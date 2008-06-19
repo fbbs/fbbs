@@ -1,0 +1,16 @@
+0Announce/bbslist/yesterday               Notepad   平均负载人数图
+0Announce/bbslist/newacct.last            Notepad   新帐号申请人数图
+0Announce/bbslist/day.last                Notepad   昨日十大热门话题
+0Announce/bbslist/toplogin                bbslists  上站次数排行榜
+0Announce/bbslist/toppost                 bbslists  讨论次数排行榜
+0Announce/bbslist/topstay                 bbslists  上站总时数排行榜
+0Announce/bbslist/topall                  bbslists  总表现值积分排行榜
+0Announce/bbslist/week                    bbslists  一周十大热门话题
+0Announce/bbslist/month                   bbslists  月度十大热门话题
+0Announce/bbslist/year                    bbslists  年度十大热门话题
+0Announce/bbslist/statBM                  bbslists  昨日版主工作检查
+0Announce/bbslist/statBM.week             bbslists  本周版主工作检查
+0Announce/bbslist/statBM.month            bbslists  本月版主工作检查
+0Announce/bbslist/bmstat                  bbslists  版主检查列表
+0Announce/bbslist/badbms                  bbslists  注意了,你7天没上站了!
+.DenyLevel                                bbslists  全站处罚列表

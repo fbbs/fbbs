@@ -1,0 +1,28 @@
+# Generated automatically from Makefile.in by configure.
+#  Makefile for local utility tool kit
+# 
+#  $Id: Makefile.org 2 2005-07-14 15:06:08Z root $
+#
+
+CC       = gcc
+CFLAGS   = -O -Wunused -I../include -I../../include
+BBSHOME	 = /export/home/bbs
+
+UTILITY  = account averun bbstop bbspop3d birthday horoscope \
+		   newacct poststat usage showuser bbsuptime
+
+.c.o:   ;   $(CC) $(CFLAGS) -c $*.c
+
+all: $(UTILITY)
+
+install: $(UTILITY)
+	cp $(UTILITY) $(BBSHOME)/bin
+
+clean:
+	rm -fr *.o *.BAK *.log $(UTILITY) *core* DEAD* *~
+
+bbspop3d:
+	$(CC) $(CFLAGS) -o bbspop3d bbspop3d.c -lcrypt
+
+usage: usage.c ../../src/record.c
+	$(CC) $(CFLAGS) -o usage usage.c ../../src/record.c

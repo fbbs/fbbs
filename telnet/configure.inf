@@ -1,0 +1,10 @@
+######################################################
+This file is generate by configure $Revision: 2 $
+######################################################
+PERL=/usr/bin/perl
+BBS_ID=AddWaterBBS
+DOMAIN=fb2000.dhs.org
+CNAME=øÏ“‚π‡ÀÆ’æ
+DEFAULTBD=SysOp
+BUILD_PLATFORM=linux
+LIBCRYPT=DES

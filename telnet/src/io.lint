@@ -1,0 +1,282 @@
+Splint 3.0.1.6 --- 03 Nov 2003
+
+include/bbs.h:342:4: Static shmkeys[9].key initialized to null value:
+                        shmkeys[9].key = 0
+  A reference with no null annotation is assigned or initialized to NULL.  Use
+  /*@null@*/ to declare the reference as a possibly null pointer. (Use
+  -nullassign to inhibit warning)
+io.c: (in function switch_code)
+io.c:70:2: Path with no return in function declared to return int
+  There is a path through a function declared to return a value on which there
+  is no return statement. This means the execution may fall through without
+  returning a meaningful result to the caller. (Use -noret to inhibit warning)
+io.c: (in function resolve_GbBig5Files)
+io.c:76:25: Unrecognized identifier: attach_shm
+  Identifier used in code has not been declared. (Use -unrecog to inhibit
+  warning)
+io.c:80:17: Assignment of int to unsigned char: BtoG[i * 2] = 0xA1
+  To make char and int types equivalent, use +charint.
+io.c:81:17: Assignment of int to unsigned char: BtoG[i * 2 + 1] = 0xF5
+io.c:85:11: Return value (type ssize_t) ignored: read(fd, BtoG, 1...
+  Result returned by function call is not used. If this is intended, can cast
+  result to (void) to eliminate message. (Use -retvalother to inhibit warning)
+io.c:86:11: Return value (type int) ignored: close(fd)
+  Result returned by function call is not used. If this is intended, can cast
+  result to (void) to eliminate message. (Use -retvalint to inhibit warning)
+io.c:91:25: Assignment of int to unsigned char: BtoG[13973 * 2 + i * 2] = 0xA1
+io.c:92:25: Assignment of int to unsigned char:
+               BtoG[13973 * 2 + i * 2 + 1] = 0xBC
+io.c:96:17: Return value (type ssize_t) ignored: read(fd, BtoG + ...
+io.c:97:17: Return value (type int) ignored: close(fd)
+io.c: (in function write2)
+io.c:107:11: Assignment of char * to unsigned char *: ptr = str
+  To ignore signs in type comparisons use +ignoresigns
+io.c:109:6: Operands of < have incompatible types (unsigned char, int):
+               ch1 < 0xA1
+io.c:109:21: Operands of > have incompatible types (unsigned char, int):
+                ch1 > 0xA9
+io.c:109:35: Operands of < have incompatible types (unsigned char, int):
+                ch1 < 0xB0
+io.c:109:50: Operands of > have incompatible types (unsigned char, int):
+                ch1 > 0xF7
+io.c:113:6: Operands of < have incompatible types (unsigned char, int):
+               ch2 < 0xA0
+io.c:113:20: Operands of == have incompatible types (unsigned char, int):
+                ch2 == 0xFF
+io.c:114:7: Operands of > have incompatible types (unsigned char, int):
+               ch1 > 0xA0
+io.c:114:23: Operands of < have incompatible types (unsigned char, int):
+                ch1 < 0xAA
+io.c:115:15: Incompatible types for - (unsigned char, int): ch1 - 0xA1
+io.c:115:33: Incompatible types for - (unsigned char, int): ch2 - 0xA1
+io.c:117:15: Incompatible types for - (unsigned char, int): ch1 - 0xB0
+io.c:117:37: Incompatible types for - (unsigned char, int): ch2 - 0xA1
+io.c:121:26: Function write expects arg 3 to be size_t gets int: len
+  To allow arbitrary integral types to match any integral type, use
+  +matchanyintegral.
+io.c:121:9: Return value type ssize_t does not match declared type int:
+               write(port, str, len)
+io.c: (in function read2)
+io.c:135:24: Function read expects arg 3 to be size_t gets int: len
+io.c:135:2: Assignment of ssize_t to int: len = read(port, str, len)
+io.c:139:10: Assignment of char * to unsigned char *: ptr = str
+io.c:141:6: Operands of < have incompatible types (unsigned char, int):
+               ch1 < 0xA1
+io.c:141:20: Operands of == have incompatible types (unsigned char, int):
+                ch1 == 0xFF
+io.c:145:6: Operands of < have incompatible types (unsigned char, int):
+               ch2 < 0x40
+io.c:145:22: Operands of > have incompatible types (unsigned char, int):
+                ch2 > 0x7E
+io.c:145:36: Operands of < have incompatible types (unsigned char, int):
+                ch2 < 0xA1
+io.c:145:52: Operands of == have incompatible types (unsigned char, int):
+                ch2 == 255
+io.c:147:8: Operands of >= have incompatible types (unsigned char, int):
+               ch2 >= 0x40
+io.c:147:25: Operands of <= have incompatible types (unsigned char, int):
+                ch2 <= 0x7E
+io.c:148:15: Incompatible types for - (unsigned char, int): ch1 - 0xA1
+io.c:148:36: Incompatible types for - (unsigned char, int): ch2 - 0x40
+io.c:150:15: Incompatible types for - (unsigned char, int): ch1 - 0xA1
+io.c:150:36: Incompatible types for - (unsigned char, int): ch2 - 0xA1
+io.c: (in function hit_alarm_clock)
+io.c:164:3: Unrecognized identifier: clear
+io.c:165:3: Unrecognized identifier: prints
+io.c:166:3: Unrecognized identifier: kill
+io.c:166:18: Unrecognized identifier: SIGHUP
+io.c:170:3: Return value (type unsigned int) ignored: alarm((60 * 3))
+io.c:172:3: Return value (type unsigned int) ignored: alarm((60 * 15))
+io.c: (in function init_alarm)
+io.c:178:9: Unrecognized identifier: SIGALRM
+io.c:178:2: Return value (type [function (int) returns void]) ignored:
+               signal(SIGALRM, ...
+io.c:179:2: Return value (type unsigned int) ignored: alarm((60 * 15))
+io.c: (in function oflush)
+io.c:186:6: Test expression for if is assignment expression: size = obufsize
+  The condition test is an assignment expression. Probably, you mean to use ==
+  instead of =. If an assignment is intended, add an extra parentheses nesting
+  (e.g., if ((a = b)) ...) to suppress this message. (Use -predassign to
+  inhibit warning)
+io.c:188:16: Return value (type int) ignored: write2(0, outbuf...
+io.c:191:20: Function write expects arg 3 to be size_t gets int: size
+io.c:191:3: Return value (type ssize_t) ignored: write(0, outbuf,...
+io.c: (in function output)
+io.c:209:16: Return value (type int) ignored: write2(0, data, ...
+io.c:212:18: Function write expects arg 3 to be size_t gets int: size
+io.c:212:3: Return value (type ssize_t) ignored: write(0, data, size)
+io.c:218:18: Function memcpy expects arg 3 to be size_t gets int: len
+io.c: (in function ochar)
+io.c:233:16: Return value (type int) ignored: write2(0, data, ...
+io.c:236:18: Function write expects arg 3 to be size_t gets int: size
+io.c:236:3: Return value (type ssize_t) ignored: write(0, data, size)
+io.c:239:2: Assignment of int to char: data[size++] = c
+io.c:240:16: Assignment of int to char: data[size++] = c
+io.c:293:31: Global i_top initialized to null value: i_top = NULL
+io.c:293:31: Global i_top initialized to null value:
+                struct timeval * i_top = NULL = NULL
+io.c:294:24: Local ? initialized to null value: flushf = NULL
+io.c:294:24: Local ? initialized to null value:
+                [function () returns int] * flushf = NULL = NULL
+io.c: (in function add_io)
+io.c:308:2: Function returns with non-null global i_top referencing null
+               storage
+  A global variable does not satisfy its annotations when control is
+  transferred. (Use -globstate to inhibit warning)
+   io.c:307:11: Storage i_top becomes null
+io.c: (in function iac_count)
+io.c:347:9: Operands of == have incompatible types (char, int):
+               (*look++ & 0xff) == 255
+io.c:348:10: Operands of == have incompatible types (char, int):
+                (*look++ & 0xff) == 240
+io.c: (in function igetch)
+io.c:386:4: Unrecognized identifier: update_utmp
+io.c:388:112: Operands of < have incompatible types (unsigned int, arbitrary
+    unsigned integral type): __i < sizeof(fd_set) / sizeof(__fd_mask)
+  To ignore type qualifiers in type comparisons use +ignorequals.
+io.c:389:5: Value rx->__fds_bits[] used before definition
+  An rvalue is used that may not be initialized to a value on some execution
+  path. (Use -usedef to inhibit warning)
+io.c:395:16: Variable to used before definition
+io.c:396:31: Null storage passed as non-null param: select (..., NULL, ...)
+  A possibly null pointer is passed as a parameter corresponding to a formal
+  parameter with no /*@null@*/ annotation.  If NULL may be used for this
+  parameter, add a /*@null@*/ annotation to the function parameter declaration.
+  (Use -nullpass to inhibit warning)
+io.c:398:6: Return value (type int) ignored: (*flushf)()
+io.c:401:6: Unrecognized identifier: refresh
+io.c:405:113: Operands of < have incompatible types (unsigned int, arbitrary
+    unsigned integral type): __i < sizeof(fd_set) / sizeof(__fd_mask)
+io.c:411:19: Unrecognized identifier: EINTR
+io.c:412:17: Function returns with non-null global big_picture referencing null
+                storage
+io.c:415:18: Function returns with non-null global big_picture referencing null
+                storage
+io.c:418:19: Function returns with non-null global big_picture referencing null
+                storage
+io.c:425:5: Assignment of ssize_t to int: ch = read(0, data, (256))
+io.c:432:5: Unrecognized identifier: abort_bbs
+io.c:434:16: Operands of == have incompatible types (char, int):
+                (*data & 0xff) == 255
+io.c:440:3: Assignment of char to int: ch = data[icurrchar++]
+io.c:467:7: Operands of == have incompatible types (int, char):
+               ch == ('L' & 037)
+io.c:474:4: Assignment of char to int: ch = '\n'
+  A character constant is used as an int. Use +charintliteral to allow
+  character constants to be used as ints.  (This is safe since the actual type
+  of a char constant is int.)
+io.c:476:15: Function returns with non-null global big_picture referencing null
+                storage
+io.c:478:2: Path with no return in function declared to return int
+io.c: (in function igetkey)
+io.c:556:18: Declaration using extern inside function scope: int RMSG
+  An extern declaration is used inside a function scope. (Use -nestedextern to
+  inhibit warning)
+io.c:562:26: Passed storage &a not completely defined: read2 (..., &a, ...)
+  Storage derivable from a parameter, return value or global is not defined.
+  Use /*@out@*/ to denote passed or returned storage which need not be defined.
+  (Use -compdef to inhibit warning)
+io.c:562:17: Return value (type int) ignored: read2(0, &a, 1)
+io.c:565:12: Passed storage &a not completely defined: read (..., &a, ...)
+io.c:565:4: Return value (type ssize_t) ignored: read(0, &a, 1)
+io.c:569:8: Operands of == have incompatible types (int, char):
+               ch == ('Z' & 037)
+io.c:570:4: Unrecognized identifier: r_msg2
+io.c:579:8: Operands of == have incompatible types (int, char): ch == '['
+io.c:579:21: Operands of == have incompatible types (int, char): ch == 'O'
+io.c:581:13: Operands of == have incompatible types (int, char): ch == '1'
+io.c:581:26: Operands of == have incompatible types (int, char): ch == '4'
+io.c:588:8: Operands of >= have incompatible types (int, char): ch >= 'A'
+io.c:588:21: Operands of <= have incompatible types (int, char): ch <= 'D'
+io.c:589:22: Incompatible types for - (int, char): ch - 'A'
+io.c:590:13: Operands of >= have incompatible types (int, char): ch >= '1'
+io.c:590:26: Operands of <= have incompatible types (int, char): ch <= '6'
+io.c:595:8: Operands of == have incompatible types (int, char): ch == '~'
+io.c:596:22: Incompatible types for - (int, char): last - '1'
+io.c: (in function top_show)
+io.c:612:2: Unrecognized identifier: move
+io.c:613:2: Unrecognized identifier: clrtoeol
+io.c:614:2: Unrecognized identifier: standout
+io.c:616:2: Unrecognized identifier: standend
+io.c: (in function getdata)
+io.c:641:32: Declaration using extern inside function scope:
+                unsigned char scr_cols
+io.c:642:18: Declaration using extern inside function scope: int RMSG
+io.c:643:21: Declaration using extern inside function scope: int msg_num
+io.c:653:2: Assignment of size_t to int: clen = strlen(buf)
+io.c:659:10: Operands of != have incompatible types (int, char):
+                (ch = igetkey()) != '\r'
+io.c:661:9: Operands of == have incompatible types (int, char):
+               ch == ('Z' & 037)
+io.c:666:9: Operands of == have incompatible types (int, char):
+               ch == ('A' & 037)
+io.c:672:8: Operands of == have incompatible types (int, char): ch == '\n'
+io.c:674:8: Operands of == have incompatible types (int, char): ch == '\177'
+io.c:674:24: Operands of == have incompatible types (int, char):
+                ch == ('H' & 037)
+io.c:679:11: Function ochar expects arg 1 to be int gets char: ('H' & 037)
+io.c:680:11: Function ochar expects arg 1 to be int gets char: ' '
+io.c:681:11: Function ochar expects arg 1 to be int gets char: ('H' & 037)
+io.c:690:4: Assignment of int to char: buf[clen++] = ch
+io.c:694:11: Function ochar expects arg 1 to be int gets char: '*'
+io.c:697:3: Unrecognized identifier: outc
+io.c:708:8: Operands of == have incompatible types (int, char):
+               ch == ('Z' & 037)
+io.c:713:8: Operands of == have incompatible types (int, char):
+               ch == ('A' & 037)
+io.c:719:7: Operands of == have incompatible types (int, char): ch == '\n'
+io.c:719:21: Operands of == have incompatible types (int, char): ch == '\r'
+io.c:721:21: Operands of == have incompatible types (int, char):
+                ch == ('R' & 037)
+io.c:726:7: Operands of == have incompatible types (int, char): ch == '\177'
+io.c:726:23: Operands of == have incompatible types (int, char):
+                ch == ('H' & 037)
+io.c:731:43: Right operand of && is non-boolean (char):
+                enabledbchar && buf[curr - 1] & 0x80
+  The operand of a boolean operator is not a boolean. Use +ptrnegate to allow !
+  to be used on pointers. (Use -boolops to inhibit warning)
+io.c:732:46: Right operand of && is non-boolean (char): i >= 0 && buf[i] & 0x80
+io.c:734:22: Right operand of && is non-boolean (char):
+                patch % 2 == 0 && buf[curr] & 0x80
+io.c:776:7: Operands of == have incompatible types (int, char):
+               ch == ('E' & 037)
+io.c:781:7: Operands of == have incompatible types (int, char):
+               ch == ('A' & 037)
+io.c:798:7: Operands of >= have incompatible types (int, unsigned char):
+               x + clen >= scr_cols
+io.c:801:8: Operand of ! is non-boolean (char): !buf[curr]
+io.c:803:4: Assignment of int to char: buf[curr] = ch
+io.c:805:29: Function strncpy expects arg 3 to be size_t gets int: len
+io.c:806:4: Assignment of int to char: buf[curr] = ch
+io.c:808:22: Function strncat expects arg 3 to be size_t gets int: len - curr
+include/bbs.h:327:29: File static variable shmkeys declared but not used
+  A variable is declared but never used. Use /*@unused@*/ in front of
+  declaration to suppress message. (Use -varuse to inhibit warning)
+io.c:44:9: Variable exported but not used outside io: inbuf
+  A declaration is exported, but not used outside this module. Declaration can
+  use static qualifier. (Use -exportlocal to inhibit warning)
+io.c:45:9: Variable exported but not used outside io: ibufsize
+io.c:46:9: Variable exported but not used outside io: icurrchar
+io.c:57:16: Variable exported but not used outside io: GtoB
+io.c:57:23: Variable exported but not used outside io: BtoG
+io.c:102:5: Function exported but not used outside io: write2
+   io.c:122:1: Definition of write2
+io.c:124:5: Function exported but not used outside io: read2
+   io.c:155:1: Definition of read2
+io.c:159:1: Function exported but not used outside io: hit_alarm_clock
+   io.c:173:1: Definition of hit_alarm_clock
+io.c:183:1: Function exported but not used outside io: oflush
+   io.c:194:1: Definition of oflush
+io.c:223:1: Function exported but not used outside io: ochar
+   io.c:224:9: Definition of ochar
+io.c:292:9: Variable exported but not used outside io: i_newfd
+io.c:293:16: Variable exported but not used outside io: i_to
+io.c:293:23: Variable exported but not used outside io: i_top
+io.c:362:1: Function exported but not used outside io: igetch
+   io.c:478:1: Definition of igetch
+io.c:552:1: Function exported but not used outside io: igetkey
+   io.c:602:1: Definition of igetkey
+io.c:605:1: Function exported but not used outside io: top_show
+   io.c:606:5: Definition of top_show
+
+Finished checking --- 163 code warnings

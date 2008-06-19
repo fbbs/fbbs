@@ -1,0 +1,96 @@
+
+# Makefile for Firebird BBS 3.0 SM series
+# deliver from SEEDNet BBS generation 1
+# $Id: Makefile.in 2 2005-07-14 15:06:08Z root $
+#################################################################
+# Makefile for SEEDNet BBS v1.0
+# Id: Makefile.in,v 1.11 1999/03/23 13:30:23 edwardc Exp 
+#################################################################
+# 1. This package is derived from Firebird BBS 1.5, which was 
+#    developed by the Department of Computer Science & Information
+#    Engineering, Chung Chen University of Taiwan, ROC.
+#    and under Firebird 2.66M the package is developed by the 
+#    Board of System Administrators, Malaysian Students' Association In Taiwan.
+#
+# 2. The example site is bbs.seed.net.tw (139.175.252.15)
+#
+# 3. The developers of this package can be reached by
+#    SYSOP.bbs@bbs.seed.net.tw
+#
+# 4. This Makefile is for "@systype@"
+#
+# This Makefile is generated automatic by configure
+
+#############################################################
+####   Setup the following site-specific information     ####
+#############################################################
+
+# The home directory and uid/gid info for user 'bbs'
+BBSHOME  = @BBS_HOME@
+BBSUID   = @BBS_USER@
+BBSGRP   = @BBS_GROUP@
+
+OS_DEF   = @OS_DEF@
+CC       = @CC@
+CFLAGS   = @CFLAGS@
+LIBS     = @LIBS@
+
+INSTALL  = @INSTALL@
+
+CSIE_DEF = @CSIE_DEF@
+
+MAKEFLAG = CC=$(CC) BBSHOME="$(BBSHOME)" OS_DEF="$(OS_DEF)" CFLAGS="$(CFLAGS)" LIBS="$(LIBS)" INSTALL="$(INSTALL)" CSIE_DEF="$(CSIE_DEF)" BBS_UID=$(BBSUID) BBSGID=$(BBSGRP)
+
+DIRS	 = @DIRS@
+
+# You needn't change the make rule, if you can't understand what are you doing
+
+all:
+	@echo "== Making main program and relatve src =="
+	@for x in $(DIRS); \
+	do \
+		echo "--> $$x"; \
+		(cd $$x; make $(MAKEFLAG) all ; cd .. ); \
+		echo "<-- $$x"; \
+		echo " "; \
+	done
+	echo "done."
+
+install: all
+	@echo "== Installing Everything ... =="
+	@for x in $(DIRS); \
+	do \
+		echo "--> $$x"; \
+		(cd $$x; make install ; cd .. ); \
+		echo "<-- $$x"; \
+		echo " "; \
+	done
+
+update: all
+	@echo "== update binary ... =="
+	@echo "-->src/"
+	(cd src; make $(MAKEFLAG) update; cd ..)
+	@echo "<--src/"
+
+clean:
+	@echo "== cleanning junks, object files, and binaries .. =="
+	-rm -fr *~ *.o *.BAK
+	@for x in $(DIRS); \
+	do \
+		echo "--> $$x"; \
+		(cd $$x; make clean ; cd .. ); \
+		echo "<-- $$x"; \
+		echo " "; \
+	done
+	echo "done."
+
+cleanall: clean
+	@echo "== cleanning all objfile, binaries .. =="
+	-rm -fr *~ *.o *.BAK
+	@for x in $(DIRS); \
+	do \
+		echo "--> $$x"; \
+		(cd $$x; make cleanall ; cd .. ); \
+		echo "<-- $$x"; \
+		echo " "; \
+	done

@@ -1,0 +1,26 @@
+NJUWWWBBS-0.9.测试版 for FB3 & FB2000.
+---------------------------------------------------------------
+
+本代码在0.7基础上做了大量改进. 如果你在使用0.7版, 建议您升级到
+新版.
+
+下载地址:
+http://bbs.nju.edu.cn/download/NJUWWWBBS-0.9.tgz (约60K)
+
+安装方法:
+设定好Makefile里面的路径以及BBSLIB.inc前面部分的路径.
+然后make install
+
+注意事项:
+缺省的cgi-bin目录是cgi-bin/bbs(推荐). 如有不同请修改 html/index.html
+
+相关讨论请到bbs.nju.edu.cn的BBSDev版, 或各大转信站的相应版面进行讨论.
+ChangeLog和相关文档正在整理中. 请稍候.
+
+Example Site: http://bbs.nju.edu.cn/
+
+
+
+
+                                        zhch.bbs@bbs.nju.edu.cn
+                                        2001.05.27
