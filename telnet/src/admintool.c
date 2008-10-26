@@ -1447,6 +1447,7 @@ void  show_register() {
     int             id, num, i;
     char            secu[STRLEN];
     char            genbuf_rm[STRLEN];	//added by roly 02.03.24
+    char            passbuf[PASSLEN];
 
     if (!(HAS_PERM (PERM_USER)))
       return;
@@ -1458,6 +1459,15 @@ void  show_register() {
     clear ();
     stand_title ("删除使用者帐号");
     move (2, 0);
+	// Added by Ashinmarch in 2008.10.20
+	// 砍掉账号时增加密码验证
+	getdata(1, 0, "^[[1;37m请输入密码: ^[[m", passbuf, PASSLEN, NOECHO, YEA);
+	passbuf[8] = '\0';
+	if (!checkpasswd(currentuser.passwd, passbuf)) {
+	prints("^[[1;31m密码输入错误...^[[m\n");
+		return 0;
+	}
+	// Add end.
     if (!gettheuserid (1, "请输入欲删除的使用者代号: ", &id))
       return 0;
     if (!strcmp (lookupuser.userid, "SYSOP")) {
@@ -2253,25 +2263,37 @@ void  show_register() {
   }
 
 // 全站广播...
-  int
-                  wall () {
-    if (!HAS_PERM (PERM_SYSOPS))
-      return 0;
-    modify_user_mode (MSG);
-    move (2, 0);
-    clrtobot ();
-    if (!get_msg ("所有使用者", buf2, 1)) {
-      return 0;
-    }
-    if (apply_ulist (dowall) == -1) {
-      move (2, 0);
-      prints ("线上空无一人\n");
-      pressanykey ();
-    }
-    prints ("\n已经广播完毕...\n");
-    pressanykey ();
-    return 1;
-  }
+int wall () {
+	char passbuf[PASSLEN];
+
+	if (!HAS_PERM (PERM_SYSOPS))
+		return 0;
+	// Added by Ashinmarch on 2008.10.20
+	// 全站广播前增加密码验证
+	clear();
+	stand_title("全站广播!");
+	getdata(1, 0, "^[[1;37m请输入密码: ^[[m", passbuf, PASSLEN, NOECHO, YEA);
+	passbuf[8] = '\0';
+	if (!checkpasswd(currentuser.passwd, passbuf)) {
+	prints("^[[1;31m密码输入错误...^[[m\n");
+		return 0;
+	}
+	// Add end.
+	modify_user_mode (MSG);
+	move (2, 0);
+	clrtobot ();
+	if (!get_msg ("所有使用者", buf2, 1)) {
+		return 0;
+	}
+	if (apply_ulist (dowall) == -1) {
+		move (2, 0);
+		prints ("线上空无一人\n");
+		pressanykey ();
+	}
+	prints ("\n已经广播完毕...\n");
+	pressanykey ();
+	return 1;
+}
 
 // 设定系统密码
   int
