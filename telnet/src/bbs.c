@@ -2939,18 +2939,18 @@ int read_post (int ent, struct fileheader *fileinfo, char *direct)
              * ´úÂë¶Î£º´Ó½ô½Ó×ÅµÄifÓï¾ä¿ªÊ¼µ½ifÓï¾ä½áÊø£¬¹²5ĞĞ¡£
              * ±¸  ×¢£ºĞŞ¸Ä±êÌâµÄÍ¬Ê±£¬ÔÚÎÄÕÂÄ©Î²Ìí¼ÓÒ»¸öĞŞ¸Ä±ê¼Ç£¬±íÃ÷ÎÄÕÂÒÑ¾­±»ĞŞ¸Ä¹ı¡£
              */
-            if (!strncmp(buf, "[m[1;36m¡ù ĞŞ¸Ä:¡¤", 17)) {
-                snprintf(buf, 256, "[m[1;36m¡ù ĞŞ¸Ä:¡¤%s ì¶ %16.16s ĞŞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s][m\n",
-                        currentuser.userid, datestring + 6, fromhost);
-                found = 1;
-            }
+            //if (!strncmp(buf, "[m[1;36m¡ù ĞŞ¸Ä:¡¤", 17)) {
+            //    snprintf(buf, 256, "[m[1;36m¡ù ĞŞ¸Ä:¡¤%s ì¶ %16.16s ĞŞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s][m\n",
+            //            currentuser.userid, datestring + 6, fromhost);
+            //   found = 1;
+            //}
 
             fputs (buf, out);
 
-            if(!found) {
-                fprintf(out,  "[m[1;36m¡ù ĞŞ¸Ä:¡¤%s ì¶ %16.16s ĞŞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s][m\n",
-                        currentuser.userid, datestring + 6, fromhost);
-            }
+            //if(!found) {
+            //    fprintf(out,  "[m[1;36m¡ù ĞŞ¸Ä:¡¤%s ì¶ %16.16s ĞŞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s][m\n",
+            //            currentuser.userid, datestring + 6, fromhost);
+            //}
 
         }
         fclose (fp);
