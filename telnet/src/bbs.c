@@ -751,6 +751,13 @@ int do_cross (int ent, struct fileheader *fileinfo, char *direct)
 #endif
     if (!HAS_PERM (PERM_POST) || digestmode == ATTACH_MODE)
         return DONOTHING;
+    //Added by Ashinmarch to Forbid Cross-post of Type 2 mail
+    if(fileinfo->filename[0] == 's')
+    {
+        prints("Type 2群信不能转载!\n");
+        return DONOTHING;
+    }
+    //add end
     if (uinfo.mode != RMAIL)
         sprintf (genbuf, "boards/%s/%s", currboard, fileinfo->filename);
     else
