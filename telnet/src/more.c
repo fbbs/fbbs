@@ -4,7 +4,9 @@ time_t  calltime = 0;
 void    R_monitor();
 extern struct boardheader *getbcache();
 //Added by Ashinmarch to support multi-line msg
+#ifdef FDQUAN
 extern void show_data(char *buf, int maxcol, int line, int col);
+#endif
 
 //modified by iamfat 2004.01.13 to add http link in telnet
 char *httplink=NULL;
@@ -22,7 +24,9 @@ char    more_buf[MORE_BUFSIZE];
 int     more_size, more_num;
 
 /*Added by Ashinmarch on 2007.12.01*/
+#ifdef FDQUAN
 extern int RMSG;
+#endif
 
 void ActiveBoard_Init( void )
 {
@@ -337,8 +341,10 @@ void R_monitor()
    /* Added by Ashinmarch on 2007.12.01
     * used to support multi-line msgs
     */
+#ifdef FDQUAN
    if (uinfo.mode == LOOKMSGS || uinfo.mode == MSG || RMSG == YEA) return;
    /*end*/
+#endif
    
    if (!DEFINE(DEF_ACBOARD) && !DEFINE(DEF_ENDLINE)) return;
    
@@ -547,23 +553,27 @@ int mesgmore(char *filename, int promptend, int row, int numlines)
    linesread++;
    while (numbytes) {
       if (linesread <= numlines || numlines == 0) {
-         viewed += numbytes; 
-	 //prints("[37m"); 
+         viewed += numbytes;
+#ifndef FDQUAN
+	 prints("[37m");
+#endif
 	 if (check_stuffmode())
 	    showstuff(buf/*, 0*/);
 	 else
-     {
-	    //prints("%s", buf);
-        
+	 {
         /* Modified by Ashinmarch on 2007.12.01, used to support multi-line msg
          * msghead(with ansi) and msg content(no ansi but multi-line) should be
          * differentiated.
          */
-        if(buf[0] == '') //msg head
-            prints("%s",buf);
-        else   //msg
-            show_data(buf, LINE_LEN-1, curr_row, 0);
+#ifdef FDQUAN
+		if(buf[0] == '') //msg head
+			prints("%s",buf);
+		else   //msg
+			show_data(buf, LINE_LEN-1, curr_row, 0);
         //added end
+#else
+		prints("%s",buf);
+#endif
      }
      isin = YEA;
 	 i++;

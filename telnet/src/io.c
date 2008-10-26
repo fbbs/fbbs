@@ -821,7 +821,7 @@ int getdata (	int line,
 }
 
 
-
+#ifdef FDQUAN
 /* Added by Ashinmarch on 2007.12.01
  * used to support display of multi-line msgs
  * */
@@ -1228,3 +1228,4 @@ int multi_getdata(int line, int col, int maxcol, char *prompt, char *buf, int le
  	    ingetdata = false;
  	    return y-starty+1;
  	}
+#endif

@@ -815,6 +815,7 @@ void saveline(int line, int mode)  /* 0,2 : save, 1,3 : restore */
  * to support multi-line msgs
  * It is used to save screen lines overwrited by msgs
  */
+#ifdef FDQUAN
 void saveline_buf(int line, int mode)//0:save 1:restore
 {
     static char temp[MAX_MSG_LINE*2+2][LINELEN];
@@ -844,3 +845,4 @@ void saveline_buf(int line, int mode)//0:save 1:restore
             break;
     }
 }
+#endif
