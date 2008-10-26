@@ -1019,29 +1019,18 @@ void login_query()
 	    }
 
 	  }
-	  if (currentuser.userlevel == 0
-	      && askyn("ÄúÖªµÀÄúÒÑ¾­×ÔÉ±ÁËÂğ£¿", NA, NA) == YEA
-	      && askyn("ÄúÏëÆğËÀ»ØÉúÂğ£¿", NA, NA) == YEA
-	      && askyn("Äú°´´í¼üÁËÂğ£¿", YEA, NA) == NA
-	      && askyn("ÄúÍ¬ÒâÄúµÄÉÏÕ¾´ÎÊı¡¢ÎÄÕÂÊı¼°ÉÏÕ¾×ÜÊ±ÊıÇåÁãÂğ£¿", NA,
-		       NA) == YEA && askyn("ÎÒÃÇºÜ·³Âğ£¿", YEA, NA) == YEA) {
-	    currentuser.userlevel = PERM_DEFAULT;
 
-	    currentuser.numposts = 0;
-	    currentuser.numlogins = 1;
-#ifdef FDQUAN
-#else
-	    currentuser.stay = 0;
-#endif
-	    substitut_record(PASSFILE, &currentuser, sizeof(currentuser),
-			     usernum);
-	  } else {
-	    prints("[32m±¾ÕÊºÅÒÑÍ£»ú¡£ÇëÏò [36mSYSOP[32m ²éÑ¯Ô­Òò[m\n");
-	    pressanykey();
-	    oflush();
-	    sleep(1);
-	    exit(1);
+      //Don't allow revival, Added by Ashinmarch Sep.04, 2008
+	  if (currentuser.userlevel == 0){
+		  prints("\033[32mÄúÒÑ¾­×ÔÉ±\033[m\n");
 	  }
+	  else{
+		  prints("\033[32m±¾ÕÊºÅÒÑÍ£»ú¡£ÇëÖÁ Notice °æ»òÏò \033[36msysops\033[32m ²éÑ¯Ô­Òò\033[m\n");
+	  }
+	  pressanykey();
+	  oflush();
+	  sleep(1);
+	  exit(1);
 	}
 
 /*2003.04.22 stephen add end*/
