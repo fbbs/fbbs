@@ -1049,9 +1049,9 @@ char   *readdoent (int num, struct fileheader *ent)		// ндубап╠М
     }
     if (ent->accessed[0] & FILE_DELETED) {
         if (brc_unread (ent->filename))
-            type = 'X';		// deardragon 0729
+            type = 'W';		// deardragon 0729
         else
-            type = 'x';
+            type = 'w';
     }
     //  bp = getbcache (currboard);
     //  if (ent->accessed[0] & FILE_NOREPLY || bp->flag & BOARD_NOREPLY_FLAG)
