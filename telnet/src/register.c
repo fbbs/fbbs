@@ -79,95 +79,6 @@ int ci_strnbcmp( register char *s1, register char *s2, int n ) {
         return 0;
 }
 
-
-
-/* added by Ashinmarch Sep.23. 07.     *
- * Compare userid to restrictid        *
- * It can match any expression pattern *
- * like "*aab*bac*adfa*...*asdf*".     */
-char *toLowercase(char *str)
-{
-    char *str_t = malloc(sizeof(char) * 20);
-    strcpy(str_t, str);
-    int i = 0;
-    while(str_t[i])
-    {
-        if(str_t[i] >= 'A' && str_t[i] <='Z')
-        {
-                                                                 
-            str_t[i] = str_t[i]  -'A' + 'a';
-        }
-        i++;
-    }
-
-    return str_t;
-}
-
-//used in ex_strcmp_v2. Using delimiter to get strBuf token. Then match strUid
-int check_str_tok(char *strUid, char *strBuf,  char *delim)   
-{
-    char str_t[20];
-    strcpy(str_t,strBuf);
-
-    if(*str_t == '*')
-        strcpy(str_t, str_t+1);
-    if(str_t[strlen(str_t)-1] == '*')
-        str_t[strlen(str_t)-1] = 0;
-
-                       
-    char *temp[10];
-    int i = 0;
-
-    temp[0] = strtok(str_t, delim);
-    while(temp[i++])
-    {
-        temp[i] = strtok(NULL, delim);
-    }
-                                      
-    char str_u[20];
-    strcpy(str_u, strUid);
-    int j;
-    for(j = 0; j < i-1; j++)
-    {
-        char *p;
-        if((p = strstr(str_u, temp[j])) != NULL)
-        {
-            if(*(p+strlen(temp[j])) != 0)
-            {
-                strcpy(str_u, p+ strlen(temp[j]));
-            }
-        }
-        else
-        {
-            return 0;
-        }
-    }
-    return 1;                                                            
-}
-
-
-int ex_strcmp_v2( char *restrictid, char *userid ) 
-{
-    char *strBuf, *strUid;
-    strBuf = toLowercase(restrictid);
-    strUid = toLowercase(userid);
-                                  
-    if(check_str_tok(strUid, strBuf, "*") == 1)  
-        return 0;
-    else
-         return 1;
-}
-
-/*add end*/
-
-
-
-
-
-
-
-
-
 /* Add by Amigo. 2001.02.13. Called by bad_user_id. */
 /* Compares userid to restrictid. */
 /* Restrictid support * match in three style: prefix*, *suffix, prefix*suffix. */
@@ -261,7 +172,7 @@ int bad_user_id(char *userid) {
             ptr = strtok( buf, " \n\t\r" );
             /* Modified by Amigo. 2001.02.13.8. * match support added. */
             /* Original: if( ptr != NULL && *ptr != '#' && ci_strcmp( ptr, userid ) == 0 ) {*/
-            if( ptr != NULL && *ptr != '#' && ( ci_strcmp( ptr, userid ) == 0 || ex_strcmp_v2( ptr, userid ) == 0 ) ) {
+            if( ptr != NULL && *ptr != '#' && ( ci_strcmp( ptr, userid ) == 0 || ex_strcmp( ptr, userid ) == 0 ) ) {
                 fclose( fp );
                 return 1;
             }
@@ -322,8 +233,6 @@ int compute_user_value(struct userec *urec) {
     if ( !(urec->userlevel & PERM_XEMPT) && (urec->userlevel & PERM_LONGLIFE) )
         return (366 * 1440 - value) / 1440;
 	
-    /*Modified temporarily by Ashinmarch on 2008.01.27 to protect new users.*/
-    //1440->2880, 86400->172800 (1 day->2 days)
 	if (urec->lastlogin > 1122825600)
 		return (90 * 1440 - value) / 1440;
 	else if (value >= 86400)
@@ -390,7 +299,7 @@ int getnewuserid() {
                 sprintf(genbuf, "#%d %-12s %14.14s %d %d %d", i + 1,
                         utmp.userid, datestring, utmp.numlogins, utmp.numposts, val);
                 log_usies("KILL ", genbuf);
-                if (!bad_user_id(utmp.userid)) {
+                {
 					sprintf(genbuf,"mail/%c/%s",
 					        toupper(utmp.userid[0]), utmp.userid);
 					fprintf(fdtmp, "[1;37m%s [m([1;33m%s[m) ¹²ÉÏÕ¾ [1;32m%d[m ´Î [[1;3%dm%s×ù[m]\n",
