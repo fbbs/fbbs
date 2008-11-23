@@ -381,11 +381,11 @@ int show_position(char *buf)
 {
 	if (lookupuser.userlevel & PERM_SPECIAL9) {
 		if (lookupuser.userlevel & PERM_SYSOPS) {
-			sprintf(buf, "[[1;32m±¾Õ¾Õ¾³¤[m]");
+			sprintf(buf, "[[1;32mÕ¾³¤[m]");
 		} else if (lookupuser.userlevel & PERM_ANNOUNCE) {
-			sprintf(buf, "[[1;32m·ÖÇø×Ü¹Ü[m]");
+			sprintf(buf, "[[1;32mÕ¾Îñ[m]");
 		} else if (lookupuser.userlevel & PERM_OCHAT) {
-			sprintf(buf, "[[1;32mÊµÏ°×Ü¹Ü[m]");
+			sprintf(buf, "[[1;32mÊµÏ°Õ¾Îñ[m]");
 		} else if (lookupuser.userlevel & PERM_SPECIAL0) {
 			sprintf(buf, "[[1;32mÕ¾ÎñÎ¯Ô±»áÃØÊé[m]");
 		} else {
@@ -425,7 +425,7 @@ int show_position(char *buf)
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_SERV) {
-			sprintf(buf, "%s[[1;32m·þÎñ×é[m]",buf);
+			sprintf(buf, "%s[[1;32mÅàÑµ×é[m]",buf);
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_SPECIAL3) {
