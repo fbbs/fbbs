@@ -32,7 +32,7 @@ BBSUID   = bbs
 BBSGRP   = bbs
 
 OS_DEF   = -DLINUX -DTERMIOS
-CC       = gcc-3.3.6
+CC       = gcc
 CFLAGS   = -Os -pipe -fomit-frame-pointer -export -Wunused -I../include
 #for main host
 #CFLAGS   = -Os -DFDQUAN -export -Wunused -I../include   #for  water host
