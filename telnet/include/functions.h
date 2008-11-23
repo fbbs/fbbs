@@ -10,7 +10,9 @@
 #define NEWONLINECOUNT
 // 下面是一些功能的控制，如果屏蔽该控制，则表示不使用这个功能
 // 如果该行前面有 "//" 则表示被屏蔽，要屏蔽该功能，则加入 "//"
-#define ENABLE_PREFIX
+#ifdef FDQUAN
+	#define ENABLE_PREFIX
+#endif
 #define SHOW_THANKYOU		/* 显示源代码提供者信息 */
 
 /*  注册相关部分代码的 define */
