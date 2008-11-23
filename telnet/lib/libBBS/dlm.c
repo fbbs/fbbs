@@ -2,27 +2,26 @@
 /* CVS: $Id: dlm.c 2 2005-07-14 15:06:08Z root $ */
 
 #ifndef BBS
-  #include <dlfcn.h>
-  #include <varargs.h>
-  #include <strings.h>
-  #include <stdlib.h>
-  #include <stdio.h>
+#include <dlfcn.h>
+#include <varargs.h>
+#include <strings.h>
+#include <stdlib.h>
+#include <stdio.h>
 #else
-  #include "bbs.h"
+#include "bbs.h"
 #endif
 
-char 	dl_lib_c[] =
-	"$Id: dlm.c 2 2005-07-14 15:06:08Z root $";
+char dl_lib_c[] = "$Id: dlm.c 2 2005-07-14 15:06:08Z root $";
 
-void   *
+void *
 DL_get(name, errno)
-char   *name;
-int    *errno;
+char *name;
+int *errno;
 {
-	char    buf[512], symbol[256];
-	void	*handle;
-	int		x = 0;
-	
+	char buf[512], symbol[256];
+	void *handle;
+	int x = 0;
+
 	report("enter the DLM ");
 	if ( !strchr(name, ':') ) {
 		*errno = -1;
@@ -39,7 +38,7 @@ int    *errno;
 	report("haha");
 	report(buf);
 	report(symbol);
-		
+
 	handle = dlopen(buf, RTLD_LAZY);
 
 	if ( !handle ) {

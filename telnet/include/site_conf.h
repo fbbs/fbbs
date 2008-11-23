@@ -1,7 +1,7 @@
 /* include/site_conf.h.  Generated automatically by configure.  */
 /*
-CVS: $Id: site_conf.h 2 2005-07-14 15:06:08Z root $
-*/
+ CVS: $Id: site_conf.h 2 2005-07-14 15:06:08Z root $
+ */
 #ifndef _AUTOCONFIG_H_
 #define _AUTOCONFIG_H_
 

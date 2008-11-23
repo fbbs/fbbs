@@ -1,27 +1,27 @@
 /*
-    Pirate Bulletin Board System
-    Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
-    Eagles Bulletin Board System
-    Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
-                        Guy Vega, gtvega@seabass.st.usm.edu
-                        Dominic Tynes, dbtynes@seabass.st.usm.edu
-    Firebird Bulletin Board System
-    Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
-                        Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
+ Pirate Bulletin Board System
+ Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
+ Eagles Bulletin Board System
+ Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
+ Guy Vega, gtvega@seabass.st.usm.edu
+ Dominic Tynes, dbtynes@seabass.st.usm.edu
+ Firebird Bulletin Board System
+ Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
+ Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 1, or (at your option)
-    any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 1, or (at your option)
+ any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-*/
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ */
 /*
-$Id: talk.c 366 2007-05-12 16:35:51Z danielfree $
-*/
+ $Id: talk.c 366 2007-05-12 16:35:51Z danielfree $
+ */
 
 #include "bbs.h"
 
@@ -47,221 +47,200 @@ extern char BoardName[];
 extern int iscolor;
 extern int numf, friendmode;
 extern char *cexpstr();
-int     talkidletime = 0;
-int     ulistpage;
-int     friendflag = 1;
-int     friend_query();
-int     friend_mail();
-int     friend_dele();
-int     friend_add();
-int     friend_edit();
-int     friend_help();
-int     reject_query();
-int     reject_dele();
-int     reject_add();
-int     reject_edit();
-int     reject_help();
+int talkidletime = 0;
+int ulistpage;
+int friendflag = 1;
+int friend_query();
+int friend_mail();
+int friend_dele();
+int friend_add();
+int friend_edit();
+int friend_help();
+int reject_query();
+int reject_dele();
+int reject_add();
+int reject_edit();
+int reject_help();
 
 #ifdef TALK_LOG
-void    do_log();
-int     talkrec = -1;
-char    partner[IDLEN + 1];
+void do_log();
+int talkrec = -1;
+char partner[IDLEN + 1];
 #endif
 
-struct one_key friend_list[] = {
-	'r', friend_query,
-	'm', friend_mail,
-	'M', friend_mail,
-	'a', friend_add,
-	'A', friend_add,
-	'd', friend_dele,
-	'D', friend_dele,
-	'E', friend_edit,
-	'h', friend_help,
-	'H', friend_help,
-	'\0', NULL
-};
+struct one_key friend_list[] = { 'r', friend_query, 'm', friend_mail, 'M',
+		friend_mail, 'a', friend_add, 'A', friend_add, 'd', friend_dele,
+		'D', friend_dele, 'E', friend_edit, 'h', friend_help, 'H',
+		friend_help, '\0', NULL };
 
-struct one_key reject_list[] = {
-	'r', reject_query,
-	'a', reject_add,
-	'A', reject_add,
-	'd', reject_dele,
-	'D', reject_dele,
-	'E', reject_edit,
-	'h', reject_help,
-	'H', reject_help,
-	'\0', NULL
-};
+struct one_key reject_list[] = { 'r', reject_query, 'a', reject_add, 'A',
+		reject_add, 'd', reject_dele, 'D', reject_dele, 'E', reject_edit,
+		'h', reject_help, 'H', reject_help, '\0', NULL };
 
 struct talk_win {
-	int     curcol, curln;
-	int     sline, eline;
+	int curcol, curln;
+	int sline, eline;
 };
 
-int     nowmovie;
-int     bind();
+int nowmovie;
+int bind();
 
-static char *refuse[] = {
-	"±§Ç¸£¬ÎÒÏÖÔÚÏë×¨ĞÄ¿´ Board¡£    ", "Çë²»Òª³³ÎÒ£¬ºÃÂğ£¿..... :)      ",
-	"ÎÒÏÖÔÚÓĞÊÂ£¬µÈÒ»ÏÂÔÙ Call Äã¡£  ", "ÎÒÂíÉÏÒªÀë¿ªÁË£¬ÏÂ´ÎÔÙÁÄ°É¡£    ",
-	"ÇëÄã²»ÒªÔÙ Page£¬ÎÒ²»Ïë¸úÄãÁÄ¡£ ", "ÇëÏÈĞ´Ò»·â×ÔÎÒ½éÉÜ¸øÎÒ£¬ºÃÂğ£¿  ",
-	"¶Ô²»Æğ£¬ÎÒÏÖÔÚÔÚµÈÈË¡£          ", "ÎÒ½ñÌìºÜÀÛ£¬²»Ïë¸ú±ğÈËÁÄÌì¡£    ",
-NULL};
+static char *refuse[] = { "±§Ç¸£¬ÎÒÏÖÔÚÏë×¨ĞÄ¿´ Board¡£    ",
+		"Çë²»Òª³³ÎÒ£¬ºÃÂğ£¿..... :)      ", "ÎÒÏÖÔÚÓĞÊÂ£¬µÈÒ»ÏÂÔÙ Call Äã¡£  ",
+		"ÎÒÂíÉÏÒªÀë¿ªÁË£¬ÏÂ´ÎÔÙÁÄ°É¡£    ", "ÇëÄã²»ÒªÔÙ Page£¬ÎÒ²»Ïë¸úÄãÁÄ¡£ ", "ÇëÏÈĞ´Ò»·â×ÔÎÒ½éÉÜ¸øÎÒ£¬ºÃÂğ£¿  ",
+		"¶Ô²»Æğ£¬ÎÒÏÖÔÚÔÚµÈÈË¡£          ", "ÎÒ½ñÌìºÜÀÛ£¬²»Ïë¸ú±ğÈËÁÄÌì¡£    ", NULL };
 
 extern int t_columns;
 
-char    save_page_requestor[40];
-extern int	t_cmpuids();
-int     cmpfnames();
-char	*ModeType();
+char save_page_requestor[40];
+extern int t_cmpuids();
+int cmpfnames();
+char *ModeType();
 
 int
 ishidden(user)
-char   *user;
+char *user;
 {
-	int     tuid;
+	int tuid;
 	struct user_info uin;
 	if (!(tuid = getuser(user)))
-		return 0;
+	return 0;
 	if (!search_ulist(&uin, t_cmpuids, tuid))
-		return 0;
+	return 0;
 	return (uin.invisible);
 }
-char pagerchar(int friend, int pager)
-{
-   if (pager & ALL_PAGER) return ' ';
-   if ((friend)) {
-      if (pager & FRIEND_PAGER) return 'O';
-      else return '#';
-   }
-   return '*';
-}
+char pagerchar(int friend, int pager) {
+	if (pager & ALL_PAGER)
+		return ' ';
+	if ((friend)
+			) {
+				if (pager & FRIEND_PAGER) return 'O';
+				else return '#';
+			}
+			return '*';
+		}
 
-int canpage(int friend, int pager)
-{
-   if ((pager & ALL_PAGER) || HAS_PERM(PERM_OCHAT))
-      return YEA;
-   if ((pager & FRIEND_PAGER)) {
-      if (friend) return YEA;
-   }
-   return NA;
-}
+		int canpage(int friend, int pager) {
+			if ((pager & ALL_PAGER) || HAS_PERM(PERM_OCHAT))
+				return YEA;
+			if ((pager & FRIEND_PAGER)) {
+				if (friend) return YEA;
+			}
+			return NA;
+		}
 #ifdef SHOW_IDLE_TIME
-char   *
-idle_str(uent)
-struct user_info *uent;
-{
-	static char hh_mm_ss[32];
+		char *
+		idle_str(uent)
+		struct user_info *uent;
+		{
+			static char hh_mm_ss[32];
 #ifndef BBSD
-	struct stat buf;
-	char    tty[128];
+			struct stat buf;
+			char tty[128];
 #endif
-	time_t  now, diff;
-	int     limit, hh, mm;
-	if (uent == NULL) {
-		strcpy(hh_mm_ss, "²»Ïê");
-		return hh_mm_ss;
-	}
+			time_t now, diff;
+			int limit, hh, mm;
+			if (uent == NULL) {
+				strcpy(hh_mm_ss, "²»Ïê");
+				return hh_mm_ss;
+			}
 #ifndef BBSD
-	strcpy(tty, uent->tty);
+			strcpy(tty, uent->tty);
 
 #ifndef SOLARIS
 #ifndef AIX
 #ifndef LINUX
-    if ( (stat( tty, &buf ) != 0) ||
-         (strstr( tty, "tty" ) == NULL)) {
-        strcpy( hh_mm_ss, "²»Ïê");
-        return hh_mm_ss;
-    }
+			if ( (stat( tty, &buf ) != 0) ||
+			(strstr( tty, "tty" ) == NULL)) {
+				strcpy( hh_mm_ss, "²»Ïê");
+				return hh_mm_ss;
+			}
 #else
-    if ( (stat( tty, &buf ) != 0) ||
-         (strstr( tty, "dev" ) == NULL)) {
-        strcpy( hh_mm_ss, "²»Ïê");
-        return hh_mm_ss;
-    }
+			if ( (stat( tty, &buf ) != 0) ||
+			(strstr( tty, "dev" ) == NULL)) {
+				strcpy( hh_mm_ss, "²»Ïê");
+				return hh_mm_ss;
+			}
 #endif
 #else
-    if ( (stat( tty, &buf ) != 0) ||
-         (strstr( tty, "pts" ) == NULL)) {
-        strcpy( hh_mm_ss, "²»Ïê");
-        return hh_mm_ss;
-    }
+			if ( (stat( tty, &buf ) != 0) ||
+			(strstr( tty, "pts" ) == NULL)) {
+				strcpy( hh_mm_ss, "²»Ïê");
+				return hh_mm_ss;
+			}
 #endif
 #else
-	if ((stat(tty, &buf) != 0) ||
-		(strstr(tty, "pts") == NULL)) {
-		strcpy(hh_mm_ss, "²»Ïê");
-		return hh_mm_ss;
-	}
+			if ((stat(tty, &buf) != 0) ||
+			(strstr(tty, "pts") == NULL)) {
+				strcpy(hh_mm_ss, "²»Ïê");
+				return hh_mm_ss;
+			}
 #endif
 #endif
 
-	now = time(0);
-	
+			now = time(0);
+
 #ifndef BBSD
-	diff = now - buf.st_atime;
+			diff = now - buf.st_atime;
 #else
-	if ( uent->mode == TALK )
-	    diff = talkidletime;	/* ÁÄÌìÁíÓĞ×Ô¼ºµÄ idle kick »úÖÆ */
-	else if (uent->mode == BBSNET )
-		diff = 0 ;
-	else
-		diff = now - uent->idle_time;
+			if ( uent->mode == TALK )
+			diff = talkidletime; /* ÁÄÌìÁíÓĞ×Ô¼ºµÄ idle kick »úÖÆ */
+			else if (uent->mode == BBSNET )
+			diff = 0;
+			else
+			diff = now - uent->idle_time;
 #endif
 
 #ifdef DOTIMEOUT
-	/*
-	 * the 60 * 60 * 24 * 5 is to prevent fault /dev mount from kicking
-	 * out all users
-	 */
+			/*
+			 * the 60 * 60 * 24 * 5 is to prevent fault /dev mount from kicking
+			 * out all users
+			 */
 
-	if (uent->ext_idle)
-		limit = IDLE_TIMEOUT * 3;
-	else
-		limit = IDLE_TIMEOUT;
+			if (uent->ext_idle)
+			limit = IDLE_TIMEOUT * 3;
+			else
+			limit = IDLE_TIMEOUT;
 
-	if ((diff > limit) && (diff < 86400 * 5)&&uent->pid)
-		kill(uent->pid, SIGHUP);
+			if ((diff> limit) && (diff < 86400 * 5)&&uent->pid)
+			kill(uent->pid, SIGHUP);
 #endif
 
-	hh = diff / 3600;
-	mm = (diff / 60) % 60;
+			hh = diff / 3600;
+			mm = (diff / 60) % 60;
 
-	if (hh > 0)
-		sprintf(hh_mm_ss, "%02d:%02d", hh, mm);
-	else if (mm > 0)
-		sprintf(hh_mm_ss, "%d", mm);
-	else
-		sprintf(hh_mm_ss, "   ");
+			if (hh> 0)
+			sprintf(hh_mm_ss, "%02d:%02d", hh, mm);
+			else if (mm> 0)
+			sprintf(hh_mm_ss, "%d", mm);
+			else
+			sprintf(hh_mm_ss, "   ");
 
-	return hh_mm_ss;
-}
+			return hh_mm_ss;
+		}
 #endif
 
-
-int listcuent( struct user_info *uentp)
-{
-   if (uentp == NULL) {
-      CreateNameList();
-      return 0;
-   }
-   if (uentp->uid == usernum) return 0;
-   if (!uentp->active || !uentp->pid || isreject(uentp)) return 0;
-   if (uentp->invisible && !(HAS_PERM(PERM_SEECLOAK))) return 0;
-   AddNameList(uentp->userid);
-   return 0;
+int listcuent(struct user_info *uentp) {
+	if (uentp == NULL) {
+		CreateNameList();
+		return 0;
+	}
+	if (uentp->uid == usernum)
+		return 0;
+	if (!uentp->active || !uentp->pid || isreject(uentp))
+		return 0;
+	if (uentp->invisible && !(HAS_PERM(PERM_SEECLOAK)))
+		return 0;
+	AddNameList(uentp->userid);
+	return 0;
 }
 
-void creat_list()
-{
-   listcuent(NULL);
-   apply_ulist(listcuent);
+void creat_list() {
+	listcuent(NULL);
+	apply_ulist(listcuent);
 }
 
-int
-t_pager()
-{
+int t_pager() {
 
 	if (uinfo.pager & ALL_PAGER) {
 		uinfo.pager &= ~ALL_PAGER;
@@ -275,9 +254,10 @@ t_pager()
 	}
 
 	if (!uinfo.in_chat && uinfo.mode != TALK) {
-		move(1, 0); clrtoeol();
+		move(1, 0);
+		clrtoeol();
 		prints("ÄúµÄºô½ĞÆ÷ (pager) ÒÑ¾­[1m%s[mÁË!",
-			(uinfo.pager & ALL_PAGER) ? "´ò¿ª" : "¹Ø±Õ");
+				(uinfo.pager & ALL_PAGER) ? "´ò¿ª" : "¹Ø±Õ");
 		pressreturn();
 	}
 	update_utmp();
@@ -287,24 +267,22 @@ t_pager()
 /*Add by SmallPig*/
 /*´Ëº¯ÊıÖ»¸ºÔğÁĞÓ¡ËµÃ÷µµ£¬²¢²»¹ÜÇå³ı»ò¶¨Î»µÄÎÊÌâ¡£*/
 
-int 
+int
 show_user_plan(userid)
-char   *userid;
+char *userid;
 {
-        char    pfile[STRLEN] ;
-        sethomefile(pfile, userid, "plans");
-        if (show_one_file(pfile)==NA) {
-                prints("[1;36mÃ»ÓĞ¸öÈËËµÃ÷µµ[m\n");
-                return NA;
+	char pfile[STRLEN];
+	sethomefile(pfile, userid, "plans");
+	if (show_one_file(pfile)==NA) {
+		prints("[1;36mÃ»ÓĞ¸öÈËËµÃ÷µµ[m\n");
+		return NA;
 	}
 	return YEA;
 }
-int
-show_one_file(char *filename)
-{
-	int     i, j, ci;
-	char    pbuf[256];
-	FILE   *pf;
+int show_one_file(char *filename) {
+	int i, j, ci;
+	char pbuf[256];
+	FILE *pf;
 	if ((pf = fopen(filename, "r")) == NULL) {
 		return NA;
 	} else {
@@ -312,11 +290,10 @@ show_one_file(char *filename)
 			if (fgets(pbuf, sizeof(pbuf), pf)) {
 				for (j = 0; j < strlen(pbuf); j++)
 					//Modified by IAMFAT 2002.06.05
-					if (pbuf[j] != '\033')
-					{
-						if(pbuf[j]!='\r') outc(pbuf[j]);
-					}
-					else {
+					if (pbuf[j] != '\033') {
+						if (pbuf[j]!='\r')
+							outc(pbuf[j]);
+					} else {
 						ci = strspn(&pbuf[j], "\033[0123456789;");
 						if (pbuf[ci + j] != 'm')
 							j += ci;
@@ -331,28 +308,27 @@ show_one_file(char *filename)
 	}
 }
 
-int show_bm(char* userid, char *bmstring)
-{
-    FILE *bmfp;
-    char bmfilename[STRLEN],tmp[20];
-    int i;
-    sethomefile (bmfilename, userid, ".bmfile");
-    bmfp = fopen (bmfilename,"r");
-    
-    if ( bmfp ){
-		for (i = 0 ; i < 3; i++) {
-			fscanf(bmfp,"%s\n",tmp);
-			sprintf (bmstring, "%s%s ",bmstring,tmp);
-			if (feof(bmfp))	break;
-        }
+int show_bm(char* userid, char *bmstring) {
+	FILE *bmfp;
+	char bmfilename[STRLEN], tmp[20];
+	int i;
+	sethomefile(bmfilename, userid, ".bmfile");
+	bmfp = fopen(bmfilename, "r");
+
+	if (bmfp) {
+		for (i = 0; i < 3; i++) {
+			fscanf(bmfp, "%s\n", tmp);
+			sprintf(bmstring, "%s%s ", bmstring, tmp);
+			if (feof(bmfp))
+				break;
+		}
 		fclose(bmfp);
 		return 1;
-    }
+	}
 	return 0;
 }
 
-int show_position(char *buf)
-{
+int show_position(char *buf) {
 	if (lookupuser.userlevel & PERM_SPECIAL9) {
 		if (lookupuser.userlevel & PERM_SYSOPS) {
 			sprintf(buf, "[[1;32mÕ¾³¤[m]");
@@ -363,232 +339,232 @@ int show_position(char *buf)
 		} else if (lookupuser.userlevel & PERM_SPECIAL0) {
 			sprintf(buf, "[[1;32mÕ¾ÎñÎ¯Ô±»áÃØÊé[m]");
 		} else {
-			sprintf(buf, "[[1;32mÀëÈÎÕ¾Îñ[m]"); 
+			sprintf(buf, "[[1;32mÀëÈÎÕ¾Îñ[m]");
 		}
-	} else{
+	} else {
 		int normal = 1;
 		char bms[STRLEN];
 		bms[0] = '\0';
-		if ((lookupuser.userlevel & PERM_XEMPT) 
-			&& (lookupuser.userlevel & PERM_LONGLIFE)
-			&& (lookupuser.userlevel & PERM_LARGEMAIL)){
-			sprintf(buf, "[[1;32mÈÙÓş°æÖ÷[m]"); 
+		if ((lookupuser.userlevel & PERM_XEMPT) && (lookupuser.userlevel
+				& PERM_LONGLIFE)
+				&& (lookupuser.userlevel & PERM_LARGEMAIL)) {
+			sprintf(buf, "[[1;32mÈÙÓş°æÖ÷[m]");
 			normal = 0;
 		}
-		if (lookupuser.userlevel & PERM_OBOARDS 
-		&& lookupuser.userlevel & PERM_SEECLOAK
-		&& lookupuser.userlevel & PERM_LARGEMAIL){
+		if (lookupuser.userlevel & PERM_OBOARDS && lookupuser.userlevel
+				& PERM_SEECLOAK && lookupuser.userlevel & PERM_LARGEMAIL) {
 			sprintf(buf, "%s[[1;32m×Ü¹ÜÖúÀí[m]", buf);
 			normal = 0;
 		}
-		if ((lookupuser.userlevel & PERM_BOARDS) &&  show_bm(lookupuser.userid, bms)){
+		if ((lookupuser.userlevel & PERM_BOARDS) && show_bm(
+				lookupuser.userid, bms)) {
 			sprintf(buf, "%s[[1;33m%s[32m°æ°æÖ÷[m]", buf, bms);
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_ARBI) {
-			sprintf(buf, "%s[[1;32mÖÙ²Ã×é[m]",buf);
+			sprintf(buf, "%s[[1;32mÖÙ²Ã×é[m]", buf);
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_SERV) {
-			sprintf(buf, "%s[[1;32mÅàÑµ×é[m]",buf);
+			sprintf(buf, "%s[[1;32mÅàÑµ×é[m]", buf);
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_SPECIAL3) {
-			sprintf(buf, "%s[[1;32mÃÀ¹¤×é[m]",buf);
+			sprintf(buf, "%s[[1;32mÃÀ¹¤×é[m]", buf);
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_TECH) {
-			sprintf(buf, "%s[[1;32m¼¼Êõ×é[m]",buf);
+			sprintf(buf, "%s[[1;32m¼¼Êõ×é[m]", buf);
 			normal = 0;
 		}
-		if (normal){
+		if (normal) {
 			sprintf(buf, "[[1;32m¹â»ªÍøÓÑ[m]");
 		}
 	}
 }
 
-extern  char    fromhost[60];
+extern char fromhost[60];
 
 /* Modified By Excellent*/
 int t_query(q_id)
-char    q_id[IDLEN + 2];
+char q_id[IDLEN + 2];
 {
-   char    uident[STRLEN];
-   int     tuid = 0, clr = 0;
-   int     exp, perf,num;	/* Add by SmallPig */
-   struct user_info uin;
-   char    qry_mail_dir[STRLEN];
-   char    planid[IDLEN + 2], buf[50];
-   time_t  now;
-   if (!strcmp(currentuser.userid, "guest"))
-		   return DONOTHING;
-/*
-   static int query_num=0;
-   static time_t last_time=0;
-   static time_t query_limit=0;
-  
-	if(query_num==0)last_time=time(0);
-	if(query_limit!=0)
-	{
-		if(time(0)-query_limit<3600)
-		{
-			move(2, 0);
-			clrtoeol();	    
-			prints("¶¼ºÍÄãËµ¹ıÁË, 1Ğ¡Ê±ÒÔºóÔÙÀ´!\n");
-			pressanykey();
-			return -1;
-		}
-		else
-		{
-			query_limit=0;
-			last_time=time(0);
-			query_num=0;
-		}
+	char uident[STRLEN];
+	int tuid = 0, clr = 0;
+	int exp, perf,num; /* Add by SmallPig */
+	struct user_info uin;
+	char qry_mail_dir[STRLEN];
+	char planid[IDLEN + 2], buf[50];
+	time_t now;
+	if (!strcmp(currentuser.userid, "guest"))
+	return DONOTHING;
+	/*
+	 static int query_num=0;
+	 static time_t last_time=0;
+	 static time_t query_limit=0;
+	 
+	 if(query_num==0)last_time=time(0);
+	 if(query_limit!=0)
+	 {
+	 if(time(0)-query_limit<3600)
+	 {
+	 move(2, 0);
+	 clrtoeol();	    
+	 prints("¶¼ºÍÄãËµ¹ıÁË, 1Ğ¡Ê±ÒÔºóÔÙÀ´!\n");
+	 pressanykey();
+	 return -1;
+	 }
+	 else
+	 {
+	 query_limit=0;
+	 last_time=time(0);
+	 query_num=0;
+	 }
+	 }
+	 if (query_num>500 && time(0)-last_time<=3600)
+	 {
+	 printf("ÄúµÄ²éÑ¯¹ıÓÚÆµ·±! ÇëĞİÏ¢1Ğ¡Ê±ºó¼ÌĞø");
+	 query_limit=time(0);
+	 do_report("QUERY_ERROR", fromhost);
+	 return -1;
+	 }
+
+	 query_num++;
+	 */
+	if ( uinfo.mode != LUSERS && uinfo.mode != LAUSERS && uinfo.mode != FRIEND
+			&& uinfo.mode != READING && uinfo.mode != MAIL && uinfo.mode != RMAIL
+			&& uinfo.mode != GMENU) {
+		modify_user_mode(QUERY);
+		refresh();
+		move(1, 0);
+		clrtobot();
+		prints("²éÑ¯Ë­:\n<ÊäÈëÊ¹ÓÃÕß´úºÅ, °´¿Õ°×¼ü¿ÉÁĞ³ö·ûºÏ×Ö´®>\n");
+		move(1, 8);
+		usercomplete(NULL, uident);
+		if (uident[0] == '\0') return 0;
+	} else {
+		if (*q_id == '\0') return 0;
+		if (strchr(q_id, ' ')) strtok(q_id, " ");
+		strncpy(uident, q_id, sizeof(uident));
+		uident[sizeof(uident) - 1] = '\0';
 	}
-	if (query_num>500 && time(0)-last_time<=3600)
-	{
-		printf("ÄúµÄ²éÑ¯¹ıÓÚÆµ·±! ÇëĞİÏ¢1Ğ¡Ê±ºó¼ÌĞø");
-		query_limit=time(0);
-		do_report("QUERY_ERROR", fromhost);
+	if (!(tuid = getuser(uident))) {
+		move(2, 0);
+		clrtoeol();
+		prints("[1m²»ÕıÈ·µÄÊ¹ÓÃÕß´úºÅ[m\n");
+		pressanykey();
 		return -1;
 	}
-
-	query_num++;
-*/
-   if ( uinfo.mode != LUSERS && uinfo.mode != LAUSERS && uinfo.mode != FRIEND
-     && uinfo.mode != READING && uinfo.mode != MAIL && uinfo.mode != RMAIL 
-     && uinfo.mode != GMENU) {
-      modify_user_mode(QUERY);
-      refresh();
-      move(1, 0);
-      clrtobot();
-      prints("²éÑ¯Ë­:\n<ÊäÈëÊ¹ÓÃÕß´úºÅ, °´¿Õ°×¼ü¿ÉÁĞ³ö·ûºÏ×Ö´®>\n");
-      move(1, 8);
-      usercomplete(NULL, uident);
-      if (uident[0] == '\0') return 0;
-   } else {
-      if (*q_id == '\0') return 0;
-      if (strchr(q_id, ' ')) strtok(q_id, " ");
-      strncpy(uident, q_id, sizeof(uident));
-      uident[sizeof(uident) - 1] = '\0';
-   } 
-   if (!(tuid = getuser(uident))) {
-      move(2, 0);
-      clrtoeol();
-      prints("[1m²»ÕıÈ·µÄÊ¹ÓÃÕß´úºÅ[m\n");
-      pressanykey();
-      return -1;
-   }
-   uinfo.destuid = tuid;
-   update_utmp(); 
-   move(0, 0);
-   clrtobot();
-   sprintf(qry_mail_dir, "mail/%c/%s/%s", toupper(lookupuser.userid[0]), lookupuser.userid, DOT_DIR); 
-   exp = countexp(&lookupuser);
-   perf = countperf(&lookupuser); 
-   if ( HAS_DEFINE(lookupuser.userdefine, DEF_COLOREDSEX) )
-      clr = (lookupuser.gender == 'F') ? 5 : 6;
-   else 
-      clr = 2;
-   if ( strcasecmp(lookupuser.userid, "guest") != 0 )
-      //sprintf(buf, "[[1;3%dm%s[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
-      sprintf(buf, "[[1;3%dm%s×ù[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
-   else 
-      sprintf(buf, "");
-   if(! HAS_DEFINE(lookupuser.userdefine, DEF_S_HOROSCOPE))buf[0] = '\0';
-   prints("[1;37m%s [m([1;33m%s[m) ¹²ÉÏÕ¾ [1;32m%d[m ´Î  %s\n",
-      lookupuser.userid, lookupuser.username,lookupuser.numlogins, buf);
-   strcpy(planid, lookupuser.userid);
-   getdatestring(lookupuser.lastlogin,NA);
-   prints("ÉÏ ´Î ÔÚ:[[1;32m%s[m] ´Ó [[1;32m%s[m] µ½±¾Õ¾Ò»ÓÎ¡£\n",
-      datestring,(lookupuser.lasthost[0]=='\0'?"(²»Ïê)":lookupuser.lasthost));
-   num = t_search_ulist(&uin, t_cmpuids, tuid, NA, NA);
-   if( num ){ 
-      search_ulist(&uin, t_cmpuids, getuser(lookupuser.userid));
-      sprintf(genbuf, "Ä¿Ç°ÔÚÏß:[[1;32mÑ¶Ï¢Æ÷:([36m%s[32m) ºô½ĞÆ÷:([36m%s[32m)[m] ", 
-      canmsg(&uin)?"´ò¿ª":"¹Ø±Õ", 
-      canpage(hisfriend(&uin), uin.pager)?"´ò¿ª":"¹Ø±Õ");
-      prints("%s",genbuf);	 
-   } else {
-      if(lookupuser.lastlogout < lookupuser.lastlogin){
-         now = ((time(0)-lookupuser.lastlogin)/120)%47+1+lookupuser.lastlogin;
-      } else  {
-         now = lookupuser.lastlogout;
-      }	 
-      getdatestring(now,NA);
-      prints("ÀëÕ¾Ê±¼ä:[[1;32m%s[m] ", datestring);
-   }
-   /*
-   prints("±íÏÖÖµ£º[[1;32m%d[m]([1;33m%s[m) ĞÅÏä£º[[1;5;32m%2s[m]\n"
-      , perf,cperf(perf), (check_query_mail(qry_mail_dir) == 1) ? "ĞÅ" : "  ");
-	  */
-   prints("±íÏÖÖµ:"
+	uinfo.destuid = tuid;
+	update_utmp();
+	move(0, 0);
+	clrtobot();
+	sprintf(qry_mail_dir, "mail/%c/%s/%s", toupper(lookupuser.userid[0]), lookupuser.userid, DOT_DIR);
+	exp = countexp(&lookupuser);
+	perf = countperf(&lookupuser);
+	if ( HAS_DEFINE(lookupuser.userdefine, DEF_COLOREDSEX) )
+	clr = (lookupuser.gender == 'F') ? 5 : 6;
+	else
+	clr = 2;
+	if ( strcasecmp(lookupuser.userid, "guest") != 0 )
+	//sprintf(buf, "[[1;3%dm%s[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
+	sprintf(buf, "[[1;3%dm%s×ù[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
+	else
+	sprintf(buf, "");
+	if(! HAS_DEFINE(lookupuser.userdefine, DEF_S_HOROSCOPE))buf[0] = '\0';
+	prints("[1;37m%s [m([1;33m%s[m) ¹²ÉÏÕ¾ [1;32m%d[m ´Î  %s\n",
+			lookupuser.userid, lookupuser.username,lookupuser.numlogins, buf);
+	strcpy(planid, lookupuser.userid);
+	getdatestring(lookupuser.lastlogin,NA);
+	prints("ÉÏ ´Î ÔÚ:[[1;32m%s[m] ´Ó [[1;32m%s[m] µ½±¾Õ¾Ò»ÓÎ¡£\n",
+			datestring,(lookupuser.lasthost[0]=='\0'?"(²»Ïê)":lookupuser.lasthost));
+	num = t_search_ulist(&uin, t_cmpuids, tuid, NA, NA);
+	if( num ) {
+		search_ulist(&uin, t_cmpuids, getuser(lookupuser.userid));
+		sprintf(genbuf, "Ä¿Ç°ÔÚÏß:[[1;32mÑ¶Ï¢Æ÷:([36m%s[32m) ºô½ĞÆ÷:([36m%s[32m)[m] ",
+				canmsg(&uin)?"´ò¿ª":"¹Ø±Õ",
+				canpage(hisfriend(&uin), uin.pager)?"´ò¿ª":"¹Ø±Õ");
+		prints("%s",genbuf);
+	} else {
+		if(lookupuser.lastlogout < lookupuser.lastlogin) {
+			now = ((time(0)-lookupuser.lastlogin)/120)%47+1+lookupuser.lastlogin;
+		} else {
+			now = lookupuser.lastlogout;
+		}
+		getdatestring(now,NA);
+		prints("ÀëÕ¾Ê±¼ä:[[1;32m%s[m] ", datestring);
+	}
+	/*
+	 prints("±íÏÖÖµ£º[[1;32m%d[m]([1;33m%s[m) ĞÅÏä£º[[1;5;32m%2s[m]\n"
+	 , perf,cperf(perf), (check_query_mail(qry_mail_dir) == 1) ? "ĞÅ" : "  ");
+	 */
+	prints("±íÏÖÖµ:"
 #ifdef SHOW_PERF
-		"%d([1;33m%s[m)"
+			"%d([1;33m%s[m)"
 #else
-		"[[1;33m%s[m]"
+			"[[1;33m%s[m]"
 #endif
-		" ĞÅÏä:[[1;5;32m%2s[m]\n"
+			" ĞÅÏä:[[1;5;32m%2s[m]\n"
 #ifdef SHOW_PERF
-	  , perf
+			, perf
 #endif
-      , cperf(perf), (check_query_mail(qry_mail_dir) == 1) ? "ĞÅ" : "  ");
+			, cperf(perf), (check_query_mail(qry_mail_dir) == 1) ? "ĞÅ" : "  ");
 
 #ifdef ALLOWGAME
-   prints("ÒøĞĞ´æ¿î: [[1;32m%dÔª[m] Ä¿Ç°´û¿î: [[1;32m%dÔª[m]([1;33m%s[m) ¾­ÑéÖµ£º[[1;32m%d[m]([1;33m%s[m)¡£\n",
-      lookupuser.money,lookupuser.bet,
-      cmoney(lookupuser.money-lookupuser.bet),exp,cexpstr(exp));
-   /* The following 2 lines are modified by Amigo 2002.04.02. Omit ÎÄÕÂÊıµÈ¼¶ÏÔÊ¾. */
-/*   prints("ÎÄ ÕÂ Êı: [[1;32m%d[m]([1;33m%s[m) ½±ÕÂÊı: [[1;32m%d[m]([1;33m%s[m) ÉúÃüÁ¦£º[[1;32m%d[m]\n",*/
-/*      lookupuser.numposts,cnumposts(lookupuser.numposts),*/
-   prints("ÎÄ ÕÂ Êı: [[1;32m%d[m] ½±ÕÂÊı: [[1;32m%d[m]([1;33m%s[m) ÉúÃüÁ¦£º[[1;32m%d[m]\n",
-      lookupuser.numposts,
-      lookupuser.nummedals,cnummedals(lookupuser.nummedals),
-      compute_user_value(&lookupuser));
+	prints("ÒøĞĞ´æ¿î: [[1;32m%dÔª[m] Ä¿Ç°´û¿î: [[1;32m%dÔª[m]([1;33m%s[m) ¾­ÑéÖµ£º[[1;32m%d[m]([1;33m%s[m)¡£\n",
+			lookupuser.money,lookupuser.bet,
+			cmoney(lookupuser.money-lookupuser.bet),exp,cexpstr(exp));
+	/* The following 2 lines are modified by Amigo 2002.04.02. Omit ÎÄÕÂÊıµÈ¼¶ÏÔÊ¾. */
+	/*   prints("ÎÄ ÕÂ Êı: [[1;32m%d[m]([1;33m%s[m) ½±ÕÂÊı: [[1;32m%d[m]([1;33m%s[m) ÉúÃüÁ¦£º[[1;32m%d[m]\n",*/
+	/*      lookupuser.numposts,cnumposts(lookupuser.numposts),*/
+	prints("ÎÄ ÕÂ Êı: [[1;32m%d[m] ½±ÕÂÊı: [[1;32m%d[m]([1;33m%s[m) ÉúÃüÁ¦£º[[1;32m%d[m]\n",
+			lookupuser.numposts,
+			lookupuser.nummedals,cnummedals(lookupuser.nummedals),
+			compute_user_value(&lookupuser));
 #else
-/*
-   prints("ÎÄ ÕÂ Êı: [[1;32m%d[m]([1;33m%s[m)  ¾­ Ñé Öµ£º[[1;32m%d[m]([1;33m%s[m)¡£ÉúÃüÁ¦£º[[1;32m%d[m]\n",
-      lookupuser.numposts,cnumposts(lookupuser.numposts), 
-      exp,cexp(exp),compute_user_value(&lookupuser));
-*/ //modified by roly
- /* The following 2 lines are modified by Amigo 2002.04.02. Omit ÎÄÕÂÊıµÈ¼¶ÏÔÊ¾. */
-/* prints("ÎÄ ÕÂ Êı: [[1;32m%d[m]([1;33m%s[m)  ¾­ Ñé Öµ£º([1;33m%s[m)¡£ÉúÃüÁ¦£º[[1;32m%d[m]\n",
-      lookupuser.numposts,cnumposts(lookupuser.numposts), */
- prints("ÎÄ ÕÂ Êı:[[1;32m%d[m] ¾­ Ñé Öµ:"
- #ifdef SHOWEXP
-		"%d([1;33m%-10s[m)"
- #else
-		"[[1;33m%-10s[m]"
- #endif
-		" ÉúÃüÁ¦:[[1;32m%d[m]\n",
-      lookupuser.numposts, 
- #ifdef SHOWEXP
-	  exp, 
- #endif
-      cexpstr(exp),compute_user_value(&lookupuser));
+	/*
+	 prints("ÎÄ ÕÂ Êı: [[1;32m%d[m]([1;33m%s[m)  ¾­ Ñé Öµ£º[[1;32m%d[m]([1;33m%s[m)¡£ÉúÃüÁ¦£º[[1;32m%d[m]\n",
+	 lookupuser.numposts,cnumposts(lookupuser.numposts), 
+	 exp,cexp(exp),compute_user_value(&lookupuser));
+	 *///modified by roly
+	/* The following 2 lines are modified by Amigo 2002.04.02. Omit ÎÄÕÂÊıµÈ¼¶ÏÔÊ¾. */
+	/* prints("ÎÄ ÕÂ Êı: [[1;32m%d[m]([1;33m%s[m)  ¾­ Ñé Öµ£º([1;33m%s[m)¡£ÉúÃüÁ¦£º[[1;32m%d[m]\n",
+	 lookupuser.numposts,cnumposts(lookupuser.numposts), */
+	prints("ÎÄ ÕÂ Êı:[[1;32m%d[m] ¾­ Ñé Öµ:"
+#ifdef SHOWEXP
+			"%d([1;33m%-10s[m)"
+#else
+			"[[1;33m%-10s[m]"
+#endif
+			" ÉúÃüÁ¦:[[1;32m%d[m]\n",
+			lookupuser.numposts,
+#ifdef SHOWEXP
+			exp,
+#endif
+			cexpstr(exp),compute_user_value(&lookupuser));
 
 #endif
 	genbuf[0] = '\0';
 	show_position(genbuf);
 	prints("Éí·İ: %s\n", genbuf);
-   t_search_ulist(&uin, t_cmpuids, tuid, YEA, NA);
+	t_search_ulist(&uin, t_cmpuids, tuid, YEA, NA);
 #if defined(QUERY_REALNAMES)
-   if (HAS_PERM(PERM_SYSOPS)) prints("ÕæÊµĞÕÃû:%s \n", lookupuser.realname);
+	if (HAS_PERM(PERM_SYSOPS)) prints("ÕæÊµĞÕÃû:%s \n", lookupuser.realname);
 #endif
-   show_user_plan(planid);
- 
-   /*
-   {
-   	char query_log[100];
-	sprintf(query_log,"%s from %s", lookupuser.userid, fromhost);
-   	do_report("QUERY_LOG", query_log);
-   }
-   */
-   if (   uinfo.mode != LUSERS && uinfo.mode != LAUSERS 
-      && uinfo.mode != FRIEND && uinfo.mode != GMENU)
-      pressanykey();
-   uinfo.destuid = 0;
-   return 0;
+	show_user_plan(planid);
+
+	/*
+	 {
+	 char query_log[100];
+	 sprintf(query_log,"%s from %s", lookupuser.userid, fromhost);
+	 do_report("QUERY_LOG", query_log);
+	 }
+	 */
+	if ( uinfo.mode != LUSERS && uinfo.mode != LAUSERS
+			&& uinfo.mode != FRIEND && uinfo.mode != GMENU)
+	pressanykey();
+	uinfo.destuid = 0;
+	return 0;
 }
 
 int
@@ -597,32 +573,30 @@ struct user_info *uentp;
 {
 	static int count;
 	if (uentp == NULL) {
-		int     c = count;
+		int c = count;
 		count = 0;
 		return c;
 	}
 	if (!uentp->active || !uentp->pid)
-		return 0;
+	return 0;
 	count++;
 	return 1;
 }
 
 // ¼ÆËãÊ¹ÓÃÍâ²¿³ÌĞòµÄÈËÊı
-int	count_useshell(struct user_info *uentp)
-{
+int count_useshell(struct user_info *uentp) {
 	static int count;
 	if (uentp == NULL) {
-		int     c = count;
+		int c = count;
 		count = 0;
 		return c;
 	}
 	if (!uentp->active || !uentp->pid)
 		return 0;
-	if ( uentp->mode == SYSINFO || uentp->mode == HYTELNET
-		|| uentp->mode == DICT || uentp->mode == ARCHIE
-		|| uentp->mode == IRCCHAT || uentp->mode == BBSNET
-		|| uentp->mode == FIVE || uentp->mode == GAME 
-		|| uentp->mode == LOGIN)
+	if (uentp->mode == SYSINFO || uentp->mode == HYTELNET || uentp->mode
+			== DICT || uentp->mode == ARCHIE || uentp->mode == IRCCHAT
+			|| uentp->mode == BBSNET || uentp->mode == FIVE || uentp->mode
+			== GAME || uentp->mode == LOGIN)
 		count++;
 	return 1;
 }
@@ -633,69 +607,67 @@ struct user_info *uentp;
 {
 	static int count;
 	if (uentp == NULL) {
-		int     c = count;
+		int c = count;
 		count = 0;
 		return c;
 	}
 	if (!uentp->active || !uentp->pid)
-		return 0;
+	return 0;
 	if (!strcmp(uentp->userid, save_page_requestor))
-		count++;
+	count++;
 	return 1;
 }
 
-int count_visible_active( struct user_info *uentp )
-{
-   static int count;
-   
-   if (uentp == NULL) {
-      int     c = count;
-      count = 0;
-      return c;
-   }
-   if (!uentp->active || !uentp->pid || isreject(uentp))
-      return 0;
-   if( (!uentp->invisible)||(uentp->uid==usernum)
-     ||(HAS_PERM(PERM_SEECLOAK))) count ++;
-   return 1;
+int count_visible_active(struct user_info *uentp) {
+	static int count;
+
+	if (uentp == NULL) {
+		int c = count;
+		count = 0;
+		return c;
+	}
+	if (!uentp->active || !uentp->pid || isreject(uentp))
+		return 0;
+	if ( (!uentp->invisible)||(uentp->uid==usernum)
+			||(HAS_PERM(PERM_SEECLOAK)))
+		count ++;
+	return 1;
 }
 
-int num_alcounter()
-{
+int num_alcounter() {
 	static time_t last=0;
 	register int i;
-	time_t now	=	time(0);
-	count_users	=	get_total();
-	if(last+10	>	now)
+	time_t now = time(0);
+	count_users = get_total();
+	if (last+10 > now)
 		return;
 	last=now;
 	//canseecloak=(!uentp->invisible)||(uentp->uid==usernum)
 	//            ||(HAS_PERM(PERM_SEECLOAK));
 	count_friends=0;
-	for(i=0;i<MAXFRIENDS && uinfo.friend[i];i++){
-		count_friends+=get_status(uinfo.friend[i]);
-	}
-    return;  
-}
+	for(i=0;i
+			<MAXFRIENDS && uinfo.friend[i];
+			i++) {
+				count_friends+=get_status(uinfo.friend[i]);
+			}
+			return;
+		}
 
-//	·µ»ØÊ¹ÓÃÍâ²¿³ÌĞòµÄÈËÊı
-int	num_useshell()
-{
-	count_useshell(NULL);
-	apply_ulist(count_useshell);
-	return count_useshell(NULL);
-}
+		//	·µ»ØÊ¹ÓÃÍâ²¿³ÌĞòµÄÈËÊı
+		int num_useshell() {
+			count_useshell(NULL);
+			apply_ulist(count_useshell);
+			return count_useshell(NULL);
+		}
 
-int
-num_active_users()
-{
-	count_active(NULL);
-	apply_ulist(count_active);
-	return count_active(NULL);
-}
-int
-num_user_logins(uid)
-char   *uid;
+		int num_active_users() {
+			count_active(NULL);
+			apply_ulist(count_active);
+			return count_active(NULL);
+		}
+		int
+		num_user_logins(uid)
+		char *uid;
 {
 	strcpy(save_page_requestor, uid);
 	count_active(NULL);
@@ -703,9 +675,7 @@ char   *uid;
 	return count_user_logins(NULL);
 }
 
-int
-num_visible_users()
-{
+int num_visible_users() {
 	count_visible_active(NULL);
 	apply_ulist(count_visible_active);
 	return count_visible_active(NULL);
@@ -713,21 +683,18 @@ num_visible_users()
 
 int
 cmpfnames(userid, uv)
-char   *userid;
+char *userid;
 struct override *uv;
 {
 	return !strcasecmp(userid, uv->id);
 }
 
-int	t_cmpuids(int	uid,struct user_info* up)
-{
+int t_cmpuids(int uid, struct user_info* up) {
 	return (up->active && uid == up->uid);
 }
 
-int
-t_talk()
-{
-	int     netty_talk;
+int t_talk() {
+	int netty_talk;
 #ifdef DOTIMEOUT
 	init_alarm();
 #else
@@ -743,24 +710,24 @@ int
 ttt_talk(userinfo)
 struct user_info *userinfo;
 {
-	char    uident[STRLEN];
-	char    reason[STRLEN];
-	int     tuid, ucount, unum, tmp;
+	char uident[STRLEN];
+	char reason[STRLEN];
+	int tuid, ucount, unum, tmp;
 #ifdef FIVEGAME
-/*added by djq,99.07.19,for FIVE */
-    int five=0;
+	/*added by djq,99.07.19,for FIVE */
+	int five=0;
 #endif
 	struct user_info uin;
 	move(1, 0);
 	clrtobot();
-/*
-	if (uinfo.invisible) {
-		move(2, 0);
-		prints("±§Ç¸, ´Ë¹¦ÄÜÔÚÒşÉí×´Ì¬ÏÂ²»ÄÜÖ´ĞĞ...\n");
-		pressreturn();
-		return 0;
-	}
-*/
+	/*
+	 if (uinfo.invisible) {
+	 move(2, 0);
+	 prints("±§Ç¸, ´Ë¹¦ÄÜÔÚÒşÉí×´Ì¬ÏÂ²»ÄÜÖ´ĞĞ...\n");
+	 pressreturn();
+	 return 0;
+	 }
+	 */
 	if (uinfo.mode != LUSERS && uinfo.mode != FRIEND) {
 		move(2, 0);
 		prints("<ÊäÈëÊ¹ÓÃÕß´úºÅ>\n");
@@ -774,7 +741,7 @@ struct user_info *userinfo;
 			return 0;
 		}
 		if (!(tuid = searchuser(uident)) || tuid == usernum) {
-	wrongid:
+			wrongid:
 			move(2, 0);
 			prints("´íÎó´úºÅ\n");
 			pressreturn();
@@ -782,20 +749,20 @@ struct user_info *userinfo;
 			clrtoeol();
 			return -1;
 		}
-		ucount =  t_search_ulist(&uin, t_cmpuids, tuid, NA, YEA);
-		if (ucount > 1) {
-	list:		move(3, 0);
+		ucount = t_search_ulist(&uin, t_cmpuids, tuid, NA, YEA);
+		if (ucount> 1) {
+			list: move(3, 0);
 			ucount = t_search_ulist(&uin, t_cmpuids, tuid,YEA,YEA);
 			clrtobot();
 			tmp = ucount + 5;
 			getdata(tmp,0,"ÇëÑ¡Ò»¸öÄã¿´µÄ±È½ÏË³ÑÛµÄ [0 -- ²»ÁÄÁË]: ",
-				genbuf, 4, DOECHO, YEA);
+					genbuf, 4, DOECHO, YEA);
 			unum = atoi(genbuf);
 			if (unum == 0) {
 				clear();
 				return 0;
 			}
-			if (unum > ucount || unum < 0) {
+			if (unum> ucount || unum < 0) {
 				move(tmp, 0);
 				prints("±¿±¿£¡ÄãÑ¡´íÁËÀ²£¡\n");
 				clrtobot();
@@ -803,11 +770,11 @@ struct user_info *userinfo;
 				goto list;
 			}
 			if (!search_ulistn(&uin, t_cmpuids, tuid, unum))
-				goto wrongid;
-		} else if (!search_ulist(&uin, t_cmpuids, tuid))
 			goto wrongid;
+		} else if (!search_ulist(&uin, t_cmpuids, tuid))
+		goto wrongid;
 	} else {
-/*     memcpy(&uin,userinfo,sizeof(uin));     */
+		/*     memcpy(&uin,userinfo,sizeof(uin));     */
 		uin = *userinfo;
 		tuid = uin.uid;
 		strcpy(uident, uin.userid);
@@ -817,7 +784,7 @@ struct user_info *userinfo;
 	}
 	/* youzi : check guest */
 	if (!strcmp(uin.userid, "guest") && !HAS_PERM(PERM_OCHAT))
-		return -1;
+	return -1;
 
 	/* check if pager on/off       --gtv */
 	if (!canpage(hisfriend(&uin), uin.pager)) {
@@ -828,11 +795,11 @@ struct user_info *userinfo;
 		clrtoeol();
 		return -1;
 	}
-	if (uin.mode == SYSINFO || uin.mode == IRCCHAT || uin.mode == BBSNET 
-		|| uin.mode == DICT || uin.mode == ADMIN || uin.mode == ARCHIE
-		|| uin.mode == LOCKSCREEN || uin.mode == GAME 
-		|| uin.mode == HYTELNET || uin.mode == PAGE
-		|| uin.mode == FIVE || uin.mode == LOGIN) {
+	if (uin.mode == SYSINFO || uin.mode == IRCCHAT || uin.mode == BBSNET
+			|| uin.mode == DICT || uin.mode == ADMIN || uin.mode == ARCHIE
+			|| uin.mode == LOCKSCREEN || uin.mode == GAME
+			|| uin.mode == HYTELNET || uin.mode == PAGE
+			|| uin.mode == FIVE || uin.mode == LOGIN) {
 		move(2, 0);
 		prints("Ä¿Ç°ÎŞ·¨ºô½Ğ.\n");
 		clrtobot();
@@ -847,40 +814,40 @@ struct user_info *userinfo;
 		clrtoeol();
 		return -1;
 	} else {
-		int     sock, msgsock, length;
+		int sock, msgsock, length;
 		struct sockaddr_in server = {0};
-		char    c;
+		char c;
 #ifdef FIVEGAME
 		char answer[2]="";
 #endif 
-		char    buf[512];
+		char buf[512];
 		move(3, 0);
 		clrtobot();
 		show_user_plan(uident);
 #ifndef FIVEGAME
-/* modified by djq,99.07.19,for FIVE */
+		/* modified by djq,99.07.19,for FIVE */
 		move(2, 0);
 		if (askyn("È·¶¨ÒªºÍËû/ËıÌ¸ÌìÂğ", NA, NA) == NA) {
 			clear();
 			return 0;
 		}
 #else
-        getdata(2, 0, "ÏëÕÒ¶Ô·½Ì¸ÌìÇë°´\'y\',ÏÂ¡ºÎå×ÓÆå¡»Çë°´\'w\'(Y/W/N)[N]:", answer, 4, DOECHO,YEA);
-        if(*answer != 'y' && *answer != 'w')
-        {
-            clear();
-            return 0;
-        }
+		getdata(2, 0, "ÏëÕÒ¶Ô·½Ì¸ÌìÇë°´\'y\',ÏÂ¡ºÎå×ÓÆå¡»Çë°´\'w\'(Y/W/N)[N]:", answer, 4, DOECHO,YEA);
+		if(*answer != 'y' && *answer != 'w')
+		{
+			clear();
+			return 0;
+		}
 
-        if( *answer == 'w' )
-            five = 1;
+		if( *answer == 'w' )
+		five = 1;
 
-        if( five == 1 )
-            sprintf(buf,"FIVE to %s",uident);
-        else
-            sprintf(buf,"TALK to %s",uident);
+		if( five == 1 )
+		sprintf(buf,"FIVE to %s",uident);
+		else
+		sprintf(buf,"TALK to %s",uident);
 
-/* modified end. */
+		/* modified end. */
 #endif
 #ifndef FIVEGAME
 		sprintf(buf, "Talk to '%s'", uident);
@@ -892,24 +859,24 @@ struct user_info *userinfo;
 		server.sin_addr.s_addr = INADDR_ANY;
 		server.sin_port = 0;
 		if (bind(sock,(struct sockaddr *)&server,sizeof(server))<0)
-			return -1;
+		return -1;
 		length = sizeof(server);
 		if (getsockname(sock,(struct sockaddr *)&server,&length)<0)
-			return -1;
+		return -1;
 		uinfo.sockactive = YEA;
 		uinfo.sockaddr = server.sin_port;
 		uinfo.destuid = tuid;
 #ifndef FIVEGAME
-/* modified by djq,99.07.19,for FIVE */
+		/* modified by djq,99.07.19,for FIVE */
 
 		modify_user_mode(PAGE);
 #else
-        if( five == 1)
-            modify_user_mode(PAGE_FIVE);
-        else
-            modify_user_mode(PAGE);
+		if( five == 1)
+		modify_user_mode(PAGE_FIVE);
+		else
+		modify_user_mode(PAGE);
 
-/* modified end */
+		/* modified end */
 #endif
 		kill(uin.pid, SIGUSR1);
 		clear();
@@ -918,7 +885,7 @@ struct user_info *userinfo;
 		listen(sock, 1);
 		add_io(sock, 20);
 		while (YEA) {
-			int     ch;
+			int ch;
 			ch = igetkey();
 			if (ch == I_TIMEOUT) {
 				move(0, 0);
@@ -937,7 +904,7 @@ struct user_info *userinfo;
 				continue;
 			}
 			if (ch == I_OTHERDATA)
-				break;
+			break;
 			if (ch == '\004') {
 				add_io(0, 0);
 				close(sock);
@@ -952,75 +919,75 @@ struct user_info *userinfo;
 		add_io(0, 0);
 		close(sock);
 		uinfo.sockactive = NA;
-/*      uinfo.destuid = 0 ;*/
+		/*      uinfo.destuid = 0 ;*/
 		read(msgsock, &c, sizeof(c));
 
 		clear();
 
 		switch (c) {
 #ifdef FIVEGAME
-        case 'y':  case 'Y': case 'w': case 'W':  /*added for FIVE,by djq.*/
-/* modified by djq,99.07.19,for FIVE */
-            sprintf( save_page_requestor, "%s (%s)", uin.userid, uin.username);
-            if( five == 1)
-                five_pk(msgsock,1);
-            else
-                do_talk(msgsock) ;
-            break;
+			case 'y': case 'Y': case 'w': case 'W': /*added for FIVE,by djq.*/
+			/* modified by djq,99.07.19,for FIVE */
+			sprintf( save_page_requestor, "%s (%s)", uin.userid, uin.username);
+			if( five == 1)
+			five_pk(msgsock,1);
+			else
+			do_talk(msgsock);
+			break;
 #else
 
-		case 'y':
-		case 'Y':
+			case 'y':
+			case 'Y':
 			sprintf(save_page_requestor, "%s (%s)", uin.userid, uin.username);
 			do_talk(msgsock);
 			break;
 #endif
-		case 'a':
-		case 'A':
+			case 'a':
+			case 'A':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[0]);
 			pressreturn();
 			break;
-		case 'b':
-		case 'B':
+			case 'b':
+			case 'B':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[1]);
 			pressreturn();
 			break;
-		case 'c':
-		case 'C':
+			case 'c':
+			case 'C':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[2]);
 			pressreturn();
 			break;
-		case 'd':
-		case 'D':
+			case 'd':
+			case 'D':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[3]);
 			pressreturn();
 			break;
-		case 'e':
-		case 'E':
+			case 'e':
+			case 'E':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[4]);
 			pressreturn();
 			break;
-		case 'f':
-		case 'F':
+			case 'f':
+			case 'F':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[5]);
 			pressreturn();
 			break;
-		case 'g':
-		case 'G':
+			case 'g':
+			case 'G':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[6]);
 			pressreturn();
 			break;
-		case 'n':
-		case 'N':
+			case 'n':
+			case 'N':
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, refuse[7]);
 			pressreturn();
 			break;
-		case 'm':
-		case 'M':
+			case 'm':
+			case 'M':
 			read(msgsock, reason, sizeof(reason));
 			prints("%s (%s)Ëµ£º%s\n", uin.userid, uin.username, reason);
 			pressreturn();
-		default:
+			default:
 			sprintf(save_page_requestor, "%s (%s)", uin.userid, uin.username);
 #ifdef TALK_LOG
 			strcpy(partner, uin.userid);
@@ -1038,42 +1005,42 @@ struct user_info *userinfo;
 
 extern int talkrequest;
 struct user_info ui;
-char    page_requestor[STRLEN];
-char    page_requestorid[STRLEN];
+char page_requestor[STRLEN];
+char page_requestorid[STRLEN];
 
 int
 cmpunums(unum, up)
-int     unum;
+int unum;
 struct user_info *up;
 {
 	if (!up->active)
-		return 0;
+	return 0;
 	return (unum == up->destuid);
 }
 
 int
 cmpmsgnum(unum, up)
-int     unum;
+int unum;
 struct user_info *up;
 {
 	if (!up->active)
-		return 0;
+	return 0;
 	return (unum == up->destuid && up->sockactive == 2);
 }
 
 int
 setpagerequest(mode)
-int     mode;
+int mode;
 {
-	int     tuid;
+	int tuid;
 	if (mode == 0)
-		tuid = search_ulist(&ui, cmpunums, usernum);
+	tuid = search_ulist(&ui, cmpunums, usernum);
 	else
-		tuid = search_ulist(&ui, cmpmsgnum, usernum);
+	tuid = search_ulist(&ui, cmpmsgnum, usernum);
 	if (tuid == 0)
-		return 1;
+	return 1;
 	if (!ui.sockactive)
-		return 1;
+	return 1;
 	uinfo.destuid = ui.uid;
 	sprintf(page_requestor, "%s (%s)", ui.userid, ui.username);
 	strcpy(page_requestorid, ui.userid);
@@ -1082,26 +1049,26 @@ int     mode;
 
 int
 servicepage(line, mesg)
-int     line;
-char   *mesg;
+int line;
+char *mesg;
 {
 	static time_t last_check;
-	time_t  now;
-	char    buf[STRLEN];
-	int     tuid = search_ulist(&ui, cmpunums, usernum);
+	time_t now;
+	char buf[STRLEN];
+	int tuid = search_ulist(&ui, cmpunums, usernum);
 	if (tuid == 0 || !ui.sockactive)
-		talkrequest = NA;
+	talkrequest = NA;
 	if (!talkrequest) {
 		if (page_requestor[0]) {
 			switch (uinfo.mode) {
-			case TALK:
+				case TALK:
 #ifdef FIVEGAME
-              		case FIVE: //added by djq,for five
+				case FIVE: //added by djq,for five
 #endif
 				move(line, 0);
 				printdash(mesg);
 				break;
-			default:	/* a chat mode */
+				default: /* a chat mode */
 				sprintf(buf, "** %s ÒÑÍ£Ö¹ºô½Ğ.", page_requestor);
 				printchatline(buf);
 			}
@@ -1111,44 +1078,42 @@ char   *mesg;
 		return NA;
 	} else {
 		now = time(0);
-		if (now - last_check > P_INT) {
+		if (now - last_check> P_INT) {
 			last_check = now;
-			if (!page_requestor[0] && setpagerequest(0 /* For Talk */ ))
-				return NA;
+			if (!page_requestor[0] && setpagerequest(0 /* For Talk */))
+			return NA;
 			else
-				switch (uinfo.mode) {
+			switch (uinfo.mode) {
 				case TALK:
-					move(line, 0);
-					sprintf(buf, "** %s ÕıÔÚºô½ĞÄã", page_requestor);
-					printdash(buf);
-					break;
-				default:	/* chat */
-					sprintf(buf, "** %s ÕıÔÚºô½ĞÄã", page_requestor);
-					printchatline(buf);
-				}
+				move(line, 0);
+				sprintf(buf, "** %s ÕıÔÚºô½ĞÄã", page_requestor);
+				printdash(buf);
+				break;
+				default: /* chat */
+				sprintf(buf, "** %s ÕıÔÚºô½ĞÄã", page_requestor);
+				printchatline(buf);
+			}
 		}
 	}
 	return YEA;
 }
 
-int
-talkreply()
-{
-	int     a;
+int talkreply() {
+	int a;
 	struct hostent *h;
-	char    buf[512];
-	char    reason[51];
-	char    hostname[STRLEN];
-	struct sockaddr_in sin={0};
-	char    inbuf[STRLEN * 2];
+	char buf[512];
+	char reason[51];
+	char hostname[STRLEN];
+	struct sockaddr_in sin= { 0 };
+	char inbuf[STRLEN * 2];
 #ifdef FIVEGAME
-/* added by djq 99.07.19,for FIVE */
-    struct user_info uip;
-    int five=0;
-    int tuid;
+	/* added by djq 99.07.19,for FIVE */
+	struct user_info uip;
+	int five=0;
+	int tuid;
 #endif
 	talkrequest = NA;
-	if (setpagerequest(0 /* For Talk */ ))
+	if (setpagerequest(0 /* For Talk */))
 		return 0;
 #ifdef DOTIMEOUT
 	init_alarm();
@@ -1157,14 +1122,14 @@ talkreply()
 #endif
 	clear();
 #ifdef FIVEGAME
-/* modified by djq, 99.07.19, for FIVE */
-    if(!(tuid = getuser(page_requestorid)))
-        return 0;
-    who_callme( &uip, t_cmpuids, tuid, uinfo.uid );
-    uinfo.destuid = uip.uid;
-    getuser(uip.userid);
-    if(uip.mode == PAGE_FIVE)
-        five=1;
+	/* modified by djq, 99.07.19, for FIVE */
+	if(!(tuid = getuser(page_requestorid)))
+	return 0;
+	who_callme( &uip, t_cmpuids, tuid, uinfo.uid );
+	uinfo.destuid = uip.uid;
+	getuser(uip.userid);
+	if(uip.mode == PAGE_FIVE)
+	five=1;
 
 #endif
 	move(5, 0);
@@ -1177,11 +1142,12 @@ talkreply()
 	prints("(G)¡¾%s¡¿(N)¡¾%s¡¿\n", refuse[6], refuse[7]);
 	prints("(M)¡¾ÁôÑÔ¸ø %-13s            ¡¿\n", page_requestorid);
 #ifndef FIVEGAME
-/* modified by djq ,99.07.19, for FIVE */
+	/* modified by djq ,99.07.19, for FIVE */
 
-	sprintf(inbuf, "ÄúÏë¸ú %s ÁÄÁÄÌìÂğ? (Y N A B C D E F G M)[Y]: ", page_requestor);
+	sprintf(inbuf, "ÄúÏë¸ú %s ÁÄÁÄÌìÂğ? (Y N A B C D E F G M)[Y]: ",
+			page_requestor);
 #else
-    sprintf(inbuf, "ÄúÏë¸ú %s %sÂğ£¿ÇëÑ¡Ôñ(Y/N/A/B/C/D)[Y] ",page_requestor,(five)?"ÏÂÎå×ÓÆå":"ÁÄÁÄÌì");
+	sprintf(inbuf, "ÄúÏë¸ú %s %sÂğ£¿ÇëÑ¡Ôñ(Y/N/A/B/C/D)[Y] ",page_requestor,(five)?"ÏÂÎå×ÓÆå":"ÁÄÁÄÌì");
 #endif
 	strcpy(save_page_requestor, page_requestor);
 #ifdef TALK_LOG
@@ -1192,7 +1158,7 @@ talkreply()
 	getdata(0, 0, inbuf, buf, 2, DOECHO, YEA);
 	gethostname(hostname, STRLEN);
 	if (!(h = gethostbyname(hostname))) {
-		prints("%s\n",strerror(errno));
+		prints("%s\n", strerror(errno));
 		return -1;
 	}
 	memset(&sin, 0, sizeof(sin));
@@ -1200,12 +1166,13 @@ talkreply()
 	memcpy(&sin.sin_addr, h->h_addr, h->h_length);
 	sin.sin_port = ui.sockaddr;
 	a = socket(sin.sin_family, SOCK_STREAM, 0);
-	if ((connect(a, (struct sockaddr *) & sin, sizeof(sin)))) return -1;
+	if ((connect(a, (struct sockaddr *) &sin, sizeof(sin))))
+		return -1;
 	if (buf[0] != 'A' && buf[0] != 'a' && buf[0] != 'B' && buf[0] != 'b'
-		&& buf[0] != 'C' && buf[0] != 'c' && buf[0] != 'D' && buf[0] != 'd'
-		&& buf[0] != 'e' && buf[0] != 'E' && buf[0] != 'f' && buf[0] != 'F'
-		&& buf[0] != 'g' && buf[0] != 'G' && buf[0] != 'n' && buf[0] != 'N'
-		&& buf[0] != 'm' && buf[0] != 'M')
+			&& buf[0] != 'C' && buf[0] != 'c' && buf[0] != 'D' && buf[0]
+			!= 'd' && buf[0] != 'e' && buf[0] != 'E' && buf[0] != 'f'
+			&& buf[0] != 'F' && buf[0] != 'g' && buf[0] != 'G' && buf[0]
+			!= 'n' && buf[0] != 'N' && buf[0] != 'm' && buf[0] != 'M')
 		buf[0] = 'y';
 	if (buf[0] == 'M' || buf[0] == 'm') {
 		move(1, 0);
@@ -1225,13 +1192,13 @@ talkreply()
 	report("page accepted");
 	clear();
 #ifndef FIVEGAME
-/* modified by djq 99.07.19 for FIVE */
-    do_talk(a) ;
+	/* modified by djq 99.07.19 for FIVE */
+	do_talk(a) ;
 #else 
-    if(!five)
-        do_talk(a);
-    else
-        five_pk(a,0);
+	if(!five)
+	do_talk(a);
+	else
+	five_pk(a,0);
 #endif
 	close(a);
 	clear();
@@ -1245,8 +1212,8 @@ struct talk_win *twin;
 {
 
 	twin->curln = twin->curln + 1;
-	if (twin->curln > twin->eline)
-		twin->curln = twin->sline;
+	if (twin->curln> twin->eline)
+	twin->curln = twin->sline;
 	if (twin->curln != twin->eline) {
 		move(twin->curln + 1, 0);
 		clrtoeol();
@@ -1259,7 +1226,7 @@ struct talk_win *twin;
 void
 do_talk_char(twin, ch)
 struct talk_win *twin;
-int     ch;
+int ch;
 {
 	extern int dumb_term;
 	if (isprint2(ch)) {
@@ -1274,29 +1241,29 @@ int     ch;
 		return;
 	}
 	switch (ch) {
-	case Ctrl('H'):
-	case '\177':
+		case Ctrl('H'):
+		case '\177':
 		if (dumb_term)
-			ochar(Ctrl('H'));
+		ochar(Ctrl('H'));
 		if (twin->curcol == 0) {
 			return;
 		}
 		(twin->curcol)--;
 		move(twin->curln, twin->curcol);
 		if (!dumb_term)
-			prints(" ");
+		prints(" ");
 		move(twin->curln, twin->curcol);
 		return;
-	case Ctrl('M'):
-	case Ctrl('J'):
+		case Ctrl('M'):
+		case Ctrl('J'):
 		if (dumb_term)
-			prints("\n");
+		prints("\n");
 		do_talk_nextline(twin);
 		return;
-	case Ctrl('G'):
+		case Ctrl('G'):
 		bell();
 		return;
-	default:
+		default:
 		break;
 	}
 	return;
@@ -1305,20 +1272,18 @@ int     ch;
 void
 do_talk_string(twin, str)
 struct talk_win *twin;
-char   *str;
+char *str;
 {
 	while (*str) {
 		do_talk_char(twin, *str++);
 	}
 }
 
-char    talkobuf[80];
-int     talkobuflen;
-int     talkflushfd;
+char talkobuf[80];
+int talkobuflen;
+int talkflushfd;
 
-void
-talkflush()
-{
+void talkflush() {
 	if (talkobuflen)
 		write(talkflushfd, talkobuf, talkobuflen);
 	talkobuflen = 0;
@@ -1326,38 +1291,36 @@ talkflush()
 
 int
 moveto(mode, twin)
-int     mode;
+int mode;
 struct talk_win *twin;
 {
 	if (mode == 1)
-		twin->curln--;
+	twin->curln--;
 	if (mode == 2)
-		twin->curln++;
+	twin->curln++;
 	if (mode == 3)
-		twin->curcol++;
+	twin->curcol++;
 	if (mode == 4)
-		twin->curcol--;
+	twin->curcol--;
 	if (twin->curcol < 0) {
 		twin->curln--;
 		twin->curcol = 0;
-	} else if (twin->curcol > 79) {
+	} else if (twin->curcol> 79) {
 		twin->curln++;
 		twin->curcol = 0;
 	}
 	if (twin->curln < twin->sline) {
 		twin->curln = twin->eline;
 	}
-	if (twin->curln > twin->eline) {
+	if (twin->curln> twin->eline) {
 		twin->curln = twin->sline;
 	}
 	move(twin->curln, twin->curcol);
 }
 
-void
-endmsg()
-{
-	int     x, y;
-	int     tmpansi;
+void endmsg() {
+	int x, y;
+	int tmpansi;
 	tmpansi = showansi;
 	showansi = 1;
 	talkidletime += 60;
@@ -1375,19 +1338,17 @@ endmsg()
 	return;
 }
 
-int
-do_talk(int fd)
-{
+int do_talk(int fd) {
 	struct talk_win mywin, itswin;
-	char    mid_line[256];
-	int     page_pending = NA;
-	int     i, i2;
-	char	ans[3];
-	int     previous_mode;
+	char mid_line[256];
+	int page_pending = NA;
+	int i, i2;
+	char ans[3];
+	int previous_mode;
 #ifdef TALK_LOG
-	char    mywords[80], itswords[80], talkbuf[80];
-	int     mlen = 0, ilen = 0;
-	time_t  now;
+	char mywords[80], itswords[80], talkbuf[80];
+	int mlen = 0, ilen = 0;
+	time_t now;
 	mywords[0] = itswords[0] = '\0';
 #endif
 
@@ -1396,8 +1357,8 @@ do_talk(int fd)
 	refresh();
 	previous_mode = uinfo.mode;
 	modify_user_mode(TALK);
-	sprintf(mid_line, " %s (%s) ºÍ %s ÕıÔÚ³©Ì¸ÖĞ",
-		currentuser.userid, currentuser.username, save_page_requestor);
+	sprintf(mid_line, " %s (%s) ºÍ %s ÕıÔÚ³©Ì¸ÖĞ", currentuser.userid,
+			currentuser.username, save_page_requestor);
 
 	memset(&mywin, 0, sizeof(mywin));
 	memset(&itswin, 0, sizeof(itswin));
@@ -1415,7 +1376,7 @@ do_talk(int fd)
 	add_flush(talkflush);
 
 	while (YEA) {
-		int     ch;
+		int ch;
 		if (talkrequest)
 			page_pending = YEA;
 		if (page_pending)
@@ -1428,8 +1389,8 @@ do_talk(int fd)
 			continue;
 		}
 		if (ch == I_OTHERDATA) {
-			char    data[80];
-			int     datac;
+			char data[80];
+			int datac;
 			register int i;
 			datac = read(fd, data, 80);
 			if (datac <= 0)
@@ -1461,7 +1422,7 @@ do_talk(int fd)
 				} else if ((data[i] == Ctrl('H') || data[i] == '\177') && !ilen) {
 					itswords[ilen--] = '\0';
 				} else if (data[i] == Ctrl('M') || data[i] == '\r' ||
-					data[i] == '\n') {
+						data[i] == '\n') {
 					itswords[ilen] = '\0';
 					(void) do_log(itswords, 2);
 					ilen = 0;
@@ -1472,8 +1433,8 @@ do_talk(int fd)
 		} else {
 			if (ch == Ctrl('D') || ch == Ctrl('C'))
 				break;
-			if (isprint2(ch) || ch == Ctrl('H') || ch == '\177'
-				|| ch == Ctrl('G')) {
+			if (isprint2(ch) || ch == Ctrl('H') || ch == '\177' || ch
+					== Ctrl('G')) {
 				talkobuf[talkobuflen++] = ch;
 				if (talkobuflen == 80)
 					talkflush();
@@ -1533,9 +1494,9 @@ do_talk(int fd)
 	itswords[ilen] = '\0';
 
 	if (mywords[0] != '\0')
-		do_log(mywords, 1);
+	do_log(mywords, 1);
 	if (itswords[0] != '\0')
-		do_log(itswords, 2);
+	do_log(itswords, 2);
 
 	now = time(0);
 	sprintf(talkbuf, "\n[1;34mÍ¨»°½áÊø, Ê±¼ä: %s [m\n", Cdate(&now));
@@ -1548,16 +1509,16 @@ do_talk(int fd)
 	getdata(23, 0, "ÊÇ·ñ¼Ä»ØÁÄÌì¼ÍÂ¼ [Y/n]: ", ans, 2, DOECHO, YEA);
 
 	switch (ans[0]) {
-	case 'n':
-	case 'N':
+		case 'n':
+		case 'N':
 		break;
-	default:
+		default:
 		sethomefile(talkbuf, currentuser.userid, "talklog");
 		sprintf(mywords, "¸ú %s µÄÁÄÌì¼ÇÂ¼ [%s]", partner, Cdate(&now) + 4);
-		{ char temp[STRLEN];
-		strcpy(temp, save_title);
-		mail_file(talkbuf, currentuser.userid, mywords);
-		strcpy(save_title,temp);
+		{	char temp[STRLEN];
+			strcpy(temp, save_title);
+			mail_file(talkbuf, currentuser.userid, mywords);
+			strcpy(save_title,temp);
 		}
 	}
 	sethomefile(talkbuf, currentuser.userid, "talklog");
@@ -1571,15 +1532,15 @@ int
 shortulist(uentp)
 struct user_info *uentp;
 {
-	int     i;
-	int     pageusers = 60;
+	int i;
+	int pageusers = 60;
 	extern struct user_info *user_record[];
 	extern int range;
 	fill_userlist(-1);
-	if (ulistpage > ((range - 1) / pageusers))
-		ulistpage = 0;
+	if (ulistpage> ((range - 1) / pageusers))
+	ulistpage = 0;
 	if (ulistpage < 0)
-		ulistpage = (range - 1) / pageusers;
+	ulistpage = (range - 1) / pageusers;
 	move(1, 0);
 	clrtoeol();
 	prints("Ã¿¸ô [1;32m%d[m Ãë¸üĞÂÒ»´Î£¬[1;32mCtrl-C[m »ò [1;32mCtrl-D[m Àë¿ª£¬[1;32mF[m ¸ü»»Ä£Ê½ [1;32m¡ü¡ı[m ÉÏ¡¢ÏÂÒ»Ò³ µÚ[1;32m %1d[m Ò³", M_INT, ulistpage + 1);
@@ -1587,37 +1548,37 @@ struct user_info *uentp;
 	move(3, 0);
 	clrtobot();
 	for (i = ulistpage * pageusers; i < (ulistpage + 1) * pageusers && i < range; i++) {
-		char    ubuf[STRLEN];
-		int     ovv;
+		char ubuf[STRLEN];
+		int ovv;
 		if (i < numf || friendmode)
-			ovv = YEA;
+		ovv = YEA;
 		else
-			ovv = NA;
+		ovv = NA;
 		sprintf(ubuf, "%s%-12.12s %s%-10.10s[m", (ovv) ? "[1;32m¡Ì" : "  ", user_record[i]->userid, (user_record[i]->invisible == YEA) ? "[1;34m" : "",ModeType(user_record[i]->mode));
-			//modestring(user_record[i]->mode, user_record[i]->destuid, 0, NULL));
+		//modestring(user_record[i]->mode, user_record[i]->destuid, 0, NULL));
 		prints("%s", ubuf);
 		if ((i + 1) % 3 == 0)
-			outc('\n');
+		outc('\n');
 		else
-			prints(" |");
+		prints(" |");
 	}
 	return range;
 }
 
 int
 do_list(modestr)
-char   *modestr;
+char *modestr;
 {
-	char    buf[STRLEN];
-	int     count;
+	char buf[STRLEN];
+	int count;
 	extern int RMSG;
-	if (RMSG != YEA) {	/* Èç¹ûÊÕµ½ Msg µÚÒ»ĞĞ²»ÏÔÊ¾¡£ */
+	if (RMSG != YEA) { /* Èç¹ûÊÕµ½ Msg µÚÒ»ĞĞ²»ÏÔÊ¾¡£ */
 		move(0, 0);
 		clrtoeol();
 		if (chkmail())
-			showtitle(modestr, "[ÄúÓĞĞÅ¼ş]");
+		showtitle(modestr, "[ÄúÓĞĞÅ¼ş]");
 		else
-			showtitle(modestr, BoardName);
+		showtitle(modestr, BoardName);
 	}
 	move(2, 0);
 	clrtoeol();
@@ -1625,20 +1586,18 @@ char   *modestr;
 	prints("[1;33;44m%s |%s |%s[m", buf, buf, buf);
 	count = shortulist();
 	if (uinfo.mode == MONITOR) {
-		time_t  thetime = time(0);
+		time_t thetime = time(0);
 		move(t_lines - 1, 0);
 		getdatestring(thetime,NA);
 		sprintf(genbuf,"[1;44;33m  Ä¿Ç°ÓĞ [32m%3d[33m %6sÉÏÏß, Ê±¼ä: [32m%22.22s [33m, Ä¿Ç°×´Ì¬£º[36m%10s   [m"
-			,count, friendmode ? "ºÃÅóÓÑ" : "Ê¹ÓÃÕß", datestring, friendmode ? "ÄãµÄºÃÅóÓÑ" : "ËùÓĞÊ¹ÓÃÕß");
+				,count, friendmode ? "ºÃÅóÓÑ" : "Ê¹ÓÃÕß", datestring, friendmode ? "ÄãµÄºÃÅóÓÑ" : "ËùÓĞÊ¹ÓÃÕß");
 		prints(genbuf);
 	}
 	refresh();
 	return 0;
 }
 
-int
-t_list()
-{
+int t_list() {
 	modify_user_mode(LUSERS);
 	report("t_list");
 	do_list("Ê¹ÓÃÕß×´Ì¬");
@@ -1648,10 +1607,7 @@ t_list()
 	return 0;
 }
 
-
-void
-sig_catcher()
-{
+void sig_catcher() {
 	ulistpage++;
 	if (uinfo.mode != MONITOR) {
 #ifdef DOTIMEOUT
@@ -1661,19 +1617,18 @@ sig_catcher()
 #endif
 		return;
 	}
-	if (signal(SIGALRM, sig_catcher) == SIG_ERR) exit(1);
+	if (signal(SIGALRM, sig_catcher) == SIG_ERR)
+		exit(1);
 	do_list("Ì½ÊÓÃñÇé");
 	alarm(M_INT);
 }
 
-int
-t_monitor()
-{
-	int     i;
-	char    modestr[] = "Ì½ÊÓÃñÇé";
+int t_monitor() {
+	int i;
+	char modestr[] = "Ì½ÊÓÃñÇé";
 	alarm(0);
 	signal(SIGALRM, sig_catcher);
-/*    idle_monitor_time = 0; */
+	/*    idle_monitor_time = 0; */
 	report("monitor");
 	modify_user_mode(MONITOR);
 	ulistpage = 0;
@@ -1698,9 +1653,9 @@ t_monitor()
 		}
 		if (i == Ctrl('D') || i == Ctrl('C') || i == KEY_LEFT)
 			break;
-/*        else if (i == -1) {
-            if (errno != EINTR) exit(1);
-        } else idle_monitor_time = 0;*/
+		/*        else if (i == -1) {
+		 if (errno != EINTR) exit(1);
+		 } else idle_monitor_time = 0;*/
 	}
 	move(2, 0);
 	clrtoeol();
@@ -1708,11 +1663,10 @@ t_monitor()
 	return 0;
 }
 /*Add by SmallPig*/
-int seek_in_file(char filename[STRLEN],char seekstr[STRLEN])
-{
-	FILE*	fp;
-	char    buf[STRLEN];
-	char*	namep;
+int seek_in_file(char filename[STRLEN], char seekstr[STRLEN]) {
+	FILE* fp;
+	char buf[STRLEN];
+	char* namep;
 	if ((fp = fopen(filename, "r")) == NULL)
 		return 0;
 	while (fgets(buf, STRLEN, fp) != NULL) {
@@ -1726,75 +1680,81 @@ int seek_in_file(char filename[STRLEN],char seekstr[STRLEN])
 	return 0;
 }
 
-int listfilecontent(char *fname, int y)
-{
-   FILE   *fp;
-   int     x = 0, cnt = 0, max = 0, len;
-   //char    u_buf[20], line[STRLEN], *nick;
-   char    u_buf[20], line[512], *nick;
-   //modified by roly 02.03.22 »º´æÇøÒç³ö
-   move(y, x);
-   CreateNameList();
-   strcpy(genbuf, fname);
-   if ((fp = fopen(genbuf, "r")) == NULL) {
-      prints("(none)\n");
-      return 0;
-   }
-   while (fgets(genbuf, 1024, fp) != NULL) {
-      strtok(genbuf, " \n\r\t");
-      strncpy(u_buf, genbuf, 20);
-      u_buf[19] = '\0';
-      if(!AddNameList(u_buf))continue;
-      nick = (char *) strtok(NULL, "\n\r\t");
-      if (nick != NULL) {
-         while (*nick == ' ') nick++;
-	 if (*nick == '\0') nick = NULL;
-      }
-      if (nick == NULL) { 
-         strcpy(line, u_buf);
-      } else {
-         sprintf(line, "%-12s%s", u_buf, nick);
-      }
-      if ((len = strlen(line)) > max) max = len;
-      if (x + len > 78) line[78 - x] = '\0';
-      prints("%s", line);
-      cnt++;
-      if ((++y) >= t_lines - 1) {
-         y = 3;
-	 x += max + 2;
-	 max = 0;
-	 if (x > 70) break;
-      }
-      move(y, x);
-   }
-   fclose(fp);
-   if (cnt == 0) prints("(none)\n");
-   return cnt;
+int listfilecontent(char *fname, int y) {
+	FILE *fp;
+	int x = 0, cnt = 0, max = 0, len;
+	//char    u_buf[20], line[STRLEN], *nick;
+	char u_buf[20], line[512], *nick;
+	//modified by roly 02.03.22 »º´æÇøÒç³ö
+	move(y, x);
+	CreateNameList();
+	strcpy(genbuf, fname);
+	if ((fp = fopen(genbuf, "r")) == NULL) {
+		prints("(none)\n");
+		return 0;
+	}
+	while (fgets(genbuf, 1024, fp) != NULL) {
+		strtok(genbuf, " \n\r\t");
+		strncpy(u_buf, genbuf, 20);
+		u_buf[19] = '\0';
+		if (!AddNameList(u_buf))
+			continue;
+		nick = (char *) strtok(NULL, "\n\r\t");
+		if (nick != NULL) {
+			while (*nick == ' ')
+				nick++;
+			if (*nick == '\0')
+				nick = NULL;
+		}
+		if (nick == NULL) {
+			strcpy(line, u_buf);
+		} else {
+			sprintf(line, "%-12s%s", u_buf, nick);
+		}
+		if ((len = strlen(line)) > max)
+			max = len;
+		if (x + len > 78)
+			line[78 - x] = '\0';
+		prints("%s", line);
+		cnt++;
+		if ((++y) >= t_lines - 1) {
+			y = 3;
+			x += max + 2;
+			max = 0;
+			if (x > 70)
+				break;
+		}
+		move(y, x);
+	}
+	fclose(fp);
+	if (cnt == 0)
+		prints("(none)\n");
+	return cnt;
 }
 
 int add_to_file(filename, str)
 //char    filename[STRLEN], str[STRLEN];
-char    filename[256], str[256];
+char filename[256], str[256];
 {
-	FILE   *fp;
-	int     rc;
+	FILE *fp;
+	int rc;
 	if ((fp = fopen(filename, "a")) == NULL)
-		return -1;
+	return -1;
 	FLOCK(fileno(fp), LOCK_EX);
 	rc = fprintf(fp, "%s\n", str);
 	FLOCK(fileno(fp), LOCK_UN);
-	fclose(fp);	
+	fclose(fp);
 	return (rc == EOF ? -1 : 1);
 }
 
 int
 addtooverride(uident)
-char   *uident;
+char *uident;
 {
 	struct override tmp;
-	int     n;
-	char    buf[STRLEN];
-	char    desc[5];
+	int n;
+	char buf[STRLEN];
+	char desc[5];
 	memset(&tmp, 0, sizeof(tmp));
 	if (friendflag) {
 		setuserfile(buf, "friends");
@@ -1820,16 +1780,16 @@ char   *uident;
 				show_message(buf);
 				return -1;
 			}
-		} else if (search_record(buf, &tmp, sizeof(tmp), cmpfnames, uident) > 0) {
+		} else if (search_record(buf, &tmp, sizeof(tmp), cmpfnames, uident)> 0) {
 			sprintf(buf, "%s ÒÑÔÚ»µÈËÃûµ¥", uident);
 			show_message(buf);
 			return -1;
 		}
 	}
 	if (uinfo.mode != LUSERS && uinfo.mode != LAUSERS && uinfo.mode != FRIEND)
-		n = 2;
+	n = 2;
 	else
-		n = t_lines - 2;
+	n = t_lines - 2;
 
 	strcpy(tmp.id, uident);
 	move(n, 0);
@@ -1840,50 +1800,49 @@ char   *uident;
 
 	n = append_record(buf, &tmp, sizeof(struct override));
 	if (n != -1)
-		(friendflag) ? getfriendstr() : getrejectstr();
+	(friendflag) ? getfriendstr() : getrejectstr();
 	else
-		report("append override error");
+	report("append override error");
 	return n;
 }
 
 int del_from_file(filename, str)
-char    filename[STRLEN], str[STRLEN];
+char filename[STRLEN], str[STRLEN];
 {
-   FILE   *fp, *nfp;
-   int     deleted = NA;
-   char    tmpbuf[1024],fnnew[STRLEN];
-   
-   if ((fp = fopen(filename, "r")) == NULL) return -1;
-   sprintf(fnnew, "%s.%d", filename, getuid());
-   if ((nfp = fopen(fnnew, "w")) == NULL) {
-   	fclose(nfp);
-   	return -1;
-   }
-   while (fgets(tmpbuf, 1024, fp) != NULL) {
-      if (strncmp(tmpbuf, str, strlen(str)) == 0 
-          &&(tmpbuf[strlen(str)]=='\0'||tmpbuf[strlen(str)]==' '||tmpbuf[strlen(str)]=='\n'))
-	  deleted = YEA;
-      else if (*tmpbuf > ' ') fputs(tmpbuf, nfp);
-   }
-   fclose(fp);
-   fclose(nfp);
-   if (!deleted) return -1;
-   return (rename(fnnew, filename) + 1);
-}
+	FILE *fp, *nfp;
+	int deleted = NA;
+	char tmpbuf[1024],fnnew[STRLEN];
 
+	if ((fp = fopen(filename, "r")) == NULL) return -1;
+	sprintf(fnnew, "%s.%d", filename, getuid());
+	if ((nfp = fopen(fnnew, "w")) == NULL) {
+		fclose(nfp);
+		return -1;
+	}
+	while (fgets(tmpbuf, 1024, fp) != NULL) {
+		if (strncmp(tmpbuf, str, strlen(str)) == 0
+				&&(tmpbuf[strlen(str)]=='\0'||tmpbuf[strlen(str)]==' '||tmpbuf[strlen(str)]=='\n'))
+		deleted = YEA;
+		else if (*tmpbuf> ' ') fputs(tmpbuf, nfp);
+	}
+	fclose(fp);
+	fclose(nfp);
+	if (!deleted) return -1;
+	return (rename(fnnew, filename) + 1);
+}
 
 int
 deleteoverride(uident, filename)
-char   *uident;
-char   *filename;
+char *uident;
+char *filename;
 {
-	int     deleted;
+	int deleted;
 	struct override fh;
-	char    buf[STRLEN];
-	int    oldstate=in_mail;
+	char buf[STRLEN];
+	int oldstate=in_mail;
 	setuserfile(buf, filename);
 	deleted = search_record(buf, &fh, sizeof(fh), cmpfnames, uident);
-	if (deleted > 0) {
+	if (deleted> 0) {
 		in_mail=YEA;
 		if (delete_record(buf, sizeof(fh), deleted,NULL,NULL) != -1) {
 			(friendflag) ? getfriendstr() : getrejectstr();
@@ -1893,11 +1852,10 @@ char   *filename;
 		}
 		in_mail=oldstate;
 	}
-	return (deleted > 0) ? 1 : -1;
+	return (deleted> 0) ? 1 : -1;
 }
-override_title()
-{
-	char    desc[5];
+override_title() {
+	char desc[5];
 	if (chkmail())
 		strcpy(genbuf, "[ÄúÓĞĞÅ¼ş]");
 	else
@@ -1909,13 +1867,17 @@ override_title()
 		showtitle("[±à¼­»µÈËÃûµ¥]", genbuf);
 		strcpy(desc, "»µÈË");
 	}
-	prints(" [[1;32m¡û[m,[1;32me[m] Àë¿ª [[1;32mh[m] ÇóÖú [[1;32m¡ú[m,[1;32mRtn[m] %sËµÃ÷µµ [[1;32m¡ü[m,[1;32m¡ı[m] Ñ¡Ôñ [[1;32ma[m] Ôö¼Ó%s [[1;32md[m] É¾³ı%s\n", desc, desc, desc);
-	prints("[1;44m ±àºÅ  %s´úºÅ      %sËµÃ÷                                                   [m\n", desc, desc);
+	prints(
+			" [[1;32m¡û[m,[1;32me[m] Àë¿ª [[1;32mh[m] ÇóÖú [[1;32m¡ú[m,[1;32mRtn[m] %sËµÃ÷µµ [[1;32m¡ü[m,[1;32m¡ı[m] Ñ¡Ôñ [[1;32ma[m] Ôö¼Ó%s [[1;32md[m] É¾³ı%s\n",
+			desc, desc, desc);
+	prints(
+			"[1;44m ±àºÅ  %s´úºÅ      %sËµÃ÷                                                   [m\n",
+			desc, desc);
 }
 
-char   *
+char *
 override_doentry(ent, fh)
-int     ent;
+int ent;
 struct override *fh;
 {
 	static char buf[STRLEN];
@@ -1925,49 +1887,48 @@ struct override *fh;
 
 int
 override_edit(ent, fh, direc)
-int     ent;
+int ent;
 struct override *fh;
-char   *direc;
+char *direc;
 {
 	struct override nh;
-	char    buf[STRLEN / 2];
-	int     pos;
+	char buf[STRLEN / 2];
+	int pos;
 	pos = search_record(direc, &nh, sizeof(nh), cmpfnames, fh->id);
 	move(t_lines - 2, 0);
 	clrtoeol();
-	if (pos > 0) {
+	if (pos> 0) {
 		sprintf(buf, "ÇëÊäÈë %s µÄĞÂ%sËµÃ÷: ", fh->id, (friendflag) ? "ºÃÓÑ" : "»µÈË");
 		getdata(t_lines - 2, 0, buf, nh.exp, 40, DOECHO, NA);
 	}
 	if (substitute_record(direc, &nh, sizeof(nh), pos) < 0)
-		report("Override files subs err");
+	report("Override files subs err");
 	move(t_lines - 2, 0);
 	clrtoeol();
 	return NEWDIRECT;
 }
 
-
 int
 override_add(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
-	char    uident[13];
+	char uident[13];
 	clear();
 	move(1, 0);
 	usercomplete("ÇëÊäÈëÒªÔö¼ÓµÄ´úºÅ: ", uident);
-	while (uident[0] != '\0'){
-	    if (getuser(uident) <= 0) {
+	while (uident[0] != '\0') {
+		if (getuser(uident) <= 0) {
 			move(2, 0);
 			prints("´íÎóµÄÊ¹ÓÃÕß´úºÅ...");
 			pressanykey();
 			return FULLUPDATE;
 		} else
-			addtooverride(uident);
+		addtooverride(uident);
 		move(2,0);
 		prints("\n°Ñ %s ¼ÓÈë%sÃûµ¥ÖĞ...", uident, (friendflag) ? "ºÃÓÑ" : "»µÈË");
-//		pressanykey();
+		//		pressanykey();
 		move(1,0);
 		usercomplete("ÇëÊäÈëÒªÔö¼ÓµÄ´úºÅ: ", uident);
 	}
@@ -1976,14 +1937,14 @@ char   *direct;
 
 int
 override_dele(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
-	char    buf[STRLEN];
-	char    desc[5];
-	char    fname[10];
-	int     deleted = NA;
+	char buf[STRLEN];
+	char desc[5];
+	char fname[10];
+	int deleted = NA;
 	if (friendflag) {
 		strcpy(desc, "ºÃÓÑ");
 		strcpy(fname, "friends");
@@ -2001,7 +1962,7 @@ char   *direct;
 			prints("ÒÑ´Ó%sÃûµ¥ÖĞÒÆ³ı¡¾%s¡¿,°´ÈÎºÎ¼ü¼ÌĞø...", desc, fh->id);
 			deleted = YEA;
 		} else
-			prints("ÕÒ²»µ½¡¾%s¡¿,°´ÈÎºÎ¼ü¼ÌĞø...", fh->id);
+		prints("ÕÒ²»µ½¡¾%s¡¿,°´ÈÎºÎ¼ü¼ÌĞø...", fh->id);
 	} else {
 		move(t_lines - 2, 0);
 		clrtoeol();
@@ -2016,9 +1977,9 @@ char   *direct;
 
 int
 friend_edit(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
 	friendflag = YEA;
 	return override_edit(ent, fh, direct);
@@ -2026,9 +1987,9 @@ char   *direct;
 
 int
 friend_add(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
 	friendflag = YEA;
 	return override_add(ent, fh, direct);
@@ -2036,9 +1997,9 @@ char   *direct;
 
 int
 friend_dele(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
 	friendflag = YEA;
 	return override_dele(ent, fh, direct);
@@ -2046,69 +2007,67 @@ char   *direct;
 
 int
 friend_mail(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
-/* Following line modified by Amigo 2002.06.08. To add mail right. */
-/*	if (!HAS_PERM(PERM_POST))*/
+	/* Following line modified by Amigo 2002.06.08. To add mail right. */
+	/*	if (!HAS_PERM(PERM_POST))*/
 	if (!HAS_PERM(PERM_MAIL))
-		return DONOTHING;
+	return DONOTHING;
 	m_send(fh->id);
 	return FULLUPDATE;
 }
 
 int
 friend_query(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
-	int     ch;
+	int ch;
 	if (t_query(fh->id) == -1)
-		return FULLUPDATE;
+	return FULLUPDATE;
 	move(t_lines - 1, 0);
 	clrtoeol();
 	prints("[0;1;44;31m[¶ÁÈ¡ºÃÓÑËµÃ÷µµ][33m ¼ÄĞÅ¸øºÃÓÑ m ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»Î» ¡ü©¦ÏÂÒ»Î» <Space>,¡ı      [m");
 	ch = egetch();
 	switch (ch) {
-	case 'N':
-	case 'Q':
-	case 'n':
-	case 'q':
-	case KEY_LEFT:
+		case 'N':
+		case 'Q':
+		case 'n':
+		case 'q':
+		case KEY_LEFT:
 		break;
-	case 'm':
-	case 'M':
+		case 'm':
+		case 'M':
 		m_send(fh->id);
 		break;
-	case ' ':
-	case 'j':
-	case KEY_RIGHT:
-	case KEY_DOWN:
-	case KEY_PGDN:
+		case ' ':
+		case 'j':
+		case KEY_RIGHT:
+		case KEY_DOWN:
+		case KEY_PGDN:
 		return READ_NEXT;
-	case KEY_UP:
-	case KEY_PGUP:
+		case KEY_UP:
+		case KEY_PGUP:
 		return READ_PREV;
-	default:
+		default:
 		break;
 	}
 	return FULLUPDATE;
 }
 
-int
-friend_help()
-{
+int friend_help() {
 	show_help("help/friendshelp");
 	return FULLUPDATE;
 }
 
 int
 reject_edit(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
 	friendflag = NA;
 	return override_edit(ent, fh, direct);
@@ -2116,9 +2075,9 @@ char   *direct;
 
 int
 reject_add(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
 	friendflag = NA;
 	return override_add(ent, fh, direct);
@@ -2126,9 +2085,9 @@ char   *direct;
 
 int
 reject_dele(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
 	friendflag = NA;
 	return override_dele(ent, fh, direct);
@@ -2136,76 +2095,72 @@ char   *direct;
 
 int
 reject_query(ent, fh, direct)
-int     ent;
+int ent;
 struct override *fh;
-char   *direct;
+char *direct;
 {
-	int     ch;
+	int ch;
 	if (t_query(fh->id) == -1)
-		return FULLUPDATE;
+	return FULLUPDATE;
 	move(t_lines - 1, 0);
 	clrtoeol();
 	prints("[0;1;44;31m[¶ÁÈ¡»µÈËËµÃ÷µµ][33m ½áÊø Q,¡û ©¦ÉÏÒ»Î» ¡ü©¦ÏÂÒ»Î» <Space>,¡ı                      [m");
 	ch = egetch();
 	switch (ch) {
-	case 'N':
-	case 'Q':
-	case 'n':
-	case 'q':
-	case KEY_LEFT:
+		case 'N':
+		case 'Q':
+		case 'n':
+		case 'q':
+		case KEY_LEFT:
 		break;
-	case ' ':
-	case 'j':
-	case KEY_RIGHT:
-	case KEY_DOWN:
-	case KEY_PGDN:
+		case ' ':
+		case 'j':
+		case KEY_RIGHT:
+		case KEY_DOWN:
+		case KEY_PGDN:
 		return READ_NEXT;
-	case KEY_UP:
-	case KEY_PGUP:
+		case KEY_UP:
+		case KEY_PGUP:
 		return READ_PREV;
-	default:
+		default:
 		break;
 	}
 	return FULLUPDATE;
 }
 
-int
-reject_help()
-{
+int reject_help() {
 	show_help("help/rejectshelp");
 	return FULLUPDATE;
 }
 
-void
-t_friend()
-{
-	char    buf[STRLEN];
+void t_friend() {
+	char buf[STRLEN];
 	friendflag = YEA;
 	setuserfile(buf, "friends");
-	i_read(GMENU, buf, override_title, override_doentry, friend_list, sizeof(struct override));
+	i_read(GMENU, buf, override_title, override_doentry, friend_list,
+			sizeof(struct override));
 	clear();
 	return;
 }
 
-void
-t_reject()
-{
-	char    buf[STRLEN];
+void t_reject() {
+	char buf[STRLEN];
 	friendflag = NA;
 	setuserfile(buf, "rejects");
-	i_read(GMENU, buf, override_title, override_doentry, reject_list, sizeof(struct override));
+	i_read(GMENU, buf, override_title, override_doentry, reject_list,
+			sizeof(struct override));
 	clear();
 	return;
 }
 
-struct user_info *t_search(char   *sid,int     pid)
-{
-	int     i;
+struct user_info *t_search(char *sid, int pid) {
+	int i;
 	extern struct UTMPFILE *utmpshm;
 	struct user_info *cur, *tmp = NULL;
 	resolve_utmp();
 	/* added by roly 02.06.02 */
-	if (pid<0) return NULL;
+	if (pid<0)
+		return NULL;
 	/* add end */
 
 	for (i = 0; i < USHM_SIZE; i++) {
@@ -2220,12 +2175,12 @@ struct user_info *t_search(char   *sid,int     pid)
 				break;
 		}
 	}
-/*
-if (tmp != NULL) {
-		if (tmp->invisible && !HAS_PERM(PERM_SEECLOAK))
-			return NULL;  
-	}
-*/
+	/*
+	 if (tmp != NULL) {
+	 if (tmp->invisible && !HAS_PERM(PERM_SEECLOAK))
+	 return NULL;  
+	 }
+	 */
 	return isreject(cur) ? NULL : tmp;
 }
 
@@ -2236,10 +2191,8 @@ int *a, *b;
 	return *a - *b;
 }
 
-int
-getfriendstr()
-{
-	int     i;
+int getfriendstr() {
+	int i;
 	struct override *tmp;
 	memset(uinfo.friend, 0, sizeof(uinfo.friend));
 	setuserfile(genbuf, "friends");
@@ -2252,7 +2205,7 @@ getfriendstr()
 	for (i = 0; i < uinfo.fnum; i++) {
 		uinfo.friend[i] = searchuser(tmp[i].id);
 		if (uinfo.friend[i] == 0)
-			deleteoverride(tmp[i].id, "friends");
+		deleteoverride(tmp[i].id, "friends");
 		/* Ë³±ãÉ¾³ıÒÑ²»´æÔÚÕÊºÅµÄºÃÓÑ */
 	}
 	free(tmp);
@@ -2260,10 +2213,8 @@ getfriendstr()
 	update_ulist(&uinfo, utmpent);
 }
 
-int
-getrejectstr()
-{
-	int     nr, i;
+int getrejectstr() {
+	int nr, i;
 	struct override *tmp;
 	memset(uinfo.reject, 0, sizeof(uinfo.reject));
 	setuserfile(genbuf, "rejects");
@@ -2286,10 +2237,10 @@ getrejectstr()
 int
 wait_friend()
 {
-	FILE   *fp;
-	int     tuid;
-	char    buf[STRLEN];
-	char    uid[13];
+	FILE *fp;
+	int tuid;
+	char buf[STRLEN];
+	char uid[13];
 	modify_user_mode(WFRIEND);
 	clear();
 	move(1, 0);
@@ -2318,7 +2269,7 @@ wait_friend()
 	}
 	sprintf(buf, "%d@%s", tuid, currentuser.userid);
 	if (!seek_in_file("friendbook", buf))
-		fprintf(fp, "%s\n", buf);
+	fprintf(fp, "%s\n", buf);
 	fclose(fp);
 	move(3, 0);
 	prints("ÒÑ¾­°ïÄú¼ÓÈëÑ°ÈËÃû²áÖĞ£¬[1m%s[m ÉÏÕ¾ÏµÍ³Ò»¶¨»áÍ¨ÖªÄú...\n", uid);
@@ -2330,23 +2281,22 @@ wait_friend()
 
 /* Í³¼Æµ±Ç°ÒşÉíÈËÊı  */
 /*
-int 
-CountCloakMan(void)
-{
-        int     i, num = 0 ;
-        extern struct UTMPFILE *utmpshm;
-        struct user_info *cur;
-        resolve_utmp();
-        for (i = 0; i < USHM_SIZE; i++) {
-                cur = &(utmpshm->uinfo[i]);
-                if (!cur->active || !cur->pid || !cur->invisible)
-                        continue;
-		num ++ ;
-        }
-        return num;
-}
-*/
-
+ int 
+ CountCloakMan(void)
+ {
+ int     i, num = 0 ;
+ extern struct UTMPFILE *utmpshm;
+ struct user_info *cur;
+ resolve_utmp();
+ for (i = 0; i < USHM_SIZE; i++) {
+ cur = &(utmpshm->uinfo[i]);
+ if (!cur->active || !cur->pid || !cur->invisible)
+ continue;
+ num ++ ;
+ }
+ return num;
+ }
+ */
 
 #ifdef TALK_LOG
 /* edwardc.990106 ·Ö±ğÎªÁ½Î»ÁÄÌìµÄÈË×÷¼ÍÂ¼ */
@@ -2356,16 +2306,16 @@ CountCloakMan(void)
 void
 do_log(char *msg, int who)
 {
-/* Sonny.990514 ÊÔÖø×¥ overflow µÄÎÊÌâ... */
-/* Sonny.990606 overflow ÎÊÌâ½â¾ö. buf[100] ÊÇÕıÈ·µÄ. ²Î¿¼ man sprintf() */
-	time_t  now;
-	char    buf[100];
+	/* Sonny.990514 ÊÔÖø×¥ overflow µÄÎÊÌâ... */
+	/* Sonny.990606 overflow ÎÊÌâ½â¾ö. buf[100] ÊÇÕıÈ·µÄ. ²Î¿¼ man sprintf() */
+	time_t now;
+	char buf[100];
 	now = time(0);
 	if (msg[strlen(msg)] == '\n')
-		msg[strlen(msg)] = '\0';
+	msg[strlen(msg)] = '\0';
 
 	if (strlen(msg) < 1 || msg[0] == '\r' || msg[0] == '\n')
-		return;
+	return;
 
 	/* Ö»°ï×Ô¼º×ö */
 	sethomefile(buf, currentuser.userid, "talklog");
@@ -2377,10 +2327,10 @@ do_log(char *msg, int who)
 		sprintf(buf, "\tÑÕÉ«·Ö±ğ´ú±í: [1;33m%s[m [1;36m%s[m \n\n", currentuser.userid, partner);
 		write(talkrec, buf, strlen(buf));
 	}
-	if (who == 1) {		/* ×Ô¼ºËµµÄ»° */
+	if (who == 1) { /* ×Ô¼ºËµµÄ»° */
 		sprintf(buf, "[1;33m-=> %s [m\n", msg);
 		write(talkrec, buf, strlen(buf));
-	} else if (who == 2) {	/* ±ğÈËËµµÄ»° */
+	} else if (who == 2) { /* ±ğÈËËµµÄ»° */
 		sprintf(buf, "[1;36m--> %s [m\n", msg);
 		write(talkrec, buf, strlen(buf));
 	}

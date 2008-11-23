@@ -31,35 +31,33 @@
  */
 
 #ifdef BBS
-  #include "bbs.h"
+#include "bbs.h"
 #else
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #endif
 
-char html_c[] = 
-  "$Id: html.c 366 2007-05-12 16:35:51Z danielfree $";
+char html_c[] = "$Id: html.c 366 2007-05-12 16:35:51Z danielfree $";
 
-char *no_tag(char *source)
-{
+char *no_tag(char *source) {
 	static char result[256];
 	int i, j, lock;
-	
-	lock = 0;	/* 0 is unlock, 1 is locked */	
+
+	lock = 0; /* 0 is unlock, 1 is locked */
 	j = 0;
-	
-	memset(result,0,sizeof(result));
-	for ( i = 0 ; i < 256 ; i++ ) {
-		if ( source[i] == 0 )
+
+	memset(result, 0, sizeof(result));
+	for (i = 0; i < 256; i++) {
+		if (source[i] == 0)
 			break;
-		else if ( source[i] == '<' && lock == 0 )
+		else if (source[i] == '<' && lock == 0)
 			lock = 1;
-		else if ( source[i] == '>' && lock == 1 )
+		else if (source[i] == '>' && lock == 1)
 			lock = 0;
-		else if ( lock == 0 )
+		else if (lock == 0)
 			result[j++] = source[i];
 	}
-	
-	return((char *)result);
+
+	return ((char *)result);
 }

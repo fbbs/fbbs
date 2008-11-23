@@ -1,30 +1,29 @@
 /*
-    Pirate Bulletin Board System
-    Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
-    Eagles Bulletin Board System
-    Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
-                        Guy Vega, gtvega@seabass.st.usm.edu
-                        Dominic Tynes, dbtynes@seabass.st.usm.edu
-    Firebird Bulletin Board System
-    Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
-                        Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
+ Pirate Bulletin Board System
+ Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
+ Eagles Bulletin Board System
+ Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
+ Guy Vega, gtvega@seabass.st.usm.edu
+ Dominic Tynes, dbtynes@seabass.st.usm.edu
+ Firebird Bulletin Board System
+ Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
+ Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 1, or (at your option)
-    any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 1, or (at your option)
+ any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-*/
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ */
 #include "config.h"
 #include "modes.h"
 
 // 返回模式mode所对应的中文名称
-char *ModeType(int mode)
-{
+char *ModeType(int mode) {
 	switch (mode) {
 		case IDLE:
 			return "无所事事";
@@ -144,34 +143,34 @@ char *ModeType(int mode)
 			return "金扑克梭哈";
 		case M_NINE:
 			return "天地九九";
-	    case WINMINE:
-            return "键盘扫雷";
+		case WINMINE:
+			return "键盘扫雷";
 		case M_BINGO:
 			return "宾果宾果";
-	    case FIVE:
+		case FIVE:
 			return "决战五子棋";
-		case MARKET:	
+		case MARKET:
 			return "交易市场";
-	    case PAGE_FIVE:
+		case PAGE_FIVE:
 			return "邀请下棋";
 		case CHICK:
 			return "电子小鸡";
 		case MARY:
-			return "超级玛丽"; 
+			return "超级玛丽";
 		case CHICKEN:
 			return "星空战斗鸡";
 		case GOODWISH:
 			return "给朋友祝福";
-/*2003.04.22 added by stephen*/
+			/*2003.04.22 added by stephen*/
 		case GIVEUPBBS:
 			return "戒网中";
-/*2003.04.22 stephen add end*/
-/* added by roly */
+			/*2003.04.22 stephen add end*/
+			/* added by roly */
 		case 10001:
 			return "WWW浏览";
 		case 10002:
 			return "JABBER";
-/* added end */
+			/* added end */
 		default:
 			return "去了那里!?";
 	}

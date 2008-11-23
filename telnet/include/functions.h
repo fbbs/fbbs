@@ -2,16 +2,15 @@
 #define _FUNCTIONS_H_
 
 #ifdef FDQUAN
-	#define ENABLE_SHOWONLINE
+#define ENABLE_SHOWONLINE
 #endif
 #define ENABLE_NOTICE	//置底功能
 #define IP_2_NAME //穿梭IP显示域名，同时限制其使用匿名发文功能
-
 #define NEWONLINECOUNT
 // 下面是一些功能的控制，如果屏蔽该控制，则表示不使用这个功能
 // 如果该行前面有 "//" 则表示被屏蔽，要屏蔽该功能，则加入 "//"
 #ifdef FDQUAN
-	#define ENABLE_PREFIX
+#define ENABLE_PREFIX
 #endif
 #define SHOW_THANKYOU		/* 显示源代码提供者信息 */
 
@@ -63,13 +62,13 @@
 
 /* 下面的是准备取消的功能， 你看着办吧 */
 /*
-    系统寻人功能是当初没有好友上站通知功能时做的一个寻人功能。
-    而且容易其提示信息极容易被忽略，而且忽略后就再也找不到了。
-    我曾想完善这个功能，为了保存信息，想到了同时发一份信给对方，
-    这样一来，这个功能也就是多余的了，因为写信本身就是一个很好
-    的寻人功能。 :) 所以我把他缺省为取消了。
-    不过，如果你想要这个功能，就自己打开吧，呵呵。
-*/
+ 系统寻人功能是当初没有好友上站通知功能时做的一个寻人功能。
+ 而且容易其提示信息极容易被忽略，而且忽略后就再也找不到了。
+ 我曾想完善这个功能，为了保存信息，想到了同时发一份信给对方，
+ 这样一来，这个功能也就是多余的了，因为写信本身就是一个很好
+ 的寻人功能。 :) 所以我把他缺省为取消了。
+ 不过，如果你想要这个功能，就自己打开吧，呵呵。
+ */
 //#define CHK_FRIEND_BOOK		/* 设定系统寻人名单 */
 
 #define USE_TRY extern sigjmp_buf bus_jump
@@ -88,13 +87,14 @@
 #define BBS_RETURN_VOID {signal(SIGBUS, SIG_IGN);return;}
 
 void sigbus(int signo);
-int safe_mmapfile(char *filename, int openflag, int prot, int flag, void **ret_ptr, size_t *size, int *ret_fd);
-int safe_mmapfile_handle(int fd, int openflag, int prot, int flag, void **ret_ptr, size_t *size);
+int safe_mmapfile(char *filename, int openflag, int prot, int flag,
+		void **ret_ptr, size_t *size, int *ret_fd);
+int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
+		void **ret_ptr, size_t *size);
 void end_mmapfile(void *ptr, int size, int fd);
 
-typedef int (*RECORD_FUNC_ARG) (void *, void *);
-typedef int (*APPLY_FUNC_ARG) (void *, int, void *);
-	
+typedef int (*RECORD_FUNC_ARG)(void *, void *);
+typedef int (*APPLY_FUNC_ARG)(void *, int, void *);
 
 #endif 
 /* _FUNCTIONS_H_ */

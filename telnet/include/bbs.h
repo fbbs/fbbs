@@ -1,6 +1,6 @@
 /*
-$Id: bbs.h 365 2007-05-12 13:07:16Z danielfree $
-*/
+ $Id: bbs.h 365 2007-05-12 13:07:16Z danielfree $
+ */
 
 #ifndef  _BBS_H_
 #define _BBS_H_
@@ -21,7 +21,7 @@ $Id: bbs.h 365 2007-05-12 13:07:16Z danielfree $
 #include <time.h>
 #include<strings.h>
 #ifndef BSD44
-  #include <stdlib.h>
+#include <stdlib.h>
 #endif
 #include <sys/time.h>
 #include <sys/types.h>
@@ -32,38 +32,36 @@ $Id: bbs.h 365 2007-05-12 13:07:16Z danielfree $
 #include <syslog.h>
 
 #ifdef DMALLOC
-  #include <dmalloc.h>
+#include <dmalloc.h>
 #endif
 
 #include "types.h"
 #include "config.h"             	/* User-configurable stuff */
-
 
 #include "glossary.h"
 #include "functions.h"				/* you can enable functions that you want */
 #include "permissions.h"
 
 #ifndef LOCK_EX
-	#define LOCK_EX         2       /* exclusive lock */
-	#define LOCK_UN         8       /* unlock */
+#define LOCK_EX         2       /* exclusive lock */
+#define LOCK_UN         8       /* unlock */
 #endif
 
 #ifdef XINU
-	extern int errno ;				//出错信息编号
+extern int errno; //出错信息编号
 #endif
 
 #define randomize() srand((unsigned)time(NULL))	//随机函数初始化
-
 #define YEA (1)        /* Booleans  (Yep, for true and false) */
 #define NA  (0) 
 
 #define DOECHO (1)     /* Flags to getdata input function */
 #define NOECHO (0)
 
-char *	bfile() ;
+char * bfile();
 
-extern FILE *ufp ;     /* External variable declarations */
-extern long ti ;
+extern FILE *ufp; /* External variable declarations */
+extern long ti;
 
 #endif /* BBSIRC */
 
@@ -79,10 +77,10 @@ extern long ti ;
 #define NUMPERMS   (32)
 #define REG_EXPIRED	3600    	/* 重做身份确认期限 */
 #ifdef FDQUAN
-	#define MAXGUEST	80	   	/* 最多 guest 帐号上站个数 */
-	#define QUERY_REALNAMES		//站务查询时,是否显示真实姓名
+#define MAXGUEST	80	   	/* 最多 guest 帐号上站个数 */
+#define QUERY_REALNAMES		//站务查询时,是否显示真实姓名
 #else
-	#define MAXGUEST	500
+#define MAXGUEST	500
 #endif
 
 #ifdef FDQUAN
@@ -101,11 +99,10 @@ extern long ti ;
 #define MAX_PREFIX			  9    /* 最大版面前缀数*/
 #define MORE_BUFSIZE       4096
 #define GOOD_BRC_NUM	70	//收藏夹最大可收藏版面数 2007-04-23 从boards.c移至此
-
 #ifdef BIGGER_MOVIE
-  #define MAXMOVIE		8
+#define MAXMOVIE		8
 #else
-  #define MAXMOVIE		6    /* lines of  activity board  */
+#define MAXMOVIE		6    /* lines of  activity board  */
 #endif
 
 #define ACBOARD_BUFSIZE      512 /* max. length of each line for activity board*/
@@ -116,21 +113,21 @@ extern long ti ;
 #define IDLEN                12    /* Length of userids */
 
 #ifdef MD5		  	   /* MD5 cryptographic support */
-  #define ENCPASSLEN         35
+#define ENCPASSLEN         35
 #else
-  #define ENCPASSLEN         14  /* Length of encrypted passwd field */
+#define ENCPASSLEN         14  /* Length of encrypted passwd field */
 #endif  
 
 #define PASSLEN		 	14    /* User's password length (13 chars) */
 
 //#ifdef CODE_VALID
-  #define RNDPASSLEN             10        /* 暗码认证的暗码长度 (适宜范围 4~10)*/
+#define RNDPASSLEN             10        /* 暗码认证的暗码长度 (适宜范围 4~10)*/
 //#endif
 
 #define MAXGOPHERITEMS     9999    /* max of gopher items */
 #define PASSFILE     ".PASSWDS"    /* Name of file User records stored in */
 #define ULIST_BASE   ".UTMP"       /* Names of users currently on line */
-extern  char ULIST[];
+extern char ULIST[];
 
 #ifndef BBSIRC 
 
@@ -160,18 +157,16 @@ extern  char ULIST[];
 #define JUNK_MODE	     11		//站务垃圾箱模式
 #define BOTTOM_MODE	     12		//??
 #define ATTACH_MODE          13         //??
-
 #define ANNPATH_SETMODE	0
 #define ANNPATH_GETMODE	1
-
 
 #ifdef ENABLE_NOTICE
 #define NOTICE_MODE 13
 #define NOTICE_DIR ".NOTICE"
 #ifdef FDQUAN
-	#define MAX_NOTICE 6
+#define MAX_NOTICE 6
 #else
-	#define MAX_NOTICE 5
+#define MAX_NOTICE 5
 #endif
 #endif
 
@@ -204,7 +199,6 @@ extern  char ULIST[];
 #define BOARD_DIR_FLAG		0x200		//目录
 #define BOARD_PREFIX_FLAG	0x400	//前缀
 #define BOARD_CUSTOM_FLAG	0x80000000		//收藏夹自定义目录 defined by cometcaptor 2007-04-16 因为是目录是自定义，故选用标志的最高位，和标准的属性分开
-
 #define ZAPPED  		0x1         /* For boards...tells if board is Zapped */
 
 /* these are flags in userec.flags[0] */
@@ -220,7 +214,7 @@ extern  char ULIST[];
 ———————————————————————————————————————"
 #define MULTI_LOGINS	2	/* 同时可上站 ID 数 */
 #ifndef FDQUAN
-	#define IPMAXLOGINS		5	// 同IP同时上站ID数
+#define IPMAXLOGINS		5	// 同IP同时上站ID数
 #endif
 #define DEF_VALUE		"★★ 欢迎光临日月光华站! ★★"
 #define DEF_FILE		"etc/whatdate"
@@ -249,7 +243,7 @@ extern  char ULIST[];
 #endif /* BBSIRC */
 
 #ifndef NO_STRUCT_H
-	#include "struct.h"
+#include "struct.h"
 #endif
 
 #include "modes.h"              /* The list of valid user modes */
@@ -295,49 +289,48 @@ extern  char ULIST[];
 #define BMLOG_RANGEANN		20          //L或者B收入精华
 #define BMLOG_RANGEDEL      21          //L或者B删除
 #define BMLOG_RANGEOTHER    23          //L或者B其他操作
+extern int scrint; /* Set when screen has been initialized */
+/* Used by namecomplete *only* */
 
-extern int scrint ;              /* Set when screen has been initialized */
-                                 /* Used by namecomplete *only* */
-
-extern int digestmode;           /*To control Digestmode*/
+extern int digestmode; /*To control Digestmode*/
 
 #ifndef NO_STRUCT_H				 /* NO_STRUCT_H */
 
 extern struct userec currentuser;/*  user structure is loaded from passwd */
-                                 /*  file at logon, and remains for the   */
-                                 /*  entire session */
+/*  file at logon, and remains for the   */
+/*  entire session */
 
-extern struct user_info uinfo ;  /* Ditto above...utmp entry is stored here
-                                     and written back to the utmp file when
-                                     necessary (pretty darn often). */ 
-extern int usernum ;      		/* Index into passwds file user record */
-extern int utmpent ;      		/* Index into this users utmp file entry */
-extern int count_friends,count_users; /*Add by SmallPig for count users and friends*/
+extern struct user_info uinfo; /* Ditto above...utmp entry is stored here
+ and written back to the utmp file when
+ necessary (pretty darn often). */
+extern int usernum; /* Index into passwds file user record */
+extern int utmpent; /* Index into this users utmp file entry */
+extern int count_friends, count_users; /*Add by SmallPig for count users and friends*/
 
-extern int t_lines, t_columns;    	/* Screen size / width */
-extern struct userec lookupuser; 	/* Used when searching for other user info */
+extern int t_lines, t_columns; /* Screen size / width */
+extern struct userec lookupuser; /* Used when searching for other user info */
 
 #endif					/* NO_STRUCT_H */
 extern char someoneDIR[];
-extern int  nettyNN;
-extern char netty_path[] ; 
-extern char netty_board[] ; 
-extern char currboard[] ;       /* name of currently selected board */
-extern char currBM[] ;          /* BM of currently selected board */
+extern int nettyNN;
+extern char netty_path[];
+extern char netty_board[];
+extern char currboard[]; /* name of currently selected board */
+extern char currBM[]; /* BM of currently selected board */
 
-extern int selboard ;           /* THis flag is true if above is active */
+extern int selboard; /* THis flag is true if above is active */
 
-extern char genbuf[1024] ;      /* generally used global buffer */
+extern char genbuf[1024]; /* generally used global buffer */
 
-extern jmp_buf byebye ;        /* Used for exception condition like I/O error*/
+extern jmp_buf byebye; /* Used for exception condition like I/O error*/
 
-extern char save_title[] ;    /* These are used by the editor when inserting */
+extern char save_title[]; /* These are used by the editor when inserting */
 extern int save_gid;
-extern char save_filename[] ; /* header information */
-extern int in_mail ;
-extern int dumb_term ;
+extern char save_filename[]; /* header information */
+extern int in_mail;
+extern int dumb_term;
 extern int showansi;
-extern time_t uptime;		  /* save user last key-in time, up every 1min */
+extern time_t uptime; /* save user last key-in time, up every 1min */
 
 #define Min(a,b) ((a<b)?a:b)
 #define Max(a,b) ((a>b)?a:b)
@@ -368,38 +361,31 @@ extern time_t uptime;		  /* save user last key-in time, up every 1min */
 #define KEY_PGUP        0x0205
 #define KEY_PGDN        0x0206
 #endif	//EXTEND_KEY	扩展键
-
 /* edwardc.990706 move shmkeys from sysconf.ini */
 
-struct _shmkey {		//共享内存键名与键值
-	char	key[16];
-	int		value;
+struct _shmkey { //共享内存键名与键值
+	char key[16];
+	int value;
 };
 
-const static struct _shmkey shmkeys[] = {
-	{ "BCACHE_SHMKEY",	30000 },
-	{ "UCACHE_SHMKEY",	30010 },
-	{ "UTMP_SHMKEY",	30020 },
-	{ "ACBOARD_SHMKEY",	30030 },
-	{ "ISSUE_SHMKEY",	30040 },
-	{ "GOODBYE_SHMKEY",	30050 },
-	{ "WELCOME_SHMKEY",	30060 },
-	{ "STAT_SHMKEY",	30070 },
+const static struct _shmkey shmkeys[] = { { "BCACHE_SHMKEY", 30000 }, {
+		"UCACHE_SHMKEY", 30010 }, { "UTMP_SHMKEY", 30020 }, {
+		"ACBOARD_SHMKEY", 30030 }, { "ISSUE_SHMKEY", 30040 }, {
+		"GOODBYE_SHMKEY", 30050 }, { "WELCOME_SHMKEY", 30060 }, {
+		"STAT_SHMKEY", 30070 },
 #ifdef ALLOWSWITCHCODE
-	{ "CONV_SHMKEY",	30080 },
+		{	"CONV_SHMKEY", 30080},
 #endif
 #ifdef CERTIFYMODE
-	{ "KEYWORDS_SHMKEY",30090 },
+		{	"KEYWORDS_SHMKEY",30090},
 #endif
-	{ "ACACHE_SHMKEY",  30005 },
-	{ 0,   0 }
-};
+		{ "ACACHE_SHMKEY", 30005 }, { 0, 0 } };
 
 #define SEM_COUNTONLINE 30000
 
 #define Ctrl(c)         ( c & 037 )		//可以考虑将函数宏改写成inline函数
 #define isprint2(c)     ( (c & 0x80) || isprint(c) )	//扩充的可打印字符
-									//包括ASCII中所有可打印字符和第一位为1的字符
+//包括ASCII中所有可打印字符和第一位为1的字符
 
 #ifdef  SYSV						//SYSV中没有定义以下函数
 //#define bzero(tgt, len)         memset( tgt, 0, len )
@@ -417,14 +403,13 @@ const static struct _shmkey shmkeys[] = {
 /* =============== ANSI EDIT ================== */
 #define   ANSI_RESET    	"\033[0m"
 #define   ANSI_REVERSE  	"\033[7m\033[4m"
-extern    int  	editansi;
-extern    int  	KEY_ESC_arg;
+extern int editansi;
+extern int KEY_ESC_arg;
 /* ============================================ */
 
 /* Added by deardragon 1999.11.2 */
-extern char	datestring[];
+extern char datestring[];
 /* Added End. */
-
 
 /* added by iamfat 2002.08.29 */
 //extern int technician;
@@ -433,7 +418,6 @@ extern char	datestring[];
 //added by iamfat 2003.02.27
 #define DEBUG(x) {file_append("debug", #x"\n");x;}	//调试模式
 #endif /* of _BBS_H_ */
-
 
 #define FLOCK(x,y) flock(x,y)
 
@@ -444,5 +428,5 @@ extern char	datestring[];
 #define BMNAMELISTLIMIT					//显示超过部分时使用...
 #define BMNAMELISTLEN	(56)		//显示版面版主列表的最大数
 #define BMNAMEMAXLEN	(56)		//每个版版主名称时最大数
-		//如果BMNAMELISTLEN与BMNAMEMAXLEN不同,显示版主列表时,将用...来表示超过部分
-		//BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界
+//如果BMNAMELISTLEN与BMNAMEMAXLEN不同,显示版主列表时,将用...来表示超过部分
+//BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界

@@ -1,6 +1,6 @@
 /*
-$Id: chat.h 2 2005-07-14 15:06:08Z root $
-*/
+ $Id: chat.h 2 2005-07-14 15:06:08Z root $
+ */
 
 #define MY_BBS_NAME   "日月光华"
 #define MY_BBS_DOMAIN "bbs.fudan.edu.cn"
@@ -15,7 +15,7 @@ $Id: chat.h 2 2005-07-14 15:06:08Z root $
 #define MAXROOM         32         /* MAX number of Chat-Room */
 #define MAXLASTCMD      6          /* MAX preserved chat input */
 #ifndef IDLEN
-	#define IDLEN           12         /* ID Length (must match in BBS.H) */
+#define IDLEN           12         /* ID Length (must match in BBS.H) */
 #endif
 #define CHAT_IDLEN      9          /* Chat ID Length in Chat-Room */
 #define CHAT_NAMELEN    20         /* MAX 20 characters of CHAT-ROOM NAME */
@@ -33,10 +33,10 @@ $Id: chat.h 2 2005-07-14 15:06:08Z root $
 #define CHAT_LOGIN_BOGUS    "BG"
 
 /* 
-   This defines the set of characters disallowed in chat id's. These
-   characters get translated to underscores (_) when someone tries to use
-   them. At the very least you should disallow spaces and '*'.
-*/ 
+ This defines the set of characters disallowed in chat id's. These
+ characters get translated to underscores (_) when someone tries to use
+ them. At the very least you should disallow spaces and '*'.
+ */
 
 #define BADCIDCHARS " *:/%"
 
