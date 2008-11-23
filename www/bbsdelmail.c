@@ -41,10 +41,8 @@ int main() {
 		printpretable_lite();
         if(loginok == 0) http_fatal("您尚未登录"); 
         id=currentuser.userid; 
-        //###########sharedmail
-        strcpy(file, getparm("file"));
-        //strsncpy(file, getparm("file"), 32); 
-        if(file[0] != 's' && (strncmp(file, "M.", 2) || strstr(file, ".."))) http_fatal("错误的参数"); 
+        strsncpy(file, getparm("file"), 32); 
+        if(strncmp(file, "M.", 2) || strstr(file, "..")) http_fatal("错误的参数"); 
         sprintf(path, "mail/%c/%s/.DIR", toupper(id[0]), id); 
         fp=fopen(path, "r"); 
         if(fp==0) http_fatal("错误的参数2"); 

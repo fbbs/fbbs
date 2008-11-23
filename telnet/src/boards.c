@@ -377,7 +377,7 @@ int load_boards (){
       if (!(bptr->flag & BOARD_POST_FLAG) && !HAS_PERM (bptr->level)
           && !(bptr->flag & BOARD_NOZAP_FLAG))
           continue;
-      if ((bptr->flag & BOARD_CLUB_FLAG)&& (bptr->flag & BOARD_READ_FLAG )&& !chk_BM (bptr->filename, 1)&& !isclubmember(currentuser.userid, bptr->filename))//cometcaptor 2007-08-11
+      if ((bptr->flag & BOARD_CLUB_FLAG)&& (bptr->flag & BOARD_READ_FLAG )&& !chk_currBM (bptr->BM, 1)&& !isclubmember(currentuser.userid, bptr->filename))
 			        continue;
 	  if (choosemode == 0){
         if (boardparent > 0 && boardparent != bptr->group - 1)
@@ -717,20 +717,11 @@ void show_brdlist (page, clsflag, newflag)
 	    (ptr->flag & BOARD_CLUB_FLAG) ? (ptr->flag & BOARD_READ_FLAG)
 	    ? "[1;31mc[m" : "[1;33mc[m" : " ",
 	    cate, title, HAS_PERM (PERM_POST) ? ptr->status : ' ');
-    //if (ptr->flag & BOARD_DIR_FLAG)
-    //  prints ("[Ä¿Â¼]\n");
-    //else
-    //  prints ("%-12s  %4d\n",
-	//     ptr->BM[0] <= ' ' ? "³ÏÕ÷°æÖ÷ÖÐ" : strtok (tmpBM, " ")
-    //modified by cometcaptor 2007-07-23
-    if (!(ptr->flag & BOARD_CUSTOM_FLAG))
-        prints("%-12s ",ptr->BM[0] <= ' ' ? "³ÏÕ÷°æÖ÷ÖÐ" : strtok (tmpBM, " "));
-    else
-        prints("[×Ô¶¨ÒåÄ¿Â¼] ");
     if (ptr->flag & BOARD_DIR_FLAG)
-        prints("\n");
+      prints ("[Ä¿Â¼]\n");
     else
-        prints ("%4d\n"
+      prints ("%-12s %4d\n",
+	      ptr->BM[0] <= ' ' ? "³ÏÕ÷°æÖ÷ÖÐ" : strtok (tmpBM, " ")
 #ifdef NEWONLINECOUNT
 	      , brdshm->bstatus[ptr->pos].inboard
 #else

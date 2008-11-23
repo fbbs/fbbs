@@ -72,11 +72,7 @@ int main() {
 		if(ptr==0) ptr=" ";
 		ptr=nohtml(ptr);
 		printf("<td><a href=bbsqry?userid=%s>%13.13s</a>", ptr, ptr);
-	 	//####sharedmail
-        if(data[i].filename[0] == 's')
-            filetime = atoi(data[i].filename + strlen(data[i].owner) + 20);
-        else
-            filetime=atoi(data[i].filename+2);
+	 	filetime=atoi(data[i].filename+2);
 		printf("<td>%12.12s", Ctime(filetime)+4);
 		printf("<td><a href=bbsmailcon?file=%s&num=%d>", data[i].filename, i);
 	 	if(strncmp("Re: ", data[i].title, 4)) 

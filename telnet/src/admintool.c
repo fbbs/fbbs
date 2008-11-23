@@ -790,7 +790,7 @@ m_editbrd ()
 	    clrtoeol ();
 	    continue;
 	  }
-	  if (HAS_PERM(PERM_SYSOPS) || valid_brdname (genbuf)) {
+	  if (valid_brdname (genbuf)) {
 	    strncpy (newfh.filename, genbuf, sizeof (newfh.filename));
 	    strcpy (bname, genbuf);
 	    break;
@@ -1458,16 +1458,15 @@ void  show_register() {
     }
     clear ();
     stand_title ("É¾³ıÊ¹ÓÃÕßÕÊºÅ");
-    move (2, 0);
-	// Added by Ashinmarch in 2008.10.20
-	// ¿³µôÕËºÅÊ±Ôö¼ÓÃÜÂëÑéÖ¤
-	getdata(1, 0, "^[[1;37mÇëÊäÈëÃÜÂë: ^[[m", passbuf, PASSLEN, NOECHO, YEA);
-	passbuf[8] = '\0';
-	if (!checkpasswd(currentuser.passwd, passbuf)) {
-	prints("^[[1;31mÃÜÂëÊäÈë´íÎó...^[[m\n");
-		return 0;
-	}
-	// Add end.
+    // Added by Ashinmarch in 2008.10.20 
+    // ¿³µôÕËºÅÊ±Ôö¼ÓÃÜÂëÑéÖ¤
+    getdata(1, 0, "[1;37mÇëÊäÈëÃÜÂë: [m", passbuf, PASSLEN, NOECHO, YEA);
+    passbuf[8] = '\0';
+    if (!checkpasswd(currentuser.passwd, passbuf)) {
+	  prints("[1;31mÃÜÂëÊäÈë´íÎó...[m\n");
+      return 0;
+    }
+    // Add end.
     if (!gettheuserid (1, "ÇëÊäÈëÓûÉ¾³ıµÄÊ¹ÓÃÕß´úºÅ: ", &id))
       return 0;
     if (!strcmp (lookupuser.userid, "SYSOP")) {
@@ -2263,37 +2262,39 @@ void  show_register() {
   }
 
 // È«Õ¾¹ã²¥...
-int wall () {
-	char passbuf[PASSLEN];
+  int
+                  wall () {
+    char passbuf[PASSLEN];
 
-	if (!HAS_PERM (PERM_SYSOPS))
-		return 0;
-	// Added by Ashinmarch on 2008.10.20
-	// È«Õ¾¹ã²¥Ç°Ôö¼ÓÃÜÂëÑéÖ¤
-	clear();
-	stand_title("È«Õ¾¹ã²¥!");
-	getdata(1, 0, "^[[1;37mÇëÊäÈëÃÜÂë: ^[[m", passbuf, PASSLEN, NOECHO, YEA);
-	passbuf[8] = '\0';
-	if (!checkpasswd(currentuser.passwd, passbuf)) {
-	prints("^[[1;31mÃÜÂëÊäÈë´íÎó...^[[m\n");
-		return 0;
-	}
-	// Add end.
-	modify_user_mode (MSG);
-	move (2, 0);
-	clrtobot ();
-	if (!get_msg ("ËùÓĞÊ¹ÓÃÕß", buf2, 1)) {
-		return 0;
-	}
-	if (apply_ulist (dowall) == -1) {
-		move (2, 0);
-		prints ("ÏßÉÏ¿ÕÎŞÒ»ÈË\n");
-		pressanykey ();
-	}
-	prints ("\nÒÑ¾­¹ã²¥Íê±Ï...\n");
-	pressanykey ();
-	return 1;
-}
+    if (!HAS_PERM (PERM_SYSOPS))
+      return 0;
+    // Added by Ashinmarch on 2008.10.20
+    // È«Õ¾¹ã²¥Ç°Ôö¼ÓÃÜÂëÑéÖ¤
+    clear();
+    stand_title("È«Õ¾¹ã²¥!");
+    getdata(1, 0, "[1;37mÇëÊäÈëÃÜÂë: [m", passbuf, PASSLEN, NOECHO, YEA);
+    passbuf[8] = '\0';
+    if (!checkpasswd(currentuser.passwd, passbuf)) {
+	  prints("[1;31mÃÜÂëÊäÈë´íÎó...[m\n");
+      return 0;
+    }
+    // Add end.
+
+    modify_user_mode (MSG);
+    move (2, 0);
+    clrtobot ();
+    if (!get_msg ("ËùÓĞÊ¹ÓÃÕß", buf2, 1)) {
+      return 0;
+    }
+    if (apply_ulist (dowall) == -1) {
+      move (2, 0);
+      prints ("ÏßÉÏ¿ÕÎŞÒ»ÈË\n");
+      pressanykey ();
+    }
+    prints ("\nÒÑ¾­¹ã²¥Íê±Ï...\n");
+    pressanykey ();
+    return 1;
+  }
 
 // Éè¶¨ÏµÍ³ÃÜÂë
   int

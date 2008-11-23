@@ -351,32 +351,6 @@ int show_bm(char* userid, char *bmstring)
 	return 0;
 }
 
-/***Added by Ashinmarch to support display volunteers in 12th anniversary
-    on 2008.04.16***/
-
-int show_volunteer(char *userid, char *volstring)
-{
-    FILE *fp;
-    char filename[STRLEN], tmp[20];
-    sethomefile(filename, userid, ".volunteer");
-    fp = fopen(filename, "r");
-    int i = 0;
-    if(fp)
-    {
-        while(!feof(fp))
-        {
-            i++;
-            fscanf(fp, "%s\n",tmp);
-            sprintf(volstring, "%s%s%s", volstring, i == 1?"":" ", tmp);
-        }
-        if(i == 0)
-            return 0;
-        fclose(fp);
-        return 1;
-    }
-    return 0;
-}
-
 int show_position(char *buf)
 {
 	if (lookupuser.userlevel & PERM_SPECIAL9) {
@@ -407,15 +381,6 @@ int show_position(char *buf)
 			sprintf(buf, "%s[[1;32m×Ü¹ÜÖúÀí[m]", buf);
 			normal = 0;
 		}
-        //added by Ashinmarch to support display of volunteer
-        /*if(show_volunteer(lookupuser.userid, bms))
-        {
-            sprintf(buf, "%s[[1;33m%s[m]", buf, bms);
-            normal = 0;
-            bms[0] = 0;
-        }*/
-        
-        //added end
 		if ((lookupuser.userlevel & PERM_BOARDS) &&  show_bm(lookupuser.userid, bms)){
 			sprintf(buf, "%s[[1;33m%s[32m°æ°æÖ÷[m]", buf, bms);
 			normal = 0;

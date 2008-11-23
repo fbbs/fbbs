@@ -523,38 +523,6 @@ int uinfo_query(struct userec *u, int real, int unum)
 	       			newinfo.gender = toupper(buf[0]);
          	}	
 
-			/******Added by Ashinmarch to support volunteer in 12th Anniversary on 2008.04.16****/
-		/*	if(currentuser.userlevel & PERM_SYSOPS)
-            {
-                char temp[30];
-                temp[0] = 0;
-                FILE *fp;
-                sethomefile(genbuf, u->userid, ".volunteer");
-                if((fp = fopen(genbuf, "r")) != NULL)
-                {
-                    fgets(temp, 30, fp);
-                    fclose(genbuf);
-                    sprintf(genbuf, "输入身份：[%s]",temp);
-                }
-                else
-                    sprintf(genbuf, "输入身份：");
-			    getdata(i++, 0, genbuf, buf, 30, DOECHO, YEA);
-			    if(buf[0])
-			    {
-				    sethomefile(genbuf, u->userid, ".volunteer");
-				    if((fp = fopen(genbuf, "w")) != NULL)
-				    {
-                        if(buf[0] != ' ')
-                        {
-				    	    fputs(buf, fp);
-					        fclose(fp);
-                        }
-                        else
-                            unlink(genbuf);
-			    	}
-			    }
-            }
-            */
 			if (real) 
 				uinfo_change1(i,u,&newinfo);
 			break;

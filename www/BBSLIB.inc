@@ -13,7 +13,7 @@
 #define ACACHE_SHMKEY get_shmkey("ACACHE_SHMKEY")
 
 #define TLINES 18
-//#define SQUID
+#define SQUID
 //added by iamfat 2002.08.29 for 浮动表现值
 #define MAX_PERF (1000)
 #define MAX_LUCKY (20)
@@ -24,9 +24,9 @@ int flock(int fd, int op) {
 
 /* ADD BY ROLY  FOR mail retriction*/
 #ifdef FDQUAN
-	#define MAX_LARGEMAIL_UPLIMIT   10000
-	#define MAX_BOARDSMAIL_UPLIMIT  10000
-	#define MAX_MAIL_UPLIMIT        10000
+	#define MAX_LARGEMAIL_UPLIMIT   300
+	#define MAX_BOARDSMAIL_UPLIMIT	120
+	#define MAX_MAIL_UPLIMIT	60
 #else
 	#define MAX_LARGEMAIL_UPLIMIT   20000
 	#define MAX_BOARDSMAIL_UPLIMIT  20000
@@ -35,14 +35,14 @@ int flock(int fd, int op) {
 /* ADD END */
 
 #ifdef FDQUAN
-	#define SECNUM 15  //15 for FDQUAN
+	#define SECNUM 9  //9 for FDQUAN
 #else
-	#define SECNUM 12 //12 for fudan
+	#define SECNUM 12 //11 for fudan
 #endif
 
 char seccode[SECNUM][6]={
 #ifdef FDQUAN
-	"abe","cd","ij","kl","op","qr", "v","y", "h","x","s","t","f","w","g"
+	"ab","cd","ij","kl","mn","op","qr","st","uv"
 #else
 //    "0nk","Ccy","IE","Nn","amB","emk","rs","xcd","fyzd","ij","Bbm"
 "0oOhH", "1pP", "2qQ", "3rRhH", "4sS", "5tT", "6uU", "7vV", "8wW", "9xX", "ayY", "bzZ"
@@ -55,20 +55,14 @@ char seccode[SECNUM][6]={
 char secname[SECNUM][2][20]={
 #ifdef FDQUAN
 		"BBS 系统", "[站内]",
-		"研究生会", "[本校]",
+		"复旦大学", "[本校]",
 		"光华公司", "[勤助]",	
 		"社团组织", "[团体]",
+		"竞赛活动", "[临时]",
 		"谈天聊地", "[感性]",
 		"游戏休闲", "[休闲]",
-		"风陵渡口", "[个人]",
-		"鼓浪屿"  , "[个人]",
-		"绝情谷"  , "[个人]",
-		"思过崖"  , "[个人]",
-		"桃花岛"  , "[个人]",
-		"天涯海阁", "[个人]",
-		"月牙泉"  , "[个人]",
-		"悦来客栈", "[个人]",
-		"缥缈峰"  , "[个人]"
+		"个人风采", "[个人]",
+		"积分论坛", "[团体]"
 #else
         "BBS 系统", "[站内]",
         "复旦大学", "[本校]",
@@ -84,6 +78,14 @@ char secname[SECNUM][2][20]={
 	"交易专区", "[交易]"
 #endif
 };
+/*
+char secname[SECNUM][2][20]={
+	"BBS 系统", "[站内]",
+	"复旦大学", "[本校]",
+	"社团组织", "[团体]",	
+        "个性空间", "[个人]"
+};
+*/
 struct boardheader *getbcache();
 int junkboard(char *board) {
         // 请自定义junkboard.

@@ -750,10 +750,6 @@ void visitlog(void)
 	  "[1;32m´Ó [[36m%4dÄê%2dÔÂ%2dÈÕ[32m] Æğ, ×î¸ßÈËÊı¼ÇÂ¼: [[36m%d[32m] ÀÛ¼Æ·ÃÎÊÈË´Î: [[36m%u[32m][m\n",
 	  max_log.year, max_log.month, max_log.day, max_log.logins,
 	  max_log.visit);
-    //sprintf(genbuf,
-    //       "´Ó [%4dÄê%2dÔÂ%2dÈÕ] Æğ, ×î¸ßÈËÊı¼ÇÂ¼: [%d] ÀÛ¼Æ·ÃÎÊÈË´Î: [%u]\n",
-    //       max_log.year, max_log.month, max_log.day, max_log.logins,
-    //       max_log.visit);
   prints(genbuf);
 }
 
@@ -842,8 +838,6 @@ void login_query()
   prints
     ("[1;35m»¶Ó­¹âÁÙ[1;40;33m¡¾ %s ¡¿ [m[[0;1;33;41m Add '.' after YourID to login for BIG5 [m]\n",
      BoardName);
-  //prints("»¶Ó­¹âÁÙ¡¾ %s ¡¿ [ Add '.' after YourID to login for BIG5 ]\n",BoardName);
-
   resolve_utmp();
   if (utmpshm->usersum == 0)
     utmpshm->usersum = allusers();
@@ -852,9 +846,7 @@ void login_query()
     utmpshm->max_login_num = utmpshm->total_num;
   prints("[1;32mÄ¿Ç°ÒÑÓĞÕÊºÅÊı: [[1;36m%d[32m/[36m%d[32m] [32mÄ¿Ç°ÉÏÕ¾ÈËÊı: [[36m%d[32m/[36m%d[1;32m]\n",	// ÆäÖĞWEBÄäÃû: [[36m%d[32m]\n",
 	 utmpshm->usersum, MAXUSERS, utmpshm->total_num, 10000);	// get_anon());
-  //prints("Ä¿Ç°ÒÑÓĞÕÊºÅÊı: [%d/%d] Ä¿Ç°ÉÏÕ¾ÈËÊı: [%d/%d]\n",   // ÆäÖĞWEBÄäÃû: [^[[36m%d^[[32m]\n",
-   //       utmpshm->usersum, MAXUSERS, utmpshm->total_num, 10000);    // get_anon());
-  //    utmpshm->usersum, curr_login_num-CountCloakMan(), 10000);
+//    utmpshm->usersum, curr_login_num-CountCloakMan(), 10000);
   visitlog();
 
 #ifdef MUDCHECK_BEFORELOGIN
@@ -881,9 +873,6 @@ void login_query()
     getdata(0, 0,
 	    "[1;33mÇëÊäÈëÕÊºÅ[m(ÊÔÓÃÇëÊäÈë'[1;36mguest[m', ×¢²áÇëÊäÈë'[1;31mnew[m'): ",
 	    uid, IDLEN + 1, DOECHO, YEA);
- //   getdata(0, 0,
- //       "ÇëÊäÈëÕÊºÅ(ÊÔÓÃÇëÊäÈë'guest', ×¢²áÇëÊäÈë'new'): ",
- //       uid, IDLEN + 1, DOECHO, YEA);
 #else //LOADTEST
     strcpy(uid, "guest");
 #endif //LOADTEST
@@ -1020,17 +1009,36 @@ void login_query()
 
 	  }
 
-      //Don't allow revival, Added by Ashinmarch Sep.04, 2008
-	  if (currentuser.userlevel == 0){
-		  prints("\033[32mÄúÒÑ¾­×ÔÉ±\033[m\n");
+      //Don't allow revival, Added by Ashinmarch Sep.04,2008
+	  if (currentuser.userlevel == 0) {
+	 /*     && askyn("ÄúÖªµÀÄúÒÑ¾­×ÔÉ±ÁËÂğ£¿", NA, NA) == YEA
+	      && askyn("ÄúÏëÆğËÀ»ØÉúÂğ£¿", NA, NA) == YEA
+	      && askyn("Äú°´´í¼üÁËÂğ£¿", YEA, NA) == NA
+	      && askyn("ÄúÍ¬ÒâÄúµÄÉÏÕ¾´ÎÊı¡¢ÎÄÕÂÊı¼°ÉÏÕ¾×ÜÊ±ÊıÇåÁãÂğ£¿", NA,
+		       NA) == YEA && askyn("ÎÒÃÇºÜ·³Âğ£¿", YEA, NA) == YEA) {
+	    currentuser.userlevel = PERM_DEFAULT;
+
+	    currentuser.numposts = 0;
+	    currentuser.numlogins = 1;
+#ifdef FDQUAN
+#else
+	    currentuser.stay = 0;
+#endif
+	    substitut_record(PASSFILE, &currentuser, sizeof(currentuser),
+			     usernum);
+                 */
+        prints("[32mÄúÒÑ¾­×ÔÉ±[m\n");
+        pressanykey();
+        oflush();
+        sleep(1);
+        exit(1);
+	  } else  {
+	    prints("[32m±¾ÕÊºÅÒÑÍ£»ú¡£ÇëÏò [36msysops[32m ²éÑ¯Ô­Òò[m\n");
+	    pressanykey();
+	    oflush();
+	    sleep(1);
+	    exit(1);
 	  }
-	  else{
-		  prints("\033[32m±¾ÕÊºÅÒÑÍ£»ú¡£ÇëÖÁ Notice °æ»òÏò \033[36msysops\033[32m ²éÑ¯Ô­Òò\033[m\n");
-	  }
-	  pressanykey();
-	  oflush();
-	  sleep(1);
-	  exit(1);
 	}
 
 /*2003.04.22 stephen add end*/
@@ -1064,6 +1072,7 @@ void login_query()
 	  } else if (passsec < 150) {
 	    write_to_count(--counter, logfile);
 	  }
+
       /**
        * ÈÕ  ÆÚ£º2007.12.7
        * Î¬»¤Õß£ºAnonomous
@@ -1504,6 +1513,8 @@ void user_login()
 	stay = 0;
     } else
       stay = 0;
+
+
     /**
      * ÈÕ  ÆÚ£º2007.12.7
      * Î¬»¤Õß£ºAnonomous

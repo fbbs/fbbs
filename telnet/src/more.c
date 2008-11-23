@@ -3,10 +3,7 @@
 time_t  calltime = 0;
 void    R_monitor();
 extern struct boardheader *getbcache();
-//Added by Ashinmarch to support multi-line msg
-#ifdef FDQUAN
-extern void show_data(char *buf, int maxcol, int line, int col);
-#endif
+
 
 //modified by iamfat 2004.01.13 to add http link in telnet
 char *httplink=NULL;
@@ -23,11 +20,6 @@ int     nnline = 0, xxxline = 0;
 char    more_buf[MORE_BUFSIZE];
 int     more_size, more_num;
 
-/*Added by Ashinmarch on 2007.12.01*/
-#ifdef FDQUAN
-extern int RMSG;
-#endif
-
 void ActiveBoard_Init( void )
 {
    struct fileheader fh;
@@ -37,8 +29,7 @@ void ActiveBoard_Init( void )
    struct stat st;
    int     max = 0, i = 0, j = 0, x, y = 0;
    int     flag; /* flag = 1 º¥Œ™π˝¬«µÙ "--\n" “‘··÷Æ»Œ∫Œƒ⁄»› */ 
-  
-
+   
    if( movieshm == NULL )
       movieshm = (void *) attach_shm("ACBOARD_SHMKEY", 4123, sizeof(*movieshm));
    
@@ -337,17 +328,8 @@ int check_calltime()
 void R_monitor()
 {
    if (uinfo.mode != MMENU) return ;
-   
-   /* Added by Ashinmarch on 2007.12.01
-    * used to support multi-line msgs
-    */
-#ifdef FDQUAN
-   if (uinfo.mode == LOOKMSGS || uinfo.mode == MSG || RMSG == YEA) return;
-   /*end*/
-#endif
-   
    if (!DEFINE(DEF_ACBOARD) && !DEFINE(DEF_ENDLINE)) return;
-   
+
    alarm(0);
    signal(SIGALRM, R_monitor);
    netty_more();
@@ -553,29 +535,13 @@ int mesgmore(char *filename, int promptend, int row, int numlines)
    linesread++;
    while (numbytes) {
       if (linesread <= numlines || numlines == 0) {
-         viewed += numbytes;
-#ifndef FDQUAN
-	 prints("[37m");
-#endif
+         viewed += numbytes; 
+	 prints("[37m"); 
 	 if (check_stuffmode())
 	    showstuff(buf/*, 0*/);
 	 else
-	 {
-        /* Modified by Ashinmarch on 2007.12.01, used to support multi-line msg
-         * msghead(with ansi) and msg content(no ansi but multi-line) should be
-         * differentiated.
-         */
-#ifdef FDQUAN
-		if(buf[0] == '') //msg head
-			prints("%s",buf);
-		else   //msg
-			show_data(buf, LINE_LEN-1, curr_row, 0);
-        //added end
-#else
-		prints("%s",buf);
-#endif
-     }
-     isin = YEA;
+	    prints("%s", buf); 
+	 isin = YEA;
 	 i++;
 	 pos++;
 	 if (pos == t_lines) {

@@ -20,7 +20,7 @@ int main() {
 			total++;
 			if(mode==1) 
 				do_del(parm_name[i]+3);
-            /* for extension */
+			/* for extension */
 		}
 	}
 	printf("</table>");
@@ -39,15 +39,7 @@ int do_del(char * file) {
         int num=0; 
         if(loginok == 0) http_fatal("您尚未登录"); 
         id=currentuser.userid; 
-        if((strncmp(file, "M.", 2) || strstr(file, "..")) && file[0] != 's') http_fatal("错误的参数"); 
-        if(file[0] == 's') //e.g.: sharedmail%2Fmailall.Ashinmarch.120623541   %2F表示'/'
-        {
-            strncpy(buf, file, 10);
-            buf[10] = 0;
-            strcat(buf, "/");
-            strcat(buf, file + 13);
-            strcpy(file, buf);
-        }
+        if(strncmp(file, "M.", 2) || strstr(file, "..")) http_fatal("错误的参数"); 
         sprintf(path, "mail/%c/%s/.DIR", toupper(id[0]), id); 
         fp=fopen(path, "r"); 
         if(fp==0) http_fatal("错误的参数2"); 

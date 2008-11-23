@@ -24,9 +24,8 @@ CVS: $Id: config.h.in 2 2005-07-14 15:06:08Z root $
 */
 /* FIREBIRD BBS 3.0 CONFIGURATION VARIABLES */
 
-#define BBSVERSION      "〔FB2000 v-Distribution〕"
-#define FDQUAN	//定义复旦泉用
-//#define USE_METALOG //定义系统日志使用Metalog Daemon
+#define BBSVERSION      "〔FB2000 v1106〕"
+
 /*
    板主任命时， 如果希望任命文章不仅仅发送到被任命版面，而且同时发送到
    sysop 板，或其他版面，你可以打开下面的定义。其中的 @DEFAULTBD@ 可以改成你
@@ -39,7 +38,7 @@ CVS: $Id: config.h.in 2 2005-07-14 15:06:08Z root $
    允许开启外部程序的用户数目。 比如：BBSNET、WINMINE、SHOWUSER 等
 */
 
-#define MAX_USESHELL    700
+#define MAX_USESHELL    20
 
 /* 
    Define this to enable wide character support for Chinese or other 
@@ -52,11 +51,6 @@ CVS: $Id: config.h.in 2 2005-07-14 15:06:08Z root $
    You may define a default board here, already selected when a user logs in.
    If this is set to the empty string, the bbs will require users to (S)elect
    a board before reading or posting. Don't comment this out. 
-#ifdef FDQUAN
-	#define DEFAULTBOARD    "SysOp"
-#else
-	#define DEFAULTBOARD    "BBS_Help"
-#endif
 */
 #define DEFAULTBOARD    "@DEFAULTBD@"
 
@@ -115,8 +109,9 @@ hog or anything, but if you don't want it...
 /* 
    These are moot if DOTIMEOUT is commented; leave them defined anyway. 
 */
-#define IDLE_TIMEOUT    (60*15)//空闲时间,十五分钟
-#define LOGIN_TIMEOUT   (60*3)//登陆时空闲,三分钟
+#define IDLE_TIMEOUT    (60*40) 
+#define LOGIN_TIMEOUT   (60*3)
+
 /* 
    By default, users with post permission can reply to a post right after
    they read it. This can lead to lots of silly replies, hence the reply
@@ -138,36 +133,9 @@ hog or anything, but if you don't want it...
    and/or server. Either the one with this distribution or a newer one. 
 */
 #define IRC   1 
-//#define CERTIFYMODE
+
 /****************************************************************************/
-/*#ifdef FDQUAN
-	#define MAXUSERS  1000	
-	#define MAXBOARD  300	
-	#define MAXACTIVE 10
-	#define MAXSIGLINES    6
-	#define MAXQUERYLINES 16
-	#define MAX_MAIL_HOLD		(20000)//(60)
-	#define MAX_BMMAIL_HOLD		(20000)//(120)
-	#define MAX_SYSOPMAIL_HOLD	(20000)//(300)
-	#define MAILBOX_SIZE_SYSOP	(10000)
-	#define MAILBOX_SIZE_BM		(5000)
-	#define MAILBOX_SIZE_NORMAL	(2000)
-	#define MAILBOX_SIZE_LARGE	(10000)
-#else
-	#define MAXUSERS  100000
-	#define MAXBOARD  500 
-	#define MAXACTIVE 10000
-	#define MAXSIGLINES    6
-	#define MAXQUERYLINES 16
-	#define MAX_MAIL_HOLD           (20000)//(200)
-	#define MAX_BMMAIL_HOLD         (20000)//(500)
-	#define MAX_SYSOPMAIL_HOLD      (50000)//(5000)
-    #define MAILBOX_SIZE_SYSOP      (50000)
-    #define MAILBOX_SIZE_BM         (10000)
-    #define MAILBOX_SIZE_NORMAL     (5000)
-    #define MAILBOX_SIZE_LARGE      (50000)
-#endif
-*/
+
 #define MAXUSERS  @MAXUSERS@  /* Maximum number of users,780 aliament 1k*/
 #define MAXBOARD  @MAXBOARD@  /* Maximum number of boards */
 #define MAXACTIVE @MAXACTIVE@ 
@@ -177,13 +145,10 @@ hog or anything, but if you don't want it...
 
 #define MAXSIGLINES    6  /* max. # of lines appended for post signature */
 #define MAXQUERYLINES 16  /* max. # of lines shown by the Query function */
-#define MAX_MAIL_HOLD		(20000)//(60)
-#define MAX_BMMAIL_HOLD		(20000)//(120)
-#define MAX_SYSOPMAIL_HOLD	(20000)//(300)
-#define MAILBOX_SIZE_SYSOP	(10000)
-#define MAILBOX_SIZE_BM		(5000)
-#define MAILBOX_SIZE_NORMAL	(2000)
-#define MAILBOX_SIZE_LARGE	(10000)
+#define MAX_MAIL_HOLD		 (60)
+#define MAX_BMMAIL_HOLD		(120)
+#define MAX_SYSOPMAIL_HOLD	(300)
+
 /* Once you set this, do not change it unless you are restarting your
    bbs from scratch! The PASSWDS file will not work if this is changed.
    If commented out, no real name/address info can be kept in the passwd
@@ -207,7 +172,7 @@ Define this to show real names in mail messages.
 /* 
 Define this for Query to show real names. 
 */
-//#define QUERY_REALNAMES      1
+#define QUERY_REALNAMES      1
 
 /*
 Define this to stamp mark on edited post

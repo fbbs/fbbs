@@ -189,39 +189,39 @@ int bad_user_id(char *userid) {
 	!PERM_LOGINOK max_hp=15
 */
 int compute_user_value(struct userec *urec) {
-	int value, value2;
-	value = (time(0) - urec->lastlogin);
-	value2 = (time(0) - urec->firstlogin); //×¢²áÊ±¼ä
-	// new user should register in 30 mins
-	if (strcmp(urec->userid, "new") == 0) {
-		return 30 * 60 - value;
-	}
+    int value, value2;
+    value = (time(0) - urec->lastlogin);
+    value2 = (time(0) - urec->firstlogin); //×¢²áÊ±¼ä
+    // new user should register in 30 mins
+    if (strcmp(urec->userid, "new") == 0) {
+        return 30 * 60 - value;
+    }
 #ifdef FDQUAN
-	if ((urec->userlevel & PERM_XEMPT)
-			|| strcmp(urec->userid, "SYSOP") == 0
-			|| strcmp(urec->userid, "guest") == 0)
-		return 999;
-	if (!(urec->userlevel & PERM_REGISTER))
-		return 14 - value / (24 * 60 * 60);
+    if ((urec->userlevel & PERM_XEMPT)
+            || strcmp(urec->userid, "SYSOP") == 0
+            || strcmp(urec->userid, "guest") == 0)
+        return 999;
+    if (!(urec->userlevel & PERM_REGISTER))
+        return 14 - value / (24 * 60 * 60);
     if (value2 >= 5 * 365 * 24 * 60 * 60)
-    	return 666 - value / (24 * 60 * 60);
-	if (value2 >= 2 * 365 * 24 * 60 * 60)
-    	return 365 - value / (24 * 60 * 60);
-	return 150 - value / (24 * 60 * 60);
+        return 666 - value / (24 * 60 * 60);
+    if (value2 >= 2 * 365 * 24 * 60 * 60)
+        return 365 - value / (24 * 60 * 60);
+    return 150 - value / (24 * 60 * 60);
 #else
-	if (((urec->userlevel & PERM_XEMPT) && (urec->userlevel & PERM_LONGLIFE))
-			|| strcmp(urec->userid, "SYSOP") == 0
-			|| strcmp(urec->userid, "guest") == 0)
-		return 999;
-	if ((urec->userlevel & PERM_XEMPT) && !(urec->userlevel & PERM_LONGLIFE))
-		return 666;
-	if (!(urec->userlevel & PERM_REGISTER))
-		return 14 - value / (24 * 60 * 60);
-	if (!(urec->userlevel & PERM_XEMPT) && (urec->userlevel & PERM_LONGLIFE))
-		return 365 - value / (24 * 60 * 60);
-	if (value2 >= 3 * 365 * 24 * 60 * 60)
-		return 180 - value / (24 * 60 * 60);
-	return 120 - value / (24 * 60 * 60);
+    if (((urec->userlevel & PERM_XEMPT) && (urec->userlevel & PERM_LONGLIFE))
+            || strcmp(urec->userid, "SYSOP") == 0
+            || strcmp(urec->userid, "guest") == 0)
+        return 999;
+    if ((urec->userlevel & PERM_XEMPT) && !(urec->userlevel & PERM_LONGLIFE))
+        return 666;
+    if (!(urec->userlevel & PERM_REGISTER))
+        return 14 - value / (24 * 60 * 60);
+    if (!(urec->userlevel & PERM_XEMPT) && (urec->userlevel & PERM_LONGLIFE))
+        return 365 - value / (24 * 60 * 60);
+    if (value2 >= 3 * 365 * 24 * 60 * 60)
+        return 180 - value / (24 * 60 * 60);
+    return 120 - value / (24 * 60 * 60);
 #endif
 }
 /*2003.06.02 stephen modify end*/
@@ -280,8 +280,8 @@ int getnewuserid() {
                 sprintf(genbuf, "#%d %-12s %14.14s %d %d %d", i + 1,
                         utmp.userid, datestring, utmp.numlogins, utmp.numposts, val);
                 log_usies("KILL ", genbuf);
-                {
-					sprintf(genbuf,"mail/%c/%s",
+                //if (!bad_user_id(utmp.userid)) {
+                {	sprintf(genbuf,"mail/%c/%s",
 					        toupper(utmp.userid[0]), utmp.userid);
 					fprintf(fdtmp, "[1;37m%s [m([1;33m%s[m) ¹²ÉÏÕ¾ [1;32m%d[m ´Î [[1;3%dm%s×ù[m]\n",
 						utmp.userid, utmp.username,	utmp.numlogins,	(utmp.gender == 'F') ? 5 : 6, horoscope (utmp.birthmonth, utmp.birthday));

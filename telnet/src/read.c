@@ -731,8 +731,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct)
    if (!in_mail){
       if(uinfo.mode != READING) return DONOTHING;
 	  if (fileinfo->owner[0] == '-') return DONOTHING;
-	  //if (!chk_currBM(currBM, 0)) return DONOTHING;
-      if (!chk_BM(currboard, 0)) return DONOTHING; //cometcaptor 2007-08-11
+	  if (!chk_currBM(currBM, 0)) return DONOTHING;
    }
    saveline(t_lines - 1, 0);
    move(t_lines - 1, 0);
@@ -1015,6 +1014,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct)
    struct fileheader fhdr;
    char annpath[512];
    char buf[STRLEN],ans[8],info[STRLEN],bname[STRLEN],dbname[STRLEN];
+   
    /**
     * Added by phrack to support deletion of water posts on 2007.12.12
     * */
@@ -1026,8 +1026,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct)
    extern char quote_file[120], quote_title[120], quote_board[120];
 
    if(uinfo.mode != READING) return DONOTHING;
-   //if(!chk_currBM(currBM, 0)) return DONOTHING;
-   if(!chk_BM(currboard, 0)) return DONOTHING;//cometcaptor 2007-08-11
+   if(!chk_currBM(currBM, 0)) return DONOTHING;
    saveline(t_lines - 1, 0);
 /* Modified by Amigo 2002.06.27. Add restore for big D board. */
 //   if(strcmp(currboard, "deleted")&&strcmp(currboard,"junk"))max=7;
@@ -1170,6 +1169,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct)
 				  post_cross('l', 0);
 				  strcpy(currboard, dbname);
 				  break;
+		   
            /**
             * Added by phrack to support deletion of water posts on 2007.12.12
             * */
@@ -1249,8 +1249,7 @@ char *direct ;
     struct fileheader fhdr;
     int    fdr,cou;
     
-    //if(!chk_currBM(currBM, 0)) return DONOTHING ;
-    if(!chk_BM(currboard, 0)) return DONOTHING ;//cometcaptor 2007-08-11
+    if(!chk_currBM(currBM, 0)) return DONOTHING ;
 
     if(digestmode==2) return DONOTHING;
     saveline(t_lines-2, 0);
@@ -1685,8 +1684,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 	    if(!get_records(currdirect,ptitle,sizeof(*ptitle),rem_crs,1))
 		    return DONOTHING;
 	    noreply=ptitle->accessed[0]&FILE_NOREPLY||bp->flag & BOARD_NOREPLY_FLAG;
-	    //if(!noreply ||chk_currBM(currBM, 0)){
-        if(!noreply ||chk_BM(currboard, 0)){//cometcaptor 2007-08-11
+	    if(!noreply ||chk_currBM(currBM, 0)){
 	       local_article=!(ptitle->filename[STRLEN-1]=='S');
 	       do_reply(ptitle);
             } else {

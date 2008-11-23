@@ -376,8 +376,7 @@ void rebuild_brdshm()
 		if (bcache[i].flag & BOARD_POST_FLAG
 			|| HAS_PERM(bcache[i].level) 
 			|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {
-		      //if ((bcache[i].flag & BOARD_CLUB_FLAG)&& (bcache[i].flag & BOARD_READ_FLAG )&& !chk_currBM (bcache[i].BM, 1)&& !isclubmember(currentuser.userid, bcache[i].filename))
-              if ((bcache[i].flag & BOARD_CLUB_FLAG)&& (bcache[i].flag & BOARD_READ_FLAG )&& !chk_BM (bcache[i].filename,1)&& !isclubmember(currentuser.userid, bcache[i].filename))//cometcaptor 2007-08-11
+		      if ((bcache[i].flag & BOARD_CLUB_FLAG)&& (bcache[i].flag & BOARD_READ_FLAG )&& !chk_currBM (bcache[i].BM, 1)&& !isclubmember(currentuser.userid, bcache[i].filename))
 				                                  continue;
 			if ((*func) (&bcache[i]) == QUIT)
 				return QUIT;

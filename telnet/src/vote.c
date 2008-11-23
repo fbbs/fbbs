@@ -119,8 +119,7 @@ int b_notes_edit()
   int     aborted;
   int     notetype;
 
-  //if (!chk_currBM(currBM, 0)) {	//检查是否版主
-   if (!chk_BM(currboard, 0)){//cometcaptor 2007-08-11
+  if (!chk_currBM(currBM, 0)) {	//检查是否版主
     return 0;
   }
   clear();
@@ -192,8 +191,7 @@ int b_notes_edit()
     char    ans[4];
     int     aborted;
     int     notetype;
-    //if (!chk_currBM(currBM, 0)) {   //检查是否版主
-     if (!chk_BM(currboard, 0)) {
+    if (!chk_currBM(currBM, 0)) {   //检查是否版主
         return 0;
     }
     clear();
@@ -251,8 +249,7 @@ int b_notes_passwd()
   char    passbuf[20], prepass[20];
   char    buf[STRLEN];
 
-  //if (!chk_currBM(currBM, 0)) {	//检查是否版主
-   if (!chk_BM(currboard, 0)){ //cometcaptor 2007-08-11
+  if (!chk_currBM(currBM, 0)) {	//检查是否版主
     return 0;
   }
   clear();
@@ -554,8 +551,7 @@ int vote_maintain(char *bname)
   struct votebal *ball = &currvote;
 
   setcontrolfile();
-  //if (!chk_currBM(currBM, 0)) {
-  if (!chk_BM(currboard, 0)) {//cometcaptor 2007-08-11
+  if (!chk_currBM(currBM, 0)) {
     return 0;
   }
   stand_title("开启投票箱");
@@ -1087,16 +1083,14 @@ int vote_key(int ch, int allnum, int pagenum)
     break;
   case 'A':
   case 'a':
-    //if (!chk_currBM(currBM, 0))
-    if (!chk_BM(currboard, 0)) //cometcaptor 2007-08-11
-        return YEA;
+    if (!chk_currBM(currBM, 0))
+      return YEA;
     vote_maintain(currboard);
     deal = 1;
     break;
   case 'O':
   case 'o':
-    //if (!chk_currBM(currBM, 0))
-    if (!chk_BM(currboard, 0)) //cometcaptor 2007-08-11
+    if (!chk_currBM(currBM, 0))
       return YEA;
     clear();
     deal = 1;
@@ -1118,8 +1112,7 @@ int vote_key(int ch, int allnum, int pagenum)
     break;
   case 'M':
   case 'm':
-    //if (!chk_currBM(currBM, 0))
-    if (!chk_BM(currboard, 0)) //cometcaptor 2007-08-11
+    if (!chk_currBM(currBM, 0))
       return YEA;
     clear();
     deal = 1;
@@ -1143,9 +1136,8 @@ int vote_key(int ch, int allnum, int pagenum)
     break;
   case 'D':
   case 'd':
-    //if (!chk_currBM(currBM, 0)) {
-    if (!chk_BM(currboard, 0)) {//cometcaptor 2007-08-11
-        return 1;
+    if (!chk_currBM(currBM, 0)) {
+      return 1;
     }
     deal = 1;
     get_record(controlfile, &currvote, sizeof(struct votebal), allnum + 1);

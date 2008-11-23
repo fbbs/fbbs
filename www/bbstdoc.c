@@ -83,18 +83,6 @@ int main() {
 
 
 	if(total<=0) http_fatal("本讨论区目前没有文章");
-	if(true){
-	printf("<a href=bbspst?board=%s><img border=0 src=/images/button/edit.gif align=absmiddle>发表文章</a> ", board);
-	if(start>0)
-		printf("<a href=bbstdoc?board=%s&start=%d><img border=0 src=/images/button/up.gif align=absmiddle>上一页</a> ", board, start-my_t_lines);
-	if(start<total2-my_t_lines)
-		printf("<a href=bbstdoc?board=%s&start=%d><img border=0 src=/images/button/down.gif align=absmiddle>下一页</a> ", board, start+my_t_lines);
-	printf("<a href=bbsnot?board=%s>进版画面</a> ", board);
-	printf("<a href=bbsdoc?board=%s>一般模式</a> ", board);
-	printf("<a href=bbsgdoc?board=%s>文摘区</a> ", board);
-	printf("<a href=bbs0an?path=%s>精华区</a> ", anno_path_of(board));
-	printf("<a href=%s.tgz>下载精华区</a>  <br>", anno_path_of(board));
-	}
 	printpretable();
 	printf("<table width=100%% height=100%%><tr valign=top><td>");
 	printf("<table bgcolor=#ffffff width=100%%>\n");
@@ -126,7 +114,6 @@ int main() {
         printf("</td></tr></table>");
  
 	printposttable();
-	if(true){
 	printf("<a href=bbspst?board=%s><img border=0 src=/images/button/edit.gif align=absmiddle>发表文章</a> ", board);
 	if(start>0)
 		printf("<a href=bbstdoc?board=%s&start=%d><img border=0 src=/images/button/up.gif align=absmiddle>上一页</a> ", board, start-my_t_lines);
@@ -137,7 +124,6 @@ int main() {
 	printf("<a href=bbsgdoc?board=%s>文摘区</a> ", board);
 	printf("<a href=bbs0an?path=%s>精华区</a> ", anno_path_of(board));
 	printf("<a href=%s.tgz>下载精华区</a>  <br>", anno_path_of(board));
-	}
 	free(data);
 	http_quit();
 }

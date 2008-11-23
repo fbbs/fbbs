@@ -94,45 +94,7 @@ int main() {
 
 
 	if(total<=0) http_fatal("本讨论区目前没有文章");
-	if(true){//added by polygon
-	boardsec = get_sec_number(board);
-	if (boardsec>=0 && boardsec<SECNUM) 
-		printf("<a href=bbsboa?%d><img border=0 src=/images/button/home.gif align=absmiddle>当前分类讨论区</a> \n" ,boardsec);
-	// added by roly 02.01.22
-	{
-		char upload_path[256];
-		sprintf(upload_path,"%s/upload/%s",BBSHOME,board);
-		if(dashd(upload_path))
-		{
-			printf("<a href=bbsfdoc?board=%s><img border=0 src=/images/button/attach.gif style='border:2px solid #ffffff' align=absmiddle>附件区</a> ",board);
-		}
-	}
-	printf("<a href=bbspst?board=%s><img border=0 src=/images/button/edit.gif align=absmiddle>发表文章</a> \n", board);
-	printf("<a href='javascript:location=location'><img border=0 src=/images/button/reload.gif align=absmiddle>刷新</a> ");
-	if(start>0)
-		printf("<a href=bbsdoc?board=%s&start=%d><img border=0 src=/images/button/up.gif align=absmiddle>上一页</a> ", board, start-my_t_lines);
-	if(start<total-my_t_lines)
-		printf("<a href=bbsdoc?board=%s&start=%d><img border=0 src=/images/button/down.gif align=absmiddle>下一页</a> ", board, start+my_t_lines);
-	printf("<a href=bbstdoc?board=%s><img border=0 src=/images/button/content.gif align=absmiddle>主题模式</a>  ", board);
-	if(has_BM_perm(&currentuser, board)) 
-		printf("<a href=bbsmdoc?board=%s><img border=0 src=/images/button/bm.gif align=absmiddle>管理模式</a>  ", board);
-	printf("<a href=bbsnot?board=%s>进版画面</a> ", board);
-	printf("<a href=bbsgdoc?board=%s>文摘区</a> ", board);
-	printf("<a href=bbs0an?path=%s>精华区</a> ", anno_path_of(board));
-	//printf("<a href=/an/%s.tgz>下载精华区</a> ", board);
-	//printf("<a href=%s.tgz>下载精华区</a> ",anno_path_of(board));
-	//modified by iamfat 2002.08.19
-	//if(has_BM_perm(&currentuser, board))
-	//if(HAS_PERM(PERM_OBOARDS))
-		printf("<a href=bbsbfind?board=%s>版内查询</a>\n", board);
-	/* added by roly 2002.01.22 */
-	if (has_BM_perm(&currentuser, board))
-    printf("<a href=bbsacount?board=%s>发文统计</a>\n", board);
-	/* add end */
-	if(loginok) 
-		printf("<a href=bbsclear?board=%s&start=%d>清除未读</a>\n", board, start);
-	printf("<a href=bbsrss?board=%s>RSS</a>\n", board);
-	}//end by polygon
+	
 	printpretable();
 	printf("<table width=100%% height=100%%><tr valign=top><td>");
 	printf("<table bgcolor=#ffffff width=100%%>\n");
@@ -232,7 +194,7 @@ int main() {
 	/* comment by roly */
 	//printf("<a href=bbsfdoc?board=%s>文件上载</a> ", board);
 	/* comment end */
-	if(true){
+	
 	boardsec = get_sec_number(board);
 	if (boardsec>=0 && boardsec<SECNUM) 
 		printf("<a href=bbsboa?%d><img border=0 src=/images/button/home.gif align=absmiddle>当前分类讨论区</a> \n" ,boardsec);
@@ -270,7 +232,6 @@ int main() {
 	if(loginok) 
 		printf("<a href=bbsclear?board=%s&start=%d>清除未读</a>\n", board, start);
 	printf("<a href=bbsrss?board=%s>RSS</a>\n", board);
-	}
 	fclose(fp);
 	printf("</body>\n");
 	http_quit();
