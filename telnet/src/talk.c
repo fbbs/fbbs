@@ -328,6 +328,26 @@ int show_bm(char* userid, char *bmstring) {
 	return 0;
 }
 
+int show_volunteer(char *userid, char *volstring) {
+	FILE *fp;
+	char filename[STRLEN], tmp[20];
+	sethomefile(filename, userid, ".volunteer");
+	fp = fopen(filename, "r");
+	int i = 0;
+	if (fp) {
+		while (!feof(fp)) {
+			i++;
+			fscanf(fp, "%s\n", tmp);
+			sprintf(volstring, "%s%s%s", volstring, i == 1 ? "" : " ", tmp);
+		}
+		if (i == 0)
+			return 0;
+		fclose(fp);
+		return 1;
+	}
+	return 0;
+}
+
 int show_position(char *buf) {
 	if (lookupuser.userlevel & PERM_SPECIAL9) {
 		if (lookupuser.userlevel & PERM_SYSOPS) {
@@ -351,11 +371,13 @@ int show_position(char *buf) {
 			sprintf(buf, "[[1;32mÈÙÓþ°æÖ÷[m]");
 			normal = 0;
 		}
-		if (lookupuser.userlevel & PERM_OBOARDS && lookupuser.userlevel
-				& PERM_SEECLOAK && lookupuser.userlevel & PERM_LARGEMAIL) {
-			sprintf(buf, "%s[[1;32m×Ü¹ÜÖúÀí[m]", buf);
+
+		if (show_volunteer(lookupuser.userid, bms)) {
+			sprintf(buf, "%s[[1;33m%s[m]", buf, bms);
 			normal = 0;
+			bms[0] = 0;
 		}
+
 		if ((lookupuser.userlevel & PERM_BOARDS) && show_bm(
 				lookupuser.userid, bms)) {
 			sprintf(buf, "%s[[1;33m%s[32m°æ°æÖ÷[m]", buf, bms);
