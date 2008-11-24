@@ -161,7 +161,7 @@ void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 		sethomefile(genbuf, u->userid, ".volunteer");
 		if ((fp = fopen(genbuf, "r")) != NULL) {
 			fgets(temp, 30, fp);
-			fclose(genbuf);
+			fclose(fp);
 			sprintf(genbuf, "输入身份(输空格取消身份)：[%s]", temp);
 		} else
 			sprintf(genbuf, "输入身份：");
