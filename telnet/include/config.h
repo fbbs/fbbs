@@ -27,7 +27,7 @@ CVS: $Id: config.h 323 2006-10-27 14:13:52Z danielfree $
 #define BBSVERSION      "〔FB2000 v-Distribution〕"
 
 //#define USE_SHMFS
-//#define FDQUAN	//定义复旦泉用
+#define FDQUAN	//定义复旦泉用
 //#define SPARC	//SPARC机器专用
 #define USE_METALOG //定义系统日志使用Metalog Daemon
 
@@ -147,9 +147,9 @@ hog or anything, but if you don't want it...
 //#define CERTIFYMODE
 /****************************************************************************/
 #ifdef FDQUAN
-	#define MAXUSERS  25000  /* Maximum number of users,780 aliament 1k*/
-	#define MAXBOARD  500  /* Maximum number of boards */
-	#define MAXACTIVE 1000 
+	#define MAXUSERS  500  /* Maximum number of users,780 aliament 1k*/
+	#define MAXBOARD  300  /* Maximum number of boards */
+	#define MAXACTIVE 10 
 							  /* Max users allowed on the system at once. Set this
 								 to a reasonable value based on the resources of
 								 your system. */
