@@ -122,7 +122,7 @@ void a_showmenu(MENU *pm) {
 				mtime = time(0);
 			}
 			pt = localtime(&mtime);
-			sprintf(fname, "[[1m%02d[m.[1m%02d[m.[1m%02d[m]",
+			sprintf(fname, "[%02d.%02d.%02d]",
 					pt->tm_year%100, pt->tm_mon + 1, pt->tm_mday);
 			ch = ' ';
 		}
