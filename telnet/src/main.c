@@ -1310,62 +1310,6 @@ void user_login() {
 	}
 
 	set_safe_record();
-	/*2003.04.22 added by stephen to make give up bbs user back */
-	/*use "char * genbuf" as template buffer for fileName need care */
-	/*2003.05.02 commented by stephen,set this func in login_query */
-	/*
-	 sethomefile(genbuf, currentuser.userid, "giveupBBS");
-	 fn = fopen(genbuf, "rt");
-	 if (fn) {
-	 while (!feof(fn)) {
-	 if (fscanf(fn, "%d %d", &i, &j) <= 0)
-	 break;
-
-	 s[lcount][0] = i;
-	 s[lcount][1] = j;
-	 lcount++;
-	 }
-
-	 fclose(fn);
-	 tmpnum = lcount;
-
-	 for (i = 0; i < lcount; i++) {
-	 if (s[i][1] <= time(0) / 3600 / 24) {
-	 tmpnum--;
-	 switch (s[i][0]) {
-	 case 1:
-	 currentuser.userlevel |= PERM_LOGIN;
-	 break;
-	 case 2:
-	 currentuser.userlevel |= PERM_POST;
-	 break;
-	 case 3:
-	 currentuser.userlevel |= PERM_TALK;
-	 break;
-	 case 4:
-	 currentuser.userlevel |= PERM_MAIL;
-	 break;
-	 }
-	 s[i][1] = 0;
-	 }
-	 }
-
-	 if (currentuser.flags[0] & GIVEUPBBS_FLAG && tmpnum == 0)
-	 currentuser.flags[0] &= ~GIVEUPBBS_FLAG;
-	 if (tmpnum == 0)
-	 unlink(genbuf);
-	 else {
-	 fn = fopen(genbuf, "wt");
-	 for (i = 0; i < lcount; i++)
-	 if (s[i][1] > 0)
-	 fprintf(fn, "%d %d\n", s[i][0], s[i][1]);
-	 fclose(fn);
-	 }
-
-	 }
-	 */
-	/*2003.05.02 commented by stephen */
-	/*2003.04.22 stephen add end */
 	check_uinfo(&currentuser, 0);
 	strncpy(currentuser.lasthost, fromhost, 16);
 	currentuser.lasthost[15] = '\0'; /* dumb mistake on my part */
@@ -1382,16 +1326,9 @@ void user_login() {
 		} else
 			stay = 0;
 
-		/**
-		 * 日  期：2007.12.7
-		 * 维护者：Anonomous
-		 * 代码断：从下面的if(login_start_time - currentuser.lastlogin > 20 * 60)开始6行。
-		 * 备  注：
-		 *         Jugde if current user logined within 20 mins since his/her last login.
-		 *         If so, don't increase his/her numlogins. ;)
-		 */
-		if (login_start_time - currentuser.lastlogin >= 20*60 || !strcmp(
-				currentuser.userid, "guest")) {
+		if (login_start_time - currentuser.lastlogin >= 20 * 60
+				|| !strcmp(currentuser.userid, "guest")
+				|| currentuser.numlogins < 100){
 			currentuser.numlogins++;
 		}
 		currentuser.lastlogin = login_start_time;
