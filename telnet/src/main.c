@@ -733,63 +733,13 @@ sprintf(genbuf,
 prints(genbuf);
 }
 
-/* The following function added by Amigo 2002.04.02. Called by login_query. */
-void write_to_count(value, fname)
-int value;
-char *fname;
-{
-	FILE *fp;
-	char fbuf[STRLEN];
-
-	//modified by iamfat 2002.08.12
-	//Èç¹û´ò¿ªÎÄ¼þ³ö´í Ôò·µ»Ø
-	if (!(fp = fopen(fname, "wt")))
-	return;
-
-	/* {
-	 prints( "ÄúµÄµÇÂ¼ÈÕÖ¾ÎÄ¼þ´íÎó£¬ÇëÏòÕ¾³¤²éÑ¯£¡" );
-	 oflush();
-	 sleep(1);
-	 exit(1);
-	 } */
-	sprintf(fbuf, "%d", value);
-	fputs(fbuf, fp);
-	fclose(fp);
-}
-
-//added by iamfat 2003.10.23
-//int num_http_anon()
-//{
-//  static int num = 0;
-//  static time_t tm = 0;
-//  FILE   *fp;
-//  time_t  now = time(0);
-//
-//  if (now - tm < 60)
-//    return num;
-//  tm = now;
-//  fp = fopen("tmp/http_anon_count", "r");
-//  if (!fp)
-//    return 0;
-//  fscanf(fp, "%d", &num);
-//  fclose(fp);
-//  return num;
-//}
-
-//added end
-
 void login_query() {
 	char uid[IDLEN + 2];
 	char passbuf[PASSLEN];
 	int curr_login_num;
 	int attempts;
 	char genbuf[STRLEN];
-
-	/* The following 4 lines are added by Amigo 2002.04.02. */
-	char logfile[STRLEN];
-	FILE *fp, *fn;
-	double passsec;
-	int counter;
+	FILE *fn;
 	char *ptr;
 	extern struct UTMPFILE *utmpshm;
 	int i, j, tmpid, tmpcount, sflag[10][2]; /*2003.04.22 added by stephen */
@@ -1029,78 +979,15 @@ void login_query() {
 				}
 
 				/*2003.04.22 stephen add end*/
-#ifdef CHECK_LESS60SEC
-				if (!HAS_PERM(PERM_SYSOPS) && strcasecmp(currentuser.userid, "guest")
-						!= 0) {
-					//prints("ÄúÔÚ 60 ÃëÄÚÖØ¸´ÉÏÕ¾.Çë°´ [1;36mCtrl+C[m ¼üÈ·ÈÏÄúµÄÉí·Ý: ");
-					/* modified by roly 02.03.27 */
-					int add1, add2;
-
-					/* Added by Amigo 2002.04.02. To prevent login machine. */
-					sprintf(logfile, "home/%c/%s/logcount",
-							toupper(currentuser.userid[0]), currentuser.userid);
-					if (!(fp = fopen(logfile, "rt"))) {
-						write_to_count(10, logfile);
-						counter = 10;
-					} else {
-						fgets(genbuf, STRLEN, fp);
-						genbuf[2] = '\0';
-						counter = atoi(genbuf);
-						fclose(fp);
-					}
-
-					passsec = abs(time(0) - currentuser.lastlogin);
-					if (passsec >= 1200) {
-						write_to_count(10, logfile);
-						counter = 10;
-					} else if (passsec < 90) {
-						write_to_count(counter - 2, logfile);
-						counter -= 2;
-					} else if (passsec < 150) {
-						write_to_count(--counter, logfile);
-					}
-
-					/**
-					 * ÈÕ  ÆÚ£º2007.12.7
-					 * Î¬»¤Õß£ºAnonomous
-					 * ´úÂë¶Î£ºÏÂÃæµÄif(counter <= 0)Ò»¶Î¡£
-					 * ±¸  ×¢£ºDon't kick him/her off if the user's logins are too frequent.
-					 *         Instead, the user's numlogins doesn't get increased within 20 mins
-					 *         since his/her last login. This is done by the codes below (aproximately
-					 *         at line 1505).
-					 *
-					 *         However, such behaviors should be reported as potential danger. So we
-					 *         still need to log it.
-					 */
-					if (counter <= 0) {
-						/*prints("ÄúµÄµÇÂ¼¹ýÓÚÆµ·±£¬ÇëÐÝÏ¢20·ÖÖÓºóÔÙÀ´£¡");*/
-						securityreport("µÇÂ¼¹ýÓÚÆµ·±", 0, 3);
-						/*oflush();*/
-						/*sleep(3);*/
-						report("Too Frequently");
-						/*exit(1);*/
-					}
-
-					if (passsec < 60) {
-						/* Add end. */
-						randomize();
-						add1 = rand() % 5;
-						add2 = rand() % 6;
-						prints
-						("ÄúÔÚ 60 ÃëÄÚÖØ¸´ÉÏÕ¾.àÅ£¬ÄúÖªµÀ [1;36m%d + %d = ?[m ¶àÉÙÃ´? Çë°´´Ë¼ü",
-								add1, add2);
-						genbuf[0] = igetkey();
-						//if ( genbuf[0] != Ctrl('C') ) 
-						if (genbuf[0] != '0' + add1 + add2) {
-							//prints("\n¶Ô²»Æð£¬Äú²¢Ã»ÓÐ°´ÏÂ CTRL+C ¼ü£¡Äú²»ÄÜ½øÈë±¾Õ¾\n");
-							prints("\n¶Ô²»Æð,ÄúÃ»ÓÐËã³ö´ËÌâ£¡ Äú²»ÄÜ½øÈë±¾Õ¾\n");
-							prints("ÈôÓÐÒÉÎÊÇëÍ¨ÖªÕ¾ÎñÈËÔ±, Ð»Ð».\n");
-							oflush();
-							sleep(3);
-							exit(1);
-						}
-						prints("\n");
-					}
+#ifdef CHECK_FREQUENTLOGIN
+				if (!HAS_PERM(PERM_SYSOPS)
+                        && strcasecmp(currentuser.userid, "guest") != 0
+                        && abs(time(0) - currentuser.lastlogin) < 10) {
+                    prints("µÇÂ¼¹ýÓÚÆµ·±£¬ÇëÉÔºòÔÙÀ´\n");
+                    report("Too Frequent");
+                    oflush();
+                    sleep(3);
+                    exit(1);
 				}
 #endif
 

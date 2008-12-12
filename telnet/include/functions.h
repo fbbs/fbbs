@@ -38,7 +38,7 @@
 /* 某些限制性代码的相关 define */
 //#define KEEP_DELETED_HEADER 	/* 保留删除文章记录 */
 //#define BELL_DELAY_FILTER	/* 过滤文章中的响铃和延时控制 */
-#define CHECK_LESS60SEC	/* 60 秒内重复 login 时要求按键确认身份*/
+#define CHECK_FREQUENTLOGIN /* 频繁登录检查 */
 //#define MARK_X_FLAG		/* 将灌水文章加上 'X' 标记 */
 
 /* 一般不需要变更的 define */
