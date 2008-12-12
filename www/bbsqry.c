@@ -3,6 +3,46 @@
 
 time_t get_last_logout(struct userec * );
 
+int count_life_value(struct userec *urec) {
+    int value, value2;
+    value = (time(0) - urec->lastlogin);
+    value2 = (time(0) - urec->firstlogin); //....
+    // new user should register in 30 mins
+    if (strcmp(urec->userid, "new") == 0) {
+        return 30 * 60 - value;
+    }
+#ifdef FDQUAN
+    if ((urec->userlevel & PERM_XEMPT)
+            || strcmp(urec->userid, "SYSOP") == 0
+            || strcmp(urec->userid, "guest") == 0)
+    return 999;
+    if (!(urec->userlevel & PERM_REGISTER))
+        return 14 - value / (24 * 60 * 60);
+    if (value2 >= 5 * 365 * 24 * 60 * 60)
+        return 666 - value / (24 * 60 * 60);
+    if (value2 >= 2 * 365 * 24 * 60 * 60)
+        return 365 - value / (24 * 60 * 60);
+    return 150 - value / (24 * 60 * 60);
+#else
+    if (((urec->userlevel & PERM_XEMPT) && (urec->userlevel
+            & PERM_LONGLIFE)) || strcmp(urec->userid, "SYSOP") == 0
+            || strcmp(urec->userid, "guest") == 0)
+        return 999;
+    if ((urec->userlevel & PERM_XEMPT) && !(urec->userlevel
+            & PERM_LONGLIFE))
+        return 666;
+    if (!(urec->userlevel & PERM_REGISTER))
+        return 14 - value / (24 * 60 * 60);
+    if (!(urec->userlevel & PERM_XEMPT) && (urec->userlevel
+            & PERM_LONGLIFE))
+        return 365 - value / (24 * 60 * 60);
+    if (value2 >= 3 * 365 * 24 * 60 * 60)
+        return 180 - value / (24 * 60 * 60);
+    return 120 - value / (24 * 60 * 60);
+#endif
+}
+
+
 int main() {
 	FILE *fp;
 	char userid[14], filename[80], buf[512];

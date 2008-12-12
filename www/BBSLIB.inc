@@ -1698,22 +1698,6 @@ char   *cperf(int perf) {
 	return GLY_CPERFB;
 }
 
-/*2003.06.02 modified by stephen to sync web mode life count*/
-int count_life_value(struct userec *urec) {
-	int i;
-	i=(time(0) - urec->lastlogin)/60;
-	if((urec->userlevel & PERM_LONGLIFE) && !(urec->userlevel & PERM_XEMPT))
-	        return (366*24*60-i)/1440;
-	if((urec->userlevel & PERM_XEMPT) && (urec->userlevel & PERM_LONGLIFE) ||!strcasecmp(urec->userid, "guest"))
-        	return 999;
-	if((urec->userlevel & PERM_XEMPT) && !(urec->userlevel & PERM_LONGLIFE))
-	        return 666;
-	if(!(urec->userlevel & PERM_REGISTER))
-		return (15*1440-i)/1440;
-	return (90*1440-i)/1440;
-}
-/*2003.06.02 stephen modify end*/
-
 int countexp(struct userec *x) {
         int tmp;
 	if(!strcasecmp(x->userid, "guest")) return -9999;
