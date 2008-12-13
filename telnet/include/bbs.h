@@ -185,6 +185,7 @@ extern char ULIST[];
 #define FILE_NOTICE     0x01
 #define FILE_SUBDEL     0x02
 #define FILE_LASTONE	0x04
+#define FILE_IMPORTED   0x08
 
 /*	版面的标志		*/
 #define BOARD_VOTE_FLAG    	0x1		//投票模式

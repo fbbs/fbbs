@@ -895,229 +895,24 @@ char *getshortdate(time_t time) {
 	return str;
 }
 
-//added by iamfat 2003.03.19
-/*
- char* get_visit_num(int visit_num)
- {
- static char svisit_num[20];
- if(visit_num>=100)return "\033[1;5;31mH!";
- else if(visit_num==0)return "  ";
- sprintf(svisit_num,"\033[32m%2d", visit_num);
- return svisit_num;
- }
- */
-
+char *readdoent(int num, struct fileheader *ent) //Post list
+{
+	static char buf[128];
+	time_t filetime;
+	char *date, color[10];
+	int type, sameflag, reflag;
+	char title[STRLEN], typeprefix[6] = "", typesufix[4] = "";
+#ifdef COLOR_POST_DATE
+	struct tm *mytm;
+#endif
 #ifdef FDQUAN
-char *readdoent (int num, struct fileheader *ent) // ндубап╠М 
-{
-	static char buf[128];
-
-	//  struct boardheader *bp;
-	time_t filetime;
-	time_t now;
-	char *timestr;
-	char date[20];
-	char /**TITLE,*/color[10];
-	int type;
-
-	//Added by IAMFAT 2002-05-27
-	int sameflag;
-	int reflag;
-	char title[STRLEN];
-	char timestr2[11];
-
-	//End IAMFAT
-	char idbuf[30];
-
-	int shipuser;
 	struct user_info uin;
-	extern int t_cmpuids ();
-
-	now = time (0);
-	timestr = ctime (&now);
-	strncpy (timestr2, timestr, 10);
-	timestr2[10] = '\0';
-
-	shipuser = getuser (ent->owner);
-	search_ulist (&uin, t_cmpuids, shipuser);
-
-#ifdef COLOR_POST_DATE
-	struct tm *mytm;
+	char idbuf[5] = "";
+	extern int t_cmpuids();
 #endif
-	type = brc_unread (ent->filename) ?
-	(!DEFINE (DEF_NOT_N_MASK) ? 'N' : '+') : ' ';
-	if ((ent->accessed[0] & FILE_DIGEST) /* && HAS_PERM(PERM_MARKPOST) */) {
-		if (type == ' ')
-		type = 'g';
-		else
-		type = 'G';
-	}
-	if (ent->accessed[0] & FILE_MARKED) {
-		switch (type) {
-			case ' ':
-			type = 'm';
-			break;
-			case 'N':
-			case '+':
-			type = 'M';
-			break;
-			case 'g':
-			type = 'b';
-			break;
-			case 'G':
-			type = 'B';
-			break;
-		}
-	}
-	if (ent->accessed[0] & FILE_DELETED) {
-		if (brc_unread (ent->filename))
-		type = 'X'; // deardragon 0729
-		else
-		type = 'x';
-	}
-	//  bp = getbcache (currboard);
-	//  if (ent->accessed[0] & FILE_NOREPLY || bp->flag & BOARD_NOREPLY_FLAG)
-	if (ent->accessed[0] & FILE_NOREPLY)
-	noreply = 1;
-	else
-	noreply = 0;
-
-	if (digestmode == ATTACH_MODE) {
-		filetime = ent->timeDeleted;
-	} else {
-		filetime = atoi (ent->filename + 2);
-	}
-
-	if (filetime> 740000000) {
-		char *datestr = ctime (&filetime);
-
-		*(datestr + 10) = '\0';
-		strcpy (date, "[1;30m      [0m");
-		if (!strcmp (timestr2, datestr)) {
-			datestr = ctime (&filetime) + 4;
-			strncpy (date + 7, datestr + 6, 6);
-		} else {
-			datestr = ctime (&filetime) + 4;
-			strncpy (date + 7, datestr, 6);
-		}
-		date[5] = '1' + (atoi (datestr + 4) % 7);
-	} else {
-		date[0] = 0;
-	}
-
-	if (!uin.active
-			|| (uin.active && uin.invisible && !HAS_PERM (PERM_SEECLOAK)))
-	sprintf (idbuf, "[1;30m%-12.12s[0;1m", ent->owner);
-	else if (uin.invisible && HAS_PERM (PERM_SEECLOAK))
-	sprintf (idbuf, "[1;36m%-12.12s[0;1m", ent->owner);
-	else if (uin.currbrdnum == getbnum (currboard)
-			|| !strcmp (uin.userid, currentuser.userid))
-	sprintf (idbuf, "[1;37m%-12.12s[0;1m", ent->owner);
-	else
-	sprintf (idbuf, "[0;37m%-12.12s[0;1m", ent->owner);
-
-#ifdef COLOR_POST_DATE
-	mytm = localtime (&filetime);
-	strftime (buf, 5, "%w", mytm);
-	sprintf (color, "[1;%dm", 30 + atoi (buf) + 1);
-#else
-	strcpy (color, "");
-#endif
-	if (digestmode == ATTACH_MODE) {
-		sprintf (title, "║Т %s", ent->filename);
-	} else if (!strncmp ("Re:", ent->title, 3)
-			|| !strncmp ("RE:", ent->title, 3)) {
-		sprintf (title, "%s %s",
-				(digestmode ==
-						2) ? ((ent->accessed[1] & FILE_LASTONE) ? "╘╦" : "╘ю") : "Re:",
-				ent->title + 4);
-		reflag = 1;
-	} else {
-		sprintf (title, "║Т %s", ent->title);
-		reflag = 0;
-	}
-	if (ent->gid == o_gid)
-	sameflag = 1;
-	else
-	sameflag = 0;
-
-	//modified by iamfat 2003.03.01
-	//ellipsis (title, 49);
-	ent->szEraser[IDLEN] = 0;
-	if (digestmode != TRASH_MODE && digestmode != JUNK_MODE) {
-		//modified by iamfat 2003.03.19
-		ellipsis (title, 49);
-		//ellipsis(title, 46);
-	} else {
-		ellipsis (title, 38 - strlen (ent->szEraser));
-	}
-	//added by iamfat 2002.08.10
-	//check_anonymous(ent->owner);
-	//added end
-
-	//Modified by IAMFAT 2002-05-28
-	if (digestmode == TRASH_MODE || digestmode == JUNK_MODE) {
-		sprintf (buf,
-				" [%sm%5d[m %c %s %s%17.17s%c%s[%sm%s[%sm[%s.%s][m",
-				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num, type,
-				idbuf, color, date, (FFLL & sameflag) ? '.' : ' ',
-				noreply ? "[1;33mx" : " ",
-				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title,
-				(ent->accessed[1] & FILE_SUBDEL) ? "1;31" : "1;32",
-				ent->szEraser, getshortdate (ent->timeDeleted));
-	} else if (digestmode == ATTACH_MODE) {
-		sprintf (buf, " %5d %c %s %17.17s  %s", num, type, idbuf, date, title);
-	} else {
-#ifdef ENABLE_NOTICE
-		if (ent->accessed[1] & FILE_NOTICE) {
-			sprintf (buf,
-					" [1;31m [║ч][m %c %s %s%17.17s%c%s[%sm%-.49s[m",
-					type,
-					idbuf, color, date, (FFLL & sameflag) ? '.' : ' ',
-					noreply ? "[1;33mx" : " ",
-					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
-		} else {
-#endif
-			sprintf (buf,
-					" [%sm%5d[m %c %s %s%17.17s%c%s[%sm%-.49s[m",
-					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num, type,
-					idbuf, color, date, (FFLL & sameflag) ? '.' : ' ',
-					noreply ? "[1;33mx" : " ",
-					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
-#ifdef ENABLE_NOTICE
-		}
-#endif
-	}
-	//End IAMFAT
-
-	noreply = 0;
-	return buf;
-}
-
-#else
-char *readdoent(int num, struct fileheader *ent) // ндубап╠М 
-{
-	static char buf[128];
-
-	//  struct boardheader *bp;
-	time_t filetime;
-	char *date;
-	char /**TITLE,*/color[10];
-	int type;
-
-	//Added by IAMFAT 2002-05-27
-	int sameflag;
-	int reflag;
-	char title[STRLEN];
-
-	//End IAMFAT
-
-#ifdef COLOR_POST_DATE
-	struct tm *mytm;
-#endif
-	type = brc_unread(ent->filename) ? (!DEFINE(DEF_NOT_N_MASK) ? 'N'
-			: '+') : ' ';
-	if ((ent->accessed[0] & FILE_DIGEST) /* && HAS_PERM(PERM_MARKPOST) */) {
+	type = brc_unread(ent->filename) ?
+		(!DEFINE(DEF_NOT_N_MASK) ? 'N' : '+') : ' ';
+	if ((ent->accessed[0] & FILE_DIGEST)) {
 		if (type == ' ')
 			type = 'g';
 		else
@@ -1141,13 +936,18 @@ char *readdoent(int num, struct fileheader *ent) // ндубап╠М
 		}
 	}
 	if (ent->accessed[0] & FILE_DELETED) {
-		if (brc_unread(ent->filename))
-			type = 'W'; // deardragon 0729
+		if (type == ' ')
+			type = 'w';
 		else
-			type = 'w'; //change 'x' to 'w' by Ashinmarch on Oct 25, 2007
+			type = 'W';
 	}
-	//  bp = getbcache (currboard);
-	//  if (ent->accessed[0] & FILE_NOREPLY || bp->flag & BOARD_NOREPLY_FLAG)
+	if (ent->accessed[1] & FILE_IMPORTED && chk_currBM(currBM, 0)){
+		if (type == ' ')
+			strcpy(typeprefix, "\033[42m");
+		else
+			strcpy(typeprefix, "\033[32m");
+		strcpy(typesufix, "\033[m");
+	}
 	if (ent->accessed[0] & FILE_NOREPLY)
 		noreply = 1;
 	else
@@ -1158,15 +958,31 @@ char *readdoent(int num, struct fileheader *ent) // ндубап╠М
 		filetime = atoi(ent->filename + 2);
 	}
 	if (filetime > 740000000) {
+#ifdef FDQUAN
+		if(time(NULL) - filetime < 24 * 60 * 60)
+			date = ctime(&filetime) + 10;
+		else
+			date = ctime(&filetime) + 4;
+#else
 		date = ctime(&filetime) + 4;
+#endif
 	} else {
 		date = "";
 	}
-
+#ifdef FDQUAN
+	search_ulist(&uin, t_cmpuids, getuser(ent->owner));
+	if (!uin.active
+		|| (uin.active && uin.invisible && !HAS_PERM (PERM_SEECLOAK)))
+		strcpy(idbuf, "1;30");
+	else if(uin.invisible && HAS_PERM(PERM_SEECLOAK))
+		strcpy(idbuf, "1;36");
+	else if (uin.currbrdnum == getbnum (currboard)
+		|| !strcmp (uin.userid, currentuser.userid))
+		strcpy(idbuf, "1;37");
+#endif
 #ifdef COLOR_POST_DATE
-	mytm = localtime (&filetime);
-	strftime (buf, 5, "%w", mytm);
-	sprintf (color, "[1;%dm", 30 + atoi (buf) + 1);
+	mytm = localtime(&filetime);
+	sprintf (color, "\033[1;%dm", 30 + mytm->tm_wday + 1);
 #else
 	strcpy(color, "");
 #endif
@@ -1185,30 +1001,27 @@ char *readdoent(int num, struct fileheader *ent) // ндубап╠М
 		sameflag = 1;
 	else
 		sameflag = 0;
-
-	//modified by iamfat 2003.03.01
-	//ellipsis (title, 49);
 	ent->szEraser[IDLEN] = 0;
-	if (digestmode != TRASH_MODE && digestmode != JUNK_MODE) {
-		//modified by iamfat 2003.03.19
+	if (digestmode != TRASH_MODE && digestmode != JUNK_MODE)
 		ellipsis(title, 49);
-		//ellipsis(title, 46);
-	} else {
+	else
 		ellipsis(title, 38 - strlen(ent->szEraser));
-	}
-	//added by iamfat 2002.08.10
-	//check_anonymous(ent->owner);
-	//added end
-
-	//Modified by IAMFAT 2002-05-28
 	if (digestmode == TRASH_MODE || digestmode == JUNK_MODE) {
-		sprintf(
-				buf,
-				" [%sm%5d[m %c %-12.12s %s%6.6s%c%s[%sm%s[%sm[%s.%s][m",
+		sprintf(buf,
+#ifdef FDQUAN
+				" \033[%sm%5d\033[m %s%c%s \033[%sm%-12.12s %s%6.6s%c%s\033[%sm%s\033[%sm[%s.%s]\033[m",
+#else
+				" \033[%sm%5d\033[m %s%c%s %-12.12s %s%6.6s%c%s\033[%sm%s\033[%sm[%s.%s]\033[m",
+#endif
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
-				type, ent->owner, color, date, (FFLL & sameflag) ? '.'
-						: ' ', noreply ? "[1;33mx" : " ", (FFLL
-						& sameflag) ? (reflag ? "1;36" : "1;32") : "",
+#ifdef FDQUAN
+				typeprefix, type, typesufix, idbuf, ent->owner, color, date, 
+#else
+				typeprefix, type, typesufix, ent->owner, color, date, 
+#endif
+				(FFLL & sameflag) ? '.' : ' ', 
+				noreply ? "\033[1;33mx" : " ",
+				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "",
 				title, (ent->accessed[1] & FILE_SUBDEL) ? "1;31" : "1;32",
 				ent->szEraser, getshortdate(ent->timeDeleted));
 	} else if (digestmode == ATTACH_MODE) {
@@ -1218,30 +1031,40 @@ char *readdoent(int num, struct fileheader *ent) // ндубап╠М
 #ifdef ENABLE_NOTICE
 		if (ent->accessed[1] & FILE_NOTICE) {
 			sprintf (buf,
-					" [1;31m [║ч][m %c %-12.12s %s%6.6s%c%s[%sm%-.49s[m",
-					type,
-					ent->owner, color, date, (FFLL & sameflag) ? '.' : ' ',
-					noreply ? "[1;33mx" : " ",
+#ifdef FDQUAN
+					" \033[1;31m [║ч]\033[m %c \033[%sm%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
+					type, idbuf, ent->owner, color, date,
+#else
+					" \033[1;31m [║ч]\033[m %c %-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
+					type, ent->owner, color, date,
+#endif
+					(FFLL & sameflag) ? '.' : ' ',
+					noreply ? "\033[1;33mx" : " ",
 					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
 		} else {
 #endif
-		sprintf(buf, " [%sm%5d[m %c %-12.12s %s%6.6s%c%s[%sm%-.49s[m",
+			sprintf(buf,
+#ifdef FDQUAN
+				" \033[%sm%5d\033[m %s%c%s \033[%sm%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
+#else
+				" \033[%sm%5d\033[m %s%c%s %-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
+#endif
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
-				type, ent->owner, color, date, (FFLL & sameflag) ? '.'
-						: ' ', noreply ? "[1;33mx" : " ", (FFLL
-						& sameflag) ? (reflag ? "1;36" : "1;32") : "",
-				title);
+#ifdef FDQUAN
+				typeprefix, type, typesufix, idbuf, ent->owner, color, date,
+#else
+				typeprefix, type, typesufix, ent->owner, color, date,
+#endif
+				(FFLL & sameflag) ? '.' : ' ',
+				noreply ? "\033[1;33mx" : " ",
+				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
 #ifdef ENABLE_NOTICE
-	}
+		}
 #endif
 	}
-	//End IAMFAT
-
 	noreply = 0;
 	return buf;
 }
-
-#endif
 
 int cmpfilename(struct fileheader *fhdr, char *filename) {
 	if (!strncmp(fhdr->filename, filename, STRLEN))
