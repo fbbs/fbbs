@@ -30,49 +30,25 @@ char *strtoupper(char *dst, char *src) {
 	return ret;	
 }
 
-void my_ansi_filter(char *source) {
-	char result[500];
-	int i, flag = 0, loc=0;
+// Eliminate ANSI escape codes from src and store it in dst.
+// src and dst can be the same.
+char *ansi_filter(char *dst, char *src)
+{
+    char *ret = dst;
+    int flag = 0;
 
-	for (i = 0; i < strlen(source) ; i++) {
-		if (source[i] == '\033') {
-			flag = 1;
-			continue;
-		} else if (flag == 1 && isalpha(source[i]) ) {
-			flag = 0;
-			continue;
-		} else if (flag == 1) {
-			continue;
-		} else {
-			result[loc++]=source[i];
-		}
-	}
-	result[loc]='\0';
-	strncpy(source, result, loc+1);
-}
-
-char * ansi_filter(char *source) {
-	char *result, ch[3];
-	int i, flag = 0, slen = strlen(source);
-
-	result = (char *)malloc((slen+10)*sizeof(char));
-
-	for (i = 0; i < slen; i++) {
-		if (source[i] == '\033') {
-			flag = 1;
-			continue;
-		} else if (flag == 1 && isalpha(source[i]) ) {
-			flag = 0;
-			continue;
-		} else if (flag == 1) {
-			continue;
-		} else {
-			sprintf(ch, "%c", source[i]);
-			strcat(result, ch);
-		}
-	}
-
-	return (char *)result;
+    if (dst == NULL || src == NULL)
+        return NULL;
+    for (; *src != '\0'; src++) {
+        if (*src == '\033')
+            flag = 1;
+        else if (flag == 0)
+            *dst++ = *src;
+        else if (isalpha(*src))
+            flag = 0;
+    };
+    *dst = '\0';
+    return ret;
 }
 
 // 将一个整数时间值轮换成 年月日时分秒周日格式,并返回

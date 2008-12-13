@@ -1219,7 +1219,8 @@ int filter;
 	fprintf(fout, "Precedence: junk\n\n");
 
 	while (fgets(genbuf, 255, fin) != NULL) {
-		if(filter) my_ansi_filter(genbuf);
+		if(filter)
+			ansi_filter(genbuf, genbuf);
 		if (genbuf[0] == '.' && genbuf[1] == '\n')
 		fputs(". \n", fout);
 		else
