@@ -116,11 +116,11 @@ int ex_strcmp(char *restrictid, char *userid) {
 			return 1;
 	} else if (strBuf[ intLength - 1 ] == '*') {
 		strBuf[ intLength - 1 ] = '\0';
-		return ci_strncmp(strBuf, strUID, intLength - 1);
+		return strncasecmp(strBuf, strUID, intLength - 1);
 	} else if (strBuf[ 0 ] == '*') {
 		return ci_strnbcmp(strBuf + 1, strUID, intLength - 1);
 	} else if ( (ptr = strstr(strBuf, "*") ) != NULL) {
-		return (ci_strncmp(strBuf, strUID, ptr - strBuf) || ci_strnbcmp(
+		return (strncasecmp(strBuf, strUID, ptr - strBuf) || ci_strnbcmp(
 				strBuf, strUID, intLength - 1 - (ptr - strBuf )) );
 	}
 	return 1;
@@ -171,8 +171,8 @@ int bad_user_id(char *userid) {
 		while (fgets(buf, STRLEN, fp) != NULL) {
 			ptr = strtok(buf, " \n\t\r");
 			/* Modified by Amigo. 2001.02.13.8. * match support added. */
-			/* Original: if( ptr != NULL && *ptr != '#' && ci_strcmp( ptr, userid ) == 0 ) {*/
-			if (ptr != NULL && *ptr != '#' && (ci_strcmp(ptr, userid) == 0
+			/* Original: if( ptr != NULL && *ptr != '#' && strcasecmp( ptr, userid ) == 0 ) {*/
+			if (ptr != NULL && *ptr != '#' && (strcasecmp(ptr, userid) == 0
 					|| ex_strcmp(ptr, userid) == 0 )) {
 				fclose(fp);
 				return 1;

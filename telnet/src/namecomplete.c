@@ -191,7 +191,7 @@ int namecomplete(char *prompt, char *data) {
 			else { /*  版面 ID 选择的一个精确匹配问题  period */
 				struct word *list;
 				for (list = cwlist; list != NULL; list = list->next) {
-					if (!ci_strcmp(data, list->name)) {
+					if (!strcasecmp(data, list->name)) {
 						strcpy(data, list->name);
 						break;
 					} //if
@@ -378,7 +378,7 @@ int usercomplete(char *prompt, char *data) {
 			prints("\n");
 			ptr = cwlist;
 			for (i = 0; i < cwnum; i++) {
-				if (ci_strncmp(data, ptr, IDLEN + 1) == 0)
+				if (strncasecmp(data, ptr, IDLEN + 1) == 0)
 					strcpy(data, ptr);
 				ptr += IDLEN + 1;
 			}

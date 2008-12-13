@@ -202,7 +202,7 @@ int bbssetenv(char *env, char *val) {
 		bbsenv[0] = NULL;
 	len = strlen(env);
 	for (i = 0; bbsenv[i]; i++)
-		if (!ci_strncmp(env, bbsenv[i], len))
+		if (!strncasecmp(env, bbsenv[i], len))
 			break;
 	if (i >= MAXENVS)
 		return -1;

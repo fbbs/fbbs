@@ -393,7 +393,7 @@ struct boardheader * getbcache(char *bname) {
 	register int i;
 	resolve_boards();
 	for (i = 0; i < numboards; i++) {
-		if (!ci_strncmp(bname, bcache[i].filename, STRLEN))
+		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
 			return &bcache[i];
 	}
 	return NULL;
@@ -401,7 +401,7 @@ struct boardheader * getbcache(char *bname) {
 struct bstat *getbstat(char *bname) {
 	register int i;
 	for (i = 0; i < numboards; i++) {
-		if (!ci_strncmp(bname, bcache[i].filename, STRLEN))
+		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
 			return &brdshm->bstatus[i];
 	}
 	return NULL;
@@ -415,7 +415,7 @@ int getbnum(char *bname) {
 		if (bcache[i].flag & BOARD_POST_FLAG //p限制版面
 				|| HAS_PERM(bcache[i].level) //权限足够
 		||(bcache[i].flag & BOARD_NOZAP_FLAG)) {//不可zap
-			if (!ci_strncmp(bname, bcache[i].filename, STRLEN)) //找到版名
+			if (!strncasecmp(bname, bcache[i].filename, STRLEN)) //找到版名
 				return i + 1;
 		}
 	}
@@ -799,7 +799,7 @@ int searchuser(char *userid) {
 	if (0) { //不执行此句
 		for (i = 0; i < uidshm->number; i++)
 			//低效的线性搜索,可以考虑提高效率
-			if (!ci_strncmp(userid, uidshm->userid[i], IDLEN + 1))
+			if (!strncasecmp(userid, uidshm->userid[i], IDLEN + 1))
 				return i + 1;
 		return 0;
 	} else {
@@ -807,7 +807,7 @@ int searchuser(char *userid) {
 		key = uhashkey(userid, &a1, &a2);
 		i = uidshm->hash[a1][a2][key];
 		while (i) {
-			if (!ci_strncmp(userid, uidshm->userid[i-1], IDLEN + 1)) {
+			if (!strncasecmp(userid, uidshm->userid[i-1], IDLEN + 1)) {
 				return i;
 			}
 			i = uidshm->next[i-1];
@@ -902,7 +902,7 @@ void resolve_utmp() {
 int get_nextid(char* boardname) {
 	register int i, ret;
 	for (i = 0; i < numboards; i++) {
-		if (!ci_strncmp(boardname, bcache[i].filename, STRLEN)) { //找到版名
+		if (!strncasecmp(boardname, bcache[i].filename, STRLEN)) { //找到版名
 			ret = i;
 			int fd;
 			fd = bcache_lock();

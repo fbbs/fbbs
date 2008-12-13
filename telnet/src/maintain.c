@@ -144,7 +144,7 @@ char    seekstr[STRLEN];
 		return 0;
 	while (fgets(buf, STRLEN, fp) != NULL) {
 		namep = strtok(buf, ": \n\r\t");
-		if (namep != NULL && ci_strcmp(namep, seekstr) == 0) {
+		if (namep != NULL && strcasecmp(namep, seekstr) == 0) {
 			fclose(fp);
 			strtok(NULL, "/");
 			namep = strtok(NULL, "/");
