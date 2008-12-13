@@ -35,9 +35,6 @@ extern int switch_code ();
 extern int convcode;
 #endif
 
-//用来保存日期字符串,如年月日周时分秒等之类的格式
-char datestring[30];
-
 extern struct BCACHE *brdshm;
 extern struct UCACHE *uidshm;
 #define TH_LOW	10
@@ -575,14 +572,9 @@ void fill_date() {
 
 	next = (time_t) time(0)
 			- ((atoi(h) * 3600) + (atoi(m) * 60) + atoi(s)) + 86400; /* 算出今天 0:0:00 的时间, 然後再往後加一天 */
-
-	sprintf(genbuf, "纪念日更新, 下一次更新时间 %s", Cdate(&next));
+	getdatestring(next, 4);
+	sprintf(genbuf, "纪念日更新, 下一次更新时间 %s", datestring);
 	report(genbuf);
-
-	// commented by infotech from memory leak
-	//buf           = (char *) malloc(80);
-	//buf2  = (char *) malloc(30);
-	//index = (char *) malloc(5);
 
 	fp = fopen(DEF_FILE, "r");
 
@@ -745,28 +737,3 @@ int sendGoodWish(char *userid) {
 	clear();
 	return 0;
 }
-
-//      将整数now的具体日期保存在datastring中,mode为1则英,为0则汉
-//      mode为2则只保存月,日,时,分
-//      返回值为秒数/10
-int getdatestring(time_t now, int mode) {
-	struct tm *tm;
-	char weeknum[7][3] = { "天", "一", "二", "三", "四", "五", "六" };
-
-	tm = localtime(&now);
-	if (mode == 0) {
-		sprintf(datestring, "%4d年%02d月%02d日%02d:%02d:%02d 星期%2s",
-				tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-				tm->tm_hour, tm->tm_min, tm->tm_sec, weeknum[tm->tm_wday]);
-	} else if (mode == 1) {
-		sprintf(datestring, "%02d/%02d/%02d %02d:%02d:%02d", tm->tm_mon
-				+ 1, tm->tm_mday, tm->tm_year - 100, tm->tm_hour,
-				tm->tm_min, tm->tm_sec);
-	} else if (mode == 2) {
-		sprintf(datestring, "%02d.%02d %02d:%02d", tm->tm_mon + 1,
-				tm->tm_mday, tm->tm_hour, tm->tm_min);
-	}
-	return (tm->tm_sec % 10);
-}
-
-/* Added End. */

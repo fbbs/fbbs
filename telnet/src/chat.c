@@ -792,7 +792,9 @@ void call_user(char *arg) {
 void chat_date() {
 	time_t thetime;
 	time(&thetime);
-	sprintf(genbuf, "[1m %s±ê×¼Ê±¼ä: [32m%s[m", BoardName, Cdate(&thetime));
+	getdatestring(thetime, 4);
+	sprintf(genbuf, "\033[1m %s±ê×¼Ê±¼ä: \033[32m%s\033[m", 
+		BoardName, datestring);
 	printchatline(genbuf);
 }
 

@@ -1521,7 +1521,8 @@ int do_talk(int fd) {
 	do_log(itswords, 2);
 
 	now = time(0);
-	sprintf(talkbuf, "\n[1;34mÍ¨»°½áÊø, Ê±¼ä: %s [m\n", Cdate(&now));
+	getdatestring(now, 4);
+	sprintf(talkbuf, "\n\033[1;34mÍ¨»°½áÊø, Ê±¼ä: %s \033[m\n", datestring);
 	write(talkrec, talkbuf, strlen(talkbuf));
 
 	close(talkrec);
@@ -1536,7 +1537,8 @@ int do_talk(int fd) {
 		break;
 		default:
 		sethomefile(talkbuf, currentuser.userid, "talklog");
-		sprintf(mywords, "¸ú %s µÄÁÄÌì¼ÇÂ¼ [%s]", partner, Cdate(&now) + 4);
+		getdatestring(now, 4);
+		sprintf(mywords, "¸ú %s µÄÁÄÌì¼ÇÂ¼ [%s]", partner, datestring + 4);
 		{	char temp[STRLEN];
 			strcpy(temp, save_title);
 			mail_file(talkbuf, currentuser.userid, mywords);
@@ -2344,7 +2346,8 @@ do_log(char *msg, int who)
 
 	if (!dashf(buf) || talkrec == -1) {
 		talkrec = open(buf, O_RDWR | O_CREAT | O_TRUNC, 0644);
-		sprintf(buf, "[1;32mÓë %s µÄÇé»°ÃàÃà, ÈÕÆÚ: %s [m\n", save_page_requestor, Cdate(&now));
+		getdatestring(now, 4);
+		sprintf(buf, "\033[1;32mÓë %s µÄÇé»°ÃàÃà, ÈÕÆÚ: %s \033[m\n", save_page_requestor, datestring);
 		write(talkrec, buf, strlen(buf));
 		sprintf(buf, "\tÑÕÉ«·Ö±ğ´ú±í: [1;33m%s[m [1;36m%s[m \n\n", currentuser.userid, partner);
 		write(talkrec, buf, strlen(buf));
