@@ -11,8 +11,8 @@ char *strtolower(char *dst, char *src) {
 
 	if (dst == NULL || src == NULL)
 		return NULL;
-	while (*src++ != '\0')
-		*dst++ = tolower(*src);
+	while (*src != '\0')
+		*dst++ = tolower(*src++);
 	*dst = '\0';
 	return ret;	
 }
@@ -24,8 +24,8 @@ char *strtoupper(char *dst, char *src) {
 
 	if (dst == NULL || src == NULL)
 		return NULL;
-	while (*src++ != '\0')
-		*dst++ = toupper(*src);
+	while (*src != '\0')
+		*dst++ = toupper(*src++);
 	*dst = '\0';
 	return ret;	
 }
