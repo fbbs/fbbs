@@ -11,9 +11,9 @@ LIBNAME	 = libBBS.a
 
 GARBAGE  = a.out core out.* *.BAK DEAD*
 
-CFILE	 = string.c html.c mmdecode.c fileio.c
+CFILE	 = string.c mmdecode.c fileio.c
 
-OBJS	 = string.o html.o mmdecode.o fileio.o
+OBJS	 = string.o mmdecode.o fileio.o
 
 .SUFFIXES: .o .c
 
