@@ -85,8 +85,7 @@ register int x;
 /* judge & decode QP / BASE64				 */
 /* ----------------------------------------------------- */
 
-void _mmdecode(str)
-unsigned char *str;
+void _mmdecode(unsigned char *str)
 {
 	int code, c1, c2, c3, c4;
 	unsigned char *src, *dst;

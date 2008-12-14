@@ -1089,7 +1089,7 @@ void notepad_init() {
 		}
 		getdatestring(now, NA);
 		sprintf(notetitle, "[%s] ÁôÑÔ°å¼ÇÂ¼", datestring);
-		if (dashf("etc/notepad", "r")) {
+		if (dashf("etc/notepad")) {
 			Postfile("etc/notepad", "Notepad", notetitle, 1);
 			unlink("etc/notepad");
 		}

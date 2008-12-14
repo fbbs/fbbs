@@ -4,7 +4,6 @@
 //原始文件从以前的备份0720里面找:P
 
 //需要用到的外部函数
-extern char * strcasestr(char* haystack, char* needle);
 extern struct boardheader *getbcache();
 
 //定义页面大小
@@ -21,7 +20,7 @@ int text_find(char* fname, int no, char* str, char* line) {
 	seek_nth_line(fd, no);
 	while (readln(fd, genbuf)) {
 		//strtok(genbuf,"\n");
-		if (strcasestr(genbuf, str)) {
+		if (strcasestr_gbk(genbuf, str)) {
 			gotit=1;
 			if (line)
 				strcpy(line, genbuf);

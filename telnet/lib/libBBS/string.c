@@ -4,8 +4,8 @@
 #include <ctype.h>
 #include <time.h>
 
-// Convert string src to lowercase and store it in dst.
-// Caller should ensure the capacity of dst is no less than src.
+// Convert string 'src' to lowercase and store it in 'dst'.
+// Caller should ensure the capacity of 'dst' is no less than 'src'.
 char *strtolower(char *dst, char *src) {
 	char *ret = dst;
 
@@ -17,8 +17,8 @@ char *strtolower(char *dst, char *src) {
 	return ret;	
 }
 
-// Convert string src to uppercase and store it in dst.
-// Caller should ensure the capacity of dst is no less than src.
+// Convert string 'src' to uppercase and store it in 'dst'.
+// Caller should ensure the capacity of 'dst' is no less than 'src'.
 char *strtoupper(char *dst, char *src) {
 	char *ret = dst;
 
@@ -30,8 +30,57 @@ char *strtoupper(char *dst, char *src) {
 	return ret;	
 }
 
-// Eliminate ANSI escape codes from src and store it in dst.
-// src and dst can be the same.
+// Compare string 's1' against 's2' and differences in case are ignored.
+// No more than 'n' characters are compared.
+// This function supports zh_CN.GBK.
+int strncasecmp_gbk(char *s1, char *s2, int n) {
+	register int c1, c2, l = 0;
+
+	while (*s1 && *s2 && l < n) {
+		c1 = tolower(*s1++);
+		c2 = tolower(*s2++);
+		if (c1 != c2)
+			return (c1 - c2);
+		++l;
+		if (c1 & 0x80)
+			if(*s1 == *s2)
+				++l;
+			else
+				return (*s1 - *s2);
+	}
+	if (l==n)
+		return 0;
+	else
+		return -1;
+}
+
+// Search string 'haystack' for a substring 'needle'
+// and differences in case are ignored.
+// This function supports zh_CN.GBK.
+char *strcasestr_gbk(char *haystack, char *needle) {
+	int i, nlength, hlength;
+
+	if (haystack == NULL || needle == NULL)
+		return NULL;
+	nlength = strlen(needle);
+	hlength = strlen(haystack);
+	if (nlength > hlength)
+		return NULL;
+	if (hlength <= 0)
+		return NULL;
+	if (nlength <= 0)
+		return haystack;
+	for (i = 0; i <= (hlength - nlength); i++) {
+		if (strncasecmp_gbk(haystack + i, needle, nlength) == 0)
+			return haystack + i;
+		if (haystack[i] & 0x80)
+			i++;
+	}
+	return NULL;
+}
+
+// Eliminate ANSI escape codes from 'src' and store it in 'dst'.
+// 'src' and 'dst' can be the same.
 char *ansi_filter(char *dst, char *src)
 {
 	char *ret = dst;

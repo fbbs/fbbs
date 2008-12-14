@@ -1749,46 +1749,6 @@ int strcasecmp2(char *s1, char *s2) {
 		return 1;
 }
 //End IAMFAT
-//Added by IAMFAT 2002-05-25
-int strncasecmp2(char *s1, char *s2, int n) {
-	register int c1, c2, l=0;
-
-	while (*s1 && *s2 && l<n) {
-		c1 = tolower(*s1);
-		c2 = tolower(*s2);
-		if (c1 != c2)
-			return (c1 - c2);
-		s1++;
-		s2++;
-		l++;
-	}
-	if (l==n)
-		return 0;
-	else
-		return -1;
-}
-char * strcasestr(char* haystack, char* needle) {
-	int i;
-	int nlength = strlen(needle);
-	int hlength = strlen(haystack);
-
-	if (nlength > hlength)
-		return NULL;
-	if (hlength <= 0)
-		return NULL;
-	if (nlength <= 0)
-		return haystack;
-	// hlength and nlength > 0, nlength <= hlength
-	for (i = 0; i <= (hlength - nlength); i++) {
-		if (strncasecmp2(haystack + i, needle, nlength) == 0)
-			return haystack + i;
-		if (haystack[i] & 0x80)
-			i++;
-	}
-
-	return NULL;
-}
-//Add End
 
 int
 searchpattern(filename, query)
@@ -1801,7 +1761,7 @@ char *query;
 	return 0;
 	while (fgets(buf, 256, fp) != NULL) {
 		//Modified by IAMFAT 2002-05-25
-		if (strcasestr(buf, query)) {
+		if (strcasestr_gbk(buf, query)) {
 			fclose(fp);
 			return YEA;
 		}
@@ -1917,7 +1877,7 @@ int search_articles(struct keeploc *locmem, char *query, int gid,
 				}
 			}
 		} else {//相关主题
-			if (strcasestr(ptr, query) != NULL) {
+			if (strcasestr_gbk(ptr, query) != NULL) {
 				if (aflag) {
 					if (strcasecmp(ptr, query))
 						continue;

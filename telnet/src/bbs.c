@@ -240,7 +240,7 @@ void Certify (char *board, struct fileheader *fh)
 			}
 			buf[i] = '\0';
 			for (j = keywords_shm->number - 1; j >= 0; j--) {
-				if (strcasestr (buf, keywords_shm->word[j])) {
+				if (strcasestr_gbk (buf, keywords_shm->word[j])) {
 					fh->accessed[1] |= FILE_UNCERTIFIED;
 					sprintf (buf, "%-12s %-16s %s\n", fh->owner, board, fh->filename);
 					file_append (".UNCERTIFIED", buf);
