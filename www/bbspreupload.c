@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 //add by Danielfree to check filesize limit 06.11.23
 int maxlen(char *board)

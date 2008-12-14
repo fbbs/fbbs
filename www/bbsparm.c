@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 char *defines[] = {
         "網請ん壽敕奀褫�繳譚挹蘀�",     /* DEF_FRIENDCALL */

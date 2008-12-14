@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include "netinet/in.h"
 #include <netdb.h>
 #include <netinet/in.h>

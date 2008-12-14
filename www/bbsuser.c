@@ -1,6 +1,6 @@
 /* total written by roly 02.01.23 */
 #define MY_CSS "/bbsold.css"
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 int main() {
 	char buf[1024], *ptr;

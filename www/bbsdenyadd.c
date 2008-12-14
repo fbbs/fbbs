@@ -1,4 +1,5 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
+
 struct deny {
 	char id[80];
 //	char exp[80];

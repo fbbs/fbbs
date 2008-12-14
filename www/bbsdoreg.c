@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 int is_bad_id(char *s) {
 	FILE *fp;

@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 char *stat1();
 int my_t_lines;
 

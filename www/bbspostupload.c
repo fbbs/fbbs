@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 #ifndef UPLOAD_MAX
 	#define UPLOAD_MAX	(1*1024*1024)

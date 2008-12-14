@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include "boardrc.inc"
 
 int main() {

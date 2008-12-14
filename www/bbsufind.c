@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 struct user_info user[MAXACTIVE];
 
 int cmpuser(a, b)

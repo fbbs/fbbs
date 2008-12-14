@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 struct boardheader data[MAXBOARD];
 //char mybrd[40][80];
 //int mybrdnum=0;

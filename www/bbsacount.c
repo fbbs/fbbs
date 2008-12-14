@@ -1,8 +1,7 @@
 /*******************************************
      annotator : DeepOcean, Oct 20,2005
 *******************************************/
-
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include "boardrc.inc"
 char *eff_size();
 int my_t_lines;

@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 char day[20], user[20], title[80];
 
 int main() {

@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 /*check whether the user is valid or not
  *
  *@author polygon

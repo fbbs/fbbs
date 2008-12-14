@@ -3,7 +3,7 @@ CGIPATH = /home/httpd/cgi-bin/bbs
 HTMPATH = /home/httpd/html
 
 #CC 	= gcc -O2 -L/usr/ucblib -lucb -lsocket -lnsl 
-CC      = gcc -Os
+CC      = gcc -Os libweb.c crypt.c
 CGI	= bbsusr bbstop10 bbssec bbsdoc bbscon bbsbrdadd bbsboa bbsall bbsanc bbs0an \
 	  bbslogout bbslogin bbsqry bbsnot bbsfind bbsmain bbsleft\
 	  bbsfadd bbsfdel bbsfall bbsfriend bbsfoot bbsform bbspwd bbsplan bbsinfo \

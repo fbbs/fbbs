@@ -1,5 +1,6 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include "boardrc.inc"
+
 char *eff_size();
 int my_t_lines;
 /* Function: 

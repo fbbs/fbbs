@@ -2,7 +2,7 @@
 // jacobson 2006.4
 // This file implements RSS 2.0
 #define XMLFILE  
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include <time.h>
 #define BBSURL BBSHOST "/cgi-bin/bbs"
 //#define BBSURL "192.168.18.4" "/cgi-bin/bbs"

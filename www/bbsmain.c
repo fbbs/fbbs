@@ -1,5 +1,5 @@
 //#define MY_CSS "/bbsold.css"
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 static char *BEGIN_MENU="stm_bm([\"noname\",400,\"\",\"/images/blank.gif\",0,\"\",\"\",0,0,0,0,50,1,0,0]);";
 static char *BEGIN_SUBMENU="stm_bp(\"submenu\",[1,4,0,0,0,2,0,7,100,\"\",-2,\"\",-2,90,0,0,\"#999999\",\"#ffffff\",\"\",3,0,0,\"#ffffff\"]);";

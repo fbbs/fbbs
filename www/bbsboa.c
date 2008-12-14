@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include "boardrc.inc"
 
 int cmpboard(b1, b2)

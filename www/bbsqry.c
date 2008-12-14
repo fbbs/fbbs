@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include "math.h"
 
 time_t get_last_logout(struct userec * );

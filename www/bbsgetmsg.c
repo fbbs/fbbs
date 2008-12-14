@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 int main() {
 	static char buf[256], buf2[256]=".";

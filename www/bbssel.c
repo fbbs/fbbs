@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 int main() {
 	char *board, buf[80], *board1, *title;

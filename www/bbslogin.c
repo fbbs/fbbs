@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 int main() {
 	char fname[STRLEN];//added by roly 02.05.10 

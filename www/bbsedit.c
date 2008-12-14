@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 char origin[512];	//added by iamfat 2002.08.17
 

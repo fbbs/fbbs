@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 int cmpboard(b1, b2)
 struct boardheader *b1, *b2;

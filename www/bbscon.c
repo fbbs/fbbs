@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 #include "boardrc.inc"
 int inboard(char *board, char* dirname , char* file){
 	char dir[256];

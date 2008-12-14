@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 //char mybrd[22][80];
 struct goodbrdheader gdbrd; //modified by cometcaptor 2007-07-13

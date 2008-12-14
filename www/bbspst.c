@@ -1,4 +1,4 @@
-#include "BBSLIB.inc"
+#include "libweb.h"
 
 int main() {
     /* added by roly 02.01.25 to disable reply article which is marked as unrepliable */
