@@ -2,8 +2,9 @@ BBSHOME = /home/bbs
 CGIPATH = /home/httpd/cgi-bin/bbs
 HTMPATH = /home/httpd/html
 
-#CC 	= gcc -O2 -L/usr/ucblib -lucb -lsocket -lnsl 
-CC      = gcc -Os libweb.c crypt.c
+CC      = gcc -Os
+OBJS	= libweb.o crypt.o
+LIBNAME	= libweb.a
 CGI	= bbsusr bbstop10 bbssec bbsdoc bbscon bbsbrdadd bbsboa bbsall bbsanc bbs0an \
 	  bbslogout bbslogin bbsqry bbsnot bbsfind bbsmain bbsleft\
 	  bbsfadd bbsfdel bbsfall bbsfriend bbsfoot bbsform bbspwd bbsplan bbsinfo \
@@ -16,7 +17,10 @@ CGI	= bbsusr bbstop10 bbssec bbsdoc bbscon bbsbrdadd bbsboa bbsall bbsanc bbs0an
 	  bbstopb10 bbsbfind bbstty bbsacount bbsuser bbschat bbsmaildown\
 	  bbsuserinfo bbsmovie bbsmailman bbsgfind\
 	  bbspostupload bbsdelf bbsfdoc bbspreupload bbsupload bbsrss
-all: $(CGI)
+all: libweb $(CGI)
+
+libweb: $(OBJS)
+	ar rs $(LIBNAME) $(OBJS)
 
 install: all
 	strip -s $(CGI)
@@ -25,5 +29,11 @@ install: all
 	chown -R bbs $(CGIPATH)
 	chgrp -R bbs $(CGIPATH) 
 	chmod +s $(CGIPATH)/*
+
 clean:
+	rm $(OBJS)
+	rm $(LIBNAME)
 	rm -rf $(CGI)
+
+%:: %.c
+	$(CC) -o $@ $< -lweb -L.
