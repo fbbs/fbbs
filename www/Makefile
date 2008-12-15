@@ -5,18 +5,17 @@ HTMPATH = /home/httpd/html
 CC      = gcc -Os
 OBJS	= libweb.o crypt.o
 LIBNAME	= libweb.a
-CGI	= bbsusr bbstop10 bbssec bbsdoc bbscon bbsbrdadd bbsboa bbsall bbsanc bbs0an \
-	  bbslogout bbslogin bbsqry bbsnot bbsfind bbsmain bbsleft\
-	  bbsfadd bbsfdel bbsfall bbsfriend bbsfoot bbsform bbspwd bbsplan bbsinfo \
-	  bbsmybrd bbssig bbspst bbsgcon bbsgdoc bbsdel bbsdelmail bbsmailcon bbsmail \
-	  bbsdelmsg bbssnd bbsalluser bbsnotepad bbsmsg bbssendmsg bbsreg \
-	  bbsmailmsg bbsnewmail bbsgetmsg bbssel bbscloak bbspstmail bbssndmail\
-	  bbsmdoc bbsnick chatlogin bbsjs bbstfind bbsadl bbstcon bbstdoc \
-	  bbsmywww bbsccc bbsufind bbsclear bbsstat bbsedit bbsman bbsparm \
-	  bbsfwd bbsmnote bbsdenyall bbsdenydel bbsdenyadd \
-	  bbstopb10 bbsbfind bbstty bbsacount bbsuser bbschat bbsmaildown\
-	  bbsuserinfo bbsmovie bbsmailman bbsgfind\
-	  bbspostupload bbsdelf bbsfdoc bbspreupload bbsupload bbsrss
+CGI		= bbs0an bbsacount bbsall bbsanc bbsbfind bbsboa bbsbrdadd bbsccc \
+		  bbsclear bbscloak bbscon bbsdel bbsdelf bbsdelmail bbsdelmsg \
+		  bbsdoc bbsedit bbsfadd bbsfall bbsfdel bbsfdoc bbsfoot bbsfriend \
+		  bbsfwd bbsgcon bbsgdoc bbsgetmsg bbsgfind bbsinfo bbsleft \
+		  bbslogin bbslogout bbsmail bbsmailcon bbsmaildown bbsmailman \
+		  bbsmailmsg bbsmain bbsman bbsmdoc bbsmnote bbsmsg bbsmybrd \
+		  bbsmywww bbsnewmail bbsnick bbsnot bbsplan bbspreupload bbspst \
+		  bbspstmail bbspwd bbsqry bbsrss bbssec bbssel bbssendmsg bbssig \
+		  bbssnd bbssndmail bbstcon bbstdoc bbstfind bbstop10 bbstopb10 \
+		  bbsufind bbsupload bbsuser bbsuserinfo bbsusr
+
 all: libweb $(CGI)
 
 libweb: $(OBJS)
