@@ -64,12 +64,6 @@ struct boardheader *bcache=NULL;
 
 char fromhost[256];
 
-struct userec *getuser();
-char *strcasestr();
-char *ModeType();
-char *anno_path_of();
-void sort_friend(int left, int right);
-
 static int shm_lock(char *lockname)
 {
     int lockfd;
@@ -152,9 +146,7 @@ void check_anonymous(char* owner)
  * 	set the .DIR file name into buf
  * Write: roly			Date:2002.01.10	
  */
-char *
-setmdir(buf,userid)
-char *buf,*userid;
+char * setmdir(char *buf, char *userid)
 {
 	sprintf(buf,"mail/%c/%s/.DIR",toupper(userid[0]),userid);
 	return buf;
@@ -338,18 +330,6 @@ int get_record(void *buf, int size, int num, char *file) {
 	return 1;
 }
 
-int put_record(void *buf, int size, int num, char *file) {
-	FILE *fp;
-	if(size<1 || size>4096) return 0;
-	if(num<0 || num>1000000) return 0;
-	fp=fopen(file, "r+");
-	if(fp==0) return 0;
-	fseek(fp, num*size, SEEK_SET);
-	fwrite(buf, size, 1, fp);
-	fclose(fp);
-	return 1;
-}
-
 int append_record(void *buf, int size, char *file)
 {
 	FILE *fp;
@@ -489,14 +469,6 @@ char *nohtml(char *s) {
 }
 
 
-
-char *strright(char *s, int len) {
-	int l=strlen(s);
-	if(len<=0) return "";
-	if(len>=l) return s;
-	return s+(l-len);
-}
-
 char *strcasestr(char *s1, char *s2) {
 	int l;
 	l=strlen(s2);
@@ -550,23 +522,9 @@ char *rtrim(char *s) {
 	return t;
 }
 
-char *get_new_shm(int key, int size) {
-        int id;
-        id=shmget(key, size, IPC_CREAT | IPC_EXCL | 0640);
-        if(id<0) return 0;
-        return shmat(id, NULL, 0);
-}
-
 char *get_old_shm(int key, int size) {
         int id;
         id=shmget(key, size, 0);
-        if(id<0) return 0;
-        return shmat(id, NULL, 0);
-}
-
-char *get_shm(int key, int size) {
-        int id;
-        id=shmget(key, size, IPC_CREAT | 0640);
         if(id<0) return 0;
         return shmat(id, NULL, 0);
 }
@@ -577,7 +535,7 @@ char *getsenv(char *s) {
         return "";
 }
 
-int http_quit() {
+int http_quit(void) {
 	printf("\n</html>\n");
 	exit(0);
 }
@@ -910,7 +868,7 @@ int get_shmkey(char *s) {
         return 0;
 }
 
-int shm_init() {
+int shm_init(void) {
 	int boardfd;
 	shm_utmp= (struct UTMPFILE *) get_old_shm(UTMP_SHMKEY, sizeof(struct UTMPFILE));
 	shm_bcache= (struct BCACHE *) get_old_shm(BCACHE_SHMKEY, sizeof(struct BCACHE));
@@ -960,6 +918,50 @@ int user_init(struct userec *x, struct user_info **y) {
 	memcpy(x, x2, sizeof(*x));
 	(*y)->idle_time=time(0);
 	return 1;
+}
+
+static int sig_append(FILE *fp, char *id, int sig) {
+	FILE *fp2;
+	char path[256];
+	char buf[100][256];
+	int i, total;
+	struct userec *x;
+	if(sig<0 || sig>10) return;
+	x=getuser(id);
+	if(x==0) return;
+	sprintf(path, "home/%c/%s/signatures", toupper(id[0]), id);
+	fp2=fopen(path, "r");
+	if(fp2==0) return;
+	for(total=0; total<100; total++) //total<255 -> 100 money modfied 03.10.21
+		if(fgets(buf[total], 255, fp2)==0) break;
+	fclose(fp2);
+	for(i=sig*6; i<sig*6+6; i++) {
+		if(i>=total) break;
+		fprintf(fp, "%s", buf[i]);
+	}
+	fprintf(fp,"\n");
+}
+
+static int fprintf2(FILE *fp, char *s) {
+	int i, tail=0, sum=0;
+	if(s[0]==':' && s[1]==' ' && strlen(s)>79) {
+		sprintf(s+76, "..\n");
+		fprintf(fp, "%s", s);
+		return;
+	}
+	for(i=0; s[i]; i++) {
+		fprintf(fp, "%c", s[i]);
+		sum++;
+		if(tail) {
+			tail=0;
+		} else if(s[i]<0) {
+			tail=s[i];
+		}
+		if(sum>=78 && tail==0) {
+			fprintf(fp, "\n");
+			sum=0;
+		}
+	}
 }
 
 int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig) {
@@ -1131,7 +1133,7 @@ static void bcache_setreadonly(int readonly)
         bcache = (struct boardheader *) mmap(oldptr, MAXBOARD * sizeof(struct boardheader), PROT_READ | PROT_WRITE, MAP_SHARED, boardfd, 0);
     close(boardfd);
 }
-static int bcache_lock()
+static int bcache_lock(void)
 {
     int lockfd;
 
@@ -1151,11 +1153,7 @@ static void bcache_unlock(int fd)
     close(fd);
 }
 //add end
-int get_nextid(char* boardname){
-  return get_nextid_bid(getbnum(boardname));
-}
-
-int get_nextid_bid(int bid){
+static int get_nextid_bid(int bid){
   int ret;
   ret = bid;
   if (ret > 0){
@@ -1166,6 +1164,10 @@ int get_nextid_bid(int bid){
     	bcache_unlock(fd);
   }
   return ret;
+}
+
+static int get_nextid(char* boardname){
+  return get_nextid_bid(getbnum(boardname));
 }
 
 int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig) {
@@ -1251,27 +1253,6 @@ void check_title(char *title)
 	return;
 }
 /* add end */
-int sig_append(FILE *fp, char *id, int sig) {
-	FILE *fp2;
-	char path[256];
-	char buf[100][256];
-	int i, total;
-	struct userec *x;
-	if(sig<0 || sig>10) return;
-	x=getuser(id);
-	if(x==0) return;
-	sprintf(path, "home/%c/%s/signatures", toupper(id[0]), id);
-	fp2=fopen(path, "r");
-	if(fp2==0) return;
-	for(total=0; total<100; total++) //total<255 -> 100 money modfied 03.10.21
-		if(fgets(buf[total], 255, fp2)==0) break;
-	fclose(fp2);
-	for(i=sig*6; i<sig*6+6; i++) {
-		if(i>=total) break;
-		fprintf(fp, "%s", buf[i]);
-	}
-	fprintf(fp,"\n");
-}
 
 char* anno_path_of(char *board) {
 	FILE *fp;
@@ -1384,7 +1365,7 @@ int count_mails(char *id, int *total, int *unread) {
         fclose(fp);
 }
 
-int findnextutmp(char *id, int from) {
+static int findnextutmp(char *id, int from) {
 	int i;
 	if(from<0) from=0;
 	for(i=from; i<MAXACTIVE; i++) 
@@ -1669,11 +1650,6 @@ int countperf(struct userec *x) {
 
 }
 
-int modify_mode(struct user_info *x, int newmode) {
-	if(x==0) return;
-	x->mode=newmode;
-}
-
 int save_user_data(struct userec *x) {
 	FILE *fp;
 	int n;
@@ -1690,23 +1666,12 @@ memcpy( &(shm_ucache->passwd[n]), x, sizeof(struct userec) );
 	return 1;
 }
 
-int is_bansite(char *ip) {
-	FILE *fp;
-	char buf3[256];
-	fp=fopen(".bansite", "r");
-	if(fp==0) return 0;
-	while(fscanf(fp, "%s", buf3)>0)
-		if(!strcasecmp(buf3, ip)) return 1;
-	fclose(fp);
-	return 0;
-}
-
 int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
 }
 
 /* add by stiger, µÃµ½hashkey */
-int uhashkey(char *userid, char *a1, char *a2)
+static int uhashkey(char *userid, char *a1, char *a2)
 {
       char *c=userid;
       int key=0;
@@ -1779,32 +1744,10 @@ int checkpasswd(char *pw_crypted, char *pw_try) {
 	return !strcmp(crypt1(pw_try, pw_crypted), pw_crypted);
 }
 
-int checkuser(char *id, char *pw) {
-	int i;
-	struct userec *x;
-	x=getuser(id);
-	if(x==0) return 0;
-	return checkpasswd(x->passwd, pw);
-}
-
-int count_id_num(char *id) {
-	int i, total=0;
-	for(i=0; i<MAXACTIVE; i++)
-		if(shm_utmp->uinfo[i].active && !strcasecmp(shm_utmp->uinfo[i].userid, id)) total++;
-	return total;
-}
-
-int count_online() {
+int count_online(void) {
 	int i, total=0;
 	for(i=0; i<MAXACTIVE; i++) 
 		if(shm_utmp->uinfo[i].active) total++;
-	return total;
-}
-
-int count_online2() {
-	int i, total=0;
-	for(i=0; i<MAXACTIVE; i++)
-		if(shm_utmp->uinfo[i].active && shm_utmp->uinfo[i].invisible==0) total++;
 	return total;
 }
 
@@ -1823,25 +1766,8 @@ int loadfriend(char *id) {
         }
 }
 
-int isfriend(char *id) {
-	static inited=0;
-        int n; 
-	if(!inited) {
-		loadfriend(currentuser.userid);
-		sort_friend(0,friendnum-1);
-		inited=1;
-	}
-	return friend_search(id, fff,friendnum);	
-/*	for(n=0; n<friendnum; n++)
-	{		
-		if(!strcasecmp(id, fff[n].id)) return 1;
-	}
-	return 0;*/
-
-}
-
 // add friend sort and binary-search by jacobson ------------2006.4.18
-int friend_search(char *id,struct override *fff,int tblsize)
+static int friend_search(char *id,struct override *fff,int tblsize)
 {
 	int     hi, low, mid;
 	int     cmp;
@@ -1865,14 +1791,25 @@ int friend_search(char *id,struct override *fff,int tblsize)
 	return 0;
 }
 
-void swap_friend(int a,int b)
+int isfriend(char *id) {
+	static inited=0;
+        int n; 
+	if(!inited) {
+		loadfriend(currentuser.userid);
+		sort_friend(0,friendnum-1);
+		inited=1;
+	}
+	return friend_search(id, fff,friendnum);	
+}
+
+static void swap_friend(int a,int b)
 {
 	struct override c;
 	c = fff[a];
 	fff[a] = fff[b];
 	fff[b] = c;
 }
-int compare_user_record(struct override *left,struct override *right)
+static int compare_user_record(struct override *left,struct override *right)
 {
 	int retCode;
 	retCode = strcasecmp(left->id, right->id);
@@ -1898,8 +1835,8 @@ void sort_friend(int left, int right)
 
 //-------------------------2006.4.18
 
-struct override bbb[MAXREJECTS];
-int badnum=0;
+static struct override bbb[MAXREJECTS];
+static int badnum=0;
 
 int loadbad(char *id) {
         FILE *fp;
@@ -1984,12 +1921,6 @@ int init_all() {
 	return my_style;
 }
 
-int init_no_http() {
-	srand(time(0)+getpid());
-	chdir(BBSHOME);
-	shm_init();
-}
-
 char *sec(char c) {
 	int i;
 	for(i=0; i<SECNUM; i++) {
@@ -2043,28 +1974,6 @@ char *userid_str(char *s) {
 	return buf;
 }
 
-int fprintf2(FILE *fp, char *s) {
-	int i, tail=0, sum=0;
-	if(s[0]==':' && s[1]==' ' && strlen(s)>79) {
-		sprintf(s+76, "..\n");
-		fprintf(fp, "%s", s);
-		return;
-	}
-	for(i=0; s[i]; i++) {
-		fprintf(fp, "%c", s[i]);
-		sum++;
-		if(tail) {
-			tail=0;
-		} else if(s[i]<0) {
-			tail=s[i];
-		}
-		if(sum>=78 && tail==0) {
-			fprintf(fp, "\n");
-			sum=0;
-		}
-	}
-}
-
 struct fileheader *get_file_ent(char *board, char *file) {
 	FILE *fp;
 	char dir[80];
@@ -2112,7 +2021,7 @@ char *getbfroma(char *path) {
 	return "";
 }
 
-int set_my_cookie() {
+int set_my_cookie(void) {
 	FILE *fp;
 	char path[256], buf[256], buf1[256], buf2[256];
 	int my_t_lines=20, my_link_mode=0, my_def_mode=0, my_style=0;
@@ -2137,26 +2046,6 @@ int set_my_cookie() {
 		sprintf(buf, "%d", my_style);
 		setcookie("my_style", buf);
  	}
-}
-
-int has_fill_form() {
-        FILE *fp;
-        int r;
-        char userid[256], tmp[256], buf[256], *ptr;
-        fp=fopen("new_register", "r");
-        if(fp==0) return 0;
-        while(1) {
-                if(fgets(buf, 100, fp)==0) break;
-                r=sscanf(buf, "%s %s", tmp, userid);
-                if(r==2) {
-                        if(!strcasecmp(tmp, "userid:") && !strcasecmp(userid, currentuser.userid)) {
-                                fclose(fp);
-                                return 1;
-                        }
-                }
-        }
-        fclose(fp);
-        return 0;
 }
 
 #ifdef USE_METALOG
@@ -2268,7 +2157,7 @@ dashd(char *fname)
 }
 
 
-void printpretable()
+void printpretable(void)
 {
 	printf("<table align=center border=0 cellpadding=0 cellspacing=0>\n");
 	printf("	<tr height=6>\n");
@@ -2281,7 +2170,7 @@ void printpretable()
 	printf("		<td width=100%% nowrap bgcolor=#ffffff>\n");
 }
 
-void printposttable()
+void printposttable(void)
 {
 	printf("		</td>\n");
 	printf("		<td width=6 background='/images/r.gif'></td>\n");
@@ -2294,14 +2183,14 @@ void printposttable()
    	printf("</table>\n");
 }
 
-void printpretable_lite()
+void printpretable_lite(void)
 {
 	printf("<table border=0 width=100%%>\n");
 	printf("	<tr height=6><td background=/images/b.gif width=100%%></td></tr>\n");
 	printf("	<tr><td>\n");
 }
 
-void printposttable_lite()
+void printposttable_lite(void)
 {	printf("	</td></tr>\n");
 	printf("</table>\n");
 }
@@ -2352,7 +2241,7 @@ void printpremarquee(char *width, char *height)
 	printf("<marquee behavior=scroll direction=up width=%s height=%s scrollamount=1 scrolldelay=60 onmouseover='this.stop()' onmouseout='this.start()'>", width, height);
 }
 
-void printpostmarquee()
+void printpostmarquee(void)
 {
 	printf("</marquee>");
 }
@@ -2532,43 +2421,6 @@ int strtourl(char * url, char * str)
 			sprintf(mybuf,"%%%X",c);
 		strcat(url,mybuf);
 	}
-	return 0;
-}
-
-int urltostr(char * str, char * url)
-{
-        int i,c,j,flag;
-	char mybuf[4];
-	/*      for(i=0;url[i];i++)
-			url[i]=toupper(url[i]);
-	*/
-	for(i=0;url[i];i+=3)
-	{
-		if(url[i]!='%')
-			return -1;
-		if(isxdigit(url[i+1])==0 || isxdigit(url[i+2])==0)
-			return -1;
-	}
-	flag=0;
-	for(i=0,j=0;url[i];i+=3,j++)
-	{
-		mybuf[0]=url[i+1];
-		mybuf[1]=url[i+2];
-		mybuf[2]='\0';
-		c=strtol(mybuf,NULL,16);
-		if(flag==1)
-		{
-			c-=256;
-			flag=0;
-		}else
-			if(c>128)
-			{
-				c-=256;
-				flag=1;
-			}
-		str[j]=c;
-	}
-	str[j]='\0';
 	return 0;
 }
 
