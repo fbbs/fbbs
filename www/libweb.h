@@ -17,8 +17,11 @@
 
 #define TLINES 18
 #define SQUID
+
+//Goodbye.c
 #define MAX_PERF (1000)
 #define MAX_LUCKY (20)
+
 #ifdef FDQUAN
 	#define MAX_LARGEMAIL_UPLIMIT   300
 	#define MAX_BOARDSMAIL_UPLIMIT	120
@@ -55,9 +58,6 @@
 extern char seccode[][6];
 extern char secname[][2][20];
 
-struct boardheader *getbcache(char *board);
-int junkboard(char *board);
-
 struct post_log {
 	char	author[IDLEN+1];
 	char	board[18];
@@ -81,12 +81,9 @@ extern struct boardheader *bcache;
 extern char fromhost[];
 
 int flock(int fd, int op);
-struct userec *getuser(char *id);
 
-char *ModeType(int mode);
 char *anno_path_of(char *board);
 
-long get_num_records(char *filename, int size);
 int mailnum_under_limit(char *userid);
 int mailsize_under_limit(char *userid);
 
@@ -95,19 +92,10 @@ int file_has_word(char *file, char *word);
 int f_append(const char *file, char *buf);
 struct stat *f_stat(char *file);
 
-int get_record(void *buf, int size, int num, char *file);
-int append_record(void *buf, int size, char *file);
-int del_record(char *file, int size, int num);
-char *cn_Ctime(time_t t);
-char *Ctime(time_t t);
-char *noansi(char *s);
-char *nohtml(char *s);
 
-char *strcasestr(char *s1, char *s2);
-int strsncpy(char *s1, char *s2, int n);
-char *const_ltrim(char *s);
-char *ltrim(char *s);
-char *rtrim(char *s);
+int del_record(char *file, int size, int num);
+
+
 
 char *getsenv(char *s);
 int http_quit(void);
@@ -131,37 +119,23 @@ int post_mail(char *userid, char *title, char *file, char *id, char *nickname, c
 void Certify(char *board, struct fileheader *fh);
 #endif
 
-int updatelastpost(char *board);
-
 int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig);
 
 void check_title(char *title);
 char* anno_path_of(char *board);
-int has_BM_perm(struct userec *user, char *board);
-int has_read_perm(struct userec *user, char *board);
-int has_post_perm(struct userec *user, char *board);
 
 int getbnum(char *board);
 struct boardheader *getbcache(char *board);
 int count_mails(char *id, int *total, int *unread);
 
-int sethomefile(char *buf, char *id, char *file);
 int send_msg(char *myuserid, int mypid, char *touserid, int topid, char *msg);
-char *horoscope(int month, int day);
-char *ModeType(int mode);
-char *cexpstr(int exp);
+
 void iconexp(int exp);
-char *cperf(int perf);
-int countexp(struct userec *x);
-int countperf(struct userec *x);
+
 int save_user_data(struct userec *x);
 int user_perm(struct userec *x, int level);
 
 int getusernum(char *userid);
-struct userec *getuser(char *id);
-
-int checkpasswd(char *pw_crypted, char *pw_try);
-int count_online(void);
 
 extern struct override fff[];
 extern int friendnum;
@@ -193,14 +167,10 @@ struct dir {
 	time_t 	timeDeleted;
 };
 
-void do_report(const char* fname, const char* content);
 void trace(const char* content);
 
 int specialboard(char* board);
-void SpecialID(const char* uid, char* host);
 
-int dashf(char *fname);
-int dashd(char *fname);
 void printpretable(void);
 void printposttable(void);
 void printpretable_lite(void);
@@ -218,9 +188,51 @@ void showbrdlist(char *path,int withbr);
 
 int strtourl(char * url, char * str);
 
-int isclubmember(char *member, char *board);
-
 //crypt.c
 char *crypt1(char *buf, char *salt);
+// Bcache.c
+struct boardheader *getbcache(char *board);
+struct userec *getuser(char *id);
+int updatelastpost(char *board);
+int count_online(void);
+// bbs.c
+int junkboard(char *board);
+int has_BM_perm(struct userec *user, char *board);
+int has_read_perm(struct userec *user, char *board);
+int has_post_perm(struct userec *user, char *board);
+int sethomefile(char *buf, char *id, char *file);
+void do_report(const char* fname, const char* content);
+// ModeType.c
+char *ModeType(int mode);
+// libBBS/string.c
+char *cn_Ctime(time_t t);
+char *Ctime(time_t t);
+char *noansi(char *s);
+char *nohtml(char *s);
+char *strcasestr(char *s1, char *s2);
+int strsncpy(char *s1, char *s2, int n);
+char *const_ltrim(char *s);
+char *ltrim(char *s);
+char *rtrim(char *s);
+// Record.c
+long get_num_records(char *filename, int size);
+int get_record(void *buf, int size, int num, char *file);
+int append_record(void *buf, int size, char *file);
+// stuff.c
+char *horoscope(int month, int day);
+// Goodbye.c
+char *cexpstr(int exp);
+char *cperf(int perf);
+int countexp(struct userec *x);
+int countperf(struct userec *x);
+// pass.c
+int checkpasswd(char *pw_crypted, char *pw_try);
+// main.c
+void SpecialID(const char* uid, char* host);
+// libBBS/fileio.c
+int dashf(char *fname);
+int dashd(char *fname);
+// bm.c
+int isclubmember(char *member, char *board);
 
 #endif
