@@ -687,7 +687,7 @@ int hhprintf(char *fmt, ...) {
                     //polygon<<
                     //
                     //if(strstr(ltmp, ".gif"))
-                    if(true)//Disable the thumbnail
+                    if(1)//Disable the thumbnail
                     {
                         printf("<IMG border=0 SRC='%s' onload='javascript:if(this.width>(screen.width*0.85))this.width=(screen.width*0.85)'>", nohtml(tmp));
                     }else
