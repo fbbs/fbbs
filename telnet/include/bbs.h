@@ -32,7 +32,6 @@
 #include <dmalloc.h>
 #endif
 
-#include "types.h"
 #include "config.h"             	/* User-configurable stuff */
 
 #include "glossary.h"

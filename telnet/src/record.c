@@ -131,7 +131,7 @@ int get_records(const char *filename, char *rptr, int size, int id,
 
 //	对名为filename的记录文件执行fptr函数
 int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
-		int applycopy, bool reverse) {
+		int applycopy, int reverse) {
 	char *buf, *buf1, *buf2;
 	int i;
 	size_t file_size;
