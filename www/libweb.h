@@ -202,8 +202,6 @@ int has_read_perm(struct userec *user, char *board);
 int has_post_perm(struct userec *user, char *board);
 int sethomefile(char *buf, char *id, char *file);
 void do_report(const char* fname, const char* content);
-// ModeType.c
-char *ModeType(int mode);
 // libBBS/string.c
 char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
@@ -229,9 +227,6 @@ int countperf(struct userec *x);
 int checkpasswd(char *pw_crypted, char *pw_try);
 // main.c
 void SpecialID(const char* uid, char* host);
-// libBBS/fileio.c
-int dashf(char *fname);
-int dashd(char *fname);
 // bm.c
 int isclubmember(char *member, char *board);
 
