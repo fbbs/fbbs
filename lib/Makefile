@@ -9,7 +9,7 @@
 #############################################################
 LIBNAME	 = libBBS.a
 
-GARBAGE  = a.out core out.* *.BAK DEAD*
+GARBAGE  = a.out core out.* *.BAK DEAD* *.a
 
 CFILE	 = string.c mmdecode.c fileio.c
 
@@ -22,8 +22,8 @@ OBJS	 = string.o mmdecode.o fileio.o
 #--------------------- Dependency starts here -------------------
 
 all: $(OBJS)
-	ar rv ../$(LIBNAME) $(OBJS)
-	ranlib ../$(LIBNAME)
+	ar rv $(LIBNAME) $(OBJS)
+	ranlib $(LIBNAME)
 
 tag:
 	ctags $(CFILE)
@@ -34,7 +34,7 @@ clean: /tmp
 
 cleanall: clean
 	@echo --- Cleanning Grabage with $(LIBNAME) ---
-	-rm -fr $(LIBNAME) ../$(LIBNAME)
+	-rm -fr $(LIBNAME) $(LIBNAME)
 
 install:
 	@echo --- lib: skip ---

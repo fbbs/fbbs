@@ -2,7 +2,7 @@
 
 #define _LIBWEB_H_
 
-#include "../telnet/include/bbs.h"
+#include "../include/bbs.h"
 #include "sys/ipc.h"
 #include "sys/shm.h"
 #include "stdarg.h"

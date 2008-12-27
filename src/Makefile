@@ -56,7 +56,6 @@ EXTRADEF = -DBACKUP_RANGE_DELETE
 .SUFFIXES: .o .c
 
 .c.o:	;$(CC) $(CFLAGS) $(DEFINES) $(EXTRADEF) -c $*.c
-#.o.so:	;ld -s -G $*.o -o $*.so -L../lib -lBBS
 
 #--------------------- Dependency starts here -------------------
 all:  $(PROGNAME) chatd thread bbsnet so miscd
