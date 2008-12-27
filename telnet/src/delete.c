@@ -145,7 +145,6 @@ int getuinfo(FILE *fn) {
 	fprintf(fn, "居住住址     : %s\n", currentuser.address);
 	fprintf(fn, "电子邮件信箱 : %s\n", currentuser.email);
 	fprintf(fn, "真实 E-mail  : %s\n", currentuser.reginfo);
-	fprintf(fn, "Ident 资料   : %s\n", currentuser.ident);
 	getdatestring(currentuser.firstlogin, NA);
 	fprintf(fn, "帐号建立日期 : %s\n", datestring);
 	getdatestring(currentuser.lastlogin, NA);

@@ -1020,22 +1020,6 @@ void login_query() {
 	login_start_time = time(0);
 }
 
-int valid_ident(ident)
-char *ident;
-{
-	static char *invalid[] = {"unknown@", "root@", "gopher@", "bbs@",
-		"guest@", "nobody@", "www@", NULL
-	};
-	int i;
-
-	if (ident[0] == '@')
-	return 0;
-	for (i = 0; invalid[i] != NULL; i++)
-	if (strstr(ident, invalid[i]) != NULL)
-	return 0;
-	return 1;
-}
-
 void write_defnotepad() {
 	currentuser.notedate = time(0);
 	set_safe_record();
@@ -1198,7 +1182,6 @@ void SpecialID(const char *uid, char *host) {
 
 void user_login() {
 	char fname[STRLEN];
-	char *ruser;
 	int logins;
 
 	if (strcmp(currentuser.userid, "SYSOP") == 0) {
@@ -1206,10 +1189,8 @@ void user_login() {
 		substitut_record(PASSFILE, &currentuser, sizeof(currentuser),
 				usernum);
 	}
-	ruser = getenv("REMOTEUSER");
 	fromhost[59] = 0; //added by iamfat 2004.01.05 to avoid overflow
-	sprintf(genbuf, "%s@%s", ruser ? ruser : "?", fromhost);
-	log_usies("ENTER", genbuf);
+	log_usies("ENTER", fromhost);
 
 	/*02.10.05  add by stephen to mask the real ip of user,convert "a.b.c.d" to "a.b.*.*"  */
 	//02.10.09 Don't add this line now.
@@ -1224,13 +1205,6 @@ void user_login() {
 	//technician=IsTechnician(currentuser.userid);
 
 	u_enter();
-	if (ruser != NULL) {
-		sprintf(genbuf, "%s@%s", ruser, fromhost);
-		if (valid_ident(genbuf)) {
-			strncpy(currentuser.ident, genbuf, NAMELEN);
-			currentuser.ident[NAMELEN - 1] = '\0';
-		}
-	}
 	report("Enter");
 	started = 1;
 	logins = count_user();

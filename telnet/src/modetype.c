@@ -71,12 +71,6 @@ char *ModeType(int mode) {
 			return "燕园夜话";
 		case CHAT1:
 			return "燕圆夜话";
-		case CHAT3:
-			return "版主工作室";
-		case CHAT4:
-			return "群龙聚首厅";
-		case IRCCHAT:
-			return "会谈IRC";
 		case LAUSERS:
 			return "探视网友";
 		case XMENU:
@@ -89,20 +83,14 @@ char *ModeType(int mode) {
 #else
 			return "饮复旦泉";
 #endif
-		case EDITWELC:
-			return "编辑Welc";
 		case EDITUFILE:
 			return "编辑个人档";
 		case EDITSFILE:
 			return "动手动脚";
-		case ZAP:
-			return "订阅讨论区";
 		case GAME:
 			return "脑力激汤";
 		case SYSINFO:
 			return "检查系统";
-		case ARCHIE:
-			return "ARCHIE";
 		case DICT:
 			return "翻查字典";
 		case LOCKSCREEN:
@@ -121,10 +109,6 @@ char *ModeType(int mode) {
 			return "自杀中..";
 		case EDITANN:
 			return "编修精华";
-		case HYTELNET:
-			return "Hytelnet";
-		case CCUGOPHER:
-			return "他站精华";
 		case LOOKMSGS:
 			return "察看讯息";
 		case WFRIEND:

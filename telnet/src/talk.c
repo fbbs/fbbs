@@ -615,10 +615,9 @@ int count_useshell(struct user_info *uentp) {
 	}
 	if (!uentp->active || !uentp->pid)
 		return 0;
-	if (uentp->mode == SYSINFO || uentp->mode == HYTELNET || uentp->mode
-			== DICT || uentp->mode == ARCHIE || uentp->mode == IRCCHAT
-			|| uentp->mode == BBSNET || uentp->mode == FIVE || uentp->mode
-			== GAME || uentp->mode == LOGIN)
+	if (uentp->mode == SYSINFO	|| uentp->mode == DICT
+		|| uentp->mode == BBSNET || uentp->mode == FIVE
+		|| uentp->mode == GAME 	|| uentp->mode == LOGIN)
 		count++;
 	return 1;
 }
@@ -817,10 +816,10 @@ struct user_info *userinfo;
 		clrtoeol();
 		return -1;
 	}
-	if (uin.mode == SYSINFO || uin.mode == IRCCHAT || uin.mode == BBSNET
-			|| uin.mode == DICT || uin.mode == ADMIN || uin.mode == ARCHIE
+	if (uin.mode == SYSINFO || uin.mode == BBSNET
+			|| uin.mode == DICT || uin.mode == ADMIN
 			|| uin.mode == LOCKSCREEN || uin.mode == GAME
-			|| uin.mode == HYTELNET || uin.mode == PAGE
+			|| uin.mode == PAGE
 			|| uin.mode == FIVE || uin.mode == LOGIN) {
 		move(2, 0);
 		prints("目前无法呼叫.\n");

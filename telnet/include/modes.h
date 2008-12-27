@@ -44,22 +44,16 @@
 #define MONITOR         19
 #define CHAT1           20
 #define CHAT2           21
-#define CHAT3           22
-#define CHAT4           23
-#define EDITWELC        24
-#define ZAP             25
 #define EDITUFILE       26
 #define EDITSFILE       27
 #define QUERY           28
 #define CNTBRDS         29
 #define VOTING          30
 #define VISIT           31
-#define IRCCHAT         32
 #define BBSNET          33
 #define DIGEST          34
 #define FRIEND          35
 #define YANKING         36
-#define ARCHIE          37
 #define GMENU           38
 #define DICT            39
 #define LOCKSCREEN      40
@@ -70,12 +64,10 @@
 #define OFFLINE         45
 #define EDITANN         46
 #define WWW             47
-#define CCUGOPHER       48
 #define LOOKMSGS        49
 #define WFRIEND         50
 #define SYSINFO	        51
 #define GAME            52
-#define HYTELNET        53
 #define WNOTEPAD		54
 #define BBSPAGER		55	/* edwardc.990429 for ÍøÂ·´«ºô */
 #define M_BLACKJACK		56 

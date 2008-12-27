@@ -1,5 +1,4 @@
 #include "bbs.h"
-#include "bbsgopher.h"
 
 #define MAXITEMS        1024
 #define PATHLEN         256
@@ -9,7 +8,6 @@
 #define ADDITEM         0
 #define ADDGROUP        1
 #define ADDMAIL         2
-#define ADDGOPHER       3
 
 void a_menu();
 
@@ -1235,12 +1233,6 @@ void a_manager(MENU *pm, int ch) {
 		case 'i':
 			a_newitem(pm, ADDMAIL);
 			break;
-			/*
-			 case 'G':
-			 if(chk_currBM(currBM, 0))
-			 a_newitem(pm, ADDGOPHER);
-			 break;
-			 *///commented by roly 03.03.24
 		case 'p':
 			a_copypaste(pm, 1);
 			break;

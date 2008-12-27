@@ -79,9 +79,6 @@ void disply_userinfo(struct userec *u) {
 	}
 	prints("电子邮件信箱 : %s\n", u->email);
 	prints("真实 E-mail  : %s\n", u->reginfo);
-	if
-	HAS_PERM (PERM_ADMINMENU)
-	prints("Ident 资料   : %s\n", u->ident);
 	prints("最近光临机器 : %-22s", u->lasthost);
 	prints("终端机形态 : %s\n", u->termtype);
 	getdatestring(u->firstlogin, NA);

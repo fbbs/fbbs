@@ -887,27 +887,22 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 
 	signal(SIGALRM, SIG_IGN);
 	clear();
-	if (uinfo.mode != CCUGOPHER) {
-		if (uinfo.mode == POSTING) {
-			if (local_article == YEA)
-				strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
-			else
-				strcpy(p_buf, "S.转信, L.本站发表, A.取消, T.更改标题 or E.再编辑? [S]: ");
-		} else if (uinfo.mode == SMAIL)
-			strcpy(p_buf, "(S)寄出, (A)取消, or (E)再编辑? [S]: ");
+	if (uinfo.mode == POSTING) {
+		if (local_article == YEA)
+			strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
 		else
-			strcpy(p_buf, "(S)储存档案, (A)放弃编辑, (E)继续编辑? [S]: ");
-		valid_article(p_buf, abort, sure);
-	} else
-		abort[0] = 'a';
+			strcpy(p_buf, "S.转信, L.本站发表, A.取消, T.更改标题 or E.再编辑? [S]: ");
+	} else if (uinfo.mode == SMAIL)
+		strcpy(p_buf, "(S)寄出, (A)取消, or (E)再编辑? [S]: ");
+	else
+		strcpy(p_buf, "(S)储存档案, (A)放弃编辑, (E)继续编辑? [S]: ");
+	valid_article(p_buf, abort, sure);
 	if (abort[0] == 'a' || abort[0] == 'A') {
 		struct stat stbuf;
 		clear();
-		if (uinfo.mode != CCUGOPHER) {
-			prints("取消...\n");
-			refresh();
-			sleep(1);
-		}
+		prints("取消...\n");
+		refresh();
+		sleep(1);
 		if (stat(filename, &stbuf) || stbuf.st_size == 0)
 			unlink(filename);
 		aborted = -1;

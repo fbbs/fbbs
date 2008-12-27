@@ -114,7 +114,6 @@ extern int errno; //出错信息编号
 #define RNDPASSLEN             10        /* 暗码认证的暗码长度 (适宜范围 4~10)*/
 //#endif
 
-#define MAXGOPHERITEMS     9999    /* max of gopher items */
 #define PASSFILE     ".PASSWDS"    /* Name of file User records stored in */
 #define ULIST_BASE   ".UTMP"       /* Names of users currently on line */
 extern char ULIST[];

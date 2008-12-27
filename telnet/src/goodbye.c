@@ -378,7 +378,7 @@ void showstuff(char *buf) {
 			currentuser.username, "realname", currentuser.realname,
 			"address", currentuser.address, "email", currentuser.email,
 			"termtype", currentuser.termtype, "realemail",
-			currentuser.reginfo, "ident", currentuser.ident, "rgtday",
+			currentuser.reginfo, "rgtday",
 			rgtday, "login", numlogins, "post", numposts, "mail",
 			nummails, "lastlogin", lasttime, "lasthost",
 					currentuser.lasthost, "lastjustify", lastjustify,

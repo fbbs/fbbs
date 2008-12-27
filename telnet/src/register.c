@@ -710,20 +710,6 @@ int check_register_ok(void) {
 		pressanykey();
 		return 1;
 	}
-	/*
-	 if ((fn = fopen(fname, "r")) != NULL) {
-	 fgets(genbuf, STRLEN, fn);
-	 fclose(fn);
-	 strtok(genbuf, "\n");
-	 if (   valid_ident(genbuf) && ((strchr(genbuf, '@') != NULL) 
-	 || strstr(genbuf, "usernum"))) {
-	 move(21, 0);
-	 prints("恭贺您!! 您已顺利完成本站的使用者注册手续,\n");
-	 prints("从现在起您将拥有一般使用者的权利与义务...\n");
-	 pressanykey();
-	 return 1;
-	 }
-	 }*/
 	return 0;
 }
 //#ifdef MAILCHECK

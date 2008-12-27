@@ -182,9 +182,9 @@ int do_sendmsg(struct user_info *uentp, char msgstr[256], int mode,
 			clrtoeol();
 			return -1;
 		}
-		if (uin->mode == IRCCHAT || uin->mode == BBSNET ||uin->mode
-				== LOCKSCREEN || uin->mode == HYTELNET ||uin->mode == GAME
-				|| uin->mode == PAGE ||uin->mode == FIVE || !canmsg(uin)) {
+		if (uin->mode == BBSNET ||uin->mode	== LOCKSCREEN
+			||uin->mode == GAME || uin->mode == PAGE
+			||uin->mode == FIVE || !canmsg(uin)) {
 			move(2, 0);
 			prints("目前无法传送讯息给对方.\n");
 			pressreturn();
@@ -196,10 +196,9 @@ int do_sendmsg(struct user_info *uentp, char msgstr[256], int mode,
 		if (uentp->uid == usernum)
 			return 0;
 		uin = uentp;
-		if (uin->mode == IRCCHAT || uin->mode == BBSNET || uin->mode
-				== HYTELNET || uin->mode == GAME || uin->mode == PAGE
-				|| uin->mode == LOCKSCREEN || uin->mode == FIVE || (mode
-				!=2 && !canmsg(uin))) //add mode!=2 by quickmouse
+		if (uin->mode == BBSNET || uin->mode == GAME
+			|| uin->mode == PAGE || uin->mode == LOCKSCREEN
+			|| uin->mode == FIVE || (mode != 2 && !canmsg(uin)))
 			return 0;
 		strcpy(uident, uin->userid);
 	}

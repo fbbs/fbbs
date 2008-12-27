@@ -1447,15 +1447,11 @@ char *ModeType(int mode) {
         case PAGE:      return "巴峡猿啼";
         case CHAT1:     return "燕圆夜话";
         case CHAT2:     return "燕园夜话";
-        case CHAT3:     return "Chat3";
-        case CHAT4:     return "Chat4";
         case LAUSERS:   return "探视网友";
         case XMENU:     return "系统资讯";
         case VOTING:    return "投票";
-        case EDITWELC:  return "编辑Welc";
         case EDITUFILE: return "编辑个人档";
         case EDITSFILE: return "动手动脚";
-        case ZAP:       return "订阅讨论区";
         case LOCKSCREEN:return "屏幕锁定";
         case NOTEPAD:   return "留言板";
         case GMENU:     return "工具箱";
