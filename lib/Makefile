@@ -11,9 +11,7 @@ LIBNAME	 = libBBS.a
 
 GARBAGE  = a.out core out.* *.BAK DEAD* *.a
 
-CFILE	 = string.c mmdecode.c fileio.c
-
-OBJS	 = string.o mmdecode.o fileio.o
+OBJS	 = string.o mmdecode.o fileio.o modetype.o
 
 .SUFFIXES: .o .c
 
@@ -24,9 +22,6 @@ OBJS	 = string.o mmdecode.o fileio.o
 all: $(OBJS)
 	ar rv $(LIBNAME) $(OBJS)
 	ranlib $(LIBNAME)
-
-tag:
-	ctags $(CFILE)
 
 clean: /tmp
 	@echo --- Cleaning Garbage ... ---

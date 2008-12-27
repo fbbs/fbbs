@@ -16,6 +16,9 @@ int f_rm(char *fpath);
 //mmdecode.c
 void _mmdecode(unsigned char *str);
 
+//modetype.c
+char *ModeType(int mode);
+
 //string.c
 char *strtolower(char *dst, char *src);
 char *strtoupper(char *dst, char *src);

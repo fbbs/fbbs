@@ -22,6 +22,10 @@
 
 /* Lots o' modes! */
 
+#ifndef _MODES_H_
+
+#define _MODES_H_
+
 #define IDLE            0       /* Modes a user can be in */
 #define TALK            1
 #define NEW             2
@@ -86,3 +90,5 @@
 #define GOODWISH		69
 #define GIVEUPBBS		70	/* 2003.04.22 stephen for give up BBS for some days*/
 //½äÍø
+
+#endif

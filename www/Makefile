@@ -35,4 +35,4 @@ clean:
 	rm -rf $(CGI)
 
 %:: %.c
-	$(CC) -o $@ $< -lweb -L.
+	$(CC) -o $@ $< -lweb -L. -lBBS -L../lib
