@@ -393,3 +393,16 @@ extern char datestring[];
 #define BMNAMEMAXLEN	(56)		//每个版版主名称时最大数
 //如果BMNAMELISTLEN与BMNAMEMAXLEN不同,显示版主列表时,将用...来表示超过部分
 //BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界
+
+//uinfo.c
+char *cexpstr(int exp);
+char *cnumposts(int num);
+#ifdef ALLOWGAME
+char *cnummedals(int num);
+char *cmoney(int num);
+#endif
+char *cperf(int perf);
+int countexp(struct userec *udata);
+int countperf(struct userec *udata);
+int julian_day(int year, int month, int day);
+int days_elapsed(int year, int month, int day, time_t now);

@@ -11,7 +11,7 @@ LIBNAME	 = libBBS.a
 
 GARBAGE  = a.out core out.* *.BAK DEAD* *.a
 
-OBJS	 = string.o mmdecode.o fileio.o modetype.o
+OBJS	 = string.o mmdecode.o fileio.o modetype.o uinfo.o
 
 .SUFFIXES: .o .c
 

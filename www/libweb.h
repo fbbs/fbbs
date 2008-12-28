@@ -212,11 +212,6 @@ int get_record(void *buf, int size, int num, char *file);
 int append_record(void *buf, int size, char *file);
 // stuff.c
 char *horoscope(int month, int day);
-// Goodbye.c
-char *cexpstr(int exp);
-char *cperf(int perf);
-int countexp(struct userec *x);
-int countperf(struct userec *x);
 // pass.c
 int checkpasswd(char *pw_crypted, char *pw_try);
 // main.c

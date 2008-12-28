@@ -1389,24 +1389,6 @@ char *horoscope(int month, int day) {
         if(date<1222) return "射手座";
 }
 
-//modified by iamfat 2002.08.01
-//经验值拉开6档 每档10级
-char   *cexpstr(int exp)
-{
-	static char ce[11];
-	char* c=   "-=+*#A";
-	int i;
-	int j;
-	strcpy(ce, "          ");
-	if(exp<0)return ce;
-	i=exp/2000;
-	i=i>5?5:i;
-	j=(exp-i*2000)/200;
-	j=j>9?9:j;
-	memset(ce,c[i],j+1);
-	return ce;
-}
-
 void iconexp(int exp)
 {
         static char ce[11];
@@ -1430,138 +1412,14 @@ void iconexp(int exp)
 	//printf("<br>");
 
 }
-/*
-{
-	int orgdata;
-	long randval;
-	orgdata = exp;
-	time(&randval);
-	if (orgdata<=4) return "    *";
-	if (orgdata<=16) 
-	if (orgdata>(randval%12+4)) return "   **";
-	else return "    *";
-	if (orgdata<64)
-	if (orgdata>(randval%48+16)) return "  ***";
-	else return "   **";
-	if (orgdata<256) 
-	if (orgdata>(randval%192+64)) return " ****";
-	else return "  ***";
-	if (orgdata<640) 
-	if (orgdata>(randval%384+256)) return "*****";
-	else return " ****";
-	return "*****";
-//modified by roly
-        if(exp==-9999) 	return "没等级";
-        if(exp<=100)  	return "新手上路";
-        if(exp<=450)	return "一般站友";
-        if(exp<=850)	return "中级站友";
-        if(exp<=1500)	return "高级站友";
-        if(exp<=2500)	return "老站友";
-        if(exp<=3000)	return "长老级";
-        if(exp<=5000)	return "本站元老";
-        if(exp<=10000)	return "开国大老";
-        return "超级大老";
-}*/
-
-
-char   *cperf(int perf) {
-/* Commented by Amigo 2002.06.18. Change exp description. */
-	/* added by roly */
-//	if (perf==100) return "好样的";
-//    	return "加油加油";
-    /* add end */    
-
-/* Following if criterias modified by Amigo 2002.06.18. */
-/* Modified by Amigo 2002.06.23. Change perf description. */
-//modified by iamfat 2002.08.01
-/*
-        if(perf==-9999)	return "新手上路";
-        if(perf<=100)	return "新手上路";
-        if(perf<=200)	return "赶快加油";
-        if(perf<=400)	return "努力中";
-        if(perf<=500)	return "还不错";
-        if(perf<=550)	return "很好";
-        if(perf<=600)	return "优秀";
-        if(perf<=650)	return "好极了";
-        if(perf<=700)	return "本站常客";
-        if(perf<=800)	return "中坚力量";
-        if(perf<=900)	return "资深人士";
-        if(perf<1000)	return "江湖元老";
-        if(perf>=1000)	return "神～～";
-	return "机器人！";
-*/
-        if (perf <= 100) return GLY_CPERF0;
-        if (perf <= 200) return GLY_CPERF1;
-        if (perf <= 400) return GLY_CPERF2;
-        if (perf <= 500) return GLY_CPERF3;
-        if (perf <= 550) return GLY_CPERF4;
-        if (perf <= 600) return GLY_CPERF5;
-        if (perf <= 650) return GLY_CPERF6;
-        if (perf <= 700) return GLY_CPERF7;
-        if (perf <= 800) return GLY_CPERF8;
-        if (perf <= 900) return GLY_CPERF9;
-        if (perf < 1000) return GLY_CPERFA;
-	return GLY_CPERFB;
-}
-
-int countexp(struct userec *x) {
-        int tmp;
-	if(!strcasecmp(x->userid, "guest")) return -9999;
-        tmp=x->numposts + x->numlogins/5 + (time(0)-x->firstlogin)/86400 + x->stay/3600;
-	//modified by roly form "numlogins/3" to numlogin/5
-	if(tmp<0) tmp=0;
-	//added by iamfat 2002.08.01
-	if(tmp>12000) tmp=12000;
-        return tmp;
-}
-
-int countperf(struct userec *x) {
-	/*
-	int day, logins, posts;
-        if(!strcasecmp(x->userid, "guest")) return -9999;
-	day=(time(0) - x->firstlogin)/86400+1;
-	logins=x->numlogins;
-	posts=x->numposts;
-	if(day<=0 || logins<=0 || posts<0) return 0;
-        return (10*posts/logins+10*logins/day);
-	*/
-	//modified by roly
-	int     perf;
-	int     reg_days;
-	if (!strcmp(x->userid, "guest"))
-		return -9999;
-	reg_days = (time(0) - x->firstlogin) / 86400 + 1;
-	
-/*   perf=(reg_days/20>20?20:reg_days/20);
-   perf=perf+(x->stay/36000>30?30:(x->stay/36000));
-   perf=perf+(x->stay/(36*reg_days)>50?50:(x->stay/(36*reg_days)));*/
-/* Modified by Amigo 2002.06.18. Change exp formula. */
-   perf=(reg_days/4>250?250:reg_days/4);
-   perf=perf+(x->stay/14400>250?250:(x->stay/14400));
-   perf=perf+(x->stay/(36*reg_days)>500?500:(x->stay/(36*reg_days)));
-   //added by iamfat 2002.08.29 for 浮动表现值
-   randomize();
-   //perf=perf + rand()%(MAX_LUCKY*2)-MAX_LUCKY;
-   perf=(perf>MAX_PERF)?MAX_PERF:perf;
-   perf=(perf<0)?0:perf;
-
-   return perf;
-
-}
 
 int save_user_data(struct userec *x) {
 	FILE *fp;
 	int n;
 	n=getusernum(x->userid);
-	if(n<0 || n>1000000) return 0;
-/*
-	fp=fopen(".PASSWDS", "r+");
-	if(fp==0) return 0;
-	fseek(fp, n*sizeof(struct userec), SEEK_SET);
-	fwrite(x, sizeof(struct userec), 1, fp);
-	fclose(fp);
-*/
-memcpy( &(shm_ucache->passwd[n]), x, sizeof(struct userec) );
+	if(n < 0 || n > 1000000)
+		return 0;
+	memcpy( &(shm_ucache->passwd[n]), x, sizeof(struct userec) );
 	return 1;
 }
 
