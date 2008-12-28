@@ -69,10 +69,10 @@ char *strcasestr_gbk(const char *haystack, const char *needle) {
 	if (hlength <= 0)
 		return NULL;
 	if (nlength <= 0)
-		return haystack;
+		return (char *)haystack;
 	for (i = 0; i <= (hlength - nlength); i++) {
 		if (strncasecmp_gbk(haystack + i, needle, nlength) == 0)
-			return haystack + i;
+			return (char *)(haystack + i);
 		if (haystack[i] & 0x80)
 			i++;
 	}
