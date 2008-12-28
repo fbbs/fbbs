@@ -586,8 +586,6 @@ struct newpostdata *ptr;
 	return num;
 }
 
-extern void ellipsis(char *, int);
-
 #ifndef NEWONLINECOUNT
 int *online_num;
 int _cntbrd(struct user_info *ui) {

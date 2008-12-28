@@ -11,8 +11,6 @@
 
 void a_menu();
 
-//Added by IAMFAT 2002-05-30
-extern void ellipsis(char* str, int len);
 extern char BoardName[];
 struct boardheader *getbcache();
 void a_prompt(); /* added by netty */

@@ -25,5 +25,6 @@ char *strtoupper(char *dst, char *src);
 char *strcasestr_gbk(char *haystack, char *needle);
 char *ansi_filter(char *dst, const char *src);
 int getdatestring(time_t time, int mode);
+int ellipsis(char *str, int len);
 
 #endif

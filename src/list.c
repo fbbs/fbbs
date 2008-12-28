@@ -42,9 +42,6 @@ time_t update_time = 0;
 int freshmode = 0;
 int SHOWONEBRD=0;
 
-//Added IAMFAT 2002-05-27
-extern void ellipsis(char* str, int len);
-//End IAMFAT
 extern int cmpfnames();
 extern int searchuser();
 extern struct UCACHE *uidshm;

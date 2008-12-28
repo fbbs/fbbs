@@ -528,37 +528,3 @@ void trimleft(char *title) {
 		title[0]='\0';
 	}
 }
-
-//Added by IAMFAT 2002-05-27
-// 超过一定长度的字符串余下部分以...显示
-void ellipsis(char *str, int len) {
-	register int l = 0;
-	register int hz=0, ohz=0;
-	unsigned char *ptr = (unsigned char *) str;
-	if (len<3) {
-		str[len]=0;
-		return;
-	}
-	while (*ptr && l<len) {
-		if (!hz && *ptr>=0xa1 && *ptr<=0xfe) {
-			hz=1;
-		} else {
-			if (hz && l==len-3)
-				ohz=1;
-			hz=0;
-		}
-		l++;
-		ptr++;
-	}
-	if (l<len) {
-		memset(ptr, ' ', len-l);
-		str[len]=0;
-	} else if (*ptr) {
-		ptr-=2;
-		strcpy(ptr, "..");
-		if (!ohz) {
-			*(ptr-1)='.';
-		}
-	}
-}
-//End IAMFAT

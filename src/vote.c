@@ -39,10 +39,6 @@ int voted_flag;
 FILE *sug; //投票结果的文件指针
 int makevote(struct votebal *ball, char *bname); //设置投票箱
 
-//Added by IAMFAT 2002.06.13
-extern void ellipsis(char *str, int len); //加省略号
-
-//Added End
 //commented by jacobson
 
 //本文件主要处理投票功能
