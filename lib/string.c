@@ -6,7 +6,7 @@
 
 // Convert string 'src' to lowercase and store it in 'dst'.
 // Caller should ensure the capacity of 'dst' is no less than 'src'.
-char *strtolower(char *dst, char *src) {
+char *strtolower(char *dst, const char *src) {
 	char *ret = dst;
 
 	if (dst == NULL || src == NULL)
@@ -19,7 +19,7 @@ char *strtolower(char *dst, char *src) {
 
 // Convert string 'src' to uppercase and store it in 'dst'.
 // Caller should ensure the capacity of 'dst' is no less than 'src'.
-char *strtoupper(char *dst, char *src) {
+char *strtoupper(char *dst, const char *src) {
 	char *ret = dst;
 
 	if (dst == NULL || src == NULL)
@@ -33,7 +33,7 @@ char *strtoupper(char *dst, char *src) {
 // Compare string 's1' against 's2' and differences in case are ignored.
 // No more than 'n' characters are compared.
 // This function supports zh_CN.GBK.
-int strncasecmp_gbk(char *s1, char *s2, int n) {
+int strncasecmp_gbk(const char *s1, const char *s2, int n) {
 	register int c1, c2, l = 0;
 
 	while (*s1 && *s2 && l < n) {
@@ -57,7 +57,7 @@ int strncasecmp_gbk(char *s1, char *s2, int n) {
 // Search string 'haystack' for a substring 'needle'
 // and differences in case are ignored.
 // This function supports zh_CN.GBK.
-char *strcasestr_gbk(char *haystack, char *needle) {
+char *strcasestr_gbk(const char *haystack, const char *needle) {
 	int i, nlength, hlength;
 
 	if (haystack == NULL || needle == NULL)
