@@ -81,7 +81,7 @@ char *strcasestr_gbk(char *haystack, char *needle) {
 
 // Eliminate ANSI escape codes from 'src' and store it in 'dst'.
 // 'src' and 'dst' can be the same.
-char *ansi_filter(char *dst, char *src)
+char *ansi_filter(char *dst, const char *src)
 {
 	char *ret = dst;
 	int flag = 0;

@@ -23,7 +23,7 @@ char *ModeType(int mode);
 char *strtolower(char *dst, char *src);
 char *strtoupper(char *dst, char *src);
 char *strcasestr_gbk(char *haystack, char *needle);
-char *ansifilter(char *dst, char *src);
+char *ansi_filter(char *dst, const char *src);
 int getdatestring(time_t time, int mode);
 
 #endif

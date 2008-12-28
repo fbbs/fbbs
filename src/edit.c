@@ -715,7 +715,7 @@ int write_posts() {
 	ptr = save_title;
 	if (!strncmp(ptr, "Re: ", 4))
 		ptr += 4;
-	safe_strcpy(buf, ptr);
+	ansi_filter(buf, ptr);
 	strncpy(postlog.title, buf, 40);
 	postlog.title[40] = '\0';
 	postlog.date = now;
@@ -914,7 +914,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		char buf[STRLEN];
 		move(1, 0);
 		prints("旧标题: %s", save_title);
-		safe_strcpy(buf, save_title);
+		ansi_filter(buf, save_title);
 		getdata(2, 0, "新标题: ", buf, 50, DOECHO, NA);
 		if (strcmp(save_title, buf) && strlen(buf) != 0) {
 			check_title(buf);

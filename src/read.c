@@ -959,7 +959,7 @@ if(/* (dotype == 1 || dotype == 3) &&*/BMch == 7) // add by jieer 2001.06.23
 	else
 	sprintf(buf, "[ºÏ¼¯]%s", keyword);
 	//modified end
-	safe_strcpy(keyword, buf);
+	ansi_filter(keyword, buf);
 	sprintf(buf, "tmp/%s.combine", currentuser.userid);
 	//modified by iamfat 2003.03.25
 	if (in_mail)

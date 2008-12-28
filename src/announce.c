@@ -475,7 +475,7 @@ int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
 	}
 
 	//Added by IAMFAT 2002-05-30
-	safe_strcpy(title, fileinfo->title);
+	ansi_filter(title, fileinfo->title);
 	ellipsis(title, 38);
 	sprintf(genbuf, "%-38.38s %s ", title, currentuser.userid);
 	//sprintf(genbuf, "%-38.38s %s ", fileinfo->title, fileinfo->owner);
@@ -1352,7 +1352,7 @@ void a_manager(MENU *pm, int ch) {
 				if (readonly==YEA)
 					break;
 				//Modified by IAMFAT 2002-05-25
-				safe_strcpy(changed_T, item->title);
+				ansi_filter(changed_T, item->title);
 				//add by Danielfree 06.2.20
 				for (i =0; i<IDLEN; i++) {
 					if (changed_T[39+i]) {

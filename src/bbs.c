@@ -2460,7 +2460,7 @@ int post_article(char *postboard, char *mailid) {
 		}
 		else
 #endif
-		safe_strcpy(postfile.title, header.title);
+		ansi_filter(postfile.title, header.title);
 		strncpy(save_title, postfile.title, STRLEN);
 		//strncpy (save_filename, fname, 4096);
 	} else {
@@ -2746,7 +2746,7 @@ int edit_title(int ent, struct fileheader *fileinfo, char *direct) {
 	return DONOTHING;
 #endif
 
-	safe_strcpy(buf, fileinfo->title);
+	ansi_filter(buf, fileinfo->title);
 	getdata(t_lines - 1, 0, "新文章标题: ", buf, 50, DOECHO, NA);
 	if (!strcmp(buf, fileinfo->title))
 		return PARTUPDATE;

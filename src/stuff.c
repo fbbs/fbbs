@@ -1,33 +1,7 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: stuff.c 370 2007-05-14 11:58:08Z danielfree $
- */
-
 #include "bbs.h"
 #include <sys/param.h>
 #include <sys/sem.h>
 
-extern char *getenv();
 extern char fromhost[];
 
 int presskeyfor(char *msg, int x) {
@@ -120,9 +94,7 @@ int askyn(char str[STRLEN], int defa, int gobottom) {
 		return 0;
 }
 
-void
-printdash(mesg)
-char *mesg;
+void printdash(char *mesg)
 {
 	char buf[80], *ptr;
 	int len;
@@ -217,9 +189,7 @@ int bbssetenv(char *env, char *val) {
 	return 0;
 }
 
-int
-do_exec(com, wd)
-char *com, *wd;
+int do_exec(char *com, char *wd)
 {
 	char path[MAXPATHLEN];
 	char pcom[MAXCOMSZ];
@@ -592,24 +562,3 @@ void ellipsis(char *str, int len) {
 	}
 }
 //End IAMFAT
-
-int safe_strcpy(char *dst, const char *src) {
-	register int mode=0, i=0;
-	while (*src) {
-		if (mode==0) {
-			if (*src==27) {
-				mode=1;
-			} else {
-				*(dst++)=*(src++);
-				i++;
-				continue;
-			}
-		} else {
-			if (!strchr(";[0123456789", *src))
-				mode=0;
-		}
-		src++;
-	}
-	*dst=0;
-	return i;
-}

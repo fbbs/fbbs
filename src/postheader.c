@@ -36,7 +36,7 @@ void set_prefix() {
 			if (i == 0 && (buf[0] == '\n' || buf[0] == ' ') )
 			buf[0] = '\0';
 			strtok(buf, " \r\n\t");
-			safe_strcpy(prefixbuf[i], buf);
+			ansi_filter(prefixbuf[i], buf);
 			prefixbuf[i][4] = '\0';
 		}
 		numofprefix = i;
@@ -199,7 +199,7 @@ int post_header(struct postheader *header) {
 			//move到相应的行，为输入做准备
 			move(t_lines - 1, 0);
 			if (header->postboard == YEA || strcmp(header->title, "没主题"))
-				safe_strcpy(titlebuf, header->title);
+				ansi_filter(titlebuf, header->title);
 
 			//从当前行获得用户输入放到titlebuf中，最多存入50-1个字节(此处会阻塞在用户输入上，只到响应enter)
 			getdata(t_lines - 1, 0, "标题: ", titlebuf, 50, DOECHO, NA);
