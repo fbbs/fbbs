@@ -1360,7 +1360,7 @@ void a_manager(MENU *pm, int ch) {
 				fowner[IDLEN]='\0';
 				//add end
 				changed_T[38]='\0';
-				trimright(changed_T);
+				rtrim(changed_T);
 				//a_prompt(-2, "ÐÂ±êÌâ: ", changed_T, 35);
 				saveline(t_lines-2, 0);
 				move(t_lines-2, 0);
@@ -2061,7 +2061,7 @@ char show_items[3][8] = { "[Ãû³Æ]", "[Ä¿Â¼]", "[Â·¾¶]" };
 void ann_set_title_show(char* title) {
 	char buf[256], path[256];
 	move(0, 0);
-	trimright(title);
+	rtrim(title);
 	sprintf(path, "[%-0.56s] %s", title, show_items[show_mode]);
 	sprintf(buf, "[1;44;33m Éè¶¨Ë¿Â· %69.69s[m\n", path);
 	prints(buf);
@@ -2109,7 +2109,7 @@ int change_ann_path(int index, char* title, char *path, int mode) {
 	strncpy(anntitle, title, STRLEN);
 	if (index != -1) {
 		move(1, 0);
-		trimright(anntitle);
+		rtrim(anntitle);
 		getdata(1, 0, "Éè¶¨Ë¿Â·Ãû:", anntitle, STRLEN, DOECHO, NA);
 		if (anntitle[0]=='\0')
 			return;

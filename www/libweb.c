@@ -489,39 +489,6 @@ int strsncpy(char *s1, char *s2, int n) {
 	s1[n-1]=0;
 }
 
-char *const_ltrim(char *s)
-{
-	char *ptr=s;
-	char *s2=s;
-	if(s[0]==0) return s;
-	while(s2[0] && strchr(" \t\r\n", s2[0])) s2++;
-	return s2;
-}
-
-char *ltrim(char *s) {
-	char *ptr=s;
-	char *s2=s;
-	if(s[0]==0) return s;
-	while(s2[0] && strchr(" \t\r\n", s2[0])) s2++;
-	/* add by money 2003.11.05 for trim it but don't change ptr s */
-	if (s2 != s)
-	while(!strchr(" \t\r\n", s2[0]))
-		*ptr++ = *s2++;
-	/* add end */
-	return s;
-}
-
-char *rtrim(char *s) {
-	static char t[1024], *t2;
-	if(s[0]==0) return s;
-	strsncpy(t, s, 1024);
-	t2=t+strlen(s)-1;
-	while(t2>t && strchr(" \t\r\n", t2[0]) && t2>=t) t2--;
-	if(t2==t && strchr(" \t\r\n", t2[0]))t2[0]=0;
-	else t2[1]=0;
-	return t;
-}
-
 char *get_old_shm(int key, int size) {
         int id;
         id=shmget(key, size, 0);
@@ -775,7 +742,7 @@ int http_init() {
 			t3[0]=0;
 			t3++;
 			__unhcode(t3);
-			parm_add(const_trim(t2), t3);
+			parm_add(trim(t2), t3);
 		}
 		t2=strtok(0, "&");
 	}
@@ -787,7 +754,7 @@ int http_init() {
 			t3[0]=0;
 			t3++;
 			__unhcode(t3);
-			parm_add(const_trim(t2), t3);
+			parm_add(trim(t2), t3);
 		}
 		t2=strtok(0, "&");
 	}
@@ -798,7 +765,7 @@ int http_init() {
 		if(t3!=0) {
 			t3[0]=0;
 			t3++;
-			parm_add(const_trim(t2), t3);
+			parm_add(trim(t2), t3);
 		}
 		t2=strtok(0, ";");
 	}

@@ -45,9 +45,6 @@
 #define file_isdir(x) ((f_stat(x)->st_mode & S_IFDIR)!=0)
 #define file_isfile(x) ((f_stat(x)->st_mode & S_IFREG)!=0)
 
-#define trim(s) ltrim(rtrim(s))
-#define const_trim(s) const_ltrim(rtrim(s))
-
 #define setcookie(a, b)	printf("<script>document.cookie='%s=%s'</script>\n", a, b)
 #define redirect(x)	printf("<meta http-equiv='Refresh' content='0; url=%s'>\n", x)
 #define refreshto(x, t)	printf("<meta http-equiv='Refresh' content='%d; url=%s'>\n", t, x)
@@ -209,9 +206,6 @@ char *noansi(char *s);
 char *nohtml(char *s);
 char *strcasestr(char *s1, char *s2);
 int strsncpy(char *s1, char *s2, int n);
-char *const_ltrim(char *s);
-char *ltrim(char *s);
-char *rtrim(char *s);
 // Record.c
 long get_num_records(char *filename, int size);
 int get_record(void *buf, int size, int num, char *file);

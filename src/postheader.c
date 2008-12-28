@@ -15,7 +15,7 @@ int numofprefix;
 #endif
 void check_title(char *title) {
 	char tempfilename[50];
-	trimboth(title);
+	trim(title);
 	if (!strncasecmp(title, "Re:", 3) && !HAS_PERM(PERM_SYSOPS)) {
 		sprintf(tempfilename, "Re£º%s", &title[3]);
 		strcpy(title, tempfilename);
@@ -219,7 +219,7 @@ int post_header(struct postheader *header) {
 			continue;
 		}
 
-		trimboth(header->title); //add by money 2003.10.29.
+		trim(header->title); //add by money 2003.10.29.
 		move(t_lines - 1, 0);
 
 #ifdef ENABLE_PREFIX	

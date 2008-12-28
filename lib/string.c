@@ -174,3 +174,35 @@ int ellipsis(char *str, int len)
 	return 1;
 }
 
+// Removes trailing chars whose ASCII code is less than 0x20.
+char *rtrim(unsigned char *str){
+	if (str == NULL)
+		return NULL;
+	size_t len = strlen(str);
+	unsigned char *ptr = str + len;
+	while (*ptr <= 0x20 && ptr >= str) {
+		--ptr;
+	}
+	*++ptr = '\0';
+	return str;
+}
+
+// Removes both leading and trailing chars
+// whose ASCII code is less than 0x20.
+char *trim(unsigned char *str){
+	if (str == NULL)
+		return NULL;
+	size_t len = strlen(str);
+	unsigned char *right = str + len;
+	while (*right <= 0x20 && right >= str) {
+		--right;
+	}
+	*++right = '\0';
+	unsigned char *left = str;
+	if(*left <= 0x20){
+		while(*++left <= 0x20)
+			;
+		memmove(str, left, right - left + 1);
+	}
+	return str;
+}

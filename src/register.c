@@ -651,29 +651,6 @@ void new_register() {
 
 }
 
-/*
- char   *
- trim(s)
- char   *s;
- {
- char   *buf;
- char   *l, *r;
- buf = (char *) malloc(256);
- 
- buf[0] = '\0';
- r = s + strlen(s) - 1;
- 
- for (l = s; strchr(" \t\r\n", *l) && *l; l++);
- 
- // if all space, *l is null here, we just return null 
- if (*l != '\0') {
- for (; strchr(" \t\r\n", *r) && r >= l; r--);
- strncpy(buf, l, r - l + 1);
- }
- return buf;
- }
- */
-
 int invalid_email(char *addr) {
 	FILE *fp;
 	char temp[STRLEN], tmp2[STRLEN];
