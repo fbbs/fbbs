@@ -69,14 +69,8 @@ void disply_userinfo(struct userec *u) {
 	prints("  出生日期 : %d/%d/%d", u->birthmonth, u->birthday, u->birthyear
 			+ 1900);
 	prints("\n居住住址     : %-38s", u->address);
-	{
-		int tyear, tmonth, tday;
-		tyear = u->birthyear+1900;
-		tmonth = u->birthmonth;
-		tday = u->birthday;
-		countdays(&tyear, &tmonth, &tday, now);
-		prints("累计生活天数 : %d\n", abs(tyear));
-	}
+	prints("累计生活天数 : %d\n",
+		days_elapsed(u->birthyear + 1900, u->birthmonth, u->birthday, now));
 	prints("电子邮件信箱 : %s\n", u->email);
 	prints("真实 E-mail  : %s\n", u->reginfo);
 	prints("最近光临机器 : %-22s", u->lasthost);

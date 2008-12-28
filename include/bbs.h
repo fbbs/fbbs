@@ -33,8 +33,6 @@
 #endif
 
 #include "config.h"             	/* User-configurable stuff */
-
-#include "glossary.h"
 #include "functions.h"				/* you can enable functions that you want */
 #include "permissions.h"
 #include "libBBS.h"
