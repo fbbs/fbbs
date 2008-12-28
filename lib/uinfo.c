@@ -149,3 +149,71 @@ int days_elapsed(int year, int month, int day, time_t now)
 	return (now - 43200) / 86400 + 2440588 - julian_day(year, month, day);
 }
 
+const char *horoscope(char month, char day) {
+	static const char *name[12] = {
+		"Ä¦ôÉ×ù", "Ë®Æ¿×ù", "Ë«Óã×ù", "ÄµÑò×ù", "½ğÅ£×ù", "Ë«×Ó×ù",
+		"¾ŞĞ·×ù", "Ê¨×Ó×ù", "´¦Å®×ù", "Ìì³Ó×ù", "ÌìĞ«×ù", "ÉäÊÖ×ù" };
+	switch (month) {
+		case 1:
+			if (day < 21)
+				return (name[0]);
+			else
+				return (name[1]);
+		case 2:
+			if (day < 19)
+				return (name[1]);
+			else
+				return (name[2]);
+		case 3:
+			if (day < 21)
+				return (name[2]);
+			else
+				return (name[3]);
+		case 4:
+			if (day < 21)
+				return (name[3]);
+			else
+				return (name[4]);
+		case 5:
+			if (day < 21)
+				return (name[4]);
+			else
+				return (name[5]);
+		case 6:
+			if (day < 22)
+				return (name[5]);
+			else
+				return (name[6]);
+		case 7:
+			if (day < 23)
+				return (name[6]);
+			else
+				return (name[7]);
+		case 8:
+			if (day < 23)
+				return (name[7]);
+			else
+				return (name[8]);
+		case 9:
+			if (day < 23)
+				return (name[8]);
+			else
+				return (name[9]);
+		case 10:
+			if (day < 24)
+				return (name[9]);
+			else
+				return (name[10]);
+		case 11:
+			if (day < 23)
+				return (name[10]);
+			else
+				return (name[11]);
+		case 12:
+			if (day < 22)
+				return (name[11]);
+			else
+				return (name[0]);
+	}
+	return ("²»Ïê×ù");
+}

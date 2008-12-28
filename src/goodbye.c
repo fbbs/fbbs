@@ -67,7 +67,7 @@ void showstuff(char *buf) {
 	int frg, i, matchfrg, strlength, cnt, tmpnum;
 	static char numlogins[10], numposts[10], nummails[10], rgtday[30],
 			lasttime[30], lastjustify[30], thistime[30], stay[10],
-			alltime[20], ccperf[20], perf[10], exp[10], ccexp[20], star[5];
+			alltime[20], ccperf[20], perf[10], exp[10], ccexp[20], star[7];
 #ifdef ALLOWGAME
 	static char moneys[10];
 #endif

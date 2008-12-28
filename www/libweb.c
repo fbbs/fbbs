@@ -1372,23 +1372,6 @@ int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]
 	return 0;
 }
 
-char *horoscope(int month, int day) {
-        int date=month*100+day;
-        if(month<1 || month>12 || day<1 || day>31) return "²»Ïê";
-        if(date<121 || date>=1222) return "Ä¦ôÉ×ù";
-        if(date<219) return "Ë®Æ¿×ù";
-        if(date<321) return "Ë«Óã×ù";
-        if(date<421) return "ÄµÑò×ù";
-        if(date<521) return "½ğÅ£×ù";
-        if(date<622) return "Ë«×Ó×ù";
-        if(date<723) return "¾ŞĞ·×ù";
-        if(date<823) return "Ê¨×Ó×ù";
-        if(date<923) return "´¦Å®×ù";
-        if(date<1024) return "Ìì³Ó×ù";
-        if(date<1123) return "ÌìĞ«×ù";
-        if(date<1222) return "ÉäÊÖ×ù";
-}
-
 void iconexp(int exp)
 {
         static char ce[11];

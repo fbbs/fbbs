@@ -489,8 +489,7 @@ char q_id[IDLEN + 2];
 	else
 	clr = 2;
 	if ( strcasecmp(lookupuser.userid, "guest") != 0 )
-	//sprintf(buf, "[[1;3%dm%s[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
-	sprintf(buf, "[[1;3%dm%s×ù[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
+		sprintf(buf, "[\033[1;3%dm%s\033[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
 	else
 	sprintf(buf, "");
 	if(! HAS_DEFINE(lookupuser.userdefine, DEF_S_HOROSCOPE))buf[0] = '\0';

@@ -210,8 +210,6 @@ int strsncpy(char *s1, char *s2, int n);
 long get_num_records(char *filename, int size);
 int get_record(void *buf, int size, int num, char *file);
 int append_record(void *buf, int size, char *file);
-// stuff.c
-char *horoscope(int month, int day);
 // pass.c
 int checkpasswd(char *pw_crypted, char *pw_try);
 // main.c

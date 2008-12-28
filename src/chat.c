@@ -690,9 +690,9 @@ void query_user(char *arg) {
 	if (HAS_DEFINE(lookupuser.userdefine, DEF_COLOREDSEX) )
 		clr = (lookupuser.gender == 'F') ? 5 : 6;
 	else
-		clr = 2; /* ∞≤ƒ‹±ÊŒ“ «–€¥∆ ?! :D */
+		clr = 2;
 	if (strcasecmp(lookupuser.userid, "guest") != 0) {
-		sprintf(buf, "[[1;3%dm%s[m] ", clr, horoscope(
+		sprintf(buf, "[\033[1;3%dm%s\033[m] ", clr, horoscope(
 				lookupuser.birthmonth, lookupuser.birthday) );
 	} else {
 		sprintf(buf, "");
@@ -703,20 +703,6 @@ void query_user(char *arg) {
 					: "", datestring,
 			(lookupuser.lasthost[0]=='\0' ? "(≤ªœÍ)" : lookupuser.lasthost));
 	printchatline(msg);
-	/*
-	 sprintf(msg, 
-	 "–≈œ‰£∫[[1;5;32m%2s[m]£¨æ≠—È÷µ£∫[[1;32m%d[m]([1;36m%s[m)"
-	 " ±Ìœ÷÷µ£∫[[1;32m%d[m]([1;36m%s[m) …˙√¸¡¶£∫[[1;32m%d[m]",
-	 (check_query_mail(qry_mail_dir) == 1) ? "–≈" : "  ", exp, cexp(exp),
-	 perf, cperf(perf), compute_user_value(&lookupuser));
-	 *///modified by roly 02.03.24
-	/*
-	 sprintf(msg, 
-	 "–≈œ‰£∫[[1;5;32m%2s[m]£¨æ≠—È÷µ£∫([1;36m%s[m)"
-	 " ±Ìœ÷÷µ£∫[[1;32m%d[m]([1;36m%s[m) …˙√¸¡¶£∫[[1;32m%d[m]",
-	 (check_query_mail(qry_mail_dir) == 1) ? "–≈" : "  ", cexp(exp),
-	 perf, cperf(perf), compute_user_value(&lookupuser));
-	 */
 	sprintf(msg, 
 	"–≈œ‰:[[1;5;32m%2s[m] æ≠—È÷µ:"
 #ifdef SHOWEXP

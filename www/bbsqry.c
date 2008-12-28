@@ -92,38 +92,19 @@ printf("<table bgcolor=#ffffff>\n");
         } else {
                 clr=32;
 	}
-	if(x->userdefine & DEF_S_HOROSCOPE) hprintf("[[1;%dm%s[m]", clr, horoscope(x->birthmonth, x->birthday));
-//	hprintf("…œ¥Œ‘⁄ [[32m%s[37m] ¥” [[32m%s[37m] µΩ±æ’æ“ª”Œ°£\n", Ctime(x->lastlogin), x->lasthost);
-//modified by iamfat 2002.08.01
-/*
-	{
-		int i;
-		srand(time(0));
-		i=(int) (10.0*rand()/(RAND_MAX+1.0));;
-		while(i--)
-		{
-			printf("<!--…œ¥Œ‘⁄ [[32m%s[37m] ¥” [[32m%d.%d.%d.%d[37m] µΩ±æ’æ“ª”Œ°£\n-->", cn_Ctime(time(0)), (int) (256.0*rand()/(RAND_MAX+1.0)), (int) (256.0*rand()/(RAND_MAX+1.0)), (int) (256.0*rand()/(RAND_MAX+1.0)), (int) (256.0*rand()/(RAND_MAX+1.0)));
-		}
-	}
-	hprintf("…œ¥Œ‘⁄ [[32m%s[37m] ¥” [[32m%s[37m] µΩ±æ’æ“ª”Œ°£\n", cn_Ctime(x->lastlogin), x->lasthost);*/
+	if(x->userdefine & DEF_S_HOROSCOPE)
+		hprintf("[\033[1;%dm%s\033[m]", clr, horoscope(x->birthmonth, x->birthday));
 	count_mails(userid, &tmp1, &tmp2);
-	hprintf("–≈œ‰£∫[[32m%s[37m]£¨", tmp2 ? "°—":"  ");
-/*
-#ifdef SHOWEXP
-	hprintf("æ≠—È÷µ£∫[[32m%d[37m]([33m%s[37m) ", countexp(x), cexp(countexp(x)));
-#else
-	hprintf("æ≠—È÷µ£∫[[33m%s[37m] ", cexp(countexp(x)));
-#endif
-*/
+	hprintf("–≈œ‰£∫[\033[32m%s\033[37m]£¨", tmp2 ? "°—":"  ");
 	printf("æ≠—È÷µ: [");
 	iconexp(countexp(x));
 	printf("]");
 #ifdef SHOWPERF
-	hprintf("±Ìœ÷÷µ£∫[[32m%d[37m]([33m%s[37m) ", countperf(x), cperf(countperf(x)));
+	hprintf("±Ìœ÷÷µ£∫[\033[32m%d\033[37m](\033[33m%s\033[37m) ", countperf(x), cperf(countperf(x)));
 #else
-	hprintf("±Ìœ÷÷µ£∫[[33m%s[37m] ", cperf(countperf(x)));
+	hprintf("±Ìœ÷÷µ£∫[\033[33m%s\033[37m] ", cperf(countperf(x)));
 #endif
-	hprintf("…˙√¸¡¶£∫[[32m%d[37m]°£\n", count_life_value(x));
+	hprintf("…˙√¸¡¶£∫[\033[32m%d\033[37m]°£\n", count_life_value(x));
 	num=0;
 	for(i=0; i<MAXACTIVE; i++) {
 		u=&(shm_utmp->uinfo[i]);

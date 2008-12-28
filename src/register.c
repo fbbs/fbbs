@@ -290,10 +290,10 @@ int getnewuserid() {
 							utmp.userid);
 					fprintf(
 							fdtmp,
-							"[1;37m%s [m([1;33m%s[m) ¹²ÉÏÕ¾ [1;32m%d[m ´Î [[1;3%dm%s×ù[m]\n",
+							"\033[1;37m%s \033[m(\033[1;33m%s\033[m) ¹²ÉÏÕ¾ \033[1;32m%d\033[m ´Î [\033[1;3%dm%s\033[m]\n",
 							utmp.userid, utmp.username, utmp.numlogins,
-							(utmp.gender == 'F') ? 5 : 6, horoscope(
-									utmp.birthmonth, utmp.birthday));
+							(utmp.gender == 'F') ? 5 : 6,
+							horoscope(utmp.birthmonth, utmp.birthday));
 					getdatestring(utmp.lastlogin, NA);
 					fprintf(
 							fdtmp,
