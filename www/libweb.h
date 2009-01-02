@@ -198,7 +198,6 @@ void do_report(const char* fname, const char* content);
 // libBBS/string.c
 char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
-char *noansi(char *s);
 char *nohtml(char *s);
 int strsncpy(char *s1, char *s2, int n);
 // Record.c

@@ -383,26 +383,6 @@ char *Ctime(time_t t)
 	return s;
 }
 
-char *noansi(char *s) {
-	static char buf[1024];
-	int i=0, mode=0;
-	while(s[0] && i<1023) {
-		if(mode==0) { 
-			if(s[0]==27) {
-				mode=1;
-			} else {
-				buf[i]=s[0];
-				i++;
-			}
-		} else {
-			if(!strchr(";[0123456789", s[0])) mode=0;
-		}
-		s++;
-	}
-	buf[i]=0;
-	return buf;
-}
-
 char *nohtml(char *s) {
 /*
 	char *buf=calloc(strlen(s)+1, 1);

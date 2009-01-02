@@ -4,17 +4,19 @@
 int main() {
    	FILE *fp;
 	char filename[80], dir[80], board[80], title[80], buf[80], *content;
+	char *origtitle;
 	int r, i, sig, o_id, o_gid;
 	char *reply_mode = NULL;
 	char tempfilename[51];
 	struct fileheader x;
 	struct boardheader *brd;
-	   	init_all();
+   	init_all();
 	printf("<b>发表文章 · %s </b><br>\n",BBSNAME);
 	printpretable_lite();
 	if(!loginok) http_fatal("匆匆过客不能发表文章，请先登录");
    	strsncpy(board, getparm("board"), 80);
-   	strsncpy(title, noansi(getparm("title")), 80);
+	origtitle = getparm("title");
+   	strsncpy(title, ansi_filter(origtitle, origtitle), 80);
  	brd=getbcache(board);
 	if(brd==0) http_fatal("错误的讨论区名称");
 	strcpy(board, brd->filename);

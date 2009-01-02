@@ -45,6 +45,7 @@ int check_user(char * userid)
 int main() {
    	FILE *fp;
 	char userid[80], filename[80], dir[80], title[80], title2[80], buf[80], *content;
+	char *origtitle;
 	int t, i, sig, backup;
 	struct fileheader x;
 	init_all();
@@ -59,7 +60,8 @@ int main() {
 		http_fatal("您的信件容量超标，无法发信");
    	
 	//prepare the message...
-	strsncpy(title, noansi(getparm("title")), 50);
+	origtitle = getparm("title");
+	strsncpy(title, ansi_filter(origtitle, origtitle), 50);
 	backup=strlen(getparm("backup"));
   	for(i=0; i<strlen(title); i++)
 		if(title[i]<27 && title[i]>=-1) title[i]=' ';
