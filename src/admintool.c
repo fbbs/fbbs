@@ -2341,7 +2341,7 @@ certify_key_deal (char *fname, int ch, char *line) {
 	}
 	fclose (fp);
 	if (gotit) {
-		brc_initial (board);
+		brc_initial (currentuser.userid, board);
 		switch (ch) {
 			case KEY_RIGHT:
 			//тд╤андуб

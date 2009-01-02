@@ -29,4 +29,13 @@ int ellipsis(char *str, int len);
 char *rtrim(unsigned char *str);
 char *trim(unsigned char *str);
 
+//boardrc.c
+void brc_update(const char *userid, const char *board);
+int brc_initial(const char* userid, const char *board);
+void brc_addlist(const char *filename);
+int brc_unread(const char *filename);
+int brc_unread1(int ftime);
+int brc_clear(int ent, const char *direct, int clearall);
+void brc_zapbuf(int *zbuf);
+
 #endif

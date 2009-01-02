@@ -1,43 +1,6 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: boards.c 374 2007-06-06 18:27:02Z danielfree $
- */
-
 #include "bbs.h"
 
 #define BBS_PAGESIZE    (t_lines - 4)
-
-#define BRC_MAXSIZE     50000
-#define BRC_MAXNUM      60
-#define BRC_STRLEN      20
-//modified by roly form 15 to 20 02.03.25
-#define BRC_ITEMSIZE    (BRC_STRLEN + 1 + BRC_MAXNUM * sizeof( int ))
-//#define GOOD_BRC_NUM	40	//modfied by money 2003.10.17 //“∆µΩbbs.h¿Ô cometcaptor 2007-04-23
-
-char brc_buf[BRC_MAXSIZE];
-int brc_size, brc_changed = 0;
-char brc_name[BRC_STRLEN];
-int brc_list[BRC_MAXNUM], brc_num;
 
 char *sysconf_str();
 extern time_t login_start_time;
@@ -193,32 +156,6 @@ void load_GoodBrd() {
 		strcpy(GoodBrd.boards[0].filename, bcache[i-1].filename);
 		strcpy(GoodBrd.boards[0].title, bcache[i-1].title);
 	}
-	/*
-	 if ((fp = fopen (fname, "r"))) {
-
-	 for ( i = 0; i< GOOD_BRC_NUM ; i++)
-	 if(fscanf(fp, "%s\n", GoodBrd.ID[i]) != EOF){
-	 if( getbnum(GoodBrd.ID[i]) )GoodBrd.num ++;
-	 } else break;
-	 //modified by roly 02.05.30
-
-	 for (i = 0; i < GOOD_BRC_NUM; i++)
-	 if (fscanf (fp, "%s\n", fname) != EOF) {
-	 if (getbnum (fname))
-	 strcpy (GoodBrd.ID[GoodBrd.num++], fname);
-	 } else
-	 break;
-
-	 fclose (fp);
-	 }
-	 if (GoodBrd.num == 0) {
-	 GoodBrd.num++;
-	 if (getbcache (DEFAULTBOARD) != NULL)
-	 strcpy (GoodBrd.ID[0], DEFAULTBOARD);
-	 else
-	 strcpy (GoodBrd.ID[0], currboard);
-	 }
-	 */
 }
 
 void save_GoodBrd() {
@@ -247,24 +184,6 @@ void save_GoodBrd() {
 		}
 		fclose(fp);
 	}
-
-	/*
-	 if (GoodBrd.num <= 0) {
-	 GoodBrd.num = 1;
-	 if (getbcache (DEFAULTBOARD) != NULL)
-	 strcpy (GoodBrd.ID[0], DEFAULTBOARD);
-	 else
-	 strcpy (GoodBrd.ID[0], currboard);
-	 }
-	 setuserfile (fname, ".goodbrd");
-	 if ((fp = fopen (fname, "wb+")) != NULL) {
-	 for (i = 0; i < GoodBrd.num; i++) {
-	 fprintf (fp, "%s\n", GoodBrd.ID[i]);
-	 report (GoodBrd.ID[i]);
-	 }
-	 fclose (fp);
-	 }
-	 */
 }
 
 void add_GoodBrd(char *bname, int pid) //cometcaptor 2007-04-21
@@ -352,12 +271,6 @@ int load_boards() {
 		load_zapbuf();
 	}
 	brdnum = 0;
-	/*
-	 if (choosemode == 0 && (boardparent == -2 || GoodBrd.num == 9999)) {
-	 load_GoodBrd ();
-	 goodbrd = 1;
-	 }
-	 */
 	if (GoodBrd.nowpid >= 0) {
 		load_GoodBrd();
 		goodbrd = 1;
@@ -445,13 +358,6 @@ int load_boards() {
 	}
 	//add end
 	if (brdnum == 0 && !yank_flag && boardparent == -1) {
-		/*
-		 if (goodbrd) {
-		 GoodBrd.num = 0;
-		 save_GoodBrd ();
-		 GoodBrd.num = 9999;
-		 }
-		 *///modified by cometcaptor 2007-04-23
 		brdnum = -1;
 		yank_flag = 1;
 		return -1;
@@ -518,26 +424,12 @@ int search_board(int *num) {
 	return 1;
 }
 
-int brc_unread1(int ftime) {
-	int n;
-	if (brc_num <= 0)
-		return 1;
-	for (n = 0; n < brc_num; n++) {
-		if (ftime > brc_list[n]) {
-			return 1;
-		} else if (ftime == brc_list[n]) {
-			return 0;
-		}
-	}
-	return 0;
-}
-
 int check_newpost (ptr)
 struct newpostdata *ptr;
 {
 	ptr->unread = 0;
 	ptr->total = (brdshm->bstatus[ptr->pos]).total;
-	if (!brc_initial (ptr->name)) {
+	if (!brc_initial (currentuser.userid, ptr->name)) {
 		ptr->unread = 1;
 	} else {
 		if (brc_unread1 ((brdshm->bstatus[ptr->pos]).lastpost)) {
@@ -556,7 +448,7 @@ struct newpostdata *ptr;
 	int fd, offset, step, num;
 	num = ptr->total + 1;
 	if (ptr->unread && (fd = open (dirfile, O_RDWR))> 0) {
-		if (!brc_initial (ptr->name)) {
+		if (!brc_initial (currentuser.userid, ptr->name)) {
 			num = 1;
 		} else {
 			offset = (int) ((char *) &(fh.filename[0]) - (char *) &(fh));
@@ -619,19 +511,7 @@ void countbrdonline() {
 	}
 }
 #endif
-/*
- char *num2str(int num)
- {
- static char str[5];
- if(num>9999)
- strcpy(str, "GOD!");
- else if(!num)
- strcpy(str, "    ");
- else 
- sprintf(str, "%4d", num);
- return str;
- }
- */
+
 void show_brdlist (page, clsflag, newflag)
 int page, clsflag, newflag;
 {
@@ -822,7 +702,7 @@ int read_board(struct newpostdata *ptr, int newflag) {
 		choosemode = tmpmode;
 		brdnum = -1;
 	} else {
-		brc_initial(ptr->name);
+		brc_initial(currentuser.userid, ptr->name);
 		memcpy(currBM, ptr->BM, BM_LEN - 1);
 		if (DEFINE(DEF_FIRSTNEW)) {
 			setbdir(buf, currboard);
@@ -831,9 +711,7 @@ int read_board(struct newpostdata *ptr, int newflag) {
 			getkeep(buf, page > 1 ? page : 1, tmp + 1);
 		}
 		Read();
-		if (zapbuf[ptr->pos] > 0 && brc_num > 0) {
-			zapbuf[ptr->pos] = brc_list[0];
-		}
+		brc_zapbuf(zapbuf + ptr->pos);
 		ptr->total = -1;
 		currBM[0] = '\0'; //added by cometcaptor 2007-06-30
 	}
@@ -960,28 +838,6 @@ int choose_board(int newflag) {
 					show_help("0Announce/bbslist/day");
 				page = -1;
 				break;
-				/*		case 'R': {
-				 *			char buf[200],path[80],ans[4],*t;
-				 *			sprintf(buf, "[1;5;31m¡¢º¥∂œœﬂ[m: [1;33m“‘±„ª÷∏¥…œ¥Œ’˝≥£¿Îø™±æ’æ ±µƒŒ¥∂¡±Íº« (Y/N) ? [[1;32mN[m[1;33m]£∫[m");
-				 *			getdata(22, 0, buf, ans, 3, DOECHO, YEA);
-				 *			if (ans[0] == 'Y' || ans[0] == 'y' ) {
-				 *			setuserfile(path, ".lastread");
-				 t = strstr(path,".");
-				 *t = '\0';
-				 sprintf(buf,"cp %s/.lastread.backup %s/.lastread",path,path);
-				 system(buf);
-				 sprintf(buf,"cp %s/.boardrc.backup %s/.boardrc",path,path);
-				 system(buf);
-				 move(23,0);clrtoeol();
-				 move(22,0);clrtoeol();
-				 prints("[1;33m“—æ≠ª÷∏¥…œ¥Œ’˝≥£¿Îø™±æ’æ ±µƒŒ¥∂¡±Íº«[m\n[1;32m«Î∞¥ Enter º¸[1;31m¡¢º¥∂œœﬂ[m[1;32m, »ª∫Û÷ÿ–¬µ«¬Ω±æ’æ [m");
-				 egetch();
-				 exit(0);
-				 }
-				 page = -1;
-				 break;	
-				 }
-				 */
 			case 'l':
 				show_allmsgs();
 				page = -1;
@@ -1269,243 +1125,3 @@ int choose_board(int newflag) {
 	nbrd = oldptr; //added by cometcaptor 2006-10-20
 	return -1;
 }
-
-char *brc_getrecord (ptr, name, pnum, list)
-char *ptr, *name;
-int *pnum, *list;
-{
-	int num;
-	char *tmp;
-	strncpy (name, ptr, BRC_STRLEN);
-	ptr += BRC_STRLEN;
-	num = (*ptr++) & 0xff;
-	tmp = ptr + num * sizeof (int);
-	if (num> BRC_MAXNUM) {
-		num = BRC_MAXNUM;
-	}
-	*pnum = num;
-	memcpy (list, ptr, num * sizeof (int));
-	return tmp;
-}
-
-char *brc_putrecord (ptr, name, num, list)
-char *ptr, *name;
-int num, *list;
-{
-	if (num> 0) {
-		if (num> BRC_MAXNUM) {
-			num = BRC_MAXNUM;
-		}
-		strncpy (ptr, name, BRC_STRLEN);
-		ptr += BRC_STRLEN;
-		*ptr++ = num;
-		memcpy (ptr, list, num * sizeof (int));
-		ptr += num * sizeof (int);
-	}
-	return ptr;
-}
-
-void brc_update() {
-	char dirfile[STRLEN], *ptr;
-	//modify by cometcaptor to fix 'f'function bug 2006-10-15
-	char tmp_buf[BRC_MAXSIZE], *tmp;
-	char tmp_name[BRC_STRLEN];
-	int tmp_list[BRC_MAXNUM], tmp_num;
-	int fd, tmp_size;
-	if (brc_changed == 0) {
-		return;
-	}
-	ptr = brc_buf;
-	if (brc_num > 0) {
-		ptr = brc_putrecord(ptr, brc_name, brc_num, brc_list);
-	}
-	if (1) {
-		setuserfile(dirfile, ".boardrc");
-		if ((fd = open(dirfile, O_RDONLY)) != -1) {
-			tmp_size = read(fd, tmp_buf, sizeof (tmp_buf));
-			//add by cometcaptor to fix 'f' function bug 2006-10-15
-			if (tmp_size > sizeof(tmp_buf) - BRC_ITEMSIZE)
-				tmp_size = sizeof(tmp_buf) - BRC_ITEMSIZE*2 + 1;
-			//add end
-			close(fd);
-		} else {
-			tmp_size = 0;
-		}
-	}
-	tmp = tmp_buf;
-	while (tmp < &tmp_buf[tmp_size] && (*tmp >= ' ' && *tmp <= 'z')) {
-		tmp = brc_getrecord(tmp, tmp_name, &tmp_num, tmp_list);
-		if (strncmp(tmp_name, currboard, BRC_STRLEN) != 0) {
-			ptr = brc_putrecord(ptr, tmp_name, tmp_num, tmp_list);
-		}
-	}
-	brc_size = (int) (ptr - brc_buf);
-
-	if ((fd = open(dirfile, O_WRONLY | O_CREAT, 0644)) != -1) {
-		ftruncate(fd, 0);
-		write(fd, brc_buf, brc_size);
-		close(fd);
-	}
-	brc_changed = 0;
-}
-
-int brc_initial (boardname) //deardragon0912
-char *boardname;
-{
-	char dirfile[STRLEN], *ptr;
-	int fd;
-	if (strcmp (currboard, boardname) == 0) {
-		return brc_num;
-	}
-	brc_update ();
-	strcpy (currboard, boardname);
-	brc_changed = 0;
-	if (brc_buf[0] == '\0') {
-		setuserfile (dirfile, ".boardrc");
-		if ((fd = open (dirfile, O_RDONLY)) != -1) {
-			brc_size = read (fd, brc_buf, sizeof (brc_buf));
-			close (fd);
-		} else {
-			brc_size = 0;
-		}
-	}
-	ptr = brc_buf;
-	while (ptr < &brc_buf[brc_size] && (*ptr >= ' ' && *ptr <= 'z')) {
-		ptr = brc_getrecord (ptr, brc_name, &brc_num, brc_list);
-		if (strncmp (brc_name, currboard, BRC_STRLEN) == 0) {
-			return brc_num;
-		}
-	}
-	strncpy (brc_name, boardname, BRC_STRLEN);
-	brc_list[0] = 1;
-	brc_num = 1;
-	return 0;
-}
-
-void brc_addlist(char *filename) {
-	int ftime, n, i;
-	if (!strcmp(currentuser.userid, "guest"))
-		return;
-	ftime = atoi(&filename[2]);
-	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.') {
-		return;
-	}
-	if (brc_num <= 0) {
-		brc_list[brc_num++] = ftime;
-		brc_changed = 1;
-		return;
-	}
-	for (n = 0; n < brc_num; n++) {
-		if (ftime == brc_list[n]) {
-			return;
-		} else if (ftime > brc_list[n]) {
-			if (brc_num < BRC_MAXNUM)
-				brc_num++;
-			for (i = brc_num - 1; i > n; i--) {
-				brc_list[i] = brc_list[i - 1];
-			}
-			brc_list[n] = ftime;
-			brc_changed = 1;
-			return;
-		}
-	}
-	if (brc_num < BRC_MAXNUM) {
-		brc_list[brc_num++] = ftime;
-		brc_changed = 1;
-	}
-}
-
-int brc_unread (filename)
-char *filename;
-{
-	int ftime, n;
-	ftime = atoi (&filename[2]);
-	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.') {
-		return 0;
-	}
-	if (brc_num <= 0)
-	return 1;
-	for (n = 0; n < brc_num; n++) {
-		if (ftime> brc_list[n]) {
-			return 1;
-		} else if (ftime == brc_list[n]) {
-			return 0;
-		}
-	}
-	return 0;
-}
-
-/*
- int brc_repair_load_last_read(void)  //quickmouse 02-08-16
- {
- char    dirfile[STRLEN], *ptr, *wptr;
- int     fd, i,  flag, j;
- unsigned int lastbrc;
-
- resolve_boards();
- brc_update();
- setuserfile(dirfile, ".boardrc");
- // memset(last_read, 0, MAXBOARD * sizeof(unsigned int));
- if ((fd = open(dirfile, O_RDONLY)) != -1)
- {
- brc_size = read(fd, brc_buf, sizeof(brc_buf));
- close(fd);
- }
- else
- {
- return 0;
-
- }
- fd = 0;
- ptr = brc_buf;
- wptr = ptr;
- while (ptr < &brc_buf[brc_size] && (*ptr >= ' ' && *ptr <= 'z'))
- {
- ptr = brc_getrecord(ptr, brc_name, &brc_num, brc_list);
- flag = 1;
- for(j = 0; j < numboards; j++)
- {
- if(!strcmp(brc_name, bcache[j].filename))
- {
- break;
- }
- }
- if(j == numboards)
- {
- report("Erase boardrc err board name");
- fd = 1;
- flag = 0;
- }
- if(brc_num == 0 || !flag )
- continue;
- lastbrc = time(0);
- for(i = 0; i < brc_num; i++)
- {
- if(brc_list[i] > lastbrc)
- {
- brc_list[i] = lastbrc--;
- flag = 0;
- }
- else
- lastbrc = brc_list[i];
- }
- wptr = brc_putrecord(wptr, brc_name, brc_num, brc_list);
- if(!flag)
- {
- fd = 1;
- sprintf(genbuf, "Repair boardrc of BOARD %s", brc_name);
- report(genbuf);
- }
- //  last_read[j] = brc_list[0];
- brc_size = wptr - brc_buf;
- if(!fd)
- return 0;
- if ((fd = open(dirfile, O_WRONLY | O_CREAT, 0644)) != -1)
- {
- ftruncate(fd, 0);
- write(fd, brc_buf, brc_size);
- close(fd);
- }
- return 0;
- }
- */

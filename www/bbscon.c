@@ -1,5 +1,5 @@
 #include "libweb.h"
-#include "boardrc.inc"
+
 int inboard(char *board, char* dirname , char* file){
 	char dir[256];
 	int total;
@@ -141,8 +141,8 @@ int main() {
 		#endif
 		//fseek(fp, sizeof(x)*(num-1), SEEK_SET);
 		//fwrite(&x, sizeof(x), 1, fp);
-		brc_init(currentuser.userid, board);
-		brc_add_read(x.filename);
+		brc_initial(currentuser.userid, board);
+		brc_addlist(x.filename);
 		brc_update(currentuser.userid, board);
 	}
 	fclose(fp);

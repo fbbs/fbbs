@@ -1572,7 +1572,8 @@ char *boardmargin() {
 	if (selboard)
 		sprintf(buf, "ÌÖÂÛÇø [%s]", currboard);
 	else {
-		brc_initial(DEFAULTBOARD);
+		brc_initial(currentuser.userid, DEFAULTBOARD);
+		strcpy(currboard, DEFAULTBOARD);
 		if (!getbnum(currboard))
 			setoboard(currboard);
 		selboard = 1;

@@ -1,5 +1,4 @@
 #include "libweb.h"
-#include "boardrc.inc"
 
 char *eff_size();
 int my_t_lines;
@@ -57,7 +56,7 @@ int main() {
         if(strlen(getparm("start"))==0 || start>total-my_t_lines) start=total-my_t_lines+1;
   	if(start<1)
 		start=1;
-	brc_init(currentuser.userid, board);
+	brc_initial(currentuser.userid, board);
 	printf("<body>");
 	
 	printf("<table width=100%% border=0 ><tr><td width=85%% align=left>\n");
@@ -114,7 +113,7 @@ int main() {
 			//added by iamfat 2002.08.10
 			//check_anonymous(x.owner);
 			//added end.
-			ptr=flag_str2(x.accessed[0], brc_has_read(x.filename));
+			ptr=flag_str2(x.accessed[0], !brc_unread(x.filename));
 			if(ptr[0]=='N') 
 			{
 				font1="<font color=#909090>";
@@ -156,7 +155,7 @@ int main() {
 			char filename[80];
 			char *ptr, *font1="", *font2="";
 			while ( fread(&x, sizeof(x), 1, fpnotice) == 1 ) {
-				ptr=flag_str2(x.accessed[0], brc_has_read(x.filename));
+				ptr=flag_str2(x.accessed[0], !brc_unread(x.filename));
 				if(ptr[0]=='N') {
 					font1="<font color=#909090>";
 					font2="</font>";

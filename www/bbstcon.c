@@ -1,5 +1,4 @@
 #include "libweb.h"
-#include "boardrc.inc"
 
 int no_re=0;
 /*	bbscon?board=xx&file=xx&start=xx 	*/
@@ -34,7 +33,8 @@ int main()
 		http_fatal("错误的讨论区");
 	}
 	strcpy(board, getbcache(board)->filename);
-	if(loginok) brc_init(currentuser.userid, board);
+	if(loginok)
+		brc_initial(currentuser.userid, board);
 	printf("<a name=pagetop ></a>");
 	printf("<b>同主题文章阅读 · %s[讨论区: %s]</center>", BBSNAME, board);
 	if(strncmp(file, "M.", 2) && strncmp(file, "G.", 2)) 
@@ -114,7 +114,7 @@ int show_file(char *board, struct fileheader *x, int n)
 		}
 	#endif
 	if(loginok) 
-		brc_add_read(x->filename);
+		brc_addlist(x->filename);
 	sprintf(path, "boards/%s/%s", board, x->filename);
 	fp=fopen(path, "r");
 	if(fp==0) 

@@ -1,5 +1,4 @@
 #include "libweb.h"
-#include "boardrc.inc"
 
 int cmpboard(b1, b2)
 struct boardheader *b1, *b2;
@@ -169,6 +168,6 @@ int board_read(char *board) {
 	fseek(fp, (total-1)*sizeof(struct fileheader), SEEK_SET);
 	fread(&x, sizeof(x), 1, fp);
 	fclose(fp);
-	brc_init(currentuser.userid, board);
-	return brc_has_read(x.filename);
+	brc_initial(currentuser.userid, board);
+	return !brc_unread(x.filename);
 }

@@ -1383,7 +1383,8 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 
 	selboard = 1;
-	brc_initial(bname);
+	brc_initial(currentuser.userid, bname);
+	strcpy(currboard, bname);
 
 	move(0, 0);
 	clrtoeol();
@@ -3209,95 +3210,16 @@ int del_post(int ent, struct fileheader *fileinfo, char *direct) {
 	return _del_post(ent, fileinfo, direct, YEA, YEA);
 }
 
-#define BRC_MAXNUM 60
-
-int flag_clearto(int ent, char *direct, int clearall) {
-
-	int i, fd, posttime, size;
-	char filename[20];
-	struct fileheader f_info;
-
-	if (uinfo.mode != READING)
-		return DONOTHING;
-	if ((fd = open(direct, O_RDONLY, 0)) == -1)
-		return DONOTHING;
-	size = sizeof(struct fileheader);
-	if (clearall)
-		lseek(fd, (off_t) (-size), SEEK_END);
-	else
-		lseek(fd, (off_t) ((ent - 1) * size), SEEK_SET);
-	read(fd, &f_info, size);
-	close(fd);
-	/* added by roly 03.02.23 */
-	if (clearall)
-		posttime = time(0) - BRC_MAXNUM + 1;
-	else
-		/* add end */
-		posttime = atoi(&(f_info.filename[2])) - BRC_MAXNUM + 1;
-	for (i = 0; i < BRC_MAXNUM; i++) {
-		sprintf(filename, "M.%d.A", posttime++);
-		brc_addlist(filename);
-	}
-	return PARTUPDATE;
-
-}
-
-#if 0
-#ifdef QCLEARNEWFLAG
-int
-flag_clearto (int ent, char *direct, int clearall)
-{
-	int i, fd, lastent = BRC_MAXNUM;
-	struct fileheader f_info;
-
-	if (uinfo.mode != READING)
-	return DONOTHING;
-	if ((fd = open (direct, O_RDONLY, 0)) == -1)
-	return DONOTHING;
-	if (clearall)
-	lseek (fd, (off_t) (-1 * BRC_MAXNUM * sizeof (f_info)), SEEK_END);
-	else if (ent> BRC_MAXNUM)
-	lseek (fd, (off_t) ((ent - BRC_MAXNUM) * sizeof (f_info)), SEEK_SET);
-	else
-	lastent = ent;
-	for (i = 0; i < lastent; i++) {
-		if (read (fd, &f_info, sizeof (f_info)) <= 0)
-		break;
-		brc_addlist (f_info.filename);
-	}
-	close (fd);
-	return PARTUPDATE;
-}
-
-#else
-
-int
-flag_clearto (int ent, char *direct, int clearall)
-{
-	int fd, i;
-	struct fileheader f_info;
-
-	if (uinfo.mode != READING)
-	return DONOTHING;
-	if ((fd = open (direct, O_RDONLY, 0)) == -1)
-	return DONOTHING;
-	for (i = 0; clearall || i < ent; i++) {
-		if (read (fd, &f_info, sizeof (f_info)) != sizeof (f_info))
-		break;
-		brc_addlist (f_info.filename);
-	}
-	close (fd);
-	return PARTUPDATE;
-}
-#endif
-#endif
-
 int new_flag_clearto(int ent, struct fileheader *fileinfo, char *direct) {
-	return flag_clearto(ent, direct, NA);
+	if (uinfo.mode != READING)
+		return DONOTHING;
+	return brc_clear(ent, direct, NA);
 }
 
 int new_flag_clear(int ent, struct fileheader *fileinfo, char *direct) {
-	return flag_clearto(ent, direct, YEA);
+	if (uinfo.mode != READING)
+		return DONOTHING;
+	return brc_clear(ent, direct, YEA);
 }
 
 /* Added by netty to handle post saving into (0)Announce */
@@ -3630,7 +3552,7 @@ int Read() {
 		return FULLUPDATE;
 	}
 
-	brc_initial(currboard);
+	brc_initial(currentuser.userid, currboard);
 	setbdir(buf, currboard);
 #ifdef NEWONLINECOUNT
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
@@ -3689,7 +3611,7 @@ int Read() {
 	countbrdonline();
 #endif
 
-	brc_update();
+	brc_update(currentuser.userid, currboard);
 	return 0;
 }
 
