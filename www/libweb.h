@@ -18,10 +18,6 @@
 #define TLINES 18
 #define SQUID
 
-//Goodbye.c
-#define MAX_PERF (1000)
-#define MAX_LUCKY (20)
-
 #ifdef FDQUAN
 	#define MAX_LARGEMAIL_UPLIMIT   300
 	#define MAX_BOARDSMAIL_UPLIMIT	120
