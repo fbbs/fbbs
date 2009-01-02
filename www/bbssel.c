@@ -38,7 +38,7 @@ int main() {
 			board1=bcache[i].filename;
 			title=bcache[i].title;
 			if(!has_read_perm(&currentuser, board1)) continue;
-			if(strcasestr(board1, board) || strcasestr(title, board)) {
+			if(strcasestr_gbk(board1, board) || strcasestr_gbk(title, board)) {
 				total++;
 				printf("<tr><td>%d", total);
 				if (bcache[i].flag & BOARD_DIR_FLAG) {

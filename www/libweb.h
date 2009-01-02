@@ -200,7 +200,6 @@ char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
 char *noansi(char *s);
 char *nohtml(char *s);
-char *strcasestr(char *s1, char *s2);
 int strsncpy(char *s1, char *s2, int n);
 // Record.c
 long get_num_records(char *filename, int size);

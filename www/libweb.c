@@ -468,19 +468,6 @@ char *nohtml(char *s) {
 	return buf;      
 }
 
-
-char *strcasestr(char *s1, char *s2) {
-	int l;
-	l=strlen(s2);
-	while(s1[0]) {
-		if(!strncasecmp2(s1, s2, l)) return s1;
-		//modified from strncasecmp to strncasecmp2 by roly 02.04.13
-		//to fix the bug of solaris when string include 8-bit character
-		s1++;
-	}
-	return 0;
-}
-
 int strsncpy(char *s1, char *s2, int n) {
 	int l=strlen(s2);
 	if(n<0) return;
@@ -608,12 +595,11 @@ int hhprintf(char *fmt, ...) {
 	s=buf;
 	my_link_mode=atoi(getparm("my_link_mode"));
 	if(my_link_mode==1)  return hprintf("%s", buf);
-	if(!strcasestr(s, "http://") 
-	   && !strcasestr(s, "ftp://") 
-	   && !strcasestr(s, "msg://")
-	   && !strcasestr(s, "mailto://")
-	   && !strcasestr(s, "board://")
-	   //&& !strcasestr(s, "upload://")
+	if(!strcasestr_gbk(s, "http://") 
+	   && !strcasestr_gbk(s, "ftp://") 
+	   && !strcasestr_gbk(s, "msg://")
+	   && !strcasestr_gbk(s, "mailto://")
+	   && !strcasestr_gbk(s, "board://")
 	   )
 		return hprintf("%s", buf);
 	while(s[0]) {
@@ -621,7 +607,6 @@ int hhprintf(char *fmt, ...) {
 		else if(!strncasecmp(s, "msg://", 6))	{msg=1;special=1;}
 		else if(!strncasecmp(s, "mailto://", 9)){mailto=1;special=1;}
 		else if(!strncasecmp(s, "board://", 8))	{board=1;special=1;}
-	//	else if(!strncasecmp(s, "upload://", 9)){upload=1;special=1;}
 		if(special)
 		{
 			char *tmp,*ltmp;
@@ -1031,7 +1016,7 @@ void Certify(char *board, struct fileheader *fh)
 			}
 			for(j=keywords_shm->number-1;j>=0;j--)
 			{
-				if(strcasestr(buf,keywords_shm->word[j]))
+				if(strcasestr_gbk(buf,keywords_shm->word[j]))
 				{
 					fh->accessed[1]|=FILE_UNCERTIFIED;
 					break;

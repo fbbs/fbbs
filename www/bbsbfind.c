@@ -49,10 +49,10 @@ int main() {
 		//added by iamfat 2002.08.10
 		//check_anonymous(x.owner);
 		//added end.
-		if(title[0] && !strcasestr(x.title, trim(title))) continue;
-		if(title2[0] && !strcasestr(x.title, trim(title2))) continue;
+		if(title[0] && !strcasestr_gbk(x.title, trim(title))) continue;
+		if(title2[0] && !strcasestr_gbk(x.title, trim(title2))) continue;
 		if(userid[0] && strcasecmp(x.owner, trim(userid))) continue;
-		if(title3[0] && strcasestr(x.title, trim(title3))) continue;
+		if(title3[0] && strcasestr_gbk(x.title, trim(title3))) continue;
 		if(abs(time(0)-atoi(x.filename+2))>dt*86400) continue;
 		if(mg && !(x.accessed[0] & FILE_MARKED) && !(x.accessed[0] & FILE_DIGEST)) continue;
 		if(og && !strncmp(x.title, "Re: ", 4)) continue;

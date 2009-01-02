@@ -22,7 +22,7 @@ int main() {
 	bzero(buf, 10000);
 	if(fp) {
 		fread(buf, 9999, 1, fp);
-		ptr=strcasestr(buf, "<textarea>");
+		ptr=strcasestr_gbk(buf, "<textarea>");
 		if(ptr) ptr[0]=0;
 		fclose(fp);
 	}

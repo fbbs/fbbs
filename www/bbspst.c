@@ -120,7 +120,7 @@ int main() {
 					printf(": (以下引言省略...)\n");
 					break;
 				}
-				if(!strcasestr(buf, "</textarea>")) printf(": %s", buf);
+				if(!strcasestr_gbk(buf, "</textarea>")) printf(": %s", buf);
 			}
 			fclose(fp);
 		}

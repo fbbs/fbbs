@@ -50,7 +50,7 @@ int main() {
 				if(!strncmp(buf, ": : ", 4)) continue;
 				if(!strncmp(buf, "--\n", 3)) break;
 				if(buf[0]=='\n') continue;;
-				if(!strcasestr(buf, "</textarea>")) printf(": %s", buf);
+				if(!strcasestr_gbk(buf, "</textarea>")) printf(": %s", buf);
 				if(lines++>20) {
 					printf(": (以下引言省略 ... ...)");
 					break;

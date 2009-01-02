@@ -81,7 +81,7 @@ int main() {
 	while(fgets(buf, 500, fp))
 	{
 		if(strstr(buf,origin) && buf[0]!=':')break;
-		if(!strcasestr(buf, "</textarea>")) printf("%s", buf);
+		if(!strcasestr_gbk(buf, "</textarea>")) printf("%s", buf);
 	}
 	fclose(fp);
    	printf("</textarea>\n");
