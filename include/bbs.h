@@ -1,7 +1,3 @@
-/*
- $Id: bbs.h 365 2007-05-12 13:07:16Z danielfree $
- */
-
 #ifndef  _BBS_H_
 #define _BBS_H_
 
@@ -380,7 +376,6 @@ extern char datestring[];
 
 //added by iamfat 2003.02.27
 #define DEBUG(x) {file_append("debug", #x"\n");x;}	//µ÷ÊÔÄ£Ê½
-#endif /* of _BBS_H_ */
 
 #define FLOCK(x,y) flock(x,y)
 
@@ -406,3 +401,15 @@ int countexp(struct userec *udata);
 int countperf(struct userec *udata);
 int julian_day(int year, int month, int day);
 int days_elapsed(int year, int month, int day, time_t now);
+
+//brdcache.c (bcache.c)
+extern struct BCACHE *brdshm;
+extern struct boardheader *bcache;
+extern int numboards;
+
+//ucache.c (bcache.c)
+extern struct UCACHE *uidshm;
+extern struct UTMPFILE *utmpshm;
+extern struct userec lookupuser;
+
+#endif /* of _BBS_H_ */

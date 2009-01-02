@@ -44,7 +44,6 @@ int SHOWONEBRD=0;
 
 extern int cmpfnames();
 extern int searchuser();
-extern struct UCACHE *uidshm;
 int showexplain = 0;
 char fexp[30]; //added by kit to make W work
 
@@ -275,7 +274,6 @@ void sort_user_record(int left, int right) {
 int fill_userlist() {
 	register int i, n, totalusernum;
 	int friendno[MAXACTIVE];
-	extern struct UTMPFILE *utmpshm;
 
 	resolve_utmp();
 	totalusernum = 0;

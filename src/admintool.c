@@ -689,7 +689,7 @@ int m_editbrd() {
 	char oldpath[STRLEN], newpath[STRLEN], tmp_grp[30];
 	int pos, tmppos, a_mv;
 	struct boardheader fh, newfh, tmpfh;
-	extern struct boardheader *bcache;
+
 	a_mv = 0; // added by Danielfree 05.12.4
 
 	//added by roly 02.03.07
@@ -2078,7 +2078,6 @@ void a_edits() {
 	int aborted;
 	char ans[7], buf[STRLEN], buf2[STRLEN];
 	int ch, num, confirm;
-	extern struct BCACHE *brdshm;
 	static char *e_file[] = { "../Welcome", "../Welcome2", "issue",
 			"logout", "../vote/notes", "hotspot", "menu.ini",
 			"../.badname", "../.bad_email", "../.bad_host", "autopost",

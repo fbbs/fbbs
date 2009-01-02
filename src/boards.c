@@ -4,10 +4,7 @@
 
 char *sysconf_str();
 extern time_t login_start_time;
-extern int numboards;
 extern int getbnum();
-extern struct boardheader *bcache;
-extern struct BCACHE *brdshm;
 extern struct boardheader *getbcache();
 extern struct bstat *getbstat();
 struct newpostdata {

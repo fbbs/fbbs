@@ -146,21 +146,7 @@ int o_gid = 0;
 extern struct boardheader *getbcache();
 extern struct bstat *getbstat();
 int totalusers, usercounter;
-extern struct boardheader *bcache;
-extern struct BCACHE *brdshm;
 
-//iamfat 2002.08.10
-/*
- void check_anonymous(char* owner)
- {
- if(owner[0]&0x80)
- {
- if(technician)owner[0]&=~0x80;
- else strcpy(owner,"Anonymous");
- }
- }*/
-//added end
-//added by iamfat 2002.08.10
 #ifdef CERTIFYMODE
 int can_read_uncertified ()
 {

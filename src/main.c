@@ -54,7 +54,6 @@ void refreshdate();
 int listmode;
 int numofsig = 0;
 jmp_buf byebye;
-extern struct BCACHE *brdshm;
 FILE *ufp;
 int talkrequest = NA;
 
@@ -669,7 +668,6 @@ struct max_log_record {
 void visitlog(void) {
 	time_t now;
 	struct tm *tm;
-	extern struct UTMPFILE *utmpshm;
 
 	//modified by iamfat to avoid deadlock
 	FILE *fp;
@@ -741,7 +739,6 @@ void login_query() {
 	char genbuf[STRLEN];
 	FILE *fn;
 	char *ptr;
-	extern struct UTMPFILE *utmpshm;
 	int i, j, tmpid, tmpcount, sflag[10][2]; /*2003.04.22 added by stephen */
 	struct userec tmpuserec; /*2003.05.02 added by stephen */
 	int lcount = 0, basici = 0, basicj = 0;

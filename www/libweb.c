@@ -57,7 +57,6 @@ struct user_info *u_info;
 struct UTMPFILE *shm_utmp;
 struct BCACHE *shm_bcache;
 struct UCACHE *shm_ucache;
-struct boardheader *bcache=NULL;
 #ifdef CERTIFYMODE
 	struct KEYWORDS_SHM *keywords_shm;
 #endif

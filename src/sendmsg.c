@@ -35,8 +35,6 @@ extern int RMSG;
 extern int msg_num;
 char buf2[STRLEN];
 struct user_info *t_search();
-extern struct UTMPFILE *utmpshm;
-
 void count_msg();
 void r_msg();
 

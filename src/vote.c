@@ -28,8 +28,6 @@
 
 extern cmpbnames();
 extern int page, range;
-extern struct boardheader *bcache;
-extern struct BCACHE *brdshm;
 static char *vote_type[] = { "是非", "单选", "复选", "数字", "问答" };
 struct votebal currvote; //当前投票
 char controlfile[STRLEN];

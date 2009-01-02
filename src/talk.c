@@ -2177,7 +2177,6 @@ void t_reject() {
 
 struct user_info *t_search(char *sid, int pid) {
 	int i;
-	extern struct UTMPFILE *utmpshm;
 	struct user_info *cur, *tmp = NULL;
 	resolve_utmp();
 	/* added by roly 02.06.02 */
@@ -2300,25 +2299,6 @@ wait_friend()
 	return;
 }
 #endif
-
-/* 统计当前隐身人数  */
-/*
- int 
- CountCloakMan(void)
- {
- int     i, num = 0 ;
- extern struct UTMPFILE *utmpshm;
- struct user_info *cur;
- resolve_utmp();
- for (i = 0; i < USHM_SIZE; i++) {
- cur = &(utmpshm->uinfo[i]);
- if (!cur->active || !cur->pid || !cur->invisible)
- continue;
- num ++ ;
- }
- return num;
- }
- */
 
 #ifdef TALK_LOG
 /* edwardc.990106 分别为两位聊天的人作纪录 */

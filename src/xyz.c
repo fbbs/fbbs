@@ -35,7 +35,6 @@ extern int switch_code ();
 extern int convcode;
 #endif
 
-extern struct BCACHE *brdshm;
 extern struct UCACHE *uidshm;
 #define TH_LOW	10
 #define TH_HIGH	15
