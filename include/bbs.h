@@ -410,12 +410,13 @@ extern int numboards;
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
 void remove_shm(const char *shmstr, int defaultkey, int shmsize);
-int updatelastpost(char *board);
+int updatelastpost(const char *board);
 void resolve_boards(void);
 void flush_bcache(void);
 void rebuild_brdshm(void);
-int get_nextid(char* boardname);
-struct boardheader *getbcache(char *bname);
+int get_nextid(const char* boardname);
+struct boardheader *getbcache(const char *bname);
+int apply_boards(int (*func) (), const struct userec *cuser);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;

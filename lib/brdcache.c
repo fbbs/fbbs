@@ -178,7 +178,7 @@ static int getlastpost(char *board, int *lastpost, int *total)
 	return 0;
 }
 
-int updatelastpost(char *board)
+int updatelastpost(const char *board)
 {
 	int pos;
 
@@ -298,7 +298,7 @@ void rebuild_brdshm(void)
 	numboards = brdshm->number;
 }
 
-int get_nextid(char* boardname)
+int get_nextid(const char* boardname)
 {
 	register int i, ret;
 	for (i = 0; i < numboards; i++) {
@@ -327,17 +327,18 @@ struct boardheader *getbcache(const char *bname)
 	return NULL;
 }
 
-int apply_boards(int (*func) (), const struct userec *cuser) {
+int apply_boards(int (*func) (), const struct userec *cuser)
+{
 	register int i;
 	resolve_boards();
 	for (i = 0; i < numboards; i++) {
 		if (bcache[i].flag & BOARD_POST_FLAG
-			|| bcache[i].level ? cuser.userlevel & bcache[i].level : 1
+			|| bcache[i].level ? cuser->userlevel & bcache[i].level : 1
 			|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {
 			if ((bcache[i].flag & BOARD_CLUB_FLAG)
 				&& (bcache[i].flag	& BOARD_READ_FLAG)
 				&& !chkBM(bcache + i, cuser)
-				&& !isclubmember(cuser.userid, bcache[i].filename))
+				&& !isclubmember(cuser->userid, bcache[i].filename))
 				continue;
 			if ((*func)(&bcache[i]) == QUIT)
 				return QUIT;
