@@ -148,7 +148,7 @@ static void bcache_unlock(int fd)
 	close(fd);
 }
 
-static int getlastpost(char *board, int *lastpost, int *total)
+static int getlastpost(const char *board, int *lastpost, int *total)
 {
 	struct fileheader fh;
 	struct stat st;
@@ -347,3 +347,23 @@ int apply_boards(int (*func) (), const struct userec *cuser)
 	return 0;
 }
 
+#ifdef NEWONLINECOUNT
+void bonlinesync(time_t now)
+{
+	int i;
+	struct user_info *uentp;
+
+	if (now - brdshm->inboarduptime < 300)
+		return;
+	brdshm->inboarduptime = now;
+
+	for (i = 0; i < numboards; i++)
+		brdshm->bstatus[i].inboard = 0;
+
+	for (i = 0; i < USHM_SIZE; i++) {
+		uentp = &(utmpshm->uinfo[i]);
+		if (uentp->active && uentp->pid && uentp->currbrdnum)
+			brdshm->bstatus[uentp->currbrdnum - 1].inboard++;
+	}
+}
+#endif

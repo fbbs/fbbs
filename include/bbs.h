@@ -417,6 +417,9 @@ void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
 struct boardheader *getbcache(const char *bname);
 int apply_boards(int (*func) (), const struct userec *cuser);
+#ifdef NEWONLINECOUNT
+void bonlinesync(time_t now);
+#endif
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;
