@@ -418,4 +418,13 @@ extern struct userec lookupuser;
 //log.c
 void report(const char *s, const char *userid);
 
+//sysconf.c
+extern char *sysconf_buf;
+extern int sysconf_menu, sysconf_key, sysconf_len;
+extern struct smenuitem *menuitem;
+extern struct sdefine *sysvar;
+char *sysconf_str(const char *key);
+int sysconf_eval(const char *key);
+void build_sysconf(const char *configfile, const char *imgfile);
+
 #endif /* of _BBS_H_ */

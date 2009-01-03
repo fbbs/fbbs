@@ -1,28 +1,3 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
- 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: struct.h 362 2007-05-07 07:17:23Z danielfree $
- */
-
 /* Note the protocol field is not inside an #ifdef FILES...
  this is a waste but allows you to add/remove UL/DL support without
  rebuilding the PASSWDS file (and it's only a lil ole int anyway).
@@ -291,4 +266,20 @@ struct s_template {
 struct a_template {
 	struct s_template * tmpl;
 	struct s_content * cont;
+};
+
+struct smenuitem {
+	int line, col, level;
+	char *name, *desc, *arg;
+	int (*fptr)();
+};
+
+struct sdefine {
+	char *key, *str;
+	int val;
+};
+
+struct sysheader {
+	char *buf;
+	int menu, key, len;
 };

@@ -102,5 +102,4 @@ void remove_shm(const char *shmstr, int defaultkey, int shmsize)
 	shmid = shmget(shmkey, shmsize, 0);
 	shmctl(shmid, IPC_RMID, NULL);
 }
-
 //////////// End of functions related to shared memory. ////////////
