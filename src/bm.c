@@ -473,25 +473,6 @@ int deny_user() {
 	return FULLUPDATE;
 }
 
-int isclubmember(char *member, char *board) {
-	FILE* fp;
-	char uident[IDLEN+1];
-	char fname[STRLEN];
-	char line[256];
-	setbfile(fname, board, "club_users");
-	if (!(fp=fopen(fname, "r")))
-		return 0;
-	while (fgets(line, 256, fp)) {
-		strncpy(uident, line, IDLEN);
-		uident[IDLEN] = '\0';
-		strtok(uident, " \r\n\t");
-		if (strcasecmp(member, uident)==0)
-			return 1;
-	}
-	fclose(fp);
-	return 0;
-}
-
 int addtoclub(char *uident, char *msg) {
 	char strtosave[512], buf[50];
 	int seek;

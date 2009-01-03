@@ -1990,28 +1990,3 @@ int strtourl(char * url, char * str)
 	return 0;
 }
 
-int isclubmember(char *member, char *board)
-{
-	FILE* fp;
-	char uident[IDLEN+1];
-	char line[256];
-	char buf[256];
-	
-	
-	struct boardheader *x;
-	x=getbcache(board);
-	sprintf(buf, "boards/%s/club_users", x->filename);
-				
-	if(!(fp=fopen(buf,"r")))
-		return 0;
-	while(fgets(line,256,fp))
-	{
-		strncpy(uident, line, IDLEN);
-		uident[IDLEN] = '\0';
-		strtok(uident," \r\n\t");
-		if(strcasecmp(member,uident)==0)
-		return 1;
-	}
-	fclose(fp);
-	return 0;
-}

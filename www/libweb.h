@@ -204,7 +204,5 @@ int append_record(void *buf, int size, char *file);
 int checkpasswd(char *pw_crypted, char *pw_try);
 // main.c
 void SpecialID(const char* uid, char* host);
-// bm.c
-int isclubmember(char *member, char *board);
 
 #endif

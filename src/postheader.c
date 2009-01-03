@@ -314,17 +314,3 @@ int post_header(struct postheader *header) {
 	}
 }
 
-//此方法未被使用，主要用于检查当前版面是否为匿名
-int check_anonyboard(currboard) {
-	struct boardheader *bp;
-	int anonyboard = 0;
-	bp = getbcache(currboard);
-	anonyboard = bp->flag & BOARD_ANONY_FLAG;
-	if (anonyboard == 8) {
-		return YEA;
-		//this is because anony_flag = 8 = 100 in binary
-	} else {
-		return NA;
-	}
-
-}

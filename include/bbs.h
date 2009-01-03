@@ -445,5 +445,6 @@ char *setmdir(char *buf, const char *userid);
 //board.c
 int changeboard(struct boardheader *bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
+int isclubmember(const char *member, const char *board);
 
 #endif /* of _BBS_H_ */
