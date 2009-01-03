@@ -416,6 +416,7 @@ void flush_bcache(void);
 void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
 struct boardheader *getbcache(const char *bname);
+struct bstat *getbstat(const char *bname);
 int apply_boards(int (*func) (), const struct userec *cuser);
 #ifdef NEWONLINECOUNT
 void bonlinesync(time_t now);

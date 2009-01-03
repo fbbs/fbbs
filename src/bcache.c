@@ -7,14 +7,6 @@
 
 int usernumber=0;
 
-struct bstat *getbstat(char *bname) {
-	register int i;
-	for (i = 0; i < numboards; i++) {
-		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
-			return &brdshm->bstatus[i];
-	}
-	return NULL;
-}
 //	根据版名,返回其在bcache中的记录位置
 int getbnum(char *bname) {
 	register int i;

@@ -319,10 +319,22 @@ int get_nextid(const char* boardname)
 struct boardheader *getbcache(const char *bname)
 {
 	register int i;
+
 	resolve_boards();
 	for (i = 0; i < numboards; i++) {
 		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
 			return &bcache[i];
+	}
+	return NULL;
+}
+
+struct bstat *getbstat(const char *bname)
+{
+	register int i;
+
+	for (i = 0; i < numboards; i++) {
+		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
+			return &brdshm->bstatus[i];
 	}
 	return NULL;
 }
