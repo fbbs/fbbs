@@ -315,3 +315,15 @@ int get_nextid(char* boardname)
 	return 0;
 }
 
+//	·µ»Ø°æÃæµÄ»º´æ
+struct boardheader *getbcache(char *bname)
+{
+	register int i;
+	resolve_boards();
+	for (i = 0; i < numboards; i++) {
+		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
+			return &bcache[i];
+	}
+	return NULL;
+}
+

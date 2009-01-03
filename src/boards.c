@@ -281,7 +281,7 @@ int load_boards() {
 					&& !(bptr->flag & BOARD_NOZAP_FLAG))
 				continue;
 			if ((bptr->flag & BOARD_CLUB_FLAG)&& (bptr->flag
-					& BOARD_READ_FLAG )&& !chk_currBM(bptr->BM, 1)
+					& BOARD_READ_FLAG )&& !chkBM(bptr, &currentuser)
 					&& !isclubmember(currentuser.userid, bptr->filename))
 				continue;
 			if (choosemode == 0) {

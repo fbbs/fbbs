@@ -69,6 +69,7 @@ char currboard[STRLEN - BM_LEN];
 char currBM[BM_LEN - 1];
 int selboard = 0;
 char someoneID[31];
+struct boardheader *currbp;
 
 //Modified by IAMFAT 2002-05-27
 //char    ReadPost[STRLEN] = "";
@@ -1303,7 +1304,7 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 
 	selboard = 1;
 	brc_initial(currentuser.userid, bname);
-	strcpy(currboard, bname);
+	changeboard(currbp, currboard, bname);
 
 	move(0, 0);
 	clrtoeol();

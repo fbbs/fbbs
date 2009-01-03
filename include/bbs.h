@@ -282,6 +282,7 @@ extern struct userec lookupuser; /* Used when searching for other user info */
 
 extern char currboard[]; /* name of currently selected board */
 extern char currBM[]; /* BM of currently selected board */
+extern struct boardheader *currbp; // boardheader pointer to currently selected board
 
 extern int selboard; /* THis flag is true if above is active */
 
@@ -414,6 +415,7 @@ void resolve_boards(void);
 void flush_bcache(void);
 void rebuild_brdshm(void);
 int get_nextid(char* boardname);
+struct boardheader *getbcache(char *bname);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;
@@ -439,5 +441,9 @@ char *setwbdir(char *buf, const char *boardname);
 char *setbfile(char *buf, const char *boardname, const char *filename);
 char *setmfile(char *buf, const char *userid, const char *filename);
 char *setmdir(char *buf, const char *userid);
+
+//board.c
+int changeboard(struct boardheader *bp, char *cboard, const char *board);
+int chkBM(const struct boardheader *bp, const struct userec *up);
 
 #endif /* of _BBS_H_ */

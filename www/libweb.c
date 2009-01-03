@@ -1158,15 +1158,6 @@ int getbnum(char *board) {
 	return 0;
 }
 
-struct boardheader *getbcache(char *board) {
-	int i;
-	if(board[0]==0) return 0;
-	for(i=0; i<MAXBOARD; i++)
-		if (!strcasecmp(board, bcache[i].filename)) 
-			return &bcache[i];
-	return 0;
-}
-
 int count_mails(char *id, int *total, int *unread) {
         struct fileheader x1;
 	char buf[256];
