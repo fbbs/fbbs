@@ -75,8 +75,6 @@ bonlinesync(time_t now)
 }
 #endif
 
-int initlastpost=0;
-
 int apply_boards(int (*func) ()) {
 	register int i;
 	resolve_boards();

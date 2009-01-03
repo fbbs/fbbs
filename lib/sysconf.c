@@ -56,7 +56,7 @@ int sysconf_eval(const char *key)
 
 // Adds 'str' 'key' to 'sysconf_buf'.
 // Stores them (together with 'val') in sysvar.
-static void sysconf_addkey(const char *key, const char *str, int val)
+static void sysconf_addkey(const char *key, char *str, int val)
 {
 	int num;
 

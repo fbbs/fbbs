@@ -7,6 +7,7 @@
 struct BCACHE *brdshm = NULL;
 struct boardheader *bcache = NULL;
 int numboards = -1;
+static int initlastpost = 0;
 
 //////////// Functions related to shared memory. ////////////
 
