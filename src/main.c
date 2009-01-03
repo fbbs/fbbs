@@ -250,7 +250,7 @@ void u_enter() {
 		}
 		if (listmode > 100) { /* 放弃吧 */
 			sprintf(genbuf, "getnewutmpent(): too much times, give up.");
-			report(genbuf);
+			report(genbuf, currentuser.userid);
 			prints("getnewutmpent(): 失败太多次, 放弃. 请回报站长.\n");
 			sleep(3);
 			exit(0);
@@ -258,7 +258,7 @@ void u_enter() {
 	}
 	if (utmpent < 0) {
 		sprintf(genbuf, "Fault: No utmpent slot for %s\n", uinfo.userid);
-		report(genbuf);
+		report(genbuf, currentuser.userid);
 	}
 	listmode = 0;
 	digestmode = NA;
@@ -528,7 +528,7 @@ void multi_user_check() {
 				return;
 			kill(uin.pid, SIGHUP);
 			//以前不是SIGHUP，会导致编辑作业丢失 by sunner
-			report("kicked (multi-login)");
+			report("kicked (multi-login)", currentuser.userid);
 			currentuser.username[NAMELEN - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
 			log_usies("KICK ", currentuser.username);
 		}
@@ -981,7 +981,7 @@ void login_query() {
                         && strcasecmp(currentuser.userid, "guest") != 0
                         && abs(time(0) - currentuser.lastlogin) < 10) {
                     prints("登录过于频繁，请稍候再来\n");
-                    report("Too Frequent");
+                    report("Too Frequent", currentuser.userid);
                     oflush();
                     sleep(3);
                     exit(1);
@@ -1062,7 +1062,7 @@ void notepad_init() {
 					if (dashf(fname)) {
 						Postfile(fname, bname, notetitle, 1);
 						sprintf(tmp, "%s 自动张贴", ntitle);
-						report(tmp);
+						report(tmp, currentuser.userid);
 					}
 				}
 			}
@@ -1074,7 +1074,7 @@ void notepad_init() {
 			Postfile("etc/notepad", "Notepad", notetitle, 1);
 			unlink("etc/notepad");
 		}
-		report("自动发信时间更改");
+		report("自动发信时间更改", currentuser.userid);
 	}
 	return;
 }
@@ -1202,14 +1202,14 @@ void user_login() {
 	//technician=IsTechnician(currentuser.userid);
 
 	u_enter();
-	report("Enter");
+	report("Enter", currentuser.userid);
 	started = 1;
 	logins = count_user();
 
 	if (! (HAS_PERM(PERM_MULTILOG) || (HAS_PERM(PERM_SPECIAL0) && logins
 			< 5) || (logins <= MULTI_LOGINS)) && strcmp(
 			currentuser.userid, "guest")) {
-		report("kicked (multi-login)[漏网之鱼]");
+		report("kicked (multi-login)[漏网之鱼]", currentuser.userid);
 		abort_bbs();
 	}
 	initscr();

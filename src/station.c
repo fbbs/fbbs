@@ -120,7 +120,7 @@ char *msg_not_here = "[1;37m°Ô [32m[[36m%s[32m] ≤¢√ª”–«∞¿¥±æª·“ÈÃ¸[37m °Ô[
 #define HAVE_REPORT
 
 #ifdef  HAVE_REPORT
-void report(char *s) {
+void report_chat(char *s) {
 	static int disable = NA;
 
 	if (disable)
@@ -132,7 +132,7 @@ void report(char *s) {
 	return;
 }
 #else
-#define	report(s)	;
+#define	report_chat(s)	;
 #endif
 
 is_valid_chatid(id)
@@ -253,8 +253,8 @@ char *roomid;
 	for (i = 0; i < MAXROOM; i++) {
 		if (i && rooms[i].occupants == 0)
 		continue;
-		report(roomid);
-		report(rooms[i].name);
+		report_chat(roomid);
+		report_chat(rooms[i].name);
 		if (!strcasecmp(roomid, rooms[i].name))
 		return i;
 	}
@@ -402,7 +402,7 @@ char *msg;
 		}
 		for (i = 1; i < MAXROOM; i++) {
 			if (rooms[i].occupants == 0) {
-				report("new room");
+				report_chat("new room");
 				rnum = i;
 				memset(rooms[rnum].invites, 0, MAXACTIVE);
 				strcpy(rooms[rnum].topic, maintopic);
@@ -536,8 +536,8 @@ char *msg;
 			users[unum].cloak = 0;
 		}
 	}
-	report(level);
-	report(users[unum].host);
+	report_chat(level);
+	report_chat(users[unum].host);
 
 	users[unum].utent = utent;
 	strcpy(users[unum].userid, userid);

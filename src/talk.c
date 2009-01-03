@@ -872,7 +872,7 @@ struct user_info *userinfo;
 #ifndef FIVEGAME
 		sprintf(buf, "Talk to '%s'", uident);
 #endif
-		report(buf);
+		report(buf, currentuser.userid);
 		sock = socket(AF_INET, SOCK_STREAM, 0);
 		if (sock < 0) return -1;
 		server.sin_family = AF_INET;
@@ -1204,12 +1204,12 @@ int talkreply() {
 		write(a, reason, sizeof(reason));
 	if (buf[0] != 'y') {
 		close(a);
-		report("page refused");
+		report("page refused", currentuser.userid);
 		clear();
 		refresh();
 		return 0;
 	}
-	report("page accepted");
+	report("page accepted", currentuser.userid);
 	clear();
 #ifndef FIVEGAME
 	/* modified by djq 99.07.19 for FIVE */
@@ -1621,7 +1621,7 @@ char *modestr;
 
 int t_list() {
 	modify_user_mode(LUSERS);
-	report("t_list");
+	report("t_list", currentuser.userid);
 	do_list("Ê¹ÓÃÕß×´Ì¬");
 	pressreturn();
 	refresh();
@@ -1651,7 +1651,7 @@ int t_monitor() {
 	alarm(0);
 	signal(SIGALRM, sig_catcher);
 	/*    idle_monitor_time = 0; */
-	report("monitor");
+	report("monitor", currentuser.userid);
 	modify_user_mode(MONITOR);
 	ulistpage = 0;
 	do_list(modestr);
@@ -1824,7 +1824,7 @@ char *uident;
 	if (n != -1)
 	(friendflag) ? getfriendstr() : getrejectstr();
 	else
-	report("append override error");
+	report("append override error", currentuser.userid);
 	return n;
 }
 
@@ -1870,7 +1870,7 @@ char *filename;
 			(friendflag) ? getfriendstr() : getrejectstr();
 		} else {
 			deleted = -1;
-			report("delete override error");
+			report("delete override error", currentuser.userid);
 		}
 		in_mail=oldstate;
 	}
@@ -1924,7 +1924,7 @@ char *direc;
 		getdata(t_lines - 2, 0, buf, nh.exp, 40, DOECHO, NA);
 	}
 	if (substitute_record(direc, &nh, sizeof(nh), pos) < 0)
-	report("Override files subs err");
+	report("Override files subs err", currentuser.userid);
 	move(t_lines - 2, 0);
 	clrtoeol();
 	return NEWDIRECT;

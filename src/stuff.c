@@ -258,7 +258,7 @@ int do_exec(char *com, char *wd)
 			if (wd)
 			if (chdir(wd)) {
 				sprintf(genbuf, "Unable to chdir to '%s'\n", wd);
-				report(genbuf);
+				report(genbuf, currentuser.userid);
 				exit(-1);
 			}
 
@@ -275,7 +275,7 @@ int do_exec(char *com, char *wd)
 			//dup2(0,2);
 			execve(path, arglist, bbsenv);
 			sprintf(genbuf, "EXECV FAILED... path = '%s'\n", path);
-			report(genbuf);
+			report(genbuf, currentuser.userid);
 			exit(-1);
 		}
 		isig = signal(SIGINT, SIG_IGN);

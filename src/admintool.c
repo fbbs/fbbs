@@ -64,7 +64,7 @@ int m_info() {
 		return -1;
 	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
 	sprintf(reportbuf, "check info: %s", uinfo.userid);
-	report(reportbuf);
+	report(reportbuf, currentuser.userid);
 
 	move(1, 0);
 	clrtobot();
@@ -1015,7 +1015,7 @@ int m_editbrd() {
 		} // if a_mv >= 1
 		substitute_record(BOARDS, &newfh, sizeof (newfh), pos);
 		sprintf(genbuf, "更改讨论区 %s 的资料 --> %s", fh.filename, newfh.filename);
-		report(genbuf);
+		report(genbuf, currentuser.userid);
 		// numboards = -1;/* force re-caching */
 		flush_bcache();
 	} // if askyn
@@ -1563,7 +1563,7 @@ int x_level() {
 	else {
 		sprintf(reportbuf, "change level: %s %.8x -> %.8x",
 				lookupuser.userid, lookupuser.userlevel, newlevel);
-		report(reportbuf);
+		report(reportbuf, currentuser.userid);
 		lookupuser.userlevel = newlevel;
 		{
 			char secu[STRLEN];

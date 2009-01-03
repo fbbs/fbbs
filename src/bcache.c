@@ -7,101 +7,13 @@
 
 int usernumber=0;
 
-void attach_err(int shmkey, char* name, int err) {
-	sprintf(genbuf, "Error! %s error #%d! key = %x.\n", name, err, shmkey);
-	write(1, genbuf, strlen(genbuf));
-	exit(1);
-}
-
-int search_shmkey(char *keyname) {
-	int i = 0, found = 0;
-	while (shmkeys[i].key != NULL) {
-		if (strcmp(shmkeys[i].key, keyname) == 0) {
-			found = shmkeys[i].value;
-			break;
-		}
-		i++;
-	}
-	if (found == 0) {
-		sprintf(genbuf, "search_shmkey(): cannot found %s SHMKEY entry!",
-				keyname);
-		report(genbuf);
-	}
-	return found;
-}
-
-void * attach_shm(char *shmstr, int defaultkey, int shmsize) {
-	void *shmptr;
-	int shmkey, shmid;
-	shmkey = search_shmkey(shmstr);
-	if (shmkey < 1024)
-		shmkey = defaultkey;
-	shmid = shmget(shmkey, shmsize, 0);
-	if (shmid < 0) {
-		shmid = shmget(shmkey, shmsize, IPC_CREAT | 0640);
-		if (shmid < 0)
-			attach_err(shmkey, "shmget", errno);
-		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
-			attach_err(shmkey, "shmat", errno);
-		memset(shmptr, 0, shmsize);
-	} else {
-		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
-			attach_err(shmkey, "shmat", errno);
-	}
-	return shmptr;
-}
-
-void *attach_shm2(shmstr, defaultkey, shmsize, iscreate)
-char *shmstr;
-int defaultkey, shmsize;
-int *iscreate;
-{
-	void *shmptr;
-	int shmkey, shmid;
-	shmkey = search_shmkey(shmstr);
-	if (shmkey < 1024)
-	shmkey = defaultkey;
-	shmid = shmget(shmkey, shmsize, 0);
-	if (shmid < 0) {
-		shmid = shmget(shmkey, shmsize, IPC_CREAT | 0644);
-		*iscreate = 1;
-		if (shmid < 0)
-		attach_err(shmkey, "shmget", errno);
-		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
-		attach_err(shmkey, "shmat", errno);
-		memset(shmptr, 0, shmsize);
-	} else {
-		*iscreate = 0;
-		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
-		attach_err(shmkey, "shmat", errno);
-	}
-	return shmptr;
-}
-
-void remove_shm(char *shmstr, int defaultkey, int shmsize) {
-	int shmkey, shmid;
-
-	if (shmstr)
-		shmkey = sysconf_eval(shmstr, defaultkey);
-
-	else
-		shmkey = 0;
-	if (shmkey < 1024)
-		shmkey = defaultkey;
-	shmid = shmget(shmkey, shmsize, 0);
-	shmctl(shmid, IPC_RMID, NULL);
-}
 //from kbs 2.0
 static void bcache_setreadonly(int readonly) {
 	int boardfd;
 	void *oldptr = bcache;
 	munmap((void *)bcache, MAXBOARD * sizeof(struct boardheader));
 	if ((boardfd = open(BOARDS, O_RDWR | O_CREAT, 0644)) == -1) {
-		report("Can't open " BOARDS "file %s");
+		report("Can't open " BOARDS "file %s", currentuser.userid);
 		exit(-1);
 	}
 	if (readonly)
@@ -119,7 +31,7 @@ static int bcache_lock() {
 
 	lockfd = creat("bcache.lock", 0600);
 	if (lockfd < 0) {
-		report("CACHE:lock bcache:%s", strerror(errno));
+		report(strerror(errno), currentuser.userid);
 		return -1;
 	}
 	bcache_setreadonly(0);
@@ -227,14 +139,14 @@ void resolve_boards() {
 	//from kds2.0
 	if (bcache == NULL) {
 		if ((boardfd = open(BOARDS, O_RDWR | O_CREAT, 0644)) == -1) {
-			report("Can't open " BOARDS "file");
+			report("Can't open " BOARDS "file", currentuser.userid);
 			exit(-1);
 		}
 		bcache = (struct boardheader *) mmap(NULL, MAXBOARD
 				* sizeof(struct boardheader), PROT_READ, MAP_SHARED,
 				boardfd, 0);
 		if (bcache == (struct boardheader *) -1) {
-			report("Can't map " BOARDS "file ");
+			report("Can't map " BOARDS "file ", currentuser.userid);
 			close(boardfd);
 			exit(-1);
 		}
@@ -911,78 +823,6 @@ int get_status(int uid) {
 		return 0;
 	return uidshm->status[uid-1];
 }
-
-//int load_anoncache(int reload)
-//{
-//	int acfd;
-//	int iscreate=0;
-//	int i;
-//
-//	acfd=shm_lock("tmp/ACACHE.lock");
-//
-//	if (anonshm == NULL) {
-//      	anonshm = attach_shm2("ACACHE_SHMKEY", 3700, sizeof(ANONCACHE), &iscreate);
-//	}
-//	log_usies("CACHE", "load anonshm");
-//	memset(anonshm,0, sizeof(ANONCACHE));
-//	anonshm->freenode=1;
-//	for(i=0;i<MAX_ANON-1;i++){
-//		anonshm->next[i]=i+2;
-//	}
-//	shm_unlock(acfd);
-//
-//	return 0;
-
-//}
-
-//void resolve_anoncache()
-//{
-//	int iscreate=0;
-//	
-//	if (anonshm == NULL) {
-//		anonshm = attach_shm2("ACACHE_SHMKEY", 3700, sizeof(ANONCACHE), &iscreate);
-//	}
-//	if (iscreate) {
-//      	remove_shm("ACACHE_SHMKEY", 3700, sizeof(ANONCACHE));
-//	        sprintf(genbuf, "Error! miscd havn't startup\n");
-//        	write(1, genbuf, strlen(genbuf));
-//	        exit(1);
-//	}
-//}
-
-//void refresh_anoncache()
-//{
-//	int i,j=0,k,acfd;
-//	time_t now=time(0);
-//	resolve_anoncache();
-//	acfd=shm_lock("tmp/ACACHE.lock");
-//	i=anonshm->usednode;
-//	while(i){
-//		if(anonshm->item[i-1]+600<now){
-//			anonshm->item[i-1]=0;
-//			k=anonshm->next[i-1];
-//			if(j){
-//				anonshm->next[j-1]=k;
-//			}else{
-//				anonshm->usednode=k;
-//			}
-//			anonshm->next[i-1]=anonshm->freenode;
-//			anonshm->freenode=i;
-//			i=k;
-//			anonshm->used--;
-//			continue;
-//		}
-//		j=i;
-//		i=anonshm->next[i-1];
-//	}
-//	shm_unlock(acfd);
-//}
-
-//int get_anon()
-//{
-//	resolve_anoncache();
-//	return anonshm->used;
-//}
 
 void refresh_utmp() {
 	int utmpfd, ucachefd;

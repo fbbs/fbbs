@@ -1995,7 +1995,7 @@ int r_searchall() {
 	else
 	flag = YEA;
 	searchallboard (id, patten, dt, all, junk,flag);
-	report ("网友大作查询");
+	report ("网友大作查询", currentuser.userid);
 }
 
 int searchallboard(char *id, char *patten, int dt, int all, int del,

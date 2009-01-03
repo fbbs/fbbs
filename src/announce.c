@@ -168,9 +168,6 @@ void a_additem(MENU *pm, char *title, char *fname) {
 		strcpy(newitem->fname, fname);
 		pm->item[(pm->num)++] = newitem;
 	}
-	//add by fangu 2003.2.26, add log
-	//sprintf(genbuf, "ANN ADD %s IN %s", title, pm->path);
-	//report(genbuf);
 }
 
 //	引导进入精华区或者进入精华区的某个目录,加载所需要的信息
@@ -283,9 +280,6 @@ void a_savenames(MENU *pm) {
 	}
 	fclose(fn);
 	chmod(fpath, 0644);
-	//add by fangu 2003.2.26, add log
-	//sprintf(genbuf, "ANN savenames file:%s ", fpath);
-	//report(genbuf);
 }
 
 void a_prompt(int bot, char* pmt, char* buf, int len) {
@@ -585,10 +579,6 @@ void a_forward(char *path,ITEM* pitem,int mode) {
 		switch (doforward(path, &fhdr, mode)) {
 			case 0:
 			mesg = "文章转寄完成!\n";
-			//add by fangu 2003.2.26, add log
-			//sprintf(genbuf, "ANN FORWARD '%s'", fhdr.title);
-			//无法记录转寄对象，除非doforward()能报告这个信息
-			//report(genbuf);
 			break;
 			case -1:
 			mesg = "System error!!.\n";
@@ -716,10 +706,6 @@ void a_moveitem(MENU *pm) {
 		for (n = pm->now; n > num; n--)
 			pm->item[n] = pm->item[n - 1];
 	}
-	//add by title 2003.2.26, add log
-	//sprintf(genbuf, "ANN moveitem  pm:%s - oldnum:%d - newnun:%d",pm->path,pm->now, num);
-	//记录 路径-原序号-新序号
-	//report(genbuf);
 	pm->item[num] = tmp;
 	pm->now = num;
 	a_savenames(pm);
@@ -1186,7 +1172,7 @@ void ann_to_title(char *annpath) {
 							}
 						}
 						strcat(result, titlename);
-						report(titlename);
+						report(titlename, currentuser.userid);
 						break;
 					}
 				}
@@ -1913,7 +1899,7 @@ int AddPCorpus() {
 		move( 9, 0);
 		prints(secu);
 		sethomefile(genbuf, lookupuser.userid, ".announcepath");
-		report(genbuf);
+		report(genbuf, currentuser.userid);
 		if (fn = fopen(genbuf, "w+")) {
 			fprintf(fn, "%s/%s", digestpath, lookupuser.userid);
 			fclose(fn);

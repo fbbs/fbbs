@@ -71,7 +71,7 @@ int autoreport(char *title,char *str,int toboard,char *userid,int mode)
     int 	savemode;
 	
     savemode = uinfo.mode;
-    report(title);
+    report(title, currentuser.userid);
     sprintf(fname,"tmp/AutoPoster.%s.%05d",currentuser.userid,uinfo.pid);
     if((se=fopen(fname,"w"))!=NULL) {
 	    fprintf(se,"%s",str);
@@ -108,7 +108,7 @@ int	securityreport(char *str, int save, int mode)
 	char    fname[STRLEN];
 	int     savemode;
 	savemode = uinfo.mode;
-	report(str);
+	report(str, currentuser.userid);
 	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, uinfo.pid);
 	if ((se = fopen(fname, "w")) != NULL) {
 		fprintf(se, "ÏµÍ³°²È«¼ÇÂ¼\n[1mÔ­Òò£º%s[m\n", str);
@@ -590,7 +590,7 @@ int kick_user( struct user_info *userinfo )
      }
      //kill (uin.pid, SIGHUP);
    sprintf(buffer, "kick out %s", kickuser);
-   report(buffer);
+   report(buffer, currentuser.userid);
    kuinfo.userid[IDLEN]=0;        //added by iamfat 2004.01.05 to avoid overflow
    kuinfo.username[NAMELEN-1]=0;        //added by iamfat 2004.01.05 to avoid overflow
    sprintf(genbuf, "%s (%s)", kuinfo.userid, kuinfo.username);

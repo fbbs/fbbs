@@ -12,7 +12,7 @@ LIBNAME	 = libBBS.a
 GARBAGE  = a.out core out.* *.BAK DEAD* *.a
 
 OBJS	 = string.o mmdecode.o fileio.o modetype.o uinfo.o boardrc.o \
-		   brdcache.o ucache.o
+		   brdcache.o ucache.o log.o
 
 .SUFFIXES: .o .c
 

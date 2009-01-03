@@ -492,7 +492,7 @@ int igetch() {
 				if (errno == EINTR)
 					continue;
 				else {
-					report("abnormal select conditions\n");
+					report("abnormal select conditions\n", currentuser.userid);
 					return -1;
 				}
 			}

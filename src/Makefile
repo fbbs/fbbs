@@ -82,7 +82,7 @@ miscd: miscd.c $(COBJS1)
 	$(CC) $(CFLAGS) -o miscd $(OS_DEF) miscd.c $(COBJS1) $(LIBS) -L../lib -lBBS
 
 thread: thread.c record.c
-	$(CC) $(CFLAGS) -o thread $(OS_DEF) record.c thread.c $(LIBS) -DTHREAD_C
+	$(CC) $(CFLAGS) -o thread $(OS_DEF) record.c thread.c $(LIBS) -DTHREAD_C -L../lib -lBBS
 
 install:
 	sh Install.sh

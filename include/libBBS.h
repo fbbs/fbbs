@@ -3,7 +3,7 @@
 #define _LIBBBS_H_
 
 //fileio.c
-void file_append(char *fpath, char *msg);
+void file_append(const char *fpath, const char *msg);
 int dashf(char *fname);
 int dashd(char *fname);
 int part_cp(char *src, char *dst, char *mode);

@@ -70,7 +70,7 @@ void b_report(char *str) {
 	char buf[STRLEN];
 
 	sprintf(buf, "%s %s", currboard, str);
-	report(buf);
+	report(buf, currentuser.userid);
 }
 
 //½¨Á¢Ä¿Â¼,Ä¿Â¼Îª vote/°æÃû,È¨ÏÞÎª755
@@ -439,21 +439,21 @@ int mk_result(int num) {
 	sug = NULL;
 	sprintf(sugname, "vote/%s/tmp.%d", currboard, uinfo.pid); //Í¶Æ±ÁÙÊ±ÎÄ¼þÂ·¾¶Îª vote/°æÃû/tmp.ÓÃ»§id
 	if ((sug = fopen(sugname, "w")) == NULL) {
-		report("open vote tmp file error");
+		report("open vote tmp file error", currentuser.userid);
 		//prints("Error: ½áÊøÍ¶Æ±´íÎó...\n");
 		pressanykey();
 	}
 	(void) memset(result, 0, sizeof(result));
 	if (apply_record(fname, count_result, sizeof(struct ballot), 0, 0, 0)
 			== -1) {
-		report("Vote apply flag error");
+		report("Vote apply flag error", currentuser.userid);
 	}
 	fprintf(sug, "[1;44;36m¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©ÈÊ¹ÓÃÕß%s©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª[m\n\n\n",
 			(currvote.type != VOTE_ASKING) ? "½¨Òé»òÒâ¼û" : "´Ë´ÎµÄ×÷´ð");
 	fclose(sug);
 	sprintf(nname, "vote/%s/results", currboard); //Í¶Æ±½á¹ûÎÄ¼þÂ·¾¶Îª vote/°æÃû/results
 	if ((sug = fopen(nname, "w")) == NULL) {
-		report("open vote newresult file error");
+		report("open vote newresult file error", currentuser.userid);
 		//prints("Error: ½áÊøÍ¶Æ±´íÎó...\n");
 	}
 	get_result_title(sug);
@@ -692,7 +692,7 @@ int vote_flag(char *bname, char val, int mode) {
 	}
 
 	if (num >= MAXUSERS) {
-		report("Vote Flag, Out of User Numbers");
+		report("Vote Flag, Out of User Numbers", currentuser.userid);
 		return -1;
 	}
 

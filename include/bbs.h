@@ -406,10 +406,16 @@ int days_elapsed(int year, int month, int day, time_t now);
 extern struct BCACHE *brdshm;
 extern struct boardheader *bcache;
 extern int numboards;
+void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
+void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
+void remove_shm(const char *shmstr, int defaultkey, int shmsize);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;
 extern struct UTMPFILE *utmpshm;
 extern struct userec lookupuser;
+
+//log.c
+void report(const char *s, const char *userid);
 
 #endif /* of _BBS_H_ */

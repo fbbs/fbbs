@@ -41,9 +41,6 @@ struct titlenode { //每个titlenode记录不同主题
 
 struct titlenode toptitle; //同主题方式的头结点
 
-int report() {
-}
-
 // 释放所有动态分配的内存空间
 int FreeTitleMem() {
 	struct titlenode *t=toptitle.next;

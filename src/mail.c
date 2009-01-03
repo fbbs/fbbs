@@ -405,7 +405,7 @@ char *userid, *title;
 		}
 		unlink(tmp_fname);
 		sprintf(genbuf, "mailed %s: %s", userid, header.title);
-		report(genbuf);
+		report(genbuf, currentuser.userid);
 		return res;
 #endif
 	} else {
@@ -436,7 +436,7 @@ char *userid, *title;
 		if (append_record(genbuf, &newmessage, sizeof(newmessage)) == -1)
 		return -1;
 		sprintf(genbuf, "mailed %s: %s", userid, header.title);
-		report(genbuf);
+		report(genbuf, currentuser.userid);
 		return 0;
 	}
 }
@@ -1583,7 +1583,7 @@ int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
 	if (append_record(genbuf, &newmessage, sizeof(newmessage)) != -1)
 		return -1;
 	sprintf(genbuf, "mailed %s: %s", userid, title);
-	report(genbuf);
+	report(genbuf, currentuser.userid);
 	return 0;
 
 }
@@ -1673,7 +1673,7 @@ int mail_file(char tmpfile[STRLEN], char userid[STRLEN],
 		return -1;
 
 	sprintf(genbuf, "mailed %s: %s ", userid, title);
-	report(genbuf);
+	report(genbuf, currentuser.userid);
 
 	return 0;
 }

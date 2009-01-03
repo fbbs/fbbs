@@ -212,7 +212,7 @@ int x_userdefine() {
 //更改隐身术设置,get_status里似乎错了,这里以前更改uinfo.invisible的
 int x_cloak() {
 	modify_user_mode(GMENU);
-	report("toggle cloak");
+	report("toggle cloak", currentuser.userid);
 	uinfo.invisible = (uinfo.invisible) ? NA : YEA;
 	//add by infotech for get_status        04.11.29
 	if (uinfo.invisible == YEA) {
@@ -274,7 +274,7 @@ void x_edits() {
 		move(5, 0);
 		prints("%s 已删除\n", explain_file[ch]);
 		sprintf(buf, "delete %s", explain_file[ch]);
-		report(buf);
+		report(buf, currentuser.userid);
 		pressreturn();
 		if (ch == 4) {
 			WishNum = 9999;
@@ -292,7 +292,7 @@ void x_edits() {
 			set_numofsig();
 			prints("系统重新设定以及读入您的签名档...");
 		}
-		report(buf);
+		report(buf, currentuser.userid);
 	} else {
 		prints("%s 取消修改\n", explain_file[ch]);
 	}
@@ -441,7 +441,7 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	}
 	sprintf(buf, "%s %s %s %d", cmdfile, param1, currentuser.userid,
 			getpid());
-	report(buf);
+	report(buf, currentuser.userid);
 	my_argv[0] = cmdfile;
 	strcpy(buf, param1);
 	if (buf[0] != '\0')
@@ -573,7 +573,7 @@ void fill_date() {
 			- ((atoi(h) * 3600) + (atoi(m) * 60) + atoi(s)) + 86400; /* 算出今天 0:0:00 的时间, 然後再往後加一天 */
 	getdatestring(next, 4);
 	sprintf(genbuf, "纪念日更新, 下一次更新时间 %s", datestring);
-	report(genbuf);
+	report(genbuf, currentuser.userid);
 
 	fp = fopen(DEF_FILE, "r");
 
@@ -731,7 +731,7 @@ int sendGoodWish(char *userid) {
 	move(11 + count, 0);
 	prints("已经帮您送出您的留言了。");
 	sprintf(genbuf, "SendGoodWish to %s", uid);
-	report(genbuf);
+	report(genbuf, currentuser.userid);
 	pressanykey();
 	clear();
 	return 0;

@@ -257,11 +257,11 @@ int exec_mbem(char *s)
 			if(func=dlsym(hdll,c ? c : "mod_main"))
 			func();
 			else
-			report(dlerror());
+			report(dlerror(), currentuser.userid);
 			dlclose(hdll);
 		}
 		else {
-			report(dlerror());
+			report(dlerror(), currentuser.userid);
 		}
 	}
 }
@@ -349,17 +349,16 @@ char * sysconf_str(char *key) {
 	return NULL;
 }
 
-int
-sysconf_eval(key)
-char *key;
+int sysconf_eval(char *key)
 {
 	int n;
 	for (n = 0; n < sysconf_key; n++)
-	if (strcmp(key, sysvar[n].key) == 0)
-	return (sysvar[n].val);
+		if (strcmp(key, sysvar[n].key) == 0)
+			return (sysvar[n].val);
 	if (*key < '0' || *key> '9') {
-		sprintf(genbuf, "sysconf: unknown key: %s.", key);
-		report(genbuf);
+		char buf[80];
+		sprintf(buf, "sysconf: unknown key: %s.", key);
+		report(buf, currentuser.userid);
 	}
 	return (strtol(key, NULL, 0));
 }
@@ -526,7 +525,7 @@ char *fname;
 					sysconf_addkey(key, NULL, val);
 				}
 			} else {
-				report(ptr);
+				report(ptr, currentuser.userid);
 			}
 		}
 	}
@@ -598,7 +597,7 @@ char *imgfile;
 		fstat(fh, &st);
 		ptr = malloc(st.st_size);
 		if (ptr==NULL)
-		report( "Insufficient memory available\n" );
+		report( "Insufficient memory available", currentuser.userid);
 
 		read(fh, &shead, sizeof(shead));
 
@@ -638,7 +637,7 @@ char *imgfile;
 
 void load_sysconf() {
 	if (!dashf("sysconf.img")) {
-		report("build sysconf.img");
+		report("build sysconf.img", currentuser.userid);
 		build_sysconf("etc/sysconf.ini", "sysconf.img");
 	}
 	load_sysconf_image("sysconf.img");
@@ -815,9 +814,9 @@ char *menu_name;
 			load_keywords();
 #endif
 			free(menuitem);
-			report("rebuild sysconf.img");
+			report("rebuild sysconf.img", currentuser.userid);
 			build_sysconf("etc/sysconf.ini", "sysconf.img");
-			report("reload sysconf.img");
+			report("reload sysconf.img", currentuser.userid);
 			load_sysconf_image("sysconf.img");
 			pm = &menuitem[sysconf_eval(menu_name)];
 			ActiveBoard_Init();

@@ -120,7 +120,7 @@ void msg() {
 void indigestion(int i) {
 	char badmsg[STRLEN];
 	sprintf(badmsg, "SERIOUS INTERNAL INDIGESTION CLASS %d\n", i);
-	report(badmsg);
+	report(badmsg, currentuser.userid);
 }
 
 struct textline *back_line(struct textline *pos, int num) {

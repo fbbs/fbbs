@@ -91,14 +91,14 @@ void ActiveBoard_Init( void )
    movieshm->update = time(0); 
    
    sprintf(buf, "»î¶¯¿´°å¸üĞÂ, ¹² %d ĞĞ, %d ²¿·İ.", j, y);
-   report(buf); 
+   report(buf, currentuser.userid); 
    return ;
 }
 
 int empty_movie(int x)
 {
    sprintf(genbuf, "Empty Movie!!! (error = %d)", x);
-   report(genbuf); 
+   report(genbuf, currentuser.userid); 
    
    strcpy(movieshm->data[2], "[K      ** ÉĞÎ´Éè¶¨»î¶¯¿´°å ** ");
    strcpy(movieshm->data[3], "[K         ÇëÏê¼û°²×°ËµÃ÷Êé Firebird-2000 ");

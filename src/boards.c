@@ -177,7 +177,7 @@ void save_GoodBrd() {
 	if ((fp = fopen(fname, "wb")) != NULL) {
 		for (i = 0; i < GoodBrd.num; i++) {
 			fwrite(&GoodBrd.boards[i], sizeof(struct goodbrdheader), 1, fp);
-			report(GoodBrd.boards[i].filename);
+			report(GoodBrd.boards[i].filename, currentuser.userid);
 		}
 		fclose(fp);
 	}

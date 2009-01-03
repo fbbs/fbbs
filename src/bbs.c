@@ -82,7 +82,6 @@ int
 		getlist(char *, char **, int, char **, int, char **, int, char **,
 				int);
 char *filemargin();
-void report();
 void board_usage();
 
 //void cancelpost ();
@@ -283,31 +282,6 @@ void get_load(double load[]) {
 int set_safe_record() {
 	if (getcurrentuser(currentuser.userid) == 0)
 		return -1;
-	/*
-	 struct userec tmp;
-	 extern int ERROR_READ_SYSTEM_FILE;
-	 if (get_record (PASSFILE, &tmp, sizeof (currentuser), usernum) == -1) {
-	 char buf[STRLEN];
-	 sprintf (buf, "Error:Read Passfile %4d %12.12s", usernum,
-	 currentuser.userid);
-	 report (buf);
-	 ERROR_READ_SYSTEM_FILE = YEA;
-	 abort_bbs ();
-	 return -1;
-	 }
-	 currentuser.numposts = tmp.numposts;
-	 currentuser.userlevel = tmp.userlevel;
-	 currentuser.numlogins = tmp.numlogins;
-	 #ifdef ALLOWGAME
-	 currentuser.nummedals = tmp.nummedals;
-	 currentuser.money = tmp.money;
-	 currentuser.bet = tmp.bet;
-	 #endif
-	 currentuser.stay = tmp.stay;
-	 currentuser.lastlogout= tmp.lastlogout;
-	 currentuser.lastlogin=tmp.lastlogin;
-	 return;
-	 */
 }
 
 /*
@@ -620,13 +594,6 @@ int Postfile(char *filename, char *nboard, char *posttitle, int mode) {
 	//added by iamfat 2003.11.21
 	int old_inmail = in_mail;
 
-	//decrease one BOARDS operations
-	/*
-	 if (search_record (BOARDS, &fh, sizeof (fh), cmpbnames, nboard) <= 0) {
-	 sprintf (bname, "%s 讨论区找不到", nboard);
-	 report (bname);
-	 return -1;
-	 } */
 	in_mail = NA;
 	strcpy(quote_board, currboard);
 	strcpy(dbname, currboard);
@@ -1729,7 +1696,7 @@ void getcross(char *filepath, int mode) {
 	inf = fopen(quote_file, "r");
 	of = fopen(filepath, "w");
 	if (inf == NULL || of == NULL) {
-		report("Cross Post error");
+		report("Cross Post error", currentuser.userid);
 		return;
 	}
 	if (mode == 0 || mode == 4) {
@@ -2248,7 +2215,7 @@ int post_cross(char islocal, int mode) {
 			sprintf(buf, "Posting '%s' on %s: append_record failed!",
 					postfile.title, quote_board);
 		}
-		report(buf);
+		report(buf, currentuser.userid);
 		pressreturn();
 		clear();
 		return 1;
@@ -2259,7 +2226,7 @@ int post_cross(char islocal, int mode) {
 		add_crossinfo(filepath, 1);
 		//commented by roly 2002.02.26 to disable add_crossinfo for compatible with crosspost form 0Announce
 		sprintf(buf, "cross_posted '%s' on %s", postfile.title, currboard);
-		report(buf);
+		report(buf, currentuser.userid);
 	}
 	/*    else
 	 sprintf(buf,"自动发表系统 POST '%s' on '%s'", postfile.title, currboard) ;
@@ -2563,7 +2530,7 @@ int post_article(char *postboard, char *mailid) {
 	if (append_record(buf, &postfile, sizeof (postfile)) == -1) {
 		sprintf(buf, "posting '%s' on %s: append_record failed!",
 				postfile.title, currboard);
-		report(buf);
+		report(buf, currentuser.userid);
 		pressreturn();
 		clear();
 		return FULLUPDATE;
@@ -2571,7 +2538,7 @@ int post_article(char *postboard, char *mailid) {
 	brc_addlist(postfile.filename);
 	updatelastpost(currboard);
 	sprintf(buf, "posted '%s' on %s", postfile.title, currboard);
-	report(buf);
+	report(buf, currentuser.userid);
 
 	if (!junkboard() && !header.chk_anony) {
 		set_safe_record();
@@ -2687,7 +2654,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!in_mail) {
 		sprintf(genbuf, "edited post '%s' on %s", fileinfo->title,
 				currboard);
-		report(genbuf);
+		report(genbuf, currentuser.userid);
 	}
 	return FULLUPDATE;
 }
@@ -3008,7 +2975,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 			updatelastpost(currboard);
 		} else {
 			sprintf(genbuf, "Range delete %d-%d in mailbox", inum1, inum2);
-			report(genbuf);
+			report(genbuf, currentuser.userid);
 		}
 		return DIRCHANGED;
 	}
@@ -3069,7 +3036,7 @@ int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 				owned);
 	}
 	sprintf(genbuf, "UNDEL '%s' on %s", fileinfo->title, currboard);
-	report(genbuf);
+	report(genbuf, currentuser.userid);
 	bm_log(currentuser.userid, currboard, BMLOG_UNDELETE, 1);
 	return DIRCHANGED;
 }
@@ -3141,7 +3108,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		if ((t = strrchr(buf, '/')) != NULL)
 			*t = '\0';
 		sprintf(genbuf, "Del '%s' on %s", fileinfo->title, currboard);
-		report(genbuf);
+		report(genbuf, currentuser.userid);
 
 		updatelastpost(currboard);
 		/*if(subflag==NA)
@@ -3764,8 +3731,8 @@ int Q_Goodbye() {
 		if (fill_shmfile(2, "etc/logout", "GOODBYE_SHMKEY"))
 			show_goodbyeshm();
 	}
-	pressreturn(); // sunner 的建议
-	report("exit");
+	pressreturn();
+	report("exit", currentuser.userid);
 
 	CreateNameList();
 
@@ -3913,34 +3880,14 @@ int Goodbye() {
 
 }
 
-void do_report(char *filename, char *s) {
+void do_report(const char *filename, const char *s) {
 	char buf[512];
-	time_t dtime;
 
-	time(&dtime);
-	getdatestring(dtime, NA);
+	getdatestring(time(NULL), NA);
 	sprintf(buf, "%-12.12s %16.16s %s\n", currentuser.userid, datestring
 			+ 6, s);
 	file_append(filename, buf);
 }
-
-/* added by money to provide a method of logging by metalog daemon 2004.01.07 */
-#ifdef USE_METALOG
-void report (char *s)
-{
-	//time_t        dtime;
-	//time(&dtime);
-	//getdatestring(dtime, NA);
-	//syslog(LOG_LOCAL6, "%-12.12s %8.8s %s", currentuser.userid, datestring + 14, s);
-	syslog (LOG_LOCAL6 | LOG_INFO, "%-12.12s %s", currentuser.userid, s);
-	return;
-}
-#else
-/* added end */
-void report(char *s) {
-	do_report("trace", s);
-}
-#endif
 
 void gamelog(char *s) {
 	do_report("game/trace", s);

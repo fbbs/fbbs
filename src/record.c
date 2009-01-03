@@ -41,7 +41,7 @@ int safewrite(int fd, char *const buf, int size) {
 	do {
 		cc = write(fd, bp, sz);
 		if ((cc < 0) && (errno != EINTR)) {
-			report("safewrite err!");
+			report("safewrite err!", "");
 			return -1;
 		}
 		if (cc > 0) {
@@ -66,13 +66,13 @@ long get_num_records(const char *filename, const int size) {
 int append_record(char *filename, char *record, int size) {
 	int fd;
 	if ((fd = open(filename, O_WRONLY | O_CREAT, 0644)) == -1) {
-		report("open file error in append_record()");
+		report("open file error in append_record()", "");
 		return -1;
 	}
 	FLOCK(fd, LOCK_EX);
 	lseek(fd, 0, SEEK_END);
 	if (safewrite(fd, record, size) == -1)
-		report("apprec write err!");
+		report("apprec write err!", "");
 	FLOCK(fd, LOCK_UN);
 	close(fd);
 	return 0;

@@ -524,14 +524,14 @@ void new_register() {
 		if (strcmp(verify_num, verify_code)) {
 			sprintf(log, "verify '%s' error with code %s!=%s from %s",
 					passbuf, verify_num, verify_code, fromhost);
-			report(log);
+			report(log, currentuser.userid);
 			prints("抱歉, 您输入的验证码不正确.\n");
 			continue;
 		}
 
 		sprintf(log, "verify '%s' with code %s from %s ", passbuf,
 				verify_code, fromhost);
-		report(log);
+		report(log, currentuser.userid);
 
 #endif
 		if (id_with_num(passbuf)) {
@@ -644,7 +644,7 @@ void new_register() {
 		exit(1);
 	}
 	sprintf(genbuf, "new account from %s", fromhost);
-	report(genbuf);
+	report(genbuf, currentuser.userid);
 	prints("请重新登陆 %s 并填写注册信息\n", newuser.userid);
 	pressanykey();
 	exit(0);
