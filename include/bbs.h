@@ -409,6 +409,10 @@ extern int numboards;
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
 void remove_shm(const char *shmstr, int defaultkey, int shmsize);
+void resolve_boards(void);
+void flush_bcache(void);
+void rebuild_brdshm(void);
+int get_nextid(char* boardname);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;

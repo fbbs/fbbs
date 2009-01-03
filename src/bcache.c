@@ -7,44 +7,6 @@
 
 int usernumber=0;
 
-//from kbs 2.0
-static void bcache_setreadonly(int readonly) {
-	int boardfd;
-	void *oldptr = bcache;
-	munmap((void *)bcache, MAXBOARD * sizeof(struct boardheader));
-	if ((boardfd = open(BOARDS, O_RDWR | O_CREAT, 0644)) == -1) {
-		report("Can't open " BOARDS "file %s", currentuser.userid);
-		exit(-1);
-	}
-	if (readonly)
-		bcache = (struct boardheader *) mmap(oldptr, MAXBOARD
-				* sizeof(struct boardheader), PROT_READ, MAP_SHARED,
-				boardfd, 0);
-	else
-		bcache = (struct boardheader *) mmap(oldptr, MAXBOARD
-				* sizeof(struct boardheader), PROT_READ | PROT_WRITE,
-				MAP_SHARED, boardfd, 0);
-	close(boardfd);
-}
-static int bcache_lock() {
-	int lockfd;
-
-	lockfd = creat("bcache.lock", 0600);
-	if (lockfd < 0) {
-		report(strerror(errno), currentuser.userid);
-		return -1;
-	}
-	bcache_setreadonly(0);
-	flock(lockfd, LOCK_EX);
-	return lockfd;
-}
-static void bcache_unlock(int fd) {
-	flock(fd, LOCK_UN);
-	bcache_setreadonly(1);
-	close(fd);
-}
-//add end
-
 int getlastpost(char *board, int *lastpost, int *total) {
 	struct fileheader fh;
 	struct stat st;
@@ -114,141 +76,7 @@ bonlinesync(time_t now)
 #endif
 
 int initlastpost=0;
-//remove by eefree 06.04.28
-//int	fillbcache(struct boardheader *fptr,int index,void *arg)
-//{
-//	struct boardheader *bptr;
-//	if (numboards >= MAXBOARD)
-//		return 0;
-//	bptr = &bcache[numboards++];
-//#ifdef NEWONLINECOUNT
-//	memcpy(bptr, fptr, sizeof(struct boardheader) - 3*sizeof(int));
-//#else
-//	memcpy(bptr, fptr, sizeof(struct boardheader) - 2*sizeof(int));
-//#endif
-//    if(initlastpost)
-//        getlastpost(bptr->filename, &(bptr->lastpost), &(bptr->total) );
-//	return 0;
-//}
 
-void resolve_boards() {
-	int boardfd=-1;
-	struct stat st;
-	time_t now;
-	int iscreate=0;
-	//from kds2.0
-	if (bcache == NULL) {
-		if ((boardfd = open(BOARDS, O_RDWR | O_CREAT, 0644)) == -1) {
-			report("Can't open " BOARDS "file", currentuser.userid);
-			exit(-1);
-		}
-		bcache = (struct boardheader *) mmap(NULL, MAXBOARD
-				* sizeof(struct boardheader), PROT_READ, MAP_SHARED,
-				boardfd, 0);
-		if (bcache == (struct boardheader *) -1) {
-			report("Can't map " BOARDS "file ", currentuser.userid);
-			close(boardfd);
-			exit(-1);
-		}
-		close(boardfd);
-	}
-	//add end
-	if (brdshm == NULL) {
-		brdshm = attach_shm2("BCACHE_SHMKEY", 3693, sizeof(*brdshm),
-				&iscreate);
-		if (iscreate) {
-			initlastpost=1;
-			int i, maxi = -1;
-			int fd;
-			fd = bcache_lock();
-			for (i = 0; i < MAXBOARD; i++) {
-				if (bcache[i].filename[0]) {
-					int count;
-					char filename[STRLEN-8];
-					struct fileheader lastfh;
-					getlastpost(bcache[i].filename,
-							&brdshm->bstatus[i].lastpost,
-							&brdshm->bstatus[i].total);
-					setbfile(filename, bcache[i].filename, DOT_DIR);
-					count=get_num_records(filename,
-							sizeof(struct fileheader));
-					get_record(filename, &lastfh,
-							sizeof(struct fileheader), count-1);
-					brdshm->bstatus[i].nowid=lastfh.id+1;
-					if (bcache[i].nowid>lastfh.id+1)
-						brdshm->bstatus[i].nowid=bcache[i].nowid;
-					else
-						brdshm->bstatus[i].nowid=lastfh.id+1;
-					maxi = i;
-				}
-			}//end for
-			if (maxi != -1)
-				brdshm->number = maxi + 1;
-			bcache_unlock(fd);
-		}//end if(creat)
-		numboards = brdshm->number;
-	}//end if brdshm=NULL
-	now = time(0);
-	if (stat(BOARDS, &st) < 0) {
-		st.st_mtime = now - 3600;
-	}
-	if (brdshm->uptime < st.st_mtime || brdshm->uptime < now - 3600) {
-		brdshm->uptime=now;
-		//remove by eefree 06.04.28
-		//log_usies("CACHE", "reload bcache");
-		//numboards = 0;
-		//apply_record(BOARDS, fillbcache, sizeof(struct boardheader), NULL, 0, 0);
-		//brdshm->number = numboards;
-		//if(initlastpost)
-		//    initlastpost=0;
-	}
-}
-//add from kbs2.0
-void detach_boards() {
-	munmap((void *)bcache, MAXBOARD * sizeof(struct boardheader));
-	bcache=NULL;
-	shmdt((void *)brdshm);
-	brdshm=NULL;
-}
-void flush_bcache() {
-	int i;
-	resolve_boards();
-	bcache_setreadonly(0);
-	for (i = 0; i < MAXBOARD; i++)
-		bcache[i].nowid=brdshm->bstatus[i].nowid;
-	msync((void *)bcache, MAXBOARD * sizeof(struct boardheader), MS_SYNC);
-	bcache_setreadonly(1);
-}
-//add end
-//added by cometcaptor 2006-10-13 a brdshm patch (temp)
-void rebuild_brdshm() {
-	int i, maxi = -1;
-	int fd;
-	fd = bcache_lock();
-	for (i = 0; i < MAXBOARD; i++) {
-		if (bcache[i].filename[0]) {
-			int count;
-			char filename[STRLEN-8];
-			struct fileheader lastfh;
-			getlastpost(bcache[i].filename, &brdshm->bstatus[i].lastpost,
-					&brdshm->bstatus[i].total);
-			setbfile(filename, bcache[i].filename, DOT_DIR);
-			count=get_num_records(filename, sizeof(struct fileheader));
-			get_record(filename, &lastfh, sizeof(struct fileheader), count
-					-1);
-			brdshm->bstatus[i].nowid=lastfh.id+1;
-			if (bcache[i].nowid>lastfh.id+1)
-				brdshm->bstatus[i].nowid=bcache[i].nowid;
-			else
-				brdshm->bstatus[i].nowid=lastfh.id+1;
-			maxi = i;
-		}
-	}//end for
-	if (maxi != -1)
-		brdshm->number = maxi + 1;
-	bcache_unlock(fd);
-	numboards = brdshm->number;
-}
 int apply_boards(int (*func) ()) {
 	register int i;
 	resolve_boards();
@@ -778,36 +606,7 @@ void resolve_utmp() {
 		utmpshm = attach_shm("UTMP_SHMKEY", 3699, sizeof(*utmpshm));
 	}
 }
-int get_nextid(char* boardname) {
-	register int i, ret;
-	for (i = 0; i < numboards; i++) {
-		if (!strncasecmp(boardname, bcache[i].filename, STRLEN)) { //ÕÒµ½°æÃû
-			ret = i;
-			int fd;
-			fd = bcache_lock();
-			brdshm->bstatus[i].nowid++;
-			ret=brdshm->bstatus[i].nowid;
-			bcache_unlock(fd);
-			return ret;
-		}
-	}
-	return 0;
-}
 
-int get_nextid_bid(int bid) {
-	int ret;
-	ret = bid;
-	if (ret > 0) {
-		int fd;
-		fd = bcache_lock();
-		brdshm->bstatus[bid-1].nowid++;
-		ret=brdshm->bstatus[bid-1].nowid;
-		bcache_unlock(fd);
-		//substitute_record (BOARDS, &bcache[bid-1], sizeof (struct boardheader), bid);
-	}
-
-	return ret;
-}
 
 int get_total() {
 	resolve_utmp();
