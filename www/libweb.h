@@ -192,7 +192,6 @@ int junkboard(char *board);
 int has_BM_perm(struct userec *user, char *board);
 int has_read_perm(struct userec *user, char *board);
 int has_post_perm(struct userec *user, char *board);
-int sethomefile(char *buf, char *id, char *file);
 void do_report(const char* fname, const char* content);
 // libBBS/string.c
 char *cn_Ctime(time_t t);

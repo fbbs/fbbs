@@ -409,6 +409,7 @@ extern int numboards;
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
 void remove_shm(const char *shmstr, int defaultkey, int shmsize);
+int updatelastpost(char *board);
 void resolve_boards(void);
 void flush_bcache(void);
 void rebuild_brdshm(void);
@@ -430,5 +431,13 @@ extern struct sdefine *sysvar;
 char *sysconf_str(const char *key);
 int sysconf_eval(const char *key);
 void build_sysconf(const char *configfile, const char *imgfile);
+
+//stuffs.c
+char *sethomefile(char *buf, const char *userid, const char *filename);
+char *setbpath(char *buf, const char *boardname);
+char *setwbdir(char *buf, const char *boardname);
+char *setbfile(char *buf, const char *boardname, const char *filename);
+char *setmfile(char *buf, const char *userid, const char *filename);
+char *setmdir(char *buf, const char *userid);
 
 #endif /* of _BBS_H_ */

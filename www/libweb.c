@@ -133,24 +133,6 @@ int     size;
     return (st.st_size/size) ;
 }
 
-//added by iamfat 2002.08.10
-/*
-void check_anonymous(char* owner)
-{
-   if(owner[0]&0x80)strcpy(owner,"Anonymous");
-}*/
-//added end
-
-/* Function:
- * 	set the .DIR file name into buf
- * Write: roly			Date:2002.01.10	
- */
-char * setmdir(char *buf, char *userid)
-{
-	sprintf(buf,"mail/%c/%s/.DIR",toupper(userid[0]),userid);
-	return buf;
-}
-
 /* Function:
  *	whether the number of mail is under the limitation
  * Write: roly			Date:2002.01.08
@@ -1008,99 +990,6 @@ void Certify(char *board, struct fileheader *fh)
 }
 #endif
 
-int getlastpost(char *board, int *lastpost, int *total)
-{       
-    struct fileheader fh;
-    struct stat st;
-    char filename[STRLEN * 2];
-    int fd, atotal, offset;
-    
-    sprintf(filename, "boards/%s/" DOT_DIR, board);
-    if ((fd = open(filename, O_RDONLY)) < 0)
-        return 0;
-    fstat(fd, &st);
-    atotal = st.st_size / sizeof(fh);
-    if (atotal <= 0) {
-        *lastpost = 0;
-        *total = 0; 
-        close(fd);
-        return 0;
-    }   
-    *total = atotal;
-    offset = (int) ((char *) &(fh.filename[0]) - (char *) &(fh));
-    lseek(fd, (off_t) (offset + (atotal - 1) * sizeof(fh)), SEEK_SET);
-    if (read(fd, filename, STRLEN) > 2) { 
-        *lastpost = atoi(filename+2);
-    }else{
-        *lastpost = 0;
-    }   
-    close(fd);
-    return 0;
-}   
-
-int updatelastpost(char *board)
-{        
-    int pos;
-
-    pos = getbnum(board);
-    if (pos > 0) {
-        getlastpost(board, &(shm_bcache->bstatus[pos - 1].lastpost), &(shm_bcache->bstatus[pos - 1].total));
-        return 0;
-    } else
-        return -1;
-}
-//from kbs 2.0
-static void bcache_setreadonly(int readonly)
-{
-    int boardfd;
-    void *oldptr = bcache;
-    munmap((void *)bcache, MAXBOARD * sizeof(struct boardheader));
-    if ((boardfd = open(BOARDS, O_RDWR | O_CREAT, 0644)) == -1) {
-        http_fatal("Can't open " BOARDS "file %s");
-    }
-    if (readonly)
-        bcache = (struct boardheader *) mmap(oldptr, MAXBOARD * sizeof(struct boardheader), PROT_READ, MAP_SHARED, boardfd, 0);
-    else
-        bcache = (struct boardheader *) mmap(oldptr, MAXBOARD * sizeof(struct boardheader), PROT_READ | PROT_WRITE, MAP_SHARED, boardfd, 0);
-    close(boardfd);
-}
-static int bcache_lock(void)
-{
-    int lockfd;
-
-    lockfd = creat("bcache.lock", 0600);
-    if (lockfd < 0) {
-        http_fatal("CACHE:lock bcache");
-        return -1;
-    }
-    bcache_setreadonly(0);
-    flock(lockfd, LOCK_EX);
-    return lockfd;
-}
-static void bcache_unlock(int fd)
-{
-    flock(fd, LOCK_UN);
-    bcache_setreadonly(1);
-    close(fd);
-}
-//add end
-static int get_nextid_bid(int bid){
-  int ret;
-  ret = bid;
-  if (ret > 0){
-  	int fd;
-	fd = bcache_lock();
-    	shm_bcache->bstatus[ret-1].nowid++;
-    	ret=shm_bcache->bstatus[ret-1].nowid;
-    	bcache_unlock(fd);
-  }
-  return ret;
-}
-
-static int get_nextid(char* boardname){
-  return get_nextid_bid(getbnum(boardname));
-}
-
 int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig) {
 	FILE *fp, *fp2;
 	char buf3[1024];
@@ -1303,10 +1192,6 @@ static int findnextutmp(char *id, int from) {
 		if(shm_utmp->uinfo[i].active)
 			if(!strcasecmp(shm_utmp->uinfo[i].userid, id)) return i;
 	return -1;
-}
-
-int sethomefile(char *buf, char *id, char *file) {
-	sprintf(buf, "home/%c/%s/%s", toupper(id[0]), id, file);
 }
 
 int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]) {

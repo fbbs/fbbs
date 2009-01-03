@@ -350,29 +350,10 @@ void setquotefile(char filepath[]) {
 	strcpy(quote_file, filepath);
 }
 
-//返回用户的信息所在目录下的文件,例如用户名为abc
-//              返回的是 home/A/abc/[filename]
-char *sethomefile(char *buf, char *userid, char *filename) {
-	sprintf(buf, "home/%c/%s/%s", toupper(userid[0]), userid, filename);
-	return buf;
-}
-
 //返回用户主目录下所在的文件filename路径
 char *setuserfile(char *buf, char *filename) {
 	sprintf(buf, "home/%c/%s/%s", toupper(currentuser.userid[0]),
 			currentuser.userid, filename);
-	return buf;
-}
-
-//set name of boards
-char *setbpath(char *buf, char *boardname) {
-	strcpy(buf, "boards/");
-	strcat(buf, boardname);
-	return buf;
-}
-
-char *setwbdir(char *buf, char *boardname) {
-	sprintf (buf, "boards/%s/" DOT_DIR, boardname);
 	return buf;
 }
 
@@ -418,21 +399,6 @@ char *setbdir(char *buf, char *boardname) {
 		sprintf(buf, "boards/%s/KEY.%s.DIR", boardname, currentuser.userid);
 	else
 		sprintf(buf, "boards/%s/%s", boardname, dir);
-	return buf;
-}
-
-//设定board版面下filename文件的相对路径,保存在buf中,并返回
-char *setbfile(char *buf, char *boardname, char *filename) {
-	sprintf(buf, "boards/%s/%s", boardname, filename);
-	return buf;
-}
-
-void setmfile(char *buf, char *userid, char *filename) {
-	sprintf(buf, "mail/%c/%s/%s", toupper(userid[0]), userid, filename);
-}
-
-char *setmdir(char *buf, char *userid) {
-	sprintf(buf, "mail/%c/%s/.DIR", toupper(userid[0]), userid);
 	return buf;
 }
 
