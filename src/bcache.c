@@ -29,24 +29,6 @@ bonlinesync(time_t now)
 }
 #endif
 
-int apply_boards(int (*func) ()) {
-	register int i;
-	resolve_boards();
-	for (i = 0; i < numboards; i++) {
-		if (bcache[i].flag & BOARD_POST_FLAG || HAS_PERM(bcache[i].level)
-				|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {
-			if ((bcache[i].flag & BOARD_CLUB_FLAG)&& (bcache[i].flag
-					& BOARD_READ_FLAG )&& !chkBM(bcache + i, &currentuser)
-					&& !isclubmember(currentuser.userid,
-							bcache[i].filename))
-				continue;
-			if ((*func)(&bcache[i]) == QUIT)
-				return QUIT;
-		} //if
-	}
-	return 0;
-}
-
 struct bstat *getbstat(char *bname) {
 	register int i;
 	for (i = 0; i < numboards; i++) {

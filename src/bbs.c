@@ -488,11 +488,11 @@ int g_all_names(struct boardheader *fhdrp) {
 void make_blist(int mode) {
 	CreateNameList();
 	if (mode == 1)
-		apply_boards(g_board_names);
+		apply_boards(g_board_names, &currentuser);
 	else if (mode == 2)
-		apply_boards(g_dir_names);
+		apply_boards(g_dir_names, &currentuser);
 	else
-		apply_boards(g_all_names);
+		apply_boards(g_all_names, &currentuser);
 }
 
 int Select() {

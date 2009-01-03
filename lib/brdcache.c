@@ -316,7 +316,7 @@ int get_nextid(char* boardname)
 }
 
 //	·µ»Ø°æÃæµÄ»º´æ
-struct boardheader *getbcache(char *bname)
+struct boardheader *getbcache(const char *bname)
 {
 	register int i;
 	resolve_boards();
@@ -325,5 +325,24 @@ struct boardheader *getbcache(char *bname)
 			return &bcache[i];
 	}
 	return NULL;
+}
+
+int apply_boards(int (*func) (), const struct userec *cuser) {
+	register int i;
+	resolve_boards();
+	for (i = 0; i < numboards; i++) {
+		if (bcache[i].flag & BOARD_POST_FLAG
+			|| bcache[i].level ? cuser.userlevel & bcache[i].level : 1
+			|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {
+			if ((bcache[i].flag & BOARD_CLUB_FLAG)
+				&& (bcache[i].flag	& BOARD_READ_FLAG)
+				&& !chkBM(bcache + i, cuser)
+				&& !isclubmember(cuser.userid, bcache[i].filename))
+				continue;
+			if ((*func)(&bcache[i]) == QUIT)
+				return QUIT;
+		}
+	}
+	return 0;
 }
 
