@@ -27,7 +27,7 @@ int main() {
     parent_name = getparm("board");
     if (parent_name) {
         parent = getbcache(parent_name);
-        parent_bid = getbnum(parent_name);
+        parent_bid = getbnum(parent_name, currentuser);
         if (parent == NULL || parent_bid <= 0 || !(parent->flag & BOARD_DIR_FLAG)) {
             parent = NULL;
             parent_bid = 0;

@@ -104,7 +104,7 @@ int main() {
 int ismyboard(char *board) //modified by cometcaptor 2007-04-23 
 {
 	int i;
-	int bpos = getbnum(board)-1;
+	int bpos = getbnum(board, currentuser) - 1;
 	//for(i=0; i<mybrdnum; i++)
 	for (i = 0; i<GoodBrd.num && i<GOOD_BRC_NUM; i++)
 	{
@@ -136,7 +136,7 @@ int read_submit() {
                                 continue;
                         }
                         //strsncpy(mybrd[mybrdnum], parm_name[i], 80);
-			bhi = getbnum(parm_name[i]);
+			bhi = getbnum(parm_name[i], currentuser);
 			if (bhi)
 			{
 				bhi--;

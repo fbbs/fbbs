@@ -896,7 +896,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 		strcpy(idbuf, "1;30");
 	else if(uin.invisible && HAS_PERM(PERM_SEECLOAK))
 		strcpy(idbuf, "1;36");
-	else if (uin.currbrdnum == getbnum (currboard)
+	else if (uin.currbrdnum == getbnum (currboard, currentuser)
 		|| !strcmp (uin.userid, currentuser.userid))
 		strcpy(idbuf, "1;37");
 #endif
@@ -1315,11 +1315,11 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
-	uinfo.currbrdnum = getbnum (bname);
+	uinfo.currbrdnum = getbnum (bname, currentuser);
 	update_utmp ();
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 #else
-	uinfo.currbrdnum = getbnum(currboard);
+	uinfo.currbrdnum = getbnum(currboard, currentuser);
 	update_utmp();
 	countbrdonline();
 #endif
@@ -3478,11 +3478,11 @@ int Read() {
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
-	uinfo.currbrdnum = getbnum (currboard);
+	uinfo.currbrdnum = getbnum (currboard, currentuser);
 	update_utmp ();
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 #else
-	uinfo.currbrdnum = getbnum(currboard);
+	uinfo.currbrdnum = getbnum(currboard, currentuser);
 	update_utmp();
 	countbrdonline();
 #endif

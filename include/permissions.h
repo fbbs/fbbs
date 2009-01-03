@@ -91,6 +91,7 @@
 
 /* Don't mess with this. */
 #define HAS_PERM(x)     ((x)?currentuser.userlevel&(x):1)
+#define HAS_PERM2(x, y) ((x)?(y)->userlevel&(x):1)
 #define DEFINE(x)     ((x)?currentuser.userdefine&(x):1)
 #define HAS_DEFINE(x,y)	((y)?x&(y):1)
 /* HAS_DEFINE(userdefine, flag) */

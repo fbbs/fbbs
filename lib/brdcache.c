@@ -182,7 +182,7 @@ int updatelastpost(const char *board)
 {
 	int pos;
 
-	pos = getbnum(board);
+	pos = getbnum(board, currentuser);
 	if (pos > 0) {
 		getlastpost(board, &brdshm->bstatus[pos - 1].lastpost,
 				&brdshm->bstatus[pos - 1].total);
@@ -339,13 +339,30 @@ struct bstat *getbstat(const char *bname)
 	return NULL;
 }
 
+//	根据版名,返回其在bcache中的记录位置
+int getbnum(const char *bname, const struct userec *cuser)
+{
+	register int i;
+
+	resolve_boards();
+	for (i = 0; i < numboards; i++) {
+		if (bcache[i].flag & BOARD_POST_FLAG //p限制版面
+			|| HAS_PERM2(bcache[i].level, cuser)
+		||(bcache[i].flag & BOARD_NOZAP_FLAG)) {//不可zap
+			if (!strncasecmp(bname, bcache[i].filename, STRLEN)) //找到版名
+				return i + 1;
+		}
+	}
+	return 0;
+}
+
 int apply_boards(int (*func) (), const struct userec *cuser)
 {
 	register int i;
 	resolve_boards();
 	for (i = 0; i < numboards; i++) {
 		if (bcache[i].flag & BOARD_POST_FLAG
-			|| bcache[i].level ? cuser->userlevel & bcache[i].level : 1
+			|| HAS_PERM2(bcache[i].level, cuser)
 			|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {
 			if ((bcache[i].flag & BOARD_CLUB_FLAG)
 				&& (bcache[i].flag	& BOARD_READ_FLAG)

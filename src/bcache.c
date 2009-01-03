@@ -7,21 +7,6 @@
 
 int usernumber=0;
 
-//	根据版名,返回其在bcache中的记录位置
-int getbnum(char *bname) {
-	register int i;
-	resolve_boards();
-
-	for (i = 0; i < numboards; i++) {
-		if (bcache[i].flag & BOARD_POST_FLAG //p限制版面
-				|| HAS_PERM(bcache[i].level) //权限足够
-		||(bcache[i].flag & BOARD_NOZAP_FLAG)) {//不可zap
-			if (!strncasecmp(bname, bcache[i].filename, STRLEN)) //找到版名
-				return i + 1;
-		}
-	}
-	return 0;
-}
 int getblankbnum() {
 	int i;
 	for (i=0; i<MAXBOARD; i++) {
@@ -76,7 +61,7 @@ int haspostperm(char *bname) {
 	 if (strcmp(bname, DEFAULTBOARD) == 0)
 	 return 1;
 	 *///added by roly 02.01.27 disable postperm in sysop of that has no perm_post
-	if ((i = getbnum(bname)) == 0) {
+	if ((i = getbnum(bname, currentuser)) == 0) {
 		return 0;
 	}
 	set_safe_record();
@@ -92,7 +77,7 @@ char *bname;
 	register int i;
 	if (strcmp(bname, DEFAULTBOARD) == 0)
 	return 1;
-	if ((i = getbnum(bname)) == 0)//版面不可见
+	if ((i = getbnum(bname, currentuser)) == 0)//版面不可见
 	return 0;
 	if (bcache[i - 1].flag & BOARD_NOZAP_FLAG)
 	return 1;

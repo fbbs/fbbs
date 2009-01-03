@@ -116,7 +116,6 @@ int post_article(char *board, char *title, char *file, char *id, char *nickname,
 void check_title(char *title);
 char* anno_path_of(char *board);
 
-int getbnum(char *board);
 int count_mails(char *id, int *total, int *unread);
 
 int send_msg(char *myuserid, int mypid, char *touserid, int topid, char *msg);
@@ -183,7 +182,6 @@ int strtourl(char * url, char * str);
 char *crypt1(char *buf, char *salt);
 // Bcache.c
 struct userec *getuser(char *id);
-int updatelastpost(char *board);
 int count_online(void);
 // bbs.c
 int junkboard(char *board);

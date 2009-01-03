@@ -1149,15 +1149,6 @@ int has_post_perm(struct userec *user, char *board) {
 	return user_perm(user, x->level);
 }
 
-int getbnum(char *board) {
-	int i;
-	if(board[0]==0) return 0;
-	for(i=0; i<shm_bcache->number; i++)
-		if (!strcasecmp(board, bcache[i].filename)) 
-			return i+1;
-	return 0;
-}
-
 int count_mails(char *id, int *total, int *unread) {
         struct fileheader x1;
 	char buf[256];

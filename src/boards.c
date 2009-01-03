@@ -4,9 +4,6 @@
 
 char *sysconf_str();
 extern time_t login_start_time;
-extern int getbnum();
-extern struct boardheader *getbcache();
-extern struct bstat *getbstat();
 struct newpostdata {
 	char *name, *title, *BM;
 	unsigned int flag;
@@ -143,9 +140,9 @@ void load_GoodBrd() {
 
 	if (GoodBrd.num == 0) {
 		GoodBrd.num = 1;
-		i = getbnum(DEFAULTBOARD);
+		i = getbnum(DEFAULTBOARD, currentuser);
 		if (i == 0)
-			i = getbnum(currboard);
+			i = getbnum(currboard, currentuser);
 		GoodBrd.boards[0].id = 1;
 		GoodBrd.boards[0].pid = 0;
 		GoodBrd.boards[0].pos = i-1;
@@ -163,9 +160,9 @@ void save_GoodBrd() {
 	//modified by cometcaptor 2007-04-21
 	if (GoodBrd.num == 0) {
 		GoodBrd.num = 1;
-		i = getbnum(DEFAULTBOARD);
+		i = getbnum(DEFAULTBOARD, currentuser);
 		if (i == 0)
-			i = getbnum(currboard);
+			i = getbnum(currboard, currentuser);
 		GoodBrd.boards[0].id = 1;
 		GoodBrd.boards[0].pid = 0;
 		GoodBrd.boards[0].pos = i-1;
@@ -185,7 +182,7 @@ void save_GoodBrd() {
 
 void add_GoodBrd(char *bname, int pid) //cometcaptor 2007-04-21
 {
-	int i = getbnum(bname);
+	int i = getbnum(bname, currentuser);
 	if ((i > 0)&&(GoodBrd.num < GOOD_BRC_NUM)) {
 		i--;
 		GoodBrd.boards[GoodBrd.num].pid = pid;
@@ -626,7 +623,7 @@ int show_board_info(char *board) {
 	bs = getbstat(board);
 	clear();
 	prints("版面详细信息:\n\n");
-	prints("number  :     %d\n", getbnum(bp->filename));
+	prints("number  :     %d\n", getbnum(bp->filename, currentuser));
 	prints("英文名称:     %s\n", bp->filename);
 	prints("中文名称:     %s\n", (HAS_PERM(PERM_SPECIAL0)) ? bp->title
 			: (bp->title + 11));
@@ -687,7 +684,7 @@ int read_board(struct newpostdata *ptr, int newflag) {
 		tmpgrp = boardparent;
 		tmpmode = choosemode;
 		choosemode = 0;
-		boardparent = getbnum(ptr->name) - 1;
+		boardparent = getbnum(ptr->name, currentuser) - 1;
 		oldpid = GoodBrd.nowpid; //cometcaptor 保存GoodBrd.nowpid
 		if (ptr->flag & BOARD_CUSTOM_FLAG)
 			GoodBrd.nowpid = ptr->pos;
@@ -947,7 +944,7 @@ int choose_board(int newflag) {
 					struct boardheader fh;
 					if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ", &pos,
 							&fh, bname, 1)) {
-						if (!inGoodBrds(getbnum(bname)-1)) {
+						if (!inGoodBrds(getbnum(bname, currentuser)-1)) {
 							//strcpy (GoodBrd.ID[GoodBrd.num++], bname);
 							add_GoodBrd(bname, GoodBrd.nowpid); //modified by cometcaptor 2007-04-21 
 							//save_GoodBrd ();
@@ -966,7 +963,7 @@ int choose_board(int newflag) {
 					//if (!((nbrd[num].flag & BOARD_DIR_FLAG)&& (bp1->group == 0))){ //根目录不可加入收藏夹Danielfree 06.3.5
 					if (GoodBrd.num >= GOOD_BRC_NUM) {
 						presskeyfor("个人热门版数已经达上限", t_lines - 1);
-					} else if (!inGoodBrds(getbnum(nbrd[num].name)-1)) {
+					} else if (!inGoodBrds(getbnum(nbrd[num].name, currentuser)-1)) {
 						sprintf(genbuf, "您确定要添加%s到收藏夹吗?", nbrd[num].name);
 						if (askyn(genbuf, NA, YEA) == YEA) {
 							//strcpy (GoodBrd.ID[GoodBrd.num++], nbrd[num].name);
