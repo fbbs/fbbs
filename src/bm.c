@@ -466,7 +466,7 @@ int deny_key_deal(char* fname, int ch, char* line) {
 }
 
 int deny_user() {
-	if (!chk_currBM(currBM, 0))
+	if (!chkBM(currbp, &currentuser))
 		return DONOTHING;
 	setbfile(genbuf, currboard, "deny_users");
 	list_text(genbuf, deny_title_show, deny_key_deal, NULL);
@@ -606,7 +606,7 @@ int club_user() {
 	extern struct boardheader *getbcache();
 	bp = getbcache(currboard);
 
-	if ((bp->flag & BOARD_CLUB_FLAG) && chk_currBM(currBM, 1)) {
+	if ((bp->flag & BOARD_CLUB_FLAG) && chkBM(currbp, &currentuser)) {
 		setbfile(genbuf, currboard, "club_users");
 		list_text(genbuf, club_title_show, club_key_deal, NULL);
 		return FULLUPDATE;

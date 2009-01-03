@@ -36,7 +36,7 @@ int apply_boards(int (*func) ()) {
 		if (bcache[i].flag & BOARD_POST_FLAG || HAS_PERM(bcache[i].level)
 				|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {
 			if ((bcache[i].flag & BOARD_CLUB_FLAG)&& (bcache[i].flag
-					& BOARD_READ_FLAG )&& !chk_currBM(bcache[i].BM, 1)
+					& BOARD_READ_FLAG )&& !chkBM(bcache + i, &currentuser)
 					&& !isclubmember(currentuser.userid,
 							bcache[i].filename))
 				continue;

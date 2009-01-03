@@ -717,7 +717,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			return DONOTHING;
 		if (fileinfo->owner[0] == '-')
 			return DONOTHING;
-		if (!chk_currBM(currBM, 0))
+		if (!chkBM(currbp, &currentuser))
 			return DONOTHING;
 	}
 	saveline(t_lines - 1, 0);
@@ -1009,7 +1009,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 
 	if (uinfo.mode != READING)
 		return DONOTHING;
-	if (!chk_currBM(currBM, 0))
+	if (!chkBM(currbp, &currentuser))
 		return DONOTHING;
 	saveline(t_lines - 1, 0);
 	/* Modified by Amigo 2002.06.27. Add restore for big D board. */
@@ -1239,7 +1239,8 @@ char *direct;
 	struct fileheader fhdr;
 	int fdr,cou;
 
-	if(!chk_currBM(currBM, 0)) return DONOTHING;
+	if(!chkBM(currbp, &currentuser))
+		return DONOTHING;
 
 	if(digestmode==2) return DONOTHING;
 	saveline(t_lines-2, 0);
@@ -1680,7 +1681,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle) {
 					return DONOTHING;
 				noreply=ptitle->accessed[0]&FILE_NOREPLY||bp->flag
 						& BOARD_NOREPLY_FLAG;
-				if (!noreply ||chk_currBM(currBM, 0)) {
+				if (!noreply || chkBM(currbp, &currentuser)) {
 					local_article=!(ptitle->filename[STRLEN-1]=='S');
 					do_reply(ptitle);
 				} else {

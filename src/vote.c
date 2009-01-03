@@ -107,9 +107,8 @@ int b_notes_edit()
 	int aborted;
 	int notetype;
 
-	if (!chk_currBM(currBM, 0)) { //检查是否版主
+	if (!chkBM(currbp, &currentuser))
 		return 0;
-	}
 	clear();
 	move(0, 0);
 	prints("设定：\n\n  (1)一般备忘录\n  (2)秘密备忘录\n");
@@ -178,9 +177,8 @@ int b_notes_edit() {
 	char ans[4];
 	int aborted;
 	int notetype;
-	if (!chk_currBM(currBM, 0)) { //检查是否版主
+	if (!chkBM(currbp, &currentuser))
 		return 0;
-	}
 	clear();
 	move(1, 0);
 	prints("编辑/删除备忘录"); //询问编辑哪种备忘录
@@ -237,9 +235,8 @@ int b_notes_passwd() {
 	char passbuf[20], prepass[20];
 	char buf[STRLEN];
 
-	if (!chk_currBM(currBM, 0)) { //检查是否版主
+	if (!chkBM(currbp, &currentuser))
 		return 0;
-	}
 	clear();
 	move(1, 0);
 	prints("设定/更改/取消「秘密备忘录」密码...");
@@ -530,9 +527,8 @@ int vote_maintain(char *bname) {
 	struct votebal *ball = &currvote;
 
 	setcontrolfile();
-	if (!chk_currBM(currBM, 0)) {
+	if (!chkBM(currbp, &currentuser))
 		return 0;
-	}
 	stand_title("开启投票箱");
 	makevdir(bname);
 	for (;;) {
@@ -1050,14 +1046,14 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'A':
 		case 'a':
-			if (!chk_currBM(currBM, 0))
+			if (!chkBM(currbp, &currentuser))
 				return YEA;
 			vote_maintain(currboard);
 			deal = 1;
 			break;
 		case 'O':
 		case 'o':
-			if (!chk_currBM(currBM, 0))
+			if (!chkBM(currbp, &currentuser))
 				return YEA;
 			clear();
 			deal = 1;
@@ -1080,7 +1076,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'M':
 		case 'm':
-			if (!chk_currBM(currBM, 0))
+			if (!chkBM(currbp, &currentuser))
 				return YEA;
 			clear();
 			deal = 1;
@@ -1105,9 +1101,8 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'D':
 		case 'd':
-			if (!chk_currBM(currBM, 0)) {
+			if (!chkBM(currbp, &currentuser))
 				return 1;
-			}
 			deal = 1;
 			get_record(controlfile, &currvote, sizeof(struct votebal),
 					allnum + 1);

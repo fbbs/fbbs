@@ -1570,7 +1570,7 @@ char *boardmargin() {
 		sprintf(buf, "ÌÖÂÛÇø [%s]", currboard);
 	else {
 		brc_initial(currentuser.userid, DEFAULTBOARD);
-		strcpy(currboard, DEFAULTBOARD);
+		changeboard(currbp, currboard, DEFAULTBOARD);
 		if (!getbnum(currboard))
 			setoboard(currboard);
 		selboard = 1;
