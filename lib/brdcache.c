@@ -182,7 +182,7 @@ int updatelastpost(const char *board)
 {
 	int pos;
 
-	pos = getbnum(board, currentuser);
+	pos = getbnum(board, &currentuser);
 	if (pos > 0) {
 		getlastpost(board, &brdshm->bstatus[pos - 1].lastpost,
 				&brdshm->bstatus[pos - 1].total);

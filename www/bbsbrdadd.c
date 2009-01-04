@@ -28,7 +28,7 @@ int main() {
 	printf("<b>收藏夹 · %s </b><br>\n",BBSNAME);
 	printpretable_lite();
 	strsncpy(board, getparm("board"), 32);
-    bpos = getbnum(board, currentuser) - 1;
+    bpos = getbnum(board, &currentuser) - 1;
 	if(!loginok) http_fatal("超时或未登录，请重新login");
 	sprintf(file, "home/%c/%s/.goodbrd", toupper(currentuser.userid[0]), currentuser.userid);
 	fp=fopen(file, "r");

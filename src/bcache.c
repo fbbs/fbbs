@@ -61,7 +61,7 @@ int haspostperm(char *bname) {
 	 if (strcmp(bname, DEFAULTBOARD) == 0)
 	 return 1;
 	 *///added by roly 02.01.27 disable postperm in sysop of that has no perm_post
-	if ((i = getbnum(bname, currentuser)) == 0) {
+	if ((i = getbnum(bname, &currentuser)) == 0) {
 		return 0;
 	}
 	set_safe_record();
@@ -77,7 +77,7 @@ char *bname;
 	register int i;
 	if (strcmp(bname, DEFAULTBOARD) == 0)
 	return 1;
-	if ((i = getbnum(bname, currentuser)) == 0)//版面不可见
+	if ((i = getbnum(bname, &currentuser)) == 0)//版面不可见
 	return 0;
 	if (bcache[i - 1].flag & BOARD_NOZAP_FLAG)
 	return 1;

@@ -537,7 +537,7 @@ int m_newbrd() {
 	strcpy(vbuf, "vote/");
 	strcat(vbuf, newboard.filename);
 	setbpath(genbuf, newboard.filename);
-	if (getbnum(newboard.filename, currentuser) > 0 || mkdir(genbuf, 0755) == -1
+	if (getbnum(newboard.filename, &currentuser) > 0 || mkdir(genbuf, 0755) == -1
 			|| mkdir(vbuf, 0755) == -1) {
 		prints("\n错误的讨论区名称!!\n");
 		pressreturn();
@@ -1345,7 +1345,7 @@ int d_board() {
 	namecomplete("请输入讨论区: ", bname);
 	if (bname[0] == '\0')
 		return 0;
-	bid = getbnum(bname, currentuser);
+	bid = getbnum(bname, &currentuser);
 	if (get_record(BOARDS, &binfo, sizeof (binfo), bid) == -1) { //取得讨论区的记录
 		move(2, 0);
 		prints("不正确的讨论区\n");
