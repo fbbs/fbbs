@@ -315,6 +315,16 @@ int get_nextid(const char* boardname)
 	return 0;
 }
 
+int getblankbnum(void)
+{
+	int i;
+	for (i = 0; i < MAXBOARD; i++) {
+		if (!(bcache[i].filename[0]))
+			return i + 1;
+	}
+	return 0;
+}
+
 //	·µ»Ø°æÃæµÄ»º´æ
 struct boardheader *getbcache(const char *bname)
 {

@@ -9,8 +9,6 @@ extern char *chgrp();
 extern int dowall();
 extern int cmpuids();
 extern int t_cmpuids();
-extern void flush_bcache();
-extern int getblankbnum();
 extern void rebuild_brdshm();
 int showperminfo(int, int);
 char cexplain[STRLEN];

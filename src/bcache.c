@@ -7,15 +7,6 @@
 
 int usernumber=0;
 
-int getblankbnum() {
-	int i;
-	for (i=0; i<MAXBOARD; i++) {
-		if (!(bcache[i].filename[0]))
-			return i+1;
-	}
-	return 0;
-}
-
 void setoboard(char *bname) {
 	register int i;
 

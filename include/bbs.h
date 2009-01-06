@@ -415,6 +415,7 @@ void resolve_boards(void);
 void flush_bcache(void);
 void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
+int getblankbnum(void);
 struct boardheader *getbcache(const char *bname);
 struct bstat *getbstat(const char *bname);
 int getbnum(const char *bname, const struct userec *cuser);
