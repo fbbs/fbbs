@@ -423,6 +423,7 @@ int apply_boards(int (*func) (), const struct userec *cuser);
 #ifdef NEWONLINECOUNT
 void bonlinesync(time_t now);
 #endif
+int hasreadperm(const struct userec *user, const struct boardheader *bp);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;

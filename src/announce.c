@@ -528,14 +528,13 @@ int a_menusearch(char *path, char* key, char * found) {
 				ptr = strtok(ptr + 1, " \t\n");
 			}
 			if (!strcasecmp(buf, key)) {
-				if (hasreadperm(key)) //added by money for judge
-				//user perm 04.02.12
+				bp = getbcache(key);
+				if (hasreadperm(&currentuser, bp))
 				{
-					bp = getbcache(key);
-					if ((bp->flag & BOARD_CLUB_FLAG)&& (bp->flag
-							& BOARD_READ_FLAG )&& !chk_currBM(bp->BM, 1)
-							&& !isclubmember(currentuser.userid,
-									bp->filename))
+					if ((bp->flag & BOARD_CLUB_FLAG)
+						&& (bp->flag & BOARD_READ_FLAG)
+						&& !chk_currBM(bp->BM, 1)
+						&& !isclubmember(currentuser.userid, bp->filename))
 						break;
 					sprintf(found, "0Announce/%s", ptr);
 					flag = '1';

@@ -406,3 +406,19 @@ void bonlinesync(time_t now)
 	}
 }
 #endif
+
+// Checks if 'user' have read permission to board 'bp'.
+int hasreadperm(const struct userec *user, const struct boardheader *bp)
+{
+	if (bp == NULL)
+		return 0;
+	if (bp->level == 0)
+		return 1;
+	if (bp->flag & (BOARD_POST_FLAG | BOARD_NOZAP_FLAG))
+		return 1;
+	if (user->userlevel & bp->level)
+		return 1;
+
+	return 0;
+}
+

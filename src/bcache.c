@@ -22,22 +22,6 @@ void setoboard(char *bname) {
 	}
 }
 
-/* added by money for check user permission on announce reading 04.02.12 */
-int
-hasreadperm(bname)
-char *bname;
-{
-	struct boardheader *x;
-
-	x = getbcache(bname);
-	if (x == 0) return 0;
-	if (x->level == 0 ) return 1;
-	if (x->flag & (BOARD_POST_FLAG | BOARD_NOZAP_FLAG)) return 1;
-	if (currentuser.userlevel & x->level) return 1;
-	return 0;
-}
-/* added end */
-
 int haspostperm(char *bname) {
 	register int i;
 	/*	if (digestmode==TRASH_MODE||digestmode==JUNK_MODE){
