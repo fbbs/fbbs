@@ -8,43 +8,27 @@
 #define ALLOWGAME
 #endif
 
-#define BADLOGINFILE    "logins.bad"
-#define VISITLOG	BBSHOME"/.visitlog"
+#define BADLOGINFILE   "logins.bad"
+#define VISITLOG    BBSHOME"/.visitlog"
 
 int RMSG = YEA;
 int msg_num = 0;
 int count_friends = 0, count_users = 0;
 int iscolor = 1;
 int mailXX = 0;
-char *getenv();
-int friend_login_wall();
-char *sysconf_str();
-struct user_info *t_search();
-void r_msg();
-void count_msg();
-void c_recover();
-void tlog_recover();
-void refreshdate();
 int listmode;
 int numofsig = 0;
 jmp_buf byebye;
-FILE *ufp;
 int talkrequest = NA;
-
-/* int ntalkrequest = NA ; */
 int enter_uflags;
 time_t lastnote;
-
 struct user_info uinfo;
-
 #ifndef BBSD
 char tty_name[20];
 #endif
 char fromhost[60];
-
 char BoardName[STRLEN];
 
-//char    ULIST[STRLEN];
 int utmpent = -1;
 time_t login_start_time;
 int showansi = 1;
@@ -60,10 +44,12 @@ int convcode = 0; //是否在GB与BIG5间转换?
 extern void resolve_GbBig5Files();
 #endif
 
-extern struct UCACHE *uidshm;
-
-//added by iamfat 2002.08.10
-//int technician=0;
+int friend_login_wall();
+struct user_info *t_search();
+void r_msg();
+void count_msg();
+void c_recover();
+void tlog_recover();
 
 /* added by money to provide a method of logging by metalog daemon 2004.01.07 */
 #ifdef USE_METALOG
