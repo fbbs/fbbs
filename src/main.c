@@ -16,11 +16,9 @@ int msg_num = 0;
 int count_friends = 0, count_users = 0;
 int iscolor = 1;
 int mailXX = 0;
-int listmode;
 int numofsig = 0;
 jmp_buf byebye;
 int talkrequest = NA;
-int enter_uflags;
 time_t lastnote;
 struct user_info uinfo;
 #ifndef BBSD
@@ -51,49 +49,40 @@ void count_msg();
 void c_recover();
 void tlog_recover();
 
-void u_enter() {
-	struct userec tmpuserec;
+static void u_enter(void)
+{
 	FILE *fn;
 	int i, j, tmpcount, tmpid, sflag[10][2];
 	int lcount = 0;
+	int ucount = 0;
+	char buf[NAME_MAX];
 
-	enter_uflags = currentuser.flags[0];
 	memset(&uinfo, 0, sizeof(uinfo));
 	uinfo.active = YEA;
 	uinfo.pid = getpid();
 	uinfo.currbrdnum = 0;
-	/* 使非 SYSOP 权限 ID 登陆时自动恢复到非隐身状态 */
 	if (!HAS_PERM(PERM_CLOAK))
 		currentuser.flags[0] &= ~CLOAK_FLAG;
 	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
 		uinfo.invisible = YEA;
 	uinfo.mode = LOGIN;
 	uinfo.pager = 0;
-	/*2003.05.18 added by stephen to modify the giveupBBS login user's rights */
-	sethomefile(genbuf, currentuser.userid, "giveupBBS");
-	fn = fopen(genbuf, "rt");
-	if (fn) {
-		/*resolve user's data,save in temp struct tmpuserec */
-		for (tmpcount = 0; tmpcount < IDLEN + 2; tmpcount++) {
-			tmpuserec.userid[tmpcount] = currentuser.userid[tmpcount];
-		}
-		//tmpid = searchuser(tmpuserec.userid);
-		//get_record(PASSFILE,&tmpuserec,sizeof(struct userec),tmpid);
-		tmpid = getuserec(tmpuserec.userid, &tmpuserec);
-		/*end resolve */
 
+	sethomefile(buf, currentuser.userid, "giveupBBS");
+	fn = fopen(buf, "r");
+	if (fn) {
+		struct userec tmpuserec;
+		memcpy(tmpuserec.userid, currentuser.userid, sizeof(tmpuserec.userid));
+		tmpid = getuserec(tmpuserec.userid, &tmpuserec);
 		while (!feof(fn)) {
 			if (fscanf(fn, "%d %d", &i, &j) <= 0)
 				break;
-
 			sflag[lcount][0] = i;
 			sflag[lcount][1] = j;
 			lcount++;
 		}
-
 		tmpcount = lcount;
 		fclose(fn);
-
 		for (i = 0; i < lcount; i++) {
 			if (sflag[i][1] <= time(0) / 3600 / 24) {
 				tmpcount--;
@@ -114,25 +103,21 @@ void u_enter() {
 				sflag[i][1] = 0;
 			}
 		}
-
 		if (tmpuserec.flags[0] & GIVEUPBBS_FLAG && tmpcount == 0)
 			tmpuserec.flags[0] &= ~GIVEUPBBS_FLAG;
-
 		substitut_record(PASSFILE, &tmpuserec, sizeof(struct userec),
 				tmpid);
-
 		if (tmpcount == 0)
-			unlink(genbuf);
+			unlink(buf);
 		else {
-			fn = fopen(genbuf, "wt");
+			fn = fopen(buf, "w");
 			for (i = 0; i < lcount; i++)
 				if (sflag[i][1] > 0)
 					fprintf(fn, "%d %d\n", sflag[i][0], sflag[i][1]);
 			fclose(fn);
 		}
-
 	}
-	/*2003.05.18 stephen add end */
+
 #ifdef BBSD
 	uinfo.idle_time = time(0);
 #endif
@@ -154,48 +139,52 @@ void u_enter() {
 		uinfo.pager |= ALLMSG_PAGER;
 		uinfo.pager |= FRIENDMSG_PAGER;
 	}
-	/* Following 3 lines added by Amigo 2002.04.03. For close logoff msg. */
 	if (DEFINE(DEF_LOGOFFMSG)) {
 		uinfo.pager |= LOGOFFMSG_PAGER;
 	}
 	uinfo.uid = usernum;
-	strncpy(uinfo.from, fromhost, 60);
+	strncpy(uinfo.from, fromhost, sizeof(uinfo.from));
+	// Terrible..
 	if (!DEFINE(DEF_NOTHIDEIP)) {
 		uinfo.from[22] = 'H';
 	}
 #if !defined(BBSD) && defined(SHOW_IDLE_TIME)
-	strncpy(uinfo.tty, tty_name, 20);
+	strncpy(uinfo.tty, tty_name, sizeof(uinfo.tty));
 #endif
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
-	strncpy(uinfo.userid, currentuser.userid, 20);
-	strncpy(uinfo.realname, currentuser.realname, 20);
-	strncpy(uinfo.username, currentuser.username, NAMELEN);
+	strncpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
+	strncpy(uinfo.realname, currentuser.realname, sizeof(uinfo.realname));
+	strncpy(uinfo.username, currentuser.username, sizeof(uinfo.username));
 	getfriendstr();
 	getrejectstr();
 
-	listmode = 0; /* 借用一下, 用来纪录到底 utmpent 卡位失败几次 */
+	// Try to get an entry in user cache.
+	ucount = 0;
 	while (1) {
 		utmpent = getnewutmpent(&uinfo);
 		if (utmpent >= 0 || utmpent == -1)
 			break;
-		if (utmpent == -2 && listmode <= 100) {
-			listmode++;
-			DEBUG(usleep(250)); /* 休息四分之一秒再接在励 */
+		if (utmpent == -2 && ucount <= 100) {
+			ucount++;
+			struct timeval t = {0, 250000};
+			select( 0, NULL, NULL, NULL, &t); // wait 0.25s before another try
 			continue;
 		}
-		if (listmode > 100) { /* 放弃吧 */
-			sprintf(genbuf, "getnewutmpent(): too much times, give up.");
-			report(genbuf, currentuser.userid);
+		if (ucount > 100) {
+			char buf1[] = "getnewutmpent(): too much times, give up.";
+			report(buf1, currentuser.userid);
 			prints("getnewutmpent(): 失败太多次, 放弃. 请回报站长.\n");
 			sleep(3);
 			exit(0);
 		}
 	}
 	if (utmpent < 0) {
-		sprintf(genbuf, "Fault: No utmpent slot for %s\n", uinfo.userid);
-		report(genbuf, currentuser.userid);
+		char buf2[STRLEN];
+		snprintf(buf2, sizeof(buf2),
+			"Fault: No utmpent slot for %s", uinfo.userid);
+		report(buf2, currentuser.userid);
 	}
-	listmode = 0;
+
 	digestmode = NA;
 }
 

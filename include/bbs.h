@@ -12,7 +12,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <time.h>
-#include<strings.h>
+#include <strings.h>
+#include <limits.h>
 #ifndef BSD44
 #include <stdlib.h>
 #endif
@@ -374,9 +375,6 @@ extern int KEY_ESC_arg;
 /* ============================================ */
 
 extern char datestring[];
-
-//added by iamfat 2003.02.27
-#define DEBUG(x) {file_append("debug", #x"\n");x;}	//µ÷ÊÔÄ£Ê½
 
 #define FLOCK(x,y) flock(x,y)
 
