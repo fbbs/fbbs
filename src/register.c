@@ -266,7 +266,7 @@ int getnewuserid() {
 		close(fd);
 		strcpy(nname, "tmp/bbs.killid");
 		fdtmp = fopen(nname, "w+");
-		log_usies("CLEAN", "dated users.");
+		log_usies("CLEAN", "dated users.", &currentuser);
 		prints("—∞’“–¬’ ∫≈÷–, «Î…‘¥˝∆¨øÃ...\n");
 		memset(&zerorec, 0, sizeof(zerorec));
 		//      if ((fd = open(PASSFILE, O_RDWR | O_CREAT, 0600)) == -1)
@@ -283,7 +283,7 @@ int getnewuserid() {
 				sprintf(genbuf, "#%d %-12s %14.14s %d %d %d", i + 1,
 						utmp.userid, datestring, utmp.numlogins,
 						utmp.numposts, val);
-				log_usies("KILL ", genbuf);
+				log_usies("KILL ", genbuf, &currentuser);
 				//if (!bad_user_id(utmp.userid)) {
 				{
 					sprintf(genbuf, "mail/%c/%s", toupper(utmp.userid[0]),
@@ -387,7 +387,7 @@ int getnewuserid() {
 	i = searchnewuser();
 	fromhost[59]=0; //added by iamfat 2004.01.05 to avoid overflow
 	sprintf(genbuf, "uid %d from %s", i, fromhost);
-	log_usies("APPLY", genbuf);
+	log_usies("APPLY", genbuf, &currentuser);
 	if (i <= 0 || i > MAXUSERS) {
 		//      flock(fd, LOCK_UN);
 		//      close(fd);

@@ -432,6 +432,7 @@ extern struct userec lookupuser;
 
 //log.c
 void report(const char *s, const char *userid);
+void log_usies(const char *mode, const char *mesg, const struct userec *user);
 
 //sysconf.c
 extern char *sysconf_buf;

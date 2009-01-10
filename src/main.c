@@ -51,31 +51,6 @@ void count_msg();
 void c_recover();
 void tlog_recover();
 
-/* added by money to provide a method of logging by metalog daemon 2004.01.07 */
-#ifdef USE_METALOG
-void log_usies(mode, mesg)
-char *mode, *mesg;
-{
-	char *fmt;
-
-	fmt = currentuser.userid[0] ? "%s %-12s %s" : "%s %s%s";
-	syslog(LOG_LOCAL4 | LOG_INFO, fmt, mode, currentuser.userid, mesg);
-	return;
-}
-#else
-/* added end */
-void log_usies(char *mode, char *mesg) {
-	time_t now;
-	char buf[256], *fmt;
-
-	now = time(0);
-	fmt = currentuser.userid[0] ? "%s %s %-12s %s\n" : "%s %s %s%s\n";
-	getdatestring(now, NA);
-	sprintf(buf, fmt, datestring, mode, currentuser.userid, mesg);
-	file_append("usies", buf);
-}
-#endif
-
 void u_enter() {
 	struct userec tmpuserec;
 	FILE *fn;
@@ -332,7 +307,7 @@ void abort_bbs() {
 		stay = time(0) - login_start_time;
 		currentuser.username[NAMELEN - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
 		sprintf(genbuf, "Stay: %3ld (%s)", stay / 60, currentuser.username);
-		log_usies("AXXED", genbuf);
+		log_usies("AXXED", genbuf, &currentuser);
 		u_exit();
 	}
 	/*
@@ -485,7 +460,7 @@ void multi_user_check() {
 			//以前不是SIGHUP，会导致编辑作业丢失 by sunner
 			report("kicked (multi-login)", currentuser.userid);
 			currentuser.username[NAMELEN - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
-			log_usies("KICK ", currentuser.username);
+			log_usies("KICK ", currentuser.username, &currentuser);
 		}
 	}
 #ifdef IPMAXLOGINS
@@ -564,7 +539,7 @@ void system_init()
 void system_abort() {
 	if (started) {
 		currentuser.username[NAMELEN - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
-		log_usies("ABORT", currentuser.username);
+		log_usies("ABORT", currentuser.username, &currentuser);
 		u_exit();
 	}
 	clear();
@@ -1142,7 +1117,7 @@ void user_login() {
 				usernum);
 	}
 	fromhost[59] = 0; //added by iamfat 2004.01.05 to avoid overflow
-	log_usies("ENTER", fromhost);
+	log_usies("ENTER", fromhost, &currentuser);
 
 	/*02.10.05  add by stephen to mask the real ip of user,convert "a.b.c.d" to "a.b.*.*"  */
 	//02.10.09 Don't add this line now.

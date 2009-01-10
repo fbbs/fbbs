@@ -11,3 +11,13 @@ void report(const char *s, const char *userid)
 	do_report("trace", s);
 #endif
 }
+
+void log_usies(const char *mode, const char *mesg, const struct userec *user)
+{
+	char *fmt;
+
+	fmt = user->userid[0] ? "%s %-12s %s" : "%s %s%s";
+	syslog(LOG_LOCAL4 | LOG_INFO, fmt, mode, user->userid, mesg);
+	return;
+}
+

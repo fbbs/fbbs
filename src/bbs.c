@@ -166,7 +166,7 @@ void load_keywords ()
 			strtok (keywords_shm->word[i], "\r\n");
 			i++;
 		}
-		log_usies ("CACHE", "RELOAD KEYWORDS");
+		log_usies ("CACHE", "RELOAD KEYWORDS", &currentuser);
 		keywords_shm->number = i;
 		fclose (fp);
 	}
@@ -3710,7 +3710,7 @@ int Q_Goodbye() {
 		//iamfat added 2004.01.05 to avoid overflow
 		currentuser.username[NAMELEN - 1] = 0;
 		sprintf(genbuf, "Stay:%3ld (%s)", stay / 60, currentuser.username);
-		log_usies("EXIT ", genbuf);
+		log_usies("EXIT ", genbuf, &currentuser);
 		u_exit();
 	}
 

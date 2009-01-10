@@ -220,7 +220,7 @@ int load_ucache(int reload) {
 				&iscreate);
 	}
 
-	log_usies("CACHE", "re load ucache");
+	log_usies("CACHE", "re load ucache", &currentuser);
 
 	/* load PASSFILE */
 	if ((passwdfd = open(PASSFILE, O_RDWR | O_CREAT, 0644)) == -1) {

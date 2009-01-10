@@ -594,7 +594,7 @@ int kick_user( struct user_info *userinfo )
    kuinfo.userid[IDLEN]=0;        //added by iamfat 2004.01.05 to avoid overflow
    kuinfo.username[NAMELEN-1]=0;        //added by iamfat 2004.01.05 to avoid overflow
    sprintf(genbuf, "%s (%s)", kuinfo.userid, kuinfo.username);
-   log_usies("KICK ", genbuf);
+   log_usies("KICK ", genbuf, &currentuser);
    move(2, 0);
    if(uinfo.mode!=LUSERS&&uinfo.mode!=OFFLINE&&uinfo.mode!=FRIEND) {
       prints("用户 [%s] 已经被踢下站.\n",kickuser);
