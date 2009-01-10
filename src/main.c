@@ -1,28 +1,3 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-
-/*
- $Id: main.c 367 2007-05-12 17:08:28Z danielfree $
- */
 #include "bbs.h"
 
 #ifndef DLM
@@ -32,11 +7,10 @@
 #ifdef FDQUAN
 #define ALLOWGAME
 #endif
-//modified by money 2002.11.15
 
 #define BADLOGINFILE    "logins.bad"
 #define VISITLOG	BBSHOME"/.visitlog"
-int ERROR_READ_SYSTEM_FILE = NA;
+
 int RMSG = YEA;
 int msg_num = 0;
 int count_friends = 0, count_users = 0;
@@ -275,8 +249,14 @@ int mask, value;
 	}
 }
 
-void u_exit() { /*这些信号的处理要关掉, 否则在离线时等候回车时出现  (ylsdd)
- 信号会导致重写名单, 这个导致的名单混乱比kick user更多 */
+void u_exit(void)
+{
+	time_t recent;
+	time_t stay;
+	time_t now;
+
+	// 这些信号的处理要关掉, 否则在离线时等候回车时出现  (ylsdd)
+	// 信号会导致重写名单, 这个导致的名单混乱比kick user更多
 	signal(SIGHUP, SIG_DFL);
 	signal(SIGALRM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
@@ -288,29 +268,18 @@ void u_exit() { /*这些信号的处理要关掉, 否则在离线时等候回车时出现  (ylsdd)
 	if (HAS_PERM(PERM_LOGINCLOAK))
 		setflags(CLOAK_FLAG, uinfo.invisible);
 
-	if (!ERROR_READ_SYSTEM_FILE) {
-		time_t recent;
-		time_t stay;
-		time_t now;
-
-		//stay=(stay>7200)?7200/*(14400-stay)*/:stay; //added by iamfat 2002.08.20 超过两个小时 上站时间递减
-		set_safe_record();
-		now = time(0);
-		recent = login_start_time;
-		if (currentuser.lastlogout > recent)
-			recent = currentuser.lastlogout;
-		if (currentuser.lastlogin > recent)
-			recent = currentuser.lastlogin;
-		//stay=now - ((currentuser.lastlogout>login_start_time)?currentuser.lastlogout:login_start_time);
-		stay = now - recent;
-		if (stay < 0)
-			stay = 0;
-		currentuser.lastlogout = now;
-		currentuser.stay += stay;
-		substitut_record(PASSFILE, &currentuser, sizeof(currentuser),
-				usernum);
-		uidshm->status[usernum - 1]--;
-	}
+	now = time(0);
+	recent = login_start_time;
+	if (currentuser.lastlogout > recent)
+		recent = currentuser.lastlogout;
+	if (currentuser.lastlogin > recent)
+		recent = currentuser.lastlogin;
+	if (stay < 0)
+		stay = 0;
+	currentuser.lastlogout = now;
+	currentuser.stay += stay;
+	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
+	uidshm->status[usernum - 1]--;
 
 	uinfo.invisible = YEA;
 	uinfo.sockactive = NA;
