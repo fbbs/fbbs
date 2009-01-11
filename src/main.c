@@ -57,6 +57,7 @@ static void u_enter(void)
 	int ucount = 0;
 	char buf[NAME_MAX];
 
+	// Initialization.
 	memset(&uinfo, 0, sizeof(uinfo));
 	uinfo.active = YEA;
 	uinfo.pid = getpid();
@@ -68,6 +69,7 @@ static void u_enter(void)
 	uinfo.mode = LOGIN;
 	uinfo.pager = 0;
 
+	// Handle giveupBBS(戒网) transactions.
 	sethomefile(buf, currentuser.userid, "giveupBBS");
 	fn = fopen(buf, "r");
 	if (fn) {
@@ -121,6 +123,8 @@ static void u_enter(void)
 #ifdef BBSD
 	uinfo.idle_time = time(0);
 #endif
+
+	// Load user preferences.
 	if (DEFINE(DEF_DELDBLCHAR))
 		enabledbchar = 1;
 	else
@@ -188,25 +192,26 @@ static void u_enter(void)
 	digestmode = NA;
 }
 
-void setflags(mask, value)
-int mask, value;
+// Set 'mask'ed bit in 'currentuser.flags[0]'  according to 'value'.
+static void setflags(int mask, int value)
 {
 	if (((currentuser.flags[0] & mask) && 1) != value) {
 		if (value)
-		currentuser.flags[0] |= mask;
+			currentuser.flags[0] |= mask;
 		else
-		currentuser.flags[0] &= ~mask;
+			currentuser.flags[0] &= ~mask;
 	}
 }
 
+// Save user info on exit.
 void u_exit(void)
 {
 	time_t recent;
 	time_t stay;
 	time_t now;
 
-	// 这些信号的处理要关掉, 否则在离线时等候回车时出现  (ylsdd)
-	// 信号会导致重写名单, 这个导致的名单混乱比kick user更多
+	// 这些信号的处理要关掉, 否则在离线时等候回车时出现
+	// 信号会导致重写名单, 这个导致的名单混乱比kick user更多  (ylsdd)
 	signal(SIGHUP, SIG_DFL);
 	signal(SIGALRM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
@@ -218,7 +223,7 @@ void u_exit(void)
 	if (HAS_PERM(PERM_LOGINCLOAK))
 		setflags(CLOAK_FLAG, uinfo.invisible);
 
-	now = time(0);
+	now = time(NULL);
 	recent = login_start_time;
 	if (currentuser.lastlogout > recent)
 		recent = currentuser.lastlogout;
