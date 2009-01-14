@@ -31,8 +31,6 @@
 #endif
 /* 系统安全相关代码的 define */
 //#define MUDCHECK_BEFORELOGIN 	// 登陆前按键确认 
-//#define CHECK_SYSTEM_PASS	// 站长级 ID 上站询问系统密码 
-//#define SYSOPLOGINPROTECT 	// SYSOP 帐号登陆安全 
 //#define AddWaterONLY		// 仅仅是快意灌水站自己使用的代码，请屏蔽
 
 /* 某些限制性代码的相关 define */

@@ -49,28 +49,17 @@ void count_msg();
 void c_recover();
 void tlog_recover();
 
-// Some initialization when user enters.
-static void u_enter(void)
+// Handle giveupBBS(½äÍø) transactions.
+// Return expiration date (in days from epoch).
+// Better rewrite it..
+int chk_giveupbbs(void)
 {
-	FILE *fn;
 	int i, j, tmpcount, tmpid, sflag[10][2];
+	FILE *fn;
 	int lcount = 0;
-	int ucount = 0;
 	char buf[NAME_MAX];
+	int recover = 0;
 
-	// Initialization.
-	memset(&uinfo, 0, sizeof(uinfo));
-	uinfo.active = YEA;
-	uinfo.pid = getpid();
-	uinfo.currbrdnum = 0;
-	if (!HAS_PERM(PERM_CLOAK))
-		currentuser.flags[0] &= ~CLOAK_FLAG;
-	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
-		uinfo.invisible = YEA;
-	uinfo.mode = LOGIN;
-	uinfo.pager = 0;
-
-	// Handle giveupBBS(½äÍø) transactions.
 	sethomefile(buf, currentuser.userid, "giveupBBS");
 	fn = fopen(buf, "r");
 	if (fn) {
@@ -87,11 +76,14 @@ static void u_enter(void)
 		tmpcount = lcount;
 		fclose(fn);
 		for (i = 0; i < lcount; i++) {
-			if (sflag[i][1] <= time(0) / 3600 / 24) {
+			if(sflag[i][0] == 1)
+				recover = sflag[i][1];
+			if (sflag[i][1] <= time(NULL) / 3600 / 24) {
 				tmpcount--;
 				switch (sflag[i][0]) {
 					case 1:
 						tmpuserec.userlevel |= PERM_LOGIN;
+						recover = 0;
 						break;
 					case 2:
 						tmpuserec.userlevel |= PERM_POST;
@@ -105,6 +97,7 @@ static void u_enter(void)
 				}
 				sflag[i][1] = 0;
 			}
+			
 		}
 		if (tmpuserec.flags[0] & GIVEUPBBS_FLAG && tmpcount == 0)
 			tmpuserec.flags[0] &= ~GIVEUPBBS_FLAG;
@@ -120,6 +113,25 @@ static void u_enter(void)
 			fclose(fn);
 		}
 	}
+	return recover;
+}
+
+// Some initialization when user enters.
+static void u_enter(void)
+{
+	// Initialization.
+	memset(&uinfo, 0, sizeof(uinfo));
+	uinfo.active = YEA;
+	uinfo.pid = getpid();
+	uinfo.currbrdnum = 0;
+	if (!HAS_PERM(PERM_CLOAK))
+		currentuser.flags[0] &= ~CLOAK_FLAG;
+	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
+		uinfo.invisible = YEA;
+	uinfo.mode = LOGIN;
+	uinfo.pager = 0;
+
+	chk_giveupbbs();
 
 #ifdef BBSD
 	uinfo.idle_time = time(0);
@@ -164,7 +176,7 @@ static void u_enter(void)
 	getrejectstr();
 
 	// Try to get an entry in user cache.
-	ucount = 0;
+	int ucount = 0;
 	while (1) {
 		utmpent = getnewutmpent(&uinfo);
 		if (utmpent >= 0 || utmpent == -1)
@@ -615,18 +627,16 @@ static void visitlog(void)
 	prints("%s", genbuf);
 }
 
-void login_query() {
+static void login_query(void)
+{
 	char uid[IDLEN + 2];
 	char passbuf[PASSLEN];
 	int curr_login_num;
 	int attempts;
-	char genbuf[STRLEN];
-	FILE *fn;
 	char *ptr;
-	int i, j, tmpid, tmpcount, sflag[10][2]; /*2003.04.22 added by stephen */
-	struct userec tmpuserec; /*2003.05.02 added by stephen */
-	int lcount = 0, basici = 0, basicj = 0;
+	int recover; // For giveupBBS
 
+	// Deny new logins if too many users (>=MAXACTIVE) online.
 	curr_login_num = num_active_users();
 	if (curr_login_num >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
@@ -634,6 +644,7 @@ void login_query() {
 		sleep(1);
 		exit(1);
 	}
+
 #ifdef BBSNAME
 	strcpy(BoardName, BBSNAME);
 #else
@@ -642,26 +653,26 @@ void login_query() {
 		ptr = "ÉĞÎ´ÃüÃû²âÊÔÕ¾";
 	strcpy(BoardName, ptr);
 #endif
+
 	if (fill_shmfile(1, "etc/issue", "ISSUE_SHMKEY")) {
-		show_issue(); /* is anibanner ready, remark this and put * \n\n */
+		show_issue();
 	}
-	prints(
-			"[1;35m»¶Ó­¹âÁÙ[1;40;33m¡¾ %s ¡¿ [m[[0;1;33;41m Add '.' after YourID to login for BIG5 [m]\n",
-			BoardName);
+	prints("\033[1;35m»¶Ó­¹âÁÙ\033[1;40;33m¡¾ %s ¡¿ \033[m"
+		"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
+		BoardName);
 	resolve_utmp();
 	if (utmpshm->usersum == 0)
 		utmpshm->usersum = allusers();
-	utmpshm->total_num = curr_login_num;//+ get_anon();
+	utmpshm->total_num = curr_login_num;
 	if (utmpshm->max_login_num < utmpshm->total_num)
 		utmpshm->max_login_num = utmpshm->total_num;
-	prints(
-			"[1;32mÄ¿Ç°ÒÑÓĞÕÊºÅÊı: [[1;36m%d[32m/[36m%d[32m] [32mÄ¿Ç°ÉÏÕ¾ÈËÊı: [[36m%d[32m/[36m%d[1;32m]\n", // ÆäÖĞWEBÄäÃû: [[36m%d[32m]\n",
-			utmpshm->usersum, MAXUSERS, utmpshm->total_num, 10000); // get_anon());
-	//    utmpshm->usersum, curr_login_num-CountCloakMan(), 10000);
+	prints("\033[1;32mÄ¿Ç°ÒÑÓĞÕÊºÅÊı: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
+		"\033[32mÄ¿Ç°ÉÏÕ¾ÈËÊı: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
+		utmpshm->usersum, MAXUSERS, utmpshm->total_num, 10000);
 	visitlog();
 
 #ifdef MUDCHECK_BEFORELOGIN
-	prints("[1;33mÎª·ÀÖ¹Ê¹ÓÃ³ÌÊ½ÉÏÕ¾£¬Çë°´ [1;36mCTRL + C[m : ");
+	prints("\033[1;33mÎª·ÀÖ¹Ê¹ÓÃ³ÌÊ½ÉÏÕ¾£¬Çë°´ \033[1;36mCTRL + C\033[m : ");
 	genbuf[0] = igetkey();
 	if (genbuf[0] != Ctrl('C')) {
 		prints("\n¶Ô²»Æğ£¬Äú²¢Ã»ÓĞ°´ÏÂ CTRL+C ¼ü£¡\n");
@@ -681,14 +692,13 @@ void login_query() {
 			exit(1);
 		}
 #ifndef LOADTEST
-		getdata(
-				0,
-				0,
-				"[1;33mÇëÊäÈëÕÊºÅ[m(ÊÔÓÃÇëÊäÈë'[1;36mguest[m', ×¢²áÇëÊäÈë'[1;31mnew[m'): ",
-				uid, IDLEN + 1, DOECHO, YEA);
-#else //LOADTEST
+		getdata(0, 0, "\033[1;33mÇëÊäÈëÕÊºÅ\033[m"
+		"(ÊÔÓÃÇëÊäÈë'\033[1;36mguest\033[m', "
+		"×¢²áÇëÊäÈë'\033[1;31mnew\033[m'): ",
+		uid, IDLEN + 1, DOECHO, YEA);
+#else
 		strcpy(uid, "guest");
-#endif //LOADTEST
+#endif
 #ifdef ALLOWSWITCHCODE
 		ptr = strchr(uid, '.');
 		if (ptr) {
@@ -696,8 +706,8 @@ void login_query() {
 			*ptr = '\0';
 		}
 #endif
-		if ((strcasecmp(uid, "guest") == 0) && (MAXACTIVE - curr_login_num
-				< 10)) {
+		if ((strcasecmp(uid, "guest") == 0)
+			&& (MAXACTIVE - curr_login_num < 10)) {
 			ansimore("etc/loginfull", NA);
 			oflush();
 			sleep(1);
@@ -710,176 +720,64 @@ void login_query() {
 			ansimore3("etc/firstlogin", YEA);
 			break;
 #else
-			prints("[1;37m±¾ÏµÍ³Ä¿Ç°ÎŞ·¨ÒÔ [36mnew[37m ×¢²á, ÇëÓÃ[36m guest[37m ½øÈë...[m\n");
+			prints("\033[1;37m±¾ÏµÍ³Ä¿Ç°ÎŞ·¨ÒÔ \033[36mnew[37m ×¢²á, "
+				"ÇëÓÃ\033[36m guest\033[37m ½øÈë...\033[m\n");
 #endif
 		} else if (*uid == '\0')
 			;
 		else if (!dosearchuser(uid, &currentuser, &usernum)) {
-			prints("[1;31m¾­²éÖ¤£¬ÎŞ´Ë ID¡£[m\n");
+			prints("\033[1;31m¾­²éÖ¤£¬ÎŞ´Ë ID¡£\033[m\n");
 		} else if (strcasecmp(uid, "guest") == 0) {
 			currentuser.userlevel = 0;
 			break;
-#ifdef SYSOPLOGINPROTECT
-		} else if (!strcasecmp(uid, "SYSOP") && strcmp(fromhost, "localhost")
-				&& strcmp(fromhost, "127.0.0.1")) {
-			prints("[1;32m ¾¯¸æ: ´Ó %s µÇÂ¼ÊÇ·Ç·¨µÄ! ÇëÎğÔÙÊÔ![m\n", fromhost);
-			prints
-			("[×¢Òâ] Îª°²È«Æğ¼û£¬±¾Õ¾ÒÑ¾­Éè¶¨ SYSOP Ö»ÄÜ´ÓÖ÷»úµÇÂ½¡£\n       Èç¹ûÄúÈ·ÊµÊÇ±¾Õ¾µÄ SYSOP £¬ÇëµÇÂ½µ½±¾ BBS ·şÎñÆ÷£¬È»ºó: \n              telnet localhost port.\n");
-			oflush();
-			sleep(1);
-			exit(1);
-#endif
 		} else {
 #ifdef ALLOWSWITCHCODE
 			if (!convcode)
-			convcode = !(currentuser.userdefine & DEF_USEGB);
+				convcode = !(currentuser.userdefine & DEF_USEGB);
 #endif
-			getdata(0, 0, "[1;37mÇëÊäÈëÃÜÂë: [m", passbuf, PASSLEN, NOECHO,
+			getdata(0, 0, "\033[1;37mÇëÊäÈëÃÜÂë: \033[m", passbuf, PASSLEN, NOECHO,
 					YEA);
 			passbuf[8] = '\0';
 			if (!checkpasswd(currentuser.passwd, passbuf)) {
 				logattempt(currentuser.userid, fromhost);
-				prints("[1;31mÃÜÂëÊäÈë´íÎó...[m\n");
+				prints("\033[1;31mÃÜÂëÊäÈë´íÎó...\033[m\n");
 			} else {
-				/*2003.04.22 added by stephen to  add giveup bbs user  login info */
 				if (strcasecmp(currentuser.userid, "guest")
-						&& !HAS_PERM(PERM_LOGIN)) {
-					sethomefile(genbuf, currentuser.userid, "giveupBBS");
-					fn = fopen(genbuf, "rt");
-					if (fn) {
-						/*2003.05.02 added by stphen to resolve user's data,save in temp struct tmpuserec */
-						for (tmpcount = 0; tmpcount < IDLEN + 2; tmpcount++) {
-							tmpuserec.userid[tmpcount]
-									= currentuser.userid[tmpcount];
-						}
-						//tmpid = searchuser(tmpuserec.userid);
-						//get_record(PASSFILE,&tmpuserec,sizeof(struct userec),tmpid);
-						tmpid = getuserec(tmpuserec.userid, &tmpuserec);
-						/*2003.05.02 add end */
-
-						while (!feof(fn)) {
-							if (fscanf(fn, "%d %d", &i, &j) <= 0)
-								break;
-
-							sflag[lcount][0] = i;
-							sflag[lcount][1] = j;
-							lcount++;
-						}
-
-						tmpcount = lcount;
-						fclose(fn);
-						/*2003.05.02 added by stephen start check giveupBBS user's giveup-datafile */
-						/*and modify the user's perm ,use tmpuserec as a temp userec struct */
-						for (i = 0; i < lcount; i++) {
-							if (sflag[i][1] <= time(0) / 3600 / 24) {
-								tmpcount--;
-								switch (sflag[i][0]) {
-									case 1:
-										tmpuserec.userlevel |= PERM_LOGIN;
-										sflag[i][0] = 0;
-										break;
-									case 2:
-										tmpuserec.userlevel |= PERM_POST;
-										break;
-									case 3:
-										tmpuserec.userlevel |= PERM_TALK;
-										break;
-									case 4:
-										tmpuserec.userlevel |= PERM_MAIL;
-										break;
-								}
-								sflag[i][1] = 0;
-							}
-
-							if (sflag[i][0] == 1) {
-								basici = i;
-								basicj = j;
-							}
-						}
-
-						/*2003.05.02 add end */
-						if (tmpuserec.flags[0] & GIVEUPBBS_FLAG
-								&& tmpcount == 0)
-							tmpuserec.flags[0] &= ~GIVEUPBBS_FLAG;
-						substitut_record(PASSFILE, &tmpuserec,
-								sizeof(struct userec), tmpid);
-
-						if (tmpcount == 0)
-							unlink(genbuf);
-						else {
-							fn = fopen(genbuf, "wt");
-							for (i = 0; i < lcount; i++)
-								if (sflag[i][1] > 0)
-									fprintf(fn, "%d %d\n", sflag[i][0],
-											sflag[i][1]);
-							fclose(fn);
-						}
-						if (sflag[basici][0] == 1) {
-							sprintf(genbuf, "[33mÄúÕıÔÚ½äÍø£¬Àë½äÍø½áÊø»¹ÓĞ%dÌì[m\n",
-									basicj - time(0) / 3600 / 24);
-							prints(genbuf);
-							oflush();
-							pressanykey();
-							sleep(1);
-
-							exit(1);
-						}
-
+					&& !HAS_PERM(PERM_LOGIN)) {
+					recover = chk_giveupbbs();
+					if (recover) {
+						prints("\033[33mÄúÕıÔÚ½äÍø£¬"
+							"Àë½äÍø½áÊø»¹ÓĞ%dÌì\033[m\n",
+							recover - time(NULL) / 3600 / 24);
+						oflush();
+						pressanykey();
+						sleep(1);
+						exit(1);
 					}
-
-					//Don't allow revival, Added by Ashinmarch Sep.04,2008
 					if (currentuser.userlevel == 0) {
-						/*     && askyn("ÄúÖªµÀÄúÒÑ¾­×ÔÉ±ÁËÂğ£¿", NA, NA) == YEA
-						 && askyn("ÄúÏëÆğËÀ»ØÉúÂğ£¿", NA, NA) == YEA
-						 && askyn("Äú°´´í¼üÁËÂğ£¿", YEA, NA) == NA
-						 && askyn("ÄúÍ¬ÒâÄúµÄÉÏÕ¾´ÎÊı¡¢ÎÄÕÂÊı¼°ÉÏÕ¾×ÜÊ±ÊıÇåÁãÂğ£¿", NA,
-						 NA) == YEA && askyn("ÎÒÃÇºÜ·³Âğ£¿", YEA, NA) == YEA) {
-						 currentuser.userlevel = PERM_DEFAULT;
-
-						 currentuser.numposts = 0;
-						 currentuser.numlogins = 1;
-						 #ifdef FDQUAN
-						 #else
-						 currentuser.stay = 0;
-						 #endif
-						 substitut_record(PASSFILE, &currentuser, sizeof(currentuser),
-						 usernum);
-						 */
-						prints("[32mÄúÒÑ¾­×ÔÉ±[m\n");
+						prints("\033[32mÄúÒÑ¾­×ÔÉ±\033[m\n");
 						pressanykey();
 						oflush();
 						sleep(1);
 						exit(1);
 					} else {
-						prints("[32m±¾ÕÊºÅÒÑÍ£»ú¡£ÇëÏò [36msysops[32m ²éÑ¯Ô­Òò[m\n");
+						prints("\033[32m±¾ÕÊºÅÒÑÍ£»ú¡£Çëµ½ "
+							"\033[36mNotice\033[32m°æ ²éÑ¯Ô­Òò\033[m\n");
 						pressanykey();
 						oflush();
 						sleep(1);
 						exit(1);
 					}
 				}
-
-				/*2003.04.22 stephen add end*/
 #ifdef CHECK_FREQUENTLOGIN
 				if (!HAS_PERM(PERM_SYSOPS)
-                        && strcasecmp(currentuser.userid, "guest") != 0
-                        && abs(time(0) - currentuser.lastlogin) < 10) {
-                    prints("µÇÂ¼¹ıÓÚÆµ·±£¬ÇëÉÔºòÔÙÀ´\n");
-                    report("Too Frequent", currentuser.userid);
-                    oflush();
-                    sleep(3);
-                    exit(1);
-				}
-#endif
-
-#ifdef CHECK_SYSTEM_PASS
-				if (HAS_PERM(PERM_SYSOPS)) {
-					if (!check_systempasswd()) {
-						prints("\n¿ÚÁî´íÎó, ²»µÃ½øÈë ! !\n");
-						oflush();
-						sleep(2);
-						exit(1);
-					}
+					&& strcasecmp(currentuser.userid, "guest") != 0
+					&& abs(time(NULL) - currentuser.lastlogin) < 10) {
+					prints("µÇÂ¼¹ıÓÚÆµ·±£¬ÇëÉÔºòÔÙÀ´\n");
+					report("Too Frequent", currentuser.userid);
+					oflush();
+					sleep(3);
+					exit(1);
 				}
 #endif
 				memset(passbuf, 0, PASSLEN - 1);
@@ -887,10 +785,11 @@ void login_query() {
 			}
 		}
 	}
+
 	multi_user_check();
 
 	if (!term_init(currentuser.termtype)) {
-		prints("Bad terminal type.  Defaulting to 'vt100'\n");
+		prints("Bad terminal type. Defaulting to 'vt100'\n");
 		strcpy(currentuser.termtype, "vt100");
 		term_init(currentuser.termtype);
 	}
@@ -898,7 +797,7 @@ void login_query() {
 	check_tty_lines();
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
-	login_start_time = time(0);
+	login_start_time = time(NULL);
 }
 
 void write_defnotepad() {
