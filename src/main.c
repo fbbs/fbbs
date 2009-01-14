@@ -49,6 +49,7 @@ void count_msg();
 void c_recover();
 void tlog_recover();
 
+// Some initialization when user enters.
 static void u_enter(void)
 {
 	FILE *fn;
@@ -248,7 +249,9 @@ void u_exit(void)
 	update_utmp();
 }
 
-void talk_request() {
+// Bell when user receives an talk request.
+static void talk_request(void)
+{
 	signal(SIGUSR1, talk_request);
 	talkrequest = YEA;
 	bell();
@@ -263,164 +266,164 @@ void talk_request() {
 	return;
 }
 
-void abort_bbs() {
+// Handle abnormal exit.
+void abort_bbs(void)
+{
 	extern int child_pid;
 
 	if (child_pid) {
 		kill(child_pid, 9);
 	}
+
+	// Save user's work.
 	if (uinfo.mode == POSTING || uinfo.mode == SMAIL || uinfo.mode == EDIT
 			|| uinfo.mode == EDITUFILE || uinfo.mode == EDITSFILE
 			|| uinfo.mode == EDITANN)
 		keep_fail_post();
+
 	if (started) {
 		time_t stay;
-
 		stay = time(0) - login_start_time;
-		currentuser.username[NAMELEN - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
-		sprintf(genbuf, "Stay: %3ld (%s)", stay / 60, currentuser.username);
+		snprintf(genbuf, sizeof(genbuf), "Stay: %3ld", stay / 60);
 		log_usies("AXXED", genbuf, &currentuser);
+
 		u_exit();
 	}
-	/*
-	 #ifdef DMALLOC
-	 dmalloc_shutdown();
-	 #endif*/
+
 	exit(0);
 }
 
-int cmpuids2(unum, urec)
-int unum;
-struct user_info *urec;
+// Compare 'unum' to 'urec'->uid. (uid)
+static int cmpuids2(int unum, const struct user_info *urec)
 {
 	return (unum == urec->uid);
 }
 
-int count_multi(uentp)
-struct user_info *uentp;
+// Count active logins of a user with 'usernum'(uid).
+// Called by count_user().
+static int count_multi(const struct user_info *uentp)
 {
 	static int count;
 
 	if (uentp == NULL) {
 		int num = count;
-
 		count = 0;
 		return num;
 	}
 	if (!uentp->active || !uentp->pid)
-	return 0;
+		return 0;
 	if (uentp->uid == usernum)
-	count++;
+		count++;
 	return 1;
 }
 
-int count_user() {
+// Count active logins of a user with 'usernum'(uid).
+static int count_user(void)
+{
 	count_multi(NULL);
 	apply_ulist(count_multi);
 	return count_multi(NULL);
 }
 
 #ifdef IPMAXLOGINS
-int _cnt_ip(uentp)
-struct user_info *uentp;
+// Count active logins from IP 'fromhost'.
+// Called by count_ip().
+static int _cnt_ip(struct user_info *uentp)
 {
 	static int count;
 
 	if (uentp == NULL) {
 		int num = count;
-
 		count = 0;
 		return num;
 	}
 	if (!uentp->active || !uentp->pid)
-	return 0;
+		return 0;
 	if (!strcmp(uentp->userid, "guest"))
-	return 0;
+		return 0;
 	if (!strcmp(uentp->from, fromhost))
-	count++;
+		count++;
 	return 1;
 }
 
-int count_ip()
+// Count active logins from IP 'fromhost'.
+static int count_ip(void)
 {
 	_cnt_ip(NULL);
 	apply_ulist(_cnt_ip);
 	return _cnt_ip(NULL);
 }
 
-void iplogins_check()
+// Check if there is greater than or equal to IPMAXLOGINS
+// active processes from IP 'fromhost'. If so, deny more logins.
+// guest users, or users from IP addresses in "etc/freeip"
+// or not in "etc/restrictip" are not checked.
+static void iplogins_check(void)
 {
 	int sameip;
 
 	if (currentuser.userid && !strcmp(currentuser.userid, "guest"))
-	return;
+		return;
 	if (!IsSpecial(fromhost, "etc/restrictip")
 			|| IsSpecial(fromhost, "etc/freeip")) {
-		sameip = 0;
+		return;
 	} else {
 		sameip = count_ip();
 	}
 	if (sameip >= IPMAXLOGINS) {
-		prints("[1;32mÎªÈ·±£ËûÈËÉÏÕ¾È¨Òæ, ±¾Õ¾½öÔÊĞí´ËIPÍ¬Ê±µÇÂ½ %d ¸ö¡£\n[0m",
+		prints("\033[1;32mÎªÈ·±£ËûÈËÉÏÕ¾È¨Òæ, ±¾Õ¾½öÔÊĞí´ËIPÍ¬Ê±µÇÂ½ %d ¸ö¡£\n\033[m",
 				IPMAXLOGINS);
-		prints("[1;36mÄúÄ¿Ç°ÒÑ¾­Ê¹ÓÃ¸ÃIPµÇÂ½ÁË %d ¸ö£¡\n[0m", sameip);
+		prints("\033[1;36mÄúÄ¿Ç°ÒÑ¾­Ê¹ÓÃ¸ÃIPµÇÂ½ÁË %d ¸ö£¡\n\033[m", sameip);
 		oflush();
 		sleep(3);
 		exit(1);
 	}
-
 }
-
 #endif
 
-void multi_user_check() {
+static void multi_user_check(void)
+{
 	struct user_info uin;
 	int logins, mustkick = 0;
 
+	// Don't check sysops.
 	if (HAS_PERM(PERM_MULTILOG))
-		return; /* don't check sysops */
+		return;
 
-	/* allow multiple guest user */
 	logins = count_user();
-
 	if (heavyload() && logins) {
-		prints("[1;33m±§Ç¸, Ä¿Ç°ÏµÍ³¸ººÉ¹ıÖØ, ÇëÎğÖØ¸´ Login¡£[m\n");
+		prints("\033[1;33m±§Ç¸, Ä¿Ç°ÏµÍ³¸ººÉ¹ıÖØ, ÇëÎğÖØ¸´ Login¡£\033[m\n");
 		oflush();
 		sleep(3);
 		exit(1);
 	}
 
+	// Allow no more than MAXGUEST guest users.
 	if (!strcasecmp("guest", currentuser.userid)) {
 		if (logins > MAXGUEST) {
-			prints("[1;33m±§Ç¸, Ä¿Ç°ÒÑÓĞÌ«¶à [1;36mguest[33m, ÇëÉÔºóÔÙÊÔ¡£[m\n");
+			prints("\033[1;33m±§Ç¸, Ä¿Ç°ÒÑÓĞÌ«¶à \033[1;36mguest\033[33m, ÇëÉÔºóÔÙÊÔ¡£\033[m\n");
 			oflush();
 			sleep(3);
 			exit(1);
 		}
-		return;
-	} else if ((!HAS_PERM(PERM_SPECIAL0) && logins >= MULTI_LOGINS)
+	}
+	// For users without PERM_SPECIAL0, MULTI_LOGINS logins are allowed.
+	// A user with PERM_SPEACIAL0 is allowed up to 6 logins.
+	// (actually 4, finding the bug..)
+	else if ((!HAS_PERM(PERM_SPECIAL0) && logins >= MULTI_LOGINS)
 			|| logins > 5) {
-		prints("[1;32mÎªÈ·±£ËûÈËÉÏÕ¾È¨Òæ, ±¾Õ¾½öÔÊĞíÄúÓÃ¸ÃÕÊºÅµÇÂ½ %d ¸ö¡£\n[0m", MULTI_LOGINS);
-		prints("[1;36mÄúÄ¿Ç°ÒÑ¾­Ê¹ÓÃ¸ÃÕÊºÅµÇÂ½ÁË %d ¸ö£¬Äú±ØĞë¶Ï¿ªÆäËûµÄÁ¬½Ó·½ÄÜ½øÈë±¾Õ¾£¡\n[0m", logins);
+		prints("\033[1;32mÎªÈ·±£ËûÈËÉÏÕ¾È¨Òæ, ±¾Õ¾½öÔÊĞíÄúÓÃ¸ÃÕÊºÅµÇÂ½ %d ¸ö¡£\n\033[m", MULTI_LOGINS);
+		prints("\033[1;36mÄúÄ¿Ç°ÒÑ¾­Ê¹ÓÃ¸ÃÕÊºÅµÇÂ½ÁË %d ¸ö£¬Äú±ØĞë¶Ï¿ªÆäËûµÄÁ¬½Ó·½ÄÜ½øÈë±¾Õ¾£¡\n\033[m", logins);
 		mustkick = 1;
 	}
-	//commented by iamfat 2002.10.27
-	//if(logins /*&& num_active_users() >= (MAXACTIVE*2/3)*/ && !HAS_PERM(PERM_BOARDS))
-	/*
-	 if(logins && !HAS_PERM(PERM_BOARDS))
-	 {
-	 prints("[1;33m±§Ç¸, Ä¿Ç°ÏµÍ³¸ººÉ¹ıÖØ, ÇëÎğÖØ¸´ Login¡£[m\n");
-	 mustkick = 1;
-	 } */
-
-	if (search_ulist(&uin, cmpuids2, usernum) && (uin.active || (uin.pid
-			&& kill(uin.pid, 0) == -1))) {
-		getdata(0, 0, "[1;37mÄúÏëÉ¾³ıÖØ¸´µÄ login Âğ (Y/N)? [N][m", genbuf, 4,
+	if (search_ulist(&uin, cmpuids2, usernum) 
+		&& (uin.active || (uin.pid && kill(uin.pid, 0) == -1))) {
+		getdata(0, 0, "\033[1;37mÄúÏëÉ¾³ıÖØ¸´µÄ login Âğ (Y/N)? [N]\033[m", genbuf, 4,
 				DOECHO, YEA);
 
 		if (genbuf[0] == 'N' || genbuf[0] == 'n' || genbuf[0] == '\0') {
 			if (mustkick) {
-				prints("[33mºÜ±§Ç¸£¬ÄúÒÑ¾­ÓÃ¸ÃÕÊºÅµÇÂ½ %d ¸ö£¬ËùÒÔ£¬´ËÁ¬Ïß½«±»È¡Ïû¡£[m\n", logins);
+				prints("\033[33mºÜ±§Ç¸£¬ÄúÒÑ¾­ÓÃ¸ÃÕÊºÅµÇÂ½ %d ¸ö£¬ËùÒÔ£¬´ËÁ¬Ïß½«±»È¡Ïû¡£\033[m\n", logins);
 				oflush();
 				sleep(3);
 				exit(1);
@@ -431,14 +434,11 @@ void multi_user_check() {
 			kill(uin.pid, SIGHUP);
 			//ÒÔÇ°²»ÊÇSIGHUP£¬»áµ¼ÖÂ±à¼­×÷Òµ¶ªÊ§ by sunner
 			report("kicked (multi-login)", currentuser.userid);
-			currentuser.username[NAMELEN - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
-			log_usies("KICK ", currentuser.username, &currentuser);
 		}
 	}
 #ifdef IPMAXLOGINS
 	iplogins_check();
 #endif
-
 }
 
 #ifndef BBSD
