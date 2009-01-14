@@ -527,7 +527,6 @@ char   *regfile;
 */
 
 #ifndef WITHOUT_ADMIN_TOOLS
-extern int cmpuids();
 extern int t_cmpuids();
 int kick_user( struct user_info *userinfo )
 {

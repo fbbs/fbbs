@@ -427,6 +427,8 @@ int hasreadperm(const struct userec *user, const struct boardheader *bp);
 extern struct UCACHE *uidshm;
 extern struct UTMPFILE *utmpshm;
 extern struct userec lookupuser;
+int cmpuids(const char *uid, const struct userec *up);
+int dosearchuser(const char *userid, struct userec *user, int *unum);
 
 //log.c
 void report(const char *s, const char *userid);

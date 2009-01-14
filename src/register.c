@@ -540,7 +540,7 @@ void new_register() {
 			prints("帐号至少需有两个英文字母!\n");
 		} else if ((*passbuf == '\0') || bad_user_id(passbuf)) {
 			prints("抱歉, 您不能使用这个字作为帐号。 请想过另外一个。\n");
-		} else if (dosearchuser(passbuf)) {
+		} else if (dosearchuser(passbuf, &currentuser, &usernum)) {
 			prints("此帐号已经有人使用\n");
 		} else
 			break;
@@ -637,7 +637,7 @@ void new_register() {
 		sleep(2);
 		exit(1);
 	}
-	if (!dosearchuser(newuser.userid)) {
+	if (!dosearchuser(newuser.userid, &currentuser, &usernum)) {
 		prints("User failed to create\n");
 		oflush();
 		sleep(2);

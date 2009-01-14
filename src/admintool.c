@@ -7,7 +7,6 @@ extern int cmpbnames();
 extern int cleanmail();
 extern char *chgrp();
 extern int dowall();
-extern int cmpuids();
 extern int t_cmpuids();
 extern void rebuild_brdshm();
 int showperminfo(int, int);

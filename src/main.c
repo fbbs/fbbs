@@ -248,28 +248,6 @@ void u_exit(void)
 	update_utmp();
 }
 
-int cmpuids(uid, up)
-char *uid;
-struct userec *up;
-{
-	return !strncasecmp(uid, up->userid, sizeof(up->userid));
-}
-
-int dosearchuser(userid)
-char *userid;
-{
-	int id;
-
-	if ((id = getuser(userid)) != 0) {
-		if (cmpuids(userid, &lookupuser)) {
-			memcpy(&currentuser, &lookupuser, sizeof(currentuser));
-			return usernum = id;
-		}
-	}
-	memset(&currentuser, 0, sizeof(currentuser));
-	return usernum = 0;
-}
-
 void talk_request() {
 	signal(SIGUSR1, talk_request);
 	talkrequest = YEA;
@@ -754,7 +732,7 @@ void login_query() {
 #endif
 		} else if (*uid == '\0')
 			;
-		else if (!dosearchuser(uid)) {
+		else if (!dosearchuser(uid, &currentuser, &usernum)) {
 			prints("[1;31mæ≠≤È÷§£¨Œﬁ¥À ID°£[m\n");
 		} else if (strcasecmp(uid, "guest") == 0) {
 			currentuser.userlevel = 0;
