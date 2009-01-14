@@ -381,6 +381,7 @@ static void iplogins_check(void)
 }
 #endif
 
+// Prevent too many logins of same account.
 static void multi_user_check(void)
 {
 	struct user_info uin;
@@ -442,20 +443,16 @@ static void multi_user_check(void)
 }
 
 #ifndef BBSD
-void system_init(argc, argv)
-int argc;
-char **argv;
+static void system_init(int argc, char **argv)
 #else
-void system_init()
+// Register some signal handlers.
+static void system_init(void)
 #endif
 {
 #ifndef BBSD
 	char *rhost;
 #endif
 	struct sigaction act;
-
-	//gethostname(genbuf, 256);
-	//sprintf(ULIST, "%s.%s", ULIST_BASE, genbuf);
 
 #ifndef BBSD
 	if (argc >= 3) {
@@ -505,13 +502,13 @@ void system_init()
 		setitimer(ITIMER_PROF, &itv, NULL);
 		signal(SIGPROF, exit);
 	}
-
 }
 
-void system_abort() {
+
+static void system_abort(void)
+{
 	if (started) {
-		currentuser.username[NAMELEN - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
-		log_usies("ABORT", currentuser.username, &currentuser);
+		log_usies("ABORT", "", &currentuser);
 		u_exit();
 	}
 	clear();
@@ -520,28 +517,38 @@ void system_abort() {
 	exit(0);
 }
 
-void logattempt(uid, frm)
-char *uid, *frm;
+// Log login attempts.
+static void logattempt(char *uid, char *frm)
 {
 	char fname[STRLEN];
 
-	getdatestring(time(0), NA);
-	sprintf(genbuf, "%-12.12s  %-30s %s\n", uid, datestring, frm);
+	getdatestring(time(NULL), NA);
+	snprintf(genbuf, sizeof(genbuf), "%-12.12s  %-30s %s\n", uid, datestring, frm);
 	file_append(BADLOGINFILE, genbuf);
 	sethomefile(fname, uid, BADLOGINFILE);
 	file_append(fname, genbuf);
-
 }
 
-int check_tty_lines() { /* dii.nju.edu.cn  zhch  2000.4.11 */
+// Get height of client window.
+// See RFC 1073 "Telnet Window Size Option"
+static int check_tty_lines(void)
+{
+	// An example: Server suggest and client agrees to use NAWS.
+	//             (Negotiate About Window Size)
+	//    (server sends)  IAC DO  NAWS
+	//                    255 253 31
+	//    (client sends)  IAC WILL NAWS
+	//                    255 251 31
+	//	  (client sends)  IAC SB  NAWS 0 80 0 24 IAC SE
+	//                    255 250 31   0 80 0 24 255 240
 	static unsigned char buf1[] = { 255, 253, 31 };
 	unsigned char buf2[100];
 	int n;
 
-	if (ttyname(0))
+	if (ttyname(STDIN_FILENO))
 		return;
-	write(0, buf1, 3);
-	n = read(0, buf2, 80);
+	write(STDIN_FILENO, buf1, 3);
+	n = read(STDIN_FILENO, buf2, 80);
 	if (n == 12) {
 		if (buf2[0] != 255 || buf2[1] != 251 || buf2[2] != 31)
 			return;
@@ -556,7 +563,8 @@ int check_tty_lines() { /* dii.nju.edu.cn  zhch  2000.4.11 */
 			return;
 		t_lines = buf2[6];
 	}
-	if (t_lines < 24 || t_lines > 100)t_lines = 24;
+	if (t_lines < 24 || t_lines > 100)
+		t_lines = 24;
 }
 
 struct max_log_record {
@@ -565,72 +573,46 @@ struct max_log_record {
 	int day;
 	int logins;
 	unsigned long visit;
-} max_log;
+};
+static struct max_log_record max_log;
 
-void visitlog(void) {
+// Show visit count and save it.
+static void visitlog(void)
+{
 	time_t now;
 	struct tm *tm;
 
-	//modified by iamfat to avoid deadlock
 	FILE *fp;
-
 	fp = fopen(VISITLOG, "r+b");
 	if (fp) {
 		if (!fread(&max_log, sizeof(max_log), 1, fp)
-				|| (max_log.year < 1990 || max_log.year> 2020)){
-		now = time(0);
-		tm = localtime(&now);
-		max_log.year = tm->tm_year + 1900;
-		max_log.month = tm->tm_mon + 1;
-		max_log.day = tm->tm_mday;
-		max_log.visit = 0;
-		max_log.logins = 0;
-	} else {
-		max_log.visit++;
-		if (max_log.logins> utmpshm->max_login_num) {
-			utmpshm->max_login_num = max_log.logins;
-		} else {
-			max_log.logins = utmpshm->max_login_num;
+			|| (max_log.year < 1990 || max_log.year> 2020)) {
+			now = time(NULL);
+			tm = localtime(&now);
+			max_log.year = tm->tm_year + 1900;
+			max_log.month = tm->tm_mon + 1;
+			max_log.day = tm->tm_mday;
+			max_log.visit = 0;
+			max_log.logins = 0;
 		}
+		else {
+			max_log.visit++;
+			if (max_log.logins > utmpshm->max_login_num)
+				utmpshm->max_login_num = max_log.logins;
+			else
+				max_log.logins = utmpshm->max_login_num;
+		}
+		fseek(fp, 0, SEEK_SET);
+		fwrite(&max_log, sizeof(max_log), 1, fp);
+		fclose(fp);
 	}
-	fseek(fp, 0, SEEK_SET);
-	fwrite(&max_log, sizeof(max_log), 1, fp);
-	fclose(fp);
-}
-/*
- int vfp;
- vfp = open(VISITLOG,O_RDWR|O_CREAT,0644);
- if(vfp == -1) {
- report("Can NOT write visit Log to .visitlog");
- return ;
- }
- flock(vfp, LOCK_EX);
- lseek(vfp,(off_t)0,SEEK_SET);
- read(vfp, &max_log,(size_t)sizeof(max_log)); 
- if(max_log.year < 1990 || max_log.year > 2020) {
- now = time(0);
- tm = localtime(&now); 
- max_log.year = tm->tm_year+1900;
- max_log.month = tm->tm_mon+1;
- max_log.day = tm->tm_mday;
- max_log.visit = 0;
- max_log.logins = 0;
- }
- max_log.visit ++ ;
- if( max_log.logins > utmpshm->max_login_num )
- utmpshm->max_login_num = max_log.logins;
- else
- max_log.logins =  utmpshm->max_login_num;
- lseek(vfp,(off_t)0,SEEK_SET);
- write(vfp,&max_log,(size_t)sizeof(max_log));
- flock(vfp, LOCK_UN);
- close(vfp); 
- */
-sprintf(genbuf,
-		"[1;32m¥” [[36m%4dƒÍ%2d‘¬%2d»’[32m] ∆, ◊Ó∏ﬂ»À ˝º«¬º: [[36m%d[32m] ¿€º∆∑√Œ »À¥Œ: [[36m%u[32m][m\n",
+	snprintf(genbuf, sizeof(genbuf), 
+		"\033[1;32m¥” [\033[36m%4dƒÍ%2d‘¬%2d»’\033[32m] ∆, "
+		"◊Ó∏ﬂ»À ˝º«¬º: [\033[36m%d\033[32m] "
+		"¿€º∆∑√Œ »À¥Œ: [\033[36m%u\033[32m]\033[m\n",
 		max_log.year, max_log.month, max_log.day, max_log.logins,
 		max_log.visit);
-prints(genbuf);
+	prints("%s", genbuf);
 }
 
 void login_query() {
@@ -913,7 +895,7 @@ void login_query() {
 		term_init(currentuser.termtype);
 	}
 
-	check_tty_lines(); /* 2000.03.14 */
+	check_tty_lines();
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(0);
