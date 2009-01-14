@@ -2291,7 +2291,7 @@ int post_article(char *postboard, char *mailid) {
 		failure++;
 		if (failure > 9999) {
 			if (failure >= 10020) {
-				abort_bbs();
+				abort_bbs(0);
 			}
 			prints("对不起，您在被劝阻多次的情况下，仍不断试图发文。");
 			move(6, 10);

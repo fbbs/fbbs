@@ -250,7 +250,7 @@ void u_exit(void)
 }
 
 // Bell when user receives an talk request.
-static void talk_request(void)
+static void talk_request(int nothing)
 {
 	signal(SIGUSR1, talk_request);
 	talkrequest = YEA;
@@ -267,7 +267,7 @@ static void talk_request(void)
 }
 
 // Handle abnormal exit.
-void abort_bbs(void)
+void abort_bbs(int nothing)
 {
 	extern int child_pid;
 
@@ -1094,7 +1094,7 @@ void user_login() {
 			< 5) || (logins <= MULTI_LOGINS)) && strcmp(
 			currentuser.userid, "guest")) {
 		report("kicked (multi-login)[Â©ÍøÖ®Óã]", currentuser.userid);
-		abort_bbs();
+		abort_bbs(0);
 	}
 	initscr();
 #ifdef USE_NOTEPAD

@@ -410,7 +410,7 @@ int domenu(const char *menu_name)
 		switch (cmd) {
 			case EOF:
 			if (!refscreen) {
-				abort_bbs();
+				abort_bbs(0);
 			}
 			domenu_screen(pm);
 			modify_user_mode(MMENU);

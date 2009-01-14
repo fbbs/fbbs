@@ -180,7 +180,7 @@ struct textline * alloc_line() {
 	p = (struct textline *) malloc(sizeof(*p));
 	if (p == NULL) {
 		indigestion(13);
-		abort_bbs();
+		abort_bbs(0);
 	}
 	p->next = NULL;
 	p->prev = NULL;
@@ -671,7 +671,7 @@ int read_file(char *filename) {
 			return;
 		}
 		indigestion(4);
-		abort_bbs();
+		abort_bbs(0);
 	}
 	insert_from_fp(fp);
 	fclose(fp);
@@ -928,7 +928,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	if (aborted != -1) {
 		if ((fp = fopen(filename, "w")) == NULL) {
 			indigestion(5);
-			abort_bbs();
+			abort_bbs(0);
 		}
 		if (write_header_to_file)
 			write_header(fp, 0);
@@ -1576,7 +1576,7 @@ void vedit_key(int ch) {
 						p = p->next;
 						if (p == NULL) {
 							indigestion(2);
-							abort_bbs();
+							abort_bbs(0);
 						}
 					}
 					redraw_everything = YEA;
@@ -1627,7 +1627,7 @@ void vedit_key(int ch) {
 						p = p->next;
 						if (p == NULL) {
 							indigestion(2);
-							abort_bbs();
+							abort_bbs(0);
 						}
 					}
 					redraw_everything = YEA;

@@ -417,7 +417,7 @@ int igetch()
 				if ((ch < 0) && (errno == EINTR))
 				continue;
 				//longjmp(byebye, -1);
-				abort_bbs();/* 非正常断线的处理 */
+				abort_bbs(0);
 			}
 			icurrchar = (*data & 0xff) == IAC ? iac_count(data) : 0;
 			if (icurrchar >= ch)
@@ -431,27 +431,6 @@ int igetch()
 			if (ch == 0 || ch == 0x0a)
 			continue;
 		}
-		//Modified by iamfat 2002.08.21
-		//防止挂站
-		/*
-		 if(repeats==0)timestart=time(0);
-		 else if(time(0)-timestart>900)
-		 {
-		 if(repeats)abort_bbs();
-		 timestart=time(0);
-		 }
-		 if(!HAS_PERM(PERM_EXT_IDLE) && ch==repeatch)
-		 //			&& (ch == Ctrl('L') || ch == Ctrl('@')))
-		 {
-		 repeats=1;
-		 }
-		 else 
-		 {
-		 repeats=0;
-		 repeatch=ch;
-		 }
-		 */
-		//Modified end.
 		if (ch == Ctrl('L'))
 		{
 			redoscr();
