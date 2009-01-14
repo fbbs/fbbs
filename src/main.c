@@ -236,6 +236,7 @@ void u_exit(void)
 	if (HAS_PERM(PERM_LOGINCLOAK))
 		setflags(CLOAK_FLAG, uinfo.invisible);
 
+	set_safe_record();
 	now = time(NULL);
 	recent = login_start_time;
 	if (currentuser.lastlogout > recent)
