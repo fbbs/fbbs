@@ -467,7 +467,7 @@ char q_id[IDLEN + 2];
 	} else {
 		if (*q_id == '\0') return 0;
 		if (strchr(q_id, ' ')) strtok(q_id, " ");
-		strncpy(uident, q_id, sizeof(uident));
+		strlcpy(uident, q_id, sizeof(uident));
 		uident[sizeof(uident) - 1] = '\0';
 	}
 	if (!(tuid = getuser(uident))) {
@@ -1717,7 +1717,7 @@ int listfilecontent(char *fname, int y) {
 	}
 	while (fgets(genbuf, 1024, fp) != NULL) {
 		strtok(genbuf, " \n\r\t");
-		strncpy(u_buf, genbuf, 20);
+		strlcpy(u_buf, genbuf, 20);
 		u_buf[19] = '\0';
 		if (!AddNameList(u_buf))
 			continue;
