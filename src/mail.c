@@ -253,11 +253,6 @@ m_internet()
 }
 #endif
 
-void m_init() {
-	sprintf(currmaildir, "mail/%c/%s/%s", toupper(currentuser.userid[0]),
-			currentuser.userid, DOT_DIR);
-}
-
 int
 do_send(userid, title)
 char *userid, *title;

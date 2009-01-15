@@ -7,7 +7,7 @@ typedef unsigned char uschar;
 struct userec { /* Structure used to hold information in */
 	char userid[IDLEN+2]; /* PASSFILE */
 	time_t firstlogin;
-	char lasthost[16];
+	char lasthost[16]; // Too short for IPv6 addresses
 	unsigned int numlogins;
 	unsigned int numposts;
 	int nummedals; /* ½±ÕÂÊý money modified u_int to int 2002.11.19*/

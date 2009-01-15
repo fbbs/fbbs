@@ -39,7 +39,7 @@ char *setmfile(char *buf, const char *userid, const char *filename)
 // Returns the path of '.DIR' under the mail directory of 'userid'.
 char *setmdir(char *buf, const char *userid)
 {
-	sprintf(buf, "mail/%c/%s/.DIR", toupper(userid[0]), userid);
+	sprintf(buf, "mail/%c/%s/" DOT_DIR, toupper(userid[0]), userid);
 	return buf;
 }
 

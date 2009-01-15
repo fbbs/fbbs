@@ -914,41 +914,36 @@ void SpecialID(const char *uid, char *host, int len) {
 	}
 }
 
-void user_login() {
+static void user_login(void)
+{
 	char fname[STRLEN];
 	int logins;
 
+	// SYSOP gets all permission bits when login.
 	if (strcmp(currentuser.userid, "SYSOP") == 0) {
-		currentuser.userlevel = ~0; /* SYSOP gets all permission bits */
+		currentuser.userlevel = ~0;
 		substitut_record(PASSFILE, &currentuser, sizeof(currentuser),
 				usernum);
 	}
 	fromhost[59] = 0; //added by iamfat 2004.01.05 to avoid overflow
 	log_usies("ENTER", fromhost, &currentuser);
 
-	/*02.10.05  add by stephen to mask the real ip of user,convert "a.b.c.d" to "a.b.*.*"  */
-	//02.10.09 Don't add this line now.
-	// And if you really want to try this, please add #ifdef FDQUAN befor it to make sure this function will only be compiled in FDQUAN
-	//      #ifdef  FDQUAN
-	//      MaskLoginIP(currentuser.userid,fromhost);
-	//      #endif
-	/*02.10.05  add end*/
-
-	//ÕâÊÇ¸ö¸øÌØÊâIDÉèÖÃÒþ²ØHOSTµÄº¯Êý
 	SpecialID(currentuser.userid, fromhost, sizeof(fromhost));
-	//technician=IsTechnician(currentuser.userid);
 
 	u_enter();
 	report("Enter", currentuser.userid);
 	started = 1;
-	logins = count_user();
 
-	if (! (HAS_PERM(PERM_MULTILOG) || (HAS_PERM(PERM_SPECIAL0) && logins
-			< 5) || (logins <= MULTI_LOGINS)) && strcmp(
-			currentuser.userid, "guest")) {
+	// Seems unnecessary since having done so in login_query().
+	logins = count_user();
+	if (! (HAS_PERM(PERM_MULTILOG)
+		|| (HAS_PERM(PERM_SPECIAL0) && logins < 5)
+		|| (logins <= MULTI_LOGINS))
+		&& strcmp(currentuser.userid, "guest")) {
 		report("kicked (multi-login)[Â©ÍøÖ®Óã]", currentuser.userid);
 		abort_bbs(0);
 	}
+
 	initscr();
 #ifdef USE_NOTEPAD
 	notepad_init();
@@ -972,12 +967,7 @@ void user_login() {
 		}
 	}
 #endif
-	/*
-	 if(show_statshm("0Announce/bbslist/countusr", 0) && DEFINE(DEF_GRAPH)) {
-	 refresh();
-	 pressanykey();
-	 }
-	 */
+
 	if (show_statshm("etc/hotspot", 0)) {
 		refresh();
 		pressanykey();
@@ -998,28 +988,27 @@ void user_login() {
 	clrtoeol();
 	if (currentuser.numlogins < 1) {
 		currentuser.numlogins = 0;
-		getdatestring(time(0), NA);
-		prints("[1;36m¡î ÕâÊÇÄúµÚ [33m1[36m ´Î°Ý·Ã±¾Õ¾£¬Çë¼Ç×¡½ñÌì°É¡£\n");
-		prints("¡î ÄúµÚÒ»´ÎÁ¬Èë±¾Õ¾µÄÊ±¼äÎª [33m%s[m ", datestring);
+		getdatestring(time(NULL), NA);
+		prints("\033[1;36m¡î ÕâÊÇÄúµÚ \033[33m1\033[36m ´Î°Ý·Ã±¾Õ¾£¬Çë¼Ç×¡½ñÌì°É¡£\n");
+		prints("¡î ÄúµÚÒ»´ÎÁ¬Èë±¾Õ¾µÄÊ±¼äÎª \033[33m%s\033[m ", datestring);
 	} else {
 		getdatestring(currentuser.lastlogin, NA);
 		prints(
-				"[1;36m¡î ÕâÊÇÄúµÚ [33m%d[36m ´Î°Ý·Ã±¾Õ¾£¬ÉÏ´ÎÄúÊÇ´Ó [33m%s[36m Á¬Íù±¾Õ¾¡£\n",
+				"\033[1;36m¡î ÕâÊÇÄúµÚ \033[33m%d\033[36m ´Î°Ý·Ã±¾Õ¾£¬ÉÏ´ÎÄúÊÇ´Ó \033[33m%s\033[36m Á¬Íù±¾Õ¾¡£\n",
 				currentuser.numlogins + 1, currentuser.lasthost);
-		prints("¡î ÉÏ´ÎÁ¬ÏßÊ±¼äÎª [33m%s[m ", datestring);
+		prints("¡î ÉÏ´ÎÁ¬ÏßÊ±¼äÎª \033[33m%s\033[m ", datestring);
 	}
 	igetkey();
 	WishNum = 9999;
 	setuserfile(fname, BADLOGINFILE);
 	if (ansimore(fname, NA) != -1) {
-		//if (askyn("ÄúÒªÉ¾³ýÒÔÉÏÃÜÂëÊäÈë´íÎóµÄ¼ÇÂ¼Âð", YEA, YEA) == YEA)
 		if (askyn("ÄúÒªÉ¾³ýÒÔÉÏÃÜÂëÊäÈë´íÎóµÄ¼ÇÂ¼Âð", NA, NA) == YEA)
 			unlink(fname);
 	}
 
 	set_safe_record();
 	check_uinfo(&currentuser, 0);
-	strncpy(currentuser.lasthost, fromhost, 16);
+	strncpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
 	currentuser.lasthost[15] = '\0'; /* dumb mistake on my part */
 	{
 		time_t stay, recent;
@@ -1044,8 +1033,8 @@ void user_login() {
 	}
 
 	if (HAS_PERM(PERM_SYSOPS) || !strcmp(currentuser.userid, "guest"))
-		currentuser.lastjustify = time(0);
-	if (HAS_PERM(PERM_REGISTER) && (abs(time(0) - currentuser.lastjustify)
+		currentuser.lastjustify = time(NULL);
+	if (HAS_PERM(PERM_REGISTER) && (abs(time(NULL) - currentuser.lastjustify)
 			>= REG_EXPIRED * 86400)) {
 #ifdef MAILCHECK
 		currentuser.email[0] = '\0';
@@ -1055,10 +1044,6 @@ void user_login() {
 		currentuser.userlevel &= ~(PERM_REGISTER | PERM_TALK);
 		mail_file("etc/expired", currentuser.userid, "¸üÐÂ¸öÈË×ÊÁÏËµÃ÷¡£");
 	}
-	/* Anonomous 2007.12.7
-	 * Move the following line above
-	 */
-	/*currentuser.numlogins++;*/
 #ifdef ALLOWGAME
 	if (currentuser.money> 1000000) {
 		currentuser.nummedals += currentuser.money / 10000;
@@ -1070,11 +1055,10 @@ void user_login() {
 	currentuser.money += 1000;
 #endif
 	if (currentuser.firstlogin == 0) {
-		currentuser.firstlogin = time(0) - 7 * 86400;
+		currentuser.firstlogin = time(NULL) - 7 * 86400;
 	}
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
-	/* Following line added by Amigo 2002.04.24. For check_register_info use. */
-	m_init();
+	setmdir(currmaildir, currentuser->userid);
 	check_register_info();
 #ifdef CERTIFYMODE
 	if (!strcmp(currentuser.userid, "dxwxb")) {
@@ -1210,7 +1194,7 @@ void start_client()
 
 	login_query();
 	user_login();
-	m_init();
+	setmdir(currmaildir, currentuser->userid);
 	RMSG = NA;
 	clear();
 	c_recover();
