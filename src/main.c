@@ -871,7 +871,8 @@ static void notepad_init(void)
 // Compare 'str' to strings in file 'filename'.
 // Return 1 if leading characters of 'str' matches (case insensitive)
 // any of those strings, 0 otherwise.
-static int IsSpecial(const char *str, const char *filename) {
+static int IsSpecial(const char *str, const char *filename)
+{
 	FILE *fp;
 	char line[STRLEN];
 	char *ptr;
@@ -895,7 +896,8 @@ static int IsSpecial(const char *str, const char *filename) {
 // Search 'uid' in id-host pairs in "etc/special.ini"(case insensitive)
 // and then modify 'host' accordingly.
 // 'len' should be the length of 'host'.
-void SpecialID(const char *uid, char *host, int len) {
+void SpecialID(const char *uid, char *host, int len)
+{
 	FILE *fp;
 	char line[STRLEN];
 	char *special;
@@ -1058,7 +1060,8 @@ static void user_login(void)
 		currentuser.firstlogin = time(NULL) - 7 * 86400;
 	}
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
-	setmdir(currmaildir, currentuser->userid);
+	extern char currmaildir[];
+	setmdir(currmaildir, currentuser.userid);
 	check_register_info();
 #ifdef CERTIFYMODE
 	if (!strcmp(currentuser.userid, "dxwxb")) {
@@ -1168,6 +1171,7 @@ int main(int argc, char **argv)
 void start_client()
 #endif
 {
+	extern char currmaildir[];
 	load_sysconf();
 
 #ifdef ALLOWSWITCHCODE
@@ -1194,7 +1198,7 @@ void start_client()
 
 	login_query();
 	user_login();
-	setmdir(currmaildir, currentuser->userid);
+	setmdir(currmaildir, currentuser.userid);
 	RMSG = NA;
 	clear();
 	c_recover();
