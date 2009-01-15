@@ -671,3 +671,180 @@ int getdata(int line, int col, char *prompt, char * buf, int len,
 	return clen;
 }
 
+char *boardmargin() {
+	static char buf[STRLEN];
+
+	//Modified by IAMFAT 2002-05-26 Add ' '
+	//Modified by IAMFAT 2002-05-28
+	//Roll Back 2002-05-29
+	if (selboard)
+		sprintf(buf, "ÌÖÂÛÇø [%s]", currboard);
+	else {
+		brc_initial(currentuser.userid, DEFAULTBOARD);
+		changeboard(currbp, currboard, DEFAULTBOARD);
+		if (!getbnum(currboard, &currentuser))
+			setoboard(currboard);
+		selboard = 1;
+		sprintf(buf, "ÌÖÂÛÇø [%s]", currboard);
+	}
+	return buf;
+}
+
+void update_endline() {
+	extern time_t login_start_time; //main.c
+	extern int WishNum; //main.c
+	extern int orderWish; //main.c
+	extern char GoodWish[][STRLEN - 3]; //main.c
+
+	char buf[255], fname[STRLEN], *ptr;
+	time_t now;
+	FILE *fp;
+	int i, allstay, foo, foo2;
+
+	move(t_lines - 1, 0);
+	clrtoeol();
+
+	if (!DEFINE(DEF_ENDLINE))
+		return;
+
+	now = time(0);
+	allstay = getdatestring(now, NA); // allstay Îªµ±Ç°ÃëÊý
+	if (allstay == 0) {
+		nowishfile: resolve_boards();
+		strcpy(datestring, brdshm->date);
+		allstay = 1;
+	}
+	if (allstay < 5) {
+		allstay = (now - login_start_time) / 60;
+		sprintf(buf, "[[36m%.12s[33m]", currentuser.userid);
+		num_alcounter();
+		//Modified by IAMFAT 2002-05-26
+		//Roll Back 2002-05-29
+		prints(
+				"[1;44;33m[[36m%29s[33m][[36m%4d[33mÈË/[1;36m%3d[33mÓÑ][[36m%1s%1s%1s%1s%1s%1s[33m]ÕÊºÅ%-24s[[36m%3d[33m:[36m%2d[33m][m",
+				datestring, count_users, count_friends, (uinfo.pager
+						& ALL_PAGER) ? "P" : "p", (uinfo.pager
+						& FRIEND_PAGER) ? "O" : "o", (uinfo.pager
+						& ALLMSG_PAGER) ? "M" : "m", (uinfo.pager
+						& FRIENDMSG_PAGER) ? "F" : "f",
+				(DEFINE(DEF_MSGGETKEY)) ? "X" : "x",
+				(uinfo.invisible == 1) ? "C" : "c", buf, (allstay / 60)
+						% 1000, allstay % 60);
+		return;
+	}
+	setuserfile(fname, "HaveNewWish");
+	if (WishNum == 9999 || dashf(fname)) {
+		if (WishNum != 9999)
+			unlink(fname);
+		WishNum = 0;
+		orderWish = 0;
+
+		if (is_birth(currentuser)) {
+			strcpy(GoodWish[WishNum],
+			//Roll Back 2002-05-29
+					"                     À²À²¡«¡«£¬ÉúÈÕ¿ìÀÖ!   ¼ÇµÃÒªÇë¿ÍÓ´ :P                   ");
+			WishNum++;
+		}
+
+		setuserfile(fname, "GoodWish");
+		if ((fp = fopen(fname, "r")) != NULL) {
+			for (; WishNum < 20;) {
+				if (fgets(buf, 255, fp) == NULL)
+					break;
+				buf[STRLEN - 4] = '\0';
+				ptr = strtok(buf, "\n\r");
+				if (ptr == NULL || ptr[0] == '#')
+					continue;
+				strcpy(buf, ptr);
+				for (ptr = buf; *ptr == ' ' && *ptr != 0; ptr++)
+					;
+				if (*ptr == 0 || ptr[0] == '#')
+					continue;
+				for (i = strlen(ptr) - 1; i < 0; i--)
+					if (ptr[i] != ' ')
+						break;
+				if (i < 0)
+					continue;
+				foo = strlen(ptr);
+				foo2 = (STRLEN - 3 - foo) / 2;
+				strcpy(GoodWish[WishNum], "");
+				for (i = 0; i < foo2; i++)
+					strcat(GoodWish[WishNum], " ");
+				strcat(GoodWish[WishNum], ptr);
+				for (i = 0; i < STRLEN - 3 - (foo + foo2); i++)
+					strcat(GoodWish[WishNum], " ");
+				GoodWish[WishNum][STRLEN - 4] = '\0';
+				WishNum++;
+			}
+			fclose(fp);
+		}
+	}
+	if (WishNum == 0)
+		goto nowishfile;
+	if (orderWish >= WishNum * 2)
+		orderWish = 0;
+	//Modified by IAMFAT 2002-05-26 insert space
+	//Roll Back 2002-05-29
+	prints("[0;1;44;33m[[36m%77s[33m][m", GoodWish[orderWish / 2]);
+	orderWish++;
+}
+
+/*ReWrite by SmallPig*/
+void showtitle(char *title, char *mid) {
+	extern char BoardName[]; //main.c
+
+	char buf[STRLEN], *note;
+	int spc1;
+	int spc2;
+
+	note = boardmargin();
+	spc1 = 39 + num_ans_chr(title) - strlen(title) - strlen(mid) / 2;
+	//if(spc1 < 2) 
+	//      spc1 = 2;
+	//Modified by IAMFAT 2002-05-28
+	//Roll Back 2002-05-29
+	spc2 = 79 - (strlen(title) - num_ans_chr(title) + spc1 + strlen(note)
+			+ strlen(mid));
+	//if (spc2 < 1) 
+	//      spc2 = 1;
+	spc1 += spc2;
+	spc1 = (spc1 > 2) ? spc1 : 2; //·ÀÖ¹¹ýÐ¡
+	spc2 = spc1 / 2;
+	spc1 -= spc2;
+	move(0, 0);
+	clrtoeol();
+	sprintf(buf, "%*s", spc1, "");
+	if (!strcmp(mid, BoardName))
+		prints("[1;44;33m%s%s[37m%s[1;44m", title, buf, mid);
+	else if (mid[0] == '[')
+		prints("[1;44;33m%s%s[5;36m%s[m[1;44m", title, buf, mid);
+	else
+		prints("[1;44;33m%s%s[36m%s", title, buf, mid);
+	sprintf(buf, "%*s", spc2, "");
+	prints("%s[33m%s[m\n", buf, note);
+	update_endline();
+	move(1, 0);
+}
+void firsttitle(char *title) {
+	extern int mailXX; //main.c
+	extern char BoardName[]; //main.c
+	char middoc[30];
+
+	if (chkmail())
+		strcpy(middoc, strstr(title, "ÌÖÂÛÇøÁÐ±í") ? "[ÄúÓÐÐÅ¼þ£¬°´ M ¿´ÐÂÐÅ]"
+				: "[ÄúÓÐÐÅ¼þ]");
+	else if (mailXX == 1)
+		strcpy(middoc, "[ÐÅ¼þ¹ýÁ¿£¬ÇëÕûÀíÐÅ¼þ!]");
+	else
+		strcpy(middoc, BoardName);
+
+	showtitle(title, middoc);
+}
+void docmdtitle(char *title, char *prompt) {
+	firsttitle(title);
+	move(1, 0);
+	clrtoeol();
+	prints("%s", prompt);
+	clrtoeol();
+}
+
