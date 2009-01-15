@@ -41,7 +41,7 @@
 
 /* 一般不需要变更的 define */
 //#define SHOWMETOFRIEND		/* 环顾四方的是否为对方好友的显示 */
-#define BBSD 			/* 使用 BBS daemon, 不使用 bbsrf */
+#define BBSD    // Always run bbs in daemon mode. Never comment out this line.
 #define ALLOWAUTOWRAP		/* 启用自动排版功能 */
 #define ALLOWSWITCHCODE		/* 启用 GB 码 <==> Big5 码 切换 */
 #define USE_NOTEPAD		/* 使用留言板 */

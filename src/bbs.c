@@ -146,36 +146,6 @@ int check_stuffmode() {
 		return NA;
 }
 
-#ifndef BBSD
-void get_load(double load[]) {
-#if defined(LINUX)
-	FILE *fp;
-
-	fp = fopen ("/proc/loadavg", "r");
-	if (!fp)
-	load[0] = load[1] = load[2] = 0;
-	else {
-		float av[3];
-
-		fscanf (fp, "%g %g %g", av, av + 1, av + 2);
-		fclose (fp);
-		load[0] = av[0];
-		load[1] = av[1];
-		load[2] = av[2];
-	}
-#elif defined(BSD44)
-	getloadavg (load, 3);
-#else
-	struct statstime rs;
-
-	rstat("localhost", &rs);
-	load[0] = rs.avenrun[0] / (double) (1 << 8);
-	load[1] = rs.avenrun[1] / (double) (1 << 8);
-	load[2] = rs.avenrun[2] / (double) (1 << 8);
-#endif
-}
-#endif
-
 //取得用户信息,不成功返回-1
 int set_safe_record() {
 	if (getcurrentuser(currentuser.userid) == 0)
@@ -1046,11 +1016,6 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		//End IAMFAT
 
 		refresh();
-
-#ifndef BBSD
-		sleep(1);
-#endif
-
 	}
 	if (!(ch == KEY_UP || ch == KEY_PGUP))
 		ch = egetch();
@@ -3573,9 +3538,6 @@ int Q_Goodbye() {
 #endif
 
 	sleep(1);
-#ifndef BBSD
-	reset_tty();
-#endif
 	exit(0);
 	return -1;
 }

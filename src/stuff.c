@@ -114,17 +114,11 @@ void printdash(char *mesg)
 
 /* 990807.edwardc fix beep sound in bbsd .. */
 
-void bell() {
-#ifndef BBSD
-	char sound[3], *ptr;
-	ptr = sound;
-	memset(ptr, Ctrl('G'), sizeof(sound));
-	write(1, ptr, sizeof(sound));
-#else
+void bell(void)
+{
 	static char sound[1] = {Ctrl('G')};
 
 	send(0, sound, sizeof(sound), 0);
-#endif
 }
 
 void touchnew() {
@@ -248,12 +242,9 @@ int do_exec(char *com, char *wd)
 #ifdef IRIX
 	if ((pid = fork()) == 0) {
 #else
-		if ((pid = vfork()) == 0) {
+	if ((pid = vfork()) == 0) {
 #endif
-
-#ifdef BBSD
 			waitpid(pid, &status, 0);
-#endif
 
 			if (wd)
 			if (chdir(wd)) {
@@ -280,10 +271,6 @@ int do_exec(char *com, char *wd)
 		}
 		isig = signal(SIGINT, SIG_IGN);
 		qsig = signal(SIGQUIT, SIG_IGN);
-#ifndef BBSD
-		while ((w = wait(&status)) != pid && w != 1)
-		/* NULL STATEMENT */;
-#endif		 
 		signal(SIGINT, isig);
 		signal(SIGQUIT, qsig);
 		restore_tty();

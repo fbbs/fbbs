@@ -21,9 +21,6 @@ jmp_buf byebye;
 int talkrequest = NA;
 time_t lastnote;
 struct user_info uinfo;
-#ifndef BBSD
-char tty_name[20];
-#endif
 char fromhost[60];
 char BoardName[STRLEN];
 
@@ -133,9 +130,7 @@ static void u_enter(void)
 
 	chk_giveupbbs();
 
-#ifdef BBSD
-	uinfo.idle_time = time(0);
-#endif
+	uinfo.idle_time = time(NULL);
 
 	// Load user preferences.
 	if (DEFINE(DEF_DELDBLCHAR))
@@ -165,9 +160,6 @@ static void u_enter(void)
 	if (!DEFINE(DEF_NOTHIDEIP)) {
 		uinfo.from[22] = 'H';
 	}
-#if !defined(BBSD) && defined(SHOW_IDLE_TIME)
-	strlcpy(uinfo.tty, tty_name, sizeof(uinfo.tty));
-#endif
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	strlcpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
 	strlcpy(uinfo.realname, currentuser.realname, sizeof(uinfo.realname));
@@ -254,9 +246,6 @@ void u_exit(void)
 	uinfo.sockactive = NA;
 	uinfo.sockaddr = 0;
 	uinfo.destuid = 0;
-#if !defined(BBSD) && defined(SHOW_IDLE_TIME)
-	strcpy(uinfo.tty, "NoTTY");
-#endif
 	uinfo.pid = 0;
 	uinfo.active = NA;
 	update_utmp();
@@ -455,35 +444,10 @@ static void multi_user_check(void)
 #endif
 }
 
-#ifndef BBSD
-static void system_init(int argc, char **argv)
-#else
 // Register some signal handlers.
 static void system_init(void)
-#endif
 {
-#ifndef BBSD
-	char *rhost;
-#endif
 	struct sigaction act;
-
-#ifndef BBSD
-	if (argc >= 3) {
-		strlcpy(fromhost, argv[2], 60);
-	} else {
-		fromhost[0] = '\0';
-	}
-	if ((rhost = getenv("REMOTEHOST")) != NULL)
-	strlcpy(fromhost, rhost, 60);
-	fromhost[59] = '\0';
-#if defined(SHOW_IDLE_TIME)
-	if (argc >= 4) {
-		strlcpy(tty_name, argv[3], 20);
-	} else {
-		tty_name[0] = '\0';
-	}
-#endif
-#endif
 
 #ifndef lint
 	signal(SIGHUP, abort_bbs);
@@ -1080,11 +1044,7 @@ void set_numofsig(void)
 	return;
 }
 
-#ifndef BBSD
-int main(int argc, char **argv)
-#else
 void start_client(void)
-#endif
 {
 	extern char currmaildir[];
 
@@ -1092,24 +1052,11 @@ void start_client(void)
 #ifdef ALLOWSWITCHCODE
 	resolve_GbBig5Files();
 #endif
-
-#ifndef BBSD
-	if (argc < 2 || *argv[1] != 'h') {
-		printf("You cannot execute this program directly.\n");
-		exit(-1);
-	}
-	system_init(argc, argv);
-#else
 	system_init();
-#endif
 
 	if (setjmp(byebye)) {
 		system_abort();
 	}
-#ifndef BBSD
-	get_tty();
-	init_tty();
-#endif
 
 	login_query();
 	user_login();
@@ -1150,7 +1097,8 @@ void start_client(void)
 
 int refscreen = NA;
 
-int egetch() {
+int egetch(void)
+{
 	int rval;
 
 	check_calltime();

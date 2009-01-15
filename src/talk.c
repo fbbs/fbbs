@@ -134,62 +134,21 @@ char pagerchar(int friend, int pager) {
 		struct user_info *uent;
 		{
 			static char hh_mm_ss[32];
-#ifndef BBSD
-			struct stat buf;
-			char tty[128];
-#endif
 			time_t now, diff;
 			int limit, hh, mm;
 			if (uent == NULL) {
 				strcpy(hh_mm_ss, "不详");
 				return hh_mm_ss;
 			}
-#ifndef BBSD
-			strcpy(tty, uent->tty);
-
-#ifndef SOLARIS
-#ifndef AIX
-#ifndef LINUX
-			if ( (stat( tty, &buf ) != 0) ||
-			(strstr( tty, "tty" ) == NULL)) {
-				strcpy( hh_mm_ss, "不详");
-				return hh_mm_ss;
-			}
-#else
-			if ( (stat( tty, &buf ) != 0) ||
-			(strstr( tty, "dev" ) == NULL)) {
-				strcpy( hh_mm_ss, "不详");
-				return hh_mm_ss;
-			}
-#endif
-#else
-			if ( (stat( tty, &buf ) != 0) ||
-			(strstr( tty, "pts" ) == NULL)) {
-				strcpy( hh_mm_ss, "不详");
-				return hh_mm_ss;
-			}
-#endif
-#else
-			if ((stat(tty, &buf) != 0) ||
-			(strstr(tty, "pts") == NULL)) {
-				strcpy(hh_mm_ss, "不详");
-				return hh_mm_ss;
-			}
-#endif
-#endif
 
 			now = time(0);
 
-#ifndef BBSD
-			diff = now - buf.st_atime;
-#else
 			if ( uent->mode == TALK )
 			diff = talkidletime; /* 聊天另有自己的 idle kick 机制 */
 			else if (uent->mode == BBSNET )
 			diff = 0;
 			else
 			diff = now - uent->idle_time;
-#endif
 
 #ifdef DOTIMEOUT
 			/*

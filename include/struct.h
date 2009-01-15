@@ -63,11 +63,7 @@ struct user_info { /* Structure used in UTMP file */
 	char chatid[ 10 ]; /* chat id, if in chat mode */
 	char from[60];
 	int currbrdnum;
-#ifndef BBSD
-	char tty[ 20 ]; /* tty port */
-#else
 	time_t idle_time; /* to keep idle time */
-#endif		
 	char userid[ 20 ];
 	char realname[ 20 ];
 	char username[NAMELEN];

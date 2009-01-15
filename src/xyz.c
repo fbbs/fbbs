@@ -384,15 +384,6 @@ int x_lockscreen() {
 
 //      ¼ì²é¸ººÉ
 int heavyload() {
-#ifndef BBSD
-	double cpu_load[3];
-	get_load(cpu_load);
-	return (cpu_load[0] > 15);
-	//if (cpu_load[0] > 15)
-	//      return 1;
-	//else
-	//      return 0;
-#else //Defined BBSD
 #ifdef chkload
 	register int load;
 	register time_t uptime;
@@ -404,7 +395,6 @@ int heavyload() {
 	return load;
 #else
 	return 0;
-#endif
 #endif
 }
 

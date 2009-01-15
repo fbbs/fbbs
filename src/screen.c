@@ -280,10 +280,6 @@ void refresh() {
 	register struct screenline *bp = big_picture;
 	extern int automargins;
 	extern int scrollrevlen;
-#ifndef BBSD
-	if (dumb_term)
-		return;
-#endif		
 	if (num_in_buf() != 0)
 		return;
 	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {

@@ -179,7 +179,7 @@ void init_alarm() {
 	signal(SIGALRM, hit_alarm_clock);
 	alarm(IDLE_TIMEOUT);
 }
-#ifdef BBSD
+
 //刷新输出缓冲区
 void oflush()
 {
@@ -244,47 +244,6 @@ void ochar(register int c)
 
 	obufsize = size;
 }
-#else
-//输出缓冲区中的字符
-void oflush() {
-	if (obufsize)
-#ifdef ALLOWSWITCHCODE
-		if(convcode) write2(1, outbuf, obufsize);
-		else
-#endif
-		write(1, outbuf, obufsize);
-	obufsize = 0;
-}
-
-//输出字符串,缓冲区满时先刷新缓冲区,再把这个字符串放到缓冲区中
-void output(char *s, int len) {
-	/* Invalid if len >= OBUFSIZE */
-
-	if (obufsize + len > OBUFSIZE) { /* doin a oflush */
-#ifdef ALLOWSWITCHCODE
-		if(convcode) write2(1, outbuf, obufsize);//转码输出
-		else
-#endif
-		write(1, outbuf, obufsize);
-		obufsize = 0;
-	}
-	memcpy(outbuf + obufsize, s, len);
-	obufsize += len;
-}
-
-//输出一个字符,缓冲区满时先刷新缓冲区,再把这个字符放到缓冲区里
-void ochar(int c) {
-	if (obufsize > OBUFSIZE - 1) { /* doin a oflush */
-#ifdef ALLOWSWITCHCODE
-		if(convcode) write2(1, outbuf, obufsize);
-		else
-#endif
-		write(1, outbuf, obufsize);
-		obufsize = 0;
-	}
-	outbuf[obufsize++] = c;
-}
-#endif
 
 int i_newfd = 0;
 struct timeval i_to, *i_top = NULL;
@@ -320,7 +279,6 @@ int num_in_buf() {
 	return n;
 }
 
-#ifdef BBSD
 static int iac_count(char *current)
 {
 	switch (*(current + 1) & 0xff) {
@@ -344,9 +302,7 @@ static int iac_count(char *current)
 		return 1;
 	}
 }
-#endif
 
-#ifdef BBSD
 int igetch()
 {
 	static int trailing = 0;
@@ -443,75 +399,6 @@ int igetch()
 		return (ch);
 	}
 }
-#else
-int igetch() {
-	igetagain: if (ibufsize == icurrchar) {
-		fd_set readfds;
-		struct timeval to;
-		int sr;
-		to.tv_sec = 0;
-		to.tv_usec = 0;
-		FD_ZERO(&readfds);
-		FD_SET(0, &readfds);
-		if (i_newfd)
-			FD_SET(i_newfd, &readfds);
-		if ((sr = select(FD_SETSIZE, &readfds, NULL, NULL, &to)) <= 0) {
-			if (flushf)
-				(*flushf)();
-			if (dumb_term)
-				oflush();
-			else
-				refresh();
-			FD_ZERO(&readfds);
-			FD_SET(0, &readfds);
-			if (i_newfd)
-				FD_SET(i_newfd, &readfds);
-			while ((sr = select(FD_SETSIZE, &readfds, NULL, NULL, i_top))
-					< 0) {
-				if (errno == EINTR)
-					continue;
-				else {
-					report("abnormal select conditions\n", currentuser.userid);
-					return -1;
-				}
-			}
-			if (sr == 0)
-				return I_TIMEOUT;
-		}
-		if (i_newfd && FD_ISSET(i_newfd, &readfds))
-			return I_OTHERDATA;
-#ifdef ALLOWSWITCHCODE
-		if( convcode )
-		ibufsize = read2(0, inbuf, IBUFSIZE);
-		else
-#endif
-		ibufsize = read(0, inbuf, IBUFSIZE);
-		while (ibufsize <= 0) {
-			if (ibufsize == 0)
-				longjmp(byebye, -1);
-			if (ibufsize < 0 && errno != EINTR)
-				longjmp(byebye, -1);
-#ifdef ALLOWSWITCHCODE
-			if( convcode )
-			ibufsize = read2(0, inbuf, IBUFSIZE);
-			else
-#endif
-			ibufsize = read(0, inbuf, IBUFSIZE);
-		}
-		icurrchar = 0;
-	}
-	i_mode = INPUT_ACTIVE;
-	switch (inbuf[icurrchar]) {
-		case Ctrl('L'):
-			redoscr();
-			icurrchar++;
-			goto igetagain;
-		default:
-			break;
-	}
-	return inbuf[icurrchar++];
-}
-#endif
 
 int igetkey() {
 	int mode;
