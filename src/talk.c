@@ -2254,52 +2254,6 @@ int getrejectstr() {
 	update_ulist(&uinfo, utmpent);
 }
 
-#ifdef CHK_FRIEND_BOOK
-int
-wait_friend()
-{
-	FILE *fp;
-	int tuid;
-	char buf[STRLEN];
-	char uid[13];
-	modify_user_mode(WFRIEND);
-	clear();
-	move(1, 0);
-	usercomplete("ÇëÊäÈëÊ¹ÓÃÕß´úºÅÒÔ¼ÓÈëÏµÍ³µÄÑ°ÈËÃû²á: ", uid);
-	if (uid[0] == '\0') {
-		clear();
-		return 0;
-	}
-	if (!(tuid = getuser(uid))) {
-		move(2, 0);
-		prints("[1m²»ÕýÈ·µÄÊ¹ÓÃÕß´úºÅ[m\n");
-		pressanykey();
-		clear();
-		return -1;
-	}
-	sprintf(buf, "ÄúÈ·¶¨Òª°Ñ [1m%s[m ¼ÓÈëÏµÍ³Ñ°ÈËÃûµ¥ÖÐ", uid);
-	move(2, 0);
-	if (askyn(buf, YEA, NA) == NA) {
-		clear();
-		return;
-	}
-	if ((fp = fopen("friendbook", "a+")) == NULL) {
-		prints("ÏµÍ³µÄÑ°ÈËÃû²áÎÞ·¨¿ªÆô£¬ÇëÍ¨ÖªÕ¾³¤...\n");
-		pressanykey();
-		return NA;
-	}
-	sprintf(buf, "%d@%s", tuid, currentuser.userid);
-	if (!seek_in_file("friendbook", buf))
-	fprintf(fp, "%s\n", buf);
-	fclose(fp);
-	move(3, 0);
-	prints("ÒÑ¾­°ïÄú¼ÓÈëÑ°ÈËÃû²áÖÐ£¬[1m%s[m ÉÏÕ¾ÏµÍ³Ò»¶¨»áÍ¨ÖªÄú...\n", uid);
-	pressanykey();
-	clear();
-	return;
-}
-#endif
-
 #ifdef TALK_LOG
 /* edwardc.990106 ·Ö±ðÎªÁ½Î»ÁÄÌìµÄÈË×÷¼ÍÂ¼ */
 /* -=> ×Ô¼ºËµµÄ»° */

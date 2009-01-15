@@ -3714,45 +3714,6 @@ int Q_Goodbye() {
 		u_exit();
 	}
 
-	/*	{ char buf[200],path[80],*t;
-	 setuserfile(path, ".lastread");
-	 t = strstr(path,".");
-	 *t = '\0';
-	 sprintf(buf,"cp %s/.lastread %s/.lastread.backup",path,path);
-	 system(buf);
-	 sprintf(buf,"cp %s/.boardrc %s/.boardrc.backup",path,path);
-	 system(buf);
-	 } 
-	 */
-
-	//pressreturn();
-#ifdef CHK_FRIEND_BOOK
-	if (num_user_logins (currentuser.userid) == 0 &&
-			strcmp (currentuser.userid, "guest")) {
-		FILE *fp;
-		char buf[STRLEN], *ptr;
-
-		if ((fp = fopen ("friendbook", "r")) != NULL) {
-			while (fgets (buf, sizeof (buf), fp) != NULL) {
-				char uid[14];
-
-				ptr = strstr (buf, "@");
-				if (ptr == NULL) {
-					del_from_file ("friendbook", buf);
-					continue;
-				}
-				ptr++;
-				strcpy (uid, ptr);
-				ptr = strstr (uid, "\n");
-				*ptr = '\0';
-				if (!strcmp (uid, currentuser.userid))
-				del_from_file ("friendbook", buf);
-			}
-			fclose (fp);
-		}
-	}
-#endif
-
 	//added by cometcaptor 2007-04-25 修正版面内快速离站造成人数统计BUG
 #ifdef NEWONLINECOUNT
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {

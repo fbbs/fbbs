@@ -41,9 +41,6 @@ int m_internet();
 #endif
 
 int t_users(), t_friends(), t_list(), t_monitor();
-#ifdef CHK_FRIEND_BOOK
-int wait_friend();
-#endif
 int t_query(), t_talk(), t_pager(), t_friend(), t_reject(), x_cloak();
 int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
@@ -123,9 +120,6 @@ static MENU sysconf_cmdlist[] = {
 	{ "ShowFriends", t_friends, 0 },
 	{ "ShowLogins", t_users, 0 },
 	{ "QueryUser", t_query, 0 },
-#ifdef CHK_FRIEND_BOOK
-	{	"WaitFriend", wait_friend, 0},
-#endif
 	{ "Talk", t_talk, 0 },
 	{ "SetPager", t_pager, 0 },
 	{ "SetCloak", x_cloak, 0 },

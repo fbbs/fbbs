@@ -1082,56 +1082,6 @@ void set_numofsig() {
 		numofsig += 1;
 }
 
-#ifdef CHK_FRIEND_BOOK
-int chk_friend_book()
-{
-	FILE *fp;
-	int idnum, n = 0;
-	char buf[STRLEN], *ptr;
-
-	if ((fp = fopen("friendbook", "r")) == NULL)
-	return 0;
-
-	move(10, 0);
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
-		char uid[14];
-		char msg[STRLEN];
-		struct user_info *uin;
-
-		ptr = strstr(buf, "@");
-		if (ptr == NULL)
-		continue;
-		ptr++;
-		strcpy(uid, ptr);
-		ptr = strstr(uid, "\n");
-		*ptr = '\0';
-		idnum = atoi(buf);
-		if (idnum != usernum || idnum <= 0)
-		continue;
-		uin = t_search(uid, NA);
-		sprintf(msg, "%s “—æ≠…œ’æ°£", currentuser.userid);
-		if (!uinfo.invisible && uin != NULL && !DEFINE(DEF_NOLOGINSEND)
-				&& do_sendmsg(uin, msg, 2, uin->pid) == 1) {
-			prints("[1m%s[m ’“ƒ˙£¨œµÕ≥“—æ≠∏ÊÀﬂÀ˚ƒ˙…œ’æµƒœ˚œ¢°£\n", uid);
-		} else
-		prints("[1m%s[m ’“ƒ˙£¨œµÕ≥Œﬁ∑®¡™¬ÁµΩÀ˚£¨«Îƒ˙∏˙À˚¡™¬Á°£\n", uid);
-		n++;
-		del_from_file("friendbook", buf);
-		if (n> 15) {
-			pressanykey();
-			move(10, 0);
-			clrtobot();
-		}
-	}
-	fclose(fp);
-	if (n) {
-		move(8, 0);
-		prints("[1mœµÕ≥—∞»À√˚≤·¡–±Ì:[m");
-	}
-	return n;
-}
-#endif
-
 int check_maxmail() {
 	extern char currmaildir[STRLEN];
 	int maxmail, maxsize, mailsize;
@@ -1230,10 +1180,6 @@ void start_client()
 		}
 		if (check_maxmail())
 			pressanykey();
-#ifdef CHK_FRIEND_BOOK
-		if (chk_friend_book())
-		pressanykey();
-#endif
 		move(9, 0);
 		clrtobot();
 		if (!DEFINE(DEF_NOLOGINSEND))

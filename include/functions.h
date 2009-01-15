@@ -58,17 +58,6 @@
 #define BIGGER_MOVIE 		/* 加大活动看板空间 (七行) */
 //#define ALWAYS_SHOW_BRDNOTE 	/* 每次进版都会 show 出进版画面 */
 
-/* 下面的是准备取消的功能， 你看着办吧 */
-/*
- 系统寻人功能是当初没有好友上站通知功能时做的一个寻人功能。
- 而且容易其提示信息极容易被忽略，而且忽略后就再也找不到了。
- 我曾想完善这个功能，为了保存信息，想到了同时发一份信给对方，
- 这样一来，这个功能也就是多余的了，因为写信本身就是一个很好
- 的寻人功能。 :) 所以我把他缺省为取消了。
- 不过，如果你想要这个功能，就自己打开吧，呵呵。
- */
-//#define CHK_FRIEND_BOOK		/* 设定系统寻人名单 */
-
 #define USE_TRY extern sigjmp_buf bus_jump
 #define BBS_TRY \
     	if (!sigsetjmp(bus_jump, 1)) { \
