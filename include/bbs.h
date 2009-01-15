@@ -458,5 +458,6 @@ int check_maxmail(void);
 
 //io.c
 int egetch(void);
+void update_endline(void);
 
 #endif /* of _BBS_H_ */

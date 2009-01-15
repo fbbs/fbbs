@@ -671,12 +671,10 @@ int getdata(int line, int col, char *prompt, char * buf, int len,
 	return clen;
 }
 
-char *boardmargin() {
+static char *boardmargin(void)
+{
 	static char buf[STRLEN];
 
-	//Modified by IAMFAT 2002-05-26 Add ' '
-	//Modified by IAMFAT 2002-05-28
-	//Roll Back 2002-05-29
 	if (selboard)
 		sprintf(buf, "ÌÖÂÛÇø [%s]", currboard);
 	else {
@@ -690,7 +688,8 @@ char *boardmargin() {
 	return buf;
 }
 
-void update_endline() {
+void update_endline(void)
+{
 	extern time_t login_start_time; //main.c
 	extern int WishNum; //main.c
 	extern int orderWish; //main.c
@@ -699,7 +698,7 @@ void update_endline() {
 	char buf[255], fname[STRLEN], *ptr;
 	time_t now;
 	FILE *fp;
-	int i, allstay, foo, foo2;
+	int i, cur_sec, allstay, foo, foo2;
 
 	move(t_lines - 1, 0);
 	clrtoeol();
@@ -707,31 +706,33 @@ void update_endline() {
 	if (!DEFINE(DEF_ENDLINE))
 		return;
 
-	now = time(0);
-	allstay = getdatestring(now, NA); // allstay Îªµ±Ç°ÃëÊý
-	if (allstay == 0) {
+	now = time(NULL);
+	cur_sec = getdatestring(now, NA); //cur_sec = tm_sec % 10
+	if (cur_sec == 0) {
 		nowishfile: resolve_boards();
-		strcpy(datestring, brdshm->date);
-		allstay = 1;
+		strlcpy(datestring, brdshm->date, sizeof(datestring));
+		cur_sec = 1;
 	}
-	if (allstay < 5) {
+	if (cur_sec < 5) {
 		allstay = (now - login_start_time) / 60;
-		sprintf(buf, "[[36m%.12s[33m]", currentuser.userid);
+		sprintf(buf, "[\033[36m%.12s\033[33m]", currentuser.userid);
 		num_alcounter();
-		//Modified by IAMFAT 2002-05-26
-		//Roll Back 2002-05-29
-		prints(
-				"[1;44;33m[[36m%29s[33m][[36m%4d[33mÈË/[1;36m%3d[33mÓÑ][[36m%1s%1s%1s%1s%1s%1s[33m]ÕÊºÅ%-24s[[36m%3d[33m:[36m%2d[33m][m",
-				datestring, count_users, count_friends, (uinfo.pager
-						& ALL_PAGER) ? "P" : "p", (uinfo.pager
-						& FRIEND_PAGER) ? "O" : "o", (uinfo.pager
-						& ALLMSG_PAGER) ? "M" : "m", (uinfo.pager
-						& FRIENDMSG_PAGER) ? "F" : "f",
-				(DEFINE(DEF_MSGGETKEY)) ? "X" : "x",
-				(uinfo.invisible == 1) ? "C" : "c", buf, (allstay / 60)
-						% 1000, allstay % 60);
+		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
+			"[\033[36m%4d\033[33mÈË/\033[36m%3d\033[33mÓÑ]"
+			"[\033[36m%c%c%c%c%c%c\033[33m]"
+			"ÕÊºÅ%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
+			datestring, count_users, count_friends,
+			(uinfo.pager & ALL_PAGER) ? 'P' : 'p',
+			(uinfo.pager & FRIEND_PAGER) ? 'O' : 'o',
+			(uinfo.pager & ALLMSG_PAGER) ? 'M' : 'm',
+			(uinfo.pager & FRIENDMSG_PAGER) ? 'F' : 'f',
+			(DEFINE(DEF_MSGGETKEY)) ? 'X' : 'x',
+			(uinfo.invisible == 1) ? 'C' : 'c',
+			buf, (allstay / 60) % 1000, allstay % 60);
 		return;
 	}
+
+	// To be removed..
 	setuserfile(fname, "HaveNewWish");
 	if (WishNum == 9999 || dashf(fname)) {
 		if (WishNum != 9999)
@@ -741,8 +742,8 @@ void update_endline() {
 
 		if (is_birth(currentuser)) {
 			strcpy(GoodWish[WishNum],
-			//Roll Back 2002-05-29
-					"                     À²À²¡«¡«£¬ÉúÈÕ¿ìÀÖ!   ¼ÇµÃÒªÇë¿ÍÓ´ :P                   ");
+					"                     À²À²¡«¡«£¬ÉúÈÕ¿ìÀÖ!"
+					"   ¼ÇµÃÒªÇë¿ÍÓ´ :P                   ");
 			WishNum++;
 		}
 
@@ -783,9 +784,7 @@ void update_endline() {
 		goto nowishfile;
 	if (orderWish >= WishNum * 2)
 		orderWish = 0;
-	//Modified by IAMFAT 2002-05-26 insert space
-	//Roll Back 2002-05-29
-	prints("[0;1;44;33m[[36m%77s[33m][m", GoodWish[orderWish / 2]);
+	prints("\033[0;1;44;33m[\033[36m%77s\033[33m]\033[m", GoodWish[orderWish / 2]);
 	orderWish++;
 }
 
