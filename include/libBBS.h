@@ -20,14 +20,15 @@ void _mmdecode(unsigned char *str);
 char *ModeType(int mode);
 
 //string.c
-char *strtolower(char *dst, char *src);
-char *strtoupper(char *dst, char *src);
-char *strcasestr_gbk(char *haystack, char *needle);
+char *strtolower(char *dst, const char *src);
+char *strtoupper(char *dst, const char *src);
+char *strcasestr_gbk(const char *haystack, const char *needle);
 char *ansi_filter(char *dst, const char *src);
 int getdatestring(time_t time, int mode);
 int ellipsis(char *str, int len);
 char *rtrim(unsigned char *str);
 char *trim(unsigned char *str);
+size_t strlcpy(char *dst, const char *src, size_t siz);
 
 //boardrc.c
 void brc_update(const char *userid, const char *board);
