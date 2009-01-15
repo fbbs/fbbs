@@ -75,22 +75,6 @@ int main() {
 		printpretable_lite();
 		http_fatal("错误的文章");
 	}
-	#ifdef CERTIFYMODE
-		fp=fopen(dir, "r+");
-		if(fp==0) 
-		{
-			printpretable_lite();
-			http_fatal("dir error2");
-		}
-		fseek(fp, sizeof(x)*num, SEEK_SET);
-	    fread(&x, sizeof(x), 1, fp);
-		fclose(fp);
-		if(x.accessed[1]&FILE_UNCERTIFIED)
-		{
-			printpretable_lite();
-			http_fatal("本文尚未通过审批");
-		}
-	#endif
 	printpretable();
 	printf("<table width=100%% border=0 cellspacing=3>\n");
 	sprintf(filename, "boards/%s/%s", board, file);

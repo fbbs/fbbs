@@ -66,9 +66,6 @@ extern struct user_info *u_info;
 extern struct UTMPFILE *shm_utmp;
 extern struct BCACHE *shm_bcache;
 extern struct UCACHE *shm_ucache;
-#ifdef CERTIFYMODE
-	struct KEYWORDS_SHM *keywords_shm;
-#endif
 
 extern char fromhost[];
 
@@ -106,11 +103,6 @@ int get_shmkey(char *s);
 int user_init(struct userec *x, struct user_info **y);
 
 int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig);
-
-#ifdef CERTIFYMODE
-void Certify(char *board, struct fileheader *fh);
-#endif
-
 int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig);
 
 void check_title(char *title);

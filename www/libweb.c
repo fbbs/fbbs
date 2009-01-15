@@ -57,9 +57,6 @@ struct user_info *u_info;
 struct UTMPFILE *shm_utmp;
 struct BCACHE *shm_bcache;
 struct UCACHE *shm_ucache;
-#ifdef CERTIFYMODE
-	struct KEYWORDS_SHM *keywords_shm;
-#endif
 
 char fromhost[256];
 
@@ -790,15 +787,10 @@ int shm_init(void) {
 		close(boardfd);
 	}
 	shm_ucache= (struct UCACHE *) get_old_shm(UCACHE_SHMKEY, sizeof(struct UCACHE));
-#ifdef CERTIFYMODE
-	keywords_shm=(struct KEYWORDS_SHM *)get_old_shm(KEYWORDS_SHMKEY,sizeof(struct KEYWORDS_SHM));
-#endif
-	//anonshm=(ANONCACHE*)get_old_shm(ACACHE_SHMKEY, sizeof(ANONCACHE));
 	
 	if(shm_utmp==0) http_fatal("shm_utmp error");
 	if(shm_bcache==0) http_fatal("shm_bcache error");
 	if(shm_ucache==0) http_fatal("shm_ucache error");
-	//if(anonshm==0)http_fatal("anonshm error");
 }
 
 int user_init(struct userec *x, struct user_info **y) {
@@ -945,43 +937,6 @@ int post_imail(char *userid, char *title, char *file, char *id, char *nickname, 
         pclose(fp2);
 }
 
-#ifdef CERTIFYMODE 
-void Certify(char *board, struct fileheader *fh)
-{
-	char buf[4096];
-	char *p=buf;
-	int	 i=4096,j;
-	int len;
-	FILE *fp;
-	sprintf(buf, "boards/%s/%s", board,fh->filename);
-	if(fp=fopen(buf, "r"))
-	{
-		fh->accessed[1]&=~FILE_UNCERTIFIED;
-		while(1)
-		{
-			p=buf;
-			while(i>1 && fgets(p,i,fp))
-			{
-				len=strlen(p);
-				while(p[len-1]=='\n'||p[len-1]=='\r')p[--len]='\0';
-				i-=len;
-				p+=len;
-			}
-			for(j=keywords_shm->number-1;j>=0;j--)
-			{
-				if(strcasestr_gbk(buf,keywords_shm->word[j]))
-				{
-					fh->accessed[1]|=FILE_UNCERTIFIED;
-					break;
-				}
-			}
-			if(i>1)break;
-		}
-		fclose(fp);
-	}
-}
-#endif
-
 int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig) {
 	FILE *fp, *fp2;
 	char buf3[1024];
@@ -1037,9 +992,6 @@ int post_article(char *board, char *title, char *file, char *id, char *nickname,
 //	fprintf(fp, "\n[1;%dm¡ù À´Ô´:£®%s %s [FROM: %.20s][m\n", 31+rand()%7, BBSNAME, "http://bbs.fudan.edu.cn", ip);
 	fprintf(fp, "[m[1;%2dm¡ù À´Ô´:¡¤%s %s¡¤HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
 	fclose(fp);
-#ifdef CERTIFYMODE 
-    Certify(board2, &header);
-#endif
 	sprintf(buf3, "boards/%s/.DIR", board2);
 	fp=fopen(buf3, "a");
 	fwrite(&header, sizeof(header), 1, fp);

@@ -41,13 +41,6 @@
 //用于保存版主对精华区操作记录的文件名,硬盘上的位置是logs/boardname
 char ANN_LOG_PATH[256];
 
-//added by iamfat 2002.11.02
-#ifdef CERTIFYMODE
-struct KEYWORDS_SHM *keywords_shm = NULL;
-#endif
-//added end
-
-
 /* added by roly 02.03.21*/
 extern char buf2[STRLEN];
 int hisfriend_wall_logout();
@@ -146,100 +139,6 @@ int o_gid = 0;
 extern struct boardheader *getbcache();
 extern struct bstat *getbstat();
 int totalusers, usercounter;
-
-#ifdef CERTIFYMODE
-int can_read_uncertified ()
-{
-	if (HAS_PERM (PERM_OBOARDS) || !strcmp (currentuser.userid, "dxwxb"))
-	return YEA;
-	return NA;
-}
-
-void load_keywords ()
-{
-	FILE *fp;
-	int i = 0;
-
-	fp = fopen (KEYWORDS, "r");
-	if (fp) {
-		while (i < MAXKEYWORDS && fgets (keywords_shm->word[i], MAXKEYWORDS, fp)) {
-			strtok (keywords_shm->word[i], "\r\n");
-			i++;
-		}
-		log_usies ("CACHE", "RELOAD KEYWORDS", &currentuser);
-		keywords_shm->number = i;
-		fclose (fp);
-	}
-}
-
-/*
- void resolve_keywords()
- {
- time_t  now;
- if (keywords_shm == NULL)
- {
- keywords_shm = (void*)attach_shm("KEYWORDS_SHMKEY", 3702, sizeof(*keywords_shm));
- }
- now = time(0);
- if (keywords_shm->uptime < now - 3600)
- {
- FILE *fp;
- int i=0;
- fp=fopen(KEYWORDS,"r");
- if(fp)
- {
- while(i<MAXKEYWORDS && fgets(keywords_shm->word[i],MAXKEYWORDS,fp))
- {
- strtok(keywords_shm->word[i],"\r\n");
- i++;
- }
- log_usies("CACHE", "RELOAD KEYWORDS");
- keywords_shm->number = i;
- keywords_shm->uptime = now;
- fclose(fp);
- }
- }
- }
- */
-void Certify (char *board, struct fileheader *fh)
-{
-	char buf[4096];
-	char ch;
-	int i, j;
-	int wildflag = 0;
-	FILE *fp;
-
-	sprintf (buf, "boards/%s/%s", board, fh->filename);
-	if (fp = fopen (buf, "r")) {
-		fh->accessed[1] &= ~FILE_UNCERTIFIED;
-		while (1) {
-			i = 0;
-			while (i < 4095 && fread (&ch, sizeof (char), 1, fp)) {
-				if ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z')
-						|| (ch >= 'A' && ch <= 'Z') || (ch >= -95 && ch <= -2)) {
-					buf[i++] = ch;
-					wildflag = 0;
-				} else if (!wildflag) {
-					buf[i++] = '*';
-					wildflag = 1;
-				}
-			}
-			buf[i] = '\0';
-			for (j = keywords_shm->number - 1; j >= 0; j--) {
-				if (strcasestr_gbk (buf, keywords_shm->word[j])) {
-					fh->accessed[1] |= FILE_UNCERTIFIED;
-					sprintf (buf, "%-12s %-16s %s\n", fh->owner, board, fh->filename);
-					file_append (".UNCERTIFIED", buf);
-				}
-			}
-			if (i> 1)
-			break;
-		}
-		fclose (fp);
-	}
-}
-#endif
-//added end
 
 int check_stuffmode() {
 	//if (uinfo.mode == RMAIL || (uinfo.mode == READING && junkboard()))
@@ -598,10 +497,6 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	char ispost[10];
 
 	set_safe_record();
-#ifdef CERTIFYMODE
-	if (!can_read_uncertified () && fileinfo->accessed[1] & FILE_UNCERTIFIED)
-	return DONOTHING;
-#endif
 	if (!HAS_PERM(PERM_POST) || digestmode == ATTACH_MODE)
 		return DONOTHING;
 	//Added by Ashinmarch to Forbide Cross
@@ -1099,15 +994,6 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 	} else {
 
 		brc_addlist(fileinfo->filename);
-#ifdef CERTIFYMODE
-		if (!can_read_uncertified () && fileinfo->accessed[1] & FILE_UNCERTIFIED) {
-			clear ();
-			move (10, 30);
-			prints ("对不起，本文内容尚未审批！");
-			pressanykey ();
-			return FULLUPDATE; //deardragon 0729
-		}
-#endif
 		if (fileinfo->owner[0] == '-')
 			return FULLUPDATE;
 		clear();
@@ -2168,9 +2054,6 @@ int post_cross(char islocal, int mode) {
 	if (mode == 1) {
 		postfile.accessed[0] |= FILE_NOREPLY;
 	}
-#ifdef CERTIFYMODE
-	Certify (currboard, &postfile);
-#endif
 	setwbdir(buf, currboard);
 
 	if (append_record(buf, &postfile, sizeof (postfile)) == -1) {
@@ -2456,10 +2339,6 @@ int post_article(char *postboard, char *mailid) {
 		outgo_post(&postfile, postboard);
 	}
 
-#ifdef CERTIFYMODE
-	if (!in_mail)
-	Certify (postboard, &postfile);
-#endif
 	if (noreply) {
 		postfile.accessed[0] |= FILE_NOREPLY;
 		noreply = 0;
@@ -2606,10 +2485,6 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 	sprintf(genbuf, "%s/%s", buf, fileinfo->filename);
 	if (vedit(genbuf, NA, NA) == -1)
 		return FULLUPDATE;
-#ifdef CERTIFYMODE
-	if (!in_mail)
-	Certify (currboard, fileinfo);
-#endif
 #ifdef MARK_X_FLAG
 	if (markXflag) {
 		fileinfo->accessed[0] |= FILE_DELETED;
@@ -2710,22 +2585,6 @@ int edit_title(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 	return PARTUPDATE;
 }
-
-#ifdef CERTIFYMODE
-int certify_post (int ent, struct fileheader *fileinfo, char *direct)
-{
-	if (!can_read_uncertified ()) {
-		return DONOTHING;
-	}
-	if (fileinfo->accessed[1] & FILE_UNCERTIFIED)
-	fileinfo->accessed[1] &= ~FILE_UNCERTIFIED;
-	else {
-		fileinfo->accessed[1] |= FILE_UNCERTIFIED;
-	}
-	substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
-	return PARTUPDATE;
-}
-#endif
 
 int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
@@ -3285,10 +3144,6 @@ int Personal(char *userid) {
 #ifdef INTERNET_EMAIL
 int forward_post (int ent, struct fileheader *fileinfo, char *direct)
 {
-#ifdef CERTIFYMODE
-	if (!can_read_uncertified () && fileinfo->accessed[1] & FILE_UNCERTIFIED)
-	return DONOTHING;
-#endif
 	if (strcmp ("guest", currentuser.userid) == 0 || digestmode == ATTACH_MODE)
 	return DONOTHING;
 	return (mail_forward (ent, fileinfo, direct));
@@ -3296,10 +3151,6 @@ int forward_post (int ent, struct fileheader *fileinfo, char *direct)
 
 int forward_u_post (int ent, struct fileheader *fileinfo, char *direct)
 {
-#ifdef CERTIFYMODE
-	if (!can_read_uncertified () && fileinfo->accessed[1] & FILE_UNCERTIFIED)
-	return DONOTHING;
-#endif
 	if (strcmp ("guest", currentuser.userid) == 0 || digestmode == ATTACH_MODE)
 	return DONOTHING;
 	return (mail_u_forward (ent, fileinfo, direct));

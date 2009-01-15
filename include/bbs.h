@@ -343,9 +343,6 @@ const static struct _shmkey shmkeys[] = {
 #ifdef ALLOWSWITCHCODE
 	{ "CONV_SHMKEY", 30080 },
 #endif
-#ifdef CERTIFYMODE
-	{ "KEYWORDS_SHMKEY", 30090 },
-#endif
 	{ "ACACHE_SHMKEY", 30005 }, { "", 0 } };
 
 #define SEM_COUNTONLINE 30000

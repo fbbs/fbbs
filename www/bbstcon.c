@@ -106,13 +106,6 @@ int show_file(char *board, struct fileheader *x, int n)
 {
 	FILE *fp;
 	char path[80], buf[512],*ptr;
-	#ifdef CERTIFYMODE
-		if(x->accessed[1]&FILE_UNCERTIFIED)
-		{
-			printpretable_lite();
-			http_fatal("本文尚未通过审批");
-		}
-	#endif
 	if(loginok) 
 		brc_addlist(x->filename);
 	sprintf(path, "boards/%s/%s", board, x->filename);

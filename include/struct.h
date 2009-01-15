@@ -205,15 +205,6 @@ struct countheader {
 };
 //End IAMFAT
 
-//Added by IAMFAT 2002.11.02 For KeyWord Filter
-#ifdef CERTIFYMODE
-struct KEYWORDS_SHM {
-	char word[MAXKEYWORDS][80];
-	int number;
-	//time_t uptime;
-};
-#endif
-
 typedef struct reginfo { //注册表单信息
 	char userid[IDLEN+1];
 	char realname[NAMELEN];

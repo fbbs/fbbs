@@ -134,12 +134,8 @@ int main() {
 				isreply? noreply?"<img src=/images/types/reply_noreply.gif align=absmiddle border=0> ":"<img src=/images/types/reply.gif align=absmiddle border=0> "
 				:noreply?"<img src=/images/types/text_noreply.gif align=absmiddle border=0> ":"<img src=/images/types/text.gif align=absmiddle border=0>",
 				noreply?"000000":"000000",
-				#ifdef CERTIFYMODE
-					(x.accessed[1]&FILE_UNCERTIFIED)?"[…–Œ¥…Û≈˙]":nohtml(x.title),
-				#else
-					nohtml(isreply?(x.title+4):x.title), 
-				#endif
-			eff_size(filename));
+				nohtml(isreply?(x.title+4):x.title), 
+				eff_size(filename));
 /*
 		printf("<td><font color=%s>%d</font>\n",
 #ifdef SPARC

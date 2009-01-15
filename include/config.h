@@ -144,7 +144,7 @@ hog or anything, but if you don't want it...
    and/or server. Either the one with this distribution or a newer one. 
 */
 #define IRC   1 
-//#define CERTIFYMODE
+
 /****************************************************************************/
 #ifdef FDQUAN
 	#define MAXUSERS  500  /* Maximum number of users,780 aliament 1k*/
