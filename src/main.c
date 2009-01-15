@@ -15,7 +15,7 @@ int RMSG = YEA;
 int msg_num = 0;
 int count_friends = 0, count_users = 0;
 int iscolor = 1;
-int mailXX = 0;
+int mailXX = 0; // If mail quota is exceeded.
 int numofsig = 0;
 jmp_buf byebye;
 int talkrequest = NA;
@@ -1066,6 +1066,7 @@ static void user_login(void)
 	check_register_info();
 }
 
+// Calculate numbers of signatures.
 void set_numofsig(void)
 {
 	int sigln;
@@ -1077,40 +1078,6 @@ void set_numofsig(void)
 	if ((sigln % MAXSIGLINES) != 0)
 		++numofsig;
 	return;
-}
-
-int check_maxmail() {
-	extern char currmaildir[STRLEN];
-	int maxmail, maxsize, mailsize;
-
-	maxmail = getmailboxhold(currentuser.userlevel);
-
-	set_safe_record();
-	currentuser.nummails = get_num_records(currmaildir,
-			sizeof(struct fileheader));
-	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
-	maxsize = getmailboxsize(currentuser.userlevel);
-	mailsize = getmailsize(currentuser.userid);
-	if (currentuser.nummails > maxmail || mailsize > maxsize) {
-		mailXX = 1;
-		clear();
-		move(4, 0);
-		if (currentuser.nummails > maxmail)
-			prints("您的私人信件高达 %d 封, 您的信件上限: %d 封\n", currentuser.nummails,
-					maxmail);
-		if (mailsize > maxsize)
-			prints("您的信件容量高达 %d K，您的容量上限: %d K\n", mailsize, maxsize);
-		prints("您的私人信件已经超限, 请整理信箱，否则无法使用本站的送信功能。\n");
-		if (currentuser.nummails > maxmail + 100) {
-			sprintf(genbuf, "私人信件过量: %d 封", currentuser.nummails);
-		}
-		if (mailsize > maxsize + 1000) {
-			sprintf(genbuf, "私人信件过量: %d K", mailsize);
-		}
-	} else
-		mailXX = 0;
-
-	return mailXX;
 }
 
 #ifndef BBSD

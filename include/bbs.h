@@ -453,4 +453,7 @@ int changeboard(struct boardheader *bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
 
+//mail.c
+int check_maxmail(void);
+
 #endif /* of _BBS_H_ */

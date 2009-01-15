@@ -694,6 +694,38 @@ int getmailnum(char *userid) {
 	return mail_count;
 }
 
+int check_maxmail(void)
+{
+	extern int mailXX;
+	int maxmail, maxsize, mailsize;
+
+	maxmail = getmailboxhold(currentuser.userlevel);
+
+	set_safe_record();
+	currentuser.nummails = get_num_records(currmaildir,
+			sizeof(struct fileheader));
+	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
+	maxsize = getmailboxsize(currentuser.userlevel);
+	mailsize = getmailsize(currentuser.userid);
+	if (currentuser.nummails > maxmail || mailsize > maxsize) {
+		mailXX = 1;
+		clear();
+		move(4, 0);
+		if (currentuser.nummails > maxmail)
+			prints("您的私人信件高达 %d 封, 您的信件上限: %d 封\n",
+				currentuser.nummails, maxmail);
+		if (mailsize > maxsize)
+			prints("您的信件容量高达 %d K，您的容量上限: %d K\n",
+				mailsize, maxsize);
+		prints("您的私人信件已经超限, 请整理信箱，"
+			"否则无法使用本站的送信功能。\n");
+	} else
+		mailXX = 0;
+
+	return mailXX;
+}
+
+
 /* added end */
 char * maildoent(int num, struct fileheader *ent) {
 	static char buf[512];
