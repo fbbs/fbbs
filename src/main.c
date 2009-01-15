@@ -1097,31 +1097,6 @@ void start_client(void)
 
 int refscreen = NA;
 
-int egetch(void)
-{
-	int rval;
-
-	check_calltime();
-	if (talkrequest) {
-		talkreply();
-		refscreen = YEA;
-		return -1;
-	}
-	while (1) {
-		rval = igetkey();
-		if (talkrequest) {
-			talkreply();
-			refscreen = YEA;
-			return -1;
-		}
-		if (rval != Ctrl('L'))
-			break;
-		redoscr();
-	}
-	refscreen = NA;
-	return rval;
-}
-
 char *boardmargin() {
 	static char buf[STRLEN];
 

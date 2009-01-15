@@ -456,4 +456,7 @@ int isclubmember(const char *member, const char *board);
 //mail.c
 int check_maxmail(void);
 
+//io.c
+int egetch(void);
+
 #endif /* of _BBS_H_ */
