@@ -801,14 +801,18 @@ static void login_query(void)
 	login_start_time = time(NULL);
 }
 
-void write_defnotepad() {
-	currentuser.notedate = time(0);
+static void write_defnotepad(void)
+{
+	currentuser.notedate = time(NULL);
 	set_safe_record();
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	return;
 }
 
-void notepad_init() {
+// Do autoposting according to "etc/autopost",
+// if no such action has been taken since last 00:00 UTC.
+static void notepad_init(void)
+{
 	FILE *check;
 	char notetitle[STRLEN];
 	char tmp[STRLEN * 2];
@@ -823,7 +827,7 @@ void notepad_init() {
 		lastnote = atol(tmp);
 		fclose(check);
 	}
-	now = time(0);
+	now = time(NULL);
 	if ((now - lastnote) >= maxsec) {
 		move(t_lines - 1, 0);
 		prints("对不起，系统自动发信，请稍候.....");
@@ -863,17 +867,18 @@ void notepad_init() {
 	return;
 }
 
-//函数原型: int IsSpecial(const char* str, const char* filename)
-//函数功能: 根据id通过对etc/technicians里面的匹配 给出该id是否是技术站长
-//added by iamfat 2003.08.10
-int IsSpecial(const char *str, const char *filename) {
+
+// Compare 'str' to strings in file 'filename'.
+// Return 1 if leading characters of 'str' matches (case insensitive)
+// any of those strings, 0 otherwise.
+static int IsSpecial(const char *str, const char *filename) {
 	FILE *fp;
 	char line[STRLEN];
 	char *ptr;
 	int i = 0;
 
 	if (fp = fopen(filename, "r")) {
-		while (fgets(line, STRLEN, fp)) {
+		while (fgets(line, sizeof(line), fp)) {
 			ptr = strtok(line, " \r\n\t");
 			if (!ptr[0] || ptr[0] == '#')
 				continue;
@@ -887,79 +892,27 @@ int IsSpecial(const char *str, const char *filename) {
 	return i;
 }
 
-//函数原型: void SpecialID(const char* uid, char* host)
-//函数功能: 根据id通过对etc/special.ini里面的匹配 给出该id相应的特殊登陆host
-//added by iamfat 2002.07.30
-//参数介绍:
-//(IN)uid:用户的id
-//(IN/OUT)host:传递过来用于修改的用户的host指针
-void SpecialID(const char *uid, char *host) {
+// Search 'uid' in id-host pairs in "etc/special.ini"(case insensitive)
+// and then modify 'host' accordingly.
+// 'len' should be the length of 'host'.
+void SpecialID(const char *uid, char *host, int len) {
 	FILE *fp;
 	char line[STRLEN];
 	char *special;
 
-	//char *lasts;
 	if (fp = fopen("etc/special.ini", "r")) {
-		while (fgets(line, STRLEN, fp)) {
-			//special=strtok_r(line," \r\n\t", &lasts);
+		while (fgets(line, sizeof(line), fp)) {
 			special = strtok(line, " \r\n\t");
 			if (special && !strcasecmp(uid, special)) {
-				//special=strtok_r(lasts," \r\n\t", &lasts);
 				special = strtok(NULL, " \r\n\t");
 				if (special)
-					strcpy(host, special);
+					strncpy(host, special, len);
 				break;
 			}
 		}
 		fclose(fp);
 	}
 }
-
-/*  02.10.05  add by stephen to convert string "a.b.c.d" to string "a.b.*.*" 
- function prototype: void MaskLoginIP(const char * uid, char * host)
- (*host) may be changed                                             */
-/*void
- MaskLoginIP(const char * uid, char * host)
- {
- int counter,i;
- char  tempHostString[16];
-
- if( *host == NULL )
- {
- return ;
- //do nothing
- }
-
- for(i=0,counter=0;i <12 && counter <2;i++)
- {
- if( *(host + i) == NULL )
- {
- break;
- }
- else if( *(host + i) == '.')
- {
- counter ++;
- tempHostString[i] = * (host + i);
- }
- else
- {
- tempHostString[i] = * (host + i);
- }
-
- }
-
- if(i > 0)
- {
- tempHostString[i++] = '*';
- tempHostString[i++] = '.';
- tempHostString[i++] = '*';
- tempHostString[i] = NULL;
- }
- 
- strcpy(host,tempHostString);
- 
- }*/
-/*02.10.05  add end*/
 
 void user_login() {
 	char fname[STRLEN];
@@ -982,7 +935,7 @@ void user_login() {
 	/*02.10.05  add end*/
 
 	//这是个给特殊ID设置隐藏HOST的函数
-	SpecialID(currentuser.userid, fromhost);
+	SpecialID(currentuser.userid, fromhost, sizeof(fromhost));
 	//technician=IsTechnician(currentuser.userid);
 
 	u_enter();
