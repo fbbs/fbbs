@@ -119,7 +119,7 @@ int if_exist_title(char *title) {
                         return 1;
                 };
         my_posts.hash_ip = (my_posts.hash_ip+1) & 63;
-        strncpy(my_posts.title[my_posts.hash_ip], title, 60);
+        strlcpy(my_posts.title[my_posts.hash_ip], title, 60);
         fseek(fp, 0, SEEK_SET);
         fwrite(&my_posts, sizeof(my_posts), 1, fp);
         fclose(fp);

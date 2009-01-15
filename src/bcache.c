@@ -122,7 +122,7 @@ void *arg;
 	int key;
 
 	if (usernumber < MAXUSERS) {
-		strncpy(uidshm->userid[usernumber], uentp->userid, IDLEN + 1);
+		strlcpy(uidshm->userid[usernumber], uentp->userid, IDLEN + 1);
 		uidshm->userid[usernumber++][IDLEN] = '\0';
 
 		if(uentp->userid[0]) {
@@ -304,7 +304,7 @@ void setuserid(int num, char *userid) {
 	if (num > 0 && num <= MAXUSERS) {
 		if (num > uidshm->number)
 			uidshm->number = num;
-		strncpy(uidshm->userid[num - 1], userid, IDLEN + 1);
+		strlcpy(uidshm->userid[num - 1], userid, IDLEN + 1);
 		/* hash Моід */
 		if (strcmp(userid, "new") ) {
 			char a1, a2;

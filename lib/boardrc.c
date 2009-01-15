@@ -16,7 +16,7 @@ static char *brc_getrecord(char *ptr, char *name, int *pnum, int *list)
 {
 	int num;
 	char *tmp;
-	strncpy(name, ptr, BRC_STRLEN);
+	strlcpy(name, ptr, BRC_STRLEN);
 	ptr += BRC_STRLEN;
 	num = (*ptr++) & 0xff;
 	tmp = ptr + num * sizeof (int);
@@ -32,7 +32,7 @@ static char *brc_putrecord(char *ptr, char *name, int num, int *list)
 	if (num> 0) {
 		if (num> BRC_MAXNUM)
 			num = BRC_MAXNUM;
-		strncpy (ptr, name, BRC_STRLEN);
+		strlcpy (ptr, name, BRC_STRLEN);
 		ptr += BRC_STRLEN;
 		*ptr++ = num;
 		memcpy (ptr, list, num * sizeof (int));
@@ -105,7 +105,7 @@ int brc_initial(const char *userid, const char *board)
 			return brc_num;
 		}
 	}
-	strncpy (brc_name, board, BRC_STRLEN);
+	strlcpy (brc_name, board, BRC_STRLEN);
 	brc_list[0] = 1;
 	brc_num = 1;
 	return 0;

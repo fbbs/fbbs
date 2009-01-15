@@ -210,9 +210,9 @@ int main()
 	for (i=1; i<5; i++)
 	if (filename[strlen(filename)-i] >= 97)
 		filename[strlen(filename)-i] -= 32;
-    strncpy(postfix,filename + strlen(filename) - 4,5);
+    strlcpy(postfix,filename + strlen(filename) - 4,5);
     if(!strncmp(postfix,"JPEG",4))
-        strncpy(postfix,filename + strlen(filename) - 5,6);
+        strlcpy(postfix,filename + strlen(filename) - 5,6);
     else if (strncmp(postfix, ".JPG", 4) &&
 		    strncmp(postfix, ".GIF", 4) &&
 		    strncmp(postfix, ".PNG", 4) &&

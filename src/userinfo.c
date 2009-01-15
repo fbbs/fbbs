@@ -178,7 +178,7 @@ void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 		netty_check = 1;
 #endif
 #endif
-		strncpy(newinfo->email, buf, STRLEN-12);
+		strlcpy(newinfo->email, buf, STRLEN-12);
 	}
 
 	sprintf(genbuf, "上线次数 [%d]: ", u->numlogins);
@@ -199,7 +199,7 @@ void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 	sprintf(genbuf, "真实 E-mail [%s]: ", u->reginfo);
 	getdata(i++, 0, genbuf, buf, STRLEN-16, DOECHO, YEA);
 	if (buf[0]) {
-		strncpy(newinfo->reginfo, buf, STRLEN-16);
+		strlcpy(newinfo->reginfo, buf, STRLEN-16);
 	}
 	sprintf(genbuf, "firstlogin [%d]: ", u->firstlogin);
 	getdata(i++, 0, genbuf, buf, 15, DOECHO, YEA);
@@ -452,7 +452,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 			sprintf(genbuf, "昵称 [%s]: ", u->username);
 			getdata(i++, 0, genbuf, buf, NAMELEN, DOECHO, YEA);
 			if (buf[0]) {
-				strncpy(newinfo.username, buf, NAMELEN);
+				strlcpy(newinfo.username, buf, NAMELEN);
 				/* added by money 2003.10.29 for filter 0xff in nick */
 				ptr = newinfo.username;
 				filter_ff(ptr);
@@ -461,7 +461,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 			sprintf(genbuf, "真实姓名 [%s]: ", u->realname);
 			getdata(i++, 0, genbuf, buf, NAMELEN, DOECHO, YEA);
 			if (buf[0]) {
-				strncpy(newinfo.realname, buf, NAMELEN);
+				strlcpy(newinfo.realname, buf, NAMELEN);
 				/* added by money 04.04.20 for filter 0xff in all user data */
 				ptr = newinfo.realname;
 				filter_ff(ptr);
@@ -471,7 +471,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 			sprintf(genbuf, "居住地址 [%s]: ", u->address);
 			getdata(i++, 0, genbuf, buf, STRLEN - 10, DOECHO, YEA);
 			if (buf[0]) {
-				strncpy(newinfo.address, buf, NAMELEN);
+				strlcpy(newinfo.address, buf, NAMELEN);
 				/* added by money 04.04.20 for filter 0xff in all user data */
 				ptr = newinfo.address;
 				filter_ff(ptr);
@@ -481,7 +481,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 			sprintf(genbuf, "终端机形态 [%s]: ", u->termtype);
 			getdata(i++, 0, genbuf, buf, 16, DOECHO, YEA);
 			if (buf[0])
-				strncpy(newinfo.termtype, buf, 16);
+				strlcpy(newinfo.termtype, buf, 16);
 
 			sprintf(genbuf, "出生年 [%d]: ", u->birthyear + 1900);
 			getdata(i++, 0, genbuf, buf, 5, DOECHO, YEA);
@@ -572,7 +572,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 					fail++;
 					break;
 				}
-				strncpy(genbuf, buf, PASSLEN);
+				strlcpy(genbuf, buf, PASSLEN);
 				getdata(i++, 0, "请重新输入新密码: ", buf, PASSLEN, NOECHO, YEA);
 				if (strncmp(buf, genbuf, PASSLEN)) {
 					prints("\n\n新密码确认失败, 无法设定新密码。\n");
@@ -580,7 +580,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 					break;
 				}
 				buf[8] = '\0';
-				strncpy(newinfo.passwd, genpasswd(buf), ENCPASSLEN);
+				strlcpy(newinfo.passwd, genpasswd(buf), ENCPASSLEN);
 				break;
 			}
 			/* Modify End */
@@ -645,7 +645,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 		}
 		if (!strcmp(u->userid, currentuser.userid)) {
 			extern int WishNum;
-			strncpy(uinfo.username, newinfo.username, NAMELEN);
+			strlcpy(uinfo.username, newinfo.username, NAMELEN);
 			WishNum = 9999;
 		}
 #ifdef MAILCHECK	 
@@ -705,7 +705,7 @@ void getfield(int line, char *info, char *desc, char *buf, int len) {
 	sprintf(prompt, "  %s: ", desc);
 	getdata(line + 1, 0, prompt, genbuf, len, DOECHO, YEA);
 	if (genbuf[0] != '\0')
-		strncpy(buf, genbuf, len);
+		strlcpy(buf, genbuf, len);
 	move(line, 0);
 	clrtoeol();
 	prints("  %s: %s\n", desc, buf);
@@ -750,10 +750,10 @@ void x_fillform() {
 	}
 
 	memset(&ri, 0, sizeof(ri));
-	strncpy(ri.userid, currentuser.userid, IDLEN+1);
-	strncpy(ri.realname, currentuser.realname, NAMELEN);
-	strncpy(ri.addr, currentuser.address, STRLEN-8);
-	strncpy(ri.email, currentuser.email, STRLEN-12);
+	strlcpy(ri.userid, currentuser.userid, IDLEN+1);
+	strlcpy(ri.realname, currentuser.realname, NAMELEN);
+	strlcpy(ri.addr, currentuser.address, STRLEN-8);
+	strlcpy(ri.email, currentuser.email, STRLEN-12);
 	while (1) {
 		move(3, 0);
 		clrtoeol();
@@ -788,10 +788,10 @@ void x_fillform() {
 	filter_ff(ptr);
 	ptr = ri.dept;
 	filter_ff(ptr);
-	strncpy(currentuser.realname, ri.realname, NAMELEN);
-	strncpy(currentuser.address, ri.addr, STRLEN-8);
+	strlcpy(currentuser.realname, ri.realname, NAMELEN);
+	strlcpy(currentuser.address, ri.addr, STRLEN-8);
 #ifndef FDQUAN
-	strncpy(currentuser.email, ri.email, STRLEN-12);
+	strlcpy(currentuser.email, ri.email, STRLEN-12);
 #endif	
 	if ((fn = fopen("unregistered", "ab")) != NULL) {
 		ri.regdate= time(NULL);

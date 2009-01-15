@@ -166,7 +166,7 @@ int m_ordainBM() {
 		strcpy(genbuf, lookupuser.userid);
 	else
 		sprintf(genbuf, "%s %s", fh.BM, lookupuser.userid);
-	strncpy(fh.BM, genbuf, sizeof (fh.BM));
+	strlcpy(fh.BM, genbuf, sizeof (fh.BM));
 	//added by infotech
 	strcpy(buf[0], fh.BM);
 #ifdef  BMNAMELISTLIMIT
@@ -355,7 +355,7 @@ int m_retireBM() {
 	} else {
 		genbuf[0] = '\0';
 	}
-	strncpy(fh.BM, genbuf, sizeof (fh.BM));
+	strlcpy(fh.BM, genbuf, sizeof (fh.BM));
 	if (fh.BM[0] != '\0') {
 		//added by infotech
 		strcpy(buf[0], fh.BM);
@@ -772,7 +772,7 @@ int m_editbrd() {
 							continue;
 						}
 						if (valid_brdname(genbuf)) {
-							strncpy(newfh.filename, genbuf,
+							strlcpy(newfh.filename, genbuf,
 									sizeof (newfh.filename));
 							strcpy(bname, genbuf);
 							break;
@@ -794,7 +794,7 @@ int m_editbrd() {
 				while (1) {
 					getdata(22, 0, "新讨论区说明: ", genbuf, 60, DOECHO, YEA);
 					if (*genbuf != 0) {
-						strncpy(newfh.title, genbuf, sizeof (newfh.title));
+						strlcpy(newfh.title, genbuf, sizeof (newfh.title));
 					} else {
 						break;
 					}
@@ -824,9 +824,9 @@ int m_editbrd() {
 					}
 				} else {
 					if (askyn("本版诚征版主吗(否，则由SYSOPs管理)?", YEA, NA) == NA) {
-						strncpy(newfh.BM, "SYSOPs", sizeof (newfh.BM));
+						strlcpy(newfh.BM, "SYSOPs", sizeof (newfh.BM));
 					} else {
-						strncpy(newfh.BM, "\0", sizeof (newfh.BM));
+						strlcpy(newfh.BM, "\0", sizeof (newfh.BM));
 					}
 				}
 				break;
@@ -1037,9 +1037,9 @@ char *regdoent(int num, REGINFO * ent) {
 	char addr[17];
 	//struct tm* tm;
 	//tm=gmtime(&ent->regdate);
-	strncpy(rname, ent->realname, 12);
-	strncpy(dept, ent->dept, 16);
-	strncpy(addr, ent->addr, 16);
+	strlcpy(rname, ent->realname, 12);
+	strlcpy(dept, ent->dept, 16);
+	strlcpy(addr, ent->addr, 16);
 	ellipsis(rname, 12);
 	ellipsis(dept, 16);
 	ellipsis(addr, 16);
@@ -1067,7 +1067,7 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 	char buf[80];
 	FILE *fout;
 
-	strncpy(uinfo.realname, ent->realname, NAMELEN);
+	strlcpy(uinfo.realname, ent->realname, NAMELEN);
 	unum = getuser(ent->userid);
 	if (!unum) {
 		clear();
@@ -1081,10 +1081,10 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 	delete_record(direct, sizeof(REGINFO), index, filecheck, ent->userid);
 
 	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
-	strncpy(uinfo.address, ent->addr, NAMELEN);
+	strlcpy(uinfo.address, ent->addr, NAMELEN);
 	sprintf(genbuf, "%s$%s@%s", ent->dept, ent->phone, currentuser.userid);
 	genbuf[STRLEN - 16] = '\0';
-	strncpy(uinfo.reginfo, genbuf, STRLEN - 17);
+	strlcpy(uinfo.reginfo, genbuf, STRLEN - 17);
 #ifdef ALLOWGAME
 	uinfo.money = 1000;
 #endif
@@ -1402,7 +1402,7 @@ int d_board() {
 	sprintf(genbuf, " << '%s' 被 %s 删除 >>", binfo.filename,
 			currentuser.userid);
 	memset(&binfo, 0, sizeof (binfo));
-	strncpy(binfo.title, genbuf, STRLEN);
+	strlcpy(binfo.title, genbuf, STRLEN);
 	binfo.level = PERM_SYSOPS;
 	substitute_record(BOARDS, &binfo, sizeof (binfo), bid);
 
@@ -1786,7 +1786,7 @@ add_to_denylist(char *uident, char ch, int day, char *msg) {
 		fseek(fpr, 0, SEEK_SET);
 		while (fgets(line, 256, fpr)) {
 			tt2 = get_denydate(line + 53);
-			strncpy(luid, line, IDLEN);
+			strlcpy(luid, line, IDLEN);
 			luid[IDLEN] = '\0';
 			strtok(luid, " \r\n\t");
 			if (!strcmp(luid, uident)
@@ -1821,7 +1821,7 @@ int release_user(char *line) {
 	char secu[STRLEN];
 	char rep[STRLEN];
 	char msgbuf[256];
-	strncpy(uident, line, IDLEN);
+	strlcpy(uident, line, IDLEN);
 	uident[IDLEN] = '\0';
 	strtok(uident, " \r\n\t");
 	if (!(id = getuser(uident)))
@@ -1897,7 +1897,7 @@ int del_from_denylist(char *fname, char *line) {
 		while (fgets(tmpbuf, 256, fpr)) {
 			//pighead      A-----------------------------     发文 2002.07.24 iamfat
 			//123456789012345678901234567890123456789012345678901234
-			strncpy(tmpdate, tmpbuf + 53, 10);
+			strlcpy(tmpdate, tmpbuf + 53, 10);
 			tt = get_denydate(tmpdate);
 			if (tt != 0 && tt <= now) {
 				deleted = YEA;
@@ -1931,7 +1931,7 @@ int add_denylevel(char *line) {
 		return 0;
 	move(1, 0);
 	if (line) {
-		strncpy(deny_uid, line, IDLEN);
+		strlcpy(deny_uid, line, IDLEN);
 		deny_uid[IDLEN] = '\0';
 		strtok(deny_uid, " \n\r\t");
 		setreason(line + IDLEN + 1, strlen(getreason()));

@@ -615,7 +615,7 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	else
 		sprintf(genbuf, "mail/%c/%s/%s", toupper(currentuser.userid[0]),
 				currentuser.userid, fileinfo->filename);
-	strncpy(quote_file, genbuf, sizeof (quote_file));
+	strlcpy(quote_file, genbuf, sizeof (quote_file));
 	quote_file[sizeof (quote_file) - 1] = '\0';
 	strcpy(quote_title, fileinfo->title);
 
@@ -1064,7 +1064,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		len = strlen(genbuf);
 		clrtoeol();
 		for (i = 0; i < len; i += 78) {
-			strncpy(tmp, genbuf + i, 78);
+			strlcpy(tmp, genbuf + i, 78);
 			tmp[78] = '\n';
 			tmp[79] = '\0';
 			prints(tmp);
@@ -1122,7 +1122,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 			pressanykey();
 			return FULLUPDATE; //deardragon 0729
 		}
-		strncpy(quote_file, genbuf, sizeof (quote_file));
+		strlcpy(quote_file, genbuf, sizeof (quote_file));
 		strcpy(quote_board, currboard);
 		strcpy(quote_title, fileinfo->title);
 		o_gid = fileinfo->gid;
@@ -1402,11 +1402,11 @@ int acction_mode(int ent, struct fileheader *fileinfo, char *direct) {
 		}
 		type = 7;
 	} else if (type == 5) {
-		strncpy (someoneID, fileinfo->owner, IDLEN);
+		strlcpy (someoneID, fileinfo->owner, IDLEN);
 		getdata (t_lines - 1, 0, "您想查找哪位网友的文章? ", someoneID, 13,
 				DOECHO, YEA);
 		if (someoneID[0] == '\0') {
-			strncpy (someoneID, fileinfo->owner, IDLEN);
+			strlcpy (someoneID, fileinfo->owner, IDLEN);
 			move (t_lines - 1, 24);
 			prints ("%s", someoneID);
 			//saveline (t_lines - 1, 1);
@@ -1439,7 +1439,7 @@ int dele_digest(char *dname, char *direc) {
 	struct fileheader fh;
 	int pos;
 
-	strncpy(digest_name, dname, STRLEN);
+	strlcpy(digest_name, dname, STRLEN);
 	strcpy(new_dir, direc);
 	digest_name[0] = 'G';
 	ptr = strrchr(new_dir, '/') + 1;
@@ -1869,7 +1869,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 	len = strlen(weblink);
 	prints("URL 地址:\n", weblink);
 	for (i = 0; i < len; i += 78) {
-		strncpy(tmp, weblink + i, 78);
+		strlcpy(tmp, weblink + i, 78);
 		tmp[78] = '\n';
 		tmp[79] = '\0';
 		prints(tmp);
@@ -2110,7 +2110,7 @@ int post_cross(char islocal, int mode) {
 		strcpy(buf4, quote_title);
 	//optimized end
 
-	strncpy(save_title, buf4, STRLEN);
+	strlcpy(save_title, buf4, STRLEN);
 
 	if (date_to_fname(currboard, now, fname) < 0)
 		return -1;
@@ -2137,7 +2137,7 @@ int post_cross(char islocal, int mode) {
 	else
 		strcpy(whopost, currentuser.userid);
 
-	strncpy(postfile.owner, whopost, STRLEN);
+	strlcpy(postfile.owner, whopost, STRLEN);
 	setbfile(filepath, currboard, postfile.filename);
 
 	local_article = YEA;
@@ -2148,7 +2148,7 @@ int post_cross(char islocal, int mode) {
 
 	getcross(filepath, mode);
 
-	strncpy(postfile.title, save_title, STRLEN);
+	strlcpy(postfile.title, save_title, STRLEN);
 	if (local_article == YEA || !(bp->flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';
@@ -2382,7 +2382,7 @@ int post_article(char *postboard, char *mailid) {
 		else
 #endif
 		ansi_filter(postfile.title, header.title);
-		strncpy(save_title, postfile.title, STRLEN);
+		strlcpy(save_title, postfile.title, STRLEN);
 		//strncpy (save_filename, fname, 4096);
 	} else {
 		return FULLUPDATE;
@@ -2413,7 +2413,7 @@ int post_article(char *postboard, char *mailid) {
 	strcpy(postfile.filename, fname);
 	in_mail = NA;
 
-	strncpy(postfile.owner, (header.chk_anony) ? "Anonymous"
+	strlcpy(postfile.owner, (header.chk_anony) ? "Anonymous"
 			: currentuser.userid, STRLEN);
 	//added by iamfat 2002.08.10
 	/*
@@ -2446,7 +2446,7 @@ int post_article(char *postboard, char *mailid) {
 		return FULLUPDATE;
 	}
 
-	strncpy(postfile.title, save_title, STRLEN - IDLEN - 1);
+	strlcpy(postfile.title, save_title, STRLEN - IDLEN - 1);
 	if ((local_article == YEA) || !(bp->flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';
@@ -3670,7 +3670,7 @@ int Q_Goodbye() {
 			char buftemp[STRLEN]; //added by roly 02.03.24;
 
 			if (choose >= 0 && choose < byes)
-				strncpy(buftemp, bye_msgs[choose], STRLEN);
+				strlcpy(buftemp, bye_msgs[choose], STRLEN);
 
 			if (choose == byes)
 				get_msg("在线好友", buftemp, byes + 4);
@@ -3784,10 +3784,10 @@ int Goodbye() {
 				continue;
 			ptr = strtok(buf, " \n\r\t");
 			if (ptr) {
-				strncpy(sysoplist[i], ptr, 14);
+				strlcpy(sysoplist[i], ptr, 14);
 				ptr = strtok(NULL, " \n\r\t");
 				if (ptr) {
-					strncpy(syswork[i], ptr, 20);
+					strlcpy(syswork[i], ptr, 20);
 				} else
 					strcpy(syswork[i], "[职务不明]");
 				i++;

@@ -209,7 +209,7 @@ void setreasondefault() {
 }
 //设置原因,将参数传过来的字符串拷贝到reason字符串中去
 void setreason(char* rsn, int i) {
-	strncpy(reason, rsn, i);
+	strlcpy(reason, rsn, i);
 	reason[i]='\0';
 }
 //	设置封禁时的标题
@@ -301,7 +301,7 @@ int seekname(char *deny_uid) {
 	if (!(fp=fopen(fname, "r")))
 		return 0;
 	while (fgets(line, 256, fp)) {
-		strncpy(uident, line, IDLEN);
+		strlcpy(uident, line, IDLEN);
 		uident[IDLEN] = '\0';
 		strtok(uident, " \r\n\t");
 		if (strcasecmp(deny_uid, uident)==0) {
@@ -393,11 +393,11 @@ int deny_key_deal(char* fname, int ch, char* line) {
 	char repbuf[500];
 	int tmp;
 	if (line) {
-		strncpy(deny_uid, line, IDLEN);
+		strlcpy(deny_uid, line, IDLEN);
 		deny_uid[IDLEN] = '\0';
 		strtok(deny_uid, " \n\r\t");
 		tmp=strlen(reasonlist);
-		strncpy(reason, line+IDLEN+1, tmp);
+		strlcpy(reason, line+IDLEN+1, tmp);
 		reason[tmp]='\0';
 		while (tmp--) {
 			if (reason[tmp]!=reasonlist[tmp])
@@ -525,7 +525,7 @@ int club_key_deal(char* fname, int ch, char* line) {
 	char msgbuf[4096];
 	char repbuf[500];
 	if (line) {
-		strncpy(club_uid, line, IDLEN);
+		strlcpy(club_uid, line, IDLEN);
 		club_uid[IDLEN] = '\0';
 		strtok(club_uid, " \n\r\t");
 	}
@@ -606,7 +606,7 @@ int bm_log(char *id, char *boardname, int type, int value) {
 	btemp = getbcache(boardname);
 	if (btemp == NULL)
 		return 0;
-	strncpy(BM, btemp->BM, sizeof(BM) - 1);
+	strlcpy(BM, btemp->BM, sizeof(BM) - 1);
 	BM[sizeof(BM) - 1] = '\0';
 	ptr = strtok(BM, ",: ;|&()\0\n");
 	while (ptr) {

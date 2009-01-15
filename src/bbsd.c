@@ -121,7 +121,7 @@ static void telnet_init() {
 
 #include <setjmp.h>
 
-#define STRN_CPY(d,s,l) { strncpy((d),(s),(l)); (d)[(l)-1] = 0; }
+#define STRN_CPY(d,s,l) { strlcpy((d),(s),(l)); (d)[(l)-1] = 0; }
 #define RFC931_TIMEOUT   10
 #define RFC931_PORT     113	/* Semi-well-known port */
 #define ANY_PORT        0	/* Any old port will do */
@@ -504,13 +504,13 @@ file_append(PID_FILE, genbuf);
 			while(fgets(line, STRLEN, netip)) {
 				special = strtok(line, " \r\n\t");
 				if (special) {
-					strncpy(table[i_counter].ip,
+					strlcpy(table[i_counter].ip,
 							special,
 							strlen(special)>15?15:strlen(special)
 					);
 					special = strtok(NULL, " \r\n\t");
 					if (special) {
-						strncpy(table[i_counter].name,
+						strlcpy(table[i_counter].name,
 								special,
 								strlen(special)>59?59:strlen(special)
 						);

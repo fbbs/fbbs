@@ -774,7 +774,7 @@ void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
 	switch (mode) {
 		case 0:
 		case 2:
-			strncpy(tmp[mode/2], bp[line].data, LINELEN);
+			strlcpy(tmp[mode/2], bp[line].data, LINELEN);
 			tmp[mode/2][bp[line].len]='\0';
 			break;
 		case 1:

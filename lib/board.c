@@ -43,7 +43,7 @@ int isclubmember(const char *member, const char *board)
 	if (!(fp = fopen(fname, "r")))
 		return 0;
 	while (fgets(line, 256, fp)) {
-		strncpy(uident, line, IDLEN);
+		strlcpy(uident, line, IDLEN);
 		uident[IDLEN] = '\0';
 		strtok(uident, " \r\n\t");
 		if (strcasecmp(member, uident)== 0)

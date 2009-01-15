@@ -354,7 +354,7 @@ char *msg;
 		send_to_unum(unum, "[1;31m¡ò [37mÇëÖ¸¶¨ĞÂµÄÁÄÌìÊÒÃû³Æ [31m¡ò[m");
 		return;
 	}
-	strncpy(rooms[rnum].name, msg, IDLE);
+	strlcpy(rooms[rnum].name, msg, IDLE);
 	sprintf(chatbuf, "/r%.11s", msg);
 	send_to_room(rnum, chatbuf);
 	sprintf(chatbuf, "[1;37m¡ï [32m[[36m%s[32m] ½«ÁÄÌìÊÒÃû³Æ¸ÄÎª [1;33m%.11s [37m¡ï[37m", users[unum].chatid, msg);
@@ -377,7 +377,7 @@ char *msg;
 		send_to_unum(unum, "[1;31m¡ò [37mÇëÖ¸¶¨»°Ìâ [31m¡ò[m");
 		return;
 	}
-	strncpy(rooms[rnum].topic, msg, 43);
+	strlcpy(rooms[rnum].topic, msg, 43);
 	rooms[rnum].topic[42] = '\0';
 	sprintf(chatbuf, "/t%.42s", msg);
 	send_to_room(rnum, chatbuf);
@@ -406,7 +406,7 @@ char *msg;
 				rnum = i;
 				memset(rooms[rnum].invites, 0, MAXACTIVE);
 				strcpy(rooms[rnum].topic, maintopic);
-				strncpy(rooms[rnum].name, room, IDLEN - 1);
+				strlcpy(rooms[rnum].name, room, IDLEN - 1);
 				rooms[rnum].name[IDLEN - 1] = '\0';
 				rooms[rnum].flags = 0;
 				op++;
@@ -541,7 +541,7 @@ char *msg;
 
 	users[unum].utent = utent;
 	strcpy(users[unum].userid, userid);
-	strncpy(users[unum].chatid, chatid, CHAT_IDLEN - 1);
+	strlcpy(users[unum].chatid, chatid, CHAT_IDLEN - 1);
 	users[unum].chatid[CHAT_IDLEN] = '\0';
 	send_to_unum(unum, CHAT_LOGIN_OK);
 	print_user_counts(unum);
@@ -1499,12 +1499,12 @@ char *argv[];
 						else {
 							hp = gethostbyaddr((char *) &sin.sin_addr, sizeof(struct in_addr),
 									sin.sin_family);
-							strncpy(s, hp ? hp->h_name : (char *) inet_ntoa(sin.sin_addr), 30);
+							strlcpy(s, hp ? hp->h_name : (char *) inet_ntoa(sin.sin_addr), 30);
 						}
 					} else {
 						hp = gethostbyaddr((char *) &sin.sin_addr, sizeof(struct in_addr),
 								sin.sin_family);
-						strncpy(s, hp ? hp->h_name : (char *) inet_ntoa(sin.sin_addr), 30);
+						strlcpy(s, hp ? hp->h_name : (char *) inet_ntoa(sin.sin_addr), 30);
 					}
 					s[29] = 0;
 

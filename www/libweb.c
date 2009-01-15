@@ -433,7 +433,7 @@ int strsncpy(char *s1, char *s2, int n) {
 	int l=strlen(s2);
 	if(n<0) return;
 	if(n>l+1) n=l+1;
-	strncpy(s1, s2, n-1);
+	strlcpy(s1, s2, n-1);
 	s1[n-1]=0;
 }
 
@@ -468,7 +468,7 @@ int http_fatal(char *fmt, ...) {
 }
 
 int strnncpy(char *s, int *l, char *s2) {
-	strncpy(s+(*l), s2, strlen(s2));
+	strlcpy(s+(*l), s2, strlen(s2));
 	(*l)+=strlen(s2);
 }
 

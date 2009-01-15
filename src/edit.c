@@ -716,7 +716,7 @@ int write_posts() {
 	if (!strncmp(ptr, "Re: ", 4))
 		ptr += 4;
 	ansi_filter(buf, ptr);
-	strncpy(postlog.title, buf, 40);
+	strlcpy(postlog.title, buf, 40);
 	postlog.title[40] = '\0';
 	postlog.date = now;
 	postlog.number = 1;
@@ -735,19 +735,19 @@ void write_header(FILE *fp, int mode) {
 
 	time_t now;
 	now = time(0);
-	strncpy(uid, currentuser.userid, 20);
+	strlcpy(uid, currentuser.userid, 20);
 	uid[19] = '\0';
 	if (in_mail)
 #if defined(MAIL_REALNAMES)
-		strncpy(uname, currentuser.realname, NAMELEN);
+		strlcpy(uname, currentuser.realname, NAMELEN);
 #else
-		strncpy(uname, currentuser.username, NAMELEN);
+		strlcpy(uname, currentuser.username, NAMELEN);
 #endif
 	else
 #if defined(POSTS_REALNAMES)
-		strncpy(uname, currentuser.realname, NAMELEN);
+		strlcpy(uname, currentuser.realname, NAMELEN);
 #else
-		strncpy(uname, currentuser.username, NAMELEN);
+		strlcpy(uname, currentuser.username, NAMELEN);
 #endif
 	uname[NAMELEN-1] = '\0';
 	save_title[STRLEN - 10] = '\0';
@@ -918,7 +918,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		getdata(2, 0, "ÐÂ±êÌâ: ", buf, 50, DOECHO, NA);
 		if (strcmp(save_title, buf) && strlen(buf) != 0) {
 			check_title(buf);
-			strncpy(save_title, buf, STRLEN);
+			strlcpy(save_title, buf, STRLEN);
 		}
 	} else if ((abort[0] == 's' || abort[0] == 'S')&&(uinfo.mode==POSTING)) {
 		local_article = NA;

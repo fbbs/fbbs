@@ -759,7 +759,7 @@ int getdata(int line, int col, char *prompt, char * buf, int len,
 			buf[curr + 1] = '\0';
 			buf[curr] = ch;
 		} else {
-			strncpy(tmp, &buf[curr], len);
+			strlcpy(tmp, &buf[curr], len);
 			buf[curr] = ch;
 			buf[curr + 1] = '\0';
 			strncat(buf, tmp, len - curr);

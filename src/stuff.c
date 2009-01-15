@@ -107,7 +107,7 @@ void printdash(char *mesg)
 		ptr = &buf[40 - len / 2];
 		ptr[-1] = ' ';
 		ptr[len] = ' ';
-		strncpy(ptr, mesg, len);
+		strlcpy(ptr, mesg, len);
 	}
 	prints("%s\n", buf);
 }
@@ -201,8 +201,8 @@ int do_exec(char *com, char *wd)
 	int pmode;
 	void (*isig) (), (*qsig) ();
 
-	strncpy(path, BINDIR, MAXPATHLEN);
-	strncpy(pcom, com, MAXCOMSZ);
+	strlcpy(path, BINDIR, MAXPATHLEN);
+	strlcpy(pcom, com, MAXCOMSZ);
 	len = Min(strlen(com) + 1, MAXCOMSZ);
 	pmode = LOOKFIRST;
 	for (i = 0, argptr = 0; i < len; i++) {
@@ -240,7 +240,7 @@ int do_exec(char *com, char *wd)
 	if (argptr == 0)
 	return -1;
 	if (*arglist[0] == '/')
-	strncpy(path, arglist[0], MAXPATHLEN);
+	strlcpy(path, arglist[0], MAXPATHLEN);
 	else
 	strncat(path, arglist[0], MAXPATHLEN);
 	reset_tty();

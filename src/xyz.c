@@ -591,7 +591,7 @@ void fill_date() {
 			continue;
 
 		buf[35] = '\0';
-		strncpy(index, buf, 4);
+		strlcpy(index, buf, 4);
 		index[4] = '\0';
 		strcpy(buf2, buf + 5);
 		t = strchr(buf2, '\n');

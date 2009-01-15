@@ -1153,7 +1153,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 					sprintf(genbuf, "mail/%c/%s/%s",
 							toupper(currentuser.userid[0]),
 							currentuser.userid, fhdr.filename);
-				strncpy(quote_file, genbuf, sizeof(quote_file));
+				strlcpy(quote_file, genbuf, sizeof(quote_file));
 				quote_file[sizeof(quote_file) - 1] = '\0';
 				strcpy(quote_title, fhdr.title);
 				strcpy(quote_board, currboard);

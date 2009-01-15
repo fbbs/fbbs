@@ -87,7 +87,7 @@ void a_showmenu(MENU *pm) {
 	strcpy(
 			buf,
 			"                                                                               ");
-	strncpy(buf+(79 - strlen(genbuf)) / 2, genbuf, strlen(genbuf));
+	strlcpy(buf+(79 - strlen(genbuf)) / 2, genbuf, strlen(genbuf));
 	prints("[1;44m%s[m\n", buf);
 	//prints(	"           [1;32m F[37m ¼Ä»Ø×Ô¼ºµÄÐÅÏä  [32m¡ü¡ý"
 	//		"[37m ÒÆ¶¯ [32m ¡ú <Enter> [37m¶ÁÈ¡ [32m ¡û,q[37m Àë¿ª[m\n");
@@ -136,7 +136,7 @@ void a_showmenu(MENU *pm) {
 					ch);
 		else
 			sprintf(genbuf, "%-s %-55.55s%-s%c", kind, title, fname, ch);
-		strncpy(title, genbuf, STRLEN * 2);
+		strlcpy(title, genbuf, STRLEN * 2);
 		title[STRLEN * 2 - 1] = '\0';
 		//Modified by IAMFAT 2002-05-30 3->4
 		prints("  %4d %s\n", n + 1, title);
@@ -217,13 +217,13 @@ int a_loadnames(MENU *pm) {
 		if ((ptr = strchr(buf, '\n')) != NULL)
 			*ptr = '\0';
 		if (strncmp(buf, "Name=", 5) == 0) {
-			strncpy(litem.title, buf + 5, 72);
+			strlcpy(litem.title, buf + 5, 72);
 			litem.title[71] = '\0';
 		} else if (strncmp(buf, "Path=", 5) == 0) {
 			if (strncmp(buf, "Path=~/", 7) == 0)
-				strncpy(litem.fname, buf + 7, 80);
+				strlcpy(litem.fname, buf + 7, 80);
 			else
-				strncpy(litem.fname, buf + 5, 80);
+				strlcpy(litem.fname, buf + 5, 80);
 			litem.fname[79] = '\0';
 			// add judgement of OBOARDS by roly 02.02.26
 			//modified by iamfat 2002.06.09
@@ -239,7 +239,7 @@ int a_loadnames(MENU *pm) {
 			}
 		} else if (strncmp(buf, "# Title=", 8) == 0) {
 			//if (pm->mtitle[0] == '\0')
-			strncpy(pm->mtitle, buf + 8, STRLEN);
+			strlcpy(pm->mtitle, buf + 8, STRLEN);
 		}//if (strncmp(buf, "Name=", 5) == 0) {
 	}
 	fclose(fn);
@@ -571,8 +571,8 @@ void a_forward(char *path,ITEM* pitem,int mode) {
 	char fname[PATHLEN], *mesg;
 	sprintf(fname, "%s/%s", path, pitem->fname);
 	if (dashf(fname)) {
-		strncpy(fhdr.title, pitem->title, STRLEN);
-		strncpy(fhdr.filename, pitem->fname, STRLEN);
+		strlcpy(fhdr.title, pitem->title, STRLEN);
+		strlcpy(fhdr.filename, pitem->fname, STRLEN);
 		fhdr.title[STRLEN - 1] = '\0';
 		fhdr.filename[STRLEN - 1] = '\0';
 		switch (doforward(path, &fhdr, mode)) {
@@ -725,7 +725,7 @@ void a_copypaste(MENU *pm, int paste) {
 		fwrite(item->title, sizeof(item->title), 1, fn);
 		fwrite(item->fname, sizeof(item->fname), 1, fn);
 		sprintf(genbuf, "%s/%s", pm->path, item->fname);
-		strncpy(fpath, genbuf, PATHLEN);
+		strlcpy(fpath, genbuf, PATHLEN);
 		fpath[PATHLEN - 1] = '\0';
 		fwrite(fpath, sizeof(fpath), 1, fn);
 		fclose(fn);
@@ -1140,11 +1140,11 @@ void ann_to_title(char *annpath) {
 	for (; ipos<strlen(annpath); ipos++) {
 		if (annpath[ipos]=='/' || annpath[ipos+1]=='\0') {
 			if (annpath[ipos]=='/') {
-				strncpy(dirname, annpath+ipos2, ipos-ipos2);
+				strlcpy(dirname, annpath+ipos2, ipos-ipos2);
 				*(dirname+ipos-ipos2+1)='\0';
 				ipos4=ipos-ipos2;
 			} else {
-				strncpy(dirname, annpath+ipos2, ipos-ipos2+1);
+				strlcpy(dirname, annpath+ipos2, ipos-ipos2+1);
 				*(dirname+ipos-ipos2+2)='\0';
 				ipos4=ipos-ipos2+1;
 			}
@@ -1155,7 +1155,7 @@ void ann_to_title(char *annpath) {
 				if ((ptr = strchr(buf, '\n')) != NULL)
 					*ptr = '\0';
 				if (strncmp(buf, "Name=", 5) == 0) {
-					strncpy(titlename, buf + 5, 72);
+					strlcpy(titlename, buf + 5, 72);
 					titlename[71] = '\0';
 				} else if (strncmp(buf, "Path=", 5) == 0) {
 
@@ -1368,7 +1368,7 @@ void a_manager(MENU *pm, int ch) {
 					if (dashf(fpath)) {
 						sprintf(genbuf, "%-38.38s %s", changed_T, fowner); //suggest by Humorous
 						//sprintf(genbuf, "%-38.38s %s", changed_T, currentuser.userid);
-						strncpy(item->title, genbuf, 72);
+						strlcpy(item->title, genbuf, 72);
 						item->title[71] = '\0';
 					} else if (dashd(fpath)) {
 						/*Modified by IAMFAT 2002-05-25*/
@@ -1389,7 +1389,7 @@ void a_manager(MENU *pm, int ch) {
 						strcpy(xpm.mtitle, genbuf);
 						a_savenames(&xpm);
 
-						strncpy(item->title, genbuf, 72);
+						strlcpy(item->title, genbuf, 72);
 					}
 					item->title[71] = '\0';
 					a_savenames(pm);
@@ -1441,7 +1441,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 	a_loadnames(&me);
 
 	memset(buf, 0, STRLEN);
-	strncpy(buf, me.mtitle, STRLEN);
+	strlcpy(buf, me.mtitle, STRLEN);
 	bmstr = strstr(buf, "(BM:");
 	if (bmstr != NULL) {
 		if (chk_currBM(bmstr + 4, 0))
@@ -1679,7 +1679,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 	if (strlen(nowpath) >=1) {
 		char *tmpchar;
 		tmpchar = strrchr(nowpath, '-');//find the last "->"
-		strncpy(oldpath, nowpath, tmpchar-nowpath);
+		strlcpy(oldpath, nowpath, tmpchar-nowpath);
 	}
 	snprintf(nowpath, STRLEN-17, "%s", oldpath);
 }
@@ -1775,7 +1775,7 @@ int del_grp(char grp[STRLEN], char bname[STRLEN], char title[STRLEN]) {
 	char check[30];
 	int i, n;
 	MENU pm;
-	strncpy(buf3, grp, 29);
+	strlcpy(buf3, grp, 29);
 	buf3[29] = '\0';
 	sprintf(buf, "0Announce/.Search");
 	sprintf(gpath, "0Announce/groups/%s", buf3);
@@ -1808,7 +1808,7 @@ int edit_grp(char bname[STRLEN], char grp[STRLEN], char title[STRLEN],
 	char bpath[STRLEN * 2];
 	int i;
 	MENU pm;
-	strncpy(buf3, grp, 29);
+	strlcpy(buf3, grp, 29);
 	buf3[29] = '\0';
 	sprintf(buf, "0Announce/.Search");
 	sprintf(gpath, "0Announce/groups/%s", buf3);
@@ -1819,21 +1819,21 @@ int edit_grp(char bname[STRLEN], char grp[STRLEN], char title[STRLEN],
 	pm.path = gpath;
 	a_loadnames(&pm);
 	for (i = 0; i < pm.num; i++) {
-		strncpy(buf2, pm.item[i]->title, STRLEN);
+		strlcpy(buf2, pm.item[i]->title, STRLEN);
 		buf2[STRLEN - 1] = '\0';
 		if (strstr(buf2, title) && strstr(pm.item[i]->fname, bname)) {
 			//add by fangu 2003.2.26, add log
 			//sprintf(genbuf, "ANN edit_grp file:%s-old title:%s -
 			//new title:%s", gpath,pm.item[i]->title,newtitle);
 			//report(genbuf);
-			strncpy(pm.item[i]->title, newtitle, STRLEN);
+			strlcpy(pm.item[i]->title, newtitle, STRLEN);
 			break;
 		}
 	}
 	a_savenames(&pm);
 	pm.path = bpath;
 	a_loadnames(&pm);
-	strncpy(pm.mtitle, newtitle, STRLEN);
+	strlcpy(pm.mtitle, newtitle, STRLEN);
 	a_savenames(&pm);
 
 }
@@ -1952,7 +1952,7 @@ int a_file_info(MENU *pm) {
 	prints("¾«»ªÇø%sÏêÏ¸ÐÅÏ¢:\n\n", type);
 	prints("Ðò    ºÅ:     µÚ %d Æª\n", pm->now);
 	prints("Àà    ±ð:     %s\n", type);
-	strncpy(tmp, pm->item[pm->now]->title, 38);
+	strlcpy(tmp, pm->item[pm->now]->title, 38);
 	tmp[38] = '\0';
 	prints("±ê    Ìâ:     %s\n", tmp);
 	prints("ÐÞ ¸Ä Õß:     %s\n", pm->item[pm->now]->title + 39);
@@ -1962,7 +1962,7 @@ int a_file_info(MENU *pm) {
 	prints("´ó    Ð¡:     %d ×Ö½Ú\n", st.st_size);
 	prints("URL µØÖ·:\n");
 	for (i = 0; i < len; i +=78) {
-		strncpy(tmp, weblink+i, 78);
+		strlcpy(tmp, weblink+i, 78);
 		tmp[78] = '\n';
 		tmp[79] = '\0';
 		prints(tmp);
@@ -2020,7 +2020,7 @@ int seekannpath(char *ann_index, char *buf) {
 	if (!(fp=fopen(genbuf, "r")))
 		return 0;
 	while (fgets(line, 4200, fp)) {
-		strncpy(index, line, IDLEN);
+		strlcpy(index, line, IDLEN);
 		index[IDLEN] = '\0';
 		if (strcasecmp(ann_index, index)==0) {
 			strcpy(buf, line+13);
@@ -2091,16 +2091,16 @@ int load_import_path() {
 int change_ann_path(int index, char* title, char *path, int mode) {
 	import_path[index].num = index;
 	char anntitle[STRLEN];
-	strncpy(anntitle, title, STRLEN);
+	strlcpy(anntitle, title, STRLEN);
 	if (index != -1) {
 		move(1, 0);
 		rtrim(anntitle);
 		getdata(1, 0, "Éè¶¨Ë¿Â·Ãû:", anntitle, STRLEN, DOECHO, NA);
 		if (anntitle[0]=='\0')
 			return;
-		strncpy(import_path[index].title, anntitle, STRLEN);
+		strlcpy(import_path[index].title, anntitle, STRLEN);
 		if (mode == 0) {
-			strncpy(import_path[index].path, path, PATHLEN);
+			strlcpy(import_path[index].path, path, PATHLEN);
 		}
 	}
 	return save_import_path();
@@ -2167,7 +2167,7 @@ int set_ann_path(char *title, char *path, int mode) {
 							import_path[to].num == -1 ? "[32m<ÉÐÎ´Éè¶¨>[m"
 									: import_path[to].path);
 				else if (show_mode = 1) {
-					strncpy(buf, import_path[to].path, PATHLEN);
+					strlcpy(buf, import_path[to].path, PATHLEN);
 					ann_to_title(buf);
 					sprintf(genbuf, "%4d  %-72.72s", to+1,
 							import_path[to].num == -1 ? "[32m<ÉÐÎ´Éè¶¨>[m"
@@ -2352,26 +2352,26 @@ int set_ann_path(char *title, char *path, int mode) {
 						if ((new_pos >= 0) && (new_pos < MAXANNPATHS)
 								&& (new_pos != curr_annpath)) {
 							if (import_path[new_pos].num != -1) {
-								strncpy(buf,
+								strlcpy(buf,
 										import_path[curr_annpath].title,
 										STRLEN);
-								strncpy(import_path[curr_annpath].title,
+								strlcpy(import_path[curr_annpath].title,
 										import_path[new_pos].title, STRLEN);
-								strncpy(import_path[new_pos].title, buf,
+								strlcpy(import_path[new_pos].title, buf,
 										STRLEN);
 
-								strncpy(buf,
+								strlcpy(buf,
 										import_path[curr_annpath].path,
 										STRLEN);
-								strncpy(import_path[curr_annpath].path,
+								strlcpy(import_path[curr_annpath].path,
 										import_path[new_pos].path, STRLEN);
-								strncpy(import_path[new_pos].path, buf,
+								strlcpy(import_path[new_pos].path, buf,
 										STRLEN);
 							} else {
-								strncpy(import_path[new_pos].title,
+								strlcpy(import_path[new_pos].title,
 										import_path[curr_annpath].title,
 										STRLEN);
-								strncpy(import_path[new_pos].path,
+								strlcpy(import_path[new_pos].path,
 										import_path[curr_annpath].path,
 										STRLEN);
 								import_path[new_pos].num = new_pos;

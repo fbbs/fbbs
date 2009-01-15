@@ -160,18 +160,18 @@ static void u_enter(void)
 		uinfo.pager |= LOGOFFMSG_PAGER;
 	}
 	uinfo.uid = usernum;
-	strncpy(uinfo.from, fromhost, sizeof(uinfo.from));
+	strlcpy(uinfo.from, fromhost, sizeof(uinfo.from));
 	// Terrible..
 	if (!DEFINE(DEF_NOTHIDEIP)) {
 		uinfo.from[22] = 'H';
 	}
 #if !defined(BBSD) && defined(SHOW_IDLE_TIME)
-	strncpy(uinfo.tty, tty_name, sizeof(uinfo.tty));
+	strlcpy(uinfo.tty, tty_name, sizeof(uinfo.tty));
 #endif
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
-	strncpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
-	strncpy(uinfo.realname, currentuser.realname, sizeof(uinfo.realname));
-	strncpy(uinfo.username, currentuser.username, sizeof(uinfo.username));
+	strlcpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
+	strlcpy(uinfo.realname, currentuser.realname, sizeof(uinfo.realname));
+	strlcpy(uinfo.username, currentuser.username, sizeof(uinfo.username));
 	getfriendstr();
 	getrejectstr();
 

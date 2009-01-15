@@ -328,7 +328,7 @@ char *userid, *title;
 	//sprintf(genbuf, "%s (%s)", currentuser.userid, currentuser.username);
 	sprintf(genbuf, "%s", currentuser.userid);
 #endif
-	strncpy(newmessage.owner, genbuf, STRLEN);
+	strlcpy(newmessage.owner, genbuf, STRLEN);
 	sprintf(filepath, "mail/%c/%s/%s", toupper(userid[0]), userid, fname);
 
 	edit_mail_file:
@@ -352,7 +352,7 @@ char *userid, *title;
 	}
 	if( result == YEA) {
 		strcpy(newmessage.title, header.title);
-		strncpy(save_title, newmessage.title, STRLEN);
+		strlcpy(save_title, newmessage.title, STRLEN);
 		sprintf(save_title2, "{%.16s} %.60s", userid, newmessage.title);
 		//		strncpy(save_filename, fname, 4096);
 	}
@@ -531,7 +531,7 @@ int read_new_mail(struct fileheader *fptr, int index, void *arg) {
 		return 0;
 	}
 	read_mail(fptr);
-	strncpy(fname, genbuf, sizeof(fname));
+	strlcpy(fname, genbuf, sizeof(fname));
 
 	//mrd = 1;
 	if (substitute_record(currmaildir, fptr, sizeof(*fptr), index))
@@ -754,7 +754,7 @@ char * maildoent(int num, struct fileheader *ent) {
 	 if (!strcmp(topic, ent->title) || !strcmp(topic, ent->title+4))
 	 same = YEA;*/
 	//End IAMFAT
-	strncpy(b2, ent->owner, STRLEN);
+	strlcpy(b2, ent->owner, STRLEN);
 	if ((b2[strlen(b2) - 1] == '>') && strchr(b2, '<')) {
 		t = strtok(b2, "<>");
 		if (invalidaddr(t))
@@ -898,7 +898,7 @@ char *direct;
 		return 0;
 	}
 	clear();
-	strncpy(uid, fileinfo->owner, STRLEN);
+	strlcpy(uid, fileinfo->owner, STRLEN);
 	if ((uid[strlen(uid) - 1] == '>') && strchr(uid, '<')) {
 		t = strtok(uid, "<>");
 		if (invalidaddr(t))
@@ -1006,7 +1006,7 @@ char *direct;
 		prints("Type 2公告禁止转信!\n");
 		return DONOTHING;
 	}
-	strncpy(buf, direct, STRLEN);
+	strlcpy(buf, direct, STRLEN);
 	buf[STRLEN - 1] = '\0';
 	if ((p = strrchr(buf, '/')) != NULL)
 	*p = '\0';
@@ -1055,7 +1055,7 @@ char *direct;
 		prints("Type 2公告禁止转信!\n");
 		return DONOTHING;
 	}
-	strncpy(buf, direct, STRLEN);
+	strlcpy(buf, direct, STRLEN);
 	buf[STRLEN - 1] = '\0';
 	if ((p = strrchr(buf, '/')) != NULL)
 	*p = '\0';
@@ -1569,10 +1569,10 @@ int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
 #else
 	sprintf(genbuf, "%s", currentuser.userid);
 #endif
-	strncpy(newmessage.owner, genbuf, STRLEN);
-	strncpy(newmessage.title, title, STRLEN);
-	strncpy(save_title, newmessage.title, STRLEN);
-	strncpy(newmessage.filename, tmpfile, STRLEN);
+	strlcpy(newmessage.owner, genbuf, STRLEN);
+	strlcpy(newmessage.title, title, STRLEN);
+	strlcpy(save_title, newmessage.title, STRLEN);
+	strlcpy(newmessage.filename, tmpfile, STRLEN);
 
 	sprintf(genbuf, "mail/%c/%s/%s", toupper(userid[0]), userid, DOT_DIR);
 	if (append_record(genbuf, &newmessage, sizeof(newmessage)) != -1)
@@ -1617,9 +1617,9 @@ int mail_file(char tmpfile[STRLEN], char userid[STRLEN],
 	//modified by roly 02.03.29
 	sprintf(genbuf, "%s", currentuser.userid);
 #endif
-	strncpy(newmessage.owner, genbuf, STRLEN);
-	strncpy(newmessage.title, title, STRLEN);
-	strncpy(save_title, newmessage.title, STRLEN);
+	strlcpy(newmessage.owner, genbuf, STRLEN);
+	strlcpy(newmessage.title, title, STRLEN);
+	strlcpy(save_title, newmessage.title, STRLEN);
 
 	sprintf(filepath, "mail/%c/%s", toupper(userid[0]), userid);
 	if (stat(filepath, &st) == -1) {
@@ -1765,7 +1765,7 @@ int mode;
 	if(check_maxmail()) return -3;
 	if (address[0] == '\0') {
 		//strncpy(address, currentuser.email, STRLEN);
-		strncpy(address, currentuser.userid, STRLEN);
+		strlcpy(address, currentuser.userid, STRLEN);
 	}
 	if (HAS_PERM(PERM_SETADDR)) {
 		prints("本站目前只提供站内转信，请输入要转寄的帐号名。\n");
@@ -1777,9 +1777,9 @@ int mode;
 		usercomplete(NULL, receiver);
 	} else strcpy(receiver,currentuser.userid);
 	if (receiver[0] != '\0') {
-		strncpy(address, receiver, STRLEN);
+		strlcpy(address, receiver, STRLEN);
 	} else
-	strncpy(receiver,address,STRLEN);
+	strlcpy(receiver,address,STRLEN);
 	sprintf(genbuf, ".bbs@%s", BBSHOST);
 	if (strstr(receiver, genbuf)
 			|| strstr(receiver, ".bbs@localhost")) {

@@ -735,7 +735,7 @@ void r_msg() {
 		char bak_title[STRLEN];
 		getdatestring(time(0), NA);
 		sprintf(mustbak_title, "[%s] 强制讯息备份%d条", datestring, i);
-		strncpy(bak_title, save_title, STRLEN-1);
+		strlcpy(bak_title, save_title, STRLEN-1);
 		bak_title[STRLEN-1]=0;
 		mail_file(fname, currentuser.userid, mustbak_title);
 		strcpy(save_title, bak_title);

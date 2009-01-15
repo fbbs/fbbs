@@ -220,17 +220,17 @@ int chat_recv(int fd, char * chatid) {
 					chat_clear();
 					break;
 				case 'n':
-					strncpy(chatid, bptr + 2, 8);
+					strlcpy(chatid, bptr + 2, 8);
 					print_chatid(chatid);
 					clrtoeol();
 					break;
 				case 'r':
 				case 't':
 					if (bptr[1] == 'r') {
-						strncpy(chatname, bptr + 2, IDLEN - 1);
+						strlcpy(chatname, bptr + 2, IDLEN - 1);
 						chatname[IDLEN-1] = '\0';
 					} else {
-						strncpy(buftopic, bptr+2, 43);
+						strlcpy(buftopic, bptr+2, 43);
 						buftopic[42] = '\0';
 					}
 					transPERstr(buftopic, tmptopic);
@@ -253,7 +253,7 @@ int chat_recv(int fd, char * chatid) {
 
 	if (c > 0) {
 		strcpy(genbuf, bptr);
-		strncpy(buf, genbuf, sizeof(buf));
+		strlcpy(buf, genbuf, sizeof(buf));
 		bufstart = len - 1;
 	} else {
 		bufstart = 0;
@@ -315,13 +315,13 @@ int ent_chat(char *chatbuf) {
 			}
 			ptr = strtok(inbuf, " \n\r\t");
 			if (ptr) {
-				strncpy(stnname[i], ptr, 19);
+				strlcpy(stnname[i], ptr, 19);
 				ptr = strtok(NULL, " \n\r\t");
 				if (ptr) {
-					strncpy(stnaddr[i], ptr, 29);
+					strlcpy(stnaddr[i], ptr, 29);
 					ptr = strtok(NULL, " \n\r\t");
 					if (ptr) {
-						strncpy(temp, ptr, 9);
+						strlcpy(temp, ptr, 9);
 						portnum[i] = atoi(temp);
 					} else {
 						portnum[i] = 7201;
@@ -1059,9 +1059,9 @@ void define_alias(char *arg) {
 			}
 		}
 	if (!del) {
-		strncpy(chat_aliases[chat_alias_count].cmd, arg, 8);
+		strlcpy(chat_aliases[chat_alias_count].cmd, arg, 8);
 		chat_aliases[chat_alias_count].cmd[8]=0;
-		strncpy(chat_aliases[chat_alias_count].action, action, 80);
+		strlcpy(chat_aliases[chat_alias_count].action, action, 80);
 		chat_aliases[chat_alias_count].action[81]=0;
 		sprintf(buf, "自定义alias-%s已经创建\n", arg);
 		printchatline(buf);
@@ -1084,7 +1084,7 @@ int use_alias(char *arg, int cfd) {
 	int slen;
 	register char* fmt;
 
-	strncpy(buf, arg, 255);
+	strlcpy(buf, arg, 255);
 	arg_count=0;
 	args[0]=buf;
 	args[1]=buf;

@@ -61,7 +61,7 @@ char * genpasswd(char *pw) {
 
 #ifdef MD5			/* use MD5 salt */
 
-	strncpy(&salt[0], "$1$", 3);
+	strlcpy(&salt[0], "$1$", 3);
 	to64(&salt[3], random(), 3);
 	to64(&salt[6], tv.tv_usec, 3);
 	salt[8] = '\0';
@@ -113,7 +113,7 @@ int checkpasswd(char *passwd, char *test) //ºÏ≤È√‹¬Î
 	char *pw;
 	static char pwbuf[PASSLEN];
 
-	strncpy(pwbuf, test, PASSLEN);
+	strlcpy(pwbuf, test, PASSLEN);
 	pw = crypt(pwbuf, passwd);
 	return (!strcmp(pw, passwd));
 }

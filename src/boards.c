@@ -571,7 +571,7 @@ int page, clsflag, newflag;
 		prints ("  %s", ptr->unread ? "◆" : "◇");
 		if (!(ptr->flag & BOARD_CUSTOM_FLAG)) //added by cometcaptor 2007-04-23   
 		strcpy (tmpBM, ptr->BM);
-		strncpy (cate, ptr->title + 1, 6);
+		strlcpy (cate, ptr->title + 1, 6);
 		strcpy (title, ptr->title + 11);
 		ellipsis (title, 20);
 		prints ("%c%-17s %s%s%6s %-20s %c ",
@@ -800,7 +800,7 @@ int choose_board(int newflag) {
 					break;
 				if (nbrd[num].flag & BOARD_CUSTOM_FLAG)
 					break;
-				strncpy(addname, nbrd[num].name, STRLEN-8);
+				strlcpy(addname, nbrd[num].name, STRLEN-8);
 				presskeyfor("版名已复制 请按P粘贴", t_lines - 1);
 				brdnum=-1;
 				break;

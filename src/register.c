@@ -565,7 +565,7 @@ void new_register() {
 			prints("密码太短或与使用者代号相同, 请重新输入\n");
 			continue;
 		}
-		strncpy(newuser.passwd, passbuf, PASSLEN);
+		strlcpy(newuser.passwd, passbuf, PASSLEN);
 		getdata(0, 0, "请再输入一次您的密码 (Reconfirm Password): ", passbuf,
 				PASSLEN, NOECHO, YEA);
 		if (strncmp(passbuf, newuser.passwd, PASSLEN) != 0) {
@@ -575,10 +575,10 @@ void new_register() {
 		passbuf[8] = '\0';
 #ifdef ENCPASSLEN
 
-		strncpy(newuser.passwd, genpasswd(passbuf), ENCPASSLEN);
+		strlcpy(newuser.passwd, genpasswd(passbuf), ENCPASSLEN);
 #else
 
-		strncpy(newuser.passwd, genpasswd(passbuf), PASSLEN);
+		strlcpy(newuser.passwd, genpasswd(passbuf), PASSLEN);
 #endif
 
 		break;
@@ -1142,7 +1142,7 @@ void check_register_info() {
 			set_safe_record();
 			urec->userlevel |= PERM_DEFAULT;
 			urec->lastjustify = time(0);
-			strncpy(urec->reginfo, buf, 62);
+			strlcpy(urec->reginfo, buf, 62);
 			substitut_record(PASSFILE, urec,sizeof(struct userec), usernum);
 			prints("恭贺您!! 您已顺利完成本站的使用者注册手续,\n");
 			prints("从现在起您将拥有一般使用者的权利与义务...\n");
