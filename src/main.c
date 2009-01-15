@@ -469,16 +469,16 @@ static void system_init(void)
 
 #ifndef BBSD
 	if (argc >= 3) {
-		strncpy(fromhost, argv[2], 60);
+		strlcpy(fromhost, argv[2], 60);
 	} else {
 		fromhost[0] = '\0';
 	}
 	if ((rhost = getenv("REMOTEHOST")) != NULL)
-	strncpy(fromhost, rhost, 60);
+	strlcpy(fromhost, rhost, 60);
 	fromhost[59] = '\0';
 #if defined(SHOW_IDLE_TIME)
 	if (argc >= 4) {
-		strncpy(tty_name, argv[3], 20);
+		strlcpy(tty_name, argv[3], 20);
 	} else {
 		tty_name[0] = '\0';
 	}
@@ -909,7 +909,7 @@ void SpecialID(const char *uid, char *host, int len)
 			if (special && !strcasecmp(uid, special)) {
 				special = strtok(NULL, " \r\n\t");
 				if (special)
-					strncpy(host, special, len);
+					strlcpy(host, special, len);
 				break;
 			}
 		}
@@ -1011,7 +1011,7 @@ static void user_login(void)
 
 	set_safe_record();
 	check_uinfo(&currentuser, 0);
-	strncpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
+	strlcpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
 	currentuser.lasthost[15] = '\0'; /* dumb mistake on my part */
 	{
 		time_t stay, recent;
