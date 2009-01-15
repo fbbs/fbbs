@@ -1083,12 +1083,12 @@ void set_numofsig(void)
 #ifndef BBSD
 int main(int argc, char **argv)
 #else
-void start_client()
+void start_client(void)
 #endif
 {
 	extern char currmaildir[];
-	load_sysconf();
 
+	load_sysconf();
 #ifdef ALLOWSWITCHCODE
 	resolve_GbBig5Files();
 #endif
@@ -1122,26 +1122,6 @@ void start_client()
 #endif
 
 	if (strcmp(currentuser.userid, "guest")) {
-		if (HAS_PERM(PERM_USER)) {
-			struct stat tpstat; //modified by money 2003.12.03 for judge file size
-
-			stat("unregistered", &tpstat);
-			if (tpstat.st_size > 0) {
-				prints("[0;1m\n\n");
-				prints("[33mÄ¿Ç°ÓÐÐÂÊ¹ÓÃÕßµÈºòÄúµÄÉóÅú¡£[37m\n\n");
-#ifdef SHOW_THANKYOU
-				prints
-				("¸ÐÐ»ÄúÊ¹ÓÃ FB2000£¡·Ç³£Ï£ÍûÄúÄÜ¾­³£¹â¹Ë [32m¿ìÒâ¹àË®Õ¾ [telnet fb2000.dhs.org][37m £¡\n");
-				prints
-				("Èç¹û¿ÉÄÜµÄ»°£¬[45;33mÇë»Ø±¨ÄúµÄÊ¹ÓÃÇé¿ö![0;1;37m£¬°üÀ¨£º BUG¡¢ÒÉÎÊ¡¢½¨Òé£¡·Ç³£¸ÐÐ»£¡\n\n");
-				prints
-				("Èç¹ûÄúÏ£Íû¼°Ê±ÁË½â FB2000 µÄ×îÐÂÇé¿ö£¬Çë¶©ÔÄ¡¾FB2000 ¿ª·¢Í¨Ñ¶¡¿ÓÊ¼þÁÐ±í£¡\n");
-				prints
-				("¶©ÔÄ·½·¨£ºÐ´ÐÅ¸ø fb2000-request@list.cn99.com£¬ÕýÎÄÌîÐ´£ºsubscribe");
-#endif
-				pressanykey();
-			}
-		}
 		if (check_maxmail())
 			pressanykey();
 		move(9, 0);
@@ -1154,9 +1134,7 @@ void start_client()
 	}
 
 	ActiveBoard_Init();
-
-	fill_date(); /* ¼ì²é¼ÍÄîÈÕ */
-	//b_closepolls();    /* ¹Ø±ÕÍ¶Æ± */
+	fill_date();
 
 	num_alcounter();
 	if (count_friends > 0 && DEFINE(DEF_LOGFRIEND))

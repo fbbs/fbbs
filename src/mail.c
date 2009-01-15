@@ -694,6 +694,7 @@ int getmailnum(char *userid) {
 	return mail_count;
 }
 
+// Check if user exceeds mail quota or max number of mails.
 int check_maxmail(void)
 {
 	extern int mailXX;
