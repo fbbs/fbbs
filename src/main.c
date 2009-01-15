@@ -1066,15 +1066,17 @@ static void user_login(void)
 	check_register_info();
 }
 
-void set_numofsig() {
+void set_numofsig(void)
+{
 	int sigln;
-	char signame[STRLEN];
+	char signame[NAME_MAX];
 
 	setuserfile(signame, "signatures");
 	sigln = countln(signame);
 	numofsig = sigln / MAXSIGLINES;
 	if ((sigln % MAXSIGLINES) != 0)
-		numofsig += 1;
+		++numofsig;
+	return;
 }
 
 int check_maxmail() {

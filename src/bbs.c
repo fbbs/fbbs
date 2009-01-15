@@ -50,8 +50,6 @@ int hisfriend_wall_logout();
 int mot;
 struct postheader header;
 
-//static int quiting;
-extern int numofsig;
 int continue_flag;
 int readpost;
 int digestmode;

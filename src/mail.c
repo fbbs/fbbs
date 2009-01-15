@@ -55,7 +55,6 @@ int s_msg();
 int G_SENDMODE = NA;
 int show_file_info();
 int send_msg();
-extern int numofsig;
 extern char quote_file[], quote_user[];
 char currmaildir[STRLEN];
 #define maxrecp 300
