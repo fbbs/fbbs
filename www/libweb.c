@@ -774,7 +774,7 @@ char *getparm(char *var) {
 
 int get_shmkey(char *s) {
         int n=0;
-        while(shmkeys[n].key!=0) {
+        while(shmkeys[n].key[0] != '\0') {
                 if(!strcasecmp(shmkeys[n].key, s)) return shmkeys[n].value;
                 n++;
         }

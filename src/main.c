@@ -220,7 +220,7 @@ static void setflags(int mask, int value)
 void u_exit(void)
 {
 	time_t recent;
-	time_t stay;
+	time_t stay = 0;
 	time_t now;
 
 	// 这些信号的处理要关掉, 否则在离线时等候回车时出现
@@ -544,7 +544,7 @@ static void logattempt(char *uid, char *frm)
 
 // Get height of client window.
 // See RFC 1073 "Telnet Window Size Option"
-static int check_tty_lines(void)
+static void check_tty_lines(void)
 {
 	// An example: Server suggest and client agrees to use NAWS.
 	//             (Negotiate About Window Size)
@@ -578,6 +578,7 @@ static int check_tty_lines(void)
 	}
 	if (t_lines < 24 || t_lines > 100)
 		t_lines = 24;
+	return;
 }
 
 struct max_log_record {
@@ -622,7 +623,7 @@ static void visitlog(void)
 	snprintf(genbuf, sizeof(genbuf), 
 		"\033[1;32m从 [\033[36m%4d年%2d月%2d日\033[32m] 起, "
 		"最高人数记录: [\033[36m%d\033[32m] "
-		"累计访问人次: [\033[36m%u\033[32m]\033[m\n",
+		"累计访问人次: [\033[36m%lu\033[32m]\033[m\n",
 		max_log.year, max_log.month, max_log.day, max_log.logins,
 		max_log.visit);
 	prints("%s", genbuf);
@@ -878,7 +879,7 @@ static int IsSpecial(const char *str, const char *filename)
 	char *ptr;
 	int i = 0;
 
-	if (fp = fopen(filename, "r")) {
+	if ((fp = fopen(filename, "r")) != NULL) {
 		while (fgets(line, sizeof(line), fp)) {
 			ptr = strtok(line, " \r\n\t");
 			if (!ptr[0] || ptr[0] == '#')
@@ -902,7 +903,7 @@ void SpecialID(const char *uid, char *host, int len)
 	char line[STRLEN];
 	char *special;
 
-	if (fp = fopen("etc/special.ini", "r")) {
+	if ((fp = fopen("etc/special.ini", "r")) != NULL) {
 		while (fgets(line, sizeof(line), fp)) {
 			special = strtok(line, " \r\n\t");
 			if (special && !strcasecmp(uid, special)) {

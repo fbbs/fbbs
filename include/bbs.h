@@ -335,18 +335,18 @@ struct _shmkey { //共享内存键名与键值
 	int value;
 };
 
-const static struct _shmkey shmkeys[] = { { "BCACHE_SHMKEY", 30000 }, {
-		"UCACHE_SHMKEY", 30010 }, { "UTMP_SHMKEY", 30020 }, {
-		"ACBOARD_SHMKEY", 30030 }, { "ISSUE_SHMKEY", 30040 }, {
-		"GOODBYE_SHMKEY", 30050 }, { "WELCOME_SHMKEY", 30060 }, {
-		"STAT_SHMKEY", 30070 },
+const static struct _shmkey shmkeys[] = {
+	{ "BCACHE_SHMKEY", 30000 }, { "UCACHE_SHMKEY", 30010 },
+	{ "UTMP_SHMKEY", 30020 }, { "ACBOARD_SHMKEY", 30030 },
+	{ "ISSUE_SHMKEY", 30040 }, { "GOODBYE_SHMKEY", 30050 },
+	{ "WELCOME_SHMKEY", 30060 }, { "STAT_SHMKEY", 30070 },
 #ifdef ALLOWSWITCHCODE
-		{	"CONV_SHMKEY", 30080},
+	{ "CONV_SHMKEY", 30080 },
 #endif
 #ifdef CERTIFYMODE
-		{	"KEYWORDS_SHMKEY",30090},
+	{ "KEYWORDS_SHMKEY", 30090 },
 #endif
-		{ "ACACHE_SHMKEY", 30005 }, { 0, 0 } };
+	{ "ACACHE_SHMKEY", 30005 }, { "", 0 } };
 
 #define SEM_COUNTONLINE 30000
 

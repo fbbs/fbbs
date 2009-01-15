@@ -60,8 +60,6 @@
 
 /* This is the default permission granted to all new accounts. */
 /* Following 2 lines modified by Amigo 2002.06.08. To add mail right. */
-//#define PERM_DEFAULT    (PERM_BASIC | PERM_CHAT | PERM_PAGE | \
-//                         PERM_POST | PERM_LOGINOK|PERM_MESSAGE)
 #define PERM_DEFAULT    (PERM_LOGIN | PERM_TALK | PERM_MAIL | PERM_POST | PERM_REGISTER)
 
 /* These permissions are bitwise ORs of the basic bits. They work that way

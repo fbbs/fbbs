@@ -22,7 +22,7 @@ static void attach_err(int shmkey, const char *name, int err)
 static int search_shmkey(const char *keyname)
 {
 	int i = 0, found = 0;
-	while (shmkeys[i].key != NULL) {
+	while (shmkeys[i].key[0] != '\0') {
 		if (strcmp(shmkeys[i].key, keyname) == 0) {
 			found = shmkeys[i].value;
 			break;
