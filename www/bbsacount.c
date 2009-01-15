@@ -29,7 +29,7 @@ int main()
 	init_all();
 	printf("<b><font style='font-size: 18pt'>发文统计</font> · %s </b><br>\n", BBSNAME);
 	type=atoi(getparm("type"));					//获取发文统计的统计方式：1:M文,2:G文,3:水文,4:未标记,5:总数,6:ID
-	strsncpy(board, getparm("board"), 30);		//获取发文统计的版面名称
+	strlcpy(board, getparm("board"), 30);		//获取发文统计的版面名称
 	brd=getbcache(board);						//判断该版面名称是否存在
 	if(brd==0) http_fatal("错误的讨论区");		//版面不存在
 	if(!has_read_perm(&currentuser, board)) http_fatal("错误的讨论区名称");		//判断当前用户是否有该版面的读权限

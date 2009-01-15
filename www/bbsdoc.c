@@ -30,7 +30,7 @@ int main() {
 	char path[256];
 	
  	init_all();
-	strsncpy(board, getparm("board"), 32);
+	strlcpy(board, getparm("board"), 32);
 	x1=getbcache(board);
 	if(x1==0 || specialboard(board)) 
 		http_fatal("´íÎóµÄÌÖÂÛÇø");

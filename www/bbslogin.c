@@ -7,8 +7,8 @@ int main() {
 	struct userec *x;
 	FILE *fp;
 	init_all();
-	strsncpy(id, getparm("id"), 13);
-        strsncpy(pw, getparm("pw"), 13);
+	strlcpy(id, getparm("id"), 13);
+        strlcpy(pw, getparm("pw"), 13);
 	if(loginok && strcasecmp(id, currentuser.userid)) {
 		http_fatal("系统检测到目前您的计算机上已经登录有一个帐号 %s，请先退出.(%s)", 
 			currentuser.userid, "选择正常logout, 或者关闭所有浏览器窗口");
@@ -54,7 +54,7 @@ int main() {
 			if(abs(t-time(0))<60) http_fatal("两次登录间隔过密!");
 		}//add end
 		x->numlogins++;
-		strsncpy(x->lasthost, fromhost, 16);
+		strlcpy(x->lasthost, fromhost, 16);
 		save_user_data(x);
 		currentuser=*x;
 	}
@@ -120,7 +120,7 @@ int wwwlogin(struct userec *user) {
 				
 			SpecialID(u->userid, fromhost);
 			   
-			strsncpy(u->from, fromhost, 24);
+			strlcpy(u->from, fromhost, 24);
 #ifdef SPARC
 			*(int*)(u->from+30)=time(0);
 #else

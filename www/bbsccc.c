@@ -4,9 +4,9 @@ int main() {
 	struct fileheader *x;
 	char board[80], file[80], target[80];
 	init_all();
-	strsncpy(board, getparm("board"), 30);
-	strsncpy(file, getparm("file"), 32);
-	strsncpy(target, getparm("target"), 30);
+	strlcpy(board, getparm("board"), 30);
+	strlcpy(file, getparm("file"), 32);
+	strlcpy(target, getparm("target"), 30);
 	if(!loginok) 
 	{
 		printf("<b>в╙тьндуб ║╓ %s </b><br>\n",BBSNAME);

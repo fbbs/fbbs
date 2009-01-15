@@ -26,7 +26,7 @@ int main() {
 		sscanf(s1+105, "%s", num);
 		if(fgets(s1, 255, fp)<=0) 
 			break;
-		strsncpy(title, s1+27, 60);
+		strlcpy(title, s1+27, 60);
 		printf("<tr class=%s><td nowrap>µÚ %2d Ãû</td><td nowrap><a href=bbsdoc?board=%s><b>%s</b></a></td><td width=100\%><a href='bbstfind?board=%s&title=%s'>%42.42s</a></td><td nowrap align=center><a href=bbsqry?userid=%s><b>%12s</b></a></td><td nowrap>%s</td></tr>\n",
 			((cc++)%2)?"pt9dc":"pt9lc" ,n, brd, brd, brd, nohtml(title), nohtml(title), id, id, num);
 	}

@@ -10,7 +10,7 @@ int main() {
 		printpretable_lite();
         if(loginok == 0) http_fatal("ÄúÉĞÎ´µÇÂ¼"); 
         id=currentuser.userid; 
-        strsncpy(file, getparm("file"), 32); 
+        strlcpy(file, getparm("file"), 32); 
         if(strncmp(file, "M.", 2) || strstr(file, "..")) http_fatal("´íÎóµÄ²ÎÊı"); 
         sprintf(path, "mail/%c/%s/.DIR", toupper(id[0]), id); 
         fp=fopen(path, "r"); 

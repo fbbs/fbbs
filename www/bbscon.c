@@ -27,8 +27,8 @@ int main() {
 	struct fileheader x;
 	int num, tmp, total, in = 0;
 	init_all();
-	strsncpy(board, getparm("b"), 32);
-	strsncpy(file, getparm("f"), 32);
+	strlcpy(board, getparm("b"), 32);
+	strlcpy(file, getparm("f"), 32);
     /*
      * 下面代码用于添加帖子的版面验证，与bbsdoc.c中的验证代码类似,added by polygon
      */

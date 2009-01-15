@@ -23,7 +23,7 @@ int main()
 	init_all();
 	count = MAXNUM;
 
-	strsncpy(board, getparm("board"), 32);
+	strlcpy(board, getparm("board"), 32);
 	x1 = getbcache(board);
 	if (x1 == 0)
 		http_fatal("´íÎóµÄÌÖÂÛÇø");

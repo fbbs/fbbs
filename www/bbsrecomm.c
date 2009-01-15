@@ -6,7 +6,7 @@ void showrecomm(char *board) {
 	char *board;
 	init_all();
 	
-	strsncpy(path,anno_path_of(board),511);
+	strlcpy(path,anno_path_of(board),511);
 	if(strstr(path, "..") || strstr(path, "SYSHome")) http_fatal("此目录不存在");
 	sprintf(names, "0Announce%s/.recommend/.Names", path);
 	fp=fopen(names, "r");

@@ -13,9 +13,9 @@ int main() {
 	printf("<b>发表文章 · %s </b><br>\n",BBSNAME);
 	printpretable_lite();
 	if(!loginok) http_fatal("匆匆过客不能发表文章，请先登录");
-   	strsncpy(board, getparm("board"), 80);
+   	strlcpy(board, getparm("board"), 80);
 	origtitle = getparm("title");
-   	strsncpy(title, ansi_filter(origtitle, origtitle), 80);
+   	strlcpy(title, ansi_filter(origtitle, origtitle), 80);
  	brd=getbcache(board);
 	if(brd==0) http_fatal("错误的讨论区名称");
 	strcpy(board, brd->filename);
@@ -91,7 +91,7 @@ int write_posts(char *id, char *board, char *title) {
  	strcpy(x.author, id);
  	strcpy(x.board, board);
  	if(!strncmp(title, "Re: ", 4)) title+=4;
- 	strsncpy(x.title, title, 61);
+ 	strlcpy(x.title, title, 61);
  	if(title[0]==0) return;
 	if(if_exist_title(title)) return; 
 	x.date=time(0);

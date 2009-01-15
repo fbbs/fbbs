@@ -11,8 +11,8 @@ int main()
     struct boardheader *x1;//added by polygon
 	int i, num=0, found=0;
 	init_all();
-	strsncpy(board, getparm("board"), 32);
-	strsncpy(file, getparm("file"), 32);
+	strlcpy(board, getparm("board"), 32);
+	strlcpy(file, getparm("file"), 32);
     /*
      *  下面代码用于添加帖子的版面验证，与bbsdoc.c中的验证代码类似,added by polygon
      * */

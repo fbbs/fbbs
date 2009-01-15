@@ -17,7 +17,7 @@ int main() {
 		printpretable_lite();
 		http_fatal("ÄúÉĞÎ´µÇÂ¼, ÇëÏÈµÇÂ¼");
 	}
-	strsncpy(buf, getparm("start"), 10);
+	strlcpy(buf, getparm("start"), 10);
 	start=atoi(buf);
         /* 02.11.17 added by stephen to fix the jump to mail num trouble */
 	start--;

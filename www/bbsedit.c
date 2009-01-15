@@ -20,7 +20,7 @@ int main() {
 		printpretable_lite();
 		http_fatal("匆匆过客不能修改文章，请先登录");
 	}
-	strsncpy(board, getparm("board"), 20);
+	strlcpy(board, getparm("board"), 20);
 	type=atoi(getparm("type"));
 	brd=getbcache(board);
 	if(brd==0) 
@@ -30,7 +30,7 @@ int main() {
 		http_fatal("错误的讨论区");
 	}
 	strcpy(board, brd->filename);
-	strsncpy(file, getparm("file"), 32);
+	strlcpy(file, getparm("file"), 32);
 	if(!has_post_perm(&currentuser, board))
 	{
 		printf("<b>修改文章 · %s </b><br>\n", BBSNAME);

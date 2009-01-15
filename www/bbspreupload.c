@@ -23,7 +23,7 @@ int main()
 {
 	char board[80];
 	init_all();
-	strsncpy(board, getparm("board"), 30);
+	strlcpy(board, getparm("board"), 30);
 	printf("<title>上传文件</title>\n");
 	if(!loginok) 
 		http_fatal("匆匆过客无权限上传文件");
@@ -31,7 +31,7 @@ int main()
 		http_fatal("错误的讨论区");
 	if(!has_post_perm(&currentuser, board)) 
 		http_fatal("该用户在这个版面无权限上传文件");
-	strsncpy(board, getparm("board"), 80);
+	strlcpy(board, getparm("board"), 80);
 	printf("<script lang='Javascript'>	\n");
 	printf("function clickup()			\n");
 	printf("{	if(document.forms['upform'].elements['up'].value)	\n");

@@ -7,8 +7,8 @@ int main()
 	struct fileheader x;
 	int num, tmp, total;
 	init_all();
-	strsncpy(board, getparm("board"), 32);
-	strsncpy(file, getparm("file"), 32);
+	strlcpy(board, getparm("board"), 32);
+	strlcpy(file, getparm("file"), 32);
 	num=atoi(getparm("num"));
 	printf("<center>\n");
 	if(!has_read_perm(&currentuser, board)) 

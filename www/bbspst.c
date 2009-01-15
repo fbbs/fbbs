@@ -21,18 +21,18 @@ int main() {
 		printpretable_lite();
 		http_fatal("匆匆过客不能发表文章，请先登录");
 	}
-	strsncpy(board, getparm("board"), 20);
-	strsncpy(file, getparm("file"), 80);
+	strlcpy(board, getparm("board"), 20);
+	strlcpy(file, getparm("file"), 80);
 	//02.09.07 modified by stephen to fit the title buffer,changed from 50 to 80
 	//strsncpy(title, getparm("title"), 50);
-	strsncpy(title, getparm("title"), 66);
+	strlcpy(title, getparm("title"), 66);
 	if(title[0])  
 	{	
 		if(strncmp(title, "Re: ", 4))
 			sprintf(title, "Re: %s", getparm("title"));
 		replymode = 1;
 	}
-	strsncpy(userid, getparm("userid"), 40);
+	strlcpy(userid, getparm("userid"), 40);
 	if(file[0]!='M' && file[0])
 	{
 		printf("<b>发表文章 · %s </b><br>\n", BBSNAME);

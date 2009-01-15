@@ -12,8 +12,8 @@ int main() {
 	printpretable_lite();
 	if(!loginok) http_fatal("请先登录");
 	id=currentuser.userid;
-	strsncpy(board, getparm("board"), 60);
-	strsncpy(file, getparm("file"), 32);
+	strlcpy(board, getparm("board"), 60);
+	strlcpy(file, getparm("file"), 32);
 	brd=getbcache(board);
 	if(strncmp(file, "M.", 2) && strncmp(file, "G.", 2)) http_fatal("错误的参数");
 	if(strstr(file, "..")) http_fatal("错误的参数");

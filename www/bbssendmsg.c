@@ -22,8 +22,8 @@ int main() {
 		http_fatal("您是未注册用户,或者无权发送消息!");
 	}
 /* add end */
-	strsncpy(destid, getparm("destid"), 13);
-	strsncpy(msg, getparm("msg"), 51);
+	strlcpy(destid, getparm("destid"), 13);
+	strlcpy(msg, getparm("msg"), 51);
 	destpid=atoi(getparm("destpid"));
 	if(destid[0]==0 || msg[0]==0) {
 		char buf3[256];

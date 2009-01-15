@@ -8,8 +8,8 @@ int main() {
    	sprintf(path, "home/%c/%s/friends", toupper(currentuser.userid[0]), currentuser.userid);
    	printf("<b><font style='font-size: 18pt'>添加好友</font> · %s [使用者: %s]</b>\n", BBSNAME, currentuser.userid);
 	printpretable_lite();
-	strsncpy(userid, getparm("userid"), 13);
-	strsncpy(exp, getparm("exp"), 32);
+	strlcpy(userid, getparm("userid"), 13);
+	strlcpy(exp, getparm("exp"), 32);
 	loadfriend(currentuser.userid);
 	if(userid[0]==0 || exp[0]==0) {
 		if(userid[0]) printf("<font color=red>请输入好友说明</font>");

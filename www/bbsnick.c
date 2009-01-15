@@ -11,7 +11,7 @@ int main() {
 		printf("<br>");
 		http_fatal("匆匆过客无法改变昵称");
 	}
-	strsncpy(nick, getparm("nick"), 30);
+	strlcpy(nick, getparm("nick"), 30);
 	if(nick[0]==0) {
 		printf(" [使用者: %s]\n", currentuser.userid);
 		printpretable_lite();
@@ -24,7 +24,7 @@ int main() {
 	}
 	for(i=0; nick[i]; i++)
 		if(nick[i]<32 || nick[i]==255) nick[i]=' ';
-	strsncpy(u_info->username, nick, 32);
+	strlcpy(u_info->username, nick, 32);
 	printf(" [使用者: %s]\n", currentuser.userid);
 	printpretable_lite();
 	printf("临时变更昵称成功");

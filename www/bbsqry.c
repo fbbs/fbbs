@@ -50,7 +50,7 @@ int main() {
 	struct user_info *u;
 	int i, tmp1, tmp2, num, clr;
 	init_all();
-	strsncpy(userid, getparm("userid"), 13);
+	strlcpy(userid, getparm("userid"), 13);
 	//printf("%s",userid);
 	printf("<b>²éÑ¯ÍøÓÑ ¡¤ %s </b>\n", BBSNAME);
 //	if(userid[0]==0) {

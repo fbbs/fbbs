@@ -193,7 +193,6 @@ void do_report(const char* fname, const char* content);
 char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
 char *nohtml(char *s);
-int strsncpy(char *s1, char *s2, int n);
 // Record.c
 long get_num_records(char *filename, int size);
 int get_record(void *buf, int size, int num, char *file);

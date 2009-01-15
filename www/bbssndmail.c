@@ -61,7 +61,7 @@ int main() {
    	
 	//prepare the message...
 	origtitle = getparm("title");
-	strsncpy(title, ansi_filter(origtitle, origtitle), 50);
+	strlcpy(title, ansi_filter(origtitle, origtitle), 50);
 	backup=strlen(getparm("backup"));
   	for(i=0; i<strlen(title); i++)
 		if(title[i]<27 && title[i]>=-1) title[i]=' ';
@@ -79,7 +79,7 @@ int main() {
 	 * 
 	 */
 	//first get the users to be sent to.
-	strsncpy(userid, getparm("userid"), 40);
+	strlcpy(userid, getparm("userid"), 40);
 	//then split it into tokens
 	char * token;
 	token = strtok(userid,";");

@@ -9,7 +9,7 @@ int main() {
 	printpretable_lite();
 
 	if(!loginok) http_fatal("请先登录");
-	strsncpy(board, getparm("board"), 60);
+	strlcpy(board, getparm("board"), 60);
 	mode=atoi(getparm("mode"));
 	brd=getbcache(board);
 	if(brd==0) http_fatal("错误的讨论区");

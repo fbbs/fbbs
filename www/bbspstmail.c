@@ -14,9 +14,9 @@ int main() {
 	if (!mailnum_under_limit(currentuser.userid) || !mailsize_under_limit(currentuser.userid)) 
 					http_fatal("您的信件容量超标，无法发信");
 	/* add end */
-	strsncpy(file, getparm("file"), 32);
-	strsncpy(title, nohtml(getparm("title")), 50);
-	strsncpy(userid, getparm("userid"), 40);
+	strlcpy(file, getparm("file"), 32);
+	strlcpy(title, nohtml(getparm("title")), 50);
+	strlcpy(userid, getparm("userid"), 40);
 	if(file[0]!='M' && file[0]) http_fatal("错误的文件名");
 	printf("<b>%s -- 寄语信鸽 [使用者: %s]</b>\n", BBSNAME, currentuser.userid);
    	printf("<center>\n");

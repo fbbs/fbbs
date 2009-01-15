@@ -5,7 +5,7 @@ int main() {
 	char buf[512], board[80], filename[80];
 	struct boardheader *x1;
 	init_all();
-	strsncpy(board, getparm("board"), 32);
+	strlcpy(board, getparm("board"), 32);
 	x1=getbcache(board);
 	if(!has_read_perm(&currentuser, board)) http_fatal("´íÎóµÄ°æÃæ");
 	if ((x1->flag & BOARD_CLUB_FLAG)

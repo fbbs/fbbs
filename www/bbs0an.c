@@ -12,7 +12,7 @@ int main() {
 	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
 	/* add end */
 	
-	strsncpy(path, getparm("path"), 511);
+	strlcpy(path, getparm("path"), 511);
 	if(strstr(path, "..") || strstr(path, "SYSHome")) http_fatal("此目录不存在");
 	sprintf(names, "0Announce%s/.Names", path);
 	fp=fopen(names, "r");

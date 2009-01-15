@@ -17,9 +17,9 @@ int main() {
 		printposttable_lite();
 		http_quit();
 	}
-  	strsncpy(pw1, getparm("pw1"), 13);
-  	strsncpy(pw2, getparm("pw2"), 13);
-  	strsncpy(pw3, getparm("pw3"), 13);
+  	strlcpy(pw1, getparm("pw1"), 13);
+  	strlcpy(pw2, getparm("pw2"), 13);
+  	strlcpy(pw3, getparm("pw3"), 13);
   	if(strcmp(pw2, pw3)) http_fatal("两次密码不相同");
   	if(strlen(pw2)<2) http_fatal("新密码太短");
   	if(!checkpasswd(currentuser.passwd, pw1)) http_fatal("密码不正确");

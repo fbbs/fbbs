@@ -5,7 +5,7 @@ int main() {
 	char *board, path[512], buf[512], ch, tmp[80], *ptr; 
 	struct boardheader *x1;
 	init_all();
-	strsncpy(path, getparm("path"), 511);
+	strlcpy(path, getparm("path"), 511);
     if(strstr(path,"bbslist"))
             http_fatal("´íÎóµÄÌÖÂÛÇø");
 	board=getbfroma(path);

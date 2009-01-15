@@ -6,7 +6,7 @@ int main() {
 	struct fileheader x;
 	int num, tmp, total;
 	init_all();
-	strsncpy(file, getparm("file"), 32);
+	strlcpy(file, getparm("file"), 32);
 	num=atoi(getparm("num"));
 	printf("<center>\n");
 	id=currentuser.userid;

@@ -10,7 +10,7 @@ int main() {
 	int i, start, total2=0, total, sum=0;
 	char path[256];
  	init_all();
-	strsncpy(board, getparm("board"), 32);
+	strlcpy(board, getparm("board"), 32);
 	x1=getbcache(board);
 	 if ((x1->flag & BOARD_CLUB_FLAG)
 	      && (x1->flag & BOARD_READ_FLAG )

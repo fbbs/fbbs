@@ -429,14 +429,6 @@ char *nohtml(char *s) {
 	return buf;      
 }
 
-int strsncpy(char *s1, char *s2, int n) {
-	int l=strlen(s2);
-	if(n<0) return;
-	if(n>l+1) n=l+1;
-	strlcpy(s1, s2, n-1);
-	s1[n-1]=0;
-}
-
 char *get_old_shm(int key, int size) {
         int id;
         id=shmget(key, size, 0);
@@ -497,7 +489,7 @@ int hsprintf(char *s, char *fmt, ...) {
 			if(buf[i+1]!='[') continue;
 			for(m=i+2; m<l && m<i+24; m++)
 				if(strchr("0123456789;", buf[m])==0) break;
-			strsncpy(ansibuf, &buf[i+2], m-(i+2)+1);
+			strlcpy(ansibuf, &buf[i+2], m-(i+2)+1);
 			i=m;
 			if(buf[i]!='m') continue;
 			//strnncpy(s, &len, "</font>");
@@ -657,8 +649,8 @@ int parm_add(char *name, char *val) {
 	if(parm_num>=255) http_fatal("too many parms.");
 	parm_val[parm_num]=calloc(len+1, 1);
 	if(parm_val[parm_num]==0) http_fatal("memory overflow2 %d %d", len, parm_num);
-	strsncpy(parm_name[parm_num], name, 78);
-	strsncpy(parm_val[parm_num], val, len+1);
+	strlcpy(parm_name[parm_num], name, 78);
+	strlcpy(parm_val[parm_num], val, len+1);
 	parm_num++;
 }
 char *getparm();
@@ -692,7 +684,7 @@ int http_init() {
 		}
 		t2=strtok(0, "&");
 	}
-	strsncpy(buf2, getsenv("QUERY_STRING"), 1024);
+	strlcpy(buf2, getsenv("QUERY_STRING"), 1024);
 	t2=strtok(buf2, "&");
 	while(t2) {
 		t3=strchr(t2, '=');
@@ -704,7 +696,7 @@ int http_init() {
 		}
 		t2=strtok(0, "&");
 	}
-	strsncpy(buf2, getsenv("HTTP_COOKIE"), 1024);
+	strlcpy(buf2, getsenv("HTTP_COOKIE"), 1024);
 	t2=strtok(buf2, ";");
 	while(t2) {
 		t3=strchr(t2, '=');
@@ -719,15 +711,15 @@ int http_init() {
 	char *fromtmp;
 	fromtmp = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
 	if (fromtmp == NULL)
-		strsncpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), 32);
+		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), 32);
 	else
 	{
 		while ((*fromtmp < '0')&&(*fromtmp != '\0'))
 			fromtmp++;
-		strsncpy(fromhost, fromtmp, 32);
+		strlcpy(fromhost, fromtmp, 32);
 	}
 #else
-	strsncpy(fromhost, getsenv("REMOTE_ADDR"), 32);
+	strlcpy(fromhost, getsenv("REMOTE_ADDR"), 32);
 #endif
 	my_style=atoi(getparm("my_style"));
 #ifndef XMLFILE
@@ -813,8 +805,8 @@ int user_init(struct userec *x, struct user_info **y) {
 	struct userec *x2;
 	char id[20], num[20];
 	int i, uid, key;
-	strsncpy(id, getparm("utmpuserid"), 13);
-	strsncpy(num, getparm("utmpnum"), 12);
+	strlcpy(id, getparm("utmpuserid"), 13);
+	strlcpy(num, getparm("utmpnum"), 12);
 	key=atoi(getparm("utmpkey"));
 	i=atoi(num);
 	if(i<=0 || i>MAXACTIVE) return 0;
@@ -900,7 +892,7 @@ int post_mail(char *userid, char *title, char *file, char *id, char *nickname, c
 	}
 	if(i>=99) return -1;
 	sprintf(header.filename, "M.%d.A", t);
-	strsncpy(header.title, title, 60);
+	strlcpy(header.title, title, 60);
 	fp=fopen(buf3, "w");
 	if(fp==0) return -2;
 	fp2=fopen(file, "r");
@@ -1016,11 +1008,11 @@ int post_article(char *board, char *title, char *file, char *id, char *nickname,
 	sprintf(header.filename, "M.%d.A", t);
 	header.id = get_nextid(board2);
 	if (strncmp(title, "Re: ", 4) == 0 && !(o_id == -1 && o_gid == -1)){
-		strsncpy(header.title, title, 68);
+		strlcpy(header.title, title, 68);
 		header.reid = o_id;
 		header.gid = o_gid;
 	}else{
-		strsncpy(header.title, title, 50);
+		strlcpy(header.title, title, 50);
 		header.reid = header.id;
 		header.gid = header.id;
 	}
@@ -1527,7 +1519,7 @@ char *flag_str2(int access, int has_read) {
 char *userid_str(char *s) {
 	static char buf[512];
 	char buf2[256], tmp[256], *ptr, *ptr2;
-	strsncpy(tmp, s, 255);
+	strlcpy(tmp, s, 255);
 	buf[0]=0;
 	ptr=strtok(tmp, " ,();\r\n\t");
 	while(ptr && strlen(buf)<400) {
@@ -1806,7 +1798,7 @@ void printpostmarquee(void)
 void showheadline(char *board)
 {
 	char path[512], headline[512];
-	strsncpy(path,anno_path_of(board),511);
+	strlcpy(path,anno_path_of(board),511);
 	if(strstr(path, "..") || strstr(path, "SYSHome")) return;
 	sprintf(headline, "0Announce%s/headline", path); 
         if(dashf(headline))
@@ -1827,7 +1819,7 @@ void showrecommend(char *board, int showall, int showborder)
 	int showed=0;
 	char *ptr, path[512], names[512], name[1024][80], file[1024][80], buf[512], title[256]=" ";
 	
-	strsncpy(path,anno_path_of(board),511);
+	strlcpy(path,anno_path_of(board),511);
 	if(strstr(path, "..") || strstr(path, "SYSHome")) return;
 	sprintf(names, "0Announce%s/recommend/.Names", path);
 	fp=fopen(names, "r");

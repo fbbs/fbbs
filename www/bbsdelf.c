@@ -23,9 +23,9 @@ int main()
 	int num=0;
 	init_all();
 	if(!loginok) http_fatal("匆匆过客无法删除文件, 请先登录");
-	strsncpy(file, getparm("file"), 40);
+	strlcpy(file, getparm("file"), 40);
 	start=atoi(getparm("start"));
-	strsncpy(board, getparm("board"),80);
+	strlcpy(board, getparm("board"),80);
 	sprintf(filename,"%s/upload/%s/.DIR",BBSHOME,board);
 	fpdir=fopen(filename, "r");
 	if(fpdir==0) 

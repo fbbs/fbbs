@@ -79,8 +79,8 @@ void addtodir(char *board, char *tmpfile)
 	if(!loginok) 
 		http_fatal("匆匆过客无法执行本操作，请先登录");
 	x.reid=1;
-	strsncpy(x.owner, currentuser.userid, 13);
-	strsncpy(x.filename, tmpfile, 100);
+	strlcpy(x.owner, currentuser.userid, 13);
+	strlcpy(x.filename, tmpfile, 100);
 	strtourl(url_filename,x.filename);
 	x.timeDeleted=time(0);
 	sprintf(file,"%s/upload/%s/%s",BBSHOME,board,x.filename);

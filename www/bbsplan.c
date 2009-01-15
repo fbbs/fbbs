@@ -38,7 +38,7 @@ int main() {
 int save_plan(char *plan) {
 	char buf[10000];
 	fp=fopen(plan, "w");
-	strsncpy(buf, getparm("text"), 9999);
+	strlcpy(buf, getparm("text"), 9999);
 	fprintf(fp, "%s", buf);
 	fclose(fp);
 	printf("个人说明档修改成功。");

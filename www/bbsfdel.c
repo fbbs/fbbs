@@ -11,7 +11,7 @@ int main() {
    	printf("<b>删除好友 · %s [使用者: %s]</b>\n", BBSNAME, currentuser.userid);
 	printf("<center>\n");
 	printpretable_lite();
-	strsncpy(userid, getparm("userid"), 13);
+	strlcpy(userid, getparm("userid"), 13);
 	if(userid[0]==0) {
 		printf("<form action=bbsfdel>\n");
 		printf("请输入欲删除的好友帐号: <input type=text><br>\n");

@@ -56,44 +56,44 @@ int main() {
 int check_info() {
   	int m, n;
   	char buf[256];
-    	strsncpy(buf, getparm("nick"), 30);
+    	strlcpy(buf, getparm("nick"), 30);
     	for(m=0; m<strlen(buf); m++) if(buf[m]<32 && buf[m]>0 || buf[m]==-1) buf[m]=' ';
     	if(strlen(buf)>1) {
 		strcpy(currentuser.username, buf);
 	} else {
 		printf("警告: 昵称太短!<br>\n");
 	}
-    	strsncpy(buf, getparm("realname"), 9);
+    	strlcpy(buf, getparm("realname"), 9);
     	if(strlen(buf)>1) {
 		strcpy(currentuser.realname, buf); 
 	} else {
 		printf("警告: 真实姓名太短!<br>\n");
 	}
-    	strsncpy(buf, getparm("address"), 40);
+    	strlcpy(buf, getparm("address"), 40);
     	if(strlen(buf)>8) {
 		strcpy(currentuser.address, buf);
 	} else {
 		printf("警告: 居住地址太短!<br>\n");
 	}
-    	strsncpy(buf, getparm("year"), 5);
+    	strlcpy(buf, getparm("year"), 5);
     	if(atoi(buf)>1910 && atoi(buf)<1998) {
 		currentuser.birthyear=atoi(buf)-1900;
 	} else {
 		printf("警告: 错误的出生年份!<br>\n");
 	}
-    	strsncpy(buf, getparm("month"), 3);
+    	strlcpy(buf, getparm("month"), 3);
     	if(atoi(buf)>0 && atoi(buf)<=12) {
 		currentuser.birthmonth=atoi(buf);
 	} else {
 		printf("警告: 错误的出生月份!<br>\n");
 	}
-    	strsncpy(buf, getparm("day"), 3);
+    	strlcpy(buf, getparm("day"), 3);
     	if(atoi(buf)>0 && atoi(buf)<=31) {
 		currentuser.birthday=atoi(buf);
 	} else {
 		printf("警告: 错误的出生日期!<br>\n");
 	}
-    	strsncpy(buf, getparm("gender"), 2);
+    	strlcpy(buf, getparm("gender"), 2);
     	if(!strcasecmp(buf, "F")) currentuser.gender='F';
     	if(!strcasecmp(buf, "M")) currentuser.gender='M';
     	save_user_data(&currentuser);

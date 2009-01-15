@@ -6,9 +6,9 @@ int main() {
 	struct userec *user;
 		
 	init_all();
-	strsncpy(board, getparm("board"), 30);
-	strsncpy(file, getparm("file"), 32);
-	strsncpy(target, getparm("target"), 30);
+	strlcpy(board, getparm("board"), 30);
+	strlcpy(file, getparm("file"), 32);
+	strlcpy(target, getparm("target"), 30);
 	if(!loginok) 
 	{
 		printf("<b>转寄/推荐给好友 · %s </b><br>\n",BBSNAME);
