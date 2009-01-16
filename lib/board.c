@@ -1,6 +1,6 @@
 #include <bbs.h>
 
-int changeboard(struct boardheader *bp, char *cboard, const char *board)
+void changeboard(struct boardheader *bp, char *cboard, const char *board)
 {
 	bp = getbcache(board);
 	strcpy(cboard, board);
