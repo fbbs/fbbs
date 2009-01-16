@@ -330,6 +330,31 @@ static int count_user(void)
 }
 
 #ifdef IPMAXLOGINS
+// Compare 'str' to strings in file 'filename'.
+// Return 1 if leading characters of 'str' matches (case insensitive)
+// any of those strings, 0 otherwise.
+static int IsSpecial(const char *str, const char *filename)
+{
+	FILE *fp;
+	char line[STRLEN];
+	char *ptr;
+	int i = 0;
+
+	if ((fp = fopen(filename, "r")) != NULL) {
+		while (fgets(line, sizeof(line), fp)) {
+			ptr = strtok(line, " \r\n\t");
+			if (!ptr[0] || ptr[0] == '#')
+				continue;
+			else if (!strncmp(str, ptr, strlen(ptr))) {
+				i = 1;
+				break;
+			}
+		}
+		fclose(fp);
+	}
+	return i;
+}
+
 // Count active logins from IP 'fromhost'.
 // Called by count_ip().
 static int _cnt_ip(struct user_info *uentp)
@@ -832,32 +857,6 @@ static void notepad_init(void)
 		report("自动发信时间更改", currentuser.userid);
 	}
 	return;
-}
-
-
-// Compare 'str' to strings in file 'filename'.
-// Return 1 if leading characters of 'str' matches (case insensitive)
-// any of those strings, 0 otherwise.
-static int IsSpecial(const char *str, const char *filename)
-{
-	FILE *fp;
-	char line[STRLEN];
-	char *ptr;
-	int i = 0;
-
-	if ((fp = fopen(filename, "r")) != NULL) {
-		while (fgets(line, sizeof(line), fp)) {
-			ptr = strtok(line, " \r\n\t");
-			if (!ptr[0] || ptr[0] == '#')
-				continue;
-			else if (!strncmp(str, ptr, strlen(ptr))) {
-				i = 1;
-				break;
-			}
-		}
-		fclose(fp);
-	}
-	return i;
 }
 
 // Search 'uid' in id-host pairs in "etc/special.ini"(case insensitive)
