@@ -16,7 +16,7 @@ OBJS	 = string.o mmdecode.o fileio.o modetype.o uinfo.o boardrc.o \
 
 .SUFFIXES: .o .c
 
-.c.o:   ;   $(CC) -s $(CFLAGS) -Wunused -c $*.c
+.c.o:   ;   $(CC) -s $(CFLAGS) -Wall -c $*.c
 
 #--------------------- Dependency starts here -------------------
 

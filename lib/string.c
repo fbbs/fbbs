@@ -42,11 +42,12 @@ int strncasecmp_gbk(const char *s1, const char *s2, int n) {
 		if (c1 != c2)
 			return (c1 - c2);
 		++l;
-		if (c1 & 0x80)
+		if (c1 & 0x80) {
 			if(*s1 == *s2)
 				++l;
 			else
 				return (*s1 - *s2);
+		}
 	}
 	if (l==n)
 		return 0;
@@ -175,12 +176,13 @@ int ellipsis(char *str, int len)
 }
 
 // Removes trailing chars whose ASCII code is less than 0x20.
-char *rtrim(unsigned char *str){
+char *rtrim(char *str){
 	if (str == NULL)
 		return NULL;
 	size_t len = strlen(str);
-	unsigned char *ptr = str + len;
-	while (*ptr <= 0x20 && ptr >= str) {
+	unsigned char *ustr = (unsigned char *)str;
+	unsigned char *ptr = ustr + len;
+	while (*ptr <= 0x20 && ptr >= ustr) {
 		--ptr;
 	}
 	*++ptr = '\0';
@@ -189,20 +191,21 @@ char *rtrim(unsigned char *str){
 
 // Removes both leading and trailing chars
 // whose ASCII code is less than 0x20.
-char *trim(unsigned char *str){
+char *trim(char *str){
 	if (str == NULL)
 		return NULL;
 	size_t len = strlen(str);
-	unsigned char *right = str + len;
-	while (*right <= 0x20 && right >= str) {
+	unsigned char *ustr = (unsigned char *)str;
+	unsigned char *right = ustr + len;
+	while (*right <= 0x20 && right >= ustr) {
 		--right;
 	}
 	*++right = '\0';
-	unsigned char *left = str;
+	unsigned char *left = ustr;
 	if(*left <= 0x20){
 		while(*++left <= 0x20)
 			;
-		memmove(str, left, right - left + 1);
+		memmove(ustr, left, right - left + 1);
 	}
 	return str;
 }

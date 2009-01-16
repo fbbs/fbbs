@@ -26,8 +26,8 @@ char *strcasestr_gbk(const char *haystack, const char *needle);
 char *ansi_filter(char *dst, const char *src);
 int getdatestring(time_t time, int mode);
 int ellipsis(char *str, int len);
-char *rtrim(unsigned char *str);
-char *trim(unsigned char *str);
+char *rtrim(char *str);
+char *trim(char *str);
 size_t strlcpy(char *dst, const char *src, size_t siz);
 
 //boardrc.c
