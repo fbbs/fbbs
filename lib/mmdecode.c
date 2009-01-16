@@ -1,90 +1,36 @@
-/* 
- * mmdecode.c		-- a tool for decoding QP/BASE64 string
- *					deliver from Maple 3
- * 
- * of SEEDNetBBS generation 1 (libBBS implement)
- *
- * Copyright (c) 1998, 1999, Edward Ping-Da Chuang <edwardc@edwardc.dhs.org>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * CVS: $Id: mmdecode.c 366 2007-05-12 16:35:51Z danielfree $
- */
-
-/*-------------------------------------------------------*/
-/* lib/str_decode.c	( NTHU CS MapleBBS Ver 3.00 )	     */
-/*-------------------------------------------------------*/
-/* target : included C for QP/BASE64 decoding		     */
-/* create : 95/03/29				 	                 */
-/* update : 97/03/29				 	                 */
-/*-------------------------------------------------------*/
-
-/* ----------------------------------------------------- */
-/* QP code : "0123456789ABCDEF"				             */
-/* ----------------------------------------------------- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static int
-qp_code(x)
-register int x;
+static int qp_code(int x)
 {
 	if (x >= '0' && x <= '9')
-	return x - '0';
+		return x - '0';
 	if (x >= 'a' && x <= 'f')
-	return x - 'a' + 10;
+		return x - 'a' + 10;
 	if (x >= 'A' && x <= 'F')
-	return x - 'A' + 10;
+		return x - 'A' + 10;
 	return -1;
 }
 
-/* ------------------------------------------------------------------ */
-/* BASE64 :							      */
-/* "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/" */
-/* ------------------------------------------------------------------ */
-
-static int
-base64_code(x)
-register int x;
+// BASE64 :
+// "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+static int base64_code(int x)
 {
 	if (x >= 'A' && x <= 'Z')
-	return x - 'A';
+		return x - 'A';
 	if (x >= 'a' && x <= 'z')
-	return x - 'a' + 26;
+		return x - 'a' + 26;
 	if (x >= '0' && x <= '9')
-	return x - '0' + 52;
+		return x - '0' + 52;
 	if (x == '+')
-	return 62;
+		return 62;
 	if (x == '/')
-	return 63;
+		return 63;
 	return -1;
 }
 
-/* ----------------------------------------------------- */
-/* judge & decode QP / BASE64				 */
-/* ----------------------------------------------------- */
-
+// judge & decode QP / BASE64
 void _mmdecode(unsigned char *str)
 {
 	int code, c1, c2, c3, c4;
