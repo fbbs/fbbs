@@ -1,82 +1,53 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: bbs.c 366 2007-05-12 16:35:51Z danielfree $
- */
 #include "bbs.h"
 #include <time.h>
 #if defined(BSD44)
 #include <stdlib.h>
-
 #elif defined(LINUX)
 /* include nothing :-) */
 #else
-
 #include <rpcsvc/rstat.h>
 #endif
 
 #ifndef DLM
 #undef	ALLOWGAME
 #endif
-//added be iamfat 2003.03.21
+
 //用于保存版主对精华区操作记录的文件名,硬盘上的位置是logs/boardname
 char ANN_LOG_PATH[256];
-
-/* added by roly 02.03.21*/
-extern char buf2[STRLEN];
-int hisfriend_wall_logout();
-
-/* added end */
-
-int mot;
 struct postheader header;
 
-int continue_flag;
-int readpost;
+extern char buf2[STRLEN];
+int hisfriend_wall_logout();
 int digestmode;
 int local_article;
 struct userec currentuser;
+struct boardheader *currbp;
 int usernum = 0;
 char currboard[STRLEN - BM_LEN];
 char currBM[BM_LEN - 1];
 int selboard = 0;
 char someoneID[31];
-struct boardheader *currbp;
-
-//Modified by IAMFAT 2002-05-27
-//char    ReadPost[STRLEN] = "";
-//char    ReplyPost[STRLEN] = "";
 char topic[STRLEN] = "";
-
-//End IAMFAT
 int FFLL = 0;
+int noreply = 0;
+#ifdef MARK_X_FLAG
+int markXflag = 0;
+#endif
+int mailtoauther = 0;
+int totalusers, usercounter;
+char genbuf[1024];
+char quote_title[120], quote_board[120];
+char quote_file[120], quote_user[120];
+#ifndef NOREPLY
+char replytitle[STRLEN];
+int o_id = 0;
+int o_gid = 0;
+#endif
 
-int
-		getlist(char *, char **, int, char **, int, char **, int, char **,
+int	getlist(char *, char **, int, char **, int, char **, int, char **,
 				int);
 char *filemargin();
 void board_usage();
-
-//void cancelpost ();
 void canceltotrash();
 void add_crossinfo();
 int thesis_mode();
@@ -106,8 +77,7 @@ int s_msg();
 int send_msg();
 int b_notes_passwd();
 int post_cross(char islocal, int mod);
-//int   read_letter();
-int BM_range(); //add by money. 2002.1.12
+int BM_range();
 int lock();
 extern int numboards;
 extern int x_lockscreen();
@@ -116,27 +86,9 @@ extern char BoardName[];
 extern int cmpbnames();
 extern int toggle1, toggle2;
 extern char fromhost[];
-
-int noreply = 0;
-
-#ifdef MARK_X_FLAG
-int markXflag = 0;
-#endif
-int mailtoauther = 0;
-
-char genbuf[1024];
-char quote_title[120], quote_board[120];
-char quote_file[120], quote_user[120];
-
-#ifndef NOREPLY
-char replytitle[STRLEN];
-int o_id = 0;
-int o_gid = 0;
-#endif
-
 extern struct boardheader *getbcache();
 extern struct bstat *getbstat();
-int totalusers, usercounter;
+
 
 int check_stuffmode() {
 	//if (uinfo.mode == RMAIL || (uinfo.mode == READING && junkboard()))
