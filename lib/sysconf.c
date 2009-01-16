@@ -232,7 +232,7 @@ static void parse_sysconf(const char *fname)
 		} else if (*ptr != '\n') {
 			key = strtok(ptr, "=#\n");
 			str = strtok(NULL, "#\n");
-			if (key != NULL & str != NULL) {
+			if (key != NULL && str != NULL) {
 				strtok(key, " \t");
 				while (*str == ' ' || *str == '\t')
 					str++;
