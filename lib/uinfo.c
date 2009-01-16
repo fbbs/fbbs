@@ -22,55 +22,37 @@ char *cexpstr(int exp) {
 	return ce;
 }
 
-char *cnumposts(int num)
-{
-	if (num <= 0)
-		return GLY_CPOST0;
-	if (num > 0 && num <= 500)
-		return GLY_CPOST1;
-	if (num > 500 && num <= 1500)
-		return GLY_CPOST2;
-	if (num > 1500 && num <= 4000)
-		return GLY_CPOST3;
-	if (num > 4000 && num <= 10000)
-		return GLY_CPOST4;
-	if (num > 10000)
-		return GLY_CPOST5;
-}
-
 #ifdef ALLOWGAME
 char *cnummedals(int num)
 {
-	if(num == 0)
+	if(num <= 0)
 		return GLY_MEDAL0;
 	if(num <= 300)
 		return GLY_MEDAL1;
-	if(num > 300 && num <= 1000)
+	if(num <= 1000)
 		return GLY_MEDAL2;
-	if(num > 1000 && num <= 3000)
+	if(num <= 3000)
 		return GLY_MEDAL3;
-	if(num > 3000)
-		return GLY_MEDAL4;
+	return GLY_MEDAL4;
 }
 
 char *cmoney(int num)
 {
-	if(num <= 100 )
+	if(num <= 100)
 		return GLY_MONEY0;
-	if(num > 100 && num <= 3000)
+	if(num <= 3000)
 		return GLY_MONEY1;
-	if(num > 3000 && num <= 10000)
+	if(num <= 10000)
 		return GLY_MONEY2;
-	if(num > 10000 && num <= 50000)
+	if(num <= 50000)
 		return GLY_MONEY3;
-	if(num > 50000 && num <= 150000)
+	if(num <= 150000)
 		return GLY_MONEY4;
-	if(num > 150000 && num <= 300000)
+	if(num <= 300000)
 		return GLY_MONEY5;
-	if(num > 300000 && num <= 500000)
+	if(num <= 500000)
 		return GLY_MONEY6;
-	if(num > 500000)
-		return GLY_MONEY7;
+	return GLY_MONEY7;
 }
 #endif
 

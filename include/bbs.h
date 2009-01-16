@@ -387,7 +387,6 @@ extern char datestring[];
 
 //uinfo.c
 char *cexpstr(int exp);
-char *cnumposts(int num);
 #ifdef ALLOWGAME
 char *cnummedals(int num);
 char *cmoney(int num);
