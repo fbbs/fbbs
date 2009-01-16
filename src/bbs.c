@@ -472,35 +472,36 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	return FULLUPDATE;
 }
 
-//½øÈëÒ»¸ö°æÃæÊ±ÏÔÊ¾µÄ±êÌâ
-void readtitle() {
+// Show title when entering a board.
+static void readtitle(void)
+{
+	extern int t_cmpuids();
 	struct boardheader *bp;
 	struct bstat *bs;
 	int i, j, bnum, tuid;
 	struct user_info uin;
-	char tmp[STRLEN], bmlists[5][13]; //iamfat 2002.08.28  tmp[40]-->tmp[255] ±ÜÃâÒç³ö
-
-	// bmlists[3][16]-->bmlists[5][13]Ôö¼Óµ½5¸ö°æÖ÷
-	extern int t_cmpuids();
-
+	char tmp[STRLEN];
+	char bmlists[5][IDLEN + 1]; // up to 5 BMs.
 	char header[STRLEN], title[STRLEN];
-	char readmode[11];
+	const char *readmode;
 
 	bp = getbcache(currboard);
 	bs = getbstat(currboard);
-	memcpy(currBM, bp->BM, BM_LEN - 1);
+
 	bnum = 0;
-	for (i = 0, j = 0; currBM[i] != '\0' && i < BMNAMELISTLEN; i++) { //½«°æÖ÷Ãûµ¥¿½µ½bmlistsÀï
-		if (currBM[i] == ' ') {
+	// Copy ID of BMs ('bp->BM') to 'bmlists'.
+	for (i = 0, j = 0; bp->BM[i] != '\0' && i < BMNAMELISTLEN; i++) {
+		if (bp->BM[i] == ' ') {
 			bmlists[bnum][j] = '\0';
 			bnum++;
 			j = 0;
 		} else {
-			bmlists[bnum][j++] = currBM[i];
+			bmlists[bnum][j++] = bp->BM[i];
 		}
 	}
 #ifdef BMNAMELISTLIMIT
-	if (i == BMNAMELISTLEN) { //Ãû³ÆÁÐ±íÌ«³¤
+	// If length of BM string exceeds BMNAMELISTLEN, use "...".
+	if (i >= BMNAMELISTLEN) {
 		j = 0;
 		bmlists[bnum][j++] = '.';
 		bmlists[bnum][j++] = '.';
@@ -509,22 +510,20 @@ void readtitle() {
 #endif
 	bmlists[bnum++][j] = '\0';
 
-	if (currBM[0] == '\0' || currBM[0] == ' ') {
-#ifdef AddWaterONLY
-		strcpy (header, "¶àÐ»¹Ø×¢±¾°æ");
-#else
+	if (bp->BM[0] == '\0' || bp->BM[0] == ' ') {
 		strcpy(header, "³ÏÕ÷°æÖ÷ÖÐ");
-#endif
 	} else {
 		strcpy(header, "°æÖ÷: ");
+		// Online BMs are shown in green, offline yellow, cloaking cyan
+		// (if currentuser have PERM_SEECLOAK, otherwise in yellow).
 		for (i = 0; i < bnum; i++) {
 			tuid = getuser(bmlists[i]);
 			search_ulist(&uin, t_cmpuids, tuid);
 			if (uin.active && uin.pid && !uin.invisible)
-				sprintf(tmp, "[32m%s[33m ", bmlists[i]);
+				sprintf(tmp, "\033[32m%s\033[33m ", bmlists[i]);
 			else if (uin.active && uin.pid && uin.invisible
 					&& (HAS_PERM(PERM_SEECLOAK) || usernum == uin.uid))
-				sprintf(tmp, "[36m%s[33m ", bmlists[i]);
+				sprintf(tmp, "\033[36m%s\033[33m ", bmlists[i]);
 			else
 				sprintf(tmp, "%s ", bmlists[i]);
 			strcat(header, tmp);
@@ -538,85 +537,76 @@ void readtitle() {
 		strcpy(title, bp->title + 8);
 
 	showtitle(header, title);
-	//Modified by IAMFAT 2002-05-29
-	prints(" Àë¿ª[[1;32m¡û[m,[1;32me[m] Ñ¡Ôñ[[1;32m¡ü[m,[1;32m¡ý[m] ÔÄ¶Á[[1;32m¡ú[m,[1;32mRtn[m] ·¢ÎÄÕÂ[[1;32mCtrl-P[m] ¿³ÐÅ[[1;32md[m] ±¸ÍüÂ¼[[1;32mTAB[m] ÇóÖú[[1;32mh[m]\n");
-	if (digestmode == 0) {
-		if (DEFINE(DEF_THESIS)) /* youzi 1997.7.8 */
-			strcpy(readmode, "Ö÷Ìâ");
-		else
-			strcpy(readmode, "Ò»°ã");
-	} else if (digestmode == DIGIST_MODE)
-		strcpy(readmode, "ÎÄÕª");
-	else if (digestmode == THREAD_MODE)
-		strcpy(readmode, "Ö÷Ìâ");
-	else if (digestmode == MARK_MODE)
-		strcpy(readmode, "MARK");
-	else if (digestmode == ORIGIN_MODE)
-		strcpy(readmode, "Ô­×÷");
+	prints(" Àë¿ª[\033[1;32m¡û\033[m,\033[1;32me\033[m] "
+		"Ñ¡Ôñ[\033[1;32m¡ü\033[m,\033[1;32m¡ý\033[m] "
+		"ÔÄ¶Á[\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m] "
+		"·¢ÎÄÕÂ[\033[1;32mCtrl-P\033[m] ¿³ÐÅ[\033[1;32md\033[m] "
+		"±¸ÍüÂ¼[\033[1;32mTAB\033[m] ÇóÖú[\033[1;32mh\033[m]\n");
+
+	switch (digestmode) {
+		case NORMAL_MODE:
+			if (DEFINE(DEF_THESIS))
+				readmode = "Ö÷Ìâ";
+			else
+				readmode = "Ò»°ã";
+			break;
+		case DIGIST_MODE:
+			readmode = "ÎÄÕª";
+			break;
+		case THREAD_MODE:
+			readmode = "Ö÷Ìâ";
+			break;
+		case MARK_MODE:
+			readmode = "MARK";
+			break;
+		case ORIGIN_MODE:
+			readmode = "Ô­×÷";
+			break;
+		case AUTHOR1_MODE:
+			readmode = "Ä£ºý";
+			break;
+		case AUTHOR2_MODE:
+			readmode = "¾«È·";
+			break;
+		case KEYWORD_MODE:
+			readmode = "±êÌâ¹Ø¼ü×Ö";
+			break;
+		case TRASH_MODE:
+			readmode = "À¬»øÏä";
+			break;
+		case JUNK_MODE:
+			readmode = "Õ¾ÎñÀ¬»øÏä";
+			break;
+		case ATTACH_MODE:
+			readmode = "¸½¼þÇø";
+			break;
+		default:
+			readmode = "Î´¶¨Òå";
+	}
+
+	if (digestmode == AUTHOR1_MODE || digestmode == AUTHOR2_MODE)
+		prints("\033[1;37;44m  ±àºÅ   %-12s %6s %-9s (¹Ø¼ü×Ö: \033[32m%-12s"
+			"\033[37m) [\033[33m%s\033[37mÍ¬×÷ÕßÔÄ¶Á] \033[m\n",
+			"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", someoneID, readmode);
 	else if (digestmode == KEYWORD_MODE)
-		strcpy(readmode, "±êÌâ¹Ø¼ü×Ö");
+		prints("\033[1;37;44m  ±àºÅ   %-12s %6s %-19s            "
+			"[\033%10sÊ½¿´°æ] \033[m\n",
+			"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
 	else if (digestmode == TRASH_MODE)
-		strcpy(readmode, "À¬»øÏä");
-	else if (digestmode == JUNK_MODE)
-		strcpy(readmode, "Õ¾ÎñÀ­»øÏä");
-	else if (digestmode == ATTACH_MODE)
-		strcpy(readmode, "¸½¼þÇø");
-	//Modified by IAMFAT 2002-05-26
-	//Modified by IAMFAT 2002-05-29
-	/*
-	 if (DEFINE (DEF_THESIS) && digestmode == 0)
-	 prints ("[1;37;44m  ±àºÅ   %-12s %6s %-25s ÔÚÏß[%4d] [%4sÊ½¿´°æ] [m\n", "¿¯ µÇ Õß",
-	 "ÈÕ  ÆÚ", " ±ê  Ìâ", bp->online_num, readmode);
-	 else if (digestmode == 5 || digestmode == 6)
-	 prints
-	 ("[1;37;44m  ±àºÅ   %-12s %6s %-9s (¹Ø¼ü×Ö: [32m%-12s[37m) [[33m%s[37mÍ¬×÷ÕßÔÄ¶Á] [m\n",
-	 "¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", someoneID,
-	 (digestmode == 5) ? "Ä£ºý" : "¾«È·");
-	 else if (digestmode == 7)
-	 prints ("[1;37;44m  ±àºÅ   %-12s %6s %-19s ÔÚÏß[%4d] [%10sÊ½¿´°æ] [m\n",
-	 "¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", bp->online_num, readmode);
-	 else if(digestmode==TRASH_MODE)
-	 prints ("[1;37;44m  ±àºÅ   %-12s %6s %-25s ÔÚÏß[%4d] [%6sÄ£Ê½] [m\n", "¿¯ µÇ Õß",
-	 "ÈÕ  ÆÚ", " ±ê  Ìâ", bp->online_num, readmode);
-	 else
-	 prints ("[1;37;44m  ±àºÅ   %-12s %6s %-27s ÔÚÏß[%4d] [%4sÄ£Ê½] [m\n", "¿¯ µÇ Õß",
-	 "ÈÕ  ÆÚ", " ±ê  Ìâ", bp->online_num, readmode);
-	 */
-	if (digestmode == 5 || digestmode == 6)
-		prints(
-				"[1;37;44m  ±àºÅ   %-12s %6s %-9s (¹Ø¼ü×Ö: [32m%-12s[37m) [[33m%s[37mÍ¬×÷ÕßÔÄ¶Á] [m\n",
-				"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", someoneID,
-				(digestmode == 5) ? "Ä£ºý" : "¾«È·");
-	else if (digestmode == 7)
-		prints(
-				"[1;37;44m  ±àºÅ   %-12s %6s %-19s            [%10sÊ½¿´°æ] [m\n",
-				"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
-	else if (digestmode == TRASH_MODE)
-		prints(
-				"[1;37;44m  ±àºÅ   %-12s %6s %-25s            [%6sÄ£Ê½] [m\n",
-				"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
+		prints("\033[1;37;44m  ±àºÅ   %-12s %6s %-25s            [%6sÄ£Ê½]"
+			" \033[m\n",
+			"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
 	else {
 		if (bp->flag & BOARD_NOREPLY_FLAG) {
-			prints(
-					"[1;37;44m  ±àºÅ   %-12s %6s %-8s  [33m±¾°æ²»¿É»Ø¸´[37m    ÔÚÏß:%-4d    [%4sÄ£Ê½] [m\n",
-					"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", bs->inboard, readmode);
+			prints("\033[1;37;44m  ±àºÅ   %-12s %6s %-8s  \033[33m"
+				"±¾°æ²»¿É»Ø¸´\033[37m    ÔÚÏß:%-4d    [%4sÄ£Ê½] \033[m\n",
+				"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", bs->inboard, readmode);
 		} else {
-			prints(
-					"[1;37;44m  ±àºÅ   %-12s %6s %-25s ÔÚÏß:%-4d    [%4sÄ£Ê½] [m\n",
-					"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", bs->inboard, readmode);
+			prints("\033[1;37;44m  ±àºÅ   %-12s %6s %-25s ÔÚÏß:%-4d"
+				"    [%4sÄ£Ê½] \033[m\n",
+				"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", bs->inboard, readmode);
 		}
 	}
-	/*
-	 if (DEFINE(DEF_THESIS) && digestmode == 0)
-	 prints("[1;37;44m ±àºÅ   %-12s %6s %-38s[%4sÊ½¿´°æ] [m\n", "¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
-	 else if (digestmode == 5 || digestmode == 6)
-	 prints("[1;37;44m ±àºÅ   %-12s %6s %-10s (¹Ø¼ü×Ö: [32m%-12s[37m) [[33m%s[37mÍ¬×÷ÕßÔÄ¶Á] [m\n","¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", someoneID,(digestmode==5)?"Ä£ºý":"¾«È·");
-	 else if (digestmode == 7 )
-	 prints("[1;37;44m ±àºÅ   %-12s %6s %-32s[%10sÊ½¿´°æ] [m\n", "¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
-	 else
-	 prints("[1;37;44m ±àºÅ   %-12s %6s %-40s[%4sÄ£Ê½] [m\n", "¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
-	 */
-	//Modify End
 	clrtobot();
 }
 

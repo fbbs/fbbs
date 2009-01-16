@@ -676,7 +676,7 @@ static char *boardmargin(void)
 	static char buf[STRLEN];
 
 	if (selboard)
-		sprintf(buf, "讨论区 [%s]", currboard);
+		snprintf(buf, sizeof(buf), "讨论区 [%s]", currboard);
 	else {
 		brc_initial(currentuser.userid, DEFAULTBOARD);
 		changeboard(currbp, currboard, DEFAULTBOARD);
@@ -788,24 +788,17 @@ void update_endline(void)
 	orderWish++;
 }
 
-/*ReWrite by SmallPig*/
-void showtitle(char *title, char *mid) {
+void showtitle(char *title, char *mid)
+{
 	extern char BoardName[]; //main.c
-
 	char buf[STRLEN], *note;
 	int spc1;
 	int spc2;
 
 	note = boardmargin();
 	spc1 = 39 + num_ans_chr(title) - strlen(title) - strlen(mid) / 2;
-	//if(spc1 < 2) 
-	//      spc1 = 2;
-	//Modified by IAMFAT 2002-05-28
-	//Roll Back 2002-05-29
 	spc2 = 79 - (strlen(title) - num_ans_chr(title) + spc1 + strlen(note)
 			+ strlen(mid));
-	//if (spc2 < 1) 
-	//      spc2 = 1;
 	spc1 += spc2;
 	spc1 = (spc1 > 2) ? spc1 : 2; //防止过小
 	spc2 = spc1 / 2;
@@ -824,6 +817,7 @@ void showtitle(char *title, char *mid) {
 	update_endline();
 	move(1, 0);
 }
+
 void firsttitle(char *title) {
 	extern int mailXX; //main.c
 	extern char BoardName[]; //main.c
@@ -839,6 +833,8 @@ void firsttitle(char *title) {
 
 	showtitle(title, middoc);
 }
+
+// Show 'title' on line 0, 'prompt' on line1.
 void docmdtitle(char *title, char *prompt) {
 	firsttitle(title);
 	move(1, 0);
