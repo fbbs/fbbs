@@ -45,7 +45,7 @@ void _mmdecode(unsigned char *str)
 	dst = buf;
 	code = 0;
 
-	while (c1 = *src++)
+	while ((c1 = *src++) != '\0')
 	{
 		if (c1 == '?' && *src == '=')
 		{
@@ -164,6 +164,6 @@ void _mmdecode(unsigned char *str)
 	{
 		line:
 		*dst = '\0';
-		strcpy(str, buf);
+		strcpy((char *)str, (char *)buf);
 	}
 }
