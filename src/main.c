@@ -45,7 +45,6 @@ int friend_login_wall();
 struct user_info *t_search();
 void r_msg();
 void count_msg();
-void c_recover();
 void tlog_recover();
 
 // Handle giveupBBS(½äÍø) transactions.
@@ -1046,6 +1045,70 @@ void set_numofsig(void)
 	return;
 }
 
+// Recover user's work from abnormal exit.
+static void c_recover(void)
+{
+	char fname[STRLEN], buf[STRLEN];
+	int a;
+
+	sprintf(fname, "home/%c/%s/%s.deadve", toupper(currentuser.userid[0]),
+			currentuser.userid, currentuser.userid);
+	if (!dashf(fname) || strcmp(currentuser.userid, "guest") == 0)
+		return;
+	clear();
+	genbuf[0] = '\0';
+	getdata(0, 0, "\033[1;32mÄúÓÐÒ»¸ö±à¼­×÷Òµ²»Õý³£ÖÐ¶Ï£¬"
+			"(S) Ð´ÈëÔÝ´æµµ (M) ¼Ä»ØÐÅÏä (Q) ËãÁË£¿[M]£º\033[m",
+			genbuf, 2, DOECHO, YEA);
+	switch (genbuf[0]) {
+		case 'Q':
+		case 'q':
+			unlink(fname);
+			break;
+		case 'S':
+		case 's':
+			while (1) {
+				genbuf[0] = '\0';
+				getdata(2, 0, "\033[1;33mÇëÑ¡ÔñÔÝ´æµµ [0-7] [0]£º\033[m",
+					genbuf, 2, DOECHO, YEA);
+				if (genbuf[0] == '\0')
+					a = 0;
+				else
+					a = atoi(genbuf);
+				if (a >= 0 && a <= 7) {
+					sprintf(buf, "home/%c/%s/clip_%d",
+						toupper(currentuser.userid[0]),
+						currentuser.userid, a);
+					if (dashf(buf)) {
+						getdata(
+							3, 0, "\033[1;31mÔÝ´æµµÒÑ´æÔÚ£¬¸²¸Ç»ò¸½¼Ó? "
+							"(O)¸²¸Ç (A)¸½¼Ó [O]£º\033[m",
+							genbuf, 2, DOECHO, YEA);
+						switch (genbuf[0]) {
+							case 'A':
+							case 'a':
+								f_cp(fname, buf, O_APPEND);
+								unlink(fname);
+								break;
+							default:
+								unlink(buf);
+								rename(fname, buf);
+								break;
+						}
+					} else
+						rename(fname, buf);
+					break;
+				}
+			}
+			break;
+		default:
+			mail_file(fname, currentuser.userid,
+				"²»Õý³£¶ÏÏßËù±£ÁôµÄ²¿·Ý...");
+			unlink(fname);
+			break;
+	}
+}
+
 void start_client(void)
 {
 	extern char currmaildir[];
@@ -1098,68 +1161,6 @@ void start_client(void)
 }
 
 int refscreen = NA;
-
-void c_recover() {
-	char fname[STRLEN], buf[STRLEN];
-	int a;
-
-	sprintf(fname, "home/%c/%s/%s.deadve", toupper(currentuser.userid[0]),
-			currentuser.userid, currentuser.userid);
-	if (!dashf(fname) || strcmp(currentuser.userid, "guest") == 0)
-		return;
-	clear();
-	strcpy(genbuf, "");
-	getdata(0, 0,
-			"[1;32mÄúÓÐÒ»¸ö±à¼­×÷Òµ²»Õý³£ÖÐ¶Ï£¬(S) Ð´ÈëÔÝ´æµµ (M) ¼Ä»ØÐÅÏä (Q) ËãÁË£¿[M]£º[m",
-			genbuf, 2, DOECHO, YEA);
-	switch (genbuf[0]) {
-		case 'Q':
-		case 'q':
-			unlink(fname);
-			break;
-		case 'S':
-		case 's':
-			while (1) {
-				strcpy(genbuf, "");
-				getdata(2, 0, "[1;33mÇëÑ¡ÔñÔÝ´æµµ [0-7] [0]£º[m", genbuf, 2,
-						DOECHO, YEA);
-				if (genbuf[0] == '\0')
-					a = 0;
-				else
-					a = atoi(genbuf);
-				if (a >= 0 && a <= 7) {
-					sprintf(buf, "home/%c/%s/clip_%d",
-							toupper(currentuser.userid[0]),
-							currentuser.userid, a);
-					if (dashf(buf)) {
-						getdata(
-								3,
-								0,
-								"[1;31mÔÝ´æµµÒÑ´æÔÚ£¬¸²¸Ç»ò¸½¼Ó? (O)¸²¸Ç (A)¸½¼Ó [O]£º[m",
-								genbuf, 2, DOECHO, YEA);
-						switch (genbuf[0]) {
-							case 'A':
-							case 'a':
-								f_cp(fname, buf, O_APPEND);
-								unlink(fname);
-								break;
-							default:
-								unlink(buf);
-								rename(fname, buf);
-								break;
-						}
-					} else
-						rename(fname, buf);
-					break;
-				}
-			}
-			break;
-		default:
-			mail_file(fname, currentuser.userid, "²»Õý³£¶ÏÏßËù±£ÁôµÄ²¿·Ý...");
-			unlink(fname);
-			break;
-	}
-}
 
 #ifdef TALK_LOG
 void tlog_recover()

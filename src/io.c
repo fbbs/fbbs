@@ -710,7 +710,7 @@ void update_endline(void)
 	cur_sec = getdatestring(now, NA); //cur_sec = tm_sec % 10
 	if (cur_sec == 0) {
 		nowishfile: resolve_boards();
-		strlcpy(datestring, brdshm->date, sizeof(datestring));
+		strlcpy(datestring, brdshm->date, 30);
 		cur_sec = 1;
 	}
 	if (cur_sec < 5) {
