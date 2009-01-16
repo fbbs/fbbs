@@ -36,6 +36,8 @@ int WishNum = 0;
 int orderWish = 0;
 extern int enabledbchar;
 
+int refscreen = NA;
+
 #ifdef ALLOWSWITCHCODE
 int convcode = 0; //ÊÇ·ñÔÚGBÓëBIG5¼ä×ª»»?
 extern void resolve_GbBig5Files();
@@ -45,7 +47,6 @@ int friend_login_wall();
 struct user_info *t_search();
 void r_msg();
 void count_msg();
-void tlog_recover();
 
 // Handle giveupBBS(½äÍø) transactions.
 // Return expiration date (in days from epoch).
@@ -1109,6 +1110,30 @@ static void c_recover(void)
 	}
 }
 
+#ifdef TALK_LOG
+// Recover user's talk log from abnormal exit.
+void tlog_recover(void)
+{
+	char buf[256];
+
+	sethomefile(buf, currentuser.userid, "talk_log");
+	if (strcasecmp(currentuser.userid, "guest") == 0 || !dashf(buf))
+		return;
+
+	clear();
+	genbuf[0] = '\0';
+	getdata(0, 0, "\033[1;32mÄúÓĞÒ»¸ö²»Õı³£¶ÏÏßËùÁôÏÂÀ´µÄÁÄÌì¼ÇÂ¼, "
+			"ÄúÒª .. (M) ¼Ä»ØĞÅÏä (Q) ËãÁË£¿[Q]£º\033[m",
+			genbuf, 2, DOECHO, YEA);
+
+	if (genbuf[0] == 'M' || genbuf[0] == 'm') {
+		mail_file(buf, currentuser.userid, "ÁÄÌì¼ÇÂ¼");
+	}
+	unlink(buf);
+	return;
+}
+#endif
+
 void start_client(void)
 {
 	extern char currmaildir[];
@@ -1130,7 +1155,7 @@ void start_client(void)
 	clear();
 	c_recover();
 #ifdef TALK_LOG
-	tlog_recover(); /* 990713.edwardc for talk_log recover */
+	tlog_recover();
 #endif
 
 	if (strcmp(currentuser.userid, "guest")) {
@@ -1159,30 +1184,3 @@ void start_client(void)
 		Goodbye();
 	}
 }
-
-int refscreen = NA;
-
-#ifdef TALK_LOG
-void tlog_recover()
-{
-	char buf[256];
-
-	sprintf(buf, "home/%c/%s/talk_log",
-			toupper(currentuser.userid[0]), currentuser.userid);
-
-	if (strcasecmp(currentuser.userid, "guest") == 0 || !dashf(buf))
-	return;
-
-	clear();
-	strcpy(genbuf, "");
-	getdata(0, 0,
-			"[1;32mÄúÓĞÒ»¸ö²»Õı³£¶ÏÏßËùÁôÏÂÀ´µÄÁÄÌì¼ÇÂ¼, ÄúÒª .. (M) ¼Ä»ØĞÅÏä (Q) ËãÁË£¿[Q]£º[m",
-			genbuf, 2, DOECHO, YEA);
-
-	if (genbuf[0] == 'M' || genbuf[0] == 'm') {
-		mail_file(buf, currentuser.userid, "ÁÄÌì¼ÇÂ¼");
-	}
-	unlink(buf);
-	return;
-}
-#endif
