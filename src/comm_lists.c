@@ -267,15 +267,6 @@ void decodestr(char *str)
 			}
 }
 
-void load_sysconf(void)
-{
-	if (!dashf("sysconf.img")) {
-		report("build sysconf.img", "");
-		build_sysconf("etc/sysconf.ini", "sysconf.img");
-	}
-	load_sysconf_image("sysconf.img");
-}
-
 int domenu_screen(struct smenuitem *pm)
 {
 	char *str;

@@ -438,6 +438,7 @@ char *sysconf_str(const char *key);
 int sysconf_eval(const char *key);
 void build_sysconf(const char *configfile, const char *imgfile);
 void load_sysconf_image(const char *imgfile);
+void load_sysconf(void);
 
 //stuffs.c
 char *sethomefile(char *buf, const char *userid, const char *filename);
