@@ -267,6 +267,55 @@ void decodestr(char *str)
 			}
 }
 
+void load_sysconf_image(const char *imgfile)
+{
+	struct sysheader shead;
+	struct stat st;
+	char *ptr, *func;
+	int fh, n, diff, x;
+
+	if ((fh = open(imgfile, O_RDONLY))> 0) {
+		fstat(fh, &st);
+		ptr = malloc(st.st_size);
+		if (ptr == NULL)
+			report( "Insufficient memory available", "");
+		read(fh, &shead, sizeof(shead));
+		read(fh, ptr, st.st_size);
+		close(fh);
+
+		menuitem = (void *) ptr;
+		ptr += shead.menu * sizeof(struct smenuitem);
+		sysvar = (void *) ptr;
+		ptr += shead.key * sizeof(struct sdefine);
+		sysconf_buf = (void *) ptr;
+		ptr += shead.len;
+		sysconf_menu = shead.menu;
+		sysconf_key = shead.key;
+		sysconf_len = shead.len;
+		diff = sysconf_buf - shead.buf;
+		for (n = 0; n < sysconf_menu; n++) {
+			menuitem[n].name += diff;
+			menuitem[n].desc += diff;
+			menuitem[n].arg += diff;
+			func = (char *) menuitem[n].fptr;
+			menuitem[n].fptr = sysconf_funcptr(func + diff, &x);
+		}
+		for (n = 0; n < sysconf_key; n++) {
+			sysvar[n].key += diff;
+			sysvar[n].str += diff;
+		}
+	}
+}
+
+void load_sysconf(void)
+{
+	if (!dashf("sysconf.img")) {
+		report("build sysconf.img", "");
+		build_sysconf("etc/sysconf.ini", "sysconf.img");
+	}
+	load_sysconf_image("sysconf.img");
+}
+
 int domenu_screen(struct smenuitem *pm)
 {
 	char *str;
@@ -321,7 +370,6 @@ int domenu(const char *menu_name)
 	struct smenuitem *pm;
 	int size, now;
 	int cmd, i;
-
 	if (sysconf_menu <= 0) {
 		return -1;
 	}

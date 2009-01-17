@@ -6,15 +6,10 @@
 #define SC_KEYSIZE 256
 #define SC_CMDSIZE 256
 
-static char *sysconf_buf;
-int sysconf_menu;
-static int sysconf_key, sysconf_len;
+char *sysconf_buf;
+int sysconf_menu, sysconf_key, sysconf_len;
 struct smenuitem *menuitem;
-struct sdefine {
-	char *key, *str;
-	int val;
-};
-static struct sdefine *sysvar;
+struct sdefine *sysvar;
 
 // Concatenates 'str' to the end of 'sysconf_buf'
 // and increments 'sysconf_len' accordingly.
@@ -304,55 +299,3 @@ void build_sysconf(const char *configfile, const char *imgfile)
 	sysconf_buf = old_buf;
 	sysconf_len = old_len;
 }
-
-// Loads sysconf image from 'imgfile'.
-void load_sysconf_image(const char *imgfile)
-{
-	extern void *sysconf_funcptr(const char *func_name, int *type);
-	struct sysheader shead;
-	struct stat st;
-	char *ptr, *func;
-	int fh, n, diff, x;
-
-	if ((fh = open(imgfile, O_RDONLY))> 0) {
-		fstat(fh, &st);
-		ptr = malloc(st.st_size);
-		if (ptr == NULL)
-			report( "Insufficient memory available", "");
-		read(fh, &shead, sizeof(shead));
-		read(fh, ptr, st.st_size);
-		close(fh);
-
-		menuitem = (void *) ptr;
-		ptr += shead.menu * sizeof(struct smenuitem);
-		sysvar = (void *) ptr;
-		ptr += shead.key * sizeof(struct sdefine);
-		sysconf_buf = (void *) ptr;
-		ptr += shead.len;
-		sysconf_menu = shead.menu;
-		sysconf_key = shead.key;
-		sysconf_len = shead.len;
-		diff = sysconf_buf - shead.buf;
-		for (n = 0; n < sysconf_menu; n++) {
-			menuitem[n].name += diff;
-			menuitem[n].desc += diff;
-			menuitem[n].arg += diff;
-			func = (char *) menuitem[n].fptr;
-			menuitem[n].fptr = sysconf_funcptr(func + diff, &x);
-		}
-		for (n = 0; n < sysconf_key; n++) {
-			sysvar[n].key += diff;
-			sysvar[n].str += diff;
-		}
-	}
-}
-
-void load_sysconf(void)
-{
-	if (!dashf("sysconf.img")) {
-		report("build sysconf.img", "");
-		build_sysconf("etc/sysconf.ini", "sysconf.img");
-	}
-	load_sysconf_image("sysconf.img");
-}
-

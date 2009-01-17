@@ -261,6 +261,11 @@ struct smenuitem {
 	int (*fptr)();
 };
 
+struct sdefine {
+	char *key, *str;
+	int val;
+};
+
 struct sysheader {
 	char *buf;
 	int menu, key, len;
