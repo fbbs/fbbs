@@ -441,17 +441,18 @@ char *getsenv(char *s) {
 
 int http_quit(void) {
 	printf("\n</html>\n");
-	exit(0);
+	FCGI_Finish();
 }
 
-int http_fatal(char *fmt, ...) {
-        char buf[1024];
-        va_list ap;
-        va_start(ap, fmt);
-        vsnprintf(buf, 1023, fmt, ap);
-        va_end(ap);
-	buf[1023]=0;
- 	printf("´íÎó! %s! <br><br>\n", buf);
+int http_fatal(char *fmt, ...)
+{
+	char buf[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+	va_end(ap);
+	buf[1023] = '\0';
+	printf("´íÎó! %s! <br><br>\n", buf);
 	printf("<a href=javascript:history.go(-1)>¿ìËÙ·µ»Ø</a>");
 	http_quit();
 }
