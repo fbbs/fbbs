@@ -196,7 +196,7 @@ int getmailsize(char *userid)
 	    && SIZEst.st_ctime >= DIRst.st_ctime){
       fp = fopen(sizefile,"r");
       if(fp){
-         fscanf(FCGI_ToFile(fp),"%d",&mailsize);
+         fscanf(fp,"%d",&mailsize);
 	 fclose(fp);
       } 
    }
@@ -1025,7 +1025,7 @@ char* anno_path_of(char *board) {
 	fp=fopen("0Announce/.Search", "r");
 	if(fp==0) return "";
 	while(1) {
-		if(fscanf(FCGI_ToFile(fp), "%s %s", buf1, buf2)<=0) break;
+		if(fscanf(fp, "%s %s", buf1, buf2)<=0) break;
 		buf1[strlen(buf1)-1]=0;
 		if(!strcasecmp(buf1, board)) {
 			sprintf(buf, "/%s", buf2);
@@ -1508,7 +1508,7 @@ char *getbfroma(char *path) {
 	while(1) {
 		bzero(buf1,256);
 		bzero(buf2,256);
-		if(fscanf(FCGI_ToFile(fp), "%s %s", buf1, buf2)<=0) break;
+		if(fscanf(fp, "%s %s", buf1, buf2)<=0) break;
 		if(buf1[0]) buf1[strlen(buf1)-1]=0;
 		if(buf1[0]=='*') continue;
 		len = strlen(buf2);
