@@ -2,6 +2,7 @@
 
 #define _LIBWEB_H_
 
+#include <fcgi_stdio.h>
 #include "../include/bbs.h"
 #include "sys/ipc.h"
 #include "sys/shm.h"
