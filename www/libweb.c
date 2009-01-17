@@ -1397,42 +1397,27 @@ int isbad(char *id) {
 //	return id;
 //}
 
-int init_all() {
-	int my_style=0;
-	//int anonid;
-	srand(time(0)*2+getpid());
+int init_all(void)
+{
+	int my_style = 0;
+	srand(time(NULL) * 2 + getpid());
 	chdir(BBSHOME);
 	my_style=http_init();
 	seteuid(BBSUID);
-	if(geteuid()!=BBSUID) http_fatal("uid error.");
+	if(geteuid() != BBSUID)
+		http_fatal("uid error.");
 	shm_init();
-	loginok=user_init(&currentuser, &u_info);
-	/*
-     * Add some information to the status bar ... added by polygon 
-    */
-    
+	loginok = user_init(&currentuser, &u_info);
+
+	// Happy birthday in status bar.
     time_t t = time(NULL);
     struct tm *tp = localtime(&t);
-    if(currentuser.birthmonth==((tp->tm_mon)+1)&&currentuser.birthday==(tp->tm_mday))
-         printf("<head><script>self.status=\"今天是您的生日，日月光华BBS祝您生日快乐！\"</script></head>");
-    /*
-    * Add End by polygon
-    */
-    //count anonymous login
-	//#ifdef BBSFOOT
-	//anonid=atoi(getparm("anonid"));
-	//if(!loginok||!strcmp(currentuser.userid, "guest"))
-	//{
-		//if(anonid){
-		//	touch_anonshm(anonid);
-		//}else{
-		//	char anonidstr[20];
-		//	anonid=touch_anonshm(0);
-		//	sprintf(anonidstr,"%d",anonid);
-		//	setcookie("anonid", anonidstr);
-		//}
-	//}
-	//#endif
+    if(currentuser.birthmonth == ((tp->tm_mon) + 1)
+		&&currentuser.birthday==(tp->tm_mday)) {
+		printf("<head><script>self.status=\""
+         	"今天是您的生日，日月光华BBS祝您生日快乐！\"</script></head>");
+    }
+
 	return my_style;
 }
 
