@@ -2,7 +2,11 @@
 
 #define _LIBWEB_H_
 
+#define USEFCGI
+
+#ifdef USEFCGI
 #include <fcgi_stdio.h>
+#endif
 #include "../include/bbs.h"
 #include "sys/ipc.h"
 #include "sys/shm.h"
