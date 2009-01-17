@@ -653,29 +653,23 @@ int parm_add(char *name, char *val) {
 }
 char *getparm();
 
-int http_init() {
+void http_parm_init(void)
+{
+	int n;
 	char *buf, buf2[1024], *t2, *t3;
-	int n, my_style;
-#ifndef XMLFILE
-	printf("Content-type: text/html; charset=%s\n\n\n", CHARSET);
-	printf("<html>\n");
-	printf("<meta http-equiv='Content-Type' content='text/html; charset=%s'>\n", CHARSET);
-	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
-#else	
-	printf("Connection: close\n");
-	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
-#endif
-	n=atoi(getsenv("CONTENT_LENGTH"));
-	if(n>5000000) n=5000000;
-	buf=calloc(n+1, 1);
-	if(buf==0) http_fatal("memory overflow");
+	n = atoi(getsenv("CONTENT_LENGTH"));
+	if(n > 5000000)
+		n = 5000000;
+	buf = calloc(n + 1, 1);
+	if(buf == NULL)
+		http_fatal("memory overflow");
 	fread(buf, 1, n, stdin);
-	buf[n]=0;
-	t2=strtok(buf, "&");
+	buf[n] = '\0';
+	t2 = strtok(buf, "&");
 	while(t2) {
-		t3=strchr(t2, '=');
-		if(t3!=0) {
-			t3[0]=0;
+		t3 = strchr(t2, '=');
+		if(t3 != 0) {
+			t3[0] = 0;
 			t3++;
 			__unhcode(t3);
 			parm_add(trim(t2), t3);
@@ -705,6 +699,23 @@ int http_init() {
 		}
 		t2=strtok(0, ";");
 	}
+}
+
+static int http_init(void)
+{
+	int my_style;
+#ifndef XMLFILE
+	printf("Content-type: text/html; charset=%s\n\n\n", CHARSET);
+	printf("<html>\n");
+	printf("<meta http-equiv='Content-Type' content='text/html; charset=%s'>\n", CHARSET);
+	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
+#else	
+	printf("Connection: close\n");
+	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
+#endif
+
+	http_parm_init();
+
 #ifdef SQUID
 	char *fromtmp;
 	fromtmp = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
@@ -1403,7 +1414,7 @@ int init_all(void)
 	int my_style = 0;
 	srand(time(NULL) * 2 + getpid());
 	chdir(BBSHOME);
-	my_style=http_init();
+	my_style = http_init();
 	seteuid(BBSUID);
 	if(geteuid() != BBSUID)
 		http_fatal("uid error.");

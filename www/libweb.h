@@ -199,4 +199,6 @@ int checkpasswd(char *pw_crypted, char *pw_try);
 // main.c
 void SpecialID(const char* uid, char* host);
 
+void http_parm_init(void);
+
 #endif
