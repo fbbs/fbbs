@@ -640,16 +640,21 @@ int hhprintf(char *fmt, ...) {
 }
 
 char parm_name[256][80], *parm_val[256];
-int parm_num=0;
+int parm_num = 0;
 
-int parm_add(char *name, char *val) {
-	int len=strlen(val);
-	if(parm_num>=255) http_fatal("too many parms.");
-	parm_val[parm_num]=calloc(len+1, 1);
-	if(parm_val[parm_num]==0) http_fatal("memory overflow2 %d %d", len, parm_num);
-	strlcpy(parm_name[parm_num], name, 78);
-	strlcpy(parm_val[parm_num], val, len+1);
-	parm_num++;
+// Adds 'name' 'val' pairs to global arrays 'parm_name' and 'parm_val'.
+// Increases 'parm_num' by 1.
+static int parm_add(const char *name, const char *val)
+{
+	int len = strlen(val);
+	if (parm_num >= sizeof(parm_val) - 1)
+		http_fatal("too many parms.");
+	parm_val[parm_num] = malloc(len + 1);
+	if (parm_val[parm_num] == NULL)
+		http_fatal("memory overflow2 %d %d", len, parm_num);
+	strlcpy(parm_name[parm_num], name, sizeof(parm_name[0]));
+	strlcpy(parm_val[parm_num], val, len + 1);
+	return ++parm_num;
 }
 char *getparm();
 
