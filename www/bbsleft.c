@@ -51,7 +51,7 @@ int bbsleft_main(void)
 			"font-weight: normal;\n"
 			"}\n"
 			"#switchbar {\n"
-			"background:#dddddd url(/images/collapse.gif) no-repeat right 50%;\n"
+			"background:#dddddd url(/images/collapse.gif) no-repeat right 50%%;\n"
 			"float:right;\n"
 			"height:100%%;\n"
 			"width:4px;\n"
