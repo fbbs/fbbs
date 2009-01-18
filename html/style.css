@@ -1,0 +1,187 @@
+body {
+	text-align: center;
+	background: #e6d373;
+      behavior: url(csshover.htc); 
+	
+}
+
+a:link,a:visited{
+	text-decoration: none;
+	font-weight: bold;
+	color: #000000;
+	list-style-type: none;
+	font-size: 14px;
+	}
+a:hover,a:active {  
+	color: #304c54;
+	}
+
+#container {
+      margin-right: auto;
+	margin-left: auto;
+	position: relative;;
+	height: 548px;
+	width: 850px;
+	background-color: #e6d373;
+	z-index: 1;
+	border:1px solid #000000;
+}
+
+#im01 {
+	background-image: url(images/images_01.gif);
+	position: absolute;
+	top:0;
+	left:0;
+	height: 231px;
+	width: 431px;
+	
+}
+
+
+#im02 {
+ 	background-image: url(images/images_02.gif);
+	position: absolute;
+	height: 231px;
+	width: 419px;
+	top: 0px;
+	right: 0px;
+}
+#im03{
+	background-image: url(images/images_03.gif);
+	position: absolute;
+	height: 222px;
+	width: 432px;
+	left: 0px;
+	top: 231px;
+}
+#im04{
+	background-image: url(images/images_04.jpg);
+	position: absolute;
+	height: 317px;
+	width: 418px;
+	right: 0px;
+	bottom: 0;
+}
+#im05{
+	background-image: url(images/images_05.gif);
+	position: absolute;
+	height: 95px;
+	width: 432px;
+	left: 0px;
+	bottom: 0px;
+}
+
+div#nav{
+      background:transparent;
+	z-index:13;
+	text-align: left;
+	color:#000000;
+
+}
+div#nav ul{
+	z-index:13;
+      margin:0;
+      padding:5px;
+	width:120px;
+	font-size:16px;
+	position:absolute;
+	left:70px;
+	bottom:130px;
+	border:1px solid #000000;
+	border-right:2px solid #000000;
+	border-bottom:2px solid #000000;
+
+
+}
+div#nav li {
+	list-style-type: none;
+	width:120px;
+	height:25px;
+	padding:2px;
+}
+div#nav ul ul{
+	position:absolute;
+	top:0;
+	left:130px;
+	width:230px;
+	height:170px;
+	font-size:14px;
+	display:none;
+      border-top:1px solid #000000;
+	border-left:0;
+	border-bottom:0;
+	border-right:1px solid #000000;
+
+
+
+}
+div#nav li a{display:block;}
+div#nav li li{
+	width:230px;
+	height:20px;
+	padding:0 0 0 5px;
+}
+div#nav li li a{
+	width:230px;
+	display:block;
+}
+div#nav>ul a {width: auto;}
+
+/*div#nav li li a:hover,#nav li li a:active{
+	 border:1px solid #ffffff;
+}
+*/		
+#input{
+	position: absolute;
+	top: 130px;
+	left: 150px;
+	color: #000000;
+	z-index: 15;
+	font-weight: bold;
+	font-size: 14px;
+	text-align: center;
+	height: 40px;
+	width: 350px;
+	background-color: transparent;
+}
+
+.myinput{
+        color: #000000;
+	background:transparent;
+	width: 100px;
+	border-top: none;
+	border-right: none;
+	border-left: none;
+	border-bottom: 1px solid #000000;
+	text-align: center;
+}
+.mybutton{
+	background:transparent;
+	height: 20px;
+	width: 50px;
+	color:#000000;
+	font-weight: bold;
+	border-top: 1px solid #000000;
+	border-right: none;
+	border-bottom: 1px solid #000000;
+	border-left: none;
+}
+#copyright{
+        text-align: left;
+	font-size: 14px;
+	color: #000000;
+	position: absolute;
+	left: 0px;
+	bottom: -40px;
+}
+#code{
+        text-align: left;
+        font-size: 14px;
+	position: absolute;
+	right:0px;
+	bottom: -40px;
+}
+#code a:link,#code a:visited{
+        color:#000000;
+}
+div#nav ul.level1 li.submenu:hover ul.level2{display:block;}

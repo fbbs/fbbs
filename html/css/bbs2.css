@@ -1,0 +1,28 @@
+A{TEXT-DECORATION: none;COLOR:ffffff}
+A:VISITED {COLOR: c0c0c0;}
+A:HOVER {COLOR: ffff00;}
+TABLE.BODY {BORDER: 2px solid; BORDER-COLOR: c0c0c0; BACKGROUND-COLOR: c0c0c0; }
+BODY 
+{	FONT-FAMILY: Tahoma; FONT-SIZE: 14px; COLOR: FFFFFF; BACKGROUND-COLOR: 000000;
+}
+TABLE{BACKGROUND-COLOR:000000}
+TH,TR, TD, P,SELECT {FONT-FAMILY: Tahoma; FONT-SIZE: 14px; COLOR: ffffff; BACKGROUND-COLOR: 000000}
+HR{COLOR: 999999}
+
+TEXTAREA.noborder{ padding: 3; border-style: solid; border-width:1; FONT-FAMILY: Fixedsys, Simsun; FONT-SIZE: 16px ; LINE-HEIGHT: 16px; COLOR: c0c0c0; BACKGROUND-COLOR: 000000; BORDER-COLOR: 666666;}
+INPUT.noborder{FONT-FAMILY: Tahoma; FONT-SIZE: 12px; border-style:none; border-bottom-style: solid; border-width:1;}
+
+.pt9  { font-size:9pt; text-transform:none; text-decoration:none;}
+.pt9u { font-size:9pt; text-transform:uppercase; text-decoration:none; color:#8f0000}
+.ansi { FONT-FAMILY: Fixedsys, Simsun; FONT-SIZE: 16px ; line-height: 16px; color: c0c0c0; background-color: 000000; margin-left: 10%} 
+
+
+FONT.c30 {COLOR: 000000;}
+FONT.c31 {COLOR: ff0000;}
+FONT.c32 {COLOR: 00ff00;}
+FONT.c33 {COLOR: ffff00;}
+FONT.c34 {COLOR: 0000ff;}
+FONT.c35 {COLOR: ff00ff;}
+FONT.c36 {COLOR: 00ffff;}
+FONT.c37 {COLOR: ffffff;}
+

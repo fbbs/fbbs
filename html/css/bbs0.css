@@ -1,0 +1,51 @@
+A{COLOR: #000000; TEXT-DECORATION: none;}
+A:HOVER {text-decoration:underline}
+TABLE.BODY {BORDER: 2px solid; BORDER-COLOR: d0f0c0; }
+BODY
+{       FONT-FAMILY: Tahoma; FONT-SIZE: 9pt; 
+}
+TABLE,TH,TD,P,INPUT,SELECT {FONT-FAMILY: Tahoma; FONT-SIZE: 9pt; }
+HR{COLOR: 000000}
+
+.ULINE {BORDER-BOTTOM: 1px solid #99ccff;}
+.TLINE {BORDER-TOP: 1px solid #99ccff;}
+.RLINE {BORDER-RIGHT: 1px solid #99ccff;}
+.LLINE {BORDER-LEFT: 1px  solid #99ccff;}
+
+.THINBLUE {BORDER: 1px solid #99ccff;}
+
+TEXTAREA.noborder{ padding: 3; border-style: solid; border-width:1; FONT-FAMILY: Simsun; FONT-SIZE: 9pt; COLOR: 000000; BACKGROUND-COLOR: FFFFFF}
+TEXTAREA{
+	border: 1px solid #6699CC; background-color: #d0e0f0;
+	FONT-FAMILY:Simsun;FONT-SIZE:9pt;
+scrollbar-3dlight-color:#6699CC;
+scrollbar-arrow-color:#00000;
+scrollbar-base-color:#6699CC;
+scrollbar-darkshadow-color:#6699CC;
+scrollbar-face-color:#d0e0f0;
+scrollbar-highlight-color:#d0e0f0;
+scrollbar-shadow-color:#d0e0f0
+	}
+INPUT.thinborder{border: 1px solid #6699CC; background-color: #d0e0f0}
+
+.pt9  { font-size:9pt; text-transform:none; text-decoration:none;}
+.pt9u { font-size:9pt; text-transform:uppercase; text-decoration:none; color:#8f0000}
+.ansi { FONT-FAMILY: Simsun; color: 000000; margin-left: 0}
+.pt9lc  { font-size:9pt; text-transform:none; text-decoration:none; background-color:#ffffff}
+.pt9dc  { font-size:9pt; text-transform:none; text-decoration:none; background-color:#f0f7ff}
+.pt9h   {  font-size:9pt; text-transform:none; text-decoration:none; background-color:#ccddff }
+.pt9h_red       { font-size:9pt; text-transform:none; text-decoration:none; background-color:#EB9889 }
+.pt9h_green     { font-size:9pt; text-transform:none; text-decoration:none; background-color:#8CE164 }
+.pt9h_blue      { font-size:9pt; text-transform:none; text-decoration:none; background-color:#3E66DF }
+.pt9h_yellow{ font-size:9pt; text-transform:none; text-decoration:none; background-color:#C0C95A }
+
+
+FONT.c30 {COLOR: 000000;}
+FONT.c31 {COLOR: e00000;}
+FONT.c32 {COLOR: 008000;}
+FONT.c33 {COLOR: 808000;}
+FONT.c34 {COLOR: 0000ff;}
+FONT.c35 {COLOR: d000d0;}
+FONT.c36 {COLOR: 33a0a0;}
+FONT.c37 {COLOR: 000000;}
+
