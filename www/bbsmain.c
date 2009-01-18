@@ -17,7 +17,7 @@ int main(void)
 	fcgi_init_all();
 
 	while (FCGI_Accept() >= 0){
-		int my_style = fcgi_init_loop();
+		fcgi_init_loop();
 		printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
 		printf("<title>ª∂”≠π‚¡Ÿ"BBSNAME"BBS</title>");
 		printf("<style type=text/css>\n"
