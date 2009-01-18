@@ -1,13 +1,11 @@
 #include "libweb.h"
 
-int main() {
+int bbsgetmsg_main(void)
+{
 	static char buf[256], buf2[256]=".";
 	char toid[13];
 	int topid;
-        init_all();
-/*   added by roly, patch of NJU0.9  */
 	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
-/*   added end */	
 	printf("<style type=text/css>\n");
         printf("A {color: #000000}\n");
         printf("</style>\n");
@@ -39,4 +37,5 @@ int main() {
 		http_quit();
 	}
 	refreshto("bbsgetmsg", 60);
+	return 0;
 }

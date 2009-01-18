@@ -8,6 +8,8 @@ struct cgi_applet {
 struct cgi_applet applets[] = {
 		{ "bbsleft", bbsleft_main },
 		{ "bbssec", bbssec_main },
+		{ "bbsfoot", bbsfoot_main },
+		{ "bbsgetmsg", bbsgetmsg_main },
 		{ NULL }
 };
 

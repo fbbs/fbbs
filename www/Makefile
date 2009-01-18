@@ -5,7 +5,7 @@ HTMPATH = /home/httpd/html
 CC      = gcc -Os
 OBJS	= libweb.o crypt.o
 LIBNAME	= libweb.a
-CFILES  = bbsmain.c bbsleft.c bbssec.c
+CFILES  = bbsmain.c bbsleft.c bbssec.c bbsfoot.c bbsgetmsg.c
 TARGET  = bbswebd
 CFLAGS  = -Wall
 

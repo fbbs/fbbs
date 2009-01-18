@@ -208,4 +208,6 @@ int fcgi_init_loop(void);
 
 int bbsleft_main(void);
 int bbssec_main(void);
+int bbsfoot_main(void);
+int bbsgetmsg_main(void);
 #endif
