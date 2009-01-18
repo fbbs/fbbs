@@ -102,7 +102,6 @@ extern char parm_name[][80];
 extern char *parm_val[];
 extern int parm_num;
 
-char *getparm(char *var);
 int get_shmkey(char *s);
 
 int user_init(struct userec *x, struct user_info **y);
@@ -199,6 +198,7 @@ int checkpasswd(char *pw_crypted, char *pw_try);
 // main.c
 void SpecialID(const char* uid, char* host);
 
+char *getparm(const char *name);
 void http_parm_init(void);
 
 #endif

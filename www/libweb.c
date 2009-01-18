@@ -529,7 +529,7 @@ int hprintf(char *fmt, ...) {
 }
 
 int hhprintf(char *fmt, ...) {
-	char buf0[1024], buf[1024], *s, *getparm();
+	char buf0[1024], buf[1024], *s;
 	int len=0;
 	int my_link_mode;
 	int msg=0;
@@ -657,6 +657,7 @@ static int parm_add(const char *name, const char *val)
 	return ++parm_num;
 }
 
+// Frees 'parm_val'.
 static int parm_free(void)
 {
 	int i;
@@ -665,7 +666,17 @@ static int parm_free(void)
 	}
 	return parm_num = 0;
 }
-char *getparm();
+
+// Searches 'parm_name' for 'name'.
+// Returns corresponding 'parm_val' if found, otherwise "".
+char *getparm(const char *name)
+{
+	int n;
+	for(n = 0; n < parm_num; n++) 
+		if(!strcasecmp(parm_name[n], name))
+			return parm_val[n];
+	return "";
+}
 
 // Uses delimeter 'delim' to split 'buf' into "key=value" pairs.
 // Adds these pairs into global arrays.
@@ -776,13 +787,6 @@ int __unhcode(char *s) {
 		s[n]=s[m];
 	}
 	s[n]=0;
-}
-
-char *getparm(char *var) {
-	int n;
-	for(n=0; n<parm_num; n++) 
-		if(!strcasecmp(parm_name[n], var)) return parm_val[n];
-	return "";
 }
 
 int get_shmkey(char *s) {
