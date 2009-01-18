@@ -1,5 +1,5 @@
 BBSHOME = /home/bbs
-CGIPATH = /home/httpd/cgi-bin/bbs
+CGIPATH = /home/httpd/fcgi
 HTMPATH = /home/httpd/html
 
 CC      = gcc -Os
