@@ -5,26 +5,20 @@ HTMPATH = /home/httpd/html
 CC      = gcc -Os
 OBJS	= libweb.o crypt.o
 LIBNAME	= libweb.a
-CGI		= bbs0an bbsacount bbsall bbsanc bbsbfind bbsboa bbsbrdadd bbsccc \
-		  bbsclear bbscloak bbscon bbsdel bbsdelf bbsdelmail bbsdelmsg \
-		  bbsdoc bbsedit bbsfadd bbsfall bbsfdel bbsfdoc bbsfoot bbsfriend \
-		  bbsfwd bbsgcon bbsgdoc bbsgetmsg bbsgfind bbsinfo bbsleft \
-		  bbslogin bbslogout bbsmail bbsmailcon bbsmaildown bbsmailman \
-		  bbsmailmsg bbsmain bbsman bbsmdoc bbsmnote bbsmsg bbsmybrd \
-		  bbsmywww bbsnewmail bbsnick bbsnot bbsplan bbspreupload bbspst \
-		  bbspstmail bbspwd bbsqry bbsrss bbssec bbssel bbssendmsg bbssig \
-		  bbssnd bbssndmail bbstcon bbstdoc bbstfind bbstop10 bbstopb10 \
-		  bbsufind bbsupload bbsuser bbsuserinfo bbsusr
+CFILES  = bbsmain.c
+TARGET  = bbswebd
+CFLAGS  = -Wall
 
-all: libweb $(CGI)
+all: libweb
+	$(CC) $(CFLAGS) $(CFILES) -o $(TARGET) -lweb -L. -lBBS -L../lib -lfcgi
 
 libweb: $(OBJS)
 	ar rs $(LIBNAME) $(OBJS)
 
 install: all
-	strip -s $(CGI)
+	strip -s $(TARGET)
 	rm -rf $(CGIPATH)/*
-	cp $(CGI) $(CGIPATH)
+	cp $(TARGET) $(CGIPATH)
 	chown -R bbs $(CGIPATH)
 	chgrp -R bbs $(CGIPATH) 
 	chmod +s $(CGIPATH)/*
@@ -32,7 +26,7 @@ install: all
 clean:
 	rm $(OBJS)
 	rm $(LIBNAME)
-	rm -rf $(CGI)
+	rm -rf $(TARGET)
 
 %:: %.c
-	$(CC) -o $@ $< -lweb -L. -lBBS -L../lib -lfcgi
+	$(CC) $(CFLAGS) $(CFILES) -o $@ $< -lweb -L. -lBBS -L../lib -lfcgi

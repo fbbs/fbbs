@@ -1440,6 +1440,7 @@ int fcgi_init_loop(void)
 
 	return my_style;
 }
+
 // Will be abolished
 int init_all(void)
 {
