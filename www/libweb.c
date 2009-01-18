@@ -639,6 +639,36 @@ int hhprintf(char *fmt, ...) {
 	}
 }
 
+// Convert a hex char 'c' to a base 10 integer.
+static int __to16(char c)
+{
+	if (c >= 'a' && c <= 'f')
+		return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F')
+		return c - 'A' + 10;
+	if (c >= '0' && c <= '9')
+		return c - '0';
+	return 0;
+}
+
+static int __unhcode(char *s)
+{
+	int m, n;
+	for(m = 0, n = 0; s[m] != 0; m++, n++) {
+		if (s[m] == '+') {
+			s[n] = ' ';
+			continue;
+		}
+		if (s[m] == '%') {
+			s[n] = __to16(s[m+1]) * 16 +__to16(s[m+2]);
+			m += 2;
+			continue;
+		}
+		s[n]=s[m];
+	}
+	s[n] = 0;
+}
+
 char parm_name[256][80], *parm_val[256];
 int parm_num = 0;
 
@@ -764,36 +794,6 @@ static int http_init(void)
 #endif
 
 	return my_style;
-}
-
-// Convert a hex char 'c' to a base 10 integer.
-static int __to16(char c)
-{
-	if (c >= 'a' && c <= 'f')
-		return c - 'a' + 10;
-	if (c >= 'A' && c <= 'F')
-		return c - 'A' + 10;
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	return 0;
-}
-
-static int __unhcode(char *s)
-{
-	int m, n;
-	for(m = 0, n = 0; s[m] != 0; m++, n++) {
-		if (s[m] == '+') {
-			s[n] = ' ';
-			continue;
-		}
-		if (s[m] == '%') {
-			s[n] = __to16(s[m+1]) * 16 +__to16(s[m+2]);
-			m += 2;
-			continue;
-		}
-		s[n]=s[m];
-	}
-	s[n] = 0;
 }
 
 int get_shmkey(char *s) {
@@ -1434,8 +1434,8 @@ int fcgi_init_loop(void)
 	struct tm *tp = localtime(&t);
 	if(currentuser.birthmonth == ((tp->tm_mon) + 1)
 		&&currentuser.birthday==(tp->tm_mday)) {
-		printf("<b>发表文章 · %s </b><br>\n",BBSNAME)("<head><script>self.status=\""
-			"今天是您的生日，日月光华BBS祝您生日快乐！\"</script></head>");
+		printf("<head><script>self.status=\""
+			"今天是您的生日，"BBSNAME"祝您生日快乐！\"</script></head>");
 	}
 
 	return my_style;
