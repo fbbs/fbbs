@@ -1421,6 +1421,14 @@ int fcgi_init_all(void)
 		http_fatal("uid error.");
 	shm_init();
 
+	return 0;
+}
+
+int fcgi_init_loop(void)
+{
+	int my_style = http_init();
+	loginok = user_init(&currentuser, &u_info);
+	
 	// Happy birthday in status bar.
 	time_t t = time(NULL);
 	struct tm *tp = localtime(&t);
@@ -1430,9 +1438,9 @@ int fcgi_init_all(void)
 			"今天是您的生日，日月光华BBS祝您生日快乐！\"</script></head>");
 	}
 
-	return 0;
+	return my_style;
 }
-
+// Will be abolished
 int init_all(void)
 {
 	int my_style = 0;
