@@ -204,6 +204,4 @@ void http_parm_init(void);
 int fcgi_init_all(void);
 int fcgi_init_loop(void);
 
-int bbsmain_main(void);
-
 #endif
