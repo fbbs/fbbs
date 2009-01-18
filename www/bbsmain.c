@@ -6,7 +6,8 @@ struct cgi_applet {
 };
 
 struct cgi_applet applets[] = {
-	{NULL}
+	{ "bbsleft", bbsleft_main },
+	{ NULL }
 };
 
 static struct cgi_applet *getapplet(char *buf, size_t len)

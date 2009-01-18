@@ -767,7 +767,6 @@ static int http_init(void)
 	printf("Connection: close\n");
 	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
 #endif
-
 	http_parm_init();
 
 #ifdef SQUID
