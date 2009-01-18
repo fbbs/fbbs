@@ -58,7 +58,7 @@ struct UTMPFILE *shm_utmp;
 struct BCACHE *shm_bcache;
 struct UCACHE *shm_ucache;
 
-char fromhost[256];
+char fromhost[40]; // IPv6 addresses can be represented in 39 chars.
 
 static int shm_lock(char *lockname)
 {
@@ -727,6 +727,7 @@ void http_parm_init(void)
 static int http_init(void)
 {
 	int my_style;
+
 #ifndef XMLFILE
 	printf("Content-type: text/html; charset=%s\n\n\n", CHARSET);
 	printf("<html>\n");
@@ -742,18 +743,18 @@ static int http_init(void)
 #ifdef SQUID
 	char *fromtmp;
 	fromtmp = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
-	if (fromtmp == NULL)
-		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), 32);
-	else
-	{
+	if (fromtmp == NULL) {
+		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), sizeof(fromhost));
+	} else {
 		while ((*fromtmp < '0')&&(*fromtmp != '\0'))
 			fromtmp++;
-		strlcpy(fromhost, fromtmp, 32);
+		strlcpy(fromhost, fromtmp, sizeof(fromhost));
 	}
 #else
-	strlcpy(fromhost, getsenv("REMOTE_ADDR"), 32);
+	strlcpy(fromhost, getsenv("REMOTE_ADDR"), sizeof(fromhost));
 #endif
-	my_style=atoi(getparm("my_style"));
+
+	my_style = atoi(getparm("my_style"));
 #ifndef XMLFILE
 #ifndef MY_CSS
         printf("<link rel=stylesheet type=text/css href='/css/bbs%d.css'>\n", my_style);
@@ -761,7 +762,7 @@ static int http_init(void)
         printf("<link rel=stylesheet type=text/css href='%s'>\n", MY_CSS);
 #endif
 #endif
-	//printf("<script type=\"text/javascript\" language=\"JavaScript1.2\" src=\"/stm31.js\"></script>");
+
 	return my_style;
 }
 
