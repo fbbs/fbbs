@@ -1412,25 +1412,26 @@ int isbad(char *id) {
         return 0;
 }
 
-//int touch_anonshm(int id)
-//{
-//	int acfd;
-//	acfd=shm_lock("tmp/ACACHE.lock");
-//	if(id==0){
-//		id=anonshm->freenode;
-//		if(id){
-//			anonshm->freenode=anonshm->next[id-1];
-//			anonshm->used++;
-//			anonshm->next[id-1]=anonshm->usednode;
-//			anonshm->usednode=id;
-//			anonshm->item[id-1]=time(0);
-//		}
-//	}else if(id<=MAX_ANON){
-//		anonshm->item[id-1]=time(0);
-//	}
-//	shm_unlock(acfd);
-//	return id;
-//}
+int fcgi_init_all(void)
+{
+	srand(time(NULL) * 2 + getpid());
+	chdir(BBSHOME);
+	seteuid(BBSUID);
+	if(geteuid() != BBSUID)
+		http_fatal("uid error.");
+	shm_init();
+
+	// Happy birthday in status bar.
+	time_t t = time(NULL);
+	struct tm *tp = localtime(&t);
+	if(currentuser.birthmonth == ((tp->tm_mon) + 1)
+		&&currentuser.birthday==(tp->tm_mday)) {
+		printf("<b>发表文章 · %s </b><br>\n",BBSNAME)("<head><script>self.status=\""
+			"今天是您的生日，日月光华BBS祝您生日快乐！\"</script></head>");
+	}
+
+	return 0;
+}
 
 int init_all(void)
 {
