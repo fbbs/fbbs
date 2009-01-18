@@ -653,52 +653,48 @@ int parm_add(char *name, char *val) {
 }
 char *getparm();
 
+// Uses delimeter 'delim' to split 'buf' into "key=value" pairs.
+// Adds these pairs into global arrays.
+static void parm_parse(char *buf, const char *delim)
+{
+	char *t2, *t3;
+	t2 = strtok(buf, delim);
+	while (t2 != NULL) {
+		t3 = strchr(t2, '=');
+		if (t3 != NULL) {
+			*t3++ = '\0';
+			__unhcode(t3);
+			parm_add(trim(t2), t3);
+		}
+		t2 = strtok(NULL, delim);
+	}
+	return;
+}
+
+// Read parameters from HTTP header.
 void http_parm_init(void)
 {
 	int n;
-	char *buf, buf2[1024], *t2, *t3;
+	char *buf, buf2[1024];
+
 	n = atoi(getsenv("CONTENT_LENGTH"));
 	if(n > 5000000)
 		n = 5000000;
-	buf = calloc(n + 1, 1);
+	buf = malloc(n + 1);
 	if(buf == NULL)
 		http_fatal("memory overflow");
 	fread(buf, 1, n, stdin);
 	buf[n] = '\0';
-	t2 = strtok(buf, "&");
-	while(t2) {
-		t3 = strchr(t2, '=');
-		if(t3 != 0) {
-			t3[0] = 0;
-			t3++;
-			__unhcode(t3);
-			parm_add(trim(t2), t3);
-		}
-		t2=strtok(0, "&");
-	}
-	strlcpy(buf2, getsenv("QUERY_STRING"), 1024);
-	t2=strtok(buf2, "&");
-	while(t2) {
-		t3=strchr(t2, '=');
-		if(t3!=0) {
-			t3[0]=0;
-			t3++;
-			__unhcode(t3);
-			parm_add(trim(t2), t3);
-		}
-		t2=strtok(0, "&");
-	}
-	strlcpy(buf2, getsenv("HTTP_COOKIE"), 1024);
-	t2=strtok(buf2, ";");
-	while(t2) {
-		t3=strchr(t2, '=');
-		if(t3!=0) {
-			t3[0]=0;
-			t3++;
-			parm_add(trim(t2), t3);
-		}
-		t2=strtok(0, ";");
-	}
+	parm_parse(buf, "&");
+	free(buf);
+
+	strlcpy(buf2, getsenv("QUERY_STRING"), sizeof(buf2));
+	parm_parse(buf2, "&");
+
+	strlcpy(buf2, getsenv("HTTP_COOKIE"), sizeof(buf2));
+	parm_parse(buf2, "&");
+
+	return;
 }
 
 static int http_init(void)
