@@ -766,28 +766,34 @@ static int http_init(void)
 	return my_style;
 }
 
-int __to16(char c) {
-	if(c>='a'&&c<='f') return c-'a'+10;
-	if(c>='A'&&c<='F') return c-'A'+10;
-	if(c>='0'&&c<='9') return c-'0';
+// Convert a hex char 'c' to a base 10 integer.
+static int __to16(char c)
+{
+	if (c >= 'a' && c <= 'f')
+		return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F')
+		return c - 'A' + 10;
+	if (c >= '0' && c <= '9')
+		return c - '0';
 	return 0;
 }
 
-int __unhcode(char *s) {
+static int __unhcode(char *s)
+{
 	int m, n;
-	for(m=0, n=0; s[m]!=0; m++, n++) {
-		if(s[m]=='+') {
-			s[n]=' ';
+	for(m = 0, n = 0; s[m] != 0; m++, n++) {
+		if (s[m] == '+') {
+			s[n] = ' ';
 			continue;
 		}
-		if(s[m]=='%') {
-			s[n]=__to16(s[m+1])*16+__to16(s[m+2]);
-			m+=2;
+		if (s[m] == '%') {
+			s[n] = __to16(s[m+1]) * 16 +__to16(s[m+2]);
+			m += 2;
 			continue;
 		}
 		s[n]=s[m];
 	}
-	s[n]=0;
+	s[n] = 0;
 }
 
 int get_shmkey(char *s) {
