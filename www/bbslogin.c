@@ -75,7 +75,6 @@ int wwwlogin(struct userec *user) {
 	char buf[80];
 	int pid, n, tmp;
 	struct user_info *u;
-/* patch added by roly */
 	if(!(currentuser.userlevel & PERM_REGISTER)) { 
                 char file[256]; 
                 sprintf(file, "home/%c/%s/register", 
@@ -85,7 +84,6 @@ int wwwlogin(struct userec *user) {
                         save_user_data(&currentuser); 
                 } 
         }  
-/* add end */
         fp=fopen("tmp/.UTMP.lock", "a");
 	FLOCK(fileno(fp), LOCK_EX);
 	for(n=0; n<MAXACTIVE; n++) {
@@ -103,9 +101,6 @@ int wwwlogin(struct userec *user) {
 			u->uid=getusernum(user->userid)+1;
 			u->pid=pid;
 			u->mode=10001;
-/* added by roly 02.05.19 for dispaly friend char when look in telnet mode 
-			getfriendstr(u);
- add end */
         		if(user_perm(&currentuser, PERM_LOGINCLOAK) &&
 			(currentuser.flags[0] & CLOAK_FLAG))
                 		u->invisible = YEA;
@@ -134,10 +129,7 @@ int wwwlogin(struct userec *user) {
             u->from[22] = DEFINE(DEF_NOTHIDEIP)?'S':'H';
 
 			u->idle_time=time(0);
-			//Modified by IAMFAT 2002.06.05
-			//strsncpy(u->username, user->username, 20);
 			strcpy(u->username, user->username);
-			//strsncpy(u->userid, user->userid, 13);
 			strcpy(u->userid, user->userid);
 			tmp=rand()%100000000;
 			u->utmpkey=tmp;
@@ -173,44 +165,7 @@ void add_msg() {
         fclose(fp);
 }
 
-/* added by roly 02.05.17 for add friend list into uinfo //not completed
-int
-getfriendstr(struct user_info *uinfo)
-{
-	int     i;
-	struct override *tmp;
-	memset(uinfo->friend, 0, sizeof(uinfo->friend));
-	setuserfile(genbuf, "friends");
-	sprintf(genbuf,"%s/%s/%s/friends",BBSHOME,toupper(currentuser.userid[0]),currentuser.userid(0));
-	uinfo->fnum = get_num_records(genbuf, sizeof(struct override));
-	if (uinfo->fnum <= 0)
-		return 0;
-	uinfo->fnum = (uinfo->fnum >= MAXFRIENDS) ? MAXFRIENDS : uinfo->fnum;
-	tmp = (struct override *) calloc(sizeof(struct override), uinfo->fnum);
-	get_records(genbuf, tmp, sizeof(struct override), 1, uinfo->fnum);
-	for (i = 0; i < uinfo->fnum; i++) {
-		uinfo->friend[i] = searchuser(tmp[i].id);
-	}
-	free(tmp);
-	//update_ulist(uinfo, utmpent);
-}
-
-int
-searchuser(userid)
-char   *userid;
-{
-	register int i;
-	resolve_ucache();
-	for (i = 0; i < uidshm->number; i++)
-		if (!ci_strncmp(userid, uidshm->userid[i], IDLEN + 1))
-			return i + 1;
-	return 0;
-}
-
- add end */
-
 void abort_program() {
-/* modified by roly   patch of NJU 0.9 */
         int stay=0; 
         struct userec *x; 
 	int loginstart;
@@ -223,7 +178,6 @@ void abort_program() {
 				shm_ucache->status[u_info->uid-1]--;
                 bzero(u_info, sizeof(struct user_info)); 
         } 
-        //if(stay>7200) stay=7200; 
         x=getuser(currentuser.userid); 
         if(x) { 
 		time_t now=time(0);
@@ -232,7 +186,6 @@ void abort_program() {
 		if(x->lastlogout>recent)recent=x->lastlogout;
 		if(x->lastlogin>recent)recent=x->lastlogin;
 		stay=now-recent;
-		//stay=now-loginstart;
 		if(stay<0)stay=0;
                 x->stay+=stay; 
                 x->lastlogout=now; 
@@ -251,7 +204,6 @@ int wwwagent() {
 	while(1) {
 		sleep(60);
 		if(abs(time(0) - u_info->idle_time)>600) {
-			//f_append("err", "idle timeout");
 			abort_program();
 		}
 	}
@@ -260,7 +212,6 @@ int wwwagent() {
 
 int check_multi(struct userec *user) {
 	int i, total=0;
-	//if(currentuser.userlevel & PERM_SYSOP) return;
 	for(i=0; i<MAXACTIVE; i++) {
 		if(shm_utmp->uinfo[i].active==0) continue;
 		if(!strcasecmp(shm_utmp->uinfo[i].userid, user->userid)) total++;
