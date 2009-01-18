@@ -39,6 +39,8 @@
 	#define SECNUM 12
 #endif
 
+#define HTTP_END (printf("\n</html>\n"));
+
 #define file_size(x) f_stat(x)->st_size
 #define file_time(x) f_stat(x)->st_mtime
 #define file_rtime(x) f_stat(x)->st_atime
@@ -92,7 +94,7 @@ int del_record(char *file, int size, int num);
 
 
 char *getsenv(char *s);
-int http_quit(void);
+void http_quit(void);
 int http_fatal(char *fmt, ...);
 int hsprintf(char *s, char *fmt, ...);
 int hprintf(char *fmt, ...);
@@ -205,5 +207,5 @@ int fcgi_init_all(void);
 int fcgi_init_loop(void);
 
 int bbsleft_main(void);
-
+int bbssec_main(void);
 #endif

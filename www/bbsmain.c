@@ -7,6 +7,7 @@ struct cgi_applet {
 
 struct cgi_applet applets[] = {
 		{ "bbsleft", bbsleft_main },
+		{ "bbssec", bbssec_main },
 		{ NULL }
 };
 

@@ -439,7 +439,7 @@ char *getsenv(char *s) {
         return "";
 }
 
-int http_quit(void) {
+void http_quit(void) {
 	printf("\n</html>\n");
 	FCGI_Finish();
 }
