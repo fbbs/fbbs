@@ -1,68 +1,73 @@
 #include "libweb.h"
 
-int main() {
-	char fname[STRLEN];//added by roly 02.05.10 
-	int pid, n, t;
-	char buf[256], id[20], pw[20];
-	struct userec *x;
-	FILE *fp;
-	init_all();
-	strlcpy(id, getparm("id"), 13);
-        strlcpy(pw, getparm("pw"), 13);
-	if(loginok && strcasecmp(id, currentuser.userid)) {
-		http_fatal("系统检测到目前您的计算机上已经登录有一个帐号 %s，请先退出.(%s)", 
-			currentuser.userid, "选择正常logout, 或者关闭所有浏览器窗口");
+int main(void)
+{
+	char fname[STRLEN];
+	char buf[256], id[IDLEN + 1], pw[PASSLEN];
+	struct userec *user;
+
+	fcgi_init_all();
+	while (FCGI_Accept() >= 0) {
+		fcgi_init_loop();
+		strlcpy(id, getparm("id"), sizeof(id));
+		strlcpy(pw, getparm("pw"), sizeof(pw));
+		if(loginok && strcasecmp(id, currentuser.userid)) {
+			http_fatal("系统检测到目前您的计算机上已经登录有一个帐号 %s，"
+				"请先退出.(选择正常logout, 或者关闭所有浏览器窗口)", 
+				currentuser.userid);
+		}
+
+		user = getuser(id);
+		if (user == NULL)
+			http_fatal("经查证，无此 ID。");
+
+		if(strcasecmp(id, "guest")) {
+			int total;
+			time_t stay, recent, now, t;
+			if (!checkpasswd(user->passwd, pw)) {
+				sprintf(buf, "%-12.12s %s @%s\n", id, cn_Ctime(time(0)), fromhost);
+				sethomefile(fname, id, "logins.bad"); 
+           		f_append(fname, buf);
+				f_append("logins.bad", buf);
+				http_fatal("密码输入错误...");
+			}
+			total = check_multi(user);
+			if (!HAS_PERM2(PERM_LOGIN, user))
+				http_fatal("本帐号已停机。请到Notice版查询原因");
+
+			now = time(NULL);
+			if (total > 1) {
+				recent = user->lastlogout;
+				if (user->lastlogin > recent)
+					recent = user->lastlogin;
+				stay=now-recent;
+				if (stay < 0)
+					stay=0;
+			} else {
+				stay = 0;
+			}
+			t = user->lastlogin;
+			user->lastlogin = now;
+			user->stay += stay;
+			save_user_data(user);
+#ifdef CHECK_FREQUENTLOGIN
+			if (!HAS_PERM(PERM_SYSOPS)
+				&& abs(t - time(NULL)) < 10) {
+				report("Too Frequent", user->userid);
+				http_fatal("登录过于频繁，请稍候再来。");
+			}
+#endif
+			user->numlogins++;
+			strlcpy(user->lasthost, fromhost, sizeof(user->lasthost));
+			save_user_data(user);
+			currentuser = *user;
+		}
+
+		log_usies("ENTER", fromhost, user);
+		if(!loginok && strcasecmp(id, "guest"))
+			wwwlogin(user);
+		redirect(FIRST_PAGE);
 	}
-	x=getuser(id);
-	if(x==0) http_fatal("错误的使用者帐号");
-	if(strcasecmp(id, "guest")) {
-		int total;
-		time_t stay;
-		time_t recent;
-		time_t now;
-		if(!checkpasswd(x->passwd, pw)) {
-			if(pw[0]!=0) sleep(2);
-		/* added by roly 02.05.10 to add bad login in telnet */
-			sprintf(buf, "%-12.12s %s @%s\n", id, cn_Ctime(time(0)), fromhost);
-			sethomefile(fname,id,"logins.bad"); 
-            		f_append(fname, buf); 
-        	/* added end */                
-			f_append("logins.bad", buf);
-			http_fatal("密码错误");
-		}
-		total=check_multi(x);
-		if(!user_perm(x, PERM_LOGIN))
-			http_fatal("此帐号已被停机, 若有疑问, 请用其他帐号在sysop版询问.");
-		if(file_has_word(".bansite", fromhost)) {
-			http_fatal("对不起, 本站不欢迎来自 [%s] 的登录. <br>若有疑问, 请与SYSOP联系.", fromhost);
-		}
-		now=time(0);
-		if(total>1)
-		{
-			recent=x->lastlogout;
-			if(x->lastlogin>recent)recent=x->lastlogin;
-			stay=now-recent;
-			if(stay<0)stay=0;
-		}
-		else stay=0;
-		t=x->lastlogin;
-		x->lastlogin=now;
-		x->stay+=stay;
-		save_user_data(x);
-		//add for NR autopost id:US.   eefree 06.9.8 
-		if (strcasecmp(id,"US") ) {
-			if(abs(t-time(0))<60) http_fatal("两次登录间隔过密!");
-		}//add end
-		x->numlogins++;
-		strlcpy(x->lasthost, fromhost, 16);
-		save_user_data(x);
-		currentuser=*x;
-	}
-	sprintf(buf, "ENTER %s", fromhost);
-	do_report("usies", buf);
-	n=0;
-	if(!loginok && strcasecmp(id, "guest"))	wwwlogin(x);
-	redirect(FIRST_PAGE);
 }
 
 int wwwlogin(struct userec *user) {
