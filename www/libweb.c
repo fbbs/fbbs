@@ -656,6 +656,15 @@ static int parm_add(const char *name, const char *val)
 	strlcpy(parm_val[parm_num], val, len + 1);
 	return ++parm_num;
 }
+
+static int parm_free(void)
+{
+	int i;
+	for (i = parm_num - 1; i >= 0; --i) {
+		free(parm_val[i]);
+	}
+	return parm_num = 0;
+}
 char *getparm();
 
 // Uses delimeter 'delim' to split 'buf' into "key=value" pairs.
@@ -681,6 +690,8 @@ void http_parm_init(void)
 {
 	int n;
 	char *buf, buf2[1024];
+
+	parm_free();
 
 	n = atoi(getsenv("CONTENT_LENGTH"));
 	if(n > 5000000)
