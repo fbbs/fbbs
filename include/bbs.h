@@ -450,7 +450,7 @@ char *setmfile(char *buf, const char *userid, const char *filename);
 char *setmdir(char *buf, const char *userid);
 
 //board.c
-void changeboard(struct boardheader *bp, char *cboard, const char *board);
+void changeboard(struct boardheader **bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
 

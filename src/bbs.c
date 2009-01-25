@@ -1095,7 +1095,7 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 
 	selboard = 1;
 	brc_initial(currentuser.userid, bname);
-	changeboard(currbp, currboard, bname);
+	changeboard(&currbp, currboard, bname);
 
 	move(0, 0);
 	clrtoeol();

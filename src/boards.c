@@ -697,7 +697,7 @@ int read_board(struct newpostdata *ptr, int newflag) {
 		brdnum = -1;
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
-		changeboard(currbp, currboard, ptr->name);
+		changeboard(&currbp, currboard, ptr->name);
 		memcpy(currBM, ptr->BM, BM_LEN - 1);
 		if (DEFINE(DEF_FIRSTNEW)) {
 			setbdir(buf, currboard);

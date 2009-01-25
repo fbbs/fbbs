@@ -679,7 +679,7 @@ static char *boardmargin(void)
 		snprintf(buf, sizeof(buf), "ÌÖÂÛÇø [%s]", currboard);
 	else {
 		brc_initial(currentuser.userid, DEFAULTBOARD);
-		changeboard(currbp, currboard, DEFAULTBOARD);
+		changeboard(&currbp, currboard, DEFAULTBOARD);
 		if (!getbnum(currboard, &currentuser))
 			setoboard(currboard);
 		selboard = 1;
