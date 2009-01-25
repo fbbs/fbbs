@@ -1,28 +1,3 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: record.c 336 2006-11-19 15:52:57Z danielfree $
- */
-
 #include "bbs.h"
 #include <unistd.h>
 #include <sys/mman.h>
@@ -34,7 +9,8 @@ USE_TRY;
 
 //	循环写字符到文件，直到写入size个字节
 //	origsz,bp是多余的？
-int safewrite(int fd, char *const buf, int size) {
+static int safewrite(int fd, char *const buf, int size)
+{
 	int cc, sz = size, origsz = size;
 	char *bp = buf;
 
@@ -54,7 +30,8 @@ int safewrite(int fd, char *const buf, int size) {
 
 //	若文件filename不存在,返回-1
 //	否则返回filename中存放的记录数
-long get_num_records(const char *filename, const int size) {
+long get_num_records(const char *filename, const int size)
+{
 	struct stat st;
 	if (stat(filename, &st) == -1)
 		return 0;
@@ -63,7 +40,8 @@ long get_num_records(const char *filename, const int size) {
 
 //增加一个记录，大小为size,首地址为record
 //	文件名为filename
-int append_record(char *filename, char *record, int size) {
+int append_record(char *filename, char *record, int size)
+{
 	int fd;
 	if ((fd = open(filename, O_WRONLY | O_CREAT, 0644)) == -1) {
 		report("open file error in append_record()", "");
@@ -78,25 +56,21 @@ int append_record(char *filename, char *record, int size) {
 	return 0;
 }
 
-void toobigmesg() {
-	/*
-	 * change by KCN 1999.09.08
-	 * fprintf( stderr, "record size too big!!\n" );
-	 */
-}
-
 //取得记录的句柄,并存放在rptr中
 //	fd是文件的描述符,size表示记录的大小,id表示记录的位置
 //	不成功时,返回-1 ; 成功时,返回0
-int get_record_handle(int fd, void *rptr, int size, int id) {
+static int get_record_handle(int fd, void *rptr, int size, int id)
+{
 	if (lseek(fd, size * (id - 1), SEEK_SET) == -1)
 		return -1;
 	if (read(fd, rptr, size) != size)
 		return -1;
 	return 0;
 }
+
 //取得记录,filename表示文件名,其它参数见get_record_handle
-int get_record(char *filename, void *rptr, int size, int id) {
+int get_record(char *filename, void *rptr, int size, int id)
+{
 	int fd;
 	int ret;
 
@@ -110,7 +84,8 @@ int get_record(char *filename, void *rptr, int size, int id) {
 //在文件filename中的第id-1个记录处读取大小为size,数量为number的记录集
 //	如果失败,返回-1,如果未能读取number个记录,则返回读取的记录数
 int get_records(const char *filename, char *rptr, int size, int id,
-		int number) {
+		int number)
+{
 	int fd;
 	int n;
 	if ((fd = open(filename, O_RDONLY, 0)) == -1)
@@ -131,7 +106,8 @@ int get_records(const char *filename, char *rptr, int size, int id,
 
 //	对名为filename的记录文件执行fptr函数
 int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
-		int applycopy, int reverse) {
+		int applycopy, int reverse)
+{
 	char *buf, *buf1, *buf2;
 	int i;
 	size_t file_size;
@@ -184,53 +160,14 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 	return 0;
 }
 
-/* COMMAN : use mmap to speed up searching */
-int search_record_back(int fd, /* file handle */
-int size, /* record size */
-int start, /* where to start reverse search */
-RECORD_FUNC_ARG fptr, /* compare function */
-void *farg, /* additional param to call fptr() / original record */
-void *rptr, /* record data buffer to be used for reading idx file */
-int sorted) { /* if records in file are sorted */
-	char *buf, *buf1;
-	int i;
-	size_t filesize;
-
-	BBS_TRY {
-		if ( safe_mmapfile_handle( fd,
-						O_RDONLY,
-						PROT_READ,
-						MAP_SHARED,
-						(void **) &buf,
-						&filesize
-				) == 0
-		)
-		BBS_RETURN(0);
-		if (start> filesize / size) //超过记录文件中的记录数目
-		start = filesize / size;
-		for (i = start, buf1 = buf + size * (start - 1); i> 0; i--, buf1 -= size) {
-			if ((*fptr) (farg, buf1)) {
-				if (rptr)
-				memcpy(rptr, buf1, size);
-				end_mmapfile((void *) buf, filesize, -1);
-				BBS_RETURN(i);
-			}
-		}
-	}
-	BBS_CATCH {
-	}
-	BBS_END end_mmapfile((void *) buf, filesize, -1);
-
-	return 0;
-}
-
 /*---   End of Addition     ---*/
 /* search_record进行了预读优化,以减少系统调用次数,提高速度. ylsdd, 2001.4.24 */
 /* COMMAN : use mmap to improve search speed */
 //	在filename文件中搜索 比较函数为fptr,欲搜索记录为farg
 //	搜索长度为O(n)可以考虑改进
 int search_record(char *filename, void *rptr, int size,
-		RECORD_FUNC_ARG fptr, void *farg) {
+		RECORD_FUNC_ARG fptr, void *farg)
+{
 	int i;
 	char *buf, *buf1;
 	size_t filesize;
@@ -258,7 +195,8 @@ int search_record(char *filename, void *rptr, int size,
 }
 
 //	将filename文件第id个记录替换为rptr所指向的数据
-int substitute_record(char *filename, void *rptr, int size, int id) {
+int substitute_record(char *filename, void *rptr, int size, int id)
+{
 	/*     * add by KCN      */
 	struct flock ldata;
 	int retval;
@@ -306,7 +244,8 @@ int substitute_record(char *filename, void *rptr, int size, int id) {
 
 //from smthbbs, 2003.10.26
 int delete_record(char *filename, int size, int id,
-		RECORD_FUNC_ARG filecheck, void *arg) {
+		RECORD_FUNC_ARG filecheck, void *arg)
+{
 	int fdr;
 	size_t filesize;
 	char* ptr;
@@ -349,25 +288,9 @@ int delete_record(char *filename, int size, int id,
 	return ret;
 }
 
-//让字符串tmpfile值改成.tmpfile,deleted改成.deleted
-void tmpfilename(char *filename, char *tmpfile, char *deleted) {
-	char *ptr, *delfname, *tmpfname;
-
-	strcpy(tmpfile, filename);
-	delfname = ".deleted";
-	tmpfname = ".tmpfile";
-	if ((ptr = strrchr(tmpfile, '/')) != NULL) {
-		strcpy(ptr + 1, delfname);
-		strcpy(deleted, tmpfile);
-		strcpy(ptr + 1, tmpfname);
-	} else {
-		strcpy(deleted, delfname);
-		strcpy(tmpfile, tmpfname);
-	}
-}
-
 // 区段删除,从id1到id2;版面文件与精华区有区别
-int delete_range(char *filename, int id1, int id2) {
+int delete_range(char *filename, int id1, int id2)
+{
 	struct fileheader *ptr;
 	struct fileheader *wptr, *rptr;
 	char dirpath[80], *p;
@@ -462,7 +385,8 @@ int delete_range(char *filename, int id1, int id2) {
 
 //插入记录
 int insert_record(char *filename, int size, RECORD_FUNC_ARG filecheck,
-		void *arg) {
+		void *arg)
+{
 	char *ptr, *rptr;
 	int fdr;
 	size_t filesize;

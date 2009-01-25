@@ -39,4 +39,21 @@ int brc_unread1(int ftime);
 int brc_clear(int ent, const char *direct, int clearall);
 void brc_zapbuf(int *zbuf);
 
+//record.c
+long get_num_records(const char *filename, const int size);
+int append_record(char *filename, char *record, int size);
+int get_record(char *filename, void *rptr, int size, int id);
+int get_records(const char *filename, char *rptr, int size, int id,
+		int number);
+int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
+		int applycopy, int reverse);
+int search_record(char *filename, void *rptr, int size,
+		RECORD_FUNC_ARG fptr, void *farg);
+int substitute_record(char *filename, void *rptr, int size, int id);
+int delete_record(char *filename, int size, int id,
+		RECORD_FUNC_ARG filecheck, void *arg);
+int delete_range(char *filename, int id1, int id2);
+int insert_record(char *filename, int size, RECORD_FUNC_ARG filecheck,
+		void *arg);
+
 #endif
