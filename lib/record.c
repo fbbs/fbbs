@@ -108,7 +108,7 @@ int get_records(const char *filename, char *rptr, int size, int id,
 int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 		int applycopy, int reverse)
 {
-	char *buf, *buf1, *buf2 = NULL;
+	void *buf, *buf1, *buf2 = NULL;
 	int i;
 	size_t file_size;
 	int count;
@@ -118,7 +118,7 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 						O_RDONLY,
 						PROT_READ,
 						MAP_SHARED,
-						(void **) &buf,//起始地址放在buf中 
+						&buf,//起始地址放在buf中 
 						&file_size, //保存映射的文件大小 
 						NULL //以非互斥方式映射文件至内存
 				)== 0
@@ -169,7 +169,7 @@ int search_record(char *filename, void *rptr, int size,
 		RECORD_FUNC_ARG fptr, void *farg)
 {
 	int i;
-	char *buf, *buf1;
+	void *buf, *buf1;
 	size_t filesize;
 
 	BBS_TRY {
@@ -248,14 +248,14 @@ int delete_record(char *filename, int size, int id,
 {
 	int fdr;
 	size_t filesize;
-	char* ptr;
+	void *ptr;
 	int ret;
 
 	if (id <= 0)
 		return 0;
 	BBS_TRY {
 		if (safe_mmapfile(filename, O_RDWR, PROT_READ | PROT_WRITE,
-						MAP_SHARED, (void **) &ptr, &filesize, &fdr)
+						MAP_SHARED, &ptr, &filesize, &fdr)
 				== 0
 		)
 		BBS_RETURN(-1);
