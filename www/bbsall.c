@@ -43,13 +43,12 @@ int bbsall_main(void)
                    data[i]->filename, data[i]->filename);
 		// Print category.
         if (isgroup)
-            printf("<td  nowrap align=center><b>%6.6s</b></td>", "[Ŀ¼]");
+			printf("<td  nowrap align=center><b>%6.6s</b></td>", "[Ŀ¼]");
         else
-            printf("<td  nowrap align=center>%6.6s</td>", data[i]->title + 1);
+			printf("<td  nowrap align=center>%6.6s</td>", data[i]->title + 1);
 		// Print board title.
         printf("<td width=100%%><a href=%s?board=%s><b>%s</b></a><br>", 
-               (isgroup?"bbsboa":"bbsdoc"), data[i]->filename, data[i]->title + 10);
-		showrecommend(data[i]->filename, 3, 0);
+              (isgroup?"bbsboa":"bbsdoc"), data[i]->filename, data[i]->title + 10);
 		printf("</td>");
 		// Print first BM.
 		char buf[BM_LEN - 4];
