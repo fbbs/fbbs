@@ -63,7 +63,7 @@ char *setwbdir(char *buf, const char *boardname);
 char *setbfile(char *buf, const char *boardname, const char *filename);
 char *setmfile(char *buf, const char *userid, const char *filename);
 char *setmdir(char *buf, const char *userid);
-int safe_mmapfile(char *filename, int openflag, int prot, int flag,
+int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
 		void **ret_ptr, size_t * size, int *ret_fd);
 
 #endif

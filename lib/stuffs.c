@@ -43,30 +43,32 @@ char *setmdir(char *buf, const char *userid)
 	return buf;
 }
 
-//	将文件filename映射到内存中,
-//	若ret_fd为空,将其指向打开filename的描述符,并锁住文件,将*size置为文件大小
-//	成功时返回1,否则0
-int safe_mmapfile(char *filename, int openflag, int prot, int flag,
-		void **ret_ptr, size_t * size, int *ret_fd) {
+// Maps whole file 'filename' to memory and locks it.
+// File descriptor of the file is returned via 'ret_fd'.
+// The size of the file is returned via 'size'.
+// 'openflag' is passed to open().
+// 'prot', 'flag' are passed to mmap().
+// 'ret_ptr' is the starting address of mapped region.
+// Returns 1 if OK, 0 on error.
+int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
+		void **ret_ptr, size_t *size, int *ret_fd)
+{
 	int fd;
 	struct stat st;
 
 	fd = open(filename, openflag, 0600);
-	if (fd < 0)//未成功打开 
+	if (fd < 0)
 		return 0;
-	if (fstat(fd, &st) < 0) { //未成功检测文件状态
+	// Return error if not a regular file or wrong size.
+	if ((fstat(fd, &st) < 0)
+			|| (!S_ISREG(st.st_mode))
+			|| (st.st_size <= 0)) {
 		close(fd);
 		return 0;
 	}
-	if (!S_ISREG(st.st_mode)) { //非常规文件,符号文件看其所指向的文件属性
-		close(fd);
-		return 0;
-	}
-	if (st.st_size <= 0) { //文件大小为0
-		close(fd);
-		return 0;
-	}
-	*ret_ptr = mmap(NULL, st.st_size, prot, flag, fd, 0);//映射整个文件到内存中
+
+	// Map whole file to memory.
+	*ret_ptr = mmap(NULL, st.st_size, prot, flag, fd, 0);
 	if (!ret_fd) {
 		close(fd);
 	} else {
