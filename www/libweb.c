@@ -194,12 +194,12 @@ int getmailsize(char *userid)
    if(stat(dirfile, &DIRst)==-1||DIRst.st_size==0) mailsize = 0;
    else if(stat(sizefile, &SIZEst)!=-1 && SIZEst.st_size!=0
 	    && SIZEst.st_ctime >= DIRst.st_ctime){
-      fp = fopen(sizefile,"r");
-      if(fp){
-         fscanf(fp,"%d",&mailsize);
-	 fclose(fp);
-      } 
-   }
+		fp = fopen(sizefile,"r");
+		if (fp != NULL) {
+			fscanf(FCGI_ToFILE(fp), "%d", &mailsize);
+			fclose(fp);
+		}
+	}
    if( mailsize != -1 ) return mailsize;
   
    mailsize=0;
@@ -216,8 +216,8 @@ int getmailsize(char *userid)
       close(fd);
    }
    fp = fopen(sizefile,"w+");
-   if(fp){
-      fprintf(fp,"%d",mailsize);
+   if(fp != NULL){
+      fprintf(FCGI_ToFILE(fp),"%d",mailsize);
       fclose(fp);
    }
    return mailsize;
@@ -262,11 +262,13 @@ char * entity_char(char *s) {
 int file_has_word(char *file, char *word) {
 	FILE *fp;
 	char buf[256], buf2[256];
-	fp=fopen(file, "r");
-	if(fp==0) return 0;
+	fp = fopen(file, "r");
+	if(fp == NULL)
+		return 0;
 	while(1) {
 		bzero(buf, 256);
-		if(fgets(buf, 255, fp)==0) break;
+		if(fgets(buf, 255, FCGI_ToFILE(fp))==0)
+			break;
 		sscanf(buf, "%s", buf2);
 		if(!strcasecmp(buf2, word)) {
 			fclose(fp);
@@ -280,9 +282,10 @@ int file_has_word(char *file, char *word) {
 int f_append(const char *file, char *buf) {
 	FILE *fp;
 	fp=fopen(file, "a");
-	if(fp==0) return;
-	fprintf(fp, "%s", buf);
-	fclose(fp);
+	if (fp != NULL) {
+		fprintf(FCGI_ToFILE(fp), "%s", buf);
+		fclose(fp);
+	}
 }
 
 struct stat *f_stat(char *file) {
@@ -297,10 +300,11 @@ int get_record(void *buf, int size, int num, char *file) {
 	if(size<1 || size>4096) return 0;
 	if(num<0 || num>1000000) return 0;
 	bzero(buf, size);
-	fp=fopen(file, "r");
-	if(fp==0) return 0;
-	fseek(fp, num*size, SEEK_SET);
-	if(fread(buf, size, 1, fp)<=0) {
+	fp = fopen(file, "r");
+	if(fp == NULL)
+		return 0;
+	fseek(FCGI_ToFILE(fp), num*size, SEEK_SET);
+	if(fread(buf, size, 1, FCGI_ToFILE(fp))<=0) {
 		fclose(fp);
 		return 0;
 	}
@@ -311,9 +315,10 @@ int get_record(void *buf, int size, int num, char *file) {
 int append_record(void *buf, int size, char *file)
 {
 	FILE *fp;
-	fp=fopen(file, "ab");
-	if(fp==0)return 0;
-	fwrite(buf,size,1,fp);
+	fp = fopen(file, "ab");
+	if(fp == NULL)
+		return 0;
+	fwrite(buf, size, 1, FCGI_ToFILE(fp));
 	fclose(fp);
 	return 1;
 }
@@ -325,17 +330,18 @@ int del_record(char *file, int size, int num) {
 	if(size<1 || size>4096) return 0;
 	total=file_size(file)/size;
 	if(total<1 || total>1000000) return 0;
-	fp=fopen(file, "r+");
-	if(fp==0) return 0;
-	flock(fileno(fp), LOCK_EX);
+	fp = fopen(file, "r+");
+	if (fp == NULL)
+		return 0;
+	flock(fileno(FCGI_ToFILE(fp)), LOCK_EX);
 	for(i=num+1; i<=total-1; i++) {
-		fseek(fp, i*size, SEEK_SET);
-		if(fread(buf, size, 1, fp)<=0) break;
-		fseek(fp, (i-1)*size, SEEK_SET);
-		fwrite(buf, size, 1, fp);
+		fseek(FCGI_ToFILE(fp), i*size, SEEK_SET);
+		if(fread(buf, size, 1, FCGI_ToFILE(fp))<=0) break;
+		fseek(FCGI_ToFILE(fp), (i-1)*size, SEEK_SET);
+		fwrite(buf, size, 1, FCGI_ToFILE(fp));
 	}
-	ftruncate(fileno(fp), (total-1)*size);
-	flock(fileno(fp), LOCK_UN);
+	ftruncate(fileno(FCGI_ToFILE(fp)), (total-1)*size);
+	flock(fileno(FCGI_ToFILE(fp)), LOCK_UN);
 	fclose(fp);
 	return 1;
 }
@@ -861,10 +867,11 @@ static int sig_append(FILE *fp, char *id, int sig) {
 	x=getuser(id);
 	if(x==0) return;
 	sprintf(path, "home/%c/%s/signatures", toupper(id[0]), id);
-	fp2=fopen(path, "r");
-	if(fp2==0) return;
+	fp2 = fopen(path, "r");
+	if (fp2 == NULL)
+		return;
 	for(total=0; total<100; total++) //total<255 -> 100 money modfied 03.10.21
-		if(fgets(buf[total], 255, fp2)==0) break;
+		if(fgets(buf[total], 255, FCGI_ToFILE(fp2))==0) break;
 	fclose(fp2);
 	for(i=sig*6; i<sig*6+6; i++) {
 		if(i>=total) break;
@@ -919,31 +926,33 @@ int post_mail(char *userid, char *title, char *file, char *id, char *nickname, c
 	if(i>=99) return -1;
 	sprintf(header.filename, "M.%d.A", t);
 	strlcpy(header.title, title, 60);
-	fp=fopen(buf3, "w");
-	if(fp==0) return -2;
-	fp2=fopen(file, "r");
-	fprintf(fp, "ºƒ–≈»À: %s (%s)\n", id, nickname);
-	fprintf(fp, "±Í  Ã‚: %s\n", title);
+	fp = fopen(buf3, "w");
+	if (fp == NULL)
+		return -2;
+	fp2 = fopen(file, "r");
+	fprintf(FCGI_ToFILE(fp), "ºƒ–≈»À: %s (%s)\n", id, nickname);
+	fprintf(FCGI_ToFILE(fp), "±Í  Ã‚: %s\n", title);
 //	fprintf(fp, "∑¢–≈’æ: %s (%s)\n", BBSNAME, Ctime(time(0)));
 //modified by iamfat 2002.08.01
-	fprintf(fp, "∑¢–≈’æ: %s (%s)\n", BBSNAME, cn_Ctime(time(0)));
-	fprintf(fp, "¿¥  ‘¥: %s\n\n", ip);
-	if(fp2) {
+	fprintf(FCGI_ToFILE(fp), "∑¢–≈’æ: %s (%s)\n", BBSNAME, cn_Ctime(time(0)));
+	fprintf(FCGI_ToFILE(fp), "¿¥  ‘¥: %s\n\n", ip);
+	if (fp2 != NULL) {
 		while(1) {
-			if(fgets(buf3, 256, fp2)<=0) break;
-			fprintf2(fp, buf3);
+			if(fgets(buf3, 256, FCGI_ToFILE(fp2))<=0) break;
+			fprintf2(FCGI_ToFILE(fp), buf3);
 		}
 		fclose(fp2);
 	}
-	fprintf(fp, "\n--\n");
-	sig_append(fp, id, sig);
-	fprintf(fp, "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
+	fprintf(FCGI_ToFILE(fp), "\n--\n");
+	sig_append(FCGI_ToFILE(fp), id, sig);
+	fprintf(FCGI_ToFILE(fp), "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
 	fclose(fp);
-        sprintf(dir, "mail/%c/%s/.DIR", toupper(userid[0]), userid);
-        fp=fopen(dir, "a");
-	if(fp==0) return -1;
-        fwrite(&header, sizeof(header), 1, fp);
-        fclose(fp);
+	sprintf(dir, "mail/%c/%s/.DIR", toupper(userid[0]), userid);
+	fp = fopen(dir, "a");
+	if (fp == NULL)
+		return -1;
+	fwrite(&header, sizeof(header), 1, FCGI_ToFILE(fp));
+	fclose(fp);
 }
 
 int post_imail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig) {
@@ -951,22 +960,25 @@ int post_imail(char *userid, char *title, char *file, char *id, char *nickname, 
         char buf[256];
 	if(strstr(userid, ";") || strstr(userid, "`")) http_fatal("¥ÌŒÛµƒ ’–≈»Àµÿ÷∑");
 	sprintf(buf, "sendmail -f %s.bbs@%s '%s'", id, BBSHOST, userid);
-        fp2=popen(buf, "w");
-        fp1=fopen(file, "r");
-        if(fp1==0 || fp2==0) return -1;
-        fprintf(fp2, "From: %s.bbs@%s\n", id, BBSHOST);
-        fprintf(fp2, "To: %s\n", userid);
-        fprintf(fp2, "Subject: %s\n\n", title);
+        fp2 = popen(buf, "w");
+        fp1 = fopen(file, "r");
+        if(fp1 == NULL || fp2 == NULL)
+			return -1;
+        fprintf(FCGI_ToFILE(fp2), "From: %s.bbs@%s\n", id, BBSHOST);
+        fprintf(FCGI_ToFILE(fp2), "To: %s\n", userid);
+        fprintf(FCGI_ToFILE(fp2), "Subject: %s\n\n", title);
         while(1) {
-		if(fgets(buf, 255, fp1)==0) break;
-		if(buf[0]=='.' && buf[1]=='\n') continue;
-                fprintf(fp2, "%s", buf);
+		if(fgets(buf, 255, FCGI_ToFILE(fp1))==0)
+			break;
+		if(buf[0]=='.' && buf[1]=='\n')
+			continue;
+        fprintf(FCGI_ToFILE(fp2), "%s", buf);
         }
-	fprintf(fp2, "\n--\n");
- 	sig_append(fp2, id, sig);
+	fprintf(FCGI_ToFILE(fp2), "\n--\n");
+ 	sig_append(FCGI_ToFILE(fp2), id, sig);
 // 	fprintf(fp2, "\n\n[1;%dm°˘ ¿¥‘¥:£Æ%s %s [FROM: %.20s][m\n", 31+rand()%7, BBSNAME, "http://bbs.fudan.edu.cn", ip);
-	fprintf(fp2, "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
-        fprintf(fp2, ".\n");
+	fprintf(FCGI_ToFILE(fp2), "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
+        fprintf(FCGI_ToFILE(fp2), ".\n");
         fclose(fp1);
         pclose(fp2);
 }
@@ -1005,30 +1017,30 @@ int post_article(char *board, char *title, char *file, char *id, char *nickname,
 		header.reid = header.id;
 		header.gid = header.id;
 	}
-	fp=fopen(buf3, "w");
-	fp2=fopen(file, "r");
-	fprintf(fp, "∑¢–≈»À: %s (%s), –≈«¯: %s\n±Í  Ã‚: %s\n∑¢–≈’æ: %s (%s)\n\n",
+	fp = fopen(buf3, "w");
+	fp2 = fopen(file, "r");
+	fprintf(FCGI_ToFILE(fp), "∑¢–≈»À: %s (%s), –≈«¯: %s\n±Í  Ã‚: %s\n∑¢–≈’æ: %s (%s)\n\n",
 //		id, nickname, board2, title, BBSNAME, Ctime(time(0)));
 //modified by iamfat 2002.08.01
 		id, nickname, board2, header.title, BBSNAME, cn_Ctime(time(0)));
-	if(fp2!=0) {
+	if (fp2 != NULL) {
 		while(1) {
 			/* modified by roly */
  			//if(fgets(buf3, 10000, fp2)<=0) break;
-			if(fgets(buf3, 1000, fp2)<=0) break;
+			if(fgets(buf3, 1000, FCGI_ToFILE(fp2))<=0) break;
 			/* modified end */
-			fprintf2(fp, buf3);
+			fprintf2(FCGI_ToFILE(fp), buf3);
 		}
 		fclose(fp2);
 	}
-	fprintf(fp, "\n--\n");
-	sig_append(fp, id, sig);
+	fprintf(FCGI_ToFILE(fp), "\n--\n");
+	sig_append(FCGI_ToFILE(fp), id, sig);
 //	fprintf(fp, "\n[1;%dm°˘ ¿¥‘¥:£Æ%s %s [FROM: %.20s][m\n", 31+rand()%7, BBSNAME, "http://bbs.fudan.edu.cn", ip);
-	fprintf(fp, "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
+	fprintf(FCGI_ToFILE(fp), "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
 	fclose(fp);
 	sprintf(buf3, "boards/%s/.DIR", board2);
-	fp=fopen(buf3, "a");
-	fwrite(&header, sizeof(header), 1, fp);
+	fp = fopen(buf3, "a");
+	fwrite(&header, sizeof(header), 1, FCGI_ToFILE(fp));
 	fclose(fp);
     updatelastpost(board);
 	return t;
@@ -1055,10 +1067,12 @@ void check_title(char *title)
 char* anno_path_of(char *board) {
 	FILE *fp;
 	static char buf[256], buf1[80], buf2[80];
-	fp=fopen("0Announce/.Search", "r");
-	if(fp==0) return "";
+	fp = fopen("0Announce/.Search", "r");
+	if (fp == NULL)
+		return "";
 	while(1) {
-		if(fscanf(fp, "%s %s", buf1, buf2)<=0) break;
+		if(fscanf(FCGI_ToFILE(fp), "%s %s", buf1, buf2)<=0)
+			break;
 		buf1[strlen(buf1)-1]=0;
 		if(!strcasecmp(buf1, board)) {
 			sprintf(buf, "/%s", buf2);
@@ -1137,8 +1151,9 @@ int count_mails(char *id, int *total, int *unread) {
         if(getuser(id)==0) return 0;
         sprintf(buf, "%s/mail/%c/%s/.DIR", BBSHOME, toupper(id[0]), id);
         fp=fopen(buf, "r");
-        if(fp==0) return;
-        while(fread(&x1, sizeof(x1), 1, fp)>0) {
+        if (fp == NULL)
+			return;
+        while(fread(&x1, sizeof(x1), 1, FCGI_ToFILE(fp))>0) {
                 (*total)++;
                 if(!(x1.accessed[0] & FILE_READ)) (*unread)++;
         }
@@ -1277,15 +1292,9 @@ struct userec *getuser(char *id) {
 	int uid;
 	FILE *fp;
 	uid=getusernum(id);
-	if(uid<0) return 0;
-/*
-	fp=fopen(".PASSWDS", "r");
-	fseek(fp, uid*sizeof(userec1), SEEK_SET);
-	bzero(&userec1, sizeof(userec1));
-	fread(&userec1, sizeof(userec1), 1, fp);
-	fclose(fp);	
-*/
-memcpy(&userec1, &(shm_ucache->passwd[uid]), sizeof(userec1) );
+	if(uid<0)
+		return 0;
+	memcpy(&userec1, &(shm_ucache->passwd[uid]), sizeof(userec1) );
 	return &userec1;
 }
 
@@ -1308,10 +1317,10 @@ int loadfriend(char *id) {
         char file[256];
         if(!loginok) return;
         sprintf(file, "home/%c/%s/friends", toupper(id[0]), id);
-        fp=fopen(file, "r");
-        if(fp) {
-                friendnum=fread(fff, sizeof(fff[0]), 200, fp);
-                fclose(fp);
+        fp = fopen(file, "r");
+        if (fp != 0) {
+            friendnum=fread(fff, sizeof(fff[0]), 200, FCGI_ToFILE(fp));
+            fclose(fp);
         }
 }
 
@@ -1392,9 +1401,9 @@ int loadbad(char *id) {
         char file[256];
         if(!loginok) return;
         sprintf(file, "home/%c/%s/rejects", toupper(id[0]), id);
-        fp=fopen(file, "r");
-        if(fp) {
-                badnum=fread(fff, sizeof(fff[0]), MAXREJECTS, fp);
+        fp = fopen(file, "r");
+        if(fp != NULL) {
+                badnum=fread(fff, sizeof(fff[0]), MAXREJECTS, FCGI_ToFILE(fp));
                 fclose(fp);
         }
 }
@@ -1526,7 +1535,7 @@ struct fileheader *get_file_ent(char *board, char *file) {
 	sprintf(dir, "boards/%s/.DIR", board);
 	fp=fopen(dir, "r");
 	while(1) {
-		if(fread(&x, sizeof(x), 1, fp)<=0) break;
+		if(fread(&x, sizeof(x), 1, FCGI_ToFILE(fp))<=0) break;
 		if(!strcmp(x.filename, file)) {
 			fclose(fp);
 			//added by iamfat 2002.08.10
@@ -1547,11 +1556,13 @@ char *getbfroma(char *path) {
 	if(path[0]==0) return "";
 	path++;
 	fp=fopen("0Announce/.Search", "r");
-	if(fp==0) return "";
+	if(fp == NULL)
+		return "";
 	while(1) {
 		bzero(buf1,256);
 		bzero(buf2,256);
-		if(fscanf(fp, "%s %s", buf1, buf2)<=0) break;
+		if(fscanf(FCGI_ToFILE(fp), "%s %s", buf1, buf2)<=0)
+			break;
 		if(buf1[0]) buf1[strlen(buf1)-1]=0;
 		if(buf1[0]=='*') continue;
 		len = strlen(buf2);
@@ -1570,15 +1581,21 @@ int set_my_cookie(void) {
 	char path[256], buf[256], buf1[256], buf2[256];
 	int my_t_lines=20, my_link_mode=0, my_def_mode=0, my_style=0;
 	sprintf(path, "home/%c/%s/.mywww", toupper(currentuser.userid[0]), currentuser.userid);
- 	fp=fopen(path, "r");
- 	if(fp) {
+ 	fp = fopen(path, "r");
+ 	if(fp != NULL) {
  		while(1) {
- 			if(fgets(buf, 80, fp)==0) break;
- 			if(sscanf(buf, "%80s %80s", buf1, buf2)!=2) continue;
- 			if(!strcmp(buf1, "t_lines")) my_t_lines=atoi(buf2);
- 			if(!strcmp(buf1, "link_mode")) my_link_mode=atoi(buf2);
-			if(!strcmp(buf1, "def_mode")) my_def_mode=atoi(buf2);
-			if(!strcmp(buf1, "mystyle")) my_style=atoi(buf2);
+ 			if(fgets(buf, 80, FCGI_ToFILE(fp))==0)
+				break;
+ 			if(sscanf(buf, "%80s %80s", buf1, buf2)!=2)
+				continue;
+ 			if(!strcmp(buf1, "t_lines"))
+				my_t_lines=atoi(buf2);
+ 			if(!strcmp(buf1, "link_mode"))
+				my_link_mode=atoi(buf2);
+			if(!strcmp(buf1, "def_mode"))
+				my_def_mode=atoi(buf2);
+			if(!strcmp(buf1, "mystyle"))
+				my_style=atoi(buf2);
  		}
  		fclose(fp);
 		sprintf(buf, "%d", my_t_lines);
@@ -1652,7 +1669,7 @@ void SpecialID(const char* uid, char* host)
 	//char *lasts;
 	if(fp=fopen("etc/special.ini","r"))
 	{
-		while(fgets(line, STRLEN, fp))
+		while(fgets(line, STRLEN, FCGI_ToFILE(fp)))
 		{
 			//special=strtok_r(line," \r\n\t", &lasts);
 			special=strtok(line," \r\n\t");
@@ -1731,12 +1748,13 @@ int showcontent(char *filename)
 	char buf[512];
 	char *ptr;
         fp=fopen(filename, "r");
-        if(fp==0)return 0;
+        if(fp == NULL)
+			return 0;
 	printf("<pre class=ansi>");
         while(1)
         {
                 char *id, *s;
-                if(fgets(buf, 512, fp)==0)
+                if(fgets(buf, 512, FCGI_ToFILE(fp))==0)
                         break;
                 if(!strncmp(buf, "∑¢–≈»À: ", 8))
                 {
@@ -1806,9 +1824,10 @@ void showrecommend(char *board, int showall, int showborder)
 	fp=fopen(names, "r");
 	board=getbfroma(path);
 	if(board[0] && !has_read_perm(&currentuser, board))return;
-	if(fp==0) return;
+	if(fp == NULL)
+		return;
 	while(1) {
-		if(fgets(buf, 511, fp)==0) break;
+		if(fgets(buf, 511, FCGI_ToFILE(fp))==0) break;
 		if(!strncmp(buf, "# Title=", 8)) strcpy(title, buf+8);
 		if(!strncmp(buf, "Name=", 5) && total<1023) {
 			strcpy(name[total], trim(buf+5));
@@ -1892,8 +1911,9 @@ void showrawcontent(char *filename)
         FILE *fp;
 	char buf[512];
         fp=fopen(filename, "r");
-        if(fp==0)return;
-        while(fgets(buf,512,fp))
+        if(fp == NULL)
+			return;
+        while(fgets(buf,512,FCGI_ToFILE(fp)))
 	{
 		printf("%s",buf);
 	}
@@ -1908,8 +1928,9 @@ void showbrdlist(char *path,int withbr)
 	FILE *fp;
 	int showed=0;
 	fp=fopen(path,"r");
-	if(fp==0)return;
-	while(fgets(board,255,fp))
+	if (fp == NULL)
+		return;
+	while(fgets(board,255,FCGI_ToFILE(fp)))
 	{
 		strtok(board,"\t\r\n ");
 		if(!board[0])continue;

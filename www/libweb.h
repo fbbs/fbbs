@@ -4,13 +4,13 @@
 
 #define USEFCGI
 
-#ifdef USEFCGI
-#include <fcgi_stdio.h>
-#endif
 #include "../include/bbs.h"
 #include "sys/ipc.h"
 #include "sys/shm.h"
 #include "stdarg.h"
+#ifdef USEFCGI
+#include <fcgi_stdio.h>  //Should be included last.
+#endif
 
 #define CGIPATH "/fcgi/"
 #define FIRST_PAGE	"/bbsmain.html"
