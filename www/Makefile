@@ -6,7 +6,7 @@ CC      = gcc -Os
 OBJS	= libweb.o crypt.o
 LIBNAME	= libweb.a
 COBJS   = bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
-		  bbsall.o
+		  bbsall.o bbsboa.o
 TARGET  = bbswebd
 CFLAGS  = -Wall
 
