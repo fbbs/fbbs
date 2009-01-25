@@ -11,6 +11,9 @@ int chkBM(const struct boardheader *bp, const struct userec *up)
 	char *ptr;
 	char BMstrbuf[BM_LEN - 1];
 
+	if (bp == NULL || up == NULL)
+		return 0;
+
 	if (bp->flag & BOARD_CLUB_FLAG) {
 		if(up->userlevel & PERM_OCLUB)
 			return YEA;
@@ -22,7 +25,7 @@ int chkBM(const struct boardheader *bp, const struct userec *up)
 	if (!(up->userlevel & PERM_BOARDS))
 		return NA;
 
-	strcpy(BMstrbuf, bp->BM);
+	strlcpy(BMstrbuf, bp->BM, sizeof(BMstrbuf));
 	ptr = strtok(BMstrbuf, ",: ;|&()\0\n");
 	while (ptr) {
 		if (!strcmp(ptr, up->userid))
