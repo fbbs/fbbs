@@ -25,21 +25,21 @@ PROGNAME = bbsd
 CFILE	 = admintool.c announce.c bbs.c bbsd.c bcache.c bm.c\
 	   boards.c chat.c comm_lists.c delete.c edit.c fileshm.c goodbye.c \
 	   help.c io.c list.c mail.c main.c maintain.c more.c \
-	   namecomplete.c pass.c postheader.c read.c record.c \
+	   namecomplete.c pass.c postheader.c read.c \
 	   register.c screen.c sendmsg.c stuff.c talk.c term.c \
 	   userinfo.c vote.c xyz.c readabc.c five.c
 
 COBJS	 = admintool.o announce.o bbs.o bbsd.o bcache.o bm.o\
 	   boards.o chat.o comm_lists.o delete.o edit.o fileshm.o goodbye.o \
 	   help.o io.o list.o mail.o main.o maintain.o more.o \
-	   namecomplete.o pass.o postheader.o read.o record.o \
+	   namecomplete.o pass.o postheader.o read.o \
 	   register.o screen.o sendmsg.o stuff.o talk.o term.o \
 	   userinfo.o vote.o xyz.o readabc.o five.o 
 
 COBJS1	 = admintool.o announce.o bbs.o bcache.o bm.o\
 	   boards.o chat.o comm_lists.o delete.o edit.o fileshm.o goodbye.o \
 	   help.o io.o list.o mail.o main.o maintain.o more.o \
-	   namecomplete.o pass.o postheader.o read.o record.o \
+	   namecomplete.o pass.o postheader.o read.o \
 	   register.o screen.o sendmsg.o stuff.o talk.o term.o \
 	   userinfo.o vote.o xyz.o readabc.o five.o
 
@@ -81,8 +81,8 @@ chatd: station.c
 miscd: miscd.c $(COBJS1)
 	$(CC) $(CFLAGS) -o miscd $(OS_DEF) miscd.c $(COBJS1) $(LIBS) -L../lib -lBBS
 
-thread: thread.c record.c
-	$(CC) $(CFLAGS) -o thread $(OS_DEF) record.c thread.c $(LIBS) -DTHREAD_C -L../lib -lBBS
+thread: thread.c ../lib/record.c
+	$(CC) $(CFLAGS) -o thread $(OS_DEF) thread.c ../lib/record.c $(LIBS) -DTHREAD_C -L../lib -lBBS
 
 install:
 	sh Install.sh
