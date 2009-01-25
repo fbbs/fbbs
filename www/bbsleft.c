@@ -21,48 +21,9 @@ static void EndMenuDrop(void)
 int bbsleft_main(void)
 {
 	char buf[1024];
-	printf("<title>欢迎光临日月光华BBS</title>");
-	printf("<link type=\"text/css\" rel=\"stylesheet\" href=\"/css/bbsleft.css\">");
-	printf("<script language=\"javascript\" type=\"text/javascript\">\n"
-			"var imgCollapse=new Image();\n"
-			"imgCollapse.src='/images/collapse.gif';\n"
-			"var imgExpand=new Image();\n"
-			"imgExpand.src='/images/expand.gif';\n"
-			"var imgNow=imgCollapse;\n"
-			"function switch_bar()\n"
-			"{\n"
-			"var mybar=document.getElementById('mainbar');\n"
-			"if(mybar.style.display!='none')\n"
-			"{\n"
-			"mybar.style.display='none';\n"
-			"imgNow=imgExpand;\n"
-			"parent.document.getElementById('bar').cols='6, *';\n"
-			"}\n"
-			"else\n"
-			"{\n"
-			"mybar.style.display='block';\n"
-			"imgNow=imgCollapse;\n"
-			"parent.document.getElementById('bar').cols='130, *';\n"
-			"}\n"
-			"document.getElementById('switchbar').style.backgroundImage='url('+imgNow.src+')';\n"
-			"}\n"
-			"var lastitem='undefined';\n"
-			"function SwitchPanel(itemid)\n"
-			"{\n"
-			"if(lastitem!='undefined' && lastitem!=itemid) document.getElementById(lastitem).style.display='none'; \n"
-			"var item=document.getElementById(itemid).style;\n"
-			"if(item.display==\"block\"){\n"
-			"item.display=\"none\";\n"
-			"lastitem=\"undefined\";\n"
-			"} \n"
-			"else{\n"
-			"item.display=\"block\";\n"
-			"lastitem=itemid;\n"
-			"}\n"
-			"return false;\n"
-			"}\n"
-			"</script>\n"
-			"</HEAD>\n");
+	printf("<title>欢迎光临日月光华BBS</title>\n");
+	printf("<link type=\"text/css\" rel=\"stylesheet\" href=\"/css/bbsleft.css\">\n");
+	printf("<script type=\"text/javascript\" src=\"/js/bbsleft.js\"></script>\n");
 
 	printf("<body>\n");
 	printf("<div style=\"height:100%%\">");
