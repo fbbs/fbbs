@@ -56,3 +56,26 @@ int isclubmember(const char *member, const char *board)
 	return 0;
 }
 
+// Checks if 'user' have read permission to board 'bp'.
+int hasreadperm(const struct userec *user, const struct boardheader *bp)
+{
+	if (bp == NULL || user == NULL)
+		return 0;
+
+	// Read restricted club
+	if ((bp->flag & BOARD_CLUB_FLAG)
+		&& (bp->flag & BOARD_READ_FLAG)
+		&& !chkBM(bp, user)
+		&& !isclubmember(user->userid, bp->filename))
+		return 0;
+
+	// Following lines deal with non-clubs.
+	if (bp->level == 0)
+		return 1;
+	if (bp->flag & (BOARD_POST_FLAG | BOARD_NOZAP_FLAG))
+		return 1;
+	if (user->userlevel & bp->level)
+		return 1;
+
+	return 0;
+}

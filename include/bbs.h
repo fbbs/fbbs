@@ -419,7 +419,6 @@ int apply_boards(int (*func) (), const struct userec *cuser);
 #ifdef NEWONLINECOUNT
 void bonlinesync(time_t now);
 #endif
-int hasreadperm(const struct userec *user, const struct boardheader *bp);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;
@@ -453,6 +452,7 @@ char *setmdir(char *buf, const char *userid);
 void changeboard(struct boardheader **bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
+int hasreadperm(const struct userec *user, const struct boardheader *bp);
 
 //mail.c
 int check_maxmail(void);
