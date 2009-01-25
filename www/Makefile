@@ -5,15 +5,10 @@ HTMPATH = /home/httpd/html
 CC      = gcc -Os
 OBJS	= libweb.o crypt.o
 LIBNAME	= libweb.a
-CFILES  = bbsmain.c bbsleft.c bbssec.c bbsfoot.c bbsgetmsg.c
+COBJS   = bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
+		  bbsall.o
 TARGET  = bbswebd
 CFLAGS  = -Wall
-
-all: libweb
-	$(CC) $(CFLAGS) $(CFILES) -o $(TARGET) -lweb -L. -lBBS -L../lib -lfcgi
-
-libweb: $(OBJS)
-	ar rs $(LIBNAME) $(OBJS)
 
 install: all
 	strip -s $(TARGET)
@@ -23,10 +18,14 @@ install: all
 	chgrp -R bbs $(CGIPATH) 
 	chmod +s $(CGIPATH)/*
 
+all: libweb $(COBJS)
+	$(CC) $(CFLAGS) $(COBJS) -o $(TARGET) -lweb -L. -lBBS -L../lib -lfcgi
+
+libweb: $(OBJS)
+	ar rs $(LIBNAME) $(OBJS)
+
 clean:
 	rm $(OBJS)
+	rm $(COBJS)
 	rm $(LIBNAME)
 	rm -rf $(TARGET)
-
-%:: %.c
-	$(CC) $(CFLAGS) $(CFILES) -o $@ $< -lweb -L. -lBBS -L../lib -lfcgi
