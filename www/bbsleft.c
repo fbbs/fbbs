@@ -120,14 +120,6 @@ int bbsleft_main(void)
 	if (loginok)
 		printf(MENUSUBITEM, CGIPATH"bbsqry", FRAME_VIEW, "/images/blankblock.gif", "查询网友");
 	printf(MENUSUBITEM, CGIPATH"bbssel", FRAME_VIEW, "/images/blankblock.gif", "查找讨论区");
-	printf(MENUSUBITEM,"/cgi-bin/rsearch",FRAME_VIEW,"/images/search.gif","日月光华搜索");
-	printf(MENUSUBITEM,"http://ycul.com?ref=bbs.fudan.edu.cn",FRAME_VIEW,"/images/service/ycul.gif","Ycul搜索");
-	printf(MENUSUBITEM,"http://10.13.200.200:8080/",FRAME_VIEW,"/images/blankblock.gif","富库搜索");
-	printf(MENUSUBITEM,"http://www.cit.fudan.edu.cn/opensource/",FRAME_VIEW,"/images/blankblock.gif","信息产业主体数据库");      
-	EndMenuDrop();
-
-	BeginMenuDrop("Service","/images/service.gif","公共服务");
-	printf(MENUSUBITEM,"#","_self","/images/blankblock.gif","开发中...");
 	EndMenuDrop();
 
 	printf(MENUITEM, "telnet://"BBSHOST":2323", "_top", "/images/telnet.gif", "终端登录");
