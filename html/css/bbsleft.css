@@ -1,0 +1,33 @@
+body {
+	margin:0; padding:0; font-family: tahoma, verdana, arial; font-size: 9pt; color: #ffffff; background: #336699; overflow:hidden;
+}
+img {
+	border:0;
+}
+a {
+	color: #ffffff; text-decoration: none; display:block; padding:0 0 4px 2px;word-break: break-all;
+}
+#mainbar {
+	height:100%; background-color: #336699; overflow: auto;
+}
+#mainbar a {
+	border: #336699 1px solid;  background-color: #336699; font-weight:bold;
+}
+#mainbar a:hover {
+	border: #99ccff 1px solid;  background-color: #6699cc; border-color: #99ccff #003366 #003366 #99ccff;
+}
+#mainbar a img {
+	margin: 2px 2px -6px 0;
+}
+#mainbar div {
+	display:none; border: #6699cc 1px solid; padding:0;
+}
+#mainbar div a {
+	font-weight: normal;
+}
+#switchbar {
+	background:#dddddd url(/images/collapse.gif) no-repeat right 50%;
+	float:right;
+	height:100%;
+	width:4px;
+}
