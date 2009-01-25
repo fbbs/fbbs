@@ -12,6 +12,7 @@
 #include "sys/shm.h"
 #include "stdarg.h"
 
+#define CGIPATH "/fcgi/"
 #define FIRST_PAGE	"/bbsmain.html"
 #define CSS_FILE 	"/css/bbs%d.css"
 #define CHARSET		"gb2312"
@@ -22,6 +23,8 @@
 
 #define TLINES 18
 #define SQUID
+
+#define LINKLEN   80
 
 #ifdef FDQUAN
 	#define MAX_LARGEMAIL_UPLIMIT   300

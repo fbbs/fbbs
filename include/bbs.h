@@ -96,6 +96,8 @@ extern int errno; //³ö´íÐÅÏ¢±àºÅ
 #define BM_LEN               60    /* Length of BM id length*/
 #define NAMELEN              40    /* Length of username/realname */
 #define IDLEN                12    /* Length of userids */
+#define HOMELEN              80 // Length of relative pathname
+                                // under BBSHOME except BBSHOME/0Announce
 
 #ifdef MD5		  	   /* MD5 cryptographic support */
 #define ENCPASSLEN         35
