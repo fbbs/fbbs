@@ -16,12 +16,7 @@ int bbsall_main(void)
 		x = &(bcache[i]);
 		if (x->filename[0] <= 32 || x->filename[0]>'z')
 			continue;
-		if (!has_read_perm(&currentuser, x->filename))
-			continue;
-		if ((x->flag & BOARD_CLUB_FLAG)
-				&& (x->flag & BOARD_READ_FLAG )
-				&& !has_BM_perm(&currentuser, x->filename)
-				&& !isclubmember(currentuser.userid, x->filename))
+		if (!hasreadperm(&currentuser, x))
 			continue;
 		memcpy(&data[total], x, sizeof(struct boardheader));
 		total++;
