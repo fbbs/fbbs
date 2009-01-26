@@ -9,10 +9,10 @@ USE_TRY;
 
 //	循环写字符到文件，直到写入size个字节
 //	origsz,bp是多余的？
-static int safewrite(int fd, char *const buf, int size)
+static int safewrite(int fd, const void *buf, int size)
 {
 	int cc, sz = size, origsz = size;
-	char *bp = buf;
+	void *bp = buf;
 
 	do {
 		cc = write(fd, bp, sz);
@@ -40,7 +40,7 @@ long get_num_records(const char *filename, const int size)
 
 //增加一个记录，大小为size,首地址为record
 //	文件名为filename
-int append_record(char *filename, char *record, int size)
+int append_record(const char *filename, const void *record, int size)
 {
 	int fd;
 	if ((fd = open(filename, O_WRONLY | O_CREAT, 0644)) == -1) {
