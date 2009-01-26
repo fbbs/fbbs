@@ -61,7 +61,7 @@ int do_del(char *board, char *file) {
                         sprintf(dir, strcmp(id, f.owner)?"boards/%s/.TRASH":"boards/%s/.JUNK", board);
                         strcpy(f.szEraser, id);
                         f.timeDeleted=time(0);
-                        append_record(&f, sizeof(struct fileheader), dir);
+						append_record(dir, &f, sizeof(f));
  			printf("<tr><td>%s  <td>标题:%s <td>删除成功.\n", f.owner, nohtml(f.title));
 			u=getuser(f.owner);
 			if(!junkboard(board) && u) {

@@ -277,17 +277,6 @@ struct stat *f_stat(char *file) {
 	return &buf;
 }
 
-int append_record(void *buf, int size, char *file)
-{
-	FILE *fp;
-	fp = fopen(file, "ab");
-	if(fp == NULL)
-		return 0;
-	fwrite(buf, size, 1, FCGI_ToFILE(fp));
-	fclose(fp);
-	return 1;
-}
-
 int del_record(char *file, int size, int num) {
 	FILE *fp;
 	int total, i;
