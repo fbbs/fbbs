@@ -632,6 +632,7 @@ static int __unhcode(char *s)
 		s[n]=s[m];
 	}
 	s[n] = 0;
+	return 0;
 }
 
 char parm_name[256][80], *parm_val[256];
@@ -790,12 +791,13 @@ int shm_init(void) {
 	if(shm_utmp==0) http_fatal("shm_utmp error");
 	if(shm_bcache==0) http_fatal("shm_bcache error");
 	if(shm_ucache==0) http_fatal("shm_ucache error");
+	return 0;
 }
 
 int user_init(struct userec *x, struct user_info **y) {
 	struct userec *x2;
 	char id[20], num[20];
-	int i, uid, key;
+	int i, key;
 	strlcpy(id, getparm("utmpuserid"), 13);
 	strlcpy(num, getparm("utmpnum"), 12);
 	key=atoi(getparm("utmpkey"));
@@ -822,13 +824,15 @@ static int sig_append(FILE *fp, char *id, int sig) {
 	char buf[100][256];
 	int i, total;
 	struct userec *x;
-	if(sig<0 || sig>10) return;
-	x=getuser(id);
-	if(x==0) return;
+	if (sig < 0 || sig > 10)
+		return -1;
+	x = getuser(id);
+	if (x == 0)
+		return -1;
 	sprintf(path, "home/%c/%s/signatures", toupper(id[0]), id);
 	fp2 = fopen(path, "r");
 	if (fp2 == NULL)
-		return;
+		return -1;
 	for(total=0; total<100; total++) //total<255 -> 100 money modfied 03.10.21
 		if(fgets(buf[total], 255, FCGI_ToFILE(fp2))==0) break;
 	fclose(fp2);
@@ -837,6 +841,7 @@ static int sig_append(FILE *fp, char *id, int sig) {
 		fprintf(fp, "%s", buf[i]);
 	}
 	fprintf(fp,"\n");
+	return 0;
 }
 
 static int fprintf2(FILE *fp, char *s) {
@@ -844,7 +849,7 @@ static int fprintf2(FILE *fp, char *s) {
 	if(s[0]==':' && s[1]==' ' && strlen(s)>79) {
 		sprintf(s+76, "..\n");
 		fprintf(fp, "%s", s);
-		return;
+		return -1;
 	}
 	for(i=0; s[i]; i++) {
 		fprintf(fp, "%c", s[i]);
@@ -859,6 +864,7 @@ static int fprintf2(FILE *fp, char *s) {
 			sum=0;
 		}
 	}
+	return 0
 }
 
 int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig) {
