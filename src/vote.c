@@ -44,8 +44,9 @@ int makevote(struct votebal *ball, char *bname); //设置投票箱
 //比较字符串userid和投票者uv 
 //userid:用户名 uv:投票者 
 //返回值:0不等， 1相等
-int cmpvuid(char *userid, struct ballot *uv) {
-	return !strcmp(userid, uv->uid);
+static int cmpvuid(void *userid, void *uv)
+{
+	return !strcmp((char *)userid, ((struct ballot *)uv)->uid);
 }
 
 //设置版面投票的标志,           
