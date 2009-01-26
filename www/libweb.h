@@ -195,7 +195,6 @@ char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
 char *nohtml(char *s);
 // Record.c
-long get_num_records(char *filename, int size);
 int get_record(void *buf, int size, int num, char *file);
 int append_record(void *buf, int size, char *file);
 // pass.c

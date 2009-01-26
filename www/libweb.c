@@ -112,24 +112,6 @@ strncasecmp2(char *s1, char *s2,int n)
 
 /* add end */
 
-/* ADDED BY ROLY FOR CHECK MAIL BOX */
-
-/* Function: 
- * 	get the number of records in a file
- * Write: roly			Date:2002.01.10
- */
-	long
-get_num_records(filename,size)
-	char    *filename ;
-	int     size;
-{
-	struct stat st ;
-
-	if(stat(filename,&st) == -1)
-		return 0 ;
-	return (st.st_size/size) ;
-}
-
 /* Function:
  *	whether the number of mail is under the limitation
  * Write: roly			Date:2002.01.08
