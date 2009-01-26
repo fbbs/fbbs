@@ -345,7 +345,7 @@ char *nohtml(char *s) {
 	/* Added by Amigo 2002.06.19. For article title display error. */
 	int j, k,len;
 	char *buf;
-	int i=0, mode=0;
+	int i=0;
 
 	for(j=0, k=0; s[j]; j++) 
 	{
@@ -415,11 +415,13 @@ int http_fatal(char *fmt, ...)
 	printf("´íÎó! %s! <br><br>\n", buf);
 	printf("<a href=javascript:history.go(-1)>¿ìËÙ·µ»Ø</a>");
 	http_quit();
+	return 0;
 }
 
 int strnncpy(char *s, int *l, char *s2) {
 	strlcpy(s+(*l), s2, strlen(s2));
 	(*l)+=strlen(s2);
+	return 0;
 }
 
 int hsprintf(char *s, char *fmt, ...) {
@@ -475,6 +477,7 @@ int hsprintf(char *s, char *fmt, ...) {
 		}
 	}
 	s[len]=0;
+	return 0;
 }
 
 
@@ -486,6 +489,7 @@ int hprintf(char *fmt, ...) {
 	va_end(ap);
 	hsprintf(buf, "%s", buf2);
 	printf("%s", buf);
+	return 0;
 }
 
 int hhprintf(char *fmt, ...) {
@@ -497,7 +501,6 @@ int hhprintf(char *fmt, ...) {
 	int board=0;
 	//int upload=0;
 	int special=0;
-	int tab=0;
 	va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(buf, 1023, fmt, ap);
@@ -564,7 +567,8 @@ int hhprintf(char *fmt, ...) {
 
 					//polygon>>
 					tmp=strtok(0, "");
-					if(tmp==0) return;
+					if(tmp==0)
+						return 0;
 					return hhprintf("%s", tmp);
 				}
 			}
@@ -597,6 +601,7 @@ int hhprintf(char *fmt, ...) {
 			s++;
 		}
 	}
+	return 0;
 }
 
 // Convert a hex char 'c' to a base 10 integer.
