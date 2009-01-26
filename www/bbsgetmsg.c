@@ -20,7 +20,7 @@ int bbsgetmsg_main(void)
 		printf("<bgsound src=/msg.wav>\n");
 		printf("<body onkeypress='checkrmsg(event.keyCode)' style='BACKGROUND-COLOR: #fffffff; font-weight:bold;'>");
 		total=file_size(buf)/129;
-		get_record(buf, 1, 129, buf2);
+		get_record(buf, buf2, 129, 1);
 		del_record(buf, 129, 0);
 		printf("<table width=\"100%%\">\n");
 		printf("<tr><td>");
