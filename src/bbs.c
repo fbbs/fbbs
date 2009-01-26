@@ -797,8 +797,9 @@ int cmpfilename(struct fileheader *fhdr, char *filename) {
 	return 0;
 }
 
-int cmpdigestfilename(char *digest_name, struct fileheader *fhdr) {
-	if (!strcmp(fhdr->filename, digest_name))
+static int cmpdigestfilename(void *digest_name, void *fhdr)
+{
+	if (!strcmp(((struct fileheader *)fhdr)->filename, (char *)digest_name))
 		return 1;
 	return 0;
 } /* comapare file names for dele_digest function. Luzi 99.3.30 */
