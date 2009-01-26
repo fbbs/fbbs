@@ -707,7 +707,7 @@ int write_posts() {
 		int number;
 	} postlog;
 	char buf[255];
-	if (junkboard() || normal_board(currboard) != 1)
+	if (junkboard(currbp) || normal_board(currboard) != 1)
 		return;
 	now = time(0);
 	strcpy(postlog.author, currentuser.userid);

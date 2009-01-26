@@ -2276,7 +2276,7 @@ int post_article(char *postboard, char *mailid) {
 	sprintf(buf, "posted '%s' on %s", postfile.title, currboard);
 	report(buf, currentuser.userid);
 
-	if (!junkboard() && !header.chk_anony) {
+	if (!junkboard(currbp) && !header.chk_anony) {
 		set_safe_record();
 		currentuser.numposts++;
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
@@ -2702,7 +2702,7 @@ int delete_range(char *filename, int id1, int id2)
 								subflag,
 								!HAS_PERM(PERM_OBOARDS)
 						);
-						if (subflag == YEA && !junkboard()) {
+						if (subflag == YEA && !junkboard(currbp)) {
 							lookupuid = getuser(rptr->owner);
 							if (lookupuid> 0 && lookupuser.numposts> 0) {
 								lookupuser.numposts--;
@@ -2840,7 +2840,7 @@ int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 	delete_record(buf, sizeof(struct fileheader), ent, cmpfilename,
 			fileinfo->filename);
 	owned = getuser(fileinfo->owner);
-	if (!junkboard() && subflag && owned != 0 && atoi(fileinfo->filename
+	if (!junkboard(currbp) && subflag && owned != 0 && atoi(fileinfo->filename
 			+ 2) > lookupuser.firstlogin) {
 		lookupuser.numposts++;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec),
@@ -2942,7 +2942,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		sprintf(genbuf, "%s/%s", buf, fileinfo->filename);
 		if (digestmode > 0)
 			unlink(genbuf);
-		if (!junkboard() && !digestmode) {
+		if (!junkboard(currbp) && !digestmode) {
 			if (owned && IScurrent) {
 				set_safe_record();
 				if (currentuser.numposts > 0 && subflag == YEA)
