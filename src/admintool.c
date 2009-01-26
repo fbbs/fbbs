@@ -4,7 +4,6 @@
 #include "bbs.h"
 
 extern int cmpbnames();
-extern int cleanmail();
 extern char *chgrp();
 extern int dowall();
 extern int t_cmpuids();

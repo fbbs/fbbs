@@ -281,29 +281,6 @@ struct fileheader *fhdrp;
 	}
 }
 
-int
-cleanmail(urec)
-struct userec *urec;
-{
-	struct stat statb;
-	if (urec->userid[0] == '\0' || !strcmp(urec->userid, "new"))
-		return 0;
-	sprintf(genbuf, "mail/%c/%s/%s", toupper(urec->userid[0]), urec->userid, DOT_DIR);
-	fprintf(cleanlog, "%s: ", urec->userid);
-	if (stat(genbuf, &statb) == -1)
-		fprintf(cleanlog, "no mail\n");
-	else if (statb.st_size == 0)
-		fprintf(cleanlog, "no mail\n");
-	else {
-		strcpy(curruser, urec->userid);
-		delcnt = 0;
-		apply_record(genbuf, domailclean, sizeof(struct fileheader),0,0,0);
-		domailclean(NULL);
-	}
-	return 0;
-}
-
-
 void
 trace_state(flag, name, size)
 int     flag, size;
