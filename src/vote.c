@@ -915,7 +915,10 @@ void voteexp() {
 
 //显示投票箱信息
 //ent 投票信息
-int printvote(struct votebal *ent) {
+// The 'notused1' and 'notused2' arguemnts are not used,
+// just to comply with function prototype.
+static int printvote(void *entv, int notused1, void *notused2)
+{
 	static int i;
 	struct ballot uservote;
 	char buf[STRLEN + 10];
@@ -924,15 +927,15 @@ int printvote(struct votebal *ent) {
 
 	//Added by IAMFAT 2002.06.13
 	char title[STRLEN];
-
 	//Added End
 
-	if (ent == NULL) {
+	if (entv == NULL) {
 		move(2, 0);
 		voteexp();
 		i = 0;
 		return 0;
 	}
+	struct votebal *ent = (struct votebal *)entv;
 	i++;
 	if (i > page + 19 || i > range)
 		return QUIT;
@@ -1136,9 +1139,9 @@ int Show_Votes() {
 
 	move(3, 0);
 	clrtobot();
-	printvote(NULL);
+	printvote(NULL, 0, NULL);
 	setcontrolfile();
-	if (apply_record(controlfile, printvote, sizeof(struct votebal), 0, 0,
+	if (apply_record(controlfile, printvote, sizeof(struct votebal), NULL, 0,
 			0) == -1) {
 		prints("错误，没有投票箱开启....");
 		pressreturn();
