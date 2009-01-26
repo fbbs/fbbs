@@ -371,17 +371,15 @@ int b_closepolls() {
 //result[32]¼ÇÂ¼µ÷ÓÃ´ÎÊý
 //²ÎÊýptr:Ò»´ÎµÄÍ¶Æ±½á¹û
 //·µ»ØÖµ:¹Ì¶¨Îª0
-int count_result(struct ballot *ptr) {
+// The 'notused1' and 'notused2' arguemnts are not used,
+// just to comply with function prototype.
+static int count_result(void *ptrv, int notused1, void *notused2)
+{
 	int i;
-
-	/*	if (ptr == NULL) {
-	 if (sug != NULL) {
-	 fclose(sug);
-	 sug == NULL;
-	 }
-	 return 0;
-	 }
-	 */if (ptr->msg[0][0] != '\0') {
+	if (ptrv == NULL)
+		return -1;
+	struct ballot *ptr = (struct ballot *)ptrv;
+	if (ptr->msg[0][0] != '\0') {
 		if (currvote.type == VOTE_ASKING) {
 			fprintf(sug, "[1m%s [mµÄ×÷´ðÈçÏÂ£º\n", ptr->uid);
 		} else
@@ -441,7 +439,7 @@ int mk_result(int num) {
 		pressanykey();
 	}
 	(void) memset(result, 0, sizeof(result));
-	if (apply_record(fname, count_result, sizeof(struct ballot), 0, 0, 0)
+	if (apply_record(fname, count_result, sizeof(struct ballot), NULL, 0, 0)
 			== -1) {
 		report("Vote apply flag error", currentuser.userid);
 	}
