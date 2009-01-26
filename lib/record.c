@@ -12,7 +12,7 @@ USE_TRY;
 static int safewrite(int fd, const void *buf, int size)
 {
 	int cc, sz = size, origsz = size;
-	void *bp = buf;
+	const void *bp = buf;
 
 	do {
 		cc = write(fd, bp, sz);
