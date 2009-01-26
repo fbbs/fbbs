@@ -10,9 +10,10 @@ struct UTMPFILE *utmpshm = NULL;
 struct UCACHE *uidshm = NULL;
 struct userec lookupuser;
 
-int cmpuids(const char *uid, const struct userec *up)
+int cmpuids(void *uid, void *up)
 {
-	return !strncasecmp(uid, up->userid, sizeof(up->userid));
+	return !strncasecmp((char *)uid, ((struct userec *)up)->userid,
+		sizeof(((struct userec *)up)->userid));
 }
 
 int dosearchuser(const char *userid, struct userec *user, int *unum)

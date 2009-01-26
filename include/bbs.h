@@ -424,7 +424,7 @@ void bonlinesync(time_t now);
 extern struct UCACHE *uidshm;
 extern struct UTMPFILE *utmpshm;
 extern struct userec lookupuser;
-int cmpuids(const char *uid, const struct userec *up);
+int cmpuids(void *uid, void *up);
 int dosearchuser(const char *userid, struct userec *user, int *unum);
 
 //log.c
