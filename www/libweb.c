@@ -60,27 +60,6 @@ struct UCACHE *shm_ucache;
 
 char fromhost[40]; // IPv6 addresses can be represented in 39 chars.
 
-static int shm_lock(char *lockname)
-{
-	int lockfd;
-
-	lockfd = open(lockname, O_RDWR | O_CREAT, 0600);
-	if (lockfd < 0) {
-		//bbslog("3system", "CACHE:lock ucache:%s", strerror(errno));
-		return -1;
-	}
-	flock(lockfd, LOCK_EX);
-	return lockfd;
-}
-
-static void shm_unlock(int fd)
-{
-	flock(fd, LOCK_UN);
-	close(fd);
-}
-
-
-
 /* added by roly for fix the bug of solaris "strncasecmp" 
    strncasecmp of solaris has bug  when string include 8-bit character
    */
@@ -864,7 +843,7 @@ static int fprintf2(FILE *fp, char *s) {
 			sum=0;
 		}
 	}
-	return 0
+	return 0;
 }
 
 int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig) {
@@ -1123,15 +1102,6 @@ int count_mails(char *id, int *total, int *unread) {
 		if(!(x1.accessed[0] & FILE_READ)) (*unread)++;
 	}
 	fclose(fp);
-}
-
-static int findnextutmp(char *id, int from) {
-	int i;
-	if(from<0) from=0;
-	for(i=from; i<MAXACTIVE; i++) 
-		if(shm_utmp->uinfo[i].active)
-			if(!strcasecmp(shm_utmp->uinfo[i].userid, id)) return i;
-	return -1;
 }
 
 int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]) {
