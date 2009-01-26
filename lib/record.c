@@ -83,7 +83,7 @@ int get_record(char *filename, void *rptr, int size, int id)
 
 //在文件filename中的第id-1个记录处读取大小为size,数量为number的记录集
 //	如果失败,返回-1,如果未能读取number个记录,则返回读取的记录数
-int get_records(const char *filename, char *rptr, int size, int id,
+int get_records(const char *filename, void *rptr, int size, int id,
 		int number)
 {
 	int fd;

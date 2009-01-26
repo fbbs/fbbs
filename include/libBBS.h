@@ -43,7 +43,7 @@ void brc_zapbuf(int *zbuf);
 long get_num_records(const char *filename, const int size);
 int append_record(char *filename, char *record, int size);
 int get_record(char *filename, void *rptr, int size, int id);
-int get_records(const char *filename, char *rptr, int size, int id,
+int get_records(const char *filename, void *rptr, int size, int id,
 		int number);
 int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 		int applycopy, int reverse);
