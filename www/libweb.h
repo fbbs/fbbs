@@ -176,7 +176,6 @@ void printpostmarquee(void);
 void showheadline(char *board);
 void showrecommend(char *board, int showall, int showborder);
 void showrawcontent(char *filename);
-void showbrdlist(char *path,int withbr);
 
 int strtourl(char * url, char * str);
 

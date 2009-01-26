@@ -1844,40 +1844,6 @@ void showrawcontent(char *filename)
 	fclose(fp);
 }
 
-
-void showbrdlist(char *path,int withbr)
-{
-	struct boardheader *x;
-	char board[256];
-	FILE *fp;
-	int showed=0;
-	fp=fopen(path,"r");
-	if (fp == NULL)
-		return;
-	while(fgets(board,255,FCGI_ToFILE(fp)))
-	{
-		strtok(board,"\t\r\n ");
-		if(!board[0])continue;
-		x=getbcache(board);
-		if(!x)return;
-		if(showed>0)
-		{
-			if(withbr)printf("<br>");
-			else printf("&nbsp;");
-		}
-		if ( x->flag & BOARD_DIR_FLAG ){
-			printf("<img src=/images/types/folder.gif align=absmiddle border=0> <a href=bbsboa?board=%s>%s</a>"
-					, board, x->title+10);}
-		else {
-			printf("<img src=/images/types/folder.gif align=absmiddle border=0> <a href=bbsdoc?board=%s>%s</a>"
-					, board, x->title+10);
-		}
-		showed++;
-	}
-	fclose(fp);
-
-}
-
 int strtourl(char * url, char * str)
 {
 	int i,c;
