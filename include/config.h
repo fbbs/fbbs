@@ -249,9 +249,3 @@ If configure cannot found it propery, it will assign "/usr/lib/sendmail"
 for default.
 */
 #define	SENDMAIL "/usr/lib/sendmail"
-
-/*
-Define junk boards lists in a long string. any boards list in will not be
-counting post num (note: case insenstive)
-*/
-#define JUNKBOARDS "newcomers"
