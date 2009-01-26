@@ -2,13 +2,13 @@ BBSHOME = /home/bbs
 CGIPATH = /home/httpd/fcgi
 HTMPATH = /home/httpd/html
 
-CC      = gcc -Os
+CC      = gcc
 OBJS	= libweb.o crypt.o
 LIBNAME	= libweb.a
 COBJS   = bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
 		  bbsall.o bbsboa.o
 TARGET  = bbswebd
-CFLAGS  = -Wall
+CFLAGS  = -Os -Wall -std=c99 -pedantic
 
 install: all
 	strip -s $(TARGET)
