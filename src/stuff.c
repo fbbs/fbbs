@@ -280,18 +280,6 @@ int do_exec(char *com, char *wd)
 		return ((w == -1) ? w : status);
 	}
 
-//中止内存映射,若fd有效,将其解锁
-void end_mmapfile(void *ptr, int size, int fd) {
-	munmap(ptr, size);
-	/*
-	 * signal(SIGSEGV,SIG_IGN);
-	 */
-	if (fd != -1) {
-		flock(fd, LOCK_UN);
-		close(fd);
-	}
-}
-
 int sem(int key) {
 	int val=1;
 	int semid;
