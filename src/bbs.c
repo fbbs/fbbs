@@ -1850,9 +1850,11 @@ time_t cn_gettime(char *str) {
 	return mktime(&tms);
 }
 
-//added by iamfat 2002.07.24
-int undelcheck(struct fileheader *fh1, struct fileheader *fh2) {
-	return (atoi(fh1->filename + 2) > atoi(fh2->filename + 2));
+
+static int undelcheck(void *fh1, void *fh2)
+{
+	return (atoi(((struct fileheader *)fh1)->filename + 2)
+		> atoi(((struct fileheader *)fh2)->filename + 2));
 }
 
 int date_to_fname(char *postboard, time_t now, char *fname) {
