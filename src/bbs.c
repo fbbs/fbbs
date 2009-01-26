@@ -791,8 +791,10 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 	return buf;
 }
 
-int cmpfilename(struct fileheader *fhdr, char *filename) {
-	if (!strncmp(fhdr->filename, filename, STRLEN))
+int cmpfilename(void *fhdr, void *filename)
+{
+	if (!strncmp(((struct fileheader *)fhdr)->filename,
+			(char *)filename, STRLEN))
 		return 1;
 	return 0;
 }
