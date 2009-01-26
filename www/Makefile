@@ -8,7 +8,8 @@ LIBNAME	= libweb.a
 COBJS   = bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
 		  bbsall.o bbsboa.o
 TARGET  = bbswebd
-CFLAGS  = -Os -Wall -std=c99 -pedantic
+DEFS    = -D_POSIX_SOURCE -D_SVID_SOURCE
+CFLAGS  = -Os -Wall -std=c99 -pedantic $(DEFS)
 
 install: all
 	strip -s $(TARGET)
