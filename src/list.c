@@ -806,19 +806,12 @@ int allusers() {
 
 /*******************Modify following two functions to support Type 2 mailall by Ashinmarch 2008.3.30*******************/
 /*******************详细说明见mail.c的mailtoall函数********************************************************************/
-int mailto(struct userec *uentp, int index, char *args) {
+static int mailto(void *uentpv, int index, void *args) {
 	char filename[STRLEN];
 	sprintf(filename, "tmp/mailall.%s", currentuser.userid);
 
-	/*if(!strcmp(uentp->userid,"dirdir")) 
-	 {
-	 move(3, 0);
-	 prints("dirdir userlever is %d",uentp->userlevel == PERM_BASIC&& mailmode == 1);
-	 pressreturn();
-	 }*/
-
+	struct userec *uentp = (struct userec *)uentpv;
 	if ((!(uentp->userlevel & PERM_BINDMAIL) && mailmode == 1) ||
-	//(uentp->userlevel & PERM_POST && mailmode == 2) ||
 			(uentp->userlevel & PERM_BOARDS && mailmode == 3)
 			|| (uentp->userlevel & PERM_SPECIAL0 && mailmode == 4)
 			|| (uentp->userlevel & PERM_SPECIAL9 && mailmode == 5)) {
@@ -837,7 +830,9 @@ int mailto(struct userec *uentp, int index, char *args) {
 	/******end*******/
 	return 1;
 }
-mailtoall(int mode, char *fname) {
+
+int mailtoall(int mode, char *fname)
+{
 	/********使用apply_record函数中的void *args参数传递共享文件的文件名*********/
 	mailmode = mode;
 	if (apply_record(PASSFILE, mailto, sizeof(struct userec),
@@ -846,7 +841,7 @@ mailtoall(int mode, char *fname) {
 		pressreturn();
 		return 0;
 	}
-	return;
+	return 1;
 }
 Show_Users() {
 
