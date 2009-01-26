@@ -13,7 +13,7 @@ static int filenum(char *board) {
 }
 
 static int board_read(char *board) {
-	char buf[256], path[256];
+	char buf[256];
 	FILE *fp;
 	struct fileheader x;
 	int total;
@@ -34,7 +34,7 @@ int bbsboa_main(void)
 {
 	struct boardheader data[MAXBOARD], *x;
 	int i, total=0, sec1;
-	char *cgi="bbsdoc", *ptr, *my_sec;
+	char *cgi="bbsdoc", *ptr;
 	char path[256];
 	char *parent_name = NULL;
     struct boardheader *parent = NULL;
@@ -156,4 +156,5 @@ int bbsboa_main(void)
 
 	printposttable();
 	http_quit();
+	return 0;
 }
