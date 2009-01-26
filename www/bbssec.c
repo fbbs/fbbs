@@ -10,14 +10,14 @@ static int showbrdlist(const char *filename)
 
 	fp = fopen(filename, "r");
 	if (fp == NULL)
-		return;
+		return -1;
 	while (fgets(board, sizeof(board) - 1, fp)) {
 		strtok(board,"\t\r\n ");
 		if (board[0] == '\0')
 			continue;
 		x = getbcache(board);
 		if (!x)
-			return;
+			return showed;
 		if(showed > 0) {
 			printf("&nbsp;");
 		}
