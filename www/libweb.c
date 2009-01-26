@@ -1570,14 +1570,6 @@ void trace(const char* content)
 }
 //added end
 
-//added by iamfat 2002.08.27
-int specialboard(char* board)
-{
-	if(file_has_word("etc/specialboard", board))return 1;
-	return 0;
-}
-//added end
-
 //added by iamfat 2002.09.03
 //函数原型: void SpecialID(const char* uid, char* host)
 //函数功能: 根据id通过对etc/special.ini里面的匹配 给出该id相应的特殊登陆host

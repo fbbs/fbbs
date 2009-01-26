@@ -30,8 +30,6 @@ int bbsall_main(void)
 	int cc = 0;
 	for(i = 0; i < total; i++) {
 		int isgroup = (data[i]->flag & BOARD_DIR_FLAG) ? 1 : 0;
-		if(specialboard(data[i]->filename))
-			continue;
 		printf("<tr class=%s valign=top><td align=right>%d</td>",
 				((cc++) % 2) ? "pt9dc" : "pt9lc", i + 1);
 		// Print board name.

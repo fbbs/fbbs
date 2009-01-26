@@ -121,7 +121,6 @@ int bbsboa_main(void)
 	for(i=0; i<total; i++) {
 		char buf[100];
 		int isgroup = (data[i].flag & BOARD_DIR_FLAG)? 1 : 0;
-		if(specialboard(data[i].filename))continue;
 		sprintf(buf, "boards/%s/.DIR", data[i].filename);
 		 /* print index */
 		printf("<tr class=%s valign=top><td align=right nowrap>%d</td>",

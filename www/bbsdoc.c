@@ -32,7 +32,7 @@ int main() {
  	init_all();
 	strlcpy(board, getparm("board"), 32);
 	x1=getbcache(board);
-	if(x1==0 || specialboard(board)) 
+	if (x1 == NULL) 
 		http_fatal("´íÎóµÄÌÖÂÛÇø");
 	strcpy(board, x1->filename);
 	if(!has_read_perm(&currentuser, board)) 

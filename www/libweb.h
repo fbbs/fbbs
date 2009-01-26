@@ -161,8 +161,6 @@ struct dir {
 
 void trace(const char* content);
 
-int specialboard(char* board);
-
 void printpretable(void);
 void printposttable(void);
 void printpretable_lite(void);
