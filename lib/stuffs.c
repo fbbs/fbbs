@@ -81,3 +81,8 @@ int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
 	return 1;
 }
 
+sigjmp_buf bus_jump;
+void sigbus(int signo)
+{
+	siglongjmp(bus_jump, 1);
+}

@@ -280,11 +280,6 @@ int do_exec(char *com, char *wd)
 		return ((w == -1) ? w : status);
 	}
 
-sigjmp_buf bus_jump;
-void sigbus(int signo) {
-	siglongjmp(bus_jump, 1);
-}
-;
 int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		void **ret_ptr, size_t * size) {
 	struct stat st;
