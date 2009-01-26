@@ -507,13 +507,15 @@ int mrd;
 int delmsgs[1024];
 int delcnt;
 
-int read_new_mail(struct fileheader *fptr, int index, void *arg) {
+static int read_new_mail(void *fptrv, int index, void *arg)
+{
 	char done = NA, delete_it;
 	char fname[256];
-	if (fptr == NULL) {
+	if (fptrv == NULL) {
 		delcnt = 0;
 		return 0;
 	}
+	struct fileheader *fptr = (struct fileheader *)fptrv;
 	//Modified by IAMFAT 2002-05-25
 	if (fptr->accessed[0] & FILE_READ)
 		return 0;
