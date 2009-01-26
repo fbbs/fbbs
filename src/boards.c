@@ -571,7 +571,7 @@ int page, clsflag, newflag;
 		prints ("  %s", ptr->unread ? "¡ô" : "¡ó");
 		if (!(ptr->flag & BOARD_CUSTOM_FLAG)) //added by cometcaptor 2007-04-23   
 		strcpy (tmpBM, ptr->BM);
-		strlcpy (cate, ptr->title + 1, 6);
+		strlcpy (cate, ptr->title + 1, 7);
 		strcpy (title, ptr->title + 11);
 		ellipsis (title, 20);
 		prints ("%c%-17s %s%s%6s %-20s %c ",
