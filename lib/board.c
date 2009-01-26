@@ -79,3 +79,24 @@ int hasreadperm(const struct userec *user, const struct boardheader *bp)
 
 	return 0;
 }
+
+int junkboard(void)
+{
+	if (strstr(JUNKBOARDS, currboard)) {
+		return 1;
+	} else {
+		struct boardheader *bp;
+
+		bp = getbcache(currboard);
+		//add by infotech to protect bp==NULL, 应该不会出现,但判断一下比较好:)
+		if (NULL == bp) {
+			return 0;
+		}
+		//end added
+		if (bp->flag & BOARD_JUNK_FLAG) {
+			return 1;
+		}
+		return 0;
+	}
+	//      return seek_in_file ("etc/junkboards", currboard);
+}
