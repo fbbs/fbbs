@@ -195,7 +195,6 @@ char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
 char *nohtml(char *s);
 // Record.c
-int get_record(void *buf, int size, int num, char *file);
 int append_record(void *buf, int size, char *file);
 // pass.c
 int checkpasswd(char *pw_crypted, char *pw_try);

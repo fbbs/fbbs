@@ -277,23 +277,6 @@ struct stat *f_stat(char *file) {
 	return &buf;
 }
 
-int get_record(void *buf, int size, int num, char *file) {
-	FILE *fp;
-	if(size<1 || size>4096) return 0;
-	if(num<0 || num>1000000) return 0;
-	bzero(buf, size);
-	fp = fopen(file, "r");
-	if(fp == NULL)
-		return 0;
-	fseek(FCGI_ToFILE(fp), num*size, SEEK_SET);
-	if(fread(buf, size, 1, FCGI_ToFILE(fp))<=0) {
-		fclose(fp);
-		return 0;
-	}
-	fclose(fp);
-	return 1;
-}
-
 int append_record(void *buf, int size, char *file)
 {
 	FILE *fp;

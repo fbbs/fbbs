@@ -158,7 +158,8 @@ void add_msg() {
         system(file);
         sprintf(file, "home/%c/%s/msgfile", toupper(id[0]), id);
         i=file_size(file)/129;
-        if(get_record(&buf, 129, i-1, file)<=0) return;
+		if (get_record(file, buf, 129, i) <= 0)
+			return;
         sprintf(file, "home/%c/%s/wwwmsg", toupper(id[0]), id);
         fp=fopen(file, "a");
         fwrite(buf, 129, 1, fp);
