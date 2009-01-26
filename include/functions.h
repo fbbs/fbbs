@@ -73,8 +73,6 @@
 #define BBS_RETURN(x) {signal(SIGBUS, SIG_IGN);return (x);}
 #define BBS_RETURN_VOID {signal(SIGBUS, SIG_IGN);return;}
 
-int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
-		void **ret_ptr, size_t *size);
 void end_mmapfile(void *ptr, int size, int fd);
 
 typedef int (*RECORD_FUNC_ARG)(void *, void *);

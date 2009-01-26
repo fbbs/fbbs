@@ -81,6 +81,27 @@ int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
 	return 1;
 }
 
+// Similar to 'safe_mmapfile', but it uses a file descriptor instead.
+int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
+		void **ret_ptr, size_t *size)
+{
+	struct stat st;
+
+	if (fd < 0)
+		return 0;
+	if ((fstat(fd, &st) < 0)
+			|| (!S_ISREG(st.st_mode))
+			|| (st.st_size <= 0)) {
+		close(fd);
+		return 0;
+	}
+	*ret_ptr = mmap(NULL, st.st_size, prot, flag, fd, 0);
+	if (*ret_ptr == NULL)
+		return 0;
+	*size = st.st_size;
+	return 1;
+}
+
 sigjmp_buf bus_jump;
 void sigbus(int signo)
 {

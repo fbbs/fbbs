@@ -280,34 +280,6 @@ int do_exec(char *com, char *wd)
 		return ((w == -1) ? w : status);
 	}
 
-int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
-		void **ret_ptr, size_t * size) {
-	struct stat st;
-
-	if (fd < 0)
-		return 0;
-	if (fstat(fd, &st) < 0) {
-		close(fd);
-		return 0;
-	}
-	if (!S_ISREG(st.st_mode)) {
-		close(fd);
-		return 0;
-	}
-	if (st.st_size <= 0) {
-		close(fd);
-		return 0;
-	}
-	*ret_ptr = mmap(NULL, st.st_size, prot, flag, fd, 0);
-	if (*ret_ptr == NULL)
-		return 0;
-	/*
-	 * signal(SIGSEGV,sigbus);
-	 */
-	*size = st.st_size;
-	return 1;
-}
-
 //中止内存映射,若fd有效,将其解锁
 void end_mmapfile(void *ptr, int size, int fd) {
 	munmap(ptr, size);
