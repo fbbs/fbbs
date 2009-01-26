@@ -3,9 +3,7 @@ CGIPATH = /home/httpd/fcgi
 HTMPATH = /home/httpd/html
 
 CC      = gcc
-OBJS	= libweb.o crypt.o
-LIBNAME	= libweb.a
-COBJS   = bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
+COBJS   = libweb.o bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
 		  bbsall.o bbsboa.o
 TARGET  = bbswebd
 DEFS    = -D_POSIX_SOURCE -D_SVID_SOURCE
@@ -19,14 +17,9 @@ install: all
 	chgrp -R bbs $(CGIPATH) 
 	chmod +s $(CGIPATH)/*
 
-all: libweb $(COBJS)
-	$(CC) $(CFLAGS) $(COBJS) -o $(TARGET) -lweb -L. -lBBS -L../lib -lfcgi
-
-libweb: $(OBJS)
-	ar rs $(LIBNAME) $(OBJS)
+all: $(COBJS)
+	$(CC) $(CFLAGS) $(COBJS) -o $(TARGET) -lcrypt -lBBS -L../lib -lfcgi
 
 clean:
-	rm $(OBJS)
 	rm $(COBJS)
-	rm $(LIBNAME)
 	rm -rf $(TARGET)

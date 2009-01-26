@@ -23,7 +23,7 @@ int main() {
   	if(strcmp(pw2, pw3)) http_fatal("两次密码不相同");
   	if(strlen(pw2)<2) http_fatal("新密码太短");
   	if(!checkpasswd(currentuser.passwd, pw1)) http_fatal("密码不正确");
-  	strcpy(currentuser.passwd, crypt1(pw2, pw2));
+  	strcpy(currentuser.passwd, crypt(pw2, pw2));
   	save_user_data(&currentuser);
   	printf("[%s] 密码修改成功.", currentuser.userid);
 }

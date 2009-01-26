@@ -1223,7 +1223,7 @@ struct userec *getuser(char *id) {
 }
 
 int checkpasswd(char *pw_crypted, char *pw_try) {
-	return !strcmp(crypt1(pw_try, pw_crypted), pw_crypted);
+	return !strcmp(crypt(pw_try, pw_crypted), pw_crypted);
 }
 
 int count_online(void) {

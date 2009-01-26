@@ -11,6 +11,7 @@
 #ifdef USEFCGI
 #include <fcgi_stdio.h>  //Should be included last.
 #endif
+#include <crypt.h>
 
 #define CGIPATH "/fcgi/"
 #define FIRST_PAGE	"/bbsmain.html"
@@ -179,8 +180,6 @@ void showbrdlist(char *path,int withbr);
 
 int strtourl(char * url, char * str);
 
-//crypt.c
-char *crypt1(char *buf, char *salt);
 // Bcache.c
 struct userec *getuser(char *id);
 int count_online(void);
