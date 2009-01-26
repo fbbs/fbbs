@@ -12,6 +12,7 @@ struct cgi_applet applets[] = {
 		{ "bbsgetmsg", bbsgetmsg_main },
 		{ "bbsall", bbsall_main },
 		{ "bbsboa", bbsboa_main },
+		{ "bbslogin", bbslogin_main},
 		{ NULL, NULL }
 };
 
