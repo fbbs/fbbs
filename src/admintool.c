@@ -1049,8 +1049,9 @@ char *regdoent(int num, REGINFO * ent) {
 }
 
 //      返回userid 与ent->userid是否相等
-int filecheck(REGINFO * ent, char *userid) {
-	return !strcmp(ent->userid, userid);
+static int filecheck(void *ent, void *userid)
+{
+	return !strcmp(((REGINFO *)ent)->userid, (char *)userid);
 }
 
 // 删除注册单文件里的一个记录
