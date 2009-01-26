@@ -39,17 +39,6 @@ char secname[SECNUM][2][20] = {
 #endif
 };
 
-int junkboard(char *board) {
-	// Çë×Ô¶¨Òåjunkboard.
-	//if(file_has_word("etc/junkboards", board)) return 1;
-	struct boardheader *bp;
-	bp = getbcache(board);
-	if (bp->flag & BOARD_JUNK_FLAG )
-		return 1;
-	// added by roly 02.03.23
-	return 0;
-}
-
 int loginok=0;
 
 struct userec currentuser;

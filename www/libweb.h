@@ -185,7 +185,6 @@ char *crypt1(char *buf, char *salt);
 struct userec *getuser(char *id);
 int count_online(void);
 // bbs.c
-int junkboard(char *board);
 int has_BM_perm(struct userec *user, char *board);
 int has_read_perm(struct userec *user, char *board);
 int has_post_perm(struct userec *user, char *board);

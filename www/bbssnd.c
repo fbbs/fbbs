@@ -73,7 +73,7 @@ int main() {
 	brc_addlist(buf);
 	brc_update(currentuser.userid, board);
 	unlink(filename);
-	if(!junkboard(board)) {
+	if(!junkboard(getbcache(board))) {
         	currentuser.numposts++;
 		save_user_data(&currentuser);
 		write_posts(currentuser.userid, board, title);
