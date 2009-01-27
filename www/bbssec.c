@@ -44,14 +44,14 @@ int bbssec_main(void)
 	for(i = 0; i < SECNUM; i++) {
 		printf("<td nowrap valign=top width=100%%>");
 		printpretable_lite();
-		printf("<font class=pt9lc><b>%X</b> <a href=bbsboa?%d>", i, i);
+		printf("<font class=pt9lc><b>%X</b> <a href=bbsboa?s=%d>", i, i);
 		sprintf(path, "%s/info/egroup%d/banner_s.jpg", BBSHOME, i);
 		if(dashf(path))
 			printf("<img src=/info/egroup%d/banner_s.jpg align=absmiddle border=0>", i);
 		else
 			printf("%s", secname[i][0]);
 		printf("</a> %s", secname[i][1]);
-		printf("&nbsp;&nbsp;&nbsp;<a href=bbsboa?%d>更多版面...</a><br>", i);
+		printf("&nbsp;&nbsp;&nbsp;<a href=bbsboa?s=%d>更多版面...</a><br>", i);
 		sprintf(path, "%s/info/egroup%d/recommend", BBSHOME, i);
 		if(dashf(path))
 		{

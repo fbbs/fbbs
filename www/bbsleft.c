@@ -76,7 +76,7 @@ int bbsleft_main(void)
 		char name[STRLEN];
 		for(i = 0; i < SECNUM; i++)
 		{
-			sprintf(path, CGIPATH"bbsboa?%d", i);
+			sprintf(path, CGIPATH"bbsboa?s=%d", i);
 			sprintf(name, "%X %s", i, secname[i][0]);
 			printf(MENUSUBITEM, path, FRAME_VIEW, "/images/types/folder1.gif", name);
 		}

@@ -193,7 +193,7 @@ int main() {
 	
 	boardsec = get_sec_number(board);
 	if (boardsec>=0 && boardsec<SECNUM) 
-		printf("<a href=bbsboa?%d><img border=0 src=/images/button/home.gif align=absmiddle>当前分类讨论区</a> \n" ,boardsec);
+		printf("<a href=bbsboa?s=%d><img border=0 src=/images/button/home.gif align=absmiddle>当前分类讨论区</a> \n" ,boardsec);
 	// added by roly 02.01.22
 	{
 		char upload_path[256];
