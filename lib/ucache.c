@@ -69,28 +69,28 @@ int uhashkey(const char *userid, char *a1, char *a2)
 
 static int usernumber = 0;
 
+// Put userid(in struct uentp) into user cache.
+// Find a proper entry of user hash.
 static int fillucache(struct userec *uentp)
 {
-	char a1,a2;
+	char a1, a2;
 	int key;
 
 	if (usernumber < MAXUSERS) {
-		strlcpy(uidshm->userid[usernumber], uentp->userid, IDLEN + 1);
-		uidshm->userid[usernumber++][IDLEN] = '\0';
-
-		if(uentp->userid[0]) {
-			/* hash 野割 */
-			key = uhashkey (uentp->userid, &a1, &a2);
-
-			if( uidshm->hash[a1][a2][key] == 0 ) {
+		strlcpy(uidshm->userid[usernumber++], uentp->userid, sizeof(uidshm->userid[0]);
+		if(uentp->userid[0] != '\0') {
+			key = uhashkey(uentp->userid, &a1, &a2);
+			if (uidshm->hash[a1][a2][key] == 0) {
+				// If the hash entry is empty, put 'usernumber' in it.
 				uidshm->hash[a1][a2][key] = usernumber;
 			} else {
-				int i;
-				for(i=uidshm->hash[a1][a2][key]; uidshm->next[i-1]; i=uidshm->next[i-1]);
-				uidshm->next[i-1] = usernumber;
-				uidshm->prev[usernumber-1] = i;
+				// Put 'usernumber' into the doubly linked list.
+				int i = uidshm->hash[a1][a2][key];
+				while (uidshm->next[i - 1] != 0)
+					i = uidshm->next[i - 1];
+				uidshm->next[i - 1] = usernumber;
+				uidshm->prev[usernumber - 1] = i;
 			}
-			/* end of hash 野割 */
 		}
 	}
 	return 0;
@@ -142,7 +142,6 @@ static int shm_lock(char *lockname)
 
 	lockfd = open(lockname, O_RDWR | O_CREAT, 0600);
 	if (lockfd < 0) {
-		//bbslog("3system", "CACHE:lock ucache:%s", strerror(errno));
 		return -1;
 	}
 	flock(lockfd, LOCK_EX);
@@ -181,7 +180,6 @@ int load_ucache(int reload)
 
 	/* load PASSFILE */
 	if ((passwdfd = open(PASSFILE, O_RDWR | O_CREAT, 0644)) == -1) {
-		//bbslog("3system", "Can't open " PASSFILE "file %s", strerror(errno));
 		ucache_unlock(fd);
 		exit(-1);
 	}
@@ -189,7 +187,6 @@ int load_ucache(int reload)
 	close(passwdfd);
 	if (get_records(PASSFILE, uidshm->passwd, sizeof(struct userec), 1,
 			MAXUSERS) != MAXUSERS) {
-		//bbslog("4system", "PASS file!");
 		ucache_unlock(fd);
 		return -1;
 	}
@@ -204,7 +201,6 @@ int load_ucache(int reload)
 
 	for (i=0; i<MAXUSERS; i++)
 		fillucache(&(uidshm->passwd[i]));
-	//apply_record(PASSFILE, fillucache, sizeof(struct userec), NULL, 0, 0);
 	uidshm->number = usernumber;
 	uidshm->uptime = ftime;
 
@@ -229,8 +225,6 @@ int flush_ucache(void)
 
 void resolve_ucache(void)
 {
-	//	struct stat st;
-	//	int     ftime;
 	int iscreate = 0;
 	if (uidshm == NULL) {
 		uidshm = attach_shm2("UCACHE_SHMKEY", 3696, sizeof(*uidshm),
@@ -242,22 +236,6 @@ void resolve_ucache(void)
 		write(1, genbuf, strlen(genbuf));
 		exit(1);
 	}
-	/*
-	 if (stat(FLUSH, &st) < 0) {
-	 ftime = time(0) - 86400;
-	 } else  ftime = st.st_mtime;
-	 if (uidshm->uptime < ftime) {
-	 uidshm->uptime = ftime;
-	 log_usies("CACHE", "reload ucache");
-	 usernumber = 0;
-	 memset(uidshm->hash, sizeof(uidshm->hash));
-	 memset(uidshm->next, sizeof(uidshm->next));
-	 memset(uidshm->prev, sizeof(uidshm->prev));
-	 apply_record(PASSFILE, fillucache, sizeof(struct userec),0,0,0);
-	 uidshm->number = usernumber;
-	 //uidshm->uptime = ftime;
-	 }
-	 */
 }
 
 void setuserid(int num, char *userid)
@@ -344,7 +322,6 @@ int getuserec(char *userid, struct userec *u)
 	int uid = searchuser(userid);
 	if (uid == 0)
 		return 0;
-	//get_record(PASSFILE, &lookupuser, sizeof(lookupuser), uid);
 	memcpy(u, &(uidshm->passwd[uid-1]), sizeof(struct userec));
 	return uid;
 }
@@ -354,7 +331,6 @@ int getuser(char * userid)
 	int uid = searchuser(userid);
 	if (uid == 0)
 		return 0;
-	//get_record(PASSFILE, &lookupuser, sizeof(lookupuser), uid);
 	memcpy(&lookupuser, &(uidshm->passwd[uid-1]), sizeof(lookupuser));
 	return uid;
 }
@@ -451,10 +427,6 @@ void refresh_utmp(void)
 
 	ucache_unlock(ucachefd);
 	utmp_unlock(utmpfd);
-
-	//refresh_anoncache();
-
-	//utmpshm->total_num=anonshm->used+num_active_users();
 	utmpshm->total_num=num_active_users();
 }
 
