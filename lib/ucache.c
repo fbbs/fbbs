@@ -67,33 +67,31 @@ int uhashkey(const char *userid, char *a1, char *a2)
 	return key % 256;
 }
 
-static int usernumber = 0;
-
 // Put userid(in struct uentp) into user cache.
 // Find a proper entry of user hash.
-static int fillucache(struct userec *uentp)
+static int fillucache(struct userec *uentp, int count)
 {
 	char a1, a2;
 	int key;
 
-	if (usernumber < MAXUSERS) {
-		strlcpy(uidshm->userid[usernumber++], uentp->userid, sizeof(uidshm->userid[0]);
+	if (count < MAXUSERS) {
+		strlcpy(uidshm->userid[count++], uentp->userid, sizeof(uidshm->userid[0]);
 		if(uentp->userid[0] != '\0') {
 			key = uhashkey(uentp->userid, &a1, &a2);
 			if (uidshm->hash[a1][a2][key] == 0) {
 				// If the hash entry is empty, put 'usernumber' in it.
-				uidshm->hash[a1][a2][key] = usernumber;
+				uidshm->hash[a1][a2][key] = count;
 			} else {
 				// Put 'usernumber' into the doubly linked list.
 				int i = uidshm->hash[a1][a2][key];
 				while (uidshm->next[i - 1] != 0)
 					i = uidshm->next[i - 1];
-				uidshm->next[i - 1] = usernumber;
-				uidshm->prev[usernumber - 1] = i;
+				uidshm->next[i - 1] = count;
+				uidshm->prev[count - 1] = i;
 			}
 		}
 	}
-	return 0;
+	return count;
 }
 
 /* hash É¾³ı */
@@ -159,26 +157,26 @@ static void shm_unlock(int fd)
 #define ucache_lock() shm_lock("tmp/.UCACHE.lock")
 #define utmp_lock() shm_lock("tmp/.UTMP.lock")
 
+// Loads PASSFILE into user cache.
+// Returns 0 on success, -1 on error.
 int load_ucache(int reload)
 {
-	int ftime;
-	int fd;
-	int iscreate=0;
-	int passwdfd;
-	int i;
+	int ftime, fd, iscreate = 0, passwdfd, i;
 
-	fd=ucache_lock();
+	// Get user cache lock.
+	fd = ucache_lock();
 	if (fd == -1) {
 		return -1;
 	}
+
+	// Get shared memory.
 	if (uidshm == NULL) {
 		uidshm = attach_shm2("UCACHE_SHMKEY", 3696, sizeof(*uidshm),
 				&iscreate);
 	}
+	log_usies("CACHE", "reload ucache", NULL);
 
-	log_usies("CACHE", "re load ucache", &currentuser);
-
-	/* load PASSFILE */
+	// Load PASSFILE.
 	if ((passwdfd = open(PASSFILE, O_RDWR | O_CREAT, 0644)) == -1) {
 		ucache_unlock(fd);
 		exit(-1);
@@ -191,23 +189,23 @@ int load_ucache(int reload)
 		return -1;
 	}
 
+	// Initialize 'userid' and hash.
 	memset(uidshm->userid, 0, sizeof(uidshm->userid));
-	/* ³õÊ¼?uhash */
 	memset(uidshm->hash, 0, sizeof(uidshm->hash));
 	memset(uidshm->next, 0, sizeof(uidshm->next));
 	memset(uidshm->prev, 0, sizeof(uidshm->prev));
-	/* endof ³õÊ¼»¯ */
-	usernumber = 0;
 
-	for (i=0; i<MAXUSERS; i++)
-		fillucache(&(uidshm->passwd[i]));
-	uidshm->number = usernumber;
+	// Fill user cache.
+	int count = 0;
+	for (i = 0; i < MAXUSERS; i++)
+		count = fillucache(&(uidshm->passwd[i]), count);
+	uidshm->number = count;
 	uidshm->uptime = ftime;
 
+	// Unlock user cache.
 	ucache_unlock(fd);
 
 	return 0;
-
 }
 
 int substitut_record(char *filename, char *rptr, int size, int id)

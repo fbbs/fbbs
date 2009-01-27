@@ -14,10 +14,11 @@ void report(const char *s, const char *userid)
 
 void log_usies(const char *mode, const char *mesg, const struct userec *user)
 {
-	char *fmt;
-
-	fmt = user->userid[0] ? "%s %-12s %s" : "%s %s%s";
-	syslog(LOG_LOCAL4 | LOG_INFO, fmt, mode, user->userid, mesg);
+	if (user == NULL) {
+		syslog(LOG_LOCAL4 | LOG_INFO, "%s %s", mode, mesg);
+	} else {
+		syslog(LOG_LOCAL4 | LOG_INFO, "%s %-12s %s", mode, user->userid, mesg);
+	}
 	return;
 }
 
