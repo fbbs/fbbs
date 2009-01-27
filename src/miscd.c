@@ -1,10 +1,5 @@
 #include "bbs.h"
 
-extern int flush_ucache();
-extern int resolve_ucache();
-
-extern int load_ucache();
-extern void resolve_boards();
 //退出时执行的函数
 void do_exit() {
 	flush_ucache();

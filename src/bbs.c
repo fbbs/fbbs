@@ -98,6 +98,17 @@ int check_stuffmode() {
 		return NA;
 }
 
+//  取得用户ID为userid的用户信息,保存在currentuser中
+static int getcurrentuser(char *userid)
+{
+	int uid = searchuser(userid);
+	if (uid == 0)
+		return 0;
+	//get_record(PASSFILE, &lookupuser, sizeof(lookupuser), uid);
+	memcpy(&currentuser, &(uidshm->passwd[uid-1]), sizeof(currentuser));
+	return uid;
+}
+
 //取得用户信息,不成功返回-1
 int set_safe_record() {
 	if (getcurrentuser(currentuser.userid) == 0)
