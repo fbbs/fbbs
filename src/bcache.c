@@ -61,25 +61,6 @@ char *bname;
 	return 1;
 }
 
-int apply_users(int (*fptr) (struct userec *)) {
-	int i;
-	int count;
-
-	count = 0;
-	for (i = 0; i < uidshm->number; i++)
-		if (fptr) {
-			int ret;
-
-			ret = (*fptr)(&uidshm->passwd[i]);
-			if (ret == -1)
-				break;
-			if (ret == 1)
-				count++;
-		} else
-			count++;
-	return count;
-}
-
 int
 fillucache(uentp,index,arg)
 struct userec *uentp;
