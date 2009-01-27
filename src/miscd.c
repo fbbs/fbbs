@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 
-		if (load_ucache(0) != 0) { //将用户的数据映射到内存
+		if (load_ucache() != 0) { //将用户的数据映射到内存
 			printf("load ucache error\n");
 			exit(-1);
 		}
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 		flush_ucache();
 		flush_bcache();
 	} else if ( !strcasecmp(argv[1], "reload") ) { //miscd reload
-		if (load_ucache(1) != 0) {
+		if (load_ucache() != 0) {
 			printf("load ucache error\n");
 			exit(-1);
 		}

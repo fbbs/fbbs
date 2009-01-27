@@ -159,7 +159,7 @@ static void shm_unlock(int fd)
 
 // Loads PASSFILE into user cache.
 // Returns 0 on success, -1 on error.
-int load_ucache(int reload)
+int load_ucache(void)
 {
 	int ftime, fd, iscreate = 0, passwdfd, i;
 

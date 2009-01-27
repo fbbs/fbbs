@@ -428,7 +428,7 @@ int cmpuids(void *uid, void *up);
 int dosearchuser(const char *userid, struct userec *user, int *unum);
 int uhashkey(const char *userid, char *a1, char *a2);
 int del_uidshm(int num, char *userid);
-int load_ucache(int reload);
+int load_ucache(void);
 int substitut_record(char *filename, char *rptr, int size, int id);
 int flush_ucache(void);
 void resolve_ucache(void);
