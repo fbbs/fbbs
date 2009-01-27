@@ -213,12 +213,11 @@ int substitut_record(char *filename, char *rptr, int size, int id)
 	memcpy(&(uidshm->passwd[id-1]), rptr, size);
 }
 
+// Flush user cache to PASSFILE.
 int flush_ucache(void)
 {
-	int ret;
-	ret= substitute_record(PASSFILE, uidshm->passwd, MAXUSERS
-			* sizeof(struct userec), 1);
-	return ret;
+	return substitute_record(PASSFILE, uidshm->passwd,
+			sizeof(uidshm->passwd), 1);
 }
 
 void resolve_ucache(void)
