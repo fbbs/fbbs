@@ -220,6 +220,8 @@ int flush_ucache(void)
 			sizeof(uidshm->passwd), 1);
 }
 
+// Exit if 'uidshm' == NULL and shared memory does not exist.
+// Do nothing otherwise.
 void resolve_ucache(void)
 {
 	int iscreate = 0;
@@ -229,8 +231,7 @@ void resolve_ucache(void)
 	}
 	if (iscreate) {
 		remove_shm("UCACHE_SHMKEY", 3696, sizeof(*uidshm));
-		sprintf(genbuf, "Error! miscd havn't startup\n");
-		write(1, genbuf, strlen(genbuf));
+		report("Error: miscd is not running!", "");
 		exit(1);
 	}
 }
