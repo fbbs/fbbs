@@ -30,3 +30,37 @@ int dosearchuser(const char *userid, struct userec *user, int *unum)
 	return *unum = 0;
 }
 
+// Returns hashkey of 'userid'.
+// The hashkey is the sum of ASCII codes of the third to the last letter
+// in uppercase.
+// a1 is 0~25 (A-Z or a-z respectively) for the first letter.
+// a2 is 0~25 (A-Z or a-z respectively) for the second letter.
+int uhashkey(const char *userid, char *a1, char *a2)
+{
+	char *c = userid;
+	int key = 0;
+
+	if (*c >= 'a' && *c <= 'z') {
+		*a1 = *c - 'a';
+	} else if ( *c >= 'A' && *c <= 'Z') {
+		*a1 = *c - 'A';
+	} else {
+		*a1 = 0;
+	}
+	c++;
+
+	if ( *c >= 'a' && *c <= 'z') {
+		*a2 = *c - 'a';
+	} else if ( *c >= 'A' && *c <= 'Z') {
+		*a2 = *c - 'A';
+	} else {
+		*a2 = 0;
+	}
+	c++;
+
+	while (*c != '\0') {
+		key += toupper(*c);
+		c++;
+	}
+	return key % 256;
+}

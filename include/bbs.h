@@ -426,6 +426,7 @@ extern struct UTMPFILE *utmpshm;
 extern struct userec lookupuser;
 int cmpuids(void *uid, void *up);
 int dosearchuser(const char *userid, struct userec *user, int *unum);
+int uhashkey(char *userid, char *a1, char *a2);
 
 //log.c
 void report(const char *s, const char *userid);

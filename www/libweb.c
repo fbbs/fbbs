@@ -1158,37 +1158,6 @@ int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
 }
 
-/* add by stiger, µÃµ½hashkey */
-static int uhashkey(char *userid, char *a1, char *a2)
-{
-	char *c=userid;
-	int key=0;
-
-	if( *c >= 'a' && *c <= 'z' ){
-		*a1 = *c - 'a';
-	}else if( *c >= 'A' && *c <= 'Z' ){
-		*a1 = *c - 'A';
-	}else
-		*a1 = 0;
-
-	c++;
-
-	if( *c >= 'a' && *c <= 'z' ){
-		*a2 = *c - 'a';
-	}else if( *c >= 'A' && *c <= 'Z' ){
-		*a2 = *c - 'A';
-	}else
-		*a2 = 0;
-
-	c++;
-	while( *c ){
-		key += toupper(*c);
-		c++;
-	}
-
-	return key%256;
-}
-
 	int
 getusernum(userid)
 	char   *userid;
