@@ -213,15 +213,15 @@ int substitut_record(char *filename, char *rptr, int size, int id)
 	memcpy(&(uidshm->passwd[id-1]), rptr, size);
 }
 
-// Flush user cache to PASSFILE.
+// Flushes user cache to PASSFILE.
 int flush_ucache(void)
 {
 	return substitute_record(PASSFILE, uidshm->passwd,
 			sizeof(uidshm->passwd), 1);
 }
 
-// Exit if 'uidshm' == NULL and shared memory does not exist.
-// Do nothing otherwise.
+// Exits if 'uidshm' == NULL and shared memory does not exist.
+// Does nothing otherwise.
 void resolve_ucache(void)
 {
 	int iscreate = 0;
@@ -280,10 +280,11 @@ int searchnewuser(void)
 	return 0;
 }
 
-void getuserid(char *userid, int uid)
+// Get 'userid' according to ('uid' - 1).
+void getuserid(char *userid, int uid, size_t len)
 {
 	resolve_ucache();
-	strcpy(userid, uidshm->userid[uid - 1]);
+	strlcpy(userid, uidshm->userid[uid - 1], len);
 }
 
 //使用hash函数来搜索用户

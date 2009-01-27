@@ -433,7 +433,7 @@ int substitut_record(char *filename, char *rptr, int size, int id);
 int flush_ucache(void);
 void resolve_ucache(void);
 void setuserid(int num, char *userid);
-void getuserid(char *userid, int uid);
+void getuserid(char *userid, int uid, size_t len);
 int searchuser(char *userid);
 int getuserec(char *userid, struct userec *u);
 int getuser(char * userid);

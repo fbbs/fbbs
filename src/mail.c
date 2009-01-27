@@ -1415,7 +1415,7 @@ int g_send() {
 				for (i = cnt; i < maxrecp && n < uinfo.fnum; i++) {
 					int key;
 					move(2, 0);
-					getuserid(uident, uinfo.friend[n]);
+					getuserid(uident, uinfo.friend[n], sizeof(uident));
 					prints("%s\n", uident);
 					move(3, 0);
 					n++;
@@ -1545,7 +1545,7 @@ char current_maillist;
 		char uid[13];
 		char buf[STRLEN];
 		if (G_SENDMODE == 1)
-		getuserid(uid, uinfo.friend[cnt]);
+		getuserid(uid, uinfo.friend[cnt], sizeof(uid));
 		else if (G_SENDMODE == 2) {
 			if (fgets(buf, STRLEN, mp) != NULL) {
 				if (strtok(buf, " \n\r\t") != NULL)
@@ -1739,7 +1739,7 @@ int ov_send() {
 	all = (uinfo.fnum >= maxrecp) ? maxrecp : uinfo.fnum;
 	for (i = 0; i < all; i++) {
 		char uid[IDLEN + 2];
-		getuserid(uid, uinfo.friend[i]);
+		getuserid(uid, uinfo.friend[i], sizeof(uid));
 		prints("%-12s ", uid);
 		if ((i + 1) % 6 == 0)
 			outc('\n');
