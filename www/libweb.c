@@ -1114,28 +1114,24 @@ int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]
 	return 0;
 }
 
+// Convert exp to icons.
 void iconexp(int exp)
 {
-	static char ce[11];
-	char* c=   "-=+*#A";
-	int i;
-	int j;
-	if(exp<0)j=-1;
-	else {
-		i=exp/2000;
-		i=i>5?5:i;
-		j=(exp-i*2000)/200;
-		j=j>9?9:j;
-	}
+	int i, j;
 
+	if (exp < 0)
+		j = -1;
+	else {
+		i = exp / 2000;
+		i = i > 5 ? 5 : i;
+		j = (exp - i * 2000) / 200;
+		j = j > 9 ? 9 : j;
+	}
 	j++;
 	while(j--)
 	{
-		printf("<img src=/images/level/%d.gif border=0 align=absmiddle>",i);
+		printf("<img src=/images/level/%d.gif border=0 align=absmiddle>", i);
 	}
-
-	//printf("<br>");
-
 }
 
 int save_user_data(struct userec *x) {
