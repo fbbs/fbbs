@@ -125,8 +125,6 @@ void iconexp(int exp);
 int save_user_data(struct userec *x);
 int user_perm(struct userec *x, int level);
 
-int getusernum(char *userid);
-
 extern struct override fff[];
 extern int friendnum;
 

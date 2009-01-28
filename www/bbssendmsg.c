@@ -40,7 +40,7 @@ int main() {
 		printposttable_lite();
 		http_quit();
 	}
-	if(getusernum(destid)<0) 
+	if(searchuser(destid) == 0) 
 	{
 		printf("<b>·¢ËÍÏûÏ¢ ¡¤ %s </b><br>\n",BBSNAME);
 		printpretable_lite();

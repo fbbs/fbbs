@@ -106,7 +106,7 @@ static int wwwlogin(struct userec *user) {
 			}
 			bzero(u, sizeof(struct user_info));
 			u->active=1;
-			u->uid=getusernum(user->userid)+1;
+			u->uid = searchuser(user->userid);
 			u->pid=pid;
 			u->mode=10001;
 			if(user_perm(&currentuser, PERM_LOGINCLOAK) &&

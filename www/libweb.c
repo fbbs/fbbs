@@ -1137,8 +1137,8 @@ void iconexp(int exp)
 int save_user_data(struct userec *x) {
 	FILE *fp;
 	int n;
-	n=getusernum(x->userid);
-	if(n < 0 || n > 1000000)
+	n = searchuser(x->userid) - 1;
+	if(n < 0 || n >= MAXUSERS)
 		return 0;
 	memcpy( &(shm_ucache->passwd[n]), x, sizeof(struct userec) );
 	return 1;
@@ -1146,28 +1146,6 @@ int save_user_data(struct userec *x) {
 
 int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
-}
-
-	int
-getusernum(userid)
-	char   *userid;
-{
-	int i;
-	char a1,a2;
-	int key;
-	/* use hash */
-	key = uhashkey (userid, &a1, &a2);
-	i = shm_ucache->hash[a1][a2][key];
-
-
-	while(i){
-		if (!strcasecmp(userid, shm_ucache->userid[i-1] )){
-			return i-1;
-		}
-		i = shm_ucache->next[i-1];
-	}
-	return -1;
-	/* endof new */
 }
 
 int checkpasswd(char *pw_crypted, char *pw_try) {
