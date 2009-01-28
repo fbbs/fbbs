@@ -37,8 +37,6 @@
 #endif
 //modified by money 2002.11.15
 char *sysconf_str();
-char *genpasswd();
-
 extern char fromhost[60];
 extern time_t login_start_time;
 extern char *cexpstr();

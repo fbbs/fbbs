@@ -71,4 +71,8 @@ void end_mmapfile(void *ptr, int size, int fd);
 extern sigjmp_buf bus_jump;
 void sigbus(int signo);
 
+//pass.c
+char *genpasswd(const char *pw);
+int checkpasswd(const char *passwd, const char *test);
+
 #endif

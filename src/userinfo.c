@@ -38,7 +38,6 @@
 extern time_t login_start_time;
 extern char fromhost[60];
 extern char *cexpstr();
-char * genpasswd();
 char *sysconf_str();
 
 //将ptr指向的字符串中字符值为0xFF的转换成空格
