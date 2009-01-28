@@ -221,6 +221,7 @@ int bbslogin_main(void)
 	log_usies("ENTER", fromhost, &user);
 	if(!loginok && strcasecmp(id, "guest"))
 		wwwlogin(&user);
+	loginok = 1;
 	redirect(FIRST_PAGE);
 	return 0;
 }

@@ -1276,6 +1276,7 @@ int fcgi_init_all(void)
 	if(geteuid() != BBSUID)
 		http_fatal("uid error.");
 	shm_init();
+	loginok = user_init(&currentuser, &u_info);
 
 	return 0;
 }
@@ -1283,7 +1284,6 @@ int fcgi_init_all(void)
 int fcgi_init_loop(void)
 {
 	int my_style = http_init();
-	loginok = user_init(&currentuser, &u_info);
 
 	// Happy birthday in status bar.
 	time_t t = time(NULL);
