@@ -332,9 +332,11 @@ int getuser(const char *userid)
 	return uid;
 }
 
+// Puts struct userec in *'u' according to ('uid' - 1).
 int getuserbyuid(struct userec *u, int uid)
 {
-	memcpy(u, &(uidshm->passwd[uid-1]), sizeof(struct userec));
+	resolve_ucache();
+	*u = uidshm->passwd[uid - 1];
 	return uid;
 }
 
