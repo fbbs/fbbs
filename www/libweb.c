@@ -1,9 +1,5 @@
 #include "libweb.h"
 
-int flock(int fd, int op) {
-	return lockf(fd, op, 0);
-}
-
 char seccode[SECNUM][6]={
 #ifdef FDQUAN
 	"ab","cd","ij","kl","mn","op","qr","st","uv"
@@ -1570,24 +1566,6 @@ void SpecialID(const char* uid, char* host)
 	}
 }
 //added end
-
-/*
-   int
-   FLOCK(fd, op)
-   int     fd, op;
-   {
-   switch (op) {
-   case LOCK_EX:
-   return lockf(fd, F_LOCK, 0);
-   case LOCK_UN:
-   return lockf(fd, F_ULOCK, 0);
-   default:
-   return -1;
-   }
-   }
-   */
-
-#define FLOCK(x,y) flock(x,y)
 
 void printpretable(void)
 {

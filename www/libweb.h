@@ -80,8 +80,6 @@ extern struct UCACHE *shm_ucache;
 
 extern char fromhost[];
 
-int flock(int fd, int op);
-
 char *anno_path_of(char *board);
 
 int mailnum_under_limit(char *userid);
