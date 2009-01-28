@@ -53,37 +53,8 @@ char *genpasswd(const char *pw)
 	return crypt(pwbuf, salt);//返回pwbuf用salt进行DES加密的结果
 }
 
-#ifdef CHKPASSWDFORK
-int checkpasswd(const char *passwd, const char *test) //生成新进程检查密码,避免被监听?
-{ // test 为输入的密码,passwd为salt值
-	int pfds[2], pid;
-	char value = 'f';
-	if( pipe(pfds) < 0) {
-		return checkpasswd0(passwd, test);
-	}
-	pid = fork();
-	if( pid == 0) {
-		close(pfds[0]);
-		if( checkpasswd0(passwd, test) ) {
-			value = 't';
-		}
-		write(pfds[1], &value, 1);
-		close(pfds[1]);
-		exit(0);
-	} else if( pid == -1 ) {
-		return checkpasswd0(passwd, test);
-	} else {
-		close(pfds[1]);
-		read(pfds[0], &value, 1);
-		close(pfds[0]);
-		return ( value == 't');
-	}
-}
-
-int checkpasswd0(char *passwd, char *test)
-#else
 int checkpasswd(const char *passwd, const char *test) //检查密码
-#endif											// test 为用户输入密码字符串
+// test 为用户输入密码字符串
 { // passwd 为salt值
 	char *pw;
 	static char pwbuf[PASSLEN];

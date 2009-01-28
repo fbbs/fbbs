@@ -46,7 +46,6 @@
 #define ALLOWSWITCHCODE		/* 启用 GB 码 <==> Big5 码 切换 */
 #define USE_NOTEPAD		/* 使用留言板 */
 #define INTERNET_EMAIL		/* 发送 InterNet Mail */
-#define CHKPASSWDFORK           /* 系统检查密码时采用 fork 进行 */
 #define COLOR_POST_DATE 	/* 文章日期颜色 */
 #define TALK_LOG 		/* 聊天纪录功能 */
 #define RNDSIGN			/* 乱数签名档 */
