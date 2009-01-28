@@ -73,6 +73,6 @@ void sigbus(int signo);
 
 //pass.c
 char *genpasswd(const char *pw);
-int checkpasswd(const char *passwd, const char *test);
+int checkpasswd(char *pw_crypted, char *pw_try);
 
 #endif

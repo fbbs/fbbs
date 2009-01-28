@@ -1148,10 +1148,6 @@ int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
 }
 
-int checkpasswd(char *pw_crypted, char *pw_try) {
-	return !strcmp(crypt(pw_try, pw_crypted), pw_crypted);
-}
-
 int count_online(void) {
 	int i, total=0;
 	for(i=0; i<MAXACTIVE; i++) 

@@ -183,8 +183,6 @@ void do_report(const char* fname, const char* content);
 char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
 char *nohtml(char *s);
-// pass.c
-int checkpasswd(char *pw_crypted, char *pw_try);
 // main.c
 void SpecialID(const char* uid, char* host);
 
