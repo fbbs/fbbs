@@ -82,10 +82,10 @@ static int fillucache(const struct userec *uentp, int count)
 		if(uentp->userid[0] != '\0') {
 			key = uhashkey(uentp->userid, &a1, &a2);
 			if (uidshm->hash[a1][a2][key] == 0) {
-				// If the hash entry is empty, put 'usernumber' in it.
+				// If the hash entry is empty, put 'count' in it.
 				uidshm->hash[a1][a2][key] = count;
 			} else {
-				// Put 'usernumber' into the doubly linked list.
+				// Put 'count' into the doubly linked list.
 				int i = uidshm->hash[a1][a2][key];
 				while (uidshm->next[i - 1] != 0)
 					i = uidshm->next[i - 1];
@@ -379,6 +379,7 @@ int refresh_utmp(void)
 	time_t now;
 
 	resolve_utmp();
+	resolve_ucache();
 	now = time(NULL);
 	// Lock caches.
 	utmpfd = utmp_lock();
@@ -412,9 +413,8 @@ int refresh_utmp(void)
 		}
 	}
 	utmpshm->total_num = count;
-	// Count all users.
-	utmpshm->usersum = allusers();
-
+	// Get count of all users from ucache.
+	utmpshm->usersum = uidshm->number;
 	// Unlock caches.
 	ucache_unlock(ucachefd);
 	utmp_unlock(utmpfd);

@@ -141,11 +141,10 @@ struct one_key { /* Used to pass commands to the readmenu */
 
 #define USHM_SIZE       (MAXACTIVE + 150)
 struct UTMPFILE {
-	struct user_info uinfo[ USHM_SIZE ];
-	//    time_t		      uptime;
-	int usersum;
+	struct user_info uinfo[ USHM_SIZE ]; // Cache for online users.
+	int usersum; // Count of all users.
 	int max_login_num;
-	int total_num;
+	int total_num; // Count of online users.
 };
 
 struct BCACHE { //°æÃæµÄ»º³å?
