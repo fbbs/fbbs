@@ -177,8 +177,9 @@ int bbslogin_main(void)
 		int total;
 		time_t stay, recent, now, t;
 		if (!checkpasswd(user.passwd, pw)) {
-			sprintf(buf, "%-12.12s %s @%s\n", id, cn_Ctime(time(0)), fromhost);
-			sethomefile(fname, id, "logins.bad"); 
+			sprintf(buf, "%-12.12s %s @%s\n",
+					user.userid, cn_Ctime(time(NULL)), fromhost);
+			sethomefile(fname, user.userid, "logins.bad"); 
 			f_append(fname, buf);
 			f_append("logins.bad", buf);
 			http_fatal("√‹¬Î ‰»Î¥ÌŒÛ...");
