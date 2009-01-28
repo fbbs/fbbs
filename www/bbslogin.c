@@ -176,6 +176,7 @@ int bbslogin_main(void)
 	if (getuserec(id, &user) == 0)
 		http_fatal("经查证，无此 ID。");
 
+	user.numlogins++;
 	if (strcasecmp(id, "guest")) {
 		int total;
 		time_t stay, recent, now, t;
@@ -191,6 +192,10 @@ int bbslogin_main(void)
 			http_fatal("本帐号已停机。请到Notice版查询原因");
 
 		now = time(NULL);
+		// Do not count frequent logins.
+		if (now - user.lastlogin < 20 * 60
+				&& user.numlogins >= 100)
+				user.numlogins--;
 		if (total > 1) {
 			recent = user.lastlogout;
 			if (user.lastlogin > recent)
@@ -204,7 +209,6 @@ int bbslogin_main(void)
 		t = user.lastlogin;
 		user.lastlogin = now;
 		user.stay += stay;
-		save_user_data(&user);
 #ifdef CHECK_FREQUENTLOGIN
 		if (!HAS_PERM(PERM_SYSOPS)
 				&& abs(t - time(NULL)) < 10) {
@@ -212,7 +216,6 @@ int bbslogin_main(void)
 			http_fatal("登录过于频繁，请稍候再来。");
 		}
 #endif
-		user.numlogins++;
 		strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
 		save_user_data(&user);
 		currentuser = user;
