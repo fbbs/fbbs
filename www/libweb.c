@@ -771,7 +771,7 @@ int user_init(struct userec *x, struct user_info **y) {
 	if((*y)->utmpkey != key) return 0;
 	if((*y)->active==0) return 0;
 	if((*y)->userid[0]==0) return 0;
-	if((*y)->mode!=10001) return 0;
+	if((*y)->mode!=WWW) return 0;
 	if(!strcasecmp((*y)->userid, "new") || !strcasecmp((*y)->userid, "guest")) return 0;
 	if(getuserec((*y)->userid, &user)== 0)
 		return 0;

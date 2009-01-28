@@ -49,14 +49,14 @@ int main() {
 			if (!strncmp(user[i].from,"10.102",6)) cEast++;
 			if (!strncmp(user[i].from,"192.168",7)) cMedic++;
 			if (!strncmp(user[i].from,"10.13",5) || !strncmp(user[i].from,"10.14",5)) cZhangJ++; //add by Danielfree 06.1.16
-			if (user[i].mode==10001) mcInWeb++;
+			if (user[i].mode==WWW) mcInWeb++;
 			else mcInTelnet ++;
 		} else {
 			cOutFudan++;
-			if (user[i].mode==10001) mcOutWeb++;
+			if (user[i].mode==WWW) mcOutWeb++;
 			else 	mcOutTelnet++;
 		}
-		if (user[i].mode==10001) mWeb++;
+		if (user[i].mode==WWW) mWeb++;
 		else mTelnet ++;
 	}
 	printf("<table border=0 width=100%%>\n");

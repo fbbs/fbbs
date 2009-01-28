@@ -128,7 +128,7 @@ char *ModeType(int mode) {
 			return "½äÍøÖĞ";
 			/*2003.04.22 stephen add end*/
 			/* added by roly */
-		case 10001:
+		case WWW:
 			return "WWWä¯ÀÀ";
 		case 10002:
 			return "JABBER";

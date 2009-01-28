@@ -311,7 +311,7 @@ int kick_user( struct user_info *userinfo )
       }
       return 0;
    }
-     if (uin.mode == 10001 ) {
+     if (uin.mode == WWW ) {
 	 kill (uin.pid,SIGABRT);
      }
      else {

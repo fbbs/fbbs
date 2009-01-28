@@ -80,76 +80,72 @@ static int wwwagent(void)
 
 static int wwwlogin(struct userec *user) {
 	FILE *fp;
-	char buf[80];
-	int pid, n, tmp;
+	char buf[STRLEN];
+	int n, tmp;
 	struct user_info *u;
+
 	if(!(currentuser.userlevel & PERM_REGISTER)) { 
-		char file[256]; 
-		sprintf(file, "home/%c/%s/register", 
-				toupper(currentuser.userid[0]), currentuser.userid); 
-		if(file_exist(file)) { 
+		char file[HOMELEN]; 
+		sethomefile(file, currentuser.userid, "register");
+		if(dashf(file)) { 
 			currentuser.userlevel |=PERM_DEFAULT; 
-			save_user_data(&currentuser); 
-		} 
-	}  
+			save_user_data(&currentuser);
+		}
+	}
+
 	fp=fopen("tmp/.UTMP.lock", "a");
 	FLOCK(fileno(fp), LOCK_EX);
-	for(n=0; n<MAXACTIVE; n++) {
+	for(n = 0; n < MAXACTIVE; n++) {
 		if(shm_utmp->uinfo[n].active == 0) {
-			u=&(shm_utmp->uinfo[n]);
-			u_info=u;
-			pid=fork();
-			if(pid<0) http_fatal("can't fork");
-			if(pid==0) {
-				wwwagent();
-				exit(0);
-			}
+			u = &(shm_utmp->uinfo[n]);
+			u_info = u;
 			bzero(u, sizeof(struct user_info));
-			u->active=1;
+			u->active = 1;
 			u->uid = searchuser(user->userid);
-			u->pid=pid;
-			u->mode=10001;
-			if(user_perm(&currentuser, PERM_LOGINCLOAK) &&
-					(currentuser.flags[0] & CLOAK_FLAG))
+			u->pid = getpid();
+			u->mode = WWW;
+			if (HAS_PERM(PERM_LOGINCLOAK)
+					&& (currentuser.flags[0] & CLOAK_FLAG))
 				u->invisible = YEA;
 			u->pager = 0;
-			if(currentuser.userdefine & DEF_FRIENDCALL)
-				u->pager|=FRIEND_PAGER;
-			if(currentuser.flags[0] & PAGER_FLAG) {
-				u->pager|=ALL_PAGER;
-				u->pager|=FRIEND_PAGER;
+			if (DEFINE(DEF_FRIENDCALL))
+				u->pager |= FRIEND_PAGER;
+			if (DEFINE(PAGER_FLAG)) {
+				u->pager |= ALL_PAGER;
+				u->pager |= FRIEND_PAGER;
 			}
-			if(currentuser.userdefine & DEF_FRIENDMSG)
-				u->pager|=FRIENDMSG_PAGER;
-			if(currentuser.userdefine & DEF_ALLMSG) {
-				u->pager|=ALLMSG_PAGER;
-				u->pager|=FRIENDMSG_PAGER;
+			if (DEFINE(DEF_FRIENDMSG))
+				u->pager |= FRIENDMSG_PAGER;
+			if (DEFINE(DEF_ALLMSG)) {
+				u->pager |= ALLMSG_PAGER;
+				u->pager |= FRIENDMSG_PAGER;
 			}
 
 			SpecialID(u->userid, fromhost);
-
-			strlcpy(u->from, fromhost, 24);
+			strlcpy(u->from, fromhost, 24);//???
 #ifdef SPARC
-			*(int*)(u->from+30)=time(0);
+			*(int*)(u->from + 30)=time(NULL);
 #else
-			*(int*)(u->from+32)=time(0);
+			*(int*)(u->from + 32)=time(NULL);
 #endif
-			u->from[22] = DEFINE(DEF_NOTHIDEIP)?'S':'H';
+			u->from[22] = DEFINE(DEF_NOTHIDEIP) ? 'S' : 'H';
 
-			u->idle_time=time(0);
-			strcpy(u->username, user->username);
-			strcpy(u->userid, user->userid);
-			tmp=rand()%100000000;
-			u->utmpkey=tmp;
-			sprintf(buf, "%d", n+1);
+			u->idle_time = time(NULL);
+			strlcpy(u->username, user->username, sizeof(u->username));
+			strlcpy(u->userid, user->userid, sizeof(u->userid));
+
+			tmp = rand() % 100000000;
+			u->utmpkey = tmp;
+			sprintf(buf, "%d", n + 1);
 			setcookie("utmpnum", buf);
 			sprintf(buf, "%d", tmp);
 			setcookie("utmpkey", buf);
 			setcookie("utmpuserid", currentuser.userid);
 			set_my_cookie();
+
 			FLOCK(fileno(fp), LOCK_UN);
 			fclose(fp);
-			shm_ucache->status[u->uid-1]++;
+			shm_ucache->status[u->uid - 1]++;
 			return 0;
 		}
 	}

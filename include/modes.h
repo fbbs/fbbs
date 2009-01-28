@@ -67,7 +67,7 @@
 #define EDIT            44
 #define OFFLINE         45
 #define EDITANN         46
-#define WWW             47
+#define WWW             10001
 #define LOOKMSGS        49
 #define WFRIEND         50
 #define SYSINFO	        51
