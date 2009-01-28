@@ -436,7 +436,7 @@ void setuserid(int num, char *userid);
 void getuserid(char *userid, int uid, size_t len);
 int searchuser(const char *userid);
 int getuserec(const char *userid, struct userec *u);
-int getuser(char * userid);
+int getuser(const char *userid);
 int getuserbyuid(struct userec *u, int uid);
 char *u_namearray(char buf[][IDLEN + 1], int *pnum, char *tag);
 void resolve_utmp(void);

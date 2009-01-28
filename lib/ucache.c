@@ -321,12 +321,14 @@ int getuserec(const char *userid, struct userec *u)
 	return uid;
 }
 
-int getuser(char * userid)
+// Similar to 'getuserec',
+// but stores result in global variable 'lookupuser'.
+int getuser(const char *userid)
 {
 	int uid = searchuser(userid);
 	if (uid == 0)
 		return 0;
-	memcpy(&lookupuser, &(uidshm->passwd[uid-1]), sizeof(lookupuser));
+	lookupuser = uidshm->passwd[uid - 1];
 	return uid;
 }
 
