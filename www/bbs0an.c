@@ -104,7 +104,7 @@ int main() {
 		
 		printf("<tr class=%s><td align=right>%d</td>", ((cc++)%2)?"pt9dc":"pt9lc", index);
 		sprintf(buf, "0Announce%s%s", path, file[i]);
-		if(!file_exist(buf)) {
+		if(!dashf(buf)) {
 			printf("<td width=100%%><img src=/images/types/error.gif border=0 align=absmiddle>  %s", nohtml(name[i]));
 		} else if(file_isdir(buf)) {
 			printf("<td width=100%%><img src=/images/types/folder.gif border=0 align=absmiddle> <a href=bbs0an?path=%s%s>%s</a>", path, file[i], nohtml(name[i]));
@@ -138,7 +138,7 @@ int get_count(char *path) {
 	char buf[256];
 	int counts=0;
 	sprintf(buf, "0Announce%s/.counts", path);
-	if(!file_exist(buf)) {
+	if(!dashf(buf)) {
 		fp=fopen(buf, "w+");
 	} else {
 		fp=fopen(buf, "r+");

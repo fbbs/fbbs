@@ -848,7 +848,8 @@ int post_mail(char *userid, char *title, char *file, char *id, char *nickname, c
 	for(i=0; i<100; i++) {
 		t=time(0)+i;
 		sprintf(buf3, "mail/%c/%s/M.%d.A", toupper(userid[0]), userid, i+time(0));
-		if(!file_exist(buf3)) break;
+		if(!dashf(buf3))
+			break;
 	}
 	if(i>=99) return -1;
 	sprintf(header.filename, "M.%d.A", t);
@@ -929,7 +930,8 @@ int post_article(char *board, char *title, char *file, char *id, char *nickname,
 	for(i=0; i<100; i++) {
 		t=time(0)+i;
 		sprintf(buf3, "boards/%s/M.%d.A", board2, t);
-		if(!file_exist(buf3)) break;
+		if(!dashf(buf3))
+			break;
 	}
 	if(i>=99) return -1;
 	sprintf(header.filename, "M.%d.A", t);
@@ -1697,7 +1699,7 @@ void showrecommend(char *board, int showall, int showborder)
 		if (!strncmp(id,"OBOARDS",7) && !(currentuser.userlevel & PERM_OBOARDS)) continue;
 
 		sprintf(buf, "0Announce%s/recommend%s", path, file[i]);
-		if(!file_exist(buf))  
+		if(!dashf(buf))  
 			continue;
 		else if(file_isdir(buf))
 		{

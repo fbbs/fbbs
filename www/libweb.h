@@ -48,7 +48,6 @@
 #define file_size(x) f_stat(x)->st_size
 #define file_time(x) f_stat(x)->st_mtime
 #define file_rtime(x) f_stat(x)->st_atime
-#define file_exist(x) (file_time(x)!=0)
 #define file_isdir(x) ((f_stat(x)->st_mode & S_IFDIR)!=0)
 #define file_isfile(x) ((f_stat(x)->st_mode & S_IFREG)!=0)
 

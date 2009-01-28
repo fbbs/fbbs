@@ -88,7 +88,8 @@ int do_fwd(struct fileheader *x, char *board, char *target) {
 	FILE *fp, *fp2;
 	char title[512], buf[512], path[200], i;
 	sprintf(path, "boards/%s/%s", board, x->filename);
-	if(!file_exist(path)) http_fatal("文件内容已丢失, 无法转寄");
+	if(!dashf(path))
+		http_fatal("文件内容已丢失, 无法转寄");
 	sprintf(title, "[转寄] %s", x->title);
 	title[60]=0;
 	post_mail(target, title, path, currentuser.userid, currentuser.username, fromhost, -1);

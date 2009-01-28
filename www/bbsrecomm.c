@@ -60,7 +60,7 @@ void showrecomm(char *board) {
 		
 		printf("<tr class=%s ><td>%d", ((cc++)%2)?"pt9dc":"pt9lc", index);
 		sprintf(buf, "0Announce%s%s", path, file[i]);
-		if(!file_exist(buf))  continue;
+		if(!dashf(buf))  continue;
 		} else if(file_isdir(buf)) {
 			printf("[Ŀ¼] <a href=bbs0an?path=%s%s>%s</a><br>", path, file[i], nohtml(name[i]));
 		} else {

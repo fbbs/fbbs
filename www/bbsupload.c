@@ -87,7 +87,7 @@ void addtodir(char *board, char *tmpfile)
 	sprintf(dir,"%s/upload/%s/.DIR",BBSHOME,board);
 	if(!has_post_perm(&currentuser, board)) 
 		http_fatal("错误的讨论区或无权上传文件至本讨论区");
-	if(!file_exist(file)) 
+	if(!dashf(file)) 
 		http_fatal("错误的文件名");
 	x.id=file_size(file);
 	if(x.id>maxlen(board)) 
