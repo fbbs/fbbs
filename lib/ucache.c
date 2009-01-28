@@ -40,9 +40,9 @@ int dosearchuser(const char *userid, struct userec *user, int *unum)
 // in uppercase.
 // a1 is 0~25 (A-Z or a-z respectively) for the first letter.
 // a2 is 0~25 (A-Z or a-z respectively) for the second letter.
-int uhashkey(const char *userid, char *a1, char *a2)
+int uhashkey(const char *userid, int *a1, int *a2)
 {
-	char *c = userid;
+	const char *c = userid;
 	int key = 0;
 
 	if (*c >= 'a' && *c <= 'z') {
@@ -74,7 +74,7 @@ int uhashkey(const char *userid, char *a1, char *a2)
 // Find a proper entry of user hash.
 static int fillucache(const struct userec *uentp, int count)
 {
-	char a1, a2;
+	int a1, a2;
 	int key;
 
 	if (count < MAXUSERS) {
@@ -100,7 +100,7 @@ static int fillucache(const struct userec *uentp, int count)
 /* hash É¾³ı */
 int del_uidshm(int num, char *userid)
 {
-	char a1, a2;
+	int a1, a2;
 	int key;
 	int i;
 
@@ -164,7 +164,7 @@ static void shm_unlock(int fd)
 // Returns 0 on success, -1 on error.
 int load_ucache(void)
 {
-	int ftime, fd, iscreate = 0, passwdfd, i;
+	int fd, iscreate = 0, passwdfd, i;
 
 	// Lock cache.
 	fd = ucache_lock();
@@ -203,7 +203,7 @@ int load_ucache(void)
 	for (i = 0; i < MAXUSERS; i++)
 		count = fillucache(&(uidshm->passwd[i]), count);
 	uidshm->number = count;
-	uidshm->uptime = ftime;
+	uidshm->uptime = time(NULL);
 
 	// Unlock cache.
 	ucache_unlock(fd);
@@ -247,7 +247,7 @@ void setuserid(int num, char *userid)
 		strlcpy(uidshm->userid[num - 1], userid, IDLEN + 1);
 		/* hash Ìî³ä */
 		if (strcmp(userid, "new") ) {
-			char a1, a2;
+			int a1, a2;
 			int key;
 
 			key = uhashkey(userid, &a1, &a2);
@@ -294,7 +294,7 @@ void getuserid(char *userid, int uid, size_t len)
 int searchuser(const char *userid)
 {
 	register int i;
-	char a1, a2;
+	int a1, a2;
 	int key;
 
 	resolve_ucache();
