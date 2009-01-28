@@ -513,65 +513,6 @@ int search_ulistn(struct user_info *uentp, int (*fptr)(), int farg, int unum)
 	return 0;
 }
 
-int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, int doTalk)
-{
-	int i, num;
-	char col[14];
-
-	resolve_utmp();
-	num = 0;
-	for (i = 0; i < USHM_SIZE; i++) {
-		*uentp = utmpshm->uinfo[i];
-		if ((*fptr)(farg, uentp)) {
-			if (!uentp->active || !uentp->pid || isreject(uentp)) {
-				continue;
-			}
-			if ( (uentp->invisible==0) ||(uentp->uid == usernum)
-					||(uentp->invisible==1) &&HAS_PERM(PERM_SEECLOAK) ) {
-				num++;
-			} else {
-				continue;
-			}
-			if (!show)
-				continue;
-			if (num == 1)
-				prints("Ä¿Ç° %s ×´Ì¬ÈçÏÂ£º\n", uentp->userid);
-			if (uentp->invisible)
-				strcpy(col, "[Òş][1;36m");
-			else if (uentp->mode == POSTING || uentp->mode == MARKET)
-				strcpy(col, "[1;32m");
-			else if (uentp->mode == FIVE || uentp->mode == BBSNET)
-				strcpy(col, "[1;33m");
-			else
-				strcpy(col, "[1m");
-			if (doTalk) {
-				prints(
-						"(%d) ×´Ì¬£º%s%-10s[m£¬À´×Ô£º%.20s\n",
-						num,
-						col,
-						ModeType(uentp->mode),
-#ifdef SHOWMETOFRIEND		    
-						/* The following line is modified by Amigo 2002.04.02. Let sysop view fromhost at »·¹ËËÄ·½. */
-						((uentp->from[22] != 'H')||hisfriend(uentp)
-								||HAS_PERM(PERM_USER))?uentp->from:"......"
-						);
-#else
-						/* The following line is modified by Amigo 2002.04.02. Let sysop view fromhost at »·¹ËËÄ·½. */
-						((uentp->from[22] != 'H')|| HAS_PERM(PERM_USER)) ? uentp->from
-								: "......");
-#endif
-			} else {
-				prints("%s%-10s[m ", col, ModeType(uentp->mode));
-				if ((num) % 5 == 0)
-					outc('\n');
-			}
-		}
-	}
-	if (show)
-		outc('\n');
-	return num;
-}
-
 //¸ü¸ÄµÚuent¸öÓÃ»§µÄĞÅÏ¢,½«ÆäÉèÖÃÎªuentp
 void update_ulist(struct user_info *uentp, int uent)
 {

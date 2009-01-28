@@ -447,7 +447,6 @@ int getnewutmpent(struct user_info *up);
 int apply_ulist(int (*fptr)());
 int search_ulist(struct user_info *uentp, int (*fptr)(), int farg);
 int search_ulistn(struct user_info *uentp, int (*fptr)(), int farg, int unum);
-int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, int doTalk);
 void update_ulist(struct user_info *uentp, int uent);
 void update_utmp(void);
 int who_callme(struct user_info *uentp, int (*fptr)(), int farg, int me);
