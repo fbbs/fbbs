@@ -795,15 +795,6 @@ struct userec *uentp;
 	return 0;
 }
 
-int allusers() {
-	countusers(NULL);
-	if (apply_record(PASSFILE, countusers, sizeof(struct userec), 0, 0, 0)
-			== -1) {
-		return 0;
-	}
-	return countusers(NULL);
-}
-
 /*******************Modify following two functions to support Type 2 mailall by Ashinmarch 2008.3.30*******************/
 /*******************详细说明见mail.c的mailtoall函数********************************************************************/
 static int mailto(void *uentpv, int index, void *args) {

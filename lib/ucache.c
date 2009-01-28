@@ -363,6 +363,13 @@ void resolve_utmp(void)
 	}
 }
 
+// Returns (non-realtime) count of all users.
+int allusers(void)
+{
+	resolve_ucache();
+	return uidshm->number;
+}
+
 // Returns (non-realtime) count of online users.
 int get_online(void)
 {
