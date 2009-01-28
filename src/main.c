@@ -15,7 +15,7 @@
 
 int RMSG = YEA;
 int msg_num = 0;
-int count_friends = 0, count_users = 0;
+int count_friends = 0;
 int iscolor = 1;
 int mailXX = 0; // If mail quota is exceeded.
 int numofsig = 0;

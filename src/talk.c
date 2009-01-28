@@ -676,7 +676,6 @@ int num_alcounter() {
 	static time_t last=0;
 	register int i;
 	time_t now = time(0);
-	count_users = get_online();
 	if (last+10 > now)
 		return;
 	last=now;

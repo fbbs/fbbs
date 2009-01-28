@@ -276,7 +276,7 @@ extern struct user_info uinfo; /* Ditto above...utmp entry is stored here
  necessary (pretty darn often). */
 extern int usernum; /* Index into passwds file user record */
 extern int utmpent; /* Index into this users utmp file entry */
-extern int count_friends, count_users; /*Add by SmallPig for count users and friends*/
+extern int count_friends; /*Add by SmallPig for count users and friends*/
 
 extern int t_lines, t_columns; /* Screen size / width */
 extern struct userec lookupuser; /* Used when searching for other user info */

@@ -721,7 +721,7 @@ void update_endline(void)
 			"[\033[36m%4d\033[33m»À/\033[36m%3d\033[33m”—]"
 			"[\033[36m%c%c%c%c%c%c\033[33m]"
 			"’ ∫≈%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
-			datestring, count_users, count_friends,
+			datestring, get_online(), count_friends,
 			(uinfo.pager & ALL_PAGER) ? 'P' : 'p',
 			(uinfo.pager & FRIEND_PAGER) ? 'O' : 'o',
 			(uinfo.pager & ALLMSG_PAGER) ? 'M' : 'm',

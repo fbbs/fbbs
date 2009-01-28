@@ -443,8 +443,8 @@ int getnewutmpent(struct user_info *up)
 		return -1;
 	}
 
-	if (utmpshm->max_login_num < count_users)
-		utmpshm->max_login_num = count_users;
+	if (utmpshm->max_login_num < get_online())
+		utmpshm->max_login_num = get_online();
 	for (i = 0; i < USHM_SIZE; i++) {
 		uentp = &(utmpshm->uinfo[i]);
 		if (!uentp->active || !uentp->pid)
