@@ -69,7 +69,7 @@ int uhashkey(const char *userid, char *a1, char *a2)
 
 // Put userid(in struct uentp) into user cache.
 // Find a proper entry of user hash.
-static int fillucache(struct userec *uentp, int count)
+static int fillucache(const struct userec *uentp, int count)
 {
 	char a1, a2;
 	int key;
@@ -134,7 +134,7 @@ int del_uidshm(int num, char *userid)
 }
 /* endof hashÉ¾³ı */
 
-static int shm_lock(char *lockname)
+static int shm_lock(const char *lockname)
 {
 	int lockfd;
 
@@ -288,7 +288,7 @@ void getuserid(char *userid, int uid, size_t len)
 }
 
 // Returns the place of 'userid' in user cache, 0 if not found.
-int searchuser(char *userid)
+int searchuser(const char *userid)
 {
 	register int i;
 	char a1, a2;
@@ -307,12 +307,14 @@ int searchuser(char *userid)
 	return 0;
 }
 
-int getuserec(char *userid, struct userec *u)
+// Gets struct userec in user cache according to 'userid'.
+// Returns uid.
+int getuserec(const char *userid, struct userec *u)
 {
 	int uid = searchuser(userid);
 	if (uid == 0)
 		return 0;
-	memcpy(u, &(uidshm->passwd[uid-1]), sizeof(struct userec));
+	*u = uidshm->passwd[uid - 1];
 	return uid;
 }
 
