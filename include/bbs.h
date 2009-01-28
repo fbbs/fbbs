@@ -438,7 +438,6 @@ int searchuser(const char *userid);
 int getuserec(const char *userid, struct userec *u);
 int getuser(const char *userid);
 int getuserbyuid(struct userec *u, int uid);
-char *u_namearray(char buf[][IDLEN + 1], int *pnum, char *tag);
 void resolve_utmp(void);
 int get_total(void);
 int get_status(int uid);

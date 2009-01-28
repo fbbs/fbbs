@@ -340,35 +340,6 @@ int getuserbyuid(struct userec *u, int uid)
 	return uid;
 }
 
-char *u_namearray(char buf[][IDLEN + 1], int *pnum, char *tag)
-{
-	register struct UCACHE *reg_ushm = uidshm;
-	register char *ptr, tmp;
-	register int n, total;
-	char tagbuf[STRLEN];
-	int ch, num = 0;
-	resolve_ucache();
-	if (*tag == '\0') {
-		*pnum = reg_ushm->number;
-		return reg_ushm->userid[0];
-	}
-	for (n = 0; tag[n] != '\0'; n++) {
-		tagbuf[n] = chartoupper(tag[n]);
-	}
-	tagbuf[n] = '\0';
-	ch = tagbuf[0];
-	total = reg_ushm->number;
-	for (n = 0; n < total; n++) {
-		ptr = reg_ushm->userid[n];
-		tmp = *ptr;
-		if (tmp == ch || tmp == ch - 'A' + 'a')
-		if (chkstr(tag, tagbuf, ptr))
-		strcpy(buf[num++], ptr);
-	}
-	*pnum = num;
-	return buf[0];
-}
-
 //映射用户数据到内存
 void resolve_utmp(void)
 {
