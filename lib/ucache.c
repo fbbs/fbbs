@@ -8,9 +8,9 @@
 
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)
 
-// The starting address of cache of online users.
+// The starting address of cache for online users.
 struct UTMPFILE *utmpshm = NULL;
-// The starting address of cache of all users.
+// The starting address of cache for all users.
 struct UCACHE *uidshm = NULL;
 // A global variable to hold result when searching users.
 struct userec lookupuser;
@@ -70,7 +70,7 @@ int uhashkey(const char *userid, int *a1, int *a2)
 	return key % 256;
 }
 
-// Put userid(in struct uentp) into cache of all users.
+// Put userid(in struct uentp) into cache for all users.
 // Find a proper entry of user hash.
 static int fillucache(const struct userec *uentp, int count)
 {
@@ -137,6 +137,8 @@ int del_uidshm(int num, char *userid)
 }
 /* endof hashÉ¾³ı */
 
+// Places an exclusive lock on file 'lockname'.
+// Returns file descriptor if OK, -1 on error.
 static int shm_lock(const char *lockname)
 {
 	int lockfd;
@@ -145,10 +147,12 @@ static int shm_lock(const char *lockname)
 	if (lockfd < 0) {
 		return -1;
 	}
-	flock(lockfd, LOCK_EX);
+	if (flock(lockfd, LOCK_EX) == -1)
+		return -1;
 	return lockfd;
 }
 
+// Removes an existing lock held by this process on file descriptor 'fd'.
 static void shm_unlock(int fd)
 {
 	flock(fd, LOCK_UN);
@@ -160,7 +164,7 @@ static void shm_unlock(int fd)
 #define ucache_lock() shm_lock("tmp/.UCACHE.lock")
 #define utmp_lock() shm_lock("tmp/.UTMP.lock")
 
-// Loads PASSFILE into cache of all users.
+// Loads PASSFILE into cache for all users.
 // Returns 0 on success, -1 on error.
 int load_ucache(void)
 {
@@ -216,7 +220,7 @@ int substitut_record(char *filename, char *rptr, int size, int id)
 	memcpy(&(uidshm->passwd[id-1]), rptr, size);
 }
 
-// Flushes cache of all users to PASSFILE.
+// Flushes cache for all users to PASSFILE.
 int flush_ucache(void)
 {
 	return substitute_record(PASSFILE, uidshm->passwd,
@@ -290,7 +294,7 @@ void getuserid(char *userid, int uid, size_t len)
 	strlcpy(userid, uidshm->userid[uid - 1], len);
 }
 
-// Returns the place of 'userid' in cache of all users, 0 if not found.
+// Returns the place of 'userid' in cache for all users, 0 if not found.
 int searchuser(const char *userid)
 {
 	register int i;
@@ -310,7 +314,7 @@ int searchuser(const char *userid)
 	return 0;
 }
 
-// Gets struct userec in cache of all users according to 'userid'.
+// Gets struct userec in cache for all users according to 'userid'.
 // struct userec is stored in *'u'. Returns uid.
 int getuserec(const char *userid, struct userec *u)
 {
@@ -365,39 +369,54 @@ int get_total(void)
 	return utmpshm->total_num;
 }
 
+// Refreshes utmp(cache for online users.)
 void refresh_utmp(void)
 {
 	int utmpfd, ucachefd;
 	struct user_info *uentp;
 	register int n;
 	time_t now;
+
 	resolve_utmp();
+	now = time(NULL);
+	// Lock caches.
+	utmpfd = utmp_lock();
+	if (utmpfd == -1)
+		return -1;
+	ucachefd = ucache_lock();
+	if (ucachefd == -1)
+		return -1;
 
-	now = time(0);
-	utmpfd=utmp_lock();
-	ucachefd=ucache_lock();
-
-	memset(uidshm->status, 0, sizeof(int)*MAXUSERS);
+	memset(uidshm->status, 0, sizeof(uidshm->status));
 	for (n = 0; n < USHM_SIZE; n++) {
 		uentp = &(utmpshm->uinfo[n]);
 		if (uentp->active && uentp->pid) {
+			 // See if pid exists.
 			if (kill(uentp->pid, 0) == -1) {
 				memset(uentp, 0, sizeof(struct user_info));
 				continue;
-			} else if (uentp->mode!=BBSNET && now - uentp->idle_time > 30
-					*60) {
-				kill(uentp->pid, SIGHUP);
-				memset(uentp, 0, sizeof(struct user_info));
 			} else {
-				uidshm->status[uentp->uid-1]++;
+				// Kick idle users out.
+				if (uentp->mode != BBSNET
+						&& now - uentp->idle_time > IDLE_TIMEOUT) {
+					kill(uentp->pid, SIGHUP);
+					memset(uentp, 0, sizeof(struct user_info));
+				} else {
+					// Increase status.
+					uidshm->status[uentp->uid - 1]++;
+				}
 			}
 		}
 	}
+	// Count all users.
 	utmpshm->usersum = allusers();
 
+	// Unlock caches.
 	ucache_unlock(ucachefd);
 	utmp_unlock(utmpfd);
-	utmpshm->total_num=num_active_users();
+
+	// Count online users.
+	utmpshm->total_num = num_active_users();
 }
 
 int getnewutmpent(struct user_info *up)
