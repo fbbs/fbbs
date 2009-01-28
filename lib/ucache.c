@@ -8,8 +8,11 @@
 
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)
 
+// The starting address of cache of online users.
 struct UTMPFILE *utmpshm = NULL;
+// The starting address of cache of all users.
 struct UCACHE *uidshm = NULL;
+// A global variable to hold result when searching users.
 struct userec lookupuser;
 
 int cmpuids(void *uid, void *up)
@@ -67,7 +70,7 @@ int uhashkey(const char *userid, char *a1, char *a2)
 	return key % 256;
 }
 
-// Put userid(in struct uentp) into user cache.
+// Put userid(in struct uentp) into cache of all users.
 // Find a proper entry of user hash.
 static int fillucache(const struct userec *uentp, int count)
 {
@@ -157,13 +160,13 @@ static void shm_unlock(int fd)
 #define ucache_lock() shm_lock("tmp/.UCACHE.lock")
 #define utmp_lock() shm_lock("tmp/.UTMP.lock")
 
-// Loads PASSFILE into user cache.
+// Loads PASSFILE into cache of all users.
 // Returns 0 on success, -1 on error.
 int load_ucache(void)
 {
 	int ftime, fd, iscreate = 0, passwdfd, i;
 
-	// Get user cache lock.
+	// Lock cache.
 	fd = ucache_lock();
 	if (fd == -1) {
 		return -1;
@@ -195,14 +198,14 @@ int load_ucache(void)
 	memset(uidshm->next, 0, sizeof(uidshm->next));
 	memset(uidshm->prev, 0, sizeof(uidshm->prev));
 
-	// Fill user cache.
+	// Fill cache.
 	int count = 0;
 	for (i = 0; i < MAXUSERS; i++)
 		count = fillucache(&(uidshm->passwd[i]), count);
 	uidshm->number = count;
 	uidshm->uptime = ftime;
 
-	// Unlock user cache.
+	// Unlock cache.
 	ucache_unlock(fd);
 
 	return 0;
@@ -213,7 +216,7 @@ int substitut_record(char *filename, char *rptr, int size, int id)
 	memcpy(&(uidshm->passwd[id-1]), rptr, size);
 }
 
-// Flushes user cache to PASSFILE.
+// Flushes cache of all users to PASSFILE.
 int flush_ucache(void)
 {
 	return substitute_record(PASSFILE, uidshm->passwd,
@@ -287,7 +290,7 @@ void getuserid(char *userid, int uid, size_t len)
 	strlcpy(userid, uidshm->userid[uid - 1], len);
 }
 
-// Returns the place of 'userid' in user cache, 0 if not found.
+// Returns the place of 'userid' in cache of all users, 0 if not found.
 int searchuser(const char *userid)
 {
 	register int i;
@@ -307,8 +310,8 @@ int searchuser(const char *userid)
 	return 0;
 }
 
-// Gets struct userec in user cache according to 'userid'.
-// Returns uid.
+// Gets struct userec in cache of all users according to 'userid'.
+// struct userec is stored in *'u'. Returns uid.
 int getuserec(const char *userid, struct userec *u)
 {
 	int uid = searchuser(userid);
