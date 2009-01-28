@@ -426,6 +426,7 @@ int refresh_utmp(void)
 	// Unlock caches.
 	ucache_unlock(ucachefd);
 	utmp_unlock(utmpfd);
+	return count;
 }
 
 int getnewutmpent(struct user_info *up)
