@@ -75,7 +75,7 @@ static int fillucache(struct userec *uentp, int count)
 	int key;
 
 	if (count < MAXUSERS) {
-		strlcpy(uidshm->userid[count++], uentp->userid, sizeof(uidshm->userid[0]);
+		strlcpy(uidshm->userid[count++], uentp->userid, sizeof(uidshm->userid[0]));
 		if(uentp->userid[0] != '\0') {
 			key = uhashkey(uentp->userid, &a1, &a2);
 			if (uidshm->hash[a1][a2][key] == 0) {
@@ -287,33 +287,24 @@ void getuserid(char *userid, int uid, size_t len)
 	strlcpy(userid, uidshm->userid[uid - 1], len);
 }
 
-//使用hash函数来搜索用户
-//		返回userid在共享内存中的位置
+// Returns the place of 'userid' in user cache, 0 if not found.
 int searchuser(char *userid)
 {
 	register int i;
 	char a1, a2;
 	int key;
+
 	resolve_ucache();
-	if (0) { //不执行此句
-		for (i = 0; i < uidshm->number; i++)
-			//低效的线性搜索,可以考虑提高效率
-			if (!strncasecmp(userid, uidshm->userid[i], IDLEN + 1))
-				return i + 1;
-		return 0;
-	} else {
-		/* use hash */
-		key = uhashkey(userid, &a1, &a2);
-		i = uidshm->hash[a1][a2][key];
-		while (i) {
-			if (!strncasecmp(userid, uidshm->userid[i-1], IDLEN + 1)) {
-				return i;
-			}
-			i = uidshm->next[i-1];
+	key = uhashkey(userid, &a1, &a2);
+	i = uidshm->hash[a1][a2][key];
+	while (i) {
+		if (!strncasecmp(userid, uidshm->userid[i - 1],
+				sizeof(uidshm->userid[0]))) {
+			return i;
 		}
-		return 0;
-		/* endof new */
+		i = uidshm->next[i - 1];
 	}
+	return 0;
 }
 
 int getuserec(char *userid, struct userec *u)
