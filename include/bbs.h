@@ -439,7 +439,7 @@ int getuserec(const char *userid, struct userec *u);
 int getuser(const char *userid);
 int getuserbyuid(struct userec *u, int uid);
 void resolve_utmp(void);
-int get_total(void);
+int get_online(void);
 int get_status(int uid);
 int refresh_utmp(void);
 int getnewutmpent(struct user_info *up);

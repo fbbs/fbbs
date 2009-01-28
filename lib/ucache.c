@@ -363,7 +363,8 @@ void resolve_utmp(void)
 	}
 }
 
-int get_total(void)
+// Returns (non-realtime) count of online users.
+int get_online(void)
 {
 	resolve_utmp();
 	return utmpshm->total_num;
