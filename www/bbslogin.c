@@ -44,8 +44,9 @@ static void abort_program(int notused)
 		shm_ucache->status[u_info->uid-1]--;
 		bzero(u_info, sizeof(struct user_info)); 
 	} 
-	x=getuser(currentuser.userid); 
-	if(x) { 
+	
+	if(getuser(currentuser.userid)) {
+		x = &lookupuser;
 		time_t now=time(0);
 		time_t recent;
 		recent=loginstart;
@@ -172,10 +173,10 @@ int bbslogin_main(void)
 				currentuser.userid);
 	}
 
-	user = getuser(id);
-	if (user == NULL)
+	if (getuser(id) == 0)
 		http_fatal("经查证，无此 ID。");
 
+	user = &lookupuser;
 	if(strcasecmp(id, "guest")) {
 		int total;
 		time_t stay, recent, now, t;

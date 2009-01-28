@@ -101,10 +101,9 @@ mailnum_under_limit(char *userid)
  */
 int mailsize_under_limit(char *userid)
 {
-	struct userec *userrec1;
-	userrec1 = getuser(userid);
-
-	if(2*getmailboxsize(userrec1->userlevel)>getmailsize(userid))
+	struct userec user;
+	getuserec(userid, &user);
+	if(2*getmailboxsize(user.userlevel)>getmailsize(userid))
 		return 1;
 	return 0;
 }
@@ -759,7 +758,7 @@ int shm_init(void) {
 }
 
 int user_init(struct userec *x, struct user_info **y) {
-	struct userec *x2;
+	struct userec user;
 	char id[20], num[20];
 	int i, key;
 	strlcpy(id, getparm("utmpuserid"), 13);
@@ -774,10 +773,11 @@ int user_init(struct userec *x, struct user_info **y) {
 	if((*y)->userid[0]==0) return 0;
 	if((*y)->mode!=10001) return 0;
 	if(!strcasecmp((*y)->userid, "new") || !strcasecmp((*y)->userid, "guest")) return 0;
-	x2=getuser((*y)->userid);
-	if(x2==0) return 0;
-	if(strcmp(x2->userid, id)) return 0;
-	memcpy(x, x2, sizeof(*x));
+	if(getuserec((*y)->userid, &user)== 0)
+		return 0;
+	if(strcmp(user.userid, id))
+		return 0;
+	memcpy(x, &user, sizeof(*x));
 	(*y)->idle_time=time(0);
 	return 1;
 }
@@ -787,11 +787,9 @@ static int sig_append(FILE *fp, char *id, int sig) {
 	char path[256];
 	char buf[100][256];
 	int i, total;
-	struct userec *x;
 	if (sig < 0 || sig > 10)
 		return -1;
-	x = getuser(id);
-	if (x == 0)
+	if (getuser(id) == 0)
 		return -1;
 	sprintf(path, "home/%c/%s/signatures", toupper(id[0]), id);
 	fp2 = fopen(path, "r");
@@ -1077,7 +1075,8 @@ int count_mails(char *id, int *total, int *unread) {
 	FILE *fp;
 	*total=0;
 	*unread=0;
-	if(getuser(id)==0) return 0;
+	if(getuser(id) == 0)
+		return 0;
 	sprintf(buf, "%s/mail/%c/%s/.DIR", BBSHOME, toupper(id[0]), id);
 	fp=fopen(buf, "r");
 	if (fp == NULL)
@@ -1174,17 +1173,6 @@ getusernum(userid)
 	}
 	return -1;
 	/* endof new */
-}
-
-struct userec *getuser(char *id) {
-	static struct userec userec1;
-	int uid;
-	FILE *fp;
-	uid=getusernum(id);
-	if(uid<0)
-		return 0;
-	memcpy(&userec1, &(shm_ucache->passwd[uid]), sizeof(userec1) );
-	return &userec1;
 }
 
 int checkpasswd(char *pw_crypted, char *pw_try) {
@@ -1628,7 +1616,7 @@ int showcontent(char *filename)
 				id=" ";
 			if(s==0)
 				s="\n";
-			if(strlen(id)<13 && getuser(id))
+			if(strlen(id) < 13 && getuser(id))
 			{
 				printf("·¢ĞÅÈË: %s%s", userid_str(id), s);
 				free(ptr);

@@ -175,8 +175,6 @@ void showrawcontent(char *filename);
 
 int strtourl(char * url, char * str);
 
-// Bcache.c
-struct userec *getuser(char *id);
 int count_online(void);
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);

@@ -63,6 +63,8 @@ int do_del(char *board, char *file) {
                         f.timeDeleted=time(0);
 						append_record(dir, &f, sizeof(f));
  			printf("<tr><td>%s  <td>标题:%s <td>删除成功.\n", f.owner, nohtml(f.title));
+			getuser(f.owner);
+			u = &lookupuser;
 			u=getuser(f.owner);
 			if(!junkboard(getbcache(board)) && u) {
 				if(u->numposts>0) u->numposts--;

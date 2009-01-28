@@ -24,7 +24,8 @@ int main() {
 	if(!getuser(userid)) http_fatal("错误的使用者帐号");
 	if(friendnum>=199) http_fatal("您的好友名单已达到上限, 不能添加新的好友");
    	if(isfriend(userid)) http_fatal("此人已经在您的好友名单里了");
-	strcpy(fff[friendnum].id, getuser(userid)->userid);
+	getuser(userid);
+	strcpy(fff[friendnum].id, lookupuser.userid);
 	strcpy(fff[friendnum].exp, exp);
 	friendnum++;
    	fp=fopen(path, "w");

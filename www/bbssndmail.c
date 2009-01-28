@@ -12,15 +12,10 @@ int check_user(char * userid)
 //	printf("%s<br>\n",userid);
 	//first check whether user is valid
 	if(!strstr(userid, "@")) {
-                u=getuser(userid);
-                if(u==0) 
-			//http_fatal("错误的收信人帐号");
-			return -1;
-                 //add by Danielfree 06.2.5
+                if(getuser(userid) || (u = &lookupuser))
+					return -1;
                  else if (!(u -> userlevel & PERM_READMAIL))
-                      //http_fatal("对方无法收信");
-		      return -1;
-                //add  end
+				 	return -1;
                 strcpy(userid, u->userid);
                 //added by roly to test mail size
                 //modified by Danielfree to test mail num

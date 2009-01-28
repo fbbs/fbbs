@@ -51,7 +51,8 @@ int main() {
 			append_record(dir, &f, sizeof(f));
 			updatelastpost(board);
 			printf("删除成功.<br><a href='bbsdoc?board=%s'>返回本讨论区</a>", board);
-			u=getuser(f.owner);
+			getuser(f.owner);
+			u = &lookupuser;
 			if(!junkboard(getbcache(board)) && u) {
 				if(u->numposts>0) u->numposts--;
 				save_user_data(u);

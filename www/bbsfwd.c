@@ -50,14 +50,15 @@ int main() {
 		if(!strstr(target, "@")) {
 			if(!getuser(target)) http_fatal("错误的使用者帐号");
 			//add by Danielfree 06.2.5
-			if (!( (getuser(target) )-> userlevel & PERM_READMAIL))
+			if (!(lookupuser.userlevel & PERM_READMAIL))
 				  http_fatal("对方无法收信");
-			strcpy(target, getuser(target)->userid);
+			strcpy(target, lookupuser.userid);
 			if (!mailsize_under_limit(target)|| !mailnum_under_limit(target))
 				http_fatal("收信人信件容量超标，无法收信");
 			//add end
 		}
-		user=getuser(target);
+		getuser(target);
+		user = &lookupuser;
 		
 		sprintf(filename, "home/%c/%s/rejects", toupper(target[0]), user->userid);
 		if(file_has_word(filename, currentuser.userid))

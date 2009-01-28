@@ -67,11 +67,11 @@ int main() {
 		http_quit();
 	}
 /* added end */
-	x=getuser(userid);
-	if(!loginok || x==0) {
+	if(!loginok || getuser(userid) == 0) {
 		printf("用户 [%s] 不存在.", userid);
 		http_quit();
 	}
+	x = &lookupuser;
 	/*
 	{
 	char query_string[256];

@@ -47,7 +47,8 @@ int main() {
 		http_fatal("查无此人");
 	}
 	printf("<body onload='document.form1.b1.focus()'>\n");
-	user=getuser(destid);
+	getuser(destid);
+	user = &lookupuser;
 		
 	sprintf(filename, "home/%c/%s/rejects", toupper(destid[0]), user->userid);
 	if(file_has_word(filename, currentuser.userid))
