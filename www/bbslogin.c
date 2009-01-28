@@ -163,7 +163,7 @@ int bbslogin_main(void)
 {
 	char fname[STRLEN];
 	char buf[256], id[IDLEN + 1], pw[PASSLEN];
-	struct userec *user;
+	struct userec user;
 
 	strlcpy(id, getparm("id"), sizeof(id));
 	strlcpy(pw, getparm("pw"), sizeof(pw));
@@ -173,55 +173,54 @@ int bbslogin_main(void)
 				currentuser.userid);
 	}
 
-	if (getuser(id) == 0)
+	if (getuserec(id, &user) == 0)
 		http_fatal("经查证，无此 ID。");
 
-	user = &lookupuser;
-	if(strcasecmp(id, "guest")) {
+	if (strcasecmp(id, "guest")) {
 		int total;
 		time_t stay, recent, now, t;
-		if (!checkpasswd(user->passwd, pw)) {
+		if (!checkpasswd(user.passwd, pw)) {
 			sprintf(buf, "%-12.12s %s @%s\n", id, cn_Ctime(time(0)), fromhost);
 			sethomefile(fname, id, "logins.bad"); 
 			f_append(fname, buf);
 			f_append("logins.bad", buf);
 			http_fatal("密码输入错误...");
 		}
-		total = check_multi(user);
-		if (!HAS_PERM2(PERM_LOGIN, user))
+		total = check_multi(&user);
+		if (!HAS_PERM2(PERM_LOGIN, &user))
 			http_fatal("本帐号已停机。请到Notice版查询原因");
 
 		now = time(NULL);
 		if (total > 1) {
-			recent = user->lastlogout;
-			if (user->lastlogin > recent)
-				recent = user->lastlogin;
+			recent = user.lastlogout;
+			if (user.lastlogin > recent)
+				recent = user.lastlogin;
 			stay = now - recent;
 			if (stay < 0)
 				stay = 0;
 		} else {
 			stay = 0;
 		}
-		t = user->lastlogin;
-		user->lastlogin = now;
-		user->stay += stay;
-		save_user_data(user);
+		t = user.lastlogin;
+		user.lastlogin = now;
+		user.stay += stay;
+		save_user_data(&user);
 #ifdef CHECK_FREQUENTLOGIN
 		if (!HAS_PERM(PERM_SYSOPS)
 				&& abs(t - time(NULL)) < 10) {
-			report("Too Frequent", user->userid);
+			report("Too Frequent", user.userid);
 			http_fatal("登录过于频繁，请稍候再来。");
 		}
 #endif
-		user->numlogins++;
-		strlcpy(user->lasthost, fromhost, sizeof(user->lasthost));
-		save_user_data(user);
-		currentuser = *user;
+		user.numlogins++;
+		strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
+		save_user_data(&user);
+		currentuser = user;
 	}
 
-	log_usies("ENTER", fromhost, user);
+	log_usies("ENTER", fromhost, &user);
 	if(!loginok && strcasecmp(id, "guest"))
-		wwwlogin(user);
+		wwwlogin(&user);
 	redirect(FIRST_PAGE);
 	return 0;
 }
