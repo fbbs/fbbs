@@ -199,7 +199,7 @@ int x_userdefine() {
 		if (DEFINE(DEF_LOGOFFMSG)) {
 			uinfo.pager |= LOGOFFMSG_PAGER;
 		}
-		update_utmp();
+		update_ulist(&uinfo, utmpent);
 		prints("新的参数设定完成...\n\n");
 	}
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
@@ -221,7 +221,7 @@ int x_cloak() {
 		uidshm->passwd[uinfo.uid - 1].flags[0] &= ~CLOAK_FLAG;
 	}
 	//end add
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	if (!uinfo.in_chat) {
 		move(1, 0);
 		clrtoeol();

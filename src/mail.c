@@ -1578,7 +1578,7 @@ char current_maillist;
 		mail_file(tmpfile, uid, save_title);
 		//added by iamfat 2003.11.03 avoid offline for timeout
 		uinfo.idle_time = time(0);
-		update_utmp();
+		update_ulist(&uinfo, utmpent);
 		//added end
 	}
 	unlink(tmpfile);

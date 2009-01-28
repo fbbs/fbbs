@@ -249,7 +249,7 @@ void check_uinfo(struct userec *u, int MUST) {
 		strcpy(uinfo.username, u->username);
 		ptr = uinfo.username;
 		filter_ff(ptr);
-		update_utmp();
+		update_ulist(&uinfo, utmpent);
 	}
 	while (1) { // 检查真实姓名
 		changeIT = MUST || (strlen(u->realname) < 4) ||(strstr(

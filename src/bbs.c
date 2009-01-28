@@ -1101,11 +1101,11 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = getbnum (bname, &currentuser);
-	update_utmp ();
+	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 #else
 	uinfo.currbrdnum = getbnum(currboard, &currentuser);
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	countbrdonline();
 #endif
 
@@ -3326,11 +3326,11 @@ int Read() {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = getbnum (currboard, &currentuser);
-	update_utmp ();
+	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 #else
 	uinfo.currbrdnum = getbnum(currboard, &currentuser);
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	countbrdonline();
 #endif
 
@@ -3370,11 +3370,11 @@ int Read() {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = 0;
-	update_utmp ();
+	update_ulist(&uinfo, utmpent);
 	bonlinesync (usetime);
 #else
 	uinfo.currbrdnum = 0;
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	countbrdonline();
 #endif
 
@@ -3567,7 +3567,7 @@ int Q_Goodbye() {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = 0;
-	update_utmp ();
+	update_ulist(&uinfo, utmpent);
 #endif
 
 	sleep(1);
@@ -3776,7 +3776,7 @@ int thesis_mode() {
 	lookupuser.userdefine = pbits;
 	currentuser.userdefine = pbits;
 	substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	return FULLUPDATE;
 }
 

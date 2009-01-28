@@ -250,7 +250,7 @@ void u_exit(void)
 	uinfo.destuid = 0;
 	uinfo.pid = 0;
 	uinfo.active = NA;
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 }
 
 // Bell when user receives an talk request.

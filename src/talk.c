@@ -219,7 +219,7 @@ int t_pager() {
 				(uinfo.pager & ALL_PAGER) ? "´ò¿ª" : "¹Ø±Õ");
 		pressreturn();
 	}
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	return 0;
 }
 
@@ -496,7 +496,7 @@ char q_id[IDLEN + 2];
 		return -1;
 	}
 	uinfo.destuid = tuid;
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	move(0, 0);
 	clrtobot();
 	sprintf(qry_mail_dir, "mail/%c/%s/%s", toupper(lookupuser.userid[0]), lookupuser.userid, DOT_DIR);
@@ -1514,7 +1514,7 @@ int do_talk(int fd) {
 				}
 			} else if (ch == Ctrl('P') && HAS_PERM(PERM_LOGIN)) {
 				t_pager();
-				update_utmp();
+				update_ulist(&uinfo, utmpent);
 				update_endline();
 			}
 		}

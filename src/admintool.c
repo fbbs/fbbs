@@ -2278,11 +2278,11 @@ int x_csh() {
 	reset_tty();
 	save_pager = uinfo.pager;
 	uinfo.pager = 0;
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	do_exec("csh", NULL);
 	restore_tty();
 	uinfo.pager = save_pager;
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	clear();
 	return 0;
 }

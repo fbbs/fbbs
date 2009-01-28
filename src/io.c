@@ -304,7 +304,7 @@ int igetch()
 			igetnext:
 
 			uinfo.idle_time = time(0);
-			update_utmp(); /* 应该是需要 update 一下 :X */
+			update_ulist(&uinfo, utmpent);
 
 			FD_ZERO(rx);
 			FD_SET(0, rx);

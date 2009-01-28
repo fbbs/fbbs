@@ -440,7 +440,7 @@ int ent_chat(char *chatbuf) {
 
 	uinfo.in_chat = YEA;
 	strcpy(uinfo.chatid, chatid);
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 
 	clear();
 	chatline = 2;
@@ -589,7 +589,7 @@ int ent_chat(char *chatbuf) {
 	add_io(0, 0);
 	uinfo.in_chat = NA;
 	uinfo.chatid[0] = '\0';
-	update_utmp();
+	update_ulist(&uinfo, utmpent);
 	clear();
 	refresh();
 	free(chat_aliases); /* KCN alias emote , 1999.11.25 */

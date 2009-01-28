@@ -513,18 +513,13 @@ int search_ulistn(struct user_info *uentp, int (*fptr)(), int farg, int unum)
 	return 0;
 }
 
-//更改第uent个用户的信息,将其设置为uentp
+// Copies user_info *'uentp' to ('uent'th - 1) entry of utmp.
 void update_ulist(struct user_info *uentp, int uent)
 {
 	resolve_utmp();
 	if (uent > 0 && uent <= USHM_SIZE) {
 		utmpshm->uinfo[uent - 1] = *uentp;
 	}
-}
-
-void update_utmp(void)
-{
-	update_ulist(&uinfo, utmpent);
 }
 
 /* added by djq 99.7.19*/
