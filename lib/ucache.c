@@ -340,7 +340,18 @@ int getuserbyuid(struct userec *u, int uid)
 	return uid;
 }
 
-//映射用户数据到内存
+int get_status(int uid)
+{
+	resolve_ucache();
+	if (!HAS_PERM(PERM_SEECLOAK)
+			&& (uidshm->passwd[uid - 1].userlevel & PERM_LOGINCLOAK)
+			&& (uidshm->passwd[uid - 1].flags[0] & CLOAK_FLAG))
+		return 0;
+	return uidshm->status[uid - 1];
+}
+
+// If 'utmpshm' == NULL, gets shared memory for online users
+// and puts its starting address in utmpshm.
 void resolve_utmp(void)
 {
 	if (utmpshm == NULL) {
@@ -352,17 +363,6 @@ int get_total(void)
 {
 	resolve_utmp();
 	return utmpshm->total_num;
-}
-
-int get_status(int uid)
-{
-	resolve_ucache();
-	if ( !HAS_PERM(PERM_SEECLOAK) && //当前使用者没有站务或看隐身权限
-			(uidshm->passwd[uid-1].userlevel&PERM_LOGINCLOAK) && //所察看的用户拥有隐身权限
-			(uidshm->passwd[uid-1].flags[0] & CLOAK_FLAG)//所察看的用户开启了隐身权限
-	)
-		return 0;
-	return uidshm->status[uid-1];
 }
 
 void refresh_utmp(void)
