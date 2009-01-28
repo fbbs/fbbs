@@ -441,7 +441,7 @@ int getuserbyuid(struct userec *u, int uid);
 void resolve_utmp(void);
 int get_total(void);
 int get_status(int uid);
-void refresh_utmp(void);
+int refresh_utmp(void);
 int getnewutmpent(struct user_info *up);
 int apply_ulist(int (*fptr)());
 int search_ulist(struct user_info *uentp, int (*fptr)(), int farg);

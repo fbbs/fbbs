@@ -370,11 +370,12 @@ int get_total(void)
 }
 
 // Refreshes utmp(cache for online users.)
-void refresh_utmp(void)
+int refresh_utmp(void)
 {
 	int utmpfd, ucachefd;
 	struct user_info *uentp;
-	register int n;
+	int n;
+	int count = 0; // Online users count.
 	time_t now;
 
 	resolve_utmp();
@@ -404,19 +405,19 @@ void refresh_utmp(void)
 				} else {
 					// Increase status.
 					uidshm->status[uentp->uid - 1]++;
+					// Count online users.
+					++count;
 				}
 			}
 		}
 	}
+	utmpshm->total_num = count;
 	// Count all users.
 	utmpshm->usersum = allusers();
 
 	// Unlock caches.
 	ucache_unlock(ucachefd);
 	utmp_unlock(utmpfd);
-
-	// Count online users.
-	utmpshm->total_num = num_active_users();
 }
 
 int getnewutmpent(struct user_info *up)
