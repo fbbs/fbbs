@@ -356,9 +356,11 @@ char *get_old_shm(int key, int size) {
 	return shmat(id, NULL, 0);
 }
 
-char *getsenv(char *s) {
-	char *t=getenv(s);
-	if(t) return t;
+char *getsenv(char *s)
+{
+	char *t = getenv(s);
+	if (t != NULL)
+		return t;
 	return "";
 }
 
@@ -697,20 +699,6 @@ static int http_init(void)
 	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
 #endif
 	http_parm_init();
-
-#ifdef SQUID
-	char *fromtmp;
-	fromtmp = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
-	if (fromtmp == NULL) {
-		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), sizeof(fromhost));
-	} else {
-		while ((*fromtmp < '0')&&(*fromtmp != '\0'))
-			fromtmp++;
-		strlcpy(fromhost, fromtmp, sizeof(fromhost));
-	}
-#else
-	strlcpy(fromhost, getsenv("REMOTE_ADDR"), sizeof(fromhost));
-#endif
 
 	my_style = atoi(getparm("my_style"));
 #ifndef XMLFILE
@@ -1251,6 +1239,20 @@ int fcgi_init_all(void)
 	if(geteuid() != BBSUID)
 		http_fatal("uid error.");
 	shm_init();
+
+#ifdef SQUID
+	char *fromtmp;
+	fromtmp = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
+	if (fromtmp == NULL) {
+		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), sizeof(fromhost));
+	} else {
+		while ((*fromtmp < '0')&&(*fromtmp != '\0'))
+			fromtmp++;
+		strlcpy(fromhost, fromtmp, sizeof(fromhost));
+	}
+#else
+	strlcpy(fromhost, getsenv("REMOTE_ADDR"), sizeof(fromhost));
+#endif
 
 	return 0;
 }
