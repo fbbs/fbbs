@@ -757,31 +757,6 @@ int shm_init(void) {
 	return 0;
 }
 
-int user_init(struct userec *x, struct user_info **y) {
-	struct userec user;
-	char id[20], num[20];
-	int i, key;
-	strlcpy(id, getparm("utmpuserid"), 13);
-	strlcpy(num, getparm("utmpnum"), 12);
-	key=atoi(getparm("utmpkey"));
-	i=atoi(num);
-	if(i<=0 || i>MAXACTIVE) return 0;
-	(*y)=&(shm_utmp->uinfo[i-1]);
-	if(strncmp((*y)->from, fromhost, 16)) return 0;
-	if((*y)->utmpkey != key) return 0;
-	if((*y)->active==0) return 0;
-	if((*y)->userid[0]==0) return 0;
-	if((*y)->mode!=WWW) return 0;
-	if(!strcasecmp((*y)->userid, "new") || !strcasecmp((*y)->userid, "guest")) return 0;
-	if(getuserec((*y)->userid, &user)== 0)
-		return 0;
-	if(strcmp(user.userid, id))
-		return 0;
-	memcpy(x, &user, sizeof(*x));
-	(*y)->idle_time=time(0);
-	return 1;
-}
-
 static int sig_append(FILE *fp, char *id, int sig) {
 	FILE *fp2;
 	char path[256];
@@ -1276,7 +1251,6 @@ int fcgi_init_all(void)
 	if(geteuid() != BBSUID)
 		http_fatal("uid error.");
 	shm_init();
-	loginok = user_init(&currentuser, &u_info);
 
 	return 0;
 }
@@ -1292,31 +1266,6 @@ int fcgi_init_loop(void)
 			&&currentuser.birthday==(tp->tm_mday)) {
 		printf("<head><script>self.status=\""
 				"今天是您的生日，"BBSNAME"祝您生日快乐！\"</script></head>");
-	}
-
-	return my_style;
-}
-
-// Will be abolished
-int init_all(void)
-{
-	int my_style = 0;
-	srand(time(NULL) * 2 + getpid());
-	chdir(BBSHOME);
-	my_style = http_init();
-	seteuid(BBSUID);
-	if(geteuid() != BBSUID)
-		http_fatal("uid error.");
-	shm_init();
-	loginok = user_init(&currentuser, &u_info);
-
-	// Happy birthday in status bar.
-	time_t t = time(NULL);
-	struct tm *tp = localtime(&t);
-	if(currentuser.birthmonth == ((tp->tm_mon) + 1)
-			&&currentuser.birthday==(tp->tm_mday)) {
-		printf("<head><script>self.status=\""
-				"今天是您的生日，日月光华BBS祝您生日快乐！\"</script></head>");
 	}
 
 	return my_style;
