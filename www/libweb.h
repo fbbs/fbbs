@@ -195,5 +195,6 @@ int bbsgetmsg_main(void);
 int bbsall_main(void);
 int bbsboa_main(void);
 int bbslogin_main(void);
+int bbslogout_main(void);
 
 #endif

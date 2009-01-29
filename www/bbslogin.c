@@ -30,54 +30,6 @@ static void add_msg(int notused)
 	fclose(fp);
 }
 
-static void abort_program(int notused)
-{
-	int stay=0; 
-	struct userec *x; 
-	int loginstart;
-	if(!strcmp(u_info->userid, currentuser.userid)) { 
-#ifdef SPARC
-		loginstart=*(int*)(u_info->from+30); 
-#else
-		loginstart=*(int*)(u_info->from+32); 
-#endif
-		uidshm->status[u_info->uid-1]--;
-		bzero(u_info, sizeof(struct user_info)); 
-	} 
-	
-	if(getuser(currentuser.userid)) {
-		x = &lookupuser;
-		time_t now=time(0);
-		time_t recent;
-		recent=loginstart;
-		if(x->lastlogout>recent)recent=x->lastlogout;
-		if(x->lastlogin>recent)recent=x->lastlogin;
-		stay=now-recent;
-		if(stay<0)stay=0;
-		x->stay+=stay; 
-		x->lastlogout=now; 
-		save_user_data(x); 
-	}
-	exit(0); 
-}
-
-static int wwwagent(void)
-{
-	int i;
-	for(i=0; i<1024; i++) close(i);
-	for(i=0; i<NSIG; i++) signal(i, SIG_IGN);
-	signal(SIGUSR2, add_msg);
-	signal(SIGHUP, abort_program);
-	signal(SIGABRT, abort_program);
-	while(1) {
-		sleep(60);
-		if(abs(time(0) - u_info->idle_time)>600) {
-			abort_program(0);
-		}
-	}
-	exit(0);
-}
-
 static int wwwlogin(struct userec *user) {
 	FILE *fp;
 	char buf[STRLEN];

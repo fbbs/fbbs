@@ -1,22 +1,46 @@
 #include "libweb.h"
 
-int main() {
-	int stay, pid;
-	//added by iamfat 2002.10.05
-	char buf[255];
-	init_all();
-	if(!loginok) { 
-		redirect(FIRST_PAGE);  //added by roly
-		return 0;
-		http_fatal("ÄúÃ»ÓÐµÇÂ¼");		
+static void abort_program(void)
+{
+	int stay = 0;
+	struct userec *x = NULL;
+	int loginstart = 0;
+
+	if(!strcmp(u_info->userid, currentuser.userid)) {
+#ifdef SPARC
+		loginstart = *(int*)(u_info->from + 30);
+#else
+		loginstart = *(int*)(u_info->from + 32);
+#endif
+		uidshm->status[u_info->uid - 1]--;
+		bzero(u_info, sizeof(struct user_info));
+	} 
+
+	if (getuser(currentuser.userid)) {
+		x = &lookupuser;
+		time_t now = time(NULL);
+		time_t recent;
+		recent = loginstart;
+		if (x->lastlogout > recent)
+			recent = x->lastlogout;
+		if (x->lastlogin > recent)
+			recent = x->lastlogin;
+		stay = now - recent;
+		if (stay < 0)
+			stay = 0;
+		x->stay += stay;
+		x->lastlogout = now;
+		save_user_data(x);
 	}
-	//added by iamfat 2002.10.05 for TRACE
-	sprintf(buf, "EXIT @%s", fromhost);
-	do_report("usies", buf);
-	//added end
-	pid=u_info->pid;
-	if(pid>0) kill(pid, SIGABRT);
-//	if(pid>0) kill(pid, SIGHUP);
+}
+
+int bbslogout_main(void)
+{
+	if (!loginok) { 
+		redirect(FIRST_PAGE);
+		return 0;
+	}
+
 	setcookie("utmpkey", "");
 	setcookie("utmpnum", "");
 	setcookie("utmpuserid", "");
@@ -24,5 +48,8 @@ int main() {
 	setcookie("my_link_mode", "");
 	setcookie("my_def_mode", "");
 	setcookie("my_style","");
-	redirect(FIRST_PAGE); 
+
+	abort_program();
+	redirect(FIRST_PAGE);
+	return 0;
 }
