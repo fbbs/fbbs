@@ -137,6 +137,7 @@ static int wwwlogin(struct userec *user) {
 			FLOCK(fileno(fp), LOCK_UN);
 			fclose(fp);
 			shm_ucache->status[u->uid - 1]++;
+			loginok = 1;
 			return 0;
 		}
 	}
@@ -212,7 +213,6 @@ int bbslogin_main(void)
 	log_usies("ENTER", fromhost, &user);
 	if(!loginok && strcasecmp(id, "guest"))
 		wwwlogin(&user);
-	loginok = 1;
 	redirect(FIRST_PAGE);
 	return 0;
 }
