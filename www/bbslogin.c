@@ -61,21 +61,16 @@ static void abort_program(int notused)
 	exit(0); 
 }
 
+// Register signal handlers.
 static int wwwagent(void)
 {
 	int i;
-	for(i=0; i<1024; i++) close(i);
-	for(i=0; i<NSIG; i++) signal(i, SIG_IGN);
+	for(i = 0; i < NSIG; i++)
+		signal(i, SIG_IGN);
 	signal(SIGUSR2, add_msg);
 	signal(SIGHUP, abort_program);
 	signal(SIGABRT, abort_program);
-	while(1) {
-		sleep(60);
-		if(abs(time(0) - u_info->idle_time)>600) {
-			abort_program(0);
-		}
-	}
-	exit(0);
+	return 0;
 }
 
 static int wwwlogin(struct userec *user) {
@@ -138,6 +133,7 @@ static int wwwlogin(struct userec *user) {
 			fclose(fp);
 			shm_ucache->status[u->uid - 1]++;
 			loginok = 1;
+			wwwagent();
 			return 0;
 		}
 	}
