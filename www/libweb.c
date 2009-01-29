@@ -757,28 +757,53 @@ int shm_init(void) {
 	return 0;
 }
 
-int user_init(struct userec *x, struct user_info **y) {
+// Load user information from cookie.
+// If everything is OK, initializes *'x', 'y' and returns 1,
+// on error, set *'x' to 0, 'y' to NULL and returns 0.
+int user_init(struct userec *x, struct user_info **y)
+{
 	struct userec user;
-	char id[20], num[20];
+	char id[IDLEN + 1];
 	int i, key;
-	strlcpy(id, getparm("utmpuserid"), 13);
-	strlcpy(num, getparm("utmpnum"), 12);
-	key=atoi(getparm("utmpkey"));
-	i=atoi(num);
-	if(i<=0 || i>MAXACTIVE) return 0;
-	(*y)=&(shm_utmp->uinfo[i-1]);
-	if(strncmp((*y)->from, fromhost, 16)) return 0;
-	if((*y)->utmpkey != key) return 0;
-	if((*y)->active==0) return 0;
-	if((*y)->userid[0]==0) return 0;
-	if((*y)->mode!=WWW) return 0;
-	if(!strcasecmp((*y)->userid, "new") || !strcasecmp((*y)->userid, "guest")) return 0;
-	if(getuserec((*y)->userid, &user)== 0)
+
+	// Get information from cookie.
+	strlcpy(id, getparm("utmpuserid"), sizeof(id));
+	i = strtol(getparm("utmpnum"), NULL, 10);
+	key = strtol(getparm("utmpkey"), NULL, 10);
+
+	// Boundary check.
+	if (i <= 0 || i > MAXACTIVE)
 		return 0;
-	if(strcmp(user.userid, id))
+	// Get user_info from utmp.
+	(*y) = &(shm_utmp->uinfo[i - 1]);
+
+	// Verify cookie and user status.
+	if (strncmp((*y)->from, fromhost, 16)
+			|| (*y)->utmpkey != key
+			|| (*y)->active == 0
+			|| (*y)->userid[0] == '\0'
+			|| (*y)->mode != WWW) {
+		*y = NULL;
 		return 0;
-	memcpy(x, &user, sizeof(*x));
-	(*y)->idle_time=time(0);
+	}
+
+	// If not normal user.
+	if (!strcasecmp((*y)->userid, "new")
+			|| !strcasecmp((*y)->userid, "guest")) {
+		*y = NULL;
+		return 0;
+	}
+
+	// Refresh idle time.
+	(*y)->idle_time = time(NULL);
+
+	// Get userec from ucache.
+	getuserbyuid(x, (*y)->uid);
+	if (strcmp(user.userid, id)) {
+		memset(x, 0, sizeof(*x));
+		return 0;
+	}
+
 	return 1;
 }
 
