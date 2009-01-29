@@ -39,9 +39,6 @@ int loginok=0;
 
 struct userec currentuser;
 struct user_info *u_info;
-struct UTMPFILE *shm_utmp;
-struct BCACHE *shm_bcache;
-struct UCACHE *shm_ucache;
 
 char fromhost[40]; // IPv6 addresses can be represented in 39 chars.
 
@@ -733,27 +730,14 @@ int get_shmkey(char *s) {
 	return 0;
 }
 
-int shm_init(void) {
-	int boardfd;
-	shm_utmp= (struct UTMPFILE *) get_old_shm(UTMP_SHMKEY, sizeof(struct UTMPFILE));
-	shm_bcache= (struct BCACHE *) get_old_shm(BCACHE_SHMKEY, sizeof(struct BCACHE));
-	//init mmap bcache
-	if (bcache == NULL) {
-		if ((boardfd = open(BOARDS, O_RDWR | O_CREAT, 0644)) == -1) {
-			http_fatal("Can't open " BOARDS "file");
-		}
-		bcache = (struct boardheader *) mmap(NULL, MAXBOARD * sizeof(struct boardheader), PROT_READ, MAP_SHARED, boardfd, 0);
-		if (bcache == (struct boardheader *) -1) {
-			http_fatal("Can't map " BOARDS "file ");
-			close(boardfd);
-		}	
-		close(boardfd);
-	}
-	shm_ucache= (struct UCACHE *) get_old_shm(UCACHE_SHMKEY, sizeof(struct UCACHE));
-
-	if(shm_utmp==0) http_fatal("shm_utmp error");
-	if(shm_bcache==0) http_fatal("shm_bcache error");
-	if(shm_ucache==0) http_fatal("shm_ucache error");
+// Gets shared memory. Returns 0 if OK, exits on error.
+int shm_init(void)
+{
+	resolve_ucache();
+	resolve_utmp();
+	resolve_boards();
+	if (uidshm == NULL || utmpshm == NULL || brdshm == NULL)
+		exit(-1);
 	return 0;
 }
 
@@ -762,7 +746,6 @@ int shm_init(void) {
 // on error, set *'x' to 0, 'y' to NULL and returns 0.
 int user_init(struct userec *x, struct user_info **y)
 {
-	struct userec user;
 	char id[IDLEN + 1];
 	int i, key;
 
@@ -775,7 +758,7 @@ int user_init(struct userec *x, struct user_info **y)
 	if (i <= 0 || i > MAXACTIVE)
 		return 0;
 	// Get user_info from utmp.
-	(*y) = &(shm_utmp->uinfo[i - 1]);
+	(*y) = &(utmpshm->uinfo[i - 1]);
 
 	// Verify cookie and user status.
 	if (strncmp((*y)->from, fromhost, 16)
@@ -799,7 +782,7 @@ int user_init(struct userec *x, struct user_info **y)
 
 	// Get userec from ucache.
 	getuserbyuid(x, (*y)->uid);
-	if (strcmp(user.userid, id)) {
+	if (strcmp(x->userid, id)) {
 		memset(x, 0, sizeof(*x));
 		return 0;
 	}
@@ -1167,7 +1150,7 @@ int save_user_data(struct userec *x) {
 	n = searchuser(x->userid) - 1;
 	if(n < 0 || n >= MAXUSERS)
 		return 0;
-	memcpy( &(shm_ucache->passwd[n]), x, sizeof(struct userec) );
+	memcpy( &(uidshm->passwd[n]), x, sizeof(struct userec) );
 	return 1;
 }
 
@@ -1178,7 +1161,7 @@ int user_perm(struct userec *x, int level) {
 int count_online(void) {
 	int i, total=0;
 	for(i=0; i<MAXACTIVE; i++) 
-		if(shm_utmp->uinfo[i].active) total++;
+		if(utmpshm->uinfo[i].active) total++;
 	return total;
 }
 

@@ -3,8 +3,8 @@
 static int check_multi(struct userec *user) {
 	int i, total=0;
 	for(i=0; i<MAXACTIVE; i++) {
-		if(shm_utmp->uinfo[i].active==0) continue;
-		if(!strcasecmp(shm_utmp->uinfo[i].userid, user->userid)) total++;
+		if(utmpshm->uinfo[i].active==0) continue;
+		if(!strcasecmp(utmpshm->uinfo[i].userid, user->userid)) total++;
 	}
 	//add for NR autopost id:US.   eefree 06.9.8 
 	if (strcasecmp(user->userid,"US") ) {
@@ -41,7 +41,7 @@ static void abort_program(int notused)
 #else
 		loginstart=*(int*)(u_info->from+32); 
 #endif
-		shm_ucache->status[u_info->uid-1]--;
+		uidshm->status[u_info->uid-1]--;
 		bzero(u_info, sizeof(struct user_info)); 
 	} 
 	
@@ -96,8 +96,8 @@ static int wwwlogin(struct userec *user) {
 	fp=fopen("tmp/.UTMP.lock", "a");
 	FLOCK(fileno(fp), LOCK_EX);
 	for(n = 0; n < MAXACTIVE; n++) {
-		if(shm_utmp->uinfo[n].active == 0) {
-			u = &(shm_utmp->uinfo[n]);
+		if(utmpshm->uinfo[n].active == 0) {
+			u = &(utmpshm->uinfo[n]);
 			u_info = u;
 			bzero(u, sizeof(struct user_info));
 			u->active = 1;
@@ -145,7 +145,7 @@ static int wwwlogin(struct userec *user) {
 
 			FLOCK(fileno(fp), LOCK_UN);
 			fclose(fp);
-			shm_ucache->status[u->uid - 1]++;
+			uidshm->status[u->uid - 1]++;
 			return 0;
 		}
 	}

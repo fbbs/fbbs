@@ -73,9 +73,6 @@ extern int loginok;
 
 extern struct userec currentuser;
 extern struct user_info *u_info;
-extern struct UTMPFILE *shm_utmp;
-extern struct BCACHE *shm_bcache;
-extern struct UCACHE *shm_ucache;
 
 extern char fromhost[];
 
