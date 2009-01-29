@@ -134,15 +134,6 @@ static int wwwlogin(struct userec *user) {
 			strlcpy(u->username, user->username, sizeof(u->username));
 			strlcpy(u->userid, user->userid, sizeof(u->userid));
 
-			tmp = rand() % 100000000;
-			u->utmpkey = tmp;
-			sprintf(buf, "%d", n + 1);
-			setcookie("utmpnum", buf);
-			sprintf(buf, "%d", tmp);
-			setcookie("utmpkey", buf);
-			setcookie("utmpuserid", currentuser.userid);
-			set_my_cookie();
-
 			FLOCK(fileno(fp), LOCK_UN);
 			fclose(fp);
 			shm_ucache->status[u->uid - 1]++;
