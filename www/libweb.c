@@ -678,7 +678,7 @@ void http_parm_init(void)
 	parm_parse(buf2, "&");
 
 	strlcpy(buf2, getsenv("HTTP_COOKIE"), sizeof(buf2));
-	parm_parse(buf2, "&");
+	parm_parse(buf2, ";");
 
 	return;
 }
