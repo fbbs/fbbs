@@ -118,3 +118,25 @@ void sigbus(int signo)
 {
 	siglongjmp(bus_jump, 1);
 }
+
+// Sends signal 'sig' to 'user'.
+// Returns 0 on success (the same as kill does), -1 on error.
+// If the 'user' is web user, does not send signal and returns -1.
+int bbskill(const struct user_info *user, int sig)
+{
+	if (user == NULL)
+		return -1;
+
+	if (user->pid > 0) {
+		if (user->mode != WWW) {
+			return kill(user->pid, sig);
+		} else {
+			// Since web users have no forked processes,
+			// do not send signals to pid.
+			// Implementation TBD
+			return 0;
+		}
+	}
+	// Sending signals to multiple processes is not allowed.
+	return -1;
+}

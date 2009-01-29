@@ -301,7 +301,7 @@ int kick_user( struct user_info *userinfo )
       strcpy(kickuser, uin.userid);
       ind = YEA;
    }
-   if (!ind||!uin.active||(uin.pid && kill(uin.pid, 0)==-1)) {
+   if (!ind||!uin.active||(uin.pid && bbskill(uin.pid, 0)==-1)) {
       if(uinfo.mode!=LUSERS&&uinfo.mode!=OFFLINE&&uinfo.mode!=FRIEND) {
          move(3, 0);
 	 prints("用户 [%s] 不在线上",kickuser);
@@ -312,12 +312,11 @@ int kick_user( struct user_info *userinfo )
       return 0;
    }
      if (uin.mode == WWW ) {
-	 kill (uin.pid,SIGABRT);
+	 	bbskill (uin.pid,SIGABRT);
      }
      else {
-	 kill(uin.pid, SIGHUP);
+	 	bbskill(uin.pid, SIGHUP);
      }
-     //kill (uin.pid, SIGHUP);
    sprintf(buffer, "kick out %s", kickuser);
    report(buffer, currentuser.userid);
    kuinfo.userid[IDLEN]=0;        //added by iamfat 2004.01.05 to avoid overflow

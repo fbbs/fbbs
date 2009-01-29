@@ -162,7 +162,7 @@ char pagerchar(int friend, int pager) {
 			limit = IDLE_TIMEOUT;
 
 			if ((diff> limit) && (diff < 86400 * 5)&&uent->pid)
-			kill(uent->pid, SIGHUP);
+				bbskill(uent->pid, SIGHUP);
 #endif
 
 			hh = diff / 3600;
@@ -843,7 +843,7 @@ struct user_info *userinfo;
 		pressreturn();
 		return -1;
 	}
-	if (!uin.active || (kill(uin.pid, 0) == -1)) {
+	if (!uin.active || (bbskill(uin.pid, 0) == -1)) {
 		move(2, 0);
 		prints("对方已离开\n");
 		pressreturn();
@@ -915,7 +915,7 @@ struct user_info *userinfo;
 
 		/* modified end */
 #endif
-		kill(uin.pid, SIGUSR1);
+		bbskill(uin.pid, SIGUSR1);
 		clear();
 		prints("呼叫 %s 中...\n输入 Ctrl-D 结束\n", uident);
 
@@ -929,7 +929,7 @@ struct user_info *userinfo;
 				prints("再次呼叫.\n");
 				add_io(sock,20);/* 1999.12.20 */
 				bell();
-				if (kill(uin.pid, SIGUSR1) == -1) {
+				if (bbskill(uin.pid, SIGUSR1) == -1) {
 					move(0, 0);
 					prints("对方已离线\n");
 					pressreturn();
@@ -1362,7 +1362,7 @@ void endmsg() {
 	showansi = 1;
 	talkidletime += 60;
 	if (talkidletime >= IDLE_TIMEOUT)
-		kill(getpid(), SIGHUP);
+		bbskill(getpid(), SIGHUP);
 	if (uinfo.in_chat == YEA)
 		return;
 	getyx(&x, &y);

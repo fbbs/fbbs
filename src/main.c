@@ -276,7 +276,7 @@ void abort_bbs(int nothing)
 	extern int child_pid;
 
 	if (child_pid) {
-		kill(child_pid, 9);
+		bbskill(child_pid, SIGKILL);
 	}
 
 	// Save user's work.
@@ -447,7 +447,7 @@ static void multi_user_check(void)
 		mustkick = 1;
 	}
 	if (search_ulist(&uin, cmpuids2, usernum) 
-		&& (uin.active || (uin.pid && kill(uin.pid, 0) == -1))) {
+		&& (uin.active || (uin.pid && bbskill(uin.pid, 0) == -1))) {
 		getdata(0, 0, "\033[1;37m您想删除重复的 login 吗 (Y/N)? [N]\033[m", genbuf, 4,
 				DOECHO, YEA);
 
@@ -461,8 +461,7 @@ static void multi_user_check(void)
 		} else {
 			if (!uin.pid)
 				return;
-			kill(uin.pid, SIGHUP);
-			//以前不是SIGHUP，会导致编辑作业丢失 by sunner
+			bbskill(uin.pid, SIGHUP);
 			report("kicked (multi-login)", currentuser.userid);
 		}
 	}

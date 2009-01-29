@@ -613,12 +613,6 @@ int printuserent(struct user_info *uentp) {
 			==uentp->uid)) || isreject(uentp))
 		return 0;
 
-#if 0
-
-	if (kill(uentp->pid, 0) == -1)
-	return 0;
-#endif
-
 	sprintf(pline, " %s%-13s[m%c%-10.10s",
 			myfriend(uentp->userid) ? "[1;32m" : "", uentp->userid,
 			uentp->invisible ? '#' : ' ', ModeType(uentp->mode) );
@@ -816,11 +810,6 @@ int print_friend_ent(struct user_info * uentp)//print one user & status if he is
 			&& uentp->invisible) {
 		return 0;
 	}
-
-#if 0
-	if (kill(uentp->pid, 0) == -1)
-	return 0;
-#endif
 
 	/*if (!myfriend(uentp->userid)) Leeward 99.02.01 */
 	if (!myfriend(uentp->uid))
