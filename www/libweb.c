@@ -1270,6 +1270,10 @@ int fcgi_init_loop(void)
 				"今天是您的生日，"BBSNAME"祝您生日快乐！\"</script></head>");
 	}
 
+	// Refresh idle time.
+	if (u_info != NULL)
+		u_info->idle_time = time(NULL);
+
 	return my_style;
 }
 
