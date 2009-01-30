@@ -29,10 +29,12 @@ static int initlastpost = 0;
 
 //////////// Functions related to shared memory. ////////////
 
+// Prints error message.
 static void attach_err(int shmkey, const char *name, int err)
 {
 	char buf[STRLEN];
-	sprintf(buf, "Error! %s error #%d! key = %x.\n", name, err, shmkey);
+	snprintf(buf, sizeof(buf), "Error! %s error #%d! key = %x.\n",
+			name, err, shmkey);
 	write(STDOUT_FILENO, buf, strlen(buf));
 	exit(1);
 }
@@ -64,6 +66,7 @@ static int search_shmkey(const char *keyname)
 }
 
 // Finds shared memory key corresponding to 'shmstr'.
+// If not found, uses defaultkey instead.
 // Tries to get shared memory segment according to key.
 // If the shared memory segment does not exist, creates one.
 // Finally attaches the shared memory segment to the process.
@@ -130,18 +133,19 @@ void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate
 	return shmptr;
 }
 
-void remove_shm(const char *shmstr, int defaultkey, int shmsize)
+// Finds shared memory key corresponding to 'shmstr'.
+// If not found, uses defaultkey instead.
+// Then mark the segment to be destroyed.
+// Returns result of 'shmctl' (-1 on error).
+int remove_shm(const char *shmstr, int defaultkey, int shmsize)
 {
 	int shmkey, shmid;
 
-	if (shmstr)
-		shmkey = sysconf_eval(shmstr);
-	else
-		shmkey = 0;
+	shmkey = search_shmkey(shmstr);
 	if (shmkey < 1024)
 		shmkey = defaultkey;
 	shmid = shmget(shmkey, shmsize, 0);
-	shmctl(shmid, IPC_RMID, NULL);
+	return shmctl(shmid, IPC_RMID, NULL);
 }
 
 //////////// End of functions related to shared memory. ////////////

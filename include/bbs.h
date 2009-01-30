@@ -390,7 +390,7 @@ extern struct boardheader *bcache;
 extern int numboards;
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
-void remove_shm(const char *shmstr, int defaultkey, int shmsize);
+int remove_shm(const char *shmstr, int defaultkey, int shmsize);
 int updatelastpost(const char *board);
 void resolve_boards(void);
 void flush_bcache(void);
