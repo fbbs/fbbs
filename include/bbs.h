@@ -332,21 +332,6 @@ extern time_t uptime; /* save user last key-in time, up every 1min */
 #endif	//EXTEND_KEY	扩展键
 /* edwardc.990706 move shmkeys from sysconf.ini */
 
-struct _shmkey { //共享内存键名与键值
-	char key[16];
-	int value;
-};
-
-const static struct _shmkey shmkeys[] = {
-	{ "BCACHE_SHMKEY", 30000 }, { "UCACHE_SHMKEY", 30010 },
-	{ "UTMP_SHMKEY", 30020 }, { "ACBOARD_SHMKEY", 30030 },
-	{ "ISSUE_SHMKEY", 30040 }, { "GOODBYE_SHMKEY", 30050 },
-	{ "WELCOME_SHMKEY", 30060 }, { "STAT_SHMKEY", 30070 },
-#ifdef ALLOWSWITCHCODE
-	{ "CONV_SHMKEY", 30080 },
-#endif
-	{ "ACACHE_SHMKEY", 30005 }, { "", 0 } };
-
 #define SEM_COUNTONLINE 30000
 
 #define Ctrl(c)         ( c & 037 )		//可以考虑将函数宏改写成inline函数

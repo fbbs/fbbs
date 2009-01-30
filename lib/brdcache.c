@@ -4,6 +4,24 @@
 #include <stdio.h>
 #include <time.h>
 
+// Key-value pairs of shared memory.
+struct _shmkey {
+	char key[16];
+	int value;
+};
+
+// Shared memory keys.
+const static struct _shmkey shmkeys[] = {
+	{ "BCACHE_SHMKEY", 30000 }, { "UCACHE_SHMKEY", 30010 },
+	{ "UTMP_SHMKEY", 30020 }, { "ACBOARD_SHMKEY", 30030 },
+	{ "ISSUE_SHMKEY", 30040 }, { "GOODBYE_SHMKEY", 30050 },
+	{ "WELCOME_SHMKEY", 30060 }, { "STAT_SHMKEY", 30070 },
+#ifdef ALLOWSWITCHCODE
+	{ "CONV_SHMKEY", 30080 },
+#endif
+	{ "ACACHE_SHMKEY", 30005 }, { "", 0 }
+};
+
 struct BCACHE *brdshm = NULL;
 struct boardheader *bcache = NULL;
 int numboards = -1;
@@ -19,9 +37,15 @@ static void attach_err(int shmkey, const char *name, int err)
 	exit(1);
 }
 
+// Searches 'keyname' in array 'shmkey'
+// Returns key value if found, 0 otherwise.
 static int search_shmkey(const char *keyname)
 {
 	int i = 0, found = 0;
+	// Pointer check.
+	if (keyname == NULL)
+		return 0;
+	// Search 'keyname' in 'shmkey'.
 	while (shmkeys[i].key[0] != '\0') {
 		if (strcmp(shmkeys[i].key, keyname) == 0) {
 			found = shmkeys[i].value;
@@ -29,11 +53,12 @@ static int search_shmkey(const char *keyname)
 		}
 		i++;
 	}
+	// Error logging.
 	if (found == 0) {
 		char buf[STRLEN];
-		sprintf(buf, "search_shmkey(): cannot found %s SHMKEY entry!",
-				keyname);
-		report(buf, currentuser.userid);
+		snprintf(buf, sizeof(buf), "%s(): cannot found %s SHMKEY entry!",
+				__func__, keyname);
+		report(buf, "");
 	}
 	return found;
 }
