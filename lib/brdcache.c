@@ -3,7 +3,6 @@
 struct BCACHE *brdshm = NULL;
 struct boardheader *bcache = NULL;
 int numboards = -1;
-static int initlastpost = 0;
 
 static void bcache_setreadonly(int readonly)
 {
@@ -90,40 +89,43 @@ int updatelastpost(const char *board)
 		return -1;
 }
 
-void resolve_boards(void)
+// Returns -1 on error.
+int resolve_boards(void)
 {
 	int boardfd=-1;
 	struct stat st;
 	time_t now;
 	int iscreate=0;
 
+	// Open BOARDS file and map it to memory.
 	if (bcache == NULL) {
 		if ((boardfd = open(BOARDS, O_RDWR | O_CREAT, 0644)) == -1) {
 			report("Can't open " BOARDS "file", "");
-			exit(-1);
+			return -1;
 		}
-		bcache = (struct boardheader *) mmap(NULL, MAXBOARD
-				* sizeof(struct boardheader), PROT_READ, MAP_SHARED,
+		bcache = (struct boardheader *) mmap(
+				NULL, MAXBOARD * sizeof(*bcache), PROT_READ, MAP_SHARED,
 				boardfd, 0);
 		if (bcache == (struct boardheader *) -1) {
 			report("Can't map " BOARDS "file ", "");
 			close(boardfd);
-			exit(-1);
+			return -1;
 		}
 		close(boardfd);
 	}
+
+	// Attach boardshm.
 	if (brdshm == NULL) {
 		brdshm = attach_shm2("BCACHE_SHMKEY", 3693, sizeof(*brdshm),
 				&iscreate);
 		if (brdshm == NULL)
-			exit(1);
+			return -1;
 		if (iscreate) {
-			initlastpost=1;
 			int i, maxi = -1;
 			int fd;
 			fd = bcache_lock();
 			for (i = 0; i < MAXBOARD; i++) {
-				if (bcache[i].filename[0]) {
+				if (bcache[i].filename[0] != 0) {
 					int count;
 					char filename[STRLEN-8];
 					struct fileheader lastfh;
@@ -131,7 +133,7 @@ void resolve_boards(void)
 							&brdshm->bstatus[i].lastpost,
 							&brdshm->bstatus[i].total);
 					setbfile(filename, bcache[i].filename, DOT_DIR);
-					count=get_num_records(filename,
+					count = get_num_records(filename,
 							sizeof(struct fileheader));
 					get_record(filename, &lastfh,
 							sizeof(struct fileheader), count - 1);
@@ -149,19 +151,21 @@ void resolve_boards(void)
 		}
 		numboards = brdshm->number;
 	}
-	now = time(0);
+	now = time(NULL);
 	if (stat(BOARDS, &st) < 0) {
 		st.st_mtime = now - 3600;
 	}
 	if (brdshm->uptime < st.st_mtime || brdshm->uptime < now - 3600) {
 		brdshm->uptime = now;
 	}
+	return 0;
 }
 
 void flush_bcache(void)
 {
 	int i;
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(1);
 	bcache_setreadonly(0);
 	for (i = 0; i < MAXBOARD; i++)
 		bcache[i].nowid = brdshm->bstatus[i].nowid;
@@ -231,7 +235,8 @@ struct boardheader *getbcache(const char *bname)
 {
 	register int i;
 
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(1);
 	for (i = 0; i < numboards; i++) {
 		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
 			return &bcache[i];
@@ -255,7 +260,8 @@ int getbnum(const char *bname, const struct userec *cuser)
 {
 	register int i;
 
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(1);
 	for (i = 0; i < numboards; i++) {
 		if (bcache[i].flag & BOARD_POST_FLAG //pÏÞÖÆ°æÃæ
 			|| HAS_PERM2(bcache[i].level, cuser)
@@ -270,7 +276,8 @@ int getbnum(const char *bname, const struct userec *cuser)
 int apply_boards(int (*func) (), const struct userec *cuser)
 {
 	register int i;
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(1);
 	for (i = 0; i < numboards; i++) {
 		if (bcache[i].flag & BOARD_POST_FLAG
 			|| HAS_PERM2(bcache[i].level, cuser)

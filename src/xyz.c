@@ -549,7 +549,8 @@ void fill_date() {
 	struct tm *mytm;
 	FILE *fp;
 	now = time(0);
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(1);
 
 	if (now < brdshm->fresh_date && strlen(brdshm->date) != 0)
 		return;

@@ -35,7 +35,8 @@ int main(int argc, char *argv[]) {
 			exit(-1);
 		}
 
-		resolve_boards();
+		if (resolve_boards() < 0)
+			exit(-1);
 		atexit(do_exit); //注册退出前运行的函数.正常退出前须执行此函数
 
 		while (1) { //循环

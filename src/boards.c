@@ -496,7 +496,8 @@ void countbrdonline() {
 		online_num = calloc(numboards, sizeof(int));
 		bzero(online_num, sizeof(int) * numboards);
 		apply_ulist(_cntbrd);
-		resolve_boards();
+		if (resolve_boards() < 0)
+			exit(1);
 		for (i = 0; i < numboards; i++) {
 			bcache[i].online_num = online_num[i];
 		}

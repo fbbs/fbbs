@@ -7,7 +7,8 @@
 void setoboard(char *bname) {
 	register int i;
 
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(1);
 	for (i = 0; i < numboards; i++) {
 		if (bcache[i].flag & BOARD_POST_FLAG || HAS_PERM(bcache[i].level)
 				|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {

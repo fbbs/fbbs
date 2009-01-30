@@ -389,7 +389,7 @@ extern struct BCACHE *brdshm;
 extern struct boardheader *bcache;
 extern int numboards;
 int updatelastpost(const char *board);
-void resolve_boards(void);
+int resolve_boards(void);
 void flush_bcache(void);
 void rebuild_brdshm(void);
 int get_nextid(const char* boardname);

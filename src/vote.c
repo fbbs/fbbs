@@ -332,7 +332,8 @@ int b_closepolls() {
 	int i, end;
 
 	now = time(0);
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(1);
 
 	if (now < brdshm->pollvote) { //现在时间小于下次可投票时间则返回？
 		return;

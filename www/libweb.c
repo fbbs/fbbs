@@ -735,7 +735,8 @@ int shm_init(void)
 {
 	resolve_ucache();
 	resolve_utmp();
-	resolve_boards();
+	if (resolve_boards() < 0)
+		exit(-1);
 	if (uidshm == NULL || utmpshm == NULL || brdshm == NULL)
 		exit(-1);
 	return 0;

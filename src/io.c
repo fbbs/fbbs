@@ -712,7 +712,9 @@ void update_endline(void)
 	now = time(NULL);
 	cur_sec = getdatestring(now, NA); //cur_sec = tm_sec % 10
 	if (cur_sec == 0) {
-		nowishfile: resolve_boards();
+		nowishfile:
+		if (resolve_boards() < 0)
+			exit(1);
 		strlcpy(datestring, brdshm->date, 30);
 		cur_sec = 1;
 	}
