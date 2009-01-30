@@ -480,7 +480,7 @@ void sigbus(int signo);
 int bbskill(const struct user_info *user, int sig);
 
 //board.c
-void changeboard(struct boardheader **bp, char *cboard, const char *board);
+int changeboard(struct boardheader **bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
 int hasreadperm(const struct userec *user, const struct boardheader *bp);

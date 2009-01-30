@@ -1,9 +1,18 @@
 #include <bbs.h>
 
-void changeboard(struct boardheader **bpp, char *cboard, const char *board)
+// Copies 'board' to 'cboard' and sets 'bpp' accordingly.
+// Returns 0 on success, -1 on error.
+int changeboard(struct boardheader **bpp, char *cboard, const char *board)
 {
+	if (bpp == NULL || cboard == NULL || board == NULL)
+		return -1;
+
 	*bpp = getbcache(board);
+	if (bpp == NULL)
+		return -1;
+
 	strcpy(cboard, board);
+	return 0;
 }
 
 int chkBM(const struct boardheader *bp, const struct userec *up)
@@ -57,6 +66,7 @@ int isclubmember(const char *member, const char *board)
 }
 
 // Checks if 'user' have read permission to board 'bp'.
+// Returns 1 for true, 0 for false or NULL pointers.
 int hasreadperm(const struct userec *user, const struct boardheader *bp)
 {
 	if (bp == NULL || user == NULL)
@@ -80,6 +90,8 @@ int hasreadperm(const struct userec *user, const struct boardheader *bp)
 	return 0;
 }
 
+// Check if board 'bp' is JUNK (posts not counted).
+// Returns 1 if 'bp' is JUNK, 0 if 'bp' is NULL or not JUNK.
 int junkboard(const struct boardheader *bp)
 {
 	if (bp == NULL)
