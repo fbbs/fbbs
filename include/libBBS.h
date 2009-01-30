@@ -64,4 +64,9 @@ int checkpasswd(char *pw_crypted, char *pw_try);
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
 int remove_shm(const char *shmstr, int defaultkey, int shmsize);
+int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
+		void **ret_ptr, size_t *size, int *ret_fd);
+int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
+		void **ret_ptr, size_t *size);
+void end_mmapfile(void *ptr, int size, int fd);
 #endif
