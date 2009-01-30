@@ -63,24 +63,36 @@ static int search_shmkey(const char *keyname)
 	return found;
 }
 
+// Finds shared memory key corresponding to 'shmstr'.
+// Tries to get shared memory segment according to key.
+// If the shared memory segment does not exist, creates one.
+// Finally attaches the shared memory segment to the process.
+// Returns the address of the attached shared memory segment,
+// NULL pointer on error.
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize)
 {
-	void *shmptr;
+	void *shmptr = NULL;
 	int shmkey, shmid;
-
+	// Search for shared memory(shm) key. If not found, use defaultkey.
 	shmkey = search_shmkey(shmstr);
 	if (shmkey < 1024)
 		shmkey = defaultkey;
+	// Get existing shm.
 	shmid = shmget(shmkey, shmsize, 0);
 	if (shmid < 0) {
+		// If shm does not exist, try to create one.
 		shmid = shmget(shmkey, shmsize, IPC_CREAT | 0640);
 		if (shmid < 0)
 			attach_err(shmkey, "shmget", errno);
+		// Attach shm to the process.
 		shmptr = (void *) shmat(shmid, NULL, 0);
 		if (shmptr == (void *) -1)
 			attach_err(shmkey, "shmat", errno);
+		// Initialization.
 		memset(shmptr, 0, shmsize);
 	} else {
+		// shm already exists.
+		// Attach shm to the process. No init needed.
 		shmptr = (void *) shmat(shmid, NULL, 0);
 		if (shmptr == (void *) -1)
 			attach_err(shmkey, "shmat", errno);
@@ -88,29 +100,32 @@ void *attach_shm(const char *shmstr, int defaultkey, int shmsize)
 	return shmptr;
 }
 
+// Does the same to attach_shm().
+// If shared memory segment is newly created, 'iscreate' is set to 1.
+// If shared memory segment already exists, 'iscreate' is set to 0.
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate)
 {
-	void *shmptr;
+	void *shmptr = NULL;
 	int shmkey, shmid;
 
 	shmkey = search_shmkey(shmstr);
 	if (shmkey < 1024)
-	shmkey = defaultkey;
+		shmkey = defaultkey;
 	shmid = shmget(shmkey, shmsize, 0);
 	if (shmid < 0) {
 		shmid = shmget(shmkey, shmsize, IPC_CREAT | 0644);
 		*iscreate = 1;
 		if (shmid < 0)
-		attach_err(shmkey, "shmget", errno);
+			attach_err(shmkey, "shmget", errno);
 		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
-		attach_err(shmkey, "shmat", errno);
+		if (shmptr == (void *) - 1)
+			attach_err(shmkey, "shmat", errno);
 		memset(shmptr, 0, shmsize);
 	} else {
 		*iscreate = 0;
 		shmptr = (void *) shmat(shmid, NULL, 0);
 		if (shmptr == (void *) -1)
-		attach_err(shmkey, "shmat", errno);
+			attach_err(shmkey, "shmat", errno);
 	}
 	return shmptr;
 }
