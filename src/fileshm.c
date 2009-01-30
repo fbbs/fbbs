@@ -48,8 +48,10 @@ int fill_shmfile(int mode, char* fname, char * shmkey) {
 		return 0;
 	}
 	ftime = st.st_mtime;
-	tmp = (void *) attach_shm(shmkey, 5000 + mode * 10,
-			sizeof(struct FILESHM) * maxnum);
+	tmp = attach_shm(shmkey, 5000 + mode * 10,
+		sizeof(struct FILESHM) * maxnum);
+	if (tmp == NULL)
+		exit(1);
 	switch (mode) {
 		case 1:
 			issueshm = tmp;
@@ -107,8 +109,9 @@ int fill_statshmfile(char* fname, int mode) {
 	now = time(0);
 
 	if (mode == 0 || statshm == NULL) {
-		statshm = (void *) attach_shm("STAT_SHMKEY", 5100,
-				sizeof(struct STATSHM) * 2);
+		statshm = attach_shm("STAT_SHMKEY", 5100, sizeof(struct STATSHM) * 2);
+		if (statshm == NULL)
+			exit(1);
 	}
 	if (abs(now - statshm[mode].update) < 86400 && ftime
 			< statshm[mode].update) {

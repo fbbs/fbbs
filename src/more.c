@@ -32,6 +32,8 @@ void ActiveBoard_Init( void )
    
    if( movieshm == NULL )
       movieshm = (void *) attach_shm("ACBOARD_SHMKEY", 4123, sizeof(*movieshm));
+	if (movieshm == NULL)
+		exit(1);
    
    if (stat("boards/Notepad/.DIGEST", &st) < 0) {
       empty_movie(1);

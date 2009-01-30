@@ -180,6 +180,8 @@ int load_ucache(void)
 	if (uidshm == NULL) {
 		uidshm = attach_shm2("UCACHE_SHMKEY", 3696, sizeof(*uidshm),
 				&iscreate);
+		if(uidshm == NULL)
+			exit(1);
 	}
 	log_usies("CACHE", "reload ucache", NULL);
 
@@ -235,6 +237,8 @@ void resolve_ucache(void)
 	if (uidshm == NULL) {
 		uidshm = attach_shm2("UCACHE_SHMKEY", 3696, sizeof(*uidshm),
 				&iscreate);
+		if (uidshm == NULL)
+			exit(1);
 	}
 	if (iscreate) {
 		remove_shm("UCACHE_SHMKEY", 3696, sizeof(*uidshm));
@@ -360,6 +364,8 @@ void resolve_utmp(void)
 {
 	if (utmpshm == NULL) {
 		utmpshm = attach_shm("UTMP_SHMKEY", 3699, sizeof(*utmpshm));
+		if (utmpshm == NULL)
+			exit(1);
 	}
 }
 

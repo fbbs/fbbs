@@ -51,7 +51,10 @@ void resolve_GbBig5Files(void)
 {
 	int fd;
 	int i;
-	BtoG =(unsigned char *)attach_shm("CONV_SHMKEY", 3013,GtoB_count*2+BtoG_count*2);
+	BtoG = (unsigned char *) attach_shm("CONV_SHMKEY", 3013,
+			GtoB_count * 2 + BtoG_count * 2);
+	if (BtoG == NULL)
+		exit(1);
 	fd = open( BtoGtablefile, O_RDONLY );
 	if (fd == -1)
 	for (i=0;i< BtoG_count; i++) {

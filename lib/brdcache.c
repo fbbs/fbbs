@@ -30,13 +30,13 @@ static int initlastpost = 0;
 //////////// Functions related to shared memory. ////////////
 
 // Prints error message.
-static void attach_err(int shmkey, const char *name, int err)
+static int attach_err(int shmkey, const char *name, int err)
 {
 	char buf[STRLEN];
 	snprintf(buf, sizeof(buf), "Error! %s error #%d! key = %x.\n",
 			name, err, shmkey);
 	write(STDOUT_FILENO, buf, strlen(buf));
-	exit(1);
+	return 0;
 }
 
 // Searches 'keyname' in array 'shmkey'
@@ -85,20 +85,26 @@ void *attach_shm(const char *shmstr, int defaultkey, int shmsize)
 	if (shmid < 0) {
 		// If shm does not exist, try to create one.
 		shmid = shmget(shmkey, shmsize, IPC_CREAT | 0640);
-		if (shmid < 0)
+		if (shmid < 0) {
 			attach_err(shmkey, "shmget", errno);
+			return NULL;
+		}
 		// Attach shm to the process.
 		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
+		if (shmptr == (void *) -1) {
 			attach_err(shmkey, "shmat", errno);
+			return NULL;
+		}
 		// Initialization.
 		memset(shmptr, 0, shmsize);
 	} else {
 		// shm already exists.
 		// Attach shm to the process. No init needed.
 		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
+		if (shmptr == (void *) -1) {
 			attach_err(shmkey, "shmat", errno);
+			return NULL;
+		}
 	}
 	return shmptr;
 }
@@ -118,17 +124,23 @@ void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate
 	if (shmid < 0) {
 		shmid = shmget(shmkey, shmsize, IPC_CREAT | 0644);
 		*iscreate = 1;
-		if (shmid < 0)
+		if (shmid < 0) {
 			attach_err(shmkey, "shmget", errno);
+			return NULL;
+		}
 		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) - 1)
+		if (shmptr == (void *) - 1) {
 			attach_err(shmkey, "shmat", errno);
+			return NULL;
+		}
 		memset(shmptr, 0, shmsize);
 	} else {
 		*iscreate = 0;
 		shmptr = (void *) shmat(shmid, NULL, 0);
-		if (shmptr == (void *) -1)
+		if (shmptr == (void *) -1) {
 			attach_err(shmkey, "shmat", errno);
+			return NULL;
+		}
 	}
 	return shmptr;
 }
@@ -260,6 +272,8 @@ void resolve_boards(void)
 	if (brdshm == NULL) {
 		brdshm = attach_shm2("BCACHE_SHMKEY", 3693, sizeof(*brdshm),
 				&iscreate);
+		if (brdshm == NULL)
+			exit(1);
 		if (iscreate) {
 			initlastpost=1;
 			int i, maxi = -1;
