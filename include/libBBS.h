@@ -60,4 +60,8 @@ int insert_record(char *filename, int size, RECORD_FUNC_ARG filecheck,
 char *genpasswd(const char *pw);
 int checkpasswd(char *pw_crypted, char *pw_try);
 
+//shm.c
+void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
+void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
+int remove_shm(const char *shmstr, int defaultkey, int shmsize);
 #endif

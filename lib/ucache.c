@@ -408,14 +408,14 @@ int refresh_utmp(void)
 		uentp = &(utmpshm->uinfo[n]);
 		if (uentp->active && uentp->pid) {
 			 // See if pid exists.
-			if (bbskill(uentp->pid, 0) == -1) {
+			if (bbskill(uentp, 0) == -1) {
 				memset(uentp, 0, sizeof(struct user_info));
 				continue;
 			} else {
 				// Kick idle users out.
 				if (uentp->mode != BBSNET
 						&& now - uentp->idle_time > IDLE_TIMEOUT) {
-					bbskill(uentp->pid, SIGHUP);
+					bbskill(uentp, SIGHUP);
 					memset(uentp, 0, sizeof(struct user_info));
 				} else {
 					// Increase status.

@@ -145,7 +145,7 @@ void hit_alarm_clock() {
 	if (i_mode == INPUT_IDLE) {
 		clear();
 		prints("Idle timeout exceeded! Booting...\n");
-		bbskill(getpid(), SIGHUP);
+		kill(getpid(), SIGHUP);
 	}
 	i_mode = INPUT_IDLE;
 	if (uinfo.mode == LOGIN)

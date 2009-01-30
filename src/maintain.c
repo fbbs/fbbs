@@ -301,7 +301,7 @@ int kick_user( struct user_info *userinfo )
       strcpy(kickuser, uin.userid);
       ind = YEA;
    }
-   if (!ind||!uin.active||(uin.pid && bbskill(uin.pid, 0)==-1)) {
+   if (!ind||!uin.active||(uin.pid && bbskill(&uin, 0)==-1)) {
       if(uinfo.mode!=LUSERS&&uinfo.mode!=OFFLINE&&uinfo.mode!=FRIEND) {
          move(3, 0);
 	 prints("用户 [%s] 不在线上",kickuser);
@@ -312,10 +312,10 @@ int kick_user( struct user_info *userinfo )
       return 0;
    }
      if (uin.mode == WWW ) {
-	 	bbskill (uin.pid,SIGABRT);
+	 	bbskill(&uin, SIGABRT);
      }
      else {
-	 	bbskill(uin.pid, SIGHUP);
+	 	bbskill(&uin, SIGHUP);
      }
    sprintf(buffer, "kick out %s", kickuser);
    report(buffer, currentuser.userid);

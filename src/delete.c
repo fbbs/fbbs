@@ -119,10 +119,10 @@ int offline() {
 		{
 			struct user_info uin;
 			if (search_ulist(&uin, cmpuids3, usernum)) {
-				if (!uin.active || (uin.pid && bbskill(uin.pid, 0) == -1))
+				if (!uin.active || (uin.pid && bbskill(&uin, 0) == -1))
 					;
 				else if (uin.pid)
-					bbskill(uin.pid, SIGHUP);
+					bbskill(&uin, SIGHUP);
 			}
 		}
 		currentuser.userlevel = 0;

@@ -1119,8 +1119,8 @@ int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]
 	/* add end */
 
 	if(topid<=0) return -1;
-	bbskill(topid, SIGTTOU);
-	bbskill(topid, SIGUSR2);
+	kill(topid, SIGTTOU);
+	kill(topid, SIGUSR2);
 	return 0;
 }
 

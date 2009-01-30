@@ -269,7 +269,7 @@ int do_sendmsg(struct user_info *uentp, char msgstr[256], int mode,
 			return -1;
 		}
 	}
-	if (!uin->active || bbskill(uin->pid, 0) == -1) {
+	if (!uin->active || bbskill(uin, 0) == -1) {
 		if (msgstr == NULL) {
 			prints("\n对方已经离线...\n");
 			pressreturn();
@@ -299,7 +299,7 @@ int do_sendmsg(struct user_info *uentp, char msgstr[256], int mode,
 #endif
 	free(msgbuf);
 	if (uin->pid) {
-		bbskill(uin->pid, SIGUSR2);
+		bbskill(uin, SIGUSR2);
 	}
 	if (msgstr == NULL) {
 		prints("\n已送出讯息...\n");
