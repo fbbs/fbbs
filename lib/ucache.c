@@ -217,9 +217,9 @@ int load_ucache(void)
 	return 0;
 }
 
-int substitut_record(char *filename, char *rptr, int size, int id)
+int substitut_record(char *filename, void *rptr, size_t size, int id)
 {
-	memcpy(&(uidshm->passwd[id-1]), rptr, size);
+	memcpy(&(uidshm->passwd[id - 1]), rptr, size);
 }
 
 // Flushes cache for all users to PASSFILE.

@@ -411,7 +411,7 @@ int dosearchuser(const char *userid, struct userec *user, int *unum);
 int uhashkey(const char *userid, int *a1, int *a2);
 int del_uidshm(int num, char *userid);
 int load_ucache(void);
-int substitut_record(char *filename, char *rptr, int size, int id);
+int substitut_record(char *filename, void *rptr, size_t size, int id);
 int flush_ucache(void);
 void resolve_ucache(void);
 void setuserid(int num, char *userid);
