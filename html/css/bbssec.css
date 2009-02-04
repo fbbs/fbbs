@@ -1,0 +1,10 @@
+li.board {
+	display: inline;
+	list-style-type: none
+}
+a {
+	color: #000000
+}
+a.visited {
+	color: #000000
+}

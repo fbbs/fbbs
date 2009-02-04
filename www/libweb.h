@@ -99,6 +99,7 @@ extern char *parm_val[];
 extern int parm_num;
 
 int user_init(struct userec *x, struct user_info **y);
+void xml_header(const char *xslfile);
 
 int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig);
 int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig);

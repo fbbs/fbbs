@@ -684,15 +684,6 @@ static int http_init(void)
 {
 	int my_style;
 
-#ifndef XMLFILE
-	printf("Content-type: text/html; charset=%s\n\n\n", CHARSET);
-	printf("<html>\n");
-	printf("<meta http-equiv='Content-Type' content='text/html; charset=%s'>\n", CHARSET);
-	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
-#else	
-	printf("Connection: close\n");
-	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
-#endif
 	http_parm_init();
 
 #ifdef SQUID
@@ -707,15 +698,6 @@ static int http_init(void)
 	}
 #else
 	strlcpy(fromhost, getsenv("REMOTE_ADDR"), sizeof(fromhost));
-#endif
-
-	my_style = atoi(getparm("my_style"));
-#ifndef XMLFILE
-#ifndef MY_CSS
-	printf("<link rel=stylesheet type=text/css href='/css/bbs%d.css'>\n", my_style);
-#else
-	printf("<link rel=stylesheet type=text/css href='%s'>\n", MY_CSS);
-#endif
 #endif
 
 	return my_style;
@@ -780,6 +762,13 @@ int user_init(struct userec *x, struct user_info **y)
 	}
 
 	return 1;
+}
+
+void xml_header(const char *xslfile)
+{
+	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
+	printf("<?xml version=\"1.0\" encoding=\"%s\"?>\n", CHARSET);
+	printf("<?xml-stylesheet type=\"text/xsl\" href=\"/xsl/%s.xsl\"?>\n", xslfile);
 }
 
 static int sig_append(FILE *fp, char *id, int sig) {
