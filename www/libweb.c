@@ -721,15 +721,6 @@ static int http_init(void)
 	return my_style;
 }
 
-int get_shmkey(char *s) {
-	int n=0;
-	while(shmkeys[n].key[0] != '\0') {
-		if(!strcasecmp(shmkeys[n].key, s)) return shmkeys[n].value;
-		n++;
-	}
-	return 0;
-}
-
 // Gets shared memory. Returns 0 if OK, exits on error.
 int shm_init(void)
 {

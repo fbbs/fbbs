@@ -17,10 +17,6 @@
 #define FIRST_PAGE	"/bbsmain.html"
 #define CSS_FILE 	"/css/bbs%d.css"
 #define CHARSET		"gb2312"
-#define UCACHE_SHMKEY	get_shmkey("UCACHE_SHMKEY")
-#define UTMP_SHMKEY	get_shmkey("UTMP_SHMKEY")
-#define BCACHE_SHMKEY	get_shmkey("BCACHE_SHMKEY")
-#define ACACHE_SHMKEY get_shmkey("ACACHE_SHMKEY")
 
 #define TLINES 18
 #define SQUID
@@ -101,8 +97,6 @@ int hhprintf(char *fmt, ...);
 extern char parm_name[][80];
 extern char *parm_val[];
 extern int parm_num;
-
-int get_shmkey(char *s);
 
 int user_init(struct userec *x, struct user_info **y);
 
