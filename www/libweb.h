@@ -39,6 +39,15 @@
 	#define SECNUM 12
 #endif
 
+enum HTTP_STATUS {
+	HTTP_STATUS_OK = 200,
+	HTTP_STATUS_BADREQUEST = 400,
+	HTTP_STATUS_FORBIDDEN = 403,
+	HTTP_STATUS_NOTFOUND = 404,
+	HTTP_STATUS_INTERNAL_ERROR = 500,
+	HTTP_STATUS_SERVICE_UNAVAILABLE = 503
+};
+
 #define HTTP_END (printf("\n</html>\n"));
 
 #define file_size(x) f_stat(x)->st_size
@@ -81,15 +90,11 @@ char * entity_char(char *s);
 int file_has_word(char *file, char *word);
 int f_append(const char *file, char *buf);
 struct stat *f_stat(char *file);
-
-
 int del_record(char *file, int size, int num);
-
-
 
 char *getsenv(char *s);
 void http_quit(void);
-int http_fatal(char *fmt, ...);
+void http_fatal(enum HTTP_STATUS status, const char *prompt);
 int hsprintf(char *s, char *fmt, ...);
 int hprintf(char *fmt, ...);
 int hhprintf(char *fmt, ...);

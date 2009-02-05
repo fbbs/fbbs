@@ -5,7 +5,7 @@ struct cgi_applet {
 	int (*func) (void);
 };
 
-struct cgi_applet applets[] = {
+static struct cgi_applet applets[] = {
 		{ "bbsleft", bbsleft_main },
 		{ "bbssec", bbssec_main },
 		{ "bbsfoot", bbsfoot_main },
@@ -46,9 +46,10 @@ int main(void)
 		fcgi_init_loop();
 		struct cgi_applet *app = getapplet(buf, sizeof(buf));
 		if (app == NULL) {
-			http_fatal("请求的页面 %s 不存在", getenv("SCRIPT_NAME"));
+			http_fatal(HTTP_STATUS_NOTFOUND, "请求的页面不存在");
+		} else {
+			(*(app->func)) ();
 		}
-		(*(app->func)) ();
 	}
 	return 0;
 }

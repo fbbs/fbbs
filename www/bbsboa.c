@@ -42,7 +42,7 @@ int bbsboa_main(void)
 
 	sector = (int)strtol(getparm("s"), NULL, 10);
 	if (sector < 0 || sector >= SECNUM)
-		http_fatal("错误的参数");
+		http_fatal(HTTP_STATUS_BADREQUEST, "错误的参数");
 	if(strtol(getparm("my_def_mode"), NULL, 10) != 0)
 		cgi = "bbstdoc";
 	else
