@@ -116,7 +116,7 @@ int count_mails(char *id, int *total, int *unread);
 
 int send_msg(char *myuserid, int mypid, char *touserid, int topid, char *msg);
 
-void iconexp(int exp);
+int iconexp(int exp, int *repeat);
 
 int save_user_data(struct userec *x);
 int user_perm(struct userec *x, int level);

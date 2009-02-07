@@ -1104,7 +1104,7 @@ int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]
 }
 
 // Convert exp to icons.
-void iconexp(int exp)
+int iconexp(int exp, int *repeat)
 {
 	int i, j;
 
@@ -1116,11 +1116,8 @@ void iconexp(int exp)
 		j = (exp - i * 2000) / 200;
 		j = j > 9 ? 9 : j;
 	}
-	j++;
-	while(j--)
-	{
-		printf("<img src=/images/level/%d.gif border=0 align=absmiddle>", i);
-	}
+	*repeat = ++j;
+	return i;
 }
 
 int save_user_data(struct userec *x) {
@@ -1271,15 +1268,6 @@ int fcgi_init_loop(void)
 {
 	int my_style = http_init();
 	loginok = user_init(&currentuser, &u_info);
-
-	// Happy birthday in status bar.
-	time_t t = time(NULL);
-	struct tm *tp = localtime(&t);
-	if(currentuser.birthmonth == ((tp->tm_mon) + 1)
-			&&currentuser.birthday==(tp->tm_mday)) {
-		printf("<head><script>self.status=\""
-				"今天是您的生日，"BBSNAME"祝您生日快乐！\"</script></head>");
-	}
 
 	return my_style;
 }

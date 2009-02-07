@@ -1,18 +1,29 @@
-A{COLOR: #000000; TEXT-DECORATION: none;}
-A:HOVER {text-decoration:underline}
-TABLE.BODY {BORDER: 2px solid; BORDER-COLOR: d0f0c0; }
-BODY
-{       FONT-FAMILY: Tahoma; FONT-SIZE: 9pt; 
+a {
+	color: #000000;
+	text-decoration: none;
 }
-TABLE,TH,TD,P,INPUT,SELECT {FONT-FAMILY: Tahoma; FONT-SIZE: 9pt; }
-HR{COLOR: 000000}
+a:hover {
+	text-decoration: underline
+}
+
+table.body {
+	border: 2px solid;
+	border-color: #d0f0c0;
+}
+
+body, table, th, td, p, input, select {
+	font-family: Tahoma;
+	font-size: 0.75em
+}
+
+hr {
+	color: #000000;
+}
 
 .ULINE {BORDER-BOTTOM: 1px solid #99ccff;}
 .TLINE {BORDER-TOP: 1px solid #99ccff;}
 .RLINE {BORDER-RIGHT: 1px solid #99ccff;}
 .LLINE {BORDER-LEFT: 1px  solid #99ccff;}
-
-.THINBLUE {BORDER: 1px solid #99ccff;}
 
 TEXTAREA.noborder{ padding: 3; border-style: solid; border-width:1; FONT-FAMILY: Simsun; FONT-SIZE: 9pt; COLOR: 000000; BACKGROUND-COLOR: FFFFFF}
 TEXTAREA{
