@@ -679,37 +679,18 @@ int num_alcounter() {
 	if (last+10 > now)
 		return;
 	last=now;
-	//canseecloak=(!uentp->invisible)||(uentp->uid==usernum)
-	//            ||(HAS_PERM(PERM_SEECLOAK));
 	count_friends=0;
-	for(i=0;i
-			<MAXFRIENDS && uinfo.friend[i];
-			i++) {
-				count_friends+=get_status(uinfo.friend[i]);
-			}
-			return;
-		}
+	for(i = 0; i < MAXFRIENDS && uinfo.friend[i]; i++) {
+		count_friends+=get_status(uinfo.friend[i]);
+	}
+	return;
+}
 
-		//	返回使用外部程序的人数
-		int num_useshell() {
-			count_useshell(NULL);
-			apply_ulist(count_useshell);
-			return count_useshell(NULL);
-		}
-
-		int num_active_users() {
-			count_active(NULL);
-			apply_ulist(count_active);
-			return count_active(NULL);
-		}
-		int
-		num_user_logins(uid)
-		char *uid;
-{
-	strcpy(save_page_requestor, uid);
-	count_active(NULL);
-	apply_ulist(count_user_logins);
-	return count_user_logins(NULL);
+//	返回使用外部程序的人数
+int num_useshell() {
+	count_useshell(NULL);
+	apply_ulist(count_useshell);
+	return count_useshell(NULL);
 }
 
 int num_visible_users() {

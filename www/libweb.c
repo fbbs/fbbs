@@ -1147,13 +1147,6 @@ int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
 }
 
-int count_online(void) {
-	int i, total=0;
-	for(i=0; i<MAXACTIVE; i++) 
-		if(utmpshm->uinfo[i].active) total++;
-	return total;
-}
-
 struct override fff[MAXFRIENDS];
 int friendnum=0;
 

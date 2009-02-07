@@ -170,7 +170,6 @@ void showrawcontent(char *filename);
 
 int strtourl(char * url, char * str);
 
-int count_online(void);
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);
 int has_read_perm(struct userec *user, char *board);

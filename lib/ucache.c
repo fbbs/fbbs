@@ -548,3 +548,12 @@ int who_callme(struct user_info *uentp, int (*fptr)(), int farg, int me)
 	return 0;
 }
 
+// Returns count of online users.
+int count_online(void)
+{
+	int i, total = 0;
+	for (i = 0; i < MAXACTIVE; i++)
+		if (utmpshm->uinfo[i].active)
+			total++;
+	return total;
+}

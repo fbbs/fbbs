@@ -39,10 +39,6 @@
 #define LOCK_UN         8       /* unlock */
 #endif
 
-#ifdef XINU
-extern int errno; //出错信息编号
-#endif
-
 #define randomize() srand((unsigned)time(NULL))	//随机函数初始化
 #define YEA (1)        /* Booleans  (Yep, for true and false) */
 #define NA  (0) 
@@ -432,6 +428,7 @@ int search_ulist(struct user_info *uentp, int (*fptr)(), int farg);
 int search_ulistn(struct user_info *uentp, int (*fptr)(), int farg, int unum);
 void update_ulist(struct user_info *uentp, int uent);
 int who_callme(struct user_info *uentp, int (*fptr)(), int farg, int me);
+int count_online(void);
 
 //log.c
 void report(const char *s, const char *userid);

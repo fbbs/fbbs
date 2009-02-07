@@ -629,7 +629,7 @@ static void login_query(void)
 	int recover; // For giveupBBS
 
 	// Deny new logins if too many users (>=MAXACTIVE) online.
-	curr_login_num = num_active_users();
+	curr_login_num = count_online();
 	if (curr_login_num >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
 		oflush();
