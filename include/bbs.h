@@ -98,6 +98,7 @@ extern int errno; //³ö´íÐÅÏ¢±àºÅ
 #define IDLEN                12    /* Length of userids */
 #define HOMELEN              80 // Length of relative pathname
                                 // under BBSHOME except BBSHOME/0Announce
+#define IPLEN                40 // Length of IP address.
 
 #ifdef MD5		  	   /* MD5 cryptographic support */
 #define ENCPASSLEN         35
@@ -455,6 +456,7 @@ char *setmdir(char *buf, const char *userid);
 extern sigjmp_buf bus_jump;
 void sigbus(int signo);
 int bbskill(const struct user_info *user, int sig);
+void SpecialID(const char *uid, char *host, int len);
 
 //board.c
 int changeboard(struct boardheader **bp, char *cboard, const char *board);

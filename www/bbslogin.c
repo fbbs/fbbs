@@ -74,7 +74,7 @@ static int wwwlogin(struct userec *user) {
 				u->pager |= FRIENDMSG_PAGER;
 			}
 
-			SpecialID(u->userid, fromhost);
+			SpecialID(u->userid, fromhost, IPLEN);
 			strlcpy(u->from, fromhost, 24);//???
 #ifdef SPARC
 			*(int*)(u->from + 30)=time(NULL);

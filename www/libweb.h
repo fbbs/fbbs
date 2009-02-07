@@ -180,9 +180,6 @@ void do_report(const char* fname, const char* content);
 char *cn_Ctime(time_t t);
 char *Ctime(time_t t);
 char *nohtml(char *s);
-// main.c
-void SpecialID(const char* uid, char* host);
-
 char *getparm(const char *name);
 void http_parm_init(void);
 

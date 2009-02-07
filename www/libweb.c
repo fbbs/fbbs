@@ -1478,38 +1478,6 @@ void trace(const char* content)
 }
 //added end
 
-//added by iamfat 2002.09.03
-//函数原型: void SpecialID(const char* uid, char* host)
-//函数功能: 根据id通过对etc/special.ini里面的匹配 给出该id相应的特殊登陆host
-//added by iamfat 2002.07.30
-//参数介绍:
-//(IN)uid:用户的id
-//(IN/OUT)host:传递过来用于修改的用户的host指针
-void SpecialID(const char* uid, char* host)
-{
-	FILE *fp;
-	char line[STRLEN];
-	char *special;
-	//char *lasts;
-	if(fp=fopen("etc/special.ini","r"))
-	{
-		while(fgets(line, STRLEN, fp))
-		{
-			//special=strtok_r(line," \r\n\t", &lasts);
-			special=strtok(line," \r\n\t");
-			if(special && !strcasecmp(uid,special))
-			{
-				//special=strtok_r(lasts," \r\n\t", &lasts);
-				special=strtok(NULL," \r\n\t");
-				if(special)strcpy(host,special);
-				break;
-			}
-		}
-		fclose(fp);
-	}
-}
-//added end
-
 void printpretable(void)
 {
 	printf("<table align=center border=0 cellpadding=0 cellspacing=0>\n");

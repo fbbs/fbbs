@@ -70,3 +70,26 @@ int bbskill(const struct user_info *user, int sig)
 	// Sending signals to multiple processes is not allowed.
 	return -1;
 }
+
+// Search 'uid' in id-host pairs in "etc/special.ini"(case insensitive)
+// and then modify 'host' accordingly.
+// 'len' should be the length of 'host'.
+void SpecialID(const char *uid, char *host, int len)
+{
+	FILE *fp;
+	char line[STRLEN];
+	char *special;
+
+	if ((fp = fopen("etc/special.ini", "r")) != NULL) {
+		while (fgets(line, sizeof(line), fp)) {
+			special = strtok(line, " \r\n\t");
+			if (special && !strcasecmp(uid, special)) {
+				special = strtok(NULL, " \r\n\t");
+				if (special)
+					strlcpy(host, special, len);
+				break;
+			}
+		}
+		fclose(fp);
+	}
+}
