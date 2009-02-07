@@ -5,10 +5,10 @@ int bbsleft_main(void)
 	xml_header("bbsleft");
 	printf("<bbsleft>\n");
 	if (loginok) {
-		printf("<login>%d</login>\n", loginok);
-		printf("<talk>%d</talk>\n", HAS_PERM(PERM_TALK));
-		printf("<cloak>%d</cloak>\n", HAS_PERM(PERM_CLOAK));
-		printf("<find>%d</find>\n", HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0));
+		printf("<login>%d</login>\n<talk>%d</talk>\n"
+				"<cloak>%d</cloak>\n<find>%d</find>\n",
+				loginok, HAS_PERM(PERM_TALK), HAS_PERM(PERM_CLOAK),
+				HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0));
 		// Favorite boards
 		const char *cgi = "bbsdoc";
 		if (atoi(getparm("my_def_mode")) != 0)
