@@ -10,6 +10,7 @@ struct _shmkey {
 	int value;
 };
 
+// TODO: Use enum.
 // Shared memory keys.
 const static struct _shmkey shmkeys[] = {
 	{ "BCACHE_SHMKEY", 30000 }, { "UCACHE_SHMKEY", 30010 },

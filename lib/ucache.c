@@ -365,7 +365,7 @@ void resolve_utmp(void)
 	if (utmpshm == NULL) {
 		utmpshm = attach_shm("UTMP_SHMKEY", 3699, sizeof(*utmpshm));
 		if (utmpshm == NULL)
-			exit(1);
+			exit(1); // TODO: leave to callers.
 	}
 }
 

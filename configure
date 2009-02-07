@@ -1512,7 +1512,7 @@ echo -n "Show idle time of BBS users ? --> [Y] "
 read ans
 case $ans in
    [Nn]) xCSIE_DEF="" ;;
-      *) xCSIE_DEF="-DSHOW_IDLE_TIME -DWITHOUT_CHROOT" ;;
+      *) xCSIE_DEF="-DSHOW_IDLE_TIME" ;;
 esac
 
 echo -n "Make bbs to Allow Games(-DDLM) ? --> [Y] "

@@ -24,7 +24,7 @@ int talkrequest = NA;
 time_t lastnote;
 struct user_info uinfo;
 char fromhost[60];
-char BoardName[STRLEN];
+char BoardName[STRLEN]; // TODO: Can be replaced by macro.
 
 int utmpent = -1;
 time_t login_start_time;
@@ -578,13 +578,13 @@ struct max_log_record {
 	int logins;
 	unsigned long visit;
 };
-static struct max_log_record max_log;
 
 // Show visit count and save it.
 static void visitlog(void)
 {
 	time_t now;
 	struct tm *tm;
+	struct max_log_record max_log;
 
 	FILE *fp;
 	fp = fopen(VISITLOG, "r+b");
@@ -660,18 +660,6 @@ static void login_query(void)
 		"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
 		allusers(), MAXUSERS, utmpshm->total_num, MAXACTIVE);
 	visitlog();
-
-#ifdef MUDCHECK_BEFORELOGIN
-	prints("\033[1;33m为防止使用程式上站，请按 \033[1;36mCTRL + C\033[m : ");
-	genbuf[0] = igetkey();
-	if (genbuf[0] != Ctrl('C')) {
-		prints("\n对不起，您并没有按下 CTRL+C 键！\n");
-		oflush();
-		exit(1);
-	} else {
-		prints("[CTRL] + [C]\n");
-	}
-#endif
 
 	attempts = 0;
 	while (1) {
