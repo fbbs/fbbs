@@ -57,6 +57,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 						</xsl:choose>
 					</span>
 				</div>
+				<script>setTimeout('self.location=self.location', 240000);</script>
 			</body>
 		</html>
 	</xsl:template>
