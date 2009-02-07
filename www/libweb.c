@@ -366,8 +366,8 @@ void http_quit(void) {
 
 void http_fatal(enum HTTP_STATUS status, const char *prompt)
 {
-	printf("Content-type: text/html\n"
-			"Status: %d\n\n", status);
+	printf("Content-type: text/html; charset=%s\nStatus: %d\n\n",
+			CHARSET, status);
 	printf("<html><head><title>发生错误</title></head><body><div>%s</div>"
 			"<a href=javascript:history.go(-1)>快速返回</a></body></html>",
 			prompt);
