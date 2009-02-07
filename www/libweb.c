@@ -767,6 +767,19 @@ void xml_header(const char *xslfile)
 	printf("<?xml-stylesheet type=\"text/xsl\" href=\"/xsl/%s.xsl\"?>\n", xslfile);
 }
 
+void http_header(void)
+{
+	printf("Content-type: text/html; charset=%s\n\n", CHARSET);
+	printf("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
+			" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n");
+	printf("<html>\n<head>\n");
+}
+
+void setcookie(const char *a, const char *b)
+{
+	printf("<script>document.cookie='%s=%s'</script>\n", a, b);
+}
+
 static int sig_append(FILE *fp, char *id, int sig) {
 	FILE *fp2;
 	char path[256];
@@ -1399,7 +1412,8 @@ char *getbfroma(char *path) {
 	return "";
 }
 
-int set_my_cookie(void) {
+int set_my_cookie(void)
+{
 	FILE *fp;
 	char path[256], buf[256], buf1[256], buf2[256];
 	int my_t_lines=20, my_link_mode=0, my_def_mode=0, my_style=0;
@@ -1421,14 +1435,9 @@ int set_my_cookie(void) {
 				my_style=atoi(buf2);
 		}
 		fclose(fp);
-		sprintf(buf, "%d", my_t_lines);
-		setcookie("my_t_lines", buf);
-		sprintf(buf, "%d", my_link_mode);
-		setcookie("my_link_mode", buf);
-		sprintf(buf, "%d", my_def_mode);
-		setcookie("my_def_mode", buf);
-		sprintf(buf, "%d", my_style);
-		setcookie("my_style", buf);
+		printf("<my_t_lines>%d</my_t_lines>\n<my_link_mode>%d</my_link_mode>\n"
+				"<my_def_mode>%d</my_def_mode>\n<my_style>%d</my_style>\n",
+				my_t_lines, my_link_mode, my_def_mode, my_style);
 	}
 }
 

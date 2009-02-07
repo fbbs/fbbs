@@ -56,7 +56,7 @@ enum HTTP_STATUS {
 #define file_isdir(x) ((f_stat(x)->st_mode & S_IFDIR)!=0)
 #define file_isfile(x) ((f_stat(x)->st_mode & S_IFREG)!=0)
 
-#define setcookie(a, b)	printf("<script>document.cookie='%s=%s'</script>\n", a, b)
+void setcookie(const char *a, const char *b);
 #define redirect(x)	printf("<meta http-equiv='Refresh' content='0; url=%s'>\n", x)
 #define refreshto(x, t)	printf("<meta http-equiv='Refresh' content='%d; url=%s'>\n", t, x)
 #define cgi_head()	printf("Content-type: text/html; charset=%s\n\n", CHARSET)
@@ -105,6 +105,7 @@ extern int parm_num;
 
 int user_init(struct userec *x, struct user_info **y);
 void xml_header(const char *xslfile);
+void http_header(void);
 
 int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig);
 int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig);

@@ -61,7 +61,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 								</xsl:if>
 							</div>
 							<!-- 处理信件 -->
-							<a href="#" onclick="return SwitchPanel('Mail')"><img src="/images/mail.gif" />个人设置</a>
+							<a href="#" onclick="return SwitchPanel('Mail')"><img src="/images/mail.gif" />处理信件</a>
 							<div id="Mail">
 								<a href="/fcgi/bbsnewmail" target="view"><img src="/images/blankblock.gif" />阅览新信件</a>
 								<a href="/fcgi/bbsmail" target="view"><img src="/images/blankblock.gif" />所有信件</a>
@@ -95,15 +95,13 @@ xmlns="http://www.w3.org/1999/xhtml">
 	<xsl:template match="bbsleft/favbrd">
 		<xsl:for-each select="./*">
 			<xsl:if test="name()='dir'">
-				<a>
+				<a target="view">
 					<xsl:attribute name="href">/fcgi/bbsboa?board=<xsl:value-of select="." /></xsl:attribute><xsl:value-of select="." />
-					<xsl:attribute name="target">view</xsl:attribute>
 				</a>
 			</xsl:if>
 			<xsl:if test="name()='board'">
-				<a>
+				<a target="view">
 					<xsl:attribute name="href">/fcgi/<xsl:value-of select="/bbsleft/favurl" />?board=<xsl:value-of select="." /></xsl:attribute><xsl:value-of select="." />
-					<xsl:attribute name="target">view</xsl:attribute>
 				</a>
 			</xsl:if>
 		</xsl:for-each>

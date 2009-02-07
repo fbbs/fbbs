@@ -89,15 +89,17 @@ static int wwwlogin(struct userec *user) {
 
 			tmp = rand() % 100000000;
 			u->utmpkey = tmp;
+			FLOCK(fileno(fp), LOCK_UN);
+			fclose(fp);
+			http_header();
 			sprintf(buf, "%d", n + 1);
 			setcookie("utmpnum", buf);
 			sprintf(buf, "%d", tmp);
 			setcookie("utmpkey", buf);
 			setcookie("utmpuserid", currentuser.userid);
 			set_my_cookie();
+			printf("</head>\n<body>\n</body>\n</html>\n");
 
-			FLOCK(fileno(fp), LOCK_UN);
-			fclose(fp);
 			uidshm->status[u->uid - 1]++;
 			return 0;
 		}
