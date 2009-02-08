@@ -50,7 +50,7 @@ void count_msg();
 
 // Handle giveupBBS(Ω‰Õ¯) transactions.
 // Return expiration date (in days from epoch).
-// Better rewrite it..
+// TODO: Better rewrite it..
 int chk_giveupbbs(void)
 {
 	int i, j, tmpcount, tmpid, sflag[10][2];
@@ -387,15 +387,15 @@ static int count_ip(void)
 // active processes from IP 'fromhost'. If so, deny more logins.
 // guest users, or users from IP addresses in "etc/freeip"
 // or not in "etc/restrictip" are not checked.
-static void iplogins_check(void)
+static int iplogins_check(void)
 {
 	int sameip;
 
 	if (currentuser.userid && !strcmp(currentuser.userid, "guest"))
-		return;
+		return 0;
 	if (!IsSpecial(fromhost, "etc/restrictip")
 			|| IsSpecial(fromhost, "etc/freeip")) {
-		return;
+		return 0;
 	} else {
 		sameip = count_ip();
 	}
@@ -403,38 +403,33 @@ static void iplogins_check(void)
 		prints("\033[1;32mŒ™»∑±£À˚»À…œ’æ»®“Ê, ±æ’æΩˆ‘ –Ì¥ÀIPÕ¨ ±µ«¬Ω %d ∏ˆ°£\n\033[m",
 				IPMAXLOGINS);
 		prints("\033[1;36mƒ˙ƒø«∞“—æ≠ π”√∏√IPµ«¬Ω¡À %d ∏ˆ£°\n\033[m", sameip);
-		oflush();
-		sleep(3);
-		exit(1);
+		return -1;
 	}
+	return 0;
 }
 #endif
 
 // Prevent too many logins of same account.
-static void multi_user_check(void)
+static int multi_user_check(void)
 {
 	struct user_info uin;
 	int logins, mustkick = 0;
 
 	// Don't check sysops.
 	if (HAS_PERM(PERM_MULTILOG))
-		return;
+		return 0;
 
 	logins = count_user();
 	if (heavyload() && logins) {
 		prints("\033[1;33m±ß«∏, ƒø«∞œµÕ≥∏∫∫…π˝÷ÿ, «ÎŒ÷ÿ∏¥ Login°£\033[m\n");
-		oflush();
-		sleep(3);
-		exit(1);
+		return -1;
 	}
 
 	// Allow no more than MAXGUEST guest users.
 	if (!strcasecmp("guest", currentuser.userid)) {
 		if (logins > MAXGUEST) {
 			prints("\033[1;33m±ß«∏, ƒø«∞“—”–Ã´∂‡ \033[1;36mguest\033[33m, «Î…‘∫Û‘Ÿ ‘°£\033[m\n");
-			oflush();
-			sleep(3);
-			exit(1);
+			return -1;
 		}
 	}
 	// For users without PERM_SPECIAL0, MULTI_LOGINS logins are allowed.
@@ -442,8 +437,8 @@ static void multi_user_check(void)
 	// (actually 4, finding the bug..)
 	else if ((!HAS_PERM(PERM_SPECIAL0) && logins >= MULTI_LOGINS)
 			|| logins > 5) {
-		prints("\033[1;32mŒ™»∑±£À˚»À…œ’æ»®“Ê, ±æ’æΩˆ‘ –Ìƒ˙”√∏√’ ∫≈µ«¬Ω %d ∏ˆ°£\n\033[m", MULTI_LOGINS);
-		prints("\033[1;36mƒ˙ƒø«∞“—æ≠ π”√∏√’ ∫≈µ«¬Ω¡À %d ∏ˆ£¨ƒ˙±ÿ–Î∂œø™∆‰À˚µƒ¡¨Ω”∑Ωƒ‹Ω¯»Î±æ’æ£°\n\033[m", logins);
+		prints("\033[1;32mŒ™»∑±£À˚»À…œ’æ»®“Ê, ±æ’æΩˆ‘ –Ìƒ˙”√∏√’ ∫≈µ«¬º %d ∏ˆ°£\n\033[m", MULTI_LOGINS);
+		prints("\033[1;36mƒ˙ƒø«∞“—æ≠ π”√∏√’ ∫≈µ«¬º¡À %d ∏ˆ£¨ƒ˙±ÿ–Î∂œø™∆‰À˚µƒ¡¨Ω”∑Ωƒ‹Ω¯»Î±æ’æ£°\n\033[m", logins);
 		mustkick = 1;
 	}
 	if (search_ulist(&uin, cmpuids2, usernum) 
@@ -453,21 +448,20 @@ static void multi_user_check(void)
 
 		if (genbuf[0] == 'N' || genbuf[0] == 'n' || genbuf[0] == '\0') {
 			if (mustkick) {
-				prints("\033[33m∫‹±ß«∏£¨ƒ˙“—æ≠”√∏√’ ∫≈µ«¬Ω %d ∏ˆ£¨À˘“‘£¨¥À¡¨œﬂΩ´±ª»°œ˚°£\033[m\n", logins);
-				oflush();
-				sleep(3);
-				exit(1);
+				prints("\033[33m∫‹±ß«∏£¨ƒ˙“—æ≠”√∏√’ ∫≈µ«¬º %d ∏ˆ£¨À˘“‘£¨¥À¡¨œﬂΩ´±ª»°œ˚°£\033[m\n", logins);
+				return -1;
 			}
 		} else {
 			if (!uin.pid)
-				return;
+				return 0;
 			bbskill(&uin, SIGHUP);
 			report("kicked (multi-login)", currentuser.userid);
 		}
 	}
 #ifdef IPMAXLOGINS
-	iplogins_check();
+	return iplogins_check();
 #endif
+	return 0;
 }
 
 // Register some signal handlers.
@@ -619,7 +613,7 @@ static void visitlog(void)
 	prints("%s", genbuf);
 }
 
-static void login_query(void)
+static int login_query(void)
 {
 	char uid[IDLEN + 2];
 	char passbuf[PASSLEN];
@@ -629,12 +623,11 @@ static void login_query(void)
 	int recover; // For giveupBBS
 
 	// Deny new logins if too many users (>=MAXACTIVE) online.
+	resolve_utmp();
 	curr_login_num = count_online();
 	if (curr_login_num >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
-		oflush();
-		sleep(1);
-		exit(1);
+		return -1;
 	}
 
 #ifdef BBSNAME
@@ -650,30 +643,27 @@ static void login_query(void)
 		show_issue();
 	}
 	prints("\033[1;35mª∂”≠π‚¡Ÿ\033[1;40;33m°æ %s °ø \033[m"
-		"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
-		BoardName);
-	resolve_utmp();
+			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
+			BoardName);
 	utmpshm->total_num = curr_login_num;
 	if (utmpshm->max_login_num < utmpshm->total_num)
 		utmpshm->max_login_num = utmpshm->total_num;
 	prints("\033[1;32mƒø«∞“—”–’ ∫≈ ˝: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
-		"\033[32mƒø«∞…œ’æ»À ˝: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
-		allusers(), MAXUSERS, utmpshm->total_num, MAXACTIVE);
+			"\033[32mƒø«∞…œ’æ»À ˝: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
+			allusers(), MAXUSERS, utmpshm->total_num, MAXACTIVE);
 	visitlog();
 
 	attempts = 0;
 	while (1) {
 		if (attempts++ >= LOGINATTEMPTS) {
 			ansimore("etc/goodbye", NA);
-			oflush();
-			sleep(1);
-			exit(1);
+			return -1;
 		}
 #ifndef LOADTEST
 		getdata(0, 0, "\033[1;33m«Î ‰»Î’ ∫≈\033[m"
-		"( ‘”√«Î ‰»Î'\033[1;36mguest\033[m', "
-		"◊¢≤·«Î ‰»Î'\033[1;31mnew\033[m'): ",
-		uid, IDLEN + 1, DOECHO, YEA);
+				"( ‘”√«Î ‰»Î'\033[1;36mguest\033[m', "
+				"◊¢≤·«Î ‰»Î'\033[1;31mnew\033[m'): ",
+				uid, IDLEN + 1, DOECHO, YEA);
 #else
 		strcpy(uid, "guest");
 #endif
@@ -685,20 +675,19 @@ static void login_query(void)
 		}
 #endif
 		if ((strcasecmp(uid, "guest") == 0)
-			&& (MAXACTIVE - curr_login_num < 10)) {
-			ansimore("etc/loginfull", NA);
-			oflush();
-			sleep(1);
-			exit(1);
+				&& (MAXACTIVE - curr_login_num < 10)) {
+				ansimore("etc/loginfull", NA);
+			return -1;
 		}
 		if (strcasecmp(uid, "new") == 0) {
 #ifdef LOGINASNEW
 			memset(&currentuser, 0, sizeof(currentuser));
 			new_register();
+			// TODO: Already exit..
 			ansimore3("etc/firstlogin", YEA);
 			break;
 #else
-			prints("\033[1;37m±æœµÕ≥ƒø«∞Œﬁ∑®“‘ \033[36mnew[37m ◊¢≤·, "
+			prints("\033[1;37m±æœµÕ≥ƒø«∞Œﬁ∑®“‘ \033[36mnew\033[37m ◊¢≤·, "
 				"«Î”√\033[36m guest\033[37m Ω¯»Î...\033[m\n");
 #endif
 		} else if (*uid == '\0')
@@ -721,41 +710,30 @@ static void login_query(void)
 				prints("\033[1;31m√‹¬Î ‰»Î¥ÌŒÛ...\033[m\n");
 			} else {
 				if (strcasecmp(currentuser.userid, "guest")
-					&& !HAS_PERM(PERM_LOGIN)) {
+						&& !HAS_PERM(PERM_LOGIN)) {
 					recover = chk_giveupbbs();
 					if (recover) {
 						prints("\033[33mƒ˙’˝‘⁄Ω‰Õ¯£¨"
 							"¿ÎΩ‰Õ¯Ω· ¯ªπ”–%dÃÏ\033[m\n",
 							recover - time(NULL) / 3600 / 24);
-						oflush();
-						pressanykey();
-						sleep(1);
-						exit(1);
+						return -1;
 					}
 					if (currentuser.userlevel == 0) {
 						prints("\033[32mƒ˙“—æ≠◊‘…±\033[m\n");
-						pressanykey();
-						oflush();
-						sleep(1);
-						exit(1);
+						return -1;
 					} else {
 						prints("\033[32m±æ’ ∫≈“—Õ£ª˙°£«ÎµΩ "
 							"\033[36mNotice\033[32m∞Ê ≤È—Ø‘≠“Ú\033[m\n");
-						pressanykey();
-						oflush();
-						sleep(1);
-						exit(1);
+						return -1;
 					}
 				}
 #ifdef CHECK_FREQUENTLOGIN
 				if (!HAS_PERM(PERM_SYSOPS)
-					&& strcasecmp(currentuser.userid, "guest") != 0
-					&& abs(time(NULL) - currentuser.lastlogin) < 10) {
+						&& strcasecmp(currentuser.userid, "guest") != 0
+						&& abs(time(NULL) - currentuser.lastlogin) < 10) {
 					prints("µ«¬ºπ˝”⁄∆µ∑±£¨«Î…‘∫Ú‘Ÿ¿¥\n");
 					report("Too Frequent", currentuser.userid);
-					oflush();
-					sleep(3);
-					exit(1);
+					return -1;
 				}
 #endif
 				memset(passbuf, 0, PASSLEN - 1);
@@ -764,7 +742,8 @@ static void login_query(void)
 		}
 	}
 
-	multi_user_check();
+	if (multi_user_check() == -1)
+		return -1;
 
 	if (!term_init(currentuser.termtype)) {
 		prints("Bad terminal type. Defaulting to 'vt100'\n");
@@ -776,6 +755,7 @@ static void login_query(void)
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);
+	return 0;
 }
 
 static void write_defnotepad(void)
@@ -1109,7 +1089,11 @@ void start_client(void)
 		system_abort();
 	}
 
-	login_query();
+	if (login_query() == -1) {
+		oflush();
+		sleep(3);
+		exit(1);
+	}
 	user_login();
 	setmdir(currmaildir, currentuser.userid);
 	RMSG = NA;
