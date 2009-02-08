@@ -21,7 +21,7 @@ int bbsfoot_main(void)
 	printf("<bbsfoot>\n");
 	if (loginok) {
 		printf("<user>%s</user>\n<gender>%c</gender>\n"
-				"<month>%d</month><day></day>"
+				"<month>%d</month>\n<day>%d</day>\n"
 				"<mail>%d</mail>\n<bind>%d</bind>\n",
 				currentuser.userid, currentuser.gender,
 				currentuser.birthmonth, currentuser.birthday,
@@ -29,7 +29,7 @@ int bbsfoot_main(void)
 				HAS_PERM(PERM_BINDMAIL));
 		int level, repeat;
 		level = iconexp(countexp(&currentuser), &repeat);
-		printf("<level>%d</level><repeat>%d</repeat>", level, repeat);
+		printf("<level>%d</level>\n<repeat>%d</repeat>\n", level, repeat);
 		int dt;
 #ifdef SPARC
 		dt = abs(time(NULL) - *(int*)(u_info->from + 30)) / 60;

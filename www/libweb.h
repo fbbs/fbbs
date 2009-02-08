@@ -57,9 +57,7 @@ enum HTTP_STATUS {
 #define file_isfile(x) ((f_stat(x)->st_mode & S_IFREG)!=0)
 
 void setcookie(const char *a, const char *b);
-#define redirect(x)	printf("<meta http-equiv='Refresh' content='0; url=%s'>\n", x)
-#define refreshto(x, t)	printf("<meta http-equiv='Refresh' content='%d; url=%s'>\n", t, x)
-#define cgi_head()	printf("Content-type: text/html; charset=%s\n\n", CHARSET)
+void refreshto(int second, const char *url);
 
 #define FLOCK(x,y) flock(x,y)
 

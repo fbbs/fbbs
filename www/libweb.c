@@ -776,6 +776,11 @@ void http_header(void)
 	printf("<html>\n<head>\n");
 }
 
+void refreshto(int second, const char *url)
+{
+	printf("<meta http-equiv='Refresh' content='%d; url=%s' />\n", second, url);
+}
+
 void setcookie(const char *a, const char *b)
 {
 	printf("<script>document.cookie='%s=%s'</script>\n", a, b);

@@ -98,7 +98,9 @@ static int wwwlogin(struct userec *user) {
 			setcookie("utmpkey", buf);
 			setcookie("utmpuserid", currentuser.userid);
 			set_my_cookie();
-			printf("</head>\n<body>\n</body>\n</html>\n");
+			refreshto(3, FIRST_PAGE);
+			printf("</head>\n<body>登录成功，3秒钟后自动转到"
+				"<a href='"FIRST_PAGE"'>web首页</a>\n</body>\n</html>\n");
 
 			uidshm->status[u->uid - 1]++;
 			return 0;
@@ -175,6 +177,5 @@ int bbslogin_main(void)
 	log_usies("ENTER", fromhost, &user);
 	if(!loginok && strcasecmp(id, "guest"))
 		wwwlogin(&user);
-	redirect(FIRST_PAGE);
 	return 0;
 }

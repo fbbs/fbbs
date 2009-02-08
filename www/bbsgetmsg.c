@@ -36,6 +36,6 @@ int bbsgetmsg_main(void)
 		printf("<td align=right><a target=view href=bbssendmsg?destid=%s&destpid=%d>[»ØÑ¶Ï¢]</a> <a href=bbsgetmsg>[ºöÂÔ]</a>", toid, topid);
 		http_quit();
 	}
-	refreshto("bbsgetmsg", 60);
+	refreshto(60, "bbsgetmsg");
 	return 0;
 }
