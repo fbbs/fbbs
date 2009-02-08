@@ -702,12 +702,13 @@ static int http_init(void)
 // Gets shared memory. Returns 0 if OK, exits on error.
 int shm_init(void)
 {
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		exit(1);
 	resolve_utmp();
 	if (resolve_boards() < 0)
-		exit(-1);
-	if (uidshm == NULL || utmpshm == NULL || brdshm == NULL)
-		exit(-1);
+		exit(1);
+	if (utmpshm == NULL || brdshm == NULL)
+		exit(1);
 	return 0;
 }
 

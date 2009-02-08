@@ -47,7 +47,8 @@ int main(int argc, char *argv[]) {
 			sleep(60 * 15); //睡眠十分钟,即每十五分钟同步一次.        
 		}
 	} else if ( !strcasecmp(argv[1], "flushed") ) { //miscd flushed
-		resolve_ucache();
+		if (resolve_ucache() == -1)
+			exit(1);
 		flush_ucache();
 		flush_bcache();
 	} else if ( !strcasecmp(argv[1], "reload") ) { //miscd reload

@@ -360,7 +360,8 @@ static char *u_namearray(char buf[][IDLEN + 1], int *pnum, char *tag)
 	register int n, total;
 	char tagbuf[STRLEN];
 	int ch, num = 0;
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		exit(0);
 	if (*tag == '\0') {
 		*pnum = reg_ushm->number;
 		return reg_ushm->userid[0];

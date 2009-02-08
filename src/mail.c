@@ -1415,7 +1415,8 @@ int g_send() {
 				for (i = cnt; i < maxrecp && n < uinfo.fnum; i++) {
 					int key;
 					move(2, 0);
-					getuserid(uident, uinfo.friend[n], sizeof(uident));
+					if (getuserid(uident, uinfo.friend[n], sizeof(uident)) == -1)
+						exit(0);
 					prints("%s\n", uident);
 					move(3, 0);
 					n++;
@@ -1544,20 +1545,26 @@ char current_maillist;
 	for (cnt = 0; cnt < num; cnt++) {
 		char uid[13];
 		char buf[STRLEN];
-		if (G_SENDMODE == 1)
-		getuserid(uid, uinfo.friend[cnt], sizeof(uid));
-		else if (G_SENDMODE == 2) {
-			if (fgets(buf, STRLEN, mp) != NULL) {
-				if (strtok(buf, " \n\r\t") != NULL)
-				strcpy(uid, buf);
-				else
-				continue;
-			} else {
-				cnt = num;
-				continue;
-			}
-		} else
-		strcpy(uid, userid[cnt]);
+		switch (G_SENDMODE) {
+			case 1:
+				if (getuserid(uid, uinfo.friend[cnt], sizeof(uid)) == -1)
+					exit(0);
+				break;
+			case 2:
+				if (fgets(buf, STRLEN, mp) != NULL) {
+					if (strtok(buf, " \n\r\t") != NULL)
+						strcpy(uid, buf);
+					else
+						continue;
+				} else {
+					cnt = num;
+					continue;
+				}
+				break;
+			default:
+				strcpy(uid, userid[cnt]);
+				break;
+		}
 		sethomefile(filepath, uid, "rejects");
 		if(search_record(filepath, &or, sizeof(or), cmpfnames, currentuser.userid))
 		continue;
@@ -1739,7 +1746,8 @@ int ov_send() {
 	all = (uinfo.fnum >= maxrecp) ? maxrecp : uinfo.fnum;
 	for (i = 0; i < all; i++) {
 		char uid[IDLEN + 2];
-		getuserid(uid, uinfo.friend[i], sizeof(uid));
+		if (getuserid(uid, uinfo.friend[i], sizeof(uid)) == -1)
+			exit(0);
 		prints("%-12s ", uid);
 		if ((i + 1) % 6 == 0)
 			outc('\n');

@@ -229,22 +229,23 @@ int flush_ucache(void)
 			sizeof(uidshm->passwd), 1);
 }
 
-// Exits if 'uidshm' == NULL and shared memory does not exist.
-// Does nothing otherwise.
-void resolve_ucache(void)
+// Returns -1 if 'uidshm' == NULL and shared memory does not exist.
+// Otherwise does nothing and returns 0.
+int resolve_ucache(void)
 {
 	int iscreate = 0;
 	if (uidshm == NULL) {
 		uidshm = attach_shm2("UCACHE_SHMKEY", 3696, sizeof(*uidshm),
 				&iscreate);
 		if (uidshm == NULL)
-			exit(1);
+			return -1;
 	}
 	if (iscreate) {
 		remove_shm("UCACHE_SHMKEY", 3696, sizeof(*uidshm));
 		report("Error: miscd is not running!", "");
-		exit(1);
+		return -1;
 	}
+	return 0;
 }
 
 void setuserid(int num, char *userid)
@@ -281,7 +282,8 @@ void setuserid(int num, char *userid)
 int searchnewuser(void)
 {
 	register int num, i;
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return 0;
 	num = uidshm->number;
 	for (i = 0; i < num; i++)
 		if (uidshm->userid[i][0] == '\0')
@@ -292,10 +294,12 @@ int searchnewuser(void)
 }
 
 // Get 'userid' according to ('uid' - 1).
-void getuserid(char *userid, int uid, size_t len)
+int getuserid(char *userid, int uid, size_t len)
 {
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return -1;
 	strlcpy(userid, uidshm->userid[uid - 1], len);
+	return 0;
 }
 
 // Returns the place of 'userid' in cache for all users, 0 if not found.
@@ -305,7 +309,8 @@ int searchuser(const char *userid)
 	int a1, a2;
 	int key;
 
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return 0;
 	key = uhashkey(userid, &a1, &a2);
 	i = uidshm->hash[a1][a2][key];
 	while (i) {
@@ -343,14 +348,16 @@ int getuser(const char *userid)
 // Puts struct userec in *'u' according to ('uid' - 1).
 int getuserbyuid(struct userec *u, int uid)
 {
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return -1;
 	*u = uidshm->passwd[uid - 1];
 	return uid;
 }
 
 int get_status(int uid)
 {
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return 0;
 	if (!HAS_PERM(PERM_SEECLOAK)
 			&& (uidshm->passwd[uid - 1].userlevel & PERM_LOGINCLOAK)
 			&& (uidshm->passwd[uid - 1].flags[0] & CLOAK_FLAG))
@@ -372,7 +379,8 @@ void resolve_utmp(void)
 // Returns (non-realtime) count of all users.
 int allusers(void)
 {
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return 0;
 	return uidshm->number;
 }
 
@@ -393,7 +401,8 @@ int refresh_utmp(void)
 	time_t now;
 
 	resolve_utmp();
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return -1;
 	now = time(NULL);
 	// Lock caches.
 	utmpfd = utmp_lock();
@@ -442,7 +451,8 @@ int getnewutmpent(struct user_info *up)
 	int i;
 
 	resolve_utmp();
-	resolve_ucache();
+	if (resolve_ucache() == -1)
+		return -1;
 
 	utmpfd=utmp_lock();
 	if (utmpfd == -1) {
