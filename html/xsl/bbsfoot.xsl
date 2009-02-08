@@ -31,8 +31,8 @@ xmlns="http://www.w3.org/1999/xhtml">
 						</xsl:when>
 						<xsl:otherwise>
 							<form action="bbslogin" method="post" target="_top">
-								用户<input name="id" type="text" maxlength="12" size="15" class="thinblue" />
-								密码<input name='pw' type='password' maxlength='12' size='15' class='thinblue' />
+								用户<input name="id" type="text" maxlength="12" size="12" class="thinblue" />
+								密码<input name='pw' type='password' maxlength='12' size='12' class='thinblue' />
 								<input src='/images/login.gif' type='image' border='0' align='absmiddle' />
 							</form>
 						</xsl:otherwise>

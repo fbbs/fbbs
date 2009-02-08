@@ -9,7 +9,7 @@ table.body {
 	border: 2px solid;
 	border-color: #d0f0c0;
 }
-body, table, th, td, p, input, select {
+body, table, th, td, p, select {
 	font-family: Tahoma;
 	font-size: 0.75em
 }
