@@ -40,7 +40,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 								<a href="/fcgi/bbsfriend" target="view"><img src="/images/blankblock.gif" />在线好友</a>
 							</xsl:if>
 							<a href="/fcgi/bbsfriend" target="view"><img src="/images/blankblock.gif" />环顾四方</a>
-							<xsl:if test="/bbsleft/talk='1'">
+							<xsl:if test="/bbsleft/talk!='0'">
 								<a href="/fcgi/bbssendmsg" target="view"><img src="/images/blankblock.gif" />发送讯息</a>
 								<a href="/fcgi/bbsmsg" target="view"><img src="/images/blankblock.gif" />查看所有讯息</a>
 							</xsl:if>
@@ -56,7 +56,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 								<a href="/fcgi/bbspwd" target="view"><img src="/images/blankblock.gif" />修改密码</a>
 								<a href="/fcgi/bbsnick" target="view"><img src="/images/blankblock.gif" />临时改昵称</a>
 								<a href="/fcgi/bbsfall" target="view"><img src="/images/blankblock.gif" />设定好友</a>
-								<xsl:if test="/bbsleft/cloak='1'">
+								<xsl:if test="/bbsleft/cloak!='0'">
 									<a href="/fcgi/bbscloak" target="view"><img src="/images/blankblock.gif" />切换隐身</a>
 								</xsl:if>
 							</div>
@@ -72,7 +72,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 						<!-- 查找选项 -->
 						<a href="#" onclick="return SwitchPanel('Search')"><img src="/images/search.gif" />查找选项</a>
 						<div id="Search">
-							<xsl:if test="/bbsleft/find='1'">
+							<xsl:if test="/bbsleft/find!='0'">
 								<a href="/fcgi/bbsfind" target="view"><img src="/images/blankblock.gif" />查找文章</a>
 							</xsl:if>
 							<xsl:if test="/bbsleft/login='1'">
