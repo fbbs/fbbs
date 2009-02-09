@@ -2,6 +2,7 @@
 <xsl:stylesheet version="2.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
+	<xsl:import href='splitbm.xsl'/>
 	<xsl:template match="bbsall">
 		<html>
 			<head>
@@ -50,15 +51,11 @@ xmlns="http://www.w3.org/1999/xhtml">
 							</a></strong></td>
 							<!-- Board Masters -->
 							<td><strong>
-								<xsl:if test="bm">
-									<xsl:call-template name='split'>
-										<xsl:with-param name='names' select='bm' />
-									</xsl:call-template>
-								</xsl:if>
-								<xsl:if test="bm=''">
-									<xsl:if test="@dir='0'">³ÏÕ÷°æÖ÷ÖÐ</xsl:if>
-									<xsl:if test="@dir='1'">-</xsl:if>
-								</xsl:if>
+								<xsl:call-template name='splitbm'>
+									<xsl:with-param name='names' select='bm' />
+									<xsl:with-param name='isdir' select='@dir' />
+									<xsl:with-param name='isfirst' select='1' />
+								</xsl:call-template>
 							</strong></td>
 						</tr>
 					</xsl:for-each>
@@ -66,25 +63,4 @@ xmlns="http://www.w3.org/1999/xhtml">
 			</body>
 		</html>
 	</xsl:template>
-	
-	<xsl:template name="split">
-		<xsl:param name='names' />
-        <xsl:variable name='first' select='substring-before($names," ")' />
-        <xsl:variable name='rest' select='substring-after($names," ")' />
-        <xsl:if test='$first'>
-			<a><xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select='$first' /></xsl:attribute><xsl:value-of select='$first' /></a>
-		</xsl:if>
-		<xsl:if test='$rest'>
-			<span>&#160;</span>
-			<xsl:call-template name='split'>
-				<xsl:with-param name='names' select='$rest'/>
-			</xsl:call-template>
-        </xsl:if>
-		<xsl:if test='not($rest)'>
-			<xsl:if test='$names'>
-				<a><xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select='$names' /></xsl:attribute><xsl:value-of select='$names' /></a>
-			</xsl:if>
-		</xsl:if>
-	</xsl:template>
-
 </xsl:stylesheet>
