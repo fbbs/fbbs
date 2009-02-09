@@ -5,20 +5,23 @@ a {
 a:hover {
 	text-decoration: underline
 }
-table.body {
-	border: 2px solid;
-	border-color: #d0f0c0;
-}
 body {
 	font-family: Tahoma;
 	font-size: 0.75em;
 }
-th, td, p, select {
+p, select {
 	font-family: Tahoma;
 }
 table {
 	font-family: Tahoma;
+	border-style: solid outset outset solid;
+	border-width: 1px 2px 2px 1px;
+	border-color: #0066cc #555555 #555555 #0066cc;
+	font-size: 1em;
+}
+td, th {
 	white-space: nowrap;
+	font-size: 1em;
 }
 hr {
 	color: #000000;
