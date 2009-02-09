@@ -1,158 +1,76 @@
 #include "libweb.h"
 
-static int cmpboard(const void *b1, const void *b2)
-{
-	return strcasecmp((*(struct boardheader **)b1)->filename,
-		(*(struct boardheader **)b2)->filename);
-}
-
+// TODO: unify with telnet
 static int filenum(char *board) {
-	char file[256];
+	char file[HOMELEN];
 	sprintf(file, "boards/%s/.DIR", board);
 	return file_size(file)/sizeof(struct fileheader);
 }
 
-static int board_read(char *board) {
-	char buf[256];
-	FILE *fp;
-	struct fileheader x;
-	int total;
-	if(!loginok) return 1;
-	bzero(&x, sizeof(x));
-	sprintf(buf, "boards/%s/.DIR", board);
-	total=file_size(buf)/sizeof(struct fileheader);
-	if(total<=0) return 1;
-	fp=fopen(buf, "r+");
-	fseek(fp, (total-1)*sizeof(struct fileheader), SEEK_SET);
-	fread(&x, sizeof(x), 1, fp);
-	fclose(fp);
-	brc_initial(currentuser.userid, board);
-	return !brc_unread(x.filename);
-}
-
 int bbsboa_main(void)
 {
-	struct boardheader *data[MAXBOARD], *x;
-	int i, total = 0, sector;
-	char *cgi, *ptr;
-	char path[HOMELEN];
-	char *parent_name = NULL;
-    struct boardheader *parent = NULL;
-    int parent_bid = 0;
-
-	sector = (int)strtol(getparm("s"), NULL, 10);
-	if (sector < 0 || sector >= SECNUM)
-		http_fatal(HTTP_STATUS_BADREQUEST, "错误的参数");
-	if(strtol(getparm("my_def_mode"), NULL, 10) != 0)
+	xml_header("bbsboa");
+	printf("<bbsboa>\n");
+	int sector = (int)strtol(getparm("s"), NULL, 10);
+	if (sector < 0 || sector >= SECNUM) {
+		printf("</bbsboa>");
+		return 0;
+	}
+	char *cgi;
+	if (strtol(getparm("my_def_mode"), NULL, 10) != 0)
 		cgi = "bbstdoc";
 	else
 		cgi = "bbsdoc";
+	printf("<def>%s</def>\n", cgi);
 
-	/* rqq: 2006.2.14: allow board directory listing via the
-     * board=boardname parameter. NOTE: this implementation 
-     * reles on the getbnum() routine to check user permissiong.
-     */
-    parent_name = getparm("board");
+	struct boardheader *parent = NULL;
+    int parent_bid = 0;
+	const char *parent_name = getparm("board");
     if (parent_name) {
         parent = getbcache(parent_name);
         parent_bid = getbnum(parent_name, &currentuser);
         if (parent == NULL || parent_bid <= 0 || !(parent->flag & BOARD_DIR_FLAG)) {
             parent = NULL;
             parent_bid = 0;
-            parent_name = NULL;
         }
     }
 
-	for(i = 0; i < MAXBOARD; i++) {
+	if (parent == NULL) {
+		char path[HOMELEN];
+		sprintf(path, "%s/info/egroup%d/icon.jpg", BBSHOME, sector);
+		if (dashf(path))
+			printf("<icon>%s</icon>\n", path);
+		printf("<title>%s</title>\n", secname[sector][0]);
+	} else {
+		printf("<dir>1</dir>");
+		printf("<title>%s</title>\n", parent->title + 11);
+		// TODO: Magic number here.
+	}
+
+	// TODO: Marquee BBSHOME/info/egroup(sector)/headline.txt
+	struct boardheader *x;
+	int i;
+	for (i = 0; i < MAXBOARD; i++) {
 		x = &(bcache[i]);
-		if (x->filename[0] <= 32 || x->filename[0] > 'z')
+		if (x->filename[0] <= 0x20 || x->filename[0] > 'z')
 			continue;
 		if (!hasreadperm(&currentuser, x))
 			continue;
-		if (parent) {
+		if (parent != NULL) {
 			if (x->group != parent_bid) // directory listing
 				continue;
 		} else {  // section listing
 			if (!strchr(seccode[sector], x->title[0]))
 				continue;
 		}
-		data[total++] = x;
+		// TODO: Magic number here.
+		printf("<board dir='%d'>\n<title>%s</title>\n<cate>%.6s</cate>\n"
+				"<desc>%s</desc>\n<bm>%s</bm>\n"
+				"<read>%d</read><count>%d</count>\n</board>/",
+				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename,
+				x->title + 1, x->title + 11, x->BM,
+				brc_unread(x->filename), filenum(x->filename));
 	}
-	qsort(data, total, sizeof(struct boardheader *), cmpboard);
-
-	sprintf(path, "%s/info/egroup%d/icon.jpg", BBSHOME, sector);
-	if(dashf(path))
-		printf("<img src=/info/egroup%d/icon.jpg align=absmiddle width=32 height=32>", sector);
-	printf("<b>");
-
-	sprintf(path,"%s/info/egroup%d/banner.jpg",BBSHOME, sector);
-	if (parent) {
-        printf("<font style='font-size: 18pt'>%s</font> ·",
-               parent->title + 10);
-    }
-    else if(dashf(path)) {
-        printf("<img src=/info/egroup%d/banner.jpg "
-               "align=absmiddle height=32>", sector);
-    } 
-    else {
-        printf("<font style='font-size: 18pt'>%s</font> ·",
-            secname[sector][0]);
-    }
-    
-    if (parent)
-        printf(" %s 版面目录 </b>",  BBSNAME);
-    else
-        printf(" %s 分类讨论区 </b>",  BBSNAME);
-
-	sprintf(path, "%s/info/egroup%d/headline.txt", BBSHOME, sector);
-	if(!parent && dashf(path)) {
-		printpretable();
-		printf("<b>HEADLINE</b><br>");
-		printpremarquee("100%%", "48");
-		showcontent(path);
-		printpostmarquee();
-		printposttable();
-	}
-	printpretable();
-	printf("<table width=100%% bgcolor=#ffffff>\n");
-	printf("<tr class=pt9h align=center><td nowrap><b>序号</b></td><td nowrap><b>未<td nowrap><b>讨论区名称</b></td><td nowrap><b>更新时间</b></td><td><b>类别</b></td><td nowrap><b>中文描述</b></td><td nowrap><b>版主</b></td><td nowrap><b>文章数\n");
-	int cc = 0;
-	for (i = 0; i < total; i++) {
-		char buf[100];
-		int isgroup = (data[i]->flag & BOARD_DIR_FLAG)? 1 : 0;
-		sprintf(buf, "boards/%s/.DIR", data[i]->filename);
-		 /* print index */
-		printf("<tr class=%s valign=top><td align=right nowrap>%d</td>",
-                       ((cc++)%2)?"pt9dc":"pt9lc", i+1);	
-		/* print brc flag */
-        if (isgroup) 
-            printf("<td nowrap>-</td>");
-        else
-            printf("<td nowrap>%s", board_read(data[i]->filename) ? "◇" : "◆");
-       
-       if (isgroup)
-            printf("<td nowrap><a href=%s?board=%s><b>[ %s ]</b></a>", 
-                   "bbsboa", data[i]->filename, data[i]->filename);
-        else
-            printf("<td nowrap><a href=%s?board=%s><b>%s</b></a>", 
-                   cgi, data[i]->filename, data[i]->filename);      	
-		if (isgroup)
-            printf("<td nowrap>-");
-        else
-            printf("<td nowrap>%12.12s", 4+Ctime(file_time(buf)));
-		  /* print category */
-        printf("<td nowrap>%6.6s", (isgroup?"[目录]":data[i]->title+1));
-		/* print display name */
-        printf("</td><td width=100%%><a href=%s?board=%s><b>%s</b></a><br>", 
-               (isgroup?"bbsboa":cgi), data[i]->filename, data[i]->title+10);
-		ptr=strtok(data[i]->BM, " ,;");
-		if(ptr==0) ptr=(isgroup?"-":"诚征版主中");
-		printf("</td><td nowrap align=center><a href=bbsqry?userid=%s><b>%s</b></a>", ptr, ptr);
-		printf("</td><td nowrap align=right>%d\n", filenum(data[i]->filename));
-	}
-    printf("</table>");
-
-	printposttable();
-	http_quit();
+	printf("</bbsboa>");
 	return 0;
 }
