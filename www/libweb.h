@@ -86,7 +86,6 @@ int mailsize_under_limit(char *userid);
 
 char * entity_char(char *s);
 int file_has_word(char *file, char *word);
-int f_append(const char *file, char *buf);
 struct stat *f_stat(char *file);
 int del_record(char *file, int size, int num);
 

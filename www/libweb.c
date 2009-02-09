@@ -221,15 +221,6 @@ int file_has_word(char *file, char *word) {
 	return 0;
 }
 
-int f_append(const char *file, char *buf) {
-	FILE *fp;
-	fp=fopen(file, "a");
-	if (fp != NULL) {
-		fprintf(fp, "%s", buf);
-		fclose(fp);
-	}
-}
-
 struct stat *f_stat(char *file) {
 	static struct stat buf;
 	bzero(&buf, sizeof(buf));
@@ -1104,16 +1095,16 @@ int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]
 	sprintf(msgbuf, "[0;1;44;36m%-12.12s[33m([36m%-5.5s[33m):[37m%-54.54s[31m(^Z»Ø)[m[%05dm\n",
 			myuserid, Ctime(time(0)) + 11, msg, mypid);
 	sethomefile(buf3, touserid, "msgfile");
-	f_append(buf3, msgbuf);
+	file_append(buf3, msgbuf);
 	sethomefile(buf3, touserid, "msgfile.me");
-	f_append(buf3, msgbuf);
+	file_append(buf3, msgbuf);
 
 
 	/* added by roly 02.05.10 */
 	sethomefile(buf3, myuserid, "msgfile.me"); 
 	sprintf(msgbuf, "[1;32;40mTo [1;33;40m%-12.12s[m (%-5.5s):%-55.55s\n", 
 			touserid, Ctime(time(0)) + 11, msg); 
-	f_append(buf3, msgbuf); 
+	file_append(buf3, msgbuf); 
 	/* add end */
 
 	if(topid<=0) return -1;
@@ -1456,7 +1447,7 @@ void do_report(const char* fname, const char* content)
 	} else {
 		sprintf(buf, "%-12.12s %16.16s HTTP %s\n",
 				currentuser.userid, cn_Ctime(time(0))+6, content);
-		f_append(fname, buf);
+		file_append(fname, buf);
 	}
 	return;
 }
@@ -1467,7 +1458,7 @@ void do_report(const char* fname, const char* content)
 	char buf[256];
 	sprintf(buf, "%-12.12s %16.16s HTTP %s\n", 
 			currentuser.userid, cn_Ctime(time(0))+6, content);
-	f_append(fname, buf);
+	file_append(fname, buf);
 }
 #endif
 
