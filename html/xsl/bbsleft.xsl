@@ -2,7 +2,7 @@
 <xsl:stylesheet version="2.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
-	<xsl:template match="/">
+	<xsl:template match="bbsleft">
 		<html>
 			<head>
 				<title>主菜单</title>
@@ -26,26 +26,26 @@ xmlns="http://www.w3.org/1999/xhtml">
 							<a href="/fcgi/bbsuserinfo" target="view"><img src="/images/blankblock.gif" />在线统计</a>
 						</div>
 						<!-- 我的收藏 -->
-						<xsl:if test="/bbsleft/favbrd">
+						<xsl:if test="favbrd">
 							<a href="#" onclick="return SwitchPanel('Favorite')"><img src="/images/favorite.gif" />我的收藏</a>
 							<div id="Favorite">
 								<a href="/fcgi/bbsmybrd" target="view"><img src="/images/blankblock.gif" />预定管理</a>
-								<xsl:apply-templates select="bbsleft/favbrd" />
+								<xsl:apply-templates select="favbrd" />
 							</div>
 						</xsl:if>
 						<!-- 鹊桥相会 -->
 						<a href="#" onclick="return SwitchPanel('QueQiao')"><img src="/images/chat.gif" />鹊桥相会</a>
 						<div id="QueQiao">
-							<xsl:if test="/bbsleft/login='1'">
+							<xsl:if test="login='1'">
 								<a href="/fcgi/bbsfriend" target="view"><img src="/images/blankblock.gif" />在线好友</a>
 							</xsl:if>
 							<a href="/fcgi/bbsfriend" target="view"><img src="/images/blankblock.gif" />环顾四方</a>
-							<xsl:if test="/bbsleft/talk!='0'">
+							<xsl:if test="talk!='0'">
 								<a href="/fcgi/bbssendmsg" target="view"><img src="/images/blankblock.gif" />发送讯息</a>
 								<a href="/fcgi/bbsmsg" target="view"><img src="/images/blankblock.gif" />查看所有讯息</a>
 							</xsl:if>
 						</div>
-						<xsl:if test="/bbsleft/login='1'">
+						<xsl:if test="login='1'">
 							<!-- 个人设置 -->
 							<a href="#" onclick="return SwitchPanel('Config')"><img src="/images/config.gif" />个人设置</a>
 							<div id="Config">
@@ -56,7 +56,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 								<a href="/fcgi/bbspwd" target="view"><img src="/images/blankblock.gif" />修改密码</a>
 								<a href="/fcgi/bbsnick" target="view"><img src="/images/blankblock.gif" />临时改昵称</a>
 								<a href="/fcgi/bbsfall" target="view"><img src="/images/blankblock.gif" />设定好友</a>
-								<xsl:if test="/bbsleft/cloak!='0'">
+								<xsl:if test="cloak!='0'">
 									<a href="/fcgi/bbscloak" target="view"><img src="/images/blankblock.gif" />切换隐身</a>
 								</xsl:if>
 							</div>
@@ -72,10 +72,10 @@ xmlns="http://www.w3.org/1999/xhtml">
 						<!-- 查找选项 -->
 						<a href="#" onclick="return SwitchPanel('Search')"><img src="/images/search.gif" />查找选项</a>
 						<div id="Search">
-							<xsl:if test="/bbsleft/find!='0'">
+							<xsl:if test="find!='0'">
 								<a href="/fcgi/bbsfind" target="view"><img src="/images/blankblock.gif" />查找文章</a>
 							</xsl:if>
-							<xsl:if test="/bbsleft/login='1'">
+							<xsl:if test="login='1'">
 								<a href="/fcgi/bbsqry" target="view"><img src="/images/blankblock.gif" />查询网友</a>
 							</xsl:if>
 							<a href="/fcgi/bbssel" target="view"><img src="/images/blankblock.gif" />查找讨论区</a>
@@ -83,8 +83,8 @@ xmlns="http://www.w3.org/1999/xhtml">
 						<!-- 终端登录 -->
 						<a href="telnet://bbs.fudan.sh.cn:23"><img src="/images/telnet.gif" />终端登录</a>
 						<!-- 注销登录 -->
-						<xsl:if test="/bbsleft/login='1'">
-								<a href="/fcgi/bbslogout" target="view"><img src="/images/exit.gif" />注销登录</a>
+						<xsl:if test="login='1'">
+								<a href="/fcgi/bbslogout" target="_top"><img src="/images/exit.gif" />注销登录</a>
 						</xsl:if>
 					</div>
 				</div>
@@ -92,7 +92,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 		</html>
 	</xsl:template>
 
-	<xsl:template match="bbsleft/favbrd">
+	<xsl:template match="favbrd">
 		<xsl:for-each select="./*">
 			<xsl:if test="name()='dir'">
 				<a target="view">

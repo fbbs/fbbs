@@ -36,6 +36,7 @@ static void abort_program(void)
 
 int bbslogout_main(void)
 {
+	http_header();
 	if (!loginok) { 
 		refreshto(0, FIRST_PAGE);
 		return 0;
@@ -50,6 +51,6 @@ int bbslogout_main(void)
 	setcookie("my_style","");
 
 	abort_program();
-	refreshto(3, FIRST_PAGE);
+	refreshto(0, FIRST_PAGE);
 	return 0;
 }
