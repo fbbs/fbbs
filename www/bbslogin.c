@@ -1,16 +1,15 @@
 #include "libweb.h"
 
-static int check_multi(struct userec *user) {
-	int i, total=0;
-	for(i=0; i<MAXACTIVE; i++) {
-		if(utmpshm->uinfo[i].active==0) continue;
-		if(!strcasecmp(utmpshm->uinfo[i].userid, user->userid)) total++;
+static int check_multi(const struct userec *user)
+{
+	int i, total = 0;
+	int uid = searchuser(user->userid);
+	for (i = 0; i < MAXACTIVE; i++) {
+		if (utmpshm->uinfo[i].active == 0)
+			continue;
+		if (utmpshm->uinfo[i].uid == uid)
+			total++;
 	}
-	//add for NR autopost id:US.   eefree 06.9.8 
-	if (strcasecmp(user->userid,"US") ) {
-		if(!(user->userlevel&PERM_SYSOPS) && total>=2)
-			http_fatal(HTTP_STATUS_FORBIDDEN, "您已经登录了2个窗口。为了保证他人利益，此次连线将被取消。");
-	}//add end
 	return total;
 }
 
@@ -140,7 +139,12 @@ int bbslogin_main(void)
 			file_append("logins.bad", buf);
 			http_fatal(HTTP_STATUS_OK, "密码输入错误...");
 		}
+
 		total = check_multi(&user);
+		if (!HAS_PERM2(PERM_SYSOPS, &user) && total >= 2)
+			http_fatal(HTTP_STATUS_FORBIDDEN,
+					"您已经登录了2个窗口。为了保证他人利益，此次连线将被取消。");
+
 		if (!HAS_PERM2(PERM_LOGIN, &user))
 			http_fatal(HTTP_STATUS_OK, "本帐号已停机。请到Notice版查询原因");
 
