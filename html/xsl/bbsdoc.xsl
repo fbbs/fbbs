@@ -40,26 +40,26 @@ xmlns="http://www.w3.org/1999/xhtml">
 								<xsl:if test='position() mod 2 = 0'>pt9dc</xsl:if>
 							</xsl:attribute>
 							<td align='right'><xsl:value-of select='position() - 1 + /bbsdoc/start' /></td>
-							<td><a><strong>
-								<xsl:value-of select='author' />
-								<xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select='author' /></xsl:attribute>
-							</strong></a></td>
+							<td><strong><a>
+								<xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select='author' /></xsl:attribute><xsl:value-of select='author' />
+							</a></strong></td>
 							<td width='100%'>
-								<a>
-									<xsl:choose>
-										<xsl:when test='substring(title, 1, 4) = "Re: "'>
-											<img align='absmiddle' border='0' src='/images/types/reply.gif' />
-
-												<xsl:attribute name='href'>bbscon?b=<xsl:value-of select='/bbsdoc/title' />f=<xsl:value-of select='id' /></xsl:attribute>
-												<xsl:value-of select='substring(title, 5)' />
-										</xsl:when>
-										<xsl:otherwise>
-											<img align='absmiddle' border='0' src='/images/types/text.gif' />
-												<xsl:attribute name='href'>bbscon?b=<xsl:value-of select='/bbsdoc/title' />f=<xsl:value-of select='id' /></xsl:attribute>
-												<xsl:value-of select='title' />
-										</xsl:otherwise>
-									</xsl:choose>
-								</a>
+								<xsl:choose>
+									<xsl:when test='substring(title, 1, 4) = "Re: "'>
+										<img align='absmiddle' border='0' src='/images/types/reply.gif' />
+										<a>
+											<xsl:attribute name='href'>bbscon?b=<xsl:value-of select='/bbsdoc/title' />f=<xsl:value-of select='id' /></xsl:attribute>
+											<xsl:value-of select='substring(title, 5)' />
+										</a>
+									</xsl:when>
+									<xsl:otherwise>
+										<img align='absmiddle' border='0' src='/images/types/text.gif' />
+										<a>
+											<xsl:attribute name='href'>bbscon?b=<xsl:value-of select='/bbsdoc/title' />f=<xsl:value-of select='id' /></xsl:attribute>
+											<xsl:value-of select='title' />
+										</a>
+									</xsl:otherwise>
+								</xsl:choose>
 							</td>
 						</tr>
 					</xsl:for-each>
