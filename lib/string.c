@@ -101,45 +101,6 @@ char *ansi_filter(char *dst, const char *src)
 	return ret;
 }
 
-char datestring[30]; //For compatibility, should be eliminated gradually.
-
-// Convert time to string in specified format.
-// mode: 0 - "2001年02月03日04:05:06 星期六"
-//       1 - "02/03/01 04:05:06"
-//       2 - "02.03 04:05"
-//       4 - "02/03/01 04:05:06 Sat"
-int getdatestring(time_t time, int mode)
-{
-	struct tm t;
-	char weeknum[7][3] = {"天", "一", "二", "三", "四", "五", "六"};
-	char engweek[7][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-
-	localtime_r(&time, &t);
-	switch (mode) {
-		case 0:
-			sprintf(datestring, "%4d年%02d月%02d日%02d:%02d:%02d 星期%2s",
-					t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
-					t.tm_hour, t.tm_min, t.tm_sec, weeknum[t.tm_wday]);
-			break;
-		case 1:
-			sprintf(datestring, "%02d/%02d/%02d %02d:%02d:%02d",
-					t.tm_mon + 1, t.tm_mday, t.tm_year - 100,
-					t.tm_hour, t.tm_min, t.tm_sec);
-			break;
-		case 2:
-			sprintf(datestring, "%02d.%02d %02d:%02d",
-					t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min);
-			break;
-		case 4:
-		default:
-			sprintf(datestring, "%02d/%02d/%02d %02d:%02d:%02d %3s",
-					t.tm_mon + 1, t.tm_mday, t.tm_year - 100,
-					t.tm_hour, t.tm_min, t.tm_sec, engweek[t.tm_wday]);
-			break;
-	}
-	return (t.tm_sec % 10);
-}
-
 // Truncates 'str' to 'len' chars ended with ".."  or "...".
 // Do nothing if 'str' is less than or equal to 'len' chars.
 int ellipsis(char *str, int len)

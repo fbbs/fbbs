@@ -116,14 +116,10 @@ void showstuff(char *buf) {
 		strcpy(ccperf, cperf(tmpnum));
 		sprintf(alltime, "%d–° ±%d∑÷÷”", currentuser.stay / 3600,
 				(currentuser.stay / 60) % 60);
-		getdatestring(currentuser.firstlogin, NA);
-		sprintf(rgtday, "%s", datestring);
-		getdatestring(currentuser.lastlogin, NA);
-		sprintf(lasttime, "%s", datestring);
-		getdatestring(now, NA);
-		sprintf(thistime, "%s", datestring);
-		getdatestring(currentuser.lastjustify, NA);
-		sprintf(lastjustify, "%24.24s", datestring);
+		sprintf(rgtday, "%s", getdatestring(currentuser.firstlogin, DATE_ZH));
+		sprintf(lasttime, "%s", getdatestring(currentuser.lastlogin, DATE_ZH));
+		sprintf(thistime, "%s", getdatestring(now, DATE_ZH));
+		sprintf(lastjustify, "%24.24s", getdatestring(currentuser.lastjustify, DATE_ZH));
 		sprintf(stay, "%d", (time(0) - login_start_time) / 60);
 		sprintf(numlogins, "%d", currentuser.numlogins);
 		sprintf(numposts, "%d", currentuser.numposts);

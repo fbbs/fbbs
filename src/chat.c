@@ -691,10 +691,10 @@ void query_user(char *arg) {
 	} else {
 		sprintf(buf, "");
 	}
-	getdatestring(lookupuser.lastlogin, NA);
-	sprintf(msg, "%sÉÏ´ÎÔÚ [[1;32m%s[m] ÓÉ [[1;32m%s[m] µ½±¾Õ¾Ò»ÓÎ",
+	
+	sprintf(msg, "%sÉÏ´ÎÔÚ [\033[1;32m%s\033[m] ÓÉ [\033[1;32m%s\033[m] µ½±¾Õ¾Ò»ÓÎ",
 			(HAS_DEFINE(lookupuser.userdefine, DEF_S_HOROSCOPE) ) ? buf
-					: "", datestring,
+					: "", getdatestring(lookupuser.lastlogin, DATE_ZH),
 			(lookupuser.lasthost[0]=='\0' ? "(²»Ïê)" : lookupuser.lasthost));
 	printchatline(msg);
 	sprintf(msg, 
@@ -731,8 +731,7 @@ void query_user(char *arg) {
 		} else {
 			now = lookupuser.lastlogout;
 		}
-		getdatestring(now, NA);
-		sprintf(msg, "[1;37mÀëÕ¾Ê±¼ä£º[[1;32m%s[1;37m][m", datestring);
+		sprintf(msg, "[1;37mÀëÕ¾Ê±¼ä£º[[1;32m%s[1;37m][m", getdatestring(now, DATE_ZH));
 	}
 	printchatline(msg);
 }
@@ -770,11 +769,8 @@ void call_user(char *arg) {
 }
 
 void chat_date() {
-	time_t thetime;
-	time(&thetime);
-	getdatestring(thetime, 4);
 	sprintf(genbuf, "\033[1m %s±ê×¼Ê±¼ä: \033[32m%s\033[m", 
-		BoardName, datestring);
+		BoardName, getdatestring(time(NULL), DATE_ENWEEK));
 	printchatline(genbuf);
 }
 
@@ -862,8 +858,7 @@ void set_rec() {
 				(recflag == 1) ? "[Â¼Òô]" : "      ", tmptopic);
 		prints("%s", genbuf);
 		fprintf(rec, "±¾¶ÎÓÉ %s", currentuser.userid);
-		getdatestring(now, NA);
-		fprintf(rec, "ËùÂ¼ÏÂ£¬Ê±¼ä£º %s\n", datestring);
+		fprintf(rec, "ËùÂ¼ÏÂ£¬Ê±¼ä£º %s\n", getdatestring(now, DATE_ZH));
 	} else {
 		recflag = 0;
 		move(0, 0);
@@ -875,8 +870,7 @@ void set_rec() {
 				(recflag == 1) ? "[Â¼Òô]" : "      ", tmptopic);
 		prints("%s", genbuf);
 		printchatline("[1;5;32mÂ¼Òô½áÊø...[m");
-		getdatestring(now, NA);
-		fprintf(rec, "½áÊøÊ±¼ä£º%s\n\n", datestring);
+		fprintf(rec, "½áÊøÊ±¼ä£º%s\n\n", getdatestring(now, DATE_ZH));
 		fclose(rec);
 		mail_file(fname, currentuser.userid, "Â¼Òô½á¹û");
 		/*  Postfile(fname,"syssecurity","Â¼Òô½á¹û",2); */

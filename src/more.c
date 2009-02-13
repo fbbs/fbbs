@@ -521,7 +521,6 @@ int mesgmore(char *filename, int promptend, int row, int numlines)
    int     numbytes;
    int     curr_row = row;
    int     linesread = 0;
-   time_t  now;
    char    title[256];
    
    if ((fd = open(filename, O_RDONLY)) == -1)  return -1;
@@ -613,9 +612,7 @@ int mesgmore(char *filename, int promptend, int row, int numlines)
 	    } else if (ch == 'M') {
 			if (askyn("确定要寄回吗？", NA, YEA) == YEA) {
 		       close(fd);
-		       now = time(0);
-	    	   getdatestring(now,NA);
-			   sprintf(title, "[%s] 所有讯息备份", datestring);
+			   sprintf(title, "[%s] 所有讯息备份", getdatestring(time(NULL), DATE_ZH));
 			   mail_file(filename, currentuser.userid, title);
 			   unlink(filename);
 			}

@@ -74,24 +74,25 @@ void disply_userinfo(struct userec *u) {
 	prints("真实 E-mail  : %s\n", u->reginfo);
 	prints("最近光临机器 : %-22s", u->lasthost);
 	prints("终端机形态 : %s\n", u->termtype);
-	getdatestring(u->firstlogin, NA);
-	prints("帐号建立日期 : %s[距今 %d 天]\n", datestring, (now-(u->firstlogin))
-			/86400);
+	;
+	prints("帐号建立日期 : %s[距今 %d 天]\n",
+			getdatestring(u->firstlogin, DATE_ZH),
+			(now - (u->firstlogin)) / 86400);
 	getdatestring(u->lastlogin, NA);
-	prints("最近光临日期 : %s[距今 %d 天]\n", datestring, (now-(u->lastlogin))
-			/86400);
+	prints("最近光临日期 : %s[距今 %d 天]\n",
+			getdatestring(u->lastlogin, DATE_ZH),
+			(now-(u->lastlogin)) / 86400);
 #ifndef AUTOGETPERM      
 #ifndef REG_EXPIRED
-	getdatestring(u->lastjustify, NA);
-	prints("身份确认日期 : %s\n", (u->lastjustify==0) ? "未曾注册" : datestring);
+	prints("身份确认日期 : %s\n", (u->lastjustify==0) ? "未曾注册" : getdatestring(u->lastjustify, DATE_ZH));
 #else	//过期	?
 	if(u->lastjustify == 0) prints("身份确认     : 未曾注册\n");
 	else {
 		prints("身份确认     : 已完成，有效期限: ");
 		nextreg = u->lastjustify + REG_EXPIRED * 86400;
-		getdatestring(nextreg,NA);
+		char *str = getdatestring(nextreg, DATE_ZH);
 		sprintf(genbuf,"%14.14s[%s]，还有 %d 天\n",
-				datestring ,datestring+23,(nextreg - now) / 86400);
+				str, str + 23, (nextreg - now) / 86400);
 		prints(genbuf);
 	}
 #endif

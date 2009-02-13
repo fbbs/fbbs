@@ -88,6 +88,7 @@ extern sigjmp_buf bus_jump;
 void sigbus(int signo);
 int bbskill(const struct user_info *user, int sig);
 void SpecialID(const char *uid, char *host, int len);
+char *getdatestring(time_t time, enum DATE_FORMAT mode);
 
 //board.c
 int changeboard(struct boardheader **bp, char *cboard, const char *board);

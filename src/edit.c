@@ -91,10 +91,8 @@ void msgline() {
 			insert_character ? "²åÈë" : "¸ÄÐ´", currln + 1, currpnt + 1,
 			linelen-1, enabledbchar ? "Ë«" : "µ¥");
 	strcat(buf, buf2);
-	getdatestring(now, NA);
-	//Modified by IAMFAT 2002-05-26
-	//Roll Back by IAMFAT 2002-05-29
-	sprintf(buf2, "[1;33m¡¾[1;32m%.23s[33m¡¿[m", datestring+6);
+	sprintf(buf2, "\033[1;33m¡¾\033[1;32m%.23s\033[33m¡¿\033[m",
+			getdatestring(now, DATE_ZH) + 6);
 	strcat(buf, buf2);
 	move(t_lines - 1, 0);
 	clrtoeol();
@@ -768,8 +766,7 @@ void write_header(FILE *fp, int mode) {
 				(noname && header.chk_anony) ? "ÎÒÊÇÄäÃûÌìÊ¹" : uname, currboard);
 	}
 	fprintf(fp, "±ê  Ìâ: %s\n", save_title);
-	getdatestring(now, NA);
-	fprintf(fp, "·¢ÐÅÕ¾: %s (%s)", BoardName, datestring);
+	fprintf(fp, "·¢ÐÅÕ¾: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
 	if (in_mail)
 		fprintf(fp, "\nÀ´  Ô´: %s\n", fromhost);
 	else
@@ -977,8 +974,8 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	extern char fromhost[];
 	if (aborted != -1 && uinfo.mode == EDIT && ADD_EDITMARK) {
 		fprintf(fp,
-				"[m[1;36m¡ù ÐÞ¸Ä:¡¤%s ì¶ %16.16s ÐÞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s][m\n",
-				currentuser.userid, datestring + 6, fromhost);
+				"\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %16.16s ÐÞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s]\033[m\n",
+				currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, fromhost);
 	}
 	//added end
 	if ((uinfo.mode==POSTING||uinfo.mode==SMAIL||uinfo.mode==EDIT)

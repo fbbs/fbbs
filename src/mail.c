@@ -1880,8 +1880,8 @@ int mode;
 		}
 		else if ((fp = fopen(tmpfname, "a")) != NULL) {
 			fprintf(fp,
-					"\n--\n[1;36m¡ù ÐÞ¸Ä:¡¤%s ì¶ %16.16s ÐÞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s][m\n",
-					currentuser.userid, datestring + 6, fromhost);
+					"\n--\n\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %16.16s ÐÞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s]\033[m\n",
+					currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, fromhost);
 			fclose (fp);
 		}
 		clear();

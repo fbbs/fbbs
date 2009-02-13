@@ -44,7 +44,6 @@ int msgmorebar(char *filename) {
 	extern int showansi;
 	char title[256];
 	int ch;
-	time_t now;
 	showansi = 1;
 	move(t_lines - 1, 0);
 	clrtoeol();
@@ -60,9 +59,7 @@ int msgmorebar(char *filename) {
 		return ch;
 	} else if (ch == 'M') {
 		if (askyn("确定要寄回吗？", NA, YEA) == YEA) {
-			now = time(0);
-			getdatestring(now, NA);
-			sprintf(title, "[%s] 所有讯息备份", datestring);
+			sprintf(title, "[%s] 所有讯息备份", getdatestring(time(NULL), DATE_ZH));
 			mail_file(filename, currentuser.userid, title);
 			unlink(filename);
 		}

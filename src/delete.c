@@ -145,10 +145,8 @@ int getuinfo(FILE *fn) {
 	fprintf(fn, "居住住址     : %s\n", currentuser.address);
 	fprintf(fn, "电子邮件信箱 : %s\n", currentuser.email);
 	fprintf(fn, "真实 E-mail  : %s\n", currentuser.reginfo);
-	getdatestring(currentuser.firstlogin, NA);
-	fprintf(fn, "帐号建立日期 : %s\n", datestring);
-	getdatestring(currentuser.lastlogin, NA);
-	fprintf(fn, "最近光临日期 : %s\n", datestring);
+	fprintf(fn, "帐号建立日期 : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
+	fprintf(fn, "最近光临日期 : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
 	fprintf(fn, "最近光临机器 : %s\n", currentuser.lasthost);
 	fprintf(fn, "上站次数     : %d 次\n", currentuser.numlogins);
 	fprintf(fn, "文章数目     : %d\n", currentuser.numposts);
@@ -169,24 +167,21 @@ void mail_info(char *lastword) {
 	char filename[STRLEN];
 
 	now = time(0);
-	getdatestring(now, NA);
-	sprintf(filename, "%s 于 %s 登记自杀", currentuser.userid, datestring);
+	sprintf(filename, "%s 于 %s 登记自杀", currentuser.userid, getdatestring(now, DATE_ZH));
 	securityreport(filename, 1, 3);
 	sprintf(filename, "tmp/suicide.%s", currentuser.userid);
 	if ((fn = fopen(filename, "w")) != NULL) {
 		fprintf(fn, "大家好,\n\n");
 		fprintf(fn, "我是 %s (%s)。我己经决定在 15 天后离开这里了。\n\n",
 				currentuser.userid, currentuser.username);
-		getdatestring(currentuser.firstlogin, NA);
 		fprintf(fn, "自 %14.14s 至今，我已经来此 %d 次了，在这总计 %d 分钟的网络生命中，\n",
-				datestring, currentuser.numlogins, currentuser.stay/60);
+				getdatestring(currentuser.firstlogin, DATE_ZH), currentuser.numlogins, currentuser.stay/60);
 		fprintf(fn, "我又如何会轻易舍弃呢？但是我得走了...  点点滴滴－－尽在我心中！\n\n");
 		fprintf(fn, "%s", lastword);
 		fprintf(fn, "朋友们，请把 %s 从你们的好友名单中拿掉吧。因为我己经决定离开这里了!\n\n",
 				currentuser.userid);
 		fprintf(fn, "或许有朝一日我会回来的。 珍重!! 再见!!\n\n\n");
-		getdatestring(now, NA);
-		fprintf(fn, "%s 於 %s 留.\n\n", currentuser.userid, datestring);
+		fprintf(fn, "%s 于 %s 留.\n\n", currentuser.userid, getdatestring(now, DATE_ZH));
 		fclose(fn);
 		{
 			char sc_title[128];
@@ -208,7 +203,6 @@ int giveUpBBS() {
 	char ans[3], day[10];
 	int i, j, k, lcount, tcount;
 	int id;
-	time_t now;
 
 	lookupuser = currentuser;
 
@@ -350,29 +344,27 @@ int giveUpBBS() {
 		fprintf(fn, "%d %d\n", ans[0] - 48, j);
 		fclose(fn);
 
-		now = time(0);
-		getdatestring(now, NA);
-
+		char *str = getdatestring(time(NULL), DATE_ZH);
 		switch (ans[0]) {
 			case '1':
 				lookupuser.userlevel &= ~PERM_LOGIN;
 				sprintf(buf, "%s 于 %14.14s 戒 %s权限 %d 天。",
-						lookupuser.userid, datestring, "上站", atoi(day));
+						lookupuser.userid, str, "上站", atoi(day));
 				break;
 			case '2':
 				lookupuser.userlevel &= ~PERM_POST;
 				sprintf(buf, "%s 于 %14.14s 戒 %s权限 %d 天。",
-						lookupuser.userid, datestring, "发文", atoi(day));
+						lookupuser.userid, str, "发文", atoi(day));
 				break;
 			case '3':
 				lookupuser.userlevel &= ~PERM_TALK;
 				sprintf(buf, "%s 于 %14.14s 戒 %s权限 %d 天。",
-						lookupuser.userid, datestring, "聊天", atoi(day));
+						lookupuser.userid, str, "聊天", atoi(day));
 				break;
 			case '4':
 				lookupuser.userlevel &= ~PERM_MAIL;
 				sprintf(buf, "%s 于 %14.14s 戒 %s权限 %d 天。",
-						lookupuser.userid, datestring, "信件", atoi(day));
+						lookupuser.userid, str, "信件", atoi(day));
 				break;
 		}
 		lcount++;

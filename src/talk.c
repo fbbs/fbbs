@@ -437,40 +437,7 @@ char q_id[IDLEN + 2];
 	char planid[IDLEN + 2], buf[50];
 	time_t now;
 	if (!strcmp(currentuser.userid, "guest"))
-	return DONOTHING;
-	/*
-	 static int query_num=0;
-	 static time_t last_time=0;
-	 static time_t query_limit=0;
-	 
-	 if(query_num==0)last_time=time(0);
-	 if(query_limit!=0)
-	 {
-	 if(time(0)-query_limit<3600)
-	 {
-	 move(2, 0);
-	 clrtoeol();	    
-	 prints("¶¼ºÍÄãËµ¹ýÁË, 1Ð¡Ê±ÒÔºóÔÙÀ´!\n");
-	 pressanykey();
-	 return -1;
-	 }
-	 else
-	 {
-	 query_limit=0;
-	 last_time=time(0);
-	 query_num=0;
-	 }
-	 }
-	 if (query_num>500 && time(0)-last_time<=3600)
-	 {
-	 printf("ÄúµÄ²éÑ¯¹ýÓÚÆµ·±! ÇëÐÝÏ¢1Ð¡Ê±ºó¼ÌÐø");
-	 query_limit=time(0);
-	 do_report("QUERY_ERROR", fromhost);
-	 return -1;
-	 }
-
-	 query_num++;
-	 */
+		return DONOTHING;
 	if ( uinfo.mode != LUSERS && uinfo.mode != LAUSERS && uinfo.mode != FRIEND
 			&& uinfo.mode != READING && uinfo.mode != MAIL && uinfo.mode != RMAIL
 			&& uinfo.mode != GMENU) {
@@ -509,14 +476,15 @@ char q_id[IDLEN + 2];
 	if ( strcasecmp(lookupuser.userid, "guest") != 0 )
 		sprintf(buf, "[\033[1;3%dm%s\033[m] ", clr, horoscope(lookupuser.birthmonth, lookupuser.birthday));
 	else
-	sprintf(buf, "");
-	if(! HAS_DEFINE(lookupuser.userdefine, DEF_S_HOROSCOPE))buf[0] = '\0';
+		sprintf(buf, "");
+	if (!HAS_DEFINE(lookupuser.userdefine, DEF_S_HOROSCOPE))
+		buf[0] = '\0';
 	prints("[1;37m%s [m([1;33m%s[m) ¹²ÉÏÕ¾ [1;32m%d[m ´Î  %s\n",
 			lookupuser.userid, lookupuser.username,lookupuser.numlogins, buf);
 	strcpy(planid, lookupuser.userid);
-	getdatestring(lookupuser.lastlogin,NA);
 	prints("ÉÏ ´Î ÔÚ:[[1;32m%s[m] ´Ó [[1;32m%s[m] µ½±¾Õ¾Ò»ÓÎ¡£\n",
-			datestring,(lookupuser.lasthost[0]=='\0'?"(²»Ïê)":lookupuser.lasthost));
+			getdatestring(lookupuser.lastlogin, DATE_ZH),
+			(lookupuser.lasthost[0] == '\0' ? "(²»Ïê)" : lookupuser.lasthost));
 	num = t_search_ulist(&uin, t_cmpuids, tuid, NA, NA);
 	if( num ) {
 		search_ulist(&uin, t_cmpuids, getuser(lookupuser.userid));
@@ -530,13 +498,8 @@ char q_id[IDLEN + 2];
 		} else {
 			now = lookupuser.lastlogout;
 		}
-		getdatestring(now,NA);
-		prints("ÀëÕ¾Ê±¼ä:[[1;32m%s[m] ", datestring);
+		prints("ÀëÕ¾Ê±¼ä:[[1;32m%s[m] ", getdatestring(now, DATE_ZH));
 	}
-	/*
-	 prints("±íÏÖÖµ£º[[1;32m%d[m]([1;33m%s[m) ÐÅÏä£º[[1;5;32m%2s[m]\n"
-	 , perf,cperf(perf), (check_query_mail(qry_mail_dir) == 1) ? "ÐÅ" : "  ");
-	 */
 	prints("±íÏÖÖµ:"
 #ifdef SHOW_PERF
 			"%d([1;33m%s[m)"
@@ -1516,9 +1479,9 @@ int do_talk(int fd) {
 	if (itswords[0] != '\0')
 	do_log(itswords, 2);
 
-	now = time(0);
-	getdatestring(now, 4);
-	sprintf(talkbuf, "\n\033[1;34mÍ¨»°½áÊø, Ê±¼ä: %s \033[m\n", datestring);
+	now = time(NULL);
+	sprintf(talkbuf, "\n\033[1;34mÍ¨»°½áÊø, Ê±¼ä: %s \033[m\n",
+			getdatestring(now, DATE_ENWEEK));
 	write(talkrec, talkbuf, strlen(talkbuf));
 
 	close(talkrec);
@@ -1530,17 +1493,18 @@ int do_talk(int fd) {
 	switch (ans[0]) {
 		case 'n':
 		case 'N':
-		break;
+			break;
 		default:
-		sethomefile(talkbuf, currentuser.userid, "talklog");
-		getdatestring(now, 4);
-		sprintf(mywords, "¸ú %s µÄÁÄÌì¼ÇÂ¼ [%s]", partner, datestring + 4);
-		{	char temp[STRLEN];
-			strcpy(temp, save_title);
-			mail_file(talkbuf, currentuser.userid, mywords);
-			strcpy(save_title,temp);
+			sethomefile(talkbuf, currentuser.userid, "talklog");
+			sprintf(mywords, "¸ú %s µÄÁÄÌì¼ÇÂ¼ [%s]", partner,
+					getdatestring(now, DATE_ENWEEK) + 4);
+			{
+				char temp[STRLEN];
+				strcpy(temp, save_title);
+				mail_file(talkbuf, currentuser.userid, mywords);
+				strcpy(save_title,temp);
+			}
 		}
-	}
 	sethomefile(talkbuf, currentuser.userid, "talklog");
 	unlink(talkbuf);
 #endif
@@ -1606,11 +1570,9 @@ char *modestr;
 	prints("[1;33;44m%s |%s |%s[m", buf, buf, buf);
 	count = shortulist();
 	if (uinfo.mode == MONITOR) {
-		time_t thetime = time(0);
 		move(t_lines - 1, 0);
-		getdatestring(thetime,NA);
 		sprintf(genbuf,"[1;44;33m  Ä¿Ç°ÓÐ [32m%3d[33m %6sÉÏÏß, Ê±¼ä: [32m%22.22s [33m, Ä¿Ç°×´Ì¬£º[36m%10s   [m"
-				,count, friendmode ? "ºÃÅóÓÑ" : "Ê¹ÓÃÕß", datestring, friendmode ? "ÄãµÄºÃÅóÓÑ" : "ËùÓÐÊ¹ÓÃÕß");
+				,count, friendmode ? "ºÃÅóÓÑ" : "Ê¹ÓÃÕß", getdatestring(time(NULL), DATE_ZH), friendmode ? "ÄãµÄºÃÅóÓÑ" : "ËùÓÐÊ¹ÓÃÕß");
 		prints(genbuf);
 	}
 	refresh();
@@ -2276,8 +2238,7 @@ do_log(char *msg, int who)
 
 	if (!dashf(buf) || talkrec == -1) {
 		talkrec = open(buf, O_RDWR | O_CREAT | O_TRUNC, 0644);
-		getdatestring(now, 4);
-		sprintf(buf, "\033[1;32mÓë %s µÄÇé»°ÃàÃà, ÈÕÆÚ: %s \033[m\n", save_page_requestor, datestring);
+		sprintf(buf, "\033[1;32mÓë %s µÄÇé»°ÃàÃà, ÈÕÆÚ: %s \033[m\n", save_page_requestor, getdatestring(now, DATE_ENWEEK));
 		write(talkrec, buf, strlen(buf));
 		sprintf(buf, "\tÑÕÉ«·Ö±ð´ú±í: [1;33m%s[m [1;36m%s[m \n\n", currentuser.userid, partner);
 		write(talkrec, buf, strlen(buf));

@@ -410,8 +410,8 @@ static int count_result(void *ptrv, int notused1, void *notused2)
 get_result_title() {
 	char buf[STRLEN];
 
-	getdatestring(currvote.opendate, NA);
-	fprintf(sug, "¡Ñ Í¶Æ±¿ªÆôì¶£º[1m%s[m  Àà±ð£º[1m%s[m\n", datestring,
+	fprintf(sug, "¡Ñ Í¶Æ±¿ªÆôÓÚ£º\033[1m%s\033[m  Àà±ð£º\033[1m%s\033[m\n",
+			getdatestring(currvote.opendate, DATE_ZH),
 			vote_type[currvote.type - 1]);
 	fprintf(sug, "¡Ñ Ö÷Ìâ£º[1m%s[m\n", currvote.title);
 	if (currvote.type == VOTE_VALUE)
@@ -761,9 +761,9 @@ void show_voteing_title() {
 	else
 		buf[0] = '\0';
 	closedate = currvote.opendate + currvote.maxdays * 86400;
-	getdatestring(closedate, NA);
-	prints("Í¶Æ±½«½áÊøì¶: [1m%s[m  %s  %s\n", datestring, buf,
-			(voted_flag) ? "([5;1mÐÞ¸ÄÇ°´ÎÍ¶Æ±[m)" : "");
+	prints("Í¶Æ±½«½áÊøÓÚ: \033[1m%s\033[m  %s  %s\n",
+			getdatestring(closedate, DATE_ZH), buf,
+			(voted_flag) ? "(\033[5;1mÐÞ¸ÄÇ°´ÎÍ¶Æ±\033[m)" : "");
 	prints("Í¶Æ±Ö÷ÌâÊÇ: [1m%-50s[mÀàÐÍ: [1m%s[m \n", currvote.title,
 			vote_type[currvote.type - 1]);
 }
@@ -950,18 +950,12 @@ static int printvote(void *entv, int notused1, void *notused2)
 	} else
 		voted_flag = YEA;
 	num_voted = get_num_records(flagname, sizeof(struct ballot));
-	getdatestring(ent->opendate, NA);
-	//Modified by IAMFAT 2002.06.13
-	/*
-	 sprintf(buf, " %s%3d %-12.12s %6.6s %-40.40s%-4.4s %3d  %4d[m\n", (voted_flag == NA) ? "[1m" : "", i, ent->userid,
-	 datestring+6, ent->title, vote_type[ent->type - 1], ent->maxdays, num_voted);
-	 */
 	strcpy(title, ent->title);
 	ellipsis(title, 39);
-	sprintf(buf, " %s%3d %-12.12s %6.6s %-39.39s %-4.4s %3d  %4d[m\n",
-			(voted_flag == NA) ? "[1m" : "", i, ent->userid, datestring
-					+ 6, title, vote_type[ent->type - 1], ent->maxdays,
-			num_voted);
+	sprintf(buf, " %s%3d %-12.12s %6.6s %-39.39s %-4.4s %3d  %4d\033[m\n",
+			(voted_flag == NA) ? "[1m" : "", i, ent->userid,
+			getdatestring(ent->opendate, DATE_ZH) + 6, title,
+			vote_type[ent->type - 1], ent->maxdays, num_voted);
 	//Ended IAMFAT
 	prints("%s", buf);
 }

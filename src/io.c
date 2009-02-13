@@ -710,12 +710,12 @@ void update_endline(void)
 		return;
 
 	now = time(NULL);
-	cur_sec = getdatestring(now, NA); //cur_sec = tm_sec % 10
+	cur_sec = now % 10;
 	if (cur_sec == 0) {
 		nowishfile:
 		if (resolve_boards() < 0)
 			exit(1);
-		strlcpy(datestring, brdshm->date, 30);
+		strlcpy(getdatestring(now, DATE_ZH), brdshm->date, 30);
 		cur_sec = 1;
 	}
 	if (cur_sec < 5) {
@@ -726,7 +726,7 @@ void update_endline(void)
 			"[\033[36m%4d\033[33mÈË/\033[36m%3d\033[33mÓÑ]"
 			"[\033[36m%c%c%c%c%c%c\033[33m]"
 			"ÕÊºÅ%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
-			datestring, get_online(), count_friends,
+			getdatestring(now, DATE_ZH), get_online(), count_friends,
 			(uinfo.pager & ALL_PAGER) ? 'P' : 'p',
 			(uinfo.pager & FRIEND_PAGER) ? 'O' : 'o',
 			(uinfo.pager & ALLMSG_PAGER) ? 'M' : 'm',

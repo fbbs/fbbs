@@ -852,8 +852,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		prints("Ğò    ºÅ:     µÚ %d Æª\n", ent);
 		prints("ÎÄ ¼ş Ãû:     %s\n", fileinfo->filename);
 		prints("ÉÏ ´« Õß:     %s\n", fileinfo->owner);
-		getdatestring(fileinfo->timeDeleted, 0);
-		prints("ÉÏ´«ÈÕÆÚ:     %s\n", datestring);
+		prints("ÉÏ´«ÈÕÆÚ:     %s\n", getdatestring(fileinfo->timeDeleted, DATE_ZH));
 		prints("ÎÄ¼ş´óĞ¡:     %d ×Ö½Ú\n", filestat.st_size);
 		prints("ÎÄ¼şËµÃ÷:     %s\n", fileinfo->title);
 		prints("URL µØÖ·:\n");
@@ -1528,8 +1527,7 @@ void getcross(char *filepath, int mode) {
 		/* modified by roly 2002.01.13 */
 		//              fprintf(of, "1;41;33m·¢ĞÅÈË: deliver (×Ô¶¯·¢ĞÅÏµÍ³), ĞÅÇø: %-12.12s                          m\n", currboard);
 		fprintf(of, "±ê  Ìâ: %s\n", quote_title);
-		getdatestring(now, NA);
-		fprintf(of, "·¢ĞÅÕ¾: %s×Ô¶¯·¢ĞÅÏµÍ³ (%s)\n\n", BoardName, datestring);
+		fprintf(of, "·¢ĞÅÕ¾: %s×Ô¶¯·¢ĞÅÏµÍ³ (%s)\n\n", BoardName, getdatestring(now, DATE_ZH));
 		/*		fprintf(of, "¡¾´ËÆªÎÄÕÂÊÇÓÉ×Ô¶¯·¢ĞÅÏµÍ³ËùÕÅÌù¡¿\n\n"); */
 		/* Added by Amigo 2002.04.17. Set BMS announce poster as 'BMS'. */
 	} else if (mode == 3) {
@@ -1538,8 +1536,7 @@ void getcross(char *filepath, int mode) {
 				//modified by iamfat 2002.08.18
 				"[1;33m·¢ĞÅÈË: BMS (°æÖ÷¹ÜÀíÔ±), ĞÅÇø: %s[m\n", currboard);
 		fprintf(of, "±ê  Ìâ: %s\n", quote_title);
-		getdatestring(now, NA);
-		fprintf(of, "·¢ĞÅÕ¾: %s×Ô¶¯·¢ĞÅÏµÍ³ (%s)\n\n", BoardName, datestring);
+		fprintf(of, "·¢ĞÅÕ¾: %s×Ô¶¯·¢ĞÅÏµÍ³ (%s)\n\n", BoardName, getdatestring(now, DATE_ZH));
 		/* Add end. */
 	} else if (mode == 2) {
 		write_header(of, 0 /* Ğ´Èë .posts */);
@@ -1643,8 +1640,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 	prints("±ê    Ìâ:     %s\n", fileinfo->title);
 	prints("%s:     %s\n", in_mail ? "·¢ ĞÅ ÈË" : "×÷    Õß", fileinfo->owner);
 	filetime = atoi(fileinfo->filename + 2);
-	getdatestring(filetime, 0);
-	prints("Ê±    ¼ä:     %s\n", datestring);
+	prints("Ê±    ¼ä:     %s\n", getdatestring(filetime, DATE_ZH));
 	prints("ÔÄ¶Á×´Ì¬:     %s\n", unread ? "Î´¶Á" : "ÒÑ¶Á");
 	prints("ÎÄÕÂÀàĞÍ:     %s\n", type);
 	prints("´ó    Ğ¡:     %d ×Ö½Ú\n", filestat.st_size);
@@ -3425,11 +3421,11 @@ void notepad() {
 			fprintf(
 					in,
 					"[1;34m¨Š[44m¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰[36mËá[32mÌğ[33m¿à[31mÀ±[37m°å[34m¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰[44m¨[m\n");
-			getdatestring(thetime, NA);
+			
 			fprintf(
 					in,
 					"[1;34m¨Š[32;44m %-44s[32mÔÚ [36m%23.23s[32m Àë¿ªÊ±ÁôÏÂµÄ»°  [m\n",
-					tmp, datestring + 6);
+					tmp, getdatestring(thetime, DATE_ZH) + 6);
 			for (n = 0; n < i; n++) {
 				if (note[n][0] == '\0')
 					break;
@@ -3654,10 +3650,8 @@ int Goodbye() {
 
 void do_report(const char *filename, const char *s) {
 	char buf[512];
-
-	getdatestring(time(NULL), NA);
-	sprintf(buf, "%-12.12s %16.16s %s\n", currentuser.userid, datestring
-			+ 6, s);
+	sprintf(buf, "%-12.12s %16.16s %s\n", currentuser.userid,
+			getdatestring(time(NULL), DATE_ZH) + 6, s);
 	file_append(filename, buf);
 }
 
@@ -3674,13 +3668,11 @@ void board_usage (char *mode, time_t usetime)
 }
 #else
 void board_usage(char *mode, time_t usetime) {
-	time_t now;
 	char buf[256];
 
-	now = time(0);
-	getdatestring(now, NA);
-	sprintf(buf, "%.22s USE %-20.20s Stay: %5ld (%s)\n", datestring, mode,
-			usetime, currentuser.userid);
+	sprintf(buf, "%.22s USE %-20.20s Stay: %5ld (%s)\n",
+			getdatestring(time(NULL), DATE_ZH),
+			mode, usetime, currentuser.userid);
 	file_append("use_board", buf);
 }
 #endif
@@ -4107,58 +4099,10 @@ int count_range(int ent, struct fileheader *fileinfo, char *direct) {
 //added by iamfat 2003.03.20
 void log_DOTFILE(char *uid, char *str) {
 	char fname[STRLEN], buf[512];
-	time_t dtime;
 
-	time(&dtime);
 	sprintf(fname, "home/%c/%s/.FILE", toupper(uid[0]), uid);
-	getdatestring(dtime, NA);
-	sprintf(buf, "%16.16s %s\n", datestring + 6, str);
+	sprintf(buf, "%16.16s %s\n", getdatestring(time(NULL), DATE_ZH) + 6, str);
 	file_append(fname, buf);
 }
 
-//added end
-
-/*
- void show_myfile()
- {
- char fname[STRLEN];
- setuserfile(fname, ".FILE");
- ansimore(fname, YEA);
- clear();
- }
-
- //added by iamfat 2003.03.26 for ycul
- char* urlencode(char *key)
- {
- static char mykey[256];
- char *src=key;
- char *dst=mykey;
- char hex[10];
- while(*src)
- {
- if(*src>=' ' && *src<='~')*(dst++)=*(src++);
- else
- {
- *(dst++)='%';
- sprintf(hex, "%X", *src);
- *(dst++)=hex[0];
- *(dst++)=hex[1];
- src++;
- }
- }
- *dst='\0';
- return mykey;
- }
-
- void ycul()
- {
- char key[30], type=0;
- char path[80];
- char ycul_text[1024];
- clear();
- getdata(0, 0, "ÄúÏë²éÕÒµÄ¹Ø¼ü×Ö: ", key, 30, DOECHO, YEA);
- sethomefile(path, currentuser.userid, "ycul");
- sprintf(ycul_text, "wget -q -O %s www.ycul.com/ftp/search.php?key=%s&t=%c; split -l 50 %s ycul", path, urlencode(key),type, path);
- system(ycul_text);
- }*/
 //added end

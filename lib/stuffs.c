@@ -93,3 +93,49 @@ void SpecialID(const char *uid, char *host, int len)
 		fclose(fp);
 	}
 }
+
+// Convert time to string in specified format.
+// mode: DATE_ZH -     "2001年02月03日04:05:06 星期六"
+//       DATE_EN -     "02/03/01 04:05:06"
+//       DATE_SHORT -  "02.03 04:05"
+//       DATE_ENWEEK - "02/03/01 04:05:06 Sat"
+//       DATE_XML -    "2001-02-03T04:05:06"
+char *getdatestring(time_t time, enum DATE_FORMAT mode)
+{
+	static char str[30] = {'\0'};
+	struct tm *t;
+	char weeknum[7][3] = {"天", "一", "二", "三", "四", "五", "六"};
+	char engweek[7][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+
+	// No multi-thread
+	t = localtime(&time);
+	switch (mode) {
+		case DATE_ZH:
+			// using sprintf here is safe
+			sprintf(str, "%4d年%02d月%02d日%02d:%02d:%02d 星期%2s",
+					t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+					t->tm_hour, t->tm_min, t->tm_sec, weeknum[t->tm_wday]);
+			break;
+		case DATE_EN:
+			sprintf(str, "%02d/%02d/%02d %02d:%02d:%02d",
+					t->tm_mon + 1, t->tm_mday, t->tm_year - 100,
+					t->tm_hour, t->tm_min, t->tm_sec);
+			break;
+		case DATE_SHORT:
+			sprintf(str, "%02d.%02d %02d:%02d",
+					t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min);
+			break;
+		case DATE_ENWEEK:
+			sprintf(str, "%02d/%02d/%02d %02d:%02d:%02d %3s",
+					t->tm_mon + 1, t->tm_mday, t->tm_year - 100,
+					t->tm_hour, t->tm_min, t->tm_sec, engweek[t->tm_wday]);
+			break;
+		case DATE_XML:
+		default:
+			sprintf(str, "%4d-%02d-%02dT%02d:%02d:%02d",
+					t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+					t->tm_hour, t->tm_min, t->tm_sec);
+			break;
+	}
+	return str;
+}

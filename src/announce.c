@@ -1905,9 +1905,8 @@ int AddPCorpus() {
 		}
 	}
 	now = time(NULL);
-	getdatestring(now, NA);
-	sprintf(genbuf, "[36m%-12.12s[m %14.14s [32m %.38s[m",
-			lookupuser.userid, datestring, title);
+	sprintf(genbuf, "\033[36m%-12.12s\033[m %14.14s \033[32m %.38s\033[m",
+			lookupuser.userid, getdatestring(now, DATE_ZH), title);
 	add_to_file(Log, genbuf);
 	//add by fangu 2003.2.26, add log
 	//Õâ¶ÎËÆºõ²»ĞèÒª¼Ó£¬ÒòÎªÇ°ÃæÓĞÒ»¸öreportÁË
@@ -1957,8 +1956,7 @@ int a_file_info(MENU *pm) {
 	prints("±ê    Ìâ:     %s\n", tmp);
 	prints("ĞŞ ¸Ä Õß:     %s\n", pm->item[pm->now]->title + 39);
 	prints("µµ    Ãû:     %s\n", pm->item[pm->now]->fname);
-	getdatestring(st.st_mtime, 0);
-	prints("±à¼­ÈÕÆÚ:     %s\n", datestring);
+	prints("±à¼­ÈÕÆÚ:     %s\n", getdatestring(st.st_mtime, DATE_ZH));
 	prints("´ó    Ğ¡:     %d ×Ö½Ú\n", st.st_size);
 	prints("URL µØÖ·:\n");
 	for (i = 0; i < len; i +=78) {

@@ -347,19 +347,11 @@ int gettheboardname(int x, char *title, int *pos, struct boardheader *fh,
 //ËøÆÁ,²¢½«ÓÅÏÈ¼¶ÉèÎª×îµÍ(19)
 int x_lockscreen() {
 	char buf[PASSLEN + 1];
-	time_t now;
 
-	//#ifndef FDQUAN
-	//      if (!(uinfo.invisible)) 
-	//              return; //added by money 2003.12.22 //bt! by ch 2005.6.2
-	//#endif
 	modify_user_mode(LOCKSCREEN);
 	move(9, 0);
 	clrtobot();
-	//update_endline();
 	buf[0] = '\0';
-	now = time(0);
-	getdatestring(now, NA);
 	move(9, 0);
 	prints("[1;37m");
 	prints("\n       _       _____   ___     _   _   ___     ___       __");
@@ -368,14 +360,12 @@ int x_lockscreen() {
 	prints("\n      | |  _  | | | | | |  _  | , <   |  _)_  | | | )   |  |");
 	prints("\n      | |_( ) | (_) | | (_( ) | |\\`\\  | (_( ) | |_) |   |==|");
 	prints("\n      (____/' (_____) (____/' (_) (_) (____/' (____/'   |__|\n");
-	//prints("\n[1;36mÓ©Ä»ÒÑÔÚ[33m %s[36m Ê±±»[32m %-12s [36mÔÝÊ±Ëø×¡ÁË...[m", datestring, currentuser.userid);
-	prints("\n[1;36mÆÁÄ»ÒÑÔÚ[33m %s[36m Ê±±»%sÔÝÊ±Ëø×¡ÁË...[m", datestring,
-			currentuser.userid);
+	prints("\n\033[1;36mÆÁÄ»ÒÑÔÚ\033[33m %s\033[36m Ê±±»%sÔÝÊ±Ëø×¡ÁË...033[m",
+			getdatestring(time(NULL), DATE_ZH), currentuser.userid);
 	nice(19);
 	while (*buf == '\0' || !checkpasswd(currentuser.passwd, buf)) {
 		move(18, 0);
 		clrtobot();
-		//update_endline();
 		getdata(19, 0, "ÇëÊäÈëÄúµÄÃÜÂëÒÔ½âËø: ", buf, PASSLEN, NOECHO, YEA);
 	}
 	nice(0);
@@ -562,8 +552,8 @@ void fill_date() {
 
 	next = (time_t) time(0)
 			- ((atoi(h) * 3600) + (atoi(m) * 60) + atoi(s)) + 86400; /* Ëã³ö½ñÌì 0:0:00 µÄÊ±¼ä, È»ááÔÙÍùáá¼ÓÒ»Ìì */
-	getdatestring(next, 4);
-	sprintf(genbuf, "¼ÍÄîÈÕ¸üÐÂ, ÏÂÒ»´Î¸üÐÂÊ±¼ä %s", datestring);
+	sprintf(genbuf, "¼ÍÄîÈÕ¸üÐÂ, ÏÂÒ»´Î¸üÐÂÊ±¼ä %s",
+			getdatestring(next, DATE_ENWEEK));
 	report(genbuf, currentuser.userid);
 
 	fp = fopen(DEF_FILE, "r");

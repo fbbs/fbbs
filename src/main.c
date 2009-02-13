@@ -519,8 +519,8 @@ static void logattempt(char *uid, char *frm)
 {
 	char fname[STRLEN];
 
-	getdatestring(time(NULL), NA);
-	snprintf(genbuf, sizeof(genbuf), "%-12.12s  %-30s %s\n", uid, datestring, frm);
+	snprintf(genbuf, sizeof(genbuf), "%-12.12s  %-30s %s\n", uid,
+			getdatestring(time(NULL), DATE_ZH), frm);
 	file_append(BADLOGINFILE, genbuf);
 	sethomefile(fname, uid, BADLOGINFILE);
 	file_append(fname, genbuf);
@@ -801,9 +801,9 @@ static void notepad_init(void)
 				if (fname == NULL || bname == NULL || ntitle == NULL)
 					continue;
 				else {
-					getdatestring(now, NA);
-					sprintf(notetitle, "[%8.8s %6.6s] %s", datestring + 6,
-							datestring + 23, ntitle);
+					char *str = getdatestring(now, DATE_ZH);
+					sprintf(notetitle, "[%8.8s %6.6s] %s", str + 6,
+							str + 23, ntitle);
 					if (dashf(fname)) {
 						Postfile(fname, bname, notetitle, 1);
 						sprintf(tmp, "%s 自动张贴", ntitle);
@@ -813,8 +813,7 @@ static void notepad_init(void)
 			}
 			fclose(check);
 		}
-		getdatestring(now, NA);
-		sprintf(notetitle, "[%s] 留言板记录", datestring);
+		sprintf(notetitle, "[%s] 留言板记录", getdatestring(now, DATE_ZH));
 		if (dashf("etc/notepad")) {
 			Postfile("etc/notepad", "Notepad", notetitle, 1);
 			unlink("etc/notepad");
@@ -898,15 +897,13 @@ static void user_login(void)
 	clrtoeol();
 	if (currentuser.numlogins < 1) {
 		currentuser.numlogins = 0;
-		getdatestring(time(NULL), NA);
 		prints("\033[1;36m☆ 这是您第 \033[33m1\033[36m 次拜访本站，请记住今天吧。\n");
-		prints("☆ 您第一次连入本站的时间为 \033[33m%s\033[m ", datestring);
+		prints("☆ 您第一次连入本站的时间为 \033[33m%s\033[m ", getdatestring(time(NULL), DATE_ZH));
 	} else {
-		getdatestring(currentuser.lastlogin, NA);
 		prints(
 				"\033[1;36m☆ 这是您第 \033[33m%d\033[36m 次拜访本站，上次您是从 \033[33m%s\033[36m 连往本站。\n",
 				currentuser.numlogins + 1, currentuser.lasthost);
-		prints("☆ 上次连线时间为 \033[33m%s\033[m ", datestring);
+		prints("☆ 上次连线时间为 \033[33m%s\033[m ", getdatestring(currentuser.lastlogin, DATE_ZH));
 	}
 	igetkey();
 	WishNum = 9999;

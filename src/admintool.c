@@ -1042,9 +1042,8 @@ char *regdoent(int num, REGINFO * ent) {
 	ellipsis(rname, 12);
 	ellipsis(dept, 16);
 	ellipsis(addr, 16);
-	getdatestring(ent->regdate, 2);
 	sprintf(buf, "  %4d %-12s %-12s %-16s %-16s %s", num, ent->userid,
-			rname, dept, addr, datestring);
+			rname, dept, addr, getdatestring(ent->regdate, DATE_SHORT));
 	return buf;
 }
 
@@ -1092,8 +1091,7 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 	substitut_record(PASSFILE, &uinfo, sizeof (uinfo), unum);
 	sethomefile(buf, uinfo.userid, "register");
 	if ((fout = fopen(buf, "a")) != NULL) {
-		getdatestring(ent->regdate, YEA);
-		fprintf(fout, "注册时间     : %s\n", datestring);
+		fprintf(fout, "注册时间     : %s\n", getdatestring(ent->regdate, DATE_EN));
 		fprintf(fout, "申请帐号     : %s\n", ent->userid);
 		fprintf(fout, "真实姓名     : %s\n", ent->realname);
 		fprintf(fout, "学校系级     : %s\n", ent->dept);
@@ -1103,8 +1101,7 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 		fprintf(fout, "电子邮件     : %s\n", ent->email);
 #endif
 		fprintf(fout, "校 友 会     : %s\n", ent->assoc);
-		getdatestring(time(0), YEA);
-		fprintf(fout, "成功日期     : %s\n", datestring);
+		fprintf(fout, "成功日期     : %s\n", getdatestring(time(NULL), DATE_EN));
 		fprintf(fout, "批准人       : %s\n", currentuser.userid);
 		fclose(fout);
 	}
@@ -1149,8 +1146,7 @@ int do_register(int index, REGINFO * ent, char *direct) {
 		disply_userinfo(&uinfo);
 		move(14, 0);
 		printdash(NULL);
-		getdatestring(ent->regdate, YEA);
-		prints("   注册时间   : %s\n", datestring);
+		prints("   注册时间   : %s\n", getdatestring(ent->regdate, DATE_EN));
 		prints("   申请帐号   : %s\n", ent->userid);
 		prints("   真实姓名   : %s\n", ent->realname);
 		prints("   学校系级   : %s\n", ent->dept);

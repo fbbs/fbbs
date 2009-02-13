@@ -759,18 +759,15 @@ struct userec *uentp;
 	uleveltochar(&permstr, uentp->userlevel);
 	switch (toggle1) {
 		case 0:
-		getdatestring(uentp->lastlogin,NA);
-		sprintf(msgstr, "%-.16s", datestring+6);
-		break;
+			sprintf(msgstr, "%-.16s", getdatestring(uentp->lastlogin, DATE_ZH) + 6);
+			break;
 		case 1:
-		sprintf(msgstr, "%-.16s", uentp->lasthost);
-		break;
+			sprintf(msgstr, "%-.16s", uentp->lasthost);
+			break;
 		case 2:
 		default:
-		getdatestring(uentp->firstlogin,NA);
-		sprintf(msgstr, "%-.14s",
-				datestring );
-		break;
+			sprintf(msgstr, "%-.14s", getdatestring(uentp->firstlogin, DATE_ZH));
+			break;
 	}
 	user_data[i - page] = *uentp;
 	override = myfriend(searchuser(uentp->userid));

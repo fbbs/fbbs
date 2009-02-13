@@ -259,8 +259,7 @@ int getnewuserid() {
 			< system_time) && (area->tm_hour < 12) && (area->tm_hour > 5) )) {
 		if ((fd = open("tmp/killuser", O_RDWR | O_CREAT, 0600)) == -1)
 			return -1;
-		getdatestring(system_time, NA);
-		write(fd, datestring, 29);
+		write(fd, getdatestring(system_time, DATE_ZH), 29);
 		close(fd);
 		strcpy(nname, "tmp/bbs.killid");
 		fdtmp = fopen(nname, "w+");
@@ -276,10 +275,9 @@ int getnewuserid() {
 			getuserbyuid( &utmp, i+1);
 			val = compute_user_value(&utmp);
 			if (utmp.userid[0] != '\0' && val < 0) {
-				getdatestring(utmp.lastlogin, NA);
 				utmp.userid[IDLEN]=0; //added by iamfat 2004.01.05 to avoid overflow
 				sprintf(genbuf, "#%d %-12s %14.14s %d %d %d", i + 1,
-						utmp.userid, datestring, utmp.numlogins,
+						utmp.userid, getdatestring(utmp.lastlogin, DATE_ZH), utmp.numlogins,
 						utmp.numposts, val);
 				log_usies("KILL ", genbuf, &currentuser);
 				//if (!bad_user_id(utmp.userid)) {
@@ -292,15 +290,12 @@ int getnewuserid() {
 							utmp.userid, utmp.username, utmp.numlogins,
 							(utmp.gender == 'F') ? 5 : 6,
 							horoscope(utmp.birthmonth, utmp.birthday));
-					getdatestring(utmp.lastlogin, NA);
 					fprintf(
 							fdtmp,
 							"ÉÏ ´Î ÔÚ:[[1;32m%s[m] ´Ó [[1;32m%s[m] µ½±¾Õ¾Ò»ÓÎ¡£\n",
-							datestring, (utmp.lasthost[0]=='\0' ? "(²»Ïê)"
+							getdatestring(utmp.lastlogin, DATE_ZH), (utmp.lasthost[0]=='\0' ? "(²»Ïê)"
 									: utmp.lasthost));
-
-					getdatestring(utmp.lastlogout, NA);
-					fprintf(fdtmp, "ÀëÕ¾Ê±¼ä:[[1;32m%s[m] ", datestring);
+					fprintf(fdtmp, "ÀëÕ¾Ê±¼ä:[[1;32m%s[m] ", getdatestring(utmp.lastlogout, DATE_ZH));
 
 					exp = countexp(&utmp);
 					perf = countperf(&utmp);
@@ -373,9 +368,8 @@ int getnewuserid() {
 		//      flock(fd, LOCK_UN);
 		//      close(fd);
 		fclose(fdtmp);
-		getdatestring(system_time, NA);
-		sprintf(genbuf, "[%8.8s %6.6s] ±¾ÈÕËæ·çÆ®ÊÅµÄID", datestring+6,
-				datestring + 23);
+		char *str = getdatestring(system_time, NA);
+		sprintf(genbuf, "[%8.8s %6.6s] ±¾ÈÕËæ·çÆ®ÊÅµÄID", str + 6, str + 23);
 		Postfile(nname, "newcomers", genbuf, 1);
 		touchnew();
 	}

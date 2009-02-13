@@ -733,8 +733,7 @@ void r_msg() {
 	i = get_num_records(fname, 129);
 	if (i>500) {
 		char bak_title[STRLEN];
-		getdatestring(time(0), NA);
-		sprintf(mustbak_title, "[%s] 强制讯息备份%d条", datestring, i);
+		sprintf(mustbak_title, "[%s] 强制讯息备份%d条", getdatestring(time(NULL), DATE_ZH), i);
 		strlcpy(bak_title, save_title, STRLEN-1);
 		bak_title[STRLEN-1]=0;
 		mail_file(fname, currentuser.userid, mustbak_title);

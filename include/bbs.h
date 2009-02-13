@@ -355,8 +355,6 @@ extern int editansi;
 extern int KEY_ESC_arg;
 /* ============================================ */
 
-extern char datestring[];
-
 #define FLOCK(x,y) flock(x,y)
 
 #define SHM_HOMEDIR "tmp"
@@ -368,6 +366,14 @@ extern char datestring[];
 #define BMNAMEMAXLEN	(56)		//每个版版主名称时最大数
 //如果BMNAMELISTLEN与BMNAMEMAXLEN不同,显示版主列表时,将用...来表示超过部分
 //BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界
+
+enum DATE_FORMAT {
+	DATE_ZH = 0,
+	DATE_EN = 1,
+	DATE_SHORT = 2,
+	DATE_ENWEEK = 4,
+	DATE_XML = 8	
+};
 
 #include "func.h"
 
