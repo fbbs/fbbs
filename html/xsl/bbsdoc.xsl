@@ -3,6 +3,7 @@
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
 	<xsl:import href='splitbm.xsl'/>
+	<xsl:import href='date-time.xsl'/>
 	<xsl:template match="bbsdoc">
 		<html>
 			<head>
@@ -31,7 +32,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 				</strong>
 				<table width="100%" bgcolor="#ffffff">
 					<tr class="pt9h">
-						<th>序号</th><th>作者</th><th>标题</th>
+						<th>序号</th><th>作者</th><th>发表时间</th><th>标题</th>
 					</tr>
 					<xsl:for-each select='post'>
 						<tr>
@@ -39,10 +40,19 @@ xmlns="http://www.w3.org/1999/xhtml">
 								<xsl:if test='position() mod 2 = 1'>pt9lc</xsl:if>
 								<xsl:if test='position() mod 2 = 0'>pt9dc</xsl:if>
 							</xsl:attribute>
+							<!-- No. -->
 							<td align='right'><xsl:value-of select='position() - 1 + /bbsdoc/start' /></td>
+							<!-- Author -->
 							<td><strong><a>
 								<xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select='author' /></xsl:attribute><xsl:value-of select='author' />
 							</a></strong></td>
+							<!-- Time -->
+							<td>
+								<xsl:call-template name='timeconvert'>
+									<xsl:with-param name='time' select='time' />
+								</xsl:call-template>
+							</td>
+							<!-- Title -->
 							<td width='100%'>
 								<xsl:choose>
 									<xsl:when test='substring(title, 1, 4) = "Re: "'>

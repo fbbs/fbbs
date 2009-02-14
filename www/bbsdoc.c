@@ -1,5 +1,11 @@
 #include "libweb.h"
 
+// Get file time according to its name 's'.
+static time_t getfiletime(const struct fileheader *f)
+{
+	return (time_t)strtol(f->filename + 2, NULL, 10);
+}
+
 int bbsdoc_main(void)
 {
 	char board[STRLEN];
@@ -47,13 +53,14 @@ int bbsdoc_main(void)
 		for (i = 0; i < my_t_lines; i++) {
 			if (fread(&x, sizeof(x), 1, fp) <= 0)
 				break;
-			printf("<post>\n<author>%s</author>\n"
+			printf("<post>\n<author>%s</author>\n<time>%s</time>\n"
 					"<title>%s</title>\n<id>%ud</id>\n",
-					x.owner, x.title, x.id);
+					x.owner, getdatestring(getfiletime(&x), DATE_XML),
+					x.title, x.id);
 			if (x.accessed[0] & FILE_NOREPLY)
 				printf("<noreply />\n");
 			printf("</post>\n");
-			// TODO: time and mark
+			// TODO: mark
      	}
 	}
 	fclose(fp);
