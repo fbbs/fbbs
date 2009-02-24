@@ -34,6 +34,8 @@ int file_append(const char *fpath, const char *msg)
 // Returns 1 if 'fname' exists and is a regular file, 0 otherwise.
 int dashf(const char *fname)
 {
+	if (fname == NULL)
+		return 0;
 	struct stat st;
 	return (stat(fname, &st) == 0 && S_ISREG(st.st_mode));
 }
@@ -41,6 +43,8 @@ int dashf(const char *fname)
 // Returns 1 if 'fname' exists and is a directory, 0 otherwise.
 int dashd(const char *fname)
 {
+	if (fname == NULL)
+		return 0;
 	struct stat st;
 	return (stat(fname, &st) == 0 && S_ISDIR(st.st_mode));
 }
