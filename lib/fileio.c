@@ -128,13 +128,6 @@ int valid_fname(char *str) {
 	return 1;
 }
 
-int touchfile(char *filename) {
-	int fd;
-	if ((fd = open(filename, O_RDWR | O_CREAT, 0600)) > 0)
-		close(fd);
-
-	return fd;
-}
 /*
  Commented by Erebus 2004-11-08 
  rm file and folder
