@@ -54,7 +54,7 @@ int bbsdoc_main(void)
 			if (fread(&x, sizeof(x), 1, fp) <= 0)
 				break;
 			printf("<post>\n<author>%s</author>\n<time>%s</time>\n"
-					"<title>%s</title>\n<id>%ud</id>\n",
+					"<title>%s</title>\n<id>%u</id>\n",
 					x.owner, getdatestring(getfiletime(&x), DATE_XML),
 					x.title, x.id);
 			if (x.accessed[0] & FILE_NOREPLY)
