@@ -26,6 +26,7 @@ void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
 int getblankbnum(void);
 struct boardheader *getbcache(const char *bname);
+struct boardheader *getbcache2(int bid);
 struct bstat *getbstat(const char *bname);
 int getbnum(const char *bname, const struct userec *cuser);
 int getbnum2(const struct boardheader *bp);

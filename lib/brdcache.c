@@ -244,6 +244,14 @@ struct boardheader *getbcache(const char *bname)
 	return NULL;
 }
 
+// Returns board pointer according to 'bid', NULL on error.
+struct boardheader *getbcache2(int bid)
+{
+	if (bid <= 0 || bid > numboards || resolve_boards() < 0)
+		return NULL;
+	return bcache + bid - 1;
+}
+
 struct bstat *getbstat(const char *bname)
 {
 	register int i;
