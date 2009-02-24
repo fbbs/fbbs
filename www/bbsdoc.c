@@ -21,6 +21,7 @@ int bbsdoc_main(void)
 	int total = file_size(dir) / sizeof(struct fileheader);
 	int start = strtol(getparm("start"), NULL, 10);
 	int my_t_lines = strtol(getparm("my_t_lines"), NULL, 10);
+	int bid = getbnum2(bp);
 	if (my_t_lines < 10 || my_t_lines > 40)
 		my_t_lines = TLINES;
 	if (strlen(getparm("start")) == 0 || start > total-my_t_lines)
@@ -41,8 +42,8 @@ int bbsdoc_main(void)
 
 	// TODO: magic number.
 	printf("<title>%s</title>\n<bm>%s</bm>\n<desc>%s</desc>\n"
-			"<total>%d</total>\n<start>%d</start>",
-			bp->filename, bp->BM, bp->title + 11, total, start);
+			"<total>%d</total>\n<start>%d</start>\n<bid>%d</bid>\n",
+			bp->filename, bp->BM, bp->title + 11, total, start, bid);
 
 	// TODO: marquee, recommend, spin
 	FILE *fp = fopen(dir, "r");

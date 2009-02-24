@@ -58,14 +58,14 @@ xmlns="http://www.w3.org/1999/xhtml">
 									<xsl:when test='substring(title, 1, 4) = "Re: "'>
 										<img align='absmiddle' border='0' src='/images/types/reply.gif' />
 										<a>
-											<xsl:attribute name='href'>bbscon?b=<xsl:value-of select='/bbsdoc/bid' />&amp;f=<xsl:value-of select='id' /></xsl:attribute>
+											<xsl:attribute name='href'>bbscon?bid=<xsl:value-of select='/bbsdoc/bid' />&amp;f=<xsl:value-of select='id' /></xsl:attribute>
 											<xsl:value-of select='substring(title, 5)' />
 										</a>
 									</xsl:when>
 									<xsl:otherwise>
 										<img align='absmiddle' border='0' src='/images/types/text.gif' />
 										<a>
-											<xsl:attribute name='href'>bbscon?b=<xsl:value-of select='/bbsdoc/bid' />&amp;f=<xsl:value-of select='id' /></xsl:attribute>
+											<xsl:attribute name='href'>bbscon?bid=<xsl:value-of select='/bbsdoc/bid' />&amp;f=<xsl:value-of select='id' /></xsl:attribute>
 											<xsl:value-of select='title' />
 										</a>
 									</xsl:otherwise>

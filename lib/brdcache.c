@@ -273,6 +273,17 @@ int getbnum(const char *bname, const struct userec *cuser)
 	return 0;
 }
 
+// Returns bid according to board pointer 'bp', 0 on error.
+int getbnum2(const struct boardheader *bp)
+{
+	if (bp == NULL)
+		return 0;
+	int bid = bp - bcache;
+	if (bid >= numboards || bid < 0)
+		return 0;
+	return bid;
+}
+
 int apply_boards(int (*func) (), const struct userec *cuser)
 {
 	register int i;

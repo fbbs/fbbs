@@ -28,6 +28,7 @@ int getblankbnum(void);
 struct boardheader *getbcache(const char *bname);
 struct bstat *getbstat(const char *bname);
 int getbnum(const char *bname, const struct userec *cuser);
+int getbnum2(const struct boardheader *bp);
 int apply_boards(int (*func) (), const struct userec *cuser);
 #ifdef NEWONLINECOUNT
 void bonlinesync(time_t now);
