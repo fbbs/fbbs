@@ -12,18 +12,25 @@
 
 static int rm_dir();
 
-//将消息msg存入到文件fpath中,写时锁住文件,写完解锁
-//****	文件操作均是底层文件IO操作,加快速度
-void file_append(const char *fpath, const char *msg) {
+// Append 'msg' to file 'fpath'.
+// Return 0 on success, -1 on error.
+int file_append(const char *fpath, const char *msg)
+{
+	if (fpath == NULL || msg == NULL)
+		return -1;
 	int fd;
-	if ((fd = open(fpath, O_WRONLY | O_CREAT, 0644)) >= 0) {
-		flock(fd, LOCK_EX);
-		lseek(fd, 0, SEEK_END);
+	if ((fd = open(fpath, O_WRONLY | O_CREAT | O_APPEND, 0644)) != -1) {
+		if (flock(fd, LOCK_EX) == -1) {
+			close(fd);
+			return -1;
+		}
 		write(fd, msg, strlen(msg));
 		flock(fd, LOCK_UN);
 		close(fd);
 	}
+	return 0;
 }
+
 //若fname存在,且为正常文件,返回真
 int dashf(char *fname) {
 	struct stat st;
