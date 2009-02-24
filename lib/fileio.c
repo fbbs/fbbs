@@ -8,8 +8,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define        BLK_SIZ         4096
-
 static int rm_dir();
 
 // Append 'msg' to file 'fpath'.
@@ -85,25 +83,23 @@ int part_cp(char *src, char *dst, char *mode) {
 	return 1;
 }
 
-int f_cp(char *src, char *dst, int mode) {
-	int fsrc, fdst, ret;
-	ret = 0;
-
-	if ((fsrc = open(src, O_RDONLY)) >= 0) {
-		ret = -1;
-
-		if ((fdst = open(dst, O_WRONLY | O_CREAT | mode, 0600)) >= 0) {
-			char pool[BLK_SIZ];
-			src = pool;
-			do {
-				ret = read(fsrc, src, BLK_SIZ);
-				if (ret <= 0)
-					break;
-			} while (write(fdst, src, ret) > 0);
-			close(fdst);
-		}
-		close(fsrc);
+// Copies file 'src' to 'dst'. Returns 0 on success, -1 on error.
+// 'mode' specifies the open mode of 'dst', usually O_APPEND or O_EXCL.
+int f_cp(const char *src, const char *dst, int mode)
+{
+	int fsrc, fdst, ret = 0;
+	if ((fsrc = open(src, O_RDONLY)) == -1)
+		return -1;
+	if ((fdst = open(dst, O_WRONLY | O_CREAT | mode, 0600)) >= 0) {
+		char buf[BUFSIZ];
+		do {
+			ret = read(fsrc, buf, BUFSIZ);
+			if (ret <= 0)
+				break;
+		} while (write(fdst, buf, ret) > 0);
+		close(fdst);
 	}
+	close(fsrc);
 	return ret;
 }
 
