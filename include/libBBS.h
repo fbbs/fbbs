@@ -4,8 +4,8 @@
 
 //fileio.c
 int file_append(const char *fpath, const char *msg);
-int dashf(char *fname);
-int dashd(char *fname);
+int dashf(const char *fname);
+int dashd(const char *fname);
 int part_cp(char *src, char *dst, char *mode);
 int f_cp(char *src, char *dst, int mode);
 int f_ln(char *src, char *dst);

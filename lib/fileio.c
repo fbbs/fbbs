@@ -31,17 +31,20 @@ int file_append(const char *fpath, const char *msg)
 	return 0;
 }
 
-//若fname存在,且为正常文件,返回真
-int dashf(char *fname) {
+// Returns 1 if 'fname' exists and is a regular file, 0 otherwise.
+int dashf(const char *fname)
+{
 	struct stat st;
 	return (stat(fname, &st) == 0 && S_ISREG(st.st_mode));
 }
 
-//如果fname存在,且为目录,返回真
-int dashd(char *fname) {
+// Returns 1 if 'fname' exists and is a directory, 0 otherwise.
+int dashd(const char *fname)
+{
 	struct stat st;
 	return (stat(fname, &st) == 0 && S_ISDIR(st.st_mode));
 }
+
 /* mode == O_EXCL / O_APPEND / O_TRUNC */
 int part_cp(char *src, char *dst, char *mode) {
 	int flag =0;
