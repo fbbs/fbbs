@@ -103,16 +103,16 @@ int f_cp(const char *src, const char *dst, int mode)
 	return ret;
 }
 
-int f_ln(src, dst)
-char *src, *dst;
+// Makes a hard link 'dst' pointing to 'src'.
+// If hard link cannot be created, try to copy 'src' to 'dst'.
+// Returns 0 on success, -1 on error.
+int f_ln(const char *src, const char *dst)
 {
-	int ret;
-
-	if ((ret = link(src, dst))!=0) {
+	if (link(src, dst) != 0) {
 		if (errno != EEXIST)
-		ret = f_cp(src, dst, O_EXCL);
+			return f_cp(src, dst, O_EXCL);
 	}
-	return ret;
+	return 0;
 }
 
 int valid_fname(char *str) {
