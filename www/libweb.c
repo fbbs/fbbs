@@ -633,6 +633,7 @@ void xml_fwrite(FILE *stream, const char *s)
 	if (buffer.buf == NULL) {
 		fwrite(last, 1, s - last, stream);
 	} else {
+		buffer_append(stream, s, &buffer, last, s - last);
 		buffer_flush(stream, &buffer);
 		free(buffer.buf);
 	}
