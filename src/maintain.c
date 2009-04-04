@@ -56,14 +56,14 @@ int autoreport(char *title,char *str,int toboard,char *userid,int mode)
 		}
 		/* Modified by Amigo 2002.04.17. Set BMS announce poster as 'BMS'. */
 //		if(toboard) Postfile( fname,currboard,title,1);
-		if(toboard) {
-    		if(mode == 1){
-			Postfile( fname,currboard,title,3);    	//由BMS发表的任命公?		} else if (mode == 2){
-			Postfile( fname,currboard,title,2);
-		} else{
-			//mode ==
-			Postfile( fname,currboard,title,1);		//由deliver发表的处罚公告
-		}
+		if (toboard) {
+    		if (mode == 1) {
+				Postfile(fname, currboard, title, 3);
+			} else if (mode == 2) {
+				Postfile(fname, currboard, title, 2);
+			} else {
+				Postfile(fname, currboard, title, 1);
+			}
 		}
 		/* Modify end. */
         unlink(fname);
