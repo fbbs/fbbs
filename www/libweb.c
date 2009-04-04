@@ -551,6 +551,93 @@ int hhprintf(char *fmt, ...) {
 	return 0;
 }
 
+struct __buffer_t {
+	char *buf;
+	size_t buflen;
+	char *ptr;	
+};
+
+// Writes contents in 'buffer' to 'stream'.
+// Returns 0 on success, -1 on error.
+static inline int buffer_flush(FILE *stream, struct __buffer_t *buffer)
+{
+	size_t size = (size_t) (buffer->ptr - buffer->buf);
+	if (size > 0) {
+		if (fwrite(buffer->buf, 1, size, stream) != size)
+			return -1;
+	}
+	buffer->ptr = buffer->buf;
+	return 0;
+}
+
+// Appends first 'len' chars from string 's2' to the 'buffer'.
+// Flushes the 'buffer' to 'stream' if the buffer is full.
+// string 's' is used to determine the buffer length to be allocated.
+// Returns 0 on success, -1 on error.
+static int buffer_append(FILE *stream, const char *s, struct __buffer_t *buffer, const char *s2, size_t len)
+{
+	const int minbuf = 64;
+	if (buffer == NULL)
+		return -1;
+	if (buffer->buf == NULL) {
+		// allocate buffer.
+		buffer->buflen = 2 * strlen(s);
+		if (buffer->buflen < minbuf)
+			buffer->buflen = minbuf;
+		buffer->buf = (char *) malloc(buffer->buflen);
+		if (buffer->buf == NULL)
+			return -1;
+		buffer->ptr = buffer->buf;
+	}
+	if (len > buffer->buflen) {
+		if (fwrite(buffer->buf, 1, len, stream) != len)
+			return -1;
+		else
+			return 0;
+	}
+	if (len > buffer->buflen - (buffer->ptr - buffer->buf)) {
+		buffer_flush(stream, buffer);
+	}
+	memcpy(buffer->ptr, s2, len);
+	buffer->ptr += len;
+	return 0;		
+}
+
+// XML-escapes string 's' and writes to 'stream'.
+void xml_fwrite(FILE *stream, const char *s)
+{
+	struct __buffer_t buffer = {NULL, 0, NULL};
+	const char *last = s;
+	while (*s != '\0') {
+		switch (*s) {
+			case '<':
+				buffer_append(stream, s, &buffer, last, s - last);
+				buffer_append(stream, s, &buffer, "&lt;", 4);
+				last = ++s;
+				break;
+			case '>':
+				buffer_append(stream, s, &buffer, last, s - last);
+				buffer_append(stream, s, &buffer, "&gt;", 4);
+				last = ++s;
+				break;
+			case '&':
+				buffer_append(stream, s, &buffer, last, s - last);
+				buffer_append(stream, s, &buffer, "&amp;", 5);
+				last = ++s;
+				break;
+			default:
+				++s;
+				break;
+		}
+	}
+	if (buffer.buf == NULL) {
+		fwrite(last, 1, s - last, stream);
+	} else {
+		buffer_flush(stream, &buffer);
+		free(buffer.buf);
+	}
+}
+
 // Convert a hex char 'c' to a base 10 integer.
 static int __to16(char c)
 {
