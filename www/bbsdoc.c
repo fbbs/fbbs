@@ -57,7 +57,7 @@ int bbsdoc_main(void)
 			printf("<post>\n<author>%s</author>\n<time>%s</time>\n"
 					"<id>%u</id>\n<title>",
 					x.owner, getdatestring(getfiletime(&x), DATE_XML), x.id);
-			xml_fwrite(stdout, x.title);
+			xml_fputs(x.title, stdout);
 			printf("</title>\n");
 			if (x.accessed[0] & FILE_NOREPLY)
 				printf("<noreply />\n");

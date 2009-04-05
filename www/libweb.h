@@ -95,7 +95,7 @@ void http_fatal(enum HTTP_STATUS status, const char *prompt);
 int hsprintf(char *s, char *fmt, ...);
 int hprintf(char *fmt, ...);
 int hhprintf(char *fmt, ...);
-void xml_fwrite(FILE *stream, const char *s);
+void xml_fputs(const char *s, FILE *stream);
 
 extern char parm_name[][80];
 extern char *parm_val[];
