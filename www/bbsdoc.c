@@ -1,7 +1,7 @@
 #include "libweb.h"
 
 // Get file time according to its name 's'.
-static time_t getfiletime(const struct fileheader *f)
+static inline time_t getfiletime(const struct fileheader *f)
 {
 	return (time_t)strtol(f->filename + 2, NULL, 10);
 }
