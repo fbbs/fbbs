@@ -24,7 +24,7 @@ int bbsdoc_main(void)
 	int bid = getbnum2(bp);
 	if (my_t_lines < 10 || my_t_lines > 40)
 		my_t_lines = TLINES;
-	if (strlen(getparm("start")) == 0 || start > total-my_t_lines)
+	if (strlen(getparm("start")) == 0 || start > total - my_t_lines)
 		start = total - my_t_lines + 1;
   	if (start < 1)
 		start = 1;
@@ -64,8 +64,8 @@ int bbsdoc_main(void)
 			printf("</post>\n");
 			// TODO: mark
      	}
+		fclose(fp);
 	}
-	fclose(fp);
 	printf("</bbsdoc>");
 	return 0;
 }
