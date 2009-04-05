@@ -286,8 +286,8 @@ int getbnum2(const struct boardheader *bp)
 {
 	if (bp == NULL)
 		return 0;
-	int bid = bp - bcache;
-	if (bid >= numboards || bid < 0)
+	int bid = bp - bcache + 1;
+	if (bid > numboards || bid <= 0)
 		return 0;
 	return bid;
 }

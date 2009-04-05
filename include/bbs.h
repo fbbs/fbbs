@@ -4,6 +4,7 @@
 /* Global includes, needed in almost every source file... */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <setjmp.h>
 #include <signal.h>
