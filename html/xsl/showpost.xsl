@@ -87,14 +87,11 @@ xmlns="http://www.w3.org/1999/xhtml">
 							</xsl:choose>
 						</xsl:variable>
 						<span>
-							<xsl:attribute name='class'>
-								ansi<xsl:value-of select='$hl' /><xsl:value-of select='$fgc' />
-								<xsl:text> </xsl:text>ansi<xsl:value-of select='$bgc' />
-							</xsl:attribute>
+							<xsl:attribute name='class'>ansi<xsl:value-of select='$hl' /><xsl:value-of select='$fgc' /><xsl:text> </xsl:text>ansi<xsl:value-of select='$bgc' /></xsl:attribute>
 							<xsl:value-of select='$text' />
 						</span>
-						<xsl:variable name='next' select='substring-after($last, ">1b")' />
-						<xsl:if test='next'>
+						<xsl:variable name='next' select='substring($last, string-length($text) + 1)' />
+						<xsl:if test='$next'>
 							<xsl:call-template name='ansi-escape'>
 								<xsl:with-param name='content' select='$next' />
 								<xsl:with-param name='fgcolor' select='$fgc' />
@@ -121,8 +118,6 @@ xmlns="http://www.w3.org/1999/xhtml">
 		</xsl:choose>
 	</xsl:template>
 	
-	<!--Returns the index of first alphabet in string 'content' after 'start'.-->
-	<!--If not found, returns empty string.-->
 	<xsl:template name='index-of-first-alpha'>
 		<xsl:param name='content' />
 		<xsl:param name='start' />
@@ -182,6 +177,14 @@ xmlns="http://www.w3.org/1999/xhtml">
 					<xsl:with-param name='param-name' select='$param-name' />
 					<xsl:with-param name='current-value' select='$new-value' />
 				</xsl:call-template>
+			</xsl:when>
+			<xsl:when test='not($next) and not($first)'>
+				<xsl:choose>
+					<xsl:when test='$param-name = "fgcolor"'>37</xsl:when>
+					<xsl:when test='$param-name = "bgcolor"'>40</xsl:when>
+					<xsl:when test='$param-name = "highlight"'>0</xsl:when>
+					<xsl:otherwise></xsl:otherwise>
+				</xsl:choose>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:value-of select='$new-value' />
