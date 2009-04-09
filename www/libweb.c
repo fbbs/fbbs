@@ -557,23 +557,23 @@ void xml_fputs(const char *s, FILE *stream)
 	while (*s != '\0') {
 		switch (*s) {
 			case '<':
-				fwrite(last, 1, s - last, stream);
-				fwrite("&lt;", 1, 4, stream);
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite("&lt;", sizeof(char), 4, stream);
 				last = ++s;
 				break;
 			case '>':
-				fwrite(last, 1, s - last, stream);
-				fwrite("&gt;", 1, 4, stream);
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite("&gt;", sizeof(char), 4, stream);
 				last = ++s;
 				break;
 			case '&':
-				fwrite(last, 1, s - last, stream);
-				fwrite("&amp;", 1, 5, stream);
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite("&amp;", sizeof(char), 5, stream);
 				last = ++s;
 				break;
 			case '\033':
-				fwrite(last, 1, s - last, stream);
-				fputc('\r', stream);
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite(">1b", sizeof(char), 3, stream);
 				last = ++s;
 				break;
 			default:
@@ -581,7 +581,7 @@ void xml_fputs(const char *s, FILE *stream)
 				break;
 		}
 	}
-	fwrite(last, 1, s - last, stream);
+	fwrite(last, sizeof(char), s - last, stream);
 }
 // Convert a hex char 'c' to a base 10 integer.
 static int __to16(char c)

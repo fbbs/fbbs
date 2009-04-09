@@ -66,5 +66,5 @@ int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size, int *ret_fd);
 int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size);
-void end_mmapfile(void *ptr, int size, int fd);
+void end_mmapfile(void *ptr, size_t size, int fd);
 #endif

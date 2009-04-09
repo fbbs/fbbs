@@ -215,7 +215,7 @@ int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 
 // Unmaps memory-mapped region. ('size' bytes starting from 'ptr')
 // Unlocks 'fd' if it is a valid file descriptor.
-void end_mmapfile(void *ptr, int size, int fd)
+void end_mmapfile(void *ptr, size_t size, int fd)
 {
 	munmap(ptr, size);
 	if (fd != -1) {
