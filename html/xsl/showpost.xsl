@@ -4,19 +4,16 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
 	<xsl:template name="showpost">
 		<xsl:param name='content' />
-		<xsl:variable name='line' select='substring-before($content, "&#10;")' />
+		<xsl:variable name='before' select='substring-before($content, "&#10;")' />
 		<xsl:variable name='rest' select='substring-after($content, "&#10;")' />
-		<xsl:call-template name='ansi-escape'>
+		<xsl:variable name='line'>
+			<xsl:call-template name='replace-space'>
+				<xsl:with-param name='str' select='$before' />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:call-template name='showline'>
 			<xsl:with-param name='content' select='$line' />
-			<xsl:with-param name='fgcolor'>
-				<xsl:choose>
-					<xsl:when test='starts-with($line, ": ")'>36</xsl:when>
-					<xsl:when test='starts-with($line, "> ")'>36</xsl:when>
-					<xsl:otherwise>37</xsl:otherwise>
-				</xsl:choose>
-			</xsl:with-param>
-			<xsl:with-param name='bgcolor' select='40' />
-			<xsl:with-param name='ishl' select='0' />
+			<xsl:with-param name='isquote' select='starts-with($line, ":&#160;") or starts-with($line, ">&#160;")' />
 		</xsl:call-template>
 		<br />
 		<xsl:if test='$rest'>
@@ -24,6 +21,97 @@ xmlns="http://www.w3.org/1999/xhtml">
 				<xsl:with-param name='content' select='$rest' />
 			</xsl:call-template>
 		</xsl:if>
+	</xsl:template>
+
+	<xsl:template name='replace-space'>
+		<xsl:param name='str' />
+		<xsl:choose>
+			<xsl:when test='contains($str, " ")'>
+				<xsl:value-of select='substring-before($str, " ")' /><xsl:text>&#160;</xsl:text>
+				<xsl:call-template name='replace-space'>
+					<xsl:with-param name='str' select='substring-after($str, " ")' />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select='$str' />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name='showline'>
+		<xsl:param name='content' />
+		<xsl:param name='isquote' />
+		<xsl:choose>
+			<xsl:when test='$isquote'>
+				<xsl:call-template name='ansi-escape'>
+					<xsl:with-param name='content' select='$content' />
+					<xsl:with-param name='fgcolor'>36</xsl:with-param>
+					<xsl:with-param name='bgcolor'>40</xsl:with-param>
+					<xsl:with-param name='ishl'>0</xsl:with-param>
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:variable name='before'>
+					<xsl:choose>
+						<xsl:when test='contains($content, "http://")'>
+							<xsl:value-of select='substring-before($content, "http://")' />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select='$content' />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<xsl:if test='$before'>
+					<xsl:call-template name='ansi-escape'>
+						<xsl:with-param name='content' select='$before' />
+						<xsl:with-param name='fgcolor'>37</xsl:with-param>
+						<xsl:with-param name='bgcolor'>40</xsl:with-param>
+						<xsl:with-param name='ishl'>0</xsl:with-param>
+					</xsl:call-template>
+				</xsl:if>
+				<xsl:variable name='after' select='substring-after($content, "http://")' />
+				<xsl:variable name='index'>
+					<xsl:if test='$after'>
+						<xsl:call-template name='not-str-token'>
+							<xsl:with-param name='str' select='$after' />
+							<xsl:with-param name='delim'>0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$-_.+!*')(,/:;=?@&amp;</xsl:with-param>
+							<xsl:with-param name='start' select='1' />
+						</xsl:call-template>
+					</xsl:if>
+				</xsl:variable>
+				<xsl:variable name='url'>
+					<xsl:if test='$after'>
+						<xsl:choose>
+							<xsl:when test='string-length($index)'>
+								<xsl:value-of select='substring($after, 1, $index - 1)' />
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:value-of select='$after' />
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:if>
+				</xsl:variable>
+				<xsl:if test='contains($content, "http://")'>
+					<xsl:call-template name='show-url'>
+						<xsl:with-param name='url' select='concat("http://", $url)' />
+					</xsl:call-template>
+				</xsl:if>
+				<xsl:if test='$after and $index'>
+					<xsl:call-template name='showline'>
+						<xsl:with-param name='content' select='substring($after, $index)' />
+						<xsl:with-param name='isquote' select='0' />
+					</xsl:call-template>
+				</xsl:if>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name='show-url'>
+		<xsl:param name='url' />
+		<a>
+			<xsl:attribute name='href'><xsl:value-of select='$url' /></xsl:attribute>
+			<xsl:value-of select='$url' />
+		</a>
 	</xsl:template>
 	
 	<xsl:template name='ansi-escape'>
@@ -46,12 +134,13 @@ xmlns="http://www.w3.org/1999/xhtml">
 				</xsl:choose>
 				<xsl:variable name='second' select='substring-after($content, ">1b[")' />
 				<xsl:variable name='first-alpha'>
-					<xsl:call-template name='index-of-first-alpha'>
-						<xsl:with-param name='content' select='$second' />
+					<xsl:call-template name='not-str-token'>
+						<xsl:with-param name='str' select='$second' />
+						<xsl:with-param name='delim'>0123456789;</xsl:with-param>
 						<xsl:with-param name='start' select='1' />
 					</xsl:call-template>
 				</xsl:variable>
-				<xsl:if test='$first-alpha'>
+				<xsl:if test='string-length($first-alpha)'>
 					<xsl:if test='substring($second, $first-alpha, 1) = "m"'>
 						<xsl:variable name='code' select='substring($second, 1, $first-alpha - 1)' />
 						<xsl:variable name='fgc'>
@@ -118,18 +207,20 @@ xmlns="http://www.w3.org/1999/xhtml">
 		</xsl:choose>
 	</xsl:template>
 	
-	<xsl:template name='index-of-first-alpha'>
-		<xsl:param name='content' />
+	<xsl:template name='not-str-token'>
+		<xsl:param name='str' />
+		<xsl:param name='delim' />
 		<xsl:param name='start' />
-		<xsl:variable name='char' select='substring($content, $start, 1)' />
+		<xsl:variable name='char' select='substring($str, $start, 1)' />
 		<xsl:if test='$char'>
 			<xsl:choose>
-				<xsl:when test='not(contains("0123456789;", $char))'>
+				<xsl:when test='not(contains($delim, $char))'>
 					<xsl:value-of select='$start' />
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:call-template name='index-of-first-alpha'>
-						<xsl:with-param name='content' select='$content' />
+					<xsl:call-template name='not-str-token'>
+						<xsl:with-param name='str' select='$str' />
+						<xsl:with-param name='delim' select='$delim' />
 						<xsl:with-param name='start' select='$start + 1' />
 					</xsl:call-template>
 				</xsl:otherwise>
