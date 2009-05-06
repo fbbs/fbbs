@@ -11,7 +11,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 				<link rel="stylesheet" type="text/css" href="/css/bbs0.css" />
 			</head>
 			<body>
-				<div>
+				<div class='article'>
 					<xsl:call-template name='showpost'>
 						<xsl:with-param name='content' select='post' />
 					</xsl:call-template>
