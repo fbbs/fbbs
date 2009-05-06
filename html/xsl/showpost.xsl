@@ -108,10 +108,22 @@ xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:template name='show-url'>
 		<xsl:param name='url' />
-		<a>
-			<xsl:attribute name='href'><xsl:value-of select='$url' /></xsl:attribute>
-			<xsl:value-of select='$url' />
-		</a>
+		<xsl:variable name='length' select='string-length($url)' />
+		<xsl:variable name='lurl' select='translate($url, "JPEGNIF", "jpegnif")' />
+		<xsl:choose>
+			<xsl:when test='(substring($lurl, $length - 4) = ".jpeg") or (substring($lurl, $length - 3) = ".jpg") or (substring($lurl, $length - 3) = ".png") or (substring($lurl, $length - 3) = ".gif")'>
+				<img>
+					<xsl:attribute name='src'><xsl:value-of select='$url' /></xsl:attribute>
+					<xsl:attribute name='alt'><xsl:value-of select='$url' /></xsl:attribute>
+				</img>
+			</xsl:when>
+			<xsl:otherwise>
+				<a>
+					<xsl:attribute name='href'><xsl:value-of select='$url' /></xsl:attribute>
+					<xsl:value-of select='$url' />
+				</a>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	
 	<xsl:template name='ansi-escape'>
@@ -252,7 +264,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 					<xsl:when test='$param-name = "bgcolor" and $first >= 40 and $first &lt;= 47'>
 						<xsl:value-of select='$first' />
 					</xsl:when>
-					<xsl:when test='$param-name = "highlight" and ($first = 0 or $first = 1)'>
+					<xsl:when test='$param-name = "highlight" and (($first = 0) or ($first = 1))'>
 						<xsl:value-of select='$first' />
 					</xsl:when>
 					<xsl:otherwise>
