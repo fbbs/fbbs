@@ -96,6 +96,7 @@ int hsprintf(char *s, char *fmt, ...);
 int hprintf(char *fmt, ...);
 int hhprintf(char *fmt, ...);
 void xml_fputs(const char *s, FILE *stream);
+void xml_fputs2(const char *s, size_t size, FILE *stream);
 
 extern char parm_name[][80];
 extern char *parm_val[];
@@ -167,6 +168,7 @@ void showrecommend(char *board, int showall, int showborder);
 void showrawcontent(char *filename);
 
 int strtourl(char * url, char * str);
+bool bbscon_search(struct boardheader *bp, unsigned int fid, struct fileheader *fp);
 
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);
@@ -193,5 +195,6 @@ int bbslogin_main(void);
 int bbslogout_main(void);
 int bbsdoc_main(void);
 int bbscon_main(void);
+int bbspst_main(void);
 
 #endif

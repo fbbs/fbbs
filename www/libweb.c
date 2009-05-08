@@ -583,6 +583,41 @@ void xml_fputs(const char *s, FILE *stream)
 	}
 	fwrite(last, sizeof(char), s - last, stream);
 }
+
+void xml_fputs2(const char *s, size_t size, FILE *stream)
+{
+	const char *last = s;
+	const char *end = s + size;
+	while (s != end) {
+		switch (*s) {
+			case '<':
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite("&lt;", sizeof(char), 4, stream);
+				last = ++s;
+				break;
+			case '>':
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite("&gt;", sizeof(char), 4, stream);
+				last = ++s;
+				break;
+			case '&':
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite("&amp;", sizeof(char), 5, stream);
+				last = ++s;
+				break;
+			case '\033':
+				fwrite(last, sizeof(char), s - last, stream);
+				fwrite(">1b", sizeof(char), 3, stream);
+				last = ++s;
+				break;
+			default:
+				++s;
+				break;
+		}
+	}
+	fwrite(last, sizeof(char), s - last, stream);
+}
+
 // Convert a hex char 'c' to a base 10 integer.
 static int __to16(char c)
 {
@@ -1735,5 +1770,36 @@ int strtourl(char * url, char * str)
 		strcat(url,mybuf);
 	}
 	return 0;
+}
+
+bool bbscon_search(struct boardheader *bp, unsigned int fid, struct fileheader *fp)
+{
+	if (bp == NULL)
+		return false;
+	char dir[HOMELEN];
+	setwbdir(dir, bp->filename);
+	void *ptr;
+	size_t size;
+	int fd;
+	if (!safe_mmapfile(dir, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+		return false;
+	// Binary search.
+	struct fileheader *begin = ptr, *end, *mid;
+	end = begin + (size / sizeof(struct fileheader)) - 1;
+	while (begin <= end) {
+		mid = begin + (end - begin) / 2;
+		if (mid->id == fid) {
+			*fp = *mid;
+			end_mmapfile(ptr, size, fd);
+			return true;
+		}
+		if (mid->id < fid) {
+			begin = mid + 1;
+		} else {
+			end = mid - 1;
+		}
+	}
+	end_mmapfile(ptr, size, fd);
+	return false;
 }
 
