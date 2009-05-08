@@ -355,7 +355,16 @@ void http_quit(void) {
 	FCGI_Finish();
 }
 
-void http_fatal(enum HTTP_STATUS status, const char *prompt)
+void http_fatal(const char *prompt)
+{
+	printf("Content-type: text/html; charset=%s\n\n", CHARSET);
+	printf("<html><head><title>发生错误</title></head><body><div>%s</div>"
+			"<a href=javascript:history.go(-1)>快速返回</a></body></html>",
+			prompt);
+	FCGI_Finish();
+}
+
+void http_fatal2(enum HTTP_STATUS status, const char *prompt)
 {
 	printf("Content-type: text/html; charset=%s\nStatus: %d\n\n",
 			CHARSET, status);
@@ -658,10 +667,10 @@ static int parm_add(const char *name, const char *val)
 {
 	int len = strlen(val);
 	if (parm_num >= sizeof(parm_val) - 1)
-		http_fatal(HTTP_STATUS_BADREQUEST, "too many parms.");
+		http_fatal2(HTTP_STATUS_BADREQUEST, "too many parms.");
 	parm_val[parm_num] = malloc(len + 1);
 	if (parm_val[parm_num] == NULL)
-		http_fatal(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow2");
+		http_fatal2(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow2");
 	strlcpy(parm_name[parm_num], name, sizeof(parm_name[0]));
 	strlcpy(parm_val[parm_num], val, len + 1);
 	return ++parm_num;
@@ -719,7 +728,7 @@ void http_parm_init(void)
 		n = 5000000;
 	buf = malloc(n + 1);
 	if(buf == NULL)
-		http_fatal(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow");
+		http_fatal2(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow");
 	fread(buf, 1, n, stdin);
 	buf[n] = '\0';
 	parm_parse(buf, "&");
@@ -898,9 +907,9 @@ int post_mail(char *userid, char *title, char *file, char *id, char *nickname, c
 	int t, i;
 	/* added by roly check mail size */
 	if (!mailnum_under_limit(currentuser.userid))
-		http_fatal(HTTP_STATUS_OK, "您的信件容量超标，无法发信");
+		http_fatal("您的信件容量超标，无法发信");
 	if (!mailsize_under_limit(userid))
-		http_fatal(HTTP_STATUS_OK, "收件人信件容量超标，无法收信");
+		http_fatal("收件人信件容量超标，无法收信");
 
 	/* add end */
 	if(strstr(userid, "@")) 
@@ -949,7 +958,7 @@ int post_imail(char *userid, char *title, char *file, char *id, char *nickname, 
 	FILE *fp1, *fp2;
 	char buf[256];
 	if(strstr(userid, ";") || strstr(userid, "`"))
-		http_fatal(HTTP_STATUS_BADREQUEST, "错误的收信人地址");
+		http_fatal("错误的收信人地址");
 	sprintf(buf, "sendmail -f %s.bbs@%s '%s'", id, BBSHOST, userid);
 	fp2 = popen(buf, "w");
 	fp1 = fopen(file, "r");
@@ -986,7 +995,7 @@ int post_article(char *board, char *title, char *file, char *id, char *nickname,
 	/* add by roly 02.05.29 */
 	brd=getbcache(board);
 	if(brd==0)
-		http_fatal(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
 	strcpy(board2, brd->filename);	
 
 	/* add end */
@@ -1328,7 +1337,7 @@ int fcgi_init_all(void)
 	chdir(BBSHOME);
 	seteuid(BBSUID);
 	if(geteuid() != BBSUID)
-		http_fatal(HTTP_STATUS_INTERNAL_ERROR, "uid error.");
+		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "uid error.");
 	shm_init();
 
 	return 0;
@@ -1351,7 +1360,7 @@ int init_all(void)
 	my_style = http_init();
 	seteuid(BBSUID);
 	if(geteuid() != BBSUID)
-		http_fatal(HTTP_STATUS_INTERNAL_ERROR, "uid error.");
+		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "uid error.");
 	shm_init();
 	loginok = user_init(&currentuser, &u_info);
 

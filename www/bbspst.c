@@ -39,11 +39,11 @@ int bbspst_main(void)
 	struct boardheader *bp = getbcache2(bid);
 #ifdef aasdffdsa
 	if (!loginok)
-		http_fatal(HTTP_STATUS_OK, "匆匆过客不能发表文章，请先登录");
+		http_fatal("匆匆过客不能发表文章，请先登录");
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal(HTTP_STATUS_OK, "您选择的是一个目录");
+		http_fatal("您选择的是一个目录");
 	// TODO: Check if the user is banned of posting
 #endif
 	unsigned int fid;
@@ -56,13 +56,13 @@ int bbspst_main(void)
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
 		if (!bbscon_search(bp, fid, &fh))
-			http_fatal(HTTP_STATUS_OK, "错误的文章");
+			http_fatal("错误的文章");
 		if (fh.accessed[0] & FILE_NOREPLY)
-			http_fatal(HTTP_STATUS_OK, "该文章具有不可回复属性");
+			http_fatal("该文章具有不可回复属性");
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
 		if (!safe_mmapfile(file, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
-			http_fatal(HTTP_STATUS_INTERNAL_ERROR, "文章打开失败");
+			http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "文章打开失败");
 	}
 	
 	xml_header("bbspst");

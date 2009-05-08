@@ -12,9 +12,9 @@ int bbsdoc_main(void)
 	strlcpy(board, getparm("board"), sizeof(board));
 	struct boardheader *bp = getbcache(board);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal(HTTP_STATUS_BADREQUEST, "您选择的是一个目录");
+		http_fatal("您选择的是一个目录");
 
 	char dir[HOMELEN];
 	setbfile(dir, board, DOT_DIR);

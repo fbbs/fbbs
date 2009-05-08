@@ -49,7 +49,7 @@ int main(void)
 		fcgi_init_loop();
 		struct cgi_applet *app = getapplet(buf, sizeof(buf));
 		if (app == NULL) {
-			http_fatal(HTTP_STATUS_NOTFOUND, "请求的页面不存在");
+			http_fatal2(HTTP_STATUS_NOTFOUND, "请求的页面不存在");
 		} else {
 			(*(app->func)) ();
 		}
