@@ -181,50 +181,6 @@ int bad_user_id(char *userid) {
 	return 0;
 }
 
-/*2003.06.02 modified by stephen to enhance the function of users' life      */
-/*
- Commented by Erebus 2004-11-08 
- user must register in 30 mins
- !PERM_LOGINOK max_hp=15
- */
-int compute_user_value(struct userec *urec) {
-	int value, value2;
-	value = (time(0) - urec->lastlogin);
-	value2 = (time(0) - urec->firstlogin); //×¢²áÊ±¼ä
-	// new user should register in 30 mins
-	if (strcmp(urec->userid, "new") == 0) {
-		return 30 * 60 - value;
-	}
-#ifdef FDQUAN
-	if ((urec->userlevel & PERM_XEMPT)
-			|| strcmp(urec->userid, "SYSOP") == 0
-			|| strcmp(urec->userid, "guest") == 0)
-	return 999;
-	if (!(urec->userlevel & PERM_REGISTER))
-	return 14 - value / (24 * 60 * 60);
-	if (value2 >= 5 * 365 * 24 * 60 * 60)
-	return 666 - value / (24 * 60 * 60);
-	if (value2 >= 2 * 365 * 24 * 60 * 60)
-	return 365 - value / (24 * 60 * 60);
-	return 150 - value / (24 * 60 * 60);
-#else
-	if (((urec->userlevel & PERM_XEMPT) && (urec->userlevel
-			& PERM_LONGLIFE)) || strcmp(urec->userid, "SYSOP") == 0
-			|| strcmp(urec->userid, "guest") == 0)
-		return 999;
-	if ((urec->userlevel & PERM_XEMPT) && !(urec->userlevel
-			& PERM_LONGLIFE))
-		return 666;
-	if (!(urec->userlevel & PERM_REGISTER))
-		return 14 - value / (24 * 60 * 60);
-	if (!(urec->userlevel & PERM_XEMPT) && (urec->userlevel
-			& PERM_LONGLIFE))
-		return 365 - value / (24 * 60 * 60);
-	if (value2 >= 3 * 365 * 24 * 60 * 60)
-		return 180 - value / (24 * 60 * 60);
-	return 120 - value / (24 * 60 * 60);
-#endif
-}
 /*2003.06.02 stephen modify end*/
 /*
  Commented by Erebus 2004-11-08 ,called by new_register()

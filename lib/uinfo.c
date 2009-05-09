@@ -86,7 +86,7 @@ char *cperf(int perf)
 
 //计算经验值,文章数+登陆数的1/5+已注册的天数+停留的时数
 //	最大值是12000
-int countexp(struct userec *udata)
+int countexp(const struct userec *udata)
 {
 	int exp;
 	if (!strcmp(udata->userid, "guest"))
@@ -99,7 +99,7 @@ int countexp(struct userec *udata)
 }
 
 //	计算 表现值
-int countperf(struct userec *udata) {
+int countperf(const struct userec *udata) {
 	int perf;
 	int reg_days;
 	if (!strcmp(udata->userid, "guest"))
@@ -131,7 +131,8 @@ int days_elapsed(int year, int month, int day, time_t now)
 	return (now - 43200) / 86400 + 2440588 - julian_day(year, month, day);
 }
 
-const char *horoscope(char month, char day) {
+const char *horoscope(char month, char day)
+{
 	static const char *name[12] = {
 		"摩羯座", "水瓶座", "双鱼座", "牡羊座", "金牛座", "双子座",
 		"巨蟹座", "狮子座", "处女座", "天秤座", "天蝎座", "射手座" };
@@ -199,3 +200,46 @@ const char *horoscope(char month, char day) {
 	}
 	return ("不详座");
 }
+
+// Compute user's hp.
+int compute_user_value(const struct userec *urec)
+{
+	int value, value2;
+	value = (time(NULL) - urec->lastlogin);
+	value2 = (time(NULL) - urec->firstlogin);
+	// new user should register in 30 mins
+	if (strcmp(urec->userid, "new") == 0) {
+		return 30 * 60 - value;
+	}
+#ifdef FDQUAN
+	if ((urec->userlevel & PERM_XEMPT)
+			|| strcmp(urec->userid, "SYSOP") == 0
+			|| strcmp(urec->userid, "guest") == 0)
+		return 999;
+	if (!(urec->userlevel & PERM_REGISTER))
+		return 14 - value / (24 * 60 * 60);
+	if (value2 >= 5 * 365 * 24 * 60 * 60)
+		return 666 - value / (24 * 60 * 60);
+	if (value2 >= 2 * 365 * 24 * 60 * 60)
+		return 365 - value / (24 * 60 * 60);
+	return 150 - value / (24 * 60 * 60);
+#else
+	if (((urec->userlevel & PERM_XEMPT) 
+			&& (urec->userlevel & PERM_LONGLIFE))
+			|| strcmp(urec->userid, "SYSOP") == 0
+			|| strcmp(urec->userid, "guest") == 0)
+		return 999;
+	if ((urec->userlevel & PERM_XEMPT) 
+			&& !(urec->userlevel & PERM_LONGLIFE))
+		return 666;
+	if (!(urec->userlevel & PERM_REGISTER))
+		return 14 - value / (24 * 60 * 60);
+	if (!(urec->userlevel & PERM_XEMPT)
+			&& (urec->userlevel	& PERM_LONGLIFE))
+		return 365 - value / (24 * 60 * 60);
+	if (value2 >= 3 * 365 * 24 * 60 * 60)
+		return 180 - value / (24 * 60 * 60);
+	return 120 - value / (24 * 60 * 60);
+#endif
+}
+

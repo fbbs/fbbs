@@ -2,8 +2,7 @@
 <xsl:stylesheet version="2.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
-	<xsl:import href='splitbm.xsl'/>
-	<xsl:import href='date-time.xsl'/>
+	<xsl:import href='misc.xsl'/>
 	<xsl:output method='html' encoding='gb2312' />
 	<xsl:template match="bbsdoc">
 		<html>
@@ -47,7 +46,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 							<td align='center'><xsl:value-of select='mark' /></td>
 							<!-- Author -->
 							<td><strong><a>
-								<xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select='author' /></xsl:attribute><xsl:value-of select='author' />
+								<xsl:attribute name='href'>bbsqry?u=<xsl:value-of select='author' /></xsl:attribute><xsl:value-of select='author' />
 							</a></strong></td>
 							<!-- Time -->
 							<td>

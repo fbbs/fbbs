@@ -10,10 +10,12 @@ char *cnummedals(int num);
 char *cmoney(int num);
 #endif
 char *cperf(int perf);
-int countexp(struct userec *udata);
-int countperf(struct userec *udata);
+int countexp(const struct userec *udata);
+int countperf(const struct userec *udata);
 int julian_day(int year, int month, int day);
 int days_elapsed(int year, int month, int day, time_t now);
+const char *horoscope(char month, char day);
+int compute_user_value(const struct userec *urec);
 
 //brdcache.c (bcache.c)
 extern struct BCACHE *brdshm;

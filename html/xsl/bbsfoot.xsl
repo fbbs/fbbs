@@ -2,6 +2,7 @@
 <xsl:stylesheet version="2.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
+	<xsl:import href='misc.xsl' />
 	<xsl:output method='html' encoding='gb2312' />
 	<xsl:template match="bbsfoot">
 		<html>
@@ -20,7 +21,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 								<xsl:attribute name='src'>/images/user_<xsl:value-of select="gender" />.gif</xsl:attribute>
 							</img>
 							<a target='view'>
-								<xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select="user" /></xsl:attribute>
+								<xsl:attribute name='href'>bbsqry?u=<xsl:value-of select="user" /></xsl:attribute>
 								<strong><xsl:value-of select="user" /></strong>
 							</a>
 							<xsl:call-template name="showexp">
@@ -63,16 +64,4 @@ xmlns="http://www.w3.org/1999/xhtml">
 		</html>
 	</xsl:template>
 	
-	  <xsl:template name="showexp">
-		<xsl:param name="count" select="1"/>
-		<xsl:if test="$count > 0">
-			<img>
-				<xsl:attribute name='src'>/images/level/<xsl:value-of select="level" />.gif</xsl:attribute>
-			</img>
-			<xsl:call-template name="showexp">
-				<xsl:with-param name="count" select="$count - 1"/>
-			</xsl:call-template>
-      </xsl:if>
-      
-  </xsl:template>
 </xsl:stylesheet>
