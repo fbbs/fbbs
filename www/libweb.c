@@ -1784,9 +1784,28 @@ int strtourl(char * url, char * str)
 	return 0;
 }
 
-bool bbscon_search(struct boardheader *bp, unsigned int fid, struct fileheader *fp)
+static struct fileheader *dir_bsearch(const struct fileheader *begin, 
+		const struct fileheader *end, unsigned int fid)
 {
-	if (bp == NULL)
+	const struct fileheader *mid;
+	while (begin < end) {
+		mid = begin + (end - begin) / 2;
+		if (mid->id == fid) {
+			return mid;
+		}
+		if (mid->id < fid) {
+			begin = mid + 1;
+		} else {
+			end = mid;
+		}
+	}
+	return NULL;
+}
+
+bool bbscon_search(const struct boardheader *bp, unsigned int fid,
+		int action, struct fileheader *fp)
+{
+	if (bp == NULL || fp == NULL)
 		return false;
 	char dir[HOMELEN];
 	setwbdir(dir, bp->filename);
@@ -1795,23 +1814,35 @@ bool bbscon_search(struct boardheader *bp, unsigned int fid, struct fileheader *
 	int fd;
 	if (!safe_mmapfile(dir, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
 		return false;
-	// Binary search.
-	struct fileheader *begin = ptr, *end, *mid;
-	end = begin + (size / sizeof(struct fileheader)) - 1;
-	while (begin <= end) {
-		mid = begin + (end - begin) / 2;
-		if (mid->id == fid) {
-			*fp = *mid;
-			end_mmapfile(ptr, size, fd);
-			return true;
+	struct fileheader *begin = ptr, *end;
+	end = begin + (size / sizeof(*begin));
+	const struct fileheader *f = dir_bsearch(begin, end, fid);
+	if (f != NULL) {
+		unsigned int gid = f->gid;
+		switch (action) {
+			case 'p':  // previous post
+				--f;
+				break;
+			case 'n':  // next post
+				++f;
+				break;
+			case 'b':  // previous post of same thread
+				while (--f >= begin && f->gid != gid)
+					; // null statement
+				break;
+			case 'a':  // next post of same thread
+				while (++f < end && f->gid != gid)
+					; // null statement
+				break;
+			default:
+				break;
 		}
-		if (mid->id < fid) {
-			begin = mid + 1;
-		} else {
-			end = mid - 1;
-		}
+		if (f >= begin && f < end)
+			*fp = *f;
+		else
+			f = NULL;
 	}
 	end_mmapfile(ptr, size, fd);
-	return false;
+	return (f != NULL);
 }
 

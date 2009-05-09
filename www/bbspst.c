@@ -55,7 +55,7 @@ int bbspst_main(void)
 	bool reply = !(*f == '\0');
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
-		if (!bbscon_search(bp, fid, &fh))
+		if (!bbscon_search(bp, fid, 0, &fh))
 			http_fatal("错误的文章");
 		if (fh.accessed[0] & FILE_NOREPLY)
 			http_fatal("该文章具有不可回复属性");

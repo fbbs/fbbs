@@ -9,9 +9,11 @@ int bbscon_main(void)
 	if (bp->flag & BOARD_DIR_FLAG)
 		http_fatal("您选择的是一个目录");
 	unsigned int fid = strtoul(getparm("f"), NULL, 10);
+	char *action = getparm("a");
 	struct fileheader fh;
-	if (!bbscon_search(bp, fid, &fh))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的文章");
+	if (!bbscon_search(bp, fid, *action, &fh))
+		http_fatal2(HTTP_STATUS_NOTFOUND, "没有找到指定的文章");
+	fid = fh.id;
 
 	char file[HOMELEN];
 	setbfile(file, bp->filename, fh.filename);
@@ -25,6 +27,8 @@ int bbscon_main(void)
 	xml_fputs((char *)ptr, stdout);
 	fputs("</post>\n", stdout);
 	end_mmapfile(ptr, size, fd);
+	if (fh.reid != fh.id)
+		printf("<reid>%u</reid>\n<gid>%u</gid>\n", fh.reid, fh.gid);
 	printf("<bid>%d</bid>\n<f>%u</f>\n</bbscon>", bid, fid);
 	return 0;
 }

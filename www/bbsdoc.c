@@ -9,8 +9,16 @@ static inline time_t getfiletime(const struct fileheader *f)
 int bbsdoc_main(void)
 {
 	char board[STRLEN];
-	strlcpy(board, getparm("board"), sizeof(board));
-	struct boardheader *bp = getbcache(board);
+	char *bidstr = getparm("bid");
+	struct boardheader *bp;
+	if (*bidstr == '\0') {
+		strlcpy(board, getparm("board"), sizeof(board));
+		bp = getbcache(board);
+	} else {
+		bp = getbcache2(strtol(bidstr, NULL, 10));
+		if (bp != NULL)
+			strlcpy(board, bp->filename, sizeof(board));
+	}
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		http_fatal2(HTTP_STATUS_NOTFOUND, "´íÎóµÄÌÖÂÛÇø");
 	if (bp->flag & BOARD_DIR_FLAG)

@@ -171,7 +171,8 @@ void showrecommend(char *board, int showall, int showborder);
 void showrawcontent(char *filename);
 
 int strtourl(char * url, char * str);
-bool bbscon_search(struct boardheader *bp, unsigned int fid, struct fileheader *fp);
+bool bbscon_search(const struct boardheader *bp, unsigned int fid, 
+		int action, struct fileheader *fp);
 
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);
