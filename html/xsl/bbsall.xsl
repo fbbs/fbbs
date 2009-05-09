@@ -3,6 +3,7 @@
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
 	<xsl:import href='splitbm.xsl'/>
+	<xsl:output method='html' encoding='gb2312' />
 	<xsl:template match="bbsall">
 		<html>
 			<head>

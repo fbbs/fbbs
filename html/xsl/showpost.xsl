@@ -294,4 +294,57 @@ xmlns="http://www.w3.org/1999/xhtml">
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
+	
+	<xsl:template name="show-quoted">
+		<xsl:param name='content' />
+		<xsl:choose>
+			<xsl:when test='contains($content, "&#10;")'>
+				<xsl:variable name='before' select='substring-before($content, "&#10;")' />
+				<xsl:variable name='rest' select='substring-after($content, "&#10;")' />
+				<xsl:call-template name='remove-ansi'>
+					<xsl:with-param name='str' select='$before' />
+				</xsl:call-template>
+				<xsl:text>&#x0d;&#x0a;</xsl:text>
+				<xsl:if test='$rest'>
+					<xsl:call-template name='show-quoted'>
+						<xsl:with-param name='content' select='$rest' />
+					</xsl:call-template>
+				</xsl:if>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name='remove-ansi'>
+					<xsl:with-param name='str' select='$content' />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+		
+		
+	</xsl:template>
+
+	<xsl:template name='remove-ansi'>
+		<xsl:param name='str' />
+		<xsl:choose>
+			<xsl:when test='contains($str, ">1b[")'>
+				<xsl:value-of select='substring-before($str, ">1b[")' />
+				<xsl:variable name='after' select='substring-after($str, ">1b[")' />
+				<xsl:if test='$after'>
+					<xsl:variable name='first-alpha'>
+						<xsl:call-template name='not-str-token'>
+							<xsl:with-param name='str' select='$after' />
+							<xsl:with-param name='delim'>0123456789;</xsl:with-param>
+							<xsl:with-param name='start' select='1' />
+						</xsl:call-template>
+					</xsl:variable>
+					<xsl:if test='string-length($first-alpha)'>
+						<xsl:call-template name='remove-ansi'>
+							<xsl:with-param name='str' select='substring($after, $first-alpha + 1)' />
+						</xsl:call-template>
+					</xsl:if>
+				</xsl:if>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select='$str' />
+			</xsl:otherwise>		
+		</xsl:choose>
+	</xsl:template>
 </xsl:stylesheet>

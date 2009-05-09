@@ -24,6 +24,7 @@ int resolve_boards(void);
 void flush_bcache(void);
 void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
+unsigned int get_nextid2(const struct boardheader *bp);
 int getblankbnum(void);
 struct boardheader *getbcache(const char *bname);
 struct boardheader *getbcache2(int bid);

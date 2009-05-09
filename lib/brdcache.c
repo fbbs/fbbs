@@ -76,6 +76,7 @@ static int getlastpost(const char *board, int *lastpost, int *total)
 	return 0;
 }
 
+// TODO:
 int updatelastpost(const char *board)
 {
 	int pos;
@@ -218,6 +219,18 @@ int get_nextid(const char* boardname)
 		}
 	}
 	return 0;
+}
+
+// Gets nowid from bcache.
+unsigned int get_nextid2(const struct boardheader *bp)
+{
+	if (bp == NULL)
+		return -1;
+	int i = bp - bcache;
+	int fd = bcache_lock();
+	int ret = ++(brdshm->bstatus[i].nowid);
+	bcache_unlock(fd);
+	return ret;
 }
 
 int getblankbnum(void)

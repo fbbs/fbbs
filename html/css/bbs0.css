@@ -1,12 +1,14 @@
+body {
+	font-size: 1em;
+}
 a {
 	color: #000000;
 	text-decoration: none;
 }
 a:hover {
-	text-decoration: underline
-}
-body {
-	font-size: 1em;
+	text-decoration: underline;
+	background-color: #336699;
+	color: #ffffff;
 }
 table {
 	border-style: solid outset outset solid;
@@ -17,6 +19,10 @@ table {
 td, th {
 	white-space: nowrap;
 	font-size: 1em;
+}
+img {
+	border: 0;
+	vertical-align: middle;
 }
 div.article {
 	border-style: solid outset outset solid;
