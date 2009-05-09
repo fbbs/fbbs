@@ -57,9 +57,10 @@ int bbsdoc_main(void)
 	FILE *fp = fopen(dir, "r");
 	if (fp != NULL) {
 		fseek(fp, (start - 1) * sizeof(struct fileheader), SEEK_SET);
-		int i;
 		struct fileheader x;
-		for (i = 0; i < my_t_lines; i++) {
+		int type;
+		for (int i = 0; i < my_t_lines; i++) {
+			type = ' ';
 			if (fread(&x, sizeof(x), 1, fp) <= 0)
 				break;
 			printf("<post>\n<author>%s</author>\n<time>%s</time>\n"
@@ -69,8 +70,27 @@ int bbsdoc_main(void)
 			printf("</title>\n");
 			if (x.accessed[0] & FILE_NOREPLY)
 				printf("<noreply />\n");
-			printf("</post>\n");
-			// TODO: mark
+			// Mark
+			if (x.accessed[0] & FILE_DIGEST)
+				type = 'g';
+			if (x.accessed[0] & FILE_MARKED) {
+				if (type == ' ')
+					type = 'm';
+				else
+					type = 'b';
+			}
+			if (x.accessed[0] & FILE_DELETED && type == ' ')
+				type = 'w';
+			if (brc_unread(x.filename)) {
+				if (type == ' ')
+					type = '+';
+				else
+					type = toupper(type);
+			}
+			if (type != ' ')
+				printf("<mark>%c</mark></post>\n", type);
+			else
+				printf("</post>\n");
      	}
 		fclose(fp);
 	}

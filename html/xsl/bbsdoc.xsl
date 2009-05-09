@@ -33,7 +33,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 				</strong>
 				<table width="100%" bgcolor="#ffffff">
 					<tr class="pt9h">
-						<th>序号</th><th>作者</th><th>发表时间</th><th>标题</th>
+						<th>序号</th><th>标记</th><th>作者</th><th>发表时间</th><th>标题</th>
 					</tr>
 					<xsl:for-each select='post'>
 						<tr>
@@ -43,6 +43,8 @@ xmlns="http://www.w3.org/1999/xhtml">
 							</xsl:attribute>
 							<!-- No. -->
 							<td align='right'><xsl:value-of select='position() - 1 + /bbsdoc/start' /></td>
+							<!-- Mark -->
+							<td align='center'><xsl:value-of select='mark' /></td>
 							<!-- Author -->
 							<td><strong><a>
 								<xsl:attribute name='href'>bbsqry?userid=<xsl:value-of select='author' /></xsl:attribute><xsl:value-of select='author' />
