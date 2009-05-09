@@ -17,6 +17,7 @@ static struct cgi_applet applets[] = {
 		{ "bbsdoc", bbsdoc_main},
 		{ "bbscon", bbscon_main},
 		{ "bbspst", bbspst_main},
+		{ "bbssnd", bbssnd_main},
 		{ NULL, NULL }
 };
 

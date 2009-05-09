@@ -37,7 +37,7 @@ int bbspst_main(void)
 {
 	int bid = strtol(getparm("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
-#ifdef aasdffdsa
+
 	if (!loginok)
 		http_fatal("匆匆过客不能发表文章，请先登录");
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
@@ -45,7 +45,7 @@ int bbspst_main(void)
 	if (bp->flag & BOARD_DIR_FLAG)
 		http_fatal("您选择的是一个目录");
 	// TODO: Check if the user is banned of posting
-#endif
+
 	unsigned int fid;
 	void *ptr;
 	size_t size;
@@ -69,12 +69,16 @@ int bbspst_main(void)
 	printf("<bbspst>\n<board>%s</board>\n<user>%s</user>\n",
 			bp->filename, currentuser.userid);
 	if (reply) {
-		printf("<title>%s</title>\n", fh.title);
-		fputs("<post>", stdout);
+		fputs("<title>", stdout);
+		ansi_filter(fh.title, fh.title);
+		xml_fputs(fh.title, stdout);
+		fputs("</title>\n<post>", stdout);		
 		web_quotation(ptr, size, &fh);
 		end_mmapfile(ptr, size, fd);
 		fputs("</post>\n", stdout);
+		printf("<f>%u</f>", fid);
 	}
+	printf("<bid>%d</bid>", bid);
 	fputs("</bbspst>", stdout);
 	
 	return 0;

@@ -982,69 +982,72 @@ int post_imail(char *userid, char *title, char *file, char *id, char *nickname, 
 	pclose(fp2);
 }
 
-int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig) {
-	FILE *fp, *fp2;
-	char buf3[1024];
-	struct fileheader header;
-	struct boardheader *brd;
-	char board2[30];
-	int t, i;
-	bzero(&header, sizeof(header));
-	strcpy(header.owner, id);
-
-	/* add by roly 02.05.29 */
-	brd=getbcache(board);
-	if(brd==0)
-		http_fatal2(HTTP_STATUS_NOTFOUND, "¥ÌŒÛµƒÃ÷¬€«¯");
-	strcpy(board2, brd->filename);	
-
-	/* add end */
-
-	for(i=0; i<100; i++) {
-		t=time(0)+i;
-		sprintf(buf3, "boards/%s/M.%d.A", board2, t);
-		if(!dashf(buf3))
-			break;
+// similar to 'date_to_fname()'.
+// Creates a new file in 'dir' with prefix 'pfx'.
+// Returns filename(in 'fname') and stream on success, NULL on error.
+static FILE *get_fname(const char *dir, const char *pfx, char *fname, size_t size)
+{
+	if (dir == NULL || pfx == NULL)
+		return NULL;
+	const char c[] = "ZYXWVUTSRQPONMLKJIHGFEDCBA";
+	int t = (int)time(NULL);
+	int count = snprintf(fname, size, "%s%s%d. ", dir, pfx, (int)time(NULL));
+	if (count < 0 || count >= size)
+		return NULL;
+	int fd;
+	for (int i = sizeof(c) - 2; i >= 0; ++i) {
+		fname[count - 1] = c[i];
+		if ((fd = open(fname, O_CREAT | O_WRONLY | O_EXCL, 0644)) > 0)
+			return fdopen(fd, "w");
 	}
-	if(i>=99) return -1;
-	sprintf(header.filename, "M.%d.A", t);
-	header.id = get_nextid(board2);
-	if (strncmp(title, "Re: ", 4) == 0 && !(o_id == -1 && o_gid == -1)){
-		strlcpy(header.title, title, 68);
-		header.reid = o_id;
-		header.gid = o_gid;
-	}else{
-		strlcpy(header.title, title, 50);
-		header.reid = header.id;
-		header.gid = header.id;
+	return NULL;
+}
+
+// Post an article with 'title', 'content' on board 'bp' by 'user' from 'ip'
+// as a reply to 'o_fp'. If 'o_fp' == NULL then it starts a new thread.
+// Returns 0 on success, -1 on error.
+int post_article(const struct userec *user, const struct boardheader *bp,
+		const char *title, const char *content, 
+		const char *ip, const struct fileheader *o_fp)
+{
+	if (user == NULL || bp == NULL || title == NULL 
+			|| content == NULL || ip == NULL)
+		return -1;
+
+	char fname[HOMELEN];
+	char dir[HOMELEN];
+	int idx = snprintf(dir, sizeof(dir), "boards/%s/", bp->filename);
+	const char *pfx = "M.";
+	FILE *fptr;
+	if ((fptr = get_fname(dir, pfx, fname, sizeof(fname))) == NULL)
+		return -1;
+	fprintf(fptr, "∑¢–≈»À: %s (%s), –≈«¯: %s\n±Í  Ã‚: %s\n∑¢–≈’æ: %s (%s)\n\n",
+			user->userid, user->username, bp->filename, title, BBSNAME,
+			getdatestring(time(NULL), DATE_ZH));
+	fputs(content, fptr);
+	fprintf(fptr, "\n--\n");
+	// TODO: signature
+	fprintf(fptr, "\033[m\033[1;%2dm°˘ ¿¥‘¥:°§"BBSNAME" "BBSHOST
+			"°§HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7, ip);
+	fclose(fptr);
+
+	struct fileheader fh;
+	memset(&fh, 0, sizeof(fh));	
+	strlcpy(fh.filename, fname + idx, sizeof(fh.filename));
+	strlcpy(fh.owner, user->userid, sizeof(fh.owner));
+	strlcpy(fh.title, title, sizeof(fh.title));
+	fh.id = get_nextid2(bp);
+	if (o_fp != NULL) { //reply
+		fh.reid = o_fp->id;
+		fh.gid = o_fp->gid;
+	} else {
+		fh.reid = fh.id;
+		fh.gid = fh.id;
 	}
-	fp = fopen(buf3, "w");
-	fp2 = fopen(file, "r");
-	fprintf(fp, "∑¢–≈»À: %s (%s), –≈«¯: %s\n±Í  Ã‚: %s\n∑¢–≈’æ: %s (%s)\n\n",
-			//		id, nickname, board2, title, BBSNAME, Ctime(time(0)));
-			//modified by iamfat 2002.08.01
-		id, nickname, board2, header.title, BBSNAME, cn_Ctime(time(0)));
-	if (fp2 != NULL) {
-		while(1) {
-			/* modified by roly */
-			//if(fgets(buf3, 10000, fp2)<=0) break;
-			if(fgets(buf3, 1000, fp2)<=0) break;
-			/* modified end */
-			fprintf2(fp, buf3);
-		}
-		fclose(fp2);
-	}
-	fprintf(fp, "\n--\n");
-	sig_append(fp, id, sig);
-	//	fprintf(fp, "\n[1;%dm°˘ ¿¥‘¥:£Æ%s %s [FROM: %.20s][m\n", 31+rand()%7, BBSNAME, "http://bbs.fudan.edu.cn", ip);
-	fprintf(fp, "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§HTTP [FROM: %-.20s][m\n", 31+rand()%7, BBSNAME, BBSHOST, ip);
-	fclose(fp);
-	sprintf(buf3, "boards/%s/.DIR", board2);
-	fp = fopen(buf3, "a");
-	fwrite(&header, sizeof(header), 1, fp);
-	fclose(fp);
-	updatelastpost(board);
-	return t;
+	setwbdir(dir, bp->filename);
+	append_record(dir, &fh, sizeof(fh));
+	updatelastpost(bp->filename);
+	return 0;
 }
 
 /* add by money 2003.11.2 for trim title */

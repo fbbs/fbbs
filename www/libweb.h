@@ -65,7 +65,7 @@ extern char seccode[][6];
 extern char secname[][2][20];
 
 struct post_log {
-	char	author[IDLEN+1];
+	char	author[IDLEN+1]; // TODO: is this too short for "id."?
 	char	board[18];
 	char	title[66];
 	time_t	date;
@@ -108,7 +108,9 @@ void xml_header(const char *xslfile);
 void http_header(void);
 
 int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig);
-int post_article(char *board, char *title, char *file, char *id, char *nickname, char *ip, int o_id, int o_gid, int sig);
+int post_article(const struct userec *user, const struct boardheader *bp, 
+		const char *title, const char *content, const char *ip, 
+		const struct fileheader *o_fp);
 
 void check_title(char *title);
 char* anno_path_of(char *board);
@@ -197,5 +199,6 @@ int bbslogout_main(void);
 int bbsdoc_main(void);
 int bbscon_main(void);
 int bbspst_main(void);
+int bbssnd_main(void);
 
 #endif
