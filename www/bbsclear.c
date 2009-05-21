@@ -1,19 +1,21 @@
 #include "libweb.h"
 
-int main() {
-	char board[80], start[80], buf[256];
-	init_all();
-	printf("<b>清除版面未读 · %s </b><br>\n",BBSNAME);
-	printpretable_lite();
-
-	strlcpy(board, getparm("board"), 32);
-	strlcpy(start, getparm("start"), 32);
-	if(!loginok) http_fatal("匆匆过客无法执行此项操作, 请先登录");
-	if(!has_read_perm(&currentuser, board)) http_fatal("错误的讨论区");
+int bbsclear_main(void)
+{
+	if (!loginok)
+		http_fatal("匆匆过客无法执行此项操作, 请先登录");
+	const char *board = getparm("board");
+	struct boardheader *bp = getbcache(board);
+	if (bp == NULL || !hasreadperm(&currentuser, bp))
+		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+	const char *start = getparm("start");
 	brc_initial(currentuser.userid, board);
 	brc_clear(NA, NULL, YEA);
 	brc_update(currentuser.userid, board);
-	sprintf(buf, "bbsdoc?board=%s&start=%s", board, start);
-	refreshto(buf, 0);
-	http_quit();
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "bbsdoc?board=%s&start=%s", board, start);
+	http_header();
+	refreshto(0, buf);
+	printf("</head></html>");
+	return 0;
 }

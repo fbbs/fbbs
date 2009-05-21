@@ -202,5 +202,6 @@ int bbscon_main(void);
 int bbspst_main(void);
 int bbssnd_main(void);
 int bbsqry_main(void);
+int bbsclear_main(void);
 
 #endif
