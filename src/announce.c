@@ -859,7 +859,7 @@ void a_RangeDelete(MENU *pm, int num1, int num2) {
 
 	//add by fangu 2003.2.26, add log
 	sprintf(genbuf, "%s %s从 '%10.10s..' 删除第%d到第%d篇\n",
-			get_short_date(time(0)), currentuser.userid, pm->mtitle);
+			get_short_date(time(0)), currentuser.userid, pm->mtitle, num1, num2);
 	file_append(ANN_LOG_PATH, genbuf);
 	bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
 	//sprintf(genbuf, "ANN RANGE_DEL %s",fpath);
@@ -979,7 +979,7 @@ int a_Rangefunc(MENU *pm) {
 /* added by roly 02.05.15 */
 /* msg用来判断是否提示已完成操作 */
 /* menuitem 用于在执行range a_a_Import的是否传入pm->now的值 */
-a_a_Import(MENU *pm, int msg, int menuitem) {
+int a_a_Import(MENU *pm, int msg, int menuitem) {
 	ITEM *item;
 	char fpath[PATHLEN], annpath[512], fname[512], dfname[512], *ip,
 			genbuf[1024];
@@ -2073,7 +2073,7 @@ int save_import_path() {
 
 int load_import_path() {
 	FILE *fp;
-	int count;
+	int count = 0;
 	sethomefile(genbuf, currentuser.userid, "annpath");
 	if (fp = fopen(genbuf, "r")) {
 		count

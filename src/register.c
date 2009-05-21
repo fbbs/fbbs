@@ -1,29 +1,3 @@
-//deardrago 2000.09.27  over
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
- 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: register.c 366 2007-05-12 16:35:51Z danielfree $
- */
-
 #include <gd.h>
 #include <gdfontl.h>
 #include "bbs.h"
@@ -82,7 +56,7 @@ int ci_strnbcmp(register char *s1, register char *s2, int n) {
 /* Restrictid support * match in three style: prefix*, *suffix, prefix*suffix. */
 /* Prefix and suffix can't contain *. */
 /* Modified by Amigo 2001.03.13. Add buffer strUID for userid. Replace all userid with strUID. */
-int ex_strcmp(char *restrictid, char *userid) {
+static int ex_strcmp(const char *restrictid, const char *userid) {
 
 	/* Modified by Amigo 2001.03.13. Add definition for strUID. */
 	char strBuf[STRLEN ], strUID[STRLEN ], *ptr;
@@ -127,40 +101,13 @@ int ex_strcmp(char *restrictid, char *userid) {
  Commented by Erebus 2004-11-08 called by getnewuserid(),new_register()
  configure ".badname" to restrict user id 
  */
-
-int bad_user_id(char *userid) {
-	/*
-	 FILE   *fp;
-	 char    buf[STRLEN], ptr2[IDLEN + 2],*ptr, ch;
-
-	 ptr = userid;
-	 while ((ch = *ptr++) != '\0') {
-	 if (!isalnum(ch) && ch != '_')
-	 return 1;
-	 }
-	 if( !strcasecmp(userid,BBSID) ) return 1;
-	 if ((fp = fopen(".badname", "r")) != NULL) {
-	 strtolower(ptr2, userid);
-	 while (fgets(buf, STRLEN, fp) != NULL) {
-	 ptr = strtok(buf, " \n\t\r");
-	 if (ptr != NULL && *ptr != '#'){
-	 if(  (ptr[0] == '*' && strstr(ptr2, &ptr[1]) != NULL)
-	 ||(ptr[0] != '*' && !strcmp(ptr2,ptr)) ) {
-	 fclose(fp); 
-	 return 1;
-	 }
-	 }
-	 }
-	 fclose(fp);
-	 }
-	 return 0;
-	 */
-
+int bad_user_id(const char *userid)
+{
 	FILE *fp;
 	char buf[STRLEN];
-	char *ptr, ch;
+	const char *ptr = userid;
+	char ch;
 
-	ptr = userid;
 	while ( (ch = *ptr++) != '\0') {
 		if ( !isalnum(ch) && ch != '_')
 			return 1;
@@ -308,21 +255,11 @@ int getnewuserid() {
 						system(genbuf_rm); //added by roly 02.03.24
 					}
 				}
-				/*
-				 if(lseek(fd, (off_t)(-size), SEEK_CUR)==-1){
-				 flock(fd, LOCK_UN);
-				 close(fd);
-				 return -1;
-				 }
-				 write(fd, &zerorec, sizeof(utmp));
-				 */
 				substitut_record(PASSFILE, &zerorec,
 						sizeof(struct userec), i+1);
 				del_uidshm(i+1, utmp.userid);
 			}
 		}
-		//      flock(fd, LOCK_UN);
-		//      close(fd);
 		fclose(fdtmp);
 		char *str = getdatestring(system_time, NA);
 		sprintf(genbuf, "[%8.8s %6.6s] 本日随风飘逝的ID", str + 6, str + 23);
@@ -348,24 +285,14 @@ int getnewuserid() {
 	memset(&utmp, 0, sizeof(utmp));
 	strcpy(utmp.userid, "new");
 	utmp.lastlogin = time(0);
-	/*
-	 if (lseek(fd, (off_t)(sizeof(utmp) * (i - 1)), SEEK_SET) == -1) {
-	 flock(fd, LOCK_UN);
-	 close(fd);
-	 return -1;
-	 }
-	 write(fd, &utmp, sizeof(utmp));
-	 //setuserid(i, utmp.userid);
-	 flock(fd, LOCK_UN);
-	 close(fd);
-	 */
 	substitut_record(PASSFILE, &utmp, sizeof(struct userec), i);
 	return i;
 }
 
 //	userid全字母返回0,否则返回1
-int id_with_num(char userid[IDLEN + 1]) {
-	char *s;
+int id_with_num(const char *userid)
+{
+	const char *s;
 	for (s = userid; *s != '\0'; s++)
 		if (*s < 1 || !isalpha(*s))
 			return 1;
@@ -423,7 +350,8 @@ const char *generate_verify_num() {
 }
 #endif
 
-void new_register() {
+void new_register(void)
+{
 	struct userec newuser;
 	char passbuf[STRLEN];
 	int allocid, tried;
@@ -470,38 +398,33 @@ void new_register() {
 		sleep(sec);
 
 		if (strcmp(verify_num, verify_code)) {
-			sprintf(log, "verify '%s' error with code %s!=%s from %s",
+			snprintf(log, sizeof(log), "verify '%s' error with code %s!=%s from %s",
 					passbuf, verify_num, verify_code, fromhost);
 			report(log, currentuser.userid);
 			prints("抱歉, 您输入的验证码不正确.\n");
 			continue;
 		}
 
-		sprintf(log, "verify '%s' with code %s from %s ", passbuf,
+		snprintf(log, sizeof(log), "verify '%s' with code %s from %s ", passbuf,
 				verify_code, fromhost);
 		report(log, currentuser.userid);
 
 #endif
+		char path[HOMELEN];
+		sethomepath(path, passbuf);
 		if (id_with_num(passbuf)) {
 			prints("帐号必须全为英文字母!\n");
 		} else if (strlen(passbuf) < 2) {
 			prints("帐号至少需有两个英文字母!\n");
 		} else if ((*passbuf == '\0') || bad_user_id(passbuf)) {
 			prints("抱歉, 您不能使用这个字作为帐号。 请想过另外一个。\n");
-		} else if (dosearchuser(passbuf, &currentuser, &usernum)) {
+		} else if (dosearchuser(passbuf, &currentuser, &usernum) || dashd(path)) {
 			prints("此帐号已经有人使用\n");
 		} else
 			break;
 	}
 
 	memset(&newuser, 0, sizeof(newuser));
-	/*
-	 allocid = getnewuserid();
-	 if (allocid > MAXUSERS || allocid <= 0) {
-	 prints("No space for new users on the system!\n\r");
-	 exit(1);
-	 } 
-	 */
 	strcpy(newuser.userid, passbuf);
 	strcpy(passbuf, "");
 
