@@ -94,12 +94,14 @@ void sigbus(int signo);
 int bbskill(const struct user_info *user, int sig);
 void SpecialID(const char *uid, char *host, int len);
 char *getdatestring(time_t time, enum DATE_FORMAT mode);
+bool seek_in_file(const char *filename, const char *seekstr);
 
 //board.c
 int changeboard(struct boardheader **bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
 int hasreadperm(const struct userec *user, const struct boardheader *bp);
+bool haspostperm(const struct userec *user, const struct boardheader *bp);
 int junkboard(const struct boardheader *bp);
 
 //mail.c

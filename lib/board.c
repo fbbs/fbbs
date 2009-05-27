@@ -90,6 +90,16 @@ int hasreadperm(const struct userec *user, const struct boardheader *bp)
 	return 0;
 }
 
+bool haspostperm(const struct userec *user, const struct boardheader *bp)
+{
+	if (bp == NULL || user == NULL || !HAS_PERM2(PERM_POST, user)
+		|| !HAS_PERM2(bp->level, user) || !hasreadperm(user, bp))
+		return false;
+	char buf[STRLEN];
+	setbfile(buf, bp->filename, "deny_users");
+	return !seek_in_file(buf, user->userid);
+}
+
 // Check if board 'bp' is JUNK (posts not counted).
 // Returns 1 if 'bp' is JUNK, 0 if 'bp' is NULL or not JUNK.
 int junkboard(const struct boardheader *bp)

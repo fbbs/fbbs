@@ -201,3 +201,23 @@ size_t strlcpy(char *dst, const char *src, size_t siz)
 	return(s - src - 1);  //count does not include NUL
 }
 
+
+void strtourl(char *url, const char *str)
+{
+	char c, h;
+
+	while ((c = *str) != '\0') {
+		if (isprint(c) && c != ' ' && c!= '%') {
+			*url++ = c;
+		} else {
+			*url++ = '%';
+			// hexadecimal representation
+			h = c / 16;
+			*url++ = h > 9 ? 'A' - 10 + h : '0' + h;
+			h = c % 16;
+			*url++ = h > 9 ? 'A' - 10 + h : '0' + h;
+		}
+		++str;
+	}
+	*url = '\0';
+}

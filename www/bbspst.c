@@ -40,13 +40,11 @@ int bbspst_main(void)
 
 	if (!loginok)
 		http_fatal("匆匆过客不能发表文章，请先登录");
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+	if (bp == NULL || !haspostperm(&currentuser, bp))
+		http_fatal("错误的讨论区或您无权在本讨论区发文");
 	if (bp->flag & BOARD_DIR_FLAG)
 		http_fatal("您选择的是一个目录");
-	// TODO: Check if the user is banned of posting
-
-	unsigned int fid;
+	unsigned int fid = 0;
 	void *ptr;
 	size_t size;
 	int fd;

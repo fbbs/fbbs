@@ -139,3 +139,21 @@ char *getdatestring(time_t time, enum DATE_FORMAT mode)
 	}
 	return str;
 }
+
+bool seek_in_file(const char *filename, const char *seekstr)
+{
+	FILE* fp;
+	char buf[STRLEN];
+	char *namep;
+	if ((fp = fopen(filename, "r")) == NULL)
+		return false;
+	while (fgets(buf, STRLEN, fp) != NULL) {
+		namep = strtok(buf, ": \n\r\t");
+		if (namep != NULL && strcasecmp(namep, seekstr) == 0) {
+			fclose(fp);
+			return true;
+		}
+	}
+	fclose(fp);
+	return false;
+}

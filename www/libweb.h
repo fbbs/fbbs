@@ -48,6 +48,11 @@ enum HTTP_STATUS {
 	HTTP_STATUS_SERVICE_UNAVAILABLE = 503
 };
 
+enum {
+	UPLOAD_MAX = 1 * 1024 * 1024,
+	UPLOAD_OVERHEAD = 1024
+};
+
 #define HTTP_END (printf("\n</html>\n"));
 
 #define file_size(x) f_stat(x)->st_size
@@ -89,7 +94,7 @@ int file_has_word(char *file, char *word);
 struct stat *f_stat(char *file);
 int del_record(char *file, int size, int num);
 
-char *getsenv(char *s);
+char *getsenv(const char *s);
 void http_quit(void);
 void http_fatal(const char *prompt);
 void http_fatal2(enum HTTP_STATUS status, const char *prompt);
@@ -141,19 +146,6 @@ struct fileheader *get_file_ent(char *board, char *file);
 char *getbfroma(char *path);
 int set_my_cookie(void);
 
-struct dir {
-	char	filename[STRLEN-8];     /* the DIR files */
-	unsigned int	id;
-	unsigned int  	gid;
-	char 	owner[STRLEN];
-	char 	title[STRLEN-IDLEN-1];
-	char 	szEraser[IDLEN+1];
-	unsigned 	level;
-	unsigned char 	accessed[4];   /* struct size = 256 bytes */
-	unsigned int reid;
-	time_t 	timeDeleted;
-};
-
 void trace(const char* content);
 
 void printpretable(void);
@@ -170,14 +162,13 @@ void showheadline(char *board);
 void showrecommend(char *board, int showall, int showborder);
 void showrawcontent(char *filename);
 
-int strtourl(char * url, char * str);
 bool bbscon_search(const struct boardheader *bp, unsigned int fid, 
 		int action, struct fileheader *fp);
+int maxlen(const char *board);
 
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);
 int has_read_perm(struct userec *user, char *board);
-int has_post_perm(struct userec *user, char *board);
 void do_report(const char* fname, const char* content);
 // libBBS/string.c
 char *cn_Ctime(time_t t);
@@ -185,6 +176,7 @@ char *Ctime(time_t t);
 char *nohtml(char *s);
 char *getparm(const char *name);
 void http_parm_init(void);
+void parse_post_data(void);
 
 int fcgi_init_all(void);
 int fcgi_init_loop(void);
@@ -203,5 +195,7 @@ int bbspst_main(void);
 int bbssnd_main(void);
 int bbsqry_main(void);
 int bbsclear_main(void);
+int bbsupload_main(void);
+int bbspreupload_main(void);
 
 #endif

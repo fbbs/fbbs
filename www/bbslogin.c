@@ -117,13 +117,13 @@ int bbslogin_main(void)
 	char buf[256], id[IDLEN + 1], pw[PASSLEN];
 	struct userec user;
 
+	parse_post_data();
 	strlcpy(id, getparm("id"), sizeof(id));
 	strlcpy(pw, getparm("pw"), sizeof(pw));
 	if(loginok && strcasecmp(id, currentuser.userid)) {
 		http_fatal("系统检测到目前您的计算机上已经登录有一个帐号，"
 				"请先退出(选择注销登录，或者关闭所有浏览器窗口)。");
 	}
-
 	if (getuserec(id, &user) == 0)
 		http_fatal("经查证，无此 ID。");
 

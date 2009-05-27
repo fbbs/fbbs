@@ -20,29 +20,6 @@ void setoboard(char *bname) {
 	}
 }
 
-int haspostperm(char *bname) {
-	register int i;
-	/*	if (digestmode==TRASH_MODE||digestmode==JUNK_MODE){
-	 return 0;
-	 }
-	 */
-	if (deny_me(bname)) {
-		return 0;
-	}
-
-	/*
-	 if (strcmp(bname, DEFAULTBOARD) == 0)
-	 return 1;
-	 *///added by roly 02.01.27 disable postperm in sysop of that has no perm_post
-	if ((i = getbnum(bname, &currentuser)) == 0) {
-		return 0;
-	}
-	set_safe_record();
-	if (!HAS_PERM(PERM_POST))
-		return 0;
-	return HAS_PERM(bcache[i - 1].level);
-}
-
 int
 normal_board(bname)
 char *bname;

@@ -1547,7 +1547,8 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 					clear();
 					if (get_a_boardname(bname, "请输入要转贴的讨论区名称: ")) {
 						move(1, 0);
-						if (deny_me(bname) || !haspostperm(bname)) {
+						struct boardheader *bp = getbcache(bname);
+						if (bp == NULL || !haspostperm(&currentuser, bp)) {
 							prints("\n\n您尚无权限在 %s 发表文章.", bname);
 							pressreturn();
 							me.page = 9999;

@@ -1,5 +1,9 @@
 #include "libweb.h"
 
+enum {
+	POST_LENGTH_LIMIT = 5 * 1024 * 1024
+};
+
 char seccode[SECNUM][6]={
 #ifdef FDQUAN
 	"ab","cd","ij","kl","mn","op","qr","st","uv"
@@ -344,9 +348,11 @@ char *get_old_shm(int key, int size) {
 	return shmat(id, NULL, 0);
 }
 
-char *getsenv(char *s) {
-	char *t=getenv(s);
-	if(t) return t;
+char *getsenv(const char *s)
+{
+	char *t = getenv(s);
+	if (t!= NULL)
+		return t;
 	return "";
 }
 
@@ -665,14 +671,15 @@ int parm_num = 0;
 // Increases 'parm_num' by 1.
 static int parm_add(const char *name, const char *val)
 {
-	int len = strlen(val);
 	if (parm_num >= sizeof(parm_val) - 1)
 		http_fatal2(HTTP_STATUS_BADREQUEST, "too many parms.");
+	size_t len = strlen(val);
 	parm_val[parm_num] = malloc(len + 1);
 	if (parm_val[parm_num] == NULL)
 		http_fatal2(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow2");
 	strlcpy(parm_name[parm_num], name, sizeof(parm_name[0]));
-	strlcpy(parm_val[parm_num], val, len + 1);
+	memcpy(parm_val[parm_num], val, len);
+	parm_val[parm_num][len] = '\0';
 	return ++parm_num;
 }
 
@@ -718,29 +725,33 @@ static void parm_parse(char *buf, const char *delim)
 // Read parameters from HTTP header.
 void http_parm_init(void)
 {
-	int n;
-	char *buf, buf2[1024];
-
+	char *buf[1024];
 	parm_free();
+	// Do not parse contents via 'POST' method
+	strlcpy(buf, getsenv("QUERY_STRING"), sizeof(buf));
+	parm_parse(buf, "&");
+	strlcpy(buf, getsenv("HTTP_COOKIE"), sizeof(buf));
+	parm_parse(buf, ";");
+}
 
-	n = atoi(getsenv("CONTENT_LENGTH"));
-	if(n > 5000000)
-		n = 5000000;
-	buf = malloc(n + 1);
+void parse_post_data(void)
+{
+	char *buf;
+	unsigned long size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
+	if (size > POST_LENGTH_LIMIT)
+		size = POST_LENGTH_LIMIT;
+	if (size <= 0)
+		return;
+	buf = malloc(size + 1);
 	if(buf == NULL)
 		http_fatal2(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow");
-	fread(buf, 1, n, stdin);
-	buf[n] = '\0';
+	if (fread(buf, 1, size, stdin) != size) {
+		free(buf);
+		http_fatal2(HTTP_STATUS_BADREQUEST, "HTTPÇëÇó¸ñÊ½´íÎó");
+	}
+	buf[size] = '\0';
 	parm_parse(buf, "&");
 	free(buf);
-
-	strlcpy(buf2, getsenv("QUERY_STRING"), sizeof(buf2));
-	parm_parse(buf2, "&");
-
-	strlcpy(buf2, getsenv("HTTP_COOKIE"), sizeof(buf2));
-	parm_parse(buf2, ";");
-
-	return;
 }
 
 static int http_init(void)
@@ -1121,28 +1132,6 @@ int has_read_perm(struct userec *user, char *board) {
 
 	if (currentuser.userlevel & x->level) return 1;
 	return 0;
-}
-
-int has_post_perm(struct userec *user, char *board) {
-	char buf3[256];
-	struct boardheader *x;
-	if(!has_read_perm(user, board)) return 0;
-	x=getbcache(board);
-	if(x==0) return 0;
-	if(!loginok) return 0;
-	if(user_perm(user, PERM_SYSOPS)) return 1;
-	sprintf(buf3, "boards/%s/deny_users", x->filename);
-	if(file_has_word(buf3, user->userid)) return 0;
-	//if(!strcasecmp(board, "sysop")) return 1;
-	//if(user_perm(user, PERM_SPECIAL8)) return 0; //commented by stephen 2003.05.29
-	if(!user_perm(user, PERM_LOGIN)) return 0;
-	if(!user_perm(user, PERM_POST)) return 0;
-	/*
-	   if (x->level & PERM_NOZAP ) return 0;
-	   if (!x->level) return 1;
-	   if (!(x->level & ~PERM_POSTMASK)) return 1;
-	   */
-	return user_perm(user, x->level);
 }
 
 int count_mails(char *id, int *total, int *unread) {
@@ -1763,27 +1752,6 @@ void showrawcontent(char *filename)
 	fclose(fp);
 }
 
-int strtourl(char * url, char * str)
-{
-	int i,c;
-	char mybuf[4];
-	url[0]='\0';
-	for(i=0;str[i];i++)
-	{
-		c=str[i];
-		if(c=='\r'||c=='\n')
-			return 0;
-		if(c<-1)
-			c+=256;
-		if(isprint(c)&&(c!=' ')&&(c!='%'))
-			sprintf(mybuf, "%c", c);
-		else
-			sprintf(mybuf,"%%%X",c);
-		strcat(url,mybuf);
-	}
-	return 0;
-}
-
 static struct fileheader *dir_bsearch(const struct fileheader *begin, 
 		const struct fileheader *end, unsigned int fid)
 {
@@ -1846,3 +1814,16 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 	return (f != NULL);
 }
 
+// TODO: put into memory
+int maxlen(const char *board)
+{
+	char path[HOMELEN];
+	int	limit = UPLOAD_MAX;
+	snprintf(path, sizeof(path), BBSHOME"/upload/%s/.maxlen", board);
+	FILE *fp = fopen(path, "r");
+	if (fp != NULL) {
+		fscanf(fp, "%d", &limit);
+		fclose(fp);
+	}
+	return limit;
+}

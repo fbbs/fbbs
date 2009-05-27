@@ -1,290 +1,164 @@
 #include "libweb.h"
 
-#define UPLOAD_MAX	(1*1024*1024)
-
-int mystrstr(char *haystack, int len, char *needle) 
+// TODO: rewrite
+static bool quota_exceeded(const char *board)
 {
-	int i, len2=strlen(needle);
-	for(i=0; i<=len-len2; i++)
-		if(!strncmp(haystack+i, needle, len2)) 
-			return i;
-	return -1;
-}
-
-void name_check(char * str )
-{
-	int i;
-	for(i=0;str[i];i++)
-	{
-		if(isdigit(str[i]) || isalpha(str[i]) )
-			continue;
-		if(str[i]=='_' || str[i]=='~' || str[i]=='.')		//add other legal characters here if needed
-			continue;
-		str[i]='_';				//turn all the other chars into '_'
-	}
-}
-
-int BoardQuota(char *board)
-{
-	int all=0, now=0;
+	int all = 0, now = 0;
 	char path[256], cmd[256];
-	sprintf(path, "%s/upload/%s", BBSHOME, board);
-	if(dashd(path))
-	{
+	sprintf(path, BBSHOME"/upload/%s", board);
+	if (dashd(path)) {
 		FILE *fp;
 		sprintf(cmd , "du %s|cut -f1>%s/.size", path, path);
 		system(cmd);
 		sprintf(cmd, "%s/.size", path);
-		fp=fopen(cmd, "r");
-		if(!fp)return 1;
-		fscanf(fp, "%d", &now);
+		if ((fp = fopen(cmd, "r")) == NULL)
+			return true;
+		fscanf(FCGI_ToFILE(fp), "%d", &now);
 		fclose(fp);
 		sprintf(cmd, "%s/.quota", path);
-		fp=fopen(cmd, "r");
-		if(fp)
-		{
-			fscanf(fp, "%d", &all);
-			if(now>=all)return 1;
+		if((fp = fopen(cmd, "r")) != NULL) {
+			fscanf(FCGI_ToFILE(fp), "%d", &all);
+			if(now >= all)
+				return true;
 			fclose(fp);
 		}
-		return 0;
+		return false;
 	}
-	return 1;
+	return true;
 }
-int maxlen(char *board) //add by Danielfree to check filesize limit 06.11.23
-{
-	char path[256],cmd[256];
-	int	limit=1*1024*1024;
-	sprintf(path,"%s/upload/%s/.maxlen",BBSHOME,board);
-	if (dashf(path))
-	{
-		FILE *fp;
-		fp=fopen(path,"r");
-		if(fp)
-			{
-				fscanf(fp,"%d",&limit);
-				fclose(fp);
-			}
-	}
-	return	limit;
-}
-void addtodir(char *board, char *tmpfile) 
-{
-	char file[100],dir[100],url_filename[256];
-	static struct dir x;
-	FILE * fp;
 
-	init_all();
-	printf("<title>上传文件</title>\n");
-	if(!loginok) 
-		http_fatal("匆匆过客无法执行本操作，请先登录");
-	x.reid=1;
-	strlcpy(x.owner, currentuser.userid, 13);
-	strlcpy(x.filename, tmpfile, 100);
-	strtourl(url_filename,x.filename);
-	x.timeDeleted=time(0);
-	sprintf(file,"%s/upload/%s/%s",BBSHOME,board,x.filename);
-	sprintf(dir,"%s/upload/%s/.DIR",BBSHOME,board);
-	if(!has_post_perm(&currentuser, board)) 
-		http_fatal("错误的讨论区或无权上传文件至本讨论区");
-	if(!dashf(file)) 
-		http_fatal("错误的文件名");
-	x.id=file_size(file);
-	if(x.id>maxlen(board)) 
-	{
+static void addtodir(const char *board, const char *tmpfile) 
+{
+	char file[100], dir[100], url_filename[256];
+	static struct fileheader x;
+	
+	x.reid = 1;
+	strlcpy(x.owner, currentuser.userid, sizeof(x.owner));
+	strlcpy(x.filename, tmpfile, sizeof(x.filename));
+	strtourl(url_filename, x.filename);
+	x.timeDeleted = time(NULL);
+	snprintf(file, sizeof(file), BBSHOME"/upload/%s/%s", board, x.filename);
+	snprintf(dir, sizeof(dir), BBSHOME"/upload/%s/.DIR", board);
+	// TODO: ...
+	x.id = file_size(file);
+	if (append_record(dir, &x, sizeof(x)) < 0) {
 		unlink(file);
-		http_fatal("文件大小超过最大文件限制");
+		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "写文件错误");
 	}
-	fp=fopen(dir, "a");
-	if(fp==NULL)
-	{
-		unlink(file);
-		http_fatal("内部错误:写文件错误");
-	}
-	fwrite(&x, sizeof(struct dir), 1, fp);
-	fclose(fp);
+
 	char buf[256],log[100];
-	sprintf(buf, "UP [%s] %s %dB %s %s FILE:%s\n",cn_Ctime(time(0)), currentuser.userid, x.id, fromhost, board, x.filename);
-	sprintf(log,"%s/upload.log",BBSHOME);
-	f_append(log, buf);
+	snprintf(buf, sizeof(buf), "UP [%s] %s %dB %s %s FILE:%s\n",
+			getdatestring(time(NULL), DATE_EN), currentuser.userid, x.id, 
+			fromhost, board, x.filename);
+	snprintf(log, sizeof(log), "%s/upload.log", BBSHOME);
+	file_append(log, buf);
 
-	printf("文件上传成功, 详细信息如下:");
-	printpretable_lite();
-	{
-		float my_size=x.id;
-		char sizestr[10];
-		if(my_size>1024)
-		{
-			my_size=my_size/1024;
-			if(my_size>1024)
-			{
-				my_size=my_size/1024;
-				sprintf(sizestr,"%-6.2fMB",my_size);
-			}else{
-				sprintf(sizestr,"%-4.2fKB",my_size);
-			}
-
-		}else{
-			sprintf(sizestr,"%dB",(int)(my_size));
-		}
-		printf("文件大小: %s<br>\n", sizestr);
-	}
-	printf("文件名称: %s<br>\n", x.filename);
-	printf("上传人ID: %s<br>\n", x.owner);
-	printf("上传时间: %s<br>\n", cn_Ctime(time(0)));
-	printf("上传版面: %s<br>\n", board);
-	printf("上传文件将自动在文章中添加http://转义,<br>\n");
-	printf("请保持自动添加部分原样(虽然看起来像乱码),<br>\n");
-	printf("在www界面下转义部分将自动转换为对应的链接/图片.\n");
-	printposttable_lite();
-	printf("<a href='#' onclick='return closewin()'>返回</a>\n");
-	printf("<script language='JavaScript'>\n");
-	printf("<!--					\n");
-	printf("function closewin()		\n");
-	printf("{						\n");
-	printf("    opener.document.forms['postform'].elements['text'].value +='\\nhttp://%s/upload/%s/%s\\n';\n",BBSHOST, board,url_filename);
-	printf("	return window.close();		\n");
-	printf("}						\n");
-	printf("-->						\n");
-	printf("</script>\n");
-	http_quit();
+	xml_header("bbsupload");
+	printf("<bbsupload><size>%d</size><user>%s</user>"
+			"<url>http://"BBSHOST"/upload/%s/%s</url></bbsupload>",
+			x.id, x.owner, board, x.filename);
 }
-int main() 
+
+static bool check_upload(char *buf, size_t size, char **begin, char **end, char **fileext)
 {
-	int m, i=0;
-	long content_len, read_len=0, file_len;
-	char *buf, *p, *filename, buf_alt[256], http_boundary[280], temp_filename[100];
-	char board[80], level[80], live[80], exp[80];
-	char postfix[5];
-	FILE *fp;
-	//printf("Content-type: text/html; charset=gb2312\n\n");
-    
-	content_len=strtol(getenv("CONTENT_LENGTH"),NULL,10);
-	if(content_len<0) 
-		content_len=0;
-	
-	if(content_len>UPLOAD_MAX) 
-	{
-		if(content_len>UPLOAD_MAX+1024)			//data other than binary file would take about 1K Bytes
-			http_fatal("文件大小超过最大限制");
-		content_len=UPLOAD_MAX;
+	if (fread(buf, 1, size, stdin) < size)
+		return false;
+	char *bufend = buf + size;
+	// find boundary
+	char *p = memchr(buf, '\r', size);
+	if (p == NULL)
+		return false;
+	*p = '\0';
+	const char *boundary = buf;
+	// line containing 'filename="xxxx"'
+	char *fname = p + 2;  // "\r\n"
+	if (fname > bufend)
+		return false;
+	p = memchr(fname, '\r', bufend - fname);
+	if (p == NULL)
+		return false;
+	*p = '\0';
+
+	// parse filename
+	fname = strstr(fname, "filename=\"");
+	if (fname == NULL)
+		return false;
+	p = strrchr(fname, '\\'); // windows path symbol
+	if (p != NULL) {
+		fname = p + 1;
+	} else {
+		// moz-browsers don't give out full path, just the very filename,
+		// so no parsing needed
+		fname += strlen("filename=\"");
 	}
-	
-	buf=malloc(content_len);
-	if(buf==0) 
-		http_fatal("内部错误：申请内存出错");
-	
-	fgets(http_boundary, 200, stdin);		
-	fgets(buf_alt, 256, stdin);				//line containing 'filename="xxxx"'
-	read_len+=strlen(http_boundary)+strlen(buf_alt);
-	filename=strstr(buf_alt, "filename=\"");
-	if(filename==0) 
-	{
+	if ((p = strchr(fname, '\"')) != NULL);
+		*p = '\0';
+	// Check filename extension
+	// Only .jpg/.jpeg/.gif/.png/.pdf are allowed.
+	p = strrchr(fname, '.');
+	if (p == NULL || (strcasecmp(p, ".JPEG") && strcasecmp(p, ".JPG")
+			&& strcasecmp(p, ".GIF") && strcasecmp(p, ".PNG")
+			&& strcasecmp(p, ".PDF"))) {
+		return false;
+	}
+	*fileext = p;
+	// skip 2 lines
+	p = memchr(p, '\r', bufend - p);
+	if (p == NULL || ++p == bufend)
+		return false;
+	p = memchr(p, '\r', bufend - p);
+	if (p == NULL || p + 2 >= bufend)
+		return false;
+	*begin = p + 2;
+	// [content]\r\n[boundary]\r\n
+	*end = bufend - 4 - strlen(boundary);
+	if (*end < *begin + 1)
+		return false;
+	return true;
+}
+
+int bbsupload_main(void)
+{
+	if (!loginok) 
+		http_fatal("匆匆过客无法执行本操作，请先登录");
+	const char *board = getparm("b");
+	struct boardheader *bp = getbcache(board);
+	if (!haspostperm(&currentuser, bp))
+		http_fatal("错误的讨论区或无权上传文件至本讨论区");
+
+	size_t size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
+	if (size > UPLOAD_MAX + UPLOAD_OVERHEAD)
+		http_fatal("文件长度超过最大限制");
+
+	char *buf = malloc(size);
+	if (buf == NULL) 
+		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "内部错误");
+	char *begin = NULL, *end = NULL, *fileext = NULL;
+	if (!check_upload(buf, size, &begin, &end, &fileext)) {
 		free(buf);
-		http_fatal("内部错误：文件名未知");
+		http_fatal("");
 	}
-	
-	p=strrchr(filename, '\\');				//windows path symbol
-	if(p)
-	{
-		filename=p+1;		
-	}else{	//moz-browsers don't give out full path,just the very filename,so no parse needed
-		filename+=strlen("filename=\"");
-	}
-	p=strchr(filename, '\"');
-	if(p) 
-		p[0]='\0';							//filename parsing end
-	if(strlen(p)>70)
-	{
+	if (end - begin > maxlen(board)) {
 		free(buf);
-		http_fatal("内部错误: 文件名过长");
+		http_fatal("文件长度超过版面限制");
 	}
-	
-	/* 文件扩展名检查，只允许.jpg/.bmp/.gif/.png/.jpeg/.jfif格式 */
-	/* added by money 2003.12.22 */
-	if (strlen(filename) < 4)
-	{
-		free(buf);
-		http_fatal("内部错误: 文件名过短");
-	}
-	for (i=1; i<5; i++)
-	if (filename[strlen(filename)-i] >= 97)
-		filename[strlen(filename)-i] -= 32;
-    strlcpy(postfix,filename + strlen(filename) - 4,5);
-    if(!strncmp(postfix,"JPEG",4))
-        strlcpy(postfix,filename + strlen(filename) - 5,6);
-    else if (strncmp(postfix, ".JPG", 4) &&
-		    strncmp(postfix, ".GIF", 4) &&
-		    strncmp(postfix, ".PNG", 4) &&
-		    strncmp(postfix,".PDF",4) )
-	{
-		free(buf);
-		http_fatal("内部错误: 文件必须是图片文件或PDF 文件");
-	}
-	/* add end */
-	
-	fgets(buf_alt, 256, stdin);
-	read_len+=strlen(buf_alt);
-	fgets(buf_alt, 256, stdin);
-	read_len+=strlen(buf_alt);				//supposed to be two blank line
-	content_len-=read_len;
-	if(content_len<0) 
-		content_len=0;
-	m=fread(buf, 1, content_len, stdin);
-	buf[m]='\0';
-	file_len=mystrstr(buf,m,http_boundary);	//find the ending boundary of this file
-	if(file_len<0)							//not using strstr() 'cause it won't work properly in binary data mode
-	{
-		free(buf);
-		http_fatal("内部错误：解析http数据格式错误");
-	}
-	
-	if(file_len-2>UPLOAD_MAX)
-	{
-		free(buf);
-		http_fatal("文件大小超过最大文件限制");
-	}
-	p=buf+file_len;
-	sprintf(temp_filename, "%s/tmp/%d.upload", BBSHOME,getpid());
-	if((fp=fopen(temp_filename,"w+"))==NULL)
-	{
-		free(buf);
-		http_fatal("内部错误：文件打开错误");
-	}
-	fwrite(p,1,strlen(p),fp);
-	rewind(fp);
-	for(m=1;m<=3;m++)
-		fgets(buf_alt,256,fp);					//3 lines of rubbish before the 'board' value
-	fgets(board,80,fp);
-	fclose(fp);
-	unlink(temp_filename);
-	m=0;										//strip \r\n out of board
-	while(board[m]&&board[m]!='\n'&&board[m]!='\r')
-		m++;
-	if(board[m]=='\n'||board[m]=='\r')
-		board[m]='\0';
-	if(file_len-2>maxlen(board))
-	{
-		free(buf);
-		http_fatal("文件大小超过最大文件限制");
-	}
-	if(BoardQuota(board))
-	{
+	if (quota_exceeded(board)) {
 		free(buf);
 		http_fatal("版面超限 无法上传");
 	}
-	//name_check(filename);
-//	sprintf(temp_filename,"%s/upload/%s/%s",BBSHOME, board, ofname);
-//	if(file_exist(temp_filename))
-	{   
-        srand((int)time(0)+getpid());
-		sprintf(buf_alt,"%d-%04d%s",time(0),(int)(10000.0*rand()/RAND_MAX)+(int)filename[0]+(int)filename[1],postfix);
-		sprintf(temp_filename,"%s/upload/%s/%s",BBSHOME,board,buf_alt);
+	// TODO: Possible collison..
+	char fname[HOMELEN], fpath[HOMELEN];
+	sprintf(fname, "%ld-%04d%s", time(NULL), 
+			(int)(10000.0 * rand() / RAND_MAX), fileext);
+	snprintf(fpath, sizeof(fpath), BBSHOME"/upload/%s/%s", board, fname);
+	FILE *fp = fopen(fpath, "w");
+	if (fp != NULL) {
+		fwrite(begin, 1, end - begin, fp);
+		fclose(fp);
+	} else {
+		http_fatal("写入错误");
 	}
-	fp=fopen(temp_filename, "w");
-	fwrite(buf, 1, file_len-2, fp);
-	fclose(fp);
 	free(buf);
-	addtodir(board, buf_alt);
-	http_quit();
+	addtodir(board, fname);
+	return 0;
 }

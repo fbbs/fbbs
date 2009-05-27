@@ -233,13 +233,6 @@ char *setbdir(char *buf, char *boardname) {
 	return buf;
 }
 
-int deny_me(char *bname) {
-	char buf[STRLEN];
-
-	setbfile(buf, bname, "deny_users");
-	return seek_in_file(buf, currentuser.userid);
-}
-
 /*Add by SmallPig*/
 void shownotepad() {
 	modify_user_mode(NOTEPAD);
@@ -797,26 +790,6 @@ static int cmpdigestfilename(void *digest_name, void *fhdr)
 	return 0;
 } /* comapare file names for dele_digest function. Luzi 99.3.30 */
 
-int strtourl(char * url, char * str) {
-	int i, c;
-	char mybuf[4];
-	url[0]='\0';
-	for (i=0; str[i]; i++) {
-		c=str[i];
-		if (c=='\r'||c=='\n')
-			return 0;
-		if (c<-1)
-			c+=256;
-		if (isprint(c)&&(c!=' '))
-			sprintf(mybuf, "%c", c);
-		else
-			sprintf(mybuf, "%%%%%X", c);
-		strcat(url, mybuf);
-
-	}
-	return 0;
-}
-
 int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 	char *t;
 	char buf[512];
@@ -928,19 +901,12 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 #ifndef NOREPLY
 		move(t_lines - 1, 0);
 		clrtoeol();
-		if (haspostperm(currboard)) {
-			//Modified by IAMFAT 2002-05-26 Insert Space at the end
-			//Roll Back by IAMFAT 2002-05-29
-			//Modified by IAMFAT 2002.06.11
-			//prints("[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  [33m»ØĞÅ R ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,¡ı©¦Ö÷ÌâÔÄ¶Á ^X»òp [m");
+		if (haspostperm(&currentuser, currbp)) {
 			prints("[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  [33m»ØĞÅ R ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,¡ı©¦Ö÷ÌâÔÄ¶Á ^s»òp [m");
 		} else {
-			//prints("[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  [33m½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,<Enter>,¡ı©¦Ö÷ÌâÔÄ¶Á ^X »ò p [m");
 			prints("[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  [33m½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,<Enter>,¡ı©¦Ö÷ÌâÔÄ¶Á p       [m");
 		}
-
 		/* Re-Write By Excellent */
-
 		FFLL = 1;
 		//Re-Write By IAMFAT 2002-05-27
 		if (strncmp(fileinfo->title, "Re:", 3) != 0) {
@@ -1867,7 +1833,7 @@ int post_cross(char islocal, int mode) {
 	//int fp, count; commented by iamfat 2002.07.25
 	time_t now;
 
-	if (!haspostperm(currboard) && !mode) {
+	if (!haspostperm(&currentuser, currbp) && !mode) {
 		prints("\n\n ÄúÉĞÎŞÈ¨ÏŞÔÚ %s °æ·¢±íÎÄÕÂ.\n", currboard);
 		return -1;
 	}
@@ -2094,9 +2060,9 @@ int post_article(char *postboard, char *mailid) {
 	} // if (abs..)
 
 	/* add end */
-
-	if (!haspostperm(postboard) || digestmode == 1 || digestmode
-			== TRASH_MODE || digestmode == JUNK_MODE) {
+	bp = getbcache(postboard);
+	if (bp == NULL || !haspostperm(&currentuser, bp) || digestmode == DIGIST_MODE 
+			|| digestmode == TRASH_MODE || digestmode == JUNK_MODE) {
 		move(3, 0);
 		clrtobot();
 		if (digestmode == NA) {
@@ -2110,7 +2076,6 @@ int post_article(char *postboard, char *mailid) {
 	}
 
 	memset(&postfile, 0, sizeof (postfile));
-	bp = getbcache(postboard);
 	//¾ãÀÖ²¿
 	if ((bp->flag & BOARD_CLUB_FLAG) && !chkBM(currbp, &currentuser)
 			&& !isclubmember(currentuser.userid, postboard)) {
