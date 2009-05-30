@@ -76,8 +76,8 @@ xmlns="http://www.w3.org/1999/xhtml">
 						</tr>
 					</xsl:for-each>
 				</table>
-				<a>
-					<xsl:attribute name='href'>bbsclear?board=<xsl:value-of select='title' />&amp;start=<xsl:value-of select='start' /></xsl:attribute>清除未读</a>
+				<a><xsl:attribute name='href'>bbsclear?board=<xsl:value-of select='title' />&amp;start=<xsl:value-of select='start' /></xsl:attribute>[清除未读]</a>
+				<a><xsl:attribute name='href'>bbsnot?board=<xsl:value-of select='title' /></xsl:attribute>[进版画面]</a>
 			</body>
 		</html>
 	</xsl:template>

@@ -199,5 +199,6 @@ int bbsupload_main(void);
 int bbspreupload_main(void);
 int bbs0an_main(void);
 int bbsanc_main(void);
+int bbsnot_main(void);
 
 #endif
