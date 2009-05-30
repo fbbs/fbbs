@@ -1443,27 +1443,28 @@ struct fileheader *get_file_ent(char *board, char *file) {
 	return 0;
 }
 
-char *getbfroma(char *path) {
+// TODO: better rewrite
+char *getbfroma(const char *path)
+{
 	FILE *fp;
 	static char buf1[256], buf2[256];
+	memset(buf1, '\0', sizeof(buf1));
+	memset(buf2, '\0', sizeof(buf2));
 	int len;
-	if(path[0]==0) return "";
-	path++;
-	fp=fopen("0Announce/.Search", "r");
-	if(fp == NULL)
+	if (path == NULL || *path == '\0')
 		return "";
-	while(1) {
-		bzero(buf1,256);
-		bzero(buf2,256);
-		if(fscanf(fp, "%s %s", buf1, buf2)<=0)
+	++path;
+	fp = fopen("0Announce/.Search", "r");
+	if (fp == NULL)
+		return "";
+	while (true) {
+		if(fscanf(FCGI_ToFILE(fp), "%s %s", buf1, buf2) <= 0)
 			break;
-		if(buf1[0]) buf1[strlen(buf1)-1]=0;
-		if(buf1[0]=='*') continue;
-		len = strlen(buf2);
-		buf2[len]= '/';
-		len++;
-		buf2[len]= '\0';
-		if(!strncmp(buf2, path,(len>strlen(path))? strlen(path):len))
+		if (*buf1 != '\0')
+			buf1[strlen(buf1) - 1] = '\0';
+		if (*buf1 == '*')
+			continue;
+		if(!strncmp(buf2, path, strlen(buf2)))
 			return buf1;
 	}
 	fclose(fp);

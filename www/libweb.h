@@ -143,7 +143,7 @@ char *flag_str2(int access, int has_read);
 char *userid_str(char *s);
 
 struct fileheader *get_file_ent(char *board, char *file);
-char *getbfroma(char *path);
+char *getbfroma(const char *path);
 int set_my_cookie(void);
 
 void trace(const char* content);
@@ -197,5 +197,6 @@ int bbsqry_main(void);
 int bbsclear_main(void);
 int bbsupload_main(void);
 int bbspreupload_main(void);
+int bbs0an_main(void);
 
 #endif

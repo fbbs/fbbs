@@ -5,7 +5,8 @@ HTMPATH = /home/httpd/html
 CC      = gcc
 COBJS   = libweb.o bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
 		  bbsall.o bbsboa.o bbslogin.o bbslogout.o bbsdoc.o bbscon.o \
-		  bbspst.o bbssnd.o bbsqry.o bbsclear.o bbsupload.o bbspreupload.o
+		  bbspst.o bbssnd.o bbsqry.o bbsclear.o bbsupload.o bbspreupload.o \
+		  bbs0an.o
 TARGET  = bbswebd
 DEFS    = -D_POSIX_SOURCE -D_SVID_SOURCE
 CFLAGS  = -Os -Wall -std=c99 -pedantic $(DEFS)
