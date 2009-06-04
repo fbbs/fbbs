@@ -1,41 +1,46 @@
+#include <utime.h>
 #include "libweb.h"
+
+// TODO: msg mechanism should be redesigned since no web delegation to handle signal
+static void add_msg(void)
+{
+	char buf[BBSMSG_RECORD_LENGTH];
+	char path[HOMELEN], *id = currentuser.userid;
+	sethomefile(path, id, "wwwmsg.flush");
+	utime(path, NULL);
+	sethomefile(path, id, "msgfile");
+	int i = file_size(path) / BBSMSG_RECORD_LENGTH;
+	if (get_record(path, buf, BBSMSG_RECORD_LENGTH, i) <= 0)
+		return;
+	sethomefile(path, id, "wwwmsg");
+	append_record(path, buf, BBSMSG_RECORD_LENGTH);
+}
 
 int bbsgetmsg_main(void)
 {
-	static char buf[256], buf2[256]=".";
-	char toid[13];
-	int topid;
-	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
-	printf("<style type=text/css>\n");
-        printf("A {color: #000000}\n");
-        printf("</style>\n");
-	printf("<body marginwidth=0 marginheight=0>");
-	if(loginok==0) {
-		http_quit();
+	add_msg();
+	xml_header("bbsgetmsg");
+	printf("<bbsgetmsg>");
+	if (loginok) {
+		struct stat st;
+		char path[HOMELEN];
+		sethomefile(path, currentuser.userid, "wwwmsg");
+		if (stat(path, &st) == 0 && st.st_size > 0) {
+			char buf[BBSMSG_RECORD_LENGTH + 1];
+			get_record(path, buf, BBSMSG_RECORD_LENGTH, 1);
+			del_record(buf, BBSMSG_RECORD_LENGTH, 0);
+			char toid[IDLEN + 1];
+			int topid;
+			buf[BBSMSG_SPLIT_OFFSET] = '\0';
+			strlcpy(toid, buf + BBSMSG_SENDER_OFFSET, sizeof(toid));
+			sscanf(buf + BBSMSG_PID_OFFSET, "%d", &topid);
+			printf("<id>%s</id><pid>%d</pid><msg>", toid, topid);
+			// ignore different msg formats..
+			xml_fputs(buf + BBSMSG_CONTENT_OFFSET, stdout);
+			puts("</msg>");
+		}
 	}
-	sethomefile(buf, currentuser.userid, "wwwmsg");
-	if(file_size(buf)>0) {
-		int total;
-		char *p;
-		printf("<bgsound src=/msg.wav>\n");
-		printf("<body onkeypress='checkrmsg(event.keyCode)' style='BACKGROUND-COLOR: #fffffff; font-weight:bold;'>");
-		total=file_size(buf)/129;
-		get_record(buf, buf2, 129, 1);
-		del_record(buf, 129, 0);
-		printf("<table width=\"100%%\">\n");
-		printf("<tr><td>");
-		buf2[111]=0;
-		//hprintf(buf2);
-		sscanf(buf2+12, "%s", toid);
-		sscanf(buf2+122, "%d", &topid);
-		p=strstr(buf2,"):");
-		if(!p)p=buf2+23;
-		else p+=2;
-		printf("<b>%s</b>:",toid);
-		hprintf(p);
-		printf("<td align=right><a target=view href=bbssendmsg?destid=%s&destpid=%d>[»ØÑ¶Ï¢]</a> <a href=bbsgetmsg>[ºöÂÔ]</a>", toid, topid);
-		http_quit();
-	}
-	refreshto(60, "bbsgetmsg");
+	printf("</bbsgetmsg>");
 	return 0;
 }
+

@@ -1,6 +1,6 @@
-#ifndef _LIBWEB_H_
+#ifndef LIBWEB_H_
 
-#define _LIBWEB_H_
+#define LIBWEB_H_
 
 #define USEFCGI
 
@@ -50,7 +50,13 @@ enum HTTP_STATUS {
 
 enum {
 	UPLOAD_MAX = 1 * 1024 * 1024,
-	UPLOAD_OVERHEAD = 1024
+	UPLOAD_OVERHEAD = 1024,
+	BBSMSG_RECORD_LENGTH = 129,
+	BBSMSG_LENGTH = 51,
+	BBSMSG_SPLIT_OFFSET = 111,
+	BBSMSG_SENDER_OFFSET = 12,
+	BBSMSG_PID_OFFSET = 122,
+	BBSMSG_CONTENT_OFFSET = 23
 };
 
 #define HTTP_END (printf("\n</html>\n"));
@@ -121,8 +127,6 @@ void check_title(char *title);
 char* anno_path_of(char *board);
 
 int count_mails(char *id, int *total, int *unread);
-
-int send_msg(char *myuserid, int mypid, char *touserid, int topid, char *msg);
 
 int iconexp(int exp, int *repeat);
 
@@ -200,5 +204,6 @@ int bbspreupload_main(void);
 int bbs0an_main(void);
 int bbsanc_main(void);
 int bbsnot_main(void);
+int bbssendmsg_main(void);
 
-#endif
+#endif // LIBWEB_H_

@@ -1154,33 +1154,6 @@ int count_mails(char *id, int *total, int *unread) {
 	fclose(fp);
 }
 
-int send_msg(char *myuserid, int mypid, char *touserid, int topid, char msg[256]) {
-	char msgbuf[256], buf3[256];
-	int i;
-	for(i=0; i<strlen(msg); i++)
-		if((0<msg[i] && msg[i]<=27 )|| msg[i]==-1) msg[i]=32;
-	if(mypid<=0) return -1;
-	sprintf(msgbuf, "[0;1;44;36m%-12.12s[33m([36m%-5.5s[33m):[37m%-54.54s[31m(^Z»Ø)[m[%05dm\n",
-			myuserid, Ctime(time(0)) + 11, msg, mypid);
-	sethomefile(buf3, touserid, "msgfile");
-	file_append(buf3, msgbuf);
-	sethomefile(buf3, touserid, "msgfile.me");
-	file_append(buf3, msgbuf);
-
-
-	/* added by roly 02.05.10 */
-	sethomefile(buf3, myuserid, "msgfile.me"); 
-	sprintf(msgbuf, "[1;32;40mTo [1;33;40m%-12.12s[m (%-5.5s):%-55.55s\n", 
-			touserid, Ctime(time(0)) + 11, msg); 
-	file_append(buf3, msgbuf); 
-	/* add end */
-
-	if(topid<=0) return -1;
-	kill(topid, SIGTTOU);
-	kill(topid, SIGUSR2);
-	return 0;
-}
-
 // Convert exp to icons.
 int iconexp(int exp, int *repeat)
 {

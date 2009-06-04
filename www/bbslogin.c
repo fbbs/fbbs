@@ -13,23 +13,6 @@ static int check_multi(const struct userec *user)
 	return total;
 }
 
-static void add_msg(int notused)
-{
-	int i;
-	FILE *fp;
-	char buf[129], file[256], *id=currentuser.userid;
-	sprintf(file, "touch home/%c/%s/wwwmsg.flush", toupper(id[0]), id);
-	system(file);
-	sprintf(file, "home/%c/%s/msgfile", toupper(id[0]), id);
-	i=file_size(file)/129;
-	if (get_record(file, buf, 129, i) <= 0)
-		return;
-	sprintf(file, "home/%c/%s/wwwmsg", toupper(id[0]), id);
-	fp=fopen(file, "a");
-	fwrite(buf, 129, 1, fp);
-	fclose(fp);
-}
-
 static int wwwlogin(struct userec *user) {
 	FILE *fp;
 	char buf[STRLEN];
@@ -97,8 +80,8 @@ static int wwwlogin(struct userec *user) {
 			setcookie("utmpkey", buf);
 			setcookie("utmpuserid", currentuser.userid);
 			set_my_cookie();
-			refreshto(3, FIRST_PAGE);
-			printf("</head>\n<body>登录成功，3秒钟后自动转到"
+			refreshto(1, FIRST_PAGE);
+			printf("</head>\n<body>登录成功，1秒钟后自动转到"
 				"<a href='"FIRST_PAGE"'>web首页</a>\n</body>\n</html>\n");
 
 			uidshm->status[u->uid - 1]++;

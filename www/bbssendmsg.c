@@ -1,96 +1,79 @@
 #include "libweb.h"
 
-int main() {
-	int i;
-	int mode, destpid=0;
-	char destid[20], msg[256], filename[80];
-	struct userec *user;
-		
+// TODO: telnet->web
+static int send_msg(const char *myuserid, int mypid, const char *touserid, int topid, char *msg)
+{
+	char msgbuf[256];
+	for (int i = 0; i < strlen(msg); i++) {
+		if (msg[i] <= 27)
+			msg[i] = ' ';
+	}
+	if (mypid <= 0)
+		return -1;
+	snprintf(msgbuf, sizeof(msgbuf), "\033[0;1;44;36m%-12.12s\033[33m(\033[36m"
+			"%-5.5s\033[33m):\033[37m%-54.54s\033[31m(^Z回)\033[m\033[%05dm\n",
+			myuserid, getdatestring(time(NULL), DATE_SHORT) + 6, msg, mypid);
+	char fname[HOMELEN];
+	sethomefile(fname, touserid, "msgfile");
+	file_append(fname, msgbuf);
+	sethomefile(fname, touserid, "msgfile.me");
+	file_append(fname, msgbuf);
+	sethomefile(fname, myuserid, "msgfile.me");
+	snprintf(msgbuf, sizeof(msgbuf), "\033[1;32;40mTo \033[1;33;40m%-12.12s"
+			"\033[m (%-5.5s):%-55.55s\n", touserid,
+			getdatestring(time(NULL), DATE_SHORT) + 6, msg);
+	file_append(fname, msgbuf); 
+	if (topid <= 0)
+		return -1;
+	kill(topid, SIGTTOU);
+	kill(topid, SIGUSR2);
+	return 0;
+}
 
-	init_all();
-	if(!loginok) 
-	{
-		printf("<b>发送消息 · %s </b><br>\n",BBSNAME);
-		printpretable_lite();
+int bbssendmsg_main(void)
+{
+	if (!loginok)
 		http_fatal("匆匆过客不能发消息, 请先登录！");
-	}
-/* added by roly 02.05.29 */
-	if(!HAS_PERM(PERM_TALK)) 
-	{
-		printf("<b>发送消息 · %s </b><br>\n",BBSNAME);
-		printpretable_lite();
-		http_fatal("您是未注册用户,或者无权发送消息!");
-	}
-/* add end */
-	strlcpy(destid, getparm("destid"), 13);
-	strlcpy(msg, getparm("msg"), 51);
-	destpid=atoi(getparm("destpid"));
-	if(destid[0]==0 || msg[0]==0) {
-		char buf3[256];
-		strcpy(buf3, "<body onload='document.form0.msg.focus()'>");
-		if(destid[0]==0) strcpy(buf3, "<body onload='document.form0.destid.focus()'>");
-		printf("%s\n", buf3);
-		printf("<b>发送消息 · %s </b><br>\n",BBSNAME);
-		printpretable_lite();
-		printf("<form name=form0 action=bbssendmsg method=post>\n");
-		printf("<input type=hidden name=destpid value=%d>\n",destpid);
-		printf("送消息给: <input name=destid maxlength=12 value='%s' size=12><br>\n",destid);
-		printf("消息内容: <input name=msg maxlength=50 size=50 value='%s'><br>\n",msg);
-		printf("<input type=submit value=确认 width=6></form>");
-		printposttable_lite();
-		http_quit();
-	}
-	if(searchuser(destid) == 0) 
-	{
-		printf("<b>发送消息 · %s </b><br>\n",BBSNAME);
-		printpretable_lite();
-		http_fatal("查无此人");
-	}
-	printf("<body onload='document.form1.b1.focus()'>\n");
-	getuser(destid);
-	user = &lookupuser;
-		
-	sprintf(filename, "home/%c/%s/rejects", toupper(destid[0]), user->userid);
-	if(file_has_word(filename, currentuser.userid))
-	    http_fatal("对方不想收到您的消息");
-		
-	printf("<b>发送消息 · %s </b><br>\n",BBSNAME);
-	printpretable_lite();
+	if (!HAS_PERM(PERM_TALK))
+		http_fatal("您是未注册用户,或者无权发送消息！");
 
-	for(i=0; i<MAXACTIVE; i++)
-		if(shm_utmp->uinfo[i].active)
-			if(!strcasecmp(shm_utmp->uinfo[i].userid, destid)) 
-			{
-				/* added by roly 02.05.30 for fix the bug of in-casecensitive of destid */
-				strcpy(destid,shm_utmp->uinfo[i].userid);
-				/* add end */
-				if(destpid!=0 && shm_utmp->uinfo[i].pid!=destpid) 
-					continue;
-				destpid=shm_utmp->uinfo[i].pid;
-				if(!(shm_utmp->uinfo[i].pager & ALLMSG_PAGER)) 
-					continue;
-				if(shm_utmp->uinfo[i].invisible && !(currentuser.userlevel & PERM_SEECLOAK)) 
-					continue;
-				mode=shm_utmp->uinfo[i].mode;
-				if(mode==BBSNET || mode==PAGE || mode== LOCKSCREEN) 
-					continue;
-				if(!strcasecmp(destid, currentuser.userid))
-					printf("您不能给自己发讯息！");
-				else 
-				{
-					if(send_msg(currentuser.userid, u_info->pid, destid, destpid, msg)==0) 
-						printf("已经帮您送出消息");
-					else
-						printf("发送消息失败");
-				}
-				printf("<script>top.fmsg.location='bbsgetmsg'</script>\n");
-				printf("<br><form name=form1><input name=b1 type=button onclick='history.go(-2)' value='[返回]'>");
-				printf("</form>");
-				http_quit();
+	parse_post_data();
+	char *destid = getparm("id");
+	char *msg = getparm("msg");
+	int destpid = strtol(getparm("pid"), NULL, 10);
+	if (*destid == '\0' || *msg == '\0') {
+		xml_header("bbssendmsg");
+		puts("<bbssendmsg>null</bbssendmsg>");
+		return 0;
+	}
+	if (!strcasecmp(destid, currentuser.userid))
+		http_fatal("您不能给自己发讯息！");
+	int destuid = searchuser(destid);
+	if (!destuid)
+		http_fatal("查无此人");
+	// TODO: check blacklist
+	xml_header("bbssendmsg");
+	struct user_info *user = utmpshm->uinfo;
+	for (int i = 0; i < MAXACTIVE; ++i, ++user) {
+		if (user->active && user->uid == destuid) {
+			if (destpid != 0 && user->pid != destpid)
+				continue;
+			destpid = user->pid;
+			if (!(user->pager & ALLMSG_PAGER))
+				continue;
+			if (user->invisible && !HAS_PERM(PERM_SEECLOAK))
+				continue;
+			int mode = user->mode;
+			if (mode == BBSNET || mode == PAGE || mode == LOCKSCREEN) {
+				continue;
+			} else {
+				if (send_msg(currentuser.userid, u_info->pid, destid, destpid, msg) == 0)
+					puts("<bbssendmsg>success</bbssendmsg>");
+				else
+					puts("<bbssendmsg>fail</bbssendmsg>");
+				break;
 			}
-	printf("此人目前不在线或者无法接受消息");
-    printf("<script>top.fmsg.location='bbsgetmsg'</script>\n");
-	printf("<br><form name=form1><input name=b1 type=button onclick='history.go(-2)' value='[返回]'>");
-	printf("</form>");
-	http_quit();
+		}			
+	}
+	return 0;
 }
