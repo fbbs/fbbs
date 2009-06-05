@@ -93,7 +93,7 @@ int hasreadperm(const struct userec *user, const struct boardheader *bp)
 bool haspostperm(const struct userec *user, const struct boardheader *bp)
 {
 	if (bp == NULL || user == NULL || !HAS_PERM2(PERM_POST, user)
-		|| !HAS_PERM2(bp->level, user) || !hasreadperm(user, bp))
+			|| !HAS_PERM2(bp->level, user) || !hasreadperm(user, bp))
 		return false;
 	char buf[STRLEN];
 	setbfile(buf, bp->filename, "deny_users");

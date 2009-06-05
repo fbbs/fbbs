@@ -91,20 +91,20 @@ int askyn(char str[STRLEN], int defa, int gobottom) {
 		return 0;
 }
 
-void printdash(char *mesg)
+void printdash(const char *mesg)
 {
 	char buf[80], *ptr;
 	int len;
-	memset(buf, '=', 79);
-	buf[79] = '\0';
+	memset(buf, '=', sizeof(buf) - 1);
+	buf[sizeof(buf) - 1] = '\0';
 	if (mesg != NULL) {
 		len = strlen(mesg);
-		if (len> 76)
-		len = 76;
-		ptr = &buf[40 - len / 2];
-		ptr[-1] = ' ';
+		if (len > sizeof(buf) - 4)
+		len = sizeof(buf) - 4;
+		ptr = buf + (sizeof(buf) - 1 - len) / 2 - 1;
+		*ptr++ = ' ';
+		memcpy(ptr, mesg, len);
 		ptr[len] = ' ';
-		strlcpy(ptr, mesg, len);
 	}
 	prints("%s\n", buf);
 }

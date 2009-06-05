@@ -848,3 +848,328 @@ void docmdtitle(char *title, char *prompt) {
 	clrtoeol();
 }
 
+/* Added by Ashinmarch on 2007.12.01
+ * used to support display of multi-line msgs
+ * */
+int show_data(char *buf, int maxcol, int line, int col)
+{
+
+    //int y = line, x = col;
+    int y, x;
+    getyx(&y, &x);
+    int chk = 0, i;
+    for(i = 0; i < strlen(buf); i++)
+    {
+        if(chk) chk = 0;
+        else if(buf[i] < 0) chk = 1;
+        if(chk && x >= maxcol) x++;
+        if(buf[i] != 13 && buf[i] != 10)
+        {
+            if(x > maxcol) 
+            {
+                clrtoeol();
+                x = 0; 
+                y++;
+                move(y,x);
+            }
+            prints("%c", buf[i]);
+            x++;
+        }
+        else
+        {
+            clrtoeol();
+            x = 0;
+            y++;
+            move(y,x);
+        }
+    }
+    return y;
+}
+
+int multi_getdata(int line, int col, int maxcol, char *prompt, char *buf, int len, int maxline, int clearlabel, int textmode)
+{
+	extern int RMSG;
+	extern int msg_num;
+	int ch, x, y, startx, starty, curr, i, k, chk, cursorx, cursory, size;
+	bool init = true;
+	char tmp[MAX_MSG_SIZE+1];
+	int ingetdata = true;
+
+	if (clearlabel == YEA)
+		memset(buf, 0, sizeof(buf));
+	move(line, col);
+	if (prompt)
+		prints("%s", prompt);
+	getyx(&starty, &startx);
+	curr = strlen(buf);
+	strncpy(tmp, buf, MAX_MSG_SIZE);
+	tmp[MAX_MSG_SIZE] = 0;
+	cursory = starty;
+	cursorx = startx;
+	while (true) {
+		y = starty;
+		x = startx;
+		move(y, x);
+		chk = 0;
+		if (curr == 0) {
+			cursory = y;
+			cursorx = x;
+		}
+		//以下遍历buf的功能是显示出每次igetkey的动作。
+		size = strlen(buf);
+		for (i = 0; i < size; i++) {
+			if (chk) {
+				chk = 0;
+			} else {
+				if (buf[i] < 0)
+					chk=1;
+			}
+			if (chk && x >= maxcol)
+				x++;
+			if (buf[i] != '\r' && buf[i] != '\n') {
+				if (x > maxcol) {
+					clrtoeol();
+					x = 0;
+					y++;
+					move(y, x);
+				}
+				//Ctrl('H')中退行bug
+				if (x == maxcol && y - starty + 1 < MAX_MSG_LINE) {
+					move(y + 1, 0);
+					clrtoeol();
+					move(y, x);
+				}
+				if (init)
+					prints("\033[4m");
+				prints("%c", buf[i]);
+				x++;
+			}
+			else {
+				clrtoeol();
+				x = 0;
+				y++;
+				move(y, x);
+			}
+			if(i == curr - 1) { //打印到buf最后一个字符时的x和y是下一步初始xy
+				cursory = y;
+				cursorx = x;
+			}
+		}
+		clrtoeol();
+		move(cursory, cursorx);
+		ch = igetkey();
+
+		if ((RMSG == YEA) && msg_num == 0) 
+		{
+			if (ch == Ctrl('Z') ) 
+			{
+				buf[0] = Ctrl('Z');
+				x = 1;
+				break; //可以改成return 某个行试试
+			}
+			if (ch == Ctrl('A') ) 
+			{
+				buf[0] = Ctrl('A');
+				x = 1;
+				break;
+			}
+		}
+
+		if(ch == Ctrl('Q'))
+		{
+			init = true;
+			buf[0]=0; curr=0;
+			for(k=0; k < MAX_MSG_LINE;k++)
+			{
+				move(starty+k,0);
+				clrtoeol();
+			}
+			continue;
+		}
+
+
+		if(textmode == 0){
+			if ((ch == '\n' || ch == '\r'))
+				break;
+		}
+		else{
+			if (ch == Ctrl('W'))
+				break;
+		}
+
+		switch(ch) {
+			case KEY_UP:
+				init = false;
+				if (cursory > starty) {
+					y = starty; x = startx;
+					chk = 0;
+					if(y == cursory - 1 && x <= cursorx)
+						curr = 0;
+					size = strlen(buf);
+					for (i = 0; i < size; i++) {
+						if (chk) {
+							chk = 0;
+						} else {
+							if (buf[i] < 0)
+								chk = 1;
+						}
+						if (chk && x >= maxcol)
+							x++;
+						if (buf[i] != '\r' && buf[i] != '\n') {
+							if(x > maxcol) {
+								x = col;
+								y++;
+							}
+							x++;
+						}
+						else {
+							x = col;
+							y++;
+						}
+						if (y == cursory - 1 && x <= cursorx)
+							curr = i + 1;
+					}
+				}
+				break;
+			case KEY_DOWN:
+				init=false;
+				if(cursory<y) {
+					y = starty; x = startx;
+					chk = 0;
+					if(y==cursory+1&&x<=cursorx)
+						curr=0;
+					size = strlen(buf);
+					for(i=0; i<size; i++) {
+						if(chk) chk=0;
+						else if(buf[i]<0) chk=1;
+						if(chk&&x>=maxcol) x++;
+						if(buf[i]!=13&&buf[i]!=10) {
+							if(x>maxcol) {
+								x = col;
+								y++;
+							}
+							x++;
+						}
+						else {
+							x = col;
+							y++;
+						}
+						if(y==cursory+1&&x<=cursorx)
+							curr=i+1;
+					}
+				}
+				break;
+			case '\177':
+			case Ctrl('H'):
+				if(init) {
+					init=false;
+					buf[0]=0;
+					curr=0;
+				}
+				if(curr>0) {
+					int currDec = 0, patch = 0;
+					if(buf[curr-1] < 0){
+						for(i = curr - 2; i >=0 && buf[i]<0; i--)
+							patch++;
+						if(patch%2 == 0 && buf[curr] < 0)
+							patch = 1;
+						else if(patch%2)
+							patch = currDec = 1;
+						else
+							patch = 0;
+					}
+					if(currDec) curr--;
+					strcpy(tmp, &buf[curr+patch]);
+					buf[--curr] = 0;
+					strcat(buf, tmp);
+				}
+				break;
+			case KEY_DEL:
+				if (init) {
+					init = false;
+					buf[0] = '\0';
+					curr = 0;
+				}
+				size = strlen(buf);
+				if (curr < size)
+					memmove(buf + curr, buf + curr + 1, size - curr);
+				break;
+			case KEY_LEFT:
+				init=false;
+				if(curr>0) {
+					curr--;
+				}
+				break;
+			case KEY_RIGHT:
+				init=false;
+				if(curr<strlen(buf)) {
+					curr++;
+				}
+				break;
+			case KEY_HOME:
+			case Ctrl('A'):
+				init=false;
+				curr--;
+				while (curr >= 0 && buf[curr] != '\n' && buf[curr] != '\r')
+					curr--;
+				curr++;
+				break;
+			case KEY_END:
+			case Ctrl('E'):
+				init = false;
+				size = strlen(buf);
+				while (curr < size && buf[curr] != '\n' && buf[curr] != '\r')
+					curr++;
+				break;
+			case KEY_PGUP:
+				init=false;
+				curr=0;
+				break;
+			case KEY_PGDN:
+				init=false;
+				curr = strlen(buf);
+				break;
+			default:
+				if(isprint2(ch)&&strlen(buf)<len-1) {
+					if(init) {
+						init=false;
+						buf[0]=0;
+						curr=0;
+					}
+					size = strlen(buf);
+					memmove(buf + curr + 1, buf + curr, size - curr + 1);
+					size++;
+					buf[curr++]=ch;
+					y = starty; x = startx;
+					chk = 0;
+					for(i = 0; i < size; i++) {
+						if(chk) chk=0;
+						else if(buf[i]<0) chk=1;
+						if(chk&&x>=maxcol) x++;
+						if(buf[i]!=13&&buf[i]!=10) {
+							if(x>maxcol) {
+								x = col;
+								y++;
+							}
+							x++;
+						}
+						else {
+							x = col;
+							y++;
+						}
+					}
+					//采用先插入后检查是否超过maxline，如果超过，那么删去这个字符调整
+					if (y - starty + 1 > maxline) {
+						memmove(buf + curr -1, buf + curr, size - curr + 1);
+						curr--;
+					}
+				}
+				init=false;
+				break;
+		}
+	}
+
+	ingetdata = false;
+	return y-starty+1;
+}
+

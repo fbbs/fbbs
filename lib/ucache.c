@@ -92,9 +92,10 @@ static int fillucache(const struct userec *uentp, int count)
 				uidshm->next[i - 1] = count;
 				uidshm->prev[count - 1] = i;
 			}
+			return 1;
 		}
 	}
-	return count;
+	return 0;
 }
 
 /* hash É¾³ý */
@@ -105,16 +106,16 @@ int del_uidshm(int num, char *userid)
 	int i;
 
 	if (num <= 0 || num > MAXUSERS)
-		return;
+		return 0;
 
 	key = uhashkey(userid, &a1, &a2);
 	i=uidshm->hash[a1][a2][key];
 	if (i<=0)
-		return;
+		return 0;
 	for (; i!=num && i>0; i=uidshm->next[i-1])
 		;
 	if (i!= num || i<=0)
-		return;
+		return 0;
 	if (uidshm->next[i-1]) {
 		if (uidshm->prev[i-1]) {
 			uidshm->next[ uidshm->prev[i-1]-1 ] = uidshm->next[i-1];
@@ -133,7 +134,7 @@ int del_uidshm(int num, char *userid)
 	uidshm->next[i-1]=0;
 	uidshm->prev[i-1]=0;
 	uidshm->userid[i-1][0]='\0';
-
+	return 1;
 }
 /* endof hashÉ¾³ý */
 
@@ -207,7 +208,7 @@ int load_ucache(void)
 	// Fill cache.
 	int count = 0;
 	for (i = 0; i < MAXUSERS; i++)
-		count = fillucache(&(uidshm->passwd[i]), count);
+		count += fillucache(&(uidshm->passwd[i]), i);
 	uidshm->number = count;
 	uidshm->uptime = time(NULL);
 
@@ -220,6 +221,7 @@ int load_ucache(void)
 int substitut_record(char *filename, void *rptr, size_t size, int id)
 {
 	memcpy(&(uidshm->passwd[id - 1]), rptr, size);
+	return 0;
 }
 
 // Flushes cache for all users to PASSFILE.

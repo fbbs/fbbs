@@ -785,3 +785,27 @@ void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
 	}
 }
 
+/* Added by Ashinmarch on 2007.12.01,
+ * to support multi-line msgs
+ * It is used to save screen lines overwrited by msgs
+ */
+void saveline_buf(int line, int mode)//0:save 1:restore
+{
+    static char temp[MAX_MSG_LINE * 2 + 2][LINELEN];
+    struct screenline *bp = big_picture;
+    int x, y;
+    
+    switch (mode) {
+        case 0:
+            strncpy(temp[line], bp[line].data, LINELEN);
+            temp[line][bp[line].len] = '\0';
+            break;
+        case 1:
+            getyx(&x, &y);
+            move(line, 0);
+            clrtoeol();
+            prints("%s", temp[line]);
+            move(x,y);
+            break;
+    }
+}
