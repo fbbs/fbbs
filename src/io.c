@@ -482,25 +482,26 @@ int ask(char *prompt) {
 
 extern int enabledbchar;
 
-int getdata(int line, int col, char *prompt, char * buf, int len,
-		int echo, int clearlabel) {
+int getdata(int line, int col, const char *prompt, char *buf, int len,
+		int echo, int clearlabel)
+{
 	int ch, clen = 0, curr = 0, x, y;
 	int currDEC=0, i, patch=0;
 	char tmp[STRLEN];
 	extern unsigned char scr_cols;
 	extern int RMSG;
 	extern int msg_num;
-	if (clearlabel == YEA) {
-		buf[0]='\0';
-	}
+
+	if (clearlabel == YEA)
+		buf[0] = '\0';
 	move(line, col);
 	if (prompt)
 		prints("%s", prompt);
 	y = line;
 	col += (prompt == NULL) ? 0 : strlen(prompt);
 	x = col;
-	clen = strlen(buf);
-	curr = (clen >= len) ? len - 1 : clen;
+	buf[len - 1] = '\0';
+	curr = clen = strlen(buf);
 	buf[curr] = '\0';
 	prints("%s", buf);
 

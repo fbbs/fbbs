@@ -57,46 +57,26 @@ void a_showmenu(MENU *pm) {
 	char ch;
 	char buf[STRLEN], genbuf[STRLEN * 2];
 	time_t mtime;
-	int n;
-	// Add by wujian
-	/*
-	 char    counter[9];
-	 FILE    *fp;
-	 sprintf(fname,"%s/counter.person",pm->path);
-	 fp=fopen(fname,"r");
-	 if(fp) { 
-	 fscanf(fp,"%s",counter);
-	 fclose(fp); 
-	 } else strcpy(counter,"< none >");
-	 ch = strlen(counter);
-	 for(n=ch;n>=0;n--) counter[n+(9-ch)/2] = counter[n];
-	 for(n=(9-ch)/2;n>0;n--)counter[n-1] = ' ';
-	 */
-	// Add end.
+	int n, len;
+
 	clear();
 	if (chkmail()) {
-		prints("[5m");
+		prints("\033[5m");
 		sprintf(genbuf, "[ÄúÓÐÐÅ¼þ£¬°´ M ¿´ÐÂÐÅ]");
 	} else {
 		strcpy(genbuf, pm->mtitle);
 	}
-	//Modified by IAMFAT 2002-05-29
-	//sprintf(buf, "%*s", (79 - strlen(genbuf)) / 2, "");
-	//prints("[1;44m%s%s%s[m\n", buf, genbuf, buf);
-	//79 char
-	strcpy(
-			buf,
-			"                                                                               ");
-	strlcpy(buf+(79 - strlen(genbuf)) / 2, genbuf, strlen(genbuf));
-	prints("[1;44m%s[m\n", buf);
-	//prints(	"           [1;32m F[37m ¼Ä»Ø×Ô¼ºµÄÐÅÏä  [32m¡ü¡ý"
-	//		"[37m ÒÆ¶¯ [32m ¡ú <Enter> [37m¶ÁÈ¡ [32m ¡û,q[37m Àë¿ª[m\n");
+	memset(buf, ' ', sizeof(buf) - 1);
+	buf[sizeof(buf) - 1] = '\0';
+	len = strlen(genbuf);
+	if (len >= sizeof(buf)) {
+		genbuf[sizeof(buf) - 1] = '\0';
+		len = sizeof(buf) - 1;
+	}
+	memcpy(buf + (sizeof(buf) - len) / 2, genbuf, len);
+	prints("\033[1;44m%s\033[m\n", buf);
 	prints("µ±Ç°¾«»ªÇøÄ¿Â¼ x%s\n", nowpath); //by Danielfree 06.12.6
-	//Modified by IAMFAT 2002-05-30
-	// prints ("[1;44;37m  ±àºÅ %-20s[32m±¾Ä¿Â¼ÒÑ±»ä¯ÀÀ[33m%-9s[32m´Î[37m ÕûÀíÕß           %8s [m",
-	//"[Àà±ð] ±ê    Ìâ",counter,a_fmode? "µµ°¸Ãû³Æ" : "±à¼­ÈÕÆÚ");
-
-	prints("[1;44;37m  ±àºÅ %-45s ÕûÀíÕß           %8s [m",
+	prints("\033[1;44;37m  ±àºÅ %-45s ÕûÀíÕß           %8s \033[m",
 			"[Àà±ð]                ±ê    Ìâ", a_fmode ? "µµ°¸Ãû³Æ" : "±à¼­ÈÕÆÚ");
 	prints("\n");
 	if (pm->num == 0) {
