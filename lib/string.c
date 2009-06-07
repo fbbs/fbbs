@@ -152,7 +152,8 @@ char *rtrim(char *str){
 
 // Removes both leading and trailing chars
 // whose ASCII code is less than 0x20.
-char *trim(char *str){
+char *trim(char *str)
+{
 	if (str == NULL)
 		return NULL;
 	size_t len = strlen(str);
@@ -163,11 +164,10 @@ char *trim(char *str){
 	}
 	*++right = '\0';
 	unsigned char *left = ustr;
-	if(*left <= 0x20){
-		while(*++left <= 0x20)
-			;
+	while (*left <= 0x20 && *left != '\0')
+		++left;
+	if (left != ustr)
 		memmove(ustr, left, right - left + 1);
-	}
 	return str;
 }
 
