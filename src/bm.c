@@ -525,8 +525,7 @@ int club_key_deal(char* fname, int ch, char* line) {
 	char msgbuf[4096];
 	char repbuf[500];
 	if (line) {
-		strlcpy(club_uid, line, IDLEN);
-		club_uid[IDLEN] = '\0';
+		strlcpy(club_uid, line, sizeof(club_uid));
 		strtok(club_uid, " \n\r\t");
 	}
 
