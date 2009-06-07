@@ -465,8 +465,10 @@ int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
 		sprintf(genbuf, "/bin/cp -r boards/%s/%s %s", key,
 				fileinfo->filename, bname);
 	system(genbuf);
-	fileinfo->accessed[1] |= FILE_IMPORTED;
-	substitute_record(direct, fileinfo, sizeof(*fileinfo), ent);
+	if (!(fileinfo->accessed[1] & FILE_NOTICE)) {
+		fileinfo->accessed[1] |= FILE_IMPORTED;
+		substitute_record(direct, fileinfo, sizeof(*fileinfo), ent);
+	}
 	if (!nomsg && !DEFINE(DEF_MULTANNPATH)) {
 		presskeyfor("已将该文章放进精华区, 请按<Enter>继续...", t_lines-1);
 	}
