@@ -360,7 +360,7 @@ int x_lockscreen() {
 	prints("\n      | |  _  | | | | | |  _  | , <   |  _)_  | | | )   |  |");
 	prints("\n      | |_( ) | (_) | | (_( ) | |\\`\\  | (_( ) | |_) |   |==|");
 	prints("\n      (____/' (_____) (____/' (_) (_) (____/' (____/'   |__|\n");
-	prints("\n\033[1;36m屏幕已在\033[33m %s\033[36m 时被%s暂时锁住了...033[m",
+	prints("\n\033[1;36m屏幕已在\033[33m %s\033[36m 时被%s暂时锁住了...\033[m",
 			getdatestring(time(NULL), DATE_ZH), currentuser.userid);
 	nice(19);
 	while (*buf == '\0' || !checkpasswd(currentuser.passwd, buf)) {
