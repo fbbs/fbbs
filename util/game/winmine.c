@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+
 int a[32][18];  //À×
 int m[32][18];  //marked
 int o[32][18];  //opened

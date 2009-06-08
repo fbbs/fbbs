@@ -704,7 +704,7 @@ p_bf()
 }
 
 
-int year(useri)
+int year(char *useri)
 {
   FILE *fp;
   char fname[50];
@@ -892,7 +892,7 @@ int ga(char buf[],int l)
 
   return 0;
 }
-int nam(useri)
+int nam(char *useri)
 {
   FILE *fp;
   char fname[50];
