@@ -73,9 +73,9 @@ int hasreadperm(const struct userec *user, const struct boardheader *bp)
 
 	// Read restricted club
 	if ((bp->flag & BOARD_CLUB_FLAG)
-		&& (bp->flag & BOARD_READ_FLAG)
-		&& !chkBM(bp, user)
-		&& !isclubmember(user->userid, bp->filename))
+			&& (bp->flag & BOARD_READ_FLAG)
+			&& !chkBM(bp, user)
+			&& !isclubmember(user->userid, bp->filename))
 		return 0;
 
 	// Following lines deal with non-clubs.
@@ -92,7 +92,11 @@ int hasreadperm(const struct userec *user, const struct boardheader *bp)
 bool haspostperm(const struct userec *user, const struct boardheader *bp)
 {
 	if (bp == NULL || user == NULL || !HAS_PERM2(PERM_POST, user)
-			|| !HAS_PERM2(bp->level, user) || !hasreadperm(user, bp))
+			|| !HAS_PERM2(bp->level, user))
+		return false;
+	if ((bp->flag & BOARD_CLUB_FLAG)
+			&& !chkBM(bp, user)
+			&& !isclubmember(user->userid, bp->filename))
 		return false;
 	char buf[STRLEN];
 	setbfile(buf, bp->filename, "deny_users");

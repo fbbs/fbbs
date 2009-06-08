@@ -1824,26 +1824,21 @@ int date_to_fname(char *postboard, time_t now, char *fname) {
 //        2 
 //        3 BMS
 //        4 精华区zz
-int post_cross(char islocal, int mode) {
+int post_cross(char islocal, int mode)
+{
 	struct fileheader postfile;
 	struct boardheader *bp;
 	char filepath[STRLEN], fname[STRLEN];
 	char buf[256], buf4[STRLEN], whopost[IDLEN + 2];
 
-	//int fp, count; commented by iamfat 2002.07.25
 	time_t now;
 
-	if (!haspostperm(&currentuser, currbp) && !mode) {
+	bp = getbcache(currboard);
+	if (!haspostperm(&currentuser, bp) && !mode) {
 		prints("\n\n 您尚无权限在 %s 版发表文章.\n", currboard);
 		return -1;
 	}
 	memset(&postfile, 0, sizeof (postfile));
-	bp = getbcache(currboard);
-	if ((bp->flag & BOARD_CLUB_FLAG) && !chkBM(currbp, &currentuser)
-			&& !isclubmember(currentuser.userid, currboard)) {
-		prints("\n\n 您不是俱乐部版 %s 的成员，无权在该版发表文章.\n", currboard);
-		return -1;
-	}
 	//  strncpy (save_filename, fname, 4096);
 	now = time(0);
 	//sprintf (fname, "M.%d.A", now);
@@ -1863,19 +1858,6 @@ int post_cross(char islocal, int mode) {
 
 	if (date_to_fname(currboard, now, fname) < 0)
 		return -1;
-	/*
-	 //commented by iamfat 2002.07.25
-	 setbfile (filepath, currboard, fname);
-	 count = 0; 
-	 while ((fp = open (filepath, O_CREAT | O_EXCL | O_WRONLY, 0644)) == -1) {
-	 now++;
-	 sprintf (fname, "M.%d.A", now);
-	 setbfile (filepath, currboard, fname);
-	 if (count++ > MAX_POSTRETRY) {
-	 return -1;
-	 }
-	 }
-	 close (fp); */
 	strcpy(postfile.filename, fname);
 	if (mode == 1)
 		/* modified by roly 2002.01.13 */
