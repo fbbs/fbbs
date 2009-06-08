@@ -419,14 +419,15 @@ borrow()
 	time_t now = time(0);
 	int tempbet,maxbet;
 	char 	buf[STRLEN];
+	char *dstr;
 	if(gotomarket("水站借贷处"))return 0;
 	prints("本处规定: 目前每人最多可以贷款 %d 元.\n\n", MAXBET);
 	if(!currentuser.bet)
 		prints("您目前还没有在本处贷款.\n\n");
 	else {
 		prints("您已经在本处贷款 %d 元.\n",currentuser.bet);
-		getdatestring(currentuser.dateforbet,NA);
-		sprintf(genbuf,"您偿还贷款的最后期限是:  %14.14s(%s) \n\n",datestring,datestring+23);
+		dstr = getdatestring(currentuser.dateforbet, NA);
+		sprintf(genbuf, "您偿还贷款的最后期限是:  %14.14s(%s) \n\n", dstr, dstr + 23);
 		prints(genbuf);
 		if( currentuser.bet>=MAXBET) {
                		prints("对不起, 您的贷款已经达到规定数目, 不能再享受贷款服务.");
@@ -456,8 +457,8 @@ borrow()
 		currentuser.bet += tempbet;
 		currentuser.dateforbet = now + 10*24*60*60;
 		substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
-		getdatestring(currentuser.dateforbet,NA);
-		sprintf(genbuf, "\n你向本站总共借款 %d 元，您需要在 %14.14s(%s) 还清贷款。",currentuser.bet,datestring,datestring+23);
+		dstr = getdatestring(currentuser.dateforbet, NA);
+		sprintf(genbuf, "\n你向本站总共借款 %d 元，您需要在 %14.14s(%s) 还清贷款。",currentuser.bet, dstr, dstr + 23);
 		prints(genbuf);
 		sprintf(genbuf,"%s 借款 %d 元.",currentuser.userid,tempbet);
 		gamelog(genbuf);

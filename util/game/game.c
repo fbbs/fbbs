@@ -1,4 +1,7 @@
 #include "bbs.h"
+#define MSG_SEPERATOR   "\
+！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！"
+
 /* 菜旬針嗄老 */
 int 
 BlackJack()
