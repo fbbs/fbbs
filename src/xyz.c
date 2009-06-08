@@ -344,7 +344,7 @@ int gettheboardname(int x, char *title, int *pos, struct boardheader *fh,
 	return 1;
 }
 
-//锁屏,并将优先级设为最低(19)
+//锁屏
 int x_lockscreen() {
 	char buf[PASSLEN + 1];
 
@@ -362,13 +362,11 @@ int x_lockscreen() {
 	prints("\n      (____/' (_____) (____/' (_) (_) (____/' (____/'   |__|\n");
 	prints("\n\033[1;36m屏幕已在\033[33m %s\033[36m 时被%s暂时锁住了...\033[m",
 			getdatestring(time(NULL), DATE_ZH), currentuser.userid);
-	nice(19);
 	while (*buf == '\0' || !checkpasswd(currentuser.passwd, buf)) {
 		move(18, 0);
 		clrtobot();
 		getdata(19, 0, "请输入您的密码以解锁: ", buf, PASSLEN, NOECHO, YEA);
 	}
-	nice(0);
 	return FULLUPDATE;
 }
 
