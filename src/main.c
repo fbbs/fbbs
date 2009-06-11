@@ -237,8 +237,10 @@ void u_exit(void)
 		recent = currentuser.lastlogout;
 	if (currentuser.lastlogin > recent)
 		recent = currentuser.lastlogin;
+	stay = now - recent;
 	if (stay < 0)
 		stay = 0;
+	
 	currentuser.lastlogout = now;
 	currentuser.stay += stay;
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
