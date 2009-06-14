@@ -5,9 +5,6 @@ void    R_monitor();
 //Added by Ashinmarch to support multi-line msg
 extern void show_data(char *buf, int maxcol, int line, int col);
 
-//modified by iamfat 2004.01.13 to add http link in telnet
-char *httplink=NULL;
-
 struct ACSHM {
 	char    data[ACBOARD_MAXLINE][ACBOARD_BUFSIZE];
 	int     movielines;
@@ -378,7 +375,6 @@ int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
 	int     numbytes;
 	int     curr_row = row;
 	int     linesread = 0;
-	int  linkshowed=0;//added by iamfat 2004.01.13 to add http link in telnet
 
 	if ((fd = open(filename, O_RDONLY)) == -1) {
 		return -1;
@@ -432,22 +428,7 @@ int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
 				scroll();
 				pos--;
 			}
-			//added by iamfat 2004.01.13 to add http link in telnet
-			//show link at bottom
-#ifdef FDQUAN
-			if(!linkshowed){
-				numbytes = readln(fd, buf);
-				if(!numbytes && httplink){
-					strcpy(buf, httplink);
-					numbytes=strlen(httplink);
-					linkshowed=1;
-				}
-			} else 
-				numbytes=0;
-#else
 			numbytes = readln(fd, buf); 
-#endif
-			//added end
 			curr_row++;
 			linesread++;
 			if (numbytes == 0) break;
@@ -648,17 +629,10 @@ int ansimore4(char *filename, int promptend, char *board, char *path, int ent)
 {
 	int     ch;
 	clear();
-#ifdef FDQUAN
-	asprintf(&httplink, "\033[0;37mhttp://%s/bc?b=%s&f=%s&n=%d\n\033[m",BBSHOST,board,path,ent);
-#endif
 	ch = rawmore(filename, promptend, 0, 0, NA);
 	move(t_lines - 1, 0);
 	prints("[0m[m");
 	refresh();
-	if(httplink){
-		free(httplink);
-		httplink=NULL;
-	}
 	return ch;
 }
 
