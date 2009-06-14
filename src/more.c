@@ -1,7 +1,7 @@
-// deardragon 2000.08.28  over
 #include "bbs.h"
-time_t  calltime = 0;
-void    R_monitor();
+
+static time_t calltime = 0;
+void R_monitor();
 //Added by Ashinmarch to support multi-line msg
 extern void show_data(char *buf, int maxcol, int line, int col);
 
@@ -12,8 +12,8 @@ struct ACSHM {
 	time_t  update;
 };
 
-struct ACSHM *movieshm = NULL;
-int     nnline = 0, xxxline = 0;
+static struct ACSHM *movieshm = NULL;
+static int nnline = 0;
 char    more_buf[MORE_BUFSIZE];
 int     more_size, more_num;
 
@@ -250,8 +250,7 @@ int countln(char *fname)
 }
 
 /* below added by netty  *//* Rewrite by SmallPig */
-	void
-netty_more()
+void netty_more(void)
 {
 	char    buf[256];
 	int     ne_row = 1;
@@ -271,7 +270,7 @@ netty_more()
 #endif
 		clrtoeol();
 		strcpy(buf, movieshm->data[nnline]);
-		showstuff(buf/*, 0*/);
+		showstuff(buf);
 		nnline = nnline + 1;
 		ne_row = ne_row + 1;
 		if (nnline == movieshm->movielines) {
@@ -284,7 +283,8 @@ netty_more()
 	}
 	move(y, x);
 }
-printacbar()
+
+void printacbar(void)
 {
 #ifndef BIGGER_MOVIE
 	struct boardheader *bp;
@@ -302,7 +302,7 @@ printacbar()
 	refresh();
 }
 
-int check_calltime()
+int check_calltime(void)
 {
 	int     line;
 	if ( calltime != 0 && time(0) >= calltime ) {
@@ -351,21 +351,8 @@ void R_monitor()
 		alarm(10);
 }
 
-#ifdef BELL_DELAY_FILTER
-void bell_delay_filter(char *buf)
-{
-	int i;
-	char *t;
-	t = strstr(buf,"\033");
-	if(t == NULL) return ;
-	for(i = 1;strchr("[0123456789; ",t[i]);i++);
-	if(t[i] == '\107' || t[i] == '\115' )*t ='\052';
-	bell_delay_filter(t+1);
-}
-#endif
-
 /*rawmore2() ansimore2() Add by SmaLLPig*/
-int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
+static int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
 {
 	extern int t_lines;
 	struct stat st;
@@ -395,10 +382,7 @@ int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
 	while (numbytes) {
 		if (linesread <= numlines || numlines == 0) {
 			viewed += numbytes;
-#ifdef BELL_DELAY_FILTER
-			bell_delay_filter(buf);
-#endif
-			if (     !titleshow && (!strncmp(buf, "¡õ ÒýÓÃ", 7))
+			if (!titleshow && (!strncmp(buf, "¡õ ÒýÓÃ", 7))
 					||(!strncmp(buf, "==>", 3)) 
 					|| (!strncmp(buf, "¡¾ ÔÚ", 5))
 					||(!strncmp(buf, "¡ù ÒýÊö", 7))) {
@@ -407,17 +391,16 @@ int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
 			} else if (buf[0] != ':' && buf[0] != '>') {
 				if (isin == YEA) { 
 					isin = NA;
-					//prints("[37m");
 					prints("[m");
 				}
 				if (check_stuffmode() || stuffmode == YEA) 
-					showstuff(buf/*, 0*/);
+					showstuff(buf);
 				else
 					prints("%s", buf);
 			} else { 
 				prints("[36m");
 				if (check_stuffmode() || stuffmode == YEA)
-					showstuff(buf/*, 0*/);
+					showstuff(buf);
 				else
 					prints("%s", buf);
 				isin = YEA;
@@ -451,17 +434,7 @@ int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
 				} else if (ch == KEY_RIGHT) {
 					i = 1;
 				} else if (ch == KEY_DOWN) {
-					//Added by IAMFAT 2002-05-11
-					//clear();
-					//i = pos = 0;
-					//curr_row-= t_lines-1;
-					//viewed = seek_nth_line(fd, curr_row);
-					//numbytes = readln(fd, buf);
-					//curr_row++;
-					//End.
-					//Removed by IAMFAT 2002-05-11
 					i = t_lines - 2;
-					//End.
 				} else if (ch == KEY_PGUP || ch == KEY_UP) {
 					clear();
 					i = pos = 0;
@@ -482,17 +455,6 @@ int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
 					viewed = seek_nth_line(fd, curr_row);
 					numbytes = readln(fd, buf);
 					curr_row++;
-					/*         } else if (ch == '*') {
-							   show_web_link(currboard, filename);
-							   clear();
-							   i = pos = 0;
-							   curr_row -= (t_lines);
-							   if (curr_row < 0)
-							   curr_row = 0;
-							   viewed = seek_nth_line(fd, curr_row);
-							   numbytes = readln(fd, buf);
-							   curr_row++;
-							   */
 			}
 			}
 		} else break;	/* More Than Want */
