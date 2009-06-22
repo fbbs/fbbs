@@ -198,6 +198,9 @@ int morekey( void )
 			case 'l':
 			case 'L':
 				return 'L';
+			case 'g':
+			case 'G':
+				return 'G';
 			case 'y':
 			case 'Y':
 			case 'n':
@@ -617,6 +620,8 @@ static ssize_t mmap_more_getline(struct mmap_more_file *d)
 // Returns the starting address of 'row'.
 static char *mmap_more_seek(struct mmap_more_file *d, int row)
 {
+	if (row < 0)
+		row = 0;
 	// find nearest row in line cache.
 	struct linenum *lnptr, *lend = d->ln + d->ln_size;
 	for (lnptr = d->ln; lnptr != lend; ++lnptr) {
@@ -630,8 +635,10 @@ static char *mmap_more_seek(struct mmap_more_file *d, int row)
 		lnptr->offset = d->buf;
 	}
 
-	d->row = lnptr->number;
-	d->end = lnptr->offset;
+	if (d->row > row || d->row < lnptr->number) {
+		d->row = lnptr->number;
+		d->end = lnptr->offset;
+	}
 	while (d->row < row) {
 		if (mmap_more_getline(d) <= 0)
 			break;			
@@ -688,6 +695,7 @@ static int rawmore2(const char *filename, int promptend, int row, int numlines, 
 	bool is_quote;
 	int new_row;
 	char *buf_end = d->buf + d->size;
+	char linebuf[7];
 	// TODO: stuffmode
 	while (true) {
 		is_quote = d->is_quote;
@@ -794,14 +802,24 @@ static int rawmore2(const char *filename, int promptend, int row, int numlines, 
 				mmap_more_seek(d, 0);
 				break;
 			case KEY_END:
-				new_row = d->row;
 				mmap_more_countline(d);
-				i = t_lines - 1 - (d->total - new_row);
+				i = t_lines - 1 - (d->total - d->row);
 				if (i < 0)
 					i = 0;
 				if (i == t_lines - 1)
 					break;
 				mmap_more_seek(d, d->total - (t_lines - 1) + i);
+				break;
+			case 'G':
+				getdata(t_lines - 1, 0, "跳转到的行号:", linebuf, sizeof(linebuf), true, true);
+				new_row = strtol(linebuf, NULL, 10) - 1;
+				if (new_row < 0)
+					new_row = 0;
+				mmap_more_seek(d, new_row);
+				if (d->total >= 0 && new_row >= d->total)
+					mmap_more_seek(d, d->total - 1);
+				clear();
+				i = pos = 0;
 				break;
 			case 'H':
 				show_help("help/morehelp");
