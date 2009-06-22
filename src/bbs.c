@@ -892,7 +892,6 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		quote_file[255] = fileinfo->filename[STRLEN - 2];
 		strcpy(quote_user, fileinfo->owner);
 
-		//modified by iamfat 2004.01.13 to add http link in telnet
 #ifndef NOREPLY
 		ch = ansimore4(genbuf, NA, currboard, fileinfo->filename, ent);
 #else
@@ -902,9 +901,9 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		move(t_lines - 1, 0);
 		clrtoeol();
 		if (haspostperm(&currentuser, currbp)) {
-			prints("[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  [33m»ØĞÅ R ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,¡ı©¦Ö÷ÌâÔÄ¶Á ^s»òp [m");
+			prints("\033[0;1;44;31m[ÔÄ¶ÁÎÄÕÂ]  \033[33m»ØĞÅ R ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,¡ı©¦Ö÷ÌâÔÄ¶Á ^s»òp \033[m");
 		} else {
-			prints("[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  [33m½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,<Enter>,¡ı©¦Ö÷ÌâÔÄ¶Á p       [m");
+			prints("\033[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  \033[33m½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,<Enter>,¡ı©¦Ö÷ÌâÔÄ¶Á p       \033[m");
 		}
 		/* Re-Write By Excellent */
 		FFLL = 1;

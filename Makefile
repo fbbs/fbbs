@@ -33,7 +33,7 @@ BBSGRP   = bbs
 
 OS_DEF   = -DLINUX -DTERMIOS
 CC       = gcc
-CFLAGS   = -Os -pipe -fomit-frame-pointer -export -Wunused -I../include
+CFLAGS   = -Os -pipe -fomit-frame-pointer -export -Wall -Wno-implicit -I../include
 #for main host
 #CFLAGS   = -Os -DFDQUAN -export -Wunused -I../include   #for  water host
 #CFLAGS   =-march=pentium3 -O3 -pipe -fomit-frame-pointer -export -Wunused -I../include

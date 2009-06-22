@@ -61,24 +61,6 @@ int inansi = NA;
 
 struct screenline *big_picture = NULL;
 
-//add by wujian
-//	清除非哑终端中从当前行开始的n行
-//	若超过屏幕,则从第一行接着清除(将第一行中的数据均置为0)
-void clrnlines(int n) {
-	register struct screenline *slp;
-	register int i, k;
-	if (dumb_term)
-		return;
-	for (i=cur_ln; i<cur_ln+n; i++) {
-		slp = &big_picture[(i + roll) % scr_lns];
-		slp->mode = 0;
-		slp->oldlen = 255;
-		slp->len = 0;
-		for (k=0; k<LINELEN; k++)
-			slp->data[k]=0;
-	}
-}
-
 #ifdef ALLOWAUTOWRAP
 //返回str中前num个字符中以ansi格式实际显示的字符数?
 int seekthestr(char *str, int num)
