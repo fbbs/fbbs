@@ -240,20 +240,11 @@ int getnewuserid() {
 							(time(0) - utmp.firstlogin) / 86400);
 
 #endif
-					sprintf(genbuf_rm, "/bin/rm -fr %s", genbuf); //added by roly 02.03.24
-					if (!strncmp(genbuf+7, utmp.userid,
-							strlen(utmp.userid))) {
-						f_rm(genbuf);
-						system(genbuf_rm); //added by roly 02.03.24
-					}
-					sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]),
-							utmp.userid);
-					sprintf(genbuf_rm, "/bin/rm -fr %s", genbuf); //added by roly 02.03.24
-					if (!strncmp(genbuf+7, utmp.userid,
-							strlen(utmp.userid))) {
-						f_rm(genbuf);
-						system(genbuf_rm); //added by roly 02.03.24
-					}
+					snprintf(genbuf_rm, sizeof(genbuf_rm), BBSHOME"/tomb/%s.%d.mail", utmp.userid, system_time);
+					rename(genbuf, genbuf_rm);
+					sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]), utmp.userid);
+					snprintf(genbuf_rm, sizeof(genbuf_rm), BBSHOME"/tomb/%s.%d.mail", utmp.userid, system_time);
+					rename(genbuf, genbuf_rm);
 				}
 				substitut_record(PASSFILE, &zerorec,
 						sizeof(struct userec), i+1);
