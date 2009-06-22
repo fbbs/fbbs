@@ -759,7 +759,7 @@ static int rawmore2(const char *filename, int promptend, int row, int numlines, 
 		move(t_lines - 1, 0);
 		clrtoeol();
 		prints("\033[0;1;44;32m下面还有喔(%d%%) 第(%d-%d)行 \033[33m|"
-				" l 上篇 | b e 开头末尾 | h 帮助\033[K\033[m",
+				" l 上篇 | b e 开头末尾 | g 跳转 | h 帮助\033[K\033[m",
 				(d->end - d->buf) * 100 / d->size, d->row - t_lines + 2, d->row);
 		refresh();
 		ch = morekey();
