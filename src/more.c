@@ -804,6 +804,7 @@ static int rawmore2(const char *filename, int promptend, int row, int numlines, 
 				i = pos = 0;
 				mmap_more_seek(d, 0);
 				break;
+			case 'R':
 			case KEY_END:
 				mmap_more_countline(d);
 				i = t_lines - 1 - (d->total - d->row);
