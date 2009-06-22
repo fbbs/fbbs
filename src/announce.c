@@ -1662,7 +1662,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 	if (strlen(nowpath) >=1) {
 		char *tmpchar;
 		tmpchar = strrchr(nowpath, '-');//find the last "->"
-		strlcpy(oldpath, nowpath, tmpchar-nowpath);
+		strncpy(oldpath, nowpath, tmpchar-nowpath);
 	}
 	snprintf(nowpath, STRLEN-17, "%s", oldpath);
 }
