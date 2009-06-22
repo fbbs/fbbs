@@ -717,7 +717,7 @@ static int rawmore2(const char *filename, int promptend, int row, int numlines, 
 						|| !strncmp(d->begin, "¡ù ÒıÊö", 7)) {
 					prints("\033[1;33m");
 					outns(d->begin, d->end - d->begin, false);
-					if (*(d->end - 1) == '\n')
+					if (*(d->end - 1) != '\n')
 						outc('\n');
 					prints("\033[m");
 				} else {
