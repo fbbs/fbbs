@@ -1,45 +1,3 @@
-/*
- * bbsd.c		-- bbs daemon for Firebird BBS 3.0
- *
- sprintf(genbuf, BANNER);
- * A part of Firebird BBS 3.0 Project
- *
- * Copyright (c) 1999, Edward Ping-Da Chuang <edwardc@firebird.dhs.org>
- * All rights reserved.
- *
- * ** use metrials from mbbsd of Maple BBS 3.00 **
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * CVS: $Id: bbsd.c 300 2006-08-17 02:52:37Z SpiritRain $
- */
-/*-------------------------------------------------------*/
-/* mbbsd.c      ( NTHU CS MapleBBS Ver 3.00 )            */
-/*-------------------------------------------------------*/
-/* target : BBS daemon/main/login/top-menu routines      */
-/* create : 95/03/29                                     */
-/* update : 96/10/10                                     */
-/*-------------------------------------------------------*/
-
 #include "bbs.h"
 
 #include <sys/resource.h>
@@ -411,9 +369,8 @@ int deadsock[MAX_DEAD];
 time_t deadtime[MAX_DEAD];
 int deadnum=0;
 
-int main(int argc, char *argv[]) {
-	extern int errno;
-
+int main(int argc, char *argv[])
+{
 	register int msock, csock; /* socket for Master and Child */
 	register int nfds; /* number of sockets */
 	register int overload;
@@ -427,12 +384,8 @@ int main(int argc, char *argv[]) {
 	struct ip_name {
 		char ip[16];
 		char name[60];
-	}table[256];
+	} table[256];
 #endif			
-
-#ifdef  LOADTEST
-	int proc_num;
-#endif
 
 	/* --------------------------------------------------- */
 	/* setup standalone                                    */
@@ -470,27 +423,22 @@ int main(int argc, char *argv[]) {
 	(void) chdir(BBSHOME);
 	umask((mode_t)022); //Ä¬ÈÏ´´½¨µÄÎÄ¼þÄ¿Â¼È¨ÏÞ¶¼ÊÇ644
 
-unlink(PID_FILE);
-		sprintf(genbuf, "%d", getpid());
-file_append(PID_FILE, genbuf);
-	
+	sprintf(genbuf, "%d %d\n", csock, getpid());
+	file_append(PID_FILE, genbuf);
+
 	/* --------------------------------------------------- */
 	/* main loop                                           */
 	/* --------------------------------------------------- */
 
-#if 0
-	resolve_utmp();
-#endif
-
-		tv.tv_sec = 60 * 30;
+	tv.tv_sec = 60 * 30;
 	tv.tv_usec = 0;
 
 	overload = uptime = 0;
 	/*
-	 Commented by Erebus 2004-11-03
-	 define IP_2_NAME in fuctions.h
-	 use domain name instand of ip when shuttling
-	 */
+	   Commented by Erebus 2004-11-03
+	   define IP_2_NAME in fuctions.h
+	   use domain name instand of ip when shuttling
+	   */
 #ifdef IP_2_NAME
 	{//#ifdef IP_2_NAME
 		FILE *netip;
@@ -507,31 +455,27 @@ file_append(PID_FILE, genbuf);
 					strlcpy(table[i_counter].ip,
 							special,
 							strlen(special)>15?15:strlen(special)
-					);
+						   );
 					special = strtok(NULL, " \r\n\t");
 					if (special) {
 						strlcpy(table[i_counter].name,
 								special,
 								strlen(special)>59?59:strlen(special)
-						);
+							   );
 						i_counter++;
 					} else {
 						memset(table[i_counter].ip, 0, 16);
 					}//		if (special)
 				}//	if (special)
 				if (i_counter> 255)
-				break;
+					break;
 			}//	while(fgets(line, STRLEN, netip))
 			fclose(netip);
 		}//if (netip != NULL)
 	}//#ifdef IP_2_NAME
 #endif
 
-#ifdef LOADTEST
-	for (proc_num=0; proc_num<PROC_MAX;proc_num++) {
-#else //LOADTEST
 	for (;;) {
-#endif //LOADTEST
 #ifdef  HAVE_CHKLOAD
 		pid = time(0);
 		if (pid> uptime) {
@@ -540,131 +484,121 @@ file_append(PID_FILE, genbuf);
 		}
 #endif
 
-#ifndef LOADTEST
-		again: readset = mainset;
+again: readset = mainset;
 
-		value = sizeof(xsin);
-		do {
-			csock = accept(msock, (struct sockaddr *) &xsin, &value);
-		} while (csock < 0 && errno == EINTR);
+	   value = sizeof(xsin);
+	   do {
+		   csock = accept(msock, (struct sockaddr *) &xsin, &value);
+	   } while (csock < 0 && errno == EINTR);
 
-		if (csock < 0) {
-			goto again;
-		}
+	   if (csock < 0) {
+		   goto again;
+	   }
 
 #ifdef HAVE_CHKLOAD
-		sprintf(genbuf, BANNER, loadstr, TH_LOW, status);
+	   sprintf(genbuf, BANNER, loadstr, TH_LOW, status);
 #else
-sprintf		(genbuf, BANNER);
+	   sprintf		(genbuf, BANNER);
 #endif
-		(void) write(csock, genbuf, strlen(genbuf));
+	   (void) write(csock, genbuf, strlen(genbuf));
 #ifdef  HAVE_CHKLOAD
-		{
-			register int idead;
-			time_t now=time(0);
-			idead=deadnum;
-			while(idead--) {
-				if(now-deadtime[idead]>4) {
-					close(deadsock[idead]);
-					if(idead<deadnum-1) {
-						deadtime[idead]=deadtime[deadnum-1];
-						deadsock[idead]=deadsock[deadnum-1];
-					}
-					deadnum--;
-				}
-			}
-		}// HAVE_CHKLOAD
+	   {
+		   register int idead;
+		   time_t now=time(0);
+		   idead=deadnum;
+		   while(idead--) {
+			   if(now-deadtime[idead]>4) {
+				   close(deadsock[idead]);
+				   if(idead<deadnum-1) {
+					   deadtime[idead]=deadtime[deadnum-1];
+					   deadsock[idead]=deadsock[deadnum-1];
+				   }
+				   deadnum--;
+			   }
+		   }
+	   }// HAVE_CHKLOAD
 
-		sprintf(genbuf, "\nÄ¿Ç°ÕýÓÐ%dÈËÕý³¢ÊÔÁ¬½Ó", deadnum);
-		write(csock, genbuf, strlen(genbuf));
+	   sprintf(genbuf, "\nÄ¿Ç°ÕýÓÐ%dÈËÕý³¢ÊÔÁ¬½Ó", deadnum);
+	   write(csock, genbuf, strlen(genbuf));
 
-		if (overload) {
-			if(deadnum<MAX_DEAD) {
-				deadsock[deadnum]=csock;
-				deadtime[deadnum++]=time(0);
-			} else {
-				close(csock);
-			}
-			continue;
-		}// if(overload)
+	   if (overload) {
+		   if(deadnum<MAX_DEAD) {
+			   deadsock[deadnum]=csock;
+			   deadtime[deadnum++]=time(0);
+		   } else {
+			   close(csock);
+		   }
+		   continue;
+	   }// if(overload)
 
 
 #endif
 
-#else	//LOADTEST
-		csock=fileno(stdout);
-#endif	//LOADTEST
-		/*
-		 Commented by Erebus 2004-11-03
-		 if wanna to maitain the system,create a file named"NOLOGIN" under the BBSHOME path
-		 */
+	   /*
+		  Commented by Erebus 2004-11-03
+		  if wanna to maitain the system,create a file named"NOLOGIN" under the BBSHOME path
+		  */
 #ifdef NOLOGIN
-		{
-			FILE *fp;
-			char buf[256];
+	   {
+		   FILE *fp;
+		   char buf[256];
 #define MYBANNER "\r\nFB2000 [bbsd NOLOGIN] ÏµÍ³´¦ÓÚ[1;33mÔÝÍ£µÇÂ½[m×´Ì¬\r\n[1;32m[±¾Õ¾³ÌÐòÎ¬»¤¿ÉÒÔÉ¾³ý \'[36m~bbs/NOLOGIN[32m\' ºó½â³ý¸Ã×´Ì¬][m\r\n\r\n£½£½£½£½£½£½¹ØÓÚÏµÍ³½øÈëÔÝÍ£µÇÂ½×´Ì¬µÄ¡¾¹«¸æ¡¿£½£½£½£½£½£½\r\n"
 
-			if ((fp = fopen(NOLOGIN, "r")) != NULL) {
-				(void) write(csock, MYBANNER, strlen(MYBANNER));
-				while (fgets(buf, 255, fp) != 0) {
-					strcat(buf, "\r");
-					(void) write(csock, buf, strlen(buf));
-				}//while
-				fclose(fp);
-				sleep(5);
-				close(csock);
-				continue;
-			}//if
-		}
+		   if ((fp = fopen(NOLOGIN, "r")) != NULL) {
+			   (void) write(csock, MYBANNER, strlen(MYBANNER));
+			   while (fgets(buf, 255, fp) != 0) {
+				   strcat(buf, "\r");
+				   (void) write(csock, buf, strlen(buf));
+			   }//while
+			   fclose(fp);
+			   sleep(5);
+			   close(csock);
+			   continue;
+		   }//if
+	   }
 #endif
 
-		pid = fork();
-		if (!pid) {
+	   pid = fork();
+	   if (!pid) {
 
 #ifdef  HAVE_CHKLOAD
-			(void) close(fkmem);
+		   (void) close(fkmem);
 #endif
-			while (--nfds >= 0)
-			(void) close(nfds);
-#ifndef LOADTEST
-			(void) dup2(csock, 0);
-			(void) close(csock);
-			(void) dup2(0, 1);
-			getremotename(&xsin, fromhost, remoteusername); /* FC931 */
-#else	//LOADTEST
-			strcpy(fromhost,"LOADTEST");
-#endif //LOADTEST
-			/* ban µô bad host / bad user */
+		   while (--nfds >= 0)
+			   (void) close(nfds);
+		   (void) dup2(csock, 0);
+		   (void) close(csock);
+		   (void) dup2(0, 1);
+		   getremotename(&xsin, fromhost, remoteusername); /* FC931 */
+
+		   /* ban µô bad host / bad user */
 #ifdef BAD_HOST
-			if (bad_host(fromhost) && !strcmp(remoteusername, "?"))
-			exit(1);
+		   if (bad_host(fromhost) && !strcmp(remoteusername, "?"))
+			   exit(1);
 #endif
 
 #ifdef IP_2_NAME
-			i_counter = 0;
+		   i_counter = 0;
 #ifndef FDQUAN
-			if (strncmp(fromhost, "10.", 3) && strncmp(fromhost, "192.", 4))
+		   if (strncmp(fromhost, "10.", 3) && strncmp(fromhost, "192.", 4))
 #endif
-			//²»ÊÇ´ÓÐ£ÄÚÀ´µÄIP,Ôò:
-			while (table[i_counter].ip[0] != '\0') {
-				if(!strcasecmp(table[i_counter].ip, fromhost)) {
-					strcpy(fromhost, table[i_counter].name);
-					break;
-				}
-				i_counter++;
-			}
+			   //²»ÊÇ´ÓÐ£ÄÚÀ´µÄIP,Ôò:
+			   while (table[i_counter].ip[0] != '\0') {
+				   if(!strcasecmp(table[i_counter].ip, fromhost)) {
+					   strcpy(fromhost, table[i_counter].name);
+					   break;
+				   }
+				   i_counter++;
+			   }
 
 #endif
-			//ÏÂÃæÁ½¸öµ÷ÓÃËÆºõ¶àÁËÒ»¸ö²ÎÊý
-			bbssetenv("REMOTEHOST", fromhost, 1);
-			bbssetenv("REMOTEUSERNAME", remoteusername, 1);
+		   //ÏÂÃæÁ½¸öµ÷ÓÃËÆºõ¶àÁËÒ»¸ö²ÎÊý
+		   bbssetenv("REMOTEHOST", fromhost, 1);
+		   bbssetenv("REMOTEUSERNAME", remoteusername, 1);
 
-			telnet_init();
-			//nice(3);
-			start_client();//¿ªÊ¼ÓÃ»§½ø³Ì???,ËÆºõÃ»ÓÐÕÒµ½
-		}//if(!pid)
-#ifndef LOADTEST
-		(void) close(csock);
-#endif //LOADTEST
+		   telnet_init();
+		   start_client();
+	   }//if(!pid)
+	   (void) close(csock);
 	}//for
 }

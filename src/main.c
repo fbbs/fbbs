@@ -661,14 +661,10 @@ static int login_query(void)
 			ansimore("etc/goodbye", NA);
 			return -1;
 		}
-#ifndef LOADTEST
 		getdata(0, 0, "\033[1;33m«Î ‰»Î’ ∫≈\033[m"
 				"( ‘”√«Î ‰»Î'\033[1;36mguest\033[m', "
 				"◊¢≤·«Î ‰»Î'\033[1;31mnew\033[m'): ",
 				uid, IDLEN + 1, DOECHO, YEA);
-#else
-		strcpy(uid, "guest");
-#endif
 #ifdef ALLOWSWITCHCODE
 		ptr = strchr(uid, '.');
 		if (ptr) {
