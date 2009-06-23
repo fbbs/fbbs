@@ -369,7 +369,7 @@ static char *u_namearray(char buf[][IDLEN + 1], int *pnum, const char *tag)
 	for (i = 0; tagbuf[i] != '\0'; i++)
 		tagbuf[i] = toupper(tagbuf[i]);
 	total = uidshm->number;
-	for (i = 0; i < MAXUSERS && num < total; i++) {
+	for (i = 0; i < total; i++) {
 		ptr = uidshm->userid[i];
 		if (!strncasecmp(ptr, tagbuf, size))
 			memcpy(buf[num++], ptr, sizeof(buf[0]));

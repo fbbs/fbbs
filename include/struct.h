@@ -160,7 +160,7 @@ struct BCACHE { //版面的缓冲?
 
 struct UCACHE { //用户的缓冲
 	char userid[MAXUSERS ][IDLEN + 1 ];
-	int number;
+	int number;	// last occupied slot in 'userid' array.
 	time_t uptime;
 	/* add by stiger */
 	int next[MAXUSERS];

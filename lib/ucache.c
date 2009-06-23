@@ -206,10 +206,12 @@ int load_ucache(void)
 	memset(uidshm->prev, 0, sizeof(uidshm->prev));
 
 	// Fill cache.
-	int count = 0;
-	for (i = 0; i < MAXUSERS; i++)
-		count += fillucache(&(uidshm->passwd[i]), i);
-	uidshm->number = count;
+	int last = 0;
+	for (i = 0; i < MAXUSERS; i++) {
+		if (fillucache(&(uidshm->passwd[i]), i))
+			last = i;
+	}
+	uidshm->number = ++last;
 	uidshm->uptime = time(NULL);
 
 	// Unlock cache.
@@ -378,12 +380,18 @@ void resolve_utmp(void)
 	}
 }
 
-// Returns (non-realtime) count of all users.
+// Returns realtime count of all users who has logged on more than once.
 int allusers(void)
 {
 	if (resolve_ucache() == -1)
 		return 0;
-	return uidshm->number;
+	struct userec *user;
+	struct userec *end = uidshm->passwd 
+			+ sizeof(uidshm->passwd) / sizeof(uidshm->passwd[0]);
+	int count = 0;
+	for (user = uidshm->passwd; user != end; ++user)
+		count += (user->numlogins != 0);
+	return count;
 }
 
 // Returns (non-realtime) count of online users.
@@ -439,7 +447,7 @@ int refresh_utmp(void)
 	}
 	utmpshm->total_num = count;
 	// Get count of all users from ucache.
-	utmpshm->usersum = uidshm->number;
+	utmpshm->usersum = allusers();
 	// Unlock caches.
 	ucache_unlock(ucachefd);
 	utmp_unlock(utmpfd);

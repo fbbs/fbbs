@@ -650,9 +650,11 @@ static int login_query(void)
 	utmpshm->total_num = curr_login_num;
 	if (utmpshm->max_login_num < utmpshm->total_num)
 		utmpshm->max_login_num = utmpshm->total_num;
+	if (utmpshm->usersum <= 0)
+		utmpshm->usersum = allusers();
 	prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
 			"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
-			allusers(), MAXUSERS, utmpshm->total_num, MAXACTIVE);
+			utmpshm->usersum, MAXUSERS, utmpshm->total_num, MAXACTIVE);
 	visitlog();
 
 	attempts = 0;
