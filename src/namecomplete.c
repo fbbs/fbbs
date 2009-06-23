@@ -353,31 +353,26 @@ int UserSubArray(char cwbuf[][IDLEN + 1], char cwlist[][IDLEN + 1],
 	return num;
 }
 
-static char *u_namearray(char buf[][IDLEN + 1], int *pnum, char *tag)
+static char *u_namearray(char buf[][IDLEN + 1], int *pnum, const char *tag)
 {
-	register struct UCACHE *reg_ushm = uidshm;
-	register char *ptr, tmp;
-	register int n, total;
+	char *ptr;
+	int i, total, num = 0;
 	char tagbuf[STRLEN];
-	int ch, num = 0;
 	if (resolve_ucache() == -1)
 		exit(0);
 	if (*tag == '\0') {
-		*pnum = reg_ushm->number;
-		return reg_ushm->userid[0];
+		*pnum = uidshm->number;
+		return uidshm->userid[0];
 	}
-	for (n = 0; tag[n] != '\0'; n++) {
-		tagbuf[n] = chartoupper(tag[n]);
-	}
-	tagbuf[n] = '\0';
-	ch = tagbuf[0];
-	total = reg_ushm->number;
-	for (n = 0; n < total; n++) {
-		ptr = reg_ushm->userid[n];
-		tmp = *ptr;
-		if (tmp == ch || tmp == ch - 'A' + 'a')
-		if (chkstr(tag, tagbuf, ptr))
-		strcpy(buf[num++], ptr);
+	strlcpy(tagbuf, tag, sizeof(tagbuf));
+	size_t size = strlen(tagbuf);
+	for (i = 0; tagbuf[i] != '\0'; i++)
+		tagbuf[i] = toupper(tagbuf[i]);
+	total = uidshm->number;
+	for (i = 0; i < MAXUSERS && num < total; i++) {
+		ptr = uidshm->userid[i];
+		if (!strncasecmp(ptr, tagbuf, size))
+			memcpy(buf[num++], ptr, sizeof(buf[0]));
 	}
 	*pnum = num;
 	return buf[0];
