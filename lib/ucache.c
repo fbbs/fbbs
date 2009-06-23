@@ -390,7 +390,7 @@ int allusers(void)
 			+ sizeof(uidshm->passwd) / sizeof(uidshm->passwd[0]);
 	int count = 0;
 	for (user = uidshm->passwd; user != end; ++user)
-		count += (user->numlogins != 0);
+		count += (user->numlogins != 0 && user->userid[0] != '\0');
 	return count;
 }
 
