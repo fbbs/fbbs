@@ -484,7 +484,8 @@ static int rawmore(char *filename, int promptend, int row, int numlines, int stu
 
 enum {
 	LINENUM_BLOCK_SIZE = 4096,
-	DEFAULT_TERM_WIDTH = 80
+	DEFAULT_TERM_WIDTH = 80,
+	TAB_STOP = 4
 };
 
 struct linenum {
@@ -504,6 +505,7 @@ struct mmap_more_file {
 	char *end;	// off-the-end pointer of last fetched line
 	int row;	// line to fetch, starting from 0
 	bool is_quote; // whether last row is part of quotation
+	bool has_tabstop; // whether last row has at least one tab stop.
 };
 
 static struct mmap_more_file *mmap_more_open(const char *filename, int width)
@@ -571,6 +573,7 @@ static ssize_t mmap_more_getline(struct mmap_more_file *d)
 	bool in_gbk = false;
 	bool in_esc = false;
 	int length = d->width;
+	d->has_tabstop = false;
 	if (!d->is_quote && (strncmp(begin, ": ", 2) || strncmp(begin, "> ", 2)))
 		d->is_quote = false;
 	for (ptr = begin; ptr != end && length > 0; ++ptr) {
@@ -589,6 +592,11 @@ static ssize_t mmap_more_getline(struct mmap_more_file *d)
 		if (in_esc) {
 			if(!memchr(code, *ptr, sizeof(code) - 1))
 				in_esc = false;
+			continue;
+		}
+		if (*ptr == '\t') {
+			d->has_tabstop = true;
+			length -= TAB_STOP - (d->width - length) % TAB_STOP;
 			continue;
 		}
 		--length;
@@ -657,6 +665,7 @@ static int mmap_more_countline(struct mmap_more_file *d)
 	char *end = d->end;
 	int row = d->row;
 	bool is_quote = d->is_quote;
+	bool has_tabstop = d->has_tabstop;
 
 	// Search line number cache
 	struct linenum *l = d->ln + d->ln_size - 1;
@@ -680,9 +689,36 @@ static int mmap_more_countline(struct mmap_more_file *d)
 	d->end = end;
 	d->row = row;
 	d->is_quote = is_quote;
+	d->has_tabstop = has_tabstop;
 
 	return d->total;
 }
+
+static void mmap_more_puts(struct mmap_more_file *d)
+{
+	if (!d->has_tabstop) {
+		outns(d->begin, d->end - d->begin, false);
+	} else {
+		char *ptr;
+		int offset = 0;
+		for (ptr = d->begin; ptr != d->end; ++ptr) {
+			if (*ptr != '\t') {
+				outc(*ptr);
+				++offset;
+			} else {
+				int count = TAB_STOP - offset % TAB_STOP;
+				while (count-- != 0 && offset < d->width) {
+					outc(' ');
+					++offset;
+				}
+			}
+		}
+	}
+	if (*(d->end - 1) != '\n')
+		outc('\n');
+	return;
+}
+
 // 'row': row on screen
 // 'numlines': most lines shown, 0 means no limit
 static int rawmore2(const char *filename, int promptend, int row, int numlines, int stuffmode)
@@ -716,9 +752,7 @@ static int rawmore2(const char *filename, int promptend, int row, int numlines, 
 						|| !strncmp(d->begin, "¡¾ ÔÚ", 5)
 						|| !strncmp(d->begin, "¡ù ÒýÊö", 7)) {
 					prints("\033[1;33m");
-					outns(d->begin, d->end - d->begin, false);
-					if (*(d->end - 1) != '\n')
-						outc('\n');
+					mmap_more_puts(d);
 					prints("\033[m");
 				} else {
 					is_wrapped = (d->begin != d->buf) && (*(d->begin - 1) != '\n');
@@ -729,14 +763,10 @@ static int rawmore2(const char *filename, int promptend, int row, int numlines, 
 					} else {
 						prints("\033[m");
 					}
-					outns(d->begin, d->end - d->begin, false);
+					mmap_more_puts(d);
 					is_wrapped = (*(d->end - 1) != '\n');
-					if (is_wrapped) {
-						outc('\n');
-					} else {
-						if (is_quote)
-							is_quote = false;
-					}
+					if (is_quote && !is_wrapped)
+						is_quote = false;
 				}
 				// Scrolling
 				if (++pos == t_lines) {
