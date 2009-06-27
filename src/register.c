@@ -243,7 +243,7 @@ int getnewuserid() {
 					snprintf(genbuf_rm, sizeof(genbuf_rm), BBSHOME"/tomb/%s.%d.mail", utmp.userid, system_time);
 					rename(genbuf, genbuf_rm);
 					sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]), utmp.userid);
-					snprintf(genbuf_rm, sizeof(genbuf_rm), BBSHOME"/tomb/%s.%d.mail", utmp.userid, system_time);
+					snprintf(genbuf_rm, sizeof(genbuf_rm), BBSHOME"/tomb/%s.%d.home", utmp.userid, system_time);
 					rename(genbuf, genbuf_rm);
 				}
 				substitut_record(PASSFILE, &zerorec,
