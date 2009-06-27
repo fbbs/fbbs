@@ -209,7 +209,7 @@ void setreasondefault() {
 }
 //设置原因,将参数传过来的字符串拷贝到reason字符串中去
 void setreason(char* rsn, int i) {
-	strlcpy(reason, rsn, i);
+	strlcpy(reason, rsn, i + 1);
 	reason[i]='\0';
 }
 //	设置封禁时的标题
@@ -301,7 +301,7 @@ int seekname(char *deny_uid) {
 	if (!(fp=fopen(fname, "r")))
 		return 0;
 	while (fgets(line, 256, fp)) {
-		strlcpy(uident, line, IDLEN);
+		strlcpy(uident, line, sizeof(uident));
 		uident[IDLEN] = '\0';
 		strtok(uident, " \r\n\t");
 		if (strcasecmp(deny_uid, uident)==0) {
@@ -393,11 +393,11 @@ int deny_key_deal(char* fname, int ch, char* line) {
 	char repbuf[500];
 	int tmp;
 	if (line) {
-		strlcpy(deny_uid, line, IDLEN);
+		strlcpy(deny_uid, line, sizeof(deny_uid));
 		deny_uid[IDLEN] = '\0';
 		strtok(deny_uid, " \n\r\t");
 		tmp=strlen(reasonlist);
-		strlcpy(reason, line+IDLEN+1, tmp);
+		strlcpy(reason, line+IDLEN+1, tmp + 1);
 		reason[tmp]='\0';
 		while (tmp--) {
 			if (reason[tmp]!=reasonlist[tmp])
