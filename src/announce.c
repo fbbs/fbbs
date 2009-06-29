@@ -694,8 +694,8 @@ void a_moveitem(MENU *pm) {
 }
 
 void a_copypaste(MENU *pm, int paste) {
-	static char title[STRLEN], filename[STRLEN], fpath[PATHLEN];
 	ITEM *item;
+	static char title[sizeof(item->title)], filename[STRLEN], fpath[PATHLEN];
 	char newpath[PATHLEN]/*,ans[5]*/;
 	FILE *fn;
 	move(t_lines - 1, 0);
