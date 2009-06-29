@@ -277,7 +277,7 @@ int show_bm(char* userid, char *bmstring) {
 	if (bmfp) {
 		for (i = 0; i < 3; i++) {
 			fscanf(bmfp, "%s\n", tmp);
-			sprintf(bmstring, "%s%s ", bmstring, tmp);
+			bmstring += sprintf(bmstring, "%s ", tmp);
 			if (feof(bmfp))
 				break;
 		}
