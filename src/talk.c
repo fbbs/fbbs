@@ -310,15 +310,15 @@ int show_volunteer(char *userid, char *volstring) {
 int show_position(char *buf) {
 	if (lookupuser.userlevel & PERM_SPECIAL9) {
 		if (lookupuser.userlevel & PERM_SYSOPS) {
-			sprintf(buf, "[[1;32mÕ¾³¤[m]");
+			sprintf(buf, "[\033[1;32mÕ¾³¤\033[m]");
 		} else if (lookupuser.userlevel & PERM_ANNOUNCE) {
-			sprintf(buf, "[[1;32mÕ¾Îñ[m]");
+			sprintf(buf, "[\033[1;32mÕ¾Îñ\033[m]");
 		} else if (lookupuser.userlevel & PERM_OCHAT) {
-			sprintf(buf, "[[1;32mÊµÏ°Õ¾Îñ[m]");
+			sprintf(buf, "[\033[1;32mÊµÏ°Õ¾Îñ\033[m]");
 		} else if (lookupuser.userlevel & PERM_SPECIAL0) {
-			sprintf(buf, "[[1;32mÕ¾ÎñÎ¯Ô±»áÃØÊé[m]");
+			sprintf(buf, "[\033[1;32mÕ¾ÎñÎ¯Ô±»áÃØÊé\033[m]");
 		} else {
-			sprintf(buf, "[[1;32mÀëÈÎÕ¾Îñ[m]");
+			sprintf(buf, "[\033[1;32mÀëÈÎÕ¾Îñ\033[m]");
 		}
 	} else {
 		int normal = 1;
@@ -327,39 +327,43 @@ int show_position(char *buf) {
 		if ((lookupuser.userlevel & PERM_XEMPT) && (lookupuser.userlevel
 				& PERM_LONGLIFE)
 				&& (lookupuser.userlevel & PERM_LARGEMAIL)) {
-			sprintf(buf, "[[1;32mÈÙÓş°æÖ÷[m]");
+			buf += sprintf(buf, "[\033[1;32mÈÙÓş°æÖ÷\033[m]");
 			normal = 0;
 		}
 
 		if (show_volunteer(lookupuser.userid, bms)) {
-			sprintf(buf, "%s[[1;33m%s[m]", buf, bms);
+			buf += sprintf(buf, "[\033[1;33m%s\033[m]", bms);
 			normal = 0;
 			bms[0] = 0;
 		}
 
 		if ((lookupuser.userlevel & PERM_BOARDS) && show_bm(
 				lookupuser.userid, bms)) {
-			sprintf(buf, "%s[[1;33m%s[32m°æ°æÖ÷[m]", buf, bms);
+			buf += sprintf(buf, "[\033[1;33m%s\033[32m°æ°æÖ÷\033[m]", bms);
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_ARBI) {
-			sprintf(buf, "%s[[1;32mÖÙ²Ã×é[m]", buf);
+			buf += sprintf(buf, "[\033[1;32mÖÙ²Ã×é\033[m]");
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_SERV) {
-			sprintf(buf, "%s[[1;32mÅàÑµ×é[m]", buf);
+			buf += sprintf(buf, "[\033[1;32mÅàÑµ×é\033[m]");
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_SPECIAL3) {
-			sprintf(buf, "%s[[1;32mÃÀ¹¤×é[m]", buf);
+			buf += sprintf(buf, "[\033[1;32mÃÀ¹¤×é\033[m]");
 			normal = 0;
 		}
 		if (lookupuser.userlevel & PERM_TECH) {
-			sprintf(buf, "%s[[1;32m¼¼Êõ×é[m]", buf);
+			buf += sprintf(buf, "[\033[1;32m¼¼Êõ×é\033[m]");
 			normal = 0;
 		}
 		if (normal) {
-			sprintf(buf, "[[1;32m¹â»ªÍøÓÑ[m]");
+#ifndef FDQUAN
+			sprintf(buf, "[\033[1;32m¹â»ªÍøÓÑ\033[m]");
+#else
+			sprintf(buf, "[\033[1;32mÈªÕ¾ÍøÓÑ\033[m]");
+#endif
 		}
 	}
 }
