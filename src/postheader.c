@@ -46,19 +46,19 @@ void set_prefix() {
 
 void print_prefixbuf(char *buf, int index) {
 	int i;
-	sprintf(buf, "前缀:");
+	buf += sprintf(buf, "前缀:");
 	for (i = 0; i < numofprefix; i++ ) {
 		if (i == 0 && prefixbuf[i][0] == '\0' )
-		sprintf(buf, "%s 1.%s无%s", buf,
-				(index == i+1)?"\033[1m":"",
-				(index == i+1)?"\033[m":"");
+		buf += sprintf(buf, "1.%s无%s",
+				(index == i + 1)?"\033[1m":"",
+				(index == i + 1)?"\033[m":"");
 		else
-		sprintf(buf, "%s %d.%s%s%s", buf,i+1,
-				(index == i+1)?"\033[1;33m":"",
+		buf += sprintf(buf, " %d.%s%s%s", i + 1,
+				(index == i + 1)?"\033[1;33m":"",
 				prefixbuf[i],
-				(index == i+1)?"\033[m":"");
+				(index == i + 1)?"\033[m":"");
 	}
-	sprintf(buf, "%s[%d]:", buf, index);
+	sprintf(buf, "[%d]:", index);
 }
 #endif
 int post_header(struct postheader *header) {
