@@ -348,9 +348,10 @@ int m_retireBM() {
 		return -1;
 	}
 	if (bmnum - 1) { //还有版主,为什么不用strcat ?
-		sprintf(genbuf, "%s", usernames[0]);
+		char *genbuf1 = genbuf;
+		genbuf1 += sprintf(genbuf, "%s", usernames[0]);
 		for (i = 1; i < bmnum - 1; i++)
-			sprintf(genbuf, "%s %s", genbuf, usernames[i]);
+			genbuf1 += sprintf(genbuf1, " %s", usernames[i]);
 	} else {
 		genbuf[0] = '\0';
 	}

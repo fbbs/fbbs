@@ -703,13 +703,14 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	int i, dotype = 0, result = 0, gid = 0;
 	int has_yinyan=0; //Add by everlove 制作合集
 	char buf[80], ch[32], BMch, annpath[512];
+	char *buf1 = buf;
 
 	//added by iamfat 2002.10.27 加入同主题大D功能
 	int subflag;
 
 	struct keeploc *locmem;
 	char SR_BMitems[9][7] = { "删除", "保留", "文摘", "精华区", "水文", "不可RE", "合集",
-			"恢复", "合并" };
+		"恢复", "合并" };
 	char subBMitems[3][9] = { "相同主题", "相同作者", "相关主题" };
 
 	if (!in_mail) {
@@ -727,269 +728,269 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	getdata(t_lines - 1, 0, "执行: 1) 相同主题  2) 相同作者 3) 相关主题 0) 取消 [0]: ",
 			ch, 3, DOECHO, YEA);
 	dotype = atoi(ch);
-	if (dotype < 1 || dotype > 3){ 
-	saveline(t_lines - 1, 1);
-	return DONOTHING;
-}
-sprintf(buf, "%s ", subBMitems[dotype - 1]);
-if (in_mail) {
-	sprintf(buf, "%s(%d)%s (%d)%s (%d)%s (%d)%s ", buf,
-			1, SR_BMitems[0],
-			2, SR_BMitems[1],
-			4, SR_BMitems[3],
-			7, SR_BMitems[6]
-	);
-}
-else if (digestmode != TRASH_MODE && digestmode !=JUNK_MODE) {
-	for (i = 0; i < 7; i++)
-	sprintf(buf, "%s(%d)%s", buf, i + 1, SR_BMitems[i]);
-	sprintf(buf, "%s(%d)%s", buf, 8, SR_BMitems[8]);
-} else {
-	for (i = 1; i < 8; i++)
-	sprintf(buf, "%s(%d)%s ", buf, i + 1, SR_BMitems[i]);
-}
-strcat(buf, "? [0]: ");
-getdata(t_lines - 1, 0, buf, ch, 3, DOECHO, YEA);
-BMch = atoi(ch);
-if(BMch<=0||BMch>8||(digestmode != 0 && BMch==3)
-		||(digestmode>2 && BMch<3)) {
-	saveline(t_lines - 1, 1);
-	return DONOTHING;
-}
-move(t_lines - 1, 0);
-sprintf(buf,"确定要执行%s[%s]吗",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
-if (askyn(buf, NA, NA) == 0) {
-	saveline(t_lines - 1, 1);
-	return PARTUPDATE;
-}
-
-if (digestmode != TRASH_MODE && digestmode !=JUNK_MODE && BMch == 8) {
-	getdata(t_lines - 1, 0, "本主题加至版面第几篇后？", ch, 8, DOECHO, YEA);
-	if (ch[0] < '0' || ch[0]> '9' )
-	return PARTUPDATE;
-	result = atoi(ch);
-	struct fileheader fh;
-	get_record (direct, &fh, sizeof (fh), result);
-	gid = fh.gid;
-	fileinfo->reid = fh.id;
-	substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
-}
-
-/* Add by everlove 制作合集 */
-if(BMch == 7) {
-	move(t_lines-1,0);
-	if (askyn("制作的合集需要引言吗？", YEA, YEA) == YEA)
-	has_yinyan=YEA;
-	else
-	has_yinyan=NA;
-}
-/*The End */
-
-if (dotype == 3) {
-	strcpy(keyword, "");
-	getdata(t_lines - 1, 0, "请输入主题关键字: ", keyword, 50, DOECHO, YEA);
-	if (keyword[0] == '\0') {
+	if (dotype < 1 || dotype > 3) { 
 		saveline(t_lines - 1, 1);
 		return DONOTHING;
 	}
-} else if (dotype == 1) {
-	strcpy(keyword, fileinfo->title);
-} else {
-	strcpy(keyword, fileinfo->owner);
-}
-
-/* Add by everlove 制作合集 */
-if( (dotype == 1 || dotype == 3) && (BMch == 7))
-{
-	sprintf(buf, "tmp/%s.combine", currentuser.userid);
-	if(dashf(buf)) unlink(buf);
-}
-/* The End */
-
-//added by iamfat 2002.10.30
-if(BMch==1) { //删除
-	subflag=askyn("是否小d", YEA, YEA);
-}
-
-move(t_lines - 1, 0);
-sprintf(buf, "是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇",
-		(dotype == 2) ? "该作者" : "此主题", SR_BMitems[BMch - 1]);
-if(askyn(buf, YEA, NA) == YEA) {
-	result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
-} else if(dotype == 3) {
-	result = locate_the_post(fileinfo, keyword,1,2,0);
-} else {
-	memcpy(&SR_fptr, fileinfo, sizeof(SR_fptr));
-}
-if( result == -1 ) {
-	saveline(t_lines - 1, 1);
-	return DONOTHING;
-}
-if(BMch == 4) {
-	if (DEFINE(DEF_MULTANNPATH)&& set_ann_path(NULL, NULL, ANNPATH_GETMODE)==0)
-	return FULLUPDATE;
-	else {
-		FILE *fn;
-		sethomefile(annpath, currentuser.userid,".announcepath");
-		if((fn = fopen(annpath, "r")) == NULL ) {
-			presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.",t_lines-1);
-			saveline(t_lines - 1, 1);
-			return DONOTHING;
-		}
-		fscanf(fn,"%s",annpath);
-		fclose(fn);
-		if (!dashd(annpath)) {
-			presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.",t_lines-1);
-			saveline(t_lines - 1, 1);
-			return DONOTHING;
-		}
+	buf1 += sprintf(buf, "%s ", subBMitems[dotype - 1]);
+	if (in_mail) {
+		sprintf(buf1, "(%d)%s (%d)%s (%d)%s (%d)%s ",
+				1, SR_BMitems[0],
+				2, SR_BMitems[1],
+				4, SR_BMitems[3],
+				7, SR_BMitems[6]
+			   );
 	}
-}
+	else if (digestmode != TRASH_MODE && digestmode !=JUNK_MODE) {
+		for (i = 0; i < 7; i++)
+			buf1 += sprintf(buf1, "(%d)%s", i + 1, SR_BMitems[i]);
+		sprintf(buf1, "(%d)%s", 8, SR_BMitems[8]);
+	} else {
+		for (i = 1; i < 8; i++)
+			buf1 += sprintf(buf1, "(%d)%s ", i + 1, SR_BMitems[i]);
+	}
+	strcat(buf, "? [0]: ");
+	getdata(t_lines - 1, 0, buf, ch, 3, DOECHO, YEA);
+	BMch = atoi(ch);
+	if(BMch<=0||BMch>8||(digestmode != 0 && BMch==3)
+			||(digestmode>2 && BMch<3)) {
+		saveline(t_lines - 1, 1);
+		return DONOTHING;
+	}
+	move(t_lines - 1, 0);
+	sprintf(buf,"确定要执行%s[%s]吗",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
+	if (askyn(buf, NA, NA) == 0) {
+		saveline(t_lines - 1, 1);
+		return PARTUPDATE;
+	}
 
-if (in_mail)
-{
-	while (1)
+	if (digestmode != TRASH_MODE && digestmode !=JUNK_MODE && BMch == 8) {
+		getdata(t_lines - 1, 0, "本主题加至版面第几篇后？", ch, 8, DOECHO, YEA);
+		if (ch[0] < '0' || ch[0]> '9' )
+			return PARTUPDATE;
+		result = atoi(ch);
+		struct fileheader fh;
+		get_record (direct, &fh, sizeof (fh), result);
+		gid = fh.gid;
+		fileinfo->reid = fh.id;
+		substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
+	}
+
+	/* Add by everlove 制作合集 */
+	if(BMch == 7) {
+		move(t_lines-1,0);
+		if (askyn("制作的合集需要引言吗？", YEA, YEA) == YEA)
+			has_yinyan=YEA;
+		else
+			has_yinyan=NA;
+	}
+	/*The End */
+
+	if (dotype == 3) {
+		strcpy(keyword, "");
+		getdata(t_lines - 1, 0, "请输入主题关键字: ", keyword, 50, DOECHO, YEA);
+		if (keyword[0] == '\0') {
+			saveline(t_lines - 1, 1);
+			return DONOTHING;
+		}
+	} else if (dotype == 1) {
+		strcpy(keyword, fileinfo->title);
+	} else {
+		strcpy(keyword, fileinfo->owner);
+	}
+
+	/* Add by everlove 制作合集 */
+	if( (dotype == 1 || dotype == 3) && (BMch == 7))
 	{
-		locmem = getkeep(currdirect, 1, 1);
-		switch(BMch) {
-			case 1:
-			if (SR_fptr.accessed[0] & FILE_MARKED)
-			break;
-			SR_BMDELFLAG = YEA;
-			result = mail_del(locmem->crs_line, &SR_fptr, currdirect);
-			SR_BMDELFLAG = NA;
-			if(result == -1)
-			return DIRCHANGED;
-			if (result != DONOTHING) {
-				last_line--;
-				locmem->crs_line--;
-			}
-			break;
-			case 2:
-			mail_mark(locmem->crs_line, &SR_fptr, currdirect);
-			break;
-			case 4:
-			a_Import("0Announce",currboard,NULL, &SR_fptr,annpath, YEA);
-			break;
-			/* Add by everlove 制作合集 */
-			case 7:
-			Add_Combine(currboard,&SR_fptr,has_yinyan);
-			break;
-			/* The End */
-		}
-		if(locmem->crs_line <= 0) {
-			result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
-		} else {
-			result = locate_the_post(fileinfo, keyword,1,dotype-1,0);
-		}
-		if(result == -1) break;
+		sprintf(buf, "tmp/%s.combine", currentuser.userid);
+		if(dashf(buf)) unlink(buf);
 	}
-} else {
-	while(1) {
-		locmem = getkeep(currdirect, 1, 1);
-		switch(BMch) {
-			case 1:
-			SR_BMDELFLAG = YEA;
-			result = _del_post(locmem->crs_line, &SR_fptr, currdirect, subflag, YEA);
-			SR_BMDELFLAG = NA;
-			if(result == -1)
-			return DIRCHANGED;
-			if (result != DONOTHING) {
-				last_line--;
-				locmem->crs_line--;
-			}
-			break;
-			case 2:
-			mark_post(locmem->crs_line, &SR_fptr, currdirect);
-			break;
-			case 3:
-			digest_post(locmem->crs_line, &SR_fptr, currdirect);
-			break;
-			case 4:
-			a_Import("0Announce",currboard,NULL, &SR_fptr,annpath, YEA);
-			break;
-			case 5:
-			makeDELETEDflag(locmem->crs_line,&SR_fptr,currdirect);
-			break;
-			case 6:
-			underline_post(locmem->crs_line,&SR_fptr,currdirect);
-			break;
-			/* Add by everlove 制作合集 */
-			case 7:
-			Add_Combine(currboard,&SR_fptr,has_yinyan);
-			break;
-			/* The End */
-			case 8:
-			if (digestmode == TRASH_MODE || digestmode ==JUNK_MODE) {
-				SR_BMDELFLAG = YEA;
-				result= _UndeleteArticle(locmem->crs_line, &SR_fptr, currdirect,NA);
-				SR_BMDELFLAG = NA;
-				if(result == -1)
-				return DIRCHANGED;
-				if (result != DONOTHING) {
-					last_line--;
-					locmem->crs_line--;
-				}
-			} else {
-				_combine_thread(locmem->crs_line, &SR_fptr, currdirect, gid);
-			}
+	/* The End */
 
-			break;
-		}
-		if(locmem->crs_line <= 0) {
-			result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
-		} else {
-			result = locate_the_post(fileinfo, keyword,1,dotype-1,0);
-		}
-		if(result == -1) break;
+	//added by iamfat 2002.10.30
+	if(BMch==1) { //删除
+		subflag=askyn("是否小d", YEA, YEA);
 	}
-}
-/* Add by everlove 制作合集 */
-if(/* (dotype == 1 || dotype == 3) &&*/BMch == 7) // add by jieer 2001.06.23
-{
-	/*
-	 if( !strncmp(keyword, "Re: ", 4)||!strncmp(keyword,"RE: ",4) )
-	 sprintf(buf, "【合集】%s", keyword + 4);
-	 else
-	 sprintf(buf, "【合集】%s", keyword);
-	 */
-	//modified by iamfat 2002.08.17
-	if( !strncmp(keyword, "Re: ", 4)||!strncmp(keyword,"RE: ",4) )
-	sprintf(buf, "[合集]%s", keyword + 4);
-	else
-	sprintf(buf, "[合集]%s", keyword);
-	//modified end
-	ansi_filter(keyword, buf);
-	sprintf(buf, "tmp/%s.combine", currentuser.userid);
-	//modified by iamfat 2003.03.25
+
+	move(t_lines - 1, 0);
+	sprintf(buf, "是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇",
+			(dotype == 2) ? "该作者" : "此主题", SR_BMitems[BMch - 1]);
+	if(askyn(buf, YEA, NA) == YEA) {
+		result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
+	} else if(dotype == 3) {
+		result = locate_the_post(fileinfo, keyword,1,2,0);
+	} else {
+		memcpy(&SR_fptr, fileinfo, sizeof(SR_fptr));
+	}
+	if( result == -1 ) {
+		saveline(t_lines - 1, 1);
+		return DONOTHING;
+	}
+	if(BMch == 4) {
+		if (DEFINE(DEF_MULTANNPATH)&& set_ann_path(NULL, NULL, ANNPATH_GETMODE)==0)
+			return FULLUPDATE;
+		else {
+			FILE *fn;
+			sethomefile(annpath, currentuser.userid,".announcepath");
+			if((fn = fopen(annpath, "r")) == NULL ) {
+				presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.",t_lines-1);
+				saveline(t_lines - 1, 1);
+				return DONOTHING;
+			}
+			fscanf(fn,"%s",annpath);
+			fclose(fn);
+			if (!dashd(annpath)) {
+				presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.",t_lines-1);
+				saveline(t_lines - 1, 1);
+				return DONOTHING;
+			}
+		}
+	}
+
 	if (in_mail)
-	mail_file(buf, currentuser.userid, keyword);
-	else
-	Postfile(buf,currboard,keyword,2);
-	unlink(buf);
-}
-/* The End */
-if (!in_mail && BMch != 7) {
-	sprintf (buf, "%s版\"b\"%s%s", currboard, subBMitems[dotype
-			- 1], SR_BMitems[BMch - 1]);
-	securityreport(buf, 0, 2);
-}
-if (!in_mail)
-switch(BMch) {
-	case 1:
-	bm_log(currentuser.userid, currboard, BMLOG_RANGEDEL, 1);
-	break;
-	case 4:
-	bm_log(currentuser.userid, currboard, BMLOG_RANGEANN, 1);
-	break;
-	case 7:
-	bm_log(currentuser.userid, currboard, BMLOG_COMBINE, 1);
-	break;
-	default:
-	bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
-	break;
-}
-return DIRCHANGED;
+	{
+		while (1)
+		{
+			locmem = getkeep(currdirect, 1, 1);
+			switch(BMch) {
+				case 1:
+					if (SR_fptr.accessed[0] & FILE_MARKED)
+						break;
+					SR_BMDELFLAG = YEA;
+					result = mail_del(locmem->crs_line, &SR_fptr, currdirect);
+					SR_BMDELFLAG = NA;
+					if(result == -1)
+						return DIRCHANGED;
+					if (result != DONOTHING) {
+						last_line--;
+						locmem->crs_line--;
+					}
+					break;
+				case 2:
+					mail_mark(locmem->crs_line, &SR_fptr, currdirect);
+					break;
+				case 4:
+					a_Import("0Announce",currboard,NULL, &SR_fptr,annpath, YEA);
+					break;
+					/* Add by everlove 制作合集 */
+				case 7:
+					Add_Combine(currboard,&SR_fptr,has_yinyan);
+					break;
+					/* The End */
+			}
+			if(locmem->crs_line <= 0) {
+				result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
+			} else {
+				result = locate_the_post(fileinfo, keyword,1,dotype-1,0);
+			}
+			if(result == -1) break;
+		}
+	} else {
+		while(1) {
+			locmem = getkeep(currdirect, 1, 1);
+			switch(BMch) {
+				case 1:
+					SR_BMDELFLAG = YEA;
+					result = _del_post(locmem->crs_line, &SR_fptr, currdirect, subflag, YEA);
+					SR_BMDELFLAG = NA;
+					if(result == -1)
+						return DIRCHANGED;
+					if (result != DONOTHING) {
+						last_line--;
+						locmem->crs_line--;
+					}
+					break;
+				case 2:
+					mark_post(locmem->crs_line, &SR_fptr, currdirect);
+					break;
+				case 3:
+					digest_post(locmem->crs_line, &SR_fptr, currdirect);
+					break;
+				case 4:
+					a_Import("0Announce",currboard,NULL, &SR_fptr,annpath, YEA);
+					break;
+				case 5:
+					makeDELETEDflag(locmem->crs_line,&SR_fptr,currdirect);
+					break;
+				case 6:
+					underline_post(locmem->crs_line,&SR_fptr,currdirect);
+					break;
+					/* Add by everlove 制作合集 */
+				case 7:
+					Add_Combine(currboard,&SR_fptr,has_yinyan);
+					break;
+					/* The End */
+				case 8:
+					if (digestmode == TRASH_MODE || digestmode ==JUNK_MODE) {
+						SR_BMDELFLAG = YEA;
+						result= _UndeleteArticle(locmem->crs_line, &SR_fptr, currdirect,NA);
+						SR_BMDELFLAG = NA;
+						if(result == -1)
+							return DIRCHANGED;
+						if (result != DONOTHING) {
+							last_line--;
+							locmem->crs_line--;
+						}
+					} else {
+						_combine_thread(locmem->crs_line, &SR_fptr, currdirect, gid);
+					}
+
+					break;
+			}
+			if(locmem->crs_line <= 0) {
+				result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
+			} else {
+				result = locate_the_post(fileinfo, keyword,1,dotype-1,0);
+			}
+			if(result == -1) break;
+		}
+	}
+	/* Add by everlove 制作合集 */
+	if(/* (dotype == 1 || dotype == 3) &&*/BMch == 7) // add by jieer 2001.06.23
+	{
+		/*
+		   if( !strncmp(keyword, "Re: ", 4)||!strncmp(keyword,"RE: ",4) )
+		   sprintf(buf, "【合集】%s", keyword + 4);
+		   else
+		   sprintf(buf, "【合集】%s", keyword);
+		   */
+		//modified by iamfat 2002.08.17
+		if( !strncmp(keyword, "Re: ", 4)||!strncmp(keyword,"RE: ",4) )
+			sprintf(buf, "[合集]%s", keyword + 4);
+		else
+			sprintf(buf, "[合集]%s", keyword);
+		//modified end
+		ansi_filter(keyword, buf);
+		sprintf(buf, "tmp/%s.combine", currentuser.userid);
+		//modified by iamfat 2003.03.25
+		if (in_mail)
+			mail_file(buf, currentuser.userid, keyword);
+		else
+			Postfile(buf,currboard,keyword,2);
+		unlink(buf);
+	}
+	/* The End */
+	if (!in_mail && BMch != 7) {
+		sprintf (buf, "%s版\"b\"%s%s", currboard, subBMitems[dotype
+				- 1], SR_BMitems[BMch - 1]);
+		securityreport(buf, 0, 2);
+	}
+	if (!in_mail)
+		switch(BMch) {
+			case 1:
+				bm_log(currentuser.userid, currboard, BMLOG_RANGEDEL, 1);
+				break;
+			case 4:
+				bm_log(currentuser.userid, currboard, BMLOG_RANGEANN, 1);
+				break;
+			case 7:
+				bm_log(currentuser.userid, currboard, BMLOG_COMBINE, 1);
+				break;
+			default:
+				bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
+				break;
+		}
+	return DIRCHANGED;
 }
 
 int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
@@ -1234,6 +1235,7 @@ char *direct;
 	int inum1, inum2;
 	int i;
 	char buf[STRLEN],ch[4],BMch;
+	char *buf1 = buf;
 	char *SR_BMitems[]= {"删除","保留","精华区","暂存档","精简暂存","不可RE"};//added by roly 02.03.27
 	struct keeploc *locmem;
 	struct fileheader fhdr;
@@ -1268,8 +1270,8 @@ char *direct;
 		return DONOTHING;
 	}
 	sprintf(buf,"区段 %d-%d : 0)取消 ",inum1,inum2);
-	for(i=0;i<6;i++)//modified by roly 02.03.27
-	sprintf(buf,"%s%d)%s ",buf,i+1,SR_BMitems[i]);
+	for (i = 0; i < 6; i++)
+		buf1 += sprintf(buf1, "%d)%s ", i + 1, SR_BMitems[i]);
 	strcat(buf,"? [0]: ");
 	getdata(t_lines-2, 0,buf,ch,3,DOECHO,NULL,YEA);
 	BMch=atoi(ch);

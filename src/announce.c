@@ -1618,7 +1618,8 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 						}
 					} else if (dashd(fname)) {
 						//add by Danielfree 06.12.6
-						sprintf(nowpath, "%s-%d", nowpath, (me.now)+1);
+						char *end = nowpath + strlen(nowpath);
+						sprintf(end, "-%d", (me.now) + 1);
 						a_menu(me.item[me.now]->title, fname, me.level,
 								bmonly);
 					}
@@ -1825,6 +1826,7 @@ int AddPCorpus() {
 	FILE *fn;
 	char digestpath[80] = "0Announce/groups/GROUP_0/PersonalCorpus";
 	char personalpath[80], Log[200], title[200], ftitle[80];
+	char *title1 = title;
 	time_t now;
 	int id;
 	modify_user_mode(DIGEST);
@@ -1858,9 +1860,10 @@ int AddPCorpus() {
 	prints("[Ö±½Ó°´ ENTER ¼ü, Ôò±êÌâÈ±Ê¡Îª: [32m%s µÄ¸öÈËÎÄ¼¯[m]", lookupuser.userid);
 	getdata(6, 0, "ÇëÊäÈë¸öÈËÎÄ¼¯Ö®±êÌâ: ", title, 39, DOECHO, YEA);
 	if (title[0] == '\0')
-		sprintf(title, "%s µÄ¸öÈËÎÄ¼¯", lookupuser.userid);
-	sprintf(title, "%-38.38s(BM: %s)", title, lookupuser.userid);
-	sprintf(digestpath, "%s/%c", digestpath, toupper(lookupuser.userid[0]));
+		title1 += sprintf(title, "%s µÄ¸öÈËÎÄ¼¯", lookupuser.userid);
+	sprintf(title1, "%-38.38s(BM: %s)", title, lookupuser.userid);
+	sprintf(digestpath, "0Announce/groups/GROUP_0/PersonalCorpus/%c", 
+			toupper(lookupuser.userid[0]));
 	sprintf(ftitle, "¸öÈËÎÄ¼¯ £­£­ (Ê××ÖÄ¸ %c)", toupper(lookupuser.userid[0]));
 	//linkto(digestpath, ftitle, lookupuser.userid, title);
 	linkto(digestpath, lookupuser.userid, title);

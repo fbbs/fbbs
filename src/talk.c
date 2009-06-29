@@ -297,7 +297,7 @@ int show_volunteer(char *userid, char *volstring) {
 		while (!feof(fp)) {
 			i++;
 			fscanf(fp, "%s\n", tmp);
-			sprintf(volstring, "%s%s%s", volstring, i == 1 ? "" : " ", tmp);
+			volstring += sprintf(volstring, "%s%s", i == 1 ? "" : " ", tmp);
 		}
 		if (i == 0)
 			return 0;
