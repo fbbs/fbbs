@@ -350,7 +350,7 @@ char *userid, *title;
 		return -2;
 	}
 	if( result == YEA) {
-		strcpy(newmessage.title, header.title);
+		memcpy(newmessage.title, header.title, sizeof(header.title));
 		strlcpy(save_title, newmessage.title, STRLEN);
 		sprintf(save_title2, "{%.16s} %.60s", userid, newmessage.title);
 		//		strncpy(save_filename, fname, 4096);

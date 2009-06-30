@@ -466,7 +466,7 @@ static void readtitle(void)
 	struct user_info uin;
 	char tmp[STRLEN];
 	char bmlists[5][IDLEN + 1]; // up to 5 BMs.
-	char header[STRLEN], title[STRLEN];
+	char header[120], title[STRLEN];
 	const char *readmode;
 
 	bp = getbcache(currboard);
