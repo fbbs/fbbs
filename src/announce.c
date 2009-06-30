@@ -1118,16 +1118,14 @@ void ann_to_title(char *annpath) {
 	tmppath[ipos]='/';
 	ipos++;
 	ipos2=ipos;
-	//	report(buf);
-	for (; ipos<strlen(annpath); ipos++) {
-		if (annpath[ipos]=='/' || annpath[ipos+1]=='\0') {
+	size_t len = strlen(annpath);
+	for (; ipos < len; ipos++) {
+		if (annpath[ipos] == '/' || annpath[ipos + 1] == '\0') {
 			if (annpath[ipos]=='/') {
-				strlcpy(dirname, annpath+ipos2, ipos-ipos2);
-				*(dirname+ipos-ipos2+1)='\0';
-				ipos4=ipos-ipos2;
+				strlcpy(dirname, annpath + ipos2, ipos - ipos2 + 1);
+				ipos4 = ipos - ipos2;
 			} else {
-				strlcpy(dirname, annpath+ipos2, ipos-ipos2+1);
-				*(dirname+ipos-ipos2+2)='\0';
+				strlcpy(dirname, annpath + ipos2, ipos - ipos2 + 2);
 				ipos4=ipos-ipos2+1;
 			}
 
@@ -1138,7 +1136,6 @@ void ann_to_title(char *annpath) {
 					*ptr = '\0';
 				if (strncmp(buf, "Name=", 5) == 0) {
 					strlcpy(titlename, buf + 5, 72);
-					titlename[71] = '\0';
 				} else if (strncmp(buf, "Path=", 5) == 0) {
 
 					if (((strncmp(buf, "Path=~/", 7) == 0) && (strncmp(buf
