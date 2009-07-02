@@ -158,7 +158,7 @@ int getnewuserid(void)
 		write(fd, getdatestring(system_time, DATE_ZH), 29);
 		close(fd);
 		snprintf(tomb, sizeof(tomb), BBSHOME"/tomb/%ld", system_time);
-		if (mkdir(tomb, 0644) != 0)
+		if (mkdir(tomb, 0755) != 0)
 			return -1;
 		strcpy(nname, "tmp/bbs.killid");
 		fdtmp = fopen(nname, "w+");
