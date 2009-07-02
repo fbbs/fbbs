@@ -433,6 +433,7 @@ static int multi_user_check(void)
 			prints("\033[1;33m抱歉, 目前已有太多 \033[1;36mguest\033[33m, 请稍后再试。\033[m\n");
 			return -1;
 		}
+		return 0;
 	}
 	// For users without PERM_SPECIAL0, MULTI_LOGINS logins are allowed.
 	// A user with PERM_SPEACIAL0 is allowed up to 6 logins.
