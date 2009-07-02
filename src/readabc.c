@@ -17,7 +17,7 @@ int marked_all(int type) {
 	register num=0;
 	int fd;
 	char dname[STRLEN], buf[STRLEN];
-	char tempname1[50], tempname2[50];
+	char tempname1[STRLEN], tempname2[STRLEN];
 	struct stat st1, st2;
 
 	sprintf(dname, "boards/%s/%s", currboard, DOT_DIR);
