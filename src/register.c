@@ -129,29 +129,22 @@ int bad_user_id(const char *userid)
 }
 
 /*2003.06.02 stephen modify end*/
-/*
- Commented by Erebus 2004-11-08 ,called by new_register()
- if the hp of user is lower than zero ,rm "home/A/abc" and "mail/A/abc"
- use systme("/bin/rm -fr filefolder")
- */
 
-int getnewuserid() {
+int getnewuserid(void)
+{
 	struct userec utmp;
 	char genbuf_rm[STRLEN]; //added by roly 02.03.22
 #ifndef SAVELIVE
-
 	struct userec zerorec;
 	int size;
 #endif
-
 	struct stat st;
 	int fd, val, i;
 	/* Following line added by Amigo 2002.04.03. Change clean account time. */
 	struct tm *area;
 	FILE *fdtmp;
-	char nname[50];
+	char nname[50], tomb[HOMELEN];
 	int exp, perf; /* Add by SmallPig */
-
 	system_time = time(0);
 	/* Following line added by Amigo 2002.04.03. Change clean account time. */
 	area = localtime(&system_time);
@@ -164,6 +157,9 @@ int getnewuserid() {
 			return -1;
 		write(fd, getdatestring(system_time, DATE_ZH), 29);
 		close(fd);
+		snprintf(tomb, sizeof(tomb), BBSHOME"/tomb/%ld", system_time);
+		if (mkdir(tomb, 0644) != 0)
+			return -1;
 		strcpy(nname, "tmp/bbs.killid");
 		fdtmp = fopen(nname, "w+");
 		log_usies("CLEAN", "dated users.", &currentuser);
@@ -183,69 +179,65 @@ int getnewuserid() {
 						utmp.userid, getdatestring(utmp.lastlogin, DATE_ZH), utmp.numlogins,
 						utmp.numposts, val);
 				log_usies("KILL ", genbuf, &currentuser);
-				//if (!bad_user_id(utmp.userid)) {
-				{
-					sprintf(genbuf, "mail/%c/%s", toupper(utmp.userid[0]),
-							utmp.userid);
-					fprintf(
-							fdtmp,
-							"\033[1;37m%s \033[m(\033[1;33m%s\033[m) ¹²ÉÏÕ¾ \033[1;32m%d\033[m ´Î [\033[1;3%dm%s\033[m]\n",
-							utmp.userid, utmp.username, utmp.numlogins,
-							(utmp.gender == 'F') ? 5 : 6,
-							horoscope(utmp.birthmonth, utmp.birthday));
-					fprintf(
-							fdtmp,
-							"ÉÏ ´Î ÔÚ:[[1;32m%s[m] ´Ó [[1;32m%s[m] µ½±¾Õ¾Ò»ÓÎ¡£\n",
-							getdatestring(utmp.lastlogin, DATE_ZH), (utmp.lasthost[0]=='\0' ? "(²»Ïê)"
-									: utmp.lasthost));
-					fprintf(fdtmp, "ÀëÕ¾Ê±¼ä:[[1;32m%s[m] ", getdatestring(utmp.lastlogout, DATE_ZH));
+				sprintf(genbuf, "mail/%c/%s", toupper(utmp.userid[0]),
+						utmp.userid);
+				fprintf(fdtmp,
+						"\033[1;37m%s \033[m(\033[1;33m%s\033[m) ¹²ÉÏÕ¾ \033[1;32m%d\033[m ´Î [\033[1;3%dm%s\033[m]\n",
+						utmp.userid, utmp.username, utmp.numlogins,
+						(utmp.gender == 'F') ? 5 : 6,
+						horoscope(utmp.birthmonth, utmp.birthday));
+				fprintf(fdtmp,
+						"ÉÏ ´Î ÔÚ:[\033[1;32m%s\033[m] ´Ó [\033[1;32m%s\033[m] µ½±¾Õ¾Ò»ÓÎ¡£\n",
+						getdatestring(utmp.lastlogin, DATE_ZH), (utmp.lasthost[0]=='\0' ? "(²»Ïê)"
+								: utmp.lasthost));
+				fprintf(fdtmp, "ÀëÕ¾Ê±¼ä:[\033[1;32m%s\033[m] ", getdatestring(utmp.lastlogout, DATE_ZH));
 
-					exp = countexp(&utmp);
-					perf = countperf(&utmp);
-					fprintf(fdtmp, "±íÏÖÖµ:"
+				exp = countexp(&utmp);
+				perf = countperf(&utmp);
+				fprintf(fdtmp, "±íÏÖÖµ:"
 #ifdef SHOW_PERF
-							"%d([1;33m%s[m)"
+						"%d(\033[1;33m%s\033[m)"
 #else
-							"[[1;33m%s[m]"
+						"[\033[1;33m%s\033[m]"
 #endif
-							" ĞÅÏä:[[5;1;32m%2s[m]\n"
+						" ĞÅÏä:[\033[5;1;32m%2s\033[m]\n"
 #ifdef SHOW_PERF
-							, perf
+						, perf
 #endif
-							, cperf(perf),
-							(check_query_mail(genbuf) == 1) ? "ĞÅ" : "  ");
-
+						, cperf(perf),
+						(check_query_mail(genbuf) == 1) ? "ĞÅ" : "  ");
 #ifdef ALLOWGAME
-					fprintf(fdtmp, "ÒøĞĞ´æ¿î: [[1;32m%dÔª[m] Ä¿Ç°´û¿î: [[1;32m%dÔª[m]([1;33m%s[m) ¾­ÑéÖµ£º[[1;32m%d[m]([1;33m%s[m)¡£\n",
-							utmp.money,utmp.bet,
-							cmoney(utmp.money-utmp.bet),exp,cexpstr(exp));
-
-					fprintf(fdtmp, "ÎÄ ÕÂ Êı: [[1;32m%d[m] ½±ÕÂÊı: [[1;32m%d[m]([1;33m%s[m) ÉúÃüÁ¦£º[[1;32m%d[m] ÍøÁä[[1;32m%dÌì[m]\n\n",
-							utmp.numposts,
-							utmp.nummedals,cnummedals(utmp.nummedals),
-							compute_user_value(&utmp),(time (0) - utmp.firstlogin) / 86400);
+				fprintf(fdtmp, "ÒøĞĞ´æ¿î: [\033[1;32m%dÔª\033[m] "
+						"Ä¿Ç°´û¿î: [\033[1;32m%dÔª\033[m](\033[1;33m%s\033[m) "
+						"¾­ÑéÖµ£º[\033[1;32m%d\033[m](\033[1;33m%s\033[m)¡£\n",
+						utmp.money,utmp.bet,
+						cmoney(utmp.money-utmp.bet),exp,cexpstr(exp));
+				fprintf(fdtmp, "ÎÄ ÕÂ Êı: [\033[1;32m%d\033[m] "
+						"½±ÕÂÊı: [\033[1;32m%d\033[m](\033[1;33m%s\033[m) "
+						"ÉúÃüÁ¦£º[\033[1;32m%d\033[m] "
+						"ÍøÁä[\033[1;32m%dÌì\033[m]\n\n", utmp.numposts,
+						utmp.nummedals,cnummedals(utmp.nummedals),
+						compute_user_value(&utmp),(time (0) - utmp.firstlogin) / 86400);
 #else
-					fprintf(fdtmp, "ÎÄ ÕÂ Êı:[[1;32m%d[m] ¾­ Ñé Öµ:"
+				fprintf(fdtmp, "ÎÄ ÕÂ Êı:[\033[1;32m%d\033[m] ¾­ Ñé Öµ:"
 #ifdef SHOWEXP
-							"%d([1;33m%-10s[m)"
+						"%d(\033[1;33m%-10s\033[m)"
 #else
-							"[[1;33m%-10s[m]"
+						"[\033[1;33m%-10s\033[m]"
 #endif
-							" ÉúÃüÁ¦:[[1;32m%d[m] ÍøÁä[[1;32m%dÌì[m]\n\n",
-							utmp.numposts,
+						" ÉúÃüÁ¦:[\033[1;32m%d\033[m] ÍøÁä[\033[1;32m%dÌì\033[m]\n\n",
+						utmp.numposts,
 #ifdef SHOWEXP
-							exp,
+						exp,
 #endif
-							cexpstr(exp), compute_user_value(&utmp),
-							(time(0) - utmp.firstlogin) / 86400);
-
+						cexpstr(exp), compute_user_value(&utmp),
+						(time(0) - utmp.firstlogin) / 86400);
 #endif
-					snprintf(genbuf_rm, sizeof(genbuf_rm), BBSHOME"/tomb/%s.%d.mail", utmp.userid, system_time);
-					rename(genbuf, genbuf_rm);
-					sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]), utmp.userid);
-					snprintf(genbuf_rm, sizeof(genbuf_rm), BBSHOME"/tomb/%s.%d.home", utmp.userid, system_time);
-					rename(genbuf, genbuf_rm);
-				}
+				snprintf(genbuf_rm, sizeof(genbuf_rm), "%s/%s.mail", tomb, utmp.userid);
+				rename(genbuf, genbuf_rm);
+				sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]), utmp.userid);
+				snprintf(genbuf_rm, sizeof(genbuf_rm), "%s/%s.home", tomb, utmp.userid);
+				rename(genbuf, genbuf_rm);
 				substitut_record(PASSFILE, &zerorec,
 						sizeof(struct userec), i+1);
 				del_uidshm(i+1, utmp.userid);
