@@ -1,31 +1,35 @@
-#  Makefile for local utility tool kit
-# 
-#  $Id: Makefile.in 2 2005-07-14 15:06:08Z root $
-#
-
 CC       = @CC@
 CFLAGS   = @CFLAGS@ -I../../include
-BBSHOME	 = @BBS_HOME@
+BBSHOME  = @BBS_HOME@
+LIBS     = -lBBS -L../../lib
 
-UTILITY  = account averun bbstop bbspop3d birthday horoscope usage_day remake\
+UTILITY  = averun bbstop bbspop3d birthday horoscope usage_day remake\
 	   newacct poststat showuser bbsuptime badbms AnnIndex showbm statBM\
 	   countid
 
-.c.o:   ;   $(CC) $(CFLAGS) -c $*.c
+all: $(UTILITY) charts
 
-all: $(UTILITY)
-
-install: $(UTILITY)
+install: $(UTILITY) charts
 	cp $(UTILITY) $(BBSHOME)/bin/@stat
+
+charts: chart.o account.o
+	$(CC) $(CFLAGS) account.o chart.o -o account $(LIBS)
 
 clean:
 	rm -fr *.o *.BAK *.log $(UTILITY) *core* DEAD* *~
+	rm -rf account
 
 bbspop3d:
 	$(CC) $(CFLAGS) -o bbspop3d bbspop3d.c @libCRYPT@
 
 usage: usage.c record.c
-       $(CC) $(CFLAGS) -o usage usage.c record.c
+	$(CC) $(CFLAGS) -o usage usage.c record.c
 
 usage_day: usage_day.c record.c
-       $(CC) $(CFLAGS) -o usage_day usage_day.c record.c
+	$(CC) $(CFLAGS) -o usage_day usage_day.c record.c
+
+%.o: %.c
+	$(CC) $(CFLAGS) $< -c
+
+% :: %.c
+	$(CC) $(CFLAGS) $< -o $@ $(LIBS)
