@@ -54,7 +54,7 @@ int getvalue(struct userec *user, int mode)
 	return 0;
 }
 
-int top_info(const char *item, int num, struct userec *users, int mode)
+void top_info(const char *item, int num, struct userec *users, int mode)
 {
 	printf("名次 帐号         %6.6s 名次 帐号         %6.6s 名次 帐号         %6.6s\n"
 			"==== ============ ====== ==== ============ ====== ==== ============ ======\n",
@@ -72,13 +72,15 @@ int top_info(const char *item, int num, struct userec *users, int mode)
 	}
 }
 
+struct userec alluser[MAXUSERS]; // avoid exceeding default stack size limit
+
 int main(int argc, char **argv)
 {
     FILE *inf;
-    int  i, num = 0, mode = 0;
+    int num = 0, mode = 0;
 	char passwd_file[256];
 	char *home_path;
-	struct userec alluser[MAXUSERS];
+
 	struct userec *user = alluser;
 	struct userec *end = user + MAXUSERS;
 
