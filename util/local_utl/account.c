@@ -47,12 +47,13 @@ int main(int argc, char **argv)
 	}
 
 	int item = draw_chart(&bst);
-	printf("\033[0;1m     0└── %-8.8s 每小时到访人次统计 ── %s ──   \n"
-			"\033[1;36m        00 01 02 03 04 05 06 07 08 09 10 11 "
+	char *mg = left_margin(item, NULL);
+	printf("\033[0;1m%s0└── %-8.8s 每小时到访人次统计 ── %s ──   \n"
+			"\033[1;36m%s   00 01 02 03 04 05 06 07 08 09 10 11 "
 			"\033[31m12 13 14 15 16 17 18 19 20 21 22 23\n\n"
-			"                 \033[1;32m1 \033[33m▇ \033[32m= \033[37m%-5d"
+			"%s            \033[1;32m1 \033[33m▇ \033[32m= \033[37m%-5d"
 			"   \033[32m总上站人次: \033[37m%-9d    \033[32m平均使用时间: \033[37m%d\n",
-			BBSNAME, getdatestring(now, DATE_ZH), item, total, 
+			mg, BBSNAME, getdatestring(now, DATE_ZH), mg, mg, item, total, 
 			(totaltime == 0) ? 0 : totaltime / total + 1);
 	return 0;
 }

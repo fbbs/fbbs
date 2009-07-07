@@ -72,11 +72,12 @@ int main(int argc, char **argv)
 	}
 
 	int item = draw_chart(&bst);
-	printf("\033[0;1m     0└── %-8.8s 平均负载人数统计 ─── %s ──   \n"
-			"\033[1;36m        00 01 02 03 04 05 06 07 08 09 10 11 "
+	char *mg = left_margin(item, NULL);
+	printf("\033[0;1m%s0└── %-8.8s 平均负载人数统计 ─── %s ──   \n"
+			"\033[1;36m%s   00 01 02 03 04 05 06 07 08 09 10 11 "
 			"\033[31m12 13 14 15 16 17 18 19 20 21 22 23\n\n"
-			"                       \033[1;37m1 \033[32m▇ \033[37m= \033[36m%-5d"
+			"%s                  \033[1;37m1 \033[32m▇ \033[37m= \033[36m%-5d"
 			"         \033[37m平均负载人数: \033[36m%d\n",
-			BBSNAME, getdatestring(time(NULL), DATE_ZH), item, avg);
+			mg, BBSNAME, getdatestring(time(NULL), DATE_ZH), mg, mg, item, avg);
 	return 0;
 }

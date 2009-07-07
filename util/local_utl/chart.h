@@ -13,7 +13,8 @@ enum {
 
 enum {
 	MAX_BARS = 24,
-	MAX_HEIGHT = 15
+	MAX_HEIGHT = 15,
+	MAX_LEFT_MARGIN = 6
 };
 
 struct bbsstat {
@@ -21,5 +22,6 @@ struct bbsstat {
 	int value[MAX_BARS];
 };
 
+char *left_margin(int item, int *left);
 int draw_chart(const struct bbsstat *st);
 #endif
