@@ -24,9 +24,9 @@ int draw_chart(const struct bbsstat *st)
 		item = 1;
 	max = item * MAX_HEIGHT;
 	if (max < 1000)
-		printf("      ┌────────────────────────────────────\n");
+		printf("\033[1;37m      ┌────────────────────────────────────\n");
 	else
-		printf("      ┌────超过1000只显示前三位数字────────────────────\n");
+		printf("\033[1;37m      ┌────超过1000只显示前三位数字────────────────────\n");
 
 	int i, j, height, lastcolor;
 	char str[20];
