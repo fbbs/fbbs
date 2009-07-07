@@ -1,23 +1,25 @@
-CC       = gcc
-CFLAGS   = -O2 -Wall -I../../include
-BBSHOME	 = /home/bbs
-LIBS     = -lBBS -L../../lib
+CC		= gcc
+CFLAGS	= -O2 -Wall -I../../include
+BBSHOME	= /home/bbs
+LIBS	= -lBBS -L../../lib
 
-UTILITY  = averun bbstop bbspop3d birthday horoscope usage_day remake\
-	   newacct poststat showuser bbsuptime badbms AnnIndex showbm statBM\
-	   countid
+UTILITY	= bbstop bbspop3d birthday horoscope usage_day remake\
+		  newacct poststat showuser bbsuptime badbms AnnIndex showbm statBM\
+		  countid
+UTIL2	= averun account
 
-all: $(UTILITY) charts
+all: $(UTILITY) $(UTIL2)
 
-install: $(UTILITY) charts
-	cp $(UTILITY) $(BBSHOME)/bin/@stat
+install: $(UTILITY) $(UTIL2)
+	cp $(UTILITY) $(UTIL2) $(BBSHOME)/bin/@stat
 
-charts: chart.o account.o
-	$(CC) $(CFLAGS) account.o chart.o -o account $(LIBS)
+charts: $(UTIL2)
+
+$(UTIL2): %: %.o chart.o
+	$(CC) $(CFLAGS) $< chart.o -o $@ $(LIBS)
 
 clean:
-	rm -fr *.o *.BAK *.log $(UTILITY) *core* DEAD* *~
-	rm -rf account
+	rm -fr *.o $(UTILITY) $(UTIL2)
 
 bbspop3d:
 	$(CC) $(CFLAGS) -o bbspop3d bbspop3d.c -lcrypt
