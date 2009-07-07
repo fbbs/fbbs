@@ -6,7 +6,7 @@ LIBS	= -lBBS -L../../lib
 UTILITY	= bbstop bbspop3d birthday horoscope usage_day remake\
 		  newacct poststat showuser bbsuptime badbms AnnIndex showbm statBM\
 		  countid
-UTIL2	= averun account
+UTIL2	= averun account newacct
 
 all: $(UTILITY) $(UTIL2)
 
