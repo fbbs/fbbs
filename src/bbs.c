@@ -1878,7 +1878,7 @@ int post_cross(char islocal, int mode)
 
 	getcross(filepath, mode);
 
-	strlcpy(postfile.title, save_title, STRLEN);
+	strlcpy(postfile.title, save_title, sizeof(postfile.title));
 	if (local_article == YEA || !(bp->flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';
@@ -2077,9 +2077,9 @@ int post_article(char *postboard, char *mailid) {
 #ifndef NOREPLY
 	if (replytitle[0] != '\0') {
 		if (strncasecmp(replytitle, "Re:", 3) == 0) {
-			strcpy(header.title, replytitle);
+			strlcpy(header.title, sizeof(header.title), replytitle);
 		} else {
-			sprintf(header.title, "Re: %s", replytitle);
+			snprintf(header.title, sizeof(header.title), "Re: %s", replytitle);
 		}
 		header.reply_mode = 1;
 	} else
@@ -2097,19 +2097,24 @@ int post_article(char *postboard, char *mailid) {
 #ifdef ENABLE_PREFIX
 		if (!header.reply_mode && header.prefix[0]) {
 #ifdef FDQUAN
-			if (bp->flag&BOARD_PREFIX_FLAG)
-			sprintf (postfile.title,"\033[1;33m[%s]\033[m%s",header.prefix, header.title);
+			if (bp->flag & BOARD_PREFIX_FLAG)
+				snprintf(postfile.title, sizeof(postfile.title),
+						"\033[1;33m[%s]\033[m%s", header.prefix, header.title);
 			else
-			sprintf (postfile.title,"\033[1m[%s]\033[m%s",header.prefix, header.title);
+				snprintf(postfile.title, sizeof(postfile.title),
+						"\033[1m[%s]\033[m%s", header.prefix, header.title);
 #else
-			sprintf (postfile.title,"[%s]%s",header.prefix, header.title);
+			snprintf(postfile.title, sizeof(postfile.title),
+					"[%s]%s",header.prefix, header.title);
 #endif
 		}
 		else
 #endif
-		ansi_filter(postfile.title, header.title);
+		{
+			ansi_filter(header.title, header.title);
+			strlcpy(postfile.title, header.title, sizeof(postfile.title));
+		}
 		strlcpy(save_title, postfile.title, STRLEN);
-		//strncpy (save_filename, fname, 4096);
 	} else {
 		return FULLUPDATE;
 	}
