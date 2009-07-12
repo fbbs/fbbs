@@ -1997,7 +1997,7 @@ int outgo_post(struct fileheader *fh, char *board) {
 int post_article(char *postboard, char *mailid) {
 	struct fileheader postfile;
 	struct boardheader *bp;
-	char filepath[STRLEN], fname[STRLEN], buf[STRLEN];
+	char filepath[STRLEN], fname[STRLEN], buf[120];
 
 	//int fp, aborted, count; commented by iamfat 2002.07.25
 	int aborted;
@@ -2177,7 +2177,7 @@ int post_article(char *postboard, char *mailid) {
 		return FULLUPDATE;
 	}
 
-	strlcpy(postfile.title, save_title, STRLEN - IDLEN - 1);
+	strlcpy(postfile.title, save_title, sizeof(postfile.title));
 	if ((local_article == YEA) || !(bp->flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';
