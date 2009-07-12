@@ -2077,7 +2077,7 @@ int post_article(char *postboard, char *mailid) {
 #ifndef NOREPLY
 	if (replytitle[0] != '\0') {
 		if (strncasecmp(replytitle, "Re:", 3) == 0) {
-			strlcpy(header.title, sizeof(header.title), replytitle);
+			strlcpy(header.title, replytitle, sizeof(header.title));
 		} else {
 			snprintf(header.title, sizeof(header.title), "Re: %s", replytitle);
 		}
