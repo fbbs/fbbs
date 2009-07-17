@@ -76,6 +76,19 @@ xmlns="http://www.w3.org/1999/xhtml">
 						</tr>
 					</xsl:for-each>
 				</table>
+				<xsl:if test='start > 1'>
+					<xsl:variable name='prev'>
+						<xsl:choose>
+							<xsl:when test='start - page &lt; 1'>1</xsl:when>
+							<xsl:otherwise><xsl:value-of select='start - page' /></xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<a><xsl:attribute name='href'>bbsdoc?bid=<xsl:value-of select='bid' />&amp;start=<xsl:value-of select='$prev' /></xsl:attribute>[ <img src='/images/button/up.gif' />上一页 ]</a>
+				</xsl:if>
+				<xsl:if test='total > start + page - 1'>
+					<xsl:variable name='next'><xsl:value-of select='start + page' /></xsl:variable>
+					<a><xsl:attribute name='href'>bbsdoc?bid=<xsl:value-of select='bid' />&amp;start=<xsl:value-of select='$next' /></xsl:attribute>[ <img src='/images/button/down.gif' />下一页 ]</a>
+				</xsl:if>
 				<a><xsl:attribute name='href'>bbsclear?board=<xsl:value-of select='title' />&amp;start=<xsl:value-of select='start' /></xsl:attribute>[清除未读]</a>
 				<a><xsl:attribute name='href'>bbsnot?board=<xsl:value-of select='title' /></xsl:attribute>[进版画面]</a>
 			</body>

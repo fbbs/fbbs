@@ -50,8 +50,9 @@ int bbsdoc_main(void)
 
 	// TODO: magic number.
 	printf("<title>%s</title>\n<bm>%s</bm>\n<desc>%s</desc>\n"
-			"<total>%d</total>\n<start>%d</start>\n<bid>%d</bid>\n",
-			bp->filename, bp->BM, bp->title + 11, total, start, bid);
+			"<total>%d</total>\n<start>%d</start>\n<bid>%d</bid>\n"
+			"<page>%d</page>\n", bp->filename, bp->BM, bp->title + 11, total,
+			start, bid, my_t_lines);
 
 	// TODO: marquee, recommend, spin
 	FILE *fp = fopen(dir, "r");
