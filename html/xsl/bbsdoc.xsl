@@ -2,7 +2,8 @@
 <xsl:stylesheet version="2.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns="http://www.w3.org/1999/xhtml">
-	<xsl:import href='misc.xsl'/>
+	<xsl:import href='misc.xsl' />
+	<xsl:import href='showpost.xsl' />
 	<xsl:output method='html' encoding='gb2312' />
 	<xsl:template match="bbsdoc">
 		<html>
@@ -68,7 +69,12 @@ xmlns="http://www.w3.org/1999/xhtml">
 										<img align='absmiddle' border='0' src='/images/types/text.gif' />
 										<a>
 											<xsl:attribute name='href'>bbscon?bid=<xsl:value-of select='/bbsdoc/bid' />&amp;f=<xsl:value-of select='id' /></xsl:attribute>
-											<xsl:value-of select='title' />
+											<xsl:call-template name='ansi-escape'>
+												<xsl:with-param name='content'><xsl:value-of select='title' /></xsl:with-param>
+												<xsl:with-param name='fgcolor'>37</xsl:with-param>
+												<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
+												<xsl:with-param name='ishl'>0</xsl:with-param>
+											</xsl:call-template>
 										</a>
 									</xsl:otherwise>
 								</xsl:choose>

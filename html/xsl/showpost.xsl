@@ -132,74 +132,84 @@ xmlns="http://www.w3.org/1999/xhtml">
 		<xsl:param name='bgcolor' />
 		<xsl:param name='ishl' />
 		<xsl:choose>
-			<xsl:when test='contains($content, ">1b[")'>
+			<xsl:when test='contains($content, ">1b")'>
 				<xsl:choose>
 					<xsl:when test='$fgcolor = 37'>
-						<xsl:value-of select='substring-before($content, ">1b[")' />
+						<xsl:value-of select='substring-before($content, ">1b")' />
 					</xsl:when>
 					<xsl:otherwise>
 						<span>
 							<xsl:attribute name='class'>ansi0<xsl:value-of select='$fgcolor' /></xsl:attribute>
-							<xsl:value-of select='substring-before($content, ">1b[")' />
+							<xsl:value-of select='substring-before($content, ">1b")' />
 						</span>
 					</xsl:otherwise>
 				</xsl:choose>
-				<xsl:variable name='second' select='substring-after($content, ">1b[")' />
+				<xsl:variable name='second' select='substring-after($content, ">1b")' />
 				<xsl:variable name='first-alpha'>
 					<xsl:call-template name='not-str-token'>
 						<xsl:with-param name='str' select='$second' />
-						<xsl:with-param name='delim'>0123456789;</xsl:with-param>
+						<xsl:with-param name='delim'>0123456789;[</xsl:with-param>
 						<xsl:with-param name='start' select='1' />
 					</xsl:call-template>
 				</xsl:variable>
 				<xsl:if test='string-length($first-alpha)'>
-					<xsl:if test='substring($second, $first-alpha, 1) = "m"'>
-						<xsl:variable name='code' select='substring($second, 1, $first-alpha - 1)' />
-						<xsl:variable name='fgc'>
-							<xsl:call-template name='get-color'>
-								<xsl:with-param name='code' select='$code' />
-								<xsl:with-param name='param-name'>fgcolor</xsl:with-param>
-								<xsl:with-param name='current-value' select='$fgcolor' />
-							</xsl:call-template>
-						</xsl:variable>
-						<xsl:variable name='bgc'>
-							<xsl:call-template name='get-color'>
-								<xsl:with-param name='code' select='$code' />
-								<xsl:with-param name='param-name'>bgcolor</xsl:with-param>
-								<xsl:with-param name='current-value' select='$bgcolor' />
-							</xsl:call-template>
-						</xsl:variable>
-						<xsl:variable name='hl'>
-							<xsl:call-template name='get-color'>
-								<xsl:with-param name='code' select='$code' />
-								<xsl:with-param name='param-name'>highlight</xsl:with-param>
-								<xsl:with-param name='current-value' select='$ishl' />
-							</xsl:call-template>
-						</xsl:variable>
-						<xsl:variable name='last' select='substring($second, $first-alpha + 1)' />
-						<xsl:variable name='text'>
-							<xsl:choose>
-								<xsl:when test='contains($last, ">1b[")'>
-									<xsl:value-of select='substring-before($last, ">1b[")' />
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of select='$last' />
-								</xsl:otherwise>
-							</xsl:choose>
-						</xsl:variable>
-						<span>
-							<xsl:attribute name='class'>ansi<xsl:value-of select='$hl' /><xsl:value-of select='$fgc' /><xsl:text> </xsl:text>ansi<xsl:value-of select='$bgc' /></xsl:attribute>
-							<xsl:value-of select='$text' />
-						</span>
-						<xsl:variable name='next' select='substring($last, string-length($text) + 1)' />
-						<xsl:if test='$next'>
-							<xsl:call-template name='ansi-escape'>
-								<xsl:with-param name='content' select='$next' />
-								<xsl:with-param name='fgcolor' select='$fgc' />
-								<xsl:with-param name='bgcolor' select='$bgc' />
-								<xsl:with-param name='ishl' select='$hl' />
-							</xsl:call-template>
-						</xsl:if>
+					<xsl:variable name='code'>
+						<xsl:choose>
+							<xsl:when test='substring($second, 1, 1) = "[" and substring($second, $first-alpha, 1) = "m"'>
+								<xsl:value-of select='substring($second, 2, $first-alpha - 2)' />
+							</xsl:when>
+							<xsl:otherwise></xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<xsl:variable name='fgc'>
+						<xsl:call-template name='get-color'>
+							<xsl:with-param name='code' select='$code' />
+							<xsl:with-param name='param-name'>fgcolor</xsl:with-param>
+							<xsl:with-param name='current-value' select='$fgcolor' />
+						</xsl:call-template>
+					</xsl:variable>
+					<xsl:variable name='bgc'>
+						<xsl:choose>
+							<xsl:when test='$bgcolor = "ignore"'>ignore</xsl:when>
+							<xsl:otherwise>
+								<xsl:call-template name='get-color'>
+									<xsl:with-param name='code' select='$code' />
+									<xsl:with-param name='param-name'>bgcolor</xsl:with-param>
+									<xsl:with-param name='current-value' select='$bgcolor' />
+								</xsl:call-template>
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<xsl:variable name='hl'>
+						<xsl:call-template name='get-color'>
+							<xsl:with-param name='code' select='$code' />
+							<xsl:with-param name='param-name'>highlight</xsl:with-param>
+							<xsl:with-param name='current-value' select='$ishl' />
+						</xsl:call-template>
+					</xsl:variable>
+					<xsl:variable name='last' select='substring($second, $first-alpha + 1)' />
+					<xsl:variable name='text'>
+						<xsl:choose>
+							<xsl:when test='contains($last, ">1b")'>
+								<xsl:value-of select='substring-before($last, ">1b")' />
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:value-of select='$last' />
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<span>
+						<xsl:attribute name='class'>ansi<xsl:value-of select='$hl' /><xsl:value-of select='$fgc' /><xsl:if test='not($bgc = "ignore")'><xsl:text> </xsl:text>ansi<xsl:value-of select='$bgc' /></xsl:if></xsl:attribute>
+						<xsl:value-of select='$text' />
+					</span>
+					<xsl:variable name='next' select='substring($last, string-length($text) + 1)' />
+					<xsl:if test='$next'>
+						<xsl:call-template name='ansi-escape'>
+							<xsl:with-param name='content' select='$next' />
+							<xsl:with-param name='fgcolor' select='$fgc' />
+							<xsl:with-param name='bgcolor' select='$bgc' />
+							<xsl:with-param name='ishl' select='$hl' />
+						</xsl:call-template>
 					</xsl:if>
 				</xsl:if>
 			</xsl:when>
@@ -249,9 +259,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 				<xsl:when test='contains($code, ";")'>
 					<xsl:value-of select='substring-before($code, ";")' />
 				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select='$code' />
-				</xsl:otherwise>
+				<xsl:otherwise><xsl:value-of select='$code' /></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:variable name='next' select='substring-after($code, ";")' />
@@ -281,7 +289,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 					<xsl:with-param name='current-value' select='$new-value' />
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test='not($next) and not($first)'>
+			<xsl:when test='not($next) and string-length($first) = 0'>
 				<xsl:choose>
 					<xsl:when test='$param-name = "fgcolor"'>37</xsl:when>
 					<xsl:when test='$param-name = "bgcolor"'>40</xsl:when>
@@ -317,8 +325,6 @@ xmlns="http://www.w3.org/1999/xhtml">
 				</xsl:call-template>
 			</xsl:otherwise>
 		</xsl:choose>
-		
-		
 	</xsl:template>
 
 	<xsl:template name='remove-ansi'>
