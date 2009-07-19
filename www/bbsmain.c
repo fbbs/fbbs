@@ -21,6 +21,7 @@ int bbsanc_main(void);
 int bbsnot_main(void);
 int bbssendmsg_main(void);
 int bbsmail_main(void);
+int bbsmailcon_main(void);
 
 struct cgi_applet {
 	char *name;
@@ -49,6 +50,7 @@ static struct cgi_applet applets[] = {
 		{ "bbsnot", bbsnot_main},
 		{ "bbssendmsg", bbssendmsg_main},
 		{ "bbsmail", bbsmail_main},
+		{ "bbsmailcon", bbsmailcon_main},
 		{ NULL, NULL }
 };
 

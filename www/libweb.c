@@ -1808,3 +1808,20 @@ time_t getfiletime(const struct fileheader *f)
 	return (time_t)strtol(f->filename + 2, NULL, 10);
 }
 
+struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file)
+{
+	if (ptr == NULL || file == NULL)
+		return NULL;
+	int total = size / sizeof(struct fileheader);
+	if (total < 1)
+		return NULL;
+	// linear search from the end.
+	// TODO: unique id should be added to speed up search.
+	struct fileheader *begin = (struct fileheader *)ptr;
+	struct fileheader *last = begin + total - 1;
+	for (struct fileheader *fh = last; fh >= begin; --fh) {
+		if (!strcmp(fh->filename, file))
+			return fh;
+	}
+	return NULL;
+}

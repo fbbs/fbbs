@@ -1,22 +1,88 @@
 #include "libweb.h"
 
+static bool valid_mailname(const char *file)
+{
+	if (!strncmp(file, "sharedmail/", 11)) {
+		if (strstr(file + 11, "..") || strchr(file + 11, '/'))
+			return false;
+	} else {
+		if (strncmp(file, "M.", 2) || strstr(file, "..") || strchr(file, '/'))
+			return false;
+	}
+	return true;
+}
+
+int bbsmailcon_main(void)
+{
+	if (!loginok)
+		http_fatal("请先登录");
+	char file[40];
+	strlcpy(file, getparm("f"), sizeof(file));
+	if (!valid_mailname(file))
+		http_fatal("错误的参数");
+	char buf[HOMELEN];
+	void *ptr;
+	size_t size;
+	int fd;
+	// deal with index
+	setmdir(buf, currentuser.userid);
+	if (!safe_mmapfile(buf, O_RDWR, PROT_WRITE, MAP_SHARED, &ptr, &size, &fd))
+		http_fatal("索引打开失败");
+	struct fileheader *fh = bbsmail_search(ptr, size, file);
+	if (fh == NULL) {
+		end_mmapfile(ptr, size, fd);
+		http_fatal("信件不存在，可能已被删除");
+	}
+	if (!(fh->accessed[0] & FILE_READ)) {
+		fh->accessed[0] |= FILE_READ;
+	}
+	xml_header("bbsmailcon");
+	printf("<bbsmailcon><user>%s</user><title>", currentuser.userid);
+	xml_fputs(fh->title, stdout);
+	printf("</title>");
+	struct fileheader *prev = fh - 1;
+	if (prev >= (struct fileheader *)ptr)
+		printf("<prev>%s</prev>", prev->filename);
+	struct fileheader *next = fh + 1;
+	if (next < (struct fileheader *)ptr + size / sizeof(*next))
+		printf("<next>%s</next>", next->filename);
+	end_mmapfile(ptr, size, fd);
+
+	// show mail content.
+	if (file[0] == 's') // shared mail
+		strlcpy(buf, file, sizeof(buf));
+	else
+		setmfile(buf, currentuser.userid, file);
+	if (!safe_mmapfile(buf, O_RDWR, PROT_WRITE, MAP_SHARED, &ptr, &size, &fd))
+		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "文章打开失败");
+	fputs("<mail>", stdout);
+	xml_fputs((char *)ptr, stdout);
+	fputs("</mail>\n", stdout);
+	end_mmapfile(ptr, size, fd);
+	printf("<file>%s</file></bbsmailcon>", file);
+	return 0;
+}
+
+#if 0
 int main() {
 	FILE *fp;
 	char buf[512], dir[80], file[80], path[80], *ptr, *id;
 	struct fileheader x;
 	int num, tmp, total;
 	init_all();
-	strlcpy(file, getparm("file"), 32);
-	num=atoi(getparm("num"));
+	//strsncpy(file, getparm("file"), 32);
+	strcpy(file, getparm("file"));
+    num=atoi(getparm("num"));
 	printf("<center>\n");
 	id=currentuser.userid;
 	printf("阅读信件 · %s [使用者: %s]\n", BBSNAME, id);
-	if(strncmp(file, "M.", 2)) 
+    
+    if(strncmp(file, "M.", 2) && file[0] != 's') 
 	{
 		printpretable_lite();
 		http_fatal("错误的参数1");
 	}
-	if(strstr(file, "..") || strstr(file, "/")) 
+	if((strstr(file, "..") || strstr(file, "/")) && file[0] != 's') 
 	{
 		printpretable_lite();
 		http_fatal("错误的参数2");
@@ -31,7 +97,11 @@ int main() {
 	printpretable();
 	printf("<table width=100%% border=0>\n");
 	printf("<tr><td>\n<pre class=ansi>");
-	sprintf(path, "mail/%c/%s/%s", toupper(id[0]), id, file);
+    /****sharedmail****/
+    if(file[0] == 's')
+        strcpy(path, file);
+    else
+	    sprintf(path, "mail/%c/%s/%s", toupper(id[0]), id, file);
 	fp=fopen(path, "r");
 	if(fp==0) 
 	{
@@ -91,3 +161,5 @@ int main() {
    	printf("</center>\n"); 
 	http_quit();
 }
+
+#endif
