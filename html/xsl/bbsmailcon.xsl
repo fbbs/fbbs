@@ -20,7 +20,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 					</xsl:call-template>
 				</div>
 				<xsl:call-template name='show-linkbar'></xsl:call-template>
-				<div><a><xsl:attribute name='href'>bbsdelmail?f=<xsl:value-of select='file' /></xsl:attribute>[ 删除此信 ]</a></div>
+				<div><a onclick='return confirm("您真的要删除这封信吗？")'><xsl:attribute name='href'>bbsdelmail?f=<xsl:value-of select='file' /></xsl:attribute>[ 删除此信 ]</a></div>
 			</body>
 		</html>
 	</xsl:template>
