@@ -1,22 +1,63 @@
 #include "libweb.h"
 
+int bbsmail_main(void)
+{
+	if (!loginok)
+		http_fatal("请先登录");
+
+	int start = strtol(getparm("start"), NULL, 10);
+	char buf[HOMELEN];
+	setmdir(buf, currentuser.userid);
+	void *ptr;
+	size_t size;
+	int fd;
+	if (!safe_mmapfile(buf, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+		http_fatal("索引打开失败");
+
+	int total = size / sizeof(struct fileheader);
+	if (start <= 0)
+		start = total - TLINES + 1;
+	if (start < 1)
+		start = 1;
+	struct fileheader *fh = (struct fileheader *)ptr + start - 1;
+	struct fileheader *end = (struct fileheader *)ptr + total;
+	xml_header("bbsmail");
+	printf("<bbsmail>\n");
+	for (int i = 0; i < TLINES && fh != end; ++i) {
+		int mark = ' ';
+		if (fh->accessed[0] & MAIL_REPLY)
+			mark = 'r';
+		if (fh->accessed[0] & FILE_MARKED) {
+			if (mark == 'r')
+				mark = 'b';
+			else
+				mark = 'm';
+		}
+		if (!(fh->accessed[0] & FILE_READ)) {
+			if (mark == ' ')
+				mark = '+';
+			else
+				mark = toupper(mark);
+		}
+		printf("<mail><mark>%c</mark><sender>%s</sender><date>%s</date><title>",
+				mark, fh->owner, getdatestring(getfiletime(fh), DATE_XML));
+		xml_fputs(fh->title, stdout);
+		printf("</title><name>%s</name></mail>\n", fh->filename);
+		fh++;
+	}
+	end_mmapfile(ptr, size, fd);
+	printf("<user>%s</user><total>%d</total><start>%d</start><page>%d</page>",
+			currentuser.userid, total, start, TLINES);
+	printf("</bbsmail>");	
+	return 0;
+}
+#if 0
 int main() {
 	FILE *fp;
 	int filetime, i, start, total, type;
 	char *ptr, buf[512], path[80], dir[80];
 	struct fileheader *data;
-   	init_all();
 
-	/* added by roly  2002.05.10 去掉cache */
-	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
-	/* add end */
-
-	if(!loginok)
-	{
-		printf("<b>信件列表 · %s </b><br>",BBSNAME);
-		printpretable_lite();
-		http_fatal("您尚未登录, 请先登录");
-	}
 	strlcpy(buf, getparm("start"), 10);
 	start=atoi(buf);
         /* 02.11.17 added by stephen to fix the jump to mail num trouble */
@@ -124,3 +165,4 @@ int main() {
 	printf("<form><input type=submit value=跳转到> 第 <input style='height:20px' type=text name=start size=3> 封</form>");
 	http_quit();
 }
+#endif

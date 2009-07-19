@@ -1,5 +1,27 @@
 #include "libweb.h"
 
+int bbsleft_main(void);
+int bbssec_main(void);
+int bbsfoot_main(void);
+int bbsgetmsg_main(void);
+int bbsall_main(void);
+int bbsboa_main(void);
+int bbslogin_main(void);
+int bbslogout_main(void);
+int bbsdoc_main(void);
+int bbscon_main(void);
+int bbspst_main(void);
+int bbssnd_main(void);
+int bbsqry_main(void);
+int bbsclear_main(void);
+int bbsupload_main(void);
+int bbspreupload_main(void);
+int bbs0an_main(void);
+int bbsanc_main(void);
+int bbsnot_main(void);
+int bbssendmsg_main(void);
+int bbsmail_main(void);
+
 struct cgi_applet {
 	char *name;
 	int (*func) (void);
@@ -26,6 +48,7 @@ static struct cgi_applet applets[] = {
 		{ "bbsanc", bbsanc_main},
 		{ "bbsnot", bbsnot_main},
 		{ "bbssendmsg", bbssendmsg_main},
+		{ "bbsmail", bbsmail_main},
 		{ NULL, NULL }
 };
 

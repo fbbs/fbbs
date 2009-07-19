@@ -18,7 +18,6 @@
 #define CSS_FILE 	"/css/bbs%d.css"
 #define CHARSET		"gb2312"
 
-#define TLINES 18
 #define SQUID
 
 #define LINKLEN   80
@@ -57,6 +56,10 @@ enum {
 	BBSMSG_SENDER_OFFSET = 12,
 	BBSMSG_PID_OFFSET = 122,
 	BBSMSG_CONTENT_OFFSET = 23
+};
+
+enum {
+	TLINES = 20
 };
 
 #define HTTP_END (printf("\n</html>\n"));
@@ -169,6 +172,7 @@ void showrawcontent(char *filename);
 bool bbscon_search(const struct boardheader *bp, unsigned int fid, 
 		int action, struct fileheader *fp);
 int maxlen(const char *board);
+time_t getfiletime(const struct fileheader *f);
 
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);
@@ -184,26 +188,5 @@ void parse_post_data(void);
 
 int fcgi_init_all(void);
 int fcgi_init_loop(void);
-
-int bbsleft_main(void);
-int bbssec_main(void);
-int bbsfoot_main(void);
-int bbsgetmsg_main(void);
-int bbsall_main(void);
-int bbsboa_main(void);
-int bbslogin_main(void);
-int bbslogout_main(void);
-int bbsdoc_main(void);
-int bbscon_main(void);
-int bbspst_main(void);
-int bbssnd_main(void);
-int bbsqry_main(void);
-int bbsclear_main(void);
-int bbsupload_main(void);
-int bbspreupload_main(void);
-int bbs0an_main(void);
-int bbsanc_main(void);
-int bbsnot_main(void);
-int bbssendmsg_main(void);
 
 #endif // LIBWEB_H_

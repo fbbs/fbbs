@@ -1,11 +1,5 @@
 #include "libweb.h"
 
-// Get file time according to its name 's'.
-static inline time_t getfiletime(const struct fileheader *f)
-{
-	return (time_t)strtol(f->filename + 2, NULL, 10);
-}
-
 int bbsdoc_main(void)
 {
 	char board[STRLEN];
