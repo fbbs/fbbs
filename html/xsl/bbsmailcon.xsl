@@ -20,6 +20,7 @@ xmlns="http://www.w3.org/1999/xhtml">
 					</xsl:call-template>
 				</div>
 				<xsl:call-template name='show-linkbar'></xsl:call-template>
+				<div><a><xsl:attribute name='href'>bbsdelmail?f=<xsl:value-of select='file' /></xsl:attribute>[ É¾³ý´ËÐÅ ]</a></div>
 			</body>
 		</html>
 	</xsl:template>

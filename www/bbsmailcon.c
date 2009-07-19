@@ -1,17 +1,5 @@
 #include "libweb.h"
 
-static bool valid_mailname(const char *file)
-{
-	if (!strncmp(file, "sharedmail/", 11)) {
-		if (strstr(file + 11, "..") || strchr(file + 11, '/'))
-			return false;
-	} else {
-		if (strncmp(file, "M.", 2) || strstr(file, "..") || strchr(file, '/'))
-			return false;
-	}
-	return true;
-}
-
 int bbsmailcon_main(void)
 {
 	if (!loginok)

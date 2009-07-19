@@ -1,33 +1,38 @@
 #include "libweb.h"
 
-int main() { 
-        FILE *fp; 
-        struct fileheader f; 
-        char path[80], file[80], *id; 
-        int num=0; 
-        init_all(); 
-		printf("<b>删除邮件 · %s </b><br>\n",BBSNAME);
-		printpretable_lite();
-        if(loginok == 0) http_fatal("您尚未登录"); 
-        id=currentuser.userid; 
-        strlcpy(file, getparm("file"), 32); 
-        if(strncmp(file, "M.", 2) || strstr(file, "..")) http_fatal("错误的参数"); 
-        sprintf(path, "mail/%c/%s/.DIR", toupper(id[0]), id); 
-        fp=fopen(path, "r"); 
-        if(fp==0) http_fatal("错误的参数2"); 
-        while(1) { 
-                if(fread(&f, sizeof(f), 1, fp)<=0) break; 
-                num++; 
-                if(!strcmp(f.filename, file)) { 
-                        fclose(fp); 
-                        del_record(path, sizeof(struct fileheader), num-1); 
+int bbsdelmail_main(void)
+{
+	if (!loginok)
+		http_fatal("请先登录");
+	char file[40];
+	strlcpy(file, getparm("f"), sizeof(file));
+	if (!valid_mailname(file))
+		http_fatal("错误的参数");
+	char buf[HOMELEN];
+	void *ptr;
+	size_t size;
+	int fd;
+	setmdir(buf, currentuser.userid);
+	if (!safe_mmapfile(buf, O_RDWR, PROT_WRITE, MAP_SHARED, &ptr, &size, &fd))
+		http_fatal("索引打开失败");
+	struct fileheader *fh = bbsmail_search(ptr, size, file);
+	if (fh == NULL) {
+		end_mmapfile(ptr, size, fd);
+		http_fatal("信件不存在，可能已被删除");
+	}
+	struct fileheader *end = (struct fileheader *)ptr + size / sizeof(*fh);
+	if (fh < end) {
+		memmove(fh, fh + 1, (end - fh) * sizeof(*fh));
+		msync(ptr, size, MS_SYNC);
+		ftruncate(fd, size - sizeof(*fh));
+	}
+	end_mmapfile(ptr, size, fd);
+	if (file[0] != 's') {// not shared mail
+		setmfile(buf, currentuser.userid, file);
+		unlink(buf);
+	}
+	xml_header("bbsdelmail");
+	printf("<bbsdelmail></bbsdelmail>\n");
+	return 0;
+}
 
-                        sprintf(path, "mail/%c/%s/%s", toupper(id[0]), id, f.filename); 
-                        unlink(path); 
-                        printf("信件已删除.<br><a href=bbsmail>返回所有信件列表</a>\n"); 
-                        http_quit(); 
-                } 
-        } 
-        fclose(fp); 
-        http_fatal("信件不存在, 无法删除"); 
-} 

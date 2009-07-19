@@ -1825,3 +1825,16 @@ struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file
 	}
 	return NULL;
 }
+
+bool valid_mailname(const char *file)
+{
+	if (!strncmp(file, "sharedmail/", 11)) {
+		if (strstr(file + 11, "..") || strchr(file + 11, '/'))
+			return false;
+	} else {
+		if (strncmp(file, "M.", 2) || strstr(file, "..") || strchr(file, '/'))
+			return false;
+	}
+	return true;
+}
+
