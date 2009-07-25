@@ -1,6 +1,6 @@
 BBSHOME = /home/bbs
 CGIPATH = /home/httpd/fcgi
-HTMPATH = /home/httpd/html
+HTMPATH = /home/httpd/
 
 CC      = gcc
 COBJS   = libweb.o bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
@@ -19,6 +19,10 @@ install: all
 	chown -R bbs $(CGIPATH)
 	chgrp -R bbs $(CGIPATH) 
 	chmod +s $(CGIPATH)/*
+
+new: install
+	cp -r ../html $(HTMPATH)
+	sh ./compress_xsl.sh $(HTMPATH)html/xsl
 
 all: $(COBJS)
 	$(CC) $(CFLAGS) $(COBJS) -o $(TARGET) -lcrypt -lBBS -L../lib -lfcgi
