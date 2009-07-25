@@ -1,6 +1,5 @@
-#ifndef _LIBBBS_H_
-
-#define _LIBBBS_H_
+#ifndef LIBBBS_H
+#define LIBBBS_H
 
 //fileio.c
 int file_append(const char *fpath, const char *msg);
@@ -63,9 +62,12 @@ int checkpasswd(char *pw_crypted, char *pw_try);
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
 int remove_shm(const char *shmstr, int defaultkey, int shmsize);
+
+//mmap.c
 int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size, int *ret_fd);
 int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size);
 void end_mmapfile(void *ptr, size_t size, int fd);
-#endif
+
+#endif // LIBBBS_H
