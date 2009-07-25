@@ -10,8 +10,8 @@ int bbsmail_main(void)
 	setmdir(buf, currentuser.userid);
 	void *ptr;
 	size_t size;
-	int fd;
-	if (!safe_mmapfile(buf, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+	int fd = mmap_open(buf, MMAP_RDONLY, &ptr, &size);
+	if (fd < 0)
 		http_fatal("Ë÷Òý´ò¿ªÊ§°Ü");
 
 	int total = size / sizeof(struct fileheader);
@@ -45,7 +45,7 @@ int bbsmail_main(void)
 		printf("</title><name>%s</name></mail>\n", fh->filename);
 		fh++;
 	}
-	end_mmapfile(ptr, size, fd);
+	mmap_close(ptr, size, fd);
 	printf("<user>%s</user><total>%d</total><start>%d</start><page>%d</page>",
 			currentuser.userid, total, start, TLINES);
 	printf("</bbsmail>");	

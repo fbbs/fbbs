@@ -1,4 +1,4 @@
-#include <bbs.h>
+#include "bbs.h"
 
 // Copies 'board' to 'cboard' and sets 'bpp' accordingly.
 // Returns 0 on success, -1 on error.

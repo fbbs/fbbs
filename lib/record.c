@@ -109,22 +109,14 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 		int applycopy, int reverse)
 {
 	void *buf, *buf1, *buf2 = NULL;
-	int i;
+	int i, fd;
 	size_t file_size;
 	int count;
 
 	BBS_TRY {
-		if ( safe_mmapfile( filename,
-						O_RDONLY,
-						PROT_READ,
-						MAP_SHARED,
-						&buf,//起始地址放在buf中 
-						&file_size, //保存映射的文件大小 
-						NULL //以非互斥方式映射文件至内存
-				)== 0
-		) {
+		// TODO: is nolock safe here?
+		if ((fd = mmap_open(filename, MMAP_NOLOCK, &buf, &file_size)) < 0)
 			BBS_RETURN(0);
-		}
 		count = file_size / size; //记录的数目
 		if (reverse)
 		buf1 = buf + (count - 1) * size;
@@ -139,7 +131,7 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 			}
 			if ((*fptr) (buf2, reverse ? count - i : i + 1, arg) == QUIT) {
 				//执行函数fptr,buf为缓冲区首地址,arg为第三参数
-				end_mmapfile((void *) buf, file_size, -1); //终止内存映射,本来没加锁,
+				mmap_close((void *) buf, file_size, fd); //终止内存映射,本来没加锁,
 				//现在不需要解锁
 				if (applycopy)
 				free(buf2);
@@ -153,7 +145,7 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 	}
 	BBS_CATCH {
 	}
-	BBS_END end_mmapfile((void *) buf, file_size, -1);
+	BBS_END mmap_close(buf, file_size, -1);
 
 	if (applycopy)
 		free(buf2);
@@ -168,28 +160,26 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 int search_record(char *filename, void *rptr, int size,
 		RECORD_FUNC_ARG fptr, void *farg)
 {
-	int i;
+	int i, fd;
 	void *buf, *buf1;
 	size_t filesize;
 
 	BBS_TRY {
-		if (safe_mmapfile( filename, O_RDONLY, PROT_READ,
-						MAP_SHARED, (void **) &buf, &filesize, NULL)
-				== 0
-		)
-		BBS_RETURN(0);
+		// TODO: is nolock safe here?
+		if ((fd = mmap_open(filename, MMAP_NOLOCK, &buf, &filesize)) < 0)
+			BBS_RETURN(0);
 		for (i = 0, buf1 = buf; i < filesize / size; i++, buf1 += size) {
 			if ((*fptr) (farg, buf1)) {
 				if (rptr)
-				memcpy(rptr, buf1, size);
-				end_mmapfile((void *) buf, filesize, -1);
+					memcpy(rptr, buf1, size);
+				mmap_close(buf, filesize, -1);
 				BBS_RETURN(i + 1);
 			}
 		}
 	}
 	BBS_CATCH {
 	}
-	BBS_END end_mmapfile((void *) buf, filesize, -1);
+	BBS_END mmap_close(buf, filesize, -1);
 
 	return 0;
 }
@@ -254,11 +244,8 @@ int delete_record(char *filename, int size, int id,
 	if (id <= 0)
 		return 0;
 	BBS_TRY {
-		if (safe_mmapfile(filename, O_RDWR, PROT_READ | PROT_WRITE,
-						MAP_SHARED, &ptr, &filesize, &fdr)
-				== 0
-		)
-		BBS_RETURN(-1);
+		if ((fdr = mmap_open(filename, MMAP_RDWR, &ptr, &filesize)) < 0)
+			BBS_RETURN(-1);
 		ret = 0;
 		if (id * size> filesize) {
 			ret = -2;
@@ -283,7 +270,7 @@ int delete_record(char *filename, int size, int id,
 	BBS_CATCH {
 		ret = -3;
 	}
-	BBS_END end_mmapfile(ptr, filesize, fdr);
+	BBS_END mmap_close(ptr, filesize, fdr);
 
 	return ret;
 }
@@ -328,7 +315,7 @@ int insert_record(char *filename, int size, RECORD_FUNC_ARG filecheck,
 	BBS_CATCH {
 		ret = -3;
 	}
-	BBS_END end_mmapfile(ptr, filesize, fdr);
+	BBS_END mmap_close(ptr, filesize, fdr);
 	return ret;
 }
 

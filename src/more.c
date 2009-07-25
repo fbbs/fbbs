@@ -512,8 +512,8 @@ static struct mmap_more_file *mmap_more_open(const char *filename, int width)
 {
 	void *ptr;
 	size_t size;
-	int fd;
-	if (!safe_mmapfile(filename, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+	int fd = mmap_open(filename, MMAP_RDONLY, &ptr, &size);
+	if (fd < 0)
 		return NULL;
 	struct mmap_more_file *d = malloc(sizeof(*d));
 	if (d == NULL)
@@ -526,12 +526,12 @@ static struct mmap_more_file *mmap_more_open(const char *filename, int width)
 	d->buf = malloc(size + d->ln_size * sizeof(struct linenum));
 	if (d->buf != NULL) {
 		memcpy(d->buf, ptr, size);
-		end_mmapfile(ptr, size, fd);
+		mmap_close(ptr, size, fd);
 		d->ln = (struct linenum *)(d->buf + size);
 		memset(d->ln, 0, d->ln_size * sizeof(struct linenum));
 		return d;
 	}
-	end_mmapfile(ptr, size, fd);
+	mmap_close(ptr, size, fd);
 	return NULL;
 }
 

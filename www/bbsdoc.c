@@ -91,7 +91,7 @@ int get_bbsdoc(const char *dir, int *start, int count, int mode)
 	struct fileheader *begin = malloc(sizeof(struct fileheader) * count);
 	if (begin == NULL)
 		return -1;
-	if (safe_mmapfile(dir, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd)) {
+	if ((fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size)) < 0) {
 		total = size / sizeof(struct fileheader);
 		struct fileheader *fh = (struct fileheader *)ptr;
 		struct fileheader *end = fh + total;
@@ -128,7 +128,7 @@ int get_bbsdoc(const char *dir, int *start, int count, int mode)
 			fh = (struct fileheader *)ptr + *start - 1;
 			memcpy(begin, fh, sizeof(struct fileheader) * count);
 		}
-		end_mmapfile(ptr, size, fd);
+		mmap_close(ptr, size, fd);
 		print_bbsdoc(begin, count);
 		return total;
 	}

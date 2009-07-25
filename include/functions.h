@@ -72,8 +72,5 @@
 #define BBS_RETURN(x) {signal(SIGBUS, SIG_IGN);return (x);}
 #define BBS_RETURN_VOID {signal(SIGBUS, SIG_IGN);return;}
 
-typedef int (*RECORD_FUNC_ARG)(void *, void *);
-typedef int (*APPLY_FUNC_ARG)(void *, int, void *);
-
 #endif 
 /* _FUNCTIONS_H_ */

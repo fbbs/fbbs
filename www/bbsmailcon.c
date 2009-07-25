@@ -14,11 +14,11 @@ int bbsmailcon_main(void)
 	int fd;
 	// deal with index
 	setmdir(buf, currentuser.userid);
-	if (!safe_mmapfile(buf, O_RDWR, PROT_WRITE, MAP_SHARED, &ptr, &size, &fd))
+	if ((fd = mmap_open(buf, MMAP_RDWR, &ptr, &size)) < 0)
 		http_fatal("索引打开失败");
 	struct fileheader *fh = bbsmail_search(ptr, size, file);
 	if (fh == NULL) {
-		end_mmapfile(ptr, size, fd);
+		mmap_close(ptr, size, fd);
 		http_fatal("信件不存在，可能已被删除");
 	}
 	if (!(fh->accessed[0] & FILE_READ)) {
@@ -34,19 +34,19 @@ int bbsmailcon_main(void)
 	struct fileheader *next = fh + 1;
 	if (next < (struct fileheader *)ptr + size / sizeof(*next))
 		printf("<next>%s</next>", next->filename);
-	end_mmapfile(ptr, size, fd);
+	mmap_close(ptr, size, fd);
 
 	// show mail content.
 	if (file[0] == 's') // shared mail
 		strlcpy(buf, file, sizeof(buf));
 	else
 		setmfile(buf, currentuser.userid, file);
-	if (!safe_mmapfile(buf, O_RDWR, PROT_WRITE, MAP_SHARED, &ptr, &size, &fd))
+	if ((fd = mmap_open(buf, MMAP_RDONLY, &ptr, &size)) < 0)
 		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "文章打开失败");
 	fputs("<mail>", stdout);
 	xml_fputs((char *)ptr, stdout);
 	fputs("</mail>\n", stdout);
-	end_mmapfile(ptr, size, fd);
+	mmap_close(ptr, size, fd);
 	printf("<file>%s</file></bbsmailcon>", file);
 	return 0;
 }

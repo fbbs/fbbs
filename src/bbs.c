@@ -2631,11 +2631,9 @@ int delete_range(char *filename, int id1, int id2)
 	p++;
 
 	BBS_TRY {
-		if ( safe_mmapfile( filename, O_RDWR, PROT_READ | PROT_WRITE,
-						MAP_SHARED, (void **) &ptr, &filesize, &fdr)
-				== 0
-		)
-		BBS_RETURN(-1);
+		fdr = mmap_open(filename, MMAP_RDWR, (void **)&ptr, &filesize);
+		if (fdr < 0)
+			BBS_RETURN(-1);
 		ret = 0;
 		if (id2 * sizeof(struct fileheader)> filesize) {
 			ret = -2; //区段范围超过文件大小
@@ -2692,7 +2690,7 @@ int delete_range(char *filename, int id1, int id2)
 	BBS_CATCH {
 		ret = -3;
 	}
-	BBS_END end_mmapfile(ptr, filesize, fdr);
+	BBS_END mmap_close(ptr, filesize, fdr);
 	//add by danielfree to recount the attach files size.06-10-31
 	if (digestmode==ATTACH_MODE) {
 		char apath[256], cmd[256];

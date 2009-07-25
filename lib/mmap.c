@@ -6,46 +6,78 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/file.h>
+#include "libBBS.h"
 
 // Maps whole file 'filename' to memory and locks it.
-// File descriptor of the file is returned via 'ret_fd'.
+// Returns the file descriptor on success, -1 on error.
 // The size of the file is returned via 'size'.
-// 'openflag' is passed to open().
-// 'prot', 'flag' are passed to mmap().
-// 'ret_ptr' is the starting address of mapped region.
-// Returns 1 if OK, 0 on error.
-int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
-		void **ret_ptr, size_t *size, int *ret_fd)
+// 'ptr' is the starting address of mapped region.
+// 'flags' should be one of MMAP_RDONLY, MMAP_WRONLY, MMAP_RDWR
+// or MMAP_NOLOCK. When MMAP_NOLOCK is specified, fd is closed.
+int mmap_open(const char *file, int flags, void **ptr, size_t *size)
 {
-	int fd;
+	int fd, open_flag, mmap_prot, lock_flag;
 	struct stat st;
-
-	fd = open(filename, openflag, 0600);
+	// Set flags respectively.
+	switch (flags) {
+		case MMAP_WRONLY:
+			open_flag = O_WRONLY;
+			mmap_prot = PROT_WRITE;
+			lock_flag = LOCK_EX;
+			break;
+		case MMAP_RDWR:
+			open_flag = O_RDWR;
+			mmap_prot = PROT_READ | PROT_WRITE;
+			lock_flag = LOCK_EX;
+			break;
+		default: // default: read only
+			open_flag = O_RDONLY;
+			mmap_prot = PROT_READ;
+			lock_flag = LOCK_SH;
+			break; // already initialized
+	}	
+	// Open and lock the file.
+	fd = open(file, open_flag);
 	if (fd < 0)
-		return 0;
+		return -1;
+	if (flags != MMAP_NOLOCK)
+		flock(fd, lock_flag);
+	else
+		close(fd);
 	// Return error if not a regular file or wrong size.
-	if ((fstat(fd, &st) < 0)
-			|| (!S_ISREG(st.st_mode))
+	if ((fstat(fd, &st) < 0) || (!S_ISREG(st.st_mode))
 			|| (st.st_size <= 0)) {
-		close(fd);
-		return 0;
+		if (flags != MMAP_NOLOCK) {
+			flock(fd, LOCK_UN);
+			close(fd);
+		}
+		return -1;
 	}
-
 	// Map whole file to memory.
-	*ret_ptr = mmap(NULL, st.st_size, prot, flag, fd, 0);
-	if (!ret_fd) {
-		close(fd);
-	} else {
-		*ret_fd = fd;
-		flock(fd, LOCK_EX);
+	*ptr = mmap(NULL, st.st_size, mmap_prot, MAP_SHARED, fd, 0);
+	if (*ptr != MAP_FAILED) {
+		*size = st.st_size;
+		return fd;
 	}
-	if (*ret_ptr == NULL)
-		return 0;
-	*size = st.st_size;
-	return 1;
+	if (flags != MMAP_NOLOCK) {
+		flock(fd, LOCK_UN);
+		close(fd);
+	}
+	return -1;
 }
 
-// Similar to 'safe_mmapfile', but it uses a file descriptor instead.
+// Unmaps memory-mapped region. ('size' bytes starting from 'ptr')
+// Unlocks 'fd' if it is a valid file descriptor.
+void mmap_close(void *ptr, size_t size, int fd)
+{
+	munmap(ptr, size);
+	if (fd > 0) {
+		flock(fd, LOCK_UN);
+		close(fd);
+	}
+}
+
+// Similar to 'mmap_open', but it uses a file descriptor instead.
 int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size)
 {
@@ -64,16 +96,5 @@ int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		return 0;
 	*size = st.st_size;
 	return 1;
-}
-
-// Unmaps memory-mapped region. ('size' bytes starting from 'ptr')
-// Unlocks 'fd' if it is a valid file descriptor.
-void end_mmapfile(void *ptr, size_t size, int fd)
-{
-	munmap(ptr, size);
-	if (fd != -1) {
-		flock(fd, LOCK_UN);
-		close(fd);
-	}
 }
 

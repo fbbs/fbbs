@@ -1,6 +1,18 @@
 #ifndef LIBBBS_H
 #define LIBBBS_H
 
+//mmap.c
+enum {
+	MMAP_RDONLY = 0,
+	MMAP_WRONLY = 1,
+	MMAP_RDWR = 2,
+	MMAP_NOLOCK = 3
+};
+
+//record.c
+typedef int (*RECORD_FUNC_ARG)(void *, void *);
+typedef int (*APPLY_FUNC_ARG)(void *, int, void *);
+
 //fileio.c
 int file_append(const char *fpath, const char *msg);
 int dashf(const char *fname);
@@ -64,10 +76,9 @@ void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate
 int remove_shm(const char *shmstr, int defaultkey, int shmsize);
 
 //mmap.c
-int safe_mmapfile(const char *filename, int openflag, int prot, int flag,
-		void **ret_ptr, size_t *size, int *ret_fd);
+int mmap_open(const char *file, int flags, void **ptr, size_t *size);
+void mmap_close(void *ptr, size_t size, int fd);
 int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size);
-void end_mmapfile(void *ptr, size_t size, int fd);
 
 #endif // LIBBBS_H

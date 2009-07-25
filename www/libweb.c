@@ -1753,8 +1753,8 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 	setwbdir(dir, bp->filename);
 	void *ptr;
 	size_t size;
-	int fd;
-	if (!safe_mmapfile(dir, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+	int fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size);
+	if (fd < 0)
 		return false;
 	struct fileheader *begin = ptr, *end;
 	end = begin + (size / sizeof(*begin));
@@ -1784,7 +1784,7 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		else
 			f = NULL;
 	}
-	end_mmapfile(ptr, size, fd);
+	mmap_close(ptr, size, fd);
 	return (f != NULL);
 }
 

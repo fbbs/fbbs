@@ -653,7 +653,7 @@ void insert_from_fp(FILE *fp) {
 	}
 	BBS_CATCH {
 	}
-	BBS_END end_mmapfile((void *) ptr, size, -1);
+	BBS_END mmap_close((void *) ptr, size, -1);
 }
 
 int read_file(char *filename) {

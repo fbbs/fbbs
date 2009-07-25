@@ -59,7 +59,7 @@ int bbspst_main(void)
 			http_fatal("该文章具有不可回复属性");
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
-		if (!safe_mmapfile(file, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+		if ((fd = mmap_open(file, MMAP_RDONLY, &ptr, &size)) < 0)
 			http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "文章打开失败");
 	}
 	
@@ -72,7 +72,7 @@ int bbspst_main(void)
 		xml_fputs(fh.title, stdout);
 		fputs("</title>\n<post>", stdout);		
 		web_quotation(ptr, size, &fh);
-		end_mmapfile(ptr, size, fd);
+		mmap_close(ptr, size, fd);
 		fputs("</post>\n", stdout);
 		printf("<f>%u</f>", fid);
 	}

@@ -19,14 +19,14 @@ int bbscon_main(void)
 	setbfile(file, bp->filename, fh.filename);
 	void *ptr;
 	size_t size;
-	int fd;
-	if (!safe_mmapfile(file, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+	int fd = mmap_open(file, MMAP_RDONLY, &ptr, &size);
+	if (fd < 0)
 		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "ÎÄÕÂ´ò¿ªÊ§°Ü");
 	xml_header("bbscon");
 	fputs("<bbscon>\n<post>", stdout);
 	xml_fputs((char *)ptr, stdout);
 	fputs("</post>\n", stdout);
-	end_mmapfile(ptr, size, fd);
+	mmap_close(ptr, size, fd);
 	if (fh.reid != fh.id)
 		printf("<reid>%u</reid>\n<gid>%u</gid>\n", fh.reid, fh.gid);
 	printf("<bid>%d</bid>\n<f>%u</f>\n</bbscon>", bid, fid);

@@ -11,13 +11,13 @@ int bbsnot_main(void)
 	snprintf(fname, sizeof(fname), "vote/%s/notes", bp->filename);
 	void *ptr;
 	size_t size;
-	int fd;
-	if (!safe_mmapfile(fname, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd))
+	int fd = mmap_open(fname, MMAP_RDONLY, &ptr, &size);
+	if (fd < 0)
 		http_fatal2(HTTP_STATUS_NOTFOUND, "本讨论区尚无进版画面");
 	xml_header("bbsnot");
 	printf("<bbsnot><content>");
 	xml_fputs((char *)ptr, stdout);
-	end_mmapfile(ptr, size, fd);
+	mmap_close(ptr, size, fd);
 	printf("</content><board>%s</board></bbsnot>", bp->filename);
 	return 0;
 }
