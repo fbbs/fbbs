@@ -1,13 +1,24 @@
 #include "libweb.h"
 
-bool allow_reply(struct fileheader *fh)
+enum {
+	MODE_NORMAL = 0,
+	MODE_DIGEST = 1,
+	MODE_THREAD = 2,
+	MODE_REMAIN = 3,
+	MODE_TOPICS = 4,
+	MODE_AUTHOR_FUZZ = 5,
+	MODE_AUTHOR = 6,
+	MODE_KEYWORD = 7,
+};
+
+bool allow_reply(const struct fileheader *fh)
 {
 	if (fh == NULL || fh->accessed[0] & FILE_NOREPLY)
 		return false;
 	return true;
 }
 
-int get_post_mark(struct fileheader *fh, bool has_read)
+int get_post_mark(const struct fileheader *fh, bool has_read)
 {
 	int mark = ' ';
 	if (fh == NULL)
@@ -31,45 +42,102 @@ int get_post_mark(struct fileheader *fh, bool has_read)
 	return mark;
 }
 
+static bool select_bbsdoc(const struct fileheader *fh, int mode)
+{
+	switch (mode) {
+		case MODE_THREAD:
+			return (fh->id == fh->gid);
+		default:
+			break;
+	}
+	return true;
+}
+
+static int print_bbsdoc(const struct fileheader *fh, int count)
+{
+	int mark;
+	const struct fileheader *end = fh + count;
+	for (; fh < end; ++fh) {
+		printf("<post>\n<author>%s</author>\n<time>%s</time>\n"
+				"<id>%u</id>\n<title>",
+				fh->owner, getdatestring(getfiletime(fh), DATE_XML), fh->id);
+		xml_fputs(fh->title, stdout);
+		printf("</title>\n");
+		if (!allow_reply(fh))
+			printf("<noreply />\n");
+		mark = get_post_mark(fh, brc_unread(fh->filename));
+		if (mark != ' ')
+			printf("<mark>%c</mark></post>\n", mark);
+		else
+			printf("</post>\n");
+   	}
+	return count;
+}
+
 // Read 'count' files starting from 'start'(origin 1) in index 'dir' and 
 // prints file information in XML format.
 // Returns files in total on success, -1 on error.
-int bbsdoc(const char *dir, int *start, int count)
+int get_bbsdoc(const char *dir, int *start, int count, int mode)
 {
 	void *ptr;
 	size_t size;
-	int fd, total, mark;
+	int fd, total = -1;
+	if (mode == MODE_DIGEST)
+		mode = MODE_NORMAL; // Digests have an independent index file.
+	struct fileheader **array = malloc(sizeof(struct fileheader *) * count);
+	if (array == NULL)
+		return -1;
+	memset(array, 0, sizeof(*array) * count);
+	struct fileheader *begin = malloc(sizeof(struct fileheader) * count);
+	if (begin == NULL)
+		return -1;
 	if (safe_mmapfile(dir, O_RDONLY, PROT_READ, MAP_SHARED, &ptr, &size, &fd)) {
 		total = size / sizeof(struct fileheader);
+		struct fileheader *fh = (struct fileheader *)ptr;
+		struct fileheader *end = fh + total;
+		int all = 0;
+		if (mode != MODE_NORMAL) {
+			total = 0;
+			for (; fh != end; ++fh) {
+				if (select_bbsdoc(fh, mode)) {
+					total++;
+					if (*start > 0 && total >= *start + count)
+						continue;
+					array[all++] = fh;
+					if (all == count)
+						all = 0;
+				}
+			}
+		}
+		// Check range of 'start' and 'count'.
 		if (*start <= 0 || *start > total - count)
 			*start = total - count + 1;
 		if (*start < 1) {
 			*start = 1;
 			count = total;
+			all = 0;
 		}
-		struct fileheader *fh = (struct fileheader *)ptr + *start - 1;
-		struct fileheader *end = fh + count;
-		for (; fh < end; ++fh) {
-			printf("<post>\n<author>%s</author>\n<time>%s</time>\n"
-					"<id>%u</id>\n<title>",
-					fh->owner, getdatestring(getfiletime(fh), DATE_XML), fh->id);
-			xml_fputs(fh->title, stdout);
-			printf("</title>\n");
-			if (!allow_reply(fh))
-				printf("<noreply />\n");
-			mark = get_post_mark(fh, brc_unread(fh->filename));
-			if (mark != ' ')
-				printf("<mark>%c</mark></post>\n", mark);
-			else
-				printf("</post>\n");
-     	}
+		// Copy index to allocated area. For more concurrency.
+		if (mode != MODE_NORMAL) {
+			for (int i = 0; i < count; i++) {
+				memcpy(begin + i, array[all++], sizeof(*begin));
+				if (all == count)
+					all = 0;
+			}
+		} else {
+			fh = (struct fileheader *)ptr + *start - 1;
+			memcpy(begin, fh, sizeof(struct fileheader) * count);
+		}
 		end_mmapfile(ptr, size, fd);
+		print_bbsdoc(begin, count);
 		return total;
 	}
-	return -1;
+	free(begin);
+	free(array);
+	return total;
 }
 
-int bbsdoc_main(void)
+static int bbsdoc(int mode)
 {
 	char board[STRLEN];
 	char *bidstr = getparm("bid");
@@ -88,7 +156,14 @@ int bbsdoc_main(void)
 		http_fatal("您选择的是一个目录");
 
 	char dir[HOMELEN];
-	setbfile(dir, board, DOT_DIR);
+	switch (mode) {
+		case MODE_DIGEST:
+			setbfile(dir, board, DIGEST_DIR);
+			break;
+		default:
+			setbfile(dir, board, DOT_DIR);
+			break;
+	}
 	int start = strtol(getparm("start"), NULL, 10);
 	int my_t_lines = strtol(getparm("my_t_lines"), NULL, 10);
 	int bid = getbnum2(bp);
@@ -105,12 +180,36 @@ int bbsdoc_main(void)
 	sprintf(path, "%s/info/boards/%s/banner.jpg", BBSHOME, board);
 	if(dashf(path))	
 		printf("<banner>%s</banner>\n", path);
-	int total = bbsdoc(dir, &start, my_t_lines);
+	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
+	char *cgi_name = "bbs";
+	switch (mode) {
+		case MODE_DIGEST:
+			cgi_name = "bbsg";
+			break;
+		case MODE_THREAD:
+			cgi_name = "bbst";
+			break;
+	}
 	// TODO: magic number.
 	printf("<title>%s</title>\n<bm>%s</bm>\n<desc>%s</desc>\n"
 			"<total>%d</total>\n<start>%d</start>\n<bid>%d</bid>\n"
-			"<page>%d</page></bbsdoc>", bp->filename, bp->BM, bp->title + 11,
-			total, start, bid, my_t_lines);
+			"<page>%d</page><link>%s</link></bbsdoc>", bp->filename, bp->BM,
+			bp->title + 11, total, start, bid, my_t_lines, cgi_name);
 	// TODO: marquee, recommend, spin
 	return 0;
+}
+
+int bbsdoc_main(void)
+{
+	return bbsdoc(MODE_NORMAL);
+}
+
+int bbsgdoc_main(void)
+{
+	return bbsdoc(MODE_DIGEST);
+}
+
+int bbstdoc_main(void)
+{
+	return bbsdoc(MODE_THREAD);
 }
