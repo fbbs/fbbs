@@ -169,8 +169,8 @@ void showheadline(char *board);
 void showrecommend(char *board, int showall, int showborder);
 void showrawcontent(char *filename);
 
-bool bbscon_search(const struct boardheader *bp, unsigned int fid, 
-		int action, struct fileheader *fp);
+bool bbscon_search(const struct boardheader *bp, const char *index,
+		unsigned int fid, int action, struct fileheader *fp);
 int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);

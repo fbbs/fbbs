@@ -34,7 +34,7 @@ int mmap_open(const char *file, int flags, void **ptr, size_t *size)
 			open_flag = O_RDONLY;
 			mmap_prot = PROT_READ;
 			lock_flag = LOCK_SH;
-			break; // already initialized
+			break;
 	}	
 	// Open and lock the file.
 	fd = open(file, open_flag);

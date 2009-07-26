@@ -77,7 +77,7 @@ static int print_bbsdoc(const struct fileheader *fh, int count)
 // Read 'count' files starting from 'start'(origin 1) in index 'dir' and 
 // prints file information in XML format.
 // Returns files in total on success, -1 on error.
-int get_bbsdoc(const char *dir, int *start, int count, int mode)
+static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 {
 	void *ptr;
 	size_t size;

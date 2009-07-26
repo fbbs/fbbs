@@ -30,3 +30,6 @@ all: $(COBJS)
 clean:
 	rm $(COBJS)
 	rm -rf $(TARGET)
+
+%.o: %.c libweb.c
+	$(CC) $(CFLAGS) $< -c -o $@

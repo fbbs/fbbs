@@ -11,7 +11,7 @@ int bbscon_main(void)
 	unsigned int fid = strtoul(getparm("f"), NULL, 10);
 	char *action = getparm("a");
 	struct fileheader fh;
-	if (!bbscon_search(bp, fid, *action, &fh))
+	if (!bbscon_search(bp, DOT_DIR, fid, *action, &fh))
 		http_fatal2(HTTP_STATUS_NOTFOUND, "没有找到指定的文章");
 	fid = fh.id;
 
