@@ -1,16 +1,5 @@
 #include "libweb.h"
 
-enum {
-	MODE_NORMAL = 0,
-	MODE_DIGEST = 1,
-	MODE_THREAD = 2,
-	MODE_REMAIN = 3,
-	MODE_TOPICS = 4,
-	MODE_AUTHOR_FUZZ = 5,
-	MODE_AUTHOR = 6,
-	MODE_KEYWORD = 7,
-};
-
 bool allow_reply(const struct fileheader *fh)
 {
 	if (fh == NULL || fh->accessed[0] & FILE_NOREPLY)
@@ -53,14 +42,17 @@ static bool select_bbsdoc(const struct fileheader *fh, int mode)
 	return true;
 }
 
-static int print_bbsdoc(const struct fileheader *fh, int count)
+static int print_bbsdoc(const struct fileheader *fh, int count, int mode)
 {
 	int mark;
 	const struct fileheader *end = fh + count;
 	for (; fh < end; ++fh) {
-		printf("<post>\n<author>%s</author>\n<time>%s</time>\n"
-				"<id>%u</id>\n<title>",
-				fh->owner, getdatestring(getfiletime(fh), DATE_XML), fh->id);
+		printf("<post>\n<author>%s</author>\n<time>%s</time>\n",
+				fh->owner, getdatestring(getfiletime(fh), DATE_XML));
+		if (mode != MODE_DIGEST)
+			printf("<id>%u</id><title>", fh->id);
+		else
+			printf("<id>%s</id><title>", fh->filename);
 		xml_fputs(fh->title, stdout);
 		printf("</title>\n");
 		if (!allow_reply(fh))
@@ -82,8 +74,6 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 	void *ptr;
 	size_t size;
 	int fd, total = -1;
-	if (mode == MODE_DIGEST)
-		mode = MODE_NORMAL; // Digests have an independent index file.
 	struct fileheader **array = malloc(sizeof(struct fileheader *) * count);
 	if (array == NULL)
 		return -1;
@@ -91,12 +81,12 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 	struct fileheader *begin = malloc(sizeof(struct fileheader) * count);
 	if (begin == NULL)
 		return -1;
-	if ((fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size)) < 0) {
+	if ((fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size)) > 0) {
 		total = size / sizeof(struct fileheader);
 		struct fileheader *fh = (struct fileheader *)ptr;
 		struct fileheader *end = fh + total;
 		int all = 0;
-		if (mode != MODE_NORMAL) {
+		if (mode != MODE_NORMAL && mode != MODE_DIGEST) {
 			total = 0;
 			for (; fh != end; ++fh) {
 				if (select_bbsdoc(fh, mode)) {
@@ -118,7 +108,7 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 			all = 0;
 		}
 		// Copy index to allocated area. For more concurrency.
-		if (mode != MODE_NORMAL) {
+		if (mode != MODE_NORMAL && mode != MODE_DIGEST) {
 			for (int i = 0; i < count; i++) {
 				memcpy(begin + i, array[all++], sizeof(*begin));
 				if (all == count)
@@ -129,7 +119,7 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 			memcpy(begin, fh, sizeof(struct fileheader) * count);
 		}
 		mmap_close(ptr, size, fd);
-		print_bbsdoc(begin, count);
+		print_bbsdoc(begin, count, mode);
 		return total;
 	}
 	free(begin);
@@ -181,13 +171,13 @@ static int bbsdoc(int mode)
 	if(dashf(path))	
 		printf("<banner>%s</banner>\n", path);
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
-	char *cgi_name = "bbs";
+	char *cgi_name = "doc";
 	switch (mode) {
 		case MODE_DIGEST:
-			cgi_name = "bbsg";
+			cgi_name = "gdoc";
 			break;
 		case MODE_THREAD:
-			cgi_name = "bbst";
+			cgi_name = "tdoc";
 			break;
 	}
 	// TODO: magic number.

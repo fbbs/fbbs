@@ -1744,13 +1744,13 @@ static struct fileheader *dir_bsearch(const struct fileheader *begin,
 	return NULL;
 }
 
-bool bbscon_search(const struct boardheader *bp, const char *index,
-		unsigned int fid, int action, struct fileheader *fp)
+bool bbscon_search(const struct boardheader *bp, unsigned int fid,
+		int action, struct fileheader *fp)
 {
 	if (bp == NULL || fp == NULL)
 		return false;
 	char dir[HOMELEN];
-	setbfile(dir, bp->filename, index);
+	setbfile(dir, bp->filename, DOT_DIR);
 	void *ptr;
 	size_t size;
 	int fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size);

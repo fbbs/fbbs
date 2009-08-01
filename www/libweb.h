@@ -62,6 +62,17 @@ enum {
 	TLINES = 20
 };
 
+enum {
+	MODE_NORMAL = 0,
+	MODE_DIGEST = 1,
+	MODE_THREAD = 2,
+	MODE_REMAIN = 3,
+	MODE_TOPICS = 4,
+	MODE_AUTHOR_FUZZ = 5,
+	MODE_AUTHOR = 6,
+	MODE_KEYWORD = 7,
+};
+
 #define HTTP_END (printf("\n</html>\n"));
 
 #define file_size(x) f_stat(x)->st_size
@@ -169,8 +180,8 @@ void showheadline(char *board);
 void showrecommend(char *board, int showall, int showborder);
 void showrawcontent(char *filename);
 
-bool bbscon_search(const struct boardheader *bp, const char *index,
-		unsigned int fid, int action, struct fileheader *fp);
+bool bbscon_search(const struct boardheader *bp, unsigned int fid,
+		int action, struct fileheader *fp);
 int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
