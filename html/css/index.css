@@ -1,0 +1,101 @@
+* {
+	font-family: Tahoma, Verdana, Arial;
+}
+img {
+	border: none;
+	vertical-align: middle;
+	padding-right: 5px;
+}
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+ul li {
+	padding: 5px 0;
+	margin-right: 10px;
+}
+input.txt {
+	background: #EDECEC;
+	width: 85px;
+	height:20px;
+	border: none;
+}
+#container {
+	position: relative;
+	width: 800px;
+	margin: 0 auto;
+}
+#left_panel {
+	font-weight: bold;
+	width: 155px;
+	float: left;
+	font-size: 0.75em;
+}
+#left_panel div {
+	margin: auto 5px 4px 0px;
+}
+#left_panel a {
+	color: #ffffff;
+	font-size: 1em;
+	text-decoration: none;
+	display: block;
+}
+#left_panel a:hover {
+	color: #8de6ff;
+}
+#menu {
+	background-color: #02addf;
+	height: 190px;
+	padding: 12px 15px 2px 12px;
+}
+#software {
+	display: none;
+	position: absolute;
+	top: 68px;
+	left: 125px;
+	background-color: #02addf;
+	border: #F5E4EA solid 1px;
+}
+#software li {
+	padding: 5px;
+	margin: 0;
+}
+#loginbox {
+	background-color: #02addf;
+	height: 105px;
+	padding: 10px 0 5px 12px;
+}
+#info {
+	background-color: #02addf;
+	color: white;
+	height: 110px;
+	margin-top: 2px;
+	padding: 12px 0 0 12px;
+}
+#info hr {
+	background-color: white;
+	border: medium none;
+	color: white;
+	margin-right:20px;
+}
+#info img {
+	width: 20px;
+	height: 20px;
+}
+#main {
+	background: url('/images/bbswebpic.jpg') no-repeat;
+	padding-top: 480px;
+	width: 640px;
+	float: left;
+	text-align: center;
+}
+#main a {
+	color: black;
+}
+#main p {
+	margin: 2px;
+}
+#valid {
+	text-align: center;
+}
