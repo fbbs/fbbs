@@ -233,6 +233,7 @@ int getnewuserid(void)
 						cexpstr(exp), compute_user_value(&utmp),
 						(time(0) - utmp.firstlogin) / 86400);
 #endif
+				sprintf(genbuf, "mail/%c/%s", toupper(utmp.userid[0]), utmp.userid);
 				snprintf(genbuf_rm, sizeof(genbuf_rm), "%s/%s.mail", tomb, utmp.userid);
 				rename(genbuf, genbuf_rm);
 				sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]), utmp.userid);
