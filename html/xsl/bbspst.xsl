@@ -14,7 +14,7 @@
 				<span>’ ∫≈£∫<strong><xsl:value-of select='user' /></strong></span><br />
 				<span>∞Ê√Ê£∫<strong id='board'><xsl:value-of select='board' /></strong></span><br />
 				<form name='postform' method='post'>
-					<xsl:attribute name='action'>bbssnd?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' /></xsl:attribute>
+					<xsl:attribute name='action'>snd?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' /></xsl:attribute>
 					<span>±ÍÃ‚£∫</span>
 					<input class='thinborder' type='text' name='title' size='60' maxlength='50'>
 						<xsl:variable name='retitle'>

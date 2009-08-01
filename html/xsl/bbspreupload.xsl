@@ -17,7 +17,7 @@
 				<p>请遵守国家法律，严禁上传非法资料和可能导致纠纷的资料。</p>
 				<p>允许的文件类型：jpeg/jpg/gif/png/pdf</p>
 				<form method='post' name='upform' enctype='multipart/form-data'>
-					<xsl:attribute name='action'>bbsupload?b=<xsl:value-of select='board' /></xsl:attribute>
+					<xsl:attribute name='action'>upload?b=<xsl:value-of select='board' /></xsl:attribute>
 					<span>上传文件: </span><input type='file' name='up'></input>
 					<input type='button' value='上传' onclick='return clickup()' />
 				</form>

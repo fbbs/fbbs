@@ -10,9 +10,9 @@ int bbsleft_main(void)
 				loginok, HAS_PERM(PERM_TALK), HAS_PERM(PERM_CLOAK),
 				HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0));
 		// Favorite boards
-		const char *cgi = "bbsdoc";
+		const char *cgi = "doc";
 		if (atoi(getparm("my_def_mode")) != 0)
-			cgi = "bbstdoc";
+			cgi = "tdoc";
 		printf("<favurl>%s</favurl>", cgi);
 		char buf[HOMELEN];
 		FILE *fp;

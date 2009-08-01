@@ -18,16 +18,16 @@
 					</xsl:call-template>
 				</div>
 				<xsl:call-template name='show-linkbar'></xsl:call-template>
-				<div><a onclick='return confirm("您真的要删除这封信吗？")'><xsl:attribute name='href'>bbsdelmail?f=<xsl:value-of select='file' /></xsl:attribute>[ 删除此信 ]</a></div>
+				<div><a onclick='return confirm("您真的要删除这封信吗？")'><xsl:attribute name='href'>delmail?f=<xsl:value-of select='file' /></xsl:attribute>[ 删除此信 ]</a></div>
 			</body>
 		</html>
 	</xsl:template>
 	
 	<xsl:template name='show-linkbar'>
 		<div>
-			<xsl:if test='prev'><a><xsl:attribute name='href'>bbsmailcon?f=<xsl:value-of select='prev' /></xsl:attribute>[ <img src='/images/button/up.gif' />上一封 ]</a></xsl:if>
-			<xsl:if test='next'><a><xsl:attribute name='href'>bbsmailcon?f=<xsl:value-of select='next' /></xsl:attribute>[ <img src='/images/button/down.gif' />下一封 ]</a></xsl:if>
-			<a href='bbsmail'>[ <img src='/images/button/back.gif' />回信件列表 ]</a>
+			<xsl:if test='prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='prev' /></xsl:attribute>[ <img src='/images/button/up.gif' />上一封 ]</a></xsl:if>
+			<xsl:if test='next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='next' /></xsl:attribute>[ <img src='/images/button/down.gif' />下一封 ]</a></xsl:if>
+			<a href='mail'>[ <img src='/images/button/back.gif' />回信件列表 ]</a>
 		</div>
 	</xsl:template>
 </xsl:stylesheet>

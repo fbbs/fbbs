@@ -17,7 +17,7 @@
 					</xsl:call-template>
 				</div>
 				<a href='javascript:history.go(-1)'>[<img src='/images/button/back.gif' />返回上一页]</a>
-				<xsl:if test='board'><a><xsl:attribute name='href'>bbsdoc?board=<xsl:value-of select='board' /></xsl:attribute>[<img src='/images/button/home.gif' />本讨论区]</a></xsl:if>
+				<xsl:if test='board'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='board' /></xsl:attribute>[<img src='/images/button/home.gif' />本讨论区]</a></xsl:if>
 			</body>
 		</html>
 	</xsl:template>

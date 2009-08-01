@@ -27,10 +27,10 @@
 							<td width='80%'>
 								<xsl:choose>
 									<xsl:when test='type = "dir"'>
-										<img src='/images/types/folder.gif' /><a><xsl:attribute name='href'>bbs0an?path=<xsl:value-of select='/bbs0an/path' /><xsl:value-of select='path' /></xsl:attribute><xsl:value-of select='title' /></a>
+										<img src='/images/types/folder.gif' /><a><xsl:attribute name='href'>0an?path=<xsl:value-of select='/bbs0an/path' /><xsl:value-of select='path' /></xsl:attribute><xsl:value-of select='title' /></a>
 									</xsl:when>
 									<xsl:when test='type = "file"'>
-										<img src='/images/types/text.gif' /><a><xsl:attribute name='href'>bbsanc?path=<xsl:value-of select='/bbs0an/path' /><xsl:value-of select='path' /></xsl:attribute><xsl:value-of select='title' /></a>
+										<img src='/images/types/text.gif' /><a><xsl:attribute name='href'>anc?path=<xsl:value-of select='/bbs0an/path' /><xsl:value-of select='path' /></xsl:attribute><xsl:value-of select='title' /></a>
 									</xsl:when>
 									<xsl:otherwise><img src='/images/types/error.gif' /><xsl:value-of select='title' /></xsl:otherwise>
 								</xsl:choose>
@@ -60,7 +60,7 @@
 					</xsl:if>
 				</table>
 				<a href='javascript:history.go(-1)'>[<img src='/images/button/back.gif' />返回上一页]</a>
-				<xsl:if test='board'><a><xsl:attribute name='href'>bbsdoc?board=<xsl:value-of select='board' /></xsl:attribute>[<img src='/images/button/home.gif' />本讨论区]</a></xsl:if>
+				<xsl:if test='board'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='board' /></xsl:attribute>[<img src='/images/button/home.gif' />本讨论区]</a></xsl:if>
 			</body>
 		</html>
 	</xsl:template>

@@ -171,13 +171,13 @@ static int bbsdoc(int mode)
 	if(dashf(path))	
 		printf("<banner>%s</banner>\n", path);
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
-	char *cgi_name = "doc";
+	char *cgi_name = "";
 	switch (mode) {
 		case MODE_DIGEST:
-			cgi_name = "gdoc";
+			cgi_name = "g";
 			break;
 		case MODE_THREAD:
-			cgi_name = "tdoc";
+			cgi_name = "t";
 			break;
 	}
 	// TODO: magic number.

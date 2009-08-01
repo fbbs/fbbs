@@ -8,15 +8,15 @@
 				<title>查看讯息 - 日月光华BBS</title>
 				<meta http-equiv='content-type' content='text/html; charset=gb2312' />
 				<meta http-equiv='pragma' content='no-cache' />
-				<meta http-equiv='Refresh' content='60; url=bbsgetmsg' />
+				<meta http-equiv='Refresh' content='60; url=getmsg' />
 				<link rel="stylesheet" type="text/css" href="/css/bbs0.css" />
 			</head>
 			<body>
 				<xsl:if test='msg'>
 					<strong><xsl:value-of select='id' /></strong>
 					<span>: <xsl:call-template name='showpost'><xsl:with-param name='content' select='msg' /></xsl:call-template></span>
-					<a target='view'><xsl:attribute name='href'>bbssendmsg?id=<xsl:value-of select='id' />&amp;pid=<xsl:value-of select='pid' /></xsl:attribute>[回复]</a>
-					<a href='bbsgetmsg'>[忽略]</a>
+					<a target='view'><xsl:attribute name='href'>sendmsg?id=<xsl:value-of select='id' />&amp;pid=<xsl:value-of select='pid' /></xsl:attribute>[回复]</a>
+					<a href='getmsg'>[忽略]</a>
 				</xsl:if>
 			</body>
 		</html>

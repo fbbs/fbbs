@@ -19,7 +19,7 @@
 								<xsl:attribute name='src'>/images/user_<xsl:value-of select="gender" />.gif</xsl:attribute>
 							</img>
 							<a target='view'>
-								<xsl:attribute name='href'>bbsqry?u=<xsl:value-of select="user" /></xsl:attribute>
+								<xsl:attribute name='href'>qry?u=<xsl:value-of select="user" /></xsl:attribute>
 								<strong><xsl:value-of select="user" /></strong>
 							</a>
 							<xsl:call-template name="showexp">
@@ -30,7 +30,7 @@
 							</xsl:if>
 						</xsl:when>
 						<xsl:otherwise>
-							<form action="bbslogin" method="post" target="_top">
+							<form action="login" method="post" target="_top">
 								用户<input name="id" type="text" maxlength="12" size="12" class="thinblue" />
 								密码<input name='pw' type='password' maxlength='12' size='12' class='thinblue' />
 								<input src='/images/login.gif' type='image' border='0' align='absmiddle' />
@@ -40,7 +40,7 @@
 				</div>
 				<div id='right'>
 					<img src='/images/users.gif' />
-					<span>[<a href='bbsusr' target='view'><xsl:value-of select="online" /></a>]</span>
+					<span>[<a href='usr' target='view'><xsl:value-of select="online" /></a>]</span>
 					<xsl:if test="mail = '1'">
 						<img src='/images/mailw.gif' />
 						<span class='notice'>有新信</span>

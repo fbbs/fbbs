@@ -28,10 +28,10 @@
 							<!-- English title -->
 							<td><strong><a>
 								<xsl:if test='@dir="1"'>
-									<xsl:attribute name='href'>bbsboa?board=<xsl:value-of select='title' /></xsl:attribute>[ <xsl:value-of select='title' /> ]
+									<xsl:attribute name='href'>boa?board=<xsl:value-of select='title' /></xsl:attribute>[ <xsl:value-of select='title' /> ]
 								</xsl:if>
 								<xsl:if test='@dir="0"'>
-									<xsl:attribute name='href'>bbsdoc?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='title' />
+									<xsl:attribute name='href'>doc?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='title' />
 								</xsl:if>
 							</a></strong></td>
 							<!-- Category -->
@@ -42,10 +42,10 @@
 							<!-- Chinese description -->
 							<td width="100%"><strong><a>
 								<xsl:if test='@dir="1"'>
-									<xsl:attribute name='href'>bbsboa?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='desc' />
+									<xsl:attribute name='href'>boa?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='desc' />
 								</xsl:if>
 								<xsl:if test='@dir="0"'>
-									<xsl:attribute name='href'>bbsdoc?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='desc' />
+									<xsl:attribute name='href'>doc?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='desc' />
 								</xsl:if>
 							</a></strong></td>
 							<!-- Board Masters -->

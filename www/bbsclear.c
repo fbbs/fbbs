@@ -13,7 +13,7 @@ int bbsclear_main(void)
 	brc_clear(NA, NULL, YEA);
 	brc_update(currentuser.userid, board);
 	char buf[STRLEN];
-	snprintf(buf, sizeof(buf), "bbsdoc?board=%s&start=%s", board, start);
+	snprintf(buf, sizeof(buf), "doc?board=%s&start=%s", board, start);
 	http_header();
 	refreshto(0, buf);
 	printf("</head></html>");

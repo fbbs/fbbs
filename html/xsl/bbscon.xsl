@@ -17,9 +17,9 @@
 					</xsl:call-template>
 				</div>
 				<xsl:call-template name='show-linkbar'></xsl:call-template>
-				<xsl:if test='link != "con"'><a><xsl:attribute name='href'>bbsgdoc?bid=<xsl:value-of select='bid' /></xsl:attribute>[ 文摘区 ]</a></xsl:if>
-				<a><xsl:attribute name='href'>bbsdoc?bid=<xsl:value-of select='bid' /></xsl:attribute>[ <img src='/images/button/home.gif' />本讨论区 ]</a>
-				<xsl:if test='link = "con"'><a><xsl:attribute name='href'>bbspst?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' /></xsl:attribute>[ <img src='/images/button/edit.gif' />回复本文 ]</a></xsl:if>
+				<xsl:if test='link != "con"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='bid' /></xsl:attribute>[ 文摘区 ]</a></xsl:if>
+				<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='bid' /></xsl:attribute>[ <img src='/images/button/home.gif' />本讨论区 ]</a>
+				<xsl:if test='link = "con"'><a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' /></xsl:attribute>[ <img src='/images/button/edit.gif' />回复本文 ]</a></xsl:if>
 			</body>
 		</html>
 	</xsl:template>
@@ -27,12 +27,12 @@
 	<xsl:template name='show-linkbar'>
 		<xsl:if test='link = "con"'>
 			<div>
-				<xsl:variable name='baseurl'>bbscon?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' />&amp;a=</xsl:variable>
+				<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' />&amp;a=</xsl:variable>
 				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />p</xsl:attribute>[ <img src='/images/button/up.gif' />上一篇 ]</a>
 				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />n</xsl:attribute>[ <img src='/images/button/down.gif' />下一篇 ]</a>
 				<xsl:if test='reid != f'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />b</xsl:attribute>[ 同主题上篇 ]</a></xsl:if>
 				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />a</xsl:attribute>[ 同主题下篇 ]</a>
-				<xsl:if test='gid'><a><xsl:attribute name='href'>bbscon?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='gid' /></xsl:attribute>[ 同主题第一篇 ]</a></xsl:if>
+				<xsl:if test='gid'><a><xsl:attribute name='href'>con?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='gid' /></xsl:attribute>[ 同主题第一篇 ]</a></xsl:if>
 			</div>
 		</xsl:if>
 	</xsl:template>

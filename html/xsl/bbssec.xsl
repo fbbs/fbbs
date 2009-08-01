@@ -18,7 +18,7 @@
 				<div class="pt9lc">
 					<span><strong><xsl:value-of select="name" /></strong>&#160;</span>
 					<xsl:element name="a">
-						<xsl:attribute name="href">bbsboa?<xsl:value-of select="name" /></xsl:attribute>
+						<xsl:attribute name="href">boa?<xsl:value-of select="name" /></xsl:attribute>
 						<xsl:value-of select="title" />
 					</xsl:element>
 					<ul class="pt9dc">
@@ -26,7 +26,7 @@
 							<li class="board">
 								<img src="/images/types/folder.gif" align="absmiddle" />
 								<a>
-									<xsl:attribute name="href">bbsdoc?board=<xsl:value-of select="url" />
+									<xsl:attribute name="href">doc?board=<xsl:value-of select="url" />
 									</xsl:attribute>
 									<xsl:value-of select="title" />
 								</a>

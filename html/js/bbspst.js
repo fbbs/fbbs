@@ -21,7 +21,7 @@ function enable_post()
 }
 function opnewwin()
 {
-	var mywin = window.open('bbspreupload?board=' + document.getElementById('board').innerHTML, '_blank', 'width=600,height=300,scrollbars=yes');
+	var mywin = window.open('preupload?board=' + document.getElementById('board').innerHTML, '_blank', 'width=600,height=300,scrollbars=yes');
 	if ((document.window != null) && (!mywin.opener))
 	mywin.opener = document.window;
 	mywin.focus();

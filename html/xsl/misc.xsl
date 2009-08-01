@@ -12,7 +12,7 @@
         <xsl:variable name='first' select='substring-before($names," ")' />
         <xsl:variable name='rest' select='substring-after($names," ")' />
         <xsl:if test='$first'>
-			<a><xsl:attribute name='href'>bbsqry?u=<xsl:value-of select='$first' /></xsl:attribute><xsl:value-of select='$first' /></a>
+			<a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$first' /></xsl:attribute><xsl:value-of select='$first' /></a>
 		</xsl:if>
 		<xsl:if test='$rest'>
 			<span>&#160;</span>
@@ -24,7 +24,7 @@
         </xsl:if>
 		<xsl:if test='not($rest)'>
 			<xsl:if test='$names'>
-				<a><xsl:attribute name='href'>bbsqry?u=<xsl:value-of select='$names' /></xsl:attribute><xsl:value-of select='$names' /></a>
+				<a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$names' /></xsl:attribute><xsl:value-of select='$names' /></a>
 			</xsl:if>
 			<xsl:if test="$names=''">
 				<xsl:if test="$isdir='0'">³ÏÕ÷°æÖ÷ÖÐ</xsl:if>

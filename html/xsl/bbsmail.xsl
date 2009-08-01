@@ -13,7 +13,7 @@
 			</head>
 			<body>
 				<strong>使用者 [<xsl:value-of select='user' />]&#160;&#160;&#160;信件总数 [<xsl:value-of select='total' />]封</strong>
-				<form name="list" method="post" action="bbsmailman">
+				<form name="list" method="post" action="mailman">
 					<table width="100%" bgcolor="#ffffff">
 						<tr class="pt9h">
 							<th>序号</th><th>管理</th><th>状态</th><th>发信人</th><th>日期</th><th>信件标题</th>
@@ -34,7 +34,7 @@
 								<td align='center'><xsl:value-of select='mark' /></td>
 								<!-- Author -->
 								<td><strong><a>
-									<xsl:attribute name='href'>bbsqry?u=<xsl:value-of select='sender' /></xsl:attribute><xsl:value-of select='sender' />
+									<xsl:attribute name='href'>qry?u=<xsl:value-of select='sender' /></xsl:attribute><xsl:value-of select='sender' />
 								</a></strong></td>
 								<!-- Time -->
 								<td>
@@ -46,7 +46,7 @@
 								<td width='100%'>
 									<xsl:if test='substring(title, 1, 4) != "Re: "'>★</xsl:if>
 									<a>
-										<xsl:attribute name='href'>bbsmailcon?f=<xsl:value-of select='name' /></xsl:attribute>
+										<xsl:attribute name='href'>mailcon?f=<xsl:value-of select='name' /></xsl:attribute>
 										<xsl:call-template name='ansi-escape'>
 											<xsl:with-param name='content'><xsl:value-of select='title' /></xsl:with-param>
 											<xsl:with-param name='fgcolor'>37</xsl:with-param>
@@ -73,11 +73,11 @@
 								<xsl:otherwise><xsl:value-of select='start - page' /></xsl:otherwise>
 							</xsl:choose>
 						</xsl:variable>
-						<a><xsl:attribute name='href'>bbsmail?start=<xsl:value-of select='$prev' /></xsl:attribute>[ <img src='/images/button/up.gif' />上一页 ]</a>
+						<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$prev' /></xsl:attribute>[ <img src='/images/button/up.gif' />上一页 ]</a>
 					</xsl:if>
 					<xsl:if test='total > start + page - 1'>
 						<xsl:variable name='next'><xsl:value-of select='start + page' /></xsl:variable>
-						<a><xsl:attribute name='href'>bbsmail?start=<xsl:value-of select='$next' /></xsl:attribute>[ <img src='/images/button/down.gif' />下一页 ]</a>
+						<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$next' /></xsl:attribute>[ <img src='/images/button/down.gif' />下一页 ]</a>
 					</xsl:if>
 					<form><input value='跳转到' type='submit' />第<input name="start" size="4" type="text" />封</form>
 				</div>

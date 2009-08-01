@@ -11,7 +11,7 @@
 			</head>
 			<body>
 				<p>信件已删除</p>
-				<a href='bbsmail'>回到信件列表</a>
+				<a href='mail'>回到信件列表</a>
 			</body>
 		</html>
 	</xsl:template>
