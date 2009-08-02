@@ -17,15 +17,9 @@ int bbsanc_main()
 
 	char fname[512];
 	sprintf(fname, "0Announce%s", path);
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(fname, MMAP_RDONLY, &ptr, &size);
-	if (fd < 0)
-		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "ÎÄÕÂ´ò¿ªÊ§°Ü");
 	xml_header("bbsanc");
 	fputs("<bbsanc><content>", stdout);
-	xml_fputs((char *)ptr, stdout);
-	mmap_close(ptr, size, fd);
+	xml_printfile(fname, stdout);
 	puts("</content>");
 	if (bp != NULL)
 		printf("<board>%s</board>", bp->filename);
