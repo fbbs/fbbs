@@ -42,19 +42,18 @@ int mmap_open(const char *file, int flags, void **ptr, size_t *size)
 		return -1;
 	if (flags != MMAP_NOLOCK)
 		flock(fd, lock_flag);
-	else
-		close(fd);
 	// Return error if not a regular file or wrong size.
 	if ((fstat(fd, &st) < 0) || (!S_ISREG(st.st_mode))
 			|| (st.st_size <= 0)) {
-		if (flags != MMAP_NOLOCK) {
+		if (flags != MMAP_NOLOCK)
 			flock(fd, LOCK_UN);
-			close(fd);
-		}
+		close(fd);
 		return -1;
 	}
 	// Map whole file to memory.
 	*ptr = mmap(NULL, st.st_size, mmap_prot, MAP_SHARED, fd, 0);
+	if (flags == MMAP_NOLOCK)
+		close(fd);
 	if (*ptr != MAP_FAILED) {
 		*size = st.st_size;
 		return fd;
