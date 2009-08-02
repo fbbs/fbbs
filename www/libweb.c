@@ -633,6 +633,20 @@ void xml_fputs2(const char *s, size_t size, FILE *stream)
 	fwrite(last, sizeof(char), s - last, stream);
 }
 
+int xml_printfile(const char *file, FILE *stream)
+{
+	if (file == NULL || stream == NULL)
+		return -1;
+	void *ptr;
+	size_t size;
+	int fd = mmap_open(file, MMAP_RDONLY, &ptr, &size);
+	if (fd < 0)
+		return -1;
+	xml_fputs((char *)ptr, stream);
+	mmap_close(ptr, size, fd);
+	return 0;
+}
+
 // Convert a hex char 'c' to a base 10 integer.
 static int __to16(char c)
 {
@@ -1726,7 +1740,10 @@ void showrawcontent(char *filename)
 	fclose(fp);
 }
 
-static struct fileheader *dir_bsearch(const struct fileheader *begin, 
+// Find post whose id = 'fid'.
+// If 'fid' > any post's id, return 'end',
+// otherwise, return the minimum one among all post whose id > 'fid'.
+struct fileheader *dir_bsearch(const struct fileheader *begin, 
 		const struct fileheader *end, unsigned int fid)
 {
 	const struct fileheader *mid;
@@ -1741,7 +1758,7 @@ static struct fileheader *dir_bsearch(const struct fileheader *begin,
 			end = mid;
 		}
 	}
-	return NULL;
+	return begin;
 }
 
 bool bbscon_search(const struct boardheader *bp, unsigned int fid,
@@ -1759,7 +1776,7 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 	struct fileheader *begin = ptr, *end;
 	end = begin + (size / sizeof(*begin));
 	const struct fileheader *f = dir_bsearch(begin, end, fid);
-	if (f != NULL) {
+	if (f != end && f->id == fid) {
 		unsigned int gid = f->gid;
 		switch (action) {
 			case 'p':  // previous post

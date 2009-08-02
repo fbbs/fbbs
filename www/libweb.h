@@ -123,6 +123,7 @@ int hprintf(char *fmt, ...);
 int hhprintf(char *fmt, ...);
 void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);
+int xml_printfile(const char *file, FILE *stream);
 
 extern char parm_name[][80];
 extern char *parm_val[];
@@ -180,6 +181,8 @@ void showheadline(char *board);
 void showrecommend(char *board, int showall, int showborder);
 void showrawcontent(char *filename);
 
+struct fileheader *dir_bsearch(const struct fileheader *begin, 
+		const struct fileheader *end, unsigned int fid);
 bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
 int maxlen(const char *board);
