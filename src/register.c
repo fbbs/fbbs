@@ -142,8 +142,8 @@ int getnewuserid(void)
 	int fd, val, i;
 	/* Following line added by Amigo 2002.04.03. Change clean account time. */
 	struct tm *area;
-	FILE *fdtmp;
-	char nname[50], tomb[HOMELEN];
+	FILE *fdtmp, *log;
+	char nname[50];
 	int exp, perf; /* Add by SmallPig */
 	system_time = time(0);
 	/* Following line added by Amigo 2002.04.03. Change clean account time. */
@@ -157,9 +157,9 @@ int getnewuserid(void)
 			return -1;
 		write(fd, getdatestring(system_time, DATE_ZH), 29);
 		close(fd);
-		snprintf(tomb, sizeof(tomb), BBSHOME"/tomb/%ld", system_time);
-		if (mkdir(tomb, 0755) != 0)
-			return -1;
+		log = fopen("tomb/log", "w+");
+		if (log == NULL)
+			return -1;	
 		strcpy(nname, "tmp/bbs.killid");
 		fdtmp = fopen(nname, "w+");
 		log_usies("CLEAN", "dated users.", &currentuser);
@@ -233,17 +233,19 @@ int getnewuserid(void)
 						cexpstr(exp), compute_user_value(&utmp),
 						(time(0) - utmp.firstlogin) / 86400);
 #endif
+				fprintf(log, "%s\n", utmp.userid);
 				sprintf(genbuf, "mail/%c/%s", toupper(utmp.userid[0]), utmp.userid);
-				snprintf(genbuf_rm, sizeof(genbuf_rm), "%s/%s.mail", tomb, utmp.userid);
+				sprintf(genbuf_rm, "%s~", genbuf);
 				rename(genbuf, genbuf_rm);
 				sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]), utmp.userid);
-				snprintf(genbuf_rm, sizeof(genbuf_rm), "%s/%s.home", tomb, utmp.userid);
+				sprintf(genbuf_rm, "%s~", genbuf);
 				rename(genbuf, genbuf_rm);
 				substitut_record(PASSFILE, &zerorec,
 						sizeof(struct userec), i+1);
 				del_uidshm(i+1, utmp.userid);
 			}
 		}
+		fclose(log);
 		fclose(fdtmp);
 		char *str = getdatestring(system_time, NA);
 		sprintf(genbuf, "[%8.8s %6.6s] 本日随风飘逝的ID", str + 6, str + 23);
