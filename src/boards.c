@@ -12,13 +12,7 @@ struct newpostdata {
 	char status;
 }*nbrd;
 
-struct goodboard {
-	//char            ID[GOOD_BRC_NUM][BRC_STRLEN];
-	//changed by cometcaptor 2007-04-17 为增加自定义目录功能
-	struct goodbrdheader boards[GOOD_BRC_NUM];
-	int nowpid;
-	int num;
-} GoodBrd;
+struct goodboard GoodBrd;
 
 int *zapbuf = NULL;
 int brdnum, yank_flag = 0;

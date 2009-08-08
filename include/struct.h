@@ -118,12 +118,19 @@ struct fileheader { /* This structure is used to hold data in */
 
 //added by cometcaptor 2007-04-21 修改.goodbrd的数据结构
 struct goodbrdheader {
-	int id; //自身ID
-	int pid; //父ID
-	int pos;
+	int id;   // id (order in the file, 1-based)
+	int pid;  // parent id
+	int pos;  // position of board in bcache (0-based, = bid - 1)
 	unsigned int flag;
 	char filename[STRLEN - 8];
 	char title[STRLEN];
+};
+
+//changed by cometcaptor 2007-04-17 为增加自定义目录功能
+struct goodboard {
+	struct goodbrdheader boards[GOOD_BRC_NUM];
+	int nowpid;
+	int num;
 };
 
 //move  shortfile to bstat. eefree 06.04.26
