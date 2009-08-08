@@ -78,6 +78,7 @@ int remove_shm(const char *shmstr, int defaultkey, int shmsize);
 //mmap.c
 int mmap_open(const char *file, int flags, void **ptr, size_t *size);
 void mmap_close(void *ptr, size_t size, int fd);
+int mmap_truncate(int fd, size_t newsize, void **ptr, size_t *size);
 int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size);
 

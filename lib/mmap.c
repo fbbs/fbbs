@@ -76,6 +76,25 @@ void mmap_close(void *ptr, size_t size, int fd)
 	}
 }
 
+// Truncate 'fd' to 'newsize'. If file extends, remap whole file.
+// On success, return 'fd', otherwise -err.
+int mmap_truncate(int fd, size_t newsize, void **ptr, size_t *size)
+{
+	if (newsize <= 0)
+		return -1;
+	if (newsize > *size)
+		munmap(*ptr, *size);
+	if (ftruncate(fd, newsize) < 0)
+		return -1;
+	if (newsize > *size) {
+		*ptr = mmap(NULL, newsize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (*ptr == MAP_FAILED)
+			return -1;
+		*size = newsize;
+	}
+	return fd;	
+}
+
 // Similar to 'mmap_open', but it uses a file descriptor instead.
 int safe_mmapfile_handle(int fd, int openflag, int prot, int flag,
 		void **ret_ptr, size_t *size)
