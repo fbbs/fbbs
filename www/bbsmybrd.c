@@ -38,22 +38,20 @@ static int read_submit(void)
 	// Read '.goodbrd'.
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(file, MMAP_RDWR, &ptr, &size);
-	if (fd < 0)
+	mmap_t m;
+	m.oflag = O_RDWR;
+	if (mmap_open(file, &m) < 0)
 		return BBS_ENOFILE; // TODO: empty?
-	if (mmap_truncate(fd, num * sizeof(struct goodbrdheader), &ptr, &size) < 0) {
-		mmap_close(ptr, size, fd);
+	if (mmap_truncate(&m, num * sizeof(struct goodbrdheader)) < 0) {
 		return BBS_EINTNL;
 	}
 	struct goodbrdheader *iter, *end;
-	end = (struct goodbrdheader *)ptr + num;
+	end = (struct goodbrdheader *)m.ptr + num;
 
 	// Remove deselected boards.
-	struct goodbrdheader *dst = ptr;
+	struct goodbrdheader *dst = m.ptr;
 	int id = 0;
-	for (iter = ptr; iter != end; ++iter) {
+	for (iter = m.ptr; iter != end; ++iter) {
 		if (boards[iter->pos] == true) {
 			boards[iter->pos] = false;
 			id++;
@@ -81,7 +79,7 @@ static int read_submit(void)
 			++dst;
 		}
 	}
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 	xml_header("bbsmybrd");
 	printf("<bbsmybrd><limit>%d</limit><selected>%d</selected></bbsmybrd>",
 			GOOD_BRC_NUM, num);
@@ -99,25 +97,24 @@ int bbsmybrd_main(void)
 	// Read '.goodbrd'.
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(file, MMAP_RDONLY, &ptr, &size);
-	if (fd < 0)
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(file, &m) < 0)
 		return BBS_ENOFILE;
 	struct goodbrdheader *iter, *end;
-	int num = size / sizeof(struct goodbrdheader);
+	int num = m.size / sizeof(struct goodbrdheader);
 	if (num > GOOD_BRC_NUM)
 		num = GOOD_BRC_NUM;
-	end = (struct goodbrdheader *)ptr + num;
+	end = (struct goodbrdheader *)m.ptr + num;
 
 	// Print 'bid's of favorite boards.
 	xml_header("bbsmybrd");
 	printf("<bbsmybrd><limit>%d</limit>", GOOD_BRC_NUM);
-	for (iter = ptr; iter != end; iter++) {
+	for (iter = m.ptr; iter != end; iter++) {
 		if (!is_custom_dir(iter))
 			printf("<my bid='%d'/>", iter->pos + 1);
 	}
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 
 	// Print all boards available.
 	struct boardheader *b;

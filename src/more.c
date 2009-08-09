@@ -510,28 +510,29 @@ struct mmap_more_file {
 
 static struct mmap_more_file *mmap_more_open(const char *filename, int width)
 {
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(filename, MMAP_RDONLY, &ptr, &size);
-	if (fd < 0)
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(filename, &m) < 0)
 		return NULL;
 	struct mmap_more_file *d = malloc(sizeof(*d));
-	if (d == NULL)
+	if (d == NULL) {
+		mmap_close(&m);
 		return NULL;
+	}
 	memset(d, 0, sizeof(*d));
 	d->total = -1;
 	d->width = width;
-	d->size = size;
-	d->ln_size = size / LINENUM_BLOCK_SIZE + 1; // at least one block
-	d->buf = malloc(size + d->ln_size * sizeof(struct linenum));
+	d->size = m.size;
+	d->ln_size = m.size / LINENUM_BLOCK_SIZE + 1; // at least one block
+	d->buf = malloc(m.size + d->ln_size * sizeof(struct linenum));
 	if (d->buf != NULL) {
-		memcpy(d->buf, ptr, size);
-		mmap_close(ptr, size, fd);
-		d->ln = (struct linenum *)(d->buf + size);
+		memcpy(d->buf, m.ptr, m.size);
+		mmap_close(&m);
+		d->ln = (struct linenum *)(d->buf + m.size);
 		memset(d->ln, 0, d->ln_size * sizeof(struct linenum));
 		return d;
 	}
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 	return NULL;
 }
 

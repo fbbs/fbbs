@@ -2613,15 +2613,13 @@ int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 // 区段删除,从id1到id2;版面文件与精华区有区别
 int delete_range(char *filename, int id1, int id2)
 {
-	struct fileheader *ptr;
-	struct fileheader *wptr, *rptr;
+	struct fileheader *ptr, *wptr, *rptr;
 	char dirpath[80], *p;
-	int fdr;
-	size_t filesize;
 	int ret;
 	int deleted=0;
 	int subflag;
 	int lookupuid;
+	mmap_t m;
 
 	strcpy(dirpath, filename);
 	p=strrchr(dirpath, '/');
@@ -2631,49 +2629,43 @@ int delete_range(char *filename, int id1, int id2)
 	p++;
 
 	BBS_TRY {
-		fdr = mmap_open(filename, MMAP_RDWR, (void **)&ptr, &filesize);
-		if (fdr < 0)
+		m.oflag = O_RDWR;
+		if (mmap_open(filename, &m) < 0)
 			BBS_RETURN(-1);
 		ret = 0;
-		if (id2 * sizeof(struct fileheader)> filesize) {
+		ptr = m.ptr;
+		if (id1 > id2 || id2 * sizeof(struct fileheader) > m.size) {
 			ret = -2; //区段范围超过文件大小
-		} else if(id1>id2) {
-			ret = -2;
 		} else {
-			wptr = rptr = &ptr[id1-1];
-			while(id1 <= id2) {
-				if(rptr->accessed[0]&FILE_MARKED) {
-					if(wptr!=rptr) {
-						memcpy(wptr,rptr,sizeof(struct fileheader));
-					}
+			wptr = rptr = ptr + id1 - 1;
+			while (id1 <= id2) {
+				if (rptr->accessed[0] & FILE_MARKED) {
+					if (wptr != rptr)
+						memcpy(wptr, rptr, sizeof(struct fileheader));
 					wptr++;
 					rptr++;
-				} else if(in_mail==NA) {
-					if(digestmode==NA) {
-						subflag=rptr->accessed[0]&FILE_DELETED? YEA:NA;
-
-						canceltotrash ( filename,
-								currentuser.userid,
-								rptr,
-								subflag,
-								!HAS_PERM(PERM_OBOARDS)
-						);
+				} else if (in_mail == NA) {
+					if (digestmode == NA) {
+						subflag = rptr->accessed[0] & FILE_DELETED ? YEA : NA;
+						canceltotrash(filename, currentuser.userid, rptr,
+								subflag, !HAS_PERM(PERM_OBOARDS));
 						if (subflag == YEA && !junkboard(currbp)) {
 							lookupuid = getuser(rptr->owner);
-							if (lookupuid> 0 && lookupuser.numposts> 0) {
+							if (lookupuid> 0 && lookupuser.numposts > 0) {
 								lookupuser.numposts--;
-								substitut_record (PASSFILE, &lookupuser, sizeof (struct userec), lookupuid);
+								substitut_record (PASSFILE, &lookupuser, 
+										sizeof (struct userec), lookupuid);
 							}
 						}
-					} else if(digestmode==YEA||digestmode==ATTACH_MODE) {
-						*p='\0';
+					} else if (digestmode == YEA || digestmode == ATTACH_MODE) {
+						*p = '\0';
 						strcat(dirpath, rptr->filename);
 						unlink(dirpath);
 					}
 					rptr++;
 					deleted++;
 				} else {
-					*p='\0';
+					*p = '\0';
 					strcat(dirpath, rptr->filename);
 					unlink(dirpath);
 					rptr++;
@@ -2683,14 +2675,14 @@ int delete_range(char *filename, int id1, int id2)
 			}
 		}
 		if (ret == 0) {
-			memcpy(wptr, rptr, filesize - sizeof(struct fileheader) * id2);
-			ftruncate(fdr, filesize - sizeof(struct fileheader) * deleted);
+			memcpy(wptr, rptr, m.size - sizeof(struct fileheader) * id2);
+			mmap_truncate(&m, m.size - sizeof(struct fileheader) * deleted);
 		}
 	}
 	BBS_CATCH {
 		ret = -3;
 	}
-	BBS_END mmap_close(ptr, filesize, fdr);
+	BBS_END mmap_close(&m);
 	//add by danielfree to recount the attach files size.06-10-31
 	if (digestmode==ATTACH_MODE) {
 		char apath[256], cmd[256];

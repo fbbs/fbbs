@@ -45,9 +45,7 @@ int bbspst_main(void)
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 	unsigned int fid = 0;
-	void *ptr;
-	size_t size;
-	int fd;
+	mmap_t m;
 	struct fileheader fh;
 	char *f = getparm("f");
 	bool reply = !(*f == '\0');
@@ -59,7 +57,8 @@ int bbspst_main(void)
 			return BBS_EPST;
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
-		if ((fd = mmap_open(file, MMAP_RDONLY, &ptr, &size)) < 0)
+		m.oflag = O_RDONLY;
+		if (mmap_open(file, &m) < 0)
 			return BBS_ENOFILE;
 	}
 	
@@ -71,8 +70,8 @@ int bbspst_main(void)
 		ansi_filter(fh.title, fh.title);
 		xml_fputs(fh.title, stdout);
 		fputs("</title>\n<post>", stdout);		
-		web_quotation(ptr, size, &fh);
-		mmap_close(ptr, size, fd);
+		web_quotation(m.ptr, m.size, &fh);
+		mmap_close(&m);
 		fputs("</post>\n", stdout);
 		printf("<f>%u</f>", fid);
 	}

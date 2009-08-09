@@ -71,9 +71,7 @@ static int print_bbsdoc(const struct fileheader *fh, int count, int mode)
 // Returns files in total on success, -1 on error.
 static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 {
-	void *ptr;
-	size_t size;
-	int fd, total = -1;
+	int total = -1;
 	struct fileheader **array = malloc(sizeof(struct fileheader *) * count);
 	if (array == NULL)
 		return -1;
@@ -81,9 +79,11 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 	struct fileheader *begin = malloc(sizeof(struct fileheader) * count);
 	if (begin == NULL)
 		return -1;
-	if ((fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size)) > 0) {
-		total = size / sizeof(struct fileheader);
-		struct fileheader *fh = (struct fileheader *)ptr;
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(dir, &m) == 0) {
+		total = m.size / sizeof(struct fileheader);
+		struct fileheader *fh = m.ptr;
 		struct fileheader *end = fh + total;
 		int all = 0;
 		if (mode != MODE_NORMAL && mode != MODE_DIGEST) {
@@ -115,10 +115,10 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 					all = 0;
 			}
 		} else {
-			fh = (struct fileheader *)ptr + *start - 1;
+			fh = (struct fileheader *)m.ptr + *start - 1;
 			memcpy(begin, fh, sizeof(struct fileheader) * count);
 		}
-		mmap_close(ptr, size, fd);
+		mmap_close(&m);
 		print_bbsdoc(begin, count, mode);
 		return total;
 	}

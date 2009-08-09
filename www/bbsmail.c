@@ -8,19 +8,17 @@ int bbsmail_main(void)
 	int start = strtol(getparm("start"), NULL, 10);
 	char buf[HOMELEN];
 	setmdir(buf, currentuser.userid);
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(buf, MMAP_RDONLY, &ptr, &size);
-	if (fd < 0)
-		return BBS_ENOFILE; // TODO: empty?
-
-	int total = size / sizeof(struct fileheader);
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(buf, &m) < 0)
+		return BBS_ENOFILE;
+	int total = m.size / sizeof(struct fileheader);
 	if (start <= 0)
 		start = total - TLINES + 1;
 	if (start < 1)
 		start = 1;
-	struct fileheader *fh = (struct fileheader *)ptr + start - 1;
-	struct fileheader *end = (struct fileheader *)ptr + total;
+	struct fileheader *fh = (struct fileheader *)m.ptr + start - 1;
+	struct fileheader *end = (struct fileheader *)m.ptr + total;
 	xml_header("bbsmail");
 	printf("<bbsmail>\n");
 	for (int i = 0; i < TLINES && fh != end; ++i) {
@@ -45,7 +43,7 @@ int bbsmail_main(void)
 		printf("</title><name>%s</name></mail>\n", fh->filename);
 		fh++;
 	}
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 	printf("<user>%s</user><total>%d</total><start>%d</start><page>%d</page>",
 			currentuser.userid, total, start, TLINES);
 	printf("</bbsmail>");	

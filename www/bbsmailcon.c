@@ -9,16 +9,15 @@ int bbsmailcon_main(void)
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 	char buf[HOMELEN];
-	void *ptr;
-	size_t size;
-	int fd;
+	mmap_t m;
+	m.oflag = O_RDWR;
 	// deal with index
 	setmdir(buf, currentuser.userid);
-	if ((fd = mmap_open(buf, MMAP_RDWR, &ptr, &size)) < 0)
+	if (mmap_open(buf, &m) < 0)
 		return BBS_ENOFILE;
-	struct fileheader *fh = bbsmail_search(ptr, size, file);
+	struct fileheader *fh = bbsmail_search(m.ptr, m.size, file);
 	if (fh == NULL) {
-		mmap_close(ptr, size, fd);
+		mmap_close(&m);
 		return BBS_ENOFILE;
 	}
 	if (!(fh->accessed[0] & FILE_READ)) {
@@ -29,24 +28,25 @@ int bbsmailcon_main(void)
 	xml_fputs(fh->title, stdout);
 	printf("</title>");
 	struct fileheader *prev = fh - 1;
-	if (prev >= (struct fileheader *)ptr)
+	if (prev >= (struct fileheader *)m.ptr)
 		printf("<prev>%s</prev>", prev->filename);
 	struct fileheader *next = fh + 1;
-	if (next < (struct fileheader *)ptr + size / sizeof(*next))
+	if (next < (struct fileheader *)m.ptr + m.size / sizeof(*next))
 		printf("<next>%s</next>", next->filename);
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 
 	// show mail content.
 	if (file[0] == 's') // shared mail
 		strlcpy(buf, file, sizeof(buf));
 	else
 		setmfile(buf, currentuser.userid, file);
-	if ((fd = mmap_open(buf, MMAP_RDONLY, &ptr, &size)) < 0)
+	m.oflag = O_RDONLY;
+	if (mmap_open(buf, &m) < 0)
 		return BBS_ENOFILE;
 	fputs("<mail>", stdout);
-	xml_fputs((char *)ptr, stdout);
+	xml_fputs((char *)m.ptr, stdout);
 	fputs("</mail>\n", stdout);
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 	printf("<file>%s</file></bbsmailcon>", file);
 	return 0;
 }

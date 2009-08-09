@@ -639,13 +639,12 @@ int xml_printfile(const char *file, FILE *stream)
 {
 	if (file == NULL || stream == NULL)
 		return -1;
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(file, MMAP_RDONLY, &ptr, &size);
-	if (fd < 0)
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(file, &m) < 0)
 		return -1;
-	xml_fputs((char *)ptr, stream);
-	mmap_close(ptr, size, fd);
+	xml_fputs((char *)m.ptr, stream);
+	mmap_close(&m);
 	return 0;
 }
 
@@ -1770,13 +1769,12 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		return false;
 	char dir[HOMELEN];
 	setbfile(dir, bp->filename, DOT_DIR);
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size);
-	if (fd < 0)
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(dir, &m) < 0)
 		return false;
-	struct fileheader *begin = ptr, *end;
-	end = begin + (size / sizeof(*begin));
+	struct fileheader *begin = m.ptr, *end;
+	end = begin + (m.size / sizeof(*begin));
 	const struct fileheader *f = dir_bsearch(begin, end, fid);
 	if (f != end && f->id == fid) {
 		unsigned int gid = f->gid;
@@ -1803,7 +1801,7 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		else
 			f = NULL;
 	}
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 	return (f != NULL);
 }
 

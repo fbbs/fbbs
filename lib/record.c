@@ -108,20 +108,22 @@ int get_records(const char *filename, void *rptr, int size, int id,
 int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 		int applycopy, int reverse)
 {
-	void *buf, *buf1, *buf2 = NULL;
-	int i, fd;
-	size_t file_size;
+	void *buf1, *buf2 = NULL;
+	int i;
 	int count;
+	mmap_t m;
 
 	BBS_TRY {
 		// TODO: is nolock safe here?
-		if ((fd = mmap_open(filename, MMAP_NOLOCK, &buf, &file_size)) < 0)
+		m.oflag = O_RDONLY;
+		if (mmap_open(filename, &m) < 0)
 			BBS_RETURN(0);
-		count = file_size / size; //记录的数目
+		mmap_lock(&m, LOCK_UN);
+		count = m.size / size; //记录的数目
 		if (reverse)
-		buf1 = buf + (count - 1) * size;
+			buf1 = (char *)m.ptr + (count - 1) * size;
 		else
-		buf1 = buf;
+			buf1 = m.ptr;
 		for (i = 0; i < count; i++) {
 			if (applycopy) {
 				buf2 = malloc(size);
@@ -131,21 +133,21 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 			}
 			if ((*fptr) (buf2, reverse ? count - i : i + 1, arg) == QUIT) {
 				//执行函数fptr,buf为缓冲区首地址,arg为第三参数
-				mmap_close((void *) buf, file_size, fd); //终止内存映射,本来没加锁,
+				mmap_close(&m); //终止内存映射,本来没加锁,
 				//现在不需要解锁
 				if (applycopy)
-				free(buf2);
+					free(buf2);
 				BBS_RETURN(QUIT);
 			}
 			if (reverse)
-			buf1 -= size;
+				buf1 -= size;
 			else
-			buf1 += size;
+				buf1 += size;
 		}
 	}
 	BBS_CATCH {
 	}
-	BBS_END mmap_close(buf, file_size, -1);
+	BBS_END mmap_close(&m);
 
 	if (applycopy)
 		free(buf2);
@@ -160,26 +162,27 @@ int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
 int search_record(char *filename, void *rptr, int size,
 		RECORD_FUNC_ARG fptr, void *farg)
 {
-	int i, fd;
-	void *buf, *buf1;
-	size_t filesize;
+	int i;
+	void *buf1;
+	mmap_t m;
 
 	BBS_TRY {
 		// TODO: is nolock safe here?
-		if ((fd = mmap_open(filename, MMAP_NOLOCK, &buf, &filesize)) < 0)
+		m.oflag = O_RDONLY;
+		if (mmap_open(filename, &m) < 0)
 			BBS_RETURN(0);
-		for (i = 0, buf1 = buf; i < filesize / size; i++, buf1 += size) {
+		for (i = 0, buf1 = m.ptr; i < m.size / size; i++, buf1 += size) {
 			if ((*fptr) (farg, buf1)) {
 				if (rptr)
 					memcpy(rptr, buf1, size);
-				mmap_close(buf, filesize, -1);
+				mmap_close(&m);
 				BBS_RETURN(i + 1);
 			}
 		}
 	}
 	BBS_CATCH {
 	}
-	BBS_END mmap_close(buf, filesize, -1);
+	BBS_END mmap_close(&m);
 
 	return 0;
 }
@@ -232,91 +235,67 @@ int substitute_record(char *filename, void *rptr, int size, int id)
 	return 0;
 }
 
-//from smthbbs, 2003.10.26
-int delete_record(char *filename, int size, int id,
-		RECORD_FUNC_ARG filecheck, void *arg)
+int delete_record(const char *file, int size, int id,
+		RECORD_FUNC_ARG check, void *arg)
 {
-	int fdr;
-	size_t filesize;
-	void *ptr;
+	mmap_t m;
 	int ret;
 
 	if (id <= 0)
 		return 0;
 	BBS_TRY {
-		if ((fdr = mmap_open(filename, MMAP_RDWR, &ptr, &filesize)) < 0)
+		m.oflag = O_RDWR;
+		if (mmap_open(file, &m) < 0)
 			BBS_RETURN(-1);
 		ret = 0;
-		if (id * size> filesize) {
+		if (id * size> m.size) {
 			ret = -2;
 		} else {
-			if (filecheck) { //检查filecheck函数是否存在?
-				if (!(*filecheck) (ptr + (id - 1) * size, arg)) {
-					for (id = 0; id * size < filesize; id++)
-					if ((*filecheck) (ptr + (id - 1) * size, arg))
-					break;
-					if (id * size >= filesize)
-					ret = -2;
+			if (check) {
+				if (!(*check)((char *)m.ptr + (id - 1) * size, arg)) {
+					for (id = 0; id * size < m.size; id++)
+						if ((*check) ((char *)m.ptr + (id - 1) * size, arg))
+							break;
+					if (id * size >= m.size)
+						ret = -2;
 				}
 			}
 		}
 		if (ret == 0) {
-			memcpy(ptr + (id - 1) * size, ptr + id * size, filesize - size * id);
-			// 将被删除记录后所有记录向前移动一个位置,
-			ftruncate(fdr, filesize - size);
-			// 将文件截短一个记录
+			memmove((char *)m.ptr + (id - 1) * size,
+					(char *)m.ptr + id * size, m.size - size * id);
+			mmap_truncate(&m, m.size - size);
 		}
 	}
 	BBS_CATCH {
 		ret = -3;
 	}
-	BBS_END mmap_close(ptr, filesize, fdr);
+	BBS_END mmap_close(&m);
 
 	return ret;
 }
 
-//插入记录
-int insert_record(char *filename, int size, RECORD_FUNC_ARG filecheck,
-		void *arg)
+int insert_record(const char *file, int size, RECORD_FUNC_ARG check, void *arg)
 {
-	char *ptr, *rptr;
-	int fdr;
-	size_t filesize;
-	int ret;
-
-	if (!filecheck||!arg)
+	if (check == NULL || arg == NULL)
 		return -1;
-	fdr=open(filename, O_RDWR, 0600);
-	lseek(fdr, 0, SEEK_END);
-	write(fdr, arg, size);
-
-	BBS_TRY {
-		if (safe_mmapfile_handle( fdr, O_RDWR, PROT_READ | PROT_WRITE,
-						MAP_SHARED, (void **) &ptr, &filesize
-				)
-				== 0
-		)
-		BBS_RETURN(-1);
-		ret = 0;
-		rptr = ptr;
-		filesize -= size;
-		while(filesize) {
-			if(filecheck(rptr, arg)) {
-				break;
-			}
-			rptr += size;
-			filesize-= size;
-		}
-		if(filesize) {
-			memmove(rptr + size, rptr, filesize);
-			memcpy(rptr, arg, size);
-		}
+	mmap_t m;
+	m.oflag = O_RDWR;
+	if (mmap_open(file, &m) < 0)
+		return -1;
+	void *iter, *end = (char *)m.ptr + m.size;
+	if (mmap_truncate(&m, m.size + size) < 0)
+		return -1;
+	for (iter = m.ptr; iter != end; iter = (char *)iter + size) {
+		if (check(iter, arg))
+			break;
 	}
-	BBS_CATCH {
-		ret = -3;
-	}
-	BBS_END mmap_close(ptr, filesize, fdr);
-	return ret;
+	if (iter != end)
+		memmove(iter + size, iter, 
+				m.size - size - ((char *)iter - (char *)m.ptr));
+	memcpy(iter, arg, size);
+	mmap_close(&m);
+	return 0;
 }
 
 #endif

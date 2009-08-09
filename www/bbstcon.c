@@ -19,15 +19,14 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 	// Open index file.
 	char dir[HOMELEN];
 	setbfile(dir, bp->filename, DOT_DIR);
-	void *ptr;
-	size_t size;
-	int fd = mmap_open(dir, MMAP_RDONLY, &ptr, &size);
-	if (fd < 0) {
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(dir, &m) < 0) {
 		free(fh);
 		return NULL;
 	}
-	struct fileheader *begin = ptr, *end;
-	end = begin + (size / sizeof(*begin));
+	struct fileheader *begin = m.ptr, *end;
+	end = begin + (m.size / sizeof(*begin));
 
 	// Search 'fid'.
 	const struct fileheader *f = dir_bsearch(begin, end, fid);
@@ -54,7 +53,7 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 		}
 		*count -= c;
 	}
-	mmap_close(ptr, size, fd);
+	mmap_close(&m);
 	return fh;
 }
 

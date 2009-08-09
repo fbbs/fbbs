@@ -634,26 +634,25 @@ void insertch_from_fp(int ch) {
 	linelen = backup_linelen;
 }
 
-void insert_from_fp(FILE *fp) {
-	char* ptr;
-	size_t size;
+void insert_from_fp(FILE *fp)
+{
+	// TODO: should change to mmap_open.
+	mmap_t m = {fileno(fp), O_RDWR, LOCK_EX, 
+			PROT_READ | PROT_WRITE, MAP_SHARED};
 	BBS_TRY {
-		if (safe_mmapfile_handle(fileno(fp),O_RDWR,PROT_READ, MAP_SHARED, (void**)(void*)&ptr, & size) == 1) {
-			char* data;
-			data=ptr;
+		if (mmap_open_fd(&m) == 0) {
+			char *data = m.ptr;
 			long not;
-			for (not=0;not<size;not++,data++) {
+			for (not = 0; not < m.size; not++, data++) {
 				insertch_from_fp(*data);
 			}
-		}
-		else
-		{
+		} else {
 			BBS_RETURN_VOID;
 		}
 	}
 	BBS_CATCH {
 	}
-	BBS_END mmap_close((void *) ptr, size, -1);
+	BBS_END mmap_close(&m);
 }
 
 int read_file(char *filename) {
