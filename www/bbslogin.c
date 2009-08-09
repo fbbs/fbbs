@@ -90,7 +90,7 @@ static int wwwlogin(struct userec *user) {
 	}
 	FLOCK(fileno(fp), LOCK_UN);
 	fclose(fp);
-	http_fatal2(HTTP_STATUS_SERVICE_UNAVAILABLE, "抱歉，目前在线用户数已达上限，无法登录。请稍后再来。");
+	return BBS_E2MANY;
 	return 0;
 }
 
@@ -103,12 +103,10 @@ int bbslogin_main(void)
 	parse_post_data();
 	strlcpy(id, getparm("id"), sizeof(id));
 	strlcpy(pw, getparm("pw"), sizeof(pw));
-	if(loginok && strcasecmp(id, currentuser.userid)) {
-		http_fatal("系统检测到目前您的计算机上已经登录有一个帐号，"
-				"请先退出(选择注销登录，或者关闭所有浏览器窗口)。");
-	}
+	if(loginok && strcasecmp(id, currentuser.userid))
+		return BBS_EDUPLGN;
 	if (getuserec(id, &user) == 0)
-		http_fatal("经查证，无此 ID。");
+		return BBS_ENOUSR;
 
 	user.numlogins++;
 	if (strcasecmp(id, "guest")) {
@@ -120,16 +118,15 @@ int bbslogin_main(void)
 			sethomefile(fname, user.userid, "logins.bad"); 
 			file_append(fname, buf);
 			file_append("logins.bad", buf);
-			http_fatal("密码输入错误...");
+			return BBS_EWPSWD;
 		}
 
 		total = check_multi(&user);
 		if (!HAS_PERM2(PERM_SYSOPS, &user) && total >= 2)
-			http_fatal("您已经登录了2个窗口。"
-					"为了保证他人利益，此次连线将被取消。");
+			return BBS_ELGNQE;
 
 		if (!HAS_PERM2(PERM_LOGIN, &user))
-			http_fatal("本帐号已停机。请到Notice版查询原因");
+			return BBS_EACCES;
 
 		now = time(NULL);
 		// Do not count frequent logins.
@@ -153,7 +150,7 @@ int bbslogin_main(void)
 		if (!HAS_PERM(PERM_SYSOPS)
 				&& abs(t - time(NULL)) < 10) {
 			report("Too Frequent", user.userid);
-			http_fatal("登录过于频繁，请稍候再来。");
+			return BBS_ELFREQ;
 		}
 #endif
 		strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));

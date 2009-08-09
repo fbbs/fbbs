@@ -39,28 +39,28 @@ int bbs0an_main(void)
 	char path[512];
 	strlcpy(path, getparm("path"), sizeof(path));
 	if (strstr(path, "..") || strstr(path, "SYSHome"))
-		http_fatal("此目录不存在");
+		return BBS_EINVAL;
 	char *board = getbfroma(path);
 	struct boardheader *bp = NULL;
 	if (*board != '\0') {
 		bp = getbcache(board);
 		if (!hasreadperm(&currentuser, bp))
-			http_fatal("目录不存在或无权访问");
+			return BBS_ENODIR;
 	}
 	char names[512];
 	snprintf(names, sizeof(names), "0Announce%s/.Names", path);
 	FILE *fp = fopen(names, "r");
 	if (fp == NULL)
-		http_fatal("目录不存在或无权访问"); // not indicating hidden directories.
+		return BBS_ENODIR; // not indicating hidden directories.
 	char buf[512], *title;
 	// check directory permission.
 	while (true) {
 		if (fgets(buf, sizeof(buf), fp) == NULL)
-			http_fatal("精华区索引错误");
+			return BBS_ENODIR;
 		if(!strncmp(buf, "# Title=", 8)) {
 			title = buf + 8;
 			if (!hasannperm(title, &currentuser, bp))
-				http_fatal("目录不存在或无权访问");
+				return BBS_ENODIR;
 			break;
 		}
 	}

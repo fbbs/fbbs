@@ -1,5 +1,7 @@
 #include "libweb.h"
 
+void check_bbserr(int err);
+
 int bbsleft_main(void);
 int bbssec_main(void);
 int bbsfoot_main(void);
@@ -94,11 +96,13 @@ int main(void)
 	while (FCGI_Accept() >= 0) {
 		fcgi_init_loop();
 		struct cgi_applet *app = getapplet(buf, sizeof(buf));
+		int ret;
 		if (app == NULL) {
-			http_fatal2(HTTP_STATUS_NOTFOUND, "请求的页面不存在");
+			ret = BBS_ENOURL;
 		} else {
-			(*(app->func)) ();
+			ret = (*(app->func)) ();
 		}
+		check_bbserr(ret);
 	}
 	return 0;
 }

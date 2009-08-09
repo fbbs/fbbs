@@ -141,9 +141,9 @@ static int bbsdoc(int mode)
 			strlcpy(board, bp->filename, sizeof(board));
 	}
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal("您选择的是一个目录");
+		return BBS_EINVAL;
 
 	char dir[HOMELEN];
 	switch (mode) {

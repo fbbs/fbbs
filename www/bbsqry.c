@@ -5,7 +5,7 @@ int bbsqry_main(void)
 	char userid[IDLEN + 1];
 	strlcpy(userid, getparm("u"), sizeof(userid));
 	if (!loginok)
-		http_fatal("请先登录方可查询");
+		return BBS_ELGNREQ;
 	struct userec user;
 	xml_header("bbsqry");
 	fputs("<bbsqry>\n", stdout);

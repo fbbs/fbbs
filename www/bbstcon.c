@@ -64,9 +64,9 @@ int bbstcon_main(void)
 	int bid = strtol(getparm("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal("您选择的是一个目录");
+		return BBS_EINVAL;
 	unsigned int gid = strtoul(getparm("g"), NULL, 10);
 	unsigned int fid = strtoul(getparm("f"), NULL, 10);
 	char action = *(getparm("a"));
@@ -80,7 +80,7 @@ int bbstcon_main(void)
 	int c = count;
 	struct fileheader *fh = bbstcon_search(bp, gid, fid, action, &c);
 	if (fh == NULL)
-		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "内部错误");
+		return BBS_ENOFILE;
 	struct fileheader *begin, *end;
 	xml_header("bbstcon");
 	printf("<bbstcon><bid>%d</bid><gid>%u</gid><page>%d</page>",

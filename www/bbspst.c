@@ -39,11 +39,11 @@ int bbspst_main(void)
 	struct boardheader *bp = getbcache2(bid);
 
 	if (!loginok)
-		http_fatal("匆匆过客不能发表文章，请先登录");
+		return BBS_ELGNREQ;
 	if (bp == NULL || !haspostperm(&currentuser, bp))
-		http_fatal("错误的讨论区或您无权在本讨论区发文");
+		return BBS_EPST;
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal("您选择的是一个目录");
+		return BBS_EINVAL;
 	unsigned int fid = 0;
 	void *ptr;
 	size_t size;
@@ -54,13 +54,13 @@ int bbspst_main(void)
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
 		if (!bbscon_search(bp, fid, 0, &fh))
-			http_fatal("错误的文章");
+			return BBS_ENOFILE;
 		if (fh.accessed[0] & FILE_NOREPLY)
-			http_fatal("该文章具有不可回复属性");
+			return BBS_EPST;
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
 		if ((fd = mmap_open(file, MMAP_RDONLY, &ptr, &size)) < 0)
-			http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "文章打开失败");
+			return BBS_ENOFILE;
 	}
 	
 	xml_header("bbspst");

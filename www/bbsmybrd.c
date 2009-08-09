@@ -14,7 +14,7 @@ static bool is_dir(const struct boardheader *bp)
 static int read_submit(void)
 {
 	if (!loginok)
-		http_fatal("请先登录");
+		return BBS_ELGNREQ;
 	parse_post_data();
 
 	// Read parameters.
@@ -31,9 +31,9 @@ static int read_submit(void)
 		}
 	}
 	if (num > GOOD_BRC_NUM)
-		http_fatal("您试图预定的讨论区数目超过上限");
+		return BBS_EBRDQE;
 	if (num <= 0)
-		http_fatal("您没有选择任何讨论区");
+		return BBS_EINVAL;
 
 	// Read '.goodbrd'.
 	char file[HOMELEN];
@@ -42,10 +42,10 @@ static int read_submit(void)
 	size_t size;
 	int fd = mmap_open(file, MMAP_RDWR, &ptr, &size);
 	if (fd < 0)
-		http_fatal("打开收藏夹失败"); // TODO: empty?
+		return BBS_ENOFILE; // TODO: empty?
 	if (mmap_truncate(fd, num * sizeof(struct goodbrdheader), &ptr, &size) < 0) {
 		mmap_close(ptr, size, fd);
-		http_fatal("修改收藏夹失败");
+		return BBS_EINTNL;
 	}
 	struct goodbrdheader *iter, *end;
 	end = (struct goodbrdheader *)ptr + num;
@@ -91,7 +91,7 @@ static int read_submit(void)
 int bbsmybrd_main(void)
 {
 	if (!loginok)
-		http_fatal("请先登录");
+		return BBS_ELGNREQ;
 	int type = strtol(getparm("type"), NULL, 10);
 	if (type != 0)
 		return read_submit();
@@ -103,7 +103,7 @@ int bbsmybrd_main(void)
 	size_t size;
 	int fd = mmap_open(file, MMAP_RDONLY, &ptr, &size);
 	if (fd < 0)
-		http_fatal("打开收藏夹失败");
+		return BBS_ENOFILE;
 	struct goodbrdheader *iter, *end;
 	int num = size / sizeof(struct goodbrdheader);
 	if (num > GOOD_BRC_NUM)

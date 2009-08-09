@@ -3,7 +3,7 @@
 int bbsmail_main(void)
 {
 	if (!loginok)
-		http_fatal("请先登录");
+		return BBS_ELGNREQ;
 
 	int start = strtol(getparm("start"), NULL, 10);
 	char buf[HOMELEN];
@@ -12,7 +12,7 @@ int bbsmail_main(void)
 	size_t size;
 	int fd = mmap_open(buf, MMAP_RDONLY, &ptr, &size);
 	if (fd < 0)
-		http_fatal("索引打开失败");
+		return BBS_ENOFILE; // TODO: empty?
 
 	int total = size / sizeof(struct fileheader);
 	if (start <= 0)

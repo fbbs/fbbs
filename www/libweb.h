@@ -116,8 +116,8 @@ int del_record(char *file, int size, int num);
 
 char *getsenv(const char *s);
 void http_quit(void);
-void http_fatal(const char *prompt);
-void http_fatal2(enum HTTP_STATUS status, const char *prompt);
+int http_fatal(const char *prompt);
+int http_fatal2(enum HTTP_STATUS status, const char *prompt);
 int hsprintf(char *s, char *fmt, ...);
 int hprintf(char *fmt, ...);
 int hhprintf(char *fmt, ...);

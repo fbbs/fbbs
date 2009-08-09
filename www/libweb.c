@@ -361,16 +361,17 @@ void http_quit(void) {
 	FCGI_Finish();
 }
 
-void http_fatal(const char *prompt)
+int http_fatal(const char *prompt)
 {
 	printf("Content-type: text/html; charset=%s\n\n", CHARSET);
 	printf("<html><head><title>发生错误</title></head><body><div>%s</div>"
 			"<a href=javascript:history.go(-1)>快速返回</a></body></html>",
 			prompt);
 	FCGI_Finish();
+	return 0;
 }
 
-void http_fatal2(enum HTTP_STATUS status, const char *prompt)
+int http_fatal2(enum HTTP_STATUS status, const char *prompt)
 {
 	printf("Content-type: text/html; charset=%s\nStatus: %d\n\n",
 			CHARSET, status);
@@ -378,6 +379,7 @@ void http_fatal2(enum HTTP_STATUS status, const char *prompt)
 			"<a href=javascript:history.go(-1)>快速返回</a></body></html>",
 			prompt);
 	FCGI_Finish();
+	return 0;
 }
 
 int strnncpy(char *s, int *l, char *s2) {

@@ -3,11 +3,11 @@
 int bbsmailcon_main(void)
 {
 	if (!loginok)
-		http_fatal("请先登录");
+		return BBS_ELGNREQ;
 	char file[40];
 	strlcpy(file, getparm("f"), sizeof(file));
 	if (!valid_mailname(file))
-		http_fatal("错误的参数");
+		return BBS_EINVAL;
 	char buf[HOMELEN];
 	void *ptr;
 	size_t size;
@@ -15,11 +15,11 @@ int bbsmailcon_main(void)
 	// deal with index
 	setmdir(buf, currentuser.userid);
 	if ((fd = mmap_open(buf, MMAP_RDWR, &ptr, &size)) < 0)
-		http_fatal("索引打开失败");
+		return BBS_ENOFILE;
 	struct fileheader *fh = bbsmail_search(ptr, size, file);
 	if (fh == NULL) {
 		mmap_close(ptr, size, fd);
-		http_fatal("信件不存在，可能已被删除");
+		return BBS_ENOFILE;
 	}
 	if (!(fh->accessed[0] & FILE_READ)) {
 		fh->accessed[0] |= FILE_READ;
@@ -42,7 +42,7 @@ int bbsmailcon_main(void)
 	else
 		setmfile(buf, currentuser.userid, file);
 	if ((fd = mmap_open(buf, MMAP_RDONLY, &ptr, &size)) < 0)
-		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "文章打开失败");
+		return BBS_ENOFILE;
 	fputs("<mail>", stdout);
 	xml_fputs((char *)ptr, stdout);
 	fputs("</mail>\n", stdout);

@@ -27,7 +27,7 @@ static bool quota_exceeded(const char *board)
 	return true;
 }
 
-static void addtodir(const char *board, const char *tmpfile) 
+static int addtodir(const char *board, const char *tmpfile) 
 {
 	char file[100], dir[100], url_filename[256];
 	static struct fileheader x;
@@ -43,7 +43,7 @@ static void addtodir(const char *board, const char *tmpfile)
 	x.id = file_size(file);
 	if (append_record(dir, &x, sizeof(x)) < 0) {
 		unlink(file);
-		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "写文件错误");
+		return BBS_EINTNL;
 	}
 
 	char buf[256],log[100];
@@ -57,6 +57,7 @@ static void addtodir(const char *board, const char *tmpfile)
 	printf("<bbsupload><size>%d</size><user>%s</user>"
 			"<url>http://"BBSHOST"/upload/%s/%s</url></bbsupload>",
 			x.id, x.owner, board, x.filename);
+	return 0;
 }
 
 static bool check_upload(char *buf, size_t size, char **begin, char **end, char **fileext)
@@ -120,31 +121,31 @@ static bool check_upload(char *buf, size_t size, char **begin, char **end, char 
 int bbsupload_main(void)
 {
 	if (!loginok) 
-		http_fatal("匆匆过客无法执行本操作，请先登录");
+		return BBS_ELGNREQ;
 	const char *board = getparm("b");
 	struct boardheader *bp = getbcache(board);
-	if (!haspostperm(&currentuser, bp))
-		http_fatal("错误的讨论区或无权上传文件至本讨论区");
+	if (bp == NULL || !haspostperm(&currentuser, bp))
+		return BBS_ENOBRD;
 
 	size_t size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
 	if (size > UPLOAD_MAX + UPLOAD_OVERHEAD)
-		http_fatal("文件长度超过最大限制");
+		return BBS_EINVAL;
 
 	char *buf = malloc(size);
 	if (buf == NULL) 
-		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "内部错误");
+		return BBS_EINTNL;
 	char *begin = NULL, *end = NULL, *fileext = NULL;
 	if (!check_upload(buf, size, &begin, &end, &fileext)) {
 		free(buf);
-		http_fatal("");
+		return BBS_EINVAL;
 	}
 	if (end - begin > maxlen(board)) {
 		free(buf);
-		http_fatal("文件长度超过版面限制");
+		return BBS_EFBIG;
 	}
 	if (quota_exceeded(board)) {
 		free(buf);
-		http_fatal("版面超限 无法上传");
+		return BBS_EATTQE;
 	}
 	// TODO: Possible collison..
 	char fname[HOMELEN], fpath[HOMELEN];
@@ -156,9 +157,8 @@ int bbsupload_main(void)
 		fwrite(begin, 1, end - begin, fp);
 		fclose(fp);
 	} else {
-		http_fatal("写入错误");
+		return BBS_EINTNL;
 	}
 	free(buf);
-	addtodir(board, fname);
-	return 0;
+	return addtodir(board, fname);
 }

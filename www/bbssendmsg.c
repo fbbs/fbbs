@@ -33,9 +33,9 @@ static int send_msg(const char *myuserid, int mypid, const char *touserid, int t
 int bbssendmsg_main(void)
 {
 	if (!loginok)
-		http_fatal("匆匆过客不能发消息, 请先登录！");
+		return BBS_ELGNREQ;
 	if (!HAS_PERM(PERM_TALK))
-		http_fatal("您是未注册用户,或者无权发送消息！");
+		return BBS_EACCES;
 
 	parse_post_data();
 	char *destid = getparm("id");
@@ -47,10 +47,10 @@ int bbssendmsg_main(void)
 		return 0;
 	}
 	if (!strcasecmp(destid, currentuser.userid))
-		http_fatal("您不能给自己发讯息！");
+		return BBS_EINVAL;
 	int destuid = searchuser(destid);
 	if (!destuid)
-		http_fatal("查无此人");
+		return BBS_ENOUSR;
 	// TODO: check blacklist
 	xml_header("bbssendmsg");
 	struct user_info *user = utmpshm->uinfo;

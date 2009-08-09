@@ -3,11 +3,11 @@
 int bbsclear_main(void)
 {
 	if (!loginok)
-		http_fatal("匆匆过客无法执行此项操作, 请先登录");
+		return BBS_ELGNREQ;
 	const char *board = getparm("board");
 	struct boardheader *bp = getbcache(board);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		return BBS_ENOBRD;
 	const char *start = getparm("start");
 	brc_initial(currentuser.userid, board);
 	brc_clear(NA, NULL, YEA);

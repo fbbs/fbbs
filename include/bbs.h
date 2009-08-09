@@ -34,6 +34,7 @@
 #include "functions.h"				/* you can enable functions that you want */
 #include "permissions.h"
 #include "libBBS.h"
+#include "bbserrno.h"
 
 #ifndef LOCK_EX
 #define LOCK_EX         2       /* exclusive lock */

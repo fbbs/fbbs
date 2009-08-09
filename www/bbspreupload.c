@@ -4,10 +4,10 @@ int bbspreupload_main(void)
 {
 	char *board = getparm("board");
 	if (!loginok)
-		http_fatal("匆匆过客无权限上传文件");
+		return BBS_EINVAL;
 	struct boardheader *bp = getbcache(board);
 	if (bp == NULL || !haspostperm(&currentuser, bp))
-		http_fatal("错误的讨论区或无权上传文件至本讨论区");
+		return BBS_EPST;
 
 	xml_header("bbspreupload");
 	printf("<bbspreupload><board>%s</board><user>%s</user><max>%d</max>"

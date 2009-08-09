@@ -7,11 +7,11 @@ int bbssnd_main(void)
 	struct boardheader *bp = getbcache2(bid);
 
 	if (!loginok)
-		http_fatal("匆匆过客不能发表文章，请先登录");
+		return BBS_ELGNREQ;
 	if (bp == NULL || !haspostperm(&currentuser, bp))
-		http_fatal("错误的讨论区或您无权在本讨论区发文");
+		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal("您选择的是一个目录");
+		return BBS_EINVAL;
 
 	unsigned int fid;
 	struct fileheader fh;
@@ -20,15 +20,15 @@ int bbssnd_main(void)
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
 		if (!bbscon_search(bp, fid, 0, &fh))
-			http_fatal("错误的文章");
+			return BBS_ENOFILE;
 		if (fh.accessed[0] & FILE_NOREPLY)
-			http_fatal("该文章具有不可回复属性");
+			return BBS_EACCES;
 	}
 
 	char title[sizeof(fh.title)];
 	char *t = getparm("title");
 	if (*t == '\0')
-		http_fatal("文章标题不能为空");
+		return BBS_EINVAL;
 	else
 		strlcpy(title, t, sizeof(title));
 	ansi_filter(title, title);
@@ -37,19 +37,19 @@ int bbssnd_main(void)
 #ifdef SPARC
 		if(abs(time(0) - *(int*)(u_info->from+34))<6) { //modified from 36 to 34 for sparc solaris by roly 02.02.28
 			*(int*)(u_info->from+34)=time(0); //modified from 36 to 34 for sparc solaris by roly 02.02.28
-			http_fatal("两次发文间隔过密, 请休息几秒后再试");
+			return BBS_EPFREQ;
 		}
 		*(int*)(u_info->from+34)=time(0);//modified from 36 to 34 for sparc solaris by roly 02.02.28
 #else
 		if(abs(time(0) - *(int*)(u_info->from+36))<6) { //modified from 36 to 34 for sparc solaris by roly 02.02.28
 			*(int*)(u_info->from+36)=time(0); //modified from 36 to 34 for sparc solaris by roly 02.02.28
-			http_fatal("两次发文间隔过密, 请休息几秒后再试");
+			return BBS_EPFREQ;
 		}
 		*(int*)(u_info->from+36)=time(0);//modified from 36 to 34 for sparc solaris by roly 02.02.28
 #endif
 	if (post_article(&currentuser, bp, title, 
 			getparm("text"), fromhost, reply ? &fh : NULL) < 0)
-		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "发表文章失败");
+		return BBS_EINTNL;
 
 	if (!junkboard(bp)) {
 		currentuser.numposts++;

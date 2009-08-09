@@ -6,13 +6,13 @@ int bbsanc_main()
 	if (strstr(path, "bbslist") || strstr(path, ".Search")
 			|| strstr(path, ".Names") || strstr(path, "..")
 			|| strstr(path, "SYSHome"))
-		http_fatal("文件不存在");
+		return BBS_EINVAL;
 	char *board = getbfroma(path);
 	struct boardheader *bp = NULL;
 	if (*board != '\0') {
 		bp = getbcache(board);
 		if (!hasreadperm(&currentuser, bp))
-			http_fatal("文件不存在或无权访问");
+			return BBS_ENOFILE;
 	}
 
 	char fname[512];

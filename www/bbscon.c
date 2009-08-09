@@ -5,15 +5,15 @@ int bbscon_main(void)
 	int bid = strtol(getparm("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal("您选择的是一个目录");
+		return BBS_EINVAL;
 	unsigned int fid = strtoul(getparm("f"), NULL, 10);
 	char *action = getparm("a");
 
 	struct fileheader fh;
 	if (!bbscon_search(bp, fid, *action, &fh))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "没有找到指定的文章");
+		return BBS_ENOFILE;
 	fid = fh.id;
 
 	xml_header("bbscon");
@@ -33,12 +33,12 @@ int bbsgcon_main(void)
 	int bid = strtol(getparm("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
-		http_fatal2(HTTP_STATUS_NOTFOUND, "错误的讨论区");
+		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
-		http_fatal("您选择的是一个目录");
+		return BBS_EINVAL;
 	char *f = getparm("f");
 	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
-		http_fatal("错误的文件名");
+		return BBS_EINVAL;
 	xml_header("bbscon");
 	printf("<bbscon><post>");
 	char file[HOMELEN];
