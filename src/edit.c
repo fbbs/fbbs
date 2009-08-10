@@ -1,64 +1,41 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: edit.c 366 2007-05-12 16:35:51Z danielfree $
- */
-
 #include "bbs.h"
 #include "edit.h"
 USE_TRY;
-struct textline *firstline = NULL;
-struct textline *can_edit_begin = NULL;
-struct textline *can_edit_end = NULL;
-struct textline *top_of_win = NULL;
-struct textline *currline = NULL;
 
-extern struct boardheader *getbcache();
-
-void vedit_key();
-int currpnt = 0;
 extern int local_article;
 extern char BoardName[];
 #ifdef MARK_X_FLAG
 extern int markXflag;
 #endif
-char searchtext[80];
+
+static struct textline *firstline = NULL;
+static struct textline *can_edit_begin = NULL;
+static struct textline *can_edit_end = NULL;
+static struct textline *top_of_win = NULL;
+static struct textline *currline = NULL;
+static struct textline *mark_begin, *mark_end;
+static int currpnt = 0;
+static char searchtext[80];
+static int scrollen = 2;
+static int moveln = 0;
+static int shifttmp = 0;
+static int ismsgline;
+static int tmpline;
+static int curr_window_line, currln;
+static int redraw_everything;
+static int insert_character = 1;
+static int linelen = WRAPMARGIN;
+static int mark_on;
+
 int editansi = 0;
-int scrollen = 2;
-int moveln = 0;
-int shifttmp = 0;
-int ismsgline;
-int tmpline;
-int curr_window_line, currln;
-int redraw_everything;
-int insert_character = 1;
-int linelen = WRAPMARGIN;
+int enabledbchar = 1;
+
+void vedit_key();
+void process_MARK_action(int arg, char *msg);
+
 /* for copy/paste */
 #define CLEAR_MARK()  mark_on = 0; mark_begin = mark_end = NULL;
-struct textline *mark_begin, *mark_end;
-int mark_on;
 /* copy/paste */
-int enabledbchar=1;
-void process_MARK_action(int arg, char *msg);
 
 void msgline() {
 	char buf[256], buf2[STRLEN * 2];
