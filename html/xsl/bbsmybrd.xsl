@@ -32,6 +32,17 @@
 		</html>
 	</xsl:template>
 
+	<xsl:template match='bbsbrdadd'>
+		<html>
+			<head>
+				<title>收藏夹设定 - 日月光华</title>
+				<meta http-equiv="content-type" content="text/html; charset=gb2312" />
+				<script>top.f2.location='left'</script>
+			</head>
+			<body><p>收藏夹添加版面 <a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='bid' /></xsl:attribute><xsl:value-of select='brd' /></a> 成功</p><a href='javascript:history.go(-1)'>快速返回</a></body>
+		</html>
+	</xsl:template>
+
 	<xsl:template match='b'>
 		<xsl:variable name='check'><xsl:call-template name='is-mybrd'><xsl:with-param name='bid' select='@bid'/></xsl:call-template></xsl:variable>
 		<td>
@@ -47,4 +58,5 @@
 		<xsl:param name='bid'/>
 		<xsl:for-each select='/bbsmybrd/my'><xsl:if test='@bid = $bid'>1</xsl:if></xsl:for-each>
 	</xsl:template>
+
 </xsl:stylesheet>
