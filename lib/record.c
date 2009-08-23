@@ -283,9 +283,10 @@ int insert_record(const char *file, int size, RECORD_FUNC_ARG check, void *arg)
 	m.oflag = O_RDWR;
 	if (mmap_open(file, &m) < 0)
 		return -1;
-	void *iter, *end = (char *)m.ptr + m.size;
+	void *iter, *end;
 	if (mmap_truncate(&m, m.size + size) < 0)
 		return -1;
+	end = (char *)m.ptr + m.size - size;
 	for (iter = m.ptr; iter != end; iter = (char *)iter + size) {
 		if (check(iter, arg))
 			break;
