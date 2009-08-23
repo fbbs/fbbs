@@ -21,6 +21,7 @@
 				<a href='javascript:history.go(-1)'>[ <img src='/images/button/back.gif' />返回 ]</a>
 				<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='bid' /></xsl:attribute>[ <img src='/images/button/home.gif' />本讨论区 ]</a>
 				<xsl:if test='link = "con"'><a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' /></xsl:attribute>[ <img src='/images/button/edit.gif' />回复本文 ]</a></xsl:if>
+				<a><xsl:attribute name='href'>ccc?bid=<xsl:value-of select='bid' />&amp;f=<xsl:value-of select='f' /></xsl:attribute>[ 转载 ]</a>
 			</body>
 		</html>
 	</xsl:template>

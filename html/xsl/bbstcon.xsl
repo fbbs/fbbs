@@ -14,6 +14,7 @@
 				<xsl:for-each select='post'>
 					<div>
 						<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='/bbstcon/bid' />&amp;f=<xsl:value-of select='fid' /></xsl:attribute>[ <img src='/images/button/edit.gif' />回复本文 ]</a>
+						<a><xsl:attribute name='href'>ccc?bid=<xsl:value-of select='/bbstcon/bid' />&amp;f=<xsl:value-of select='fid' /></xsl:attribute>[ 转载本文 ]</a>
 						<a><xsl:attribute name='href'>qry?u=<xsl:value-of select='author' /></xsl:attribute>[ 本篇作者: <xsl:value-of select='author' /> ]</a>
 						<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='/bbstcon/bid' />&amp;f=<xsl:value-of select='fid' /></xsl:attribute>[ <img src='/images/button/content.gif' />单篇阅读 ]</a>
 						<a href='#top'>[ <img src='/images/button/up.gif' />回页首 ]</a>
