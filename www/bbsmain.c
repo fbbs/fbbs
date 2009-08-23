@@ -30,6 +30,7 @@ int bbstdoc_main(void);
 int bbsgcon_main(void);
 int bbstcon_main(void);
 int bbsmybrd_main(void);
+int bbsbrdadd_main(void);
 
 struct cgi_applet {
 	char *name;
@@ -65,6 +66,7 @@ static struct cgi_applet applets[] = {
 		{ "gcon", bbsgcon_main},
 		{ "tcon", bbstcon_main},
 		{ "mybrd", bbsmybrd_main},
+		{ "brdadd", bbsbrdadd_main},
 		{ NULL, NULL }
 };
 
