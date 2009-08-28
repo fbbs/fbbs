@@ -349,24 +349,22 @@ int do_userlist() {
 							: uentp->username);
 			ellipsis(userid, 20);
 			//End IAMFAT
+			char *host;
+			if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
+				host = uentp->from;
+			} else {
+				if (uentp->from[22] == 'H')
+					host = "......";
+				else
+					host = mask_host(uentp->from);
+			}
 			sprintf(
 					user_info_str,
 					" [m%4d%2s%-12.22s[37m %-20.20s[m %-15.15s %c %c %c %s%-10.10s[37m %5.5s[m\n",
 					i + 1 + page,
 					//Modified by IAMFAT 2002-05-27
-#ifdef SHOWMETOFRIEND	 
-					(override) ? ((hisfriend(uentp))? "[32m¡Ì":"¡Ì[32m"):((hisfriend(uentp))?"[33m  ":"  "),
-					uentp->userid,userid,
-					(HAS_PERM(PERM_OCHAT)||(uentp->from[22] != 'H')||hisfriend(uentp))?uentp->from:"......",
-#else
-					(override) ? "[32m¡Ì" : "  ",
-					uentp->userid,
-					userid,
-					(HAS_PERM(PERM_OCHAT)||(uentp->from[22] != 'H')) ? uentp->from
-							: "......",
-#endif
-					//End IAMFAT
-					//added by Ashinmarch : uentp->mode ==LOCKSCREEN used to modify status on 2007.11.5
+					(override) ? "\033[32m¡Ì" : "  ", uentp->userid, userid,
+					host,
 					(uentp->mode == FIVE || uentp->mode == BBSNET
 							|| uentp->mode == LOCKSCREEN) ? '@'
 							: pagerchar(hisfriend(uentp), uentp->pager),

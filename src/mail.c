@@ -1881,7 +1881,7 @@ int mode;
 		else if ((fp = fopen(tmpfname, "a")) != NULL) {
 			fprintf(fp,
 					"\n--\n\033[1;36m※ 修改:·%s 于 %16.16s 修改本文·[FROM: %-.20s]\033[m\n",
-					currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, fromhost);
+					currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, mask_host(fromhost));
 			fclose (fp);
 		}
 		clear();

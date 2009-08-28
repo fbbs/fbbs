@@ -221,3 +221,19 @@ void strtourl(char *url, const char *str)
 	}
 	*url = '\0';
 }
+
+char *mask_host(const char *host)
+{
+	static char masked[40];
+	strlcpy(masked, host, sizeof(masked));
+	char *last = strrchr(masked, '.');
+	if (last != NULL) {
+		char *end = masked + sizeof(masked);
+		if (++last < end)
+			*last = '*';
+		if (++last < end)
+			*last = '\0';
+		masked[sizeof(masked) - 1] = '\0';
+	}
+	return masked;
+}

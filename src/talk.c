@@ -401,22 +401,18 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 				strcpy(col, "[1;33m");
 			else
 				strcpy(col, "[1m");
+			char *host;
+			if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
+				host = uentp->from;
+			} else {
+				if (uentp->from[22] == 'H')
+					host = "......";
+				else
+					host = mask_host(uentp->from);
+			}
 			if (doTalk) {
-				prints(
-						"(%d) ◊¥Ã¨£∫%s%-10s[m£¨¿¥◊‘£∫%.20s\n",
-						num,
-						col,
-						ModeType(uentp->mode),
-#ifdef SHOWMETOFRIEND		    
-						/* The following line is modified by Amigo 2002.04.02. Let sysop view fromhost at ª∑πÀÀƒ∑Ω. */
-						((uentp->from[22] != 'H')||hisfriend(uentp)
-								||HAS_PERM(PERM_USER))?uentp->from:"......"
-						);
-#else
-						/* The following line is modified by Amigo 2002.04.02. Let sysop view fromhost at ª∑πÀÀƒ∑Ω. */
-						((uentp->from[22] != 'H')|| HAS_PERM(PERM_USER)) ? uentp->from
-								: "......");
-#endif
+				prints("(%d) ◊¥Ã¨£∫%s%-10s[m£¨¿¥◊‘£∫%.20s\n", num, col,
+						ModeType(uentp->mode), host);
 			} else {
 				prints("%s%-10s[m ", col, ModeType(uentp->mode));
 				if ((num) % 5 == 0)
@@ -470,6 +466,7 @@ char q_id[IDLEN + 2];
 	update_ulist(&uinfo, utmpent);
 	move(0, 0);
 	clrtobot();
+	bool self = !strcmp(currentuser.userid, lookupuser.userid);
 	sprintf(qry_mail_dir, "mail/%c/%s/%s", toupper(lookupuser.userid[0]), lookupuser.userid, DOT_DIR);
 	exp = countexp(&lookupuser);
 	perf = countperf(&lookupuser);
@@ -486,9 +483,19 @@ char q_id[IDLEN + 2];
 	prints("[1;37m%s [m([1;33m%s[m) π≤…œ’æ [1;32m%d[m ¥Œ  %s\n",
 			lookupuser.userid, lookupuser.username,lookupuser.numlogins, buf);
 	strcpy(planid, lookupuser.userid);
-	prints("…œ ¥Œ ‘⁄:[[1;32m%s[m] ¥” [[1;32m%s[m] µΩ±æ’æ“ª”Œ°£\n",
-			getdatestring(lookupuser.lastlogin, DATE_ZH),
-			(lookupuser.lasthost[0] == '\0' ? "(≤ªœÍ)" : lookupuser.lasthost));
+
+	char *host;
+	if (lookupuser.lasthost[0] == '\0') {
+		host = "(≤ªœÍ)";
+	} else {
+		if (self || HAS_PERM2(PERM_OCHAT, &currentuser))
+			host = lookupuser.lasthost;
+		else 
+			host = mask_host(lookupuser.lasthost);
+	}
+	prints("…œ ¥Œ ‘⁄:[\033[1;32m%s\033[m] ¥” [\033[1;32m%s\033[m] µΩ±æ’æ“ª”Œ°£\n",
+			getdatestring(lookupuser.lastlogin, DATE_ZH), host);
+
 	num = t_search_ulist(&uin, t_cmpuids, tuid, NA, NA);
 	if( num ) {
 		search_ulist(&uin, t_cmpuids, getuser(lookupuser.userid));

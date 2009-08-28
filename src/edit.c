@@ -744,7 +744,7 @@ void write_header(FILE *fp, int mode) {
 	fprintf(fp, "±ê  Ìâ: %s\n", save_title);
 	fprintf(fp, "·¢ÐÅÕ¾: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
 	if (in_mail)
-		fprintf(fp, "\nÀ´  Ô´: %s\n", fromhost);
+		fprintf(fp, "\nÀ´  Ô´: %s\n", mask_host(fromhost));
 	else
 		fprintf(fp, ", %s\n", (local_article) ? "Õ¾ÄÚÐÅ¼þ" : "×ªÐÅ");
 	fprintf(fp, "\n");
@@ -951,7 +951,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	if (aborted != -1 && uinfo.mode == EDIT && ADD_EDITMARK) {
 		fprintf(fp,
 				"\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %16.16s ÐÞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s]\033[m\n",
-				currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, fromhost);
+				currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, mask_host(fromhost));
 	}
 	//added end
 	if ((uinfo.mode==POSTING||uinfo.mode==SMAIL||uinfo.mode==EDIT)
@@ -967,7 +967,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		if (!dashf(fname) || currentuser.signature == 0 || noidboard)
 			fputs("--\n", fp);
 		fprintf(fp, "[m[1;%2dm¡ù À´Ô´:¡¤%s %s¡¤[FROM: %-.20s][m\n", color,
-				BoardName, BBSHOST, (noidboard) ? "ÄäÃûÌìÊ¹µÄ¼Ò" : fromhost);
+				BoardName, BBSHOST, (noidboard) ? "ÄäÃûÌìÊ¹µÄ¼Ò" : mask_host(fromhost));
 	}
 	if (aborted != -1)
 		fclose(fp);

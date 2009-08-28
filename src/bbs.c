@@ -1936,7 +1936,7 @@ void add_crossinfo(char *filepath, int mode) {
 	if ((fp = fopen(filepath, "a")) == NULL)
 		return;
 	fprintf(fp, "--\n[m[1;%2dm¡ù ×ª%s:¡¤%s %s¡¤[FROM: %-.20s][m\n", color,
-			(mode == 1) ? "ÔØ" : "¼Ä", BoardName, BBSHOST, fromhost);
+			(mode == 1) ? "ÔØ" : "¼Ä", BoardName, BBSHOST, mask_host(fromhost));
 	fclose(fp);
 	return;
 }
