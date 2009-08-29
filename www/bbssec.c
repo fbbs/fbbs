@@ -18,11 +18,8 @@ static int showbrdlist(const char *filename)
 		x = getbcache(board);
 		if (!x)
 			return showed;
-		printf("<board>\n"
-				"<url><![CDATA[%s]]></url>\n"
-				"<title><![CDATA[%s]]></title>\n"
-				"</board>\n",
-				board, x->title + 10);
+		// TODO: Magic number.
+		printf("<brd name='%s' desc='%s' />", board, x->title + 10);
 		showed++;
 	}
 	fclose(fp);
@@ -31,26 +28,16 @@ static int showbrdlist(const char *filename)
 
 int bbssec_main(void)
 {
-	int i, style;
 	char path[HOMELEN];
-
 	xml_header("bbssec");
-	
-	printf("<bbssec>\n");
-	style = loginok ? strtol(getparm("my_style"), NULL, 10) : 0;
-	printf("<style>%d</style>\n", style);
-
-	for(i = 0; i < SECNUM; i++) {
-		printf("<sector>\n"
-				"<name>%X</name>\n"
-				"<title><![CDATA[%s %s]]></title>\n", i, secname[i][0], secname[i][1]);
+	printf("<bbssec p='%s'>", get_permission());
+	for(int i = 0; i < SECNUM; i++) {
+		printf("<sec id='%X' desc='%s %s'>", i, secname[i][0], secname[i][1]);
 		sprintf(path, "%s/info/egroup%d/recommend", BBSHOME, i);
 		if(dashf(path))
-		{
 			showbrdlist(path);
-		}
-		printf("</sector>\n");
+		printf("</sec>");
 	}
-	printf("</bbssec>\n");
+	printf("</bbssec>");
 	return 0;
 }

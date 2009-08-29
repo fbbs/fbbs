@@ -1855,3 +1855,12 @@ bool valid_mailname(const char *file)
 	return true;
 }
 
+char *get_permission(void)
+{
+	static char c[4];
+	c[0] = loginok ? 'l' : ' ';
+	c[1] = HAS_PERM(PERM_TALK) ? 't' : ' ';
+	c[2] = HAS_PERM(PERM_CLOAK) ? '#': ' ';
+	c[3] = HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0) ? 'f' : ' ';
+	return c;
+}

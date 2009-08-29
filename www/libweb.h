@@ -189,6 +189,7 @@ int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
+char *get_permission(void);
 
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);

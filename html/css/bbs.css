@@ -1,41 +1,128 @@
-A{TEXT-DECORATION: none;}
-A:HOVER {COLOR: #ff0000;}
-A:VISITED {COLOR: #7f0000;}
-TABLE.BODY {BORDER: 2px solid; BORDER-COLOR: d0f0c0; }
-BODY 
-{	FONT-FAMILY: Tahoma; FONT-SIZE: 10pt;
+body {
+	font-family: Verdana, sans-serif;
+	font-size: 1em;
 }
-TABLE,TH,TD,P,INPUT,TEXTAREA,SELECT {FONT-FAMILY: Tahoma; FONT-SIZE: 10pt;}
-HR{COLOR: 007f00}
-
-TEXTAREA.noborder{ padding: 3; border-style: solid; border-width:1; FONT-FAMILY: Simsun; FONT-SIZE: 14px ; LINE-HEIGHT: 14px; COLOR: 000000; BACKGROUND-COLOR: FFFFFF}
-INPUT.noborder{border-style:none; border-bottom-style: solid; border-width:1;}
-
-.pt9  { font-size:9pt; text-transform:none; text-decoration:none;}
-.pt9u { font-size:9pt; text-transform:uppercase; text-decoration:none; color:#8f0000}
-.ansi { FONT-FAMILY: Simsun; FONT-SIZE: 14px ; line-height: 14px; color: 000000; background-color: ffffff; margin-left: 10%} 
-.pt9lc
-{
-	font-size:9pt;
-	text-transform:none;
-	text-decoration:none;
-	background-color:#f2f2f2
+div.main {
+	width: 63em;
+	margin: auto;
 }
-.pt9dc
-{
-	font-size:9pt;
-	text-transform:none;
-	text-decoration:none;
-	background-color:#dedede
+h2 {
+	font-weight: normal;
+	font-size: 1.2em;
+}
+a {
+	color: #000000;
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+	background-color: #336699;
+	color: #ffffff;
+}
+img {
+	border: 0;
+	vertical-align: middle;
+}
+ul.brd {
+	list-style-type: none;
+}
+ul.brd li{
+	padding-left: 20px;
+	display: inline;
+	background: transparent url('/images/types/folder.gif') no-repeat left center;
+	margin-left: 0.5em;
 }
 
+ul.nav {
+	display: block;
+	background: #336699;
+	height: 2.5em;
+	padding: 0 0 0 1em;
+	margin: 0 0 1em 0;
+	list-style-type: none;
+}
+ul.nav li {
+	display: block;
+	float: left;
+	margin: 0;
+	width: 6em;
+}
+ul.nav li a {
+	display: inline-block;
+	position: relative;
+	height: 2.5em;
+	line-height: 2.5em;
+	width: 4.5em;
+	color: #ffffff;
+	padding-left: 1.3em;
+	margin: 0;
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+ul.nav li ul {
+	display: none;
+	padding: 0;
+}
+ul.nav li li {
+	display: block;
+	width: 8em;
+}
+ul.nav li li a {
+	display: block;
+	position: relative;
+	height: 2em;
+	line-height: 2em;
+	width: 7em;
+	padding: 0 0 0 1.5em;
+	background-image: none !important;
+}
+ul.nav li:hover ul, ul.nav li:focus ul {
+	visibility: visible;
+	display: block;
+	position: absolute;
+}
+ul.nav li:hover ul li, ul.nav li:focus ul li {
+	float: none;
+	width: 8.5em;
+	background-color: #336699;
+}
+ul.nav li a:hover, ul.nav li a:focus {
+	text-decoration: none;
+	background-color: #6699cc;
+}
+li#nava a { background-image: url('/images/announce.gif'); }
+li#navp a { background-image: url('/images/penguin.gif'); }
+li#navt a { background-image: url('/images/top10.gif'); }
+li#navf a { background-image: url('/images/favorite.gif'); }
+li#navc a { background-image: url('/images/chat.gif'); }
+li#navco a { background-image: url('/images/config.gif'); }
+li#navm a { background-image: url('/images/mail.gif'); }
+li#navs a { background-image: url('/images/search.gif'); }
+li#navte a { background-image: url('/images/telnet.gif'); }
+li#nave a { background-image: url('/images/exit.gif'); }
 
-FONT.c30 {COLOR: 000000;}
-FONT.c31 {COLOR: e00000;}
-FONT.c32 {COLOR: 008000;}
-FONT.c33 {COLOR: 808000;}
-FONT.c34 {COLOR: 0000ff;}
-FONT.c35 {COLOR: d000d0;}
-FONT.c36 {COLOR: 33a0a0;}
-FONT.c37 {COLOR: 000000;}
+.a030 { color: Window; }
+.a130 { color: #c0c0c0; }
+.a031 { color: #800000; }
+.a131 { color: #800000; }
+.a032 { color: #008000; }
+.a132 { color: #008000; }
+.a033 { color: #808000; }
+.a133 { color: #808000; }
+.a034 { color: #000080; }
+.a134 { color: #000080; }
+.a035 { color: #800080; }
+.a135 { color: #800080; }
+.a036 { color: #008080; }
+.a136 { color: #008080; }
+.a037 { color: #000000; }
+.a137 { color: #000000; }
+.a40 { background-color: Window; }
+.a41 { background-color: #ff0000; }
+.a42 { background-color: #00ff00; }
+.a43 { background-color: #ffff00; }
+.a44 { background-color: #0000ff; }
+.a45 { background-color: #ff00ff; }
+.a46 { background-color: #00ffff; }
+.a47 { background-color: Window; }
 
