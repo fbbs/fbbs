@@ -17,14 +17,16 @@ int bbscon_main(void)
 	fid = fh.id;
 
 	xml_header("bbscon");
-	printf("<bbscon><post>");
+	printf("<bbscon p='%s' link='con' bid='%d'>", get_permission(), bid);
+	printf("<po fid='%u'", fid);
+	if (fh.reid != fh.id)
+		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
+	else
+		printf(">");
 	char file[HOMELEN];
 	setbfile(file, bp->filename, fh.filename);
 	xml_printfile(file, stdout);
-	puts("</post>");
-	if (fh.reid != fh.id)
-		printf("<reid>%u</reid>\n<gid>%u</gid>\n", fh.reid, fh.gid);
-	printf("<bid>%d</bid><f>%u</f><link>con</link></bbscon>", bid, fid);
+	printf("</po></bbscon>");
 	return 0;
 }
 

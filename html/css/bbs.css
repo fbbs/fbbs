@@ -132,6 +132,50 @@ th.ptitle, td.ptitle { width: 35em; }
 th.read, td.read { width: 2.5em; text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
 
+div.ptable {
+	display: table;
+	width: 100%;
+	height: auto;
+	border: 1px solid #336699;
+	margin: 0;
+}
+div.post {
+	display: table-row;
+}
+div.pleft {
+	display: table-cell;
+	padding: 0.5em;
+	width: 8.5em;
+	vertical-align: top;
+}
+div.pleft a {
+	display: block;
+	line-height: 1.5em;
+	text-align: center;
+}
+div.pright {
+	display: table-cell;
+	width: 51em;
+	border-left: 1px solid #336699;
+}
+div.pmain {
+	word-wrap: break-word;
+	word-break: break-all;
+	padding: 0.5em;
+	line-height: 1.3;
+	font-size: 1em;
+}
+div.pmtop { border-bottom: 1px solid #336699; }
+div.pmbot { border-top: 1px solid #336699; }
+div.pmtop, div.pmbot {
+	padding: 0.5em;
+	height: 1.5em;
+}
+div.pmtop a, div.pmbot a {
+	display: inline-block;
+	line-height: 1.5em;
+}
+
 .a030 { color: Window; }
 .a130 { color: #c0c0c0; }
 .a031 { color: #800000; }

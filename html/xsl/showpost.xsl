@@ -137,7 +137,7 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<span>
-							<xsl:attribute name='class'>ansi0<xsl:value-of select='$fgcolor' /></xsl:attribute>
+							<xsl:attribute name='class'>a0<xsl:value-of select='$fgcolor' /></xsl:attribute>
 							<xsl:value-of select='substring-before($content, ">1b")' />
 						</span>
 					</xsl:otherwise>
@@ -197,7 +197,7 @@
 						</xsl:choose>
 					</xsl:variable>
 					<span>
-						<xsl:attribute name='class'>ansi<xsl:value-of select='$hl' /><xsl:value-of select='$fgc' /><xsl:if test='not($bgc = "ignore")'><xsl:text> </xsl:text>ansi<xsl:value-of select='$bgc' /></xsl:if></xsl:attribute>
+						<xsl:attribute name='class'>a<xsl:value-of select='$hl' /><xsl:value-of select='$fgc' /><xsl:if test='not($bgc = "ignore")'><xsl:text> </xsl:text>a<xsl:value-of select='$bgc' /></xsl:if></xsl:attribute>
 						<xsl:value-of select='$text' />
 					</span>
 					<xsl:variable name='next' select='substring($last, string-length($text) + 1)' />
@@ -218,7 +218,7 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<span>
-							<xsl:attribute name='class'>ansi0<xsl:value-of select='$fgcolor' /></xsl:attribute>
+							<xsl:attribute name='class'>a0<xsl:value-of select='$fgcolor' /></xsl:attribute>
 							<xsl:value-of select='$content' />
 						</span>
 					</xsl:otherwise>
