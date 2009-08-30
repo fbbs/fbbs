@@ -12,7 +12,7 @@
 		</head>
 		<body><div class='main'>
 			<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
-			<div class='ptable'><div class='post'>
+			<div class='post'>
 				<div class='pleft'>
 					<xsl:if test='@link != "con"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[ 文摘区 ]</a></xsl:if>
 					<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[ <img src='/images/button/home.gif' />本讨论区 ]</a>
@@ -30,7 +30,7 @@
 					<div class='pmbot'><xsl:call-template name='linkbar' /></div>
 				</div>
 			</div>
-		</div></div></body>
+		</div></body>
 	</html>
 	</xsl:template>
 	

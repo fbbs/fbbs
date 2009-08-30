@@ -132,15 +132,12 @@ th.ptitle, td.ptitle { width: 35em; }
 th.read, td.read { width: 2.5em; text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
 
-div.ptable {
+div.post {
 	display: table;
 	width: 100%;
 	height: auto;
 	border: 1px solid #336699;
-	margin: 0;
-}
-div.post {
-	display: table-row;
+	margin-bottom: 1em;
 }
 div.pleft {
 	display: table-cell;

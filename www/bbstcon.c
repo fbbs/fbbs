@@ -82,8 +82,8 @@ int bbstcon_main(void)
 		return BBS_ENOFILE;
 	struct fileheader *begin, *end;
 	xml_header("bbstcon");
-	printf("<bbstcon><bid>%d</bid><gid>%u</gid><page>%d</page>",
-			bid, gid, count);
+	printf("<bbstcon p='%s' bid='%d' gid='%u' page='%d'>",
+			get_permission(), bid, gid, count);
 	if (action == 'n') {
 		begin = fh;
 		end = fh + c;
@@ -93,11 +93,10 @@ int bbstcon_main(void)
 	}
 	char file[HOMELEN];
 	for (; begin != end; ++begin) {
-		printf("<post><fid>%u</fid><author>%s</author><content>",
-				begin->id, begin->owner);
+		printf("<po fid='%u' owner='%s'>", begin->id, begin->owner);
 		setbfile(file, bp->filename, begin->filename);
 		xml_printfile(file, stdout);
-		puts("</content></post>");
+		puts("</po>");
 	}
 	free(fh);
 	puts("</bbstcon>");
