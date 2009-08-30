@@ -47,21 +47,16 @@ static int print_bbsdoc(const struct fileheader *fh, int count, int mode)
 	int mark;
 	const struct fileheader *end = fh + count;
 	for (; fh < end; ++fh) {
-		printf("<post>\n<author>%s</author>\n<time>%s</time>\n",
+		mark = get_post_mark(fh, brc_unread(fh->filename));
+		printf("<po %sm='%c' owner='%s' time= '%s' id='",
+				allow_reply(fh) ? "" : "nore='1' ", mark,
 				fh->owner, getdatestring(getfiletime(fh), DATE_XML));
 		if (mode != MODE_DIGEST)
-			printf("<id>%u</id><title>", fh->id);
+			printf("%u'>", fh->id);
 		else
-			printf("<id>%s</id><title>", fh->filename);
+			printf("%s'>", fh->filename);
 		xml_fputs(fh->title, stdout);
-		printf("</title>\n");
-		if (!allow_reply(fh))
-			printf("<noreply />\n");
-		mark = get_post_mark(fh, brc_unread(fh->filename));
-		if (mark != ' ')
-			printf("<mark>%c</mark></post>\n", mark);
-		else
-			printf("</post>\n");
+		printf("</po>\n");
    	}
 	return count;
 }
@@ -162,14 +157,7 @@ static int bbsdoc(int mode)
 	brc_initial(currentuser.userid, board);
 
 	xml_header("bbsdoc");
-	printf("<bbsdoc>\n");
-	char path[HOMELEN];
-	sprintf(path, "%s/info/boards/%s/icon.jpg", BBSHOME, board);
-	if(dashf(path))
-		printf("<icon>%s</icon>\n", path);
-	sprintf(path, "%s/info/boards/%s/banner.jpg", BBSHOME, board);
-	if(dashf(path))	
-		printf("<banner>%s</banner>\n", path);
+	printf("<bbsdoc p='%s'>\n", get_permission());
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 	char *cgi_name = "";
 	switch (mode) {
@@ -181,10 +169,18 @@ static int bbsdoc(int mode)
 			break;
 	}
 	// TODO: magic number.
-	printf("<title>%s</title>\n<bm>%s</bm>\n<desc>%s</desc>\n"
-			"<total>%d</total>\n<start>%d</start>\n<bid>%d</bid>\n"
-			"<page>%d</page><link>%s</link></bbsdoc>", bp->filename, bp->BM,
-			bp->title + 11, total, start, bid, my_t_lines, cgi_name);
+	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
+			"bid='%d' page='%d' link='%s' ", bp->filename, bp->title + 11,
+			bp->BM, total, start, bid, my_t_lines, cgi_name);
+	char path[HOMELEN];
+	sprintf(path, "%s/info/boards/%s/icon.jpg", BBSHOME, board);
+	if(dashf(path))
+		printf("icon='%s' ", path);
+	sprintf(path, "%s/info/boards/%s/banner.jpg", BBSHOME, board);
+	if(dashf(path))	
+		printf("banner='%s' ", path);
+	printf("/>\n</bbsdoc>");
+
 	// TODO: marquee, recommend, spin
 	return 0;
 }

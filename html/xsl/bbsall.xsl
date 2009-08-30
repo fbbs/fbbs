@@ -13,8 +13,7 @@
 				<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
 				<h3>[讨论区数: <xsl:value-of select="count(brd)" />]</h3>
 				<table>
-					<col class='no' /><col class='title' /><col class='cate' /><col class='desc' /><col class='bm' />
-					<tr><th>序号</th><th>讨论区名称</th><th>类别</th><th>中文描述</th><th>版主</th></tr>
+					<tr><th class='no'>序号</th><th class='title'>讨论区名称</th><th class='cate'>类别</th><th class='desc'>中文描述</th><th class='bm'>版主</th></tr>
 					<xsl:for-each select='brd'>
 					<xsl:sort select="@title" />
 					<tr>
@@ -22,20 +21,20 @@
 							<xsl:if test='position() mod 2 = 1'>light</xsl:if>
 							<xsl:if test='position() mod 2 = 0'>dark</xsl:if>
 						</xsl:attribute>
-						<td><xsl:value-of select='position()' /></td>
-						<td><a class='title'><xsl:choose>
+						<td class='no'><xsl:value-of select='position()' /></td>
+						<td class='title'><a class='title'><xsl:choose>
 							<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title' /></xsl:attribute>[ <xsl:value-of select='@title' /> ]</xsl:when>
 							<xsl:otherwise><xsl:attribute name='href'>doc?board=<xsl:value-of select='@title' /></xsl:attribute><xsl:value-of select='@title' /></xsl:otherwise>
 						</xsl:choose></a></td>
-						<td><xsl:choose>
+						<td class='cate'><xsl:choose>
 							<xsl:when test='@dir="1"'>[目录]</xsl:when>
 							<xsl:otherwise><xsl:value-of select='@cate' /></xsl:otherwise>
 						</xsl:choose></td>
-						<td><a class='desc'><xsl:choose>
+						<td class='desc'><a class='desc'><xsl:choose>
 							<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title' /></xsl:attribute><xsl:value-of select='@desc' /></xsl:when>
 							<xsl:otherwise><xsl:attribute name='href'>doc?board=<xsl:value-of select='@title' /></xsl:attribute><xsl:value-of select='@desc' /></xsl:otherwise>
 						</xsl:choose></a></td>
-						<td>
+						<td class='bm'>
 							<xsl:call-template name='splitbm'>
 								<xsl:with-param name='names' select='@bm' />
 								<xsl:with-param name='isdir' select='@dir' />
