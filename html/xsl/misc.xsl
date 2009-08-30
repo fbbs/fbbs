@@ -107,4 +107,6 @@
 			</ul>
 		</div>
 	</xsl:template>
+	
+	<xsl:template name='bbsname'>&#160;- 日月光华</xsl:template>
 </xsl:stylesheet>

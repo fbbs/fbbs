@@ -1,65 +1,51 @@
-<?xml version="1.0" encoding="gb2312"?>
-<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
+<?xml version='1.0' encoding='gb2312'?>
+<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns='http://www.w3.org/1999/xhtml'>
 	<xsl:import href='misc.xsl'/>
-	<xsl:output method='html' encoding='gb2312' />
-	<xsl:template match="bbsall">
+	<xsl:output method='xml' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
+	<xsl:template match='bbsall'>
 		<html>
 			<head>
-				<title>全部讨论区</title>
-				<meta http-equiv="content-type" content="text/html; charset=gb2312" />
-				<link rel="stylesheet" type="text/css" href="/css/bbs0.css" />
+				<title>全部讨论区<xsl:call-template name='bbsname' /></title>
+				<meta http-equiv='content-type' content='text/html; charset=gb2312' />
+				<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
 			</head>
-			<body>
-				<img src="/info/all/banner.jpg" align="absmiddle" border="0" />
-				<strong>日月光华 [讨论区数: <xsl:value-of select="count(board)" />]</strong>
-				<table width="100%" bgcolor="#ffffff">
-					<tr class="pt9h">
-						<th>序号</th><th>讨论区名称</th><th>类别</th><th>中文描述</th><th>版主</th>
+			<body><div class='main'>
+				<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
+				<h3>[讨论区数: <xsl:value-of select="count(brd)" />]</h3>
+				<table>
+					<col class='no' /><col class='title' /><col class='cate' /><col class='desc' /><col class='bm' />
+					<tr><th>序号</th><th>讨论区名称</th><th>类别</th><th>中文描述</th><th>版主</th></tr>
+					<xsl:for-each select='brd'>
+					<xsl:sort select="@title" />
+					<tr>
+						<xsl:attribute name='class'>
+							<xsl:if test='position() mod 2 = 1'>light</xsl:if>
+							<xsl:if test='position() mod 2 = 0'>dark</xsl:if>
+						</xsl:attribute>
+						<td><xsl:value-of select='position()' /></td>
+						<td><a class='title'><xsl:choose>
+							<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title' /></xsl:attribute>[ <xsl:value-of select='@title' /> ]</xsl:when>
+							<xsl:otherwise><xsl:attribute name='href'>doc?board=<xsl:value-of select='@title' /></xsl:attribute><xsl:value-of select='@title' /></xsl:otherwise>
+						</xsl:choose></a></td>
+						<td><xsl:choose>
+							<xsl:when test='@dir="1"'>[目录]</xsl:when>
+							<xsl:otherwise><xsl:value-of select='@cate' /></xsl:otherwise>
+						</xsl:choose></td>
+						<td><a class='desc'><xsl:choose>
+							<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title' /></xsl:attribute><xsl:value-of select='@desc' /></xsl:when>
+							<xsl:otherwise><xsl:attribute name='href'>doc?board=<xsl:value-of select='@title' /></xsl:attribute><xsl:value-of select='@desc' /></xsl:otherwise>
+						</xsl:choose></a></td>
+						<td>
+							<xsl:call-template name='splitbm'>
+								<xsl:with-param name='names' select='@bm' />
+								<xsl:with-param name='isdir' select='@dir' />
+								<xsl:with-param name='isfirst' select='1' />
+							</xsl:call-template>
+						</td>
 					</tr>
-					<xsl:for-each select='board'>
-						<xsl:sort select="title" />
-						<tr>
-							<xsl:attribute name='class'>
-								<xsl:if test='position() mod 2 = 1'>pt9lc</xsl:if>
-								<xsl:if test='position() mod 2 = 0'>pt9dc</xsl:if>
-							</xsl:attribute>
-							<!-- No. -->
-							<td align="right"><xsl:value-of select='position()' /></td>
-							<!-- English title -->
-							<td><strong><a>
-								<xsl:if test='@dir="1"'>
-									<xsl:attribute name='href'>boa?board=<xsl:value-of select='title' /></xsl:attribute>[ <xsl:value-of select='title' /> ]
-								</xsl:if>
-								<xsl:if test='@dir="0"'>
-									<xsl:attribute name='href'>doc?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='title' />
-								</xsl:if>
-							</a></strong></td>
-							<!-- Category -->
-							<td align="center">
-								<xsl:if test='@dir="1"'><strong>[目录]</strong></xsl:if>
-								<xsl:if test='@dir="0"'><xsl:value-of select='cate' /></xsl:if>
-							</td>
-							<!-- Chinese description -->
-							<td width="100%"><strong><a>
-								<xsl:if test='@dir="1"'>
-									<xsl:attribute name='href'>boa?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='desc' />
-								</xsl:if>
-								<xsl:if test='@dir="0"'>
-									<xsl:attribute name='href'>doc?board=<xsl:value-of select='title' /></xsl:attribute><xsl:value-of select='desc' />
-								</xsl:if>
-							</a></strong></td>
-							<!-- Board Masters -->
-							<td><strong>
-								<xsl:call-template name='splitbm'>
-									<xsl:with-param name='names' select='bm' />
-									<xsl:with-param name='isdir' select='@dir' />
-									<xsl:with-param name='isfirst' select='1' />
-								</xsl:call-template>
-							</strong></td>
-						</tr>
-					</xsl:for-each>
+				</xsl:for-each>
 				</table>
-			</body>
+			</div></body>
 		</html>
 	</xsl:template>
 </xsl:stylesheet>

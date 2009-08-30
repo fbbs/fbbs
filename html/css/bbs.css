@@ -2,11 +2,15 @@ body {
 	font-family: Verdana, sans-serif;
 	font-size: 1em;
 }
+body, div {
+	margin: 0;
+	padding: 0;
+}
 div.main {
 	width: 63em;
-	margin: auto;
+	margin: 0 auto;
 }
-h2 {
+h3 {
 	font-weight: normal;
 	font-size: 1.2em;
 }
@@ -74,7 +78,6 @@ ul.nav li li a {
 	line-height: 2em;
 	width: 7em;
 	padding: 0 0 0 1.5em;
-	background-image: none !important;
 }
 ul.nav li:hover ul, ul.nav li:focus ul {
 	visibility: visible;
@@ -90,16 +93,31 @@ ul.nav li a:hover, ul.nav li a:focus {
 	text-decoration: none;
 	background-color: #6699cc;
 }
-li#nava a { background-image: url('/images/announce.gif'); }
-li#navp a { background-image: url('/images/penguin.gif'); }
-li#navt a { background-image: url('/images/top10.gif'); }
-li#navf a { background-image: url('/images/favorite.gif'); }
-li#navc a { background-image: url('/images/chat.gif'); }
-li#navco a { background-image: url('/images/config.gif'); }
-li#navm a { background-image: url('/images/mail.gif'); }
-li#navs a { background-image: url('/images/search.gif'); }
-li#navte a { background-image: url('/images/telnet.gif'); }
-li#nave a { background-image: url('/images/exit.gif'); }
+li#nava>a { background-image: url('/images/announce.gif'); }
+li#navp>a { background-image: url('/images/penguin.gif'); }
+li#navt>a { background-image: url('/images/top10.gif'); }
+li#navf>a { background-image: url('/images/favorite.gif'); }
+li#navc>a { background-image: url('/images/chat.gif'); }
+li#navco>a { background-image: url('/images/config.gif'); }
+li#navm>a { background-image: url('/images/mail.gif'); }
+li#navs>a { background-image: url('/images/search.gif'); }
+li#navte>a { background-image: url('/images/telnet.gif'); }
+li#nave>a { background-image: url('/images/exit.gif'); }
+
+th {
+	border: 0 0 1px 0;
+	background-color: #ccddff;
+	text-align: left;
+}
+tr { height: 1.75em; vertical-align: middle; }
+tr.light { background-color: #ffffff; }
+tr.dark { background-color: #f0f7ff; }
+col.no { width: 3em;}
+col.title { width: 10em; }
+col.cate { width: 3.5em; text-align: center; }
+col.desc { width: 10em; }
+col.bm { width: auto; color: #333333; }
+a.title, a.desc { display: block; }
 
 .a030 { color: Window; }
 .a130 { color: #c0c0c0; }
