@@ -6,7 +6,7 @@ enum {
 
 char seccode[SECNUM][6]={
 #ifdef FDQUAN
-	"ab","cd","ij","kl","mn","op","qr","st","uv"
+	"0ab","cd","ij","kl","mn","op","qr","st","uv"
 #else
 		"0oOhH", "1pP", "2qQ", "3rRhH", "4sS", "5tT", "6uU", "7vV", "8wW", "9xX", "ayY", "bzZ"
 #endif
@@ -1863,4 +1863,21 @@ char *get_permission(void)
 	c[2] = HAS_PERM(PERM_CLOAK) ? '#': ' ';
 	c[3] = HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0) ? 'f' : ' ';
 	return c;
+}
+
+const char *get_referer(void)
+{
+	char *r = getsenv("HTTP_REFERER");
+	int i = 3;
+	if (r != NULL) {
+		// http://host/path... let's find the third slash
+		while (i != 0 && *r != '\0') {
+			if (*r == '/')
+				i--;
+			r++;
+		}
+	}
+	if (i == 0)
+		return --r;
+	return "";
 }

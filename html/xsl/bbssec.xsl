@@ -14,7 +14,7 @@
 			<img src='/images/secbanner.jpg' />
 			<xsl:for-each select='sec'>
 				<div>
-					<h3><a><xsl:attribute name='href'>boa?<xsl:value-of select='@id' /></xsl:attribute><xsl:value-of select='@id' />&#160;<xsl:value-of select='@desc' /></a></h3>
+					<h3><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id' /></xsl:attribute><xsl:value-of select='@id' />&#160;<xsl:value-of select='@desc' /></a></h3>
 					<ul class='brd'>
 						<xsl:for-each select='brd'>
 							<li><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@name' /></xsl:attribute><xsl:value-of select='@desc' /></a></li>

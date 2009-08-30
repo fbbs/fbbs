@@ -13,7 +13,8 @@ static int check_multi(const struct userec *user)
 	return total;
 }
 
-static int wwwlogin(struct userec *user) {
+static int wwwlogin(struct userec *user, const char *ref)
+{
 	FILE *fp;
 	char buf[STRLEN];
 	int n, tmp;
@@ -80,9 +81,14 @@ static int wwwlogin(struct userec *user) {
 			setcookie("utmpkey", buf);
 			setcookie("utmpuserid", currentuser.userid);
 			set_my_cookie();
-			refreshto(1, FIRST_PAGE);
-			printf("</head>\n<body>登录成功，1秒钟后自动转到"
-				"<a href='"FIRST_PAGE"'>web首页</a>\n</body>\n</html>\n");
+
+			const char *referer = ref;
+			if (*referer == '\0') {
+				referer = "sec";
+			}
+			refreshto(1, referer);
+			printf("</head>\n<body>登录成功，1秒钟后自动转到<a href='%s'>"
+					"登录前页面</a>\n</body>\n</html>\n", referer);
 
 			uidshm->status[u->uid - 1]++;
 			return 0;
@@ -94,6 +100,27 @@ static int wwwlogin(struct userec *user) {
 	return 0;
 }
 
+static login_screen(void)
+{
+	http_header();
+	const char *referer = get_referer();
+	const char *ref;
+	if (!strcmp(referer, "/") || !strcmp(referer, "/index.htm"))
+		ref = "sec";
+	else
+		ref = referer;
+	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
+			"<link rel='stylesheet' type='text/css' href='/css/bbs.css' />"
+			"<title>用户登录 - "BBSNAME"</title></head>"
+			"<body><form action='login' method='post'>"
+			"<label for='id'>帐号</label><input type='text' name='id' /><br />"
+			"<label for='pw'>密码</label><input type='password' name='pw' /><br />"
+			"<input type='hidden' name='ref' value='%s'/>"
+			"<input type='submit' value='登录' />"
+			"</form></body></html>", ref);
+	return 0;
+}
+
 int bbslogin_main(void)
 {
 	char fname[STRLEN];
@@ -102,6 +129,8 @@ int bbslogin_main(void)
 
 	parse_post_data();
 	strlcpy(id, getparm("id"), sizeof(id));
+	if (*id == '\0')
+		return login_screen();
 	strlcpy(pw, getparm("pw"), sizeof(pw));
 	if(loginok && strcasecmp(id, currentuser.userid))
 		return BBS_EDUPLGN;
@@ -160,6 +189,6 @@ int bbslogin_main(void)
 
 	log_usies("ENTER", fromhost, &user);
 	if(!loginok && strcasecmp(id, "guest"))
-		wwwlogin(&user);
+		wwwlogin(&user, getparm("ref"));
 	return 0;
 }

@@ -9,19 +9,17 @@ static int filenum(char *board) {
 
 int bbsboa_main(void)
 {
-	xml_header("bbsboa");
-	printf("<bbsboa>\n");
-	int sector = (int)strtol(getparm("s"), NULL, 10);
-	if (sector < 0 || sector >= SECNUM) {
-		printf("</bbsboa>");
-		return 0;
-	}
+	int sector = (int)strtol(getparm("s"), NULL, 16);
+	if (sector < 0 || sector >= SECNUM)
+		return BBS_EINVAL;
 	char *cgi;
 	if (strtol(getparm("my_def_mode"), NULL, 10) != 0)
-		cgi = "bbstdoc";
+		cgi = "tdoc";
 	else
-		cgi = "bbsdoc";
-	printf("<def>%s</def>\n", cgi);
+		cgi = "doc";
+	
+	xml_header("bbsboa");
+	printf("<bbsboa p='%s' link='%s' ", get_permission(), cgi);
 
 	struct boardheader *parent = NULL;
     int parent_bid = 0;
@@ -39,11 +37,10 @@ int bbsboa_main(void)
 		char path[HOMELEN];
 		sprintf(path, "%s/info/egroup%d/icon.jpg", BBSHOME, sector);
 		if (dashf(path))
-			printf("<icon>%s</icon>\n", path);
-		printf("<title>%s</title>\n", secname[sector][0]);
+			printf("icon='%s' ", path);
+		printf("title='%s'>", secname[sector][0]);
 	} else {
-		printf("<dir>1</dir>");
-		printf("<title>%s</title>\n", parent->title + 11);
+		printf("dir= '1' title='%s'>", parent->title + 11);
 		// TODO: Magic number here.
 	}
 
@@ -64,9 +61,8 @@ int bbsboa_main(void)
 				continue;
 		}
 		// TODO: Magic number here.
-		printf("<board dir='%d'>\n<title>%s</title>\n<cate>%.6s</cate>\n"
-				"<desc>%s</desc>\n<bm>%s</bm>\n"
-				"<read>%d</read><count>%d</count>\n</board>/",
+		printf("<brd dir='%d' title='%s' cate='%.6s' desc='%s' bm='%s' "
+				"read='%d' count='%d' />",
 				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename,
 				x->title + 1, x->title + 11, x->BM,
 				brc_unread(x->filename), filenum(x->filename));

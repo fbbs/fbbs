@@ -14,7 +14,6 @@
 #include <crypt.h>
 
 #define CGIPATH "/fcgi/"
-#define FIRST_PAGE	"/bbsmain.html"
 #define CSS_FILE 	"/css/bbs%d.css"
 #define CHARSET		"gb2312"
 
@@ -190,6 +189,7 @@ time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
 char *get_permission(void);
+const char *get_referer(void);
 
 // bbs.c
 int has_BM_perm(struct userec *user, char *board);

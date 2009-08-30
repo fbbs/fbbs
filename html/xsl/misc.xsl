@@ -50,10 +50,12 @@
 		<xsl:param name='perm' />
 		<div>
 			<ul class='nav'>
+				<li id='navh'><a href='sec'>首页</a></li>
+				<xsl:if test='not(contains($perm, "l"))'><li id='navl'><a href='login'>登录</a></li></xsl:if>
 				<xsl:if test='contains($perm, "l")'>
-					<li id='navf'><a href='fav'>我的收藏</a></li>
+					<li id='navf'><a href='fav'>收藏夹</a></li>
 					<li id='navc'>
-						<a href='#'>鹊桥相会</a>
+						<a href='#'>鹊桥</a>
 						<ul>
 							<li><a href='friend'>在线好友</a></li>
 							<li><a href='usr'>环顾四方</a></li>
@@ -62,7 +64,7 @@
 						</ul>
 					</li>
 					<li id='navm'>
-						<a href='#'>处理信件</a>
+						<a href='#'>信件</a>
 						<ul>
 							<li><a href='newmail'>阅览新信件</a></li>
 							<li><a href='mail'>所有信件</a></li>
@@ -71,7 +73,7 @@
 						</ul>
 					</li>
 					<li id='navco'>
-						<a href='#'>个人设置</a>
+						<a href='#'>设置</a>
 						<ul>
 							<li><a href='info'>个人资料</a></li>
 							<li><a href='plan'>改说明档</a></li>
@@ -88,7 +90,7 @@
 				<li id='nava'><a href='0an'>本站精华</a></li>
 				<li id='navp'><a href='all'>全部讨论</a></li>
 				<li id='navs'>
-					<a href='#'>查找选项</a>
+					<a href='#'>查找</a>
 					<ul>
 						<li><a href='qry'>查找文章</a></li>
 						<li><a href='qry'>查询网友</a></li>
@@ -96,7 +98,7 @@
 					</ul>
 				</li>
 				<li id='navt'>
-					<a href='#'>统计数据</a>
+					<a href='#'>统计</a>
 					<ul>
 						<li><a href='top10'>本日十大</a></li>
 						<li><a href='topb10'>热门讨论</a></li>
