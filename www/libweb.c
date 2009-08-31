@@ -856,7 +856,7 @@ int user_init(struct userec *x, struct user_info **y)
 
 void xml_header(const char *xslfile)
 {
-	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
+	printf("Content-type: application/xml; charset=%s\n\n", CHARSET);
 	printf("<?xml version=\"1.0\" encoding=\"%s\"?>\n", CHARSET);
 	printf("<?xml-stylesheet type=\"text/xsl\" href=\"/xsl/%s.xsl\"?>\n", xslfile);
 }
@@ -864,9 +864,8 @@ void xml_header(const char *xslfile)
 void http_header(void)
 {
 	printf("Content-type: text/html; charset=%s\n\n", CHARSET);
-	printf("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
-			" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n");
-	printf("<html>\n<head>\n");
+	printf("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" "
+			"\"http://www.w3.org/TR/html4/strict.dtd\"><html><head>");
 }
 
 void refreshto(int second, const char *url)
