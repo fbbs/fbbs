@@ -10,27 +10,29 @@
 			<meta http-equiv='content-type' content='text/html; charset=gb2312' />
 			<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
 		</head>
-		<body><a name='top' /><div class='main'>
+		<body><a name='top' /><div id='wrap'>
 			<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
-			<xsl:for-each select='po'>
-				<div class='post'>
-					<div class='pleft'>
-						<a href='#top'>[ <img src='/images/button/up.gif' />回页首 ]</a>
-						<a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='../@bid' /></xsl:attribute>[ 文摘区 ]</a>
-						<a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='../@bid' /></xsl:attribute>[ <img src='/images/button/home.gif' />本讨论区 ]</a>
-						<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='../@bid' />&amp;f=<xsl:value-of select='@fid' /></xsl:attribute>[ <img src='/images/button/content.gif' />本文链接 ]</a>
-						<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid' /></xsl:variable>
-						<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid' /></xsl:variable>
-						<xsl:if test='count(../po) = ../@page'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid' />&amp;g=<xsl:value-of select='../@gid' />&amp;f=<xsl:value-of select='$last' />&amp;a=n</xsl:attribute>[<img src='/images/button/down.gif' />下一页 ]</a></xsl:if>
-						<xsl:if test='$first != ../@gid'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid' />&amp;g=<xsl:value-of select='../@gid' />&amp;f=<xsl:value-of select='$first' />&amp;a=p</xsl:attribute>[<img src='/images/button/up.gif' />上一页 ]</a></xsl:if>
+			<div id='main'>
+				<xsl:for-each select='po'>
+					<div class='post'>
+						<div class='pleft'>
+							<a href='#top'>[ <img src='/images/button/up.gif' />回页首 ]</a>
+							<a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='../@bid' /></xsl:attribute>[ 文摘区 ]</a>
+							<a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='../@bid' /></xsl:attribute>[ <img src='/images/button/home.gif' />本讨论区 ]</a>
+							<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='../@bid' />&amp;f=<xsl:value-of select='@fid' /></xsl:attribute>[ <img src='/images/button/content.gif' />本文链接 ]</a>
+							<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid' /></xsl:variable>
+							<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid' /></xsl:variable>
+							<xsl:if test='count(../po) = ../@page'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid' />&amp;g=<xsl:value-of select='../@gid' />&amp;f=<xsl:value-of select='$last' />&amp;a=n</xsl:attribute>[<img src='/images/button/down.gif' />下一页 ]</a></xsl:if>
+							<xsl:if test='$first != ../@gid'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid' />&amp;g=<xsl:value-of select='../@gid' />&amp;f=<xsl:value-of select='$first' />&amp;a=p</xsl:attribute>[<img src='/images/button/up.gif' />上一页 ]</a></xsl:if>
+						</div>
+						<div class='pright'>
+							<div class='pmtop'><xsl:call-template name='linkbar' /></div>
+							<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></div>
+							<div class='pmbot'><xsl:call-template name='linkbar' /></div>
+						</div>
 					</div>
-					<div class='pright'>
-						<div class='pmtop'><xsl:call-template name='linkbar' /></div>
-						<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></div>
-						<div class='pmbot'><xsl:call-template name='linkbar' /></div>
-					</div>
-				</div>
-			</xsl:for-each>
+				</xsl:for-each>
+			</div>
 		</div></body>
 	</html>
 	</xsl:template>

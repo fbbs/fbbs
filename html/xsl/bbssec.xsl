@@ -8,20 +8,23 @@
 			<title>推荐版面<xsl:call-template name='bbsname' /></title>
 			<meta http-equiv='content-type' content='text/html; charset=gb2312' />
 			<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
+			<script type='text/javascript' src='/js/bbs.js'></script>
 		</head>
-		<body><div class='main'>
+		<body><div id='wrap'>
 			<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
-			<img src='/images/secbanner.jpg' />
-			<xsl:for-each select='sec'>
-				<div>
-					<h3><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id' /></xsl:attribute><xsl:value-of select='@id' />&#160;<xsl:value-of select='@desc' /></a></h3>
-					<ul class='brd'>
-						<xsl:for-each select='brd'>
-							<li><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@name' /></xsl:attribute><xsl:value-of select='@desc' /></a></li>
-						</xsl:for-each>
+			<div id='main'>
+				<img src='/images/secbanner.jpg' />
+				<xsl:for-each select='sec'>
+					<ul class='sec'>
+						<li><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id' /></xsl:attribute><xsl:value-of select='@id' />&#160;<xsl:value-of select='@desc' /></a></li>
+						<ul class='brd'>
+							<xsl:for-each select='brd'>
+								<li><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@name' /></xsl:attribute><xsl:value-of select='@desc' /></a></li>
+							</xsl:for-each>
+						</ul>
 					</ul>
-				</div>
-			</xsl:for-each>
+				</xsl:for-each>
+			</div>
 		</div></body>
 	</html>
 	</xsl:template>
