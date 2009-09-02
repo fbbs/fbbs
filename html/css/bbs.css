@@ -122,8 +122,10 @@ th.no, td.no { min-width: 2em; text-align: center; }
 th.title, td.ptitle { min-width: 8em; }
 th.ptitle, td.ptitle { min-width: 25em; }
 th.owner, td.owner { min-width: 6em; text-align: center;}
+td.idesc { min-width: 10em; }
 th.cate, td.cate, th.mark, td.mark, th.time, td.time, th.read, td.read { text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
+a.idesc { display: inline-block; margin-left: 2px; }
 
 div.post {
 	display: table;

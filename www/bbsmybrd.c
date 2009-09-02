@@ -109,7 +109,7 @@ int bbsmybrd_main(void)
 
 	// Print 'bid's of favorite boards.
 	xml_header("bbsmybrd");
-	printf("<bbsmybrd><limit>%d</limit>", GOOD_BRC_NUM);
+	printf("<bbsmybrd p='%s' limit='%d'>", get_permission(), GOOD_BRC_NUM);
 	for (iter = m.ptr; iter != end; iter++) {
 		if (!is_custom_dir(iter))
 			printf("<my bid='%d'/>", iter->pos + 1);
