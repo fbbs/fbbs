@@ -60,7 +60,7 @@ int bbssnd_main(void)
 	snprintf(buf, sizeof(buf), "posted '%s' on %s", title, bp->filename);
 	report(buf, currentuser.userid);
 
-	snprintf(buf, sizeof(buf), "bbsdoc?board=%s", bp->filename);
+	snprintf(buf, sizeof(buf), "doc?board=%s", bp->filename);
 	http_header();
 	refreshto(1, buf);
 	printf("</head>\n<body>发表成功，1秒钟后自动转到<a href='%s'>版面</a>\n"

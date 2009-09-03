@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="gb2312"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
 	<xsl:import href='misc.xsl' />
-	<xsl:output method='html' encoding='gb2312' />
+	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template match="bbsmybrd">
 		<html>
 			<head>

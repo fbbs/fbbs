@@ -63,21 +63,19 @@ int bbspst_main(void)
 	}
 	
 	xml_header("bbspst");
-	printf("<bbspst>\n<board>%s</board>\n<user>%s</user>\n",
-			bp->filename, currentuser.userid);
+	printf("<bbspst p='%s' u='%s' brd='%s' bid='%d'>", get_permission(),
+			currentuser.userid, bp->filename, bid);
 	if (reply) {
-		fputs("<title>", stdout);
+		printf("<t>");
 		ansi_filter(fh.title, fh.title);
 		xml_fputs(fh.title, stdout);
-		fputs("</title>\n<post>", stdout);		
+		printf("</t><po f='%u'>", fid);
 		web_quotation(m.ptr, m.size, &fh);
 		mmap_close(&m);
-		fputs("</post>\n", stdout);
-		printf("<f>%u</f>", fid);
+		fputs("</po>", stdout);
 	}
-	printf("<bid>%d</bid>", bid);
-	fputs("</bbspst>", stdout);
-	
+	printf("</bbspst>");
+
 	return 0;
 }
 

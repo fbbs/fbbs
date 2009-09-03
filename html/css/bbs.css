@@ -3,7 +3,7 @@ body, div, ul, ol, li, h1, h2, h3, h4, h5, h6, form, input, textarea, p, blockqu
 	padding: 0;
 }
 body {
-	font-family: "Gill Sans MT", Verdana, sans-serif;
+	font-family: "Microsoft YaHei", "Gill Sans MT", Verdana, sans-serif;
 	font-size: 1em;
 	height: 100%;
 }
@@ -64,14 +64,17 @@ ul.brd li{
 }
 #main {
 	position: absolute;
-	left: 9.5em;
+	left: 10.5em;
+	overflow: auto;
 }
 #nav {
+	-moz-border-radius: 0.4em;
 	display: block;
 	float: left;
 	background-color: #f0f7ff;
 	border: #336699 1px solid;
-	width: 8em;
+	width: 8.5em;
+	padding: 0.25em;
 }
 #nav li {
 	display: block;
@@ -128,6 +131,7 @@ a.title, a.desc, a.owner, a.ptitle { display: block; }
 a.idesc { display: inline-block; margin-left: 2px; }
 
 div.post {
+	-moz-border-radius: 0.4em;
 	display: table;
 	height: auto;
 	border: 1px solid #336699;
@@ -167,6 +171,22 @@ div.pmtop a, div.pmbot a {
 	line-height: 1.5em;
 }
 
+textarea.binput {
+	font-size: 1.2em;
+	border: 1px solid #6699cc;
+	background-color: #d0e0f0;
+}
+input.binput {
+	font-size: 1.2em;
+	border: 1px solid #6699cc;
+	background-color: #d0e0f0;
+}
+input[type="submit"], input[type="button"] {
+	font-size: 1.2em;
+	padding: 0 1em;
+	margin-right: 0.3em;
+}
+
 .a030 { color: Window; }
 .a130 { color: #c0c0c0; }
 .a031 { color: #800000; }
@@ -191,4 +211,3 @@ div.pmtop a, div.pmbot a {
 .a45 { background-color: #ff00ff; }
 .a46 { background-color: #00ffff; }
 .a47 { background-color: Window; }
-
