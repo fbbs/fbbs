@@ -5,12 +5,13 @@
 	<xsl:template match='bbssec'>
 	<html>
 		<head>
-			<title>推荐版面<xsl:call-template name='bbsname' /></title>
+			<title>推荐版面 - <xsl:call-template name='bbsname' /></title>
 			<meta http-equiv='content-type' content='text/html; charset=gb2312' />
-			<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
-			<script type='text/javascript' src='/js/bbs.js'></script>
+			<xsl:call-template name='include-css' />
+			<xsl:call-template name='include-js' />
 		</head>
 		<body><div id='wrap'>
+			<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>
 			<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
 			<div id='main'>
 				<img src='/images/secbanner.jpg' />
@@ -25,6 +26,7 @@
 					</ul>
 				</xsl:for-each>
 			</div>
+			<xsl:call-template name='foot' />
 		</div></body>
 	</html>
 	</xsl:template>

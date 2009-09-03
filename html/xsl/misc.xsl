@@ -48,7 +48,6 @@
 	<xsl:template name='navgation-bar'>
 		<xsl:param name='perm' />
 		<ul id='nav'>
-			<xsl:if test='not(contains($perm, "l"))'><li id='navl'><a href='login'>登录</a></li></xsl:if>
 			<li id='navh'><a href='sec'>推荐版面</a></li>
 			<li id='nava'><a href='0an'>本站精华</a></li>
 			<li id='navp'><a href='all'>全部讨论</a></li>
@@ -102,10 +101,25 @@
 					<li><a href='sel'>查找讨论区</a></li>
 				</ul>
 			</li>
-			<li id='navte'><a href='telnet://bbs.fudan.sh.cn:23'>终端登录</a></li>			
-			<xsl:if test='contains($perm, "l")'><li id='nave'><a href='logout'>注销登录</a></li></xsl:if>			
 		</ul>
 	</xsl:template>
 	
-	<xsl:template name='bbsname'>&#160;- 日月光华</xsl:template>
+	<xsl:template name='header'>
+		<xsl:param name='perm' />
+		<xsl:param name='user' />
+		<div id='hd'>
+			<xsl:if test='$user != ""'><a id='navu'><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user' /></xsl:attribute><xsl:value-of select='$user' /></a></xsl:if>
+			<xsl:if test='$user = ""'><a id='navl' href='login'>登录</a></xsl:if>
+			<xsl:if test='$user != ""'><a id='nave' href='logout'>注销</a></xsl:if>
+			<a id='navte' href='telnet://bbs.fudan.sh.cn:23'>终端登录</a>
+		</div>
+	</xsl:template>
+
+	<xsl:template name='foot'>
+		<div id='ft'><xsl:call-template name='bbsname' /> &#169;1996-2009 Powered by <a href='http://code.google.com/p/fdubbs/'><strong>fdubbs</strong></a></div>
+	</xsl:template>
+
+	<xsl:template name='bbsname'>日月光华</xsl:template>
+	<xsl:template name='include-css'><link rel='stylesheet' type='text/css' href='../css/bbs.css' /></xsl:template>
+	<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script></xsl:template>
 </xsl:stylesheet>

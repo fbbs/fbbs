@@ -819,8 +819,10 @@ int user_init(struct userec *x, struct user_info **y)
 	key = strtol(getparm("utmpkey"), NULL, 10);
 
 	// Boundary check.
-	if (i <= 0 || i > MAXACTIVE)
+	if (i <= 0 || i > MAXACTIVE) {
+		memset(x, 0, sizeof(*x));
 		return 0;
+	}
 	// Get user_info from utmp.
 	(*y) = &(utmpshm->uinfo[i - 1]);
 

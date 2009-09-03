@@ -5,7 +5,6 @@ body, div, ul, ol, li, h1, h2, h3, h4, h5, h6, form, input, textarea, p, blockqu
 body {
 	font-family: "Microsoft YaHei", "Gill Sans MT", Verdana, sans-serif;
 	font-size: 1em;
-	height: 100%;
 }
 ul, ol {
 	list-style: none;
@@ -60,16 +59,40 @@ ul.brd li{
 }
 
 #wrap {
-	margin: 0.5em;
+	display: block;
+	width: 63em;
+	margin: 0.5em auto;
 }
 #main {
-	position: absolute;
-	left: 10.5em;
+	float: left;
+	margin-left: 1em;
 	overflow: auto;
 }
+#hd {
+	margin-bottom: 0.5em;
+	padding-bottom: 0.5em;
+	border-bottom: #6699cc 1px dashed;
+}
+#ft {	
+	clear: both;
+	margin-top: 0.5em;
+	padding-top: 0.5em;
+	border-top: #6699cc 1px dashed;
+	font-size: 0.8em;
+}
+#hd>a {
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-position: left center;
+	line-height: 1.5em;
+	padding: 0 0.5em 0 1.5em;
+}
+#navl {  background-image: url('../images/login.gif'); }
+#navte { background-image: url('../images/telnet.gif'); }
+#nave { background-image: url('../images/exit.gif'); }
+a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #nav {
 	-moz-border-radius: 0.4em;
-	display: block;
 	float: left;
 	background-color: #f0f7ff;
 	border: #336699 1px solid;
@@ -101,18 +124,15 @@ ul.brd li{
 #nav li li {
 	display: block;
 }
-li#navh>a { background-image: url('/images/button/home.gif'); }
-li#navl>a { background-image: url('/images/login.gif'); }
-li#nava>a { background-image: url('/images/announce.gif'); }
-li#navp>a { background-image: url('/images/penguin.gif'); }
-li#navt>a { background-image: url('/images/top10.gif'); }
-li#navf>a { background-image: url('/images/favorite.gif'); }
-li#navc>a { background-image: url('/images/chat.gif'); }
-li#navco>a { background-image: url('/images/config.gif'); }
-li#navm>a { background-image: url('/images/mail.gif'); }
-li#navs>a { background-image: url('/images/search.gif'); }
-li#navte>a { background-image: url('/images/telnet.gif'); }
-li#nave>a { background-image: url('/images/exit.gif'); }
+li#navh>a { background-image: url('../images/button/home.gif'); }
+li#nava>a { background-image: url('../images/announce.gif'); }
+li#navp>a { background-image: url('../images/penguin.gif'); }
+li#navt>a { background-image: url('../images/top10.gif'); }
+li#navf>a { background-image: url('../images/favorite.gif'); }
+li#navc>a { background-image: url('../images/chat.gif'); }
+li#navco>a { background-image: url('../images/config.gif'); }
+li#navm>a { background-image: url('../images/mail.gif'); }
+li#navs>a { background-image: url('../images/search.gif'); }
 
 table.content {
 	border-collapse: separate;
