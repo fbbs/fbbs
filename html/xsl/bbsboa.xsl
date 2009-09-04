@@ -7,7 +7,8 @@
 		<head>
 			<title><xsl:choose><xsl:when test='@dir'>版面目录</xsl:when><xsl:otherwise>分类讨论区</xsl:otherwise></xsl:choose> - <xsl:call-template name='bbsname' /></title>
 			<meta http-equiv='content-type' content='text/html; charset=gb2312' />
-			<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
+			<xsl:call-template name='include-css' />
+			<xsl:call-template name='include-js' />
 		</head>
 		<body><div id='wrap'>
 			<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>

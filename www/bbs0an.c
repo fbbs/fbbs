@@ -66,9 +66,12 @@ int bbs0an_main(void)
 	}
 
 	xml_header("bbs0an");
-	printf("<bbs0an><path>%s</path><visit>%d</visit>", path, get_count(path));
+	printf("<bbs0an p='%s' u='%s' path='%s' v='%d'", get_permission(),
+			currentuser.userid, path, get_count(path));
 	if (bp != NULL)
-		printf("<board>%s</board>", bp->filename);
+		printf(" brd='%s'", bp->filename);
+	printf(">");
+	
 	char name[STRLEN], fpath[1024], *id = NULL, *ptr;
 	struct stat st;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
@@ -89,23 +92,20 @@ int bbs0an_main(void)
 			if (fgets(buf, sizeof(buf), fp) == NULL || strncmp(buf, "Path=~", 6)) {
 				break;
 			} else {
-				puts("<entry><title>");
-				xml_fputs(name, stdout);
-				printf("</title><path>%s</path>", trim(buf + 6));
+				printf("<ent path='%s' t='", trim(buf + 6));
 				snprintf(fpath, sizeof(fpath), "0Announce%s%s", path, buf + 6);
 				if (stat(fpath, &st) != 0 || (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))) {
-					puts("<type>err</type>");
+					printf("e'");
 				} else if (S_ISREG(st.st_mode)) {
-					puts("<type>file</type>");
+					printf("f'");
 				} else {
-					puts("<type>dir</type>");
+					printf("d'");
 				}
-				if (id != NULL) {
-					puts("<id>");
-					xml_fputs(id, stdout);
-					puts("</id>");
-				}
-				printf("<time>%s</time></entry>", getdatestring(st.st_mtime, DATE_XML));
+				if (id != NULL)
+					printf(" id='%s'", id);
+				printf(" time='%s'>", getdatestring(st.st_mtime, DATE_XML));
+				xml_fputs(trim(name), stdout);
+				printf("</ent>");
 			}
 		}
 	}

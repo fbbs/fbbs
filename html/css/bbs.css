@@ -98,6 +98,7 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 	border: #336699 1px solid;
 	width: 8.5em;
 	padding: 0.25em;
+	margin-bottom: 0.5em;
 }
 #nav li {
 	display: block;
