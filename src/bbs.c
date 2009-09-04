@@ -3101,7 +3101,9 @@ int read_trash(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!dashf(currdirect)) {
 		digestmode = NA;
 		setbdir(currdirect, currboard);
-		return PARTUPDATE;
+		presskeyfor("版面垃圾箱无内容，按任意键继续...", t_lines-1);
+		update_endline();
+		return DONOTHING;
 	}
 	return NEWDIRECT;
 }
@@ -3114,7 +3116,9 @@ int read_attach(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!dashf(currdirect)) {
 		digestmode = NA;
 		setbdir(currdirect, currboard);
-		return PARTUPDATE;
+		presskeyfor("版面附件区无内容，按任意键继续...", t_lines-1);
+		update_endline();
+		return DONOTHING;
 	}
 	return NEWDIRECT;
 }
@@ -3129,7 +3133,9 @@ int read_junk(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!dashf(currdirect)) {
 		digestmode = NA;
 		setbdir(currdirect, currboard);
-		return PARTUPDATE;
+		presskeyfor("站务垃圾箱无内容，按任意键继续...", t_lines-1);
+		update_endline();
+		return DONOTHING;
 	}
 	return NEWDIRECT;
 }
