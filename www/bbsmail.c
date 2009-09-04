@@ -20,7 +20,7 @@ int bbsmail_main(void)
 	struct fileheader *fh = (struct fileheader *)m.ptr + start - 1;
 	struct fileheader *end = (struct fileheader *)m.ptr + total;
 	xml_header("bbsmail");
-	printf("<bbsmail p='%s' u='%s' start='%d' total='%d' page='%d'>",
+	printf("<root><bbsmail p='%s' u='%s' start='%d' total='%d' page='%d'>",
 			get_permission(), currentuser.userid, start, total, TLINES);
 	for (int i = 0; i < TLINES && fh != end; ++i) {
 		int mark = ' ';
@@ -45,6 +45,6 @@ int bbsmail_main(void)
 		fh++;
 	}
 	mmap_close(&m);
-	printf("</bbsmail>");
+	printf("</bbsmail></root>");
 	return 0;
 }

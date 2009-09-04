@@ -3,61 +3,55 @@
 	<xsl:import href='misc.xsl' />
 	<xsl:import href='showpost.xsl' />
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
-	<xsl:template match='bbsmail'>
-	<html>
-		<head>
-			<title>信件列表 - <xsl:call-template name='bbsname' /></title>
-			<meta http-equiv="content-type" content="text/html; charset=gb2312" />
-			<xsl:call-template name='include-css' />
-			<xsl:call-template name='include-js' />
-		</head>
-		<body><div id='wrap'>
-			<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>
-			<xsl:call-template name='navigation'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
-			<div id='main'>
-				<p>信件总数 [<xsl:value-of select='@total' />]封</p>
-				<form name='list' method='post' action='mailman'>
-					<table class='content'>
-						<tr><th class='no'>序号</th><th>管理</th><th class='mark'>状态</th><th class='owner'>发信人</th><th>日期</th><th class='ptitle'>信件标题</th></tr>
-						<xsl:for-each select='mail'><tr>
-							<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-							<td class='no'><xsl:value-of select='position() - 1 + ../@start' /></td>
-							<td><input type="checkbox"><xsl:attribute name='name'>box<xsl:value-of select='@name' /></xsl:attribute></input></td>
-							<td class='mark'><xsl:value-of select='@m' /></td>
-							<td><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from' /></xsl:attribute><xsl:value-of select='@from' /></a></td>
-							<td><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date' /></xsl:call-template></td>
-							<td class='ptitle'><a class='ptitle'>
-								<xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name' /></xsl:attribute>
-								<xsl:call-template name='ansi-escape'>
-									<xsl:with-param name='content'><xsl:value-of select='.' /></xsl:with-param>
-									<xsl:with-param name='fgcolor'>37</xsl:with-param>
-									<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
-									<xsl:with-param name='ishl'>0</xsl:with-param>
-								</xsl:call-template>
-							</a></td>
-						</tr></xsl:for-each>
-					</table>
-					<input name='mode' value='' type='hidden' />
-				</form>
-				<div>[<a href="#"  onclick="checkAll();">本页全选</a>] [<a href="#"  onclick="checkReverse();">本页反选</a>] [<a href="#" onclick="delSelected()">删除所选信件</a>]</div>
-				<div>
-					<xsl:if test='@start &gt; 1'>
-						<xsl:variable name='prev'>
-							<xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page' /></xsl:otherwise></xsl:choose>
-						</xsl:variable>
-						<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$prev' /></xsl:attribute>[ <img src='../images/button/up.gif' />上一页 ]</a>
-					</xsl:if>
-					<xsl:if test='@total &gt; @start + @page - 1'>
-						<xsl:variable name='next'><xsl:value-of select='@start + @page' /></xsl:variable>
-						<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$next' /></xsl:attribute>[ <img src='../images/button/down.gif' />下一页 ]</a>
-					</xsl:if>
-					<form><input value='跳转到' type='submit' />第<input name='start' size='4' type='text' />封</form>
-				</div>
-			</div>
-			<xsl:call-template name='foot' />
-		</div></body>
-	</html>
+	<xsl:template match='root'>
+		<xsl:call-template name='layout'>
+			<xsl:with-param name='title'>信件列表</xsl:with-param>
+			<xsl:with-param name='p'><xsl:value-of select='bbsmail/@p' /></xsl:with-param>
+			<xsl:with-param name='u'><xsl:value-of select='bbsmail/@u' /></xsl:with-param>
+		</xsl:call-template>
 	</xsl:template>
+
+	<xsl:template match='bbsmail'>
+		<p>信件总数 [<xsl:value-of select='@total' />]封</p>
+		<form name='list' method='post' action='mailman'>
+			<table class='content'>
+				<tr><th class='no'>序号</th><th>管理</th><th class='mark'>状态</th><th class='owner'>发信人</th><th>日期</th><th class='ptitle'>信件标题</th></tr>
+				<xsl:for-each select='mail'><tr>
+					<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
+					<td class='no'><xsl:value-of select='position() - 1 + ../@start' /></td>
+					<td><input type="checkbox"><xsl:attribute name='name'>box<xsl:value-of select='@name' /></xsl:attribute></input></td>
+					<td class='mark'><xsl:value-of select='@m' /></td>
+					<td><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from' /></xsl:attribute><xsl:value-of select='@from' /></a></td>
+					<td><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date' /></xsl:call-template></td>
+					<td class='ptitle'><a class='ptitle'>
+						<xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name' /></xsl:attribute>
+						<xsl:call-template name='ansi-escape'>
+							<xsl:with-param name='content'><xsl:value-of select='.' /></xsl:with-param>
+							<xsl:with-param name='fgcolor'>37</xsl:with-param>
+							<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
+							<xsl:with-param name='ishl'>0</xsl:with-param>
+						</xsl:call-template>
+					</a></td>
+				</tr></xsl:for-each>
+			</table>
+			<input name='mode' value='' type='hidden' />
+		</form>
+		<div>[<a href="#"  onclick="checkAll();">本页全选</a>] [<a href="#"  onclick="checkReverse();">本页反选</a>] [<a href="#" onclick="delSelected()">删除所选信件</a>]</div>
+		<div>
+			<xsl:if test='@start &gt; 1'>
+				<xsl:variable name='prev'>
+					<xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page' /></xsl:otherwise></xsl:choose>
+				</xsl:variable>
+				<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$prev' /></xsl:attribute>[ <img src='../images/button/up.gif' />上一页 ]</a>
+			</xsl:if>
+			<xsl:if test='@total &gt; @start + @page - 1'>
+				<xsl:variable name='next'><xsl:value-of select='@start + @page' /></xsl:variable>
+				<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$next' /></xsl:attribute>[ <img src='../images/button/down.gif' />下一页 ]</a>
+			</xsl:if>
+			<form><input value='跳转到' type='submit' />第<input name='start' size='4' type='text' />封</form>
+		</div>
+	</xsl:template>
+	
 	<xsl:template name='linkbar'>
 	</xsl:template>
 </xsl:stylesheet>

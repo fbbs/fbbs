@@ -39,15 +39,16 @@ int bbsccc_main(void)
 		if (ret < 0)
 			return BBS_EINTNL;
 		xml_header("bbsccc");
-		printf("<bbsccc p='%s' u='%s' t='%d' b='%d'/>", get_permission(),
-				currentuser.userid, bp2 - bcache + 1, bp - bcache + 1);
+		printf("<root><bbsccc p='%s' u='%s' t='%d' b='%d'/></root>",
+				get_permission(), currentuser.userid, bp2 - bcache + 1,
+				bp - bcache + 1);
 	} else {
 		xml_header("bbsccc");
-		printf("<bbsccc p='%s' u='%s' owner='%s' brd='%s' bid='%d' fid='%u'>",
-				get_permission(), currentuser.userid, fh.owner, bp->filename,
-				bp - bcache + 1, fid);
+		printf("<root><bbsccc p='%s' u='%s' owner='%s' brd='%s' bid='%d'"
+				" fid='%u'>", get_permission(), currentuser.userid, fh.owner,
+				bp->filename, bp - bcache + 1, fid);
 		xml_fputs(fh.title, stdout);
-		printf("</bbsccc>");
+		printf("</bbsccc></root>");
 	}
 	return 0;
 }

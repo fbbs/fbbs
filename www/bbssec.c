@@ -30,7 +30,8 @@ int bbssec_main(void)
 {
 	char path[HOMELEN];
 	xml_header("bbssec");
-	printf("<bbssec p='%s' u='%s'>", get_permission(), currentuser.userid);
+	printf("<root><bbssec p='%s' u='%s'>", get_permission(),
+			currentuser.userid);
 	for(int i = 0; i < SECNUM; i++) {
 		printf("<sec id='%X' desc='%s %s'>", i, secname[i][0], secname[i][1]);
 		sprintf(path, "%s/info/egroup%d/recommend", BBSHOME, i);
@@ -38,6 +39,6 @@ int bbssec_main(void)
 			showbrdlist(path);
 		printf("</sec>");
 	}
-	printf("</bbssec>");
+	printf("</bbssec></root>");
 	return 0;
 }

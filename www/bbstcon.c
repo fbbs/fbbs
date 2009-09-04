@@ -82,7 +82,7 @@ int bbstcon_main(void)
 		return BBS_ENOFILE;
 	struct fileheader *begin, *end;
 	xml_header("bbstcon");
-	printf("<bbstcon p='%s' u='%s' bid='%d' gid='%u' page='%d'>",
+	printf("<root><bbstcon p='%s' u='%s' bid='%d' gid='%u' page='%d'>",
 			get_permission(), currentuser.userid, bid, gid, count);
 	if (action == 'n') {
 		begin = fh;
@@ -99,6 +99,6 @@ int bbstcon_main(void)
 		puts("</po>");
 	}
 	free(fh);
-	puts("</bbstcon>");
+	puts("</bbstcon></root>");
 	return 0;
 }

@@ -18,11 +18,12 @@ int bbsanc_main()
 	char fname[512];
 	sprintf(fname, "0Announce%s", path);
 	xml_header("bbsanc");
-	printf("<bbsanc p='%s' u='%s'", get_permission(), currentuser.userid);
+	printf("<root><bbsanc p='%s' u='%s'", get_permission(),
+			currentuser.userid);
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
 	xml_printfile(fname, stdout);
-	printf("</bbsanc>");
+	printf("</bbsanc></root>");
 	return 0;
 }
