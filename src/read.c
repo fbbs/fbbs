@@ -998,12 +998,9 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 	char annpath[512];
 	char buf[STRLEN], ans[8], info[STRLEN], bname[STRLEN], dbname[STRLEN];
 
-	/**
-	 * Added by phrack to support deletion of water posts on 2007.12.12
-	 * */
 	char items[9][8] = { "保留", "文摘", "不可RE", "删除", "精华区", "水文", "转载",
 			"删水文", "恢复" };
-	int type, num1, num2, i, max=9;
+	int type, num1, num2, i, max = 9;
 	int fdr, ssize;
 	extern int SR_BMDELFLAG;
 	extern char quote_file[120], quote_title[120], quote_board[120];
@@ -1013,16 +1010,14 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!chkBM(currbp, &currentuser))
 		return DONOTHING;
 	saveline(t_lines - 1, 0);
-	/* Modified by Amigo 2002.06.27. Add restore for big D board. */
-	//   if(strcmp(currboard, "deleted")&&strcmp(currboard,"junk"))max=7;
-	if (digestmode!=TRASH_MODE && digestmode!=JUNK_MODE)
-		max=8; //modified by phrack
+	if (digestmode != TRASH_MODE && digestmode != JUNK_MODE)
+		max = 8;
 	strcpy(info, "区段:");
-	for (i=0; i<max; i++) {
-		sprintf(buf, " %d)%s", i+1, items[i]);
+	for (i = 0; i < max; i++) {
+		sprintf(buf, "%d)%s", i + 1, items[i]);
 		strcat(info, buf);
 	}
-	strcat(info, " [0]: ");
+	strcat(info, "[0]:");
 	getdata(t_lines-1, 0, info, ans, 2, DOECHO, YEA);
 	type = atoi(ans);
 	if (type <= 0 || type > max) {
