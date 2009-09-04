@@ -65,7 +65,7 @@ ul.brd li{
 }
 #main {
 	float: left;
-	margin-left: 1em;
+	margin: 0 0 0.5em 1em;
 	overflow: auto;
 }
 #hd {

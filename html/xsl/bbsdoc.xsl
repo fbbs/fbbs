@@ -6,12 +6,14 @@
 	<xsl:template match='bbsdoc'>
 		<html>
 			<head>
-				<title><xsl:value-of select='brd/@desc' /><xsl:call-template name='bbsname' /></title>
+				<title><xsl:value-of select='brd/@desc' /> - <xsl:call-template name='bbsname' /></title>
 				<meta http-equiv='content-type' content='text/html; charset=gb2312' />
-				<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
+				<xsl:call-template name='include-css' />
+				<xsl:call-template name='include-js' />
 			</head>
 			<body><div id='wrap'>
-				<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
+				<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>
+				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
 				<xsl:if test='brd/@icon'><img><xsl:attribute name='src'><xsl:value-of select='brd/@icon' /></xsl:attribute></img></xsl:if>
 				<div id='main'>
 					<xsl:choose>
@@ -43,6 +45,7 @@
 					</table>
 					<xsl:apply-templates select='brd' />
 				</div>
+				<xsl:call-template name='foot' />
 			</div></body>
 		</html>
 	</xsl:template>
