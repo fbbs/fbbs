@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='gb2312'?>
 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template name='timeconvert'>
 		<xsl:param name='time' />
 		<xsl:value-of select='concat(substring($time, 6, 5), " ", substring($time, 12, 5))' />
@@ -122,4 +123,27 @@
 	<xsl:template name='bbsname'>日月光华</xsl:template>
 	<xsl:template name='include-css'><link rel='stylesheet' type='text/css' href='../css/bbs.css' /></xsl:template>
 	<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script></xsl:template>
+	<xsl:template name='linkbar'>
+
+	</xsl:template>
+
+	<xsl:template name='layout'>
+		<xsl:param name='title' />
+		<xsl:param name='p' />
+		<xsl:param name='u' />
+		<html>
+			<head>
+				<title><xsl:value-of select='$title' /> - <xsl:call-template name='bbsname' /></title>
+				<meta http-equiv="content-type" content="text/html; charset=gb2312" />
+				<xsl:call-template name='include-css' />
+				<xsl:call-template name='include-js' />
+			</head>
+			<body><div id='wrap'>
+				<xsl:call-template name='header'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='user' select='$u' /></xsl:call-template>
+				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p' /></xsl:call-template>
+				<div id='main'><xsl:apply-templates /></div>
+				<xsl:call-template name='foot' />
+			</div></body>
+		</html>
+	</xsl:template>
 </xsl:stylesheet>

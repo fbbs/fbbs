@@ -20,7 +20,8 @@ int bbsfav_main(void)
 
 	// Print all favorite boards.
 	xml_header("bbsfav");
-	printf("<bbsfav p='%s' u='%s'>", get_permission(), currentuser.userid);
+	printf("<root><bbsfav p='%s' u='%s'>", get_permission(),
+			currentuser.userid);
 	for (iter = m.ptr; iter != end; ++iter) {
 		if (!gbrd_is_custom_dir(iter)) {
 			printf("<brd bid='%d' brd='%s'>", iter->pos + 1, iter->filename);
@@ -28,6 +29,6 @@ int bbsfav_main(void)
 			printf("</brd>");
 		}
 	}
-	printf("</bbsfav>");
+	printf("</bbsfav></root>");
 	return 0;
 }
