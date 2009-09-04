@@ -813,6 +813,7 @@ int user_init(struct userec *x, struct user_info **y)
 	char id[IDLEN + 1];
 	int i, key;
 
+	memset(x, 0, sizeof(*x));
 	// Get information from cookie.
 	strlcpy(id, getparm("utmpuserid"), sizeof(id));
 	i = strtol(getparm("utmpnum"), NULL, 10);
@@ -820,7 +821,6 @@ int user_init(struct userec *x, struct user_info **y)
 
 	// Boundary check.
 	if (i <= 0 || i > MAXACTIVE) {
-		memset(x, 0, sizeof(*x));
 		return 0;
 	}
 	// Get user_info from utmp.

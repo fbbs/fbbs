@@ -199,12 +199,12 @@ textarea.binput {
 	background-color: #d0e0f0;
 }
 input[type="text"] {
-	font-size: 1.2em;
+	font-size: 1.1em;
 	border: 1px solid #6699cc;
 	background-color: #d0e0f0;
 }
 input[type="submit"], input[type="button"] {
-	font-size: 1.1em;
+	font-size: 1.05em;
 	padding: 0 1em;
 	margin-right: 0.3em;
 }
