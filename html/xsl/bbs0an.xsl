@@ -32,14 +32,7 @@
 									<xsl:with-param name='isfirst' select='1' />
 								</xsl:call-template>
 							</xsl:if></td>
-							<!-- Time -->
-							<td>
-								<xsl:if test='type != "err"'>
-									<xsl:call-template name='timeconvert'>
-										<xsl:with-param name='time' select='time' />
-									</xsl:call-template>
-								</xsl:if>
-							</td>
+							<td class='time'><xsl:if test='@t != "e"'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time' /></xsl:call-template></xsl:if></td>
 					</tr></xsl:for-each>
 					<xsl:if test='not(ent)'>
 						<td /><td width='80%'>&lt;&lt;目前没有文章&gt;&gt;</td>
