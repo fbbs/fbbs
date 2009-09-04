@@ -67,7 +67,7 @@
 						<li><a href='friend'>在线好友</a></li>
 						<li><a href='usr'>环顾四方</a></li>
 						<li><a href='sendmsg'>发送讯息</a></li>
-						<li><a href='msg'>查看所有讯息</a></li>
+						<li><a href='msg'>查看讯息</a></li>
 					</ul>
 				</li>
 				<li id='navm'>

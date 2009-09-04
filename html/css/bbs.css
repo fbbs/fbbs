@@ -43,7 +43,7 @@ th {
 	background-color: #ccddff;
 	text-align: left;
 }
-th, td { padding: 0 0.5em; }
+th, td { padding: 0 0.25em; }
 tr { height: 1.5em; line-height: 1.5em; vertical-align: middle; }
 
 ul.sec>li {
@@ -65,8 +65,9 @@ ul.brd li{
 }
 #main {
 	float: left;
-	margin: 0 0 0.5em 1em;
+	margin: 0 0 0.5em 0.5em;
 	overflow: auto;
+	width: 54em;
 }
 #hd {
 	margin-bottom: 0.5em;
@@ -96,7 +97,7 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 	float: left;
 	background-color: #f0f7ff;
 	border: #336699 1px solid;
-	width: 8.5em;
+	width: 7.5em;
 	padding: 0.25em;
 	margin-bottom: 0.5em;
 }
@@ -197,13 +198,13 @@ textarea.binput {
 	border: 1px solid #6699cc;
 	background-color: #d0e0f0;
 }
-input.binput {
+input[type="text"] {
 	font-size: 1.2em;
 	border: 1px solid #6699cc;
 	background-color: #d0e0f0;
 }
 input[type="submit"], input[type="button"] {
-	font-size: 1.2em;
+	font-size: 1.1em;
 	padding: 0 1em;
 	margin-right: 0.3em;
 }
