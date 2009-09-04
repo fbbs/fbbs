@@ -1,3 +1,4 @@
+#include "config.h"
 #include "modes.h"
 
 // 返回模式mode所对应的中文名称
