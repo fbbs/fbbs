@@ -160,7 +160,7 @@ div.post {
 }
 div.pleft {
 	display: table-cell;
-	padding: 0.5em;
+	padding: 0.5em 0;
 	width: 8.5em;
 	vertical-align: top;
 }
@@ -171,7 +171,7 @@ div.pleft a {
 }
 div.pright {
 	display: table-cell;
-	width: 51em;
+	width: 44em;
 	border-left: 1px solid #336699;
 }
 div.pmain {
