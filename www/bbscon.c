@@ -17,7 +17,8 @@ int bbscon_main(void)
 	fid = fh.id;
 
 	xml_header("bbscon");
-	printf("<bbscon p='%s' link='con' bid='%d'>", get_permission(), bid);
+	printf("<bbscon p='%s' u='%s' link='con' bid='%d'>", get_permission(),
+			currentuser.userid, bid);
 	printf("<po fid='%u'", fid);
 	if (fh.reid != fh.id)
 		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
