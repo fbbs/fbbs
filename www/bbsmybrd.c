@@ -1,10 +1,5 @@
 #include "libweb.h"
 
-static bool is_custom_dir(const struct goodbrdheader *bh)
-{
-	return (bh->flag & BOARD_CUSTOM_FLAG);
-}
-
 static bool is_dir(const struct boardheader *bp)
 {
 	return (bp->flag & BOARD_DIR_FLAG);
@@ -111,7 +106,7 @@ int bbsmybrd_main(void)
 	xml_header("bbsmybrd");
 	printf("<bbsmybrd p='%s' limit='%d'>", get_permission(), GOOD_BRC_NUM);
 	for (iter = m.ptr; iter != end; iter++) {
-		if (!is_custom_dir(iter))
+		if (!gbrd_is_custom_dir(iter))
 			printf("<my bid='%d'/>", iter->pos + 1);
 	}
 	mmap_close(&m);

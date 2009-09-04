@@ -81,7 +81,7 @@
 #define MAX_POSTRETRY       100
 #define MAX_PREFIX			  9    /* 最大版面前缀数*/
 #define MORE_BUFSIZE       4096
-#define GOOD_BRC_NUM	70	//收藏夹最大可收藏版面数 2007-04-23 从boards.c移至此
+
 #ifdef BIGGER_MOVIE
 #define MAXMOVIE		8
 #else
@@ -378,5 +378,6 @@ enum DATE_FORMAT {
 };
 
 #include "func.h"
+#include "../lib/goodbrd.h"
 
 #endif /* of _BBS_H_ */
