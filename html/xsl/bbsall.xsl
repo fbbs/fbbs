@@ -5,12 +5,13 @@
 	<xsl:template match='bbsall'>
 		<html>
 			<head>
-				<title>全部讨论区<xsl:call-template name='bbsname' /></title>
+				<title>全部讨论区- <xsl:call-template name='bbsname' /></title>
 				<meta http-equiv='content-type' content='text/html; charset=gb2312' />
 				<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
 			</head>
 			<body><div id='wrap'>
-				<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
+				<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>
+				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
 				<div id='main'>
 					<h3>[讨论区数: <xsl:value-of select="count(brd)" />]</h3>
 					<table class='content'>
@@ -46,6 +47,7 @@
 					</xsl:for-each>
 					</table>
 				</div>
+				<xsl:call-template name='foot' />
 			</div></body>
 		</html>
 	</xsl:template>

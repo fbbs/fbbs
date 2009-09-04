@@ -7,7 +7,7 @@ int bbsall_main(void)
 	struct boardheader *x;
 	int i;
 	xml_header("bbsall");
-	printf("<bbsall p='%s'>", get_permission());
+	printf("<bbsall p='%s' u='%s'>", get_permission(), currentuser.userid);
 	for (i = 0; i < MAXBOARD; i++) {
 		x = &(bcache[i]);
 		if (x->filename[0] <= 0x20 || x->filename[0] > 'z')
