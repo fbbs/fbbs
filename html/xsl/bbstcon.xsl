@@ -31,6 +31,7 @@
 							<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></div>
 							<div class='pmbot'><xsl:call-template name='linkbar' /></div>
 						</div>
+						<div class='pclear'></div>
 					</div>
 				</xsl:for-each>
 			</div>

@@ -73,7 +73,7 @@
 				<li id='navm'>
 					<a href='#' onclick='return switchPanel(this);'>处理信件</a>
 					<ul>
-						<li><a href='newmail'>阅览新信件</a></li>
+						<li><a href='newmail'>阅览新信</a></li>
 						<li><a href='mail'>所有信件</a></li>
 						<li><a href='pstmail'>发送信件</a></li>
 						<li></li>

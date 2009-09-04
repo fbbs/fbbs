@@ -15,6 +15,7 @@
 			<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>
 			<xsl:call-template name='navigation'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
 			<div id='main'>
+				<h2>½ø°æ»­Ãæ - [<xsl:value-of select='@brd' />]</h2>
 				<div class='post'>
 					<div class='pleft'>
 						<xsl:if test='@brd'>
@@ -27,6 +28,7 @@
 						<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></div>
 						<div class='pmbot'><xsl:call-template name='linkbar' /></div>
 					</div>
+					<div class='pclear'></div>
 				</div>
 			</div>
 			<xsl:call-template name='foot' />

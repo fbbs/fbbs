@@ -26,6 +26,7 @@
 						<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail' /></xsl:call-template></div>
 						<div class='pmbot'><xsl:call-template name='linkbar' /></div>
 					</div>
+					<div class='pclear'></div>
 				</div>
 			</div>
 			<xsl:call-template name='foot' />

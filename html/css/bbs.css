@@ -66,8 +66,6 @@ ul.brd li{
 #main {
 	float: left;
 	margin: 0 0 0.5em 0.5em;
-	overflow: auto;
-	width: 54em;
 }
 #hd {
 	margin-bottom: 0.5em;
@@ -97,7 +95,7 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 	float: left;
 	background-color: #f0f7ff;
 	border: #336699 1px solid;
-	width: 7.5em;
+	width: 6.5em;
 	padding: 0.25em;
 	margin-bottom: 0.5em;
 }
@@ -154,15 +152,13 @@ a.idesc { display: inline-block; margin-left: 2px; }
 
 div.post {
 	-moz-border-radius: 0.4em;
-	display: table;
-	height: auto;
 	border: 1px solid #336699;
 	margin-bottom: 1em;
 }
 div.pleft {
-	display: table-cell;
-	padding: 0.5em 0;
-	width: 8.5em;
+	float: left;
+	padding: 0.25em 0;
+	width: 7em;
 	vertical-align: top;
 }
 div.pleft a {
@@ -171,14 +167,14 @@ div.pleft a {
 	text-align: center;
 }
 div.pright {
-	display: table-cell;
-	width: 44em;
+	float: left;
+	width: 48em;
 	border-left: 1px solid #336699;
 }
 div.pmain {
 	word-wrap: break-word;
 	word-break: break-all;
-	padding: 0.5em;
+	padding: 0.25em;
 	line-height: 1.3;
 	font-size: 1em;
 }
@@ -191,6 +187,9 @@ div.pmtop, div.pmbot {
 div.pmtop a, div.pmbot a {
 	display: inline-block;
 	line-height: 1.5em;
+}
+div.pclear {
+	clear: both;
 }
 
 textarea.binput {
