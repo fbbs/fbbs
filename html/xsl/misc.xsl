@@ -45,7 +45,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template name='navgation-bar'>
+	<xsl:template name='navigation'>
 		<xsl:param name='perm' />
 		<ul id='nav'>
 			<li id='navh'><a href='sec'>ÍÆ¼ö°æÃæ</a></li>

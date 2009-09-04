@@ -10,7 +10,8 @@
 			<link rel='stylesheet' type='text/css' href='/css/bbs.css' />
 		</head>
 		<body><div id='wrap'>
-			<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
+			<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>
+			<xsl:call-template name='navigation'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
 			<div id='main'>
 				<h2><xsl:if test='@icon'><img><xsl:attribute name='src'><xsl:value-of select='icon' /></xsl:attribute></img></xsl:if><xsl:value-of select='@title' /></h2>
 				<table class='content'>
@@ -30,6 +31,7 @@
 					</tr></xsl:for-each>
 				</table>
 			</div>
+			<xsl:call-template name='foot' />
 		</div></body>
 	</html>
 	</xsl:template>

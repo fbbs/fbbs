@@ -19,7 +19,8 @@ int bbsboa_main(void)
 		cgi = "doc";
 	
 	xml_header("bbsboa");
-	printf("<bbsboa p='%s' link='%s' ", get_permission(), cgi);
+	printf("<bbsboa p='%s' u='%s' link='%s' ", get_permission(),
+			currentuser.userid, cgi);
 
 	struct boardheader *parent = NULL;
     int parent_bid = 0;

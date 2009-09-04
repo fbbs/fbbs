@@ -12,7 +12,7 @@
 		</head>
 		<body><div id='wrap'>
 			<xsl:call-template name='header'><xsl:with-param name='perm' select='@p' /><xsl:with-param name='user' select='@u' /></xsl:call-template>
-			<xsl:call-template name='navgation-bar'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
+			<xsl:call-template name='navigation'><xsl:with-param name='perm' select='@p' /></xsl:call-template>
 			<div id='main'>
 				<img src='/images/secbanner.jpg' />
 				<xsl:for-each select='sec'>
