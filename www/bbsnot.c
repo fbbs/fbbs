@@ -14,9 +14,10 @@ int bbsnot_main(void)
 	if (mmap_open(fname, &m) < 0)
 		return BBS_ENOFILE;
 	xml_header("bbsnot");
-	printf("<bbsnot><content>");
+	printf("<bbsnot p='%s' u='%s' brd='%s'>", get_permission(),
+			currentuser.userid, bp->filename);
 	xml_fputs((char *)m.ptr, stdout);
 	mmap_close(&m);
-	printf("</content><board>%s</board></bbsnot>", bp->filename);
+	printf("</bbsnot>", bp->filename);
 	return 0;
 }
