@@ -72,6 +72,10 @@ ul.brd li{
 	padding-bottom: 0.5em;
 	border-bottom: #6699cc 1px dashed;
 }
+#iewarn {
+	font-weight: bold;
+	background-color: #fff0b2;
+}
 #ft {	
 	clear: both;
 	margin-top: 0.5em;
@@ -207,6 +211,29 @@ input[type="submit"], input[type="button"], input[type="reset"] {
 	padding: 0 1em;
 	margin-right: 0.3em;
 }
+
+#user {
+	-moz-border-radius: 0.4em;
+	border: 1px solid #336699;
+	width: 40em;
+	padding: 0.5em;
+	margin-bottom: 1em;
+	font-size: 1.2em;
+}
+#user .a131, #user .a132, #user .a133 {
+	font-weight: bold;
+}
+.lev0, .lev1, .lev2, .lev3, .lev4, .lev5 {
+	display: inline-block;
+	height: 0.9em;
+	width: 5em;
+}
+.lev0 div { background-color: #808080; }
+.lev1 div { background-color: #0000ff; }
+.lev2 div { background-color: #008000; }
+.lev3 div { background-color: #ff0000; }
+.lev4 div { background-color: #ffa500; }
+.lev5 div { background-color: #ffff00; }
 
 .a030 { color: Window; }
 .a130 { color: #c0c0c0; }
