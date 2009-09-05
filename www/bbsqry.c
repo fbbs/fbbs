@@ -11,8 +11,9 @@ int bbsqry_main(void)
 	if (getuserec(userid, &user) != 0) {
 		int level, repeat;
 		level = iconexp(countexp(&user), &repeat);		
-		printf("<bbsqry id='%s' login='%d' lastlogin='%s' perf='%s' post='%d'"
-				" hp='%d' level='%d' repeat='%d'", user.userid,
+		printf("<bbsqry p='%s' u='%s' id='%s' login='%d' lastlogin='%s' "
+				"perf='%s' post='%d' hp='%d' level='%d' repeat='%d'",
+				get_permission(), currentuser.userid, user.userid,
 				user.numlogins, getdatestring(user.lastlogin, DATE_XML),
 				cperf(countperf(&user)), user.numposts,
 				compute_user_value(&user), level, repeat);
