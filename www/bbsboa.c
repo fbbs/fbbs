@@ -19,7 +19,7 @@ int bbsboa_main(void)
 		cgi = "doc";
 	
 	xml_header("bbsboa");
-	printf("<root><bbsboa p='%s' u='%s' link='%s' ", get_permission(),
+	printf("<bbsboa p='%s' u='%s' link='%s' ", get_permission(),
 			currentuser.userid, cgi);
 
 	struct boardheader *parent = NULL;
@@ -68,6 +68,6 @@ int bbsboa_main(void)
 				x->title + 1, x->title + 11, x->BM,
 				brc_unread(x->filename), filenum(x->filename));
 	}
-	printf("</bbsboa></root>");
+	printf("</bbsboa>");
 	return 0;
 }

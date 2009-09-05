@@ -63,7 +63,7 @@ int bbspst_main(void)
 	}
 	
 	xml_header("bbspst");
-	printf("<root><bbspst p='%s' u='%s' brd='%s' bid='%d'>", get_permission(),
+	printf("<bbspst p='%s' u='%s' brd='%s' bid='%d'>", get_permission(),
 			currentuser.userid, bp->filename, bid);
 	if (reply) {
 		printf("<t>");
@@ -74,7 +74,7 @@ int bbspst_main(void)
 		mmap_close(&m);
 		fputs("</po>", stdout);
 	}
-	printf("</bbspst></root>");
+	printf("</bbspst>");
 	return 0;
 }
 

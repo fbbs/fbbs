@@ -66,7 +66,7 @@ int bbs0an_main(void)
 	}
 
 	xml_header("bbs0an");
-	printf("<root><bbs0an p='%s' u='%s' path='%s' v='%d'", get_permission(),
+	printf("<bbs0an p='%s' u='%s' path='%s' v='%d'", get_permission(),
 			currentuser.userid, path, get_count(path));
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
@@ -110,6 +110,6 @@ int bbs0an_main(void)
 		}
 	}
 	fclose(fp);
-	puts("</bbs0an></root>");
+	puts("</bbs0an>");
 	return 0;
 }

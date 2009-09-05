@@ -157,7 +157,7 @@ static int bbsdoc(int mode)
 	brc_initial(currentuser.userid, board);
 
 	xml_header("bbsdoc");
-	printf("<root><bbsdoc p='%s' u='%s'>\n", get_permission(),
+	printf("<bbsdoc p='%s' u='%s'>\n", get_permission(),
 			currentuser.userid);
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 	char *cgi_name = "";
@@ -180,7 +180,7 @@ static int bbsdoc(int mode)
 	sprintf(path, "%s/info/boards/%s/banner.jpg", BBSHOME, board);
 	if(dashf(path))	
 		printf("banner='%s' ", path);
-	printf("/>\n</bbsdoc></root>");
+	printf("/>\n</bbsdoc>");
 
 	// TODO: marquee, recommend, spin
 	return 0;

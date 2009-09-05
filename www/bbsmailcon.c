@@ -24,8 +24,7 @@ int bbsmailcon_main(void)
 		fh->accessed[0] |= FILE_READ;
 	}
 	xml_header("bbsmailcon");
-	printf("<root><bbsmailcon p='%s' u='%s'", get_permission(),
-			currentuser.userid);
+	printf("<bbsmailcon p='%s' u='%s'", get_permission(), currentuser.userid);
 	struct fileheader *prev = fh - 1;
 	if (prev >= (struct fileheader *)m.ptr)
 		printf(" prev='%s'", prev->filename);
@@ -49,7 +48,7 @@ int bbsmailcon_main(void)
 	xml_fputs((char *)m.ptr, stdout);
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);
-	printf("</bbsmailcon></root>");
+	printf("</bbsmailcon>");
 	return 0;
 }
 

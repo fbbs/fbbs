@@ -2,11 +2,11 @@
 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
 	<xsl:import href='misc.xsl' />
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
-	<xsl:template match='root'>
+	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
 			<xsl:with-param name='title'> ’≤ÿº–</xsl:with-param>
-			<xsl:with-param name='p'><xsl:value-of select='bbsfav/@p' /></xsl:with-param>
-			<xsl:with-param name='u'><xsl:value-of select='bbsfav/@u' /></xsl:with-param>
+			<xsl:with-param name='p'><xsl:value-of select='/@p' /></xsl:with-param>
+			<xsl:with-param name='u'><xsl:value-of select='/@u' /></xsl:with-param>
 		</xsl:call-template>
 	</xsl:template>
 

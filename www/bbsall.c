@@ -7,8 +7,7 @@ int bbsall_main(void)
 	struct boardheader *x;
 	int i;
 	xml_header("bbsall");
-	printf("<root><bbsall p='%s' u='%s'>", get_permission(),
-			currentuser.userid);
+	printf("<bbsall p='%s' u='%s'>", get_permission(), currentuser.userid);
 	for (i = 0; i < MAXBOARD; i++) {
 		x = &(bcache[i]);
 		if (x->filename[0] <= 0x20 || x->filename[0] > 'z')
@@ -19,6 +18,6 @@ int bbsall_main(void)
 				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename, x->title + 1,
 				x->title + 11, x->BM); // TODO: Magic number here.
 	}
-	printf("</bbsall></root>");
+	printf("</bbsall>");
 	return 0;
 }

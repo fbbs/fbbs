@@ -76,8 +76,8 @@ static int read_submit(void)
 	}
 	mmap_close(&m);
 	xml_header("bbsmybrd");
-	printf("<root><bbsmybrd p='%s' u='%s' limit='%d' selected='%d'>"
-			"</bbsmybrd></root>", get_permission(),	currentuser.userid, 
+	printf("<bbsmybrd p='%s' u='%s' limit='%d' selected='%d'>"
+			"</bbsmybrd>", get_permission(),	currentuser.userid, 
 			GOOD_BRC_NUM, num);
 	return 0;
 }
@@ -105,7 +105,7 @@ int bbsmybrd_main(void)
 
 	// Print 'bid's of favorite boards.
 	xml_header("bbsmybrd");
-	printf("<root><bbsmybrd p='%s' u='%s' limit='%d'>", get_permission(),
+	printf("<bbsmybrd p='%s' u='%s' limit='%d'>", get_permission(),
 			currentuser.userid, GOOD_BRC_NUM);
 	for (iter = m.ptr; iter != end; iter++) {
 		if (!gbrd_is_custom_dir(iter))
@@ -124,6 +124,6 @@ int bbsmybrd_main(void)
 		printf("<brd bid='%d' desc='%s' %s/>", i + 1, b->title + 11,
 				is_dir(b) ? "dir='1'" : "");
 	}
-	printf("</bbsmybrd></root>");
+	printf("</bbsmybrd>");
 	return 0;	
 }
