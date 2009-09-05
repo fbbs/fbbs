@@ -5,9 +5,9 @@
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
-			<xsl:with-param name='title'><xsl:value-of select='/brd/@desc' /></xsl:with-param>
-			<xsl:with-param name='p'><xsl:value-of select='/@p' /></xsl:with-param>
-			<xsl:with-param name='u'><xsl:value-of select='/@u' /></xsl:with-param>
+			<xsl:with-param name='title'><xsl:value-of select='bbsdoc/brd/@desc' /></xsl:with-param>
+			<xsl:with-param name='p'><xsl:value-of select='bbsdoc/@p' /></xsl:with-param>
+			<xsl:with-param name='u'><xsl:value-of select='bbsdoc/@u' /></xsl:with-param>
 		</xsl:call-template>
 	</xsl:template>
 

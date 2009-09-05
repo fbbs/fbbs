@@ -5,8 +5,8 @@
 	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
 			<xsl:with-param name='title'><xsl:choose><xsl:when test='/@dir'>版面目录</xsl:when><xsl:otherwise>分类讨论区</xsl:otherwise></xsl:choose></xsl:with-param>
-			<xsl:with-param name='p'><xsl:value-of select='/@p' /></xsl:with-param>
-			<xsl:with-param name='u'><xsl:value-of select='/@u' /></xsl:with-param>
+			<xsl:with-param name='p'><xsl:value-of select='bbsboa/@p' /></xsl:with-param>
+			<xsl:with-param name='u'><xsl:value-of select='bbsboa/@u' /></xsl:with-param>
 		</xsl:call-template>
 	</xsl:template>
 

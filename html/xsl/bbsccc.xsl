@@ -5,8 +5,8 @@
 	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
 			<xsl:with-param name='title'>в╙тьндуб</xsl:with-param>
-			<xsl:with-param name='p'><xsl:value-of select='/@p' /></xsl:with-param>
-			<xsl:with-param name='u'><xsl:value-of select='/@u' /></xsl:with-param>
+			<xsl:with-param name='p'><xsl:value-of select='bbsccc/@p' /></xsl:with-param>
+			<xsl:with-param name='u'><xsl:value-of select='bbsccc/@u' /></xsl:with-param>
 		</xsl:call-template>
 	</xsl:template>
 
