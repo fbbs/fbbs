@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='gb2312'?>
 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
 	<xsl:import href='misc.xsl' />
+	<xsl:import href='showpost.xsl' />
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
@@ -31,7 +32,7 @@
 					</xsl:call-template>
 				</xsl:attribute>
 			</input></p>
-			<p><textarea class='binput' name='text' rows='20' cols='90' wrap='virtual'>
+			<p><textarea class='binput' name='text' rows='20' cols='85' wrap='virtual'>
 				<xsl:text>&#x0d;&#x0a;</xsl:text>
 				<xsl:call-template name='show-quoted'>
 					<xsl:with-param name='content' select='po' />
