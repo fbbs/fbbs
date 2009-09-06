@@ -1,35 +1,15 @@
-#ifndef LIBWEB_H_
-
-#define LIBWEB_H_
-
-#define USEFCGI
+#ifndef FDUBBS_LIBWEB_H
+#define FDUBBS_LIBWEB_H
 
 #include "../include/bbs.h"
 #include "sys/ipc.h"
 #include "sys/shm.h"
 #include "stdarg.h"
-#ifdef USEFCGI
-#include <fcgi_stdio.h>  //Should be included last.
-#endif
 #include <crypt.h>
+#include <fcgi_stdio.h>  //Should be included last.
 
-#define CGIPATH "/fcgi/"
-#define CSS_FILE 	"/css/bbs%d.css"
 #define CHARSET		"gb2312"
-
 #define SQUID
-
-#define LINKLEN   80
-
-#ifdef FDQUAN
-	#define MAX_LARGEMAIL_UPLIMIT   300
-	#define MAX_BOARDSMAIL_UPLIMIT	120
-	#define MAX_MAIL_UPLIMIT	60
-#else
-	#define MAX_LARGEMAIL_UPLIMIT   20000
-	#define MAX_BOARDSMAIL_UPLIMIT  20000
-	#define MAX_MAIL_UPLIMIT        20000
-#endif
 
 #ifdef FDQUAN
 	#define SECNUM 9
@@ -72,8 +52,6 @@ enum {
 	MODE_KEYWORD = 7,
 };
 
-#define HTTP_END (printf("\n</html>\n"));
-
 #define file_size(x) f_stat(x)->st_size
 #define file_time(x) f_stat(x)->st_mtime
 #define file_rtime(x) f_stat(x)->st_atime
@@ -100,26 +78,13 @@ extern int loginok;
 
 extern struct userec currentuser;
 extern struct user_info *u_info;
-
 extern char fromhost[];
 
-char *anno_path_of(char *board);
-
-int mailnum_under_limit(char *userid);
-int mailsize_under_limit(char *userid);
-
-char * entity_char(char *s);
-int file_has_word(char *file, char *word);
 struct stat *f_stat(char *file);
-int del_record(char *file, int size, int num);
 
 char *getsenv(const char *s);
-void http_quit(void);
 int http_fatal(const char *prompt);
 int http_fatal2(enum HTTP_STATUS status, const char *prompt);
-int hsprintf(char *s, char *fmt, ...);
-int hprintf(char *fmt, ...);
-int hhprintf(char *fmt, ...);
 void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);
 int xml_printfile(const char *file, FILE *stream);
@@ -132,53 +97,17 @@ int user_init(struct userec *x, struct user_info **y);
 void xml_header(const char *xslfile);
 void http_header(void);
 
-int post_mail(char *userid, char *title, char *file, char *id, char *nickname, char *ip, int sig);
 int post_article(const struct userec *user, const struct boardheader *bp, 
 		const char *title, const char *content, const char *ip, 
 		const struct fileheader *o_fp);
-
-void check_title(char *title);
-char* anno_path_of(char *board);
-
-int count_mails(char *id, int *total, int *unread);
 
 int iconexp(int exp, int *repeat);
 
 int save_user_data(struct userec *x);
 int user_perm(struct userec *x, int level);
 
-extern struct override fff[];
-extern int friendnum;
-
-int loadfriend(char *id);
-int isfriend(char *id);
-void sort_friend(int left, int right);
-
-int init_all();
-char *sec(char c);
-char *flag_str(int access);
-char *flag_str2(int access, int has_read);
-char *userid_str(char *s);
-
-struct fileheader *get_file_ent(char *board, char *file);
 char *getbfroma(const char *path);
 int set_my_cookie(void);
-
-void trace(const char* content);
-
-void printpretable(void);
-void printposttable(void);
-void printpretable_lite(void);
-void printposttable_lite(void);
-
-int showcontent(char *filename);
-
-void printpremarquee(char *width, char *height);
-void printpostmarquee(void);
-
-void showheadline(char *board);
-void showrecommend(char *board, int showall, int showborder);
-void showrawcontent(char *filename);
 
 struct fileheader *dir_bsearch(const struct fileheader *begin, 
 		const struct fileheader *end, unsigned int fid);
@@ -191,14 +120,6 @@ bool valid_mailname(const char *file);
 char *get_permission(void);
 const char *get_referer(void);
 
-// bbs.c
-int has_BM_perm(struct userec *user, char *board);
-int has_read_perm(struct userec *user, char *board);
-void do_report(const char* fname, const char* content);
-// libBBS/string.c
-char *cn_Ctime(time_t t);
-char *Ctime(time_t t);
-char *nohtml(char *s);
 char *getparm(const char *name);
 void http_parm_init(void);
 void parse_post_data(void);
@@ -206,4 +127,4 @@ void parse_post_data(void);
 int fcgi_init_all(void);
 int fcgi_init_loop(void);
 
-#endif // LIBWEB_H_
+#endif  //FDUBBS_LIBWEB_H

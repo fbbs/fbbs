@@ -5,7 +5,6 @@ void check_bbserr(int err);
 int bbsleft_main(void);
 int bbssec_main(void);
 int bbsfoot_main(void);
-int bbsgetmsg_main(void);
 int bbsall_main(void);
 int bbsboa_main(void);
 int bbslogin_main(void);
@@ -21,7 +20,6 @@ int bbspreupload_main(void);
 int bbs0an_main(void);
 int bbsanc_main(void);
 int bbsnot_main(void);
-int bbssendmsg_main(void);
 int bbsmail_main(void);
 int bbsmailcon_main(void);
 int bbsdelmail_main(void);
@@ -43,7 +41,6 @@ static struct cgi_applet applets[] = {
 		{ "left", bbsleft_main },
 		{ "sec", bbssec_main },
 		{ "foot", bbsfoot_main },
-		{ "getmsg", bbsgetmsg_main },
 		{ "all", bbsall_main },
 		{ "boa", bbsboa_main },
 		{ "login", bbslogin_main},
@@ -59,7 +56,6 @@ static struct cgi_applet applets[] = {
 		{ "0an", bbs0an_main},
 		{ "anc", bbsanc_main},
 		{ "not", bbsnot_main},
-		{ "sendmsg", bbssendmsg_main},
 		{ "mail", bbsmail_main},
 		{ "mailcon", bbsmailcon_main},
 		{ "delmail", bbsdelmail_main},

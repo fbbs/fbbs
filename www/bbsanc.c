@@ -1,6 +1,6 @@
 #include "libweb.h"
 
-int bbsanc_main()
+int bbsanc_main(void)
 {
 	char *path = getparm("path");
 	if (strstr(path, "bbslist") || strstr(path, ".Search")

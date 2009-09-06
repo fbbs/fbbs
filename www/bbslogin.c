@@ -100,7 +100,7 @@ static int wwwlogin(struct userec *user, const char *ref)
 	return 0;
 }
 
-static login_screen(void)
+static int login_screen(void)
 {
 	http_header();
 	const char *referer = get_referer();
@@ -142,8 +142,8 @@ int bbslogin_main(void)
 		int total;
 		time_t stay, recent, now, t;
 		if (!checkpasswd(user.passwd, pw)) {
-			sprintf(buf, "%-12.12s %s @%s\n",
-					user.userid, cn_Ctime(time(NULL)), fromhost);
+			sprintf(buf, "%-12.12s %s @%s\n", user.userid,
+					getdatestring(time(NULL), DATE_ZH), fromhost);
 			sethomefile(fname, user.userid, "logins.bad"); 
 			file_append(fname, buf);
 			file_append("logins.bad", buf);

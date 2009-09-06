@@ -3,10 +3,10 @@ CGIPATH = /home/httpd/fcgi
 HTMPATH = /home/httpd/
 
 CC      = gcc
-COBJS   = libweb.o bbsmain.o bbsleft.o bbssec.o bbsfoot.o bbsgetmsg.o \
+COBJS   = libweb.o bbsmain.o bbsleft.o bbssec.o bbsfoot.o \
 		  bbsall.o bbsboa.o bbslogin.o bbslogout.o bbsdoc.o bbscon.o \
 		  bbspst.o bbssnd.o bbsqry.o bbsclear.o bbsupload.o bbspreupload.o \
-		  bbs0an.o bbsanc.o bbsnot.o bbssendmsg.o bbsmail.o bbsmailcon.o \
+		  bbs0an.o bbsanc.o bbsnot.o bbsmail.o bbsmailcon.o \
 		  bbsdelmail.o bbstcon.o bbsmybrd.o bbserr.o bbsbrdadd.o bbsccc.o \
 		  bbsfav.o
 TARGET  = bbswebd
