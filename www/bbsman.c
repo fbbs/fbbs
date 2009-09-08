@@ -54,10 +54,6 @@ int do_del(char *board, char *file) {
 		//added end.
 		if(!strcmp(f.filename, file)) {
                         del_record(dir, sizeof(struct fileheader), num);
-//                      sprintf(buf, "\n¡ù %s ÓÚ %s É¾³ý¡E[FROM: %s]", currentuser.userid, Ctime(time(0))+4, fromhost);
-//modified by iamfat 2002.08.01
-//                      sprintf(buf, "\n¡ù %s ÓÚ %16.16s É¾³ý¡E[FROM: %s]", currentuser.userid, cn_Ctime(time(0))+6, fromhost);
-//                      f_append(path, buf);
                         sprintf(dir, strcmp(id, f.owner)?"boards/%s/.TRASH":"boards/%s/.JUNK", board);
                         strcpy(f.szEraser, id);
                         f.timeDeleted=time(0);

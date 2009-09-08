@@ -37,10 +37,6 @@ int main() {
         		if(strcasecmp(id, f.owner) && !has_BM_perm(&currentuser, board))
                 		http_fatal("您无权删除该文");
 			del_record(dir, sizeof(struct fileheader), num);
-//			sprintf(buf, "\n※ %s 于 %s 删除[FROM: %s]", currentuser.userid, Ctime(time(0))+4, fromhost);
-//modified by iamfat 2002.08.01
-//			sprintf(buf, "\n※ %s 于 %16.16s 删除[FROM: %s]", currentuser.userid, cn_Ctime(time(0))+6, fromhost);
-//			f_append(path, buf);
 		#ifdef USE_SHMFS
 			sprintf(dir, strcmp(id, f.owner)?"%s/boards/%s/.TRASH":"%s/boards/%s/.JUNK", SHM_HOMEDIR, board);
 		#else

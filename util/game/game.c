@@ -1265,12 +1265,10 @@ add(t)
 
 	switch (*t % 13) {
 	case 4:
-		//4 » Ø×ª
 			dir = -dir;
 		break;
 
 	case 5:
-		//5 Ö ¸¶¨
 			move(21, 0);
 		clrtoeol();
 

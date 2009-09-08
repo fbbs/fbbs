@@ -90,12 +90,12 @@ int main(int argc,char ** argv) {
 	}
 	else if (argv[1][0] == 'h')
 	{
-		printf("check_perm N (0<N<31)    检查权限2^Nn");
-		printf("check_perm a/admin       检查总管权限n");
-		printf("check_perm b/bm          检查版主权限n");
-		printf("check_perm i/inner       检查内部版权限n");
-		printf("check_perm l/long        检查特殊生命力n");
-		printf("check_perm s/special     检查所有特殊权限n");
+		printf("check_perm N (0<N<31)    检查权限2^N\n");
+		printf("check_perm a/admin       检查总管权限\n");
+		printf("check_perm b/bm          检查版主权限\n");
+		printf("check_perm i/inner       检查内部版权限\n");
+		printf("check_perm l/long        检查特殊生命力\n");
+		printf("check_perm s/special     检查所有特殊权限\n");
 		return(-1);
 	}
 	else

@@ -137,7 +137,7 @@ void search(struct postlist *rec) {
     int 	h;
 	//int		found = 0;
 
-    //¼ÆËãtitleµÄhashÖiµ
+    //¼ÆËãtitleµÄhash
 	//h = hash(rec->title);
 	h = rec->gid % HASHSIZE;
 	//Èç¹ûbucketÎª¿Õ
