@@ -1,8 +1,9 @@
-#include "libweb.h"
+/*
+ *  Fdubbs Project
+ *  See COPYRIGHT for more details.
+ */
 
-enum {
-	POST_LENGTH_LIMIT = 5 * 1024 * 1024
-};
+#include "libweb.h"
 
 char seccode[SECNUM][6]={
 #ifdef FDQUAN
@@ -51,6 +52,15 @@ struct stat *f_stat(char *file) {
 	return &buf;
 }
 
+/**
+ * Get an environment variable.
+ * The function searches environment list where FastCGI stores parameters
+ * for a string that matches the string pointed by s. The strings are of 
+ * the form name=value.
+ * @param s the name
+ * @return a pointer to the value in the environment, or empty string if
+ *         there is no match
+ */
 char *getsenv(const char *s)
 {
 	char *t = getenv(s);

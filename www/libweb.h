@@ -52,6 +52,10 @@ enum {
 	MODE_KEYWORD = 7,
 };
 
+enum {
+	POST_LENGTH_LIMIT = 5 * 1024 * 1024
+};
+
 #define file_size(x) f_stat(x)->st_size
 #define file_time(x) f_stat(x)->st_mtime
 #define file_rtime(x) f_stat(x)->st_atime
