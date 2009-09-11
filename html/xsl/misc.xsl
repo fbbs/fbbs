@@ -16,7 +16,7 @@
 			<a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$first' /></xsl:attribute><xsl:value-of select='$first' /></a>
 		</xsl:if>
 		<xsl:if test='$rest'>
-			<span>&#160;</span>
+			<xsl:text>&#160;</xsl:text>
 			<xsl:call-template name='splitbm'>
 				<xsl:with-param name='names' select='$rest'/>
 				<xsl:with-param name='isdir' select='$isdir'/>
