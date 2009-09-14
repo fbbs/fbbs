@@ -44,9 +44,9 @@ int loginok = 0;
 struct userec currentuser;
 struct user_info *u_info;
 char fromhost[40]; // IPv6 addresses can be represented in 39 chars.
-char param_name[MAX_PARAMS][PARAM_NAMELEN]; /**< Parameter names. */
-char *param_val[MAX_PARAMS]; /**< Parameter values. */
-int param_num = 0;  /**< Count of parsed parameters. */
+char param_name[MAX_PARAMS][PARAM_NAMELEN]; ///< Parameter names.
+char *param_val[MAX_PARAMS]; ///< Parameter values.
+int param_num = 0;  ///< Count of parsed parameters.
 
 /**
  * Get an environment variable.
@@ -232,22 +232,6 @@ char *getparm(const char *name)
 		if(!strcasecmp(param_name[n], name))
 			return param_val[n];
 	return "";
-}
-
-int http_fatal(const char *prompt)
-{
-	return http_fatal2(HTTP_STATUS_OK, prompt);
-}
-
-int http_fatal2(enum HTTP_STATUS status, const char *prompt)
-{
-	printf("Content-type: text/html; charset=%s\nStatus: %d\n\n",
-			CHARSET, status);
-	printf("<html><head><title>发生错误</title></head><body><div>%s</div>"
-			"<a href=javascript:history.go(-1)>快速返回</a></body></html>",
-			prompt);
-	FCGI_Finish();
-	return 0;
 }
 
 void xml_fputs(const char *s, FILE *stream)
@@ -523,7 +507,7 @@ int fcgi_init_all(void)
 	chdir(BBSHOME);
 	seteuid(BBSUID);
 	if(geteuid() != BBSUID)
-		http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "uid error.");
+		return BBS_EINTNL;
 	shm_init();
 
 	return 0;

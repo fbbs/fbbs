@@ -86,13 +86,9 @@ extern struct user_info *u_info;
 extern char fromhost[];
 
 char *getsenv(const char *s);
-int http_fatal(const char *prompt);
-int http_fatal2(enum HTTP_STATUS status, const char *prompt);
 void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);
 int xml_printfile(const char *file, FILE *stream);
-
-
 
 int user_init(struct userec *x, struct user_info **y);
 void xml_header(const char *xslfile);

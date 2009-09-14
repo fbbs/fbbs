@@ -98,7 +98,10 @@ int main(void)
 {
 	char buf[STRLEN];
 
-	fcgi_init_all();
+	if (fcgi_init_all() < 0) {
+		check_bbserr(BBS_EINTNL);
+		return 1;
+	}
 	while (FCGI_Accept() >= 0) {
 		fcgi_init_loop();
 		struct cgi_applet *app = getapplet(buf, sizeof(buf));

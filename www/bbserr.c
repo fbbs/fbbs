@@ -1,5 +1,37 @@
 #include "libweb.h"
 
+/**
+ * Print HTTP error message with status code set.
+ * @param status HTTP status code
+ * @param prompt description of the error
+ * @return 0
+ */
+static int http_fatal2(int status, const char *prompt)
+{
+	printf("Content-type: text/html; charset=%s\nStatus: %d\n\n",
+			CHARSET, status);
+	printf("<html><head><title>发生错误</title></head><body><div>%s</div>"
+			"<a href=javascript:history.go(-1)>快速返回</a></body></html>",
+			prompt);
+	FCGI_Finish();
+	return 0;
+}
+
+/**
+ * Print HTTP error message with status OK (200).
+ * @param prompt description of the error
+ * @return 0
+ */
+static int http_fatal(const char *prompt)
+{
+	return http_fatal2(HTTP_STATUS_OK, prompt);
+}
+
+/**
+ * Print error information.
+ * @param err bbs errno
+ * @return 0
+ */
 int check_bbserr(int err)
 {
 	if (err >= 0)
