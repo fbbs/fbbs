@@ -1,8 +1,8 @@
 #include "libweb.h"
 
-static int web_quotation(const char *str, size_t size, const struct fileheader *fh)
+int web_quotation(const char *str, size_t size, const char *owner, bool ismail)
 {
-	printf("【 在 %s 的大作中提到: 】\n", fh->owner);
+	printf("【 在 %s 的%s中提到: 】\n", owner, ismail ? "来信" : "大作");
 	int lines = 0;
 	const char *start = str;
 	const char *end = str + size;
@@ -70,7 +70,7 @@ int bbspst_main(void)
 		ansi_filter(fh.title, fh.title);
 		xml_fputs(fh.title, stdout);
 		printf("</t><po f='%u'>", fid);
-		web_quotation(m.ptr, m.size, &fh);
+		web_quotation(m.ptr, m.size, fh.owner, false);
 		mmap_close(&m);
 		fputs("</po>", stdout);
 	}

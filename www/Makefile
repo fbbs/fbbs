@@ -8,7 +8,7 @@ COBJS   = libweb.o bbsmain.o bbsleft.o bbssec.o bbsfoot.o \
 		  bbspst.o bbssnd.o bbsqry.o bbsclear.o bbsupload.o bbspreupload.o \
 		  bbs0an.o bbsanc.o bbsnot.o bbsmail.o bbsmailcon.o \
 		  bbsdelmail.o bbstcon.o bbsmybrd.o bbserr.o bbsbrdadd.o bbsccc.o \
-		  bbsfav.o
+		  bbsfav.o bbspstmail.o bbssndmail.o
 TARGET  = bbswebd
 DEFS    = -D_POSIX_SOURCE -D_SVID_SOURCE
 CFLAGS  = -Os -Wall -std=c99 -pedantic $(DEFS)

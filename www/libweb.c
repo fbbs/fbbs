@@ -71,12 +71,7 @@ char *getsenv(const char *s)
 
 int http_fatal(const char *prompt)
 {
-	printf("Content-type: text/html; charset=%s\n\n", CHARSET);
-	printf("<html><head><title>发生错误</title></head><body><div>%s</div>"
-			"<a href=javascript:history.go(-1)>快速返回</a></body></html>",
-			prompt);
-	FCGI_Finish();
-	return 0;
+	return http_fatal2(HTTP_STATUS_OK, prompt);
 }
 
 int http_fatal2(enum HTTP_STATUS status, const char *prompt)
@@ -92,42 +87,16 @@ int http_fatal2(enum HTTP_STATUS status, const char *prompt)
 
 void xml_fputs(const char *s, FILE *stream)
 {
-	const char *last = s;
-	while (*s != '\0') {
-		switch (*s) {
-			case '<':
-				fwrite(last, sizeof(char), s - last, stream);
-				fwrite("&lt;", sizeof(char), 4, stream);
-				last = ++s;
-				break;
-			case '>':
-				fwrite(last, sizeof(char), s - last, stream);
-				fwrite("&gt;", sizeof(char), 4, stream);
-				last = ++s;
-				break;
-			case '&':
-				fwrite(last, sizeof(char), s - last, stream);
-				fwrite("&amp;", sizeof(char), 5, stream);
-				last = ++s;
-				break;
-			case '\033':
-				fwrite(last, sizeof(char), s - last, stream);
-				fwrite(">1b", sizeof(char), 3, stream);
-				last = ++s;
-				break;
-			default:
-				++s;
-				break;
-		}
-	}
-	fwrite(last, sizeof(char), s - last, stream);
+	xml_fputs2(s, 0, stream);
 }
 
 void xml_fputs2(const char *s, size_t size, FILE *stream)
 {
 	const char *last = s;
 	const char *end = s + size;
-	while (s != end) {
+	if (size == 0)
+		end = NULL;
+	while (s != end && *s != '\0') {
 		switch (*s) {
 			case '<':
 				fwrite(last, sizeof(char), s - last, stream);

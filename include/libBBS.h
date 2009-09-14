@@ -1,5 +1,5 @@
-#ifndef LIBBBS_H
-#define LIBBBS_H
+#ifndef FB_LIBBBS_H
+#define FB_LIBBBS_H
 
 //mmap.c
 typedef struct {
@@ -86,4 +86,13 @@ int mmap_close(mmap_t *m);
 int mmap_truncate(mmap_t *m, size_t size);
 int mmap_lock(mmap_t *m, int lock);
 
-#endif // LIBBBS_H
+//mail.c
+int getmailboxsize(unsigned int userlevel);
+int getmailboxhold(unsigned int userlevel);
+int getmailsize(const char *userid);
+int getmailnum(const char *userid);
+int do_mail_file(const char *recv, const char *title, const char *header,
+		const char *text, int len, const char *source);
+int mail_file(const char *file, const char *recv, const char *title);
+
+#endif // FB_LIBBBS_H
