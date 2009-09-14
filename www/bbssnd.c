@@ -2,7 +2,8 @@
 
 int bbssnd_main(void)
 {
-	parse_post_data();
+	if (parse_post_data() < 0)
+		return BBS_EINVAL;
 	int bid = strtol(getparm("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 

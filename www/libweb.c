@@ -44,6 +44,9 @@ int loginok = 0;
 struct userec currentuser;
 struct user_info *u_info;
 char fromhost[40]; // IPv6 addresses can be represented in 39 chars.
+char param_name[MAX_PARAMS][PARAM_NAMELEN]; /**< Parameter names. */
+char *param_val[MAX_PARAMS]; /**< Parameter values. */
+int param_num = 0;  /**< Count of parsed parameters. */
 
 struct stat *f_stat(char *file) {
 	static struct stat buf;
@@ -66,6 +69,175 @@ char *getsenv(const char *s)
 	char *t = getenv(s);
 	if (t!= NULL)
 		return t;
+	return "";
+}
+
+/**
+ * Get decimal value of a hex char 'c'
+ * @param c hex char
+ * @return converted decimal value, 0 on error
+ */
+static int hex2dec(int c)
+{
+	c = toupper(c);
+	switch (c) {
+		case '0': return 0;
+		case '1': return 1;
+		case '2': return 2;
+		case '3': return 3;
+		case '4': return 4;
+		case '5': return 5;
+		case '6': return 6;
+		case '7': return 7;
+		case '8': return 8;
+		case '9': return 9;
+		case 'A': return 10;
+		case 'B': return 11;
+		case 'C': return 12;
+		case 'D': return 13;
+		case 'E': return 14;
+		case 'F': return 15;
+		default:  return 0;
+	}
+}
+
+/**
+ * Decode an url string.
+ * @param s string to decode.
+ * @return 0 on success, -1 if an error occurs.
+ */
+static int url_decode(char *s)
+{
+	int m, n;
+	for(m = 0, n = 0; s[m] != 0; m++, n++) {
+		if (s[m] == '+') {
+			s[n] = ' ';
+			continue;
+		}
+		if (s[m] == '%') {
+			if (s[m + 1] != '\0' && s[m + 2] != '\0') {
+				s[n] = hex2dec(s[m + 1]) * 16 + hex2dec(s[m + 2]);
+				m += 2;
+				continue;
+			} else {
+				s[n] = '\0';
+				return -1;
+			}
+		}
+		s[n] = s[m];
+	}
+	s[n] = '\0';
+	return 0;
+}
+
+/**
+ * Add a name-value pair to global buffer.
+ * @param name name of the pair
+ * @param val value of the pair
+ * @return 0 on success, -1 on error.
+ */
+static int param_add(const char *name, const char *val)
+{
+	if (param_num >= sizeof(param_val) - 1)
+		return -1;
+	size_t len = strlen(val);
+	param_val[param_num] = malloc(len + 1);
+	if (param_val[param_num] == NULL)
+		return -1;
+	strlcpy(param_name[param_num], name, sizeof(param_name[0]));
+	memcpy(param_val[param_num], val, len + 1);
+	++param_num;
+	return 0;
+}
+
+/**
+ * Free all memory for parameters.
+ */
+static void param_free(void)
+{
+	for (int i = param_num - 1; i >= 0; --i) {
+		free(param_val[i]);
+	}
+	param_num = 0;
+}
+
+/**
+ * Parse parameters.
+ * The function splits buf into key-value pairs and stores them 
+ * in a global buffer.
+ * @param buf the string to parse
+ * @param delim delimiter to split 'buf'
+ * @return 0 on success, -1 on error.
+ */
+static int param_parse(char *buf, const char *delim)
+{
+	char *t2, *t3;
+	t2 = strtok(buf, delim);
+	while (t2 != NULL) {
+		t3 = strchr(t2, '=');
+		if (t3 != NULL) {
+			*t3++ = '\0';
+			url_decode(t3);
+			if (param_add(trim(t2), t3) < 0)
+				return -1;
+		}
+		t2 = strtok(NULL, delim);
+	}
+	return 0;
+}
+
+/**
+ * Read parameters from HTTP header.
+ * The function parses both query string and cookie in HTTP header and stores
+ * the result in a global buffer.
+ * @see parse_post_data
+ */
+static void param_init(void)
+{
+	char buf[1024];
+	param_free();
+	// Do not parse contents via 'POST' method
+	strlcpy(buf, getsenv("QUERY_STRING"), sizeof(buf));
+	param_parse(buf, "&");
+	strlcpy(buf, getsenv("HTTP_COOKIE"), sizeof(buf));
+	param_parse(buf, ";");
+}
+
+/**
+ * Parse parameters submitted by POST method.
+ * @return 0 on success, bbserrno on error.
+ */
+int parse_post_data(void)
+{
+	char *buf;
+	unsigned long size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
+	if (size > MAX_CONTENT_LENGTH)
+		size = MAX_CONTENT_LENGTH;
+	if (size <= 0)
+		return BBS_EINVAL;
+	buf = malloc(size + 1);
+	if(buf == NULL)
+		return BBS_EINTNL;
+	if (fread(buf, 1, size, stdin) != size) {
+		free(buf);
+		return BBS_EINTNL;
+	}
+	buf[size] = '\0';
+	param_parse(buf, "&");
+	free(buf);
+	return 0;
+}
+
+/**
+ * Get a parameter value.
+ * @param the name of the parameter
+ * @return the value corresponding to 'name', an empty string if not found.
+ */
+char *getparm(const char *name)
+{
+	for(int n = 0; n < param_num; n++) 
+		if(!strcasecmp(param_name[n], name))
+			return param_val[n];
 	return "";
 }
 
@@ -92,38 +264,40 @@ void xml_fputs(const char *s, FILE *stream)
 
 void xml_fputs2(const char *s, size_t size, FILE *stream)
 {
-	const char *last = s;
-	const char *end = s + size;
+	// To fit FastCGI prototypes..
+	char *c = (char *)s;
+	char *last = c;
+	char *end = c + size;
 	if (size == 0)
 		end = NULL;
-	while (s != end && *s != '\0') {
-		switch (*s) {
+	while (c != end && *c != '\0') {
+		switch (*c) {
 			case '<':
-				fwrite(last, sizeof(char), s - last, stream);
+				fwrite(last, sizeof(char), c - last, stream);
 				fwrite("&lt;", sizeof(char), 4, stream);
-				last = ++s;
+				last = ++c;
 				break;
 			case '>':
-				fwrite(last, sizeof(char), s - last, stream);
+				fwrite(last, sizeof(char), c - last, stream);
 				fwrite("&gt;", sizeof(char), 4, stream);
-				last = ++s;
+				last = ++c;
 				break;
 			case '&':
-				fwrite(last, sizeof(char), s - last, stream);
+				fwrite(last, sizeof(char), c - last, stream);
 				fwrite("&amp;", sizeof(char), 5, stream);
-				last = ++s;
+				last = ++c;
 				break;
 			case '\033':
-				fwrite(last, sizeof(char), s - last, stream);
+				fwrite(last, sizeof(char), c - last, stream);
 				fwrite(">1b", sizeof(char), 3, stream);
-				last = ++s;
+				last = ++c;
 				break;
 			default:
-				++s;
+				++c;
 				break;
 		}
 	}
-	fwrite(last, sizeof(char), s - last, stream);
+	fwrite(last, sizeof(char), c - last, stream);
 }
 
 int xml_printfile(const char *file, FILE *stream)
@@ -139,132 +313,12 @@ int xml_printfile(const char *file, FILE *stream)
 	return 0;
 }
 
-// Convert a hex char 'c' to a base 10 integer.
-static int __to16(char c)
-{
-	if (c >= 'a' && c <= 'f')
-		return c - 'a' + 10;
-	if (c >= 'A' && c <= 'F')
-		return c - 'A' + 10;
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	return 0;
-}
-
-static int __unhcode(char *s)
-{
-	int m, n;
-	for(m = 0, n = 0; s[m] != 0; m++, n++) {
-		if (s[m] == '+') {
-			s[n] = ' ';
-			continue;
-		}
-		if (s[m] == '%') {
-			s[n] = __to16(s[m+1]) * 16 +__to16(s[m+2]);
-			m += 2;
-			continue;
-		}
-		s[n]=s[m];
-	}
-	s[n] = 0;
-	return 0;
-}
-
-char parm_name[256][80], *parm_val[256];
-int parm_num = 0;
-
-// Adds 'name' 'val' pairs to global arrays 'parm_name' and 'parm_val'.
-// Increases 'parm_num' by 1.
-static int parm_add(const char *name, const char *val)
-{
-	if (parm_num >= sizeof(parm_val) - 1)
-		http_fatal2(HTTP_STATUS_BADREQUEST, "too many parms.");
-	size_t len = strlen(val);
-	parm_val[parm_num] = malloc(len + 1);
-	if (parm_val[parm_num] == NULL)
-		http_fatal2(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow2");
-	strlcpy(parm_name[parm_num], name, sizeof(parm_name[0]));
-	memcpy(parm_val[parm_num], val, len);
-	parm_val[parm_num][len] = '\0';
-	return ++parm_num;
-}
-
-// Frees 'parm_val'.
-static int parm_free(void)
-{
-	int i;
-	for (i = parm_num - 1; i >= 0; --i) {
-		free(parm_val[i]);
-	}
-	return parm_num = 0;
-}
-
-// Searches 'parm_name' for 'name'.
-// Returns corresponding 'parm_val' if found, otherwise "".
-char *getparm(const char *name)
-{
-	int n;
-	for(n = 0; n < parm_num; n++) 
-		if(!strcasecmp(parm_name[n], name))
-			return parm_val[n];
-	return "";
-}
-
-// Uses delimeter 'delim' to split 'buf' into "key=value" pairs.
-// Adds these pairs into global arrays.
-static void parm_parse(char *buf, const char *delim)
-{
-	char *t2, *t3;
-	t2 = strtok(buf, delim);
-	while (t2 != NULL) {
-		t3 = strchr(t2, '=');
-		if (t3 != NULL) {
-			*t3++ = '\0';
-			__unhcode(t3);
-			parm_add(trim(t2), t3);
-		}
-		t2 = strtok(NULL, delim);
-	}
-	return;
-}
-
-// Read parameters from HTTP header.
-void http_parm_init(void)
-{
-	char *buf[1024];
-	parm_free();
-	// Do not parse contents via 'POST' method
-	strlcpy(buf, getsenv("QUERY_STRING"), sizeof(buf));
-	parm_parse(buf, "&");
-	strlcpy(buf, getsenv("HTTP_COOKIE"), sizeof(buf));
-	parm_parse(buf, ";");
-}
-
-void parse_post_data(void)
-{
-	char *buf;
-	unsigned long size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
-	if (size > POST_LENGTH_LIMIT)
-		size = POST_LENGTH_LIMIT;
-	if (size <= 0)
-		return;
-	buf = malloc(size + 1);
-	if(buf == NULL)
-		http_fatal2(HTTP_STATUS_SERVICE_UNAVAILABLE, "memory overflow");
-	if (fread(buf, 1, size, stdin) != size) {
-		free(buf);
-		http_fatal2(HTTP_STATUS_BADREQUEST, "HTTPÇëÇó¸ñÊ½´íÎó");
-	}
-	buf[size] = '\0';
-	parm_parse(buf, "&");
-	free(buf);
-}
 
 static int http_init(void)
 {
 	int my_style;
 
-	http_parm_init();
+	param_init();
 
 #ifdef SQUID
 	char *fromtmp;

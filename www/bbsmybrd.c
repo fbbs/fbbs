@@ -10,14 +10,15 @@ static int read_submit(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	parse_post_data();
+	if (parse_post_data() < 0)
+		return BBS_EINVAL;
 
 	// Read parameters.
 	bool boards[MAXBOARD] = {0};
 	int num = 0;
-	for (int i = 0; i < parm_num; i++) {
-		if (!strcasecmp(parm_val[i], "on")) {
-			int bid = strtol(parm_name[i], NULL, 10);
+	for (int i = 0; i < param_num; i++) {
+		if (!strcasecmp(param_val[i], "on")) {
+			int bid = strtol(param_name[i], NULL, 10);
 			if (bid > 0 && bid <= MAXBOARD
 					&& hasreadperm(&currentuser, bcache + bid - 1)) {
 				boards[bid - 1] = true;

@@ -127,7 +127,8 @@ int bbslogin_main(void)
 	char buf[256], id[IDLEN + 1], pw[PASSLEN];
 	struct userec user;
 
-	parse_post_data();
+	if (parse_post_data() < 0)
+		return BBS_EINVAL;
 	strlcpy(id, getparm("id"), sizeof(id));
 	if (*id == '\0')
 		return login_screen();

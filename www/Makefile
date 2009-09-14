@@ -32,5 +32,5 @@ clean:
 	rm $(COBJS)
 	rm -rf $(TARGET)
 
-%.o: %.c libweb.c
+%.o: %.c
 	$(CC) $(CFLAGS) $< -c -o $@
