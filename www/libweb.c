@@ -256,11 +256,16 @@ const char *get_referer(void)
 	return "";
 }
 
-void xml_fputs(const char *s, FILE *stream)
-{
-	xml_fputs2(s, 0, stream);
-}
+/**
+ * Print XML escaped string.
 
+ * @param s string to print
+ * @param size maximum output bytes. If 0, print until NUL is encountered.
+ * @param stream output stream
+ * @note '<' => "&lt;" '&' => "&amp;" '>' => "&gt;" '\\033' => ">1b".
+ *       ESC('\\033') is not allowed in XML 1.0. We have to use a workaround 
+ *       for compatibility with ANSI escape sequences.
+ */
 void xml_fputs2(const char *s, size_t size, FILE *stream)
 {
 	// To fit FastCGI prototypes..
@@ -299,6 +304,23 @@ void xml_fputs2(const char *s, size_t size, FILE *stream)
 	fwrite(last, sizeof(char), c - last, stream);
 }
 
+/**
+ * Print XML escaped string.
+ * @param s string to print (should be NUL terminated)
+ * @param stream output stream
+ * @see xml_fputs2
+ */
+void xml_fputs(const char *s, FILE *stream)
+{
+	xml_fputs2(s, 0, stream);
+}
+
+/**
+ * Print a file with XML escaped.
+ * @param file filename to print
+ * @param stream output stream
+ * @see xml_fputs2
+ */
 int xml_printfile(const char *file, FILE *stream)
 {
 	if (file == NULL || stream == NULL)
@@ -398,6 +420,10 @@ int fcgi_init_loop(void)
 	return 0;
 }
 
+/**
+ * Print XML response header.
+ * @param xslfile name of the XSLT file to use.
+ */
 void xml_header(const char *xslfile)
 {
 	printf("Content-type: application/xml; charset=%s\n\n", CHARSET);
@@ -405,6 +431,9 @@ void xml_header(const char *xslfile)
 	printf("<?xml-stylesheet type=\"text/xsl\" href=\"/xsl/%s.xsl\"?>\n", xslfile);
 }
 
+/**
+ * Print HTML response header.
+ */
 void http_header(void)
 {
 	printf("Content-type: text/html; charset=%s\n\n", CHARSET);
@@ -412,11 +441,17 @@ void http_header(void)
 			"\"http://www.w3.org/TR/html4/strict.dtd\"><html><head>");
 }
 
+/**
+ * HTML code for redirecting/refreshing.
+ * @param second seconds before reloading
+ * @param url URL to load
+ */
 void refreshto(int second, const char *url)
 {
 	printf("<meta http-equiv='Refresh' content='%d; url=%s' />\n", second, url);
 }
 
+// TODO: should use response header instead of js
 void setcookie(const char *a, const char *b)
 {
 	printf("<script>document.cookie='%s=%s'</script>\n", a, b);
@@ -702,5 +737,4 @@ char *get_permission(void)
 	c[4] = '\0';
 	return c;
 }
-
 
