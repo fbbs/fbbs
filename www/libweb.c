@@ -234,6 +234,28 @@ char *getparm(const char *name)
 	return "";
 }
 
+/**
+ * Get referrer of the request.
+ * @return the path related to the site root, an empty string on error.
+ * @note the return string is read only.
+ */
+const char *get_referer(void)
+{
+	char *r = getsenv("HTTP_REFERER");
+	int i = 3;
+	if (r != NULL) {
+		// http://host/path... let's find the third slash
+		while (i != 0 && *r != '\0') {
+			if (*r == '/')
+				i--;
+			r++;
+		}
+	}
+	if (i == 0)
+		return --r;
+	return "";
+}
+
 void xml_fputs(const char *s, FILE *stream)
 {
 	xml_fputs2(s, 0, stream);
@@ -290,40 +312,26 @@ int xml_printfile(const char *file, FILE *stream)
 	return 0;
 }
 
-
+/**
+ * Parse HTTP header and get client IP address.
+ * @return 0
+ */
 static int http_init(void)
 {
-	int my_style;
-
 	param_init();
-
 #ifdef SQUID
-	char *fromtmp;
-	fromtmp = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
-	if (fromtmp == NULL) {
+	char *from;
+	from = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
+	if (from == NULL) {
 		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), sizeof(fromhost));
 	} else {
-		while ((*fromtmp < '0')&&(*fromtmp != '\0'))
-			fromtmp++;
-		strlcpy(fromhost, fromtmp, sizeof(fromhost));
+		while ((*from < '0') && (*from != '\0'))
+			from++;
+		strlcpy(fromhost, from, sizeof(fromhost));
 	}
 #else
 	strlcpy(fromhost, getsenv("REMOTE_ADDR"), sizeof(fromhost));
 #endif
-
-	return my_style;
-}
-
-// Gets shared memory. Returns 0 if OK, exits on error.
-int shm_init(void)
-{
-	if (resolve_ucache() == -1)
-		exit(1);
-	resolve_utmp();
-	if (resolve_boards() < 0)
-		exit(1);
-	if (utmpshm == NULL || brdshm == NULL)
-		exit(1);
 	return 0;
 }
 
@@ -376,6 +384,18 @@ int user_init(struct userec *x, struct user_info **y)
 	}
 
 	return 1;
+}
+
+/**
+ * Initialization inside a FastCGI loop.
+ * @return 0
+ */
+// TODO: return value?
+int fcgi_init_loop(void)
+{
+	http_init();
+	loginok = user_init(&currentuser, &u_info);
+	return 0;
 }
 
 void xml_header(const char *xslfile)
@@ -499,26 +519,6 @@ int save_user_data(struct userec *x) {
 
 int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
-}
-
-int fcgi_init_all(void)
-{
-	srand(time(NULL) * 2 + getpid());
-	chdir(BBSHOME);
-	seteuid(BBSUID);
-	if(geteuid() != BBSUID)
-		return BBS_EINTNL;
-	shm_init();
-
-	return 0;
-}
-
-int fcgi_init_loop(void)
-{
-	int my_style = http_init();
-	loginok = user_init(&currentuser, &u_info);
-
-	return my_style;
 }
 
 // TODO: better rewrite
@@ -703,19 +703,4 @@ char *get_permission(void)
 	return c;
 }
 
-const char *get_referer(void)
-{
-	char *r = getsenv("HTTP_REFERER");
-	int i = 3;
-	if (r != NULL) {
-		// http://host/path... let's find the third slash
-		while (i != 0 && *r != '\0') {
-			if (*r == '/')
-				i--;
-			r++;
-		}
-	}
-	if (i == 0)
-		return --r;
-	return "";
-}
+

@@ -1,7 +1,6 @@
 #include "libweb.h"
 
 void check_bbserr(int err);
-
 int bbsleft_main(void);
 int bbssec_main(void);
 int bbsfoot_main(void);
@@ -93,7 +92,28 @@ static struct cgi_applet *getapplet(char *buf, size_t len)
 	}
 	return NULL;
 }
-	
+
+/**
+ * Initialization before any FastCGI loop.
+ * @return 0 on success, BBS_EINTNL on error.
+ */
+static int fcgi_init_all(void)
+{
+	srand(time(NULL) * 2 + getpid());
+	chdir(BBSHOME);
+	seteuid(BBSUID);
+	if(geteuid() != BBSUID)
+		return BBS_EINTNL;
+	if (resolve_ucache() == -1)
+		return BBS_EINTNL;
+	resolve_utmp();
+	if (resolve_boards() < 0)
+		return BBS_EINTNL;
+	if (utmpshm == NULL || brdshm == NULL)
+		return BBS_EINTNL;
+	return 0;
+}
+
 int main(void)
 {
 	char buf[STRLEN];

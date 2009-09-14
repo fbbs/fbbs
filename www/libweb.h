@@ -61,7 +61,10 @@ enum {
 extern char param_name[][PARAM_NAMELEN];
 extern char *param_val[];
 extern int param_num;
+char *getsenv(const char *s);
 int parse_post_data(void);
+char *getparm(const char *name);
+const char *get_referer(void);
 
 void setcookie(const char *a, const char *b);
 void refreshto(int second, const char *url);
@@ -85,7 +88,7 @@ extern struct userec currentuser;
 extern struct user_info *u_info;
 extern char fromhost[];
 
-char *getsenv(const char *s);
+
 void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);
 int xml_printfile(const char *file, FILE *stream);
@@ -115,12 +118,6 @@ time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
 char *get_permission(void);
-const char *get_referer(void);
-
-char *getparm(const char *name);
-
-
-int fcgi_init_all(void);
 int fcgi_init_loop(void);
 
 #endif  //FDUBBS_LIBWEB_H
