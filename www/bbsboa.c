@@ -3,8 +3,11 @@
 // TODO: unify with telnet
 static int filenum(char *board) {
 	char file[HOMELEN];
+	struct stat st;
 	sprintf(file, "boards/%s/.DIR", board);
-	return file_size(file)/sizeof(struct fileheader);
+	if (stat(file, &st) < 0)
+		return 0;
+	return st.st_size / sizeof(struct fileheader);
 }
 
 int bbsboa_main(void)

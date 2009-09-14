@@ -220,7 +220,6 @@ typedef struct _NUMFONT {
 #define MAX_TEMPLATE 10
 #define MAX_CONTENT 20
 #define TMPL_BM_FLAG 0x1
-#define MAX_CONTENT_LENGTH 555
 #define TMPL_NOW_VERSION 1
 
 struct s_content {

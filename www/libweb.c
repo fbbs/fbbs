@@ -48,13 +48,6 @@ char param_name[MAX_PARAMS][PARAM_NAMELEN]; /**< Parameter names. */
 char *param_val[MAX_PARAMS]; /**< Parameter values. */
 int param_num = 0;  /**< Count of parsed parameters. */
 
-struct stat *f_stat(char *file) {
-	static struct stat buf;
-	bzero(&buf, sizeof(buf));
-	if(stat(file, &buf)==-1) bzero(&buf, sizeof(buf));
-	return &buf;
-}
-
 /**
  * Get an environment variable.
  * The function searches environment list where FastCGI stores parameters
@@ -230,7 +223,7 @@ int parse_post_data(void)
 
 /**
  * Get a parameter value.
- * @param the name of the parameter
+ * @param name the name of the parameter
  * @return the value corresponding to 'name', an empty string if not found.
  */
 char *getparm(const char *name)

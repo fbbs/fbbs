@@ -58,17 +58,10 @@ enum {
 	MAX_CONTENT_LENGTH = 5 * 1024 * 1024, /**< Max content length*/
 };
 
-#define file_size(x) f_stat(x)->st_size
-#define file_time(x) f_stat(x)->st_mtime
-#define file_rtime(x) f_stat(x)->st_atime
-#define file_isdir(x) ((f_stat(x)->st_mode & S_IFDIR)!=0)
-#define file_isfile(x) ((f_stat(x)->st_mode & S_IFREG)!=0)
-
 extern char param_name[][PARAM_NAMELEN];
 extern char *param_val[];
 extern int param_num;
 int parse_post_data(void);
-
 
 void setcookie(const char *a, const char *b);
 void refreshto(int second, const char *url);
@@ -91,8 +84,6 @@ extern int loginok;
 extern struct userec currentuser;
 extern struct user_info *u_info;
 extern char fromhost[];
-
-struct stat *f_stat(char *file);
 
 char *getsenv(const char *s);
 int http_fatal(const char *prompt);

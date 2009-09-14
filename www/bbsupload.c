@@ -40,7 +40,11 @@ static int addtodir(const char *board, const char *tmpfile)
 	snprintf(file, sizeof(file), BBSHOME"/upload/%s/%s", board, x.filename);
 	snprintf(dir, sizeof(dir), BBSHOME"/upload/%s/.DIR", board);
 	// TODO: ...
-	x.id = file_size(file);
+	struct stat st;
+	if (stat(file, &st) < 0)
+		x.id = 0;
+	else
+		x.id = st.st_size;
 	if (append_record(dir, &x, sizeof(x)) < 0) {
 		unlink(file);
 		return BBS_EINTNL;
