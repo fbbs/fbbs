@@ -61,7 +61,7 @@ enum {
 extern char param_name[][PARAM_NAMELEN];
 extern char *param_val[];
 extern int param_num;
-char *getsenv(const char *s);
+const char *getsenv(const char *s);
 int parse_post_data(void);
 char *getparm(const char *name);
 const char *get_referer(void);

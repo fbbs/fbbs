@@ -57,7 +57,7 @@ int param_num = 0;  ///< Count of parsed parameters.
  * @return a pointer to the value in the environment, or empty string if
  *         there is no match
  */
-char *getsenv(const char *s)
+const char *getsenv(const char *s)
 {
 	char *t = getenv(s);
 	if (t!= NULL)
@@ -237,11 +237,10 @@ char *getparm(const char *name)
 /**
  * Get referrer of the request.
  * @return the path related to the site root, an empty string on error.
- * @note the return string is read only.
  */
 const char *get_referer(void)
 {
-	char *r = getsenv("HTTP_REFERER");
+	const char *r = getsenv("HTTP_REFERER");
 	int i = 3;
 	if (r != NULL) {
 		// http://host/path... let's find the third slash
