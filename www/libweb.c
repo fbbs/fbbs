@@ -204,10 +204,12 @@ int parse_post_data(void)
 {
 	char *buf;
 	unsigned long size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
-	if (size > MAX_CONTENT_LENGTH)
-		size = MAX_CONTENT_LENGTH;
-	if (size <= 0)
+	if (size == 0)
+		return 0;
+	else if (size < 0)
 		return BBS_EINVAL;
+	else if (size > MAX_CONTENT_LENGTH)
+		size = MAX_CONTENT_LENGTH;
 	buf = malloc(size + 1);
 	if(buf == NULL)
 		return BBS_EINTNL;
