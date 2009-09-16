@@ -3,7 +3,7 @@ body, div, ul, ol, li, h1, h2, h3, h4, h5, h6, form, input, textarea, p, blockqu
 	padding: 0;
 }
 body {
-	font-family: "Microsoft YaHei", "Gill Sans MT", Verdana, sans-serif;
+	font-family: "Microsoft YaHei", "WenQuanYi Zen Hei", "Gill Sans MT", Verdana, sans-serif;
 	font-size: 1em;
 }
 ul, ol {
