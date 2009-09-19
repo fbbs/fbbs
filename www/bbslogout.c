@@ -36,21 +36,14 @@ static void abort_program(void)
 
 int bbslogout_main(void)
 {
-	http_header();
-	if (!loginok) { 
-		refreshto(0, "sec");
+	if (!loginok) {
+		printf("Location: sec\n\n");
 		return 0;
 	}
-
-	setcookie("utmpkey", "");
-	setcookie("utmpnum", "");
-	setcookie("utmpuserid", "");
-	setcookie("my_t_lines", "");
-	setcookie("my_link_mode", "");
-	setcookie("my_def_mode", "");
-	setcookie("my_style","");
-
 	abort_program();
-	refreshto(0, "sec");
+	printf("Set-cookie: utmpnum=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+			"Set-cookie: utmpkey=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+			"Set-cookie: utmpuserid=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+			"Location: sec\n\n");
 	return 0;
 }

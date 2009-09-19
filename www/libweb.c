@@ -452,12 +452,6 @@ void refreshto(int second, const char *url)
 	printf("<meta http-equiv='Refresh' content='%d; url=%s' />\n", second, url);
 }
 
-// TODO: should use response header instead of js
-void setcookie(const char *a, const char *b)
-{
-	printf("<script>document.cookie='%s=%s'</script>\n", a, b);
-}
-
 // Convert exp to icons.
 int iconexp(int exp, int *repeat)
 {
@@ -515,35 +509,6 @@ char *getbfroma(const char *path)
 	}
 	fclose(fp);
 	return "";
-}
-
-int set_my_cookie(void)
-{
-	FILE *fp;
-	char path[256], buf[256], buf1[256], buf2[256];
-	int my_t_lines=20, my_link_mode=0, my_def_mode=0, my_style=0;
-	sprintf(path, "home/%c/%s/.mywww", toupper(currentuser.userid[0]), currentuser.userid);
-	fp = fopen(path, "r");
-	if(fp != NULL) {
-		while(1) {
-			if(fgets(buf, 80, fp)==0)
-				break;
-			if(sscanf(buf, "%80s %80s", buf1, buf2)!=2)
-				continue;
-			if(!strcmp(buf1, "t_lines"))
-				my_t_lines=atoi(buf2);
-			if(!strcmp(buf1, "link_mode"))
-				my_link_mode=atoi(buf2);
-			if(!strcmp(buf1, "def_mode"))
-				my_def_mode=atoi(buf2);
-			if(!strcmp(buf1, "mystyle"))
-				my_style=atoi(buf2);
-		}
-		fclose(fp);
-		printf("<my_t_lines>%d</my_t_lines>\n<my_link_mode>%d</my_link_mode>\n"
-				"<my_def_mode>%d</my_def_mode>\n<my_style>%d</my_style>\n",
-				my_t_lines, my_link_mode, my_def_mode, my_style);
-	}
 }
 
 // Find post whose id = 'fid'.

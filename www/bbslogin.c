@@ -16,7 +16,6 @@ static int check_multi(const struct userec *user)
 static int wwwlogin(struct userec *user, const char *ref)
 {
 	FILE *fp;
-	char buf[STRLEN];
 	int n, tmp;
 	struct user_info *u;
 
@@ -74,23 +73,18 @@ static int wwwlogin(struct userec *user, const char *ref)
 			u->utmpkey = tmp;
 			FLOCK(fileno(fp), LOCK_UN);
 			fclose(fp);
-			http_header();
-			sprintf(buf, "%d", n + 1);
-			setcookie("utmpnum", buf);
-			sprintf(buf, "%d", tmp);
-			setcookie("utmpkey", buf);
-			setcookie("utmpuserid", currentuser.userid);
-			set_my_cookie();
+			uidshm->status[u->uid - 1]++;
 
 			const char *referer = ref;
 			if (*referer == '\0') {
 				referer = "sec";
 			}
-			refreshto(1, referer);
-			printf("</head>\n<body>登录成功，1秒钟后自动转到<a href='%s'>"
-					"登录前页面</a>\n</body>\n</html>\n", referer);
-
-			uidshm->status[u->uid - 1]++;
+			// TODO: these cookies should be merged into one.
+			printf("Content-type: text/html; charset=%s\n"
+					"Set-cookie: utmpnum=%d\nSet-cookie: utmpkey=%d\n"
+					"Set-cookie: utmpuserid=%s\nLocation: %s\n\n",
+					CHARSET, n + 1, tmp, currentuser.userid, referer);
+			
 			return 0;
 		}
 	}

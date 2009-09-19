@@ -12,7 +12,7 @@ static FILE *get_fname(const char *dir, const char *pfx, char *fname, size_t siz
 		return NULL;
 	const char c[] = "ZYXWVUTSRQPONMLKJIHGFEDCBA";
 	int t = (int)time(NULL);
-	int count = snprintf(fname, size, "%s%s%d. ", dir, pfx, (int)time(NULL));
+	int count = snprintf(fname, size, "%s%s%d. ", dir, pfx, t);
 	if (count < 0 || count >= size)
 		return NULL;
 	int fd;
