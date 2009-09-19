@@ -1,5 +1,8 @@
 #include "libweb.h"
 
+extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
+		int action, struct fileheader *fp);
+
 int web_quotation(const char *str, size_t size, const char *owner, bool ismail)
 {
 	printf("【 在 %s 的%s中提到: 】\n", owner, ismail ? "来信" : "大作");

@@ -111,8 +111,6 @@ int set_my_cookie(void);
 
 struct fileheader *dir_bsearch(const struct fileheader *begin, 
 		const struct fileheader *end, unsigned int fid);
-bool bbscon_search(const struct boardheader *bp, unsigned int fid,
-		int action, struct fileheader *fp);
 int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);

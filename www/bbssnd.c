@@ -1,5 +1,8 @@
 #include "libweb.h"
 
+extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
+		int action, struct fileheader *fp);
+
 int bbssnd_main(void)
 {
 	if (parse_post_data() < 0)

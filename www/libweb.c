@@ -635,49 +635,6 @@ struct fileheader *dir_bsearch(const struct fileheader *begin,
 	return begin;
 }
 
-bool bbscon_search(const struct boardheader *bp, unsigned int fid,
-		int action, struct fileheader *fp)
-{
-	if (bp == NULL || fp == NULL)
-		return false;
-	char dir[HOMELEN];
-	setbfile(dir, bp->filename, DOT_DIR);
-	mmap_t m;
-	m.oflag = O_RDONLY;
-	if (mmap_open(dir, &m) < 0)
-		return false;
-	struct fileheader *begin = m.ptr, *end;
-	end = begin + (m.size / sizeof(*begin));
-	const struct fileheader *f = dir_bsearch(begin, end, fid);
-	if (f != end && f->id == fid) {
-		unsigned int gid = f->gid;
-		switch (action) {
-			case 'p':  // previous post
-				--f;
-				break;
-			case 'n':  // next post
-				++f;
-				break;
-			case 'b':  // previous post of same thread
-				while (--f >= begin && f->gid != gid)
-					; // null statement
-				break;
-			case 'a':  // next post of same thread
-				while (++f < end && f->gid != gid)
-					; // null statement
-				break;
-			default:
-				break;
-		}
-		if (f >= begin && f < end)
-			*fp = *f;
-		else
-			f = NULL;
-	}
-	mmap_close(&m);
-	return (f != NULL);
-}
-
 // TODO: put into memory
 int maxlen(const char *board)
 {
