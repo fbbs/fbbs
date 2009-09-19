@@ -3,7 +3,7 @@
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template name='timeconvert'>
 		<xsl:param name='time' />
-		<xsl:value-of select='concat(substring($time, 6, 5), " ", substring($time, 12, 5))' />
+		<xsl:value-of select='concat(substring($time, 1, 10), " ", substring($time, 12, 5))' />
 	</xsl:template>
 
 	<xsl:template name="splitbm">

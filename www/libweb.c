@@ -512,6 +512,7 @@ int post_article(const struct userec *user, const struct boardheader *bp,
 	strlcpy(fh.filename, fname + idx, sizeof(fh.filename));
 	strlcpy(fh.owner, user->userid, sizeof(fh.owner));
 	strlcpy(fh.title, title, sizeof(fh.title));
+	// TODO: assure fid order in .DIR
 	fh.id = get_nextid2(bp);
 	if (o_fp != NULL) { //reply
 		fh.reid = o_fp->id;
