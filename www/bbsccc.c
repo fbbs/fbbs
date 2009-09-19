@@ -1,7 +1,10 @@
 #include "libweb.h"
 
-extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
+bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
+int post_article(const struct userec *user, const struct boardheader *bp, 
+		const char *title, const char *content, const char *ip, 
+		const struct fileheader *o_fp);
 
 int bbsccc_main(void)
 {

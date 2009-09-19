@@ -3,6 +3,82 @@
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
 
+// similar to 'date_to_fname()'.
+// Creates a new file in 'dir' with prefix 'pfx'.
+// Returns filename(in 'fname') and stream on success, NULL on error.
+static FILE *get_fname(const char *dir, const char *pfx, char *fname, size_t size)
+{
+	if (dir == NULL || pfx == NULL)
+		return NULL;
+	const char c[] = "ZYXWVUTSRQPONMLKJIHGFEDCBA";
+	int t = (int)time(NULL);
+	int count = snprintf(fname, size, "%s%s%d. ", dir, pfx, (int)time(NULL));
+	if (count < 0 || count >= size)
+		return NULL;
+	int fd;
+	for (int i = sizeof(c) - 2; i >= 0; ++i) {
+		fname[count - 1] = c[i];
+		if ((fd = open(fname, O_CREAT | O_WRONLY | O_EXCL, 0644)) > 0)
+			return fdopen(fd, "w");
+	}
+	return NULL;
+}
+
+/**
+ * Post an article.
+ * @user the owner.
+ * @bp the board to post.
+ * @title title.
+ * @content content.
+ * @ip owner's IP address.
+ * @o_fp pointer to the replied post. NULL if this is a new thread.
+ * @return 0 on success, -1 on error.
+ */
+int post_article(const struct userec *user, const struct boardheader *bp,
+		const char *title, const char *content, 
+		const char *ip, const struct fileheader *o_fp)
+{
+	if (user == NULL || bp == NULL || title == NULL 
+			|| content == NULL || ip == NULL)
+		return -1;
+
+	char fname[HOMELEN];
+	char dir[HOMELEN];
+	int idx = snprintf(dir, sizeof(dir), "boards/%s/", bp->filename);
+	const char *pfx = "M.";
+	FILE *fptr;
+	if ((fptr = get_fname(dir, pfx, fname, sizeof(fname))) == NULL)
+		return -1;
+	fprintf(fptr, "发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n",
+			user->userid, user->username, bp->filename, title, BBSNAME,
+			getdatestring(time(NULL), DATE_ZH));
+	fputs(content, fptr);
+	fprintf(fptr, "\n--\n");
+	// TODO: signature
+	fprintf(fptr, "\033[m\033[1;%2dm※ 来源:·"BBSNAME" "BBSHOST
+			"·HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7, ip);
+	fclose(fptr);
+
+	struct fileheader fh;
+	memset(&fh, 0, sizeof(fh));	
+	strlcpy(fh.filename, fname + idx, sizeof(fh.filename));
+	strlcpy(fh.owner, user->userid, sizeof(fh.owner));
+	strlcpy(fh.title, title, sizeof(fh.title));
+	// TODO: assure fid order in .DIR
+	fh.id = get_nextid2(bp);
+	if (o_fp != NULL) { //reply
+		fh.reid = o_fp->id;
+		fh.gid = o_fp->gid;
+	} else {
+		fh.reid = fh.id;
+		fh.gid = fh.id;
+	}
+	setwbdir(dir, bp->filename);
+	append_record(dir, &fh, sizeof(fh));
+	updatelastpost(bp->filename);
+	return 0;
+}
+
 int bbssnd_main(void)
 {
 	if (parse_post_data() < 0)

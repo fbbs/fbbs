@@ -97,10 +97,6 @@ int user_init(struct userec *x, struct user_info **y);
 void xml_header(const char *xslfile);
 void http_header(void);
 
-int post_article(const struct userec *user, const struct boardheader *bp, 
-		const char *title, const char *content, const char *ip, 
-		const struct fileheader *o_fp);
-
 int iconexp(int exp, int *repeat);
 
 int save_user_data(struct userec *x);

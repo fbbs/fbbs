@@ -1983,16 +1983,11 @@ int post_article(char *postboard, char *mailid) {
 	struct fileheader postfile;
 	struct boardheader *bp;
 	char filepath[STRLEN], fname[STRLEN], buf[120];
-
-	//int fp, aborted, count; commented by iamfat 2002.07.25
 	int aborted;
 	time_t now = time(0);
 
-	/* added by roly 02.05.18 灌水机 */
 	static time_t lastposttime = 0;
 	static int failure = 0;
-
-	/* add end */
 
 	modify_user_mode(POSTING);
 
@@ -2105,57 +2100,20 @@ int post_article(char *postboard, char *mailid) {
 	}
 	now = time(0);
 
-	//sprintf (fname, "M.%d.A", now); commented by iamfat 2002.07.25
-	/* added by roly 02.05.18 */
-	lastposttime = now; //added by soff 防止灌水机 2000.10.08
+	lastposttime = now;
 	failure = 0;
-	/* add end */
+
 	if (date_to_fname(postboard, now, fname) < 0)
 		return -1;
-	//commented by iamfat 2002.07.25
-	/*
-	 setbfile (filepath, postboard, fname);
-	 count = 0;
-	 while ((fp = open (filepath, O_CREAT | O_EXCL | O_WRONLY, 0644)) == -1) {
-	 now++;
-	 sprintf (fname, "M.%d.A", now);
-	 setbfile (filepath, postboard, fname);
-	 if (count++ > MAX_POSTRETRY) {
-	 return -1;
-	 }
-	 }
-	 fchmod (fp, 0644);           // youzi 1999.1.8 
-	 close (fp); */
 	strcpy(postfile.filename, fname);
 	in_mail = NA;
 
 	strlcpy(postfile.owner, (header.chk_anony) ? "Anonymous"
 			: currentuser.userid, STRLEN);
-	//added by iamfat 2002.08.10
-	/*
-	 strcpy(postfile.owner, currentuser.userid);
-	 if(header.chk_anony)
-	 postfile.owner[0]|=0x80;     //开头一位置1 判断是否匿名
-	 */
-	//added end
-
-	//      postboard : currentuser.userid, STRLEN);
-	/* Modified by roly 2002.01.13 to change auther to "Anonymous" */
 	setbfile(filepath, postboard, postfile.filename);
 	modify_user_mode(POSTING);
 	do_quote(filepath, header.include_mode);
-	postfile.id = get_nextid(currboard);
-	if (header.reply_mode == 1) {
-		postfile.gid = o_gid;
-		postfile.reid = o_id;
-	} else {
-		postfile.gid = postfile.id;
-		postfile.reid = postfile.id;
-
-	}
-	save_gid = postfile.gid;
 	aborted = vedit(filepath, YEA, YEA);
-	/* Anony=0; *//* Inital For ShowOut Signature */
 	if (aborted == -1) {
 		unlink(filepath);
 		clear();
@@ -2163,6 +2121,7 @@ int post_article(char *postboard, char *mailid) {
 	}
 
 	strlcpy(postfile.title, save_title, sizeof(postfile.title));
+	// TODO: ...
 	if ((local_article == YEA) || !(bp->flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';
@@ -2206,6 +2165,15 @@ int post_article(char *postboard, char *mailid) {
 		pressanykey();
 	}
 	setwbdir(buf, postboard);
+	postfile.id = get_nextid(currboard);
+	if (header.reply_mode == 1) {
+		postfile.gid = o_gid;
+		postfile.reid = o_id;
+	} else {
+		postfile.gid = postfile.id;
+		postfile.reid = postfile.id;
+	}
+	save_gid = postfile.gid;
 	if (append_record(buf, &postfile, sizeof (postfile)) == -1) {
 		sprintf(buf, "posting '%s' on %s: append_record failed!",
 				postfile.title, currboard);
@@ -2224,7 +2192,6 @@ int post_article(char *postboard, char *mailid) {
 		currentuser.numposts++;
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
 				usernum);
-		// 可以将这些记录放到内存里,一次记录:
 	}
 	bm_log(currentuser.userid, currboard, BMLOG_POST, 1);
 	return FULLUPDATE;
