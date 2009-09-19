@@ -53,7 +53,7 @@
 			<li id='nava'><a href='0an'>本站精华</a></li>
 			<li id='navp'><a href='all'>全部讨论</a></li>
 			<li id='navt'>
-				<a href='#' onclick='return switchPanel(this);'>统计</a>
+				<a href='#' onclick='return switchPanel(this);'>统计数据</a>
 				<ul>
 					<li><a href='top10'>本日十大</a></li>
 					<li><a href='topb10'>热门讨论</a></li>

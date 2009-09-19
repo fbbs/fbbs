@@ -83,12 +83,20 @@ ul.brd li{
 	border-top: #6699cc 1px dashed;
 	font-size: 0.8em;
 }
-#hd>a {
+#hd a {
 	display: inline-block;
 	background-repeat: no-repeat;
 	background-position: left center;
 	line-height: 1.5em;
 	padding: 0 0.5em 0 1.5em;
+}
+#hd a:hover {
+	background-color: #336699;
+}
+#navl, #navte, #nave {
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-position: left;
 }
 #navl {  background-image: url('../images/login.gif'); }
 #navte { background-image: url('../images/telnet.gif'); }
@@ -105,15 +113,18 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 }
 #nav li {
 	display: block;
+	padding: 0;
+	margin: 0;
 }
 #nav li a {
-	display: block;
+	display: inline-block;
 	color: #336699;
 	border: #f0f7ff 1px solid;
 	line-height: 1.5em;
 	padding-left: 1.5em;
 	background-repeat: no-repeat;
 	background-position: left center;
+	margin: 0;
 }
 #nav li a:hover {
 	text-decoration: none;
@@ -128,15 +139,16 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #nav li li {
 	display: block;
 }
-li#navh>a { background-image: url('../images/button/home.gif'); }
-li#nava>a { background-image: url('../images/announce.gif'); }
-li#navp>a { background-image: url('../images/penguin.gif'); }
-li#navt>a { background-image: url('../images/top10.gif'); }
-li#navf>a { background-image: url('../images/favorite.gif'); }
-li#navc>a { background-image: url('../images/chat.gif'); }
-li#navco>a { background-image: url('../images/config.gif'); }
-li#navm>a { background-image: url('../images/mail.gif'); }
-li#navs>a { background-image: url('../images/search.gif'); }
+#navh a { background-image: url('../images/button/home.gif'); }
+#nava a { background-image: url('../images/announce.gif'); }
+#navp a { background-image: url('../images/penguin.gif'); }
+#navt a { background-image: url('../images/top10.gif'); }
+#navf a { background-image: url('../images/favorite.gif'); }
+#navc a { background-image: url('../images/chat.gif'); }
+#navco a { background-image: url('../images/config.gif'); }
+#navm a { background-image: url('../images/mail.gif'); }
+#navs a { background-image: url('../images/search.gif'); }
+#navh li a, #nava li a, #navp li a, #navt li a, #navf li a, #navc li a, #navco li a, #navm li a, #navs li a { background-image: none; }
 
 table.content {
 	border-collapse: separate;
