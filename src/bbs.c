@@ -323,20 +323,6 @@ int Select() {
 	return 0;
 }
 
-int Post() {
-	if (!selboard) {
-		prints("\n\n先用 (S)elect 去选择一个讨论区。\n");
-		pressreturn();
-		clear();
-		return 0;
-	}
-#ifndef NOREPLY
-	*replytitle = '\0';
-#endif
-	do_post();
-	return 0;
-}
-
 /* added by roly */
 int Poststring(char *str, char *nboard, char *posttitle, int mode) {
 	int savemode;
@@ -1993,7 +1979,6 @@ int outgo_post(struct fileheader *fh, char *board) {
 
 }
 
-//      发表文章
 int post_article(char *postboard, char *mailid) {
 	struct fileheader postfile;
 	struct boardheader *bp;

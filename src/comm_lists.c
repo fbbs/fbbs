@@ -13,7 +13,7 @@
 int domenu(const char *menu_name);
 int Announce(), Personal(), Boards(), EGroup(), Info(), Goodbye(),
 		BoardGroup();
-int New(), Post(), GoodBrds(), Read(), Select(), Users(), Welcome();
+int New(), GoodBrds(), Read(), Select(), Users(), Welcome();
 int setcalltime();
 int show_allmsgs(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), t_users(), x_info(), x_fillform(), x_vote();
@@ -94,7 +94,6 @@ static MENU sysconf_cmdlist[] = {
 	{ "Personal", Personal, 0 },
 	{ "SelectBoard", Select, 0 },
 	{ "ReadBoard", Read, 0 },
-	{ "PostArticle", Post, 0 },
 	{ "SetAlarm", setcalltime, 0 },
 	{ "MailAll", mailall, 0 },
 	{ "LockScreen", x_lockscreen, 0 },
