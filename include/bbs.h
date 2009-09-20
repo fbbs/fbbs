@@ -377,6 +377,29 @@ enum DATE_FORMAT {
 	DATE_XML = 8	
 };
 
+/**
+ * Telnet option negotiation sequence status.
+ */
+enum {
+	TELST_NOR,  ///< normal byte
+	TELST_IAC,  ///< right after IAC
+	TELST_COM,  ///< right after IAC DO/DONT/WILL/WONT
+	TELST_SUB,  ///< right after IAC SB
+	TELST_SBC,  ///< right after IAC SB [COMMAND]
+	TELST_END,  ///< end of an telnet option
+};
+
+enum {
+	IOBUFSIZE = 4096,
+	OBUFSIZE = 4096,
+};
+
+typedef struct {
+	int cur;
+	int size;
+	unsigned char buf[IOBUFSIZE];
+} iobuf_t;
+
 #include "func.h"
 #include "../lib/goodbrd.h"
 

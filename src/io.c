@@ -6,137 +6,34 @@
 #endif
 #include <arpa/telnet.h>
 
-#define OBUFSIZE  (4096)
-#define IBUFSIZE  (256)
+enum {
+	INPUT_ACTIVE = 0,
+	INPUT_IDLE = 1,
+};
 
-#define INPUT_ACTIVE 0
-#define INPUT_IDLE 1
+/** ESC process status */
+enum {
+	ESCST_BEG,  ///< begin
+	ESCST_CUR,  ///< Cursor keys
+	ESCST_FUN,  ///< Function keys
+	ESCST_ERR,  ///< Parse error
+};
 
+#ifdef ALLOWSWITCHCODE
+extern int convcode;
+#endif
 extern int dumb_term;
+extern struct screenline *big_picture;
 
+static iobuf_t inbuf;
 //	定义输出缓冲区,及其已被使用的字节数
 static char outbuf[OBUFSIZE];
 static int obufsize = 0;
-
-struct user_info uinfo;
-
-char inbuf[IBUFSIZE];
-int ibufsize = 0;
-int icurrchar = 0;
 int KEY_ESC_arg;
-
 static int i_mode= INPUT_ACTIVE;
-extern struct screenline *big_picture;
 
-#ifdef ALLOWSWITCHCODE
-
-#define BtoGtablefile "etc/b2g_table"
-#define GtoBtablefile "etc/g2b_table"
-
-unsigned char* GtoB,* BtoG;
-
-#define GtoB_count 7614
-#define BtoG_count 13973
-
-extern int convcode;
-extern void redoscr();
-
-//	将字码转换状态取逆, 并重绘屏幕
-int switch_code() {
-	convcode=!convcode;
-	redoscr();
-}
-
-void resolve_GbBig5Files(void)
-{
-	int fd;
-	int i;
-	BtoG = (unsigned char *) attach_shm("CONV_SHMKEY", 3013,
-			GtoB_count * 2 + BtoG_count * 2);
-	if (BtoG == NULL)
-		exit(1);
-	fd = open( BtoGtablefile, O_RDONLY );
-	if (fd == -1)
-	for (i=0;i< BtoG_count; i++) {
-		BtoG[i*2]=0xA1;
-		BtoG[i*2+1]=0xF5;
-	}
-	else
-	{
-		read(fd,BtoG,BtoG_count*2);
-		close(fd);
-	}
-	fd=open(GtoBtablefile,O_RDONLY);
-	if (fd==-1)
-	for (i=0;i< GtoB_count; i++) {
-		BtoG[BtoG_count*2+i*2]=0xA1;
-		BtoG[BtoG_count*2+i*2+1]=0xBC;
-	}
-	else
-	{
-		read(fd,BtoG+BtoG_count*2,GtoB_count*2);
-		close(fd);
-	}
-	GtoB = BtoG + BtoG_count*2;
-}
-
-//	将str字符串中的GB码汉字转换成相应的BIG5码汉字,并调用write函数输出
-int write2(int port, char *str, int len) // write gb to big
-{
-	register int i, locate;
-	register unsigned char ch1, ch2, *ptr;
-
-	for(i=0, ptr=str; i < len;i++) {
-		ch1 = (ptr+i)[0];
-		if(ch1 < 0xA1 || (ch1> 0xA9 && ch1 < 0xB0) || ch1> 0xF7)
-		continue;
-		ch2 = (ptr+i)[1];
-		i ++;
-		if(ch2 < 0xA0 || ch2 == 0xFF )
-		continue;
-		if((ch1> 0xA0) && (ch1 < 0xAA)) //01～09区为符号数字
-		locate = ((ch1 - 0xA1)*94 + (ch2 - 0xA1))*2;
-		else //if((buf > 0xAF) && (buf < 0xF8)){ //16～87区为汉字
-		locate = ((ch1 - 0xB0 + 9)*94 + (ch2 - 0xA1))*2;
-		(ptr+i-1)[0] = GtoB[locate++];
-		(ptr+i-1)[1] = GtoB[locate];
-	}
-	return write(port, str, len);
-}
-
-int read2(int port, char *str, int len) // read big from gb 
-{
-	/*
-	 * Big-5 是一个双字节编码方案，其第一字节的值在 16 进
-	 * 制的 A0～FE 之间，第二字节在 40～7E 和 A1～FE 之间。
-	 * 因此，其第一字节的最高位是 1，第二字节的最高位则可
-	 * 能是 1，也可能是 0。
-	 */
-	register unsigned char ch1,ch2, *ptr;
-	register int locate, i=0;
-	if(len == 0) return 0;
-	len = read(port, str, len);
-	if( len < 1)
-	return len;
-
-	for(i=0,ptr = str; i < len; i++) {
-		ch1 = (ptr+i)[0];
-		if(ch1 < 0xA1 || ch1 == 0xFF)
-		continue;
-		ch2 = (ptr+i)[1];
-		i ++;
-		if(ch2 < 0x40 || ( ch2> 0x7E && ch2 < 0xA1 ) || ch2 == 255)
-		continue;
-		if( (ch2 >= 0x40) && (ch2 <= 0x7E) )
-		locate = ((ch1 - 0xA1) * 157 + (ch2 - 0x40)) * 2;
-		else
-		locate = ((ch1 - 0xA1) * 157 + (ch2 - 0xA1) + 63) * 2;
-		(ptr+i-1)[0] = BtoG[ locate++ ];
-		(ptr+i-1)[1] = BtoG[ locate ];
-	}
-	return len;
-}
-#endif
+// TODO: why here..
+struct user_info uinfo;
 
 //	超时处理函数,将非特权ID超时时踢出bbs
 void hit_alarm_clock() {
@@ -225,9 +122,9 @@ void ochar(register int c)
 	obufsize = size;
 }
 
-int i_newfd = 0;
-struct timeval i_to, *i_top = NULL;
-int (*flushf)() = NULL;
+static int i_newfd = 0;
+static struct timeval i_to, *i_top = NULL;
+static int (*flushf)() = NULL;
 
 void add_io(int fd, int timeout) {
 	i_newfd = fd;
@@ -244,191 +141,226 @@ void add_flush(int (*flushfunc)()) {
 	flushf = flushfunc;
 }
 
-/*
- int
- num_in_buf()
- {
- return icurrchar - ibufsize;
- }
+bool inbuf_empty(void)
+{
+	return (inbuf.cur >= inbuf.size);
+}
+
+/**
+ * Get raw byte from stdin.
+ * @return next byte from stdin
  */
-//	返回缓冲中的字符数
-int num_in_buf() {
-	int n;
-	if ((n = icurrchar - ibufsize) < 0)
-		n=0;
-	return n;
-}
-
-static int iac_count(char *current)
+static int get_raw_ch(void)
 {
-	switch (*(current + 1) & 0xff) {
-		case DO:
-		case DONT:
-		case WILL:
-		case WONT:
-		return 3;
-		case SB: /* loop forever looking for the SE */
-		{
-			register char *look = current + 2;
-			for (;;) {
-				if ((*look++ & 0xff) == IAC) {
-					if ((*look++ & 0xff) == SE) {
-						return look - current;
-					}
-				}
-			}
-		}
-		default:
-		return 1;
-	}
-}
+	if (inbuf.cur >= inbuf.size) {
+		fd_set rset;
+		struct timeval to;
+		int fd = i_newfd;
+		int nfds, ret;
 
-int igetch()
-{
-	static int trailing = 0;
-	//modified by iamfat 2002.08.21
-	//static int repeats = 0;
-	//static time_t timestart=0;
-	//static int repeatch=0;
-	//modified end
-	register int ch;
-	register char *data;
-	data = inbuf;
-
-	for (;;) {
-		if (ibufsize == icurrchar) {
-			fd_set readfds;
-			struct timeval to;
-			register fd_set *rx;
-			register int fd, nfds;
-			rx = &readfds;
-			fd = i_newfd;
-
-			igetnext:
-
-			uinfo.idle_time = time(0);
-			update_ulist(&uinfo, utmpent);
-
-			FD_ZERO(rx);
-			FD_SET(0, rx);
-			if (fd) {
-				FD_SET(fd, rx);
-				nfds = fd + 1;
-			} else
+		FD_ZERO(&rset);
+		FD_SET(STDIN_FILENO, &rset);
+		if (fd) {
+			FD_SET(fd, &rset);
+			nfds = fd + 1;
+		} else {
 			nfds = 1;
-			to.tv_sec = to.tv_usec = 0;
-			if ((ch = select(nfds, rx, NULL, NULL, &to)) <= 0) {
-				if (flushf)
-				(*flushf) ();
+		}
 
-				if (big_picture)
+		// TODO: simplify it
+		uinfo.idle_time = time(0);
+		update_ulist(&uinfo, utmpent);
+
+		to.tv_sec = to.tv_usec = 0;
+		if ((ret = select(nfds, &rset, NULL, NULL, &to)) <= 0) {
+			if (flushf)
+				(*flushf) ();
+			if (big_picture)
 				refresh();
-				else
+			else
 				oflush();
 
-				FD_ZERO(rx);
-				FD_SET(0, rx);
-				if (fd)
-				FD_SET(fd, rx);
-
-				while ((ch = select(nfds, rx, NULL, NULL, i_top)) < 0) {
-					if (errno != EINTR)
+			FD_ZERO(&rset);
+			FD_SET(0, &rset);
+			if (fd)
+				FD_SET(fd, &rset);
+			while ((ret = select(nfds, &rset, NULL, NULL, i_top)) < 0) {
+				if (errno != EINTR)
 					return -1;
-				}
-				if (ch == 0)
-				return I_TIMEOUT;
 			}
-			if (fd && FD_ISSET(fd, rx))
+			if (ret == 0)
+				return I_TIMEOUT;
+		}
+		if (fd && FD_ISSET(fd, &rset))
 			return I_OTHERDATA;
 
-			for (;;) {
-#ifdef ALLOWSWITCHCODE
-				if( convcode ) ch = read2(0, data, IBUFSIZE);
-				else
-#endif
-				ch = read(0, data, IBUFSIZE);
-
-				if (ch> 0)
+		while (1) {
+			ret = read(STDIN_FILENO, inbuf.buf, sizeof(inbuf.buf));
+			if (ret > 0)
 				break;
-				if ((ch < 0) && (errno == EINTR))
+			if ((ret < 0) && (errno == EINTR))
 				continue;
-				//longjmp(byebye, -1);
-				abort_bbs(0);
-			}
-			icurrchar = (*data & 0xff) == IAC ? iac_count(data) : 0;
-			if (icurrchar >= ch)
-			goto igetnext;
-			ibufsize = ch;
-			i_mode = INPUT_ACTIVE;
+			abort_bbs(0);
 		}
-		ch = data[icurrchar++];
-		if (trailing) {
-			trailing = 0;
-			if (ch == 0 || ch == 0x0a)
-			continue;
-		}
-		if (ch == Ctrl('L'))
-		{
-			redoscr();
-			continue;
-		}
-		if (ch == 0x0d) {
-			trailing = 1;
-			ch = '\n';
-		}
-		return (ch);
+		inbuf.cur = 0;
+		inbuf.size = ret;
+		i_mode = INPUT_ACTIVE;
 	}
+	return inbuf.buf[inbuf.cur++];
 }
 
-int igetkey() {
-	int mode;
-	int ch, last;
-	extern int RMSG;
-	mode = last = 0;
+/**
+ * Handle telnet option negotiation.
+ * @return the first character after IAC sequence.
+ */
+static int iac_handler(void)
+{
+	int status = TELST_IAC;
 	while (1) {
-		if ((uinfo.in_chat == YEA || uinfo.mode == TALK || uinfo.mode
-				== PAGE || uinfo.mode == FIVE) && RMSG == YEA) {
-			char a;
-#ifdef ALLOWSWITCHCODE
-			if(convcode) read2(0, &a, 1);
-			else
-#endif
-			read(0, &a, 1);
-			ch = (int) a;
-		} else
-			ch = igetch();
-		if ((ch == Ctrl('Z')) && (RMSG == NA) && uinfo.mode != LOCKSCREEN) {
-			r_msg2();
-			return 0;
-		}
-		if (mode == 0) {
-			if (ch == KEY_ESC)
-				mode = 1;
-			else
-				return ch; /* Normal Key */
-		} else if (mode == 1) { /* Escape sequence */
-			if (ch == '[' || ch == 'O')
-				mode = 2;
-			else if (ch == '1' || ch == '4')
-				mode = 3;
-			else {
-				KEY_ESC_arg = ch;
-				return KEY_ESC;
-			}
-		} else if (mode == 2) { /* Cursor key */
-			if (ch >= 'A' && ch <= 'D')
-				return KEY_UP + (ch - 'A');
-			else if (ch >= '1' && ch <= '6')
-				mode = 3;
-			else
+		int ch = get_raw_ch();
+		if (ch < 0)
+			return ch;
+		switch (status) {
+			case TELST_IAC:
+				if (ch == SB)
+					status = TELST_SUB;
+				else
+					status = TELST_COM;
+				break;
+			case TELST_COM:
+				status = TELST_END;
+				break;
+			case TELST_SUB:
+				if (ch == SE)
+					status = TELST_END;
+				break;
+			case TELST_END:
 				return ch;
-		} else if (mode == 3) { /* Ins Del Home End PgUp PgDn */
-			if (ch == '~')
-				return KEY_HOME + (last - '1');
-			else
+			default:
+				break;
+		}	
+	}
+	return 0;
+}
+
+/**
+ * Handle ANSI ESC sequences.
+ * @return converted key on success, next key on error.
+ */
+static int esc_handler(void)
+{
+	int status = ESCST_BEG, ret, ch, last;
+	while (1) {
+		ch = get_raw_ch();
+		if (ch < 0)
+			return ch;
+		switch (status) {
+			case ESCST_BEG:
+				if (ch == '[' || ch == 'O')
+					status = ESCST_CUR;
+				else if (ch == '1' || ch == '4')
+					status = ESCST_FUN;
+				else {
+					KEY_ESC_arg = ch;  // TODO:...
+					return KEY_ESC;
+				}
+				break;
+			case ESCST_CUR:
+				if (ch >= 'A' && ch <= 'D')
+					return KEY_UP + ch - 'A';
+				else if (ch >= '1' && ch <= '6')
+					status = ESCST_FUN;
+				else
+					status = ESCST_ERR;
+				break;
+			case ESCST_FUN:
+				if (ch == '~' && last >= '1' && last <= '6')
+					return KEY_HOME + last - '1';
+				else
+					status = ESCST_ERR;
+				break;
+			case ESCST_ERR:
 				return ch;
+			default:
+				break;
 		}
 		last = ch;
+	}
+	return 0;
+}
+
+/**
+ * Get next byte from stdin, with special byte interpreted.
+ * @return next byte from stdin
+ */
+static int igetch(void)
+{
+	static bool cr = 0;
+	int ch;
+	while (1) {
+		ch = get_raw_ch();
+		switch (ch) {
+			case IAC:
+				ch = iac_handler();
+				continue;
+			case KEY_ESC:
+				ch = esc_handler();
+				break;
+			case Ctrl('L'):
+				redoscr();
+				continue;
+			case '\r':
+				ch = '\n';
+				break;
+			case '\n':
+				if (cr) {
+					cr = false;
+					continue;
+				}
+				break;
+			default:
+				cr = false;
+#ifdef ALLOWSWITCHCODE
+				if (convcode) {
+					ch = convert_b2g(ch);
+					if (ch >= 0)
+						return ch;
+				}
+#endif // ALLOWSWITCHCODE
+				break;
+		}
+		if (ch == '\r')
+			cr = true;
+		break;
+	}
+	return ch;
+}
+
+/**
+ * Get next byte from stdin in gbk encoding (if conversion is needed).
+ */
+int igetkey(void)
+{
+	extern int RMSG;
+	int ch;
+#ifdef ALLOWSWITCHCODE
+	if (convcode) {
+		ch = convert_b2g(-1); // If there is a byte left.
+		if (ch < 0) {
+			ch = igetch();
+		}
+	} else {
+		ch = igetch();
+	}
+#else
+	ch = igetch();
+#endif // ALLOWSWITCHCODE
+	// TODO:...
+	if ((ch == Ctrl('Z')) && (RMSG == NA) && uinfo.mode != LOCKSCREEN) {
+		r_msg2();
+		return 0;
+	} else {
+		return ch;
 	}
 }
 
@@ -506,7 +438,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	prints("%s", buf);
 
 	if (dumb_term || echo == NA) {
-		while ((ch = igetkey()) != '\r') {
+		while ((ch = igetkey()) != '\n') {
 			if (RMSG == YEA && msg_num == 0) {
 				if (ch == Ctrl('Z') || ch == KEY_UP) {
 					buf[0] = Ctrl('Z');

@@ -27,21 +27,21 @@ CFILE	 = admintool.c announce.c bbs.c bbsd.c bcache.c bm.c\
 	   help.c io.c list.c mail.c main.c maintain.c more.c \
 	   namecomplete.c postheader.c read.c \
 	   register.c screen.c sendmsg.c stuff.c talk.c term.c \
-	   userinfo.c vote.c xyz.c readabc.c five.c
+	   userinfo.c vote.c xyz.c readabc.c five.c convert.c
 
 COBJS	 = admintool.o announce.o bbs.o bbsd.o bcache.o bm.o\
 	   boards.o chat.o comm_lists.o delete.o edit.o fileshm.o goodbye.o \
 	   help.o io.o list.o mail.o main.o maintain.o more.o \
 	   namecomplete.o postheader.o read.o \
 	   register.o screen.o sendmsg.o stuff.o talk.o term.o \
-	   userinfo.o vote.o xyz.o readabc.o five.o 
+	   userinfo.o vote.o xyz.o readabc.o five.o convert.o
 
 COBJS1	 = admintool.o announce.o bbs.o bcache.o bm.o\
 	   boards.o chat.o comm_lists.o delete.o edit.o fileshm.o goodbye.o \
 	   help.o io.o list.o mail.o main.o maintain.o more.o \
 	   namecomplete.o postheader.o read.o \
 	   register.o screen.o sendmsg.o stuff.o talk.o term.o \
-	   userinfo.o vote.o xyz.o readabc.o five.o
+	   userinfo.o vote.o xyz.o readabc.o five.o convert.o
 
 GARBAGE  = a.out core installchatd chatd thread *~ *.BAK miscd
 

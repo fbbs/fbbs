@@ -13,6 +13,9 @@
 #define BADLOGINFILE   "logins.bad"
 #define VISITLOG    BBSHOME"/.visitlog"
 
+#ifdef ALLOWSWITCHCODE
+extern int convcode;
+#endif
 int RMSG = YEA;
 int msg_num = 0;
 int count_friends = 0;
@@ -35,14 +38,7 @@ char GoodWish[20][STRLEN - 3];
 int WishNum = 0;
 int orderWish = 0;
 extern int enabledbchar;
-
 int refscreen = NA;
-
-#ifdef ALLOWSWITCHCODE
-int convcode = 0; //是否在GB与BIG5间转换?
-extern void resolve_GbBig5Files();
-#endif
-
 int friend_login_wall();
 struct user_info *t_search();
 void r_msg();
@@ -1075,7 +1071,8 @@ void start_client(void)
 
 	load_sysconf();
 #ifdef ALLOWSWITCHCODE
-	resolve_GbBig5Files();
+	if (resolve_gbkbig5_table() < 0)
+		exit(1);
 #endif
 	system_init();
 

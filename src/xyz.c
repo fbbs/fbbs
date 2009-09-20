@@ -31,7 +31,6 @@ extern int iscolor;
 extern int enabledbchar;
 
 #ifdef ALLOWSWITCHCODE
-extern int switch_code ();
 extern int convcode;
 #endif
 

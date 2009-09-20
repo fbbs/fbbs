@@ -1,7 +1,7 @@
 // Function declarations.
 
-#ifndef _FUNC_H_
-#define _FUNC_H_
+#ifndef FB_FUNC_H
+#define FB_FUNC_H
 
 //uinfo.c
 char *cexpstr(int exp);
@@ -108,7 +108,15 @@ int junkboard(const struct boardheader *bp);
 int check_maxmail(void);
 
 //io.c
+int igetkey(void);
 int egetch(void);
 void update_endline(void);
 
-#endif // _FUNC_H_
+//convert.c
+#ifdef ALLOWSWITCHCODE
+void switch_code(void);
+int resolve_gbkbig5_table(void);
+int convert_b2g(int ch);
+#endif // ALLOWSWITCHCODE
+
+#endif // FB_FUNC_H

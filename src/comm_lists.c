@@ -64,10 +64,6 @@ int setsystempasswd();
 #endif
 #endif
 
-#ifdef ALLOWSWITCHCODE
-int switch_code();
-#endif
-
 int wall();
 int friend_wall();
 /*Add By Excellent */

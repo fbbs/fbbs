@@ -29,18 +29,6 @@ char datafile[80]= BBSHOME"/etc/bbsnet.ini";
 char userid[80]= "unknown.";
 
 /**
- * Telnet option negotiation sequence status.
- */
-enum {
-	TELST_NOR,  ///< normal byte
-	TELST_IAC,  ///< right after IAC
-	TELST_COM,  ///< right after IAC DO/DONT/WILL/WONT
-	TELST_SUB,  ///< right after IAC SB
-	TELST_SBC,  ///< right after IAC SB [COMMAND]
-	TELST_END,  ///< end of an telnet option
-};
-
-/**
  * Get appropriate response command.
  * @param command received command
  * @param use use the option or not
