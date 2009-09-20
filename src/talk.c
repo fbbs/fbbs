@@ -83,7 +83,6 @@ struct talk_win {
 };
 
 int nowmovie;
-int bind();
 
 static char *refuse[] = { "抱歉，我现在想专心看 Board。    ",
 		"请不要吵我，好吗？..... :)      ", "我现在有事，等一下再 Call 你。  ",

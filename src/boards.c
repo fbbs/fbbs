@@ -63,12 +63,6 @@ void GoodBrds() {
 }
 
 void New() {
-	if (heavyload()) {
-		clear();
-		prints("抱歉，目前系统负荷过重，请改用 Boards 指令阅览讨论区...");
-		pressanykey();
-		return;
-	}
 	boardprefix = NULL;
 	boardparent = -1;
 	GoodBrd.num = 0;

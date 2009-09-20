@@ -370,22 +370,6 @@ int x_lockscreen() {
 	return FULLUPDATE;
 }
 
-//      检查负荷
-int heavyload() {
-#ifdef chkload
-	register int load;
-	register time_t uptime;
-
-	if (time (0)> uptime) { //每隔45分钟检查一次?
-		load = chkload (load ? TH_LOW : TH_HIGH);
-		uptime = time (0) + load + 45;
-	}
-	return load;
-#else
-	return 0;
-#endif
-}
-
 //#define MY_DEBUG
 //  执行命令cmdfile,参数为param1
 void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
@@ -399,12 +383,6 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	move(2, 0);
 	if (num_useshell() > MAX_USESHELL) {
 		prints("太多人使用外部程式了，您等一下再用吧...");
-		pressanykey();
-		return;
-	}
-	if (!HAS_PERM(PERM_SYSOPS) && heavyload()) {
-		clear();
-		prints("抱歉，目前系统负荷过重，此功能暂时不能执行...");
 		pressanykey();
 		return;
 	}

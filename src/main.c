@@ -422,10 +422,6 @@ static int multi_user_check(void)
 		return 0;
 
 	logins = count_user();
-	if (heavyload() && logins) {
-		prints("\033[1;33m抱歉, 目前系统负荷过重, 请勿重复 Login。\033[m\n");
-		return -1;
-	}
 
 	// Allow no more than MAXGUEST guest users.
 	if (!strcasecmp("guest", currentuser.userid)) {
