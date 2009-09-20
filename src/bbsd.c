@@ -181,7 +181,9 @@ static int check_nologin(int fd)
 		write(fd, m.ptr, m.size);
 		mmap_close(&m);
 		close(fd);
+		return -1;
 	}
+	return 0;
 }
 #endif // NOLOGIN
 
@@ -226,8 +228,10 @@ int main(int argc, char *argv[])
 		if (csock < 0)
 			continue;
 #ifdef NOLOGIN
-		if (check_nologin(csock) < 0)
+		if (check_nologin(csock) < 0) {
+			close(csock);
 			continue;
+		}
 #endif // NOLOGIN
 		pid = fork();
 		if (pid == 0) {
