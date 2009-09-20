@@ -167,10 +167,13 @@ static int bind_port(struct sockaddr_in *xsin, int port)
 /**
  * Deny new login if NOLOGIN file exists.
  * @param fd output file descriptor
+ * @return 0 if login is permitted, -1 otherwise
+ * @note '\r' is not added, so prompt message is not recommended to exceed
+ *       1 line.
  */
-static void check_nologin(int fd)
+static int check_nologin(int fd)
 {
-	const char banner[] = "本站目前暂停登录，原因如下: \n";
+	const char banner[] = "本站目前暂停登录，原因如下: \r\n";
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(NOLOGIN, &m) == 0) {
@@ -223,7 +226,8 @@ int main(int argc, char *argv[])
 		if (csock < 0)
 			continue;
 #ifdef NOLOGIN
-		check_nologin(csock);
+		if (check_nologin(csock) < 0)
+			continue;
 #endif // NOLOGIN
 		pid = fork();
 		if (pid == 0) {
