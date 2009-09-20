@@ -6,11 +6,7 @@
 #include <termios.h>
 #include <string.h>
 #include <time.h>
-
 #include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-//#include <termio.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <netdb.h>
@@ -22,7 +18,6 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <termios.h>
 #include <math.h>
 
 #include "bbs.h"
@@ -33,7 +28,135 @@ int port[100], counts= 0;
 char datafile[80]= BBSHOME"/etc/bbsnet.ini";
 char userid[80]= "unknown.";
 
-init_data() {
+/**
+ * Telnet option negotiation sequence status.
+ */
+enum {
+	TELST_NOR,  ///< normal byte
+	TELST_IAC,  ///< right after IAC
+	TELST_COM,  ///< right after IAC DO/DONT/WILL/WONT
+	TELST_SUB,  ///< right after IAC SB
+	TELST_SBC,  ///< right after IAC SB [COMMAND]
+	TELST_END,  ///< end of an telnet option
+};
+
+/**
+ * Get appropriate response command.
+ * @param command received command
+ * @param use use the option or not
+ * @return the response command
+ */
+int telnet_response(int command, bool use)
+{
+	if (command == WILL || command == WONT) {
+		if (use == true)
+			return DO;
+		else
+			return DONT;
+	} else if (command == DO || command == DONT){
+		if (use == true)
+			return WILL;
+		else
+			return WONT;
+	} else {  // command == SB
+		return SB;
+	}
+}
+
+/**
+ * Telnet option negotiation.
+ * @param fd output file descriptor (to server)
+ * @param command received command
+ * @param option option to negotiate
+ * @note only a small subset of telnet options is implemented
+ */
+void telnet_opt(int fd, int command, int option)
+{
+	unsigned char res[16] = {IAC};
+	const unsigned char tty[] = { IAC, SB, TELOPT_TTYPE, TELQUAL_IS, 'V', 
+			'T', '1', '0', '0', IAC, SE};
+	const unsigned char naws[] = { IAC, WILL, TELOPT_NAWS, IAC, SB,
+			TELOPT_NAWS, 0, 80, 0, 24, IAC, SE};
+	switch (option) {
+		case TELOPT_BINARY:
+		case TELOPT_SGA:
+			res[1] = telnet_response(command, true);
+			res[2] = option;
+			write(fd, res, 3);
+			break;
+		case TELOPT_ECHO:
+			res[1] = telnet_response(command, false);
+			res[2] = option;
+			break;
+		case TELOPT_TTYPE:
+			res[1] = telnet_response(command, true);
+			if (res[1] == SB) {
+				write(fd, tty, sizeof(tty));
+			} else {
+				res[2] = option;
+				write(fd, res, 3);
+			}
+			break;
+		case TELOPT_NAWS:
+			write(fd, naws, sizeof(naws));
+			break;
+		default:
+			break;
+	}
+}
+
+/**
+ * Telnet proxy which automatically responses to server's option negotiation.
+ * @param fd output file descriptor (to server)
+ * @param buf input buffer
+ * @param size bytes in input buffer
+ */
+void telnet_proxy(int fd, const unsigned char *buf, int size)
+{
+	static int status, command;
+	int option = 0;
+	const unsigned char *end = buf + size, *last = buf;
+	while (buf != end) {
+		switch (status) {
+			case TELST_NOR:
+				if (*buf == IAC) {
+					status = TELST_IAC;
+					write(STDOUT_FILENO, last, buf - last);
+					last = buf;
+				}
+				break;
+			case TELST_IAC:
+				command = *buf;
+				if (*buf == SB)
+					status = TELST_SUB;
+				else
+					status = TELST_COM;
+				break;
+			case TELST_COM:
+				status = TELST_END;
+				telnet_opt(fd, command, *buf);
+				break;
+			case TELST_SUB:
+				option = *buf;
+				status = TELST_SBC;
+				break;
+			case TELST_SBC:
+				if (*buf == SE) {
+					telnet_opt(fd, command, option);
+					status = TELST_END;
+				}
+				break;
+			default:
+				break;
+		}
+		++buf;
+	}
+	if (status == TELST_NOR)
+		write(STDOUT_FILENO, last, buf - last);
+}
+
+void init_data(void)
+{
 	FILE *fp;
 	char t[256], *t1, *t2, *t3, *t4;
 	fp= fopen(datafile, "r");
@@ -57,7 +180,8 @@ init_data() {
 
 #ifdef FDQUAN	//¸´µ©ÈªµÄ´©Ëó³ÌÐò
 char str[]= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-sh(int n) {
+void sh(int n)
+{
 	static oldn= -1;
 	if(n>= counts) return;
 	if(oldn >=0) {
@@ -71,7 +195,8 @@ sh(int n) {
 	printf("[%c][1;42m%s[m", str[n], host2[n]);
 }
 
-show_all() {
+void show_all(void)
+{
 	int n;
 	printf("[H[2J[m");
 	printf("©³©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥[1;35m ´©  Ëó  Òø  ºÓ [m©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©·\r\n");
@@ -86,7 +211,8 @@ show_all() {
 	}
 }
 
-locate(int n) {
+void locate(int n)
+{
 	int x, y;
 	char buf[20];
 	if(n>= counts) return;
@@ -99,7 +225,7 @@ locate(int n) {
 	printf(buf);
 }
 
-int getch()
+int getch(void)
 {
 	int c, d, e;
 	static lastc= 0;
@@ -117,7 +243,7 @@ int getch()
 	return 0;
 }
 
-void main_loop()
+void main_loop(void)
 {
 	int p= 0;
 	int c, n;
@@ -164,7 +290,8 @@ void main_loop()
 }
 #endif
 
-int bbsnet(int n) {
+int bbsnet(int n)
+{
 	if (n>= counts)
 		return -1;
 	printf("[H[2J[1;32mo Á¬Íù: %s (%s)\r\n", host2[n], ip[n]);
@@ -174,18 +301,21 @@ int bbsnet(int n) {
 	return 0;
 }
 
-void QuitTime() {
+void QuitTime(int notused)
+{
 	reset_tty();
 	exit(0);
 }
 
-int SetQuitTime() {
+int SetQuitTime(void)
+{
 	signal(SIGALRM, QuitTime);
 	alarm(60);
 	return 0;
 }
 
-main(int n, char* cmd[]) {
+int main(int n, char* cmd[])
+{
 	SetQuitTime();
 	get_tty();
 	init_tty();
@@ -206,7 +336,8 @@ main(int n, char* cmd[]) {
 	reset_tty();
 }
 
-bbs_syslog(char* s) { //rename by money for conflict with syslog() 2004.01.07
+int bbs_syslog(char* s)
+{ //rename by money for conflict with syslog() 2004.01.07
 	char buf[512], timestr[16], *thetime;
 	time_t dtime;
 	FILE *fp;
@@ -224,13 +355,15 @@ bbs_syslog(char* s) { //rename by money for conflict with syslog() 2004.01.07
 #define gtty(fd, data) tcgetattr( fd, data )
 struct termios tty_state, tty_new;
 
-get_tty() {
+int get_tty(void)
+{
 	if (gtty(1,&tty_state) < 0)
 		return 0;
 	return 1;
 }
 
-init_tty() {
+void init_tty(void)
+{
 	long vdisable;
 
 	memcpy( &tty_new, &tty_state, sizeof(tty_new)) ;
@@ -247,11 +380,13 @@ init_tty() {
 	tcsetattr(1, TCSANOW, &tty_new);
 }
 
-reset_tty() {
+void reset_tty(void)
+{
 	stty(1,&tty_state);
 }
 
-proc(char *hostname, char *server, int port) {
+void proc(char *hostname, char *server, int port)
+{
 	int fd;
 	struct sockaddr_in blah;
 	struct hostent *he;
@@ -284,7 +419,7 @@ proc(char *hostname, char *server, int port) {
 		tv.tv_usec = 0;
 		FD_ZERO(&readfds) ;
 		FD_SET(fd, &readfds);
-		FD_SET(0, &readfds);
+		FD_SET(STDIN_FILENO, &readfds);
 
 		result = select(fd + 1, &readfds, NULL, NULL, &tv);
 		if (result <= 0)
@@ -305,71 +440,10 @@ proc(char *hostname, char *server, int port) {
 			write(fd, buf, result);
 		} else {
 			result=read(fd, buf, 2048);
-			if (result<=0)
+			if (result <= 0)
 				break;
-			if (strchr(buf, 255))
-				telnetopt(fd, buf, result);
-			else
-				write(0, buf, result);
+			telnet_proxy(fd, buf, result);
 		}
-	}
-}
-
-int telnetopt(int fd, char* buf, int max) {
-	unsigned char c, d, e;
-	int pp=0;
-	unsigned char tmp[30];
-	while (pp<max) {
-		c=buf[pp++];
-		if (c==255) {
-			d=buf[pp++];
-			e=buf[pp++];
-			fflush(stdout);
-			if ((d==253)&&(e==3||e==24)) {
-				tmp[0]=255;
-				tmp[1]=251;
-				tmp[2]=e;
-				write(fd, tmp, 3);
-				continue;
-			}
-			if ((d==251||d==252)&&(e==1||e==3||e==24)) {
-				tmp[0]=255;
-				tmp[1]=253;
-				tmp[2]=e;
-				write(fd, tmp, 3);
-				continue;
-			}
-			if (d==251||d==252) {
-				tmp[0]=255;
-				tmp[1]=254;
-				tmp[2]=e;
-				write(fd, tmp, 3);
-				continue;
-			}
-			if (d==253||d==254) {
-				tmp[0]=255;
-				tmp[1]=252;
-				tmp[2]=e;
-				write(fd, tmp, 3);
-				continue;
-			}
-			if (d==250) {
-				while (e!=240&&pp<max)
-					e=buf[pp++];
-				tmp[0]=255;
-				tmp[1]=250;
-				tmp[2]=24;
-				tmp[3]=0;
-				tmp[4]=65;
-				tmp[5]=78;
-				tmp[6]=83;
-				tmp[7]=73;
-				tmp[8]=255;
-				tmp[9]=240;
-				write(fd, tmp, 10);
-			}
-		} else
-			write(0, &c, 1);
 	}
 }
 
