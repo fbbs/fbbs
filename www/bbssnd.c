@@ -26,12 +26,12 @@ static FILE *get_fname(const char *dir, const char *pfx, char *fname, size_t siz
 
 /**
  * Post an article.
- * @user the owner.
- * @bp the board to post.
- * @title title.
- * @content content.
- * @ip owner's IP address.
- * @o_fp pointer to the replied post. NULL if this is a new thread.
+ * @param user the owner
+ * @param bp the board to post
+ * @param title title
+ * @param content content
+ * @param ip owner's IP address.
+ * @param o_fp pointer to the replied post. NULL if this is a new thread.
  * @return 0 on success, -1 on error.
  */
 int post_article(const struct userec *user, const struct boardheader *bp,
