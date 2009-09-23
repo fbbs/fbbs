@@ -795,8 +795,8 @@ static void notepad_init(void)
 					continue;
 				else {
 					char *str = getdatestring(now, DATE_ZH);
-					sprintf(notetitle, "[%8.8s %6.6s] %s", str + 6,
-							str + 23, ntitle);
+					snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] %s",
+							str, str + 23, ntitle);
 					if (dashf(fname)) {
 						Postfile(fname, bname, notetitle, 1);
 						sprintf(tmp, "%s 自动张贴", ntitle);
@@ -806,7 +806,9 @@ static void notepad_init(void)
 			}
 			fclose(check);
 		}
-		sprintf(notetitle, "[%s] 留言板记录", getdatestring(now, DATE_ZH));
+		char *str = getdatestring(now, DATE_ZH);
+		snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] 留言板记录",
+				str, str + 23);
 		if (dashf("etc/notepad")) {
 			Postfile("etc/notepad", "Notepad", notetitle, 1);
 			unlink("etc/notepad");
