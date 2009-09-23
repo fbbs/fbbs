@@ -168,7 +168,7 @@ static int bind_port(struct sockaddr_in *xsin, int port)
  * Deny new login if NOLOGIN file exists.
  * @param fd output file descriptor
  * @return 0 if login is permitted, -1 otherwise
- * @note '\r' is not added, so prompt message is not recommended to exceed
+ * @note '\\r' is not added, so prompt message is not recommended to exceed
  *       1 line.
  */
 static int check_nologin(int fd)

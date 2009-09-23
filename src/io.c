@@ -25,7 +25,8 @@ extern int convcode;
 extern int dumb_term;
 extern struct screenline *big_picture;
 
-static iobuf_t inbuf;
+static iobuf_t inbuf;   ///< Input buffer.
+
 //	定义输出缓冲区,及其已被使用的字节数
 static char outbuf[OBUFSIZE];
 static int obufsize = 0;
@@ -249,7 +250,7 @@ static int iac_handler(void)
  */
 static int esc_handler(void)
 {
-	int status = ESCST_BEG, ret, ch, last;
+	int status = ESCST_BEG, ch, last = 0;
 	while (1) {
 		ch = get_raw_ch();
 		if (ch < 0)
@@ -346,9 +347,8 @@ int igetkey(void)
 #ifdef ALLOWSWITCHCODE
 	if (convcode) {
 		ch = convert_b2g(-1); // If there is a byte left.
-		if (ch < 0) {
+		while (ch < 0)
 			ch = igetch();
-		}
 	} else {
 		ch = igetch();
 	}
