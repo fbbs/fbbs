@@ -86,11 +86,8 @@ static void put_raw_ch(int ch)
  */
 void ochar(int ch)
 {
-	int convert = 0;
 #ifdef ALLOWSWITCHCODE
-		convert = convcode;
-#endif // ALLOWSWITCHCODE
-	if (convert) {
+	if (convcode) {
 		ch = convert_g2b(ch);
 		while (ch > 0) {
 			put_raw_ch(ch);
@@ -99,6 +96,9 @@ void ochar(int ch)
 	} else {
 		put_raw_ch(ch);
 	}
+#else
+	put_raw_ch(ch);
+#endif // ALLOWSWITCHCODE
 }
 
 /**
