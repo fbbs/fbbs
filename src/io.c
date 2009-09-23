@@ -26,10 +26,8 @@ extern int dumb_term;
 extern struct screenline *big_picture;
 
 static iobuf_t inbuf;   ///< Input buffer.
+static iobuf_t outbuf;  ///< Output buffer.
 
-//	定义输出缓冲区,及其已被使用的字节数
-static char outbuf[OBUFSIZE];
-static int obufsize = 0;
 int KEY_ESC_arg;
 static int i_mode= INPUT_ACTIVE;
 
@@ -58,69 +56,81 @@ void init_alarm() {
 	alarm(IDLE_TIMEOUT);
 }
 
-//刷新输出缓冲区
-void oflush()
+/**
+ * Flush output buffer.
+ * @return 0 on success, -1 on error.
+ */
+int oflush(void)
 {
-	register int size;
-	if (size = obufsize) {
-#ifdef ALLOWSWITCHCODE
-		if(convcode) write2(0, outbuf, size);
-		else
-#endif
-		write(0, outbuf, size);
-		obufsize = 0;
-	}
+	int ret = 0;
+	if (outbuf.size > 0)
+		ret = write(STDOUT_FILENO, outbuf.buf, outbuf.size);
+	outbuf.size = 0;
+	return ret;
 }
 
-//	把长度为len的字符串s放入缓冲区中,若缓冲区存放过多字节时,则刷新缓冲区
-//		1) 若允许GB与BIG5转换,且用户使用的是BIG5码,使用write2函数输出
-//		2)	否则,使用 write函数直接输出
-//		3)	将新加的字符串放到缓冲区中
-//	其中0是文件描述符,已经被映射到socket管道的输出
-void output(char *s,int len)
+/**
+ * Put a byte into output buffer.
+ * @param ch byte to put.
+ */
+static void put_raw_ch(int ch)
 {
-	/* Invalid if len >= OBUFSIZE */
+	outbuf.buf[outbuf.size++] = ch;
+	if (outbuf.size == sizeof(outbuf.buf))
+		oflush();
+}
 
-	register int size;
-	register char *data;
-	size = obufsize;
-	data = outbuf;
-	if (size + len> OBUFSIZE) {
+/**
+ * Put a byte into output buffer. Do translation if needed.
+ * @param ch byte to put.
+ */
+void ochar(int ch)
+{
+	int convert = 0;
 #ifdef ALLOWSWITCHCODE
-		if(convcode)
-		write2(0, data, size);
-		else
-#endif
-		write(0, data, size);
-		size = len;
+		convert = 0;
+#endif // ALLOWSWITCHCODE
+	if (convert) {
+		ch = convert_g2b(ch);
+		while (ch > 0) {
+			put_raw_ch(ch);
+			ch = convert_g2b(-1);
+		}
 	} else {
-		data += size;
-		size += len;
+		put_raw_ch(ch);
 	}
-	memcpy(data, s, len);
-	obufsize = size;
 }
 
-// 输出一个字符?
-void ochar(register int c)
+/**
+ * Put bytes into output buffer.
+ * @param str pointer to the first byte.
+ * @param size bytes to output.
+ * @note IAC is not handled.
+ */
+void output(const unsigned char *str, int size)
 {
-	register char *data;
-	register int size;
-	data = outbuf;
-	size = obufsize;
-
-	if (size> OBUFSIZE - 2) { /* doin a oflush */
+	int convert = 0;
 #ifdef ALLOWSWITCHCODE
-		if(convcode) write2(0, data, size);
-		else
-#endif
-		write(0, data, size);
-		size = 0;
+	convert = convcode;
+#endif // ALLOWSWITCHCODE
+	if (convert) {
+		while (size-- > 0)
+			ochar(*str);
+	} else {
+		while (size > 0) {
+			int len = sizeof(outbuf.buf) - outbuf.size;
+			if (size > len) {
+				memcpy(outbuf.buf + outbuf.size, str, len);
+				oflush();
+				size -= len;
+				str += len;
+			} else {
+				memcpy(outbuf.buf + outbuf.size, str, size);
+				outbuf.size += size;
+				return;
+			}
+		}
 	}
-	data[size++] = c;
-	if (c == IAC) data[size++] = c;
-
-	obufsize = size;
 }
 
 static int i_newfd = 0;

@@ -96,11 +96,53 @@ enum {
 };
 
 /**
- * Convert big5 bytes to gbk bytes.
- * @param ch byte to convert. if ch < 0, test if there is second byte to 
- *        get.
- * @return the first byte of converted value, successive call will return 
- *         the second byte. -1 on error.
+ * Convert GB2312 bytes to BIG5 bytes.
+ * @param ch byte to convert. If ch < 0, test if there is second byte to get.
+ * @return the first byte of converted value. successive call will return
+ *         the second byte. original byte on error, -1 indicates a second
+ *         byte is needed.
+ */
+int convert_g2b(int ch)
+{
+	static int status = CONVERT_BEG, got, second;
+	int locate;
+
+	if (status != CONVERT_STR && ch < 0)
+		return -1;
+	switch (status) {
+		case CONVERT_BEG:
+			if (ch < 0xA1 || (ch > 0xA9 && ch < 0xB0) || ch > 0xF7) {
+				return ch;
+			} else {
+				got = ch;
+				status = CONVERT_GOT;
+				return -1;
+			}
+		case CONVERT_GOT:
+			status = CONVERT_STR;
+			if (ch < 0xA0 || ch == 0xFF) {
+				second = ch;
+				return got;
+			}
+			if (got > 0xA0 && got < 0xAA)
+				locate = (got - 0xA1) * 94 + (ch - 0xA1) * 2;
+			else
+				locate = (got - 0xB0 + 9) * 94 + (ch - 0xA1) * 2;
+			second = g2b[locate];
+			return g2b[locate++];
+		case CONVERT_STR:
+			status = CONVERT_BEG;
+			return second;
+		default:
+			return -1;
+	}
+}
+
+/**
+ * Convert BIG5 bytes to GBK bytes.
+ * @param ch byte to convert. if ch < 0, test if there is second byte to get.
+ *         the second byte. original byte on error, -1 indicates a second
+ *         byte is needed.
  */
 int convert_b2g(int ch)
 {
@@ -119,15 +161,15 @@ int convert_b2g(int ch)
 				return -1;
 			}
 		case CONVERT_GOT:
+			status = CONVERT_STR;
 			if (ch >= 0x40 && ch <= 0x7E)
 				locate = ((got - 0xA1) * 157 + (ch - 0x40)) * 2;
 			else if (ch >= 0xA1 && ch <= 0xFE)
 				locate = ((got - 0xA1) * 157 + (ch - 0xA1) + 63) * 2;
 			else {
-				status = CONVERT_BEG;
-				return -1;
+				second = ch;
+				return got;
 			}
-			status = CONVERT_STR;
 			second = b2g[locate + 1];
 			return b2g[locate];
 		case CONVERT_STR:

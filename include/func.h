@@ -116,6 +116,7 @@ void update_endline(void);
 #ifdef ALLOWSWITCHCODE
 void switch_code(void);
 int resolve_gbkbig5_table(void);
+int convert_g2b(int ch);
 int convert_b2g(int ch);
 #endif // ALLOWSWITCHCODE
 
