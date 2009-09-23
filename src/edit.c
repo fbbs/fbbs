@@ -928,18 +928,6 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	while (p != NULL) {
 		struct textline *v = p->next;
 		if (aborted != -1) {
-			//comment by iamfat 2002.08.17
-			//½«ÐÞ¸Ä·ÅÔÚÎÄÕÂ×îºó, ºÍwww·½Ê½Í³Ò»ÆðÀ´
-			/*
-			 if (  uinfo.mode != EDIT||p != can_edit_end->prev ||
-			 ( ADD_EDITMARK && strncmp(p->data,"[m[1;36m¡ù ÐÞ¸Ä:¡¤",17))){
-			 if (p->next != NULL || p->data[0] != '\0')fprintf(fp, "%s\n", p->data);
-			 }  
-			 if( p == can_edit_end->prev && uinfo.mode == EDIT && ADD_EDITMARK){
-			 fprintf(fp,
-			 "[m[1;36m¡ù ÐÞ¸Ä:¡¤%s ì¶ %16.16s ÐÞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s][m\n",
-			 currentuser.userid, datestring + 6, currentuser.lasthost);
-			 }*/
 			if (ADD_EDITMARK && strncmp(p->data, "[m[1;36m¡ù ÐÞ¸Ä:¡¤", 17))
 				fprintf(fp, "%s\n", p->data);
 		}
@@ -949,9 +937,9 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	//added by iamfat 2002.08.17
 	extern char fromhost[];
 	if (aborted != -1 && uinfo.mode == EDIT && ADD_EDITMARK) {
-		fprintf(fp,
-				"\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %16.16s ÐÞ¸Ä±¾ÎÄ¡¤[FROM: %-.20s]\033[m\n",
-				currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, mask_host(fromhost));
+		fprintf(fp, "\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %22.22s¡¤[FROM: %-.20s]"
+				"\033[m\n", currentuser.userid,
+				getdatestring(time(NULL), DATE_ZH), mask_host(fromhost));
 	}
 	//added end
 	if ((uinfo.mode==POSTING||uinfo.mode==SMAIL||uinfo.mode==EDIT)
