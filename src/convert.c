@@ -65,30 +65,6 @@ int resolve_gbkbig5_table(void)
 	return 0;
 }
 
-//	将str字符串中的GB码汉字转换成相应的BIG5码汉字,并调用write函数输出
-int write2(int port, char *str, int len)
-{
-	register int i, locate;
-	register unsigned char ch1, ch2, *ptr;
-
-	for(i=0, ptr=str; i < len;i++) {
-		ch1 = (ptr+i)[0];
-		if(ch1 < 0xA1 || (ch1> 0xA9 && ch1 < 0xB0) || ch1> 0xF7)
-		continue;
-		ch2 = (ptr+i)[1];
-		i ++;
-		if(ch2 < 0xA0 || ch2 == 0xFF )
-		continue;
-		if((ch1> 0xA0) && (ch1 < 0xAA)) //01～09区为符号数字
-		locate = ((ch1 - 0xA1)*94 + (ch2 - 0xA1))*2;
-		else //if((buf > 0xAF) && (buf < 0xF8)){ //16～87区为汉字
-		locate = ((ch1 - 0xB0 + 9)*94 + (ch2 - 0xA1))*2;
-		(ptr+i-1)[0] = g2b[locate++];
-		(ptr+i-1)[1] = g2b[locate];
-	}
-	return write(port, str, len);
-}
-
 enum {
 	CONVERT_BEG,
 	CONVERT_GOT,
@@ -125,11 +101,11 @@ int convert_g2b(int ch)
 				return got;
 			}
 			if (got > 0xA0 && got < 0xAA)
-				locate = (got - 0xA1) * 94 + (ch - 0xA1) * 2;
+				locate = ((got - 0xA1) * 94 + (ch - 0xA1)) * 2;
 			else
-				locate = (got - 0xB0 + 9) * 94 + (ch - 0xA1) * 2;
-			second = g2b[locate];
-			return g2b[locate++];
+				locate = ((got - 0xB0 + 9) * 94 + (ch - 0xA1)) * 2;
+			second = g2b[locate + 1];
+			return g2b[locate];
 		case CONVERT_STR:
 			status = CONVERT_BEG;
 			return second;

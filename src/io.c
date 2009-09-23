@@ -88,7 +88,7 @@ void ochar(int ch)
 {
 	int convert = 0;
 #ifdef ALLOWSWITCHCODE
-		convert = 0;
+		convert = convcode;
 #endif // ALLOWSWITCHCODE
 	if (convert) {
 		ch = convert_g2b(ch);
@@ -115,7 +115,7 @@ void output(const unsigned char *str, int size)
 #endif // ALLOWSWITCHCODE
 	if (convert) {
 		while (size-- > 0)
-			ochar(*str);
+			ochar(*str++);
 	} else {
 		while (size > 0) {
 			int len = sizeof(outbuf.buf) - outbuf.size;
