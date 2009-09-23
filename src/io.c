@@ -313,7 +313,7 @@ static int igetch(void)
 		switch (ch) {
 			case IAC:
 				ch = iac_handler();
-				continue;
+				break;
 			case KEY_ESC:
 				ch = esc_handler();
 				break;
@@ -322,6 +322,7 @@ static int igetch(void)
 				continue;
 			case '\r':
 				ch = '\n';
+				cr = true;
 				break;
 			case '\n':
 				if (cr) {
@@ -340,8 +341,6 @@ static int igetch(void)
 #endif // ALLOWSWITCHCODE
 				break;
 		}
-		if (ch == '\r')
-			cr = true;
 		break;
 	}
 	return ch;
