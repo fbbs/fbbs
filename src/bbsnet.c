@@ -75,6 +75,7 @@ void telnet_opt(int fd, int command, int option)
 		case TELOPT_ECHO:
 			res[1] = telnet_response(command, false);
 			res[2] = option;
+			write(fd, res, 3);
 			break;
 		case TELOPT_TTYPE:
 			res[1] = telnet_response(command, true);
@@ -106,6 +107,10 @@ void telnet_proxy(int fd, const unsigned char *buf, int size)
 	const unsigned char *end = buf + size, *last = buf;
 	while (buf != end) {
 		switch (status) {
+			case TELST_END:
+				last = buf;
+				status = TELST_NOR;
+				// No break here.
 			case TELST_NOR:
 				if (*buf == IAC) {
 					status = TELST_IAC;
@@ -413,7 +418,7 @@ void proc(char *hostname, char *server, int port)
 		if (result <= 0)
 			break;
 		if (FD_ISSET(0, &readfds)) {
-			result = read(0, buf, 2048);
+			result = read(0, buf, sizeof(buf));
 			if (result<=0)
 				break;
 			if (result==1&&(buf[0]==10||buf[0]==13)) {
@@ -427,7 +432,7 @@ void proc(char *hostname, char *server, int port)
 			}
 			write(fd, buf, result);
 		} else {
-			result=read(fd, buf, 2048);
+			result=read(fd, buf, sizeof(buf));
 			if (result <= 0)
 				break;
 			telnet_proxy(fd, buf, result);
