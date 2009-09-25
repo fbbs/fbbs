@@ -304,7 +304,7 @@ static int esc_handler(void)
  * Get next byte from stdin, with special byte interpreted.
  * @return next byte from stdin
  */
-static int igetch(void)
+int igetch(void)
 {
 	static bool cr = 0;
 	int ch;
