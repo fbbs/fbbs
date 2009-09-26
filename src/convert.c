@@ -2,18 +2,19 @@
 
 #ifdef ALLOWSWITCHCODE
 
-#define B2G_TABLE "etc/b2g_table"
-#define G2B_TABLE "etc/g2b_table"
+#define B2G_TABLE "etc/b2g_table"  ///< BIG5 to GB2312 table.
+#define G2B_TABLE "etc/g2b_table"  ///< GB2312 to BIG5 table.
 
 enum {
-	G2B_COUNT = 7614,  ///< Count of characters in g2b table
-	B2G_COUNT = 13973, ///< Count of characters in b2g table
+	G2B_COUNT = 7614,  ///< Count of characters in g2b table.
+	B2G_COUNT = 13973, ///< Count of characters in b2g table.
 };
 
 extern void redoscr();
 
-int convcode = 0;
-static unsigned char *g2b, *b2g;
+int convcode = 0;  ///< Whether to convert between BIG5 and GB2312.
+static unsigned char *g2b;  ///< the starting address of mapped g2b table.
+static unsigned char *b2g;  ///< the starting address of mapped b2g table.
 
 /**
  * Revert convert option and redraw screen.
@@ -117,6 +118,7 @@ int convert_g2b(int ch)
 /**
  * Convert BIG5 bytes to GBK bytes.
  * @param ch byte to convert. if ch < 0, test if there is second byte to get.
+ * @return the first byte of converted value. successive call will return
  *         the second byte. original byte on error, -1 indicates a second
  *         byte is needed.
  */
