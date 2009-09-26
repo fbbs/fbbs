@@ -614,8 +614,7 @@ void insertch_from_fp(int ch) {
 void insert_from_fp(FILE *fp)
 {
 	// TODO: should change to mmap_open.
-	mmap_t m = {fileno(fp), O_RDWR, LOCK_EX, 
-			PROT_READ | PROT_WRITE, MAP_SHARED};
+	mmap_t m = {fileno(fp), O_RDONLY, LOCK_SH, PROT_READ, MAP_SHARED};
 	BBS_TRY {
 		if (mmap_open_fd(&m) == 0) {
 			char *data = m.ptr;
