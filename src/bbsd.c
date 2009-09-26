@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 	umask(S_IWGRP | S_IWOTH);
 
 	// Log pid to PID_FILE.
-	sprintf(buf, "%d %d\n", port, getpid());
+	sprintf(buf, "%d\n", getpid());
 	unlink(PID_FILE);
 	file_append(PID_FILE, buf);
 
