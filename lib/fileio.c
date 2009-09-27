@@ -10,14 +10,18 @@
 
 static int rm_dir();
 
-// Append 'msg' to file 'fpath'.
-// Return 0 on success, -1 on error.
-int file_append(const char *fpath, const char *msg)
+/**
+ * Append to file.
+ * @param file file name.
+ * @param msg a NUL terminated string.
+ * @return 0 on success, -1 on error.
+ */
+int file_append(const char *file, const char *msg)
 {
-	if (fpath == NULL || msg == NULL)
+	if (file == NULL || msg == NULL)
 		return -1;
-	int fd;
-	if ((fd = open(fpath, O_WRONLY | O_CREAT | O_APPEND, 0644)) != -1) {
+	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	if (fd != -1) {
 		if (flock(fd, LOCK_EX) == -1) {
 			close(fd);
 			return -1;
@@ -29,22 +33,56 @@ int file_append(const char *fpath, const char *msg)
 	return 0;
 }
 
-// Returns 1 if 'fname' exists and is a regular file, 0 otherwise.
-int dashf(const char *fname)
+/**
+ * Write given bytes to file.
+ * @param fd file handle.
+ * @param buf starting address of the buffer.
+ * @param size bytes to write.
+ * @return 0 on success, -1 on error.
+ */
+int safer_write(int fd, const void *buf, int size)
 {
-	if (fname == NULL)
-		return 0;
-	struct stat st;
-	return (stat(fname, &st) == 0 && S_ISREG(st.st_mode));
+	int cc, sz = size;
+	const char *bp = buf;
+
+	do {
+		cc = write(fd, bp, sz);
+		if ((cc < 0) && (errno != EINTR)) {
+			report("safer_write() err!", "");
+			return -1;
+		}
+		if (cc > 0) {
+			bp += cc;
+			sz -= cc;
+		}
+	} while (sz > 0);
+	return 0;
 }
 
-// Returns 1 if 'fname' exists and is a directory, 0 otherwise.
-int dashd(const char *fname)
+/**
+ * Check whether given file is a regular file.
+ * @param file file name.
+ * @return 1 if file exists and is a regular file, 0 otherwise.
+ */
+int dashf(const char *file)
 {
-	if (fname == NULL)
+	if (file == NULL)
 		return 0;
 	struct stat st;
-	return (stat(fname, &st) == 0 && S_ISDIR(st.st_mode));
+	return (stat(file, &st) == 0 && S_ISREG(st.st_mode));
+}
+
+/**
+ * Check whether given file is a directory.
+ * @param file file name (directory path).
+ * @return 1 if file exists and is a directory, 0 otherwise.
+ */
+int dashd(const char *file)
+{
+	if (file == NULL)
+		return 0;
+	struct stat st;
+	return (stat(file, &st) == 0 && S_ISDIR(st.st_mode));
 }
 
 /* mode == O_EXCL / O_APPEND / O_TRUNC */

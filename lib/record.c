@@ -7,30 +7,13 @@
 
 USE_TRY;
 
-//	循环写字符到文件，直到写入size个字节
-//	origsz,bp是多余的？
-static int safewrite(int fd, const void *buf, int size)
-{
-	int cc, sz = size, origsz = size;
-	const void *bp = buf;
-
-	do {
-		cc = write(fd, bp, sz);
-		if ((cc < 0) && (errno != EINTR)) {
-			report("safewrite err!", "");
-			return -1;
-		}
-		if (cc > 0) {
-			bp += cc;
-			sz -= cc;
-		}
-	} while (sz > 0);
-	return origsz;
-}
-
-//	若文件filename不存在,返回-1
-//	否则返回filename中存放的记录数
-long get_num_records(const char *filename, const int size)
+/**
+ * Get number of records in file.
+ * @param file file name.
+ * @param size bytes of a record.
+ * @return number of records in file on success, -1 on error.
+ */
+long get_num_records(const char *filename, int size)
 {
 	struct stat st;
 	if (stat(filename, &st) == -1)
@@ -49,7 +32,7 @@ int append_record(const char *filename, const void *record, int size)
 	}
 	FLOCK(fd, LOCK_EX);
 	lseek(fd, 0, SEEK_END);
-	if (safewrite(fd, record, size) == -1)
+	if (safer_write(fd, record, size) == -1)
 		report("apprec write err!", "");
 	FLOCK(fd, LOCK_UN);
 	close(fd);
@@ -223,15 +206,8 @@ int substitute_record(char *filename, void *rptr, int size, int id)
 		close(fd);
 		return -1;
 	}
-	//由infotech修改,去掉safewrite的判断,以后调试时可以再增加
-	//if (safewrite(fd, rptr, size) != size)
-	safewrite(fd, rptr, size);
-	//bbslog("user", "%s", "subrec write err");
-	/*
-	 * change by KCN
-	 * flock(fd,LOCK_UN) ;
-	 */
 
+	safer_write(fd, rptr, size);
 	ldata.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &ldata);
 	close(fd);

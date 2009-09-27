@@ -20,9 +20,10 @@ typedef int (*RECORD_FUNC_ARG)(void *, void *);
 typedef int (*apply_func_t)(void *, int, void *);
 
 //fileio.c
-int file_append(const char *fpath, const char *msg);
-int dashf(const char *fname);
-int dashd(const char *fname);
+int file_append(const char *file, const char *msg);
+int safer_write(int fd, const void *buf, int size);
+int dashf(const char *file);
+int dashd(const char *file);
 int part_cp(char *src, char *dst, char *mode);
 int f_cp(const char *src, const char *dst, int mode);
 int f_ln(const char *src, const char *dst);
@@ -58,7 +59,7 @@ int brc_clear(int ent, const char *direct, int clearall);
 void brc_zapbuf(int *zbuf);
 
 //record.c
-long get_num_records(const char *filename, const int size);
+long get_num_records(const char *filename, int size);
 int append_record(const char *filename, const void *record, int size);
 int get_record(char *filename, void *rptr, int size, int id);
 int get_records(const char *filename, void *rptr, int size, int id,
