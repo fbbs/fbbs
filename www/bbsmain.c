@@ -132,7 +132,7 @@ int main(void)
 			ret = BBS_ENOURL;
 		} else {
 			if (loginok)
-				u_info->mode = set_web_mode(app->mode);
+				u_info->mode = get_web_mode(app->mode);
 			ret = (*(app->func)) ();
 		}
 		check_bbserr(ret);

@@ -150,7 +150,7 @@ bool is_web_user(int mode)
  * @param mode user mode.
  * @return correspoding web mode.
  */
-int set_web_mode(int mode)
+int get_web_mode(int mode)
 {
 	return (mode | WWW);
 }
