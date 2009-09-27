@@ -30,6 +30,8 @@ int bbsqry_main(void)
 		fputs("</nick>", stdout);
 		
 		// TODO: mail, logout, identity
+	} else {
+		printf("<bbsqry p='%s' u='%s'>", get_permission(), currentuser.userid);
 	}
 	printf("</bbsqry>");
 	return 0;
