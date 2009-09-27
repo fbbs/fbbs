@@ -104,53 +104,59 @@ int get_records(const char *filename, void *rptr, int size, int id,
 
 #ifndef THREAD_C
 
-//	对名为filename的记录文件执行fptr函数
-int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
-		int applycopy, int reverse)
+/**
+ * Apply function to records.
+ * @param file name of the file that holds all records.
+ * @param func function to be applied.
+ * @param size the length of a record, in bytes.
+ * @param arg parameters to be passed to func.
+ * @param copy whether to apply function to a copy of the original record.
+ * @param reverse whether to apply functions in reverse order.
+ * @param lock whether to lock the file. Choose 'false' when 'file' is a 
+ *        fixed-length shared resource, 'true' otherwise.
+ * @return 0 on success, -1 on error.
+ */
+int apply_record(const char *file, apply_func_t func, int size,
+			void *arg, bool copy, bool reverse, bool lock)
 {
-	void *buf1, *buf2 = NULL;
-	int i;
-	int count;
+	void *ptr, *buf = NULL;
+	int count, i;
 	mmap_t m;
 
-	BBS_TRY {
-		// TODO: is nolock safe here?
-		m.oflag = O_RDONLY;
-		if (mmap_open(filename, &m) < 0)
-			BBS_RETURN(0);
-		mmap_lock(&m, LOCK_UN);
-		count = m.size / size; //记录的数目
-		if (reverse)
-			buf1 = (char *)m.ptr + (count - 1) * size;
-		else
-			buf1 = m.ptr;
-		for (i = 0; i < count; i++) {
-			if (applycopy) {
-				buf2 = malloc(size);
-				memcpy(buf2, buf1, size);
-			} else {
-				buf2 = buf1;
-			}
-			if ((*fptr) (buf2, reverse ? count - i : i + 1, arg) == QUIT) {
-				//执行函数fptr,buf为缓冲区首地址,arg为第三参数
-				mmap_close(&m); //终止内存映射,本来没加锁,
-				//现在不需要解锁
-				if (applycopy)
-					free(buf2);
-				BBS_RETURN(QUIT);
-			}
-			if (reverse)
-				buf1 -= size;
-			else
-				buf1 += size;
-		}
-	}
-	BBS_CATCH {
-	}
-	BBS_END mmap_close(&m);
+	if (copy)
+		buf = malloc(size);
+	if (buf == NULL)
+		return -1;
 
-	if (applycopy)
-		free(buf2);
+	m.oflag = O_RDONLY;
+	if (mmap_open(file, &m) < 0)
+		return -1;
+	if (!lock)
+		mmap_lock(&m, LOCK_UN);
+	count = m.size / size;
+	if (reverse)
+		ptr = (char *)m.ptr + (count - 1) * size;
+	else
+		ptr = m.ptr;
+	for (i = 0; i < count; ++i) {
+		if (copy)
+			memcpy(buf, ptr, size);
+		else
+			buf = ptr;
+		if ((*func)(buf, reverse ? count - i : i + 1, arg) == QUIT) {
+			mmap_close(&m);
+			if (copy)
+				free(buf);
+			return 0;
+		}
+		if (reverse)
+			ptr = (char *)ptr - size;
+		else
+			ptr = (char *)ptr + size;
+	}
+	mmap_close(&m);
+	if (copy)
+		free(buf);
 	return 0;
 }
 

@@ -822,7 +822,7 @@ int mailtoall(int mode, char *fname)
 	/********使用apply_record函数中的void *args参数传递共享文件的文件名*********/
 	mailmode = mode;
 	if (apply_record(PASSFILE, mailto, sizeof(struct userec),
-			(char*)fname , 0, 0) == -1) {
+			(char*)fname , 0, 0, false) == -1) {
 		prints("No Users Exist");
 		pressreturn();
 		return 0;
@@ -834,7 +834,7 @@ Show_Users() {
 	usercounter = 0;
 	modify_user_mode(LAUSERS);
 	printuent((struct userec *) NULL);
-	if (apply_record(PASSFILE, printuent, sizeof(struct userec), 0, 0, 0)
+	if (apply_record(PASSFILE, printuent, sizeof(struct userec), 0, 0, 0, false)
 			== -1) {
 		prints("No Users Exist");
 		pressreturn();

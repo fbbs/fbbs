@@ -1,6 +1,8 @@
 #ifndef FB_LIBBBS_H
 #define FB_LIBBBS_H
 
+#include <stdbool.h>
+
 //mmap.c
 typedef struct {
 	int fd;       // file descriptor
@@ -15,7 +17,7 @@ typedef struct {
 
 //record.c
 typedef int (*RECORD_FUNC_ARG)(void *, void *);
-typedef int (*APPLY_FUNC_ARG)(void *, int, void *);
+typedef int (*apply_func_t)(void *, int, void *);
 
 //fileio.c
 int file_append(const char *fpath, const char *msg);
@@ -60,8 +62,8 @@ int append_record(const char *filename, const void *record, int size);
 int get_record(char *filename, void *rptr, int size, int id);
 int get_records(const char *filename, void *rptr, int size, int id,
 		int number);
-int apply_record(char *filename, APPLY_FUNC_ARG fptr, int size, void *arg,
-		int applycopy, int reverse);
+int apply_record(const char *file, apply_func_t func, int size,
+			void *arg, bool copy, bool reverse, bool lock);
 int search_record(char *filename, void *rptr, int size,
 		RECORD_FUNC_ARG fptr, void *farg);
 int substitute_record(char *filename, void *rptr, int size, int id);

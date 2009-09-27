@@ -441,7 +441,7 @@ int mk_result(int num) {
 		pressanykey();
 	}
 	(void) memset(result, 0, sizeof(result));
-	if (apply_record(fname, count_result, sizeof(struct ballot), NULL, 0, 0)
+	if (apply_record(fname, count_result, sizeof(struct ballot), NULL, 0, 0, true)
 			== -1) {
 		report("Vote apply flag error", currentuser.userid);
 	}
@@ -1137,7 +1137,7 @@ int Show_Votes() {
 	printvote(NULL, 0, NULL);
 	setcontrolfile();
 	if (apply_record(controlfile, printvote, sizeof(struct votebal), NULL, 0,
-			0) == -1) {
+			0, true) == -1) {
 		prints("错误，没有投票箱开启....");
 		pressreturn();
 		return 0;
