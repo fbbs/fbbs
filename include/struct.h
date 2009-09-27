@@ -90,6 +90,7 @@ struct override {
 	char id[13];
 	char exp[40];
 };
+typedef struct override override_t;
 
 struct boardheader { /* This structure is used to hold data in */
 	char filename[STRLEN - 8]; /* the BOARDS files */

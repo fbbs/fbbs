@@ -30,6 +30,7 @@ int bbsccc_main(void);
 int bbsfav_main(void);
 int bbspstmail_main(void);
 int bbssndmail_main(void);
+int bbsfall_main(void);
 
 struct cgi_applet {
 	char *name;
@@ -66,6 +67,7 @@ static struct cgi_applet applets[] = {
 		{ "fav", bbsfav_main},
 		{ "pstmail", bbspstmail_main},
 		{ "sndmail", bbssndmail_main},
+		{ "fall", bbsfall_main},
 		{ NULL, NULL }
 };
 

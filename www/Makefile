@@ -8,7 +8,7 @@ CFILES  = libweb.c bbsmain.c bbssec.c \
 		  bbspst.c bbssnd.c bbsqry.c bbsclear.c bbsupload.c bbspreupload.c \
 		  bbs0an.c bbsanc.c bbsnot.c bbsmail.c bbsmailcon.c \
 		  bbsdelmail.c bbstcon.c bbsmybrd.c bbserr.c bbsbrdadd.c bbsccc.c \
-		  bbsfav.c bbspstmail.c bbssndmail.c
+		  bbsfav.c bbspstmail.c bbssndmail.c bbsfall.c
 COBJS   = $(CFILES:.c=.o)
 DEPS    = $(CFILES:.c=.d)
 TARGET  = bbswebd
