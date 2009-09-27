@@ -371,8 +371,8 @@ extern char fromhost[60];
 
 int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, int doTalk)
 {
-	int i, num;
-	char col[14];
+	int i, num, mode, idle;
+	const char *col;
 
 	resolve_utmp();
 	num = 0;
@@ -392,14 +392,17 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 				continue;
 			if (num == 1)
 				prints("Ä¿Ç° %s ×´Ì¬ÈçÏÂ£º\n", uentp->userid);
+			mode = get_raw_mode(uentp->mode);
 			if (uentp->invisible)
-				strcpy(col, "[Òþ][1;36m");
-			else if (uentp->mode == POSTING || uentp->mode == MARKET)
-				strcpy(col, "[1;32m");
-			else if (uentp->mode == FIVE || uentp->mode == BBSNET)
-				strcpy(col, "[1;33m");
+				col = "[Òþ]\033[1;30m";
+			else if (mode == POSTING || mode == MARKET)
+				col = "\033[1;32m";
+			else if (mode == FIVE || mode == BBSNET)
+				col = "\033[1;33m";
+			else if (is_web_user(uentp->mode))
+				col = "\033[1;36m";
 			else
-				strcpy(col, "[1m");
+				strcpy(col, "\033[1m");
 			char *host;
 			if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
 				host = uentp->from;
@@ -410,10 +413,15 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 					host = mask_host(uentp->from);
 			}
 			if (doTalk) {
-				prints("(%d) ×´Ì¬£º%s%-10s[m£¬À´×Ô£º%.20s\n", num, col,
+				prints("(%d) ×´Ì¬£º%s%-10s\033[m£¬À´×Ô£º%.20s\n", num, col,
 						mode_type(uentp->mode), host);
 			} else {
-				prints("%s%-10s[m ", col, mode_type(uentp->mode));
+				prints("%s%s\033[m", col, mode_type(uentp->mode));
+				idle = (time(NULL) - uentp->idle_time) / 60;
+				if (idle >= 1)
+					prints("[%d] ", idle);
+				else
+					prints("    ");
 				if ((num) % 5 == 0)
 					outc('\n');
 			}

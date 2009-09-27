@@ -3,13 +3,22 @@
 #include <stdbool.h>
 
 /**
+ * Get raw user mode.
+ * @return user mode without web mask.
+ */
+int get_raw_mode(int mode)
+{
+	return (mode & 0x3fffffff);
+}
+
+/**
  * Get descriptions of user mode.
  * @param mode user mode.
  * @return a string describing the mode.
  */
 const char *mode_type(int mode)
 {
-	switch (mode & 0x3fffffff) {
+	switch (get_raw_mode(mode)) {
 		case IDLE:
 			return "无所事事";
 		case NEW:
@@ -154,3 +163,4 @@ int get_web_mode(int mode)
 {
 	return (mode | WWW);
 }
+

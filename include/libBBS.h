@@ -34,6 +34,7 @@ int f_rm(char *fpath);
 void _mmdecode(unsigned char *str);
 
 //modetype.c
+int get_raw_mode(int mode);
 const char *mode_type(int mode);
 bool is_web_user(int mode);
 int get_web_mode(int mode);
