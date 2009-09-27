@@ -184,7 +184,7 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 			return -1;
 		}
 		if (uin->mode == BBSNET ||uin->mode == LOCKSCREEN
-				|| uin->mode == GAME || uin->mode == PAGE
+				|| uin->mode == PAGE
 				|| uin->mode == FIVE || !canmsg(uin)) {
 			move(2, 0);
 			prints("目前无法传送讯息给对方.\n");
@@ -197,7 +197,7 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 		if (uentp->uid == usernum)
 			return 0;
 		uin = uentp;
-		if (uin->mode == BBSNET || uin->mode == GAME 
+		if (uin->mode == BBSNET
 				|| uin->mode == PAGE || uin->mode == LOCKSCREEN 
 				|| uin->mode == FIVE || (mode != 2 && !canmsg(uin))) //add mode!=2 by quickmouse
 			return 0;

@@ -411,9 +411,9 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 			}
 			if (doTalk) {
 				prints("(%d) ×´Ì¬£º%s%-10s[m£¬À´×Ô£º%.20s\n", num, col,
-						ModeType(uentp->mode), host);
+						mode_type(uentp->mode), host);
 			} else {
-				prints("%s%-10s[m ", col, ModeType(uentp->mode));
+				prints("%s%-10s[m ", col, mode_type(uentp->mode));
 				if ((num) % 5 == 0)
 					outc('\n');
 			}
@@ -607,7 +607,7 @@ int count_useshell(struct user_info *uentp) {
 		return 0;
 	if (uentp->mode == SYSINFO	|| uentp->mode == DICT
 		|| uentp->mode == BBSNET || uentp->mode == FIVE
-		|| uentp->mode == GAME 	|| uentp->mode == LOGIN)
+		|| uentp->mode == LOGIN)
 		count++;
 	return 1;
 }
@@ -788,7 +788,7 @@ struct user_info *userinfo;
 	}
 	if (uin.mode == SYSINFO || uin.mode == BBSNET
 			|| uin.mode == DICT || uin.mode == ADMIN
-			|| uin.mode == LOCKSCREEN || uin.mode == GAME
+			|| uin.mode == LOCKSCREEN
 			|| uin.mode == PAGE
 			|| uin.mode == FIVE || uin.mode == LOGIN) {
 		move(2, 0);
@@ -1548,7 +1548,7 @@ struct user_info *uentp;
 		ovv = YEA;
 		else
 		ovv = NA;
-		sprintf(ubuf, "%s%-12.12s %s%-10.10s[m", (ovv) ? "[1;32m¡Ì" : "  ", user_record[i]->userid, (user_record[i]->invisible == YEA) ? "[1;34m" : "",ModeType(user_record[i]->mode));
+		sprintf(ubuf, "%s%-12.12s %s%-10.10s[m", (ovv) ? "[1;32m¡Ì" : "  ", user_record[i]->userid, (user_record[i]->invisible == YEA) ? "[1;34m" : "",mode_type(user_record[i]->mode));
 		//modestring(user_record[i]->mode, user_record[i]->destuid, 0, NULL));
 		prints("%s", ubuf);
 		if ((i + 1) % 3 == 0)

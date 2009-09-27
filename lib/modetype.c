@@ -1,8 +1,14 @@
 #include "config.h"
 #include "modes.h"
+#include <stdbool.h>
 
-// 返回模式mode所对应的中文名称
-char *ModeType(int mode) {
+/**
+ * Get descriptions of user mode.
+ * @param mode user mode.
+ * @return a string describing the mode.
+ */
+const char *mode_type(int mode)
+{
 	switch (mode) {
 		case IDLE:
 			return "无所事事";
@@ -49,13 +55,11 @@ char *ModeType(int mode) {
 		case CHAT2:
 			return "燕园夜话";
 		case CHAT1:
-			return "燕圆夜话";
+			return "燕园夜话";
 		case LAUSERS:
 			return "探视网友";
 		case XMENU:
 			return "系统资讯";
-		case VOTING:
-			return "投票";
 		case BBSNET:
 #ifdef FDQUAN
 			return "有泉穿梭";
@@ -66,8 +70,6 @@ char *ModeType(int mode) {
 			return "编辑个人档";
 		case EDITSFILE:
 			return "动手动脚";
-		case GAME:
-			return "脑力激汤";
 		case SYSINFO:
 			return "检查系统";
 		case DICT:
@@ -89,7 +91,7 @@ char *ModeType(int mode) {
 		case EDITANN:
 			return "编修精华";
 		case LOOKMSGS:
-			return "察看讯息";
+			return "查看讯息";
 		case WFRIEND:
 			return "寻人名册";
 		case WNOTEPAD:
@@ -124,17 +126,19 @@ char *ModeType(int mode) {
 			return "星空战斗鸡";
 		case GOODWISH:
 			return "给朋友祝福";
-			/*2003.04.22 added by stephen*/
 		case GIVEUPBBS:
 			return "戒网中";
-			/*2003.04.22 stephen add end*/
-			/* added by roly */
-		case WWW:
-			return "WWW浏览";
-		case 10002:
-			return "JABBER";
-			/* added end */
 		default:
-			return "去了那里!?";
+			return "去了哪里!?";
 	}
+}
+
+/**
+ * Get whether user is web browsing.
+ * @param mode user mode.
+ * @return true if web browsing, false otherwise.
+ */
+bool is_web_user(int mode)
+{
+	return (mode & WWW);
 }

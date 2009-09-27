@@ -374,7 +374,7 @@ int do_userlist() {
 							: (uentp->mode==POSTING||uentp->mode==MARKET) ? "[32m"
 									: ((uentp->mode==FIVE||uentp->mode
 											==BBSNET) ? "[33m" : ""),
-					ModeType(uentp->mode),
+					mode_type(uentp->mode),
 #ifdef SHOW_IDLE_TIME
 					idle_str(uentp));
 #else

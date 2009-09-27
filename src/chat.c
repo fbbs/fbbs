@@ -615,7 +615,7 @@ int printuserent(struct user_info *uentp) {
 
 	sprintf(pline, " %s%-13s[m%c%-10.10s",
 			myfriend(uentp->userid) ? "[1;32m" : "", uentp->userid,
-			uentp->invisible ? '#' : ' ', ModeType(uentp->mode) );
+			uentp->invisible ? '#' : ' ', mode_type(uentp->mode) );
 	//modestring(uentp->mode, uentp->destuid, 0, NULL));
 	if (cnt < 2)
 		strcat(pline, "©¦");
@@ -812,7 +812,7 @@ int print_friend_ent(struct user_info * uentp)//print one user & status if he is
 		return 0;
 
 	sprintf(pline, " %-13s%c%-10s", uentp->userid, uentp->invisible ? '#'
-			: ' ', ModeType(uentp->mode) );
+			: ' ', mode_type(uentp->mode) );
 	//modestring(uentp->mode, uentp->destuid, 0, NULL));
 	if (cnt < 2)
 		strcat(pline, "©¦");

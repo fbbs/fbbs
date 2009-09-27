@@ -33,7 +33,8 @@ int f_rm(char *fpath);
 void _mmdecode(unsigned char *str);
 
 //modetype.c
-char *ModeType(int mode);
+const char *mode_type(int mode);
+bool is_web_user(int mode);
 
 //string.c
 char *strtolower(char *dst, const char *src);
