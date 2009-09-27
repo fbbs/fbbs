@@ -112,22 +112,6 @@ int
 myfriend(uid)
 int uid;
 {
-
-	/*	char    f_userid[13];
-	 struct override tmp;
-	 char    buf[STRLEN];
-	 memset(&tmp, 0, sizeof(tmp));
-	 
-	 strcpy(f_userid,get_userid(uid));
-	 setuserfile(buf, "friends");
-	 if(friend_search(uid, &uinfo, uinfo.fnum))
-	 {
-	 if(search_record(buf, &tmp, sizeof(tmp), cmpfnames, f_userid))
-	 strcpy(fexp,tmp.exp);
-	 return YEA;
-	 
-	 }	
-	 else return NA;*/
 	return friend_search(uid, &uinfo, uinfo.fnum);
 }
 

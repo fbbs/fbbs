@@ -16,7 +16,7 @@ typedef struct {
 } mmap_t;
 
 //record.c
-typedef int (*RECORD_FUNC_ARG)(void *, void *);
+typedef int (*record_func_t)(void *, void *);
 typedef int (*apply_func_t)(void *, int, void *);
 
 //fileio.c
@@ -67,13 +67,13 @@ int get_records(const char *filename, void *rptr, int size, int id,
 		int number);
 int apply_record(const char *file, apply_func_t func, int size,
 			void *arg, bool copy, bool reverse, bool lock);
-int search_record(char *filename, void *rptr, int size,
-		RECORD_FUNC_ARG fptr, void *farg);
+int search_record(const char *file, void *rptr, int size, record_func_t func,
+		void *arg);
 int substitute_record(char *filename, void *rptr, int size, int id);
 int delete_record(const char *file, int size, int id,
-		RECORD_FUNC_ARG check, void *arg);
+		record_func_t check, void *arg);
 int delete_range(char *filename, int id1, int id2);
-int insert_record(const char *file, int size, RECORD_FUNC_ARG check, void *arg);
+int insert_record(const char *file, int size, record_func_t check, void *arg);
 
 //pass.c
 char *genpasswd(const char *pw);

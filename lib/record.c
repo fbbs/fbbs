@@ -142,36 +142,34 @@ int apply_record(const char *file, apply_func_t func, int size,
 	return 0;
 }
 
-/*---   End of Addition     ---*/
-/* search_record进行了预读优化,以减少系统调用次数,提高速度. ylsdd, 2001.4.24 */
-/* COMMAN : use mmap to improve search speed */
-//	在filename文件中搜索 比较函数为fptr,欲搜索记录为farg
-//	搜索长度为O(n)可以考虑改进
-int search_record(char *filename, void *rptr, int size,
-		RECORD_FUNC_ARG fptr, void *farg)
+/**
+ * Search records in file (linear).
+ * @param file file name.
+ * @param rptr ptr to store record hit.
+ * @param size record length in bytes.
+ * @param func search criterion.
+ * @param arg parameters to func.
+ * @return record number (1-based) on success, 0 on error.
+ */
+int search_record(const char *file, void *rptr, int size, record_func_t func,
+		void *arg)
 {
-	int i;
-	void *buf1;
 	mmap_t m;
-
-	BBS_TRY {
-		// TODO: is nolock safe here?
-		m.oflag = O_RDONLY;
-		if (mmap_open(filename, &m) < 0)
-			BBS_RETURN(0);
-		for (i = 0, buf1 = m.ptr; i < m.size / size; i++, buf1 += size) {
-			if ((*fptr) (farg, buf1)) {
-				if (rptr)
-					memcpy(rptr, buf1, size);
-				mmap_close(&m);
-				BBS_RETURN(i + 1);
-			}
+	m.oflag = O_RDONLY;
+	if (mmap_open(file, &m) < 0)
+		return 0;
+	int i, count = m.size / size;
+	const char *buf;
+	for (i = 0; i < count; ++i) {
+		if ((*func)(arg, buf)) {
+			if (rptr != NULL)
+				memcpy(rptr, buf, size);
+			mmap_close(&m);
+			return i + 1;
 		}
+		buf += size;
 	}
-	BBS_CATCH {
-	}
-	BBS_END mmap_close(&m);
-
+	mmap_close(&m);
 	return 0;
 }
 
@@ -217,7 +215,7 @@ int substitute_record(char *filename, void *rptr, int size, int id)
 }
 
 int delete_record(const char *file, int size, int id,
-		RECORD_FUNC_ARG check, void *arg)
+		record_func_t check, void *arg)
 {
 	mmap_t m;
 	int ret;
@@ -256,7 +254,7 @@ int delete_record(const char *file, int size, int id,
 	return ret;
 }
 
-int insert_record(const char *file, int size, RECORD_FUNC_ARG check, void *arg)
+int insert_record(const char *file, int size, record_func_t check, void *arg)
 {
 	if (check == NULL || arg == NULL)
 		return -1;
