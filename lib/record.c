@@ -123,9 +123,7 @@ int apply_record(const char *file, apply_func_t func, int size,
 	int count, i;
 	mmap_t m;
 
-	if (copy)
-		buf = malloc(size);
-	if (buf == NULL)
+	if (copy && (buf = malloc(size)) == NULL)
 		return -1;
 
 	m.oflag = O_RDONLY;
