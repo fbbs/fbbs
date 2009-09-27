@@ -311,7 +311,7 @@ int kick_user( struct user_info *userinfo )
       }
       return 0;
    }
-     if (uin.mode == WWW ) {
+     if (is_web_user(uin.mode)) {
 	 	bbskill(&uin, SIGABRT);
      }
      else {

@@ -1,4 +1,6 @@
 #include "libweb.h"
+#include <sys/types.h>
+#include <unistd.h>
 
 void check_bbserr(int err);
 int bbssec_main(void);
@@ -32,57 +34,61 @@ int bbspstmail_main(void);
 int bbssndmail_main(void);
 int bbsfall_main(void);
 
-struct cgi_applet {
-	char *name;
-	int (*func) (void);
+typedef struct {
+	char *name;          ///< name of the cgi.
+	int (*func) (void);  ///< handler function.
+	int mode;            ///< user mode. @see mode_type
+} web_handler_t;
+
+static web_handler_t applets[] = {
+		{"sec", bbssec_main, READBRD},
+		{"all", bbsall_main, READBRD},
+		{"boa", bbsboa_main, READNEW},
+		{"login", bbslogin_main, LOGIN},
+		{"logout", bbslogout_main, MMENU},
+		{"doc", bbsdoc_main, READING},
+		{"con", bbscon_main, READING},
+		{"pst", bbspst_main, POSTING},
+		{"snd", bbssnd_main, POSTING},
+		{"qry", bbsqry_main, QUERY},
+		{"clear", bbsclear_main, READING},
+		{"upload", bbsupload_main, BBSST_UPLOAD},
+		{"preupload", bbspreupload_main, BBSST_UPLOAD},
+		{"0an", bbs0an_main, DIGEST},
+		{"anc", bbsanc_main, DIGEST},
+		{"not", bbsnot_main, READING},
+		{"mail", bbsmail_main, RMAIL},
+		{"mailcon", bbsmailcon_main, RMAIL},
+		{"delmail", bbsdelmail_main, RMAIL},
+		{"gdoc", bbsgdoc_main, READING},
+		{"tdoc" ,bbstdoc_main, READING},
+		{"gcon", bbsgcon_main, READING},
+		{"tcon", bbstcon_main, READING},
+		{"mybrd", bbsmybrd_main, READING},
+		{"brdadd", bbsbrdadd_main, READING},
+		{"ccc", bbsccc_main, POSTING},
+		{"fav", bbsfav_main, READING},
+		{"pstmail", bbspstmail_main, SMAIL},
+		{"sndmail", bbssndmail_main, SMAIL},
+		{"fall", bbsfall_main, FRIEND},
+		{NULL, NULL, 0}
 };
 
-static struct cgi_applet applets[] = {
-		{ "sec", bbssec_main },
-		{ "all", bbsall_main },
-		{ "boa", bbsboa_main },
-		{ "login", bbslogin_main},
-		{ "logout", bbslogout_main},
-		{ "doc", bbsdoc_main},
-		{ "con", bbscon_main},
-		{ "pst", bbspst_main},
-		{ "snd", bbssnd_main},
-		{ "qry", bbsqry_main},
-		{ "clear", bbsclear_main},
-		{ "upload", bbsupload_main},
-		{ "preupload", bbspreupload_main},
-		{ "0an", bbs0an_main},
-		{ "anc", bbsanc_main},
-		{ "not", bbsnot_main},
-		{ "mail", bbsmail_main},
-		{ "mailcon", bbsmailcon_main},
-		{ "delmail", bbsdelmail_main},
-		{ "gdoc", bbsgdoc_main},
-		{ "tdoc" ,bbstdoc_main},
-		{ "gcon", bbsgcon_main},
-		{ "tcon", bbstcon_main},
-		{ "mybrd", bbsmybrd_main},
-		{ "brdadd", bbsbrdadd_main},
-		{ "ccc", bbsccc_main},
-		{ "fav", bbsfav_main},
-		{ "pstmail", bbspstmail_main},
-		{ "sndmail", bbssndmail_main},
-		{ "fall", bbsfall_main},
-		{ NULL, NULL }
-};
-
-static struct cgi_applet *getapplet(char *buf, size_t len)
+/**
+ * Get an web request handler according to its name.
+ * @return handler pointer if found, NULL otherwise.
+ */
+static web_handler_t *getapplet(void)
 {
 	char *surl = getenv("SCRIPT_NAME");
 	if(surl == NULL)
 		return NULL;
-	strlcpy(buf, surl, len);
-	char *result = strrchr(buf, '/');
+	char *result = strrchr(surl, '/');
 	if (result == NULL)
-		result = buf;
+		result = surl;
 	else
 		result++;	
-	struct cgi_applet *app = applets;
+	web_handler_t *app = applets;
 	while (app->name != NULL) {
 		if (!strcmp(result, app->name))
 			return app;
@@ -114,19 +120,19 @@ static int fcgi_init_all(void)
 
 int main(void)
 {
-	char buf[STRLEN];
-
 	if (fcgi_init_all() < 0) {
 		check_bbserr(BBS_EINTNL);
 		return 1;
 	}
 	while (FCGI_Accept() >= 0) {
 		fcgi_init_loop();
-		struct cgi_applet *app = getapplet(buf, sizeof(buf));
+		web_handler_t *app = getapplet();
 		int ret;
 		if (app == NULL) {
 			ret = BBS_ENOURL;
 		} else {
+			if (loginok)
+				u_info->mode = set_web_mode(app->mode);
 			ret = (*(app->func)) ();
 		}
 		check_bbserr(ret);

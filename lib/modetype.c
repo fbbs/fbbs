@@ -9,7 +9,7 @@
  */
 const char *mode_type(int mode)
 {
-	switch (mode) {
+	switch (mode & 0x3fffffff) {
 		case IDLE:
 			return "无所事事";
 		case NEW:
@@ -128,6 +128,8 @@ const char *mode_type(int mode)
 			return "给朋友祝福";
 		case GIVEUPBBS:
 			return "戒网中";
+		case BBSST_UPLOAD:
+			return "上传文件";
 		default:
 			return "去了哪里!?";
 	}
@@ -141,4 +143,14 @@ const char *mode_type(int mode)
 bool is_web_user(int mode)
 {
 	return (mode & WWW);
+}
+
+/**
+ * Get web mode.
+ * @param mode user mode.
+ * @return correspoding web mode.
+ */
+int set_web_mode(int mode)
+{
+	return (mode | WWW);
 }

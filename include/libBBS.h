@@ -36,6 +36,7 @@ void _mmdecode(unsigned char *str);
 //modetype.c
 const char *mode_type(int mode);
 bool is_web_user(int mode);
+int set_web_mode(int mode);
 
 //string.c
 char *strtolower(char *dst, const char *src);

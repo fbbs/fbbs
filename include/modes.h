@@ -62,6 +62,7 @@ enum {
 	CHICKEN = 68,
 	GOODWISH = 69,
 	GIVEUPBBS = 70,
+	BBSST_UPLOAD = 71,
 	WWW = 0x40000000,
 };
 #endif // FB_MODES_H

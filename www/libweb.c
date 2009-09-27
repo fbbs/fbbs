@@ -384,7 +384,7 @@ int user_init(struct userec *x, struct user_info **y)
 			|| (*y)->utmpkey != key
 			|| (*y)->active == 0
 			|| (*y)->userid[0] == '\0'
-			|| (*y)->mode != WWW) {
+			|| !is_web_user((*y)->mode)) {
 		*y = NULL;
 		return 0;
 	}

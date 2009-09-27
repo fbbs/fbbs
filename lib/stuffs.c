@@ -58,7 +58,7 @@ int bbskill(const struct user_info *user, int sig)
 		return -1;
 
 	if (user->pid > 0) {
-		if (user->mode != WWW) {
+		if (is_web_user(user->mode)) {
 			return kill(user->pid, sig);
 		} else {
 			// Since web users have no forked processes,
