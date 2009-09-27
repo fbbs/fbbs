@@ -33,6 +33,8 @@ int bbsfav_main(void);
 int bbspstmail_main(void);
 int bbssndmail_main(void);
 int bbsfall_main(void);
+int bbsfadd_main(void);
+int bbsfdel_main(void);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -70,7 +72,9 @@ static web_handler_t applets[] = {
 		{"fav", bbsfav_main, READING},
 		{"pstmail", bbspstmail_main, SMAIL},
 		{"sndmail", bbssndmail_main, SMAIL},
-		{"fall", bbsfall_main, FRIEND},
+		{"fall", bbsfall_main, GMENU},
+		{"fadd", bbsfadd_main, GMENU},
+		{"fdel", bbsfdel_main, GMENU},
 		{NULL, NULL, 0}
 };
 
