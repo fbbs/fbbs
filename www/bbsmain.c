@@ -1,9 +1,7 @@
 #include "libweb.h"
 
 void check_bbserr(int err);
-int bbsleft_main(void);
 int bbssec_main(void);
-int bbsfoot_main(void);
 int bbsall_main(void);
 int bbsboa_main(void);
 int bbslogin_main(void);
@@ -39,9 +37,7 @@ struct cgi_applet {
 };
 
 static struct cgi_applet applets[] = {
-		{ "left", bbsleft_main },
 		{ "sec", bbssec_main },
-		{ "foot", bbsfoot_main },
 		{ "all", bbsall_main },
 		{ "boa", bbsboa_main },
 		{ "login", bbslogin_main},

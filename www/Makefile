@@ -3,7 +3,7 @@ CGIPATH = /home/httpd/fcgi
 HTMPATH = /home/httpd/
 
 CC      = gcc
-CFILES  = libweb.c bbsmain.c bbsleft.c bbssec.c bbsfoot.c \
+CFILES  = libweb.c bbsmain.c bbssec.c \
 		  bbsall.c bbsboa.c bbslogin.c bbslogout.c bbsdoc.c bbscon.c \
 		  bbspst.c bbssnd.c bbsqry.c bbsclear.c bbsupload.c bbspreupload.c \
 		  bbs0an.c bbsanc.c bbsnot.c bbsmail.c bbsmailcon.c \
