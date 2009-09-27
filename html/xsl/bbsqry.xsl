@@ -12,18 +12,18 @@
 
 	<xsl:template match='bbsqry'>
 		<div id='user'>
-			<p><strong><xsl:value-of select='@id' /></strong> (<strong><xsl:value-of select='nick' /></strong>) <xsl:call-template name='show-horo'/></p>
-			<p>上次在:[<span class='a132'><xsl:value-of select='@lastlogin' />]</span> 从[<span class='a132'><xsl:value-of select='ip' /></span>] 到本站一游。</p>
-			<p>文章数:[<span class='a132'><xsl:value-of select='@post' /></span>] 生命力:[<span class='a132'><xsl:value-of select='@hp' /></span>]</p> 
-			<p>表现值:[<span class='a133'><xsl:value-of select='@perf' /></span>]</p>
-			<div>经验值:[<xsl:call-template name="show-exp" />] (<xsl:value-of select='@level * 10 + @repeat' />/120)</div>
+			<p><strong><xsl:value-of select='@id' /></strong> （<strong><xsl:value-of select='nick' /></strong>） <xsl:call-template name='show-horo'/></p>
+			<p>上次在:【<span class='a132'><xsl:value-of select='@lastlogin' />】</span>从【<span class='a132'><xsl:value-of select='ip' /></span>】到本站一游。</p>
+			<p>文章数:【<span class='a132'><xsl:value-of select='@post' /></span>】 生命力:【<span class='a132'><xsl:value-of select='@hp' /></span>】</p> 
+			<p>表现值:【<span class='a133'><xsl:value-of select='@perf' /></span>】</p>
+			<div>经验值:【<xsl:call-template name="show-exp" />】 (<xsl:value-of select='@level * 10 + @repeat' />/120)</div>
 		</div>
 	</xsl:template>
 	
 	<xsl:template name='show-horo'>
 		<xsl:if test='@horo'>
 			<xsl:variable name='color'><xsl:choose><xsl:when test='gender = "M"'>a136</xsl:when><xsl:when test='gender = "F"'>a135</xsl:when><xsl:otherwise>a132</xsl:otherwise></xsl:choose></xsl:variable>
-			<span>[</span><span><xsl:attribute name='class'><xsl:value-of select='$color' /></xsl:attribute><xsl:value-of select='@horo' /></span><span>]</span>
+			<span>【</span><span><xsl:attribute name='class'><xsl:value-of select='$color' /></xsl:attribute><xsl:value-of select='@horo' /></span><span>】</span>
 		</xsl:if>
 	</xsl:template>
 	
