@@ -4,8 +4,13 @@
 #include <ctype.h>
 #include <time.h>
 
-// Convert string 'src' to lowercase and store it in 'dst'.
-// Caller should ensure the capacity of 'dst' is no less than 'src'.
+/**
+ * Convert string to lower case.
+ * @param dst result string.
+ * @param src the string to convert.
+ * @return the converted string.
+ * @note 'dst' should have enough space to hold 'src'.
+ */
 char *strtolower(char *dst, const char *src) {
 	char *ret = dst;
 
@@ -17,8 +22,13 @@ char *strtolower(char *dst, const char *src) {
 	return ret;	
 }
 
-// Convert string 'src' to uppercase and store it in 'dst'.
-// Caller should ensure the capacity of 'dst' is no less than 'src'.
+/**
+ * Convert string to upper case.
+ * @param dst result string.
+ * @param src the string to convert.
+ * @return the converted string.
+ * @note 'dst' should have enough space to hold 'src'.
+ */
 char *strtoupper(char *dst, const char *src) {
 	char *ret = dst;
 
