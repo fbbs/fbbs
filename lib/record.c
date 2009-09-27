@@ -13,30 +13,31 @@ USE_TRY;
  * @param size bytes of a record.
  * @return number of records in file on success, -1 on error.
  */
-long get_num_records(const char *filename, int size)
+long get_num_records(const char *file, int size)
 {
 	struct stat st;
-	if (stat(filename, &st) == -1)
+	if (stat(file, &st) == -1)
 		return 0;
 	return (st.st_size / size);
 }
 
-//增加一个记录，大小为size,首地址为record
-//	文件名为filename
-int append_record(const char *filename, const void *record, int size)
+/**
+ * Append a record to file.
+ * @param file file name.
+ * @param record starting address of record to append.
+ * @param size bytes of a record.
+ * @return 0 on success, -1 on error.
+ */
+int append_record(const char *file, const void *record, int size)
 {
-	int fd;
-	if ((fd = open(filename, O_WRONLY | O_CREAT, 0644)) == -1) {
-		report("open file error in append_record()", "");
+	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	if (fd < 0)
 		return -1;
-	}
-	FLOCK(fd, LOCK_EX);
-	lseek(fd, 0, SEEK_END);
-	if (safer_write(fd, record, size) == -1)
-		report("apprec write err!", "");
-	FLOCK(fd, LOCK_UN);
+	flock(fd, LOCK_EX);
+	int ret = safer_write(fd, record, size);
+	flock(fd, LOCK_UN);
 	close(fd);
-	return 0;
+	return ret;
 }
 
 //取得记录的句柄,并存放在rptr中

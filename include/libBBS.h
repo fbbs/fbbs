@@ -59,8 +59,8 @@ int brc_clear(int ent, const char *direct, int clearall);
 void brc_zapbuf(int *zbuf);
 
 //record.c
-long get_num_records(const char *filename, int size);
-int append_record(const char *filename, const void *record, int size);
+long get_num_records(const char *file, int size);
+int append_record(const char *file, const void *record, int size);
 int get_record(char *filename, void *rptr, int size, int id);
 int get_records(const char *filename, void *rptr, int size, int id,
 		int number);
