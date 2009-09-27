@@ -159,7 +159,7 @@ int search_record(const char *file, void *rptr, int size, record_func_t func,
 	if (mmap_open(file, &m) < 0)
 		return 0;
 	int i, count = m.size / size;
-	const char *buf;
+	const char *buf = m.ptr;
 	for (i = 0; i < count; ++i) {
 		if ((*func)(arg, buf)) {
 			if (rptr != NULL)
