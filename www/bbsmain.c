@@ -122,6 +122,10 @@ static int fcgi_init_all(void)
 	return 0;
 }
 
+/**
+ * The main entrance of bbswebd.
+ * @return 0 on success, 1 on initialization error.
+ */
 int main(void)
 {
 	if (fcgi_init_all() < 0) {
@@ -135,8 +139,10 @@ int main(void)
 		if (app == NULL) {
 			ret = BBS_ENOURL;
 		} else {
-			if (loginok)
+			if (loginok) {
 				u_info->mode = get_web_mode(app->mode);
+				u_info->idle_time = time(NULL);
+			}
 			ret = (*(app->func)) ();
 		}
 		check_bbserr(ret);
