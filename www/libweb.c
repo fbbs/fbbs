@@ -263,43 +263,47 @@ const char *get_referer(void)
  * @param s string to print
  * @param size maximum output bytes. If 0, print until NUL is encountered.
  * @param stream output stream
- * @note '<' => "&lt;" '&' => "&amp;" '>' => "&gt;" '\\033' => ">1b".
+ * @note '<' => "&lt;" '&' => "&amp;" '>' => "&gt;" '\\033' => ">1b"
+ *       '\r' => ""
  *       ESC('\\033') is not allowed in XML 1.0. We have to use a workaround 
  *       for compatibility with ANSI escape sequences.
  */
 void xml_fputs2(const char *s, size_t size, FILE *stream)
 {
-	// To fit FastCGI prototypes..
-	char *c = (char *)s;
+	char *c = (char *)s; // To fit FastCGI prototypes..
 	char *last = c;
 	char *end = c + size;
+	char *subst;
 	if (size == 0)
 		end = NULL;
 	while (c != end && *c != '\0') {
 		switch (*c) {
 			case '<':
-				fwrite(last, sizeof(char), c - last, stream);
-				fwrite("&lt;", sizeof(char), 4, stream);
-				last = ++c;
+				subst = "&lt;";
 				break;
 			case '>':
-				fwrite(last, sizeof(char), c - last, stream);
-				fwrite("&gt;", sizeof(char), 4, stream);
-				last = ++c;
+				subst = "&gt;";
 				break;
 			case '&':
-				fwrite(last, sizeof(char), c - last, stream);
-				fwrite("&amp;", sizeof(char), 5, stream);
-				last = ++c;
+				subst = "&amp;";
 				break;
 			case '\033':
-				fwrite(last, sizeof(char), c - last, stream);
-				fwrite(">1b", sizeof(char), 3, stream);
-				last = ++c;
+				subst = ">1b";
+				break;
+			case '\r':
+				subst = "";
 				break;
 			default:
-				++c;
+				subst = NULL;
 				break;
+		}
+		if (subst != NULL) {
+			fwrite(last, sizeof(char), c - last, stream);
+			while (*subst != '\0')
+				fputc(*subst++, stream);
+			last = ++c;
+		} else {
+			++c;
 		}
 	}
 	fwrite(last, sizeof(char), c - last, stream);
@@ -330,7 +334,7 @@ int xml_printfile(const char *file, FILE *stream)
 	m.oflag = O_RDONLY;
 	if (mmap_open(file, &m) < 0)
 		return -1;
-	xml_fputs((char *)m.ptr, stream);
+	xml_fputs2((char *)m.ptr, m.size, stream);
 	mmap_close(&m);
 	return 0;
 }
