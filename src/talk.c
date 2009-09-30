@@ -394,7 +394,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 				prints("目前 %s 状态如下：\n", uentp->userid);
 			mode = get_raw_mode(uentp->mode);
 			if (uentp->invisible)
-				col = "[隐]\033[1;30m";
+				col = "\033[1;30m";
 			else if (mode == POSTING || mode == MARKET)
 				col = "\033[1;32m";
 			else if (mode == FIVE || mode == BBSNET)

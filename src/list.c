@@ -354,10 +354,10 @@ int do_userlist() {
 							: pagerchar(hisfriend(uentp), uentp->pager),
 					msgchar(uentp),
 					(uentp->invisible == YEA) ? '@' : ' ',
-					(uentp->invisible == YEA) ? "[36m"
-							: (uentp->mode==POSTING||uentp->mode==MARKET) ? "[32m"
+					(uentp->invisible == YEA) ? "\033[1;30m"
+							: (uentp->mode==POSTING||uentp->mode==MARKET) ? "\033[32m"
 									: ((uentp->mode==FIVE||uentp->mode
-											==BBSNET) ? "[33m" : ""),
+											==BBSNET) ? "\033[33m" : ""),
 					mode_type(uentp->mode),
 #ifdef SHOW_IDLE_TIME
 					idle_str(uentp));
