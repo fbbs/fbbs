@@ -1,46 +1,41 @@
 #include "libweb.h"
-FILE *fp;
 
-int main() {
-	FILE *fp;
-	char *ptr, plan[256], buf[10000];
-   	init_all();
-
-	/* added by roly  2002.05.10 去掉cache */
-	printf("<meta http-equiv=\"pragma\" content=\"no-cache\">");
-	/* add end */
-
-	if(!loginok) http_fatal("匆匆过客不能设置说明档，请先登录");
-	sprintf(plan, "home/%c/%s/plans", toupper(currentuser.userid[0]), currentuser.userid);
-	if(!strcasecmp(getparm("type"), "update")) save_plan(plan);
-	printf("<b><font style='font-size: 18pt'>%s</font> · %s 设置个人说明档</b> \n", currentuser.userid, BBSNAME);
-	printf("<center>\n");
-	printpretable_lite();
-   	printf("<form method=post action=bbsplan?type=update>\n");
-	fp=fopen(plan, "r");
-	if(fp) {
-		fread(buf, 9999, 1, fp);
-		ptr=strcasestr_gbk(buf, "<textarea>");
-		if(ptr) ptr[0]=0;
-		fclose(fp);
+static int edit_user_file(const char *file, const char *desc, const char *submit)
+{
+	if (!loginok)
+		return BBS_ELGNREQ;
+	char buf[HOMELEN];
+	sethomefile(buf, currentuser.userid, file);
+	parse_post_data();
+	char *text = getparm("text");
+	if (*text != '\0') {
+		int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd < 0)
+			return BBS_EINTNL;
+		flock(fd, LOCK_EX);
+		safer_write(fd, text, strlen(text));
+		flock(fd, LOCK_UN);
+		close(fd);
+		xml_header("bbseufile");
+		printf("<bbseufile p='%s' u='%s' desc='%s'></bbseufile>",
+				get_permission(), currentuser.userid, desc);
+	} else {
+		xml_header("bbseufile");
+		printf("<bbseufile p='%s' u='%s' desc='%s' submit='%s'>",
+				get_permission(), currentuser.userid, desc, submit);
+		xml_printfile(buf, stdout);
+		printf("</bbseufile>");
 	}
-   	printf("<table width=610 border=0><tr><td>");
-   	printf("<textarea class=thinborder name=text rows=20 cols=80 nowrap>\n");
-	printf("%s",buf);
-   	printf("</textarea></table>\n");
-   	printf("<input type=submit value=存盘> ");
-   	printf("<input type=reset value=复原>\n");
-	printposttable_lite();
-   	printf("</center>\n");
-	http_quit();
+	return 0;
 }
 
-int save_plan(char *plan) {
-	char buf[10000];
-	fp=fopen(plan, "w");
-	strlcpy(buf, getparm("text"), 9999);
-	fprintf(fp, "%s", buf);
-	fclose(fp);
-	printf("个人说明档修改成功。");
-	http_quit();
+int bbsplan_main(void)
+{
+	return edit_user_file("plans", "编辑说明档", "plan");
 }
+
+int bbssig_main(void)
+{
+	return edit_user_file("signatures", "编辑签名档", "sig");
+}
+
