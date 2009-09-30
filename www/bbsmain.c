@@ -137,17 +137,13 @@ int main(void)
 		return 1;
 	}
 	while (FCGI_Accept() >= 0) {
-		fcgi_init_loop();
 		web_handler_t *app = getapplet();
 		int ret;
 		if (app == NULL) {
 			ret = BBS_ENOURL;
 		} else {
-			if (loginok) {
-				u_info->mode = get_web_mode(app->mode);
-				u_info->idle_time = time(NULL);
-			}
-			ret = (*(app->func)) ();
+			fcgi_init_loop(get_web_mode(app->mode));
+			ret = (*(app->func))();
 		}
 		check_bbserr(ret);
 	}

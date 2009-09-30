@@ -93,7 +93,6 @@ void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);
 int xml_printfile(const char *file, FILE *stream);
 
-int user_init(struct userec *x, struct user_info **y);
 void xml_header(const char *xslfile);
 void http_header(void);
 
@@ -110,6 +109,6 @@ time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
 char *get_permission(void);
-int fcgi_init_loop(void);
+int fcgi_init_loop(int mode);
 
 #endif  //FDUBBS_LIBWEB_H

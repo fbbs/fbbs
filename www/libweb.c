@@ -362,28 +362,35 @@ static int http_init(void)
 	return 0;
 }
 
-// Load user information from cookie.
-// If everything is OK, initializes *'x', 'y' and returns 1,
-// on error, set *'x' to 0, 'y' to NULL and returns 0.
-int user_init(struct userec *x, struct user_info **y)
+/**
+ * Load user information from cookie.
+ * If everything is OK, initializes @a x and @a y.
+ * Otherwise, @a x is cleared and @a y is set to NULL.
+ * @param[in,out] x pointer to user infomation struct.
+ * @param[in,out] y pointer to pointer to user online cache.
+ * @param[in] mode user mode.
+ * @return 1 on valid user login, 0 on error.
+ */
+ // TODO: no lock?
+static int user_init(struct userec *x, struct user_info **y, int mode)
 {
-	char id[IDLEN + 1];
-	int i, key;
-
 	memset(x, 0, sizeof(*x));
+
 	// Get information from cookie.
-	strlcpy(id, getparm("utmpuserid"), sizeof(id));
-	i = strtol(getparm("utmpnum"), NULL, 10);
-	key = strtol(getparm("utmpkey"), NULL, 10);
+	char *id = getparm("utmpuserid");
+	int i = strtol(getparm("utmpnum"), NULL, 10);
+	int key = strtol(getparm("utmpkey"), NULL, 10);
 
 	// Boundary check.
 	if (i <= 0 || i > MAXACTIVE) {
+		*y = NULL;
 		return 0;
 	}
 	// Get user_info from utmp.
 	(*y) = &(utmpshm->uinfo[i - 1]);
 
 	// Verify cookie and user status.
+	// TODO: magic number here. Lack IPv6 support.
 	if (strncmp((*y)->from, fromhost, 16)
 			|| (*y)->utmpkey != key
 			|| (*y)->active == 0
@@ -400,28 +407,31 @@ int user_init(struct userec *x, struct user_info **y)
 		return 0;
 	}
 
-	// Refresh idle time.
-	(*y)->idle_time = time(NULL);
-
 	// Get userec from ucache.
 	getuserbyuid(x, (*y)->uid);
 	if (strcmp(x->userid, id)) {
 		memset(x, 0, sizeof(*x));
+		*y = NULL;
 		return 0;
 	}
+
+	// Refresh idle time, set user mode.
+	(*y)->idle_time = time(NULL);
+	(*y)->mode = mode;
 
 	return 1;
 }
 
 /**
  * Initialization inside a FastCGI loop.
+ * @param mode user mode.
  * @return 0
  */
 // TODO: return value?
-int fcgi_init_loop(void)
+int fcgi_init_loop(int mode)
 {
 	http_init();
-	loginok = user_init(&currentuser, &u_info);
+	loginok = user_init(&currentuser, &u_info, mode);
 	return 0;
 }
 
