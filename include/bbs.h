@@ -30,7 +30,7 @@
 #include <dmalloc.h>
 #endif
 
-#include "config.h"             	/* User-configurable stuff */
+#include "site.h"             	/* User-configurable stuff */
 #include "functions.h"				/* you can enable functions that you want */
 #include "permissions.h"
 #include "libBBS.h"
