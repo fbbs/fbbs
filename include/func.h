@@ -3,6 +3,8 @@
 #ifndef FB_FUNC_H
 #define FB_FUNC_H
 
+#include "bbs.h"
+
 //uinfo.c
 char *cexpstr(int exp);
 #ifdef ALLOWGAME
@@ -103,6 +105,7 @@ int isclubmember(const char *member, const char *board);
 int hasreadperm(const struct userec *user, const struct boardheader *bp);
 bool haspostperm(const struct userec *user, const struct boardheader *bp);
 int junkboard(const struct boardheader *bp);
+bool is_board_dir(const struct boardheader *bp);
 
 //mail.c
 int check_maxmail(void);

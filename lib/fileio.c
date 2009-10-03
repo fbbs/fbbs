@@ -7,6 +7,7 @@
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "func.h"
 
 static int rm_dir();
 
@@ -56,6 +57,36 @@ int safer_write(int fd, const void *buf, int size)
 			sz -= cc;
 		}
 	} while (sz > 0);
+	return 0;
+}
+
+/**
+ * Restart version of close.
+ * If close is interrupted by a signal, restart.
+ * @param[in] fd file descriptor to close.
+ * @return 0 on success, -1 on error.
+ */
+int restart_close(int fd)
+{
+	while (close(fd) < 0) {
+		if (errno != EINTR)
+			return -1;
+	}
+	return 0;
+}
+
+/**
+ * Restart version of ftruncate.
+ * If ftruncate is interrupted by a signal, restart.
+ * @param[in] fd file descriptor to operate.
+ * @return 0 on success, -1 on error.
+ */
+int restart_ftruncate(int fd, off_t size)
+{
+	while (ftruncate(fd, size) < 0) {
+		if (errno != EINTR)
+			return -1;
+	}
 	return 0;
 }
 

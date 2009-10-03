@@ -159,7 +159,7 @@ int search_record(const char *file, void *rptr, int size, record_func_t func,
 	if (mmap_open(file, &m) < 0)
 		return 0;
 	int i, count = m.size / size;
-	const char *buf = m.ptr;
+	char *buf = m.ptr;
 	for (i = 0; i < count; ++i) {
 		if ((*func)(arg, buf)) {
 			if (rptr != NULL)
@@ -279,3 +279,86 @@ int insert_record(const char *file, int size, record_func_t check, void *arg)
 }
 
 #endif
+
+/**
+ * Linear search of an array.
+ * @param[in] key object to match.
+ * @param[in] base pointer to the initial member.
+ * @param[in] nmemb number of objects in the array.
+ * @param[in] size size of each object of the array.
+ * @param[in] compar the comparator, see ::comparator_t.
+ * @return a pointer to a matching member of the array, NULL if not found.
+ */
+void *lsearch(const void *key, const void *base, size_t nmemb, size_t size,
+		comparator_t compar)
+{
+	const char *ptr = base;
+	const char *end = ptr + nmemb * size;
+	while (ptr != end) {
+		if (!compar(key, ptr))
+			return ptr;
+		ptr += size;
+	}
+	return NULL;
+}
+
+/**
+ * Open file as record stream.
+ * @param[in] file file to open.
+ * @param[in] mode open mode (O_RDONLY, O_WRONLY, O_RDWR).
+ * @param[in,out] r pointer to a record stream.
+ * @return 0 on success, -1 on error.
+ */
+int record_open(const char *file, int mode, record_t *r)
+{
+	r->oflag = mode;
+	return mmap_open(file, r);
+}
+
+/**
+ * Close a record stream.
+ * @param[in] r pointer to a record stream.
+ * @return 0 on success, -1 on error.
+ */
+int record_close(record_t *r)
+{
+	return mmap_close(r);
+}
+
+/**
+ * Search for a specific record.
+ * @param[in] r pointer to a record stream.
+ * @param[in] key pointer to the object to match.
+ * @param[in] size size of each record.
+ * @param[in] method search method.
+ * @param[in] compar compare function.
+ * @return a pointer to a matching member of the array, NULL if not found.
+ */
+void *record_search(record_t *r, const void *key, size_t size,
+		search_method_t method, comparator_t compar)
+{
+	if (r == NULL || key == NULL || method == NULL)
+		return NULL;
+	return (*method)(key, r->ptr, r->size / size, size, compar);
+}
+
+/**
+ * Delete a specific record.
+ * @param[in,out] r pointer to a record stream.
+ * @param[in] ptr pointer to the record for deletion.
+ * @param[in] size record size.
+ * @return 0 on success, -1 on error.
+ */
+int record_delete(record_t *r, void *ptr, int size)
+{
+	if (r == NULL || ptr == NULL 
+			|| (r->oflag != O_RDWR && r->oflag != O_WRONLY))
+		return -1;
+	if (ptr < r->ptr || ((char *)ptr + size > (char *)(r->ptr) + r->size))
+		return -1;
+	memmove(ptr, (char *)ptr + size,
+			r->size - size - ((char *)ptr - (char *)r->ptr));
+	if (mmap_shrink(r, r->size - size) < 0)
+		return -1;
+	return 0;
+}

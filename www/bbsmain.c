@@ -37,6 +37,7 @@ int bbsfadd_main(void);
 int bbsfdel_main(void);
 int bbsplan_main(void);
 int bbssig_main(void);
+int bbsdel_main(void);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -79,6 +80,7 @@ static web_handler_t applets[] = {
 		{"fdel", bbsfdel_main, GMENU},
 		{"plan", bbsplan_main, EDITUFILE},
 		{"sig", bbssig_main, EDITUFILE},
+		{"del", bbsdel_main, READING},
 		{NULL, NULL, 0}
 };
 

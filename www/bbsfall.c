@@ -33,8 +33,13 @@ int bbsfall_main(void)
 static int cmpname(void *arg, void *buf)
 {
 	override_t *ov = (override_t *)buf;
-	report(ov->id, arg);
 	return !strncasecmp(arg, ov->id, sizeof(ov->id));
+}
+
+static int cmp_override(const void *key, const void *buf)
+{
+	override_t *ov = (override_t *)buf;
+	return strncasecmp(((override_t *)key)->id, ov->id, sizeof(ov->id));
 }
 
 int bbsfadd_main(void)
@@ -74,12 +79,17 @@ int bbsfdel_main(void)
 	if (*user != '\0') {
 		char file[HOMELEN];
 		sethomefile(file, currentuser.userid, "friends");
-		// TODO: be atomic
-		int del = search_record(file, NULL, sizeof(override_t), cmpname, user);
-		if (del > 0)
-			delete_record(file, sizeof(override_t), del, NULL, NULL);
+		record_t r;
+		if (record_open(file, O_RDWR, &r) < 0)
+			return BBS_EINTNL;
+		override_t key;
+		strlcpy(key.id, user, sizeof(key.id));
+		override_t *ptr =
+				record_search(&r, &key, sizeof(key), lsearch, cmp_override);
+		if (ptr != NULL)
+			record_delete(&r, ptr, sizeof(*ptr));
+		record_close(&r);
 	}
 	printf("Location: fall\n\n");
 	return 0;
 }
-

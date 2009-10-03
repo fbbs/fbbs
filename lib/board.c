@@ -114,3 +114,8 @@ int junkboard(const struct boardheader *bp)
 
 	return 0;
 }
+
+bool is_board_dir(const struct boardheader *bp)
+{
+	return (bp->flag & BOARD_DIR_FLAG);
+}

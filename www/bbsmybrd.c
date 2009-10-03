@@ -1,10 +1,5 @@
 #include "libweb.h"
 
-static bool is_dir(const struct boardheader *bp)
-{
-	return (bp->flag & BOARD_DIR_FLAG);
-}
-
 // TODO: Handle user-defined directories.
 static int read_submit(void)
 {
@@ -123,7 +118,7 @@ int bbsmybrd_main(void)
 		if (!hasreadperm(&currentuser, b))
 			continue;
 		printf("<brd bid='%d' desc='%s' %s/>", i + 1, b->title + 11,
-				is_dir(b) ? "dir='1'" : "");
+				is_board_dir(b) ? "dir='1'" : "");
 	}
 	printf("</bbsmybrd>");
 	return 0;	
