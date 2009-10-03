@@ -1,4 +1,4 @@
-AM_CFLAGS = -O2 -pipe -Wall -Wno-implicit -export
+AM_CFLAGS = @ENABLE_DEBUG@ -O2 -pipe -Wall -Wno-implicit -export
 AM_CPPFLAGS = -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I../include
 LIBS = -lncurses -lcrypt -ldl -lgd -lBBS
 AM_LDFLAGS = -L../lib
