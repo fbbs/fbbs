@@ -60,7 +60,6 @@
 #define NUMPERMS   (32)
 #ifdef FDQUAN
 #define MAXGUEST	80	   	/* 最多 guest 帐号上站个数 */
-#define QUERY_REALNAMES		//站务查询时,是否显示真实姓名
 #else
 #define MAXGUEST	500
 #endif

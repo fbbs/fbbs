@@ -711,17 +711,9 @@ void write_header(FILE *fp, int mode) {
 	strlcpy(uid, currentuser.userid, 20);
 	uid[19] = '\0';
 	if (in_mail)
-#if defined(MAIL_REALNAMES)
-		strlcpy(uname, currentuser.realname, NAMELEN);
-#else
 		strlcpy(uname, currentuser.username, NAMELEN);
-#endif
 	else
-#if defined(POSTS_REALNAMES)
-		strlcpy(uname, currentuser.realname, NAMELEN);
-#else
 		strlcpy(uname, currentuser.username, NAMELEN);
-#endif
 	uname[NAMELEN-1] = '\0';
 	save_title[STRLEN - 10] = '\0';
 	bp = getbcache(currboard);

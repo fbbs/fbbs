@@ -321,12 +321,7 @@ char *userid, *title;
 	}
 	close(fp);
 	strcpy(newmessage.filename, fname);
-#if defined(MAIL_REALNAMES)
-	sprintf(genbuf, "%s (%s)", currentuser.userid, currentuser.realname);
-#else
-	//sprintf(genbuf, "%s (%s)", currentuser.userid, currentuser.username);
 	sprintf(genbuf, "%s", currentuser.userid);
-#endif
 	strlcpy(newmessage.owner, genbuf, STRLEN);
 	sprintf(filepath, "mail/%c/%s/%s", toupper(userid[0]), userid, fname);
 
@@ -1149,12 +1144,7 @@ int filter;
 	fprintf(fout, "To: %s\n", receiver);
 	fprintf(fout, "Subject: %s\n", title);
 	fprintf(fout, "X-Forwarded-By: %s (%s)\n",
-			currentuser.userid,
-#ifdef MAIL_REALNAMES
-			currentuser.realname);
-#else
-	currentuser.username);
-#endif
+			currentuser.userid,	currentuser.username);
 
 	fprintf(fout, "X-Disclaimer: %s 对本信内容恕不负责。\n", BoardName);
 #ifdef SENDMAIL_MIME_AUTOCONVERT
@@ -1423,13 +1413,7 @@ char current_maillist;
 
 	s_current_maillist[0] = current_maillist;
 	in_mail = YEA;
-#if defined(MAIL_REALNAMES)
-	sprintf(genbuf, "%s (%s)", currentuser.userid, currentuser.realname);
-#else
-	//sprintf(genbuf, "%s (%s)", currentuser.userid, currentuser.username);
-	//modified by roly 02.03.29
 	sprintf(genbuf, "%s", currentuser.userid);
-#endif
 	header.reply_mode = NA;
 	strcpy(header.title, "没主题");
 	strcpy(header.ds, "寄信给一群人");
@@ -1524,11 +1508,7 @@ int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
 	if (!(lookupuser.userlevel & PERM_READMAIL))
 		return -3;
 	memset(&newmessage, 0, sizeof(newmessage));
-#if defined(MAIL_REALNAMES)
-	sprintf(genbuf, "%s (%s)", currentuser.userid, currentuser.realname);
-#else
 	sprintf(genbuf, "%s", currentuser.userid);
-#endif
 	strlcpy(newmessage.owner, genbuf, STRLEN);
 	strlcpy(newmessage.title, title, STRLEN);
 	strlcpy(save_title, newmessage.title, STRLEN);

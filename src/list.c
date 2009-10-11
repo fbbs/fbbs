@@ -756,11 +756,7 @@ struct userec *uentp;
 	prints(" %5d%2s%s%-12s%s %-17s %6d %4d %10s %-16s\n", i + 1,
 			(override) ? "¡Ì" : "",
 			(override) ? "[1;32m" : "", uentp->userid, (override) ? "[m" : "",
-#if defined(ACTS_REALNAMES)
-			HAS_PERM(PERM_USER) ? uentp->realname : uentp->username,
-#else
 			uentp->username,
-#endif
 #ifdef ALLOWGAME
 			(toggle2 == 0) ? (uentp->numlogins) : (toggle2 == 1) ? (uentp->numposts) : (uentp->money),
 			(toggle2 == 0) ? uentp->stay / 3600 : (toggle2 == 1) ? (uentp->nummedals) : uentp->nummails,

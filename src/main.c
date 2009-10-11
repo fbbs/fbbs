@@ -160,7 +160,6 @@ static void u_enter(void)
 	}
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	strlcpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
-	strlcpy(uinfo.realname, currentuser.realname, sizeof(uinfo.realname));
 	strlcpy(uinfo.username, currentuser.username, sizeof(uinfo.username));
 	getfriendstr();
 	getrejectstr();

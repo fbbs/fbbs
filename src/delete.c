@@ -75,13 +75,6 @@ int offline() {
 		clear();
 		return;
 	}
-	getdata(3, 0, "ÇëÎÊÄú½ĞÊ²÷áÃû×Ö? ", buf, NAMELEN, DOECHO, YEA);
-	if (*buf == '\0' || strcmp(buf, currentuser.realname)) {
-		prints("\n\nºÜ±§Ç¸, ÎÒ²¢²»ÈÏÊ¶Äú¡£\n");
-		pressreturn();
-		clear();
-		return;
-	}
 	clear();
 	//   move(1, 0);
 	//   prints("[1;5;31m¾¯¸æ[0;1;31m£º ×ÔÉ±áá, Äú½«ÎŞ·¨ÔÙÓÃ´ËÕÊºÅ½øÈë±¾Õ¾£¡£¡");
@@ -141,7 +134,6 @@ int getuinfo(FILE *fn) {
 	char buf[40];
 	fprintf(fn, "\n\nËûµÄ´úºÅ     : %s\n", currentuser.userid);
 	fprintf(fn, "ËûµÄêÇ³Æ     : %s\n", currentuser.username);
-	fprintf(fn, "ÕæÊµĞÕÃû     : %s\n", currentuser.realname);
 	fprintf(fn, "¾Ó×¡×¡Ö·     : %s\n", currentuser.address);
 	fprintf(fn, "µç×ÓÓÊ¼şĞÅÏä : %s\n", currentuser.email);
 	fprintf(fn, "ÕÊºÅ½¨Á¢ÈÕÆÚ : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));

@@ -603,10 +603,7 @@ void send_regmail(struct userec *trec) {
 		fprintf(fout, "您注册的 BBS ID  : %s\n", trec->userid);
 		fprintf(fout, "申请日期         : %s", ctime(&trec->firstlogin));
 		fprintf(fout, "登入来源         : %s\n", fromhost);
-		fprintf(fout, "您的真实姓名/昵称: %s (%s)\n", trec->realname,
-				trec->username);
 #ifdef CODE_VALID
-
 		sprintf(buf, "%s", (char *) genrandpwd((int) getpid()));
 		fprintf(fout, "注册码           : %s (请注意大小写)\n", buf);
 #endif
@@ -619,7 +616,6 @@ void send_regmail(struct userec *trec) {
 		fprintf(fout, "APPLICATION DATE : %s", ctime(&trec->firstlogin));
 		fprintf(fout, "LOGIN HOST       : %s\n", fromhost);
 		fprintf(fout, "YOUR NICK NAME   : %s\n", trec->username);
-		fprintf(fout, "YOUR NAME        : %s\n", trec->realname);
 #ifdef CODE_VALID
 
 		fprintf(fout, "VALID CODE       : %s (case sensitive)\n", buf);

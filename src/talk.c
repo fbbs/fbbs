@@ -568,9 +568,6 @@ char q_id[IDLEN + 2];
 	show_position(genbuf);
 	prints("身份: %s\n", genbuf);
 	t_search_ulist(&uin, t_cmpuids, tuid, YEA, NA);
-#if defined(QUERY_REALNAMES)
-	if (HAS_PERM(PERM_SYSOPS)) prints("真实姓名:%s \n", lookupuser.realname);
-#endif
 	show_user_plan(planid);
 
 	/*

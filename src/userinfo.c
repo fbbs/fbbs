@@ -62,7 +62,6 @@ void disply_userinfo(struct userec *u) {
 	prints("ÄúµÄ´úºÅ     : %-14s", u->userid);
 	prints("êÇ³Æ : %-20s", u->username);
 	prints("     ĞÔ±ğ : %s", (u->gender == 'M' ? "ÄĞ" : "Å®"));
-	prints("\nÕæÊµĞÕÃû     : %-40s", u->realname);
 	prints("  ³öÉúÈÕÆÚ : %d/%d/%d", u->birthmonth, u->birthday, u->birthyear
 			+ 1900);
 	prints("\n¾Ó×¡×¡Ö·     : %-38s", u->address);
@@ -225,25 +224,6 @@ void check_uinfo(struct userec *u, int MUST) {
 		filter_ff(ptr);
 		update_ulist(&uinfo, utmpent);
 	}
-	while (1) { // ¼ì²éÕæÊµĞÕÃû
-		changeIT = MUST || (strlen(u->realname) < 4) ||(strstr(
-				u->realname, "  "))||(strstr(u->realname, "¡¡"));
-		if (!changeIT) {
-			if (changed) {
-				pos += 2;
-				changed = 0;
-			}
-			break;
-		} else {
-			MUST = 0;
-			changed = 1;
-		}
-		move(pos, 0);
-		prints("ÇëÊäÈëÄúµÄÕæÊµĞÕÃû (Enter realname):\n");
-		getdata(pos+1, 0, "> ", u->realname, NAMELEN, DOECHO, YEA);
-		ptr = u->realname;
-		filter_ff(ptr);
-	}
 	while (1) { // ¼ì²éÍ¨Ñ¶µØÖ·
 		changeIT = MUST||(strlen(u->address)<10) ||(strstr(u->address,
 				"  "))||(strstr(u->address, "¡¡"));
@@ -263,43 +243,6 @@ void check_uinfo(struct userec *u, int MUST) {
 		ptr = u->address;
 		filter_ff(ptr);
 	}
-	/*
-	 while(1){ // ¼ì²éĞÅ¼şµØÖ·
-	 changeIT = MUST||(strchr(u->email, '@') == NULL);
-	 if(!changeIT) {
-	 #ifdef MAILCHECK      
-	 if(changed) { 
-	 pos += 4; 
-	 changed = 0; 
-	 }
-	 #else	 
-	 if(changed) { 
-	 pos += 3; 
-	 changed = 0; 
-	 }
-	 #endif
-	 break;
-	 } else { 
-	 MUST = 0; 
-	 changed = 1;	 
-	 }
-	 move(pos, 0);
-	 prints("µç×ÓĞÅÏä¸ñÊ½Îª: [1;37muserid@your.domain.name[m\n");
-	 #ifdef MAILCHECK      
-	 prints( "[32m±¾Õ¾ÒÑ¾­Ìá¹©[33mµç×ÓÓÊ¼ş×¢²á[32m¹¦ÄÜ, Äú¿ÉÒÔÍ¨¹ıµç×ÓÓÊ¼ş¿ìËÙµØÍ¨¹ı×¢²áÈÏÖ¤.[m\n");
-	 #endif
-	 prints("ÇëÊäÈëµç×ÓĞÅÏä (²»ÄÜÌá¹©Õß°´ <Enter>)");
-	 #ifdef MAILCHECK      
-	 getdata(pos+3,0,"> ",u->email,STRLEN-12,DOECHO, YEA);
-	 #else	 
-	 getdata(pos+2,0,"> ",u->email,STRLEN-12,DOECHO, YEA);
-	 #endif
-	 if (strchr(u->email, '@') == NULL) {
-	 sprintf(genbuf, "%s.bbs@%s", u->userid, BBSHOST);
-	 strncpy(u->email, genbuf, STRLEN-12);
-	 }
-	 }
-	 */
 	{ // ¼ì²éĞÔ±ğ
 		changeIT = MUST||(strchr("MF", u->gender) == NULL);
 		if (changeIT) {
@@ -432,16 +375,6 @@ int uinfo_query(struct userec *u, int real, int unum) {
 				filter_ff(ptr);
 				/* added end */
 			}
-			sprintf(genbuf, "ÕæÊµĞÕÃû [%s]: ", u->realname);
-			getdata(i++, 0, genbuf, buf, NAMELEN, DOECHO, YEA);
-			if (buf[0]) {
-				strlcpy(newinfo.realname, buf, NAMELEN);
-				/* added by money 04.04.20 for filter 0xff in all user data */
-				ptr = newinfo.realname;
-				filter_ff(ptr);
-				/* added end */
-			}
-
 			sprintf(genbuf, "¾Ó×¡µØÖ· [%s]: ", u->address);
 			getdata(i++, 0, genbuf, buf, STRLEN - 10, DOECHO, YEA);
 			if (buf[0]) {
@@ -720,7 +653,6 @@ void x_fillform() {
 
 	memset(&ri, 0, sizeof(ri));
 	strlcpy(ri.userid, currentuser.userid, IDLEN+1);
-	strlcpy(ri.realname, currentuser.realname, NAMELEN);
 	strlcpy(ri.addr, currentuser.address, STRLEN-8);
 	strlcpy(ri.email, currentuser.email, STRLEN-12);
 	while (1) {
@@ -757,7 +689,6 @@ void x_fillform() {
 	filter_ff(ptr);
 	ptr = ri.dept;
 	filter_ff(ptr);
-	strlcpy(currentuser.realname, ri.realname, NAMELEN);
 	strlcpy(currentuser.address, ri.addr, STRLEN-8);
 #ifndef FDQUAN
 	strlcpy(currentuser.email, ri.email, STRLEN-12);

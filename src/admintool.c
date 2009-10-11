@@ -1067,7 +1067,6 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 	char buf[80];
 	FILE *fout;
 
-	strlcpy(uinfo.realname, ent->realname, NAMELEN);
 	unum = getuser(ent->userid);
 	if (!unum) {
 		clear();
@@ -1449,7 +1448,6 @@ int d_user(char *cid) {
 	prints("\n\n以下是 [%s] 的部分资料:\n", lookupuser.userid);
 	prints("    User ID:  [%s]\n", lookupuser.userid);
 	prints("    昵   称:  [%s]\n", lookupuser.username);
-	prints("    姓   名:  [%s]\n", lookupuser.realname);
 	strcpy(secu, "ltmprbBOCAMURS#@XLEast0123456789\0");
 	for (num = 0; num < strlen(secu) - 1; num++) {
 		if (!(lookupuser.userlevel & (1 << num)))
@@ -1499,7 +1497,6 @@ int d_user(char *cid) {
 	lookupuser.bet = 0;
 #endif
 	strcpy(lookupuser.username, "");
-	strcpy(lookupuser.realname, "");
 	prints("\n%s 已经被灭绝了...\n", lookupuser.userid);
 	lookupuser.userid[0] = '\0';
 	substitut_record(PASSFILE, &lookupuser, sizeof(lookupuser), id);

@@ -266,11 +266,7 @@ int uleveltochar(char *buf, unsigned int lvl) {
 void printutitle() {
 	move(2, 0);
 	prints("[1;44m ฑเ บล  สนำรี฿ด๚บล   %-19s #%-4s #%-4s %8s    %-12s  [m\n",
-#if defined(ACTS_REALNAMES)
-			HAS_PERM (PERM_SYSOPS) ? "ีๆสตะีร๛" : "สนำรี฿๊วณฦ",
-#else
 			"สนำรี฿๊วณฦ",
-#endif
 #ifdef ALLOWGAME
 			(toggle2 == 0) ? "ษฯีพ" : (toggle2 == 1) ? "ฮฤีย" : "ดๆฟ๎",
 			(toggle2 == 0) ? "สฑสý" : (toggle2 == 1) ? "ฝฑีย" : "ะลผþ",

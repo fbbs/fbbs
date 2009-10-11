@@ -185,26 +185,6 @@ hog or anything, but if you don't want it...
    If commented out, no real name/address info can be kept in the passwd
    file. Pretty useless to have this if LOGINASNEW is defined. */
 
-/* 
-Define this to show real names to SYSOP in the Config Menu user list.
-*/
-#define ACTS_REALNAMES       1
-
-/* 
-Define this to show real names in post headers. 
-*/
-/* #define POSTS_REALNAMES      1 */
-
-/* 
-Define this to show real names in mail messages. 
-*/
-/* #define MAIL_REALNAMES       1 */
-
-/* 
-Define this for Query to show real names. 
-*/
-//#define QUERY_REALNAMES      1
-
 /*
 Define this to stamp mark on edited post
 */
