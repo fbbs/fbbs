@@ -75,8 +75,7 @@ void showstuff(char *buf) {
 	time_t now;
 
 	static logout loglst[] = { "userid", currentuser.userid, "username",
-			currentuser.username, "address", currentuser.address,
-			"email", currentuser.email,
+			currentuser.username, "email", currentuser.email,
 			"rgtday", rgtday, "login", numlogins, "post", numposts,
 			"mail", nummails,
 			"lastlogin", lasttime, "lasthost", currentuser.lasthost,

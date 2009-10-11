@@ -1490,7 +1490,6 @@ int d_user(char *cid) {
 	system(genbuf_rm);
 	/* add end */
 	lookupuser.userlevel = 0;
-	strcpy(lookupuser.address, "");
 #ifdef ALLOWGAME
 	lookupuser.money = 0;
 	lookupuser.nummedals = 0;

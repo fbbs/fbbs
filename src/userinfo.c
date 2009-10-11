@@ -62,10 +62,9 @@ void disply_userinfo(struct userec *u) {
 	prints("您的代号     : %-14s", u->userid);
 	prints("昵称 : %-20s", u->username);
 	prints("     性别 : %s", (u->gender == 'M' ? "男" : "女"));
-	prints("  出生日期 : %d/%d/%d", u->birthmonth, u->birthday, u->birthyear
+	prints("  出生日期 : %d/%d/%d\n", u->birthmonth, u->birthday, u->birthyear
 			+ 1900);
-	prints("\n居住住址     : %-38s", u->address);
-	prints("累计生活天数 : %d\n",
+	prints("                                                     累计生活天数 : %d\n",
 		days_elapsed(u->birthyear + 1900, u->birthmonth, u->birthday, now));
 	prints("电子邮件信箱 : %s\n", u->email);
 	prints("最近光临机器 : %-22s", u->lasthost);
@@ -224,25 +223,6 @@ void check_uinfo(struct userec *u, int MUST) {
 		filter_ff(ptr);
 		update_ulist(&uinfo, utmpent);
 	}
-	while (1) { // 检查通讯地址
-		changeIT = MUST||(strlen(u->address)<10) ||(strstr(u->address,
-				"  "))||(strstr(u->address, "　"));
-		if (!changeIT) {
-			if (changed) {
-				pos += 2;
-				changed = 0;
-			}
-			break;
-		} else {
-			MUST = 0;
-			changed = 1;
-		}
-		move(pos, 0);
-		prints("请输入您的通讯地址 (Enter home address)：\n");
-		getdata(pos+1, 0, "> ", u->address, STRLEN - 10, DOECHO, YEA);
-		ptr = u->address;
-		filter_ff(ptr);
-	}
 	{ // 检查性别
 		changeIT = MUST||(strchr("MF", u->gender) == NULL);
 		if (changeIT) {
@@ -375,16 +355,6 @@ int uinfo_query(struct userec *u, int real, int unum) {
 				filter_ff(ptr);
 				/* added end */
 			}
-			sprintf(genbuf, "居住地址 [%s]: ", u->address);
-			getdata(i++, 0, genbuf, buf, STRLEN - 10, DOECHO, YEA);
-			if (buf[0]) {
-				strlcpy(newinfo.address, buf, NAMELEN);
-				/* added by money 04.04.20 for filter 0xff in all user data */
-				ptr = newinfo.address;
-				filter_ff(ptr);
-				/* added end */
-			}
-
 			sprintf(genbuf, "出生年 [%d]: ", u->birthyear + 1900);
 			getdata(i++, 0, genbuf, buf, 5, DOECHO, YEA);
 			if (buf[0] && atoi(buf) > 1920 && atoi(buf) < 1998)
@@ -653,7 +623,6 @@ void x_fillform() {
 
 	memset(&ri, 0, sizeof(ri));
 	strlcpy(ri.userid, currentuser.userid, IDLEN+1);
-	strlcpy(ri.addr, currentuser.address, STRLEN-8);
 	strlcpy(ri.email, currentuser.email, STRLEN-12);
 	while (1) {
 		move(3, 0);
@@ -689,7 +658,6 @@ void x_fillform() {
 	filter_ff(ptr);
 	ptr = ri.dept;
 	filter_ff(ptr);
-	strlcpy(currentuser.address, ri.addr, STRLEN-8);
 #ifndef FDQUAN
 	strlcpy(currentuser.email, ri.email, STRLEN-12);
 #endif	

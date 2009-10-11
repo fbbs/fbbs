@@ -134,7 +134,6 @@ int getuinfo(FILE *fn) {
 	char buf[40];
 	fprintf(fn, "\n\n他的代号     : %s\n", currentuser.userid);
 	fprintf(fn, "他的昵称     : %s\n", currentuser.username);
-	fprintf(fn, "居住住址     : %s\n", currentuser.address);
 	fprintf(fn, "电子邮件信箱 : %s\n", currentuser.email);
 	fprintf(fn, "帐号建立日期 : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
 	fprintf(fn, "最近光临日期 : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
