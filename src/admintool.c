@@ -1503,7 +1503,6 @@ int d_user(char *cid) {
 #endif
 	strcpy(lookupuser.username, "");
 	strcpy(lookupuser.realname, "");
-	strcpy(lookupuser.termtype, "");
 	prints("\n%s 已经被灭绝了...\n", lookupuser.userid);
 	lookupuser.userid[0] = '\0';
 	substitut_record(PASSFILE, &lookupuser, sizeof(lookupuser), id);

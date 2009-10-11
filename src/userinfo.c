@@ -71,8 +71,6 @@ void disply_userinfo(struct userec *u) {
 	prints("电子邮件信箱 : %s\n", u->email);
 	prints("真实 E-mail  : %s\n", u->reginfo);
 	prints("最近光临机器 : %-22s", u->lasthost);
-	prints("终端机形态 : %s\n", u->termtype);
-	;
 	prints("帐号建立日期 : %s[距今 %d 天]\n",
 			getdatestring(u->firstlogin, DATE_ZH),
 			(now - (u->firstlogin)) / 86400);
@@ -460,11 +458,6 @@ int uinfo_query(struct userec *u, int real, int unum) {
 				filter_ff(ptr);
 				/* added end */
 			}
-
-			sprintf(genbuf, "终端机形态 [%s]: ", u->termtype);
-			getdata(i++, 0, genbuf, buf, 16, DOECHO, YEA);
-			if (buf[0])
-				strlcpy(newinfo.termtype, buf, 16);
 
 			sprintf(genbuf, "出生年 [%d]: ", u->birthyear + 1900);
 			getdata(i++, 0, genbuf, buf, 5, DOECHO, YEA);

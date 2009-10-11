@@ -446,7 +446,6 @@ void new_register(void)
 	}
 	/*2003.04.30 modify end*/
 
-	strcpy(newuser.termtype, "vt100");
 	newuser.gender = 'X';
 #ifdef ALLOWGAME
 

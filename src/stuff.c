@@ -251,7 +251,6 @@ int do_exec(char *com, char *wd)
 			}
 
 			bbssetenv("PATH", "/bin:.");
-			bbssetenv("TERM", currentuser.termtype);
 			bbssetenv("USER", currentuser.userid);
 			bbssetenv("USERNAME", currentuser.username);
 

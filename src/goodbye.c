@@ -77,25 +77,23 @@ void showstuff(char *buf) {
 	static logout loglst[] = { "userid", currentuser.userid, "username",
 			currentuser.username, "realname", currentuser.realname,
 			"address", currentuser.address, "email", currentuser.email,
-			"termtype", currentuser.termtype, "realemail",
-			currentuser.reginfo, "rgtday",
-			rgtday, "login", numlogins, "post", numposts, "mail",
-			nummails, "lastlogin", lasttime, "lasthost", currentuser.lasthost,
-					"now", thistime, "bbsname", BoardName, "stay", stay,
-					"alltime", alltime,
+			"realemail", currentuser.reginfo, "rgtday", rgtday,
+			"login", numlogins, "post", numposts, "mail", nummails,
+			"lastlogin", lasttime, "lasthost", currentuser.lasthost,
+			"now", thistime, "bbsname", BoardName, "stay", stay,
+			"alltime", alltime,
 #ifdef SHOWEXP
-					"exp", exp,
+			"exp", exp,
 #endif
 #ifdef ALLOWGAME
-					"money", moneys,
+			"money", moneys,
 #endif
-					"cexpstr", ccexp,
+			"cexpstr", ccexp,
 #ifdef SHOWPERF
-					"perf", perf,
+			"perf", perf,
 #endif
-					"cperf", ccperf, "star", star, "pst", numposts, "log",
-					numlogins, "bbsip", BBSIP, "bbshost", BBSHOST, NULL,
-					NULL };
+			"cperf", ccperf, "star", star, "pst", numposts, "log", numlogins,
+			"bbsip", BBSIP, "bbshost", BBSHOST, NULL, NULL };
 	if (!strchr(buf, '$')) {
 		//if (!limit)
 		prints("%s", buf);

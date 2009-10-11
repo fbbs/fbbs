@@ -738,12 +738,7 @@ static int login_query(void)
 	if (multi_user_check() == -1)
 		return -1;
 
-	if (!term_init(currentuser.termtype)) {
-		prints("Bad terminal type. Defaulting to 'vt100'\n");
-		strcpy(currentuser.termtype, "vt100");
-		term_init(currentuser.termtype);
-	}
-
+	term_init("vt100");
 	check_tty_lines();
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
