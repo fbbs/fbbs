@@ -995,7 +995,6 @@ void check_register_info() {
 		} else {
 			set_safe_record();
 			urec->userlevel |= PERM_DEFAULT;
-			strlcpy(urec->reginfo, buf, 62);
 			substitut_record(PASSFILE, urec,sizeof(struct userec), usernum);
 			prints("恭贺您!! 您已顺利完成本站的使用者注册手续,\n");
 			prints("从现在起您将拥有一般使用者的权利与义务...\n");

@@ -1082,9 +1082,6 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 
 	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
 	strlcpy(uinfo.address, ent->addr, NAMELEN);
-	sprintf(genbuf, "%s$%s@%s", ent->dept, ent->phone, currentuser.userid);
-	genbuf[STRLEN - 16] = '\0';
-	strlcpy(uinfo.reginfo, genbuf, STRLEN - 17);
 #ifdef ALLOWGAME
 	uinfo.money = 1000;
 #endif

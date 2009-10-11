@@ -69,7 +69,6 @@ void disply_userinfo(struct userec *u) {
 	prints("累计生活天数 : %d\n",
 		days_elapsed(u->birthyear + 1900, u->birthmonth, u->birthday, now));
 	prints("电子邮件信箱 : %s\n", u->email);
-	prints("真实 E-mail  : %s\n", u->reginfo);
 	prints("最近光临机器 : %-22s", u->lasthost);
 	prints("帐号建立日期 : %s[距今 %d 天]\n",
 			getdatestring(u->firstlogin, DATE_ZH),
@@ -176,12 +175,6 @@ void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 	getdata(i++, 0, genbuf, buf, 10, DOECHO, YEA);
 	if (atoi(buf) > 0)
 		newinfo->stay = atoi(buf);
-	//add by eefree 06.6.29
-	sprintf(genbuf, "真实 E-mail [%s]: ", u->reginfo);
-	getdata(i++, 0, genbuf, buf, STRLEN-16, DOECHO, YEA);
-	if (buf[0]) {
-		strlcpy(newinfo->reginfo, buf, STRLEN-16);
-	}
 	sprintf(genbuf, "firstlogin [%d]: ", u->firstlogin);
 	getdata(i++, 0, genbuf, buf, 15, DOECHO, YEA);
 	if (atoi(buf) >0)
