@@ -53,9 +53,7 @@ void filter_ff(char *ptr) {
 //	用于	设定个人资料  选单时显示的信息,即显示个人资料
 void disply_userinfo(struct userec *u) {
 	int num, exp;
-#ifdef REG_EXPIRED
-	time_t nextreg,now;
-#endif
+	time_t now;
 
 	move(2, 0);
 	clrtobot();
@@ -82,21 +80,6 @@ void disply_userinfo(struct userec *u) {
 	prints("最近光临日期 : %s[距今 %d 天]\n",
 			getdatestring(u->lastlogin, DATE_ZH),
 			(now-(u->lastlogin)) / 86400);
-#ifndef AUTOGETPERM      
-#ifndef REG_EXPIRED
-	prints("身份确认日期 : %s\n", (u->lastjustify==0) ? "未曾注册" : getdatestring(u->lastjustify, DATE_ZH));
-#else	//过期	?
-	if(u->lastjustify == 0) prints("身份确认     : 未曾注册\n");
-	else {
-		prints("身份确认     : 已完成，有效期限: ");
-		nextreg = u->lastjustify + REG_EXPIRED * 86400;
-		char *str = getdatestring(nextreg, DATE_ZH);
-		sprintf(genbuf,"%14.14s[%s]，还有 %d 天\n",
-				str, str + 23, (nextreg - now) / 86400);
-		prints(genbuf);
-	}
-#endif
-#endif
 #ifdef ALLOWGAME
 	prints("文章数目     : %-20d 奖章数目 : %d\n",u->numposts,u->nummedals);
 	prints("私人信箱     : %d 封\n", u->nummails);

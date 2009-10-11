@@ -66,7 +66,7 @@ void showstuff(char *buf) {
 	extern time_t login_start_time;
 	int frg, i, matchfrg, strlength, cnt, tmpnum;
 	static char numlogins[10], numposts[10], nummails[10], rgtday[30],
-			lasttime[30], lastjustify[30], thistime[30], stay[10],
+			lasttime[30], thistime[30], stay[10],
 			alltime[20], ccperf[20], perf[10], exp[10], ccexp[20], star[7];
 #ifdef ALLOWGAME
 	static char moneys[10];
@@ -80,8 +80,7 @@ void showstuff(char *buf) {
 			"termtype", currentuser.termtype, "realemail",
 			currentuser.reginfo, "rgtday",
 			rgtday, "login", numlogins, "post", numposts, "mail",
-			nummails, "lastlogin", lasttime, "lasthost",
-					currentuser.lasthost, "lastjustify", lastjustify,
+			nummails, "lastlogin", lasttime, "lasthost", currentuser.lasthost,
 					"now", thistime, "bbsname", BoardName, "stay", stay,
 					"alltime", alltime,
 #ifdef SHOWEXP
@@ -119,7 +118,6 @@ void showstuff(char *buf) {
 		sprintf(rgtday, "%s", getdatestring(currentuser.firstlogin, DATE_ZH));
 		sprintf(lasttime, "%s", getdatestring(currentuser.lastlogin, DATE_ZH));
 		sprintf(thistime, "%s", getdatestring(now, DATE_ZH));
-		sprintf(lastjustify, "%24.24s", getdatestring(currentuser.lastjustify, DATE_ZH));
 		sprintf(stay, "%d", (time(0) - login_start_time) / 60);
 		sprintf(numlogins, "%d", currentuser.numlogins);
 		sprintf(numposts, "%d", currentuser.numposts);

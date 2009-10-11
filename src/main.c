@@ -934,18 +934,6 @@ static void user_login(void)
 		currentuser.stay += stay;
 	}
 
-	if (HAS_PERM(PERM_SYSOPS) || !strcmp(currentuser.userid, "guest"))
-		currentuser.lastjustify = time(NULL);
-	if (HAS_PERM(PERM_REGISTER) && (abs(time(NULL) - currentuser.lastjustify)
-			>= REG_EXPIRED * 86400)) {
-#ifdef MAILCHECK
-		currentuser.email[0] = '\0';
-#endif
-		currentuser.address[0] = '\0';
-		/* Following line modified by Amigo 2002.06.08. To omit default perm_page right. */
-		currentuser.userlevel &= ~(PERM_REGISTER | PERM_TALK);
-		mail_file("etc/expired", currentuser.userid, "更新个人资料说明。");
-	}
 #ifdef ALLOWGAME
 	if (currentuser.money> 1000000) {
 		currentuser.nummedals += currentuser.money / 10000;

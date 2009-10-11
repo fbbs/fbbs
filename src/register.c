@@ -763,7 +763,6 @@ void check_reg_mail() {
 			set_safe_record();
 			urec->userlevel |= PERM_BINDMAIL;
 			strcpy(urec->email, email);
-			urec->lastjustify = time(0);
 			substitut_record(PASSFILE, urec, sizeof(struct userec),
 					usernum);
 			prints("认证码认证成功!\n");
@@ -952,7 +951,6 @@ void check_register_info() {
 	if (check_register_ok()) {
 #endif
 		set_safe_record();
-		urec->lastjustify = time(0);
 		urec->userlevel |= PERM_DEFAULT;
 		substitut_record(PASSFILE, urec, sizeof(struct userec), usernum);
 		return;
@@ -998,7 +996,6 @@ void check_register_info() {
 		} else {
 			set_safe_record();
 			urec->userlevel |= PERM_DEFAULT;
-			urec->lastjustify = time(0);
 			strlcpy(urec->reginfo, buf, 62);
 			substitut_record(PASSFILE, urec,sizeof(struct userec), usernum);
 			prints("恭贺您!! 您已顺利完成本站的使用者注册手续,\n");

@@ -58,7 +58,6 @@
 #define MAXFRIENDS (300)
 #define MAXREJECTS (32)
 #define NUMPERMS   (32)
-#define REG_EXPIRED	3600    	/* 重做身份确认期限 */
 #ifdef FDQUAN
 #define MAXGUEST	80	   	/* 最多 guest 帐号上站个数 */
 #define QUERY_REALNAMES		//站务查询时,是否显示真实姓名

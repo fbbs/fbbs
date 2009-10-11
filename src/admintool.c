@@ -1088,7 +1088,6 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 #ifdef ALLOWGAME
 	uinfo.money = 1000;
 #endif
-	uinfo.lastjustify = time(0);
 	substitut_record(PASSFILE, &uinfo, sizeof (uinfo), unum);
 	sethomefile(buf, uinfo.userid, "register");
 	if ((fout = fopen(buf, "a")) != NULL) {
