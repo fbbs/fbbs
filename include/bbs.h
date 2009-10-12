@@ -210,6 +210,15 @@ extern char ULIST[];
 #define TERMTYPESZ 		(10)
 /* END */
 
+/** Some constants. */
+enum {
+	EXT_IDLEN = 16,    ///< length of userid field including 'NUL'.
+	IP_LEN = 40,       ///< max length of an IP address.
+	EMAIL_LEN = 40,    ///< max length of an email address.
+	IOBUFSIZE = 4096,  ///< I/O buffer size.
+	OBUFSIZE = 4096,   ///< output buffer size.
+};
+
 #ifndef NO_STRUCT_H
 #include "struct.h"
 #endif
@@ -385,11 +394,6 @@ enum {
 	TELST_SUB,  ///< right after IAC SB
 	TELST_SBC,  ///< right after IAC SB [COMMAND]
 	TELST_END,  ///< end of an telnet option
-};
-
-enum {
-	IOBUFSIZE = 4096,
-	OBUFSIZE = 4096,
 };
 
 typedef struct {

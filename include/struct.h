@@ -4,44 +4,40 @@
  */
 
 typedef unsigned char uschar;
-struct userec { /* Structure used to hold information in */
-	char userid[IDLEN+2]; /* PASSFILE */
-	time_t firstlogin;
-	char lasthost[16]; // Too short for IPv6 addresses
-	unsigned int numlogins;
-	unsigned int numposts;
-	int nummedals; /* 奖章数 money modified u_int to int 2002.11.19*/
-	int money; /* 存款 */
-	int bet; /* 贷款 */
-	time_t dateforbet;
-	char flags[2];
-#ifdef ENCPASSLEN
-	char passwd[ENCPASSLEN];
-#else
-	char passwd[PASSLEN];
-#endif
-	char username[NAMELEN];
-	char ident[NAMELEN];
-	char termtype[16];
-	char reginfo[STRLEN-16];
-	unsigned int userlevel;
-	//unsigned long   dwExLevel;
-	time_t lastlogin;
-	time_t lastlogout;/* 最近离线时间 */
-	time_t stay;
-	char realname[NAMELEN];
-	char address[STRLEN];
-	char email[STRLEN-12];
-	unsigned int nummails;
-	time_t lastjustify;
-	char gender; //性别
-	unsigned char birthyear; //出生年
-	unsigned char birthmonth; //出生月
-	unsigned char birthday; //出生日
-	int signature; //签名档数目
-	unsigned int userdefine;
-	time_t notedate;
-	int noteline;
+
+/** User infomation on disk. */
+struct userec {
+	unsigned int uid;         ///< unique uid, not yet set now.
+	unsigned int userlevel;   ///< permission bits.
+	unsigned int numlogins;   ///< number of logins.
+	unsigned int numposts;    ///< number of posts.
+	unsigned int stay;        ///< total online time in seconds.
+	int nummedals;            ///< number of medals.
+	int money;                ///< money.
+	int bet;                  ///< loan.
+	char flags[2];            ///< some user preferences.
+	char passwd[PASSLEN];     ///< encrypted password.
+	unsigned int nummails;    ///< number of mails.
+	char gender;              ///< gender.
+	unsigned char birthyear;  ///< year of birth.
+	unsigned char birthmonth; ///< month of birth.
+	unsigned char birthday;   ///< day of birth.
+	int signature;            ///< number of signatures.
+	unsigned int userdefine;  ///< user preferences.
+	unsigned int prefs;       ///< exdended user preferences, not yet used.
+	// TODO: remove noteline
+	int noteline;             ///< will be removed soon.
+	int64_t firstlogin;       ///< time of first login.
+	int64_t lastlogin;        ///< time of last login.
+	int64_t lastlogout;       ///< time of last logout.
+	int64_t dateforbet;       ///< loan deadline.
+	// TODO: remove notedate
+	int64_t notedate;         ///< will be removed soon.
+	char userid[EXT_IDLEN];   ///< userid.
+	char lasthost[IP_LEN];    ///< last login IP address.
+	char username[NAMELEN];   ///< nick.
+	char email[EMAIL_LEN];    ///< email address.
+	char reserved[8];         ///< reserved for future use.
 };
 
 struct user_info { /* Structure used in UTMP file */
@@ -114,7 +110,7 @@ struct fileheader { /* This structure is used to hold data in */
 	unsigned level;
 	unsigned char accessed[4]; /* struct size = 256 bytes */
 	unsigned int reid;
-	time_t timeDeleted;
+	int timeDeleted;
 };
 
 //move  shortfile to bstat. eefree 06.04.26
