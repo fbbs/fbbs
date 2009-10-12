@@ -102,19 +102,17 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	int maxmail;
 
 	if (!getuser(recv))
-		return -1;
-	if (!(lookupuser.userlevel & PERM_READMAIL))
-		return -3;
+		return BBS_EINTNL;
 	sethomefile(filepath, recv, "rejects");
 	if (search_record(filepath, &ov, sizeof(ov), cmpfname,
 			currentuser.userid))
-		return -5;
+		return BBS_EBLKLST;
 	if (getmailboxsize(lookupuser.userlevel) * 2 
 			< getmailsize(lookupuser.userid))
-		return -4;
+		return BBS_ERMQE;
 	maxmail = getmailboxhold(lookupuser.userlevel);
 	if (getmailnum(lookupuser.userid) > maxmail * 2)
-		return -4;
+		return BBS_ERMQE;
 
 	memset(&fh, 0, sizeof(fh));
 	strlcpy(fh.owner, currentuser.userid, sizeof(fh.owner));
@@ -123,10 +121,10 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	sprintf(filepath, "mail/%c/%s", toupper(recv[0]), recv);
 	if (stat(filepath, &st) == -1) {
 		if (mkdir(filepath, 0755) == -1)
-			return -1;
+			return BBS_EINTNL;
 	} else {
 		if (!(st.st_mode & S_IFDIR))
-			return -1;
+			return BBS_EINTNL;
 	}
 	// TODO: get_fname?
 	sprintf(fname, "M.%ld.A", time(NULL));
@@ -141,7 +139,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 		sprintf(filepath, "mail/%c/%s/%s", toupper(recv[0]), recv,
 				fname);
 		if (count++ > MAX_POSTRETRY) {
-			return -1;
+			return BBS_EINTNL;
 		}
 	}
 	flock(fd, LOCK_EX);
@@ -156,7 +154,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	close(fd);
 	setmdir(fname, recv);
 	if (append_record(fname, &fh, sizeof(fh)) == -1)
-		return -1;
+		return BBS_EINTNL;
 
 	char buf[256];
 	sprintf(buf, "mailed %s: %s ", recv, title);
@@ -169,7 +167,7 @@ int mail_file(const char *file, const char *recv, const char *title)
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(file, &m) < 0)
-		return -1;
+		return BBS_EINTNL;
 	int ret = do_mail_file(recv, title, NULL, m.ptr, m.size, NULL);
 	mmap_close(&m);
 	return ret;

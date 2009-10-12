@@ -559,19 +559,19 @@ void a_forward(char *path,ITEM* pitem,int mode) {
 		fhdr.filename[STRLEN - 1] = '\0';
 		switch (doforward(path, &fhdr, mode)) {
 			case 0:
-			mesg = "文章转寄完成!\n";
-			break;
-			case -1:
-			mesg = "System error!!.\n";
-			break;
+				mesg = "文章转寄完成!\n";
+				break;
+			case BBS_EINTNL:
+				mesg = "System error!!.\n";
+				break;
 			case -2:
-			mesg = "Invalid address.\n";
-			break;
-			case -5:
-			mesg = "对方不想收到您的信件.\n";
-			break;
+				mesg = "Invalid address.\n";
+				break;
+			case BBS_EBLKLST:
+				mesg = "对方不想收到您的信件.\n";
+				break;
 			default:
-			mesg = "取消转寄动作.\n";
+				mesg = "取消转寄动作.\n";
 		}
 		prints(mesg);
 	} else {

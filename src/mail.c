@@ -960,27 +960,25 @@ char *direct;
 	*p = '\0';
 	switch (doforward(buf, fileinfo, 0)) {
 		case 0:
-		prints("文章转寄完成!\n");
-		break;
-		case -1:
-		prints("转寄失败: 系统发生错误.\n");
-		break;
+			prints("文章转寄完成!\n");
+			break;
+		case BBS_EINTNL:
+			prints("转寄失败: 系统发生错误.\n");
+			break;
 		case -2:
-		prints("转寄失败: 不正确的收信地址.\n");
-		break;
-		case -3:
-		prints("您的信箱超限，暂时无法使用信件服务.\n");
-		break;
-		/* Added by Amigo 2002.06.10. To add mail right check. */
-		case -4:
-		prints("您没有发信权限，暂时无法使用信件服务.\n");
-		break;
-		case -5:
-		prints("对方不想收到您的信件.\n");
-		break;
-		/* Add end. */
+			prints("转寄失败: 不正确的收信地址.\n");
+			break;
+		case BBS_EMAILQE:
+			prints("您的信箱超限，暂时无法使用信件服务.\n");
+			break;
+		case BBS_EACCES:
+			prints("您没有发信权限，暂时无法使用信件服务.\n");
+			break;
+		case BBS_EBLKLST:
+			prints("对方不想收到您的信件.\n");
+			break;
 		default:
-		prints("取消转寄...\n");
+			prints("取消转寄...\n");
 	}
 	pressreturn();
 	clear();
@@ -1009,27 +1007,25 @@ char *direct;
 	*p = '\0';
 	switch (doforward(buf, fileinfo, 1)) {
 		case 0:
-		prints("文章转寄完成!\n");
-		break;
-		case -1:
-		prints("转寄失败: 系统发生错误.\n");
-		break;
+			prints("文章转寄完成!\n");
+			break;
+		case BBS_EINTNL:
+			prints("转寄失败: 系统发生错误.\n");
+			break;
 		case -2:
-		prints("转寄失败: 不正确的收信地址.\n");
-		break;
-		case -3:
-		prints("您的信箱超限，暂时无法使用信件服务.\n");
-		break;
-		/* Added by Amigo 2002.06.10. To add mail right check. */
-		case -4:
-		prints("您没有发信权限，暂时无法使用信件服务.\n");
-		break;
-		case -5:
-		prints("对方不想收到您的信件.\n");
-		break;
-		/* Add end. */
+			prints("转寄失败: 不正确的收信地址.\n");
+			break;
+		case BBS_EMAILQE:
+			prints("您的信箱超限，暂时无法使用信件服务.\n");
+			break;
+		case BBS_EACCES:
+			prints("您没有发信权限，暂时无法使用信件服务.\n");
+			break;
+		case BBS_EBLKLST:
+			prints("对方不想收到您的信件.\n");
+			break;
 		default:
-		prints("取消转寄...\n");
+			prints("取消转寄...\n");
 	}
 	pressreturn();
 	clear();
@@ -1610,10 +1606,10 @@ int mode;
 	extern char fromhost[];
 
 	clear();
-	/* Added by Amigo 2002.06.10. To add mail right check. */
-	if(!HAS_PERM(PERM_MAIL)) return -4;
-	/* Add end. */
-	if(check_maxmail()) return -3;
+	if (!HAS_PERM(PERM_MAIL))
+		return BBS_EACCES;
+	if (check_maxmail())
+		return BBS_EMAILQE;
 	if (address[0] == '\0') {
 		//strncpy(address, currentuser.email, STRLEN);
 		strlcpy(address, currentuser.userid, STRLEN);
@@ -1644,14 +1640,14 @@ int mode;
 	}
 	if(!internet_mail) {
 		if (!getuser(address))
-		return -1;
+			return BBS_EINTNL;
 		if(getmailboxsize(lookupuser.userlevel)*2<getmailsize(lookupuser.userid)) {
 			prints("[%s] 信箱容量已满，无法收信。\n",address);
-			return -4;
+			return BBS_ERMQE;
 		}
 		sethomefile(fname, lookupuser.userid, "rejects");
 		if(search_record(fname, &fh, sizeof(fh), cmpfnames, currentuser.userid))
-		return -5;
+			return BBS_EBLKLST;
 
 		/* added by roly 03.03.10*/
 		/*   
@@ -1664,16 +1660,16 @@ int mode;
 
 		if (getmailnum(lookupuser.userid)> maxmail*2) {
 			prints("[%s] 信箱已满，无法收信。\n",address);
-			return -4;
+			return BBS_ERMQE;
 		}
 		/* add end */
 	}
 	sprintf(genbuf, "确定将文章寄给 %s 吗", address);
 	if (askyn(genbuf, YEA, NA) == 0)
-	return 1;
+		return 1;
 	if (invalidaddr(address))
-	if (!getuser(address))
-	return -2;
+		if (!getuser(address))
+			return -2;
 	sprintf(tmpfname, "tmp/forward.%s.%05d", currentuser.userid, uinfo.pid);
 
 	sprintf(genbuf, "%s/%s", direct, fh->filename);
