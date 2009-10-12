@@ -1080,7 +1080,6 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 	delete_record(direct, sizeof(REGINFO), index, filecheck, ent->userid);
 
 	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
-	strlcpy(uinfo.address, ent->addr, NAMELEN);
 #ifdef ALLOWGAME
 	uinfo.money = 1000;
 #endif
