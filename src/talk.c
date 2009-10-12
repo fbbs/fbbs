@@ -402,7 +402,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 			else if (is_web_user(uentp->mode))
 				col = "\033[1;36m";
 			else
-				strcpy(col, "\033[1m");
+				col = "\033[1m";
 			char *host;
 			if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
 				host = uentp->from;
