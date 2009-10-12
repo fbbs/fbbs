@@ -51,7 +51,15 @@
 			<form><input value='跳转到' type='submit' />第<input name='start' size='4' type='text' />封</form>
 		</div>
 	</xsl:template>
-	
+
+	<xsl:template match='bbsfwd'>
+		<form action='fwd' method='post'>
+			<input type='hidden' name='bid'><xsl:attribute name='value'><xsl:value-of select='@bid' /></xsl:attribute></input>
+			<input type='hidden' name='f'><xsl:attribute name='value'><xsl:value-of select='@f' /></xsl:attribute></input>
+			<label for='u'>收信人:&#160;</label><input type='text' name='u' size='16'></input><br />
+			<input value='转寄' type='submit' />
+		</form>
+	</xsl:template>
 	<xsl:template name='linkbar'>
 	</xsl:template>
 </xsl:stylesheet>
