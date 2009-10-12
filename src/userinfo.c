@@ -61,11 +61,11 @@ void disply_userinfo(struct userec *u) {
 	set_safe_record();
 	prints("您的代号     : %-14s", u->userid);
 	prints("昵称 : %-20s", u->username);
-	prints("     性别 : %s", (u->gender == 'M' ? "男" : "女"));
-	prints("  出生日期 : %d/%d/%d\n", u->birthmonth, u->birthday, u->birthyear
-			+ 1900);
-	prints("                                                     累计生活天数 : %d\n",
-		days_elapsed(u->birthyear + 1900, u->birthmonth, u->birthday, now));
+	prints("     性别 : %s\n", (u->gender == 'M' ? "男" : "女"));
+	prints("出生日期     : %d年%d月%d日", u->birthyear + 1900, u->birthmonth,
+			u->birthday);
+	prints(" (累计生活天数 : %d)\n", days_elapsed(u->birthyear + 1900, 
+			u->birthmonth, u->birthday, now));
 	prints("电子邮件信箱 : %s\n", u->email);
 	prints("最近光临机器 : %-22s", u->lasthost);
 	prints("帐号建立日期 : %s[距今 %d 天]\n",
