@@ -1,7 +1,7 @@
 AM_CFLAGS = @ENABLE_DEBUG@ -O2 -Wall -std=c99 -pedantic
 AM_CPPFLAGS = -D_POSIX_SOURCE -D_SVID_SOURCE -I../include
-LIBS = -lcrypt -lfcgi -lBBS
-AM_LDFLAGS = -L../lib
+LIBS = -lcrypt -lfcgi
+LDADD = ../lib/libBBS.a
 
 bin_PROGRAMS = bbswebd
 bbswebd_SOURCES = libweb.c bbsmain.c bbssec.c bbsall.c bbsboa.c bbslogin.c \
