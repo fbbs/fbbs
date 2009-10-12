@@ -79,6 +79,7 @@ int restart_close(int fd)
  * Restart version of ftruncate.
  * If ftruncate is interrupted by a signal, restart.
  * @param[in] fd file descriptor to operate.
+ * @param[in] size new size of the file.
  * @return 0 on success, -1 on error.
  */
 int restart_ftruncate(int fd, off_t size)

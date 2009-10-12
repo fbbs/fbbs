@@ -264,7 +264,7 @@ const char *get_referer(void)
  * @param size maximum output bytes. If 0, print until NUL is encountered.
  * @param stream output stream
  * @note '<' => "&lt;" '&' => "&amp;" '>' => "&gt;" '\\033' => ">1b"
- *       '\r' => ""
+ *       '\\r' => ""
  *       ESC('\\033') is not allowed in XML 1.0. We have to use a workaround 
  *       for compatibility with ANSI escape sequences.
  */
