@@ -4,7 +4,7 @@
 AC_PREREQ(2.61)
 AC_INIT(fdubbs, 2009, http://code.google.com/p/fdubbs/issues)
 AM_INIT_AUTOMAKE
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([include/config.h])
 
 # Checks for programs.
 AC_PROG_AWK
@@ -49,6 +49,8 @@ AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_FUNC_UTIME_NULL
 AC_CHECK_FUNCS([alarm atexit bzero dup2 ftruncate getcwd gethostbyaddr gethostbyname gethostname gettimeofday inet_ntoa memchr memmove memset mkdir munmap rmdir select socket strcasecmp strchr strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul utime])
+
+AC_CHECK_SIZEOF([time_t])
 
 CFLAGS=
 

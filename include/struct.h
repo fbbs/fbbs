@@ -1,7 +1,7 @@
-/* Note the protocol field is not inside an #ifdef FILES...
- this is a waste but allows you to add/remove UL/DL support without
- rebuilding the PASSWDS file (and it's only a lil ole int anyway).
- */
+#ifndef FB_STRUCT_H
+#define FB_STRUCT_H
+
+#include "config.h"
 
 typedef unsigned char uschar;
 
@@ -27,10 +27,22 @@ struct userec {
 	unsigned int prefs;       ///< exdended user preferences, not yet used.
 	// TODO: remove noteline
 	int noteline;             ///< will be removed soon.
-	int64_t firstlogin;       ///< time of first login.
-	int64_t lastlogin;        ///< time of last login.
-	int64_t lastlogout;       ///< time of last logout.
-	int64_t dateforbet;       ///< loan deadline.
+	time_t firstlogin;       ///< time of first login.
+#if SIZEOF_TIME_T == 4
+	char pad1[4];
+#endif
+	time_t lastlogin;        ///< time of last login.
+#if SIZEOF_TIME_T == 4
+	char pad2[4];
+#endif
+	time_t lastlogout;       ///< time of last logout.
+#if SIZEOF_TIME_T == 4
+	char pad3[4];
+#endif
+	time_t dateforbet;       ///< loan deadline.
+#if SIZEOF_TIME_T == 4
+	char pad4[4];
+#endif
 	// TODO: remove notedate
 	int64_t notedate;         ///< will be removed soon.
 	char userid[EXT_IDLEN];   ///< userid.
@@ -255,3 +267,4 @@ struct sysheader {
 	char *buf;
 	int menu, key, len;
 };
+#endif //FB_STRUCT_H
