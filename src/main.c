@@ -778,7 +778,7 @@ static void notepad_init(void)
 		refresh();
 		check = fopen("etc/checknotepad", "w");
 		lastnote = now - (now % maxsec);
-		fprintf(check, "%d", lastnote);
+		fprintf(check, "%ld", lastnote);
 		fclose(check);
 		if ((check = fopen("etc/autopost", "r")) != NULL) {
 			while (fgets(tmp, STRLEN, check) != NULL) {
@@ -823,7 +823,7 @@ static void user_login(void)
 		substitut_record(PASSFILE, &currentuser, sizeof(currentuser),
 				usernum);
 	}
-	fromhost[59] = 0; //added by iamfat 2004.01.05 to avoid overflow
+	fromhost[sizeof(fromhost) - 1] = 0; //added by iamfat 2004.01.05 to avoid overflow
 	log_usies("ENTER", fromhost, &currentuser);
 
 	SpecialID(currentuser.userid, fromhost, sizeof(fromhost));
