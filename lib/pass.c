@@ -52,7 +52,7 @@ char *genpasswd(const char *pw)
 
 // Checks if encrypted 'pw_try' matches 'pw_crypted'.
 // Returns 1 if match, 0 otherwise.
-int checkpasswd(char *pw_crypted, char *pw_try)
+int checkpasswd(const char *pw_crypted, const char *pw_try)
 {
 	return !strcmp(crypt(pw_try, pw_crypted), pw_crypted);
 }

@@ -100,7 +100,7 @@ int record_delete(record_t *r, void *ptr, int size);
 
 //pass.c
 char *genpasswd(const char *pw);
-int checkpasswd(char *pw_crypted, char *pw_try);
+int checkpasswd(const char *pw_crypted, const char *pw_try);
 
 //shm.c
 void *attach_shm(const char *shmstr, int defaultkey, int shmsize);

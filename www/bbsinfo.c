@@ -76,3 +76,45 @@ int bbsinfo_main(void)
 	}
 	return 0;
 }
+
+static int set_password(const char *orig, const char *new1, const char *new2)
+{
+	if (!checkpasswd(currentuser.passwd, orig))
+		return BBS_EWPSWD;
+	if (strcmp(new1, new2))
+		return BBS_EINVAL;
+	if (strlen(new1) < 2)
+		return BBS_EINVAL;
+	strlcpy(currentuser.passwd, crypt(new1, new1), sizeof(currentuser.passwd));
+	save_user_data(&currentuser);
+	return 0;
+}
+
+int bbspwd_main(void)
+{
+	if (!loginok)
+		return BBS_ELGNREQ;
+	parse_post_data();
+	xml_header("bbspwd");
+	printf("<bbspwd p='%s' u='%s' ", get_permission(), currentuser.userid);
+	char *pw1 = getparm("pw1");
+	if (*pw1 == '\0') {
+		printf("i='i'></bbspwd>");
+		return 0;
+	}
+	char *pw2 = getparm("pw2");
+	char *pw3 = getparm("pw3");
+	switch (set_password(pw1, pw2, pw3)) {
+		case BBS_EWPSWD:
+			printf(">ÃÜÂë´íÎó</bbspwd>");
+			break;
+		case BBS_EINVAL:
+			printf(">ĞÂÃÜÂë²»Æ¥Åä »ò ĞÂÃÜÂëÌ«¶Ì</bbspwd>", get_permission(),
+					currentuser.userid);
+			break;
+		default:
+			printf("></bbspwd>");
+			break;
+	}
+	return 0;
+}

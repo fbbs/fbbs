@@ -81,6 +81,8 @@ int check_bbserr(int err)
 			return http_fatal("在线用户数已达上限");
 		case BBS_EINTNL:
 			return http_fatal2(HTTP_STATUS_INTERNAL_ERROR, "内部错误");
+		case BBS_ERMQE:
+			return http_fatal("对方信箱已满");
 		default:
 			return http_fatal("未知错误");
 	}
