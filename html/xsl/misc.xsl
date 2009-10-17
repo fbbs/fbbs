@@ -86,11 +86,8 @@
 						<li><a href='info'>个人资料</a></li>
 						<li><a href='plan'>改说明档</a></li>
 						<li><a href='sig'>改签名档</a></li>
-						<li><a href='mywww'>Web定制</a></li>
 						<li><a href='pwd'>修改密码</a></li>
-						<li><a href='nick'>临时改昵称</a></li>
 						<li><a href='fall'>设定好友</a></li>
-						<li><a href='cloak'>切换隐身</a></li>
 					</ul>
 				</li>
 			</xsl:if>
