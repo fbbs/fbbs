@@ -342,22 +342,32 @@ int do_userlist() {
 				else
 					host = mask_host(uentp->from);
 			}
-			sprintf(
-					user_info_str,
-					" [m%4d%2s%-12.22s[37m %-20.20s[m %-15.15s %c %c %c %s%-10.10s[37m %5.5s[m\n",
-					i + 1 + page,
-					//Modified by IAMFAT 2002-05-27
+
+			char pager;
+			if (uentp->mode == FIVE || uentp->mode == BBSNET
+					|| uentp->mode == LOCKSCREEN)
+				pager = '@';
+			else
+				pager = pagerchar(hisfriend(uentp), uentp->pager);
+
+			char *color;
+			if (uentp->invisible)
+				color = "\033[1;30m";
+			else if (is_web_user(uentp->mode))
+				color = "\033[36m";
+			else if (uentp->mode == POSTING || uentp->mode == MARKET)
+				color = "\033[32m";
+			else if (uentp->mode == FIVE || uentp->mode == BBSNET)
+				color = "\033[33m";
+			else
+				color = "";
+
+			snprintf(user_info_str, sizeof(user_info_str), " \033[m%4d%2s"
+					"%-12.22s\033[37m %-20.20s\033[m %-15.15s %c %c %c %s"
+					"%-10.10s\033[37m %5.5s\033[m\n", i + 1 + page,
 					(override) ? "\033[32m¡Ì" : "  ", uentp->userid, userid,
-					host,
-					(uentp->mode == FIVE || uentp->mode == BBSNET
-							|| uentp->mode == LOCKSCREEN) ? '@'
-							: pagerchar(hisfriend(uentp), uentp->pager),
-					msgchar(uentp),
-					(uentp->invisible == YEA) ? '@' : ' ',
-					(uentp->invisible == YEA) ? "\033[1;30m"
-							: (uentp->mode==POSTING||uentp->mode==MARKET) ? "\033[32m"
-									: ((uentp->mode==FIVE||uentp->mode
-											==BBSNET) ? "\033[33m" : ""),
+					host, pager, msgchar(uentp),
+					(uentp->invisible) ? '@' : ' ', color,
 					mode_type(uentp->mode),
 #ifdef SHOW_IDLE_TIME
 					idle_str(uentp));
