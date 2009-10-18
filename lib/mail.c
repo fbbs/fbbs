@@ -100,10 +100,12 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	char fname[HOMELEN], filepath[HOMELEN], *ip;
 	int fd, count;
 	int maxmail;
+	char *user;
 
 	if (!getuser(recv))
 		return BBS_EINTNL;
-	sethomefile(filepath, recv, "rejects");
+	user = lookupuser.userid;
+	sethomefile(filepath, user, "rejects");
 	if (search_record(filepath, &ov, sizeof(ov), cmpfname,
 			currentuser.userid))
 		return BBS_EBLKLST;
@@ -118,7 +120,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	strlcpy(fh.owner, currentuser.userid, sizeof(fh.owner));
 	strlcpy(fh.title, title, sizeof(fh.title));
 
-	sprintf(filepath, "mail/%c/%s", toupper(recv[0]), recv);
+	sprintf(filepath, "mail/%c/%s", toupper(user[0]), user);
 	if (stat(filepath, &st) == -1) {
 		if (mkdir(filepath, 0755) == -1)
 			return BBS_EINTNL;
@@ -128,7 +130,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	}
 	// TODO: get_fname?
 	sprintf(fname, "M.%ld.A", time(NULL));
-	sprintf(filepath, "mail/%c/%s/%s", toupper(recv[0]), recv, fname);
+	sprintf(filepath, "mail/%c/%s/%s", toupper(user[0]), user, fname);
 	ip = strrchr(fname, 'A');
 	count = 0;
 	while ((fd = open(filepath, O_CREAT | O_EXCL | O_WRONLY, 0644)) == -1) {
@@ -136,7 +138,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 			ip++, *ip = 'A', *(ip + 1) = '\0';
 		else
 			(*ip)++;
-		sprintf(filepath, "mail/%c/%s/%s", toupper(recv[0]), recv,
+		sprintf(filepath, "mail/%c/%s/%s", toupper(user[0]), user,
 				fname);
 		if (count++ > MAX_POSTRETRY) {
 			return BBS_EINTNL;
@@ -144,7 +146,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	}
 	flock(fd, LOCK_EX);
 	strlcpy(fh.filename, fname, sizeof(fh.filename));
-	sprintf(filepath, "mail/%c/%s/%s", toupper(recv[0]), recv, fname);
+	sprintf(filepath, "mail/%c/%s/%s", toupper(user[0]), user, fname);
 	if (header != NULL)
 		write(fd, header, strlen(header));
 	write(fd, text, len);
@@ -152,12 +154,12 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 		write(fd, source, strlen(source));
 	flock(fd, LOCK_UN);
 	close(fd);
-	setmdir(fname, recv);
+	setmdir(fname, user);
 	if (append_record(fname, &fh, sizeof(fh)) == -1)
 		return BBS_EINTNL;
 
 	char buf[256];
-	sprintf(buf, "mailed %s: %s ", recv, title);
+	sprintf(buf, "mailed %s: %s ", user, title);
 	report(buf, currentuser.userid);
 	return 0;
 }
