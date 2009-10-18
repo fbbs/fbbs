@@ -60,8 +60,7 @@ int bbscon_main(void)
 	fid = fh.id;
 
 	xml_header("bbscon");
-	printf("<bbscon p='%s' u='%s' link='con' bid='%d'>",
-			get_permission(), currentuser.userid, bid);
+	printf("<bbscon %s link='con' bid='%d'>", get_session_str(), bid);
 	printf("<po fid='%u'", fid);
 	if (fh.reid != fh.id)
 		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
@@ -86,8 +85,7 @@ int bbsgcon_main(void)
 	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
 		return BBS_EINVAL;
 	xml_header("bbscon");
-	printf("<bbscon p='%s' u='%s' link='gcon' bid='%d'><po>",
-			get_permission(), currentuser.userid, bid);
+	printf("<bbscon %s link='gcon' bid='%d'><po>", get_session_str(), bid);
 	char file[HOMELEN];
 	setbfile(file, bp->filename, f);
 	xml_printfile(file, stdout);

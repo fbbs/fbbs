@@ -97,8 +97,8 @@ static int do_bbspst(bool isedit)
 	}
 	
 	xml_header("bbspst");
-	printf("<bbspst p='%s' u='%s' brd='%s' bid='%d' edit='%d'>",
-			get_permission(), currentuser.userid, bp->filename, bid, isedit);
+	printf("<bbspst %s brd='%s' bid='%d' edit='%d'>", get_session_str(),
+			bp->filename, bid, isedit);
 	if (reply) {
 		printf("<t>");
 		ansi_filter(fh.title, fh.title);

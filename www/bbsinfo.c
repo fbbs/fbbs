@@ -56,14 +56,13 @@ int bbsinfo_main(void)
 	char *type = getparm("type");
 	xml_header("bbsinfo");
 	if (*type != '\0') {
-		printf("<bbsinfo p='%s' u='%s'>", get_permission(),
-				currentuser.userid);
+		printf("<bbsinfo %s>", get_session_str());
 		printf("%s</bbsinfo>", check_info());
 	} else {
-		printf("<bbsinfo p='%s' u='%s' post='%d' login='%d' stay='%d' "
+		printf("<bbsinfo %s post='%d' login='%d' stay='%d' "
 				"since='%s' host='%s' year='%d' month='%d' "
-				"day='%d' gender='%c'", get_permission(), 
-				currentuser.userid, currentuser.numposts,
+				"day='%d' gender='%c'", get_session_str(),
+				currentuser.numposts,
 				currentuser.numlogins, currentuser.stay / 60,
 				getdatestring(currentuser.firstlogin, DATE_XML),
 				currentuser.lasthost, currentuser.birthyear,
@@ -96,7 +95,7 @@ int bbspwd_main(void)
 		return BBS_ELGNREQ;
 	parse_post_data();
 	xml_header("bbspwd");
-	printf("<bbspwd p='%s' u='%s' ", get_permission(), currentuser.userid);
+	printf("<bbspwd %s>", get_session_str());
 	char *pw1 = getparm("pw1");
 	if (*pw1 == '\0') {
 		printf("i='i'></bbspwd>");
@@ -106,15 +105,14 @@ int bbspwd_main(void)
 	char *pw3 = getparm("pw3");
 	switch (set_password(pw1, pw2, pw3)) {
 		case BBS_EWPSWD:
-			printf(">ÃÜÂë´íÎó</bbspwd>");
+			printf("ÃÜÂë´íÎó");
 			break;
 		case BBS_EINVAL:
-			printf(">ĞÂÃÜÂë²»Æ¥Åä »ò ĞÂÃÜÂëÌ«¶Ì</bbspwd>", get_permission(),
-					currentuser.userid);
+			printf("ĞÂÃÜÂë²»Æ¥Åä »ò ĞÂÃÜÂëÌ«¶Ì");
 			break;
 		default:
-			printf("></bbspwd>");
 			break;
 	}
+	printf("</bbspwd>");
 	return 0;
 }

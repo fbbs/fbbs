@@ -24,7 +24,7 @@ int bbsmailcon_main(void)
 		fh->accessed[0] |= FILE_READ;
 	}
 	xml_header("bbsmailcon");
-	printf("<bbsmailcon p='%s' u='%s'", get_permission(), currentuser.userid);
+	printf("<bbsmailcon %s", get_session_str());
 	struct fileheader *prev = fh - 1;
 	if (prev >= (struct fileheader *)m.ptr)
 		printf(" prev='%s'", prev->filename);

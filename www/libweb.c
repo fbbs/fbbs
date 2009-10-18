@@ -596,7 +596,7 @@ bool valid_mailname(const char *file)
 	return true;
 }
 
-char *get_permission(void)
+static char *get_permission(void)
 {
 	static char c[5];
 	c[0] = loginok ? 'l' : ' ';
@@ -607,3 +607,9 @@ char *get_permission(void)
 	return c;
 }
 
+const char *get_session_str(void)
+{
+	static char buf[256];
+	snprintf(buf, sizeof(buf), "s='%s;%s'", get_permission(), currentuser.userid);
+	return buf;
+}

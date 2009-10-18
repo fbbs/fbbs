@@ -18,7 +18,7 @@ int bbsanc_main(void)
 	char fname[512];
 	sprintf(fname, "0Announce%s", path);
 	xml_header("bbsanc");
-	printf("<bbsanc p='%s' u='%s'", get_permission(), currentuser.userid);
+	printf("<bbsanc %s", get_session_str());
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");

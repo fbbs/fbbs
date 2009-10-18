@@ -6,8 +6,7 @@
 	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
 			<xsl:with-param name='title'><xsl:choose><xsl:when test='bbspst/@edit="0"'>发表</xsl:when><xsl:otherwise>修改</xsl:otherwise></xsl:choose>文章</xsl:with-param>
-			<xsl:with-param name='p'><xsl:value-of select='bbspst/@p' /></xsl:with-param>
-			<xsl:with-param name='u'><xsl:value-of select='bbspst/@u' /></xsl:with-param>
+			<xsl:with-param name='session'><xsl:value-of select='bbspst/@s' /></xsl:with-param>
 		</xsl:call-template>
 	</xsl:template>
 

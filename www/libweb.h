@@ -1,5 +1,5 @@
-#ifndef FDUBBS_LIBWEB_H
-#define FDUBBS_LIBWEB_H
+#ifndef FB_LIBWEB_H
+#define FB_LIBWEB_H
 
 #include "../include/bbs.h"
 #include "sys/ipc.h"
@@ -108,7 +108,8 @@ int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
-char *get_permission(void);
 int fcgi_init_loop(int mode);
+const char *get_session_str(void);
 
-#endif  //FDUBBS_LIBWEB_H
+#endif  //FB_LIBWEB_H
+

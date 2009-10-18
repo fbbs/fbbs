@@ -126,9 +126,10 @@
 	</xsl:template>
 
 	<xsl:template name='layout'>
-		<xsl:param name='title' />
-		<xsl:param name='p' />
-		<xsl:param name='u' />
+		<xsl:param name='title'/>
+		<xsl:param name='session'/>
+		<xsl:variable name='p' select='substring-before($session,";")'/>
+		<xsl:variable name='u' select='substring-after($session,";")'/>
 		<html>
 			<head>
 				<title><xsl:value-of select='$title' /> - <xsl:call-template name='bbsname' /></title>

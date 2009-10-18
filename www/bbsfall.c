@@ -21,7 +21,7 @@ int bbsfall_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header("bbsovr");
-	printf("<bbsfall p='%s' u='%s'>", get_permission(), currentuser.userid);
+	printf("<bbsfall %s>", get_session_str());
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, "friends");
 	apply_record(file, print_override, sizeof(override_t), NULL, false,
@@ -66,8 +66,7 @@ int bbsfadd_main(void)
 		return 0;
 	}
 	xml_header("bbsovr");
-	printf("<bbsfadd p='%s' u='%s'>%s</bbsfadd>", get_permission(),
-				currentuser.userid, id);
+	printf("<bbsfadd %s>%s</bbsfadd>", get_session_str(), id);
 	return 0;
 }
 
