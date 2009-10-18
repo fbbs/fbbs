@@ -11,13 +11,14 @@
 	</xsl:template>
 
 	<xsl:template match='bbsqry'>
-		<div id='user'>
+		<form action='qry' method='get'><label for='u'>请输入欲查询的帐号：</label><input type='text' name='u' maxlength='12' size='12'/><input type='submit' value='查询'/></form>
+		<xsl:if test='@id'><div id='user'>
 			<p><strong><xsl:value-of select='@id' /></strong> （<strong><xsl:value-of select='nick' /></strong>） <xsl:call-template name='show-horo'/></p>
 			<p>上次在:【<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@lastlogin' /></xsl:call-template></span>】从【<span class='a132'><xsl:value-of select='ip' /></span>】到本站一游。</p>
 			<p>文章数:【<span class='a132'><xsl:value-of select='@post' /></span>】 生命力:【<span class='a132'><xsl:value-of select='@hp' /></span>】</p> 
 			<p>表现值:【<span class='a133'><xsl:value-of select='@perf' /></span>】</p>
 			<div>经验值:【<xsl:call-template name="show-exp" />】 (<xsl:value-of select='@level * 10 + @repeat' />/120)</div>
-		</div>
+		</div></xsl:if>
 	</xsl:template>
 	
 	<xsl:template name='show-horo'>
