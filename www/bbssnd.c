@@ -79,20 +79,85 @@ int post_article(const struct userec *user, const struct boardheader *bp,
 	return 0;
 }
 
+static int edit_article(const char *file, const char *content, const char *ip)
+{
+	if (file == NULL || content == NULL || ip == NULL)
+		return BBS_EINTNL;
+	int fd = open(file, O_RDWR);
+	if (fd < 0)
+		return BBS_EINTNL;
+	flock(fd, LOCK_EX);
+	char buf[4096];
+	ssize_t bytes = read(fd, buf, sizeof(buf));
+	if (bytes >= 0) {
+		// skip header.
+		char *ptr = buf, *e = buf + bytes;
+		int n = 3;
+		while (ptr != e && n >= 0) {
+			if (*ptr == '\n')
+				--n;
+			++ptr;
+		}
+		int begin = ptr - buf;
+
+		if (bytes == sizeof(buf)) {
+			lseek(fd, -sizeof(buf), SEEK_END);
+			bytes = read(fd, buf, sizeof(buf));
+			if (bytes < sizeof(buf)) {
+				flock(fd, LOCK_UN);
+				restart_close(fd);
+				return BBS_EINTNL;
+			}
+			e = buf + bytes;
+		}
+		ptr = e - 2; // skip last '\n'
+		while (ptr >= buf && *ptr != '\n')
+			--ptr;
+		if (ptr >= buf) {
+			if (!strncmp(ptr + 1, "\033[m\033[1;36m¡ù ÐÞ¸Ä", 17)) {
+				e = ptr + 1;
+				--ptr;
+				while (ptr >= buf && *ptr != '\n')
+					--ptr;
+			}
+		}
+
+		lseek(fd, begin, SEEK_SET);
+		size_t len = strlen(content);
+		size_t size = begin + len;
+		int ret = safer_write(fd, content, len);
+		if (ret == 0 && ptr != e)
+			ret = safer_write(fd, ptr, e - ptr);
+		len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ "
+				"%22.22s¡¤HTTP [FROM: %-.20s]\033[m\n", currentuser.userid,
+				getdatestring(time(NULL), DATE_ZH), mask_host(ip));
+		if (ret == 0)
+			ret = safer_write(fd, buf, len);
+		size += (e - ptr) + len;
+		ftruncate(fd, size);
+		flock(fd, LOCK_UN);
+		restart_close(fd);
+		if (ret == 0)
+			return 0;
+		return BBS_EINTNL;
+	}
+	return BBS_EINTNL;	
+}
+
 int bbssnd_main(void)
 {
+	if (!loginok)
+		return BBS_ELGNREQ;
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;
 	int bid = strtol(getparm("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
-
-	if (!loginok)
-		return BBS_ELGNREQ;
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
+	bool isedit = (*(getparm("e")) == '1');
 	unsigned int fid;
 	struct fileheader fh;
 	char *f = getparm("f");
@@ -101,17 +166,22 @@ int bbssnd_main(void)
 		fid = strtoul(f, NULL, 10);
 		if (!bbscon_search(bp, fid, 0, &fh))
 			return BBS_ENOFILE;
-		if (fh.accessed[0] & FILE_NOREPLY)
+		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
+			return BBS_EPST;
+		if (isedit && !chkBM(bp, &currentuser)
+				&& strcmp(fh.owner, currentuser.userid))
 			return BBS_EACCES;
 	}
 
 	char title[sizeof(fh.title)];
-	char *t = getparm("title");
-	if (*t == '\0')
-		return BBS_EINVAL;
-	else
-		strlcpy(title, t, sizeof(title));
-	ansi_filter(title, title);
+	if (!isedit) {
+		char *t = getparm("title");
+		if (*t == '\0')
+			return BBS_EINVAL;
+		else
+			strlcpy(title, t, sizeof(title));
+		ansi_filter(title, title);
+	}
 
 // TODO: ...
 #ifdef SPARC
@@ -127,17 +197,26 @@ int bbssnd_main(void)
 		}
 		*(int*)(u_info->from+36)=time(0);//modified from 36 to 34 for sparc solaris by roly 02.02.28
 #endif
-	if (post_article(&currentuser, bp, title, 
-			getparm("text"), fromhost, reply ? &fh : NULL) < 0)
-		return BBS_EINTNL;
 
-	if (!junkboard(bp)) {
+	if (isedit) {
+		char file[HOMELEN];
+		setbfile(file, bp->filename, fh.filename);
+		if (edit_article(file, getparm("text"), mask_host(fromhost)) < 0)
+			return BBS_EINTNL;
+	} else {
+		if (post_article(&currentuser, bp, title, 
+			getparm("text"), mask_host(fromhost), reply ? &fh : NULL) < 0)
+			return BBS_EINTNL;
+	}
+
+	if (!isedit && !junkboard(bp)) {
 		currentuser.numposts++;
 		save_user_data(&currentuser);
 	}
 
 	char buf[sizeof(fh.title) + sizeof(bp->filename)];
-	snprintf(buf, sizeof(buf), "posted '%s' on %s", title, bp->filename);
+	snprintf(buf, sizeof(buf), "%sed '%s' on %s", isedit ? "edit" : "post",
+			title, bp->filename);
 	report(buf, currentuser.userid);
 
 	snprintf(buf, sizeof(buf), "doc?board=%s", bp->filename);
@@ -147,4 +226,3 @@ int bbssnd_main(void)
 			"</body>\n</html>\n", buf);
 	return 0;
 }
-

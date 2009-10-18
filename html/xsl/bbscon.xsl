@@ -37,9 +37,11 @@
 	</xsl:template>
 	
 	<xsl:template name='linkbar'>
-		<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:attribute>[ <img src='/images/button/edit.gif' />回复本文 ]</a></xsl:if>
-		<a><xsl:attribute name='href'>ccc?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:attribute>[ 转载 ]</a>
-		<a><xsl:attribute name='href'>fwd?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:attribute>[ 转寄 ]</a>
-		<a><xsl:attribute name='href'>del?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:attribute>[ 删除 ]</a>
+		<xsl:variable name='param'>bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:variable>
+		<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>[ <img src='/images/button/edit.gif' />回复本文 ]</a></xsl:if>
+		<a><xsl:attribute name='href'>edit?<xsl:value-of select='$param'/></xsl:attribute>[ 修改 ]</a>
+		<a><xsl:attribute name='href'>ccc?<xsl:value-of select='$param'/></xsl:attribute>[ 转载 ]</a>
+		<a><xsl:attribute name='href'>fwd?<xsl:value-of select='$param'/></xsl:attribute>[ 转寄 ]</a>
+		<a><xsl:attribute name='href'>del?<xsl:value-of select='$param'/></xsl:attribute>[ 删除 ]</a>
 	</xsl:template>
 </xsl:stylesheet>

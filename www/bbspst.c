@@ -36,28 +36,59 @@ int web_quotation(const char *str, size_t size, const char *owner, bool ismail)
 	return lines;	
 }
 
-int bbspst_main(void)
+static void get_post_body(char **begin, char **end)
 {
-	int bid = strtol(getparm("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
+	char *ptr = *begin, *e = *end;
+	// skip header.
+	int n = 3;
+	while (ptr != e && n >= 0) {
+		if (*ptr == '\n')
+			--n;
+		++ptr;
+	}
+	*begin = ptr;
 
+	ptr = e - 2; // skip last '\n'
+	while (ptr >= *begin && *ptr != '\n')
+		--ptr;
+	if (ptr < *begin)
+		return;
+	if (!strncmp(ptr + 1, "\033[m\033[1;36m¡ù ÐÞ¸Ä", 17)) {
+		--ptr;
+		while (ptr >= *begin && *ptr != '\n')
+			--ptr;
+		*end = (ptr >= *begin) ? ptr : *begin;
+	} else {
+		*end = ptr;
+	}
+}
+
+static int do_bbspst(bool isedit)
+{
 	if (!loginok)
 		return BBS_ELGNREQ;
+	int bid = strtol(getparm("bid"), NULL, 10);
+	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_EPST;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	unsigned int fid = 0;
+	unsigned long fid = 0;
 	mmap_t m;
 	struct fileheader fh;
 	char *f = getparm("f");
 	bool reply = !(*f == '\0');
+	if (isedit && !reply)
+		return BBS_EINVAL;
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
 		if (!bbscon_search(bp, fid, 0, &fh))
 			return BBS_ENOFILE;
-		if (fh.accessed[0] & FILE_NOREPLY)
+		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
 			return BBS_EPST;
+		if (isedit && !chkBM(bp, &currentuser)
+				&& strcmp(fh.owner, currentuser.userid))
+			return BBS_EACCES;
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
 		m.oflag = O_RDONLY;
@@ -66,14 +97,21 @@ int bbspst_main(void)
 	}
 	
 	xml_header("bbspst");
-	printf("<bbspst p='%s' u='%s' brd='%s' bid='%d'>", get_permission(),
-			currentuser.userid, bp->filename, bid);
+	printf("<bbspst p='%s' u='%s' brd='%s' bid='%d' edit='%d'>",
+			get_permission(), currentuser.userid, bp->filename, bid, isedit);
 	if (reply) {
 		printf("<t>");
 		ansi_filter(fh.title, fh.title);
 		xml_fputs(fh.title, stdout);
 		printf("</t><po f='%u'>", fid);
-		web_quotation(m.ptr, m.size, fh.owner, false);
+		if (isedit) {
+			char *begin = m.ptr, *end = (char *)(m.ptr) + m.size;
+			get_post_body(&begin, &end);
+			if (end > begin)
+				xml_fputs2(begin, end - begin, stdout);
+		} else {
+			web_quotation(m.ptr, m.size, fh.owner, false);
+		}
 		mmap_close(&m);
 		fputs("</po>", stdout);
 	}
@@ -81,3 +119,12 @@ int bbspst_main(void)
 	return 0;
 }
 
+int bbspst_main(void)
+{
+	return do_bbspst(false);
+}
+
+int bbsedit_main(void)
+{
+	return do_bbspst(true);
+}
