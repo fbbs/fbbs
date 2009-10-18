@@ -1,4 +1,4 @@
-#include <bbs.h>
+#include "bbs.h"
 
 // Returns the path of 'filename' under the home directory of 'userid'.
 char *sethomefile(char *buf, const char *userid, const char *filename)
@@ -156,4 +156,34 @@ bool seek_in_file(const char *filename, const char *seekstr)
 	}
 	fclose(fp);
 	return false;
+}
+
+/**
+ * Mask last section of an IP address.
+ * @param host IP address to be masked.
+ * @return masked IP address.
+ */
+const char *mask_host(const char *host)
+{
+	static char masked[IP_LEN];
+	char *end = masked + sizeof(masked);	
+	strlcpy(masked, host, sizeof(masked));
+	char *last = strrchr(masked, '.'); // IPv4 address.
+	if (last != NULL) {
+		if (++last < end && *last >= '0' && *last <= '9') {
+			*last = '*';
+			if (++last < end)
+				*last = '\0';
+		}
+	} else {
+		last = strrchr(masked, ':'); // IPv6 address.
+		if (last != NULL) {
+			if (++last < end)
+				*last = '*';
+			if (++last < end)
+				*last = '\0';
+		}
+	}
+	masked[sizeof(masked) - 1] = '\0';
+	return masked;
 }
