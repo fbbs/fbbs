@@ -553,10 +553,8 @@ void a_forward(char *path,ITEM* pitem,int mode) {
 	char fname[PATHLEN], *mesg;
 	sprintf(fname, "%s/%s", path, pitem->fname);
 	if (dashf(fname)) {
-		strlcpy(fhdr.title, pitem->title, STRLEN);
-		strlcpy(fhdr.filename, pitem->fname, STRLEN);
-		fhdr.title[STRLEN - 1] = '\0';
-		fhdr.filename[STRLEN - 1] = '\0';
+		strlcpy(fhdr.title, pitem->title, sizeof(fhdr.title));
+		strlcpy(fhdr.filename, pitem->fname, sizeof(fhdr.filename));
 		switch (doforward(path, &fhdr, mode)) {
 			case 0:
 				mesg = "ÎÄÕÂ×ª¼ÄÍê³É!\n";
@@ -612,7 +610,7 @@ void a_newitem(MENU *pm, int mode) {
 			break;
 	}
 	/* edwardc.990320 system will assign a filename for you .. */
-	sprintf(fname, "%c%X", head, time(0) + getpid() + getppid() + rand());
+	sprintf(fname, "%c%lX", head, time(0) + getpid() + getppid() + rand());
 	sprintf(fpath, "%s/%s", pm->path, fname);
 	mesg = "ÇëÊäÈëÎÄ¼þ»òÄ¿Â¼Ö®ÖÐÎÄÃû³Æ£º ";
 	a_prompt(-1, mesg, title, 35);
@@ -1252,7 +1250,7 @@ void a_manager(MENU *pm, int ch) {
 			} else {
 				FILE *fn;
 				sethomefile(genbuf, currentuser.userid, ".announcepath");
-				if (fn = fopen(genbuf, "w+")) {
+				if ((fn = fopen(genbuf, "w+")) != NULL) {
 					fprintf(fn, "%s", pm->path);
 					fclose(fn);
 					presskeyfor("ÒÑ½«¸ÃÂ·¾¶ÉèÎªË¿Â·, Çë°´<Enter>¼ÌÐø...", t_lines-1);
@@ -1321,7 +1319,7 @@ void a_manager(MENU *pm, int ch) {
 						fowner[i]=changed_T[39+i];
 					}
 				}
-				fowner[IDLEN]='\0';
+				fowner[sizeof(fowner) - 1] = '\0';
 				//add end
 				changed_T[38]='\0';
 				rtrim(changed_T);
@@ -1882,7 +1880,7 @@ int AddPCorpus() {
 		prints(secu);
 		sethomefile(genbuf, lookupuser.userid, ".announcepath");
 		report(genbuf, currentuser.userid);
-		if (fn = fopen(genbuf, "w+")) {
+		if ((fn = fopen(genbuf, "w+")) != NULL) {
 			fprintf(fn, "%s/%s", digestpath, lookupuser.userid);
 			fclose(fn);
 		}
@@ -2028,7 +2026,7 @@ void ann_set_title_show(char* title) {
 	char buf[256], path[256];
 	move(0, 0);
 	rtrim(title);
-	sprintf(path, "[%-0.56s] %s", title, show_items[show_mode]);
+	sprintf(path, "[%-1.56s] %s", title, show_items[show_mode]);
 	sprintf(buf, "[1;44;33m Éè¶¨Ë¿Â· %69.69s[m\n", path);
 	prints(buf);
 	prints(" ÍË³ö[[1;32m¡û[m] Ôö¼Ó/Ìæ»»[[1;32m¡ú Enter[m] ¸ÄÃû[[1;32mt[m] É¾³ý[[1;32md[m] Çå¿Õ[[1;32mc[m] ÒÆ¶¯[[1;32mm[m] ½øÈë[[1;32mg[m] °ïÖú[[1;32mh[m]\n");
@@ -2047,7 +2045,7 @@ void ann_get_title_show() {
 int save_import_path() {
 	FILE *fp;
 	sethomefile(genbuf, currentuser.userid, "annpath");
-	if (fp = fopen(genbuf, "w")) {
+	if ((fp = fopen(genbuf, "w")) != NULL) {
 		fwrite(import_path, sizeof(struct AnnPath), MAXANNPATHS, fp);
 		fclose(fp);
 	}
@@ -2058,10 +2056,8 @@ int load_import_path() {
 	FILE *fp;
 	int count = 0;
 	sethomefile(genbuf, currentuser.userid, "annpath");
-	if (fp = fopen(genbuf, "r")) {
-		count
-				= fread(import_path, sizeof(struct AnnPath), MAXANNPATHS,
-						fp);
+	if ((fp = fopen(genbuf, "r")) != NULL) {
+		count = fread(import_path, sizeof(struct AnnPath), MAXANNPATHS,	fp);
 		fclose(fp);
 	}
 	if (count != MAXANNPATHS)
@@ -2382,13 +2378,13 @@ int set_ann_path(char *title, char *path, int mode) {
 							change_ann_path(curr_annpath, title, path, 0);
 					} else if (ann_mode == ANNPATH_GETMODE) {
 						if (import_path[curr_annpath].num != -1) {
-							sprintf(genbuf, "·ÅÈëË¿Â·%d [%-0.50s]Âð?",
+							sprintf(genbuf, "·ÅÈëË¿Â·%d [%-1.50s]Âð?",
 									import_path[curr_annpath].num + 1,
 									import_path[curr_annpath].title);
 							if (askyn(genbuf, YEA, NA)==YEA) {
 								sethomefile(genbuf, currentuser.userid,
 										".announcepath");
-								if (fn = fopen(genbuf, "w+")) {
+								if ((fn = fopen(genbuf, "w+")) != NULL) {
 									fprintf(fn, "%s",
 											import_path[curr_annpath].path);
 									fclose(fn);
