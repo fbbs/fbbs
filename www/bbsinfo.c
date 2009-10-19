@@ -95,12 +95,13 @@ int bbspwd_main(void)
 		return BBS_ELGNREQ;
 	parse_post_data();
 	xml_header("bbspwd");
-	printf("<bbspwd %s>", get_session_str());
+	printf("<bbspwd %s", get_session_str());
 	char *pw1 = getparm("pw1");
 	if (*pw1 == '\0') {
-		printf("i='i'></bbspwd>");
+		printf(" i='i'></bbspwd>");
 		return 0;
 	}
+	fputc(">", stdout);
 	char *pw2 = getparm("pw2");
 	char *pw3 = getparm("pw3");
 	switch (set_password(pw1, pw2, pw3)) {
