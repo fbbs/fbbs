@@ -1,7 +1,4 @@
 #include "bbs.h"
-//extern  cmpbnames();
-//rewritten by iamfat 2002.07.20
-//原始文件从以前的备份0720里面找:P
 
 //需要用到的外部函数
 extern struct boardheader *getbcache();
@@ -251,7 +248,7 @@ int reason_check(char* line) {
 int getreasoncount() {
 	FILE *fp;
 	char line[256];
-	if (fp=fopen(reason_suggestion, "r")) {
+	if ((fp = fopen(reason_suggestion, "r")) != NULL) {
 		reasoncount=0;
 		while (fgets(line, 256, fp) && strchr(reasonlist, line[0]))
 			reasoncount++;
@@ -277,7 +274,7 @@ char* getdetailreason() {
 	FILE* fp;
 	char line[256];
 	char* dtlrsn=detailreason;
-	if (fp=fopen(reason_detail, "r")) {
+	if ((fp = fopen(reason_detail, "r")) != NULL) {
 		while (fgets(line, 256, fp)) {
 			if (strchr(reason, line[0])) {
 				strcpy(dtlrsn, line+1);
@@ -553,7 +550,7 @@ int club_key_deal(char* fname, int ch, char* line) {
 			if (delclub(club_uid)) {
 				sprintf(repbuf, "%s取消%s在俱乐部版%s的权利", currentuser.userid,
 						club_uid, currboard);
-				sprintf(msgbuf, "");
+				msgbuf[0] = '\0';
 				autoreport(repbuf, msgbuf, YEA, club_uid, 2);
 				Poststring(msgbuf, "club", repbuf, 2);
 				log_DOTFILE(club_uid, repbuf);
