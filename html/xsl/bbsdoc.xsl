@@ -57,5 +57,6 @@
 		<xsl:if test='@link != "g"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[文摘区]</a></xsl:if>
 		<a><xsl:attribute name='href'>not?board=<xsl:value-of select='@title' /></xsl:attribute>[进版画面]</a>
 		<a><xsl:attribute name='href'>brdadd?bid=<xsl:value-of select='@bid' /></xsl:attribute>[收藏本版]</a>
+		<a><xsl:attribute name='href'>rss?bid=<xsl:value-of select='@bid'/></xsl:attribute>[RSS]</a>
 	</xsl:template>
 </xsl:stylesheet>
