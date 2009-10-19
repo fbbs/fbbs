@@ -905,7 +905,6 @@ static void user_login(void)
 	set_safe_record();
 	check_uinfo(&currentuser, 0);
 	strlcpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
-	currentuser.lasthost[15] = '\0'; /* dumb mistake on my part */
 	{
 		time_t stay, recent;
 
