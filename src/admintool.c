@@ -1182,8 +1182,13 @@ int do_register(int index, REGINFO * ent, char *direct) {
 	return 0;
 }
 
-struct one_key reg_comms[] = { 'r', do_register, 'y', pass_register, 'd',
-		delete_register, '\0', NULL };
+struct one_key reg_comms[] = {
+		{'r', do_register},
+		{'y', pass_register},
+		{'d', delete_register},
+		{'\0', NULL}
+};
+
 void show_register() {
 	FILE *fn;
 	int x; //, y, wid, len;
@@ -2085,14 +2090,14 @@ void a_edits() {
 	move(1, 0);
 	prints("±‡–ﬁœµÕ≥µµ∞∏\n\n");
 	for (num = 0; (HAS_PERM(PERM_ESYSFILE)) ? e_file[num] != NULL
-			&& explain_file[num] != NULL : explain_file[num] != "menu.ini"; num++) {
-		prints("[[1;32m%2d[m] %s", num + 1, explain_file[num]);
+			&& explain_file[num] != NULL : strcmp(explain_file[num], "menu.ini"); num++) {
+		prints("[\033[1;32m%2d\033[m] %s", num + 1, explain_file[num]);
 		if (num < 17)
 			move(4 + num, 0);
 		else
 			move(num - 14, 50);
 	}
-	prints("[[1;32m%2d[m] ∂º≤ªœÎ∏ƒ\n", num + 1);
+	prints("[\033[1;32m%2d\033[m] ∂º≤ªœÎ∏ƒ\n", num + 1);
 
 	getdata(23, 0, "ƒ„“™±‡–ﬁƒƒ“ªœÓœµÕ≥µµ∞∏: ", ans, 3, DOECHO, YEA);
 	ch = atoi(ans);
