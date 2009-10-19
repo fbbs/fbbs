@@ -397,7 +397,6 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 		sprintf(genbuf, "mail/%c/%s/%s", toupper(currentuser.userid[0]),
 				currentuser.userid, fileinfo->filename);
 	strlcpy(quote_file, genbuf, sizeof (quote_file));
-	quote_file[sizeof (quote_file) - 1] = '\0';
 	strcpy(quote_title, fileinfo->title);
 
 	clear();
@@ -871,7 +870,6 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		strcpy(quote_title, fileinfo->title);
 		o_gid = fileinfo->gid;
 		o_id = fileinfo->id;
-		quote_file[255] = fileinfo->filename[STRLEN - 2];
 		strcpy(quote_user, fileinfo->owner);
 
 #ifndef NOREPLY
@@ -1794,7 +1792,7 @@ static int undelcheck(void *fh1, void *fh2)
 int date_to_fname(char *postboard, time_t now, char *fname) {
 	static unsigned ref = 0;
 
-	sprintf(fname, "M.%d.%X%X", now, uinfo.pid, ref);
+	sprintf(fname, "M.%ld.%X%X", now, uinfo.pid, ref);
 	ref++;
 	return 0;
 }
@@ -3088,16 +3086,6 @@ int read_junk(int ent, struct fileheader *fileinfo, char *direct) {
 	return NEWDIRECT;
 }
 
-/*
- int read_log()
- {
- if(!HAS_PERM(PERM_OBOARDS))return DONOTHING;
- setbfile(ANN_LOG_PATH, currboard, ".log");
- ansimore(ANN_LOG_PATH, YEA);
- return FULLUPDATE;
- }
- */
-
 int show_online() {
 	extern int SHOWONEBRD;
 
@@ -3124,55 +3112,37 @@ extern int b_vote_maintain();
 extern int b_notes_edit();
 int count_range(int ent, struct fileheader *fileinfo, char *direct);
 
-struct one_key read_comms[] = { '_', underline_post,
-//',', read_log,
-		//'y', show_re_level,
-		//added by iamfat 2003.03.01
-		'@', show_online,
+struct one_key read_comms[] = {
+		{'_', underline_post}, {'@', show_online},
 #ifdef ENABLE_NOTICE
-		'#', make_notice,
-		';', move_notice,
+		{'#', make_notice}, {';', move_notice},
 #endif
-		'.', read_trash, 'J', read_junk, ',', read_attach,
-//added end
-		'w', makeDELETEDflag, 'Y', UndeleteArticle, 'r', read_post, 'K',
-		skip_post,
-//  'G', range_do,
-		/*      'u', skip_post, *//* Key 'u' use to query user's info */
-		'd', del_post, 'D', del_range, 'm', mark_post, 'E', edit_post,
-		Ctrl('G'), acction_mode, '`', acction_mode, 'g', digest_post, 'T',
-		edit_title, 's', do_select, Ctrl('C'), do_cross, Ctrl('P'),
-		do_post, 'c', new_flag_clearto, /* 清除未读标记到当前位置 */
-//'C', new_flag_clear,  /* 清全部未读标记 */
-		'C', count_range, /* Modified by IAMFAT 2002.06.14 */
-//swap c & C,by money 2002.3.22
+		{'.', read_trash}, {'J', read_junk}, {',', read_attach},
+		{'w', makeDELETEDflag}, {'Y', UndeleteArticle}, {'r', read_post},
+		{'K', skip_post}, {'d', del_post}, {'D', del_range},
+		{'m', mark_post}, {'E', edit_post}, {Ctrl('G'), acction_mode},
+		{'`', acction_mode}, {'g', digest_post}, {'T', edit_title},
+		{'s', do_select}, {Ctrl('C'), do_cross}, {Ctrl('P'), do_post},
+		{'c', new_flag_clearto}, {'C', count_range},
 #ifdef INTERNET_EMAIL
-		'F', forward_post,
-		'U', forward_u_post,
-		Ctrl ('R'), post_reply,
+		{'F', forward_post}, {'U', forward_u_post}, {Ctrl ('R'), post_reply},
 #endif
-		'i', Save_post, 'I', Import_post, 'R', b_results, 'v', b_vote,
-		'V', b_vote_maintain,
-		//'M', b_vote_maintain,
-				'W', b_notes_edit, Ctrl('W'), b_notes_passwd, 'h',
-				mainreadhelp, Ctrl('J'), mainreadhelp, KEY_TAB,
-				show_b_note, 'z', show_b_secnote, 'x', into_announce,
-		//Commented by Amigo 2002.06.07
-				//      'X', into_myAnnounce,
-				//      Ctrl('X'), into_PAnnounce,
-				'a', auth_search_down, 'A', auth_search_up, '/',
-				t_search_down, '?', t_search_up, '\'', post_search_down,
-				'\"', post_search_up, ']', thread_down, '[', thread_up,
-				Ctrl('D'), deny_user, Ctrl('K'), club_user, Ctrl('A'),
-				show_author, Ctrl('N'), SR_first_new, 'n', SR_first_new,
-				'\\', SR_last, '=', SR_first, Ctrl('S'), SR_read, 'p',
-				SR_read, Ctrl('U'), SR_author, 'b', SR_BMfunc, Ctrl('T'),
-				acction_mode, 't', thesis_mode, /* youzi 1997.7.8 */
-		'!', Q_Goodbye, 'S', s_msg, 'f', new_flag_clear, /* 清全部未读标记  modified by Seaman  ( original: t_friends) */
-		'o', t_friends, /* added by Seaman */
-		'L', BM_range, //add by money. 2002.1.12
-		'*', show_file_info, //add by SpiritRain. 2005.7.9
-		'Z', send_msg, '|', lock, '\0', NULL };
+		{'i', Save_post}, {'I', Import_post}, {'R', b_results},
+		{'v', b_vote}, {'V', b_vote_maintain}, {'W', b_notes_edit},
+		{Ctrl('W'), b_notes_passwd}, {'h', mainreadhelp},
+		{Ctrl('J'), mainreadhelp}, {KEY_TAB, show_b_note},
+		{'z', show_b_secnote}, {'x', into_announce},
+		{'a', auth_search_down}, {'A', auth_search_up}, {'/', t_search_down},
+		{'?', t_search_up}, {'\'', post_search_down}, {'\"', post_search_up},
+		{']', thread_down}, {'[', thread_up}, {Ctrl('D'), deny_user},
+		{Ctrl('K'), club_user}, {Ctrl('A'), show_author},
+		{Ctrl('N'), SR_first_new}, {'n', SR_first_new}, {'\\', SR_last},
+		{'=', SR_first}, {Ctrl('S'), SR_read}, {'p', SR_read},
+		{Ctrl('U'), SR_author}, {'b', SR_BMfunc}, {Ctrl('T'), acction_mode},
+		{'t', thesis_mode}, {'!', Q_Goodbye}, {'S', s_msg},
+		{'f', new_flag_clear}, {'o', t_friends}, {'L', BM_range},
+		{'*', show_file_info}, {'Z', send_msg}, {'|', lock}, {'\0', NULL}
+};
 
 int Read() {
 	char buf[STRLEN];

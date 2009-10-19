@@ -1150,7 +1150,6 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 							toupper(currentuser.userid[0]),
 							currentuser.userid, fhdr.filename);
 				strlcpy(quote_file, genbuf, sizeof(quote_file));
-				quote_file[sizeof(quote_file) - 1] = '\0';
 				strcpy(quote_title, fhdr.title);
 				strcpy(quote_board, currboard);
 				strcpy(dbname, currboard);
