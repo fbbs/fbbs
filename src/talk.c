@@ -127,55 +127,54 @@ char pagerchar(int friend, int pager) {
 			}
 			return NA;
 		}
+
 #ifdef SHOW_IDLE_TIME
-		char *
-		idle_str(uent)
-		struct user_info *uent;
-		{
-			static char hh_mm_ss[32];
-			time_t now, diff;
-			int limit, hh, mm;
-			if (uent == NULL) {
-				strcpy(hh_mm_ss, "不详");
-				return hh_mm_ss;
-			}
+const char *idle_str(struct user_info *uent)
+{
+	static char hh_mm_ss[32];
+	time_t now, diff;
+	int limit, hh, mm;
+	if (uent == NULL) {
+		strcpy(hh_mm_ss, "不详");
+		return hh_mm_ss;
+	}
 
-			now = time(0);
+	now = time(NULL);
 
-			if ( uent->mode == TALK )
-			diff = talkidletime; /* 聊天另有自己的 idle kick 机制 */
-			else if (uent->mode == BBSNET )
-			diff = 0;
-			else
-			diff = now - uent->idle_time;
+	if ( uent->mode == TALK )
+	diff = talkidletime; /* 聊天另有自己的 idle kick 机制 */
+	else if (uent->mode == BBSNET )
+	diff = 0;
+	else
+	diff = now - uent->idle_time;
 
 #ifdef DOTIMEOUT
-			/*
-			 * the 60 * 60 * 24 * 5 is to prevent fault /dev mount from kicking
-			 * out all users
-			 */
+	/*
+	 * the 60 * 60 * 24 * 5 is to prevent fault /dev mount from kicking
+	 * out all users
+	 */
 
-			if (uent->ext_idle)
-			limit = IDLE_TIMEOUT * 3;
-			else
-			limit = IDLE_TIMEOUT;
+	if (uent->ext_idle)
+	limit = IDLE_TIMEOUT * 3;
+	else
+	limit = IDLE_TIMEOUT;
 
-			if ((diff> limit) && (diff < 86400 * 5)&&uent->pid)
-				bbskill(uent, SIGHUP);
+	if ((diff> limit) && (diff < 86400 * 5)&&uent->pid)
+		bbskill(uent, SIGHUP);
 #endif
 
-			hh = diff / 3600;
-			mm = (diff / 60) % 60;
+	hh = diff / 3600;
+	mm = (diff / 60) % 60;
 
-			if (hh> 0)
-			sprintf(hh_mm_ss, "%02d:%02d", hh, mm);
-			else if (mm> 0)
-			sprintf(hh_mm_ss, "%d", mm);
-			else
-			sprintf(hh_mm_ss, "   ");
+	if (hh> 0)
+	sprintf(hh_mm_ss, "%02d:%02d", hh, mm);
+	else if (mm> 0)
+	sprintf(hh_mm_ss, "%d", mm);
+	else
+	sprintf(hh_mm_ss, "   ");
 
-			return hh_mm_ss;
-		}
+	return hh_mm_ss;
+}
 #endif
 
 int listcuent(struct user_info *uentp) {

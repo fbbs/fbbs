@@ -310,6 +310,8 @@ int fill_userlist() {
 	return totalusernum == 0 ? -1 : 1;
 }
 
+extern const char *idle_str(struct user_info *uent);
+
 int do_userlist() {
 	int i, j, override;
 	char user_info_str[STRLEN * 2];
@@ -362,8 +364,8 @@ int do_userlist() {
 			else
 				color = "";
 
-			snprintf(user_info_str, sizeof(user_info_str), " \033[m%4d%2s"
-					"%-12.22s\033[37m %-20.20s\033[m %-15.15s %c %c %c %s"
+			snprintf(user_info_str, sizeof(user_info_str), " \033[m%4d%s"
+					"%-12.12s\033[37m %-20.20s\033[m %-15.15s %c %c %c %s"
 					"%-10.10s\033[37m %5.5s\033[m\n", i + 1 + page,
 					(override) ? "\033[32m¡Ì" : "  ", uentp->userid, userid,
 					host, pager, msgchar(uentp),
