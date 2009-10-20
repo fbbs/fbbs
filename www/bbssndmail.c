@@ -8,7 +8,6 @@ int bbssndmail_main(void)
 		return BBS_EACCES;
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;
-	// TODO: mail quota
 	const char *recv = getparm("recv");
 	if (*recv == '\0')
 		return BBS_EINVAL;
