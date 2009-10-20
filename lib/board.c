@@ -119,3 +119,13 @@ bool is_board_dir(const struct boardheader *bp)
 {
 	return (bp->flag & BOARD_DIR_FLAG);
 }
+
+/**
+ * Get board description.
+ * @param bp pointer to board header.
+ * @return board description.
+ */
+const char *get_board_desc(const struct boardheader *bp)
+{
+	return (bp->title + 11);
+}

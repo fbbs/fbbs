@@ -18,8 +18,7 @@ static int showbrdlist(const char *filename)
 		x = getbcache(board);
 		if (!x)
 			return showed;
-		// TODO: Magic number.
-		printf("<brd name='%s' desc='%s' />", board, x->title + 10);
+		printf("<brd name='%s' desc='%s' />", board, get_board_desc(x));
 		showed++;
 	}
 	fclose(fp);

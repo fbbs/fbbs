@@ -15,9 +15,8 @@ int bbssel_main(void)
 				continue;
 			if (strcasestr(bp->filename, brd)
 					|| strcasestr(bp->title, brd)) {
-				// TODO: Magic number here.
 				printf("<brd dir='%d' title='%s' desc='%s' />",
-						is_board_dir(bp), bp->filename, bp->title + 11);
+						is_board_dir(bp), bp->filename, get_board_desc(bp));
 				found++;
 			}
 		}

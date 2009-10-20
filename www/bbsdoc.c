@@ -168,9 +168,8 @@ static int bbsdoc(int mode)
 			cgi_name = "t";
 			break;
 	}
-	// TODO: magic number.
 	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
-			"bid='%d' page='%d' link='%s' ", bp->filename, bp->title + 11,
+			"bid='%d' page='%d' link='%s' ", bp->filename, get_board_desc(bp),
 			bp->BM, total, start, bid, my_t_lines, cgi_name);
 	char path[HOMELEN];
 	sprintf(path, "%s/info/boards/%s/icon.jpg", BBSHOME, board);

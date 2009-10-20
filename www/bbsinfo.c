@@ -101,7 +101,7 @@ int bbspwd_main(void)
 		printf(" i='i'></bbspwd>");
 		return 0;
 	}
-	fputc(">", stdout);
+	printf(">", stdout);
 	char *pw2 = getparm("pw2");
 	char *pw3 = getparm("pw3");
 	switch (set_password(pw1, pw2, pw3)) {

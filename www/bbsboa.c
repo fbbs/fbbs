@@ -43,8 +43,7 @@ int bbsboa_main(void)
 			printf("icon='%s' ", path);
 		printf("title='%s'>", secname[sector][0]);
 	} else {
-		printf("dir= '1' title='%s'>", parent->title + 11);
-		// TODO: Magic number here.
+		printf("dir= '1' title='%s'>", get_board_desc(parent));
 	}
 
 	// TODO: Marquee BBSHOME/info/egroup(sector)/headline.txt
@@ -63,11 +62,10 @@ int bbsboa_main(void)
 			if (!strchr(seccode[sector], x->title[0]))
 				continue;
 		}
-		// TODO: Magic number here.
 		printf("<brd dir='%d' title='%s' cate='%.6s' desc='%s' bm='%s' "
 				"read='%d' count='%d' />",
 				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename,
-				x->title + 1, x->title + 11, x->BM,
+				x->title + 1, get_board_desc(x), x->BM,
 				brc_unread(x->filename), filenum(x->filename));
 	}
 	printf("</bbsboa>");

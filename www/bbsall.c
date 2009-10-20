@@ -16,7 +16,7 @@ int bbsall_main(void)
 			continue;
 		printf("<brd dir='%d' title='%s' cate='%6.6s' desc='%s' bm='%s' />",
 				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename, x->title + 1,
-				x->title + 11, x->BM); // TODO: Magic number here.
+				get_board_desc(x), x->BM);
 	}
 	printf("</bbsall>");
 	return 0;
