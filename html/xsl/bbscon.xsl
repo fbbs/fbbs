@@ -14,11 +14,11 @@
 		<div class='post'>
 			<div class='pleft'>
 				<xsl:if test='@link != "con"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[文摘区]</a></xsl:if>
-				<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='/images/button/home.gif' />本讨论区]</a>
+				<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/button/home.gif' />本讨论区]</a>
 				<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:attribute>[本文链接]</a>
 				<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' />&amp;a=</xsl:variable>
-				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />p</xsl:attribute>[<img src='/images/button/up.gif' />上一篇]</a>
-				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />n</xsl:attribute>[<img src='/images/button/down.gif' />下一篇]</a>
+				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />p</xsl:attribute>[<img src='../images/button/up.gif' />上一篇]</a>
+				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />n</xsl:attribute>[<img src='../images/button/down.gif' />下一篇]</a>
 				<xsl:if test='po/@reid != f'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />b</xsl:attribute>[同主题上篇]</a></xsl:if>
 				<a><xsl:attribute name='href'><xsl:value-of select='$baseurl' />a</xsl:attribute>[同主题下篇]</a>
 				<xsl:if test='po/@gid'><a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@gid' /></xsl:attribute>[同主题第一篇]</a></xsl:if>
@@ -37,7 +37,7 @@
 	
 	<xsl:template name='linkbar'>
 		<xsl:variable name='param'>bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:variable>
-		<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>[ <img src='/images/button/edit.gif' />回复本文 ]</a></xsl:if>
+		<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>[ <img src='../images/button/edit.gif' />回复本文 ]</a></xsl:if>
 		<a><xsl:attribute name='href'>edit?<xsl:value-of select='$param'/></xsl:attribute>[ 修改 ]</a>
 		<a><xsl:attribute name='href'>ccc?<xsl:value-of select='$param'/></xsl:attribute>[ 转载 ]</a>
 		<a><xsl:attribute name='href'>fwd?<xsl:value-of select='$param'/></xsl:attribute>[ 转寄 ]</a>

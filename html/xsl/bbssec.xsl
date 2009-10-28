@@ -10,7 +10,7 @@
 	</xsl:template>
 
 	<xsl:template match='bbssec'>
-		<img src='/images/secbanner.jpg' />
+		<img src='../images/secbanner.jpg' />
 		<xsl:for-each select='sec'>
 			<ul class='sec'>
 				<li><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id' /></xsl:attribute><xsl:value-of select='@id' />&#160;<xsl:value-of select='@desc' /></a></li>
