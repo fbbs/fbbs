@@ -213,7 +213,6 @@ int x_cloak() {
 	modify_user_mode(GMENU);
 	report("toggle cloak", currentuser.userid);
 	uinfo.invisible = (uinfo.invisible) ? NA : YEA;
-	//add by infotech for get_status        04.11.29
 	if (uinfo.invisible == YEA) {
 		uidshm->passwd[uinfo.uid - 1].flags[0] |= CLOAK_FLAG;
 	} else {

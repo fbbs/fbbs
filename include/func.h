@@ -61,7 +61,6 @@ int getuserbyuid(struct userec *u, int uid);
 void resolve_utmp(void);
 int allusers(void);
 int get_online(void);
-int get_status(int uid);
 int refresh_utmp(void);
 int getnewutmpent(struct user_info *up);
 int apply_ulist(int (*fptr)());

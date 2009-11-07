@@ -358,17 +358,6 @@ int getuserbyuid(struct userec *u, int uid)
 	return uid;
 }
 
-int get_status(int uid)
-{
-	if (resolve_ucache() == -1)
-		return 0;
-	if (!HAS_PERM(PERM_SEECLOAK)
-			&& (uidshm->passwd[uid - 1].userlevel & PERM_LOGINCLOAK)
-			&& (uidshm->passwd[uid - 1].flags[0] & CLOAK_FLAG))
-		return 0;
-	return uidshm->status[uid - 1];
-}
-
 // If 'utmpshm' == NULL, gets shared memory for online users
 // and puts its starting address in utmpshm.
 void resolve_utmp(void)

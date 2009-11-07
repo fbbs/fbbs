@@ -649,6 +649,17 @@ int count_visible_active(struct user_info *uentp) {
 	return 1;
 }
 
+int get_status(int uid)
+{
+	if (resolve_ucache() == -1)
+		return 0;
+	if (!HAS_PERM(PERM_SEECLOAK)
+			&& (uidshm->passwd[uid - 1].userlevel & PERM_LOGINCLOAK)
+			&& (uidshm->passwd[uid - 1].flags[0] & CLOAK_FLAG))
+		return 0;
+	return uidshm->status[uid - 1];
+}
+
 int num_alcounter() {
 	static time_t last=0;
 	register int i;
