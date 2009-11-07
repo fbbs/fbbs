@@ -28,10 +28,6 @@ struct binfo *a, *b;
     return a->sum-b->sum;
 }
 
-int report()
-{
-        return ;
-}
 /* Added by deardragon 1999.12.2 */
 void getdatestring( time_t now)
 {
