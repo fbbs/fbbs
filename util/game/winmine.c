@@ -188,7 +188,7 @@ int winloop()
         if((c==260||c=='h')&&x>1) x--;
         if((c==259||c=='l')&&x<30) x++;
         move(0, 20);
-        sprintf(buf, "时间: %d ", time(0)-t0);
+        sprintf(buf, "时间: %ld ", time(0)-t0);
         prints(buf);
         move(40, 20);
         sprintf(buf, "标记: %d ", marked);
@@ -220,7 +220,7 @@ int winloop()
             move(0, 22);
             prints("祝贺你！你成功了！                    ");
             {  char buf[100];
-               sprintf(buf, "finished in %d s.", time(0)-t0);
+               sprintf(buf, "finished in %ld s.", time(0)-t0);
                syslog(buf);
             }
             gameover= 0;
@@ -231,7 +231,7 @@ int winloop()
             move(0, 22);
             prints("很遗憾，你失败了... 再来一次吧！                                 ");
             {  char buf[100];
-               sprintf(buf, "failed in %d s.", time(0)-t0);
+               sprintf(buf, "failed in %ld s.", time(0)-t0);
                syslog(buf);
             }
             gameover= 0;
@@ -304,7 +304,7 @@ int win_loadrec() {
         return;
     }
     for(n=0; n<=19; n++)
-        fscanf(fp, "%s %d %s\n", topID[n], &topT[n], &topFROM[n]);
+        fscanf(fp, "%s %d %s\n", topID[n], &topT[n], topFROM[n]);
     fclose(fp);
 }
 

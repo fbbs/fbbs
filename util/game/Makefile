@@ -2,7 +2,7 @@
 BBSHOME=/home/bbs
 
 CC      = gcc
-CFLAGS  = -O
+CFLAGS  = -O2 -pipe -fPIC
 DEFINES = -I../../include/
 
 CGAMES 	 = chicken.c game.c money.c
