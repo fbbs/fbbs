@@ -43,7 +43,7 @@ int main (int argc, char *argv[])
 					break;
 		     	fscanf (bmfp, "%s\n", which);
 		      	fprintf (	fout,
-		    		  " ** [1;33m%-16s[m°æÖ÷ [1;32m%-15.15s[m [ %-20.20s ]%6dÌì\n",
+		    		  " ** [1;33m%-16s[m°æÖ÷ [1;32m%-15.15s[m [ %-20.20s ]%6ldÌì\n",
 		       			which, aman.userid, aman.username,(now - aman.lastlogin) / 86400);
 	   		}
 	 		fclose (bmfp);
@@ -54,9 +54,10 @@ int main (int argc, char *argv[])
 	if (j)  {
     	fprintf (fout, "\n\n×Ü¹²ÓĞ %d Î»ÆßÌìÎ´ÉÏÕ¾µÄ°æÖ÷¡£\n", j);
       	fprintf (fout, "\n[1;31m    ÇëÒÔÉÏ°æÖ÷×¢Òâ¡£[m\n");
-      	fprintf (fout, "\n\n³¬¹ıÒ»¸öÔÂÁ¬Ğø²»ÉÏÏß½«È¡Ïû°æÖ÷×Ê¸ñ¡£\n", j);
+      	fprintf (fout, "\n\n³¬¹ıÒ»¸öÔÂÁ¬Ğø²»ÉÏÏß½«È¡Ïû°æÖ÷×Ê¸ñ¡£\n");
     }  else    {
     	fprintf (fout, "\n\n±¾Õ¾Ä¿Ç°ÉĞÎŞÆßÌìÎ´ÉÏÕ¾µÄ°åÖ÷¡£\n");
     }
   	fclose (fout);
+	return 0;
 }

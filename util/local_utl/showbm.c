@@ -432,9 +432,9 @@ main (void)
       if ((time (0) - lastNarticles_Ann) / 60 / 60 / 24 > 999)
         fprintf (fp0, " %6d", 999);
       else if ((time (0) - lastNarticles_Ann) / 60 / 60 / 24 > NO0FILEDAYS)
-        fprintf (fp0, " %s%6d%s",REDMARK,(time (0) - lastNarticles_Ann) / 60 / 60 / 24,ENDREDMARK);
+        fprintf (fp0, " %s%6ld%s",REDMARK,(time (0) - lastNarticles_Ann) / 60 / 60 / 24,ENDREDMARK);
       else
-        fprintf (fp0, " %6d", (time (0) - lastNarticles_Ann) / 60 / 60 / 24);
+        fprintf (fp0, " %6ld", (time (0) - lastNarticles_Ann) / 60 / 60 / 24);
 #endif
 
 #ifndef PRINTOFF
@@ -464,16 +464,16 @@ main (void)
       		if ((time (0) - bmrec.lastlogin) / 60 / 60 / 24 > 999)
         		fprintf (fp0, " %s%6d%s", "", 999," ");
       		else if ((time (0) - bmrec.lastlogin) / 60 / 60 / 24 > BMNOLOGIN)
-        		fprintf (fp0, " %s%6d%s",REDMARK,(time (0) - bmrec.lastlogin) / 60 / 60 / 24,ENDREDMARK);
+        		fprintf (fp0, " %s%6ld%s",REDMARK,(time (0) - bmrec.lastlogin) / 60 / 60 / 24,ENDREDMARK);
       		else
-        		fprintf (fp0, " %6d", (time (0) - bmrec.lastlogin) / 60 / 60 / 24);
+        		fprintf (fp0, " %6ld", (time (0) - bmrec.lastlogin) / 60 / 60 / 24);
       
 		if ((time (0) - lastbmpost_Brd) / 60 / 60 / 24 > 999)
         		fprintf (fp0, " %6d", 999);
       		else if ((time (0) - lastbmpost_Brd) / 60 / 60 / 24 > BMNOFILEDAYS)
-        		fprintf (fp0, " %s%6d%s",REDMARK,(time (0) - lastbmpost_Brd) / 60 / 60 / 24,ENDREDMARK);
+        		fprintf (fp0, " %s%6ld%s",REDMARK,(time (0) - lastbmpost_Brd) / 60 / 60 / 24,ENDREDMARK);
       		else
-        		fprintf (fp0, " %6d", (time (0) - lastbmpost_Brd) / 60 / 60 / 24);
+        		fprintf (fp0, " %6ld", (time (0) - lastbmpost_Brd) / 60 / 60 / 24);
 		
 		bm=strtok(NULL, " \t\n");
 		if(bm)fprintf(fp0, "\n%37.37s", " ");

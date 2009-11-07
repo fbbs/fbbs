@@ -1,11 +1,8 @@
-/* $Id: birthday.c 2 2005-07-14 15:06:08Z root $ */
-
 #include <time.h>
 #include <stdio.h>
 #include "bbs.h"
 
-main(argc, argv)
-char   *argv[];
+int main(int argc, char **argv)
 {
 	FILE   *fp, *fout;
 	time_t  now;
@@ -13,6 +10,7 @@ char   *argv[];
 	struct userec aman;
 	struct tm *tmnow;
 	char    buf[256];
+
 	sprintf(buf, "%s/.PASSWDS", BBSHOME);
 	if ((fp = fopen(buf, "rb")) == NULL) {
 		printf("Can't open record data file.\n");
@@ -49,4 +47,5 @@ char   *argv[];
 	fprintf(fout, "\n\n总共有 %d 位寿星。\n", j);
 	fclose(fout);
 	fclose(fp);
+	return 0;
 }

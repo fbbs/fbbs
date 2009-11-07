@@ -3,7 +3,7 @@ CFLAGS	= -O2 -Wall -I../../include
 BBSHOME	= /home/bbs
 LIBS	= -lBBS -L../../lib
 
-UTILITY	= bbstop birthday horoscope newacct poststat bbsuptime \
+UTILITY	= bbstop birthday poststat bbsuptime \
           badbms AnnIndex showbm statBM
 UTIL2	= averun account newacct horoscope zodiac
 
