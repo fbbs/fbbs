@@ -169,7 +169,7 @@ span.time { color: gray; font-size: 0.8em; }
 
 div.post {
 	-moz-border-radius: 0.4em;
-	border: 1px solid #336699;
+	border: 2px solid #336699;
 	margin-bottom: 1em;
 }
 div.pleft {
