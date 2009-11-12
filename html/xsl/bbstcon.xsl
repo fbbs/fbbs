@@ -5,13 +5,14 @@
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
-			<xsl:with-param name='title'>收藏夹</xsl:with-param>
+			<xsl:with-param name='title'>同主题文章阅读</xsl:with-param>
 			<xsl:with-param name='session'><xsl:value-of select='bbstcon/@s' /></xsl:with-param>
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match='bbstcon'>
 		<xsl:for-each select='po'>
+			<a name='top' />
 			<div class='post'>
 				<div class='pleft'>
 					<a href='#top'>[ <img src='../images/button/up.gif' />回页首 ]</a>
