@@ -1,4 +1,4 @@
-#include "config.h"
+#include "site.h"
 #include "modes.h"
 #include <stdbool.h>
 

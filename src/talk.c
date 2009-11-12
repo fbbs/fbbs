@@ -417,7 +417,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 			} else {
 				prints("%s%s\033[m", col, mode_type(uentp->mode));
 				idle = (time(NULL) - uentp->idle_time) / 60;
-				if (idle >= 1)
+				if (idle >= 1 && mode != BBSNET)
 					prints("[%d] ", idle);
 				else
 					prints("    ");
