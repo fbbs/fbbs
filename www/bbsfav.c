@@ -23,8 +23,9 @@ int bbsfav_main(void)
 	printf("<bbsfav %s>", get_session_str());
 	for (iter = m.ptr; iter != end; ++iter) {
 		if (!gbrd_is_custom_dir(iter)) {
-			printf("<brd bid='%d' brd='%s'>", iter->pos + 1, iter->filename);
-			xml_fputs(iter->title + 11, stdout);
+			struct boardheader *bp = bcache + iter->pos;
+			printf("<brd bid='%d' brd='%s'>", iter->pos + 1, bp->filename);
+			xml_fputs(get_board_desc(bp), stdout);
 			printf("</brd>");
 		}
 	}
