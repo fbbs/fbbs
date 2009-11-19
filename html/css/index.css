@@ -94,6 +94,7 @@ input.txt {
 	color: black;
 }
 #main p {
+	font-size: 0.8em;
 	margin: 2px;
 }
 #valid {

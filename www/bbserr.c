@@ -40,7 +40,7 @@ int check_bbserr(int err)
 		case BBS_EINVAL:
 			return http_fatal2(HTTP_STATUS_BADREQUEST, "参数错误");
 		case BBS_ELGNREQ:
-			return http_fatal("请先登录");
+			return http_fatal("请先<a href='login'>登录</a>");
 		case BBS_EACCES:
 			return http_fatal("权限不足");
 		case BBS_EPST:
