@@ -157,7 +157,14 @@ int main(void)
 			ret = BBS_ENOURL;
 		} else {
 			fcgi_init_loop(get_web_mode(app->mode));
+#ifdef FDQUAN
+			if (!loginok && app->func != bbslogin_main)
+				ret = BBS_ELGNREQ;
+			else
+				ret = (*(app->func))();
+#else
 			ret = (*(app->func))();
+#endif // FDQUAN
 		}
 		check_bbserr(ret);
 	}
