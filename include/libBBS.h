@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "hash.h"
+
 //mmap.c
 /** Memory mapped file information. */
 typedef struct {
