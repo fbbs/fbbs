@@ -3,10 +3,11 @@
 	<xsl:import href='misc.xsl' />
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template match='/'>
-		<xsl:call-template name='layout'>
+		<xsl:choose><xsl:when test='count(bbssel/brd)=1'><html><head><meta http-equiv="refresh"><xsl:attribute name='content'>0; url=<xsl:choose><xsl:when test='bbssel/brd/@dir="1"'>boa?board=<xsl:value-of select='bbssel/brd/@title'/></xsl:when><xsl:otherwise>doc?board=<xsl:value-of select='bbssel/brd/@title'/></xsl:otherwise></xsl:choose></xsl:attribute></meta></head><body></body></html></xsl:when>
+		<xsl:otherwise><xsl:call-template name='layout'>
 			<xsl:with-param name='title'>Ñ¡ÔñÌÖÂÛÇø</xsl:with-param>
 			<xsl:with-param name='session'><xsl:value-of select='bbssel/@s' /></xsl:with-param>
-		</xsl:call-template>
+		</xsl:call-template></xsl:otherwise></xsl:choose>
 	</xsl:template>
 
 	<xsl:template match='bbssel'>
