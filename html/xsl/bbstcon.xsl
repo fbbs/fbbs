@@ -11,8 +11,8 @@
 	</xsl:template>
 
 	<xsl:template match='bbstcon'>
+		<a name='top' />
 		<xsl:for-each select='po'>
-			<a name='top' />
 			<div class='post'>
 				<div class='pleft'>
 					<a href='#top'>[ <img src='../images/button/up.gif' />»ØÒ³Ê× ]</a>
