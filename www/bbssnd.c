@@ -26,16 +26,17 @@ static FILE *get_fname(const char *dir, const char *pfx, char *fname, size_t siz
 
 /**
  * Post an article.
- * @param user the owner
- * @param bp the board to post
- * @param title title
- * @param content content
- * @param ip owner's IP address.
- * @param o_fp pointer to the replied post. NULL if this is a new thread.
+ * @param user The owner.
+ * @param bp The board to post.
+ * @param title The title.
+ * @param content The content.
+ * @param cross Whether this is a cross post.
+ * @param ip The owner's IP address.
+ * @param o_fp Pointer to the replied post. NULL if this is a new thread.
  * @return 0 on success, -1 on error.
  */
 int post_article(const struct userec *user, const struct boardheader *bp,
-		const char *title, const char *content, 
+		const char *title, const char *content, bool cross,
 		const char *ip, const struct fileheader *o_fp)
 {
 	if (user == NULL || bp == NULL || title == NULL 
@@ -55,8 +56,9 @@ int post_article(const struct userec *user, const struct boardheader *bp,
 	fputs(content, fptr);
 	fprintf(fptr, "\n--\n");
 	// TODO: signature
-	fprintf(fptr, "\033[m\033[1;%2dm※ 来源:·"BBSNAME" "BBSHOST
-			"·HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7, ip);
+	fprintf(fptr, "\033[m\033[1;%2dm※ %s:·"BBSNAME" "BBSHOST
+			"·HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7,
+			cross ? "转载" : "来源", ip);
 	fclose(fptr);
 
 	struct fileheader fh;
@@ -204,8 +206,8 @@ int bbssnd_main(void)
 		if (edit_article(file, getparm("text"), mask_host(fromhost)) < 0)
 			return BBS_EINTNL;
 	} else {
-		if (post_article(&currentuser, bp, title, 
-			getparm("text"), mask_host(fromhost), reply ? &fh : NULL) < 0)
+		if (post_article(&currentuser, bp, title, getparm("text"),
+				false, mask_host(fromhost), reply ? &fh : NULL) < 0)
 			return BBS_EINTNL;
 	}
 

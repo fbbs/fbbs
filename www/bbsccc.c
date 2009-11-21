@@ -3,7 +3,7 @@
 bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
 int post_article(const struct userec *user, const struct boardheader *bp, 
-		const char *title, const char *content, const char *ip, 
+		const char *title, const char *content, bool cross, const char *ip, 
 		const struct fileheader *o_fp);
 
 int bbsccc_main(void)
@@ -35,17 +35,21 @@ int bbsccc_main(void)
 		m.oflag = O_RDONLY;
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
+
 		char title[sizeof(fh.title)];
-		snprintf(title, sizeof(title), "[转载]%s", fh.title);
+		if (strncmp(fh.title, "[转载]", sizeof("[转载]") - 1) == 0)
+			strlcpy(title, fh.title, sizeof(title));
+		else
+			snprintf(title, sizeof(title), "[转载]%s", fh.title);
 		if (mmap_open(file, &m) < 0)
 			return BBS_EINTNL;
-		int ret = post_article(&currentuser, bp2, title,
-				m.ptr, fromhost, NULL);
+		int ret = post_article(&currentuser, bp2, title, m.ptr, true,
+				fromhost, NULL);
 		mmap_close(&m);
 		if (ret < 0)
 			return BBS_EINTNL;
 		xml_header("bbsccc");
-		printf("<bbsccc %s t='%d' b='%d'/></root>", get_session_str(),
+		printf("<bbsccc %s t='%d' b='%d'/>", get_session_str(),
 				bp2 - bcache + 1, bp - bcache + 1);
 	} else {
 		xml_header("bbsccc");
