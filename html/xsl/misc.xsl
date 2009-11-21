@@ -65,7 +65,7 @@
 				<li id='navc'>
 					<a href='#' onclick='return switchPanel(this);'>鹊桥相会</a>
 					<ul>
-						<li><a href='friend'>在线好友</a></li>
+						<li><a href='ovr'>在线好友</a></li>
 						<li><a href='usr'>环顾四方</a></li>
 						<li><a href='sendmsg'>发送讯息</a></li>
 						<li><a href='msg'>查看讯息</a></li>

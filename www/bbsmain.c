@@ -44,6 +44,7 @@ int bbspwd_main(void);
 int bbsedit_main(void);
 int bbssel_main(void);
 int bbsrss_main(void);
+int bbsovr_main(void);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -93,6 +94,7 @@ static web_handler_t applets[] = {
 		{"edit", bbsedit_main, EDIT},
 		{"sel", bbssel_main, SELECT},
 		{"rss", bbsrss_main, READING},
+		{"ovr", bbsovr_main, FRIEND},
 		{NULL, NULL, 0}
 };
 
