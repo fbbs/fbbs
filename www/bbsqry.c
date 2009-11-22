@@ -31,7 +31,11 @@ int bbsqry_main(void)
 		char ident[160];
 		show_position(&user, ident, sizeof(ident));
 		xml_fputs(ident, stdout);
-		printf("</ident>");
+		printf("</ident><smd>");
+		char file[HOMELEN];
+		sethomefile(file, user.userid, "plans");
+		xml_printfile(file, stdout);
+		printf("</smd>");
 		// TODO: mail, logout
 	} else {
 		printf("<bbsqry %s>", get_session_str());
