@@ -24,6 +24,7 @@ int bbsdel_main(void)
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+
 	char file[HOMELEN];
 	setwbdir(file, bp->filename);
 	record_t r;
@@ -36,23 +37,36 @@ int bbsdel_main(void)
 		record_close(&r);
 		return BBS_ENOFILE;
 	}
-	if (strcmp(ptr->owner, currentuser.userid) &&
-			!chkBM(bp, &currentuser)) {
+	bool self = !strcmp(ptr->owner, currentuser.userid);
+	if (!self && !chkBM(bp, &currentuser)) {
 		record_close(&r);
 		return BBS_EACCES;
 	}
 	memcpy(&fh, ptr, sizeof(fh));
 	record_delete(&r, ptr, sizeof(*ptr));
 	record_close(&r);
+
+	if (!junkboard(bp)) {
+		struct userec user;
+		getuserec(fh.owner, &user);
+		user.numposts--;
+		save_user_data(&user);
+	}
+
 	char buf[STRLEN];
 	sprintf(buf, "deleted[www] '%u' on %s\n", fid, bp->filename);
 	report(buf, currentuser.userid);
 	strlcpy(fh.szEraser, currentuser.userid, sizeof(fh.szEraser));
 	fh.timeDeleted = time(NULL);
-	char *trash = HAS_PERM(PERM_OBOARDS) ? JUNK_DIR : TRASH_DIR;
+	const char *trash = JUNK_DIR;
+	if (!self && !HAS_PERM(PERM_OBOARDS)) {
+		trash = TRASH_DIR;
+	}
+	fh.accessed[1] |= FILE_SUBDEL;
 	setbfile(file, bp->filename, trash);
 	append_record(file, &fh, sizeof(fh));
 	updatelastpost(bp->filename);
+
 	printf("Location: doc?bid=%d\n\n", bid);
 	return 0;
 }
