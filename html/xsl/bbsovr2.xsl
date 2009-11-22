@@ -12,7 +12,7 @@
 	<xsl:template match='bbsovr2'>
 		<table class='content'>
 			<tr><th>编号</th><th>使用者代号</th><th>昵称</th><th>上站位置</th><th>动态</th><th>发呆</th></tr>
-			<xsl:for-each select='ov'><tr>
+			<xsl:for-each select='ov'><xsl:sort select='@id'/><tr>
 				<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
 				<td><xsl:value-of select='position()'/></td>
 				<td><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@id'/></xsl:attribute><xsl:value-of select='@id'/></a></td>
