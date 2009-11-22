@@ -90,7 +90,7 @@ int countexp(const struct userec *udata)
 {
 	int exp;
 	if (!strcmp(udata->userid, "guest"))
-		return -9999;
+		return 0;
 	exp = udata->numposts + udata->numlogins / 5 + (time(0) 
 		- udata->firstlogin) / 86400 + udata->stay / 3600;
 	if (exp > 12000)
@@ -103,7 +103,7 @@ int countperf(const struct userec *udata) {
 	int perf;
 	int reg_days;
 	if (!strcmp(udata->userid, "guest"))
-		return -9999;
+		return 0;
 	reg_days = (time(0) - udata->firstlogin) / 86400 + 1;
 	perf = (reg_days / 4 > 250 ? 250 : reg_days / 4);
 	perf += (udata->stay / 14400 > 250 ? 250 : (udata->stay / 14400));
@@ -243,3 +243,92 @@ int compute_user_value(const struct userec *urec)
 #endif
 }
 
+static int show_volunteer(char *userid, char **buf, size_t *size)
+{
+	char file[HOMELEN], tmp[STRLEN];
+	sethomefile(file, userid, ".volunteer");
+	FILE *fp = fopen(file, "r");
+	if (fp) {
+		strappend(buf, size, "[\033[1;33m");
+		while (fgets(tmp, sizeof(tmp), fp) != NULL) {
+			tmp[strlen(tmp) - 1] = '\0';
+			strappend(buf, size, tmp);
+		}
+		strappend(buf, size, "\033[m]");
+		fclose(fp);
+		return 1;
+	}
+	return 0;
+}
+
+static int show_bm(char *userid, char **buf, size_t *size)
+{
+	char file[HOMELEN], tmp[STRLEN];
+	sethomefile(file, userid, ".bmfile");
+	FILE *fp = fopen(file, "r");
+	if (fp) {
+		strappend(buf, size, "[\033[1;33m");
+		while (fgets(tmp, sizeof(tmp), fp) != NULL) {
+			tmp[strlen(tmp) - 1] = ' ';
+			strappend(buf, size, tmp);
+		}
+		strappend(buf, size, "\033[32m版版主\033[m]");
+		fclose(fp);
+		return 1;
+	}
+	return 0;
+}
+
+void show_position(const struct userec *user, char *buf, size_t size)
+{
+	if (user->userlevel & PERM_SPECIAL9) {
+		if (user->userlevel & PERM_SYSOPS) {
+			strappend(&buf, &size, "[\033[1;32m站长\033[m]");
+		} else if (user->userlevel & PERM_ANNOUNCE) {
+			strappend(&buf, &size, "[\033[1;32m站务\033[m]");
+		} else if (user->userlevel & PERM_OCHAT) {
+			strappend(&buf, &size, "[\033[1;32m实习站务\033[m]");
+		} else if (user->userlevel & PERM_SPECIAL0) {
+			strappend(&buf, &size, "[\033[1;32m站务委员会秘书\033[m]");
+		} else {
+			strappend(&buf, &size, "[\033[1;32m离任站务\033[m]");
+		}
+	} else {
+		int normal = 1;
+		if ((user->userlevel & PERM_XEMPT)
+				&& (user->userlevel & PERM_LONGLIFE)
+				&& (user->userlevel & PERM_LARGEMAIL)) {
+			strappend(&buf, &size, "[\033[1;32m荣誉版主\033[m]");
+			normal = 0;
+		}
+		if (show_volunteer(user->userid, &buf, &size))
+			normal = 0;
+		if ((user->userlevel & PERM_BOARDS)
+				&& show_bm(user->userid, &buf, &size)) {
+			normal = 0;
+		}
+		if (user->userlevel & PERM_ARBI) {
+			strappend(&buf, &size, "[\033[1;32m仲裁组\033[m]");
+			normal = 0;
+		}
+		if (user->userlevel & PERM_SERV) {
+			strappend(&buf, &size, "[\033[1;32m培训组\033[m]");
+			normal = 0;
+		}
+		if (user->userlevel & PERM_SPECIAL3) {
+			strappend(&buf, &size, "[\033[1;32m美工组\033[m]");
+			normal = 0;
+		}
+		if (user->userlevel & PERM_TECH) {
+			strappend(&buf, &size, "[\033[1;32m技术组\033[m]");
+			normal = 0;
+		}
+		if (normal) {
+#ifndef FDQUAN
+			snprintf(buf, size, "[\033[1;32m光华网友\033[m]");
+#else
+			snprintf(buf, size, "[\033[1;32m泉站网友\033[m]");
+#endif
+		}
+	}
+}

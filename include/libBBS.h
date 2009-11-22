@@ -66,6 +66,7 @@ char *rtrim(char *str);
 char *trim(char *str);
 size_t strlcpy(char *dst, const char *src, size_t siz);
 void strtourl(char *url, const char *str);
+void strappend(char **dst, size_t *size, const char *src);
 
 //boardrc.c
 void brc_update(const char *userid, const char *board);

@@ -27,9 +27,12 @@ int bbsqry_main(void)
 		xml_fputs(mask_host(user.lasthost), stdout);
 		printf("</ip><nick>");
 		xml_fputs(user.username, stdout);
-		fputs("</nick>", stdout);
-		
-		// TODO: mail, logout, identity
+		printf("</nick><ident>");
+		char ident[160];
+		show_position(&user, ident, sizeof(ident));
+		xml_fputs(ident, stdout);
+		printf("</ident>");
+		// TODO: mail, logout
 	} else {
 		printf("<bbsqry %s>", get_session_str());
 	}

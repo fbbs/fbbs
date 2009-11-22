@@ -231,3 +231,12 @@ void strtourl(char *url, const char *str)
 	}
 	*url = '\0';
 }
+
+void strappend(char **dst, size_t *size, const char *src)
+{
+	size_t len = strlcpy(*dst, src, *size);
+	if (len >= *size)
+		len = *size;
+	*dst += len;
+	*size -= len;
+}

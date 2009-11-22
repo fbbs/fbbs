@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='gb2312'?>
 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
 	<xsl:import href='misc.xsl' />
+	<xsl:import href='showpost.xsl'/>
 	<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd' />
 	<xsl:template match='/'>
 		<xsl:call-template name='layout'>
@@ -16,7 +17,8 @@
 			<p>上次在:【<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@lastlogin' /></xsl:call-template></span>】从【<span class='a132'><xsl:value-of select='ip' /></span>】到本站一游。</p>
 			<p>文章数:【<span class='a132'><xsl:value-of select='@post' /></span>】 生命力:【<span class='a132'><xsl:value-of select='@hp' /></span>】</p> 
 			<p>表现值:【<span class='a133'><xsl:value-of select='@perf' /></span>】</p>
-			<div>经验值:【<xsl:call-template name="show-exp" />】 (<xsl:value-of select='@level * 10 + @repeat' />/60)</div>
+			<p>经验值:【<xsl:call-template name="show-exp" />】 (<xsl:value-of select='@level * 10 + @repeat' />/60)</p>
+			<p>身份: <xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='ident' /></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></p>
 		</div></xsl:if>
 	</xsl:template>
 	

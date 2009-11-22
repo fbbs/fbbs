@@ -265,107 +265,6 @@ int show_one_file(char *filename) {
 	}
 }
 
-int show_bm(char* userid, char *bmstring) {
-	FILE *bmfp;
-	char bmfilename[STRLEN], tmp[20];
-	int i;
-	sethomefile(bmfilename, userid, ".bmfile");
-	bmfp = fopen(bmfilename, "r");
-
-	if (bmfp) {
-		for (i = 0; i < 3; i++) {
-			fscanf(bmfp, "%s\n", tmp);
-			bmstring += sprintf(bmstring, "%s ", tmp);
-			if (feof(bmfp))
-				break;
-		}
-		fclose(bmfp);
-		return 1;
-	}
-	return 0;
-}
-
-int show_volunteer(char *userid, char *volstring) {
-	FILE *fp;
-	char filename[STRLEN], tmp[20];
-	sethomefile(filename, userid, ".volunteer");
-	fp = fopen(filename, "r");
-	int i = 0;
-	if (fp) {
-		while (!feof(fp)) {
-			i++;
-			fscanf(fp, "%s\n", tmp);
-			volstring += sprintf(volstring, "%s%s", i == 1 ? "" : " ", tmp);
-		}
-		if (i == 0)
-			return 0;
-		fclose(fp);
-		return 1;
-	}
-	return 0;
-}
-
-int show_position(char *buf) {
-	if (lookupuser.userlevel & PERM_SPECIAL9) {
-		if (lookupuser.userlevel & PERM_SYSOPS) {
-			sprintf(buf, "[\033[1;32m站长\033[m]");
-		} else if (lookupuser.userlevel & PERM_ANNOUNCE) {
-			sprintf(buf, "[\033[1;32m站务\033[m]");
-		} else if (lookupuser.userlevel & PERM_OCHAT) {
-			sprintf(buf, "[\033[1;32m实习站务\033[m]");
-		} else if (lookupuser.userlevel & PERM_SPECIAL0) {
-			sprintf(buf, "[\033[1;32m站务委员会秘书\033[m]");
-		} else {
-			sprintf(buf, "[\033[1;32m离任站务\033[m]");
-		}
-	} else {
-		int normal = 1;
-		char bms[STRLEN];
-		bms[0] = '\0';
-		if ((lookupuser.userlevel & PERM_XEMPT) && (lookupuser.userlevel
-				& PERM_LONGLIFE)
-				&& (lookupuser.userlevel & PERM_LARGEMAIL)) {
-			buf += sprintf(buf, "[\033[1;32m荣誉版主\033[m]");
-			normal = 0;
-		}
-
-		if (show_volunteer(lookupuser.userid, bms)) {
-			buf += sprintf(buf, "[\033[1;33m%s\033[m]", bms);
-			normal = 0;
-			bms[0] = 0;
-		}
-
-		if ((lookupuser.userlevel & PERM_BOARDS) && show_bm(
-				lookupuser.userid, bms)) {
-			buf += sprintf(buf, "[\033[1;33m%s\033[32m版版主\033[m]", bms);
-			normal = 0;
-		}
-		if (lookupuser.userlevel & PERM_ARBI) {
-			buf += sprintf(buf, "[\033[1;32m仲裁组\033[m]");
-			normal = 0;
-		}
-		if (lookupuser.userlevel & PERM_SERV) {
-			buf += sprintf(buf, "[\033[1;32m培训组\033[m]");
-			normal = 0;
-		}
-		if (lookupuser.userlevel & PERM_SPECIAL3) {
-			buf += sprintf(buf, "[\033[1;32m美工组\033[m]");
-			normal = 0;
-		}
-		if (lookupuser.userlevel & PERM_TECH) {
-			buf += sprintf(buf, "[\033[1;32m技术组\033[m]");
-			normal = 0;
-		}
-		if (normal) {
-#ifndef FDQUAN
-			sprintf(buf, "[\033[1;32m光华网友\033[m]");
-#else
-			sprintf(buf, "[\033[1;32m泉站网友\033[m]");
-#endif
-		}
-	}
-}
-
 extern char fromhost[60];
 
 int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, int doTalk)
@@ -563,9 +462,9 @@ char q_id[IDLEN + 2];
 			cexpstr(exp),compute_user_value(&lookupuser));
 
 #endif
-	genbuf[0] = '\0';
-	show_position(genbuf);
-	prints("身份: %s\n", genbuf);
+	char buf2[160];
+	show_position(&lookupuser, buf2, sizeof(buf2));
+	prints("身份: %s\n", buf2);
 	t_search_ulist(&uin, t_cmpuids, tuid, YEA, NA);
 	show_user_plan(planid);
 
