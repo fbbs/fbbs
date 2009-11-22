@@ -114,17 +114,29 @@ static void override_info(void)
 			ov++;
 		}
 		time_t now = time(NULL);
-		struct user_info *user = utmpshm->uinfo;
+		struct user_info *uinfo = utmpshm->uinfo;
+		struct userec *user;
+		char *ip;
+		int idle;
 		for (int i = 0; i < MAXACTIVE; ++i) {
-			if (user->active && !(user->invisible && !HAS_PERM(PERM_SEECLOAK))
-					&& hash_get(&ht, user->userid, HASH_KEY_STRING)) {
+			if (uinfo->active
+					&& !(uinfo->invisible && !HAS_PERM(PERM_SEECLOAK))
+					&& hash_get(&ht, uinfo->userid, HASH_KEY_STRING)) {
+				user = uidshm->passwd + (uinfo->uid - 1);
+				if (HAS_DEFINE(user->userdefine, DEF_NOTHIDEIP))
+					ip = mask_host(uinfo->from);
+				else
+					ip = "......";
+				if (uinfo->mode == BBSNET)
+					idle = 0;
+				else
+					idle = (now - uinfo->idle_time) / 60;
 				printf("<ov id='%s' action='%s' idle='%d' ip='%s'>",
-						user->userid, mode_type(user->mode),
-						(now - user->idle_time) / 60, mask_host(user->from));
-				xml_fputs(user->username, stdout);
+						uinfo->userid, mode_type(uinfo->mode), idle, ip);
+				xml_fputs(uinfo->username, stdout);
 				printf("</ov>");
 			}
-			user++;
+			uinfo++;
 		}
 	}
 	hash_destroy(&ht);
