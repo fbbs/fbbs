@@ -48,7 +48,8 @@ static int print_bbsdoc(const struct fileheader *fh, int count, int mode)
 	const struct fileheader *end = fh + count;
 	for (; fh < end; ++fh) {
 		mark = get_post_mark(fh, brc_unread(fh->filename));
-		printf("<po %sm='%c' owner='%s' time= '%s' id='",
+		printf("<po %s%sm='%c' owner='%s' time= '%s' id='",
+				mode == MODE_NOTICE ? "sticky='1' " : "",
 				allow_reply(fh) ? "" : "nore='1' ", mark,
 				fh->owner, getdatestring(getfiletime(fh), DATE_XML));
 		if (mode != MODE_DIGEST)
@@ -159,6 +160,17 @@ static int bbsdoc(int mode)
 	xml_header("bbsdoc");
 	printf("<bbsdoc %s>\n", get_session_str());
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
+
+	if (mode == MODE_NORMAL) {
+		setbfile(dir, board, NOTICE_DIR);
+		mmap_t m;
+		if (mmap_open(dir, &m) == 0) {
+			int count = m.size / sizeof(struct fileheader);
+			print_bbsdoc(m.ptr, count, MODE_NOTICE);
+			mmap_close(&m);
+		}
+	}
+
 	char *cgi_name = "";
 	switch (mode) {
 		case MODE_DIGEST:
@@ -180,7 +192,7 @@ static int bbsdoc(int mode)
 		printf("banner='%s' ", path);
 	printf("/>\n</bbsdoc>");
 
-	// TODO: marquee, recommend, spin
+	// TODO: marquee, recommend
 	return 0;
 }
 

@@ -21,7 +21,7 @@
 			<tr><th class='no'>序号</th><th class='mark'>标记</th><th>作者</th><th>发表时间</th><th class='ptitle'>标题</th></tr>
 			<xsl:for-each select='po'><tr>
 				<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-				<td class='no'><xsl:value-of select='position() - 1 + ../brd/@start' /></td>
+				<td class='no'><xsl:choose><xsl:when test='@sticky'>【∞】</xsl:when><xsl:otherwise><xsl:value-of select='position() - 1 + ../brd/@start' /></xsl:otherwise></xsl:choose></td>
 				<td class='mark'><xsl:value-of select='@m' /></td>
 				<td><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner' /></xsl:attribute><xsl:value-of select='@owner' /></a></td>
 				<td><span class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time' /></xsl:call-template></span></td>

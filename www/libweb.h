@@ -50,6 +50,7 @@ enum {
 	MODE_AUTHOR_FUZZ = 5,
 	MODE_AUTHOR = 6,
 	MODE_KEYWORD = 7,
+	MODE_NOTICE = 8,
 };
 
 enum {
