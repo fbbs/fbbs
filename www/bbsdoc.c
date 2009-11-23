@@ -7,7 +7,7 @@ bool allow_reply(const struct fileheader *fh)
 	return true;
 }
 
-int get_post_mark(const struct fileheader *fh, bool has_read)
+int get_post_mark(const struct fileheader *fh, bool unread)
 {
 	int mark = ' ';
 	if (fh == NULL)
@@ -22,7 +22,7 @@ int get_post_mark(const struct fileheader *fh, bool has_read)
 	}
 	if (fh->accessed[0] & FILE_DELETED && mark == ' ')
 		mark = 'w';
-	if (!has_read) {
+	if (unread) {
 		if (mark == ' ')
 			mark = '+';
 		else
