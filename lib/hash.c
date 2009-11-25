@@ -196,3 +196,29 @@ void hash_destroy(hash_t *ht)
 	}
 	free(ht->array);
 }
+
+hash_iter_t *hash_next(hash_iter_t *iter)
+{
+	iter->entry = iter->next;
+	while (!iter->entry) {
+		if (iter->index > iter->ht->max) {
+			free(iter);
+			return NULL;
+		}
+		iter->entry = iter->ht->array[iter->index++];
+	}
+	iter->next = iter->entry->next;
+	return iter;
+}
+
+hash_iter_t *hash_begin(const hash_t *ht)
+{
+	hash_iter_t *iter = malloc(sizeof(*iter));
+	if (!iter)
+		return NULL;
+	iter->ht = ht;
+	iter->index = 0;
+	iter->entry = NULL;
+	iter->next = NULL;
+	return hash_next(iter);
+}

@@ -40,11 +40,22 @@ typedef struct hash_t
 	hash_func_t func;      ///< hash function.
 } hash_t;
 
+/** Hash table iterator type. */
+typedef struct hash_iter_t
+{
+	hash_t *ht;           ///< The hash table.
+	hash_entry_t *entry;  ///< Current entry.
+	hash_entry_t *next;   ///< Next entry.
+	unsigned int index;   ///< Current ndex in ht->array.
+} hash_iter_t;
+
 unsigned int hash_func_default(const char *key, unsigned int *klen);
 int hash_create(hash_t *ht, unsigned int max, hash_func_t func);
 int hash_set(hash_t *ht, const char *key, unsigned int klen, const void *val);
 void *hash_get(hash_t *ht, const void *key, unsigned int klen);
 void hash_destroy(hash_t *ht);
+hash_iter_t *hash_next(hash_iter_t *iter);
+hash_iter_t *hash_begin(const hash_t *ht);
 
 #endif // FB_HASH_H
 
