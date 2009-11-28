@@ -483,37 +483,39 @@ static int rawmore(char *filename, int promptend, int row, int numlines, int stu
 // Following lines are added for supporting showing arbitrary length lines.
 
 enum {
-	LINENUM_BLOCK_SIZE = 4096,
-	DEFAULT_TERM_WIDTH = 80,
-	TAB_STOP = 4
+	/** A ::linenum_t will be assigned for every block. */
+	LINENUM_BLOCK_SIZE = 4096, 
+	DEFAULT_TERM_WIDTH = 80,   ///< Default terminal width.
+	TAB_STOP = 4,     ///< Columns of a tab stop.
+	IS_QUOTE = 0x1,   ///< The line is part of quotation if this bit is set.
+	HAS_TABSTOP = 0x2 ///< The line has tab stop(s) if this bit is set.
 };
 
 /** Line number cache structure. */
-typedef struct {
-	int number;    ///< starts from 0.
-	char *offset;  ///< pointer to the first character of the line.
-	bool is_quote; ///< whether this line is part of quotation.
+typedef struct linenum_t {
+	char *offset;  ///< Pointer to the first character of the line.
+	int number;    ///< Line number, starts from 0.
+	int prop;      ///< Properties. See ::IS_QUOTE, ::HAS_TABSTOP.
 } linenum_t;
 
 /** Mmap_more stream structure. */
-typedef struct {
-	char *buf;        ///< starting address of the text.
-	size_t size;      ///< length of the text.
-	linenum_t *ln;    ///< starting address of line number cache.
-	int ln_size;      ///< length of line number cache.
-	int total;        ///< rows in total.
-	int width;        ///< max length of each line.
-	char *begin;      ///< starting address of last fetched line.
-	char *end;        ///< off-the-end pointer of last fetched line.
-	int line;         ///< line to fetch, starting from 0.
-	bool is_quote;    ///< whether last line is part of quotation.
-	bool has_tabstop; ///< whether last line has at least one tab stop.
+typedef struct mmap_more_file_t {
+	char *buf;        ///< Starting address of the text.
+	size_t size;      ///< Length of the text.
+	linenum_t *ln;    ///< Starting address of line number cache.
+	int ln_size;      ///< Length of line number cache.
+	int total;        ///< Lines in total.
+	int width;        ///< Max length of each line.
+	int line;         ///< Line to fetch, starting from 0.
+	char *begin;      ///< Starting address of last fetched line.
+	char *end;        ///< Off-the-end pointer of last fetched line.
+	int prop;         ///< Properties of last fetched line.
 } mmap_more_file_t;
 
 /**
  * Open a file as mmap_more stream.
- * @param file file to open.
- * @param width row width.
+ * @param file File to open.
+ * @param width Line width.
  * @return an ::mmap_more_file_t pointer on success, NULL on error.
  */
 static mmap_more_file_t *mmap_more_open(const char *file, int width)
@@ -546,7 +548,7 @@ static mmap_more_file_t *mmap_more_open(const char *file, int width)
 
 /**
  * Close mmap_more stream.
- * @param d an pointer to mmap_more stream.
+ * @param d The mmap_more stream.
  */
 static void mmap_more_close(mmap_more_file_t *d)
 {
@@ -557,11 +559,9 @@ static void mmap_more_close(mmap_more_file_t *d)
 
 /**
  * Get next line from mmap_more stream.
- * On success, d->begin is set to starting address of fetched line,
- * d->row is set to line number to fetch (used to update line number cache).
- * If last fetched line is part of quotation, d->is_quote is set to true.
- * @param[in,out] d pointer to an mmap_more stream.
- * @return size of string, -1 on error.
+ * On success, d->begin, d->row, d->prop is set and returned.
+ * @param[in,out] d The mmap_more stream.
+ * @return Size of string, -1 on error.
  */
 static ssize_t mmap_more_getline(mmap_more_file_t *d)
 {
@@ -578,7 +578,7 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 	if (l->offset == NULL) {
 		l->number = d->line;
 		l->offset = d->begin;
-		l->is_quote = d->is_quote;
+		l->prop = d->prop;
 	}
 
 	char *ptr, *begin = d->begin, *end = d->buf + d->size;
@@ -588,13 +588,14 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 	bool in_gbk = false;
 	bool in_esc = false;
 	int length = d->width;
-	d->has_tabstop = false;
-	if (!d->is_quote && (strncmp(begin, ": ", 2) || strncmp(begin, "> ", 2)))
-		d->is_quote = false;
+	d->prop &= ~HAS_TABSTOP;
+	if (!(d->prop & IS_QUOTE)
+			&& (strncmp(begin, ": ", 2) || strncmp(begin, "> ", 2)))
+		d->prop &= ~IS_QUOTE;
 	for (ptr = begin; ptr != end && length > 0; ++ptr) {
 		if (*ptr == '\n') {
-			if (d->is_quote)
-				d->is_quote = false;
+			if (d->prop & IS_QUOTE)
+				d->prop &= ~IS_QUOTE;
 			if (++ptr == end)
 				d->total = d->line;
 			d->end = ptr;
@@ -610,7 +611,7 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 			continue;
 		}
 		if (*ptr == '\t') {
-			d->has_tabstop = true;
+			d->prop |= HAS_TABSTOP;
 			length -= TAB_STOP - (d->width - length) % TAB_STOP;
 			continue;
 		}
@@ -630,8 +631,8 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 		++ptr;
 	if (*ptr == '\n') {
 		++ptr; // including trailing '\n'.
-		if (d->is_quote)
-			d->is_quote = false;
+		if (d->prop & IS_QUOTE)
+			d->prop &= ~IS_QUOTE;
 	}
 	d->end = ptr;
 	if (ptr == end) {
@@ -642,9 +643,9 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 
 /**
  * Get the strarting address of given line.
- * @param d pointer to an mmap_more stream.
- * @param line line number.
- * @return the strarting address of given line.
+ * @param d The mmap_more stream.
+ * @param line Line number.
+ * @return The strarting address of given line.
  */
 static char *mmap_more_seek(mmap_more_file_t *d, int line)
 {
@@ -677,8 +678,8 @@ static char *mmap_more_seek(mmap_more_file_t *d, int line)
 
 /**
  * Get count of lines of given mmap_more stream.
- * @param d pointer to an mmap_more stream.
- * @return count of lines.
+ * @param d The mmap_more stream.
+ * @return Count of lines.
  */
 static int mmap_more_countline(mmap_more_file_t *d)
 {
@@ -689,8 +690,7 @@ static int mmap_more_countline(mmap_more_file_t *d)
 	char *begin = d->begin;
 	char *end = d->end;
 	int line = d->line;
-	bool is_quote = d->is_quote;
-	bool has_tabstop = d->has_tabstop;
+	int prop = d->prop;
 
 	// Search line number cache
 	linenum_t *l = d->ln + d->ln_size - 1;
@@ -713,15 +713,14 @@ static int mmap_more_countline(mmap_more_file_t *d)
 	d->begin = begin;
 	d->end = end;
 	d->line = line;
-	d->is_quote = is_quote;
-	d->has_tabstop = has_tabstop;
+	d->prop = prop;
 
 	return d->total;
 }
 
 /**
  * Print current line in an mmap_more stream.
- * @param d pointer to an mmap_more stream.
+ * @param d The mmap_more stream.
  */
 static void mmap_more_puts(mmap_more_file_t *d)
 {
@@ -746,12 +745,12 @@ static void mmap_more_puts(mmap_more_file_t *d)
 
 /**
  * Article reading function for telnet.
- * @param file file to show.
- * @param promptend whether immediately ask user to press any key.
- * @param line the start line (on screen) of the article area.
- * @param numlines most lines shown, 0 means no limit.
+ * @param file File to show.
+ * @param promptend Whether immediately ask user to press any key.
+ * @param line The start line (on screen) of the article area.
+ * @param numlines Lines shown at most, 0 means no limit.
  * @param stuffmode todo..
- * @return last dealt key, -1 on error.
+ * @return Last dealt key, -1 on error.
  */
 static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
 {
@@ -767,7 +766,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 	char linebuf[7];
 	// TODO: stuffmode
 	while (true) {
-		is_quote = d->is_quote;
+		is_quote = d->prop & IS_QUOTE;
 		while (i++ < t_lines - 1) {
 			// Get a line
 			if (mmap_more_getline(d) <= 0) {
