@@ -592,7 +592,7 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 	if (!(d->prop & IS_QUOTE)
 			&& (strncmp(begin, ": ", 2) || strncmp(begin, "> ", 2)))
 		d->prop &= ~IS_QUOTE;
-	for (ptr = begin; ptr != end && length > 0; ++ptr) {
+	for (ptr = begin; ptr != end && length >= 0; ++ptr) {
 		if (*ptr == '\n') {
 			if (d->prop & IS_QUOTE)
 				d->prop &= ~IS_QUOTE;
@@ -621,19 +621,15 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 		else
 			in_gbk = false;
 	}
-	if (ptr == end) {
+	if (ptr == end && length >= 0) {
 		d->total = d->line;
 		d->end = ptr;
 		return d->end - d->begin;
 	}
 	--ptr;
-	if (!in_gbk) // half Chinese character should be left out.
-		++ptr;
-	if (*ptr == '\n') {
-		++ptr; // including trailing '\n'.
-		if (d->prop & IS_QUOTE)
-			d->prop &= ~IS_QUOTE;
-	}
+	// half Chinese character should be left out.
+	if (!in_gbk && *(ptr - 1) & 0x80)
+		--ptr;
 	d->end = ptr;
 	if (ptr == end) {
 		d->total = d->line;
