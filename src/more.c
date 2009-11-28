@@ -756,7 +756,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 
 	clrtobot();
 	int lines_read = 1, pos = 0, i = 0, ch = 0;
-	bool is_quote, is_wrapped;
+	bool is_quote, is_wrapped, colored = false;
 	int new_row;
 	char *buf_end = d->buf + d->size;
 	char linebuf[7];
@@ -779,15 +779,19 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 						|| !strncmp(d->begin, "¡ù ÒıÊö", 7)) {
 					prints("\033[1;33m");
 					mmap_more_puts(d);
-					prints("\033[m");
+					colored = true;
 				} else {
 					is_wrapped = (d->begin != d->buf) && (*(d->begin - 1) != '\n');
 					if (is_quote || (!is_wrapped && ((!strncmp(d->begin, ": ", 2)
 							|| !strncmp(d->begin, "> ", 2))))) {
 						is_quote = true;
-						prints("\033[36m");
+						prints("\033[0;36m");
+						colored = true;
 					} else {
-						prints("\033[m");
+						if (colored) {
+							prints("\033[m");
+							colored = false;
+						}
 					}
 					mmap_more_puts(d);
 					is_wrapped = (*(d->end - 1) != '\n');
