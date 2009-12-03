@@ -78,6 +78,9 @@ int post_article(const struct userec *user, const struct boardheader *bp,
 	setwbdir(dir, bp->filename);
 	append_record(dir, &fh, sizeof(fh));
 	updatelastpost(bp->filename);
+	brc_initial(currentuser.userid, bp->filename);
+	brc_addlist(fh.filename);
+	brc_update(currentuser.userid, bp->filename);
 	return 0;
 }
 
