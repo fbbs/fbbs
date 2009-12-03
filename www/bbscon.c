@@ -70,6 +70,10 @@ int bbscon_main(void)
 	setbfile(file, bp->filename, fh.filename);
 	xml_printfile(file, stdout);
 	printf("</po></bbscon>");
+
+	brc_initial(currentuser.userid, bp->filename);
+	brc_addlist(fh.filename);
+	brc_update(currentuser.userid, bp->filename);
 	return 0;
 }
 
