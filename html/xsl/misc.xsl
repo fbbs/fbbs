@@ -110,7 +110,7 @@
 			<xsl:if test='$user = ""'><a id='navl' href='login'>登录</a></xsl:if>
 			<xsl:if test='$user != ""'><a id='nave' href='logout'>注销</a></xsl:if>
 			<a id='navte' href='telnet://bbs.fudan.sh.cn:23'>终端登录</a>
-			<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 8]>您正在使用旧版本的IE浏览器，强烈建议您进行升级<![endif]]]></xsl:comment></span>
+			<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 8]><![endif]]]></xsl:comment></span>
 		</div>
 	</xsl:template>
 

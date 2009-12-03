@@ -42,5 +42,9 @@
 			<input type='reset' value='复原' size='10'/>
 			<xsl:if test='@edit="0"'><input type='button' name='attach' value='上传附件' onclick='return preUpload() ' /></xsl:if>
 		</form>
+		<xsl:choose>
+			<xsl:when test='not(t)'><script>window.onload = function() {document.postform.title.focus();}</script></xsl:when>
+			<xsl:otherwise><script>window.onload = function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 0; text.focus();}</script></xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 </xsl:stylesheet>
