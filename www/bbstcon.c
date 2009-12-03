@@ -92,13 +92,16 @@ int bbstcon_main(void)
 		end = fh + count;
 	}
 	char file[HOMELEN];
+	brc_initial(currentuser.userid, bp->filename);
 	for (; begin != end; ++begin) {
 		printf("<po fid='%u' owner='%s'>", begin->id, begin->owner);
 		setbfile(file, bp->filename, begin->filename);
 		xml_printfile(file, stdout);
 		puts("</po>");
+		brc_addlist(begin->filename);
 	}
 	free(fh);
 	puts("</bbstcon>");
+	brc_update(currentuser.userid, bp->filename);
 	return 0;
 }
