@@ -155,11 +155,11 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 	char date[32];
 	for (i = 0; i < limit; ++i) {
 		top = tops[i];
-		strlcpy(date, ctime(&top->last) + 4, 20);
+		strlcpy(date, ctime(&top->last) + 4, 16);
 		fprintf(fp, "\033[1;37m第\033[31m%3u\033[37m 名 \033[37m信区 : \033[33m"
 				"%-18s\033[37m〖 \033[32m%s\033[37m〗\033[36m%4d \033[37m篇"
 				"\033[33m%13.13s\n     \033[37m标题 : \033[1;44m%-60.60s"
-				"\033[m\n", i + 1, top->board, date, top->count, top->owner,
+				"\033[40m\n", i + 1, top->board, date, top->count, top->owner,
 				top->title);
 	}
 	fclose(fp);
