@@ -76,7 +76,7 @@ void process(hash_t *ht, const struct boardheader *bp)
 {
 	if (!should_stat(bp))
 		return;
-	time_t recent = time(NULL) - 2400 * 60 * 60;
+	time_t recent = time(NULL) - 24 * 60 * 60;
 	char file[HOMELEN];
 	setwbdir(file, bp->filename);
 	FILE *fp = fopen(file, "r");
