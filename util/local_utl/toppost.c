@@ -144,7 +144,7 @@ top_t **sort_stat(const hash_t *ht)
 void print_stat(const hash_t *ht, top_t **tops, int type)
 {
 	char file[HOMELEN];
-	sprintf(file, BASEPATH"/%s.0", files[type]);
+	sprintf(file, BASEPATH"/%s", files[type]);
 	FILE *fp = fopen(file, "w+");
 	fprintf(fp, "                \033[1;34m-----\033[37m=====\033[41m"
 			" 本%s大热门话题 \033[40m=====\033[34m-----\033[m\n\n",
