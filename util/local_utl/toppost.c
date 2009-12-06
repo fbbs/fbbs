@@ -153,6 +153,7 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 	int i;
 	int limit = limits[type] < ht->count ? limits[type] : ht->count;
 	char date[32];
+	char title[sizeof(top->title)];
 	for (i = 0; i < limit; ++i) {
 		top = tops[i];
 		strlcpy(date, ctime(&top->last) + 4, 16);
@@ -160,7 +161,7 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 				"%-18s\033[37m¡¼ \033[32m%s\033[37m¡½\033[36m%4d \033[37mÆª"
 				"\033[33m%13.13s\n     \033[37m±êÌâ : \033[1;44m%-60.60s"
 				"\033[40m\n", i + 1, top->board, date, top->count, top->owner,
-				top->title);
+				ansi_filter(title, top->title));
 	}
 	fclose(fp);
 }
