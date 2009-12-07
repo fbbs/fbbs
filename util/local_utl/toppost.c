@@ -172,7 +172,7 @@ void save_stat(const hash_t *ht, top_t **tops, int type)
 	time_t now = time(NULL);
 	time_t recent = now - RESERVE_HOURS * 60 * 60;
 	char file[HOMELEN];
-	sprintf(file, BASEPATH"%s.0", files[type]);
+	sprintf(file, BASEPATH"/%s.0", files[type]);
 	FILE *fp = fopen(file, "w+");
 	if (!fp)
 		return;
