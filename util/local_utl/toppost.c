@@ -57,7 +57,8 @@ void load_stat(hash_t *ht, int type)
 		while (fread(&buf, sizeof(buf), 1, fp) == 1) {
 			top_t *top = top_alloc();
 			memcpy(top, &buf, sizeof(*top));
-			top->count = 0;
+			if (type == DAY)
+				top->count = 0;
 			hash_set(ht, (char *)top, HASH_KEY_STRING, top);
 		}
 		fclose(fp);
