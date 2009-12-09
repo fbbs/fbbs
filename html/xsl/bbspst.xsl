@@ -40,7 +40,7 @@
 			</textarea></p>
 			<input type='submit' value='发表' id='btnPost' size='10'/>
 			<input type='reset' value='复原' size='10'/>
-			<xsl:if test='@edit="0"'><input type='button' name='attach' value='上传附件' onclick='return preUpload() ' /></xsl:if>
+			<xsl:if test='@edit="0" and @att!=0'><input type='button' name='attach' value='上传附件' onclick='return preUpload() ' /></xsl:if>
 		</form>
 		<xsl:choose>
 			<xsl:when test='not(t)'><script>window.onload = function() {document.postform.title.focus();}</script></xsl:when>
