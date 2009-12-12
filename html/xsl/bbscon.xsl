@@ -11,8 +11,8 @@
 	</xsl:template>
 
 	<xsl:template match='bbscon'>
-		<div class='post'>
-			<div class='pleft'>
+		<table class='post'><tr>
+			<td class='pleft' rowspan='3'>
 				<xsl:if test='@link != "con"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[文摘区]</a></xsl:if>
 				<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/button/home.gif' />本讨论区]</a>
 				<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /></xsl:attribute>[本文链接]</a>
@@ -25,14 +25,11 @@
 				<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid' /></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid' /></xsl:otherwise></xsl:choose></xsl:variable>
 				<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='$gid' /></xsl:attribute>[展开主题]</a>
 				<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid' />&amp;g=<xsl:value-of select='$gid' />&amp;f=<xsl:value-of select='po/@fid' />&amp;a=n</xsl:attribute>[向后展开]</a>
-			</div>
-			<div class='pright'>
-				<div class='pmtop'><xsl:call-template name='linkbar' /></div>
-				<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po' /></xsl:call-template></div>
-				<div class='pmbot'><xsl:call-template name='linkbar' /></div>
-			</div>
-			<div class='pclear'></div>
-		</div>
+			</td>
+			<td class='pmtop'><xsl:call-template name='linkbar' /></td></tr>
+			<tr><td class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po' /></xsl:call-template></td></tr>
+			<tr><td class='pmbot'><xsl:call-template name='linkbar' /></td></tr>
+		</table>
 	</xsl:template>
 	
 	<xsl:template name='linkbar'>

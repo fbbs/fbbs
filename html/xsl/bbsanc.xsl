@@ -12,19 +12,18 @@
 
 	<xsl:template match='bbsanc'>
 		<h3><xsl:if test='@brd'><xsl:value-of select='@brd' />版 - </xsl:if>精华区文章阅读</h3>
-		<div class='post'>
-			<div class='pleft'>
+		<table class='post'><tr>
+			<td class='pleft' rowspan='3'>
 				<xsl:if test='@brd'>
 					<a><xsl:attribute name='href'>gdoc?board=<xsl:value-of select='@brd' /></xsl:attribute>[ 文摘区 ]</a>
 					<a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@brd' /></xsl:attribute>[<img src='../images/button/home.gif' />本讨论区]</a>
 				</xsl:if>
-			</div>
-			<div class='pright'>
-				<div class='pmtop'><xsl:call-template name='linkbar' /></div>
-				<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></div>
-				<div class='pmbot'><xsl:call-template name='linkbar' /></div>
-			</div>
-			<div class='pclear'></div>
-		</div>
+			</td>
+			<td class='pmtop'><xsl:call-template name='linkbar' /></td></tr>
+			<tr><td class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></td></tr>
+			<tr><td class='pmbot'><xsl:call-template name='linkbar' /></td></tr>
+		</table>
 	</xsl:template>
+	
+	<xsl:template name='linkbar'></xsl:template>
 </xsl:stylesheet>

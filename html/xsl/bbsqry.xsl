@@ -31,9 +31,9 @@
 	</xsl:template>
 	
 	<xsl:template name='show-exp'>
-		<div>
+		<span>
 			<xsl:attribute name='class'>lev<xsl:value-of select='@level' /></xsl:attribute>
-			<div><xsl:attribute name='class'>lev<xsl:value-of select='@level' /></xsl:attribute><xsl:attribute name='style'>width:<xsl:value-of select='@repeat * 10' />%;</xsl:attribute></div>
-		</div>
+			<span><xsl:attribute name='class'>lev<xsl:value-of select='@level' /></xsl:attribute><xsl:attribute name='style'>width:<xsl:value-of select='@repeat * 10' />%;</xsl:attribute></span>
+		</span>
 	</xsl:template>
 </xsl:stylesheet>

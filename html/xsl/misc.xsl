@@ -56,8 +56,6 @@
 				<a href='#' onclick='return switchPanel(this);'>统计数据</a>
 				<ul>
 					<li><a href='top10'>本日十大</a></li>
-					<li><a href='topb10'>热门讨论</a></li>
-					<li><a href='userinfo'>在线统计</a></li>
 				</ul>
 			</li>
 			<xsl:if test='contains($perm, "l")'>
@@ -66,9 +64,6 @@
 					<a href='#' onclick='return switchPanel(this);'>鹊桥相会</a>
 					<ul>
 						<li><a href='ovr'>在线好友</a></li>
-						<li><a href='usr'>环顾四方</a></li>
-						<li><a href='sendmsg'>发送讯息</a></li>
-						<li><a href='msg'>查看讯息</a></li>
 					</ul>
 				</li>
 				<li id='navm'>
@@ -77,7 +72,6 @@
 						<li><a href='newmail'>阅览新信</a></li>
 						<li><a href='mail'>所有信件</a></li>
 						<li><a href='pstmail'>发送信件</a></li>
-						<li></li>
 					</ul>
 				</li>
 				<li id='navco'>
@@ -94,9 +88,8 @@
 			<li id='navs'>
 				<a href='#' onclick='return switchPanel(this);'>查找选项</a>
 				<ul>
-					<li><a href='qry'>查找文章</a></li>
 					<li><a href='qry'>查询网友</a></li>
-					<li><a href='sel'>查找讨论区</a></li>
+					<li><a href='sel'>查找版面</a></li>
 				</ul>
 			</li>
 		</ul>
@@ -106,9 +99,9 @@
 		<xsl:param name='perm' />
 		<xsl:param name='user' />
 		<div id='hd'>
+			<div id='hdright'><xsl:if test='$user != ""'><a id='nave' href='logout'>注销</a></xsl:if></div>
 			<xsl:if test='$user != ""'><a id='navu'><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user' /></xsl:attribute><xsl:value-of select='$user' /></a></xsl:if>
 			<xsl:if test='$user = ""'><a id='navl' href='login'>登录</a></xsl:if>
-			<xsl:if test='$user != ""'><a id='nave' href='logout'>注销</a></xsl:if>
 			<a id='navte' href='telnet://bbs.fudan.sh.cn:23'>终端登录</a>
 			<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 8]><![endif]]]></xsl:comment></span>
 		</div>
@@ -121,9 +114,6 @@
 	<xsl:template name='bbsname'>日月光华</xsl:template>
 	<xsl:template name='include-css'><link rel='stylesheet' type='text/css' href='../css/bbs.css' /></xsl:template>
 	<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script></xsl:template>
-	<xsl:template name='linkbar'>
-
-	</xsl:template>
 
 	<xsl:template name='layout'>
 		<xsl:param name='title'/>
@@ -137,12 +127,12 @@
 				<xsl:call-template name='include-css' />
 				<xsl:call-template name='include-js' />
 			</head>
-			<body><div id='wrap'>
+			<body>
 				<xsl:call-template name='header'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='user' select='$u' /></xsl:call-template>
 				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p' /></xsl:call-template>
 				<div id='main'><xsl:apply-templates /></div>
 				<xsl:call-template name='foot' />
-			</div></body>
+			</body>
 		</html>
 	</xsl:template>
 </xsl:stylesheet>

@@ -11,19 +11,16 @@
 	</xsl:template>
 
 	<xsl:template match='bbsmailcon'>
-		<div class='post'>
-			<div class='pleft'>
+		<table class='post'><tr>
+			<td class='pleft' rowspan='3'>
 				<a href='mail'>[ <img src='../images/button/back.gif' />信件列表 ]</a>
 				<xsl:if test='@prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@prev' /></xsl:attribute>[ <img src='../images/button/up.gif' />上一封 ]</a></xsl:if>
 				<xsl:if test='@next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@next' /></xsl:attribute>[ <img src='../images/button/down.gif' />下一封 ]</a></xsl:if>
-			</div>
-			<div class='pright'>
-				<div class='pmtop'><xsl:call-template name='linkbar' /></div>
-				<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail' /></xsl:call-template></div>
-				<div class='pmbot'><xsl:call-template name='linkbar' /></div>
-			</div>
-			<div class='pclear'></div>
-		</div>
+			</td>
+			<td class='pmtop'><xsl:call-template name='linkbar' /></td></tr>
+			<tr><td class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail' /></xsl:call-template></td></tr>
+			<tr><td class='pmbot'><xsl:call-template name='linkbar' /></td></tr>
+		</table>
 	</xsl:template>
 	
 	<xsl:template name='linkbar'>
