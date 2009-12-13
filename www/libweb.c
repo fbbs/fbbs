@@ -334,7 +334,8 @@ int xml_printfile(const char *file, FILE *stream)
 	m.oflag = O_RDONLY;
 	if (mmap_open(file, &m) < 0)
 		return -1;
-	xml_fputs2((char *)m.ptr, m.size, stream);
+	if (m.size > 0)
+		xml_fputs2((char *)m.ptr, m.size, stream);
 	mmap_close(&m);
 	return 0;
 }
