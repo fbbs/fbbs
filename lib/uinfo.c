@@ -251,7 +251,7 @@ static int show_volunteer(char *userid, char **buf, size_t *size)
 	if (fp) {
 		strappend(buf, size, "[\033[1;33m");
 		while (fgets(tmp, sizeof(tmp), fp) != NULL) {
-			tmp[strlen(tmp) - 1] = '\0';
+			tmp[strlen(tmp)] = '\0';
 			strappend(buf, size, tmp);
 		}
 		strappend(buf, size, "\033[m]");
