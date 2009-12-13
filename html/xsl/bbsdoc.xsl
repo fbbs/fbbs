@@ -11,10 +11,9 @@
 	</xsl:template>
 
 	<xsl:template match='bbsdoc'>
-		<xsl:if test='brd/@icon'><img><xsl:attribute name='src'><xsl:value-of select='brd/@icon' /></xsl:attribute></img></xsl:if>
 		<xsl:choose>
 			<xsl:when test='brd/@banner'><img><xsl:attribute name='src'><xsl:value-of select='brd/@banner' /></xsl:attribute></img></xsl:when>
-			<xsl:otherwise><h2><a><xsl:attribute name='href'><xsl:value-of select='brd/@link' />doc?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute><xsl:value-of select='brd/@desc' /> [<xsl:value-of select='brd/@title' />]<xsl:if test='brd/@link = "g"'> - 文摘区</xsl:if><xsl:if test='brd/@link = "t"'> - 主题模式</xsl:if></a></h2></xsl:otherwise>
+			<xsl:otherwise><h2><xsl:if test='brd/@icon'><img><xsl:attribute name='src'><xsl:value-of select='brd/@icon' /></xsl:attribute></img></xsl:if><a><xsl:attribute name='href'><xsl:value-of select='brd/@link' />doc?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute><xsl:value-of select='brd/@desc' /> [<xsl:value-of select='brd/@title' />]<xsl:if test='brd/@link = "g"'> - 文摘区</xsl:if><xsl:if test='brd/@link = "t"'> - 主题模式</xsl:if></a></h2></xsl:otherwise>
 		</xsl:choose>
 		<p>版主 [ <xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm' /><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1' /></xsl:call-template> ]  <xsl:choose><xsl:when test='brd/@link = "t"'>主题</xsl:when><xsl:otherwise>文章</xsl:otherwise></xsl:choose>数 [ <xsl:choose><xsl:when test='brd/@total &gt; 0'><xsl:value-of select='brd/@total' /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose> ] <a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute>[<img src='../images/button/edit.gif' />发表文章]</a></p>
 		<table class='content'>
