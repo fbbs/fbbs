@@ -1541,7 +1541,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 
 	if (in_mail) {
 		snprintf(weblink, 256,
-				"http://%s/cgi-bin/bbs/bbsmailcon?file=%s&num=%d\n",
+				"http://%s/bbs/mailcon?f=%s&n=%d\n",
 				BBSHOST, fileinfo->filename, ent - 1);
 		if (fileinfo->accessed[0] & FILE_READ)
 			unread = 0;
@@ -1557,8 +1557,8 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 		else
 			strcpy(type, "ÆÕÍ¨");
 	} else {
-		snprintf(weblink, 256, "http://%s/cgi-bin/bbs/bbscon?b=%s&f=%s\n",
-				BBSHOST, currboard, fileinfo->filename);
+		snprintf(weblink, 256, "http://%s/bbs/con?bid=%d&f=%u\n",
+				BBSHOST, currbp - bcache + 1, fileinfo->id);
 		unread = brc_unread(fileinfo->filename);
 		if (fileinfo->accessed[0] & FILE_DIGEST) {
 			if (fileinfo->accessed[0] & FILE_MARKED)
