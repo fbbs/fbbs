@@ -33,7 +33,7 @@
 			<xsl:otherwise><xsl:call-template name='remove-ansi'><xsl:with-param name='str' select='t' /></xsl:call-template></xsl:otherwise>
 			</xsl:choose></p>
 			<p><textarea class='binput' name='text' rows='20' cols='85' wrap='virtual'>
-				<xsl:if test='@edit="0"'><xsl:text>&#x0d;&#x0a;</xsl:text></xsl:if>
+				<xsl:if test='@edit=0'><xsl:text> &#x0d;&#x0a;</xsl:text></xsl:if>
 				<xsl:call-template name='show-quoted'>
 					<xsl:with-param name='content' select='po' />
 				</xsl:call-template>
@@ -44,7 +44,7 @@
 		</form>
 		<xsl:choose>
 			<xsl:when test='not(t)'><script>window.onload = function() {document.postform.title.focus();}</script></xsl:when>
-			<xsl:otherwise><script>window.onload = function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 0; text.focus();}</script></xsl:otherwise>
+			<xsl:otherwise><script>window.onload = function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();}</script></xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
 </xsl:stylesheet>
