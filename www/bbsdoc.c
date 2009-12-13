@@ -186,10 +186,10 @@ static int bbsdoc(int mode)
 	char path[HOMELEN];
 	sprintf(path, "%s/info/boards/%s/icon.jpg", BBSHOME, board);
 	if(dashf(path))
-		printf("icon='%s' ", path);
+		printf("icon='../info/boards/%s/icon.jpg' ", board);
 	sprintf(path, "%s/info/boards/%s/banner.jpg", BBSHOME, board);
 	if(dashf(path))	
-		printf("banner='%s' ", path);
+		printf("banner='../info/boards/%s/banner.jpg' ", board);
 	printf("/>\n</bbsdoc>");
 
 	// TODO: marquee, recommend
