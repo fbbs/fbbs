@@ -40,5 +40,5 @@ struct votebal {
 	int maxdays;
 	int maxtkt;
 	int totalitems;
-	time_t opendate;
+	int opendate;
 };
