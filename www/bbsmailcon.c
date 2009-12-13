@@ -44,7 +44,7 @@ int bbsmailcon_main(void)
 	m.oflag = O_RDONLY;
 	if (mmap_open(buf, &m) < 0)
 		return BBS_ENOFILE;
-	printf("<mail f='%s'>", file);
+	printf("<mail f='%s' n='%s'>", file, getparm("n"));
 	xml_fputs((char *)m.ptr, stdout);
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);

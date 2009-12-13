@@ -23,7 +23,7 @@
 					<td><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from' /></xsl:attribute><xsl:value-of select='@from' /></a></td>
 					<td><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date' /></xsl:call-template></td>
 					<td class='ptitle'><a class='ptitle'>
-						<xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name' /></xsl:attribute>
+						<xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name' />&amp;n=<xsl:value-of select='position() - 1 + ../@start' /></xsl:attribute>
 						<xsl:call-template name='ansi-escape'>
 							<xsl:with-param name='content'><xsl:value-of select='.' /></xsl:with-param>
 							<xsl:with-param name='fgcolor'>37</xsl:with-param>
