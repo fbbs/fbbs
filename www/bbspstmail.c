@@ -30,7 +30,9 @@ int bbspstmail_main(void)
 		fh = (struct fileheader *)m.ptr + num - 1;
 	}
 	xml_header("bbspstmail");
-	printf("<bbspstmail %s ref='", get_session_str());
+	printf("<bbspstmail ");
+	print_session();
+	printf(" ref='");
 	xml_fputs(get_referer(), stdout);
 	printf("'>");
 	if (fh != NULL) {

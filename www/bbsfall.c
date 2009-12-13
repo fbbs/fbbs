@@ -21,7 +21,9 @@ int bbsfall_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header("bbsovr");
-	printf("<bbsfall %s>", get_session_str());
+	printf("<bbsfall ");
+	print_session();
+	printf(">");
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, "friends");
 	apply_record(file, print_override, sizeof(override_t), NULL, false,
@@ -66,7 +68,9 @@ int bbsfadd_main(void)
 		return 0;
 	}
 	xml_header("bbsovr");
-	printf("<bbsfadd %s>%s</bbsfadd>", get_session_str(), id);
+	printf("<bbsfadd ");
+	print_session();
+	printf(">%s</bbsfadd>", id);
 	return 0;
 }
 
@@ -116,7 +120,7 @@ static void override_info(void)
 		time_t now = time(NULL);
 		struct user_info *uinfo = utmpshm->uinfo;
 		struct userec *user;
-		char *ip;
+		const char *ip;
 		int idle;
 		for (int i = 0; i < MAXACTIVE; ++i) {
 			if (uinfo->active
@@ -148,7 +152,9 @@ int bbsovr_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header("bbsovr2");
-	printf("<bbsovr2 %s>", get_session_str());
+	printf("<bbsovr2 ");
+	print_session();
+	printf(">");
 	override_info();
 	printf("</bbsovr2>");
 	return 0;

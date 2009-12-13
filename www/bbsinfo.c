@@ -56,18 +56,19 @@ int bbsinfo_main(void)
 	char *type = getparm("type");
 	xml_header("bbsinfo");
 	if (*type != '\0') {
-		printf("<bbsinfo %s>", get_session_str());
-		printf("%s</bbsinfo>", check_info());
+		printf("<bbsinfo ");
+		print_session();
+		printf(">%s</bbsinfo>", check_info());
 	} else {
-		printf("<bbsinfo %s post='%d' login='%d' stay='%d' "
+		printf("<bbsinfo post='%d' login='%d' stay='%d' "
 				"since='%s' host='%s' year='%d' month='%d' "
-				"day='%d' gender='%c'", get_session_str(),
-				currentuser.numposts,
+				"day='%d' gender='%c' ", currentuser.numposts,
 				currentuser.numlogins, currentuser.stay / 60,
 				getdatestring(currentuser.firstlogin, DATE_XML),
 				currentuser.lasthost, currentuser.birthyear,
 				currentuser.birthmonth, currentuser.birthday,
 				currentuser.gender);
+		print_session();
 		printf(" last='%s'><nick>",
 				getdatestring(currentuser.lastlogin, DATE_XML));
 		xml_fputs(currentuser.username, stdout);
@@ -95,7 +96,8 @@ int bbspwd_main(void)
 		return BBS_ELGNREQ;
 	parse_post_data();
 	xml_header("bbspwd");
-	printf("<bbspwd %s", get_session_str());
+	printf("<bbspwd ");
+	print_session();
 	char *pw1 = getparm("pw1");
 	if (*pw1 == '\0') {
 		printf(" i='i'></bbspwd>");

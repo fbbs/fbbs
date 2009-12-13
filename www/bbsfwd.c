@@ -16,8 +16,9 @@ int bbsfwd_main(void)
 	char *reci = getparm("u");
 	if (*reci == '\0') {
 		xml_header("bbsmail");
-		printf("<bbsfwd %s bid='%s' f='%s'></bbsfwd>", get_session_str(),
-				getparm("bid"), getparm("f"));
+		printf("<bbsfwd bid='%s' f='%s' ", getparm("bid"), getparm("f"));
+		print_session();
+		printf("></bbsfwd>");
 	} else {
 		if (!HAS_PERM(PERM_MAIL))
 			return BBS_EACCES;

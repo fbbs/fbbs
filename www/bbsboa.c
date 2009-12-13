@@ -22,7 +22,8 @@ int bbsboa_main(void)
 		cgi = "doc";
 	
 	xml_header("bbsboa");
-	printf("<bbsboa %s link='%s' ", get_session_str(), cgi);
+	printf("<bbsboa link='%s' ", cgi);
+	print_session();
 
 	struct boardheader *parent = NULL;
     int parent_bid = 0;
@@ -40,10 +41,10 @@ int bbsboa_main(void)
 		char path[HOMELEN];
 		sprintf(path, "%s/info/egroup%d/icon.jpg", BBSHOME, sector);
 		if (dashf(path))
-			printf("icon='%s' ", path);
-		printf("title='%s'>", secname[sector][0]);
+			printf(" icon='%s'", path);
+		printf(" title='%s'>", secname[sector][0]);
 	} else {
-		printf("dir= '1' title='%s'>", get_board_desc(parent));
+		printf(" dir= '1' title='%s'>", get_board_desc(parent));
 	}
 
 	// TODO: Marquee BBSHOME/info/egroup(sector)/headline.txt

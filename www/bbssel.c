@@ -4,7 +4,9 @@
 int bbssel_main(void)
 {
 	xml_header("bbssel");
-	printf("<bbssel %s>", get_session_str());
+	printf("<bbssel ");
+	print_session();
+	printf(">");
 	char *brd = getparm("brd");
 	if (*brd != '\0') {
 		struct boardheader *bp;

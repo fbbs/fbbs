@@ -14,7 +14,9 @@ int bbsnot_main(void)
 	if (mmap_open(fname, &m) < 0)
 		return BBS_ENOFILE;
 	xml_header("bbsnot");
-	printf("<bbsnot %s brd='%s'>", get_session_str(), bp->filename);
+	printf("<bbsnot ");
+	print_session();
+	printf(" brd='%s'>", bp->filename);
 	xml_fputs((char *)m.ptr, stdout);
 	mmap_close(&m);
 	printf("</bbsnot>");

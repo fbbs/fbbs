@@ -99,8 +99,10 @@ static int do_bbspst(bool isedit)
 	xml_header("bbspst");
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s", bp->filename);
-	printf("<bbspst %s brd='%s' bid='%d' edit='%d' att='%d'>", get_session_str(),
-			bp->filename, bid, isedit, dashd(path));
+	printf("<bbspst ");
+	print_session();
+	printf(" brd='%s' bid='%d' edit='%d' att='%d'>", bp->filename, bid,
+			isedit, dashd(path));
 	if (reply) {
 		printf("<t>");
 		ansi_filter(fh.title, fh.title);

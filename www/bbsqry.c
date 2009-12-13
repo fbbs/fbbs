@@ -11,12 +11,13 @@ int bbsqry_main(void)
 	if (getuserec(userid, &user) != 0) {
 		int level, repeat;
 		level = iconexp(countexp(&user), &repeat);		
-		printf("<bbsqry %s id='%s' login='%d' lastlogin='%s' "
-				"perf='%s' post='%d' hp='%d' level='%d' repeat='%d'",
-				get_session_str(), user.userid, user.numlogins,
+		printf("<bbsqry id='%s' login='%d' lastlogin='%s' "
+				"perf='%s' post='%d' hp='%d' level='%d' repeat='%d' ",
+				user.userid, user.numlogins,
 				getdatestring(user.lastlogin, DATE_XML),
 				cperf(countperf(&user)), user.numposts,
 				compute_user_value(&user), level, repeat);
+		print_session();
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
 			printf(" horo='%s'", 
 					horoscope(user.birthmonth, user.birthday));
@@ -38,7 +39,9 @@ int bbsqry_main(void)
 		printf("</smd>");
 		// TODO: mail, logout
 	} else {
-		printf("<bbsqry %s>", get_session_str());
+		printf("<bbsqry ");
+		print_session();
+		printf(">");
 	}
 	printf("</bbsqry>");
 	return 0;

@@ -110,7 +110,7 @@ time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
 int fcgi_init_loop(int mode);
-const char *get_session_str(void);
+void print_session(void);
 
 #endif  //FB_LIBWEB_H
 

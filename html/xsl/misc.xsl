@@ -46,8 +46,17 @@
 		</xsl:if>
 	</xsl:template>
 
+	<xsl:template name='show-fav'>
+		<xsl:param name='fav'/>
+		<xsl:variable name='brd' select='substring-before($fav, " ")'/>
+		<xsl:if test='$brd!=""'><li class='sf'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='$brd'/></xsl:attribute><xsl:value-of select='$brd'/></a></li></xsl:if>
+		<xsl:variable name='rest' select='substring-after($fav, " ")'/>
+		<xsl:if test='$rest!=""'><xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$rest'/></xsl:call-template></xsl:if>
+	</xsl:template>
+	
 	<xsl:template name='navigation'>
-		<xsl:param name='perm' />
+		<xsl:param name='perm'/>
+		<xsl:param name='fav'/>
 		<ul id='nav'>
 			<li id='navh'><a href='sec'>推荐版面</a></li>
 			<li id='nava'><a href='0an'>本站精华</a></li>
@@ -59,7 +68,10 @@
 				</ul>
 			</li>
 			<xsl:if test='contains($perm, "l")'>
-				<li id='navf'><a href='fav'>我的收藏</a></li>
+				<li id='navf'>
+					<a href='#' onclick='return switchPanel(this);'>我的收藏</a>
+					<ul><li><a href='fav'>查看详情</a></li><xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$fav'/></xsl:call-template></ul>
+				</li>
 				<li id='navc'>
 					<a href='#' onclick='return switchPanel(this);'>鹊桥相会</a>
 					<ul>
@@ -119,7 +131,9 @@
 		<xsl:param name='title'/>
 		<xsl:param name='session'/>
 		<xsl:variable name='p' select='substring-before($session,";")'/>
-		<xsl:variable name='u' select='substring-after($session,";")'/>
+		<xsl:variable name='rest' select='substring-after($session,";")'/>
+		<xsl:variable name='u' select='substring-before($rest,";")'/>
+		<xsl:variable name='fav' select='substring-after($rest,";")'/>
 		<html>
 			<head>
 				<title><xsl:value-of select='$title' /> - <xsl:call-template name='bbsname' /></title>
@@ -129,7 +143,7 @@
 			</head>
 			<body>
 				<xsl:call-template name='header'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='user' select='$u' /></xsl:call-template>
-				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p' /></xsl:call-template>
+				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='fav' select='$fav' /></xsl:call-template>
 				<div id='main'><xsl:apply-templates /></div>
 				<xsl:call-template name='foot' />
 			</body>

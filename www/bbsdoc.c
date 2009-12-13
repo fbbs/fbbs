@@ -158,7 +158,9 @@ static int bbsdoc(int mode)
 	brc_initial(currentuser.userid, board);
 
 	xml_header("bbsdoc");
-	printf("<bbsdoc %s>\n", get_session_str());
+	printf("<bbsdoc ");
+	print_session();
+	printf(">");
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 
 	if (mode == MODE_NORMAL) {

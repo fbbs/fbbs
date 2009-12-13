@@ -18,7 +18,8 @@ int bbsanc_main(void)
 	char fname[512];
 	sprintf(fname, "0Announce%s", path);
 	xml_header("bbsanc");
-	printf("<bbsanc %s", get_session_str());
+	printf("<bbsanc ");
+	print_session();
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");

@@ -20,8 +20,9 @@ int bbsmail_main(void)
 	struct fileheader *fh = (struct fileheader *)m.ptr + start - 1;
 	struct fileheader *end = (struct fileheader *)m.ptr + total;
 	xml_header("bbsmail");
-	printf("<bbsmail %s start='%d' total='%d' page='%d'>",
-			get_session_str(), start, total, TLINES);
+	printf("<bbsmail start='%d' total='%d' page='%d' ", start, total, TLINES);
+	print_session();
+	printf(">");
 	for (int i = 0; i < TLINES && fh != end; ++i) {
 		int mark = ' ';
 		if (fh->accessed[0] & MAIL_REPLY)

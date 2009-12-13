@@ -608,9 +608,25 @@ static char *get_permission(void)
 	return c;
 }
 
-const char *get_session_str(void)
+void print_session(void)
 {
-	static char buf[256];
-	snprintf(buf, sizeof(buf), "s='%s;%s'", get_permission(), currentuser.userid);
-	return buf;
+	printf("s='%s;%s;", get_permission(), currentuser.userid);
+	char file[HOMELEN];
+	sethomefile(file, currentuser.userid, ".goodbrd");
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(file, &m) == 0) {
+		struct goodbrdheader *iter, *end;
+		int num = m.size / sizeof(struct goodbrdheader);
+		if (num > GOOD_BRC_NUM)
+			num = GOOD_BRC_NUM;
+		end = (struct goodbrdheader *)m.ptr + num;
+		for (iter = m.ptr; iter != end; ++iter) {
+			if (!gbrd_is_custom_dir(iter)) {
+				struct boardheader *bp = bcache + iter->pos;
+				printf("%s ", bp->filename);
+			}
+		}
+	}
+	printf("'");
 }

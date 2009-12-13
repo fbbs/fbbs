@@ -20,7 +20,9 @@ int bbsfav_main(void)
 
 	// Print all favorite boards.
 	xml_header("bbsfav");
-	printf("<bbsfav %s>", get_session_str());
+	printf("<bbsfav ");
+	print_session();
+	printf(">");
 	for (iter = m.ptr; iter != end; ++iter) {
 		if (!gbrd_is_custom_dir(iter)) {
 			struct boardheader *bp = bcache + iter->pos;

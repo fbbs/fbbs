@@ -58,7 +58,7 @@ ul.brd li{
 	margin-left: 0.5em;
 }
 #main {
-	margin: 0 0.5em 0.5em 9.5em;
+	margin: 0 0.5em 0.5em 10.5em;
 	font-size: 0.875em;
 }
 #hd {
@@ -105,7 +105,7 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 	float: left;
 	background-color: #f0f7ff;
 	border: #336699 1px solid;
-	width: 6.5em;
+	width: 7.5em;
 	padding: 0.25em;
 	margin: 0 0 0.5em 0.5em;
 }
@@ -148,6 +148,8 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #navm a { background-image: url('../images/mail.gif'); }
 #navs a { background-image: url('../images/search.gif'); }
 #navh li a, #nava li a, #navp li a, #navt li a, #navf li a, #navc li a, #navco li a, #navm li a, #navs li a { background-image: none; }
+.sf { padding: 0; font-size: 0.8em; }
+#navf ul li.sf a { padding: 0; }
 
 table.content {
 	border-collapse: separate;
