@@ -17,12 +17,12 @@
 		</xsl:choose>
 		<p>版主 [ <xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm' /><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1' /></xsl:call-template> ]  <xsl:choose><xsl:when test='brd/@link = "t"'>主题</xsl:when><xsl:otherwise>文章</xsl:otherwise></xsl:choose>数 [ <xsl:choose><xsl:when test='brd/@total &gt; 0'><xsl:value-of select='brd/@total' /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose> ] <a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute>[<img src='../images/button/edit.gif' />发表文章]</a></p>
 		<table class='content'>
-			<tr><th class='no'>序号</th><th class='mark'>标记</th><th>作者</th><th>发表时间</th><th class='ptitle'>标题</th></tr>
+			<tr><th class='no'>序号</th><th class='mark'>标记</th><th>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
 			<xsl:for-each select='po'><tr>
 				<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
 				<td class='no'><xsl:choose><xsl:when test='@sticky'>【∞】</xsl:when><xsl:otherwise><xsl:value-of select='position() - 1 + ../brd/@start' /></xsl:otherwise></xsl:choose></td>
 				<td class='mark'><xsl:value-of select='@m' /></td>
-				<td><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner' /></xsl:attribute><xsl:value-of select='@owner' /></a></td>
+				<td class='owner'><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner' /></xsl:attribute><xsl:value-of select='@owner' /></a></td>
 				<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time' /></xsl:call-template></td>
 				<xsl:variable name='imgsrc'>../images/types/<xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'>reply</xsl:when><xsl:otherwise>text</xsl:otherwise></xsl:choose>.gif</xsl:variable>
 				<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)' /></xsl:when><xsl:otherwise><xsl:value-of select='.' /></xsl:otherwise></xsl:choose></xsl:variable>

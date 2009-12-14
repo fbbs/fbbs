@@ -12,8 +12,8 @@
 
 	<xsl:template match='bbsnewmail'>
 		<h2>阅览新信件</h2>
-		<p><a href='mail'>本页仅显示30天内新信件，查看全部信件请点此处</a></p>
-		<form name='list' method='post' action='mailman'>
+		<p><a href='mail'><xsl:choose><xsl:when test='count(mail)=0'>您没有30天内的未读信件</xsl:when><xsl:otherwise>本页仅显示30天内未读信件</xsl:otherwise></xsl:choose>，查看全部信件请点此处</a></p>
+		<xsl:if test='count(mail)!=0'><form name='list' method='post' action='mailman'>
 			<table class='content'>
 				<tr><th class='no'>序号</th><th>管理</th><th class='owner'>发信人</th><th>日期</th><th class='ptitle'>信件标题</th></tr>
 				<xsl:for-each select='mail'><tr>
@@ -35,6 +35,6 @@
 			</table>
 			<input name='mode' value='' type='hidden' />
 		</form>
-		<div>[<a href="#"  onclick="checkAll();">全选</a>] [<a href="#"  onclick="checkReverse();">反选</a>] [<a href="#" onclick="delSelected()">删除所选信件</a>]</div>
+		<div>[<a href="#"  onclick="checkAll();">全选</a>] [<a href="#"  onclick="checkReverse();">反选</a>] [<a href="#" onclick="delSelected()">删除所选信件</a>]</div></xsl:if>
 	</xsl:template>
 </xsl:stylesheet>

@@ -158,15 +158,15 @@ table.content {
 }
 tr.light { background-color: #ffffff; }
 tr.dark { background-color: #f0f7ff; }
-th.no, td.no { min-width: 2em; text-align: center; }
-th.title, td.ptitle { min-width: 8em; }
-th.ptitle, td.ptitle { min-width: 30em; }
-th.owner, td.owner { min-width: 6em; text-align: center;}
+th.no, td.no { width: 3em; text-align: center; }
+th.title, td.ptitle { width: 8em; }
+th.ptitle, td.ptitle { min-width: 35em; _width: 35em; }
+th.owner, td.owner { width: 7em;}
 td.idesc { min-width: 10em; }
 th.cate, td.cate, th.mark, td.mark, th.time, td.time, th.read, td.read { text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
 a.idesc { display: inline-block; margin-left: 2px; }
-td.time, span.time { color: gray; font-size: 0.8em; }
+td.time, span.time { color: gray; font-size: 0.8em; text-align: center;}
 
 table.post {
 	-moz-border-radius: 0.8em;
