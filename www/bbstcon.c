@@ -64,6 +64,7 @@ int bbstcon_main(void)
 	struct boardheader *bp;
 	if (bid <= 0) {
 		bp = getbcache(getparm("board"));
+		bid = getbnum2(bp);
 	} else {
 		bp = getbcache2(bid);
 	}
