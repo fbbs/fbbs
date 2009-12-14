@@ -223,9 +223,5 @@ so we don't need define this by passing make argument to the complier
 	#define BBSHOST "bbs.fudan.edu.cn"
 	#define BBSIP	"61.129.42.9"
 #endif
-/*
-Define where's sendmail locate, it's not the same in different OSes
-If configure cannot found it propery, it will assign "/usr/lib/sendmail"
-for default.
-*/
-#define	SENDMAIL "/usr/lib/sendmail"
+
+#define	MTA "/usr/sbin/ssmtp"   ///< Mail Transfer Agent

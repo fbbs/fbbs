@@ -1127,7 +1127,7 @@ int filter;
 #endif
 {
 	FILE *fin, *fout;
-	sprintf(genbuf, "%s -f %s.bbs@%s %s", SENDMAIL,
+	sprintf(genbuf, "%s -f %s.bbs@%s %s", MTA,
 			currentuser.userid, BBSHOST, receiver);
 	fout = popen(genbuf, "w");
 	fin = fopen(fname, "r");

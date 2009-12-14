@@ -586,7 +586,7 @@ void send_regmail(struct userec *trec) {
 	fprintf(dp, "%9.9d:%d\n", code, getpid());
 	fclose(dp);
 
-	sprintf(genbuf, "%s -f %s.bbs@%s %s ", SENDMAIL, trec->userid,
+	sprintf(genbuf, "%s -f %s.bbs@%s %s ", MTA, trec->userid,
 			BBSHOST, trec->email);
 	fout = popen(genbuf, "w");
 	fin = fopen("etc/mailcheck", "r");
@@ -651,13 +651,7 @@ void regmail_send(struct userec *trec, char* mail) {
 	fclose(dp);
 
 	code = time(0);
-	//	sprintf(genbuf, "%s -f %s.bbs@%s %s ",
-	//   SENDMAIL, trec->userid, BBSHOST, mail);
-	mailp = fopen("/home/bbs/mailbox", "r");//make sure mailbox exists Danielfree05.12.29
-	fscanf(mailp, "%s %s", mailuser, mailpass);
-	fclose(mailp);
-	sprintf(genbuf, "%s -au %s -ap %s -f %s.bbs@%s %s", SENDMAIL,
-			mailuser, mailpass, trec->userid, BBSHOST, mail);
+	sprintf(genbuf, "%s -f %s.bbs@%s %s", MTA, trec->userid, BBSHOST, mail);
 	fout = popen(genbuf, "w");
 	if (fout != NULL) {
 		fprintf(fout, "Reply-To: SYSOP.bbs@%s\n", BBSHOST);
