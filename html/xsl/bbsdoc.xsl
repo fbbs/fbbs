@@ -42,6 +42,7 @@
 	</xsl:template>
 	
 	<xsl:template match='brd'>
+		<a href='javascript:location=location'>[<img src='../images/button/reload.gif'/>к╒пб]</a>
 		<xsl:if test='@start > 1'>
 			<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page' /></xsl:otherwise></xsl:choose></xsl:variable>
 			<a><xsl:attribute name='href'><xsl:value-of select='@link' />doc?bid=<xsl:value-of select='@bid' />&amp;start=<xsl:value-of select='$prev' /></xsl:attribute>[ <img src='../images/button/up.gif' />иор╩рЁ ]</a>
