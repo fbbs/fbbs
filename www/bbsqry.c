@@ -41,7 +41,7 @@ int bbsqry_main(void)
 	} else {
 		printf("<bbsqry ");
 		print_session();
-		printf(">");
+		printf(" id='%s'>", userid);
 	}
 	printf("</bbsqry>");
 	return 0;
