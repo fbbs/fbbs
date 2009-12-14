@@ -45,16 +45,17 @@
 		<a href='javascript:location=location'>[<img src='../images/button/reload.gif'/>刷新]</a>
 		<xsl:if test='@start > 1'>
 			<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page' /></xsl:otherwise></xsl:choose></xsl:variable>
-			<a><xsl:attribute name='href'><xsl:value-of select='@link' />doc?bid=<xsl:value-of select='@bid' />&amp;start=<xsl:value-of select='$prev' /></xsl:attribute>[ <img src='../images/button/up.gif' />上一页 ]</a>
+			<a><xsl:attribute name='href'><xsl:value-of select='@link' />doc?bid=<xsl:value-of select='@bid' />&amp;start=<xsl:value-of select='$prev' /></xsl:attribute>[<img src='../images/button/up.gif' />上一页]</a>
 		</xsl:if>
 		<xsl:if test='@total > @start + @page - 1'>
 			<xsl:variable name='next'><xsl:value-of select='@start + @page' /></xsl:variable>
-			<a><xsl:attribute name='href'><xsl:value-of select='@link' />doc?bid=<xsl:value-of select='@bid' />&amp;start=<xsl:value-of select='$next' /></xsl:attribute>[ <img src='../images/button/down.gif' />下一页 ]</a>
+			<a><xsl:attribute name='href'><xsl:value-of select='@link' />doc?bid=<xsl:value-of select='@bid' />&amp;start=<xsl:value-of select='$next' /></xsl:attribute>[<img src='../images/button/down.gif' />下一页]</a>
 		</xsl:if>
 		<a><xsl:attribute name='href'>clear?board=<xsl:value-of select='@title' />&amp;start=<xsl:value-of select='@start' /></xsl:attribute>[清除未读]</a>
 		<xsl:if test='@link != ""'><a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/button/home.gif' />一般模式]</a></xsl:if>
 		<xsl:if test='@link != "t"'><a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/button/content.gif' />主题模式]</a></xsl:if>
 		<xsl:if test='@link != "g"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[文摘区]</a></xsl:if>
+		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/announce.gif'/>精华区]</a>
 		<a><xsl:attribute name='href'>not?board=<xsl:value-of select='@title' /></xsl:attribute>[进版画面]</a>
 		<a><xsl:attribute name='href'>brdadd?bid=<xsl:value-of select='@bid' /></xsl:attribute>[收藏本版]</a>
 		<a><xsl:attribute name='href'>rss?bid=<xsl:value-of select='@bid'/></xsl:attribute>[RSS]</a>

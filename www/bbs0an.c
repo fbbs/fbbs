@@ -37,14 +37,41 @@ static int get_count(const char *path)
 int bbs0an_main(void)
 {
 	char path[512];
-	strlcpy(path, getparm("path"), sizeof(path));
-	if (strstr(path, "..") || strstr(path, "SYSHome"))
-		return BBS_EINVAL;
-	char *board = getbfroma(path);
 	struct boardheader *bp = NULL;
-	if (*board != '\0') {
-		bp = getbcache(board);
-		if (!hasreadperm(&currentuser, bp))
+	int bid = strtol(getparm("bid"), NULL, 10);
+	if (bid <= 0) {
+		strlcpy(path, getparm("path"), sizeof(path));
+		if (strstr(path, "..") || strstr(path, "SYSHome"))
+			return BBS_EINVAL;
+		char *board = getbfroma(path);
+		if (*board != '\0') {
+			bp = getbcache(board);
+			if (!hasreadperm(&currentuser, bp))
+				return BBS_ENODIR;
+		}
+	} else {
+		bp = getbcache2(bid);
+		if (bp == NULL || !hasreadperm(&currentuser, bp))
+			return BBS_ENOBRD;
+		if (bp->flag & BOARD_DIR_FLAG)
+			return BBS_EINVAL;
+		path[0] = '\0';
+		FILE *fp = fopen("0Announce/.Search", "r");
+		if (fp == NULL)
+			return BBS_EINTNL;
+		char tmp[256];
+		int len = strlen(bp->filename);
+		while (fgets(tmp, sizeof(tmp), fp) != NULL) {
+			if (!strncmp(tmp, bp->filename, len) && tmp[len] == ':'
+					&& tmp[len + 1] == ' ') {
+				tmp[len + 1] = '/';
+				strlcpy(path, tmp + len + 1, sizeof(path));
+				path[strlen(path) - 1] = '\0';
+				break;
+			}
+		}
+		fclose(fp);
+		if (path[0] == '\0')
 			return BBS_ENODIR;
 	}
 	char names[512];
