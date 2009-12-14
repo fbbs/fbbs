@@ -172,7 +172,7 @@ table.post {
 	-moz-border-radius: 0.8em;
 	border: 2px solid #336699;
 	margin-bottom: 1em;
-	min-width: 100%;
+	width: 100%;
 	_width: 47em;
 }
 td.pleft {
