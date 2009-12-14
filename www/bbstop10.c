@@ -10,7 +10,7 @@ typedef struct top_t {
     char title[TITLE_LEN];
     char owner[OWNER_LEN];
     int count;
-    int64_t last;
+    time_t last;
 } top_t;
 
 int bbstop10_main(void)

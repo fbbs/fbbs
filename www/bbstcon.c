@@ -61,7 +61,12 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 int bbstcon_main(void)
 {
 	int bid = strtol(getparm("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
+	struct boardheader *bp;
+	if (bid <= 0) {
+		bp = getbcache(getparm("board"));
+	} else {
+		bp = getbcache2(bid);
+	}
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
