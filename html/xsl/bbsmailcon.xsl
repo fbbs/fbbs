@@ -14,8 +14,8 @@
 		<table class='post'><tr>
 			<td class='pleft' rowspan='3'>
 				<a href='mail'>[ <img src='../images/button/back.gif' />信件列表 ]</a>
-				<xsl:if test='@prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@prev' />&amp;n=<xsl:value-of select='@n-1'/></xsl:attribute>[ <img src='../images/button/up.gif' />上一封 ]</a></xsl:if>
-				<xsl:if test='@next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@next' />&amp;n=<xsl:value-of select='@n+1'/></xsl:attribute>[ <img src='../images/button/down.gif' />下一封 ]</a></xsl:if>
+				<xsl:if test='@prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@prev' />&amp;n=<xsl:value-of select='mail/@n - 1'/></xsl:attribute>[ <img src='../images/button/up.gif' />上一封 ]</a></xsl:if>
+				<xsl:if test='@next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@next' />&amp;n=<xsl:value-of select='mail/@n+1'/></xsl:attribute>[ <img src='../images/button/down.gif' />下一封 ]</a></xsl:if>
 			</td>
 			<td class='pmtop'><xsl:call-template name='linkbar' /></td></tr>
 			<tr><td class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail' /></xsl:call-template></td></tr>

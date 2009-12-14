@@ -1,5 +1,9 @@
 #include "libweb.h"
 
+enum {
+	NEWMAIL_EXPIRE = 30,
+};
+
 int bbsmail_main(void)
 {
 	if (!loginok)
@@ -47,5 +51,38 @@ int bbsmail_main(void)
 	}
 	mmap_close(&m);
 	printf("</bbsmail>");
+	return 0;
+}
+
+int print_new_mail(void *buf, int count, void *args)
+{
+	struct fileheader *fp = buf;
+	time_t limit = *(time_t *)args;
+	time_t date = getfiletime(fp);
+	if (date < limit)
+		return QUIT;
+	if (!(fp->accessed[0] & FILE_READ)) {
+		printf("<mail from='%s' date='%s' name='%s' n='%d'>", fp->owner, 
+				getdatestring(date, DATE_XML), fp->filename, count);
+		xml_fputs(fp->title, stdout);
+		printf("</mail>");
+	}
+	return 0;
+}
+
+int bbsnewmail_main(void)
+{
+	if (!loginok)
+		return BBS_ELGNREQ;
+	xml_header("bbsnewmail");
+	printf("<bbsnewmail ");
+	print_session();
+	printf(">");
+	char file[HOMELEN];
+	setmdir(file, currentuser.userid);
+	time_t limit = time(NULL) - 24 * 60 * 60 * NEWMAIL_EXPIRE;
+	apply_record(file, print_new_mail, sizeof(struct fileheader), &limit,
+			false, true, true);
+	printf("</bbsnewmail>");
 	return 0;
 }

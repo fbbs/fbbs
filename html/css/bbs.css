@@ -166,7 +166,7 @@ td.idesc { min-width: 10em; }
 th.cate, td.cate, th.mark, td.mark, th.time, td.time, th.read, td.read { text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
 a.idesc { display: inline-block; margin-left: 2px; }
-span.time { color: gray; font-size: 0.8em; }
+td.time, span.time { color: gray; font-size: 0.8em; }
 
 table.post {
 	-moz-border-radius: 0.8em;

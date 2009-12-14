@@ -564,7 +564,9 @@ int maxlen(const char *board)
 // Get file time according to its name 's'.
 time_t getfiletime(const struct fileheader *f)
 {
-	return (time_t)strtol(f->filename + 2, NULL, 10);
+	if (f->filename[0] == 's') // sharedmail..
+		return strtol(f->filename + strlen(f->owner) + 20, NULL, 10);
+	return strtol(f->filename + 2, NULL, 10);
 }
 
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file)

@@ -11,6 +11,7 @@
 	</xsl:template>
 
 	<xsl:template match='bbsmail'>
+		<h2>信件列表</h2>
 		<p>信件总数 [<xsl:value-of select='@total' />]封</p>
 		<form name='list' method='post' action='mailman'>
 			<table class='content'>
