@@ -555,7 +555,7 @@ int maxlen(const char *board)
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s/.maxlen", board);
 	FILE *fp = fopen(path, "r");
 	if (fp != NULL) {
-		fscanf(fp, "%d", &limit);
+		fscanf(FCGI_ToFILE(fp), "%d", &limit);
 		fclose(fp);
 	}
 	return limit;
