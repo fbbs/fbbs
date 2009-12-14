@@ -129,17 +129,15 @@ static int bbsdoc(int mode)
 	char *bidstr = getparm("bid");
 	struct boardheader *bp;
 	if (*bidstr == '\0') {
-		strlcpy(board, getparm("board"), sizeof(board));
-		bp = getbcache(board);
+		bp = getbcache(getparm("board"));
 	} else {
 		bp = getbcache2(strtol(bidstr, NULL, 10));
-		if (bp != NULL)
-			strlcpy(board, bp->filename, sizeof(board));
 	}
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+	strlcpy(board, bp->filename, sizeof(board));
 
 	char dir[HOMELEN];
 	switch (mode) {
