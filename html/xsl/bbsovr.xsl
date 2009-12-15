@@ -12,12 +12,12 @@
 	<xsl:template match='bbsfall'>
 		<h2>设定关注名单</h2>
 		<table class='content'>
-			<tr><th class='owner'>帐号</th><th class='idesc'>说明</th><th>操作</th></tr>
+			<tr><th class='owner'>帐号</th><th class='chkbox'>操作</th><th class='idesc'>说明</th></tr>
 			<xsl:for-each select='ov'><tr>
 				<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-				<td class='owner'><a><xsl:attribute name='href'>qry?u=<xsl:value-of select='@id' /></xsl:attribute><xsl:value-of select='@id' /></a></td>
+				<td class='owner'><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@id' /></xsl:attribute><xsl:value-of select='@id' /></a></td>
+				<td class='chkbox'><a><xsl:attribute name='href'>fdel?u=<xsl:value-of select='@id' /></xsl:attribute>删除</a></td>
 				<td class='idesc'><xsl:value-of select='.' /></td>
-				<td><a><xsl:attribute name='href'>fdel?u=<xsl:value-of select='@id' /></xsl:attribute>删除</a></td>
 			</tr></xsl:for-each>
 		</table>
 		<a href='fadd'>[增加关注网友]</a>

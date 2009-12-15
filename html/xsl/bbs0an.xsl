@@ -12,7 +12,7 @@
 	<xsl:template match='bbs0an'>
 		<p>本目录web浏览次数：[<xsl:value-of select='@v' />]</p>
 		<table class='content'>
-			<tr><th class='no'>序号</th><th class='ptitle'>标题</th><th class='bm'>整理者</th><th>日期</th></tr>
+			<tr><th class='no'>序号</th><th class='ptitle'>标题</th><th class='bm'>整理者</th><th class='time'>日期</th></tr>
 			<xsl:for-each select='ent'><tr>
 					<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
 					<td class='no'><xsl:value-of select='position()' /></td>

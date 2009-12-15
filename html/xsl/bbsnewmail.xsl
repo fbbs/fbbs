@@ -15,12 +15,12 @@
 		<p><a href='mail'><xsl:choose><xsl:when test='count(mail)=0'>您没有30天内的未读信件</xsl:when><xsl:otherwise>本页仅显示30天内未读信件</xsl:otherwise></xsl:choose>，查看全部信件请点此处</a></p>
 		<xsl:if test='count(mail)!=0'><form name='list' method='post' action='mailman'>
 			<table class='content'>
-				<tr><th class='no'>序号</th><th>管理</th><th class='owner'>发信人</th><th>日期</th><th class='ptitle'>信件标题</th></tr>
+				<tr><th class='no'>序号</th><th class='chkbox'>管理</th><th class='owner'>发信人</th><th class='time'>日期</th><th class='ptitle'>信件标题</th></tr>
 				<xsl:for-each select='mail'><tr>
 					<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
 					<td class='no'><xsl:value-of select='@n'/></td>
-					<td><input type="checkbox"><xsl:attribute name='name'>box<xsl:value-of select='@name' /></xsl:attribute></input></td>
-					<td><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from' /></xsl:attribute><xsl:value-of select='@from' /></a></td>
+					<td class='chkbox'><input type="checkbox"><xsl:attribute name='name'>box<xsl:value-of select='@name' /></xsl:attribute></input></td>
+					<td class='owner'><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from' /></xsl:attribute><xsl:value-of select='@from' /></a></td>
 					<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date' /></xsl:call-template></td>
 					<td class='ptitle'><a class='ptitle'>
 						<xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name' />&amp;n=<xsl:value-of select='@n' /></xsl:attribute>

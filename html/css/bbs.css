@@ -44,7 +44,7 @@ th {
 	text-align: left;
 }
 th, td { padding: 0 0.25em; }
-tr { height: 1.5em; line-height: 1.5em; vertical-align: middle; }
+tr { height: 1.75em; line-height: 1.75em; vertical-align: middle; }
 
 ul.sec>li {
 	font-size: 1.2em;
@@ -155,18 +155,27 @@ table.content {
 	border-collapse: separate;
 	border-spacing: 2px;
 	margin-bottom: 0.5em;
+	width:100%;
+	_width: 50em;
 }
 tr.light { background-color: #ffffff; }
 tr.dark { background-color: #f0f7ff; }
-th.no, td.no { width: 3em; text-align: center; }
-th.title, td.title { width: 8em; }
-th.ptitle, td.ptitle { min-width: 35em; _width: 35em; }
+th.no, td.no { width: 4em; text-align: center; }
+th.title, td.title { width: 12em; }
+th.ptitle, td.ptitle { _width: 35em;}
 th.owner, td.owner { width: 7em;}
+th.mark, td.mark { width: 3em; }
+th.time, td.time { width: 9em; _width: 10em; text-align: center;}
+th.bm, td.bm { _width: 20em; }
+th.cate, td.cate { width: 4em; }
+th.desc, td.desc { width: 15em; }
+th.read, td.read { width: 3em; }
+th.chkbox, td.chkbox { width: 3em; }
 td.idesc { min-width: 10em; }
 th.cate, td.cate, th.mark, td.mark, th.time, td.time, th.read, td.read { text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
 a.idesc { display: inline-block; margin-left: 2px; }
-td.time, span.time { color: gray; font-size: 0.8em; text-align: center;}
+td.time, span.time { color: gray; font-size: 0.8em;}
 
 table.post {
 	-moz-border-radius: 0.8em;
