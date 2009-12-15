@@ -47,6 +47,7 @@ int bbsrss_main(void);
 int bbsovr_main(void);
 int bbstop10_main(void);
 int bbsnewmail_main(void);
+int bbsbfind_main(void);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -99,6 +100,7 @@ static web_handler_t applets[] = {
 		{"ovr", bbsovr_main, FRIEND},
 		{"top10", bbstop10_main, READING},
 		{"newmail", bbsnewmail_main, RMAIL},
+		{"bfind", bbsbfind_main, READING},
 		{NULL, NULL, 0}
 };
 

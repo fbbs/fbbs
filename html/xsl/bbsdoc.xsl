@@ -56,6 +56,7 @@
 		<xsl:if test='@link != "t"'><a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/button/content.gif' />主题模式]</a></xsl:if>
 		<xsl:if test='@link != "g"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[文摘区]</a></xsl:if>
 		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/announce.gif'/>精华区]</a>
+		<a><xsl:attribute name='href'>bfind?bid=<xsl:value-of select='@bid'/></xsl:attribute>[版内搜索]</a>
 		<a><xsl:attribute name='href'>not?board=<xsl:value-of select='@title' /></xsl:attribute>[进版画面]</a>
 		<a><xsl:attribute name='href'>brdadd?bid=<xsl:value-of select='@bid' /></xsl:attribute>[收藏本版]</a>
 		<a><xsl:attribute name='href'>rss?bid=<xsl:value-of select='@bid'/></xsl:attribute>[RSS]</a>

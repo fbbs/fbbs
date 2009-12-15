@@ -1,4 +1,22 @@
+#define _GNU_SOURCE
 #include "libweb.h"
+
+enum {
+	BFIND_EXPIRE = 30,
+	BFIND_MAX = 100,
+};
+
+typedef struct criteria_t {
+	int bid;
+	bool mark;
+	bool nore;
+	time_t limit;
+	char *t1;
+	char *t2;
+	char *t3;
+	char *user;
+	int found;
+} criteria_t;
 
 bool allow_reply(const struct fileheader *fh)
 {
@@ -209,4 +227,76 @@ int bbsgdoc_main(void)
 int bbstdoc_main(void)
 {
 	return bbsdoc(MODE_THREAD);
+}
+
+int do_bfind(void *buf, int count, void *args)
+{
+	struct fileheader *fp = buf;
+	criteria_t *cp = args;
+	time_t date = getfiletime(fp);
+	if (date < cp->limit)
+		return QUIT;
+	if (cp->nore && fp->id != fp->gid)
+		return 0;
+	if (cp->mark && !(fp->accessed[0] & FILE_DIGEST)
+			&& !(fp->accessed[0] & FILE_MARKED))
+		return 0;
+	if (*cp->user && strcasecmp(fp->owner, cp->user))
+		return 0;
+	if (*cp->t1 && !strcasestr(fp->title, cp->t1))
+		return 0;
+	if (*cp->t2 && !strcasestr(fp->title, cp->t2))
+		return 0;
+	if (*cp->t3 && strcasestr(fp->title, cp->t3))
+		return 0;
+	print_bbsdoc(fp, 1, MODE_NORMAL);
+	if (++cp->found >= BFIND_MAX)
+		return QUIT;
+	return 0;
+}
+
+int bbsbfind_main(void)
+{
+	if (!loginok)
+		return BBS_ELGNREQ;
+
+	criteria_t cri;
+	cri.bid = strtol(getparm("bid"), NULL, 10);
+	struct boardheader *bp = getbcache2(cri.bid);
+	if (bp == NULL || !hasreadperm(&currentuser, bp))
+		return BBS_ENOBRD;
+	cri.mark = false;
+	if (!strcasecmp(getparm("mark"), "on"))
+		cri.mark = true;
+	cri.nore = false;
+	if (!strcasecmp(getparm("nore"), "on"))
+		cri.nore = true;
+	long day = strtol(getparm("limit"), NULL, 10);
+	if (day < 0)
+		day = 0;
+	if (day > BFIND_EXPIRE)
+		day = BFIND_EXPIRE;
+	cri.limit = time(NULL) - 24 * 60 * 60 * day;
+	cri.t1 = getparm("t1");
+	cri.t2 = getparm("t2");
+	cri.t3 = getparm("t3");
+	cri.user = getparm("user");
+	cri.found = 0;
+
+	xml_header("bbsbfind");
+	printf("<bbsbfind ");
+	print_session();
+	printf(" bid='%d'", cri.bid);
+
+	if (*cri.t1 || *cri.t2 || *cri.t3 || *cri.user) {
+		printf(" result='1'>");
+		char file[HOMELEN];
+		setwbdir(file, bp->filename);
+		apply_record(file, do_bfind, sizeof(struct fileheader), &cri, false,
+				true, true);
+	} else {
+		printf(">");
+	}
+	printf("</bbsbfind>");
+	return 0;
 }
