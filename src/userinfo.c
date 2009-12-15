@@ -67,7 +67,7 @@ void disply_userinfo(struct userec *u) {
 	prints(" (累计生活天数 : %d)\n", days_elapsed(u->birthyear + 1900, 
 			u->birthmonth, u->birthday, now));
 	prints("电子邮件信箱 : %s\n", u->email);
-	prints("最近光临机器 : %-22s", u->lasthost);
+	prints("最近光临机器 : %-22s\n", u->lasthost);
 	prints("帐号建立日期 : %s[距今 %d 天]\n",
 			getdatestring(u->firstlogin, DATE_ZH),
 			(now - (u->firstlogin)) / 86400);
