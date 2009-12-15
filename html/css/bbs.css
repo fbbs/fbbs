@@ -3,7 +3,7 @@ body, div, ul, ol, li, h1, h2, h3, h4, h5, h6, form, input, textarea, p, blockqu
 	padding: 0;
 }
 body {
-	font-family: "Microsoft YaHei", "WenQuanYi Zen Hei", "Gill Sans MT", Verdana, sans-serif;
+	font-family: "Microsoft YaHei", "WenQuanYi Zen Hei", "SimSun", "Gill Sans MT", Verdana, sans-serif;
 	font-size: 1em;
 	width: 100%;
 }
@@ -165,7 +165,7 @@ th.title, td.title { width: 12em; }
 th.ptitle, td.ptitle { _width: 35em;}
 th.owner, td.owner { width: 7em;}
 th.mark, td.mark { width: 3em; }
-th.time, td.time { width: 9em; _width: 10em; text-align: center;}
+th.time, td.time { width: 9em; _width: 10em; text-align: center; padding: 0; margin: 0}
 th.bm, td.bm { _width: 20em; }
 th.cate, td.cate { width: 4em; }
 th.desc, td.desc { width: 15em; }
@@ -194,6 +194,7 @@ td.pleft a {
 	display: block;
 	line-height: 1.5em;
 	text-align: center;
+	padding: 0;
 }
 td.pmain {
 	word-wrap: break-word;
