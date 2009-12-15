@@ -13,7 +13,7 @@
 	<xsl:template match='bbsbfind'>
 		<h2>版内文章搜索</h2>
 		<xsl:variable name='count' select='count(po)'/>
-		<xsl:choose><xsl:when test='@result'><p>共找到 <xsl:value-of select='$count'/> 篇文章 <xsl:if test='$count&gt;=100'>（100篇以上部分省略）</xsl:if></p><xsl:if test='$count!=0'><table class='content'>
+		<xsl:choose><xsl:when test='@result'><p>共找到 <xsl:value-of select='$count'/> 篇文章 <xsl:if test='$count&gt;=100'>（100篇以上部分省略）</xsl:if></p><xsl:if test='$count!=0'><p>最新文章靠前</p><table class='content'>
 			<tr><th class='no'>序号</th><th class='mark'>标记</th><th class='owner'>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
 			<xsl:for-each select='po'><tr>
 				<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
@@ -24,7 +24,7 @@
 				<xsl:variable name='imgsrc'>../images/types/<xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'>reply</xsl:when><xsl:otherwise>text</xsl:otherwise></xsl:choose>.gif</xsl:variable>
 				<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)' /></xsl:when><xsl:otherwise><xsl:value-of select='.' /></xsl:otherwise></xsl:choose></xsl:variable>
 				<td class='ptitle'><a class='ptitle'>
-					<xsl:attribute name='href'><xsl:value-of select='../brd/@link' />con?bid=<xsl:value-of select='../brd/@bid' />&amp;f=<xsl:value-of select='@id' /></xsl:attribute>
+					<xsl:attribute name='href'><xsl:value-of select='../brd/@link' />con?bid=<xsl:value-of select='../@bid' />&amp;f=<xsl:value-of select='@id' /></xsl:attribute>
 					<img><xsl:attribute name='src'><xsl:value-of select='$imgsrc' /></xsl:attribute></img>
 					<xsl:call-template name='ansi-escape'>
 						<xsl:with-param name='content'><xsl:value-of select='$text' /></xsl:with-param>

@@ -188,6 +188,7 @@ table.post {
 td.pleft {
 	padding: 0.25em 0;
 	width: 7em;
+	min-width: 7em;
 	vertical-align: top;
 	border-right: 1px solid #336699;
 }
