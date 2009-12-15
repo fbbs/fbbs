@@ -15,82 +15,85 @@ static int check_multi(const struct userec *user)
 
 static int wwwlogin(struct userec *user, const char *ref)
 {
-	FILE *fp;
-	int n, tmp;
-	struct user_info *u;
-
-	if(!(currentuser.userlevel & PERM_REGISTER)) { 
+	if (!(currentuser.userlevel & PERM_REGISTER)) {
 		char file[HOMELEN]; 
 		sethomefile(file, currentuser.userid, "register");
-		if(dashf(file)) { 
-			currentuser.userlevel |=PERM_DEFAULT; 
+		if (dashf(file)) {
+			currentuser.userlevel |= PERM_DEFAULT;
 			save_user_data(&currentuser);
 		}
 	}
 
-	fp=fopen("tmp/.UTMP.lock", "a");
-	FLOCK(fileno(fp), LOCK_EX);
-	for(n = 0; n < MAXACTIVE; n++) {
-		if(utmpshm->uinfo[n].active == 0) {
-			u = &(utmpshm->uinfo[n]);
-			u_info = u;
-			bzero(u, sizeof(struct user_info));
-			u->active = 1;
-			u->uid = searchuser(user->userid);
-			u->pid = getpid();
-			u->mode = WWW;
-			if (HAS_PERM(PERM_LOGINCLOAK)
-					&& (currentuser.flags[0] & CLOAK_FLAG))
-				u->invisible = YEA;
-			u->pager = 0;
-			if (DEFINE(DEF_FRIENDCALL))
-				u->pager |= FRIEND_PAGER;
-			if (DEFINE(PAGER_FLAG)) {
-				u->pager |= ALL_PAGER;
-				u->pager |= FRIEND_PAGER;
-			}
-			if (DEFINE(DEF_FRIENDMSG))
-				u->pager |= FRIENDMSG_PAGER;
-			if (DEFINE(DEF_ALLMSG)) {
-				u->pager |= ALLMSG_PAGER;
-				u->pager |= FRIENDMSG_PAGER;
-			}
+	struct user_info info;
+	memset(&info, 0, sizeof(info));
+	info.active = 1;
+	info.uid = searchuser(user->userid);
+	info.pid = getpid();
+	info.mode = WWW | LOGIN;
+	if (HAS_PERM(PERM_LOGINCLOAK)
+			&& (currentuser.flags[0] & CLOAK_FLAG))
+		info.invisible = YEA;
+	info.pager = 0;
+	if (DEFINE(DEF_FRIENDCALL))
+		info.pager |= FRIEND_PAGER;
+	if (DEFINE(PAGER_FLAG)) {
+		info.pager |= ALL_PAGER;
+		info.pager |= FRIEND_PAGER;
+	}
+	if (DEFINE(DEF_FRIENDMSG))
+		info.pager |= FRIENDMSG_PAGER;
+	if (DEFINE(DEF_ALLMSG)) {
+		info.pager |= ALLMSG_PAGER;
+		info.pager |= FRIENDMSG_PAGER;
+	}
 
-			SpecialID(u->userid, fromhost, IPLEN);
-			strlcpy(u->from, fromhost, 24);//???
-#ifdef SPARC
-			*(int*)(u->from + 30)=time(NULL);
+// TODO:...
+	strlcpy(info.from, fromhost, 24);
+// login start..
+#ifdef SPARC 
+	*(int*)(info.from + 30) = time(NULL);
 #else
-			*(int*)(u->from + 32)=time(NULL);
+	*(int*)(info.from + 32) = time(NULL);
 #endif
-			u->from[22] = DEFINE(DEF_NOTHIDEIP) ? 'S' : 'H';
+	info.from[22] = DEFINE(DEF_NOTHIDEIP) ? 'S' : 'H';
 
-			u->idle_time = time(NULL);
-			strlcpy(u->username, user->username, sizeof(u->username));
-			strlcpy(u->userid, user->userid, sizeof(u->userid));
+	info.idle_time = time(NULL);
+	strlcpy(info.username, user->username, sizeof(info.username));
+	strlcpy(info.userid, user->userid, sizeof(info.userid));
 
-			tmp = rand() % 100000000;
-			u->utmpkey = tmp;
-			FLOCK(fileno(fp), LOCK_UN);
-			fclose(fp);
-			uidshm->status[u->uid - 1]++;
+	int utmpkey = rand() % 100000000;
+	info.utmpkey = utmpkey;
 
-			const char *referer = ref;
-			if (*referer == '\0') {
-				referer = "sec";
-			}
-			// TODO: these cookies should be merged into one.
-			printf("Content-type: text/html; charset=%s\n"
-					"Set-cookie: utmpnum=%d\nSet-cookie: utmpkey=%d\n"
-					"Set-cookie: utmpuserid=%s\nLocation: %s\n\n",
-					CHARSET, n + 1, tmp, currentuser.userid, referer);
-			
-			return 0;
+	int fd = open("tmp/.UTMP.lock", O_RDWR | O_CREAT, 0600);
+	if (fd < 0)
+		return BBS_EINTNL;
+	if (flock(fd, LOCK_EX) == -1) {
+		close(fd);
+		return BBS_EINTNL;
+	}
+
+	struct user_info *up = utmpshm->uinfo;
+	int n;
+	for (n = 0; n < MAXACTIVE; n++, up++) {
+		if (!up->active) {
+			*up = info;
+			uidshm->status[up->uid - 1]++;
+			break;
 		}
 	}
-	FLOCK(fileno(fp), LOCK_UN);
-	fclose(fp);
-	return BBS_E2MANY;
+	flock(fd, LOCK_UN);
+	close(fd);
+	if (n >= MAXACTIVE)
+		return BBS_E2MANY;
+	
+	const char *referer = ref;
+	if (*referer == '\0')
+		referer = "sec";
+	// TODO: these cookies should be merged into one.
+	printf("Content-type: text/html; charset=%s\n"
+			"Set-cookie: utmpnum=%d\nSet-cookie: utmpkey=%d\n"
+			"Set-cookie: utmpuserid=%s\nLocation: %s\n\n",
+			CHARSET, n + 1, utmpkey, currentuser.userid, referer);
 	return 0;
 }
 
@@ -127,7 +130,7 @@ int bbslogin_main(void)
 	if (*id == '\0')
 		return login_screen();
 	strlcpy(pw, getparm("pw"), sizeof(pw));
-	if(loginok && strcasecmp(id, currentuser.userid))
+	if (loginok && strcasecmp(id, currentuser.userid))
 		return BBS_EDUPLGN;
 	if (getuserec(id, &user) == 0)
 		return BBS_ENOUSR;
@@ -156,7 +159,7 @@ int bbslogin_main(void)
 		// Do not count frequent logins.
 		if (now - user.lastlogin < 20 * 60
 				&& user.numlogins >= 100)
-				user.numlogins--;
+			user.numlogins--;
 		if (total > 1) {
 			recent = user.lastlogout;
 			if (user.lastlogin > recent)
@@ -183,7 +186,7 @@ int bbslogin_main(void)
 	}
 
 	log_usies("ENTER", fromhost, &user);
-	if(!loginok && strcasecmp(id, "guest"))
+	if (!loginok && strcasecmp(id, "guest"))
 		wwwlogin(&user, getparm("ref"));
 	return 0;
 }
