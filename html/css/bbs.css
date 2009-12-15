@@ -150,6 +150,7 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #navh li a, #nava li a, #navp li a, #navt li a, #navf li a, #navc li a, #navco li a, #navm li a, #navs li a { background-image: none; }
 .sf { padding: 0; font-size: 0.8em; }
 #navf ul li.sf a { padding: 0; }
+#nav #navf ul { display: block; }
 
 table.content {
 	border-collapse: separate;
