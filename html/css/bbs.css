@@ -186,8 +186,6 @@ table.post {
 }
 td.pleft {
 	padding: 0.25em 0;
-	width: 100px;
-	min-width: 7em;
 	width: 7em;
 	vertical-align: top;
 	border-right: 1px solid #336699;
@@ -206,10 +204,12 @@ td.pmain {
 }
 td.pmtop { border-bottom: 1px solid #336699; }
 td.pmbot { border-top: 1px solid #336699; }
-td.pmtop, td.pmbot {
+td.pmtop, td.pmbot, td.plbot {
 	padding: 0.5em;
 	height: 1.5em;
 }
+td.plbot { width: 7em; text-align: center; border-right: 1px solid #336699; padding: 0}
+td.plbot a { display: block; line-height: 1.5em; }
 td.pmtop a, td.pmbot a {
 	display: inline-block;
 	line-height: 1.5em;

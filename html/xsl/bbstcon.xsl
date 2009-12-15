@@ -11,11 +11,9 @@
 	</xsl:template>
 
 	<xsl:template match='bbstcon'>
-		<a name='top' />
 		<xsl:for-each select='po'>
 			<table class='post'><tr>
-				<td class='pleft' rowspan='3'>
-					<a href='#top'>[ <img src='../images/button/up.gif' />回页首 ]</a>
+				<td class='pleft' rowspan='2'>
 					<a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='../@bid' /></xsl:attribute>[ 文摘区 ]</a>
 					<a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='../@bid' /></xsl:attribute>[ <img src='../images/button/home.gif' />本讨论区 ]</a>
 					<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='../@bid' />&amp;f=<xsl:value-of select='@fid' /></xsl:attribute>[ <img src='../images/button/content.gif' />本文链接 ]</a>
@@ -26,7 +24,7 @@
 				</td>
 				<td class='pmtop'><xsl:call-template name='linkbar' /></td></tr>
 				<tr><td class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></td></tr>
-				<tr><td class='pmbot'><xsl:call-template name='linkbar' /></td></tr>
+				<tr><td class='plbot'><a href='#top'>[ <img src='../images/button/up.gif' />回页首 ]</a></td><td class='pmbot'><xsl:call-template name='linkbar' /></td></tr>
 			</table>
 		</xsl:for-each>
 	</xsl:template>

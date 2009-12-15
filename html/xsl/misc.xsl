@@ -142,6 +142,7 @@
 				<xsl:call-template name='include-js' />
 			</head>
 			<body>
+				<a name='top' />
 				<xsl:call-template name='header'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='user' select='$u' /></xsl:call-template>
 				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='fav' select='$fav' /></xsl:call-template>
 				<div id='main'><xsl:apply-templates /></div>
