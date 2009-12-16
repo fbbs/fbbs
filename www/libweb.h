@@ -111,6 +111,7 @@ struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file
 bool valid_mailname(const char *file);
 int fcgi_init_loop(int mode);
 void print_session(void);
+const char *check_gbk(const char *title);
 
 #endif  //FB_LIBWEB_H
 

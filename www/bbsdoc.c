@@ -74,7 +74,7 @@ static int print_bbsdoc(const struct fileheader *fh, int count, int mode)
 			printf("%u'>", fh->id);
 		else
 			printf("%s'>", fh->filename);
-		xml_fputs(fh->title, stdout);
+		xml_fputs2(fh->title, check_gbk(fh->title) - fh->title, stdout);
 		printf("</po>\n");
    	}
 	return count;

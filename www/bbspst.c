@@ -106,7 +106,7 @@ static int do_bbspst(bool isedit)
 	if (reply) {
 		printf("<t>");
 		ansi_filter(fh.title, fh.title);
-		xml_fputs(fh.title, stdout);
+		xml_fputs2(fh.title, check_gbk(fh.title) - fh.title, stdout);
 		printf("</t><po f='%u'>", fid);
 		if (isedit) {
 			char *begin = m.ptr, *end = (char *)(m.ptr) + m.size;
