@@ -139,6 +139,7 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 	display: block;
 }
 #navh a { background-image: url('../images/button/home.gif'); }
+#navb a { background-image: url('../images/egroup.gif'); }
 #nava a { background-image: url('../images/announce.gif'); }
 #navp a { background-image: url('../images/penguin.gif'); }
 #navt a { background-image: url('../images/top10.gif'); }
@@ -147,7 +148,8 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #navco a { background-image: url('../images/config.gif'); }
 #navm a { background-image: url('../images/mail.gif'); }
 #navs a { background-image: url('../images/search.gif'); }
-#navh li a, #nava li a, #navp li a, #navt li a, #navf li a, #navc li a, #navco li a, #navm li a, #navs li a { background-image: none; }
+#navh li a, #navb li a, #nava li a, #navp li a, #navt li a, #navf li a, #navc li a, #navco li a, #navm li a, #navs li a { background-image: none; }
+#navb ul li a { padding-left: 0.5em; }
 .sf { padding: 0; font-size: 0.8em; }
 #navf ul li.sf a { padding: 0; }
 #nav #navf ul { display: block; }
@@ -168,7 +170,7 @@ th.owner, td.owner { width: 7em;}
 th.mark, td.mark { width: 3em; }
 th.time, td.time { width: 9em; _width: 10em; text-align: center; padding: 0; margin: 0}
 th.bm, td.bm { _width: 20em; }
-th.cate, td.cate { width: 4em; }
+th.cate, td.cate { width: 5em; }
 th.desc, td.desc { width: 15em; }
 th.read, td.read { width: 3em; }
 th.chkbox, td.chkbox { width: 3em; }

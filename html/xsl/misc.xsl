@@ -57,8 +57,25 @@
 	<xsl:template name='navigation'>
 		<xsl:param name='perm'/>
 		<xsl:param name='fav'/>
+		<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
 		<ul id='nav'>
 			<li id='navh'><a href='sec'>推荐版面</a></li>
+			<xsl:if test='$bbsname="日月光华"'><li id='navb'>
+				<a href='#' onclick='return switchPanel(this);'>分类讨论</a>
+				<ul><li><a href='boa?s=0'>0 BBS系统</a></li>
+				<li><a href='boa?s=1'>1 复旦大学</a></li>
+				<li><a href='boa?s=2'>2 院系风采</a></li>
+				<li><a href='boa?s=3'>3 电脑技术</a></li>
+				<li><a href='boa?s=4'>4 休闲娱乐</a></li>
+				<li><a href='boa?s=5'>5 文学艺术</a></li>
+				<li><a href='boa?s=6'>6 体育健身</a></li>
+				<li><a href='boa?s=7'>7 感性空间</a></li>
+				<li><a href='boa?s=8'>8 新闻信息</a></li>
+				<li><a href='boa?s=9'>9 学科学术</a></li>
+				<li><a href='boa?s=A'>A 音乐影视</a></li>
+				<li><a href='boa?s=B'>B 交易专区</a></li>
+				</ul>
+			</li></xsl:if>
 			<li id='nava'><a href='0an'>本站精华</a></li>
 			<li id='navp'><a href='all'>全部讨论</a></li>
 			<li id='navt'>
