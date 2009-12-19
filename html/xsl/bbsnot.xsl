@@ -12,19 +12,17 @@
 
 	<xsl:template match='bbsnot'>
 		<h2>进版画面 - [<xsl:value-of select='@brd' />]</h2>
-		<table class='post'><tr>
-			<td class='pleft' rowspan='3'>
-				<xsl:if test='@brd'>
-					<a><xsl:attribute name='href'>gdoc?board=<xsl:value-of select='@brd' /></xsl:attribute>[ 文摘区 ]</a>
-					<a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@brd' /></xsl:attribute>[<img src='../images/button/home.gif' />本讨论区]</a>
-				</xsl:if>
-			</td>
-			<td class='pmtop'><xsl:call-template name='linkbar' /></td></tr>
-			<tr><td class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></td></tr>
-			<tr><td class='pmbot'><xsl:call-template name='linkbar' /></td></tr>
-		</table>
+		<div class='post'>
+			<div class='ptop'><xsl:call-template name='navbar'/></div>
+			<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.' /></xsl:call-template></div>
+			<div class='pbot'><xsl:call-template name='navbar'/></div>
+		</div>
 	</xsl:template>
 	
-	<xsl:template name='linkbar'>
+	<xsl:template name='navbar'>
+		<xsl:if test='@brd'>
+			<a><xsl:attribute name='href'>gdoc?board=<xsl:value-of select='@brd' /></xsl:attribute>[ 文摘区 ]</a>
+			<a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@brd' /></xsl:attribute>[<img src='../images/button/home.gif' />本讨论区]</a>
+		</xsl:if>
 	</xsl:template>
 </xsl:stylesheet>

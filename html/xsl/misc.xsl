@@ -132,7 +132,7 @@
 			<xsl:if test='$user != ""'><a id='navu'><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user' /></xsl:attribute><xsl:value-of select='$user' /></a></xsl:if>
 			<xsl:if test='$user = ""'><a id='navl' href='login'>登录</a></xsl:if>
 			<a id='navte' href='telnet://bbs.fudan.sh.cn:23'>终端登录</a>
-			<span id='iewarn'><xsl:comment><![CDATA[[if IE 6]><![endif]]]></xsl:comment></span>
+			<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 7]><![endif]]]></xsl:comment></span>
 		</div>
 	</xsl:template>
 
@@ -156,7 +156,7 @@
 				<title><xsl:value-of select='$title' /> - <xsl:call-template name='bbsname' /></title>
 				<meta http-equiv="content-type" content="text/html; charset=gb2312" />
 				<xsl:call-template name='include-css' />
-<xsl:comment><![CDATA[[if IE 6]><style>
+<xsl:comment><![CDATA[[if lt IE 7]><style>
 #hd{position:absolute;top:0;left:144px;margin:0.5em;}
 #main{position:absolute;top:32px;left:144px;margin:0.5em 0 0.5em 0}
 #ft{display:none;margin:0.5em}

@@ -11,18 +11,21 @@
 	</xsl:template>
 
 	<xsl:template match='bbsmailcon'>
-		<table class='post'><tr>
-			<td class='pleft' rowspan='3'>
-				<a href='mail'>[ <img src='../images/button/back.gif' />信件列表 ]</a>
-				<xsl:if test='@prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@prev' />&amp;n=<xsl:value-of select='mail/@n - 1'/></xsl:attribute>[ <img src='../images/button/up.gif' />上一封 ]</a></xsl:if>
-				<xsl:if test='@next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@next' />&amp;n=<xsl:value-of select='mail/@n+1'/></xsl:attribute>[ <img src='../images/button/down.gif' />下一封 ]</a></xsl:if>
-			</td>
-			<td class='pmtop'><xsl:call-template name='linkbar' /></td></tr>
-			<tr><td class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail' /></xsl:call-template></td></tr>
-			<tr><td class='pmbot'><xsl:call-template name='linkbar' /></td></tr>
-		</table>
+		<div class='post'>
+			<div class='ptop'><xsl:call-template name='navbar'/></div>
+			<div class='plink'><xsl:call-template name='linkbar' /></div>
+			<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail' /></xsl:call-template></div>
+			<div class='plink'><xsl:call-template name='linkbar' /></div>
+			<div class='pbot'><xsl:call-template name='navbar'/></div>
+		</div>
 	</xsl:template>
-	
+
+	<xsl:template name='navbar'>
+		<a href='mail'>[ <img src='../images/button/back.gif' />信件列表 ]</a>
+		<xsl:if test='@prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@prev' />&amp;n=<xsl:value-of select='mail/@n - 1'/></xsl:attribute>[ <img src='../images/button/up.gif' />上一封 ]</a></xsl:if>
+		<xsl:if test='@next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@next' />&amp;n=<xsl:value-of select='mail/@n+1'/></xsl:attribute>[ <img src='../images/button/down.gif' />下一封 ]</a></xsl:if>
+	</xsl:template>
+
 	<xsl:template name='linkbar'>
 		<a><xsl:attribute name='href'>pstmail?n=<xsl:value-of select='mail/@n'/></xsl:attribute>[ <img src='../images/button/edit.gif' />回复此信 ]</a>
 		<a onclick='return confirm("您真的要删除这封信吗？")'><xsl:attribute name='href'>delmail?f=<xsl:value-of select='mail/@f' /></xsl:attribute>[ 删除此信 ]</a>
