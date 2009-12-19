@@ -9,7 +9,7 @@ int bbsclear_main(void)
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	const char *start = getparm("start");
-	brc_initial(currentuser.userid, board);
+	brc_fcgi_init(currentuser.userid, board);
 	brc_clear(NA, NULL, YEA);
 	brc_update(currentuser.userid, board);
 	char buf[STRLEN];

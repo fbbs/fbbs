@@ -76,6 +76,7 @@ int brc_unread(const char *filename);
 int brc_unread1(int ftime);
 int brc_clear(int ent, const char *direct, int clearall);
 void brc_zapbuf(int *zbuf);
+int brc_fcgi_init(const char *user, const char *board);
 
 //record.c
 long get_num_records(const char *file, int size);

@@ -172,7 +172,7 @@ static int bbsdoc(int mode)
 	int bid = getbnum2(bp);
 	if (my_t_lines < 10 || my_t_lines > 40)
 		my_t_lines = TLINES;
-	brc_initial(currentuser.userid, board);
+	brc_fcgi_init(currentuser.userid, board);
 
 	xml_header("bbsdoc");
 	printf("<bbsdoc ");

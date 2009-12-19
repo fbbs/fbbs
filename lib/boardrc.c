@@ -208,3 +208,9 @@ void brc_zapbuf(int *zbuf)
 	if (*zbuf > 0 && brc_num > 0)
 		*zbuf = brc_list[0];
 }
+
+int brc_fcgi_init(const char *user, const char *board)
+{
+	brc_buf[0] = '\0';
+	return brc_initial(user, board);
+}

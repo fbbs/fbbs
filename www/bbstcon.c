@@ -99,7 +99,7 @@ int bbstcon_main(void)
 		end = fh + count;
 	}
 	char file[HOMELEN];
-	brc_initial(currentuser.userid, bp->filename);
+	brc_fcgi_init(currentuser.userid, bp->filename);
 	for (; begin != end; ++begin) {
 		printf("<po fid='%u' owner='%s'>", begin->id, begin->owner);
 		setbfile(file, bp->filename, begin->filename);

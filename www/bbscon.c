@@ -73,7 +73,7 @@ int bbscon_main(void)
 	xml_printfile(file, stdout);
 	printf("</po></bbscon>");
 
-	brc_initial(currentuser.userid, bp->filename);
+	brc_fcgi_init(currentuser.userid, bp->filename);
 	brc_addlist(fh.filename);
 	brc_update(currentuser.userid, bp->filename);
 	return 0;
@@ -98,7 +98,7 @@ int bbsgcon_main(void)
 	setbfile(file, bp->filename, f);
 	xml_printfile(file, stdout);
 	printf("</po></bbscon>", bid);
-	brc_initial(currentuser.userid, bp->filename);
+	brc_fcgi_init(currentuser.userid, bp->filename);
 	brc_addlist(f);
 	brc_update(currentuser.userid, bp->filename);
 	return 0;
