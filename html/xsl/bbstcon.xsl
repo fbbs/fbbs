@@ -30,6 +30,7 @@
 		<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid' /></xsl:variable>
 		<xsl:if test='count(../po) = ../@page'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid' />&amp;g=<xsl:value-of select='../@gid' />&amp;f=<xsl:value-of select='$last' />&amp;a=n</xsl:attribute>[<img src='../images/button/down.gif' />下一页]</a></xsl:if>
 		<xsl:if test='$first != ../@gid'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid' />&amp;g=<xsl:value-of select='../@gid' />&amp;f=<xsl:value-of select='$first' />&amp;a=p</xsl:attribute>[<img src='../images/button/up.gif' />上一页]</a></xsl:if>
+		<a href='#' onclick='return saveHTML(this);'>[保存本页]</a>
 	</xsl:template>
 
 	<xsl:template name='linkbar'>
