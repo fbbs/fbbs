@@ -1,5 +1,12 @@
 #include "libweb.h"
 
+static int cmp_fid(void *arg, void *buf)
+{
+	struct fileheader *fp = buf;
+	unsigned int *fid = arg;
+	return (fp->id == *fid);
+}
+
 bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp)
 {
@@ -53,10 +60,18 @@ int bbscon_main(void)
 		return BBS_EINVAL;
 	unsigned int fid = strtoul(getparm("f"), NULL, 10);
 	char *action = getparm("a");
+	bool sticky = *getparm("s");
 
 	struct fileheader fh;
-	if (!bbscon_search(bp, fid, *action, &fh))
-		return BBS_ENOFILE;
+	if (sticky) {
+		char file[HOMELEN];
+		setbfile(file, bp->filename, NOTICE_DIR);
+		if (!search_record(file, &fh, sizeof(fh), cmp_fid, &fid))
+			return BBS_ENOFILE;
+	} else {
+		if (!bbscon_search(bp, fid, *action, &fh))
+			return BBS_ENOFILE;
+	}
 	fid = fh.id;
 
 	xml_header("bbscon");
@@ -64,6 +79,8 @@ int bbscon_main(void)
 	print_session();
 	printf(">");
 	printf("<po fid='%u'", fid);
+	if (sticky)
+		printf(" sticky='1'");
 	if (fh.reid != fh.id)
 		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
 	else

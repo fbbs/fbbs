@@ -28,7 +28,7 @@
 				<xsl:variable name='imgsrc'>../images/types/<xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'>reply</xsl:when><xsl:otherwise>text</xsl:otherwise></xsl:choose>.gif</xsl:variable>
 				<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)' /></xsl:when><xsl:otherwise><xsl:value-of select='.' /></xsl:otherwise></xsl:choose></xsl:variable>
 				<td class='ptitle'><a class='ptitle'>
-					<xsl:attribute name='href'><xsl:value-of select='../brd/@link' />con?bid=<xsl:value-of select='../brd/@bid' />&amp;f=<xsl:value-of select='@id' /></xsl:attribute>
+					<xsl:attribute name='href'><xsl:value-of select='../brd/@link' />con?bid=<xsl:value-of select='../brd/@bid' />&amp;f=<xsl:value-of select='@id' /><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
 					<img><xsl:attribute name='src'><xsl:value-of select='$imgsrc' /></xsl:attribute></img>
 					<xsl:call-template name='ansi-escape'>
 						<xsl:with-param name='content'><xsl:value-of select='$text' /></xsl:with-param>
