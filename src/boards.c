@@ -657,9 +657,8 @@ int show_board_info(char *board) {
 		prints("\n权 限 位:     %s\n", secu);
 	}
 
-	prints(
-			"URL 地址:     http://bbs.fudan.edu.cn/cgi-bin/bbs/bbsdoc?board=%s\n",
-			bp->filename);
+	prints("URL 地址:     http://"BBSHOST"/bbs/doc?bid=%d\n",
+			bp - bcache + 1);
 	pressanykey();
 	return FULLUPDATE;
 
