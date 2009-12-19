@@ -3,9 +3,10 @@ body, div, ul, ol, li, h1, h2, h3, h4, h5, h6, form, input, textarea, p, blockqu
 	padding: 0;
 }
 body {
-	font-family: "Microsoft YaHei", "WenQuanYi Zen Hei", "SimSun", "Gill Sans MT", Verdana, sans-serif;
+	font-family: "SimSun", "Gill Sans MT", Verdana, sans-serif;
 	font-size: 1em;
 	width: 100%;
+	background-color: #f0f7ff;
 }
 ul, ol {
 	list-style: none;
@@ -32,8 +33,7 @@ a {
 	text-decoration: none;
 }
 a:hover {
-	background-color: #336699;
-	color: #ffffff;
+	background-color: #ffffdd;
 }
 img {
 	border: 0;
@@ -58,13 +58,14 @@ ul.brd li{
 	margin-left: 0.5em;
 }
 #main {
-	margin: 0 0.5em 0.5em 10.5em;
-	font-size: 0.875em;
+	margin: 0.5em 0.5em 0.5em 144px;
+	font-size: 0.75em;
 }
 #hd {
-	margin: auto 0.5em 0.5em;
-	padding-bottom: 0.5em;
+	margin: 0.5em 1px 1px 144px;
+	padding-bottom: 2px;
 	border-bottom: #6699cc 1px dashed;
+	font-size: 0.875em;
 }
 #iewarn {
 	font-weight: bold;
@@ -76,10 +77,10 @@ ul.brd li{
 }
 #ft {	
 	clear: both;
-	margin: 0.5em;
+	margin: 0.5em 0.5em 0.5em 144px;
 	padding-top: 0.5em;
 	border-top: #6699cc 1px dashed;
-	font-size: 0.8em;
+	font-size: 0.75em;
 }
 #hd a {
 	display: inline-block;
@@ -89,7 +90,7 @@ ul.brd li{
 	padding: 0 0.5em 0 1.5em;
 }
 #hd a:hover {
-	background-color: #336699;
+	background-color: #ffffdd;
 }
 #navl, #navte, #nave {
 	background-color: transparent;
@@ -101,13 +102,18 @@ ul.brd li{
 #nave { background-image: url('../images/exit.gif'); }
 a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #nav {
-	-moz-border-radius: 0.4em;
 	float: left;
-	background-color: #f0f7ff;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background-color: #336699;
 	border: #336699 1px solid;
-	width: 7.5em;
+	width: 120px;
 	padding: 0.25em;
-	margin: 0 0 0.5em 0.5em;
+	margin: 0 0 0.5em 0;
+	overflow: auto;
+	font-size: 0.875em;
 }
 #nav li {
 	display: block;
@@ -116,8 +122,8 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 }
 #nav li a {
 	display: block;
-	color: #336699;
-	border: #f0f7ff 1px solid;
+	color: #ffffff;
+	border: #336699 1px solid;
 	line-height: 1.5em;
 	padding-left: 1.5em;
 	background-repeat: no-repeat;
@@ -178,7 +184,7 @@ td.idesc { min-width: 10em; }
 th.cate, td.cate, th.mark, td.mark, th.time, td.time, th.read, td.read { text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
 a.idesc { display: inline-block; margin-left: 2px; }
-td.time, span.time { color: gray; font-size: 0.8em;}
+td.time, span.time { color: gray;}
 
 table.post {
 	-moz-border-radius: 0.8em;
@@ -275,11 +281,11 @@ input[type="submit"], input[type="button"], input[type="reset"] {
 .a136 { color: #008080; }
 .a037 { color: #000000; }
 .a137 { color: #000000; }
-.a40 { background-color: Window; }
+.a40 { background-color: #f0f7ff; }
 .a41 { background-color: #ff0000; }
 .a42 { background-color: #00ff00; }
 .a43 { background-color: #ffff00; }
 .a44 { background-color: #0000ff; }
 .a45 { background-color: #ff00ff; }
 .a46 { background-color: #00ffff; }
-.a47 { background-color: Window; }
+.a47 { background-color: #f0f7ff; }

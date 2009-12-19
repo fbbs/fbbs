@@ -15,7 +15,8 @@
 			<xsl:when test='brd/@banner'><img><xsl:attribute name='src'><xsl:value-of select='brd/@banner' /></xsl:attribute></img></xsl:when>
 			<xsl:otherwise><h2><xsl:if test='brd/@icon'><img><xsl:attribute name='src'><xsl:value-of select='brd/@icon' /></xsl:attribute></img></xsl:if><a><xsl:attribute name='href'><xsl:value-of select='brd/@link' />doc?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute><xsl:value-of select='brd/@desc' /> [<xsl:value-of select='brd/@title' />]<xsl:if test='brd/@link = "g"'> - 文摘区</xsl:if><xsl:if test='brd/@link = "t"'> - 主题模式</xsl:if></a></h2></xsl:otherwise>
 		</xsl:choose>
-		<p>版主 [ <xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm' /><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1' /></xsl:call-template> ]  <xsl:choose><xsl:when test='brd/@link = "t"'>主题</xsl:when><xsl:otherwise>文章</xsl:otherwise></xsl:choose>数 [ <xsl:choose><xsl:when test='brd/@total &gt; 0'><xsl:value-of select='brd/@total' /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose> ] <a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute>[<img src='../images/button/edit.gif' />发表文章]</a></p>
+		<p><a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute>[<img src='../images/button/edit.gif' />发表文章]</a><a><xsl:attribute name='href'>not?board=<xsl:value-of select='brd/@title' /></xsl:attribute>[进版画面]</a><a><xsl:attribute name='href'>brdadd?bid=<xsl:value-of select='brd/@bid' /></xsl:attribute>[收藏本版]</a>&#160;版主 [<xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm' /><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1' /></xsl:call-template>]  <xsl:choose><xsl:when test='brd/@link = "t"'>主题</xsl:when><xsl:otherwise>文章</xsl:otherwise></xsl:choose>数 [<xsl:choose><xsl:when test='brd/@total &gt; 0'><xsl:value-of select='brd/@total' /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>] </p>
+		<xsl:apply-templates select='brd' />
 		<table class='content'>
 			<tr><th class='no'>序号</th><th class='mark'>标记</th><th>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
 			<xsl:for-each select='po'><tr>
@@ -56,9 +57,8 @@
 		<xsl:if test='@link != "t"'><a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/button/content.gif' />主题模式]</a></xsl:if>
 		<xsl:if test='@link != "g"'><a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='@bid' /></xsl:attribute>[文摘区]</a></xsl:if>
 		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='@bid' /></xsl:attribute>[<img src='../images/announce.gif'/>精华区]</a>
-		<a><xsl:attribute name='href'>bfind?bid=<xsl:value-of select='@bid'/></xsl:attribute>[版内搜索]</a>
-		<a><xsl:attribute name='href'>not?board=<xsl:value-of select='@title' /></xsl:attribute>[进版画面]</a>
-		<a><xsl:attribute name='href'>brdadd?bid=<xsl:value-of select='@bid' /></xsl:attribute>[收藏本版]</a>
+		<a><xsl:attribute name='href'>bfind?bid=<xsl:value-of select='@bid'/></xsl:attribute>[<img src='../images/search.gif'/>版内搜索]</a>
+		
 		<a><xsl:attribute name='href'>rss?bid=<xsl:value-of select='@bid'/></xsl:attribute>[RSS]</a>
 	</xsl:template>
 </xsl:stylesheet>

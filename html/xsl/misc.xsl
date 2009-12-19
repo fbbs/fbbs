@@ -132,12 +132,12 @@
 			<xsl:if test='$user != ""'><a id='navu'><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user' /></xsl:attribute><xsl:value-of select='$user' /></a></xsl:if>
 			<xsl:if test='$user = ""'><a id='navl' href='login'>登录</a></xsl:if>
 			<a id='navte' href='telnet://bbs.fudan.sh.cn:23'>终端登录</a>
-			<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 8]><![endif]]]></xsl:comment></span>
+			<span id='iewarn'><xsl:comment><![CDATA[[if IE 6]><![endif]]]></xsl:comment></span>
 		</div>
 	</xsl:template>
 
 	<xsl:template name='foot'>
-		<div id='ft'><xsl:call-template name='bbsname' /> &#169;1996-2009 Powered by <a href='http://code.google.com/p/fdubbs/'><strong>fdubbs</strong></a></div>
+		<div id='ft'><a href='#'>[<img src='../images/button/up.gif'/>回页首]</a>&#160;<xsl:call-template name='bbsname'/> &#169;1996-2009 Powered by <a href='http://code.google.com/p/fdubbs/'><strong>fdubbs</strong></a></div>
 	</xsl:template>
 
 	<xsl:template name='bbsname'>日月光华</xsl:template>
@@ -156,12 +156,22 @@
 				<title><xsl:value-of select='$title' /> - <xsl:call-template name='bbsname' /></title>
 				<meta http-equiv="content-type" content="text/html; charset=gb2312" />
 				<xsl:call-template name='include-css' />
+<xsl:comment><![CDATA[[if IE 6]><style>
+#hd{position:absolute;top:0;left:144px;margin:0.5em;}
+#main{position:absolute;top:32px;left:144px;margin:0.5em 0 0.5em 0}
+#ft{display:none;margin:0.5em}
+#main td{font-size:12px;height:1}
+table.content{width:100%}
+th.ptitle,td.ptitle{width:auto}
+.content tr{line-height:24px}
+table.post{width:100%}
+</style><![endif]]]></xsl:comment>
 				<xsl:call-template name='include-js' />
 			</head>
 			<body>
 				<a name='top' />
-				<xsl:call-template name='header'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='user' select='$u' /></xsl:call-template>
 				<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='fav' select='$fav' /></xsl:call-template>
+				<xsl:call-template name='header'><xsl:with-param name='perm' select='$p' /><xsl:with-param name='user' select='$u' /></xsl:call-template>
 				<div id='main'><xsl:apply-templates /></div>
 				<xsl:call-template name='foot' />
 			</body>
