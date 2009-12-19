@@ -91,8 +91,10 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 		return -1;
 	memset(array, 0, sizeof(*array) * count);
 	struct fileheader *begin = malloc(sizeof(struct fileheader) * count);
-	if (begin == NULL)
+	if (begin == NULL) {
+		free(array);
 		return -1;
+	}
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(dir, &m) == 0) {
@@ -134,7 +136,6 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 		}
 		mmap_close(&m);
 		print_bbsdoc(begin, count, mode);
-		return total;
 	}
 	free(begin);
 	free(array);

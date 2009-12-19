@@ -165,7 +165,6 @@ table.content {
 	border-spacing: 2px;
 	margin-bottom: 0.5em;
 	width:100%;
-	_width: 50em;
 }
 tr.light { background-color: #ffffff; }
 tr.dark { background-color: #f0f7ff; }

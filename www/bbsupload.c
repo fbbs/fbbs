@@ -161,6 +161,7 @@ int bbsupload_main(void)
 		fwrite(begin, 1, end - begin, fp);
 		fclose(fp);
 	} else {
+		free(buf);
 		return BBS_EINTNL;
 	}
 	free(buf);
