@@ -171,7 +171,6 @@ tr.light { background-color: #ffffff; }
 tr.dark { background-color: #f0f7ff; }
 th.no, td.no { width: 4em; text-align: center; }
 th.title, td.title { width: 12em; }
-th.ptitle, td.ptitle { _width: 35em;}
 th.owner, td.owner { width: 7em;}
 th.mark, td.mark { width: 3em; }
 th.time, td.time { width: 9em; _width: 10em; text-align: center; padding: 0; margin: 0}

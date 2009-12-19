@@ -162,6 +162,7 @@
 #ft{display:none;margin:0.5em}
 #main td{font-size:12px;height:1}
 table.content{width:100%}
+th.ptitle,td.ptitle{width:auto}
 .content tr{line-height:24px}
 table.post{width:100%}
 </style><![endif]]]></xsl:comment>
