@@ -30,6 +30,7 @@ int bbstop10_main(void)
 			xml_fputs(top.title, stdout);
 			printf("</top>\n");
 		}
+		fclose(fp);
 	}
 	printf("</bbstop10>");
 	return 0;
