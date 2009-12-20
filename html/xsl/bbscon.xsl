@@ -33,7 +33,7 @@
 		<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid' /></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid' /></xsl:otherwise></xsl:choose></xsl:variable>
 		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='$gid' /></xsl:attribute>[展开主题]</a>
 		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid' />&amp;g=<xsl:value-of select='$gid' />&amp;f=<xsl:value-of select='po/@fid' />&amp;a=n</xsl:attribute>[向后展开]</a></xsl:if>
-		<a href='#' onclick='return saveHTML(this);'>[保存本页]</a>
+		<a><xsl:attribute name='href'>../static/con?bid=<xsl:value-of select='@bid' />&amp;f=<xsl:value-of select='po/@fid' /><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>[保存/打印]</a>
 	</xsl:template>
 	
 	<xsl:template name='linkbar'>

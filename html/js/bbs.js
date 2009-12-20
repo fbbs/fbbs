@@ -54,16 +54,3 @@ function delSelected() {
 	document.list.submit();
 }
 
-function saveHTML() {
-	win = window.open();
-	win.document.write('<html>' + document.getElementsByTagName('head')[0].innerHTML + '<body>');
-	var divs = document.getElementById('main').getElementsByTagName('div');
-	for (var i = 0; i < divs.length; ++i) {
-		if (divs[i].className == 'pmain') {
-			win.document.write("<div class='pmain'>");
-			win.document.write(divs[i].innerHTML);
-			win.document.write('</div>');
-		}
-	}
-	win.document.write('</body></html>');
-}
