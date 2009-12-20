@@ -31,6 +31,7 @@ int bbsfav_main(void)
 			printf("</brd>");
 		}
 	}
+	mmap_close(&m);
 	printf("</bbsfav>");
 	return 0;
 }
