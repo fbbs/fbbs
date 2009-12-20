@@ -519,8 +519,10 @@ char *getbfroma(const char *path)
 			buf1[strlen(buf1) - 1] = '\0';
 		if (*buf1 == '*')
 			continue;
-		if(!strncmp(buf2, path, strlen(buf2)))
+		if(!strncmp(buf2, path, strlen(buf2))) {
+			fclose(fp);
 			return buf1;
+		}
 	}
 	fclose(fp);
 	return "";
