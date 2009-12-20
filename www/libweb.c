@@ -629,6 +629,7 @@ void print_session(void)
 				printf("%s ", bp->filename);
 			}
 		}
+		mmap_close(&m);
 	}
 	printf("'");
 }
