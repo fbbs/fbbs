@@ -17,13 +17,18 @@ ul li {
 }
 input.txt {
 	background: #EDECEC;
-	width: 85px;
+	width: 100px;
 	height:20px;
 	border: none;
 }
+.box {
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	background-color: #202041;
+}
 #container {
 	position: relative;
-	width: 800px;
+	width: 810px;
 	margin: 0 auto;
 }
 #left_panel {
@@ -45,16 +50,15 @@ input.txt {
 	color: #8de6ff;
 }
 #menu {
-	background-color: #02addf;
 	height: 190px;
-	padding: 12px 15px 2px 12px;
+	padding: 12px 10px 2px 12px;
 }
 #software {
 	display: none;
 	position: absolute;
 	top: 68px;
 	left: 125px;
-	background-color: #02addf;
+	background-color: #202041;
 	border: #F5E4EA solid 1px;
 }
 #software li {
@@ -62,14 +66,12 @@ input.txt {
 	margin: 0;
 }
 #loginbox {
-	background-color: #02addf;
 	height: 105px;
-	padding: 10px 0 5px 12px;
+	padding: 10px 0 5px 10px;
 }
 #info {
-	background-color: #02addf;
 	color: white;
-	height: 110px;
+	height: 140px;
 	margin-top: 2px;
 	padding: 12px 0 0 12px;
 }
@@ -77,15 +79,24 @@ input.txt {
 	background-color: white;
 	border: medium none;
 	color: white;
-	margin-right:20px;
+	margin-right: 20px;
+}
+#info p {
+	margin: 2px 25px 8px 8px;
+	padding-bottom: 4px;
+	border-bottom: 2px solid #ffffff;
 }
 #info img {
-	width: 20px;
-	height: 20px;
+	width: 16px;
+	height: 16px;
+}
+#info ul li {
+	padding: 1px 0 1px 8px;
+	margin-right: 10px;
 }
 #main {
-	background: url('/images/bbswebpic.jpg') no-repeat;
-	padding-top: 480px;
+/*	background: url('/images/bbswebpic.jpg') no-repeat;*/
+/*	padding-top: 480px;*/
 	width: 640px;
 	float: left;
 	text-align: center;
@@ -96,7 +107,4 @@ input.txt {
 #main p {
 	font-size: 0.8em;
 	margin: 2px;
-}
-#valid {
-	text-align: center;
 }

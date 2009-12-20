@@ -8,7 +8,7 @@
 <body>
 <div id="container">
 <div id="left_panel">
-<div id="menu"><ul>
+<div id="menu" class="box"><ul>
 <li><a href="bbs/0an"><img src='images/announce.gif' alt='icon' />本站精华区</a></li>
 <li><a href="telnet://bbs.fudan.edu.cn"><img src='images/telnet.gif' alt='icon'/>Telnet进站</a></li>
 <li><a href="intro.html"><img src='images/help.gif' alt='icon' />如何注册</a></li>
@@ -29,16 +29,21 @@
 </li>
 <li><a href="list/banner.htm"><img src='images/web.gif' alt='icon' />WEB进站展示</a></li>
 </ul></div>
-<div id="loginbox"><form method="post" action="bbs/login"><ul><li><img src="images/user.gif" alt="id" /><input id="id" type="text" name="id" class="txt"/></li><li><img src="images/password.gif" alt="password" /><input type="password" name="pw" class="txt"/></li><li><input type="submit" onmouseout="javascript:window.status='欢迎光临日月光华站WWW页面';return true;" onmouseover="javascript:window.status='填写用户名和密码登录进站';return true;" value="登录"/><input type="button" onclick="javascript:window.location='bbs/sec'" onmouseout="javascript:window.status='欢迎光临日月光华站WWW页面';return true;" onmouseover="javascript:window.status='您将使用Guest匿名登录，本站为注册用户设计的一些功能将不可用。';return true;" value="随便看看"/></li></ul></form></div>
-<div id="info">目前支持的浏览器<hr />
-<img src="images/IE.png" alt="IE" />IE 6.0+<br/>
-<img src="images/Firefox.png" alt="Firefox" />Firefox 2.0+<br/>
-<img src="images/Safari.png" alt="Safari" />Safari 3.0+</div>
-<div id="valid"><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml11-blue" alt="Valid XHTML 1.1" height="31" width="88" /></a></div>
+<div id="loginbox" class="box"><form method="post" action="bbs/login"><ul><li><img src="images/user.gif" alt="id" /><input id="id" type="text" name="id" class="txt"/></li><li><img src="images/password.gif" alt="password" /><input type="password" name="pw" class="txt"/></li><li><input type="submit" onmouseout="javascript:window.status='欢迎光临日月光华站WWW页面';return true;" onmouseover="javascript:window.status='填写用户名和密码登录进站';return true;" value="登录"/><input type="button" onclick="javascript:window.location='bbs/sec'" onmouseout="javascript:window.status='欢迎光临日月光华站WWW页面';return true;" onmouseover="javascript:window.status='您将使用Guest匿名登录，本站为注册用户设计的一些功能将不可用。';return true;" value="随便看看"/></li></ul></form></div>
+<div id="info" class="box">
+<p>目前支持的浏览器</p>
+<ul>
+<li><img src="images/IE.png" alt="IE" />IE 6+</li>
+<li><img src="images/Firefox.png" alt="Firefox" />Firefox 1+</li>
+<li><img src="images/Safari.png" alt="Safari" />Safari 3+</li>
+<li><img src="images/Chrome.png" alt="Safari" />Chrome 1+</li>
+<li><img src="images/Opera.png" alt="Safari" />Opera 9+</li>
+</ul>
+</div>
 </div>
 <div id="main">
-<p><strong>日月光华站 版权所有 &copy;1996-2009 Fudan BBS</strong></p>
-<p><a href="http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407">沪ICP备042465</a></p>
+<embed id="xmas" width="600" height="480" quality="high" bgcolor="#ffffff" wmode="transparent" name="xmas" style="" src="images/xmas.swf" type="application/x-shockwave-flash"/>
+<p><strong>日月光华站 版权所有 &copy;1996-2009 </strong><a href="http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407">沪ICP备042465</a></p>
 </div>
 </div>
 <script type="text/javascript">document.getElementById('id').focus();</script>
