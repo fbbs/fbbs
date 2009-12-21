@@ -1782,7 +1782,7 @@ enum {
 int search_articles(struct keeploc *locmem, const char *query, int gid,
 		int offset, int aflag, int newflag)
 {
-	int complete, ent, oldent, lastent;
+	int complete, ent, oldent, lastent = 0;
 	char *ptr;
 
 	if (*query == '\0')
