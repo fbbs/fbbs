@@ -1770,8 +1770,8 @@ char *query;
 enum {
 	SEARCH_BACKWARD = -1,
 	SEARCH_FORWARD = 1,
-	SEARCH_FIRST = 3,
-	SEARCH_LAST = 5,
+	SEARCH_FIRST = 5,
+	SEARCH_LAST = 3,
 
 	SEARCH_CONTENT = -1,
 	SEARCH_THREAD = 0,
@@ -1797,7 +1797,10 @@ int search_articles(struct keeploc *locmem, const char *query, int gid,
 			&& aflag != SEARCH_CONTENT) {
 		ent = 0;
 		oldent = 0;
-		offset = -4; //?
+		if (offset == SEARCH_FIRST)
+			offset = SEARCH_FORWARD;
+		else
+			offset = SEARCH_BACKWARD;
 	} else {
 		ent = locmem->crs_line;
 		oldent = locmem->crs_line;
