@@ -43,7 +43,8 @@ char *strtoupper(char *dst, const char *src) {
 // Compare string 's1' against 's2' and differences in case are ignored.
 // No more than 'n' characters are compared.
 // This function supports zh_CN.GBK.
-int strncasecmp_gbk(const char *s1, const char *s2, int n) {
+int strncasecmp_gbk(const char *s1, const char *s2, int n)
+{
 	register int c1, c2, l = 0;
 
 	while (*s1 && *s2 && l < n) {
@@ -53,13 +54,13 @@ int strncasecmp_gbk(const char *s1, const char *s2, int n) {
 			return (c1 - c2);
 		++l;
 		if (c1 & 0x80) {
-			if(*s1 == *s2)
+			if (*s1++ == *s2++)
 				++l;
 			else
-				return (*s1 - *s2);
+				return (*--s1 - *--s2);
 		}
 	}
-	if (l==n)
+	if (l == n)
 		return 0;
 	else
 		return -1;
