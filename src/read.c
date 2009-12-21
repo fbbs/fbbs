@@ -1767,99 +1767,114 @@ char *query;
 	return NA;
 }
 
-int search_articles(struct keeploc *locmem, char *query, int gid,
-		int offset,//-1 µ±«∞œÚ…œ  1 µ±«∞œÚœ¬  3 ◊Ó∫Û“ª∆™ 5 µ⁄“ª∆™
-		int aflag,// -1 ƒ⁄»› 0 Õ¨÷˜Ã‚ 1 ◊˜’ﬂ  2 œ‡πÿ÷˜Ã‚
-		int newflag // 1 ±ÿ–ÎŒ™–¬Œƒ’¬   0 –¬æ…æ˘ø…
-) {
+enum {
+	SEARCH_BACKWARD = -1,
+	SEARCH_FORWARD = 1,
+	SEARCH_FIRST = 3,
+	SEARCH_LAST = 5,
+
+	SEARCH_CONTENT = -1,
+	SEARCH_THREAD = 0,
+	SEARCH_AUTHOR = 1,
+	SEARCH_RELATED = 2,
+};
+
+int search_articles(struct keeploc *locmem, const char *query, int gid,
+		int offset, int aflag, int newflag)
+{
+	int complete, ent, oldent, lastent;
 	char *ptr;
-	int ent, fd;
-	int complete_search, oldent, lastent = 0;
-	int ssize = sizeof(struct fileheader);
 
 	if (*query == '\0')
 		return 0;
-	if (aflag >= 2) {
-		complete_search = 0;
-		aflag -= 2;
+	if (aflag == SEARCH_RELATED) {
+		complete = 0;
+		aflag = SEARCH_THREAD;
 	} else {
-		complete_search = 1;
+		complete = 1;
 	}
-	if (aflag != -1 && offset > 2) {
+	if ((offset == SEARCH_FIRST || offset == SEARCH_LAST)
+			&& aflag != SEARCH_CONTENT) {
 		ent = 0;
 		oldent = 0;
-		offset -= 4;
+		offset = -4; //?
 	} else {
 		ent = locmem->crs_line;
 		oldent = locmem->crs_line;
 	}
-	move(t_lines - 1, 0);
-	clrtoeol();
-	prints("[1;44;33mÀ——∞÷–£¨«Î…‘∫Ú....                                                             [m");
-	refresh();
-	if ((fd = open(currdirect, O_RDONLY, 0)) == -1)
-		return -1;
-	if (aflag !=-1 && offset < 0)
+	if (aflag != SEARCH_CONTENT && offset < 0)
 		ent = 0;
+
+	if (aflag == SEARCH_CONTENT) {
+		move(t_lines - 1, 0);
+		clrtoeol();
+		prints("\033[1;44;33mÀ——∞÷–£¨«Î…‘∫Ú....                      "
+				"                                       \033[m");
+		refresh();
+	}
+
+	FILE *fp = fopen(currdirect, "rb");
+	if (fp == NULL)
+		return -1;
+	
 	if (ent) {
-		if (aflag == -1 && offset < 0)
+		if (aflag == SEARCH_CONTENT && offset < 0)
 			ent -= 2;
-		if (ent<0 || lseek(fd, (off_t)(ent*ssize), SEEK_SET)==-1) {
-			close(fd);
+		if (ent < 0 || fseek(fp, ent * sizeof(struct fileheader), SEEK_SET) < 0) {
+			fclose(fp);
 			return -1;
 		}
 	}
-	if (aflag != - 1 && offset > 0)
+	if (aflag != SEARCH_CONTENT && offset > 0)
 		ent = oldent;
-	if (aflag == -1 && offset < 0)
+	if (aflag == SEARCH_CONTENT && offset < 0)
 		ent += 2;
-	while (read(fd, &SR_fptr, ssize)==ssize) {
-		if (aflag == -1 && offset < 0)
-			ent --;
+	while (fread(&SR_fptr, sizeof(SR_fptr), 1, fp) == 1) {
+		if (aflag == SEARCH_CONTENT && offset < 0)
+			ent--;
 		else
-			ent ++;
-		if (aflag != -1 && offset < 0 && oldent > 0 && ent >= oldent)
+			ent++;
+		if (aflag != SEARCH_CONTENT && offset < 0 && oldent > 0
+				&& ent >= oldent)
 			break;
 		if (newflag && !brc_unread(SR_fptr.filename))
 			continue;
-		if (aflag == -1) {
+
+		if (aflag == SEARCH_CONTENT) {
 			char p_name[256];
-			if (uinfo.mode != RMAIL)
+			if (uinfo.mode != RMAIL) {
 				setbfile(p_name, currboard, SR_fptr.filename);
-			else
+			} else {
 				sprintf(p_name, "mail/%c/%s/%s",
 						toupper(currentuser.userid[0]),
 						currentuser.userid, SR_fptr.filename);
+			}
 			if (searchpattern(p_name, query)) {
 				lastent = ent;
 				break;
-			} else if (offset > 0)
+			} else if (offset > 0) {
 				continue;
-			else {
-				if (lseek(fd, (off_t)(-2*ssize), SEEK_CUR)==-1) {
-					close(fd);
+			} else {
+				if (fseek(fp, -2 * sizeof(SR_fptr), SEEK_CUR) < 0) {
+					fclose(fp);
 					return -1;
 				}
 				continue;
 			}
 		}
-		//Modified by IAMFAT 2002-05-25
-		ptr = (aflag==1) ? SR_fptr.owner : SR_fptr.title;
-		if (complete_search == 1) {
-			if (aflag==1) {//Õ¨◊˜’ﬂ
+
+		ptr = (aflag == SEARCH_AUTHOR) ? SR_fptr.owner : SR_fptr.title;
+		if (complete) {
+			if (aflag == SEARCH_AUTHOR) {
 				if (!strcasecmp(ptr, query)) {
 					lastent = ent;
 					if (offset > 0)
 						break;
 				}
-			} else {//Õ¨÷˜Ã‚
+			} else { // SEARCH_THREAD
 				if (in_mail) {
-					if ((*ptr=='R'||*ptr=='r')&&(*(ptr+1)=='E'||*(ptr+1)
-							=='e') && (*(ptr + 2) == ':') && (*(ptr + 3)
-							== ' ')) {
-						ptr = ptr + 4;
-					}
-					//Modified by IAMFAT 2002-05-27
+					if (!strncasecmp(ptr, "Re: ", 4))
+						ptr += 4;
 					if (!strcasecmp2(ptr, query)) {
 						lastent = ent;
 						if (offset > 0)
@@ -1873,7 +1888,7 @@ int search_articles(struct keeploc *locmem, char *query, int gid,
 					}
 				}
 			}
-		} else {//œ‡πÿ÷˜Ã‚
+		} else {// SEARCH_RELATED
 			if (strcasestr_gbk(ptr, query) != NULL) {
 				if (aflag) {
 					if (strcasecmp(ptr, query))
@@ -1884,38 +1899,14 @@ int search_articles(struct keeploc *locmem, char *query, int gid,
 					break;
 			}
 		}
-		/*
-		 ptr = aflag ? SR_fptr.owner : SR_fptr.title;
-		 if (complete_search == 1) {
-		 if((*ptr=='R'||*ptr=='r')&&(*(ptr+1)=='E'||*(ptr+1)=='e')
-		 && (*(ptr + 2) == ':') && (*(ptr + 3) == ' ')) {
-		 ptr = ptr + 4;
-		 }
-		 if (!strncmp(ptr, query,40)) {  
-		 lastent = ent;
-		 if(offset > 0) break;
-		 }
-		 } else {
-		 char    upper_ptr[STRLEN], upper_query[STRLEN];
-		 strtoupper(upper_ptr, ptr);
-		 strtoupper(upper_query, query);
-		 if (strstr(upper_ptr, upper_query) != NULL) {
-		 if(aflag){
-		 if(strcmp(upper_ptr,upper_query)) continue;
-		 }   
-		 lastent = ent;
-		 if(offset > 0)break;
-		 }
-		 }*/
-		//End IAMFAT
 	}
 	move(t_lines - 1, 0);
 	clrtoeol();
-	close(fd);
+	fclose(fp);
 	if (lastent == 0)
 		return -1;
 	get_record(currdirect, &SR_fptr, sizeof(SR_fptr), lastent);
-	last_line = get_num_records(currdirect, ssize);
+	last_line = get_num_records(currdirect, sizeof(SR_fptr));
 	return (cursor_pos(locmem, lastent, 10));
 }
 
