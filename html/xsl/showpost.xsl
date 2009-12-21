@@ -2,7 +2,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
 	<xsl:template name="showpost">
 		<xsl:param name='content' />
-		<xsl:variable name='before' select='substring-before($content, "&#10;")' />
+		<xsl:variable name='before'><xsl:if test='not(contains($content, "&#10;"))'><xsl:value-of select='$content'/></xsl:if><xsl:value-of select='substring-before($content, "&#10;")'/></xsl:variable>
 		<xsl:variable name='rest' select='substring-after($content, "&#10;")' />
 		<xsl:variable name='line'>
 			<xsl:call-template name='replace-space'>
