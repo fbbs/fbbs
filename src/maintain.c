@@ -260,75 +260,71 @@ struct fileheader *fhdrp;
 extern int t_cmpuids();
 int kick_user( struct user_info *userinfo )
 {
-   int     id, ind;
-   struct user_info uin;
-   struct userec kuinfo;
-   char    kickuser[40], buffer[40];
-   
-   if (uinfo.mode != LUSERS && uinfo.mode != OFFLINE && uinfo.mode != FRIEND) {
-   if (!(HAS_PERM(PERM_OBOARDS))) return 0;
-      modify_user_mode(ADMIN);
-      stand_title("踢使用者下站");
-      move(1, 0);
-      usercomplete("输入使用者帐号: ", kickuser);
-      if (*kickuser == '\0') {
-         clear();
-	 return 0;
-      }
-      if (!(id = getuser(kickuser))) {
-         move(3, 0);
-	 prints("无效的用户 ID！");
-	 clrtoeol();
-	 pressreturn();
-	 clear();
-	 return 0;
-      }
-      move(1, 0);
-      clrtoeol();
-      sprintf(genbuf,"踢掉使用者 : [%s].", kickuser);
-      move(2, 0);
-      if (askyn(genbuf, NA, NA) == NA) {
-         move(2, 0);
-	 prints("取消踢使用者..\n");
-	 pressreturn();
-	 clear();
-	 return 0;
-      }
-      search_record(PASSFILE, &kuinfo, sizeof(kuinfo), cmpuids, kickuser);
-      ind = search_ulist(&uin, t_cmpuids, id);
-   } else {
-      uin = *userinfo;
-      strcpy(kickuser, uin.userid);
-      ind = YEA;
-   }
-   if (!ind||!uin.active||(uin.pid && bbskill(&uin, 0)==-1)) {
-      if(uinfo.mode!=LUSERS&&uinfo.mode!=OFFLINE&&uinfo.mode!=FRIEND) {
-         move(3, 0);
-	 prints("用户 [%s] 不在线上",kickuser);
-	 clrtoeol();
-	 pressreturn();
-	 clear();
-      }
-      return 0;
-   }
-     if (is_web_user(uin.mode)) {
-	 	bbskill(&uin, SIGABRT);
-     }
-     else {
-	 	bbskill(&uin, SIGHUP);
-     }
-   sprintf(buffer, "kick out %s", kickuser);
-   report(buffer, currentuser.userid);
-   kuinfo.userid[IDLEN]=0;        //added by iamfat 2004.01.05 to avoid overflow
-   kuinfo.username[NAMELEN-1]=0;        //added by iamfat 2004.01.05 to avoid overflow
-   sprintf(genbuf, "%s (%s)", kuinfo.userid, kuinfo.username);
-   log_usies("KICK ", genbuf, &currentuser);
-   move(2, 0);
-   if(uinfo.mode!=LUSERS&&uinfo.mode!=OFFLINE&&uinfo.mode!=FRIEND) {
-      prints("用户 [%s] 已经被踢下站.\n",kickuser);
-      pressreturn();
-      clear();
-   }
-   return 1;
+	int id, ind;
+	struct user_info uin;
+	struct userec kuinfo;
+	char kickuser[40], buffer[40];
+
+	if (uinfo.mode != LUSERS && uinfo.mode != OFFLINE && uinfo.mode != FRIEND) {
+		if (!(HAS_PERM(PERM_OBOARDS)))
+			return 0;
+		modify_user_mode(ADMIN);
+		stand_title("踢使用者下站");
+		move(1, 0);
+		usercomplete("输入使用者帐号: ", kickuser);
+		if (*kickuser == '\0') {
+			clear();
+			return 0;
+		}
+		if (!(id = getuser(kickuser))) {
+			move(3, 0);
+			prints("无效的用户 ID！");
+			clrtoeol();
+			pressreturn();
+			clear();
+			return 0;
+		}
+		move(1, 0);
+		clrtoeol();
+		sprintf(genbuf,"踢掉使用者 : [%s].", kickuser);
+		move(2, 0);
+		if (askyn(genbuf, NA, NA) == NA) {
+			move(2, 0);
+			prints("取消踢使用者..\n");
+			pressreturn();
+			clear();
+			return 0;
+		}
+		search_record(PASSFILE, &kuinfo, sizeof(kuinfo), cmpuids, kickuser);
+		ind = search_ulist(&uin, t_cmpuids, id);
+	} else {
+		uin = *userinfo;
+		strcpy(kickuser, uin.userid);
+		ind = YEA;
+	}
+	if (!ind || !uin.active || (uin.pid && bbskill(&uin, 0) == -1)) {
+		if (uinfo.mode != LUSERS && uinfo.mode != OFFLINE && uinfo.mode != FRIEND) {
+			move(3, 0);
+			prints("用户 [%s] 不在线上",kickuser);
+			clrtoeol();
+			pressreturn();
+			clear();
+		}
+		return 0;
+	}
+	bbskill(userinfo, SIGHUP);
+	sprintf(buffer, "kick out %s", kickuser);
+	report(buffer, currentuser.userid);
+	kuinfo.userid[IDLEN]=0;        //added by iamfat 2004.01.05 to avoid overflow
+	kuinfo.username[NAMELEN-1]=0;        //added by iamfat 2004.01.05 to avoid overflow
+	sprintf(genbuf, "%s", kuinfo.userid);
+	log_usies("KICK ", genbuf, &currentuser);
+	move(2, 0);
+	if (uinfo.mode != LUSERS && uinfo.mode != OFFLINE && uinfo.mode != FRIEND) {
+		prints("用户 [%s] 已经被踢下站.\n",kickuser);
+		pressreturn();
+		clear();
+	}
+	return 1;
 }
 #endif
