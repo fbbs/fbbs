@@ -49,10 +49,44 @@ void sigbus(int signo)
 	siglongjmp(bus_jump, 1);
 }
 
+static void kick_web_user(struct user_info *user)
+{
+	int stay = 0;
+	int start;
+	int uid = user->uid;
+	if (uid < 1 || uid > MAXUSERS)
+		return;
+#ifdef SPARC
+	start = *(int*)(user->from + 30);
+#else
+	start = *(int*)(user->from + 32);
+#endif
+	uidshm->status[uid - 1]--;
+
+	struct userec *up = uidshm->passwd + uid - 1;
+	time_t now = time(NULL);
+	stay = now - start;
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "Stay: %3d", stay / 60);
+	log_usies("AXXED", buf, up);
+
+	time_t recent = start;
+	if (up->lastlogout > recent)
+		recent = up->lastlogout;
+	if (up->lastlogin > recent)
+		recent = up->lastlogin;
+	stay = now - recent;
+	if (stay < 0)
+		stay = 0;
+	up->lastlogout = now;
+	up->stay += stay;
+	memset(user, 0, sizeof(*user));
+}
+
 // Sends signal 'sig' to 'user'.
 // Returns 0 on success (the same as kill does), -1 on error.
 // If the 'user' is web user, does not send signal and returns -1.
-int bbskill(const struct user_info *user, int sig)
+int bbskill(struct user_info *user, int sig)
 {
 	if (user == NULL)
 		return -1;
@@ -61,10 +95,13 @@ int bbskill(const struct user_info *user, int sig)
 		if (!is_web_user(user->mode)) {
 			return kill(user->pid, sig);
 		} else {
-			// Since web users have no forked processes,
-			// do not send signals to pid.
-			// Implementation TBD
-			return 0;
+			if (sig == SIGHUP) {
+				// kick web users off, below should be moved out later.
+				kick_web_user(user);
+			} else {
+				// other signals TBD
+				return 0;
+			}
 		}
 	}
 	// Sending signals to multiple processes is not allowed.

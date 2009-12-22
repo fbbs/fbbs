@@ -93,7 +93,7 @@ char *setmfile(char *buf, const char *userid, const char *filename);
 char *setmdir(char *buf, const char *userid);
 extern sigjmp_buf bus_jump;
 void sigbus(int signo);
-int bbskill(const struct user_info *user, int sig);
+int bbskill(struct user_info *user, int sig);
 void SpecialID(const char *uid, char *host, int len);
 char *getdatestring(time_t time, enum DATE_FORMAT mode);
 bool seek_in_file(const char *filename, const char *seekstr);

@@ -464,10 +464,12 @@ int deal_key(char ch, int allnum, int pagenum) //环顾四方处理按键
 			move(BBS_PAGESIZE + 2, 0);
 			if (askyn(buf, NA, NA) == NA)
 				break;
+			char tmp[EXT_IDLEN];
+			strlcpy(tmp, user_record[allnum]->userid, sizeof(tmp));
 			if (kick_user(user_record[allnum]) == 1) {
-				sprintf(buf, "%s 已被踢出站外", user_record[allnum]->userid);
+				sprintf(buf, "%s 已被踢出站外", tmp);
 			} else {
-				sprintf(buf, "%s 无法踢出站外", user_record[allnum]->userid);
+				sprintf(buf, "%s 无法踢出站外", tmp);
 			}
 			msgflag = YEA;
 			break;
