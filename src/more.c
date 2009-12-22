@@ -1037,11 +1037,11 @@ int ansimore4(char *filename, int promptend, char *board, char *path, int ent)
 
 int ansimore(char *filename, int promptend)
 {
-	int     ch;
+	int ch;
 	clear();
-	ch	=	rawmore(filename, promptend, 0, 0, NA);
+	ch = rawmore2(filename, promptend, 0, 0, NA);
 	move(t_lines - 1, 0);
-	prints("[0m[m");
+	prints("\033[0m\033[m");
 	refresh();
 	return ch;
 }
