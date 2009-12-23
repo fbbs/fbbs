@@ -222,12 +222,7 @@ int load_ucache(void)
 
 int substitut_record(char *filename, void *rptr, size_t size, int id)
 {
-	if (id < 1 || id > MAXUSERS)
-		return 0;
-	struct userec *user = rptr;
-	struct userec *entry = uidshm->passwd + id - 1;
-	if (!strcmp(entry->userid, user->userid))
-		memcpy(entry, user, sizeof(*entry));
+	memcpy(&(uidshm->passwd[id - 1]), rptr, size);
 	return 0;
 }
 
