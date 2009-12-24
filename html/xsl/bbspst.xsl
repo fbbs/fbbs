@@ -43,8 +43,8 @@
 			<xsl:if test='@edit="0" and @att!=0'><input type='button' name='attach' value='ÉÏ´«¸½¼þ' onclick='return preUpload() ' /></xsl:if>
 		</form>
 		<xsl:choose>
-			<xsl:when test='not(t)'><script>window.onload = function() {document.postform.title.focus();}</script></xsl:when>
-			<xsl:otherwise><script>window.onload = function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();}</script></xsl:otherwise>
+			<xsl:when test='not(t)'><script>addLoadEvent(function(){document.postform.title.focus();})</script></xsl:when>
+			<xsl:otherwise><script>addLoadEvent(function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();})</script></xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
 </xsl:stylesheet>

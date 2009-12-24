@@ -38,7 +38,8 @@ enum {
 };
 
 enum {
-	TLINES = 20
+	TLINES = 20,
+	NEWMAIL_EXPIRE = 30,
 };
 
 enum {

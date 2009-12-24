@@ -92,6 +92,7 @@ ul.brd li{
 #hd a:hover {
 	background-color: #ffffdd;
 }
+a#navnm { display: none; font-weight: bold; }
 #navl, #navte, #nave {
 	background-color: transparent;
 	background-repeat: no-repeat;
@@ -100,6 +101,7 @@ ul.brd li{
 #navl { background-image: url('../images/login.gif'); }
 #navte { background-image: url('../images/telnet.gif'); }
 #nave { background-image: url('../images/exit.gif'); }
+#navnm { background-image: url('../images/mail_new.gif'); }
 a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #nav {
 	float: left;
@@ -158,7 +160,6 @@ a#navu { font-weight: bold; padding: 0 1em 0 0; }
 #navb ul li a { padding-left: 0.5em; }
 .sf { padding: 0; font-size: 11px;}
 #navf ul li.sf a { padding: 0; }
-#nav #navf ul { display: block; }
 
 table.content {
 	border-collapse: separate;

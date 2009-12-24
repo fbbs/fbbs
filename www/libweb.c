@@ -418,7 +418,8 @@ static int user_init(struct userec *x, struct user_info **y, int mode)
 
 	// Refresh idle time, set user mode.
 	(*y)->idle_time = time(NULL);
-	(*y)->mode = mode;
+	if (get_web_mode(IDLE) != mode)
+		(*y)->mode = mode;
 
 	return 1;
 }

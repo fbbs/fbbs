@@ -1,9 +1,5 @@
 #include "libweb.h"
 
-enum {
-	NEWMAIL_EXPIRE = 30,
-};
-
 int bbsmail_main(void)
 {
 	if (!loginok)

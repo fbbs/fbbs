@@ -119,3 +119,37 @@ int bbspwd_main(void)
 	printf("</bbspwd>");
 	return 0;
 }
+
+typedef struct mail_count_t {
+	time_t limit;
+	int count;
+} mail_count_t;
+
+static int count_new_mail(void *buf, int count, void *args)
+{
+	struct fileheader *fp = buf;
+	mail_count_t *cp = args;
+	time_t date = getfiletime(fp);
+	if (date < cp->limit)
+		return QUIT;
+	if (!(fp->accessed[0] & FILE_READ))
+		cp->count++;
+	return 0;
+}
+
+int bbsidle_main(void)
+{
+	if (!loginok)
+		return BBS_ELGNREQ;
+	printf("Content-type: text/xml; charset="CHARSET"\n\n"
+			"<?xml version=\"1.0\" encoding=\""CHARSET"\"?>\n<bbsidle");
+	char file[HOMELEN];
+	setmdir(file, currentuser.userid);
+	mail_count_t c;
+	c.limit = time(NULL) - 24 * 60 * 60 * NEWMAIL_EXPIRE;
+	c.count = 0;
+	apply_record(file, count_new_mail, sizeof(struct fileheader), &c, false,
+			true, true);
+	printf(" mail='%d'></bbsidle>", c.count);
+	return 0;
+}

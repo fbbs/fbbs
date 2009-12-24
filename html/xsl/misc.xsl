@@ -131,6 +131,7 @@
 			<div id='hdright'><xsl:if test='$user != ""'><a id='nave' href='logout'>注销</a></xsl:if></div>
 			<xsl:if test='$user != ""'><a id='navu'><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user' /></xsl:attribute><xsl:value-of select='$user' /></a></xsl:if>
 			<xsl:if test='$user = ""'><a id='navl' href='login'>登录</a></xsl:if>
+			<a id='navnm' href='newmail'>您有[<span id='navmc'></span>]封新信件</a>
 			<a id='navte' href='telnet://bbs.fudan.sh.cn:23'>终端登录</a>
 			<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 7]><![endif]]]></xsl:comment></span>
 		</div>
@@ -142,7 +143,7 @@
 
 	<xsl:template name='bbsname'>日月光华</xsl:template>
 	<xsl:template name='include-css'><link rel='stylesheet' type='text/css' href='../css/bbs.css' /></xsl:template>
-	<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script></xsl:template>
+	<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script><script type='text/javascript' src='../js/persist.js'></script></xsl:template>
 
 	<xsl:template name='layout'>
 		<xsl:param name='title'/>
