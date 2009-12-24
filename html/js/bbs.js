@@ -112,7 +112,7 @@ var HTTP = {
 
 var bbs = {
 	inited: false,
-	interval: 10000,
+	interval: 300000,
 	root: window.location.href.substring(0, window.location.href.lastIndexOf("/")),
 	init: function () {
 		if (!bbs.inited) {
