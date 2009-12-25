@@ -143,7 +143,7 @@
 
 	<xsl:template name='bbsname'>日月光华</xsl:template>
 	<xsl:template name='include-css'><link rel='stylesheet' type='text/css' href='../css/bbs.css' /></xsl:template>
-	<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script><script type='text/javascript' src='../js/persist.js'></script></xsl:template>
+	<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script><script type='text/javascript' src='../js/persist-all-min.js'></script></xsl:template>
 
 	<xsl:template name='layout'>
 		<xsl:param name='title'/>
@@ -176,6 +176,7 @@ table.post{width:100%}
 				<div id='main'><xsl:apply-templates /></div>
 				<xsl:call-template name='foot' />
 			</body>
+			<xsl:comment><![CDATA[[if lt IE 7]><script>addLoadEvent(ie6fix);window.onresize=ie6fix;</script><![endif]]]></xsl:comment>
 		</html>
 	</xsl:template>
 </xsl:stylesheet>

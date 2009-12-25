@@ -20,7 +20,9 @@ int bbsmailcon_main(void)
 		mmap_close(&m);
 		return BBS_ENOFILE;
 	}
+	bool newmail = false;
 	if (!(fh->accessed[0] & FILE_READ)) {
+		newmail = true;
 		fh->accessed[0] |= FILE_READ;
 	}
 	xml_header("bbsmailcon");
@@ -32,6 +34,8 @@ int bbsmailcon_main(void)
 	struct fileheader *next = fh + 1;
 	if (next < (struct fileheader *)m.ptr + m.size / sizeof(*next))
 		printf(" next='%s'", next->filename);
+	if (newmail)
+		printf(" new='1'");
 	printf("><t>");
 	xml_fputs(fh->title, stdout);
 	printf("</t>");

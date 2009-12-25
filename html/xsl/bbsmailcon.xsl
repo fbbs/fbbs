@@ -18,6 +18,7 @@
 			<div class='plink'><xsl:call-template name='linkbar' /></div>
 			<div class='pbot'><xsl:call-template name='navbar'/></div>
 		</div>
+		<xsl:if test='@new'><script>bbs.init();bbs.store.set('last', 0);</script></xsl:if>
 	</xsl:template>
 
 	<xsl:template name='navbar'>
