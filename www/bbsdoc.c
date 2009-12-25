@@ -154,8 +154,8 @@ static int bbsdoc(int mode)
 	}
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
-		return BBS_EINVAL;
+	if (is_board_dir(bp))
+		return bbsboa_main();
 	strlcpy(board, bp->filename, sizeof(board));
 
 	char dir[HOMELEN];
