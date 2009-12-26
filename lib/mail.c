@@ -159,7 +159,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 		return BBS_EINTNL;
 
 	char buf[256];
-	sprintf(buf, "mailed %s: %s ", user, title);
+	snprintf(buf, sizeof(buf), "mailed %s: %s ", user, title);
 	report(buf, currentuser.userid);
 	return 0;
 }

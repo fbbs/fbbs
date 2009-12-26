@@ -88,7 +88,7 @@ int mmap_close(mmap_t *m)
 {
 	if (m == NULL)
 		return 0;
-	munmap(m->ptr, m->size);
+	munmap(m->ptr, m->msize);
 	if (m->lock != LOCK_UN)
 		flock(m->fd, LOCK_UN);
 	return restart_close(m->fd);
