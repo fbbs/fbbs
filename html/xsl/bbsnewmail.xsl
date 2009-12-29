@@ -36,6 +36,5 @@
 			<input name='mode' value='' type='hidden' />
 		</form>
 		<div>[<a href="#"  onclick="checkAll();">全选</a>] [<a href="#"  onclick="checkReverse();">反选</a>] [<a href="#" onclick="delSelected()">删除所选信件</a>]</div></xsl:if>
-		<script>bbs.init();bbs.store.set('mail', <xsl:value-of select='count(mail)'/>);</script>
 	</xsl:template>
 </xsl:stylesheet>
