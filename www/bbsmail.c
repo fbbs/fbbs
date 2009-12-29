@@ -41,7 +41,7 @@ int bbsmail_main(void)
 		}
 		printf("<mail m='%c' from='%s' date='%s' name='%s'>", mark, fh->owner,
 				getdatestring(getfiletime(fh), DATE_XML), fh->filename);
-		xml_fputs(fh->title, stdout);
+		xml_fputs2(fh->title, check_gbk(fh->title) - fh->title, stdout);
 		printf("</mail>");
 		fh++;
 	}
@@ -60,7 +60,7 @@ int print_new_mail(void *buf, int count, void *args)
 	if (!(fp->accessed[0] & FILE_READ)) {
 		printf("<mail from='%s' date='%s' name='%s' n='%d'>", fp->owner, 
 				getdatestring(date, DATE_XML), fp->filename, count);
-		xml_fputs(fp->title, stdout);
+		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title, stdout);
 		printf("</mail>");
 	}
 	return 0;

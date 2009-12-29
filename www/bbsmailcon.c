@@ -37,7 +37,7 @@ int bbsmailcon_main(void)
 	if (newmail)
 		printf(" new='1'");
 	printf("><t>");
-	xml_fputs(fh->title, stdout);
+	xml_fputs2(fh->title, check_gbk(fh->title) - fh->title, stdout);
 	printf("</t>");
 	mmap_close(&m);
 
