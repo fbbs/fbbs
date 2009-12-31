@@ -18,10 +18,10 @@ static bool quota_exceeded(const char *board)
 		sprintf(cmd, "%s/.quota", path);
 		if((fp = fopen(cmd, "r")) != NULL) {
 			fscanf(FCGI_ToFILE(fp), "%d", &all);
-			if(now >= all)
-				return true;
 			fclose(fp);
 		}
+		if(now >= all)
+			return true;
 		return false;
 	}
 	return true;
