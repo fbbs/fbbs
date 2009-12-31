@@ -82,12 +82,16 @@ int bbs0an_main(void)
 	char buf[512], *title;
 	// check directory permission.
 	while (true) {
-		if (fgets(buf, sizeof(buf), fp) == NULL)
+		if (fgets(buf, sizeof(buf), fp) == NULL) {
+			fclose(fp);
 			return BBS_ENODIR;
+		}
 		if(!strncmp(buf, "# Title=", 8)) {
 			title = buf + 8;
-			if (!hasannperm(title, &currentuser, bp))
+			if (!hasannperm(title, &currentuser, bp)) {
+				fclose(fp);
 				return BBS_ENODIR;
+			}
 			break;
 		}
 	}
