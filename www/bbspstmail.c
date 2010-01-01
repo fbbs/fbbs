@@ -32,11 +32,17 @@ int bbspstmail_main(void)
 	xml_header("bbspstmail");
 	printf("<bbspstmail ");
 	print_session();
+
 	printf(" ref='");
-	xml_fputs(get_referer(), stdout);
-	printf("'>");
+	const char *ref = get_referer();
+	if (*ref == '\0')
+		ref = "pstmail";
+	xml_fputs(ref, stdout);
+
+	printf("' recv='%s'>", fh == NULL ? getparm("recv") : fh->owner);
+
 	if (fh != NULL) {
-		printf("<o>%s</o><t>", fh->owner);
+		printf("<t>");
 		xml_fputs(fh->title, stdout);
 		printf("</t><m>");
 		mmap_t m2;

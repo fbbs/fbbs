@@ -13,7 +13,7 @@
 	<xsl:template match='bbspstmail'>
 		<form id='postform' name='postform' method='post' action='sndmail'>
 			<input type='hidden' name='ref'><xsl:attribute name='value'><xsl:value-of select='@ref' /></xsl:attribute></input>
-			<p><label for='recv'>收信人:&#160;&#160;&#160;</label><input class='binput' type='text' name='recv' size='15' maxlength='15'><xsl:attribute name='value'><xsl:value-of select='o' /></xsl:attribute></input></p>
+			<p><label for='recv'>收信人:&#160;&#160;&#160;</label><input class='binput' type='text' name='recv' size='15' maxlength='15'><xsl:attribute name='value'><xsl:value-of select='@recv' /></xsl:attribute></input></p>
 			<p><label for='title'>信件标题 </label>
 			<input class='binput' type='text' name='title' size='60' maxlength='50'>
 				<xsl:variable name='retitle'>
