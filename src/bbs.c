@@ -1032,6 +1032,7 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 
 	selboard = 1;
+	brc_update(currentuser.userid, currboard);
 	brc_initial(currentuser.userid, bname);
 	changeboard(&currbp, currboard, bname);
 
