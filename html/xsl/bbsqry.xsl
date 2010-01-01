@@ -22,7 +22,7 @@
 			<p>经验值:【<xsl:call-template name="show-exp" />】 (<xsl:value-of select='@level * 10 + @repeat' />/60)</p>
 			<p>身份: <xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='ident' /></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></p></div>
 			<div class='usplit'>个人说明档如下</div>
-			<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
+			<div class='usmd'><xsl:call-template name='showpost'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
 			<div class='pbot'><xsl:call-template name='linkbar'/></div>
 		</div></xsl:when><xsl:otherwise><xsl:if test='@id!=""'><p>没有找到用户【<xsl:value-of select='@id' />】</p></xsl:if></xsl:otherwise></xsl:choose>
 	</xsl:template>

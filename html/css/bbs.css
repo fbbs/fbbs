@@ -200,7 +200,7 @@ div.plink {
 	padding: 0.25em 0.5em;
 	background-color: #f0f7ff;
 }
-div.pmain, div.umain {
+div.pmain, div.umain, div.usmd {
 	padding: 0.25em 0.5em;
 	background-color: #f0f7ff;
 	border-top: 1px solid #ccddff;
@@ -213,6 +213,7 @@ div.umain {
 div.usplit {
 	padding: 0.25em 0.5em;
 }
+div.usmd { font-family: monospace; }
 
 textarea.binput {
 	font-size: 1.1em;
