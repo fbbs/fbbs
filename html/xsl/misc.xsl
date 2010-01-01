@@ -138,7 +138,7 @@
 	</xsl:template>
 
 	<xsl:template name='foot'>
-		<div id='ft'><a href='#'>[<img src='../images/button/up.gif'/>回页首]</a>&#160;<xsl:call-template name='bbsname'/> &#169;1996-2009 Powered by <a href='http://code.google.com/p/fdubbs/'><strong>fdubbs</strong></a></div>
+		<div id='ft'><a href='#'>[<img src='../images/button/up.gif'/>回页首]</a>&#160;<xsl:call-template name='bbsname'/> &#169;1996-2010 Powered by <a href='http://code.google.com/p/fdubbs/'><strong>fdubbs</strong></a></div>
 	</xsl:template>
 
 	<xsl:template name='bbsname'>日月光华</xsl:template>
