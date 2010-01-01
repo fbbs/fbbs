@@ -17,10 +17,13 @@
 			<div class='umain' id='uinfo'>
 			<p><strong><xsl:value-of select='@id' /></strong> （<strong><xsl:value-of select='nick' /></strong>） <xsl:call-template name='show-horo'/></p>
 			<p>上次在:【<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@lastlogin' /></xsl:call-template></span>】从【<span class='a132'><xsl:value-of select='ip' /></span>】到本站一游。</p>
+			<xsl:if test='logout'><p>离站于:【<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='logout' /></xsl:call-template></span>】</p></xsl:if>
 			<p>文章数:【<span class='a132'><xsl:value-of select='@post' /></span>】 生命力:【<span class='a132'><xsl:value-of select='@hp' /></span>】</p> 
 			<p>表现值:【<span class='a133'><xsl:value-of select='@perf' /></span>】</p>
 			<p>经验值:【<xsl:call-template name="show-exp" />】 (<xsl:value-of select='@level * 10 + @repeat' />/60)</p>
 			<p>身份: <xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='ident' /></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></p></div>
+			<xsl:if test='st'><div class='usplit'>目前状态</div>
+			<div class='umain'><xsl:for-each select='st'><p><strong><xsl:value-of select='@desc'/></strong><xsl:if test='@idle!=0'>[发呆<xsl:value-of select='@idle'/>分钟]</xsl:if><xsl:if test='@web=1'>（web登录）</xsl:if><xsl:if test='@vis=0'>（隐身）</xsl:if></p></xsl:for-each></div></xsl:if>
 			<div class='usplit'>个人说明档如下</div>
 			<div class='usmd'><xsl:call-template name='showpost'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
 			<div class='pbot'><xsl:call-template name='linkbar'/></div>

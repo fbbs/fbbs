@@ -7,8 +7,10 @@ int bbsqry_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	struct userec user;
+	int uid;
 	xml_header("bbsqry");
-	if (getuserec(userid, &user) != 0) {
+	uid = getuserec(userid, &user);
+	if (uid != 0) {
 		int level, repeat;
 		level = iconexp(countexp(&user), &repeat);		
 		printf("<bbsqry id='%s' login='%d' lastlogin='%s' "
@@ -37,7 +39,33 @@ int bbsqry_main(void)
 		sethomefile(file, user.userid, "plans");
 		xml_printfile(file, stdout);
 		printf("</smd>");
-		// TODO: mail, logout
+
+		// TODO: blacklist?
+		int num = 0;
+		struct user_info *uinfo = utmpshm->uinfo;
+		for (int i = 0; i < USHM_SIZE; ++i, ++uinfo) {
+			if (uinfo->active && uinfo->uid == uid) {
+				if (uinfo->invisible && !HAS_PERM(PERM_SEECLOAK))
+					continue;
+				num++;
+				int idle = (time(NULL) - uinfo->idle_time) / 60;
+				if (idle < 1 || get_raw_mode(uinfo->mode) == BBSNET)
+					idle = 0;
+				printf("<st vis='%d' web='%d' idle='%d' desc='%s'/>",
+						!uinfo->invisible, is_web_user(uinfo->mode),
+						idle, mode_type(uinfo->mode));
+			}
+		}
+		if (!num) {
+			time_t logout = user.lastlogout;
+			if (logout < user.lastlogin) {
+				logout = ((time(NULL) - user.lastlogin) / 120) % 47 + 1
+						+ user.lastlogin;
+			}
+			printf("<logout>%s</logout>",
+					getdatestring(logout, DATE_XML));
+		}
+		// TODO: mail
 	} else {
 		printf("<bbsqry ");
 		print_session();
