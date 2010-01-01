@@ -12,20 +12,24 @@
 
 	<xsl:template match='bbsqry'>
 		<form action='qry' method='get'><label for='u'>请输入欲查询的帐号：</label><input type='text' name='u' maxlength='12' size='12'/><input type='submit' value='查询'/></form>
-		<xsl:choose><xsl:when test='@login'><div id='user'>
+		<xsl:choose><xsl:when test='@login'><div class='post'>
+			<div class='ptop'><xsl:call-template name='linkbar'/></div>
+			<div class='umain' id='uinfo'>
 			<p><strong><xsl:value-of select='@id' /></strong> （<strong><xsl:value-of select='nick' /></strong>） <xsl:call-template name='show-horo'/></p>
 			<p>上次在:【<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@lastlogin' /></xsl:call-template></span>】从【<span class='a132'><xsl:value-of select='ip' /></span>】到本站一游。</p>
 			<p>文章数:【<span class='a132'><xsl:value-of select='@post' /></span>】 生命力:【<span class='a132'><xsl:value-of select='@hp' /></span>】</p> 
 			<p>表现值:【<span class='a133'><xsl:value-of select='@perf' /></span>】</p>
 			<p>经验值:【<xsl:call-template name="show-exp" />】 (<xsl:value-of select='@level * 10 + @repeat' />/60)</p>
-			<p>身份: <xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='ident' /></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></p>
-			<p>个人说明档如下:</p><xsl:call-template name='showpost'><xsl:with-param name='content' select='smd'/></xsl:call-template>
+			<p>身份: <xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='ident' /></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></p></div>
+			<div class='usplit'>个人说明档如下</div>
+			<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
+			<div class='pbot'><xsl:call-template name='linkbar'/></div>
 		</div></xsl:when><xsl:otherwise><xsl:if test='@id!=""'><p>没有找到用户【<xsl:value-of select='@id' />】</p></xsl:if></xsl:otherwise></xsl:choose>
 	</xsl:template>
 	
 	<xsl:template name='show-horo'>
 		<xsl:if test='@horo'>
-			<xsl:variable name='color'><xsl:choose><xsl:when test='gender = "M"'>a136</xsl:when><xsl:when test='gender = "F"'>a135</xsl:when><xsl:otherwise>a132</xsl:otherwise></xsl:choose></xsl:variable>
+			<xsl:variable name='color'><xsl:choose><xsl:when test='@gender = "M"'>a136</xsl:when><xsl:when test='@gender = "F"'>a135</xsl:when><xsl:otherwise>a132</xsl:otherwise></xsl:choose></xsl:variable>
 			<span>【</span><span><xsl:attribute name='class'><xsl:value-of select='$color' /></xsl:attribute><xsl:value-of select='@horo' /></span><span>】</span>
 		</xsl:if>
 	</xsl:template>
@@ -35,5 +39,9 @@
 			<xsl:attribute name='class'>lev<xsl:value-of select='@level' /></xsl:attribute>
 			<span><xsl:attribute name='class'>lev<xsl:value-of select='@level' /></xsl:attribute><xsl:attribute name='style'>width:<xsl:value-of select='@repeat * 10' />%;</xsl:attribute></span>
 		</span>
+	</xsl:template>
+	
+	<xsl:template name='linkbar'>
+		<a><xsl:attribute name='href'>pstmail?recv=<xsl:value-of select='@id'/></xsl:attribute>[发送信件]</a>
 	</xsl:template>
 </xsl:stylesheet>

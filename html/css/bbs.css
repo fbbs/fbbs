@@ -200,11 +200,18 @@ div.plink {
 	padding: 0.25em 0.5em;
 	background-color: #f0f7ff;
 }
-div.pmain {
+div.pmain, div.umain {
 	padding: 0.25em 0.5em;
 	background-color: #f0f7ff;
 	border-top: 1px solid #ccddff;
 	border-bottom: 1px solid #ccddff;
+}
+div.umain {
+	padding: 0.25em 0.5em;
+	font-size: 1.2em;
+}
+div.usplit {
+	padding: 0.25em 0.5em;
 }
 
 textarea.binput {
@@ -223,15 +230,7 @@ input[type="submit"], input[type="button"], input[type="reset"] {
 	margin-right: 0.3em;
 }
 
-#user {
-	-moz-border-radius: 0.4em;
-	border: 1px solid #336699;
-	width: 40em;
-	padding: 0.5em;
-	margin-bottom: 1em;
-	font-size: 1.2em;
-}
-#user .a131, #user .a132, #user .a133 {
+#uinfo .a131, #uinfo .a132, #uinfo .a133, #uinfo .a135, #uinfo .a136 {
 	font-weight: bold;
 }
 .lev0, .lev1, .lev2, .lev3, .lev4, .lev5 {
