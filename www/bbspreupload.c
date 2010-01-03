@@ -4,7 +4,7 @@ int bbspreupload_main(void)
 {
 	char *board = getparm("board");
 	if (!loginok)
-		return BBS_EINVAL;
+		return BBS_ELGNREQ;
 	struct boardheader *bp = getbcache(board);
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_EPST;
