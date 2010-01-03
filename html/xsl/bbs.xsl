@@ -627,7 +627,7 @@ table.post{width:100%}
 		<div class='plink'><xsl:call-template name='mailcon-linkbar'/></div>
 		<div class='pbot'><xsl:call-template name='mailcon-navbar'/></div>
 	</div>
-	<xsl:if test='@new'><script>bbs.init();bbs.store.set('last', 0);</script></xsl:if>
+	<xsl:if test='@new'><script type='text/javascript' defer='defer'>bbs.init();bbs.store.set('last', 0);</script></xsl:if>
 </xsl:template>
 
 <xsl:template name='mailcon-navbar'>
