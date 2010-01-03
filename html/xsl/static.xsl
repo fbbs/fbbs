@@ -3,7 +3,7 @@
 <xsl:import href='bbs.xsl'/>
 <xsl:import href='showpost.xsl'/>
 <xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
-<xsl:template match='bbscon'>
+<xsl:template match='/'>
 <html>
 <head>
 	<title>ндубтд╤а - <xsl:call-template name='bbsname'/></title>
@@ -12,7 +12,7 @@
 </head>
 <body>
 	<div class='post'>
-		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
+		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='bbscon/po'/></xsl:call-template></div>
 	</div>
 </body>
 </html>
