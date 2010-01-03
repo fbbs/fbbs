@@ -71,7 +71,7 @@ static int read_submit(void)
 		}
 	}
 	mmap_close(&m);
-	xml_header("bbsmybrd");
+	xml_header("bbs");
 	printf("<bbsmybrd ");
 	print_session();
 	printf(" limit='%d' selected='%d'></bbsmybrd>", GOOD_BRC_NUM, num);
@@ -100,7 +100,7 @@ int bbsmybrd_main(void)
 	end = (struct goodbrdheader *)m.ptr + num;
 
 	// Print 'bid's of favorite boards.
-	xml_header("bbsmybrd");
+	xml_header("bbs");
 	printf("<bbsmybrd ");
 	print_session();
 	printf(" limit='%d'>", GOOD_BRC_NUM);
@@ -118,7 +118,7 @@ int bbsmybrd_main(void)
 			continue;
 		if (!hasreadperm(&currentuser, b))
 			continue;
-		printf("<brd bid='%d' desc='%s' %s/>", i + 1, b->title + 11,
+		printf("<mbrd bid='%d' desc='%s' %s/>", i + 1, b->title + 11,
 				is_board_dir(b) ? "dir='1'" : "");
 	}
 	printf("</bbsmybrd>");

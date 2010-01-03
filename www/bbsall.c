@@ -6,7 +6,7 @@ int bbsall_main(void)
 {
 	struct boardheader *x;
 	int i;
-	xml_header("bbsall");
+	xml_header("bbs");
 	printf("<bbsall ");
 	print_session();
 	printf(">");

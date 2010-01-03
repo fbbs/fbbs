@@ -29,7 +29,7 @@ int bbspstmail_main(void)
 		}
 		fh = (struct fileheader *)m.ptr + num - 1;
 	}
-	xml_header("bbspstmail");
+	xml_header("bbs");
 	printf("<bbspstmail ");
 	print_session();
 

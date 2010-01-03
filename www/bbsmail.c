@@ -19,7 +19,7 @@ int bbsmail_main(void)
 		start = 1;
 	struct fileheader *fh = (struct fileheader *)m.ptr + start - 1;
 	struct fileheader *end = (struct fileheader *)m.ptr + total;
-	xml_header("bbsmail");
+	xml_header("bbs");
 	printf("<bbsmail start='%d' total='%d' page='%d' ", start, total, TLINES);
 	print_session();
 	printf(">");
@@ -70,7 +70,7 @@ int bbsnewmail_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	xml_header("bbsnewmail");
+	xml_header("bbs");
 	printf("<bbsnewmail ");
 	print_session();
 	printf(">");

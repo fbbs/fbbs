@@ -15,7 +15,7 @@ int bbsfwd_main(void)
 	parse_post_data();
 	char *reci = getparm("u");
 	if (*reci == '\0') {
-		xml_header("bbsmail");
+		xml_header("bbs");
 		printf("<bbsfwd bid='%s' f='%s' ", getparm("bid"), getparm("f"));
 		print_session();
 		printf("></bbsfwd>");

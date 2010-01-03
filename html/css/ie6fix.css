@@ -1,0 +1,8 @@
+#hd{position:absolute;top:0;left:144px;margin:0.5em;}
+#main{position:absolute;top:32px;left:144px;margin:0.5em 0 0.5em 0;}
+#ft{display:none;margin:0.5em;}
+#main td{font-size:12px;height:1;}
+table.content{width:100%;}
+th.ptitle,td.ptitle{width:auto;}
+.content tr{line-height:24px;}
+table.post{width:100%;}

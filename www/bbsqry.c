@@ -8,7 +8,7 @@ int bbsqry_main(void)
 		return BBS_ELGNREQ;
 	struct userec user;
 	int uid;
-	xml_header("bbsqry");
+	xml_header("bbs");
 	uid = getuserec(userid, &user);
 	if (uid != 0) {
 		int level, repeat;

@@ -96,7 +96,7 @@ static int do_bbspst(bool isedit)
 			return BBS_ENOFILE;
 	}
 	
-	xml_header("bbspst");
+	xml_header("bbs");
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s", bp->filename);
 	printf("<bbspst ");

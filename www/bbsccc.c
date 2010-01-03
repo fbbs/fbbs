@@ -48,12 +48,12 @@ int bbsccc_main(void)
 		mmap_close(&m);
 		if (ret < 0)
 			return BBS_EINTNL;
-		xml_header("bbsccc");
+		xml_header("bbs");
 		printf("<bbsccc t='%d' b='%d' ", bp2 - bcache + 1, bp - bcache + 1);
 		print_session();
 		printf("/>");
 	} else {
-		xml_header("bbsccc");
+		xml_header("bbs");
 		printf("<bbsccc owner='%s' brd='%s' bid='%d' fid='%u' ", 
 				fh.owner, bp->filename, bp - bcache + 1, fid);
 		print_session();

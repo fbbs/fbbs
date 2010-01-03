@@ -74,7 +74,7 @@ int bbscon_main(void)
 	}
 	fid = fh.id;
 
-	xml_header("bbscon");
+	xml_header("bbs");
 	printf("<bbscon link='con' bid='%d' ", bid);
 	print_session();
 	printf(">");
@@ -107,7 +107,7 @@ int bbsgcon_main(void)
 	char *f = getparm("f");
 	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
 		return BBS_EINVAL;
-	xml_header("bbscon");
+	xml_header("bbs");
 	printf("<bbscon link='gcon' bid='%d' ", bid);
 	print_session();
 	printf("><po>");

@@ -20,7 +20,7 @@ int bbsfall_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	xml_header("bbsovr");
+	xml_header("bbs");
 	printf("<bbsfall ");
 	print_session();
 	printf(">");
@@ -67,7 +67,7 @@ int bbsfadd_main(void)
 		printf("Location: fall\n\n");
 		return 0;
 	}
-	xml_header("bbsovr");
+	xml_header("bbs");
 	printf("<bbsfadd ");
 	print_session();
 	printf(">%s</bbsfadd>", id);
@@ -151,11 +151,11 @@ int bbsovr_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	xml_header("bbsovr2");
-	printf("<bbsovr2 ");
+	xml_header("bbs");
+	printf("<bbsovr ");
 	print_session();
 	printf(">");
 	override_info();
-	printf("</bbsovr2>");
+	printf("</bbsovr>");
 	return 0;
 }

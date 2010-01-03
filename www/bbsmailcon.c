@@ -25,7 +25,7 @@ int bbsmailcon_main(void)
 		newmail = true;
 		fh->accessed[0] |= FILE_READ;
 	}
-	xml_header("bbsmailcon");
+	xml_header("bbs");
 	printf("<bbsmailcon ");
 	print_session();
 	struct fileheader *prev = fh - 1;

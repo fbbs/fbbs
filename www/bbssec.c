@@ -28,7 +28,7 @@ static int showbrdlist(const char *filename)
 int bbssec_main(void)
 {
 	char path[HOMELEN];
-	xml_header("bbssec");
+	xml_header("bbs");
 	printf("<bbssec ");
 	print_session();
 	printf(">");

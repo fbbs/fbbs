@@ -21,7 +21,7 @@ int bbsboa_main(void)
 	else
 		cgi = "doc";
 	
-	xml_header("bbsboa");
+	xml_header("bbs");
 	printf("<bbsboa link='%s' ", cgi);
 	print_session();
 

@@ -36,7 +36,7 @@ int bbsbrdadd_main(void)
 		memcpy(iter->filename, bp->filename, sizeof(iter->filename));
 	}
 	mmap_close(&m);
-	xml_header("bbsmybrd");
+	xml_header("bbs");
 	printf("<bbsbrdadd><brd>%s</brd><bid>%d</bid></bbsbrdadd>",
 			bp->filename, bid);
 	return 0;

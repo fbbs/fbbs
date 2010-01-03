@@ -96,7 +96,7 @@ int bbs0an_main(void)
 		}
 	}
 
-	xml_header("bbs0an");
+	xml_header("bbs");
 	printf("<bbs0an path='%s' v='%d' ", path, get_count(path));
 	print_session();
 	if (bp != NULL)

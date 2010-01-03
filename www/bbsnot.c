@@ -13,7 +13,7 @@ int bbsnot_main(void)
 	m.oflag = O_RDONLY;
 	if (mmap_open(fname, &m) < 0)
 		return BBS_ENOFILE;
-	xml_header("bbsnot");
+	xml_header("bbs");
 	printf("<bbsnot ");
 	print_session();
 	printf(" brd='%s'>", bp->filename);

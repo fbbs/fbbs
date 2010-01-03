@@ -16,12 +16,12 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		safer_write(fd, text, strlen(text));
 		flock(fd, LOCK_UN);
 		close(fd);
-		xml_header("bbseufile");
+		xml_header("bbs");
 		printf("<bbseufile ");
 		print_session();
 		printf(" desc='%s'></bbseufile>", desc);
 	} else {
-		xml_header("bbseufile");
+		xml_header("bbs");
 		printf("<bbseufile ");
 		print_session();
 		printf(" desc='%s' submit='%s'>", desc, submit);

@@ -19,7 +19,7 @@ int bbsfav_main(void)
 	end = (struct goodbrdheader *)m.ptr + num;
 
 	// Print all favorite boards.
-	xml_header("bbsfav");
+	xml_header("bbs");
 	printf("<bbsfav ");
 	print_session();
 	printf(">");

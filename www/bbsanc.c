@@ -17,7 +17,7 @@ int bbsanc_main(void)
 
 	char fname[512];
 	sprintf(fname, "0Announce%s", path);
-	xml_header("bbsanc");
+	xml_header("bbs");
 	printf("<bbsanc ");
 	print_session();
 	if (bp != NULL)

@@ -174,7 +174,7 @@ static int bbsdoc(int mode)
 		my_t_lines = TLINES;
 	brc_fcgi_init(currentuser.userid, board);
 
-	xml_header("bbsdoc");
+	xml_header("bbs");
 	printf("<bbsdoc ");
 	print_session();
 	printf(">");
@@ -284,7 +284,7 @@ int bbsbfind_main(void)
 	cri.user = getparm("user");
 	cri.found = 0;
 
-	xml_header("bbsbfind");
+	xml_header("bbs");
 	printf("<bbsbfind ");
 	print_session();
 	printf(" bid='%d'", cri.bid);
