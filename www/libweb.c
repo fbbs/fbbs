@@ -499,36 +499,6 @@ int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
 }
 
-// TODO: better rewrite
-char *getbfroma(const char *path)
-{
-	FILE *fp;
-	static char buf1[256], buf2[256];
-	memset(buf1, '\0', sizeof(buf1));
-	memset(buf2, '\0', sizeof(buf2));
-	int len;
-	if (path == NULL || *path == '\0')
-		return "";
-	++path;
-	fp = fopen("0Announce/.Search", "r");
-	if (fp == NULL)
-		return "";
-	while (true) {
-		if(fscanf(FCGI_ToFILE(fp), "%s %s", buf1, buf2) <= 0)
-			break;
-		if (*buf1 != '\0')
-			buf1[strlen(buf1) - 1] = '\0';
-		if (*buf1 == '*')
-			continue;
-		if(!strncmp(buf2, path, strlen(buf2))) {
-			fclose(fp);
-			return buf1;
-		}
-	}
-	fclose(fp);
-	return "";
-}
-
 // Find post whose id = 'fid'.
 // If 'fid' > any post's id, return 'end',
 // otherwise, return the minimum one among all post whose id > 'fid'.
