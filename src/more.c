@@ -585,55 +585,75 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 	if (begin == end)
 		return 0;
 	d->line++;
-	bool in_gbk = false;
 	bool in_esc = false;
-	int length = d->width;
+	int len = d->width;
+
 	d->prop &= ~HAS_TABSTOP;
 	if (!(d->prop & IS_QUOTE)
-			&& (strncmp(begin, ": ", 2) || strncmp(begin, "> ", 2)))
+			&& strncmp(begin, ": ", 2) && strncmp(begin, "> ", 2))
 		d->prop &= ~IS_QUOTE;
-	for (ptr = begin; ptr != end && length >= 0; ++ptr) {
+
+	for (ptr = begin; ptr < end; ++ptr) {
 		if (*ptr == '\n') {
-			if (d->prop & IS_QUOTE)
-				d->prop &= ~IS_QUOTE;
-			if (++ptr == end)
-				d->total = d->line;
-			d->end = ptr;
-			return d->end - d->begin;
+			d->prop &= ~IS_QUOTE;
+			break;
 		}
 		if (*ptr == '\033') {
 			in_esc = true;
 			continue;
 		}
 		if (in_esc) {
-			if(!memchr(code, *ptr, sizeof(code) - 1))
+			if (!memchr(code, *ptr, sizeof(code) - 1))
 				in_esc = false;
 			continue;
 		}
 		if (*ptr == '\t') {
 			d->prop |= HAS_TABSTOP;
-			length -= TAB_STOP - (d->width - length) % TAB_STOP;
+			len -= TAB_STOP - (d->width - len) % TAB_STOP;
+			if (len < 0)
+				--ptr;
+			if (len <= 0)
+				break;
 			continue;
 		}
-		--length;
-		if (!in_gbk && *ptr & 0x80)
-			in_gbk = true;
-		else
-			in_gbk = false;
+		if (*ptr & 0x80) {
+			len -= 2;
+			if (len < 0)
+				--ptr;
+			++ptr;
+			if (len == 0)
+				break;
+		} else {
+			if (--len == 0)
+				break;
+		}
 	}
-	if (ptr == end && length >= 0) {
+
+	if (++ptr >= end) {
 		d->total = d->line;
-		d->end = ptr;
+		d->end = end;
 		return d->end - d->begin;
 	}
-	--ptr;
-	// half Chinese character should be left out.
-	if (!in_gbk && *(ptr - 1) & 0x80)
-		--ptr;
-	d->end = ptr;
-	if (ptr == end) {
-		d->total = d->line;
+
+	if (len == 0) {
+		// trailing escape sequence
+		if (*ptr == '\033') {
+			while (++ptr < end && memchr(code, *ptr, sizeof(code) - 1))
+				;
+			++ptr;
+		}
+		// include trailing '\n' or '\r\n'.
+		if (*ptr == '\n') {
+			++ptr;
+			d->prop &= ~IS_QUOTE;
+		} else if (*ptr == '\r' && *(ptr + 1) == '\n') {
+			ptr += 2;
+			d->prop &= ~IS_QUOTE;
+		}
 	}
+	d->end = ptr;
+	if (ptr >= end)
+		d->total = d->line;
 	return d->end - d->begin;
 }
 
