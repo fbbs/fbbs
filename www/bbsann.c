@@ -55,7 +55,9 @@ static char *getbfroma(const char *path)
 			buf1[strlen(buf1) - 1] = '\0';
 		if (*buf1 == '*')
 			continue;
-		if(!strncmp(buf2, path, strlen(buf2))) {
+		size_t len = strlen(buf2);
+		if(!strncmp(buf2, path, len)
+				&& (path[len] == '/' || path[len] == '\0')) {
 			fclose(fp);
 			return buf1;
 		}
