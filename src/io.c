@@ -121,6 +121,7 @@ void output(const unsigned char *str, int size)
 			int len = sizeof(outbuf.buf) - outbuf.size;
 			if (size > len) {
 				memcpy(outbuf.buf + outbuf.size, str, len);
+				outbuf.size += len;
 				oflush();
 				size -= len;
 				str += len;
