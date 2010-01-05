@@ -565,7 +565,7 @@ static void mmap_more_close(mmap_more_file_t *d)
  */
 static ssize_t mmap_more_getline(mmap_more_file_t *d)
 {
-	static char code[] = "[0123456789;";
+	static const char code[] = "[0123456789;";
 	if (d->width < 2) {
 		return -1;
 	}
@@ -618,8 +618,10 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 		}
 		if (*ptr & 0x80) {
 			len -= 2;
-			if (len < 0)
+			if (len < 0) {
 				--ptr;
+				break;
+			}
 			++ptr;
 			if (len == 0)
 				break;
