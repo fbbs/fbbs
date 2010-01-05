@@ -136,7 +136,7 @@
 	<link rel='stylesheet' type='text/css' href='../css/bbs.css'/>
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css'/><![endif]]]></xsl:comment>
 </xsl:template>
-<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js'></script><script type='text/javascript' src='../js/persist-all-min.js'></script></xsl:template>
+<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js' defer='defer'></script><script type='text/javascript' src='../js/persist-all-min.js' defer='defer'></script></xsl:template>
 
 <xsl:template name='page-title'>
 	<xsl:variable name='cgi' select='local-name(node()[2])'/>
@@ -203,7 +203,7 @@ table.post{width:100%}
 			<div id='main'><xsl:apply-templates/></div>
 			<xsl:call-template name='foot'/>
 		</body>
-		<xsl:comment><![CDATA[[if lt IE 7]><script>addLoadEvent(ie6fix);window.onresize=ie6fix;</script><![endif]]]></xsl:comment>
+		<xsl:comment><![CDATA[[if lt IE 7]><script type='text/javascript' defer='defer'>addLoadEvent(ie6fix);window.onresize=ie6fix;</script><![endif]]]></xsl:comment>
 	</html>
 </xsl:template>
 
@@ -492,8 +492,8 @@ table.post{width:100%}
 		<xsl:if test='@edit="0" and @att!=0'><input type='button' name='attach' value='ÉÏ´«¸½¼þ' onclick='return preUpload() '/></xsl:if>
 	</form>
 	<xsl:choose>
-		<xsl:when test='not(t)'><script>addLoadEvent(function(){document.postform.title.focus();})</script></xsl:when>
-		<xsl:otherwise><script>addLoadEvent(function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();})</script></xsl:otherwise>
+		<xsl:when test='not(t)'><script type='text/javascript' defer='defer'>addLoadEvent(function(){document.postform.title.focus();})</script></xsl:when>
+		<xsl:otherwise><script type='text/javascript' defer='defer'>addLoadEvent(function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();})</script></xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
 
