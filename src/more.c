@@ -590,8 +590,8 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 
 	d->prop &= ~HAS_TABSTOP;
 	if (!(d->prop & IS_QUOTE)
-			&& strncmp(begin, ": ", 2) && strncmp(begin, "> ", 2))
-		d->prop &= ~IS_QUOTE;
+			&& (!strncmp(begin, ": ", 2) || !strncmp(begin, "> ", 2)))
+		d->prop |= IS_QUOTE;
 
 	for (ptr = begin; ptr < end; ++ptr) {
 		if (*ptr == '\n') {
