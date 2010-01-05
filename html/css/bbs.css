@@ -231,6 +231,8 @@ input[type="submit"], input[type="button"], input[type="reset"] {
 	margin-right: 0.3em;
 }
 
+form.jump { display:inline; }
+
 #uinfo .a131, #uinfo .a132, #uinfo .a133, #uinfo .a135, #uinfo .a136 {
 	font-weight: bold;
 }
