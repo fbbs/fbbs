@@ -72,7 +72,7 @@
 					<xsl:if test='$after'>
 						<xsl:call-template name='not-str-token'>
 							<xsl:with-param name='str' select='$after'/>
-							<xsl:with-param name='delim'>0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~$-_.+!*')(,/:;=?@&amp;</xsl:with-param>
+							<xsl:with-param name='delim'>0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~$-_.+!*')(,/:;=?@%#&amp;</xsl:with-param>
 							<xsl:with-param name='start' select='1'/>
 						</xsl:call-template>
 					</xsl:if>
