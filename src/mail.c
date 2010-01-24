@@ -571,7 +571,7 @@ int m_new() {
 	modify_user_mode(RMAIL);
 	read_new_mail(NULL, 0, NULL);
 	apply_record(currmaildir, read_new_mail, sizeof(struct fileheader), 0,
-			1, 0, true);
+			1, 0, false);
 	while (delcnt--)
 		delete_record(currmaildir, sizeof(struct fileheader),
 				delmsgs[delcnt], NULL, NULL);
