@@ -503,80 +503,53 @@ int ent_winmine() {
 	exec_cmd(WINMINE, NA, "so/winmine", buf);
 }
 
-//      纪念日相关
-void fill_date() {
-	time_t now, next;
-	char buf[80], buf2[30], index[5], index_buf[5], *t = NULL;
-	//char   *buf, *buf2, *index, index_buf[5], *t=NULL; commented by infotech.
-	char h[3], m[3], s[3];
-	int foo, foo2, i;
-	struct tm *mytm;
-	FILE *fp;
-	now = time(0);
+/**
+ * Load memorial day info.
+ * @return 0 on success, -1 on error.
+ */
+int fill_date(void)
+{
 	if (resolve_boards() < 0)
-		exit(1);
+		return -1;
 
-	if (now < brdshm->fresh_date && strlen(brdshm->date) != 0)
-		return;
+	time_t now = time(NULL);
+	if (now < brdshm->fresh_date && brdshm->date[0] != '\0')
+		return 0;
 
-	mytm = localtime(&now);
-	strftime(h, 3, "%H", mytm); //0-24  小时
-	strftime(m, 3, "%M", mytm); //00-59 分钟
-	strftime(s, 3, "%S", mytm); //00-61 秒数,61为闰秒
+	struct tm *mytm = localtime(&now);
+	time_t next = now - mytm->tm_hour * 3600 - mytm->tm_min * 60
+			- mytm->tm_sec + 86400;
 
-	next = (time_t) time(0)
-			- ((atoi(h) * 3600) + (atoi(m) * 60) + atoi(s)) + 86400; /* 算出今天 0:0:00 的时间, 然後再往後加一天 */
-	sprintf(genbuf, "纪念日更新, 下一次更新时间 %s",
-			getdatestring(next, DATE_ENWEEK));
-	report(genbuf, currentuser.userid);
+	strlcpy(brdshm->date, DEF_VALUE, sizeof(brdshm->date));
 
-	fp = fopen(DEF_FILE, "r");
-
+	FILE *fp = fopen(DEF_FILE, "r");
 	if (fp == NULL)
-		return;
+		return -1;
 
-	now = time(0);
-	mytm = localtime(&now);
-	strftime(index_buf, 5, "%m%d", mytm);
-
-	strcpy(brdshm->date, DEF_VALUE);
-
-	while (fgets(buf, 80, fp) != NULL) {
-		if (buf[0] == ';' || buf[0] == '#' || buf[0] == ' ')
+	char date[5], index[5], buf[80], msg[30];
+	strftime(date, sizeof(date), "%m%d", mytm);
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if (*buf == '#' || *buf == '\0')
 			continue;
-
-		buf[35] = '\0';
-		strlcpy(index, buf, 4);
-		index[4] = '\0';
-		strcpy(buf2, buf + 5);
-		t = strchr(buf2, '\n');
-		if (t) {
+		if (strlcpy(index, buf, sizeof(index)) < sizeof(index))
+			continue;
+		strlcpy(msg, buf + sizeof(index), sizeof(msg));
+		char *t = strchr(msg, '\n');
+		if (t != NULL)
 			*t = '\0';
-		}
-
-		if (index[0] == '\0' || buf2[0] == '\0')
+		if (*index == '\0' || *msg == '\0')
 			continue;
-
-		if (strcmp(index, "0000") == 0 || strcmp(index_buf, index) == 0) {
-			foo = strlen(buf2);
-			foo2 = (30 - foo) / 2;
-			strcpy(brdshm->date, "");
-			for (i = 0; i < foo2; i++)
-				strcat(brdshm->date, " ");
-			strcat(brdshm->date, buf2);
-			for (i = 0; i < 30 - (foo + foo2); i++)
-				strcat(brdshm->date, " ");
+		if (strcmp(index, "0000") == 0 || strcmp(date, index) == 0) {
+			// align center
+			memset(brdshm->date, ' ', sizeof(msg));
+			size_t len = strlen(msg);
+			memcpy(brdshm->date + (sizeof(msg) - len) / 2, msg, len);
+			brdshm->date[sizeof(msg)] = '\0';
 		}
 	}
-
 	fclose(fp);
 	brdshm->fresh_date = next;
-
-	//free(buf);    by infotech.
-	//free(buf2);
-	//free(index);
-
-	return;
+	return 0;
 }
 
 //  今天是生日?
