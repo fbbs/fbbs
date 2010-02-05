@@ -16,7 +16,7 @@ ul li {
 	margin-right: 10px;
 }
 input.txt {
-	background: #EDECEC;
+	background: #ffcccc;
 	width: 100px;
 	height:20px;
 	border: none;
@@ -24,7 +24,7 @@ input.txt {
 .box {
 	-webkit-border-radius: 8px;
 	-moz-border-radius: 8px;
-	background-color: #202041;
+	background-color: #cc3300;
 }
 #container {
 	position: relative;
@@ -47,7 +47,7 @@ input.txt {
 	display: block;
 }
 #left_panel a:hover {
-	color: #8de6ff;
+	color: #ff6600;
 }
 #menu {
 	height: 190px;
@@ -58,7 +58,7 @@ input.txt {
 	position: absolute;
 	top: 68px;
 	left: 125px;
-	background-color: #202041;
+	background-color: #cc3300;
 	border: #F5E4EA solid 1px;
 }
 #software li {
