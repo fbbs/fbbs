@@ -52,11 +52,11 @@ int bbsrss_main(void)
 		printf("</title><link>http://"BASEURL"/con?bid=%d&amp;f=%u</link>"
 				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
 				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
-				"<description>", bid, fp->id, fp->owner,
+				"<description><![CDATA[<pre>", bid, fp->id, fp->owner,
 				getdatestring(getfiletime(fp), DATE_RSS), fp->owner, bid,
 				fp->id);
 		xml_printfile(file, stdout);
-		printf("</description></item>");
+		printf("<pre>]]></description></item>");
 	}
 	printf("</channel></rss>");
 	return 0;
