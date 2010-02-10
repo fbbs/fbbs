@@ -877,8 +877,9 @@ static void user_login(void)
 			vote_flag(NULL, 'R', 2 /* 写入读过新的Welcome */);
 		}
 	} else {
-		if (fill_shmfile(3, "Welcome2", "WELCOME_SHMKEY"))
-			show_welcomeshm();
+		//if (fill_shmfile(3, "Welcome2", "WELCOME_SHMKEY"))
+			//show_welcomeshm();
+		ansimore("Welcome2", YEA);
 	}
 	show_statshm("etc/posts/day", 1);
 	refresh();
