@@ -1,4 +1,4 @@
-AM_CFLAGS = @ENABLE_DEBUG@ -O2 -Wall -std=c99 -pedantic
+AM_CFLAGS = -O2 -Wall -std=c99 -pedantic @ENABLE_DEBUG@
 AM_CPPFLAGS = -D_POSIX_SOURCE -D_SVID_SOURCE -I../include
 LIBS = -lcrypt -lfcgi
 LDADD = ../lib/libBBS.a

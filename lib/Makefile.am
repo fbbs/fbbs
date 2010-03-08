@@ -1,4 +1,4 @@
-AM_CFLAGS = @ENABLE_DEBUG@ -O2 -pipe -Wall
+AM_CFLAGS = -O2 -pipe -Wall @ENABLE_DEBUG@
 AM_CPPFLAGS = -DLINUX -DTERMIOS -I../include
 noinst_LIBRARIES = libBBS.a
 libBBS_a_SOURCES = board.c boardrc.c brdcache.c fileio.c goodbrd.c log.c \

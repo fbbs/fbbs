@@ -199,6 +199,55 @@ bool seek_in_file(const char *filename, const char *seekstr)
 }
 
 /**
+ * 从文件中删除指定行.
+ * @param[in] file 需要修改的文件.
+ * @param[in] str 匹配行的开头, 后跟空格/换行.
+ * @return 成功 0, 出错(包括无匹配) -1.
+ */
+int del_from_file(const char *file, const char *str)
+{
+	FILE *fpr, *fpw;
+	bool deleted = false, empty = true;
+	char buf[1024], fnew[HOMELEN];
+
+	if ((fpr = fopen(file, "r")) == NULL)
+		return -1;
+	flock(fileno(fpr), LOCK_EX);
+	snprintf(fnew, sizeof(fnew), "%s.%d", file, getpid());
+	if ((fpw = fopen(fnew, "w")) == NULL) {
+		flock(fileno(fpr), LOCK_UN);
+		fclose(fpr);
+		return -1;
+	}
+
+	size_t len = strlen(str);
+	while (fgets(buf, sizeof(buf), fpr) != NULL) {
+		if (!deleted) {
+			char c = buf[len];
+			if ((c == '\0' || c == ' ' || c == '\n')
+					&& !strncmp(buf, str, len)) {
+				deleted = true;
+				continue;
+			}
+		}
+		fputs(buf, fpw);
+	}
+	empty = (ftell(fpw) <= 0);
+	fclose(fpw);
+	flock(fileno(fpr), LOCK_UN);
+	fclose(fpr);
+
+	if (deleted) {
+		if (empty)
+			return unlink(file);
+		else
+			return rename(fnew, file);
+	}
+	unlink(fnew);
+	return -1;
+}
+
+/**
  * Mask last section of an IP address.
  * @param host IP address to be masked.
  * @return masked IP address.

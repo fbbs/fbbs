@@ -1695,31 +1695,6 @@ char *uident;
 	return n;
 }
 
-int del_from_file(filename, str)
-char filename[STRLEN], str[STRLEN];
-{
-	FILE *fp, *nfp;
-	int deleted = NA;
-	char tmpbuf[1024],fnnew[STRLEN];
-
-	if ((fp = fopen(filename, "r")) == NULL) return -1;
-	sprintf(fnnew, "%s.%d", filename, getuid());
-	if ((nfp = fopen(fnnew, "w")) == NULL) {
-		fclose(nfp);
-		return -1;
-	}
-	while (fgets(tmpbuf, 1024, fp) != NULL) {
-		if (strncmp(tmpbuf, str, strlen(str)) == 0
-				&&(tmpbuf[strlen(str)]=='\0'||tmpbuf[strlen(str)]==' '||tmpbuf[strlen(str)]=='\n'))
-		deleted = YEA;
-		else if (*tmpbuf> ' ') fputs(tmpbuf, nfp);
-	}
-	fclose(fp);
-	fclose(nfp);
-	if (!deleted) return -1;
-	return (rename(fnnew, filename) + 1);
-}
-
 int
 deleteoverride(uident, filename)
 char *uident;

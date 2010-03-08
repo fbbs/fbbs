@@ -61,7 +61,7 @@ AC_ARG_ENABLE(www, [  --enable-www            compile www modules],
 AC_SUBST(ENABLE_WWW)
 
 AC_ARG_ENABLE(debug, [  --enable-debug          compile debug version],
-			  [if test "$enableval" = "yes" ; then ENABLE_DEBUG="-g"; fi], [ENABLE_DEBUG= ])
+			  [if test "$enableval" = "yes" ; then ENABLE_DEBUG="-g -O0"; fi], [ENABLE_DEBUG= ])
 AC_SUBST(ENABLE_DEBUG)
 
 AC_CONFIG_FILES([Makefile
