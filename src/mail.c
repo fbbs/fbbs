@@ -187,7 +187,7 @@ int mailall() {
 		sprintf(fname, "sharedmail/mailall.%s.%d", currentuser.userid,
 				time(0));
 	/**********Modified end**********/
-	do_quote(fname, header.include_mode);
+	do_quote(quote_file, fname, header.include_mode);
 	if (vedit(fname, YEA, YEA) == -1) {
 		in_mail = NA;
 		unlink(fname);
@@ -350,7 +350,7 @@ char *userid, *title;
 		sprintf(save_title2, "{%.16s} %.60s", userid, newmessage.title);
 		//		strncpy(save_filename, fname, 4096);
 	}
-	do_quote(filepath, header.include_mode);
+	do_quote(quote_file, filepath, header.include_mode);
 
 	if (internet_mail) {
 #ifndef INTERNET_EMAIL
@@ -1424,7 +1424,7 @@ char current_maillist;
 		sprintf(save_title, "[群体信件] %-60.60s", header.title);
 		//		strncpy(save_filename, fname, 4096);
 	}
-	do_quote(tmpfile, header.include_mode);
+	do_quote(quote_file, tmpfile, header.include_mode);
 	if (vedit(tmpfile, YEA, YEA) == -1) {
 		unlink(tmpfile);
 		clear();

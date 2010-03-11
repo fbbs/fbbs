@@ -1269,7 +1269,14 @@ int do_reply(struct fileheader *fh) {
 }
 #endif
 
-int garbage_line(char *str) {
+/**
+ * Tell if a line is meaningless.
+ * @param str The string to be checked.
+ * @return True if str is quotation of a quotation or contains only white
+           spaces, false otherwise.
+ */
+bool garbage_line(const char *str)
+{
 	int qlevel = 0;
 
 	while (*str == ':' || *str == '>') {
@@ -1277,105 +1284,110 @@ int garbage_line(char *str) {
 		if (*str == ' ')
 			str++;
 		if (qlevel++ >= 1)
-			return 1;
+			return true;
 	}
-	while (*str == ' ' || *str == '\t')
+	while (*str == ' ' || *str == '\t' || *str == '\r')
 		str++;
-	if (qlevel >= 1)
-		if (strstr(str, "提到:\n") || strstr(str, ": 】\n") || strncmp(str,
-				"==>", 3) == 0 || strstr(str, "的文章 □"))
-			return 1;
 	return (*str == '\n');
 }
 
-/* this is a trap for bad people to cover my program to his */
-
-int Origin2(char text[256]) {
-	char tmp[STRLEN];
-
-	sprintf(tmp, ":·%s %s·[FROM:", BoardName, BBSHOST);
-	if (strstr(text, tmp))
-		return 1;
-	else
-		return 0;
+/**
+ * Find newline in [begin, end).
+ * @param begin The head pointer.
+ * @param end The off-the-end pointer.
+ * @return Off-the-end pointer to the first newline, 'end' if not found.
+ */
+static const char *get_newline(const char *begin, const char *end)
+{
+	while (begin < end) {
+		if (*begin++ == '\n')
+			return begin;
+	}
+	return begin;
 }
 
-/* When there is an old article that can be included -jjyang */
-void do_quote(char *filepath, char quote_mode) {
-	FILE *inf, *outf;
-	char *qfile, *quser;
-	char buf[256], *ptr;
-	char op;
-	int bflag, i;
+enum {
+	MAX_QUOTE_LINES = 9,     ///< Maximum quoted lines (for mode 'R').
+	MAX_QUOTE_BYTES = 1024,  ///< Maximum quoted bytes (for mode 'R').
+};
 
-	qfile = quote_file;
-	quser = quote_user;
-	bflag = strncmp(qfile, "mail", 4);
-	outf = fopen(filepath, "w");
-	if (quote_mode != '\0' && *qfile != '\0' && (inf = fopen(qfile, "r"))
-			!= NULL) {
+/**
+ * Quote in given mode.
+ * @param orig The file to be quoted.
+ * @param file The output file.
+ * @param mode Quote mode (R/S/Y/A/N).
+ */
+// TODO: do not use quote_file in callers.
+void do_quote(const char *orig, const char *file, char mode)
+{
+	bool mail = !strncmp(orig, "mail", 4);
+	FILE *fp = fopen(file, "w");
+	if (!fp)
+		return;
+	if (mode != 'N') {
+		mmap_t m;
+		m.oflag = O_RDONLY;
+		if (mmap_open(file, &m) == 0) {
+			const char *begin = m.ptr;
+			const char *end = begin + m.size;
+			const char *lend = get_newline(begin, end);
 
-		op = quote_mode;
-		if (op != 'N') {
-			fgets(buf, 256, inf);
-			if ((ptr = strrchr(buf, ')')) != NULL) {
-				ptr[1] = '\0';
-				if ((ptr = strchr(buf, ':')) != NULL) {
-					quser = ptr + 1;
-					while (*quser == ' ') {
-						quser++;
-					}
-				}
+			// Parse author & nick.
+			const char *quser = begin, *ptr = lend;
+			while (quser < lend) {
+				if (*quser++ == ':')
+					break;
 			}
-			if (bflag)
-				fprintf(outf, "\n【 在 %-.55s 的大作中提到: 】\n", quser);
-			else
-				fprintf(outf, "\n【 在 %-.55s 的来信中提到: 】\n", quser);
-			if (op == 'A') {
-				while (fgets(buf, 256, inf) != NULL) {
-					fprintf(outf, ": %s", buf);
+			while (--ptr >= begin) {
+				if (*ptr == ')')
+					break;
+			}
+			++ptr;
+			fprintf(fp, "\n【 在 ");
+			if (ptr > quser)
+				fwrite(quser, ptr - quser, sizeof(char), fp);
+			fprintf(fp, " 的%s中提到: 】\n", mail ? "来信" : "大作");
+
+			bool header = true, tail = false;
+			size_t lines = 0, bytes= 0;
+			ptr = lend;
+			while (ptr < end) {
+				lend = get_newline(ptr, end);
+				if (header && *ptr == '\n') {
+					header = false;
+					continue;
 				}
-			} else if (op == 'S') { //exchange 'R' and 'S' by Danielfree 07.04.05
-				while (fgets(buf, 256, inf) != NULL) {
-					if (buf[0] == '\n')
+				if (lend - ptr == 3 && !memcmp(ptr, "--\n", 3)) {
+					tail = true;
+					if (mode == 'Y' || mode == 'R')
 						break;
 				}
-				while (fgets(buf, 256, inf) != NULL) {
-					if (Origin2(buf))
+				if (!header || mode == 'A') {
+					if ((mode == 'Y' || mode == 'R')
+							&& garbage_line(ptr)) {
 						continue;
-					fprintf(outf, "%s", buf);
-				}
-			} else {
-				while (fgets(buf, 256, inf) != NULL) {
-					if (buf[0] == '\n')
+					}
+					if (mode == 'S' && lend - ptr > 10 + sizeof("※ 来源:·")
+							&& !memcmp(ptr + 10, "※ 来源:·", sizeof("※ 来源:·"))) {
 						break;
-				}
-				i = 0;
-				while (fgets(buf, 256, inf) != NULL) {
-					if (strcmp(buf, "--\n") == 0)
-						break;
-					if (buf[250] != '\0')
-						strcpy(buf + 250, "\n");
-					if (!garbage_line(buf)) {
-						if (op == 'R' && i >= 10) { //exchange 'R' and 'S' by Danielfree 07.04.05
-							fprintf(outf, ": .................（以下省略）");
+					}
+					if (mode == 'R') {
+						bytes += lend - ptr;
+						if (lines > MAX_QUOTE_LINES
+								|| bytes > MAX_QUOTE_BYTES) {
+							fputs(": .................（以下省略）", fp);
 							break;
 						}
-						i++;
-						fprintf(outf, ": %s", buf);
 					}
+					if (mode != 'S')
+						fputs(": ", fp);
+					fwrite(ptr, lend - ptr, sizeof(char), fp);
 				}
+				ptr = lend;
 			}
-		} //if (op != 'N') 
-		fprintf(outf, "\n");
-		fclose(inf);
+		}
 	}
-	*quote_file = '\0';
-	*quote_user = '\0';
-	if (!(currentuser.signature == 0 || header.chk_anony == 1)) {
-		addsignature(outf, 1);
-	}
-	fclose(outf);
+	fclose(fp);
 }
 
 /* Add by SmallPig */
@@ -2108,7 +2120,7 @@ int post_article(char *postboard, char *mailid) {
 			: currentuser.userid, STRLEN);
 	setbfile(filepath, postboard, postfile.filename);
 	modify_user_mode(POSTING);
-	do_quote(filepath, header.include_mode);
+	do_quote(quote_file, filepath, header.include_mode);
 	aborted = vedit(filepath, YEA, YEA);
 	if (aborted == -1) {
 		unlink(filepath);
