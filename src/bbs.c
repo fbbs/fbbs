@@ -1327,7 +1327,7 @@ void do_quote(const char *orig, const char *file, char mode)
 	if (mode != 'N') {
 		mmap_t m;
 		m.oflag = O_RDONLY;
-		if (mmap_open(file, &m) == 0) {
+		if (mmap_open(orig, &m) == 0) {
 			const char *begin = m.ptr;
 			const char *end = begin + m.size;
 			const char *lend = get_newline(begin, end);
@@ -1335,7 +1335,7 @@ void do_quote(const char *orig, const char *file, char mode)
 			// Parse author & nick.
 			const char *quser = begin, *ptr = lend;
 			while (quser < lend) {
-				if (*quser++ == ':')
+				if (*quser++ == ' ')
 					break;
 			}
 			while (--ptr >= begin) {
@@ -1350,8 +1350,10 @@ void do_quote(const char *orig, const char *file, char mode)
 
 			bool header = true, tail = false;
 			size_t lines = 0, bytes= 0;
-			ptr = lend;
-			while (ptr < end) {
+			while (1) {
+				ptr = lend;
+				if (ptr >= end)
+					break;
 				lend = get_newline(ptr, end);
 				if (header && *ptr == '\n') {
 					header = false;
@@ -1373,7 +1375,7 @@ void do_quote(const char *orig, const char *file, char mode)
 					}
 					if (mode == 'R') {
 						bytes += lend - ptr;
-						if (lines > MAX_QUOTE_LINES
+						if (++lines > MAX_QUOTE_LINES
 								|| bytes > MAX_QUOTE_BYTES) {
 							fputs(": .................£®“‘œ¬ °¬‘£©", fp);
 							break;
@@ -1383,8 +1385,8 @@ void do_quote(const char *orig, const char *file, char mode)
 						fputs(": ", fp);
 					fwrite(ptr, lend - ptr, sizeof(char), fp);
 				}
-				ptr = lend;
 			}
+			mmap_close(&m);
 		}
 	}
 	fclose(fp);
