@@ -16,7 +16,7 @@ ul li {
 	margin-right: 10px;
 }
 input.txt {
-	background: #ffcccc;
+	background: #d1f4ca;
 	width: 100px;
 	height:20px;
 	border: none;
@@ -24,7 +24,7 @@ input.txt {
 .box {
 	-webkit-border-radius: 8px;
 	-moz-border-radius: 8px;
-	background-color: #cc3300;
+	background-color: #0a3601;
 }
 #container {
 	position: relative;
@@ -47,7 +47,7 @@ input.txt {
 	display: block;
 }
 #left_panel a:hover {
-	color: #ff6600;
+	background-color: #9ed992;
 }
 #menu {
 	height: 190px;
@@ -58,7 +58,7 @@ input.txt {
 	position: absolute;
 	top: 68px;
 	left: 125px;
-	background-color: #cc3300;
+	background-color: #0a3601;
 	border: #F5E4EA solid 1px;
 }
 #software li {
@@ -95,8 +95,8 @@ input.txt {
 	margin-right: 10px;
 }
 #main {
-/*	background: url('/images/bbswebpic.jpg') no-repeat;*/
-/*	padding-top: 480px;*/
+	background: url('/images/bbswebpic.jpg') no-repeat;
+	padding-top: 480px;
 	width: 640px;
 	float: left;
 	text-align: center;
