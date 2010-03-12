@@ -1389,6 +1389,8 @@ void do_quote(const char *orig, const char *file, char mode)
 			mmap_close(&m);
 		}
 	}
+	if (currentuser.signature && !header.chk_anony)
+		addsignature(fp, 1);
 	fclose(fp);
 }
 
