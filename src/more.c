@@ -810,10 +810,8 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 						prints("\033[0;36m");
 						colored = true;
 					} else {
-						if (colored) {
-							prints("\033[m");
-							colored = false;
-						}
+						prints("\033[m");
+						colored = false;
 					}
 					mmap_more_puts(d);
 					is_wrapped = (*(d->end - 1) != '\n');
