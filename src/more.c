@@ -810,8 +810,10 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 						prints("\033[0;36m");
 						colored = true;
 					} else {
-						prints("\033[m");
-						colored = false;
+						if (colored) {
+							prints("\033[m");
+							colored = false;
+						}
 					}
 					mmap_more_puts(d);
 					is_wrapped = (*(d->end - 1) != '\n');
@@ -844,10 +846,10 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 		prints("\033[0;1;44;32m下面还有喔(%d%%) 第(%d-%d)行 \033[33m|"
 				" l 上篇 | b e 开头末尾 | g 跳转 | h 帮助\033[K\033[m",
 				(d->end - d->buf) * 100 / d->size, d->line - t_lines + 2, d->line);
-		refresh();
 		ch = morekey();
 		move(t_lines - 1, 0);
 		clrtoeol();
+		refresh();
 		switch (ch) {
 			case KEY_LEFT:
 				mmap_more_close(d);
