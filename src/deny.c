@@ -574,7 +574,7 @@ static int deny_date_cmp(const char *s1, const char *s2)
  * @param[in] type The choice, used when provided no description.
  * @param[out] buf Buffer to return description.
  * @param[in] size The size of the buf.
- * @return respective permission bit.
+ * @return respective permission bit, 0 on error.
  */
 static unsigned int denylist_get_type(const char *orig, int type,
 		char *buf, size_t size)
@@ -591,7 +591,7 @@ static unsigned int denylist_get_type(const char *orig, int type,
 		else if (!strncmp(orig, desc[3], strlen(desc[3])))
 			type = '4';
 		else
-			return -1;
+			return 0;
 	}
 	type -= '1';
 	strlcpy(buf, desc[type], size);
@@ -611,6 +611,8 @@ static void denylist_release(const char *line)
 	char desc[8];
 	unsigned int perm = 
 			denylist_get_type(line + OFFSET_PERM, 0, desc, sizeof(desc));
+	if (!perm)
+		return;
 	// Re-grant permission.
 	struct userec urec;
 	int uid = getuserec(id, &urec);
@@ -705,6 +707,8 @@ static int denylist_do_add(const char *userid, int type, int days,
 {
 	char desc[8];
 	unsigned int perm = denylist_get_type(orig, type, desc, sizeof(desc));
+	if (!perm)
+		return -1;
 
 	if (days > DENY_FOREVER)
 		days = DENY_FOREVER;
