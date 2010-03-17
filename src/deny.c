@@ -7,16 +7,12 @@
 #define BBS_PAGESIZE (t_lines - 4)
 
 enum {
-	LINE_BUFSIZE = 256,  ///< Line buffer size.
 	OFFSET_PERM = 48,    ///< Offset of the permission in a ban list.
 	OFFSET_DATE = 53,    ///< Offset of the release date in a ban list.
 	DENY_FOREVER = 999,  ///< Ban forever.
 	DENY_TEMP = 0,       ///< Ban temporarily.
 	DENY_BOARD_MAX = 90, ///< Maximum ban days (board-wide).
 	DENY_BOARD_MIN = 1,  ///< Minimum ban days (board-wide).
-	BBS_EDENYSELF = -1,  ///< Ban his/herself.
-	BBS_EDENYGUEST = -2, ///< Ban guest.
-	BBS_EDENYEXIST = -3  ///< Ban a user already banned.
 };
 
 static char reason[32];  ///< Reason of banning.
@@ -332,6 +328,22 @@ static void deny_generate(FILE *fp, const char *file)
 }
 
 /**
+ * Tell whether buf equals str.
+ * @param buf The buffer.
+ * @param size The size of the buffer.
+ * @param str The string.
+ * @param len The length of the string.
+ * @return True if equals, false otherwise.
+ */
+static bool deny_do_add_eqaul(const char *buf, size_t size, const char *str,
+		size_t len)
+{
+	if (len >= size)
+		return false;
+	return (buf[len] == ' ' && !strncmp(buf, str, len));
+}
+
+/**
  * Ban a user board-wide or change an existing ban.
  * @param[in] board The board.
  * @param[in] user The user to be banned.
@@ -345,11 +357,11 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 {
 	struct userec urec;
 	if (!getuserec(user, &urec))
-		return -1;
+		return BBS_ENOUSR;
 	if (!strcmp(currentuser.userid, urec.userid))
 		return BBS_ENOUSR;
 	if (!strcmp(urec.userid, "guest"))
-		return BBS_EDENYGUEST;
+		return BBS_EDGUEST;
 	if (days > DENY_BOARD_MAX)
 		days = DENY_BOARD_MAX;
 	if (days < DENY_BOARD_MIN)
@@ -363,42 +375,12 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 			t->tm_mday, currentuser.userid);
 
 	// Edit ban list.
-	char list[HOMELEN], lnew[HOMELEN], buf[LINE_BUFSIZE];
+	char list[HOMELEN];
 	setbfile(list, board, "deny_users");
-	snprintf(lnew, sizeof(lnew), "%s.%d", list, uinfo.pid);
-	FILE *fpr = fopen(list, "r");
-	FILE *fpw = fopen(lnew, "w");
-	if (!fpw) {
-		if (fpr)
-			fclose(fpr);
-		return -1;
-	}
-	size_t len = strlen(urec.userid);
-	bool exist = false;
-	if (fpr) {
-		while (fgets(buf, sizeof(buf), fpr)) {
-			if (!exist && buf[len] == ' ' && !strncmp(buf, urec.userid, len)) {
-				exist = true;
-				if (change)
-					fputs(str, fpw);
-				else
-					break;
-			} else {
-				fputs(buf, fpw);
-			}
-		}
-	}
-	if (!change && !exist)
-		fputs(str, fpw);
-	fclose(fpw);
-	if (fpr)
-		fclose(fpr);
-	if (!change && exist) {
-		unlink(lnew);
-		return BBS_EDENYEXIST;
-	} else {
-		rename(lnew, list);
-	}
+	int ret = add_to_file(list, str, strlen(urec.userid), change,
+			deny_do_add_eqaul);
+	if (ret < 0)
+		return ret;
 	
 	// Generate notification.
 	char file[HOMELEN], title[STRLEN];
@@ -411,7 +393,7 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 	}
 	snprintf(file, sizeof(file), "tmp/AutoPoster.%s.%05d", currentuser.userid,
 			uinfo.pid);
-	fpw = fopen(file, "w");
+	FILE *fpw = fopen(file, "w");
 	fprintf(fpw, "%s因:\n", urec.userid);
 	deny_generate(fpw, DENY_BOARD_FILE);
 	fprintf(fpw, "\n应被封禁%s版发文权限%d天\n请在处罚期满后(%04d.%02d.%02d)"
@@ -458,13 +440,13 @@ static void deny_add(const char *line)
 		yes = askyn("真的要封禁该用户吗?", NA, NA);
 	if (yes) {
 		switch (deny_do_add(currboard, id, ps, strtol(ans, NULL, 10), line)) {
-			case BBS_EDENYSELF:
+			case BBS_EDSELF:
 				presskeyfor("ft! 封自己玩!!!??? NO WAY! :P", 1);
 				break;
-			case BBS_EDENYEXIST:
+			case BBS_ELEXIST:
 				presskeyfor("该用户已在封禁名单中", 1);
 				break;
-			case BBS_EDENYGUEST:
+			case BBS_EDGUEST:
 				presskeyfor("你在搞笑吗?封guest?", 1);
 				break;
 			default:
@@ -532,6 +514,8 @@ static int deny_key_deal(const char *file, int ch, char *line)
 			strtok(id, " \n\r\t");
 			t_query(id);
 			break;
+		default:
+			return 0;
 	}
 	return 1;
 }
@@ -891,6 +875,8 @@ int denylist_key_deal(const char *file, int ch, const char *line)
 				return 0;
 			t_query(line);
 			break;
+		default:
+			return 0;
 	}
 	return 1;
 }

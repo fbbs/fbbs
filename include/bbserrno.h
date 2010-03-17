@@ -25,6 +25,9 @@ enum {
 	BBS_E2MANY  = -21, ///< Too many online users.
 	BBS_EINTNL  = -22, ///< Internal Error.
 	BBS_ERMQE   = -23, ///< Recipient's mail quota exceeded.
+	BBS_ELEXIST = -24, ///< Line exists.
+	BBS_EDSELF  = -25, ///< Ban his/herself.
+	BBS_EDGUEST = -26, ///< Ban guest.
 };
 
 #endif // FB_BBSERRNO_H

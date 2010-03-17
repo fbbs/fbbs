@@ -198,6 +198,50 @@ bool seek_in_file(const char *filename, const char *seekstr)
 	return false;
 }
 
+int add_to_file(const char *file, const char *str, size_t len, bool overwrite,
+		bool (*equal)(const char *, size_t, const char *, size_t))
+{
+	char fnew[HOMELEN], buf[LINE_BUFSIZE];
+	if (snprintf(fnew, sizeof(fnew), "%s.%d", file, getpid()) >= sizeof(fnew))
+		return -1;
+	FILE *fpr = fopen(file, "r");
+	FILE *fpw = fopen(fnew, "w");
+	if (!fpw) {
+		if (fpr)
+			fclose(fpr);
+		return -1;
+	}
+	bool exist = false;
+	if (fpr) {
+		flock(fileno(fpr), LOCK_EX);
+		while (fgets(buf, sizeof(buf), fpr)) {
+			if (!exist && equal && (*equal)(buf, sizeof(buf), str, len)) {
+				exist = true;
+				if (overwrite)
+					fputs(str, fpw);
+				else
+					break;
+			} else {
+				fputs(buf, fpw);
+			}
+		}
+	}
+	if (!exist)
+		fputs(str, fpw);
+	fclose(fpw);
+	if (fpr) {
+		flock(fileno(fpr), LOCK_UN);
+		fclose(fpr);
+	}
+	if (!overwrite && exist) {
+		unlink(fnew);
+		return BBS_ELEXIST;
+	} else {
+		return rename(fnew, file);
+	}
+}
+
+
 /**
  * 从文件中删除指定行.
  * @param[in] file 需要修改的文件.

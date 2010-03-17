@@ -1,122 +1,158 @@
 #include "bbs.h"
 
-//ĞèÒªÓÃµ½µÄÍâ²¿º¯Êı
-extern struct boardheader *getbcache();
-
 //¶¨ÒåÒ³Ãæ´óĞ¡
 #define BBS_PAGESIZE (t_lines-4)
 
-char club_uid[IDLEN+1];
+/**
+ *
+ */
+static bool club_do_add_equal(const char *buf, size_t size, const char *str,
+		size_t len)
+{
+	if (len >= size)
+		return false;
+	return (buf[len] == ' ' && !strncmp(buf, str, len));
+}
 
-int addtoclub(char *uident, char *msg) {
-	char strtosave[512], buf[50];
-	int seek;
-	if (!strcmp(uident, "guest")) {
-		move(t_lines-1, 0);
-		prints("²»ÄÜÑûÇëguest¼ÓÈë¾ãÀÖ²¿");
-		egetch();
-		return -1;
-	}
-	seek = isclubmember(uident, currboard);
-	if (seek) {
-		move(1, 0);
-		prints(" %s ÒÑ¾­ÔÚ¾ãÀÖ²¿Ãûµ¥ÖĞ¡£", uident);
-		egetch();
-		return -1;
-	}
-	getdata(1, 0, "ÊäÈë²¹³äËµÃ÷:", buf, 50, DOECHO, YEA);
+/**
+ *
+ */
+static int club_do_add(const char *user, const char *board, const char *ps)
+{
+	char buf[LINE_BUFSIZE], file[HOMELEN], title[STRLEN], msg[256];
+	time_t now= time(NULL);
+	struct tm* t = localtime(&now);
+	snprintf(buf, sizeof(buf), "%-12s %-40s %04d.%02d.%02d %-12s\n", user, ps,
+			1900 + t->tm_year, t->tm_mon + 1, t->tm_mday, currentuser.userid);
+
+	setbfile(file, board, "club_users");
+	int ret = add_to_file(file, buf, strlen(user), false, club_do_add_equal);
+	if (ret < 0)
+		return ret;
+
+	bm_log(currentuser.userid, board, BMLOG_ADDCLUB, 1);
+
+	snprintf(title, sizeof(title), "%sÑûÇë%s¼ÓÈë¾ãÀÖ²¿°æ%s",
+			currentuser.userid, user, board);
+	snprintf(msg, sizeof(msg), "%s:\n\n    Äú±»ÑûÇë¼ÓÈë¾ãÀÖ²¿°æ %s\n\n²¹³äËµÃ÷"
+			"£º%s\n\nÑûÇëÈË: %s\n", user, board, ps, currentuser.userid);
+	autoreport(title, msg, YEA, user, 2);
+	Poststring(msg, "club", title, 2);
+	return 0;
+}
+
+/**
+ *
+ */
+static int club_add(void)
+{
+	struct userec urec;
+	char user[IDLEN + 1], ps[40], buf[STRLEN];
 	move(1, 0);
-	sprintf(strtosave, "ÑûÇë%s¼ÓÈë¾ãÀÖ²¿Âğ?", uident);
-	if (askyn(strtosave, YEA, NA)==NA)
+	usercomplete("Ôö¼Ó¾ãÀÖ²¿³ÉÔ±: ", user);
+	if (*user == '\0' || !getuserec(user, &urec))
 		return -1;
-	time_t daytime= time(0);
-	struct tm* tmtime=localtime(&daytime);
-	sprintf(strtosave, "%-12s %-40s %04d.%02d.%02d %-12s", uident, buf,
-			1900+tmtime->tm_year, tmtime->tm_mon+1, tmtime->tm_mday,
-			currentuser.userid);
-
-	sprintf(msg, "%s:\n\n    Äú±»ÑûÇë¼ÓÈë¾ãÀÖ²¿°æ %s\n\n²¹³äËµÃ÷£º%s\n\nÑûÇëÈË: %s\n",
-			uident, currboard, buf, currentuser.userid);
-	setbfile(genbuf, currboard, "club_users");
-	bm_log(currentuser.userid, currboard, BMLOG_ADDCLUB, 1);
-	return add_to_file(genbuf, strtosave);
+	if (!strcasecmp(user, "guest")) {
+		presskeyfor("²»ÄÜÑûÇëguest¼ÓÈë¾ãÀÖ²¿", t_lines - 1);
+		return -1;
+	}
+	getdata(1, 0, "ÊäÈë²¹³äËµÃ÷:", ps, sizeof(ps), DOECHO, YEA);
+	move(1, 0);
+	snprintf(buf, sizeof(buf), "ÑûÇë %s ¼ÓÈë¾ãÀÖ²¿Âğ?", urec.userid);
+	if (!askyn(buf, YEA, NA))
+		return -1;
+	return club_do_add(urec.userid, currboard, ps);
 }
 
-int delclub(char *uident) {
-	char fn[STRLEN];
-	setbfile(fn, currboard, "club_users");
-	bm_log(currentuser.userid, currboard, BMLOG_DELCLUB, 1);
-	return del_from_file(fn, uident);
+/**
+ *
+ */
+static int club_del(const char *user, const char *board)
+{
+	char file[HOMELEN];
+	setbfile(file, currboard, "club_users");
+	if (del_from_file(file, user) < 0)
+		return -1;
+
+	bm_log(currentuser.userid, board, BMLOG_DELCLUB, 1);
+
+	char title[STRLEN];
+	char *msg = "";
+	snprintf(title, sizeof(title), "%sÈ¡Ïû%sÔÚ¾ãÀÖ²¿°æ%sµÄÈ¨Àû",
+			currentuser.userid, user, board);
+	autoreport(title, msg, YEA, user, 2);
+	Poststring(msg, "club", title, 2);
+	return 0;
 }
 
-void club_title_show() {
+/**
+ *
+ */
+static void club_title_show(void)
+{
 	move(0, 0);
-	prints("[1;44;36m Éè¶¨¾ãÀÖ²¿µÄÃûµ¥                                                               [m\n");
-	prints("Àë¿ª[[1;32m¡û[m] Ñ¡Ôñ[[1;32m¡ü[m,[1;32m¡ı[m] Ìí¼Ó[[1;32ma[m] É¾³ı[[1;32md[m] ²éÕÒ[[1;32m/[m]\n");
-	prints("[1;44mÓÃ»§´úºÅ               ¸½¼ÓËµÃ÷                         ÑûÇëÈÕÆÚ     ÑûÇëÈË     [m\n");
+	outs("\033[1;44;36m Éè¶¨¾ãÀÖ²¿Ãûµ¥\033[K\033[m\n"
+			"Àë¿ª[\033[1;32m¡û\033[m] Ñ¡Ôñ[\033[1;32m¡ü\033[m,\033[1;32m¡ı"
+			"\033[m] Ìí¼Ó[\033[1;32ma\033[m] É¾³ı[\033[1;32md\033[m] ²éÕÒ"
+			"[\033[1;32m/\033[m]\n"
+			"\033[1;44m ÓÃ»§´úºÅ     ¸½¼ÓËµÃ÷                             "
+			"    ÑûÇëÈÕÆÚ   ÑûÇëÈË\033[K\033[m\n");
 }
 
-int club_key_deal(char* fname, int ch, char* line) {
-	char msgbuf[4096];
-	char repbuf[500];
+/**
+ *
+ */
+static int club_key_deal(const char* fname, int ch, char* line)
+{
+	char user[IDLEN + 1], buf[STRLEN];
 	if (line) {
-		strlcpy(club_uid, line, sizeof(club_uid));
-		strtok(club_uid, " \n\r\t");
+		strlcpy(user, line, sizeof(user));
+		strtok(user, " \n\r\t");
 	}
 	switch (ch) {
-		case 'a': //Ôö¼Ó
-			move(1, 0);
-			usercomplete("Ôö¼Ó¾ãÀÖ²¿³ÉÔ±: ", club_uid);
-			if (*club_uid!='\0' && getuser(club_uid)) {
-				if (addtoclub(club_uid, msgbuf)==1) {
-					sprintf(repbuf, "%sÑûÇë%s¼ÓÈë¾ãÀÖ²¿°æ%s", currentuser.userid,
-							club_uid, currboard);
-					autoreport(repbuf, msgbuf, YEA, club_uid, 2);
-					Poststring(msgbuf, "club", repbuf, 2);
-					log_DOTFILE(club_uid, repbuf);
-				}
-			}
+		case 'a':
+			club_add();
 			break;
-		case 'd': //É¾³ı³ÉÔ±
+		case 'd':
 			if (!line)
 				return 0;
 			move(1, 0);
-			sprintf(msgbuf, "É¾³ı¾ãÀÖ²¿³ÉÔ±%sÂğ?", club_uid);
-			if (askyn(msgbuf, NA, NA)==NA)
+			snprintf(buf, sizeof(buf), "É¾³ı¾ãÀÖ²¿³ÉÔ±%sÂğ?", user);
+			if (!askyn(buf, NA, NA))
 				return 1;
-			if (delclub(club_uid)) {
-				sprintf(repbuf, "%sÈ¡Ïû%sÔÚ¾ãÀÖ²¿°æ%sµÄÈ¨Àû", currentuser.userid,
-						club_uid, currboard);
-				msgbuf[0] = '\0';
-				autoreport(repbuf, msgbuf, YEA, club_uid, 2);
-				Poststring(msgbuf, "club", repbuf, 2);
-				log_DOTFILE(club_uid, repbuf);
-			}
+			club_del(user, currboard);
 			break;
 		case Ctrl('A'):
 		case KEY_RIGHT: //ÓÃ»§ĞÅÏ¢
 			if (!line)
 				return 0;
-			t_query(club_uid);
+			t_query(user);
 			break;
+		default:
+			return 0;
 	}
 	return 1;
 }
 
-int club_user() {
-	struct boardheader *bp;
-	extern struct boardheader *getbcache();
-	bp = getbcache(currboard);
-
-	if ((bp->flag & BOARD_CLUB_FLAG) && chkBM(currbp, &currentuser)) {
-		setbfile(genbuf, currboard, "club_users");
-		list_text(genbuf, club_title_show, club_key_deal, NULL);
-		return FULLUPDATE;
-	} else
+/**
+ *
+ */
+int club_user(void)
+{
+	struct boardheader *bp = getbcache(currboard);
+	if (!bp)
 		return DONOTHING;
+	char file[HOMELEN];
+	if ((bp->flag & BOARD_CLUB_FLAG) && chkBM(currbp, &currentuser)) {
+		setbfile(file, currboard, "club_users");
+		list_text(file, club_title_show, club_key_deal, NULL);
+		return FULLUPDATE;
+	}
+	return DONOTHING;
 }
 
-int bm_log(char *id, char *boardname, int type, int value) {
+int bm_log(const char *user, const char *board, int type, int value)
+{
 	int fd, data[BMLOGLEN];
 	struct flock ldata;
 	struct stat buf;
@@ -124,7 +160,7 @@ int bm_log(char *id, char *boardname, int type, int value) {
 	char direct[STRLEN], BM[BM_LEN];
 	char *ptr;
 
-	btemp = getbcache(boardname);
+	btemp = getbcache(board);
 	if (btemp == NULL)
 		return 0;
 	strlcpy(BM, btemp->BM, sizeof(BM) - 1);
@@ -137,7 +173,7 @@ int bm_log(char *id, char *boardname, int type, int value) {
 	}
 	if (!ptr)
 		return 0;
-	sprintf(direct, "boards/%s/.bm.%s", boardname, id);
+	sprintf(direct, "boards/%s/.bm.%s", board, user);
 	if ((fd = open(direct, O_RDWR | O_CREAT, 0644)) == -1)
 		return 0;
 	ldata.l_type = F_RDLCK;
@@ -163,4 +199,3 @@ int bm_log(char *id, char *boardname, int type, int value) {
 	close(fd);
 	return 0;
 }
-

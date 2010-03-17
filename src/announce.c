@@ -1684,7 +1684,7 @@ int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
 	char gpath[STRLEN * 2]; //高层目录
 	char bpath[STRLEN * 2]; //低层目录
 	sprintf(buf, "0Announce/.Search");
-	sprintf(searchname, "%s: groups/%s/%s", bname, group, bname);
+	sprintf(searchname, "%s: groups/%s/%s\n", bname, group, bname);
 	sprintf(gpath, "0Announce/groups/%s", group);
 	sprintf(bpath, "%s/%s", gpath, bname);
 	if (!dashd("0Announce")) {
@@ -1698,7 +1698,7 @@ int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
 		fclose(fn);
 	}
 	if (!seek_in_file(buf, bname))
-		add_to_file(buf, searchname);
+		file_append(buf, searchname);
 	if (!dashd("0Announce/groups")) {
 		mkdir("0Announce/groups", 0755);
 		chmod("0Announce/groups", 0755);
@@ -1886,13 +1886,9 @@ int AddPCorpus() {
 		}
 	}
 	now = time(NULL);
-	sprintf(genbuf, "\033[36m%-12.12s\033[m %14.14s \033[32m %.38s\033[m",
+	sprintf(genbuf, "\033[36m%-12.12s\033[m %14.14s \033[32m %.38s\033[m\n",
 			lookupuser.userid, getdatestring(now, DATE_ZH), title);
-	add_to_file(Log, genbuf);
-	//add by fangu 2003.2.26, add log
-	//这段似乎不需要加，因为前面有一个report了
-	//sprintf(genbuf, "ANN AddPC %s - file:%s", secu,personalpath);
-	//report(genbuf);
+	file_append(Log, genbuf);
 	presskeyfor("已经创建个人文集, 请按任意键继续...", 12);
 	return 0;
 }

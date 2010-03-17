@@ -397,6 +397,10 @@ enum {
 	TELST_END,  ///< end of an telnet option
 };
 
+enum {
+	LINE_BUFSIZE = 256,  ///< Line buffer size.
+};
+
 typedef struct {
 	int cur;
 	int size;

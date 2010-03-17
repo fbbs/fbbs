@@ -1621,21 +1621,6 @@ int listfilecontent(char *fname, int y) {
 	return cnt;
 }
 
-int add_to_file(filename, str)
-//char    filename[STRLEN], str[STRLEN];
-char filename[256], str[256];
-{
-	FILE *fp;
-	int rc;
-	if ((fp = fopen(filename, "a")) == NULL)
-	return -1;
-	FLOCK(fileno(fp), LOCK_EX);
-	rc = fprintf(fp, "%s\n", str);
-	FLOCK(fileno(fp), LOCK_UN);
-	fclose(fp);
-	return (rc == EOF ? -1 : 1);
-}
-
 int
 addtooverride(uident)
 char *uident;

@@ -1172,7 +1172,7 @@ int filter;
 int g_send() {
 	char uident[13], tmp[3];
 	int cnt, i, n, fmode = NA;
-	char maillists[STRLEN];
+	char maillists[STRLEN], buf[STRLEN];
 	char current_maillist = '0';
 	char s_current_maillist[2] = { 0, 0 };
 
@@ -1257,7 +1257,8 @@ int g_send() {
 						prints("已经列为收件人之一 \n");
 						continue;
 					}
-					add_to_file(maillists, uident);
+					snprintf(buf, sizeof(buf), "%s\n", uident);
+					file_append(maillists, uident);
 					cnt++;
 				}
 			else
@@ -1296,7 +1297,8 @@ int g_send() {
 					prints("已经列为收件人之一 \n");
 					break;
 				}
-				add_to_file(maillists, uident);
+				snprintf(buf, sizeof(buf), "%s\n", uident);
+				file_append(maillists, uident);
 				cnt++;
 				break;
 			case 'E':
@@ -1352,7 +1354,8 @@ int g_send() {
 							i--;
 							continue;
 						}
-						add_to_file(maillists, uident);
+						snprintf(buf, sizeof(buf), "%s\n", uident);
+						file_append(maillists, uident);
 						cnt++;
 					}
 				}
