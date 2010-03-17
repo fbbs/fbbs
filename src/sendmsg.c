@@ -620,103 +620,102 @@ void r_msg(int notused)
 			}
 		}
 		fclose(fp);
+
 		move(line, 0);
 		clrtoeol();
-		//prints("%s", msg);
-		prints("%s", msghead);
+		// This is a temporary solution to Fterm message recognition.
+		char user[13], date[25];
+		strlcpy(user, msghead + 12, sizeof(user));
+		strlcpy(date, msghead + 35, sizeof(date));
+		prints("\033[1;36;44m%s  \033[33m(%s)\033[37m\n", user, date);
 
-		move(line+1, 0);
+		move(line + 1, 0);
 		clrtoeol();
-		msg_line = show_data(msg, LINE_LEN-1, line + 1, 0); //·µ»ØµÄÊÇmsg_lineÐÐ,Ò²¾ÍÊÇ»ØÐÅÏ¢µÄµÚÒ»ÐÐ
-
+		msg_line = show_data(msg, LINE_LEN-1, line + 1, 0);
+		saveline(msg_line, 0);
+		move(msg_line, 0);
+		clrtoeol();
+		outs("\033[m°´^Z»ØÑ¶Ï¢");
 		refresh();
 		msg_num--;
 		if (DEFINE(DEF_MSGGETKEY)) {
 			RMSG = YEA;
 			ch = 0;
-#ifdef MSG_CANCLE_BY_CTRL_C
-			while (ch != Ctrl('C'))
-#else
-				while (ch != '\r' && ch != '\n')
-#endif
-				{
-					ch = igetkey();
-#ifdef MSG_CANCLE_BY_CTRL_C
-					if (ch == Ctrl('C'))
-						break;
-#else
-					if (ch == '\r' || ch == '\n')
-						break;
-#endif
-					else if (ch == Ctrl('R') || ch == 'R' || ch == 'r' || ch == Ctrl('Z')) {
-						struct user_info *uin;
-						char    msgbuf[STRLEN];
-						int     good_id, send_pid;
-						char   *ptr, usid[STRLEN];
-						ptr = strrchr(msghead, '[');
-						send_pid = atoi(ptr + 1);
-						/* added by roly 02.06.02 for disable reply logout msg*/
-						if (send_pid==0) send_pid=-1;
-						/* add end */ 
-						ptr = strtok(msghead + 12, " [");
-						if (ptr == NULL)
+			while (ch != '\r' && ch != '\n') {
+				ch = igetkey();
+				if (ch == '\r' || ch == '\n') {
+					saveline(msg_line, 1);
+					break;
+				}
+				else if (ch == Ctrl('R') || ch == 'R' || ch == 'r' || ch == Ctrl('Z')) {
+					struct user_info *uin;
+					char    msgbuf[STRLEN];
+					int     good_id, send_pid;
+					char   *ptr, usid[STRLEN];
+					ptr = strrchr(msghead, '[');
+					send_pid = atoi(ptr + 1);
+					/* added by roly 02.06.02 for disable reply logout msg*/
+					if (send_pid==0) send_pid=-1;
+					/* add end */ 
+					ptr = strtok(msghead + 12, " [");
+					if (ptr == NULL)
+						good_id = NA;
+					else if (!strcmp(ptr, currentuser.userid))
+						good_id = NA;
+					else {
+						strcpy(usid, ptr);
+						uin = t_search(usid, send_pid);
+						if (uin == NULL) 
 							good_id = NA;
-						else if (!strcmp(ptr, currentuser.userid))
-							good_id = NA;
-						else {
-							strcpy(usid, ptr);
-							uin = t_search(usid, send_pid);
-							if (uin == NULL) 
-								good_id = NA;
-							else
-								good_id = YEA;
-						}
-						oflush();
-						//saveline(line + 1, 2);
-						for(k = MAX_MSG_LINE + 1; k < MAX_MSG_LINE*2 + 2; k++)
-						{
-							saveline_buf(k, 0);
-						}
+						else
+							good_id = YEA;
+					}
+					oflush();
+					//saveline(line + 1, 2);
+					for(k = MAX_MSG_LINE + 1; k < MAX_MSG_LINE*2 + 2; k++)
+					{
+						saveline_buf(k, 0);
+					}
 
-						if (good_id == YEA) {
-							int     userpid;
-							userpid = uin->pid;
-							move(msg_line, 0);
-							clrtoeol();
-							sprintf(msgbuf, "Á¢¼´»ØÑ¶Ï¢¸ø %s: ", usid);
-							prints("%s", msgbuf);
-
-							move(msg_line + 1, 0);
-							clrtoeol();
-							refresh();
-							multi_getdata(msg_line + 1, 0, LINE_LEN-1, NULL, buf, MAX_MSG_SIZE+1, MAX_MSG_LINE, 1, 0);
-							if (buf[0] != '\0' && buf[0] != Ctrl('Z') && buf[0] != Ctrl('A')) {
-								if (do_sendmsg(uin, buf, 2, userpid))
-									sprintf(msgbuf, "[1;32m°ïÄúËÍ³öÑ¶Ï¢¸ø %s ÁË![m", usid);
-								else
-									sprintf(msgbuf, "[1;32mÑ¶Ï¢ÎÞ·¨ËÍ³ö.[m");
-							} else
-								sprintf(msgbuf, "[1;33m¿ÕÑ¶Ï¢, ËùÒÔ²»ËÍ³ö. [m");
-						} else {
-							sprintf(msgbuf, "[1;32mÕÒ²»µ½·¢Ñ¶Ï¢µÄ %s.[m", usid);
-						}
+					if (good_id == YEA) {
+						int     userpid;
+						userpid = uin->pid;
 						move(msg_line, 0);
 						clrtoeol();
-						refresh();
+						sprintf(msgbuf, "Á¢¼´»ØÑ¶Ï¢¸ø %s: ", usid);
 						prints("%s", msgbuf);
-						refresh();
-						if (!strstr(msgbuf, "°ïÄú"))
-							sleep(1);
-						//saveline(line + 1, 3);
 
-						for(k = msg_line; k < MAX_MSG_LINE*2+2; k++)
-						{
-							saveline_buf(k, 1);
-						}
+						move(msg_line + 1, 0);
+						clrtoeol();
 						refresh();
-						break;
-					}	/* if */
-				}	/* while */
+						multi_getdata(msg_line + 1, 0, LINE_LEN-1, NULL, buf, MAX_MSG_SIZE+1, MAX_MSG_LINE, 1, 0);
+						if (buf[0] != '\0' && buf[0] != Ctrl('Z') && buf[0] != Ctrl('A')) {
+							if (do_sendmsg(uin, buf, 2, userpid))
+								sprintf(msgbuf, "[1;32m°ïÄúËÍ³öÑ¶Ï¢¸ø %s ÁË![m", usid);
+							else
+								sprintf(msgbuf, "[1;32mÑ¶Ï¢ÎÞ·¨ËÍ³ö.[m");
+						} else
+							sprintf(msgbuf, "[1;33m¿ÕÑ¶Ï¢, ËùÒÔ²»ËÍ³ö. [m");
+					} else {
+						sprintf(msgbuf, "[1;32mÕÒ²»µ½·¢Ñ¶Ï¢µÄ %s.[m", usid);
+					}
+					move(msg_line, 0);
+					clrtoeol();
+					refresh();
+					prints("%s", msgbuf);
+					refresh();
+					if (!strstr(msgbuf, "°ïÄú"))
+						sleep(1);
+					//saveline(line + 1, 3);
+
+					for(k = msg_line; k < MAX_MSG_LINE*2+2; k++)
+					{
+						saveline_buf(k, 1);
+					}
+					refresh();
+					break;
+				}	/* if */
+			}	/* while */
 		}		/* if */
 	}			/* while */
 

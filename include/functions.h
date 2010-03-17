@@ -52,7 +52,6 @@
 //#define DOMAIN_NAME		/* 登陆时进行域名反查 */
 
 /* 看站长的喜好啦， 想如何就如何吧， 当然你要懂这个啦，呵呵 */
-//#define MSG_CANCLE_BY_CTRL_C 	/* 用 ctrl-c 来否略讯息 */
 #define LOG_MY_MESG		/* 讯息纪录中纪录自己所发出的讯息 */
 #define BIGGER_MOVIE 		/* 加大活动看板空间 (七行) */
 //#define ALWAYS_SHOW_BRDNOTE 	/* 每次进版都会 show 出进版画面 */

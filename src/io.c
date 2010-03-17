@@ -795,38 +795,38 @@ void docmdtitle(char *title, char *prompt) {
 /* Added by Ashinmarch on 2007.12.01
  * used to support display of multi-line msgs
  * */
-int show_data(char *buf, int maxcol, int line, int col)
+int show_data(const char *buf, int maxcol, int line, int col)
 {
-
-    //int y = line, x = col;
-    int y, x;
-    getyx(&y, &x);
-    int chk = 0, i;
-    for(i = 0; i < strlen(buf); i++)
-    {
-        if(chk) chk = 0;
-        else if(buf[i] < 0) chk = 1;
-        if(chk && x >= maxcol) x++;
-        if(buf[i] != 13 && buf[i] != 10)
-        {
-            if(x > maxcol) 
-            {
-                clrtoeol();
-                x = 0; 
-                y++;
-                move(y,x);
-            }
-            prints("%c", buf[i]);
-            x++;
-        }
-        else
-        {
-            clrtoeol();
-            x = 0;
-            y++;
-            move(y,x);
-        }
-    }
+	int y, x;
+	getyx(&y, &x);
+	bool chk = false;
+	size_t len = strlen(buf);
+	int i;
+	for (i = 0; i < len; i++) {
+		if (chk) {
+			chk = false;
+		} else {
+			if(buf[i] < 0)
+				chk = true;
+		}
+		if (chk && x >= maxcol)
+			x++;
+		if (buf[i] != '\r' && buf[i] != '\n') {
+			if (x > maxcol) {
+				clrtoeol();
+				x = 0;
+				y++;
+				move(y, x);
+			}
+			outc(buf[i]);
+			x++;
+		} else {
+			clrtoeol();
+			x = 0;
+			y++;
+			move(y, x);
+		}
+	}
     return y;
 }
 

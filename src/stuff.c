@@ -113,9 +113,7 @@ void printdash(const char *mesg)
 
 void bell(void)
 {
-	static char sound[1] = {Ctrl('G')};
-
-	send(0, sound, sizeof(sound), 0);
+	ochar(Ctrl('G'));
 }
 
 void touchnew() {
