@@ -50,13 +50,15 @@ extern int dumb_term;
 #define o_standup()   output(strtstandout,strtstandoutlen)
 #define o_standdown() output(endstandout,endstandoutlen)
 
-static unsigned int scr_lns;    ///< Lines of the screen.
-unsigned int scr_cols;         ///< Columns of the screen.
-unsigned char cur_ln = 0, cur_col = 0;
+static int scr_lns;     ///< Lines of the screen.
+unsigned int scr_cols;  ///< Columns of the screen.
+static int cur_ln = 0;  ///< Current line.
+static int cur_col = 0; ///< Current column.
 static int roll; //roll 表示首行在big_picture的偏移量
 //因为随着光标滚动,big_picture[0]可能不再保存第一行的数据
 static int scrollcnt;
-
+static int tc_col;      ///< Terminal's current column.
+static int tc_line;     ///< Terminal's current line.
 unsigned char docls;
 unsigned char downfrom;
 static bool standing = false;
@@ -164,8 +166,6 @@ void initscr() {
 	init_screen(t_lines, WRAPMARGIN);
 }
 
-int tc_col, tc_line; //terminal's current collumn,current line?
-
 //	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
 void rel_move(int was_col, int was_ln, int new_col, int new_ln) {
 	int ochar();
@@ -219,40 +219,40 @@ void standoutput(char * buf, int ds, int de, int sso, int eso) {
 		output(buf + eso, de - eso);
 }
 
-//	刷新屏幕
-void redoscr() {
-	register int i, j;
-	int ochar();
-	register struct screenline *bp = big_picture;
+/**
+ * Redraw the screen.
+ */
+void redoscr(void)
+{
 	if (dumb_term)
 		return;
 	o_clear();
-	//清除缓冲
 	tc_col = 0;
 	tc_line = 0;
+	int i;
+	struct screenline *s;
 	for (i = 0; i < scr_lns; i++) {
-		j = i + roll;
-		while (j >= scr_lns)
-			j -= scr_lns;
-		if (bp[j].len == 0)
+		s = big_picture + (i + roll) % scr_lns;
+		if (s->len == 0)
 			continue;
 		rel_move(tc_col, tc_line, 0, i);
-		if (bp[j].mode & STANDOUT)
-			standoutput(bp[j].data, 0, bp[j].len, bp[j].sso, bp[j].eso);
+		if (s->mode & STANDOUT)
+			standoutput(s->data, 0, s->len, s->sso, s->eso);
 		else
-			output(bp[j].data, bp[j].len);
-		tc_col += bp[j].len;
+			output(s->data, s->len);
+		tc_col += s->len;
 		if (tc_col >= t_columns) {
 			if (!automargins) {
 				tc_col -= t_columns;
 				tc_line++;
 				if (tc_line >= t_lines)
 					tc_line = t_lines - 1;
-			} else
+			} else {
 				tc_col = t_columns - 1;
+			}
 		}
-		bp[j].mode &= ~(MODIFIED);
-		bp[j].oldlen = bp[j].len;
+		s->mode &= ~(MODIFIED);
+		s->oldlen = s->len;
 	}
 	rel_move(tc_col, tc_line, cur_col, cur_ln);
 	docls = NA;
@@ -376,26 +376,19 @@ void clear_whole_line(int i) {
 	slp->oldlen = 79;
 }
 
-//	将从当前光标到行末的所有字符变成空格,达到清除的效果
-void clrtoeol() {
-	register struct screenline *slp;
-	register int ln;
-
+/**
+ * Clear to end of current line.
+ */
+void clrtoeol(void)
+{
 	if (dumb_term)
 		return;
-	standing = NA;
-	ln = cur_ln + roll;
-	while (ln >= scr_lns)
-		//相当于ln%=scr_lns,取当前行在big_picture中的序号
-		ln -= scr_lns;
-	slp = &big_picture[ln];
+	standing = false;
+	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
 	if (cur_col <= slp->sso)
-		slp->mode &= ~STANDOUT; //将slp->mode第0位置0
-	if (cur_col > slp->oldlen) {
-		register int i;
-		for (i = slp->len; i <= cur_col; i++)
-			slp->data[i] = ' ';
-	}
+		slp->mode &= ~STANDOUT;
+	if (cur_col > slp->oldlen)
+		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
 	slp->len = cur_col;
 }
 
