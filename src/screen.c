@@ -326,30 +326,42 @@ void refresh() {
 	oflush();
 }
 
-/*移动到第y行,第x列*/
-void move(int y, int x) {
-	cur_col = x /* +c_shift(y,x) */;
+/**
+ * Move to given position.
+ * @param y Line number.
+ * @param x Column number.
+ */
+void move(int y, int x)
+{
+	cur_col = x;
 	cur_ln = y;
 }
 
-//	返回当前的行数到y,列数到x
-void getyx(int *y, int *x) {
+/**
+ * Get current position.
+ * @param[out] y Line number.
+ * @param[out] x Column number.
+ */
+void getyx(int *y, int *x)
+{
 	*y = cur_ln;
-	*x = cur_col /*-c_shift(y,x)*/;
+	*x = cur_col;
 }
 
-//	清零	big_picture中的数据,roll,docls,downfrom
-//	移动到位置(0,0)
-void clear() {
-	register int i;
-	register struct screenline *slp;
-	if (dumb_term)/*哑终端*/
+/**
+ * Reset screen and move to (0, 0).
+ */
+void clear(void)
+{
+	if (dumb_term)
 		return;
 	roll = 0;
 	docls = YEA;
 	downfrom = 0;
+	struct screenline *slp;
+	int i;
 	for (i = 0; i < scr_lns; i++) {
-		slp = &big_picture[i];
+		slp = big_picture + i;
 		slp->mode = 0;
 		slp->len = 0;
 		slp->oldlen = 0;
