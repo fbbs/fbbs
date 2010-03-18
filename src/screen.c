@@ -406,15 +406,6 @@ void clrtobot() {
 	}
 }
 
-//	½«big_pictureµÄSTANDOUTÎ»ÖÃ0
-void clrstandout() {
-	register int i;
-	if (dumb_term)
-		return;
-	for (i = 0; i < scr_lns; i++)
-		big_picture[i].mode &= ~(STANDOUT);
-}
-
 static char nullstr[] = "(null)";
 
 /**
