@@ -1745,55 +1745,6 @@ int setsystempasswd() {
 	return;
 }
 
-//      进入c shell环境
-int x_csh() {
-	char buf[PASSLEN];
-	int save_pager;
-	int magic;
-
-	if (!HAS_PERM(PERM_SYSOPS)) {
-		return 0;
-	}
-	if (!check_systempasswd()) {
-		return;
-	}
-	modify_user_mode(SYSINFO);
-	clear();
-	getdata(1, 0, "请输入通行暗号: ", buf, PASSLEN, NOECHO, YEA);
-	if (*buf == '\0' || !checkpasswd(currentuser.passwd, buf)) {
-		prints("\n\n暗号不正确, 不能执行。\n");
-		pressreturn();
-		clear();
-		return;
-	}
-	randomize();
-	magic = rand() % 1000;
-	prints("\nMagic Key: %d", magic * 5 - 2);
-	getdata(4, 0, "Your Key : ", buf, PASSLEN, NOECHO, YEA);
-	if (*buf == '\0' || !(atoi(buf) == magic)) {
-		securityreport("Fail to shell out", 0, 0);
-		prints("\n\nKey 不正确, 不能执行。\n");
-		pressreturn();
-		clear();
-		return;
-	}
-	securityreport("Shell out", 0, 0);
-	modify_user_mode(SYSINFO);
-	clear();
-	refresh();
-	reset_tty();
-	save_pager = uinfo.pager;
-	uinfo.pager = 0;
-	update_ulist(&uinfo, utmpent);
-	do_exec("csh", NULL);
-	restore_tty();
-	uinfo.pager = save_pager;
-	update_ulist(&uinfo, utmpent);
-	clear();
-	return 0;
-}
-
-
 #define DENY_LEVEL_LIST ".DenyLevel"
 extern int denylist_key_deal(const char *file, int ch, const char *line);
 

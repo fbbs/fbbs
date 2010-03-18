@@ -49,16 +49,6 @@ struct sgttyb tty_state, tty_new;
 #define CBREAK  0x00000002
 #endif
 
-//  获取tty属性,不成功则退出函数
-int get_tty() {
-	if (gtty(1, &tty_state) < 0) {
-		prints("gtty failed\n");
-		oflush();
-		sleep(2);
-		exit(-1);
-	}
-	return 1;
-}
 #ifdef TERMIOS
 //	初始化tty设置
 void init_tty()
@@ -95,16 +85,6 @@ void init_tty() {
 	stty(1, &tty_new);
 }
 #endif
-
-//以属性tty_state设定重新设定
-void reset_tty() {
-	stty(1, &tty_state);
-}
-
-//以属性tty_new来恢复终端设定
-void restore_tty() {
-	stty(1, &tty_new);
-}
 
 #define TERMCOMSIZE (1024)
 
