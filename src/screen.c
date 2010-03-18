@@ -420,8 +420,9 @@ static char nullstr[] = "(null)";
 /**
  * Output a character.
  * @param c The character.
+ * @return 1, 0 on ansi control codes.
  */
-void outc(int c)
+int outc(int c)
 {
 	static bool inansi;
 #ifndef BIT8
@@ -431,13 +432,13 @@ void outc(int c)
 	if (inansi) {
 		if (c == 'm') {
 			inansi = false;
-			return;
+			return 0;
 		}
-		return;
+		return 0;
 	}
 	if (c == KEY_ESC && !iscolor) {
 		inansi = true;
-		return;
+		return 0;
 	}
 
 	if (dumb_term) {
@@ -450,7 +451,7 @@ void outc(int c)
 			}
 		}
 		ochar(c);
-		return;
+		return 1;
 	}
 
 	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
@@ -468,7 +469,7 @@ void outc(int c)
 			cur_col = 0;
 			if (cur_ln < scr_lns)
 				cur_ln++;
-			return;
+			return 1;
 		} else {
 			if (c != KEY_ESC || !showansi)
 				c = '*';
@@ -506,6 +507,7 @@ void outc(int c)
 			cur_ln++;
 	}
 	cur_col = col; /* store cur_col back */
+	return 1;
 }
 
 /**
@@ -519,46 +521,24 @@ void outs(const char *str)
 	}
 }
 
-//	cc±íÊ¾ÊÇ·ñAnsi·½Ê½Êä³ö?
-//	n±íÊ¾Êä³öµÄ×Ö·û´®³¤¶È,strÊÇÏàÓ¦µÄ×Ö·û´®
-//	
-void outns(register char * str, register int n, register int cc) {
-	if (!cc) {
-		for (; n > 0; n--) {
+/**
+ * Print first n bytes of a string.
+ * @param str The string.
+ * @param n Maximum output bytes.
+ * @param ansi Whether ansi control codes should be excluded in length or not.
+ */
+static void outns(const char *str, int n, bool ansi)
+{
+	if (!ansi) {
+		while (*str != '\0' && n > 0) {
 			outc(*str++);
+			n--;
 		}
 	} else {
-		/*
-		 * need to do find out how many color control char used. and
-		 * then add to 'n'.
-		 * 
-		 * n = n + count_of_color_controler
-		 */
-		int lock = 0, i = 0, j, k;
-		char *foo;
-		foo = (char *) malloc(strlen(str) + 100);
-		strcpy(foo, str);
-
-		for (j = 0, k = n; k > 0; k--, j++) { //kËÆºõÊÇ¶àÓàµÄ,ÓÃj¾Í¿ÉÒÔ?
-			if (foo[j] == '' && lock == 0) { //lockÎªÕæ,±íÊ¾½øÈëansiµÄ¿ØÖÆ±êÖ¾
-				lock = 1;
-				i++;
-				continue;
-			} else if (isalpha(foo[j]) && lock > 0) {
-				i++;
-				lock = 0;
-				continue;
-			} else if (lock > 0) {
-				i++;
-			}
+		while (*str != '\0' && n > 0) {
+			n -= outc(*str++);
 		}
-
-		n += i; //iÎªÇó³öµÄ¿ØÖÆ±êÖ¾×Ö·û¸öÊı
-		for (; n > 0; n--)
-			outc(*str++);
-		outs("[m");
-
-		free(foo); //avoid memory overflow, iamfat 2004.01.12
+		outs("\033[m");
 	}
 }
 
@@ -604,11 +584,11 @@ void prints(char *fmt, ...) {
 						register int slen = strlen(bp);
 						if (!sgn2) {
 							if (val <= slen)
-								outns(bp, val, 1);
+								outns(bp, val, true);
 							else
-								outns(bp, slen, 1);
+								outns(bp, slen, true);
 						} else if (val <= slen)
-							outns(bp, val, 0);
+							outns(bp, val, false);
 						else if (sgn > 0) {
 							for (slen = val - slen; slen > 0; slen--)
 								outc(' ');
