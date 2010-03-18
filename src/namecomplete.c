@@ -237,7 +237,7 @@ int namecomplete(char *prompt, char *data) {
 				cwlist = node;
 				morelist = NULL;
 				move(y, x);
-				addch(ch);
+				outc(ch);
 				x++;
 			} //for
 			clearbot = YEA;
@@ -284,7 +284,7 @@ int namecomplete(char *prompt, char *data) {
 			morelist = NULL;
 			x--;
 			move(y, x);
-			addch(' ');
+			outc(' ');
 			move(y, x);
 			continue;
 		} //if
@@ -304,7 +304,7 @@ int namecomplete(char *prompt, char *data) {
 			cwlist = node;
 			morelist = NULL;
 			move(y, x);
-			addch(ch);
+			outc(ch);
 			x++;
 		}
 	} // while
@@ -446,7 +446,7 @@ int usercomplete(char *prompt, char *data) {
 				cwnum = n;
 				morenum = 0;
 				move(y, x);
-				addch(ch);
+				outc(ch);
 				x++;
 			}
 			clearbot = YEA;
@@ -489,7 +489,7 @@ int usercomplete(char *prompt, char *data) {
 			morenum = 0;
 			x--;
 			move(y, x);
-			addch(' ');
+			outc(' ');
 			move(y, x);
 			continue;
 		}
@@ -509,7 +509,7 @@ int usercomplete(char *prompt, char *data) {
 			cwnum = n;
 			morenum = 0;
 			move(y, x);
-			addch(ch);
+			outc(ch);
 			x++;
 		}
 	}

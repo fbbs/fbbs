@@ -676,10 +676,7 @@ void prints(char *fmt, ...) {
 	va_end(ap);
 	endprint: return;
 }
-//	输出一个字符
-void addch(int ch) {
-	outc(ch);
-}
+
 // 卷动一行
 void scroll() {
 	if (dumb_term) {
