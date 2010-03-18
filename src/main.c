@@ -737,8 +737,6 @@ static int login_query(void)
 	if (multi_user_check() == -1)
 		return -1;
 
-	term_init("vt100");
-	check_tty_lines();
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);
@@ -842,7 +840,6 @@ static void user_login(void)
 		abort_bbs(0);
 	}
 
-	initscr();
 #ifdef USE_NOTEPAD
 	notepad_init();
 	if (strcmp(currentuser.userid, "guest") != 0) {
@@ -1064,6 +1061,9 @@ void start_client(void)
 		system_abort();
 	}
 
+	check_tty_lines();
+	initscr();
+	
 	if (login_query() == -1) {
 		oflush();
 		sleep(3);

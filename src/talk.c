@@ -1133,7 +1133,6 @@ do_talk_char(twin, ch)
 struct talk_win *twin;
 int ch;
 {
-	extern int dumb_term;
 	if (isprint2(ch)) {
 		if (twin->curcol < 79) {
 			move(twin->curln, (twin->curcol)++);
@@ -1149,7 +1148,7 @@ int ch;
 		case Ctrl('H'):
 		case '\177':
 		if (dumb_term)
-		ochar(Ctrl('H'));
+			ochar(Ctrl('H'));
 		if (twin->curcol == 0) {
 			return;
 		}

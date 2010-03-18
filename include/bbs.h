@@ -303,7 +303,7 @@ extern char save_title[]; /* These are used by the editor when inserting */
 extern int save_gid;
 extern char save_filename[]; /* header information */
 extern int in_mail;
-extern int dumb_term;
+extern bool dumb_term;
 extern int showansi;
 extern time_t uptime; /* save user last key-in time, up every 1min */
 

@@ -22,7 +22,6 @@ enum {
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
 #endif
-extern int dumb_term;
 extern struct screenline *big_picture;
 
 static iobuf_t inbuf;   ///< Input buffer.

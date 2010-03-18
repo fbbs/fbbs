@@ -1,54 +1,42 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: screen.c 2 2005-07-14 15:06:08Z root $
- */
-
 #include "bbs.h"
 #include "screen.h"
 #include "edit.h"
 #include <sys/param.h>
 #include <stdarg.h>
 
-extern char clearbuf[];
-extern char cleolbuf[];
-extern char scrollrev[];
-extern char strtstandout[];
-extern char endstandout[];
+/**
+ * String of commands to clear the entire screen and position the cursor at the
+ * upper left corner. 
+ */
+#define TERM_CMD_CL "\033[H\033[J"
+
+/**
+ * String of commands to clear from the cursor to the end of the current line.
+ */
+#define TERM_CMD_CE "\033[K"
+
+/**
+ * String of commands to scroll the screen one line down, assuming it is output
+ * with the cursor at the beginning of the top line. 
+ */
+#define TERM_CMD_SR "\033M"
+
+/** String of commands to enter standout mode. */
+#define TERM_CMD_SO "\033[7m"
+
+/** String of commands to leave standout mode. */
+#define TERM_CMD_SE "\033[m"
+
+/** Send a terminal command. */
+#define term_cmd(cmd)  output(cmd, sizeof(cmd))
+
 extern int iscolor;
-extern int clearbuflen;
-extern int cleolbuflen;
-extern int scrollrevlen;
-extern int strtstandoutlen;
-extern int endstandoutlen;
 extern int editansi;
 
-extern int automargins;
-extern int dumb_term;
-#define o_clear()     output(clearbuf,clearbuflen)
-#define o_cleol()     output(cleolbuf,cleolbuflen)
-#define o_scrollrev() output(scrollrev,scrollrevlen)
-#define o_standup()   output(strtstandout,strtstandoutlen)
-#define o_standdown() output(endstandout,endstandoutlen)
+bool dumb_term = false;
+bool automargins = false;
+int t_lines = 24;          ///< Terminal height.
+int t_columns = 80;        ///< Terminal width.
 
 static int scr_lns;     ///< Lines of the screen.
 unsigned int scr_cols;  ///< Columns of the screen.
@@ -166,10 +154,22 @@ void initscr() {
 	init_screen(t_lines, WRAPMARGIN);
 }
 
+/**
+ * Generate and send terminal move cmd.
+ * @param col Column to move to.
+ * @param line Line to move to.
+ */
+static void do_move(int col, int line)
+{
+	char buf[16];
+	snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
+	char *p;
+	for (p = buf; *p != '\0'; p++)
+		ochar(*p);
+}
+
 //	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
 void rel_move(int was_col, int was_ln, int new_col, int new_ln) {
-	int ochar();
-	extern char *BC;
 	if (new_ln >= t_lines || new_col >= t_columns) //越界,返回
 		return;
 	tc_col = new_col;
@@ -187,14 +187,11 @@ void rel_move(int was_col, int was_ln, int new_col, int new_ln) {
 	}
 	if (was_col == new_col && was_ln == new_ln)
 		return;
-	if (new_col == was_col - 1 && new_ln == was_ln) { //到前一行
-		if (BC)
-			tputs(BC, 1, ochar);
-		else
-			ochar(Ctrl('H'));
+	if (new_col == was_col - 1 && new_ln == was_ln) {
+		ochar(Ctrl('H'));
 		return;
 	}
-	do_move(new_col, new_ln, ochar); //所有情况都不满足时,执行此函数
+	do_move(new_col, new_ln);
 }
 
 // 标准输出buf中的数据,	ds,de表示数据的区间,sso,eso也是
@@ -212,9 +209,9 @@ void standoutput(char * buf, int ds, int de, int sso, int eso) {
 	st_end = Min(eso, de);
 	if (sso > ds)
 		output(buf + ds, sso - ds);
-	o_standup();
+	term_cmd(TERM_CMD_SO);
 	output(buf + st_start, st_end - st_start);
-	o_standdown();
+	term_cmd(TERM_CMD_SE);
 	if (de > eso)
 		output(buf + eso, de - eso);
 }
@@ -226,7 +223,7 @@ void redoscr(void)
 {
 	if (dumb_term)
 		return;
-	o_clear();
+	term_cmd(TERM_CMD_CL);
 	tc_col = 0;
 	tc_line = 0;
 	int i;
@@ -264,8 +261,6 @@ void redoscr(void)
 void refresh() {
 	register int i, j;
 	register struct screenline *bp = big_picture;
-	extern int automargins;
-	extern int scrollrevlen;
 	if (!inbuf_empty())
 		return;
 	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {
@@ -273,13 +268,9 @@ void refresh() {
 		return;
 	}
 	if (scrollcnt < 0) {
-		if (!scrollrevlen) {
-			redoscr();
-			return;
-		}
 		rel_move(tc_col, tc_line, 0, 0);
 		while (scrollcnt < 0) {
-			o_scrollrev();
+			term_cmd(TERM_CMD_SR);
 			scrollcnt++;
 		}
 	}
@@ -318,7 +309,7 @@ void refresh() {
 		}
 		if (bp[j].oldlen > bp[j].len) {
 			rel_move(tc_col, tc_line, bp[j].len, i);
-			o_cleol();
+			term_cmd(TERM_CMD_CE);
 		}
 		bp[j].oldlen = bp[j].len;
 	}
@@ -387,7 +378,7 @@ void clrtoeol(void)
 	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
 	if (cur_col <= slp->sso)
 		slp->mode &= ~STANDOUT;
-	if (cur_col > slp->oldlen)
+	if (cur_col > slp->len)
 		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
 	slp->len = cur_col;
 }
@@ -472,9 +463,8 @@ int outc(int c)
 		}
 	}
 
-	if (col >= slp->len) { // >= or > ?
+	if (col > slp->len) {
 		memset(slp->data + slp->len, ' ', col - slp->len);
-		slp->data[col] = '\0';
 		slp->len = col + 1;
 	}
 
@@ -683,7 +673,7 @@ void scroll(void)
 void standout() {
 	register struct screenline *slp;
 	register int ln;
-	if (dumb_term || !strtstandoutlen)
+	if (dumb_term)
 		return;
 	if (!standing) {
 		ln = cur_ln + roll;
@@ -701,7 +691,7 @@ void standout() {
 void standend() {
 	register struct screenline *slp;
 	register int ln;
-	if (dumb_term || !strtstandoutlen)
+	if (dumb_term)
 		return;
 	if (standing) {
 		ln = cur_ln + roll;
