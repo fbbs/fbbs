@@ -50,7 +50,8 @@ extern int dumb_term;
 #define o_standup()   output(strtstandout,strtstandoutlen)
 #define o_standdown() output(endstandout,endstandoutlen)
 
-unsigned char scr_lns, scr_cols;
+static unsigned int scr_lns;    ///< Lines of the screen.
+unsigned int scr_cols;         ///< Columns of the screen.
 unsigned char cur_ln = 0, cur_col = 0;
 int roll, scrollcnt;//roll 表示首行在big_picture的偏移量
 //因为随着光标滚动,big_picture[0]可能不再保存第一行的数据
@@ -132,17 +133,19 @@ int num_ans_chr(char *str) {
 	return ansinum;
 }
 
-//	初始化屏幕,将行数设成 slns ,将列数设置成LINELEN与scols的最小值,
-//	其中LINELEN表示系统设置的最大列数,为256
-//		将分配到的屏幕缓冲映射到big_picture, 供调用
-void init_screen(int slns, int scols) {
-	register struct screenline *slp;
+/**
+ * Initialize screen.
+ * @param slns Lines of the screen, ::LINELEN max.
+ * @param scols Columns of the screen.
+ */
+static void init_screen(int slns, int scols)
+{
+	struct screenline *slp;
 	scr_lns = slns;
 	scr_cols = Min(scols, LINELEN);
-	big_picture = (struct screenline *) calloc(scr_lns,
-			sizeof(struct screenline));
+	big_picture = calloc(scr_lns, sizeof(*big_picture));
 	for (slns = 0; slns < scr_lns; slns++) {
-		slp = &big_picture[slns];
+		slp = big_picture + slns;
 		slp->mode = 0;
 		slp->len = 0;
 		slp->oldlen = 0;
