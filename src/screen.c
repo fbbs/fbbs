@@ -57,8 +57,7 @@ int roll, scrollcnt;//roll 表示首行在big_picture的偏移量
 //因为随着光标滚动,big_picture[0]可能不再保存第一行的数据
 unsigned char docls;
 unsigned char downfrom;
-int standing = NA;
-int inansi = NA;
+static bool standing = false;
 
 struct screenline *big_picture = NULL;
 
@@ -416,98 +415,103 @@ void clrstandout() {
 
 static char nullstr[] = "(null)";
 
-//以ANSI格式输出字符c,通常是作用在一个字符串上,以ANSI格式输出一个一个字符
-void outc(register unsigned char c) {
-	register struct screenline *slp;
-	register unsigned char reg_col;
+/**
+ * Output a character.
+ * @param c The character.
+ */
+void outc(int c)
+{
+	static bool inansi;
 #ifndef BIT8
-	c &= 0x7f; /*若定义了双字节,去掉最高位*/
+	c &= 0x7f;
 #endif
-	if (inansi == 1) { //inansi表示是否在ansi状态内
+
+	if (inansi) {
 		if (c == 'm') {
-			inansi = 0;
+			inansi = false;
 			return;
 		}
 		return;
 	}
-	if (c == KEY_ESC && iscolor == NA) {//进入ansi状态
-		inansi = 1;
+	if (c == KEY_ESC && !iscolor) {
+		inansi = true;
 		return;
 	}
+
 	if (dumb_term) {
 		if (!isprint2(c)) {
-			if (c == '\n') { //换行
+			if (c == '\n') {
 				ochar('\r');
-			} else if (c != KEY_ESC || !showansi) {//不可打印字符显示为'*'
-				c = '*';
+			} else {
+				if (c != KEY_ESC || !showansi)
+					c = '*';
 			}
 		}
 		ochar(c);
 		return;
 	}
-	if (1) {
-		register int reg_line = cur_ln + roll;
-		register int reg_scrln = scr_lns;
-		while (reg_line > 0 && reg_line >= reg_scrln)
-			reg_line -= reg_scrln;
-		slp = &big_picture[reg_line];//获得当前行的映射
-	}
-	reg_col = cur_col;
-	/* deal with non-printables */
+
+	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
+	unsigned int col = cur_col;
+
 	if (!isprint2(c)) {
-		if (c == '\n' || c == '\r') { /* do the newline thing */
+		if (c == '\n' || c == '\r') {
 			if (standing) {
-				slp->eso = Max(slp->eso, reg_col);
-				standing = NA;
+				slp->eso = Max(slp->eso, col);
+				standing = false;
 			}
-			if (reg_col > slp->len) {//以空格扩充列
-				register int i;
-				for (i = slp->len; i <= reg_col; i++)
-					slp->data[i] = ' ';
-			}
-			slp->len = reg_col;
-			cur_col = 0; /* reset cur_col */
+			if (col > slp->len)
+				memset(slp->data + slp->len, ' ', col - slp->len + 1);
+			slp->len = col;
+			cur_col = 0;
 			if (cur_ln < scr_lns)
 				cur_ln++;
 			return;
-		} else if (c != KEY_ESC || !showansi) {
-			c = '*';/* else substitute a '*' for non-printable */
+		} else {
+			if (c != KEY_ESC || !showansi)
+				c = '*';
 		}
 	}
-	if (reg_col >= slp->len) { //	>= 还是 > ?
-		register int i;
-		for (i = slp->len; i < reg_col; i++)
-			slp->data[i] = ' ';
-		slp->data[reg_col] = '\0';
-		slp->len = reg_col + 1;
+
+	if (col >= slp->len) { // >= or > ?
+		memset(slp->data + slp->len, ' ', col - slp->len);
+		slp->data[col] = '\0';
+		slp->len = col + 1;
 	}
-	if (slp->data[reg_col] != c) {
-		if ((slp->mode & MODIFIED) != MODIFIED)
-			slp->smod = (slp->emod = reg_col);
-		else {
-			if (reg_col > slp->emod)
-				slp->emod = reg_col;
-			if (reg_col < slp->smod)
-				slp->smod = reg_col;
+
+	if (slp->data[col] != c) {
+		if ((slp->mode & MODIFIED) != MODIFIED) {
+			slp->smod = (slp->emod = col);
+		} else {
+			if (col > slp->emod)
+				slp->emod = col;
+			if (col < slp->smod)
+				slp->smod = col;
 		}
 		slp->mode |= MODIFIED;
 	}
-	slp->data[reg_col] = c; //在当前行reg_col列存储字符c
-	reg_col++;
-	if (reg_col >= scr_cols) { //超过屏幕最大宽度
+
+	slp->data[col] = c;
+	col++;
+
+	if (col >= scr_cols) {
 		if (standing && slp->mode & STANDOUT) {
-			standing = NA;
-			slp->eso = Max(slp->eso, reg_col);
+			standing = false;
+			slp->eso = Max(slp->eso, col);
 		}
-		reg_col = 0;
+		col = 0;
 		if (cur_ln < scr_lns)
 			cur_ln++;
 	}
-	cur_col = reg_col; /* store cur_col back */
+	cur_col = col; /* store cur_col back */
 }
 
-//	利用outc输出字符串str
-void outs(register char *str) {
+/**
+ * Output a string.
+ * @param str The string.
+ */
+void outs(const char *str)
+{
 	while (*str != '\0') {
 		outc(*str++);
 	}
