@@ -1600,9 +1600,7 @@ void vedit_key(int ch) {
 		curr_window_line = 0;
 		if (top_of_win!=can_edit_begin) {
 			top_of_win = top_of_win->prev;
-			//Modified by IAMFAT 2002-05-26
 			redraw_everything = YEA;
-			//rscroll();
 		}
 	}
 	if (curr_window_line >= t_lines - 1) {

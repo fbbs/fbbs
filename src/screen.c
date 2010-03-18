@@ -53,8 +53,10 @@ extern int dumb_term;
 static unsigned int scr_lns;    ///< Lines of the screen.
 unsigned int scr_cols;         ///< Columns of the screen.
 unsigned char cur_ln = 0, cur_col = 0;
-int roll, scrollcnt;//roll 表示首行在big_picture的偏移量
+static int roll; //roll 表示首行在big_picture的偏移量
 //因为随着光标滚动,big_picture[0]可能不再保存第一行的数据
+static int scrollcnt;
+
 unsigned char docls;
 unsigned char downfrom;
 static bool standing = false;
@@ -684,8 +686,11 @@ void prints(char *fmt, ...) {
 	endprint: return;
 }
 
-// 卷动一行
-void scroll() {
+/**
+ * Scroll down one line.
+ */
+void scroll(void)
+{
 	if (dumb_term) {
 		prints("\n");
 		return;
@@ -695,20 +700,6 @@ void scroll() {
 	if (roll >= scr_lns)
 		roll -= scr_lns;
 	move(scr_lns - 1, 0);
-	clrtoeol();
-}
-//向上卷动一行
-void rscroll() {
-	if (dumb_term) {
-		prints("\n\n");
-		return;
-	}
-	scrollcnt--;
-	if (roll > 0)
-		roll--;
-	else
-		roll = scr_lns - 1;
-	move(0, 0);
 	clrtoeol();
 }
 
