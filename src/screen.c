@@ -28,15 +28,15 @@
 #define TERM_CMD_SE "\033[m"
 
 /** Send a terminal command. */
-#define term_cmd(cmd)  output(cmd, sizeof(cmd))
+#define term_cmd(cmd)  output(cmd, sizeof(cmd) - 1)
 
 extern int iscolor;
 extern int editansi;
 
-bool dumb_term = false;
-bool automargins = false;
+bool dumb_term = true;
+bool automargins = true;
 int t_lines = 24;          ///< Terminal height.
-int t_columns = 80;        ///< Terminal width.
+int t_columns = 255;       ///< Terminal width.
 
 static int scr_lns;     ///< Lines of the screen.
 unsigned int scr_cols;  ///< Columns of the screen.
@@ -465,17 +465,15 @@ int outc(int c)
 
 	if (col > slp->len)
 		memset(slp->data + slp->len, ' ', col - slp->len);
-	if (slp->data[col] != c) {
-		if ((slp->mode & MODIFIED) != MODIFIED) {
-			slp->smod = (slp->emod = col);
-		} else {
-			if (col > slp->emod)
-				slp->emod = col;
-			if (col < slp->smod)
-				slp->smod = col;
-		}
-		slp->mode |= MODIFIED;
+	if ((slp->mode & MODIFIED) != MODIFIED) {
+		slp->smod = (slp->emod = col);
+	} else {
+		if (col > slp->emod)
+			slp->emod = col;
+		if (col < slp->smod)
+			slp->smod = col;
 	}
+	slp->mode |= MODIFIED;
 	slp->data[col] = c;
 	col++;
 	if (col > slp->len)
