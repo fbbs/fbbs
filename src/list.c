@@ -59,16 +59,6 @@ struct userec *user_data;
 enum sort_type {stUserID, stUserName, stIP, stState} st = stUserID;
 // add by Flier - 2000.5.12 - End
 
-#ifdef WITHOUT_ADMIN_TOOLS
-#define kick_user
-#endif
-
-/*char* get_userid( unsigned short uid)
- {
- resolve_ucache();	
- return(uidshm->userid[uid-1]);
- }*/
-
 char* get_explain(char* userid) {
 	struct override tmp;
 	char buf[STRLEN];
@@ -466,7 +456,7 @@ int deal_key(char ch, int allnum, int pagenum) //环顾四方处理按键
 				break;
 			char tmp[EXT_IDLEN];
 			strlcpy(tmp, user_record[allnum]->userid, sizeof(tmp));
-			if (kick_user(user_record[allnum]) == 1) {
+			if (do_kick_user(user_record[allnum]) == 0) {
 				sprintf(buf, "%s 已被踢出站外", tmp);
 			} else {
 				sprintf(buf, "%s 无法踢出站外", tmp);

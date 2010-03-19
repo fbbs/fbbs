@@ -25,9 +25,6 @@
 
 #include "bbs.h"
 
-#ifdef WITHOUT_ADMIN_TOOLS
-#define kick_user
-#endif
 void mail_info(char *lastword);
 
 int cmpuids3(int unum, struct user_info *urec) {
@@ -123,7 +120,7 @@ int offline() {
 				usernum);
 		mail_info(lastword);
 		modify_user_mode(OFFLINE);
-		kick_user(&uinfo);
+		do_kick_user(&uinfo);
 		exit(0);
 	}
 }

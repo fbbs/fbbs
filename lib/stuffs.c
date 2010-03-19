@@ -49,13 +49,13 @@ void sigbus(int signo)
 	siglongjmp(bus_jump, 1);
 }
 
-static void kick_web_user(struct user_info *user)
+static int kick_web_user(struct user_info *user)
 {
 	int stay = 0;
 	int start;
 	int uid = user->uid;
 	if (uid < 1 || uid > MAXUSERS)
-		return;
+		return -1;
 #ifdef SPARC
 	start = *(int*)(user->from + 30);
 #else
@@ -81,6 +81,7 @@ static void kick_web_user(struct user_info *user)
 	up->lastlogout = now;
 	up->stay += stay;
 	memset(user, 0, sizeof(*user));
+	return 0;
 }
 
 // Sends signal 'sig' to 'user'.
@@ -97,7 +98,7 @@ int bbskill(struct user_info *user, int sig)
 		} else {
 			if (sig == SIGHUP) {
 				// kick web users off, below should be moved out later.
-				kick_web_user(user);
+				return kick_web_user(user);
 			} else {
 				// other signals TBD
 				return 0;
