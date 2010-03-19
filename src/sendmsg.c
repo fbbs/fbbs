@@ -589,9 +589,7 @@ void r_msg(int notused)
 		line = 0;
 	if (DEFINE(DEF_MSGGETKEY)) {
 		oflush();
-		//saveline(line, 0);
-		for(k = 0; k < MAX_MSG_LINE + 1; k++)
-		{
+		for(k = 0; k < MAX_MSG_LINE + 2; k++) {
 			saveline_buf(k, 0);
 		}
 		premsg = RMSG;
@@ -627,12 +625,10 @@ void r_msg(int notused)
 		char user[13], date[25];
 		strlcpy(user, msghead + 12, sizeof(user));
 		strlcpy(date, msghead + 35, sizeof(date));
-		prints("\033[1;36;44m%s  \033[33m(%s)\033[37m\n", user, date);
-
+		prints("\033[1;36;44m%s  \033[33m(%s)\033[37m", user, date);
 		move(line + 1, 0);
 		clrtoeol();
 		msg_line = show_data(msg, LINE_LEN-1, line + 1, 0);
-		saveline(msg_line, 0);
 		move(msg_line, 0);
 		clrtoeol();
 		outs("\033[m按^Z回讯息");
@@ -644,7 +640,6 @@ void r_msg(int notused)
 			while (ch != '\r' && ch != '\n') {
 				ch = igetkey();
 				if (ch == '\r' || ch == '\n') {
-					saveline(msg_line, 1);
 					break;
 				}
 				else if (ch == Ctrl('R') || ch == 'R' || ch == 'r' || ch == Ctrl('Z')) {
@@ -739,10 +734,8 @@ void r_msg(int notused)
 
 	if (DEFINE(DEF_MSGGETKEY)) {
 		RMSG = premsg;
-		//saveline(line, 1);
-		for(k = 0; k < msg_line; k++)
-		{
-			saveline_buf(k,1);
+		for (k = 0; k <= msg_line; k++) {
+			saveline_buf(k, 1);
 		}
 	}
 	showansi = tmpansi;

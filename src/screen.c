@@ -742,7 +742,7 @@ void saveline_buf(int line, int mode)//0:save 1:restore
         case 1:
             getyx(&x, &y);
             move(line, 0);
-            clrtoeol();
+            clear_whole_line(line);
             prints("%s", temp[line]);
             move(x,y);
             break;
