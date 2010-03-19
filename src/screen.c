@@ -463,11 +463,8 @@ int outc(int c)
 		}
 	}
 
-	if (col > slp->len) {
+	if (col > slp->len)
 		memset(slp->data + slp->len, ' ', col - slp->len);
-		slp->len = col + 1;
-	}
-
 	if (slp->data[col] != c) {
 		if ((slp->mode & MODIFIED) != MODIFIED) {
 			slp->smod = (slp->emod = col);
@@ -479,9 +476,10 @@ int outc(int c)
 		}
 		slp->mode |= MODIFIED;
 	}
-
 	slp->data[col] = c;
 	col++;
+	if (col > slp->len)
+		slp->len = col;
 
 	if (col >= scr_cols) {
 		if (standing && slp->mode & STANDOUT) {
