@@ -330,6 +330,9 @@ int igetch(void)
 					continue;
 				}
 				break;
+			case '\0':
+				cr = false;
+				continue;
 			default:
 				cr = false;
 #ifdef ALLOWSWITCHCODE
