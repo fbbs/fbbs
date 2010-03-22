@@ -738,6 +738,7 @@ static int login_query(void)
 		return -1;
 
 	dumb_term = false;
+	check_tty_lines();
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);
@@ -1062,8 +1063,6 @@ void start_client(void)
 	if (setjmp(byebye)) {
 		system_abort();
 	}
-
-	check_tty_lines();
 
 	if (login_query() == -1) {
 		oflush();
