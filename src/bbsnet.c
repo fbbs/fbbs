@@ -91,20 +91,20 @@ static void do_bbsnet(const site_t *site)
 	sock.sin_addr.s_addr = inet_addr(site->ip);
 	sock.sin_port = htons(site->port);
 	int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	struct hostent *he = gethostbyname(site->ip);
-	if (he) {
-		memcpy(&sock.sin_addr, he->h_addr, he->h_length);
-	} else {
-		if ((sock.sin_addr.s_addr = inet_addr(site->ip)) < 0) {
-			close(fd);
-			modify_user_mode(MMENU);
-			return;
-		}
-	}
 
 	if (!sigsetjmp(ret_alarm, 1)) {
 		signal(SIGALRM, exit_bbsnet);
 		alarm(CONNECT_TIMEOUT);
+		struct hostent *he = gethostbyname(site->ip);
+		if (he) {
+			memcpy(&sock.sin_addr, he->h_addr, he->h_length);
+		} else {
+			if ((sock.sin_addr.s_addr = inet_addr(site->ip)) < 0) {
+				close(fd);
+				modify_user_mode(MMENU);
+				return;
+			}
+		}
 		if (connect(fd, (struct sockaddr *)&sock, sizeof(sock)) < 0) {
 			close(fd);
 			modify_user_mode(MMENU);
