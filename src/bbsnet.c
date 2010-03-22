@@ -51,7 +51,7 @@ static bool can_bbsnet(const char *file, const char *from)
 		}
 		fclose(fp);
 	}
-	return true;
+	return false;
 }
 
 /**
