@@ -3,22 +3,21 @@ AM_CPPFLAGS = -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I.
 LIBS = -lcrypt -ldl -lgd
 LDADD = ../lib/libBBS.a
 
-bin_PROGRAMS = bbsd miscd chatd thread bbsnet
+bin_PROGRAMS = bbsd miscd chatd thread
 bbsd_SOURCES = announce.c bbs.c bbsd.c bcache.c bm.c boards.c chat.c \
 			   comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
 			   help.c io.c list.c mail.c main.c maintain.c more.c \
 			   namecomplete.c postheader.c read.c register.c screen.c \
 			   sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
-			   readabc.c five.c convert.c
+			   readabc.c five.c convert.c bbsnet.c
 miscd_SOURCES = announce.c bbs.c bcache.c bm.c boards.c chat.c \
 				comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
 				help.c io.c list.c mail.c main.c maintain.c miscd.c more.c \
 				namecomplete.c postheader.c read.c register.c screen.c \
 				sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
-				readabc.c convert.c
+				readabc.c convert.c bbsnet.c
 chatd_SOURCES = station.c
 thread_SOURCES = thread.c
-bbsnet_SOURCES = bbsnet.c
 
 lib_LTLIBRARIES = admintool.la
 admintool_la_SOURCES = admintool.c

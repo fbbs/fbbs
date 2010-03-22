@@ -1,442 +1,346 @@
-/*bbsnet.c*/
-// NJU bbsnet, preview version, zhch@dii.nju.edu.cn, 2000.3.23 //
-// HIT bbsnet, Changed by Sunner, sun@bbs.hit.edu.cn, 2000.6.11
-
-#include <stdio.h>
-#include <termios.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <arpa/telnet.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <math.h>
-
+#include <netinet/in.h>
+#include <netdb.h>
 #include "bbs.h"
 
-char host1[100][40], host2[100][40], ip[100][40];
-int port[100], counts= 0;
-
-char datafile[80]= BBSHOME"/etc/bbsnet.ini";
-char userid[80]= "unknown.";
-
-/**
- * Get appropriate response command.
- * @param command received command
- * @param use use the option or not
- * @return the response command
- */
-int telnet_response(int command, bool use)
-{
-	if (command == WILL || command == WONT) {
-		if (use == true)
-			return DO;
-		else
-			return DONT;
-	} else if (command == DO || command == DONT){
-		if (use == true)
-			return WILL;
-		else
-			return WONT;
-	} else {  // command == SB
-		return SB;
-	}
-}
+enum {
+	MAX_BBSNET_SITES = 54,  ///<
+	MAX_SITE_LENGTH = 40,   ///<
+	CONNECT_TIMEOUT = 15,   ///<
+	DATA_TIMEOUT    = 2400  ///<
+};
 
 /**
- * Telnet option negotiation.
- * @param fd output file descriptor (to server)
- * @param command received command
- * @param option option to negotiate
- * @note only a small subset of telnet options is implemented
+ *
  */
-void telnet_opt(int fd, int command, int option)
+typedef struct {
+	char host[MAX_SITE_LENGTH];  ///<
+	char name[MAX_SITE_LENGTH];  ///<
+	char ip[IPLEN];              ///<
+	int port;                    ///<
+} site_t;
+
+static jmp_buf ret_alarm;
+
+/**
+ *
+ */
+static bool can_bbsnet(const char *file, const char *from)
 {
-	unsigned char res[16] = {IAC};
-	const unsigned char tty[] = { IAC, SB, TELOPT_TTYPE, TELQUAL_IS, 'V', 
-			'T', '1', '0', '0', IAC, SE};
-	const unsigned char naws[] = { IAC, WILL, TELOPT_NAWS, IAC, SB,
-			TELOPT_NAWS, 0, 80, 0, 24, IAC, SE};
-	switch (option) {
-		case TELOPT_BINARY:
-		case TELOPT_SGA:
-			res[1] = telnet_response(command, true);
-			res[2] = option;
-			write(fd, res, 3);
-			break;
-		case TELOPT_ECHO:
-			res[1] = telnet_response(command, false);
-			res[2] = option;
-			write(fd, res, 3);
-			break;
-		case TELOPT_TTYPE:
-			res[1] = telnet_response(command, true);
-			if (res[1] == SB) {
-				write(fd, tty, sizeof(tty));
-			} else {
-				res[2] = option;
-				write(fd, res, 3);
+	if (!strcmp(from, "127.0.0.1") || !strcmp(from, "localhost"))
+		return true;
+	FILE *fp = fopen(file, "r");
+	if (fp) {
+		char buf[256], *ptr, *ch;
+		bool allow;
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
+			ptr = strtok(buf, " \n\t\r");
+			if (ptr != NULL && *ptr != '#') {
+				allow = (*ptr != '!');
+				if (!allow)
+					ptr++;
+				ch = ptr;
+				while (*ch != '\0' && *ch != '*')
+					ch++;
+				*ch = '\0';
+				if (!strncmp(from, ptr, ch - ptr)) {
+					fclose(fp);
+					return allow;
+				}
 			}
-			break;
-		case TELOPT_NAWS:
-			write(fd, naws, sizeof(naws));
-			break;
-		default:
-			break;
+		}
+		fclose(fp);
 	}
+	return true;
 }
 
 /**
- * Telnet proxy which automatically responses to server's option negotiation.
- * @param fd output file descriptor (to server)
- * @param buf input buffer
- * @param size bytes in input buffer
+ *
  */
-void telnet_proxy(int fd, const unsigned char *buf, int size)
+static void exit_bbsnet(int signo)
 {
-	static int status, command;
-	int option = 0;
-	const unsigned char *end = buf + size, *last = buf;
-	while (buf != end) {
-		switch (status) {
-			case TELST_END:
-				last = buf;
-				status = TELST_NOR;
-				// No break here.
-			case TELST_NOR:
-				if (*buf == IAC) {
-					status = TELST_IAC;
-					write(STDOUT_FILENO, last, buf - last);
-					last = buf;
-				}
-				break;
-			case TELST_IAC:
-				command = *buf;
-				if (*buf == SB)
-					status = TELST_SUB;
-				else
-					status = TELST_COM;
-				break;
-			case TELST_COM:
-				status = TELST_END;
-				telnet_opt(fd, command, *buf);
-				break;
-			case TELST_SUB:
-				option = *buf;
-				status = TELST_SBC;
-				break;
-			case TELST_SBC:
-				if (*buf == SE) {
-					telnet_opt(fd, command, option);
-					status = TELST_END;
-				}
-				break;
-			default:
-				break;
-		}
-		++buf;
-	}
-	if (status == TELST_NOR)
-		write(STDOUT_FILENO, last, buf - last);
+	siglongjmp(ret_alarm, 1);
 }
 
-void init_data(void)
+/**
+ *
+ */
+static int bbsnet_log(const site_t *site)
 {
-	FILE *fp;
-	char t[256], *t1, *t2, *t3, *t4;
-	fp= fopen(datafile, "r");
-	if (fp== NULL)
+	char buf[512];
+	time_t now = time(NULL);
+	snprintf(buf, sizeof(buf), "%s %s %s (%s)\n", currentuser.userid,
+			ctime(&now), site->name, site->ip);
+	return file_append("reclog/bbsnet.log", buf);
+}
+
+/**
+ *
+ */
+static void do_bbsnet(const site_t *site)
+{
+	modify_user_mode(BBSNET);
+	clear();
+	prints("\033[1;32mÁ¬Íù: %s (%s)\nÁ¬²»ÉÏÊ±ÇëÉÔºò£¬%d Ãëºó½«×Ô¶¯ÍË³ö\n",
+			site->name, site->ip, CONNECT_TIMEOUT);
+	refresh();
+
+	struct sockaddr_in sock;
+	memset(&sock, 0, sizeof(sock));
+	sock.sin_family = AF_INET;
+	sock.sin_addr.s_addr = inet_addr(site->ip);
+	sock.sin_port = htons(site->port);
+	int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	struct hostent *he = gethostbyname(site->ip);
+	if (he) {
+		memcpy(&sock.sin_addr, he->h_addr, he->h_length);
+	} else {
+		if ((sock.sin_addr.s_addr = inet_addr(site->ip)) < 0) {
+			close(fd);
+			modify_user_mode(MMENU);
+			return;
+		}
+	}
+
+	if (!sigsetjmp(ret_alarm, 1)) {
+		signal(SIGALRM, exit_bbsnet);
+		alarm(CONNECT_TIMEOUT);
+		if (connect(fd, (struct sockaddr *)&sock, sizeof(sock)) < 0) {
+			close(fd);
+			modify_user_mode(MMENU);
+			return;
+		}
+	} else {
+		if (fd > 0)
+			close(fd);
+		modify_user_mode(MMENU);
 		return;
-	while (fgets(t, 255, fp)&& counts <= 72) {
-		t1= strtok(t, " \t");
-		t2= strtok(NULL, " \t\n");
-		t3= strtok(NULL, " \t\n");
-		t4= strtok(NULL, " \t\n");
-		if (t1[0]== '#'|| t1== NULL|| t2== NULL|| t3== NULL)
-			continue;
-		strncpy(host1[counts], t1, 16);
-		strncpy(host2[counts], t2, 36);
-		strncpy(ip[counts], t3, 36);
-		port[counts]= t4 ? atoi(t4) : 23;
-		counts++;
+	}
+	signal(SIGALRM, SIG_IGN);
+
+	bbsnet_log(site);
+	prints("\033[1;32mÒÑ¾­Á¬½ÓÉÏÖ÷»ú£¬°´'ctrl+]'¿ìËÙÍË³ö¡£\033[m\n");
+	refresh();
+
+	struct timeval tv;
+	fd_set fds;
+	int ret;
+	char buf[2048];
+	while (1) {
+		tv.tv_sec = DATA_TIMEOUT;
+		tv.tv_usec = 0;
+		FD_ZERO(&fds);
+		FD_SET(fd, &fds);
+		FD_SET(STDIN_FILENO, &fds);
+
+		ret = select(fd + 1, &fds, NULL, NULL, &tv);
+		if (ret <= 0)
+			break;
+		if (FD_ISSET(STDIN_FILENO, &fds)) {
+			ret = read(STDIN_FILENO, buf, sizeof(buf));
+			if (ret <= 0 || *buf == Ctrl(']'))
+				break;
+			write(fd, buf, ret);
+		} else {
+			ret = read(fd, buf, sizeof(buf));
+			if (ret <= 0)
+				break;
+			write(STDIN_FILENO, buf, ret);
+		}
+	}
+	close(fd);
+	modify_user_mode(MMENU);
+}
+
+/**
+ *
+ */
+static int load_config(const char *file, site_t *sites, int size)
+{
+	int count = 0;
+	FILE *fp = fopen(file, "r");
+	char buf[256], *t1, *t2, *t3, *t4;
+	site_t *site;
+	if (fp) {
+		while (count <= size && fgets(buf, sizeof(buf), fp)) {
+			t1 = strtok(buf, " \t");
+			if (!t1 || *t1 == '#')
+				continue;
+			t2 = strtok(NULL, " \t\n");
+			if (!t2)
+				continue;
+			t3 = strtok(NULL, " \t\n");
+			if (!t3)
+				continue;
+			t4 = strtok(NULL, " \t\n");
+			site = sites + count;
+			strlcpy(site->host, t1, sizeof(site->host));
+			strlcpy(site->name, t2, sizeof(site->name));
+			strlcpy(site->ip, t3, sizeof(site->ip));
+			site->port = t4 ? strtol(t4, NULL, 10) : 23;
+			count++;
+		}
 	}
 	fclose(fp);
+	return count;
 }
-
-#ifdef FDQUAN	//¸´µ©ÈªµÄ´©Ëó³ÌÐò
-char str[]= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-void sh(int n)
-{
-	static oldn= -1;
-	if(n>= counts) return;
-	if(oldn >=0) {
-		locate(oldn);
-		printf("[1;32m %c.[m%s", str[oldn], host2[oldn]);
-	}
-	oldn= n;
-	printf("[22;3H[1;37mµ¥Î»: [1;33m%s                   [22;32H[1;37m Õ¾Ãû: [1;33m%s              \r\n", host1[n], host2[n]);
-	printf("[1;37m[23;3HÁ¬Íù: [1;33m%s                   [21;1H", ip[n]);
-	locate(n);
-	printf("[%c][1;42m%s[m", str[n], host2[n]);
-}
-
-void show_all(void)
-{
-	int n;
-	printf("[H[2J[m");
-	printf("©³©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥[1;35m ´©  Ëó  Òø  ºÓ [m©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©·\r\n");
-	for(n= 1; n< 22; n++)
-	printf("©§                                                                            ©§\r\n");
-	printf("©§                                                               [1;36m°´[1;33mCtrl+C[1;36mÍË³ö[m ©§\r\n");
-	printf("©»©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¿");
-	printf("[21;3H©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤");
-	for(n= 0; n< counts; n++) {
-		locate(n);
-		printf("[1;32m %c.[m%s", str[n], host2[n]);
-	}
-}
-
-void locate(int n)
-{
-	int x, y;
-	char buf[20];
-	if(n>= counts) return;
-	/*    y= n% 17+ 3;
-	 x= n/ 17* 25+ 4;*/
-	y= n/3 + 3;
-	x= n % 3 * 25+ 4;
-
-	sprintf(buf, "[%d;%dH", y, x);
-	printf(buf);
-}
-
-int getch(void)
-{
-	int c, d, e;
-	static lastc= 0;
-	c= getchar();
-	if(c== 10&& lastc== 13) c=getchar();
-	lastc= c;
-	if(c!= 27) return c;
-	d= getchar();
-	e= getchar();
-	if(d== 27) return 27;
-	if(e== 'A') return 257;
-	if(e== 'B') return 258;
-	if(e== 'C') return 259;
-	if(e== 'D') return 260;
-	return 0;
-}
-
-void main_loop(void)
-{
-	int p= 0;
-	int c, n;
-	L:
-	show_all();
-	sh(p);
-	fflush(stdout);
-	while(1) {
-		c= getch();
-		alarm(60);
-		if(c== 3|| c== 4|| c== 27|| c< 0) break;
-		if(c== 257) //ÏòÉÏ
-		{
-			if (p < 3) {
-				p += 3 * ( (counts -1)/3 - (p> ((counts -1)%3)));
-			} else p -= 3;
-		}
-		if(c== 258) //ÏòÏÂ
-		{
-			if (p+3> counts - 1)
-			p %= 3;
-			else p += 3;
-		}
-		if(c== 259) //ÏòÓÒ
-		{
-			p ++;
-			if(p> counts - 1) p = 0;
-		}
-		if(c== 260) //Ïò×ó
-		{
-			p --;
-			if(p<0)p = counts -1;
-		}
-		if(c== 13|| c== 10) {
-			alarm(0);
-			bbsnet(p);
-			SetQuitTime();
-			goto L;
-		}
-		for(n=0; n< counts; n++) if(str[n]== c) p= n;
-		sh(p);
-		fflush(stdout);
-	}
-}
-#endif
-
-int bbsnet(int n)
-{
-	if (n>= counts)
-		return -1;
-	printf("[H[2J[1;32mo Á¬Íù: %s (%s)\r\n", host2[n], ip[n]);
-	printf("%s\r\n\r\n[m", "o Á¬²»ÉÏÊ±ÇëÉÔºò£¬30 Ãëºó½«×Ô¶¯ÍË³ö");
-	fflush(stdout);
-	proc(host2[n], ip[n], port[n]);
-	return 0;
-}
-
-void QuitTime(int notused)
-{
-	reset_tty();
-	exit(0);
-}
-
-int SetQuitTime(void)
-{
-	signal(SIGALRM, QuitTime);
-	alarm(60);
-	return 0;
-}
-
-int main(int n, char* cmd[])
-{
-	SetQuitTime();
-	get_tty();
-	init_tty();
-	if (n>= 2)
-		strcpy(datafile, cmd[1]);
-	if (n>= 3)
-		strcpy(userid, cmd[2]);
-	//    if(n>= 4) strcpy(userid, cmd[3]);
-	init_data();
 
 #ifdef FDQUAN
-	main_loop();
-#else
-	bbsnet(0);
+const static char str[] =
+		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234";
+
+/**
+ *
+ */
+static int show_site(const site_t *sites, int count, int pos, int cur, int off)
+{
+	if (pos >= count)
+		return 0;
+	move(pos / 3 + 3, off);
+	if (pos == cur) {
+		prints("\033[1;33;40m[%c]\033[42m%s\033[m", str[pos], sites[pos].name);
+		return 18;
+	} else {
+		prints("\033[1;32;40m %c.\033[m%s", str[pos], sites[pos].name);
+		return 13;
+	}
+}
+
+static void show_line(const site_t *sites, int count, int line, int cur)
+{
+	const int col[] = { 3, 28, 53 };
+	int offset = 0;
+	move(line + 3, 0);
+	clrtoeol();
+	offset += show_site(sites, count, line * 3, cur, col[0]);
+	offset += show_site(sites, count, line * 3 + 1, cur, col[1] + offset);
+	show_site(sites, count, line * 3 + 2, cur, col[2] + offset);
+}
+
+/**
+ *
+ */
+static void show_sites(const site_t *sites, int count)
+{
+	int i;
+	clear();
+	outs("\033[1;44m´©ËóÒøºÓ\033[K\n\033[mÀë¿ª[\033[1;32mCtrl-C Ctrl-D\033[m] "
+			"Ñ¡Ôñ[\033[1;32m¡ü\033[m,\033[1;32m¡ý\033[m,\033[1;32m¡û\033[m,"
+			"\033[1;32m¡ú\033[m]");
+	for (i = 0; i < MAX_BBSNET_SITES / 3; i++) {
+		show_line(sites, count, i, -1);
+	}
+}
+
+/**
+ *
+ */
+static void site_highlight(const site_t *sites, int count, int cur)
+{
+	show_line(sites, count, cur / 3, cur);
+	move(t_lines - 1, 0);
+	clrtoeol();
+	prints("\033[1;37;44m%s(%s)\033[K", sites[cur].name, sites[cur].host);
+}
+
+/**
+ *
+ */
+static void site_select(const site_t *sites, int count)
+{
+	int p = 0, old = -1;
+	show_sites(sites, count);
+	while (1) {
+		site_highlight(sites, count, p);
+		old = p;
+		int ch = igetch();
+		const char *ptr;
+		switch (ch) {
+			case KEY_UP:
+				p -= 3;
+				if (p < 0)
+					p = p % 3 + count - 1;
+				break;
+			case KEY_DOWN:
+				p += 3;
+				if (p >= count)
+					p %= 3;
+				break;
+			case KEY_LEFT:
+				if (--p < 0)
+					p = count - 1;
+				break;
+			case KEY_RIGHT:
+				if (++p >= count)
+					p = 0;
+				break;
+			case '\n':
+			case '\r':
+				do_bbsnet(sites + p);
+				show_sites(sites, count);
+				break;
+			case Ctrl('C'):
+			case Ctrl('D'):
+				return;
+			default:
+				ptr = strchr(str, ch);
+				if (ptr)
+					p = ptr - str;
+				if (p >= count)
+					p = old;
+				break;
+		}
+		if (p / 3 != old / 3)
+			show_line(sites, count, old / 3, p);
+	}
+}
 #endif
 
-	printf("[m");
-	reset_tty();
-}
-
-int bbs_syslog(char* s)
-{ //rename by money for conflict with syslog() 2004.01.07
-	char buf[512], timestr[16], *thetime;
-	time_t dtime;
-	FILE *fp;
-	fp=fopen("reclog/bbsnet.log", "a");
-	time(&dtime);
-	thetime = (char*) ctime(&dtime);
-	strncpy(timestr, &(thetime[4]), 15);
-	timestr[15] = '\0';
-	sprintf(buf, "%s %s %s\n", userid, timestr, s) ;
-	fprintf(fp, buf);
-	fclose(fp);
-}
-
-#define stty(fd, data) tcsetattr( fd, TCSANOW, data )
-#define gtty(fd, data) tcgetattr( fd, data )
-struct termios tty_state, tty_new;
-
-int get_tty(void)
+/**
+ *
+ */
+static void bbsnet(const char *config, const char *user)
 {
-	if (gtty(1,&tty_state) < 0)
-		return 0;
-	return 1;
-}
-
-void init_tty(void)
-{
-	long vdisable;
-
-	memcpy( &tty_new, &tty_state, sizeof(tty_new)) ;
-	tty_new.c_lflag &= ~(ICANON|ECHO|ECHOE|ECHOK|ISIG);
-	tty_new.c_cflag &= ~CSIZE;
-	tty_new.c_cflag |= CS8;
-	tty_new.c_cc[ VMIN ] = 1;
-	tty_new.c_cc[ VTIME ] = 0;
-	if ((vdisable = fpathconf(STDIN_FILENO, _PC_VDISABLE)) >= 0) {
-		tty_new.c_cc[VSTART] = vdisable;
-		tty_new.c_cc[VSTOP] = vdisable;
-		tty_new.c_cc[VLNEXT] = vdisable;
-	}
-	tcsetattr(1, TCSANOW, &tty_new);
-}
-
-void reset_tty(void)
-{
-	stty(1,&tty_state);
-}
-
-void proc(char *hostname, char *server, int port)
-{
-	int fd;
-	struct sockaddr_in blah;
-	struct hostent *he;
-	int result;
-	unsigned char buf[2048];
-	fd_set readfds;
-	struct timeval tv;
-	signal(SIGALRM, QuitTime);
-	alarm(30);
-	memset((char *)&blah, 0, sizeof(blah));
-	blah.sin_family=AF_INET;
-	blah.sin_addr.s_addr=inet_addr(server);
-	blah.sin_port=htons(port);
-	fflush(stdout);
-	fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if ((he = gethostbyname(server)) != NULL)
-		bcopy(he->h_addr, (char *)&blah.sin_addr, he->h_length);
-	else if ((blah.sin_addr.s_addr = inet_addr(server)) < 0)
-		return;
-	if (connect(fd, (struct sockaddr *)&blah, 16)<0)
+	site_t sites[MAX_BBSNET_SITES];
+	int count = load_config(config, sites, MAX_BBSNET_SITES);
+	if (count <= 0)
 		return;
 
 	signal(SIGALRM, SIG_IGN);
-	printf("ÒÑ¾­Á¬½ÓÉÏÖ÷»ú£¬°´'ctrl+]'¿ìËÙÍË³ö¡£\n");
-	sprintf(buf, "%s (%s)", hostname, server);
-	bbs_syslog(buf);//rename by money for conflict with syslog() 2004.01.07
-
-	while (1) {
-		tv.tv_sec = 2400;
-		tv.tv_usec = 0;
-		FD_ZERO(&readfds) ;
-		FD_SET(fd, &readfds);
-		FD_SET(STDIN_FILENO, &readfds);
-
-		result = select(fd + 1, &readfds, NULL, NULL, &tv);
-		if (result <= 0)
-			break;
-		if (FD_ISSET(0, &readfds)) {
-			result = read(0, buf, sizeof(buf));
-			if (result<=0)
-				break;
-			if (result==1&&(buf[0]==10||buf[0]==13)) {
-				buf[0]=13;
-				buf[1]=10;
-				result=2;
-			}
-			if (buf[0]==29) {
-				close(fd);
-				return;
-			}
-			write(fd, buf, result);
-		} else {
-			result=read(fd, buf, sizeof(buf));
-			if (result <= 0)
-				break;
-			telnet_proxy(fd, buf, result);
-		}
-	}
+#ifdef FDQUAN
+	site_select(sites, count);
+#else
+	do_bbsnet(sites);
+#endif
 }
 
+/**
+ *
+ */
+int ent_bnet(void)
+{
+	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip", uinfo.from)) {
+		bbsnet("etc/bbsnet.ini", currentuser.userid);
+	} else {
+		clear();
+		prints("±§Ç¸£¬ÓÉÓÚÄúÊÇÐ£ÄÚÓÃ»§£¬ÄúÎÞ·¨Ê¹ÓÃ±¾´©Ëó¹¦ÄÜ...\n");
+		prints("ÇëÖ±½ÓÁ¬Íù¸´µ©ÈªÕ¾£ºtelnet 10.8.225.9");
+		pressanykey();
+	}
+	return 0;
+}
+
+/**
+ *
+ */
+int ent_bnet2(void)
+{
+	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip2", uinfo.from)) {
+		bbsnet("etc/bbsnet2.ini", currentuser.userid);
+	} else {
+		clear();
+		prints("±§Ç¸£¬ÄúËù´¦µÄÎ»ÖÃÎÞ·¨Ê¹ÓÃ±¾´©Ëó¹¦ÄÜ...");
+		pressanykey();
+	}
+	return 0;
+}

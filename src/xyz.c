@@ -38,51 +38,6 @@ extern struct UCACHE *uidshm;
 #define TH_LOW	10
 #define TH_HIGH	15
 
-/* Function : if host can use bbsnet return 0, else return 1
- * Writer:    roly
- * Data:      02.02.20
- */
-//"etc/bbsnetip"
-//      判断fromhost这个地址可否使用bbsnet,它从bbsnetip中读取不可访问列表 
-//      其中,以#开头的表示注释,忽略
-//               以!开头的表示不可使用
-//               否则,返回大于零的值
-int canbbsnet(char *bbsnetip, char *fromhost) {
-	FILE *fp;
-	char buf[STRLEN], ptr2[STRLEN], *ptr, *ch;
-	int canflag;
-	ptr = fromhost;
-
-	if (!strcasecmp(fromhost, "127.0.0.1"))
-		return 1;
-	if (!strcasecmp(fromhost, "localhost"))
-		return 1;
-
-	if ((fp = fopen(bbsnetip, "r")) != NULL) {
-		strtolower(ptr2, fromhost);
-		while (fgets(buf, STRLEN, fp) != NULL) {
-			ptr = strtok(buf, " \n\t\r");
-			if (ptr != NULL && *ptr != '#') {
-				canflag = (*ptr == '!') ? 0 : 1;
-				if (!canflag)
-					ptr++;
-				ch = ptr;
-				while (*ch != '\0') {
-					if (*ch == '*')
-						break;
-					ch++;
-				}
-				*ch = '\0';
-				if (!strncmp(ptr2, ptr, strlen(ptr))) {
-					fclose(fp);
-					return canflag;
-				} //if !strncmp                  
-			} //if ptr!=NULL
-		} //while
-		fclose(fp);
-	}
-	return 0;
-}
 
 //更改用户 模式状态至mode
 int modify_user_mode(int mode) {
@@ -455,45 +410,6 @@ void x_showuser() {
 		mail_file(buf, currentuser.userid, "使用者资料查询结果");
 		unlink(buf);
 	}
-}
-
-//added by iamfat 2002.09.04
-//      穿梭..
-int ent_bnet2() {
-	char buf[80];
-
-	if (HAS_PERM(PERM_BLEVELS) || canbbsnet("etc/bbsnetip2", uinfo.from)) {
-		sprintf(buf, "etc/bbsnet2.ini %s", currentuser.userid);
-		exec_cmd(BBSNET, NA, "bin/bbsnet", buf);
-	} else {
-		clear();
-		prints("抱歉，您所出的位置无法使用本穿梭功能...");
-		pressanykey();
-		return;
-	}
-	return 0;
-}
-
-//      返回值无意义
-int ent_bnet() {
-	/*   
-	 char buf[80];
-	 sprintf(buf,"etc/bbsnet.ini %s",currentuser.userid);
-	 exec_cmd(BBSNET,NA,"bin/bbsnet",buf);
-	 */
-	char buf[80];
-
-	if (HAS_PERM(PERM_BLEVELS) || canbbsnet("etc/bbsnetip", uinfo.from)) {
-		sprintf(buf, "etc/bbsnet.ini %s", currentuser.userid);
-		exec_cmd(BBSNET, NA, "bin/bbsnet", buf);
-	} else {
-		clear();
-		prints("抱歉，由于您是校内用户，您无法使用本穿梭功能...\n");
-		prints("请直接连往复旦泉站：telnet 10.8.225.9");
-		pressanykey();
-		return 0;
-	}
-	return 0;
 }
 
 //  排雷游戏
