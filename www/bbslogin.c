@@ -97,15 +97,21 @@ static int wwwlogin(struct userec *user, const char *ref)
 	return 0;
 }
 
-static int login_screen(void)
+static const char *get_login_referer(void)
 {
-	http_header();
 	const char *referer = get_referer();
 	const char *ref;
 	if (!strcmp(referer, "/") || !strcmp(referer, "/index.htm"))
 		ref = "sec";
 	else
 		ref = referer;
+	return ref;
+}
+
+static int login_screen(void)
+{
+	http_header();
+	const char *ref = get_login_referer();
 	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
 			"<link rel='stylesheet' type='text/css' href='/css/bbs.css' />"
 			"<title>用户登录 - "BBSNAME"</title></head>"
@@ -130,8 +136,11 @@ int bbslogin_main(void)
 	if (*id == '\0')
 		return login_screen();
 	strlcpy(pw, getparm("pw"), sizeof(pw));
-	if (loginok && strcasecmp(id, currentuser.userid))
-		return BBS_EDUPLGN;
+	if (loginok && !strcasecmp(id, currentuser.userid)) {
+		const char *ref = get_login_referer();
+		printf("Location: %s\n\n", ref);
+		return 0;
+	}
 	if (getuserec(id, &user) == 0)
 		return BBS_ENOUSR;
 
