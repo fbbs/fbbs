@@ -137,7 +137,7 @@ static void do_bbsnet(const site_t *site)
 		if (ret <= 0)
 			break;
 		if (FD_ISSET(STDIN_FILENO, &fds)) {
-			ret = read(STDIN_FILENO, buf, sizeof(buf));
+			ret = read_stdin(buf, sizeof(buf));
 			if (ret <= 0 || *buf == Ctrl(']'))
 				break;
 			write(fd, buf, ret);
@@ -145,7 +145,7 @@ static void do_bbsnet(const site_t *site)
 			ret = read(fd, buf, sizeof(buf));
 			if (ret <= 0)
 				break;
-			write(STDIN_FILENO, buf, ret);
+			write_stdout(buf, ret);
 		}
 	}
 	close(fd);

@@ -13,9 +13,18 @@
 #ifdef LINUX
 #include <sys/ioctl.h>
 #endif
+#ifdef SSHBBS
+#include <libssh/libssh.h>
+#include <libssh/server.h>
+#endif // SSHBBS
 #include "bbs.h"
 
+#ifdef SSHBBS
+#define KEYS_FOLDER "/etc/ssh/"
+#define PID_FILE	BBSHOME"/reclog/sshbbsd.pid"
+#else // SSHBBS
 #define PID_FILE	BBSHOME"/reclog/bbsd.pid"
+#endif // SSHBBS
 #define LOG_FILE	BBSHOME"/reclog/bbsd.log"
 #define NOLOGIN		BBSHOME"/NOLOGIN"
 #ifdef IP_2_NAME
@@ -32,6 +41,10 @@ extern char fromhost[];
 // TODO: deprecate this
 char genbuf[1024]; ///< global buffer for strings. 
 
+#ifdef SSHBBS
+ssh_channel ssh_chan;
+#endif // SSHBBS
+
 // TODO: rewrite this
 static void telnet_init() {
 	static char svr[] = { IAC, WILL, TELOPT_ECHO, IAC, WILL, TELOPT_SGA };
@@ -39,11 +52,11 @@ static void telnet_init() {
 	int rset = 1;
 	char buf[256];
 
-	send(0, svr, 6, 0);
+	write_stdout(svr, sizeof(svr));
 	to.tv_sec = 6;
 	to.tv_usec = 1;
 	if (select(1, (fd_set *)(&rset), NULL, NULL, &to)> 0)
-		recv(0, buf, sizeof(buf), 0);
+		read_stdin(buf, sizeof(buf));
 }
 
 /**
@@ -187,10 +200,84 @@ static int check_nologin(int fd)
 }
 #endif // NOLOGIN
 
+/**
+ *
+ */
+static bool sshbbs_auth(const char *user, const char *password)
+{
+	if (!strcmp(user, "bbs") && !strcmp(password, "bbs"))
+		return true;
+	return false;
+}
+
+/**
+ *
+ */
+static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
+{
+	ssh_message msg;
+	ssh_channel chan = false;
+	bool auth = false;
+	if (ssh_bind_accept(sshbind, session) == SSH_OK
+			&& !ssh_accept(session)) {
+		do {
+			msg = ssh_message_get(session);
+			if (!msg)
+				break;
+			switch (ssh_message_type(msg)) {
+				case SSH_REQUEST_AUTH:
+					switch(ssh_message_subtype(msg)) {
+						case SSH_AUTH_METHOD_PASSWORD:
+							if (sshbbs_auth(ssh_message_auth_user(msg),
+									ssh_message_auth_password(msg))) {
+								auth = true;
+								ssh_message_auth_reply_success(msg, 0);
+								break;
+							}
+						case SSH_AUTH_METHOD_NONE:
+						default:
+							ssh_message_auth_set_methods(msg, 
+									SSH_AUTH_METHOD_PASSWORD);
+							ssh_message_reply_default(msg);
+							break;
+					}
+					break;
+				default:
+					ssh_message_reply_default(msg);
+			}
+			ssh_message_free(msg);
+		} while (!auth);		
+	}
+	if (!auth) {
+		ssh_disconnect(session);
+		return NULL;
+	}
+	
+    do {
+        msg = ssh_message_get(session);
+        if (msg) {
+			switch(ssh_message_type(msg)) {
+				case SSH_REQUEST_CHANNEL_OPEN:
+					if (ssh_message_subtype(msg) == SSH_CHANNEL_SESSION) {
+						chan = ssh_message_channel_request_open_reply_accept(msg);
+                        break;
+                    }
+                default:
+					ssh_message_reply_default(msg);
+            }
+            ssh_message_free(msg);
+        }
+    } while (message && !chan);
+	if (!chan) {
+        ssh_finalize();
+        return NULL;
+    }
+	return chan;
+}
+
 int main(int argc, char *argv[])
 {
-	struct sockaddr_in xsin;
-	int msock, csock, nfds, pid;
+	int csock, nfds, pid;
 	int port = DEFAULT_PORT;
 	socklen_t value;
 	char buf[STRLEN];
@@ -199,15 +286,33 @@ int main(int argc, char *argv[])
 	signal(SIGCHLD, reapchild);
 	signal(SIGTERM, close_daemon);
 
+#ifdef SSHBBS
+	ssh_bind sshbind = ssh_bind_new();
+	ssh_session session = ssh_new();
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,
+			KEYS_FOLDER "ssh_host_rsa_key");
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_LOG_VERBOSITY,
+			SSH_LOG_NOLOG);
+#endif // SSHBBS
+
 	// Port binding
 	if (argc > 1)
 		port = strtol(argv[1], NULL, 10);
 	if (port <= 0)
 		port = DEFAULT_PORT;
-	msock = bind_port(&xsin, port);
+#ifdef SSHBBS
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, port);
+	if (ssh_init() < 0)
+		exit(1);
+#endif // SSHBBS
+	struct sockaddr_in xsin;
+	int msock = bind_port(&xsin, port);
 	if (msock < 0) {
 		exit(1);
 	}
+#ifdef SSHBBS
+	ssh_bind_set_fd(sshbind, msock);
+#endif // SSHBBS
 	nfds = msock + 1;
 
 	// Give up root privileges.
@@ -216,30 +321,42 @@ int main(int argc, char *argv[])
 	chdir(BBSHOME);
 	umask(S_IWGRP | S_IWOTH);
 
-	// Log pid to PID_FILE.
+	// Log pid.
 	sprintf(buf, "%d\n", getpid());
 	unlink(PID_FILE);
 	file_append(PID_FILE, buf);
 
 	// Main loop.
 	while (1) {
+#ifdef SSHBBS
+		ssh_chan = sshbbs_accept(sshbind, session);
+		if (!ssh_chan)
+			continue;
+		csock = session->fd;
+		getpeername(csock, (struct sockaddr *) &xsin, &value);
+#else // SSHBBS
 		value = sizeof(xsin);
 		csock = accept(msock, (struct sockaddr *) &xsin, &value);
 		if (csock < 0)
 			continue;
+		// TODO: nologin
 #ifdef NOLOGIN
 		if (check_nologin(csock) < 0) {
 			close(csock);
 			continue;
 		}
 #endif // NOLOGIN
+#endif // SSHBBS
+
 		pid = fork();
 		if (pid == 0) {
 			while (--nfds >= 0)
 				close(nfds);
 			dup2(csock, STDIN_FILENO);
+#ifndef SSHBBS
 			close(csock);
 			dup2(STDIN_FILENO, STDOUT_FILENO);
+#endif // SSHBBS
 			get_ip_addr(&xsin);
 			telnet_init();
 			start_client();

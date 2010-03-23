@@ -1,10 +1,13 @@
 // Terminal I/O handlers.
 
-#include "bbs.h"
 #ifdef AIX
 #include <sys/select.h>
 #endif
 #include <arpa/telnet.h>
+#ifdef SSHBBS
+#include <libssh/libssh.h>
+#endif // SSHBBS
+#include "bbs.h"
 
 enum {
 	INPUT_ACTIVE = 0,
@@ -56,6 +59,31 @@ void init_alarm() {
 }
 
 /**
+ *
+ */
+int read_stdin(char *buf, size_t size)
+{
+#ifdef SSHBBS
+	return channel_read(ssh_chan, buf, size, 0);
+#else // SSHBBS
+	return read(STDIN_FILENO, buf, size);
+#endif // SSHBBS
+}
+
+/**
+ *
+ */
+int write_stdout(const char *buf, size_t len)
+{
+#ifdef SSHBBS
+	return channel_write(ssh_chan, buf, len);
+#else // SSHBBS
+	return write(STDIN_FILENO, buf, len);
+#endif // SSHBBS
+
+}
+
+/**
  * Flush output buffer.
  * @return 0 on success, -1 on error.
  */
@@ -63,7 +91,7 @@ int oflush(void)
 {
 	int ret = 0;
 	if (outbuf.size > 0)
-		ret = write(STDOUT_FILENO, outbuf.buf, outbuf.size);
+		ret = write_stdout(outbuf.buf, outbuf.size);
 	outbuf.size = 0;
 	return ret;
 }
@@ -206,7 +234,7 @@ static int get_raw_ch(void)
 			return I_OTHERDATA;
 
 		while (1) {
-			ret = read(STDIN_FILENO, inbuf.buf, sizeof(inbuf.buf));
+			ret = read_stdin(inbuf.buf, sizeof(inbuf.buf));
 			if (ret > 0)
 				break;
 			if ((ret < 0) && (errno == EINTR))

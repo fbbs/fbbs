@@ -538,8 +538,8 @@ static void check_tty_lines(void)
 
 	if (ttyname(STDIN_FILENO))
 		return;
-	write(STDIN_FILENO, buf1, 3);
-	n = read(STDIN_FILENO, buf2, 80);
+	write_stdout(buf1, 3);
+	n = read_stdin(buf2, 80);
 	if (n == 12) {
 		if (buf2[0] != 255 || buf2[1] != 251 || buf2[2] != 31)
 			return;

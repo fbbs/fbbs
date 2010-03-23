@@ -3,13 +3,21 @@ AM_CPPFLAGS = -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I.
 LIBS = -lcrypt -ldl -lgd
 LDADD = ../lib/libBBS.a
 
-bin_PROGRAMS = bbsd miscd chatd thread
+bin_PROGRAMS = bbsd miscd sshbbsd chatd thread
 bbsd_SOURCES = announce.c bbs.c bbsd.c bcache.c bm.c boards.c chat.c \
 			   comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
 			   help.c io.c list.c mail.c main.c maintain.c more.c \
 			   namecomplete.c postheader.c read.c register.c screen.c \
 			   sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
 			   readabc.c five.c convert.c bbsnet.c
+sshbbsd_SOURCES = announce.c bbs.c bbsd.c bcache.c bm.c boards.c chat.c \
+			   comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
+			   help.c io.c list.c mail.c main.c maintain.c more.c \
+			   namecomplete.c postheader.c read.c register.c screen.c \
+			   sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
+			   readabc.c five.c convert.c bbsnet.c
+sshbbsd_LIBS += -lssh
+sshbbsd_CPPFLAGS += -DSSHBBS
 miscd_SOURCES = announce.c bbs.c bcache.c bm.c boards.c chat.c \
 				comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
 				help.c io.c list.c mail.c main.c maintain.c miscd.c more.c \
