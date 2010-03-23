@@ -738,7 +738,9 @@ static int login_query(void)
 		return -1;
 
 	dumb_term = false;
+#ifndef SSHBBS
 	check_tty_lines();
+#endif // SSHBBS
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);

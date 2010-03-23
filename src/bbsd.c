@@ -211,6 +211,28 @@ static bool sshbbs_auth(const char *user, const char *password)
 	return false;
 }
 
+static bool channel_reply(ssh_session session, enum ssh_channel_requests_e req)
+{
+	ssh_message msg;
+	bool expect = false;
+	do {
+		msg = ssh_message_get(session);
+		if (msg && ssh_message_type(msg)==SSH_REQUEST_CHANNEL &&
+				ssh_message_subtype(msg) == req) {
+			expect = true;
+			ssh_message_channel_request_reply_success(msg);
+			break;
+		}
+		if (!expect) {
+			ssh_message_reply_default(msg);
+		}
+		ssh_message_free(msg);
+	} while (msg && !expect);
+	if (!expect)
+		return false;
+	return true;
+}
+
 /**
  *
  */
@@ -219,8 +241,7 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 	ssh_message msg;
 	ssh_channel chan = NULL;
 	bool auth = false;
-	if (ssh_bind_accept(sshbind, session) == SSH_OK
-			&& !ssh_accept(session)) {
+	if (ssh_accept(session) == 0) {
 		do {
 			msg = ssh_message_get(session);
 			if (!msg)
@@ -270,17 +291,24 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
         }
     } while (msg && !chan);
 	if (!chan) {
-        ssh_finalize();
+        ssh_disconnect(session);
         return NULL;
     }
+
+	if (!channel_reply(session, SSH_CHANNEL_REQUEST_PTY)
+			|| !channel_reply(session, SSH_CHANNEL_REQUEST_SHELL)) {
+		ssh_disconnect(session);
+		return NULL;
+	}
 	return chan;
 }
 #endif // SSHBBS
 
 int main(int argc, char *argv[])
 {
-	int csock, nfds, pid;
+	int msock, csock, nfds, pid;
 	int port = DEFAULT_PORT;
+	struct sockaddr_in xsin;
 	socklen_t value;
 	char buf[STRLEN];
 
@@ -290,7 +318,9 @@ int main(int argc, char *argv[])
 
 #ifdef SSHBBS
 	ssh_bind sshbind = ssh_bind_new();
-	ssh_session session = ssh_new();
+	ssh_session session;
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_DSAKEY,
+			KEYS_FOLDER "ssh_host_dsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,
 			KEYS_FOLDER "ssh_host_rsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_LOG_VERBOSITY,
@@ -304,16 +334,18 @@ int main(int argc, char *argv[])
 		port = DEFAULT_PORT;
 #ifdef SSHBBS
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, &port);
-	if (ssh_init() < 0)
+	ssh_bind_set_blocking(sshbind, 1);
+	if (ssh_bind_listen(sshbind) < 0) {
+		snprintf(buf, sizeof(buf), "listen failed: %s.\n", ssh_get_error(sshbind));
+		bbsd_log(buf);
 		exit(1);
-#endif // SSHBBS
-	struct sockaddr_in xsin;
-	int msock = bind_port(&xsin, port);
+	}
+	msock = ssh_bind_get_fd(sshbind);
+#else // SSHBBS
+	msock = bind_port(&xsin, port);
 	if (msock < 0) {
 		exit(1);
 	}
-#ifdef SSHBBS
-	ssh_bind_set_fd(sshbind, msock);
 #endif // SSHBBS
 	nfds = msock + 1;
 
@@ -331,9 +363,11 @@ int main(int argc, char *argv[])
 	// Main loop.
 	while (1) {
 #ifdef SSHBBS
-		ssh_chan = sshbbs_accept(sshbind, session);
-		if (!ssh_chan)
+		session = ssh_new();
+		if (ssh_bind_accept(sshbind, session) == SSH_ERROR) {
+			ssh_free(session);
 			continue;
+		}
 		csock = ssh_get_fd(session);
 		getpeername(csock, (struct sockaddr *) &xsin, &value);
 #else // SSHBBS
@@ -355,12 +389,18 @@ int main(int argc, char *argv[])
 			while (--nfds >= 0)
 				close(nfds);
 			dup2(csock, STDIN_FILENO);
-#ifndef SSHBBS
+#ifdef SSHBBS
+			ssh_chan = sshbbs_accept(sshbind, session);
+			if (!ssh_chan)
+				exit(1);
+#else // SSHBBS
 			close(csock);
 			dup2(STDIN_FILENO, STDOUT_FILENO);
 #endif // SSHBBS
 			get_ip_addr(&xsin);
+#ifndef SSHBBS
 			telnet_init();
+#endif // SSHBBS
 			start_client();
 		}
 		close(csock);
