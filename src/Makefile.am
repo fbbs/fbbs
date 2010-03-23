@@ -3,27 +3,28 @@ AM_CPPFLAGS = -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I.
 LIBS = -lcrypt -ldl -lgd
 LDADD = ../lib/libBBS.a
 
+
 bin_PROGRAMS = bbsd miscd sshbbsd chatd thread
-bbsd_SOURCES = announce.c bbs.c bbsd.c bcache.c bm.c boards.c chat.c \
-			   comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
-			   help.c io.c list.c mail.c main.c maintain.c more.c \
-			   namecomplete.c postheader.c read.c register.c screen.c \
-			   sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
-			   readabc.c five.c convert.c bbsnet.c
-sshbbsd_SOURCES = announce.c bbs.c bbsd.c bcache.c bm.c boards.c chat.c \
-			   comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
-			   help.c io.c list.c mail.c main.c maintain.c more.c \
-			   namecomplete.c postheader.c read.c register.c screen.c \
-			   sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
-			   readabc.c five.c convert.c bbsnet.c
-sshbbsd_LDADD = $(LDADD) -lssh
+bbsd_SOURCES = bbsd.c io.c
+bbsd_LDADD = $(LDADD) announce.$(OBJEXT) bbs.$(OBJEXT) bcache.$(OBJEXT) \
+             bm.$(OBJEXT) boards.$(OBJEXT) chat.$(OBJEXT) \
+			 comm_lists.$(OBJEXT) delete.$(OBJEXT) deny.$(OBJEXT) \
+			 edit.$(OBJEXT) fileshm.$(OBJEXT) goodbye.$(OBJEXT) \
+			 help.$(OBJEXT) list.$(OBJEXT) mail.$(OBJEXT) main.$(OBJEXT) \
+			 maintain.$(OBJEXT) more.$(OBJEXT) namecomplete.$(OBJEXT) \
+			 postheader.$(OBJEXT) read.$(OBJEXT) register.$(OBJEXT) \
+			 screen.$(OBJEXT) sendmsg.$(OBJEXT) stuff.$(OBJEXT) \
+			 talk.$(OBJEXT) userinfo.$(OBJEXT) vote.$(OBJEXT) xyz.$(OBJEXT) \
+			 readabc.$(OBJEXT) five.$(OBJEXT) convert.$(OBJEXT) \
+			 bbsnet.$(OBJEXT)
+
+sshbbsd_SOURCES = bbsd.c io.c
+sshbbsd_LDADD = $(bbsd_LDADD) -lssh
 sshbbsd_CPPFLAGS = -DSSHBBS $(AM_CPPFLAGS)
-miscd_SOURCES = announce.c bbs.c bcache.c bm.c boards.c chat.c \
-				comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
-				help.c io.c list.c mail.c main.c maintain.c miscd.c more.c \
-				namecomplete.c postheader.c read.c register.c screen.c \
-				sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
-				readabc.c convert.c bbsnet.c
+
+miscd_SOURCES = miscd.c io.c
+miscd_LDADD = $(bbsd_LDADD)
+
 chatd_SOURCES = station.c
 thread_SOURCES = thread.c
 
