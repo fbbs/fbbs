@@ -16,8 +16,8 @@ sshbbsd_SOURCES = announce.c bbs.c bbsd.c bcache.c bm.c boards.c chat.c \
 			   namecomplete.c postheader.c read.c register.c screen.c \
 			   sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c \
 			   readabc.c five.c convert.c bbsnet.c
-sshbbsd_LIBS += -lssh
-sshbbsd_CPPFLAGS += -DSSHBBS
+sshbbsd_LDADD = $(LDADD) -lssh
+sshbbsd_CPPFLAGS = -DSSHBBS $(AM_CPPFLAGS)
 miscd_SOURCES = announce.c bbs.c bcache.c bm.c boards.c chat.c \
 				comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c \
 				help.c io.c list.c mail.c main.c maintain.c miscd.c more.c \

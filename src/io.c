@@ -26,6 +26,9 @@ enum {
 extern int convcode;
 #endif
 extern struct screenline *big_picture;
+#ifdef SSHBBS
+extern ssh_channel ssh_chan;
+#endif // SSHBBS
 
 static iobuf_t inbuf;   ///< Input buffer.
 static iobuf_t outbuf;  ///< Output buffer.

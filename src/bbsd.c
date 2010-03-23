@@ -200,6 +200,7 @@ static int check_nologin(int fd)
 }
 #endif // NOLOGIN
 
+#ifdef SSHBBS
 /**
  *
  */
@@ -216,7 +217,7 @@ static bool sshbbs_auth(const char *user, const char *password)
 static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 {
 	ssh_message msg;
-	ssh_channel chan = false;
+	ssh_channel chan = NULL;
 	bool auth = false;
 	if (ssh_bind_accept(sshbind, session) == SSH_OK
 			&& !ssh_accept(session)) {
@@ -267,13 +268,14 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
             }
             ssh_message_free(msg);
         }
-    } while (message && !chan);
+    } while (msg && !chan);
 	if (!chan) {
         ssh_finalize();
         return NULL;
     }
 	return chan;
 }
+#endif // SSHBBS
 
 int main(int argc, char *argv[])
 {
@@ -301,7 +303,7 @@ int main(int argc, char *argv[])
 	if (port <= 0)
 		port = DEFAULT_PORT;
 #ifdef SSHBBS
-	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, port);
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, &port);
 	if (ssh_init() < 0)
 		exit(1);
 #endif // SSHBBS
@@ -332,7 +334,7 @@ int main(int argc, char *argv[])
 		ssh_chan = sshbbs_accept(sshbind, session);
 		if (!ssh_chan)
 			continue;
-		csock = session->fd;
+		csock = ssh_get_fd(session);
 		getpeername(csock, (struct sockaddr *) &xsin, &value);
 #else // SSHBBS
 		value = sizeof(xsin);
