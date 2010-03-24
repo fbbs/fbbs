@@ -20,7 +20,7 @@
 #include "bbs.h"
 
 #ifdef SSHBBS
-#define KEYS_FOLDER "/etc/ssh/"
+#define KEYS_FOLDER BBSHOME"/etc/ssh"
 #define PID_FILE	BBSHOME"/reclog/sshbbsd.pid"
 #else // SSHBBS
 #define PID_FILE	BBSHOME"/reclog/bbsd.pid"
@@ -320,9 +320,9 @@ int main(int argc, char *argv[])
 	ssh_bind sshbind = ssh_bind_new();
 	ssh_session session;
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_DSAKEY,
-			KEYS_FOLDER "ssh_host_dsa_key");
+			KEYS_FOLDER"/ssh_host_dsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,
-			KEYS_FOLDER "ssh_host_rsa_key");
+			KEYS_FOLDER"/ssh_host_rsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_LOG_VERBOSITY,
 			SSH_LOG_NOLOG);
 #endif // SSHBBS
