@@ -488,6 +488,7 @@ table.post{width:100%}
 		</input></xsl:when>
 		<xsl:otherwise><xsl:call-template name='remove-ansi'><xsl:with-param name='str' select='t'/></xsl:call-template></xsl:otherwise>
 		</xsl:choose></p>
+		<p>Ç©Ãûµµ: <input type='radio' name='sig' value='1' checked='checked'/>1 <input type='radio' name='sig' value='2'/>2 <input type='radio' name='sig' value='3'/>3 <input type='radio' name='sig' value='4'/>4 <input type='radio' name='sig' value='5'/>5 <input type='radio' name='sig' value='6'/>6</p>
 		<p><textarea class='binput' name='text' rows='20' cols='85' wrap='virtual'>
 			<xsl:if test='@edit=0'><xsl:text> &#x0d;&#x0a;</xsl:text></xsl:if>
 			<xsl:call-template name='show-quoted'>

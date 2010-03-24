@@ -321,3 +321,33 @@ const char *mask_host(const char *host)
 	masked[sizeof(masked) - 1] = '\0';
 	return masked;
 }
+
+/**
+ * Attach a signature.
+ * @param fp Output file.
+ */
+void add_signature(FILE *fp, const char *user, int sig)
+{
+	fputs("\n--\n", fp);
+	if (sig <= 0)
+		return;
+
+	char file[HOMELEN], buf[256];
+	sethomefile(file, user, "signatures");
+	FILE *fin = fopen(file, "r");
+	if (!fin)
+		return;
+	int i;
+	for (i = 0; i < (sig - 1) * MAXSIGLINES; ++i) {
+		if (!fgets(buf, sizeof(buf), fin)) {
+			fclose(fin);
+			return;
+		}
+	}
+	for (i = 0; i < MAXSIGLINES; i++) {
+		if (fgets(buf, sizeof(buf), fin)
+				&& !strstr(buf, ":¡¤"BBSNAME" "BBSHOST"¡¤[FROM:"))
+			fputs(buf, fp);
+	}
+	fclose(fin);
+}

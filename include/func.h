@@ -98,6 +98,7 @@ void SpecialID(const char *uid, char *host, int len);
 char *getdatestring(time_t time, enum DATE_FORMAT mode);
 bool seek_in_file(const char *filename, const char *seekstr);
 const char *mask_host(const char *host);
+void add_signature(FILE *fp, const char *user, int sig);
 
 //board.c
 int changeboard(struct boardheader **bp, char *cboard, const char *board);

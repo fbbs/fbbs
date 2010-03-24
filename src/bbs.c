@@ -1390,7 +1390,7 @@ void do_quote(const char *orig, const char *file, char mode)
 		}
 	}
 	if (currentuser.signature && !header.chk_anony)
-		addsignature(fp, 1);
+		add_signature(fp, currentuser.userid, currentuser.signature);
 	fclose(fp);
 }
 

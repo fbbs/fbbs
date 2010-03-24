@@ -30,13 +30,14 @@ static FILE *get_fname(const char *dir, const char *pfx, char *fname, size_t siz
  * @param bp The board to post.
  * @param title The title.
  * @param content The content.
+ * @param sig The number of signature to use.
  * @param cross Whether this is a cross post.
  * @param ip The owner's IP address.
  * @param o_fp Pointer to the replied post. NULL if this is a new thread.
  * @return 0 on success, -1 on error.
  */
 int post_article(const struct userec *user, const struct boardheader *bp,
-		const char *title, const char *content, bool cross,
+		const char *title, const char *content, int sig, bool cross,
 		const char *ip, const struct fileheader *o_fp)
 {
 	if (user == NULL || bp == NULL || title == NULL 
@@ -54,8 +55,7 @@ int post_article(const struct userec *user, const struct boardheader *bp,
 			user->userid, user->username, bp->filename, title, BBSNAME,
 			getdatestring(time(NULL), DATE_ZH));
 	fputs(content, fptr);
-	fprintf(fptr, "\n--\n");
-	// TODO: signature
+	add_signature(FCGI_ToFILE(fptr), currentuser.userid, sig);
 	fprintf(fptr, "\033[m\033[1;%2dm¡ù %s:¡¤"BBSNAME" "BBSHOST
 			"¡¤HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7,
 			cross ? "×ªÔØ" : "À´Ô´", ip);
@@ -210,7 +210,8 @@ int bbssnd_main(void)
 			return BBS_EINTNL;
 	} else {
 		if (post_article(&currentuser, bp, title, getparm("text"),
-				false, mask_host(fromhost), reply ? &fh : NULL) < 0)
+				strtol(getparm("sig"), NULL, 0), false, mask_host(fromhost),
+				reply ? &fh : NULL) < 0)
 			return BBS_EINTNL;
 	}
 

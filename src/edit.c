@@ -741,48 +741,6 @@ void write_header(FILE *fp, int mode) {
 	fprintf(fp, "\n");
 }
 
-// 给文章或信件末尾附上签名档
-void addsignature(FILE *fp, int blank) {
-	FILE *sigfile;
-	int i, valid_ln = 0;
-	char tmpsig[MAXSIGLINES][256];
-	char inbuf[256];
-	char fname[STRLEN];
-	char tmp[256]; //added by roly 02.04.26
-
-	setuserfile(fname, "signatures");
-	if ((sigfile = fopen(fname, "r")) == NULL) {
-		return;
-	}
-	if (blank)
-		fputs("\n", fp);
-	fputs("--\n", fp);
-	for (i = 1; i <= (currentuser.signature - 1) * MAXSIGLINES
-			&& currentuser.signature != 1; i++) {
-
-		if (!fgets(inbuf, sizeof(inbuf), sigfile)) {
-			fclose(sigfile);
-			return;
-		}
-	} // for
-	for (i = 1; i <= MAXSIGLINES; i++) {
-		if (fgets(inbuf, sizeof(inbuf), sigfile)) {
-			if (inbuf[0] != '\n')
-				valid_ln = i;
-			strcpy(tmpsig[i - 1], inbuf);
-		} else {
-			break;
-		}
-	}
-	fclose(sigfile);
-	/* added by roly 02.04.26 to disable fake FROM */
-	sprintf(tmp, ":·%s %s·[FROM:", BoardName, BBSHOST);
-	/* added end */
-	for (i = 1; i <= valid_ln; i++)
-		if (!strstr(tmpsig[i-1], tmp)) //added by roly 02.04.26
-			fputs(tmpsig[i - 1], fp);
-
-}
 #define KEEP_EDITING -2
 
 void valid_article(char *pmt, char *abort, int sure) {

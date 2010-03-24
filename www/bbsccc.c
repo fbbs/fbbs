@@ -2,9 +2,9 @@
 
 bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
-int post_article(const struct userec *user, const struct boardheader *bp, 
-		const char *title, const char *content, bool cross, const char *ip, 
-		const struct fileheader *o_fp);
+int post_article(const struct userec *user, const struct boardheader *bp,
+		const char *title, const char *content, int sig, bool cross,
+		const char *ip, const struct fileheader *o_fp);
 
 int bbsccc_main(void)
 {
@@ -43,7 +43,7 @@ int bbsccc_main(void)
 			snprintf(title, sizeof(title), "[зЊди]%s", fh.title);
 		if (mmap_open(file, &m) < 0)
 			return BBS_EINTNL;
-		int ret = post_article(&currentuser, bp2, title, m.ptr, true,
+		int ret = post_article(&currentuser, bp2, title, m.ptr, 0, true,
 				fromhost, NULL);
 		mmap_close(&m);
 		if (ret < 0)
