@@ -8,7 +8,7 @@
  */
 int get_raw_mode(int mode)
 {
-	return (mode & 0x3fffffff);
+	return (mode & 0xffff);
 }
 
 /**
