@@ -626,6 +626,8 @@ void r_msg(int notused)
 		strlcpy(user, msghead + 12, sizeof(user));
 		strlcpy(date, msghead + 35, sizeof(date));
 		prints("\033[1;36;44m%s  \033[33m(%s)\033[37m", user, date);
+		move(line, 93);
+		outs("\033[31m(^Z»Ø)\033[37m");
 		move(line + 1, 0);
 		clrtoeol();
 		msg_line = show_data(msg, LINE_LEN-1, line + 1, 0);
