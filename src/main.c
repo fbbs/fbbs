@@ -520,6 +520,7 @@ static void logattempt(char *uid, char *frm)
 	file_append(fname, genbuf);
 }
 
+#ifndef SSHBBS
 // Get height of client window.
 // See RFC 1073 "Telnet Window Size Option"
 static void check_tty_lines(void)
@@ -558,6 +559,7 @@ static void check_tty_lines(void)
 		t_lines = 24;
 	return;
 }
+#endif // SSHBBS
 
 struct max_log_record {
 	int year;
@@ -607,31 +609,69 @@ static void visitlog(void)
 	prints("%s", genbuf);
 }
 
+enum {
+	BBS_EGIVEUP = 1,
+	BBS_ESUICIDE = 2,
+	BBS_EBANNED = 3,
+};
+
+/**
+ *
+ */
+int bbs_auth(const char *user, const char *passwd)
+{
+	resolve_utmp();
+	if (!user || *user == '\0')
+		return BBS_ENOUSR;
+	if (currentuser.userid[0] == '\0') {
+		if (count_online() > MAXACTIVE)
+			return BBS_E2MANY;
+		if (!dosearchuser(user, &currentuser, &usernum))
+			return BBS_ENOUSR;
+	}
+	if (!checkpasswd(currentuser.passwd, passwd)) {
+		logattempt(currentuser.userid, fromhost);
+		return BBS_EWPSWD;
+	}
+	if (strcasecmp(currentuser.userid, "guest") && !HAS_PERM(PERM_LOGIN)) {
+		if (chk_giveupbbs())
+			return BBS_EGIVEUP;
+		if (currentuser.userlevel == 0) {
+			return BBS_ESUICIDE;
+		} else {
+			return BBS_EBANNED;
+		}
+	}
+#ifdef CHECK_FREQUENTLOGIN
+	if (!HAS_PERM(PERM_SYSOPS)
+			&& strcasecmp(currentuser.userid, "guest") != 0
+			&& abs(time(NULL) - currentuser.lastlogin) < 10) {
+		return BBS_ELFREQ;
+	}
+#endif
+	return 0;
+}
+
 static int login_query(void)
 {
+#ifndef SSHBBS
 	char uid[IDLEN + 2];
 	char passbuf[PASSLEN];
-	int curr_login_num;
 	int attempts;
 	char *ptr;
 	int recover; // For giveupBBS
+	bool auth = false;
+#endif // SSHBBS
 
 	// Deny new logins if too many users (>=MAXACTIVE) online.
 	resolve_utmp();
-	curr_login_num = count_online();
+	int curr_login_num = count_online();
+#ifndef SSHBBS
 	if (curr_login_num >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
 		return -1;
 	}
-
-#ifdef BBSNAME
-	strcpy(BoardName, BBSNAME);
-#else
-	ptr = sysconf_str("BBSNAME");
-	if (ptr == NULL)
-		ptr = "尚未命名测试站";
-	strcpy(BoardName, ptr);
-#endif
+#endif // SSHBBS
 
 	if (fill_shmfile(1, "etc/issue", "ISSUE_SHMKEY")) {
 		show_issue();
@@ -639,18 +679,21 @@ static int login_query(void)
 	prints("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
 			BoardName);
+
 	utmpshm->total_num = curr_login_num;
 	if (utmpshm->max_login_num < utmpshm->total_num)
 		utmpshm->max_login_num = utmpshm->total_num;
 	if (utmpshm->usersum <= 0)
 		utmpshm->usersum = allusers();
+
 	prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
 			"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
 			utmpshm->usersum, MAXUSERS, utmpshm->total_num, MAXACTIVE);
 	visitlog();
 
+#ifndef SSHBBS
 	attempts = 0;
-	while (1) {
+	while (!auth) {
 		if (attempts++ >= LOGINATTEMPTS) {
 			ansimore("etc/goodbye", NA);
 			return -1;
@@ -694,45 +737,39 @@ static int login_query(void)
 			if (!convcode)
 				convcode = !(currentuser.userdefine & DEF_USEGB);
 #endif
-			getdata(0, 0, "\033[1;37m请输入密码: \033[m", passbuf, PASSLEN, NOECHO,
-					YEA);
+			getdata(0, 0, "\033[1;37m请输入密码: \033[m", passbuf, PASSLEN,
+					NOECHO, YEA);
 			passbuf[8] = '\0';
-			if (!checkpasswd(currentuser.passwd, passbuf)) {
-				logattempt(currentuser.userid, fromhost);
-				prints("\033[1;31m密码输入错误...\033[m\n");
-			} else {
-				if (strcasecmp(currentuser.userid, "guest")
-						&& !HAS_PERM(PERM_LOGIN)) {
+			switch (bbs_auth(currentuser.userid, passbuf)) {
+				case BBS_EWPSWD:
+					logattempt(currentuser.userid, fromhost);
+					prints("\033[1;31m密码输入错误...\033[m\n");
+					break;
+				case BBS_EGIVEUP:
 					recover = chk_giveupbbs();
-					if (recover) {
-						prints("\033[33m您正在戒网，"
-							"离戒网结束还有%d天\033[m\n",
+					prints("\033[33m您正在戒网，离戒网结束还有%d天\033[m\n",
 							recover - time(NULL) / 3600 / 24);
-						return -1;
-					}
-					if (currentuser.userlevel == 0) {
-						prints("\033[32m您已经自杀\033[m\n");
-						return -1;
-					} else {
-						prints("\033[32m本帐号已停机。请到 "
-							"\033[36mNotice\033[32m版 查询原因\033[m\n");
-						return -1;
-					}
-				}
-#ifdef CHECK_FREQUENTLOGIN
-				if (!HAS_PERM(PERM_SYSOPS)
-						&& strcasecmp(currentuser.userid, "guest") != 0
-						&& abs(time(NULL) - currentuser.lastlogin) < 10) {
-					prints("登录过于频繁，请稍候再来\n");
-					report("Too Frequent", currentuser.userid);
 					return -1;
-				}
-#endif
-				memset(passbuf, 0, PASSLEN - 1);
-				break;
+				case BBS_ESUICIDE:
+					prints("\033[32m您已经自杀\033[m\n");
+					return -1;
+				case BBS_EBANNED:
+					prints("\033[32m本帐号已停机。请到 "
+							"\033[36mNotice\033[32m版 查询原因\033[m\n");
+					return -1;
+				case BBS_ELFREQ:
+					prints("登录过于频繁，请稍候再来\n");
+					return -1;
+				default:
+					auth = true;
+					break;
 			}
+			memset(passbuf, 0, PASSLEN - 1);
 		}
 	}
+#else // SSHBBS
+	presskeyfor("\033[1;33m欢迎使用ssh方式访问本站，请按任意键继续", t_lines - 1);
+#endif // SSHBBS
 
 	if (multi_user_check() == -1)
 		return -1;
@@ -1054,8 +1091,6 @@ void tlog_recover(void)
 void start_client(void)
 {
 	extern char currmaildir[];
-
-	load_sysconf();
 #ifdef ALLOWSWITCHCODE
 	if (resolve_gbkbig5_table() < 0)
 		exit(1);
@@ -1065,6 +1100,15 @@ void start_client(void)
 	if (setjmp(byebye)) {
 		system_abort();
 	}
+
+#ifdef BBSNAME
+	strcpy(BoardName, BBSNAME);
+#else
+	ptr = sysconf_str("BBSNAME");
+	if (ptr == NULL)
+		ptr = "尚未命名测试站";
+	strcpy(BoardName, ptr);
+#endif
 
 	if (login_query() == -1) {
 		oflush();
@@ -1098,6 +1142,8 @@ void start_client(void)
 	num_alcounter();
 	if (count_friends > 0 && DEFINE(DEF_LOGFRIEND))
 		t_friends();
+
+	load_sysconf();
 	while (1) {
 		if (DEFINE(DEF_NORMALSCR))
 			domenu("TOPMENU");

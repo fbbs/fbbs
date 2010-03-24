@@ -45,20 +45,6 @@ char genbuf[1024]; ///< global buffer for strings.
 ssh_channel ssh_chan;
 #endif // SSHBBS
 
-// TODO: rewrite this
-static void telnet_init() {
-	static char svr[] = { IAC, WILL, TELOPT_ECHO, IAC, WILL, TELOPT_SGA };
-	struct timeval to;
-	int rset = 1;
-	char buf[256];
-
-	write_stdout(svr, sizeof(svr));
-	to.tv_sec = 6;
-	to.tv_usec = 1;
-	if (select(1, (fd_set *)(&rset), NULL, NULL, &to)> 0)
-		read_stdin(buf, sizeof(buf));
-}
-
 /**
  * Get remote ip address.
  * @param from socket struct
@@ -144,6 +130,21 @@ static int bbsd_log(const char *str)
 	return file_append(LOG_FILE, buf);
 }
 
+#ifndef SSHBBS
+// TODO: rewrite this
+static void telnet_init() {
+	static char svr[] = { IAC, WILL, TELOPT_ECHO, IAC, WILL, TELOPT_SGA };
+	struct timeval to;
+	int rset = 1;
+	char buf[256];
+
+	write_stdout(svr, sizeof(svr));
+	to.tv_sec = 6;
+	to.tv_usec = 1;
+	if (select(1, (fd_set *)(&rset), NULL, NULL, &to)> 0)
+		read_stdin(buf, sizeof(buf));
+}
+
 /**
  * Port Binding.
  * @param xsin the socket structure
@@ -200,17 +201,7 @@ static int check_nologin(int fd)
 }
 #endif // NOLOGIN
 
-#ifdef SSHBBS
-/**
- *
- */
-static bool sshbbs_auth(const char *user, const char *password)
-{
-	if (!strcmp(user, "bbs") && !strcmp(password, "bbs"))
-		return true;
-	return false;
-}
-
+#else // SSHBBS
 static bool channel_reply(ssh_session session, enum ssh_channel_requests_e req)
 {
 	ssh_message msg;
@@ -241,6 +232,8 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 	ssh_message msg;
 	ssh_channel chan = NULL;
 	bool auth = false;
+	int ret;
+	int attempt = 0;
 	if (ssh_accept(session) == 0) {
 		do {
 			msg = ssh_message_get(session);
@@ -250,17 +243,29 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 				case SSH_REQUEST_AUTH:
 					switch(ssh_message_subtype(msg)) {
 						case SSH_AUTH_METHOD_PASSWORD:
-							if (sshbbs_auth(ssh_message_auth_user(msg),
-									ssh_message_auth_password(msg))) {
-								auth = true;
-								ssh_message_auth_reply_success(msg, 0);
-								break;
+							ret = bbs_auth(ssh_message_auth_user(msg),
+									ssh_message_auth_password(msg));
+							switch (ret) {
+								case BBS_ENOUSR:
+								case BBS_EWPSWD:
+									attempt++;
+									ssh_message_reply_default(msg);
+									break;
+								case 0:
+									auth = true;
+									ssh_message_auth_reply_success(msg, 0);
+									break;
+								default:
+									ssh_disconnect(session);
+									return NULL;
 							}
+							break;
 						case SSH_AUTH_METHOD_NONE:
 						default:
 							ssh_message_auth_set_methods(msg, 
 									SSH_AUTH_METHOD_PASSWORD);
 							ssh_message_reply_default(msg);
+							attempt++;
 							break;
 					}
 					break;
@@ -268,7 +273,7 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 					ssh_message_reply_default(msg);
 			}
 			ssh_message_free(msg);
-		} while (!auth);		
+		} while (!auth && attempt < LOGINATTEMPTS);
 	}
 	if (!auth) {
 		ssh_disconnect(session);
@@ -389,6 +394,7 @@ int main(int argc, char *argv[])
 			while (--nfds >= 0)
 				close(nfds);
 			dup2(csock, STDIN_FILENO);
+			get_ip_addr(&xsin);
 #ifdef SSHBBS
 			ssh_chan = sshbbs_accept(sshbind, session);
 			if (!ssh_chan)
@@ -396,9 +402,6 @@ int main(int argc, char *argv[])
 #else // SSHBBS
 			close(csock);
 			dup2(STDIN_FILENO, STDOUT_FILENO);
-#endif // SSHBBS
-			get_ip_addr(&xsin);
-#ifndef SSHBBS
 			telnet_init();
 #endif // SSHBBS
 			start_client();
