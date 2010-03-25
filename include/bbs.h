@@ -401,12 +401,6 @@ enum {
 	LINE_BUFSIZE = 256,  ///< Line buffer size.
 };
 
-typedef struct {
-	int cur;
-	int size;
-	unsigned char buf[IOBUFSIZE];
-} iobuf_t;
-
 #include "func.h"
 #include "../lib/goodbrd.h"
 

@@ -22,6 +22,12 @@ enum {
 	ESCST_ERR,  ///< Parse error
 };
 
+typedef struct {
+	int cur;
+	size_t size;
+	unsigned char buf[IOBUFSIZE];
+} iobuf_t;
+
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
 #endif
@@ -64,7 +70,7 @@ void init_alarm() {
 /**
  *
  */
-int read_stdin(char *buf, size_t size)
+int read_stdin(unsigned char *buf, size_t size)
 {
 #ifdef SSHBBS
 	return channel_read(ssh_chan, buf, size, 0);
@@ -76,7 +82,7 @@ int read_stdin(char *buf, size_t size)
 /**
  *
  */
-int write_stdout(const char *buf, size_t len)
+int write_stdout(const unsigned char *buf, size_t len)
 {
 #ifdef SSHBBS
 	return channel_write(ssh_chan, buf, len);
@@ -214,7 +220,12 @@ static int get_raw_ch(void)
 		update_ulist(&uinfo, utmpent);
 
 		to.tv_sec = to.tv_usec = 0;
-		if ((ret = select(nfds, &rset, NULL, NULL, &to)) <= 0) {
+		ret = select(nfds, &rset, NULL, NULL, &to);
+#ifdef SSHBBS
+		if (FD_ISSET(STDIN_FILENO, &rset))
+			ret = channel_poll(ssh_chan, 0);
+#endif
+		if (ret <= 0) {
 			if (flushf)
 				(*flushf) ();
 			if (big_picture)
