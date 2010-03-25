@@ -436,7 +436,7 @@ int egetch(void)
 
 void top_show(char *prompt) {
 	if (editansi) {
-		prints(ANSI_RESET);
+		outs(ANSI_RESET);
 		refresh();
 	}
 	move(0, 0);

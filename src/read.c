@@ -174,7 +174,7 @@ void draw_bottom(char *buf) {
 		move(t_lines-1, 71);
 		clrtoeol();
 		sprintf(buf1, "\033[0;1;44;33m[%6.6s]\033[m", buf);
-		prints(buf1);
+		outs(buf1);
 	}
 }
 

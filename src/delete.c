@@ -244,7 +244,7 @@ int giveUpBBS() {
 					break;
 			}
 			sprintf(buf, "        »¹ÓÐ%dÌì\n", j - time(0) / 3600 / 24);
-			prints(buf);
+			outs(buf);
 			lcount++;
 		}
 		fclose(fn);

@@ -153,7 +153,7 @@ int show_statshm(char* fh, int mode) {
 				if (statshm[mode].line[i] == NULL)
 					break;
 				strcpy(buf, statshm[mode].line[i]);
-				prints(buf);
+				outs(buf);
 			}
 		}
 		if (mode == 1)

@@ -157,7 +157,7 @@ int m_ordainBM() {
 		sprintf(secu, "版主任命, 给予 %s 的版主权限", lookupuser.userid);
 		securityreport(secu, 0, 1);
 		move(15, 0);
-		prints(secu);
+		outs(secu);
 		pressanykey();
 		clear();
 	}
@@ -270,7 +270,7 @@ int m_ordainBM() {
 	/* Add end. */
 	securityreport(bmfilename, 0, 1);
 	move(16, 0);
-	prints(bmfilename);
+	outs(bmfilename);
 	pressanykey();
 	return 0;
 }
@@ -389,7 +389,7 @@ int m_retireBM() {
 	sprintf(genbuf, "取消 %s 的 %s 版版主职务", lookupuser.userid, fh.filename);
 	securityreport(genbuf, 0, 1);
 	move(8, 0);
-	prints(genbuf);
+	outs(genbuf);
 	sethomefile(bmfilename, lookupuser.userid, ".bmfile");
 	if (oldbm - 1) {
 		bmfp = fopen(bmfilename, "w+");
@@ -409,7 +409,7 @@ int m_retireBM() {
 			sprintf(secu, "版主卸职, 取消 %s 的版主权限", lookupuser.userid);
 			securityreport(secu, 0, 1);
 			move(9, 0);
-			prints(secu);
+			outs(secu);
 		}
 	}
 	prints("\n\n");

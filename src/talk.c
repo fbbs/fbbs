@@ -1496,7 +1496,7 @@ char *modestr;
 		move(t_lines - 1, 0);
 		sprintf(genbuf,"[1;44;33m  Ä¿Ç°ÓĞ [32m%3d[33m %6sÉÏÏß, Ê±¼ä: [32m%22.22s [33m, Ä¿Ç°×´Ì¬£º[36m%10s   [m"
 				,count, friendmode ? "ºÃÅóÓÑ" : "Ê¹ÓÃÕß", getdatestring(time(NULL), DATE_ZH), friendmode ? "ÄãµÄºÃÅóÓÑ" : "ËùÓĞÊ¹ÓÃÕß");
-		prints(genbuf);
+		outs(genbuf);
 	}
 	refresh();
 	return 0;

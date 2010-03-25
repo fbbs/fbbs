@@ -571,7 +571,7 @@ void a_forward(char *path,ITEM* pitem,int mode) {
 			default:
 				mesg = "È¡Ïû×ª¼Ä¶¯×÷.\n";
 		}
-		prints(mesg);
+		outs(mesg);
 	} else {
 		move(t_lines - 1, 0);
 		prints("ÎŞ·¨×ª¼Ä´ËÏîÄ¿.\n");
@@ -1073,7 +1073,7 @@ void a_newname(MENU *pm) {
 		}
 		mesg = "µµÃû¸ü¸ÄÊ§°Ü!!";
 	}
-	prints(mesg);
+	outs(mesg);
 	egetch();
 
 }
@@ -1537,7 +1537,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 									4);
 							move(3, 0);
 							sprintf(tmp, "[1mÒÑ¾­°ïÄú×ªÌùÖÁ %s °æÁË[m", bname);
-							prints(tmp);
+							outs(tmp);
 							refresh();
 							sleep(1);
 						}
@@ -1877,7 +1877,7 @@ int AddPCorpus() {
 		sprintf(secu, "½¨Á¢¸öÈËÎÄ¼¯, ¸øÓè %s °æÖ÷È¨ÏŞ", lookupuser.userid);
 		securityreport(secu, 0, 0);
 		move( 9, 0);
-		prints(secu);
+		outs(secu);
 		sethomefile(genbuf, lookupuser.userid, ".announcepath");
 		report(genbuf, currentuser.userid);
 		if ((fn = fopen(genbuf, "w+")) != NULL) {
@@ -1940,7 +1940,7 @@ int a_file_info(MENU *pm) {
 		strlcpy(tmp, weblink+i, 78);
 		tmp[78] = '\n';
 		tmp[79] = '\0';
-		prints(tmp);
+		outs(tmp);
 	}
 
 	pressanykey();
@@ -2024,7 +2024,7 @@ void ann_set_title_show(char* title) {
 	rtrim(title);
 	sprintf(path, "[%-1.56s] %s", title, show_items[show_mode]);
 	sprintf(buf, "[1;44;33m Éè¶¨Ë¿Â· %69.69s[m\n", path);
-	prints(buf);
+	outs(buf);
 	prints(" ÍË³ö[[1;32m¡û[m] Ôö¼Ó/Ìæ»»[[1;32m¡ú Enter[m] ¸ÄÃû[[1;32mt[m] É¾³ı[[1;32md[m] Çå¿Õ[[1;32mc[m] ÒÆ¶¯[[1;32mm[m] ½øÈë[[1;32mg[m] °ïÖú[[1;32mh[m]\n");
 	prints("[1;44;37m ±àºÅ  Ë¿Â·                                                                    [m\n");
 }
@@ -2033,7 +2033,7 @@ void ann_get_title_show() {
 	char buf[256];
 	move(0, 0);
 	sprintf(buf, "[1;44;33m Ê¹ÓÃË¿Â· %69.69s[m\n", show_items[show_mode]);
-	prints(buf);
+	outs(buf);
 	prints(" ÍË³ö[[1;32m¡û[m] ²é¿´[[1;32m¡ú[m] ÒÆ¶¯[[1;32m¡ü[m,[1;32m¡ı[m] ²é¿´[[1;32mS[m] Ä£Ê½[[1;32mf[m] ²éÑ°[[1;32m/[m] °ïÖú[[1;32mh[m]\n");
 	prints("[1;44;37m ±àºÅ  Ë¿Â·                                                                    [m\n");
 }

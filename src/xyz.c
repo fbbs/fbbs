@@ -55,7 +55,7 @@ int showperminfo(int pbits, int i) {
 			(use_define) ? user_definestr[i] : permstrings[i], ((pbits
 					>> i) & 1 ? "ÊÇ" : "¡Á"));
 	move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
-	prints(buf);
+	outs(buf);
 	refresh();
 	return YEA;
 }

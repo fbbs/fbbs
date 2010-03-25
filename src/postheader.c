@@ -178,7 +178,7 @@ int post_header(struct postheader *header) {
 				print_prefixbuf(pbuf, index);
 			}
 			move(t_lines - 4, 0);
-			prints(pbuf);
+			outs(pbuf);
 		}
 
 		//对于回复和发信，title初始不为空.所以只有在发表文章时，才会出现"[正在设定主题]"

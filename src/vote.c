@@ -746,7 +746,7 @@ int showvoteitems(unsigned int pbits, int i, int flag) {
 	sprintf(buf, "%c.%2.2s%-36.36s", 'A' + i, ((pbits >> i) & 1 ? "¡Ì"
 			: "  "), currvote.items[i]);
 	move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
-	prints(buf);
+	outs(buf);
 	refresh();
 	return YEA;
 }

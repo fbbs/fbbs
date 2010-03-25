@@ -819,7 +819,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 			strlcpy(tmp, genbuf + i, 78);
 			tmp[78] = '\n';
 			tmp[79] = '\0';
-			prints(tmp);
+			outs(tmp);
 		}
 		if (!(ch == KEY_UP || ch == KEY_PGUP))
 			ch = egetch();
@@ -1616,7 +1616,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 		strlcpy(tmp, weblink + i, 78);
 		tmp[78] = '\n';
 		tmp[79] = '\0';
-		prints(tmp);
+		outs(tmp);
 	}
 
 	pressanykey();
