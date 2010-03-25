@@ -4,23 +4,30 @@
 
 extern char fromhost[];
 
-int presskeyfor(char *msg, int x) {
+/**
+ * Prompt and wait user to press any key.
+ * @param[in] msg The prompt message.
+ * @param[in] x Line number.
+ */
+void presskeyfor(const char *msg, int x)
+{
 	extern int showansi;
 	showansi = 1;
-	//saveline(x,0);
 	move(x, 0);
 	clrtoeol();
-	prints(msg);
+	outs(msg);
 	egetch();
 	move(x, 0);
 	clrtoeol();
-	//saveline(x,1);
-	return 0;
 }
-int pressanykey() {
-	presskeyfor(
-			"[m                                [5;1;33m°´ÈÎºÎ¼ü¼ÌÐø...[m",
-			t_lines-1);
+
+/**
+ * Prompt and wait user to press any key.
+ */
+void pressanykey(void)
+{
+	presskeyfor("\033[m                                "
+			"\033[5;1;33m°´ÈÎºÎ¼ü¼ÌÐø...[m", t_lines - 1);
 }
 
 int pressreturn() {
@@ -130,10 +137,6 @@ void touchnew() {
 #define MAXENVS (20)
 #define BINDIR "/bin/"
 
-//ÓÃÓÚ´æ´¢BBS»·¾³±äÁ¿
-char *bbsenv[MAXENVS];
-int numbbsenvs = 0;
-
 //ÈôdstÎªÄ¿Â¼,ÇÒ²¢·Ç.,..,×îºóÒ»¸ö×Ö·û²»Îª/,
 //			½«ÆäÉ¾³ý,³É¹¦·µ»Ø	1
 //					 ·ñÔò·µ»Ø	0
@@ -148,34 +151,6 @@ int deltree(char *dst) {
 		return 1;
 	} else
 		return 0;
-}
-
-//ÉèÖÃBBS»·¾³ env=val
-/*
- Commented by Erebus 2004-11-04
- char * bbsenv[MAXENVS];
- if *env exists ,update its value to *val
- else add "*env=**val" to the end,numberbbsenvs++
- */
-int bbssetenv(char *env, char *val) {
-	register int i, len;
-	if (numbbsenvs == 0)
-		bbsenv[0] = NULL;
-	len = strlen(env);
-	for (i = 0; bbsenv[i]; i++)
-		if (!strncasecmp(env, bbsenv[i], len))
-			break;
-	if (i >= MAXENVS)
-		return -1;
-	if (bbsenv[i])
-		free(bbsenv[i]);
-	else
-		bbsenv[++numbbsenvs] = NULL;
-	bbsenv[i] = malloc(strlen(env) + strlen(val) + 2);
-	strcpy(bbsenv[i], env);
-	strcat(bbsenv[i], "=");
-	strcat(bbsenv[i], val);
-	return 0;
 }
 
 int sem(int key) {
