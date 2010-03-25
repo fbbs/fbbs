@@ -26,7 +26,7 @@ jmp_buf byebye;
 int talkrequest = NA;
 time_t lastnote;
 struct user_info uinfo;
-char fromhost[60];
+char fromhost[IP_LEN];
 char BoardName[STRLEN]; // TODO: Can be replaced by macro.
 
 int utmpent = -1;
