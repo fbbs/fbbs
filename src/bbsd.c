@@ -52,7 +52,7 @@ ssh_channel ssh_chan;
  */
 static void get_ip_addr(struct sockaddr_in *from)
 {
-	strlcpy(fromhost, IP_LEN, inet_ntoa(from->sin_addr));
+	strlcpy(fromhost, inet_ntoa(from->sin_addr), IP_LEN);
 #ifdef IP_2_NAME
 	FILE *fp = fopen(BBSHOME"/etc/hosts", "r");
 	if (!fp)
@@ -64,7 +64,7 @@ static void get_ip_addr(struct sockaddr_in *from)
 			if (strcmp(fromhost, field) == 0) {
 				field = strtok(NULL, " \r\n\t");
 				if (field)
-					strlcpy(fromhost, IP_LEN, field);
+					strlcpy(fromhost, field, IP_LEN);
 				break;
 			}
 		}
