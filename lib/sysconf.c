@@ -2,94 +2,99 @@
 
 #include "bbs.h"
 
-#define SC_BUFSIZE 20480
-#define SC_KEYSIZE 256
-#define SC_CMDSIZE 256
+enum {
+	SC_BUFSIZE = 20480,
+	SC_KEYSIZE = 256,
+	SC_CMDSIZE = 256
+};
 
-char *sysconf_buf;
-int sysconf_menu, sysconf_key, sysconf_len;
-struct smenuitem *menuitem;
-struct sdefine *sysvar;
+sysconf_t sys_conf;
 
-// Concatenates 'str' to the end of 'sysconf_buf'
-// and increments 'sysconf_len' accordingly.
-static void *sysconf_addstr(const char *str)
+/**
+ * Concatenates string to the sysconf buffer.
+ * @param str The string.
+ * @param conf The sysconf data structure.
+ */
+static void *sysconf_addstr(const char *str, sysconf_t *conf)
 {
-	int len = sysconf_len;
-	char *buf;
-
-	buf = sysconf_buf + len;
-	strcpy(buf, str);
-	sysconf_len = len + strlen(str) + 1;
-	return buf;
+	conf->len += strlcpy(conf->buf + conf->len, str, SC_BUFSIZE - conf->len);
+	return conf->buf;
 }
 
-// Searches structs 'sysvar' for 'key'.
-// Returns sysvar.str if found, NULL otherwise.
+/**
+ * Search sysconf for 'key'.
+ * @param key The key.
+ * @return The correspoding string if found, NULL otherwise.
+ */
 char *sysconf_str(const char *key)
 {
 	int n;
-
-	for (n = 0; n < sysconf_key; n++)
-		if (strcmp(key, sysvar[n].key) == 0)
-			return (sysvar[n].str);
+	for (n = 0; n < sys_conf.keys; n++)
+		if (strcmp(key, sys_conf.var[n].key) == 0)
+			return (sys_conf.var[n].str);
 	return NULL;
 }
 
-// Searches structs 'sysvar' for 'key'.
-// Returns 'sysvar.key' if found,
-// the integer 'key' is representing otherwise.
-int sysconf_eval(const char *key)
+/**
+ * Searches sysconf for key.
+ * @param key The key.
+ * @param conf The sysconf data structure.
+ * @return The corresponding value if found. Otherwise, key is converted to
+ *         integer and returned.
+ */
+int sysconf_eval(const char *key, sysconf_t *conf)
 {
 	int n;
-
-	for (n = 0; n < sysconf_key; n++)
-		if (strcmp(key, sysvar[n].key) == 0)
-			return (sysvar[n].val);
-	if (*key < '0' || *key> '9') {
-		char buf[80];
-		sprintf(buf, "sysconf: unknown key: %s.", key);
-		report(buf, "");
-	}
+	for (n = 0; n < conf->keys; n++)
+		if (strcmp(key, conf->var[n].key) == 0)
+			return (conf->var[n].val);
 	return (strtol(key, NULL, 0));
 }
 
-// Adds 'str' 'key' to 'sysconf_buf'.
-// Stores them (together with 'val') in sysvar.
-static void sysconf_addkey(const char *key, char *str, int val)
+/**
+ * Add 'str' 'key' to sysconf.
+ * @param key The key.
+ * @param str The string.
+ * @param val The value.
+ * @param conf The sysconf data structure.
+ */
+static void sysconf_addkey(const char *key, char *str, int val, sysconf_t *conf)
 {
-	int num;
-
-	if (sysconf_key < SC_KEYSIZE) {
+	if (conf->keys < SC_KEYSIZE) {
 		if (str == NULL)
-			str = sysconf_buf;
+			str = conf->buf;
 		else
-			str = sysconf_addstr(str);
-		num = sysconf_key++;
-		sysvar[num].key = sysconf_addstr(key);
-		sysvar[num].str = str;
-		sysvar[num].val = val;
+			str = sysconf_addstr(str, conf);
+		conf->keys++;
+		conf->var[conf->keys].key = sysconf_addstr(key, conf);
+		conf->var[conf->keys].str = str;
+		conf->var[conf->keys].val = val;
 	}
 }
 
-// Reads 'fp' and add menu items.(Each line stands for an item.)
-// Format: cmd line col level name desc
-// Line started with '#' are comments.
-// 'cmd's start with '@' are ordinary cmds.
-// 'cmd's start with '!' represent a link to another cmd group.
-// Otherwise, 'cmd's are properties of the cmd group.
-// 'line', 'col' specifies the location to display the item.
-// Users above 'level' can see the item.
-// The first letter of 'name' is the shortcut to the menu item.
-// 'desc' is the description of item shown on screen.
-static void sysconf_addmenu(FILE *fp, const char *key)
+/**
+ * Read file and add menu items. Each line stands for an item.
+ * Format: cmd line col level name desc.
+ * Line started with '#' are comments.
+ * Commands start with '\@' are ordinary cmds.
+ * Commands start with '!' represent a link to another cmd group.
+ * Otherwise, 'cmd's are properties of the cmd group.
+ * 'line', 'col' specifies the location to display the item.
+ * Users above 'level' can see the item.
+ * The first letter of 'name' is the shortcut to the menu item.
+ * 'desc' is the description of item shown on screen.
+ * @param fp The file.
+ * @param key The key.
+ * @param conf The sysconf data structure.
+ */
+static void sysconf_addmenu(FILE *fp, const char *key, sysconf_t *conf)
 {
 	struct smenuitem *pm;
-	char buf[256];
+	char buf[LINE_BUFSIZE];
 	char *cmd, *arg[5], *ptr;
 	int n;
 
-	sysconf_addkey(key, "menu", sysconf_menu);
+	sysconf_addkey(key, "menu", conf->items, conf);
 	while (fgets(buf, sizeof(buf), fp) != NULL && buf[0] != '%') {
 		cmd = strtok(buf, " \t\n");
 		if (cmd == NULL || *cmd == '#')
@@ -113,32 +118,32 @@ static void sysconf_addmenu(FILE *fp, const char *key)
 				*ptr = '\0';
 			}
 		}
-		pm = &menuitem[sysconf_menu++];
-		pm->line = sysconf_eval(arg[0]);
-		pm->col = sysconf_eval(arg[1]);
+		pm = conf->item + (conf->items++);
+		pm->line = sysconf_eval(arg[0], conf);
+		pm->col = sysconf_eval(arg[1], conf);
 		if (*cmd == '@') {
-			pm->level = sysconf_eval(arg[2]);
-			pm->name = sysconf_addstr(arg[3]);
-			pm->desc = sysconf_addstr(arg[4]);
-			pm->fptr = sysconf_addstr(cmd + 1);
+			pm->level = sysconf_eval(arg[2], conf);
+			pm->name = sysconf_addstr(arg[3], conf);
+			pm->desc = sysconf_addstr(arg[4], conf);
+			pm->fptr = sysconf_addstr(cmd + 1, conf);
 			pm->arg = pm->name;
 		} else if (*cmd == '!') {
-			pm->level = sysconf_eval(arg[2]);
-			pm->name = sysconf_addstr(arg[3]);
-			pm->desc = sysconf_addstr(arg[4]);
-			pm->fptr = sysconf_addstr("domenu");
-			pm->arg = sysconf_addstr(cmd + 1);
+			pm->level = sysconf_eval(arg[2], conf);
+			pm->name = sysconf_addstr(arg[3], conf);
+			pm->desc = sysconf_addstr(arg[4], conf);
+			pm->fptr = sysconf_addstr("domenu", conf);
+			pm->arg = sysconf_addstr(cmd + 1, conf);
 		} else {
 			pm->level = -2;
-			pm->name = sysconf_addstr(cmd);
-			pm->desc = sysconf_addstr(arg[2]);
-			pm->fptr = (void *) sysconf_buf;
-			pm->arg = sysconf_buf;
+			pm->name = sysconf_addstr(cmd, conf);
+			pm->desc = sysconf_addstr(arg[2], conf);
+			pm->fptr = (void *) conf->buf;
+			pm->arg = conf->buf;
 		}
 	}
-	pm = &menuitem[sysconf_menu++];
-	pm->name = pm->desc = pm->arg = sysconf_buf;
-	pm->fptr = (void *) sysconf_buf;
+	pm = conf->item + (conf->items++);
+	pm->name = pm->desc = pm->arg = conf->buf;
+	pm->fptr = (void *) conf->buf;
 	pm->level = -1;
 }
 
@@ -165,45 +170,48 @@ static void encodestr(char *str)
 	*buf = '\0';
 }
 
-// Read 'fp' and add menu blocks(background).
-static void sysconf_addblock(FILE *fp, const char *key)
+/**
+ * Read file and add menu blocks (background).
+ * @param fp The file.
+ * @param key The key.
+ * @param conf The sysconf data structure.
+ */
+static void sysconf_addblock(FILE *fp, const char *key, sysconf_t *conf)
 {
-	char buf[256];
-	int num;
-
-	if (sysconf_key < SC_KEYSIZE) {
-		num = sysconf_key++;
-		sysvar[num].key = sysconf_addstr(key);
-		sysvar[num].str = sysconf_buf + sysconf_len;
-		sysvar[num].val = -1;
+	char buf[LINE_BUFSIZE];
+	if (conf->keys < SC_KEYSIZE) {
+		conf->keys++;
+		conf->var[conf->keys].key = sysconf_addstr(key, conf);
+		conf->var[conf->keys].str = conf->buf + conf->len;
+		conf->var[conf->keys].val = -1;
 		while (fgets(buf, sizeof(buf), fp) != NULL && buf[0] != '%') {
 			encodestr(buf);
-			strcpy(sysconf_buf + sysconf_len, buf);
-			sysconf_len += strlen(buf);
+			conf->len += strlcpy(conf->buf + conf->len, buf,
+					SC_BUFSIZE - conf->len);
 		}
-		sysconf_len++;
+		conf->len++;
 	} else {
 		while (fgets(buf, sizeof(buf), fp) != NULL && buf[0] != '%') {
 		}
 	}
 }
 
-// Parse sysconfig file 'fname'.
-// '#include' has the same effect of that in C file.
-// Lines starting with '%' splits the file into groups.
-// '%menu' indicates a group of menu items, otherwise menu background.
-static void parse_sysconf(const char *fname)
+/**
+ * Parse sysconfig file 'fname'.
+ * '#include' has the same effect of that in C file.
+ * Lines starting with '%' splits the file into groups.
+ * '%menu' indicates a group of menu items, otherwise menu background.
+ */
+static void sysconf_parse(const char *fname, sysconf_t *conf)
 {
-	FILE *fp;
-	char buf[256];
-	char tmp[256], *ptr;
-	char *key, *str;
+	char buf[LINE_BUFSIZE], tmp[LINE_BUFSIZE], *ptr, *key, *str;
 	int val;
 
-	if ((fp = fopen(fname, "r")) == NULL) {
+	FILE *fp = fopen(fname, "r");
+	if (fp == NULL)
 		return;
-	}
-	sysconf_addstr("(null ptr)");
+
+	sysconf_addstr("(null ptr)", conf);
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		ptr = buf;
 		while (*ptr == ' ' || *ptr == '\t')
@@ -213,16 +221,16 @@ static void parse_sysconf(const char *fname)
 			if (strcmp(ptr, "%menu") == 0) {
 				str = strtok(NULL, " \t\n");
 				if (str != NULL)
-					sysconf_addmenu(fp, str);
+					sysconf_addmenu(fp, str, conf);
 			} else {
-				sysconf_addblock(fp, ptr + 1);
+				sysconf_addblock(fp, ptr + 1, conf);
 			}
 		} else if (*ptr == '#') {
 			key = strtok(ptr, " \t\"\n");
 			str = strtok(NULL, " \t\"\n");
 			if (key != NULL && str != NULL &&
 					strcmp(key, "#include") == 0) {
-				parse_sysconf(str);
+				sysconf_parse(str, conf);
 			}
 		} else if (*ptr != '\n') {
 			key = strtok(ptr, "=#\n");
@@ -235,16 +243,16 @@ static void parse_sysconf(const char *fname)
 					str++;
 					strtok(str, "\"");
 					val = atoi(str);
-					sysconf_addkey(key, str, val);
+					sysconf_addkey(key, str, val, conf);
 				} else {
 					val = 0;
-					strcpy(tmp, str);
+					strlcpy(tmp, str, sizeof(tmp));
 					ptr = strtok(tmp, ", \t");
 					while (ptr != NULL) {
-						val |= sysconf_eval(ptr);
+						val |= sysconf_eval(ptr, conf);
 						ptr = strtok(NULL, ", \t");
 					}
-					sysconf_addkey(key, NULL, val);
+					sysconf_addkey(key, NULL, val, conf);
 				}
 			} else {
 				report(ptr, "");
@@ -254,48 +262,44 @@ static void parse_sysconf(const char *fname)
 	fclose(fp);
 }
 
-// Parse sysconfig file 'configfile' and store the result in 'imgfile'.
-void build_sysconf(const char *configfile, const char *imgfile)
+/**
+ * Parse sysconfig file.
+ * @param configfile The configuration file.
+ * @param imgfile The file to hold the result.
+ */
+void sysconf_build(const char *configfile, const char *imgfile)
 {
-	struct smenuitem *old_menuitem;
-	struct sdefine *old_sysvar;
-	char *old_buf;
-	int old_menu, old_key, old_len;
-	struct sysheader shead;
-	int fh;
-
-	old_menuitem = menuitem;
-	old_menu = sysconf_menu;
-	old_sysvar = sysvar;
-	old_key = sysconf_key;
-	old_buf = sysconf_buf;
-	old_len = sysconf_len;
-	menuitem = (void *) malloc(SC_CMDSIZE * sizeof(struct smenuitem));
-	sysvar = (void *) malloc(SC_KEYSIZE * sizeof(struct sdefine));
-	sysconf_buf = (void *) malloc(SC_BUFSIZE);
-	sysconf_menu = 0;
-	sysconf_key = 0;
-	sysconf_len = 0;
-	parse_sysconf(configfile);
-	if ((fh = open(imgfile, O_WRONLY | O_CREAT, 0644))> 0) {
-		ftruncate(fh, 0);
-		shead.buf = sysconf_buf;
-		shead.menu = sysconf_menu;
-		shead.key = sysconf_key;
-		shead.len = sysconf_len;
-		write(fh, &shead, sizeof(shead));
-		write(fh, menuitem, sysconf_menu * sizeof(struct smenuitem));
-		write(fh, sysvar, sysconf_key * sizeof(struct sdefine));
-		write(fh, sysconf_buf, sysconf_len);
-		close(fh);
+	sysconf_t conf;
+	conf.item = malloc(SC_CMDSIZE * sizeof(*conf.item));
+	conf.var = malloc(SC_KEYSIZE * sizeof(*conf.var));
+	conf.buf = malloc(SC_BUFSIZE);
+	if (!conf.buf || !conf.var || !conf.item) {
+		if (conf.item)
+			free(conf.item);
+		if (conf.var)
+			free(conf.var);
+		if (conf.buf)
+			free(conf.buf);
+		return;
 	}
-	free(menuitem);
-	free(sysvar);
-	free(sysconf_buf);
-	menuitem = old_menuitem;
-	sysconf_menu = old_menu;
-	sysvar = old_sysvar;
-	sysconf_key = old_key;
-	sysconf_buf = old_buf;
-	sysconf_len = old_len;
+
+	sysconf_parse(configfile, &conf);
+
+	struct sysheader shead;
+	FILE *fp = fopen(imgfile, "w");
+	if (fp) {
+		shead.buf = conf.buf;
+		shead.menu = conf.items;
+		shead.key = conf.keys;
+		shead.len = conf.len;
+		fwrite(&shead, sizeof(shead), 1, fp);
+		fwrite(conf.item, sizeof(*conf.item), conf.items, fp);
+		fwrite(conf.var, sizeof(*conf.var), conf.keys, fp);
+		fwrite(conf.buf, conf.len, 1, fp);
+		fclose(fp);
+	}
+
+	free(conf.item);
+	free(conf.var);
+	free(conf.buf);
 }
