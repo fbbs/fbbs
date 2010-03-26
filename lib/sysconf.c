@@ -17,8 +17,11 @@ sysconf_t sys_conf;
  */
 static void *sysconf_addstr(const char *str, sysconf_t *conf)
 {
-	conf->len += strlcpy(conf->buf + conf->len, str, SC_BUFSIZE - conf->len);
-	return conf->buf;
+	char *buf = conf->buf + conf->len;
+	conf->len += strlcpy(buf, str, SC_BUFSIZE - conf->len) + 1;
+	if (conf->len > SC_BUFSIZE)
+		conf->len = SC_BUFSIZE;
+	return buf;
 }
 
 /**
@@ -65,10 +68,10 @@ static void sysconf_addkey(const char *key, char *str, int val, sysconf_t *conf)
 			str = conf->buf;
 		else
 			str = sysconf_addstr(str, conf);
-		conf->keys++;
 		conf->var[conf->keys].key = sysconf_addstr(key, conf);
 		conf->var[conf->keys].str = str;
 		conf->var[conf->keys].val = val;
+		conf->keys++;
 	}
 }
 
@@ -180,10 +183,10 @@ static void sysconf_addblock(FILE *fp, const char *key, sysconf_t *conf)
 {
 	char buf[LINE_BUFSIZE];
 	if (conf->keys < SC_KEYSIZE) {
-		conf->keys++;
 		conf->var[conf->keys].key = sysconf_addstr(key, conf);
 		conf->var[conf->keys].str = conf->buf + conf->len;
 		conf->var[conf->keys].val = -1;
+		conf->keys++;
 		while (fgets(buf, sizeof(buf), fp) != NULL && buf[0] != '%') {
 			encodestr(buf);
 			conf->len += strlcpy(conf->buf + conf->len, buf,
@@ -282,6 +285,7 @@ void sysconf_build(const char *configfile, const char *imgfile)
 			free(conf.buf);
 		return;
 	}
+	conf.len = conf.items = conf.keys = 0;
 
 	sysconf_parse(configfile, &conf);
 
