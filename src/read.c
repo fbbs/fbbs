@@ -1294,7 +1294,8 @@ char *direct;
 					SR_BMDELFLAG=YEA;
 					del_post(locmem->crs_line,&fhdr,currdirect);
 					SR_BMDELFLAG=NA;
-					if(sysconf_eval("KEEP_DELETED_HEADER")<=0) locmem->crs_line--;
+					if (sysconf_eval("KEEP_DELETED_HEADER", &sys_conf) <= 0)
+						locmem->crs_line--;
 					lseek(fdr,(sizeof(fhdr))*(-1),SEEK_CUR);
 					break;
 					case 2:

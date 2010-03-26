@@ -76,13 +76,10 @@ void report(const char *s, const char *userid);
 void log_usies(const char *mode, const char *mesg, const struct userec *user);
 
 //sysconf.c
-extern char *sysconf_buf;
-extern int sysconf_menu, sysconf_key, sysconf_len;
-extern struct smenuitem *menuitem;
-extern struct sdefine *sysvar;
+extern sysconf_t sys_conf;
 char *sysconf_str(const char *key);
-int sysconf_eval(const char *key);
-void build_sysconf(const char *configfile, const char *imgfile);
+int sysconf_eval(const char *key, sysconf_t *conf);
+void sysconf_build(const char *configfile, const char *imgfile);
 
 //stuffs.c
 char *sethomefile(char *buf, const char *userid, const char *filename);

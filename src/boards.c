@@ -2,7 +2,6 @@
 
 #define BBS_PAGESIZE    (t_lines - 4)
 
-char *sysconf_str();
 extern time_t login_start_time;
 struct newpostdata {
 	char *name, *title, *BM;

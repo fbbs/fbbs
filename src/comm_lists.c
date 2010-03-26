@@ -70,15 +70,14 @@ int friend_wall();
 
 typedef struct {
 	char *name;
-	/*	int     (*fptr) ();*/
-	void (*fptr);
+	void *fptr;
 	int type;
-} MENU;
+} smenu_t;
 
-MENU currcmd;
+smenu_t currcmd;
 
 //保存字符串所对应的函数
-static MENU sysconf_cmdlist[] = {
+static smenu_t sysconf_cmdlist[] = {
 	{ "domenu", domenu, 0 },
 	{ "EGroups", EGroup, 0 },
 	{ "BGroups", BoardGroup, 0 },
@@ -278,26 +277,26 @@ void load_sysconf_image(const char *imgfile)
 		read(fh, ptr, st.st_size);
 		close(fh);
 
-		menuitem = (void *) ptr;
+		sys_conf.item = (void *) ptr;
 		ptr += shead.menu * sizeof(struct smenuitem);
-		sysvar = (void *) ptr;
+		sys_conf.var = (void *) ptr;
 		ptr += shead.key * sizeof(struct sdefine);
-		sysconf_buf = (void *) ptr;
+		sys_conf.buf = (void *) ptr;
 		ptr += shead.len;
-		sysconf_menu = shead.menu;
-		sysconf_key = shead.key;
-		sysconf_len = shead.len;
-		diff = sysconf_buf - shead.buf;
-		for (n = 0; n < sysconf_menu; n++) {
-			menuitem[n].name += diff;
-			menuitem[n].desc += diff;
-			menuitem[n].arg += diff;
-			func = (char *) menuitem[n].fptr;
-			menuitem[n].fptr = sysconf_funcptr(func + diff, &x);
+		sys_conf.items = shead.menu;
+		sys_conf.keys = shead.key;
+		sys_conf.len = shead.len;
+		diff = sys_conf.buf - shead.buf;
+		for (n = 0; n < sys_conf.items; n++) {
+			sys_conf.item[n].name += diff;
+			sys_conf.item[n].desc += diff;
+			sys_conf.item[n].arg += diff;
+			func = (char *) sys_conf.item[n].fptr;
+			sys_conf.item[n].fptr = sysconf_funcptr(func + diff, &x);
 		}
-		for (n = 0; n < sysconf_key; n++) {
-			sysvar[n].key += diff;
-			sysvar[n].str += diff;
+		for (n = 0; n < sys_conf.keys; n++) {
+			sys_conf.var[n].key += diff;
+			sys_conf.var[n].str += diff;
 		}
 	}
 }
@@ -306,7 +305,7 @@ void load_sysconf(void)
 {
 	if (!dashf("sysconf.img")) {
 		report("build sysconf.img", "");
-		build_sysconf("etc/sysconf.ini", "sysconf.img");
+		sysconf_build("etc/sysconf.ini", "sysconf.img");
 	}
 	load_sysconf_image("sysconf.img");
 }
@@ -365,10 +364,11 @@ int domenu(const char *menu_name)
 	struct smenuitem *pm;
 	int size, now;
 	int cmd, i;
-	if (sysconf_menu <= 0) {
+
+	if (sys_conf.items <= 0) {
 		return -1;
 	}
-	pm = &menuitem[sysconf_eval(menu_name)];
+	pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
 	size = domenu_screen(pm);
 	now = 0;
 	if (strcmp(menu_name, "TOPMENU") == 0 && chkmail()) {
@@ -474,12 +474,12 @@ int domenu(const char *menu_name)
 				//modified by roly 02.01.24 add PERM_WELCOME
 				break;
 			}
-			free(menuitem);
+			free(sys_conf.items);
 			report("rebuild sysconf.img", currentuser.userid);
-			build_sysconf("etc/sysconf.ini", "sysconf.img");
+			sysconf_build("etc/sysconf.ini", "sysconf.img");
 			report("reload sysconf.img", currentuser.userid);
 			load_sysconf_image("sysconf.img");
-			pm = &menuitem[sysconf_eval(menu_name)];
+			pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
 			ActiveBoard_Init();
 			size = domenu_screen(pm);
 			now = 0;

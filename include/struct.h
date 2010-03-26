@@ -267,4 +267,15 @@ struct sysheader {
 	char *buf;
 	int menu, key, len;
 };
+
+typedef struct {
+	char *buf;
+	struct smenuitem *item;
+	struct sdefine *var;
+	int len;
+	int items;
+	int keys;
+} sysconf_t;
+
 #endif //FB_STRUCT_H
+
