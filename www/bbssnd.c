@@ -56,7 +56,7 @@ int post_article(const struct userec *user, const struct boardheader *bp,
 			getdatestring(time(NULL), DATE_ZH));
 	fputs(content, fptr);
 	add_signature(FCGI_ToFILE(fptr), currentuser.userid, sig);
-	fprintf(fptr, "\033[m\033[1;%2dm¡ù %s:¡¤"BBSNAME" "BBSHOST
+	fprintf(fptr, "\n\033[m\033[1;%2dm¡ù %s:¡¤"BBSNAME" "BBSHOST
 			"¡¤HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7,
 			cross ? "×ªÔØ" : "À´Ô´", ip);
 	fclose(fptr);
