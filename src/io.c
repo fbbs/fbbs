@@ -269,7 +269,7 @@ static int get_raw_ch(void)
 static int iac_handler(void)
 {
 	int status = TELST_IAC;
-	while (1) {
+	while (status != TELST_END) {
 		int ch = get_raw_ch();
 		if (ch < 0)
 			return ch;
@@ -287,8 +287,6 @@ static int iac_handler(void)
 				if (ch == SE)
 					status = TELST_END;
 				break;
-			case TELST_END:
-				return ch;
 			default:
 				break;
 		}	
@@ -354,8 +352,8 @@ int igetch(void)
 		ch = get_raw_ch();
 		switch (ch) {
 			case IAC:
-				ch = iac_handler();
-				break;
+				iac_handler();
+				continue;
 			case KEY_ESC:
 				ch = esc_handler();
 				break;

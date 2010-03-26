@@ -147,17 +147,10 @@ static int bbsd_log(const char *str)
 
 #ifndef SSHBBS
 // TODO: rewrite this
-static void telnet_init() {
+static void telnet_init(void)
+{
 	static char svr[] = { IAC, WILL, TELOPT_ECHO, IAC, WILL, TELOPT_SGA };
-	struct timeval to;
-	int rset = 1;
-	char buf[256];
-
 	write_stdout(svr, sizeof(svr));
-	to.tv_sec = 6;
-	to.tv_usec = 1;
-	if (select(1, (fd_set *)(&rset), NULL, NULL, &to)> 0)
-		read_stdin(buf, sizeof(buf));
 }
 
 /**
