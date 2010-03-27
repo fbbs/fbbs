@@ -1,2 +1,2 @@
-SUBDIRS = lib src @ENABLE_WWW@
-DIST_SUBDIRS = lib src www
+SUBDIRS = lib libssh src @ENABLE_WWW@
+DIST_SUBDIRS = lib libssh src www

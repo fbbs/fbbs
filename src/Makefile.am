@@ -19,7 +19,7 @@ bbsd_LDADD = $(LDADD) announce.$(OBJEXT) bbs.$(OBJEXT) bcache.$(OBJEXT) \
 			 bbsnet.$(OBJEXT)
 
 sshbbsd_SOURCES = bbsd.c io.c main.c
-sshbbsd_LDADD = $(bbsd_LDADD) -lssh
+sshbbsd_LDADD = $(bbsd_LDADD) -lfbssh -L../libssh
 sshbbsd_CPPFLAGS = -DSSHBBS $(AM_CPPFLAGS)
 
 miscd_SOURCES = miscd.c io.c main.c

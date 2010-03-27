@@ -16,6 +16,7 @@ AC_PROG_LIBTOOL
 # Checks for libraries.
 AC_CHECK_LIB([crypt], [crypt])
 AC_CHECK_LIB([fcgi], [FCGI_Accept])
+AC_CHECK_LIB([gcrypt], [gcry_cipher_encrypt])
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -48,9 +49,11 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_FUNC_UTIME_NULL
-AC_CHECK_FUNCS([alarm atexit bzero dup2 ftruncate getcwd gethostbyaddr gethostbyname gethostname gettimeofday inet_ntoa memchr memmove memset mkdir munmap rmdir select socket strcasecmp strchr strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul utime])
+AC_CHECK_FUNCS([alarm atexit bzero dup2 ftruncate getaddrinfo getcwd gethostbyaddr gethostbyname gethostname gettimeofday inet_ntoa memchr memmove memset mkdir munmap poll rmdir select socket strcasecmp strchr strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul utime])
 
 AC_CHECK_SIZEOF([time_t])
+
+AM_PROG_CC_C_O
 
 CFLAGS=
 
@@ -64,8 +67,5 @@ AC_ARG_ENABLE(debug, [  --enable-debug          compile debug version],
 			  [if test "$enableval" = "yes" ; then ENABLE_DEBUG="-g -O0"; fi], [ENABLE_DEBUG= ])
 AC_SUBST(ENABLE_DEBUG)
 
-AC_CONFIG_FILES([Makefile
-                 lib/Makefile
-                 src/Makefile
-                 www/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile libssh/Makefile src/Makefile www/Makefile])
 AC_OUTPUT
