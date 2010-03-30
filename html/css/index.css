@@ -16,7 +16,7 @@ ul li {
 	margin-right: 10px;
 }
 input.txt {
-	background: #d1f4ca;
+	background: #edecec;
 	width: 100px;
 	height:20px;
 	border: none;
@@ -41,15 +41,16 @@ input.txt {
 	margin: auto 5px 4px 0px;
 }
 #left_panel a {
-	color: #ffffff;
+	color: #000000;
 	font-size: 1em;
 	text-decoration: none;
 	display: block;
 }
 #left_panel a:hover {
-	background-color: #9ed992;
+	background-color: #ff9898;
 }
 #menu {
+	background-color: #ffffff;
 	height: 190px;
 	padding: 12px 10px 2px 12px;
 }
@@ -58,7 +59,7 @@ input.txt {
 	position: absolute;
 	top: 68px;
 	left: 125px;
-	background-color: #0a3601;
+	background-color: #ffffff;
 	border: #F5E4EA solid 1px;
 }
 #software li {
@@ -66,25 +67,20 @@ input.txt {
 	margin: 0;
 }
 #loginbox {
+	background-color: #ffffff;
 	height: 105px;
 	padding: 10px 0 5px 10px;
 }
 #info {
-	color: white;
+	background-color: #ffffff;
 	height: 140px;
 	margin-top: 2px;
 	padding: 12px 0 0 12px;
 }
-#info hr {
-	background-color: white;
-	border: medium none;
-	color: white;
-	margin-right: 20px;
-}
 #info p {
 	margin: 2px 25px 8px 8px;
 	padding-bottom: 4px;
-	border-bottom: 2px solid #ffffff;
+	border-bottom: 2px solid #000000;
 }
 #info img {
 	width: 16px;
@@ -95,7 +91,7 @@ input.txt {
 	margin-right: 10px;
 }
 #main {
-	background: url('/images/bbswebpic.jpg') no-repeat;
+	background: url('/images/bbswebpic.png') no-repeat;
 	padding-top: 480px;
 	width: 640px;
 	float: left;
