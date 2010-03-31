@@ -40,38 +40,49 @@ int bbsbrdadd_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
+
 	int bid = strtol(getparm("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
+
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
-	mmap_t m;
-	m.oflag = O_RDWR;
-	if (mmap_open(file, &m) < 0)
+	FILE *fp = fopen(file, "rw");
+	if (fp == NULL)
 		return BBS_EINTNL;
-	int size = m.size / sizeof(struct goodbrdheader);
-	struct goodbrdheader *iter = m.ptr;
-	struct goodbrdheader *end = iter + size;
-	while (iter != end && iter->pos != bid - 1)
-		++iter;
-	if (iter == end) { // Not exist
-		if (size >= GOOD_BRC_NUM) {
-			mmap_close(&m);
-			return BBS_EBRDQE;
+	flock(fileno(fp), LOCK_EX);
+
+	struct goodbrdheader gbrd;
+	bool found = false;
+	while (fread(&gbrd, sizeof(gbrd), 1, fp) == 1) {
+		if (gbrd.pos == bid - 1) {
+			found = true;
+			break;
 		}
-		if (mmap_truncate(&m, (size + 1) * sizeof(struct goodbrdheader)) < 0) {
-			mmap_close(&m);
-			return BBS_EINTNL;
-		}
-		iter = ((struct goodbrdheader *)m.ptr) + size;
-		iter->id = size + 1;
-		iter->pid = 0;
-		iter->pos = bid - 1;
-		memcpy(iter->title, bp->title, sizeof(iter->title));
-		memcpy(iter->filename, bp->filename, sizeof(iter->filename));
 	}
-	mmap_close(&m);
+
+	int ret = 0;
+	if (!found) {
+		fseek(fp, 0, SEEK_END);
+		int size = ftell(fp) / sizeof(gbrd);
+		if (size < GOOD_BRC_NUM) {
+			gbrd.id = size + 1;
+			gbrd.pid = 0;
+			gbrd.pos = bid - 1;
+			memcpy(gbrd.title, bp->title, sizeof(gbrd.title));
+			memcpy(gbrd.filename, bp->filename, sizeof(gbrd.filename));
+			if (fwrite(&gbrd, sizeof(gbrd), 1, fp) != 1)
+				ret = BBS_EINTNL;
+		} else {
+			ret = BBS_EBRDQE;
+		}
+	}
+	flock(fileno(fp), LOCK_UN);
+	fclose(fp);
+
+	if (ret)
+		return ret;
 	xml_header("bbs");
 	printf("<bbsbrdadd><brd>%s</brd><bid>%d</bid></bbsbrdadd>",
 			bp->filename, bid);
