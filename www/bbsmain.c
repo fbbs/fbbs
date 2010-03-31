@@ -110,7 +110,7 @@ const static web_handler_t applets[] = {
  * Get an web request handler according to its name.
  * @return handler pointer if found, NULL otherwise.
  */
-static web_handler_t *getapplet(void)
+static const web_handler_t *getapplet(void)
 {
 	char *surl = getenv("SCRIPT_NAME");
 	if (surl == NULL)
@@ -120,7 +120,7 @@ static web_handler_t *getapplet(void)
 		result = surl;
 	else
 		result++;	
-	web_handler_t *app = applets;
+	const web_handler_t *app = applets;
 	while (app->name != NULL) {
 		if (!strcmp(result, app->name))
 			return app;
@@ -161,7 +161,7 @@ int main(void)
 		return 1;
 	}
 	while (FCGI_Accept() >= 0) {
-		web_handler_t *app = getapplet();
+		const web_handler_t *app = getapplet();
 		int ret;
 		if (app == NULL) {
 			ret = BBS_ENOURL;
