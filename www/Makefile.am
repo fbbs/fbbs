@@ -6,7 +6,7 @@ LDADD = ../lib/libBBS.a
 bin_PROGRAMS = bbswebd
 bbswebd_SOURCES = libweb.c bbsmain.c bbssec.c bbsall.c bbsboa.c bbslogin.c \
 				  bbslogout.c bbsdoc.c bbscon.c bbspst.c bbssnd.c bbsqry.c \
-				  bbsclear.c bbsupload.c bbspreupload.c bbsann.c \
+				  bbsclear.c bbsupload.c bbsann.c \
 				  bbsnot.c bbsmail.c bbsmailcon.c bbsdelmail.c bbstcon.c \
 				  bbsmybrd.c bbserr.c bbsbrdadd.c bbsccc.c bbsfav.c \
 				  bbspstmail.c bbssndmail.c bbsfall.c bbsplan.c bbsdel.c \

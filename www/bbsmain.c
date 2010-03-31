@@ -56,7 +56,7 @@ typedef struct {
 	int mode;            ///< user mode. @see mode_type
 } web_handler_t;
 
-static web_handler_t applets[] = {
+const static web_handler_t applets[] = {
 		{"sec", bbssec_main, READBRD},
 		{"all", bbsall_main, READBRD},
 		{"boa", bbsboa_main, READNEW},
@@ -113,7 +113,7 @@ static web_handler_t applets[] = {
 static web_handler_t *getapplet(void)
 {
 	char *surl = getenv("SCRIPT_NAME");
-	if(surl == NULL)
+	if (surl == NULL)
 		return NULL;
 	char *result = strrchr(surl, '/');
 	if (result == NULL)
