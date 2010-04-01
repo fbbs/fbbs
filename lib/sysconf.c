@@ -201,9 +201,9 @@ static void sysconf_addblock(FILE *fp, const char *key, sysconf_t *conf)
 
 /**
  * Parse sysconfig file 'fname'.
- * '#include' has the same effect of that in C file.
- * Lines starting with '%' splits the file into groups.
- * '%menu' indicates a group of menu items, otherwise menu background.
+ * '\#include' has the same effect of that in C file.
+ * Lines starting with '\%' splits the file into groups.
+ * '\%menu' indicates a group of menu items, otherwise menu background.
  */
 static void sysconf_parse(const char *fname, sysconf_t *conf)
 {

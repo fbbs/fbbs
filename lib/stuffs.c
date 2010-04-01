@@ -325,6 +325,8 @@ const char *mask_host(const char *host)
 /**
  * Attach a signature.
  * @param fp Output file.
+ * @param user The user.
+ * @param sig number of signature, 1-based.
  */
 void add_signature(FILE *fp, const char *user, int sig)
 {

@@ -226,7 +226,7 @@ void list_text(const char *file,
 
 /**
  * Copy ban reason from string.
- * @param r[in] string to copy from.
+ * @param[in] r string to copy from.
  */
 static void reason_copy(const char *r)
 {
