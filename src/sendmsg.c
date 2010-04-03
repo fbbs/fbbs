@@ -479,7 +479,6 @@ static int show_msg(const char *user, const char *head, const char *buf, int lin
 	prints("\033[m回讯息给 %s", sender);
 	move(++line, 0);
 	clrtoeol();
-	refresh();
 	return line;
 }
 
@@ -677,14 +676,26 @@ int msg_reply(int ch)
 		case MSG_SHOW:
 			msg_show(&num, &rpid, head, sizeof(head), buf, sizeof(buf),
 					receiver, sizeof(receiver), &cury, &status);
+			move(cury - 1, 0);
+			clrtoeol();
+			outs("\033[m按^Z回复");
+			move(cury, 0);
+			refresh();
+			status = MSG_WAIT;
 			break;
 		case MSG_WAIT:
 			if (ch == Ctrl('Z')) {
 				status = MSG_REPLYING;
 				ch = '\0';
-			}
-			if (ch == '\r' || ch == '\n')
+			} else if (ch == '\r' || ch == '\n')
 				status = MSG_REPLYING;
+			else
+				return;
+			move(cury - 1, 0);
+			clrtoeol();
+			prints("\033[m回讯息给 %s", receiver);
+			move(cury, 0);
+			refresh();
 			// fall through
 		case MSG_REPLYING:
 			switch (ch) {
@@ -723,6 +734,7 @@ int msg_reply(int ch)
 					height = 1;
 					msg_show(&num, &rpid, head, sizeof(head), buf, sizeof(buf),
 							receiver, sizeof(receiver), &cury, &status);
+					refresh();
 					break;
 				default:
 					getdata_r(msg, sizeof(msg), &len, ch, cury, &height);
