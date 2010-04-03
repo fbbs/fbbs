@@ -35,6 +35,7 @@ extern struct screenline *big_picture;
 #ifdef SSHBBS
 extern ssh_channel ssh_chan;
 #endif // SSHBBS
+extern int msg_num, RMSG;
 
 static iobuf_t inbuf;   ///< Input buffer.
 static iobuf_t outbuf;  ///< Output buffer.
@@ -389,12 +390,8 @@ int igetch(void)
 	return ch;
 }
 
-/**
- * Get next byte from stdin in gbk encoding (if conversion is needed).
- */
-int igetkey(void)
+int do_igetkey(void)
 {
-	extern int RMSG;
 	int ch;
 #ifdef ALLOWSWITCHCODE
 	if (convcode) {
@@ -407,13 +404,26 @@ int igetkey(void)
 #else
 	ch = igetch();
 #endif // ALLOWSWITCHCODE
-	// TODO:...
-	if ((ch == Ctrl('Z')) && (RMSG == NA) && uinfo.mode != LOCKSCREEN) {
-		r_msg2();
-		return 0;
-	} else {
-		return ch;
+
+	// Handle messages.
+	if (ch == Ctrl('Z')) {
+		if (!msg_num)
+			RMSG = true;
 	}
+	return ch;
+}
+
+/**
+ * Get next byte from stdin in gbk encoding (if conversion is needed).
+ */
+int igetkey(void)
+{
+	int ch = do_igetkey();
+	while ((RMSG || msg_num) && uinfo.mode != LOCKSCREEN) {
+		msg_reply(ch);
+		ch = do_igetkey();
+	}
+	return ch;
 }
 
 int egetch(void)
@@ -839,11 +849,12 @@ void docmdtitle(char *title, char *prompt) {
  * */
 int show_data(const char *buf, int maxcol, int line, int col)
 {
-	int y, x;
-	getyx(&y, &x);
 	bool chk = false;
 	size_t len = strlen(buf);
-	int i;
+	int i, x, y;
+	getyx(&y, &x);
+	move(line, col);
+	clrtoeol();
 	for (i = 0; i < len; i++) {
 		if (chk) {
 			chk = false;
@@ -851,25 +862,24 @@ int show_data(const char *buf, int maxcol, int line, int col)
 			if(buf[i] < 0)
 				chk = true;
 		}
-		if (chk && x >= maxcol)
-			x++;
+		if (chk && col >= maxcol)
+			col++;
 		if (buf[i] != '\r' && buf[i] != '\n') {
-			if (x > maxcol) {
+			if (col > maxcol) {
+				col = 0;
+				move(++line, col);
 				clrtoeol();
-				x = 0;
-				y++;
-				move(y, x);
 			}
 			outc(buf[i]);
-			x++;
+			col++;
 		} else {
+			col = 0;
+			move(++line, col);
 			clrtoeol();
-			x = 0;
-			y++;
-			move(y, x);
 		}
 	}
-    return y;
+	move(y, x);
+    return line;
 }
 
 int multi_getdata(int line, int col, int maxcol, char *prompt, char *buf, int len, int maxline, int clearlabel, int textmode)

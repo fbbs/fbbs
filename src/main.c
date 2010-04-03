@@ -16,7 +16,7 @@
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
 #endif
-int RMSG = YEA;
+int RMSG = false;
 int msg_num = 0;
 int count_friends = 0;
 int iscolor = 1;
@@ -41,8 +41,7 @@ extern int enabledbchar;
 int refscreen = NA;
 int friend_login_wall();
 struct user_info *t_search();
-void r_msg();
-void count_msg();
+void msg_handler(int signum);
 
 // Handle giveupBBS(½äÍø) transactions.
 // Return expiration date (in days from epoch).
@@ -484,7 +483,7 @@ static void system_init(void)
 
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = SA_NODEFER;
-	act.sa_handler = r_msg;
+	act.sa_handler = msg_handler;
 	sigaction(SIGUSR2, &act, NULL);
 	{
 		struct itimerval itv;
