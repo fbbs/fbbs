@@ -255,9 +255,14 @@ int bbssndmail_main(void)
 			BBSNAME" (%s)\n¿¥  ‘¥: %s\n\n", currentuser.userid,
 			currentuser.username, title, getdatestring(time(NULL), DATE_ZH),
 			mask_host(fromhost));
-	// TODO: signature, error code, backup?
+	// TODO: signature, error code
 	if (do_mail_file(recv, title, header, text, len, NULL) < 0)
 		return BBS_EINVAL;
+	if (*getparm("backup") != '\0') {
+		char title2[STRLEN];
+		snprintf(title2, sizeof(title2), "{%s} %s", recv, title);
+		do_mail_file(currentuser.userid, title2, header, text, len, NULL);
+	}
 	const char *ref = getparm("ref");
 	http_header();
 	refreshto(1, ref);

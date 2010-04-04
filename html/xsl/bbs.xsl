@@ -668,6 +668,7 @@ table.post{width:100%}
 				</xsl:call-template>
 			</xsl:attribute>
 		</input></p>
+		<p>备份给自己 <input type='checkbox' name='backup' value='backup'/></p>
 		<p><textarea class='binput' name='text' rows='20' cols='85' wrap='virtual'>
 			<xsl:text>&#x0d;&#x0a;</xsl:text>
 			<xsl:call-template name='show-quoted'>
