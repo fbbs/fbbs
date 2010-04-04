@@ -480,8 +480,6 @@ static int rawmore(char *filename, int promptend, int row, int numlines, int stu
 	return 0;
 }
 
-// Following lines are added for supporting showing arbitrary length lines.
-
 enum {
 	/** A ::linenum_t will be assigned for every block. */
 	LINENUM_BLOCK_SIZE = 4096, 
@@ -499,7 +497,7 @@ typedef struct linenum_t {
 } linenum_t;
 
 /** Mmap_more stream structure. */
-typedef struct mmap_more_file_t {
+typedef struct more_file_t {
 	char *buf;        ///< Starting address of the text.
 	size_t size;      ///< Length of the text.
 	linenum_t *ln;    ///< Starting address of line number cache.
@@ -510,21 +508,21 @@ typedef struct mmap_more_file_t {
 	char *begin;      ///< Starting address of last fetched line.
 	char *end;        ///< Off-the-end pointer of last fetched line.
 	int prop;         ///< Properties of last fetched line.
-} mmap_more_file_t;
+} more_file_t;
 
 /**
- * Open a file as mmap_more stream.
+ * Open a file as more stream.
  * @param file File to open.
  * @param width Line width.
- * @return an ::mmap_more_file_t pointer on success, NULL on error.
+ * @return an ::more_file_t pointer on success, NULL on error.
  */
-static mmap_more_file_t *mmap_more_open(const char *file, int width)
+static more_file_t *more_open(const char *file, int width)
 {
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(file, &m) < 0)
 		return NULL;
-	mmap_more_file_t *d = malloc(sizeof(*d));
+	more_file_t *d = malloc(sizeof(*d));
 	if (d == NULL) {
 		mmap_close(&m);
 		return NULL;
@@ -547,10 +545,10 @@ static mmap_more_file_t *mmap_more_open(const char *file, int width)
 }
 
 /**
- * Close mmap_more stream.
- * @param d The mmap_more stream.
+ * Close more stream.
+ * @param d The more stream.
  */
-static void mmap_more_close(mmap_more_file_t *d)
+static void more_close(more_file_t *d)
 {
 	if (d->buf != NULL)
 		free(d->buf);
@@ -558,12 +556,12 @@ static void mmap_more_close(mmap_more_file_t *d)
 }
 
 /**
- * Get next line from mmap_more stream.
+ * Get next line from more stream.
  * On success, d->begin, d->row, d->prop is set and returned.
- * @param[in,out] d The mmap_more stream.
+ * @param[in,out] d The more stream.
  * @return Size of string, -1 on error.
  */
-static ssize_t mmap_more_getline(mmap_more_file_t *d)
+static ssize_t more_getline(more_file_t *d)
 {
 	static const char code[] = "[0123456789;";
 	if (d->width < 2) {
@@ -661,11 +659,11 @@ static ssize_t mmap_more_getline(mmap_more_file_t *d)
 
 /**
  * Get the strarting address of given line.
- * @param d The mmap_more stream.
+ * @param d The more stream.
  * @param line Line number.
  * @return The strarting address of given line.
  */
-static char *mmap_more_seek(mmap_more_file_t *d, int line)
+static char *more_seek(more_file_t *d, int line)
 {
 	if (line < 0)
 		line = 0;
@@ -687,7 +685,7 @@ static char *mmap_more_seek(mmap_more_file_t *d, int line)
 		d->end = lnptr->offset;
 	}
 	while (d->line < line) {
-		if (mmap_more_getline(d) <= 0)
+		if (more_getline(d) <= 0)
 			break;			
 	}
 	return d->begin;
@@ -695,11 +693,11 @@ static char *mmap_more_seek(mmap_more_file_t *d, int line)
 }
 
 /**
- * Get count of lines of given mmap_more stream.
- * @param d The mmap_more stream.
+ * Get count of lines of given more stream.
+ * @param d The more stream.
  * @return Count of lines.
  */
-static int mmap_more_countline(mmap_more_file_t *d)
+static int more_countline(more_file_t *d)
 {
 	if (d->total >= 0)
 		return d->total;
@@ -725,7 +723,7 @@ static int mmap_more_countline(mmap_more_file_t *d)
 	}
 
 	while (d->total < 0)
-		mmap_more_getline(d);
+		more_getline(d);
 
 	// Restore status
 	d->begin = begin;
@@ -737,10 +735,10 @@ static int mmap_more_countline(mmap_more_file_t *d)
 }
 
 /**
- * Print current line in an mmap_more stream.
- * @param d The mmap_more stream.
+ * Print current line in an more stream.
+ * @param d The more stream.
  */
-static void mmap_more_puts(mmap_more_file_t *d)
+static void more_puts(more_file_t *d)
 {
 	char *ptr;
 	int offset = 0;
@@ -772,7 +770,7 @@ static void mmap_more_puts(mmap_more_file_t *d)
  */
 static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
 {
-	mmap_more_file_t *d = mmap_more_open(file, DEFAULT_TERM_WIDTH);
+	more_file_t *d = more_open(file, DEFAULT_TERM_WIDTH);
 	if (d == NULL)
 		return -1;
 
@@ -787,8 +785,8 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 		is_quote = d->prop & IS_QUOTE;
 		while (i++ < t_lines - 1) {
 			// Get a line
-			if (mmap_more_getline(d) <= 0) {
-				mmap_more_close(d);
+			if (more_getline(d) <= 0) {
+				more_close(d);
 				if (promptend)
 					pressanykey();
 				return ch;
@@ -800,7 +798,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 						|| !strncmp(d->begin, "【 在", 5)
 						|| !strncmp(d->begin, "※ 引述", 7)) {
 					prints("\033[1;33m");
-					mmap_more_puts(d);
+					more_puts(d);
 					colored = true;
 				} else {
 					is_wrapped = (d->begin != d->buf) && (*(d->begin - 1) != '\n');
@@ -815,7 +813,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 							colored = false;
 						}
 					}
-					mmap_more_puts(d);
+					more_puts(d);
 					is_wrapped = (*(d->end - 1) != '\n');
 					if (is_quote && !is_wrapped)
 						is_quote = false;
@@ -826,7 +824,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 					--pos;
 				}
 			} 			else {
-				mmap_more_close(d);
+				more_close(d);
 				if (promptend)
 					pressanykey();
 				refresh();
@@ -835,7 +833,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 		}
 		// Reaching end by KEY_END can be rolled back.
 		if (d->end == buf_end && ch != KEY_END) {
-			mmap_more_close(d);
+			more_close(d);
 			if (promptend)
 				pressanykey();
 			return ch;
@@ -852,7 +850,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 		refresh();
 		switch (ch) {
 			case KEY_LEFT:
-				mmap_more_close(d);
+				more_close(d);
 				return ch;
 				break;
 			case KEY_RIGHT:
@@ -866,44 +864,44 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 				i = pos = 0;
 				new_row = d->line - (2 * t_lines - 3);
 				if (new_row < 0) {
-					mmap_more_close(d);
+					more_close(d);
 					return ch;
 				}
-				mmap_more_seek(d, new_row);
+				more_seek(d, new_row);
 				break;
 			case KEY_UP:
 				clear();
 				i = pos = 0;
 				new_row = d->line - t_lines;
 				if (new_row < 0) {
-					mmap_more_close(d);
+					more_close(d);
 					return ch;
 				}
-				mmap_more_seek(d, new_row);
+				more_seek(d, new_row);
 				break;
 			case KEY_HOME:
 				clear();
 				i = pos = 0;
-				mmap_more_seek(d, 0);
+				more_seek(d, 0);
 				break;
 			case 'R':
 			case KEY_END:
-				mmap_more_countline(d);
+				more_countline(d);
 				i = t_lines - 1 - (d->total - d->line);
 				if (i < 0)
 					i = 0;
 				if (i == t_lines - 1)
 					break;
-				mmap_more_seek(d, d->total - (t_lines - 1) + i);
+				more_seek(d, d->total - (t_lines - 1) + i);
 				break;
 			case 'G':
 				getdata(t_lines - 1, 0, "跳转到的行号:", linebuf, sizeof(linebuf), true, true);
 				new_row = strtol(linebuf, NULL, 10) - 1;
 				if (new_row < 0)
 					new_row = 0;
-				mmap_more_seek(d, new_row);
+				more_seek(d, new_row);
 				if (d->total >= 0 && new_row >= d->total)
-					mmap_more_seek(d, d->total - 1);
+					more_seek(d, d->total - 1);
 				clear();
 				i = pos = 0;
 				break;
@@ -913,23 +911,21 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 				new_row = d->line - t_lines + 1;
 				if (new_row < 0)
 					new_row = 0;
-				mmap_more_seek(d, new_row);
+				more_seek(d, new_row);
 				break;
 			case 'L':
-				mmap_more_close(d);
+				more_close(d);
 				return KEY_PGUP;
 				break;
 			default:
 				break;
 			}
 	}
-	mmap_more_close(d);
+	more_close(d);
 	if (promptend)
 		pressanykey();
 	return ch;
 }
-
-// Added end.
 
 int mesgmore(char *filename, int promptend, int row, int numlines)
 {
