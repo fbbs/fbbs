@@ -396,7 +396,11 @@ typedef struct more_file_t {
 	int prop;         ///< Properties of last fetched line.
 } more_file_t;
 
-typedef int (*more_open_func_t)(const char *, more_file_t *);
+typedef int (*more_open_t)(const char *, more_file_t *);
+
+typedef int (*more_prompt_t)(more_file_t *);
+
+typedef int (*more_handler_t)(more_file_t *, int);
 
 /**
  * Open a file as more stream.
@@ -405,7 +409,7 @@ typedef int (*more_open_func_t)(const char *, more_file_t *);
  * @param func A function to fill the stream with file content.
  * @return an ::more_file_t pointer on success, NULL on error.
  */
-static more_file_t *more_open(const char *file, int width, more_open_func_t func)
+static more_file_t *more_open(const char *file, int width, more_open_t func)
 {
 	more_file_t *more = malloc(sizeof(*more));
 	if (more == NULL)
@@ -640,7 +644,7 @@ static void more_puts(more_file_t *d)
 /**
  *
  */
-int more_open_file(const char *file, more_file_t *more)
+static int more_open_file(const char *file, more_file_t *more)
 {
 	mmap_t m;
 	m.oflag = O_RDONLY;
@@ -662,62 +666,69 @@ int more_open_file(const char *file, more_file_t *more)
 	return -1;
 }
 
-/**
- * Article reading function for telnet.
- * @param file File to show.
- * @param promptend Whether immediately ask user to press any key.
- * @param line The start line (on screen) of the article area.
- * @param numlines Lines shown at most, 0 means no limit.
- * @param stuffmode todo..
- * @return Last dealt key, -1 on error.
- */
-static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
+static int more_prompt_file(more_file_t *more)
 {
-	more_file_t *d = more_open(file, DEFAULT_TERM_WIDTH, more_open_file);
-	if (d == NULL)
-		return -1;
+	prints("\033[0;1;44;32m下面还有喔(%d%%) 第(%d-%d)行 \033[33m|"
+			" l 上篇 | b e 开头末尾 | g 跳转 | h 帮助\033[K\033[m",
+			(more->end - more->buf) * 100 / more->size,
+			more->line - t_lines + 2, more->line);
+	return 0;
+}
 
-	clrtobot();
+static int is_emphasize(const char *str)
+{
+	return (!strncmp(str, "【 在", sizeof("【 在"))
+			|| !strncmp(str, "==>", 3)
+			|| !strncmp(str, "□ 引用", sizeof("□ 引用"))
+			|| !strncmp(str, "※ 引述", sizeof("※ 引述")));
+}
+
+static int is_quotation(const char *str)
+{
+	return (!strncmp(str, ": ", 2) || !strncmp(str, "> ", 2));
+}
+
+static int more_main(more_file_t *more, bool promptend, int line, int lines,
+		int stuff, more_prompt_t prompt, more_handler_t handler)
+{
 	int lines_read = 1, pos = 0, i = 0, ch = 0;
 	bool is_quote, is_wrapped, colored = false;
 	int new_row;
-	char *buf_end = d->buf + d->size;
+	char *buf_end = more->buf + more->size;
 	char linebuf[7];
+
+	clrtobot();
 	// TODO: stuffmode
 	while (true) {
-		is_quote = d->prop & IS_QUOTE;
+		is_quote = more->prop & IS_QUOTE;
 		while (i++ < t_lines - 1) {
 			// Get a line
-			if (more_getline(d) <= 0) {
-				more_close(d);
-				if (promptend)
+			if (more_getline(more) <= 0) {
+				if (prompt)
 					pressanykey();
 				return ch;
 			}
 			lines_read++;
-			if (numlines == 0 || lines_read <= numlines) {
-				if (!strncmp(d->begin, "□ 引用", 7)
-						|| !strncmp(d->begin, "==>", 3)
-						|| !strncmp(d->begin, "【 在", 5)
-						|| !strncmp(d->begin, "※ 引述", 7)) {
-					prints("\033[1;33m");
-					more_puts(d);
+			if (lines == 0 || lines_read <= lines) {
+				if (is_emphasize(more->begin)) {
+					outs("\033[1;33m");
+					more_puts(more);
 					colored = true;
 				} else {
-					is_wrapped = (d->begin != d->buf) && (*(d->begin - 1) != '\n');
-					if (is_quote || (!is_wrapped && ((!strncmp(d->begin, ": ", 2)
-							|| !strncmp(d->begin, "> ", 2))))) {
+					is_wrapped = (more->begin != more->buf)
+							&& (*(more->begin - 1) != '\n');
+					if (is_quote || (!is_wrapped && is_quotation(more->begin))) {
 						is_quote = true;
-						prints("\033[0;36m");
+						outs("\033[0;36m");
 						colored = true;
 					} else {
 						if (colored) {
-							prints("\033[m");
+							outs("\033[m");
 							colored = false;
 						}
 					}
-					more_puts(d);
-					is_wrapped = (*(d->end - 1) != '\n');
+					more_puts(more);
+					is_wrapped = (*(more->end - 1) != '\n');
 					if (is_quote && !is_wrapped)
 						is_quote = false;
 				}
@@ -727,33 +738,31 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 					--pos;
 				}
 			} 			else {
-				more_close(d);
 				if (promptend)
 					pressanykey();
 				refresh();
 				return ch;
 			}
 		}
+
 		// Reaching end by KEY_END can be rolled back.
-		if (d->end == buf_end && ch != KEY_END) {
-			more_close(d);
+		if (more->end == buf_end && ch != KEY_END) {
 			if (promptend)
 				pressanykey();
 			return ch;
 		}
+
 		// If screen is filled, wait for user command.
 		move(t_lines - 1, 0);
 		clrtoeol();
-		prints("\033[0;1;44;32m下面还有喔(%d%%) 第(%d-%d)行 \033[33m|"
-				" l 上篇 | b e 开头末尾 | g 跳转 | h 帮助\033[K\033[m",
-				(d->end - d->buf) * 100 / d->size, d->line - t_lines + 2, d->line);
+		(*prompt)(more);
+
 		ch = morekey();
 		move(t_lines - 1, 0);
 		clrtoeol();
 		refresh();
 		switch (ch) {
 			case KEY_LEFT:
-				more_close(d);
 				return ch;
 				break;
 			case KEY_RIGHT:
@@ -765,68 +774,86 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 			case KEY_PGUP:
 				clear();
 				i = pos = 0;
-				new_row = d->line - (2 * t_lines - 3);
-				if (new_row < 0) {
-					more_close(d);
+				new_row = more->line - (2 * t_lines - 3);
+				if (new_row < 0)
 					return ch;
-				}
-				more_seek(d, new_row);
+				more_seek(more, new_row);
 				break;
 			case KEY_UP:
 				clear();
 				i = pos = 0;
-				new_row = d->line - t_lines;
+				new_row = more->line - t_lines;
 				if (new_row < 0) {
-					more_close(d);
 					return ch;
 				}
-				more_seek(d, new_row);
+				more_seek(more, new_row);
 				break;
 			case KEY_HOME:
 				clear();
 				i = pos = 0;
-				more_seek(d, 0);
+				more_seek(more, 0);
 				break;
 			case 'R':
 			case KEY_END:
-				more_countline(d);
-				i = t_lines - 1 - (d->total - d->line);
+				more_countline(more);
+				i = t_lines - 1 - (more->total - more->line);
 				if (i < 0)
 					i = 0;
 				if (i == t_lines - 1)
 					break;
-				more_seek(d, d->total - (t_lines - 1) + i);
+				more_seek(more, more->total - (t_lines - 1) + i);
 				break;
 			case 'G':
-				getdata(t_lines - 1, 0, "跳转到的行号:", linebuf, sizeof(linebuf), true, true);
+				getdata(t_lines - 1, 0, "跳转到的行号:", linebuf,
+						sizeof(linebuf), true, true);
 				new_row = strtol(linebuf, NULL, 10) - 1;
 				if (new_row < 0)
 					new_row = 0;
-				more_seek(d, new_row);
-				if (d->total >= 0 && new_row >= d->total)
-					more_seek(d, d->total - 1);
+				more_seek(more, new_row);
+				if (more->total >= 0 && new_row >= more->total)
+					more_seek(more, more->total - 1);
 				clear();
 				i = pos = 0;
 				break;
 			case 'H':
 				show_help("help/morehelp");
 				i = pos = 0;
-				new_row = d->line - t_lines + 1;
+				new_row = more->line - t_lines + 1;
 				if (new_row < 0)
 					new_row = 0;
-				more_seek(d, new_row);
+				more_seek(more, new_row);
 				break;
 			case 'L':
-				more_close(d);
 				return KEY_PGUP;
 				break;
 			default:
+				if (handler)
+					(*handler)(more, ch);
 				break;
 			}
 	}
-	more_close(d);
 	if (promptend)
 		pressanykey();
+	return ch;
+}
+
+/**
+ * Article reading function for telnet.
+ * @param file File to show.
+ * @param promptend Whether immediately ask user to press any key.
+ * @param line The start line (on screen) of the article area.
+ * @param numlines Lines shown at most, 0 means no limit.
+ * @param stuffmode todo..
+ * @return Last dealt key, -1 on error.
+ */
+static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
+{
+	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_file);
+	if (more == NULL)
+		return -1;
+	int ch = more_main(more, promptend, line, numlines, stuffmode,
+			more_prompt_file, NULL);
+	more_close(more);
 	return ch;
 }
 
