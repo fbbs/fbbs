@@ -48,7 +48,7 @@ int bbsbrdadd_main(void)
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
-	FILE *fp = fopen(file, "rw");
+	FILE *fp = fopen(file, "r+");
 	if (fp == NULL)
 		return BBS_EINTNL;
 	flock(fileno(fp), LOCK_EX);
@@ -84,7 +84,8 @@ int bbsbrdadd_main(void)
 	if (ret)
 		return ret;
 	xml_header("bbs");
-	printf("<bbsbrdadd><brd>%s</brd><bid>%d</bid></bbsbrdadd>",
-			bp->filename, bid);
+	printf("<bbsbrdadd ");
+	print_session();
+	printf("><brd>%s</brd><bid>%d</bid></bbsbrdadd>", bp->filename, bid);
 	return 0;
 }

@@ -792,6 +792,11 @@ table.post{width:100%}
 	</table>
 </xsl:template>
 
+<xsl:template match='bbsbrdadd'>
+	<h2>添加收藏版面</h2>
+	<p>成功添加 <a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='bid'/></xsl:attribute><xsl:value-of select='brd'/></a> 版到收藏夹</p>
+</xsl:template>
+
 <xsl:template match='bbsfav'>
 	<h2>我的收藏夹</h2>
 	<p><a href='mybrd'>自定义</a></p>
