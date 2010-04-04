@@ -707,7 +707,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 		while (i++ < t_lines - 1) {
 			// Get a line
 			if (more_getline(more) <= 0) {
-				if (prompt)
+				if (promptend)
 					pressanykey();
 				return ch;
 			}
