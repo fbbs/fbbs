@@ -2,7 +2,7 @@
 #include "libweb.h"
 
 enum {
-	BFIND_EXPIRE = 30,
+	BFIND_EXPIRE = 90,
 	BFIND_MAX = 100,
 };
 
