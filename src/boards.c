@@ -821,7 +821,7 @@ int choose_board(int newflag) {
 				page = -1;
 				break;
 			case 'l':
-				show_allmsgs();
+				msg_more();
 				page = -1;
 				break;
 			case 'N':

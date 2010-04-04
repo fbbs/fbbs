@@ -370,9 +370,11 @@ enum {
 	/** A ::linenum_t will be assigned for every block. */
 	LINENUM_BLOCK_SIZE = 4096, 
 	DEFAULT_TERM_WIDTH = 80,   ///< Default terminal width.
-	TAB_STOP = 4,     ///< Columns of a tab stop.
-	IS_QUOTE = 0x1,   ///< The line is part of quotation if this bit is set.
-	HAS_TABSTOP = 0x2 ///< The line has tab stop(s) if this bit is set.
+	TAB_STOP = 4,       ///< Columns of a tab stop.
+	IS_QUOTE = 0x1,     ///< The line is part of quotation if this bit is set.
+	HAS_TABSTOP = 0x2,  ///< The line has tab stop(s) if this bit is set.
+	NO_QUOTE = 0x1,     ///< Show quote with normal style.
+	NO_EMPHASIZE = 0x2, ///< Show emphasized text with normal style.
 };
 
 /** Line number cache structure. */
@@ -394,6 +396,7 @@ typedef struct more_file_t {
 	char *begin;      ///< Starting address of last fetched line.
 	char *end;        ///< Off-the-end pointer of last fetched line.
 	int prop;         ///< Properties of last fetched line.
+	int opt;          ///< Options of the more file.
 } more_file_t;
 
 typedef int (*more_open_t)(const char *, more_file_t *);
@@ -710,14 +713,15 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 			}
 			lines_read++;
 			if (lines == 0 || lines_read <= lines) {
-				if (is_emphasize(more->begin)) {
+				if (!(more->opt & NO_EMPHASIZE) && is_emphasize(more->begin)) {
 					outs("\033[1;33m");
 					more_puts(more);
 					colored = true;
 				} else {
 					is_wrapped = (more->begin != more->buf)
 							&& (*(more->begin - 1) != '\n');
-					if (is_quote || (!is_wrapped && is_quotation(more->begin))) {
+					if (!(more->opt & NO_QUOTE) && (is_quote
+							|| (!is_wrapped && is_quotation(more->begin)))) {
 						is_quote = true;
 						outs("\033[0;36m");
 						colored = true;
@@ -827,8 +831,11 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				return KEY_PGUP;
 				break;
 			default:
-				if (handler)
-					(*handler)(more, ch);
+				if (handler) {
+					ch = (*handler)(more, ch);
+					if (ch)
+						return ch;
+				}
 				break;
 			}
 	}
@@ -854,6 +861,112 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 	int ch = more_main(more, promptend, line, numlines, stuffmode,
 			more_prompt_file, NULL);
 	more_close(more);
+	return ch;
+}
+
+static int more_open_msg(const char *file, more_file_t *more)
+{
+	more->opt |= NO_QUOTE | NO_EMPHASIZE;
+
+	FILE *fp = fopen(file, "r");
+	if (fp == NULL)
+		return -1;
+	flock(fileno(fp), LOCK_EX);
+	fseek(fp, 0, SEEK_END);
+	int size = ftell(fp);
+
+	int len = 0;
+	char head[LINE_BUFSIZE], buf[LINE_BUFSIZE];
+	more->buf = malloc(size);
+	if (more->buf != NULL) {
+		fseek(fp, 0, SEEK_SET);
+		while (fgets(head, sizeof(head), fp) && fgets(buf, sizeof(buf), fp)) {
+			// truncate head.
+			memcpy(more->buf + len, head, 71);
+			len += 71;
+			memcpy(more->buf + len, "\033[K\033[m\n", 7);
+			len += 7;
+			len += strlcpy(more->buf + len, buf, size - len);
+			if (len > size) {
+				len = size;
+				break;
+			}
+		}
+		flock(fileno(fp), LOCK_UN);
+		fclose(fp);
+
+		more->size = len;
+		more->ln_size = len / LINENUM_BLOCK_SIZE + 1;
+		more->buf = realloc(more->buf, len + more->ln_size * sizeof(linenum_t));
+		if (more->buf == NULL)
+			return -1;
+		more->ln = (linenum_t *)(more->buf + len);
+		memset(more->ln, 0, more->ln_size * sizeof(linenum_t));
+	} else {
+		return -1;
+	}
+	return 0;
+}
+
+static int more_prompt_msg(more_file_t *more)
+{
+	prints("\033[0;1;44;32m讯息浏览器 (%d%%) 第(%d-%d)行 \033[33m| "
+			"c 清除 | m 寄回信箱 | b e 开头末尾 | g 跳转\033[K\033[m",
+			(more->end - more->buf) * 100 / more->size,
+			more->line - t_lines + 2, more->line);
+	return 0;
+}
+
+static int more_handle_msg(more_file_t *more, int ch)
+{
+	switch (ch) {
+		case 'C':
+			if (askyn("确定要清除吗？", NA, YEA))
+				return ch;
+			break;
+		case 'M':
+			if (askyn("确定要寄回吗？", NA, YEA))
+				return ch;
+			break;
+	}
+	return 0;
+}
+
+int msg_more(void)
+{
+	char file[HOMELEN], title[STRLEN];
+	if (!strcmp(currentuser.userid, "guest"))
+		return 0;
+#ifdef LOG_MY_MESG
+	setuserfile(file, "msgfile.me");
+#else
+	setuserfile(file, "msgfile");
+#endif
+	modify_user_mode(LOOKMSGS);
+
+	int ch;
+	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_msg);
+	if (more == NULL) {
+		presskeyfor("没有任何的讯息存在...", t_lines - 1);
+	} else {
+		clear();
+		ch = more_main(more, false, 0, 0, false, more_prompt_msg,
+				more_handle_msg);
+		switch (ch) {
+			case 'C':
+				unlink(file);
+				break;
+			case 'M':
+				snprintf(title, sizeof(title), "[%s] 所有讯息备份",
+						getdatestring(time(NULL), DATE_ZH));
+				mail_file(file, currentuser.userid, title);
+				unlink(file);
+				break;
+			default:
+				break;
+		}
+	}
+	clear();
 	return ch;
 }
 

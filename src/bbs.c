@@ -3362,7 +3362,7 @@ int Q_Goodbye() {
 	/* edwardc.990423 Ñ¶Ï¢ä¯ÀÀÆ÷ */
 	if (dashf(fname)) {
 		clear();
-		mesgmore(fname, NA, 0, 9999);
+		msg_more();
 	}
 	clear();
 	prints("\n\n\n\n");

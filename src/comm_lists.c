@@ -15,7 +15,7 @@ int Announce(), Personal(), Boards(), EGroup(), Info(), Goodbye(),
 		BoardGroup();
 int New(), GoodBrds(), Read(), Select(), Users(), Welcome();
 int setcalltime();
-int show_allmsgs(), x_lockscreen(), x_showuser();
+int msg_more(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), t_users(), x_info(), x_fillform(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();
 int shownotepad(), x_userdefine();
@@ -114,7 +114,7 @@ static smenu_t sysconf_cmdlist[] = {
 	{ "SetPager", t_pager, 0 },
 	{ "SetCloak", x_cloak, 0 },
 	{ "SendMsg", s_msg, 0 },
-	{ "ShowMsg", show_allmsgs, 0 },
+	{ "ShowMsg", msg_more, 0 },
 	{ "SetFriends", t_friend, 0 },
 	{ "SetRejects", t_reject, 0 },
 	{ "RFriendWall", friend_wall, 	0 },

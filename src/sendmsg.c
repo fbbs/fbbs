@@ -109,29 +109,6 @@ int send_msg(int ent, const struct fileheader *fileinfo, char *direct)
 	return FULLUPDATE;
 }
 
-int show_allmsgs(void)
-{
-	char fname[STRLEN];
-	if (!strcmp(currentuser.userid, "guest"))
-		return;
-#ifdef LOG_MY_MESG
-	setuserfile(fname, "msgfile.me");
-#else
-	setuserfile(fname, "msgfile");
-#endif
-	clear();
-	modify_user_mode(LOOKMSGS);
-	if (dashf(fname)) {
-		mesgmore(fname, YEA, 0, 9999);
-		clear();
-	} else {
-		move(5, 30);
-		prints("没有任何的讯息存在！！");
-		pressanykey();
-		clear();
-	}//if dashf(fname)
-}
-
 int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int userpid)
 {
 	char uident[STRLEN], ret_str[20];

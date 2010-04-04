@@ -517,8 +517,8 @@ int ch, ssize;
 		return PARTUPDATE;
 		break;
 		case 'l': /* ppfoong */
-		show_allmsgs();
-		return FULLUPDATE;
+			msg_more();
+			return FULLUPDATE;
 		/*        case 'L':		//chenhao 解决在文章列表时看信的问题
 		 if(uinfo.mode == RMAIL) return DONOTHING;
 		 savemode = uinfo.mode;
