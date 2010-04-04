@@ -396,49 +396,41 @@ typedef struct more_file_t {
 	int prop;         ///< Properties of last fetched line.
 } more_file_t;
 
+typedef int (*more_open_func_t)(const char *, more_file_t *);
+
 /**
  * Open a file as more stream.
  * @param file File to open.
  * @param width Line width.
+ * @param func A function to fill the stream with file content.
  * @return an ::more_file_t pointer on success, NULL on error.
  */
-static more_file_t *more_open(const char *file, int width)
+static more_file_t *more_open(const char *file, int width, more_open_func_t func)
 {
-	mmap_t m;
-	m.oflag = O_RDONLY;
-	if (mmap_open(file, &m) < 0)
+	more_file_t *more = malloc(sizeof(*more));
+	if (more == NULL)
 		return NULL;
-	more_file_t *d = malloc(sizeof(*d));
-	if (d == NULL) {
-		mmap_close(&m);
+
+	memset(more, 0, sizeof(*more));
+	more->total = -1;
+	more->width = width;
+
+	if ((*func)(file, more) != 0) {
+		free(more);
 		return NULL;
 	}
-	memset(d, 0, sizeof(*d));
-	d->total = -1;
-	d->width = width;
-	d->size = m.size;
-	d->ln_size = m.size / LINENUM_BLOCK_SIZE + 1; // at least one block
-	d->buf = malloc(m.size + d->ln_size * sizeof(linenum_t));
-	if (d->buf != NULL) {
-		memcpy(d->buf, m.ptr, m.size);
-		mmap_close(&m);
-		d->ln = (linenum_t *)(d->buf + m.size);
-		memset(d->ln, 0, d->ln_size * sizeof(linenum_t));
-		return d;
-	}
-	mmap_close(&m);
-	return NULL;
+	return more;
 }
 
 /**
  * Close more stream.
  * @param d The more stream.
  */
-static void more_close(more_file_t *d)
+static void more_close(more_file_t *more)
 {
-	if (d->buf != NULL)
-		free(d->buf);
-	free(d);
+	if (more->buf != NULL)
+		free(more->buf);
+	free(more);
 }
 
 /**
@@ -646,6 +638,31 @@ static void more_puts(more_file_t *d)
 }
 
 /**
+ *
+ */
+int more_open_file(const char *file, more_file_t *more)
+{
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(file, &m) < 0)
+		return -1;
+
+	more->size = m.size;
+	more->ln_size = m.size / LINENUM_BLOCK_SIZE + 1; // at least one block
+	more->buf = malloc(m.size + more->ln_size * sizeof(linenum_t));
+	if (more->buf != NULL) {
+		memcpy(more->buf, m.ptr, m.size);
+		mmap_close(&m);
+		more->ln = (linenum_t *)(more->buf + m.size);
+		memset(more->ln, 0, more->ln_size * sizeof(linenum_t));
+		return 0;
+	}
+
+	mmap_close(&m);
+	return -1;
+}
+
+/**
  * Article reading function for telnet.
  * @param file File to show.
  * @param promptend Whether immediately ask user to press any key.
@@ -656,7 +673,7 @@ static void more_puts(more_file_t *d)
  */
 static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
 {
-	more_file_t *d = more_open(file, DEFAULT_TERM_WIDTH);
+	more_file_t *d = more_open(file, DEFAULT_TERM_WIDTH, more_open_file);
 	if (d == NULL)
 		return -1;
 
