@@ -366,120 +366,6 @@ void R_monitor()
 		alarm(10);
 }
 
-static int rawmore(char *filename, int promptend, int row, int numlines, int stuffmode)
-{
-	extern int t_lines;
-	struct stat st;
-	int     fd, tsize;
-	char    buf[256];
-	int     i, ch, viewed, pos, isin = NA, titleshow = NA;
-	int     numbytes;
-	int     curr_row = row;
-	int     linesread = 0;
-
-	if ((fd = open(filename, O_RDONLY)) == -1) {
-		return -1;
-	}
-	if (fstat(fd, &st)) {
-		return -1;
-	}
-
-	tsize = st.st_size;
-	more_size = more_num = 0; 
-	clrtobot();
-	i = pos = viewed = 0;
-
-	numbytes = readln(fd, buf);
-
-	curr_row++;
-	linesread++;
-	while (numbytes) {
-		if (linesread <= numlines || numlines == 0) {
-			viewed += numbytes;
-			if (!titleshow && (!strncmp(buf, "¡õ ÒýÓÃ", 7))
-					||(!strncmp(buf, "==>", 3)) 
-					|| (!strncmp(buf, "¡¾ ÔÚ", 5))
-					||(!strncmp(buf, "¡ù ÒýÊö", 7))) {
-				prints("[1;33m%s[m", buf);
-				titleshow = YEA;
-			} else if (buf[0] != ':' && buf[0] != '>') {
-				if (isin == YEA) { 
-					isin = NA;
-					prints("[m");
-				}
-				if (check_stuffmode() || stuffmode == YEA) 
-					showstuff(buf);
-				else
-					prints("%s", buf);
-			} else { 
-				prints("[36m");
-				if (check_stuffmode() || stuffmode == YEA)
-					showstuff(buf);
-				else
-					prints("%s", buf);
-				isin = YEA;
-			}
-			i++;
-			pos++;
-			if (pos == t_lines) {
-				scroll();
-				pos--;
-			}
-			numbytes = readln(fd, buf); 
-			curr_row++;
-			linesread++;
-			if (numbytes == 0) break;
-			if (i == t_lines - 1) {
-				if (showansi) {
-					move(t_lines - 1, 0);
-					prints("[0m[m");
-					refresh();
-				}
-				move(t_lines - 1, 0);
-				clrtoeol();
-				prints("[1;44;32mÏÂÃæ»¹ÓÐà¸ (%d%%)[33m   ©¦ ½áÊø ¡û <q> ©¦ ¡ü/¡ý/PgUp/PgDn ÒÆ¶¯ ©¦ ? ¸¨ÖúËµÃ÷ ©¦     [m", (viewed * 100) / tsize);
-				ch = morekey();
-				move(t_lines - 1, 0);
-				clrtoeol();
-				refresh();
-				if (ch == KEY_LEFT) { 
-					close(fd);
-					return ch;
-				} else if (ch == KEY_RIGHT) {
-					i = 1;
-				} else if (ch == KEY_DOWN) {
-					i = t_lines - 2;
-				} else if (ch == KEY_PGUP || ch == KEY_UP) {
-					clear();
-					i = pos = 0;
-					curr_row -= (ch == KEY_PGUP) ? (2 * t_lines - 2) : (t_lines + 1);
-					if (curr_row < 0) {
-						close(fd);
-						return ch;
-					}
-					viewed = seek_nth_line(fd, curr_row);
-					numbytes = readln(fd, buf);
-					curr_row++;
-				} else if (ch == 'H') {
-					show_help("help/morehelp");
-					i = pos = 0;
-					curr_row -= (t_lines);
-					if (curr_row < 0)
-						curr_row = 0;
-					viewed = seek_nth_line(fd, curr_row);
-					numbytes = readln(fd, buf);
-					curr_row++;
-				}
-			}
-		} else break;	/* More Than Want */
-	}
-	close(fd);
-	if (promptend) {
-		pressanykey();
-	}
-	return 0;
-}
-
 enum {
 	/** A ::linenum_t will be assigned for every block. */
 	LINENUM_BLOCK_SIZE = 4096, 
@@ -1067,7 +953,7 @@ int ansimore(char *filename, int promptend)
 int ansimore2(char *filename, int promptend, int row, int numlines)
 {
 	int     ch;
-	ch = rawmore(filename, promptend, row, numlines, NA);
+	ch = rawmore2(filename, promptend, row, numlines, NA);
 	refresh();
 	return ch;
 }
@@ -1077,7 +963,7 @@ int ansimore3(char *filename, int promptend)
 {
 	int     ch;
 	clear();
-	ch = rawmore(filename, promptend, 0, 0, YEA);
+	ch = rawmore2(filename, promptend, 0, 0, YEA);
 	move(t_lines - 1, 0);
 	prints("[0m[m");
 	refresh();
