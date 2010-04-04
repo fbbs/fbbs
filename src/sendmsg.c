@@ -419,7 +419,7 @@ int friend_login_wall(const struct user_info *pageinfo)
 }
 
 enum {
-	MSG_INIT, MSG_SHOW, MSG_WAIT, MSG_REPLYING,
+	MSG_INIT, MSG_SHOW, MSG_REPLYING,
 	MSG_BAK_THRES = 500,
 };
 
@@ -476,9 +476,10 @@ static int show_msg(const char *user, const char *head, const char *buf, int lin
 	line = show_data(buf, LINE_LEN - 1, line, 0);
 	move(line, 0);
 	clrtoeol();
-	prints("\033[m回讯息给 %s", sender);
+	prints("\033[m立即回讯息给 %s", sender);
 	move(++line, 0);
 	clrtoeol();
+	refresh();
 	return line;
 }
 
@@ -658,7 +659,7 @@ int msg_reply(int ch)
 	static char msg[MAX_MSG_LINE * LINE_LEN + 1];
 	static char receiver[IDLEN + 1];
 
-	int k, line;
+	int k;
 	char buf[LINE_BUFSIZE], head[LINE_BUFSIZE];
 		
 	switch (status) {
@@ -676,26 +677,7 @@ int msg_reply(int ch)
 		case MSG_SHOW:
 			msg_show(&num, &rpid, head, sizeof(head), buf, sizeof(buf),
 					receiver, sizeof(receiver), &cury, &status);
-			move(cury - 1, 0);
-			clrtoeol();
-			outs("\033[m按^Z回复");
-			move(cury, 0);
-			refresh();
-			status = MSG_WAIT;
-			break;
-		case MSG_WAIT:
-			if (ch == Ctrl('Z')) {
-				status = MSG_REPLYING;
-				ch = '\0';
-			} else if (ch == '\r' || ch == '\n')
-				status = MSG_REPLYING;
-			else
-				return;
-			move(cury - 1, 0);
-			clrtoeol();
-			prints("\033[m回讯息给 %s", receiver);
-			move(cury, 0);
-			refresh();
+			status = MSG_REPLYING;
 			// fall through
 		case MSG_REPLYING:
 			switch (ch) {
@@ -734,7 +716,6 @@ int msg_reply(int ch)
 					height = 1;
 					msg_show(&num, &rpid, head, sizeof(head), buf, sizeof(buf),
 							receiver, sizeof(receiver), &cury, &status);
-					refresh();
 					break;
 				default:
 					getdata_r(msg, sizeof(msg), &len, ch, cury, &height);
@@ -744,6 +725,7 @@ int msg_reply(int ch)
 		default:
 			break;
 	}
+	return 0;
 }
 
 void msg_handler(int signum)
