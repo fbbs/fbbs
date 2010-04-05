@@ -30,49 +30,53 @@ int getmailboxhold(unsigned int userlevel)
 	return MAX_MAIL_HOLD;
 }
 
-int getmailsize(const char *userid)
+/**
+ * Get apparent mailbox size.
+ * The result is cached in tmp directory.
+ * @param user The user.
+ * @return Mailbox size in kilobytes.
+ */
+int getmailsize(const char *user)
 {
-	struct fileheader fcache;
-	struct stat DIRst, SIZEst, st;
-	char sizefile[50], dirfile[256], mailfile[256];
-	FILE *fp;
-	int mailsize= -1, fd, ssize = sizeof(struct fileheader);
+	char index[HOMELEN], tmp[HOMELEN];
+	setmdir(index, user);
+	snprintf(tmp, sizeof(tmp), "tmp/%s.mailsize", user);
 
-	setmdir(dirfile, userid);
-	sprintf(sizefile, "tmp/%s.mailsize", userid);
-	if (stat(dirfile, &DIRst)==-1||DIRst.st_size==0)
-		mailsize = 0;
-	else if (stat(sizefile, &SIZEst)!=-1 && SIZEst.st_size!=0
-			&& SIZEst.st_ctime >= DIRst.st_ctime) {
-		fp = fopen(sizefile, "r");
-		if (fp) {
-			fscanf(fp, "%d", &mailsize);
+	int size = 0;
+	struct stat st, st2;
+	if (stat(index, &st) != 0 || st.st_size == 0)
+		return 0;
+	if (stat(tmp, &st2) == 0 && st2.st_size != 0
+			&& st2.st_ctime >= st.st_ctime) {
+		FILE *fp = fopen(tmp, "r");
+		if (fp != NULL) {
+			fscanf(fp, "%d", &size);
 			fclose(fp);
+			return size;
 		}
 	}
-	if (mailsize != -1)
-		return mailsize;
 
-	mailsize = 0;
-	if (stat(dirfile, &st)!=-1)
-		mailsize+=(st.st_size/1024+1);
-	fd = open(dirfile, O_RDONLY);
-	if (fd != -1) {
-		while (read(fd, &fcache, ssize) == ssize) {
-			sprintf(mailfile, "mail/%c/%s/%s", toupper(userid[0]), userid,
-					fcache.filename);
-			if (stat(mailfile, &st)!=-1) {
-				mailsize += (st.st_size/1024+1);
-			}
-		}
-		close(fd);
-	}
-	fp = fopen(sizefile, "w+");
+	size = st.st_size;
+	struct fileheader fh;
+	char file[HOMELEN];
+	FILE *fp = fopen(index, "r");
 	if (fp) {
-		fprintf(fp, "%d", mailsize);
+		while (fread(&fh, sizeof(fh), 1, fp) == 1) {
+			setmfile(file, currentuser.userid, fh.filename);
+			if (stat(file, &st) == 0)
+				size += st.st_size;
+		}
 		fclose(fp);
 	}
-	return mailsize;
+	size /= 1024;
+
+	fp = fopen(tmp, "w");
+	if (fp) {
+		fprintf(fp, "%d", size);
+		fclose(fp);
+	}
+
+	return size;
 }
 
 int getmailnum(const char *userid)
