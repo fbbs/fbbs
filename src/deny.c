@@ -543,10 +543,10 @@ int deny_user(void)
  */
 static int deny_date_cmp(const char *s1, const char *s2)
 {
-	if ((!strncmp(s1, "待定", sizeof("待定"))
-			|| !strncmp(s1, "终身", sizeof("终身")))
-		&& (!strncmp(s2, "待定", sizeof("待定"))
-			|| !strncmp(s2, "终身", sizeof("终身")))) {
+	if ((!strncmp(s1, "待定", sizeof("待定") - 1)
+			|| !strncmp(s1, "终身", sizeof("终身") - 1))
+		&& (!strncmp(s2, "待定", sizeof("待定") - 1)
+			|| !strncmp(s2, "终身", sizeof("终身") - 1))) {
 		return 0;
 	}
 	return strncmp(s1, s2, 10);

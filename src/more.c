@@ -680,10 +680,10 @@ static int more_prompt_file(more_file_t *more)
 
 static int is_emphasize(const char *str)
 {
-	return (!strncmp(str, "【 在", sizeof("【 在"))
+	return (!strncmp(str, "【 在", sizeof("【 在") - 1)
 			|| !strncmp(str, "==>", 3)
-			|| !strncmp(str, "□ 引用", sizeof("□ 引用"))
-			|| !strncmp(str, "※ 引述", sizeof("※ 引述")));
+			|| !strncmp(str, "□ 引用", sizeof("□ 引用") - 1)
+			|| !strncmp(str, "※ 引述", sizeof("※ 引述") - 1));
 }
 
 static int is_quotation(const char *str)
