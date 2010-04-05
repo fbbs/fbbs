@@ -124,40 +124,6 @@ void setcalltime( void )
 	calltime = time(0) + ttt * 60;
 }
 
-int readln(int fd, char *buf)
-{
-	int     len, bytes, in_esc, ch;
-	len = bytes = in_esc = 0;
-	while (1) {
-		if (more_num >= more_size) {
-			more_size = read(fd, more_buf, MORE_BUFSIZE);
-			if (more_size == 0)  break;
-			more_num = 0;
-		}
-		ch = more_buf[more_num++];
-		bytes++;
-		if (ch == '\n' || bytes > 255) break;
-		else if (ch == '\t') {
-			do {
-				len++, *buf++ = ' ';
-			} while ((len % 4) != 0);
-		} else if (ch == '') {
-			if (showansi) *buf++ = ch;
-			in_esc = 1;
-		} else if (in_esc) {
-			if (showansi) *buf++ = ch;
-			if (strchr("[0123456789;,", ch) == NULL) in_esc = 0;
-		} else if (isprint2(ch)) {
-			if (len > 79) break;
-			len++;
-			*buf++ = ch;
-		}
-	}
-	*buf++ = ch;
-	*buf = '\0';
-	return bytes;
-}
-
 int morekey( void )
 {
 	int     ch;
@@ -220,34 +186,6 @@ int morekey( void )
 	}
 }
 
-int seek_nth_line(int fd, int no)  // ´ÓÎÄ¼þÍ·¶Áµ½µÚ no ÐÐ( ¶¨Î»µ½ no ÐÐ )
-{
-	int     n_read, line_count, viewed;
-	char   *p, *end;
-	lseek(fd, 0, SEEK_SET);
-	line_count = viewed = 0;
-
-	if (no > 0)
-		while (1) {
-			n_read = read(fd, more_buf, MORE_BUFSIZE);
-			if(n_read<=0)break;
-			p = more_buf;
-			end = p + n_read;
-			for (; p < end && line_count < no; p++)
-				if (*p == '\n')line_count++;
-
-			if (line_count >= no) {
-				viewed += (p - more_buf);
-				lseek(fd, (off_t) viewed, SEEK_SET);
-				break;
-			} else
-				viewed += n_read;
-		} 
-
-	more_num = MORE_BUFSIZE + 1;	/* invalidate the readln()'s buffer */
-
-	return viewed;
-}
 /*Add by SmallPig*/
 int countln(char *fname)
 {
