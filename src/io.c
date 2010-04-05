@@ -5,7 +5,7 @@
 #endif
 #include <arpa/telnet.h>
 #ifdef SSHBBS
-#include <libssh/libssh.h>
+#include "libssh/libssh.h"
 #endif // SSHBBS
 #include "bbs.h"
 

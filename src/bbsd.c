@@ -14,8 +14,8 @@
 #include <sys/ioctl.h>
 #endif
 #ifdef SSHBBS
-#include <libssh/libssh.h>
-#include <libssh/server.h>
+#include "libssh/libssh.h"
+#include "libssh/server.h"
 #endif // SSHBBS
 #include "bbs.h"
 
