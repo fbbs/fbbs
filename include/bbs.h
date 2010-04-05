@@ -183,14 +183,17 @@ extern char ULIST[];
 #define BOARD_CUSTOM_FLAG	0x80000000		//收藏夹自定义目录 defined by cometcaptor 2007-04-16 因为是目录是自定义，故选用标志的最高位，和标准的属性分开
 #define ZAPPED  		0x1         /* For boards...tells if board is Zapped */
 
-/* these are flags in userec.flags[0] */
-#define PAGER_FLAG   	0x1   /* true if pager was OFF last session */
-#define CLOAK_FLAG   	0x2   /* true if cloak was ON last session */
-#define SIG_FLAG     	0x8   /* true if sig was turned OFF last session */
-#define BRDSORT_FLAG 	0x20  /* true if the boards sorted alphabetical */
-#define BRDSORT_ONLINE 	0x40
-#define GIVEUPBBS_FLAG  0x80  /* true if the user give up BBs now (2003.04.22 stephen)*/
-#define ACTIVE_BOARD 	0x200 /* true if user toggled active movie board on */
+/** These are flags in userec.flags[0] */
+enum {
+	PAGER_FLAG     = 0x1,  ///< True if pager was OFF last session.
+	CLOAK_FLAG     = 0x2,  ///< True if cloak was ON last session.
+	BRD_HIDEREAD   = 0x4,  ///< True if read boards are hidden.
+	BRDSORT_UPDATE = 0x8,  ///< True if boards are sorted by update time.
+	BRDSORT_UDEF   = 0x10, ///< True if boards are sorted in user-defined order.
+	BRDSORT_FLAG   = 0x20, ///< True if boards are sorted alphabetical.
+	BRDSORT_ONLINE = 0x40, ///< True if boards are sorted by online users.
+	GIVEUPBBS_FLAG = 0x80, ///< True if the user gives up BBS now.
+};
 
 #define MULTI_LOGINS	2	/* 同时可上站 ID 数 */
 #ifndef FDQUAN
