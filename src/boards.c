@@ -494,94 +494,91 @@ void countbrdonline() {
 }
 #endif
 
-void show_brdlist (page, clsflag, newflag)
-int page, clsflag, newflag;
+void show_brdlist(int page, int clsflag, int newflag)
 {
 	struct newpostdata *ptr;
-	int n;
 	char tmpBM[BM_LEN - 1];
-	char cate[7];
-	char title[80];
-	cate[6] = '\0';
-	char buf[20];
 
-	if (currentuser.flags[0] & BRDSORT_FLAG) {
-		strcpy (buf, "[ÌÖÂÛÇøÁĞ±í] [×ÖÄ¸]");
-	} else if (currentuser.flags[0] & BRDSORT_ONLINE) {
-		strcpy (buf, "[ÌÖÂÛÇøÁĞ±í] [ÔÚÏß]");
-	} else {
-		strcpy (buf, "[ÌÖÂÛÇøÁĞ±í] [·ÖÀà]");
+	char cate[7], title[STRLEN];
+
+	const char *sort = "·ÖÀà";
+	char flag = currentuser.flags[0];
+	if (flag & BRDSORT_FLAG) {
+		sort = "×ÖÄ¸";
+	} else if (flag & BRDSORT_ONLINE) {
+		sort = "ÔÚÏß";
+	} else if (flag & BRDSORT_UDEF) {
+		sort = "×Ô¶¨";
+	} else if (flag & BRDSORT_UPDATE) {
+		sort = "¸üĞÂ";
 	}
+	char buf[32];
+	snprintf(buf, sizeof(buf), "[ÌÖÂÛÇøÁĞ±í] [%s]", sort);
 
-	//countbrdonline();
-	//resolve_bcache();
 	if (clsflag) {
-		clear ();
-		docmdtitle (buf,
-				" [mÖ÷Ñ¡µ¥[[1;32m¡û[m,[1;32me[m] ÔÄ¶Á[[1;32m¡ú[m,[1;32mRtn[m] Ñ¡Ôñ[[1;32m¡ü[m,[1;32m¡ı[m] ÁĞ³ö[[1;32my[m] ÅÅĞò[[1;32ms[m] ËÑÑ°[[1;32m/[m] ÇĞ»»[[1;32mc[m] ÇóÖú[[1;32mh[m]\n");
-		/*
-		 prints("[1;44;37m %s ÌÖÂÛÇøÃû³Æ       V  Àà±ğ  ×ª %-25s S °æ  Ö÷   %s   [m\n",
-		 newflag ? "È«²¿  Î´" : "±àºÅ  ", "ÖĞ  ÎÄ  Ğğ  Êö", newflag ? "" : "   "); */
-		//Modified by IAMFAT 2002-05-26
-		//Modified by IAMFAT 2002-05-29
-		//Modified by IAMFAT 2002-06-11
-		/*
-		 prints("[1;44;37m %s ÌÖÂÛÇøÃû³Æ       V  Àà±ğ  ×ª %-25s S °æ  Ö÷   %s  [m\n",
-		 newflag ? "È« ²¿  Î´" : "±à ºÅ  ", "ÖĞ  ÎÄ  Ğğ  Êö", newflag ? "" : "   "); */
-		prints
-		("[1;44;37m %s ÌÖÂÛÇøÃû³Æ        V  Àà±ğ  %-20s S °æ  Ö÷        ÔÚÏß [m\n",
-				newflag ? "È« ²¿  Î´" : "±à ºÅ  Î´", "ÖĞ  ÎÄ  Ğğ  Êö");
-		//              prints("[1;44;37m %s ÌÖÂÛÇøÃû³Æ       V  Àà±ğ  %-25s S °æ  Ö÷   %s     [m\n",
-		//                      newflag ? "È« ²¿  Î´" : "±à ºÅ  ", "ÖĞ  ÎÄ  Ğğ  Êö", newflag ? "" : "  ");
+		clear();
+		docmdtitle(buf, " \033[mÖ÷Ñ¡µ¥[\033[1;32m¡û\033[m,\033[1;32me\033[m] "
+				"ÔÄ¶Á[\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m] Ñ¡Ôñ[\033[1;32m"
+				"¡ü\033[m,\033[1;32m¡ı\033[m] ÁĞ³ö[\033[1;32my\033[m] ÅÅĞò"
+				"[\033[1;32ms\033[m] ËÑÑ°[\033[1;32m/\033[m] ÇĞ»»[\033[1;32mc"
+				"\033[m] ÇóÖú[\033[1;32mh\033[m]\n");
+		prints("\033[1;44;37m %s ÌÖÂÛÇøÃû³Æ        V  Àà±ğ  %-20s S °æ  Ö÷"
+				"        ÔÚÏß \033[m\n", newflag ? "È« ²¿  Î´" : "±à ºÅ  Î´",
+				"ÖĞ  ÎÄ  Ğğ  Êö");
 	}
+
 	move (3, 0);
+	int n;
 	for (n = page; n < page + BBS_PAGESIZE; n++) {
 		if (n >= brdnum) {
 			prints ("\n");
 			continue;
 		}
-		ptr = &nbrd[n];
+		ptr = nbrd + n;
 		if (ptr->total == -1) {
-			refresh ();
-			check_newpost (ptr);
+			refresh();
+			check_newpost(ptr);
 		}
-		//Modified by IAMFAT 2002-05-26
+
 		if (!newflag)
-		prints (" %5d", (n + 1));
+			prints(" %5d", n + 1);
 		else if (ptr->flag & BOARD_DIR_FLAG)
-		prints ("  Ä¿Â¼");
+			prints("  Ä¿Â¼");
 		else
-		prints (" %5d", ptr->total);
+			prints(" %5d", ptr->total);
 
 		if (ptr->flag & BOARD_DIR_FLAG)
-		prints ("  £«");
+			prints("  £«");
 		else
-		prints ("  %s", ptr->unread ? "¡ô" : "¡ó");
-		if (!(ptr->flag & BOARD_CUSTOM_FLAG)) //added by cometcaptor 2007-04-23   
-		strcpy (tmpBM, ptr->BM);
-		strlcpy (cate, ptr->title + 1, 7);
-		strcpy (title, ptr->title + 11);
-		ellipsis (title, 20);
-		prints ("%c%-17s %s%s%6s %-20s %c ",
+			prints("  %s", ptr->unread ? "¡ô" : "¡ó");
+
+		if (!(ptr->flag & BOARD_CUSTOM_FLAG))
+			strcpy(tmpBM, ptr->BM);
+
+		strlcpy(cate, ptr->title + 1, sizeof(cate));
+		strlcpy(title, ptr->title + 11, sizeof(title));
+		ellipsis(title, 20);
+
+		prints("%c%-17s %s%s%6s %-20s %c ",
 				(ptr->zap && !(ptr->flag & BOARD_NOZAP_FLAG)) ? '*' : ' ',
 				ptr->name,
-				(ptr->flag & BOARD_VOTE_FLAG) ? "[1;31mV[m" : " ",
+				(ptr->flag & BOARD_VOTE_FLAG) ? "\033[1;31mV\033[m" : " ",
 				(ptr->flag & BOARD_CLUB_FLAG) ? (ptr->flag & BOARD_READ_FLAG)
-				? "[1;31mc[m" : "[1;33mc[m" : " ",
+				? "\033[1;31mc\033[m" : "\033[1;33mc\033[m" : " ",
 				cate, title, HAS_PERM (PERM_POST) ? ptr->status : ' ');
+
 		if (ptr->flag & BOARD_DIR_FLAG)
-		prints ("[Ä¿Â¼]\n");
+			prints("[Ä¿Â¼]\n");
 		else
-		prints ("%-12s %4d\n",
-				ptr->BM[0] <= ' ' ? "³ÏÕ÷°æÖ÷ÖĞ" : strtok (tmpBM, " ")
+			prints("%-12s %4d\n", ptr->BM[0] <= ' ' ? "³ÏÕ÷°æÖ÷ÖĞ" : strtok(tmpBM, " ")
 #ifdef NEWONLINECOUNT
 				, brdshm->bstatus[ptr->pos].inboard
 #else
 				, brdshm->bstatus[ptr->pos].online_num
 #endif
-		);
+			);
 	}
-	refresh ();
+	refresh();
 }
 
 int cmpboard (brd, tmp)
