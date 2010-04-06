@@ -37,7 +37,6 @@
 #define refreshtime     (30)
 extern time_t login_start_time;
 extern char BoardName[];
-int (*func_list_show)();
 time_t update_time = 0;
 int freshmode = 0;
 int SHOWONEBRD=0;
@@ -51,7 +50,7 @@ int toggle1 = 0, toggle2 = 0;
 int mailmode, numf;
 int friendmode = 0;
 int usercounter, real_user_names = 0;
-int range, page, readplan, num;
+int range, page, readplan;
 //struct user_info *user_record[MAXACTIVE];
 struct user_info *user_record[USHM_SIZE];
 struct userec *user_data;
@@ -933,13 +932,13 @@ int (*key_deal)();
 int (*list_show)();
 int (*read)();
 {
+	int num = 0;
 	int ch, number, deal;
 	readplan = NA;
 	(*title_show) ();
-	func_list_show = list_show;
 	signal(SIGALRM, SIG_IGN);
 	if (update == 1)
-	update_data();
+		update_data();
 	page = -1;
 	number = 0;
 	num = defaultn;
