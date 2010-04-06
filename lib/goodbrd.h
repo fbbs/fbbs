@@ -16,12 +16,6 @@ typedef struct goodbrdheader {
 	char title[STRLEN];
 } gbrdh_t;
 
-struct goodboard {
-	gbrdh_t boards[GOOD_BRC_NUM];
-	int nowpid;
-	int num;
-};
-
 bool gbrd_is_custom_dir(const gbrdh_t *bh);
 
 #endif //FDUBBS_GOODBRD_H
