@@ -3336,7 +3336,6 @@ void notepad() {
 /* youzi quick goodbye */
 int Q_Goodbye() {
 	extern int started;
-	extern int *zapbuf;
 	char fname[STRLEN];
 	int logouts;
 
@@ -3347,10 +3346,6 @@ int Q_Goodbye() {
 	char bye_msgs[9][STRLEN];
 
 	/* add end */
-
-	//add if(zapbuf) to avoid zapbuff=NULL; iamfat 2004.01.12
-	if (zapbuf)
-		free(zapbuf);
 
 	setuserfile(fname, "msgfile");
 

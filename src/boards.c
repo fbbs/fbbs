@@ -3,71 +3,27 @@
 #define BBS_PAGESIZE    (t_lines - 4)
 
 extern time_t login_start_time;
-struct newpostdata {
+
+typedef struct {
 	char *name, *title, *BM;
 	unsigned int flag;
 	int pos, total;
-	char unread, zap;
+	bool unread, zap;
 	char status;
-}*nbrd;
+} board_data_t;
+
+typedef struct {
+	board_data_t *brds;
+	int *zapbuf;
+	char *prefix;
+	int num;
+	bool yank;
+	int parent;
+	bool mode;
+	bool newflag;
+} choose_board_t;
 
 struct goodboard GoodBrd;
-
-int *zapbuf = NULL;
-int brdnum, yank_flag = 0;
-int boardparent;
-char *boardprefix;
-int choosemode;
-
-void EGroup (cmd)
-char *cmd;
-{
-	char buf[STRLEN];
-	sprintf (buf, "EGROUP%c", *cmd);
-	GoodBrd.num = 0;
-	GoodBrd.nowpid = -1;
-	choosemode = 1;
-	boardprefix = sysconf_str(buf);
-	choose_board (DEFINE (DEF_NEWPOST) ? 1 : 0);
-}
-
-void BoardGroup() {
-	GoodBrd.num = 0;
-	boardparent = 0;
-	choosemode = 0;
-	boardprefix = NULL;
-	GoodBrd.nowpid = -1;
-	choose_board(DEFINE(DEF_NEWPOST) ? 1 : 0);
-}
-
-void Boards() {
-	boardprefix = NULL;
-	boardparent = -1;
-	GoodBrd.num = 0;
-	GoodBrd.nowpid = -1;
-	choose_board(0);
-}
-
-void GoodBrds() {
-	if (!strcmp(currentuser.userid, "guest"))
-		return;
-	//GoodBrd.num = 9999;
-	boardprefix = NULL;
-	boardparent = -2;
-	choosemode = 0;
-	GoodBrd.nowpid = 0; //added by cometcaptor 2007-04-21
-	choose_board(1);
-	GoodBrd.nowpid = -1;
-	GoodBrd.num = 0;
-}
-
-void New() {
-	boardprefix = NULL;
-	boardparent = -1;
-	GoodBrd.num = 0;
-	GoodBrd.nowpid = -1;
-	choose_board(1);
-}
 
 //int inGoodBrds (char *bname)
 int inGoodBrds(int pos) //modified by cometcaptor 2007-04-21 简化查找流程
@@ -82,20 +38,48 @@ int inGoodBrds(int pos) //modified by cometcaptor 2007-04-21 简化查找流程
 	return 0;
 }
 
-void load_zapbuf() {
-	char fname[STRLEN];
-	int fd, size, n;
+/**
+ *
+ */
+static int load_zapbuf(choose_board_t *cbrd)
+{
+	if (cbrd->zapbuf == NULL) {
+		cbrd->zapbuf = malloc(sizeof(*cbrd->zapbuf) * MAXBOARD);
+		if (cbrd->zapbuf == NULL)
+			return -1;
+	} else {
+		return 0;
+	}
 
-	size = MAXBOARD * sizeof(int);
-	zapbuf = (int *) malloc(size);
-	for (n = 0; n < MAXBOARD; n++)
-		zapbuf[n] = 1;
-	setuserfile(fname, ".lastread");
-	if ((fd = open(fname, O_RDONLY, 0600)) != -1) {
-		size = numboards * sizeof(int);
-		read(fd, zapbuf, size);
+	char file[HOMELEN];
+	sethomefile(file, currentuser.userid, ".lastread");
+	int fd = open(file, O_RDONLY, 0600);
+	if (fd < 0) {
+		int n;
+		for (n = 0; n < MAXBOARD; n++) {
+			cbrd->zapbuf[n] = 1;
+		}
+	} else {
+		read(fd, cbrd->zapbuf, sizeof(int) * numboards);
 		close(fd);
 	}
+	return 0;
+}
+
+/**
+ *
+ */
+int save_zapbuf(const choose_board_t *cbrd)
+{
+	char file[HOMELEN];
+	sethomefile(file, currentuser.userid, ".lastread");
+	int fd = open(file, O_WRONLY | O_CREAT, 0600);
+	if (fd >= 0) {
+		write(fd, cbrd->zapbuf, sizeof(int) * numboards);
+		close(fd);
+		return 0;
+	}
+	return -1;
 }
 
 void load_GoodBrd() {
@@ -232,35 +216,31 @@ void rmdir_GoodBrd(int id)//cometcaptor 2007-04-21
 	save_GoodBrd();
 }
 
-void save_zapbuf() {
-	char fname[STRLEN];
-	int fd, size;
-	setuserfile(fname, ".lastread");
-	if ((fd = open(fname, O_WRONLY | O_CREAT, 0600)) != -1) {
-		size = numboards * sizeof(int);
-		write(fd, zapbuf, size);
-		close(fd);
-	}
-}
-
-int load_boards() {
+/**
+ *
+ */
+static int load_boards(choose_board_t *cbrd)
+{
 	struct boardheader *bptr;
-	struct newpostdata *ptr;
-	int n, addto = 0, goodbrd = 0;
-	// resolve_boards ();
-	if (zapbuf == NULL) {
-		load_zapbuf();
-	}
-	brdnum = 0;
+	board_data_t *ptr;
+	int addto = 0;
+	bool goodbrd = false;
+
+	if (load_zapbuf(cbrd) != 0)
+		return -1;
+	cbrd->num = 0;
+
 	if (GoodBrd.nowpid >= 0) {
 		load_GoodBrd();
-		goodbrd = 1;
+		goodbrd = true;
 	}
+
+	int n;
 	for (n = 0; n < numboards; n++) {
-		bptr = &bcache[n];
+		bptr = bcache + n;
 		if (!(bptr->filename[0]))
-			continue; /* 隐藏被删除的版面 */
-		if (goodbrd == 0) {
+			continue;
+		if (!goodbrd) {
 			if (!(bptr->flag & BOARD_POST_FLAG) && !HAS_PERM(bptr->level)
 					&& !(bptr->flag & BOARD_NOZAP_FLAG))
 				continue;
@@ -268,39 +248,42 @@ int load_boards() {
 					& BOARD_READ_FLAG )&& !chkBM(bptr, &currentuser)
 					&& !isclubmember(currentuser.userid, bptr->filename))
 				continue;
-			if (choosemode == 0) {
-				if (boardparent > 0 && boardparent != bptr->group - 1)
+			if (cbrd->mode == 0) {
+				if (cbrd->parent > 0 && cbrd->parent != bptr->group - 1)
 					continue;
-				if (boardparent == 0 && bptr->group != 0)
+				if (cbrd->parent == 0 && bptr->group != 0)
 					continue;
-				if (boardparent > 0 && bptr->title[0] == '*')
+				if (cbrd->parent > 0 && bptr->title[0] == '*')
 					continue;
 			} else {
-				if (boardprefix != NULL && strchr(boardprefix,
-						bptr->title[0]) == NULL && boardprefix[0] != '*')
+				if (cbrd->prefix != NULL
+						&& !strchr(cbrd->prefix, bptr->title[0])
+						&& cbrd->prefix[0] != '*')
 					continue;
-				if (boardprefix != NULL && boardprefix[0] == '*') {
-					if (!strstr(bptr->title, "●") && !strstr(bptr->title,
-							"⊙") && bptr->title[0] != '*')
+				if (cbrd->prefix != NULL && cbrd->prefix[0] == '*') {
+					if (!strstr(bptr->title, "●")
+							&& !strstr(bptr->title, "⊙")
+							&& bptr->title[0] != '*')
 						continue;
 				}
-				if (boardprefix == NULL && bptr->title[0] == '*')
+				if (cbrd->prefix == NULL && bptr->title[0] == '*')
 					continue;
 			}
-			addto = yank_flag || zapbuf[n] != 0 || (bptr->flag
-					& BOARD_NOZAP_FLAG);
-		} else
-			//addto = inGoodBrds (bptr->filename);
-			addto = inGoodBrds(n); //modified by cometcaptor 2007-04-17
+			addto = cbrd->yank || cbrd->zapbuf[n] != 0
+					|| (bptr->flag & BOARD_NOZAP_FLAG);
+		} else {
+			addto = inGoodBrds(n);
+		}
+
 		if (addto) {
-			ptr = &nbrd[brdnum++];
+			ptr = cbrd->brds + cbrd->num++;
 			ptr->name = bptr->filename;
 			ptr->title = bptr->title;
 			ptr->BM = bptr->BM;
 			ptr->flag = bptr->flag;
 			ptr->pos = n;
 			ptr->total = -1;
-			ptr->zap = (zapbuf[n] == 0);
+			ptr->zap = (cbrd->zapbuf[n] == 0);
 			if (bptr ->flag & BOARD_DIR_FLAG) {
 				if (bptr->level != 0)
 					ptr->status = 'r';
@@ -320,12 +303,13 @@ int load_boards() {
 			}
 		}
 	}
+
 	//added by cometcaptor 2007-04-21 读取自定义目录
 	if (goodbrd) {
 		for (n = 0; n<GoodBrd.num && n<GOOD_BRC_NUM; n++) {
 			if ((GoodBrd.boards[n].flag & BOARD_CUSTOM_FLAG)
 					&&(GoodBrd.boards[n].pid == GoodBrd.nowpid)) {
-				ptr = &nbrd[brdnum++];
+				ptr = cbrd->brds + cbrd->num++;
 				ptr->name = GoodBrd.boards[n].filename;
 				ptr->title = GoodBrd.boards[n].title;
 				ptr->BM = NULL;
@@ -338,36 +322,40 @@ int load_boards() {
 		}
 	}
 	//add end
-	if (brdnum == 0 && !yank_flag && boardparent == -1) {
-		brdnum = -1;
-		yank_flag = 1;
+
+	if (cbrd->num == 0 && !cbrd->yank && cbrd->parent == -1) {
+		cbrd->num = -1;
+		cbrd->yank = true;
 		return -1;
 	}
 	return 0;
 }
 
-int search_board(int *num) {
+static int search_board(const choose_board_t *cbrd, int *num)
+{
 	static int i = 0, find = YEA;
 	static char bname[STRLEN];
 	int n, ch, tmpn = NA;
+
 	if (find == YEA) {
 		bzero(bname, sizeof (bname));
 		find = NA;
 		i = 0;
 	}
+
 	while (1) {
 		move(t_lines - 1, 0);
 		clrtoeol();
-		prints("请输入要找寻的 board 名称：%s", bname);
+		prints("请输入要查找的版面名称：%s", bname);
 		ch = egetch();
 
 		if (isprint2(ch)) {
 			bname[i++] = ch;
-			for (n = 0; n < brdnum; n++) {
-				if (!strncasecmp(nbrd[n].name, bname, i)) {
+			for (n = 0; n < cbrd->num; n++) {
+				if (!strncasecmp(cbrd->brds[n].name, bname, i)) {
 					tmpn = YEA;
 					*num = n;
-					if (!strcmp(nbrd[n].name, bname))
+					if (!strcmp(cbrd->brds[n].name, bname))
 						return 1 /* 找到类似的版，画面重画
 						 */;
 				}
@@ -405,24 +393,21 @@ int search_board(int *num) {
 	return 1;
 }
 
-int check_newpost (ptr)
-struct newpostdata *ptr;
+static bool check_newpost(board_data_t *ptr)
 {
-	ptr->unread = 0;
+	ptr->unread = false;
 	ptr->total = (brdshm->bstatus[ptr->pos]).total;
-	if (!brc_initial (currentuser.userid, ptr->name)) {
-		ptr->unread = 1;
+	if (!brc_initial(currentuser.userid, ptr->name)) {
+		ptr->unread = true;
 	} else {
-		if (brc_unread1 ((brdshm->bstatus[ptr->pos]).lastpost)) {
-			ptr->unread = 1;
+		if (brc_unread1((brdshm->bstatus[ptr->pos]).lastpost)) {
+			ptr->unread = true;
 		}
 	}
-	return 1;
+	return ptr->unread;
 }
 
-int unread_position (dirfile, ptr)
-char *dirfile;
-struct newpostdata *ptr;
+int unread_position(char *dirfile, board_data_t *ptr)
 {
 	struct fileheader fh;
 	char filename[STRLEN];
@@ -494,9 +479,9 @@ void countbrdonline() {
 }
 #endif
 
-void show_brdlist(int page, int clsflag, int newflag)
+static void show_brdlist(choose_board_t *cbrd, int page, bool clsflag)
 {
-	struct newpostdata *ptr;
+	board_data_t *ptr;
 	char tmpBM[BM_LEN - 1];
 
 	char cate[7], title[STRLEN];
@@ -523,24 +508,24 @@ void show_brdlist(int page, int clsflag, int newflag)
 				"[\033[1;32ms\033[m] 搜寻[\033[1;32m/\033[m] 切换[\033[1;32mc"
 				"\033[m] 求助[\033[1;32mh\033[m]\n");
 		prints("\033[1;44;37m %s 讨论区名称        V  类别  %-20s S 版  主"
-				"        在线 \033[m\n", newflag ? "全 部  未" : "编 号  未",
-				"中  文  叙  述");
+				"        在线 \033[m\n",
+				cbrd->newflag ? "全 部  未" : "编 号  未", "中  文  叙  述");
 	}
 
 	move (3, 0);
 	int n;
 	for (n = page; n < page + BBS_PAGESIZE; n++) {
-		if (n >= brdnum) {
+		if (n >= cbrd->num) {
 			prints ("\n");
 			continue;
 		}
-		ptr = nbrd + n;
+		ptr = cbrd->brds + n;
 		if (ptr->total == -1) {
 			refresh();
 			check_newpost(ptr);
 		}
 
-		if (!newflag)
+		if (!cbrd->newflag)
 			prints(" %5d", n + 1);
 		else if (ptr->flag & BOARD_DIR_FLAG)
 			prints("  目录");
@@ -581,25 +566,27 @@ void show_brdlist(int page, int clsflag, int newflag)
 	refresh();
 }
 
-int cmpboard (brd, tmp)
-struct newpostdata *brd, *tmp;
+static int cmpboard(const void *b1, const void *b2)
 {
-	register int type = 0;
+	const board_data_t *brd = b1;
+	const board_data_t *tmp = b2;
+
 	if (currentuser.flags[0] & BRDSORT_FLAG) {
-		return strcasecmp (brd->name, tmp->name);
+		return strcasecmp(brd->name, tmp->name);
 	} else if (currentuser.flags[0] & BRDSORT_ONLINE) {
 		return brdshm->bstatus[tmp->pos].inboard - brdshm->bstatus[brd->pos].inboard;
 	}
 
-	type = brd->title[0] - tmp->title[0];
+	int type = brd->title[0] - tmp->title[0];
 	if (type == 0)
-	type = strncasecmp (brd->title + 1, tmp->title + 1, 6);
+		type = strncasecmp(brd->title + 1, tmp->title + 1, 6);
 	if (type == 0)
-	type = strcasecmp (brd->name, tmp->name);
+		type = strcasecmp(brd->name, tmp->name);
 	return type;
 }
 
-int show_board_info(char *board) {
+static int show_board_info(const char *board)
+{
 	int i;
 	struct boardheader *bp;
 	struct bstat *bs;
@@ -660,29 +647,37 @@ int show_board_info(char *board) {
 
 }
 
-int read_board(struct newpostdata *ptr, int newflag) {
-	char buf[STRLEN];
+static int choose_board(choose_board_t *cbrd);
+
+/**
+ *
+ */
+static void read_board(choose_board_t *cbrd, int pos)
+{
+	board_data_t *ptr = cbrd->brds + pos;
 	if (ptr->flag & BOARD_DIR_FLAG) {
 		int tmpgrp, tmpmode;
-		int oldpid; //added by cometcaptor 2007-04-21
-		tmpgrp = boardparent;
-		tmpmode = choosemode;
-		choosemode = 0;
-		boardparent = getbnum(ptr->name, &currentuser) - 1;
-		oldpid = GoodBrd.nowpid; //cometcaptor 保存GoodBrd.nowpid
+		int oldpid;
+		tmpgrp = cbrd->parent;
+		tmpmode = cbrd->mode;
+		cbrd->mode = 0;
+		cbrd->parent = getbnum(ptr->name, &currentuser) - 1;
+		oldpid = GoodBrd.nowpid;
 		if (ptr->flag & BOARD_CUSTOM_FLAG)
 			GoodBrd.nowpid = ptr->pos;
 		else
 			GoodBrd.nowpid = -1;
-		choose_board(newflag);
+		choose_board(cbrd);
 		GoodBrd.nowpid = oldpid;
-		boardparent = tmpgrp;
-		choosemode = tmpmode;
-		brdnum = -1;
+		cbrd->parent = tmpgrp;
+		cbrd->mode = tmpmode;
+		cbrd->num = -1;
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
 		changeboard(&currbp, currboard, ptr->name);
 		memcpy(currBM, ptr->BM, BM_LEN - 1);
+
+		char buf[STRLEN];
 		if (DEFINE(DEF_FIRSTNEW)) {
 			setbdir(buf, currboard);
 			int tmp = unread_position(buf, ptr);
@@ -690,48 +685,56 @@ int read_board(struct newpostdata *ptr, int newflag) {
 			getkeep(buf, page > 1 ? page : 1, tmp + 1);
 		}
 		Read();
-		brc_zapbuf(zapbuf + ptr->pos);
+		brc_zapbuf(cbrd->zapbuf + ptr->pos);
 		ptr->total = -1;
-		currBM[0] = '\0'; //added by cometcaptor 2007-06-30
+		currBM[0] = '\0';
 	}
 }
 
-int choose_board(int newflag) {
+/**
+ *
+ */
+static int choose_board(choose_board_t *cbrd)
+{
 	static int num;
-	struct newpostdata newpost_buffer[MAXBOARD];
-	struct newpostdata *ptr;
-	struct newpostdata *oldptr = nbrd; //added by cometcaptor 2006-10-20
+	board_data_t *ptr;
 	int page, ch, tmp, number, tmpnum;
 	int loop_mode = 0;
 	char ans[2];
 	static char addname[STRLEN-8];
+
+	cbrd->brds = malloc(sizeof(board_data_t) * MAXBOARD);
+	if (cbrd->brds == NULL)
+		return -1;
 	if (!strcmp(currentuser.userid, "guest"))
-		yank_flag = 1;
-	nbrd = newpost_buffer;
-	modify_user_mode(newflag ? READNEW : READBRD);
-	brdnum = number = 0;
+		cbrd->yank = true;
+
+	modify_user_mode(cbrd->newflag ? READNEW : READBRD);
+
+	cbrd->num = number = 0;
+
 	clear();
-	//show_brdlist(0, 1, newflag);
 	while (1) {
 		digestmode = NA;
-		if (brdnum <= 0) {
-			if (load_boards() == -1)
+		if (cbrd->num <= 0) {
+			if (load_boards(cbrd) == -1)
 				continue;
-			qsort(nbrd, brdnum, sizeof (nbrd[0]), cmpboard);
+			qsort(cbrd->brds, cbrd->num, sizeof(cbrd->brds[0]), cmpboard);
 			page = -1;
-			if (brdnum < 0)
-				// prints ("brdnum <=0 ");
+			if (cbrd->num < 0)
 				break;
 		}
+
 		if (num < 0)
 			num = 0;
-		if (num >= brdnum)
-			num = brdnum - 1;
+		if (num >= cbrd->num)
+			num = cbrd->num - 1;
+
 		if (page < 0) {
-			if (newflag) {
+			if (cbrd->newflag) {
 				tmp = num;
-				while (num < brdnum) {
-					ptr = &nbrd[num];
+				while (num < cbrd->num) {
+					ptr = cbrd->brds + num;
 					if (!(ptr->flag & BOARD_DIR_FLAG)) {
 						if (ptr->total == -1)
 							check_newpost(ptr);
@@ -740,18 +743,20 @@ int choose_board(int newflag) {
 					}
 					num++;
 				}
-				if (num >= brdnum)
+				if (num >= cbrd->num)
 					num = tmp;
 			}
 			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
-			show_brdlist(page, 1, newflag);
+			show_brdlist(cbrd, page, true);
 			update_endline();
 		}
+
 		if (num < page || num >= page + BBS_PAGESIZE) {
 			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
-			show_brdlist(page, 0, newflag);
+			show_brdlist(cbrd, page, false);
 			update_endline();
 		}
+
 		move(3 + num - page, 0);
 		prints(">", number);
 		if (loop_mode == 0) {
@@ -763,9 +768,9 @@ int choose_board(int newflag) {
 			break;
 		switch (ch) {
 			case '*':
-				if (nbrd[num].flag & BOARD_CUSTOM_FLAG)
-					break; //added by cometcaptor 2007-04-22
-				ptr = &nbrd[num];
+				if (cbrd->brds[num].flag & BOARD_CUSTOM_FLAG)
+					break;
+				ptr = cbrd->brds + num;
 				show_board_info(ptr->name);
 				page = -1;
 				break;
@@ -773,27 +778,24 @@ int choose_board(int newflag) {
 			case Ctrl('B'):
 			case KEY_PGUP:
 				if (num == 0)
-					num = brdnum - 1;
+					num = cbrd->num - 1;
 				else
 					num -= BBS_PAGESIZE;
 				break;
 			case 'C':
 				if (!HAS_PERM(PERM_LOGIN))
 					break;
-				if ((GoodBrd.num==0)&&(GoodBrd.nowpid == -1))
+				if ((GoodBrd.num == 0) && (GoodBrd.nowpid == -1))
 					break;
-				if (nbrd[num].flag & BOARD_CUSTOM_FLAG)
+				if (cbrd->brds[num].flag & BOARD_CUSTOM_FLAG)
 					break;
-				strlcpy(addname, nbrd[num].name, STRLEN-8);
+				strlcpy(addname, cbrd->brds[num].name, sizeof(addname));
 				presskeyfor("版名已复制 请按P粘贴", t_lines - 1);
-				brdnum=-1;
+				cbrd->num = -1;
 				break;
 			case 'c':
-				if (newflag == 1)
-					newflag = 0;
-				else
-					newflag = 1;
-				show_brdlist(page, 1, newflag);
+				cbrd->newflag = !cbrd->newflag;
+				show_brdlist(cbrd, page, true);
 				break;
 			case 'L':
 				m_read();
@@ -825,7 +827,7 @@ int choose_board(int newflag) {
 			case ' ':
 			case Ctrl('F'):
 			case KEY_PGDN:
-				if (num == brdnum - 1)
+				if (num == cbrd->num - 1)
 					num = 0;
 				else
 					num += BBS_PAGESIZE;
@@ -837,24 +839,26 @@ int choose_board(int newflag) {
 					break;
 				add_GoodBrd(addname, GoodBrd.nowpid);
 				addname[0]='\0';
-				brdnum = -1;
+				cbrd->num = -1;
 				break;
 			case 'p':
 			case 'k':
 			case KEY_UP:
 				if (num-- <= 0)
-					num = brdnum - 1;
+					num = cbrd->num - 1;
 				break;
 			case 'n':
 			case 'j':
 			case KEY_DOWN:
-				if (++num >= brdnum)
+				if (++num >= cbrd->num)
 					num = 0;
 				break;
 			case '$':
-				num = brdnum - 1;
+				num = cbrd->num - 1;
 				break;
-			case '!': /* youzi leave */
+			case '!':
+				save_zapbuf(cbrd);
+				free(cbrd->brds);
 				return Goodbye();
 				break;
 			case 'h':
@@ -865,7 +869,7 @@ int choose_board(int newflag) {
 				move(3 + num - page, 0);
 				prints(">", number);
 				tmpnum = num;
-				tmp = search_board(&num);
+				tmp = search_board(cbrd, &num);
 				move(3 + tmpnum - page, 0);
 				prints(" ", number);
 				if (tmp == 1)
@@ -877,7 +881,7 @@ int choose_board(int newflag) {
 				break;
 			case 'i': //sort by online num
 				currentuser.flags[0] ^= BRDSORT_ONLINE;
-				qsort(nbrd, brdnum, sizeof (nbrd[0]), cmpboard);
+				qsort(cbrd->brds, cbrd->num, sizeof(*cbrd->brds), cmpboard);
 				page = -1;
 				substitut_record(PASSFILE, &currentuser,
 						sizeof(currentuser), usernum);
@@ -891,7 +895,7 @@ int choose_board(int newflag) {
 				} else {
 					currentuser.flags[0] ^= BRDSORT_FLAG;
 				}
-				qsort(nbrd, brdnum, sizeof (nbrd[0]), cmpboard);
+				qsort(cbrd->brds, cbrd->num, sizeof(*cbrd->brds), cmpboard);
 				substitut_record(PASSFILE, &currentuser,
 						sizeof(currentuser), usernum);
 				page = -1;
@@ -899,25 +903,25 @@ int choose_board(int newflag) {
 			case 'y':
 				if (GoodBrd.num)
 					break;
-				yank_flag = !yank_flag;
-				brdnum = -1;
+				cbrd->yank = !cbrd->yank;
+				cbrd->num = -1;
 				break;
 			case 'z':
 				if (GoodBrd.num)
 					break;
-				if (HAS_PERM(PERM_LOGIN) && !(nbrd[num].flag
-						& BOARD_NOZAP_FLAG)) {
-					ptr = &nbrd[num];
+				if (HAS_PERM(PERM_LOGIN)
+						&& !(cbrd->brds[num].flag & BOARD_NOZAP_FLAG)) {
+					ptr = cbrd->brds + num;
 					ptr->zap = !ptr->zap;
 					ptr->total = -1;
-					zapbuf[ptr->pos] = (ptr->zap ? 0 : login_start_time);
+					cbrd->zapbuf[ptr->pos] = (ptr->zap ? 0 : login_start_time);
 					page = 999;
 				}
 				break;
 			case 'a':
 				if (!HAS_PERM(PERM_LOGIN))
 					break;
-				if ((GoodBrd.num)&&(GoodBrd.nowpid == -1))
+				if ((GoodBrd.num) && (GoodBrd.nowpid == -1))
 					break; //added by cometcaptor 2007-04-24 防止在非自定义目录加版面
 				if (GoodBrd.num >= GOOD_BRC_NUM) {
 					presskeyfor("个人热门版数已经达上限", t_lines - 1);
@@ -926,37 +930,26 @@ int choose_board(int newflag) {
 					int pos;
 					char bname[STRLEN];
 					struct boardheader fh;
-					if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ", &pos,
-							&fh, bname, 1)) {
+					if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ",
+							&pos, &fh, bname, 1)) {
 						if (!inGoodBrds(getbnum(bname, &currentuser)-1)) {
-							//strcpy (GoodBrd.ID[GoodBrd.num++], bname);
 							add_GoodBrd(bname, GoodBrd.nowpid); //modified by cometcaptor 2007-04-21 
-							//save_GoodBrd ();
-							//GoodBrd.num = 9999;
-							brdnum = -1;
+							cbrd->num = -1;
 							break;
 						}
 					}
 					page = -1;
-					//其他情况
-				} else { //added by iamfat 2003.11.20 add goodbrd directly
+				} else {
 					load_GoodBrd();
-					//added by iamfat 2003.12.28 to avoid flow bug
-					//struct boardheader *bp1 =NULL;
-					//bp1 = getbcache(nbrd[num].name);
-					//if (!((nbrd[num].flag & BOARD_DIR_FLAG)&& (bp1->group == 0))){ //根目录不可加入收藏夹Danielfree 06.3.5
 					if (GoodBrd.num >= GOOD_BRC_NUM) {
 						presskeyfor("个人热门版数已经达上限", t_lines - 1);
-					} else if (!inGoodBrds(getbnum(nbrd[num].name, &currentuser)-1)) {
-						sprintf(genbuf, "您确定要添加%s到收藏夹吗?", nbrd[num].name);
+					} else if (!inGoodBrds(getbnum(cbrd->brds[num].name, &currentuser)-1)) {
+						sprintf(genbuf, "您确定要添加%s到收藏夹吗?", cbrd->brds[num].name);
 						if (askyn(genbuf, NA, YEA) == YEA) {
-							//strcpy (GoodBrd.ID[GoodBrd.num++], nbrd[num].name);
-							add_GoodBrd(nbrd[num].name, 0); //modified by cometcaptor 2007-04-21
-							//save_GoodBrd ();
+							add_GoodBrd(cbrd->brds[num].name, 0); //modified by cometcaptor 2007-04-21
 						}
-						brdnum = -1;
+						cbrd->num = -1;
 					}
-					//}
 					GoodBrd.num = 0;
 				}
 				break;
@@ -971,7 +964,6 @@ int choose_board(int newflag) {
 						//要求输入目录名
 						char dirname[STRLEN];
 						char dirtitle[STRLEN];
-						//.....这里
 						dirname[0] = '\0'; //清除上一次创建的目录名
 						getdata(t_lines - 1, 0, "创建自定义目录: ", dirname, 17,
 								DOECHO, NA); //设成17是因为只显示16个字符，为了防止创建的目录名和显示的不同而限定
@@ -981,7 +973,7 @@ int choose_board(int newflag) {
 									21, DOECHO, NA);
 							mkdir_GoodBrd(dirname, dirtitle, 0);
 						}
-						brdnum = -1;
+						cbrd->num = -1;
 					}
 				}
 				break;
@@ -989,13 +981,13 @@ int choose_board(int newflag) {
 				//added by cometcaptor 2007-04-25 修改自定义目录名
 				if (!HAS_PERM(PERM_LOGIN))
 					break;
-				if ((GoodBrd.nowpid == 0)&&(brdnum)&&(nbrd[num].flag
-						& BOARD_CUSTOM_FLAG)) {
+				if ((GoodBrd.nowpid == 0)&& cbrd->num
+						&& (cbrd->brds[num].flag & BOARD_CUSTOM_FLAG)) {
 					char dirname[STRLEN];
 					char dirtitle[STRLEN];
 					int gbid = 0;
 					for (gbid = 0; gbid < GoodBrd.num; gbid++)
-						if (GoodBrd.boards[gbid].id == nbrd[num].pos)
+						if (GoodBrd.boards[gbid].id == cbrd->brds[num].pos)
 							break;
 					if (gbid == GoodBrd.num)
 						break;
@@ -1012,30 +1004,21 @@ int choose_board(int newflag) {
 						strcpy(GoodBrd.boards[gbid].title+11, dirtitle);
 						save_GoodBrd();
 					}
-					brdnum = -1;
+					cbrd->num = -1;
 				}
 				break;
 			case 'd':
-				if ((GoodBrd.num)&&(brdnum > 0)) { //modified by cometcaptor 2007-04-24
+				if ((GoodBrd.num)&&(cbrd->num > 0)) {
 					int i, pos;
 					char ans[5];
-					sprintf(genbuf, "要把 %s 从收藏夹中去掉？[y/N]", nbrd[num].name);
+					sprintf(genbuf, "要把 %s 从收藏夹中去掉？[y/N]",
+							cbrd->brds[num].name);
 					getdata(t_lines - 1, 0, genbuf, ans, 2, DOECHO, YEA);
-					//if (ans[0] == 'n' || ans[0] == 'N') {
-					//  page = -1;
-					//  break;
-					//}
 					if (ans[0] == 'y' || ans[0] == 'Y') {
-						/*pos = inGoodBrds (nbrd[num].name);
-						 for (i = pos - 1; i < GoodBrd.num - 1; i++)
-						 strcpy (GoodBrd.ID[i], GoodBrd.ID[i + 1]);
-						 GoodBrd.num--;
-						 */
-						//modified by cometcaptor 2007-04-21
-						if (nbrd[num].flag & BOARD_CUSTOM_FLAG)
-							rmdir_GoodBrd(nbrd[num].pos);
+						if (cbrd->brds[num].flag & BOARD_CUSTOM_FLAG)
+							rmdir_GoodBrd(cbrd->brds[num].pos);
 						else {
-							pos = inGoodBrds(nbrd[num].pos);
+							pos = inGoodBrds(cbrd->brds[num].pos);
 							if (pos) {
 								for (i = pos-1; i < GoodBrd.num-1; i++)
 									memcpy(&GoodBrd.boards[i],
@@ -1045,8 +1028,7 @@ int choose_board(int newflag) {
 							}
 							save_GoodBrd();
 						}
-						//GoodBrd.num = 9999;
-						brdnum = -1;
+						cbrd->num = -1;
 					} else {
 						page = -1;
 						break;
@@ -1057,7 +1039,7 @@ int choose_board(int newflag) {
 				num = 0;
 				break;
 			case KEY_END:
-				num = brdnum - 1;
+				num = cbrd->num - 1;
 				break;
 			case '\n':
 			case '\r':
@@ -1069,29 +1051,27 @@ int choose_board(int newflag) {
 			case KEY_RIGHT:
 				tmp = num;
 				num = 0;
-				if (brdnum > 0)
-					read_board(&nbrd[tmp], newflag); //modified by cometcaptor 2007-04-23
-				//read_board (&nbrd[tmp], newflag);
+				if (cbrd->num > 0)
+					read_board(cbrd, tmp);
 				num = tmp;
 				page = -1;
 				break;
-			case 'S': /* sendmsg ... youzi */
+			case 'S':
 				if (!HAS_PERM(PERM_TALK))
 					break;
 				s_msg();
 				page = -1;
 				break;
-			case 'o': /* show friends ... youzi */
+			case 'o':
 				if (!HAS_PERM(PERM_LOGIN))
 					break;
 				t_friends();
 				page = -1;
 				break;
-
 			default:
-				;
+				break;
 		}
-		modify_user_mode(newflag ? READNEW : READBRD);
+		modify_user_mode(cbrd->newflag ? READNEW : READBRD);
 		if (ch >= '0' && ch <= '9') {
 			number = number * 10 + (ch - '0');
 			ch = '\0';
@@ -1100,7 +1080,75 @@ int choose_board(int newflag) {
 		}
 	}
 	clear();
-	save_zapbuf();
-	nbrd = oldptr; //added by cometcaptor 2006-10-20
-	return -1;
+	save_zapbuf(cbrd);
+	free(cbrd->brds);
+	return 0;
 }
+
+void EGroup(const char *cmd)
+{
+	char buf[16];
+	snprintf(buf, sizeof(buf), "EGROUP%c", *cmd);
+
+	choose_board_t cbrd;
+	memset(&cbrd, 0, sizeof(cbrd));
+	cbrd.mode = true;
+	cbrd.prefix = sysconf_str(buf);
+	cbrd.newflag = DEFINE(DEF_NEWPOST);
+	GoodBrd.num = 0;
+	GoodBrd.nowpid = -1;
+
+	choose_board(&cbrd);
+}
+
+void BoardGroup(void)
+{
+	choose_board_t cbrd;
+	memset(&cbrd, 0, sizeof(cbrd));
+	cbrd.newflag = DEFINE(DEF_NEWPOST);
+	GoodBrd.num = 0;
+	GoodBrd.nowpid = -1;
+
+	choose_board(&cbrd);
+}
+
+void Boards(void)
+{
+	choose_board_t cbrd;
+	memset(&cbrd, 0, sizeof(cbrd));
+	cbrd.parent = -1;
+	GoodBrd.num = 0;
+	GoodBrd.nowpid = -1;
+
+	choose_board(&cbrd);
+}
+
+void GoodBrds(void)
+{
+	if (!strcmp(currentuser.userid, "guest"))
+		return;
+
+	choose_board_t cbrd;
+	memset(&cbrd, 0, sizeof(cbrd));
+	cbrd.parent = -2;
+	cbrd.newflag = true;
+	GoodBrd.nowpid = 0;
+
+	choose_board(&cbrd);
+
+	GoodBrd.nowpid = -1;
+	GoodBrd.num = 0;
+}
+
+void New(void)
+{
+	choose_board_t cbrd;
+	memset(&cbrd, 0, sizeof(cbrd));
+	cbrd.parent = -1;
+	cbrd.newflag = true;
+	GoodBrd.num = 0;
+	GoodBrd.nowpid = -1;
+
+	choose_board(&cbrd);
+}
+
