@@ -1041,18 +1041,12 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	move(1, 0);
 	clrtoeol();
 	setbdir(direct, currboard);
-#ifdef NEWONLINECOUNT
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = getbnum (bname, &currentuser);
 	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
-#else
-	uinfo.currbrdnum = getbnum(currboard, &currentuser);
-	update_ulist(&uinfo, utmpent);
-	countbrdonline();
-#endif
 
 	return NEWDIRECT;
 }
@@ -3200,18 +3194,12 @@ int Read() {
 
 	brc_initial(currentuser.userid, currboard);
 	setbdir(buf, currboard);
-#ifdef NEWONLINECOUNT
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = getbnum (currboard, &currentuser);
 	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
-#else
-	uinfo.currbrdnum = getbnum(currboard, &currentuser);
-	update_ulist(&uinfo, utmpent);
-	countbrdonline();
-#endif
 
 	setvfile(notename, currboard, "notes");
 	if (stat(notename, &st) != -1) {
@@ -3222,18 +3210,12 @@ int Read() {
 		}
 	}
 
-	//#ifdef ALWAYS_SHOW_BRDNOTE
-	//      if (dashf(notename))
-	//              ansimore3(notename, YEA);
-	//#else
-
 	if (vote_flag(currboard, '\0', 1 /* 检查读过新的备忘录没 */) == 0) {
 		if (dashf(notename)) {
 			ansimore(notename, YEA);
 			vote_flag(currboard, 'R', 1 /* 写入读过新的备忘录 */);
 		}
 	}
-	//#endif
 
 	usetime = time(0);
 	i_read(READING, buf, readtitle, readdoent, &read_comms[0],
@@ -3243,19 +3225,13 @@ int Read() {
 	bm_log(currentuser.userid, currboard, BMLOG_STAYTIME, time(0)
 			- usetime);
 	bm_log(currentuser.userid, currboard, BMLOG_INBOARD, 1);
-	//bcache_online_num(currboard, -1);
-#ifdef NEWONLINECOUNT
+
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = 0;
 	update_ulist(&uinfo, utmpent);
 	bonlinesync (usetime);
-#else
-	uinfo.currbrdnum = 0;
-	update_ulist(&uinfo, utmpent);
-	countbrdonline();
-#endif
 
 	brc_update(currentuser.userid, currboard);
 	return 0;
@@ -3435,14 +3411,11 @@ int Q_Goodbye() {
 		u_exit();
 	}
 
-	//added by cometcaptor 2007-04-25 修正版面内快速离站造成人数统计BUG
-#ifdef NEWONLINECOUNT
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
 	uinfo.currbrdnum = 0;
 	update_ulist(&uinfo, utmpent);
-#endif
 
 	sleep(1);
 	exit(0);

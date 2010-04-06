@@ -326,7 +326,6 @@ int apply_boards(int (*func) (), const struct userec *cuser)
 	return 0;
 }
 
-#ifdef NEWONLINECOUNT
 void bonlinesync(time_t now)
 {
 	int i;
@@ -345,4 +344,3 @@ void bonlinesync(time_t now)
 			brdshm->bstatus[uentp->currbrdnum - 1].inboard++;
 	}
 }
-#endif

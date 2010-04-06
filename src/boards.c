@@ -444,41 +444,6 @@ int unread_position(char *dirfile, board_data_t *ptr)
 	return num;
 }
 
-#ifndef NEWONLINECOUNT
-int *online_num;
-int _cntbrd(struct user_info *ui) {
-	if (ui->active && ui->pid) {
-		if (ui->currbrdnum > 0 && ui->currbrdnum <= numboards)
-			online_num[ui->currbrdnum - 1]++;
-	}
-}
-
-void countbrdonline() {
-	register int i;
-	static time_t lasttime = 0;
-	static time_t now = 0;
-	int semid;
-
-	now = time(0);
-	if (now - lasttime < 5)
-		return;
-	semid = sem(SEM_COUNTONLINE);
-	if (0 == p_nowait(semid)) {
-		lasttime = now;
-		online_num = calloc(numboards, sizeof(int));
-		bzero(online_num, sizeof(int) * numboards);
-		apply_ulist(_cntbrd);
-		if (resolve_boards() < 0)
-			exit(1);
-		for (i = 0; i < numboards; i++) {
-			bcache[i].online_num = online_num[i];
-		}
-		free(online_num);
-		v(semid);
-	}
-}
-#endif
-
 static void show_brdlist(choose_board_t *cbrd, int page, bool clsflag)
 {
 	board_data_t *ptr;
@@ -555,13 +520,9 @@ static void show_brdlist(choose_board_t *cbrd, int page, bool clsflag)
 		if (ptr->flag & BOARD_DIR_FLAG)
 			prints("[目录]\n");
 		else
-			prints("%-12s %4d\n", ptr->BM[0] <= ' ' ? "诚征版主中" : strtok(tmpBM, " ")
-#ifdef NEWONLINECOUNT
-				, brdshm->bstatus[ptr->pos].inboard
-#else
-				, brdshm->bstatus[ptr->pos].online_num
-#endif
-			);
+			prints("%-12s %4d\n",
+					ptr->BM[0] <= ' ' ? "诚征版主中" : strtok(tmpBM, " "),
+					brdshm->bstatus[ptr->pos].inboard);
 	}
 	refresh();
 }

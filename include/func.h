@@ -37,9 +37,7 @@ struct bstat *getbstat(const char *bname);
 int getbnum(const char *bname, const struct userec *cuser);
 int getbnum2(const struct boardheader *bp);
 int apply_boards(int (*func) (), const struct userec *cuser);
-#ifdef NEWONLINECOUNT
 void bonlinesync(time_t now);
-#endif
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;
