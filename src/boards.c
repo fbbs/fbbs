@@ -17,17 +17,18 @@ typedef struct {
 } board_data_t;
 
 typedef struct {
-	board_data_t *brds;
-	int *zapbuf;
-	char *prefix;
-	int num;
-	bool yank;
-	int parent;
-	bool mode;
-	bool newflag;
+	comparator_t cmp;     ///< Compare function pointer.
+	board_data_t *brds;   ///< Array of boards.
+	int *zapbuf;          ///<
+	char *prefix;         ///<
+	int num;              ///< Number of boards loaded.
+	bool yank;            ///<
+	int parent;           ///<
+	bool mode;            ///<
+	bool newflag;         ///<
 	gbrdh_t *gbrds;       ///< Array of favorite boards.
 	int gnum;             ///< Number of favorite boards.
-	int nowpid;
+	int nowpid;           ///<
 } choose_board_t;
 
 /**
@@ -237,8 +238,6 @@ static int load_boards(choose_board_t *cbrd)
 	int addto = 0;
 	bool goodbrd = false;
 
-	if (load_zapbuf(cbrd) != 0)
-		return -1;
 	cbrd->num = 0;
 
 	if (cbrd->nowpid >= 0) {
@@ -537,22 +536,26 @@ static void show_brdlist(choose_board_t *cbrd, int page, bool clsflag)
 	refresh();
 }
 
-static int cmpboard(const void *b1, const void *b2)
+static int board_cmp_flag(const void *brd1, const void *brd2)
 {
-	const board_data_t *brd = b1;
-	const board_data_t *tmp = b2;
+	const board_data_t *b1 = brd1, *b2 = brd2;
+	return strcasecmp(b1->name, b2->name);
+}
 
-	if (currentuser.flags[0] & BRDSORT_FLAG) {
-		return strcasecmp(brd->name, tmp->name);
-	} else if (currentuser.flags[0] & BRDSORT_ONLINE) {
-		return brdshm->bstatus[tmp->pos].inboard - brdshm->bstatus[brd->pos].inboard;
-	}
+static int board_cmp_online(const void *brd1, const void *brd2)
+{
+	const board_data_t *b1 = brd1, *b2 = brd2;
+	return brdshm->bstatus[b2->pos].inboard - brdshm->bstatus[b1->pos].inboard;
+}
 
-	int type = brd->title[0] - tmp->title[0];
+static int board_cmp_default(const void *brd1, const void *brd2)
+{
+	const board_data_t *b1 = brd1, *b2 = brd2;
+	int type = b1->title[0] - b2->title[0];
 	if (type == 0)
-		type = strncasecmp(brd->title + 1, tmp->title + 1, 6);
+		type = strncasecmp(b1->title + 1, b2->title + 1, 6);
 	if (type == 0)
-		type = strcasecmp(brd->name, tmp->name);
+		type = strcasecmp(b1->name, b2->name);
 	return type;
 }
 
@@ -665,29 +668,57 @@ static void read_board(choose_board_t *cbrd, int pos)
 /**
  *
  */
-static int choose_board(choose_board_t *cbrd)
+static int choose_board_init(choose_board_t *cbrd)
 {
-	static int num;
-	board_data_t *ptr;
-	int page, ch, tmp, number, tmpnum;
-	int loop_mode = 0;
-	char ans[2];
-	static char addname[STRLEN-8];
-
 	cbrd->brds = malloc(sizeof(board_data_t) * MAXBOARD);
 	if (cbrd->brds == NULL)
 		return -1;
+
 	cbrd->gbrds = malloc(sizeof(*cbrd->gbrds) * GOOD_BRC_NUM);
 	if (cbrd->gbrds == NULL) {
 		free(cbrd->brds);
 		return -1;
 	}
+
+	if (load_zapbuf(cbrd) != 0) {
+		free(cbrd->brds);
+		free(cbrd->gbrds);
+		return -1;
+	}
+
+	cbrd->num = 0;
 	if (!strcmp(currentuser.userid, "guest"))
 		cbrd->yank = true;
 
-	modify_user_mode(cbrd->newflag ? READNEW : READBRD);
+	char flag = currentuser.flags[0];
+	if (flag & BRDSORT_FLAG)
+		cbrd->cmp = board_cmp_flag;
+	else if (flag & BRDSORT_ONLINE)
+		cbrd->cmp = board_cmp_online;
+	else if (flag & BRDSORT_UDEF)
+		cbrd->cmp = board_cmp_default;
+	else if (flag & BRDSORT_UPDATE)
+		cbrd->cmp = board_cmp_default;
+	return board_cmp_default;
 
-	cbrd->num = number = 0;
+	return 0;
+}
+
+/**
+ *
+ */
+static int choose_board(choose_board_t *cbrd)
+{
+	static int num;
+	board_data_t *ptr;
+	int page, ch, tmp, number = 0, tmpnum;
+	int loop_mode = 0;
+	char ans[2];
+	static char addname[STRLEN-8];
+
+	choose_board_init(cbrd);
+
+	modify_user_mode(cbrd->newflag ? READNEW : READBRD);
 
 	clear();
 	while (1) {
@@ -695,7 +726,7 @@ static int choose_board(choose_board_t *cbrd)
 		if (cbrd->num <= 0) {
 			if (load_boards(cbrd) == -1)
 				continue;
-			qsort(cbrd->brds, cbrd->num, sizeof(cbrd->brds[0]), cmpboard);
+			qsort(cbrd->brds, cbrd->num, sizeof(cbrd->brds[0]), cbrd->cmp);
 			page = -1;
 			if (cbrd->num < 0)
 				break;
@@ -856,23 +887,19 @@ static int choose_board(choose_board_t *cbrd)
 					update_endline();
 				}
 				break;
-			case 'i': //sort by online num
-				currentuser.flags[0] ^= BRDSORT_ONLINE;
-				qsort(cbrd->brds, cbrd->num, sizeof(*cbrd->brds), cmpboard);
-				page = -1;
-				substitut_record(PASSFILE, &currentuser,
-						sizeof(currentuser), usernum);
-				break;
-			case 's': /* sort/unsort -mfchen */
+			case 's':
 				if (currentuser.flags[0] & BRDSORT_FLAG) {
 					currentuser.flags[0] ^= BRDSORT_FLAG;
 					currentuser.flags[0] |= BRDSORT_ONLINE;
+					cbrd->cmp = board_cmp_online;
 				} else if (currentuser.flags[0] & BRDSORT_ONLINE) {
 					currentuser.flags[0] ^= BRDSORT_ONLINE;
+					cbrd->cmp = board_cmp_default;
 				} else {
-					currentuser.flags[0] ^= BRDSORT_FLAG;
+					currentuser.flags[0] |= BRDSORT_FLAG;
+					cbrd->cmp = board_cmp_flag;
 				}
-				qsort(cbrd->brds, cbrd->num, sizeof(*cbrd->brds), cmpboard);
+				qsort(cbrd->brds, cbrd->num, sizeof(*cbrd->brds), cbrd->cmp);
 				substitut_record(PASSFILE, &currentuser,
 						sizeof(currentuser), usernum);
 				page = -1;
