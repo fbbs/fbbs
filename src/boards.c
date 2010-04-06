@@ -110,7 +110,7 @@ static void load_default_board(choose_board_t *cbrd)
 /**
  *
  */
-static void load_GoodBrd(choose_board_t *cbrd)
+static void goodbrd_load(choose_board_t *cbrd)
 {
 	cbrd->gnum = 0;
 
@@ -139,7 +139,7 @@ static void load_GoodBrd(choose_board_t *cbrd)
 /**
  *
  */
-static void save_GoodBrd(choose_board_t *cbrd)
+static void goodbrd_save(choose_board_t *cbrd)
 {
 	load_default_board(cbrd);
 
@@ -155,7 +155,7 @@ static void save_GoodBrd(choose_board_t *cbrd)
 /**
  *
  */
-void add_GoodBrd(choose_board_t *cbrd, char *board, int pid)
+static void goodbrd_add(choose_board_t *cbrd, char *board, int pid)
 {
 	if (cbrd->gnum >= GOOD_BRC_NUM)
 		return;
@@ -174,12 +174,12 @@ void add_GoodBrd(choose_board_t *cbrd, char *board, int pid)
 			ptr->id = 1;
 
 		cbrd->gnum++;
-		save_GoodBrd(cbrd);
+		goodbrd_save(cbrd);
 	}
 }
 
 //pid暂时是个不使用的参数，因为不打算建二级目录（删除目录的代码目录仍不完善）
-static void mkdir_GoodBrd(choose_board_t *cbrd, const char *name,
+static void goodbrd_mkdir(choose_board_t *cbrd, const char *name,
 		const char *title, int pid)
 {
 	if (cbrd->gnum < GOOD_BRC_NUM) {
@@ -198,12 +198,12 @@ static void mkdir_GoodBrd(choose_board_t *cbrd, const char *name,
 		else
 			ptr->id = 1;
 		cbrd->gnum++;
-		save_GoodBrd(cbrd);
+		goodbrd_save(cbrd);
 	}
 }
 
 //目录没有对二级目录嵌套删除的功能，也因为这个限制，收藏夹目录不允许建立二级目录
-void rmdir_GoodBrd(choose_board_t *cbrd, int id)
+void goodbrd_rmdir(choose_board_t *cbrd, int id)
 {
 	// TODO: to many copying?
 	int i, n = 0;
@@ -219,7 +219,7 @@ void rmdir_GoodBrd(choose_board_t *cbrd, int id)
 		}
 	}
 	cbrd->gnum = n;
-	save_GoodBrd(cbrd);
+	goodbrd_save(cbrd);
 }
 
 /**
@@ -238,7 +238,7 @@ static int load_boards(choose_board_t *cbrd)
 	cbrd->num = 0;
 
 	if (cbrd->nowpid >= 0) {
-		load_GoodBrd(cbrd);
+		goodbrd_load(cbrd);
 		goodbrd = true;
 	}
 
@@ -809,7 +809,7 @@ static int choose_board(choose_board_t *cbrd)
 					break;
 				if ((cbrd->gnum==0) && (cbrd->nowpid == -1))
 					break;
-				add_GoodBrd(cbrd, addname, cbrd->nowpid);
+				goodbrd_add(cbrd, addname, cbrd->nowpid);
 				addname[0]='\0';
 				cbrd->num = -1;
 				break;
@@ -905,20 +905,20 @@ static int choose_board(choose_board_t *cbrd)
 					if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ",
 							&pos, &fh, bname, 1)) {
 						if (!inGoodBrds(cbrd, getbnum(bname, &currentuser)-1)) {
-							add_GoodBrd(cbrd, bname, cbrd->nowpid);
+							goodbrd_add(cbrd, bname, cbrd->nowpid);
 							cbrd->num = -1;
 							break;
 						}
 					}
 					page = -1;
 				} else {
-					load_GoodBrd(cbrd);
+					goodbrd_load(cbrd);
 					if (cbrd->gnum >= GOOD_BRC_NUM) {
 						presskeyfor("个人热门版数已经达上限", t_lines - 1);
 					} else if (!inGoodBrds(cbrd, getbnum(cbrd->brds[num].name, &currentuser)-1)) {
 						sprintf(genbuf, "您确定要添加%s到收藏夹吗?", cbrd->brds[num].name);
 						if (askyn(genbuf, NA, YEA) == YEA) {
-							add_GoodBrd(cbrd, cbrd->brds[num].name, 0);
+							goodbrd_add(cbrd, cbrd->brds[num].name, 0);
 						}
 						cbrd->num = -1;
 					}
@@ -943,7 +943,7 @@ static int choose_board(choose_board_t *cbrd)
 							strcpy(dirtitle, "自定义目录");
 							getdata(t_lines - 1, 0, "自定义目录描述: ", dirtitle,
 									21, DOECHO, NA);
-							mkdir_GoodBrd(cbrd, dirname, dirtitle, 0);
+							goodbrd_mkdir(cbrd, dirname, dirtitle, 0);
 						}
 						cbrd->num = -1;
 					}
@@ -974,7 +974,7 @@ static int choose_board(choose_board_t *cbrd)
 							strcpy(dirtitle, cbrd->gbrds[gbid].title+11);
 						strcpy(cbrd->gbrds[gbid].filename, dirname);
 						strcpy(cbrd->gbrds[gbid].title+11, dirtitle);
-						save_GoodBrd(cbrd);
+						goodbrd_save(cbrd);
 					}
 					cbrd->num = -1;
 				}
@@ -988,7 +988,7 @@ static int choose_board(choose_board_t *cbrd)
 					getdata(t_lines - 1, 0, genbuf, ans, 2, DOECHO, YEA);
 					if (ans[0] == 'y' || ans[0] == 'Y') {
 						if (cbrd->brds[num].flag & BOARD_CUSTOM_FLAG)
-							rmdir_GoodBrd(cbrd, cbrd->brds[num].pos);
+							goodbrd_rmdir(cbrd, cbrd->brds[num].pos);
 						else {
 							pos = inGoodBrds(cbrd, cbrd->brds[num].pos);
 							if (pos) {
@@ -997,7 +997,7 @@ static int choose_board(choose_board_t *cbrd)
 											sizeof(struct goodbrdheader));
 								cbrd->gnum--;
 							}
-							save_GoodBrd(cbrd);
+							goodbrd_save(cbrd);
 						}
 						cbrd->num = -1;
 					} else {
@@ -1057,7 +1057,7 @@ static int choose_board(choose_board_t *cbrd)
 	return 0;
 }
 
-void EGroup(const char *cmd)
+void board_read_group(const char *cmd)
 {
 	char buf[16];
 	snprintf(buf, sizeof(buf), "EGROUP%c", *cmd);
@@ -1072,16 +1072,7 @@ void EGroup(const char *cmd)
 	choose_board(&cbrd);
 }
 
-void BoardGroup(void)
-{
-	choose_board_t cbrd;
-	memset(&cbrd, 0, sizeof(cbrd));
-	cbrd.newflag = DEFINE(DEF_NEWPOST);
-	cbrd.nowpid = -1;
-	choose_board(&cbrd);
-}
-
-void Boards(void)
+void board_read_all(void)
 {
 	choose_board_t cbrd;
 	memset(&cbrd, 0, sizeof(cbrd));
@@ -1090,7 +1081,17 @@ void Boards(void)
 	choose_board(&cbrd);
 }
 
-void GoodBrds(void)
+void board_read_new(void)
+{
+	choose_board_t cbrd;
+	memset(&cbrd, 0, sizeof(cbrd));
+	cbrd.parent = -1;
+	cbrd.newflag = true;
+	cbrd.nowpid = -1;
+	choose_board(&cbrd);
+}
+
+void goodbrd_show(void)
 {
 	if (!strcmp(currentuser.userid, "guest"))
 		return;
@@ -1104,14 +1105,4 @@ void GoodBrds(void)
 
 	cbrd.nowpid = -1;
 	cbrd.num = 0;
-}
-
-void New(void)
-{
-	choose_board_t cbrd;
-	memset(&cbrd, 0, sizeof(cbrd));
-	cbrd.parent = -1;
-	cbrd.newflag = true;
-	cbrd.nowpid = -1;
-	choose_board(&cbrd);
 }

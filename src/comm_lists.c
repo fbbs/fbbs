@@ -11,9 +11,8 @@
 //modified by money 2002.11.15
 
 int domenu(const char *menu_name);
-int Announce(), Personal(), Boards(), EGroup(), Info(), Goodbye(),
-		BoardGroup();
-int New(), GoodBrds(), Read(), Select(), Users(), Welcome();
+int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodbye();
+int board_read_new(), goodbrd_show(), Read(), Select(), Users(), Welcome();
 int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), t_users(), x_info(), x_fillform(), x_vote();
@@ -79,11 +78,10 @@ smenu_t currcmd;
 //保存字符串所对应的函数
 static smenu_t sysconf_cmdlist[] = {
 	{ "domenu", domenu, 0 },
-	{ "EGroups", EGroup, 0 },
-	{ "BGroups", BoardGroup, 0 },
-	{ "BoardsAll", Boards, 0 },
-	{ "BoardsGood", GoodBrds, 0 },
-	{ "BoardsNew", New, 0 },
+	{ "EGroups", board_read_group, 0 },
+	{ "BoardsAll", board_read_all, 0 },
+	{ "BoardsGood", goodbrd_show, 0 },
+	{ "BoardsNew", board_read_new, 0 },
 	{ "LeaveBBS", Goodbye, 0 },
 	{ "Announce", Announce, 0 },
 	{ "Personal", Personal, 0 },
