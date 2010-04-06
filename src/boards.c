@@ -5,11 +5,15 @@
 extern time_t login_start_time;
 
 typedef struct {
-	char *name, *title, *BM;
-	unsigned int flag;
-	int pos, total;
-	bool unread, zap;
-	char status;
+	char *name;        ///< Board name.
+	char *title;       ///< Board description.
+	char *BM;          ///< Board masters.
+	unsigned int flag; ///< Board flag. @see ::boardheader.
+	int pos;           ///< Position in ::bcache, 0-based.
+	int total;         ///< Number of posts in the board.
+	bool unread;       ///< True if there are unread posts in the board.
+	bool zap;          ///< True if the board is zapped.
+	char property;     ///< A character reflects the board's property.
 } board_data_t;
 
 typedef struct {
@@ -293,20 +297,20 @@ static int load_boards(choose_board_t *cbrd)
 			ptr->zap = (cbrd->zapbuf[n] == 0);
 			if (bptr ->flag & BOARD_DIR_FLAG) {
 				if (bptr->level != 0)
-					ptr->status = 'r';
+					ptr->property = 'r';
 				else
-					ptr->status = ' ';
+					ptr->property = ' ';
 			} else {
 				if (bptr->flag & BOARD_NOZAP_FLAG)
-					ptr->status = 'z';
+					ptr->property = 'z';
 				else if (bptr->flag & BOARD_POST_FLAG)
-					ptr->status = 'p';
+					ptr->property = 'p';
 				else if (bptr->flag & BOARD_NOREPLY_FLAG)
-					ptr->status = 'x';
+					ptr->property = 'x';
 				else if (bptr->level != 0)
-					ptr->status = 'r';
+					ptr->property = 'r';
 				else
-					ptr->status = ' ';
+					ptr->property = ' ';
 			}
 		}
 	}
@@ -324,7 +328,7 @@ static int load_boards(choose_board_t *cbrd)
 				ptr->pos = gptr->id;
 				ptr->zap = 0;
 				ptr->total = 0;
-				ptr->status = ' ';
+				ptr->property = ' ';
 			}
 		}
 	}
@@ -521,7 +525,7 @@ static void show_brdlist(choose_board_t *cbrd, int page, bool clsflag)
 				(ptr->flag & BOARD_VOTE_FLAG) ? "\033[1;31mV\033[m" : " ",
 				(ptr->flag & BOARD_CLUB_FLAG) ? (ptr->flag & BOARD_READ_FLAG)
 				? "\033[1;31mc\033[m" : "\033[1;33mc\033[m" : " ",
-				cate, title, HAS_PERM (PERM_POST) ? ptr->status : ' ');
+				cate, title, HAS_PERM (PERM_POST) ? ptr->property : ' ');
 
 		if (ptr->flag & BOARD_DIR_FLAG)
 			prints("[Ŀ¼]\n");
