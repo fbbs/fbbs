@@ -1057,6 +1057,7 @@ static int choose_board(choose_board_t *cbrd)
 	clear();
 	save_zapbuf(cbrd);
 	free(cbrd->brds);
+	free(cbrd->zapbuf);
 	free(cbrd->gbrds);
 	return 0;
 }
