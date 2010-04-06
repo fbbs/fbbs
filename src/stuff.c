@@ -47,6 +47,37 @@ int pressreturn() {
 	return 0;
 }
 
+/**
+ * Ask for confirmation.
+ * @param str The prompt string.
+ * @param defa Default answer.
+ * @param gobottom True if prompt at the bottom of the screen.
+ * @return True if user answers "y", false if "n", default answer otherwise.
+ */
+bool askyn(const char *str, bool defa, bool gobottom)
+{
+	int x, y;
+	char buf[100];
+	char ans[3];
+	snprintf(buf, sizeof(buf), "%s %s", str, (defa) ? "(YES/no)? [Y]"
+			: "(yes/NO)? [N]");
+	if (gobottom)
+		move(t_lines - 1, 0);
+	getyx(&x, &y);
+	clrtoeol();
+	getdata(x, y, buf, ans, 2, DOECHO, YEA);
+	switch (ans[0]) {
+		case 'Y':
+		case 'y':
+			return true;
+		case 'N':
+		case 'n':
+			return false;
+		default:
+			return defa;
+	}
+}
+
 int msgmorebar(char *filename) {
 	extern int showansi;
 	char title[256];
@@ -77,25 +108,6 @@ int msgmorebar(char *filename) {
 	clrtoeol();
 	refresh();
 	return ch;
-}
-
-int askyn(char str[STRLEN], int defa, int gobottom) {
-	int x, y;
-	char realstr[100];
-	char ans[3];
-	sprintf(realstr, "%s %s", str, (defa) ? "(YES/no)? [Y]"
-			: "(yes/NO)? [N]");
-	if (gobottom)
-		move(t_lines - 1, 0);
-	getyx(&x, &y);
-	clrtoeol();
-	getdata(x, y, realstr, ans, 2, DOECHO, YEA);
-	if (ans[0] != 'Y' && ans[0] != 'y' && ans[0] != 'N' && ans[0] != 'n') {
-		return defa;
-	} else if (ans[0] == 'Y' || ans[0] == 'y')
-		return 1;
-	else if (ans[0] == 'N' || ans[0] == 'n')
-		return 0;
 }
 
 void printdash(const char *mesg)
