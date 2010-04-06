@@ -152,38 +152,3 @@ int deltree(char *dst) {
 	} else
 		return 0;
 }
-
-int sem(int key) {
-	int val=1;
-	int semid;
-	semid=semget(key, 1, 0);
-	if (semid<0) {
-		semid=semget(key, 1, IPC_CREAT|0660);
-		if (semid<0) {
-			//errlog("[0x%x] semget\n",key);
-			return -1;
-		}
-		semctl(semid, 0, SETVAL, val);
-	}
-	return semid;
-}
-
-void d_sem(int semid) {
-	int val=0;
-	semctl(semid, 0, IPC_RMID, val);
-}
-
-int p_nowait(int semid) {
-	struct sembuf sb= { 0, -1, IPC_NOWAIT };
-	return semop(semid, &sb, 1);
-}
-
-void p(int semid) {
-	struct sembuf sb= { 0, -1, SEM_UNDO };
-	semop(semid, &sb, 1);
-}
-
-void v(int semid) {
-	struct sembuf sb= { 0, 1, 0 };
-	semop(semid, &sb, 1);
-}
