@@ -898,7 +898,7 @@ static int choose_board(choose_board_t *cbrd)
 					break; //added by cometcaptor 2007-04-24 防止在非自定义目录加版面
 				if (cbrd->gnum >= GOOD_BRC_NUM) {
 					presskeyfor("个人热门版数已经达上限", t_lines - 1);
-				} else if (cbrd->num) {
+				} else if (cbrd->gnum) {
 					int pos;
 					char bname[STRLEN];
 					struct boardheader fh;
