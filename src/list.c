@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "list.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -1071,4 +1072,109 @@ int (*read)();
 	}
 	signal(SIGALRM, SIG_IGN);
 	return -1;
+}
+
+enum {
+	LIST_START = 3,
+};
+
+int choose2(choose_t *cp)
+{
+	int ch, ret, number = 0;
+	bool end = false;
+
+	cp->cur = 0;
+	cp->start = -1;
+
+	clear();
+	(*cp->title)(cp);
+
+	while (!end) {
+		// Rolling.
+		if (cp->cur < 0)
+			cp->cur = cp->all - 1;
+		if (cp->cur >= cp->all)
+			cp->cur = 0;
+
+		if (cp->start < 0 || cp->update == PARTUPDATE) {
+			cp->update = DONOTHING;
+			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
+			move(LIST_START, 0);
+			clrtobot();
+			if ((*cp->display)(cp) == -1)
+				return -1;
+			update_endline();
+		}
+
+		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
+			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
+			if ((*cp->display)(cp) == -1)
+				return -1;
+			update_endline();
+			continue;
+		}
+
+		move(LIST_START + cp->cur - cp->start, 0);
+		outs(">");
+
+		ch = igetkey();
+
+		move(LIST_START + cp->cur - cp->start, 0);
+		outs(" ");
+
+		switch (ch) {
+			case 'q':
+			case 'e':
+			case 'KEY_LEFT':
+			case EOF:
+				end = true;
+				break;
+			case 'b':
+			case Ctrl('B'):
+			case KEY_PGUP:
+				cp->cur -= BBS_PAGESIZE;
+				break;
+			case 'N':
+			case Ctrl('F'):
+			case KEY_PGDN:
+				cp->cur += BBS_PAGESIZE;
+				break;
+			case 'p':
+			case 'l':
+			case KEY_UP:
+				cp->cur--;
+				break;
+			case 'n':
+			case 'j':
+			case KEY_DOWN:
+				cp->cur++;
+				break;
+			case '$':
+			case KEY_END:
+				cp->cur = cp->all - 1;
+				break;
+			case KEY_HOME:
+				cp->cur = 0;
+				break;
+			case '\n':
+			case '\r':
+				if (number > 0) {
+					cp->cur = number - 1;
+					break;
+				}
+				// fall through
+			default:
+				if (ch >= '0' && ch <= '9') {
+					number = number * 10 + (ch - '0');
+					ch = '\0';
+				} else {
+					number = 0;
+					ret = (*cp->handler)(cp);
+				if (ret < 0)
+					end = true;
+				}
+				break;
+		}
+	}
+	return 0;
 }
