@@ -131,13 +131,6 @@ void print_title() {
 			" ÁÄÌì[[1;32mt[m] ¼ÄÐÅ[[1;32mm[m] ËÍÑ¶Ï¢[[1;32ms[m] ¼Ó,¼õÅóÓÑ[[1;32mo[m,[1;32md[m] ¿´ËµÃ÷µµ[[1;32m¡ú[m,[1;32mRtn[m] ÇÐ»»Ä£Ê½ [[1;32mf[m] Çó¾È[[1;32mh[m]");
 	update_endline();
 }
-print_title2() {
-
-	docmdtitle(
-			(friendmode) ? "[ºÃÅóÓÑÁÐ±í]" : "[Ê¹ÓÃÕßÁÐ±í]",
-			"        ¼ÄÐÅ[[1;32mm[m] ¼Ó,¼õÅóÓÑ[[1;32mo[m,[1;32md[m] ¿´ËµÃ÷µµ[[1;32m¡ú[m,[1;32mRtn[m] Ñ¡Ôñ[[1;32m¡ü[m,[1;32m¡ý[m] Çó¾È[[1;32mh[m]");
-	update_endline();
-}
 
 void update_data() {
 	if (readplan == YEA)
@@ -597,111 +590,6 @@ int deal_key(char ch, int allnum, int pagenum) //»·¹ËËÄ·½´¦Àí°´¼ü
 	return 1;
 }
 
-int deal_key2(char ch, int allnum, int pagenum) //Ì½ÊÓÍøÓÑ´¦Àí°´¼ü
-{
-	char buf[STRLEN];
-	static int msgflag;
-
-	if (msgflag == YEA) {
-		show_message(NULL);
-		msgflag = NA;
-	}
-	switch (ch) {
-		case 'h':
-		case 'H':
-			show_help("help/usershelp");
-			break;
-		case 'm':
-		case 'M':
-			/* Following line modified by Amigo 2002.06.08. To add mail right. */
-			/*         if (!HAS_PERM(PERM_POST)) return 1;*/
-			if (!HAS_PERM(PERM_MAIL))
-				return 1;
-			m_send(user_data[allnum - pagenum].userid);
-			break;
-		case 'o':
-		case 'O':
-			if (!strcmp("guest", currentuser.userid))
-				return 0;
-			sprintf(buf, "È·¶¨Òª°Ñ %s ¼ÓÈëºÃÓÑÃûµ¥Âð",
-					user_data[allnum - pagenum].userid);
-			move(BBS_PAGESIZE + 2, 0);
-			if (askyn(buf, NA, NA) == NA)
-				break;
-			if (addtooverride(user_data[allnum - pagenum].userid) == -1) {
-				sprintf(buf, "%s ÒÑÔÚÅóÓÑÃûµ¥", user_data[allnum-pagenum].userid);
-				show_message(buf);
-			} else {
-				sprintf(buf, "%s ÁÐÈëÅóÓÑÃûµ¥",
-						user_data[allnum - pagenum].userid);
-				show_message(buf);
-			}
-			msgflag = YEA;
-			if (!friendmode)
-				return 1;
-			break;
-		case 'f':
-		case 'F':
-			toggle1++;
-			if (toggle1 >= 3)
-				toggle1 = 0;
-			break;
-		case 'W':
-		case 'w':
-			if (showexplain==1)
-				showexplain=0;
-			else
-				showexplain=1;
-			break;
-		case 't':
-		case 'T':
-			toggle2++;
-#ifdef ALLOWGAME
-			if (toggle2 >= 3) toggle2 = 0;
-#else
-			if (toggle2 >= 2)
-				toggle2 = 0;
-#endif
-			break;
-		case 'd':
-		case 'D':
-			if (!strcmp("guest", currentuser.userid))
-				return 0;
-			sprintf(buf, "È·¶¨Òª°Ñ %s ´ÓºÃÓÑÃûµ¥É¾³ýÂð",
-					user_data[allnum - pagenum].userid);
-			move(BBS_PAGESIZE + 2, 0);
-			if (askyn(buf, NA, NA) == NA)
-				break;
-			if (deleteoverride(user_data[allnum-pagenum].userid, "friends")
-					==-1) {
-				sprintf(buf, "%s ±¾À´¾Í²»ÔÚÅóÓÑÃûµ¥ÖÐ",
-						user_data[allnum - pagenum].userid);
-				show_message(buf);
-			} else {
-				sprintf(buf, "%s ÒÑ´ÓÅóÓÑÃûµ¥ÒÆ³ý",
-						user_data[allnum - pagenum].userid);
-				show_message(buf);
-			}
-			msgflag = YEA;
-			if (!friendmode)
-				return 1;
-			break;
-		default:
-			return 0;
-	}
-	modify_user_mode(LAUSERS);
-	if (readplan == NA) {
-		print_title2();
-		move(3, 0);
-		clrtobot();
-		if (Show_Users() == -1)
-			return -1;
-		update_endline();
-	}
-	redoscr();
-	return 1;
-}
-
 int
 countusers(uentp)
 struct userec *uentp;
@@ -717,60 +605,6 @@ struct userec *uentp;
 		totalusers++;
 		return 1;
 	}
-	return 0;
-}
-
-printuent(uentp)
-struct userec *uentp;
-{
-	static int i;
-	char permstr[11];
-	char msgstr[18];
-	int override;
-	if (uentp == NULL) {
-		printutitle();
-		i = 0;
-		return 0;
-	}
-	if (uentp->numlogins == 0 ||
-			uleveltochar(permstr, uentp->userlevel) == 0)
-	return 0;
-	if (i < page || i >= page + BBS_PAGESIZE || i >= range) {
-		i++;
-		if (i >= page + BBS_PAGESIZE || i >= range)
-		return QUIT;
-		else
-		return 0;
-	}
-	uleveltochar(&permstr, uentp->userlevel);
-	switch (toggle1) {
-		case 0:
-			sprintf(msgstr, "%-.16s", getdatestring(uentp->lastlogin, DATE_ZH) + 6);
-			break;
-		case 1:
-			sprintf(msgstr, "%-.16s", uentp->lasthost);
-			break;
-		case 2:
-		default:
-			sprintf(msgstr, "%-.14s", getdatestring(uentp->firstlogin, DATE_ZH));
-			break;
-	}
-	user_data[i - page] = *uentp;
-	override = myfriend(searchuser(uentp->userid));
-	prints(" %5d%2s%s%-12s%s %-17s %6d %4d %10s %-16s\n", i + 1,
-			(override) ? "¡Ì" : "",
-			(override) ? "[1;32m" : "", uentp->userid, (override) ? "[m" : "",
-			uentp->username,
-#ifdef ALLOWGAME
-			(toggle2 == 0) ? (uentp->numlogins) : (toggle2 == 1) ? (uentp->numposts) : (uentp->money),
-			(toggle2 == 0) ? uentp->stay / 3600 : (toggle2 == 1) ? (uentp->nummedals) : uentp->nummails,
-#else
-			(toggle2 == 0) ? (uentp->numlogins) : (uentp->numposts),
-			(toggle2 == 0) ? uentp->stay / 3600 : uentp->nummails,
-#endif
-			HAS_PERM(PERM_SEEULEVELS) ? permstr : "", msgstr);
-	i++;
-	usercounter++;
 	return 0;
 }
 
@@ -813,20 +647,7 @@ int mailtoall(int mode, char *fname)
 	}
 	return 1;
 }
-Show_Users() {
 
-	usercounter = 0;
-	modify_user_mode(LAUSERS);
-	printuent((struct userec *) NULL);
-	if (apply_record(PASSFILE, printuent, sizeof(struct userec), 0, 0, 0, false)
-			== -1) {
-		prints("No Users Exist");
-		pressreturn();
-		return 0;
-	}
-	clrtobot();
-	return 0;
-}
 setlistrange(i)
 int i;
 {
@@ -842,27 +663,6 @@ int star, curr;
 		move(t_lines - 1, 0);
 		prints("[0;1;37;44mÁÄÌì[[1;32mt[37m] ¼ÄÐÅ[[1;32mm[37m] ËÍÑ¶Ï¢[[1;32ms[37m] ¼Ó,¼õÅóÓÑ[[1;32mo[37m,[1;32md[37m] Ñ¡ÔñÊ¹ÓÃÕß[[1;32m¡ü[37m,[1;32m¡ý[37m] ÇÐ»»Ä£Ê½ [[1;32mf[37m] Çó¾È[[1;32mh[37m][m");
 	}
-}
-do_query2(star, curr)
-int star, curr;
-{
-	if (user_data[curr - star].userid != NULL) {
-		t_query(user_data[curr - star].userid);
-		move(t_lines - 1, 0);
-		prints("[0;1;37;44m          ¼ÄÐÅ[[1;32mm[37m] ¼Ó,¼õÅóÓÑ[[1;32mo[37m,[1;32md[37m] ¿´ËµÃ÷µµ[[1;32m¡ú[37m,[1;32mRtn[37m] Ñ¡Ôñ[[1;32m¡ü[37m,[1;32m¡ý[37m] Çó¾È[[1;32mh[37m]          [m");
-	}
-}
-
-Users() {
-	range = allusers();
-	modify_user_mode(LAUSERS);
-	clear();
-	user_data = (struct userec *) calloc(sizeof(struct userec),
-			BBS_PAGESIZE);
-	choose(NA, 0, print_title2, deal_key2, Show_Users, do_query2);
-	clear();
-	free(user_data);
-	return;
 }
 
 int t_friends() {

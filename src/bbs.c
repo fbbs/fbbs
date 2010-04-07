@@ -263,21 +263,6 @@ int uleveltochar(char *buf, unsigned int lvl) {
 	return 1;
 }
 
-void printutitle() {
-	move(2, 0);
-	prints("[1;44m ±à ºÅ  Ê¹ÓÃÕß´úºÅ   %-19s #%-4s #%-4s %8s    %-12s  [m\n",
-			"Ê¹ÓÃÕßêÇ³Æ",
-#ifdef ALLOWGAME
-			(toggle2 == 0) ? "ÉÏÕ¾" : (toggle2 == 1) ? "ÎÄÕÂ" : "´æ¿î",
-			(toggle2 == 0) ? "Ê±Êý" : (toggle2 == 1) ? "½±ÕÂ" : "ÐÅ¼þ",
-#else
-			(toggle2 == 0) ? "ÉÏÕ¾" : "ÎÄÕÂ", (toggle2 == 0) ? "Ê±Êý" : "ÐÅ¼þ",
-#endif
-			HAS_PERM(PERM_SEEULEVELS) ? " µÈ  ¼¶ " : "",
-			(toggle1 == 0) ? "×î½ü¹âÁÙÈÕÆÚ" : (toggle1 == 1) ? "×î½ü¹âÁÙµØµã"
-					: "ÕÊºÅ½¨Á¢ÈÕÆÚ");
-}
-
 int g_board_names(struct boardheader *fhdrp) {
 	if (!(fhdrp->flag & BOARD_DIR_FLAG)
 			&& ((fhdrp->flag & BOARD_POST_FLAG) || HAS_PERM(fhdrp->level)

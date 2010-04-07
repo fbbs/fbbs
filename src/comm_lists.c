@@ -130,7 +130,6 @@ static smenu_t sysconf_cmdlist[] = {
 	{ "ExecBBSNet", ent_bnet, 0 },
 	{ "ExecBBSNet2", ent_bnet2, 0 },
 	{ "ShowWelcome", Welcome, 0 },
-	{ "AllUsers", Users, 0 },
 	{ "AddPCorpus", AddPCorpus, 0 },
 	{ "GoodWish", sendgoodwish, 0 },
 #ifdef ALLOWSWITCHCODE
