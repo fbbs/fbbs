@@ -1089,30 +1089,46 @@ int choose2(choose_t *cp)
 	cp->update = FULLUPDATE;
 	cp->valid = false;
 	
-	clear();
-	(*cp->title)(cp);
-
 	while (!end) {
 		if (!cp->valid) {
 			if ((*cp->loader)(cp) < 0)
 				break;
 			cp->valid = true;
+			if (cp->update != FULLUPDATE)
+				cp->update = PARTUPDATE;
 		}
 
 		// Rolling.
-		if (cp->cur < 0)
+		if (cp->cur < 0) {
 			cp->cur = cp->all - 1;
-		if (cp->cur >= cp->all)
+		}
+		if (cp->cur >= cp->all) {
 			cp->cur = 0;
+		}
+
+		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
+			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
+			if (cp->update != FULLUPDATE)
+				cp->update = PARTUPDATE;
+		}
+
+		if (cp->update != FULLUPDATE && cp->all > BBS_PAGESIZE)
+			cp->update = PARTUPDATE;
 
 		if (cp->update != DONOTHING) {
-			cp->update = DONOTHING;
-			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
-			move(LIST_START, 0);
-			clrtobot();
-			if ((*cp->display)(cp) == -1)
-				return -1;
+			if (cp->update == FULLUPDATE) {
+				clear();
+				(*cp->title)(cp);
+				cp->update = PARTUPDATE;
+			}
+			if (cp->update == PARTUPDATE) {
+				move(LIST_START, 0);
+				clrtobot();
+				if ((*cp->display)(cp) == -1)
+					return -1;
+			}
 			update_endline();
+			cp->update = DONOTHING;
 		}
 
 		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
@@ -1134,7 +1150,7 @@ int choose2(choose_t *cp)
 		switch (ch) {
 			case 'q':
 			case 'e':
-			case 'KEY_LEFT':
+			case KEY_LEFT:
 			case EOF:
 				end = true;
 				break;
@@ -1179,8 +1195,10 @@ int choose2(choose_t *cp)
 				} else {
 					number = 0;
 					ret = (*cp->handler)(cp, ch);
-				if (ret < 0)
-					end = true;
+					if (ret < 0)
+						end = true;
+					else
+						cp->update = ret;
 				}
 				break;
 		}
