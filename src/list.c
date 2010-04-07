@@ -1083,20 +1083,29 @@ int choose2(choose_t *cp)
 	int ch, ret, number = 0;
 	bool end = false;
 
+	cp->all = -1;
 	cp->cur = 0;
 	cp->start = -1;
-
+	cp->update = FULLUPDATE;
+	cp->valid = false;
+	
 	clear();
 	(*cp->title)(cp);
 
 	while (!end) {
+		if (!cp->valid) {
+			if ((*cp->loader)(cp) < 0)
+				break;
+			cp->valid = true;
+		}
+
 		// Rolling.
 		if (cp->cur < 0)
 			cp->cur = cp->all - 1;
 		if (cp->cur >= cp->all)
 			cp->cur = 0;
 
-		if (cp->start < 0 || cp->update == PARTUPDATE) {
+		if (cp->update != DONOTHING) {
 			cp->update = DONOTHING;
 			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
 			move(LIST_START, 0);
@@ -1169,7 +1178,7 @@ int choose2(choose_t *cp)
 					ch = '\0';
 				} else {
 					number = 0;
-					ret = (*cp->handler)(cp);
+					ret = (*cp->handler)(cp, ch);
 				if (ret < 0)
 					end = true;
 				}

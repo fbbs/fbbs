@@ -8,11 +8,13 @@ typedef struct choose_t {
 	int update;    ///< UI update status.
 	int valid;     ///< True if data are not out-dated.
 	void *data;    ///< Data.
+	int (*loader)(struct choose_t *);   ///< Data loader.
 	void (*title)(struct choose_t *);   ///< Function that shows title.
 	int (*display)(struct choose_t *);  ///< Display function.
-	int (*handler)(struct choose_t *);  ///< Key handler.
+	int (*handler)(struct choose_t *, int);  ///< Key handler.
 } choose_t;
 
 extern int choose2(choose_t *cp);
 
 #endif // FB_LIST_H
+
