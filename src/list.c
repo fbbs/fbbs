@@ -1085,7 +1085,7 @@ int choose2(choose_t *cp)
 
 	cp->all = -1;
 	cp->cur = 0;
-	cp->start = -1;
+	cp->start = 0;
 	cp->update = FULLUPDATE;
 	cp->valid = false;
 	

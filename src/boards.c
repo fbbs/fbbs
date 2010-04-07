@@ -977,6 +977,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 			cp->cur = tmp;
 			cp->valid = false;
 			modify_mode = true;
+			break;
 		case 'S':
 			if (!HAS_PERM(PERM_TALK))
 				return DONOTHING;
