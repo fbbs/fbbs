@@ -64,15 +64,15 @@ static int load_zapbuf(choose_board_t *cbrd)
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".lastread");
+	int n = 0;
 	int fd = open(file, O_RDONLY, 0600);
-	if (fd < 0) {
-		int n;
-		for (n = 0; n < MAXBOARD; n++) {
-			cbrd->zapbuf[n] = 1;
-		}
-	} else {
-		read(fd, cbrd->zapbuf, sizeof(int) * numboards);
-		close(fd);
+	if (fd >= 0) {
+		n = read(fd, cbrd->zapbuf, sizeof(*cbrd->zapbuf) * numboards);
+		restart_close(fd);
+	}
+	int i;
+	for (i = n / sizeof(*cbrd->zapbuf); i < MAXBOARD; ++i) {
+		cbrd->zapbuf[i] = 1;
 	}
 	return 0;
 }
