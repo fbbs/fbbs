@@ -3,6 +3,12 @@
 
 #define BBS_PAGESIZE (t_lines - 4)
 
+enum {
+	USRSORT_USERID = 0,
+	USRSORT_NICK = 1,
+	USRSORT_FROM = 2,
+	USRSORT_STATUS = 3,
+};
 
 typedef struct {
 	comparator_t cmp;         ///< Sorting method.
@@ -10,6 +16,7 @@ typedef struct {
 	int *ovrs;                ///< Array of online overriding users.
 	int num;                  ///< Number of online users.
 	int onum;                 ///< Number of online overriding users.
+	int sort;                 ///< Sort method enum.
 	bool ovr_only;            ///< True if show overriding users only.
 	bool board;               ///< True if show users in current board only.
 	bool show_note;           ///< True if show note to overriding users.
@@ -56,6 +63,7 @@ static int online_users_init(online_users_t *up)
 	}
 
 	up->cmp = online_users_sort_userid;
+	up->sort = USRSORT_USERID;
 	return 0;
 }
 
@@ -115,7 +123,25 @@ static void online_users_title(choose_t *cp)
 			"\033[1;32ms\033[m] 加,减朋友[\033[1;32mo\033[m,\033[1;32md\033[m]"
 			" 看说明档[\033[1;32m→\033[m,\033[1;32mRtn\033[m] 切换模式 "
 			"[\033[1;32mf\033[m] 求救[\033[1;32mh\033[m]");
+	
+	const char *field = up->show_note ? "好友说明  " : "使用者昵称";
 
+	char title[256];
+	snprintf(title, sizeof(title), "\033[1;44m 编号 %s使用者代号%s %s%s%s    "
+			"     %s上站的位置%s     P M %c%s目前动态%s  时:分\033[m\n",
+			up->sort == USRSORT_USERID ? "\033[32m{" : " ",
+			up->sort == USRSORT_USERID ? "}\033[37m" : " ",
+			up->sort == USRSORT_NICK ? "\033[32m{" : " ", field,
+			up->sort == USRSORT_NICK ? "}\033[37m" : " ",
+			up->sort == USRSORT_FROM ? "\033[32m{" : " ",
+			up->sort == USRSORT_FROM ? "}\033[37m" : " ",
+			HAS_PERM(PERM_CLOAK) ? 'C' : ' ',
+			up->sort == USRSORT_STATUS ? "\033[32m{" : " ",
+			up->sort == USRSORT_STATUS ? "}\033[37m" : " ");
+
+	move(2, 0);
+	clrtoeol();
+	prints("%s", title);
 }
 
 static void get_override_note(const char *userid, char *buf, size_t size)
@@ -129,6 +155,8 @@ static void get_override_note(const char *userid, char *buf, size_t size)
 	if (search_record(buf, &tmp, sizeof(tmp), cmpfnames, userid))
 		strlcpy(buf, tmp.exp, size);
 }
+
+extern const char *idle_str(struct user_info *uent);
 
 static int online_users_display(choose_t *cp)
 {
