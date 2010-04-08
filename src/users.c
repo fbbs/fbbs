@@ -138,8 +138,12 @@ static int online_users_display(choose_t *cp)
 	int i;
 	bool is_ovr;
 	char buf[STRLEN], line[256];
-	for (i = cp->start; i < cp->start + BBS_PAGESIZE; ++i) {
+	int limit = up->ovr_only ? up->onum : up->num;
+	if (limit > cp->start + BBS_PAGESIZE)
+		limit = cp->start + BBS_PAGESIZE;
+	for (i = cp->start; i < limit; ++i) {
 		is_ovr = up->ovr_only || i < up->onum;
+		uin = up->users + i;
 		if (!uin || !uin->active || !uin->pid || *uin->userid == '\0') {
 			outs("\033[1;44m°¡..ÎÒ¸Õ×ß\033[m\n");
 			continue;
