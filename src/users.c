@@ -143,9 +143,9 @@ static int online_users_display(choose_t *cp)
 		limit = cp->start + BBS_PAGESIZE;
 	for (i = cp->start; i < limit; ++i) {
 		is_ovr = up->ovr_only || i < up->onum;
-		uin = up->users + i;
+		uin = up->users[i];
 		if (!uin || !uin->active || !uin->pid || *uin->userid == '\0') {
-			outs("\033[1;44m啊..我刚走\033[m\n");
+			outs("  \033[1;44m啊..我刚走\033[m\n");
 			continue;
 		}
 
