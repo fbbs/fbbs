@@ -552,15 +552,6 @@ static void channel_rcv_request(ssh_session session) {
     return;
   }
 
-  if(strcmp(request,"keepalive@openssh.com")==0){
-    SAFE_FREE(request);
-    ssh_log(session, SSH_LOG_PROTOCOL,"Responding to Openssh's keepalive");
-    buffer_add_u8(session->out_buffer, SSH2_MSG_CHANNEL_SUCCESS);
-    buffer_add_u32(session->out_buffer, htonl(channel->remote_channel));
-    packet_send(session);
-    leave_function();
-    return;
-  }
   /* TODO call message_handle since it handles channel requests as messages */
   /* *but* reset buffer before !! */
 
@@ -1368,7 +1359,6 @@ static ssh_channel channel_accept(ssh_session session, int channeltype,
   };
 #endif
   ssh_message msg = NULL;
-  ssh_channel channel = NULL;
   struct ssh_iterator *iterator;
   int t;
 
@@ -1383,9 +1373,7 @@ static ssh_channel channel_accept(ssh_session session, int channeltype,
         if (ssh_message_type(msg) == SSH_REQUEST_CHANNEL_OPEN &&
             ssh_message_subtype(msg) == channeltype) {
           ssh_list_remove(session->ssh_message_list, iterator);
-          channel = ssh_message_channel_request_open_reply_accept(msg);
-          ssh_message_free(msg);
-          return channel;
+          return ssh_message_channel_request_open_reply_accept(msg);
         }
         iterator = iterator->next;
       }

@@ -35,6 +35,7 @@ enum ssh_config_opcode_e {
   SOC_PORT,
   SOC_USERNAME,
   SOC_IDENTITY,
+  SOC_CIPHER,
   SOC_CIPHERS,
   SOC_COMPRESSION,
   SOC_TIMEOUT,
@@ -52,6 +53,7 @@ static struct ssh_config_keyword_table_s ssh_config_keyword_table[] = {
   { "port", SOC_PORT },
   { "user", SOC_USERNAME },
   { "identityfile", SOC_IDENTITY },
+  { "cipher", SOC_CIPHER },
   { "ciphers", SOC_CIPHERS },
   { "compression", SOC_COMPRESSION },
   { "connecttimeout", SOC_TIMEOUT },
@@ -225,8 +227,8 @@ static int ssh_config_parse_line(ssh_session session, const char *line,
       i = ssh_config_get_yesno(&s, -1);
       if (i >= 0 && *parsing) {
         if (i) {
-          ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "zlib,none");
-          ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "zlib,none");
+          ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "zlib");
+          ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "zlib");
         } else {
           ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
           ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");

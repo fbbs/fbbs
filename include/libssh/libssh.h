@@ -79,7 +79,7 @@
 /* libssh version */
 #define LIBSSH_VERSION_MAJOR  0
 #define LIBSSH_VERSION_MINOR  4
-#define LIBSSH_VERSION_MICRO  2
+#define LIBSSH_VERSION_MICRO  0
 
 #define LIBSSH_VERSION_INT SSH_VERSION_INT(LIBSSH_VERSION_MAJOR, \
                                            LIBSSH_VERSION_MINOR, \
@@ -252,7 +252,6 @@ enum ssh_options_e {
   SSH_OPTIONS_USER,
   SSH_OPTIONS_SSH_DIR,
   SSH_OPTIONS_IDENTITY,
-  SSH_OPTIONS_ADD_IDENTITY,
   SSH_OPTIONS_KNOWNHOSTS,
   SSH_OPTIONS_TIMEOUT,
   SSH_OPTIONS_TIMEOUT_USEC,
@@ -336,14 +335,10 @@ LIBSSH_API void privatekey_free(ssh_private_key prv);
 LIBSSH_API ssh_private_key privatekey_from_file(ssh_session session, const char *filename,
     int type, const char *passphrase);
 LIBSSH_API void publickey_free(ssh_public_key key);
-LIBSSH_API int ssh_publickey_to_file(ssh_session session, const char *file,
-    ssh_string pubkey, int type);
 LIBSSH_API ssh_string publickey_from_file(ssh_session session, const char *filename,
     int *type);
 LIBSSH_API ssh_public_key publickey_from_privatekey(ssh_private_key prv);
 LIBSSH_API ssh_string publickey_to_string(ssh_public_key key);
-LIBSSH_API int ssh_try_publickey_from_file(ssh_session session, const char *keyfile,
-    ssh_string *publickey, int *type);
 
 LIBSSH_API int ssh_auth_list(ssh_session session);
 LIBSSH_API char *ssh_basename (const char *path);

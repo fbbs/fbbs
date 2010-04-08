@@ -149,16 +149,17 @@ struct sftp_status_message_struct {
     char *langmsg;
 };
 
+/* don't worry much of these aren't really used */
 struct sftp_attributes_struct {
     char *name;
-    char *longname; /* ls -l output on openssh, not reliable else */
+    char *longname; /* some weird stuff */
     uint32_t flags;
     uint8_t type;
     uint64_t size;
     uint32_t uid;
     uint32_t gid;
-    char *owner; /* set if openssh and version 4 */
-    char *group; /* set if openssh and version 4 */
+    char *owner;
+    char *group;
     uint32_t permissions;
     uint64_t atime64;
     uint32_t atime;

@@ -35,7 +35,6 @@
 #include "libssh/buffer.h"
 #include "libssh/agent.h"
 #include "libssh/keyfiles.h"
-#include "libssh/misc.h"
 #include "libssh/packet.h"
 #include "libssh/session.h"
 #include "libssh/keys.h"
@@ -757,6 +756,42 @@ error:
   return rc;
 }
 
+#ifdef _MSC_VER
+static const char privKey_1[] = "SSH_DIR/identity";
+static const char pubKey_1[] = "SSH_DIR/identity.pub";
+static const char privKey_2[] = "SSH_DIR/id_dsa";
+static const char pubKey_2[] = "SSH_DIR/id_dsa.pub";
+static const char privKey_3[] = "SSH_DIR/id_rsa";
+static const char pubKey_3[] = "SSH_DIR/id_rsa.pub";
+/** Used different var to allow const char[] declaration */
+static struct ssh_keys_struct keytab[] = {
+  { privKey_1, pubKey_1},
+  { privKey_2, pubKey_2},
+  { privKey_3, pubKey_3},
+  {0}
+};
+#else
+/* This requires GCC extensions */
+static struct ssh_keys_struct keytab[] = {
+  {
+    .privatekey = "SSH_DIR/identity",
+    .publickey = "SSH_DIR/identity.pub"
+  },
+  {
+    .privatekey = "SSH_DIR/id_dsa",
+    .publickey = "SSH_DIR/id_dsa.pub",
+  },
+  {
+    .privatekey = "SSH_DIR/id_rsa",
+    .publickey = "SSH_DIR/id_rsa.pub",
+  },
+  {
+    .privatekey = NULL,
+    .publickey = NULL
+  }
+};
+#endif
+
 /**
  * @brief Tries to automaticaly authenticate with public key and "none"
  *
@@ -780,10 +815,13 @@ error:
  * @see ssh_options_set()
  */
 int ssh_userauth_autopubkey(ssh_session session, const char *passphrase) {
-  struct ssh_iterator *it;
+  struct ssh_public_key_struct *publickey;
+  ssh_string pubkey;
   ssh_private_key privkey;
-  ssh_public_key pubkey;
-  ssh_string pubkey_string;
+  char *privkeyfile = NULL;
+  char *id = NULL;
+  size_t size;
+  unsigned int i = 0;
   int type = 0;
   int rc;
 
@@ -799,170 +837,142 @@ int ssh_userauth_autopubkey(ssh_session session, const char *passphrase) {
   /* Try authentication with ssh-agent first */
 #ifndef _WIN32
   if (agent_is_running(session)) {
-    char *privkey_file = NULL;
-
     ssh_log(session, SSH_LOG_RARE,
         "Trying to authenticate with SSH agent keys as user: %s",
         session->username);
 
-    for (pubkey = agent_get_first_ident(session, &privkey_file);
-        pubkey != NULL;
-        pubkey = agent_get_next_ident(session, &privkey_file)) {
+    for (publickey = agent_get_first_ident(session, &privkeyfile);
+        publickey != NULL;
+        publickey = agent_get_next_ident(session, &privkeyfile)) {
 
-      ssh_log(session, SSH_LOG_RARE, "Trying identity %s", privkey_file);
+      ssh_log(session, SSH_LOG_RARE, "Trying identity %s", privkeyfile);
 
-      pubkey_string = publickey_to_string(pubkey);
-      if (pubkey_string) {
-        rc = ssh_userauth_offer_pubkey(session, NULL, pubkey->type, pubkey_string);
-        string_free(pubkey_string);
+      pubkey = publickey_to_string(publickey);
+      if (pubkey) {
+        rc = ssh_userauth_offer_pubkey(session, NULL, publickey->type, pubkey);
+        string_free(pubkey);
         if (rc == SSH_AUTH_ERROR) {
-          SAFE_FREE(privkey_file);
-          publickey_free(pubkey);
+          SAFE_FREE(id);
+          SAFE_FREE(privkeyfile);
+          publickey_free(publickey);
           leave_function();
 
           return rc;
         } else if (rc != SSH_AUTH_SUCCESS) {
-          ssh_log(session, SSH_LOG_PROTOCOL, "Public key refused by server");
-          SAFE_FREE(privkey_file);
-          publickey_free(pubkey);
+          ssh_log(session, SSH_LOG_PACKET, "Public key refused by server\n");
+          SAFE_FREE(id);
+          SAFE_FREE(privkeyfile);
+          publickey_free(publickey);
           continue;
         }
         ssh_log(session, SSH_LOG_RARE, "Public key accepted");
         /* pubkey accepted by server ! */
-        rc = ssh_userauth_agent_pubkey(session, NULL, pubkey);
+        rc = ssh_userauth_agent_pubkey(session, NULL, publickey);
         if (rc == SSH_AUTH_ERROR) {
-          SAFE_FREE(privkey_file);
-          publickey_free(pubkey);
+          SAFE_FREE(id);
+          SAFE_FREE(privkeyfile);
+          publickey_free(publickey);
           leave_function();
 
           return rc;
         } else if (rc != SSH_AUTH_SUCCESS) {
           ssh_log(session, SSH_LOG_RARE,
-              "Server accepted public key but refused the signature ;"
-              " It might be a bug of libssh");
-          SAFE_FREE(privkey_file);
-          publickey_free(pubkey);
+              "Server accepted public key but refused the signature\n"
+              "It might be a bug of libssh\n");
+          SAFE_FREE(id);
+          SAFE_FREE(privkeyfile);
+          publickey_free(publickey);
           continue;
         }
         /* auth success */
-        ssh_log(session, SSH_LOG_PROTOCOL, "Authentication using %s success",
-            privkey_file);
-        SAFE_FREE(privkey_file);
-        publickey_free(pubkey);
+        ssh_log(session, SSH_LOG_RARE, "Authentication using %s success\n",
+            privkeyfile);
+        SAFE_FREE(id);
+        SAFE_FREE(privkeyfile);
+        publickey_free(publickey);
 
         leave_function();
 
         return SSH_AUTH_SUCCESS;
       } /* if pubkey */
-      SAFE_FREE(privkey_file);
-      publickey_free(pubkey);
+      SAFE_FREE(id);
+      SAFE_FREE(privkeyfile);
+      publickey_free(publickey);
     } /* for each privkey */
   } /* if agent is running */
 #endif
 
-  for (it = ssh_list_get_iterator(session->identity);
-       it != NULL;
-       it = it->next) {
-    char *privkey_file = NULL;
-    int privkey_open = 0;
+  size = ARRAY_SIZE(keytab);
+  if (session->identity) {
+    ssh_log(session, SSH_LOG_RARE,
+        "Trying identity file %s\n", session->identity);
 
-    privkey_file = dir_expand_dup(session, it->data, 1);
-    if (privkey_file == NULL) {
+    id = malloc(strlen(session->identity) + 1 + 4);
+    if (id == NULL) {
+      leave_function();
+      return SSH_AUTH_ERROR;
+    }
+    sprintf(id, "%s.pub", session->identity);
+
+    keytab[size - 1].privatekey = session->identity;
+    keytab[size - 1].publickey = id;
+  }
+
+  for (i = 0, pubkey = try_publickey_from_file(session, keytab[i],
+        &privkeyfile, &type);
+      i < size;
+      pubkey = try_publickey_from_file(session, keytab[i++],
+        &privkeyfile, &type)) {
+    if (pubkey == NULL) {
       continue;
     }
 
-    ssh_log(session, SSH_LOG_PROTOCOL, "Trying to read privatekey %s", privkey_file);
-
-    rc = ssh_try_publickey_from_file(session, privkey_file, &pubkey_string, &type);
-    if (rc == 1) {
-      char *publickey_file;
-      size_t len;
-
-      privkey = privatekey_from_file(session, privkey_file, type, passphrase);
-      if (privkey == NULL) {
-        ssh_log(session, SSH_LOG_RARE,
-          "Reading private key %s failed (bad passphrase ?)",
-          privkey_file);
-        SAFE_FREE(privkey_file);
-        leave_function();
-        return SSH_AUTH_ERROR;
-      }
-      privkey_open = 1;
-
-      pubkey = publickey_from_privatekey(privkey);
-      if (pubkey == NULL) {
-        SAFE_FREE(privkey_file);
-        privatekey_free(privkey);
-        ssh_set_error_oom(session);
-        leave_function();
-        return SSH_AUTH_ERROR;
-      }
-
-      pubkey_string = publickey_to_string(pubkey);
-      type = pubkey->type;
-      publickey_free(pubkey);
-      if (pubkey_string == NULL) {
-        SAFE_FREE(privkey_file);
-        ssh_set_error_oom(session);
-        leave_function();
-        return SSH_AUTH_ERROR;
-      }
-
-      len = strlen(privkey_file) + 5;
-      publickey_file = malloc(len);
-      if (publickey_file == NULL) {
-        SAFE_FREE(privkey_file);
-        ssh_set_error_oom(session);
-        leave_function();
-        return SSH_AUTH_ERROR;
-      }
-      snprintf(publickey_file, len, "%s.pub", privkey_file);
-      rc = ssh_publickey_to_file(session, publickey_file, pubkey_string, type);
-      if (rc < 0) {
-        ssh_log(session, SSH_LOG_PACKET,
-            "Could not write public key to file: %s", publickey_file);
-      }
-      SAFE_FREE(publickey_file);
-    } else if (rc < 0) {
-      SAFE_FREE(privkey_file);
-      continue;
-    }
-
-    rc = ssh_userauth_offer_pubkey(session, NULL, type, pubkey_string);
+    rc = ssh_userauth_offer_pubkey(session, NULL, type, pubkey);
     if (rc == SSH_AUTH_ERROR){
-      SAFE_FREE(privkey_file);
-      string_free(pubkey_string);
+      if (id != NULL) {
+        keytab[size - 1].privatekey = NULL;
+        keytab[size - 1].publickey  = NULL;
+        SAFE_FREE(id);
+      }
+      string_free(pubkey);
+      SAFE_FREE(privkeyfile);
       ssh_log(session, SSH_LOG_RARE, "Publickey authentication error");
       leave_function();
       return rc;
     } else {
       if (rc != SSH_AUTH_SUCCESS){
-        ssh_log(session, SSH_LOG_PROTOCOL, "Publickey refused by server");
-        SAFE_FREE(privkey_file);
-        string_free(pubkey_string);
+        ssh_log(session, SSH_LOG_RARE, "Publickey refused by server");
+        string_free(pubkey);
+        pubkey = NULL;
+        SAFE_FREE(privkeyfile);
+        privkeyfile = NULL;
         continue;
       }
     }
 
     /* Public key accepted by server! */
-    if (!privkey_open) {
-      ssh_log(session, SSH_LOG_PROTOCOL, "Trying to read privatekey %s",
-          privkey_file);
-      privkey = privatekey_from_file(session, privkey_file, type, passphrase);
-      if (privkey == NULL) {
-        ssh_log(session, SSH_LOG_RARE,
-            "Reading private key %s failed (bad passphrase ?)",
-            privkey_file);
-        SAFE_FREE(privkey_file);
-        string_free(pubkey_string);
-        continue; /* continue the loop with other pubkey */
-      }
+    ssh_log(session, SSH_LOG_RARE, "Trying to read privatekey %s", privkeyfile);
+    privkey = privatekey_from_file(session, privkeyfile, type, passphrase);
+    if (privkey == NULL) {
+      ssh_log(session, SSH_LOG_FUNCTIONS,
+          "Reading private key %s failed (bad passphrase ?)",
+          privkeyfile);
+      string_free(pubkey);
+      pubkey = NULL;
+      SAFE_FREE(privkeyfile);
+      privkeyfile = NULL;
+      continue; /* continue the loop with other pubkey */
     }
 
-    rc = ssh_userauth_pubkey(session, NULL, pubkey_string, privkey);
+    rc = ssh_userauth_pubkey(session, NULL, pubkey, privkey);
     if (rc == SSH_AUTH_ERROR) {
-      SAFE_FREE(privkey_file);
-      string_free(pubkey_string);
+      if (id != NULL) {
+        keytab[size - 1].privatekey = NULL;
+        keytab[size - 1].publickey  = NULL;
+        SAFE_FREE(id);
+      }
+      string_free(pubkey);
+      SAFE_FREE(privkeyfile);
       privatekey_free(privkey);
       leave_function();
       return rc;
@@ -970,28 +980,39 @@ int ssh_userauth_autopubkey(ssh_session session, const char *passphrase) {
       if (rc != SSH_AUTH_SUCCESS){
         ssh_log(session, SSH_LOG_FUNCTIONS,
             "The server accepted the public key but refused the signature");
-        SAFE_FREE(privkey_file);
-        string_free(pubkey_string);
+        string_free(pubkey);
+        pubkey = NULL;
+        SAFE_FREE(privkeyfile);
+        privkeyfile = NULL;
         privatekey_free(privkey);
         continue;
       }
     }
 
     /* auth success */
-    ssh_log(session, SSH_LOG_PROTOCOL,
-        "Successfully authenticated using %s", privkey_file);
-    SAFE_FREE(privkey_file);
-    string_free(pubkey_string);
+    ssh_log(session, SSH_LOG_RARE,
+        "Successfully authenticated using %s", privkeyfile);
+    string_free(pubkey);
     privatekey_free(privkey);
+    SAFE_FREE(privkeyfile);
+    if (id != NULL) {
+      keytab[size - 1].privatekey = NULL;
+      keytab[size - 1].publickey  = NULL;
+      SAFE_FREE(id);
+    }
 
     leave_function();
     return SSH_AUTH_SUCCESS;
   }
-
   /* at this point, pubkey is NULL and so is privkeyfile */
   ssh_log(session, SSH_LOG_FUNCTIONS,
       "Tried every public key, none matched");
   ssh_set_error(session,SSH_NO_ERROR,"No public key matched");
+  if (id) {
+    keytab[size - 1].privatekey = NULL;
+    keytab[size - 1].publickey  = NULL;
+    SAFE_FREE(id);
+  }
 
   leave_function();
   return SSH_AUTH_DENIED;

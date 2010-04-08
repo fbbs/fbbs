@@ -77,7 +77,7 @@ typedef struct kex_struct {
 
 struct error_struct {
 /* error handling */
-    unsigned int error_code;
+    int error_code;
     char error_buffer[ERROR_BUFFERLEN];
 };
 

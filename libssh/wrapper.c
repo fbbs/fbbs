@@ -157,31 +157,29 @@ static void blowfish_decrypt(struct crypto_struct *cipher, void *in,
 }
 
 static int aes_set_key(struct crypto_struct *cipher, void *key, void *IV) {
-  int mode=GCRY_CIPHER_MODE_CBC;
   if (cipher->key == NULL) {
     if (alloc_key(cipher) < 0) {
       return -1;
     }
-    if(strstr(cipher->name,"-ctr"))
-      mode=GCRY_CIPHER_MODE_CTR;
+
     switch (cipher->keysize) {
       case 128:
         if (gcry_cipher_open(&cipher->key[0], GCRY_CIPHER_AES128,
-              mode, 0)) {
+              GCRY_CIPHER_MODE_CBC, 0)) {
           SAFE_FREE(cipher->key);
           return -1;
         }
         break;
       case 192:
         if (gcry_cipher_open(&cipher->key[0], GCRY_CIPHER_AES192,
-              mode, 0)) {
+              GCRY_CIPHER_MODE_CBC, 0)) {
           SAFE_FREE(cipher->key);
           return -1;
         }
         break;
       case 256:
         if (gcry_cipher_open(&cipher->key[0], GCRY_CIPHER_AES256,
-              mode, 0)) {
+              GCRY_CIPHER_MODE_CBC, 0)) {
           SAFE_FREE(cipher->key);
           return -1;
         }
@@ -191,17 +189,9 @@ static int aes_set_key(struct crypto_struct *cipher, void *key, void *IV) {
       SAFE_FREE(cipher->key);
       return -1;
     }
-    if(mode == GCRY_CIPHER_MODE_CBC){
-      if (gcry_cipher_setiv(cipher->key[0], IV, 16)) {
-
-        SAFE_FREE(cipher->key);
-        return -1;
-      }
-    } else {
-      if(gcry_cipher_setctr(cipher->key[0],IV,16)){
-        SAFE_FREE(cipher->key);
-        return -1;
-      }
+    if (gcry_cipher_setiv(cipher->key[0], IV, 16)) {
+      SAFE_FREE(cipher->key);
+      return -1;
     }
   }
 
@@ -328,39 +318,6 @@ static struct crypto_struct ssh_ciphertab[] = {
     .set_decrypt_key = blowfish_set_key,
     .cbc_encrypt     = blowfish_encrypt,
     .cbc_decrypt     = blowfish_decrypt
-  },
-  {
-    .name            = "aes128-ctr",
-    .blocksize       = 16,
-    .keylen          = sizeof(gcry_cipher_hd_t),
-    .key             = NULL,
-    .keysize         = 128,
-    .set_encrypt_key = aes_set_key,
-    .set_decrypt_key = aes_set_key,
-    .cbc_encrypt     = aes_encrypt,
-    .cbc_decrypt     = aes_encrypt
-  },
-  {
-      .name            = "aes192-ctr",
-      .blocksize       = 16,
-      .keylen          = sizeof(gcry_cipher_hd_t),
-      .key             = NULL,
-      .keysize         = 192,
-      .set_encrypt_key = aes_set_key,
-      .set_decrypt_key = aes_set_key,
-      .cbc_encrypt     = aes_encrypt,
-      .cbc_decrypt     = aes_encrypt
-  },
-  {
-      .name            = "aes256-ctr",
-      .blocksize       = 16,
-      .keylen          = sizeof(gcry_cipher_hd_t),
-      .key             = NULL,
-      .keysize         = 256,
-      .set_encrypt_key = aes_set_key,
-      .set_decrypt_key = aes_set_key,
-      .cbc_encrypt     = aes_encrypt,
-      .cbc_decrypt     = aes_encrypt
   },
   {
     .name            = "aes128-cbc",
@@ -613,24 +570,6 @@ static void aes_decrypt(struct crypto_struct *cipher, void *in, void *out,
     unsigned long len, void *IV) {
   AES_cbc_encrypt(in, out, len, cipher->key, IV, AES_DECRYPT);
 }
-
-/** @internal
- * @brief encrypts/decrypts data with stream cipher AES_ctr128. 128 bits is actually
- * the size of the CTR counter and incidentally the blocksize, but not the keysize.
- * @param len[in] must be a multiple of AES128 block size.
- */
-static void aes_ctr128_encrypt(struct crypto_struct *cipher, void *in, void *out,
-    unsigned long len, void *IV) {
-  unsigned char tmp_buffer[128/8];
-  unsigned int num=0;
-  /* Some things are special with ctr128 :
-   * In this case, tmp_buffer is not being used, because it is used to store temporary data
-   * when an encryption is made on lengths that are not multiple of blocksize.
-   * Same for num, which is being used to store the current offset in blocksize in CTR
-   * function.
-   */
-  AES_ctr128_encrypt(in, out, len, cipher->key, IV, tmp_buffer, &num);
-}
 #endif /* HAS_AES */
 
 #ifdef HAS_DES
@@ -722,39 +661,6 @@ static struct crypto_struct ssh_ciphertab[] = {
   },
 #endif /* HAS_BLOWFISH */
 #ifdef HAS_AES
-  {
-    "aes128-ctr",
-    16,
-    sizeof(AES_KEY),
-    NULL,
-    128,
-    aes_set_encrypt_key,
-    aes_set_encrypt_key,
-    aes_ctr128_encrypt,
-    aes_ctr128_encrypt
-  },
-  {
-    "aes192-ctr",
-    16,
-    sizeof(AES_KEY),
-    NULL,
-    192,
-    aes_set_encrypt_key,
-    aes_set_encrypt_key,
-    aes_ctr128_encrypt,
-    aes_ctr128_encrypt
-  },
-  {
-    "aes256-ctr",
-    16,
-    sizeof(AES_KEY),
-    NULL,
-    256,
-    aes_set_encrypt_key,
-    aes_set_encrypt_key,
-    aes_ctr128_encrypt,
-    aes_ctr128_encrypt
-  },
   {
     "aes128-cbc",
     16,

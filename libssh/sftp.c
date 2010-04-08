@@ -25,7 +25,6 @@
 /* This file contains code written by Nick Zitzmann */
 
 #include <errno.h>
-#include <ctype.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1112,54 +1111,6 @@ static sftp_attributes sftp_parse_attr_4(sftp_session sftp, ssh_buffer buf,
   return attr;
 }
 
-enum sftp_longname_field_e {
-  SFTP_LONGNAME_PERM = 0,
-  SFTP_LONGNAME_FIXME,
-  SFTP_LONGNAME_OWNER,
-  SFTP_LONGNAME_GROUP,
-  SFTP_LONGNAME_SIZE,
-  SFTP_LONGNAME_DATE,
-  SFTP_LONGNAME_TIME,
-  SFTP_LONGNAME_NAME,
-};
-
-static char *sftp_parse_longname(const char *longname,
-        enum sftp_longname_field_e longname_field) {
-    const char *p, *q;
-    size_t len, field = 0;
-    char *x;
-
-    p = longname;
-    /* Find the beginning of the field which is specified by sftp_longanme_field_e. */
-    while(field != longname_field) {
-        if(isspace(*p)) {
-            field++;
-            p++;
-            while(*p && isspace(*p)) {
-                p++;
-            }
-        } else {
-            p++;
-        }
-    }
-
-    q = p;
-    while (! isspace(*q)) {
-        q++;
-    }
-
-    /* There is no strndup on windows */
-    len = q - p + 1;
-    x = malloc(len);
-    if (x == NULL) {
-      return NULL;
-    }
-
-    snprintf(x, len, "%s", p);
-
-    return x;
-}
-
 /* sftp version 0-3 code. It is different from the v4 */
 /* maybe a paste of the draft is better than the code */
 /*
@@ -1206,19 +1157,6 @@ static sftp_attributes sftp_parse_attr_3(sftp_session sftp, ssh_buffer buf,
         break;
       }
       string_free(longname);
-
-      /* Set owner and group if we talk to openssh and have the longname */
-      if (ssh_get_openssh_version(sftp->session)) {
-        attr->owner = sftp_parse_longname(attr->longname, SFTP_LONGNAME_OWNER);
-        if (attr->owner == NULL) {
-          break;
-        }
-
-        attr->group = sftp_parse_longname(attr->longname, SFTP_LONGNAME_GROUP);
-        if (attr->group == NULL) {
-          break;
-        }
-      }
     }
 
     if (buffer_get_u32(buf, &flags) != sizeof(uint32_t)) {
@@ -1316,8 +1254,6 @@ static sftp_attributes sftp_parse_attr_3(sftp_session sftp, ssh_buffer buf,
     string_free(attr->extended_data);
     SAFE_FREE(attr->name);
     SAFE_FREE(attr->longname);
-    SAFE_FREE(attr->owner);
-    SAFE_FREE(attr->group);
     SAFE_FREE(attr);
 
     ssh_set_error(sftp->session, SSH_FATAL, "Invalid ATTR structure");
