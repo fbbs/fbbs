@@ -532,22 +532,6 @@ struct user_info *uentp;
 	return 1;
 }
 
-int count_visible_active(struct user_info *uentp) {
-	static int count;
-
-	if (uentp == NULL) {
-		int c = count;
-		count = 0;
-		return c;
-	}
-	if (!uentp->active || !uentp->pid || isreject(uentp))
-		return 0;
-	if ( (!uentp->invisible)||(uentp->uid==usernum)
-			||(HAS_PERM(PERM_SEECLOAK)))
-		count ++;
-	return 1;
-}
-
 int get_status(int uid)
 {
 	if (resolve_ucache() == -1)
@@ -578,12 +562,6 @@ int num_useshell() {
 	count_useshell(NULL);
 	apply_ulist(count_useshell);
 	return count_useshell(NULL);
-}
-
-int num_visible_users() {
-	count_visible_active(NULL);
-	apply_ulist(count_visible_active);
-	return count_visible_active(NULL);
 }
 
 int t_cmpuids(int uid, struct user_info* up) {

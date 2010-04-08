@@ -34,7 +34,7 @@ int noreply = 0;
 int markXflag = 0;
 #endif
 int mailtoauther = 0;
-int totalusers, usercounter;
+int totalusers;
 char genbuf[1024];
 char quote_title[120], quote_board[120];
 char quote_file[120], quote_user[120];
@@ -84,7 +84,6 @@ extern int x_lockscreen();
 extern time_t login_start_time;
 extern char BoardName[];
 extern int cmpbnames();
-extern int toggle1, toggle2;
 extern char fromhost[];
 extern struct boardheader *getbcache();
 extern struct bstat *getbstat();
