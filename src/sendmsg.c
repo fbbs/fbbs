@@ -631,7 +631,7 @@ static int msg_show(int *num, int *rpid, char *head, size_t hsize, char *buf,
 
 int msg_reply(int ch)
 {
-	static int status = MSG_INIT, x, y, cury, height = 1, rpid, num = 0;
+	static int status = MSG_INIT, x, y, cury, height = 1, rpid, num = 0, sa;
 	static size_t len = 0;
 	static char msg[MAX_MSG_LINE * LINE_LEN + 1];
 	static char receiver[IDLEN + 1];
@@ -642,6 +642,8 @@ int msg_reply(int ch)
 	switch (status) {
 		case MSG_INIT:
 			getyx(&y, &x);
+			sa = showansi;
+			showansi = true;
 			if (DEFINE(DEF_MSGGETKEY)) {
 				for (k = 0; k < MAX_MSG_LINE * 2 + 2; k++)
 					saveline_buf(k, 0);
@@ -679,6 +681,7 @@ int msg_reply(int ch)
 						for (k = 0; k < MAX_MSG_LINE + 2; k++)
 							saveline_buf(k, 1);
 						move(y, x);
+						showansi = sa;
 					}
 					break;
 				case '\0':
