@@ -211,7 +211,7 @@ int t_pager() {
 	}
 
 	if (!uinfo.in_chat && uinfo.mode != TALK) {
-		move(1, 0);
+		move(t_lines - 1, 0);
 		clrtoeol();
 		prints("ÄúµÄºô½ÐÆ÷ (pager) ÒÑ¾­[1m%s[mÁË!",
 				(uinfo.pager & ALL_PAGER) ? "´ò¿ª" : "¹Ø±Õ");

@@ -10,7 +10,12 @@ enum {
 	USRSORT_STATUS = 3,
 };
 
+enum {
+	REFRESH_TIME = 30,
+};
+
 typedef struct {
+	time_t uptime;
 	comparator_t cmp;         ///< Sorting method.
 	struct user_info **users; ///< Array of online users.
 	int *ovrs;                ///< Array of online overriding users.
@@ -64,6 +69,9 @@ static int online_users_init(online_users_t *up)
 
 	up->cmp = online_users_sort_userid;
 	up->sort = USRSORT_USERID;
+
+	up->uptime = 0;
+
 	return 0;
 }
 
@@ -77,6 +85,11 @@ static void online_users_swap(online_users_t *up, int a, int b)
 static int online_users_load(choose_t *cp)
 {
 	online_users_t *up = cp->data;
+
+	time_t now = time(NULL);
+	if (now > up->uptime + REFRESH_TIME)
+		return cp->all;
+	up->uptime = now;
 
 	resolve_utmp();
 
@@ -221,9 +234,154 @@ static int online_users_display(choose_t *cp)
 	return 0;
 }
 
+extern int friendflag;
 static int online_users_handler(choose_t *cp, int ch)
 {
-	return 0;
+	char buf[STRLEN], tmp[EXT_IDLEN], *ptr;
+	online_users_t *up = cp->data;
+	struct user_info *uin = up->users[cp->cur];
+	
+	cp->valid = false;
+	switch (ch) {
+		case 'Y':
+			if (HAS_PERM(PERM_CLOAK)) {
+				x_cloak();
+				up->uptime = 0;
+				return PARTUPDATE;
+			}
+			return DONOTHING;
+		case 'P':
+			t_pager();
+			up->uptime = 0;
+			return PARTUPDATE;
+		case 'C':
+		case 'c':
+			if (!strcmp(currentuser.userid, "guest"))
+				return DONOTHING;
+			buf[0] = '\0';
+			if (ch == 'C')
+				ptr = "变换昵称(不是临时变换)为: ";
+			else
+				ptr = "暂时变换昵称(最多10个汉字): ";
+			getdata(t_lines - 1, 0, ptr, buf, (ch=='C') ? NAMELEN : 21,
+					DOECHO, NA);
+			if (buf[0] != '\0') {
+				strlcpy(uinfo.username, buf, sizeof(uinfo.username));
+				if (ch == 'C') {
+					set_safe_record();
+					strlcpy(currentuser.username, buf,
+							sizeof(currentuser.username));
+					substitut_record(PASSFILE, &currentuser,
+							sizeof(currentuser), usernum);
+				}
+				up->uptime = 0;
+				return PARTUPDATE;
+			}
+			return MINIUPDATE;
+		case 'k':
+		case 'K':
+			if (!HAS_PERM(PERM_USER) && (usernum != uin->uid))
+				return DONOTHING;
+			if (!strcmp(currentuser.userid, "guest"))
+				return DONOTHING;
+			if (uin->pid == uinfo.pid)
+				strlcpy(buf, "您自己要把【自己】踢出去吗", sizeof(buf));
+			else
+				snprintf(buf, sizeof(buf), "你要把 %s 踢出站外吗", uin->userid);
+			if (!askyn(buf, false, true))
+				return MINIUPDATE;
+			strlcpy(tmp, uin->userid, sizeof(tmp));
+			if (do_kick_user(uin) == 0) {
+				snprintf(buf, sizeof(buf), "%s 已被踢出站外", tmp);
+				up->uptime = 0;
+				return PARTUPDATE;
+			} else {
+				snprintf(buf, sizeof(buf), "%s 无法踢出站外", tmp);
+				return MINIUPDATE;
+			}
+		case 'h':
+		case 'H':
+			show_help("help/userlisthelp");
+			return FULLUPDATE;
+		case 't':
+		case 'T':
+			if (!HAS_PERM(PERM_TALK) || uin->uid == usernum)
+				return DONOTHING;
+			ttt_talk(uin);
+			return FULLUPDATE;
+		case 'm':
+		case 'M':
+			if (!HAS_PERM(PERM_MAIL))
+				return DONOTHING;
+			m_send(uin->userid);
+			return FULLUPDATE;
+		case 'f':
+		case 'F':
+			up->ovr_only = !up->ovr_only;
+			if (up->ovr_only)
+				modify_user_mode(FRIEND);
+			else
+				modify_user_mode(LUSERS);
+			up->uptime = 0;
+			return PARTUPDATE;
+		case 's':
+		case 'S':
+			if (!strcmp(currentuser.userid, "guest") || !HAS_PERM(PERM_TALK))
+				return DONOTHING;
+			if (!canmsg(uin)) {
+				snprintf(buf, sizeof(buf), "%s 已关闭讯息呼叫器", uin->userid);
+				presskeyfor(buf, t_lines - 1);
+				return MINIUPDATE;
+			}
+			do_sendmsg(uin, NULL, 0, uin->pid);
+			return FULLUPDATE;
+		case 'o':
+		case 'O':
+		case 'r':
+		case 'R':
+			if (!strcmp(currentuser.userid, "guest"))
+				return DONOTHING;
+			if (ch == 'o' || ch == 'O') {
+				friendflag = true;
+				ptr = "好友";
+			} else {
+				friendflag = false;
+				ptr = "坏人";
+			}
+			snprintf(buf, sizeof(buf), "确定要把 %s 加入%s名单吗",
+					uin->userid, ptr);
+			move(BBS_PAGESIZE + 2, 0);
+			if (!askyn(buf, false, true))
+				return MINIUPDATE;
+			if (addtooverride(uin->userid) == -1)
+				snprintf(buf, sizeof(buf), "%s 已在%s名单", uin->userid, ptr);
+			else
+				snprintf(buf, sizeof(buf), "%s 列入%s名单", uin->userid, ptr);
+			presskeyfor(buf, t_lines - 1);
+			return MINIUPDATE;
+		case 'd':
+		case 'D':
+			if (!strcmp(currentuser.userid, "guest"))
+				return DONOTHING;
+			snprintf(buf, sizeof(buf), "确定要把 %s 从好友名单删除吗",
+					uin->userid);
+			if (!askyn(buf, false, true))
+				return MINIUPDATE;
+			if (deleteoverride(uin->userid, "friends") == -1)
+				snprintf(buf, sizeof(buf), "%s 本就不在名单中", uin->userid);
+			else
+				snprintf(buf, sizeof(buf), "%s 已从名单中删除", uin->userid);
+			presskeyfor(buf, t_lines - 1);
+			return MINIUPDATE;
+		case 'W':
+		case 'w':
+			if (!strcmp(currentuser.userid, "guest"))
+				return DONOTHING;
+			up->show_note = !up->show_note;
+			return PARTUPDATE;
+		default:
+			return DONOTHING;
+	}
 }
 
 int online_users(online_users_t *op)

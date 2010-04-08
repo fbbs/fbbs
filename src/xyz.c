@@ -176,7 +176,7 @@ int x_cloak() {
 	//end add
 	update_ulist(&uinfo, utmpent);
 	if (!uinfo.in_chat) {
-		move(1, 0);
+		move(t_lines - 1, 0);
 		clrtoeol();
 		prints("隐身术 (cloak) 已经%s了!", (uinfo.invisible) ? "启动" : "停止");
 		pressreturn();
