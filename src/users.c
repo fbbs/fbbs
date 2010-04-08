@@ -16,7 +16,6 @@ enum {
 
 typedef struct {
 	time_t uptime;
-	comparator_t cmp;         ///< Sorting method.
 	struct user_info **users; ///< Array of online users.
 	int *ovrs;                ///< Array of online overriding users.
 	int num;                  ///< Number of online users.
@@ -56,6 +55,10 @@ static int online_users_sort_status(const void *usr1, const void *usr2)
 	return (*u1)->mode - (*u2)->mode;
 }
 
+static const comparator_t comparators[] = {online_users_sort_userid,
+		online_users_sort_nick, online_users_sort_from,
+		online_users_sort_status};
+
 static int online_users_init(online_users_t *up)
 {
 	memset(up, 0, sizeof(*up));
@@ -69,7 +72,6 @@ static int online_users_init(online_users_t *up)
 		return -1;
 	}
 
-	up->cmp = online_users_sort_userid;
 	up->sort = USRSORT_USERID;
 
 	up->uptime = 0;
@@ -123,8 +125,9 @@ static int online_users_load(choose_t *cp)
 		}
 	}
 
-	qsort(up->users, up->onum, sizeof(*up->users), up->cmp);
-	qsort(up->users + up->onum, up->num - up->onum, sizeof(*up->users), up->cmp);
+	qsort(up->users, up->onum, sizeof(*up->users), comparators[up->sort]);
+	qsort(up->users + up->onum, up->num - up->onum, sizeof(*up->users),
+			comparators[up->sort]);
 
 	cp->all = up->num;
 	return cp->all;
@@ -384,12 +387,20 @@ static int online_users_handler(choose_t *cp, int ch)
 				return DONOTHING;
 			up->show_note = !up->show_note;
 			return PARTUPDATE;
+		case KEY_TAB:	
+			if (HAS_PERM(PERM_OCHAT)) {
+				if (++(up->sort) > USRSORT_STATUS)
+					up->sort = USRSORT_USERID;
+				up->uptime = 0;
+				return FULLUPDATE;
+			}
+			return DONOTHING;
 		default:
 			return DONOTHING;
 	}
 }
 
-int online_users(online_users_t *op)
+static int online_users(online_users_t *op)
 {
 	choose_t cs;
 	cs.data = op;
