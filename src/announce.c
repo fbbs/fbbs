@@ -1468,7 +1468,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 				}
 				break;
 			case 'o':
-				t_users();
+				online_users_show();
 				a_showmenu(&me);
 				break;
 				/* End */

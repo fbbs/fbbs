@@ -15,7 +15,7 @@ int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodby
 int board_read_new(), goodbrd_show(), Read(), Select(), Users(), Welcome();
 int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
-int Conditions(), x_cloak(), t_users(), x_info(), x_fillform(), x_vote();
+int Conditions(), x_cloak(), online_users_show(), x_info(), x_fillform(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();
 int shownotepad(), x_userdefine();
 int m_new(), m_read(), m_send(), g_send();
@@ -39,7 +39,7 @@ int ent_winmine();
 int m_internet();
 #endif
 
-int t_users(), t_friends(), t_list(), t_monitor();
+int t_friends(), t_list(), t_monitor();
 int t_query(), t_talk(), t_pager(), t_friend(), t_reject(), x_cloak();
 int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
@@ -106,7 +106,7 @@ static smenu_t sysconf_cmdlist[] = {
 #endif
 	{ "UserDefine", x_userdefine, 0 },
 	{ "ShowFriends", t_friends, 0 },
-	{ "ShowLogins", t_users, 0 },
+	{ "ShowLogins", online_users_show, 0 },
 	{ "QueryUser", t_query, 0 },
 	{ "Talk", t_talk, 0 },
 	{ "SetPager", t_pager, 0 },

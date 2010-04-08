@@ -586,14 +586,6 @@ int num_visible_users() {
 	return count_visible_active(NULL);
 }
 
-int
-cmpfnames(userid, uv)
-char *userid;
-struct override *uv;
-{
-	return !strcasecmp(userid, uv->id);
-}
-
 int t_cmpuids(int uid, struct user_info* up) {
 	return (up->active && uid == up->uid);
 }

@@ -16,7 +16,7 @@ bbsd_LDADD = $(LDADD) announce.$(OBJEXT) bbs.$(OBJEXT) bcache.$(OBJEXT) \
 			 screen.$(OBJEXT) sendmsg.$(OBJEXT) stuff.$(OBJEXT) \
 			 talk.$(OBJEXT) userinfo.$(OBJEXT) vote.$(OBJEXT) xyz.$(OBJEXT) \
 			 readabc.$(OBJEXT) five.$(OBJEXT) convert.$(OBJEXT) \
-			 bbsnet.$(OBJEXT)
+			 bbsnet.$(OBJEXT) users.$(OBJEXT)
 
 sshbbsd_SOURCES = bbsd.c io.c main.c
 sshbbsd_LDADD = $(bbsd_LDADD) -lfbssh -L../libssh

@@ -490,11 +490,10 @@ static int choose_board_display(choose_t *cp)
 
 	char cate[7], title[STRLEN];
 
-	move (3, 0);
 	int n;
 	for (n = cp->start; n < cp->start + BBS_PAGESIZE; n++) {
 		if (n >= cbrd->num) {
-			prints ("\n");
+			prints("\n");
 			continue;
 		}
 		ptr = cbrd->brds + n;

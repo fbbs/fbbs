@@ -68,6 +68,7 @@ int search_ulistn(struct user_info *uentp, int (*fptr)(), int farg, int unum);
 void update_ulist(struct user_info *uentp, int uent);
 int who_callme(struct user_info *uentp, int (*fptr)(), int farg, int me);
 int count_online(void);
+int cmpfnames(void *user, void *over);
 
 //log.c
 void report(const char *s, const char *userid);

@@ -566,3 +566,13 @@ int count_online(void)
 			total++;
 	return total;
 }
+
+/**
+ *
+ */
+int cmpfnames(void *user, void *over)
+{
+	const char *userid = user;
+	struct override *ov = over;
+	return !strcasecmp(userid, ov->id);
+}
