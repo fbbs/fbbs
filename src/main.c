@@ -1140,7 +1140,7 @@ void start_client(void)
 
 	num_alcounter();
 	if (count_friends > 0 && DEFINE(DEF_LOGFRIEND))
-		t_friends();
+		online_users_show_override();
 
 	load_sysconf();
 	while (1) {

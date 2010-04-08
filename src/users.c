@@ -58,6 +58,8 @@ static int online_users_sort_status(const void *usr1, const void *usr2)
 
 static int online_users_init(online_users_t *up)
 {
+	memset(up, 0, sizeof(*up));
+
 	up->users = malloc(sizeof(*up->users) * USHM_SIZE);
 	if (!up->users)
 		return -1;
@@ -274,6 +276,7 @@ static int online_users_handler(choose_t *cp, int ch)
 					substitut_record(PASSFILE, &currentuser,
 							sizeof(currentuser), usernum);
 				}
+				update_ulist(&uinfo, utmpent);
 				up->uptime = 0;
 				return PARTUPDATE;
 			}
@@ -285,7 +288,7 @@ static int online_users_handler(choose_t *cp, int ch)
 			if (!strcmp(currentuser.userid, "guest"))
 				return DONOTHING;
 			if (uin->pid == uinfo.pid)
-				strlcpy(buf, "您自己要把【自己】踢出去吗", sizeof(buf));
+				strlcpy(buf, "您要把【自己】踢出去吗", sizeof(buf));
 			else
 				snprintf(buf, sizeof(buf), "你要把 %s 踢出站外吗", uin->userid);
 			if (!askyn(buf, false, true))
@@ -350,7 +353,6 @@ static int online_users_handler(choose_t *cp, int ch)
 			}
 			snprintf(buf, sizeof(buf), "确定要把 %s 加入%s名单吗",
 					uin->userid, ptr);
-			move(BBS_PAGESIZE + 2, 0);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
 			if (addtooverride(uin->userid) == -1)
@@ -367,12 +369,15 @@ static int online_users_handler(choose_t *cp, int ch)
 					uin->userid);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
-			if (deleteoverride(uin->userid, "friends") == -1)
+			if (deleteoverride(uin->userid, "friends") == -1) {
 				snprintf(buf, sizeof(buf), "%s 本就不在名单中", uin->userid);
-			else
+				presskeyfor(buf, t_lines - 1);
+				return MINIUPDATE;
+			} else {
 				snprintf(buf, sizeof(buf), "%s 已从名单中删除", uin->userid);
-			presskeyfor(buf, t_lines - 1);
-			return MINIUPDATE;
+				presskeyfor(buf, t_lines - 1);
+				return PARTUPDATE;
+			}
 		case 'W':
 		case 'w':
 			if (!strcmp(currentuser.userid, "guest"))
@@ -405,7 +410,39 @@ int online_users_show(void)
 	online_users_t ou;
 	if (online_users_init(&ou) < 0)
 		return -1;
-	ou.ovr_only = false;
+
+	modify_user_mode(LUSERS);
+	return online_users(&ou);
+}
+
+int online_users_show_override(void)
+{
+	modify_user_mode(FRIEND);
+
+	char file[HOMELEN];
+	sethomefile(file, currentuser.userid, "friends");
+	if (!dashf(file)) {
+		presskeyfor("您尚未设定好友名单，所以...", t_lines - 1);
+		return 0;
+	}
+
+	online_users_t ou;
+	if (online_users_init(&ou) < 0)
+		return -1;
+
+	ou.ovr_only = true;
+
+	return online_users(&ou);
+}
+
+int online_users_show_board(void)
+{
+	online_users_t ou;
+	if (online_users_init(&ou) < 0)
+		return -1;
+
+	ou.board = true;
+
 	modify_user_mode(LUSERS);
 	return online_users(&ou);
 }

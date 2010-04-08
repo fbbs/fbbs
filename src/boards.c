@@ -986,7 +986,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case 'o':
 			if (!HAS_PERM(PERM_LOGIN))
 				return DONOTHING;
-			t_friends();
+			online_users_show_override();
 			modify_mode = true;
 			break;
 		default:

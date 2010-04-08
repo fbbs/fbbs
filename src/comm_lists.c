@@ -39,7 +39,7 @@ int ent_winmine();
 int m_internet();
 #endif
 
-int t_friends(), t_list(), t_monitor();
+int online_users_show_override(), t_list(), t_monitor();
 int t_query(), t_talk(), t_pager(), t_friend(), t_reject(), x_cloak();
 int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
@@ -105,7 +105,7 @@ static smenu_t sysconf_cmdlist[] = {
 	{ "SendNetMail", m_internet, 0},
 #endif
 	{ "UserDefine", x_userdefine, 0 },
-	{ "ShowFriends", t_friends, 0 },
+	{ "ShowFriends", online_users_show_override, 0 },
 	{ "ShowLogins", online_users_show, 0 },
 	{ "QueryUser", t_query, 0 },
 	{ "Talk", t_talk, 0 },

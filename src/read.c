@@ -602,11 +602,11 @@ int ch, ssize;
 		return FULLUPDATE;
 		break;
 		/*case 'f':	modified by Seaman *//* youzi */
-		case 'o' : /* added by Seaman */
-		if (!HAS_PERM(PERM_LOGIN))
-		break;
-		t_friends();
-		return FULLUPDATE;
+		case 'o':
+			if (!HAS_PERM(PERM_LOGIN))
+				break;
+			online_users_show_override();
+			return FULLUPDATE;
 		break;
 		case '!': /* youzi leave */
 		return Goodbye();

@@ -883,7 +883,7 @@ int choose2(choose_t *cp)
 	int ch, ret, number = 0;
 	bool end = false;
 
-	cp->all = -1;
+	cp->all = 0;
 	cp->cur = 0;
 	cp->start = 0;
 	cp->update = FULLUPDATE;
