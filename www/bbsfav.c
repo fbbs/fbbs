@@ -48,7 +48,7 @@ int bbsbrdadd_main(void)
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
-	FILE *fp = fopen(file, "r+");
+	FILE *fp = fopen(file, "a+");
 	if (fp == NULL)
 		return BBS_EINTNL;
 	flock(fileno(fp), LOCK_EX);
