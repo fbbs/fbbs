@@ -87,7 +87,7 @@ static int online_users_load(choose_t *cp)
 	online_users_t *up = cp->data;
 
 	time_t now = time(NULL);
-	if (now > up->uptime + REFRESH_TIME)
+	if (now < up->uptime + REFRESH_TIME)
 		return cp->all;
 	up->uptime = now;
 
