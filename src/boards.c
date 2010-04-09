@@ -27,6 +27,7 @@ typedef struct {
 	bool yank;            ///< True if hide unsubscribed boards.
 	bool newflag;         ///< True if jump to unread board.
 	bool goodbrd;         ///< True if reading favorite boards.
+	bool recursive;       ///< True if called recursively.
 	gbrdh_t *gbrds;       ///< Array of favorite boards.
 	int gnum;             ///< Number of favorite boards.
 	int parent;           ///< Parent directory.
@@ -634,11 +635,22 @@ static int choose_board_read(choose_t *cp)
 	choose_board_t *cbrd = cp->data;
 	board_data_t *ptr = cbrd->brds + cp->cur;
 	if (ptr->flag & BOARD_DIR_FLAG) {
-		choose_board_t cbrd2;
-		memcpy(&cbrd2, cbrd, sizeof(cbrd2));
-		cbrd2->parent = ptr->pos;
-		cbrd2->prefix = NULL;
-		choose_board(&cbrd2);
+		int parent = cbrd->parent;
+		char *prefix = cbrd->prefix;
+		bool recursive = cbrd->recursive;
+
+		if (ptr->flag & BOARD_CUSTOM_FLAG)
+			cbrd->parent = ptr->pos;
+		else
+			cbrd->parent = -1;
+		cbrd->prefix = NULL;
+		cbrd->recursive = true;
+
+		choose_board(cbrd);
+
+		cbrd->parent = parent;
+		cbrd->prefix = prefix;
+		cbrd->recursive = recursive;
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
 		changeboard(&currbp, currboard, ptr->name);
@@ -1001,11 +1013,13 @@ static int choose_board(choose_board_t *cbrd)
 
 	choose2(&cs);
 
-	clear();
-	save_zapbuf(cbrd);
-	free(cbrd->brds);
-	free(cbrd->zapbuf);
-	free(cbrd->gbrds);
+	if (!cbrd->recursive) {
+		clear();
+		save_zapbuf(cbrd);
+		free(cbrd->brds);
+		free(cbrd->zapbuf);
+		free(cbrd->gbrds);
+	}
 	return 0;
 }
 
