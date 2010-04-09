@@ -129,7 +129,10 @@ static int online_users_load(choose_t *cp)
 	qsort(up->users + up->onum, up->num - up->onum, sizeof(*up->users),
 			comparators[up->sort]);
 
-	cp->all = up->num;
+	if (up->ovr_only)
+		cp->all = up->onum;
+	else
+		cp->all = up->num;
 	return cp->all;
 }
 
