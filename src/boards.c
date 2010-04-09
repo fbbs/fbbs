@@ -309,7 +309,10 @@ static int choose_board_load(choose_t *cp)
 			ptr->title = bptr->title;
 			ptr->BM = bptr->BM;
 			ptr->flag = bptr->flag;
-			ptr->parent = bptr->group;
+			if (!goodbrd)
+				ptr->parent = bptr->group;
+			else
+				ptr->parent = cbrd->gbrds[addto - 1].pid;
 			ptr->pos = n;
 			ptr->total = -1;
 			ptr->zap = (cbrd->zapbuf[n] == 0);
