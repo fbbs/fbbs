@@ -10,6 +10,7 @@ typedef struct {
 	char *title;       ///< Board description.
 	char *BM;          ///< Board masters.
 	unsigned int flag; ///< Board flag. @see ::boardheader.
+	int parent;        ///< Parent directory.
 	int pos;           ///< Position in ::bcache, 0-based.
 	int total;         ///< Number of posts in the board.
 	bool unread;       ///< True if there are unread posts in the board.
@@ -308,6 +309,7 @@ static int choose_board_load(choose_t *cp)
 			ptr->title = bptr->title;
 			ptr->BM = bptr->BM;
 			ptr->flag = bptr->flag;
+			ptr->parent = bptr->group;
 			ptr->pos = n;
 			ptr->total = -1;
 			ptr->zap = (cbrd->zapbuf[n] == 0);
@@ -341,6 +343,7 @@ static int choose_board_load(choose_t *cp)
 				ptr->title = gptr->title;
 				ptr->BM = NULL;
 				ptr->flag = gptr->flag;
+				ptr->parent = gptr->pid;
 				ptr->pos = gptr->id;
 				ptr->zap = 0;
 				ptr->total = 0;
@@ -629,26 +632,17 @@ static int choose_board(choose_board_t *cbrd);
 /**
  *
  */
-static void read_board(choose_board_t *cbrd, int pos)
+static int read_board(choose_board_t *cbrd, int pos)
 {
 	board_data_t *ptr = cbrd->brds + pos;
 	if (ptr->flag & BOARD_DIR_FLAG) {
-		int tmpgrp, tmpmode;
-		int oldpid;
-		tmpgrp = cbrd->parent;
-		tmpmode = cbrd->mode;
-		cbrd->mode = 0;
 		cbrd->parent = getbnum(ptr->name, &currentuser) - 1;
-		oldpid = cbrd->nowpid;
 		if (ptr->flag & BOARD_CUSTOM_FLAG)
 			cbrd->nowpid = ptr->pos;
 		else
 			cbrd->nowpid = -1;
-		choose_board(cbrd);
-		cbrd->nowpid = oldpid;
-		cbrd->parent = tmpgrp;
-		cbrd->mode = tmpmode;
-		cbrd->num = -1;
+		cbrd->valid = false;
+		return PARTUPDATE;
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
 		changeboard(&currbp, currboard, ptr->name);
@@ -666,6 +660,7 @@ static void read_board(choose_board_t *cbrd, int pos)
 		ptr->total = -1;
 		currBM[0] = '\0';
 	}
+	return FULLUPDATE;
 }
 
 /**
@@ -748,6 +743,20 @@ static int choose_board_handler(choose_t *cp, int ch)
 	int tmp;
 
 	switch (ch) {
+		case 'q':
+		case 'e':
+		case KEY_LEFT:
+		case EOF:
+			if (cbrd->parent > 0) {
+				cbrd->parent = cbrd->brds[cp->cur].parent;
+				if (cbrd->parent > 0)
+					cbrd->nowpid = cbrd->brds[cbrd->parent].parent;
+				else
+					cbrd->nowpid = -1;
+				cp->valid = false;
+				return PARTUPDATE;
+			}
+			return -1;
 		case '*':
 			if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
 				return DONOTHING;
@@ -1068,7 +1077,4 @@ void goodbrd_show(void)
 	cbrd.newflag = true;
 
 	choose_board(&cbrd);
-
-	cbrd.nowpid = -1;
-	cbrd.num = 0;
 }
