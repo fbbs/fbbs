@@ -21,16 +21,15 @@ typedef struct {
 typedef struct {
 	comparator_t cmp;     ///< Compare function pointer.
 	board_data_t *brds;   ///< Array of boards.
-	int *zapbuf;          ///<
-	char *prefix;         ///<
+	int *zapbuf;          ///< Subscribing record.
+	char *prefix;         ///< Group by prefix if not NULL, by dir otherwise.
 	int num;              ///< Number of boards loaded.
-	bool yank;            ///<
-	int parent;           ///<
-	bool mode;            ///<
-	bool newflag;         ///<
+	bool yank;            ///< True if hide unsubscribed boards.
+	bool newflag;         ///< True if jump to unread board.
+	bool goodbrd;         ///< True if reading favorite boards.
 	gbrdh_t *gbrds;       ///< Array of favorite boards.
 	int gnum;             ///< Number of favorite boards.
-	int nowpid;           ///<
+	int parent;           ///< Parent directory.
 	char buf[STRLEN-8];   ///< Copy/paste buffer.
 } choose_board_t;
 
@@ -41,7 +40,7 @@ static int inGoodBrds(const choose_board_t *cbrd, int pos)
 {
 	int i;
 	for (i = 0; i < cbrd->gnum && i < GOOD_BRC_NUM; i++) {
-		if ((cbrd->gbrds[i].pid == cbrd->nowpid)
+		if ((cbrd->gbrds[i].pid == cbrd->parent)
 				&& (!(cbrd->gbrds[i].flag & BOARD_CUSTOM_FLAG))
 				&& (pos == cbrd->gbrds[i].pos)) {
 			return i + 1;
@@ -254,53 +253,50 @@ static int choose_board_load(choose_t *cp)
 	board_data_t *ptr;
 	gbrdh_t *gptr;
 	int addto = 0;
-	bool goodbrd = false;
 
 	cbrd->num = 0;
 
-	if (cbrd->nowpid >= 0) {
+	if (cbrd->goodbrd)
 		goodbrd_load(cbrd);
-		goodbrd = true;
-	}
 
 	int n;
 	for (n = 0; n < numboards; n++) {
 		bptr = bcache + n;
-		if (!(bptr->filename[0]))
+		if (bptr->filename[0] == '\0')
 			continue;
-		if (!goodbrd) {
+
+		if (cbrd->goodbrd) {
+			addto = inGoodBrds(cbrd, n);
+		} else {
 			if (!(bptr->flag & BOARD_POST_FLAG) && !HAS_PERM(bptr->level)
 					&& !(bptr->flag & BOARD_NOZAP_FLAG))
 				continue;
-			if ((bptr->flag & BOARD_CLUB_FLAG)&& (bptr->flag
-					& BOARD_READ_FLAG )&& !chkBM(bptr, &currentuser)
+			if ((bptr->flag & BOARD_CLUB_FLAG) 
+					&& (bptr->flag & BOARD_READ_FLAG )
+					&& !chkBM(bptr, &currentuser)
 					&& !isclubmember(currentuser.userid, bptr->filename))
 				continue;
-			if (cbrd->mode == 0) {
-				if (cbrd->parent > 0 && cbrd->parent != bptr->group - 1)
+
+			if (cbrd->prefix != NULL) {
+				if (!strchr(cbrd->prefix, bptr->title[0])
+						&& cbrd->prefix[0] != '*')
+					continue;
+				if (cbrd->prefix[0] == '*') {
+					if (!strstr(bptr->title, "●") && !strstr(bptr->title, "⊙")
+							&& bptr->title[0] != '*')
+						continue;
+				}
+			} else {
+				if (cbrd->parent > 0 && bptr->group != cbrd->parent + 1)
 					continue;
 				if (cbrd->parent == 0 && bptr->group != 0)
 					continue;
 				if (cbrd->parent > 0 && bptr->title[0] == '*')
 					continue;
-			} else {
-				if (cbrd->prefix != NULL
-						&& !strchr(cbrd->prefix, bptr->title[0])
-						&& cbrd->prefix[0] != '*')
-					continue;
-				if (cbrd->prefix != NULL && cbrd->prefix[0] == '*') {
-					if (!strstr(bptr->title, "●")
-							&& !strstr(bptr->title, "⊙")
-							&& bptr->title[0] != '*')
-						continue;
-				}
-				if (cbrd->prefix == NULL && bptr->title[0] == '*')
-					continue;
 			}
+
 			addto = cbrd->yank || cbrd->zapbuf[n] != 0
 					|| (bptr->flag & BOARD_NOZAP_FLAG);
-		} else {
-			addto = inGoodBrds(cbrd, n);
 		}
 
 		if (addto) {
@@ -309,10 +305,10 @@ static int choose_board_load(choose_t *cp)
 			ptr->title = bptr->title;
 			ptr->BM = bptr->BM;
 			ptr->flag = bptr->flag;
-			if (!goodbrd)
-				ptr->parent = bptr->group;
-			else
+			if (cbrd->goodbrd)
 				ptr->parent = cbrd->gbrds[addto - 1].pid;
+			else
+				ptr->parent = bptr->group;
 			ptr->pos = n;
 			ptr->total = -1;
 			ptr->zap = (cbrd->zapbuf[n] == 0);
@@ -336,11 +332,12 @@ static int choose_board_load(choose_t *cp)
 		}
 	}
 
-	if (goodbrd) {
+	// Load custom dirs.
+	if (cbrd->goodbrd) {
 		for (n = 0; n < cbrd->gnum && n < GOOD_BRC_NUM; n++) {
 			gptr = cbrd->gbrds + n;
 			if ((gptr->flag & BOARD_CUSTOM_FLAG)
-					&& (gptr->pid == cbrd->nowpid)) {
+					&& (gptr->pid == cbrd->parent)) {
 				ptr = cbrd->brds + cbrd->num++;
 				ptr->name = gptr->filename;
 				ptr->title = gptr->title;
@@ -379,10 +376,7 @@ static int choose_board_load(choose_t *cp)
 			cp->cur = i;
 	}
 		
-	if (goodbrd)
-		cp->all = cbrd->gnum;
-	else
-		cp->all= cbrd->num;
+	cp->all= cbrd->num;
 	return 0;
 }
 
@@ -640,14 +634,11 @@ static int choose_board_read(choose_t *cp)
 	choose_board_t *cbrd = cp->data;
 	board_data_t *ptr = cbrd->brds + cp->cur;
 	if (ptr->flag & BOARD_DIR_FLAG) {
-		cbrd->parent = getbnum(ptr->name, &currentuser) - 1;
-		if (ptr->flag & BOARD_CUSTOM_FLAG)
-			cbrd->nowpid = ptr->pos;
-		else
-			cbrd->nowpid = -1;
-		cp->cur = 0;
-		cp->valid = false;
-		return PARTUPDATE;
+		choose_board_t cbrd2;
+		memcpy(&cbrd2, cbrd, sizeof(cbrd2));
+		cbrd2->parent = ptr->pos;
+		cbrd2->prefix = NULL;
+		choose_board(&cbrd2);
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
 		changeboard(&currbp, currboard, ptr->name);
@@ -747,20 +738,6 @@ static int choose_board_handler(choose_t *cp, int ch)
 	bool modify_mode = false;
 
 	switch (ch) {
-		case 'q':
-		case 'e':
-		case KEY_LEFT:
-		case EOF:
-			if (cbrd->parent > 0) {
-				cbrd->parent = cbrd->brds[cp->cur].parent;
-				if (cbrd->parent > 0)
-					cbrd->nowpid = cbrd->brds[cbrd->parent].parent;
-				else
-					cbrd->nowpid = -1;
-				cp->valid = false;
-				return PARTUPDATE;
-			}
-			return -1;
 		case '*':
 			if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
 				return DONOTHING;
@@ -770,7 +747,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case 'C':
 			if (!HAS_PERM(PERM_LOGIN))
 				return DONOTHING;
-			if ((cbrd->gnum == 0) && (cbrd->nowpid == -1))
+			if ((cbrd->gnum == 0) && (cbrd->parent == -1))
 				return DONOTHING;
 			if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
 				return DONOTHING;
@@ -810,9 +787,9 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case 'P':
 			if (!HAS_PERM(PERM_LOGIN))
 				return DONOTHING;
-			if ((cbrd->gnum == 0) && (cbrd->nowpid == -1))
+			if ((cbrd->gnum == 0) && (cbrd->parent == -1))
 				return DONOTHING;
-			goodbrd_add(cbrd, cbrd->buf, cbrd->nowpid);
+			goodbrd_add(cbrd, cbrd->buf, cbrd->parent);
 			*cbrd->buf='\0';
 			cp->valid = false;
 			break;
@@ -865,7 +842,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case 'a':
 			if (!HAS_PERM(PERM_LOGIN))
 				return DONOTHING;
-			if ((cbrd->gnum) && (cbrd->nowpid == -1))
+			if ((cbrd->gnum) && (cbrd->parent == -1))
 				return DONOTHING;
 			if (cbrd->gnum >= GOOD_BRC_NUM) {
 				presskeyfor("个人热门版数已经达上限", t_lines - 1);
@@ -877,7 +854,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 				if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ",
 						&pos, &fh, bname, 1)) {
 					if (!inGoodBrds(cbrd, getbnum(bname, &currentuser)-1)) {
-						goodbrd_add(cbrd, bname, cbrd->nowpid);
+						goodbrd_add(cbrd, bname, cbrd->parent);
 						cp->valid = false;
 					}
 				}
@@ -899,7 +876,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 			//added by cometcaptor 2007-04-22 这里写入的是创建自定义目录的代码
 			if (!HAS_PERM(PERM_LOGIN))
 				return DONOTHING;
-			if (cbrd->nowpid == 0) {
+			if (cbrd->parent == 0) {
 				if (cbrd->gnum >= GOOD_BRC_NUM) {
 					presskeyfor("个人热门版数已经达上限", t_lines - 1);
 					return MINIUPDATE;
@@ -925,7 +902,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 			//added by cometcaptor 2007-04-25 修改自定义目录名
 			if (!HAS_PERM(PERM_LOGIN))
 				return DONOTHING;
-			if ((cbrd->nowpid == 0)&& cbrd->num
+			if ((cbrd->parent == 0)&& cbrd->num
 					&& (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)) {
 				char dirname[STRLEN];
 				char dirtitle[STRLEN];
@@ -1039,10 +1016,9 @@ void board_read_group(const char *cmd)
 
 	choose_board_t cbrd;
 	memset(&cbrd, 0, sizeof(cbrd));
-	cbrd.mode = true;
 	cbrd.prefix = sysconf_str(buf);
 	cbrd.newflag = DEFINE(DEF_NEWPOST);
-	cbrd.nowpid = -1;
+	cbrd.parent = -1;
 
 	choose_board(&cbrd);
 }
@@ -1052,7 +1028,6 @@ void board_read_all(void)
 	choose_board_t cbrd;
 	memset(&cbrd, 0, sizeof(cbrd));
 	cbrd.parent = -1;
-	cbrd.nowpid = -1;
 	choose_board(&cbrd);
 }
 
@@ -1062,7 +1037,6 @@ void board_read_new(void)
 	memset(&cbrd, 0, sizeof(cbrd));
 	cbrd.parent = -1;
 	cbrd.newflag = true;
-	cbrd.nowpid = -1;
 	choose_board(&cbrd);
 }
 
@@ -1073,8 +1047,8 @@ void goodbrd_show(void)
 
 	choose_board_t cbrd;
 	memset(&cbrd, 0, sizeof(cbrd));
-	cbrd.parent = -2;
 	cbrd.newflag = true;
+	cbrd.goodbrd = true;
 
 	choose_board(&cbrd);
 }

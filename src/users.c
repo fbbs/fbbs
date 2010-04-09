@@ -248,11 +248,6 @@ static int online_users_handler(choose_t *cp, int ch)
 	
 	cp->valid = false;
 	switch (ch) {
-		case 'q':
-		case 'e':
-		case KEY_LEFT:
-		case EOF:
-			return -1;
 		case 'Y':
 			if (HAS_PERM(PERM_CLOAK)) {
 				x_cloak();
