@@ -638,19 +638,22 @@ static int choose_board_read(choose_t *cp)
 		int parent = cbrd->parent;
 		char *prefix = cbrd->prefix;
 		bool recursive = cbrd->recursive;
+		bool goodbrd = cbrd->goodbrd;
+		int cur = cp->cur;
 
-		if (ptr->flag & BOARD_CUSTOM_FLAG)
-			cbrd->parent = ptr->pos;
-		else
-			cbrd->parent = -1;
+		cbrd->parent = ptr->pos;
 		cbrd->prefix = NULL;
 		cbrd->recursive = true;
+		cbrd->goodbrd = (ptr->flag & BOARD_CUSTOM_FLAG) ? true : false;
 
 		choose_board(cbrd);
 
 		cbrd->parent = parent;
 		cbrd->prefix = prefix;
 		cbrd->recursive = recursive;
+		cbrd->goodbrd = goodbrd;
+		cp->valid = false;
+		cp->cur = cur;
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
 		changeboard(&currbp, currboard, ptr->name);
