@@ -632,16 +632,18 @@ static int choose_board(choose_board_t *cbrd);
 /**
  *
  */
-static int read_board(choose_board_t *cbrd, int pos)
+static int choose_board_read(choose_t *cp)
 {
-	board_data_t *ptr = cbrd->brds + pos;
+	choose_board_t *cbrd = cp->data;
+	board_data_t *ptr = cbrd->brds + cp->cur;
 	if (ptr->flag & BOARD_DIR_FLAG) {
 		cbrd->parent = getbnum(ptr->name, &currentuser) - 1;
 		if (ptr->flag & BOARD_CUSTOM_FLAG)
 			cbrd->nowpid = ptr->pos;
 		else
 			cbrd->nowpid = -1;
-		cbrd->valid = false;
+		cp->cur = 0;
+		cp->valid = false;
 		return PARTUPDATE;
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
@@ -740,7 +742,6 @@ static int choose_board_handler(choose_t *cp, int ch)
 	board_data_t *ptr;
 	char ans[2];
 	bool modify_mode = false;
-	int tmp;
 
 	switch (ch) {
 		case 'q':
@@ -978,12 +979,8 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case '\r':
 		case '\n':
 		case KEY_RIGHT:
-			tmp = cp->cur;
-			cp->cur = 0;
 			if (cbrd->num > 0)
-				read_board(cbrd, tmp);
-			cp->cur = tmp;
-			cp->valid = false;
+				choose_board_read(cp);
 			modify_mode = true;
 			break;
 		case 'S':
