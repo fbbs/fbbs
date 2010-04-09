@@ -679,6 +679,9 @@ static int choose_board_read(choose_t *cp)
  */
 static int choose_board_init(choose_board_t *cbrd)
 {
+	if (cbrd->recursive)
+		return 0;
+
 	cbrd->brds = malloc(sizeof(board_data_t) * MAXBOARD);
 	if (cbrd->brds == NULL)
 		return -1;
