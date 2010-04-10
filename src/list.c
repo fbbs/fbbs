@@ -502,12 +502,6 @@ int choose2(choose_t *cp)
 		outs(" ");
 
 		switch (ch) {
-			case 'q':
-			case 'e':
-			case KEY_LEFT:
-			case EOF:
-				end = true;
-				break;
 			case 'b':
 			case Ctrl('B'):
 			case KEY_PGUP:
@@ -519,11 +513,9 @@ int choose2(choose_t *cp)
 				cp->cur += BBS_PAGESIZE;
 				break;
 			case 'p':
-			case 'l':
 			case KEY_UP:
 				cp->cur--;
 				break;
-			case 'n':
 			case 'j':
 			case KEY_DOWN:
 				cp->cur++;
