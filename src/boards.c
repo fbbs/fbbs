@@ -652,7 +652,6 @@ static int choose_board_read(choose_t *cp)
 		cbrd->prefix = prefix;
 		cbrd->recursive = recursive;
 		cbrd->goodbrd = goodbrd;
-		cp->valid = false;
 		cp->cur = cur;
 	} else {
 		brc_initial(currentuser.userid, ptr->name);
@@ -979,6 +978,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case KEY_RIGHT:
 			if (cbrd->num > 0)
 				choose_board_read(cp);
+			cp->valid = false;
 			modify_mode = true;
 			break;
 		case 'S':
