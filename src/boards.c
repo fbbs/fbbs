@@ -756,11 +756,6 @@ static int choose_board_handler(choose_t *cp, int ch)
 	bool modify_mode = false;
 
 	switch (ch) {
-		case 'q':
-		case 'e':
-		case KEY_LEFT:
-		case EOF:
-			return -1;
 		case '*':
 			if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
 				return DONOTHING;

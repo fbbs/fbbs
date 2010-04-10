@@ -502,6 +502,12 @@ int choose2(choose_t *cp)
 		outs(" ");
 
 		switch (ch) {
+			case 'q':
+			case 'e':
+			case KEY_LEFT:
+			case EOF:
+				end = true;
+				break;
 			case 'b':
 			case Ctrl('B'):
 			case KEY_PGUP:
