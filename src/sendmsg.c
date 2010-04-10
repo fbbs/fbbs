@@ -657,6 +657,7 @@ int msg_reply(int ch)
 			msg_show(&num, &rpid, head, sizeof(head), buf, sizeof(buf),
 					receiver, sizeof(receiver), &cury, &status);
 			status = MSG_REPLYING;
+			ch = 0;
 			// fall through
 		case MSG_REPLYING:
 			switch (ch) {
@@ -668,20 +669,26 @@ int msg_reply(int ch)
 					len = 0;
 					height = 1;
 					status = MSG_SHOW;
+
 					if (!RMSG) {
 						msg_num--;
 						num--;
+					} else {
+						RMSG = false;
+						num = 0;
 					}
-					if (RMSG || !msg_num) {
-						if (RMSG) {
-							RMSG = false;
-							num = 0;
-						}
+
+					if (!msg_num) {
 						status = MSG_INIT;
 						for (k = 0; k < MAX_MSG_LINE + 2; k++)
 							saveline_buf(k, 1);
 						move(y, x);
 						showansi = sa;
+					} else {
+						msg_show(&num, &rpid, head, sizeof(head),
+								buf, sizeof(buf), receiver, sizeof(receiver),
+								&cury, &status);
+						status = MSG_REPLYING;
 					}
 					break;
 				case '\0':
