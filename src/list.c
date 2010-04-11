@@ -466,9 +466,6 @@ int choose2(choose_t *cp)
 				cp->update = PARTUPDATE;
 		}
 
-		if (cp->update != FULLUPDATE && cp->all > BBS_PAGESIZE)
-			cp->update = PARTUPDATE;
-
 		if (cp->update != DONOTHING) {
 			if (cp->update == FULLUPDATE) {
 				clear();
@@ -501,7 +498,6 @@ int choose2(choose_t *cp)
 		move(LIST_START + cp->cur - cp->start, 0);
 		outs(" ");
 
-		cp->update = DONOTHING;
 		switch (ch) {
 			case 'q':
 			case 'e':
