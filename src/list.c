@@ -501,6 +501,7 @@ int choose2(choose_t *cp)
 		move(LIST_START + cp->cur - cp->start, 0);
 		outs(" ");
 
+		cp->update = DONOTHING;
 		switch (ch) {
 			case 'q':
 			case 'e':
