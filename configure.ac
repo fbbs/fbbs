@@ -67,5 +67,10 @@ AC_ARG_ENABLE(debug, [  --enable-debug          compile debug version],
 			  [if test "$enableval" = "yes" ; then ENABLE_DEBUG="-g -O0"; fi], [ENABLE_DEBUG= ])
 AC_SUBST(ENABLE_DEBUG)
 
+AC_ARG_ENABLE(ssh, [  --enable-ssh            compile ssh module],
+			  [if test "$enableval" = "yes" ; then ENABLE_SSH="sshbbsd"; ssh="true"; fi], [ENABLE_SSH= ;ssh="false"])
+AC_SUBST(ENABLE_SSH)
+AM_CONDITIONAL([SSH], [test x$ssh = xtrue])
+
 AC_CONFIG_FILES([Makefile lib/Makefile libssh/Makefile src/Makefile www/Makefile])
 AC_OUTPUT

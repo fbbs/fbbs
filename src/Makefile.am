@@ -4,7 +4,9 @@ LIBS = -lcrypt -ldl -lgd
 LDADD = ../lib/libBBS.a
 
 
-bin_PROGRAMS = bbsd miscd sshbbsd chatd thread
+bin_PROGRAMS = bbsd miscd @ENABLE_SSH@ chatd thread
+EXTRA_PROGRAMS = bbsd miscd sshbbsd chatd thread
+
 bbsd_SOURCES = bbsd.c io.c main.c
 bbsd_LDADD = $(LDADD) announce.$(OBJEXT) bbs.$(OBJEXT) bcache.$(OBJEXT) \
              bm.$(OBJEXT) boards.$(OBJEXT) chat.$(OBJEXT) \
@@ -18,9 +20,11 @@ bbsd_LDADD = $(LDADD) announce.$(OBJEXT) bbs.$(OBJEXT) bcache.$(OBJEXT) \
 			 readabc.$(OBJEXT) five.$(OBJEXT) convert.$(OBJEXT) \
 			 bbsnet.$(OBJEXT) users.$(OBJEXT)
 
+if SSH
 sshbbsd_SOURCES = bbsd.c io.c main.c
 sshbbsd_LDADD = $(bbsd_LDADD) -lfbssh -L../libssh
 sshbbsd_CPPFLAGS = -DSSHBBS $(AM_CPPFLAGS)
+endif
 
 miscd_SOURCES = miscd.c io.c main.c
 miscd_LDADD = $(bbsd_LDADD)
