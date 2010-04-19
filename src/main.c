@@ -1,6 +1,7 @@
 // Handle user login.
 
 #include "bbs.h"
+#include "sysconf.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -1136,7 +1137,7 @@ void start_client(void)
 	if (count_friends > 0 && DEFINE(DEF_LOGFRIEND))
 		online_users_show_override();
 
-	load_sysconf();
+	sysconf_load(false);
 	while (1) {
 		if (DEFINE(DEF_NORMALSCR))
 			domenu("TOPMENU");

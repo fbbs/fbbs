@@ -1,6 +1,7 @@
 // For menu config.
 
 #include "bbs.h"
+#include "sysconf.h"
 
 enum {
 	SC_BUFSIZE = 20480,
@@ -8,14 +9,19 @@ enum {
 	SC_CMDSIZE = 256
 };
 
-sysconf_t sys_conf;
+struct sysheader {
+	char *buf;
+	int menu, key, len;
+};
+
+sysconf_t sys_conf = { NULL, NULL, NULL, 0, 0, 0 };
 
 /**
  * Concatenates string to the sysconf buffer.
  * @param str The string.
  * @param conf The sysconf data structure.
  */
-static void *sysconf_addstr(const char *str, sysconf_t *conf)
+static char *sysconf_addstr(const char *str, sysconf_t *conf)
 {
 	char *buf = conf->buf + conf->len;
 	conf->len += strlcpy(buf, str, SC_BUFSIZE - conf->len) + 1;
@@ -29,7 +35,7 @@ static void *sysconf_addstr(const char *str, sysconf_t *conf)
  * @param key The key.
  * @return The correspoding string if found, NULL otherwise.
  */
-char *sysconf_str(const char *key)
+const char *sysconf_str(const char *key)
 {
 	int n;
 	for (n = 0; n < sys_conf.keys; n++)
@@ -92,7 +98,7 @@ static void sysconf_addkey(const char *key, char *str, int val, sysconf_t *conf)
  */
 static void sysconf_addmenu(FILE *fp, const char *key, sysconf_t *conf)
 {
-	struct smenuitem *pm;
+	menuitem_t *pm;
 	char buf[LINE_BUFSIZE];
 	char *cmd, *arg[5], *ptr;
 	int n;
@@ -128,25 +134,25 @@ static void sysconf_addmenu(FILE *fp, const char *key, sysconf_t *conf)
 			pm->level = sysconf_eval(arg[2], conf);
 			pm->name = sysconf_addstr(arg[3], conf);
 			pm->desc = sysconf_addstr(arg[4], conf);
-			pm->fptr = sysconf_addstr(cmd + 1, conf);
+			pm->func = sysconf_addstr(cmd + 1, conf);
 			pm->arg = pm->name;
 		} else if (*cmd == '!') {
 			pm->level = sysconf_eval(arg[2], conf);
 			pm->name = sysconf_addstr(arg[3], conf);
 			pm->desc = sysconf_addstr(arg[4], conf);
-			pm->fptr = sysconf_addstr("domenu", conf);
+			pm->func = sysconf_addstr("domenu", conf);
 			pm->arg = sysconf_addstr(cmd + 1, conf);
 		} else {
 			pm->level = -2;
 			pm->name = sysconf_addstr(cmd, conf);
 			pm->desc = sysconf_addstr(arg[2], conf);
-			pm->fptr = (void *) conf->buf;
+			pm->func = conf->buf;
 			pm->arg = conf->buf;
 		}
 	}
 	pm = conf->item + (conf->items++);
 	pm->name = pm->desc = pm->arg = conf->buf;
-	pm->fptr = (void *) conf->buf;
+	pm->func = conf->buf;
 	pm->level = -1;
 }
 
@@ -270,8 +276,9 @@ static void sysconf_parse(const char *fname, sysconf_t *conf)
  * @param configfile The configuration file.
  * @param imgfile The file to hold the result.
  */
-void sysconf_build(const char *configfile, const char *imgfile)
+static int sysconf_build(const char *configfile, const char *imgfile)
 {
+	int ret = -1;
 	sysconf_t conf;
 	conf.item = malloc(SC_CMDSIZE * sizeof(*conf.item));
 	conf.var = malloc(SC_KEYSIZE * sizeof(*conf.var));
@@ -283,7 +290,6 @@ void sysconf_build(const char *configfile, const char *imgfile)
 			free(conf.var);
 		if (conf.buf)
 			free(conf.buf);
-		return;
 	}
 	conf.len = conf.items = conf.keys = 0;
 
@@ -301,9 +307,74 @@ void sysconf_build(const char *configfile, const char *imgfile)
 		fwrite(conf.var, sizeof(*conf.var), conf.keys, fp);
 		fwrite(conf.buf, conf.len, 1, fp);
 		fclose(fp);
+		ret = 0;
 	}
 
 	free(conf.item);
 	free(conf.var);
 	free(conf.buf);
+	return ret;
+}
+
+static int sysconf_load_image(const char *imgfile)
+{
+	struct sysheader shead;
+	struct stat st;
+	char *ptr;
+	int fd, n, diff;
+
+	if ((fd = open(imgfile, O_RDONLY)) > 0) {
+		fstat(fd, &st);
+		ptr = malloc(st.st_size);
+		if (ptr == NULL) {
+			report( "Insufficient memory available", "");
+			close(fd);
+			return -1;
+		}
+
+		read(fd, &shead, sizeof(shead));
+		read(fd, ptr, st.st_size);
+		close(fd);
+
+		sys_conf.item = (void *) ptr;
+		ptr += shead.menu * sizeof(menuitem_t);
+		sys_conf.var = (void *) ptr;
+		ptr += shead.key * sizeof(struct sdefine);
+		sys_conf.buf = (void *) ptr;
+		ptr += shead.len;
+		sys_conf.items = shead.menu;
+		sys_conf.keys = shead.key;
+		sys_conf.len = shead.len;
+
+		diff = sys_conf.buf - shead.buf;
+		for (n = 0; n < sys_conf.items; n++) {
+			sys_conf.item[n].name += diff;
+			sys_conf.item[n].desc += diff;
+			sys_conf.item[n].arg += diff;
+			sys_conf.item[n].func += diff;
+		}
+		for (n = 0; n < sys_conf.keys; n++) {
+			sys_conf.var[n].key += diff;
+			sys_conf.var[n].str += diff;
+		}
+	}
+	return 0;
+}
+
+/**
+ * Load menu config.
+ * @param rebuild Whether reload config and overwrite the image file.
+ * @return 0 on success, -1 on error.
+ */
+int sysconf_load(bool rebuild)
+{
+	if (rebuild && sys_conf.item)
+		free(sys_conf.item);
+
+	if (rebuild || !dashf("sysconf.img")) {
+		if (sysconf_build("etc/sysconf.ini", "sysconf.img") != 0)
+			return -1;
+	}
+
+	return sysconf_load_image("sysconf.img");
 }

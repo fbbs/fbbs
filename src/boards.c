@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "list.h"
+#include "sysconf.h"
 
 #define BBS_PAGESIZE    (t_lines - 4)
 
