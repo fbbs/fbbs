@@ -3908,14 +3908,3 @@ int count_range(int ent, struct fileheader *fileinfo, char *direct) {
 }
 
 //End IAMFAT
-
-//added by iamfat 2003.03.20
-void log_DOTFILE(char *uid, char *str) {
-	char fname[STRLEN], buf[512];
-
-	sprintf(fname, "home/%c/%s/.FILE", toupper(uid[0]), uid);
-	sprintf(buf, "%16.16s %s\n", getdatestring(time(NULL), DATE_ZH) + 6, str);
-	file_append(fname, buf);
-}
-
-//added end
