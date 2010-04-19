@@ -30,7 +30,6 @@
 
 /* 某些限制性代码的相关 define */
 #define CHECK_FREQUENTLOGIN /* 频繁登录检查 */
-//#define MARK_X_FLAG		/* 将灌水文章加上 'X' 标记 */
 
 /* 一般不需要变更的 define */
 //#define SHOWMETOFRIEND		/* 环顾四方的是否为对方好友的显示 */

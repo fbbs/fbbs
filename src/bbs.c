@@ -30,9 +30,6 @@ char someoneID[31];
 char topic[STRLEN] = "";
 int FFLL = 0;
 int noreply = 0;
-#ifdef MARK_X_FLAG
-int markXflag = 0;
-#endif
 int mailtoauther = 0;
 int totalusers;
 char genbuf[1024];
@@ -2125,14 +2122,6 @@ int post_article(char *postboard, char *mailid) {
 		postfile.accessed[0] |= FILE_NOREPLY;
 		noreply = 0;
 	}
-#ifdef MARK_X_FLAG
-	if (markXflag) {
-		postfile.accessed[0] |= FILE_DELETED;
-		markXflag = 0;
-	} else {
-		postfile.accessed[0] &= ~FILE_DELETED;
-	}
-#endif
 	//added by iamfat 2003.03.19
 	if (mailtoauther) {
 		if (header.chk_anony) {
@@ -2275,14 +2264,6 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 	sprintf(genbuf, "%s/%s", buf, fileinfo->filename);
 	if (vedit(genbuf, NA, NA) == -1)
 		return FULLUPDATE;
-#ifdef MARK_X_FLAG
-	if (markXflag) {
-		fileinfo->accessed[0] |= FILE_DELETED;
-		markXflag = 0;
-	} else
-	fileinfo->accessed[0] &= ~FILE_DELETED;
-	substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
-#endif
 	if (!in_mail) {
 		sprintf(genbuf, "edited post '%s' on %s", fileinfo->title,
 				currboard);

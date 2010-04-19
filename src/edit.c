@@ -4,9 +4,6 @@ USE_TRY;
 
 extern int local_article;
 extern char BoardName[];
-#ifdef MARK_X_FLAG
-extern int markXflag;
-#endif
 
 static struct textline *firstline = NULL;
 static struct textline *can_edit_begin = NULL;
@@ -768,16 +765,6 @@ void valid_article(char *pmt, char *abort, int sure) {
 			prints("注意：本篇文章的引言过长, 建议您删掉一些不必要的引言.\n");
 			y += 3;
 		}
-#ifdef MARK_X_FLAG
-		if (len < 20 || lines < 1) {
-			move(y, 0);
-			prints("注意：本篇文章过於简短, 系统认为是灌水文章.\n");
-			prints("      被系统判定为灌水的文章，将自动加上 'X' 标记。\n      系统可能定时删除被 'X' 标记的文章。版主可以用 w 解除该标记\n");
-			markXflag = 1;
-			y += 3;
-			w = YEA;
-		} else markXflag = 0;
-#endif
 		if (w) {
 			strcpy(pmt, "E.再编辑, S.转信, L.本站发表, A.取消 or T.更改标题?[L]: ");
 		}
