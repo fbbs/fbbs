@@ -44,12 +44,6 @@ int t_query(), t_talk(), t_pager(), t_friend(), t_reject(), x_cloak();
 int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
-//int	show_myfile();
-
-#ifdef DLM 
-int exec_mbem();
-#endif
-//modified by money 2002.11.15
 
 #ifndef WITHOUT_ADMIN_TOOLS
 int kick_user(), m_vote();
@@ -65,7 +59,7 @@ int setsystempasswd();
 
 int wall();
 int friend_wall();
-/*Add By Excellent */
+static int exec_mbem(const char *s);
 
 typedef struct {
 	char *name;
@@ -76,7 +70,7 @@ typedef struct {
 smenu_t currcmd;
 
 //保存字符串所对应的函数
-static smenu_t sysconf_cmdlist[] = {
+static const smenu_t sysconf_cmdlist[] = {
 	{ "domenu", domenu, 0 },
 	{ "EGroups", board_read_group, 0 },
 	{ "BoardsAll", board_read_all, 0 },
@@ -152,9 +146,7 @@ static smenu_t sysconf_cmdlist[] = {
 	{ "Lending", "@mod:so/game.so#lending", 1},
 	{ "StarChicken", "@mod:so/pip.so#mod_default", 1},
 #endif 
-#ifdef DLM 
-	{ "RunMBEM",exec_mbem,0},
-#endif
+	{ "RunMBEM", exec_mbem, 0 },
 	{ "Kick", kick_user, 0 },
 	{ "OpenVote", m_vote, 0 },
 	{ "SearchAll", r_searchall, 0 },
@@ -209,37 +201,34 @@ void *sysconf_funcptr(const char *func_name, int *type)
 	return NULL;
 }
 
-#ifdef DLM 
-//modified by money 2002.11.15
-int exec_mbem(char *s)
+/**
+ * Execute function in dynamic loaded modules.
+ * @param str function location, format: \@mod:[file]\#[function].
+ * @return 0.
+ */
+static int exec_mbem(const char *str)
 {
-	void *hdll;
-	int (*func)();
-	char *c;
-	char buf[80];
+	char buf[128];
+	strlcpy(buf, str, sizeof(buf));
 
-	strcpy(buf,s);
-	s = strstr(buf,"@mod:");
-	if (s)	{
-		c = strstr(s + 5,"#");
-		if (c) {
-			*c = 0;
-			c++;
+	char *ptr = strstr(buf, "@mod:");
+	if (ptr) {
+		ptr = strstr(str + 5, "#");
+		if (ptr) {
+			*ptr = '\0';
+			++ptr;
 		}
-		hdll = dlopen(s + 5, RTLD_LAZY);
+
+		void *hdll = dlopen(str + 5, RTLD_LAZY);
 		if (hdll) {
-			if (func = dlsym(hdll, c ? c : "mod_main"))
+			int (*func)() = dlsym(hdll, ptr ? ptr : "mod_main");
+			if (func)
 				func();
-			else
-				report(dlerror(), currentuser.userid);
 			dlclose(hdll);
 		}
-		else {
-			report(dlerror(), currentuser.userid);
-		}
 	}
+	return 0;
 }
-#endif
 
 void decodestr(char *str)
 {
@@ -358,142 +347,149 @@ int domenu_screen(struct smenuitem *pm)
 int domenu(const char *menu_name)
 {
 	extern int refscreen;
-	struct smenuitem *pm;
-	int size, now;
-	int cmd, i;
+	int ch, i;
 
-	if (sys_conf.items <= 0) {
+	if (sys_conf.items <= 0)
 		return -1;
-	}
-	pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
-	size = domenu_screen(pm);
-	now = 0;
+
+	struct smenuitem *pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
+
+	int size = domenu_screen(pm);
+
+	int now = 0;
+
+	// Jump to mail menu if user have unread mail.
 	if (strcmp(menu_name, "TOPMENU") == 0 && chkmail()) {
 		for (i = 0; i < size; i++)
 		if (pm[i].line> 0 && pm[i].name[0] == 'M')
 		now = i;
-
 	}
+
 	modify_user_mode(MMENU);
+
+	// TODO: deprecate
 	R_monitor();
+
 	while (1) {
 		printacbar();
+
 		while (pm[now].level < 0 || !HAS_PERM(pm[now].level)) {
 			now++;
 			if (now >= size)
-			now = 0;
+				now = 0;
 		}
-		move(pm[now].line, pm[now].col);
-		prints("> ");
-		move(pm[now].line, pm[now].col+1);
-		cmd = egetch();
-		move(pm[now].line, pm[now].col);
-		prints("  ");
-		switch (cmd) {
-			case EOF:
-			if (!refscreen) {
-				abort_bbs(0);
-			}
-			domenu_screen(pm);
-			modify_user_mode(MMENU);
-			R_monitor();
-			break;
-			case KEY_RIGHT:
-			for (i = 0; i < size; i++) {
-				if (pm[i].line == pm[now].line && pm[i].level >= 0 &&
-						pm[i].col> pm[now].col && HAS_PERM(pm[i].level))
-				break;
-			}
-			if (i < size) {
-				now = i;
-				break;
-			}
-			case '\n':
-			case '\r':
-			if (strcmp(pm[now].arg, "..") == 0) {
-				return 0;
-			}
-			if (pm[now].fptr != NULL) {
-				int type;
 
-				(void *) sysconf_funcptr(pm[now].name, &type);
-#ifdef DLM 
-				if (type == 1) {
-					exec_mbem((char *)pm[now].fptr);
-				} else
-#endif
-				//modified by money 2002.11.15
-				(*pm[now].fptr) (pm[now].arg);
-				if (pm[now].fptr == Select) {
-					now++;
+		move(pm[now].line, pm[now].col);
+		prints(">");
+
+		ch = egetch();
+
+		move(pm[now].line, pm[now].col);
+		prints(" ");
+
+		switch (ch) {
+			case EOF:
+				// TODO: deprecate
+				if (!refscreen) {
+					abort_bbs(0);
 				}
 				domenu_screen(pm);
 				modify_user_mode(MMENU);
 				R_monitor();
-			}
-			break;
-			case KEY_LEFT:
-			for (i = 0; i < size; i++) {
-				if (pm[i].line == pm[now].line && pm[i].level >= 0 &&
-						pm[i].col < pm[now].col && HAS_PERM(pm[i].level))
 				break;
-				if (pm[i].fptr == Goodbye)
-				break;
-			}
-			if (i < size) {
-				now = i;
-				break;
-			}
-			return 0;
-			case KEY_DOWN:
-			now++;
-			break;
-			case KEY_UP:
-			now--;
-			while (pm[now].level < 0 || !HAS_PERM(pm[now].level)) {
-				if (now> 0)
-				now--;
-				else
-				now = size - 1;
-			}
-			break;
-			// Modified by Flier - 2000.5.12 - Begin
-			case KEY_PGUP:
-			now = 0;
-			break;
-			case KEY_PGDN:
-			now = size - 1;
-			while (pm[now].level < 0 || !HAS_PERM(pm[now].level)) now--;
-			break;
-			// Modified by Flier - 2000.5.12 - End
-			case '~':
-			if (!(HAS_PERM(PERM_ESYSFILE))) {
-				//modified by roly 02.01.24 add PERM_WELCOME
-				break;
-			}
-			free(sys_conf.items);
-			report("rebuild sysconf.img", currentuser.userid);
-			sysconf_build("etc/sysconf.ini", "sysconf.img");
-			report("reload sysconf.img", currentuser.userid);
-			load_sysconf_image("sysconf.img");
-			pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
-			ActiveBoard_Init();
-			size = domenu_screen(pm);
-			now = 0;
-			break;
-			case '!': /* youzi leave */
-			if (strcmp("TOPMENU", menu_name) == 0)
-			break;
-			else
-			return Goodbye();
-			default:
-			if (cmd >= 'a' && cmd <= 'z')
-			cmd = cmd - 'a' + 'A';
-			for (i = 0; i < size; i++) {
-				if (pm[i].line> 0 && cmd == pm[i].name[0] &&
-						HAS_PERM(pm[i].level)) {
+			case KEY_RIGHT:
+				for (i = 0; i < size; i++) {
+					if (pm[i].line == pm[now].line && pm[i].level >= 0 &&
+							pm[i].col > pm[now].col && HAS_PERM(pm[i].level))
+						break;
+				}
+				// If there are items on the right to current item.
+				if (i < size) {
 					now = i;
 					break;
+				}
+				// fall through.
+			case '\n':
+			case '\r':
+				if (strcmp(pm[now].arg, "..") == 0)
+					return 0;
+				if (pm[now].fptr != NULL) {
+					int type;
+					sysconf_funcptr(pm[now].name, &type);
+
+					if (type == 1) {
+						exec_mbem((char *)pm[now].fptr);
+					} else {
+						(*pm[now].fptr)(pm[now].arg);
+					}
+
+					if (pm[now].fptr == Select) {
+						now++;
+					}
+					domenu_screen(pm);
+					modify_user_mode(MMENU);
+					R_monitor();
+				}
+				break;
+			case KEY_LEFT:
+				for (i = 0; i < size; i++) {
+					if (pm[i].line == pm[now].line && pm[i].level >= 0 &&
+							pm[i].col < pm[now].col && HAS_PERM(pm[i].level))
+						break;
+					if (pm[i].fptr == Goodbye)
+						break;
+				}
+				if (i < size) {
+					now = i;
+					break;
+				}
+				return 0;
+			case KEY_DOWN:
+				now++;
+				break;
+			case KEY_UP:
+				now--;
+				while (pm[now].level < 0 || !HAS_PERM(pm[now].level)) {
+					if (now > 0)
+						now--;
+					else
+						now = size - 1;
+				}
+				break;
+			case KEY_PGUP:
+				now = 0;
+				break;
+			case KEY_PGDN:
+				now = size - 1;
+				while (pm[now].level < 0 || !HAS_PERM(pm[now].level))
+					now--;
+				break;
+			case '~':
+				if (!(HAS_PERM(PERM_ESYSFILE)))
+					break;
+				free(sys_conf.item);
+				report("rebuild sysconf.img", currentuser.userid);
+				sysconf_build("etc/sysconf.ini", "sysconf.img");
+				report("reload sysconf.img", currentuser.userid);
+				load_sysconf_image("sysconf.img");
+				pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
+				ActiveBoard_Init();
+				size = domenu_screen(pm);
+				now = 0;
+				break;
+			case '!':
+				if (strcmp("TOPMENU", menu_name) == 0)
+					break;
+				else
+					return 0;
+			default:
+				if (ch >= 'a' && ch <= 'z')
+					ch = ch - 'a' + 'A';
+				for (i = 0; i < size; i++) {
+					if (pm[i].line> 0 && ch == pm[i].name[0]
+							&& HAS_PERM(pm[i].level)) {
+						now = i;
+						break;
 				}
 			}
 		}
