@@ -296,19 +296,19 @@ void load_sysconf(void)
 	load_sysconf_image("sysconf.img");
 }
 
-int domenu_screen(struct smenuitem *pm)
+static int draw_menu(struct smenuitem *pm)
 {
 	char *str;
-	int line, col, num;
 
 	clear();
-	line = 3;
-	col = 0;
-	num = 0;
+	int line = 3;
+	int col = 0;
+	int num = 0;
+
 	while (1) {
 		switch (pm->level) {
 			case -1:
-				return (num);
+				return num;
 			case -2:
 				if (strcmp(pm->name, "title") == 0) {
 					firsttitle(pm->desc);
@@ -332,7 +332,7 @@ int domenu_screen(struct smenuitem *pm)
 					prints("  %s", pm->desc);
 					line++;
 				} else {
-					if (pm->line> 0) {
+					if (pm->line > 0) {
 						line = pm->line;
 						col = pm->col;
 					}
@@ -354,7 +354,7 @@ int domenu(const char *menu_name)
 
 	struct smenuitem *pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
 
-	int size = domenu_screen(pm);
+	int size = draw_menu(pm);
 
 	int now = 0;
 
@@ -393,7 +393,7 @@ int domenu(const char *menu_name)
 				if (!refscreen) {
 					abort_bbs(0);
 				}
-				domenu_screen(pm);
+				draw_menu(pm);
 				modify_user_mode(MMENU);
 				R_monitor();
 				break;
@@ -426,7 +426,7 @@ int domenu(const char *menu_name)
 					if (pm[now].fptr == Select) {
 						now++;
 					}
-					domenu_screen(pm);
+					draw_menu(pm);
 					modify_user_mode(MMENU);
 					R_monitor();
 				}
@@ -474,7 +474,7 @@ int domenu(const char *menu_name)
 				load_sysconf_image("sysconf.img");
 				pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
 				ActiveBoard_Init();
-				size = domenu_screen(pm);
+				size = draw_menu(pm);
 				now = 0;
 				break;
 			case '!':
