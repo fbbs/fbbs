@@ -1100,14 +1100,7 @@ void start_client(void)
 		system_abort();
 	}
 
-#ifdef BBSNAME
-	strcpy(BoardName, BBSNAME);
-#else
-	ptr = sysconf_str("BBSNAME");
-	if (ptr == NULL)
-		ptr = "…–Œ¥√¸√˚≤‚ ‘’æ";
-	strcpy(BoardName, ptr);
-#endif
+	strlcpy(BoardName, BBSNAME, sizeof(BoardName));
 
 	if (login_query() == -1) {
 		oflush();
@@ -1115,6 +1108,7 @@ void start_client(void)
 		exit(1);
 	}
 	user_login();
+
 	setmdir(currmaildir, currentuser.userid);
 	RMSG = NA;
 	clear();
