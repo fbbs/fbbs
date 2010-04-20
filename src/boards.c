@@ -194,8 +194,8 @@ static int goodbrd_add(choose_board_t *cbrd, int bnum, int pid)
 	return 0;
 }
 
-//pid暂时是个不使用的参数，因为不打算建二级目录（删除目录的代码目录仍不完善）
-static void goodbrd_mkdir(choose_board_t *cbrd, const char *name,
+// TODO: pid暂时是个不使用的参数，因为不打算建二级目录（删除目录的代码目录仍不完善）
+static int goodbrd_mkdir(choose_board_t *cbrd, const char *name,
 		const char *title, int pid)
 {
 	if (cbrd->gnum < GOOD_BRC_NUM) {
@@ -214,8 +214,9 @@ static void goodbrd_mkdir(choose_board_t *cbrd, const char *name,
 		else
 			ptr->id = 1;
 		cbrd->gnum++;
-		goodbrd_save(cbrd);
+		return goodbrd_save(cbrd);
 	}
+	return -1;
 }
 
 //目录没有对二级目录嵌套删除的功能，也因为这个限制，收藏夹目录不允许建立二级目录
@@ -325,6 +326,43 @@ static int tui_goodbrd_paste(choose_t *cp)
 		cbrd->copy_bnum = 0;
 		cp->valid = false;
 		return PARTUPDATE;
+	}
+	return DONOTHING;
+}
+
+/**
+ * Create directory when browsing favorites.
+ * @param cp browsing status.
+ * @return update status.
+ */
+static int tui_goodbrd_mkdir(choose_t *cp)
+{
+	choose_board_t *cbrd = cp->data;
+
+	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
+		return DONOTHING;
+
+	if (cbrd->parent == 0) {
+		if (cbrd->gnum >= GOOD_BRC_NUM) {
+			presskeyfor("个人热门版数已经达上限", t_lines - 1);
+			return MINIUPDATE;
+		}
+
+		char name[STRLEN];
+		char title[STRLEN];
+		name[0] = '\0';
+		getdata(t_lines - 1, 0, "创建自定义目录: ", name, 17,
+				DOECHO, NA);
+		if (name[0] != '\0') {
+			strlcpy(title, "自定义目录", sizeof(title));
+			getdata(t_lines - 1, 0, "自定义目录描述: ", title, 21,
+					DOECHO, NA);
+			if (goodbrd_mkdir(cbrd, name, title, 0) == 0) {
+				cp->valid = false;
+				return PARTUPDATE;
+			}
+		}
+		return MINIUPDATE;
 	}
 	return DONOTHING;
 }
@@ -943,31 +981,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case 'a':
 			return tui_goodbrd_add(cp);
 		case 'A':
-			//added by cometcaptor 2007-04-22 这里写入的是创建自定义目录的代码
-			if (!HAS_PERM(PERM_LOGIN))
-				return DONOTHING;
-			if (cbrd->parent == 0) {
-				if (cbrd->gnum >= GOOD_BRC_NUM) {
-					presskeyfor("个人热门版数已经达上限", t_lines - 1);
-					return MINIUPDATE;
-				} else {
-					//要求输入目录名
-					char dirname[STRLEN];
-					char dirtitle[STRLEN];
-					dirname[0] = '\0';
-					getdata(t_lines - 1, 0, "创建自定义目录: ", dirname, 17,
-							DOECHO, NA); //设成17是因为只显示16个字符，为了防止创建的目录名和显示的不同而限定
-					if (dirname[0] != '\0') {
-						strcpy(dirtitle, "自定义目录");
-						getdata(t_lines - 1, 0, "自定义目录描述: ", dirtitle,
-								21, DOECHO, NA);
-						goodbrd_mkdir(cbrd, dirname, dirtitle, 0);
-					}
-					cp->valid = false;
-				}
-				return PARTUPDATE;
-			}
-			return DONOTHING;
+			return tui_goodbrd_mkdir(cp);
 		case 'T':
 			//added by cometcaptor 2007-04-25 修改自定义目录名
 			if (!HAS_PERM(PERM_LOGIN))
