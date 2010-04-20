@@ -213,13 +213,13 @@ static int exec_mbem(const char *str)
 
 	char *ptr = strstr(buf, "@mod:");
 	if (ptr) {
-		ptr = strstr(str + 5, "#");
+		ptr = strstr(buf + 5, "#");
 		if (ptr) {
 			*ptr = '\0';
 			++ptr;
 		}
 
-		void *hdll = dlopen(str + 5, RTLD_LAZY);
+		void *hdll = dlopen(buf + 5, RTLD_LAZY);
 		if (hdll) {
 			int (*func)() = dlsym(hdll, ptr ? ptr : "mod_main");
 			if (func)
@@ -366,8 +366,9 @@ int domenu(const char *menu_name)
 					return 0;
 				if (pm[now].func) {
 					int type;
-					void *ptr = sysconf_funcptr(pm[now].name, &type);
-
+					void *ptr = sysconf_funcptr(pm[now].func, &type);
+					if (!ptr)
+						break;
 					if (type == 1) {
 						exec_mbem(ptr);
 					} else {
