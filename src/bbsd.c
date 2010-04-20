@@ -332,6 +332,8 @@ int main(int argc, char *argv[])
 #ifdef SSHBBS
 	ssh_bind sshbind = ssh_bind_new();
 	ssh_session session;
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_DSAKEY,
+			KEYS_FOLDER"/ssh_host_dsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,
 			KEYS_FOLDER"/ssh_host_rsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_LOG_VERBOSITY,
