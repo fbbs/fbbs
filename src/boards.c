@@ -367,6 +367,49 @@ static int tui_goodbrd_mkdir(choose_t *cp)
 	return DONOTHING;
 }
 
+/**
+ * Rename directory when browsing favorites.
+ * @param cp browsing status.
+ * @return update status.
+ */
+static int tui_goodbrd_rename(choose_t *cp)
+{
+	choose_board_t *cbrd = cp->data;
+
+	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
+		return DONOTHING;
+
+	if ((cbrd->parent == 0) && cbrd->num
+			&& (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)) {
+
+		int gbid;
+		for (gbid = 0; gbid < cbrd->gnum; gbid++) {
+			if (cbrd->gbrds[gbid].id == cbrd->brds[cp->cur].pos)
+				break;
+		}
+		if (gbid == cbrd->gnum)
+			return DONOTHING;
+
+		gbrdh_t *gbp = cbrd->gbrds + gbid;
+		char name[STRLEN];
+		char title[STRLEN];
+		strlcpy(name, gbp->filename, sizeof(name));
+		getdata(t_lines - 1, 0, "修改自定义目录名: ", name, 17, DOECHO, NA);
+		if (name[0] != '\0') {
+			strlcpy(title, gbp->title + 11, sizeof(title));
+			getdata(t_lines - 1, 0, "自定义目录描述: ", title, 21, DOECHO, NA);
+			if (title[0] == '\0')
+				strlcpy(title, gbp->title + 11, sizeof(title));
+			strlcpy(gbp->filename, name, sizeof(gbp->filename));
+			strlcpy(gbp->title + 11, title, sizeof(gbp->title) - 11);
+			if (goodbrd_save(cbrd) == 0)
+				return PARTUPDATE;
+		}
+		return MINIUPDATE;
+	}
+	return DONOTHING;
+}
+
 static bool check_newpost(board_data_t *ptr)
 {
 	ptr->unread = false;
@@ -983,36 +1026,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case 'A':
 			return tui_goodbrd_mkdir(cp);
 		case 'T':
-			//added by cometcaptor 2007-04-25 修改自定义目录名
-			if (!HAS_PERM(PERM_LOGIN))
-				return DONOTHING;
-			if ((cbrd->parent == 0)&& cbrd->num
-					&& (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)) {
-				char dirname[STRLEN];
-				char dirtitle[STRLEN];
-				int gbid = 0;
-				for (gbid = 0; gbid < cbrd->gnum; gbid++)
-					if (cbrd->gbrds[gbid].id == cbrd->brds[cp->cur].pos)
-						return DONOTHING;
-				if (gbid == cbrd->gnum)
-					return DONOTHING;
-				strcpy(dirname, cbrd->gbrds[gbid].filename);
-				getdata(t_lines - 1, 0, "修改自定义目录名: ", dirname, 17,
-						DOECHO, NA);
-				if (dirname[0] != '\0') {
-					strcpy(dirtitle, cbrd->gbrds[gbid].title+11);
-					getdata(t_lines - 1, 0, "自定义目录描述: ", dirtitle, 21,
-							DOECHO, NA);
-					if (dirtitle[0] == '\0')
-						strcpy(dirtitle, cbrd->gbrds[gbid].title+11);
-					strcpy(cbrd->gbrds[gbid].filename, dirname);
-					strcpy(cbrd->gbrds[gbid].title+11, dirtitle);
-					goodbrd_save(cbrd);
-				}
-				cp->valid = false;
-				return PARTUPDATE;
-			}
-			return DONOTHING;
+			return tui_goodbrd_rename(cp);
 		case 'd':
 			if ((cbrd->gnum) && (cbrd->num > 0)) {
 				int i, pos;
