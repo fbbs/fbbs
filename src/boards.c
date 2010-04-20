@@ -222,7 +222,6 @@ static int goodbrd_mkdir(choose_board_t *cbrd, const char *name,
 //目录没有对二级目录嵌套删除的功能，也因为这个限制，收藏夹目录不允许建立二级目录
 static void goodbrd_rmdir(choose_board_t *cbrd, int id)
 {
-	// TODO: to many copying?
 	int i, n = 0;
 	for (i = 0; i < cbrd->gnum; i++) {
 		gbrdh_t *ptr = cbrd->gbrds + i;
@@ -344,7 +343,7 @@ static int tui_goodbrd_mkdir(choose_t *cp)
 
 	if (cbrd->parent == 0) {
 		if (cbrd->gnum >= GOOD_BRC_NUM) {
-			presskeyfor("个人热门版数已经达上限", t_lines - 1);
+			presskeyfor("收藏夹已满", t_lines - 1);
 			return MINIUPDATE;
 		}
 
@@ -404,6 +403,39 @@ static int tui_goodbrd_rename(choose_t *cp)
 			strlcpy(gbp->title + 11, title, sizeof(gbp->title) - 11);
 			if (goodbrd_save(cbrd) == 0)
 				return PARTUPDATE;
+		}
+		return MINIUPDATE;
+	}
+	return DONOTHING;
+}
+
+/**
+ * Remove board/directory from favorites.
+ * @param cp browsing status.
+ * @return update status.
+ */
+static int tui_goodbrd_rm(choose_t *cp)
+{
+	choose_board_t *cbrd = cp->data;
+
+	if (cbrd->goodbrd && cbrd->num > 0) {
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "要把 %s 从收藏夹中去掉？",
+				cbrd->brds[cp->cur].name);
+		if (askyn(buf, false, true)) {
+			if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG) {
+				goodbrd_rmdir(cbrd, cbrd->brds[cp->cur].pos);
+			} else {
+				int pos = inGoodBrds(cbrd, cbrd->brds[cp->cur].pos);
+				if (pos) {
+					memmove(cbrd->gbrds + pos - 1, cbrd->gbrds + pos,
+							sizeof(gbrdh_t) * (cbrd->gnum - pos));
+					cbrd->gnum--;
+					goodbrd_save(cbrd);
+				}
+			}
+			cp->valid = false;
+			return PARTUPDATE;
 		}
 		return MINIUPDATE;
 	}
@@ -1028,32 +1060,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 		case 'T':
 			return tui_goodbrd_rename(cp);
 		case 'd':
-			if ((cbrd->gnum) && (cbrd->num > 0)) {
-				int i, pos;
-				char ans[5];
-				sprintf(genbuf, "要把 %s 从收藏夹中去掉？[y/N]",
-						cbrd->brds[cp->cur].name);
-				getdata(t_lines - 1, 0, genbuf, ans, 2, DOECHO, YEA);
-				if (ans[0] == 'y' || ans[0] == 'Y') {
-					if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
-						goodbrd_rmdir(cbrd, cbrd->brds[cp->cur].pos);
-					else {
-						pos = inGoodBrds(cbrd, cbrd->brds[cp->cur].pos);
-						if (pos) {
-							for (i = pos-1; i < cbrd->gnum-1; i++)
-								memcpy(cbrd->gbrds + i, cbrd->gbrds + i + 1,
-										sizeof(struct goodbrdheader));
-							cbrd->gnum--;
-						}
-						goodbrd_save(cbrd);
-					}
-					cp->valid = false;
-					return PARTUPDATE;
-				} else {
-					return MINIUPDATE;
-				}
-			}
-			return DONOTHING;
+			return tui_goodbrd_rm(cp);
 		case '\r':
 		case '\n':
 		case KEY_RIGHT:
