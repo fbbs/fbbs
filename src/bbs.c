@@ -295,7 +295,7 @@ void make_blist(int mode) {
 		apply_boards(g_all_names, &currentuser);
 }
 
-int Select() {
+int board_select() {
 	do_select(0, NULL, genbuf);
 	return 0;
 }
@@ -3118,7 +3118,7 @@ struct one_key read_comms[] = {
 		{'*', show_file_info}, {'Z', send_msg}, {'|', lock}, {'\0', NULL}
 };
 
-int Read() {
+int board_read() {
 	char buf[STRLEN];
 	char notename[STRLEN];
 	time_t usetime;

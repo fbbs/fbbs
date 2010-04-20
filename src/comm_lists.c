@@ -13,7 +13,7 @@
 
 int domenu(const char *menu_name);
 int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodbye();
-int board_read_new(), goodbrd_show(), Read(), Select(), Users(), Welcome();
+int board_read_new(), goodbrd_show(), board_read(), board_select(), Welcome();
 int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), online_users_show(), x_info(), x_fillform(), x_vote();
@@ -81,8 +81,8 @@ static void *sysconf_funcptr(const char *func_name, int *type)
 		{ "LeaveBBS", Goodbye, 0 },
 		{ "Announce", Announce, 0 },
 		{ "Personal", Personal, 0 },
-		{ "SelectBoard", Select, 0 },
-		{ "ReadBoard", Read, 0 },
+		{ "SelectBoard", board_select, 0 },
+		{ "ReadBoard", board_read, 0 },
 		{ "SetAlarm", setcalltime, 0 },
 		{ "MailAll", mailall, 0 },
 		{ "LockScreen", x_lockscreen, 0 },
@@ -374,7 +374,7 @@ int domenu(const char *menu_name)
 					} else {
 						int (*func)() = ptr;
 						(*func)(pm[now].arg);
-						if (func == Select)
+						if (func == board_select)
 							now++;
 					}
 					draw_menu(pm);

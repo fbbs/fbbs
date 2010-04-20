@@ -666,7 +666,7 @@ static int choose_board_read(choose_t *cp)
 			int page = tmp - t_lines / 2;
 			getkeep(buf, page > 1 ? page : 1, tmp + 1);
 		}
-		Read();
+		board_read();
 		brc_zapbuf(cbrd->zapbuf + ptr->pos);
 		ptr->total = -1;
 		currBM[0] = '\0';
