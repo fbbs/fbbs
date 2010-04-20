@@ -23,7 +23,7 @@ typedef struct {
 	comparator_t cmp;     ///< Compare function pointer.
 	board_data_t *brds;   ///< Array of boards.
 	int *zapbuf;          ///< Subscribing record.
-	char *prefix;         ///< Group by prefix if not NULL, by dir otherwise.
+	const char *prefix;   ///< Group by prefix if not NULL, by dir otherwise.
 	int num;              ///< Number of boards loaded.
 	bool yank;            ///< True if hide unsubscribed boards.
 	bool newflag;         ///< True if jump to unread board.
@@ -32,7 +32,7 @@ typedef struct {
 	gbrdh_t *gbrds;       ///< Array of favorite boards.
 	int gnum;             ///< Number of favorite boards.
 	int parent;           ///< Parent directory.
-	char buf[STRLEN-8];   ///< Copy/paste buffer.
+	int copy_bnum;        ///< Copy/paste buffer.
 } choose_board_t;
 
 /**
@@ -148,7 +148,7 @@ static void goodbrd_load(choose_board_t *cbrd)
 /**
  *
  */
-static void goodbrd_save(choose_board_t *cbrd)
+static int goodbrd_save(choose_board_t *cbrd)
 {
 	load_default_board(cbrd);
 
@@ -158,33 +158,40 @@ static void goodbrd_save(choose_board_t *cbrd)
 	if (fp) {
 		fwrite(cbrd->gbrds, sizeof(*cbrd->gbrds), cbrd->gnum, fp);
 		fclose(fp);
+		return 0;
 	}
+	return -1;
 }
 
 /**
- *
+ * 
  */
-static void goodbrd_add(choose_board_t *cbrd, char *board, int pid)
+static int goodbrd_add(choose_board_t *cbrd, int bnum, int pid)
 {
 	if (cbrd->gnum >= GOOD_BRC_NUM)
-		return;
+		return -1;
 
-	int i = getbnum(board, &currentuser);
-	if (i > 0) {
-		gbrdh_t *ptr = cbrd->gbrds + cbrd->gnum;
-		ptr->pid = pid;
-		ptr->pos = --i;
-		strlcpy(ptr->filename, bcache[i].filename, sizeof(ptr->filename));
-		strlcpy(ptr->title, bcache[i].title, sizeof(ptr->title));
-		ptr->flag = bcache[i].flag;
-		if (cbrd->gnum)
-			ptr->id = (ptr - 1)->id + 1;
-		else
-			ptr->id = 1;
+	if (--bnum < 0 || inGoodBrds(cbrd, bnum))
+		return -1;
 
-		cbrd->gnum++;
-		goodbrd_save(cbrd);
-	}
+	if (!hasreadperm(&currentuser, bcache + bnum))
+		return -1;
+
+	gbrdh_t *ptr = cbrd->gbrds + cbrd->gnum;
+	ptr->pid = pid;
+	ptr->pos = bnum;
+	strlcpy(ptr->filename, bcache[bnum].filename, sizeof(ptr->filename));
+	strlcpy(ptr->title, bcache[bnum].title, sizeof(ptr->title));
+	ptr->flag = bcache[bnum].flag;
+
+	if (cbrd->gnum)
+		ptr->id = (ptr - 1)->id + 1;
+	else
+		ptr->id = 1;
+
+	cbrd->gnum++;
+	goodbrd_save(cbrd);
+	return 0;
 }
 
 //pid暂时是个不使用的参数，因为不打算建二级目录（删除目录的代码目录仍不完善）
@@ -212,7 +219,7 @@ static void goodbrd_mkdir(choose_board_t *cbrd, const char *name,
 }
 
 //目录没有对二级目录嵌套删除的功能，也因为这个限制，收藏夹目录不允许建立二级目录
-void goodbrd_rmdir(choose_board_t *cbrd, int id)
+static void goodbrd_rmdir(choose_board_t *cbrd, int id)
 {
 	// TODO: to many copying?
 	int i, n = 0;
@@ -229,6 +236,97 @@ void goodbrd_rmdir(choose_board_t *cbrd, int id)
 	}
 	cbrd->gnum = n;
 	goodbrd_save(cbrd);
+}
+
+/**
+ *
+ */
+static int tui_goodbrd_add(choose_t *cp)
+{
+	choose_board_t *cbrd = cp->data;
+
+	if (!HAS_PERM(PERM_LOGIN))
+		return DONOTHING;
+
+	if (cbrd->goodbrd && (cbrd->parent == -1))
+		return DONOTHING;
+
+	if (cbrd->goodbrd) {
+		if (cbrd->parent == -1)
+			return DONOTHING;
+
+		if (cbrd->gnum >= GOOD_BRC_NUM) {
+			presskeyfor("收藏夹已满", t_lines - 1);
+			return MINIUPDATE;
+		}
+
+		int pos;
+		char bname[STRLEN];
+		struct boardheader fh;
+		if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ",
+				&pos, &fh, bname, 1)) {
+			if (goodbrd_add(cbrd, pos, cbrd->parent) == 0)
+				cp->valid = false;
+		}
+		return FULLUPDATE;
+	} else {
+		goodbrd_load(cbrd);
+		if (cbrd->gnum >= GOOD_BRC_NUM) {
+			presskeyfor("收藏夹已满", t_lines - 1);
+			return MINIUPDATE;
+		} else {
+			char buf[STRLEN];
+			snprintf(buf, sizeof(buf), "您确定要添加 %s 到收藏夹吗?",
+					cbrd->brds[cp->cur].name);
+			if (askyn(buf, false, true)) {
+				if (goodbrd_add(cbrd, cbrd->brds[cp->cur].pos + 1, 0) == 0) {
+					cp->valid = false;
+					return PARTUPDATE;
+				}
+			}
+			return MINIUPDATE;
+		}
+	}
+}
+
+/**
+ * Copy board when browsing favorites.
+ * @param cp browsing status.
+ * @return update status.
+ */
+static int tui_goodbrd_copy(choose_t *cp)
+{
+	choose_board_t *cbrd = cp->data;
+
+	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
+		return DONOTHING;
+
+	if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
+		return DONOTHING;
+
+	cbrd->copy_bnum = cbrd->brds[cp->cur].pos + 1;
+	presskeyfor("版面已复制 请按P粘贴", t_lines - 1);
+	return MINIUPDATE;
+}
+
+/**
+ * Paste copied board when browsing favorites.
+ * @param cp browsing status.
+ * @return update status.
+ */
+static int tui_goodbrd_paste(choose_t *cp)
+{
+	choose_board_t *cbrd = cp->data;
+
+	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
+		return DONOTHING;
+
+	if (goodbrd_add(cbrd, cbrd->copy_bnum, cbrd->parent) == 0) {
+		cbrd->copy_bnum = 0;
+		cp->valid = false;
+		return PARTUPDATE;
+	}
+	return DONOTHING;
 }
 
 static bool check_newpost(board_data_t *ptr)
@@ -637,7 +735,7 @@ static int choose_board_read(choose_t *cp)
 	board_data_t *ptr = cbrd->brds + cp->cur;
 	if (ptr->flag & BOARD_DIR_FLAG) {
 		int parent = cbrd->parent;
-		char *prefix = cbrd->prefix;
+		const char *prefix = cbrd->prefix;
 		bool recursive = cbrd->recursive;
 		bool goodbrd = cbrd->goodbrd;
 		int cur = cp->cur;
@@ -763,15 +861,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 			show_board_info(ptr->name);
 			return FULLUPDATE;
 		case 'C':
-			if (!HAS_PERM(PERM_LOGIN))
-				return DONOTHING;
-			if ((cbrd->gnum == 0) && (cbrd->parent == -1))
-				return DONOTHING;
-			if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
-				return DONOTHING;
-			strlcpy(cbrd->buf, cbrd->brds[cp->cur].name, sizeof(cbrd->buf));
-			presskeyfor("版名已复制 请按P粘贴", t_lines - 1);
-			return DONOTHING;
+			return tui_goodbrd_copy(cp);
 		case 'c':
 			cbrd->newflag = !cbrd->newflag;
 			return PARTUPDATE;
@@ -803,14 +893,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 			modify_mode = true;
 			break;
 		case 'P':
-			if (!HAS_PERM(PERM_LOGIN))
-				return DONOTHING;
-			if ((cbrd->gnum == 0) && (cbrd->parent == -1))
-				return DONOTHING;
-			goodbrd_add(cbrd, cbrd->buf, cbrd->parent);
-			*cbrd->buf='\0';
-			cp->valid = false;
-			break;
+			return tui_goodbrd_paste(cp);
 		case '!':
 			save_zapbuf(cbrd);
 			free(cbrd->brds);
@@ -858,38 +941,7 @@ static int choose_board_handler(choose_t *cp, int ch)
 			cp->valid = false;
 			return PARTUPDATE;
 		case 'a':
-			if (!HAS_PERM(PERM_LOGIN))
-				return DONOTHING;
-			if ((cbrd->gnum) && (cbrd->parent == -1))
-				return DONOTHING;
-			if (cbrd->gnum >= GOOD_BRC_NUM) {
-				presskeyfor("个人热门版数已经达上限", t_lines - 1);
-				return MINIUPDATE;
-			} else if (cbrd->gnum) {
-				int pos;
-				char bname[STRLEN];
-				struct boardheader fh;
-				if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ",
-						&pos, &fh, bname, 1)) {
-					if (!inGoodBrds(cbrd, getbnum(bname, &currentuser)-1)) {
-						goodbrd_add(cbrd, bname, cbrd->parent);
-						cp->valid = false;
-					}
-				}
-			} else {
-				goodbrd_load(cbrd);
-				if (cbrd->gnum >= GOOD_BRC_NUM) {
-					presskeyfor("个人热门版数已经达上限", t_lines - 1);
-					return MINIUPDATE;
-				} else if (!inGoodBrds(cbrd, getbnum(cbrd->brds[cp->cur].name, &currentuser)-1)) {
-					sprintf(genbuf, "您确定要添加%s到收藏夹吗?", cbrd->brds[cp->cur].name);
-					if (askyn(genbuf, NA, YEA) == YEA) {
-						goodbrd_add(cbrd, cbrd->brds[cp->cur].name, 0);
-					}
-					cp->valid = false;
-				}
-			}
-			return FULLUPDATE;
+			return tui_goodbrd_add(cp);
 		case 'A':
 			//added by cometcaptor 2007-04-22 这里写入的是创建自定义目录的代码
 			if (!HAS_PERM(PERM_LOGIN))
