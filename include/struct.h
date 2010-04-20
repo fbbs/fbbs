@@ -252,30 +252,5 @@ struct a_template {
 	struct s_content * cont;
 };
 
-struct smenuitem {
-	int line, col, level;
-	char *name, *desc, *arg;
-	int (*fptr)();
-};
-
-struct sdefine {
-	char *key, *str;
-	int val;
-};
-
-struct sysheader {
-	char *buf;
-	int menu, key, len;
-};
-
-typedef struct {
-	char *buf;
-	struct smenuitem *item;
-	struct sdefine *var;
-	int len;
-	int items;
-	int keys;
-} sysconf_t;
-
 #endif //FB_STRUCT_H
 
