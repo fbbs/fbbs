@@ -366,16 +366,16 @@ int domenu(const char *menu_name)
 					return 0;
 				if (pm[now].func) {
 					int type;
-					int (*func)() = sysconf_funcptr(pm[now].name, &type);
+					void *ptr = sysconf_funcptr(pm[now].name, &type);
 
-					if (type == 1)
-						exec_mbem(pm[now].func);
-					else
+					if (type == 1) {
+						exec_mbem(ptr);
+					} else {
+						int (*func)() = ptr;
 						(*func)(pm[now].arg);
-
-					if (func == Select)
-						now++;
-
+						if (func == Select)
+							now++;
+					}
 					draw_menu(pm);
 					modify_user_mode(MMENU);
 					R_monitor();
