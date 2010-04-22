@@ -242,12 +242,17 @@ int bbssndmail_main(void)
 		return BBS_EACCES;
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;
+
 	const char *recv = getparm("recv");
 	if (*recv == '\0')
 		return BBS_EINVAL;
-	const char *title = getparm("title");
+
+	char title[STRLEN];
+	strlcpy(title, getparm("title"), sizeof(title));
+	printable_filter(title);
 	if (*title == '\0')
-		title = "没主题";
+		strlcpy(title, "没主题", sizeof(title));
+
 	const char *text = getparm("text");
 	int len = strlen(text);
 	char header[320];

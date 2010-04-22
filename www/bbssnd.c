@@ -180,12 +180,10 @@ int bbssnd_main(void)
 
 	char title[sizeof(fh.title)];
 	if (!isedit) {
-		char *t = getparm("title");
-		if (*t == '\0')
+		strlcpy(title, getparm("title"), sizeof(title));
+		printable_filter(title);
+		if (*title == '\0')
 			return BBS_EINVAL;
-		else
-			strlcpy(title, t, sizeof(title));
-		ansi_filter(title, title);
 	}
 
 // TODO: ...

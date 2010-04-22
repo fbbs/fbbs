@@ -619,3 +619,22 @@ const char *check_gbk(const char *title)
 	}
 	return (gbk ? title - 1 : title);
 }
+
+/**
+ * Remove non-printable characters.
+ * @param[in, out] str The string to be filtered.
+ */
+void printable_filter(char *str)
+{
+	if (!str)
+		return;
+
+	char *dst = str;
+
+	while (*str != '\0') {
+		if (isprint2(*str))
+			*dst++ = *str;
+		str++;
+	}
+	*dst = '\0';
+}

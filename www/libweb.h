@@ -112,6 +112,7 @@ bool valid_mailname(const char *file);
 int fcgi_init_loop(int mode);
 void print_session(void);
 const char *check_gbk(const char *title);
+void printable_filter(char *str);
 
 #endif  //FB_LIBWEB_H
 
