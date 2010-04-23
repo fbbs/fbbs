@@ -581,7 +581,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 #endif
 #ifdef FDQUAN
 	struct user_info uin;
-	const char *idcolor;
+	const char *idcolor = "";
 	extern int t_cmpuids();
 #endif
 	type = brc_unread(ent->filename) ?
