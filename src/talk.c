@@ -105,7 +105,7 @@ char *user;
 	if (!(tuid = getuser(user)))
 	return 0;
 	if (!search_ulist(&uin, t_cmpuids, tuid))
-	return 0;
+		return 0;
 	return (uin.invisible);
 }
 char pagerchar(int friend, int pager) {
@@ -564,7 +564,8 @@ int num_useshell() {
 	return count_useshell(NULL);
 }
 
-int t_cmpuids(int uid, struct user_info* up) {
+int t_cmpuids(int uid, const struct user_info *up)
+{
 	return (up->active && uid == up->uid);
 }
 
@@ -883,20 +884,14 @@ struct user_info ui;
 char page_requestor[STRLEN];
 char page_requestorid[STRLEN];
 
-int
-cmpunums(unum, up)
-int unum;
-struct user_info *up;
+int cmpunums(int unum, const struct user_info *up)
 {
 	if (!up->active)
 	return 0;
 	return (unum == up->destuid);
 }
 
-int
-cmpmsgnum(unum, up)
-int unum;
-struct user_info *up;
+int cmpmsgnum(int unum, const struct user_info *up)
 {
 	if (!up->active)
 	return 0;
@@ -909,13 +904,13 @@ int mode;
 {
 	int tuid;
 	if (mode == 0)
-	tuid = search_ulist(&ui, cmpunums, usernum);
+		tuid = search_ulist(&ui, cmpunums, usernum);
 	else
-	tuid = search_ulist(&ui, cmpmsgnum, usernum);
+		tuid = search_ulist(&ui, cmpmsgnum, usernum);
 	if (tuid == 0)
-	return 1;
+		return 1;
 	if (!ui.sockactive)
-	return 1;
+		return 1;
 	uinfo.destuid = ui.uid;
 	sprintf(page_requestor, "%s (%s)", ui.userid, ui.username);
 	strcpy(page_requestorid, ui.userid);

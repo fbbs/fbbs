@@ -27,7 +27,8 @@
 
 void mail_info(char *lastword);
 
-int cmpuids3(int unum, struct user_info *urec) {
+int cmpuids3(int unum, const struct user_info *urec)
+{
 	return ((unum == urec->uid) && (uinfo.pid != urec->pid));
 }
 

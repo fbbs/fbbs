@@ -418,10 +418,11 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	return FULLUPDATE;
 }
 
+extern int t_cmpuids(int uid, const struct user_info *up);
+
 // Show title when entering a board.
 static void readtitle(void)
 {
-	extern int t_cmpuids();
 	struct boardheader *bp;
 	struct bstat *bs;
 	int i, j, bnum, tuid;
