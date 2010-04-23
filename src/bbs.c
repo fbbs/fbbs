@@ -461,20 +461,22 @@ static void readtitle(void)
 		strcpy(header, "诚征版主中");
 	} else {
 		strcpy(header, "版主: ");
+
 		// Online BMs are shown in green, offline yellow, cloaking cyan
 		// (if currentuser have PERM_SEECLOAK, otherwise in yellow).
 		for (i = 0; i < bnum; i++) {
 			tuid = getuser(bmlists[i]);
-			search_ulist(&uin, t_cmpuids, tuid);
-			if (uin.active && uin.pid && !uin.invisible)
+			tuid = search_ulist(&uin, t_cmpuids, tuid);
+			if (tuid && uin.active && uin.pid && !uin.invisible)
 				sprintf(tmp, "\033[32m%s\033[33m ", bmlists[i]);
-			else if (uin.active && uin.pid && uin.invisible
+			else if (tuid && uin.active && uin.pid && uin.invisible
 					&& (HAS_PERM(PERM_SEECLOAK) || usernum == uin.uid))
 				sprintf(tmp, "\033[36m%s\033[33m ", bmlists[i]);
 			else
 				sprintf(tmp, "%s ", bmlists[i]);
 			strcat(header, tmp);
 		}
+
 	}
 	if (chkmail())
 		strcpy(title, "[您有信件，按 M 看新信]");
@@ -579,7 +581,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 #endif
 #ifdef FDQUAN
 	struct user_info uin;
-	char idbuf[5] = "";
+	const char *idcolor;
 	extern int t_cmpuids();
 #endif
 	type = brc_unread(ent->filename) ?
@@ -641,17 +643,19 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 	} else {
 		date = "";
 	}
+
 #ifdef FDQUAN
-	search_ulist(&uin, t_cmpuids, getuser(ent->owner));
-	if (!uin.active
-		|| (uin.active && uin.invisible && !HAS_PERM (PERM_SEECLOAK)))
-		strcpy(idbuf, "1;30");
-	else if(uin.invisible && HAS_PERM(PERM_SEECLOAK))
-		strcpy(idbuf, "1;36");
-	else if (uin.currbrdnum == getbnum (currboard, &currentuser)
-		|| !strcmp (uin.userid, currentuser.userid))
-		strcpy(idbuf, "1;37");
+	if (!search_ulist(&uin, t_cmpuids, getuser(ent->owner)) || !uin.active
+		|| (uin.active && uin.invisible && !HAS_PERM (PERM_SEECLOAK))) {
+		idcolor = "1;30";
+	} else if (uin.invisible && HAS_PERM(PERM_SEECLOAK)) {
+		idcolor = "1;36";
+	} else if (uin.currbrdnum == getbnum (currboard, &currentuser)
+		|| !strcmp (uin.userid, currentuser.userid)) {
+		idcolor = "1;37";
+	}
 #endif
+
 #ifdef COLOR_POST_DATE
 	mytm = localtime(&filetime);
 	sprintf (color, "\033[1;%dm", 30 + mytm->tm_wday + 1);
@@ -687,7 +691,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 #endif
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
 #ifdef FDQUAN
-				typeprefix, type, typesufix, idbuf, ent->owner, color, date, 
+				typeprefix, type, typesufix, idcolor, ent->owner, color, date, 
 #else
 				typeprefix, type, typesufix, ent->owner, color, date, 
 #endif
@@ -705,7 +709,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 			sprintf (buf,
 #ifdef FDQUAN
 					" \033[1;31m [∞]\033[m %c \033[%sm%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
-					type, idbuf, ent->owner, color, date,
+					type, idcolor, ent->owner, color, date,
 #else
 					" \033[1;31m [∞]\033[m %c %-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
 					type, ent->owner, color, date,
@@ -723,7 +727,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 #endif
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
 #ifdef FDQUAN
-				typeprefix, type, typesufix, idbuf, ent->owner, color, date,
+				typeprefix, type, typesufix, idcolor, ent->owner, color, date,
 #else
 				typeprefix, type, typesufix, ent->owner, color, date,
 #endif
