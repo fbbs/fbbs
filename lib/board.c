@@ -8,7 +8,7 @@ int changeboard(struct boardheader **bpp, char *cboard, const char *board)
 		return -1;
 
 	*bpp = getbcache(board);
-	if (bpp == NULL)
+	if (*bpp == NULL)
 		return -1;
 
 	strcpy(cboard, board);
