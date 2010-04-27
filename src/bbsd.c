@@ -19,6 +19,14 @@
 #endif // SSHBBS
 #include "bbs.h"
 
+#ifndef NSIG
+#ifdef _NSIG
+#define NSIG _NSIG
+#else
+#define NSIG 65
+#endif
+#endif
+
 #ifdef SSHBBS
 #define KEYS_FOLDER BBSHOME"/etc/ssh"
 #define PID_FILE	BBSHOME"/reclog/sshbbsd.pid"

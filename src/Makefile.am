@@ -1,5 +1,5 @@
 AM_CFLAGS = -O2 -pipe -Wall -Wno-implicit -export @ENABLE_DEBUG@
-AM_CPPFLAGS = -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I../include
+AM_CPPFLAGS = -D_XOPEN_SOURCE=500 -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I../include
 LIBS = -lcrypt -ldl -lgd
 LDADD = ../lib/libBBS.a
 
@@ -35,5 +35,5 @@ thread_SOURCES = thread.c
 lib_LTLIBRARIES = admintool.la
 admintool_la_SOURCES = admintool.c
 admintool_la_LDFLAGS = -module -L../lib
-admintool_la_CPPFLAGS = -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DBACKUP_RANGE_DELETE -I../include
+admintool_la_CPPFLAGS = -D_XOPEN_SOURCE=500 -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DBACKUP_RANGE_DELETE -I../include
 libdir=${prefix}/so
