@@ -355,7 +355,7 @@ int ent_chat(char *chatbuf) {
 			return -1;
 		memset(&sin, 0, sizeof sin);
 		sin.sin_family = PF_INET;
-		memcpy(&sin.sin_addr, h->h_addr, h->h_length);
+		memcpy(&sin.sin_addr, h->h_addr_list[0], h->h_length);
 		sin.sin_port = htons(portnum[i]);
 		cfd = socket(sin.sin_family, SOCK_STREAM, 0);
 
@@ -365,7 +365,7 @@ int ent_chat(char *chatbuf) {
 				return -1;
 			memset(&sin, 0, sizeof sin);
 			sin.sin_family = PF_INET;
-			memcpy(&sin.sin_addr, h->h_addr, h->h_length);
+			memcpy(&sin.sin_addr, h->h_addr_list[0], h->h_length);
 			chatport = CHATPORT1;
 			sin.sin_port = htons(chatport);
 			close(cfd);
@@ -384,7 +384,7 @@ int ent_chat(char *chatbuf) {
 			return -1;
 		memset(&sin, 0, sizeof(sin));
 		sin.sin_family = PF_INET;
-		memcpy(&sin.sin_addr, h->h_addr, h->h_length);
+		memcpy(&sin.sin_addr, h->h_addr_list[0], h->h_length);
 		sin.sin_port = htons(chatport);
 		cfd = socket(sin.sin_family, SOCK_STREAM, 0);
 

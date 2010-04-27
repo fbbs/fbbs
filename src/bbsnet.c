@@ -97,7 +97,7 @@ static void do_bbsnet(const site_t *site)
 		alarm(CONNECT_TIMEOUT);
 		struct hostent *he = gethostbyname(site->ip);
 		if (he) {
-			memcpy(&sock.sin_addr, he->h_addr, he->h_length);
+			memcpy(&sock.sin_addr, he->h_addr_list[0], he->h_length);
 		} else {
 			if ((sock.sin_addr.s_addr = inet_addr(site->ip)) < 0) {
 				close(fd);

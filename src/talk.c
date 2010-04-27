@@ -1033,7 +1033,7 @@ int talkreply() {
 	}
 	memset(&sin, 0, sizeof(sin));
 	sin.sin_family = h->h_addrtype;
-	memcpy(&sin.sin_addr, h->h_addr, h->h_length);
+	memcpy(&sin.sin_addr, h->h_addr_list[0], h->h_length);
 	sin.sin_port = ui.sockaddr;
 	a = socket(sin.sin_family, SOCK_STREAM, 0);
 	if ((connect(a, (struct sockaddr *) &sin, sizeof(sin))))
