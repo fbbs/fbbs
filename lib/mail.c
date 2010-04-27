@@ -129,7 +129,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 		if (mkdir(filepath, 0755) == -1)
 			return BBS_EINTNL;
 	} else {
-		if (!(st.st_mode & S_IFDIR))
+		if (!S_ISDIR(st.st_mode))
 			return BBS_EINTNL;
 	}
 	// TODO: get_fname?
