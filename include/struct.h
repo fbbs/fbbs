@@ -1,9 +1,12 @@
 #ifndef FB_STRUCT_H
 #define FB_STRUCT_H
 
+#include <stdint.h>
 #include "config.h"
 
 typedef unsigned char uschar;
+
+typedef int64_t fb_time_t;
 
 /** User infomation on disk. */
 struct userec {
@@ -27,22 +30,10 @@ struct userec {
 	unsigned int prefs;       ///< exdended user preferences, not yet used.
 	// TODO: remove noteline
 	int noteline;             ///< will be removed soon.
-	time_t firstlogin;       ///< time of first login.
-#if SIZEOF_TIME_T == 4
-	char pad1[4];
-#endif
-	time_t lastlogin;        ///< time of last login.
-#if SIZEOF_TIME_T == 4
-	char pad2[4];
-#endif
-	time_t lastlogout;       ///< time of last logout.
-#if SIZEOF_TIME_T == 4
-	char pad3[4];
-#endif
-	time_t dateforbet;       ///< loan deadline.
-#if SIZEOF_TIME_T == 4
-	char pad4[4];
-#endif
+	fb_time_t firstlogin;     ///< time of first login.
+	fb_time_t lastlogin;      ///< time of last login.
+	fb_time_t lastlogout;     ///< time of last logout.
+	fb_time_t dateforbet;     ///< loan deadline.
 	// TODO: remove notedate
 	int64_t notedate;         ///< will be removed soon.
 	char userid[EXT_IDLEN];   ///< userid.
