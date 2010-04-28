@@ -328,8 +328,7 @@ const char *generate_verify_num() {
  */
 static bool strisalpha(const char *str)
 {
-	const char *s;
-	for (s = str; *s != '\0'; s++)
+	for (const char *s = str; *s != '\0'; s++)
 		if (!isalpha(*s))
 			return false;
 	return true;
