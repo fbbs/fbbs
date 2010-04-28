@@ -18,11 +18,13 @@ static unsigned char *b2g;  ///< the starting address of mapped b2g table.
 
 /**
  * Revert convert option and redraw screen.
+ * @return Current convert option.
  */
-void switch_code(void)
+int switch_code(void)
 {
 	convcode = !convcode;
 	redoscr();
+	return convcode;
 }
 
 /**

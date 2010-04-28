@@ -9,7 +9,12 @@
 #ifdef FDQUAN
 #define ALLOWGAME
 #endif
-//modified by money 2002.11.15
+
+enum {
+	TYPE_FUNCTION = 0,
+	TYPE_STRING = 1,
+	TYPE_INVALID = -1,
+};
 
 int domenu(const char *menu_name);
 int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodbye();
@@ -26,9 +31,6 @@ int r_searchall();
 /*2003.04.23 added by stephen*/
 int giveUpBBS();
 /*stephen add end*/
-#ifdef SMS
-void sms_menu();
-#endif
 
 int ent_bnet2();
 
@@ -62,140 +64,162 @@ int wall();
 int friend_wall();
 static int exec_mbem(const char *s);
 
-typedef struct {
-	char *name;
-	void *fptr;
-	int type;
-} smenu_t;
+typedef int (*telnet_handler_t)();
 
-static void *sysconf_funcptr(const char *func_name, int *type)
+typedef struct {
+	const char *name;
+	telnet_handler_t fptr;
+} cmd_list_t;
+
+#ifdef DLM
+typedef struct {
+	const char *name;
+	const char *fptr;
+} dlm_list_t;
+#endif
+
+static const void *sysconf_funcptr(const char *func_name, int *type)
 {
-	static const smenu_t cmdlist[] = {
-		{ "domenu", domenu, 0 },
-		{ "EGroups", board_read_group, 0 },
-		{ "BoardsAll", board_read_all, 0 },
-		{ "BoardsGood", goodbrd_show, 0 },
-		{ "BoardsNew", board_read_new, 0 },
-		{ "LeaveBBS", Goodbye, 0 },
-		{ "Announce", Announce, 0 },
-		{ "Personal", Personal, 0 },
-		{ "SelectBoard", board_select, 0 },
-		{ "ReadBoard", board_read, 0 },
-		{ "SetAlarm", setcalltime, 0 },
-		{ "MailAll", mailall, 0 },
-		{ "LockScreen", x_lockscreen, 0 },
-		{ "ShowUser", x_showuser, 0 },
-		{ "OffLine", offline, 0 },
-		{ "GiveUpBBS", giveUpBBS, 0 },
-#ifdef SMS
-		{ "Sms_Menu", sms_menu, 0},
-#endif
-		{ "ReadNewMail", m_new, 0 },
-		{ "ReadMail", m_read, 0 },
-		{ "SendMail", m_send, 0 },
-		{ "GroupSend", g_send, 0 },
-		{ "OverrideSend", ov_send, 0 },
+	static const cmd_list_t cmdlist[] = {
+		{ "domenu", domenu },
+		{ "EGroups", board_read_group },
+		{ "BoardsAll", board_read_all },
+		{ "BoardsGood", goodbrd_show },
+		{ "BoardsNew", board_read_new },
+		{ "LeaveBBS", Goodbye },
+		{ "Announce", Announce },
+		{ "Personal", Personal },
+		{ "SelectBoard", board_select },
+		{ "ReadBoard", board_read },
+		{ "SetAlarm", setcalltime },
+		{ "MailAll", mailall },
+		{ "LockScreen", x_lockscreen },
+		{ "ShowUser", x_showuser },
+		{ "OffLine", offline },
+		{ "GiveUpBBS", giveUpBBS },
+		{ "ReadNewMail", m_new },
+		{ "ReadMail", m_read },
+		{ "SendMail", m_send },
+		{ "GroupSend", g_send },
+		{ "OverrideSend", ov_send },
 #ifdef INTERNET_EMAIL
-		{ "SendNetMail", m_internet, 0},
+		{ "SendNetMail", m_internet },
 #endif
-		{ "UserDefine", x_userdefine, 0 },
-		{ "ShowFriends", online_users_show_override, 0 },
-		{ "ShowLogins", online_users_show, 0 },
-		{ "QueryUser", t_query, 0 },
-		{ "Talk", t_talk, 0 },
-		{ "SetPager", t_pager, 0 },
-		{ "SetCloak", x_cloak, 0 },
-		{ "SendMsg", s_msg, 0 },
-		{ "ShowMsg", msg_more, 0 },
-		{ "SetFriends", t_friend, 0 },
-		{ "SetRejects", t_reject, 0 },
-		{ "RFriendWall", friend_wall,	0 },
-		{ "EnterChat", ent_chat, 0 },
-		{ "ListLogins", t_list, 0 },
-		{ "Monitor", t_monitor, 0 },
-		{ "FillForm", x_fillform, 0 },
-		{ "Information", x_info, 0 },
-		{ "EditUFiles", x_edits, 0 },
-		{ "ShowLicense", Conditions, 0 },
-		{ "ShowVersion", Info, 0 },
-		{ "Notepad", shownotepad, 0 },
-		{ "Vote", x_vote, 0 },
-		{ "VoteResult", x_results, 0 },
-		{ "ExecBBSNet", ent_bnet, 0 },
-		{ "ExecBBSNet2", ent_bnet2, 0 },
-		{ "ShowWelcome", Welcome, 0 },
-		{ "AddPCorpus", AddPCorpus, 0 },
-		{ "GoodWish", sendgoodwish, 0 },
+		{ "UserDefine", x_userdefine },
+		{ "ShowFriends", online_users_show_override },
+		{ "ShowLogins", online_users_show },
+		{ "QueryUser", t_query },
+		{ "Talk", t_talk },
+		{ "SetPager", t_pager },
+		{ "SetCloak", x_cloak },
+		{ "SendMsg", s_msg },
+		{ "ShowMsg", msg_more },
+		{ "SetFriends", t_friend },
+		{ "SetRejects", t_reject },
+		{ "RFriendWall", friend_wall },
+		{ "EnterChat", ent_chat },
+		{ "ListLogins", t_list },
+		{ "Monitor", t_monitor },
+		{ "FillForm", x_fillform },
+		{ "Information", x_info },
+		{ "EditUFiles", x_edits },
+		{ "ShowLicense", Conditions },
+		{ "ShowVersion", Info },
+		{ "Notepad", shownotepad },
+		{ "Vote", x_vote },
+		{ "VoteResult", x_results },
+		{ "ExecBBSNet", ent_bnet },
+		{ "ExecBBSNet2", ent_bnet2 },
+		{ "ShowWelcome", Welcome },
+		{ "AddPCorpus", AddPCorpus },
+		{ "GoodWish", sendgoodwish },
 #ifdef ALLOWSWITCHCODE
-		{ "SwitchCode", switch_code, 0 },
+		{ "SwitchCode", switch_code },
 #endif
 #ifdef ALLOWGAME
-		{ "WinMine", ent_winmine,0},
-		{ "Gagb", "@mod:so/game.so#gagb", 1},
-		{ "BlackJack", "@mod:so/game.so#BlackJack", 1},
-		{ "X_dice", "@mod:so/game.so#x_dice", 1},
-		{ "P_gp", "@mod:so/game.so#p_gp", 1},
-		{ "IP_nine", "@mod:so/game.so#p_nine", 1},
-		{ "OBingo", "@mod:so/game.so#bingo", 1},
-		{ "Chicken", "@mod:so/game.so#chicken_main", 1},
-		{ "Mary", "@mod:so/game.so#mary_m", 1},
-		{ "Borrow", "@mod:so/game.so#borrow", 1},
-		{ "Payoff", "@mod:so/game.so#payoff", 1},
-		{ "Impawn", "@mod:so/game.so#popshop", 1},
-		{ "Doshopping", "@mod:so/game.so#doshopping", 1},
-		{ "Lending", "@mod:so/game.so#lending", 1},
-		{ "StarChicken", "@mod:so/pip.so#mod_default", 1},
-#endif 
-		{ "RunMBEM", exec_mbem, 0 },
-		{ "Kick", kick_user, 0 },
-		{ "OpenVote", m_vote, 0 },
-		{ "SearchAll", r_searchall, 0 },
-#ifndef DLM
-		{ "Setsyspass", setsystempasswd, 0 },
-		{ "Register", m_register, 0 },
-		{ "ShowRegister", show_register, 0 },
-		{ "Info", m_info, 0 },
-		{ "Level", x_level, 0 },
-		{ "OrdainBM", m_ordainBM, 0 },
-		{ "RetireBM", m_retireBM, 0 },
-		{ "NewChangeLevel", x_new_denylevel, 0 },
-		{ "DelUser", d_user, 0 },
-		{ "NewBoard", m_newbrd, 0 },
-		{ "ChangeBrd", m_editbrd, 0 },
-		{ "BoardDel", d_board, 0 },
-		{ "SysFiles", a_edits, 0 },
-		{ "Wall", wall, 0 },
-#else
-		{ "Setsyspass", "@mod:so/admintool.so#setsystempasswd",1},
-		{ "Register", "@mod:so/admintool.so#m_register", 1},
-		{ "ShowRegister", "@mod:so/admintool.so#show_register",1},
-		{ "Info", "@mod:so/admintool.so#m_info", 1},
-		{ "Level", "@mod:so/admintool.so#x_level", 1},
-		{ "OrdainBM", "@mod:so/admintool.so#m_ordainBM", 1},
-		{ "RetireBM", "@mod:so/admintool.so#m_retireBM", 1},
-		{ "ChangeLevel", "@mod:so/admintool.so#x_denylevel", 1},
-		{ "NewChangeLevel", "@mod:so/admintool.so#x_new_denylevel", 1},
-		{ "DelUser", "@mod:so/admintool.so#d_user", 1},
-		{ "NewBoard", "@mod:so/admintool.so#m_newbrd", 1},
-		{ "ChangeBrd", "@mod:so/admintool.so#m_editbrd", 1},
-		{ "BoardDel", "@mod:so/admintool.so#d_board", 1},
-		{ "SysFiles", "@mod:so/admintool.so#a_edits", 1},
-		{ "Wall", "@mod:so/admintool.so#wall", 1},
+		{ "WinMine", ent_winmine },
 #endif
-		{ 0, 0, 0 }
+		{ "RunMBEM", exec_mbem },
+		{ "Kick", kick_user },
+		{ "OpenVote", m_vote },
+		{ "SearchAll", r_searchall },
+#ifndef DLM
+		{ "Setsyspass", setsystempasswd },
+		{ "Register", m_register },
+		{ "ShowRegister", show_register },
+		{ "Info", m_info },
+		{ "Level", x_level },
+		{ "OrdainBM", m_ordainBM },
+		{ "RetireBM", m_retireBM },
+		{ "NewChangeLevel", x_new_denylevel },
+		{ "DelUser", d_user },
+		{ "NewBoard", m_newbrd },
+		{ "ChangeBrd", m_editbrd },
+		{ "BoardDel", d_board },
+		{ "SysFiles", a_edits },
+		{ "Wall", wall },
+#endif
+		{ NULL, NULL }
 	};
 
-	int n = 0;
-	char *str;
+#ifdef DLM
+	static const dlm_list_t dlmlist[] = {
+#ifdef ALLOWGAME
+		{ "Gagb", "@mod:so/game.so#gagb" },
+		{ "BlackJack", "@mod:so/game.so#BlackJack" },
+		{ "X_dice", "@mod:so/game.so#x_dice" },
+		{ "P_gp", "@mod:so/game.so#p_gp" },
+		{ "IP_nine", "@mod:so/game.so#p_nine" },
+		{ "OBingo", "@mod:so/game.so#bingo" },
+		{ "Chicken", "@mod:so/game.so#chicken_main" },
+		{ "Mary", "@mod:so/game.so#mary_m" },
+		{ "Borrow", "@mod:so/game.so#borrow" },
+		{ "Payoff", "@mod:so/game.so#payoff" },
+		{ "Impawn", "@mod:so/game.so#popshop" },
+		{ "Doshopping", "@mod:so/game.so#doshopping" },
+		{ "Lending", "@mod:so/game.so#lending" },
+		{ "StarChicken", "@mod:so/pip.so#mod_default" },
+#endif // ALLOWGAME
+		{ "Setsyspass", "@mod:so/admintool.so#setsystempasswd" },
+		{ "Register", "@mod:so/admintool.so#m_register" },
+		{ "ShowRegister", "@mod:so/admintool.so#show_register" },
+		{ "Info", "@mod:so/admintool.so#m_info" },
+		{ "Level", "@mod:so/admintool.so#x_level" },
+		{ "OrdainBM", "@mod:so/admintool.so#m_ordainBM" },
+		{ "RetireBM", "@mod:so/admintool.so#m_retireBM" },
+		{ "ChangeLevel", "@mod:so/admintool.so#x_denylevel" },
+		{ "NewChangeLevel", "@mod:so/admintool.so#x_new_denylevel" },
+		{ "DelUser", "@mod:so/admintool.so#d_user" },
+		{ "NewBoard", "@mod:so/admintool.so#m_newbrd" },
+		{ "ChangeBrd", "@mod:so/admintool.so#m_editbrd" },
+		{ "BoardDel", "@mod:so/admintool.so#d_board" },
+		{ "SysFiles", "@mod:so/admintool.so#a_edits" },
+		{ "Wall", "@mod:so/admintool.so#wall" },
+		{ NULL, NULL }
+	};
+#endif // DLM
 
-	while ((str = cmdlist[n].name) != NULL) {
-		if (strcmp(func_name, str) == 0) {
-			*type = cmdlist[n].type;
-			return (cmdlist[n].fptr);
+	const cmd_list_t *cmd = cmdlist;
+	while (cmd->name != NULL) {
+		if (strcmp(func_name, cmd->name) == 0) {
+			*type = TYPE_FUNCTION;
+			return *(void * const *)(&cmd->fptr);
 		}
-		n++;
+		++cmd;
 	}
-	*type = -1;
+
+#ifdef DLM
+	const dlm_list_t *dlm = dlmlist;
+	while (dlm->name != NULL) {
+		if (strcmp(func_name, dlm->name) == 0) {
+			*type = TYPE_STRING;
+			return dlm->fptr;
+		}
+		++dlm;
+	}
+#endif // DLM
+
+	*type = TYPE_INVALID;
 	return NULL;
 }
 
@@ -219,7 +243,8 @@ static int exec_mbem(const char *str)
 
 		void *hdll = dlopen(buf + 5, RTLD_LAZY);
 		if (hdll) {
-			int (*func)() = dlsym(hdll, ptr ? ptr : "mod_main");
+			int (*func)();
+			*(void **)(&func) = dlsym(hdll, ptr ? ptr : "mod_main");
 			if (func)
 				func();
 			dlclose(hdll);
@@ -364,13 +389,14 @@ int domenu(const char *menu_name)
 					return 0;
 				if (pm[now].func) {
 					int type;
-					void *ptr = sysconf_funcptr(pm[now].func, &type);
+					const void *ptr = sysconf_funcptr(pm[now].func, &type);
 					if (!ptr)
 						break;
 					if (type == 1) {
 						exec_mbem(ptr);
 					} else {
-						int (*func)() = ptr;
+						telnet_handler_t func;
+						func = *(telnet_handler_t *)ptr;
 						(*func)(pm[now].arg);
 						if (func == board_select)
 							now++;
