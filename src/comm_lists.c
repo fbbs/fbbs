@@ -68,8 +68,6 @@ typedef struct {
 	int type;
 } smenu_t;
 
-smenu_t currcmd;
-
 static void *sysconf_funcptr(const char *func_name, int *type)
 {
 	static const smenu_t cmdlist[] = {
