@@ -10,12 +10,6 @@
 #define ALLOWGAME
 #endif
 
-enum {
-	TYPE_FUNCTION = 0,
-	TYPE_STRING = 1,
-	TYPE_INVALID = -1,
-};
-
 int domenu(const char *menu_name);
 int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodbye();
 int board_read_new(), goodbrd_show(), board_read(), board_select(), Welcome();
@@ -78,7 +72,7 @@ typedef struct {
 } dlm_list_t;
 #endif
 
-static const void *sysconf_funcptr(const char *func_name, int *type)
+static telnet_handler_t sysconf_funcptr(const char *name)
 {
 	static const cmd_list_t cmdlist[] = {
 		{ "domenu", domenu },
@@ -162,7 +156,18 @@ static const void *sysconf_funcptr(const char *func_name, int *type)
 		{ NULL, NULL }
 	};
 
+	const cmd_list_t *cmd = cmdlist;
+	while (cmd->name != NULL) {
+		if (strcmp(name, cmd->name) == 0)
+			return cmd->fptr;
+		++cmd;
+	}
+	return NULL;
+}
+
 #ifdef DLM
+static const char *sysconf_funcstr(const char *name)
+{
 	static const dlm_list_t dlmlist[] = {
 #ifdef ALLOWGAME
 		{ "Gagb", "@mod:so/game.so#gagb" },
@@ -197,31 +202,16 @@ static const void *sysconf_funcptr(const char *func_name, int *type)
 		{ "Wall", "@mod:so/admintool.so#wall" },
 		{ NULL, NULL }
 	};
-#endif // DLM
 
-	const cmd_list_t *cmd = cmdlist;
-	while (cmd->name != NULL) {
-		if (strcmp(func_name, cmd->name) == 0) {
-			*type = TYPE_FUNCTION;
-			return *(void * const *)(&cmd->fptr);
-		}
-		++cmd;
-	}
-
-#ifdef DLM
 	const dlm_list_t *dlm = dlmlist;
 	while (dlm->name != NULL) {
-		if (strcmp(func_name, dlm->name) == 0) {
-			*type = TYPE_STRING;
+		if (strcmp(name, dlm->name) == 0)
 			return dlm->fptr;
-		}
 		++dlm;
 	}
-#endif // DLM
-
-	*type = TYPE_INVALID;
 	return NULL;
 }
+#endif // DLM
 
 /**
  * Execute function in dynamic loaded modules.
@@ -388,18 +378,21 @@ int domenu(const char *menu_name)
 				if (strcmp(pm[now].arg, "..") == 0)
 					return 0;
 				if (pm[now].func) {
-					int type;
-					const void *ptr = sysconf_funcptr(pm[now].func, &type);
-					if (!ptr)
-						break;
-					if (type == 1) {
-						exec_mbem(ptr);
-					} else {
-						telnet_handler_t func;
-						func = *(telnet_handler_t *)ptr;
+					telnet_handler_t func = sysconf_funcptr(pm[now].func);
+					if (func) {
 						(*func)(pm[now].arg);
 						if (func == board_select)
 							now++;
+					} else {
+#ifdef DLM
+						const char *ptr = sysconf_funcstr(pm[now].func);
+						if (!ptr)
+							break;
+						else
+							exec_mbem(ptr);
+#else
+						;
+#endif // DLM
 					}
 					draw_menu(pm);
 					modify_user_mode(MMENU);
