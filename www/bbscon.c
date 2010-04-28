@@ -7,6 +7,27 @@ static int cmp_fid(void *arg, void *buf)
 	return (fp->id == *fid);
 }
 
+// Find post whose id = 'fid'.
+// If 'fid' > any post's id, return 'end',
+// otherwise, return the minimum one among all post whose id > 'fid'.
+const struct fileheader *dir_bsearch(const struct fileheader *begin, 
+		const struct fileheader *end, unsigned int fid)
+{
+	const struct fileheader *mid;
+	while (begin < end) {
+		mid = begin + (end - begin) / 2;
+		if (mid->id == fid) {
+			return mid;
+		}
+		if (mid->id < fid) {
+			begin = mid + 1;
+		} else {
+			end = mid;
+		}
+	}
+	return begin;
+}
+
 bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp)
 {

@@ -4,6 +4,9 @@ enum {
 	POSTS_PER_PAGE = 20,
 };
 
+extern const struct fileheader *dir_bsearch(const struct fileheader *begin, 
+		const struct fileheader *end, unsigned int fid);
+
 // If 'action' == 'n', return at most 'count' posts
 // after 'fid' in thread 'gid', otherwise, posts before 'fid'.
 // Return NULL if not found, otherwise, memory should be freed by caller.

@@ -103,8 +103,6 @@ int iconexp(int exp, int *repeat);
 int save_user_data(struct userec *x);
 int user_perm(struct userec *x, int level);
 
-struct fileheader *dir_bsearch(const struct fileheader *begin, 
-		const struct fileheader *end, unsigned int fid);
 int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);

@@ -498,27 +498,6 @@ int user_perm(struct userec *x, int level) {
 	return (level?x->userlevel & level:1);
 }
 
-// Find post whose id = 'fid'.
-// If 'fid' > any post's id, return 'end',
-// otherwise, return the minimum one among all post whose id > 'fid'.
-struct fileheader *dir_bsearch(const struct fileheader *begin, 
-		const struct fileheader *end, unsigned int fid)
-{
-	const struct fileheader *mid;
-	while (begin < end) {
-		mid = begin + (end - begin) / 2;
-		if (mid->id == fid) {
-			return mid;
-		}
-		if (mid->id < fid) {
-			begin = mid + 1;
-		} else {
-			end = mid;
-		}
-	}
-	return begin;
-}
-
 // TODO: put into memory
 int maxlen(const char *board)
 {
