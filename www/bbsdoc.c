@@ -142,6 +142,8 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 	return total;
 }
 
+extern int bbsboa_main();
+
 static int bbsdoc(int mode)
 {
 	char board[STRLEN];

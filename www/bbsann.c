@@ -41,7 +41,6 @@ static char *getbfroma(const char *path)
 	static char buf1[256], buf2[256];
 	memset(buf1, '\0', sizeof(buf1));
 	memset(buf2, '\0', sizeof(buf2));
-	int len;
 	if (path == NULL || *path == '\0')
 		return "";
 	++path;

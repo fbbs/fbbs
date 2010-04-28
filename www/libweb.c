@@ -486,7 +486,6 @@ int iconexp(int exp, int *repeat)
 }
 
 int save_user_data(struct userec *x) {
-	FILE *fp;
 	int n;
 	n = searchuser(x->userid) - 1;
 	if(n < 0 || n >= MAXUSERS)
