@@ -718,9 +718,8 @@ static int login_query(void)
 #ifdef LOGINASNEW
 			memset(&currentuser, 0, sizeof(currentuser));
 			new_register();
-			// TODO: Already exit..
-			ansimore3("etc/firstlogin", YEA);
-			break;
+			oflush();
+			exit(1);
 #else
 			prints("\033[1;37m本系统目前无法以 \033[36mnew\033[37m 注册, "
 				"请用\033[36m guest\033[37m 进入...\033[m\n");
