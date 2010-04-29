@@ -29,8 +29,8 @@ static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 			user->money, user->bet, cmoney(user->money - user->bet),
 			exp, cexpstr(exp));
 	fprintf(fp, "文 章 数: [\033[1;32m%d\033[m] "
-			"奖章数: [\033[1;32m%d\033[m](\033[1;33m%s\033[m) "
-			"生命力：[\033[1;32m%d\033[m] 网龄[\033[1;32m%d天\033[m]\n\n",
+			"奖章数: [\033[1;32m%d\033[m](\033[1;33m%s\033[m) 生命力："
+			"[\033[1;32m%d\033[m] 网龄[\033[1;32m%"PRIdFBT"天\033[m]\n\n",
 			user->numposts, user->nummedals, cnummedals(user->nummedals),
 			compute_user_value(user), (now - user->firstlogin) / 86400);
 #else
@@ -55,7 +55,7 @@ int main(void)
 	int fd = open(BBSHOME"/tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);
 	if (fd < 0)
 		return EXIT_FAILURE;
-	unlink(fd);
+	unlink(BBSHOME"/tmp/killuser");
 
 	FILE *log = fopen(BBSHOME"/tomb/log", "w+");
 	if (!log)
@@ -87,20 +87,20 @@ int main(void)
 
 			post_add(post, &user, now);
 			fwrite(&user, sizeof(user), 1, data);
-			fprintf(log, "%s\n", user->userid);
+			fprintf(log, "%s\n", user.userid);
 			
 			snprintf(file, sizeof(file), "mail/%c/%s",
-					toupper(user->userid[0]), user->userid);
+					toupper(user.userid[0]), user.userid);
 			snprintf(buf, sizeof(buf), "%s~", file);
 			rename(file, buf);
 
 			snprintf(file, sizeof(file), "home/%c/%s",
-					toupper(user->userid[0]), user->userid);
+					toupper(user.userid[0]), user.userid);
 			snprintf(buf, sizeof(buf), "%s~", file);
 			rename(file, buf);
 
 			substitut_record(PASSFILE, &zero, sizeof(zero), i + 1);
-			del_uidshm(i+1, user->userid);
+			del_uidshm(i + 1, user.userid);
 		}
 	}
 
