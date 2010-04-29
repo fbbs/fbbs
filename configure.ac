@@ -72,5 +72,6 @@ AC_ARG_ENABLE(ssh, [  --enable-ssh            compile ssh module],
 AC_SUBST(ENABLE_SSH)
 AM_CONDITIONAL([SSH], [test x$ssh = xtrue])
 
-AC_CONFIG_FILES([Makefile lib/Makefile libssh/Makefile src/Makefile www/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile libssh/Makefile src/Makefile www/Makefile
+                 util/local_utl/Makefile])
 AC_OUTPUT
