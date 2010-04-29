@@ -2,9 +2,10 @@
 #define FB_STRUCT_H
 
 #include <stdint.h>
+#include <inttypes.h>
 #include "config.h"
 
-typedef unsigned char uschar;
+#define PRIdFBT PRId64
 
 typedef int64_t fb_time_t;
 
