@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "post.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
@@ -133,10 +134,6 @@ int bbsedit_main(void)
 	return do_bbspst(true);
 }
 
-int post_article(const struct userec *user, const struct boardheader *bp,
-		const char *title, const char *content, int sig, bool cross,
-		const char *ip, const struct fileheader *o_fp);
-
 int bbsccc_main(void)
 {
 	if (!loginok)
@@ -174,11 +171,16 @@ int bbsccc_main(void)
 			snprintf(title, sizeof(title), "[зЊди]%s", fh.title);
 		if (mmap_open(file, &m) < 0)
 			return BBS_EINTNL;
-		int ret = post_article(&currentuser, bp2, title, m.ptr, 0, true,
-				fromhost, NULL);
+
+		post_request_t pr = { .autopost = false, .crosspost = true,
+			.userid = NULL, .nick = NULL, .user = &currentuser,
+			.bp = bp2, .title = title, .content = m.ptr, .sig = 0,
+			.ip = fromhost, .o_fp = NULL, .noreply = false, .mmark = false };
+		int ret = do_post_article(&pr);
 		mmap_close(&m);
 		if (ret < 0)
 			return BBS_EINTNL;
+
 		xml_header("bbs");
 		printf("<bbsccc t='%d' b='%d' ", bp2 - bcache + 1, bp - bcache + 1);
 		print_session();

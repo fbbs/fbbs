@@ -1,88 +1,8 @@
 #include "libweb.h"
+#include "post.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
-
-// similar to 'date_to_fname()'.
-// Creates a new file in 'dir' with prefix 'pfx'.
-// Returns filename(in 'fname') and stream on success, NULL on error.
-static FILE *get_fname(const char *dir, const char *pfx, char *fname, size_t size)
-{
-	if (dir == NULL || pfx == NULL)
-		return NULL;
-	const char c[] = "ZYXWVUTSRQPONMLKJIHGFEDCBA";
-	int t = (int)time(NULL);
-	int count = snprintf(fname, size, "%s%s%d. ", dir, pfx, t);
-	if (count < 0 || count >= size)
-		return NULL;
-	int fd;
-	for (int i = sizeof(c) - 2; i >= 0; ++i) {
-		fname[count - 1] = c[i];
-		if ((fd = open(fname, O_CREAT | O_WRONLY | O_EXCL, 0644)) > 0)
-			return fdopen(fd, "w");
-	}
-	return NULL;
-}
-
-/**
- * Post an article.
- * @param user The owner.
- * @param bp The board to post.
- * @param title The title.
- * @param content The content.
- * @param sig The number of signature to use.
- * @param cross Whether this is a cross post.
- * @param ip The owner's IP address.
- * @param o_fp Pointer to the replied post. NULL if this is a new thread.
- * @return 0 on success, -1 on error.
- */
-int post_article(const struct userec *user, const struct boardheader *bp,
-		const char *title, const char *content, int sig, bool cross,
-		const char *ip, const struct fileheader *o_fp)
-{
-	if (user == NULL || bp == NULL || title == NULL 
-			|| content == NULL || ip == NULL)
-		return -1;
-
-	char fname[HOMELEN];
-	char dir[HOMELEN];
-	int idx = snprintf(dir, sizeof(dir), "boards/%s/", bp->filename);
-	const char *pfx = "M.";
-	FILE *fptr;
-	if ((fptr = get_fname(dir, pfx, fname, sizeof(fname))) == NULL)
-		return -1;
-	fprintf(fptr, "发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n",
-			user->userid, user->username, bp->filename, title, BBSNAME,
-			getdatestring(time(NULL), DATE_ZH));
-	fputs(content, fptr);
-	add_signature(FCGI_ToFILE(fptr), currentuser.userid, sig);
-	fprintf(fptr, "\n\033[m\033[1;%2dm※ %s:·"BBSNAME" "BBSHOST
-			"·HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7,
-			cross ? "转载" : "来源", ip);
-	fclose(fptr);
-
-	struct fileheader fh;
-	memset(&fh, 0, sizeof(fh));	
-	strlcpy(fh.filename, fname + idx, sizeof(fh.filename));
-	strlcpy(fh.owner, user->userid, sizeof(fh.owner));
-	strlcpy(fh.title, title, sizeof(fh.title));
-	// TODO: assure fid order in .DIR
-	fh.id = get_nextid2(bp);
-	if (o_fp != NULL) { //reply
-		fh.reid = o_fp->id;
-		fh.gid = o_fp->gid;
-	} else {
-		fh.reid = fh.id;
-		fh.gid = fh.id;
-	}
-	setwbdir(dir, bp->filename);
-	append_record(dir, &fh, sizeof(fh));
-	updatelastpost(bp->filename);
-	brc_fcgi_init(currentuser.userid, bp->filename);
-	brc_addlist(fh.filename);
-	brc_update(currentuser.userid, bp->filename);
-	return 0;
-}
 
 static int edit_article(const char *file, const char *content, const char *ip)
 {
@@ -207,9 +127,12 @@ int bbssnd_main(void)
 		if (edit_article(file, getparm("text"), mask_host(fromhost)) < 0)
 			return BBS_EINTNL;
 	} else {
-		if (post_article(&currentuser, bp, title, getparm("text"),
-				strtol(getparm("sig"), NULL, 0), false, mask_host(fromhost),
-				reply ? &fh : NULL) < 0)
+		post_request_t pr = { .autopost = false, .crosspost = false,
+			.userid = NULL, .nick = NULL, .user = &currentuser,
+			.bp = bp, .title = title, .content = getparm("text"),
+			.sig = strtol(getparm("sig"), NULL, 0), .ip = mask_host(fromhost),
+			.o_fp = reply ? &fh : NULL, .noreply = false, .mmark = false };
+		if (do_post_article(&pr) < 0)
 			return BBS_EINTNL;
 	}
 
