@@ -4,7 +4,7 @@ LDADD = ../../lib/libBBS.a
 bindir = ${prefix}/tools
 
 bin_PROGRAMS = bbstop birthday toppost bbsuptime badbms AnnIndex showbm \
-               statBM averun account newacct horoscope zodiac
+               statBM cleanuser averun account newacct horoscope zodiac
 
 averun_SOURCES = averun.c chart.c
 account_SOURCES = account.c chart.c

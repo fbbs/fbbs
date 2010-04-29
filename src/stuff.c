@@ -135,12 +135,6 @@ void bell(void)
 	ochar(Ctrl('G'));
 }
 
-void touchnew() {
-	sprintf(genbuf, "touch by: %d\n", time(0));
-	file_append(FLUSH, genbuf);
-}
-/* rrr - Snagged from pbbs 1.8 */
-
 #define LOOKFIRST  (0)
 #define LOOKLAST   (1)
 #define QUOTEMODE  (2)

@@ -112,7 +112,6 @@
 #define ULIST_BASE   ".UTMP"       /* Names of users currently on line */
 extern char ULIST[];
 
-#define FLUSH       ".PASSFLUSH"   /* Stores date for user cache flushing */
 #define BOARDS      ".BOARDS"      /* File containing list of boards */
 #define DOT_DIR     ".DIR"         /* Name of Directory file info */
 #define THREAD_DIR  ".THREAD"      /* Name of Thread file info */

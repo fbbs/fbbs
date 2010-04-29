@@ -11,7 +11,6 @@ enum {
 //modified by money 2002.11.15
 extern char fromhost[60];
 extern time_t login_start_time;
-time_t system_time;
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
@@ -129,146 +128,20 @@ int bad_user_id(const char *userid)
 
 int getnewuserid(void)
 {
-	struct userec utmp;
-	char genbuf_rm[STRLEN]; //added by roly 02.03.22
-#ifndef SAVELIVE
-	struct userec zerorec;
-	int size;
-#endif
-	struct stat st;
-	int fd, val, i;
-	/* Following line added by Amigo 2002.04.03. Change clean account time. */
-	struct tm *area;
-	FILE *fdtmp, *log;
-	char nname[50];
-	int exp, perf; /* Add by SmallPig */
-	system_time = time(0);
-	/* Following line added by Amigo 2002.04.03. Change clean account time. */
-	area = localtime(&system_time);
-#ifndef SAVELIVE
-	/* Following line modified by Amigo 2002.04.03. Change clean account time. */
-	/*   if (stat("tmp/killuser", &st)==-1 || st.st_mtime+3600 < system_time){ */
-	if (stat("tmp/killuser", &st)==-1 || ( (st.st_mtime+72000
-			< system_time) && (area->tm_hour < 12) && (area->tm_hour > 5) )) {
-		if ((fd = open("tmp/killuser", O_RDWR | O_CREAT, 0600)) == -1)
-			return -1;
-		write(fd, getdatestring(system_time, DATE_ZH), 29);
-		close(fd);
-		log = fopen("tomb/log", "w+");
-		if (log == NULL)
-			return -1;	
-		strcpy(nname, "tmp/bbs.killid");
-		fdtmp = fopen(nname, "w+");
-		log_usies("CLEAN", "dated users.", &currentuser);
-		prints("寻找新帐号中, 请稍待片刻...\n");
-		memset(&zerorec, 0, sizeof(zerorec));
-		//      if ((fd = open(PASSFILE, O_RDWR | O_CREAT, 0600)) == -1)
-		//        return -1;
-		//      flock(fd, LOCK_EX);
-		size = sizeof(utmp);
-		for (i = 0; i < MAXUSERS; i++) {
-			//         if (read(fd, &utmp, size) != size) break;
-			getuserbyuid( &utmp, i+1);
-			val = compute_user_value(&utmp);
-			if (utmp.userid[0] != '\0' && val < 0) {
-				utmp.userid[IDLEN]=0; //added by iamfat 2004.01.05 to avoid overflow
-				sprintf(genbuf, "#%d %-12s %14.14s %d %d %d", i + 1,
-						utmp.userid, getdatestring(utmp.lastlogin, DATE_ZH), utmp.numlogins,
-						utmp.numposts, val);
-				log_usies("KILL ", genbuf, &currentuser);
-				sprintf(genbuf, "mail/%c/%s", toupper(utmp.userid[0]),
-						utmp.userid);
-				fprintf(fdtmp,
-						"\033[1;37m%s \033[m(\033[1;33m%s\033[m) 共上站 \033[1;32m%d\033[m 次 [\033[1;3%dm%s\033[m]\n",
-						utmp.userid, utmp.username, utmp.numlogins,
-						(utmp.gender == 'F') ? 5 : 6,
-						horoscope(utmp.birthmonth, utmp.birthday));
-				fprintf(fdtmp,
-						"上 次 在:[\033[1;32m%s\033[m] 从 [\033[1;32m%s\033[m] 到本站一游。\n",
-						getdatestring(utmp.lastlogin, DATE_ZH), (utmp.lasthost[0]=='\0' ? "(不详)"
-								: utmp.lasthost));
-				fprintf(fdtmp, "离站时间:[\033[1;32m%s\033[m] ", getdatestring(utmp.lastlogout, DATE_ZH));
+	struct userec user;
+	memset(&user, 0, sizeof(user));
+	strlcpy(user.userid, "new", sizeof(user.userid));
 
-				exp = countexp(&utmp);
-				perf = countperf(&utmp);
-				fprintf(fdtmp, "表现值:"
-#ifdef SHOW_PERF
-						"%d(\033[1;33m%s\033[m)"
-#else
-						"[\033[1;33m%s\033[m]"
-#endif
-						" 信箱:[\033[5;1;32m%2s\033[m]\n"
-#ifdef SHOW_PERF
-						, perf
-#endif
-						, cperf(perf),
-						(check_query_mail(genbuf) == 1) ? "信" : "  ");
-#ifdef ALLOWGAME
-				fprintf(fdtmp, "银行存款: [\033[1;32m%d元\033[m] "
-						"目前贷款: [\033[1;32m%d元\033[m](\033[1;33m%s\033[m) "
-						"经验值：[\033[1;32m%d\033[m](\033[1;33m%s\033[m)。\n",
-						utmp.money,utmp.bet,
-						cmoney(utmp.money-utmp.bet),exp,cexpstr(exp));
-				fprintf(fdtmp, "文 章 数: [\033[1;32m%d\033[m] "
-						"奖章数: [\033[1;32m%d\033[m](\033[1;33m%s\033[m) "
-						"生命力：[\033[1;32m%d\033[m] "
-						"网龄[\033[1;32m%d天\033[m]\n\n", utmp.numposts,
-						utmp.nummedals,cnummedals(utmp.nummedals),
-						compute_user_value(&utmp),(time (0) - utmp.firstlogin) / 86400);
-#else
-				fprintf(fdtmp, "文 章 数:[\033[1;32m%d\033[m] 经 验 值:"
-#ifdef SHOWEXP
-						"%d(\033[1;33m%-10s\033[m)"
-#else
-						"[\033[1;33m%-10s\033[m]"
-#endif
-						" 生命力:[\033[1;32m%d\033[m] 网龄[\033[1;32m%d天\033[m]\n\n",
-						utmp.numposts,
-#ifdef SHOWEXP
-						exp,
-#endif
-						cexpstr(exp), compute_user_value(&utmp),
-						(time(0) - utmp.firstlogin) / 86400);
-#endif
-				fprintf(log, "%s\n", utmp.userid);
-				sprintf(genbuf, "mail/%c/%s", toupper(utmp.userid[0]), utmp.userid);
-				sprintf(genbuf_rm, "%s~", genbuf);
-				rename(genbuf, genbuf_rm);
-				sprintf(genbuf, "home/%c/%s", toupper(utmp.userid[0]), utmp.userid);
-				sprintf(genbuf_rm, "%s~", genbuf);
-				rename(genbuf, genbuf_rm);
-				substitut_record(PASSFILE, &zerorec,
-						sizeof(struct userec), i+1);
-				del_uidshm(i+1, utmp.userid);
-			}
-		}
-		fclose(log);
-		fclose(fdtmp);
-		char *str = getdatestring(system_time, NA);
-		sprintf(genbuf, "[%8.8s %6.6s] 本日随风飘逝的ID", str + 6, str + 23);
-		Postfile(nname, "newcomers", genbuf, 1);
-		touchnew();
-	}
-#endif   // of SAVELIVE
-	//   if ((fd = open(PASSFILE, O_RDWR | O_CREAT, 0600)) == -1) return -1;
-	//   flock(fd, LOCK_EX);
-	i = searchnewuser();
-	fromhost[59]=0; //added by iamfat 2004.01.05 to avoid overflow
-	sprintf(genbuf, "uid %d from %s", i, fromhost);
+	int i = searchnewuser();
+
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "uid %d from %s", i, fromhost);
 	log_usies("APPLY", genbuf, &currentuser);
-	if (i <= 0 || i > MAXUSERS) {
-		//      flock(fd, LOCK_UN);
-		//      close(fd);
-		prints("抱歉, 使用者帐号已经满了, 无法注册新的帐号.\n\r");
-		val = (st.st_mtime - system_time + 3660) / 60;
-		prints("请等待 %d 分钟後再试一次, 祝您好运.\n\r", val);
-		sleep(2);
-		exit(1);
-	}
-	memset(&utmp, 0, sizeof(utmp));
-	strcpy(utmp.userid, "new");
-	utmp.lastlogin = time(0);
-	substitut_record(PASSFILE, &utmp, sizeof(struct userec), i);
+
+	if (i <= 0 || i > MAXUSERS)
+		return i;
+
+	substitut_record(PASSFILE, &user, sizeof(user), i);
 	return i;
 }
 
