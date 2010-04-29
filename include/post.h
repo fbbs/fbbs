@@ -19,5 +19,5 @@ typedef struct {
 
 extern int do_post_article(const post_request_t *pr);
 
-#endif FB_POST_H
+#endif // FB_POST_H
 
