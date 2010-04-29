@@ -175,7 +175,8 @@ int bbsccc_main(void)
 		post_request_t pr = { .autopost = false, .crosspost = true,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
 			.bp = bp2, .title = title, .content = m.ptr, .sig = 0,
-			.ip = fromhost, .o_fp = NULL, .noreply = false, .mmark = false };
+			.ip = mask_host(fromhost), .o_fp = NULL, .noreply = false,
+			.mmark = false };
 		int ret = do_post_article(&pr);
 		mmap_close(&m);
 		if (ret < 0)
