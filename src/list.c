@@ -452,13 +452,10 @@ int choose2(choose_t *cp)
 				cp->update = PARTUPDATE;
 		}
 
-		// Rolling.
-		if (cp->cur < 0) {
-			cp->cur = cp->all - 1;
-		}
-		if (cp->cur >= cp->all) {
+		if (cp->cur < 0)
 			cp->cur = 0;
-		}
+		if (cp->cur >= cp->all)
+			cp->cur = cp->all - 1;
 
 		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
 			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
@@ -508,21 +505,29 @@ int choose2(choose_t *cp)
 			case 'b':
 			case Ctrl('B'):
 			case KEY_PGUP:
-				cp->cur -= BBS_PAGESIZE;
+				if (cp->cur == 0)
+					cp->cur = cp->all - 1;
+				else
+					cp->cur -= BBS_PAGESIZE;
 				break;
 			case 'N':
 			case Ctrl('F'):
 			case KEY_PGDN:
 			case ' ':
-				cp->cur += BBS_PAGESIZE;
+				if (cp->cur == cp->all - 1)
+					cp->cur = 0;
+				else
+					cp->cur += BBS_PAGESIZE;
 				break;
 			case 'p':
 			case KEY_UP:
-				cp->cur--;
+				if (--cp->cur < 0)
+					cp->cur - cp->all - 1;
 				break;
 			case 'j':
 			case KEY_DOWN:
-				cp->cur++;
+				if (++cp->cur >= cp->all)
+					cp->cur = 0;
 				break;
 			case '$':
 			case KEY_END:
