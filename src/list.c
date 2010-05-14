@@ -522,7 +522,7 @@ int choose2(choose_t *cp)
 			case 'p':
 			case KEY_UP:
 				if (--cp->cur < 0)
-					cp->cur - cp->all - 1;
+					cp->cur = cp->all - 1;
 				break;
 			case 'j':
 			case KEY_DOWN:
