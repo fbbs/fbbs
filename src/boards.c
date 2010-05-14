@@ -573,7 +573,7 @@ static int choose_board_load(choose_t *cp)
 
 	qsort(cbrd->brds, cbrd->num, sizeof(cbrd->brds[0]), cbrd->cmp);
 
-	if (cbrd->newflag) {
+	if (cbrd->newflag && cp->cur < 0) {
 		// Jump to first unread board.
 		int i;
 		for (i = 0; i < cbrd->num; ++i) {
@@ -588,7 +588,9 @@ static int choose_board_load(choose_t *cp)
 		if (i < cbrd->num)
 			cp->cur = i;
 	}
-		
+
+	if (cp->cur < 0)
+		cp->cur = 0;
 	cp->all= cbrd->num;
 	return 0;
 }

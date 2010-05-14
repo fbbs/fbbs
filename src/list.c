@@ -438,7 +438,7 @@ int choose2(choose_t *cp)
 	bool end = false;
 
 	cp->all = 0;
-	cp->cur = 0;
+	cp->cur = -1;
 	cp->start = 0;
 	cp->update = FULLUPDATE;
 	cp->valid = false;
