@@ -41,16 +41,16 @@ input.txt {
 	margin: auto 5px 4px 0px;
 }
 #left_panel a {
-	color: #000000;
+	color: #ffffff;
 	font-size: 1em;
 	text-decoration: none;
 	display: block;
 }
 #left_panel a:hover {
-	background-color: #ff9898;
+	background-color: #1e3f45;
 }
 #menu {
-	background-color: #ffffff;
+	background-color: #505b5f;
 	height: 190px;
 	padding: 12px 10px 2px 12px;
 }
@@ -59,7 +59,7 @@ input.txt {
 	position: absolute;
 	top: 68px;
 	left: 125px;
-	background-color: #ffffff;
+	background-color: #505b5f;
 	border: #F5E4EA solid 1px;
 }
 #software li {
@@ -67,12 +67,12 @@ input.txt {
 	margin: 0;
 }
 #loginbox {
-	background-color: #ffffff;
+	background-color: #505b5f;
 	height: 105px;
 	padding: 10px 0 5px 10px;
 }
 #info {
-	background-color: #ffffff;
+	background-color: #505b5f;
 	height: 140px;
 	margin-top: 2px;
 	padding: 12px 0 0 12px;
