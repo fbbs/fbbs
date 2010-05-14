@@ -513,6 +513,7 @@ int choose2(choose_t *cp)
 			case 'N':
 			case Ctrl('F'):
 			case KEY_PGDN:
+			case ' ':
 				cp->cur += BBS_PAGESIZE;
 				break;
 			case 'p':
