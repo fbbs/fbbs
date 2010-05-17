@@ -615,97 +615,104 @@ static void msg_backup(const char *user)
 	}
 }
 
-static int msg_show(int *num, int *rpid, char *head, size_t hsize, char *buf,
-		size_t size, char *receiver, size_t rsize, int *y, int *status)
+typedef struct {
+	int status;
+	int x;
+	int y;
+	int cury;
+	int height;
+	int rpid;
+	int num;
+	int sa;
+	size_t len;
+	char msg[MAX_MSG_LINE * LINE_LEN + 1];
+	char receiver[IDLEN + 1];
+} msg_status_t;
+
+static int msg_show(msg_status_t *st, char *head, size_t hsize,
+		char *buf, size_t size)
 {
-	*rpid = get_msg3(currentuser.userid, num, head, hsize, buf, size);
-	if (*rpid) {
-		strlcpy(receiver, head + 12, rsize);
-		strtok(receiver, " ");
+	st->rpid = get_msg3(currentuser.userid, &st->num, head, hsize, buf, size);
+	if (st->rpid) {
+		strlcpy(st->receiver, head + 12, sizeof(st->receiver));
+		strtok(st->receiver, " ");
 		int line = (uinfo.mode == TALK ? t_lines / 2 - 1 : 0);
-		*y = show_msg(currentuser.userid, head, buf, line);
+		st->cury = show_msg(currentuser.userid, head, buf, line);
 	}
-	*status = MSG_REPLYING;
-	return *rpid;
+	st->status = MSG_REPLYING;
+	return st->rpid;
 }
 
 int msg_reply(int ch)
 {
-	static int status = MSG_INIT, x, y, cury, height = 1, rpid, num = 0, sa;
-	static size_t len = 0;
-	static char msg[MAX_MSG_LINE * LINE_LEN + 1];
-	static char receiver[IDLEN + 1];
+	static msg_status_t st = { .status = MSG_INIT, .height = 1,
+			.num = 0, .len = 0};
 
 	int k;
 	char buf[LINE_BUFSIZE], head[LINE_BUFSIZE];
 		
-	switch (status) {
+	switch (st.status) {
 		case MSG_INIT:
-			getyx(&y, &x);
-			sa = showansi;
+			getyx(&st.y, &st.x);
+			st.sa = showansi;
 			showansi = true;
 			if (DEFINE(DEF_MSGGETKEY)) {
 				for (k = 0; k < MAX_MSG_LINE * 2 + 2; k++)
 					saveline_buf(k, 0);
 			}
 			if (RMSG)
-				num++;
+				st.num++;
 			else
-				num = msg_num;
+				st.num = msg_num;
 			// fall through
 		case MSG_SHOW:
-			msg_show(&num, &rpid, head, sizeof(head), buf, sizeof(buf),
-					receiver, sizeof(receiver), &cury, &status);
-			status = MSG_REPLYING;
+			msg_show(&st, head, sizeof(head), buf, sizeof(buf));
 			ch = 0;
 			// fall through
 		case MSG_REPLYING:
 			switch (ch) {
 				case '\r':
 				case '\n':
-					send_msg3(receiver, rpid, msg, cury);
+					send_msg3(st.receiver, st.rpid, st.msg, st.cury);
 					msg_backup(currentuser.userid);
-					*msg = '\0';
-					len = 0;
-					height = 1;
-					status = MSG_SHOW;
+					st.msg[0] = '\0';
+					st.len = 0;
+					st.height = 1;
+					st.status = MSG_SHOW;
 
 					if (!RMSG) {
 						msg_num--;
-						num--;
+						st.num--;
 					} else {
 						RMSG = false;
-						num = 0;
+						st.num = 0;
 					}
 
 					if (!msg_num) {
-						status = MSG_INIT;
+						st.status = MSG_INIT;
 						for (k = 0; k < MAX_MSG_LINE + 2; k++)
 							saveline_buf(k, 1);
-						move(y, x);
-						showansi = sa;
+						move(st.y, st.x);
+						showansi = st.sa;
 					} else {
-						msg_show(&num, &rpid, head, sizeof(head),
-								buf, sizeof(buf), receiver, sizeof(receiver),
-								&cury, &status);
-						status = MSG_REPLYING;
+						msg_show(&st, head, sizeof(head), buf, sizeof(buf));
 					}
 					break;
 				case '\0':
 					break;
 				case Ctrl('Z'):
 				case Ctrl('A'):
-					num += (ch == Ctrl('Z') ? 1 : -1);
-					if (num < 1)
-						num = 1;
-					*msg = '\0';
-					len = 0;
-					height = 1;
-					msg_show(&num, &rpid, head, sizeof(head), buf, sizeof(buf),
-							receiver, sizeof(receiver), &cury, &status);
+					st.num += (ch == Ctrl('Z') ? 1 : -1);
+					if (st.num < 1)
+						st.num = 1;
+					st.msg[0] = '\0';
+					st.len = 0;
+					st.height = 1;
+					msg_show(&st, head, sizeof(head), buf, sizeof(buf));
 					break;
 				default:
-					getdata_r(msg, sizeof(msg), &len, ch, cury, &height);
+					getdata_r(st.msg, sizeof(st.msg), &st.len, ch, st.cury,
+							&st.height);
 					break;
 			}
 			break;
