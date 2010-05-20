@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 #include "bbs.h"
 
 static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
@@ -50,26 +52,33 @@ static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 #endif
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
-	int fd = open(BBSHOME"/tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);
-	if (fd < 0)
-		return EXIT_FAILURE;
-	unlink(BBSHOME"/tmp/killuser");
+	bool pretend = (argc != 2) || (strcasecmp(argv[1], "-f") != 0);
 
-	FILE *log = fopen(BBSHOME"/tomb/log", "w+");
-	if (!log)
-		return EXIT_FAILURE;
+	int fd;
+	FILE *log, *data, *post;
+
+	if (!pretend) {
+		int fd = open(BBSHOME"/tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);
+		if (fd < 0)
+			return EXIT_FAILURE;
+		unlink(BBSHOME"/tmp/killuser");
 	
-	FILE *data = fopen(BBSHOME"/tomb/PASSWDS", "w+");
-	if (!data)
-		return EXIT_FAILURE;
+		log = fopen(BBSHOME"/tomb/log", "w+");
+		if (!log)
+			return EXIT_FAILURE;
 
-	FILE *post = fopen(BBSHOME"/tomb/post", "w+");
-	if (!post)
-		return EXIT_FAILURE;
+		data = fopen(BBSHOME"/tomb/PASSWDS", "w+");
+		if (!data)
+			return EXIT_FAILURE;
 
-	log_usies("CLEAN", "dated users.", NULL);
+		post = fopen(BBSHOME"/tomb/post", "w+");
+		if (!post)
+			return EXIT_FAILURE;
+
+		log_usies("CLEAN", "dated users.", NULL);
+	}
 
 	fb_time_t now = time(NULL);
 
@@ -84,6 +93,11 @@ int main(void)
 
 		if (user.userid[0] != '\0' && val < 0) {
 			user.userid[sizeof(user.userid) - 1] = '\0';
+
+			if (pretend) {
+				puts(user.userid);
+				continue;
+			}
 
 			post_add(post, &user, now);
 			fwrite(&user, sizeof(user), 1, data);
@@ -104,10 +118,11 @@ int main(void)
 		}
 	}
 
-	fclose(post);
-	fclose(data);
-	fclose(log);
-
-	close(fd);
+	if (!pretend) {
+		fclose(post);
+		fclose(data);
+		fclose(log);
+		close(fd);
+	}
 	return EXIT_SUCCESS;
 }
