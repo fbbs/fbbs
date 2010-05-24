@@ -341,7 +341,7 @@ static int check_duplicate_login(const struct userec *user, int *max)
 
 	if (strcasecmp("guest", user->userid) == 0)
 		*max = MAXGUEST;
-	if (logins > *max)
+	if (logins >= *max)
 		return BBS_E2MANY;
 	
 	if (!HAS_PERM2(PERM_SPECIAL0, user)) {
@@ -352,7 +352,7 @@ static int check_duplicate_login(const struct userec *user, int *max)
 	} else {
 		*max = MAX_LOGINS_DIRECTOR;
 	}
-	if (logins > *max)
+	if (logins >= *max)
 		return logins;
 
 	return 0;
