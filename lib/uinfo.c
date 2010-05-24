@@ -239,7 +239,7 @@ int compute_user_value(const struct userec *urec)
 		return 666;
 	if (!(urec->userlevel & PERM_REGISTER))
 		return 14 - value / (24 * 60 * 60);
-	if (urec->userlevel & PERM_SPECIAL1)
+	if (urec->userlevel & PERM_SPECIAL1 && !(urec->userlevel & PERM_SPECIAL0))
 		return 527 - value / (24 * 60 * 60);
 	if (!(urec->userlevel & PERM_XEMPT)
 			&& (urec->userlevel	& PERM_LONGLIFE))
