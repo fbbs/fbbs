@@ -61,9 +61,13 @@ LIBSSH_API ssh_bind ssh_bind_new(void);
 /**
  * @brief Set the opitons for the current SSH server bind.
  *
- * @param  ssh_bind     The ssh server bind to use.
+ * @param  sshbind     The ssh server bind to use.
  *
- * @param  options      The option structure to set.
+ * @param  type        The option type to set.
+ *
+ * @param  value       The option value to set.
+ *
+ * @return 0 on success, < 0 on error.
  */
 LIBSSH_API int ssh_bind_options_set(ssh_bind sshbind,
     enum ssh_bind_options_e type, const void *value);

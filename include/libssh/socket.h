@@ -52,4 +52,10 @@ int ssh_socket_get_status(struct socket *s);
 int ssh_socket_data_available(struct socket *s);
 int ssh_socket_data_writable(struct socket *s);
 
+#ifndef _WIN32
+void ssh_execute_command(const char *command, socket_t in, socket_t out);
+socket_t ssh_socket_connect_proxycommand(ssh_session session,
+    const char *command);
+#endif
+
 #endif /* SOCKET_H_ */

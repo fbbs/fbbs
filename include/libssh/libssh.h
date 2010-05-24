@@ -79,7 +79,7 @@
 /* libssh version */
 #define LIBSSH_VERSION_MAJOR  0
 #define LIBSSH_VERSION_MINOR  4
-#define LIBSSH_VERSION_MICRO  0
+#define LIBSSH_VERSION_MICRO  3
 
 #define LIBSSH_VERSION_INT SSH_VERSION_INT(LIBSSH_VERSION_MAJOR, \
                                            LIBSSH_VERSION_MINOR, \
@@ -231,7 +231,7 @@ enum {
 	/** Only rare and noteworthy events
 	 */
 	SSH_LOG_RARE,
-	/** High level protocol informations
+	/** High level protocol information
 	 */
 	SSH_LOG_PROTOCOL,
 	/** Lower level protocol infomations, packet level
@@ -252,6 +252,7 @@ enum ssh_options_e {
   SSH_OPTIONS_USER,
   SSH_OPTIONS_SSH_DIR,
   SSH_OPTIONS_IDENTITY,
+  SSH_OPTIONS_ADD_IDENTITY,
   SSH_OPTIONS_KNOWNHOSTS,
   SSH_OPTIONS_TIMEOUT,
   SSH_OPTIONS_TIMEOUT_USEC,
@@ -263,7 +264,8 @@ enum ssh_options_e {
   SSH_OPTIONS_CIPHERS_C_S,
   SSH_OPTIONS_CIPHERS_S_C,
   SSH_OPTIONS_COMPRESSION_C_S,
-  SSH_OPTIONS_COMPRESSION_S_C
+  SSH_OPTIONS_COMPRESSION_S_C,
+  SSH_OPTIONS_PROXYCOMMAND
 };
 
 enum {
@@ -335,10 +337,14 @@ LIBSSH_API void privatekey_free(ssh_private_key prv);
 LIBSSH_API ssh_private_key privatekey_from_file(ssh_session session, const char *filename,
     int type, const char *passphrase);
 LIBSSH_API void publickey_free(ssh_public_key key);
+LIBSSH_API int ssh_publickey_to_file(ssh_session session, const char *file,
+    ssh_string pubkey, int type);
 LIBSSH_API ssh_string publickey_from_file(ssh_session session, const char *filename,
     int *type);
 LIBSSH_API ssh_public_key publickey_from_privatekey(ssh_private_key prv);
 LIBSSH_API ssh_string publickey_to_string(ssh_public_key key);
+LIBSSH_API int ssh_try_publickey_from_file(ssh_session session, const char *keyfile,
+    ssh_string *publickey, int *type);
 
 LIBSSH_API int ssh_auth_list(ssh_session session);
 LIBSSH_API char *ssh_basename (const char *path);
@@ -383,6 +389,9 @@ LIBSSH_API int ssh_pcap_file_close(ssh_pcap_file pcap);
 LIBSSH_API void ssh_pcap_file_free(ssh_pcap_file pcap);
 LIBSSH_API ssh_pcap_file ssh_pcap_file_new(void);
 LIBSSH_API int ssh_pcap_file_open(ssh_pcap_file pcap, const char *filename);
+
+LIBSSH_API int ssh_privatekey_type(ssh_private_key privatekey);
+
 LIBSSH_API void ssh_print_hexa(const char *descr, const unsigned char *what, size_t len);
 LIBSSH_API int ssh_scp_accept_request(ssh_scp scp);
 LIBSSH_API int ssh_scp_close(ssh_scp scp);

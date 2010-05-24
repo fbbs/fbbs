@@ -40,14 +40,21 @@
 #endif
 
 /**
+ * @addtogroup ssh_session
+ * @{
+ */
+
+/**
  * @brief Duplicate the options of a session structure.
  *
  * If you make several sessions with the same options this is useful. You
  * cannot use twice the same option structure in ssh_session_connect.
  *
- * @param opt           Option structure to copy.
+ * @param src           The session to use to copy the options.
  *
- * @returns New copied option structure, NULL on error.
+ * @param dest          The session to copy the options to.
+ *
+ * @returns             0 on sucess, -1 on error with errno set.
  *
  * @see ssh_session_connect()
  */
@@ -76,9 +83,28 @@ int ssh_options_copy(ssh_session src, ssh_session *dest) {
   }
 
   if (src->identity) {
-    new->identity = strdup(src->identity);
+    struct ssh_iterator *it;
+
+    new->identity = ssh_list_new();
     if (new->identity == NULL) {
       return -1;
+    }
+
+    it = ssh_list_get_iterator(src->identity);
+    while (it) {
+      char *id;
+      int rc;
+
+      id = strdup((char *) it->data);
+      if (id == NULL) {
+        return -1;
+      }
+
+      rc = ssh_list_append(new->identity, id);
+      if (rc < 0) {
+        return -1;
+      }
+      it = it->next;
     }
   }
 
@@ -117,29 +143,6 @@ int ssh_options_copy(ssh_session src, ssh_session *dest) {
   return 0;
 }
 
-#ifndef _WIN32
-static char *get_username_from_uid(ssh_session session, uid_t uid){
-    struct passwd *pwd = NULL;
-    char *name;
-
-    pwd = getpwuid(uid);
-
-    if (pwd == NULL) {
-      ssh_set_error(session, SSH_FATAL, "uid %d doesn't exist !", uid);
-      return NULL;
-    }
-
-    name = strdup(pwd->pw_name);
-
-    if (name == NULL) {
-      ssh_set_error_oom(session);
-      return NULL;
-    }
-
-    return name;
-}
-#endif
-
 int ssh_options_set_algo(ssh_session session, int algo,
     const char *list) {
   if (!verify_existing_algo(algo, list)) {
@@ -159,58 +162,6 @@ int ssh_options_set_algo(ssh_session session, int algo,
   return 0;
 }
 
-char *dir_expand_dup(ssh_session session, const char *value, int allowsshdir) {
-	char *new;
-
-	if (value[0] == '~' && value[1] == '/') {
-		char *homedir = ssh_get_user_home_dir();
-    size_t lv, lh;
-
-    if (homedir == NULL) {
-      return NULL;
-    }
-    lv = strlen(value + 1);
-    lh = strlen(homedir);
-
-		new = malloc(lv + lh + 1);
-		if (new == NULL) {
-      ssh_set_error_oom(session);
-      SAFE_FREE(homedir);
-			return NULL;
-    }
-		memcpy(new, homedir, lh);
-    SAFE_FREE(homedir);
-		memcpy(new + lh, value + 1, lv + 1);
-		return new;
-	}
-	if (allowsshdir && strncmp(value, "SSH_DIR/", 8) == 0) {
-		size_t lv, ls;
-		if (session->sshdir == NULL) {
-			if (ssh_options_set(session, SSH_OPTIONS_SSH_DIR, NULL) < 0)
-				return NULL;
-		}
-
-		value += 7;
-		lv = strlen(value);
-		ls = strlen(session->sshdir);
-
-		new = malloc(lv + ls + 1);
-		if (new == NULL) {
-      ssh_set_error_oom(session);
-			return NULL;
-    }
-		memcpy(new, session->sshdir, ls);
-		memcpy(new + ls, value, lv + 1);
-		return new;
-	}
-  new = strdup(value);
-  if (new == NULL) {
-    ssh_set_error_oom(session);
-    return NULL;
-  }
-  return new;
-}
-
 /**
  * @brief This function can set all possible ssh options.
  *
@@ -219,142 +170,149 @@ char *dir_expand_dup(ssh_session session, const char *value, int allowsshdir) {
  * @param  type         The option type to set. This could be one of the
  *                      following:
  *
- *                      SSH_OPTIONS_HOST:
+ *                      - SSH_OPTIONS_HOST:
  *                        The hostname or ip address to connect to (string).
  *
- *                      SSH_OPTIONS_PORT:
+ *                      - SSH_OPTIONS_PORT:
  *                        The port to connect to (integer).
  *
- *                      SSH_OPTIONS_PORT_STR:
+ *                      - SSH_OPTIONS_PORT_STR:
  *                        The port to connect to (string).
  *
- *                      SSH_OPTIONS_FD:
- *                        The file descriptor to use (socket_t).
- *
+ *                      - SSH_OPTIONS_FD:
+ *                        The file descriptor to use (socket_t).\n
+ *                        \n
  *                        If you wish to open the socket yourself for a reason
  *                        or another, set the file descriptor. Don't forget to
  *                        set the hostname as the hostname is used as a key in
  *                        the known_host mechanism.
  *
- *                      SSH_OPTIONS_USER:
- *                        The username for authentication (string).
- *
+ *                      - SSH_OPTIONS_USER:
+ *                        The username for authentication (string).\n
+ *                        \n
  *                        If the value is NULL, the username is set to the
  *                        default username.
  *
- *                      SSH_OPTIONS_SSH_DIR:
- *                        Set the ssh directory (format string).
- *
+ *                      - SSH_OPTIONS_SSH_DIR:
+ *                        Set the ssh directory (format string).\n
+ *                        \n
  *                        If the value is NULL, the directory is set to the
- *                        default ssh directory.
- *
+ *                        default ssh directory.\n
+ *                        \n
  *                        The ssh directory is used for files like known_hosts
  *                        and identity (private and public key). It may include
  *                        "%s" which will be replaced by the user home
  *                        directory.
  *
- *                      SSH_OPTIONS_KNOWNHOSTS:
- *                        Set the known hosts file name (format string).
- *
+ *                      - SSH_OPTIONS_KNOWNHOSTS:
+ *                        Set the known hosts file name (format string).\n
+ *                        \n
  *                        If the value is NULL, the directory is set to the
- *                        default known hosts file, normally ~/.ssh/known_hosts.
- *
+ *                        default known hosts file, normally
+ *                        ~/.ssh/known_hosts.\n
+ *                        \n
  *                        The known hosts file is used to certify remote hosts
  *                        are genuine. It may include "%s" which will be
  *                        replaced by the user home directory.
  *
- *                      SSH_OPTIONS_IDENTITY:
- *                        Set the identity file name (format string).
- *
- *                        By default identity, id_dsa and id_rsa are checked.
- *
+ *                      - SSH_OPTIONS_IDENTITY:
+ *                        Set the identity file name (format string).\n
+ *                        \n
+ *                        By default identity, id_dsa and id_rsa are checked.\n
+ *                        \n
  *                        The identity file used authenticate with public key.
  *                        It may include "%s" which will be replaced by the
  *                        user home directory.
  *
- *                      SSH_OPTIONS_TIMEOUT:
+ *                      - SSH_OPTIONS_TIMEOUT:
  *                        Set a timeout for the connection in seconds (integer).
  *
- *                      SSH_OPTIONS_TIMEOUT_USEC:
+ *                      - SSH_OPTIONS_TIMEOUT_USEC:
  *                        Set a timeout for the connection in micro seconds
  *                        (integer).
  *
- *                      SSH_OPTIONS_SSH1:
+ *                      - SSH_OPTIONS_SSH1:
  *                        Allow or deny the connection to SSH1 servers
  *                        (integer).
  *
- *                      SSH_OPTIONS_SSH2:
+ *                      - SSH_OPTIONS_SSH2:
  *                        Allow or deny the connection to SSH2 servers
  *                        (integer).
  *
- *                      SSH_OPTIONS_LOG_VERBOSITY:
- *                        Set the session logging verbosity (integer).
- *
+ *                      - SSH_OPTIONS_LOG_VERBOSITY:
+ *                        Set the session logging verbosity (integer).\n
+ *                        \n
  *                        The verbosity of the messages. Every log smaller or
  *                        equal to verbosity will be shown.
- *                          SSH_LOG_NOLOG: No logging
- *                          SSH_LOG_RARE: Rare conditions or warnings
- *                          SSH_LOG_ENTRY: API-accessible entrypoints
- *                          SSH_LOG_PACKET: Packet id and size
- *                          SSH_LOG_FUNCTIONS: Function entering and leaving
+ *                          - SSH_LOG_NOLOG: No logging
+ *                          - SSH_LOG_RARE: Rare conditions or warnings
+ *                          - SSH_LOG_ENTRY: API-accessible entrypoints
+ *                          - SSH_LOG_PACKET: Packet id and size
+ *                          - SSH_LOG_FUNCTIONS: Function entering and leaving
  *
- *                      SSH_OPTIONS_LOG_VERBOSITY_STR:
- *                        Set the session logging verbosity (string).
- *
+ *                      - SSH_OPTIONS_LOG_VERBOSITY_STR:
+ *                        Set the session logging verbosity (string).\n
+ *                        \n
  *                        The verbosity of the messages. Every log smaller or
  *                        equal to verbosity will be shown.
- *                          SSH_LOG_NOLOG: No logging
- *                          SSH_LOG_RARE: Rare conditions or warnings
- *                          SSH_LOG_ENTRY: API-accessible entrypoints
- *                          SSH_LOG_PACKET: Packet id and size
- *                          SSH_LOG_FUNCTIONS: Function entering and leaving
- *
+ *                          - SSH_LOG_NOLOG: No logging
+ *                          - SSH_LOG_RARE: Rare conditions or warnings
+ *                          - SSH_LOG_ENTRY: API-accessible entrypoints
+ *                          - SSH_LOG_PACKET: Packet id and size
+ *                          - SSH_LOG_FUNCTIONS: Function entering and leaving
+ *                          \n
  *                          See the corresponding numbers in libssh.h.
  *
- *                      SSH_OPTTIONS_AUTH_CALLBACK:
+ *                      - SSH_OPTTIONS_AUTH_CALLBACK:
  *                        Set a callback to use your own authentication function
  *                        (function pointer).
  *
- *                      SSH_OPTTIONS_AUTH_USERDATA:
- *                        Set the user data passed to the authentication function
- *                        (generic pointer).
+ *                      - SSH_OPTTIONS_AUTH_USERDATA:
+ *                        Set the user data passed to the authentication
+ *                        function (generic pointer).
  *
- *                      SSH_OPTTIONS_LOG_CALLBACK:
+ *                      - SSH_OPTTIONS_LOG_CALLBACK:
  *                        Set a callback to use your own logging function
  *                        (function pointer).
  *
- *                      SSH_OPTTIONS_LOG_USERDATA:
+ *                      - SSH_OPTTIONS_LOG_USERDATA:
  *                        Set the user data passed to the logging function
  *                        (generic pointer).
  *
- *                      SSH_OPTTIONS_STATUS_CALLBACK:
+ *                      - SSH_OPTTIONS_STATUS_CALLBACK:
  *                        Set a callback to show connection status in realtime
- *                        (function pointer).
- *
+ *                        (function pointer).\n
+ *                        \n
+ *                        @code
  *                        fn(void *arg, float status)
- *
+ *                        @endcode
+ *                        \n
  *                        During ssh_connect(), libssh will call the callback
  *                        with status from 0.0 to 1.0.
  *
- *                      SSH_OPTTIONS_STATUS_ARG:
+ *                      - SSH_OPTTIONS_STATUS_ARG:
  *                        Set the status argument which should be passed to the
  *                        status callback (generic pointer).
  *
- *                      SSH_OPTIONS_CIPHERS_C_S:
+ *                      - SSH_OPTIONS_CIPHERS_C_S:
  *                        Set the symmetric cipher client to server (string,
  *                        comma-separated list).
  *
- *                      SSH_OPTIONS_CIPHERS_S_C:
+ *                      - SSH_OPTIONS_CIPHERS_S_C:
  *                        Set the symmetric cipher server to client (string,
  *                        comma-separated list).
  *
- *                      SSH_OPTIONS_COMPRESSION_C_S:
+ *                      - SSH_OPTIONS_COMPRESSION_C_S:
  *                        Set the compression to use for client to server
  *                        communication (string, "none" or "zlib").
  *
- *                      SSH_OPTIONS_COMPRESSION_S_C:
+ *                      - SSH_OPTIONS_COMPRESSION_S_C:
  *                        Set the compression to use for server to client
  *                        communication (string, "none" or "zlib").
+ *
+ *                      - SSH_OPTIONS_PROXYCOMMAND:
+ *                        Set the command to be executed in order to connect to
+ *                        server.
  *
  * @param  value        The value to set. This is a generic pointer and the
  *                      datatype which is used should be set according to the
@@ -366,6 +324,7 @@ int ssh_options_set(ssh_session session, enum ssh_options_e type,
     const void *value) {
   char *p, *q;
   long int i;
+  int rc;
 
   if (session == NULL) {
     return -1;
@@ -429,30 +388,23 @@ int ssh_options_set(ssh_session session, enum ssh_options_e type,
         session->port = i & 0xffff;
       }
       break;
+    case SSH_OPTIONS_FD:
+      if (value == NULL) {
+        session->fd = -1;
+      } else {
+        socket_t *x = (socket_t *) value;
+
+        session->fd = *x & 0xffff;
+      }
+      break;
     case SSH_OPTIONS_USER:
       SAFE_FREE(session->username);
       if (value == NULL) { /* set default username */
-#ifdef _WIN32
-        DWORD size = 0;
-        GetUserName(NULL, &size); //Get Size
-        q = malloc(size);
-        if (q == NULL) {
-          ssh_set_error_oom(session);
-          return -1;
-        }
-        if (GetUserName(q, &size)) {
-          session->username = q;
-        } else {
-          SAFE_FREE(q);
-          return -1;
-        }
-#else /* _WIN32 */
-        q = get_username_from_uid(session, getuid());
+        q = ssh_get_local_username(session);
         if (q == NULL) {
           return -1;
         }
         session->username = q;
-#endif /* _WIN32 */
       } else { /* username provided */
         session->username = strdup(value);
         if (session->username == NULL) {
@@ -464,43 +416,47 @@ int ssh_options_set(ssh_session session, enum ssh_options_e type,
     case SSH_OPTIONS_SSH_DIR:
       if (value == NULL) {
         SAFE_FREE(session->sshdir);
-	/* TODO: why ~/.ssh/ instead of ~/.ssh ? */
 
-        session->sshdir = dir_expand_dup(session, "~/.ssh/", 0);
+        session->sshdir = ssh_path_expand_tilde("~/.ssh/");
         if (session->sshdir == NULL) {
           return -1;
         }
       } else {
         SAFE_FREE(session->sshdir);
-        session->sshdir = dir_expand_dup(session, value, 0);
+        session->sshdir = ssh_path_expand_tilde(value);
         if (session->sshdir == NULL) {
           return -1;
         }
       }
       break;
     case SSH_OPTIONS_IDENTITY:
-
+    case SSH_OPTIONS_ADD_IDENTITY:
       if (value == NULL) {
         ssh_set_error_invalid(session, __FUNCTION__);
         return -1;
       }
-      SAFE_FREE(session->identity);
-      session->identity = dir_expand_dup(session, value, 1);
-      if (session->identity == NULL) {
+      q = strdup(value);
+      if (q == NULL) {
+          return -1;
+      }
+      rc = ssh_list_prepend(session->identity, q);
+      if (rc < 0) {
         return -1;
       }
       break;
     case SSH_OPTIONS_KNOWNHOSTS:
       if (value == NULL) {
         SAFE_FREE(session->knownhosts);
-        session->knownhosts = dir_expand_dup(session,
-            "SSH_DIR/known_hosts", 1);
+        if (session->sshdir == NULL) {
+            return -1;
+        }
+        session->knownhosts = ssh_path_expand_escape(session, "%d/known_hosts");
         if (session->knownhosts == NULL) {
           return -1;
         }
       } else {
         SAFE_FREE(session->knownhosts);
-        session->knownhosts = dir_expand_dup(session, value, 1);
+        session->knownhosts = strdup(value);
         if (session->knownhosts == NULL) {
           return -1;
         }
@@ -608,16 +564,34 @@ int ssh_options_set(ssh_session session, enum ssh_options_e type,
           return -1;
       }
       break;
+    case SSH_OPTIONS_PROXYCOMMAND:
+      if (value == NULL) {
+        ssh_set_error_invalid(session, __FUNCTION__);
+        return -1;
+      } else {
+        SAFE_FREE(session->ProxyCommand);
+        q = strdup(value);
+        if (q == NULL) {
+            return -1;
+        }
+        session->ProxyCommand = q;
+      }
+      break;
     default:
-      ssh_set_error(session, SSH_REQUEST_DENIED, "Unkown ssh option %d", type);
+      ssh_set_error(session, SSH_REQUEST_DENIED, "Unknown ssh option %d", type);
       return -1;
     break;
   }
 
   return 0;
 }
+/** @} */
 
 #ifdef WITH_SERVER
+/**
+ * @addtogroup ssh_server
+ * @{
+ */
 static int ssh_bind_options_set_algo(ssh_bind sshbind, int algo,
     const char *list) {
   if (!verify_existing_algo(algo, list)) {
@@ -818,7 +792,7 @@ int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,
       }
       break;
     default:
-      ssh_set_error(sshbind, SSH_REQUEST_DENIED, "Unkown ssh option %d", type);
+      ssh_set_error(sshbind, SSH_REQUEST_DENIED, "Unknown ssh option %d", type);
       return -1;
     break;
   }
@@ -1041,19 +1015,84 @@ int ssh_options_parse_config(ssh_session session, const char *filename) {
     return -1;
   }
 
+  if (session->sshdir == NULL) {
+      r = ssh_options_set(session, SSH_OPTIONS_SSH_DIR, NULL);
+      if (r < 0) {
+          ssh_set_error_oom(session);
+          return -1;
+      }
+  }
+
   /* set default filename */
   if (filename == NULL) {
-    expanded_filename = dir_expand_dup(session, "SSH_DIR/config", 1);
+    expanded_filename = ssh_path_expand_escape(session, "%d/config");
   } else {
-    expanded_filename = dir_expand_dup(session, filename, 1);
+    expanded_filename = ssh_path_expand_escape(session, filename);
   }
-  if (expanded_filename == NULL)
+  if (expanded_filename == NULL) {
     return -1;
+  }
 
   r = ssh_config_parse_file(session, expanded_filename);
+  if (r < 0) {
+      goto out;
+  }
+  if (filename == NULL) {
+      r = ssh_config_parse_file(session, "/etc/ssh/ssh_config");
+  }
+
+out:
   free(expanded_filename);
   return r;
 }
 
-/** @} */
-/* vim: set ts=2 sw=2 et cindent: */
+int ssh_options_apply(ssh_session session) {
+    struct ssh_iterator *it;
+    char *tmp;
+    int rc;
+
+    if (session->sshdir == NULL) {
+        rc = ssh_options_set(session, SSH_OPTIONS_SSH_DIR, NULL);
+        if (rc < 0) {
+            return -1;
+        }
+    }
+
+    if (session->knownhosts == NULL) {
+        tmp = ssh_path_expand_escape(session, "%d/known_hosts");
+    } else {
+        tmp = ssh_path_expand_escape(session, session->knownhosts);
+    }
+    if (tmp == NULL) {
+        return -1;
+    }
+    free(session->knownhosts);
+    session->knownhosts = tmp;
+
+    if (session->ProxyCommand != NULL) {
+        tmp = ssh_path_expand_escape(session, session->ProxyCommand);
+        if (tmp == NULL) {
+            return -1;
+        }
+        free(session->ProxyCommand);
+        session->ProxyCommand = tmp;
+    }
+
+    for (it = ssh_list_get_iterator(session->identity);
+         it != NULL;
+         it = it->next) {
+        char *id = (char *) it->data;
+        tmp = ssh_path_expand_escape(session, id);
+        if (tmp == NULL) {
+            return -1;
+        }
+        free(id);
+        it->data = tmp;
+    }
+
+    return 0;
+}
+
+/* @} */
+
+/* vim: set ts=4 sw=4 et cindent: */

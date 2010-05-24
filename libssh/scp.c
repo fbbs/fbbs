@@ -26,11 +26,18 @@
 
 #include "libssh/priv.h"
 #include "libssh/scp.h"
+/** @defgroup ssh_scp SSH-scp
+ * @brief SCP protocol over SSH functions
+ * @addtogroup ssh_scp
+ * @{
+*/
 
 /** @brief Creates a new scp session
  * @param session the SSH session to use
  * @param mode one of SSH_SCP_WRITE or SSH_SCP_READ, depending if you need to drop files remotely or read them.
  * It is not possible to combine read and write.
+ * @param location The directory in which write or read will be done. Any push or pull will be relative 
+ * to this place
  * @returns NULL if the creation was impossible.
  * @returns a ssh_scp handle if it worked.
  */
@@ -110,10 +117,21 @@ int ssh_scp_init(ssh_scp scp){
 }
 
 int ssh_scp_close(ssh_scp scp){
+  char buffer[128];
+  int err;
   if(scp->channel != NULL){
     if(channel_send_eof(scp->channel) == SSH_ERROR){
       scp->state=SSH_SCP_ERROR;
       return SSH_ERROR;
+    }
+    /* avoid situations where data are buffered and
+     * not yet stored on disk. This can happen if the close is sent
+     * before we got the EOF back
+     */
+    while(!channel_is_eof(scp->channel)){
+      err=channel_read(scp->channel,buffer,sizeof(buffer),0);
+      if(err==SSH_ERROR)
+        break;
     }
     if(channel_close(scp->channel) == SSH_ERROR){
       scp->state=SSH_SCP_ERROR;
@@ -138,6 +156,7 @@ void ssh_scp_free(ssh_scp scp){
 }
 
 /** @brief creates a directory in a scp in sink mode
+ * @param scp the scp handle.
  * @param dirname Name of the directory being created.
  * @param mode  Unix permissions for the new directory, e.g. 0755.
  * @returns SSH_OK if the directory was created.
@@ -203,6 +222,7 @@ int ssh_scp_push_directory(ssh_scp scp, const char *dirname, int mode){
 
 
 /** @brief initializes the sending of a file to a scp in sink mode
+ * @param scp the scp handle.
  * @param filename Name of the file being sent. It should not contain any path indicator
  * @param size Exact size in bytes of the file being sent.
  * @param mode Unix permissions for the new file, e.g. 0644
@@ -285,6 +305,7 @@ int ssh_scp_response(ssh_scp scp, char **response){
 }
 
 /** @brief Write into a remote scp file
+ * @param scp the scp handle.
  * @param buffer the buffer to write
  * @param len the number of bytes to write
  * @returns SSH_OK the write was successful
@@ -331,6 +352,7 @@ int ssh_scp_write(ssh_scp scp, const void *buffer, size_t len){
 
 /**
  * @brief reads a string on a channel, terminated by '\n'
+ * @param scp the scp handle.
  * @param buffer pointer to a buffer to place the string
  * @param len size of the buffer in bytes. If the string is bigger
  * than len-1, only len-1 bytes are read and the string
@@ -455,6 +477,7 @@ int ssh_scp_pull_request(ssh_scp scp){
 /**
  * @brief denies the transfer of a file or creation of a directory
  *  coming from the remote party
+ *  @param scp the scp handle.
  *  @param reason nul-terminated string with a human-readable explanation
  *  of the deny
  *  @returns SSH_OK the message was sent
@@ -481,6 +504,7 @@ int ssh_scp_deny_request(ssh_scp scp, const char *reason){
 /**
  * @brief accepts transfer of a file or creation of a directory
  *  coming from the remote party
+ *  @param scp the scp handle.
  *  @returns SSH_OK the message was sent
  *  @returns SSH_ERROR Error sending the message, or sending it in a bad state
  */
@@ -503,6 +527,7 @@ int ssh_scp_accept_request(ssh_scp scp){
 }
 
 /** @brief Read from a remote scp file
+ * @param scp the scp handle.
  * @param buffer Destination buffer
  * @param size Size of the buffer
  * @returns Number of bytes read
@@ -585,7 +610,7 @@ int ssh_scp_integer_mode(const char *mode){
 
 /** @brief Converts a unix mode into a scp string one.
  * @param mode mode to convert, e.g. 420 or 0644
- * @retuns pointer to a malloc'ed string containing the scp mode,
+ * @returns pointer to a malloc'ed string containing the scp mode,
  * e.g. "0644".
  */
 char *ssh_scp_string_mode(int mode){
@@ -601,3 +626,6 @@ char *ssh_scp_string_mode(int mode){
 const char *ssh_scp_request_get_warning(ssh_scp scp){
 	return scp->warning;
 }
+
+/** @} */
+

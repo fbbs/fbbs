@@ -3,6 +3,7 @@
  *
  * This file is part of the SSH Library
  *
+ * Copyright (c) 2009-2010 by Andreas Schneider <mail@cynapses.org>
  * Copyright (c) 2003-2009 by Aris Adamantiadis
  * Copyright (c) 2009 Aleksandar Kanchev
  *
@@ -23,8 +24,6 @@
  *
  * vim: ts=2 sw=2 et cindent
  */
-
-/* This code is based on glib's gpoll */
 
 #include "config.h"
 
@@ -60,176 +59,163 @@ struct ssh_poll_ctx_struct {
 #ifdef HAVE_POLL
 #include <poll.h>
 
+void ssh_poll_init(void) {
+    return;
+}
+
 int ssh_poll(ssh_pollfd_t *fds, nfds_t nfds, int timeout) {
   return poll((struct pollfd *) fds, nfds, timeout);
 }
 
 #else /* HAVE_POLL */
+
+#include <sys/types.h>
+
 #ifdef _WIN32
-
-#if 0
-/* defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600) */
-
-#include <winsock2.h>
-
-int ssh_poll(ssh_pollfd_t *fds, nfds_t nfds, int timeout) {
-  return WSAPoll(fds, nfds, timeout);
-}
-
-#else /* _WIN32_WINNT */
-
 #ifndef STRICT
 #define STRICT
 #endif
 
-#include <stdio.h>
+#include <time.h>
 #include <windows.h>
-#include <errno.h>
+#include <winsock2.h>
 
-static int poll_rest (HANDLE *handles, int nhandles,
-    ssh_pollfd_t *fds, nfds_t nfds, int timeout) {
-  DWORD ready;
-  ssh_pollfd_t *f;
-  int recursed_result;
+#define WS2_LIBRARY "ws2_32.dll"
+typedef int (*poll_fn)(ssh_pollfd_t *, nfds_t, int);
 
-  if (nhandles == 0) {
-    /* No handles to wait for, just the timeout */
-    if (timeout == INFINITE) {
-      ready = WAIT_FAILED;
-    } else {
-      SleepEx(timeout, 1);
-      ready = WAIT_TIMEOUT;
-    }
-  } else {
-    /* Wait for just handles */
-    ready = WaitForMultipleObjectsEx(nhandles, handles, FALSE, timeout, TRUE);
-#if 0
-    if (ready == WAIT_FAILED)  {
-      fprintf(stderr, "WaitForMultipleObjectsEx failed: %d\n", GetLastError());
-    }
+static poll_fn win_poll;
+static HINSTANCE hlib;
+
+#else
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <sys/time.h>
 #endif
-  }
 
-  if (ready == WAIT_FAILED) {
-    return -1;
-  } else if (ready == WAIT_TIMEOUT || ready == WAIT_IO_COMPLETION) {
-    return 0;
-  } else if (ready >= WAIT_OBJECT_0 && ready < WAIT_OBJECT_0 + nhandles) {
-    for (f = fds; f < &fds[nfds]; f++) {
-      if ((HANDLE) f->fd == handles[ready - WAIT_OBJECT_0]) {
-        f->revents = f->events;
-      }
-    }
-
-    /*
-     * If no timeout and polling several handles, recurse to poll
-     * the rest of them.
-     */
-    if (timeout == 0 && nhandles > 1) {
-      /* Remove the handle that fired */
-      int i;
-      if (ready < nhandles - 1) {
-        for (i = ready - WAIT_OBJECT_0 + 1; i < nhandles; i++) {
-          handles[i-1] = handles[i];
-        }
-      }
-      nhandles--;
-      recursed_result = poll_rest(handles, nhandles, fds, nfds, 0);
-      if (recursed_result < 0) {
-        return -1;
-      }
-      return recursed_result + 1;
-    }
-    return 1;
-  }
-
-  return 0;
-}
-
-int ssh_poll(ssh_pollfd_t *fds, nfds_t nfds, int timeout) {
-  HANDLE handles[MAXIMUM_WAIT_OBJECTS];
-  ssh_pollfd_t *f;
-  int nhandles = 0;
-  int rc = -1;
+static int bsd_poll(ssh_pollfd_t *fds, nfds_t nfds, int timeout) {
+  fd_set readfds, writefds, exceptfds;
+  struct timeval tv, *ptv;
+  socket_t max_fd;
+  int rc;
+  nfds_t i;
 
   if (fds == NULL) {
-    errno = EFAULT;
-    return -1;
+      errno = EFAULT;
+      return -1;
   }
 
-  if (nfds >= MAXIMUM_WAIT_OBJECTS) {
-    errno = EINVAL;
-    return -1;
-  }
+  FD_ZERO (&readfds);
+  FD_ZERO (&writefds);
+  FD_ZERO (&exceptfds);
 
-  for (f = fds; f < &fds[nfds]; f++) {
-    if (f->fd > 0) {
-      int i;
-
-      /*
-       * Don't add the same handle several times into the array, as
-       * docs say that is not allowed, even if it actually does seem
-       * to work.
-       */
-      for (i = 0; i < nhandles; i++) {
-        if (handles[i] == (HANDLE) f->fd) {
-          break;
-        }
+  /* compute fd_sets and find largest descriptor */
+  for (max_fd = -1, i = 0; i < nfds; i++) {
+      if (fds[i].fd < 0) {
+          continue;
       }
 
-      if (i == nhandles) {
-        if (nhandles == MAXIMUM_WAIT_OBJECTS) {
-          break;
-        } else {
-          handles[nhandles++] = (HANDLE) f->fd;
-        }
+      if (fds[i].events & (POLLIN | POLLRDNORM)) {
+          FD_SET (fds[i].fd, &readfds);
       }
-    }
+      if (fds[i].events & (POLLOUT | POLLWRNORM | POLLWRBAND)) {
+          FD_SET (fds[i].fd, &writefds);
+      }
+      if (fds[i].events & (POLLPRI | POLLRDBAND)) {
+          FD_SET (fds[i].fd, &exceptfds);
+      }
+      if (fds[i].fd >= max_fd &&
+          (fds[i].events & (POLLIN | POLLOUT | POLLPRI |
+                            POLLRDNORM | POLLRDBAND |
+                            POLLWRNORM | POLLWRBAND))) {
+          max_fd = fds[i].fd;
+      }
   }
 
-  if (timeout == -1) {
-    timeout = INFINITE;
+  if (max_fd == -1) {
+      errno = EINVAL;
+      return -1;
   }
 
-  if (nhandles > 1) {
-    /*
-     * First check if one or several of them are immediately
-     * available.
-     */
-    rc = poll_rest(handles, nhandles, fds, nfds, 0);
-
-    /*
-     * If not, and we have a significant timeout, poll again with
-     * timeout then. Note that this will return indication for only
-     * one event, or only for messages. We ignore timeouts less than
-     * ten milliseconds as they are mostly pointless on Windows, the
-     * MsgWaitForMultipleObjectsEx() call will timeout right away
-     * anyway.
-     */
-    if (rc == 0 && (timeout == INFINITE || timeout >= 10)) {
-      rc = poll_rest(handles, nhandles, fds, nfds, timeout);
-    }
+  if (timeout < 0) {
+      ptv = NULL;
   } else {
-    /*
-     * Just polling for one thing, so no need to check first if
-     * available immediately
-     */
-    rc = poll_rest(handles, nhandles, fds, nfds, timeout);
+      ptv = &tv;
+      if (timeout == 0) {
+          tv.tv_sec = 0;
+          tv.tv_usec = 0;
+      } else {
+          tv.tv_sec = timeout / 1000;
+          tv.tv_usec = (timeout % 1000) * 1000;
+      }
   }
 
+  rc = select (max_fd + 1, &readfds, &writefds, &exceptfds, ptv);
   if (rc < 0) {
-    for (f = fds; f < &fds[nfds]; f++) {
-      f->revents = 0;
-    }
-    errno = EBADF;
+      return -1;
   }
+
+  for (rc = 0, i = 0; i < nfds; i++)
+    if (fds[i].fd >= 0) {
+        fds[i].revents = 0;
+
+        if (FD_ISSET(fds[i].fd, &readfds)) {
+            int save_errno = errno;
+            char data[64] = {0};
+
+            /* support for POLLHUP */
+#ifdef _WIN32
+            if ((recv(fds[i].fd, data, 64, MSG_PEEK) == -1) &&
+                (errno == WSAESHUTDOWN || errno == WSAECONNRESET ||
+                 errno == WSAECONNABORTED || errno == WSAENETRESET)) {
+#else
+            if ((recv(fds[i].fd, data, 64, MSG_PEEK) == -1) &&
+                (errno == ESHUTDOWN || errno == ECONNRESET ||
+                 errno == ECONNABORTED || errno == ENETRESET)) {
+#endif
+                fds[i].revents |= POLLHUP;
+            } else {
+                fds[i].revents |= fds[i].events & (POLLIN | POLLRDNORM);
+            }
+
+            errno = save_errno;
+        }
+        if (FD_ISSET(fds[i].fd, &writefds)) {
+            fds[i].revents |= fds[i].events & (POLLOUT | POLLWRNORM | POLLWRBAND);
+        }
+
+        if (FD_ISSET(fds[i].fd, &exceptfds)) {
+            fds[i].revents |= fds[i].events & (POLLPRI | POLLRDBAND);
+        }
+
+        if (fds[i].revents & ~POLLHUP) {
+          rc++;
+        }
+    } else {
+        fds[i].revents = POLLNVAL;
+    }
 
   return rc;
 }
 
-#endif /* _WIN32_WINNT */
+void ssh_poll_init(void) {
+    poll_fn wsa_poll = NULL;
 
-#endif /* _WIN32 */
+    hlib = LoadLibrary(WS2_LIBRARY);
+    if (hlib != NULL) {
+        wsa_poll = (poll_fn) GetProcAddress(hlib, "WSAPoll");
+    }
+
+    if (wsa_poll == NULL) {
+        win_poll = bsd_poll;
+    } else {
+        win_poll = wsa_poll;
+    }
+}
+
+int ssh_poll(ssh_pollfd_t *fds, nfds_t nfds, int timeout) {
+    return win_poll(fds, nfds, timeout);
+}
 
 #endif /* HAVE_POLL */
 

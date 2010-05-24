@@ -278,7 +278,11 @@ void ssh_bind_free(ssh_bind sshbind){
   }
 
   if (sshbind->bindfd >= 0) {
+#ifdef _WIN32
+    closesocket(sshbind->bindfd);
+#else
     close(sshbind->bindfd);
+#endif
   }
   sshbind->bindfd = -1;
 
@@ -867,7 +871,7 @@ int ssh_execute_message_callbacks(ssh_session session){
   if(!session->ssh_message_list)
     return SSH_OK;
   if(session->ssh_message_callback){
-    while((msg=ssh_list_get_head(ssh_message , session->ssh_message_list)) != NULL){
+    while((msg=ssh_list_pop_head(ssh_message , session->ssh_message_list)) != NULL){
       ret=session->ssh_message_callback(session,msg);
       if(ret==1){
         ret = ssh_message_reply_default(msg);
@@ -876,7 +880,7 @@ int ssh_execute_message_callbacks(ssh_session session){
       }
     }
   } else {
-    while((msg=ssh_list_get_head(ssh_message , session->ssh_message_list)) != NULL){
+    while((msg=ssh_list_pop_head(ssh_message , session->ssh_message_list)) != NULL){
       ret = ssh_message_reply_default(msg);
       if(ret != SSH_OK)
         return ret;

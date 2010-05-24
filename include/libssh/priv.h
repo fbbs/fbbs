@@ -33,17 +33,56 @@
 #include "config.h"
 
 #ifdef _MSC_VER
-#define snprintf _snprintf
+
 /** Imitate define of inttypes.h */
 #define PRIdS "Id"
+
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define strtoull _strtoui64
 #define isblank(ch) ((ch) == ' ' || (ch) == '\t' || (ch) == '\n' || (ch) == '\r')
+
+#if _MSC_VER >= 1400
+#define strdup _strdup
+#endif
+#define usleep(X) Sleep(((X)+1000)/1000)
+
+#undef strtok_r
+#define strtok_r strtok_s
+
+#ifndef HAVE_SNPRINTF
+#ifdef HAVE__SNPRINTF_S
+#define snprintf(d, n, ...) _snprintf_s((d), (n), _TRUNCATE, __VA_ARGS__)
 #else
+#ifdef HAVE__SNPRINTF
+#define snprintf _snprintf
+#else 
+#error "no snprintf compatible function found"
+#endif /* HAVE__SNPRINTF */
+#endif /* HAVE__SNPRINTF_S */
+#endif /* HAVE_SNPRINTF */
+
+#ifndef HAVE_VSNPRINTF
+#ifdef HAVE__VSNPRINTF_S
+#define vsnprintf(s, n, f, v) _vsnprintf_s((s), (n), _TRUNCATE, (f), (v))
+#else
+#ifdef HAVE__VSNPRINTF
+#define vsnprintf _vsnprintf
+#else /* HAVE_VSNPRINTF */
+#error "No vsnprintf compatible function found"
+#endif /* HAVE__VSNPRINTF */
+#endif /* HAVE__VSNPRINTF_S */
+#endif /* HAVE_VSNPRINTF */
+
+#ifndef HAVE_STRNCPY
+#define strncpy(d, s, n) strncpy_s((d), (n), (s), _TRUNCATE)
+#endif
+#else /* _MSC_VER */
+
 #include <unistd.h>
 #define PRIdS "zd"
-#endif
+
+#endif /* _MSC_VER */
 
 #include "libssh/libssh.h"
 #include "libssh/callbacks.h"
@@ -77,7 +116,7 @@ typedef struct kex_struct {
 
 struct error_struct {
 /* error handling */
-    int error_code;
+    unsigned int error_code;
     char error_buffer[ERROR_BUFFERLEN];
 };
 
@@ -222,8 +261,8 @@ int gettimeofday(struct timeval *__p, void *__t);
 
 /* options.c  */
 
-char *dir_expand_dup(ssh_session session, const char *value, int allowsshdir);
 int ssh_options_set_algo(ssh_session session, int algo, const char *list);
+int ssh_options_apply(ssh_session session);
 
 /** Free memory space */
 #define SAFE_FREE(x) do { if ((x) != NULL) {free(x); x=NULL;} } while(0)

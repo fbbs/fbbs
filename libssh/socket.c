@@ -27,17 +27,20 @@
 #include <stdio.h>
 #ifdef _WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+extern const char **environ;
 #endif
 #include "libssh/priv.h"
 #include "libssh/socket.h"
 #include "libssh/buffer.h"
 #include "libssh/poll.h"
 #include "libssh/session.h"
+
 
 /** \defgroup ssh_socket SSH Sockets
  * \addtogroup ssh_socket
@@ -68,6 +71,8 @@ int ssh_socket_init(void) {
   if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
     return -1;
   }
+
+  ssh_poll_init();
 #endif
   return 0;
 }
@@ -185,8 +190,7 @@ int ssh_socket_is_open(struct socket *s) {
 /* \internal
  * \brief read len bytes from socket into buffer
  */
-static int ssh_socket_unbuffered_read(struct socket *s, void *buffer, uint32_t len)
-{
+static int ssh_socket_unbuffered_read(struct socket *s, void *buffer, uint32_t len) {
 	if (s->data_except)
 		return -1;
 
@@ -661,6 +665,54 @@ int ssh_socket_get_status(struct socket *s) {
 
   return r;
 }
+
+#ifndef _WIN32
+/**
+ * @internal
+ * @brief executes a command and redirect input and outputs
+ * @param command command to execute
+ * @param in input file descriptor
+ * @param out output file descriptor
+ */
+void ssh_execute_command(const char *command, socket_t in, socket_t out){
+  const char *args[]={"/bin/sh","-c",command,NULL};
+  /* redirect in and out to stdin, stdout and stderr */
+  dup2(in, 0);
+  dup2(out,1);
+  dup2(out,2);
+  close(in);
+  close(out);
+  execve(args[0],(char * const *)args,(char * const *)environ);
+  exit(1);
+}
+
+/**
+ * @internal
+ * @brief Open a socket on a ProxyCommand
+ * This call will always be nonblocking.
+ * @param s    socket to connect.
+ * @param command Command to execute.
+ * @returns SSH_OK socket is being connected.
+ * @returns SSH_ERROR error while executing the command.
+ */
+
+socket_t ssh_socket_connect_proxycommand(ssh_session session,
+    const char *command){
+  socket_t fd[2];
+  int pid;
+  enter_function();
+  socketpair(AF_UNIX,SOCK_STREAM,0,fd);
+  pid = fork();
+  if(pid == 0){
+    ssh_execute_command(command,fd[1],fd[1]);
+  }
+  close(fd[1]);
+  ssh_log(session,SSH_LOG_PROTOCOL,"ProxyCommand connection pipe: [%d,%d]",fd[0],fd[1]);
+  return fd[0];
+}
+
+#endif /* _WIN32 */
+
 
 /** @}
  */

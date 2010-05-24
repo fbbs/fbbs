@@ -36,6 +36,7 @@
 #include "libssh/keys.h"
 #include "libssh/dh.h"
 #include "libssh/messages.h"
+#include "libssh/string.h"
 
 /** \addtogroup ssh_auth
  * @{
@@ -130,9 +131,9 @@ ssh_public_key publickey_make_dss(ssh_session session, ssh_buffer buffer) {
 #endif /* HAVE_LIBCRYPTO */
 
 #ifdef DEBUG_CRYPTO
-  ssh_print_hexa("p", p->string, string_len(p));
-  ssh_print_hexa("q", q->string, string_len(q));
-  ssh_print_hexa("g", g->string, string_len(g));
+  ssh_print_hexa("p", string_data(p), string_len(p));
+  ssh_print_hexa("q", string_data(q), string_len(q));
+  ssh_print_hexa("g", string_data(g), string_len(g));
 #endif
 
   string_burn(p);
@@ -206,8 +207,8 @@ ssh_public_key publickey_make_rsa(ssh_session session, ssh_buffer buffer,
 #endif
 
 #ifdef DEBUG_CRYPTO
-  ssh_print_hexa("e", e->string, string_len(e));
-  ssh_print_hexa("n", n->string, string_len(n));
+  ssh_print_hexa("e", string_data(e), string_len(e));
+  ssh_print_hexa("n", string_data(n), string_len(n));
 #endif
 
   string_burn(e);
@@ -974,8 +975,8 @@ SIGNATURE *signature_from_string(ssh_session session, ssh_string signature,
 #endif
 
 #ifdef DEBUG_CRYPTO
-      ssh_print_hexa("r", rs->string, 20);
-      ssh_print_hexa("s", rs->string + 20, 20);
+      ssh_print_hexa("r", string_data(rs), 20);
+      ssh_print_hexa("s", (const unsigned char *)string_data(rs) + 20, 20);
 #endif
       string_free(rs);
 
@@ -1024,7 +1025,7 @@ SIGNATURE *signature_from_string(ssh_session session, ssh_string signature,
 
 #ifdef DEBUG_CRYPTO
       ssh_log(session, SSH_LOG_FUNCTIONS, "len e: %d", len);
-      ssh_print_hexa("RSA signature", e->string, len);
+      ssh_print_hexa("RSA signature", string_data(e), len);
 #endif
 
 #ifdef HAVE_LIBGCRYPT

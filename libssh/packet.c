@@ -693,6 +693,9 @@ void packet_parse(ssh_session session) {
       case SSH2_MSG_CHANNEL_OPEN:
         message_handle(session,type);
         return;
+      case SSH2_MSG_GLOBAL_REQUEST:
+        ssh_global_request_handle(session);
+        return;
       default:
         ssh_log(session, SSH_LOG_RARE, "Received unhandled packet %d", type);
     }
@@ -779,6 +782,7 @@ static int packet_wait2(ssh_session session, int type, int blocking) {
         ssh_log(session, SSH_LOG_PACKET, "received disconnect packet");
         leave_function();
         return SSH_ERROR;
+      case SSH2_MSG_GLOBAL_REQUEST:
       case SSH2_MSG_CHANNEL_WINDOW_ADJUST:
       case SSH2_MSG_CHANNEL_DATA:
       case SSH2_MSG_CHANNEL_EXTENDED_DATA:

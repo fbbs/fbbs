@@ -296,6 +296,7 @@ static int dh_handshake(ssh_session session) {
         goto error;
       }
       session->dh_server_signature = signature;
+      signature=NULL; /* ownership changed */
       if (dh_build_k(session) < 0) {
         ssh_set_error(session, SSH_FATAL, "Cannot build k number");
         rc = SSH_ERROR;
@@ -400,10 +401,6 @@ error:
     string_burn(f);
     string_free(f);
   }
-  if(pubkey != NULL){
-    string_burn(pubkey);
-    string_free(pubkey);
-  }
   if(signature != NULL){
     string_burn(signature);
     string_free(signature);
@@ -485,6 +482,7 @@ int ssh_connect(ssh_session session) {
   int ssh1 = 0;
   int ssh2 = 0;
   int fd = -1;
+  int ret;
 
   if (session == NULL) {
     ssh_set_error(session, SSH_FATAL, "Invalid session pointer");
@@ -500,13 +498,26 @@ int ssh_connect(ssh_session session) {
     leave_function();
     return SSH_ERROR;
   }
-  if (session->fd == -1 && session->host == NULL) {
+  if (session->fd == -1 && session->host == NULL &&
+      session->ProxyCommand == NULL) {
     ssh_set_error(session, SSH_FATAL, "Hostname required");
     leave_function();
     return SSH_ERROR;
   }
+
+  ret = ssh_options_apply(session);
+  if (ret < 0) {
+      ssh_set_error(session, SSH_FATAL, "Couldn't apply options");
+      leave_function();
+      return SSH_ERROR;
+  }
+
   if (session->fd != -1) {
     fd = session->fd;
+#ifndef _WIN32
+  } else if (session->ProxyCommand != NULL) {
+    fd=ssh_socket_connect_proxycommand(session, session->ProxyCommand);
+#endif
   } else {
     fd = ssh_connect_host(session, session->host, session->bindaddr,
         session->port, session->timeout, session->timeout_usec);
@@ -699,7 +710,7 @@ error:
 const char *ssh_copyright(void) {
     return SSH_STRINGIFY(LIBSSH_VERSION) " (c) 2003-2008 Aris Adamantiadis "
     "(aris@0xbadc0de.be) Distributed under the LGPL, please refer to COPYING"
-    "file for informations about your rights";
+    "file for information about your rights";
 }
 /** @} */
 /* vim: set ts=2 sw=2 et cindent: */

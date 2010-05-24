@@ -70,6 +70,11 @@ typedef HMAC_CTX* HMACCTX;
 #define MD5_DIGEST_LEN MD5_DIGEST_LENGTH
 
 #include <openssl/bn.h>
+#include <openssl/opensslv.h>
+#define OPENSSL_0_9_7b 0x0090702fL
+#if (OPENSSL_VERSION_NUMBER <= OPENSSL_0_9_7b)
+#define BROKEN_AES_CTR
+#endif
 typedef BIGNUM*  bignum;
 typedef BN_CTX* bignum_CTX;
 

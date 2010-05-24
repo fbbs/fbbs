@@ -32,7 +32,8 @@
 #include "libssh/packet.h"
 #include "libssh/session.h"
 #include "libssh/misc.h"
-
+#include "libssh/ssh2.h"
+#include "libssh/buffer.h"
 #define FIRST_CHANNEL 42 // why not ? it helps to find bugs.
 
 /** \defgroup ssh_session SSH Session
@@ -46,6 +47,8 @@
  */
 ssh_session ssh_new(void) {
   ssh_session session;
+  char *id;
+  int rc;
 
   session = malloc(sizeof (struct ssh_session_struct));
   if (session == NULL) {
@@ -95,6 +98,39 @@ ssh_session ssh_new(void) {
       goto err;
     }
 #endif /* _WIN32 */
+
+    session->identity = ssh_list_new();
+    if (session->identity == NULL) {
+      goto err;
+    }
+
+    id = strdup("SSH_DIR/id_rsa");
+    if (id == NULL) {
+      goto err;
+    }
+    rc = ssh_list_append(session->identity, id);
+    if (rc == SSH_ERROR) {
+      goto err;
+    }
+
+    id = strdup("SSH_DIR/id_dsa");
+    if (id == NULL) {
+      goto err;
+    }
+    rc = ssh_list_append(session->identity, id);
+    if (rc == SSH_ERROR) {
+      goto err;
+    }
+
+    id = strdup("SSH_DIR/identity");
+    if (id == NULL) {
+      goto err;
+    }
+    rc = ssh_list_append(session->identity, id);
+    if (rc == SSH_ERROR) {
+      goto err;
+    }
+
     return session;
 
 err:
@@ -155,19 +191,30 @@ void ssh_free(ssh_session session) {
   privatekey_free(session->rsa_key);
   if(session->ssh_message_list){
     ssh_message msg;
-    while((msg=ssh_list_get_head(ssh_message ,session->ssh_message_list))
+    while((msg=ssh_list_pop_head(ssh_message ,session->ssh_message_list))
         != NULL){
       ssh_message_free(msg);
     }
     ssh_list_free(session->ssh_message_list);
   }
 
+  if (session->identity) {
+    char *id;
+
+    for (id = ssh_list_pop_head(char *, session->identity);
+         id != NULL;
+         id = ssh_list_pop_head(char *, session->identity)) {
+      SAFE_FREE(id);
+    }
+    ssh_list_free(session->identity);
+  }
+
   /* options */
   SAFE_FREE(session->username);
   SAFE_FREE(session->host);
-  SAFE_FREE(session->identity);
   SAFE_FREE(session->sshdir);
   SAFE_FREE(session->knownhosts);
+  SAFE_FREE(session->ProxyCommand);
 
   for (i = 0; i < 10; i++) {
     if (session->wanted_methods[i]) {
@@ -361,6 +408,33 @@ int ssh_get_version(ssh_session session) {
   }
 
   return session->version;
+}
+
+
+/**
+ * @internal
+ * @handle a SSH_MSG_GLOBAL_REQUEST packet
+ * @param session the SSH session
+ */
+void ssh_global_request_handle(ssh_session session){
+  ssh_string type;
+  char *type_c;
+  uint32_t needreply;
+  type=buffer_get_ssh_string(session->in_buffer);
+  buffer_get_u32(session->in_buffer,&needreply);
+  if(type==NULL)
+    return;
+  type_c=string_to_char(type);
+  if(!type_c)
+    return;
+  ssh_log(session, SSH_LOG_PROTOCOL,
+      "Received SSH_GLOBAL_REQUEST %s (wantreply=%d)",type_c,needreply);
+  SAFE_FREE(type_c);
+  string_free(type);
+  if(needreply != 0){
+    buffer_add_u8(session->out_buffer,SSH2_MSG_REQUEST_FAILURE);
+    packet_send(session);
+  }
 }
 
 /** @} */

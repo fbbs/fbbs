@@ -22,8 +22,7 @@
 #ifndef BUFFER_H_
 #define BUFFER_H_
 
-/** Describes a buffer state at a moment
- */
+/* Describes a buffer state */
 struct ssh_buffer_struct {
     char *data;
     uint32_t used;

@@ -30,7 +30,9 @@
 #ifdef WITH_PCAP
 
 #include <stdio.h>
-#ifndef _WIN32
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#else
 #include <sys/time.h>
 #include <sys/socket.h>
 #endif
@@ -91,7 +93,7 @@ struct ssh_pcap_context_struct {
 	ssh_session session;
 	ssh_pcap_file file;
 	int connected;
-	/* All of these informations are useful to generate
+	/* All of these information are useful to generate
 	 * the dummy IP and TCP packets
 	 */
 	uint32_t ipsource;
