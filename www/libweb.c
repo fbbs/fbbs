@@ -43,7 +43,7 @@ char secname[SECNUM][2][20] = {
 int loginok = 0;
 struct userec currentuser;
 struct user_info *u_info;
-char fromhost[40]; // IPv6 addresses can be represented in 39 chars.
+char fromhost[IP_LEN]; // IPv6 addresses can be represented in 39 chars.
 char param_name[MAX_PARAMS][PARAM_NAMELEN]; ///< Parameter names.
 char *param_val[MAX_PARAMS]; ///< Parameter values.
 int param_num = 0;  ///< Count of parsed parameters.
