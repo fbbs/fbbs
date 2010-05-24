@@ -339,10 +339,11 @@ static int check_duplicate_login(const struct userec *user, int *max)
 
 	int logins = count_user(user->uid);
 
-	if (strcasecmp("guest", user->userid) == 0)
+	if (strcasecmp("guest", user->userid) == 0) {
 		*max = MAXGUEST;
-	if (logins >= *max)
-		return BBS_E2MANY;
+		if (logins >= *max)
+			return BBS_E2MANY;
+	}
 	
 	if (!HAS_PERM2(PERM_SPECIAL0, user)) {
 		if (HAS_PERM2(PERM_BOARDS, user))
