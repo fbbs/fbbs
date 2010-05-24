@@ -14,6 +14,12 @@
 #define BADLOGINFILE   "logins.bad"
 #define VISITLOG    BBSHOME"/.visitlog"
 
+enum {
+	MAX_LOGINS_NORMAL = 2,   ///< max logins for a single account.
+	MAX_LOGINS_BM = 4,       ///< max logins for a board manager.
+	MAX_LOGINS_DIRECTOR = 6, ///< max logins for a director(zhanwu).
+};
+
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
 #endif
@@ -300,161 +306,89 @@ static int cmpuids2(int unum, const struct user_info *urec)
 	return (unum == urec->uid);
 }
 
-// Count active logins of a user with 'usernum'(uid).
-// Called by count_user().
-static int count_multi(const struct user_info *uentp)
+/**
+ * Count logins of an account.
+ * @param unum User num.
+ * @return The count.
+ */
+static int count_user(int unum)
 {
-	static int count;
-
-	if (uentp == NULL) {
-		int num = count;
-		count = 0;
-		return num;
+	int count = 0;
+	struct user_info *begin = utmpshm->uinfo, *ptr;
+	struct user_info *end = begin + sizeof(utmpshm->uinfo) / sizeof(*begin);
+	
+	for (ptr = begin; ptr != end; ++ptr) {
+		if (ptr->active && ptr->pid && ptr->uid == unum)
+			++count;
 	}
-	if (!uentp->active || !uentp->pid)
-		return 0;
-	if (uentp->uid == usernum)
-		count++;
-	return 1;
+	return count;
 }
 
-// Count active logins of a user with 'usernum'(uid).
-static int count_user(void)
+/**
+ * Check whether user exceeds login quota.
+ * @param[in] user The user.
+ * @param[out] max Login quota.
+ * @return 0 when OK. On error, return current number of logins for non-guests,
+ *         ::BBS_E2MANY for guest.
+ */
+static int check_duplicate_login(const struct userec *user, int *max)
 {
-	count_multi(NULL);
-	apply_ulist(count_multi);
-	return count_multi(NULL);
-}
-
-#ifdef IPMAXLOGINS
-// Compare 'str' to strings in file 'filename'.
-// Return 1 if leading characters of 'str' matches (case insensitive)
-// any of those strings, 0 otherwise.
-static int IsSpecial(const char *str, const char *filename)
-{
-	FILE *fp;
-	char line[STRLEN];
-	char *ptr;
-	int i = 0;
-
-	if ((fp = fopen(filename, "r")) != NULL) {
-		while (fgets(line, sizeof(line), fp)) {
-			ptr = strtok(line, " \r\n\t");
-			if (!ptr[0] || ptr[0] == '#')
-				continue;
-			else if (!strncmp(str, ptr, strlen(ptr))) {
-				i = 1;
-				break;
-			}
-		}
-		fclose(fp);
-	}
-	return i;
-}
-
-// Count active logins from IP 'fromhost'.
-// Called by count_ip().
-static int _cnt_ip(struct user_info *uentp)
-{
-	static int count;
-
-	if (uentp == NULL) {
-		int num = count;
-		count = 0;
-		return num;
-	}
-	if (!uentp->active || !uentp->pid)
+	// No limit for sysops.
+	if (HAS_PERM2(PERM_MULTILOG, user))
 		return 0;
-	if (!strcmp(uentp->userid, "guest"))
-		return 0;
-	if (!strcmp(uentp->from, fromhost))
-		count++;
-	return 1;
-}
 
-// Count active logins from IP 'fromhost'.
-static int count_ip(void)
-{
-	_cnt_ip(NULL);
-	apply_ulist(_cnt_ip);
-	return _cnt_ip(NULL);
-}
+	int logins = count_user(user->uid);
 
-// Check if there is greater than or equal to IPMAXLOGINS
-// active processes from IP 'fromhost'. If so, deny more logins.
-// guest users, or users from IP addresses in "etc/freeip"
-// or not in "etc/restrictip" are not checked.
-static int iplogins_check(void)
-{
-	int sameip;
-
-	if (currentuser.userid && !strcmp(currentuser.userid, "guest"))
-		return 0;
-	if (!IsSpecial(fromhost, "etc/restrictip")
-			|| IsSpecial(fromhost, "etc/freeip")) {
-		return 0;
+	if (strcasecmp("guest", user->userid) == 0)
+		*max = MAXGUEST;
+	if (logins > *max)
+		return BBS_E2MANY;
+	
+	if (!HAS_PERM2(PERM_SPECIAL0, user)) {
+		if (HAS_PERM2(PERM_BOARDS, user))
+			*max = MAX_LOGINS_BM;
+		else
+			*max = MAX_LOGINS_NORMAL;
 	} else {
-		sameip = count_ip();
+		*max = MAX_LOGINS_DIRECTOR;
 	}
-	if (sameip >= IPMAXLOGINS) {
-		prints("\033[1;32m为确保他人上站权益, 本站仅允许此IP同时登陆 %d 个。\n\033[m",
-				IPMAXLOGINS);
-		prints("\033[1;36m您目前已经使用该IP登陆了 %d 个！\n\033[m", sameip);
-		return -1;
-	}
+	if (logins > *max)
+		return logins;
+
 	return 0;
 }
-#endif
 
 // Prevent too many logins of same account.
 static int multi_user_check(void)
 {
-	struct user_info uin;
-	int logins, mustkick = 0;
+	int max;
+	int ret = check_duplicate_login(&currentuser, &max);
 
-	// Don't check sysops.
-	if (HAS_PERM(PERM_MULTILOG))
-		return 0;
+	if (ret == BBS_E2MANY) {
+		prints("\033[1;33m抱歉, 目前已有太多 \033[1;36mguest\033[33m, "
+				"请稍后再试。\033[m\n");
+		return -1;
+	}
 
-	logins = count_user();
-
-	// Allow no more than MAXGUEST guest users.
-	if (!strcasecmp("guest", currentuser.userid)) {
-		if (logins > MAXGUEST) {
-			prints("\033[1;33m抱歉, 目前已有太多 \033[1;36mguest\033[33m, 请稍后再试。\033[m\n");
+	if (ret > 0) {
+		prints("\033[1;32m为确保他人上站权益, "
+				"本站仅允许您用该帐号登录 %d 个。\n\033[m"
+				"\033[1;36m您目前已经使用该帐号登录了 %d 个，"
+				"您必须断开其他的连接方能进入本站！\n\033[m", max, ret);
+		bool kick = askyn("您想删除重复的连接吗", false, false);
+		if (!kick) {
+			prints("\033[33m很抱歉，您已经用该帐号登录 %d 个，"
+					"所以，此连线将被取消。\033[m\n", ret);
 			return -1;
-		}
-		return 0;
-	}
-	// For users without PERM_SPECIAL0, MULTI_LOGINS logins are allowed.
-	// A user with PERM_SPEACIAL0 is allowed up to 6 logins.
-	// (actually 4, finding the bug..)
-	else if ((!HAS_PERM(PERM_SPECIAL0) && logins >= MULTI_LOGINS)
-			|| logins > 5) {
-		prints("\033[1;32m为确保他人上站权益, 本站仅允许您用该帐号登录 %d 个。\n\033[m", MULTI_LOGINS);
-		prints("\033[1;36m您目前已经使用该帐号登录了 %d 个，您必须断开其他的连接方能进入本站！\n\033[m", logins);
-		mustkick = 1;
-	}
-	if (search_ulist(&uin, cmpuids2, usernum) 
-		&& (uin.active || (uin.pid && bbskill(&uin, 0) == -1))) {
-		getdata(0, 0, "\033[1;37m您想删除重复的 login 吗 (Y/N)? [N]\033[m", genbuf, 4,
-				DOECHO, YEA);
-
-		if (genbuf[0] == 'N' || genbuf[0] == 'n' || genbuf[0] == '\0') {
-			if (mustkick) {
-				prints("\033[33m很抱歉，您已经用该帐号登录 %d 个，所以，此连线将被取消。\033[m\n", logins);
-				return -1;
-			}
 		} else {
-			if (!uin.pid)
-				return 0;
-			bbskill(&uin, SIGHUP);
-			report("kicked (multi-login)", currentuser.userid);
+			struct user_info uin;
+			if (search_ulist(&uin, cmpuids2, usernum)) {
+				bbskill(&uin, SIGHUP);
+				report("kicked (multi-login)", currentuser.userid);
+			}
 		}
 	}
-#ifdef IPMAXLOGINS
-	return iplogins_check();
-#endif
+
 	return 0;
 }
 
@@ -853,7 +787,6 @@ static void notepad_init(void)
 static void user_login(void)
 {
 	char fname[STRLEN];
-	int logins;
 
 	// SYSOP gets all permission bits when login.
 	if (strcmp(currentuser.userid, "SYSOP") == 0) {
@@ -870,12 +803,9 @@ static void user_login(void)
 	report("Enter", currentuser.userid);
 	started = 1;
 
-	// Seems unnecessary since having done so in login_query().
-	logins = count_user();
-	if (! (HAS_PERM(PERM_MULTILOG)
-		|| (HAS_PERM(PERM_SPECIAL0) && logins < 5)
-		|| (logins <= MULTI_LOGINS))
-		&& strcmp(currentuser.userid, "guest")) {
+	int max;
+	int ret = check_duplicate_login(&currentuser, &max);
+	if (ret > 0) {
 		report("kicked (multi-login)[漏网之鱼]", currentuser.userid);
 		abort_bbs(0);
 	}
@@ -947,7 +877,7 @@ static void user_login(void)
 	{
 		time_t stay, recent;
 
-		if (count_user() > 1) {
+		if (count_user(usernum) > 1) {
 			recent = currentuser.lastlogout;
 			if (currentuser.lastlogin > recent)
 				recent = currentuser.lastlogin;

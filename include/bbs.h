@@ -194,10 +194,6 @@ enum {
 	GIVEUPBBS_FLAG = 0x80, ///< True if the user gives up BBS now.
 };
 
-#define MULTI_LOGINS	2	/* 同时可上站 ID 数 */
-#ifndef FDQUAN
-#define IPMAXLOGINS		5	// 同IP同时上站ID数
-#endif
 #define DEF_VALUE		"★★ 欢迎光临日月光华站! ★★"
 #define DEF_FILE		"etc/whatdate"
 
