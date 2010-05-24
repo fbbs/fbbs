@@ -3070,12 +3070,12 @@ int read_junk(int ent, struct fileheader *fileinfo, char *direct) {
 
 int show_online(void)
 {
+	if (currbp->flag & BOARD_ANONY_FLAG) {
+		// TODO: prompt at bottom.
+		return DONOTHING;
+	}
 #ifndef FDQUAN
-	struct boardheader *bp;
-	extern struct boardheader *getbcache();
-
-	bp = getbcache(currboard);
-	if (!(bp->flag & BOARD_CLUB_FLAG) || !(chkBM(currbp, &currentuser)
+	if (!(currbp->flag & BOARD_CLUB_FLAG) || !(chkBM(currbp, &currentuser)
 			|| isclubmember(currentuser.userid, currboard))) {
 		return DONOTHING;
 	}
