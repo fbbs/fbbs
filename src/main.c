@@ -337,7 +337,7 @@ static int check_duplicate_login(const struct userec *user, int *max)
 	if (HAS_PERM2(PERM_MULTILOG, user))
 		return 0;
 
-	int logins = count_user(user->uid);
+	int logins = count_user(usernum);
 
 	if (strcasecmp("guest", user->userid) == 0) {
 		*max = MAXGUEST;
