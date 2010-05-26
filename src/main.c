@@ -807,7 +807,7 @@ static void user_login(void)
 	int max;
 	int ret = check_duplicate_login(&currentuser, &max);
 	// The process just created should be excluded.
-	if (ret > max) {
+	if (ret > 0 && ret > max) {
 		report("kicked (multi-login)[ТЉЭјжЎгу]", currentuser.userid);
 		abort_bbs(0);
 	}
