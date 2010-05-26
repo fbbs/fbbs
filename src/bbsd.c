@@ -53,6 +53,28 @@ char genbuf[1024]; ///< global buffer for strings.
 ssh_channel ssh_chan;
 #endif // SSHBBS
 
+typedef void (*sighandler_t)(int);
+
+static sighandler_t fb_signal(int signum, sighandler_t handler)
+{
+	struct sigaction act, oact;
+	act.sa_handler = handler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	if (signum == SIGALRM) {
+#ifdef SA_INTERRUPT
+		act.sa_flags |= SA_INTERRUPT;
+#endif
+	} else {
+#ifdef  SA_RESTART
+		act.sa_flags |= SA_RESTART;
+#endif
+	}
+	if (sigaction(signum, &act, &oact) < 0)
+		return(SIG_ERR);
+	return(oact.sa_handler);
+}
+
 /**
  * Get remote ip address.
  * @param from socket struct
@@ -334,8 +356,8 @@ int main(int argc, char *argv[])
 	char buf[STRLEN];
 
 	start_daemon();
-	signal(SIGCHLD, reapchild);
-	signal(SIGTERM, close_daemon);
+	fb_signal(SIGCHLD, reapchild);
+	fb_signal(SIGTERM, close_daemon);
 
 #ifdef SSHBBS
 	ssh_bind sshbind = ssh_bind_new();
