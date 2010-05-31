@@ -25,10 +25,13 @@
 
 #include "bbs.h"
 #include "vote.h"
+#include "list.h"
 
 extern cmpbnames();
 extern int page, range;
-static char *vote_type[] = { "是非", "单选", "复选", "数字", "问答" };
+
+static const char *vote_type[] = { "是非", "单选", "复选", "数字", "问答" };
+
 struct votebal currvote; //当前投票
 char controlfile[STRLEN];
 unsigned int result[33]; //投票结果数组
@@ -1205,4 +1208,114 @@ int x_vote() {
 int x_results() {
 	modify_user_mode(XMENU); //更改用户 模式状态至??
 	return vote_results(DEFAULTBOARD); //显示sysop版投票结果
+}
+
+typedef struct choose_vote_t {
+	struct boardheader *bp;
+	struct votebal *votes;
+	bool voted;
+} choose_vote_t;
+
+/**
+ *
+ */
+static choose_title_t choose_vote_title(choose_t *cp)
+{
+	docmdtitle("[投票箱列表]", "[\033[1;32m←\033[m,\033[1;32me\033[m] 离开 "
+			"[\033[1;32mh\033[m] 求助 [\033[1;32m→\033[m,\033[1;32mr <cr>"
+			"\033[m] 进行投票 [\033[1;32m↑\033[m,\033[1;32m↓\033[m] 上,下选择"
+			" \033[1m高亮度\033[m表示尚未投票\n"
+			"\033[1;44m编号 开启投票箱者 开启日 投票主题"
+			"                                类别 天数 人数\033[m\n");
+}
+
+/**
+ *
+ */
+static choose_loader_t choose_vote_load(choose_t *cp)
+{
+	choose_vote_t *cv = cp->data;
+	if (cv->votes) {
+		free(cv->votes);
+		cv->votes = NULL;
+	}
+
+	char file[HOMELEN];
+	setvfile(file, cv->bp->filename, "control");
+
+	mmap_t m = { .oflag = O_RDONLY };
+	if (mmap_open(file, &m) == 0) {
+		cv->votes = malloc(m.size);
+		if (!cv->votes) {
+			mmap_close(&m);
+			return -1;
+		}
+		memcpy(cv->votes, m.ptr, m.size);
+		cp->all = m.size / sizeof(*cv->votes);
+	}
+	mmap_close(&m);
+	cp->eod = true;
+	return 0;
+}
+
+/**
+ *
+ */
+static choose_display_t choose_vote_display(choose_t *cp)
+{
+	choose_vote_t *cv = cp->data;
+	struct votebal *vote;
+
+	for (int i = cp->cur; i < cp->all; ++i) {
+		vote = cv->votes + i;
+
+		char file[HOMELEN], buf[STRLEN];
+		snprintf(buf, sizeof(buf), "flag.%d", vote->opendate);
+		setvfile(file, cv->bp->filename, buf);
+
+		cv->voted = (search_record(file, NULL, sizeof(struct ballot),
+				cmpvuid, currentuser.userid) <= 0);
+
+		int num = get_num_records(file, sizeof(struct ballot));
+
+		char title[STRLEN];
+		strlcpy(title, vote->title, sizeof(title));
+		ellipsis(title, 39);
+
+		prints(" %s%3d %-12.12s %6.6s %-39.39s %-4.4s %3d  %4d\033[m\n",
+			cv->voted ? "" : "\033[1m", i, vote->userid,
+			getdatestring(vote->opendate, DATE_ZH) + 6, title,
+			vote_type[vote->type - 1], vote->maxdays, num);
+	}
+	return 0;
+}
+
+/**
+ *
+ */
+int b_vote2(void)
+{
+	if (!HAS_PERM(PERM_VOTE) || (currentuser.stay < 1800))
+		return DONOTHING;
+	
+	choose_vote_t cv = { .bp = currbp, .votes = NULL};
+
+	char file[HOMELEN];
+	setvfile(file, cv.bp->filename, "control");
+	int num = get_num_records(file, sizeof(struct votebal));
+	if (num == 0) {
+		presskeyfor("抱歉, 目前并没有任何投票举行。", t_lines - 1);
+		return FULLUPDATE;
+	}
+
+	clear();
+	choose_t cs;
+	cs.data = &cv;
+	cs.loader = choose_vote_load;
+	cs.title = choose_vote_title;
+	cs.display = choose_vote_display;
+//	cs.handler = user_vote;
+	choose2(&cs);
+	clear();
+	return FULLUPDATE;
 }
