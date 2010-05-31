@@ -133,6 +133,7 @@ static choose_loader_t online_users_load(choose_t *cp)
 		cp->all = up->onum;
 	else
 		cp->all = up->num;
+	cp->eod = true;
 	return cp->all;
 }
 

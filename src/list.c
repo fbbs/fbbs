@@ -445,6 +445,7 @@ int choose2(choose_t *cp)
 	
 	while (!end) {
 		if (!cp->valid) {
+			cp->eod = false;
 			if ((*cp->loader)(cp) < 0)
 				break;
 			cp->valid = true;
@@ -452,10 +453,14 @@ int choose2(choose_t *cp)
 				cp->update = PARTUPDATE;
 		}
 
-		if (cp->cur < 0)
-			cp->cur = 0;
-		if (cp->cur >= cp->all)
-			cp->cur = cp->all - 1;
+		if (!cp->eod) {
+			(*cp->loader)(cp);
+		} else {
+			if (cp->cur < 0)
+				cp->cur = 0;
+			if (cp->cur >= cp->all)
+				cp->cur = cp->all - 1;
+		}
 
 		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
 			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
@@ -526,7 +531,8 @@ int choose2(choose_t *cp)
 				break;
 			case 'j':
 			case KEY_DOWN:
-				if (++cp->cur >= cp->all)
+				++cp->cur;
+				if (cp->eod && cp->cur >= cp->all)
 					cp->cur = 0;
 				break;
 			case '$':

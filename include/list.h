@@ -12,6 +12,7 @@ typedef struct choose_t {
 	int start;     ///< Starting entry of the page.
 	int update;    ///< UI update status.
 	int valid;     ///< True if data are not out-dated.
+	bool eod;      ///< True if the end of data are reached.
 	void *data;    ///< Data.
 	int (*loader)(struct choose_t *);   ///< Data loader.
 	void (*title)(struct choose_t *);   ///< Function that shows title.

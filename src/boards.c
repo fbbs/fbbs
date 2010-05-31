@@ -590,6 +590,7 @@ static choose_loader_t choose_board_load(choose_t *cp)
 	}
 
 	cp->all= cbrd->num;
+	cp->eod = true;
 	return 0;
 }
 
