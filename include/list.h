@@ -1,6 +1,11 @@
 #ifndef FB_LIST_H
 #define FB_LIST_H
 
+typedef int choose_loader_t;
+typedef void choose_title_t;
+typedef int choose_display_t;
+typedef int choose_handler_t;
+
 typedef struct choose_t {
 	int all;       ///< Number of entries.
 	int cur;       ///< Current entry.
