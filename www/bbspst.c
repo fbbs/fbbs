@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "post.h"
+#include "mmap.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);

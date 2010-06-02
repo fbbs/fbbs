@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "mmap.h"
 
 int getmailboxsize(unsigned int userlevel)
 {

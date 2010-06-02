@@ -4,6 +4,7 @@
  */
 
 #include "libweb.h"
+#include "mmap.h"
 
 char seccode[SECNUM][6]={
 #ifdef FDQUAN

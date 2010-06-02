@@ -7,6 +7,7 @@
 #else
 #include <rpcsvc/rstat.h>
 #endif
+#include "mmap.h"
 
 #ifndef DLM
 #undef	ALLOWGAME

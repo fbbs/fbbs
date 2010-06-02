@@ -1,4 +1,6 @@
 #include "libweb.h"
+#include "mmap.h"
+#include "record.h"
 
 /**
  * Print override information.

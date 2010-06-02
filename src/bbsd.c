@@ -18,6 +18,7 @@
 #include "libssh/server.h"
 #endif // SSHBBS
 #include "bbs.h"
+#include "mmap.h"
 
 #ifndef NSIG
 #ifdef _NSIG

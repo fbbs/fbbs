@@ -1,7 +1,9 @@
-#include "bbs.h"
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include "bbs.h"
+#include "mmap.h"
+#include "record.h"
 
 #define BUFSIZE (MAXUSERS + 244)
 

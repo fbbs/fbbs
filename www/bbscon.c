@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "mmap.h"
 
 static int cmp_fid(void *arg, void *buf)
 {

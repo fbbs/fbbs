@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "mmap.h"
 
 int bbsnot_main(void)
 {

@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "mmap.h"
 
 static time_t calltime = 0;
 void R_monitor();

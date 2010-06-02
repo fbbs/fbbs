@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <sys/file.h>
 #include "libBBS.h"
+#include "mmap.h"
 
 enum {
 	MMAP_MINSIZE = 4096,  ///< Minimum memory mapped region size.
