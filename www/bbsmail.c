@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "record.h"
 
 int bbsmail_main(void)
 {

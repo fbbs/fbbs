@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "record.h"
 
 /**
  * Check user info validity.

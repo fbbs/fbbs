@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "record.h"
 
 // TODO: rewrite
 static bool quota_exceeded(const char *board)
