@@ -1254,7 +1254,7 @@ int g_send() {
 						continue;
 					}
 					snprintf(buf, sizeof(buf), "%s\n", uident);
-					file_append(maillists, uident);
+					file_append(maillists, buf);
 					cnt++;
 				}
 			else
@@ -1294,7 +1294,7 @@ int g_send() {
 					break;
 				}
 				snprintf(buf, sizeof(buf), "%s\n", uident);
-				file_append(maillists, uident);
+				file_append(maillists, buf);
 				cnt++;
 				break;
 			case 'E':
@@ -1351,7 +1351,7 @@ int g_send() {
 							continue;
 						}
 						snprintf(buf, sizeof(buf), "%s\n", uident);
-						file_append(maillists, uident);
+						file_append(maillists, buf);
 						cnt++;
 					}
 				}
