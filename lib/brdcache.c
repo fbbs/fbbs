@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "record.h"
 
 struct BCACHE *brdshm = NULL;
 struct boardheader *bcache = NULL;
@@ -35,13 +36,13 @@ static int bcache_lock(void)
 		return -1;
 	}
 	bcache_setreadonly(0);
-	flock(lockfd, LOCK_EX);
+	fb_flock(lockfd, LOCK_EX);
 	return lockfd;
 }
 
 static void bcache_unlock(int fd)
 {
-	flock(fd, LOCK_UN);
+	fb_flock(fd, LOCK_UN);
 	bcache_setreadonly(1);
 	close(fd);
 }

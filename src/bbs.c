@@ -2492,14 +2492,14 @@ int move_notice(int ent, struct fileheader *fh, char *direct) {
 		strcat(tmppath, currboard);
 		strcat(tmppath, ".lock");
 		lockfd = creat(tmppath, 0600);
-		flock(lockfd, LOCK_EX);
+		fb_flock(lockfd, LOCK_EX);
 		if (pos > 0) {
 			delete_record(path, sizeof(struct fileheader), pos,
 					cmpfilename, fh->filename);
 			append_record(path, fh, sizeof(struct fileheader));
 		} else
 			return DONOTHING;
-		flock(lockfd, LOCK_UN);
+		fb_flock(lockfd, LOCK_UN);
 		close(lockfd);
 	}
 	updatelastpost(currboard);

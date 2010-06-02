@@ -5,6 +5,7 @@
 #include <sys/shm.h>
 #include <stdio.h>
 #include <time.h>
+#include "record.h"
 
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)
 
@@ -148,7 +149,7 @@ static int shm_lock(const char *lockname)
 	if (lockfd < 0) {
 		return -1;
 	}
-	if (flock(lockfd, LOCK_EX) == -1)
+	if (fb_flock(lockfd, LOCK_EX) == -1)
 		return -1;
 	return lockfd;
 }
@@ -156,7 +157,7 @@ static int shm_lock(const char *lockname)
 // Removes an existing lock held by this process on file descriptor 'fd'.
 static void shm_unlock(int fd)
 {
-	flock(fd, LOCK_UN);
+	fb_flock(fd, LOCK_UN);
 	close(fd);
 }
 

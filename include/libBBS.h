@@ -18,6 +18,7 @@ int f_cp(const char *src, const char *dst, int mode);
 int f_ln(const char *src, const char *dst);
 int valid_fname(char *str);
 int f_rm(char *fpath);
+int fb_flock(int fd, int operation);
 
 //mmdecode.c
 void _mmdecode(unsigned char *str);

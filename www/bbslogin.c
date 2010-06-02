@@ -67,7 +67,7 @@ static int wwwlogin(struct userec *user, const char *ref)
 	int fd = open("tmp/.UTMP.lock", O_RDWR | O_CREAT, 0600);
 	if (fd < 0)
 		return BBS_EINTNL;
-	if (flock(fd, LOCK_EX) == -1) {
+	if (fb_flock(fd, LOCK_EX) == -1) {
 		close(fd);
 		return BBS_EINTNL;
 	}
@@ -81,7 +81,7 @@ static int wwwlogin(struct userec *user, const char *ref)
 			break;
 		}
 	}
-	flock(fd, LOCK_UN);
+	fb_flock(fd, LOCK_UN);
 	close(fd);
 	if (n >= MAXACTIVE)
 		return BBS_E2MANY;

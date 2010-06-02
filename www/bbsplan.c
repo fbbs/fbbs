@@ -12,9 +12,9 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd < 0)
 			return BBS_EINTNL;
-		flock(fd, LOCK_EX);
+		fb_flock(fd, LOCK_EX);
 		safer_write(fd, text, strlen(text));
-		flock(fd, LOCK_UN);
+		fb_flock(fd, LOCK_UN);
 		close(fd);
 		xml_header("bbs");
 		printf("<bbseufile ");

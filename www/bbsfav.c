@@ -52,7 +52,7 @@ int bbsbrdadd_main(void)
 	FILE *fp = fopen(file, "a+");
 	if (fp == NULL)
 		return BBS_EINTNL;
-	flock(fileno(fp), LOCK_EX);
+	fb_flock(fileno(fp), LOCK_EX);
 
 	struct goodbrdheader gbrd;
 	bool found = false;
@@ -79,7 +79,7 @@ int bbsbrdadd_main(void)
 			ret = BBS_EBRDQE;
 		}
 	}
-	flock(fileno(fp), LOCK_UN);
+	fb_flock(fileno(fp), LOCK_UN);
 	fclose(fp);
 
 	if (ret)

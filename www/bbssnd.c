@@ -11,7 +11,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 	int fd = open(file, O_RDWR);
 	if (fd < 0)
 		return BBS_EINTNL;
-	flock(fd, LOCK_EX);
+	fb_flock(fd, LOCK_EX);
 	char buf[4096];
 	ssize_t bytes = read(fd, buf, sizeof(buf));
 	if (bytes >= 0) {
@@ -29,7 +29,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 			lseek(fd, -sizeof(buf), SEEK_END);
 			bytes = read(fd, buf, sizeof(buf));
 			if (bytes < sizeof(buf)) {
-				flock(fd, LOCK_UN);
+				fb_flock(fd, LOCK_UN);
 				restart_close(fd);
 				return BBS_EINTNL;
 			}
@@ -60,7 +60,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 			ret = safer_write(fd, buf, len);
 		size += (e - ptr) + len;
 		ftruncate(fd, size);
-		flock(fd, LOCK_UN);
+		fb_flock(fd, LOCK_UN);
 		restart_close(fd);
 		if (ret == 0)
 			return 0;

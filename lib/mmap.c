@@ -28,7 +28,7 @@ int mmap_open_fd(mmap_t *m)
 
 	if (m->fd < 0)
 		return -1;
-	if (flock(m->fd, m->lock) < 0) {
+	if (fb_flock(m->fd, m->lock) < 0) {
 		close(m->fd);
 		return -1;
 	}
@@ -36,7 +36,7 @@ int mmap_open_fd(mmap_t *m)
 	// Return error if 'file' is not a regular file or has a wrong size.
 	if (fstat(m->fd, &st) < 0 || !S_ISREG(st.st_mode)
 			|| st.st_size < 0) {
-		flock(m->fd, LOCK_UN);
+		fb_flock(m->fd, LOCK_UN);
 		close(m->fd);
 		return -1;
 	}
@@ -50,7 +50,7 @@ int mmap_open_fd(mmap_t *m)
 	m->ptr = mmap(NULL, m->msize, m->prot, m->mflag, m->fd, 0);
 	if (m->ptr != MAP_FAILED)
 		return 0;
-	flock(m->fd, LOCK_UN);
+	fb_flock(m->fd, LOCK_UN);
 	close(m->fd);
 	return -1;
 }
@@ -91,7 +91,7 @@ int mmap_close(mmap_t *m)
 		return 0;
 	munmap(m->ptr, m->msize);
 	if (m->lock != LOCK_UN)
-		flock(m->fd, LOCK_UN);
+		fb_flock(m->fd, LOCK_UN);
 	return restart_close(m->fd);
 }
 
@@ -152,5 +152,5 @@ int mmap_lock(mmap_t *m, int lock)
 	if (lock == m->lock)
 		return 0;
 	m->lock = lock;
-	return flock(m->fd, lock);
+	return fb_flock(m->fd, lock);
 }

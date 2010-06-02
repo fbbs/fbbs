@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "bbs.h"
 #include "post.h"
+#include "record.h"
 
 /**
  * Creates a new file in specific location.

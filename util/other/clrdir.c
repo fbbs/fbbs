@@ -33,11 +33,11 @@ char *s ;
         thetime = ctime(&dtime);
         strncpy(timestr, &(thetime[11]), 8);
         timestr[8] = '\0';
-        flock(fd,LOCK_EX) ;
+        fb_flock(fd,LOCK_EX) ;
         lseek(fd,0,SEEK_END) ;
         sprintf(buf,"%s %s\n", timestr, s) ;
         write(fd,buf,strlen(buf)) ;
-        flock(fd,LOCK_UN) ;
+        fb_flock(fd,LOCK_UN) ;
         close(fd) ;
         return ;
     }

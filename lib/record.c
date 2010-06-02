@@ -35,9 +35,9 @@ int append_record(const char *file, const void *record, int size)
 	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 		return -1;
-	flock(fd, LOCK_EX);
+	fb_flock(fd, LOCK_EX);
 	int ret = safer_write(fd, record, size);
-	flock(fd, LOCK_UN);
+	fb_flock(fd, LOCK_UN);
 	close(fd);
 	return ret;
 }
@@ -178,30 +178,21 @@ int search_record(const char *file, void *rptr, int size, record_func_t func,
 //	将filename文件第id个记录替换为rptr所指向的数据
 int substitute_record(char *filename, void *rptr, int size, int id)
 {
-	/*     * add by KCN      */
 	struct flock ldata;
 	int retval;
 	int fd;
 
 	if ((fd = open(filename, O_WRONLY | O_CREAT, 0644)) == -1)
 		return -1;
-	/*
-	 * change by KCN
-	 * flock(fd,LOCK_EX) ;
-	 */
 	ldata.l_type = F_WRLCK;
 	ldata.l_whence = 0;
 	ldata.l_len = size;
 	ldata.l_start = size * (id - 1);
 	if ((retval = fcntl(fd, F_SETLKW, &ldata)) == -1) {//以互斥方式锁文件
-		//bbslog("user", "%s", "reclock error");
 		close(fd);
-		/*---	period	2000-10-20	file should be closed	---*/
 		return -1;
 	}
 	if (lseek(fd, size * (id - 1), SEEK_SET) == -1) { //无法到文件的指定位置
-		// bbslog("user", "%s", "subrec seek err");
-		/*---	period	2000-10-24	---*/
 		ldata.l_type = F_UNLCK;
 		fcntl(fd, F_SETLK, &ldata);
 		close(fd);
