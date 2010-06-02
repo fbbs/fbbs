@@ -1,28 +1,3 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: vote.c 317 2006-10-27 13:20:07Z danielfree $
- */
-
 #include "bbs.h"
 #include "vote.h"
 #include "list.h"
@@ -1290,6 +1265,191 @@ static choose_display_t choose_vote_display(choose_t *cp)
 	return 0;
 }
 
+#if 0
+int tui_user_vote(const struct boardheader *bp, struct votebal *vb)
+{
+	if (currentuser.firstlogin > vb->opendate) {
+		prints("¶Ô²»Æğ£¬Í¶Æ±Ãû²áÉÏÕÒ²»µ½ÄúµÄ´óÃû\n");
+		pressanykey();
+		return;
+	}
+
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "vote/%s/flag.%d", bp->filename, vb->opendate);
+	struct ballot vote;
+	int voted = true;
+	int pos = search_record(file, vote, sizeof(vote), cmpvuid, currentuser.userid);
+	if (pos <= 0) {
+		memset(&vote, 0, sizeof(vote));
+		voted = false;
+	}
+	strlcpy(vote.uid, currentuser.userid);
+
+	snprintf(file, sizeof(file), "vote/%s/desc.%d", bp->filename, vb->opendate);
+	ansimore(file, YEA);
+	move(0, 0);
+	clrtobot();
+
+	int value;
+	bool aborted = false;
+	switch (vb->type) {
+		case VOTE_SINGLE:
+		case VOTE_MULTI:
+		case VOTE_YN:
+			value = multivote(&vote);
+			if (value == -1)
+				aborted = true;
+			break;
+		case VOTE_VALUE:
+			value = valuevote(&vote);
+			if (vote == -1)
+				aborted = true;
+			break;
+		case VOTE_ASKING:
+			vote.voted = 0;
+			aborted = !getsug(&vote);
+			break;
+	}
+	clear();
+
+	if (aborted) {
+		prints("±£Áô ¡¾\033[1m%s\033[m¡¿Ô­À´µÄµÄÍ¶Æ±¡£\n", vb->title);
+	} else {
+		if (vb->type != VOTE_ASKING)
+			getsug(&vote);
+		pos = search_record(fname, &tmpbal, sizeof(tmpbal), cmpvuid,
+				currentuser.userid);
+		if (pos) {
+			substitute_record(fname, &uservote, sizeof(uservote), pos);
+		} else if (append_record(fname, &uservote, sizeof(uservote)) == -1) {
+			move(2, 0);
+			clrtoeol();
+			prints("Í¶Æ±Ê§°Ü! ÇëÍ¨ÖªÕ¾³¤²Î¼ÓÄÇÒ»¸öÑ¡ÏîÍ¶Æ±\n");
+			pressreturn();
+		}
+		prints("\nÒÑ¾­°ïÄúÍ¶ÈëÆ±ÏäÖĞ...\n");
+	}
+	pressanykey();
+	return;
+}
+#endif
+
+/**
+ *
+ */
+static choose_handler_t choose_vote_handler(choose_t *cp, int ch)
+{
+	choose_vote_t *cv = cp->data;
+
+	switch (ch) {
+		case 'v':
+		case 'V':
+		case '\n':
+		case '\r':
+		case 'r':
+		case KEY_RIGHT:
+//			tui_user_vote(cv->bp, cv->votes + cp->cur)
+//			user_vote(allnum + 1);
+//			deal = 1;
+			break;
+		case 'R':
+//			vote_results(currboard);
+//			deal = 1;
+			break;
+		case 'H':
+		case 'h':
+//			show_help("help/votehelp");
+//			deal = 1;
+			break;
+		case 'A':
+		case 'a':
+//			if (!chkBM(currbp, &currentuser))
+//				return YEA;
+//			vote_maintain(currboard);
+//			deal = 1;
+			break;
+		case 'O':
+		case 'o':
+#if 0
+			if (!chkBM(currbp, &currentuser))
+				return YEA;
+			clear();
+			deal = 1;
+			get_record(controlfile, &currvote, sizeof(struct votebal),
+					allnum + 1);
+			prints("[5;1;31m¾¯¸æ!![m\n");
+			prints("Í¶Æ±Ïä±êÌâ£º[1m%s[m\n", currvote.title);
+			ans = askyn("ÄúÈ·¶¨ÒªÌáÔç½áÊøÕâ¸öÍ¶Æ±Âğ", NA, NA);
+
+			if (ans != 1) {
+				move(2, 0);
+				prints("È¡ÏûÉ¾³ıĞĞ¶¯\n");
+				pressreturn();
+				clear();
+				break;
+			}
+			mk_result(allnum + 1);
+			sprintf(buf, "[½áÊø] ÌáÔç½áÊøÍ¶Æ± %s", currvote.title);
+			securityreport(buf, 0, 4);
+#endif
+			break;
+		case 'M':
+		case 'm':
+#if 0
+			if (!chkBM(currbp, &currentuser))
+				return YEA;
+			clear();
+			deal = 1;
+			get_record(controlfile, &currvote, sizeof(struct votebal),
+					allnum + 1);
+			prints("[5;1;31m¾¯¸æ!![m\n");
+			prints("Í¶Æ±Ïä±êÌâ£º[1m%s[m\n", currvote.title);
+			ans = askyn("ÄúÈ·¶¨ÒªĞŞ¸ÄÕâ¸öÍ¶Æ±µÄÉè¶¨Âğ", NA, NA);
+
+			if (ans != 1) {
+				move(2, 0);
+				prints("È¡ÏûĞŞ¸ÄĞĞ¶¯\n");
+				pressreturn();
+				clear();
+				break;
+			}
+			makevote(&currvote, currboard);
+			substitute_record(controlfile, &currvote,
+					sizeof(struct votebal), allnum + 1);
+			sprintf(buf, "[ĞŞ¸Ä] ĞŞ¸ÄÍ¶Æ±Éè¶¨ %s", currvote.title);
+			securityreport(buf, 0, 4);
+#endif
+			break;
+		case 'D':
+		case 'd':
+#if 0
+			if (!chkBM(currbp, &currentuser))
+				return 1;
+			deal = 1;
+			get_record(controlfile, &currvote, sizeof(struct votebal),
+					allnum + 1);
+			clear();
+			prints("[5;1;31m¾¯¸æ!![m\n");
+			prints("Í¶Æ±Ïä±êÌâ£º[1m%s[m\n", currvote.title);
+			ans = askyn("ÄúÈ·¶¨ÒªÇ¿ÖÆ¹Ø±ÕÕâ¸öÍ¶Æ±Âğ", NA, NA);
+
+			if (ans != 1) {
+				move(2, 0);
+				prints("È¡ÏûÉ¾³ıĞĞ¶¯\n");
+				pressreturn();
+				clear();
+				break;
+			}
+			sprintf(buf, "[¹Ø±Õ] Ç¿ÖÆ¹Ø±ÕÍ¶Æ± %s", currvote.title);
+			securityreport(buf, 0, 4);
+			dele_vote(allnum + 1);
+			break;
+#endif
+		default:
+			return DONOTHING;
+	}
+}
+
 /**
  *
  */
@@ -1314,7 +1474,7 @@ int b_vote2(void)
 	cs.loader = choose_vote_load;
 	cs.title = choose_vote_title;
 	cs.display = choose_vote_display;
-//	cs.handler = user_vote;
+	cs.handler = choose_vote_handler;
 	choose2(&cs);
 	clear();
 	return FULLUPDATE;
