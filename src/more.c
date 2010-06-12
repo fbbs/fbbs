@@ -1,6 +1,11 @@
-#include "bbs.h"
-#include "mmap.h"
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "fbbs/mmap.h"
+#include "fbbs/screen.h"
 
+#if 0
 static time_t calltime = 0;
 void R_monitor();
 //Added by Ashinmarch to support multi-line msg
@@ -304,11 +309,11 @@ void R_monitor()
 	else
 		alarm(10);
 }
+#endif
 
 enum {
 	/** A ::linenum_t will be assigned for every block. */
 	LINENUM_BLOCK_SIZE = 4096, 
-	DEFAULT_TERM_WIDTH = 80,   ///< Default terminal width.
 	TAB_STOP = 4,       ///< Columns of a tab stop.
 	IS_QUOTE = 0x1,     ///< The line is part of quotation if this bit is set.
 	HAS_TABSTOP = 0x2,  ///< The line has tab stop(s) if this bit is set.
@@ -323,7 +328,7 @@ typedef struct linenum_t {
 	int prop;      ///< Properties. See ::IS_QUOTE, ::HAS_TABSTOP.
 } linenum_t;
 
-/** Mmap_more stream structure. */
+/** Structure for showing text files. */
 typedef struct more_file_t {
 	char *buf;        ///< Starting address of the text.
 	size_t size;      ///< Length of the text.
@@ -347,7 +352,7 @@ typedef int (*more_handler_t)(more_file_t *, int);
 /**
  * Open a file as more stream.
  * @param file File to open.
- * @param width Line width.
+ * @param width Line width, set to standard screen width if 0.
  * @param func A function to fill the stream with file content.
  * @return an ::more_file_t pointer on success, NULL on error.
  */
@@ -359,6 +364,8 @@ static more_file_t *more_open(const char *file, int width, more_open_t func)
 
 	memset(more, 0, sizeof(*more));
 	more->total = -1;
+	if (width <= 0)
+		width = get_screen_width();
 	more->width = width;
 
 	if ((*func)(file, more) != 0) {
@@ -370,7 +377,7 @@ static more_file_t *more_open(const char *file, int width, more_open_t func)
 
 /**
  * Close more stream.
- * @param d The more stream.
+ * @param more The more stream.
  */
 static void more_close(more_file_t *more)
 {
@@ -379,6 +386,7 @@ static void more_close(more_file_t *more)
 	free(more);
 }
 
+// TODO: rewrite to support utf-8
 /**
  * Get next line from more stream.
  * On success, d->begin, d->row, d->prop is set and returned.
@@ -567,6 +575,7 @@ static void more_puts(more_file_t *d)
 	char *ptr;
 	int offset = 0;
 	for (ptr = d->begin; ptr != d->end; ++ptr) {
+		// TODO: expand tab on opening. forbid \r
 		if (*ptr != '\t' && *ptr != '\r') {
 			outc(*ptr);
 			++offset;
@@ -613,7 +622,7 @@ static int more_prompt_file(more_file_t *more)
 	prints("\033[0;1;44;32m下面还有喔(%d%%) 第(%d-%d)行 \033[33m|"
 			" l 上篇 | b e 开头末尾 | g 跳转 | h 帮助\033[K\033[m",
 			(more->end - more->buf) * 100 / more->size,
-			more->line - t_lines + 2, more->line);
+			more->line - get_screen_height() + 2, more->line);
 	return 0;
 }
 
@@ -633,12 +642,12 @@ static int is_quotation(const char *str)
 static int more_main(more_file_t *more, bool promptend, int line, int lines,
 		int stuff, more_prompt_t prompt, more_handler_t handler)
 {
-	int lines_read = 1, pos = 0, i = 0, ch = 0;
+	int lines_read = 1, pos = 0, i = 0, ch = 0, new_row;
 	bool is_quote, is_wrapped, colored = false;
-	int new_row;
 	char *buf_end = more->buf + more->size;
 	char linebuf[7];
 
+	int t_lines = get_screen_height();
 	clrtobot();
 	// TODO: stuffmode
 	while (true) {
@@ -783,6 +792,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 	return ch;
 }
 
+#if 0
 /**
  * Article reading function for telnet.
  * @param file File to show.
@@ -945,5 +955,4 @@ int ansimore3(char *filename, int promptend)
 	refresh();
 	return ch;
 }
-
-// deardragon 2000.08.28  over
+#endif

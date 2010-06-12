@@ -279,6 +279,16 @@ void refresh(void)
 	_refresh(&stdscr);
 }
 
+int get_screen_width(void)
+{
+	return stdscr.scr_cols;
+}
+
+int get_screen_height(void)
+{
+	return stdscr.scr_lns;
+}
+
 #if 0
 int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
 		1000, 100, 10, 1 };

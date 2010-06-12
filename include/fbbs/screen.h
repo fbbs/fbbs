@@ -42,5 +42,6 @@ extern void outc(int c);
 extern void outs(const char *str);
 extern void redoscr(void);
 extern void refresh(void);
+extern int get_screen_width(void);
 
 #endif // FB_SCREEN_H
