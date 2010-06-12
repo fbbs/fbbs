@@ -1,50 +1,33 @@
-// Terminal I/O handlers.
-
-#ifdef AIX
-#include <sys/select.h>
-#endif
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <arpa/telnet.h>
-#ifdef SSHBBS
-#include "libssh/libssh.h"
-#endif // SSHBBS
-#include "bbs.h"
 
+#include "fbbs/util.h"
+#include "fbbs/termio.h"
+
+/** Telnet option negotiation sequence status. */
 enum {
-	INPUT_ACTIVE = 0,
-	INPUT_IDLE = 1,
+    TELST_NOR,  ///< Normal byte.
+    TELST_IAC,  ///< Right after IAC.
+    TELST_COM,  ///< Right after IAC DO/DONT/WILL/WONT.
+    TELST_SUB,  ///< Right after IAC SB.
+    TELST_SBC,  ///< Right after IAC SB [COMMAND].
+    TELST_END,  ///< End of an telnet option.
 };
 
-/** ESC process status */
+/** ESC process status. */
 enum {
-	ESCST_BEG,  ///< begin
-	ESCST_CUR,  ///< Cursor keys
-	ESCST_FUN,  ///< Function keys
-	ESCST_ERR,  ///< Parse error
+    ESCST_BEG,  ///< Begin.
+    ESCST_CUR,  ///< Cursor keys.
+    ESCST_FUN,  ///< Function keys.
+    ESCST_ERR,  ///< Parse error.
 };
 
-typedef struct {
-	int cur;
-	size_t size;
-	unsigned char buf[IOBUFSIZE];
-} iobuf_t;
-
-#ifdef ALLOWSWITCHCODE
-extern int convcode;
-#endif
-extern struct screenline *big_picture;
-#ifdef SSHBBS
-extern ssh_channel ssh_chan;
-#endif // SSHBBS
-extern int msg_num, RMSG;
-
-static iobuf_t inbuf;   ///< Input buffer.
-static iobuf_t outbuf;  ///< Output buffer.
-
-int KEY_ESC_arg;
-static int i_mode= INPUT_ACTIVE;
-
-// TODO: why here..
-struct user_info uinfo;
+enum {
+    DEFAULT_TERM_COLS = 80,
+    DEFAULT_TERM_LINES = 24,
+};
 
 //	超时处理函数,将非特权ID超时时踢出bbs
 void hit_alarm_clock() {
