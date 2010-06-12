@@ -56,47 +56,6 @@ void screen_init(telconn_t *tc, int lines, int cols)
 	_screen_init(&stdscr, tc, lines, cols);
 }
 
-/**
- * Redraw the screen.
- */
-void redoscr(void)
-{
-	if (dumb_term)
-		return;
-	term_cmd(TERM_CMD_CL);
-	tc_col = 0;
-	tc_line = 0;
-	int i;
-	struct screenline *s;
-	for (i = 0; i < scr_lns; i++) {
-		s = big_picture + (i + roll) % scr_lns;
-		if (s->len == 0)
-			continue;
-		rel_move(tc_col, tc_line, 0, i);
-		if (s->mode & STANDOUT)
-			standoutput(s->data, 0, s->len, s->sso, s->eso);
-		else
-			output(s->data, s->len);
-		tc_col += s->len;
-		if (tc_col >= t_columns) {
-			if (!automargins) {
-				tc_col -= t_columns;
-				tc_line++;
-				if (tc_line >= t_lines)
-					tc_line = t_lines - 1;
-			} else {
-				tc_col = t_columns - 1;
-			}
-		}
-		s->mode &= ~(MODIFIED);
-		s->oldlen = s->len;
-	}
-	rel_move(tc_col, tc_line, cur_col, cur_ln);
-	docls = NA;
-	scrollcnt = 0;
-	oflush();
-}
-
 //刷新缓冲区,重新显示屏幕?
 void refresh() {
 	register int i, j;
@@ -328,6 +287,36 @@ static void term_move(screen_t *s, int line, int col)
 	s->tc_ln = line;
 	s->tc_col = col;
 }
+
+static void _redoscr(screen_t *s)
+{
+	term_cmd(TERM_CMD_CL);
+	s->tc_col = s->tc_ln = 0;
+
+	struct screen_line_t *slp;
+	for (int i = 0; i < s->scr_lns; i++) {
+		slp = s->lines + (i + s->roll) % s->scr_lns;
+		if (slp->len == 0)
+			continue;
+
+		term_move(s, i, 0);
+		telnet_write(s->tc, slp->data, slp->len);
+		s->tc_col += slp->len;
+
+		slp->modified = false;
+		slp->oldlen = slp->len;
+	}
+	term_move(s, s->cur_col, s->cur_ln);
+	s->scroll_cnt = 0;
+	s->clear = false;
+	telnet_flush(s->tc);
+}
+
+void redoscr(void)
+{
+	_redoscr(&stdscr);
+}
+
 
 
 int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
