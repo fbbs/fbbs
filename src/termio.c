@@ -8,25 +8,25 @@
 
 /** Telnet option negotiation sequence status. */
 enum {
-    TELST_NOR,  ///< Normal byte.
-    TELST_IAC,  ///< Right after IAC.
-    TELST_COM,  ///< Right after IAC DO/DONT/WILL/WONT.
-    TELST_SUB,  ///< Right after IAC SB.
-    TELST_SBC,  ///< Right after IAC SB [COMMAND].
-    TELST_END,  ///< End of an telnet option.
+	TELST_NOR,  ///< Normal byte.
+	TELST_IAC,  ///< Right after IAC.
+	TELST_COM,  ///< Right after IAC DO/DONT/WILL/WONT.
+	TELST_SUB,  ///< Right after IAC SB.
+	TELST_SBC,  ///< Right after IAC SB [COMMAND].
+	TELST_END,  ///< End of an telnet option.
 };
 
 /** ESC process status. */
 enum {
-    ESCST_BEG,  ///< Begin.
-    ESCST_CUR,  ///< Cursor keys.
-    ESCST_FUN,  ///< Function keys.
-    ESCST_ERR,  ///< Parse error.
+	ESCST_BEG,  ///< Begin.
+	ESCST_CUR,  ///< Cursor keys.
+	ESCST_FUN,  ///< Function keys.
+	ESCST_ERR,  ///< Parse error.
 };
 
 enum {
-    DEFAULT_TERM_COLS = 80,
-    DEFAULT_TERM_LINES = 24,
+	DEFAULT_TERM_COLS = 80,
+	DEFAULT_TERM_LINES = 24,
 };
 
 /**
@@ -38,7 +38,7 @@ enum {
  */
 static int raw_read(int fd, uchar_t *buf, size_t size)
 {
-    return read(fd, buf, size);
+	return read(fd, buf, size);
 }
 
 /**
@@ -50,7 +50,7 @@ static int raw_read(int fd, uchar_t *buf, size_t size)
  */
 static int raw_write(int fd, const uchar_t *buf, size_t len)
 {
-    return write(fd, buf, len);
+	return write(fd, buf, len);
 }
 
 /**
@@ -61,15 +61,15 @@ static int raw_write(int fd, const uchar_t *buf, size_t len)
  */
 static int buffered_getch(int fd, iobuf_t *inbuf)
 {
-    int ret;
-    if (inbuf->cur >= inbuf->size) {
-        ret = raw_read(fd, inbuf->buf, sizeof(inbuf->buf));
-        if (ret < 0)
-            return -1;
-        inbuf->cur = 0;
-        inbuf->size = ret;
-    }
-    return inbuf->buf[inbuf->cur++];
+	int ret;
+	if (inbuf->cur >= inbuf->size) {
+		ret = raw_read(fd, inbuf->buf, sizeof(inbuf->buf));
+		if (ret < 0)
+			return -1;
+		inbuf->cur = 0;
+		inbuf->size = ret;
+	}
+	return inbuf->buf[inbuf->cur++];
 }
 
 /**
@@ -79,34 +79,34 @@ static int buffered_getch(int fd, iobuf_t *inbuf)
  */
 static int telnet_getch(telconn_t *tc)
 {
-    int ch = buffered_getch(tc->fd, &tc->inbuf);
-    if (ch != KEY_ESC)
-        return ch;
+	int ch = buffered_getch(tc->fd, &tc->inbuf);
+	if (ch != KEY_ESC)
+		return ch;
 
-    int status = TELST_IAC;
-    while (status != TELST_END) {
-        int ch = buffered_getch(tc->fd, &tc->inbuf);
-        if (ch < 0)
-            return ch;
-        switch (status) {
-            case TELST_IAC:
-                if (ch == SB)
-                    status = TELST_SUB;
-                else
-                    status = TELST_COM;
-                break;
-            case TELST_COM:
-                status = TELST_END;
-                break;
-            case TELST_SUB:
-                if (ch == SE)
-                    status = TELST_END;
-                break;
-            default:
-                break;
-        }
-    }
-    return 0;
+	int status = TELST_IAC;
+	while (status != TELST_END) {
+		int ch = buffered_getch(tc->fd, &tc->inbuf);
+		if (ch < 0)
+			return ch;
+		switch (status) {
+			case TELST_IAC:
+				if (ch == SB)
+					status = TELST_SUB;
+				else
+					status = TELST_COM;
+				break;
+			case TELST_COM:
+				status = TELST_END;
+				break;
+			case TELST_SUB:
+				if (ch == SE)
+					status = TELST_END;
+				break;
+			default:
+				break;
+		}
+	}
+	return 0;
 }
 
 /**
@@ -116,42 +116,42 @@ static int telnet_getch(telconn_t *tc)
  */
 static int esc_handler(telconn_t *tc)
 {
-    int status = ESCST_BEG, ch, last = 0;
-    while (1) {
-        ch = telnet_getch(tc);
-        if (ch < 0)
-            return ch;
-        switch (status) {
-            case ESCST_BEG:
-                if (ch == '[' || ch == 'O')
-                    status = ESCST_CUR;
-                else if (ch == '1' || ch == '4')
-                    status = ESCST_FUN;
-                else
-                    return KEY_ESC;
-                break;
-            case ESCST_CUR:
-                if (ch >= 'A' && ch <= 'D')
-                    return KEY_UP + ch - 'A';
-                else if (ch >= '1' && ch <= '6')
-                    status = ESCST_FUN;
-                else
-                    status = ESCST_ERR;
-                break;
-            case ESCST_FUN:
-                if (ch == '~' && last >= '1' && last <= '6')
-                    return KEY_HOME + last - '1';
-                else
-                    status = ESCST_ERR;
-                break;
-            case ESCST_ERR:
-                return ch;
-            default:
-                break;
-        }
-        last = ch;
-    }
-    return 0;
+	int status = ESCST_BEG, ch, last = 0;
+	while (1) {
+		ch = telnet_getch(tc);
+		if (ch < 0)
+			return ch;
+		switch (status) {
+			case ESCST_BEG:
+				if (ch == '[' || ch == 'O')
+					status = ESCST_CUR;
+				else if (ch == '1' || ch == '4')
+					status = ESCST_FUN;
+				else
+					return KEY_ESC;
+				break;
+			case ESCST_CUR:
+				if (ch >= 'A' && ch <= 'D')
+					return KEY_UP + ch - 'A';
+				else if (ch >= '1' && ch <= '6')
+					status = ESCST_FUN;
+				else
+					status = ESCST_ERR;
+				break;
+			case ESCST_FUN:
+				if (ch == '~' && last >= '1' && last <= '6')
+					return KEY_HOME + last - '1';
+				else
+					status = ESCST_ERR;
+				break;
+			case ESCST_ERR:
+				return ch;
+			default:
+				break;
+		}
+		last = ch;
+	}
+	return 0;
 }
 
 /**
@@ -161,36 +161,36 @@ static int esc_handler(telconn_t *tc)
  */
 static int term_getch(telconn_t *tc)
 {
-    int ch;
-    while (1) {
-        ch = telnet_getch(tc);
-        switch (ch) {
-            case KEY_ESC:
-                ch = esc_handler(tc);
-                break;
-            case KEY_CTRL_L:
-                // TODO: redoscr().
-                continue;
-            case '\r':
-                ch = '\n';
-                tc->cr = true;
-                break;
-            case '\n':
-                if (tc->cr) {
-                    tc->cr = false;
-                    continue;
-                }
-                break;
-            case '\0':
-                tc->cr = false;
-                continue;
-            default:
-                tc->cr = false;
-                break;
-        }
-        break;
-    }
-    return ch;
+	int ch;
+	while (1) {
+		ch = telnet_getch(tc);
+		switch (ch) {
+			case KEY_ESC:
+				ch = esc_handler(tc);
+				break;
+			case KEY_CTRL_L:
+				// TODO: redoscr().
+				continue;
+			case '\r':
+				ch = '\n';
+				tc->cr = true;
+				break;
+			case '\n':
+				if (tc->cr) {
+					tc->cr = false;
+					continue;
+				}
+				break;
+			case '\0':
+				tc->cr = false;
+				continue;
+			default:
+				tc->cr = false;
+				break;
+		}
+		break;
+	}
+	return ch;
 }
 
 void telnet_init(telconn_t *tc, int fd)
@@ -243,7 +243,7 @@ int telnet_putc(telconn_t *tc, int c)
 
 bool buffer_empty(const iobuf_t *buf)
 {
-    return (buf->cur >= buf->size);
+	return (buf->cur >= buf->size);
 }
 
 #if 0
