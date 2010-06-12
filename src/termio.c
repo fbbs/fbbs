@@ -72,11 +72,6 @@ static int buffered_getch(int fd, iobuf_t *inbuf)
     return inbuf->buf[inbuf->cur++];
 }
 
-bool inbuf_empty(void)
-{
-	return (inbuf.cur >= inbuf.size);
-}
-
 /**
  * Get ch from a telnet connection, with IAC handled.
  * @param tc Telnet connection data.
@@ -244,6 +239,11 @@ int telnet_putc(telconn_t *tc, int c)
 		return telnet_flush(tc);
 	else
 		return 0;
+}
+
+bool buffer_empty(const iobuf_t *buf)
+{
+    return (buf->cur >= buf->size);
 }
 
 #if 0
