@@ -194,48 +194,47 @@ static int telnet_getch(telconn_t *tc)
 
 /**
  * Handle ANSI ESC sequences.
- * @return converted key on success, next key on error.
+ * @param tc Telnet connection data.
+ * @return Converted key on success, next key on error.
  */
-static int esc_handler(void)
+static int esc_handler(telconn_t *tc)
 {
-	int status = ESCST_BEG, ch, last = 0;
-	while (1) {
-		ch = get_raw_ch();
-		if (ch < 0)
-			return ch;
-		switch (status) {
-			case ESCST_BEG:
-				if (ch == '[' || ch == 'O')
-					status = ESCST_CUR;
-				else if (ch == '1' || ch == '4')
-					status = ESCST_FUN;
-				else {
-					KEY_ESC_arg = ch;  // TODO:...
-					return KEY_ESC;
-				}
-				break;
-			case ESCST_CUR:
-				if (ch >= 'A' && ch <= 'D')
-					return KEY_UP + ch - 'A';
-				else if (ch >= '1' && ch <= '6')
-					status = ESCST_FUN;
-				else
-					status = ESCST_ERR;
-				break;
-			case ESCST_FUN:
-				if (ch == '~' && last >= '1' && last <= '6')
-					return KEY_HOME + last - '1';
-				else
-					status = ESCST_ERR;
-				break;
-			case ESCST_ERR:
-				return ch;
-			default:
-				break;
-		}
-		last = ch;
-	}
-	return 0;
+    int status = ESCST_BEG, ch, last = 0;
+    while (1) {
+        ch = telnet_getch(tc);
+        if (ch < 0)
+            return ch;
+        switch (status) {
+            case ESCST_BEG:
+                if (ch == '[' || ch == 'O')
+                    status = ESCST_CUR;
+                else if (ch == '1' || ch == '4')
+                    status = ESCST_FUN;
+                else
+                    return KEY_ESC;
+                break;
+            case ESCST_CUR:
+                if (ch >= 'A' && ch <= 'D')
+                    return KEY_UP + ch - 'A';
+                else if (ch >= '1' && ch <= '6')
+                    status = ESCST_FUN;
+                else
+                    status = ESCST_ERR;
+                break;
+            case ESCST_FUN:
+                if (ch == '~' && last >= '1' && last <= '6')
+                    return KEY_HOME + last - '1';
+                else
+                    status = ESCST_ERR;
+                break;
+            case ESCST_ERR:
+                return ch;
+            default:
+                break;
+        }
+        last = ch;
+    }
+    return 0;
 }
 
 /**
