@@ -1,5 +1,9 @@
-// Handle user login.
+#include <unistd.h>
 
+#include "fbbs/termio.h"
+#include "fbbs/screen.h"
+
+#if 0
 #include "bbs.h"
 #include "sysconf.h"
 
@@ -1019,61 +1023,13 @@ void tlog_recover(void)
 }
 #endif
 
+#endif // 0
+
 void start_client(void)
 {
-	extern char currmaildir[];
-#ifdef ALLOWSWITCHCODE
-	if (resolve_gbkbig5_table() < 0)
-		exit(1);
-#endif
-	system_init();
+	telconn_t tc;
+	telnet_init(&tc, STDIN_FILENO);
 
-	if (setjmp(byebye)) {
-		system_abort();
-	}
+	screen_init(&tc, tc.lines, tc.cols);
 
-	strlcpy(BoardName, BBSNAME, sizeof(BoardName));
-
-	if (login_query() == -1) {
-		oflush();
-		sleep(3);
-		exit(1);
-	}
-	user_login();
-
-	setmdir(currmaildir, currentuser.userid);
-	RMSG = NA;
-	clear();
-	c_recover();
-#ifdef TALK_LOG
-	tlog_recover();
-#endif
-
-	if (strcmp(currentuser.userid, "guest")) {
-		if (check_maxmail())
-			pressanykey();
-		move(9, 0);
-		clrtobot();
-		if (!DEFINE(DEF_NOLOGINSEND))
-			if (!uinfo.invisible)
-				apply_ulist(friend_login_wall);
-		clear();
-		set_numofsig();
-	}
-
-	ActiveBoard_Init();
-	fill_date();
-
-	num_alcounter();
-	if (count_friends > 0 && DEFINE(DEF_LOGFRIEND))
-		online_users_show_override();
-
-	sysconf_load(false);
-	while (1) {
-		if (DEFINE(DEF_NORMALSCR))
-			domenu("TOPMENU");
-		else
-			domenu("TOPMENU2");
-		Goodbye();
-	}
 }

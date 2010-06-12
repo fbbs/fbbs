@@ -14,6 +14,8 @@
 #include "fbbs/util.h"
 #include "fbbs/site.h"
 
+extern void start_client(void);
+
 /**
  * Wait for an child to terminate.
  * @param notused Not used.
@@ -97,7 +99,8 @@ static int accept_connection(int fd, int nfds)
 		char host[IP_LEN];
 		getnameinfo((struct sockaddr *)&sock, socklen, host, sizeof(host),
 				NULL, 0, NI_NUMERICHOST);
-
+		start_client();
+		exit(0);
 	} else {
 		close(conn);
 	}
