@@ -1,9 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
+#include "fbbs/string.h"
 
+#if 0
 /**
  * Convert string to lower case.
  * @param dst result string.
@@ -181,38 +178,33 @@ char *trim(char *str)
 		memmove(ustr, left, right - left + 1);
 	return str;
 }
+#endif
 
-// OpenBSD: strlcpy.c,v 1.11
-// Copy 'src' to string 'dst' of size 'siz'.
-// At most siz-1 characters will be copied.
-// Always NUL terminates (unless siz == 0).
-// Returns strlen(src); if retval >= siz, truncation occurred.
-size_t strlcpy(char *dst, const char *src, size_t siz)
+/**
+ * Safe string copy.
+ * @param[out] dst The destination string.
+ * @param[in] src The source string.
+ * @param[in] size At most size-1 characters will be copied.
+ * @return Characters copied, excluding terminating NUL.
+ */
+size_t strlcpy(char *dst, const char *src, size_t size)
 {
-	char *d = dst;
-	const char *s = src;
-	size_t n = siz;
+	size_t n = size;
 
-	// Copy as many bytes as will fit
-	if (n != 0) {
-		while (--n != 0) {
-			if ((*d++ = *s++) == '\0')
-				break;
-		}
+	while (*src != '\0' && --n != 0) {
+		*dst++ = *src++;
 	}
 
-	// Not enough room in dst, add NUL and traverse rest of src
-	if (n == 0) {
-		if (siz != 0)
-			*d = '\0';  // NUL-terminate dst
-		while (*s++)
-			;
-	}
+	*dst = '\0';
 
-	return(s - src - 1);  //count does not include NUL
+	if (n == size)
+		return 0;
+	return size - n - 1;
 }
 
 
+
+#if 0
 void strtourl(char *url, const char *str)
 {
 	char c, h;
@@ -241,3 +233,4 @@ void strappend(char **dst, size_t *size, const char *src)
 	*dst += len;
 	*size -= len;
 }
+#endif
