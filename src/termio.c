@@ -73,19 +73,6 @@ static int buffered_getch(int fd, iobuf_t *inbuf)
 }
 
 /**
- * Flush output buffer.
- * @return 0 on success, -1 on error.
- */
-int oflush(void)
-{
-	int ret = 0;
-	if (outbuf.size > 0)
-		ret = write_stdout(outbuf.buf, outbuf.size);
-	outbuf.size = 0;
-	return ret;
-}
-
-/**
  * Put a byte into output buffer.
  * @param ch byte to put.
  */
@@ -288,6 +275,14 @@ void telnet_init(telconn_t *tc, int fd)
 	tc->outbuf.size = 0;
 }
 
+int telnet_flush(telconn_t *tc)
+{
+	int ret = 0;
+	if (tc->outbuf.size > 0)
+		ret = raw_write(tc->fd, tc->outbuf.buf, tc->outbuf.size);
+	tc->outbuf.size = 0;
+	return ret;
+}
 
 #if 0
 int getdata(int line, int col, const char *prompt, char *buf, int len,
