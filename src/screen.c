@@ -1,8 +1,8 @@
-#include "bbs.h"
-#include "screen.h"
-#include "edit.h"
-#include <sys/param.h>
-#include <stdarg.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "fbbs/screen.h"
 
 /**
  * String of commands to clear the entire screen and position the cursor at the
@@ -28,101 +28,9 @@
 #define TERM_CMD_SE "\033[m"
 
 /** Send a terminal command. */
-#define term_cmd(cmd)  output(cmd, sizeof(cmd) - 1)
+#define term_cmd(cmd)  telnet_write(s->tc, (const uchar_t *)cmd, sizeof(cmd) - 1)
 
-extern int iscolor;
-extern int editansi;
-
-bool dumb_term = true;
-bool automargins = true;
-int t_lines = 24;          ///< Terminal height.
-int t_columns = 255;       ///< Terminal width.
-
-static int scr_lns;     ///< Lines of the screen.
-unsigned int scr_cols;  ///< Columns of the screen.
-static int cur_ln = 0;  ///< Current line.
-static int cur_col = 0; ///< Current column.
-static int roll; //roll 表示首行在big_picture的偏移量
-//因为随着光标滚动,big_picture[0]可能不再保存第一行的数据
-static int scrollcnt;
-static int tc_col;      ///< Terminal's current column.
-static int tc_line;     ///< Terminal's current line.
-unsigned char docls;
-unsigned char downfrom;
-static bool standing = false;
-
-struct screenline *big_picture = NULL;
-
-#ifdef ALLOWAUTOWRAP
-//返回str中前num个字符中以ansi格式实际显示的字符数?
-int seekthestr(char *str, int num)
-{
-	int len, i, ansi= NA;
-	len = strlen(str);
-	for(i=0;i<len;i++) {
-		if(!(num--))
-		break;
-		if(str[i] == KEY_ESC) {
-			ansi = YEA;
-			continue;
-		}
-		if( ansi ) {
-			if ( !strchr("[0123456789; ", str[i]))
-			ansi = NA;
-			continue;
-			/*                      if (strchr("[0123456789; ", str[i]))
-			 continue;
-			 else if (isalpha(str[i])) {
-			 ansi = NA;
-			 continue;
-			 }
-			 else
-			 break;
-			 */
-		} //if
-		//		if(!(num--)) break;
-	} //for
-	return i;
-}
-#endif	
-
-//返回字符串中属于 ansi的个数?	对后一个continue不太理解 
-int num_ans_chr(char *str) {
-	int len, i, ansinum, ansi;
-
-	ansinum=0;
-	ansi=NA;
-	len=strlen(str);
-	for (i=0; i < len; i++) {
-		if (str[i] == KEY_ESC) {
-			ansi = YEA;
-			ansinum++;
-			continue;
-		}
-		if (ansi) {
-			if (!strchr("[0123456789; ", str[i]))
-				ansi = NA;
-			ansinum++;
-			continue;
-			/*
-			 if (strchr("[0123456789; ", str[i]))
-			 {
-			 ansinum++;
-			 continue;
-			 }
-			 else if (isalpha(str[i]))
-			 {
-			 ansinum++;
-			 ansi = NA;
-			 continue;
-			 }
-			 else
-			 break;
-			 */
-		}
-	}
-	return ansinum;
-}
+static screen_t stdscr;
 
 /**
  * Initialize screen.
