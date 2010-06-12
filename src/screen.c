@@ -32,34 +32,28 @@
 
 static screen_t stdscr;
 
-/**
- * Initialize screen.
- * @param slns Lines of the screen, ::LINELEN max.
- * @param scols Columns of the screen.
- */
-static void init_screen(int slns, int scols)
+static void _screen_init(screen_t *scr, telconn_t *tc, int lines, int cols)
 {
-	struct screenline *slp;
-	scr_lns = slns;
-	scr_cols = Min(scols, LINELEN);
-	big_picture = calloc(scr_lns, sizeof(*big_picture));
-	for (slns = 0; slns < scr_lns; slns++) {
-		slp = big_picture + slns;
-		slp->mode = 0;
-		slp->len = 0;
-		slp->oldlen = 0;
+	scr->scr_lns = lines;
+	scr->scr_cols = cols;
+	scr->cur_ln = scr->cur_col = scr->roll = scr->scroll_cnt = 0;
+	scr->size = lines;
+	scr->show_ansi = true;
+	scr->clear = true;
+	scr->tc = tc;
+	scr->lines = fb_malloc(sizeof(*scr->lines) * lines);
+	screen_line_t *slp = scr->lines;
+	for (int i = 0; i < lines; ++i) {
+		slp->oldlen = slp->len = 0;
+		slp->modified = false;
+		slp->smod = slp->emod = 0;
+		++slp;
 	}
-	docls = YEA;
-	downfrom = 0;
-	roll = 0;
 }
 
-//对于哑终端或是big_picture中尚无内存映射,将t_columns设置成WRAPMARGIN
-//	调用init_screen初始化终端
-void initscr() {
-	if (!dumb_term && !big_picture)
-		t_columns = WRAPMARGIN;
-	init_screen(t_lines, WRAPMARGIN);
+void screen_init(telconn_t *tc, int lines, int cols)
+{
+	_screen_init(&stdscr, tc, lines, cols);
 }
 
 /**
