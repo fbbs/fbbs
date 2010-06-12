@@ -230,44 +230,24 @@ void move(int line, int col)
 	_move(&stdscr, line, col);
 }
 
-
-/**
- * Get current position.
- * @param[out] y Line number.
- * @param[out] x Column number.
- */
-void getyx(int *y, int *x)
+static void _clear(screen_t *s)
 {
-	*y = cur_ln;
-	*x = cur_col;
-}
+	s->roll = 0;
+	s->clear = true;
 
-/**
- * Reset screen and move to (0, 0).
- */
-void clear(void)
-{
-	if (dumb_term)
-		return;
-	roll = 0;
-	docls = YEA;
-	downfrom = 0;
-	struct screenline *slp;
-	int i;
-	for (i = 0; i < scr_lns; i++) {
-		slp = big_picture + i;
-		slp->mode = 0;
+	screen_line_t *slp = s->lines;
+	for (int i = 0; i < s->scr_lns; ++i) {
+		slp->modified = false;
 		slp->len = 0;
 		slp->oldlen = 0;
+		++slp;
 	}
-	move(0, 0);
+	_move(s, 0, 0);
 }
 
-//清除big_picture中的第i行,将mode与len置0
-void clear_whole_line(int i) {
-	register struct screenline *slp = &big_picture[i];
-	slp->mode = slp->len = 0;
-	slp->oldlen = 79;
+void clear(void)
+{
+	_clear(&stdscr);
 }
 
 /**
