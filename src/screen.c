@@ -278,103 +278,70 @@ void scroll(void)
 	_scroll(&stdscr);
 }
 
-/**
- * Output a character.
- * @param c The character.
- * @return 1, 0 on ansi control codes.
- */
-int outc(int c)
+static inline bool isprint2(int c)
 {
-	static bool inansi;
-#ifndef BIT8
-	c &= 0x7f;
-#endif
+	return ((c & 0x80) || isprint(c));
+}
 
-	if (inansi) {
-		if (c == 'm') {
-			inansi = false;
-			return 0;
+static void _outs(screen_t *s, const uchar_t *str, int len)
+{
+	bool newline = true;
+	screen_line_t *slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
+	int col = s->cur_col, c;
+
+	if (len == 0)
+		len = strlen((const char *)str);
+	while (len-- > 0) {
+		if (newline) {
+			slp->modified = true;
+			if (col > slp->len)
+				memset(slp->data + slp->len, ' ', col - slp->len);
+			if (col < slp->smod)
+				slp->smod = col;
+			newline = false;
 		}
-		return 0;
-	}
-	if (c == KEY_ESC && !iscolor) {
-		inansi = true;
-		return 0;
-	}
 
-	if (dumb_term) {
+		c = *str++;
+
 		if (!isprint2(c)) {
-			if (c == '\n') {
-				ochar('\r');
+			if (c == '\n' || c == '\r') {
+				slp->data[col] = ' ';
+				slp->len = col;
+				s->cur_col = 0;
+				if (col > slp->emod)
+					slp->emod = col;
+				if (s->cur_ln < s->scr_lns)
+					++s->cur_ln;
+				newline = true;
+				slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
+				col = s->cur_col;
+				continue;
 			} else {
-				if (c != KEY_ESC || !showansi)
+				if (c != KEY_ESC || !s->show_ansi)
 					c = '*';
 			}
 		}
-		ochar(c);
-		return 1;
-	}
 
-	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
-	unsigned int col = cur_col;
-
-	if (!isprint2(c)) {
-		if (c == '\n' || c == '\r') {
-			if (standing) {
-				slp->eso = Max(slp->eso, col);
-				standing = false;
-			}
-			if (col > slp->len)
-				memset(slp->data + slp->len, ' ', col - slp->len + 1);
-			slp->len = col;
-			cur_col = 0;
-			if (cur_ln < scr_lns)
-				cur_ln++;
-			return 1;
-		} else {
-			if (c != KEY_ESC || !showansi)
-				c = '*';
+		slp->data[col++] = c;
+		if (col >= sizeof(slp->data)) {
+			col = sizeof(slp->data) - 1;
 		}
 	}
 
-	if (col > slp->len)
-		memset(slp->data + slp->len, ' ', col - slp->len);
-	if ((slp->mode & MODIFIED) != MODIFIED) {
-		slp->smod = (slp->emod = col);
-	} else {
-		if (col > slp->emod)
-			slp->emod = col;
-		if (col < slp->smod)
-			slp->smod = col;
-	}
-	slp->mode |= MODIFIED;
-	slp->data[col] = c;
-	col++;
-	if (col > slp->len)
-		slp->len = col;
-
-	if (col >= scr_cols) {
-		if (standing && slp->mode & STANDOUT) {
-			standing = false;
-			slp->eso = Max(slp->eso, col);
-		}
-		col = 0;
-		if (cur_ln < scr_lns)
-			cur_ln++;
-	}
-	cur_col = col; /* store cur_col back */
-	return 1;
+	if (col > slp->emod)
+		slp->emod = col;
+	s->cur_col = col;
 }
 
-/**
- * Output a string.
- * @param str The string.
- */
+void outc(int c)
+{
+	uchar_t ch = c;
+	_outs(&stdscr, &ch, 1);
+}
+
 void outs(const char *str)
 {
-	while (*str != '\0') {
-		outc(*str++);
-	}
+	_outs(&stdscr, (const uchar_t *)str, 0);
 }
 
 /**
