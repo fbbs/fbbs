@@ -54,6 +54,25 @@ static int raw_write(int fd, const uchar_t *buf, size_t len)
 }
 
 /**
+ * Get ch from buffer.
+ * @param fd The input file descriptor.
+ * @param inbuf The input buffer.
+ * @return Character on success, -1 on error.
+ */
+static int buffered_getch(int fd, iobuf_t *inbuf)
+{
+    int ret;
+    if (inbuf->cur >= inbuf->size) {
+        ret = raw_read(fd, inbuf->buf, sizeof(inbuf->buf));
+        if (ret < 0)
+            return -1;
+        inbuf->cur = 0;
+        inbuf->size = ret;
+    }
+    return inbuf->buf[inbuf->cur++];
+}
+
+/**
  * Flush output buffer.
  * @return 0 on success, -1 on error.
  */
@@ -134,74 +153,6 @@ void output(const unsigned char *str, int size)
 bool inbuf_empty(void)
 {
 	return (inbuf.cur >= inbuf.size);
-}
-
-/**
- * Get raw byte from stdin.
- * @return next byte from stdin
- */
-static int get_raw_ch(void)
-{
-	if (inbuf.cur >= inbuf.size) {
-		fd_set rset;
-		struct timeval to;
-		int fd = i_newfd;
-		int nfds, ret;
-
-		FD_ZERO(&rset);
-		FD_SET(STDIN_FILENO, &rset);
-		if (fd) {
-			FD_SET(fd, &rset);
-			nfds = fd + 1;
-		} else {
-			nfds = 1;
-		}
-
-		// TODO: simplify it
-		uinfo.idle_time = time(0);
-		update_ulist(&uinfo, utmpent);
-
-		to.tv_sec = to.tv_usec = 0;
-		ret = select(nfds, &rset, NULL, NULL, &to);
-#ifdef SSHBBS
-		if (FD_ISSET(STDIN_FILENO, &rset))
-			ret = channel_poll(ssh_chan, 0);
-#endif
-		if (ret <= 0) {
-			if (flushf)
-				(*flushf) ();
-			if (big_picture)
-				refresh();
-			else
-				oflush();
-
-			FD_ZERO(&rset);
-			FD_SET(0, &rset);
-			if (fd)
-				FD_SET(fd, &rset);
-			while ((ret = select(nfds, &rset, NULL, NULL, i_top)) < 0) {
-				if (errno != EINTR)
-					return -1;
-			}
-			if (ret == 0)
-				return I_TIMEOUT;
-		}
-		if (fd && FD_ISSET(fd, &rset))
-			return I_OTHERDATA;
-
-		while (1) {
-			ret = read_stdin(inbuf.buf, sizeof(inbuf.buf));
-			if (ret > 0)
-				break;
-			if ((ret < 0) && (errno == EINTR))
-				continue;
-			abort_bbs(0);
-		}
-		inbuf.cur = 0;
-		inbuf.size = ret;
-		i_mode = INPUT_ACTIVE;
-	}
-	return inbuf.buf[inbuf.cur++];
 }
 
 /**
