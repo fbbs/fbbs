@@ -57,68 +57,6 @@ void screen_init(telconn_t *tc, int lines, int cols)
 }
 
 /**
- * Generate and send terminal move cmd.
- * @param col Column to move to.
- * @param line Line to move to.
- */
-static void do_move(int col, int line)
-{
-	char buf[16];
-	snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
-	char *p;
-	for (p = buf; *p != '\0'; p++)
-		ochar(*p);
-}
-
-//	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
-void rel_move(int was_col, int was_ln, int new_col, int new_ln) {
-	if (new_ln >= t_lines || new_col >= t_columns) //越界,返回
-		return;
-	tc_col = new_col;
-	tc_line = new_ln;
-	if ((new_col == 0) && (new_ln == was_ln + 1)) { //换行
-		ochar('\n');
-		if (was_col != 0) //到第一列位置,返回
-			ochar('\r');
-		return;
-	}
-	if ((new_col == 0) && (new_ln == was_ln)) { //不换行,到第一列位置,并返回
-		if (was_col != 0)
-			ochar('\r');
-		return;
-	}
-	if (was_col == new_col && was_ln == new_ln)
-		return;
-	if (new_col == was_col - 1 && new_ln == was_ln) {
-		ochar(Ctrl('H'));
-		return;
-	}
-	do_move(new_col, new_ln);
-}
-
-// 标准输出buf中的数据,	ds,de表示数据的区间,sso,eso也是
-//		但当它们没有交集时,以ds,de为准
-//		有交集时,取合集
-//			但下限以ds为准,上限以de为准				跟直接取ds,de有什么区别?
-///		对o_standup,o_standdown作用不太清楚
-void standoutput(char * buf, int ds, int de, int sso, int eso) {
-	int st_start, st_end;
-	if (eso <= ds || sso >= de) {
-		output(buf + ds, de - ds);
-		return;
-	}
-	st_start = Max(sso, ds);
-	st_end = Min(eso, de);
-	if (sso > ds)
-		output(buf + ds, sso - ds);
-	term_cmd(TERM_CMD_SO);
-	output(buf + st_start, st_end - st_start);
-	term_cmd(TERM_CMD_SE);
-	if (de > eso)
-		output(buf + eso, de - eso);
-}
-
-/**
  * Redraw the screen.
  */
 void redoscr(void)
@@ -364,6 +302,33 @@ static void outns(const char *str, int n, bool ansi)
 		outs("\033[m");
 	}
 }
+
+static inline void ochar(screen_t *s, int c)
+{
+	telnet_putc(s->tc, c);
+}
+
+static void term_move(screen_t *s, int line, int col)
+{
+	if (col == 0 && line == s->tc_ln + 1) { // newline
+		ochar(s, '\n');
+		if (s->tc_ln != 0)
+			ochar(s, '\r');
+	} else if (col == 0 && line == s->tc_ln) { // return
+		if (s->tc_ln != 0)
+			ochar(s, '\r');
+	} else if (col == s->tc_col - 1 && line == s->tc_ln) { // backspace
+		ochar(s, KEY_CTRL_H);
+	} else if (col != s->tc_col || line != s->tc_ln) { // arbitrary move
+		char buf[16];
+		snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
+		for (char *p = buf; *p != '\0'; p++)
+			ochar(s, *p);
+	}
+	s->tc_ln = line;
+	s->tc_col = col;
+}
+
 
 int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
 		1000, 100, 10, 1 };
