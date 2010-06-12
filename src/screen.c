@@ -56,66 +56,6 @@ void screen_init(telconn_t *tc, int lines, int cols)
 	_screen_init(&stdscr, tc, lines, cols);
 }
 
-//刷新缓冲区,重新显示屏幕?
-void refresh() {
-	register int i, j;
-	register struct screenline *bp = big_picture;
-	if (!inbuf_empty())
-		return;
-	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {
-		redoscr();
-		return;
-	}
-	if (scrollcnt < 0) {
-		rel_move(tc_col, tc_line, 0, 0);
-		while (scrollcnt < 0) {
-			term_cmd(TERM_CMD_SR);
-			scrollcnt++;
-		}
-	}
-	if (scrollcnt > 0) {
-		rel_move(tc_col, tc_line, 0, t_lines - 1);
-		while (scrollcnt > 0) {
-			ochar('\n');
-			scrollcnt--;
-		}
-	}
-	for (i = 0; i < scr_lns; i++) {
-		j = i + roll;
-		while (j >= scr_lns)
-			j -= scr_lns;
-		if (bp[j].mode & MODIFIED && bp[j].smod < bp[j].len) {
-			bp[j].mode &= ~(MODIFIED); //若被修改,则输出
-			if (bp[j].emod >= bp[j].len)
-				bp[j].emod = bp[j].len - 1;
-			rel_move(tc_col, tc_line, bp[j].smod, i);
-			if (bp[j].mode & STANDOUT)
-				standoutput(bp[j].data, bp[j].smod, bp[j].emod + 1,
-						bp[j].sso, bp[j].eso);
-			else
-				output(&bp[j].data[bp[j].smod], bp[j].emod - bp[j].smod
-						+ 1);
-			tc_col = bp[j].emod + 1;
-			if (tc_col >= t_columns) {
-				if (automargins) {
-					tc_col -= t_columns;
-					tc_line++;
-					if (tc_line >= t_lines)
-						tc_line = t_lines - 1;
-				} else
-					tc_col = t_columns - 1;
-			}
-		}
-		if (bp[j].oldlen > bp[j].len) {
-			rel_move(tc_col, tc_line, bp[j].len, i);
-			term_cmd(TERM_CMD_CE);
-		}
-		bp[j].oldlen = bp[j].len;
-	}
-	rel_move(tc_col, tc_line, cur_col, cur_ln);
-	oflush();
-}
-
 static void _move(screen_t *s, int line, int col)
 {
 	s->cur_ln = line;
@@ -317,6 +257,48 @@ void redoscr(void)
 	_redoscr(&stdscr);
 }
 
+static void _refresh(screen_t *s)
+{
+	if (!buffer_empty(&s->tc->inbuf))
+		return;
+
+	if (s->clear || s->scroll_cnt >= s->scr_lns - 3) {
+		_redoscr(s);
+		return;
+	}
+
+	if (s->scroll_cnt > 0) {
+		term_move(s, s->tc->lines - 1, 0);
+		while (s->scroll_cnt-- > 0) {
+			ochar(s, '\n');
+		}
+	}
+
+	screen_line_t *slp;
+	for (int i = 0; i < s->scr_lns; ++i) {
+		slp = s->lines + (i + s->roll) % s->scr_lns;
+		if (slp->modified) {
+			slp->modified = false;
+			if (slp->emod >= slp->len)
+				slp->emod = slp->len - 1;
+			term_move(s, i, slp->smod);
+			telnet_write(s->tc, slp->data + slp->smod, slp->emod - slp->smod + 1);
+			s->tc_col = slp->emod + 1;
+		}
+		if (slp->oldlen > slp->len) {
+			term_move(s, i, slp->len);
+			term_cmd(TERM_CMD_CE);
+		}
+		slp->oldlen = slp->len;
+	}
+	term_move(s, s->cur_ln, s->cur_col);
+	telnet_flush(s->tc);
+}
+
+void refresh(void)
+{
+	_refresh(&stdscr);
+}
 
 
 int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
