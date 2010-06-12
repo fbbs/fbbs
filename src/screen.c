@@ -263,6 +263,21 @@ void clrtoeol(void)
 	_clrtoeol(&stdscr);
 }
 
+static void _scroll(screen_t *s)
+{
+	s->scroll_cnt++;
+	s->roll++;
+	if (s->roll >= s->scr_lns)
+		s->roll -= s->scr_lns;
+	_move(s, s->scr_lns - 1, 0);
+	_clrtoeol(s);
+}
+
+void scroll(void)
+{
+	_scroll(&stdscr);
+}
+
 /**
  * Output a character.
  * @param c The character.
@@ -505,23 +520,6 @@ void prints(char *fmt, ...) {
 	}
 	va_end(ap);
 	endprint: return;
-}
-
-/**
- * Scroll down one line.
- */
-void scroll(void)
-{
-	if (dumb_term) {
-		prints("\n");
-		return;
-	}
-	scrollcnt++;
-	roll++;
-	if (roll >= scr_lns)
-		roll -= scr_lns;
-	move(scr_lns - 1, 0);
-	clrtoeol();
 }
 
 //将big_picture输出位置1,标准输出区间为(cur_col,cur_col)
