@@ -238,115 +238,42 @@ static int esc_handler(telconn_t *tc)
 }
 
 /**
- * Get next byte from stdin, with special byte interpreted.
- * @return next byte from stdin
+ * Get ch from telnet connection, with ESC sequence handled.
+ * @param tc Telnet connection data.
+ * @return
  */
-int igetch(void)
+static int term_getch(telconn_t *tc)
 {
-	static bool cr = 0;
-	int ch;
-	while (1) {
-		ch = get_raw_ch();
-		switch (ch) {
-			case IAC:
-				iac_handler();
-				continue;
-			case KEY_ESC:
-				ch = esc_handler();
-				break;
-			case Ctrl('L'):
-				redoscr();
-				continue;
-			case '\r':
-				ch = '\n';
-				cr = true;
-				break;
-			case '\n':
-				if (cr) {
-					cr = false;
-					continue;
-				}
-				break;
-			case '\0':
-				cr = false;
-				continue;
-			default:
-				cr = false;
-#ifdef ALLOWSWITCHCODE
-				if (convcode) {
-					ch = convert_b2g(ch);
-					if (ch >= 0)
-						return ch;
-				}
-#endif // ALLOWSWITCHCODE
-				break;
-		}
-		break;
-	}
-	return ch;
-}
-
-int do_igetkey(void)
-{
-	int ch;
-#ifdef ALLOWSWITCHCODE
-	if (convcode) {
-		ch = convert_b2g(-1); // If there is a byte left.
-		while (ch < 0)
-			ch = igetch();
-	} else {
-		ch = igetch();
-	}
-#else
-	ch = igetch();
-#endif // ALLOWSWITCHCODE
-
-	// Handle messages.
-	if (ch == Ctrl('Z')) {
-		if (!msg_num)
-			RMSG = true;
-	}
-	return ch;
-}
-
-/**
- * Get next byte from stdin in gbk encoding (if conversion is needed).
- */
-int igetkey(void)
-{
-	int ch = do_igetkey();
-	while ((RMSG || msg_num) && uinfo.mode != LOCKSCREEN) {
-		msg_reply(ch);
-		ch = do_igetkey();
-	}
-	return ch;
-}
-
-int egetch(void)
-{
-	extern int talkrequest; //main.c
-	extern int refscreen; //main.c
-	int rval;
-
-	check_calltime();
-	if (talkrequest) {
-		talkreply();
-		refscreen = YEA;
-		return -1;
-	}
-	while (1) {
-		rval = igetkey();
-		if (talkrequest) {
-			talkreply();
-			refscreen = YEA;
-			return -1;
-		}
-		if (rval != Ctrl('L'))
-			break;
-		redoscr();
-	}
-	refscreen = NA;
-	return rval;
+    int ch;
+    while (1) {
+        ch = telnet_getch(tc);
+        switch (ch) {
+            case KEY_ESC:
+                ch = esc_handler(tc);
+                break;
+            case KEY_CTRL_L:
+                // TODO: redoscr().
+                continue;
+            case '\r':
+                ch = '\n';
+                tc->cr = true;
+                break;
+            case '\n':
+                if (tc->cr) {
+                    tc->cr = false;
+                    continue;
+                }
+                break;
+            case '\0':
+                tc->cr = false;
+                continue;
+            default:
+                tc->cr = false;
+                break;
+        }
+        break;
+    }
+    return ch;
 }
 
 #if 0
