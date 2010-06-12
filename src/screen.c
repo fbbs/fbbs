@@ -250,42 +250,18 @@ void clear(void)
 	_clear(&stdscr);
 }
 
-/**
- * Clear to end of current line.
- */
+static void _clrtoeol(screen_t *s)
+{
+	screen_line_t *slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
+	if (s->cur_col > slp->len)
+		memset(slp->data + slp->len, ' ', s->cur_col - slp->len + 1);
+	slp->len = s->cur_col;
+}
+
 void clrtoeol(void)
 {
-	if (dumb_term)
-		return;
-	standing = false;
-	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
-	if (cur_col <= slp->sso)
-		slp->mode &= ~STANDOUT;
-	if (cur_col > slp->len)
-		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
-	slp->len = cur_col;
+	_clrtoeol(&stdscr);
 }
-
-//从当前行清除到最后一行
-void clrtobot() {
-	register struct screenline *slp;
-	register int i, j;
-	if (dumb_term)
-		return;
-	for (i = cur_ln; i < scr_lns; i++) {
-		j = i + roll;
-		while (j >= scr_lns)
-			//求j%scr_lns ? 因为减法比取余时间少?
-			j -= scr_lns;
-		slp = &big_picture[j];
-		slp->mode = 0;
-		slp->len = 0;
-		if (slp->oldlen > 0)
-			slp->oldlen = 255;
-	}
-}
-
-static char nullstr[] = "(null)";
 
 /**
  * Output a character.
