@@ -43,7 +43,7 @@ typedef struct hash_t
 /** Hash table iterator type. */
 typedef struct hash_iter_t
 {
-	hash_t *ht;           ///< The hash table.
+	const hash_t *ht;     ///< The hash table.
 	hash_entry_t *entry;  ///< Current entry.
 	hash_entry_t *next;   ///< Next entry.
 	unsigned int index;   ///< Current ndex in ht->array.
@@ -58,4 +58,3 @@ hash_iter_t *hash_next(hash_iter_t *iter);
 hash_iter_t *hash_begin(const hash_t *ht);
 
 #endif // FB_HASH_H
-
