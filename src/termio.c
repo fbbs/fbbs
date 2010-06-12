@@ -29,28 +29,6 @@ enum {
     DEFAULT_TERM_LINES = 24,
 };
 
-//	超时处理函数,将非特权ID超时时踢出bbs
-void hit_alarm_clock() {
-	if (HAS_PERM(PERM_NOTIMEOUT))
-		return;
-	if (i_mode == INPUT_IDLE) {
-		clear();
-		prints("Idle timeout exceeded! Booting...\n");
-		kill(getpid(), SIGHUP);
-	}
-	i_mode = INPUT_IDLE;
-	if (uinfo.mode == LOGIN)
-		alarm(LOGIN_TIMEOUT);
-	else
-		alarm(IDLE_TIMEOUT);
-}
-
-//初始化超时时钟信号,将hit_alarm_clock函数挂在此信号处理句柄上
-void init_alarm() {
-	signal(SIGALRM, hit_alarm_clock);
-	alarm(IDLE_TIMEOUT);
-}
-
 /**
  * Read raw bytes from fd.
  * @param[in] fd The file descriptor.
@@ -151,25 +129,6 @@ void output(const unsigned char *str, int size)
 			}
 		}
 	}
-}
-
-static int i_newfd = 0;
-static struct timeval i_to, *i_top = NULL;
-static int (*flushf)() = NULL;
-
-void add_io(int fd, int timeout) {
-	i_newfd = fd;
-	if (timeout) {
-		i_to.tv_sec = timeout;
-		i_to.tv_usec = 0;
-		i_top = &i_to;
-	} else
-		i_top = NULL;
-}
-
-//	将flushf函数指针指向函数flushfunc
-void add_flush(int (*flushfunc)()) {
-	flushf = flushfunc;
 }
 
 bool inbuf_empty(void)
@@ -435,29 +394,7 @@ int egetch(void)
 	return rval;
 }
 
-void top_show(char *prompt) {
-	if (editansi) {
-		outs(ANSI_RESET);
-		refresh();
-	}
-	move(0, 0);
-	clrtoeol();
-	standout();
-	prints("%s", prompt);
-	standend();
-}
-
-int ask(char *prompt) {
-	int ch;
-	top_show(prompt);
-	ch = igetkey();
-	move(0, 0);
-	clrtoeol();
-	return (ch);
-}
-
-extern int enabledbchar;
-
+#if 0
 int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel)
 {
@@ -1150,4 +1087,4 @@ int multi_getdata(int line, int col, int maxcol, char *prompt, char *buf, int le
 	ingetdata = false;
 	return y-starty+1;
 }
-
+#endif
