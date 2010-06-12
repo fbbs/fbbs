@@ -156,35 +156,40 @@ bool inbuf_empty(void)
 }
 
 /**
- * Handle telnet option negotiation.
- * @return the first character after IAC sequence.
+ * Get ch from a telnet connection, with IAC handled.
+ * @param tc Telnet connection data.
+ * @return The first character after IAC sequence.
  */
-static int iac_handler(void)
+static int telnet_getch(telconn_t *tc)
 {
-	int status = TELST_IAC;
-	while (status != TELST_END) {
-		int ch = get_raw_ch();
-		if (ch < 0)
-			return ch;
-		switch (status) {
-			case TELST_IAC:
-				if (ch == SB)
-					status = TELST_SUB;
-				else
-					status = TELST_COM;
-				break;
-			case TELST_COM:
-				status = TELST_END;
-				break;
-			case TELST_SUB:
-				if (ch == SE)
-					status = TELST_END;
-				break;
-			default:
-				break;
-		}	
-	}
-	return 0;
+    int ch = buffered_getch(tc->fd, &tc->inbuf);
+    if (ch != KEY_ESC)
+        return ch;
+
+    int status = TELST_IAC;
+    while (status != TELST_END) {
+        int ch = buffered_getch(tc->fd, &tc->inbuf);
+        if (ch < 0)
+            return ch;
+        switch (status) {
+            case TELST_IAC:
+                if (ch == SB)
+                    status = TELST_SUB;
+                else
+                    status = TELST_COM;
+                break;
+            case TELST_COM:
+                status = TELST_END;
+                break;
+            case TELST_SUB:
+                if (ch == SE)
+                    status = TELST_END;
+                break;
+            default:
+                break;
+        }
+    }
+    return 0;
 }
 
 /**
