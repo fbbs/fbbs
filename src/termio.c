@@ -52,28 +52,27 @@ void init_alarm() {
 }
 
 /**
- *
+ * Read raw bytes from fd.
+ * @param[in] fd The file descriptor.
+ * @param[out] buf The buffer.
+ * @param[in] size The buffer size.
+ * @return Bytes read, -1 on error.
  */
-int read_stdin(unsigned char *buf, size_t size)
+static int raw_read(int fd, uchar_t *buf, size_t size)
 {
-#ifdef SSHBBS
-	return channel_read(ssh_chan, buf, size, 0);
-#else // SSHBBS
-	return read(STDIN_FILENO, buf, size);
-#endif // SSHBBS
+    return read(fd, buf, size);
 }
 
 /**
- *
+ * Write raw bytes to fd.
+ * @param[in] fd The file descriptor.
+ * @param[in] buf The buffer.
+ * @param[in] len Bytes to write.
+ * @return Bytes written, -1 on error.
  */
-int write_stdout(const unsigned char *buf, size_t len)
+static int raw_write(int fd, const uchar_t *buf, size_t len)
 {
-#ifdef SSHBBS
-	return channel_write(ssh_chan, buf, len);
-#else // SSHBBS
-	return write(STDIN_FILENO, buf, len);
-#endif // SSHBBS
-
+    return write(fd, buf, len);
 }
 
 /**
