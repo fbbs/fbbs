@@ -1,6 +1,8 @@
 #ifndef FB_SYSCONF_H
 #define FB_SYSCONF_H
 
+#include <stdbool.h>
+
 typedef struct {
 	int line;    ///< Line.
 	int col;     ///< Column.

@@ -1,12 +1,20 @@
-// For menu config.
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
-#include "bbs.h"
-#include "sysconf.h"
+#include "fbbs/sysconf.h"
+#include "fbbs/string.h"
+#include "fbbs/file.h"
 
 enum {
 	SC_BUFSIZE = 20480,
 	SC_KEYSIZE = 256,
-	SC_CMDSIZE = 256
+	SC_CMDSIZE = 256,
+	LINE_BUFSIZE = 256,
 };
 
 struct sysheader {
@@ -263,8 +271,6 @@ static void sysconf_parse(const char *fname, sysconf_t *conf)
 					}
 					sysconf_addkey(key, NULL, val, conf);
 				}
-			} else {
-				report(ptr, "");
 			}
 		}
 	}
@@ -327,7 +333,6 @@ static int sysconf_load_image(const char *imgfile)
 		fstat(fd, &st);
 		ptr = malloc(st.st_size);
 		if (ptr == NULL) {
-			report( "Insufficient memory available", "");
 			close(fd);
 			return -1;
 		}
