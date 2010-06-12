@@ -1,16 +1,11 @@
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
-#include <dirent.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sys/file.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "func.h"
+#include <sys/file.h>
 
-static int rm_dir();
-
+#if 0
 /**
  * Append to file.
  * @param file file name.
@@ -90,9 +85,10 @@ int restart_ftruncate(int fd, off_t size)
 	}
 	return 0;
 }
+#endif
 
 /**
- * Check whether given file is a regular file.
+ * Check whether given file exists and is a regular file.
  * @param file file name.
  * @return 1 if file exists and is a regular file, 0 otherwise.
  */
@@ -104,6 +100,7 @@ int dashf(const char *file)
 	return (stat(file, &st) == 0 && S_ISREG(st.st_mode));
 }
 
+#if 0
 /**
  * Check whether given file is a directory.
  * @param file file name (directory path).
@@ -251,6 +248,7 @@ static int rm_dir(char *fpath) {
 	*--fname = '\0';
 	return rmdir(buf);
 }
+#endif
 
 /**
  * Put an advisory lock on file descriptor using blocking fcntl().
@@ -275,4 +273,3 @@ int fb_flock(int fd, int operation)
 
 	return fcntl(fd, F_SETLKW, &lock);
 }
-
