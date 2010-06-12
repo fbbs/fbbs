@@ -72,71 +72,6 @@ static int buffered_getch(int fd, iobuf_t *inbuf)
     return inbuf->buf[inbuf->cur++];
 }
 
-/**
- * Put a byte into output buffer.
- * @param ch byte to put.
- */
-static void put_raw_ch(int ch)
-{
-	outbuf.buf[outbuf.size++] = ch;
-	if (outbuf.size == sizeof(outbuf.buf))
-		oflush();
-}
-
-/**
- * Put a byte into output buffer. Do translation if needed.
- * @param ch byte to put.
- */
-void ochar(int ch)
-{
-#ifdef ALLOWSWITCHCODE
-	if (convcode) {
-		ch = convert_g2b(ch);
-		while (ch > 0) {
-			put_raw_ch(ch);
-			ch = convert_g2b(-1);
-		}
-	} else {
-		put_raw_ch(ch);
-	}
-#else
-	put_raw_ch(ch);
-#endif // ALLOWSWITCHCODE
-}
-
-/**
- * Put bytes into output buffer.
- * @param str pointer to the first byte.
- * @param size bytes to output.
- * @note IAC is not handled.
- */
-void output(const unsigned char *str, int size)
-{
-	int convert = 0;
-#ifdef ALLOWSWITCHCODE
-	convert = convcode;
-#endif // ALLOWSWITCHCODE
-	if (convert) {
-		while (size-- > 0)
-			ochar(*str++);
-	} else {
-		while (size > 0) {
-			int len = sizeof(outbuf.buf) - outbuf.size;
-			if (size > len) {
-				memcpy(outbuf.buf + outbuf.size, str, len);
-				outbuf.size += len;
-				oflush();
-				size -= len;
-				str += len;
-			} else {
-				memcpy(outbuf.buf + outbuf.size, str, size);
-				outbuf.size += size;
-				return;
-			}
-		}
-	}
-}
-
 bool inbuf_empty(void)
 {
 	return (inbuf.cur >= inbuf.size);
@@ -282,6 +217,33 @@ int telnet_flush(telconn_t *tc)
 		ret = raw_write(tc->fd, tc->outbuf.buf, tc->outbuf.size);
 	tc->outbuf.size = 0;
 	return ret;
+}
+
+void telnet_write(telconn_t *tc, const uchar_t *str, int size)
+{
+	while (size > 0) {
+		int len = sizeof(tc->outbuf.buf) - tc->outbuf.size;
+		if (size > len) {
+			memcpy(tc->outbuf.buf + tc->outbuf.size, str, len);
+			tc->outbuf.size += len;
+			telnet_flush(tc);
+			size -= len;
+			str += len;
+		} else {
+			memcpy(tc->outbuf.buf + tc->outbuf.size, str, size);
+			tc->outbuf.size += size;
+			break;
+		}
+	}
+}
+
+int telnet_putc(telconn_t *tc, int c)
+{
+	tc->outbuf.buf[tc->outbuf.size++] = c;
+	if (tc->outbuf.size == sizeof(tc->outbuf.buf))
+		return telnet_flush(tc);
+	else
+		return 0;
 }
 
 #if 0
