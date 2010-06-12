@@ -181,27 +181,6 @@ void outs(const char *str)
 	_outs(&stdscr, (const uchar_t *)str, 0);
 }
 
-/**
- * Print first n bytes of a string.
- * @param str The string.
- * @param n Maximum output bytes.
- * @param ansi Whether ansi control codes should be excluded in length or not.
- */
-static void outns(const char *str, int n, bool ansi)
-{
-	if (!ansi) {
-		while (*str != '\0' && n > 0) {
-			outc(*str++);
-			n--;
-		}
-	} else {
-		while (*str != '\0' && n > 0) {
-			n -= outc(*str++);
-		}
-		outs("\033[m");
-	}
-}
-
 static inline void ochar(screen_t *s, int c)
 {
 	telnet_putc(s->tc, c);
@@ -300,7 +279,7 @@ void refresh(void)
 	_refresh(&stdscr);
 }
 
-
+#if 0
 int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
 		1000, 100, 10, 1 };
 
@@ -424,87 +403,4 @@ void prints(char *fmt, ...) {
 	va_end(ap);
 	endprint: return;
 }
-
-//将big_picture输出位置1,标准输出区间为(cur_col,cur_col)
-void standout() {
-	register struct screenline *slp;
-	register int ln;
-	if (dumb_term)
-		return;
-	if (!standing) {
-		ln = cur_ln + roll;
-		while (ln >= scr_lns)
-			ln -= scr_lns;
-		slp = &big_picture[ln];
-		standing = YEA;
-		slp->sso = cur_col;
-		slp->eso = cur_col;
-		slp->mode |= STANDOUT;
-	}
-}
-//	如果standing为真,将当前行在big_picture中的映射设成真
-//		并将eso设成eso,cur_col的最大值
-void standend() {
-	register struct screenline *slp;
-	register int ln;
-	if (dumb_term)
-		return;
-	if (standing) {
-		ln = cur_ln + roll;
-		while (ln >= scr_lns)
-			ln -= scr_lns;
-		slp = &big_picture[ln];
-		standing = NA;
-		slp->eso = Max(slp->eso, cur_col);
-	}
-}
-//	根据mode来决定 保存或恢复行line的内容
-//		最多只能保存一行,否则会被抹去
-void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
-{
-	register struct screenline *bp = big_picture;
-	static char tmp[2][256];
-	int x, y;
-
-	switch (mode) {
-		case 0:
-		case 2:
-			strlcpy(tmp[mode/2], bp[line].data, LINELEN);
-			tmp[mode/2][bp[line].len]='\0';
-			break;
-		case 1:
-		case 3:
-			getyx(&x, &y);
-			move(line, 0);
-			clrtoeol();
-			refresh();
-			prints("%s", tmp[(mode-1)/2]);
-			move(x, y);
-			refresh();
-	}
-}
-
-/* Added by Ashinmarch on 2007.12.01,
- * to support multi-line msgs
- * It is used to save screen lines overwrited by msgs
- */
-void saveline_buf(int line, int mode)//0:save 1:restore
-{
-    static char temp[MAX_MSG_LINE * 2 + 2][LINELEN];
-    struct screenline *bp = big_picture;
-    int x, y;
-    
-    switch (mode) {
-        case 0:
-            strncpy(temp[line], bp[line].data, LINELEN);
-            temp[line][bp[line].len] = '\0';
-            break;
-        case 1:
-            getyx(&x, &y);
-            move(line, 0);
-            clear_whole_line(line);
-            prints("%s", temp[line]);
-            move(x,y);
-            break;
-    }
-}
+#endif

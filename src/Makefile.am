@@ -4,4 +4,4 @@ LDADD = ../lib/libfbbs.a
 
 bin_PROGRAMS = bbsd
 
-bbsd_SOURCES = bbsd.c sysconf.c
+bbsd_SOURCES = bbsd.c sysconf.c termio.c screen.c
