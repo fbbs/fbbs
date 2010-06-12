@@ -8,8 +8,8 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/file.h>
-#include "libBBS.h"
-#include "mmap.h"
+#include "fbbs/mmap.h"
+#include "fbbs/util.h"
 
 enum {
 	MMAP_MINSIZE = 4096,  ///< Minimum memory mapped region size.
@@ -22,7 +22,7 @@ enum {
  * @attention This function is exported only for compatability. It will be
  *            made private sooner or later.
  */
-int mmap_open_fd(mmap_t *m)
+static int mmap_open_fd(mmap_t *m)
 {
 	struct stat st;
 
@@ -34,8 +34,7 @@ int mmap_open_fd(mmap_t *m)
 	}
 
 	// Return error if 'file' is not a regular file or has a wrong size.
-	if (fstat(m->fd, &st) < 0 || !S_ISREG(st.st_mode)
-			|| st.st_size < 0) {
+	if (fstat(m->fd, &st) < 0 || !S_ISREG(st.st_mode) || st.st_size < 0) {
 		fb_flock(m->fd, LOCK_UN);
 		close(m->fd);
 		return -1;
@@ -50,6 +49,7 @@ int mmap_open_fd(mmap_t *m)
 	m->ptr = mmap(NULL, m->msize, m->prot, m->mflag, m->fd, 0);
 	if (m->ptr != MAP_FAILED)
 		return 0;
+
 	fb_flock(m->fd, LOCK_UN);
 	close(m->fd);
 	return -1;
@@ -92,54 +92,7 @@ int mmap_close(mmap_t *m)
 	munmap(m->ptr, m->msize);
 	if (m->lock != LOCK_UN)
 		fb_flock(m->fd, LOCK_UN);
-	return restart_close(m->fd);
-}
-
-/**
- * Truncate mmap'ed file to new size.
- * If file extends, remap whole file.
- * @param[in,out] m pointer to an ::mmap_t struct.
- * @param[in] size new file size.
- * @return 0 on success, -1 on error.
- */
-int mmap_truncate(mmap_t *m, size_t size)
-{
-	if (size < 0) {
-		mmap_close(m);
-		return -1;
-	}
-	if (size > m->msize)
-		munmap(m->ptr, m->size);
-	if (restart_ftruncate(m->fd, size) < 0) {
-		mmap_close(m);
-		return -1;
-	}
-	m->size = size;
-	if (size > m->msize) {
-		m->ptr = mmap(NULL, size, m->prot, m->mflag, m->fd, 0);
-		if (m->ptr == MAP_FAILED) {
-			mmap_close(m);
-			return -1;
-		}
-		m->msize = size;
-	}
-	return 0;
-}
-
-/**
- * Shrink memory mapped file to new size.
- * @param[in] m pointer to an ::mmap_t struct.
- * @param[in] size new file size, must be smaller than current size.
- * @return 0 on success, -1 on error.
- */
-int mmap_shrink(mmap_t *m, size_t size)
-{
-	if (size >= m->msize)
-		return -1;
-	if (restart_ftruncate(m->fd, size) < 0)
-		return -1;
-	m->size = size;
-	return 0;
+	return close(m->fd);
 }
 
 /**
