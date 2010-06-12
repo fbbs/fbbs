@@ -276,6 +276,19 @@ static int term_getch(telconn_t *tc)
     return ch;
 }
 
+void telnet_init(telconn_t *tc, int fd)
+{
+	tc->fd = fd;
+	tc->cr = false;
+	tc->lines = DEFAULT_TERM_LINES;
+	tc->cols = DEFAULT_TERM_COLS;
+	tc->inbuf.cur = 0;
+	tc->inbuf.size = 0;
+	tc->outbuf.cur = 0;
+	tc->outbuf.size = 0;
+}
+
+
 #if 0
 int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel)
