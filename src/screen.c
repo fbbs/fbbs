@@ -219,16 +219,17 @@ void refresh() {
 	oflush();
 }
 
-/**
- * Move to given position.
- * @param y Line number.
- * @param x Column number.
- */
-void move(int y, int x)
+static void _move(screen_t *s, int line, int col)
 {
-	cur_col = x;
-	cur_ln = y;
+	s->cur_ln = line;
+	s->cur_col = col;
 }
+
+void move(int line, int col)
+{
+	_move(&stdscr, line, col);
+}
+
 
 /**
  * Get current position.
