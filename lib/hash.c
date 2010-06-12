@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
+#include "fbbs/hash.h"
 
 /**
  * Default hash funtion (djb algorithm).
