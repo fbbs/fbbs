@@ -1,3 +1,5 @@
+#include <wchar.h>
+#include <string.h>
 #include "fbbs/string.h"
 
 #if 0
@@ -234,3 +236,31 @@ void strappend(char **dst, size_t *size, const char *src)
 	*size -= len;
 }
 #endif
+
+/**
+ * Get number of column positions of a multibyte string.
+ * Non-printable characters are treated as zero-width.
+ * @param s The multibyte string.
+ * @return Number of columns of the string.
+ */
+size_t mbwidth(const char *s)
+{
+	int ret, w;
+	size_t width = 0;
+	wchar_t wc;
+	mbstate_t state;
+	memset(&state, 0, sizeof(state));
+
+	while (*s != '\0') {
+		ret = mbrtowc(&wc, s, MB_CUR_MAX, &state);
+		if (ret >= (size_t)-2) {
+			return width;
+		} else {
+			w = wcwidth(wc);
+			if (w == -1)
+				w = 0;
+			width += w;
+		}
+	}
+	return width;
+}
