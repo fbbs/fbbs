@@ -1,6 +1,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#include <wchar.h>
+#include <stdarg.h>
 
 #include "fbbs/screen.h"
 
@@ -289,27 +291,87 @@ int get_screen_height(void)
 	return stdscr.scr_lns;
 }
 
-#if 0
-int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
-		1000, 100, 10, 1 };
+/**
+ * Print width-limited string.
+ * @param str The string.
+ * @param max Maxmimum string width (if max > 0).
+ * @param min Minimum string width (if min < 0). If the string has fewer
+ *            columns, it is padded with spaces.
+ * @param left_align Alignment when padding.
+ */
+static void outns(const char *str, int max, int min, bool left_align)
+{
+	int ret, w;
+	size_t width = 0;
+	wchar_t wc;
+	mbstate_t state;
+	memset(&state, 0, sizeof(state));
+	const char *s = str;
+	while (*s != '\0') {
+		ret = mbrtowc(&wc, s, MB_CUR_MAX, &state);
+		if (ret >= (size_t)-2) {
+			break;
+		} else {
+			w = wcwidth(wc);
+			if (w == -1)
+				w = 0;
+			width += w;
+			if (max > 0 && width > max)
+				break;
+			s += ret;
+		}
+	}
 
-/*以ANSI格式输出可变参数的字符串序列*/
-void prints(char *fmt, ...) {
+	if (max > 0) {
+		_outs(&stdscr, (const uchar_t *)str, s - str);
+	} else if (min > 0) {
+		if (!left_align) {
+			for (int i = 0; i < min - width; ++i)
+				outc(' ');
+		}
+		_outs(&stdscr, (const uchar_t *)str, s - str);
+		if (left_align) {
+			for (int i = 0; i < min - width; ++i)
+				outc(' ');
+		}
+	}
+}
+
+static void outns2(const char *str, int val, int sgn, int sgn2)
+{
+	if (val) {
+		if (!sgn2) {
+			outns(str, val, 0, sgn < 0);
+		} else {
+			outns(str, 0, val, sgn < 0);
+		}
+	} else {
+		_outs(&stdscr, (const uchar_t *)str, 0);
+	}
+}
+
+/**
+ * 
+ *
+ */
+void prints(const char *fmt, ...)
+{
+	const char *bp;
+	int i;
+	char tmp[16];
+
 	va_list ap;
-	char *bp;
-	register int i, count, hd, indx;
 	va_start(ap, fmt);
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
 			int sgn = 1;
 			int sgn2 = 1;
 			int val = 0;
-			int len, negi;
 			fmt++;
 			switch (*fmt) {
 				case '-':
 					while (*fmt == '-') {
-						sgn *= -1;
+						sgn = -sgn;
 						fmt++;
 					}
 					break;
@@ -318,88 +380,32 @@ void prints(char *fmt, ...) {
 					fmt++;
 					break;
 			}
+
 			while (isdigit(*fmt)) {
 				val *= 10;
 				val += *fmt - '0';
 				fmt++;
 			}
+
 			switch (*fmt) {
 				case 's':
-					bp = va_arg(ap, char *);
+					bp = va_arg(ap, const char *);
 					if (bp == NULL)
-						bp = nullstr;
-					if (val) {
-						register int slen = strlen(bp);
-						if (!sgn2) {
-							if (val <= slen)
-								outns(bp, val, true);
-							else
-								outns(bp, slen, true);
-						} else if (val <= slen)
-							outns(bp, val, false);
-						else if (sgn > 0) {
-							for (slen = val - slen; slen > 0; slen--)
-								outc(' ');
-							outs(bp);
-						} else {
-							outs(bp);
-							for (slen = val - slen; slen > 0; slen--)
-								outc(' ');
-						}
-					} else
-						outs(bp);
+						continue;
+					outns2(bp, val, sgn, sgn2);
 					break;
 				case 'd':
 					i = va_arg(ap, int);
-
-					negi = NA;
-					if (i < 0) {
-						negi = YEA;
-						i *= -1;
-					}
-					for (indx = 0; indx < 10; indx++)
-						if (i >= dec[indx])
-							break;
-					if (i == 0)
-						len = 1;
-					else
-						len = 10 - indx;
-					if (negi)
-						len++;
-					if (val >= len && sgn > 0) {
-						register int slen;
-						for (slen = val - len; slen > 0; slen--)
-							outc(' ');
-					}
-					if (negi)
-						outc('-');
-					hd = 1, indx = 0;
-					while (indx < 10) {
-						count = 0;
-						while (i >= dec[indx]) {
-							count++;
-							i -= dec[indx];
-						}
-						indx++;
-						if (indx == 10)
-							hd = 0;
-						if (hd && !count)
-							continue;
-						hd = 0;
-						outc('0' + count);
-					}
-					if (val >= len && sgn < 0) {
-						register int slen;
-						for (slen = val - len; slen > 0; slen--)
-							outc(' ');
-					}
+					snprintf(tmp, sizeof(tmp), "%d", i);
+					outns2(tmp, val, sgn, sgn2);
 					break;
 				case 'c':
 					i = va_arg(ap, int);
 					outc(i);
 					break;
 				case '\0':
-					goto endprint;
+					va_end(ap);
+					return;
 				default:
 					outc(*fmt);
 					break;
@@ -411,6 +417,5 @@ void prints(char *fmt, ...) {
 		fmt++;
 	}
 	va_end(ap);
-	endprint: return;
+	return;
 }
-#endif
