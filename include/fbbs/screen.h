@@ -37,6 +37,7 @@ extern void screen_init(telconn_t *tc, int lines, int cols);
 extern void move(int line, int col);
 extern void clear(void);
 extern void clrtoeol(void);
+extern void clrtobot(void);
 extern void scroll(void);
 extern void outc(int c);
 extern void outs(const char *str);

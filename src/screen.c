@@ -103,6 +103,21 @@ void clrtoeol(void)
 	_clrtoeol(&stdscr);
 }
 
+static void _clrtobot(screen_t *s)
+{
+	screen_line_t *slp;
+	for (int i = s->cur_ln; i < s->scr_lns; ++i) {
+		slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
+		slp->modified = true;
+		slp->len = 0;
+	}
+}
+
+void clrtobot(void)
+{
+	_clrtobot(&stdscr);
+}
+
 static void _scroll(screen_t *s)
 {
 	s->scroll_cnt++;
