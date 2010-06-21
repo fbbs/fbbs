@@ -47,6 +47,8 @@ extern int get_screen_width(void);
 extern int get_screen_height(void);
 extern void prints(const char *fmt, ...);
 
+extern int getch(void);
+
 extern void presskeyfor(const char *msg, int x);
 extern void pressanykey(void);
 

@@ -440,6 +440,11 @@ void prints(const char *fmt, ...)
 	return;
 }
 
+int getch(void)
+{
+	return term_getch(stdscr.tc);
+}
+
 /**
  * Prompt and wait user to press any key.
  * @param[in] msg The prompt message.
@@ -451,7 +456,7 @@ void presskeyfor(const char *msg, int x)
     clrtoeol();
 
 	prints("\033[1;33m%s\033[m", msg);
-    term_getch(stdscr.tc);
+	getch();
 
     move(x, 0);
     clrtoeol();
