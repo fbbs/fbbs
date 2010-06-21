@@ -159,7 +159,7 @@ static int esc_handler(telconn_t *tc)
  * @param tc Telnet connection data.
  * @return
  */
-static int term_getch(telconn_t *tc)
+int term_getch(telconn_t *tc)
 {
 	int ch;
 	while (1) {
