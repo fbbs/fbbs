@@ -133,8 +133,10 @@ static void _outs(screen_t *s, const uchar_t *str, int len)
 	while (len-- > 0) {
 		if (newline) {
 			slp->modified = true;
-			if (col > slp->len)
+			if (col > slp->len) {
 				memset(slp->data + slp->len, ' ', col - slp->len);
+				slp->len = col;
+			}
 			if (col < slp->smod)
 				slp->smod = col;
 			newline = false;
@@ -167,6 +169,8 @@ static void _outs(screen_t *s, const uchar_t *str, int len)
 		}
 	}
 
+	if (col > slp->len)
+		slp->len = col;
 	if (col > slp->emod)
 		slp->emod = col;
 	s->cur_col = col;
@@ -227,7 +231,7 @@ static void _redoscr(screen_t *s)
 		slp->modified = false;
 		slp->oldlen = slp->len;
 	}
-	term_move(s, s->cur_col, s->cur_ln);
+	term_move(s, s->cur_ln, s->cur_col);
 	s->scroll_cnt = 0;
 	s->clear = false;
 	telnet_flush(s->tc);
