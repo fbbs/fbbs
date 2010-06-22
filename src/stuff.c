@@ -1,23 +1,20 @@
-#include "bbs.h"
-#include <sys/param.h>
-#include <sys/sem.h>
-
-extern char fromhost[];
+#include "fbbs/i18n.h"
+#include "fbbs/screen.h"
 
 /**
  * Prompt and wait user to press any key.
  * @param[in] msg The prompt message.
  * @param[in] x Line number.
  */
-void presskeyfor(const char *msg, int x)
+void presskeyfor(const char *msg, int line)
 {
-	extern int showansi;
-	showansi = 1;
-	move(x, 0);
+	move(line, 0);
 	clrtoeol();
-	outs(msg);
-	egetch();
-	move(x, 0);
+
+	prints("\033[1;33m%s\033[m", msg);
+	getch();
+
+	move(line, 0);
 	clrtoeol();
 }
 
@@ -26,10 +23,10 @@ void presskeyfor(const char *msg, int x)
  */
 void pressanykey(void)
 {
-	presskeyfor("\033[m                                "
-			"\033[5;1;33m°´ÈÎºÎ¼ü¼ÌÐø...[m", t_lines - 1);
+	presskeyfor(_("Press any key to continue..."), get_screen_height() - 1);
 }
 
+#if 0
 int pressreturn() {
 	extern int showansi;
 	char buf[3];
@@ -158,3 +155,4 @@ int deltree(char *dst) {
 	} else
 		return 0;
 }
+#endif

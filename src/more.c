@@ -1,5 +1,7 @@
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "fbbs/mmap.h"
@@ -129,12 +131,13 @@ void setcalltime( void )
 	if (ttt <= 0) return;
 	calltime = time(0) + ttt * 60;
 }
+#endif
 
-int morekey( void )
+static int morekey(void)
 {
-	int     ch;
+	int ch;
 	while (1) {
-		switch (ch = egetch()) { 
+		switch (ch = getch()) {
 			case 'q':
 			case KEY_LEFT:
 			case EOF:
@@ -142,10 +145,10 @@ int morekey( void )
 			case ' ':
 			case KEY_RIGHT:
 			case KEY_PGDN:
-			case Ctrl('F'): 
+			case KEY_CTRL_F:
 				return KEY_RIGHT;
 			case KEY_PGUP:
-			case Ctrl('B'):
+			case KEY_CTRL_B:
 				return KEY_PGUP;
 			case '\r':
 			case '\n':
@@ -192,6 +195,7 @@ int morekey( void )
 	}
 }
 
+#if 0
 /*Add by SmallPig*/
 int countln(char *fname)
 {

@@ -4,7 +4,6 @@
 #include <wchar.h>
 #include <stdarg.h>
 
-#include "fbbs/i18n.h"
 #include "fbbs/screen.h"
 
 /**
@@ -445,27 +444,3 @@ int getch(void)
 	return term_getch(stdscr.tc);
 }
 
-/**
- * Prompt and wait user to press any key.
- * @param[in] msg The prompt message.
- * @param[in] x Line number.
- */
-void presskeyfor(const char *msg, int x)
-{
-    move(x, 0);
-    clrtoeol();
-
-	prints("\033[1;33m%s\033[m", msg);
-	getch();
-
-    move(x, 0);
-    clrtoeol();
-}
-
-/**
- * Prompt and wait user to press any key.
- */
-void pressanykey(void)
-{
-    presskeyfor(_("Press any key to continue..."), get_screen_height() - 1);
-}
