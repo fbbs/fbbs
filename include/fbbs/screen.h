@@ -49,7 +49,4 @@ extern void prints(const char *fmt, ...);
 
 extern int getch(void);
 
-extern void presskeyfor(const char *msg, int x);
-extern void pressanykey(void);
-
 #endif // FB_SCREEN_H

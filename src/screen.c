@@ -32,8 +32,16 @@
 /** Send a terminal command. */
 #define term_cmd(cmd)  telnet_write(s->tc, (const uchar_t *)cmd, sizeof(cmd) - 1)
 
+/** The standard screen. */
 static screen_t stdscr;
 
+/**
+ * Initialize a screen.
+ * @param scr The screen to be initialized.
+ * @param tc Related telnet connection.
+ * @param lines Lines of the screen.
+ * @param cols Columns of the screen.
+ */
 static void _screen_init(screen_t *scr, telconn_t *tc, int lines, int cols)
 {
 	scr->scr_lns = lines;
@@ -53,22 +61,43 @@ static void _screen_init(screen_t *scr, telconn_t *tc, int lines, int cols)
 	}
 }
 
+/**
+ * Initialize the standard screen.
+ * @param tc Related telnet connection.
+ * @param lines Lines of the screen.
+ * @param cols Columns of the screen.
+ */
 void screen_init(telconn_t *tc, int lines, int cols)
 {
 	_screen_init(&stdscr, tc, lines, cols);
 }
 
+/**
+ * Move to given position.
+ * @param s The screen.
+ * @param line The line to move to.
+ * @param col The column to move to.
+ */
 static void _move(screen_t *s, int line, int col)
 {
 	s->cur_ln = line;
 	s->cur_col = col;
 }
 
+/**
+ * Move to given position in the standard screen.
+ * @param line The line to move to.
+ * @param col The column to move to.
+ */
 void move(int line, int col)
 {
 	_move(&stdscr, line, col);
 }
 
+/**
+ * Clear a screen.
+ * @param s The screen.
+ */
 static void _clear(screen_t *s)
 {
 	s->roll = 0;
@@ -84,11 +113,18 @@ static void _clear(screen_t *s)
 	_move(s, 0, 0);
 }
 
+/**
+ * Clear the standard screen.
+ */
 void clear(void)
 {
 	_clear(&stdscr);
 }
 
+/**
+ * Clear from current column to the end of line.
+ * @param s The screen.
+ */
 static void _clrtoeol(screen_t *s)
 {
 	screen_line_t *slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
@@ -97,11 +133,18 @@ static void _clrtoeol(screen_t *s)
 	slp->len = s->cur_col;
 }
 
+/**
+ * Clear from current column to the end of line.
+ */
 void clrtoeol(void)
 {
 	_clrtoeol(&stdscr);
 }
 
+/**
+ * Clear from current line (included) to the bottom of the screen.
+ * @param s The screen.
+ */
 static void _clrtobot(screen_t *s)
 {
 	screen_line_t *slp;
@@ -112,11 +155,18 @@ static void _clrtobot(screen_t *s)
 	}
 }
 
+/**
+ * Clear from current line (included) to the bottom of the standard screen.
+ */
 void clrtobot(void)
 {
 	_clrtobot(&stdscr);
 }
 
+/**
+ * Scroll one line down.
+ * @param s The screen.
+ */
 static void _scroll(screen_t *s)
 {
 	s->scroll_cnt++;
@@ -127,6 +177,9 @@ static void _scroll(screen_t *s)
 	_clrtoeol(s);
 }
 
+/**
+ * Scroll one line down.
+ */
 void scroll(void)
 {
 	_scroll(&stdscr);
@@ -207,6 +260,12 @@ static inline void ochar(screen_t *s, int c)
 	telnet_putc(s->tc, c);
 }
 
+/**
+ * Move to a new position in terminal.
+ * @param s The screen.
+ * @param line The new line.
+ * @param col The new column.
+ */
 static void term_move(screen_t *s, int line, int col)
 {
 	if (col == 0 && line == s->tc_ln + 1) { // newline
@@ -228,6 +287,10 @@ static void term_move(screen_t *s, int line, int col)
 	s->tc_col = col;
 }
 
+/**
+ * Redraw the screen.
+ * @param s The screen.
+ */
 static void _redoscr(screen_t *s)
 {
 	term_cmd(TERM_CMD_CL);
@@ -252,11 +315,18 @@ static void _redoscr(screen_t *s)
 	telnet_flush(s->tc);
 }
 
+/**
+ * Redraw the standard screen.
+ */
 void redoscr(void)
 {
 	_redoscr(&stdscr);
 }
 
+/**
+ * Flush all modifications of a screen to terminal.
+ * @param s The screen.
+ */
 static void _refresh(screen_t *s)
 {
 	if (!buffer_empty(&s->tc->inbuf))
@@ -295,16 +365,27 @@ static void _refresh(screen_t *s)
 	telnet_flush(s->tc);
 }
 
+/**
+ * Flush all modifications of the standard screen to terminal.
+ */
 void refresh(void)
 {
 	_refresh(&stdscr);
 }
 
+/**
+ * Get the width of the standard screen.
+ * @return The width of the standard screen.
+ */
 int get_screen_width(void)
 {
 	return stdscr.scr_cols;
 }
 
+/**
+ * Get the height of the standard screen.
+ * @return The height of the standard screen.
+ */
 int get_screen_height(void)
 {
 	return stdscr.scr_lns;
@@ -370,8 +451,10 @@ static void outns2(const char *str, int val, int sgn, int sgn2)
 }
 
 /**
- * 
- *
+ * Format and print string to the standard screen.
+ * Only 3 format specifiers (s, d, c) are supported.
+ * Only one of maximum or minimum filed width can be specified.
+ * @param fmt The format string.
  */
 void prints(const char *fmt, ...)
 {
