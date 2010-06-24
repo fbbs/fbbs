@@ -12,8 +12,6 @@ typedef struct screen_line_t {
 	int oldlen;                        // Length after last flush.
 	int len;                           // Length in the buffer.
 	bool modified;                     // Modified or not.
-	ushort_t smod;                     // Start of modification.
-	ushort_t emod;                     // End of modification.
 	uchar_t data[SCREENLINE_BUFSIZE];  // The buffer.
 } screen_line_t;
 

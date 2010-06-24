@@ -56,7 +56,6 @@ static void _screen_init(screen_t *scr, telconn_t *tc, int lines, int cols)
 	for (int i = 0; i < lines; ++i) {
 		slp->oldlen = slp->len = 0;
 		slp->modified = false;
-		slp->smod = slp->emod = 0;
 		++slp;
 	}
 }
@@ -205,8 +204,6 @@ static void _outs(screen_t *s, const uchar_t *str, int len)
 				memset(slp->data + slp->len, ' ', col - slp->len);
 				slp->len = col;
 			}
-			if (col < slp->smod)
-				slp->smod = col;
 			newline = false;
 		}
 
@@ -217,8 +214,6 @@ static void _outs(screen_t *s, const uchar_t *str, int len)
 				slp->data[col] = ' ';
 				slp->len = col;
 				s->cur_col = 0;
-				if (col > slp->emod)
-					slp->emod = col;
 				if (s->cur_ln < s->scr_lns)
 					++s->cur_ln;
 				newline = true;
@@ -239,8 +234,6 @@ static void _outs(screen_t *s, const uchar_t *str, int len)
 
 	if (col > slp->len)
 		slp->len = col;
-	if (col > slp->emod)
-		slp->emod = col;
 	s->cur_col = col;
 }
 
@@ -349,15 +342,11 @@ static void _refresh(screen_t *s)
 		slp = s->lines + (i + s->roll) % s->scr_lns;
 		if (slp->modified) {
 			slp->modified = false;
-			if (slp->emod >= slp->len)
-				slp->emod = slp->len - 1;
-			term_move(s, i, slp->smod);
-			telnet_write(s->tc, slp->data + slp->smod, slp->emod - slp->smod + 1);
-			s->tc_col = slp->emod + 1;
-		}
-		if (slp->oldlen > slp->len) {
-			term_move(s, i, slp->len);
-			term_cmd(TERM_CMD_CE);
+			term_move(s, i, 0);
+			telnet_write(s->tc, slp->data, slp->len);
+			if (slp->len != 0)
+				term_cmd(TERM_CMD_CE);
+			s->tc_col = slp->len + 1;
 		}
 		slp->oldlen = slp->len;
 	}
