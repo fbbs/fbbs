@@ -46,5 +46,6 @@ extern int get_screen_height(void);
 extern void prints(const char *fmt, ...);
 
 extern int getch(void);
+extern int getdata(int line, const char *prompt, char *buf, int len, bool mask);
 
 #endif // FB_SCREEN_H

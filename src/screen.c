@@ -4,6 +4,7 @@
 #include <wchar.h>
 #include <stdarg.h>
 
+#include "fbbs/string.h"
 #include "fbbs/screen.h"
 
 /**
@@ -322,7 +323,7 @@ void redoscr(void)
  */
 static void _refresh(screen_t *s)
 {
-	if (!buffer_empty(&s->tc->inbuf))
+	if (!buffer_empty(s->tc))
 		return;
 
 	if (s->clear || s->scroll_cnt >= s->scr_lns - 3) {
@@ -514,5 +515,113 @@ void prints(const char *fmt, ...)
 int getch(void)
 {
 	return term_getch(stdscr.tc);
+}
+
+/**
+ * Delete a UTF-8 character.
+ * @param backspace If true, delete backward, otherwise forward.
+ * @return Bytes deleted.
+ */
+int delch(bool backspace)
+{
+	screen_t *s = &stdscr;
+	screen_line_t *slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
+	uchar_t *begin = slp->data, *end = slp->data + slp->len;
+	uchar_t *ptr = slp->data + s->cur_col;
+	if (backspace) {
+		while (--ptr >= begin) {
+			if ((*ptr & 0x80) == 0 || (*ptr & 0xC0) == 0xC0)
+				break;
+		}
+		end = slp->data + s->cur_col;
+		if (ptr >= begin) {
+			slp->modified = true;
+			int width = mbwidth((const char *)ptr);
+			memmove(ptr, end, slp->len - s->cur_col);
+			slp->len -= end - ptr;
+			s->cur_col -= width;
+			if (s->cur_col < 0)
+				s->cur_col = 0;
+			return end - ptr;
+		}
+	} else {
+		while (++ptr < end) {
+			if ((*ptr & 0x80) == 0 || (*ptr & 0xC0) == 0xC0)
+				break;
+		}
+		begin = slp->data + s->cur_col;
+		if (ptr < end) {
+			slp->modified = true;
+			memmove(begin, ptr, end - ptr);
+			slp->len -= ptr - begin;
+			return ptr - begin;
+		}
+	}
+	return 0;
+}
+
+/**
+ * Get user input string.
+ * @param line Line to show prompt.
+ * @param prompt The prompt message.
+ * @param buf The buffer. If not empty, its content is shown.
+ * @param len Length of buffer.
+ * @param mask Whether to asterisk the echo.
+ * @return The user input in bytes.
+ */
+int getdata(int line, const char *prompt, char *buf, int len, bool mask)
+{
+	move(line, 0);
+	clrtoeol();
+	if (prompt)
+		outs(prompt);
+
+	int clen = 0;
+	if (buf[0] != '\0') {
+		outs(buf);
+		clen = strlen(buf);
+	}
+	refresh();
+
+	int ch;
+	while (1) {
+		ch = getch();
+		if (ch == '\n')
+			break;
+		if (!isprint2(ch) || clen >= len - 1)
+			continue;
+		switch (ch) {
+			case KEY_BACKSPACE:
+			case KEY_CTRL_H:
+				if (clen == 0)
+					continue;
+				clen -= delch(true);
+				break;
+			case KEY_DEL:
+				if (clen == 0)
+					continue;
+				clen -= delch(false);
+			case KEY_LEFT: // TODO: ...
+				break;
+			case KEY_RIGHT:
+				break;
+			case KEY_HOME:
+			case KEY_CTRL_A:
+				break;
+			case KEY_END:
+			case KEY_CTRL_E:
+				break;
+			default:
+				buf[clen++] = ch;
+				if (mask)
+					outc(ch);
+				else
+					outc('*');
+				break;
+		}
+		refresh();
+	}
+	buf[clen] = '\0';
+	return clen;
 }
 

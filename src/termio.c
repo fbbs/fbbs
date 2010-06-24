@@ -80,7 +80,7 @@ static int buffered_getch(int fd, iobuf_t *inbuf)
 static int telnet_getch(telconn_t *tc)
 {
 	int ch = buffered_getch(tc->fd, &tc->inbuf);
-	if (ch != KEY_ESC)
+	if (ch != IAC)
 		return ch;
 
 	int status = TELST_IAC;
@@ -241,205 +241,18 @@ int telnet_putc(telconn_t *tc, int c)
 		return 0;
 }
 
-bool buffer_empty(const iobuf_t *buf)
+bool buffer_empty(telconn_t *tc)
 {
-	return (buf->cur >= buf->size);
+	if (tc->inbuf.cur < tc->inbuf.size && tc->cr) {
+		if (tc->inbuf.buf[tc->inbuf.cur] == '\n') {
+			tc->cr = false;
+			++tc->inbuf.cur;
+		}
+	}
+	return (tc->inbuf.cur >= tc->inbuf.size);
 }
 
 #if 0
-int getdata(int line, int col, const char *prompt, char *buf, int len,
-		int echo, int clearlabel)
-{
-	int ch, clen = 0, curr = 0, x, y;
-	int currDEC=0, i, patch=0;
-	char tmp[STRLEN];
-	extern unsigned char scr_cols;
-	extern int RMSG;
-	extern int msg_num;
-
-	if (clearlabel == YEA)
-		buf[0] = '\0';
-	move(line, col);
-	if (prompt)
-		prints("%s", prompt);
-	y = line;
-	col += (prompt == NULL) ? 0 : strlen(prompt);
-	x = col;
-	buf[len - 1] = '\0';
-	curr = clen = strlen(buf);
-	buf[curr] = '\0';
-	prints("%s", buf);
-
-	if (dumb_term || echo == NA) {
-		while ((ch = igetkey()) != '\n') {
-			if (RMSG == YEA && msg_num == 0) {
-				if (ch == Ctrl('Z') || ch == KEY_UP) {
-					buf[0] = Ctrl('Z');
-					clen = 1;
-					break;
-				}
-				if (ch == Ctrl('A') || ch == KEY_DOWN) {
-					buf[0] = Ctrl('A');
-					clen = 1;
-					break;
-				}
-			}
-			if (ch == '\n')
-				break;
-			if (ch == '\177' || ch == Ctrl('H')) {
-				if (clen == 0) {
-					continue;
-				}
-				clen--;
-				ochar(Ctrl('H'));
-				ochar(' ');
-				ochar(Ctrl('H'));
-				continue;
-			}
-			if (!isprint2(ch)) {
-				continue;
-			}
-			if (clen >= len - 1) {
-				continue;
-			}
-			buf[clen++] = ch;
-			if (echo)
-				ochar(ch);
-			else
-				ochar('*');
-		}
-		buf[clen] = '\0';
-		outc('\n');
-		oflush();
-		return clen;
-	}
-	clrtoeol();
-	while (1) {
-		if ( (uinfo.in_chat == YEA || uinfo.mode == TALK || uinfo.mode
-				== FIVE) && RMSG == YEA) {
-			refresh();
-		}
-		ch = igetkey();
-		if ((RMSG == YEA) && msg_num == 0) {
-			if (ch == Ctrl('Z') || ch == KEY_UP) {
-				buf[0] = Ctrl('Z');
-				clen = 1;
-				break;
-			}
-			if (ch == Ctrl('A') || ch == KEY_DOWN) {
-				buf[0] = Ctrl('A');
-				clen = 1;
-				break;
-			}
-		}
-		if (ch == '\n' || ch == '\r')
-			break;
-		if (ch == Ctrl('R')) {
-			enabledbchar=~enabledbchar&1;
-			continue;
-		}
-		if (ch == '\177' || ch == Ctrl('H')) {
-			if (curr == 0) {
-				continue;
-			}
-			currDEC = patch = 0;
-			if (enabledbchar&&buf[curr-1]&0x80) {
-				for (i=curr-2; i>=0&&buf[i]&0x80; i--)
-					patch ++;
-				if (patch%2==0 && buf[curr]&0x80)
-					patch = 1;
-				else if (patch%2)
-					patch = currDEC = 1;
-				else
-					patch = 0;
-			}
-			if (currDEC)
-				curr --;
-			strcpy(tmp, &buf[curr+patch]);
-			buf[--curr] = '\0';
-			(void) strcat(buf, tmp);
-			clen--;
-			if (patch)
-				clen --;
-			move(y, x);
-			prints("%s", buf);
-			clrtoeol();
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == KEY_DEL) {
-			if (curr >= clen) {
-				curr = clen;
-				continue;
-			}
-			strcpy(tmp, &buf[curr + 1]);
-			buf[curr] = '\0';
-			(void) strcat(buf, tmp);
-			clen--;
-			move(y, x);
-			prints("%s", buf);
-			clrtoeol();
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == KEY_LEFT) {
-			if (curr == 0) {
-				continue;
-			}
-			curr--;
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == Ctrl('E') || ch == KEY_END) {
-			curr = clen;
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == Ctrl('A') || ch == KEY_HOME) {
-			curr = 0;
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == KEY_RIGHT) {
-			if (curr >= clen) {
-				curr = clen;
-				continue;
-			}
-			curr++;
-			move(y, x + curr);
-			continue;
-		}
-		if (!isprint2(ch)) {
-			continue;
-		}
-		if (x + clen >= scr_cols || clen >= len - 1) {
-			continue;
-		}
-		if (!buf[curr]) {
-			buf[curr + 1] = '\0';
-			buf[curr] = ch;
-		} else {
-			strlcpy(tmp, &buf[curr], len);
-			buf[curr] = ch;
-			buf[curr + 1] = '\0';
-			strncat(buf, tmp, len - curr);
-		}
-		curr++;
-		clen++;
-		move(y, x);
-		prints("%s", buf);
-		move(y, x + curr);
-	}
-	buf[clen] = '\0';
-	if (echo) {
-		move(y, x);
-		prints("%s", buf);
-	}
-	outc('\n');
-	refresh();
-	return clen;
-}
-
 static char *boardmargin(void)
 {
 	static char buf[STRLEN];

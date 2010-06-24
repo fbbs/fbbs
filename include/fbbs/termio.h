@@ -50,7 +50,7 @@ extern void telnet_init(telconn_t *tc, int fd);
 extern int telnet_flush(telconn_t *tc);
 extern void telnet_write(telconn_t *tc, const uchar_t *str, int size);
 extern int telnet_putc(telconn_t *tc, int c);
-extern bool buffer_empty(const iobuf_t *buf);
+extern bool buffer_empty(telconn_t *tc);
 extern int term_getch(telconn_t *tc);
 
 #endif // FB_TERMIO_H
