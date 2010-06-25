@@ -1,6 +1,8 @@
 #ifndef FB_USER_H
 #define FB_USER_H
 
+#include "fbbs/util.h"
+
 enum {
 	EXT_ID_LEN = 16,
 	NICK_LEN = 40,

@@ -6,4 +6,4 @@ bin_PROGRAMS = bbsd cached
 
 bbsd_SOURCES = bbsd.c sysconf.c termio.c screen.c main.c stuff.c
 
-cached_SOURCES = cached.c
+cached_SOURCES = cached.c ucache.c

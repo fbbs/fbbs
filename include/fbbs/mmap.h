@@ -1,6 +1,8 @@
 #ifndef FB_MMAP_H
 #define FB_MMAP_H
 
+#include <stddef.h>
+
 /** Memory mapped file information. */
 typedef struct {
 	int fd;       ///< file descriptor.
