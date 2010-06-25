@@ -1,5 +1,11 @@
-#include "bbs.h"
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
 #include <crypt.h>
+#include <sys/time.h>
+
+#include "fbbs/site.h"
 
 #ifndef MD5
 #ifndef DES
@@ -8,13 +14,17 @@
 #endif
 #endif
 
-// 0 ... 63 => ascii - 64
-static unsigned char itoa64[] =
-"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+/** Used in integer-string conversion. */
+static const unsigned char itoa64[] =
+		"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-// Uses 7 least significant bits of 'v' to find counterpart in 'itoa64'.
-// Concatenates result to string 's' and right shifts 'v' for 6 bits.
-// Then loops for 'n' times.
+/**
+ * Convert a long integer to string.
+ * Every 6 bits of the integer is mapped to a char.
+ * @param s The resulting string.
+ * @param v The long integer.
+ * @param n Number of converted characters.
+ */
 static void to64(char *s, long v, int n) {
 	while (--n >= 0) {
 		*s++ = itoa64[v & 0x3f];
@@ -22,8 +32,13 @@ static void to64(char *s, long v, int n) {
 	}
 }
 
-// Encrypts 'pw' using libcrypt and returns result.
-char *genpasswd(const char *pw)
+/**
+ * Encrypt string.
+ * When using DES, only the first 8 chars in the string are significant.
+ * @param pw The string to be encrypted.
+ * @return The encrypted string.
+ */
+const char *generate_passwd(const char *pw)
 {
 	char salt[10];
 	struct timeval tv;
@@ -31,8 +46,8 @@ char *genpasswd(const char *pw)
 	if (pw == NULL || pw[0] == '\0')
 		return "";
 
-	srand(time(NULL) % getpid());
 	gettimeofday(&tv, NULL);
+	srand(tv.tv_sec % getpid());
 
 #ifdef MD5			/* use MD5 salt */
 	strncpy(&salt[0], "$1$", 3);
@@ -50,9 +65,14 @@ char *genpasswd(const char *pw)
 	return crypt(pw, salt);
 }
 
-// Checks if encrypted 'pw_try' matches 'pw_crypted'.
-// Returns 1 if match, 0 otherwise.
-int checkpasswd(const char *pw_crypted, const char *pw_try)
+/**
+ * Checks if the given plain text could be the original text
+ * of encrypted string.
+ * @param pw_crypted The encrypted string.
+ * @param pw_try The plain text.
+ * @return True if match, false otherwise.
+ */
+bool check_passwd(const char *pw_crypted, const char *pw_try)
 {
 	return !strcmp(crypt(pw_try, pw_crypted), pw_crypted);
 }

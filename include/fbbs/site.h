@@ -3,6 +3,8 @@
 
 #define TESTING
 
+#define DES
+
 #define BBSHOME "/home/bbs"
 
 enum {
