@@ -11,6 +11,7 @@ enum {
 
 typedef struct user_t {
 	seq_t uid;
+	seq_t eid;
 	uint_t perm;
 	uint_t logins;
 	uint_t posts;
@@ -33,7 +34,6 @@ typedef struct user_t {
 	char name[EXT_ID_LEN];
 	char nick[NICK_LEN];
 	char real[NAME_LEN];
-	char email[EMAIL_LEN];
 } user_t;
 
 #endif // FB_USER_H
