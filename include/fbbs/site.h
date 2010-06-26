@@ -14,9 +14,10 @@ enum {
 
 #ifdef TESTING
 enum {
-    MAX_USERS = 25000,
-    MAX_BOARDS = 1000,
-    MAX_ACTIVE = 1000,
+	MAX_USERS = 25000,
+	USER_HASH_SLOTS = 65535,
+	MAX_BOARDS = 1000,
+	MAX_ACTIVE = 1000,
 };
 #endif
 

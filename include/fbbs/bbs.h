@@ -3,8 +3,8 @@
 
 #include "fbbs/site.h"
 
-#define USER_FILE  BBSHOME"/user.idx"
-#define BOARD_FILE BBSHOME"/board.idx"
+#define USER_FILE  BBSHOME"/db/users"
+#define BOARD_FILE BBSHOME"/db/boards"
 
 enum {
 	IP_LEN = 40,
