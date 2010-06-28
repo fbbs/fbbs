@@ -614,9 +614,9 @@ int getdata(int line, const char *prompt, char *buf, int len, bool mask)
 			default:
 				buf[clen++] = ch;
 				if (mask)
-					outc(ch);
-				else
 					outc('*');
+				else
+					outc(ch);
 				break;
 		}
 		refresh();

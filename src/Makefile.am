@@ -4,6 +4,6 @@ LDADD = ../lib/libfbbs.a
 
 bin_PROGRAMS = bbsd cached
 
-bbsd_SOURCES = bbsd.c sysconf.c termio.c screen.c main.c stuff.c
+bbsd_SOURCES = bbsd.c sysconf.c termio.c screen.c main.c stuff.c more.c
 
 cached_SOURCES = cached.c ucache.c

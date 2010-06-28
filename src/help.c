@@ -24,11 +24,7 @@
  */
 
 #include "bbs.h"
-//显示帮助文件fname的内容
-void show_help(char *fname) {
-	ansimore(fname, YEA);
-	clear();
-}
+
 /*void
  standhelp( mesg )
  char    *mesg;

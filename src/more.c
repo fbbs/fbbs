@@ -2,10 +2,15 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include "fbbs/i18n.h"
 #include "fbbs/mmap.h"
+#include "fbbs/more.h"
 #include "fbbs/screen.h"
+#include "fbbs/stuff.h"
 
 #if 0
 static time_t calltime = 0;
@@ -760,8 +765,9 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				more_seek(more, more->total - (t_lines - 1) + i);
 				break;
 			case 'G':
-				getdata(t_lines - 1, 0, "跳转到的行号:", linebuf,
-						sizeof(linebuf), true, true);
+				linebuf[0] = '\0';
+				getdata(t_lines - 1, _("Jump to: "), linebuf,
+						sizeof(linebuf), false);
 				new_row = strtol(linebuf, NULL, 10) - 1;
 				if (new_row < 0)
 					new_row = 0;
@@ -796,27 +802,34 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 	return ch;
 }
 
-#if 0
 /**
  * Article reading function for telnet.
  * @param file File to show.
- * @param promptend Whether immediately ask user to press any key.
+ * @param presskey Whether immediately ask user to press any key.
  * @param line The start line (on screen) of the article area.
  * @param numlines Lines shown at most, 0 means no limit.
- * @param stuffmode todo..
+ * @param expand Whether expand the keywords in the file.
  * @return Last dealt key, -1 on error.
  */
-static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
+int ansimore(const char *file, bool presskey, int line, int lines, bool expand)
 {
-	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_file);
+	more_file_t *more = more_open(file, get_screen_width(), more_open_file);
 	if (more == NULL)
 		return -1;
-	int ch = more_main(more, promptend, line, numlines, stuffmode,
-			more_prompt_file, NULL);
+
+	int ch = more_main(more, presskey, line, lines, expand, more_prompt_file,
+			NULL);
 	more_close(more);
 	return ch;
 }
 
+void show_help(const char *file)
+{
+	ansimore(file, false, 0, 0, false);
+	clear();
+}
+
+#if 0
 static int more_open_msg(const char *file, more_file_t *more)
 {
 	more->opt |= NO_QUOTE | NO_EMPHASIZE;
