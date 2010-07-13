@@ -134,7 +134,7 @@ static hash_entry_t **find_entry(hash_t *ht, const char *key,
  * @param [in] val The value associated with the key. Delete the pair if NULL.
  * @return 0 on success, -1 on error.
  */
-int hash_set(hash_t *ht, const char *key, unsigned int klen, const void *val)
+int hash_set(hash_t *ht, const void *key, unsigned int klen, const void *val)
 {
 	hash_entry_t **ptr = find_entry(ht, key, klen, val);
 	if (val) {

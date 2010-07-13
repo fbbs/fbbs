@@ -51,7 +51,7 @@ typedef struct hash_iter_t
 
 unsigned int hash_func_default(const char *key, unsigned int *klen);
 int hash_create(hash_t *ht, unsigned int max, hash_func_t func);
-int hash_set(hash_t *ht, const char *key, unsigned int klen, const void *val);
+int hash_set(hash_t *ht, const void *key, unsigned int klen, const void *val);
 void *hash_get(hash_t *ht, const void *key, unsigned int klen);
 void hash_destroy(hash_t *ht);
 hash_iter_t *hash_next(hash_iter_t *iter);
