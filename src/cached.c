@@ -6,12 +6,11 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include "fbbs/cache.h"
 #include "fbbs/site.h"
 #include "fbbs/socket.h"
 #include "fbbs/string.h"
 #include "fbbs/util.h"
-
-#define CACHE_SOCKET BBSHOME"/tmp/cache-socket"
 
 enum {
 	QLEN = 20,
@@ -44,7 +43,7 @@ int main(void)
 	chdir(BBSHOME);
 	umask(S_IWGRP | S_IWOTH);
 
-	int fd = unix_dgram_bind(CACHE_SOCKET, QLEN);
+	int fd = unix_dgram_bind(CACHE_SERVER, QLEN);
 	if (fd < 0)
 		return EXIT_FAILURE;
 	
