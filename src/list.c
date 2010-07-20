@@ -546,6 +546,7 @@ int choose2(choose_t *cp)
 			case '\r':
 				if (number > 0) {
 					cp->cur = number - 1;
+					number = 0;
 					break;
 				}
 				// fall through
