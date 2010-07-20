@@ -18,4 +18,15 @@ Makefile.in
 test
 
 *.o
+*.lo
+*.a
+*.la
 .deps
+.libs
+
+bbsd
+chatd
+miscd
+sshbbsd
+thread
+bbswebd
