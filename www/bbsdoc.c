@@ -186,7 +186,7 @@ static int bbsdoc(int mode)
 
 	if (mode == MODE_NORMAL) {
 		setbfile(dir, board, NOTICE_DIR);
-		mmap_t m;
+		mmap_t m = { .oflag = O_RDONLY };
 		if (mmap_open(dir, &m) == 0) {
 			int count = m.size / sizeof(struct fileheader);
 			print_bbsdoc(m.ptr, count, MODE_NOTICE);
