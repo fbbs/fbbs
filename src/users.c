@@ -236,7 +236,7 @@ static choose_display_t online_users_display(choose_t *cp)
 
 		snprintf(line, sizeof(line), " \033[m%4d%s%-12.12s\033[37m %-20.20s"
 				"\033[m %-15.15s %c %c %c %s%-10.10s\033[37m %5.5s\033[m\n",
-				cp->start + i + 1, is_ovr ? "\033[32m¡Ì" : "  ", uin->userid,
+				i + 1, is_ovr ? "\033[32m¡Ì" : "  ", uin->userid,
 				buf, host, pager, msgchar(uin), uin->invisible ? '@' : ' ',
 				color, mode_type(uin->mode), idle_str(uin));
 		prints("%s", line);
