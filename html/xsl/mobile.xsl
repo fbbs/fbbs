@@ -144,7 +144,7 @@
 					<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
 					<xsl:with-param name='ishl'>0</xsl:with-param>
 				</xsl:call-template>
-			</a> [<a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span>]
+			</a><br/><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span>
 		</div></xsl:for-each>
 	</div>
 </xsl:template>
