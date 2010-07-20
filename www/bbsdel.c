@@ -50,7 +50,8 @@ int bbsdel_main(void)
 	if (!junkboard(bp)) {
 		struct userec user;
 		getuserec(fh.owner, &user);
-		user.numposts--;
+		if (user.numposts > 0)
+			user.numposts--;
 		save_user_data(&user);
 	}
 
