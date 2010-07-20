@@ -1,0 +1,21 @@
+syntax: glob
+
+aclocal.m4
+autom4te.cache
+configure
+config.*
+compile
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+stamp-h1
+
+Makefile
+Makefile.in
+
+test
+
+*.o
+.deps
