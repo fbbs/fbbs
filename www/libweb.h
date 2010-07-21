@@ -8,7 +8,7 @@
 #include <crypt.h>
 #include <fcgi_stdio.h>  //Should be included last.
 
-#define CHARSET		"gb2312"
+#define CHARSET		"gb18030"
 #define SQUID
 
 #ifdef FDQUAN
