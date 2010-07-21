@@ -131,10 +131,10 @@
 		<a><xsl:attribute name='href'>clear?board=<xsl:value-of select='brd/@title'/>&amp;start=<xsl:value-of select='brd/@start'/></xsl:attribute>[Çå³ýÎ´¶Á]</a>
 		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[¾«»ª]</a>
 	</div>
-	<div>
-		<xsl:for-each select='po'><xsl:sort select='@time' order='descending'/><div class='po'>
+	<ul class='po'>
+		<xsl:for-each select='po'><xsl:sort select='@time' order='descending'/><li>
 			<xsl:if test='@sticky'>[ÖÃµ×]</xsl:if>
-			<a>
+			<p><a>
 				<xsl:attribute name='href'><xsl:value-of select='../brd/@link'/>con?bid=<xsl:value-of select='../brd/@bid'/>&amp;f=<xsl:value-of select='@id'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
 				<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
 				<xsl:if test='substring(., 1, 4) = "Re: "'>Re: </xsl:if>
@@ -144,9 +144,9 @@
 					<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
 					<xsl:with-param name='ishl'>0</xsl:with-param>
 				</xsl:call-template>
-			</a><br/><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span>
-		</div></xsl:for-each>
-	</div>
+			</a></p><p><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span></p>
+		</li></xsl:for-each>
+	</ul>
 </xsl:template>
 
 <xsl:template match='brd'>

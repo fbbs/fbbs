@@ -12,7 +12,6 @@ ul, ol {
 }
 h2 { font-weight: bold; font-size: 1em; margin: 0.25em 0; }
 h3 { font-weight: normal; margin-bottom: 0.25em; }
-p { margin-bottom: 0.5em; }
 a { color: #336699; text-decoration: none; }
 a:hover { background-color: #ffffdd; }
 img { border: 0; vertical-align: middle; }
@@ -26,15 +25,14 @@ div.nav { background-color: #ccddff; padding: 0.25em 0; }
 #ft { margin-top: 0.25em; border-top: #6699cc 1px solid; }
 div#fav, div#main, div#ft { padding: 0 3px; }
 
-div.po { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
-div.po a { display: inline; color: #000000; }
-span.time { font-size: 0.75em; color: gray; }
-a.owner { font-size: 0.75em; }
-div.po a.owner { color: #336699; }
+ul.po a { display: inline; color: #000000; }
+span.time { font-size: 0.85em; color: gray; }
+a.owner { font-size: 0.85em; }
+ul.po a.owner { color: #336699; }
 div.post { border-bottom: #6699cc 1px dotted; padding: 0.5em 0; }
 
 li { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
-li.brd span.tt { font-size: 0.75em; }
+li.brd span.tt { font-size: 0.85em; }
 
 .a030 { color: Window; }
 .a130 { color: #c0c0c0; }
