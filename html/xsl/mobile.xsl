@@ -156,7 +156,7 @@
 <xsl:template match='bbstcon'>
 	<xsl:for-each select='po'>
 		<div class='post'>
-			<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
+			<div class='pmain'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
 			<div class='nav'>
 				<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
 				<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>

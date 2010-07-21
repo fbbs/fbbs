@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="gb2312"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
-	<xsl:template name="showpost">
+	<xsl:template name='showpost'>
 		<xsl:param name='content'/>
+		<xsl:call-template name='_showpost'>
+			<xsl:with-param name='content' select='$content'/>
+			<xsl:with-param name='mode'>normal</xsl:with-param>
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template name='simple-post'>
+		<xsl:param name='content'/>
+		<xsl:call-template name='_showpost'>
+			<xsl:with-param name='content' select='$content'/>
+			<xsl:with-param name='mode'>simple</xsl:with-param>
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template name="_showpost">
+		<xsl:param name='content'/>
+		<xsl:param name='mode'/>
+		<xsl:variable name='show-image' select='$mode = "normal"'/>
 		<xsl:variable name='before'><xsl:if test='not(contains($content, "&#10;"))'><xsl:value-of select='$content'/></xsl:if><xsl:value-of select='substring-before($content, "&#10;")'/></xsl:variable>
 		<xsl:variable name='rest' select='substring-after($content, "&#10;")'/>
 		<xsl:variable name='line'>
@@ -12,10 +30,11 @@
 		<xsl:call-template name='showline'>
 			<xsl:with-param name='content' select='$line'/>
 			<xsl:with-param name='isquote' select='starts-with($line, ":&#160;") or starts-with($line, ">&#160;")'/>
+			<xsl:with-param name='show-image' select='$show-image'/>
 		</xsl:call-template>
 		<br/>
 		<xsl:if test='$rest'>
-			<xsl:call-template name='showpost'>
+			<xsl:call-template name='_showpost'>
 				<xsl:with-param name='content' select='$rest'/>
 			</xsl:call-template>
 		</xsl:if>
@@ -39,6 +58,7 @@
 	<xsl:template name='showline'>
 		<xsl:param name='content'/>
 		<xsl:param name='isquote'/>
+		<xsl:param name='show-image'/>
 		<xsl:choose>
 			<xsl:when test='$isquote'>
 				<xsl:call-template name='ansi-escape'>
@@ -92,12 +112,14 @@
 				<xsl:if test='contains($content, "http://")'>
 					<xsl:call-template name='show-url'>
 						<xsl:with-param name='url' select='concat("http://", $url)'/>
+						<xsl:with-param name='show-image' select='$show-image'/>
 					</xsl:call-template>
 				</xsl:if>
 				<xsl:if test='$after and $index'>
 					<xsl:call-template name='showline'>
 						<xsl:with-param name='content' select='substring($after, $index)'/>
 						<xsl:with-param name='isquote' select='0'/>
+						<xsl:with-param name='show-image' select='$show-image'/>
 					</xsl:call-template>
 				</xsl:if>
 			</xsl:otherwise>
@@ -106,10 +128,11 @@
 
 	<xsl:template name='show-url'>
 		<xsl:param name='url'/>
+		<xsl:param name='show-image'/>
 		<xsl:variable name='length' select='string-length($url)'/>
 		<xsl:variable name='lurl' select='translate($url, "JPEGNIF", "jpegnif")'/>
 		<xsl:choose>
-			<xsl:when test='(substring($lurl, $length - 4) = ".jpeg") or (substring($lurl, $length - 3) = ".jpg") or (substring($lurl, $length - 3) = ".png") or (substring($lurl, $length - 3) = ".gif")'>
+			<xsl:when test='boolean($show-image) and ((substring($lurl, $length - 4) = ".jpeg") or (substring($lurl, $length - 3) = ".jpg") or (substring($lurl, $length - 3) = ".png") or (substring($lurl, $length - 3) = ".gif"))'>
 				<img>
 					<xsl:attribute name='src'><xsl:value-of select='$url'/></xsl:attribute>
 					<xsl:attribute name='alt'><xsl:value-of select='$url'/></xsl:attribute>
