@@ -33,6 +33,9 @@ a.owner { font-size: 0.75em; }
 div.po a.owner { color: #336699; }
 div.post { border-bottom: #6699cc 1px dotted; padding: 0.5em 0; }
 
+li { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
+li.brd span.tt { font-size: 0.75em; }
+
 .a030 { color: Window; }
 .a130 { color: #c0c0c0; }
 .a031 { color: #800000; }
