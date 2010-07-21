@@ -173,4 +173,17 @@
 	</xsl:for-each>
 </xsl:template>
 
+<xsl:template match='bbsboa'>
+	<h2><xsl:value-of select='@title'/></h2>
+	<ul><xsl:for-each select='brd'><xsl:sort select='@title'/><li class='brd'>
+		<a><xsl:choose>
+			<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:when>
+			<xsl:otherwise><xsl:attribute name='href'>doc?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:otherwise>
+		</xsl:choose>
+		<xsl:choose><xsl:when test='@read="0"'>¡ó</xsl:when><xsl:otherwise>¡ô</xsl:otherwise></xsl:choose>
+		<xsl:choose><xsl:when test='@dir="1"'>[Ä¿Â¼]</xsl:when><xsl:otherwise><xsl:value-of select='@cate'/></xsl:otherwise></xsl:choose>
+		<xsl:value-of select='@desc'/></a><span class='tt'>[<xsl:value-of select='@title'/>]</span>
+	</li></xsl:for-each></ul>
+</xsl:template>
+
 </xsl:stylesheet>
