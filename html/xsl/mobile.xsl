@@ -132,10 +132,9 @@
 		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[精华]</a>
 	</div>
 	<ul class='po'>
-		<xsl:for-each select='po'><xsl:sort select='@time' order='descending'/><li>
-			<xsl:if test='@sticky'>[置底]</xsl:if>
+		<xsl:for-each select='po'><xsl:sort select='@time' order='descending'/><xsl:if test='not(@sticky)'><li>
 			<p><a>
-				<xsl:attribute name='href'><xsl:value-of select='../brd/@link'/>con?bid=<xsl:value-of select='../brd/@bid'/>&amp;f=<xsl:value-of select='@id'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
+				<xsl:attribute name='href'><xsl:value-of select='../brd/@link'/>con?bid=<xsl:value-of select='../brd/@bid'/>&amp;f=<xsl:value-of select='@id'/></xsl:attribute>
 				<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
 				<xsl:if test='substring(., 1, 4) = "Re: "'>Re: </xsl:if>
 				<xsl:call-template name='ansi-escape'>
@@ -145,7 +144,7 @@
 					<xsl:with-param name='ishl'>0</xsl:with-param>
 				</xsl:call-template>
 			</a></p><p><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span></p>
-		</li></xsl:for-each>
+		</li></xsl:if></xsl:for-each>
 	</ul>
 </xsl:template>
 
@@ -160,7 +159,7 @@
 			<div class='nav'>
 				<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
 				<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>
-				<xsl:if test='count(../po) = ../@page'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$last'/>&amp;a=n</xsl:attribute>[<img src='../images/button/down.gif'/>下一页]</a></xsl:if>
+				<xsl:if test='count(../po) = ../@page'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$last'/>&amp;a=n</xsl:attribute>[下一页]</a></xsl:if>
 				<xsl:if test='$first != ../@gid'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$first'/>&amp;a=p</xsl:attribute>[<img src='../images/button/up.gif'/>上一页]</a></xsl:if>
 				<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@fid'/></xsl:attribute>[回复]</a>
 				<a><xsl:attribute name='href'>ccc?bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@fid'/></xsl:attribute>[转载]</a>
