@@ -162,8 +162,8 @@
 	</div>
 	<div class='nav'>
 		<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
-		<xsl:if test='not(po/@sticky)'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>p</xsl:attribute>[<img src='../images/button/up.gif'/>上篇]</a>
-		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>n</xsl:attribute>[<img src='../images/button/down.gif'/>下篇]</a>
+		<xsl:if test='not(po/@sticky)'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>p</xsl:attribute>[上篇]</a>
+		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>n</xsl:attribute>[下篇]</a>
 		<xsl:if test='po/@reid != f'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>b</xsl:attribute>[同题上]</a></xsl:if>
 		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>a</xsl:attribute>[同题下]</a>
 		<xsl:if test='po/@gid'><a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@gid'/></xsl:attribute>[同题首]</a></xsl:if>
@@ -182,7 +182,7 @@
 				<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
 				<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>
 				<xsl:if test='count(../po) = ../@page'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$last'/>&amp;a=n</xsl:attribute>[下一页]</a></xsl:if>
-				<xsl:if test='$first != ../@gid'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$first'/>&amp;a=p</xsl:attribute>[<img src='../images/button/up.gif'/>上一页]</a></xsl:if>
+				<xsl:if test='$first != ../@gid'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$first'/>&amp;a=p</xsl:attribute>[上一页]</a></xsl:if>
 				<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@fid'/></xsl:attribute>[回复]</a>
 				<a><xsl:attribute name='href'>ccc?bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@fid'/></xsl:attribute>[转载]</a>
 				<a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='../@bid'/></xsl:attribute>[版面]</a>
