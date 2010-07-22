@@ -24,14 +24,17 @@
 </xsl:template>
 
 <xsl:template name='navigation'>
-	<xsl:param name='perm'/><xsl:param name='user'/><xsl:param name='fav'/>
+	<xsl:param name='session'/>
+	<xsl:variable name='user' select='$session/u'/>
 	<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
 	<div id='hd'>
 		<xsl:if test='$user != ""'><a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user'/></xsl:attribute><xsl:value-of select='$user'/></a>|</xsl:if>
 		<xsl:if test='$user = ""'><a href='login'>登录</a>|</xsl:if>
-		<a href='0an'>精华</a>|<a href='top10'>十大</a><xsl:if test='contains($perm, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
+		<a href='0an'>精华</a>|<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
-	<div id='fav'>收藏 <xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$fav'/></xsl:call-template></div>
+	<div id='fav'>收藏 <xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
+	<a><xsl:attribute name='href'>tdoc?board=<xsl:value-of select='.'/></xsl:attribute><xsl:value-of select='.'/></a>
+	</xsl:for-each></div>
 </xsl:template>
 
 <xsl:template name='foot'>
@@ -81,11 +84,6 @@
 </xsl:template>
 
 <xsl:template match='/'>
-	<xsl:variable name='session' select='node()[2]/@s'/>
-	<xsl:variable name='p' select='substring-before($session,";")'/>
-	<xsl:variable name='rest' select='substring-after($session,";")'/>
-	<xsl:variable name='u' select='substring-before($rest,";")'/>
-	<xsl:variable name='fav' select='substring-after($rest,";")'/>
 	<html>
 		<head>
 			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/></title>
@@ -95,7 +93,7 @@
 		</head>
 		<body>
 			<a name='top'/>
-			<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p'/><xsl:with-param name='user' select='$u'/><xsl:with-param name='fav' select='$fav'/></xsl:call-template>
+			<xsl:call-template name='navigation'><xsl:with-param name='session' select='node()[2]/session'/></xsl:call-template>
 			<div id='main'><xsl:apply-templates/></div>
 			<xsl:call-template name='foot'/>
 		</body>
