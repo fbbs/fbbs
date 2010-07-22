@@ -152,6 +152,28 @@
 
 </xsl:template>
 
+<xsl:template match='bbscon'>
+<div class='post'>
+	<div class='pmain'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
+	<div class='plink'>
+		<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
+		<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>[回复]</a></xsl:if>
+		<a><xsl:attribute name='href'>edit?<xsl:value-of select='$param'/></xsl:attribute>[修改]</a>
+	</div>
+	<div class='nav'>
+		<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
+		<xsl:if test='not(po/@sticky)'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>p</xsl:attribute>[<img src='../images/button/up.gif'/>上篇]</a>
+		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>n</xsl:attribute>[<img src='../images/button/down.gif'/>下篇]</a>
+		<xsl:if test='po/@reid != f'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>b</xsl:attribute>[同题上]</a></xsl:if>
+		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>a</xsl:attribute>[同题下]</a>
+		<xsl:if test='po/@gid'><a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@gid'/></xsl:attribute>[同题首]</a></xsl:if>
+		<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
+		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='$gid'/></xsl:attribute>[展开]</a>
+		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid'/>&amp;g=<xsl:value-of select='$gid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=n</xsl:attribute>[后展]</a></xsl:if>
+	</div>
+</div>
+</xsl:template>
+
 <xsl:template match='bbstcon'>
 	<xsl:for-each select='po'>
 		<div class='post'>

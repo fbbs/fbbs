@@ -19,7 +19,6 @@ img { border: 0; vertical-align: middle; }
 #hd { line-height: 1.5em; }
 #hd a, #fav a { display: inline-block; padding: 0 0.25em; }
 div#hd, div#fav { border-bottom: #6699cc 1px solid; padding: 0.25em 0; }
-div.nav { background-color: #ccddff; padding: 0.25em 0; }
 #hd a:hover { background-color: #ffffdd; }
 #main { padding: 0.25em 0; }
 #ft { margin-top: 0.25em; border-top: #6699cc 1px solid; }
@@ -29,7 +28,10 @@ ul.po a { display: inline; color: #000000; }
 span.time { font-size: 0.85em; color: gray; }
 a.owner { font-size: 0.85em; }
 ul.po a.owner { color: #336699; }
-div.post { border-bottom: #6699cc 1px dotted; padding: 0.5em 0; }
+
+div.post { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
+div.nav, div.plink { background-color: #ccddff; padding: 0.25em 0; }
+div.plink { border-bottom: #6699cc 1px dotted; }
 
 li { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
 li.brd span.tt { font-size: 0.85em; }
