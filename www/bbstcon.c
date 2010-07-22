@@ -92,9 +92,8 @@ int bbstcon_main(void)
 		return BBS_ENOFILE;
 	struct fileheader *begin, *end;
 	xml_header("bbs");
-	printf("<bbstcon ");
+	printf("<bbstcon bid='%d' gid='%u' page='%d'>", bid, gid, count);
 	print_session();
-	printf(" bid='%d' gid='%u' page='%d'>", bid, gid, count);
 	if (action == 'n') {
 		begin = fh;
 		end = fh + c;

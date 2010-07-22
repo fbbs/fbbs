@@ -23,9 +23,8 @@ int bbsfall_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header("bbs");
-	printf("<bbsfall ");
+	printf("<bbsfall>");
 	print_session();
-	printf(">");
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, "friends");
 	apply_record(file, print_override, sizeof(override_t), NULL, false,
@@ -70,9 +69,9 @@ int bbsfadd_main(void)
 		return 0;
 	}
 	xml_header("bbs");
-	printf("<bbsfadd ");
+	printf("<bbsfadd>");
 	print_session();
-	printf(">%s</bbsfadd>", id);
+	printf("%s</bbsfadd>", id);
 	return 0;
 }
 
@@ -154,9 +153,8 @@ int bbsovr_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header("bbs");
-	printf("<bbsovr ");
+	printf("<bbsovr>");
 	print_session();
-	printf(">");
 	override_info();
 	printf("</bbsovr>");
 	return 0;

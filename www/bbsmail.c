@@ -22,9 +22,8 @@ int bbsmail_main(void)
 	struct fileheader *fh = (struct fileheader *)m.ptr + start - 1;
 	struct fileheader *end = (struct fileheader *)m.ptr + total;
 	xml_header("bbs");
-	printf("<bbsmail start='%d' total='%d' page='%d' ", start, total, TLINES);
+	printf("<bbsmail start='%d' total='%d' page='%d'>", start, total, TLINES);
 	print_session();
-	printf(">");
 	for (int i = 0; i < TLINES && fh != end; ++i) {
 		int mark = ' ';
 		if (fh->accessed[0] & MAIL_REPLY)
@@ -73,9 +72,8 @@ int bbsnewmail_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header("bbs");
-	printf("<bbsnewmail ");
+	printf("<bbsnewmail>");
 	print_session();
-	printf(">");
 	char file[HOMELEN];
 	setmdir(file, currentuser.userid);
 	time_t limit = time(NULL) - 24 * 60 * 60 * NEWMAIL_EXPIRE;
@@ -112,7 +110,6 @@ int bbsmailcon_main(void)
 	}
 	xml_header("bbs");
 	printf("<bbsmailcon ");
-	print_session();
 	struct fileheader *prev = fh - 1;
 	if (prev >= (struct fileheader *)m.ptr)
 		printf(" prev='%s'", prev->filename);
@@ -138,6 +135,7 @@ int bbsmailcon_main(void)
 	xml_fputs((char *)m.ptr, stdout);
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);
+	print_session();
 	printf("</bbsmailcon>");
 	return 0;
 }
@@ -208,7 +206,6 @@ int bbspstmail_main(void)
 	}
 	xml_header("bbs");
 	printf("<bbspstmail ");
-	print_session();
 
 	printf(" ref='");
 	const char *ref = get_referer();
@@ -232,6 +229,7 @@ int bbspstmail_main(void)
 		printf("</m>");
 	}
 	mmap_close(&m);
+	print_session();
 	printf("</bbspstmail>");
 	return 0;
 }

@@ -101,10 +101,9 @@ static int do_bbspst(bool isedit)
 	xml_header("bbs");
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s", bp->filename);
-	printf("<bbspst ");
-	print_session();
-	printf(" brd='%s' bid='%d' edit='%d' att='%d'>", bp->filename, bid,
+	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d'>", bp->filename, bid,
 			isedit, dashd(path));
+	print_session();
 	if (reply) {
 		printf("<t>");
 		ansi_filter(fh.title, fh.title);
@@ -184,16 +183,15 @@ int bbsccc_main(void)
 			return BBS_EINTNL;
 
 		xml_header("bbs");
-		printf("<bbsccc t='%d' b='%d' ", bp2 - bcache + 1, bp - bcache + 1);
+		printf("<bbsccc t='%d' b='%d'>", bp2 - bcache + 1, bp - bcache + 1);
 		print_session();
-		printf("/>");
+		printf("/bbsccc>");
 	} else {
 		xml_header("bbs");
-		printf("<bbsccc owner='%s' brd='%s' bid='%d' fid='%u' ", 
+		printf("<bbsccc owner='%s' brd='%s' bid='%d' fid='%u'>", 
 				fh.owner, bp->filename, bp - bcache + 1, fid);
-		print_session();
-		printf(">");
 		xml_fputs(fh.title, stdout);
+		print_session();
 		printf("</bbsccc>");
 	}
 	return 0;
@@ -212,9 +210,9 @@ int bbsfwd_main(void)
 	char *reci = getparm("u");
 	if (*reci == '\0') {
 		xml_header("bbs");
-		printf("<bbsfwd bid='%s' f='%s' ", getparm("bid"), getparm("f"));
+		printf("<bbsfwd bid='%s' f='%s'>", getparm("bid"), getparm("f"));
 		print_session();
-		printf("></bbsfwd>");
+		printf("</bbsfwd>");
 	} else {
 		if (!HAS_PERM(PERM_MAIL))
 			return BBS_EACCES;

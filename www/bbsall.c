@@ -7,9 +7,8 @@ int bbsall_main(void)
 	struct boardheader *x;
 	int i;
 	xml_header("bbs");
-	printf("<bbsall ");
+	printf("<bbsall>");
 	print_session();
-	printf(">");
 	for (i = 0; i < MAXBOARD; i++) {
 		x = &(bcache[i]);
 		if (x->filename[0] <= 0x20 || x->filename[0] > 'z')
@@ -48,7 +47,6 @@ int bbsboa_main(void)
 	
 	xml_header("bbs");
 	printf("<bbsboa link='%s' ", cgi);
-	print_session();
 
 	struct boardheader *parent = NULL;
     int parent_bid = 0;
@@ -94,6 +92,7 @@ int bbsboa_main(void)
 				x->title + 1, get_board_desc(x), x->BM,
 				brc_unread(x->filename), filenum(x->filename));
 	}
+	print_session();
 	printf("</bbsboa>");
 	return 0;
 }

@@ -38,15 +38,13 @@
 
 <xsl:template name='show-fav'>
 	<xsl:param name='fav'/>
-	<xsl:variable name='brd' select='substring-before($fav, " ")'/>
-	<xsl:if test='$brd!=""'><li class='sf'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='$brd'/></xsl:attribute><xsl:value-of select='$brd'/></a></li></xsl:if>
-	<xsl:variable name='rest' select='substring-after($fav, " ")'/>
-	<xsl:if test='$rest!=""'><xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$rest'/></xsl:call-template></xsl:if>
+	<xsl:for-each select='$fav/b'><xsl:sort select='.'/>
+		<li class='sf'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='.'/></xsl:attribute><xsl:value-of select='.'/></a></li>
+	</xsl:for-each>
 </xsl:template>
 
 <xsl:template name='navigation'>
-	<xsl:param name='perm'/>
-	<xsl:param name='fav'/>
+	<xsl:param name='session'/>
 	<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
 	<ul id='nav'>
 		<li id='navh'><a href='sec'>推荐版面</a></li>
@@ -74,10 +72,10 @@
 				<li><a href='top10'>本日十大</a></li>
 			</ul>
 		</li>
-		<xsl:if test='contains($perm, "l")'>
+		<xsl:if test='contains($session/p, "l")'>
 			<li id='navf'>
 				<a href='#' onclick='return switchPanel(this);'>我的收藏</a>
-				<ul><li><a href='fav'>查看详情</a></li><xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$fav'/></xsl:call-template></ul>
+				<ul><li><a href='fav'>查看详情</a></li><xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$session/f'/></xsl:call-template></ul>
 			</li>
 			<li id='navc'>
 				<a href='#' onclick='return switchPanel(this);'>鹊桥相会</a>
@@ -115,8 +113,8 @@
 </xsl:template>
 
 <xsl:template name='header'>
-	<xsl:param name='perm'/>
-	<xsl:param name='user'/>
+	<xsl:param name='session'/>
+	<xsl:variable name='user' select='$session/u'/>
 	<div id='hd'>
 		<div id='hdright'><xsl:if test='$user != ""'><a id='nave' href='logout'>注销</a></xsl:if></div>
 		<xsl:if test='$user != ""'><a id='navu'><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user'/></xsl:attribute><xsl:value-of select='$user'/></a></xsl:if>
@@ -174,11 +172,6 @@
 </xsl:template>
 
 <xsl:template match='/'>
-	<xsl:variable name='session' select='node()[2]/@s'/>
-	<xsl:variable name='p' select='substring-before($session,";")'/>
-	<xsl:variable name='rest' select='substring-after($session,";")'/>
-	<xsl:variable name='u' select='substring-before($rest,";")'/>
-	<xsl:variable name='fav' select='substring-after($rest,";")'/>
 	<html>
 		<head>
 			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/></title>
@@ -198,8 +191,8 @@ table.post{width:100%}
 		</head>
 		<body>
 			<a name='top'/>
-			<xsl:call-template name='navigation'><xsl:with-param name='perm' select='$p'/><xsl:with-param name='fav' select='$fav'/></xsl:call-template>
-			<xsl:call-template name='header'><xsl:with-param name='perm' select='$p'/><xsl:with-param name='user' select='$u'/></xsl:call-template>
+			<xsl:call-template name='navigation'><xsl:with-param name='session' select='node()[2]/session'/></xsl:call-template>
+				<xsl:call-template name='header'><xsl:with-param name='session' select='node()[2]/session'/></xsl:call-template>
 			<div id='main'><xsl:apply-templates/></div>
 			<xsl:call-template name='foot'/>
 		</body>

@@ -19,7 +19,6 @@ int bbsqry_main(void)
 				getdatestring(user.lastlogin, DATE_XML),
 				cperf(countperf(&user)), user.numposts,
 				compute_user_value(&user), level, repeat);
-		print_session();
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
 			printf(" horo='%s'", 
 					horoscope(user.birthmonth, user.birthday));
@@ -67,10 +66,9 @@ int bbsqry_main(void)
 		}
 		// TODO: mail
 	} else {
-		printf("<bbsqry ");
-		print_session();
-		printf(" id='%s'>", userid);
+		printf("<bbsqry id='%s'>", userid);
 	}
+	print_session();
 	printf("</bbsqry>");
 	return 0;
 }

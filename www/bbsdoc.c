@@ -179,9 +179,8 @@ static int bbsdoc(int mode)
 	brc_fcgi_init(currentuser.userid, board);
 
 	xml_header("bbs");
-	printf("<bbsdoc ");
+	printf("<bbsdoc>");
 	print_session();
-	printf(">");
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 
 	if (mode == MODE_NORMAL) {
@@ -290,7 +289,6 @@ int bbsbfind_main(void)
 
 	xml_header("bbs");
 	printf("<bbsbfind ");
-	print_session();
 	printf(" bid='%d'", cri.bid);
 
 	if (*cri.t1 || *cri.t2 || *cri.t3 || *cri.user) {
@@ -302,6 +300,7 @@ int bbsbfind_main(void)
 	} else {
 		printf(">");
 	}
+	print_session();
 	printf("</bbsbfind>");
 	return 0;
 }

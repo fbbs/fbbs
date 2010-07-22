@@ -17,15 +17,14 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		fb_flock(fd, LOCK_UN);
 		close(fd);
 		xml_header("bbs");
-		printf("<bbseufile ");
+		printf("<bbseufile desc='%s'>", desc);
 		print_session();
-		printf(" desc='%s'></bbseufile>", desc);
+		printf("</bbseufile>");
 	} else {
 		xml_header("bbs");
-		printf("<bbseufile ");
-		print_session();
-		printf(" desc='%s' submit='%s'>", desc, submit);
+		printf("<bbseufile desc='%s' submit='%s'>", desc, submit);
 		xml_printfile(buf, stdout);
+		print_session();
 		printf("</bbseufile>");
 	}
 	return 0;

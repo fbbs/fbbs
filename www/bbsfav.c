@@ -21,9 +21,8 @@ int bbsfav_main(void)
 
 	// Print all favorite boards.
 	xml_header("bbs");
-	printf("<bbsfav ");
+	printf("<bbsfav>");
 	print_session();
-	printf(">");
 	for (iter = m.ptr; iter != end; ++iter) {
 		if (!gbrd_is_custom_dir(iter)) {
 			struct boardheader *bp = bcache + iter->pos;
@@ -85,8 +84,8 @@ int bbsbrdadd_main(void)
 	if (ret)
 		return ret;
 	xml_header("bbs");
-	printf("<bbsbrdadd ");
+	printf("<bbsbrdadd>");
 	print_session();
-	printf("><brd>%s</brd><bid>%d</bid></bbsbrdadd>", bp->filename, bid);
+	printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", bp->filename, bid);
 	return 0;
 }

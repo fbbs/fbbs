@@ -57,9 +57,9 @@ int bbsinfo_main(void)
 	char *type = getparm("type");
 	xml_header("bbs");
 	if (*type != '\0') {
-		printf("<bbsinfo ");
+		printf("<bbsinfo>");
 		print_session();
-		printf(">%s</bbsinfo>", check_info());
+		printf("%s</bbsinfo>", check_info());
 	} else {
 		printf("<bbsinfo post='%d' login='%d' stay='%d' "
 				"since='%s' host='%s' year='%d' month='%d' "
@@ -69,11 +69,12 @@ int bbsinfo_main(void)
 				currentuser.lasthost, currentuser.birthyear,
 				currentuser.birthmonth, currentuser.birthday,
 				currentuser.gender);
-		print_session();
 		printf(" last='%s'><nick>",
 				getdatestring(currentuser.lastlogin, DATE_XML));
 		xml_fputs(currentuser.username, stdout);
-		printf("</nick></bbsinfo>");
+		printf("</nick>");
+		print_session();
+		printf("</bbsinfo>");
 	}
 	return 0;
 }
@@ -98,10 +99,11 @@ int bbspwd_main(void)
 	parse_post_data();
 	xml_header("bbs");
 	printf("<bbspwd ");
-	print_session();
 	char *pw1 = getparm("pw1");
 	if (*pw1 == '\0') {
-		printf(" i='i'></bbspwd>");
+		printf(" i='i'>");
+		print_session();
+		printf("</bbspwd>");
 		return 0;
 	}
 	printf(">", stdout);
@@ -117,6 +119,7 @@ int bbspwd_main(void)
 		default:
 			break;
 	}
+	print_session();
 	printf("</bbspwd>");
 	return 0;
 }

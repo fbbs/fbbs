@@ -564,7 +564,9 @@ static char *get_permission(void)
 
 void print_session(void)
 {
-	printf("s='%s;%s;", get_permission(), currentuser.userid);
+	printf("<session><p>%s</p><u>%s</u><f>", get_permission(),
+			currentuser.userid);
+
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
 	mmap_t m;
@@ -578,12 +580,13 @@ void print_session(void)
 		for (iter = m.ptr; iter != end; ++iter) {
 			if (!gbrd_is_custom_dir(iter)) {
 				struct boardheader *bp = bcache + iter->pos;
-				printf("%s ", bp->filename);
+				printf("<b>%s</b>", bp->filename);
 			}
 		}
 		mmap_close(&m);
 	}
-	printf("'");
+
+	printf("</f></session>");
 }
 
 const char *check_gbk(const char *title)

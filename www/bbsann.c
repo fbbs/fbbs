@@ -129,10 +129,10 @@ int bbs0an_main(void)
 
 	xml_header("bbs");
 	printf("<bbs0an path='%s' v='%d' ", path, get_count(path));
-	print_session();
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
+	print_session();
 	
 	char name[STRLEN], fpath[1024], *id = NULL, *ptr;
 	struct stat st;
@@ -195,10 +195,10 @@ int bbsanc_main(void)
 	sprintf(fname, "0Announce%s", path);
 	xml_header("bbs");
 	printf("<bbsanc ");
-	print_session();
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
+	print_session();
 	xml_printfile(fname, stdout);
 	printf("</bbsanc>");
 	return 0;
