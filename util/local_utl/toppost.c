@@ -5,7 +5,8 @@
 enum {
 	BOARD_LEN = 18, TITLE_LEN = 62, OWNER_LEN = 16,
 	RESERVE_HOURS = 72, MAX_RECORDS = 40000,
-	DAY = 0, WEEK = 1, MONTH = 2, YEAR = 3,
+	DAY = 0, WEEK = 1, MONTH = 2, YEAR = 3, DAY_F = 4,
+	PER_BOARD_LIMIT = 2,
 };
 
 typedef struct top_t {
@@ -17,9 +18,9 @@ typedef struct top_t {
 	time_t last;
 } top_t;
 
-const char *files[] = { "day", "week", "month", "year" };
-const int limits[] = { 10, 50, 100, 200 };
-const char *titles[] = { "日十", "周五十", "月一百", "年度二百" };
+const char *files[] = { "day", "week", "month", "year", "day_f" };
+const int limits[] = { 10, 50, 100, 200, 10 };
+const char *titles[] = { "日十", "周五十", "月一百", "年度二百", "日十" };
 
 unsigned int top_hash(const char *key, unsigned int *klen)
 {
@@ -142,6 +143,33 @@ top_t **sort_stat(const hash_t *ht)
 	return tops;
 }
 
+typedef struct count_t {
+	int count;
+	char board[BOARD_LEN];
+} count_t;
+
+int exceed_board_limit(const top_t *top, count_t *c, int size)
+{
+	int i;
+	for (i = 0; i < size; ++i) {
+		if (c[i].board[0] == '\0')
+			break;
+		if (strcmp(c[i].board, top->board) == 0) {
+			if (c[i].count < PER_BOARD_LIMIT) {
+				c[i].count++;
+				return 0;
+			} else {
+				return 1;
+			}
+		}
+	}
+	if (i < size) {
+		strlcpy(c[i].board, top->board, sizeof(c[i].board));
+		c[i].count = 1;
+	}
+	return 0;
+}
+
 void print_stat(const hash_t *ht, top_t **tops, int type)
 {
 	char file[HOMELEN];
@@ -151,19 +179,29 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 			" 本%s大热门话题 \033[40m=====\033[34m-----\033[m\n\n",
 			titles[type]);
 	top_t *top;
-	int i;
+	int i, j = 0;
 	int limit = limits[type] < ht->count ? limits[type] : ht->count;
 	char date[32];
 	char title[sizeof(top->title)];
-	for (i = 0; i < limit; ++i) {
+
+	count_t c[limits[DAY_F]];
+	memset(c, 0, sizeof(c));
+
+	for (i = 0; i < ht->count && j < limit; ++i) {
 		top = tops[i];
+		if (type == DAY_F && exceed_board_limit(top, c, sizeof(c) / sizeof(c[0])))
+			continue;
 		strlcpy(date, ctime(&top->last) + 4, 16);
 		fprintf(fp, "\033[1;37m第\033[31m%3u\033[37m 名 \033[37m信区 : \033[33m"
 				"%-18s\033[37m〖 \033[32m%s\033[37m 〗\033[36m%4d \033[37m篇"
 				"\033[33m%13.13s\n     \033[37m标题 : \033[1;44m%-60.60s"
-				"\033[40m\n", i + 1, top->board, date, top->count, top->owner,
+				"\033[40m\n", ++j, top->board, date, top->count, top->owner,
 				ansi_filter(title, top->title));
 	}
+
+	if (type == DAY_F && i > j)
+		fprintf(fp, "\033[1;30m  【有 %d 个主题因超出版面限制而被省略】\033[m", i - j);
+
 	fclose(fp);
 }
 
@@ -245,6 +283,7 @@ int main(int argc, char **argv)
 	top_t **tops = sort_stat(&stat);
 	if (tops) {
 		print_stat(&stat, tops, DAY);
+		print_stat(&stat, tops, DAY_F);
 		save_stat(&stat, tops, DAY);
 	}
 
