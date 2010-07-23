@@ -205,4 +205,43 @@
 	</li></xsl:for-each></ul>
 </xsl:template>
 
+<xsl:template match='bbspst'>
+	<p>版面：<xsl:value-of select='@brd'/></p>
+	<form id='postform' name='postform' method='post'>
+		<xsl:attribute name='action'>snd?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@f'/>&amp;e=<xsl:value-of select='@edit'/></xsl:attribute>
+		<input type='hidden' id='brd'><xsl:attribute name='value'><xsl:value-of select='@brd'/></xsl:attribute></input>
+		<p>标题：<xsl:choose>
+		<xsl:when test='@edit=0'><input class='binput' type='text' name='title' size='27' maxlength='50'>
+			<xsl:variable name='retitle'>
+				<xsl:choose>
+					<xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
+					<xsl:when test='not(t)'></xsl:when>
+					<xsl:otherwise><xsl:value-of select='concat("Re: ", t)'/></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:attribute name='value'>
+				<xsl:call-template name='remove-ansi'>
+					<xsl:with-param name='str' select='$retitle'/>
+				</xsl:call-template>
+			</xsl:attribute>
+		</input></xsl:when>
+		<xsl:otherwise><xsl:call-template name='remove-ansi'><xsl:with-param name='str' select='t'/></xsl:call-template></xsl:otherwise>
+		</xsl:choose></p>
+		<p>签名档: <input type='radio' name='sig' value='1' checked='checked'/>1 <input type='radio' name='sig' value='2'/>2 <input type='radio' name='sig' value='3'/>3 <input type='radio' name='sig' value='4'/>4 <input type='radio' name='sig' value='5'/>5 <input type='radio' name='sig' value='6'/>6</p>
+		<p><textarea class='binput' name='text' rows='10' cols='27' wrap='virtual'>
+			<xsl:if test='@edit=0'><xsl:text> &#x0d;&#x0a;</xsl:text></xsl:if>
+			<xsl:call-template name='show-quoted'>
+				<xsl:with-param name='content' select='po'/>
+			</xsl:call-template>
+		</textarea></p>
+		<input type='submit' value='发表' id='btnPost' size='10'/>
+		<input type='reset' value='复原' size='10'/>
+		<xsl:if test='@edit="0" and @att!=0'><input type='button' name='attach' value='上传附件' onclick='return preUpload() '/></xsl:if>
+	</form>
+	<xsl:choose>
+		<xsl:when test='not(t)'><script type='text/javascript' defer='defer'>addLoadEvent(function(){document.postform.title.focus();})</script></xsl:when>
+		<xsl:otherwise><script type='text/javascript' defer='defer'>addLoadEvent(function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();})</script></xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
 </xsl:stylesheet>
