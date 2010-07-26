@@ -15,14 +15,6 @@
 	<xsl:value-of select='concat(substring($time, 6, 5), " ", substring($time, 12, 5))'/>
 </xsl:template>
 
-<xsl:template name='show-fav'>
-	<xsl:param name='fav'/>
-	<xsl:variable name='brd' select='substring-before($fav, " ")'/>
-	<xsl:if test='$brd!=""'><a><xsl:attribute name='href'>tdoc?board=<xsl:value-of select='$brd'/></xsl:attribute><xsl:value-of select='$brd'/></a></xsl:if>
-	<xsl:variable name='rest' select='substring-after($fav, " ")'/>
-	<xsl:if test='$rest!=""'>|<xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$rest'/></xsl:call-template></xsl:if>
-</xsl:template>
-
 <xsl:template name='navigation'>
 	<xsl:param name='session'/>
 	<xsl:variable name='user' select='$session/u'/>
@@ -33,7 +25,7 @@
 		<a href='0an'>精华</a>|<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
 	<div id='fav'>收藏 <xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
-	<a><xsl:attribute name='href'>tdoc?board=<xsl:value-of select='.'/></xsl:attribute><xsl:value-of select='.'/></a>
+	<a><xsl:attribute name='href'>tdoc?<xsl:choose><xsl:when test='@bid'><xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
 	</xsl:for-each></div>
 </xsl:template>
 
