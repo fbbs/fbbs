@@ -1,7 +1,7 @@
-<?xml version='1.0' encoding='gb2312'?>
+<?xml version='1.0' encoding='gb18030'?>
 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns='http://www.w3.org/1999/xhtml'>
 <xsl:import href='showpost.xsl'/>
-<xsl:output method='html' encoding='gb2312' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
+<xsl:output method='html' encoding='gb18030' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
 
 <xsl:template name='bbsname'>日月光华</xsl:template>
 
@@ -87,7 +87,7 @@
 	<html>
 		<head>
 			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/></title>
-			<meta http-equiv="content-type" content="text/html; charset=gb2312"/>
+			<meta http-equiv="content-type" content="text/html; charset=gb18030"/>
 			<xsl:call-template name='include-css'/>
 			<xsl:call-template name='include-js'/>
 		</head>
