@@ -318,4 +318,18 @@
 	</div>
 </xsl:template>
 
+<xsl:template match='bbsmailcon'>
+	<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
+	<div class='po'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail'/></xsl:call-template></div>
+	<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
+</xsl:template>
+
+<xsl:template name='mailcon-navbar'>
+	<a><xsl:attribute name='href'>pstmail?n=<xsl:value-of select='mail/@n'/></xsl:attribute>[回信]</a>
+	<a onclick='return confirm("您真的要删除这封信吗？")'><xsl:attribute name='href'>delmail?f=<xsl:value-of select='mail/@f'/></xsl:attribute>[删除]</a>
+	<xsl:if test='@prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@prev'/>&amp;n=<xsl:value-of select='mail/@n - 1'/></xsl:attribute>[上封]</a></xsl:if>
+	<xsl:if test='@next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@next'/>&amp;n=<xsl:value-of select='mail/@n+1'/></xsl:attribute>[下封]</a></xsl:if>
+	<a href='mail'>[列表]</a>
+</xsl:template>
+
 </xsl:stylesheet>
