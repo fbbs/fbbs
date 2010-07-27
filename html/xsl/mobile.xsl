@@ -332,4 +332,35 @@
 	<a href='mail'>[列表]</a>
 </xsl:template>
 
+<xsl:template match='bbspstmail'>
+	<form id='postform' name='postform' method='post' action='sndmail'>
+		<input type='hidden' name='ref'><xsl:attribute name='value'><xsl:value-of select='@ref'/></xsl:attribute></input>
+		<p><label for='recv'>收信人: </label><input class='binput' type='text' name='recv' size='15' maxlength='15'><xsl:attribute name='value'><xsl:value-of select='@recv'/></xsl:attribute></input></p>
+		<p><label for='title'>标题: </label>
+		<input class='binput' type='text' name='title' size='25' maxlength='40'>
+			<xsl:variable name='retitle'>
+				<xsl:choose>
+					<xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
+					<xsl:when test='not(t)'></xsl:when>
+					<xsl:otherwise><xsl:value-of select='concat("Re: ", t)'/></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:attribute name='value'>
+				<xsl:call-template name='remove-ansi'>
+					<xsl:with-param name='str' select='$retitle'/>
+				</xsl:call-template>
+			</xsl:attribute>
+		</input></p>
+		<p>备份给自己 <input type='checkbox' name='backup' value='backup'/></p>
+		<p><textarea class='binput' name='text' rows='10' cols='30' wrap='virtual'>
+			<xsl:text>&#x0d;&#x0a;</xsl:text>
+			<xsl:call-template name='show-quoted'>
+				<xsl:with-param name='content' select='m'/>
+			</xsl:call-template>
+		</textarea></p>
+		<input type='submit' value='寄出' id='btnPost' size='10'/>
+		<input type='reset' value='重置'/>
+	</form>
+</xsl:template>
+
 </xsl:stylesheet>
