@@ -24,10 +24,10 @@ div#hd, div#fav { border-bottom: #6699cc 1px solid; padding: 0.25em 0; }
 #ft { margin-top: 0.25em; border-top: #6699cc 1px solid; }
 div#fav, div#main, div#ft { padding: 0 3px; }
 
-ul.po a { display: inline; color: #000000; }
+.po a { display: inline; color: #000000; }
 span.time { font-size: 0.85em; color: gray; }
-a.owner { font-size: 0.85em; }
-ul.po a.owner { color: #336699; }
+a.owner, .ainfo { font-size: 0.85em; }
+.po a.owner, .ainfo a { color: #336699; }
 
 div.post { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
 div.nav, div.plink { background-color: #ccddff; padding: 0.25em 0; }
