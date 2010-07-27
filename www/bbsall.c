@@ -51,7 +51,7 @@ int bbsboa_main(void)
 	struct boardheader *parent = NULL;
     int parent_bid = 0;
 	const char *parent_name = getparm("board");
-    if (parent_name) {
+    if (*parent_name) {
         parent = getbcache(parent_name);
         parent_bid = getbnum(parent_name, &currentuser);
 	} else {
