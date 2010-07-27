@@ -580,12 +580,10 @@ void print_session(void)
 		for (iter = m.ptr; iter != end; ++iter) {
 			if (!gbrd_is_custom_dir(iter)) {
 				struct boardheader *bp = bcache + iter->pos;
-				printf("<b");
-				if (!isascii(bp->filename[0]))
-					printf(" bid='%d'", iter->pos + 1);
-				if (is_board_dir(bp))
-					printf(" dir='1'");
-				printf(">%s</b>", bp->filename);
+				if (isascii(bp->filename[0]))
+					printf("<b>%s</b>", bp->filename);
+				else
+					printf("<b bid='%d'>%s</b>", iter->pos + 1, bp->filename);
 			}
 		}
 		mmap_close(&m);
