@@ -300,4 +300,22 @@
 	<xsl:if test='@brd'><div class='nav'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@brd'/></xsl:attribute>[版面]</a></div></xsl:if>
 </xsl:template>
 
+<xsl:template match='bbsmail'>
+	<h2>信件列表</h2>
+	<ol class='po'><xsl:for-each select='mail'><xsl:sort select='@date' order='descending'/><li>
+		<p><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name'/>&amp;n=<xsl:value-of select='position() - 1 + ../@start'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
+		<p><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from'/></xsl:attribute><xsl:value-of select='@from'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></span></p>
+	</li></xsl:for-each></ol>
+	<div class='nav'>
+		<xsl:if test='@start &gt; 1'>
+			<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page'/></xsl:otherwise></xsl:choose></xsl:variable>
+			<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$prev'/></xsl:attribute>[上页]</a>
+		</xsl:if>
+		<xsl:if test='@total &gt; @start + @page - 1'>
+			<xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
+			<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$next'/></xsl:attribute>[下页]</a>
+		</xsl:if>
+	</div>
+</xsl:template>
+
 </xsl:stylesheet>
