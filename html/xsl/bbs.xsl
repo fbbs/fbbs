@@ -705,7 +705,7 @@ table.post{width:100%}
 	<h3><xsl:if test='@brd'><xsl:value-of select='@brd'/>版 - </xsl:if>精华区文章阅读</h3>
 	<div class='post'>
 		<div class='ptop'><xsl:call-template name='anc-navbar'/></div>
-		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
+		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
 		<div class='pbot'><xsl:call-template name='anc-navbar'/></div>
 	</div>
 </xsl:template>

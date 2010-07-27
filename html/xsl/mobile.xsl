@@ -237,7 +237,7 @@
 </xsl:template>
 
 <xsl:template match='bbsqry'>
-	<form action='qry' method='get'><label for='u'>请输入欲查询的帐号：</label><input type='text' name='u' maxlength='12' size='12'/><input type='submit' value='查询'/></form>
+	<form action='qry' method='get'><label for='u'>帐号：</label><input type='text' name='u' maxlength='12' size='12'/><input type='submit' value='查询'/></form>
 	<xsl:choose><xsl:when test='@login'><div class='uqry'>
 		<div class='nav'><xsl:call-template name='qry-linkbar'/></div>
 		<div class='umain' id='uinfo'>
@@ -273,6 +273,31 @@
 		<p><a><xsl:attribute name='href'>tcon?board=<xsl:value-of select='@board'/>&amp;f=<xsl:value-of select='@gid'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
 		<p class='ainfo'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@board'/></xsl:attribute><xsl:value-of select='@board'/>版</a> - <a><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>篇</p>
 	</li></xsl:for-each></ol>
+</xsl:template>
+
+<xsl:template match='bbs0an'>
+	<xsl:call-template name='anc-navbar'/>
+	<ol><xsl:for-each select='ent'><li>
+		<p><xsl:choose>
+			<xsl:when test='@t = "d"'>[目录]<a class='ptitle'><xsl:attribute name='href'>0an?path=<xsl:value-of select='../@path'/><xsl:value-of select='@path'/></xsl:attribute><xsl:value-of select='.'/></a></xsl:when>
+			<xsl:when test='@t = "f"'><a class='ptitle'><xsl:attribute name='href'>anc?path=<xsl:value-of select='../@path'/><xsl:value-of select='@path'/></xsl:attribute><xsl:value-of select='.'/></a></xsl:when>
+			<xsl:otherwise>[错误]<xsl:value-of select='@t'/></xsl:otherwise>
+		</xsl:choose></p>
+		<p><span class='time'><xsl:if test='@t != "e"'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></xsl:if></span></p>
+	</li></xsl:for-each></ol>
+	<xsl:if test='not(ent)'><p>&lt;&lt;目前没有文章&gt;&gt;</p></xsl:if>
+	<xsl:call-template name='anc-navbar'/>
+</xsl:template>
+
+<xsl:template match='bbsanc'>
+	<h3><xsl:if test='@brd'><xsl:value-of select='@brd'/>版 - </xsl:if>精华区文章阅读</h3>
+	<xsl:call-template name='anc-navbar'/>
+	<div class='po'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
+	<xsl:call-template name='anc-navbar'/>
+</xsl:template>
+
+<xsl:template name='anc-navbar'>
+	<xsl:if test='@brd'><div class='nav'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@brd'/></xsl:attribute>[版面]</a></div></xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>

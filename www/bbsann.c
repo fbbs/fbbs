@@ -199,7 +199,8 @@ int bbsanc_main(void)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
 	print_session();
+	printf("<po>");
 	xml_printfile(fname, stdout);
-	printf("</bbsanc>");
+	printf("</po></bbsanc>");
 	return 0;
 }
