@@ -267,4 +267,12 @@
 	<a><xsl:attribute name='href'>pstmail?recv=<xsl:value-of select='@id'/></xsl:attribute>[发信]</a>
 </xsl:template>
 
+<xsl:template match='bbstop10'>
+	<h2>24小时十大热门话题</h2>
+	<ol class='po'><xsl:for-each select='top'><li>
+		<p><a><xsl:attribute name='href'>tcon?board=<xsl:value-of select='@board'/>&amp;f=<xsl:value-of select='@gid'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
+		<p class='ainfo'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@board'/></xsl:attribute><xsl:value-of select='@board'/>版</a> - <a><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>篇</p>
+	</li></xsl:for-each></ol>
+</xsl:template>
+
 </xsl:stylesheet>
