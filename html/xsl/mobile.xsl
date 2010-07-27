@@ -25,7 +25,7 @@
 		<a href='0an'>精华</a>|<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
 	<div id='fav'>收藏 <xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
-	<a><xsl:attribute name='href'>tdoc?<xsl:choose><xsl:when test='@bid'><xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
+	<a><xsl:attribute name='href'><xsl:choose><xsl:when test='@dir'>boa?</xsl:when><xsl:otherwise>tdoc?</xsl:otherwise></xsl:choose><xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
 	</xsl:for-each></div>
 </xsl:template>
 

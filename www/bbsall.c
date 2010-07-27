@@ -54,11 +54,14 @@ int bbsboa_main(void)
     if (parent_name) {
         parent = getbcache(parent_name);
         parent_bid = getbnum(parent_name, &currentuser);
-        if (parent == NULL || parent_bid <= 0 || !(parent->flag & BOARD_DIR_FLAG)) {
-            parent = NULL;
-            parent_bid = 0;
-        }
-    }
+	} else {
+		parent_bid = strtol(getparm("bid"), NULL, 10);
+		parent = getbcache2(parent_bid);
+	}
+	if (parent == NULL || parent_bid <= 0 || !(parent->flag & BOARD_DIR_FLAG)) {
+		parent = NULL;
+		parent_bid = 0;
+	}
 
 	if (parent == NULL) {
 		char path[HOMELEN];
