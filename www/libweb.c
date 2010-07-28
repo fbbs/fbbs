@@ -562,10 +562,30 @@ static char *get_permission(void)
 	return c;
 }
 
+int get_doc_mode(void)
+{
+	return currentuser.flags[1];
+}
+
+void set_doc_mode(int mode)
+{
+	uidshm->passwd[u_info->uid - 1].flags[1] = mode;
+}
+
+static const char *get_doc_mode_str(void)
+{
+	switch (get_doc_mode()) {
+		case MODE_THREAD:
+			return "t";
+		default:
+			return "";
+	}
+}
+
 void print_session(void)
 {
-	printf("<session><p>%s</p><u>%s</u><f>", get_permission(),
-			currentuser.userid);
+	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
+			get_permission(), currentuser.userid);
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");

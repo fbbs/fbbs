@@ -214,6 +214,8 @@ static int bbsdoc(int mode)
 		printf("banner='../info/boards/%s/banner.jpg' ", board);
 	printf("/>\n</bbsdoc>");
 
+	if (get_doc_mode() != mode)
+		set_doc_mode(mode);
 	// TODO: marquee, recommend
 	return 0;
 }
