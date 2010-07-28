@@ -178,6 +178,9 @@ static int bbsdoc(int mode)
 		my_t_lines = TLINES;
 	brc_fcgi_init(currentuser.userid, board);
 
+	if (get_doc_mode() != mode)
+		set_doc_mode(mode);
+
 	xml_header("bbs");
 	printf("<bbsdoc>");
 	print_session();
@@ -214,8 +217,6 @@ static int bbsdoc(int mode)
 		printf("banner='../info/boards/%s/banner.jpg' ", board);
 	printf("/>\n</bbsdoc>");
 
-	if (get_doc_mode() != mode)
-		set_doc_mode(mode);
 	// TODO: marquee, recommend
 	return 0;
 }
