@@ -25,7 +25,7 @@
 		<a href='0an'>精华</a>|<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
 	<div id='fav'>收藏 <xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
-	<a><xsl:attribute name='href'>tdoc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
+	<a><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
 	</xsl:for-each></div>
 </xsl:template>
 
@@ -98,7 +98,7 @@
 			<li><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id'/></xsl:attribute><xsl:value-of select='@id'/>&#160;<xsl:value-of select='@desc'/></a></li>
 			<ul class='brd'>
 				<xsl:for-each select='brd'>
-					<li><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@name'/></xsl:attribute><xsl:value-of select='@desc'/></a></li>
+					<li><a><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@name'/></xsl:attribute><xsl:value-of select='@desc'/></a></li>
 				</xsl:for-each>
 			</ul>
 		</ul>
@@ -106,8 +106,12 @@
 </xsl:template>
 
 <xsl:template match='bbsdoc'>
-	<h2><a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute><xsl:value-of select='brd/@desc'/>[<xsl:value-of select='brd/@title'/>]<xsl:if test='brd/@link = "g"'>[文摘]</xsl:if><xsl:if test='brd/@link = "t"'>[主题]</xsl:if></a></h2>
+	<h2><a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute><xsl:value-of select='brd/@desc'/>[<xsl:value-of select='brd/@title'/>]</a><xsl:if test='brd/@link = "g"'>[文摘]</xsl:if><xsl:if test='brd/@link = "t"'>[主题]</xsl:if></h2>
 	<div class='nav'>
+		<xsl:choose>
+			<xsl:when test='brd/@link="t"'><a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[传统]</a></xsl:when>
+			<xsl:otherwise><a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[主题]</a></xsl:otherwise>
+		</xsl:choose>
 		<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[发文]</a>
 		<a href='javascript:location=location'>[刷新]</a>
 		<xsl:if test='brd/@start > 1'>
@@ -189,7 +193,7 @@
 	<ul><xsl:for-each select='brd'><xsl:sort select='@title'/><li class='brd'>
 		<a><xsl:choose>
 			<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:when>
-			<xsl:otherwise><xsl:attribute name='href'>doc?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:otherwise>
+			<xsl:otherwise><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:otherwise>
 		</xsl:choose>
 		<xsl:choose><xsl:when test='@read="0"'>◇</xsl:when><xsl:otherwise>◆</xsl:otherwise></xsl:choose>
 		<xsl:choose><xsl:when test='@dir="1"'>[目录]</xsl:when><xsl:otherwise><xsl:value-of select='@cate'/></xsl:otherwise></xsl:choose>
@@ -271,7 +275,7 @@
 	<h2>24小时十大热门话题</h2>
 	<ol class='po'><xsl:for-each select='top'><li>
 		<p><a><xsl:attribute name='href'>tcon?board=<xsl:value-of select='@board'/>&amp;f=<xsl:value-of select='@gid'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
-		<p class='ainfo'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@board'/></xsl:attribute><xsl:value-of select='@board'/>版</a> - <a><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>篇</p>
+		<p class='ainfo'><a><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@board'/></xsl:attribute><xsl:value-of select='@board'/>版</a> - <a><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>篇</p>
 	</li></xsl:for-each></ol>
 </xsl:template>
 
@@ -297,7 +301,7 @@
 </xsl:template>
 
 <xsl:template name='anc-navbar'>
-	<xsl:if test='@brd'><div class='nav'><a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@brd'/></xsl:attribute>[版面]</a></div></xsl:if>
+	<xsl:if test='@brd'><div class='nav'><a><xsl:attribute name='href'><xsl:value-of select='session/@m'/>doc?board=<xsl:value-of select='@brd'/></xsl:attribute>[版面]</a></div></xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsmail'>
