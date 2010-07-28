@@ -22,7 +22,7 @@
 	<div id='hd'>
 		<xsl:if test='$user != ""'><a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user'/></xsl:attribute><xsl:value-of select='$user'/></a>|</xsl:if>
 		<xsl:if test='$user = ""'><a href='login'>登录</a>|</xsl:if>
-		<a href='0an'>精华</a>|<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
+		<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
 	<div id='fav'>收藏 <xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
 	<a><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
@@ -113,7 +113,6 @@
 			<xsl:otherwise><a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[主题]</a></xsl:otherwise>
 		</xsl:choose>
 		<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[发文]</a>
-		<a href='javascript:location=location'>[刷新]</a>
 		<xsl:if test='brd/@start > 1'>
 			<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
 			<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$prev'/></xsl:attribute>[上页]</a>
@@ -122,7 +121,6 @@
 			<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
 			<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$next'/></xsl:attribute>[下页]</a>
 		</xsl:if>
-		<a><xsl:attribute name='href'>clear?board=<xsl:value-of select='brd/@title'/>&amp;start=<xsl:value-of select='brd/@start'/></xsl:attribute>[清除未读]</a>
 		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[精华]</a>
 	</div>
 	<ul class='po'>
