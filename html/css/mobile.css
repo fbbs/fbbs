@@ -24,6 +24,7 @@ div#hd, div#fav { border-bottom: #6699cc 1px solid; padding: 0.25em 0; }
 #ft { margin-top: 0.25em; border-top: #6699cc 1px solid; }
 div#fav, div#main, div#ft { padding: 0 3px; }
 div#fav { margin-bottom: 0.25em; }
+div#fave, div#favc { display: none; }
 
 .po a { display: inline; color: #000000; }
 span.time { font-size: 0.85em; color: gray; }
