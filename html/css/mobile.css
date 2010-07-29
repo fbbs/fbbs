@@ -30,6 +30,7 @@ div#fave, div#favc { display: none; }
 span.time { font-size: 0.85em; color: gray; }
 a.owner, .ainfo { font-size: 0.85em; }
 .po a.owner, .ainfo a { color: #336699; }
+.ainfo { color: #808080; }
 
 div.post { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
 div.nav, div.plink { background-color: #ccddff; padding: 0.25em 0; }
