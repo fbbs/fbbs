@@ -4,42 +4,42 @@ body, div, ul, ol, li, h1, h2, h3, h4, h5, h6, form, input, textarea, p, blockqu
 }
 body {
 	font-family: "SimSun", "Gill Sans MT", Verdana, sans-serif;
-	font-size: 1em;
+	font-size: 16px;
 	background-color: #f0f7ff;
 }
 ul, ol {
 	list-style: none;
 }
-h2 { font-weight: bold; font-size: 1em; margin: 0.25em 0; }
-h3 { font-weight: normal; margin-bottom: 0.25em; }
+h2 { font-weight: bold; font-size: 16px; margin: 4px 0; }
+h3 { font-weight: normal; margin-bottom: 4px; }
 a { color: #336699; text-decoration: none; }
 a:hover { background-color: #ffffdd; }
 img { border: 0; vertical-align: middle; }
 
-#hd { line-height: 1.5em; }
-#hd a, #fav a { display: inline-block; padding: 0 0.25em; }
-div#hd, div#fav { border-bottom: #6699cc 1px solid; padding: 0.25em 0; }
+#hd { line-height: 24px; }
+#hd a, #fav a { display: inline-block; padding: 0 4px; }
+div#hd, div#fav { border-bottom: #6699cc 1px solid; padding: 4px 0; }
 #hd a:hover { background-color: #ffffdd; }
-#main { padding: 0.25em 0; }
-#ft { margin-top: 0.25em; border-top: #6699cc 1px solid; }
+#main { padding: 4px 0; }
+#ft { margin-top: 4px; border-top: #6699cc 1px solid; }
 div#fav, div#main, div#ft { padding: 0 3px; }
-div#fav { margin-bottom: 0.25em; }
+div#fav { margin-bottom: 4px; }
 div#fave, div#favc { display: none; }
 
 .po a { display: inline; color: #000000; }
-span.time { font-size: 0.85em; color: gray; }
-a.owner, .ainfo { font-size: 0.85em; }
+span.time { font-size: 14px; color: gray; }
+a.owner, .ainfo { font-size: 14px; }
 .po a.owner, .ainfo a { color: #336699; }
 .ainfo { color: #808080; }
 
-div.post { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
-div.nav, div.plink { background-color: #ccddff; padding: 0.25em 0; }
+div.post { border-bottom: #6699cc 1px dotted; padding: 4px 0; }
+div.nav, div.plink { background-color: #ccddff; padding: 4px 0; }
 div.plink { border-bottom: #6699cc 1px dotted; }
 
-li { border-bottom: #6699cc 1px dotted; padding: 0.25em 0; }
-li.brd span.tt { font-size: 0.85em; }
+li { border-bottom: #6699cc 1px dotted; padding: 4px 0; }
+li.brd span.tt { font-size: 14px; }
 
-div.umain { padding: 0.25em 0; }
+div.umain { padding: 4px 0; }
 div.usmd { font-family: monospace; }
 
 .a030 { color: Window; }
