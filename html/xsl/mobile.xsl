@@ -20,11 +20,11 @@
 	<xsl:variable name='user' select='$session/u'/>
 	<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
 	<div id='hd'>
-		<xsl:if test='$user != ""'><a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user'/></xsl:attribute><xsl:value-of select='$user'/></a>|</xsl:if>
+		<xsl:if test='$user != ""'><a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user'/></xsl:attribute><xsl:value-of select='$user'/></a> <a id='fave' href='#' onclick='return expandFav();'>收藏▽</a><a href='#' id='favc' onclick='return collapseFav();'>收起△</a>|</xsl:if>
 		<xsl:if test='$user = ""'><a href='login'>登录</a>|</xsl:if>
 		<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
-	<div id='fav'>收藏 <xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
+	<div id='fav'><xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
 	<a><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
 	</xsl:for-each></div>
 </xsl:template>
@@ -38,6 +38,7 @@
 </xsl:template>
 
 <xsl:template name='include-js'>
+<script src='../js/mobile.js' defer='defer'></script>
 </xsl:template>
 
 <xsl:template name='page-title'>
