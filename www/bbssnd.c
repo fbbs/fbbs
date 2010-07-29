@@ -146,7 +146,8 @@ int bbssnd_main(void)
 			title, bp->filename);
 	report(buf, currentuser.userid);
 
-	snprintf(buf, sizeof(buf), "doc?board=%s", bp->filename);
+	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_doc_mode_str(),
+			bp->filename);
 	http_header();
 	refreshto(1, buf);
 	printf("</head>\n<body>发表成功，1秒钟后自动转到<a href='%s'>版面</a>\n"

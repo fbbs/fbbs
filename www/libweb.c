@@ -572,7 +572,7 @@ void set_doc_mode(int mode)
 	uidshm->passwd[u_info->uid - 1].flags[1] = mode;
 }
 
-static const char *get_doc_mode_str(void)
+const char *get_doc_mode_str(void)
 {
 	switch (uidshm->passwd[u_info->uid - 1].flags[1]) {
 		case MODE_THREAD:
