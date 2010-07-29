@@ -39,6 +39,7 @@ div.plink { border-bottom: #6699cc 1px dotted; }
 
 li { border-bottom: #6699cc 1px dotted; padding: 4px 0; }
 li.brd span.tt { font-size: 14px; }
+.rd a, .rd span, .rd a.owner { color: #808080; }
 
 div.umain { padding: 4px 0; }
 div.usmd { font-family: monospace; }
