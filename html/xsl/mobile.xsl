@@ -79,7 +79,7 @@
 <xsl:template match='/'>
 	<html>
 		<head>
-			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/></title>
+			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/>手机版</title>
 			<meta http-equiv="content-type" content="text/html; charset=gb18030"/>
 			<xsl:call-template name='include-css'/>
 			<xsl:call-template name='include-js'/>
