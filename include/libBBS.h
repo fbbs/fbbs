@@ -69,7 +69,4 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 		const char *text, int len, const char *source);
 int mail_file(const char *file, const char *recv, const char *title);
 
-// register.c
-bool is_no_register(void);
-
 #endif // FB_LIBBBS_H
