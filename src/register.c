@@ -261,7 +261,7 @@ void new_register(void)
 	int sec;
 #endif
 
-	if (dashf("NOREGISTER")) {
+	if (is_no_register()) {
 		ansimore("NOREGISTER", NA);
 		pressreturn();
 		return;
