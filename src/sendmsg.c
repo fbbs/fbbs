@@ -396,7 +396,7 @@ int friend_login_wall(const struct user_info *pageinfo)
 }
 
 enum {
-	MSG_INIT, MSG_SHOW, MSG_REPLYING,
+	MSG_INIT, MSG_SHOW, MSG_WAIT, MSG_REPLYING,
 	MSG_BAK_THRES = 500,
 };
 
@@ -433,7 +433,8 @@ static int get_msg3(const char *user, int *num, char *head, size_t hsize,
 	return 0;
 }
 
-static int show_msg(const char *user, const char *head, const char *buf, int line)
+static int show_msg(const char *user, const char *head, const char *buf,
+		int line, bool reply)
 {
 	if (!RMSG && DEFINE(DEF_SOUNDMSG))
 		bell();
@@ -453,9 +454,13 @@ static int show_msg(const char *user, const char *head, const char *buf, int lin
 	line = show_data(buf, LINE_LEN - 1, line, 0);
 	move(line, 0);
 	clrtoeol();
-	prints("\033[m立即回讯息给 %s", sender);
-	move(++line, 0);
-	clrtoeol();
+	if (!reply) {
+		outs("\033[m按^Z回复");
+	} else {
+		prints("\033[m立即回讯息给 %s", sender);
+		move(++line, 0);
+		clrtoeol();
+	}
 	refresh();
 	return line;
 }
@@ -637,10 +642,35 @@ static int msg_show(msg_status_t *st, char *head, size_t hsize,
 		strlcpy(st->receiver, head + 12, sizeof(st->receiver));
 		strtok(st->receiver, " ");
 		int line = (uinfo.mode == TALK ? t_lines / 2 - 1 : 0);
-		st->cury = show_msg(currentuser.userid, head, buf, line);
+		st->cury = show_msg(currentuser.userid, head, buf, line,
+				st->status == MSG_REPLYING);
 	}
-	st->status = MSG_REPLYING;
+	if (st->status < MSG_WAIT)
+		st->status = MSG_WAIT;
 	return st->rpid;
+}
+
+static int msg_next(msg_status_t *st, char *head, size_t hsize,
+		char *buf, size_t size)
+{
+	if (!RMSG) {
+		msg_num--;
+		st->num--;
+	} else {
+		RMSG = false;
+		st->num = 0;
+	}
+	
+	if (!msg_num) {
+		st->status = MSG_INIT;
+		for (int k = 0; k < MAX_MSG_LINE + 2; k++)
+			saveline_buf(k, 1);
+		move(st->y, st->x);
+		showansi = st->sa;
+	} else {
+		msg_show(&st, head, hsize, buf, size);
+	}
+	return;
 }
 
 int msg_reply(int ch)
@@ -667,7 +697,21 @@ int msg_reply(int ch)
 			// fall through
 		case MSG_SHOW:
 			msg_show(&st, head, sizeof(head), buf, sizeof(buf));
-			ch = 0;
+			// fall through
+		case MSG_WAIT:
+			switch (ch) {
+				case Ctrl('Z'):
+					st.status = MSG_REPLYING;
+					msg_show(&st, head, sizeof(head), buf, sizeof(buf));
+					ch = 0;
+					break;
+				case '\r':
+				case '\n':
+					msg_next(&st, head, sizeof(head), buf, sizeof(buf));
+					return;
+				default:
+					return;
+			}
 			// fall through
 		case MSG_REPLYING:
 			switch (ch) {
@@ -679,24 +723,7 @@ int msg_reply(int ch)
 					st.len = 0;
 					st.height = 1;
 					st.status = MSG_SHOW;
-
-					if (!RMSG) {
-						msg_num--;
-						st.num--;
-					} else {
-						RMSG = false;
-						st.num = 0;
-					}
-
-					if (!msg_num) {
-						st.status = MSG_INIT;
-						for (k = 0; k < MAX_MSG_LINE + 2; k++)
-							saveline_buf(k, 1);
-						move(st.y, st.x);
-						showansi = st.sa;
-					} else {
-						msg_show(&st, head, sizeof(head), buf, sizeof(buf));
-					}
+					msg_next(&st, head, sizeof(head), buf, sizeof(buf));
 					break;
 				case '\0':
 					break;
