@@ -436,7 +436,7 @@ static int get_msg3(const char *user, int *num, char *head, size_t hsize,
 static int show_msg(const char *user, const char *head, const char *buf,
 		int line, bool reply)
 {
-	if (!RMSG && DEFINE(DEF_SOUNDMSG))
+	if (!RMSG && !reply && DEFINE(DEF_SOUNDMSG))
 		bell();
 	move(line, 0);
 	clrtoeol();
@@ -668,12 +668,12 @@ static int msg_next(msg_status_t *st, char *head, size_t hsize,
 		move(st->y, st->x);
 		showansi = st->sa;
 	} else {
-		msg_show(&st, head, hsize, buf, size);
+		msg_show(st, head, hsize, buf, size);
 	}
-	return;
+	return 0;
 }
 
-int msg_reply(int ch)
+void msg_reply(int ch)
 {
 	static msg_status_t st = { .status = MSG_INIT, .height = 1,
 			.num = 0, .len = 0};
@@ -746,7 +746,6 @@ int msg_reply(int ch)
 		default:
 			break;
 	}
-	return 0;
 }
 
 void msg_handler(int signum)
