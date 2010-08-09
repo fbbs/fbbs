@@ -448,7 +448,7 @@ static int show_msg(const char *user, const char *head, const char *buf,
 
 	prints("\033[1;36;44m%s  \033[33m(%s)\033[37m", sender, date);
 	move(line, 93);
-	outs("\033[31m(^Z»Ø)\033[37m");
+	outs("\033[31m(^Z»Ø) \033[37m");
 	move(++line, 0);
 	clrtoeol();
 	line = show_data(buf, LINE_LEN - 1, line, 0);
