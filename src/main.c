@@ -676,7 +676,6 @@ static int login_query(void)
 			passbuf[8] = '\0';
 			switch (bbs_auth(currentuser.userid, passbuf)) {
 				case BBS_EWPSWD:
-					logattempt(currentuser.userid, fromhost);
 					prints("\033[1;31mÃÜÂëÊäÈë´íÎó...\033[m\n");
 					break;
 				case BBS_EGIVEUP:
