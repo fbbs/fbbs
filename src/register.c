@@ -262,7 +262,7 @@ void send_regmail(struct userec *trec) {
 	if ((dp = fopen(genbuf, "w")) == NULL)
 		return;
 	code = time(0);
-	fprintf(dp, "%9.9d:%d\n", code, getpid());
+	fprintf(dp, "%9.9"PRIdFBT":%d\n", code, getpid());
 	fclose(dp);
 
 	sprintf(genbuf, "%s -f %s.bbs@%s %s ", MTA, trec->userid,
@@ -273,7 +273,7 @@ void send_regmail(struct userec *trec) {
 		fprintf(fout, "Reply-To: SYSOP.bbs@%s\n", BBSHOST);
 		fprintf(fout, "From: SYSOP.bbs@%s\n", BBSHOST);
 		fprintf(fout, "To: %s\n", trec->email);
-		fprintf(fout, "Subject: @%s@[-%9.9d:%d-]%s mail check.\n",
+		fprintf(fout, "Subject: @%s@[-%9.9"PRIdFBT":%d-]%s mail check.\n",
 				trec->userid, code, getpid(), BBSID);
 		fprintf(fout, "X-Purpose: %s registration mail.\n", BBSNAME);
 		fprintf(fout, "\n");
@@ -317,9 +317,8 @@ void send_regmail(struct userec *trec) {
 
 void regmail_send(struct userec *trec, char* mail) {
 	time_t code;
-	FILE *fout, *dp, *mailp;
+	FILE *fout, *dp;
 	char buf[RNDPASSLEN + 1];
-	char mailuser[25], mailpass[25];
 	sprintf(buf, "%s", (char *) genrandpwd((int) getpid()));
 	sethomefile(genbuf, trec->userid, ".regpass");
 	if ((dp = fopen(genbuf, "w")) == NULL)
