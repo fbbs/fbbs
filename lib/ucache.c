@@ -7,6 +7,8 @@
 #include <time.h>
 #include "record.h"
 
+#include "fbbs/ucache.h"
+
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)
 
 // The starting address of cache for online users.
@@ -221,7 +223,7 @@ int load_ucache(void)
 	return 0;
 }
 
-int substitut_record(char *filename, void *rptr, size_t size, int id)
+int substitut_record(char *filename, const void *rptr, size_t size, int id)
 {
 	memcpy(&(uidshm->passwd[id - 1]), rptr, size);
 	return 0;
@@ -580,4 +582,32 @@ int cmpfnames(void *user, void *over)
 	const char *userid = user;
 	struct override *ov = over;
 	return !strcasecmp(userid, ov->id);
+}
+
+/*
+ * Create a new user (unique in userid).
+ * @param user The initial user data.
+ * @return 0 if OK, <0 on error.
+ */
+int create_user(const struct userec *user)
+{
+	int fd = ucache_lock();
+	if (fd < 0)
+		return UCACHE_EINTNL;
+
+	if (searchuser(user->userid) != 0) {
+		ucache_unlock(fd);
+		return UCACHE_EEXIST;
+	}
+
+	int i = searchnewuser();
+	if (i == 0) {
+		ucache_unlock(fd);
+		return UCACHE_EFULL;
+	}
+
+	substitut_record(PASSFILE, user, sizeof(*user), i);
+
+	ucache_unlock(fd);
+	return 0;
 }
