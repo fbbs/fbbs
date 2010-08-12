@@ -1,6 +1,6 @@
 AM_CFLAGS = -O2 -pipe -std=c99 -pedantic -Wall -Wno-implicit -export @ENABLE_DEBUG@
 AM_CPPFLAGS = -D_XOPEN_SOURCE=500 -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I../include
-LIBS = -lcrypt -ldl -lgd
+LIBS = -lcrypt -ldl
 LDADD = ../lib/libBBS.a
 
 

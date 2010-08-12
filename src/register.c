@@ -1,5 +1,3 @@
-#include <gd.h>
-#include <gdfontl.h>
 #include "bbs.h"
 #include "register.h"
 
@@ -35,59 +33,6 @@ int getnewuserid(void)
 	substitut_record(PASSFILE, &user, sizeof(user), i);
 	return i;
 }
-
-#ifndef FDQUAN
-const char *generate_verify_num() {
-	/* Declare the image */
-	gdImagePtr im;
-	/* Declare output files */
-	//FILE *gifout;
-	/* Declare color indexes */
-	int black;
-	int white;
-	int x, y, z;
-	int rd;
-	static char s[10];
-
-	/* Allocate the image: 64 pixels across by 64 pixels tall */
-	im = gdImageCreate(40, 16);
-
-	/* Allocate the color black (red, green and blue all minimum).
-	 Since this is the first color in a new image, it will
-	 be the background color. */
-	black = gdImageColorAllocate(im, 0, 0, 0);
-
-	white = gdImageColorAllocate(im, 255, 255, 255);
-
-	srandom(time(0)%getpid());
-
-	rd=random()%(100000);
-	sprintf(s, "%05d", rd);
-	gdImageString(im, gdFontGetLarge(), 0, 0, s, white);
-	for (z=0; z<20; z++) {
-		x=random()%(im->sx);
-		y=random()%(im->sy);
-		gdImageSetPixel(im, x, y, white);
-	}
-	for (y=0; y<im->sy; y++) {
-		for (x=0; x<im->sx; x++) {
-			if (gdImageGetPixel(im, x, y))
-				outc('o');
-			else
-				outc(' ');
-		}
-		outc('\n');
-	}
-
-	gdImageDestroy(im);
-
-	oflush();
-
-	return s;
-}
-#endif
-
-
 
 /**
  *
@@ -140,11 +85,6 @@ static void fill_new_userec(struct userec *user, const char *userid,
 void new_register(void)
 {
 	char userid[IDLEN + 1], passwd[PASSLEN], passbuf[PASSLEN], log[STRLEN];
-#ifndef FDQUAN
-	char code[IDLEN+1];
-	const char *verify_num;
-	int sec;
-#endif
 
 	if (is_no_register()) {
 		ansimore("NOREGISTER", NA);
@@ -168,11 +108,6 @@ void new_register(void)
 			return;
 		}
 
-#ifndef FDQUAN
-		verify_num = generate_verify_num();
-		getdata(0, 0, "请输入上面显示的数字: ", code, IDLEN + 1, DOECHO, YEA);
-#endif
-
 		getdata(0, 0, "请输入帐号名称 (Enter User ID, \"0\" to abort): ",
 				userid, sizeof(userid), DOECHO, YEA);
 		if (userid[0] == '0')
@@ -182,25 +117,6 @@ void new_register(void)
 			outs(errmsg);
 			continue;
 		}
-
-#ifndef FDQUAN
-		sec = random() % 5;
-		prints("为避免与其他注册者冲突...请耐心等候 %d 秒...\n", sec);
-		oflush();
-		sleep(sec);
-
-		if (strcmp(verify_num, code)) {
-			snprintf(log, sizeof(log), "verify '%s' error with code %s!=%s from %s",
-					userid, verify_num, code, fromhost);
-			report(log, currentuser.userid);
-			prints("抱歉, 您输入的验证码不正确.\n");
-			continue;
-		}
-
-		snprintf(log, sizeof(log), "verify '%s' with code %s from %s ", userid,
-				code, fromhost);
-		report(log, currentuser.userid);
-#endif
 
 		char path[HOMELEN];
 		sethomepath(path, userid);
