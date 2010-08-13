@@ -370,7 +370,7 @@ static more_file_t *more_open(const char *file, int width, more_open_t func)
 
 /**
  * Close more stream.
- * @param d The more stream.
+ * @param more The more stream.
  */
 static void more_close(more_file_t *more)
 {

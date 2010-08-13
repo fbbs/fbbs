@@ -9,7 +9,7 @@
  * @param[in] dir The directory.
  * @param[in] pfx Prefix of the file.
  * @param[in, out] fname The resulting filename.
- * @param[size] The size of fname.
+ * @param[in] size The size of fname.
  * @return Filename and stream on success, NULL on error.
  * @see ::date_to_fname.
  */
