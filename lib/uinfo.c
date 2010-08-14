@@ -250,7 +250,7 @@ int compute_user_value(const struct userec *urec)
 #endif
 }
 
-static int show_volunteer(char *userid, char **buf, size_t *size)
+static int show_volunteer(const char *userid, char **buf, size_t *size)
 {
 	char file[HOMELEN], tmp[STRLEN];
 	sethomefile(file, userid, ".volunteer");
@@ -268,7 +268,7 @@ static int show_volunteer(char *userid, char **buf, size_t *size)
 	return 0;
 }
 
-static int show_bm(char *userid, char **buf, size_t *size)
+static int show_bm(const char *userid, char **buf, size_t *size)
 {
 	char file[HOMELEN], tmp[STRLEN];
 	sethomefile(file, userid, ".bmfile");

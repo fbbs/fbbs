@@ -18,10 +18,10 @@ struct UCACHE *uidshm = NULL;
 // A global variable to hold result when searching users.
 struct userec lookupuser;
 
-int cmpuids(void *uid, void *up)
+int cmpuids(const void *uid, const void *up)
 {
-	return !strncasecmp((char *)uid, ((struct userec *)up)->userid,
-		sizeof(((struct userec *)up)->userid));
+	return !strncasecmp((const char *)uid, ((const struct userec *)up)->userid,
+		sizeof(((const struct userec *)up)->userid));
 }
 
 int dosearchuser(const char *userid, struct userec *user, int *unum)
