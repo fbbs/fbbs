@@ -4,7 +4,9 @@
 #include <stdbool.h>
 
 enum {
-	BBS_EREG_NONALPHA, BBS_EREG_SHORT, BBS_EREG_BADNAME
+	BBS_EREG_NONALPHA = -1,
+	BBS_EREG_SHORT = -2,
+	BBS_EREG_BADNAME = -3,
 };
 
 bool is_no_register(void);
