@@ -115,8 +115,8 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	if (search_record(filepath, &ov, sizeof(ov), cmpfname,
 			currentuser.userid))
 		return BBS_EBLKLST;
-	if (getmailboxsize(lookupuser.userlevel) * 2 
-			< getmailsize(lookupuser.userid))
+	if (getmailboxsize(lookupuser.userlevel) * 2
+		< getmailsize(lookupuser.userid))
 		return BBS_ERMQE;
 	maxmail = getmailboxhold(lookupuser.userlevel);
 	if (getmailnum(lookupuser.userid) > maxmail * 2)

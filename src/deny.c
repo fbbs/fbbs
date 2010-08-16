@@ -593,7 +593,7 @@ static void denylist_release(const char *line)
 	strtok(id, " \r\n\t");
 
 	char desc[8];
-	unsigned int perm = 
+	unsigned int perm =
 			denylist_get_type(line + OFFSET_PERM, 0, desc, sizeof(desc));
 	if (!perm)
 		return;
