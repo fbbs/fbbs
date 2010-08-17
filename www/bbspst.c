@@ -159,6 +159,8 @@ int bbsccc_main(void)
 			return BBS_EINVAL;
 		if (!haspostperm(&currentuser, bp2))
 			return BBS_EPST;
+		if (bp2 == bp)
+			return BBS_EINVAL;
 		mmap_t m;
 		m.oflag = O_RDONLY;
 		char file[HOMELEN];
