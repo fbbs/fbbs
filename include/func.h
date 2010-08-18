@@ -5,21 +5,6 @@
 
 #include "bbs.h"
 
-//uinfo.c
-char *cexpstr(int exp);
-#ifdef ALLOWGAME
-char *cnummedals(int num);
-char *cmoney(int num);
-#endif
-char *cperf(int perf);
-int countexp(const struct userec *udata);
-int countperf(const struct userec *udata);
-int julian_day(int year, int month, int day);
-int days_elapsed(int year, int month, int day, time_t now);
-const char *horoscope(char month, char day);
-int compute_user_value(const struct userec *urec);
-void show_position(const struct userec *user, char *buf, size_t size);
-
 //brdcache.c (bcache.c)
 extern struct BCACHE *brdshm;
 extern struct boardheader *bcache;

@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/uinfo.h"
 
 int bbsqry_main(void)
 {
