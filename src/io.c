@@ -8,6 +8,7 @@
 #include "libssh/libssh.h"
 #endif // SSHBBS
 #include "bbs.h"
+#include "fbbs/string.h"
 
 enum {
 	INPUT_ACTIVE = 0,

@@ -340,8 +340,6 @@ extern time_t uptime; /* save user last key-in time, up every 1min */
 #define SEM_COUNTONLINE 30000
 
 #define Ctrl(c)         ( c & 037 )		//可以考虑将函数宏改写成inline函数
-#define isprint2(c)     ( (c & 0x80) || isprint(c) )	//扩充的可打印字符
-//包括ASCII中所有可打印字符和第一位为1的字符
 
 #ifdef  SYSV						//SYSV中没有定义以下函数
 //#define bzero(tgt, len)         memset( tgt, 0, len )

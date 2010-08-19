@@ -5,6 +5,7 @@
 
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/string.h"
 
 char seccode[SECNUM][6]={
 #ifdef FDQUAN

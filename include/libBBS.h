@@ -29,18 +29,6 @@ const char *mode_type(int mode);
 bool is_web_user(int mode);
 int get_web_mode(int mode);
 
-//string.c
-char *strtolower(char *dst, const char *src);
-char *strtoupper(char *dst, const char *src);
-char *strcasestr_gbk(const char *haystack, const char *needle);
-char *ansi_filter(char *dst, const char *src);
-int ellipsis(char *str, int len);
-char *rtrim(char *str);
-char *trim(char *str);
-size_t strlcpy(char *dst, const char *src, size_t siz);
-void strtourl(char *url, const char *str);
-void strappend(char **dst, size_t *size, const char *src);
-
 //boardrc.c
 void brc_update(const char *userid, const char *board);
 int brc_initial(const char* userid, const char *board);
