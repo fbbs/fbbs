@@ -14,6 +14,7 @@ extern char *trim(char *str);
 extern size_t strlcpy(char *dst, const char *src, size_t siz);
 extern void strtourl(char *url, const char *str);
 extern void strappend(char **dst, size_t *size, const char *src);
+extern void printable_filter(char *str);
 
 static inline bool isprint2(char c)
 {

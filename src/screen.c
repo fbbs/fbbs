@@ -3,6 +3,7 @@
 #include "edit.h"
 #include <sys/param.h>
 #include <stdarg.h>
+#include "fbbs/string.h"
 
 /**
  * String of commands to clear the entire screen and position the cursor at the

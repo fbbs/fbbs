@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "fbbs/string.h"
 
 extern int RMSG;
 extern int msg_num;

@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "edit.h"
 #include "mmap.h"
+#include "fbbs/string.h"
 USE_TRY;
 
 extern int local_article;

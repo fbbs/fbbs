@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "fbbs/string.h"
 
 #define M_INT 8			/* monitor mode update interval */
 #define P_INT 20		/* interval to check for page req. in

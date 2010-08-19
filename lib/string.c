@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include "fbbs/string.h"
 
 /**
  * Convert string to lower case.
@@ -240,4 +241,23 @@ void strappend(char **dst, size_t *size, const char *src)
 		len = *size;
 	*dst += len;
 	*size -= len;
+}
+
+/**
+ * Remove non-printable characters.
+ * @param[in, out] str The string to be filtered.
+ */
+void printable_filter(char *str)
+{
+	if (!str)
+		return;
+
+	char *dst = str;
+
+	while (*str != '\0') {
+		if (isprint2(*str))
+			*dst++ = *str;
+		str++;
+	}
+	*dst = '\0';
 }
