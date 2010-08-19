@@ -1,7 +1,13 @@
-#include <bbs.h>
-#include <glossary.h>
+#include "bbs.h"
+#include "glossary.h"
+#include "fbbs/uinfo.h"
 
 #define MAX_PERF (1000)
+
+enum {
+	MIN_BIRTH_YEAR = 1901,
+	MAX_BIRTH_YEAR = 2009,
+};
 
 //	将经验值转换成显示字符,如 [---      ]等,[]不包括在内
 //  显示的字符以2000为单位,分别是-=+*#A
@@ -338,4 +344,53 @@ void show_position(const struct userec *user, char *buf, size_t size)
 #endif
 		}
 	}
+}
+
+/**
+ *
+ *
+ */
+static bool valid_birth_date(int year, int month, int day)
+{
+	if (year < MIN_BIRTH_YEAR || year > MAX_BIRTH_YEAR
+			|| month < 1 || month > 12)
+		return false;
+
+	int days = 31;
+	switch (month) {
+		case 2:
+			if (year % 4 == 0 && !(year % 100 == 0 && year % 400 != 0))
+				days = 29;
+			else
+				days = 28;
+			break;
+		case 4:
+		case 6:
+		case 9:
+		case 11:
+			days = 30;
+			break;
+	}
+	if (day < 0 || day > days)
+		return false;
+	return true;
+}
+
+/**
+ *
+ *
+ */
+int check_user_profile(const struct userec *u)
+{
+	if (strlen(u->username) < 2 || strstr(u->username, "  ")
+			|| (strstr(u->username, "　")))
+		return UINFO_ENICK;
+
+	if (strchr("MF", u->gender) == NULL)
+		return UINFO_EGENDER;
+
+	if (!valid_birth_date(u->birthyear + 1900, u->birthmonth, u->birthday))
+		return UINFO_EBIRTH;
+
+	return 0;
 }

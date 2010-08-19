@@ -3,6 +3,12 @@
 
 #include "bbs.h"
 
+enum {
+	UINFO_ENICK = -1,
+	UINFO_EGENDER = -2,
+	UINFO_EBIRTH = -3,
+};
+
 extern char *cexpstr(int exp);
 #ifdef ALLOWGAME
 extern char *cnummedals(int num);
