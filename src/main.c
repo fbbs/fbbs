@@ -873,7 +873,7 @@ static void user_login(void)
 	}
 
 	set_safe_record();
-	check_uinfo(&currentuser, 0);
+	tui_check_uinfo(&currentuser);
 	strlcpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
 	{
 		time_t stay, recent;

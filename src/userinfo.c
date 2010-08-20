@@ -1,30 +1,5 @@
-// deardragon 2000.09.26 over
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: userinfo.c 366 2007-05-12 16:35:51Z danielfree $
- */
-
 #include "bbs.h"
+#include "fbbs/uinfo.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -195,117 +170,41 @@ void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 #endif
 }
 
-// 检查用户的资料,
-void check_uinfo(struct userec *u, int MUST) {
-	int changeIT = 0, changed = 0, pos = 2;
-	int r = 0; // added by money 2003.10.24. for test 闰年
-	char *ptr;// added by money 2003.10.29. for filter '0xff'
+void tui_check_uinfo(struct userec *u)
+{
 	char ans[5];
+	bool finish = false;
 
-	while (1) { // 检查昵称
-		changeIT = MUST || (strlen(u->username) < 2) ||(strstr(
-				u->username, "  "))||(strstr(u->username, "　"));
-		if (!changeIT) { //不需要再改变
-			if (changed) {
-				pos ++;
-				changed = 0;
-			}
-			break;
-		} else {
-			MUST = 0;
-			changed = 1;
+	while (!finish) {
+		switch (check_user_profile(u)) {
+			case UINFO_ENICK:
+				getdata(2, 0, "请输入您的昵称 (Enter nickname): ",
+						u->username, NAMELEN, DOECHO, YEA);
+				strlcpy(uinfo.username, u->username, sizeof(uinfo.username));
+				printable_filter(uinfo.username);
+				update_ulist(&uinfo, utmpent);
+				break;
+			case UINFO_EGENDER:
+				getdata(3, 0, "请输入您的性别: M.男 F.女 [M]: ",
+						ans, 2, DOECHO, YEA);
+				if (ans[0] != 'F' && ans[0] != 'f')
+					u->gender = 'M';
+				else
+					u->gender = 'F';
+				break;
+			case UINFO_EBIRTH:
+				getdata(4, 0, "请输入您的生日年份(四位数): ",
+						ans, 5, DOECHO, YEA);
+				u->birthyear = strtol(ans, NULL, 10);
+				getdata(5, 0, "请输入您的生日月份: ", ans, 3, DOECHO, YEA);
+				u->birthmonth = strtol(ans, NULL, 10);
+				getdata(6, 0, "请输入您的出生日: ", ans, 3, DOECHO, YEA);
+				u->birthday = strtol(ans, NULL, 10);
+				break;
+			default:
+				finish = true;
+				break;
 		}
-		getdata(pos, 0, "请输入您的昵称 (Enter nickname): ", u->username,
-				NAMELEN, DOECHO, YEA);
-		strcpy(uinfo.username, u->username);
-		ptr = uinfo.username;
-		filter_ff(ptr);
-		update_ulist(&uinfo, utmpent);
-	}
-	{ // 检查性别
-		changeIT = MUST||(strchr("MF", u->gender) == NULL);
-		if (changeIT) {
-			getdata(pos, 0, "请输入您的性别: M.男 F.女 [M]: ", ans, 2, DOECHO, YEA);
-			if (ans[0]!='F'&& ans[0]!='f'||ans[0]=='m') //后一个判断可省...
-				u->gender = 'M';
-			else
-				u->gender = 'F';
-			pos ++;
-		}
-	}
-	while (1) { // 检查出生年
-		changeIT = MUST||(u->birthyear <20) ||(u->birthyear>98);
-		if (u->birthyear % 4 == 0) {
-			if (u->birthyear % 100 != 0)
-				r = 1;
-			else if (u->birthyear % 400 == 0)
-				r = 1;
-		}
-		if (!changeIT) {
-			if (changed) {
-				pos ++;
-				changed = 0;
-			}
-			break;
-		} else {
-			MUST = 0;
-			changed = 1;
-		}
-		getdata(pos, 0, "请输入您的生日年份(四位数): ", ans, 5, DOECHO, YEA);
-		if (atoi(ans)<1920 || atoi(ans) > 1998) {
-			MUST = 1;
-			continue;
-		}
-		u->birthyear = atoi(ans) -1900;
-		/* add by money 2003.10.24. for test 闰年 */
-		if ((atoi(ans) % 4) == 0) {
-			if ((atoi(ans) % 100) != 0)
-				r = 1;
-			else if ((atoi(ans) % 400) == 0)
-				r = 1;
-		}
-		/* add end */
-	}
-	while (1) { // 检查出生月
-		changeIT = MUST||(u->birthmonth <1) ||(u->birthmonth>12);
-		if (!changeIT) {
-			if (changed) {
-				pos ++;
-				changed = 0;
-			}
-			break;
-		} else {
-			MUST = 0;
-			changed = 1;
-		}
-		getdata(pos, 0, "请输入您的生日月份: ", ans, 3, DOECHO, YEA);
-		u->birthmonth = atoi(ans);
-	}
-	while (1) { // 检查出生日
-		changeIT = MUST||(u->birthday <1) ||(u->birthday>31)
-				||(u->birthmonth<8&&!(u->birthmonth%2)&&(u->birthday>30)
-				||u->birthmonth>7&&(u->birthmonth%2))&&u->birthday>30
-		|| u->birthmonth==2&&u->birthday>29;
-		/* add by money 2003.10.24. for check 2.28/29 */
-		if (u->birthmonth == 2) {
-			if (!r)
-			if ((u->birthday>28)&&(!changeIT))
-			changeIT = !changeIT;
-		}
-		/* add end */
-
-		if(!changeIT) {
-			if(changed) {
-				pos ++;
-				changed = 0;
-			}
-			break;
-		} else {
-			MUST = 0;
-			changed = 1;
-		}
-		getdata(pos, 0, "请输入您的出生日: ", ans, 3, DOECHO, YEA);
-		u->birthday = atoi(ans);
 	}
 }
 
