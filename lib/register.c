@@ -138,3 +138,70 @@ int check_userid(const char *userid)
 		return BBS_EREG_BADNAME;
 	return 0;
 }
+
+char *genrandpwd(int seed) {
+	char panel[]=
+			"1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	char *result;
+	int i, rnd;
+
+	result = (char *) malloc(RNDPASSLEN + 1);
+	srand((unsigned) (time(0) * seed));
+	memset(result, 0, RNDPASSLEN + 1);
+	for (i = 0; i < RNDPASSLEN; i++) {
+		rnd = rand() % sizeof(panel);
+		if (panel[rnd] == '\0') {
+			i--;
+			continue;
+		}
+		result[i] = panel[rnd];
+	}
+	sethomefile(genbuf, currentuser.userid, ".regpass");
+	unlink(genbuf);
+	file_append(genbuf, result);
+	return ((char *) result);
+}
+
+void regmail_send(struct userec *trec, char* mail) {
+	time_t code;
+	FILE *fout, *dp;
+	char buf[RNDPASSLEN + 1];
+	sprintf(buf, "%s", (char *) genrandpwd((int) getpid()));
+	sethomefile(genbuf, trec->userid, ".regpass");
+	if ((dp = fopen(genbuf, "w")) == NULL)
+		return;
+	dp = fopen(genbuf, "w+");
+	fprintf(dp, "%s\n", buf);
+	fprintf(dp, "%s\n", mail);
+	fclose(dp);
+
+	code = time(0);
+	sprintf(genbuf, "%s -f %s.bbs@%s %s", MTA, trec->userid, BBSHOST, mail);
+	fout = popen(genbuf, "w");
+	if (fout != NULL) {
+		fprintf(fout, "Reply-To: SYSOP.bbs@%s\n", BBSHOST);
+		fprintf(fout, "From: SYSOP.bbs@%s\n", BBSHOST);
+		fprintf(fout, "To: %s\n", mail);
+		fprintf(fout, "Subject: %s@%s mail check.\n", trec->userid, BBSID);
+		fprintf(fout, "X-Purpose: %s registration mail.\n", BBSNAME);
+		fprintf(fout, "\n");
+		fprintf(fout, "[中文]\n");
+		fprintf(fout, "BBS 位址         : %s (%s)\n", BBSHOST, BBSIP);
+		fprintf(fout, "您注册的 BBS ID  : %s\n", trec->userid);
+		fprintf(fout, "申请日期         : %s", ctime(&trec->firstlogin));
+		fprintf(fout, "认证码           : %s (请注意大小写)\n", buf);
+		fprintf(fout, "认证信发出日期   : %s\n", ctime(&code));
+
+		fprintf(fout, "[English]\n");
+		fprintf(fout, "BBS LOCATION     : %s (%s)\n", BBSHOST, BBSIP);
+		fprintf(fout, "YOUR BBS USER ID : %s\n", trec->userid);
+		fprintf(fout, "APPLICATION DATE : %s", ctime(&trec->firstlogin));
+		fprintf(fout, "YOUR NICK NAME   : %s\n", trec->username);
+		fprintf(fout, "VALID CODE       : %s (case sensitive)\n", buf);
+		fprintf(fout, "THIS MAIL SENT ON: %s\n", ctime(&code));
+
+		fprintf(fout, ".\n");
+		fclose(fout);
+	}
+
+}
