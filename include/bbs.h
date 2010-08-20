@@ -104,9 +104,7 @@
 
 #define PASSLEN		 	14    /* User's password length (13 chars) */
 
-//#ifdef CODE_VALID
 #define RNDPASSLEN             10        /* 暗码认证的暗码长度 (适宜范围 4~10)*/
-//#endif
 
 #define PASSFILE     ".PASSWDS"    /* Name of file User records stored in */
 #define ULIST_BASE   ".UTMP"       /* Names of users currently on line */

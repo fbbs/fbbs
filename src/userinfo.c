@@ -124,12 +124,6 @@ void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 	sprintf(genbuf, "µç×ÓĞÅÏä [%s]: ", u->email);
 	getdata(i++, 0, genbuf, buf, STRLEN - 1, DOECHO, YEA);
 	if (buf[0]) {
-#ifdef MAILCHECK
-#ifdef MAILCHANGED
-		if(u->uid == usernum)
-		netty_check = 1;
-#endif
-#endif
 		strlcpy(newinfo->email, buf, STRLEN-12);
 	}
 
@@ -216,9 +210,6 @@ int uinfo_query(struct userec *u, int real, int unum) {
 	int i, fail = 0;
 	unsigned char *ptr; //add by money 2003.10.29 for filter '0xff' in nick
 	int r = 0; //add by money 2003.10.14 for test ÈòÄê
-#ifdef MAILCHANGED
-	int netty_check = 0;
-#endif
 	time_t now;
 	struct tm *tmnow;
 	memcpy(&newinfo, u, sizeof(currentuser));
@@ -312,24 +303,6 @@ int uinfo_query(struct userec *u, int real, int unum) {
 					break;
 				}
 			}
-			/*Modified by IAMFAT 2002-05-25*/
-			/*
-			 getdata(i++, 0, "ÇëÉè¶¨ĞÂÃÜÂë: ", buf, PASSLEN, NOECHO, YEA);
-			 if (buf[0] == '\0') {
-			 prints("\n\nÃÜÂëÉè¶¨È¡Ïû, ¼ÌĞøÊ¹ÓÃ¾ÉÃÜÂë\n");
-			 fail++;
-			 break;
-			 }
-			 strncpy(genbuf, buf, PASSLEN); 
-			 getdata(i++, 0, "ÇëÖØĞÂÊäÈëĞÂÃÜÂë: ", buf, PASSLEN, NOECHO, YEA);
-			 if (strncmp(buf, genbuf, PASSLEN)) {
-			 prints("\n\nĞÂÃÜÂëÈ·ÈÏÊ§°Ü, ÎŞ·¨Éè¶¨ĞÂÃÜÂë¡£\n");
-			 fail++;
-			 break;
-			 }
-			 buf[8] = '\0';
-			 strncpy(newinfo.passwd, genpasswd(buf), ENCPASSLEN);
-			 */
 			while (1) {
 				getdata(i++, 0, "ÇëÉè¶¨ĞÂÃÜÂë: ", buf, PASSLEN, NOECHO, YEA);
 				if (buf[0] == '\0') {
@@ -353,7 +326,6 @@ int uinfo_query(struct userec *u, int real, int unum) {
 				strlcpy(newinfo.passwd, genpasswd(buf), ENCPASSLEN);
 				break;
 			}
-			/* Modify End */
 			break;
 		case '3':
 			if (!real) {
@@ -361,27 +333,6 @@ int uinfo_query(struct userec *u, int real, int unum) {
 				getdata(i++, 0, genbuf, buf, 16, DOECHO, YEA);
 				if (atoi(buf) >= 0)
 					newinfo.signature = atoi(buf);
-			} else {
-				/* Remmed by Amigo 2002.04.24. Userid unchangable. 
-				 struct user_info uin;
-				 extern int t_cmpuids();
-				 if(t_search_ulist(&uin, t_cmpuids, unum, NA, NA)!=0){
-				 prints("\n¶Ô²»Æğ£¬¸ÃÓÃ»§Ä¿Ç°ÕıÔÚÏßÉÏ¡£");
-				 fail++;
-				 } else if(!strcmp(lookupuser.userid,"SYSOP")) {
-				 prints("\n¶Ô²»Æğ£¬Äã²»¿ÉÒÔĞŞ¸Ä SYSOP µÄ ID¡£");
-				 fail++;
-				 } else {   
-				 getdata(i++,0,"ĞÂµÄÊ¹ÓÃÕß´úºÅ: ",genbuf,IDLEN+1,DOECHO, YEA);
-				 if (*genbuf != '\0') {
-				 if (getuser(genbuf)) {
-				 prints("\n¶Ô²»Æğ! ÒÑ¾­ÓĞÍ¬Ñù ID µÄÊ¹ÓÃÕß\n");
-				 fail++;
-				 } else {
-				 strncpy(newinfo.userid, genbuf, IDLEN + 2);
-				 }
-				 } else fail ++;
-				 }*/
 			}
 			break;
 		default:
@@ -418,38 +369,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 			strlcpy(uinfo.username, newinfo.username, NAMELEN);
 			WishNum = 9999;
 		}
-#ifdef MAILCHECK	 
-#ifdef MAILCHANGED
-		if ((netty_check == 1)&&!HAS_PERM(PERM_SYSOPS)) {
-			sprintf(genbuf, "%s", BBSHOST);
-			if ( (!strstr(newinfo.email, genbuf)) &&
-					(!invalidaddr(newinfo.email)) &&
-					(!invalid_email(newinfo.email))) {
-				strcpy(u->email, newinfo.email);
-				send_regmail(u);
-			} else {
-				move(t_lines - 5, 0);
-				prints("\nÄúËùÌîµÄµç×ÓÓÊ¼şµØÖ· ¡¾[1;33m%s[m¡¿\n",
-						newinfo.email);
-				prints("Ë¡²»ÊÜ±¾Õ¾³ĞÈÏ£¬ÏµÍ³²»»áÍ¶µİ×¢²áĞÅ£¬Çë°ÑËüĞŞÕıºÃ...\n");
-				pressanykey();
-				return 0;
-			}
-		}
-#endif
-#endif
 		memcpy(u, &newinfo, (size_t)sizeof(currentuser));
-#ifdef MAILCHECK
-#ifdef MAILCHANGED
-		if ((netty_check == 1)&&!HAS_PERM(PERM_SYSOPS)) {
-			/* Following line modified by Amigo 2002.06.08. To omit default perm_page right. */
-			newinfo.userlevel &= ~(PERM_REGISTER | PERM_TALK);
-			sethomefile(src, newinfo.userid, "register");
-			sethomefile(dst, newinfo.userid, "register.old");
-			rename(src, dst);
-		}
-#endif
-#endif
 		substitut_record(PASSFILE, &newinfo, sizeof(newinfo), unum);
 	}
 	clear();

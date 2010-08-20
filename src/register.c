@@ -224,8 +224,7 @@ int check_register_ok(void) {
 	}
 	return 0;
 }
-//#ifdef MAILCHECK
-//#ifdef CODE_VALID
+
 char *genrandpwd(int seed) {
 	char panel[]=
 			"1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -248,72 +247,6 @@ char *genrandpwd(int seed) {
 	file_append(genbuf, result);
 	return ((char *) result);
 }
-//#endif
-
-void send_regmail(struct userec *trec) {
-	time_t code;
-	FILE *fin, *fout, *dp;
-#ifdef CODE_VALID
-
-	char buf[RNDPASSLEN + 1];
-#endif
-
-	sethomefile(genbuf, trec->userid, "mailcheck");
-	if ((dp = fopen(genbuf, "w")) == NULL)
-		return;
-	code = time(0);
-	fprintf(dp, "%9.9"PRIdFBT":%d\n", code, getpid());
-	fclose(dp);
-
-	sprintf(genbuf, "%s -f %s.bbs@%s %s ", MTA, trec->userid,
-			BBSHOST, trec->email);
-	fout = popen(genbuf, "w");
-	fin = fopen("etc/mailcheck", "r");
-	if ((fin != NULL) && (fout != NULL)) {
-		fprintf(fout, "Reply-To: SYSOP.bbs@%s\n", BBSHOST);
-		fprintf(fout, "From: SYSOP.bbs@%s\n", BBSHOST);
-		fprintf(fout, "To: %s\n", trec->email);
-		fprintf(fout, "Subject: @%s@[-%9.9"PRIdFBT":%d-]%s mail check.\n",
-				trec->userid, code, getpid(), BBSID);
-		fprintf(fout, "X-Purpose: %s registration mail.\n", BBSNAME);
-		fprintf(fout, "\n");
-		fprintf(fout, "[ÖĞÎÄ]\n");
-		fprintf(fout, "BBS Î»Ö·         : %s (%s)\n", BBSHOST, BBSIP);
-		fprintf(fout, "Äú×¢²áµÄ BBS ID  : %s\n", trec->userid);
-		fprintf(fout, "ÉêÇëÈÕÆÚ         : %s", ctime(&trec->firstlogin));
-		fprintf(fout, "µÇÈëÀ´Ô´         : %s\n", fromhost);
-#ifdef CODE_VALID
-		sprintf(buf, "%s", (char *) genrandpwd((int) getpid()));
-		fprintf(fout, "×¢²áÂë           : %s (Çë×¢Òâ´óĞ¡Ğ´)\n", buf);
-#endif
-
-		fprintf(fout, "ÈÏÖ¤ĞÅ·¢³öÈÕÆÚ   : %s\n", ctime(&code));
-
-		fprintf(fout, "[English]\n");
-		fprintf(fout, "BBS LOCATION     : %s (%s)\n", BBSHOST, BBSIP);
-		fprintf(fout, "YOUR BBS USER ID : %s\n", trec->userid);
-		fprintf(fout, "APPLICATION DATE : %s", ctime(&trec->firstlogin));
-		fprintf(fout, "LOGIN HOST       : %s\n", fromhost);
-		fprintf(fout, "YOUR NICK NAME   : %s\n", trec->username);
-#ifdef CODE_VALID
-
-		fprintf(fout, "VALID CODE       : %s (case sensitive)\n", buf);
-#endif
-
-		fprintf(fout, "THIS MAIL SENT ON: %s\n", ctime(&code));
-
-		while (fgets(genbuf, 255, fin) != NULL) {
-			if (genbuf[0] == '.' && genbuf[1] == '\n')
-				fputs(". \n", fout);
-			else
-				fputs(genbuf, fout);
-		}
-		fprintf(fout, ".\n");
-		fclose(fin);
-		fclose(fout);
-	}
-}
-//#endif
 
 void regmail_send(struct userec *trec, char* mail) {
 	time_t code;
@@ -528,15 +461,6 @@ void check_register_info() {
 	struct userec *urec = &currentuser;
 	FILE *fout;
 	char buf[192], buf2[STRLEN];
-#ifdef MAILCHECK
-
-	char ans[4];
-#ifdef CODE_VALID
-
-	int i;
-#endif
-#endif
-
 	if (!(urec->userlevel & PERM_LOGIN)) {
 		urec->userlevel = 0;
 		return;
@@ -626,71 +550,6 @@ void check_register_info() {
 	}
 #endif
 
-#ifdef MAILCHECK
-#ifdef CODE_VALID
-	sethomefile(buf, currentuser.userid, ".regpass");
-	if (dashf(buf)) {
-		move(13, 0);
-		prints("ÄúÉĞÎ´Í¨¹ıÉí·İÈ·ÈÏ... \n");
-		prints("ÄúÏÖÔÚ±ØĞëÊäÈë×¢²áÈ·ÈÏĞÅÀï, \"ÈÏÖ¤°µÂë\"À´×öÎªÉí·İÈ·ÈÏ\n");
-		prints("Ò»¹²ÊÇ %d ¸ö×Ö·û, ´óĞ¡Ğ´ÊÇÓĞ²î±ğµÄ, Çë×¢Òâ.\n", RNDPASSLEN);
-		prints("ÈôÏëÈ¡Ïû¿ÉÒÔÁ¬°´ÈıÏÂ [Enter] ¼ü.\n");
-		prints("[1;33mÇë×¢Òâ, ÇëÊäÈë×îĞÂÒ»·âÈÏÖ¤ĞÅÖĞËù°üº¬µÄÂÒÊıÃÜÂë£¡[m\n");
-		if ((fout = fopen(buf, "r")) != NULL) {
-			fscanf(fout, "%s", buf2);
-			fclose(fout);
-			for (i = 0; i < 3; i++) {
-				move(18, 0);
-				prints("Äú»¹ÓĞ %d ´Î»ú»á\n", 3 - i);
-				getdata(19,0,"ÇëÊäÈëÈÏÖ¤°µÂë: ",genbuf,(RNDPASSLEN+1),DOECHO,YEA);
-				if (strcmp(genbuf, "") != 0) {
-					if (strcmp(genbuf, buf2) != 0)
-					continue;
-					else
-					break;
-				}
-			}
-		} else
-		i = 3;
-		if (i == 3) {
-			prints("°µÂëÈÏÖ¤Ê§°Ü! ÄúĞèÒªÌîĞ´×¢²áµ¥»ò½ÓÊÕÈ·ÈÏĞÅÒÔÈ·¶¨ÄúµÄÉí·İ\n");
-			getdata(22,0,"ÇëÑ¡Ôñ£º1.Ìî×¢²áµ¥ 2.½ÓÊÕÈ·ÈÏĞÅ [1]:",ans,2,DOECHO,YEA);
-			if(ans[0] == '2') {
-				send_regmail(&currentuser);
-				pressanykey();
-			} else
-			x_fillform();
-		} else {
-			set_safe_record();
-			urec->userlevel |= PERM_DEFAULT;
-			substitut_record(PASSFILE, urec,sizeof(struct userec), usernum);
-			prints("¹§ºØÄú!! ÄúÒÑË³ÀûÍê³É±¾Õ¾µÄÊ¹ÓÃÕß×¢²áÊÖĞø,\n");
-			prints("´ÓÏÖÔÚÆğÄú½«ÓµÓĞÒ»°ãÊ¹ÓÃÕßµÄÈ¨ÀûÓëÒåÎñ...\n");
-			unlink(buf);
-			mail_file("etc/smail", "SYSOP", "»¶Ó­¼ÓÈë±¾Õ¾ĞĞÁĞ");
-			pressanykey();
-		}
-		return;
-	}
-#endif
-	if ( (!strstr(urec->email, BBSHOST)) && (!invalidaddr(urec->email)) &&
-			(!invalid_email(urec->email))) {
-		move(13, 0);
-		prints("ÄúµÄµç×ÓĞÅÏä ÉĞĞëÍ¨¹ı»ØĞÅÑéÖ¤...  \n");
-		prints("    ±¾Õ¾½«ÂíÉÏ¼ÄÒ»·âÑéÖ¤ĞÅ¸øÄú,\n");
-		prints("    ÄúÖ»Òª´Ó %s »ØĞÅ, ¾Í¿ÉÒÔ³ÉÎª±¾Õ¾ºÏ¸ñ¹«Ãñ.\n\n", urec->email);
-		prints("    ³ÉÎª±¾Õ¾ºÏ¸ñ¹«Ãñ, ¾ÍÄÜÏíÓĞ¸ü¶àµÄÈ¨Òæà¸!\n");
-		prints("    ÄúÒ²¿ÉÒÔÖ±½ÓÌîĞ´×¢²áµ¥£¬È»ºóµÈ´ıÕ¾³¤µÄÊÖ¹¤ÈÏÖ¤¡£\n");
-		getdata(21,0,"ÇëÑ¡Ôñ£º1.Ìî×¢²áµ¥ 2.·¢È·ÈÏĞÅ [1]: ",ans,2,DOECHO,YEA);
-		if(ans[0] == '2') {
-			send_regmail(&currentuser);
-			getdata(21,0,"È·ÈÏĞÅÒÑ¼Ä³ö, µÈÄú»ØĞÅÅ¶!! ",ans, 2, DOECHO, YEA);
-			return;
-		}
-	}
-#endif
-	/* Following line modified by Amigo 2002.04.23. Fill form only when no new letter. */
-	/*   x_fillform();*/
 	if (!chkmail())
 		x_fillform();
 }
