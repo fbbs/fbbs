@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/string.h"
 
 // TODO: Handle user-defined directories.
 static int read_submit(void)

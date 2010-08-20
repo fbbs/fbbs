@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/string.h"
 
 /**
  * Print override information.

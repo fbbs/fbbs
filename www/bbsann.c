@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/string.h"
 
 enum {
 	ANN_TITLE_LENGTH = 39

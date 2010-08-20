@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "record.h"
+#include "fbbs/string.h"
 
 static int cmp_fid(const void *key, const void *buf)
 {
