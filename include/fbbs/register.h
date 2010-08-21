@@ -12,5 +12,6 @@ enum {
 extern bool is_no_register(void);
 extern int check_userid(const char *userid);
 extern int send_regmail(const struct userec *user, const char *mail);
+extern bool activate_email(const char *userid, const char *attempt);
 
 #endif // FB_REGISTER_H

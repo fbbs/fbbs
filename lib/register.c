@@ -1,6 +1,9 @@
 #include "libBBS.h"
 #include "bbs.h"
 #include "fbbs/register.h"
+#include "fbbs/string.h"
+
+#define REG_CODE_FILE ".regpass"
 
 bool is_no_register(void)
 {
@@ -187,7 +190,7 @@ int send_regmail(const struct userec *user, const char *mail)
 	generate_random_password(password, sizeof(password));
 
 	char file[HOMELEN];
-	sethomefile(file, user->userid, ".regpass");
+	sethomefile(file, user->userid, REG_CODE_FILE);
 	FILE *fp = fopen(file, "w");
 	if (!fp)
 		return -1;
@@ -220,4 +223,32 @@ int send_regmail(const struct userec *user, const char *mail)
 			BBSHOST, BBSIP, user->userid, ctime(&user->firstlogin), password);
 	fclose(fout);
 	return 0;
+}
+
+bool activate_email(const char *userid, const char *attempt)
+{
+	char file[HOMELEN];
+	sethomefile(file, userid, REG_CODE_FILE);
+	FILE *fp = fopen(file, "r");
+	if (!fp)
+		return false;
+
+	char code[RNDPASSLEN + 1], email[EMAIL_LEN];
+	fscanf(fp, "%s", code);
+	fscanf(fp, "%s", email);
+	fclose(fp);
+
+	if (strcmp(code, attempt) != 0)
+		return false;
+
+	int num = getuserec(userid, &currentuser);
+	if (!num)
+		return false;
+
+	currentuser.userlevel |= PERM_BINDMAIL;
+	strlcpy(currentuser.email, email, sizeof(currentuser.email));
+	substitut_record(NULL, &currentuser, sizeof(currentuser), num);
+
+	unlink(file);
+	return true;
 }
