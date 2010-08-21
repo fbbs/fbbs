@@ -225,92 +225,69 @@ int check_register_ok(void) {
 	return 0;
 }
 
-void check_reg_mail() {
-	struct userec *urec = &currentuser;
-	char buf[192], code[STRLEN], email[STRLEN]="ÄúµÄÓÊÏä";
-	FILE *fout;
-	int i;
-	sethomefile(buf, urec->userid, ".regpass");
-	if (!dashf(buf)) {
+void tui_check_reg_mail(void)
+{
+	char email[EMAIL_LEN] = "ÄúµÄÓÊÏä", file[HOMELEN], buf[RNDPASSLEN + 1];
+	int i = 0;
+
+	sethomefile(file, currentuser.userid, REG_CODE_FILE);
+	if (!dashf(file)) {
 		move(1, 0);
-		prints("    ÇëÊäÈëÄúµÄ¸´µ©ÓÊÏä(username@fudan.edu.cn)\n");
-		prints("    [1;32m±¾Õ¾²ÉÓÃ¸´µ©ÓÊÏä°ó¶¨ÈÏÖ¤£¬½«·¢ËÍÈÏÖ¤ÂëÖÁÄúµÄ¸´µ©ÓÊÏä[m");
+		outs("    ÇëÊäÈëÄúµÄ¸´µ©ÓÊÏä(username@fudan.edu.cn)\n");
+		outs("    \033[1;32m±¾Õ¾²ÉÓÃ¸´µ©ÓÊÏä°ó¶¨ÈÏÖ¤£¬½«·¢ËÍÈÏÖ¤ÂëÖÁÄúµÄ¸´µ©ÓÊÏä\033[m");
 		do {
-			getdata(3, 0, "    E-Mail:> ", email, STRLEN-12, DOECHO, YEA);
-			if (invalidaddr(email) ||(strstr(email, "@fudan.edu.cn")
-					== NULL) || invalid_email(email) == 1) {
+			getdata(3, 0, "    E-Mail:> ", email, sizeof(email), DOECHO, YEA);
+			if (invalidaddr(email) || (strstr(email, "@fudan.edu.cn") == NULL)
+					|| invalid_email(email) == 1) {
 				prints("    ¶Ô²»Æğ, ¸ÃemailµØÖ·ÎŞĞ§, ÇëÖØĞÂÊäÈë \n");
 				continue;
 			} else
 				break;
 		} while (1);
-		send_regmail(urec, email);
+
+		send_regmail(&currentuser, email);
 	}
+
 	move(4, 0);
 	clrtoeol();
 	move(5, 0);
-	prints(" [1;33m   ÈÏÖ¤ÂëÒÑ·¢ËÍµ½ %s £¬Çë²éÊÕ[m\n", email);
+	prints(" \033[1;33m   ÈÏÖ¤ÂëÒÑ·¢ËÍµ½ %s £¬Çë²éÊÕ\033[m\n", email);
 
-	getdata(7, 0, "    ÏÖÔÚÊäÈëÈÏÖ¤ÂëÃ´£¿[Y/n] ", buf, 2, DOECHO, YEA);
-	if (buf[0] != 'n' && buf[0] != 'N') {
+	move(7, 0);
+	if (askyn("    ÏÖÔÚÊäÈëÈÏÖ¤ÂëÃ´£¿", true, false)) {
 		move(9, 0);
-		prints("ÇëÊäÈë×¢²áÈ·ÈÏĞÅÀï, \"ÈÏÖ¤Âë\"À´×öÎªÉí·İÈ·ÈÏ\n");
+		outs("ÇëÊäÈë×¢²áÈ·ÈÏĞÅÀï, \"ÈÏÖ¤Âë\"À´×öÎªÉí·İÈ·ÈÏ\n");
 		prints("Ò»¹²ÊÇ %d ¸ö×Ö·û, ´óĞ¡Ğ´ÊÇÓĞ²î±ğµÄ, Çë×¢Òâ.\n", RNDPASSLEN);
-		prints("Çë×¢Òâ, ÇëÊäÈë×îĞÂÒ»·âÈÏÖ¤ĞÅÖĞËù°üº¬µÄÂÒÊıÃÜÂë£¡\n");
-		prints("\n[1;31mÌáÊ¾£º×¢²áÂëÊä´í 3´ÎºóÏµÍ³½«ÒªÇóÄúÖØÌîĞè°ó¶¨µÄÓÊÏä¡£[m\n");
+		outs("Çë×¢Òâ, ÇëÊäÈë×îĞÂÒ»·âÈÏÖ¤ĞÅÖĞËù°üº¬µÄÂÒÊıÃÜÂë£¡\n\n"
+				"\033[1;31mÌáÊ¾£º×¢²áÂëÊä´í 3´ÎºóÏµÍ³½«ÒªÇóÄúÖØÌîĞè°ó¶¨µÄÓÊÏä¡£\033[m\n");
 
-		sethomefile(buf, currentuser.userid, ".regpass");
-		if ((fout = fopen(buf, "r")) != NULL) {
-			//ÊäÈÏÖ¤Âë
-			fscanf(fout, "%s", code);
-			fscanf(fout, "%s", email);
-			fclose(fout);
-			//3´Î»ú»á
-			for (i = 0; i < 3; i++) {
-				move(15, 0);
-				prints("Äú»¹ÓĞ %d ´Î»ú»á\n", 3 - i);
-				getdata(16, 0, "ÇëÊäÈëÈÏÖ¤Âë: ", genbuf, (RNDPASSLEN+1), DOECHO,
-						YEA);
-
-				if (strcmp(genbuf, "") != 0) {
-					if (strcmp(genbuf, code) != 0)
-						continue;
-					else
-						break;
-				}
-			}
-		} else
-			i = 3;
-
-		unlink(buf);
-		if (i == 3) {
-			prints("ÈÏÖ¤ÂëÈÏÖ¤Ê§°Ü!ÇëÖØÌîÓÊÏä¡£\n");
-			//add by eefree 06.8.16
-			sethomefile(buf, currentuser.userid, ".regextra");
-			if (dashf(buf))
-				unlink(buf);
-			//add end
-			pressanykey();
-		} else {
-			set_safe_record();
-			urec->userlevel |= PERM_BINDMAIL;
-			strcpy(urec->email, email);
-			substitut_record(PASSFILE, urec, sizeof(struct userec),
-					usernum);
-			prints("ÈÏÖ¤ÂëÈÏÖ¤³É¹¦!\n");
-			//add by eefree 06.8.10
-			sethomefile(buf, currentuser.userid, ".regextra");
-			if (dashf(buf)) {
-				prints("ÎÒÃÇ½«ÔİÊ±±£ÁôÄúµÄÕı³£Ê¹ÓÃÈ¨ÏŞ,Èç¹ûºË¶ÔÄúÊäÈëµÄ¸öÈËĞÅÏ¢ÓĞÎó½«Í£Ö¹ÄúµÄ·¢ÎÄÈ¨ÏŞ,\n");
-				prints("Òò´ËÇëÈ·±£ÄúÊäÈëµÄÊÇ¸öÈËÕæÊµĞÅÏ¢.\n");
-			}
-			//add end
-			if (!HAS_PERM(PERM_REGISTER)) {
-				prints("Çë¼ÌĞøÌîĞ´×¢²áµ¥¡£\n");
-			}
-			pressanykey();
+		for (i = 0; i < 3; i++) {
+			move(15, 0);
+			prints("Äú»¹ÓĞ %d ´Î»ú»á\n", 3 - i);
+			getdata(16, 0, "ÇëÊäÈëÈÏÖ¤Âë: ", buf, sizeof(buf), DOECHO, YEA);
+			if (activate_email(currentuser.userid, buf))
+				break;
 		}
+	}
+
+	if (i == 3) {
+		unlink(buf);
+		prints("ÈÏÖ¤Ê§°Ü! ÇëÖØÌîÓÊÏä¡£\n");
+		sethomefile(buf, currentuser.userid, ".regextra");
+		if (dashf(buf))
+			unlink(buf);
+		pressanykey();
 	} else {
+		prints("ÈÏÖ¤³É¹¦!\n");
+		sethomefile(buf, currentuser.userid, ".regextra");
+		if (dashf(buf)) {
+			prints("ÎÒÃÇ½«ÔİÊ±±£ÁôÄúµÄÕı³£Ê¹ÓÃÈ¨ÏŞ,Èç¹ûºË¶ÔÄúÊäÈëµÄ¸öÈËĞÅÏ¢ÓĞÎó½«Í£Ö¹ÄúµÄ·¢ÎÄÈ¨ÏŞ,\n");
+			prints("Òò´ËÇëÈ·±£ÄúÊäÈëµÄÊÇ¸öÈËÕæÊµĞÅÏ¢.\n");
+		}
+		if (!HAS_PERM(PERM_REGISTER)) {
+			prints("Çë¼ÌĞøÌîĞ´×¢²áµ¥¡£\n");
+		}
+		pressanykey();
 	}
 }
 
@@ -384,7 +361,7 @@ void check_reg_extra() {
 		send_regmail(urec, schmate.email);
 	}
 	clear();
-	check_reg_mail();
+	tui_check_reg_mail();
 }
 
 /*add end*/
@@ -461,7 +438,7 @@ void check_register_info() {
 			}
 			//add end.
 		}
-		check_reg_mail();
+		tui_check_reg_mail();
 	}
 
 #endif

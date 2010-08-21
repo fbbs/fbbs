@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#define REG_CODE_FILE ".regpass"
+
 enum {
 	BBS_EREG_NONALPHA = -1,
 	BBS_EREG_SHORT = -2,

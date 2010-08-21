@@ -3,8 +3,6 @@
 #include "fbbs/register.h"
 #include "fbbs/string.h"
 
-#define REG_CODE_FILE ".regpass"
-
 bool is_no_register(void)
 {
 	return dashf("NOREGISTER");
