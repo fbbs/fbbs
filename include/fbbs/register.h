@@ -9,7 +9,8 @@ enum {
 	BBS_EREG_BADNAME = -3,
 };
 
-bool is_no_register(void);
-int check_userid(const char *userid);
+extern bool is_no_register(void);
+extern int check_userid(const char *userid);
+extern int send_regmail(const struct userec *user, const char *mail);
 
 #endif // FB_REGISTER_H

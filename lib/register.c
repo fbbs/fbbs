@@ -1,6 +1,6 @@
 #include "libBBS.h"
-#include "register.h"
 #include "bbs.h"
+#include "fbbs/register.h"
 
 bool is_no_register(void)
 {
