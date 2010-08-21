@@ -139,69 +139,85 @@ int check_userid(const char *userid)
 	return 0;
 }
 
-char *genrandpwd(int seed) {
-	char panel[]=
-			"1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	char *result;
-	int i, rnd;
-
-	result = (char *) malloc(RNDPASSLEN + 1);
-	srand((unsigned) (time(0) * seed));
-	memset(result, 0, RNDPASSLEN + 1);
-	for (i = 0; i < RNDPASSLEN; i++) {
-		rnd = rand() % sizeof(panel);
-		if (panel[rnd] == '\0') {
-			i--;
-			continue;
-		}
-		result[i] = panel[rnd];
-	}
-	sethomefile(genbuf, currentuser.userid, ".regpass");
-	unlink(genbuf);
-	file_append(genbuf, result);
-	return ((char *) result);
+/**
+ * Read from /dev/urandom.
+ * @param buf The buffer.
+ * @param size Bytes to read.
+ * @return 0 if OK, -1 on error.
+ */
+static int read_urandom(char *buf, size_t size)
+{
+	int fd = open("/dev/urandom", O_RDONLY);
+	if (fd < 0)
+		return -1;
+	if (read(fd, buf, size) < size)
+		return -1;
+	close(fd);
+	return 0;
 }
 
-void regmail_send(struct userec *trec, char* mail) {
-	time_t code;
-	FILE *fout, *dp;
-	char buf[RNDPASSLEN + 1];
-	sprintf(buf, "%s", (char *) genrandpwd((int) getpid()));
-	sethomefile(genbuf, trec->userid, ".regpass");
-	if ((dp = fopen(genbuf, "w")) == NULL)
-		return;
-	dp = fopen(genbuf, "w+");
-	fprintf(dp, "%s\n", buf);
-	fprintf(dp, "%s\n", mail);
-	fclose(dp);
+/**
+ * Generate random password.
+ * @param[out] buf The buffer.
+ * @param[in] size The buffer size.
+ */
+static void generate_random_password(char *buf, size_t size)
+{
+	const char panel[]=
+			"1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-	code = time(0);
-	sprintf(genbuf, "%s -f %s.bbs@%s %s", MTA, trec->userid, BBSHOST, mail);
-	fout = popen(genbuf, "w");
-	if (fout != NULL) {
-		fprintf(fout, "Reply-To: SYSOP.bbs@%s\n", BBSHOST);
-		fprintf(fout, "From: SYSOP.bbs@%s\n", BBSHOST);
-		fprintf(fout, "To: %s\n", mail);
-		fprintf(fout, "Subject: %s@%s mail check.\n", trec->userid, BBSID);
-		fprintf(fout, "X-Purpose: %s registration mail.\n", BBSNAME);
-		fprintf(fout, "\n");
-		fprintf(fout, "[中文]\n");
-		fprintf(fout, "BBS 位址         : %s (%s)\n", BBSHOST, BBSIP);
-		fprintf(fout, "您注册的 BBS ID  : %s\n", trec->userid);
-		fprintf(fout, "申请日期         : %s", ctime(&trec->firstlogin));
-		fprintf(fout, "认证码           : %s (请注意大小写)\n", buf);
-		fprintf(fout, "认证信发出日期   : %s\n", ctime(&code));
+	read_urandom(buf, size - 1);
 
-		fprintf(fout, "[English]\n");
-		fprintf(fout, "BBS LOCATION     : %s (%s)\n", BBSHOST, BBSIP);
-		fprintf(fout, "YOUR BBS USER ID : %s\n", trec->userid);
-		fprintf(fout, "APPLICATION DATE : %s", ctime(&trec->firstlogin));
-		fprintf(fout, "YOUR NICK NAME   : %s\n", trec->username);
-		fprintf(fout, "VALID CODE       : %s (case sensitive)\n", buf);
-		fprintf(fout, "THIS MAIL SENT ON: %s\n", ctime(&code));
-
-		fprintf(fout, ".\n");
-		fclose(fout);
+	for (int i = 0; i < size; ++i) {
+		buf[i] = panel[buf[i] % sizeof(panel)];
 	}
 
+	buf[size - 1] = '\0';
+}
+
+/**
+ * Send registration activation mail.
+ * @param user The user.
+ * @param mail The email address.
+ * @return 0 if OK, -1 on error.
+ */
+int send_regmail(const struct userec *user, const char *mail)
+{
+	char password[RNDPASSLEN + 1];
+	generate_random_password(password, sizeof(password));
+
+	char file[HOMELEN];
+	sethomefile(file, user->userid, ".regpass");
+	FILE *fp = fopen(file, "w");
+	if (!fp)
+		return -1;
+	fprintf(fp, "%s\n%s\n", password, mail);
+	fclose(fp);
+
+	char buf[256];
+	snprintf(buf, sizeof(buf), "%s -f %s.bbs@%s %s", MTA, user->userid,
+			BBSHOST, mail);
+	FILE *fout = popen(buf, "w");
+	if (!fout)
+		return -1;
+	fprintf(fout, "Reply-To: SYSOP.bbs@%s\n"
+			"From: SYSOP.bbs@%s\n"
+			"To: %s\n"
+			"Subject: %s@%s mail check.\n"
+			"X-Purpose: %s registration mail.\n\n",
+			BBSHOST, BBSHOST, mail, user->userid, BBSID, BBSNAME);
+	fprintf(fout, "[中文]\n"
+			"BBS 位址         : %s (%s)\n"
+			"您注册的 BBS ID  : %s\n"
+			"申请日期         : %s"
+			"认证码           : %s (请注意大小写)\n",
+			BBSHOST, BBSIP, user->userid, ctime(&user->firstlogin), password);
+	fprintf(fout, "[English]\n"
+			"BBS LOCATION     : %s (%s)\n"
+			"YOUR BBS USER ID : %s\n"
+			"APPLICATION DATE : %s"
+			"VALID CODE       : %s (case sensitive)\n",
+			BBSHOST, BBSIP, user->userid, ctime(&user->firstlogin), password);
+	fclose(fout);
+	return 0;
 }

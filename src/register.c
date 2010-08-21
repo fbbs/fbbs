@@ -244,7 +244,7 @@ void check_reg_mail() {
 			} else
 				break;
 		} while (1);
-		regmail_send(urec, email);
+		send_regmail(urec, email);
 	}
 	move(4, 0);
 	clrtoeol();
@@ -381,7 +381,7 @@ void check_reg_extra() {
 		sethomefile(bufe, currentuser.userid, ".regextra");
 		file_append(bufe, buf);
 		do_report(".SCHOOLMATE", buf);
-		regmail_send(urec, schmate.email);
+		send_regmail(urec, schmate.email);
 	}
 	clear();
 	check_reg_mail();
