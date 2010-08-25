@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "glossary.h"
+#include "fbbs/string.h"
 #include "fbbs/uinfo.h"
 
 #define MAX_PERF (1000)

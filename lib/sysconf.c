@@ -2,6 +2,7 @@
 
 #include "bbs.h"
 #include "sysconf.h"
+#include "fbbs/string.h"
 
 enum {
 	SC_BUFSIZE = 20480,

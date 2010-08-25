@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/string.h"
 
 // Copies 'board' to 'cboard' and sets 'bpp' accordingly.
 // Returns 0 on success, -1 on error.

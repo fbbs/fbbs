@@ -7,6 +7,7 @@
 #include <time.h>
 #include "record.h"
 
+#include "fbbs/string.h"
 #include "fbbs/ucache.h"
 
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)

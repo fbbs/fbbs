@@ -3,6 +3,7 @@
 #include "bbs.h"
 #include "post.h"
 #include "record.h"
+#include "fbbs/string.h"
 
 /**
  * Creates a new file in specific location.

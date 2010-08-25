@@ -1,6 +1,7 @@
 // Handle unread mark
 
 #include "bbs.h"
+#include "fbbs/string.h"
 
 #define BRC_MAXSIZE     50000
 #define BRC_MAXNUM      60
