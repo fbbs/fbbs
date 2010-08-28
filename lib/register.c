@@ -2,6 +2,7 @@
 #include "bbs.h"
 #include "fbbs/register.h"
 #include "fbbs/string.h"
+#include "fbbs/util.h"
 
 bool is_no_register(void)
 {
@@ -137,23 +138,6 @@ int check_userid(const char *userid)
 		return BBS_EREG_SHORT;
 	if (bad_user_id(userid))
 		return BBS_EREG_BADNAME;
-	return 0;
-}
-
-/**
- * Read from /dev/urandom.
- * @param buf The buffer.
- * @param size Bytes to read.
- * @return 0 if OK, -1 on error.
- */
-static int read_urandom(char *buf, size_t size)
-{
-	int fd = open("/dev/urandom", O_RDONLY);
-	if (fd < 0)
-		return -1;
-	if (read(fd, buf, size) < size)
-		return -1;
-	close(fd);
 	return 0;
 }
 
