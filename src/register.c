@@ -74,8 +74,7 @@ static int gen_captcha_link(char *link, size_t size, int *n)
 	snprintf(target, sizeof(target), CAPTCHA_DIR"/%d.gif", r + 1);
 	while (1) {
 		*n = urandom_pos_int();
-		char link[HOMELEN];
-		snprintf(link, sizeof(link), CAPTCHA_OUT"/%d.gif", *n);
+		snprintf(link, size, CAPTCHA_OUT"/%d.gif", *n);
 		if (symlink(target, link) == 0)
 			return r;
 		if (errno != EEXIST)
