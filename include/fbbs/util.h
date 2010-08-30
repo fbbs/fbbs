@@ -4,6 +4,6 @@
 #include <stddef.h>
 
 extern int read_urandom(void *buf, size_t size);
-extern int urandom_int(void);
+extern int urandom_pos_int(void);
 
 #endif // FB_UTIL_H

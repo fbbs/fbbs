@@ -70,12 +70,10 @@ static void fill_new_userec(struct userec *user, const char *userid,
 static int gen_captcha_link(char *link, size_t size, int *n)
 {
 	char target[HOMELEN];
-	int r = urandom_int() % NUM_CAPTCHAS;
+	int r = urandom_pos_int() % NUM_CAPTCHAS;
 	snprintf(target, sizeof(target), CAPTCHA_DIR"/%d.gif", r);
 	while (1) {
-		*n = urandom_int();
-		if (*n < 0)
-			*n = -*n;
+		*n = urandom_pos_int();
 		char link[HOMELEN];
 		snprintf(link, sizeof(link), CAPTCHA_OUT"/%d.gif", *n);
 		if (symlink(target, link) == 0)
@@ -96,6 +94,7 @@ static int get_captcha_answer(int pos, char *answer, size_t size)
 		return -1;
 	fseek(fp, pos * CAPTCHA_LEN, SEEK_SET);
 	fread(answer, size, 1, fp);
+	strtok(answer, " ");
 	fclose(fp);
 	return 0;
 }

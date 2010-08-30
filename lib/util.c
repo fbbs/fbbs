@@ -19,12 +19,14 @@ int read_urandom(void *buf, size_t size)
 }
 
 /**
- * Get an int from /dev/urandom.
+ * Get an positive int from /dev/urandom.
  * @return A random integer.
  */
-int urandom_int(void)
+int urandom_pos_int(void)
 {
 	int i;
 	read_urandom(&i, sizeof(i));
+	if (i < 0)
+		return -i;
 	return i;
 }
