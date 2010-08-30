@@ -71,7 +71,7 @@ static int gen_captcha_link(char *link, size_t size, int *n)
 {
 	char target[HOMELEN];
 	int r = urandom_pos_int() % NUM_CAPTCHAS;
-	snprintf(target, sizeof(target), CAPTCHA_DIR"/%d.gif", r);
+	snprintf(target, sizeof(target), CAPTCHA_DIR"/%d.gif", r + 1);
 	while (1) {
 		*n = urandom_pos_int();
 		char link[HOMELEN];
@@ -92,7 +92,7 @@ static int get_captcha_answer(int pos, char *answer, size_t size)
 	FILE *fp = fopen(CAPTCHA_INDEX, "r");
 	if (!fp)
 		return -1;
-	fseek(fp, pos * CAPTCHA_LEN, SEEK_SET);
+	fseek(fp, pos * (CAPTCHA_LEN + 1), SEEK_SET);
 	fread(answer, size, 1, fp);
 	strtok(answer, " ");
 	fclose(fp);
