@@ -607,6 +607,7 @@ int create_user(const struct userec *user)
 		return UCACHE_EFULL;
 	}
 
+	setuserid(i, user->userid);
 	substitut_record(PASSFILE, user, sizeof(*user), i);
 
 	ucache_unlock(fd);

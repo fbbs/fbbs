@@ -15,25 +15,6 @@ extern time_t login_start_time;
 extern int convcode;
 #endif
 
-int getnewuserid(void)
-{
-	struct userec user;
-	memset(&user, 0, sizeof(user));
-	strlcpy(user.userid, "new", sizeof(user.userid));
-
-	int i = searchnewuser();
-
-	char buf[STRLEN];
-	snprintf(buf, sizeof(buf), "uid %d from %s", i, fromhost);
-	log_usies("APPLY", genbuf, &currentuser);
-
-	if (i <= 0 || i > MAXUSERS)
-		return i;
-
-	substitut_record(PASSFILE, &user, sizeof(user), i);
-	return i;
-}
-
 /**
  *
  */
@@ -82,6 +63,46 @@ static void fill_new_userec(struct userec *user, const char *userid,
 	user->firstlogin = user->lastlogin = time(NULL);
 }
 
+/**
+ *
+ *
+ */
+static int gen_captcha_link(char *link, size_t size, int *n)
+{
+	char target[HOMELEN];
+	int r = urandom_int() % NUM_CAPTCHAS;
+	snprintf(target, sizeof(target), CAPTCHA_DIR"/%d.gif", r);
+	while (1) {
+		*n = urandom_int();
+		if (*n < 0)
+			*n = -*n;
+		char link[HOMELEN];
+		snprintf(link, sizeof(link), CAPTCHA_OUT"/%d.gif", *n);
+		if (symlink(target, link) == 0)
+			return r;
+		if (errno != EEXIST)
+			return -1;
+	}
+}
+
+/**
+ *
+ *
+ */
+static int get_captcha_answer(int pos, char *answer, size_t size)
+{
+	FILE *fp = fopen(CAPTCHA_INDEX, "r");
+	if (!fp)
+		return -1;
+	fseek(fp, pos * CAPTCHA_LEN, SEEK_SET);
+	fread(answer, size, 1, fp);
+	fclose(fp);
+	return 0;
+}
+
+/**
+ * Telnet register interface.
+ */
 void new_register(void)
 {
 	char userid[IDLEN + 1], passwd[PASSLEN], passbuf[PASSLEN], log[STRLEN];
@@ -93,17 +114,16 @@ void new_register(void)
 	}
 
 	ansimore("etc/register", NA);
-
 #ifndef FDQUAN
 	if (!askyn("您是否同意本站Announce版精华区x-3目录所列站规?", false, false))
-		return 0;
+		return;
 #endif
 
 	int tried = 0;
 	prints("\n");
 	while (1) {
-		if (++tried >= 9) {
-			prints("\n拜拜，按太多下  <Enter> 了...\n");
+		if (++tried >= MAX_NEW_TRIES) {
+			outs("\n拜拜，按太多下  <Enter> 了...\n");
 			refresh();
 			return;
 		}
@@ -120,10 +140,32 @@ void new_register(void)
 
 		char path[HOMELEN];
 		sethomepath(path, userid);
-		if (dosearchuser(userid, &currentuser, &usernum) || dashd(path))
-			prints("此帐号已经有人使用\n");
-		else
+		if (dosearchuser(userid, &currentuser, &usernum) || dashd(path)) {
+			outs("此帐号已经有人使用\n");
+			continue;
+		}
+#ifndef REG_CAPTCHA
+		break;
+#else
+		char link[STRLEN], attempt[CAPTCHA_LEN + 1], answer[CAPTCHA_LEN + 1];
+		int lnum;
+		int pos = gen_captcha_link(link, sizeof(link), &lnum);
+		if (pos < 0)
+			return;
+
+		prints("http://"BBSHOST"/captcha/%d.gif\n", lnum);
+		getdata(0, 0, "请输入上图所包含的英文字母: ", attempt, sizeof(attempt),
+				DOECHO, YEA);
+		unlink(link);
+
+		get_captcha_answer(pos, answer, sizeof(answer));
+		if (strcasecmp(answer, attempt) != 0) {
+			outs("验证码输入错误...\n");
+			continue;
+		} else {
 			break;
+		}
+#endif // REG_CAPTCHA
 	}
 
 	for (tried = 0; tried <= MAX_SET_PASSWD_TRIES; ++tried) {
@@ -135,7 +177,7 @@ void new_register(void)
 			continue;
 		}
 		strlcpy(passwd, passbuf, PASSLEN);
-		getdata(0, 0, "请再输入一次您的密码 (Reconfirm Password): ", passbuf,
+		getdata(0, 0, "请再输入一次您的密码 (Confirm Password): ", passbuf,
 				PASSLEN, NOECHO, YEA);
 		if (strncmp(passbuf, passwd, PASSLEN) != 0) {
 			prints("密码输入错误, 请重新输入密码.\n");
@@ -154,27 +196,8 @@ void new_register(void)
 	fill_new_userec(&newuser, userid, passwd, true);
 #endif
 
-	/* added by roly */
-	sprintf(genbuf, "/bin/rm -fr %s/mail/%c/%s", BBSHOME,
-			toupper(newuser.userid[0]), newuser.userid) ;
-	system(genbuf);
-	sprintf(genbuf, "/bin/rm -fr %s/home/%c/%s", BBSHOME,
-			toupper(newuser.userid[0]), newuser.userid) ;
-	system(genbuf);
-	/* add end */
-
-	int allocid = getnewuserid();
-	if (allocid > MAXUSERS || allocid <= 0) {
-		prints("No space for new users on the system!\n\r");
-		return;
-	}
-	setuserid(allocid, newuser.userid);
-	if (substitut_record(PASSFILE, &newuser, sizeof(newuser), allocid) == -1) {
-		prints("too much, good bye!\n");
-		return;
-	}
-	if (!dosearchuser(newuser.userid, &currentuser, &usernum)) {
-		prints("User failed to create\n");
+	if (create_user(&newuser) < 0) {
+		outs("Failed to create user.\n");
 		return;
 	}
 
