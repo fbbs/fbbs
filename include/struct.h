@@ -191,16 +191,6 @@ struct countheader {
 };
 //End IAMFAT
 
-typedef struct reginfo { //注册表单信息
-	char userid[IDLEN+1];
-	char realname[NAMELEN];
-	char dept[STRLEN];
-	char addr[STRLEN];
-	char phone[STRLEN];
-	char email[STRLEN-12];
-	char assoc[STRLEN];
-	time_t regdate;
-} REGINFO;
 
 typedef struct _ANONCACHE { //www匿名用户缓冲
 	time_t item[MAX_ANON];

@@ -402,10 +402,11 @@ void getfield(int line, char *info, char *desc, char *buf, int len) {
 	clrtoeol();
 }
 
+#include "fbbs/register.h"
 //	填写用户资料
 void x_fillform() {
 	char ans[5], *mesg, *ptr;
-	REGINFO ri;
+	reginfo_t ri;
 	FILE *fn;
 
 	if (!strcmp("guest", currentuser.userid))

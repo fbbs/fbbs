@@ -25,6 +25,17 @@ enum {
 };
 #endif // REG_CAPTCHA
 
+typedef struct reginfo {
+	char userid[IDLEN+1];
+	char realname[NAMELEN];
+	char dept[STRLEN];
+	char addr[STRLEN];
+	char phone[STRLEN];
+	char email[STRLEN-12];
+	char assoc[STRLEN];
+	time_t regdate;
+} reginfo_t;
+
 extern bool is_no_register(void);
 extern int check_userid(const char *userid);
 extern int send_regmail(const struct userec *user, const char *mail);

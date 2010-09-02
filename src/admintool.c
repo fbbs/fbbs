@@ -2,6 +2,7 @@
 #ifndef DLM
 #include <stdio.h>
 #include "bbs.h"
+#include "fbbs/register.h"
 
 extern int cmpbnames();
 extern char *chgrp();
@@ -1030,7 +1031,7 @@ void regtitle() {
 }
 
 //      在批注册单时显示的注册ID列表
-char *regdoent(int num, REGINFO * ent) {
+char *regdoent(int num, reginfo_t* ent) {
 	static char buf[128];
 	char rname[17];
 	char dept[17];
@@ -1051,17 +1052,17 @@ char *regdoent(int num, REGINFO * ent) {
 //      返回userid 与ent->userid是否相等
 static int filecheck(void *ent, void *userid)
 {
-	return !strcmp(((REGINFO *)ent)->userid, (char *)userid);
+	return !strcmp(((reginfo_t *)ent)->userid, (char *)userid);
 }
 
 // 删除注册单文件里的一个记录
-int delete_register(int index, REGINFO * ent, char *direct) {
-	delete_record(direct, sizeof(REGINFO), index, filecheck, ent->userid);
+int delete_register(int index, reginfo_t* ent, char *direct) {
+	delete_record(direct, sizeof(reginfo_t), index, filecheck, ent->userid);
 	return DIRCHANGED;
 }
 
 //      通过注册单
-int pass_register(int index, REGINFO * ent, char *direct) {
+int pass_register(int index, reginfo_t* ent, char *direct) {
 	int unum;
 	struct userec uinfo;
 	char buf[80];
@@ -1072,12 +1073,12 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 		clear();
 		prints("系统错误! 查无此账号!\n"); //      在回档或者某些情况下,找不到在注册单文件
 		pressanykey(); // unregister中的此记录,故删除
-		delete_record(direct, sizeof(REGINFO), index, filecheck,
+		delete_record(direct, sizeof(reginfo_t), index, filecheck,
 				ent->userid);
 		return DIRCHANGED;
 	}
 
-	delete_record(direct, sizeof(REGINFO), index, filecheck, ent->userid);
+	delete_record(direct, sizeof(reginfo_t), index, filecheck, ent->userid);
 
 	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
 #ifdef ALLOWGAME
@@ -1110,7 +1111,7 @@ int pass_register(int index, REGINFO * ent, char *direct) {
 }
 
 //      处理注册单
-int do_register(int index, REGINFO * ent, char *direct) {
+int do_register(int index, reginfo_t* ent, char *direct) {
 	int unum;
 	struct userec uinfo;
 	//char ps[80];
@@ -1125,7 +1126,7 @@ int do_register(int index, REGINFO * ent, char *direct) {
 	unum = getuser(ent->userid);
 	if (!unum) {
 		prints("系统错误! 查无此账号!\n"); //删除不存在的记录,如果有的话
-		delete_record(direct, sizeof(REGINFO), index, filecheck,
+		delete_record(direct, sizeof(reginfo_t), index, filecheck,
 				ent->userid);
 		return DIRCHANGED;
 	}
@@ -1309,7 +1310,7 @@ int m_register() {
 			break;
 		case '1':
 			i_read(ADMIN, "unregistered", regtitle, regdoent,
-					&reg_comms[0], sizeof(REGINFO));
+					&reg_comms[0], sizeof(reginfo_t));
 			break;
 	}
 	clear();
