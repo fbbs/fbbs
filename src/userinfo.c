@@ -385,21 +385,4 @@ void x_info() {
 	uinfo_query(&currentuser, 0, usernum);
 }
 
-//	¸ü¸ÄÓÃ»§×ÊÁÏÖĞÄ³ÓòËù¶ÔÓ¦Éè¶¨
-void getfield(int line, char *info, char *desc, char *buf, int len) {
-	char prompt[STRLEN];
-	sprintf(genbuf, "  Ô­ÏÈÉè¶¨: %-40.40s [1;32m(%s)[m",
-			(buf[0] == '\0') ? "(Î´Éè¶¨)" : buf, info);
-	move(line, 0);
-	prints("%s", genbuf);
-	sprintf(prompt, "  %s: ", desc);
-	getdata(line + 1, 0, prompt, genbuf, len, DOECHO, YEA);
-	if (genbuf[0] != '\0')
-		strlcpy(buf, genbuf, len);
-	move(line, 0);
-	clrtoeol();
-	prints("  %s: %s\n", desc, buf);
-	clrtoeol();
-}
-
 

@@ -4,6 +4,8 @@
 #include "fbbs/string.h"
 #include "fbbs/util.h"
 
+#define REGISTER_LIST "unregistered"
+
 bool is_no_register(void)
 {
 	return dashf("NOREGISTER");
@@ -233,4 +235,51 @@ bool activate_email(const char *userid, const char *attempt)
 
 	unlink(file);
 	return true;
+}
+
+bool is_reg_pending(const char *userid)
+{
+	FILE *fp = fopen(REGISTER_LIST, "r");
+	if (!fp)
+		return false;
+
+	reginfo_t reg;
+	while (fread(&reg, sizeof(reg), 1, fp)) {
+		if (strcasecmp(reg.userid, userid) == 0) {
+			fclose(fp);
+			return true;
+		}
+	}
+
+	fclose(fp);
+	return false;
+}
+
+/**
+ * Append register info to pending list.
+ * @param reg The register info.
+ * @return 0 if OK, -1 on error or duplication.
+ */
+int append_reg_list(const reginfo_t *reg)
+{
+	FILE *fp = fopen(REGISTER_LIST, "r+");
+	if (!fp)
+		return -1;
+	fb_flock(fileno(fp), LOCK_EX);
+
+	int found = 0;
+	reginfo_t tmp;
+	while (fread(&tmp, sizeof(tmp), 1, fp)) {
+		if (strcasecmp(reg->userid, tmp.userid) == 0) {
+			found = 1;
+			break;
+		}
+	}
+	if (!found) {
+		fwrite(reg, sizeof(*reg), 1, fp);
+	}
+
+	fb_flock(fileno(fp), LOCK_UN);
+	fclose(fp);
+	return 0 - found;
 }

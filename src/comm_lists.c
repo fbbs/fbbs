@@ -15,7 +15,7 @@ int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodby
 int board_read_new(), goodbrd_show(), board_read(), board_select(), Welcome();
 int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
-int Conditions(), x_cloak(), online_users_show(), x_info(), x_fillform(), x_vote();
+int Conditions(), x_cloak(), online_users_show(), x_info(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();
 int shownotepad(), x_userdefine();
 int m_new(), m_read(), m_send(), g_send();
@@ -25,6 +25,7 @@ int r_searchall();
 /*2003.04.23 added by stephen*/
 int giveUpBBS();
 /*stephen add end*/
+extern int fill_reg_form(void);
 
 int ent_bnet2();
 
@@ -114,7 +115,7 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "EnterChat", ent_chat },
 		{ "ListLogins", t_list },
 		{ "Monitor", t_monitor },
-		{ "FillForm", x_fillform },
+		{ "FillForm", fill_reg_form },
 		{ "Information", x_info },
 		{ "EditUFiles", x_edits },
 		{ "ShowLicense", Conditions },

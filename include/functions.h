@@ -17,7 +17,6 @@
 #define NEWCOMERREPORT		/* 新手上路在 newcomers 版自动发文 */
 //#define SAVELIVE		/* 锁定帐号 防止用户长时间不上线而死亡*/
 //#define AUTOGETPERM		/* 无需注册即获取基本权限 */
-//#define PASSAFTERTHREEDAYS	/* 新手上路三天限制 */
 
 /* 游戏相关代码的 define */
 #ifdef FDQUAN

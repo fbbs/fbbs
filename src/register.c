@@ -430,18 +430,6 @@ void check_register_info() {
 		pressanykey();
 	}
 #endif
-#ifdef PASSAFTERTHREEDAYS
-	if (urec->lastlogin - urec->firstlogin < 3 * 86400) {
-		if (!HAS_PERM(PERM_SYSOP)) {
-			set_safe_record();
-			urec->userlevel &= ~(PERM_DEFAULT);
-			urec->userlevel |= PERM_LOGIN;
-			substitut_record(PASSFILE, urec, sizeof(struct userec), usernum);
-			ansimore("etc/newregister", YEA);
-			return;
-		}
-	}
-#endif
 #ifndef FDQUAN
 	//检查邮箱
 	while (!HAS_PERM(PERM_BINDMAIL)) {
@@ -481,96 +469,89 @@ void check_register_info() {
 #endif
 
 	if (!chkmail())
-		x_fillform();
+		fill_reg_form();
 }
 
-void x_fillform(void)
+static void getfield(int line, char *info, char *desc, char *buf, int len)
 {
-	char ans[5], *mesg, *ptr;
-	reginfo_t ri;
-	FILE *fn;
+	move(line, 0);
+	prints("  原先设定: %-40.40s \033[1;32m(%s)\033[m",
+			(buf[0] == '\0') ? "(未设定)" : buf, info);
+	char prompt[STRLEN];
+	snprintf(prompt, sizeof(prompt), "  %s: ", desc);
+	getdata(line + 1, 0, prompt, buf, len, DOECHO, YEA);
+	printable_filter(buf);
+	move(line, 0);
+	clrtoeol();
+	prints("  %s: %s\n", desc, buf);
+	clrtoeol();
+}
+
+int fill_reg_form(void)
+{
+	char ans[5], *ptr;
+	reginfo_t reg;
 
 	if (!strcmp("guest", currentuser.userid))
-		return;
+		return 0;
+
 	modify_user_mode(NEW);
+
 	clear();
 	move(2, 0);
 	clrtobot();
 	if (currentuser.userlevel & PERM_REGISTER) {
 		prints("您已经完成本站的使用者注册手续, 欢迎加入本站的行列.");
 		pressreturn();
-		return;
-	}
-#ifdef PASSAFTERTHREEDAYS
-	if (currentuser.lastlogin - currentuser.firstlogin < 3 * 86400) {
-		prints("您首次登入本站未满三天(72个小时)...\n");
-		prints("请先四处熟悉一下，在满三天以后再填写注册单。");
-		pressreturn();
-		return;
-	}
-#endif
-	if ((fn = fopen("unregistered", "rb")) != NULL) {
-		while (fread(&ri, sizeof(ri), 1, fn)) {
-			if (!strcasecmp(ri.userid, currentuser.userid)) {
-				fclose(fn);
-				prints("站长尚未处理您的注册申请单, 您先到处看看吧.");
-				pressreturn();
-				return;
-			}
-		}
-		fclose(fn);
+		return 0;
 	}
 
-	memset(&ri, 0, sizeof(ri));
-	strlcpy(ri.userid, currentuser.userid, IDLEN+1);
-	strlcpy(ri.email, currentuser.email, STRLEN-12);
+	if (is_reg_pending(currentuser.userid)) {
+		prints("站长尚未处理您的注册申请单, 您先到处看看吧.");
+		pressreturn();
+		return 0;
+	}
+
+	memset(&reg, 0, sizeof(reg));
+	strlcpy(reg.userid, currentuser.userid, sizeof(reg.userid));
+	strlcpy(reg.email, currentuser.email, sizeof(reg.email));
 	while (1) {
 		move(3, 0);
 		clrtoeol();
 		prints("%s 您好, 请据实填写以下的资料:\n", currentuser.userid);
 		do {
-			getfield(6, "请用中文", "真实姓名", ri.realname, NAMELEN);
-		} while (strlen(ri.realname)<4);
+			getfield(6, "请用中文", "真实姓名",
+					reg.realname, sizeof(reg.realname));
+		} while (strlen(reg.realname) < 4);
 
 		do {
-			getfield(8, "学校系级或所在单位", "学校系级", ri.dept, STRLEN);
-		} while (strlen(ri.dept)< 6);
+			getfield(8, "学校系级或所在单位", "学校系级",
+					reg.dept, sizeof(reg.dept));
+		} while (strlen(reg.dept) < 6);
 
 		do {
-			getfield(10, "包括寝室或门牌号码", "目前住址", ri.addr, STRLEN);
-		} while (strlen(ri.addr)<10);
+			getfield(10, "包括寝室或门牌号码", "目前住址",
+					reg.addr, sizeof(reg.addr));
+		} while (strlen(reg.addr) < 10);
 
 		do {
-			getfield(12, "包括可联络时间", "联络电话", ri.phone, STRLEN);
-		} while (strlen(ri.phone)<8);
+			getfield(12, "包括可联络时间", "联络电话",
+					reg.phone, sizeof(reg.phone));
+		} while (strlen(reg.phone) < 8);
 
-		getfield(14, "校友会或毕业学校", "校 友 会", ri.assoc, STRLEN);
-		mesg = "以上资料是否正确, 按 Q 放弃注册 (Y/N/Quit)? [Y]: ";
-		getdata(t_lines - 1, 0, mesg, ans, 3, DOECHO, YEA);
+		getfield(14, "校友会或毕业学校", "校 友 会",
+				reg.assoc, sizeof(reg.assoc));
+
+		getdata(t_lines - 1, 0,
+				"以上资料是否正确, 按 Q 放弃注册 (Y/N/Quit)? [Y]: ",
+				ans, 3, DOECHO, YEA);
 		if (ans[0] == 'Q' || ans[0] == 'q')
-			return;
+			return 0;
 		if (ans[0] != 'N' && ans[0] != 'n')
 			break;
 	}
-	ptr = ri.realname;
-	filter_ff(ptr);
-	ptr = ri.addr;
-	filter_ff(ptr);
-	ptr = ri.dept;
-	filter_ff(ptr);
-#ifndef FDQUAN
-	strlcpy(currentuser.email, ri.email, STRLEN-12);
-#endif	
-	if ((fn = fopen("unregistered", "ab")) != NULL) {
-		ri.regdate= time(NULL);
-		fwrite(&ri, sizeof(ri), 1, fn);
-		fclose(fn);
-	}
-	setuserfile(genbuf, "mailcheck");
-	if ((fn = fopen(genbuf, "w")) == NULL) {
-		fclose(fn);
-		return;
-	}
-	fprintf(fn, "usernum: %d\n", usernum);
-	fclose(fn);
+
+	reg.regdate = time(NULL);
+	append_reg_list(&reg);
+	return 0;
 }
