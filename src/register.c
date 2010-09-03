@@ -489,7 +489,6 @@ static void getfield(int line, char *info, char *desc, char *buf, int len)
 
 int fill_reg_form(void)
 {
-	char ans[5], *ptr;
 	reginfo_t reg;
 
 	if (!strcmp("guest", currentuser.userid))
@@ -542,9 +541,10 @@ int fill_reg_form(void)
 		getfield(14, "校友会或毕业学校", "校 友 会",
 				reg.assoc, sizeof(reg.assoc));
 
+		char ans[3];
 		getdata(t_lines - 1, 0,
 				"以上资料是否正确, 按 Q 放弃注册 (Y/N/Quit)? [Y]: ",
-				ans, 3, DOECHO, YEA);
+				ans, sizeof(ans), DOECHO, YEA);
 		if (ans[0] == 'Q' || ans[0] == 'q')
 			return 0;
 		if (ans[0] != 'N' && ans[0] != 'n')
