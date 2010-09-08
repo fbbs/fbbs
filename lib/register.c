@@ -6,6 +6,11 @@
 
 #define REGISTER_LIST "unregistered"
 
+enum {
+	MIN_ID_LEN = 2,
+	MIN_PASSWORD_LEN = 4,
+};
+
 bool is_no_register(void)
 {
 	return dashf("NOREGISTER");
@@ -132,15 +137,25 @@ static bool strisalpha(const char *str)
 	return true;
 }
 
-int check_userid(const char *userid)
+/**
+ *
+ */
+const char *invalid_userid(const char *userid)
 {
 	if (!strisalpha(userid))
-		return BBS_EREG_NONALPHA;
-	if (strlen(userid) < 2)
-		return BBS_EREG_SHORT;
+		return "帐号必须全为英文字母\n";
+	if (strlen(userid) < MIN_ID_LEN || strlen(userid) > IDLEN)
+		return "帐号长度应为2~12个字符\n";
 	if (bad_user_id(userid))
-		return BBS_EREG_BADNAME;
-	return 0;
+		return "抱歉, 您不能使用这个字作为帐号\n";
+	return NULL;
+}
+
+const char *invalid_password(const char *password, const char *userid)
+{
+	if (strlen(password) < MIN_PASSWORD_LEN || !strcmp(password, userid))
+		return "密码太短或与使用者代号相同, 请重新输入\n";
+	return NULL;
 }
 
 /**

@@ -9,12 +9,6 @@
 #define REG_CAPTCHA
 #endif
 
-enum {
-	BBS_EREG_NONALPHA = -1,
-	BBS_EREG_SHORT = -2,
-	BBS_EREG_BADNAME = -3,
-};
-
 #ifdef REG_CAPTCHA
 #define CAPTCHA_DIR    BBSHOME"/captcha"
 #define CAPTCHA_OUT    BBSHOME"/captcha2"
@@ -37,7 +31,8 @@ typedef struct reginfo {
 } reginfo_t;
 
 extern bool is_no_register(void);
-extern int check_userid(const char *userid);
+extern const char *invalid_userid(const char *userid);
+extern const char *invalid_password(const char *password, const char *userid);
 extern int send_regmail(const struct userec *user, const char *mail);
 extern bool activate_email(const char *userid, const char *attempt);
 extern bool is_reg_pending(const char *userid);

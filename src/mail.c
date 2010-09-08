@@ -237,7 +237,7 @@ m_internet()
 		move(3, 0);
 		prints("站内信件, 请用 (S)end 指令来寄\n");
 		pressreturn();
-	} else if (!invalidaddr(receiver)) {
+	} else if (valid_addr(receiver)) {
 		*quote_file = '\0';
 		clear();
 		do_send(receiver, NULL);
@@ -704,7 +704,7 @@ char * maildoent(int num, struct fileheader *ent) {
 	strlcpy(b2, ent->owner, STRLEN);
 	if ((b2[strlen(b2) - 1] == '>') && strchr(b2, '<')) {
 		t = strtok(b2, "<>");
-		if (invalidaddr(t))
+		if (!valid_addr(t))
 			t = strtok(NULL, "<>");
 		if (t != NULL)
 			strcpy(b2, t);
@@ -848,10 +848,10 @@ char *direct;
 	strlcpy(uid, fileinfo->owner, STRLEN);
 	if ((uid[strlen(uid) - 1] == '>') && strchr(uid, '<')) {
 		t = strtok(uid, "<>");
-		if (invalidaddr(t))
-		t = strtok(NULL, "<>");
+		if (!valid_addr(t))
+			t = strtok(NULL, "<>");
 		if (t != NULL)
-		strcpy(uid, t);
+			strcpy(uid, t);
 		else {
 			prints("无法投递\n");
 			pressreturn();
@@ -1085,27 +1085,6 @@ int m_read() {
 	i_read(RMAIL, currmaildir, mailtitle, maildoent, &mail_comms[0],
 			sizeof(struct fileheader));
 	in_mail = NA;
-	return 0;
-}
-int
-invalidaddr(addr)
-char *addr;
-{
-	int i=0;
-	if (*addr == '\0' || !strchr(addr, '@'))
-	return 1;
-	while (*addr) {
-		if (!isalnum(*addr) && !strchr(".!@:-_", *addr))
-		return 1;
-		if(strchr("@",*addr)) {
-			i++;
-			if (i>=2) {
-				i=0;
-				return 1;
-			}
-		}
-		addr++;
-	}
 	return 0;
 }
 #ifdef INTERNET_EMAIL
@@ -1666,7 +1645,7 @@ int mode;
 	sprintf(genbuf, "确定将文章寄给 %s 吗", address);
 	if (askyn(genbuf, YEA, NA) == 0)
 		return 1;
-	if (invalidaddr(address))
+	if (!valid_addr(address))
 		if (!getuser(address))
 			return -2;
 	sprintf(tmpfname, "tmp/forward.%s.%05d", currentuser.userid, uinfo.pid);

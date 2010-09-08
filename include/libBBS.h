@@ -48,13 +48,4 @@ void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
 void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
 int remove_shm(const char *shmstr, int defaultkey, int shmsize);
 
-//mail.c
-int getmailboxsize(unsigned int userlevel);
-int getmailboxhold(unsigned int userlevel);
-int getmailsize(const char *userid);
-int getmailnum(const char *userid);
-int do_mail_file(const char *recv, const char *title, const char *header,
-		const char *text, int len, const char *source);
-int mail_file(const char *file, const char *recv, const char *title);
-
 #endif // FB_LIBBBS_H

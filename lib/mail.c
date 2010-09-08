@@ -182,3 +182,23 @@ int mail_file(const char *file, const char *recv, const char *title)
 	return ret;
 }
 
+/**
+ * Check email address validity.
+ * @param addr The email address.
+ * @return True if valid, false otherwise.
+ */
+bool valid_addr(const char *addr)
+{
+	int at = 0;
+	if (*addr == '\0' || !strchr(addr, '@'))
+		return false;
+	while (*addr) {
+		if (!isalnum(*addr) && !strchr(".!@:-_", *addr))
+			return false;
+		if (*addr == '@' && ++at >= 2)
+			return false;
+		++addr;
+	}
+	return true;
+}
+

@@ -18,23 +18,6 @@ extern int convcode;
 /**
  *
  */
-static const char *invalid_userid(const char *userid)
-{
-	switch (check_userid(userid)) {
-		case BBS_EREG_NONALPHA:
-			return "帐号必须全为英文字母!\n";
-		case BBS_EREG_SHORT:
-			return "帐号至少需有两个英文字母!\n";
-		case BBS_EREG_BADNAME:
-			return "抱歉, 您不能使用这个字作为帐号。\n";
-		default:
-			return NULL;
-	}
-}
-
-/**
- *
- */
 static void fill_new_userec(struct userec *user, const char *userid,
 		const char *passwd, bool usegbk)
 {
@@ -104,6 +87,7 @@ static int get_captcha_answer(int pos, char *answer, size_t size)
 void new_register(void)
 {
 	char userid[IDLEN + 1], passwd[PASSLEN], passbuf[PASSLEN], log[STRLEN];
+	const char *errmsg;
 
 	if (is_no_register()) {
 		ansimore("NOREGISTER", NA);
@@ -130,7 +114,7 @@ void new_register(void)
 				userid, sizeof(userid), DOECHO, YEA);
 		if (userid[0] == '0')
 			return;
-		const char *errmsg = invalid_userid(userid);
+		errmsg = invalid_userid(userid);
 		if (errmsg != NULL) {
 			outs(errmsg);
 			continue;
@@ -170,15 +154,16 @@ void new_register(void)
 		passbuf[0] = '\0';
 		getdata(0, 0, "请设定您的密码 (Setup Password): ", passbuf,
 				sizeof(passbuf), NOECHO, YEA);
-		if (strlen(passbuf) < 4 || !strcmp(passbuf, userid)) {
-			prints("密码太短或与使用者代号相同, 请重新输入\n");
+		errmsg = invalid_password(passbuf, userid);
+		if (errmsg) {
+			outs(errmsg);
 			continue;
 		}
 		strlcpy(passwd, passbuf, PASSLEN);
 		getdata(0, 0, "请再输入一次您的密码 (Confirm Password): ", passbuf,
 				PASSLEN, NOECHO, YEA);
 		if (strncmp(passbuf, passwd, PASSLEN) != 0) {
-			prints("密码输入错误, 请重新输入密码.\n");
+			prints("密码输入错误, 请重新输入密码\n");
 			continue;
 		}
 		passwd[8] = '\0';
@@ -258,7 +243,7 @@ void tui_check_reg_mail(void)
 		outs("    \033[1;32m本站采用复旦邮箱绑定认证，将发送认证码至您的复旦邮箱\033[m");
 		do {
 			getdata(3, 0, "    E-Mail:> ", email, sizeof(email), DOECHO, YEA);
-			if (invalidaddr(email) || (strstr(email, "@fudan.edu.cn") == NULL)
+			if (!valid_addr(email) || (strstr(email, "@fudan.edu.cn") == NULL)
 					|| invalid_email(email) == 1) {
 				prints("    对不起, 该email地址无效, 请重新输入 \n");
 				continue;
@@ -353,7 +338,7 @@ void check_reg_extra() {
 			do {
 				getdata(4, 0, "输入邮箱(外部邮箱亦可): ", schmate.email, STRLEN,
 						DOECHO, YEA);
-			} while (invalidaddr(schmate.email));
+			} while (!valid_addr(schmate.email));
 			do {
 				getdata(6, 0, "输入身份证号码: ", schmate.identity_card_num,
 						IDCARDLEN+1, DOECHO, YEA);
