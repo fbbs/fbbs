@@ -124,6 +124,7 @@ static void put_raw_ch(int ch)
  */
 void ochar(int ch)
 {
+	ch = (unsigned char)ch;
 #ifdef ALLOWSWITCHCODE
 	if (convcode) {
 		ch = convert_g2b(ch);
