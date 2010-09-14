@@ -1,5 +1,9 @@
 syntax: glob
 
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+
 aclocal.m4
 autom4te.cache
 configure
@@ -15,12 +19,11 @@ stamp-h1
 Makefile
 Makefile.in
 
-test
-
 *.o
 *.lo
 *.a
 *.la
+*.so
 .deps
 .libs
 

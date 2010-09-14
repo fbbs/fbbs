@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
+#AC_PREREQ(2.61)
 AC_INIT(fdubbs, 2009, http://code.google.com/p/fdubbs/issues)
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER([include/config.h])
@@ -30,7 +30,7 @@ AC_C_CONST
 AC_TYPE_UID_T
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
-AC_TYPE_SSIZE_T
+#AC_TYPE_SSIZE_T
 AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_STRUCT_ST_BLOCKS
 AC_HEADER_TIME
