@@ -35,9 +35,9 @@ install(TARGETS bbsd miscd chatd thread
 install(TARGETS admintool
 	LIBRARY DESTINATION so)
 if(ENABLE_SSH)
-	add_definitions(-DSSHBBS)
 	link_directories(../lib ../libssh)
 	add_executable(sshbbsd bbsd.c io.c main.c)
+	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DSSHBBS")
 	target_link_libraries(sshbbsd crypt dl BBS fbssh fbcmn)
 	install(TARGETS sshbbsd
 		RUNTIME DESTINATION bin)
