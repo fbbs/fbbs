@@ -12,6 +12,10 @@ add_library(fbcmn STATIC announce.c bbs.c bcache.c bm.c boards.c chat.c
 	convert.c bbsnet.c users.c)
 target_link_libraries(fbcmn BBS)
 
+if(COMMAND cmake_policy)
+	cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 add_executable(bbsd bbsd.c io.c main.c)
 target_link_libraries(bbsd crypt dl BBS fbcmn)
 

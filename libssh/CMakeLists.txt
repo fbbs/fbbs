@@ -7,4 +7,4 @@ add_library(fbssh SHARED agent.c auth.c auth1.c base64.c buffer.c callbacks.c
 	session.c sftp.c sftpserver.c socket.c string.c wrapper.c)
 
 install(TARGETS fbssh
-	RUNTIME DESTINATION so)
+	LIBRARY DESTINATION so)
