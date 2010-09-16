@@ -26,10 +26,11 @@ static int get_count(const char *path)
 	else
 		fp = fopen(buf, "r+");
 	FLOCK(fileno(fp), LOCK_EX);
-	fscanf(FCGI_ToFILE(fp), "%d", &counts);
-	counts++;
-	fseek(fp, 0, SEEK_SET);
-	fprintf(fp, "%d\n", counts);
+	if (fscanf(FCGI_ToFILE(fp), "%d", &counts) > 0) {
+		counts++;
+		fseek(fp, 0, SEEK_SET);
+		fprintf(fp, "%d\n", counts);
+	}
 	FLOCK(fileno(fp), LOCK_UN);
 	fclose(fp);
 	return counts;

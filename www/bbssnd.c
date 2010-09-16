@@ -60,7 +60,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 		if (ret == 0)
 			ret = safer_write(fd, buf, len);
 		size += (e - ptr) + len;
-		ftruncate(fd, size);
+		ret = ftruncate(fd, size);
 		fb_flock(fd, LOCK_UN);
 		restart_close(fd);
 		if (ret == 0)

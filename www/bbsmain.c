@@ -136,7 +136,8 @@ static const web_handler_t *getapplet(void)
 static int fcgi_init_all(void)
 {
 	srand(time(NULL) * 2 + getpid());
-	chdir(BBSHOME);
+	if (chdir(BBSHOME) != 0)
+		return BBS_EINTNL;
 	seteuid(BBSUID);
 	if(geteuid() != BBSUID)
 		return BBS_EINTNL;

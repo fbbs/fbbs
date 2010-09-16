@@ -1,4 +1,4 @@
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic -Werror")
 add_definitions(-D_XOPEN_SOURCE=600)
 
 if(COMMAND cmake_policy)

@@ -473,7 +473,7 @@ void refreshto(int second, const char *url)
 // Convert exp to icons.
 int iconexp(int exp, int *repeat)
 {
-	int i, j;
+	int i = 0, j;
 
 	if (exp < 0)
 		j = -1;
@@ -508,7 +508,8 @@ int maxlen(const char *board)
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s/.maxlen", board);
 	FILE *fp = fopen(path, "r");
 	if (fp != NULL) {
-		fscanf(FCGI_ToFILE(fp), "%d", &limit);
+		if (fscanf(FCGI_ToFILE(fp), "%d", &limit) <= 0)
+			limit = UPLOAD_MAX;
 		fclose(fp);
 	}
 	return limit;

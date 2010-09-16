@@ -11,15 +11,22 @@ static bool quota_exceeded(const char *board)
 	if (dashd(path)) {
 		FILE *fp;
 		sprintf(cmd , "du %s|cut -f1>%s/.size", path, path);
-		system(cmd);
+		int ret = system(cmd) >> 8;
+		if (ret != 0)
+			return true;
+
 		sprintf(cmd, "%s/.size", path);
 		if ((fp = fopen(cmd, "r")) == NULL)
 			return true;
-		fscanf(FCGI_ToFILE(fp), "%d", &now);
+		ret = fscanf(FCGI_ToFILE(fp), "%d", &now);
 		fclose(fp);
+		if (ret <= 0)
+			return true;
+
 		sprintf(cmd, "%s/.quota", path);
 		if((fp = fopen(cmd, "r")) != NULL) {
-			fscanf(FCGI_ToFILE(fp), "%d", &all);
+			if (fscanf(FCGI_ToFILE(fp), "%d", &all) <= 0)
+				all = 0;
 			fclose(fp);
 		}
 		if(now >= all)
