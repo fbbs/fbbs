@@ -2,6 +2,7 @@
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/string.h"
+#include "fbbs/mail.h"
 
 int bbsmail_main(void)
 {

@@ -2,6 +2,7 @@
 #include "post.h"
 #include "mmap.h"
 #include "fbbs/string.h"
+#include "fbbs/mail.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
