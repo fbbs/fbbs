@@ -264,7 +264,7 @@ int insert_record(const char *file, int size, record_func_t check, void *arg)
 			break;
 	}
 	if (iter != end)
-		memmove(iter + size, iter, 
+		memmove((char *)iter + size, iter, 
 				m.size - size - ((char *)iter - (char *)m.ptr));
 	memcpy(iter, arg, size);
 	mmap_close(&m);
@@ -289,7 +289,7 @@ void *lsearch(const void *key, const void *base, size_t nmemb, size_t size,
 	const char *end = ptr + nmemb * size;
 	while (ptr != end) {
 		if (!compar(key, ptr))
-			return ptr;
+			return (void *)ptr;
 		ptr += size;
 	}
 	return NULL;
