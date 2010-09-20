@@ -216,7 +216,7 @@ hash_iter_t *hash_begin(const hash_t *ht)
 	hash_iter_t *iter = malloc(sizeof(*iter));
 	if (!iter)
 		return NULL;
-	iter->ht = ht;
+	iter->ht = (hash_t *)ht;
 	iter->index = 0;
 	iter->entry = NULL;
 	iter->next = NULL;

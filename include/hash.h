@@ -46,7 +46,7 @@ typedef struct hash_iter_t
 	hash_t *ht;           ///< The hash table.
 	hash_entry_t *entry;  ///< Current entry.
 	hash_entry_t *next;   ///< Next entry.
-	unsigned int index;   ///< Current ndex in ht->array.
+	unsigned int index;   ///< Current index in ht->array.
 } hash_iter_t;
 
 unsigned int hash_func_default(const char *key, unsigned int *klen);
@@ -58,4 +58,3 @@ hash_iter_t *hash_next(hash_iter_t *iter);
 hash_iter_t *hash_begin(const hash_t *ht);
 
 #endif // FB_HASH_H
-
