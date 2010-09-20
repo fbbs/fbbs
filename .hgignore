@@ -1,5 +1,7 @@
 syntax: glob
 
+tags
+
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
