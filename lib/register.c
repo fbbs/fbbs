@@ -320,3 +320,34 @@ bool domain_allowed(const char *mail)
 {
 	return strstr(mail, "@fudan.edu.cn");
 }
+
+/**
+ * Initialize a basic user record.
+ */
+void init_userec(struct userec *user, const char *userid,
+		const char *passwd, bool usegbk)
+{
+	memset(user, 0, sizeof(*user));
+	strlcpy(user->userid, userid, sizeof(user->userid));
+	strlcpy(user->passwd, genpasswd(passwd), ENCPASSLEN);
+
+	user->gender = 'X';
+#ifdef ALLOWGAME
+	user->money = 1000;
+#endif
+	user->userdefine = ~0;
+	if (!strcmp(userid, "guest")) {
+		user->userlevel = 0;
+		user->userdefine &= ~(DEF_FRIENDCALL | DEF_ALLMSG | DEF_FRIENDMSG);
+	} else {
+		user->userlevel = PERM_LOGIN;
+		user->flags[0] = PAGER_FLAG;
+	}
+	user->userdefine &= ~(DEF_NOLOGINSEND);
+
+	if (!usegbk)
+		user->userdefine &= ~DEF_USEGB;
+
+	user->flags[1] = 0;
+	user->firstlogin = user->lastlogin = time(NULL);
+}

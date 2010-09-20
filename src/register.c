@@ -17,37 +17,6 @@ extern int convcode;
 
 /**
  *
- */
-static void fill_new_userec(struct userec *user, const char *userid,
-		const char *passwd, bool usegbk)
-{
-	memset(user, 0, sizeof(*user));
-	strlcpy(user->userid, userid, sizeof(user->userid));
-	strlcpy(user->passwd, genpasswd(passwd), ENCPASSLEN);
-
-	user->gender = 'X';
-#ifdef ALLOWGAME
-	user->money = 1000;
-#endif
-	user->userdefine = ~0;
-	if (!strcmp(userid, "guest")) {
-		user->userlevel = 0;
-		user->userdefine &= ~(DEF_FRIENDCALL | DEF_ALLMSG | DEF_FRIENDMSG);
-	} else {
-		user->userlevel = PERM_LOGIN;
-		user->flags[0] = PAGER_FLAG;
-	}
-	user->userdefine &= ~(DEF_NOLOGINSEND);
-
-	if (!usegbk)
-		user->userdefine &= ~DEF_USEGB;
-
-	user->flags[1] = 0;
-	user->firstlogin = user->lastlogin = time(NULL);
-}
-
-/**
- *
  *
  */
 static int gen_captcha_link(char *link, size_t size, int *n)
@@ -172,14 +141,14 @@ void new_register(void)
 	if (tried > MAX_SET_PASSWD_TRIES)
 		return;
 
-	struct userec newuser;
+	struct userec user;
 #ifdef ALLOWSWITCHCODE
-	fill_new_userec(&newuser, userid, passwd, !convcode);
+	init_userec(&user, userid, passwd, !convcode);
 #else
-	fill_new_userec(&newuser, userid, passwd, true);
+	init_userec(&user, userid, passwd, true);
 #endif
 
-	if (create_user(&newuser) < 0) {
+	if (create_user(&user) < 0) {
 		outs("Failed to create user.\n");
 		return;
 	}
@@ -187,7 +156,7 @@ void new_register(void)
 	snprintf(log, sizeof(log), "new account from %s", fromhost);
 	report(log, currentuser.userid);
 
-	prints("请重新登录 %s 并填写注册信息\n", newuser.userid);
+	prints("请重新登录 %s 并填写注册信息\n", user.userid);
 	pressanykey();
 	return;
 }
