@@ -256,7 +256,7 @@ int resolve_ucache(void)
 	return 0;
 }
 
-void setuserid(int num, char *userid)
+void setuserid(int num, const char *userid)
 {
 	if (num > 0 && num <= MAXUSERS) {
 		if (num > uidshm->number)

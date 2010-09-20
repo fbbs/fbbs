@@ -36,7 +36,7 @@ int load_ucache(void);
 int substitut_record(char *filename, const void *rptr, size_t size, int id);
 int flush_ucache(void);
 int resolve_ucache(void);
-void setuserid(int num, char *userid);
+void setuserid(int num, const char *userid);
 int getuserid(char *userid, int uid, size_t len);
 int searchuser(const char *userid);
 int getuserec(const char *userid, struct userec *u);
