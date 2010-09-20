@@ -16,8 +16,9 @@ extern void strtourl(char *url, const char *str);
 extern void strappend(char **dst, size_t *size, const char *src);
 extern void printable_filter(char *str);
 
-static inline bool isprint2(char c)
+static inline bool isprint2(int ch)
 {
+	unsigned char c = ch;
 	return (((c & 0x80) && c != 0xFF) || isprint(c));
 }
 
