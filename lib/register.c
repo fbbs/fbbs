@@ -315,3 +315,8 @@ bool is_banned_email(const char *mail)
 	}
 	return false;
 }
+
+bool domain_allowed(const char *mail)
+{
+	return strstr(mail, "@fudan.edu.cn");
+}

@@ -37,5 +37,7 @@ extern int send_regmail(const struct userec *user, const char *mail);
 extern bool activate_email(const char *userid, const char *attempt);
 extern bool is_reg_pending(const char *userid);
 extern int append_reg_list(const reginfo_t *reg);
+extern bool is_banned_email(const char *mail);
+extern bool domain_allowed(const char *mail);
 
 #endif // FB_REGISTER_H

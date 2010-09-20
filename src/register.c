@@ -218,8 +218,8 @@ void tui_check_reg_mail(void)
 		outs("    \033[1;32m本站采用复旦邮箱绑定认证，将发送认证码至您的复旦邮箱\033[m");
 		do {
 			getdata(3, 0, "    E-Mail:> ", email, sizeof(email), DOECHO, YEA);
-			if (!valid_addr(email) || (strstr(email, "@fudan.edu.cn") == NULL)
-					|| is_banned_email(email)) {
+			if (!valid_addr(email) || !domain_allowed(email) ||
+					is_banned_email(email)) {
 				prints("    对不起, 该email地址无效, 请重新输入 \n");
 				continue;
 			} else
