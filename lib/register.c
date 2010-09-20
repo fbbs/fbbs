@@ -298,3 +298,20 @@ int append_reg_list(const reginfo_t *reg)
 	fclose(fp);
 	return 0 - found;
 }
+
+bool is_banned_email(const char *mail)
+{
+	char tmp[128];
+	FILE *fp = fopen(".bad_email", "r");
+	if (fp) {
+		while (fgets(tmp, sizeof(tmp), fp)) {
+			strtok(tmp, "# \t\r\n");
+			if (strcasecmp(tmp, mail) == 0) {
+				fclose(fp);
+				return true;
+			}
+		}
+		fclose(fp);
+	}
+	return false;
+}

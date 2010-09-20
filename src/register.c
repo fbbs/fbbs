@@ -192,31 +192,6 @@ void new_register(void)
 	return;
 }
 
-int invalid_email(char *addr) {
-	FILE *fp;
-	char temp[STRLEN], tmp2[STRLEN];
-
-	if (strlen(addr)<3)
-		return 1;
-
-	strtolower(tmp2, addr);
-	if (strstr(tmp2, "bbs") != NULL)
-		return 1;
-
-	if ((fp = fopen(".bad_email", "r")) != NULL) {
-		while (fgets(temp, STRLEN, fp) != NULL) {
-			strtok(temp, "\n");
-			strtolower(genbuf, temp);
-			if (strstr(tmp2, genbuf)!=NULL||strstr(genbuf, tmp2) != NULL) {
-				fclose(fp);
-				return 1;
-			}
-		}
-		fclose(fp);
-	}
-	return 0;
-}
-
 int check_register_ok(void) {
 	char fname[STRLEN];
 
@@ -244,7 +219,7 @@ void tui_check_reg_mail(void)
 		do {
 			getdata(3, 0, "    E-Mail:> ", email, sizeof(email), DOECHO, YEA);
 			if (!valid_addr(email) || (strstr(email, "@fudan.edu.cn") == NULL)
-					|| invalid_email(email) == 1) {
+					|| is_banned_email(email)) {
 				prints("    对不起, 该email地址无效, 请重新输入 \n");
 				continue;
 			} else
