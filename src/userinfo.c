@@ -189,7 +189,7 @@ void tui_check_uinfo(struct userec *u)
 			case UINFO_EBIRTH:
 				getdata(4, 0, "请输入您的生日年份(四位数): ",
 						ans, 5, DOECHO, YEA);
-				u->birthyear = strtol(ans, NULL, 10);
+				u->birthyear = strtol(ans, NULL, 10) - 1900;
 				getdata(5, 0, "请输入您的生日月份: ", ans, 3, DOECHO, YEA);
 				u->birthmonth = strtol(ans, NULL, 10);
 				getdata(6, 0, "请输入您的出生日: ", ans, 3, DOECHO, YEA);

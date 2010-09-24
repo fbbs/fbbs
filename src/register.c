@@ -406,7 +406,7 @@ void check_register_info() {
 static void getfield(int line, char *info, char *desc, char *buf, int len)
 {
 	move(line, 0);
-	prints("  原先设定: %-40.40s \033[1;32m(%s)\033[m",
+	prints("  原先设定: %s \033[1;32m(%s)\033[m",
 			(buf[0] == '\0') ? "(未设定)" : buf, info);
 	char prompt[STRLEN];
 	snprintf(prompt, sizeof(prompt), "  %s: ", desc);
