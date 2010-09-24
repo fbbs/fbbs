@@ -44,4 +44,6 @@ check_function_exists(poll HAVE_POLL)
 	
 configure_file(include/config.h.cmake include/config.h)
 
+set(CMAKE_INSTALL_PREFIX "/home/bbs")
+
 #set(CMAKE_COLOR_MAKEFILE off)
