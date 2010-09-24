@@ -15,6 +15,7 @@ extern time_t login_start_time;
 extern int convcode;
 #endif
 
+#ifdef REG_CAPTCHA
 /**
  *
  *
@@ -49,6 +50,7 @@ static int get_captcha_answer(int pos, char *answer, size_t size)
 	fclose(fp);
 	return 0;
 }
+#endif // REG_CAPTCHA
 
 /**
  * Telnet register interface.
