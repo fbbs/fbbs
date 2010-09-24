@@ -456,10 +456,10 @@ int choose2(choose_t *cp)
 		if (!cp->eod) {
 			(*cp->loader)(cp);
 		} else {
-			if (cp->cur < 0)
-				cp->cur = 0;
 			if (cp->cur >= cp->all)
 				cp->cur = cp->all - 1;
+			if (cp->cur < 0)
+				cp->cur = 0;
 		}
 
 		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
