@@ -41,6 +41,8 @@ include(CheckFunctionExists)
 check_function_exists(select HAVE_SELECT)
 check_function_exists(getaddrinfo HAVE_GETADDRINFO)
 check_function_exists(poll HAVE_POLL)
+check_function_exists(gethostbyname HAVE_GETHOSTBYNAME)
+check_function_exists(regcomp HAVE_REGCOMP)
 	
 configure_file(include/config.h.cmake include/config.h)
 
