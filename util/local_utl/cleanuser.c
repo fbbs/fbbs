@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "bbs.h"
+#include "fbbs/uinfo.h"
 
 static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 {
@@ -42,7 +43,7 @@ static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 #else
 			"[\033[1;33m%-10s\033[m]"
 #endif
-			" 生命力:[\033[1;32m%d\033[m] 网龄[\033[1;32m%d天\033[m]\n\n",
+			" 生命力:[\033[1;32m%d\033[m] 网龄[\033[1;32m%"PRIdFBT"天\033[m]\n\n",
 			user->numposts,
 #ifdef SHOWEXP
 			exp,
@@ -56,8 +57,8 @@ int main(int argc, char **argv)
 {
 	bool pretend = (argc != 2) || (strcasecmp(argv[1], "-f") != 0);
 
-	int fd;
-	FILE *log, *data, *post;
+	int fd = 0;
+	FILE *log = NULL, *data = NULL, *post = NULL;
 
 	if (!pretend) {
 		int fd = open(BBSHOME"/tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);

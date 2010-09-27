@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/string.h"
 
 #define BASEPATH BBSHOME"/etc/posts"
 
