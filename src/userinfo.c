@@ -141,7 +141,7 @@ void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 	getdata(i++, 0, genbuf, buf, 10, DOECHO, YEA);
 	if (atoi(buf) > 0)
 		newinfo->stay = atoi(buf);
-	sprintf(genbuf, "firstlogin [%d]: ", u->firstlogin);
+	sprintf(genbuf, "firstlogin [%"PRIdFBT"]: ", u->firstlogin);
 	getdata(i++, 0, genbuf, buf, 15, DOECHO, YEA);
 	if (atoi(buf) >0)
 		newinfo->firstlogin = atoi(buf);
