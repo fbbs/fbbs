@@ -49,6 +49,7 @@ int bbstop10_main(void);
 int bbsnewmail_main(void);
 int bbsbfind_main(void);
 int bbsidle_main(void);
+extern int fcgi_reg(void);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -103,6 +104,7 @@ const static web_handler_t applets[] = {
 		{"newmail", bbsnewmail_main, RMAIL},
 		{"bfind", bbsbfind_main, READING},
 		{"idle", bbsidle_main, IDLE},
+		{"reg", fcgi_reg, NEW},
 		{NULL, NULL, 0}
 };
 

@@ -39,5 +39,7 @@ extern bool is_reg_pending(const char *userid);
 extern int append_reg_list(const reginfo_t *reg);
 extern bool is_banned_email(const char *mail);
 extern bool domain_allowed(const char *mail);
+extern void init_userec(struct userec *user, const char *userid,
+		        const char *passwd, bool usegbk);
 
 #endif // FB_REGISTER_H

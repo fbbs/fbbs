@@ -10,4 +10,4 @@ bbswebd_SOURCES = libweb.c bbsmain.c bbssec.c bbsall.c bbslogin.c \
 				  bbsnot.c bbsmail.c bbstcon.c \
 				  bbsmybrd.c bbserr.c bbsfav.c \
 				  bbsfall.c bbsplan.c bbsdel.c \
-				  bbsinfo.c bbssel.c bbsrss.c bbstop10.c
+				  bbsinfo.c bbssel.c bbsrss.c bbstop10.c register.c
