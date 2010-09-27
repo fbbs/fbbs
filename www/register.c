@@ -110,3 +110,12 @@ int fcgi_reg(void)
 	printf("</bbsreg>");
 	return 0;
 }
+
+int fcgi_activate(void)
+{
+	const char *code = getparm("code");
+	const char *user = getparm("user");
+	printf("<bbsactivate success='%d'>", activate_email(user, code));
+	print_session();
+	printf("</bbsactivate>");
+}

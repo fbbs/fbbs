@@ -208,18 +208,24 @@ int send_regmail(const struct userec *user, const char *mail)
 			"Subject: %s@%s mail check.\n"
 			"X-Purpose: %s registration mail.\n\n",
 			BBSHOST, BBSHOST, mail, user->userid, BBSID, BBSNAME);
-	fprintf(fout, "[中文]\n"
-			"BBS 位址         : %s (%s)\n"
-			"您注册的 BBS ID  : %s\n"
-			"申请日期         : %s"
-			"认证码           : %s (请注意大小写)\n",
-			BBSHOST, BBSIP, user->userid, ctime(&user->firstlogin), password);
-	fprintf(fout, "[English]\n"
-			"BBS LOCATION     : %s (%s)\n"
-			"YOUR BBS USER ID : %s\n"
-			"APPLICATION DATE : %s"
-			"VALID CODE       : %s (case sensitive)\n",
-			BBSHOST, BBSIP, user->userid, ctime(&user->firstlogin), password);
+	fprintf(fout, "感谢您注册 %s BBS站\n"
+			"Thank you for your registration.\n\n"
+			"请访问以下链接激活账号:\n"
+			"Please use the following link to activate your account:\n"
+			"http://%s/bbs/activate?user=%s&code=%s\n\n"
+			"您也可以使用telnet登录输入下列验证码激活账号:\n"
+			"You can also enter the code that follows on telnet login\n"
+			"验证码(Validation code)    : %s (请注意大小写/Case sensitive)\n\n",
+			BBSNAME, BBSHOST, user->userid, password, password);
+	fprintf(fout, "附加信息(Additional Info)\n"
+			"本站地址(Site address)     : %s (%s)\n"
+			"您注册的账号(Your account) : %s\n"
+			"申请日期(Application date) : %s\n\n",
+			BBSHOST, BBSIP, user->userid, ctime(&user->firstlogin));
+	fprintf(fout, "本信件由系统自动发送，请不要回复。\n"
+			"Note: this is an automated email. Please don't reply.\n"
+			"如果您从未注册以上账号，请忽略此信。\n"
+			"If you have never registered this account, please ignore the mail.\n");
 	fclose(fout);
 	return 0;
 }
