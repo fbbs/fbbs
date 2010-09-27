@@ -592,6 +592,12 @@ int cmpfnames(void *user, void *over)
  */
 int create_user(const struct userec *user)
 {
+	char path[HOMELEN];
+	snprintf(path, sizeof(path), "home/%c/%s",
+			toupper(user->userid[0]), user->userid);
+	if (dashd(path))
+		return UCACHE_EEXIST;
+
 	int fd = ucache_lock();
 	if (fd < 0)
 		return UCACHE_EINTNL;
