@@ -203,7 +203,7 @@ void tui_check_uinfo(struct userec *u)
 }
 
 //	查询u所指向的用户的资料信息
-int uinfo_query(struct userec *u, int real, int unum) {
+void uinfo_query(struct userec *u, int real, int unum) {
 	struct userec newinfo;
 	char ans[3], buf[STRLEN], genbuf[128];
 	char src[STRLEN], dst[STRLEN];
@@ -337,12 +337,12 @@ int uinfo_query(struct userec *u, int real, int unum) {
 			break;
 		default:
 			clear();
-			return 0;
+			return;
 	}
 	if (fail != 0) {
 		pressreturn();
 		clear();
-		return 0;
+		return;
 	}
 	if (askyn("确定要改变吗", NA, YEA) == YEA) {
 		if (real) {
@@ -373,7 +373,7 @@ int uinfo_query(struct userec *u, int real, int unum) {
 		substitut_record(PASSFILE, &newinfo, sizeof(newinfo), unum);
 	}
 	clear();
-	return 0;
+	return;
 }
 
 //与Information相关联.在comm_list.c里,用于显示和设定个人资料
