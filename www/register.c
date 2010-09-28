@@ -118,4 +118,5 @@ int fcgi_activate(void)
 	printf("<bbsactivate success='%d'>", activate_email(user, code));
 	print_session();
 	printf("</bbsactivate>");
+	return 0;
 }
