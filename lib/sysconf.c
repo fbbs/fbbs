@@ -2,6 +2,7 @@
 
 #include "bbs.h"
 #include "sysconf.h"
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 
 enum {

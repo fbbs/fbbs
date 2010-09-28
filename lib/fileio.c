@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "func.h"
+#include "fbbs/fileio.h"
 
 static int rm_dir();
 

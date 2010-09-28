@@ -1,6 +1,7 @@
 // Lists all boards.
 
 #include "libweb.h"
+#include "fbbs/fileio.h"
 
 int bbsall_main(void)
 {

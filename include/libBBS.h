@@ -6,20 +6,6 @@
 #include <sys/types.h>
 #include "hash.h"
 
-//fileio.c
-int file_append(const char *file, const char *msg);
-int safer_write(int fd, const void *buf, int size);
-int restart_close(int fd);
-int restart_ftruncate(int fd, off_t size);
-int dashf(const char *file);
-int dashd(const char *file);
-int part_cp(char *src, char *dst, char *mode);
-int f_cp(const char *src, const char *dst, int mode);
-int f_ln(const char *src, const char *dst);
-int valid_fname(char *str);
-int f_rm(char *fpath);
-int fb_flock(int fd, int operation);
-
 //mmdecode.c
 void _mmdecode(unsigned char *str);
 

@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/fileio.h"
 
 // Read board lists from file 'filename' and print line by line.
 static int showbrdlist(const char *filename)

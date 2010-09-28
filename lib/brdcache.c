@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "record.h"
+#include "fbbs/fileio.h"
 
 struct BCACHE *brdshm = NULL;
 struct boardheader *bcache = NULL;

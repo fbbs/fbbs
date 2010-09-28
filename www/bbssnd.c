@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "post.h"
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,

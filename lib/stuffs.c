@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 
 // Returns the path of 'filename' under the home directory of 'userid'.

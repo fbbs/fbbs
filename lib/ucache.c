@@ -7,6 +7,7 @@
 #include <time.h>
 #include "record.h"
 
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/ucache.h"
 

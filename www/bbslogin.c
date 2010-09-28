@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 
 static int check_multi(const struct userec *user)

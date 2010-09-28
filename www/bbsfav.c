@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/fileio.h"
 
 int bbsfav_main(void)
 {

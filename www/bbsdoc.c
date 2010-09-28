@@ -2,6 +2,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 
 enum {
