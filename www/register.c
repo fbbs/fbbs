@@ -43,12 +43,15 @@ static const char *_reg(const reg_req_t *r)
 	struct userec user;
 	init_userec(&user, r->id, r->pw, false);
 
-	strlcpy(user.email, r->mail, sizeof(user.email));
-	if (!valid_addr(user.email) || !domain_allowed(user.email)
-			|| is_banned_email(user.email)) {
+#ifndef FDQUAN
+	char email[sizeof(user.email)];
+	snprintf(email, sizeof(email), "%s@fudan.edu.cn", r->mail);
+	if (!valid_addr(email) || !domain_allowed(email)
+			|| is_banned_email(email)) {
 		return "电子邮件地址无效，或不在允许范围";
 	}
 	user.email[0] = '\0';
+#endif // FDQUAN
 
 	user.gender = r->gender[0];
 	strlcpy(user.username, r->nick, sizeof(user.username));
@@ -76,14 +79,17 @@ static const char *_reg(const reg_req_t *r)
 	if (append_reg_list(&reg) != 0)
 		return "提交注册资料失败";
 
-	if (send_regmail(&user, r->mail) != 0)
+#ifndef FDQUAN
+	if (send_regmail(&user, email) != 0)
 		return "发送注册信失败";
+#endif // FDQUAN
 
 	return NULL;
 }
 
 int fcgi_reg(void)
 {
+	parse_post_data();
 	reg_req_t request = {
 		.id = getparm("id"),
 		.pw = getparm("pw"),
@@ -106,7 +112,8 @@ int fcgi_reg(void)
 
 	printf("<bbsreg error='%d'>", error ? 1 : 0);
 	print_session();
-	printf("%s", error);
+	if (error)
+		printf("%s", error);
 	printf("</bbsreg>");
 	return 0;
 }

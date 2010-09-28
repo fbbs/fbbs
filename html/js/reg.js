@@ -32,7 +32,7 @@ String.prototype.getBytes = function() {
 }
 
 var checker = {
-	id: function(i) { return i.value.length >= 2 && i.value.length <= 12 && !i.value.match(/^[a-zA-Z]/) },
+	id: function(i) { return i.value.length >= 2 && i.value.length <= 12 && !i.value.match(/[^a-zA-Z]/) },
 	pw: function(i) { return i.value.getBytes() >= 4; },
 	pw2: function(i) { return i.value.getBytes() >= 4 && i.value == $('#pw').val(); },
 	mail: function(i) { return i.value; },

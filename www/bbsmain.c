@@ -173,7 +173,8 @@ int main(void)
 		} else {
 			fcgi_init_loop(get_web_mode(app->mode));
 #ifdef FDQUAN
-			if (!loginok && app->func != bbslogin_main)
+			if (!loginok && app->func != bbslogin_main
+					&& app->func != fcgi_reg && app->func != fcgi_activate)
 				ret = BBS_ELGNREQ;
 			else
 				ret = (*(app->func))();
