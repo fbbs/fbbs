@@ -1,24 +1,20 @@
 AM_CFLAGS = -O2 -pipe -std=c99 -pedantic -Wall -Wno-implicit -export @ENABLE_DEBUG@
 AM_CPPFLAGS = -D_XOPEN_SOURCE=500 -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE -I../include
-LIBS = -lcrypt -ldl
-LDADD = ../lib/libBBS.a
-
+LIBS = -lcrypt -ldl -lBBS
+AM_LDFLAGS = -L../lib
 
 bin_PROGRAMS = bbsd miscd @ENABLE_SSH@ chatd thread
 EXTRA_PROGRAMS = bbsd miscd sshbbsd chatd thread
 
+noinst_LIBRARIES = libfbcmn.a
+libfbcmn_a_SOURCES = announce.c bbs.c bcache.c bm.c boards.c chat.c \
+	comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c help.c list.c \
+	mail.c maintain.c more.c namecomplete.c postheader.c read.c register.c \
+	screen.c sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c readabc.c \
+	five.c convert.c bbsnet.c users.c
+
 bbsd_SOURCES = bbsd.c io.c main.c
-bbsd_LDADD = $(LDADD) announce.$(OBJEXT) bbs.$(OBJEXT) bcache.$(OBJEXT) \
-             bm.$(OBJEXT) boards.$(OBJEXT) chat.$(OBJEXT) \
-			 comm_lists.$(OBJEXT) delete.$(OBJEXT) deny.$(OBJEXT) \
-			 edit.$(OBJEXT) fileshm.$(OBJEXT) goodbye.$(OBJEXT) \
-			 help.$(OBJEXT) list.$(OBJEXT) mail.$(OBJEXT) \
-			 maintain.$(OBJEXT) more.$(OBJEXT) namecomplete.$(OBJEXT) \
-			 postheader.$(OBJEXT) read.$(OBJEXT) register.$(OBJEXT) \
-			 screen.$(OBJEXT) sendmsg.$(OBJEXT) stuff.$(OBJEXT) \
-			 talk.$(OBJEXT) userinfo.$(OBJEXT) vote.$(OBJEXT) xyz.$(OBJEXT) \
-			 readabc.$(OBJEXT) five.$(OBJEXT) convert.$(OBJEXT) \
-			 bbsnet.$(OBJEXT) users.$(OBJEXT)
+bbsd_LDADD = ./libfbcmn.a
 
 if SSH
 sshbbsd_SOURCES = bbsd.c io.c main.c
