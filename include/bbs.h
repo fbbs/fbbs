@@ -371,15 +371,6 @@ extern int KEY_ESC_arg;
 //如果BMNAMELISTLEN与BMNAMEMAXLEN不同,显示版主列表时,将用...来表示超过部分
 //BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界
 
-enum DATE_FORMAT {
-	DATE_ZH = 0,      ///< "2001年02月03日04:05:06 星期六"
-	DATE_EN = 1,      ///< "02/03/01 04:05:06"
-	DATE_SHORT = 2,   ///< "02.03 04:05"
-	DATE_ENWEEK = 4,  ///< "02/03/01 04:05:06 Sat"
-	DATE_XML = 8,     ///< "2001-02-03T04:05:06"
-	DATE_RSS = 16,    ///< "Sat,03 Feb 2001 04:05:06 +0800"
-};
-
 /**
  * Telnet option negotiation sequence status.
  */

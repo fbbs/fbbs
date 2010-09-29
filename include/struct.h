@@ -1,13 +1,8 @@
 #ifndef FB_STRUCT_H
 #define FB_STRUCT_H
 
-#include <stdint.h>
-#include <inttypes.h>
 #include "config.h"
-
-#define PRIdFBT PRId64
-
-typedef int64_t fb_time_t;
+#include "fbbs/time.h"
 
 /** User infomation on disk. */
 struct userec {
