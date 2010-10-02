@@ -15,7 +15,10 @@ if(ENABLE_DEBUG)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 endif(ENABLE_DEBUG)
 
-subdirs(lib src util/local_utl)
+set(CMAKE_INSTALL_PREFIX "/home/bbs")
+
+add_subdirectory(lib)
+add_subdirectory(src)
 if(ENABLE_SSH)
 	add_subdirectory(libssh)
 	set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/libssh/cmake)
@@ -29,6 +32,7 @@ endif(ENABLE_SSH)
 if(ENABLE_WWW)
 	add_subdirectory(www)
 endif(ENABLE_WWW)
+add_subdirectory(util/local_utl EXCLUDE_FROM_ALL)
 
 if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 NEW)
@@ -45,7 +49,5 @@ check_function_exists(gethostbyname HAVE_GETHOSTBYNAME)
 check_function_exists(regcomp HAVE_REGCOMP)
 	
 configure_file(include/config.h.cmake include/config.h)
-
-set(CMAKE_INSTALL_PREFIX "/home/bbs")
 
 #set(CMAKE_COLOR_MAKEFILE off)
