@@ -110,6 +110,7 @@ int fcgi_reg(void)
 
 	const char *error = _reg(&request);
 
+	xml_header("bbs");
 	printf("<bbsreg error='%d'>", error ? 1 : 0);
 	print_session();
 	if (error)

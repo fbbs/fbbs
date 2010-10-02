@@ -167,6 +167,7 @@
 		<xsl:when test='bbsmybrd'>个人资料</xsl:when>
 		<xsl:when test='bbspwd'>修改密码</xsl:when>
 		<xsl:when test='bbsnot'>进版画面</xsl:when>
+		<xsl:when test='bbsreg'>注册帐号</xsl:when>
 		<xsl:otherwise></xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
@@ -902,6 +903,17 @@ table.post{width:100%}
 	<xsl:if test='@brd'>
 		<a><xsl:attribute name='href'>gdoc?board=<xsl:value-of select='@brd'/></xsl:attribute>[ 文摘区 ]</a>
 		<a><xsl:attribute name='href'>doc?board=<xsl:value-of select='@brd'/></xsl:attribute>[<img src='../images/button/home.gif'/>本讨论区]</a>
+	</xsl:if>
+</xsl:template>
+
+<xsl:template match='bbsreg'>
+	<xsl:if test='@error=1'>
+		<p>注册帐号出错：<xsl:value-of select='.'/></p>
+		<p><a href='javascript:history.go(-1)'>快速返回</a></p>
+	</xsl:if>
+	<xsl:if test='@error=0'>
+		<p>注册成功！</p>
+		<p><a href='login'>现在登录</a></p>
 	</xsl:if>
 </xsl:template>
 </xsl:stylesheet>
