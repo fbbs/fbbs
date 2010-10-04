@@ -913,7 +913,7 @@ table.post{width:100%}
 	</xsl:if>
 	<xsl:if test='@error=0'>
 		<p>注册成功！</p>
-		<p><a href='login'>现在登录</a></p>
+		<p><a href='login?next=sec'>现在登录</a></p>
 	</xsl:if>
 </xsl:template>
 </xsl:stylesheet>
