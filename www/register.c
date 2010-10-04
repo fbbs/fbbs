@@ -52,7 +52,7 @@ static const char *_reg(const reg_req_t *r)
 		return error;
 
 	struct userec user;
-	init_userec(&user, r->id, r->pw, false);
+	init_userec(&user, r->id, r->pw, true);
 
 #ifndef FDQUAN
 	char email[sizeof(user.email)];
@@ -91,6 +91,12 @@ static const char *_reg(const reg_req_t *r)
 	reg.regdate = now;
 	if (append_reg_list(&reg) != 0)
 		return "提交注册资料失败";
+
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "home/%c/%s",
+			toupper(user.userid[0]), user.userid);
+	if (mkdir(file, 0755) != 0)
+		return "内部错误";
 
 #ifndef FDQUAN
 	if (send_regmail(&user, email) != 0)
