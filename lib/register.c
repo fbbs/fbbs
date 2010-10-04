@@ -172,7 +172,7 @@ static void generate_random_password(char *buf, size_t size)
 	read_urandom(buf, size - 1);
 
 	for (int i = 0; i < size; ++i) {
-		buf[i] = panel[buf[i] % sizeof(panel)];
+		buf[i] = panel[buf[i] % (sizeof(panel) - 1)];
 	}
 
 	buf[size - 1] = '\0';
