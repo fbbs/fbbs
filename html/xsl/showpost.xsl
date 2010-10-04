@@ -36,6 +36,7 @@
 		<xsl:if test='$rest'>
 			<xsl:call-template name='_showpost'>
 				<xsl:with-param name='content' select='$rest'/>
+				<xsl:with-param name='mode'><xsl:value-of select='$mode'/></xsl:with-param>
 			</xsl:call-template>
 		</xsl:if>
 	</xsl:template>

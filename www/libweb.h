@@ -9,7 +9,7 @@
 #include <fcgi_stdio.h>  //Should be included last.
 
 #define CHARSET		"gb18030"
-#define SQUID
+//#define SQUID
 
 #ifdef FDQUAN
 	#define SECNUM 9

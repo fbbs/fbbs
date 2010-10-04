@@ -57,6 +57,7 @@ static bool select_bbsdoc(const struct fileheader *fh, int mode)
 {
 	switch (mode) {
 		case MODE_THREAD:
+		case MODE_TOPICS:
 			return (fh->id == fh->gid);
 		default:
 			break;
@@ -236,6 +237,11 @@ int bbsgdoc_main(void)
 int bbstdoc_main(void)
 {
 	return bbsdoc(MODE_THREAD);
+}
+
+int bbsodoc_main(void)
+{
+	return bbsdoc(MODE_TOPICS);
 }
 
 int do_bfind(void *buf, int count, void *args)
