@@ -2,11 +2,29 @@ var ok = false;
 
 $(document).ready(function() {
 	$("span").hide();
+	$('#exist').show();
 	$('#id').focus();
 });
 
 $("input").focus(focus).blur(blur).keyup(check);
 $("input[name=agree]").click(check);
+
+$("input[type=button]").unbind('focus').unbind('blur');
+$("input[type=button]").click(function() {
+	$(this).attr("disabled", true);
+	var id = $("#id").get(0).value;
+	$.get("bbs/exist", { user: id },
+		function(data) {
+			var text = $(data).find("bbsexist").text();
+			if (text == "1") {
+				$('#e1').show().html('ÕÊºÅ' + id + 'ÒÑ±»ÈË×¢²á');
+				$('#e0').hide();
+			} else {
+				$('#e0').show().html('ÕÊºÅ' + id + 'ÉÐÎ´±»×¢²á');
+                $('#e1').hide();
+			}
+		});
+});
 $("select").change(check);
 $("input[type=submit]").click(function () {
 	ok = true;
@@ -21,8 +39,12 @@ function check() {
 	if (checker[this.name] && checker[this.name](this) == false) {
 		$(this).addClass('warn');
 		ok = false;
+		if (this.name == 'id')
+			$("input[type=button]").attr("disabled", true);
 	} else {
 		$(this).removeClass('warn');
+		if (this.name == 'id')
+			$("input[type=button]").attr("disabled", false);
 	}
 }
 

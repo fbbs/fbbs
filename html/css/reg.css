@@ -12,3 +12,6 @@ label { padding: 0 0.5em; }
 select { font-size: 1em; width: 3em; }
 span.hint { margin-left: 0.5em; color: green; }
 #register { background-color: #f0f7ff; }
+#exist { display: none; }
+#e1 { color: red; margin-left: 1em; }
+#e0 { color: green; margin-left: 1em; }
