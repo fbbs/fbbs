@@ -101,6 +101,9 @@ static int wwwlogin(struct userec *user, const char *ref)
 
 static const char *get_login_referer(void)
 {
+	const char *next = getparm("next");
+	if (*next != '\0' && !strchr(next, '.'))
+		return next;
 	const char *referer = get_referer();
 	const char *ref;
 	if (!strcmp(referer, "/") || !strcmp(referer, "/index.htm"))
