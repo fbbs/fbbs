@@ -913,17 +913,17 @@ table.post{width:100%}
 	</xsl:if>
 	<xsl:if test='@error=0'>
 		<p>注册成功！</p>
-		<p><a href='login?next=sec'>现在登录</a></p>
+		<p><a href='http://mail.fudan.edu.cn/'>现在登录复旦邮箱查收激活链接</a></p>
 	</xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsactivate'>
 	<xsl:if test='@success=1'>
-		<p>邮箱验证成功！</p>
+		<p>帐号成功激活！</p>
 		<p><a href='login?next=sec'>现在登录</a></p>
 	</xsl:if>
 	<xsl:if test='@success=0'>
-		<p>邮箱验证失败 :( 请检查激活链接</p>
+		<p>帐号激活失败 :( 请检查激活链接</p>
 	</xsl:if>
 </xsl:template>
 
