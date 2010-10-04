@@ -41,8 +41,6 @@ var checker = {
 	bmon: function(i) { var s = $("#bmon option:selected"); return s && s.val() != "0"; },
 	bday: function(i) { var s = $("#bday option:selected"); return s && s.val() != "0"; },
 	name: function(i) { return i.value.getBytes() >= 4 && i.value.match(/[^\x00-\xff]/ig) != null; },
-	dept: function(i) { return i.value.getBytes() >= 6 },
-	addr: function(i) { return i.value.getBytes() >= 10; },
 	tel: function(i) { return i.value.length >= 8 && !i.value.match(/[^0-9]/);},
 	agree: function(i) { return i.checked; }
 }

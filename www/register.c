@@ -20,10 +20,7 @@ typedef struct reg_req_t {
 	const char *nick;
 	const char *gender;
 	const char *name;
-	const char *dept;
-	const char *addr;
 	const char *tel;
-	const char *assoc;
 	const char *agree;
 	int year;
 	int month;
@@ -70,12 +67,9 @@ static const char *_reg(const reg_req_t *r)
 	user.birthyear = r->year > 1900 ? r->year - 1900 : r->year;
 	user.birthmonth = r->month;
 	user.birthday = r->day;
-	if (check_user_profile(&user) != 0)
-		return "请填写个人资料";
-
-	if (strlen(r->name) < 4 || strlen(r->dept) < 6
-			|| strlen(r->addr) < 10 || strlen(r->tel) < 8)
-		return "请详细填写注册资料";
+	if (check_user_profile(&user) != 0
+			|| strlen(r->name) < 4 || strlen(r->tel) < 8)
+		return "请详细填写个人资料";
 
 	if (create_user(&user) != 0)
 		return "用户已存在，或出现其他内部错误";
@@ -84,13 +78,10 @@ static const char *_reg(const reg_req_t *r)
 	memset(&reg, 0, sizeof(reg));
 	strlcpy(reg.userid, r->id, sizeof(reg.userid));
 	strlcpy(reg.realname, r->name, sizeof(reg.realname));
-	strlcpy(reg.dept, r->dept, sizeof(reg.dept));
-	strlcpy(reg.addr, r->addr, sizeof(reg.addr));
 	strlcpy(reg.phone, r->tel, sizeof(reg.phone));
 #ifndef FDQUAN
 	strlcpy(reg.email, email, sizeof(reg.email));
 #endif
-	strlcpy(reg.assoc, r->assoc, sizeof(reg.assoc));
 	reg.regdate = now;
 	if (append_reg_list(&reg) != 0)
 		return "提交注册资料失败";
@@ -120,10 +111,7 @@ int fcgi_reg(void)
 		.nick = getparm("nick"),
 		.gender = getparm("gender"),
 		.name = getparm("name"),
-		.dept = getparm("dept"),
-		.addr = getparm("addr"),
 		.tel = getparm("tel"),
-		.assoc = getparm("assoc"),
 		.agree = getparm("agree"),
 		.year = strtol(getparm("byear"), NULL, 10),
 		.month = strtol(getparm("bmon"), NULL, 10),
