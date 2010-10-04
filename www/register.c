@@ -81,12 +81,15 @@ static const char *_reg(const reg_req_t *r)
 		return "用户已存在，或出现其他内部错误";
 
 	reginfo_t reg;
+	memset(&reg, 0, sizeof(reg));
 	strlcpy(reg.userid, r->id, sizeof(reg.userid));
 	strlcpy(reg.realname, r->name, sizeof(reg.realname));
 	strlcpy(reg.dept, r->dept, sizeof(reg.dept));
 	strlcpy(reg.addr, r->addr, sizeof(reg.addr));
 	strlcpy(reg.phone, r->tel, sizeof(reg.phone));
+#ifndef FDQUAN
 	strlcpy(reg.email, email, sizeof(reg.email));
+#endif
 	strlcpy(reg.assoc, r->assoc, sizeof(reg.assoc));
 	reg.regdate = now;
 	if (append_reg_list(&reg) != 0)
