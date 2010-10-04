@@ -223,16 +223,16 @@ void tui_check_reg_mail(void)
 	}
 
 	if (i == 3) {
-		unlink(buf);
+		unlink(file);
 		prints("认证失败! 请重填邮箱。\n");
-		sethomefile(buf, currentuser.userid, ".regextra");
-		if (dashf(buf))
-			unlink(buf);
+		sethomefile(file, currentuser.userid, ".regextra");
+		if (dashf(file))
+			unlink(file);
 		pressanykey();
 	} else {
 		prints("认证成功!\n");
-		sethomefile(buf, currentuser.userid, ".regextra");
-		if (dashf(buf)) {
+		sethomefile(file, currentuser.userid, ".regextra");
+		if (dashf(file)) {
 			prints("我们将暂时保留您的正常使用权限,如果核对您输入的个人信息有误将停止您的发文权限,\n");
 			prints("因此请确保您输入的是个人真实信息.\n");
 		}

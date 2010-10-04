@@ -86,7 +86,9 @@ static const char *_reg(const reg_req_t *r)
 	strlcpy(reg.dept, r->dept, sizeof(reg.dept));
 	strlcpy(reg.addr, r->addr, sizeof(reg.addr));
 	strlcpy(reg.phone, r->tel, sizeof(reg.phone));
-	strlcpy(reg.email, user.email, sizeof(reg.email));
+	strlcpy(reg.email, email, sizeof(reg.email));
+	strlcpy(reg.assoc, r->assoc, sizeof(reg.assoc));
+	reg.regdate = now;
 	if (append_reg_list(&reg) != 0)
 		return "提交注册资料失败";
 
@@ -134,6 +136,7 @@ int fcgi_activate(void)
 {
 	const char *code = getparm("code");
 	const char *user = getparm("user");
+	xml_header("bbs");
 	printf("<bbsactivate success='%d'>", activate_email(user, code));
 	print_session();
 	printf("</bbsactivate>");

@@ -198,17 +198,14 @@ int send_regmail(const struct userec *user, const char *mail)
 	fclose(fp);
 
 	char buf[256];
-	snprintf(buf, sizeof(buf), "%s -f %s.bbs@%s %s", MTA, user->userid,
-			BBSHOST, mail);
+	snprintf(buf, sizeof(buf), "%s %s", MTA, mail);
 	FILE *fout = popen(buf, "w");
 	if (!fout)
 		return -1;
-	fprintf(fout, "Reply-To: SYSOP.bbs@%s\n"
-			"From: SYSOP.bbs@%s\n"
-			"To: %s\n"
-			"Subject: %s@%s mail check.\n"
+	fprintf(fout, "To: %s\n"
+			"Subject: [%s]邮件验证(Registration Email)\n"
 			"X-Purpose: %s registration mail.\n\n",
-			BBSHOST, BBSHOST, mail, user->userid, BBSID, BBSNAME);
+			mail, BBSNAME, BBSNAME);
 	fprintf(fout, "感谢您注册 %s BBS站\n"
 			"Thank you for your registration.\n\n"
 			"请访问以下链接激活账号:\n"
