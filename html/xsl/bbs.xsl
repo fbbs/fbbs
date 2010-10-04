@@ -916,4 +916,15 @@ table.post{width:100%}
 		<p><a href='login?next=sec'>现在登录</a></p>
 	</xsl:if>
 </xsl:template>
+
+<xsl:template match='bbsactivate'>
+	<xsl:if test='@success=1'>
+		<p>邮箱验证成功！</p>
+		<p><a href='login?next=sec'>现在登录</a></p>
+	</xsl:if>
+	<xsl:if test='@success=0'>
+		<p>邮箱验证失败 :( 请检查激活链接</p>
+	</xsl:if>
+</xsl:template>
+
 </xsl:stylesheet>
