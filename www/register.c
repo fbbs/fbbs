@@ -139,3 +139,11 @@ int fcgi_activate(void)
 	printf("</bbsactivate>");
 	return 0;
 }
+
+int fcgi_exist(void)
+{
+	const char *user = getparm("user");
+	xml_header("bbs");
+	printf("<bbsexist>%d</bbsexist>", searchuser(user) != 0);
+	return 0;
+}
