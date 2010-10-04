@@ -913,7 +913,7 @@ table.post{width:100%}
 	</xsl:if>
 	<xsl:if test='@error=0'>
 		<p>注册成功！</p>
-		<p><a href='http://mail.fudan.edu.cn/'>现在登录复旦邮箱查收激活链接</a></p>
+		<p><a href='http://mail.fudan.edu.cn/'>点击此处登录复旦邮箱，查收激活链接</a></p>
 	</xsl:if>
 </xsl:template>
 
