@@ -4,6 +4,12 @@
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
 
+// Since there is no captcha for web registration...
+enum {
+	WEB_NOREG_START = 5,
+	WEB_NOREG_END = 7,
+};
+
 extern int create_user(const struct userec *user);
 
 typedef struct reg_req_t {
@@ -26,6 +32,11 @@ typedef struct reg_req_t {
 
 static const char *_reg(const reg_req_t *r)
 {
+	time_t now = time(NULL);
+	struct tm *t = localtime(&now);
+	if (t->tm_hour >= WEB_NOREG_START && t->tm_hour < WEB_NOREG_END)
+		return "当前时段恕不开放web注册，请稍后再试";
+
 	if (strcmp(r->agree, "agree") != 0)
 		return "您必须同意站规";
 
