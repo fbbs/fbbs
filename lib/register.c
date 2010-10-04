@@ -248,7 +248,7 @@ bool activate_email(const char *userid, const char *attempt)
 	if (!num)
 		return false;
 
-	currentuser.userlevel |= PERM_BINDMAIL;
+	currentuser.userlevel |= (PERM_DEFAULT | PERM_BINDMAIL);
 	strlcpy(currentuser.email, email, sizeof(currentuser.email));
 	substitut_record(NULL, &currentuser, sizeof(currentuser), num);
 
