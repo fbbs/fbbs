@@ -149,6 +149,7 @@ void new_register(void)
 #else
 	init_userec(&user, userid, passwd, true);
 #endif
+	strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
 
 	if (create_user(&user) < 0) {
 		outs("Failed to create user.\n");

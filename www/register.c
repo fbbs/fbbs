@@ -50,6 +50,7 @@ static const char *_reg(const reg_req_t *r)
 
 	struct userec user;
 	init_userec(&user, r->id, r->pw, true);
+	strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
 
 #ifndef FDQUAN
 	char email[sizeof(user.email)];

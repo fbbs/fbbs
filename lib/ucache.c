@@ -618,5 +618,10 @@ int create_user(const struct userec *user)
 	substitut_record(PASSFILE, user, sizeof(*user), i);
 
 	ucache_unlock(fd);
+
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "new account from %s", user->lasthost);
+	report(buf, user->userid);
+
 	return 0;
 }
