@@ -184,7 +184,7 @@ static int bbsdoc(int mode)
 	if (get_doc_mode() != mode)
 		set_doc_mode(mode);
 
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsdoc>");
 	print_session();
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
@@ -298,7 +298,7 @@ int bbsbfind_main(void)
 	cri.user = getparm("user");
 	cri.found = 0;
 
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsbfind ");
 	printf(" bid='%d'", cri.bid);
 

@@ -7,7 +7,7 @@ int bbsall_main(void)
 {
 	struct boardheader *x;
 	int i;
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsall>");
 	print_session();
 	for (i = 0; i < MAXBOARD; i++) {
@@ -46,7 +46,7 @@ int bbsboa_main(void)
 	else
 		cgi = "doc";
 	
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsboa link='%s' ", cgi);
 
 	struct boardheader *parent = NULL;

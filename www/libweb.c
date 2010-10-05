@@ -445,9 +445,10 @@ int fcgi_init_loop(int mode)
  */
 void xml_header(const char *xslfile)
 {
+	const char *xsl = xslfile ? xslfile : "bbs";
 	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
 	printf("<?xml version=\"1.0\" encoding=\"%s\"?>\n", CHARSET);
-	printf("<?xml-stylesheet type=\"text/xsl\" href=\"../xsl/%s.xsl\"?>\n", xslfile);
+	printf("<?xml-stylesheet type=\"text/xsl\" href=\"../xsl/%s.xsl\"?>\n", xsl);
 }
 
 /**

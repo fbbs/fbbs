@@ -73,7 +73,7 @@ static int read_submit(void)
 		}
 	}
 	mmap_close(&m);
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsmybrd limit='%d' selected='%d'>", GOOD_BRC_NUM, num);
 	print_session();
 	printf("</bbsmybrd>");
@@ -102,7 +102,7 @@ int bbsmybrd_main(void)
 	end = (struct goodbrdheader *)m.ptr + num;
 
 	// Print 'bid's of favorite boards.
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsmybrd ");
 	printf(" limit='%d'>", GOOD_BRC_NUM);
 	for (iter = m.ptr; iter != end; iter++) {

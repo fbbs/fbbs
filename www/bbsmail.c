@@ -23,7 +23,7 @@ int bbsmail_main(void)
 		start = 1;
 	struct fileheader *fh = (struct fileheader *)m.ptr + start - 1;
 	struct fileheader *end = (struct fileheader *)m.ptr + total;
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsmail start='%d' total='%d' page='%d'>", start, total, TLINES);
 	print_session();
 	for (int i = 0; i < TLINES && fh != end; ++i) {
@@ -73,7 +73,7 @@ int bbsnewmail_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsnewmail>");
 	print_session();
 	char file[HOMELEN];
@@ -110,7 +110,7 @@ int bbsmailcon_main(void)
 		newmail = true;
 		fh->accessed[0] |= FILE_READ;
 	}
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsmailcon ");
 	struct fileheader *prev = fh - 1;
 	if (prev >= (struct fileheader *)m.ptr)
@@ -206,7 +206,7 @@ int bbspstmail_main(void)
 		}
 		fh = (struct fileheader *)m.ptr + num - 1;
 	}
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbspstmail ");
 
 	printf(" ref='");

@@ -23,7 +23,7 @@ int bbsfall_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsfall>");
 	print_session();
 	char file[HOMELEN];
@@ -69,7 +69,7 @@ int bbsfadd_main(void)
 		printf("Location: fall\n\n");
 		return 0;
 	}
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsfadd>");
 	print_session();
 	printf("%s</bbsfadd>", id);
@@ -153,7 +153,7 @@ int bbsovr_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsovr>");
 	print_session();
 	override_info();

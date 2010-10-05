@@ -130,7 +130,7 @@ int bbs0an_main(void)
 		}
 	}
 
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbs0an path='%s' v='%d' ", path, get_count(path));
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
@@ -196,7 +196,7 @@ int bbsanc_main(void)
 
 	char fname[512];
 	sprintf(fname, "0Announce%s", path);
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsanc ");
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);

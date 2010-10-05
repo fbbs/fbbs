@@ -56,7 +56,7 @@ int bbsinfo_main(void)
 		return BBS_ELGNREQ;
 	parse_post_data();
 	char *type = getparm("type");
-	xml_header("bbs");
+	xml_header(NULL);
 	if (*type != '\0') {
 		printf("<bbsinfo>");
 		print_session();
@@ -98,7 +98,7 @@ int bbspwd_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	parse_post_data();
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbspwd ");
 	char *pw1 = getparm("pw1");
 	if (*pw1 == '\0') {

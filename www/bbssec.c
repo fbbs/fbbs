@@ -29,7 +29,7 @@ static int showbrdlist(const char *filename)
 int bbssec_main(void)
 {
 	char path[HOMELEN];
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbssec>");
 	print_session();
 	for(int i = 0; i < SECNUM; i++) {

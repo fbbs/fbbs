@@ -101,7 +101,7 @@ static int do_bbspst(bool isedit)
 			return BBS_ENOFILE;
 	}
 	
-	xml_header("bbs");
+	xml_header(NULL);
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s", bp->filename);
 	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d'>", bp->filename, bid,
@@ -187,12 +187,12 @@ int bbsccc_main(void)
 		if (ret < 0)
 			return BBS_EINTNL;
 
-		xml_header("bbs");
+		xml_header(NULL);
 		printf("<bbsccc t='%d' b='%d'>", bp2 - bcache + 1, bp - bcache + 1);
 		print_session();
 		printf("/bbsccc>");
 	} else {
-		xml_header("bbs");
+		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%d' fid='%u'>", 
 				fh.owner, bp->filename, bp - bcache + 1, fid);
 		xml_fputs(fh.title, stdout);
@@ -214,7 +214,7 @@ int bbsfwd_main(void)
 	parse_post_data();
 	char *reci = getparm("u");
 	if (*reci == '\0') {
-		xml_header("bbs");
+		xml_header(NULL);
 		printf("<bbsfwd bid='%s' f='%s'>", getparm("bid"), getparm("f"));
 		print_session();
 		printf("</bbsfwd>");

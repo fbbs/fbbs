@@ -120,7 +120,7 @@ int fcgi_reg(void)
 
 	const char *error = _reg(&request);
 
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsreg error='%d'>", error ? 1 : 0);
 	print_session();
 	if (error)
@@ -133,7 +133,7 @@ int fcgi_activate(void)
 {
 	const char *code = getparm("code");
 	const char *user = getparm("user");
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsactivate success='%d'>", activate_email(user, code));
 	print_session();
 	printf("</bbsactivate>");
@@ -143,7 +143,7 @@ int fcgi_activate(void)
 int fcgi_exist(void)
 {
 	const char *user = getparm("user");
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsexist>%d</bbsexist>", searchuser(user) != 0);
 	return 0;
 }

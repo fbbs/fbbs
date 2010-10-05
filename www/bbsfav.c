@@ -21,7 +21,7 @@ int bbsfav_main(void)
 	end = (struct goodbrdheader *)m.ptr + num;
 
 	// Print all favorite boards.
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsfav>");
 	print_session();
 	for (iter = m.ptr; iter != end; ++iter) {
@@ -84,7 +84,7 @@ int bbsbrdadd_main(void)
 
 	if (ret)
 		return ret;
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbsbrdadd>");
 	print_session();
 	printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", bp->filename, bid);

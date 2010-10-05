@@ -15,7 +15,7 @@ typedef struct top_t {
 
 int bbstop10_main(void)
 {
-	xml_header("bbs");
+	xml_header(NULL);
 	printf("<bbstop10>");
 	print_session();
 	top_t top;
