@@ -374,7 +374,6 @@ int save_register_file(const reginfo_t *reg)
 		fclose(fp);
 	}
 
-	mail_file("etc/s_fill", "sysops", "恭禧您，您已经完成注册。");
 	return 0;
 }
 
