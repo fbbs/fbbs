@@ -15,3 +15,4 @@ span.hint { margin-left: 0.5em; color: green; }
 #exist { display: none; }
 #e1 { color: red; margin-left: 1em; }
 #e0 { color: green; margin-left: 1em; }
+#prompt { color: red; }

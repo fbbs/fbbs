@@ -27,6 +27,9 @@ $(document).ready(function() {
 		ok = true;
 		$("input").each(check);
 		$("select").each(check);
+		if (!ok) {
+			$('#prompt').show();
+		}
 		return ok;
 	});
 });
@@ -41,6 +44,7 @@ function check() {
 			$("input[type=button]").attr("disabled", true);
 	} else {
 		$(this).removeClass('warn');
+		$('#prompt').hide();
 		if (this.name == 'id')
 			$("input[type=button]").attr("disabled", false);
 	}
