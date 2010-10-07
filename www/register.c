@@ -84,7 +84,8 @@ static const char *_reg(const reg_req_t *r)
 	strlcpy(reg.email, email, sizeof(reg.email));
 #endif
 	reg.regdate = now;
-	if (append_reg_list(&reg) != 0)
+	//TODO: should be put in fcgi_activate
+	if (save_register_file(&reg) != 0)
 		return "提交注册资料失败";
 
 	char file[HOMELEN];

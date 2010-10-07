@@ -1,6 +1,7 @@
 #include "libBBS.h"
 #include "bbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/mail.h"
 #include "fbbs/register.h"
 #include "fbbs/string.h"
 #include "fbbs/util.h"
@@ -355,3 +356,25 @@ void init_userec(struct userec *user, const char *userid,
 	user->flags[1] = 0;
 	user->firstlogin = user->lastlogin = time(NULL);
 }
+
+int save_register_file(const reginfo_t *reg)
+{
+	char file[HOMELEN];
+	sethomefile(file, reg->userid, "register");
+
+	FILE *fp = fopen(file, "a");
+	if (fp) {
+		fprintf(fp, "注册时间     : %s\n", getdatestring(reg->regdate, DATE_EN));
+		fprintf(fp, "申请帐号     : %s\n", reg->userid);
+		fprintf(fp, "真实姓名     : %s\n", reg->realname);
+		fprintf(fp, "联络电话     : %s\n", reg->phone);
+#ifndef FDQUAN
+		fprintf(fp, "电子邮件     : %s\n", reg->email);
+#endif
+		fclose(fp);
+	}
+
+	mail_file("etc/s_fill", "sysops", "恭禧您，您已经完成注册。");
+	return 0;
+}
+

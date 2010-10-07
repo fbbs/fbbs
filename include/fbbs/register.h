@@ -41,5 +41,5 @@ extern bool is_banned_email(const char *mail);
 extern bool domain_allowed(const char *mail);
 extern void init_userec(struct userec *user, const char *userid,
 		        const char *passwd, bool usegbk);
-
+extern int save_register_file(const reginfo_t *reg);
 #endif // FB_REGISTER_H
