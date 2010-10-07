@@ -1,5 +1,3 @@
-#ifndef WITHOUT_ADMIN_TOOLS
-#ifndef DLM
 #include <stdio.h>
 #include "bbs.h"
 #include "fbbs/register.h"
@@ -1772,6 +1770,3 @@ int x_new_denylevel(void)
 	list_text(DENY_LEVEL_LIST, denylist_title_show, denylist_key_deal, NULL);
 	return FULLUPDATE;
 }
-
-#endif
-#endif
