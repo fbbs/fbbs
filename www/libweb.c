@@ -572,7 +572,8 @@ int get_doc_mode(void)
 
 void set_doc_mode(int mode)
 {
-	uidshm->passwd[u_info->uid - 1].flags[1] = mode;
+	if (loginok)
+		uidshm->passwd[u_info->uid - 1].flags[1] = mode;
 }
 
 const char *get_doc_mode_str(void)
