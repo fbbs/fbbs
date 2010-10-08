@@ -1,5 +1,4 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/tools")
 
 add_definitions(-D_XOPEN_SOURCE=600 -I../../include)
 
@@ -15,3 +14,7 @@ foreach(name bbstop birthday toppost bbsuptime badbms AnnIndex showbm statBM
 	add_executable(${name} ${name}.c)
 	target_link_libraries(${name} BBS)
 endforeach(name)
+
+install(TARGETS averun account newacct horoscope zodiac bbstop birthday
+toppost bbsuptime badbms AnnIndex showbm statBM cleanuser
+RUNTIME DESTINATION tools)
