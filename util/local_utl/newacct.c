@@ -5,9 +5,9 @@ int main(int argc, char **argv)
 {
 	struct bbsstat bst;
 	memset(&bst, 0, sizeof(bst));
-	FILE *fp = fopen(BBSHOME"/usies", "r");
+	FILE *fp = fopen(BBSHOME"/trace", "r");
 	if (fp == NULL) {
-		printf("can't open usies\n");
+		printf("can't open trace\n");
 		return 1;
 	}
 	time_t now = time(NULL);
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 		}
 		if (strncmp(buf, date, 6))
 			continue;
-		if (strstr(buf + 16, "bbsd: APPLY")) {
+		if (strstr(buf + 16, "new account from")) {
 			bst.value[hour]++;
 			continue;
 		}
