@@ -84,15 +84,16 @@ static const char *_reg(const reg_req_t *r)
 	strlcpy(reg.email, email, sizeof(reg.email));
 #endif
 	reg.regdate = now;
-	//TODO: should be put in fcgi_activate
-	if (save_register_file(&reg) != 0)
-		return "提交注册资料失败";
 
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "home/%c/%s",
 			toupper(user.userid[0]), user.userid);
 	if (mkdir(file, 0755) != 0)
 		return "内部错误";
+
+	//TODO: should be put in fcgi_activate
+	if (save_register_file(&reg) != 0)
+		return "提交注册资料失败";
 
 #ifndef FDQUAN
 	if (send_regmail(&user, email) != 0)
