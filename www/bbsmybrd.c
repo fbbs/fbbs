@@ -32,7 +32,7 @@ static int read_submit(void)
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
 	mmap_t m;
-	m.oflag = O_RDWR;
+	m.oflag = O_RDWR | O_CREAT;
 	if (mmap_open(file, &m) < 0)
 		return BBS_ENOFILE; // TODO: empty?
 	if (mmap_truncate(&m, num * sizeof(struct goodbrdheader)) < 0) {
@@ -88,28 +88,27 @@ int bbsmybrd_main(void)
 	if (type != 0)
 		return read_submit();
 
-	// Read '.goodbrd'.
-	char file[HOMELEN];
-	sethomefile(file, currentuser.userid, ".goodbrd");
-	mmap_t m;
-	m.oflag = O_RDONLY;
-	if (mmap_open(file, &m) < 0)
-		return BBS_ENOFILE;
-	struct goodbrdheader *iter, *end;
-	int num = m.size / sizeof(struct goodbrdheader);
-	if (num > GOOD_BRC_NUM)
-		num = GOOD_BRC_NUM;
-	end = (struct goodbrdheader *)m.ptr + num;
-
 	// Print 'bid's of favorite boards.
 	xml_header(NULL);
 	printf("<bbsmybrd ");
 	printf(" limit='%d'>", GOOD_BRC_NUM);
-	for (iter = m.ptr; iter != end; iter++) {
-		if (!gbrd_is_custom_dir(iter))
-			printf("<my bid='%d'/>", iter->pos + 1);
+
+	char file[HOMELEN];
+	sethomefile(file, currentuser.userid, ".goodbrd");
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	if (mmap_open(file, &m) == 0) {
+		struct goodbrdheader *iter, *end;
+		int num = m.size / sizeof(struct goodbrdheader);
+		if (num > GOOD_BRC_NUM)
+			num = GOOD_BRC_NUM;
+		end = (struct goodbrdheader *)m.ptr + num;
+		for (iter = m.ptr; iter != end; iter++) {
+			if (!gbrd_is_custom_dir(iter))
+				printf("<my bid='%d'/>", iter->pos + 1);
+		}
+		mmap_close(&m);
 	}
-	mmap_close(&m);
 
 	// Print all boards available.
 	struct boardheader *b;
