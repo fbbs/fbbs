@@ -76,7 +76,7 @@ int mmap_open(const char *file, mmap_t *m)
 		m->lock = LOCK_SH;
 	}
 
-	m->fd = open(file, m->oflag);
+	m->fd = open(file, m->oflag, 0640);
 	return mmap_open_fd(m);
 }
 
