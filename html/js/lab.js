@@ -13,10 +13,17 @@ function load() {
 		location.hash = encodeURI(link);
 		link = 'bbs/' + link;
 	}
+	$('#status').removeClass('st_err').addClass('st_load').html('Loading').fadeIn('fast');
 	$.get(link, function(data) {
-		var x = new xslt(sheet);
-		$('#main').empty().append(x.transform(data));
-		$('#main a').click(load);
+		if (typeof data == 'object') {
+			var x = new xslt(sheet);
+			$('#main').empty().append(x.transform(data));
+			$('#main a').click(load);
+			$('#status').hide();
+		} else {
+			$('#status').addClass('st_err').html($(data).filter('div').text());
+		}
+		$('#status').removeClass('st_load');
 	});
 	return false;
 }

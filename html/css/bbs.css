@@ -272,3 +272,7 @@ form.jump { display:inline; }
 .a45 { background-color: #ff00ff; }
 .a46 { background-color: #00ffff; }
 .a47 { background-color: #f0f7ff; }
+
+.st_load { background-color: #ffffdd; }
+.st_err { background-color: #ff6666; }
+#status { display: inline; position: fixed; bottom: 0.5em; left: 10px; width: 100px; text-align: center; }
