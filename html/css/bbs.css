@@ -275,4 +275,4 @@ form.jump { display:inline; }
 
 .st_load { background-color: #ffffdd; }
 .st_err { background-color: #ff6666; }
-#status { display: inline; position: fixed; bottom: 0.5em; left: 10px; width: 100px; text-align: center; }
+#status { display: inline; position: fixed; bottom: 0.5em; left: 10px; width: 100px; text-align: center; -moz-border-radius: 6px; -webkit-border-radius: 6px; }

@@ -13,7 +13,7 @@ function load() {
 		location.hash = encodeURI(link);
 		link = 'bbs/' + link;
 	}
-	$('#status').removeClass('st_err').addClass('st_load').html('Loading').fadeIn('fast');
+	$('#status').removeClass('st_err').addClass('st_load').html('<img src="images/indicator.gif"/>Loading').fadeIn('fast');
 	$.get(link, function(data) {
 		if (typeof data == 'object') {
 			var x = new xslt(sheet);
