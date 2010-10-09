@@ -1,10 +1,17 @@
-var sheet = null;
+var transformer = null;
 
 $(document).ready(function() {
-	$('a').click(load);
-	$.get('../xsl/lab.xsl', function(data) {
-		sheet = data;
+	$.get('../xsl/lab.xsl', function(xsl) {
+		if (typeof XSLTProcessor != 'undefined') {
+			transformer = new XSLTProcessor();
+			transformer.importStylesheet(xsl);
+		} else if ('transformNode' in xsl) {
+			transformer = xsl;
+		} else {
+			throw "xslt not supported";
+		}
 	});
+	$('a').click(load);
 });
 
 function load() {
@@ -16,8 +23,7 @@ function load() {
 	$('#status').removeClass('st_err').addClass('st_load').html('<img src="images/indicator.gif"/>Loading').fadeIn('fast');
 	$.get(link, function(data) {
 		if (typeof data == 'object') {
-			var x = new xslt(sheet);
-			$('#main').empty().append(x.transform(data));
+			$('#main').empty().append(xslt(data));
 			$('#main a').click(load);
 			$('#status').hide();
 		} else {
@@ -28,34 +34,13 @@ function load() {
 	return false;
 }
 
-var xslt = function(stylesheet) {
+function xslt(xml)
+{
 	if (typeof XSLTProcessor != 'undefined') {
-		this.processor = new XSLTProcessor();
-		this.processor.importStylesheet(stylesheet);
-	}
-};
-
-xslt.prototype.transform = function(xml) {
-	if (this.processor) {
-		return this.processor.transformToFragment(xml, document);
-	} else if ('transformNode' in node) {
-		return xml.transformNode(sheet);
+		return transformer.transformToFragment(xml, document);
+	} else if ('transformNode' in xml) {
+		return xml.transformNode(transformer);
 	} else {
-		throw "xslt not supported"
+		throw "xslt not supported";
 	}
-};
-
-function xslt(xml, xsl) {
-	var processor = null;
-	var result;
-	if (typeof XSLTProcessor != "undefined") {
-		processor = new XSLTProcessor();
-		processor.importStylesheet(xsl);
-		result = processor.transformToFragment(xml, document);
-	} else if ("transformNode" in xml) {
-		xml.transformNode(xsl);
-	} else {
-		throw "XSLT not supported";
-	}
-	return result;
 }
