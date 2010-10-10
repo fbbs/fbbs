@@ -12,16 +12,27 @@ $(document).ready(function() {
 		}
 	});
 	$('a').click(load);
+
+	var link = decodeURI(location.hash).substr(1);
+	if (link.length != 0 && link != $('#st_link').html())
+		loadLink(link);
 });
 
 function load() {
 	var link = $(this).attr('href');
 	if (!link.match(/^(?:http|\.\.)/)) {
 		location.hash = encodeURI(link);
-		link = 'bbs/' + link;
+		loadLink(link);
+		return false;
+	} else {
+		return true;
 	}
+}
+
+function loadLink(link) {
 	$('#status').removeClass('st_err').addClass('st_load').html('<img src="images/indicator.gif"/>Loading').fadeIn('fast');
-	$.get(link, function(data) {
+	$('#st_link').html(link);
+	$.get('bbs/' + link, function(data) {
 		if (typeof data == 'object') {
 			$('#main').empty().append(xslt(data));
 			$('#main a').click(load);
@@ -31,7 +42,6 @@ function load() {
 		}
 		$('#status').removeClass('st_load');
 	});
-	return false;
 }
 
 function xslt(xml)
