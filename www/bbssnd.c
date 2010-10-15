@@ -1,6 +1,6 @@
 #include "libweb.h"
-#include "post.h"
 #include "fbbs/fileio.h"
+#include "fbbs/post.h"
 #include "fbbs/string.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
@@ -133,7 +133,8 @@ int bbssnd_main(void)
 			.userid = NULL, .nick = NULL, .user = &currentuser,
 			.bp = bp, .title = title, .content = getparm("text"),
 			.sig = strtol(getparm("sig"), NULL, 0), .ip = mask_host(fromhost),
-			.o_fp = reply ? &fh : NULL, .noreply = false, .mmark = false };
+			.o_fp = reply ? &fh : NULL, .noreply = false, .mmark = false,
+			.anony = strtol(getparm("anony"), NULL, 0) };
 		if (do_post_article(&pr) < 0)
 			return BBS_EINTNL;
 	}

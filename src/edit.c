@@ -2,6 +2,7 @@
 #include "edit.h"
 #include "mmap.h"
 #include "fbbs/string.h"
+#include "fbbs/post.h"
 USE_TRY;
 
 extern int local_article;
@@ -726,10 +727,8 @@ void write_header(FILE *fp, int mode) {
 			write_posts();
 		}
 		fprintf(fp, "∑¢–≈»À: %s (%s), –≈«¯: %s\n",
-				(noname && header.chk_anony) ? "Anonymous" : uid,
-				//(noname && header.chk_anony) ? currboard : uid,
-				/* modified by roly 2002.01.13 change author to Anonymous */
-				(noname && header.chk_anony) ? "Œ“ «ƒ‰√˚ÃÏ π" : uname, currboard);
+				(noname && header.chk_anony) ? ANONYMOUS_ACCOUNT : uid,
+				(noname && header.chk_anony) ? ANONYMOUS_NICK : uname, currboard);
 	}
 	fprintf(fp, "±Í  Ã‚: %s\n", save_title);
 	fprintf(fp, "∑¢–≈’æ: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
@@ -893,7 +892,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		if (!dashf(fname) || currentuser.signature == 0 || noidboard)
 			fputs("--\n", fp);
 		fprintf(fp, "[m[1;%2dm°˘ ¿¥‘¥:°§%s %s°§[FROM: %-.20s][m\n", color,
-				BoardName, BBSHOST, (noidboard) ? "ƒ‰√˚ÃÏ πµƒº“" : mask_host(fromhost));
+				BoardName, BBSHOST, (noidboard) ? ANONYMOUS_SOURCE : mask_host(fromhost));
 	}
 	if (aborted != -1)
 		fclose(fp);

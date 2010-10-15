@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "bbs.h"
-#include "post.h"
 #include "record.h"
+#include "fbbs/post.h"
 #include "fbbs/string.h"
 
 /**
@@ -50,8 +50,13 @@ int do_post_article(const post_request_t *pr)
 	if (!pr || !pr->title || !pr->content || !pr->bp)
 		return -1;
 
-	const char *userid = NULL, *nick = NULL;
-	if (pr->user) {
+	bool anony = pr->anony && (pr->bp->flag & BOARD_ANONY_FLAG);
+	const char *userid = NULL, *nick = NULL, *ip = pr->ip;
+	if (anony) {
+		userid = ANONYMOUS_ACCOUNT;
+		nick = ANONYMOUS_NICK;
+		ip = ANONYMOUS_SOURCE;
+	} else if (pr->user) {
 		userid = pr->user->userid;
 		nick = pr->user->username;
 	} else if (pr->autopost) {
@@ -76,13 +81,15 @@ int do_post_article(const post_request_t *pr)
 
 	fputs(pr->content, fptr);
 
-	if (pr->sig > 0)
+	if (!anony && pr->sig > 0)
 		add_signature(fptr, userid, pr->sig);
+	else
+		fputs("\n--", fptr);
 
-	if (pr->ip) {
+	if (ip) {
 		fprintf(fptr, "\n\033[m\033[1;%2dm※ %s:·"BBSNAME" "BBSHOST
 			"·HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7,
-			pr->crosspost ? "转载" : "来源", pr->ip);
+			pr->crosspost ? "转载" : "来源", ip);
 	}
 
 	fclose(fptr);

@@ -1,6 +1,10 @@
 #ifndef FB_POST_H
 #define FB_POST_H
 
+#define ANONYMOUS_ACCOUNT "Anonymous"
+#define ANONYMOUS_NICK    "我是匿名天使"
+#define ANONYMOUS_SOURCE  "匿名天使的家"
+
 typedef struct {
 	bool autopost;
 	bool crosspost;
@@ -15,6 +19,7 @@ typedef struct {
 	const struct fileheader *o_fp;
 	bool noreply;
 	bool mmark;
+	bool anony;
 } post_request_t;
 
 extern int do_post_article(const post_request_t *pr);

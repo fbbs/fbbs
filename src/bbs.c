@@ -8,6 +8,7 @@
 #include <rpcsvc/rstat.h>
 #endif
 #include "mmap.h"
+#include "fbbs/post.h"
 
 #ifndef DLM
 #undef	ALLOWGAME
@@ -1964,12 +1965,9 @@ int outgo_post(struct fileheader *fh, char *board) {
 	char buf[256];
 
 	sprintf(buf, "%s\t%s\t%s\t%s\t%s\n", board, fh->filename,
-			header.chk_anony ? "Anonymous" : currentuser.userid,
-			/* fh->filename, header.chk_anony ? board : currentuser.userid, */
-			/* modified by roly 2002.01.13  change author to "Anonymous" */
-			header.chk_anony ? "我是匿名天使" : currentuser.username, save_title);
+			header.chk_anony ? ANONYMOUS_ACCOUNT : currentuser.userid,
+			header.chk_anony ? ANONYMOUS_NICK : currentuser.username, save_title);
 	file_append("innd/out.bntp", buf);
-
 }
 
 int post_article(char *postboard, char *mailid) {

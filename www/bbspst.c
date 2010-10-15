@@ -1,9 +1,9 @@
 #include "libweb.h"
-#include "post.h"
 #include "mmap.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/mail.h"
+#include "fbbs/post.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
@@ -104,8 +104,9 @@ static int do_bbspst(bool isedit)
 	xml_header(NULL);
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s", bp->filename);
-	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d'>", bp->filename, bid,
-			isedit, dashd(path));
+	bool anony = bp->flag & BOARD_ANONY_FLAG;
+	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d' anony='%d'>",
+			bp->filename, bid, isedit, dashd(path), anony);
 	print_session();
 	if (reply) {
 		printf("<t>");
@@ -181,7 +182,7 @@ int bbsccc_main(void)
 			.userid = NULL, .nick = NULL, .user = &currentuser,
 			.bp = bp2, .title = title, .content = m.ptr, .sig = 0,
 			.ip = mask_host(fromhost), .o_fp = NULL, .noreply = false,
-			.mmark = false };
+			.mmark = false, .anony = false };
 		int ret = do_post_article(&pr);
 		mmap_close(&m);
 		if (ret < 0)
