@@ -1105,6 +1105,7 @@ static int choose_board(choose_board_t *cbrd)
 	cs.title = choose_board_title;
 	cs.display = choose_board_display;
 	cs.handler = choose_board_handler;
+	cs.query = NULL;
 
 	modify_user_mode(cbrd->newflag ? READNEW : READBRD);
 

@@ -5,6 +5,7 @@ typedef int choose_loader_t;
 typedef void choose_title_t;
 typedef int choose_display_t;
 typedef int choose_handler_t;
+typedef int choose_query_t;
 
 typedef struct choose_t {
 	int all;       ///< Number of entries.
@@ -13,14 +14,15 @@ typedef struct choose_t {
 	int update;    ///< UI update status.
 	int valid;     ///< True if data are not out-dated.
 	bool eod;      ///< True if the end of data are reached.
+	bool in_query; ///< True if in query mode.
 	void *data;    ///< Data.
 	int (*loader)(struct choose_t *);   ///< Data loader.
 	void (*title)(struct choose_t *);   ///< Function that shows title.
 	int (*display)(struct choose_t *);  ///< Display function.
 	int (*handler)(struct choose_t *, int);  ///< Key handler.
+	int (*query)(struct choose_t *); ///< Query handler.
 } choose_t;
 
 extern int choose2(choose_t *cp);
 
 #endif // FB_LIST_H
-

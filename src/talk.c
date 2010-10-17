@@ -329,7 +329,7 @@ int tui_query_result(const char *userid)
 		snprintf(horo, sizeof(horo), "[\033[1;3%dm%s\033[m] ",
 				color, horoscope(user.birthmonth, user.birthday));
 	}
-	prints("\033[1;37m%s \033[m(\033[1;33m%s\033[m) 共上站 \033[1;32m%d\033[m "
+	prints("\033[0;1;37m%s \033[m(\033[1;33m%s\033[m) 共上站 \033[1;32m%d\033[m "
 			"次  %s\n", user.userid, user.username, user.numlogins, horo);
 
 	bool self = !strcmp(currentuser.userid, user.userid);

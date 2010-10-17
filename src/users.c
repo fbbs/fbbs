@@ -90,6 +90,7 @@ static void online_users_swap(online_users_t *up, int a, int b)
 static choose_loader_t online_users_load(choose_t *cp)
 {
 	online_users_t *up = cp->data;
+	cp->eod = true;
 
 	time_t now = time(NULL);
 	if (now < up->uptime + REFRESH_TIME)
@@ -134,7 +135,6 @@ static choose_loader_t online_users_load(choose_t *cp)
 		cp->all = up->onum;
 	else
 		cp->all = up->num;
-	cp->eod = true;
 	return cp->all;
 }
 
@@ -244,6 +244,23 @@ static choose_display_t online_users_display(choose_t *cp)
 	return 0;
 }
 
+static choose_query_t online_users_query(choose_t *cp)
+{
+	online_users_t *up = cp->data;
+	struct user_info *uin = up->users[cp->cur];
+	cp->in_query = true;
+	if (!uin)
+		return DONOTHING;
+	t_query(uin->userid);
+	move(t_lines - 1, 0);
+	prints("\033[0;1;37;44m聊天[\033[1;32mt\033[37m] 寄信[\033[1;32mm\033[37m] "
+			"送讯息[\033[1;32ms\033[37m] 加,减朋友[\033[1;32mo\033[37m,\033[1;32md\033[37m] "
+			"选择使用者[\033[1;32m↑\033[37m,\033[1;32m↓\033[37m] "
+			"求救[\033[1;32mh\033[37m]");
+	refresh();
+	return DONOTHING;
+}
+
 extern int friendflag;
 static choose_handler_t online_users_handler(choose_t *cp, int ch)
 {
@@ -252,6 +269,78 @@ static choose_handler_t online_users_handler(choose_t *cp, int ch)
 	struct user_info *uin = up->users[cp->cur];
 	
 	cp->valid = false;
+	switch (ch) {
+		case 'h':
+		case 'H':
+			show_help("help/userlisthelp");
+			return FULLUPDATE;
+		case 't':
+		case 'T':
+			if (!HAS_PERM(PERM_TALK) || uin->uid == usernum)
+				return DONOTHING;
+			ttt_talk(uin);
+			return FULLUPDATE;
+		case 'm':
+		case 'M':
+			if (!HAS_PERM(PERM_MAIL))
+				return DONOTHING;
+			m_send(uin->userid);
+			return FULLUPDATE;
+		case 's':
+		case 'S':
+			if (!strcmp(currentuser.userid, "guest") || !HAS_PERM(PERM_TALK))
+				return DONOTHING;
+			if (!canmsg(uin)) {
+				snprintf(buf, sizeof(buf), "%s 已关闭讯息呼叫器", uin->userid);
+				presskeyfor(buf, t_lines - 1);
+				return MINIUPDATE;
+			}
+			do_sendmsg(uin, NULL, 0, uin->pid);
+			return FULLUPDATE;
+		case 'o':
+		case 'O':
+		case 'r':
+		case 'R':
+			if (!strcmp(currentuser.userid, "guest"))
+				return DONOTHING;
+			if (ch == 'o' || ch == 'O') {
+				friendflag = true;
+				ptr = "好友";
+			} else {
+				friendflag = false;
+				ptr = "坏人";
+			}
+			snprintf(buf, sizeof(buf), "确定要把 %s 加入%s名单吗",
+					uin->userid, ptr);
+			if (!askyn(buf, false, true))
+				return MINIUPDATE;
+			if (addtooverride(uin->userid) == -1)
+				snprintf(buf, sizeof(buf), "%s 已在%s名单", uin->userid, ptr);
+			else
+				snprintf(buf, sizeof(buf), "%s 列入%s名单", uin->userid, ptr);
+			presskeyfor(buf, t_lines - 1);
+			return MINIUPDATE;
+		case 'd':
+		case 'D':
+			if (!strcmp(currentuser.userid, "guest"))
+				return DONOTHING;
+			snprintf(buf, sizeof(buf), "确定要把 %s 从好友名单删除吗",
+					uin->userid);
+			if (!askyn(buf, false, true))
+				return MINIUPDATE;
+			if (deleteoverride(uin->userid, "friends") == -1) {
+				snprintf(buf, sizeof(buf), "%s 本就不在名单中", uin->userid);
+				presskeyfor(buf, t_lines - 1);
+				return MINIUPDATE;
+			} else {
+				snprintf(buf, sizeof(buf), "%s 已从名单中删除", uin->userid);
+				presskeyfor(buf, t_lines - 1);
+				return PARTUPDATE;
+			}		
+	}
+	if (cp->in_query)
+		return DONOTHING;
+
 	switch (ch) {
 		case 'Y':
 			if (HAS_PERM(PERM_CLOAK)) {
@@ -310,22 +399,6 @@ static choose_handler_t online_users_handler(choose_t *cp, int ch)
 				snprintf(buf, sizeof(buf), "%s 无法踢出站外", tmp);
 				return MINIUPDATE;
 			}
-		case 'h':
-		case 'H':
-			show_help("help/userlisthelp");
-			return FULLUPDATE;
-		case 't':
-		case 'T':
-			if (!HAS_PERM(PERM_TALK) || uin->uid == usernum)
-				return DONOTHING;
-			ttt_talk(uin);
-			return FULLUPDATE;
-		case 'm':
-		case 'M':
-			if (!HAS_PERM(PERM_MAIL))
-				return DONOTHING;
-			m_send(uin->userid);
-			return FULLUPDATE;
 		case 'f':
 		case 'F':
 			up->ovr_only = !up->ovr_only;
@@ -335,57 +408,6 @@ static choose_handler_t online_users_handler(choose_t *cp, int ch)
 				modify_user_mode(LUSERS);
 			up->uptime = 0;
 			return PARTUPDATE;
-		case 's':
-		case 'S':
-			if (!strcmp(currentuser.userid, "guest") || !HAS_PERM(PERM_TALK))
-				return DONOTHING;
-			if (!canmsg(uin)) {
-				snprintf(buf, sizeof(buf), "%s 已关闭讯息呼叫器", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return MINIUPDATE;
-			}
-			do_sendmsg(uin, NULL, 0, uin->pid);
-			return FULLUPDATE;
-		case 'o':
-		case 'O':
-		case 'r':
-		case 'R':
-			if (!strcmp(currentuser.userid, "guest"))
-				return DONOTHING;
-			if (ch == 'o' || ch == 'O') {
-				friendflag = true;
-				ptr = "好友";
-			} else {
-				friendflag = false;
-				ptr = "坏人";
-			}
-			snprintf(buf, sizeof(buf), "确定要把 %s 加入%s名单吗",
-					uin->userid, ptr);
-			if (!askyn(buf, false, true))
-				return MINIUPDATE;
-			if (addtooverride(uin->userid) == -1)
-				snprintf(buf, sizeof(buf), "%s 已在%s名单", uin->userid, ptr);
-			else
-				snprintf(buf, sizeof(buf), "%s 列入%s名单", uin->userid, ptr);
-			presskeyfor(buf, t_lines - 1);
-			return MINIUPDATE;
-		case 'd':
-		case 'D':
-			if (!strcmp(currentuser.userid, "guest"))
-				return DONOTHING;
-			snprintf(buf, sizeof(buf), "确定要把 %s 从好友名单删除吗",
-					uin->userid);
-			if (!askyn(buf, false, true))
-				return MINIUPDATE;
-			if (deleteoverride(uin->userid, "friends") == -1) {
-				snprintf(buf, sizeof(buf), "%s 本就不在名单中", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return MINIUPDATE;
-			} else {
-				snprintf(buf, sizeof(buf), "%s 已从名单中删除", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return PARTUPDATE;
-			}
 		case 'W':
 		case 'w':
 			if (!strcmp(currentuser.userid, "guest"))
@@ -403,9 +425,8 @@ static choose_handler_t online_users_handler(choose_t *cp, int ch)
 		case '\r':
 		case '\n':
 		case KEY_RIGHT:
-			t_query(uin->userid);
-			pressanykey();
-			return FULLUPDATE;
+			online_users_query(cp);
+			return DONOTHING;
 		default:
 			return DONOTHING;
 	}
@@ -419,6 +440,7 @@ static int online_users(online_users_t *op)
 	cs.title = online_users_title;
 	cs.display = online_users_display;
 	cs.handler = online_users_handler;
+	cs.query = online_users_query;
 	
 	choose2(&cs);
 

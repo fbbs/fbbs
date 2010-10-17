@@ -442,9 +442,10 @@ int choose2(choose_t *cp)
 	cp->start = 0;
 	cp->update = FULLUPDATE;
 	cp->valid = false;
+	cp->in_query = false;
 	
 	while (!end) {
-		if (!cp->valid) {
+		if (!cp->in_query && !cp->valid) {
 			cp->eod = false;
 			if ((*cp->loader)(cp) < 0)
 				break;
@@ -492,20 +493,29 @@ int choose2(choose_t *cp)
 			continue;
 		}
 
-		move(LIST_START + cp->cur - cp->start, 0);
-		outs(">");
+		if (!cp->in_query) {
+			move(LIST_START + cp->cur - cp->start, 0);
+			outs(">");
+		}
 
 		ch = igetkey();
 
-		move(LIST_START + cp->cur - cp->start, 0);
-		outs(" ");
+		if (!cp->in_query) {
+			move(LIST_START + cp->cur - cp->start, 0);
+			outs(" ");
+		}
 
 		switch (ch) {
 			case 'q':
 			case 'e':
 			case KEY_LEFT:
 			case EOF:
-				end = true;
+				if (cp->in_query) {
+					cp->in_query = false;
+					cp->update = FULLUPDATE;
+				} else {
+					end = true;
+				}
 				break;
 			case 'b':
 			case Ctrl('B'):
@@ -528,12 +538,16 @@ int choose2(choose_t *cp)
 			case KEY_UP:
 				if (--cp->cur < 0)
 					cp->cur = cp->all - 1;
+				if (cp->in_query && cp->query)
+					(*cp->query)(cp);
 				break;
 			case 'j':
 			case KEY_DOWN:
 				++cp->cur;
 				if (cp->eod && cp->cur >= cp->all)
 					cp->cur = 0;
+				if (cp->in_query && cp->query)
+					(*cp->query)(cp);
 				break;
 			case '$':
 			case KEY_END:
