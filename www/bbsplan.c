@@ -23,8 +23,9 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		printf("</bbseufile>");
 	} else {
 		xml_header(NULL);
-		printf("<bbseufile desc='%s' submit='%s'>", desc, submit);
+		printf("<bbseufile desc='%s' submit='%s'><text>", desc, submit);
 		xml_printfile(buf, stdout);
+		printf("</text>");
 		print_session();
 		printf("</bbseufile>");
 	}

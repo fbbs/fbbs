@@ -849,7 +849,7 @@ table.post{width:100%}
 		<xsl:when test='@submit'>
 			<form name='postform' method='post'>
 				<xsl:attribute name='action'><xsl:value-of select='@submit'/></xsl:attribute>
-				<p><textarea class='binput' name='text' rows='20' cols='85' wrap='virtual'><xsl:call-template name='show-quoted'><xsl:with-param name='content' select='.'/></xsl:call-template></textarea></p>
+				<p><textarea class='binput' name='text' rows='20' cols='85' wrap='virtual'><xsl:call-template name='show-quoted'><xsl:with-param name='content' select='text'/></xsl:call-template></textarea></p>
 				<p><input type='submit' value='±£´æ' id='btnPost' size='10'/></p>
 			</form>
 		</xsl:when>
