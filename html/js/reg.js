@@ -9,9 +9,13 @@ $(document).ready(function() {
 	$("input[name=agree]").click(check);
 	$("input[type=button]").click(function() {
 		$(this).attr("disabled", true);
+		$('#e0').hide();
+		$('#e1').hide();
+		$('#loading').show();
 		var id = $("#id").get(0).value;
 		$.get("bbs/exist", { user: id },
 			function(data) {
+				$('#loading').hide();
 				var text = $(data).find("bbsexist").text();
 				if (text == "1") {
 					$('#e1').show().html('ÕÊºÅ' + id + 'ÒÑ±»ÈË×¢²á');
