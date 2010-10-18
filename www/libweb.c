@@ -590,6 +590,9 @@ const char *get_doc_mode_str(void)
 
 void print_session(void)
 {
+	if (strcmp(getparm("api"), "1") == 0)
+		return;
+
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);
 
