@@ -599,7 +599,7 @@
 		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
 		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
 		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
-		<div class='pbot'><a href='#top'>[<img src='../images/button/up.gif'/>回页首]</a><xsl:call-template name='con-navbar'/></div>
+		<div class='pbot'><xsl:call-template name='con-navbar'/></div>
 	</div>
 </xsl:template>
 
@@ -635,7 +635,7 @@
 			<div class='plink'><xsl:call-template name='tcon-linkbar'/></div>
 			<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
 			<div class='plink'><xsl:call-template name='tcon-linkbar'/></div>
-			<div class='pbot'><a href='#top'>[<img src='../images/button/up.gif'/>回页首]</a><xsl:call-template name='tcon-navbar'/></div>
+			<div class='pbot'><xsl:call-template name='tcon-navbar'/></div>
 		</div>
 	</xsl:for-each>
 </xsl:template>

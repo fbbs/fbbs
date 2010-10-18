@@ -32,7 +32,7 @@ function load() {
 		return;
 	$('#status').removeClass('st_err').addClass('st_load').html('<img src="images/indicator.gif"/>Loading').fadeIn('fast');
 	$('#st_link').html(link);
-	$.get('bbs/' + link, function(data) {
+	$.get('api/' + link, function(data) {
 		if (typeof data == 'object') {
 			$('#main').empty().append(xslt(data));
 			$('#main a').click(changeHash);
