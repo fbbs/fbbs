@@ -179,7 +179,6 @@ static int bbsdoc(int mode)
 	int bid = getbnum2(bp);
 	if (my_t_lines < 10 || my_t_lines > 40)
 		my_t_lines = TLINES;
-	brc_fcgi_init(currentuser.userid, board);
 
 	if (get_doc_mode() != mode)
 		set_doc_mode(mode);
@@ -187,6 +186,7 @@ static int bbsdoc(int mode)
 	xml_header(NULL);
 	printf("<bbsdoc>");
 	print_session();
+	brc_fcgi_init(currentuser.userid, board);
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 
 	if (mode == MODE_NORMAL) {
