@@ -94,7 +94,7 @@ int bbsboa_main(void)
 				"read='%d' count='%d' />",
 				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename,
 				x->title + 1, get_board_desc(x), x->BM,
-				brc_unread(x->filename), filenum(x->filename));
+				brc_board_unread(currentuser.userid, x), filenum(x->filename));
 	}
 	print_session();
 	printf("</bbsboa>");

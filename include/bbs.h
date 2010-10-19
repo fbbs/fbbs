@@ -33,7 +33,6 @@
 #include "site.h"             	/* User-configurable stuff */
 #include "functions.h"				/* you can enable functions that you want */
 #include "permissions.h"
-#include "libBBS.h"
 #include "bbserrno.h"
 
 #ifndef LOCK_EX
@@ -218,7 +217,6 @@ enum {
 #ifndef NO_STRUCT_H
 #include "struct.h"
 #endif
-
 #include "modes.h"              /* The list of valid user modes */
 
 enum {
@@ -389,5 +387,6 @@ enum {
 
 #include "func.h"
 #include "../lib/goodbrd.h"
+#include "libBBS.h"
 
 #endif /* of _BBS_H_ */
