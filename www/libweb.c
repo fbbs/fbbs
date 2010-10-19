@@ -613,8 +613,8 @@ void print_session(void)
 				printf("<b");
 				if (!isascii(bp->filename[0]))
 					printf(" bid='%d'", iter->pos + 1);
-				if (mobile)
-					printf(" u='%d'", brc_board_unread(currentuser.userid, bp));
+				if (mobile && !brc_board_unread(currentuser.userid, bp))
+					printf(" r='1'");
 				printf(">%s</b>", bp->filename);
 			}
 		}

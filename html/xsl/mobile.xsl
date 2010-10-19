@@ -25,7 +25,7 @@
 		<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
 	<div id='fav'><xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
-	<a><xsl:if test='not(@u)'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
+	<a><xsl:if test='@r'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
 	</xsl:for-each></div>
 </xsl:template>
 
