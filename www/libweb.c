@@ -592,6 +592,7 @@ void print_session(void)
 {
 	if (strcmp(getparm("api"), "1") == 0)
 		return;
+	bool mobile = (strcmp(getparm("mob"), "1") == 0);
 
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);
@@ -609,10 +610,12 @@ void print_session(void)
 		for (iter = m.ptr; iter != end; ++iter) {
 			if (!gbrd_is_custom_dir(iter)) {
 				struct boardheader *bp = bcache + iter->pos;
-				if (isascii(bp->filename[0]))
-					printf("<b>%s</b>", bp->filename);
-				else
-					printf("<b bid='%d'>%s</b>", iter->pos + 1, bp->filename);
+				printf("<b");
+				if (!isascii(bp->filename[0]))
+					printf(" bid='%d'", iter->pos + 1);
+				if (mobile)
+					printf(" u='%d'", brc_board_unread(currentuser.userid, bp));
+				printf(">%s</b>", bp->filename);
 			}
 		}
 		mmap_close(&m);
