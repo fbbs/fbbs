@@ -635,9 +635,6 @@ typedef struct {
 	char receiver[IDLEN + 1];
 } msg_status_t;
 
-static int msg_next(msg_status_t *st, char *head, size_t hsize,
-        char *buf, size_t size);
-
 static int msg_show(msg_status_t *st, char *head, size_t hsize,
 		char *buf, size_t size)
 {
@@ -648,9 +645,6 @@ static int msg_show(msg_status_t *st, char *head, size_t hsize,
 		int line = (uinfo.mode == TALK ? t_lines / 2 - 1 : 0);
 		st->cury = show_msg(currentuser.userid, head, buf, line,
 				st->status == MSG_REPLYING);
-	} else {
-		msg_next(st, head, hsize, buf, size);
-		return 0;
 	}
 	if (st->status < MSG_WAIT)
 		st->status = MSG_WAIT;
@@ -703,7 +697,10 @@ void msg_reply(int ch)
 				st.num = msg_num;
 			// fall through
 		case MSG_SHOW:
-			msg_show(&st, head, sizeof(head), buf, sizeof(buf));
+			if (!msg_show(&st, head, sizeof(head), buf, sizeof(buf))) {
+				msg_next(&st, head, sizeof(head), buf, sizeof(buf));
+				break;
+			}
 			// fall through
 		case MSG_WAIT:
 			switch (ch) {
