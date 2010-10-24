@@ -1037,7 +1037,7 @@ static choose_handler_t choose_board_handler(choose_t *cp, int ch)
 			qsort(cbrd->brds, cbrd->num, sizeof(*cbrd->brds), cbrd->cmp);
 			substitut_record(PASSFILE, &currentuser,
 					sizeof(currentuser), usernum);
-			return PARTUPDATE;
+			return FULLUPDATE;
 		case 'y':
 			if (cbrd->gnum)
 				return DONOTHING;
