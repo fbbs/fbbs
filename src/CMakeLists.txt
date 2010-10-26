@@ -1,0 +1,8 @@
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic -Werror")
+add_definitions(-D_XOPEN_SOURCE=500)
+
+link_directories(../lib)
+
+add_executable(bbsd bbsd.c sysconf.c termio.c screen.c main.c stuff.c more.c)
+target_link_libraries(bbsd crypt dl fbbs)
+

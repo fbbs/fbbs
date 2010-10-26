@@ -13,6 +13,10 @@ missing
 Makefile
 Makefile.in
 
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+
 tags
 
 autom4te.cache
