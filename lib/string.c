@@ -159,7 +159,7 @@ char *rtrim(char *str){
 	*++ptr = '\0';
 	return str;
 }
-
+#endif
 // Removes both leading and trailing chars
 // whose ASCII code is less than 0x20.
 char *trim(char *str)
@@ -180,7 +180,6 @@ char *trim(char *str)
 		memmove(ustr, left, right - left + 1);
 	return str;
 }
-#endif
 
 /**
  * Safe string copy.

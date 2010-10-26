@@ -3,6 +3,10 @@
 
 #include <stdlib.h>
 
+#define streq(a, b)  (!strcmp(a, b))
+
+extern char *trim(char *str);
+
 extern size_t strlcpy(char *dst, const char *src, size_t siz);
 
 extern size_t mbwidth(const char *s);
