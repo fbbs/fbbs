@@ -10,3 +10,5 @@ endif(COMMAND cmake_policy)
 add_executable(bbsd bbsd.c sysconf.c termio.c screen.c main.c stuff.c more.c)
 target_link_libraries(bbsd crypt dl fbbs)
 
+install(TARGETS bbsd RUNTIME DESTINATION bin)
+
