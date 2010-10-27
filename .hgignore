@@ -27,6 +27,8 @@ include/config.h
 include/config.h.in
 include/stamp-h1
 
+*.so
+
 lib/Makefile
 lib/Makefile.in
 lib/.deps

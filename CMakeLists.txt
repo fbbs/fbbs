@@ -19,6 +19,7 @@ endif(ENABLE_DEBUG)
 set(CMAKE_INSTALL_PREFIX "/home/bbs")
 
 add_subdirectory(lib)
+add_subdirectory(pg)
 add_subdirectory(src)
 if(ENABLE_WWW)
 	add_subdirectory(www)
