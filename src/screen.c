@@ -267,7 +267,7 @@ static void term_move(screen_t *s, int line, int col)
 		if (s->tc_ln != 0)
 			ochar(s, '\r');
 	} else if (col == 0 && line == s->tc_ln) { // return
-		if (s->tc_ln != 0)
+		if (s->tc_col != 0)
 			ochar(s, '\r');
 	} else if (col == s->tc_col - 1 && line == s->tc_ln) { // backspace
 		ochar(s, KEY_CTRL_H);
@@ -588,8 +588,6 @@ int getdata(int line, const char *prompt, char *buf, int len, bool mask)
 		ch = getch();
 		if (ch == '\n')
 			break;
-		if (!isprint2(ch) || clen >= len - 1)
-			continue;
 		switch (ch) {
 			case KEY_BACKSPACE:
 			case KEY_CTRL_H:
@@ -601,6 +599,7 @@ int getdata(int line, const char *prompt, char *buf, int len, bool mask)
 				if (clen == 0)
 					continue;
 				clen -= delch(false);
+				break;
 			case KEY_LEFT: // TODO: ...
 				break;
 			case KEY_RIGHT:
@@ -612,6 +611,8 @@ int getdata(int line, const char *prompt, char *buf, int len, bool mask)
 			case KEY_CTRL_E:
 				break;
 			default:
+				if (!isprint2(ch) || clen >= len - 1)
+					continue;
 				buf[clen++] = ch;
 				if (mask)
 					outc('*');

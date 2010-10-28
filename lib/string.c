@@ -259,6 +259,7 @@ size_t mbwidth(const char *s)
 			if (w == -1)
 				w = 0;
 			width += w;
+			s += ret;
 		}
 	}
 	return width;
