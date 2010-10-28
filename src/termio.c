@@ -53,6 +53,12 @@ static int raw_write(int fd, const uchar_t *buf, size_t len)
 	return write(fd, buf, len);
 }
 
+void telnet_opt(telconn_t *tc)
+{
+	uchar_t opt[] = { IAC, WILL, TELOPT_ECHO, IAC, WILL, TELOPT_SGA };
+	telnet_write(tc, opt, sizeof(opt) - 1);
+}
+
 /**
  * Get ch from buffer.
  * @param fd The input file descriptor.

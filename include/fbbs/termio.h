@@ -47,6 +47,7 @@ typedef struct telconn_t {
 } telconn_t;
 
 extern void telnet_init(telconn_t *tc, int fd);
+extern void telnet_opt(telconn_t *tc);
 extern int telnet_flush(telconn_t *tc);
 extern void telnet_write(telconn_t *tc, const uchar_t *str, int size);
 extern int telnet_putc(telconn_t *tc, int c);
