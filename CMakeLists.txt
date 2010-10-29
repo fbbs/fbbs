@@ -5,6 +5,10 @@ set(fbbs_VERSION_MAJOR 0)
 set(fbbs_VERSION_MINOR 1)
 set(fbbs_VERSION_PATCH 0)
 
+if(COMMAND cmake_policy)
+	cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 include_directories(include)
 
 option(ENABLE_SSH "compile ssh module" off)
@@ -24,7 +28,3 @@ add_subdirectory(src)
 if(ENABLE_WWW)
 	add_subdirectory(www)
 endif(ENABLE_WWW)
-
-if(COMMAND cmake_policy)
-	cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
