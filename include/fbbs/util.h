@@ -8,6 +8,7 @@
 typedef int64_t fb_time_t;
 #define PRIdFBT PRId64
 
+typedef uint64_t ulong_t;
 typedef uint32_t uint_t;
 typedef uint16_t ushort_t;
 typedef uint8_t uchar_t;
