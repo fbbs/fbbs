@@ -17,7 +17,7 @@ static int _max_pool_alloc = 0;
  */
 static inline void *_align_ptr(void *ptr)
 {
-	return (void *)(((ulong_t)ptr + ALIGNMENT - 1) & ~(ALIGNMENT - 1));
+	return (void *)(((uintptr_t)ptr + ALIGNMENT - 1) & ~(ALIGNMENT - 1));
 }
 
 /**
