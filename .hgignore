@@ -43,4 +43,4 @@ src/bbsd
 src/cached
 src/*.o
 
-test
+www/fbwebd
