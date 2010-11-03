@@ -1,4 +1,15 @@
 #include <endian.h>
+
+#ifndef be64toh
+# if __BYTE_ORDER == __LITTLE_ENDIAN
+#  include <byteswap.h>
+#  define be64toh(x) bswap_64(x)
+# else
+#  define be64toh(x) (x)
+#endif
+
+#endif
+
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include "fbbs/dbi.h"
