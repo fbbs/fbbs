@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include "fbbs/error.h"
 #include "fbbs/pool.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -79,6 +80,13 @@ static char *_url_decode(char *s)
 	return s;
 }
 
+/**
+ * Parse a 'key=value' pair and put it into request struct.
+ * @param r The http request.
+ * @param begin The string.
+ * @param len Length of the string.
+ * @return 0 on success, ::FB_FATAL on error.
+ */
 static int _parse_param(http_req_t *r, const char *begin, size_t len)
 {
 	if (len == 0)
@@ -86,7 +94,7 @@ static int _parse_param(http_req_t *r, const char *begin, size_t len)
 
 	char *s = pool_alloc(r->p, len + 1);
 	if (!s)
-		return -1;
+		return FB_FATAL;
 
 	strlcpy(s, begin, len + 1);
 	s[len] = '\0';
@@ -105,32 +113,39 @@ static int _parse_param(http_req_t *r, const char *begin, size_t len)
 	return 0;
 }
 
+/**
+ * Parse 'key=value' pairs and put them into request struct.
+ * @param r The http request.
+ * @param key The name in the environment.
+ * @param delim The delimiter.
+ * @return 0 on success, ::FB_FATAL on error.
+ */
 static int _parse_params(http_req_t *r, const char *key, int delim)
 {
 	const char *env = _get_server_env(key);
 	const char *ptr = strchr(env, delim), *last = env;
 	while (ptr) {
-		if (_parse_param(r, last, ptr - last) < 0)
-			return -1;
+		if (_parse_param(r, last, ptr - last) != 0)
+			return FB_FATAL;
 		last = ptr + 1;
 		ptr = strchr(last, delim);
 	}
 	if (_parse_param(r, last, strlen(last)) < 0)
-		return -1;
+		return FB_FATAL;
 	return 0;
 }
 
 /**
  * Parse GET parameters and cookies.
  * @param r The http request.
- * @return 0 on success, -1 on error.
+ * @return 0 on success, FB_FATAL on error.
  */
 static int _parse_http_req(http_req_t *r)
 {
 	if (_parse_params(r, "QUERY_STRING", '&') < 0)
-		return -1;
+		return FB_FATAL;
 	if (_parse_params(r, "HTTP_COOKIE", ';') < 0)
-		return -1;
+		return FB_FATAL;
 	return 0;
 }
 
@@ -138,6 +153,7 @@ static int _parse_http_req(http_req_t *r)
  * Get an http request.
  * The GET request and cookies are parsed into key=value pairs.
  * @param p A memory pool to use.
+ * @return A parsed http request struct, NULL on error.
  */
 http_req_t *get_request(pool_t *p)
 {
@@ -147,7 +163,7 @@ http_req_t *get_request(pool_t *p)
 
 	r->p = p;
 	r->count = 0;
-	if (_parse_http_req(r) < 0)
+	if (_parse_http_req(r) != 0)
 		return NULL;
 	return r;
 }
