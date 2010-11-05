@@ -1,6 +1,8 @@
 #ifndef FB_CFG_H
 #define FB_CFG_H
 
+#define DEFAULT_CFG_FILE "/etc/fbbs/fbbs.conf"
+
 typedef struct config_t {
 	int pairs;
 	int cur;
