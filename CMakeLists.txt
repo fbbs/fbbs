@@ -21,6 +21,7 @@ if(ENABLE_DEBUG)
 endif(ENABLE_DEBUG)
 
 set(CMAKE_INSTALL_PREFIX "/home/bbs")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/so")
 
 add_subdirectory(lib)
 add_subdirectory(pg)
