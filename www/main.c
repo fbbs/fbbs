@@ -5,11 +5,11 @@
 #include "fbbs/web.h"
 
 typedef struct web_handler_t {
-	const char *name;           ///< name of the handler.
-	int (*func)(http_req_t *);  ///< handler function.
+	const char *name;          ///< name of the handler.
+	int (*func)(web_ctx_t *);  ///< handler function.
 } web_handler_t;
 
-int fcgi_foo(http_req_t *r)
+int fcgi_foo(web_ctx_t *ctx)
 {
 	html_header();
 	printf("Hello, world!\n</head></html>");
@@ -48,6 +48,17 @@ static const web_handler_t *_get_handler(void)
  */
 int main(void)
 {
+	config_t cfg;
+	config_init(&cfg);
+	if (config_load(&cfg, DEFAULT_CFG_FILE) != 0)
+		return EXIT_FAILURE;
+
+	db_conn_t *conn = db_connect(config_get(&cfg, "host"),
+			config_get(&cfg, "port"), config_get(&cfg, "dbname"),
+			config_get(&cfg, "user"), config_get(&cfg, "password"));
+	if (db_status(conn) != DB_CONNECTION_OK)
+        return EXIT_FAILURE;
+
 	while (FCGI_Accept() >= 0) {
 		pool_t *p = pool_create(DEFAULT_POOL_SIZE);
 
@@ -55,12 +66,14 @@ int main(void)
 		if (!r)
 			return EXIT_FAILURE;
 
+		web_ctx_t ctx = { .c = &cfg, .d = conn, .p = p, .r = r };
+
 		int ret;
 		const web_handler_t *h = _get_handler();
 		if (!h) {
 			;	
 		} else {
-			ret = (*(h->func))(r);
+			ret = (*(h->func))(&ctx);
 		}
 
 		pool_destroy(p);

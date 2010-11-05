@@ -1,6 +1,9 @@
 #ifndef FB_WEB_H
 #define FB_WEB_H
 
+#include "fbbs/cfg.h"
+#include "fbbs/dbi.h"
+#include "fbbs/pool.h"
 #include <fcgi_stdio.h>
 
 #define CHARSET "utf-8"
@@ -20,6 +23,13 @@ typedef struct http_req_t {
 	pair_t params[MAX_PARAMETERS];
 	int count;
 } http_req_t;
+
+typedef struct web_ctx_t {
+	config_t *c;
+	db_conn_t *d;
+	pool_t *p;
+	http_req_t *r;
+} web_ctx_t;
 
 extern http_req_t *get_request(pool_t *p);
 extern const char *get_param(http_req_t *r, const char *name);
