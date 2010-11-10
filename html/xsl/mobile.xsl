@@ -79,8 +79,8 @@
 <xsl:template match='/'>
 	<html>
 		<head>
+			<meta http-equiv="content-type" content="text/html; charset=gb2312"/>
 			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/>手机版</title>
-			<meta http-equiv="content-type" content="text/html; charset=gb18030"/>
 			<xsl:call-template name='include-css'/>
 			<xsl:call-template name='include-js'/>
 		</head>
@@ -106,6 +106,17 @@
 	</xsl:for-each>
 </xsl:template>
 
+<xsl:template name='bbsdoc-link'>
+	<xsl:if test='brd/@start > 1'>
+		<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
+		<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$prev'/></xsl:attribute>[前页]</a>
+	</xsl:if>
+	<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
+		<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
+		<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$next'/></xsl:attribute>[后页]</a>
+	</xsl:if>
+</xsl:template>
+
 <xsl:template match='bbsdoc'>
 	<h2><a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute><xsl:value-of select='brd/@desc'/>[<xsl:value-of select='brd/@title'/>]</a><xsl:if test='brd/@link = "g"'>[文摘]</xsl:if><xsl:if test='brd/@link = "t"'>[主题]</xsl:if></h2>
 	<div class='nav'>
@@ -114,14 +125,7 @@
 			<xsl:otherwise><a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[主题]</a></xsl:otherwise>
 		</xsl:choose>
 		<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[发文]</a>
-		<xsl:if test='brd/@start > 1'>
-			<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
-			<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$prev'/></xsl:attribute>[上页]</a>
-		</xsl:if>
-		<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
-			<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
-			<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$next'/></xsl:attribute>[下页]</a>
-		</xsl:if>
+		<xsl:call-template name='bbsdoc-link'></xsl:call-template>
 		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[精华]</a>
 	</div>
 	<ul class='po'>
@@ -140,6 +144,9 @@
 			</a></p><p><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span></p>
 		</li></xsl:if></xsl:for-each>
 	</ul>
+	<div class='nav'>
+		<xsl:call-template name='bbsdoc-link'></xsl:call-template>
+	</div>
 </xsl:template>
 
 <xsl:template match='bbscon'>
