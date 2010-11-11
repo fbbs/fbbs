@@ -74,6 +74,7 @@ void SpecialID(const char *uid, char *host, int len);
 bool seek_in_file(const char *filename, const char *seekstr);
 const char *mask_host(const char *host);
 void add_signature(FILE *fp, const char *user, int sig);
+int valid_gbk_file(const char *file, int replace);
 
 //board.c
 int changeboard(struct boardheader **bp, char *cboard, const char *board);

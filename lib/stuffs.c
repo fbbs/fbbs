@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "mmap.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 
@@ -305,4 +306,16 @@ void add_signature(FILE *fp, const char *user, int sig)
 			fputs(buf, fp);
 	}
 	fclose(fin);
+}
+
+int valid_gbk_file(const char *file, int replace)
+{
+	mmap_t m = { .oflag = O_RDWR };
+	if (mmap_open(file, &m) != 0)
+		return -1;
+
+	int count = valid_gbk(m.ptr, m.size, '?');
+
+	mmap_close(&m);
+	return count;
 }

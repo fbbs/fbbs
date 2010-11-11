@@ -15,6 +15,7 @@ extern size_t strlcpy(char *dst, const char *src, size_t siz);
 extern void strtourl(char *url, const char *str);
 extern void strappend(char **dst, size_t *size, const char *src);
 extern void printable_filter(char *str);
+extern int valid_gbk(unsigned char *str, int len, int replace);
 
 static inline bool isprint2(int ch)
 {

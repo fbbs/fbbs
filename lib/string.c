@@ -261,3 +261,39 @@ void printable_filter(char *str)
 	}
 	*dst = '\0';
 }
+
+enum {
+	GBK_FIRST = 0,
+	GBK_SECOND,
+};
+
+int valid_gbk(unsigned char *str, int len, int replace)
+{
+	int count = 0;
+	int state = GBK_FIRST;
+	unsigned char *s;
+	for (s = str; len > 0; --len, ++s) {
+		switch (state) {
+			case GBK_FIRST:
+				if (*s == 0x80 || *s == 0xff) {
+					*s = replace;
+					break;
+				} else if (*s & 0x80) {
+					state = GBK_SECOND;
+				}
+				break;
+			case GBK_SECOND:
+				if (*s < 0x40 || *s == 0x7f) {
+					*--s = replace;
+					++len;
+					++count;
+				}
+				state = GBK_FIRST;
+				break;
+		}
+	}
+	if (state == GBK_SECOND)
+		*(s - 1) = replace;
+	return count;
+}
+
