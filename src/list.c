@@ -534,7 +534,7 @@ int choose2(choose_t *cp)
 				else
 					cp->cur += BBS_PAGESIZE;
 				break;
-			case 'p':
+			case 'k':
 			case KEY_UP:
 				if (--cp->cur < 0)
 					cp->cur = cp->all - 1;
