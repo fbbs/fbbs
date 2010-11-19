@@ -329,6 +329,10 @@ void show_position(const struct userec *user, char *buf, size_t size)
 			strappend(&buf, &size, "[\033[1;32m培训组\033[m]");
 			normal = 0;
 		}
+		if (user->userlevel & PERM_SPECIAL2) {
+			strappend(&buf, &size, "[\033[1;32m服务组\033[m]");
+			normal = 0;
+		}
 		if (user->userlevel & PERM_SPECIAL3) {
 			strappend(&buf, &size, "[\033[1;32m美工组\033[m]");
 			normal = 0;
