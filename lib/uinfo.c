@@ -1,3 +1,4 @@
+#include <math.h>
 #include "bbs.h"
 #include "glossary.h"
 #include "fbbs/string.h"
@@ -10,20 +11,19 @@ enum {
 	MAX_BIRTH_YEAR = 2009,
 };
 
-//	将经验值转换成显示字符,如 [---      ]等,[]不包括在内
-//  显示的字符以2000为单位,分别是-=+*#A
-//	显示的个数是将超出2000倍数的个数以200为单位再次划分,最多10个
-char *cexpstr(int exp) {
+const char *cexpstr(int exp)
+{
+	const char *c = "-=+*#A";
 	static char ce[11];
-	char* c= "-=+*#A";
-	int i;
-	int j;
-	strcpy(ce, "          ");
+	memset(ce, ' ', 10);
+
 	if (exp < 0)
 		return ce;
-	i = exp / 2000;
+	exp = sqrt(exp / 5);
+	int i, j;
+	i = exp / 10;
 	i = i > 5 ? 5 : i;
-	j = (exp - i * 2000) / 200;
+	j = exp - i * 10;
 	j = j > 9 ? 9 : j;
 	memset(ce, c[i], j + 1);
 	return ce;
@@ -92,7 +92,6 @@ char *cperf(int perf)
 }
 
 //计算经验值,文章数+登陆数的1/5+已注册的天数+停留的时数
-//	最大值是12000
 int countexp(const struct userec *udata)
 {
 	int exp;
@@ -100,8 +99,8 @@ int countexp(const struct userec *udata)
 		return 0;
 	exp = udata->numposts + udata->numlogins / 5 + (time(0) 
 		- udata->firstlogin) / 86400 + udata->stay / 3600;
-	if (exp > 12000)
-		exp = 12000;
+	if (exp > 18000)
+		exp = 18000;
 	return exp > 0 ? exp : 0;
 }
 

@@ -2,6 +2,7 @@
  *  Fdubbs Project
  *  See COPYRIGHT for more details.
  */
+#include <math.h>
 
 #include "libweb.h"
 #include "mmap.h"
@@ -479,9 +480,10 @@ int iconexp(int exp, int *repeat)
 	if (exp < 0)
 		j = -1;
 	else {
-		i = exp / 2000;
+		exp = sqrt(exp / 5);
+		i = exp / 10;
 		i = i > 5 ? 5 : i;
-		j = (exp - i * 2000) / 200;
+		j = exp - i * 10;
 		j = j > 9 ? 9 : j;
 	}
 	*repeat = ++j;

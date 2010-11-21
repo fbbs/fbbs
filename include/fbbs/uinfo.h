@@ -9,7 +9,7 @@ enum {
 	UINFO_EBIRTH = -3,
 };
 
-extern char *cexpstr(int exp);
+extern const char *cexpstr(int exp);
 #ifdef ALLOWGAME
 extern char *cnummedals(int num);
 extern char *cmoney(int num);

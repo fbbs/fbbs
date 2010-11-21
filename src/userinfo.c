@@ -12,7 +12,6 @@
 
 extern time_t login_start_time;
 extern char fromhost[60];
-extern char *cexpstr();
 
 //将ptr指向的字符串中字符值为0xFF的转换成空格
 void filter_ff(char *ptr) {
