@@ -44,7 +44,7 @@
 <xsl:template name='page-title'>
 	<xsl:variable name='cgi' select='local-name(node()[2])'/>
 	<xsl:choose>
-		<xsl:when test='bbssec'>推荐版面</xsl:when>
+		<xsl:when test='bbssec'>分区列表</xsl:when>
 		<xsl:when test='bbsboa'><xsl:choose><xsl:when test='bbsboa/@dir'>版面目录</xsl:when><xsl:otherwise>分类讨论区</xsl:otherwise></xsl:choose></xsl:when>
 		<xsl:when test='bbsall'>全部讨论区</xsl:when>
 		<xsl:when test='bbssel'>选择讨论区</xsl:when>
@@ -94,16 +94,9 @@
 </xsl:template>
 
 <xsl:template match='bbssec'>
-	<xsl:for-each select='sec'>
-		<ul class='sec'>
-			<li><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id'/></xsl:attribute><xsl:value-of select='@id'/>&#160;<xsl:value-of select='@desc'/></a></li>
-			<ul class='brd'>
-				<xsl:for-each select='brd'>
-					<li><a><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@name'/></xsl:attribute><xsl:value-of select='@desc'/></a></li>
-				</xsl:for-each>
-			</ul>
-		</ul>
-	</xsl:for-each>
+	<ul class='sec'><xsl:for-each select='sec'>
+		<li><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id'/></xsl:attribute><xsl:value-of select='@id'/>&#160;<xsl:value-of select='@desc'/></a></li>
+	</xsl:for-each></ul>
 </xsl:template>
 
 <xsl:template name='bbsdoc-link'>
