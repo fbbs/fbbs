@@ -106,7 +106,8 @@ static const char *get_login_referer(void)
 		return next;
 	const char *referer = get_referer();
 	const char *ref;
-	if (!strcmp(referer, "/") || !strcmp(referer, "/index.htm"))
+	if (!strcmp(referer, "/") || !strcmp(referer, "/index.htm")
+			|| strstr(referer, "login"))
 		ref = "sec";
 	else
 		ref = referer;
