@@ -4,6 +4,10 @@ project(fbbs)
 set(fbbs_VERSION_MAJOR 2010)
 set(fbbs_VERSION_MINOR 0)
 
+if(COMMAND cmake_policy)
+	cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 include_directories(include)
 
 option(ENABLE_SSH "compile ssh module" off)
