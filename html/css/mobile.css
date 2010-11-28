@@ -18,7 +18,7 @@ img { border: 0; vertical-align: middle; }
 
 #hd { line-height: 24px; }
 #hd a, #fav a { display: inline-block; padding: 0 4px; }
-#fav a { min-width: 48px; text-align: center; }
+#fav a { min-width: 110px; text-align: center; }
 div#hd, div#fav { border-bottom: #6699cc 1px solid; padding: 4px 0; }
 #hd a:hover { background-color: #ffffdd; }
 #main { padding: 4px 0; }
