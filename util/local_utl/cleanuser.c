@@ -57,24 +57,27 @@ int main(int argc, char **argv)
 {
 	bool pretend = (argc != 2) || (strcasecmp(argv[1], "-f") != 0);
 
+	if (chdir(BBSHOME) < 0)
+		return EXIT_FAILURE;
+
 	int fd = 0;
 	FILE *log = NULL, *data = NULL, *post = NULL;
 
 	if (!pretend) {
-		int fd = open(BBSHOME"/tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);
+		int fd = open("tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);
 		if (fd < 0)
 			return EXIT_FAILURE;
-		unlink(BBSHOME"/tmp/killuser");
+		unlink("tmp/killuser");
 	
-		log = fopen(BBSHOME"/tomb/log", "w+");
+		log = fopen("tomb/log", "w+");
 		if (!log)
 			return EXIT_FAILURE;
 
-		data = fopen(BBSHOME"/tomb/PASSWDS", "w+");
+		data = fopen("tomb/PASSWDS", "w+");
 		if (!data)
 			return EXIT_FAILURE;
 
-		post = fopen(BBSHOME"/tomb/post", "w+");
+		post = fopen("tomb/post", "w+");
 		if (!post)
 			return EXIT_FAILURE;
 
