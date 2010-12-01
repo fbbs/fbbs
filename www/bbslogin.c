@@ -17,7 +17,7 @@ static int check_multi(const struct userec *user)
 
 static int wwwlogin(struct userec *user, const char *ref)
 {
-	if (!(currentuser.userlevel & PERM_REGISTER)) {
+	if (!HAS_PERM(PERM_REGISTER) && HAS_PERM(PERM_BINDMAIL)) {
 		char file[HOMELEN]; 
 		sethomefile(file, currentuser.userid, "register");
 		if (dashf(file)) {
