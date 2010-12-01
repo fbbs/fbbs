@@ -1,13 +1,10 @@
-function switchPanel(link) {
-	var item = link.nextSibling;
-	var expand = false;
-	if (item.style.display == 'block') {
-		item.style.display = 'none';
-	} else {
-		item.style.display = 'block';
-		expand = true;
-	}
-	var id = link.parentNode.id;
+function switchPanel() {
+	var item = $(this).next();
+	item.toggle();
+
+	var expand = item.is(':visible');
+	var id = item.parent().attr('id');
+
 	bbs.store.get('navbar', function(ok, val) {
 		var str = '0000000';
 		if (ok && val && val.toString().length == 7)
@@ -30,51 +27,21 @@ function preUpload()
 	mywin.focus();
 	return false;
 }
-document.onkeydown = function(evt) {
-	document.onkeypress = function() {return true;};
-	if (!document.getElementById('postform'))
-		return true;
-	evt = evt ? evt : event;
-	if ((evt.keyCode == 87) && evt.ctrlKey) { // Ctrl-W
-		document.onkeypress = function() {return false;};
-		document.postform.submit();
-		return false;
-	}
-};
 
 // for bbsmail
 function checkAll() {
-	var inputs = document.getElementsByName('list')[0].getElementsByTagName('input');
-	for (var i = 0; i < inputs.length; i++) {
-		if (inputs[i].type == 'checkbox') {
-			inputs[i].checked = true;
-		}
-	}
+	$('form[name="list"] input:checkbox').attr('checked', true);
 	return false;
 }
 function checkReverse() {
-	var inputs = document.getElementsByName('list')[0].getElementsByTagName('input');
-	for (var i = 0; i < inputs.length; i++) {
-		if (inputs[i].type == 'checkbox')
-			inputs[i].checked = !(inputs[i].checked);
-	}
+	$('form[name="list"] input:checkbox').attr('checked', function() {
+		return !this.checked;
+	});
 	return false;
 }
 function delSelected() {
 	document.list.mode.value = 1;
 	document.list.submit();
-}
-
-function addLoadEvent(func) {
-    if (typeof window.onload != 'function') {
-        window.onload = func;
-    } else {
-		var old = window.onload;
-		window.onload = function() {
-            old();
-            func();
-        }
-    }
 }
 
 function ie6fix() {
@@ -94,36 +61,6 @@ function ie6fix() {
 	}
 }
 
-var HTTP = {
-	_factories: [
-		function() { return new XMLHttpRequest(); },
-		function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
-		function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
-	],
-	_factory: null,
-	newRequest: function() {
-		if (HTTP._factory != null)
-			return HTTP._factory();
-		for(var i = 0; i < HTTP._factories.length; i++) {
-			try {
-				var factory = HTTP._factories[i];
-				var request = factory();
-				if (request != null) {
-					HTTP._factory = factory;
-					return request;
-				}
-			}
-			catch(e) {
-				continue;
-			}
-		}
-		HTTP._factory = function() {
-			throw new Error("XMLHttpRequest not supported");
-		}
-		HTTP._factory();
-	}
-};
-
 var bbs = {
 	inited: false,
 	interval: 300000,
@@ -137,16 +74,15 @@ var bbs = {
 	},
 	showmail: function(mail) {
 		if (mail > 0) {
-			document.getElementById('navnm').style.display = 'inline-block';
-			document.getElementById('navmc').innerHTML = mail;
+			$('#navnm').show();
+			$('#navmc').html(mail);
 		} else {
-			document.getElementById('navnm').style.display = 'none';
+			$('#navnm').hide();
 		}
 	},
 	check: function () {
 		bbs.init();
 		bbs.store.get('last', function(ok, val) {
-			//alert(parseInt(val));
 			var now = new Date().getTime();
 			if (ok && val && now - parseInt(val) < bbs.interval) {
 				bbs.store.get('mail', function(ok, val) {
@@ -157,18 +93,12 @@ var bbs = {
 				});
 				return;
 			}
-			var request = HTTP.newRequest();
-			request.onreadystatechange = function() {
-				if (request.readyState == 4) {
-					if (request.status == 200) {
-						var res = request.responseXML.getElementsByTagName('bbsidle')[0].getAttribute('mail');
-						bbs.store.set('mail', res);
-						bbs.showmail(res);
-					}
-				}
-			}
-			request.open('GET', 'idle?date=' + now, true);
-			request.send(null);
+			$.get('idle', { date: now },
+				function(data) {
+					var res = $(data).find('bbsidle').attr('mail');
+					bbs.store.set('mail', res);
+					bbs.showmail(res);
+				});
 			bbs.store.set('last', now);
 		});
 	},
@@ -179,8 +109,7 @@ var bbs = {
 			if (ok && val) {
 				var str = val.toString();
 				for (var i = 0; i < bbs.navbar.length; i++) {
-					var nav = document.getElementById(bbs.navbar[i]);
-					nav && (nav.getElementsByTagName('ul')[0].style.display = (str.charAt(i) == '0' ? 'none' :'block'));
+					$('#' + bbs.navbar[i] + ' ul').toggle(str.charAt(i) != '0');
 				}
 			}
 		});
@@ -189,5 +118,28 @@ var bbs = {
 	sync: function() { bbs.navinit(); bbs.check(); }
 };
 
-addLoadEvent(bbs.sync);
-setInterval(bbs.sync, bbs.syncinterval);
+$(document).ready(function() {
+	$('#navnm').hide();
+
+	for (var i = 0; i < bbs.navbar.length; ++i) {
+		$('#' + bbs.navbar[i] + '>a').click(switchPanel);
+	}
+
+	bbs.sync();
+	setInterval(bbs.sync, bbs.syncinterval);
+
+	document.onkeydown = function(evt) {
+		document.onkeypress = function() { return true; };
+		var form = $('#postform');
+		if (!form.length)
+			return true;
+		evt = evt ? evt : event;
+		if ((evt.keyCode == 87) && evt.ctrlKey) { // Ctrl-W
+			document.onkeypress = function() { return false; };
+			form.submit();
+			return false;
+		} else {
+			return true;
+		}
+	};
+});

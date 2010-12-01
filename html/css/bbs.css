@@ -92,7 +92,7 @@ ul.brd li{
 #hd a:hover {
 	background-color: #ffffdd;
 }
-a#navnm { display: none; font-weight: bold; }
+a#navnm { display: inline-block; font-weight: bold; }
 #navl, #navte, #nave {
 	background-color: transparent;
 	background-repeat: no-repeat;

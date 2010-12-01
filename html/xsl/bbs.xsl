@@ -49,7 +49,7 @@
 	<ul id='nav'>
 		<li id='navh'><a href='sec'>推荐版面</a></li>
 		<xsl:if test='$bbsname="日月光华"'><li id='navb'>
-			<a href='#' onclick='return switchPanel(this);'>分类讨论</a>
+			<a href='#'>分类讨论</a>
 			<ul><li><a href='boa?s=0'>0 BBS系统</a></li>
 			<li><a href='boa?s=1'>1 复旦大学</a></li>
 			<li><a href='boa?s=2'>2 院系风采</a></li>
@@ -67,24 +67,24 @@
 		<li id='nava'><a href='0an'>本站精华</a></li>
 		<li id='navp'><a href='all'>全部讨论</a></li>
 		<li id='navt'>
-			<a href='#' onclick='return switchPanel(this);'>统计数据</a>
+			<a href='#'>统计数据</a>
 			<ul>
 				<li><a href='top10'>本日十大</a></li>
 			</ul>
 		</li>
 		<xsl:if test='contains($session/p, "l")'>
 			<li id='navf'>
-				<a href='#' onclick='return switchPanel(this);'>我的收藏</a>
+				<a href='#'>我的收藏</a>
 				<ul><li><a href='fav'>查看详情</a></li><xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$session/f'/></xsl:call-template></ul>
 			</li>
 			<li id='navc'>
-				<a href='#' onclick='return switchPanel(this);'>鹊桥相会</a>
+				<a href='#'>鹊桥相会</a>
 				<ul>
 					<li><a href='ovr'>在线好友</a></li>
 				</ul>
 			</li>
 			<li id='navm'>
-				<a href='#' onclick='return switchPanel(this);'>处理信件</a>
+				<a href='#'>处理信件</a>
 				<ul>
 					<li><a href='newmail'>阅览新信</a></li>
 					<li><a href='mail'>所有信件</a></li>
@@ -92,7 +92,7 @@
 				</ul>
 			</li>
 			<li id='navco'>
-				<a href='#' onclick='return switchPanel(this);'>个人设置</a>
+				<a href='#'>个人设置</a>
 				<ul>
 					<li><a href='info'>个人资料</a></li>
 					<li><a href='plan'>改说明档</a></li>
@@ -103,7 +103,7 @@
 			</li>
 		</xsl:if>
 		<li id='navs'>
-			<a href='#' onclick='return switchPanel(this);'>查找选项</a>
+			<a href='#'>查找选项</a>
 			<ul>
 				<li><a href='qry'>查询网友</a></li>
 				<li><a href='sel'>查找版面</a></li>
@@ -134,7 +134,11 @@
 	<link rel='stylesheet' type='text/css' href='../css/bbs.css'/>
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css'/><![endif]]]></xsl:comment>
 </xsl:template>
-<xsl:template name='include-js'><script type='text/javascript' src='../js/bbs.js' defer='defer'></script><script type='text/javascript' src='../js/persist-all-min.js' defer='defer'></script></xsl:template>
+<xsl:template name='include-js'>
+	<script src='../js/persist-all-min.js' defer='defer'></script>
+	<script src='/js/jquery-1.4.2.min.js' defer='defer'></script>
+	<script src='../js/bbs.js' defer='defer'></script>
+</xsl:template>
 
 <xsl:template name='page-title'>
 	<xsl:variable name='cgi' select='local-name(node()[2])'/>
