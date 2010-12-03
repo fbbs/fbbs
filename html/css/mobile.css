@@ -16,6 +16,8 @@ a { color: #336699; text-decoration: none; }
 a:hover { background-color: #ffffdd; }
 img { border: 0; vertical-align: middle; }
 
+.button_login { width: 180px; height: 24px; margin: 5px 0 0; }
+
 #hd { line-height: 24px; }
 #hd a, #fav a { display: inline-block; padding: 0 4px; }
 #fav a { min-width: 110px; text-align: center; }
