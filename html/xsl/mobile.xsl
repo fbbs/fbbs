@@ -80,6 +80,7 @@
 	<html>
 		<head>
 			<meta http-equiv="content-type" content="text/html; charset=gb2312"/>
+			<meta name="viewport" content="width=device-width"/>
 			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/>手机版</title>
 			<xsl:call-template name='include-css'/>
 			<xsl:call-template name='include-js'/>
