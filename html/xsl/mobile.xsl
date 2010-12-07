@@ -22,7 +22,7 @@
 	<div id='hd'>
 		<xsl:if test='$user != ""'><a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user'/></xsl:attribute><xsl:value-of select='$user'/></a> <a id='fave' href='#' onclick='return expandFav();'>收藏▽</a><a href='#' id='favc' onclick='return collapseFav();'>收起△</a>|</xsl:if>
 		<xsl:if test='$user = ""'><a href='login'>登录</a>|</xsl:if>
-		<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
+		<a href='sec'>首页</a>|<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
 	<div id='fav'><xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
 	<a><xsl:if test='@r'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
@@ -152,12 +152,13 @@
 		<a><xsl:attribute name='href'>edit?<xsl:value-of select='$param'/></xsl:attribute>[修改]</a>
 	</div>
 	<div class='nav'>
+		<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid'/></xsl:attribute>[版面]</a>
 		<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
 		<xsl:if test='not(po/@sticky)'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>p</xsl:attribute>[上篇]</a>
 		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>n</xsl:attribute>[下篇]</a>
-		<xsl:if test='po/@reid != f'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>b</xsl:attribute>[同题上]</a></xsl:if>
-		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>a</xsl:attribute>[同题下]</a>
-		<xsl:if test='po/@gid'><a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@gid'/></xsl:attribute>[同题首]</a></xsl:if>
+		<xsl:if test='po/@reid != f'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>b</xsl:attribute>[上楼]</a></xsl:if>
+		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>a</xsl:attribute>[下楼]</a>
+		<xsl:if test='po/@gid'><a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@gid'/></xsl:attribute>[顶楼]</a></xsl:if>
 		<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
 		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='$gid'/></xsl:attribute>[展开]</a>
 		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid'/>&amp;g=<xsl:value-of select='$gid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=n</xsl:attribute>[后展]</a></xsl:if>
