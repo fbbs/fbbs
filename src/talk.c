@@ -26,6 +26,7 @@ extern char *cexpstr();
 int talkidletime = 0;
 int ulistpage;
 int friendflag = 1;
+int friend_query();
 int friend_mail();
 int friend_dele();
 int friend_add();
@@ -42,10 +43,19 @@ int talkrec = -1;
 char partner[IDLEN + 1];
 #endif
 
-struct one_key friend_list[] = { 'm', friend_mail, 'M',
-		friend_mail, 'a', friend_add, 'A', friend_add, 'd', friend_dele,
-		'D', friend_dele, 'E', friend_edit, 'h', friend_help, 'H',
-		friend_help, '\0', NULL };
+struct one_key friend_list[] = {
+		'r', friend_query,
+		'm', friend_mail,
+		'M', friend_mail,
+		'a', friend_add,
+		'A', friend_add,
+		'd', friend_dele,
+		'D', friend_dele,
+		'E', friend_edit,
+		'h', friend_help,
+		'H', friend_help,
+		'\0', NULL
+};
 
 struct one_key reject_list[] = { 'a', reject_add, 'A',
 		reject_add, 'd', reject_dele, 'D', reject_dele, 'E', reject_edit,
