@@ -26,7 +26,7 @@ int bbstop10_main(void)
 				break;
 			printf("<top board='%s' owner='%s' count='%d' gid='%u'>",
 					top.board, top.owner, top.count, top.gid);
-			xml_fputs(top.title, stdout);
+			xml_fputs2(top.title, check_gbk(top.title) - top.title, stdout);
 			printf("</top>\n");
 		}
 		fclose(fp);
