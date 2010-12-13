@@ -254,7 +254,7 @@
 		<xsl:if test='st'><div class='nav'>目前状态</div>
 		<div class='umain'><xsl:for-each select='st'><p><xsl:value-of select='@desc'/><xsl:if test='@idle!=0'>[发呆<xsl:value-of select='@idle'/>分钟]</xsl:if><xsl:if test='@web=1'>（web）</xsl:if><xsl:if test='@vis=0'>（隐）</xsl:if></p></xsl:for-each></div></xsl:if>
 		<div class='nav'>个人说明档如下</div>
-		<div class='usmd'><xsl:call-template name='showpost'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
+		<div class='usmd'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
 	</div></xsl:when><xsl:otherwise><xsl:if test='@id!=""'><p>没有找到用户【<xsl:value-of select='@id'/>】</p></xsl:if></xsl:otherwise></xsl:choose>
 </xsl:template>
 
@@ -294,7 +294,7 @@
 <xsl:template match='bbsanc'>
 	<h3><xsl:if test='@brd'><xsl:value-of select='@brd'/>版 - </xsl:if>精华区文章阅读</h3>
 	<xsl:call-template name='anc-navbar'/>
-	<div class='po'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
+	<div class='po'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
 	<xsl:call-template name='anc-navbar'/>
 </xsl:template>
 
@@ -322,7 +322,7 @@
 
 <xsl:template match='bbsmailcon'>
 	<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
-	<div class='po'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail'/></xsl:call-template></div>
+	<div class='po'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='mail'/></xsl:call-template></div>
 	<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
 </xsl:template>
 
