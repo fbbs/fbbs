@@ -305,7 +305,7 @@
 <xsl:template match='bbsmail'>
 	<h2>信件列表</h2>
 	<ol class='po'><xsl:for-each select='mail'><xsl:sort select='@date' order='descending'/><li>
-		<p><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name'/>&amp;n=<xsl:value-of select='position() - 1 + ../@start'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
+		<p><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name'/>&amp;n=<xsl:value-of select='../@start + count(../mail) - position()'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
 		<p><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from'/></xsl:attribute><xsl:value-of select='@from'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></span></p>
 	</li></xsl:for-each></ol>
 	<div class='nav'>
