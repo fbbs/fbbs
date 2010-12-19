@@ -626,15 +626,4 @@ void print_session(void)
 	printf("</f></session>");
 }
 
-const char *check_gbk(const char *title)
-{
-	bool gbk = false;
-	while (*title != '\0') {
-		if (!gbk && *title & 0x80)
-			gbk = true;
-		else
-			gbk = false;
-		title++;
-	}
-	return (gbk ? title - 1 : title);
-}
+

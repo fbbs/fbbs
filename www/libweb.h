@@ -112,7 +112,6 @@ int get_doc_mode(void);
 void set_doc_mode(int mode);
 const char *get_doc_mode_str(void);
 void print_session(void);
-const char *check_gbk(const char *title);
 void printable_filter(char *str);
 
 #endif  //FB_LIBWEB_H

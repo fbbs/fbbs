@@ -16,6 +16,7 @@ extern void strtourl(char *url, const char *str);
 extern void strappend(char **dst, size_t *size, const char *src);
 extern void printable_filter(char *str);
 extern int valid_gbk(unsigned char *str, int len, int replace);
+extern const char *check_gbk(const char *title);
 
 static inline bool isprint2(int ch)
 {

@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/string.h"
 
 enum {
     BOARD_LEN = 18, TITLE_LEN = 62, OWNER_LEN = 16,

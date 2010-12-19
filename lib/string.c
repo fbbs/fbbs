@@ -297,3 +297,15 @@ int valid_gbk(unsigned char *str, int len, int replace)
 	return count;
 }
 
+const char *check_gbk(const char *title)
+{
+	bool gbk = false;
+	while (*title != '\0') {
+		if (!gbk && *title & 0x80)
+			gbk = true;
+		else
+			gbk = false;
+		title++;
+	}
+	return (gbk ? title - 1 : title);
+}
