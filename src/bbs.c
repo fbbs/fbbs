@@ -9,6 +9,7 @@
 #endif
 #include "mmap.h"
 #include "fbbs/post.h"
+#include "fbbs/string.h"
 
 #ifndef DLM
 #undef	ALLOWGAME
@@ -2086,6 +2087,8 @@ int post_article(char *postboard, char *mailid) {
 			strlcpy(postfile.title, header.title, sizeof(postfile.title));
 		}
 		strlcpy(save_title, postfile.title, STRLEN);
+		valid_title(save_title);
+
 	} else {
 		return FULLUPDATE;
 	}
@@ -2112,6 +2115,8 @@ int post_article(char *postboard, char *mailid) {
 	}
 
 	strlcpy(postfile.title, save_title, sizeof(postfile.title));
+	valid_title(postfile.title);
+
 	// TODO: ...
 	if ((local_article == YEA) || !(bp->flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';

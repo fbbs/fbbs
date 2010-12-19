@@ -252,6 +252,7 @@ int bbssndmail_main(void)
 	char title[STRLEN];
 	strlcpy(title, getparm("title"), sizeof(title));
 	printable_filter(title);
+	valid_title(title);
 	if (*title == '\0')
 		strlcpy(title, "Ã»Ö÷Ìâ", sizeof(title));
 

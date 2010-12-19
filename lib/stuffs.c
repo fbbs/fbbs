@@ -319,3 +319,11 @@ int valid_gbk_file(const char *file, int replace)
 	mmap_close(&m);
 	return count;
 }
+
+char *valid_title(char *title)
+{
+	char *end = (char *)check_gbk(title);
+	*end = '\0';
+	valid_gbk((unsigned char *)title, strlen(title), '?');
+	return title;
+}

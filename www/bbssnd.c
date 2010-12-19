@@ -104,6 +104,7 @@ int bbssnd_main(void)
 	if (!isedit) {
 		strlcpy(title, getparm("title"), sizeof(title));
 		printable_filter(title);
+		valid_title(title);
 		if (*title == '\0')
 			return BBS_EINVAL;
 	}
