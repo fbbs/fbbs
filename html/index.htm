@@ -1,51 +1,59 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns='http://www.w3.org/1999/xhtml'>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
-<link rel="stylesheet" href="css/index.css" style="text/css" />
+<meta http-equiv='Content-Type' content='text/html; charset=gb2312'/>
+<link rel='stylesheet' href='css/index.css' style='text/css'/>
+<script src="/js/jquery-1.4.2.min.js" defer="defer"></script>
+<script src="js/index.js" defer="defer"></script>
 <title>欢迎光临复旦大学日月光华BBS</title>
 </head>
 <body>
-<div id="container">
-<div id="left_panel">
-<div id="menu" class="box"><ul>
-<li><a href="bbs/0an"><img src='images/announce.gif' alt='icon' />本站精华区</a></li>
-<li><a href="telnet://bbs.fudan.edu.cn"><img src='images/telnet.gif' alt='icon'/>Telnet进站</a></li>
-<li><a href="software/xuanchuance.pdf" target="_blank"><img src='images/xcc.gif' alt='icon' />日月光华宣传册</a></li>
-<li onmouseover="document.getElementById('software').style.display='block'" onmouseout="document.getElementById('software').style.display='none'"><a href="#"><img src='images/software.gif' alt='icon' />常用软件</a>
-<div id="software"><ul>
-<li><a href="/software/netterm32428.exe" target="_blank">NetTerm 4.28 (929KB)</a></li>
-<li><a href="/software/Cterm2000.exe">CTerm 2000 (498KB)</a></li>
-<li><a href="/software/FTerm2.5.0.154.exe">FTerm 2.5.0.154 (4,187KB)</a></li>
-<li><a href="/software/STerm2.549.rar">S-Term 2.549 (2,300KB)</a></li>
-<li><a href="/software/CTerm3.24.rar">Cterm 3.24 (2,574KB)</a></li>
-<li><a href="/software/qterm-0.4.0pre1.tar.gz">Qterm 0.4pre1 (1,053KB)</a></li>
-<li><a href="/software/Ansieditor2.03e.exe">AnsiEditor (330KB)</a></li>
-<li><a href="/software/Bmp2Ascii.exe">Bmp2Ascii (536KB)</a></li>
-<li><a href="/software/exp2004.exe">exp2004 (425KB)</a></li>
-<li><a href="/software/fdubbs.tar.gz">fdubbs(1.4M)</a></li>
-</ul></div>
-</li>
-<li><a href="list/banner.htm"><img src='images/web.gif' alt='icon' />WEB进站展示</a></li>
-</ul></div>
-<div id="loginbox" class="box"><form method="post" action="bbs/login"><ul><li><img src="images/user.gif" alt="id" /><input id="id" type="text" name="id" class="txt"/></li><li><img src="images/password.gif" alt="password" /><input type="password" name="pw" class="txt"/></li><li><input type="submit" onmouseout="javascript:window.status='欢迎光临日月光华站WWW页面';return true;" onmouseover="javascript:window.status='填写用户名和密码登录进站';return true;" value="登录"/><input type="button" onclick="javascript:window.location='bbs/sec'" onmouseout="javascript:window.status='欢迎光临日月光华站WWW页面';return true;" onmouseover="javascript:window.status='您将使用Guest匿名登录，本站为注册用户设计的一些功能将不可用。';return true;" value="随便看看"/></li></ul></form>
-<form method="get" action="reg.htm"><input id="reg" type="submit" value="注册"/></form>
-</div>
-<div id="info" class="box">
-<p>目前支持的浏览器</p>
+<div id='container'>
+<div id='left'>
+<div id='menu' class='box'>
 <ul>
-<li><img src="images/IE.png" alt="IE" />IE 6+</li>
-<li><img src="images/Firefox.png" alt="Firefox" />Firefox 1+</li>
-<li><img src="images/Safari.png" alt="Safari" />Safari 3+</li>
-<li><img src="images/Chrome.png" alt="Safari" />Chrome 1+</li>
-<li><img src="images/Opera.png" alt="Safari" />Opera 9+</li>
+<li><a href='bbs/0an'><img src='images/announce.gif' alt='icon'/>本站精华区</a></li>
+<li><a href='telnet://bbs.fudan.edu.cn'><img src='images/telnet.gif' alt='icon'/>Telnet进站</a></li>
+<li><a href='software/xuanchuance.pdf'><img src='images/xcc.gif' alt='icon'/>日月光华宣传册</a></li>
+<li id='sw'>
+<a href='#'><img src='images/software.gif' alt='icon'/>常用软件</a>
+<div id='software' class='box'>
+<ul>
+<li><a href='/software/FTerm2.5.0.154.exe'>FTerm 2.5.0.154 (4,187KB)</a></li>
+<li><a href='/software/CTerm3.24.rar'>Cterm 3.24 (2,574KB)</a></li>
+<li><a href='/software/netterm32428.exe'>NetTerm 4.28 (929KB)</a></li>
+<li><a href='/software/Cterm2000.exe'>CTerm 2000 (498KB)</a></li>
+<li><a href='/software/STerm2.549.rar'>S-Term 2.549 (2,300KB)</a></li>
+<li><a href='/software/qterm-0.4.0pre1.tar.gz'>Qterm 0.4pre1 (1,053KB)</a></li>
+<li><a href='/software/Ansieditor2.03e.exe'>AnsiEditor (330KB)</a></li>
+<li><a href='/software/Bmp2Ascii.exe'>Bmp2Ascii (536KB)</a></li>
+</ul>
+</div>
+</li>
+<li><a href='banner.htm'><img src='images/web.gif' alt='icon'/>WEB进站展示</a></li>
+</ul>
+</div>
+<div id='loginbox' class='box'>
+<form method='post' action='bbs/login'>
+<ul>
+<li><img src='images/user.gif' alt='id'/><input id='id' type='text' name='id' class='txt'/></li>
+<li><img src='images/password.gif' alt='password'/><input type='password' name='pw' class='txt'/></li>
+<li><input id='login' type='submit' value='登录'/><input id='guest' type='button' value='游客'/></li>
+</ul>
+</form>
+<form method='get' action='reg.htm'><input id='reg' type='submit' value='注册'/></form>
+</div>
+<div id='links' class='box'>
+<ul>
+<li><a href='/m/'>手机登录（测试）</a></li>
+<li><a href='/q/'>附属站复旦泉</a></li>
+<li><a href='/qm/'>复旦泉手机登录</a></li>
 </ul>
 </div>
 </div>
-<div id="main">
-<p><strong>日月光华站 版权所有 &copy;1996-2010 </strong><a href="http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407">沪ICP备042465</a></p>
+<div id='main'>
+<p><strong>日月光华站 版权所有 &copy;1996-2010 </strong><a href='http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407'>沪ICP备042465</a></p>
 </div>
 </div>
-<script type="text/javascript">document.getElementById('id').focus();</script>
 </body>
 </html>
