@@ -11,8 +11,8 @@ ul {
 	padding: 0;
 }
 ul li {
-    padding: 5px 0;
-    margin-right: 10px;
+	padding: 5px 0;
+	margin-right: 10px;
 }
 #container {
 	position: relative;
@@ -25,17 +25,17 @@ ul li {
 	width: 175px;
 }
 #left div {
-    margin: auto 5px 4px 0px;
+	margin: auto 5px 4px 0px;
 }
 #left a {
-    color: #ffffff;
-    font-size: 14px;
-    text-decoration: none;
-    display: block;
-    height: 24px;
+	color: #ffffff;
+	font-size: 14px;
+	text-decoration: none;
+	display: block;
+	height: 24px;
 }
 #left a:hover {
-    background-color: #ff7f7f;
+	background-color: #ff7f7f;
 }
 
 .box {
@@ -44,8 +44,8 @@ ul li {
 	border-radius: 8px 8px 8px 8px;
 }
 #menu {
-    height: 170px;
-    padding: 10px 10px 10px 12px;
+	height: 170px;
+	padding: 10px 10px 10px 12px;
 }
 #loginbox {
 	height: 145px;
@@ -60,16 +60,16 @@ ul li {
 }
 
 #software {
-    display: none;
-    position: absolute;
-    top: 68px;
-    left: 125px;
-    border: #f5e4ea solid 1px;
+	display: none;
+	position: absolute;
+	top: 68px;
+	left: 125px;
+	border: #f5e4ea solid 1px;
 	font-weight: normal;
 }
 #software li {
-    padding: 5px;
-    margin: 0;
+	padding: 5px;
+	margin: 0;
 }
 
 form {
@@ -83,26 +83,26 @@ input {
 	font-size: 14px;
 }
 input.txt {
-    background: #edecec;
-    width: 118px;
-    height: 24px;
-    border: none;
+	background: #edecec;
+	width: 118px;
+	height: 24px;
+	border: none;
 }
 #login { width: 90px; margin-right: 5px; }
 #guest { width: 50px; }
 #reg { width: 145px; }
 
 #main {
-    background: url('../images/bbswebpic.jpg') no-repeat;
-    padding-top: 480px;
-    width: 640px;
-    float: left;
-    text-align: center;
-    font-size: 14px;
+	background: url('../images/bbswebpic.jpg') no-repeat;
+	padding-top: 480px;
+	width: 640px;
+	float: left;
+	text-align: center;
+	font-size: 14px;
 }
 #main a {
-    color: #000000;
+	color: #000000;
 }
 #main p {
-    margin: 2px;
+	margin: 2px;
 }
