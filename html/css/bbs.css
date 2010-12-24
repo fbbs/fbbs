@@ -277,3 +277,6 @@ form.jump { display:inline; }
 .st_err { background-color: #ff6666; }
 #status { display: inline; position: fixed; bottom: 16px; left: 10px; width: 100px; text-align: center; -moz-border-radius: 6px; -webkit-border-radius: 6px; }
 #st_link { display: none; }
+
+.column-3 { -moz-column-count: 3; -webkit-column-count: 3; -column-count: 3; }
+li { margin: 0 0 6px 0; }

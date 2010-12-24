@@ -818,13 +818,9 @@ table.post{width:100%}
 		</xsl:when>
 		<xsl:otherwise>
 			<form action='mybrd?type=1' method='post'>
-				<table class='content'>
-					<xsl:for-each select='mbrd'>
-						<xsl:if test='position() mod 3 = 1'><tr>
-							<xsl:apply-templates select='.'/><xsl:apply-templates select='following-sibling::mbrd[1]'/><xsl:apply-templates select='following-sibling::mbrd[2]'/>
-						</tr></xsl:if>
-					</xsl:for-each>
-				</table>
+				<div class='column-3'><ul>
+					<xsl:apply-templates select='mbrd'/>
+				</ul></div>
 				<input type='submit' value='确认预定'/><input type='reset' value='复原'/>
 			</form>
 		</xsl:otherwise>
@@ -833,13 +829,12 @@ table.post{width:100%}
 
 <xsl:template match='mbrd'>
 	<xsl:variable name='check'><xsl:call-template name='is-mybrd'><xsl:with-param name='bid' select='@bid'/></xsl:call-template></xsl:variable>
-	<td class='idesc'>
-		<input type='checkbox'>
-			<xsl:attribute name='name'><xsl:value-of select='@bid'/></xsl:attribute>
+	<li>
+		<input type='checkbox' name='{@bid}'>
 			<xsl:if test='$check = 1'><xsl:attribute name='checked'>checked</xsl:attribute></xsl:if>
 		</input>
-		<a class='idesc'><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid'/></xsl:attribute><xsl:value-of select='@desc'/></a>
-	</td>
+		<a class='idesc' href='doc?bid={@bid}'><xsl:value-of select='@name'/> - <xsl:value-of select='@desc'/></a>
+	</li>
 </xsl:template>
 
 <xsl:template name='is-mybrd'>

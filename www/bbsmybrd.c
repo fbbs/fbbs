@@ -118,7 +118,8 @@ int bbsmybrd_main(void)
 			continue;
 		if (!hasreadperm(&currentuser, b))
 			continue;
-		printf("<mbrd bid='%d' desc='%s' %s/>", i + 1, b->title + 11,
+		printf("<mbrd bid='%d' desc='%s' name='%s' %s/>", i + 1,
+				b->title + 11, b->filename,
 				is_board_dir(b) ? "dir='1'" : "");
 	}
 	print_session();
