@@ -20,7 +20,7 @@
 	<xsl:variable name='user' select='$session/u'/>
 	<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
 	<div id='hd'>
-		<xsl:if test='$user != ""'><a><xsl:attribute name='href'>qry?u=<xsl:value-of select='$user'/></xsl:attribute><xsl:value-of select='$user'/></a> <a id='fave' href='#' onclick='return expandFav();'>收藏▽</a><a href='#' id='favc' onclick='return collapseFav();'>收起△</a>|</xsl:if>
+		<xsl:if test='$user != ""'><a href='qry?u={$user}'><xsl:value-of select='$user'/></a> <a id='fave' href='#' onclick='return expandFav();'>收藏▽</a><a href='#' id='favc' onclick='return collapseFav();'>收起△</a>|</xsl:if>
 		<xsl:if test='$user = ""'><a href='login'>登录</a>|</xsl:if>
 		<a href='sec'>首页</a>|<a href='top10'>十大</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>信件</a>|<a href='logout'>注销</a></xsl:if>
 	</div>
@@ -96,37 +96,36 @@
 
 <xsl:template match='bbssec'>
 	<ul class='sec'><xsl:for-each select='sec'>
-		<li><a><xsl:attribute name='href'>boa?s=<xsl:value-of select='@id'/></xsl:attribute><xsl:value-of select='@id'/>&#160;<xsl:value-of select='@desc'/></a></li>
+		<li><a href='boa?s={@id}'><xsl:value-of select='@id'/>&#160;<xsl:value-of select='@desc'/></a></li>
 	</xsl:for-each></ul>
 </xsl:template>
 
 <xsl:template name='bbsdoc-link'>
 	<xsl:if test='brd/@start > 1'>
 		<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
-		<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$prev'/></xsl:attribute>[前页]</a>
+		<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$prev}'>[前页]</a>
 	</xsl:if>
 	<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
 		<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
-		<a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/>&amp;start=<xsl:value-of select='$next'/></xsl:attribute>[后页]</a>
+		<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'>[后页]</a>
 	</xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsdoc'>
-	<h2><a><xsl:attribute name='href'><xsl:value-of select='brd/@link'/>doc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute><xsl:value-of select='brd/@desc'/>[<xsl:value-of select='brd/@title'/>]</a><xsl:if test='brd/@link = "g"'>[文摘]</xsl:if><xsl:if test='brd/@link = "t"'>[主题]</xsl:if></h2>
+	<h2><a href='{brd/@link}doc?bid={brd/@bid}'><xsl:value-of select='brd/@desc'/>[<xsl:value-of select='brd/@title'/>]</a><xsl:if test='brd/@link = "g"'>[文摘]</xsl:if><xsl:if test='brd/@link = "t"'>[主题]</xsl:if></h2>
 	<div class='nav'>
 		<xsl:choose>
-			<xsl:when test='brd/@link="t"'><a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[传统]</a></xsl:when>
-			<xsl:otherwise><a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[主题]</a></xsl:otherwise>
+			<xsl:when test='brd/@link="t"'><a href='doc?bid={brd/@bid}'>[传统]</a></xsl:when>
+			<xsl:otherwise><a href='tdoc?bid={brd/@bid}'>[主题]</a></xsl:otherwise>
 		</xsl:choose>
-		<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[发文]</a>
+		<a href='pst?bid={brd/@bid}'>[发文]</a>
 		<xsl:call-template name='bbsdoc-link'></xsl:call-template>
-		<a><xsl:attribute name='href'>0an?bid=<xsl:value-of select='brd/@bid'/></xsl:attribute>[精华]</a>
+		<a href='0an?bid={brd/@bid}'>[精华]</a>
 	</div>
 	<ul class='po'>
 		<xsl:for-each select='po'><xsl:sort select='@time' order='descending'/><xsl:if test='not(@sticky)'><li>
 			<xsl:if test='contains(" gmbw", @m)'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if>
-			<p><a>
-				<xsl:attribute name='href'><xsl:value-of select='../brd/@link'/>con?bid=<xsl:value-of select='../brd/@bid'/>&amp;f=<xsl:value-of select='@id'/></xsl:attribute>
+			<p><a href='{../brd/@link}con?bid={../brd/@bid}&amp;f={@id}'>
 				<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
 				<xsl:if test='substring(., 1, 4) = "Re: "'>Re: </xsl:if>
 				<xsl:call-template name='ansi-escape'>
@@ -135,7 +134,8 @@
 					<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
 					<xsl:with-param name='ishl'>0</xsl:with-param>
 				</xsl:call-template>
-			</a></p><p><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span></p>
+			</a></p>
+			<p><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span></p>
 		</li></xsl:if></xsl:for-each>
 	</ul>
 	<div class='nav'>
@@ -148,20 +148,20 @@
 	<div class='pmain'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
 	<div class='plink'>
 		<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
-		<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>[回复]</a></xsl:if>
-		<a><xsl:attribute name='href'>edit?<xsl:value-of select='$param'/></xsl:attribute>[修改]</a>
+		<xsl:if test='@link = "con"'><a href='pst?{$param}'>[回复]</a></xsl:if>
+		<a href='edit?{$param}'>[修改]</a>
 	</div>
 	<div class='nav'>
-		<a><xsl:attribute name='href'>doc?bid=<xsl:value-of select='@bid'/></xsl:attribute>[版面]</a>
+		<a href='doc?bid={@bid}'>[版面]</a>
 		<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
-		<xsl:if test='not(po/@sticky)'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>p</xsl:attribute>[上篇]</a>
-		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>n</xsl:attribute>[下篇]</a>
-		<xsl:if test='po/@reid != f'><a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>b</xsl:attribute>[上楼]</a></xsl:if>
-		<a><xsl:attribute name='href'><xsl:value-of select='$baseurl'/>a</xsl:attribute>[下楼]</a>
-		<xsl:if test='po/@gid'><a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@gid'/></xsl:attribute>[顶楼]</a></xsl:if>
+		<xsl:if test='not(po/@sticky)'><a href='{$baseurl}p'>[上篇]</a>
+		<a href='{$baseurl}n'>[下篇]</a>
+		<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>[上楼]</a></xsl:if>
+		<a href='{$baseurl}a'>[下楼]</a>
+		<xsl:if test='po/@gid'><a href='con?bid={@bid}&amp;f={po/@gid}'>[顶楼]</a></xsl:if>
 		<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
-		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='$gid'/></xsl:attribute>[展开]</a>
-		<a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='@bid'/>&amp;g=<xsl:value-of select='$gid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=n</xsl:attribute>[后展]</a></xsl:if>
+		<a href='tcon?bid={@bid}&amp;f={$gid}'>[展开]</a>
+		<a href='tcon?bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>[后展]</a></xsl:if>
 	</div>
 </div>
 </xsl:template>
@@ -173,14 +173,14 @@
 			<div class='nav'>
 				<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
 				<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>
-				<xsl:if test='count(../po) = ../@page'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$last'/>&amp;a=n</xsl:attribute>[下一页]</a></xsl:if>
-				<xsl:if test='$first != ../@gid'><a><xsl:attribute name='href'>tcon?bid=<xsl:value-of select='../@bid'/>&amp;g=<xsl:value-of select='../@gid'/>&amp;f=<xsl:value-of select='$first'/>&amp;a=p</xsl:attribute>[上一页]</a></xsl:if>
-				<a><xsl:attribute name='href'>pst?bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@fid'/></xsl:attribute>[回复]</a>
-				<a><xsl:attribute name='href'>ccc?bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@fid'/></xsl:attribute>[转载]</a>
-				<a><xsl:attribute name='href'>tdoc?bid=<xsl:value-of select='../@bid'/></xsl:attribute>[版面]</a>
-				<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@fid'/></xsl:attribute>[链接]</a>
-				<a><xsl:attribute name='href'>gdoc?bid=<xsl:value-of select='../@bid'/></xsl:attribute>[文摘]</a>
-				<a><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute>[作者: <xsl:value-of select='@owner'/>]</a>
+				<xsl:if test='count(../po) = ../@page'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$last}&amp;a=n'>[下一页]</a></xsl:if>
+				<xsl:if test='$first != ../@gid'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$first}&amp;a=p'>[上一页]</a></xsl:if>
+				<a href='pst?bid={../@bid}&amp;f={@fid}'>[回复]</a>
+				<a href='ccc?bid={../@bid}&amp;f={@fid}'>[转载]</a>
+				<a href='tdoc?bid={../@bid}'>[版面]</a>
+				<a href='con?bid={../@bid}&amp;f={@fid}'>[链接]</a>
+				<a href='gdoc?bid={../@bid}'>[文摘]</a>
+				<a href='qry?u={@owner}'>[作者: <xsl:value-of select='@owner'/>]</a>
 			</div>
 		</div>
 	</xsl:for-each>
@@ -201,9 +201,8 @@
 
 <xsl:template match='bbspst'>
 	<p>版面：<xsl:value-of select='@brd'/></p>
-	<form id='postform' name='postform' method='post'>
-		<xsl:attribute name='action'>snd?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@f'/>&amp;e=<xsl:value-of select='@edit'/></xsl:attribute>
-		<input type='hidden' id='brd'><xsl:attribute name='value'><xsl:value-of select='@brd'/></xsl:attribute></input>
+	<form id='postform' name='postform' method='post' action='snd?bid={@bid}&amp;f={po/@f}&amp;e={@edit}'>
+		<input type='hidden' id='brd' value='{@brd}'></input>
 		<p>标题：<xsl:choose>
 		<xsl:when test='@edit=0'><input class='binput' type='text' name='title' size='27' maxlength='50'>
 			<xsl:variable name='retitle'>
@@ -261,19 +260,19 @@
 <xsl:template name='show-horo'>
 	<xsl:if test='@horo'>
 		<xsl:variable name='color'><xsl:choose><xsl:when test='@gender = "M"'>a136</xsl:when><xsl:when test='@gender = "F"'>a135</xsl:when><xsl:otherwise>a132</xsl:otherwise></xsl:choose></xsl:variable>
-		<span>【</span><span><xsl:attribute name='class'><xsl:value-of select='$color'/></xsl:attribute><xsl:value-of select='@horo'/></span><span>】</span>
+		<span>【</span><span class='{$color}'><xsl:value-of select='@horo'/></span><span>】</span>
 	</xsl:if>
 </xsl:template>
 
 <xsl:template name='qry-linkbar'>
-	<a><xsl:attribute name='href'>pstmail?recv=<xsl:value-of select='@id'/></xsl:attribute>[发信]</a>
+	<a href='pstmail?recv={@id}'>[发信]</a>
 </xsl:template>
 
 <xsl:template match='bbstop10'>
 	<h2>24小时十大热门话题</h2>
 	<ol class='po'><xsl:for-each select='top'><li>
-		<p><a><xsl:attribute name='href'>tcon?board=<xsl:value-of select='@board'/>&amp;f=<xsl:value-of select='@gid'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
-		<p class='ainfo'><a><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@board'/></xsl:attribute><xsl:value-of select='@board'/>版</a> - <a><xsl:attribute name='href'>qry?u=<xsl:value-of select='@owner'/></xsl:attribute><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>篇</p>
+		<p><a href='tcon?board={@board}&amp;f={@gid}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
+		<p class='ainfo'><a href='{../session/@m}doc?board={@board}'><xsl:value-of select='@board'/>版</a> - <a href='qry?u={@owner}'><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>篇</p>
 	</li></xsl:for-each></ol>
 </xsl:template>
 
@@ -281,8 +280,8 @@
 	<xsl:call-template name='anc-navbar'/>
 	<ol><xsl:for-each select='ent'><li>
 		<p><xsl:choose>
-			<xsl:when test='@t = "d"'>[目录]<a class='ptitle'><xsl:attribute name='href'>0an?path=<xsl:value-of select='../@path'/><xsl:value-of select='@path'/></xsl:attribute><xsl:value-of select='.'/></a></xsl:when>
-			<xsl:when test='@t = "f"'><a class='ptitle'><xsl:attribute name='href'>anc?path=<xsl:value-of select='../@path'/><xsl:value-of select='@path'/></xsl:attribute><xsl:value-of select='.'/></a></xsl:when>
+			<xsl:when test='@t = "d"'>[目录]<a class='ptitle' href='0an?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
+			<xsl:when test='@t = "f"'><a class='ptitle' href='anc?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
 			<xsl:otherwise>[错误]<xsl:value-of select='@t'/></xsl:otherwise>
 		</xsl:choose></p>
 		<p><span class='time'><xsl:if test='@t != "e"'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></xsl:if></span></p>
@@ -299,23 +298,23 @@
 </xsl:template>
 
 <xsl:template name='anc-navbar'>
-	<xsl:if test='@brd'><div class='nav'><a><xsl:attribute name='href'><xsl:value-of select='session/@m'/>doc?board=<xsl:value-of select='@brd'/></xsl:attribute>[版面]</a></div></xsl:if>
+	<xsl:if test='@brd'><div class='nav'><a href='{session/@m}doc?board={@brd}'>[版面]</a></div></xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsmail'>
 	<h2>信件列表</h2>
 	<ol class='po'><xsl:for-each select='mail'><xsl:sort select='@date' order='descending'/><li>
-		<p><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name'/>&amp;n=<xsl:value-of select='../@start + count(../mail) - position()'/></xsl:attribute><xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
-		<p><a class='owner'><xsl:attribute name='href'>qry?u=<xsl:value-of select='@from'/></xsl:attribute><xsl:value-of select='@from'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></span></p>
+		<p><a href='mailcon?f={@name}&amp;n={../@start+count(../mail)-position()}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
+		<p><a class='owner' href='qry?u={@from}'><xsl:value-of select='@from'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></span></p>
 	</li></xsl:for-each></ol>
 	<div class='nav'>
 		<xsl:if test='@start &gt; 1'>
 			<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page'/></xsl:otherwise></xsl:choose></xsl:variable>
-			<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$prev'/></xsl:attribute>[上页]</a>
+			<a href='mail?start={$prev}'>[上页]</a>
 		</xsl:if>
 		<xsl:if test='@total &gt; @start + @page - 1'>
 			<xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
-			<a><xsl:attribute name='href'>mail?start=<xsl:value-of select='$next'/></xsl:attribute>[下页]</a>
+			<a href='mail?start={$next}'>[下页]</a>
 		</xsl:if>
 	</div>
 </xsl:template>
@@ -327,17 +326,17 @@
 </xsl:template>
 
 <xsl:template name='mailcon-navbar'>
-	<a><xsl:attribute name='href'>pstmail?n=<xsl:value-of select='mail/@n'/></xsl:attribute>[回信]</a>
-	<a onclick='return confirm("您真的要删除这封信吗？")'><xsl:attribute name='href'>delmail?f=<xsl:value-of select='mail/@f'/></xsl:attribute>[删除]</a>
-	<xsl:if test='@prev'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@prev'/>&amp;n=<xsl:value-of select='mail/@n - 1'/></xsl:attribute>[上封]</a></xsl:if>
-	<xsl:if test='@next'><a><xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@next'/>&amp;n=<xsl:value-of select='mail/@n+1'/></xsl:attribute>[下封]</a></xsl:if>
+	<a href='pstmail?n={mail/@n}'>[回信]</a>
+	<a onclick='return confirm("您真的要删除这封信吗？")' href='delmail?f={mail/@f}'>[删除]</a>
+	<xsl:if test='@prev'><a href='mailcon?f={@prev}&amp;n={mail/@n-1}'>[上封]</a></xsl:if>
+	<xsl:if test='@next'><a href='mailcon?f={@next}&amp;n={mail/@n+1}'>[下封]</a></xsl:if>
 	<a href='mail'>[列表]</a>
 </xsl:template>
 
 <xsl:template match='bbspstmail'>
 	<form id='postform' name='postform' method='post' action='sndmail'>
-		<input type='hidden' name='ref'><xsl:attribute name='value'><xsl:value-of select='@ref'/></xsl:attribute></input>
-		<p><label for='recv'>收信人: </label><input class='binput' type='text' name='recv' size='15' maxlength='15'><xsl:attribute name='value'><xsl:value-of select='@recv'/></xsl:attribute></input></p>
+		<input type='hidden' name='ref' value='{@ref}'></input>
+		<p><label for='recv'>收信人: </label><input class='binput' type='text' name='recv' size='15' maxlength='15' value='{@recv}'></input></p>
 		<p><label for='title'>标题: </label>
 		<input class='binput' type='text' name='title' size='25' maxlength='40'>
 			<xsl:variable name='retitle'>
