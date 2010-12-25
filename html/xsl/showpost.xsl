@@ -134,16 +134,10 @@
 		<xsl:variable name='lurl' select='translate($url, "JPEGNIF", "jpegnif")'/>
 		<xsl:choose>
 			<xsl:when test='boolean($show-image) and ((substring($lurl, $length - 4) = ".jpeg") or (substring($lurl, $length - 3) = ".jpg") or (substring($lurl, $length - 3) = ".png") or (substring($lurl, $length - 3) = ".gif"))'>
-				<img>
-					<xsl:attribute name='src'><xsl:value-of select='$url'/></xsl:attribute>
-					<xsl:attribute name='alt'><xsl:value-of select='$url'/></xsl:attribute>
-				</img>
+				<img src='{$url}' alt='{$url}'/>
 			</xsl:when>
 			<xsl:otherwise>
-				<a>
-					<xsl:attribute name='href'><xsl:value-of select='$url'/></xsl:attribute>
-					<xsl:value-of select='$url'/>
-				</a>
+				<a href='{$url}'><xsl:value-of select='$url'/></a>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
@@ -160,8 +154,7 @@
 						<xsl:value-of select='substring-before($content, ">1b")'/>
 					</xsl:when>
 					<xsl:otherwise>
-						<span>
-							<xsl:attribute name='class'>a0<xsl:value-of select='$fgcolor'/></xsl:attribute>
+						<span class='a0{$fgcolor}'>
 							<xsl:value-of select='substring-before($content, ">1b")'/>
 						</span>
 					</xsl:otherwise>
@@ -241,8 +234,7 @@
 						<xsl:value-of select='$content'/>
 					</xsl:when>
 					<xsl:otherwise>
-						<span>
-							<xsl:attribute name='class'>a0<xsl:value-of select='$fgcolor'/></xsl:attribute>
+						<span class='a0{$fgcolor}'>
 							<xsl:value-of select='$content'/>
 						</span>
 					</xsl:otherwise>
