@@ -2113,6 +2113,7 @@ int post_article(char *postboard, char *mailid) {
 		clear();
 		return FULLUPDATE;
 	}
+	valid_gbk_file(filepath, '?');
 
 	strlcpy(postfile.title, save_title, sizeof(postfile.title));
 	valid_title(postfile.title);
@@ -2270,9 +2271,13 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 		return DONOTHING;
 	}
 	//added end
-	sprintf(genbuf, "%s/%s", buf, fileinfo->filename);
-	if (vedit(genbuf, NA, NA) == -1)
+
+	char file[HOMELEN];
+	sprintf(file, "%s/%s", buf, fileinfo->filename);
+	if (vedit(file, NA, NA) == -1)
 		return FULLUPDATE;
+	valid_gbk_file(file, '?');
+
 	if (!in_mail) {
 		sprintf(genbuf, "edited post '%s' on %s", fileinfo->title,
 				currboard);

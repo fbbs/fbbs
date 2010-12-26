@@ -93,6 +93,7 @@ int do_post_article(const post_request_t *pr)
 	}
 
 	fclose(fptr);
+	valid_gbk_file(fname, '?');
 
 	struct fileheader fh;
 	memset(&fh, 0, sizeof(fh));	
