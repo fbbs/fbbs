@@ -565,7 +565,7 @@ table.post{width:100%}
 				<td class='chkbox'><input type='checkbox' name='box{@name}'></input></td>
 				<td class='owner'><a class='owner' href='qry?u={@from}'><xsl:value-of select='@from'/></a></td>
 				<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></td>
-				<td class='ptitle'><a class='ptitle' href='mailcom?f={@name}&amp;n={@n}'>
+				<td class='ptitle'><a class='ptitle' href='mailcon?f={@name}&amp;n={@n}'>
 					<xsl:call-template name='ansi-escape'>
 						<xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param>
 						<xsl:with-param name='fgcolor'>37</xsl:with-param>
