@@ -891,6 +891,13 @@ int msg_more(void)
 		clear();
 		ch = more_main(more, false, 0, 0, false, more_prompt_msg,
 				more_handle_msg);
+		if (!ch) {
+			move(t_lines - 1, 0);
+			clrtoeol();
+			prints("\033[0;1;44;31m[讯息浏览器]  \033[33mc 清除 | "
+					"m 寄回信箱\033[K\033[m");
+			ch = igetkey();
+		}
 		switch (ch) {
 			case 'C':
 				unlink(file);
