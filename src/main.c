@@ -343,6 +343,7 @@ static int check_duplicate_login(const struct userec *user, int *max)
 		*max = MAXGUEST;
 		if (logins >= *max)
 			return BBS_E2MANY;
+		return 0;
 	}
 	
 	if (!HAS_PERM2(PERM_SPECIAL0, user)) {
