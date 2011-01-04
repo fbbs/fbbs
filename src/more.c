@@ -896,7 +896,7 @@ int msg_more(void)
 			clrtoeol();
 			prints("\033[0;1;44;31m[讯息浏览器]  \033[33mc 清除 | "
 					"m 寄回信箱\033[K\033[m");
-			ch = igetkey();
+			ch = toupper(igetkey());
 		}
 		switch (ch) {
 			case 'C':
