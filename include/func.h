@@ -32,6 +32,8 @@ int cmpuids(const void *uid, const void *up);
 int dosearchuser(const char *userid, struct userec *user, int *unum);
 int uhashkey(const char *userid, int *a1, int *a2);
 int del_uidshm(int num, char *userid);
+int ucache_lock();
+void ucache_unlock(int fd);
 int load_ucache(void);
 int substitut_record(char *filename, const void *rptr, size_t size, int id);
 int flush_ucache(void);

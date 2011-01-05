@@ -165,10 +165,18 @@ static void shm_unlock(int fd)
 	close(fd);
 }
 
-#define ucache_unlock(fd) shm_unlock(fd)
 #define utmp_unlock(fd) shm_unlock(fd)
-#define ucache_lock() shm_lock("tmp/.UCACHE.lock")
 #define utmp_lock() shm_lock("tmp/.UTMP.lock")
+
+int ucache_lock(void)
+{
+	return shm_lock("tmp/.UCACHE.lock");
+}
+
+void ucache_unlock(int fd)
+{
+	shm_unlock(fd);
+}
 
 // Loads PASSFILE into cache for all users.
 // Returns 0 on success, -1 on error.
