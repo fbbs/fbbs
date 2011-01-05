@@ -90,6 +90,13 @@ int main(int argc, char **argv)
 	memset(&zero, 0, sizeof(zero));
 	char file[HOMELEN], buf[HOMELEN];
 
+	int lock;
+	if (!pretend) {
+		lock = ucache_lock();
+		if (lock < 0)
+			return EXIT_FAILURE;
+	}
+
 	for (int i = 0; i < MAXUSERS; ++i) {
 		getuserbyuid(&user, i + 1);
 
@@ -123,6 +130,7 @@ int main(int argc, char **argv)
 	}
 
 	if (!pretend) {
+		ucache_unlock(lock);
 		fclose(post);
 		fclose(data);
 		fclose(log);
