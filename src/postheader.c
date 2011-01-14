@@ -13,13 +13,15 @@ extern struct boardheader *getbcache();
 char prefixbuf[MAX_PREFIX][6];
 int numofprefix;
 #endif
-void check_title(char *title) {
-	char tempfilename[50];
+void check_title(char *title)
+{
+	char temp[50];
 	trim(title);
 	if (!strncasecmp(title, "Re:", 3) && !HAS_PERM(PERM_SYSOPS)) {
-		sprintf(tempfilename, "Re£º%s", &title[3]);
-		strcpy(title, tempfilename);
+		snprintf(temp, sizeof(temp), "Re£º%s", &title[3]);
+		strlcpy(title, temp, sizeof(temp));
 	}
+	valid_title(title);
 }
 #ifdef ENABLE_PREFIX
 void set_prefix() {
