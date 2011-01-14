@@ -30,7 +30,7 @@
 </xsl:template>
 
 <xsl:template name='foot'>
-	<div id='ft'><xsl:call-template name='bbsname'/> &#169;1996-2010</div>
+	<div id='ft'><xsl:call-template name='bbsname'/> &#169;1996-2011</div>
 </xsl:template>
 
 <xsl:template name='include-css'>
