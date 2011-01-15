@@ -805,9 +805,9 @@ static int denylist_add(const char *line)
 		reason_copy(line + IDLEN + 1);
 		prints("修改[%s]的封禁时间\n", user);
 	} else {
+		usercomplete("封禁使用者: ", user);
 		if (*user == '\0')
 			return 0;
-		usercomplete("封禁使用者: ", user);
 		reason_copy(DEFAULT_REASON);
 		reason_select(DENY_LEVEL_FILE);
 		clear();
