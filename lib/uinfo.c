@@ -403,3 +403,19 @@ bool is_hide_ip(const struct user_info *u)
 {
 	return !((uidshm->passwd + u->uid - 1)->userdefine & DEF_NOTHIDEIP);
 }
+
+int update_user_stay(struct userec *u, bool is_login, bool is_dup)
+{
+	time_t now = time(NULL);
+	time_t last = u->lastlogout > u->lastlogin ? u->lastlogout : u->lastlogin;
+	int stay = now - last;
+	if (stay < 0)
+		stay = 0;
+	if (!is_login || is_dup)
+		u->stay += stay;
+	if (is_login)
+		u->lastlogin = now;
+	else
+		u->lastlogout = now;
+	return stay;
+}

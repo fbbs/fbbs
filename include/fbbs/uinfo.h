@@ -24,5 +24,6 @@ extern int compute_user_value(const struct userec *urec);
 extern void show_position(const struct userec *user, char *buf, size_t size);
 extern int check_user_profile(const struct userec *u);
 extern bool is_hide_ip(const struct user_info *u);
+extern int update_user_stay(struct userec *u, bool is_login, bool is_dup);
 
 #endif // FB_UINFO_H

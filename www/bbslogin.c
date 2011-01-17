@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
+#include "fbbs/uinfo.h"
 
 static int check_multi(const struct userec *user)
 {
@@ -49,14 +50,7 @@ static int wwwlogin(struct userec *user, const char *ref)
 		info.pager |= FRIENDMSG_PAGER;
 	}
 
-// TODO:...
-	strlcpy(info.from, fromhost, 24);
-// login start..
-#ifdef SPARC 
-	*(int*)(info.from + 30) = time(NULL);
-#else
-	*(int*)(info.from + 32) = time(NULL);
-#endif
+	strlcpy(info.from, fromhost, sizeof(info.from));
 
 	info.idle_time = time(NULL);
 	strlcpy(info.username, user->username, sizeof(info.username));
@@ -152,10 +146,10 @@ int bbslogin_main(void)
 	user.numlogins++;
 	if (strcasecmp(id, "guest")) {
 		int total;
-		time_t stay, recent, now, t;
+		time_t now = time(NULL);
 		if (!checkpasswd(user.passwd, pw)) {
 			sprintf(buf, "%-12.12s %s @%s\n", user.userid,
-					getdatestring(time(NULL), DATE_ZH), fromhost);
+					getdatestring(now, DATE_ZH), fromhost);
 			sethomefile(fname, user.userid, "logins.bad"); 
 			file_append(fname, buf);
 			file_append("logins.bad", buf);
@@ -169,31 +163,22 @@ int bbslogin_main(void)
 		if (!HAS_PERM2(PERM_LOGIN, &user))
 			return BBS_EACCES;
 
-		now = time(NULL);
 		// Do not count frequent logins.
 		if (now - user.lastlogin < 20 * 60
 				&& user.numlogins >= 100)
 			user.numlogins--;
-		if (total > 1) {
-			recent = user.lastlogout;
-			if (user.lastlogin > recent)
-				recent = user.lastlogin;
-			stay = now - recent;
-			if (stay < 0)
-				stay = 0;
-		} else {
-			stay = 0;
-		}
-		t = user.lastlogin;
-		user.lastlogin = now;
-		user.stay += stay;
+
 #ifdef CHECK_FREQUENTLOGIN
+		time_t last = user.lastlogin;
 		if (!HAS_PERM(PERM_SYSOPS)
-				&& abs(t - time(NULL)) < 10) {
+				&& abs(last - now) < 10) {
 			report("Too Frequent", user.userid);
 			return BBS_ELFREQ;
 		}
 #endif
+
+		update_user_stay(&user, true, total >= 1);
+
 		strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
 		save_user_data(&user);
 		currentuser = user;

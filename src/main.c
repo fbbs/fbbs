@@ -210,10 +210,6 @@ static void setflags(int mask, int value)
 // Save user info on exit.
 void u_exit(void)
 {
-	time_t recent;
-	time_t stay = 0;
-	time_t now;
-
 	// 这些信号的处理要关掉, 否则在离线时等候回车时出现
 	// 信号会导致重写名单, 这个导致的名单混乱比kick user更多  (ylsdd)
 	signal(SIGHUP, SIG_DFL);
@@ -228,18 +224,7 @@ void u_exit(void)
 		setflags(CLOAK_FLAG, uinfo.invisible);
 
 	set_safe_record();
-	now = time(NULL);
-	recent = login_start_time;
-	if (currentuser.lastlogout > recent)
-		recent = currentuser.lastlogout;
-	if (currentuser.lastlogin > recent)
-		recent = currentuser.lastlogin;
-	stay = now - recent;
-	if (stay < 0)
-		stay = 0;
-	
-	currentuser.lastlogout = now;
-	currentuser.stay += stay;
+	update_user_stay(&currentuser, false, false);
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	uidshm->status[usernum - 1]--;
 
@@ -872,26 +857,11 @@ static void user_login(void)
 	set_safe_record();
 	tui_check_uinfo(&currentuser);
 	strlcpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
-	{
-		time_t stay, recent;
-
-		if (count_user(usernum) > 1) {
-			recent = currentuser.lastlogout;
-			if (currentuser.lastlogin > recent)
-				recent = currentuser.lastlogin;
-			stay = login_start_time - recent;
-			if (stay < 0)
-				stay = 0;
-		} else
-			stay = 0;
-
-		if (login_start_time - currentuser.lastlogin >= 20 * 60
-				|| !strcmp(currentuser.userid, "guest")
-				|| currentuser.numlogins < 100){
-			currentuser.numlogins++;
-		}
-		currentuser.lastlogin = login_start_time;
-		currentuser.stay += stay;
+	update_user_stay(&currentuser, true, count_user(usernum) > 1);
+	if (login_start_time - currentuser.lastlogin >= 20 * 60
+			|| !strcmp(currentuser.userid, "guest")
+			|| currentuser.numlogins < 100) {
+		currentuser.numlogins++;
 	}
 
 #ifdef ALLOWGAME

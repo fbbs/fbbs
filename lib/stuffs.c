@@ -2,6 +2,7 @@
 #include "mmap.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
+#include "fbbs/uinfo.h"
 
 // Returns the path of 'filename' under the home directory of 'userid'.
 char *sethomefile(char *buf, const char *userid, const char *filename)
@@ -54,35 +55,17 @@ void sigbus(int signo)
 
 static int kick_web_user(struct user_info *user)
 {
-	int stay = 0;
-	int start;
 	int uid = user->uid;
 	if (uid < 1 || uid > MAXUSERS)
 		return -1;
-#ifdef SPARC
-	start = *(int*)(user->from + 30);
-#else
-	start = *(int*)(user->from + 32);
-#endif
 	uidshm->status[uid - 1]--;
 
 	struct userec *up = uidshm->passwd + uid - 1;
-	time_t now = time(NULL);
-	stay = now - start;
+	int stay = update_user_stay(up, false, false);
 	char buf[STRLEN];
 	snprintf(buf, sizeof(buf), "Stay: %3d", stay / 60);
 	log_usies("AXXED", buf, up);
 
-	time_t recent = start;
-	if (up->lastlogout > recent)
-		recent = up->lastlogout;
-	if (up->lastlogin > recent)
-		recent = up->lastlogin;
-	stay = now - recent;
-	if (stay < 0)
-		stay = 0;
-	up->lastlogout = now;
-	up->stay += stay;
 	memset(user, 0, sizeof(*user));
 	return 0;
 }

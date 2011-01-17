@@ -1,35 +1,18 @@
 #include "libweb.h"
+#include "fbbs/uinfo.h"
 
 static void abort_program(void)
 {
-	int stay = 0;
 	struct userec *x = NULL;
-	int loginstart = 0;
 
 	if(!strcmp(u_info->userid, currentuser.userid)) {
-#ifdef SPARC
-		loginstart = *(int*)(u_info->from + 30);
-#else
-		loginstart = *(int*)(u_info->from + 32);
-#endif
 		uidshm->status[u_info->uid - 1]--;
 		bzero(u_info, sizeof(struct user_info));
 	} 
 
 	if (getuser(currentuser.userid)) {
 		x = &lookupuser;
-		time_t now = time(NULL);
-		time_t recent;
-		recent = loginstart;
-		if (x->lastlogout > recent)
-			recent = x->lastlogout;
-		if (x->lastlogin > recent)
-			recent = x->lastlogin;
-		stay = now - recent;
-		if (stay < 0)
-			stay = 0;
-		x->stay += stay;
-		x->lastlogout = now;
+		update_user_stay(x, false, false);
 		save_user_data(x);
 	}
 }
