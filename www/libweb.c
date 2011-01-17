@@ -394,8 +394,7 @@ static int user_init(struct userec *x, struct user_info **y, int mode)
 	(*y) = &(utmpshm->uinfo[i - 1]);
 
 	// Verify cookie and user status.
-	// TODO: magic number here. Lack IPv6 support.
-	if (strncmp((*y)->from, fromhost, 16)
+	if (strcmp((*y)->from, fromhost)
 			|| (*y)->utmpkey != key
 			|| (*y)->active == 0
 			|| (*y)->userid[0] == '\0'
