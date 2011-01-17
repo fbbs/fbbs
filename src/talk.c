@@ -117,7 +117,7 @@ const char *idle_str(struct user_info *uent)
 {
 	static char hh_mm_ss[32];
 	time_t now, diff;
-	int limit, hh, mm;
+	int hh, mm;
 	if (uent == NULL) {
 		strcpy(hh_mm_ss, "²»Ïê");
 		return hh_mm_ss;
@@ -137,13 +137,7 @@ const char *idle_str(struct user_info *uent)
 	 * the 60 * 60 * 24 * 5 is to prevent fault /dev mount from kicking
 	 * out all users
 	 */
-
-	if (uent->ext_idle)
-	limit = IDLE_TIMEOUT * 3;
-	else
-	limit = IDLE_TIMEOUT;
-
-	if ((diff> limit) && (diff < 86400 * 5)&&uent->pid)
+	if (diff > IDLE_TIMEOUT && diff < 86400 * 5 && uent->pid)
 		bbskill(uent, SIGHUP);
 #endif
 

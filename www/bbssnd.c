@@ -109,20 +109,11 @@ int bbssnd_main(void)
 			return BBS_EINVAL;
 	}
 
-// TODO: ...
-#ifdef SPARC
-		if(abs(time(0) - *(int*)(u_info->from+34))<6) { //modified from 36 to 34 for sparc solaris by roly 02.02.28
-			*(int*)(u_info->from+34)=time(0); //modified from 36 to 34 for sparc solaris by roly 02.02.28
-			return BBS_EPFREQ;
-		}
-		*(int*)(u_info->from+34)=time(0);//modified from 36 to 34 for sparc solaris by roly 02.02.28
-#else
-		if(abs(time(0) - *(int*)(u_info->from+36))<6) { //modified from 36 to 34 for sparc solaris by roly 02.02.28
-			*(int*)(u_info->from+36)=time(0); //modified from 36 to 34 for sparc solaris by roly 02.02.28
-			return BBS_EPFREQ;
-		}
-		*(int*)(u_info->from+36)=time(0);//modified from 36 to 34 for sparc solaris by roly 02.02.28
-#endif
+	time_t now = time(NULL);
+	int diff = now - u_info->last_post_time;
+	u_info->last_post_time = now;
+	if (diff < 6)
+		return BBS_EPFREQ;
 
 	if (isedit) {
 		char file[HOMELEN];

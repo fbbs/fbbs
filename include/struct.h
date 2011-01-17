@@ -54,7 +54,7 @@ struct user_info { /* Structure used in UTMP file */
 	int pager; /* pager toggle, YEA, or NA */
 	int in_chat; /* for in_chat commands   */
 	int fnum; /* number of friends */
-	int ext_idle; /* has extended idle time, YEA or NA */
+	int last_post_time;
 	char chatid[ 10 ]; /* chat id, if in chat mode */
 	char from[60];
 	int currbrdnum;
