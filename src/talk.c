@@ -289,7 +289,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 			if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
 				host = uentp->from;
 			} else {
-				if (uentp->from[22] == 'H')
+				if (is_hide_ip(uentp))
 					host = "......";
 				else
 					host = mask_host(uentp->from);

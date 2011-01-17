@@ -141,7 +141,6 @@ int x_userdefine() {
 			enabledbchar = 1;
 		else
 			enabledbchar = 0;
-		uinfo.from[22] = DEFINE(DEF_NOTHIDEIP) ? 'S' : 'H';
 		if (DEFINE(DEF_FRIENDMSG)) {
 			uinfo.pager |= FRIENDMSG_PAGER;
 		}

@@ -57,7 +57,6 @@ static int wwwlogin(struct userec *user, const char *ref)
 #else
 	*(int*)(info.from + 32) = time(NULL);
 #endif
-	info.from[22] = DEFINE(DEF_NOTHIDEIP) ? 'S' : 'H';
 
 	info.idle_time = time(NULL);
 	strlcpy(info.username, user->username, sizeof(info.username));

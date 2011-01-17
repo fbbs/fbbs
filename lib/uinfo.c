@@ -398,3 +398,8 @@ int check_user_profile(const struct userec *u)
 
 	return 0;
 }
+
+bool is_hide_ip(const struct user_info *u)
+{
+	return !((uidshm->passwd + u->uid - 1)->userdefine & DEF_NOTHIDEIP);
+}

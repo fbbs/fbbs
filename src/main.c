@@ -160,10 +160,6 @@ static void u_enter(void)
 	}
 	uinfo.uid = usernum;
 	strlcpy(uinfo.from, fromhost, sizeof(uinfo.from));
-	// Terrible..
-	if (!DEFINE(DEF_NOTHIDEIP)) {
-		uinfo.from[22] = 'H';
-	}
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	strlcpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
 	strlcpy(uinfo.username, currentuser.username, sizeof(uinfo.username));

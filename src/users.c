@@ -45,8 +45,7 @@ static int online_users_sort_from(const void *usr1, const void *usr2)
 {
 	struct user_info * const *u1 = usr1;
 	struct user_info * const *u2 = usr2;
-	// TODO: from[22] is used..
-	return strncmp((*u1)->from, (*u2)->from, 20);
+	return strcmp((*u1)->from, (*u2)->from);
 }
 
 static int online_users_sort_status(const void *usr1, const void *usr2)
@@ -210,7 +209,7 @@ static choose_display_t online_users_display(choose_t *cp)
 		if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
 			host = uin->from;
 		} else {
-			if (uin->from[22] == 'H')
+			if (is_hide_ip(uin))
 				host = "......";
 			else
 				host = mask_host(uin->from);
