@@ -857,12 +857,12 @@ static void user_login(void)
 	set_safe_record();
 	tui_check_uinfo(&currentuser);
 	strlcpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
-	update_user_stay(&currentuser, true, count_user(usernum) > 1);
 	if (login_start_time - currentuser.lastlogin >= 20 * 60
 			|| !strcmp(currentuser.userid, "guest")
 			|| currentuser.numlogins < 100) {
 		currentuser.numlogins++;
 	}
+	update_user_stay(&currentuser, true, count_user(usernum) > 1);
 
 #ifdef ALLOWGAME
 	if (currentuser.money> 1000000) {
