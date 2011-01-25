@@ -13,6 +13,7 @@
 #ifdef LINUX
 #include <sys/ioctl.h>
 #endif
+#include <poll.h>
 #ifdef SSHBBS
 #include "libssh/libssh.h"
 #include "libssh/server.h"
@@ -81,9 +82,13 @@ static sighandler_t fb_signal(int signum, sighandler_t handler)
  * @param from socket struct
  * @note the result is stored in the global variable 'fromhost'.
  */
-static void get_ip_addr(struct sockaddr_in *from)
+static void get_ip_addr(const struct sockaddr_storage *sa)
 {
-	strlcpy(fromhost, inet_ntoa(from->sin_addr), IP_LEN);
+	char host[IP_LEN];
+	getnameinfo((struct sockaddr *)sa, sizeof(*sa), host, sizeof(host),
+			NULL, 0, NI_NUMERICHOST);
+
+	strlcpy(fromhost, host, IP_LEN);
 #ifdef IP_2_NAME
 	FILE *fp = fopen(BBSHOME"/etc/hosts", "r");
 	if (!fp)
@@ -186,34 +191,53 @@ static void telnet_init(void)
 
 /**
  * Port Binding.
- * @param xsin the socket structure
- * @param port port to bind
- * @return socket descriptor
+ * @param port The port number.
+ * @param fds The pollfd array.
+ * @param nfds Number of pollfd elements.
+ * @return Number of binded sockets.
  */
-static int bind_port(struct sockaddr_in *xsin, int port)
+static int bind_port(const char *port, struct pollfd *fds, int nfds)
 {
 	char buf[80];
-	int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	int on = 1;
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *)&on, sizeof(on));
-	xsin->sin_family = AF_INET;
-	xsin->sin_addr.s_addr = INADDR_ANY;
-	xsin->sin_port = htons(port);
 
-	if (bind(sock, (struct sockaddr *)xsin, sizeof(*xsin)) < 0) {
-		sprintf(buf, "bbsd %s can't bind to %d: %d\n", __func__, port, errno);
-		bbsd_log(buf);
-		exit(1);
-	}
-	if (listen(sock, SOCKET_QLEN) < 0) {
-		sprintf(buf, "bbsd %s can't listen to %d\n", __func__, port);
-		bbsd_log(buf);
-		exit(1);
+	struct addrinfo hints, *ai;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
+	hints.ai_socktype = SOCK_STREAM;
+
+	int e = getaddrinfo(NULL, port, &hints, &ai);
+	if (e)
+		return -1;
+	
+	int n = 0;
+	for (struct addrinfo *p = ai; n < nfds && p; p = p->ai_next) {
+		int fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+		if (fd < 0) {
+			freeaddrinfo(ai);
+			return 0;
+		}
+
+		int on = 1;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+		if (p->ai_family == AF_INET6)
+			setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on));
+
+		if (bind(fd, p->ai_addr, p->ai_addrlen) != 0
+				|| listen(fd, SOMAXCONN) != 0) {
+			sprintf(buf, "%s() can't bind/listen to %s errno %d\n",
+					__func__, port, errno);
+			bbsd_log(buf);
+			close(fd);
+		} else {
+			fds[n].fd = fd;
+			fds[n].events = POLLIN;
+			++n;
+			sprintf(buf, "started on port %s\n", port);
+			bbsd_log(buf);
+		}
 	}
 
-	sprintf(buf, "started on port %d\n", port);
-	bbsd_log(buf);
-	return sock;
+	return n;
 }
 
 #ifdef NOLOGIN
@@ -348,15 +372,46 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 }
 #endif // SSHBBS
 
+static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
+#ifdef SSHBBS
+		, ssh_bind sshbind, ssh_session session
+#endif
+)
+{
+	pid_t pid = fork();
+	if (pid < 0)
+		return -1;
+
+	if (pid == 0) {
+		while (--nfds >= 0)
+			close(nfds);
+		dup2(fd, STDIN_FILENO);
+		get_ip_addr(p);
+#ifdef SSHBBS
+		ssh_chan = sshbbs_accept(sshbind, session);
+		if (!ssh_chan)
+			exit(1);
+#else // SSHBBS
+		close(fd);
+		dup2(STDIN_FILENO, STDOUT_FILENO);
+		telnet_init();
+#endif // SSHBBS
+		start_client();
+	} else {
+		close(fd);
+	}
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
-	int msock, csock, nfds, pid;
-	int port = DEFAULT_PORT;
-	struct sockaddr_in xsin;
-	socklen_t value;
-	char buf[STRLEN];
+	if (argc <= 1) {
+		printf("Usage: %s [port]\n", argv[0]);
+		return EXIT_FAILURE;
+	}
 
 	start_daemon();
+
 	fb_signal(SIGCHLD, reapchild);
 	fb_signal(SIGTERM, close_daemon);
 
@@ -371,12 +426,14 @@ int main(int argc, char *argv[])
 			SSH_LOG_NOLOG);
 #endif // SSHBBS
 
-	// Port binding
-	if (argc > 1)
-		port = strtol(argv[1], NULL, 10);
+	char buf[80];
+	int nfds;
+#ifdef SSHBBS
+	// libssh server does not support ipv6 until upcoming version 0.5,
+	// so let's just bind to ipv4 socket.
+	int port = strtol(argv[1], NULL, 10);
 	if (port <= 0)
 		port = DEFAULT_PORT;
-#ifdef SSHBBS
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, &port);
 	ssh_bind_set_blocking(sshbind, 1);
 	if (ssh_bind_listen(sshbind) < 0) {
@@ -384,14 +441,13 @@ int main(int argc, char *argv[])
 		bbsd_log(buf);
 		exit(1);
 	}
-	msock = ssh_bind_get_fd(sshbind);
+	nfds = ssh_bind_get_fd(sshbind) + 1;
 #else // SSHBBS
-	msock = bind_port(&xsin, port);
-	if (msock < 0) {
-		exit(1);
-	}
+	struct pollfd fds[2];
+	nfds = bind_port(argv[1], fds, sizeof(fds) / sizeof(fds[0]));
 #endif // SSHBBS
-	nfds = msock + 1;
+	if (nfds < 0)
+		return EXIT_FAILURE;
 
 	// Give up root privileges.
 	setgid((gid_t)BBSGID);
@@ -406,46 +462,34 @@ int main(int argc, char *argv[])
 
 	// Main loop.
 	while (1) {
+		struct sockaddr_storage sa;
+		socklen_t slen = sizeof(sa);
 #ifdef SSHBBS
 		session = ssh_new();
 		if (ssh_bind_accept(sshbind, session) == SSH_ERROR) {
 			ssh_free(session);
 			continue;
 		}
-		csock = ssh_get_fd(session);
-		getpeername(csock, (struct sockaddr *) &xsin, &value);
+		int fd = ssh_get_fd(session);
+		getpeername(fd, (struct sockaddr *)&sa, &slen);
+		accept_connection(fd, nfds, &sa, sshbind, session);
 #else // SSHBBS
-		value = sizeof(xsin);
-		csock = accept(msock, (struct sockaddr *) &xsin, &value);
-		if (csock < 0)
-			continue;
-		// TODO: nologin
+		int n = poll(fds, nfds, -1);
+		if (n > 0) {
+			for (int i = 0; i < nfds; ++i) {
+				if (fds[i].revents & POLLIN) {
+					int fd = accept(fds[i].fd, (struct sockaddr *)&sa, &slen);
 #ifdef NOLOGIN
-		if (check_nologin(csock) < 0) {
-			close(csock);
-			continue;
-		}
+					if (check_nologin(fd) < 0) {
+						close(fd);
+					}
 #endif // NOLOGIN
-#endif // SSHBBS
-
-		pid = fork();
-		if (pid == 0) {
-			while (--nfds >= 0)
-				close(nfds);
-			dup2(csock, STDIN_FILENO);
-			get_ip_addr(&xsin);
-#ifdef SSHBBS
-			ssh_chan = sshbbs_accept(sshbind, session);
-			if (!ssh_chan)
-				exit(1);
-#else // SSHBBS
-			close(csock);
-			dup2(STDIN_FILENO, STDOUT_FILENO);
-			telnet_init();
-#endif // SSHBBS
-			start_client();
+					accept_connection(fd, nfds, &sa);
+				}
+			}
 		}
-		close(csock);
+
+#endif // SSHBBS
 	}
 	return 0;
 }
