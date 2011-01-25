@@ -15,6 +15,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "fbbs/string.h"
+#include "fbbs/uinfo.h"
 
 #define M_INT 8			/* monitor mode update interval */
 #define P_INT 20		/* interval to check for page req. in
@@ -22,7 +23,6 @@
 extern char BoardName[];
 extern int iscolor;
 extern int numf, friendmode;
-extern char *cexpstr();
 int talkidletime = 0;
 int ulistpage;
 int friendflag = 1;
@@ -308,6 +308,10 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 	return num;
 }
 
+enum {
+	IPADDR_OMIT_THRES = 36,
+};
+
 /**
  *
  */
@@ -346,14 +350,15 @@ int tui_query_result(const char *userid)
 		else 
 			host = mask_host(user.lasthost);
 	}
-	prints("上 次 在:[\033[1;32m%s\033[m] 从 [\033[1;32m%s\033[m] "
-			"到本站一游。\n", getdatestring(user.lastlogin, DATE_ZH), host);
+	prints("进站 [\033[1;32m%s\033[m] %s[\033[1;32m%s\033[m]\n",
+			getdatestring(user.lastlogin, DATE_ZH),
+			strlen(host) > IPADDR_OMIT_THRES ? "" : "来自 ", host);
 
 	struct user_info uin;
 	int num = t_search_ulist(&uin, t_cmpuids, unum, NA, NA);
 	if (num) {
 		search_ulist(&uin, t_cmpuids, unum);
-		prints("目前在线:[\033[1;32m讯息器:(\033[36m%s\033[32m) "
+		prints("在线 [\033[1;32m讯息器:(\033[36m%s\033[32m) "
 				"呼叫器:(\033[36m%s\033[32m)\033[m] ",
 				canmsg(&uin) ? "打开" : "关闭",
 				canpage(hisfriend(&uin), uin.pager) ? "打开" : "关闭");
@@ -361,20 +366,20 @@ int tui_query_result(const char *userid)
 		fb_time_t t = user.lastlogout;
 		if (user.lastlogout < user.lastlogin)
 			t = ((time(NULL) - user.lastlogin) / 120) % 47 + 1 + user.lastlogin;
-		prints("离站时间:[\033[1;32m%s\033[m] ", getdatestring(t, DATE_ZH));
+		prints("离站 [\033[1;32m%s\033[m] ", getdatestring(t, DATE_ZH));
 	}
 
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), "mail/%c/%s/%s",
 			toupper(user.userid[0]), user.userid, DOT_DIR);
 	int perf = countperf(&user);
-	prints("表现值:"
+	prints("表现值 "
 #ifdef SHOW_PERF
 			"%d(\033[1;33m%s\033[m)"
 #else
 			"[\033[1;33m%s\033[m]"
 #endif
-			" 信箱:[\033[1;5;32m%2s\033[m]\n"
+			" 信箱 [\033[1;5;32m%2s\033[m]\n"
 #ifdef SHOW_PERF
 			, perf
 #endif
@@ -382,22 +387,22 @@ int tui_query_result(const char *userid)
 
 	int exp = countexp(&user);
 #ifdef ALLOWGAME
-	prints("银行存款: [\033[1;32m%d元\033[m] 目前贷款: [\033[1;32m%d元\033[m]"
-			"(\033[1;33m%s\033[m) 经验值：[\033[1;32m%d\033[m]"
-			"(\033[1;33m%s\033[m)。\n", user.money, user.bet,
+	prints("存款 [\033[1;32m%d元\033[m] 贷款 [\033[1;32m%d元\033[m]"
+			"(\033[1;33m%s\033[m) 经验值 [\033[1;32m%d\033[m]"
+			"(\033[1;33m%s\033[m)\n", user.money, user.bet,
 			cmoney(user.money - user.bet), exp, cexpstr(exp));
-	prints("文 章 数: [\033[1;32m%d\033[m] 奖章数: [\033[1;32m%d\033[m]"
-			"(\033[1;33m%s\033[m) 生命力：[\033[1;32m%d\033[m]\n",
+	prints("发文 [\033[1;32m%d\033[m] 奖章 [\033[1;32m%d\033[m]"
+			"(\033[1;33m%s\033[m) 生命力 [\033[1;32m%d\033[m]\n",
 			user.numposts, user.nummedals, cnummedals(user.nummedals),
 			compute_user_value(&user));
 #else
-	prints("文 章 数:[\033[1;32m%d\033[m] 经 验 值:"
+	prints("发文 [\033[1;32m%d\033[m] 经验值"
 #ifdef SHOWEXP
 			"%d(\033[1;33m%-10s\033[m)"
 #else
 			"[\033[1;33m%-10s\033[m]"
 #endif
-			" 生命力:[\033[1;32m%d\033[m]\n",
+			" 生命力 [\033[1;32m%d\033[m]\n",
 			user.numposts,
 #ifdef SHOWEXP
 			exp,
@@ -407,7 +412,7 @@ int tui_query_result(const char *userid)
 
 	char buf[160];
 	show_position(&user, buf, sizeof(buf));
-	prints("身份: %s\n", buf);
+	prints("身份 %s\n", buf);
 
 	t_search_ulist(&uin, t_cmpuids, unum, YEA, NA);
 	show_user_plan(userid);
