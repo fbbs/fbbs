@@ -47,11 +47,11 @@ int m_info() {
 	int id;
 
 	if (!(HAS_PERM(PERM_USER)))
-		return;
+		return 0;
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd()) {
-		return;
+		return 0;
 	}
 	clear();
 	stand_title("修改使用者资料");
@@ -78,11 +78,11 @@ int m_ordainBM() {
 	char buf[5][STRLEN];
 
 	if (!(HAS_PERM(PERM_USER)))
-		return;
+		return 0;
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd())
-		return;
+		return 0;
 
 	clear();
 	stand_title("任命版主\n");
@@ -284,11 +284,11 @@ int m_retireBM() {
 	char bname[STRLEN], usernames[BMMAXNUM][STRLEN];
 
 	if (!(HAS_PERM(PERM_USER)))
-		return;
+		return 0;
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd())
-		return;
+		return 0;
 
 	clear();
 	stand_title("版主离职\n");
@@ -487,11 +487,11 @@ int m_newbrd() {
 	int bid, pos;
 
 	if (!(HAS_PERM(PERM_BLEVELS)))
-		return;
+		return 0;
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd()) {
-		return;
+		return 0;
 	}
 	clear();
 	stand_title("开启新讨论区");
@@ -690,12 +690,12 @@ int m_editbrd() {
 
 	//added by roly 02.03.07
 	if (!(HAS_PERM(PERM_BLEVELS)))
-		return;
+		return 0;
 	//add end
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd()) {
-		return;
+		return 0;
 	}
 	clear();
 	stand_title("修改讨论区资讯");
@@ -1233,11 +1233,11 @@ int m_register() {
 	char uident[STRLEN];
 
 	if (!(HAS_PERM(PERM_USER)))
-		return;
+		return 0;
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd()) {
-		return;
+		return 0;
 	}
 	clear();
 
@@ -1328,7 +1328,7 @@ int d_board() {
 	}
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd()) {
-		return;
+		return 0;
 	}
 	clear();
 	stand_title("删除讨论区");
@@ -1417,11 +1417,11 @@ int d_user(char *cid) {
 	char passbuf[PASSLEN];
 
 	if (!(HAS_PERM(PERM_USER)))
-		return;
+		return 0;
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd()) {
-		return;
+		return 0;
 	}
 	clear();
 	stand_title("删除使用者帐号");
@@ -1515,11 +1515,11 @@ int x_level() {
 	unsigned int newlevel;
 
 	if (!HAS_PERM(PERM_SYSOPS))
-		return;
+		return 0;
 
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd()) {
-		return;
+		return 0;
 	}
 	clear();
 	move(0, 0);
@@ -1707,13 +1707,13 @@ int setsystempasswd() {
 	char passbuf[20], prepass[20];
 	modify_user_mode(ADMIN);
 	if (!check_systempasswd())
-		return;
+		return 0;
 	if (strcmp(currentuser.userid, "SYSOP")) {
 		clear();
 		move(10, 20);
 		prints("对不起，系统密码只能由 SYSOP 修改！");
 		pressanykey();
-		return;
+		return 0;
 	}
 	getdata(2, 0, "请输入新的系统密码(直接回车则取消系统密码): ", passbuf, 19, NOECHO, YEA);
 	if (passbuf[0] == '\0') {
@@ -1721,27 +1721,27 @@ int setsystempasswd() {
 			unlink("etc/.syspasswd");
 			securityreport("取消系统密码", 0, 0);
 		}
-		return;
+		return 0;
 	}
 	getdata(3, 0, "确认新的系统密码: ", prepass, 19, NOECHO, YEA);
 	if (strcmp(passbuf, prepass)) {
 		move(4, 0);
 		prints("两次密码不相同, 取消此次设定.");
 		pressanykey();
-		return;
+		return 0;
 	}
 	if ((pass = fopen("etc/.syspasswd", "w")) == NULL) {
 		move(4, 0);
 		prints("系统密码无法设定....");
 		pressanykey();
-		return;
+		return 0;
 	}
 	fprintf(pass, "%s\n", genpasswd(passbuf));
 	fclose(pass);
 	move(4, 0);
 	prints("系统密码设定完成....");
 	pressanykey();
-	return;
+	return 0;
 }
 
 #define DENY_LEVEL_LIST ".DenyLevel"
