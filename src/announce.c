@@ -1395,6 +1395,53 @@ void a_manager(MENU *pm, int ch) {
 		}
 }
 
+void a_file_info(MENU *pm)
+{
+	char fname[1024], weblink[1024], tmp[80], type[10];
+	struct stat st;
+	int i, len;
+
+	/*¾«»ªÇø*/
+
+	sprintf(fname, "%s/%s", pm->path, pm->item[pm->now]->fname);
+	if (dashf(fname) ) {
+		snprintf(weblink, 1024, "http://%s/cgi-bin/bbs/bbsanc?path=%s\n",
+				BBSHOST, fname + 9);
+		strcpy(type, "ÎÄ¼þ");
+	} else if (dashd(fname) ) {
+		snprintf(weblink, 1024, "http://%s/cgi-bin/bbs/bbs0an?path=%s\n",
+				BBSHOST, fname + 9);
+		strcpy(type, "Ä¿Â¼");
+	} else {
+		return;
+	}
+	len = strlen(weblink);
+	stat(fname, &st);
+
+	clear();
+	move(0, 0);
+
+	prints("¾«»ªÇø%sÏêÏ¸ÐÅÏ¢:\n\n", type);
+	prints("Ðò    ºÅ:     µÚ %d Æª\n", pm->now);
+	prints("Àà    ±ð:     %s\n", type);
+	strlcpy(tmp, pm->item[pm->now]->title, 38);
+	tmp[38] = '\0';
+	prints("±ê    Ìâ:     %s\n", tmp);
+	prints("ÐÞ ¸Ä Õß:     %s\n", pm->item[pm->now]->title + 39);
+	prints("µµ    Ãû:     %s\n", pm->item[pm->now]->fname);
+	prints("±à¼­ÈÕÆÚ:     %s\n", getdatestring(st.st_mtime, DATE_ZH));
+	prints("´ó    Ð¡:     %d ×Ö½Ú\n", st.st_size);
+	prints("URL µØÖ·:\n");
+	for (i = 0; i < len; i +=78) {
+		strlcpy(tmp, weblink+i, 78);
+		tmp[78] = '\n';
+		tmp[79] = '\0';
+		outs(tmp);
+	}
+
+	pressanykey();
+}
+
 void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 	MENU me;
 	char fname[PATHLEN], tmp[STRLEN];
@@ -1674,6 +1721,7 @@ int linkto(char *path, char *fname, char *title) {
 		strcpy(pm.mtitle, title);
 	a_additem(&pm, title, fname);
 	a_savenames(&pm);
+	return 0;
 }
 
 int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
@@ -1691,7 +1739,7 @@ int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
 		mkdir("0Announce", 0755);
 		chmod("0Announce", 0755);
 		if ((fn = fopen("0Announce/.Names", "w")) == NULL)
-			return;
+			return -1;
 		fprintf(fn, "#\n");
 		fprintf(fn, "# Title=%s ¾«»ªÇø¹«²¼À¸\n", BoardName);
 		fprintf(fn, "#\n");
@@ -1704,7 +1752,7 @@ int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
 		chmod("0Announce/groups", 0755);
 
 		if ( (fn = fopen("0Announce/groups/.Names", "w")) == NULL)
-			return;
+			return -1;
 		fprintf(fn, "#\n");
 		fprintf(fn, "# Title=ÌÖÂÛÇø¾«»ª\n");
 		fprintf(fn, "#\n");
@@ -1718,7 +1766,7 @@ int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
 		chmod(gpath, 0755);
 		sprintf(buf, "%s/.Names", gpath);
 		if ( (fn = fopen(buf, "w")) == NULL)
-			return;
+			return -1;
 		fprintf(fn, "#\n");
 		fprintf(fn, "# Title=%s\n", gname);
 		fprintf(fn, "#\n");
@@ -1743,7 +1791,7 @@ int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
 	//add by fangu 2003.2.26 ,add log
 	//sprintf(genbuf, "ANN add_grp %s", bpath);
 	//report(genbuf);
-	return 1;
+	return 0;
 
 }
 
@@ -1778,6 +1826,7 @@ int del_grp(char grp[STRLEN], char bname[STRLEN], char title[STRLEN]) {
 	//add by fangu 2003.2.26, add log
 	//sprintf(genbuf, "ANN del_grp %s", bpath);
 	//report(genbuf);
+	return 0;
 }
 
 int edit_grp(char bname[STRLEN], char grp[STRLEN], char title[STRLEN],
@@ -1814,7 +1863,7 @@ int edit_grp(char bname[STRLEN], char grp[STRLEN], char title[STRLEN],
 	a_loadnames(&pm);
 	strlcpy(pm.mtitle, newtitle, STRLEN);
 	a_savenames(&pm);
-
+	return 0;
 }
 
 int AddPCorpus() {
@@ -1900,52 +1949,6 @@ void Announce() {
 	clear();
 }
 
-int a_file_info(MENU *pm) {
-	char fname[1024], weblink[1024], tmp[80], type[10];
-	struct stat st;
-	int i, len;
-
-	/*¾«»ªÇø*/
-
-	sprintf(fname, "%s/%s", pm->path, pm->item[pm->now]->fname);
-	if (dashf(fname) ) {
-		snprintf(weblink, 1024, "http://%s/cgi-bin/bbs/bbsanc?path=%s\n",
-				BBSHOST, fname + 9);
-		strcpy(type, "ÎÄ¼þ");
-	} else if (dashd(fname) ) {
-		snprintf(weblink, 1024, "http://%s/cgi-bin/bbs/bbs0an?path=%s\n",
-				BBSHOST, fname + 9);
-		strcpy(type, "Ä¿Â¼");
-	} else {
-		return;
-	}
-	len = strlen(weblink);
-	stat(fname, &st);
-
-	clear();
-	move(0, 0);
-
-	prints("¾«»ªÇø%sÏêÏ¸ÐÅÏ¢:\n\n", type);
-	prints("Ðò    ºÅ:     µÚ %d Æª\n", pm->now);
-	prints("Àà    ±ð:     %s\n", type);
-	strlcpy(tmp, pm->item[pm->now]->title, 38);
-	tmp[38] = '\0';
-	prints("±ê    Ìâ:     %s\n", tmp);
-	prints("ÐÞ ¸Ä Õß:     %s\n", pm->item[pm->now]->title + 39);
-	prints("µµ    Ãû:     %s\n", pm->item[pm->now]->fname);
-	prints("±à¼­ÈÕÆÚ:     %s\n", getdatestring(st.st_mtime, DATE_ZH));
-	prints("´ó    Ð¡:     %d ×Ö½Ú\n", st.st_size);
-	prints("URL µØÖ·:\n");
-	for (i = 0; i < len; i +=78) {
-		strlcpy(tmp, weblink+i, 78);
-		tmp[78] = '\n';
-		tmp[79] = '\0';
-		outs(tmp);
-	}
-
-	pressanykey();
-}
-
 /* coded by stiger, immigrate to fudan by jacobson 2005.5.21 */
 
 /* Ñ°ÕÒ¶ªÊ§ÌõÄ¿ */
@@ -1982,31 +1985,10 @@ int a_repair(MENU *pm) {
 		//if(a_savenames(pm) != 0)
 		a_savenames(pm);
 		//changed = 0 - changed;
-		return changed;
 	}
+	return changed;
 }
 /* add end */
-
-int seekannpath(char *ann_index, char *buf) {
-	FILE* fp;
-	char index[IDLEN+1];
-	char line[4200];
-	sethomefile(genbuf, currentuser.userid, "annpath");
-	if (!(fp=fopen(genbuf, "r")))
-		return 0;
-	while (fgets(line, 4200, fp)) {
-		strlcpy(index, line, IDLEN);
-		index[IDLEN] = '\0';
-		if (strcasecmp(ann_index, index)==0) {
-			strcpy(buf, line+13);
-			buf[256] = '\0';
-			strtok(buf, " \r\n\t");
-			fclose(fp);
-			return 1;
-		}
-	}
-	fclose(fp);
-}
 
 struct AnnPath {
 	int num;
@@ -2070,7 +2052,7 @@ int change_ann_path(int index, char* title, char *path, int mode) {
 		rtrim(anntitle);
 		getdata(1, 0, "Éè¶¨Ë¿Â·Ãû:", anntitle, STRLEN, DOECHO, NA);
 		if (anntitle[0]=='\0')
-			return;
+			return 0;
 		strlcpy(import_path[index].title, anntitle, STRLEN);
 		if (mode == 0) {
 			strlcpy(import_path[index].path, path, PATHLEN);
@@ -2139,7 +2121,7 @@ int set_ann_path(char *title, char *path, int mode) {
 					sprintf(genbuf, "%4d  %-72.72s", to+1,
 							import_path[to].num == -1 ? "[32m<ÉÐÎ´Éè¶¨>[m"
 									: import_path[to].path);
-				else if (show_mode = 1) {
+				else if (show_mode == 1) {
 					strlcpy(buf, import_path[to].path, PATHLEN);
 					ann_to_title(buf);
 					sprintf(genbuf, "%4d  %-72.72s", to+1,
