@@ -8,6 +8,42 @@ char    cexplain[STRLEN];
 char    lookgrp[30];
 FILE   *cleanlog;
 
+//	ÏµÍ³°²È«¼ÇÂ¼,×Ô¶¯·¢ËÍµ½syssecurity°æ
+//  mode == 0		syssecurity
+//	mode == 1		boardsecurity
+//  mode == 2		bmsecurity
+//  mode == 3		usersecurity
+void securityreport(char *str, int save, int mode)
+{
+	FILE*	se;
+	char    fname[STRLEN];
+	int     savemode;
+	savemode = uinfo.mode;
+	report(str, currentuser.userid);
+	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, uinfo.pid);
+	if ((se = fopen(fname, "w")) != NULL) {
+		fprintf(se, "ÏµÍ³°²È«¼ÇÂ¼\n[1mÔ­Òò£º%s[m\n", str);
+		if (save){
+			fprintf(se, "ÒÔÏÂÊÇ¸öÈË×ÊÁÏ:");
+			getuinfo(se);
+		}
+		fclose(se);
+		if (mode == 0){
+			Postfile(fname, "syssecurity", str, 2);
+		} else if (mode == 1){
+			Postfile(fname, "boardsecurity", str, 2);
+		} else if (mode == 2){
+		    Postfile(fname, "bmsecurity", str, 2);
+		} else if (mode == 3){
+		    Postfile(fname, "usersecurity", str, 2);
+		} else if (mode == 4){
+		    Postfile(fname, "vote", str, 2);
+		}
+		unlink(fname);
+		modify_user_mode(savemode);
+	}
+}
+
 //	ºË¶ÔÏµÍ³ÃÜÂë
 int	check_systempasswd()
 {
@@ -70,42 +106,6 @@ int autoreport(char *title,char *str,int toboard,char *userid,int mode)
         modify_user_mode( savemode );
     }
 	return 0;	//·µ»ØÖµÏÖÎŞÒâÒå
-}
-
-//	ÏµÍ³°²È«¼ÇÂ¼,×Ô¶¯·¢ËÍµ½syssecurity°æ
-//  mode == 0		syssecurity
-//	mode == 1		boardsecurity
-//  mode == 2		bmsecurity
-//  mode == 3		usersecurity
-int	securityreport(char *str, int save, int mode)
-{
-	FILE*	se;
-	char    fname[STRLEN];
-	int     savemode;
-	savemode = uinfo.mode;
-	report(str, currentuser.userid);
-	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, uinfo.pid);
-	if ((se = fopen(fname, "w")) != NULL) {
-		fprintf(se, "ÏµÍ³°²È«¼ÇÂ¼\n[1mÔ­Òò£º%s[m\n", str);
-		if (save){
-			fprintf(se, "ÒÔÏÂÊÇ¸öÈË×ÊÁÏ:");
-			getuinfo(se);
-		}
-		fclose(se);
-		if (mode == 0){
-			Postfile(fname, "syssecurity", str, 2);
-		} else if (mode == 1){
-			Postfile(fname, "boardsecurity", str, 2);
-		} else if (mode == 2){
-		    Postfile(fname, "bmsecurity", str, 2);
-		} else if (mode == 3){
-		    Postfile(fname, "usersecurity", str, 2);
-		} else if (mode == 4){
-		    Postfile(fname, "vote", str, 2);
-		}
-		unlink(fname);
-		modify_user_mode(savemode);
-	}
 }
 
 int

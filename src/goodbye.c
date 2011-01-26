@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/uinfo.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -74,25 +75,38 @@ void showstuff(char *buf) {
 	char buf2[STRLEN], *ptr, *ptr2;
 	time_t now;
 
-	static logout loglst[] = { "userid", currentuser.userid, "username",
-			currentuser.username, "email", currentuser.email,
-			"rgtday", rgtday, "login", numlogins, "post", numposts,
-			"mail", nummails,
-			"lastlogin", lasttime, "lasthost", currentuser.lasthost,
-			"now", thistime, "bbsname", BoardName, "stay", stay,
-			"alltime", alltime,
+	static logout loglst[] = {
+			{ "userid", currentuser.userid },
+			{ "username", currentuser.username },
+			{ "email", currentuser.email },
+			{ "rgtday", rgtday },
+			{ "login", numlogins },
+			{ "post", numposts },
+			{ "mail", nummails },
+			{ "lastlogin", lasttime },
+			{ "lasthost", currentuser.lasthost },
+			{ "now", thistime },
+			{ "bbsname", BoardName },
+			{ "stay", stay },
+			{ "alltime", alltime },
 #ifdef SHOWEXP
-			"exp", exp,
+			{ "exp", exp },
 #endif
 #ifdef ALLOWGAME
-			"money", moneys,
+			{ "money", moneys },
 #endif
-			"cexpstr", ccexp,
+			{ "cexpstr", ccexp },
 #ifdef SHOWPERF
-			"perf", perf,
+			{ "perf", perf },
 #endif
-			"cperf", ccperf, "star", star, "pst", numposts, "log", numlogins,
-			"bbsip", BBSIP, "bbshost", BBSHOST, NULL, NULL };
+			{ "cperf", ccperf },
+			{ "star", star },
+			{ "pst", numposts },
+			{ "log", numlogins },
+			{ "bbsip", BBSIP },
+			{ "bbshost", BBSHOST },
+			{ NULL, NULL }
+	};
 	if (!strchr(buf, '$')) {
 		//if (!limit)
 		prints("%s", buf);
@@ -115,7 +129,7 @@ void showstuff(char *buf) {
 		sprintf(rgtday, "%s", getdatestring(currentuser.firstlogin, DATE_ZH));
 		sprintf(lasttime, "%s", getdatestring(currentuser.lastlogin, DATE_ZH));
 		sprintf(thistime, "%s", getdatestring(now, DATE_ZH));
-		sprintf(stay, "%d", (time(0) - login_start_time) / 60);
+		sprintf(stay, "%ld", (time(0) - login_start_time) / 60);
 		sprintf(numlogins, "%d", currentuser.numlogins);
 		sprintf(numposts, "%d", currentuser.numposts);
 #ifdef ALLOWGAME
@@ -128,7 +142,7 @@ void showstuff(char *buf) {
 	frg = 1;
 	ptr2 = buf;
 	do {
-		if (ptr = strchr(ptr2, '$')) {
+		if ((ptr = strchr(ptr2, '$'))) {
 			matchfrg = 0;
 			*ptr = '\0';
 			prints("%s", ptr2);

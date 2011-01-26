@@ -21,6 +21,21 @@ int     more_size, more_num;
 /*Added by Ashinmarch on 2007.12.01*/
 extern int RMSG;
 
+void empty_movie(int x)
+{
+	sprintf(genbuf, "Empty Movie!!! (error = %d)", x);
+	report(genbuf, currentuser.userid); 
+
+	strcpy(movieshm->data[2], "[K      ** ÉÐÎ´Éè¶¨»î¶¯¿´°å ** ");
+	strcpy(movieshm->data[3], "[K         ÇëÏê¼û°²×°ËµÃ÷Êé Firebird-2000 ");
+	strcpy(movieshm->data[4], "[K         Éè¶¨ notepad °æ"); 
+
+	movieshm->movielines = MAXMOVIE;
+	movieshm->movieitems = 1;
+	movieshm->update = time(0);
+
+}
+
 void ActiveBoard_Init( void )
 {
 	struct fileheader fh;
@@ -96,21 +111,6 @@ void ActiveBoard_Init( void )
 	sprintf(buf, "»î¶¯¿´°å¸üÐÂ, ¹² %d ÐÐ, %d ²¿·Ý.", j, y);
 	report(buf, currentuser.userid); 
 	return ;
-}
-
-int empty_movie(int x)
-{
-	sprintf(genbuf, "Empty Movie!!! (error = %d)", x);
-	report(genbuf, currentuser.userid); 
-
-	strcpy(movieshm->data[2], "[K      ** ÉÐÎ´Éè¶¨»î¶¯¿´°å ** ");
-	strcpy(movieshm->data[3], "[K         ÇëÏê¼û°²×°ËµÃ÷Êé Firebird-2000 ");
-	strcpy(movieshm->data[4], "[K         Éè¶¨ notepad °æ"); 
-
-	movieshm->movielines = MAXMOVIE;
-	movieshm->movieitems = 1;
-	movieshm->update = time(0);
-
 }
 
 void setcalltime( void )

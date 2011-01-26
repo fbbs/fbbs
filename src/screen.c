@@ -200,7 +200,7 @@ void rel_move(int was_col, int was_ln, int new_col, int new_ln) {
 //		有交集时,取合集
 //			但下限以ds为准,上限以de为准				跟直接取ds,de有什么区别?
 ///		对o_standup,o_standdown作用不太清楚
-void standoutput(char * buf, int ds, int de, int sso, int eso) {
+void standoutput(unsigned char *buf, int ds, int de, int sso, int eso) {
 	int st_start, st_end;
 	if (eso <= ds || sso >= de) {
 		output(buf + ds, de - ds);
@@ -710,7 +710,7 @@ void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
 	switch (mode) {
 		case 0:
 		case 2:
-			strlcpy(tmp[mode/2], bp[line].data, LINELEN);
+			strlcpy(tmp[mode/2], (const char *)bp[line].data, LINELEN);
 			tmp[mode/2][bp[line].len]='\0';
 			break;
 		case 1:
@@ -737,7 +737,7 @@ void saveline_buf(int line, int mode)//0:save 1:restore
     
     switch (mode) {
         case 0:
-            strncpy(temp[line], bp[line].data, LINELEN);
+            strncpy(temp[line], (const char *)bp[line].data, LINELEN);
             temp[line][bp[line].len] = '\0';
             break;
         case 1:

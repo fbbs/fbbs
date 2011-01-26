@@ -174,7 +174,7 @@ static void get_override_note(const char *userid, char *buf, size_t size)
 	buf[0] = '\0';
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, "friends");
-	if (search_record(buf, &tmp, sizeof(tmp), cmpfnames, userid))
+	if (search_record(buf, &tmp, sizeof(tmp), cmpfnames, (void *)userid))
 		strlcpy(buf, tmp.exp, size);
 }
 

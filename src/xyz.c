@@ -416,6 +416,7 @@ int ent_winmine() {
 	char buf[80];
 	sprintf(buf, "%s %s", currentuser.userid, currentuser.lasthost);
 	exec_cmd(WINMINE, NA, "so/winmine", buf);
+	return 0;
 }
 
 /**

@@ -14,7 +14,7 @@ extern char someoneID[31];
 //				4时,标题关键字
 int marked_all(int type) {
 	struct fileheader post;
-	register num=0;
+	int num = 0;
 	int fd;
 	char dname[STRLEN], buf[STRLEN];
 	char tempname1[STRLEN], tempname2[STRLEN];

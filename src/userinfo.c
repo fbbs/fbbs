@@ -207,7 +207,6 @@ void uinfo_query(struct userec *u, int real, int unum) {
 	char ans[3], buf[STRLEN], genbuf[128];
 	char src[STRLEN], dst[STRLEN];
 	int i, fail = 0;
-	unsigned char *ptr; //add by money 2003.10.29 for filter '0xff' in nick
 	int r = 0; //add by money 2003.10.14 for test 闰年
 	time_t now;
 	struct tm *tmnow;
@@ -239,8 +238,7 @@ void uinfo_query(struct userec *u, int real, int unum) {
 			if (buf[0]) {
 				strlcpy(newinfo.username, buf, NAMELEN);
 				/* added by money 2003.10.29 for filter 0xff in nick */
-				ptr = newinfo.username;
-				filter_ff(ptr);
+				filter_ff(newinfo.username);
 				/* added end */
 			}
 			sprintf(genbuf, "出生年 [%d]: ", u->birthyear + 1900);

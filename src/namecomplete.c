@@ -390,7 +390,7 @@ int usercomplete(char *prompt, char *data) {
 		clrtoeol();
 	}
 	temp = data;
-	cwlist = u_namearray(cwbuf, &cwnum, "");
+	cwlist = u_namearray((void *)cwbuf, &cwnum, "");
 	getyx(&y, &x);
 	getyx(&origy, &origx);
 	while ((ch = igetkey()) != EOF) {
@@ -485,7 +485,7 @@ int usercomplete(char *prompt, char *data) {
 			temp--;
 			count--;
 			*temp = '\0';
-			cwlist = u_namearray(cwbuf, &cwnum, data);
+			cwlist = u_namearray((void *)cwbuf, &cwnum, data);
 			morenum = 0;
 			x--;
 			move(y, x);

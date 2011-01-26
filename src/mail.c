@@ -60,7 +60,7 @@ char currmaildir[STRLEN];
 
 int chkmail() {
 	static long lasttime = 0;
-	static ismail = 0;
+	static int ismail = 0;
 	struct fileheader fh;
 	struct stat st;
 	int fd, size;
@@ -183,7 +183,7 @@ int mailall() {
 	/***********Type 2的群信改为共享文件的形式， 目的减少文件的拷贝，防止死机*****************/
 	/***********相关改动文件：list.c, bbs.c***************************************************/
 	if (ans[0] - '0' == 2)
-		sprintf(fname, "sharedmail/mailall.%s.%d", currentuser.userid,
+		sprintf(fname, "sharedmail/mailall.%s.%ld", currentuser.userid,
 				time(0));
 	/**********Modified end**********/
 	do_quote(quote_file, fname, header.include_mode);
@@ -304,7 +304,7 @@ char *userid, *title;
 		return -1;
 	}
 	memset(&newmessage, 0, sizeof(newmessage));
-	sprintf(fname, "M.%d.A", time(NULL));
+	sprintf(fname, "M.%ld.A", time(NULL));
 	sprintf(filepath, "mail/%c/%s/%s", toupper(userid[0]), userid, fname);
 	ip = strrchr(fname, 'A');
 	count = 0;
@@ -1058,25 +1058,49 @@ char *direct;
 extern int mailreadhelp();
 extern int SR_BMfunc();
 
-struct one_key mail_comms[] = { 'd', mail_del, 'D', mail_del_range, 'b',
-		SR_BMfunc, Ctrl('P'), m_send, 'E', edit_post, 'r', mail_read, 'R',
-		mail_reply, 'm', mail_mark, 'i', Save_post, 'I', Import_post,
-//Commented by Amigo 2002.06.07
-		//	'x', into_myAnnounce,
-		KEY_TAB, show_user_notes,
+struct one_key mail_comms[] = {
+		{ 'd', mail_del },
+		{ 'D', mail_del_range },
+		{ 'b', SR_BMfunc },
+		{ Ctrl('P'), m_send },
+		{ 'E', edit_post },
+		{ 'r', mail_read },
+		{ 'R', mail_reply },
+		{ 'm', mail_mark },
+		{ 'i', Save_post },
+		{'I', Import_post },
+		{ KEY_TAB, show_user_notes },
 #ifdef INTERNET_EMAIL
-		'F', mail_forward,
-		'U', mail_u_forward,
+		{ 'F', mail_forward },
+		{ 'U', mail_u_forward },
 #endif
-		'a', auth_search_down, 'A', auth_search_up, '/', t_search_down,
-		'?', t_search_up, '\'', post_search_down, '\"', post_search_up,
-		']', thread_down, '[', thread_up, Ctrl('A'), show_author,
-		Ctrl('N'), SR_first_new, '\\', SR_last, '=', SR_first, 'l',
-		msg_more, Ctrl('C'), do_cross, Ctrl('S'), SR_read, 'n',
-		SR_first_new, 'p', SR_read, Ctrl('X'), SR_read, Ctrl('U'),
-		SR_author, 'h', mailreadhelp, Ctrl('J'), mailreadhelp, '!',
-		Q_Goodbye, 'S', s_msg, '*', show_file_info, 'Z', send_msg,
-		'\0', NULL };
+		{ 'a', auth_search_down },
+		{ 'A', auth_search_up },
+		{ '/', t_search_down },
+		{ '?', t_search_up },
+		{ '\'', post_search_down },
+		{ '\"', post_search_up },
+		{ ']', thread_down },
+		{ '[', thread_up },
+		{ Ctrl('A'), show_author },
+		{ Ctrl('N'), SR_first_new },
+		{ '\\', SR_last },
+		{ '=', SR_first },
+		{ 'l', msg_more },
+		{ Ctrl('C'), do_cross },
+		{ Ctrl('S'), SR_read },
+		{ 'n', SR_first_new },
+		{ 'p', SR_read },
+		{ Ctrl('X'), SR_read },
+		{ Ctrl('U'), SR_author },
+		{ 'h', mailreadhelp },
+		{ Ctrl('J'), mailreadhelp },
+		{ '!', Q_Goodbye },
+		{ 'S', s_msg },
+		{ '*', show_file_info },
+		{ 'Z', send_msg },
+		{ '\0', NULL }
+};
 
 int m_read() {
 	if (!strcmp(currentuser.userid, "guest"))

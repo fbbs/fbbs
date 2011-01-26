@@ -95,7 +95,7 @@ void update_data() {
 	return;
 }
 
-show_message(msg)
+void show_message(msg)
 char msg[];
 {
 
@@ -272,7 +272,7 @@ int mailtoall(int mode, char *fname)
 	return 1;
 }
 
-setlistrange(i)
+void setlistrange(i)
 int i;
 {
 	range = i;
