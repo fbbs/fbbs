@@ -8,7 +8,7 @@ link_directories(../lib)
 add_library(fbcmn STATIC announce.c bbs.c bcache.c bm.c boards.c chat.c
 	comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c help.c list.c
 	mail.c maintain.c more.c namecomplete.c postheader.c read.c register.c
-	screen.c sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c readabc.c five.c
+	screen.c sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c readabc.c
 	convert.c bbsnet.c users.c)
 target_link_libraries(fbcmn BBS)
 
