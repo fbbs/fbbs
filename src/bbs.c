@@ -112,6 +112,7 @@ static int getcurrentuser(char *userid)
 int set_safe_record() {
 	if (getcurrentuser(currentuser.userid) == 0)
 		return -1;
+	return 0;
 }
 
 /*
@@ -304,7 +305,7 @@ int board_select() {
 }
 
 /* added by roly */
-int Poststring(char *str, char *nboard, char *posttitle, int mode) {
+void Poststring(char *str, char *nboard, char *posttitle, int mode) {
 	int savemode;
 	FILE *se;
 	char fname[STRLEN];
@@ -339,7 +340,7 @@ int Postfile(char *filename, char *nboard, char *posttitle, int mode) {
 	post_cross('l', mode);
 	strcpy(currboard, dbname);
 	in_mail = old_inmail;
-	return;
+	return 0;
 }
 
 int get_a_boardname(char *bname, char *prompt) {
@@ -763,7 +764,7 @@ static int cmpdigestfilename(void *digest_name, void *fhdr)
 int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 	char *t;
 	char buf[512];
-	int ch;
+	int ch = 0;
 
 	//int     cou;
 
@@ -1144,7 +1145,7 @@ int acction_mode(int ent, struct fileheader *fileinfo, char *direct) {
 return NEWDIRECT;
 }
 
-int dele_digest(char *dname, char *direc) {
+void dele_digest(char *dname, char *direc) {
 	char digest_name[STRLEN];
 	char new_dir[STRLEN];
 	char buf[STRLEN];
@@ -1557,7 +1558,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 		else
 			strcpy(type, "ÆÕÍ¨");
 	} else {
-		snprintf(weblink, 256, "http://%s/bbs/con?bid=%d&f=%u%s\n",
+		snprintf(weblink, 256, "http://%s/bbs/con?bid=%"PRIdPTR"&f=%u%s\n",
 				BBSHOST, currbp - bcache + 1, fileinfo->id,
 				fileinfo->accessed[1] & FILE_NOTICE ? "&s=1" : "");
 		unread = brc_unread(fileinfo->filename);
@@ -1969,6 +1970,7 @@ int outgo_post(struct fileheader *fh, char *board) {
 			header.chk_anony ? ANONYMOUS_ACCOUNT : currentuser.userid,
 			header.chk_anony ? ANONYMOUS_NICK : currentuser.username, save_title);
 	file_append("innd/out.bntp", buf);
+	return 0;
 }
 
 int post_article(char *postboard, char *mailid) {
@@ -2233,7 +2235,7 @@ int change_title(char *fname, char *title) {
 	system(systembuf);
 	chmod(fname, 0644);
 
-	return;
+	return 0;
 }
 
 int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
@@ -2286,7 +2288,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 	return FULLUPDATE;
 }
 
-int getnam(char *direct, int num, char *id) {
+void getnam(char *direct, int num, char *id) {
 	FILE *fp;
 	int size;
 	struct fileheader ff;
