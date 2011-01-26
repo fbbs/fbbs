@@ -20,7 +20,6 @@ static int scrollen = 2;
 static int moveln = 0;
 static int shifttmp = 0;
 static int ismsgline;
-static int tmpline;
 static int curr_window_line, currln;
 static int redraw_everything;
 static int insert_character = 1;
@@ -347,7 +346,7 @@ void split(register struct textline *line, register int pos) {
 	p->attr = line->attr; /* for copy/paste */
 	*(line->data + pos) = '\0';
 	append(p, line);
-	if (mark_end == NULL&&line==mark_begin ||line == mark_end)
+	if ((mark_end == NULL && line == mark_begin) || line == mark_end)
 		mark_end = p;
 	if (line == currline && pos <= currpnt) {
 		currline = p;
@@ -641,7 +640,7 @@ int read_file(char *filename) {
 	if ((fp = fopen(filename, "r+")) == NULL) {
 		if ((fp = fopen(filename, "w+")) != NULL) {
 			fclose(fp);
-			return;
+			return 0;
 		}
 		indigestion(4);
 		abort_bbs(0);
@@ -668,7 +667,7 @@ char save_title[STRLEN];
 //char    save_filename[4096];
 int in_mail;
 
-int write_posts() {
+void write_posts() {
 	char *ptr;
 	time_t now;
 	struct { //与 BBS2WWW 经常出错相关的地方
@@ -904,7 +903,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	return aborted;
 }
 
-keep_fail_post() {
+void keep_fail_post() {
 	char filename[STRLEN];
 	struct textline *p = firstline;
 	FILE *fp;
@@ -1084,7 +1083,7 @@ int vedit_process_ESC(int arg) /* ESC + x */
 			action = 'M';
 			break;
 		default:
-			return;
+			return '\0';
 	}
 	if (strchr("IES", action) && (ch2 == '\n' || ch2 == '\r'))
 		ch2 = '0';

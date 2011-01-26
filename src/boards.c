@@ -596,6 +596,7 @@ static choose_loader_t choose_board_load(choose_t *cp)
 	return 0;
 }
 
+#if 0
 static int search_board(const choose_board_t *cbrd, int *num)
 {
 	static int i = 0, find = YEA;
@@ -657,6 +658,7 @@ static int search_board(const choose_board_t *cbrd, int *num)
 	}
 	return 1;
 }
+#endif
 
 int unread_position(char *dirfile, board_data_t *ptr)
 {

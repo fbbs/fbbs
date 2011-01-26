@@ -46,7 +46,7 @@ int offline() {
 		prints("Äú±»·â½ûÈ¨ÏŞ, ²»ÄÜËæ±ã×ÔÉ±!!!\n");
 		pressreturn();
 		clear();
-		return;
+		return 0;
 
 	}
 	if (HAS_PERM(PERM_SYSOPS) || HAS_PERM(PERM_BOARDS)
@@ -55,7 +55,7 @@ int offline() {
 		prints("ÄúÓĞÖØÈÎÔÚÉí, ²»ÄÜËæ±ã×ÔÉ±À²!!\n");
 		pressreturn();
 		clear();
-		return;
+		return 0;
 	}
 	/*2003.04.22 stephen modify end*/
 	if (currentuser.stay < 86400) {
@@ -64,14 +64,14 @@ int offline() {
 		prints("Çë mail ¸ø SYSOP ËµÃ÷×ÔÉ±Ô­Òò, Ğ»Ğ»¡£\n");
 		pressreturn();
 		clear();
-		return;
+		return 0;
 	}
 	getdata(1, 0, "ÇëÊäÈëÄúµÄÃÜÂë: ", buf, PASSLEN, NOECHO, YEA);
 	if (*buf == '\0' || !checkpasswd(currentuser.passwd, buf)) {
 		prints("\n\nºÜ±§Ç¸, ÄúÊäÈëµÄÃÜÂë²»ÕıÈ·¡£\n");
 		pressreturn();
 		clear();
-		return;
+		return 0;
 	}
 	clear();
 	//   move(1, 0);
@@ -124,6 +124,7 @@ int offline() {
 		do_kick_user(&uinfo);
 		exit(0);
 	}
+	return 0;
 }
 
 //±£´æÓÃ»§½üÆÚĞÅÏ¢
@@ -202,7 +203,7 @@ int giveUpBBS() {
 		move(11, 28);
 		prints("[1m[33mÄãÓĞ»¹Ã»ÓĞ×¢²áÍ¨¹ı£¬²»ÄÜ½äÍø£¡[m");
 		pressanykey();
-		return;
+		return 0;
 	}
 
 	if (HAS_PERM(PERM_SYSOPS) || HAS_PERM(PERM_BOARDS)
@@ -211,7 +212,7 @@ int giveUpBBS() {
 		move(11, 28);
 		prints("[1m[33mÄãÓĞÖØÈÎÔÚÉí£¬²»ÄÜ½äÍø£¡[m");
 		pressanykey();
-		return;
+		return 0;
 	}
 
 	lcount = 0;
@@ -244,7 +245,7 @@ int giveUpBBS() {
 					prints("·¢ĞÅÈ¨ÏŞ");
 					break;
 			}
-			sprintf(buf, "        »¹ÓĞ%dÌì\n", j - time(0) / 3600 / 24);
+			sprintf(buf, "        »¹ÓĞ%ldÌì\n", j - time(0) / 3600 / 24);
 			outs(buf);
 			lcount++;
 		}
@@ -269,7 +270,7 @@ int giveUpBBS() {
 
 	getdata(10, 0, "ÇëÑ¡Ôñ [0]", ans, 2, DOECHO, NULL);
 	if (ans[0] < '1' || ans[0] > '4') {
-		return;
+		return 0;
 	}
 	k = 1;
 	switch (ans[0]) {
@@ -290,24 +291,24 @@ int giveUpBBS() {
 	if (!k) {
 		prints("\n\nÄãÒÑ¾­Ã»ÓĞÁË¸ÃÈ¨ÏŞ");
 		pressanykey();
-		return;
+		return 0;
 	}
 
 	getdata(11, 0, "ÇëÊäÈë½äÍøÌìÊı [0]", day, 4, DOECHO, NULL);
 	i = 0;
 	while (day[i]) {
 		if (!isdigit(day[i]))
-			return;
+			return 0;
 		i++;
 	}
 	j = atoi(day);
 	if (j <= 0)
-		return;
+		return 0;
 
 	if (compute_user_value(&lookupuser) <= j) {
 		prints("\n\n¶Ô²»Æğ£¬ÌìÊı²»¿ÉÒÔ´óÓÚÉúÃüÁ¦...");
 		pressanykey();
-		return;
+		return 0;
 	}
 
 	j = time(0) / 3600 / 24 + j;
@@ -319,7 +320,7 @@ int giveUpBBS() {
 		if (*buf == '\0' || !checkpasswd(lookupuser.passwd, buf)) {
 			prints("\n\nºÜ±§Ç¸, ÄúÊäÈëµÄÃÜÂë²»ÕıÈ·¡£\n");
 			pressanykey();
-			return;
+			return 0;
 		}
 
 		sethomefile(genbuf, lookupuser.userid, "giveupBBS");
@@ -327,7 +328,7 @@ int giveUpBBS() {
 		if (!fn) {
 			prints("\n\nÓÉÓÚÏµÍ³ÎÊÌâ£¬ÏÖÔÚÄã²»ÄÜ½äÍø");
 			pressanykey();
-			return;
+			return 0;
 		}
 		fprintf(fn, "%d %d\n", ans[0] - 48, j);
 		fclose(fn);
@@ -385,5 +386,6 @@ int giveUpBBS() {
 
 		memset(ans, 0, 3);
 	}
+	return 0;
 }
 /*2003.04.22 stephen add end*/

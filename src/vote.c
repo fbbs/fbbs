@@ -3,7 +3,7 @@
 #include "list.h"
 #include "mmap.h"
 
-extern cmpbnames();
+extern int cmpbnames();
 extern int page, range;
 
 static const char *vote_type[] = { "是非", "单选", "复选", "数字", "问答" };
@@ -42,6 +42,7 @@ int setvoteflag(char *bname, int flag) {
 		fh.flag = fh.flag | BOARD_VOTE_FLAG;
 	if (substitute_record(BOARDS, &fh, sizeof(fh), pos) == -1)
 		prints("Error updating BOARDS file...\n");
+	return 0;
 }
 
 //显示bug报告(目前好像没有实现)
@@ -315,7 +316,7 @@ int b_closepolls() {
 		exit(1);
 
 	if (now < brdshm->pollvote) { //现在时间小于下次可投票时间则返回？
-		return;
+		return 0;
 	}
 	//关闭显示 函数调用移到miscd
 	/*
@@ -386,7 +387,8 @@ static int count_result(void *ptrv, int notused1, void *notused2)
 }
 
 //将投票的抬头写入sug投票结果文件
-get_result_title() {
+void get_result_title()
+{
 	char buf[STRLEN];
 
 	fprintf(sug, "⊙ 投票开启于：\033[1m%s\033[m  类别：\033[1m%s\033[m\n",
@@ -469,10 +471,10 @@ int mk_result(int num) {
 
 	sprintf(title, "[公告] %s 版的投票结果", currboard);
 	Postfile(nname, "vote", title, 1); //投票结果贴入vote版
-	if (currboard != "vote")
+	if (strcmp(currboard, "vote"))
 		Postfile(nname, currboard, title, 1); //投票结果贴入当前版
 	dele_vote(num); //关闭投票,删除临时文件
-	return;
+	return 0;
 }
 
 //取得选择题可选项目,放入bal中
@@ -831,7 +833,7 @@ int user_vote(int num) {
 	if (currentuser.firstlogin > currvote.opendate) { //注册日在投票开启日前不能投票
 		prints("对不起, 投票名册上找不到您的大名\n");
 		pressanykey();
-		return;
+		return 0;
 	}
 	sprintf(fname, "vote/%s/flag.%d", currboard, currvote.opendate);
 	if ((pos = search_record(fname, &uservote, sizeof(uservote), cmpvuid,
@@ -884,7 +886,7 @@ int user_vote(int num) {
 		prints("\n已经帮您投入票箱中...\n");
 	}
 	pressanykey();
-	return;
+	return 0;
 }
 
 //显示投票箱信息的头部
@@ -937,13 +939,13 @@ static int printvote(void *entv, int notused1, void *notused2)
 			vote_type[ent->type - 1], ent->maxdays, num_voted);
 	//Ended IAMFAT
 	prints("%s", buf);
+	return 0;
 }
 
 //删除投票文件
 //num 投票controlfile中第几个记录
 //返回值 无
-int dele_vote(num)
-int num;
+int dele_vote(int num)
 {
 	char buf[STRLEN];
 
@@ -959,6 +961,7 @@ int num;
 	if (get_num_records(controlfile, sizeof(currvote)) == 0) {
 		setvoteflag(currboard, 0);
 	}
+	return 0;
 }
 
 //显示投票结果
@@ -1132,7 +1135,7 @@ int b_vote() {
 	int voting;
 
 	if (!HAS_PERM(PERM_VOTE) || (currentuser.stay < 1800)) {
-		return;
+		return 0;
 	}
 	setcontrolfile();
 	num_of_vote = get_num_records(controlfile, sizeof(struct votebal));
@@ -1165,7 +1168,7 @@ int m_vote() {
 	modify_user_mode(ADMIN);
 	vote_maintain(DEFAULTBOARD);
 	strcpy(currboard, buf);
-	return;
+	return 0;
 }
 
 //对SYSOP版进行投票
@@ -1177,7 +1180,7 @@ int x_vote() {
 	strcpy(currboard, DEFAULTBOARD);
 	b_vote();
 	strcpy(currboard, buf);
-	return;
+	return 0;
 }
 
 //显示sysop版投票结果
@@ -1340,7 +1343,7 @@ int tui_user_vote(const struct boardheader *bp, struct votebal *vb)
  */
 static choose_handler_t choose_vote_handler(choose_t *cp, int ch)
 {
-	choose_vote_t *cv = cp->data;
+//	choose_vote_t *cv = cp->data;
 
 	switch (ch) {
 		case 'v':
@@ -1449,6 +1452,7 @@ static choose_handler_t choose_vote_handler(choose_t *cp, int ch)
 		default:
 			return DONOTHING;
 	}
+	return DONOTHING;
 }
 
 /**

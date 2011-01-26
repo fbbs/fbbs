@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include "chat.h"
 #include "fbbs/string.h"
+#include "fbbs/uinfo.h"
 
 char chatname[IDLEN]; /* Chat-Room Name */
 int chatline; /* Where to display message now */
@@ -21,7 +22,6 @@ char chat_station[19];
 extern char BoardName[];
 extern char page_requestor[];
 extern int talkrequest;
-extern char *cexpstr();
 extern char pagerchar();
 extern void t_pager();
 void set_rec();
@@ -380,7 +380,7 @@ int ent_chat(char *chatbuf) {
 	while (1) {
 		getdata(2, 0, "«Î ‰»Î¡ƒÃÏ¥˙∫≈(ÕÀ≥ˆ: *)£∫", inbuf, CHAT_IDLEN, DOECHO, YEA);
 		if (inbuf[0] == '*')
-			return;
+			return 0;
 		sprintf(chatid, "%.8s",
 				((inbuf[0] != '\0' && inbuf[0] != '\n') ? inbuf
 						: cuser.userid));
@@ -665,7 +665,7 @@ void query_user(char *arg) {
 		sprintf(buf, "[\033[1;3%dm%s\033[m] ", clr, horoscope(
 				lookupuser.birthmonth, lookupuser.birthday) );
 	} else {
-		sprintf(buf, "");
+		buf[0] = '\0';
 	}
 	
 	sprintf(msg, "%s…œ¥Œ‘⁄ [\033[1;32m%s\033[m] ”… [\033[1;32m%s\033[m] µΩ±æ’æ“ª”Œ",
@@ -727,7 +727,7 @@ void call_user(char *arg) {
 		good_id = NA;
 	} else {
 		uin = t_search(userid, NA);
-		if (uin == NULL ||uin->invisible&&(!HAS_PERM(PERM_SEECLOAK))) {
+		if (uin == NULL || (uin->invisible && (!HAS_PERM(PERM_SEECLOAK)))) {
 			good_id = NA;
 		} else {
 			good_id = YEA;
@@ -892,7 +892,7 @@ void chat_sendmsg(char *arg) {
 	}
 
 	uentp=t_search(uident, NA);
-	if (uentp==NULL || uentp->invisible&&(!HAS_PERM(PERM_SEECLOAK))) {
+	if (uentp == NULL || (uentp->invisible && (!HAS_PERM(PERM_SEECLOAK)))) {
 		printchatline("[1mœﬂ…œ√ª”–’‚∏ˆID[m");
 		return;
 	}
@@ -1155,11 +1155,12 @@ int chat_cmd(char *buf, int cfd) {
 	if (*buf++ != '/')
 		return 0;
 
-	if (*buf=='/')
+	if (*buf=='/') {
 		if (!use_alias(buf+1, cfd))
 			return 0;
 		else
 			return 1;
+	}
 	if ((tolower(*buf)=='m')&&isspace(*(buf+1)))
 		return 0;
 	if ((tolower(*buf)=='a')&&isspace(*(buf+1)))

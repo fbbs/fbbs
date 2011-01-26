@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "fbbs/string.h"
 
 //将光标移到当前的位置,并显示成>
 #define PUTCURS   move(3+locmem->crs_line-locmem->top_line,0);prints(">");
@@ -1237,14 +1238,10 @@ char *direct;
 	return PARTUPDATE;
 }
 
-int _combine_thread(ent, fileinfo, direct, gid)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
-int gid;
+int _combine_thread(int ent, struct fileheader *fileinfo, char *direct, int gid)
 {
 	fileinfo->gid = gid;
-	substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
+	return substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
 }
 
 int SR_first_new(ent, fileinfo, direct)
@@ -1608,7 +1605,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle) {
 }
 
 //Added by IAMFAT 2002-05-27
-int strcasecmp2(char *s1, char *s2) {
+int strcasecmp2(const char *s1, const char *s2) {
 	register int c1, c2;
 	while (*s1 && *s2) {
 		c1 = tolower(*s1);
@@ -1844,22 +1841,23 @@ int r_searchall() {
 	if (id[0] == 0) {
 		getdata(0, 30, "查询所有的作者吗?[Y/N]: ", ans, 7, DOECHO, YEA);
 		if ((*ans != 'Y') && (*ans != 'y')) {
-			return;
+			return 0;
 		} else
 			all = YEA;
 	} else if (!getuser(id)) {
 		prints("不正确的使用者代号\n");
 		pressreturn();
-		return;
+		return 0;
 	}
 	getdata(1, 0, "请输入文章标题关键字: ", patten, 29, DOECHO, YEA);
 	getdata(2, 0, "查询距今多少天以内的文章?: ", buf, 4, DOECHO, YEA);
 	dt = atoi(buf);
 	if (dt == 0)
-		return;
+		return 0;
 	getdata(3, 0, "搜索 0)取消 1) 版面 2)版主垃圾箱 3)站务垃圾箱[0]:", buf, 4, DOECHO, YEA);
 	junk = atoi(buf);
-	if (junk < 1 || junk > 3)return ;
+	if (junk < 1 || junk > 3)
+		return 0;
 	getdata(4,0,"是否删除文章?[Y/N]",ans,2,DOECHO,YEA);
 	if ((*ans != 'Y') && (*ans != 'y'))
 	flag=NA;
@@ -1867,6 +1865,7 @@ int r_searchall() {
 	flag = YEA;
 	searchallboard (id, patten, dt, all, junk,flag);
 	report ("网友大作查询", currentuser.userid);
+	return 0;
 }
 
 int searchallboard(char *id, char *patten, int dt, int all, int del,
@@ -1932,7 +1931,7 @@ int searchallboard(char *id, char *patten, int dt, int all, int del,
 		if (counts >= 1000)
 			break;
 	}
-	sprintf(buf2, "[%s]查询%s在%d天内关键字'%0.10s'", del==1 ? "版面"
+	sprintf(buf2, "[%s]查询%s在%d天内关键字'%.10s'", del==1 ? "版面"
 			: (del==2 ? "Trash" : "Junk"), id, dt/86400, patten);
 	fprintf(fp3, "%d matched found.\n", counts);
 	fclose(fp2);

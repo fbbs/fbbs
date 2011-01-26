@@ -44,22 +44,29 @@ char partner[IDLEN + 1];
 #endif
 
 struct one_key friend_list[] = {
-		'r', friend_query,
-		'm', friend_mail,
-		'M', friend_mail,
-		'a', friend_add,
-		'A', friend_add,
-		'd', friend_dele,
-		'D', friend_dele,
-		'E', friend_edit,
-		'h', friend_help,
-		'H', friend_help,
-		'\0', NULL
+		{ 'r', friend_query },
+		{ 'm', friend_mail },
+		{ 'M', friend_mail },
+		{ 'a', friend_add },
+		{ 'A', friend_add },
+		{ 'd', friend_dele },
+		{ 'D', friend_dele },
+		{ 'E', friend_edit },
+		{ 'h', friend_help },
+		{ 'H', friend_help },
+		{ '\0', NULL }
 };
 
-struct one_key reject_list[] = { 'a', reject_add, 'A',
-		reject_add, 'd', reject_dele, 'D', reject_dele, 'E', reject_edit,
-		'h', reject_help, 'H', reject_help, '\0', NULL };
+struct one_key reject_list[] = {
+		{ 'a', reject_add },
+		{ 'A', reject_add },
+		{ 'd', reject_dele },
+		{ 'D', reject_dele },
+		{ 'E', reject_edit },
+		{ 'h', reject_help },
+		{ 'H', reject_help },
+		{ '\0', NULL }
+};
 
 struct talk_win {
 	int curcol, curln;
@@ -68,10 +75,17 @@ struct talk_win {
 
 int nowmovie;
 
-static char *refuse[] = { "抱歉，我现在想专心看 Board。    ",
-		"请不要吵我，好吗？..... :)      ", "我现在有事，等一下再 Call 你。  ",
-		"我马上要离开了，下次再聊吧。    ", "请你不要再 Page，我不想跟你聊。 ", "请先写一封自我介绍给我，好吗？  ",
-		"对不起，我现在在等人。          ", "我今天很累，不想跟别人聊天。    ", NULL };
+static char *refuse[] = {
+		"抱歉，我现在想专心看 Board。    ",
+		"请不要吵我，好吗？..... :)      ",
+		"我现在有事，等一下再 Call 你。  ",
+		"我马上要离开了，下次再聊吧。    ",
+		"请你不要再 Page，我不想跟你聊。 ",
+		"请先写一封自我介绍给我，好吗？  ",
+		"对不起，我现在在等人。          ",
+		"我今天很累，不想跟别人聊天。    ",
+		NULL
+};
 
 extern int t_columns;
 
@@ -259,7 +273,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 				continue;
 			}
 			if ( (uentp->invisible==0) ||(uentp->uid == usernum)
-					||(uentp->invisible==1) &&HAS_PERM(PERM_SEECLOAK) ) {
+					|| (uentp->invisible && HAS_PERM(PERM_SEECLOAK))) {
 				num++;
 			} else {
 				continue;
@@ -279,7 +293,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 				col = "\033[1;36m";
 			else
 				col = "\033[1m";
-			char *host;
+			const char *host;
 			if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
 				host = uentp->from;
 			} else {
@@ -527,7 +541,8 @@ int get_status(int uid)
 	return uidshm->status[uid - 1];
 }
 
-int num_alcounter() {
+void num_alcounter(void)
+{
 	static time_t last=0;
 	register int i;
 	time_t now = time(0);
@@ -674,8 +689,9 @@ struct user_info *userinfo;
 		clrtoeol();
 		return -1;
 	} else {
-		int sock, msgsock, length;
+		int sock, msgsock;
 		struct sockaddr_in server = {0};
+		socklen_t length;
 		char c;
 #ifdef FIVEGAME
 		char answer[2]="";
@@ -775,7 +791,7 @@ struct user_info *userinfo;
 			}
 		}
 
-		msgsock = accept(sock, (struct sockaddr *) 0, (int *) 0);
+		msgsock = accept(sock, (struct sockaddr *) 0, (socklen_t *) 0);
 		add_io(0, 0);
 		close(sock);
 		uinfo.sockactive = NA;
@@ -1142,10 +1158,7 @@ void talkflush() {
 	talkobuflen = 0;
 }
 
-int
-moveto(mode, twin)
-int mode;
-struct talk_win *twin;
+void moveto(int mode, struct talk_win *twin)
 {
 	if (mode == 1)
 	twin->curln--;
@@ -1651,7 +1664,9 @@ char *filename;
 	}
 	return (deleted> 0) ? 1 : -1;
 }
-override_title() {
+
+void override_title(void)
+{
 	char desc[5];
 	if (chkmail())
 		strcpy(genbuf, "[您有信件]");
@@ -1972,6 +1987,7 @@ int getfriendstr() {
 	free(tmp);
 	qsort(&uinfo.friend, uinfo.fnum, sizeof(uinfo.friend[0]), cmpfuid);
 	update_ulist(&uinfo, utmpent);
+	return 0;
 }
 
 int getrejectstr() {
@@ -1992,6 +2008,7 @@ int getrejectstr() {
 	}
 	free(tmp);
 	update_ulist(&uinfo, utmpent);
+	return 0;
 }
 
 #ifdef TALK_LOG

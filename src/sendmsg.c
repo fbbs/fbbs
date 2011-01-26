@@ -195,11 +195,12 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 		sprintf(wholebuf, "%s\n", msgstr == NULL ? buf : msgstr);
 		strcat(mymsg, wholebuf);
 		sprintf(buf2, "你的好朋友 %s 已经上站罗！", currentuser.userid);
-		if (msgstr != NULL)
+		if (msgstr != NULL) {
 			if (strcmp(msgstr, buf2) == 0)
 				ishelo = 1;
 			else if (strcmp(buf, buf2) == 0)
 				ishelo = 1;
+		}
 #endif
 	} else if (mode == 0) {
 		sprintf(msgbuf, "\033[0;1;5;44;33m站长 于\033[36m %24.24s \033[33m广播：\033[m\033[1;37;44m%-39.39s\033[m\033[%05dm\n", timestr," ",  uinfo.pid); 
@@ -231,7 +232,7 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 			return -1;
 		}
 	}
-	if (!uin->active || bbskill(uin, 0) == -1) {
+	if (!uin->active || bbskill((struct user_info *)uin, 0) == -1) {
 		if (msgstr == NULL) {
 			prints("\n对方已经离线...\n");
 			pressreturn();
@@ -254,7 +255,7 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 #endif
 	free(msgbuf);
 	if(uin->pid) {
-		bbskill(uin, SIGUSR2);
+		bbskill((struct user_info *)uin, SIGUSR2);
 	}
 	if (msgstr == NULL) {
 		prints("\n已送出讯息...\n");
@@ -273,6 +274,7 @@ int dowall(const struct user_info *uin)
 	prints("\033[1;32m正对 %s 广播.... Ctrl-D 停止对此位 User 广播。\033[m", uin->userid);
 	refresh();
 	do_sendmsg(uin, buf2, 0, uin->pid);
+	return 0;
 }
 
 int myfriend_wall(const struct user_info *uin)
@@ -286,6 +288,7 @@ int myfriend_wall(const struct user_info *uin)
 		refresh();
 		do_sendmsg(uin, buf2, 3, uin->pid);
 	}
+	return 0;
 }
 
 int hisfriend_wall_logout(const struct user_info *uin)
@@ -297,6 +300,7 @@ int hisfriend_wall_logout(const struct user_info *uin)
 		refresh();
 		do_sendmsg(uin, buf2, 4, uin->pid);
 	}
+	return 0;
 }
 
 int hisfriend_wall(const struct user_info *uin)
@@ -307,6 +311,7 @@ int hisfriend_wall(const struct user_info *uin)
 		refresh();
 		do_sendmsg(uin, buf2, 3, uin->pid);
 	}
+	return 0;
 }
 
 int friend_wall(void)
