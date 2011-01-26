@@ -32,6 +32,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 
 #ifdef LINUX
 #include <unistd.h>
@@ -1484,26 +1485,27 @@ char *argv[];
 					struct hostent *hp;
 					char *s = users[i].host;
 					struct hostent *local;
-					//struct in_addr in;
-					int j;
 					local = gethostbyname("localhost");
 
 					if (local) {
-						for (j = 0; j < local->h_length / sizeof(unsigned int); j++) {
-							if (sin.sin_addr.s_addr == (unsigned int) local->h_addr_list[j])
-							break;
+						char *l = inet_ntoa(sin.sin_addr);
+						for (char **p = local->h_addr_list; p; ++p) {
+							if (strcmp(l, *p) == 0) {
+								strcpy(s, "localhost");
+								break;
+							}
 						}
-						if ((j < local->h_length) || (sin.sin_addr.s_addr == 0x100007F))
-						strcpy(s, "localhost");
+						if (sin.sin_addr.s_addr == 0x100007F)
+							strcpy(s, "localhost");
 						else {
 							hp = gethostbyaddr((char *) &sin.sin_addr, sizeof(struct in_addr),
 									sin.sin_family);
-							strlcpy(s, hp ? hp->h_name : (char *) inet_ntoa(sin.sin_addr), 30);
+							strlcpy(s, hp ? hp->h_name : inet_ntoa(sin.sin_addr), 30);
 						}
 					} else {
 						hp = gethostbyaddr((char *) &sin.sin_addr, sizeof(struct in_addr),
 								sin.sin_family);
-						strlcpy(s, hp ? hp->h_name : (char *) inet_ntoa(sin.sin_addr), 30);
+						strlcpy(s, hp ? hp->h_name : inet_ntoa(sin.sin_addr), 30);
 					}
 					s[29] = 0;
 
