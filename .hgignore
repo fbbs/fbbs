@@ -1,17 +1,6 @@
 syntax: glob
 
-aclocal.m4
-configure
-config.*
-compile
-depcomp
-install-sh
-libtool
-ltmain.sh
-missing
-
 Makefile
-Makefile.in
 
 CMakeFiles
 CMakeCache.txt
@@ -20,24 +9,14 @@ install_manifest.txt
 
 tags
 
-autom4te.cache
-
-m4
-
-include/config.h
-include/config.h.in
-include/stamp-h1
-
 *.so
 
 lib/Makefile
-lib/Makefile.in
 lib/.deps
 lib/libfbbs.a
 lib/*.o
 
 src/Makefile
-src/Makefile.in
 src/.deps
 src/bbsd
 src/cached
