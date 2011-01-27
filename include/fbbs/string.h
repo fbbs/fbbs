@@ -1,8 +1,12 @@
 #ifndef FB_STRING_H
 #define FB_STRING_H
 
-#include <stddef.h>
+#include <ctype.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+
+#define streq(a, b)  (!strcmp(a, b))
 
 extern char *strtolower(char *dst, const char *src);
 extern char *strtoupper(char *dst, const char *src);
