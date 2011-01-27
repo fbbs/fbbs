@@ -873,7 +873,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	//added by iamfat 2002.08.17
 	extern char fromhost[];
 	if (aborted != -1 && uinfo.mode == EDIT && ADD_EDITMARK) {
-		fprintf(fp, "\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %22.22s¡¤[FROM: %-.20s]"
+		fprintf(fp, "\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %22.22s¡¤[FROM: %s]"
 				"\033[m\n", currentuser.userid,
 				getdatestring(time(NULL), DATE_ZH), mask_host(fromhost));
 	}
@@ -890,7 +890,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || noidboard)
 			fputs("--\n", fp);
-		fprintf(fp, "[m[1;%2dm¡ù À´Ô´:¡¤%s %s¡¤[FROM: %-.20s][m\n", color,
+		fprintf(fp, "[m[1;%2dm¡ù À´Ô´:¡¤%s %s¡¤[FROM: %s][m\n", color,
 				BoardName, BBSHOST, (noidboard) ? ANONYMOUS_SOURCE : mask_host(fromhost));
 	}
 	if (aborted != -1)

@@ -88,7 +88,7 @@ int do_post_article(const post_request_t *pr)
 
 	if (ip) {
 		fprintf(fptr, "\n\033[m\033[1;%2dm¡ù %s:¡¤"BBSNAME" "BBSHOST
-			"¡¤HTTP [FROM: %-.20s]\033[m\n", 31 + rand() % 7,
+			"¡¤HTTP [FROM: %s]\033[m\n", 31 + rand() % 7,
 			pr->crosspost ? "×ªÔØ" : "À´Ô´", ip);
 	}
 

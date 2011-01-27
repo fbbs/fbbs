@@ -56,7 +56,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 		if (ret == 0 && ptr != e)
 			ret = safer_write(fd, ptr, e - ptr);
 		len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ "
-				"%22.22s¡¤HTTP [FROM: %-.20s]\033[m\n", currentuser.userid,
+				"%22.22s¡¤HTTP [FROM: %s]\033[m\n", currentuser.userid,
 				getdatestring(time(NULL), DATE_ZH), mask_host(ip));
 		if (ret == 0)
 			ret = safer_write(fd, buf, len);
