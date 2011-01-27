@@ -30,7 +30,7 @@ void set_prefix() {
 	FILE *fp;
 
 	setvfile(filename, currboard, "prefix");
-	if ((fp = fopen(filename, "r"))> 0) {
+	if ((fp = fopen(filename, "r"))) {
 		for (i = 0; i < MAX_PREFIX; i++) {
 			if (!fgets(buf, STRLEN, fp)) {
 				break;
