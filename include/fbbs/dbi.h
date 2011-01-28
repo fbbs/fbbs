@@ -6,6 +6,12 @@
 #include <libpq-fe.h>
 #include "fbbs/util.h"
 
+#define PARAM_TEXT(x)     { .value = x,  .length = 0, .format = 0 }
+#define PARAM_CHAR(x)     { .value = &x, .length = 1, .format = 1 }
+#define PARAM_SMALLINT(x) { .value = &x, .length = 2, .format = 1 }
+#define PARAM_INT(x)      { .value = &x, .length = 4, .format = 1 }
+#define PARAM_BIGINT(x)   { .value = &x, .length = 8, .format = 1 }
+
 typedef PGconn db_conn_t;
 typedef PGresult db_res_t;
 
