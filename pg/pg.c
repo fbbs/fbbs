@@ -117,7 +117,7 @@ int64_t db_get_bigint(const db_res_t *res, int row, int col)
 	if (_is_binary_field(res, col)) {
 		return (int64_t)be64toh(*((uint64_t *)r));
 	} else {
-		return (int32_t)strtoll(r, NULL, 10);
+		return (int64_t)strtoll(r, NULL, 10);
 	}
 }
 
