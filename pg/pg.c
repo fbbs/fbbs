@@ -125,7 +125,7 @@ int32_t db_get_integer(const db_res_t *res, int row, int col)
 {
 	const char *r = PQgetvalue(res, row, col);
 	if (_is_binary_field(res, col)) {
-		return (int32_t)ntohs(*((uint32_t *)r));
+		return (int32_t)ntohl(*((uint32_t *)r));
 	} else {
 		return (int32_t)strtol(r, NULL, 10);
 	}
