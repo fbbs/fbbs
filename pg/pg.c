@@ -6,13 +6,33 @@
 #  define be64toh(x) bswap_64(x)
 # else
 #  define be64toh(x) (x)
+# endif
 #endif
 
-#endif
-
-#include <stdlib.h>
 #include <arpa/inet.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include "fbbs/dbi.h"
+#include "fbbs/util.h"
+
+/** Postgresql epoch (Jan 1, 2000) in unix time. */
+#define POSTGRES_EPOCH_TIME INT64_C(946684800)
+
+/**
+ * Default postgresql installation used to use double to represent timestamp.
+ * It was changed to 64-bit integer since 8.4 (Jul 2009).
+ */
+#define HAVE_INT64_TIMESTAMP
+
+fb_time_t ts_to_time(timestamp ts)
+{
+	return ts / INT64_C(1000000) + POSTGRES_EPOCH_TIME;
+}
+
+timestamp time_to_ts(fb_time_t t)
+{
+	return (t - POSTGRES_EPOCH_TIME) * INT64_C(1000000);
+}
 
 db_conn_t *db_connect(const char *host, const char *port,
         const char *db, const char *user, const char *pwd)
@@ -52,7 +72,7 @@ db_res_t *db_exec_params(db_conn_t *conn, const char *cmd, int count,
 		return PQexecParams(conn, cmd, count, NULL, values, lengths,
 			formats, binary);
 	} else {
-		return PQexec(conn, cmd);
+		return PQexecParams(conn, cmd, 0, NULL, NULL, NULL, NULL, binary);
 	}
 }
 
@@ -138,4 +158,19 @@ bool db_get_bool(const db_res_t *res, int row, int col)
 				return false;
 		}
 	}
+}
+
+fb_time_t db_get_time(const db_res_t *res, int row, int col)
+{
+	const char *r = PQgetvalue(res, row, col);
+	if (_is_binary_field(res, col)) {
+#ifdef HAVE_INT64_TIMESTAMP
+		timestamp ts = (int64_t)be64toh(*(uint64_t *)r);
+#else
+		uint64_t t = be64toh(*(uint64_t *)r);
+		timestamp ts = *(double *)&t * 1000000;
+#endif
+		return ts_to_time(ts);
+	}
+	return 0;
 }

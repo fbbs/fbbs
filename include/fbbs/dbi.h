@@ -1,12 +1,15 @@
 #ifndef FB_DBI_H
 #define FB_DBI_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <libpq-fe.h>
+#include "fbbs/util.h"
 
 typedef PGconn db_conn_t;
 typedef PGresult db_res_t;
+
+typedef int64_t timestamp;
 
 typedef enum db_conn_status_t {
 	DB_CONNECTION_OK = CONNECTION_OK,
@@ -22,6 +25,8 @@ typedef struct db_param_t {
 	int length;
 	int format;
 } db_param_t;
+
+extern timestamp time_to_ts(fb_time_t t);
 
 extern db_conn_t *db_connect(const char *host, const char *port,
 		const char *db, const char *user, const char *pwd);
