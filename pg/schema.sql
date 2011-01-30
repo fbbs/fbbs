@@ -6,6 +6,7 @@ CREATE TABLE users (
 	passwd TEXT,
 	nick TEXT,
 	email TEXT,
+	options BIGINT,
 	logins INTEGER DEFAULT 0,
 	posts INTEGER DEFAULT 0,
 	stay INTEGER DEFAULT 0,
