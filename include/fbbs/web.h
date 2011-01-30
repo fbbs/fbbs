@@ -38,4 +38,6 @@ extern int parse_post_data(http_req_t *r);
 extern void html_header(void);
 extern void xml_header(const char *xslfile);
 
+extern void print_session(void);
+
 #endif // FB_WEB_H

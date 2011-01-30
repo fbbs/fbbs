@@ -228,3 +228,8 @@ void xml_header(const char *xslfile)
 			"<?xml-stylesheet type=\"text/xsl\" href=\"../xsl/%s.xsl\"?>\n",
 			xsl);
 }
+
+void print_session(void)
+{
+	return;
+}
