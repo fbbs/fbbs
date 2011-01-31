@@ -50,6 +50,12 @@ CREATE TABLE boards (
 	property INTEGER
 );
 
+CREATE TABLE managers (
+	user_id INTEGER,
+	board_id INTEGER,
+	appointed TIMESTAMPTZ
+);
+
 CREATE TABLE posts (
 	id BIGSERIAL PRIMARY KEY,
 	reid BIGINT,

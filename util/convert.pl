@@ -6,16 +6,19 @@ use Encode;
 use Getopt::Long;
 use POSIX;
 
-my ($host, $port, $db, $user, $file);
+$| = 1;
+
+my ($host, $port, $db, $user, $dir);
 GetOptions(
 	"h|host=s" => \$host,
-	"p|port=s" => \$port,
+	"p|port:s" => \$port,
 	"d|database=s" => \$db,
 	"u|user=s" => \$user,
-	"f|file=s" => \$file,
+	"b|basedir:s" => \$dir,
 );
 $port = 5432 if (not $port);
-die "Usage: $0 -h host [-p port] -d database -u user -f file\n" if (not $host or not $db or not $user or not $file);
+$dir = '/home/bbs' if (not $dir);
+die "Usage: $0 -h host [-p port] -d database -u user -b [base dir]\n" if (not $host or not $db or not $user);
 
 my $dbconf = {
 	'host' => $host,
@@ -27,7 +30,10 @@ my $dsn = "DBI:Pg:database=$db;host=$host;port=$port";
 my $dbh;
 $dbh = DBI->connect($dsn, $user, $user, { RaiseError => 1, AutoCommit => 0 }) or die $dbh->errstr;
 
+my (%users, %boards);
+
 &insert_users;
+&insert_boards;
 
 $dbh->disconnect;
 
@@ -40,35 +46,81 @@ sub insert_users
 	# 20 lastlogin 21 lastlogout 22 dateforbet 23 notedate 24 userid
 	# 25 lasthost 26 username 27 email 28 reserved
 	my ($buf, %hash);
-	open my $fh, '<', $file or die "can't open file '$file'\n";
+	my $i = 1;
+	open my $fh, '<', "$dir/.PASSWDS" or die "can't open .PASSWDS\n";
 	while (1) {
 		last if (read($fh, $buf, 256) != 256);
 		my @t = unpack "I3iIi3sA14IcC3iI2iq5Z16Z40Z40Z40a8", $buf;
 		if ($t[24] and not exists $hash{$t[24]}) {
 			$hash{$t[24]} = \@t;
+		}
 	}
+	close $fh;
+
+	my @temp = values %hash;
+	@temp = sort { $a->[19] <=> $b->[19] } @temp;
+
+	my $query = $dbh->prepare("INSERT INTO users (name, passwd, nick, email, options, logins, posts, stay, medals, money, birth, gender, creation, lastlogin, lastlogout, lasthost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
+
+	print "inserting users...";
+	$i = 0;
+	foreach (@temp) {
+		print "$i..." if ($i % 500 == 0);
+		my $nick = &convert($_->[26]);
+		my $email = &check_email($_->[27]);
+		my $lasthost = &convert($_->[25]);
+		my $birth = &check_birth($_->[12], $_->[13], $_->[14]);
+		$query->execute($_->[24], $_->[9], $nick, $email, $_->[16], $_->[2], $_->[3], $_->[4], $_->[5], $_->[6], $birth, chr($_->[11]), &mytime($_->[19]), &mytime($_->[20]), &mytime($_->[21]), $lasthost) or die $dbh->errstr;
+		$users{$_->[24]} = ++$i;
+	}
+
+	$dbh->commit;
+	print "finished\n";
 }
-close $fh;
 
-my @temp = values %hash;
-@temp = sort { $a->[19] <=> $b->[19] } @temp;
+sub insert_boards
+{
+	#0 filename 1 nowid 2 group 3 owner 4 bm 5 flag
+	#6 sector 7 category 8 nonsense 9 title
+	#10 level 11 accessed
+	my ($buf, %hash, @temp);
+	my $i = 0;
+	my $id = 1;
+	open my $fh, '<', "$dir/.BOARDS" or die "can't open .BOARDS\n";
+	while (1) {
+		last if (read($fh, $buf, 256) != 256);
+		my @t = unpack "Z72IiZ20Z56ia2a4a5Z69Ia12", $buf;
+		++$i;
+		if ($t[0]) {
+			$hash{$i} = $id;
+			$boards{$t[0]} = $id;
+			++$id;
+			push @temp, \@t;
+		}
+	}
 
-my $query = $dbh->prepare("INSERT INTO users (name, passwd, nick, email, options, logins, posts, stay, medals, money, birth, gender, creation, lastlogin, lastlogout, lasthost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
+	print "inserting boards...";
+	my $query = $dbh->prepare("INSERT INTO boards (name, description, category, sector, parent, property) VALUES (?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
 
-print "inserting users...";
-my $i = 0;
-foreach (@temp) {
-	print "$i..." if ($i % 500 == 0);
-	my $nick = &convert($_->[26]);
-	my $email = &check_email($_->[27]);
-	my $lasthost = &convert($_->[25]);
-	my $birth = &check_birth($_->[12], $_->[13], $_->[14]);
-	$query->execute($_->[24], $_->[9], $nick, $email, $_->[16], $_->[2], $_->[3], $_->[4], $_->[5], $_->[6], $birth, chr($_->[11]), &mytime($_->[19]), &mytime($_->[20]), &mytime($_->[21]), $lasthost) or die $dbh->errstr;
-	++$i;
-}
+	foreach (@temp) {
+		$query->execute(&convert($_->[0]), &convert($_->[9]), &convert($_->[7]), ord(substr($_->[6], 0, 1)), $_->[2] ? $hash{$_->[2]} : 0, $_->[5]) or die $dbh->errstr;
+	}
 
-$dbh->commit;
-print "finished\n";
+	$dbh->commit;
+	print "finished\n";
+
+	print "inserting managers...";
+	$query = $dbh->prepare("INSERT INTO managers (user_id, board_id) VALUES (?, ?)") or die $dbh->errstr;
+	foreach my $brd (@temp) {
+		my @bm = split / /, $brd->[4];
+		foreach my $bm (@bm) {
+			if (exists $users{$bm}) {
+				$query->execute($users{$bm}, $boards{$brd->[0]}) or die $dbh->errstr;
+			}
+		}
+	}
+	$dbh->commit;
+	print "finished\n";
 }
 
 sub convert
