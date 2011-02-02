@@ -6,7 +6,7 @@ CREATE TABLE users (
 	passwd TEXT,
 	nick TEXT,
 	email TEXT,
-	options BIGINT,
+	flag BIGINT,
 	logins INTEGER DEFAULT 0,
 	posts INTEGER DEFAULT 0,
 	stay INTEGER DEFAULT 0,
@@ -45,9 +45,9 @@ CREATE TABLE boards (
 	name TEXT,
 	description TEXT,
 	category TEXT,
-	sector INTEGER,
+	sector SMALLINT,
 	parent INTEGER,
-	property INTEGER
+	flag INTEGER
 );
 
 CREATE TABLE managers (
@@ -64,9 +64,10 @@ CREATE TABLE posts (
 	user_id INTEGER,
 	user_name TEXT, -- for compatability
 	title TEXT,
-	property INTEGER, --?
-	filename TEXT,
-	time TIMESTAMPTZ
+	flag INTEGER, --?
+	time TIMESTAMPTZ,
+	t2 TIMESTAMPTZ,
+	itype SMALLINT
 );
 
 COMMIT;
