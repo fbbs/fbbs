@@ -34,8 +34,8 @@ my (%users, %boards, @posts);
 my $pcount = 0;
 
 &insert_users;
-&insert_boards;
-&insert_posts;
+#&insert_boards;
+#&insert_posts;
 
 $dbh->disconnect;
 
@@ -52,7 +52,7 @@ sub insert_users
 	open my $fh, '<', "$dir/.PASSWDS" or die "can't open .PASSWDS\n";
 	while (1) {
 		last if (read($fh, $buf, 256) != 256);
-		my @t = unpack "I3iIi3sA14IcC3iI2iq5Z16Z40Z40Z40a8", $buf;
+		my @t = unpack "IiIiIi3sA14IcC3iI2iq5Z16Z40Z40Z40a8", $buf;
 		if ($t[24] and not exists $hash{$t[24]}) {
 			$hash{$t[24]} = \@t;
 		}
@@ -62,7 +62,7 @@ sub insert_users
 	my @temp = values %hash;
 	@temp = sort { $a->[19] <=> $b->[19] } @temp;
 
-	my $query = $dbh->prepare("INSERT INTO users (name, passwd, nick, email, flag, logins, posts, stay, medals, money, birth, gender, creation, lastlogin, lastlogout, lasthost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
+	my $query = $dbh->prepare("INSERT INTO users (name, passwd, nick, email, flag, perm, logins, posts, stay, medals, money, birth, gender, creation, lastlogin, lastlogout, lasthost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
 
 	print "inserting users...";
 	$i = 0;
@@ -72,7 +72,7 @@ sub insert_users
 		my $email = &check_email($_->[27]);
 		my $lasthost = &convert($_->[25]);
 		my $birth = &check_birth($_->[12], $_->[13], $_->[14]);
-		$query->execute($_->[24], $_->[9], $nick, $email, $_->[16], $_->[2], $_->[3], $_->[4], $_->[5], $_->[6], $birth, chr($_->[11]), &mytime($_->[19]), &mytime($_->[20]), &mytime($_->[21]), $lasthost) or die $dbh->errstr;
+		$query->execute($_->[24], $_->[9], $nick, $email, $_->[16], $_->[1], $_->[2], $_->[3], $_->[4], $_->[5], $_->[6], $birth, chr($_->[11]), &mytime($_->[19]), &mytime($_->[20]), &mytime($_->[21]), $lasthost) or die $dbh->errstr;
 		$users{$_->[24]} = ++$i;
 	}
 

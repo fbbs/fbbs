@@ -7,6 +7,7 @@ CREATE TABLE users (
 	nick TEXT,
 	email TEXT,
 	flag BIGINT,
+	perm INTEGER,
 	logins INTEGER DEFAULT 0,
 	posts INTEGER DEFAULT 0,
 	stay INTEGER DEFAULT 0,
@@ -20,20 +21,6 @@ CREATE TABLE users (
 	lasthost TEXT
 );
 CREATE UNIQUE INDEX user_name_idx ON users (lower(name));
-
-CREATE TABLE groups (
-	id SERIAL PRIMARY KEY,
-	name TEXT,
-	description TEXT
-);
-
-CREATE TABLE roles (
-	user_id INTEGER,
-	group_id INTEGER,
-	grant_type INTEGER
-);
-CREATE INDEX roles_user_id_idx ON roles (user_id);
--- unique index?
 
 CREATE TABLE sectors (
 	id SERIAL PRIMARY KEY,
