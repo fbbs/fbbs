@@ -33,13 +33,18 @@ $dbh = DBI->connect($dsn, $user, $user, { RaiseError => 1, AutoCommit => 0 }) or
 my (%users, %boards, @posts);
 my $pcount = 0;
 
-&insert_users;
-#&insert_boards;
-#&insert_posts;
+my $array = &read_users;
+&insert_users($array);
+
+$array = &read_boards;
+&insert_boards($array);
+&insert_managers($array);
+
+&insert_posts;
 
 $dbh->disconnect;
 
-sub insert_users
+sub read_users
 {
 	# 0 uid 1 userlevel 2 numlogins 3 numposts 4 stay
 	# 5 nummedals 6 money 7 bet 8 flags 9 passwd
@@ -48,7 +53,6 @@ sub insert_users
 	# 20 lastlogin 21 lastlogout 22 dateforbet 23 notedate 24 userid
 	# 25 lasthost 26 username 27 email 28 reserved
 	my ($buf, %hash);
-	my $i = 1;
 	open my $fh, '<', "$dir/.PASSWDS" or die "can't open .PASSWDS\n";
 	while (1) {
 		last if (read($fh, $buf, 256) != 256);
@@ -62,25 +66,33 @@ sub insert_users
 	my @temp = values %hash;
 	@temp = sort { $a->[19] <=> $b->[19] } @temp;
 
-	my $query = $dbh->prepare("INSERT INTO users (name, passwd, nick, email, flag, perm, logins, posts, stay, medals, money, birth, gender, creation, lastlogin, lastlogout, lasthost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
+	my $i = 1;
+	$users{$_->[24]} = $i++ foreach (@temp);
+
+	return \@temp;
+}
+
+sub insert_users
+{
+	my $arr = shift;
+	my $query = $dbh->prepare("INSERT INTO users (name, passwd, nick, email, flag, perm, logins, posts, stay, medals, money, birth, gender, creation, lastlogin, lastlogout, lasthost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
 
 	print "inserting users...";
-	$i = 0;
-	foreach (@temp) {
-		print "$i..." if ($i % 500 == 0);
+	my $i = 0;
+	foreach (@$arr) {
+		print "$i..." if (++$i % 500 == 0);
 		my $nick = &convert($_->[26]);
 		my $email = &check_email($_->[27]);
 		my $lasthost = &convert($_->[25]);
 		my $birth = &check_birth($_->[12], $_->[13], $_->[14]);
 		$query->execute($_->[24], $_->[9], $nick, $email, $_->[16], $_->[1], $_->[2], $_->[3], $_->[4], $_->[5], $_->[6], $birth, chr($_->[11]), &mytime($_->[19]), &mytime($_->[20]), &mytime($_->[21]), $lasthost) or die $dbh->errstr;
-		$users{$_->[24]} = ++$i;
 	}
 
 	$dbh->commit;
 	print "finished\n";
 }
 
-sub insert_boards
+sub read_boards
 {
 	#0 filename 1 nowid 2 group 3 owner 4 bm 5 flag
 	#6 sector 7 category 8 nonsense 9 title
@@ -101,19 +113,31 @@ sub insert_boards
 		}
 	}
 
+	$_->[2] = $_->[2] ? $hash{$_->[2]} : undef foreach (@temp);
+	return \@temp;
+}
+
+sub insert_boards
+{
+	my $arr = shift;
 	print "inserting boards...";
 	my $query = $dbh->prepare("INSERT INTO boards (name, description, category, sector, parent, flag) VALUES (?, ?, ?, ?, ?, ?)") or die $dbh->errstr;
 
-	foreach (@temp) {
-		$query->execute(&convert($_->[0]), &convert($_->[9]), &convert($_->[7]), ord(substr($_->[6], 0, 1)), $_->[2] ? $hash{$_->[2]} : 0, $_->[5]) or die $dbh->errstr;
+	foreach (@$arr) {
+		$query->execute(&convert($_->[0]), &convert($_->[9]), &convert($_->[7]), ord(substr($_->[6], 0, 1)), $_->[2], $_->[5]) or die $dbh->errstr;
 	}
 
 	$dbh->commit;
 	print "finished\n";
 
+}
+
+sub insert_managers
+{
+	my $arr = shift;
 	print "inserting managers...";
-	$query = $dbh->prepare("INSERT INTO managers (user_id, board_id) VALUES (?, ?)") or die $dbh->errstr;
-	foreach my $brd (@temp) {
+	my $query = $dbh->prepare("INSERT INTO managers (user_id, board_id) VALUES (?, ?)") or die $dbh->errstr;
+	foreach my $brd (@$arr) {
 		my @bm = split / /, $brd->[4];
 		foreach my $bm (@bm) {
 			if (exists $users{$bm}) {
