@@ -43,6 +43,14 @@ CREATE TABLE managers (
 	appointed TIMESTAMPTZ
 );
 
+CREATE TABLE club_users (
+	user_id INTEGER,
+	board_id INTEGER,
+	granter INTEGER,
+	added TIMESTAMPTZ,
+	comments TEXT
+);
+
 CREATE TABLE posts (
 	id BIGSERIAL PRIMARY KEY,
 	reid BIGINT,
