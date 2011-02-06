@@ -162,7 +162,7 @@ sub insert_club_users
 		my $fh;
 		open $fh, '<', "$dir/boards/" . $brd->[0] . '/club_users' and do {
 			while (<$fh>) {
-				if (/^(\w+) +(\S+) +(\d{4}.\d\d\.\d\d) (\w+) *$/) {
+				if (/^(\w+) +(\S*) +(\d{4}.\d\d\.\d\d) (\w+) *$/) {
 					$query->execute($users{$1}, $boards{$brd->[0]}, $users{$4}, $3 . ' 0:0:0 +8:00', &convert($2)) if (exists $users{$1});
 				}
 			}
