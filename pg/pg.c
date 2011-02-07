@@ -81,6 +81,11 @@ db_exec_status_t db_res_status(const db_res_t *res)
 	return PQresultStatus(res);
 }
 
+const char *db_res_error(const db_res_t *res)
+{
+	return PQresultErrorMessage(res);
+}
+
 void db_clear(db_res_t *res)
 {
 	PQclear(res);

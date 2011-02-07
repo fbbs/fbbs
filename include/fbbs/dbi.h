@@ -43,6 +43,7 @@ extern const char *db_errmsg(db_conn_t *conn);
 extern db_res_t *db_exec_params(db_conn_t *conn, const char *cmd, int count,
 		db_param_t *params, bool binary);
 extern db_exec_status_t db_res_status(const db_res_t *res);
+extern const char *db_res_error(const db_res_t *res);
 extern void db_clear(db_res_t *res);
 
 extern int db_num_rows(const db_res_t *res);
@@ -54,5 +55,6 @@ extern int16_t db_get_smallint(const db_res_t *res, int row, int col);
 extern int32_t db_get_integer(const db_res_t *res, int row, int col);
 extern int64_t db_get_bigint(const db_res_t *res, int row, int col);
 extern bool db_get_bool(const db_res_t *res, int row, int col);
+extern fb_time_t db_get_time(const db_res_t *res, int row, int col);
 
 #endif // FB_DBI_H
