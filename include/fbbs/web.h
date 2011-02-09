@@ -40,4 +40,6 @@ extern void xml_header(const char *xslfile);
 
 extern void print_session(void);
 
+extern void xml_print(const char *s);
+
 #endif // FB_WEB_H

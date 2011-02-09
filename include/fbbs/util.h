@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <inttypes.h>
 
+#define elems(x)  (sizeof(x) / sizeof(x[0]))
+
 typedef int64_t fb_time_t;
 #define PRIdFBT PRId64
 

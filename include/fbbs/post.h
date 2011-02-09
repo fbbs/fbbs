@@ -3,6 +3,13 @@
 
 #include "fbbs/util.h"
 
+enum {
+	FILE_MARKED = 0x8,
+	FILE_DIGEST = 0x10,
+	FILE_NOREPLY = 0x40,
+	FILE_WATER = 0x80,
+};
+
 typedef struct post_t {
 	seq_t id;
 	seq_t reid;

@@ -233,3 +233,38 @@ void print_session(void)
 {
 	return;
 }
+
+void xml_print(const char *s)
+{
+	char *c = (char *)s;
+	char *last = c;
+	char *subst;
+	while (*c != '\0') {
+		switch (*c) {
+			case '<':
+				subst = "&lt;";
+				break;
+			case '>':
+				subst = "&gt;";
+				break;
+			case '&':
+				subst = "&amp;";
+				break;
+			case '\033':
+			case '\r':
+				subst = "";
+				break;
+			default:
+				subst = NULL;
+				break;
+		}
+		if (subst) {
+			fwrite(last, 1, c - last, stdout);
+			fputs(subst, stdout);
+			last = ++c;
+		} else {
+			++c;
+		}
+	}
+	fwrite(last, 1, c - last, stdout);
+}

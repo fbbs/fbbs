@@ -7,4 +7,8 @@ enum {
 	FB_FATAL = -2,
 };
 
+enum {
+	FB_EINVAL,
+};
+
 #endif // FB_ERROR_H

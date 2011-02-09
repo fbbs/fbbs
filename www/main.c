@@ -4,6 +4,8 @@
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
+extern int bbs_board(web_ctx_t *ctx);
+
 typedef struct web_handler_t {
 	const char *name;          ///< name of the handler.
 	int (*func)(web_ctx_t *);  ///< handler function.
@@ -17,6 +19,7 @@ int fcgi_foo(web_ctx_t *ctx)
 }
 
 static const web_handler_t _handlers[] = {
+	{ "board", bbs_board },
 	{ "foo", fcgi_foo },
 	{ NULL, NULL }
 };
