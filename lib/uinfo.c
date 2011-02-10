@@ -375,7 +375,7 @@ static bool valid_birth_date(int year, int month, int day)
 			days = 30;
 			break;
 	}
-	if (day < 0 || day > days)
+	if (day < 1 || day > days)
 		return false;
 	return true;
 }
