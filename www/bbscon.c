@@ -107,9 +107,14 @@ int bbscon_main(void)
 		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
 	else
 		printf(">");
+
 	char file[HOMELEN];
 	setbfile(file, bp->filename, fh.filename);
-	xml_printfile(file, stdout);
+	if (*getparm("mob") == '\0')
+		xml_printfile(file, stdout);
+	else
+		xml_print_post(file, PARSE_NOSIG);
+
 	printf("</po></bbscon>");
 
 	brc_fcgi_init(currentuser.userid, bp->filename);
@@ -133,9 +138,14 @@ int bbsgcon_main(void)
 	printf("<bbscon link='gcon' bid='%d'>", bid);
 	print_session();
 	printf("<po>");
+
 	char file[HOMELEN];
 	setbfile(file, bp->filename, f);
-	xml_printfile(file, stdout);
+	if (*getparm("mob") == '\0')
+		xml_printfile(file, stdout);
+	else
+		xml_print_post(file, PARSE_NOSIG);
+
 	printf("</po></bbscon>", bid);
 	brc_fcgi_init(currentuser.userid, bp->filename);
 	brc_addlist(f);

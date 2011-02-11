@@ -35,9 +35,12 @@ a.owner, .ainfo { font-size: 14px; }
 .po a.owner, .ainfo a { color: #336699; }
 .ainfo { color: #808080; }
 
-div.post { border-bottom: #6699cc 1px dotted; padding: 4px 0; }
-div.nav, div.plink { background-color: #ccddff; padding: 4px 0; }
-div.plink { border-bottom: #6699cc 1px dotted; }
+div.post { border-top: #6699cc 1px solid; padding: 4px 0; }
+div.post_h { background-color: #ccddff; margin-bottom: 10px; }
+div.post_q { color: #606060; background-color: #ddeeff; margin-left: 14px; }
+.post p { padding: 2px 0; }
+div.nav, div.plink { padding: 4px 0; }
+div.plink, div.nav { border-top: #6699cc 1px dotted; }
 
 li { border-bottom: #6699cc 1px dotted; padding: 4px 0; }
 li.brd span.tt { font-size: 14px; }

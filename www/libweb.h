@@ -60,6 +60,10 @@ enum {
 	MAX_CONTENT_LENGTH = 5 * 1024 * 1024, /**< Max content length*/
 };
 
+enum {
+	PARSE_NOSIG = 0x1,
+};
+
 extern char param_name[][PARAM_NAMELEN];
 extern char *param_val[];
 extern int param_num;
@@ -113,6 +117,8 @@ void set_doc_mode(int mode);
 const char *get_doc_mode_str(void);
 void print_session(void);
 void printable_filter(char *str);
+
+extern int xml_print_post(const char *file, int option);
 
 #endif  //FB_LIBWEB_H
 
