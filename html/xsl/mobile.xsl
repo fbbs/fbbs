@@ -145,7 +145,7 @@
 
 <xsl:template match='bbscon'>
 <div class='post'>
-	<div class='pmain'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
+	<div class='pmain'><xsl:apply-templates select='po'/></div>
 	<div class='plink'>
 		<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
 		<xsl:if test='@link = "con"'><a href='pst?{$param}'>[回复]</a></xsl:if>
@@ -166,21 +166,41 @@
 </div>
 </xsl:template>
 
+<xsl:template match='po'>
+<div class='post_h'>
+	<p><xsl:value-of select='title'/></p>
+	<p><a href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>)</p>
+	<p><xsl:value-of select='date'/></p>
+</div>
+<xsl:for-each select='pa'>
+	<div class='post_{@m}'>
+		<xsl:for-each select='p'><p><xsl:apply-templates select='.'/></p></xsl:for-each>
+	</div>
+</xsl:for-each>
+</xsl:template>
+
+<xsl:template match='c'>
+<span class='a{@h}{@f} a{@b}'><xsl:value-of select='.'/></span>
+</xsl:template>
+
+<xsl:template match='a'>
+<a href='{@href}'><xsl:value-of select='@href'/></a>
+</xsl:template>
+
 <xsl:template match='bbstcon'>
+	<a href='tdoc?bid={@bid}'>[版面]</a>
+	<a href='gdoc?bid={@bid}'>[文摘]</a>
 	<xsl:for-each select='po'>
 		<div class='post'>
-			<div class='pmain'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
+			<div class='pmain'><xsl:apply-templates select='.'/></div>
 			<div class='nav'>
 				<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
 				<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>
-				<xsl:if test='count(../po) = ../@page'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$last}&amp;a=n'>[下一页]</a></xsl:if>
-				<xsl:if test='$first != ../@gid'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$first}&amp;a=p'>[上一页]</a></xsl:if>
+				<xsl:if test='count(../po) = ../@page'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$last}&amp;a=n'>[下页]</a></xsl:if>
+				<xsl:if test='$first != ../@gid'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$first}&amp;a=p'>[上页]</a></xsl:if>
 				<a href='pst?bid={../@bid}&amp;f={@fid}'>[回复]</a>
 				<a href='ccc?bid={../@bid}&amp;f={@fid}'>[转载]</a>
-				<a href='tdoc?bid={../@bid}'>[版面]</a>
 				<a href='con?bid={../@bid}&amp;f={@fid}'>[链接]</a>
-				<a href='gdoc?bid={../@bid}'>[文摘]</a>
-				<a href='qry?u={@owner}'>[作者: <xsl:value-of select='@owner'/>]</a>
 			</div>
 		</div>
 	</xsl:for-each>
