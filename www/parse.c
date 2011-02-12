@@ -335,6 +335,7 @@ int xml_print_post(const char *file, int option)
 	if (begin != (const char *)m.ptr)
 		++begin;
 	_print_body(begin, (const char *)m.ptr + m.size, option);
-
+	
+	mmap_close(&m);
 	return 0;
 }

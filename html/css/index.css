@@ -35,11 +35,11 @@ ul li {
 	height: 24px;
 }
 #left a:hover {
-	background-color: #ff7f7f;
+	background-color: #ff221f;
 }
 
 .box {
-	background-color: #e10019;
+	background-color: #a81315;
 	-moz-border-radius: 8px 8px 8px 8px;
 	border-radius: 8px 8px 8px 8px;
 }
@@ -93,7 +93,7 @@ input.txt {
 #reg { width: 145px; }
 
 #main {
-	background: url('../images/bbswebpic.jpg') no-repeat;
+	background: url('../images/banner/74-2011-newyear-soulfox.jpg') no-repeat;
 	padding-top: 480px;
 	width: 640px;
 	float: left;

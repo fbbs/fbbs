@@ -448,7 +448,7 @@ void xml_header(const char *xslfile)
 	const char *xsl = xslfile ? xslfile : "bbs";
 	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
 	printf("<?xml version=\"1.0\" encoding=\"%s\"?>\n", CHARSET);
-	printf("<?xml-stylesheet type=\"text/xsl\" href=\"../xsl/%s.xsl\"?>\n", xsl);
+	printf("<?xml-stylesheet type=\"text/xsl\" href=\"../xsl/%s.xsl?v1\"?>\n", xsl);
 }
 
 /**
