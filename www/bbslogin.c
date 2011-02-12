@@ -112,14 +112,15 @@ static int login_screen(void)
 	http_header();
 	const char *ref = get_login_referer();
 	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
-			"<link rel='stylesheet' type='text/css' href='/css/bbs.css' />"
+			"<link rel='stylesheet' type='text/css' href='../css/%s.css' />"
 			"<title>用户登录 - "BBSNAME"</title></head>"
 			"<body><form action='login' method='post'>"
 			"<label for='id'>帐号</label><input type='text' name='id' /><br />"
 			"<label for='pw'>密码</label><input type='password' name='pw' /><br />"
 			"<input type='hidden' name='ref' value='%s'/>"
 			"<input type='submit' value='登录' />"
-			"</form></body></html>", ref);
+			"</form></body></html>",
+			*getparm("mob") ? "mobile" : "bbs", ref);
 	return 0;
 }
 
