@@ -106,10 +106,7 @@ int bbstcon_main(void)
 	for (; begin != end; ++begin) {
 		printf("<po fid='%u' owner='%s'>", begin->id, begin->owner);
 		setbfile(file, bp->filename, begin->filename);
-		if (*getparm("mob") == '\0')
-			xml_printfile(file, stdout);
-		else
-			xml_print_post(file, PARSE_NOSIG);
+		xml_print_file(file);
 		puts("</po>");
 		brc_addlist(begin->filename);
 	}

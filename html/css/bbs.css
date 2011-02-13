@@ -188,20 +188,55 @@ td.time, span.time { color: gray;}
 div.post {
 	-moz-border-radius: 0.8em;
 	-webkit-border-radius: 0.8em;
-	background-color: #ccddff;
 	border: 2px solid #ccddff;
 	margin-bottom: 1em;
 	width: 100%;
 }
+.post a {
+	color: #336699;
+}
 div.ptop, div.pbot {
 	padding: 0.25em 0.5em;
+}
+.ptop a, .plink a, .pnav a {
+	border: 1px solid #6699cc;
+	padding: 2px 3px;
+	margin-right: 2px;
+	color: #333333;
+}
+div.pnav {
+	margin: 0 0 5px;
+}
+div.ptop, div.plink {
+	margin: 5px 0;
 }
 div.plink {
 	padding: 0.25em 0.5em;
 	background-color: #f0f7ff;
 }
-div.pmain, div.umain, div.usmd {
+div.post_h {
+	background-color: #ccddff;
+	margin-bottom: 10px;
+}
+div.post_q {
+	color: #606060;
+	background-color: #ddeeff;
+	margin-left: 14px;
+}
+div.post_s {
+	border-top: 2px dotted #ccddff;
+	padding: 4px 0 0;
+	margin: 4px 0 0;
+	font-family: monospace;
+}
+.post_s img {
+	max-width: 600px;
+	max-height: 200px;
+}
+div.post_h, div.post_t, div.post_q, div.post_s {
 	padding: 0.25em 0.5em;
+}
+div.pmain, div.umain, div.usmd {
 	background-color: #f0f7ff;
 	border-top: 1px solid #ccddff;
 	border-bottom: 1px solid #ccddff;
@@ -213,7 +248,10 @@ div.umain {
 div.usplit {
 	padding: 0.25em 0.5em;
 }
-div.usmd { font-family: monospace; }
+div.usmd {
+	padding: 0.25em 0.5em;
+	font-family: monospace;
+}
 
 textarea.binput {
 	font-size: 1.1em;

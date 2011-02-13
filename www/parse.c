@@ -7,9 +7,9 @@
 #include "mmap.h"
 
 #define BEGIN_WITH(b, e, s) \
-	(e - b >= sizeof(s) - 1 && memcmp(b, s, sizeof(s) - 1) == 0)
+	(e - b >= sizeof(s) - 1 && strncasecmp(b, s, sizeof(s) - 1) == 0)
 #define END_WITH(b, e, s) \
-	(e - b >= sizeof(s) - 1 && memcmp(e - sizeof(s) + 1, s, sizeof(s) - 1) == 0)
+	(e - b >= sizeof(s) - 1 && strncasecmp(e - sizeof(s) + 1, s, sizeof(s) - 1) == 0)
 
 typedef struct string_t {
 	const char *begin;

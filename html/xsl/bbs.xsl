@@ -330,7 +330,7 @@ table.post{width:100%}
 			<xsl:variable name='imgsrc'>../images/types/<xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'>reply</xsl:when><xsl:otherwise>text</xsl:otherwise></xsl:choose>.gif</xsl:variable>
 			<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
 			<td class='ptitle'><a class='ptitle'>
-				<xsl:attribute name='href'><xsl:value-of select='../brd/@link'/>con?bid=<xsl:value-of select='../brd/@bid'/>&amp;f=<xsl:value-of select='@id'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
+				<xsl:attribute name='href'><xsl:value-of select='../brd/@link'/>con?new=1&amp;bid=<xsl:value-of select='../brd/@bid'/>&amp;f=<xsl:value-of select='@id'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
 				<img src='{$imgsrc}'/>
 				<xsl:call-template name='ansi-escape'>
 					<xsl:with-param name='content'><xsl:value-of select='$text'/></xsl:with-param>
@@ -366,71 +366,88 @@ table.post{width:100%}
 <xsl:template match='bbscon'>
 	<div class='post'>
 		<div class='ptop'><xsl:call-template name='con-navbar'/></div>
+		<div class='pmain'><xsl:apply-templates select='po'/></div>
 		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
-		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
-		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
-		<div class='pbot'><a href='#top'>[<img src='../images/button/up.gif'/>回页首]</a><xsl:call-template name='con-navbar'/></div>
 	</div>
 </xsl:template>
+
+<xsl:template match='po'>
+<div class='post_h'>
+	<p>发信人: <a href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>), 信区: <a href='doc?board={board}'><xsl:value-of select='board'/></a></p>
+	<p>标&#160;&#160;题: <xsl:value-of select='title'/></p>
+	<p>发信站: 复旦泉 (<xsl:value-of select='date'/>), 站内信件</p>
+</div>
+<xsl:for-each select='pa'>
+	<div class='post_{@m}'>
+		<xsl:for-each select='p'><p><xsl:apply-templates select='.'/></p></xsl:for-each>
+	</div>
+</xsl:for-each>
+</xsl:template>
+
+<xsl:template match='c'>
+<span class='a{@h}{@f} a{@b}'><xsl:value-of select='.'/></span>
+</xsl:template>
+
+<xsl:template match='a'>
+<a href='{@href}'><xsl:choose><xsl:when test='@i'><img src='{@href}'/></xsl:when><xsl:otherwise><xsl:value-of select='@href'/></xsl:otherwise></xsl:choose></a>
+</xsl:template>
+
 <xsl:template name='con-navbar'>
-	<xsl:if test='@link != "con"'><a href='gdoc?bid={@bid}'>[文摘区]</a></xsl:if>
-	<a href='doc?bid={@bid}'>[<img src='../images/button/home.gif'/>本讨论区]</a>
-	<a><xsl:attribute name='href'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>[本文链接]</a>
-	<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
+	<xsl:if test='@link != "con"'><a href='gdoc?bid={@bid}'>文摘区</a></xsl:if>
+	<a href='doc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
+	<xsl:variable name='baseurl'>con?new=1&amp;bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
 	<xsl:if test='not(po/@sticky)'>
-		<a href='{$baseurl}p'>[<img src='../images/button/up.gif'/>上一篇]</a>
-		<a href='{$baseurl}n'>[<img src='../images/button/down.gif'/>下一篇]</a>
-		<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>[同主题上篇]</a></xsl:if>
-		<a href='{$baseurl}a'>[同主题下篇]</a>
-		<xsl:if test='po/@gid'><a href='con?bid={@bid}&amp;f={po/@gid}'>[同主题首篇]</a></xsl:if>
+		<a href='{$baseurl}p'><img src='../images/button/up.gif'/>上篇</a>
+		<a href='{$baseurl}n'><img src='../images/button/down.gif'/>下篇</a>
+		<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>上楼</a></xsl:if>
+		<a href='{$baseurl}a'>下楼</a>
+		<xsl:if test='po/@gid'><a href='con?new=1&amp;bid={@bid}&amp;f={po/@gid}'>顶楼</a></xsl:if>
 		<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
-		<a href='tcon?bid={@bid}&amp;f={$gid}'>[展开主题]</a>
-		<a href='tcon?bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>[向后展开]</a>
+		<a href='tcon?new=1&amp;bid={@bid}&amp;f={$gid}'>展开主题</a>
+		<a href='tcon?new=1&amp;bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>向后展开</a>
 	</xsl:if>
-	<a><xsl:attribute name='href'>../static/con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>[保存/打印]</a>
+	<a><xsl:attribute name='href'>con?new=1&amp;bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>本文链接</a>
+	<a><xsl:attribute name='href'>../static/con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>保存/打印</a>
 </xsl:template>
 
 <xsl:template name='con-linkbar'>
 	<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
-	<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>[ <img src='../images/button/edit.gif'/>回复本文 ]</a></xsl:if>
-	<a href='edit?{$param}'>[ 修改 ]</a>
-	<a href='ccc?{$param}'>[ 转载 ]</a>
-	<a href='fwd?{$param}'>[ 转寄 ]</a>
-	<a href='del?{$param}'>[ 删除 ]</a>
+	<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute><img src='../images/button/edit.gif'/>回复本文</a></xsl:if>
+	<a href='edit?{$param}'>修改</a>
+	<a href='ccc?{$param}'>转载</a>
+	<a href='fwd?{$param}'>转寄</a>
+	<a href='del?{$param}'>删除</a>
 </xsl:template>
 
 <xsl:template match='bbstcon'>
+	<div class='pnav'><xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
+	<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if></div>
 	<xsl:for-each select='po'>
 		<div class='post'>
 			<div class='ptop'><xsl:call-template name='tcon-navbar'/></div>
+			<div class='pmain'><xsl:apply-templates select='.'/></div>
 			<div class='plink'><xsl:call-template name='tcon-linkbar'/></div>
-			<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
-			<div class='plink'><xsl:call-template name='tcon-linkbar'/></div>
-			<div class='pbot'><a href='#top'>[<img src='../images/button/up.gif'/>回页首]</a><xsl:call-template name='tcon-navbar'/></div>
 		</div>
 	</xsl:for-each>
+	<div class='pnav'><xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
+	<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if></div>
 </xsl:template>
 
 <xsl:template name='tcon-navbar'>
-	<a href='gdoc?bid={../@bid}'>[文摘区]</a>
-	<a href='tdoc?bid={../@bid}'>[<img src='../images/button/home.gif'/>本讨论区]</a>
-	<a href='con?bid={../@bid}&amp;f={@fid}'>[<img src='../images/button/content.gif'/>本文链接]</a>
-	<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
-	<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>
-	<xsl:if test='count(../po) = ../@page'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$last}&amp;a=n'>[<img src='../images/button/down.gif'/>下一页]</a></xsl:if>
-	<xsl:if test='$first != ../@gid'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$first}&amp;a=p'>[<img src='../images/button/up.gif'/>上一页]</a></xsl:if>
+	<a href='gdoc?bid={../@bid}'>文摘区</a>
+	<a href='tdoc?bid={../@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
+	<a href='con?new=1&amp;bid={../@bid}&amp;f={@fid}'><img src='../images/button/content.gif'/>本文链接</a>
 </xsl:template>
 
 <xsl:template name='tcon-linkbar'>
-	<a href='pst?bid={../@bid}&amp;f={@fid}'>[ <img src='../images/button/edit.gif'/>回复本文 ]</a>
-	<a href='ccc?bid={../@bid}&amp;f={@fid}'>[ 转载 ]</a>
-	<a href='qry?u={@owner}'>[ 本篇作者: <xsl:value-of select='@owner'/> ]</a>
+	<a href='pst?bid={../@bid}&amp;f={@fid}'><img src='../images/button/edit.gif'/>回复本文</a>
+	<a href='ccc?bid={../@bid}&amp;f={@fid}'>转载</a>
 </xsl:template>
 
 <xsl:template match='bbsqry'>
 	<form action='qry' method='get'><label for='u'>请输入欲查询的帐号：</label><input type='text' name='u' maxlength='12' size='12'/><input type='submit' value='查询'/></form>
 	<xsl:choose><xsl:when test='@login'><div class='post'>
-		<div class='ptop'><xsl:call-template name='qry-linkbar'/></div>
+		<div class='ptop'><a href='pstmail?recv={@id}'>发送信件</a></div>
 		<div class='umain' id='uinfo'>
 		<p><strong><xsl:value-of select='@id'/></strong> （<strong><xsl:value-of select='nick'/></strong>） <xsl:call-template name='show-horo'/></p>
 		<p>上次在:【<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@lastlogin'/></xsl:call-template></span>】从【<span class='a132'><xsl:value-of select='ip'/></span>】到本站一游。</p>
@@ -443,7 +460,6 @@ table.post{width:100%}
 		<div class='umain'><xsl:for-each select='st'><p><strong><xsl:value-of select='@desc'/></strong><xsl:if test='@idle!=0'>[发呆<xsl:value-of select='@idle'/>分钟]</xsl:if><xsl:if test='@web=1'>（web登录）</xsl:if><xsl:if test='@vis=0'>（隐身）</xsl:if></p></xsl:for-each></div></xsl:if>
 		<div class='usplit'>个人说明档如下</div>
 		<div class='usmd'><xsl:call-template name='showpost'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
-		<div class='pbot'><xsl:call-template name='qry-linkbar'/></div>
 	</div></xsl:when><xsl:otherwise><xsl:if test='@id!=""'><p>没有找到用户【<xsl:value-of select='@id'/>】</p></xsl:if></xsl:otherwise></xsl:choose>
 </xsl:template>
 
@@ -458,10 +474,6 @@ table.post{width:100%}
 	<span class='lev{@level}'>
 		<span class='lev{@level}' style='width:{@repeat * 10}%;'></span>
 	</span>
-</xsl:template>
-
-<xsl:template name='qry-linkbar'>
-	<a href='pstmail?recv={@id}'>[发送信件]</a>
 </xsl:template>
 
 <xsl:template match='bbspst'>

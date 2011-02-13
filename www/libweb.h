@@ -119,6 +119,7 @@ void print_session(void);
 void printable_filter(char *str);
 
 extern int xml_print_post(const char *file, int option);
+extern int xml_print_file(const char *file);
 
 #endif  //FB_LIBWEB_H
 

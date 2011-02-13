@@ -110,10 +110,7 @@ int bbscon_main(void)
 
 	char file[HOMELEN];
 	setbfile(file, bp->filename, fh.filename);
-	if (*getparm("mob") == '\0')
-		xml_printfile(file, stdout);
-	else
-		xml_print_post(file, PARSE_NOSIG);
+	xml_print_file(file);
 
 	printf("</po></bbscon>");
 
@@ -141,14 +138,20 @@ int bbsgcon_main(void)
 
 	char file[HOMELEN];
 	setbfile(file, bp->filename, f);
-	if (*getparm("mob") == '\0')
-		xml_printfile(file, stdout);
-	else
-		xml_print_post(file, PARSE_NOSIG);
+	xml_print_file(file);
 
 	printf("</po></bbscon>", bid);
 	brc_fcgi_init(currentuser.userid, bp->filename);
 	brc_addlist(f);
 	brc_update(currentuser.userid, bp->filename);
 	return 0;
+}
+
+int xml_print_file(const char *file)
+{
+	if (*getparm("new") != '\0')
+		return xml_print_post(file, 0);
+	if (*getparm("mob") == '\0')
+		return xml_printfile(file, stdout);
+	return xml_print_post(file, PARSE_NOSIG);
 }
