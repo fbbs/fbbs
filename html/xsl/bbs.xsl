@@ -131,8 +131,8 @@
 
 <xsl:template name='bbsname'>日月光华</xsl:template>
 <xsl:template name='include-css'>
-	<link rel='stylesheet' type='text/css' href='../css/bbs.css'/>
-	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css'/><![endif]]]></xsl:comment>
+	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1261'/>
+	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1261'/><![endif]]]></xsl:comment>
 </xsl:template>
 <xsl:template name='include-js'>
 	<script src='../js/persist-all-min.js' defer='defer'></script>
