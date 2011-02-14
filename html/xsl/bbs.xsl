@@ -316,7 +316,7 @@ table.post{width:100%}
 		<a href='brdadd?bid={brd/@bid}'>[收藏本版]</a>
 		&#160;版主 [<xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template>]  
 		<xsl:choose><xsl:when test='brd/@link = "t"'>主题</xsl:when><xsl:otherwise>文章</xsl:otherwise></xsl:choose>数 [<xsl:choose><xsl:when test='brd/@total &gt; 0'><xsl:value-of select='brd/@total'/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>]
-		<form class='jump' method='get' action='{brd/@link}doc'><input type='hidden' name='bid' value='{@brd/@bid}'></input><img src='../images/button/forward.gif'/>跳转到<input type='text' name='start' size='6'/>篇</form>
+		<form class='jump' method='get' action='{brd/@link}doc'><input type='hidden' name='bid' value='{brd/@bid}'></input><img src='../images/button/forward.gif'/>跳转到<input type='text' name='start' size='6'/>篇</form>
 	</p>
 	<xsl:apply-templates select='brd'/>
 	<table class='content'>
