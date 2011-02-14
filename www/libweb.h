@@ -62,6 +62,7 @@ enum {
 
 enum {
 	PARSE_NOSIG = 0x1,
+	PARSE_NOQUOTEIMG = 0x2,
 };
 
 extern char param_name[][PARAM_NAMELEN];

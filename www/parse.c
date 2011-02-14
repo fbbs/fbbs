@@ -244,12 +244,13 @@ static const char *_get_url(const char *begin, const char *end)
 	return end;
 }
 
-static const char *_print_url(const char *begin, const char *end)
+static const char *_print_url(const char *begin, const char *end, int option)
 {
 	const char *e = _get_url(begin, end);
 	printf("<a ");
-	if (END_WITH(begin, e, ".jpg") || END_WITH(begin, e, ".gif")
-			|| END_WITH(begin, e, ".png") || END_WITH(begin, e, "jpeg")) {
+	if (!(option & PARSE_NOQUOTEIMG)
+			&& (END_WITH(begin, e, ".jpg") || END_WITH(begin, e, ".gif")
+			|| END_WITH(begin, e, ".png") || END_WITH(begin, e, "jpeg"))) {
 		printf("i='i' ");
 	}
 	printf("href='");
@@ -258,7 +259,7 @@ static const char *_print_url(const char *begin, const char *end)
 	return e;
 }
 
-static void _print_paragraph(const char *begin, const char *end)
+static void _print_paragraph(const char *begin, const char *end, int option)
 {
 	ansi_color_t ansi = { .hl = 0, .fg = 37, .bg = 40 };
 	const char *s = begin;
@@ -266,7 +267,7 @@ static void _print_paragraph(const char *begin, const char *end)
 		const char *url = _memstr(s, "http://", end - s);
 		if (url) {
 			_print_ansi_text(s, url, &ansi);
-			s = _print_url(url, end);
+			s = _print_url(url, end, option);
 		} else {
 			_print_ansi_text(s, end, &ansi);
 			break;
@@ -310,7 +311,7 @@ static void _print_body(const char *begin, const char *end, int option)
 			}
 		}
 		fputs("<p>", stdout);
-		_print_paragraph(s, e);
+		_print_paragraph(s, e, in_quote ? option : option & ~PARSE_NOQUOTEIMG);
 		fputs("</p>", stdout);
 	}
 	printf("</pa>");

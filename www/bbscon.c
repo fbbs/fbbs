@@ -150,7 +150,7 @@ int bbsgcon_main(void)
 int xml_print_file(const char *file)
 {
 	if (*getparm("new") != '\0')
-		return xml_print_post(file, 0);
+		return xml_print_post(file, PARSE_NOQUOTEIMG);
 	if (*getparm("mob") == '\0')
 		return xml_printfile(file, stdout);
 	return xml_print_post(file, PARSE_NOSIG);
