@@ -301,8 +301,9 @@ static void _print_body(const char *begin, const char *end, int option)
 				if (option & PARSE_NOSIG)
 					break;
 				in_text = false;
+				in_quote = false;
 				in_signature = true;
-				printf("</pa><pa m='s'>");
+				printf("</pa><pa m='s'><p>--</p>");
 				continue;
 			}
 			if (_is_quote(s, e) != in_quote) {
