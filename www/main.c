@@ -16,7 +16,8 @@ typedef struct web_handler_t {
 int fcgi_foo(web_ctx_t *ctx)
 {
 	html_header();
-	printf("Hello, world!\n</head></html>");
+	printf("</head><body><p>Hello, world!</p>"
+			"<p>Your IP addr is: %s</p></body></html>", ctx->r->from);
 	return 0;
 }
 

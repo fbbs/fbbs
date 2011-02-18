@@ -165,6 +165,14 @@ http_req_t *get_request(pool_t *p)
 	r->count = 0;
 	if (_parse_http_req(r) != 0)
 		return NULL;
+
+	const char *from = _get_server_env("REMOTE_ADDR");
+	size_t len = strlen(from) + 1;
+	r->from = pool_alloc(p, len);
+	if (!r->from)
+		return NULL;
+	strlcpy(r->from, from, len);
+
 	return r;
 }
 

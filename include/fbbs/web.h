@@ -25,6 +25,7 @@ typedef struct pair_t {
 
 typedef struct http_req_t {
 	pool_t *p;
+	char *from;
 	pair_t params[MAX_PARAMETERS];
 	int count;
 } http_req_t;
