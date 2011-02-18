@@ -199,10 +199,10 @@ div.ptop, div.pbot {
 	padding: 0.25em 0.5em;
 }
 .ptop a, .plink a, .pnav a {
-	border: 1px solid #6699cc;
-	padding: 2px 3px;
-	margin-right: 2px;
-	color: #333333;
+	border-bottom: 1px dotted #6699cc;
+	padding: 3px 0;
+	margin-right: 7px;
+	color: #224466;
 }
 div.pnav {
 	margin: 0 0 5px;

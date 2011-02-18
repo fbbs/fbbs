@@ -524,7 +524,7 @@ table.post{width:100%}
 			<td class='owner'><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a></td>
 			<td class='title'><a class='title' href='doc?board={@board}'><xsl:value-of select='@board'/></a></td>
 			<td class='no'><xsl:value-of select='@count'/></td>
-			<td class='ptitle'><a class='ptitle' href='tcon?board={@board}&amp;f={@gid}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></td>
+			<td class='ptitle'><a class='ptitle' href='tcon?new=1&amp;board={@board}&amp;f={@gid}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></td>
 		</tr></xsl:for-each>
 	</table>
 </xsl:template>
@@ -542,7 +542,7 @@ table.post{width:100%}
 			<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></td>
 			<xsl:variable name='imgsrc'>../images/types/<xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'>reply</xsl:when><xsl:otherwise>text</xsl:otherwise></xsl:choose>.gif</xsl:variable>
 			<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
-			<td class='ptitle'><a class='ptitle' href='{../brd/@link}con?bid={../@bid}&amp;f={@id}'>
+			<td class='ptitle'><a class='ptitle' href='{../brd/@link}con?new=1&amp;bid={../@bid}&amp;f={@id}'>
 				<img src='{$imgsrc}'/>
 				<xsl:call-template name='ansi-escape'>
 					<xsl:with-param name='content'><xsl:value-of select='$text'/></xsl:with-param>
