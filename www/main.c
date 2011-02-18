@@ -1,10 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "fbbs/pool.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
 extern int bbs_board(web_ctx_t *ctx);
+extern int bbs_post(web_ctx_t *ctx);
 
 typedef struct web_handler_t {
 	const char *name;          ///< name of the handler.
@@ -21,6 +23,7 @@ int fcgi_foo(web_ctx_t *ctx)
 static const web_handler_t _handlers[] = {
 	{ "board", bbs_board },
 	{ "foo", fcgi_foo },
+	{ "post", bbs_post },
 	{ NULL, NULL }
 };
 
@@ -61,6 +64,9 @@ int main(void)
 			config_get(&cfg, "user"), config_get(&cfg, "password"));
 	if (db_status(conn) != DB_CONNECTION_OK)
         return EXIT_FAILURE;
+
+	if (chdir(config_get(&cfg, "root")) < 0)
+		return EXIT_FAILURE;
 
 	while (FCGI_Accept() >= 0) {
 		pool_t *p = pool_create(DEFAULT_POOL_SIZE);

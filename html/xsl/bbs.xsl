@@ -2,7 +2,7 @@
 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
 	<xsl:output method='html' encoding='utf-8' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
 
-	<xsl:template name='timeconvert' mode='short'>
+	<xsl:template name='timeconvert'>
 		<xsl:param name='time'/>
 		<xsl:value-of select='concat(substring($time, 6, 5), " ", substring($time, 12, 5))'/>
 	</xsl:template>
@@ -12,6 +12,7 @@
 			<head>
 				<title></title>
 				<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+				<link rel='stylesheet' type='text/css' href='../css/bbs.css'/>
 			</head>
 			<body>
 				<div id='main'><xsl:apply-templates/></div>
@@ -38,5 +39,37 @@
 		</div>
 	</xsl:template>
 
+	<xsl:template match='bbs_post'>
+		<a href='board?bid={@bid}'>返回版面</a>
+		<a href='post?id={post/@id}&amp;a=n'>下楼</a>
+		<a href='post?id={post/@id}&amp;a=p'>上楼</a>
+		<xsl:if test='post/@id!=@gid'><a href='post?id={@gid}'>顶楼</a></xsl:if>
+		<xsl:apply-templates select='post'/>
+	</xsl:template>
+
+	<xsl:template match='post'>
+		<div class='post'>
+			<div class='post_h'>
+				<p><span>发信人: </span><a href='user?name={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>), 信区: <a href='board?name={board}'><xsl:value-of select='board'/></a></p>
+				<p><span>标  题: </span><xsl:value-of select='title'/></p>
+				<p><span>发信站: </span>复旦泉 (<xsl:value-of select='date'/>), 站内信件</p>
+			</div>
+			<xsl:for-each select='pa'>
+				<div class='post_{@m}'>
+					<xsl:for-each select='p'>
+						<p><xsl:apply-templates select='.'/></p>
+					</xsl:for-each>
+				</div>
+			</xsl:for-each>
+		</div>
+	</xsl:template>
+
+	<xsl:template match='c'>
+		<span class='a{@h}{@f} a{@b}'><xsl:value-of select='.'/></span>
+	</xsl:template>
+
+	<xsl:template match='a'>
+		<a href='{@href}'><xsl:choose><xsl:when test='@i'><img src='{@href}'/></xsl:when><xsl:otherwise><xsl:value-of select='@href'/></xsl:otherwise></xsl:choose></a>
+	</xsl:template>
 </xsl:stylesheet>
 
