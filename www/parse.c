@@ -70,6 +70,25 @@ static const void *_memrchr(const void *s, int c, size_t n)
 	return NULL;
 }
 
+static const char *_memstr(const void *m, const char *s, size_t size)
+{
+	if (!m || !s)
+		return NULL;
+	const char *p = m;
+	const char *e = p + size;
+	size_t len = strlen(s);
+
+	while (p != e) {
+		p = memchr(p, *s, e - p);
+		if (!p)
+			return NULL;
+		if (e - p >= len && memcmp(p, s, len) == 0)
+			return p;
+		++p;
+	}
+	return NULL;
+}
+
 static void _xml_escape(const char *begin, const char *end)
 {
 	for (const char *s = begin; s != end; ++s) {
@@ -170,8 +189,9 @@ static const char *_print_header(const char *begin, size_t size)
 
 	string_t owner, nick, board, title;
 
-	if ((owner.begin = begin + sizeof("发信人: ") - 1) >= end)
+	if (!(owner.begin = _memstr(begin, "发信人: ", line.end - begin)))
 		return begin;
+	owner.begin += sizeof("发信人: ") - 1;
 	if (!(owner.end = memchr(owner.begin, ' ', line.end - owner.begin)))
 		return begin;
 
@@ -183,7 +203,8 @@ static const char *_print_header(const char *begin, size_t size)
 	board.begin = memchr(nick.end, ':', line.end - nick.end);
 	if ((board.begin += 2) >= end)
 		return begin;
-	board.end = line.end - 1;
+	if (!(board.end = memchr(board.begin, '\033', line.end - board.begin)))
+		board.end = line.end - 1;
 
 	line.begin = line.end;
 	line.end = _get_line_end(line.begin, end);
@@ -210,25 +231,6 @@ static const char *_print_header(const char *begin, size_t size)
 	printf("<date>%s</date>", getdatestring(date, DATE_ZH));
 
 	return line.end;
-}
-
-static const char *_memstr(const void *m, const char *s, size_t size)
-{
-	if (!m || !s)
-		return NULL;
-	const char *p = m;
-	const char *e = p + size;
-	size_t len = strlen(s);
-
-	while (p != e) {
-		p = memchr(p, *s, e - p);
-		if (!p)
-			return NULL;
-		if (e - p >= len && memcmp(p, s, len) == 0)
-			return p;
-		++p;
-	}
-	return NULL;
 }
 
 static const char *_get_url(const char *begin, const char *end)
