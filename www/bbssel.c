@@ -1,12 +1,13 @@
 #define _GNU_SOURCE
 #include "libweb.h"
+#include "fbbs/web.h"
 
-int bbssel_main(void)
+int bbssel_main(web_ctx_t *ctx)
 {
 	xml_header("bbssel");
 	printf("<bbssel>");
-	print_session();
-	char *brd = getparm("brd");
+	print_session(ctx);
+	const char *brd = get_param(ctx->r, "brd");
 	if (*brd != '\0') {
 		struct boardheader *bp;
 		int found = 0;

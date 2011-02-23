@@ -5,6 +5,7 @@
 #include "fbbs/time.h"
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/web.h"
 
 #define BEGIN_WITH(b, e, s) \
 	(e - b >= sizeof(s) - 1 && strncasecmp(b, s, sizeof(s) - 1) == 0)

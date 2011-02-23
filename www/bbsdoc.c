@@ -4,6 +4,7 @@
 #include "record.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 enum {
 	BFIND_EXPIRE = 90,
@@ -15,10 +16,10 @@ typedef struct criteria_t {
 	bool mark;
 	bool nore;
 	time_t limit;
-	char *t1;
-	char *t2;
-	char *t3;
-	char *user;
+	const char *t1;
+	const char *t2;
+	const char *t3;
+	const char *user;
 	int found;
 } criteria_t;
 
@@ -149,13 +150,13 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 
 extern int bbsboa_main();
 
-static int bbsdoc(int mode)
+static int bbsdoc(web_ctx_t *ctx, int mode)
 {
 	char board[STRLEN];
-	char *bidstr = getparm("bid");
+	const char *bidstr = get_param(ctx->r, "bid");
 	struct boardheader *bp;
 	if (*bidstr == '\0') {
-		bp = getbcache(getparm("board"));
+		bp = getbcache(get_param(ctx->r, "board"));
 	} else {
 		bp = getbcache2(strtol(bidstr, NULL, 10));
 	}
@@ -174,8 +175,8 @@ static int bbsdoc(int mode)
 			setbfile(dir, board, DOT_DIR);
 			break;
 	}
-	int start = strtol(getparm("start"), NULL, 10);
-	int my_t_lines = strtol(getparm("my_t_lines"), NULL, 10);
+	int start = strtol(get_param(ctx->r, "start"), NULL, 10);
+	int my_t_lines = strtol(get_param(ctx->r, "my_t_lines"), NULL, 10);
 	int bid = getbnum2(bp);
 	if (my_t_lines < 10 || my_t_lines > 40)
 		my_t_lines = TLINES;
@@ -185,7 +186,7 @@ static int bbsdoc(int mode)
 
 	xml_header(NULL);
 	printf("<bbsdoc>");
-	print_session();
+	print_session(ctx);
 	brc_fcgi_init(currentuser.userid, board);
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 
@@ -224,24 +225,24 @@ static int bbsdoc(int mode)
 	return 0;
 }
 
-int bbsdoc_main(void)
+int bbsdoc_main(web_ctx_t *ctx)
 {
-	return bbsdoc(MODE_NORMAL);
+	return bbsdoc(ctx, MODE_NORMAL);
 }
 
-int bbsgdoc_main(void)
+int bbsgdoc_main(web_ctx_t *ctx)
 {
-	return bbsdoc(MODE_DIGEST);
+	return bbsdoc(ctx, MODE_DIGEST);
 }
 
-int bbstdoc_main(void)
+int bbstdoc_main(web_ctx_t *ctx)
 {
-	return bbsdoc(MODE_THREAD);
+	return bbsdoc(ctx, MODE_THREAD);
 }
 
-int bbsodoc_main(void)
+int bbsodoc_main(web_ctx_t *ctx)
 {
-	return bbsdoc(MODE_TOPICS);
+	return bbsdoc(ctx, MODE_TOPICS);
 }
 
 int do_bfind(void *buf, int count, void *args)
@@ -270,32 +271,32 @@ int do_bfind(void *buf, int count, void *args)
 	return 0;
 }
 
-int bbsbfind_main(void)
+int bbsbfind_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
 	criteria_t cri;
-	cri.bid = strtol(getparm("bid"), NULL, 10);
+	cri.bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(cri.bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	cri.mark = false;
-	if (!strcasecmp(getparm("mark"), "on"))
+	if (!strcasecmp(get_param(ctx->r, "mark"), "on"))
 		cri.mark = true;
 	cri.nore = false;
-	if (!strcasecmp(getparm("nore"), "on"))
+	if (!strcasecmp(get_param(ctx->r, "nore"), "on"))
 		cri.nore = true;
-	long day = strtol(getparm("limit"), NULL, 10);
+	long day = strtol(get_param(ctx->r, "limit"), NULL, 10);
 	if (day < 0)
 		day = 0;
 	if (day > BFIND_EXPIRE)
 		day = BFIND_EXPIRE;
 	cri.limit = time(NULL) - 24 * 60 * 60 * day;
-	cri.t1 = getparm("t1");
-	cri.t2 = getparm("t2");
-	cri.t3 = getparm("t3");
-	cri.user = getparm("user");
+	cri.t1 = get_param(ctx->r, "t1");
+	cri.t2 = get_param(ctx->r, "t2");
+	cri.t3 = get_param(ctx->r, "t3");
+	cri.user = get_param(ctx->r, "user");
 	cri.found = 0;
 
 	xml_header(NULL);
@@ -311,7 +312,7 @@ int bbsbfind_main(void)
 	} else {
 		printf(">");
 	}
-	print_session();
+	print_session(ctx);
 	printf("</bbsbfind>");
 	return 0;
 }

@@ -2,6 +2,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		int action, struct fileheader *fp);
@@ -71,23 +72,23 @@ static int edit_article(const char *file, const char *content, const char *ip)
 	return BBS_EINTNL;	
 }
 
-int bbssnd_main(void)
+int bbssnd_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	if (parse_post_data() < 0)
+	if (parse_post_data(ctx->r) < 0)
 		return BBS_EINVAL;
-	int bid = strtol(getparm("bid"), NULL, 10);
+	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	bool isedit = (*(getparm("e")) == '1');
+	bool isedit = (*(get_param(ctx->r, "e")) == '1');
 	unsigned int fid;
 	struct fileheader fh;
-	char *f = getparm("f");
+	const char *f = get_param(ctx->r, "f");
 	bool reply = !(*f == '\0');
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
@@ -102,7 +103,7 @@ int bbssnd_main(void)
 
 	char title[sizeof(fh.title)];
 	if (!isedit) {
-		strlcpy(title, getparm("title"), sizeof(title));
+		strlcpy(title, get_param(ctx->r, "title"), sizeof(title));
 		printable_filter(title);
 		valid_title(title);
 		if (*title == '\0')
@@ -118,15 +119,15 @@ int bbssnd_main(void)
 	if (isedit) {
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
-		if (edit_article(file, getparm("text"), mask_host(fromhost)) < 0)
+		if (edit_article(file, get_param(ctx->r, "text"), mask_host(fromhost)) < 0)
 			return BBS_EINTNL;
 	} else {
 		post_request_t pr = { .autopost = false, .crosspost = false,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.bp = bp, .title = title, .content = getparm("text"),
-			.sig = strtol(getparm("sig"), NULL, 0), .ip = mask_host(fromhost),
+			.bp = bp, .title = title, .content = get_param(ctx->r, "text"),
+			.sig = strtol(get_param(ctx->r, "sig"), NULL, 0), .ip = mask_host(fromhost),
 			.o_fp = reply ? &fh : NULL, .noreply = false, .mmark = false,
-			.anony = strtol(getparm("anony"), NULL, 0) };
+			.anony = strtol(get_param(ctx->r, "anony"), NULL, 0) };
 		if (do_post_article(&pr) < 0)
 			return BBS_EINTNL;
 	}

@@ -25,12 +25,12 @@ int main() {
 		http_fatal("ÄúÉĞÎ´µÇÂ¼, ÇëÏÈµÇÂ¼");
 	}
 	printf("<b>ĞÅ¼şÏÂÔØ ¡¤ %s</b><br>\n", BBSNAME);
-	type=atoi(getparm("type"));
+	type=atoi(get_param(ctx->r, "type"));
 	
 	if(type==0) return show_form();	
 	
-    docstart=atoi(getparm("start"));
-    docend=atoi(getparm("end"));	
+    docstart=atoi(get_param(ctx->r, "start"));
+    docend=atoi(get_param(ctx->r, "end"));	
 	sprintf(dir, "mail/%c/%s/.DIR", toupper(currentuser.userid[0]), currentuser.userid);
    	total=file_size(dir)/sizeof(struct fileheader);
 	

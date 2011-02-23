@@ -11,7 +11,7 @@ int main() {
 		printf("<br>");
 		http_fatal("匆匆过客无法改变昵称");
 	}
-	strlcpy(nick, getparm("nick"), 30);
+	strlcpy(nick, get_param(ctx->r, "nick"), 30);
 	if(nick[0]==0) {
 		printf(" [使用者: %s]\n", currentuser.userid);
 		printpretable_lite();

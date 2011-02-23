@@ -30,7 +30,7 @@ static int send_msg(const char *myuserid, int mypid, const char *touserid, int t
 	return 0;
 }
 
-int bbssendmsg_main(void)
+int bbssendmsg_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
@@ -38,9 +38,9 @@ int bbssendmsg_main(void)
 		return BBS_EACCES;
 
 	parse_post_data();
-	char *destid = getparm("id");
-	char *msg = getparm("msg");
-	int destpid = strtol(getparm("pid"), NULL, 10);
+	char *destid = get_param(ctx->r, "id");
+	char *msg = get_param(ctx->r, "msg");
+	int destpid = strtol(get_param(ctx->r, "pid"), NULL, 10);
 	if (*destid == '\0' || *msg == '\0') {
 		xml_header("bbssendmsg");
 		puts("<bbssendmsg>null</bbssendmsg>");

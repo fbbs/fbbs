@@ -16,7 +16,7 @@ static void add_msg(void)
 	append_record(path, buf, BBSMSG_RECORD_LENGTH);
 }
 
-int bbsgetmsg_main(void)
+int bbsgetmsg_main(web_ctx_t *ctx)
 {
 	add_msg();
 	xml_header("bbsgetmsg");

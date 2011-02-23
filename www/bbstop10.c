@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 enum {
     BOARD_LEN = 18, TITLE_LEN = 62, OWNER_LEN = 16,
@@ -14,11 +15,11 @@ typedef struct top_t {
     time_t last;
 } top_t;
 
-int bbstop10_main(void)
+int bbstop10_main(web_ctx_t *ctx)
 {
 	xml_header(NULL);
 	printf("<bbstop10>");
-	print_session();
+	print_session(ctx);
 	top_t top;
 	FILE *fp = fopen(BBSHOME"/etc/posts/day.0", "rb");
 	if (fp != NULL) {

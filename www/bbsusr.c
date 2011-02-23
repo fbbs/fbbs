@@ -25,8 +25,8 @@ int main() {
 		memcpy(&user[total], x, sizeof(struct user_info));
 		total++;
 	}
-	start=atoi(getparm("start"))-1;//added "-1" by roly 02.04.07
-	my_t_lines=atoi(getparm("my_t_lines"));
+	start=atoi(get_param(ctx->r, "start"))-1;//added "-1" by roly 02.04.07
+	my_t_lines=atoi(get_param(ctx->r, "my_t_lines"));
 	if(my_t_lines<10 || my_t_lines>40) my_t_lines=TLINES;
 
 	printpretable();

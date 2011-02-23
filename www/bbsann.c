@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 enum {
 	ANN_TITLE_LENGTH = 39
@@ -68,13 +69,13 @@ static char *getbfroma(const char *path)
 	return "";
 }
 
-int bbs0an_main(void)
+int bbs0an_main(web_ctx_t *ctx)
 {
 	char path[512];
 	struct boardheader *bp = NULL;
-	int bid = strtol(getparm("bid"), NULL, 10);
+	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	if (bid <= 0) {
-		strlcpy(path, getparm("path"), sizeof(path));
+		strlcpy(path, get_param(ctx->r, "path"), sizeof(path));
 		if (strstr(path, "..") || strstr(path, "SYSHome"))
 			return BBS_EINVAL;
 		char *board = getbfroma(path);
@@ -135,7 +136,7 @@ int bbs0an_main(void)
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
-	print_session();
+	print_session(ctx);
 	
 	char name[STRLEN], fpath[1024], *id = NULL, *ptr;
 	struct stat st;
@@ -179,9 +180,9 @@ int bbs0an_main(void)
 	return 0;
 }
 
-int bbsanc_main(void)
+int bbsanc_main(web_ctx_t *ctx)
 {
-	char *path = getparm("path");
+	const char *path = get_param(ctx->r, "path");
 	if (strstr(path, "bbslist") || strstr(path, ".Search")
 			|| strstr(path, ".Names") || strstr(path, "..")
 			|| strstr(path, "SYSHome"))
@@ -201,7 +202,7 @@ int bbsanc_main(void)
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
-	print_session();
+	print_session(ctx);
 	printf("<po>");
 	xml_printfile(fname, stdout);
 	printf("</po></bbsanc>");

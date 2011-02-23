@@ -1,61 +1,62 @@
 #include "libweb.h"
 #include <sys/types.h>
 #include <unistd.h>
+#include "fbbs/web.h"
 
 void check_bbserr(int err);
-int bbssec_main(void);
-int bbsall_main(void);
-int bbsboa_main(void);
-int bbslogin_main(void);
-int bbslogout_main(void);
-int bbsdoc_main(void);
-int bbscon_main(void);
-int bbspst_main(void);
-int bbssnd_main(void);
-int bbsqry_main(void);
-int bbsclear_main(void);
-int bbsupload_main(void);
-int bbspreupload_main(void);
-int bbs0an_main(void);
-int bbsanc_main(void);
-int bbsnot_main(void);
-int bbsmail_main(void);
-int bbsmailcon_main(void);
-int bbsdelmail_main(void);
-int bbsgdoc_main(void);
-int bbstdoc_main(void);
-int bbsgcon_main(void);
-int bbstcon_main(void);
-int bbsmybrd_main(void);
-int bbsbrdadd_main(void);
-int bbsccc_main(void);
-int bbsfav_main(void);
-int bbspstmail_main(void);
-int bbssndmail_main(void);
-int bbsfall_main(void);
-int bbsfadd_main(void);
-int bbsfdel_main(void);
-int bbsplan_main(void);
-int bbssig_main(void);
-int bbsdel_main(void);
-int bbsfwd_main(void);
-int bbsinfo_main(void);
-int bbspwd_main(void);
-int bbsedit_main(void);
-int bbssel_main(void);
-int bbsrss_main(void);
-int bbsovr_main(void);
-int bbstop10_main(void);
-int bbsnewmail_main(void);
-int bbsbfind_main(void);
-int bbsidle_main(void);
-extern int fcgi_reg(void);
-extern int fcgi_activate(void);
-extern int fcgi_exist(void);
+extern int bbssec_main(web_ctx_t *ctx);
+extern int bbsall_main(web_ctx_t *ctx);
+extern int bbsboa_main(web_ctx_t *ctx);
+extern int bbslogin_main(web_ctx_t *ctx);
+extern int bbslogout_main(web_ctx_t *ctx);
+extern int bbsdoc_main(web_ctx_t *ctx);
+extern int bbscon_main(web_ctx_t *ctx);
+extern int bbspst_main(web_ctx_t *ctx);
+extern int bbssnd_main(web_ctx_t *ctx);
+extern int bbsqry_main(web_ctx_t *ctx);
+extern int bbsclear_main(web_ctx_t *ctx);
+extern int bbsupload_main(web_ctx_t *ctx);
+extern int bbspreupload_main(web_ctx_t *ctx);
+extern int bbs0an_main(web_ctx_t *ctx);
+extern int bbsanc_main(web_ctx_t *ctx);
+extern int bbsnot_main(web_ctx_t *ctx);
+extern int bbsmail_main(web_ctx_t *ctx);
+extern int bbsmailcon_main(web_ctx_t *ctx);
+extern int bbsdelmail_main(web_ctx_t *ctx);
+extern int bbsgdoc_main(web_ctx_t *ctx);
+extern int bbstdoc_main(web_ctx_t *ctx);
+extern int bbsgcon_main(web_ctx_t *ctx);
+extern int bbstcon_main(web_ctx_t *ctx);
+extern int bbsmybrd_main(web_ctx_t *ctx);
+extern int bbsbrdadd_main(web_ctx_t *ctx);
+extern int bbsccc_main(web_ctx_t *ctx);
+extern int bbsfav_main(web_ctx_t *ctx);
+extern int bbspstmail_main(web_ctx_t *ctx);
+extern int bbssndmail_main(web_ctx_t *ctx);
+extern int bbsfall_main(web_ctx_t *ctx);
+extern int bbsfadd_main(web_ctx_t *ctx);
+extern int bbsfdel_main(web_ctx_t *ctx);
+extern int bbsplan_main(web_ctx_t *ctx);
+extern int bbssig_main(web_ctx_t *ctx);
+extern int bbsdel_main(web_ctx_t *ctx);
+extern int bbsfwd_main(web_ctx_t *ctx);
+extern int bbsinfo_main(web_ctx_t *ctx);
+extern int bbspwd_main(web_ctx_t *ctx);
+extern int bbsedit_main(web_ctx_t *ctx);
+extern int bbssel_main(web_ctx_t *ctx);
+extern int bbsrss_main(web_ctx_t *ctx);
+extern int bbsovr_main(web_ctx_t *ctx);
+extern int bbstop10_main(web_ctx_t *ctx);
+extern int bbsnewmail_main(web_ctx_t *ctx);
+extern int bbsbfind_main(web_ctx_t *ctx);
+extern int bbsidle_main(web_ctx_t *ctx);
+extern int fcgi_reg(web_ctx_t *ctx);
+extern int fcgi_activate(web_ctx_t *ctx);
+extern int fcgi_exist(web_ctx_t *ctx);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
-	int (*func) (void);  ///< handler function.
+	int (*func) (web_ctx_t *);  ///< handler function.
 	int mode;            ///< user mode. @see mode_type
 } web_handler_t;
 
@@ -163,25 +164,31 @@ static int fcgi_init_all(void)
  */
 int main(void)
 {
-	if (fcgi_init_all() < 0) {
-		check_bbserr(BBS_EINTNL);
-		return 1;
-	}
+	if (fcgi_init_all() < 0)
+		return EXIT_FAILURE;
+
 	while (FCGI_Accept() >= 0) {
+		pool_t *p = pool_create(DEFAULT_POOL_SIZE);
+
+		http_req_t *r = get_request(p);
+		if (!r)
+			return EXIT_FAILURE;
+
+		web_ctx_t ctx = { .r = r };
 		const web_handler_t *app = getapplet();
 		int ret;
 		if (app == NULL) {
 			ret = BBS_ENOURL;
 		} else {
-			fcgi_init_loop(get_web_mode(app->mode));
-#ifdef FDQUAN
+			fcgi_init_loop(&ctx, get_web_mode(app->mode));
+#ifndef FDQUAN
 			if (!loginok && app->func != bbslogin_main
 					&& app->func != fcgi_reg && app->func != fcgi_activate)
 				ret = BBS_ELGNREQ;
 			else
-				ret = (*(app->func))();
+				ret = (*(app->func))(&ctx);
 #else
-			ret = (*(app->func))();
+			ret = (*(app->func))(&ctx);
 #endif // FDQUAN
 		}
 		check_bbserr(ret);

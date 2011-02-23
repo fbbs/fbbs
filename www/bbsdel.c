@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "record.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 static int cmp_fid(const void *key, const void *buf)
 {
@@ -13,12 +14,12 @@ static int cmp_fid(const void *key, const void *buf)
 	return 0;
 }
 
-int bbsdel_main(void)
+int bbsdel_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	int bid = strtol(getparm("bid"), NULL, 10);
-	unsigned int fid = strtoul(getparm("f"), NULL, 10);
+	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
 	if (fid == 0)
 		return BBS_EINVAL;
 	struct boardheader *bp = getbcache2(bid);

@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/web.h"
 
 static int cmp_fid(void *arg, void *buf)
 {
@@ -73,17 +74,17 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 	return (f != NULL);
 }
 
-int bbscon_main(void)
+int bbscon_main(web_ctx_t *ctx)
 {
-	int bid = strtol(getparm("bid"), NULL, 10);
+	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	unsigned int fid = strtoul(getparm("f"), NULL, 10);
-	char *action = getparm("a");
-	bool sticky = *getparm("s");
+	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
+	const char *action = get_param(ctx->r, "a");
+	bool sticky = *get_param(ctx->r, "s");
 
 	struct fileheader fh;
 	if (sticky) {
@@ -99,7 +100,7 @@ int bbscon_main(void)
 
 	xml_header(NULL);
 	printf("<bbscon link='con' bid='%d'>", bid);
-	print_session();
+	print_session(ctx);
 	printf("<po fid='%u'", fid);
 	if (sticky)
 		printf(" sticky='1'");
@@ -110,7 +111,7 @@ int bbscon_main(void)
 
 	char file[HOMELEN];
 	setbfile(file, bp->filename, fh.filename);
-	xml_print_file(file);
+	xml_print_file(ctx->r, file);
 
 	printf("</po></bbscon>");
 
@@ -120,25 +121,25 @@ int bbscon_main(void)
 	return 0;
 }
 
-int bbsgcon_main(void)
+int bbsgcon_main(web_ctx_t *ctx)
 {
-	int bid = strtol(getparm("bid"), NULL, 10);
+	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	char *f = getparm("f");
+	const char *f = get_param(ctx->r, "f");
 	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
 		return BBS_EINVAL;
 	xml_header(NULL);
 	printf("<bbscon link='gcon' bid='%d'>", bid);
-	print_session();
+	print_session(ctx);
 	printf("<po>");
 
 	char file[HOMELEN];
 	setbfile(file, bp->filename, f);
-	xml_print_file(file);
+	xml_print_file(ctx->r, file);
 
 	printf("</po></bbscon>");
 	brc_fcgi_init(currentuser.userid, bp->filename);
@@ -147,11 +148,11 @@ int bbsgcon_main(void)
 	return 0;
 }
 
-int xml_print_file(const char *file)
+int xml_print_file(http_req_t *r, const char *file)
 {
-	if (*getparm("new") != '\0')
+	if (*get_param(r, "new") != '\0')
 		return xml_print_post(file, PARSE_NOQUOTEIMG);
-	if (*getparm("mob") == '\0')
+	if (*get_param(r, "mob") == '\0')
 		return xml_printfile(file, stdout);
 	return xml_print_post(file, PARSE_NOSIG);
 }

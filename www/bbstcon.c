@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/web.h"
 
 enum {
 	POSTS_PER_PAGE = 20,
@@ -62,12 +63,12 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 }
 
 // TODO: brc
-int bbstcon_main(void)
+int bbstcon_main(web_ctx_t *ctx)
 {
-	int bid = strtol(getparm("bid"), NULL, 10);
+	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	struct boardheader *bp;
 	if (bid <= 0) {
-		bp = getbcache(getparm("board"));
+		bp = getbcache(get_param(ctx->r, "board"));
 		bid = getbnum2(bp);
 	} else {
 		bp = getbcache2(bid);
@@ -76,9 +77,9 @@ int bbstcon_main(void)
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	unsigned int gid = strtoul(getparm("g"), NULL, 10);
-	unsigned int fid = strtoul(getparm("f"), NULL, 10);
-	char action = *(getparm("a"));
+	unsigned int gid = strtoul(get_param(ctx->r, "g"), NULL, 10);
+	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
+	char action = *(get_param(ctx->r, "a"));
 	if (gid == 0) {
 		gid = fid;
 		fid--;
@@ -93,7 +94,7 @@ int bbstcon_main(void)
 	struct fileheader *begin, *end;
 	xml_header(NULL);
 	printf("<bbstcon bid='%d' gid='%u' page='%d'>", bid, gid, count);
-	print_session();
+	print_session(ctx);
 	if (action == 'n') {
 		begin = fh;
 		end = fh + c;
@@ -106,7 +107,7 @@ int bbstcon_main(void)
 	for (; begin != end; ++begin) {
 		printf("<po fid='%u' owner='%s'>", begin->id, begin->owner);
 		setbfile(file, bp->filename, begin->filename);
-		xml_print_file(file);
+		xml_print_file(ctx->r, file);
 		puts("</po>");
 		brc_addlist(begin->filename);
 	}

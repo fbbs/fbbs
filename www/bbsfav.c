@@ -1,15 +1,16 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/fileio.h"
+#include "fbbs/web.h"
 
-int bbsfav_main(void)
+int bbsfav_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
 	xml_header(NULL);
 	printf("<bbsfav>");
-	print_session();
+	print_session(ctx);
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
@@ -35,12 +36,12 @@ int bbsfav_main(void)
 	return 0;
 }
 
-int bbsbrdadd_main(void)
+int bbsbrdadd_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	int bid = strtol(getparm("bid"), NULL, 10);
+	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
@@ -84,7 +85,7 @@ int bbsbrdadd_main(void)
 		return ret;
 	xml_header(NULL);
 	printf("<bbsbrdadd>");
-	print_session();
+	print_session(ctx);
 	printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", bp->filename, bid);
 	return 0;
 }

@@ -7,6 +7,7 @@
 #include "stdarg.h"
 #include <crypt.h>
 #include <fcgi_stdio.h>  //Should be included last.
+#include "fbbs/web.h"
 
 #define CHARSET		"gb18030"
 //#define SQUID
@@ -57,20 +58,9 @@ enum {
 enum {
 	MAX_PARAMS = 256,    /**< Max number of parameter pairs */
 	PARAM_NAMELEN = 80,  /**< Max length of a parameter name */
-	MAX_CONTENT_LENGTH = 5 * 1024 * 1024, /**< Max content length*/
 };
 
-enum {
-	PARSE_NOSIG = 0x1,
-	PARSE_NOQUOTEIMG = 0x2,
-};
-
-extern char param_name[][PARAM_NAMELEN];
-extern char *param_val[];
-extern int param_num;
 const char *getsenv(const char *s);
-int parse_post_data(void);
-char *getparm(const char *name);
 const char *get_referer(void);
 
 void setcookie(const char *a, const char *b);
@@ -112,15 +102,15 @@ int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
-int fcgi_init_loop(int mode);
+int fcgi_init_loop(web_ctx_t *ctx, int mode);
 int get_doc_mode(void);
 void set_doc_mode(int mode);
 const char *get_doc_mode_str(void);
-void print_session(void);
+void print_session(web_ctx_t *ctx);
 void printable_filter(char *str);
 
 extern int xml_print_post(const char *file, int option);
-extern int xml_print_file(const char *file);
+extern int xml_print_file(http_req_t *r, const char *file);
 
 #endif  //FB_LIBWEB_H
 

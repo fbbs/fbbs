@@ -3,6 +3,7 @@
 #include "fbbs/register.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
+#include "fbbs/web.h"
 
 // Since there is no captcha for web registration...
 enum {
@@ -103,49 +104,49 @@ static const char *_reg(const reg_req_t *r)
 	return NULL;
 }
 
-int fcgi_reg(void)
+int fcgi_reg(web_ctx_t *ctx)
 {
-	parse_post_data();
+	parse_post_data(ctx->r);
 	reg_req_t request = {
-		.id = getparm("id"),
-		.pw = getparm("pw"),
-		.pw2 = getparm("pw2"),
-		.mail = getparm("mail"),
-		.nick = getparm("nick"),
-		.gender = getparm("gender"),
-		.name = getparm("name"),
-		.tel = getparm("tel"),
-		.agree = getparm("agree"),
-		.year = strtol(getparm("byear"), NULL, 10),
-		.month = strtol(getparm("bmon"), NULL, 10),
-		.day = strtol(getparm("bday"), NULL, 10)
+		.id = get_param(ctx->r, "id"),
+		.pw = get_param(ctx->r, "pw"),
+		.pw2 = get_param(ctx->r, "pw2"),
+		.mail = get_param(ctx->r, "mail"),
+		.nick = get_param(ctx->r, "nick"),
+		.gender = get_param(ctx->r, "gender"),
+		.name = get_param(ctx->r, "name"),
+		.tel = get_param(ctx->r, "tel"),
+		.agree = get_param(ctx->r, "agree"),
+		.year = strtol(get_param(ctx->r, "byear"), NULL, 10),
+		.month = strtol(get_param(ctx->r, "bmon"), NULL, 10),
+		.day = strtol(get_param(ctx->r, "bday"), NULL, 10)
 	};
 
 	const char *error = _reg(&request);
 
 	xml_header(NULL);
 	printf("<bbsreg error='%d'>", error ? 1 : 0);
-	print_session();
+	print_session(ctx);
 	if (error)
 		printf("%s", error);
 	printf("</bbsreg>");
 	return 0;
 }
 
-int fcgi_activate(void)
+int fcgi_activate(web_ctx_t *ctx)
 {
-	const char *code = getparm("code");
-	const char *user = getparm("user");
+	const char *code = get_param(ctx->r, "code");
+	const char *user = get_param(ctx->r, "user");
 	xml_header(NULL);
 	printf("<bbsactivate success='%d'>", activate_email(user, code));
-	print_session();
+	print_session(ctx);
 	printf("</bbsactivate>");
 	return 0;
 }
 
-int fcgi_exist(void)
+int fcgi_exist(web_ctx_t *ctx)
 {
-	const char *user = getparm("user");
+	const char *user = get_param(ctx->r, "user");
 	xml_header(NULL);
 	printf("<bbsexist>%d</bbsexist>", searchuser(user) != 0);
 	return 0;

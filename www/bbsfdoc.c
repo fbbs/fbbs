@@ -55,7 +55,7 @@ int main()
 	struct dir x[30000], xx;
 	int i, start, total=0;
 	init_all();
-	strlcpy(board, getparm("board"), 30);
+	strlcpy(board, get_param(ctx->r, "board"), 30);
 	if(!has_read_perm(&currentuser, board)) 
 		http_fatal("´íÎóµÄÌÖÂÛÇø");
 	sprintf(dir,"%s/upload/%s/.DIR",BBSHOME,board);
@@ -72,7 +72,7 @@ int main()
 		total++;
 	}
 	fclose(fp);
-	ptr=getparm("start");
+	ptr=get_param(ctx->r, "start");
 	if(ptr[0]==0) 
 	{
 		start=total-19;

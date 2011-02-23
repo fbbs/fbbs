@@ -3,13 +3,14 @@
 #include "record.h"
 #include "fbbs/string.h"
 #include "fbbs/mail.h"
+#include "fbbs/web.h"
 
-int bbsmail_main(void)
+int bbsmail_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	int start = strtol(getparm("start"), NULL, 10);
+	int start = strtol(get_param(ctx->r, "start"), NULL, 10);
 	char buf[HOMELEN];
 	setmdir(buf, currentuser.userid);
 	mmap_t m;
@@ -25,7 +26,7 @@ int bbsmail_main(void)
 	struct fileheader *end = (struct fileheader *)m.ptr + total;
 	xml_header(NULL);
 	printf("<bbsmail start='%d' total='%d' page='%d'>", start, total, TLINES);
-	print_session();
+	print_session(ctx);
 	for (int i = 0; i < TLINES && fh != end; ++i) {
 		int mark = ' ';
 		if (fh->accessed[0] & MAIL_REPLY)
@@ -69,13 +70,13 @@ int print_new_mail(void *buf, int count, void *args)
 	return 0;
 }
 
-int bbsnewmail_main(void)
+int bbsnewmail_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsnewmail>");
-	print_session();
+	print_session(ctx);
 	char file[HOMELEN];
 	setmdir(file, currentuser.userid);
 	time_t limit = time(NULL) - 24 * 60 * 60 * NEWMAIL_EXPIRE;
@@ -85,12 +86,12 @@ int bbsnewmail_main(void)
 	return 0;
 }
 
-int bbsmailcon_main(void)
+int bbsmailcon_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	char file[40];
-	strlcpy(file, getparm("f"), sizeof(file));
+	strlcpy(file, get_param(ctx->r, "f"), sizeof(file));
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 	char buf[HOMELEN];
@@ -133,21 +134,21 @@ int bbsmailcon_main(void)
 	m.oflag = O_RDONLY;
 	if (mmap_open(buf, &m) < 0)
 		return BBS_ENOFILE;
-	printf("<mail f='%s' n='%s'>", file, getparm("n"));
+	printf("<mail f='%s' n='%s'>", file, get_param(ctx->r, "n"));
 	xml_fputs((char *)m.ptr, stdout);
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);
-	print_session();
+	print_session(ctx);
 	printf("</bbsmailcon>");
 	return 0;
 }
 
-int bbsdelmail_main(void)
+int bbsdelmail_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	char file[40];
-	strlcpy(file, getparm("f"), sizeof(file));
+	strlcpy(file, get_param(ctx->r, "f"), sizeof(file));
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 	char buf[HOMELEN];
@@ -179,7 +180,7 @@ int bbsdelmail_main(void)
 
 extern int web_quotation(const char *str, size_t size, const char *owner, bool ismail);
 
-int bbspstmail_main(void)
+int bbspstmail_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
@@ -190,7 +191,7 @@ int bbspstmail_main(void)
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	char file[HOMELEN];
-	const char *str = getparm("n"); // 1-based
+	const char *str = get_param(ctx->r, "n"); // 1-based
 	const struct fileheader *fh = NULL;
 	if (*str != '\0') {
 		num = strtol(str, NULL, 10);
@@ -215,7 +216,7 @@ int bbspstmail_main(void)
 		ref = "pstmail";
 	xml_fputs(ref, stdout);
 
-	printf("' recv='%s'>", fh == NULL ? getparm("recv") : fh->owner);
+	printf("' recv='%s'>", fh == NULL ? get_param(ctx->r, "recv") : fh->owner);
 
 	if (fh != NULL) {
 		printf("<t>");
@@ -231,32 +232,32 @@ int bbspstmail_main(void)
 		printf("</m>");
 	}
 	mmap_close(&m);
-	print_session();
+	print_session(ctx);
 	printf("</bbspstmail>");
 	return 0;
 }
 
-int bbssndmail_main(void)
+int bbssndmail_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
-	if (parse_post_data() < 0)
+	if (parse_post_data(ctx->r) < 0)
 		return BBS_EINVAL;
 
-	const char *recv = getparm("recv");
+	const char *recv = get_param(ctx->r, "recv");
 	if (*recv == '\0')
 		return BBS_EINVAL;
 
 	char title[STRLEN];
-	strlcpy(title, getparm("title"), sizeof(title));
+	strlcpy(title, get_param(ctx->r, "title"), sizeof(title));
 	printable_filter(title);
 	valid_title(title);
 	if (*title == '\0')
 		strlcpy(title, "没主题", sizeof(title));
 
-	const char *text = getparm("text");
+	const char *text = get_param(ctx->r, "text");
 	int len = strlen(text);
 	char header[320];
 	snprintf(header, sizeof(header), "寄信人: %s (%s)\n标  题: %s\n发信站: "
@@ -266,12 +267,12 @@ int bbssndmail_main(void)
 	// TODO: signature, error code
 	if (do_mail_file(recv, title, header, text, len, NULL) < 0)
 		return BBS_EINVAL;
-	if (*getparm("backup") != '\0') {
+	if (*get_param(ctx->r, "backup") != '\0') {
 		char title2[STRLEN];
 		snprintf(title2, sizeof(title2), "{%s} %s", recv, title);
 		do_mail_file(currentuser.userid, title2, header, text, len, NULL);
 	}
-	const char *ref = getparm("ref");
+	const char *ref = get_param(ctx->r, "ref");
 	http_header();
 	refreshto(1, ref);
 	printf("</head>\n<body>发表成功，1秒钟后自动转到<a href='%s'>原页面</a>\n"

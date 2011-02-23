@@ -1,6 +1,7 @@
 #include <time.h>
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/web.h"
 
 #define BASEURL BBSHOST"/bbs"
 
@@ -8,9 +9,9 @@ enum {
 	MAXRSS = 10, ///< max. number of posts output
 };
 
-int bbsrss_main(void)
+int bbsrss_main(web_ctx_t *ctx)
 {
-	struct boardheader *bp = getbcache2(strtol(getparm("bid"), NULL, 10));
+	struct boardheader *bp = getbcache2(strtol(get_param(ctx->r, "bid"), NULL, 10));
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (is_board_dir(bp))

@@ -2,6 +2,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
+#include "fbbs/web.h"
 
 static int check_multi(const struct userec *user)
 {
@@ -92,9 +93,9 @@ static int wwwlogin(struct userec *user, const char *ref)
 	return 0;
 }
 
-static const char *get_login_referer(void)
+static const char *get_login_referer(web_ctx_t *ctx)
 {
-	const char *next = getparm("next");
+	const char *next = get_param(ctx->r, "next");
 	if (*next != '\0' && !strchr(next, '.'))
 		return next;
 	const char *referer = get_referer();
@@ -107,10 +108,10 @@ static const char *get_login_referer(void)
 	return ref;
 }
 
-static int login_screen(void)
+static int login_screen(web_ctx_t *ctx)
 {
 	http_header();
-	const char *ref = get_login_referer();
+	const char *ref = get_login_referer(ctx);
 	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
 			"<link rel='stylesheet' type='text/css' href='../css/%s.css' />"
 			"<title>用户登录 - "BBSNAME"</title></head>"
@@ -120,24 +121,24 @@ static int login_screen(void)
 			"<input type='hidden' name='ref' value='%s'/>"
 			"<input type='submit' value='登录' />"
 			"</form></body></html>",
-			*getparm("mob") ? "mobile" : "bbs", ref);
+			*get_param(ctx->r, "mob") ? "mobile" : "bbs", ref);
 	return 0;
 }
 
-int bbslogin_main(void)
+int bbslogin_main(web_ctx_t *ctx)
 {
 	char fname[STRLEN];
 	char buf[256], id[IDLEN + 1], pw[PASSLEN];
 	struct userec user;
 
-	if (parse_post_data() < 0)
+	if (parse_post_data(ctx->r) < 0)
 		return BBS_EINVAL;
-	strlcpy(id, getparm("id"), sizeof(id));
+	strlcpy(id, get_param(ctx->r, "id"), sizeof(id));
 	if (*id == '\0')
-		return login_screen();
-	strlcpy(pw, getparm("pw"), sizeof(pw));
+		return login_screen(ctx);
+	strlcpy(pw, get_param(ctx->r, "pw"), sizeof(pw));
 	if (loginok && !strcasecmp(id, currentuser.userid)) {
-		const char *ref = get_login_referer();
+		const char *ref = get_login_referer(ctx);
 		printf("Location: %s\n\n", ref);
 		return 0;
 	}
@@ -187,6 +188,6 @@ int bbslogin_main(void)
 
 	log_usies("ENTER", fromhost, &user);
 	if (!loginok && strcasecmp(id, "guest"))
-		wwwlogin(&user, getparm("ref"));
+		wwwlogin(&user, get_param(ctx->r, "ref"));
 	return 0;
 }

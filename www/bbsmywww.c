@@ -12,7 +12,7 @@ int main() {
 		http_fatal("匆匆过客不能定制界面");
 	}
 	sprintf(path, "home/%c/%s/.mywww", toupper(currentuser.userid[0]), currentuser.userid);
-        type=atoi(getparm("type"));
+        type=atoi(get_param(ctx->r, "type"));
 	if(type==0)
 	{
 		fp=fopen(path, "r");
@@ -30,11 +30,11 @@ int main() {
 	}
 	else
 	{
-		ptr=getparm("t_lines");
+		ptr=get_param(ctx->r, "t_lines");
 		if(ptr[0]) t_lines=atoi(ptr);
-		ptr=getparm("link_mode");
+		ptr=get_param(ctx->r, "link_mode");
 		if(ptr[0]) link_mode=atoi(ptr);
-       	 	ptr=getparm("def_mode");
+       	 	ptr=get_param(ctx->r, "def_mode");
         	if(ptr[0]) def_mode=atoi(ptr);
 	}
 	printf("<b>WWW个人定制 · %s [使用者: %s]</b>", BBSNAME, currentuser.userid);

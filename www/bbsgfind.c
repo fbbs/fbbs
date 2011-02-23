@@ -7,8 +7,8 @@ int main() {
 	struct fileheader x, x0;
 	int sum=0, total=0, gid = 0;
  	init_all();
-	strlcpy(board, getparm("board"), 32);
-	gid = atoi(getparm("gid"));
+	strlcpy(board, get_param(ctx->r, "board"), 32);
+	gid = atoi(get_param(ctx->r, "gid"));
 	x1=getbcache(board);
 	if(x1==0) 
 	{

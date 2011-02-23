@@ -1,21 +1,22 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 // TODO: Handle user-defined directories.
-static int read_submit(void)
+static int read_submit(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	if (parse_post_data() < 0)
+	if (parse_post_data(ctx->r) < 0)
 		return BBS_EINVAL;
 
 	// Read parameters.
 	bool boards[MAXBOARD] = {0};
 	int num = 0;
-	for (int i = 0; i < param_num; i++) {
-		if (!strcasecmp(param_val[i], "on")) {
-			int bid = strtol(param_name[i], NULL, 10);
+	for (int i = 0; i < ctx->r->count; i++) {
+		if (!strcasecmp(ctx->r->params[i].val, "on")) {
+			int bid = strtol(ctx->r->params[i].key, NULL, 10);
 			if (bid > 0 && bid <= MAXBOARD
 					&& hasreadperm(&currentuser, bcache + bid - 1)) {
 				boards[bid - 1] = true;
@@ -75,18 +76,18 @@ static int read_submit(void)
 	mmap_close(&m);
 	xml_header(NULL);
 	printf("<bbsmybrd limit='%d' selected='%d'>", GOOD_BRC_NUM, num);
-	print_session();
+	print_session(ctx);
 	printf("</bbsmybrd>");
 	return 0;
 }
 
-int bbsmybrd_main(void)
+int bbsmybrd_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	int type = strtol(getparm("type"), NULL, 10);
+	int type = strtol(get_param(ctx->r, "type"), NULL, 10);
 	if (type != 0)
-		return read_submit();
+		return read_submit(ctx);
 
 	// Print 'bid's of favorite boards.
 	xml_header(NULL);
@@ -122,7 +123,7 @@ int bbsmybrd_main(void)
 				b->title + 11, b->filename,
 				is_board_dir(b) ? "dir='1'" : "");
 	}
-	print_session();
+	print_session(ctx);
 	printf("</bbsmybrd>");
 	return 0;	
 }

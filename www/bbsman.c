@@ -9,8 +9,8 @@ int main() {
 	printpretable_lite();
 
 	if(!loginok) http_fatal("请先登录");
-	strlcpy(board, getparm("board"), 60);
-	mode=atoi(getparm("mode"));
+	strlcpy(board, get_param(ctx->r, "board"), 60);
+	mode=atoi(get_param(ctx->r, "mode"));
 	brd=getbcache(board);
 	if(brd==0) http_fatal("错误的讨论区");
 	strcpy(board, brd->filename);

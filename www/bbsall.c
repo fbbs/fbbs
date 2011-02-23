@@ -2,14 +2,15 @@
 
 #include "libweb.h"
 #include "fbbs/fileio.h"
+#include "fbbs/web.h"
 
-int bbsall_main(void)
+int bbsall_main(web_ctx_t *ctx)
 {
 	struct boardheader *x;
 	int i;
 	xml_header(NULL);
 	printf("<bbsall>");
-	print_session();
+	print_session(ctx);
 	for (i = 0; i < MAXBOARD; i++) {
 		x = &(bcache[i]);
 		if (x->filename[0] <= 0x20 || x->filename[0] > 'z')
@@ -35,13 +36,13 @@ static int filenum(char *board)
 	return st.st_size / sizeof(struct fileheader);
 }
 
-int bbsboa_main(void)
+int bbsboa_main(web_ctx_t *ctx)
 {
-	int sector = (int)strtol(getparm("s"), NULL, 16);
+	int sector = (int)strtol(get_param(ctx->r, "s"), NULL, 16);
 	if (sector < 0 || sector >= SECNUM)
 		return BBS_EINVAL;
 	char *cgi;
-	if (strtol(getparm("my_def_mode"), NULL, 10) != 0)
+	if (strtol(get_param(ctx->r, "my_def_mode"), NULL, 10) != 0)
 		cgi = "tdoc";
 	else
 		cgi = "doc";
@@ -51,12 +52,12 @@ int bbsboa_main(void)
 
 	struct boardheader *parent = NULL;
     int parent_bid = 0;
-	const char *parent_name = getparm("board");
+	const char *parent_name = get_param(ctx->r, "board");
     if (*parent_name) {
         parent = getbcache(parent_name);
         parent_bid = getbnum(parent_name, &currentuser);
 	} else {
-		parent_bid = strtol(getparm("bid"), NULL, 10);
+		parent_bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 		parent = getbcache2(parent_bid);
 	}
 	if (parent == NULL || parent_bid <= 0 || !(parent->flag & BOARD_DIR_FLAG)) {
@@ -96,7 +97,7 @@ int bbsboa_main(void)
 				x->title + 1, get_board_desc(x), x->BM,
 				brc_board_unread(currentuser.userid, x), filenum(x->filename));
 	}
-	print_session();
+	print_session(ctx);
 	printf("</bbsboa>");
 	return 0;
 }

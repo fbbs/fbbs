@@ -28,8 +28,8 @@ int main()
 	struct fileheader x;
 	init_all();
 	printf("<b><font style='font-size: 18pt'>发文统计</font> · %s </b><br>\n", BBSNAME);
-	type=atoi(getparm("type"));					//获取发文统计的统计方式：1:M文,2:G文,3:水文,4:未标记,5:总数,6:ID
-	strlcpy(board, getparm("board"), 30);		//获取发文统计的版面名称
+	type=atoi(get_param(ctx->r, "type"));					//获取发文统计的统计方式：1:M文,2:G文,3:水文,4:未标记,5:总数,6:ID
+	strlcpy(board, get_param(ctx->r, "board"), 30);		//获取发文统计的版面名称
 	brd=getbcache(board);						//判断该版面名称是否存在
 	if(brd==0) http_fatal("错误的讨论区");		//版面不存在
 	if(!has_read_perm(&currentuser, board)) http_fatal("错误的讨论区名称");		//判断当前用户是否有该版面的读权限
@@ -40,10 +40,10 @@ if (brd ->flag & BOARD_DIR_FLAG)
 		      http_fatal("你选择的是一个目录"); //add by Danielfree 06.3.5
 if ((brd->flag & BOARD_CLUB_FLAG)&& (brd->flag & BOARD_READ_FLAG )&& !has_BM_perm(&currentuser, board)&& !isclubmember(currentuser.userid, board))
 			        http_fatal("您不是俱乐部版 %s 的成员，无权访问该版面", board);
-	sortmode=atoi(getparm("mode"));				//获取排序方式：0:降序，1:升序
-	docstart=atoi(getparm("start"));			//获取起始篇数
-	docend=atoi(getparm("end"));				//获取终止篇数
-	docmin=atoi(getparm("min"));				//获取统计阈值，3篇起统计
+	sortmode=atoi(get_param(ctx->r, "mode"));				//获取排序方式：0:降序，1:升序
+	docstart=atoi(get_param(ctx->r, "start"));			//获取起始篇数
+	docend=atoi(get_param(ctx->r, "end"));				//获取终止篇数
+	docmin=atoi(get_param(ctx->r, "min"));				//获取统计阈值，3篇起统计
 
 	sprintf(dir, "boards/%s/.DIR", board);
 

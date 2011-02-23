@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "fbbs/uinfo.h"
+#include "fbbs/web.h"
 
 static void abort_program(void)
 {
@@ -17,7 +18,7 @@ static void abort_program(void)
 	}
 }
 
-int bbslogout_main(void)
+int bbslogout_main(web_ctx_t *ctx)
 {
 	if (!loginok) {
 		printf("Location: sec\n\n");

@@ -23,7 +23,7 @@ int main() {
 		memcpy(&user[total], x, sizeof(struct user_info));
 		total++;
 	}
-	search=toupper(getparm("search")[0]);
+	search=toupper(get_param(ctx->r, "search")[0]);
 	if(search!='*' && (search<'A' || search>'Z')) http_fatal("错误的参数");
 	if(search=='*') {
 		printf("所有在线使用者<br>\n");

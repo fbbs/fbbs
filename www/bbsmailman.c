@@ -9,7 +9,7 @@ int main() {
 	printpretable_lite();
 	if(!loginok) 
 		http_fatal("请先登录");
-	mode=atoi(getparm("mode"));
+	mode=atoi(get_param(ctx->r, "mode"));
 	if(mode<=0 || mode>1) 
 		http_fatal("错误的参数");
 	printf("<table>");

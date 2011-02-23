@@ -1,14 +1,15 @@
 #include "libweb.h"
 #include "fbbs/fileio.h"
+#include "fbbs/web.h"
 
-static int edit_user_file(const char *file, const char *desc, const char *submit)
+static int edit_user_file(web_ctx_t *ctx, const char *file, const char *desc, const char *submit)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	char buf[HOMELEN];
 	sethomefile(buf, currentuser.userid, file);
-	parse_post_data();
-	char *text = getparm("text");
+	parse_post_data(ctx->r);
+	const char *text = get_param(ctx->r, "text");
 	if (*text != '\0') {
 		int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd < 0)
@@ -19,26 +20,26 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		close(fd);
 		xml_header(NULL);
 		printf("<bbseufile desc='%s'>", desc);
-		print_session();
+		print_session(ctx);
 		printf("</bbseufile>");
 	} else {
 		xml_header(NULL);
 		printf("<bbseufile desc='%s' submit='%s'><text>", desc, submit);
 		xml_printfile(buf, stdout);
 		printf("</text>");
-		print_session();
+		print_session(ctx);
 		printf("</bbseufile>");
 	}
 	return 0;
 }
 
-int bbsplan_main(void)
+int bbsplan_main(web_ctx_t *ctx)
 {
-	return edit_user_file("plans", "±à¼­ËµÃ÷µµ", "plan");
+	return edit_user_file(ctx, "plans", "±à¼­ËµÃ÷µµ", "plan");
 }
 
-int bbssig_main(void)
+int bbssig_main(web_ctx_t *ctx)
 {
-	return edit_user_file("signatures", "±à¼­Ç©Ãûµµ", "sig");
+	return edit_user_file(ctx, "signatures", "±à¼­Ç©Ãûµµ", "sig");
 }
 

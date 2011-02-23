@@ -10,7 +10,7 @@ int main()
 	struct fileheader x;
 	int i, start, total;
  	init_all();
-	strlcpy(board, getparm("board"), 32);
+	strlcpy(board, get_param(ctx->r, "board"), 32);
 	x1=getbcache(board);
 	if(x1==0) 
 	{
@@ -40,12 +40,12 @@ int main()
 		http_fatal("错误的讨论区目录");
 	}
 	total=file_size(dir)/sizeof(struct fileheader);
-	start=atoi(getparm("start"));
-	if(strlen(getparm("start"))==0 || start>total-20) 
+	start=atoi(get_param(ctx->r, "start"));
+	if(strlen(get_param(ctx->r, "start"))==0 || start>total-20) 
 		start=total-20;
-        my_t_lines=atoi(getparm("my_t_lines"));
+        my_t_lines=atoi(get_param(ctx->r, "my_t_lines"));
 	if(my_t_lines<10 || my_t_lines>40) my_t_lines=TLINES;
-	if(strlen(getparm("start"))==0 || start>total-my_t_lines) start=total-my_t_lines+1;
+	if(strlen(get_param(ctx->r, "start"))==0 || start>total-my_t_lines) start=total-my_t_lines+1;
 	if(start<1)start=1;
 						
 	printf("<nobr>\n");

@@ -7,6 +7,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 char seccode[SECNUM][6]={
 #ifdef FDQUAN
@@ -47,9 +48,6 @@ int loginok = 0;
 struct userec currentuser;
 struct user_info *u_info;
 char fromhost[IP_LEN]; // IPv6 addresses can be represented in 39 chars.
-char param_name[MAX_PARAMS][PARAM_NAMELEN]; ///< Parameter names.
-char *param_val[MAX_PARAMS]; ///< Parameter values.
-int param_num = 0;  ///< Count of parsed parameters.
 
 /**
  * Get an environment variable.
@@ -65,177 +63,6 @@ const char *getsenv(const char *s)
 	char *t = getenv(s);
 	if (t!= NULL)
 		return t;
-	return "";
-}
-
-/**
- * Get decimal value of a hex char 'c'
- * @param c hex char
- * @return converted decimal value, 0 on error
- */
-static int hex2dec(int c)
-{
-	c = toupper(c);
-	switch (c) {
-		case '0': return 0;
-		case '1': return 1;
-		case '2': return 2;
-		case '3': return 3;
-		case '4': return 4;
-		case '5': return 5;
-		case '6': return 6;
-		case '7': return 7;
-		case '8': return 8;
-		case '9': return 9;
-		case 'A': return 10;
-		case 'B': return 11;
-		case 'C': return 12;
-		case 'D': return 13;
-		case 'E': return 14;
-		case 'F': return 15;
-		default:  return 0;
-	}
-}
-
-/**
- * Decode an url string.
- * @param s string to decode.
- * @return 0 on success, -1 if an error occurs.
- */
-static int url_decode(char *s)
-{
-	int m, n;
-	for(m = 0, n = 0; s[m] != 0; m++, n++) {
-		if (s[m] == '+') {
-			s[n] = ' ';
-			continue;
-		}
-		if (s[m] == '%') {
-			if (s[m + 1] != '\0' && s[m + 2] != '\0') {
-				s[n] = hex2dec(s[m + 1]) * 16 + hex2dec(s[m + 2]);
-				m += 2;
-				continue;
-			} else {
-				s[n] = '\0';
-				return -1;
-			}
-		}
-		s[n] = s[m];
-	}
-	s[n] = '\0';
-	return 0;
-}
-
-/**
- * Add a name-value pair to global buffer.
- * @param name name of the pair
- * @param val value of the pair
- * @return 0 on success, -1 on error.
- */
-static int param_add(const char *name, const char *val)
-{
-	if (param_num >= sizeof(param_val) - 1)
-		return -1;
-	size_t len = strlen(val);
-	param_val[param_num] = malloc(len + 1);
-	if (param_val[param_num] == NULL)
-		return -1;
-	strlcpy(param_name[param_num], name, sizeof(param_name[0]));
-	memcpy(param_val[param_num], val, len + 1);
-	++param_num;
-	return 0;
-}
-
-/**
- * Free all memory for parameters.
- */
-static void param_free(void)
-{
-	for (int i = param_num - 1; i >= 0; --i) {
-		free(param_val[i]);
-	}
-	param_num = 0;
-}
-
-/**
- * Parse parameters.
- * The function splits buf into key-value pairs and stores them 
- * in a global buffer.
- * @param buf the string to parse
- * @param delim delimiter to split 'buf'
- * @return 0 on success, -1 on error.
- */
-static int param_parse(char *buf, const char *delim)
-{
-	char *t2, *t3;
-	t2 = strtok(buf, delim);
-	while (t2 != NULL) {
-		t3 = strchr(t2, '=');
-		if (t3 != NULL) {
-			*t3++ = '\0';
-			url_decode(t3);
-			if (param_add(trim(t2), t3) < 0)
-				return -1;
-		}
-		t2 = strtok(NULL, delim);
-	}
-	return 0;
-}
-
-/**
- * Read parameters from HTTP header.
- * The function parses both query string and cookie in HTTP header and stores
- * the result in a global buffer.
- * @see parse_post_data
- */
-static void param_init(void)
-{
-	char buf[1024];
-	param_free();
-	// Do not parse contents via 'POST' method
-	strlcpy(buf, getsenv("QUERY_STRING"), sizeof(buf));
-	param_parse(buf, "&");
-	strlcpy(buf, getsenv("HTTP_COOKIE"), sizeof(buf));
-	param_parse(buf, ";");
-}
-
-/**
- * Parse parameters submitted by POST method.
- * @return 0 on success, bbserrno on error.
- */
-int parse_post_data(void)
-{
-	char *buf;
-	unsigned long size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
-	if (size == 0)
-		return 0;
-	else if (size < 0)
-		return BBS_EINVAL;
-	else if (size > MAX_CONTENT_LENGTH)
-		size = MAX_CONTENT_LENGTH;
-	buf = malloc(size + 1);
-	if(buf == NULL)
-		return BBS_EINTNL;
-	if (fread(buf, 1, size, stdin) != size) {
-		free(buf);
-		return BBS_EINTNL;
-	}
-	buf[size] = '\0';
-	param_parse(buf, "&");
-	free(buf);
-	return 0;
-}
-
-/**
- * Get a parameter value.
- * @param name the name of the parameter
- * @return the value corresponding to 'name', an empty string if not found.
- */
-char *getparm(const char *name)
-{
-	for(int n = 0; n < param_num; n++) 
-		if(!strcasecmp(param_name[n], name))
-			return param_val[n];
 	return "";
 }
 
@@ -349,7 +176,6 @@ int xml_printfile(const char *file, FILE *stream)
  */
 static int http_init(void)
 {
-	param_init();
 #ifdef SQUID
 	char *from;
 	from = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
@@ -376,14 +202,14 @@ static int http_init(void)
  * @return 1 on valid user login, 0 on error.
  */
  // TODO: no lock?
-static int user_init(struct userec *x, struct user_info **y, int mode)
+static int user_init(web_ctx_t *ctx, struct userec *x, struct user_info **y, int mode)
 {
 	memset(x, 0, sizeof(*x));
 
 	// Get information from cookie.
-	char *id = getparm("utmpuserid");
-	int i = strtol(getparm("utmpnum"), NULL, 10);
-	int key = strtol(getparm("utmpkey"), NULL, 10);
+	const char *id = get_param(ctx->r, "utmpuserid");
+	int i = strtol(get_param(ctx->r, "utmpnum"), NULL, 10);
+	int key = strtol(get_param(ctx->r, "utmpkey"), NULL, 10);
 
 	// Boundary check.
 	if (i <= 0 || i > MAXACTIVE) {
@@ -432,23 +258,11 @@ static int user_init(struct userec *x, struct user_info **y, int mode)
  * @return 0
  */
 // TODO: return value?
-int fcgi_init_loop(int mode)
+int fcgi_init_loop(web_ctx_t *ctx, int mode)
 {
 	http_init();
-	loginok = user_init(&currentuser, &u_info, mode);
+	loginok = user_init(ctx, &currentuser, &u_info, mode);
 	return 0;
-}
-
-/**
- * Print XML response header.
- * @param xslfile name of the XSLT file to use.
- */
-void xml_header(const char *xslfile)
-{
-	const char *xsl = xslfile ? xslfile : "bbs";
-	printf("Content-type: text/xml; charset=%s\n\n", CHARSET);
-	printf("<?xml version=\"1.0\" encoding=\"%s\"?>\n", CHARSET);
-	printf("<?xml-stylesheet type=\"text/xsl\" href=\"../xsl/%s.xsl?v1261\"?>\n", xsl);
 }
 
 /**
@@ -589,11 +403,11 @@ const char *get_doc_mode_str(void)
 	}
 }
 
-void print_session(void)
+void print_session(web_ctx_t *ctx)
 {
-	if (strcmp(getparm("api"), "1") == 0)
+	if (strcmp(get_param(ctx->r, "api"), "1") == 0)
 		return;
-	bool mobile = (strcmp(getparm("mob"), "1") == 0);
+	bool mobile = (strcmp(get_param(ctx->r, "mob"), "1") == 0);
 
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);

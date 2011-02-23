@@ -5,6 +5,7 @@ tags
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
+install_manifest.txt
 
 aclocal.m4
 autom4te.cache

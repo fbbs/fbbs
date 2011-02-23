@@ -5,11 +5,11 @@ if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-add_executable(bbswebd libweb.c bbsmain.c bbssec.c bbsall.c bbslogin.c
+add_executable(bbswebd libweb.c main.c bbssec.c bbsall.c bbslogin.c
 	bbslogout.c bbsdoc.c bbscon.c bbspst.c bbssnd.c bbsqry.c bbsclear.c
 	bbsupload.c bbsann.c bbsnot.c bbsmail.c bbstcon.c bbsmybrd.c bbserr.c
 	bbsfav.c bbsfall.c bbsplan.c bbsdel.c bbsinfo.c bbssel.c bbsrss.c
-	bbstop10.c register.c parse.c)
+	bbstop10.c register.c parse.c web.c)
 target_link_libraries(bbswebd crypt fcgi BBS)
 install(TARGETS bbswebd
 	RUNTIME DESTINATION bin)

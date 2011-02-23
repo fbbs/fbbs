@@ -1,15 +1,16 @@
 #include "libweb.h"
 #include "record.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 /**
  * Check user info validity.
  * @return empty string on success, error msg otherwise.
  */
-static char *check_info(void)
+static char *check_info(web_ctx_t *ctx)
 {
 	unsigned char *nick;
-	nick = (unsigned char *)getparm("nick");
+	nick = (unsigned char *)get_param(ctx->r, "nick");
 	unsigned char *t2 = nick;
 	while (*t2 != '\0') {
 		if (*t2 < 0x20 || *t2 == 0xFF)
@@ -19,28 +20,28 @@ static char *check_info(void)
 	strlcpy(currentuser.username, (char *)nick, sizeof(currentuser.username));
 
 	// TODO: more accurate birthday check.
-	char *tmp = getparm("year");
+	const char *tmp = get_param(ctx->r, "year");
 	long num = strtol(tmp, NULL, 10);
 	if (num < 1910 || num > 1998)
 		return "错误的出生年份";
 	else
 		currentuser.birthyear = num - 1900;
 
-	tmp = getparm("month");
+	tmp = get_param(ctx->r, "month");
 	num = strtol(tmp, NULL, 10);
 	if (num <= 0 || num > 12)
 		return "错误的出生月份";
 	else
 		currentuser.birthmonth = num;
 
-	tmp = getparm("day");
+	tmp = get_param(ctx->r, "day");
 	num = strtol(tmp, NULL, 10);
 	if (num <= 0 || num > 31)
 		return "错误的出生日期";
 	else
 		currentuser.birthday = num;
 
-	tmp = getparm("gender");
+	tmp = get_param(ctx->r, "gender");
 	if (*tmp == 'M')
 		currentuser.gender = 'M';
 	else
@@ -50,17 +51,17 @@ static char *check_info(void)
 	return "";
 }
 
-int bbsinfo_main(void)
+int bbsinfo_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	parse_post_data();
-	char *type = getparm("type");
+	parse_post_data(ctx->r);
+	const char *type = get_param(ctx->r, "type");
 	xml_header(NULL);
 	if (*type != '\0') {
 		printf("<bbsinfo>");
-		print_session();
-		printf("%s</bbsinfo>", check_info());
+		print_session(ctx);
+		printf("%s</bbsinfo>", check_info(ctx));
 	} else {
 		printf("<bbsinfo post='%d' login='%d' stay='%d' "
 				"since='%s' host='%s' year='%d' month='%d' "
@@ -74,7 +75,7 @@ int bbsinfo_main(void)
 				getdatestring(currentuser.lastlogin, DATE_XML));
 		xml_fputs(currentuser.username, stdout);
 		printf("</nick>");
-		print_session();
+		print_session(ctx);
 		printf("</bbsinfo>");
 	}
 	return 0;
@@ -93,23 +94,23 @@ static int set_password(const char *orig, const char *new1, const char *new2)
 	return 0;
 }
 
-int bbspwd_main(void)
+int bbspwd_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	parse_post_data();
+	parse_post_data(ctx->r);
 	xml_header(NULL);
 	printf("<bbspwd ");
-	char *pw1 = getparm("pw1");
+	const char *pw1 = get_param(ctx->r, "pw1");
 	if (*pw1 == '\0') {
 		printf(" i='i'>");
-		print_session();
+		print_session(ctx);
 		printf("</bbspwd>");
 		return 0;
 	}
 	printf(">", stdout);
-	char *pw2 = getparm("pw2");
-	char *pw3 = getparm("pw3");
+	const char *pw2 = get_param(ctx->r, "pw2");
+	const char *pw3 = get_param(ctx->r, "pw3");
 	switch (set_password(pw1, pw2, pw3)) {
 		case BBS_EWPSWD:
 			printf("密码错误");
@@ -120,7 +121,7 @@ int bbspwd_main(void)
 		default:
 			break;
 	}
-	print_session();
+	print_session(ctx);
 	printf("</bbspwd>");
 	return 0;
 }
@@ -142,7 +143,7 @@ static int count_new_mail(void *buf, int count, void *args)
 	return 0;
 }
 
-int bbsidle_main(void)
+int bbsidle_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;

@@ -2,6 +2,7 @@
 #include "record.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
+#include "fbbs/web.h"
 
 // TODO: rewrite
 static bool quota_exceeded(const char *board)
@@ -132,9 +133,9 @@ static bool check_upload(char *buf, size_t size, char **begin, char **end, char 
 	return true;
 }
 
-int bbspreupload_main(void)
+int bbspreupload_main(web_ctx_t *ctx)
 {
-	char *board = getparm("board");
+	const char *board = get_param(ctx->r, "board");
 	if (!loginok)
 		return BBS_ELGNREQ;
 	struct boardheader *bp = getbcache(board);
@@ -152,11 +153,11 @@ int bbspreupload_main(void)
 	return 0;
 }
 
-int bbsupload_main(void)
+int bbsupload_main(web_ctx_t *ctx)
 {
 	if (!loginok) 
 		return BBS_ELGNREQ;
-	const char *board = getparm("b");
+	const char *board = get_param(ctx->r, "b");
 	struct boardheader *bp = getbcache(board);
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_ENOBRD;
