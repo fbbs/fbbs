@@ -7,20 +7,9 @@ CMakeCache.txt
 cmake_install.cmake
 install_manifest.txt
 
-aclocal.m4
-autom4te.cache
-configure
-config.*
-compile
-depcomp
-install-sh
-libtool
-ltmain.sh
-missing
-stamp-h1
+config.h
 
 Makefile
-Makefile.in
 
 *.o
 *.lo
