@@ -116,14 +116,13 @@ static int _parse_param(http_req_t *r, const char *begin, size_t len)
 /**
  * Parse 'key=value' pairs and put them into request struct.
  * @param r The http request.
- * @param key The name in the environment.
- * @param delim The delimiter.
+ * @param buf Value buffer.
+ * @param delim Delimiter.
  * @return 0 on success, -1 on error.
  */
-static int _parse_params(http_req_t *r, const char *key, int delim)
+static int _parse_params(http_req_t *r, const char *buf, int delim)
 {
-	const char *env = _get_server_env(key);
-	const char *ptr = strchr(env, delim), *last = env;
+	const char *ptr = strchr(buf, delim), *last = buf;
 	while (ptr) {
 		if (_parse_param(r, last, ptr - last) != 0)
 			return -1;
@@ -142,9 +141,9 @@ static int _parse_params(http_req_t *r, const char *key, int delim)
  */
 static int _parse_http_req(http_req_t *r)
 {
-	if (_parse_params(r, "QUERY_STRING", '&') < 0)
+	if (_parse_params(r, _get_server_env("QUERY_STRING"), '&') < 0)
 		return -1;
-	if (_parse_params(r, "HTTP_COOKIE", ';') < 0)
+	if (_parse_params(r, _get_server_env("HTTP_COOKIE"), ';') < 0)
 		return -1;
 	return 0;
 }
