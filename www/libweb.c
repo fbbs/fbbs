@@ -405,9 +405,9 @@ const char *get_doc_mode_str(void)
 
 void print_session(web_ctx_t *ctx)
 {
-	if (strcmp(get_param(ctx->r, "api"), "1") == 0)
+	if (ctx->r->flag & REQUEST_API)
 		return;
-	bool mobile = (strcmp(get_param(ctx->r, "mob"), "1") == 0);
+	bool mobile = ctx->r->flag & REQUEST_MOBILE;
 
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);

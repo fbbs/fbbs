@@ -121,7 +121,7 @@ static int login_screen(web_ctx_t *ctx)
 			"<input type='hidden' name='ref' value='%s'/>"
 			"<input type='submit' value='µÇÂ¼' />"
 			"</form></body></html>",
-			*get_param(ctx->r, "mob") ? "mobile" : "bbs", ref);
+			(ctx->r->flag & REQUEST_MOBILE) ? "mobile" : "bbs", ref);
 	return 0;
 }
 

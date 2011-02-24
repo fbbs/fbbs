@@ -150,6 +150,42 @@ static int _parse_http_req(http_req_t *r)
 }
 
 /**
+ * Get a parameter value.
+ * @param r The http request.
+ * @param key The name of the parameter.
+ * @return the value corresponding to 'key', an empty string if not found.
+ */
+const char *get_param(http_req_t *r, const char *key)
+{
+	for (int i = 0; i < r->count; ++i) {
+		if (streq(r->params[i].key, key))
+			return r->params[i].val;
+	}
+	return "";
+}
+
+struct _option_pairs {
+	const char *param;
+	int flag;
+};
+
+static void _get_global_options(http_req_t *r)
+{
+	struct _option_pairs pairs[] = {
+		{ "api", REQUEST_API },
+		{ "new", REQUEST_PARSED },
+		{ "mob", REQUEST_MOBILE },
+		{ "utf8", REQUEST_UTF8 }
+	};
+
+	r->flag = 0;
+	for (int i = 0; i < sizeof(pairs) / sizeof(pairs[0]); ++i) {
+		if (*get_param(r, pairs[i].param) == '1')
+			r->flag |= pairs[i].flag;
+	}
+}
+
+/**
  * Get an http request.
  * The GET request and cookies are parsed into key=value pairs.
  * @param p A memory pool to use.
@@ -173,22 +209,9 @@ http_req_t *get_request(pool_t *p)
 		return NULL;
 	strlcpy(r->from, from, len);
 
-	return r;
-}
+	_get_global_options(r);
 
-/**
- * Get a parameter value.
- * @param r The http request.
- * @param key The name of the parameter.
- * @return the value corresponding to 'key', an empty string if not found.
- */
-const char *get_param(http_req_t *r, const char *key)
-{
-	for (int i = 0; i < r->count; ++i) {
-		if (streq(r->params[i].key, key))
-			return r->params[i].val;
-	}
-	return "";
+	return r;
 }
 
 /**

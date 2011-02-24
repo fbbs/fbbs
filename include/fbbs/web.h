@@ -9,11 +9,14 @@
 enum {
 	MAX_PARAMETERS = 32,
 	MAX_CONTENT_LENGTH = 1 * 1024 * 1024,
-};
 
-enum {
 	PARSE_NOSIG = 0x1,
 	PARSE_NOQUOTEIMG = 0x2,
+
+	REQUEST_API = 0x1,
+	REQUEST_PARSED = 0x2,
+	REQUEST_MOBILE = 0x4,
+	REQUEST_UTF8 = 0x8,
 };
 
 typedef struct pair_t {
@@ -26,6 +29,7 @@ typedef struct http_req_t {
 	char *from;
 	pair_t params[MAX_PARAMETERS];
 	int count;
+	int flag;
 } http_req_t;
 
 typedef struct web_ctx_t {

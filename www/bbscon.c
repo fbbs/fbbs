@@ -150,9 +150,9 @@ int bbsgcon_main(web_ctx_t *ctx)
 
 int xml_print_file(http_req_t *r, const char *file)
 {
-	if (*get_param(r, "new") != '\0')
+	if (r->flag & REQUEST_PARSED)
 		return xml_print_post(file, PARSE_NOQUOTEIMG);
-	if (*get_param(r, "mob") == '\0')
+	if (!(r->flag & REQUEST_MOBILE))
 		return xml_printfile(file, stdout);
 	return xml_print_post(file, PARSE_NOSIG);
 }
