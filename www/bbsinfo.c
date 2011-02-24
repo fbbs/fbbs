@@ -108,7 +108,7 @@ int bbspwd_main(web_ctx_t *ctx)
 		printf("</bbspwd>");
 		return 0;
 	}
-	printf(">", stdout);
+	printf(">");
 	const char *pw2 = get_param(ctx->r, "pw2");
 	const char *pw3 = get_param(ctx->r, "pw3");
 	switch (set_password(pw1, pw2, pw3)) {

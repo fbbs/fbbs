@@ -113,7 +113,7 @@ static int do_bbspst(web_ctx_t *ctx, bool isedit)
 		printf("<t>");
 		ansi_filter(fh.title, fh.title);
 		xml_fputs2(fh.title, check_gbk(fh.title) - fh.title, stdout);
-		printf("</t><po f='%u'>", fid);
+		printf("</t><po f='%lu'>", fid);
 		if (isedit) {
 			char *begin = m.ptr, *end = (char *)(m.ptr) + m.size;
 			get_post_body(&begin, &end);
@@ -190,12 +190,12 @@ int bbsccc_main(web_ctx_t *ctx)
 			return BBS_EINTNL;
 
 		xml_header(NULL);
-		printf("<bbsccc t='%d' b='%d'>", bp2 - bcache + 1, bp - bcache + 1);
+		printf("<bbsccc t='%ld' b='%ld'>", bp2 - bcache + 1, bp - bcache + 1);
 		print_session(ctx);
 		printf("/bbsccc>");
 	} else {
 		xml_header(NULL);
-		printf("<bbsccc owner='%s' brd='%s' bid='%d' fid='%u'>", 
+		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",
 				fh.owner, bp->filename, bp - bcache + 1, fid);
 		xml_fputs(fh.title, stdout);
 		print_session(ctx);
