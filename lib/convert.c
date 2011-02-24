@@ -32,23 +32,30 @@ void convert_reset(convert_t *cp)
  * @param from Input string.
  * @param len Length of the input string. If zero, the length will be
  *            counted automatically.
+ * @param buf If not NULL, it will be used instead of internal buffer.
+ * @param size Size of buf.
  * @param handler Function to handle the converted bits. If it returns a
  *                negative number, the conversion will stop.
+ * @param arg Argument for handler.
  * @return 0 on success, negative on handler failure, input bytes converted
  *         if the input string ends with an imcomplete multibyte sequence.
  */
 int convert(convert_t *cp, const char *from, size_t len,
-		convert_handler_t handler)
+		char *buf, size_t size, convert_handler_t handler, void *arg)
 {
 	if (len == 0)
 		len = strlen(from);
-	size_t l = len;
+
 	char *f = (char *)from;
+	size_t l = len;
+
+	char *buffer = buf ? buf : cp->buf;
+	size = buf ? size : sizeof(cp->buf);
 
 	int ret = 0;
 	while (l > 0) {
-		char *b = cp->buf;
-		size_t oleft = sizeof(cp->buf);
+		char *b = buffer;
+		size_t oleft = size;
 		size_t s = iconv(cp->cd, &f, &l, &b, &oleft);
 		if (s == (size_t) -1) {
 			switch (errno) {
@@ -57,7 +64,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 				case EILSEQ:
 					++f;
 					--l;
-					(*handler)("?", 1);
+					(*handler)("?", 1, arg);
 					break;
 				case EINVAL:
 					ret = len - l;
@@ -67,8 +74,8 @@ int convert(convert_t *cp, const char *from, size_t len,
 					break;
 			}
 		}
-		if (oleft < sizeof(cp->buf)) {
-			s = (*handler)(cp->buf, sizeof(cp->buf) - oleft);
+		if (oleft < size) {
+			s = (*handler)(buffer, size - oleft, arg);
 			if (s < 0)
 				return ret;
 		}
