@@ -2,6 +2,7 @@
 #define FB_WEB_H
 
 #include "fbbs/cfg.h"
+#include "fbbs/convert.h"
 #include "fbbs/dbi.h"
 #include "fbbs/pool.h"
 #include <fcgi_stdio.h>
@@ -37,6 +38,8 @@ typedef struct web_ctx_t {
 	db_conn_t *d;
 	pool_t *p;
 	http_req_t *r;
+	convert_t *u2g;
+	convert_t *g2u;
 } web_ctx_t;
 
 extern http_req_t *get_request(pool_t *p);

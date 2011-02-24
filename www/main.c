@@ -167,14 +167,17 @@ int main(void)
 	if (fcgi_init_all() < 0)
 		return EXIT_FAILURE;
 
+	convert_t u2g, g2u;
+	if (convert_open(&u2g, "GBK", "UTF-8") < 0
+			|| convert_open(&g2u, "UTF-8", "GBK") < 0)
+		return EXIT_FAILURE;
+
 	while (FCGI_Accept() >= 0) {
 		pool_t *p = pool_create(DEFAULT_POOL_SIZE);
-
-		http_req_t *r = get_request(p);
-		if (!r)
+		web_ctx_t ctx = { .r = get_request(p), .u2g = &u2g, .g2u = &g2u };
+		if (!ctx.r)
 			return EXIT_FAILURE;
 
-		web_ctx_t ctx = { .r = r };
 		const web_handler_t *app = getapplet();
 		int ret;
 		if (app == NULL) {
