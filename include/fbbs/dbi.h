@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <libpq-fe.h>
+#include "fbbs/time.h"
 #include "fbbs/util.h"
 
 #define PARAM_TEXT(x)     { .value = x,  .length = 0, .format = 0 }
