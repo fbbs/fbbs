@@ -36,6 +36,7 @@ void convert_reset(convert_t *cp)
  * @param size Size of buf.
  * @param handler Function to handle the converted bits. If it returns a
  *                negative number, the conversion will stop.
+ *                If handler is NULL, output buffer will not be reused.
  * @param arg Argument for handler.
  * @return 0 on success, negative on handler failure, input bytes converted
  *         if the input string ends with an imcomplete multibyte sequence.
@@ -52,19 +53,29 @@ int convert(convert_t *cp, const char *from, size_t len,
 	char *buffer = buf ? buf : cp->buf;
 	size = buf ? size : sizeof(cp->buf);
 
+	char *b;
+	size_t oleft;
 	int ret = 0;
-	while (l > 0) {
-		char *b = buffer;
-		size_t oleft = size;
+	for (b = buffer, oleft = size; l > 0; ) {
+		if (handler) {
+			b = buffer;
+			oleft = size;
+		}
+
 		size_t s = iconv(cp->cd, &f, &l, &b, &oleft);
 		if (s == (size_t) -1) {
 			switch (errno) {
 				case E2BIG:
+					if (!handler)
+						return 0;
 					break;
 				case EILSEQ:
 					++f;
 					--l;
-					(*handler)("?", 1, arg);
+					if (handler)
+						(*handler)("?", 1, arg);
+					else
+						;
 					break;
 				case EINVAL:
 					ret = len - l;
@@ -74,7 +85,8 @@ int convert(convert_t *cp, const char *from, size_t len,
 					break;
 			}
 		}
-		if (oleft < size) {
+
+		if (handler && oleft < size) {
 			s = (*handler)(buffer, size - oleft, arg);
 			if (s < 0)
 				return ret;
