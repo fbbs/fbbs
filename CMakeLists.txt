@@ -13,7 +13,7 @@ include_directories(include)
 option(ENABLE_SSH "compile ssh module" off)
 option(ENABLE_DEBUG "compile debug version" on)
 option(ENABLE_WWW "compile www module" on)
-option(ENABLE_PG "compile postgresql module" off)
+option(ENABLE_PG "compile postgresql module" on)
 
 set(CMAKE_C_FLAGS "-O2 -pipe -Wall")
 if(ENABLE_DEBUG)
