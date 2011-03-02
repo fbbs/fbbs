@@ -99,7 +99,8 @@ int bbscon_main(web_ctx_t *ctx)
 	fid = fh.id;
 
 	xml_header(NULL);
-	printf("<bbscon link='con' bid='%d'>", bid);
+	bool anony = bp->flag & BOARD_ANONY_FLAG;
+	printf("<bbscon link='con' bid='%d' anony='%d'>", bid, anony);
 	print_session(ctx);
 	printf("<po fid='%u'", fid);
 	if (sticky)

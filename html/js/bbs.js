@@ -118,6 +118,94 @@ var bbs = {
 	sync: function() { bbs.navinit(); bbs.check(); }
 };
 
+$.fn.selectRange = function(b, e) {
+	return this.each(function() {
+			if (this.setSelectionRange) {
+				this.setSelectionRange(b, e);
+			} else if (this.createTextRange) {
+				var range = this.createTextRange();
+				range.collapse(true);
+				range.moveEnd('character', b);
+				range.moveStart('character', e);
+				range.select();
+			}
+		});
+}
+
+function replyButton() {
+	var div = $(this).parent().parent();
+	var f = $('form', div);
+	var action = $('.reply').attr('href').replace(/^pst/, 'snd') + '&utf8=1';
+	if (!f.length) {
+		$(this).parent().after($('#quick_reply').clone(false).removeAttr('id').attr('action', action));
+		f = $('form', div);
+
+		var title = $('.ptitle', div).text();
+		if (title.substring(0, 4) == 'Re:\xa0') {
+			title = 'Re: ' + title.substring(4);
+		} else {
+			title = 'Re: ' + title;
+		}
+		$('[name="title"]', f).val(title);
+
+		var q = [ '', '【 在 ' + $('.powner', div).text() + ' 的大作中提到: 】' ];
+		var p = [];
+		$('p', div).each(function() { p.push($(this).text()) });
+		p.splice(0, 3);
+		var quoted = 0;
+		for (var i = 0; i < p.length; ++i) {
+			p[i] = p[i].replace(/\xa0/g, ' ');
+			if (!p[i].length || p[i].substring(0, 4) == ': 【 ' || p[i].substring(0, 4) == ': : ')
+				continue;
+			if (p[i].substring(0, 2) == '--')
+				break;
+			if (++quoted >= 10) {
+				q.push(': ' + ': .................（以下省略）');
+				break;
+			}
+			q.push(': ' + p[i]);
+		}
+		$('[name="text"]', f).val(q.join('\n'));
+		$('.cancel', f).click(function() { f.hide(); $('.plink', div).show(); });
+		$('.confirm', f).click(replyFormSubmit);
+	}
+	if (f.is(':visible')) {
+		f.hide();
+	} else {
+		$('.plink', div).hide();
+		f.show();
+		$('textarea', f).focus().selectRange(0, 0);
+	}
+	return false;
+}
+
+function replyFormSubmit() {
+	var button = $(this);
+	button.attr('disabled', true);
+	var form = $(this).parent().parent();
+	$('.loading', form).show();
+	$.ajax({
+		type: 'POST', url: form.attr('action'), data: form.serialize(),
+		success: function(data) {
+			if ($(data).filter('a').text() == '快速返回') {
+				alert($(data).filter('div').text());
+			} else {
+				form.after("<div class='preply'></div>");
+				form.next().text($('textarea', form).val().replace(/【 [\s\S]+/, " ...")).prepend('<span class="success">回复成功</span>');
+				form.slideUp().prev().slideDown();
+			}
+		},
+		error: function() {
+			alert('发送失败，请稍候重试');
+		},
+		complete: function() {
+			$('.loading', form).hide();
+			button.attr('disabled', false);
+		}
+	});
+	return false;
+}
+
 $(document).ready(function() {
 	$('#navnm').hide();
 
@@ -142,4 +230,6 @@ $(document).ready(function() {
 			return true;
 		}
 	};
+
+	$('.reply').click(replyButton);
 });

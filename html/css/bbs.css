@@ -214,13 +214,17 @@ div.plink {
 	padding: 0.25em 0.5em;
 	background-color: #f0f7ff;
 }
+div.preply {
+	padding: 5px 0;
+	border-top: 1px solid #ccddff;
+}
 div.post_h {
 	background-color: #ccddff;
 	margin-bottom: 10px;
 }
-div.post_q {
+div.post_q, div.preply {
 	color: #606060;
-	background-color: #ddeeff;
+	background-color: #e7f5fa;
 	margin-left: 14px;
 }
 div.post_s {
@@ -235,6 +239,11 @@ div.post_s {
 }
 div.post_h, div.post_t, div.post_q, div.post_s {
 	padding: 0.25em 0.5em;
+}
+.preply .success {
+	color: #22b14c;
+	font-weight: bold;
+	margin-right: 10px;
 }
 div.pmain, div.umain, div.usmd {
 	background-color: #f0f7ff;
@@ -251,6 +260,33 @@ div.usplit {
 div.usmd {
 	padding: 0.25em 0.5em;
 	font-family: monospace;
+}
+
+a.reply {
+	font-weight: bold;
+	color: #ffffff;
+	background-color: #336699;
+	border-color: #cccccc #000000 #000000 #cccccc;
+	border-style: solid;
+	border-width: 1px;
+}
+a.reply {
+	padding: 5px 10px;
+}
+#quick_reply, .quick_reply {
+	display: none;
+	margin: 3px;
+	font-size: 14px;
+}
+.quick_reply .buttons {
+	margin: 0 8px 8px 0;
+}
+.quick_reply .confirm {
+	margin-left: 8px;
+	width: 200px;
+}
+.quick_reply textarea {
+	margin: 8px 0 0 0;
 }
 
 textarea.binput {
@@ -318,3 +354,5 @@ form.jump { display:inline; }
 
 .column-3 { -moz-column-count: 3; -webkit-column-count: 3; -column-count: 3; }
 li { margin: 0 0 6px 0; }
+
+.loading { display: none; }

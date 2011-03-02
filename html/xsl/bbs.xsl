@@ -135,9 +135,9 @@
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1261'/><![endif]]]></xsl:comment>
 </xsl:template>
 <xsl:template name='include-js'>
-	<script src='../js/persist-all-min.js' defer='defer'></script>
-	<script src='/js/jquery-1.4.2.min.js' defer='defer'></script>
-	<script src='../js/bbs.js' defer='defer'></script>
+	<script src='../js/persist-all-min.js'></script>
+	<script src='/js/jquery-1.5.1.min.js'></script>
+	<script src='../js/bbs.js' charset='gb2312' defer='defer'></script>
 </xsl:template>
 
 <xsl:template name='page-title'>
@@ -369,12 +369,28 @@ table.post{width:100%}
 		<div class='pmain'><xsl:apply-templates select='po'/></div>
 		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
 	</div>
+	<xsl:call-template name='quick-reply-form'/>
+</xsl:template>
+
+<xsl:template name='quick-reply-form'>
+<form id='quick_reply' class='quick_reply' method='post'>
+<div class='buttons'>
+<input type='button' class='cancel' value='取消'/>
+<xsl:if test='@anony=1'><input type="checkbox" name="anony" value="1" checked="checked"/>匿名</xsl:if>
+签名档 <select name='sig'><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+<input type='button' value='发表' class='confirm'/><img src='../images/indicator.gif' class='loading'/>
+</div>
+<div>
+<div>标题 <input class='binput' type='text' name='title' size='60' maxlength='50'></input></div>
+<textarea class='binput' name='text' rows='10' cols='85' wrap='virtual'></textarea>
+</div>
+</form>
 </xsl:template>
 
 <xsl:template match='po'>
 <div class='post_h'>
-	<p>发信人: <a href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>), 信区: <a href='doc?board={board}'><xsl:value-of select='board'/></a></p>
-	<p>标&#160;&#160;题: <xsl:value-of select='title'/></p>
+	<p>发信人: <a class='powner' href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>), 信区: <a href='doc?board={board}'><xsl:value-of select='board'/></a></p>
+	<p>标&#160;&#160;题: <span class='ptitle'><xsl:value-of select='title'/></span></p>
 	<p>发信站: 复旦泉 (<xsl:value-of select='date'/>), 站内信件</p>
 </div>
 <xsl:for-each select='pa'>
@@ -412,7 +428,7 @@ table.post{width:100%}
 
 <xsl:template name='con-linkbar'>
 	<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
-	<xsl:if test='@link = "con"'><a><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute><img src='../images/button/edit.gif'/>回复本文</a></xsl:if>
+	<xsl:if test='@link = "con"'><a class='reply'><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>回复本文</a></xsl:if>
 	<a href='edit?{$param}'>修改</a>
 	<a href='ccc?{$param}'>转载</a>
 	<a href='fwd?{$param}'>转寄</a>
@@ -426,22 +442,21 @@ table.post{width:100%}
 		<div class='post'>
 			<div class='ptop'><xsl:call-template name='tcon-navbar'/></div>
 			<div class='pmain'><xsl:apply-templates select='.'/></div>
-			<div class='plink'><xsl:call-template name='tcon-linkbar'/></div>
+			<div class='plink'>
+				<a class='reply' href='pst?bid={../@bid}&amp;f={@fid}'>回复本文</a>
+				<a href='ccc?bid={../@bid}&amp;f={@fid}'>转载</a>
+			</div>
 		</div>
 	</xsl:for-each>
 	<div class='pnav'><xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
 	<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if></div>
+	<xsl:call-template name='quick-reply-form'/>
 </xsl:template>
 
 <xsl:template name='tcon-navbar'>
 	<a href='gdoc?bid={../@bid}'>文摘区</a>
 	<a href='tdoc?bid={../@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
 	<a href='con?new=1&amp;bid={../@bid}&amp;f={@fid}'><img src='../images/button/content.gif'/>本文链接</a>
-</xsl:template>
-
-<xsl:template name='tcon-linkbar'>
-	<a href='pst?bid={../@bid}&amp;f={@fid}'><img src='../images/button/edit.gif'/>回复本文</a>
-	<a href='ccc?bid={../@bid}&amp;f={@fid}'>转载</a>
 </xsl:template>
 
 <xsl:template match='bbsqry'>

@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "bbs.h"
 #include "record.h"
+#include "fbbs/convert.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 
@@ -38,6 +39,14 @@ static FILE *get_fname(const char *dir, const char *pfx,
 		}
 	}
 	return NULL;
+}
+
+static int convert_to_file(char *buf, size_t len, void *arg)
+{
+	FILE *fp = arg;
+	if (fwrite(buf, 1, len, fp) < len)
+		return -1;
+	return 0;
 }
 
 /**
@@ -79,7 +88,10 @@ int do_post_article(const post_request_t *pr)
 			userid, nick, pr->bp->filename, pr->title, BBSNAME,
 			getdatestring(time(NULL), DATE_ZH));
 
-	fputs(pr->content, fptr);
+	if (pr->cp)
+		convert(pr->cp, pr->content, 0, NULL, 0, convert_to_file, fptr);
+	else
+		fputs(pr->content, fptr);
 
 	if (!anony && pr->sig > 0)
 		add_signature(fptr, userid, pr->sig);

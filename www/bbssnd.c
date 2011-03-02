@@ -103,7 +103,12 @@ int bbssnd_main(web_ctx_t *ctx)
 
 	char title[sizeof(fh.title)];
 	if (!isedit) {
-		strlcpy(title, get_param(ctx->r, "title"), sizeof(title));
+		if (ctx->r->flag & REQUEST_UTF8) {
+			convert(ctx->u2g, get_param(ctx->r, "title"), 0,
+					title, sizeof(title), NULL, NULL);
+		} else {
+			strlcpy(title, get_param(ctx->r, "title"), sizeof(title));
+		}
 		printable_filter(title);
 		valid_title(title);
 		if (*title == '\0')
@@ -127,7 +132,9 @@ int bbssnd_main(web_ctx_t *ctx)
 			.bp = bp, .title = title, .content = get_param(ctx->r, "text"),
 			.sig = strtol(get_param(ctx->r, "sig"), NULL, 0), .ip = mask_host(fromhost),
 			.o_fp = reply ? &fh : NULL, .noreply = false, .mmark = false,
-			.anony = strtol(get_param(ctx->r, "anony"), NULL, 0) };
+			.anony = strtol(get_param(ctx->r, "anony"), NULL, 0),
+			.cp = (ctx->r->flag & REQUEST_UTF8) ? ctx->u2g : NULL
+		};
 		if (do_post_article(&pr) < 0)
 			return BBS_EINTNL;
 	}
