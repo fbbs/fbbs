@@ -36,13 +36,6 @@
 	</xsl:if>
 </xsl:template>
 
-<xsl:template name='show-fav'>
-	<xsl:param name='fav'/>
-	<xsl:for-each select='$fav/b'><xsl:sort select='.'/>
-		<li class='sf'><a href='doc?board={.}'><xsl:value-of select='.'/></a></li>
-	</xsl:for-each>
-</xsl:template>
-
 <xsl:template name='navigation'>
 	<xsl:param name='session'/>
 	<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
@@ -75,7 +68,12 @@
 		<xsl:if test='contains($session/p, "l")'>
 			<li id='navf'>
 				<a href='#'>我的收藏</a>
-				<ul><li><a href='fav'>查看详情</a></li><xsl:call-template name='show-fav'><xsl:with-param name='fav' select='$session/f'/></xsl:call-template></ul>
+				<ul>
+					<li><a href='fav'>查看详情</a></li>
+					<xsl:for-each select='$session/f/b'><xsl:sort select='.'/>
+						<li class='sf'><a href='{$session/@m}doc?board={.}'><xsl:value-of select='.'/></a></li>
+					</xsl:for-each>
+				</ul>
 			</li>
 			<li id='navc'>
 				<a href='#'>鹊桥相会</a>
