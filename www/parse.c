@@ -315,7 +315,10 @@ static void _print_body(const char *begin, const char *end, int option)
 			}
 		}
 		fputs("<p>", stdout);
-		_print_paragraph(s, e, in_quote ? option : option & ~PARSE_NOQUOTEIMG);
+		if (e == s + 1)
+			fputs("<br/>", stdout);
+		else
+			_print_paragraph(s, e, in_quote ? option : option & ~PARSE_NOQUOTEIMG);
 		fputs("</p>", stdout);
 	}
 	printf("</pa>");

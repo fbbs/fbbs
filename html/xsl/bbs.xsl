@@ -402,6 +402,8 @@ table.post{width:100%}
 </xsl:for-each>
 </xsl:template>
 
+<xsl:template match='br'><br/></xsl:template>
+
 <xsl:template match='c'>
 <span class='a{@h}{@f} a{@b}'><xsl:value-of select='.'/></span>
 </xsl:template>
