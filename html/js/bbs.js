@@ -140,8 +140,8 @@ function replyButton() {
 		$(this).parent().after($('#quick_reply').clone(false).removeAttr('id').attr('action', action));
 		f = $('form', div);
 
-		var title = $('.ptitle', div).text();
-		if (title.substring(0, 4) == 'Re:\xa0') {
+		var title = $('.ptitle', div).text().replace(/\xa0/g, ' ');
+		if (title.substring(0, 4) == 'Re: ') {
 			title = 'Re: ' + title.substring(4);
 		} else {
 			title = 'Re: ' + title;
