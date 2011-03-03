@@ -184,7 +184,7 @@ int main(void)
 			ret = BBS_ENOURL;
 		} else {
 			fcgi_init_loop(&ctx, get_web_mode(app->mode));
-#ifndef FDQUAN
+#ifdef FDQUAN
 			if (!loginok && app->func != bbslogin_main
 					&& app->func != fcgi_reg && app->func != fcgi_activate)
 				ret = BBS_ELGNREQ;
