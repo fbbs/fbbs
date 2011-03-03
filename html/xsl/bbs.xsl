@@ -916,17 +916,17 @@ table.post{width:100%}
 <xsl:template match='bbsnot'>
 	<h2>进版画面 - [<xsl:value-of select='@brd'/>]</h2>
 	<div class='post'>
-		<div class='ptop'><xsl:call-template name='not-navbar'/></div>
-		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='.'/></xsl:call-template></div>
-		<div class='pbot'><xsl:call-template name='not-navbar'/></div>
+		<div class='ptop'>
+			<xsl:if test='@brd'>
+				<a href='gdoc?board={@brd}'>文摘区</a>
+				<a href='doc?board={@brd}'><img src='../images/button/home.gif'/>本讨论区</a>
+			</xsl:if>
+		</div>
+		<div class='usmd'><xsl:call-template name='showpost'><xsl:with-param name='content' select='node()[1]'/></xsl:call-template></div>
 	</div>
 </xsl:template>
 
 <xsl:template name='not-navbar'>
-	<xsl:if test='@brd'>
-		<a href='gdoc?board={@brd}'>[ 文摘区 ]</a>
-		<a href='doc?board={@brd}'>[<img src='../images/button/home.gif'/>本讨论区]</a>
-	</xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsreg'>
