@@ -426,9 +426,6 @@ table.post{width:100%}
 <a href='{@href}'><xsl:choose><xsl:when test='@i'><img src='{@href}'/></xsl:when><xsl:otherwise><xsl:value-of select='@href'/></xsl:otherwise></xsl:choose></a>
 </xsl:template>
 
-<xsl:template name='con-navbar'>
-</xsl:template>
-
 <xsl:template name='con-linkbar'>
 	<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
 	<xsl:if test='po/@nore'><span class='disabled'>本文不可回复</span></xsl:if>
@@ -440,27 +437,27 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template match='bbstcon'>
-	<div class='pnav'><xsl:if test='not(@last)'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
-	<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if></div>
+	<xsl:call-template name='tcon-navbar'/>
 	<xsl:for-each select='po'>
 		<div class='post'>
-			<div class='ptop'><xsl:call-template name='tcon-navbar'/></div>
 			<div class='pmain'><xsl:apply-templates select='.'/></div>
 			<div class='plink'>
 				<a class='reply' href='pst?bid={../@bid}&amp;f={@fid}'>回复本文</a>
 				<a href='ccc?bid={../@bid}&amp;f={@fid}'>转载</a>
+				<a href='con?new=1&amp;bid={../@bid}&amp;f={@fid}'><img src='../images/button/content.gif'/>本文链接</a>
 			</div>
 		</div>
 	</xsl:for-each>
-	<div class='pnav'><xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
-	<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if></div>
+	<xsl:call-template name='tcon-navbar'/>
 	<xsl:call-template name='quick-reply-form'/>
 </xsl:template>
 
 <xsl:template name='tcon-navbar'>
-	<a href='gdoc?bid={../@bid}'>文摘区</a>
-	<a href='tdoc?bid={../@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
-	<a href='con?new=1&amp;bid={../@bid}&amp;f={@fid}'><img src='../images/button/content.gif'/>本文链接</a>
+	<div class='pnav'>
+		<a href='tdoc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
+		<xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
+		<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if>
+	</div>
 </xsl:template>
 
 <xsl:template match='bbsqry'>
