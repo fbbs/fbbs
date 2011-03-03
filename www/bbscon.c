@@ -31,20 +31,23 @@ const struct fileheader *dir_bsearch(const struct fileheader *begin,
 	return begin;
 }
 
-bool bbscon_search(const struct boardheader *bp, unsigned int fid,
-		int action, struct fileheader *fp)
+int bbscon_search(const struct boardheader *bp, unsigned int fid,
+		int action, struct fileheader *fp, bool extra)
 {
-	if (bp == NULL || fp == NULL)
-		return false;
+	if (!bp || !fp)
+		return -1;
+
 	char dir[HOMELEN];
 	setbfile(dir, bp->filename, DOT_DIR);
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(dir, &m) < 0)
-		return false;
+		return -1;
+
 	struct fileheader *begin = m.ptr, *end;
 	end = begin + (m.size / sizeof(*begin));
 	const struct fileheader *f = dir_bsearch(begin, end, fid);
+
 	if (f != end && f->id == fid) {
 		unsigned int gid = f->gid;
 		switch (action) {
@@ -70,8 +73,24 @@ bool bbscon_search(const struct boardheader *bp, unsigned int fid,
 		else
 			f = NULL;
 	}
+
+	int ret = (f != NULL);
+	if (f && extra) {
+		if (f == begin)
+			ret |= POST_FIRST;
+		if (f == end - 1)
+			ret |= POST_LAST;
+		if (f->id == f->gid)
+			ret |= THREAD_FIRST;
+		unsigned int gid = f->gid;
+		while (++f < end && f->gid != gid)
+			;
+		if (f >= end)
+			ret |= THREAD_LAST;
+	}
+
 	mmap_close(&m);
-	return (f != NULL);
+	return ret;
 }
 
 int bbscon_main(web_ctx_t *ctx)
@@ -86,6 +105,7 @@ int bbscon_main(web_ctx_t *ctx)
 	const char *action = get_param(ctx->r, "a");
 	bool sticky = *get_param(ctx->r, "s");
 
+	int ret;
 	struct fileheader fh;
 	if (sticky) {
 		char file[HOMELEN];
@@ -93,7 +113,8 @@ int bbscon_main(web_ctx_t *ctx)
 		if (!search_record(file, &fh, sizeof(fh), cmp_fid, &fid))
 			return BBS_ENOFILE;
 	} else {
-		if (!bbscon_search(bp, fid, *action, &fh))
+		ret = bbscon_search(bp, fid, *action, &fh, true);
+		if (ret <= 0)
 			return BBS_ENOFILE;
 	}
 	fid = fh.id;
@@ -102,9 +123,11 @@ int bbscon_main(web_ctx_t *ctx)
 	bool anony = bp->flag & BOARD_ANONY_FLAG;
 	printf("<bbscon link='con' bid='%d' anony='%d'>", bid, anony);
 	print_session(ctx);
-	printf("<po fid='%u'", fid);
-	if (sticky)
-		printf(" sticky='1'");
+	printf("<po fid='%u'%s%s%s%s", fid,
+			sticky ? " sticky='1'" : "",
+			ret & POST_FIRST ? " first='1'" : "",
+			ret & POST_LAST ? " last='1'" : "",
+			ret & THREAD_LAST ? " tlast='1'" : "");
 	if (fh.reid != fh.id)
 		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
 	else

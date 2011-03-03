@@ -4,9 +4,6 @@
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
-extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
-		int action, struct fileheader *fp);
-
 static int edit_article(const char *file, const char *content, const char *ip)
 {
 	if (file == NULL || content == NULL || ip == NULL)
@@ -92,7 +89,7 @@ int bbssnd_main(web_ctx_t *ctx)
 	bool reply = !(*f == '\0');
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
-		if (!bbscon_search(bp, fid, 0, &fh))
+		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
 		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
 			return BBS_EPST;

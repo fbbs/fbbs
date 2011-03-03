@@ -364,7 +364,24 @@ table.post{width:100%}
 
 <xsl:template match='bbscon'>
 	<div class='post'>
-		<div class='ptop'><xsl:call-template name='con-navbar'/></div>
+		<div class='ptop'>
+			<xsl:if test='@link != "con"'><a href='gdoc?bid={@bid}'>文摘区</a></xsl:if>
+			<a href='doc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
+			<xsl:variable name='baseurl'>con?new=1&amp;bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
+			<xsl:if test='not(po/@sticky)'>
+				<xsl:if test='not(po/@first)'><a href='{$baseurl}p'><img src='../images/button/up.gif'/>上篇</a></xsl:if>
+				<xsl:if test='not(po/@last)'><a href='{$baseurl}n'><img src='../images/button/down.gif'/>下篇</a></xsl:if>
+				<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>上楼</a></xsl:if>
+				<xsl:if test='not(po/@tlast)'><a href='{$baseurl}a'>下楼</a></xsl:if>
+				<xsl:if test='po/@gid'><a href='con?new=1&amp;bid={@bid}&amp;f={po/@gid}'>顶楼</a></xsl:if>
+				<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
+				<a href='tcon?new=1&amp;bid={@bid}&amp;f={$gid}'>展开主题</a>
+				<a href='tcon?new=1&amp;bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>向后展开</a>
+			</xsl:if>
+			<a><xsl:attribute name='href'>con?new=1&amp;bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>本文链接</a>
+			<a><xsl:attribute name='href'>../static/con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>保存/打印</a>
+		</div>
+
 		<div class='pmain'><xsl:apply-templates select='po'/></div>
 		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
 	</div>
@@ -410,21 +427,6 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template name='con-navbar'>
-	<xsl:if test='@link != "con"'><a href='gdoc?bid={@bid}'>文摘区</a></xsl:if>
-	<a href='doc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
-	<xsl:variable name='baseurl'>con?new=1&amp;bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
-	<xsl:if test='not(po/@sticky)'>
-		<a href='{$baseurl}p'><img src='../images/button/up.gif'/>上篇</a>
-		<a href='{$baseurl}n'><img src='../images/button/down.gif'/>下篇</a>
-		<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>上楼</a></xsl:if>
-		<a href='{$baseurl}a'>下楼</a>
-		<xsl:if test='po/@gid'><a href='con?new=1&amp;bid={@bid}&amp;f={po/@gid}'>顶楼</a></xsl:if>
-		<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
-		<a href='tcon?new=1&amp;bid={@bid}&amp;f={$gid}'>展开主题</a>
-		<a href='tcon?new=1&amp;bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>向后展开</a>
-	</xsl:if>
-	<a><xsl:attribute name='href'>con?new=1&amp;bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>本文链接</a>
-	<a><xsl:attribute name='href'>../static/con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>保存/打印</a>
 </xsl:template>
 
 <xsl:template name='con-linkbar'>

@@ -6,9 +6,6 @@
 #include "fbbs/post.h"
 #include "fbbs/web.h"
 
-extern bool bbscon_search(const struct boardheader *bp, unsigned int fid,
-		int action, struct fileheader *fp);
-
 int web_quotation(const char *str, size_t size, const char *owner, bool ismail)
 {
 	printf("【 在 %s 的%s中提到: 】\n", owner, ismail ? "来信" : "大作");
@@ -88,7 +85,7 @@ static int do_bbspst(web_ctx_t *ctx, bool isedit)
 		return BBS_EINVAL;
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
-		if (!bbscon_search(bp, fid, 0, &fh))
+		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
 		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
 			return BBS_EPST;
@@ -152,7 +149,7 @@ int bbsccc_main(web_ctx_t *ctx)
 
 	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
 	struct fileheader fh;
-	if (!bbscon_search(bp, fid, 0, &fh))
+	if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
 		return BBS_ENOFILE;
 
 	const char *target = get_param(ctx->r, "t");
@@ -232,7 +229,7 @@ int bbsfwd_main(web_ctx_t *ctx)
 			return BBS_EINVAL;
 		unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
 		struct fileheader fh;
-		if (!bbscon_search(bp, fid, 0, &fh))
+		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);

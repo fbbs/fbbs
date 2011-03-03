@@ -60,6 +60,13 @@ enum {
 	PARAM_NAMELEN = 80,  /**< Max length of a parameter name */
 };
 
+enum {
+	POST_FIRST = 0x2,
+	POST_LAST = 0x4,
+	THREAD_FIRST = 0x8,
+	THREAD_LAST = 0x10,
+};
+
 const char *getsenv(const char *s);
 const char *get_referer(void);
 
@@ -112,5 +119,7 @@ void printable_filter(char *str);
 extern int xml_print_post(const char *file, int option);
 extern int xml_print_file(http_req_t *r, const char *file);
 
+extern int bbscon_search(const struct boardheader *bp, unsigned int fid,
+		int action, struct fileheader *fp, bool extra);
 #endif  //FB_LIBWEB_H
 
