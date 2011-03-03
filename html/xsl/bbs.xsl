@@ -431,7 +431,8 @@ table.post{width:100%}
 
 <xsl:template name='con-linkbar'>
 	<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
-	<xsl:if test='@link = "con"'><a class='reply'><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>回复本文</a></xsl:if>
+	<xsl:if test='po/@nore'><span class='disabled'>本文不可回复</span></xsl:if>
+	<xsl:if test='not(po/@nore) and @link="con"'><a class='reply'><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>回复本文</a></xsl:if>
 	<a href='edit?{$param}'>修改</a>
 	<a href='ccc?{$param}'>转载</a>
 	<a href='fwd?{$param}'>转寄</a>

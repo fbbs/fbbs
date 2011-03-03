@@ -166,6 +166,11 @@ table.content {
 	border-spacing: 2px;
 	margin-bottom: 7px;
 	width: 100%;
+	font-size: 14px;
+}
+.content tr {
+	line-height: 20px;
+	height: 20px;
 }
 tr.light { background-color: #ffffff; }
 tr.dark { background-color: #f0f7ff; }
@@ -173,7 +178,8 @@ th.no, td.no { width: 56px; text-align: center; }
 th.title, td.title { width: 168px; }
 th.owner, td.owner { width: 98px;}
 th.mark, td.mark { width: 42px; }
-th.time, td.time { width: 140px; _width: 140px; text-align: center; padding: 0; margin: 0}
+th.time, td.time { width: 140px; _width: 140px; text-align: center; padding: 0; margin: 0; }
+td.time { font-size: 11px; }
 th.bm, td.bm { _width: 280px; }
 th.cate, td.cate { width: 70px; }
 th.desc, td.desc { width: 225px; }
@@ -218,6 +224,9 @@ div.ptop, div.pbot {
 	padding: 3px 0;
 	margin-right: 7px;
 	color: #224466;
+}
+.plink span.disabled {
+	margin: 0 7px 0 0;
 }
 div.pnav {
 	margin: 0 0 5px;
@@ -304,6 +313,10 @@ a.newpost {
 }
 .quick_reply textarea {
 	margin: 8px 0 0 0;
+}
+
+.disabled {
+	color: #808080;
 }
 
 textarea.binput {

@@ -123,11 +123,13 @@ int bbscon_main(web_ctx_t *ctx)
 	bool anony = bp->flag & BOARD_ANONY_FLAG;
 	printf("<bbscon link='con' bid='%d' anony='%d'>", bid, anony);
 	print_session(ctx);
-	printf("<po fid='%u'%s%s%s%s", fid,
+	bool noreply = fh.accessed[0] & FILE_NOREPLY && !chkBM(bp, &currentuser);
+	printf("<po fid='%u'%s%s%s%s%s", fid,
 			sticky ? " sticky='1'" : "",
 			ret & POST_FIRST ? " first='1'" : "",
 			ret & POST_LAST ? " last='1'" : "",
-			ret & THREAD_LAST ? " tlast='1'" : "");
+			ret & THREAD_LAST ? " tlast='1'" : "",
+			noreply ? " nore='1'" : "");
 	if (fh.reid != fh.id)
 		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
 	else
