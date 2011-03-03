@@ -247,6 +247,7 @@ div.post_s {
 	padding: 4px 0 0;
 	margin: 4px 0 0;
 	font-family: monospace;
+	font-size: 12px;
 }
 .post_s img {
 	max-width: 600px;
