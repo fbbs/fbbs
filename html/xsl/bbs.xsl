@@ -353,16 +353,13 @@ table.post{width:100%}
 	</table>
 
 	<div class='blink'>
-		<xsl:if test='@link != ""'><a href='doc?bid={brd/@bid}'><img src='../images/button/home.gif'/>一般模式</a></xsl:if>
-		<xsl:if test='@link != "t"'><a href='tdoc?bid={brd/@bid}'><img src='../images/button/content.gif'/>主题模式</a></xsl:if>
-		<xsl:if test='@link != "g"'><a href='gdoc?bid={brd/@bid}'>文摘区</a></xsl:if>
+		<xsl:if test='brd/@link != ""'><a href='doc?bid={brd/@bid}'><img src='../images/button/home.gif'/>一般模式</a></xsl:if>
+		<xsl:if test='brd/@link != "t"'><a href='tdoc?bid={brd/@bid}'><img src='../images/button/content.gif'/>主题模式</a></xsl:if>
+		<xsl:if test='brd/@link != "g"'><a href='gdoc?bid={brd/@bid}'>文摘区</a></xsl:if>
 		<a href='0an?bid={brd/@bid}'><img src='../images/announce.gif'/>精华区</a>
 		<a href='bfind?bid={brd/@bid}'><img src='../images/search.gif'/>版内搜索</a>
 		<a href='rss?bid={brd/@bid}'>RSS</a>
 	</div>
-</xsl:template>
-
-<xsl:template match='brd'>
 </xsl:template>
 
 <xsl:template match='bbscon'>
