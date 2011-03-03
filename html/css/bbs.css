@@ -168,7 +168,7 @@ table.content {
 	width: 100%;
 	font-size: 14px;
 }
-.content tr {
+#postlist tr {
 	line-height: 20px;
 	height: 20px;
 }
