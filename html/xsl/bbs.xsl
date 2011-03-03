@@ -442,7 +442,8 @@ table.post{width:100%}
 		<div class='post'>
 			<div class='pmain'><xsl:apply-templates select='.'/></div>
 			<div class='plink'>
-				<a class='reply' href='pst?bid={../@bid}&amp;f={@fid}'>回复本文</a>
+				<xsl:if test='@nore'><span class='disabled'>本文不可回复</span></xsl:if>
+				<xsl:if test='not(@nore)'><a class='reply' href='pst?bid={../@bid}&amp;f={@fid}'>回复本文</a></xsl:if>
 				<a href='ccc?bid={../@bid}&amp;f={@fid}'>转载</a>
 				<a href='con?new=1&amp;bid={../@bid}&amp;f={@fid}'><img src='../images/button/content.gif'/>本文链接</a>
 			</div>

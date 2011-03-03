@@ -108,6 +108,8 @@ int bbstcon_main(web_ctx_t *ctx)
 	printf("<bbstcon bid='%d' gid='%u' page='%d'%s>", bid, gid, count,
 			flag & THREAD_LAST ? " last='1'" : "");
 	print_session(ctx);
+
+	bool isbm = chkBM(bp, &currentuser);
 	if (action == 'n') {
 		begin = fh;
 		end = fh + c;
@@ -118,7 +120,8 @@ int bbstcon_main(web_ctx_t *ctx)
 	char file[HOMELEN];
 	brc_fcgi_init(currentuser.userid, bp->filename);
 	for (; begin != end; ++begin) {
-		printf("<po fid='%u' owner='%s'>", begin->id, begin->owner);
+		printf("<po fid='%u' owner='%s'%s>", begin->id, begin->owner,
+				!isbm && begin->accessed[0] & FILE_NOREPLY ? " nore='1'" : "");
 		setbfile(file, bp->filename, begin->filename);
 		xml_print_file(ctx->r, file);
 		puts("</po>");
