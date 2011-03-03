@@ -189,7 +189,7 @@ div.bnav {
 	margin: 8px 0;
 }
 div.btop {
-	margin: 2px 0;
+	margin: 2px 0 0;
 }
 .btop span {
 	margin-left: 20px;
@@ -277,16 +277,17 @@ div.usmd {
 	font-family: monospace;
 }
 
-a.reply {
+a.reply, a.newpost {
 	font-weight: bold;
 	color: #ffffff;
 	background-color: #336699;
 	border-color: #cccccc #000000 #000000 #cccccc;
 	border-style: solid;
 	border-width: 1px;
-}
-a.reply {
 	padding: 5px 10px;
+}
+a.newpost {
+	padding: 3px 10px;
 }
 #quick_reply, .quick_reply {
 	display: none;

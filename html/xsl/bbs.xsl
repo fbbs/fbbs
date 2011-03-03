@@ -311,9 +311,9 @@ table.post{width:100%}
 		<xsl:otherwise><h2><xsl:if test='brd/@icon'><img src='{brd/@icon}'/></xsl:if><a href='{brd/@link}doc?bid={brd/@bid}'><xsl:value-of select='brd/@desc'/> [<xsl:value-of select='brd/@title'/>]<xsl:if test='brd/@link = "g"'> - 文摘区</xsl:if><xsl:if test='brd/@link = "t"'> - 主题模式</xsl:if></a></h2></xsl:otherwise>
 	</xsl:choose>
 	<div class='btop'>
-		<a href='pst?bid={brd/@bid}'><img src='../images/button/edit.gif'/>发表文章</a>
-		<a href='not?board={brd/@title}'>进版画面</a>
+		<a class='newpost' href='pst?bid={brd/@bid}'>发表文章</a>
 		<a href='brdadd?bid={brd/@bid}'>收藏本版</a>
+		<a href='not?board={brd/@title}'>进版画面</a>
 		<span>版主: <xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template></span>
 	</div>
 
