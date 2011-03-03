@@ -131,13 +131,13 @@
 
 <xsl:template name='bbsname'>日月光华</xsl:template>
 <xsl:template name='include-css'>
-	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1261'/>
-	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1261'/><![endif]]]></xsl:comment>
+	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1283'/>
+	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1283'/><![endif]]]></xsl:comment>
 </xsl:template>
 <xsl:template name='include-js'>
 	<script src='../js/persist-all-min.js'></script>
 	<script src='/js/jquery-1.5.1.min.js'></script>
-	<script src='../js/bbs.js' charset='gb2312' defer='defer'></script>
+	<script src='../js/bbs.js?v1283' charset='gb2312' defer='defer'></script>
 </xsl:template>
 
 <xsl:template name='page-title'>
@@ -310,15 +310,27 @@ table.post{width:100%}
 		<xsl:when test='brd/@banner'><img src='{brd/@banner}'/></xsl:when>
 		<xsl:otherwise><h2><xsl:if test='brd/@icon'><img src='{brd/@icon}'/></xsl:if><a href='{brd/@link}doc?bid={brd/@bid}'><xsl:value-of select='brd/@desc'/> [<xsl:value-of select='brd/@title'/>]<xsl:if test='brd/@link = "g"'> - 文摘区</xsl:if><xsl:if test='brd/@link = "t"'> - 主题模式</xsl:if></a></h2></xsl:otherwise>
 	</xsl:choose>
-	<p>
-		<a href='pst?bid={brd/@bid}'>[<img src='../images/button/edit.gif'/>发表文章]</a>
-		<a href='not?board={brd/@title}'>[进版画面]</a>
-		<a href='brdadd?bid={brd/@bid}'>[收藏本版]</a>
-		&#160;版主 [<xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template>]  
-		<xsl:choose><xsl:when test='brd/@link = "t"'>主题</xsl:when><xsl:otherwise>文章</xsl:otherwise></xsl:choose>数 [<xsl:choose><xsl:when test='brd/@total &gt; 0'><xsl:value-of select='brd/@total'/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>]
+	<div class='btop'>
+		<a href='pst?bid={brd/@bid}'><img src='../images/button/edit.gif'/>发表文章</a>
+		<a href='not?board={brd/@title}'>进版画面</a>
+		<a href='brdadd?bid={brd/@bid}'>收藏本版</a>
+		<span>版主: <xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template></span>
+	</div>
+
+	<div class='bnav'>
+		<a href='javascript:location=location'><img src='../images/button/reload.gif'/>刷新</a>
+		<xsl:if test='brd/@start > 1'>
+			<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
+			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$prev}'><img src='../images/button/up.gif'/>上一页</a>
+		</xsl:if>
+		<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
+			<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
+			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'><img src='../images/button/down.gif'/>下一页</a>
+		</xsl:if>
+		<a href='clear?board={brd/@title}&amp;start={brd/@start}'>清除未读</a>
 		<form class='jump' method='get' action='{brd/@link}doc'><input type='hidden' name='bid' value='{brd/@bid}'></input><img src='../images/button/forward.gif'/>跳转到<input type='text' name='start' size='6'/>篇</form>
-	</p>
-	<xsl:apply-templates select='brd'/>
+	</div>
+
 	<table class='content'>
 		<tr><th class='no'>序号</th><th class='mark'>标记</th><th>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
 		<xsl:for-each select='po'><tr>
@@ -327,13 +339,11 @@ table.post{width:100%}
 			<td class='mark'><xsl:value-of select='@m'/></td>
 			<td class='owner'><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a></td>
 			<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></td>
-			<xsl:variable name='imgsrc'>../images/types/<xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'>reply</xsl:when><xsl:otherwise>text</xsl:otherwise></xsl:choose>.gif</xsl:variable>
-			<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
 			<td class='ptitle'><a class='ptitle'>
 				<xsl:attribute name='href'><xsl:value-of select='../brd/@link'/>con?new=1&amp;bid=<xsl:value-of select='../brd/@bid'/>&amp;f=<xsl:value-of select='@id'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
-				<img src='{$imgsrc}'/>
+				<xsl:if test='substring(., 1, 4) != "Re: "'><img src='../images/types/text.gif'/></xsl:if>
 				<xsl:call-template name='ansi-escape'>
-					<xsl:with-param name='content'><xsl:value-of select='$text'/></xsl:with-param>
+					<xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param>
 					<xsl:with-param name='fgcolor'>37</xsl:with-param>
 					<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
 					<xsl:with-param name='ishl'>0</xsl:with-param>
@@ -341,26 +351,18 @@ table.post{width:100%}
 			</a></td>
 		</tr></xsl:for-each>
 	</table>
-	<xsl:apply-templates select='brd'/>
+
+	<div class='blink'>
+		<xsl:if test='@link != ""'><a href='doc?bid={brd/@bid}'><img src='../images/button/home.gif'/>一般模式</a></xsl:if>
+		<xsl:if test='@link != "t"'><a href='tdoc?bid={brd/@bid}'><img src='../images/button/content.gif'/>主题模式</a></xsl:if>
+		<xsl:if test='@link != "g"'><a href='gdoc?bid={brd/@bid}'>文摘区</a></xsl:if>
+		<a href='0an?bid={brd/@bid}'><img src='../images/announce.gif'/>精华区</a>
+		<a href='bfind?bid={brd/@bid}'><img src='../images/search.gif'/>版内搜索</a>
+		<a href='rss?bid={brd/@bid}'>RSS</a>
+	</div>
 </xsl:template>
 
 <xsl:template match='brd'>
-	<a href='javascript:location=location'>[<img src='../images/button/reload.gif'/>刷新]</a>
-	<xsl:if test='@start > 1'>
-		<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page'/></xsl:otherwise></xsl:choose></xsl:variable>
-		<a href='{@link}doc?bid={@bid}&amp;start={$prev}'>[<img src='../images/button/up.gif'/>上一页]</a>
-	</xsl:if>
-	<xsl:if test='@total > @start + @page - 1'>
-		<xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
-		<a href='{@link}doc?bid={@bid}&amp;start={$next}'>[<img src='../images/button/down.gif'/>下一页]</a>
-	</xsl:if>
-	<a href='clear?board={@title}&amp;start={@start}'>[清除未读]</a>
-	<xsl:if test='@link != ""'><a href='doc?bid={@bid}'>[<img src='../images/button/home.gif'/>一般模式]</a></xsl:if>
-	<xsl:if test='@link != "t"'><a href='tdoc?bid={@bid}'>[<img src='../images/button/content.gif'/>主题模式]</a></xsl:if>
-	<xsl:if test='@link != "g"'><a href='gdoc?bid={@bid}'>[文摘区]</a></xsl:if>
-	<a href='0an?bid={@bid}'>[<img src='../images/announce.gif'/>精华区]</a>
-	<a href='bfind?bid={@bid}'>[<img src='../images/search.gif'/>版内搜索]</a>
-	<a href='rss?bid={@bid}'>[RSS]</a>
 </xsl:template>
 
 <xsl:template match='bbscon'>

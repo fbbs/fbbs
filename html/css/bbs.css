@@ -3,7 +3,7 @@ body, div, ul, ol, li, h1, h2, h3, h4, h5, h6, form, input, textarea, p, blockqu
 	padding: 0;
 }
 body {
-	font-family: "SimSun", "Gill Sans MT", Verdana, sans-serif;
+	font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif;
 	font-size: 16px;
 	width: 100%;
 	background-color: #f0f7ff;
@@ -112,7 +112,7 @@ a#navu { font-weight: bold; padding: 0 14px 0 0; }
 	background-color: #336699;
 	border: #336699 1px solid;
 	width: 120px;
-	padding: 3px
+	padding: 3px;
 	margin: 0 0 6px 0;
 	overflow: auto;
 	font-size: 14px;
@@ -159,7 +159,7 @@ a#navu { font-weight: bold; padding: 0 14px 0 0; }
 #navh li a, #navb li a, #nava li a, #navp li a, #navt li a, #navf li a, #navc li a, #navco li a, #navm li a, #navs li a { background-image: none; }
 #navb ul li a { padding-left: 7px; }
 .sf { padding: 0; font-size: 12px; }
-#navf ul li.sf a { padding: 0; }
+#navf ul li.sf a { padding: 0; line-height: 18px; height: 18px; }
 
 table.content {
 	border-collapse: separate;
@@ -185,6 +185,21 @@ a.title, a.desc, a.owner, a.ptitle { display: block; }
 a.idesc { display: inline-block; margin-left: 2px; }
 td.time, span.time { color: gray;}
 
+div.bnav {
+	margin: 8px 0;
+}
+div.btop {
+	margin: 2px 0;
+}
+.btop span {
+	margin-left: 20px;
+}
+.btop span a {
+	border: none;
+	padding: 0;
+	margin-right: 3px;
+}
+
 div.post {
 	-moz-border-radius: 11px;
 	-webkit-border-radius: 11px;
@@ -198,7 +213,7 @@ div.post {
 div.ptop, div.pbot {
 	padding: 3px 7px;
 }
-.ptop a, .plink a, .pnav a {
+.ptop a, .plink a, .pnav a, .btop a, .blink a, .bnav a {
 	border-bottom: 1px dotted #6699cc;
 	padding: 3px 0;
 	margin-right: 7px;
