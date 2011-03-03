@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/string.h"
 #include "fbbs/web.h"
 
 static int cmp_fid(void *arg, void *buf)
@@ -123,13 +124,16 @@ int bbscon_main(web_ctx_t *ctx)
 	bool anony = bp->flag & BOARD_ANONY_FLAG;
 	printf("<bbscon link='con' bid='%d' anony='%d'>", bid, anony);
 	print_session(ctx);
-	bool noreply = fh.accessed[0] & FILE_NOREPLY && !chkBM(bp, &currentuser);
-	printf("<po fid='%u'%s%s%s%s%s", fid,
+	bool isbm = chkBM(bp, &currentuser);
+	bool noreply = fh.accessed[0] & FILE_NOREPLY && !isbm;
+	bool self = streq(fh.owner, currentuser.userid);
+	printf("<po fid='%u'%s%s%s%s%s%s", fid,
 			sticky ? " sticky='1'" : "",
 			ret & POST_FIRST ? " first='1'" : "",
 			ret & POST_LAST ? " last='1'" : "",
 			ret & THREAD_LAST ? " tlast='1'" : "",
-			noreply ? " nore='1'" : "");
+			noreply ? " nore='1'" : "",
+			self || isbm ? " edit='1'" : "");
 	if (fh.reid != fh.id)
 		printf(" reid='%u' gid='%u'>", fh.reid, fh.gid);
 	else

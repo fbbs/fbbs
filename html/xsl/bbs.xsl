@@ -430,10 +430,12 @@ table.post{width:100%}
 	<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
 	<xsl:if test='po/@nore'><span class='disabled'>本文不可回复</span></xsl:if>
 	<xsl:if test='not(po/@nore) and @link="con"'><a class='reply'><xsl:attribute name='href'>pst?<xsl:value-of select='$param'/></xsl:attribute>回复本文</a></xsl:if>
-	<a href='edit?{$param}'>修改</a>
+	<xsl:if test='po/@edit'>
+		<a href='edit?{$param}'>修改</a>
+		<a href='del?{$param}'>删除</a>
+	</xsl:if>
 	<a href='ccc?{$param}'>转载</a>
 	<a href='fwd?{$param}'>转寄</a>
-	<a href='del?{$param}'>删除</a>
 </xsl:template>
 
 <xsl:template match='bbstcon'>
@@ -765,7 +767,7 @@ table.post{width:100%}
 		</xsl:when>
 		<xsl:otherwise>
 			<form method='get' action='ccc'>
-				<p>文章标题: <xsl:value-of select='.'/></p>
+				<p>文章标题: <xsl:value-of select='node()[1]'/></p>
 				<p>文章作者: <xsl:value-of select='@owner'/></p>
 				<p>原始版面: <xsl:value-of select='@brd'/></p>
 				<input type='hidden' name='bid' value='{@bid}'></input>
