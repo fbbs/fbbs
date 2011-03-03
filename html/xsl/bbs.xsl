@@ -439,7 +439,7 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template match='bbstcon'>
-	<div class='pnav'><xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>обрЁ</a></xsl:if>
+	<div class='pnav'><xsl:if test='not(@last)'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>обрЁ</a></xsl:if>
 	<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>иорЁ</a></xsl:if></div>
 	<xsl:for-each select='po'>
 		<div class='post'>

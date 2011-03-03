@@ -13,12 +13,12 @@ extern const struct fileheader *dir_bsearch(const struct fileheader *begin,
 // after 'fid' in thread 'gid', otherwise, posts before 'fid'.
 // Return NULL if not found, otherwise, memory should be freed by caller.
 static struct fileheader *bbstcon_search(const struct boardheader *bp,
-		unsigned int gid, unsigned int fid, char action, int *count)
+		unsigned int gid, unsigned int fid, char action, int *count, int *flag)
 {
-	if (bp == NULL || count == NULL || *count < 1)
+	if (!bp || !count || *count < 1)
 		return NULL;
 	struct fileheader *fh = malloc(sizeof(struct fileheader) * (*count));
-	if (fh == NULL)
+	if (!fh)
 		return NULL;
 
 	// Open index file.
@@ -30,11 +30,11 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 		free(fh);
 		return NULL;
 	}
+
 	struct fileheader *begin = m.ptr, *end;
 	end = begin + (m.size / sizeof(*begin));
+	const struct fileheader *f = dir_bsearch(begin, end, fid), *last = NULL;
 
-	// Search 'fid'.
-	const struct fileheader *f = dir_bsearch(begin, end, fid);
 	int c = 0;
 	if (action == 'n') {  // forward
 		if (f != end && f->id == fid)
@@ -42,12 +42,15 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 		for (; f < end; ++f) {
 			if (f->gid == gid) {
 				fh[c++] = *f;
-				if (c == *count)
+				if (c == *count) {
+					last = f;
 					break;
+				}
 			}
 		}
 		*count = c;
 	} else { // backward
+		last = f;
 		c = *count;
 		for (--f; f >= begin && f->id >= gid; --f) {
 			if (f->gid == gid) {
@@ -58,11 +61,19 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 		}
 		*count -= c;
 	}
+
+	*flag = 0;
+	if (last) {
+		while (++last < end && last->gid != gid)
+			;
+	}
+	if (!last || last >= end)
+		*flag |= THREAD_LAST;
+
 	mmap_close(&m);
 	return fh;
 }
 
-// TODO: brc
 int bbstcon_main(web_ctx_t *ctx)
 {
 	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
@@ -87,13 +98,15 @@ int bbstcon_main(web_ctx_t *ctx)
 	}
 
 	int count = POSTS_PER_PAGE;
-	int c = count;
-	struct fileheader *fh = bbstcon_search(bp, gid, fid, action, &c);
-	if (fh == NULL)
+	int c = count, flag = 0;
+	struct fileheader *fh = bbstcon_search(bp, gid, fid, action, &c, &flag);
+	if (!fh)
 		return BBS_ENOFILE;
+
 	struct fileheader *begin, *end;
 	xml_header(NULL);
-	printf("<bbstcon bid='%d' gid='%u' page='%d'>", bid, gid, count);
+	printf("<bbstcon bid='%d' gid='%u' page='%d'%s>", bid, gid, count,
+			flag & THREAD_LAST ? " last='1'" : "");
 	print_session(ctx);
 	if (action == 'n') {
 		begin = fh;
