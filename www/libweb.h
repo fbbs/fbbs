@@ -63,8 +63,10 @@ enum {
 enum {
 	POST_FIRST = 0x2,
 	POST_LAST = 0x4,
-	THREAD_FIRST = 0x8,
-	THREAD_LAST = 0x10,
+	THREAD_FIRST_POST = 0x8,
+	THREAD_LAST_POST = 0x10,
+	THREAD_LAST = 0x20,
+	THREAD_FIRST = 0x40,
 };
 
 const char *getsenv(const char *s);

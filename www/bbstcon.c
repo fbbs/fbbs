@@ -13,7 +13,7 @@ extern const struct fileheader *dir_bsearch(const struct fileheader *begin,
 // after 'fid' in thread 'gid', otherwise, posts before 'fid'.
 // Return NULL if not found, otherwise, memory should be freed by caller.
 static struct fileheader *bbstcon_search(const struct boardheader *bp,
-		unsigned int gid, unsigned int fid, char action, int *count, int *flag)
+		unsigned int *gid, unsigned int fid, char action, int *count, int *flag)
 {
 	if (!bp || !count || *count < 1)
 		return NULL;
@@ -34,13 +34,38 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 	struct fileheader *begin = m.ptr, *end;
 	end = begin + (m.size / sizeof(*begin));
 	const struct fileheader *f = dir_bsearch(begin, end, fid), *last = NULL;
+	const struct fileheader *h;
+
+	*flag = 0;
+	if (action == 'a') {
+		while (++f < end && f->id != f->gid)
+			;
+		if (f < end)
+			*gid = f->id;
+	}
+	for (h = f; ++h < end && h->id != h->gid; )
+		;
+	if (h >= end)
+		*flag |= THREAD_LAST;
+
+	// find prev thread
+	if (action == 'b') {
+		while (--f >= begin && f->id != f->gid)
+			;
+		if (f >= begin)
+			*gid = f->id;
+	}
+	for (h = f; --h >= begin && h->id != h->gid; )
+		;
+	if (h < begin)
+		*flag |= THREAD_FIRST;
 
 	int c = 0;
-	if (action == 'n') {  // forward
-		if (f != end && f->id == fid)
+	if (action != 'p') {  // forward
+		if (action == 'n' && f != end && f->id == fid)
 			++f;	// skip current post.
 		for (; f < end; ++f) {
-			if (f->gid == gid) {
+			if (f->gid == *gid) {
 				fh[c++] = *f;
 				if (c == *count) {
 					last = f;
@@ -52,8 +77,8 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 	} else { // backward
 		last = f;
 		c = *count;
-		for (--f; f >= begin && f->id >= gid; --f) {
-			if (f->gid == gid) {
+		for (--f; f >= begin && f->id >= *gid; --f) {
+			if (f->gid == *gid) {
 				fh[--c] = *f;
 				if (c == 0)
 					break;
@@ -62,13 +87,12 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 		*count -= c;
 	}
 
-	*flag = 0;
 	if (last) {
-		while (++last < end && last->gid != gid)
+		while (++last < end && last->gid != *gid)
 			;
 	}
 	if (!last || last >= end)
-		*flag |= THREAD_LAST;
+		*flag |= THREAD_LAST_POST;
 
 	mmap_close(&m);
 	return fh;
@@ -88,29 +112,31 @@ int bbstcon_main(web_ctx_t *ctx)
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+
 	unsigned int gid = strtoul(get_param(ctx->r, "g"), NULL, 10);
 	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
 	char action = *(get_param(ctx->r, "a"));
-	if (gid == 0) {
+	if (gid == 0)
 		gid = fid;
-		fid--;
-		action = 'n';
-	}
 
 	int count = POSTS_PER_PAGE;
 	int c = count, flag = 0;
-	struct fileheader *fh = bbstcon_search(bp, gid, fid, action, &c, &flag);
+	struct fileheader *fh = bbstcon_search(bp, &gid, fid, action, &c, &flag);
 	if (!fh)
 		return BBS_ENOFILE;
+	if (action == 'a' || action == 'b')
+		action = 'n';
 
 	struct fileheader *begin, *end;
 	xml_header(NULL);
-	printf("<bbstcon bid='%d' gid='%u' page='%d'%s>", bid, gid, count,
-			flag & THREAD_LAST ? " last='1'" : "");
+	printf("<bbstcon bid='%d' gid='%u' page='%d'%s%s%s>", bid, gid, count,
+			flag & THREAD_LAST_POST ? " last='1'" : "",
+			flag & THREAD_LAST ? " tlast='1'" : "",
+			flag & THREAD_FIRST ? " tfirst='1'" : "");
 	print_session(ctx);
 
 	bool isbm = chkBM(bp, &currentuser);
-	if (action == 'n') {
+	if (action != 'p') {
 		begin = fh;
 		end = fh + c;
 	} else {

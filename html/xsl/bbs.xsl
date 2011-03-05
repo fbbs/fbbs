@@ -458,6 +458,8 @@ table.post{width:100%}
 		<a href='tdoc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
 		<xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
 		<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if>
+		<xsl:if test='not(@tlast)'><a href='tcon?new=1&amp;bid={@bid}&amp;f={@gid}&amp;a=a'>下一主题</a></xsl:if>
+		<xsl:if test='not(@tfirst)'><a href='tcon?new=1&amp;bid={@bid}&amp;f={@gid}&amp;a=b'>上一主题</a></xsl:if>
 	</div>
 </xsl:template>
 

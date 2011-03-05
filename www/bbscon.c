@@ -82,12 +82,12 @@ int bbscon_search(const struct boardheader *bp, unsigned int fid,
 		if (f == end - 1)
 			ret |= POST_LAST;
 		if (f->id == f->gid)
-			ret |= THREAD_FIRST;
+			ret |= THREAD_FIRST_POST;
 		unsigned int gid = f->gid;
 		while (++f < end && f->gid != gid)
 			;
 		if (f >= end)
-			ret |= THREAD_LAST;
+			ret |= THREAD_LAST_POST;
 	}
 
 	mmap_close(&m);
@@ -131,7 +131,7 @@ int bbscon_main(web_ctx_t *ctx)
 			sticky ? " sticky='1'" : "",
 			ret & POST_FIRST ? " first='1'" : "",
 			ret & POST_LAST ? " last='1'" : "",
-			ret & THREAD_LAST ? " tlast='1'" : "",
+			ret & THREAD_LAST_POST ? " tlast='1'" : "",
 			noreply ? " nore='1'" : "",
 			self || isbm ? " edit='1'" : "");
 	if (fh.reid != fh.id)
