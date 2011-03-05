@@ -380,27 +380,24 @@ static char *get_permission(void)
 	return c;
 }
 
-int get_doc_mode(void)
-{
-	return currentuser.flags[1];
-}
-
-void set_doc_mode(int mode)
-{
-	if (loginok)
-		uidshm->passwd[u_info->uid - 1].flags[1] = mode;
-}
-
 const char *get_doc_mode_str(void)
 {
 	if (!loginok)
 		return "";
-	switch (uidshm->passwd[u_info->uid - 1].flags[1]) {
-		case MODE_THREAD:
-			return "t";
-		default:
-			return "";
-	}
+	if ((uidshm->passwd[u_info->uid - 1].flags[1] & 0xf) == MODE_THREAD)
+		return "t";
+	return "";
+}
+
+int get_user_flag(void)
+{
+	return currentuser.flags[1];
+}
+
+void set_user_flag(int flag)
+{
+	if (loginok)
+		uidshm->passwd[u_info->uid - 1].flags[1] = flag;
 }
 
 void print_session(web_ctx_t *ctx)

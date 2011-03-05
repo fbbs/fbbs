@@ -150,6 +150,19 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 
 extern int bbsboa_main();
 
+int get_doc_mode(void)
+{
+	return get_user_flag() & 0xf;
+}
+
+void set_doc_mode(int mode)
+{
+	if (loginok) {
+		char flag = uidshm->passwd[u_info->uid - 1].flags[1] & 0xf0;
+		uidshm->passwd[u_info->uid - 1].flags[1] = flag | (mode & 0x0f);
+	}
+}
+
 static int bbsdoc(web_ctx_t *ctx, int mode)
 {
 	char board[STRLEN];
