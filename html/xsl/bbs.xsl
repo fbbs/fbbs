@@ -378,6 +378,7 @@ table.post{width:100%}
 			</xsl:if>
 			<a><xsl:attribute name='href'>con?new=1&amp;bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>本文链接</a>
 			<a><xsl:attribute name='href'>../static/con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/><xsl:if test='po/@sticky'>&amp;s=1</xsl:if></xsl:attribute>保存/打印</a>
+			<xsl:call-template name='sigature-options'/>
 		</div>
 
 		<div class='pmain'><xsl:apply-templates select='po'/></div>
@@ -437,7 +438,10 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template match='bbstcon'>
-	<xsl:call-template name='tcon-navbar'/>
+	<div class='pnav'>
+		<xsl:call-template name='tcon-navbar'/>
+		<xsl:call-template name='sigature-options'/>
+	</div>
 	<xsl:for-each select='po'>
 		<div class='post'>
 			<div class='pmain'><xsl:apply-templates select='.'/></div>
@@ -449,18 +453,23 @@ table.post{width:100%}
 			</div>
 		</div>
 	</xsl:for-each>
-	<xsl:call-template name='tcon-navbar'/>
+	<div class='pnav'><xsl:call-template name='tcon-navbar'/></div>
 	<xsl:call-template name='quick-reply-form'/>
 </xsl:template>
 
 <xsl:template name='tcon-navbar'>
-	<div class='pnav'>
 		<a href='tdoc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
 		<xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
 		<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if>
 		<xsl:if test='not(@tlast)'><a href='tcon?new=1&amp;bid={@bid}&amp;f={@gid}&amp;a=a'>下一主题</a></xsl:if>
 		<xsl:if test='not(@tfirst)'><a href='tcon?new=1&amp;bid={@bid}&amp;f={@gid}&amp;a=b'>上一主题</a></xsl:if>
-	</div>
+</xsl:template>
+
+<xsl:template name='sigature-options'>
+	<a href='#' class='sig_option'>签名档选项</a>
+	<form class='sig_option' action='sigopt'>
+		<input type='checkbox' name='hidesig'><xsl:if test='@nosig'><xsl:attribute name='checked'>checked</xsl:attribute></xsl:if></input>隐藏签名档<input type='checkbox' name='hideimg'><xsl:if test='@nosigimg'><xsl:attribute name='checked'>checked</xsl:attribute></xsl:if></input>隐藏签名档图片<input type='submit' value='保存'/><input type='button' class='cancel' value='取消'/>
+	</form>
 </xsl:template>
 
 <xsl:template match='bbsqry'>

@@ -121,9 +121,15 @@ int bbscon_main(web_ctx_t *ctx)
 	fid = fh.id;
 
 	xml_header(NULL);
+
 	bool anony = bp->flag & BOARD_ANONY_FLAG;
-	printf("<bbscon link='con' bid='%d' anony='%d'>", bid, anony);
+	int opt = get_user_flag();
+	printf("<bbscon link='con' bid='%d' anony='%d'%s%s>", bid, anony,
+			opt & PREF_NOSIG ? " nosig='1'" : "",
+			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
+
 	print_session(ctx);
+
 	bool isbm = chkBM(bp, &currentuser);
 	bool noreply = fh.accessed[0] & FILE_NOREPLY && !isbm;
 	bool self = streq(fh.owner, currentuser.userid);
@@ -180,8 +186,15 @@ int bbsgcon_main(web_ctx_t *ctx)
 
 int xml_print_file(http_req_t *r, const char *file)
 {
-	if (r->flag & REQUEST_PARSED)
-		return xml_print_post(file, PARSE_NOQUOTEIMG);
+	if (r->flag & REQUEST_PARSED) {
+		int opt = PARSE_NOQUOTEIMG;
+		int flag = get_user_flag();
+		if (flag & PREF_NOSIG)
+			opt |= PARSE_NOSIG;
+		if (flag & PREF_NOSIGIMG)
+			opt |= PARSE_NOSIGIMG;
+		return xml_print_post(file, opt);
+	}
 	if (!(r->flag & REQUEST_MOBILE))
 		return xml_printfile(file, stdout);
 	return xml_print_post(file, PARSE_NOSIG);

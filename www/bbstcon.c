@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/string.h"
 #include "fbbs/web.h"
 
 enum {
@@ -127,12 +128,16 @@ int bbstcon_main(web_ctx_t *ctx)
 	if (action == 'a' || action == 'b')
 		action = 'n';
 
+	int opt = get_user_flag();
+
 	struct fileheader *begin, *end;
 	xml_header(NULL);
-	printf("<bbstcon bid='%d' gid='%u' page='%d'%s%s%s>", bid, gid, count,
+	printf("<bbstcon bid='%d' gid='%u' page='%d'%s%s%s%s%s>", bid, gid, count,
 			flag & THREAD_LAST_POST ? " last='1'" : "",
 			flag & THREAD_LAST ? " tlast='1'" : "",
-			flag & THREAD_FIRST ? " tfirst='1'" : "");
+			flag & THREAD_FIRST ? " tfirst='1'" : "",
+			opt & PREF_NOSIG ? " nosig='1'" : "",
+			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session(ctx);
 
 	bool isbm = chkBM(bp, &currentuser);
@@ -156,5 +161,31 @@ int bbstcon_main(web_ctx_t *ctx)
 	free(fh);
 	puts("</bbstcon>");
 	brc_update(currentuser.userid, bp->filename);
+	return 0;
+}
+
+int web_sigopt(web_ctx_t *ctx)
+{
+	if (!loginok)
+		return BBS_ELGNREQ;
+
+	bool hidesig = streq(get_param(ctx->r, "hidesig"), "on");
+	bool hideimg = streq(get_param(ctx->r, "hideimg"), "on");
+
+	int flag = get_user_flag();
+
+	if (hidesig)
+		flag |= PREF_NOSIG;
+	else
+		flag &= ~PREF_NOSIG;
+	if (hideimg)
+		flag |= PREF_NOSIGIMG;
+	else
+		flag &= ~PREF_NOSIGIMG;
+
+	set_user_flag(flag);
+
+	html_header();
+	printf("<title>success</title></head><body></body></html>");
 	return 0;
 }

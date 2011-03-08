@@ -251,7 +251,7 @@ static const char *_print_url(const char *begin, const char *end, int option)
 {
 	const char *e = _get_url(begin, end);
 	printf("<a ");
-	if (!(option & PARSE_NOQUOTEIMG)
+	if (!(option & (PARSE_NOQUOTEIMG | PARSE_NOSIGIMG))
 			&& (END_WITH(begin, e, ".jpg") || END_WITH(begin, e, ".gif")
 			|| END_WITH(begin, e, ".png") || END_WITH(begin, e, "jpeg"))) {
 		printf("i='i' ");
@@ -315,10 +315,16 @@ static void _print_body(const char *begin, const char *end, int option)
 			}
 		}
 		fputs("<p>", stdout);
-		if (e == s + 1)
+		if (e == s + 1) {
 			fputs("<br/>", stdout);
-		else
-			_print_paragraph(s, e, in_quote ? option : option & ~PARSE_NOQUOTEIMG);
+		} else {
+			int opt = option;
+			if (!in_quote)
+				opt &= ~PARSE_NOQUOTEIMG;
+			if (!in_signature)
+				opt &= ~PARSE_NOSIGIMG;
+			_print_paragraph(s, e, opt);
+		}
 		fputs("</p>", stdout);
 	}
 	printf("</pa>");

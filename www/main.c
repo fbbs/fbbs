@@ -53,6 +53,7 @@ extern int bbsidle_main(web_ctx_t *ctx);
 extern int fcgi_reg(web_ctx_t *ctx);
 extern int fcgi_activate(web_ctx_t *ctx);
 extern int fcgi_exist(web_ctx_t *ctx);
+extern int web_sigopt(web_ctx_t *ctx);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -110,6 +111,7 @@ const static web_handler_t applets[] = {
 		{"reg", fcgi_reg, NEW},
 		{"activate", fcgi_activate, NEW},
 		{"exist", fcgi_exist, QUERY},
+		{"sigopt", web_sigopt, GMENU},
 		{NULL, NULL, 0}
 };
 

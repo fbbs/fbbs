@@ -312,8 +312,15 @@ a.reply, a.newpost {
 	margin: 8px 0 0 0;
 }
 
-.disabled {
-	color: #808080;
+.disabled { color: #808080; }
+form.sig_option {
+	display: none;
+	margin: 10px 0 5px 0;
+	padding: 5px 0;
+	background-color: #ccddff;
+}
+form.sig_option input {
+	margin: 0 2px 0 8px;
 }
 
 textarea.binput {

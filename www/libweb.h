@@ -53,6 +53,9 @@ enum {
 	MODE_AUTHOR = 6,
 	MODE_KEYWORD = 7,
 	MODE_NOTICE = 8,
+
+	PREF_NOSIG = 0x10,
+	PREF_NOSIGIMG = 0x20,
 };
 
 enum {

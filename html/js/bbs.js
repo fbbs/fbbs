@@ -206,6 +206,19 @@ function replyFormSubmit() {
 	return false;
 }
 
+function signatureOption()
+{
+	var form = $(this).next();
+	$('.cancel', form).unbind('click').click(function() { form.slideUp('fast'); });
+	$('[type=submit]', form).unbind('click').click(function() {
+		$(this).attr('disabled', true);
+		$.get(form.attr('action'), form.serialize(), form.slideToggle('fast'));
+		$(this).attr('disabled', false);
+		return false;
+	});
+	form.slideToggle('fast');
+}
+
 $(document).ready(function() {
 	$('#navnm').hide();
 
@@ -232,4 +245,5 @@ $(document).ready(function() {
 	};
 
 	$('.reply').click(replyButton);
+	$('a.sig_option').click(signatureOption);
 });
