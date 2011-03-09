@@ -134,11 +134,11 @@ $.fn.selectRange = function(b, e) {
 
 function replyButton() {
 	var div = $(this).parent().parent();
-	var f = $('form', div);
+	var f = $('form.quick_reply', div);
 	var action = $('.reply').attr('href').replace(/^pst/, 'snd') + '&utf8=1';
 	if (!f.length) {
 		$(this).parent().after($('#quick_reply').clone(false).removeAttr('id').attr('action', action));
-		f = $('form', div);
+		f = $('form.quick_reply', div);
 
 		var title = $('.ptitle', div).text().replace(/\xa0/g, ' ');
 		if (title.substring(0, 4) == 'Re: ') {

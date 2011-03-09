@@ -135,7 +135,7 @@
 <xsl:template name='include-js'>
 	<script src='../js/persist-all-min.js'></script>
 	<script src='/js/jquery-1.5.1.min.js'></script>
-	<script src='../js/bbs.js?v1283' charset='gb2312' defer='defer'></script>
+	<script src='../js/bbs.js?v1307' charset='gb2312' defer='defer'></script>
 </xsl:template>
 
 <xsl:template name='page-title'>
