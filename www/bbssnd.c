@@ -91,11 +91,12 @@ int bbssnd_main(web_ctx_t *ctx)
 		fid = strtoul(f, NULL, 10);
 		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
-		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
-			return BBS_EPST;
-		if (isedit && !chkBM(bp, &currentuser)
-				&& strcmp(fh.owner, currentuser.userid))
-			return BBS_EACCES;
+		if (!chkBM(bp, &currentuser) && !streq(fh.owner, currentuser.userid)) {
+			if (!isedit && fh.accessed[0] & FILE_NOREPLY)
+				return BBS_EPST;
+			if (isedit)
+				return BBS_EACCES;
+		}
 	}
 
 	char title[sizeof(fh.title)];
