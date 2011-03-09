@@ -129,7 +129,8 @@ int bbssnd_main(web_ctx_t *ctx)
 			.userid = NULL, .nick = NULL, .user = &currentuser,
 			.bp = bp, .title = title, .content = get_param(ctx->r, "text"),
 			.sig = strtol(get_param(ctx->r, "sig"), NULL, 0), .ip = mask_host(fromhost),
-			.o_fp = reply ? &fh : NULL, .noreply = false, .mmark = false,
+			.o_fp = reply ? &fh : NULL, .mmark = false,
+			.noreply = fh.accessed[0] & FILE_NOREPLY,
 			.anony = strtol(get_param(ctx->r, "anony"), NULL, 0),
 			.cp = (ctx->r->flag & REQUEST_UTF8) ? ctx->u2g : NULL
 		};
