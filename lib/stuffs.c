@@ -271,22 +271,33 @@ void add_signature(FILE *fp, const char *user, int sig)
 	if (sig <= 0)
 		return;
 
-	char file[HOMELEN], buf[256];
+	char file[HOMELEN];
 	sethomefile(file, user, "signatures");
 	FILE *fin = fopen(file, "r");
 	if (!fin)
 		return;
-	int i;
-	for (i = 0; i < (sig - 1) * MAXSIGLINES; ++i) {
+
+	char buf[256];
+	for (int i = 0; i < (sig - 1) * MAXSIGLINES; ++i) {
 		if (!fgets(buf, sizeof(buf), fin)) {
 			fclose(fin);
 			return;
 		}
 	}
-	for (i = 0; i < MAXSIGLINES; i++) {
-		if (fgets(buf, sizeof(buf), fin)
-				&& !strstr(buf, ":，"BBSNAME" "BBSHOST"，[FROM:"))
-			fputs(buf, fp);
+
+	int blank = 0;
+	for (int i = 0; i < MAXSIGLINES; i++) {
+		if (!fgets(buf, sizeof(buf), fin))
+			break;
+		if (buf[0] == '\n' || streq(buf, "\r\n")) {
+			++blank;
+		} else {
+			while (blank-- > 0)
+				fputs("\n", fp);
+			blank = 0;
+			if (!strstr(buf, ":，"BBSNAME" "BBSHOST"，[FROM:"))
+				fputs(buf, fp);
+		}
 	}
 	fclose(fin);
 }

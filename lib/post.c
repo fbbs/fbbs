@@ -28,8 +28,8 @@ static FILE *get_fname(const char *dir, const char *pfx,
 	int fd;
 	for (int i = sizeof(c) - 2; i >= 0; ++i) {
 		fname[count - 1] = c[i];
-		if ((fd = open(fname, O_CREAT | O_WRONLY | O_EXCL, 0644)) > 0) {
-			FILE *fp = fdopen(fd, "w");
+		if ((fd = open(fname, O_CREAT | O_RDWR | O_EXCL, 0644)) > 0) {
+			FILE *fp = fdopen(fd, "w+");
 			if (fp) {
 				return fp;
 			} else {
@@ -99,7 +99,13 @@ int do_post_article(const post_request_t *pr)
 		fputs("\n--", fptr);
 
 	if (ip) {
-		fprintf(fptr, "\n\033[m\033[1;%2dm¡ù %s:¡¤"BBSNAME" "BBSHOST
+		char buf[2];
+		fseek(fptr, -1, SEEK_END);
+		fread(buf, 1, 1, fptr);
+		if (buf[0] != '\n')
+			fputs("\n", fptr);
+
+		fprintf(fptr, "\033[m\033[1;%2dm¡ù %s:¡¤"BBSNAME" "BBSHOST
 			"¡¤HTTP [FROM: %s]\033[m\n", 31 + rand() % 7,
 			pr->crosspost ? "×ªÔØ" : "À´Ô´", ip);
 	}
