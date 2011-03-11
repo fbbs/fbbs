@@ -63,6 +63,8 @@ int convert(convert_t *cp, const char *from, size_t len,
 		}
 
 		size_t s = iconv(cp->cd, &f, &l, &b, &oleft);
+		buffer[size - oleft] = '\0';
+
 		if (s == (size_t) -1) {
 			switch (errno) {
 				case E2BIG:
