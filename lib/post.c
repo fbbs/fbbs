@@ -52,12 +52,12 @@ static int convert_to_file(char *buf, size_t len, void *arg)
 /**
  * Post an article.
  * @param pr The post request.
- * @return 0 on success, -1 on error.
+ * @return file id on success, -1 on error.
  */
-int do_post_article(const post_request_t *pr)
+unsigned int do_post_article(const post_request_t *pr)
 {
 	if (!pr || !pr->title || !pr->content || !pr->bp)
-		return -1;
+		return 0;
 
 	bool anony = pr->anony && (pr->bp->flag & BOARD_ANONY_FLAG);
 	const char *userid = NULL, *nick = NULL, *ip = pr->ip;
@@ -73,7 +73,7 @@ int do_post_article(const post_request_t *pr)
 		nick = pr->nick;
 	}
 	if (!userid || !nick)
-		return -1;
+		return 0;
 
 	char dir[HOMELEN];
 	int idx = snprintf(dir, sizeof(dir), "boards/%s/", pr->bp->filename);
@@ -82,7 +82,7 @@ int do_post_article(const post_request_t *pr)
 	char fname[HOMELEN];
 	FILE *fptr;
 	if ((fptr = get_fname(dir, pfx, fname, sizeof(fname))) == NULL)
-		return -1;
+		return 0;
 
 	fprintf(fptr, "发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n",
 			userid, nick, pr->bp->filename, pr->title, BBSNAME,
@@ -144,5 +144,5 @@ int do_post_article(const post_request_t *pr)
 		brc_update(userid, pr->bp->filename);
 	}
 
-	return 0;
+	return fh.id;
 }

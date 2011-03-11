@@ -183,7 +183,7 @@ int bbsccc_main(web_ctx_t *ctx)
 			.mmark = false, .anony = false };
 		int ret = do_post_article(&pr);
 		mmap_close(&m);
-		if (ret < 0)
+		if (!ret)
 			return BBS_EINTNL;
 
 		xml_header(NULL);

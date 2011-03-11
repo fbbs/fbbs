@@ -25,7 +25,7 @@ typedef struct {
 	convert_t *cp;
 } post_request_t;
 
-extern int do_post_article(const post_request_t *pr);
+extern unsigned int do_post_article(const post_request_t *pr);
 
 #endif // FB_POST_H
 

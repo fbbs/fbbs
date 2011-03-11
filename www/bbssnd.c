@@ -81,6 +81,7 @@ int bbssnd_main(web_ctx_t *ctx)
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+	bid = bp - bcache + 1;
 
 	bool isedit = (*(get_param(ctx->r, "e")) == '1');
 	unsigned int fid;
@@ -134,7 +135,7 @@ int bbssnd_main(web_ctx_t *ctx)
 			.anony = strtol(get_param(ctx->r, "anony"), NULL, 0),
 			.cp = (ctx->r->flag & REQUEST_UTF8) ? ctx->u2g : NULL
 		};
-		if (do_post_article(&pr) < 0)
+		if (!(fid = do_post_article(&pr)))
 			return BBS_EINTNL;
 	}
 
@@ -152,7 +153,8 @@ int bbssnd_main(web_ctx_t *ctx)
 			bp->filename);
 	http_header();
 	refreshto(1, buf);
-	printf("</head>\n<body>发表成功，1秒钟后自动转到<a href='%s'>版面</a>\n"
-			"</body>\n</html>\n", buf);
+	printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>发表</a>"
+			"成功，1秒钟后自动转到<a href='%s'>版面</a>\n</body>\n</html>\n",
+			bid, fid, buf);
 	return 0;
 }

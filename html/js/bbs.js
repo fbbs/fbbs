@@ -203,12 +203,13 @@ function replyFormSubmit() {
 	$.ajax({
 		type: 'POST', url: form.attr('action'), data: form.serialize(),
 		success: function(data) {
-			if ($(data).filter('a').text() == '快速返回') {
-				alert($(data).filter('div').text());
-			} else {
+			var url = $(data).filter('#url');
+			if (url.length) {
 				form.after("<div class='preply'></div>");
-				form.next().text($('textarea', form).val().replace(/【 [\s\S]+/, " ...")).prepend('<span class="success">回复成功</span>');
+				form.next().text($('textarea', form).val().replace(/【 [\s\S]+/, " ...")).prepend('<a class="success" href="' + url.attr('href') + '">回复成功</a>');
 				form.slideUp().prev().slideDown();
+			} else {
+				alert($(data).filter('div').text());
 			}
 		},
 		error: function() {
