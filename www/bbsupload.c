@@ -142,14 +142,13 @@ int bbspreupload_main(web_ctx_t *ctx)
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_EPST;
 
-	char path[HOMELEN];
-	snprintf(path, sizeof(path), BBSHOME"/upload/%s", bp->filename);
-	if (!dashd(path))
+	int max = maxlen(bp->filename);
+	if (max <= 0)
 		return BBS_ENODIR;
 
 	xml_header("bbspreupload");
 	printf("<bbspreupload><board>%s</board><user>%s</user><max>%d</max>"
-			"</bbspreupload>", board, currentuser.userid, maxlen(board));
+			"</bbspreupload>", board, currentuser.userid, max);
 	return 0;
 }
 
@@ -157,10 +156,17 @@ int bbsupload_main(web_ctx_t *ctx)
 {
 	if (!loginok) 
 		return BBS_ELGNREQ;
-	const char *board = get_param(ctx->r, "b");
-	struct boardheader *bp = getbcache(board);
-	if (bp == NULL || !haspostperm(&currentuser, bp))
+
+	struct boardheader *bp;
+	const char *bid = get_param(ctx->r, "bid");
+	if (*bid == '\0')
+		bp = getbcache(get_param(ctx->r, "b"));
+	else
+		bp = getbcache2(strtol(bid, NULL, 10));
+
+	if (!bp || !haspostperm(&currentuser, bp))
 		return BBS_ENOBRD;
+	const char *board = bp->filename;
 
 	size_t size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
 	if (size > UPLOAD_MAX + UPLOAD_OVERHEAD)

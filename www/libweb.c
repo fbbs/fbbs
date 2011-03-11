@@ -6,6 +6,7 @@
 
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
@@ -319,16 +320,23 @@ int user_perm(struct userec *x, int level) {
 // TODO: put into memory
 int maxlen(const char *board)
 {
+	int max = 0;
+
 	char path[HOMELEN];
-	int	limit = UPLOAD_MAX;
-	snprintf(path, sizeof(path), BBSHOME"/upload/%s/.maxlen", board);
-	FILE *fp = fopen(path, "r");
-	if (fp != NULL) {
-		if (fscanf(FCGI_ToFILE(fp), "%d", &limit) <= 0)
-			limit = UPLOAD_MAX;
-		fclose(fp);
+	snprintf(path, sizeof(path), BBSHOME"/upload/%s", board);
+
+	if (dashd(path)) {
+		max = UPLOAD_MAX;
+		snprintf(path, sizeof(path), BBSHOME"/upload/%s/.maxlen", board);
+
+		FILE *fp = fopen(path, "r");
+		if (fp) {
+			if (fscanf(FCGI_ToFILE(fp), "%d", &max) <= 0)
+				max = UPLOAD_MAX;
+			fclose(fp);
+		}
 	}
-	return limit;
+	return max;
 }
 
 // Get file time according to its name 's'.

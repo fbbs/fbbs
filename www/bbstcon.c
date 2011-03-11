@@ -132,7 +132,8 @@ int bbstcon_main(web_ctx_t *ctx)
 
 	struct fileheader *begin, *end;
 	xml_header(NULL);
-	printf("<bbstcon bid='%d' gid='%u' page='%d'%s%s%s%s%s>", bid, gid, count,
+	printf("<bbstcon bid='%d' gid='%u' page='%d' attach='%d'%s%s%s%s%s>",
+			bid, gid, count, maxlen(bp->filename),
 			flag & THREAD_LAST_POST ? " last='1'" : "",
 			flag & THREAD_LAST ? " tlast='1'" : "",
 			flag & THREAD_FIRST ? " tfirst='1'" : "",

@@ -388,18 +388,24 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template name='quick-reply-form'>
-<form id='quick_reply' class='quick_reply' method='post'>
+<div id='quick_reply' class='quick_reply'>
 <div class='buttons'>
 <input type='button' class='cancel' value='取消'/>
+<input type='button' value='发表' class='confirm'/><img src='../images/indicator.gif' class='loading'/>
+<xsl:if test='@attach&gt;0'>
+上传文件<form class='quick_upload' method='post' enctype='multipart/form-data' target='quick_upload_ifrm' action='upload?bid={@bid}'><input type='file' name='up'/></form>
+</xsl:if>
+</div>
+<form class='quick_reply' method='post'>
+<div class='title'>
+标题 <input class='binput' type='text' name='title' size='60' maxlength='50'></input>
 <xsl:if test='@anony=1'><input type="checkbox" name="anony" value="1" checked="checked"/>匿名</xsl:if>
 签名档 <select name='sig'><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
-<input type='button' value='发表' class='confirm'/><img src='../images/indicator.gif' class='loading'/>
 </div>
-<div>
-<div>标题 <input class='binput' type='text' name='title' size='60' maxlength='50'></input></div>
 <textarea class='binput' name='text' rows='10' cols='85' wrap='virtual'></textarea>
-</div>
 </form>
+</div>
+<xsl:if test='@attach&gt;0'><iframe name='quick_upload_ifrm' class='quick_upload_ifrm'></iframe></xsl:if>
 </xsl:template>
 
 <xsl:template match='po'>

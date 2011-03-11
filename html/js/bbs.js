@@ -134,11 +134,12 @@ $.fn.selectRange = function(b, e) {
 
 function replyButton() {
 	var div = $(this).parent().parent();
-	var f = $('form.quick_reply', div);
+	var f = $('div.quick_reply', div);
 	var action = $('.reply').attr('href').replace(/^pst/, 'snd') + '&utf8=1';
 	if (!f.length) {
-		$(this).parent().after($('#quick_reply').clone(false).removeAttr('id').attr('action', action));
-		f = $('form.quick_reply', div);
+		$(this).parent().after($('#quick_reply').clone(false).removeAttr('id'));
+		f = $('div.quick_reply', div);
+		$('form.quick_reply', div).attr('action', action);
 
 		var title = $('.ptitle', div).text().replace(/\xa0/g, ' ');
 		if (title.substring(0, 4) == 'Re: ') {
@@ -168,6 +169,21 @@ function replyButton() {
 		$('[name="text"]', f).val(q.join('\n'));
 		$('.cancel', f).click(function() { f.hide(); $('.plink', div).show(); });
 		$('.confirm', f).click(replyFormSubmit);
+
+		$('iframe').load(function() {
+			$('[type="file"]').attr('disabled', false);
+			var url = $(this).contents().find('#url');
+			if (url.length) {
+				var text = $('textarea', f);
+				text.val(text.val() + "\n" + url.text() + "\n");
+			} else {
+				alert("Error!");
+			}
+		});
+		$('[type="file"]', f).change(function() {
+			$(this).parent().submit();
+			$('[type="file"]').attr('disabled', true);
+		});
 	}
 	if (f.is(':visible')) {
 		f.hide();
@@ -182,7 +198,7 @@ function replyButton() {
 function replyFormSubmit() {
 	var button = $(this);
 	button.attr('disabled', true);
-	var form = $(this).parent().parent();
+	var form = $('form.quick_reply', $(this).parent().parent());
 	$('.loading', form).show();
 	$.ajax({
 		type: 'POST', url: form.attr('action'), data: form.serialize(),

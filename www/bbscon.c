@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
@@ -124,7 +125,9 @@ int bbscon_main(web_ctx_t *ctx)
 
 	bool anony = bp->flag & BOARD_ANONY_FLAG;
 	int opt = get_user_flag();
-	printf("<bbscon link='con' bid='%d' anony='%d'%s%s>", bid, anony,
+
+	printf("<bbscon link='con' bid='%d' anony='%d' attach='%d'%s%s>",
+			bid, anony, maxlen(bp->filename),
 			opt & PREF_NOSIG ? " nosig='1'" : "",
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 

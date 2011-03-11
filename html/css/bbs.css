@@ -296,21 +296,17 @@ a.reply, a.newpost {
 	border-width: 1px;
 	padding: 3px 10px;
 }
-#quick_reply, .quick_reply {
+#quick_reply, div.quick_reply {
 	display: none;
 	margin: 3px;
 	font-size: 14px;
 }
-.quick_reply .buttons {
-	margin: 0 8px 8px 0;
-}
-.quick_reply .confirm {
-	margin-left: 8px;
-	width: 200px;
-}
-.quick_reply textarea {
-	margin: 8px 0 0 0;
-}
+.quick_reply .buttons { margin: 0 8px 8px 0; }
+.quick_reply .confirm { width: 200px; }
+.quick_reply textarea { margin: 8px 0 0 0; }
+.quick_reply .title input[type="text"] { height: 22px; }
+.quick_upload_ifrm { display: none; }
+form.quick_upload { display: inline-block; }
 
 .disabled { color: #808080; }
 form.sig_option {
