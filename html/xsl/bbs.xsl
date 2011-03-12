@@ -391,7 +391,7 @@ table.post{width:100%}
 <div id='quick_reply' class='quick_reply'>
 <div class='buttons'>
 <input type='button' class='cancel' value='取消'/>
-<input type='button' value='发表' class='confirm'/><img src='../images/indicator.gif' class='loading'/>
+<input type='button' value='发表' class='confirm'/>
 <xsl:if test='@attach&gt;0'>
 上传文件<form class='quick_upload' method='post' enctype='multipart/form-data' target='quick_upload_ifrm' action='upload?bid={@bid}'><input type='file' name='up'/></form>
 </xsl:if>

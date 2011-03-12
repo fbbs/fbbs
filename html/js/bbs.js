@@ -132,6 +132,13 @@ $.fn.selectRange = function(b, e) {
 		});
 }
 
+$.fn.toggleLoading = function() {
+	if (this.attr('disabled'))
+		return this.attr('disabled', false).removeClass('loading');
+	else
+		return this.attr('disabled', true).addClass('loading');
+}
+
 function replyButton() {
 	var div = $(this).parent().parent();
 	var f = $('div.quick_reply', div);
@@ -171,7 +178,7 @@ function replyButton() {
 		$('.confirm', f).click(replyFormSubmit);
 
 		$('iframe').load(function() {
-			$('[type="file"]').attr('disabled', false);
+			$('[type="file"]').toggleLoading();
 			var url = $(this).contents().find('#url');
 			if (url.length) {
 				var text = $('textarea', f);
@@ -182,7 +189,7 @@ function replyButton() {
 		});
 		$('[type="file"]', f).change(function() {
 			$(this).parent().submit();
-			$('[type="file"]').attr('disabled', true);
+			$('[type="file"]').toggleLoading();
 		});
 	}
 	if (f.is(':visible')) {
@@ -197,9 +204,8 @@ function replyButton() {
 
 function replyFormSubmit() {
 	var button = $(this);
-	button.attr('disabled', true);
+	button.toggleLoading();
 	var form = $('form.quick_reply', $(this).parent().parent());
-	$('.loading', form).show();
 	$.ajax({
 		type: 'POST', url: form.attr('action'), data: form.serialize(),
 		success: function(data) {
@@ -215,8 +221,7 @@ function replyFormSubmit() {
 			alert('∑¢ÀÕ ß∞‹£¨«Î…‘∫Ú÷ÿ ‘');
 		},
 		complete: function() {
-			$('.loading', form).hide();
-			button.attr('disabled', false);
+			button.toggleLoading();
 		}
 	});
 	return false;
@@ -227,9 +232,9 @@ function signatureOption()
 	var form = $(this).next();
 	$('.cancel', form).unbind('click').click(function() { form.slideUp('fast'); });
 	$('[type=submit]', form).unbind('click').click(function() {
-		$(this).attr('disabled', true);
+		$(this).toggleLoading();
 		$.get(form.attr('action'), form.serialize(), form.slideToggle('fast'));
-		$(this).attr('disabled', false);
+		$(this).toggleLoading();
 		return false;
 	});
 	form.slideToggle('fast');

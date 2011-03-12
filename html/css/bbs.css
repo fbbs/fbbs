@@ -385,4 +385,9 @@ form.jump { display:inline; }
 .column-3 { -moz-column-count: 3; -webkit-column-count: 3; -column-count: 3; }
 li { margin: 0 0 6px 0; }
 
-.loading { display: none; }
+.loading {
+	background: #f0f0f0 no-repeat center url('../images/indicator.gif');
+	border: solid #a0a0a0 1px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
