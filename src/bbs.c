@@ -1558,7 +1558,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 		else
 			strcpy(type, "ÆÕÍ¨");
 	} else {
-		snprintf(weblink, 256, "http://%s/bbs/con?bid=%"PRIdPTR"&f=%u%s\n",
+		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%"PRIdPTR"&f=%u%s\n",
 				BBSHOST, currbp - bcache + 1, fileinfo->id,
 				fileinfo->accessed[1] & FILE_NOTICE ? "&s=1" : "");
 		unread = brc_unread(fileinfo->filename);
