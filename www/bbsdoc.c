@@ -7,7 +7,6 @@
 #include "fbbs/web.h"
 
 enum {
-	BFIND_EXPIRE = 90,
 	BFIND_MAX = 100,
 };
 
@@ -303,8 +302,6 @@ int bbsbfind_main(web_ctx_t *ctx)
 	long day = strtol(get_param(ctx->r, "limit"), NULL, 10);
 	if (day < 0)
 		day = 0;
-	if (day > BFIND_EXPIRE)
-		day = BFIND_EXPIRE;
 	cri.limit = time(NULL) - 24 * 60 * 60 * day;
 	cri.t1 = get_param(ctx->r, "t1");
 	cri.t2 = get_param(ctx->r, "t2");
