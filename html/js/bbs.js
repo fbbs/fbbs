@@ -207,7 +207,7 @@ function replyFormSubmit() {
 			if (url.length) {
 				form.after("<div class='preply'></div>");
 				form.next().text($('textarea', form).val().replace(/¡¾ [\s\S]+/, " ...")).prepend('<a class="success" href="' + url.attr('href') + '">»Ø¸´³É¹¦</a>');
-				form.slideUp().prev().slideDown();
+				form.parent().slideUp().prev().slideDown();
 			} else {
 				alert($(data).filter('div').text());
 			}
