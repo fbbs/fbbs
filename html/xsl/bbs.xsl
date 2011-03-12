@@ -3,6 +3,8 @@
 <xsl:import href='showpost.xsl'/>
 <xsl:output method='html' encoding='gb2312' indent='no' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
 
+<xsl:variable name='bbsname'>日月光华</xsl:variable>
+
 <xsl:template name='timeconvert'>
 	<xsl:param name='time'/>
 	<xsl:value-of select='concat(substring($time, 1, 10), " ", substring($time, 12, 5))'/>
@@ -38,7 +40,6 @@
 
 <xsl:template name='navigation'>
 	<xsl:param name='session'/>
-	<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
 	<ul id='nav'>
 		<li id='navh'><a href='sec'>推荐版面</a></li>
 		<xsl:if test='$bbsname="日月光华"'><li id='navb'>
@@ -124,10 +125,9 @@
 </xsl:template>
 
 <xsl:template name='foot'>
-	<div id='ft'><a href='#'>[<img src='../images/button/up.gif'/>回页首]</a>&#160;<xsl:call-template name='bbsname'/> &#169;1996-2011 Powered by <a href='http://code.google.com/p/fbbs/'><strong>fbbs</strong></a></div>
+	<div id='ft'><a href='#'>[<img src='../images/button/up.gif'/>回页首]</a>&#160;<xsl:value-of select='$bbsname'/> &#169;1996-2011 Powered by <a href='http://code.google.com/p/fbbs/'><strong>fbbs</strong></a></div>
 </xsl:template>
 
-<xsl:template name='bbsname'>日月光华</xsl:template>
 <xsl:template name='include-css'>
 	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1283'/>
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1283'/><![endif]]]></xsl:comment>
@@ -177,7 +177,7 @@
 <xsl:template match='/'>
 	<html>
 		<head>
-			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/></title>
+			<title><xsl:call-template name='page-title'/> - <xsl:value-of select='$bbsname'/></title>
 			<meta http-equiv="content-type" content="text/html; charset=gb2312"/>
 			<xsl:call-template name='include-css'/>
 <xsl:comment><![CDATA[[if lt IE 7]><style>
@@ -412,7 +412,7 @@ table.post{width:100%}
 <div class='post_h'>
 	<p>发信人: <a class='powner' href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>), 信区: <a href='doc?board={board}'><xsl:value-of select='board'/></a></p>
 	<p>标&#160;&#160;题: <span class='ptitle'><xsl:value-of select='title'/></span></p>
-	<p>发信站: 复旦泉 (<xsl:value-of select='date'/>), 站内信件</p>
+	<p>发信站: <xsl:value-of select='$bbsname'/> (<xsl:value-of select='date'/>), 站内信件</p>
 </div>
 <xsl:for-each select='pa'>
 	<div class='post_{@m}'>
