@@ -439,7 +439,7 @@ table.post{width:100%}
 		<a href='edit?{$param}'>修改</a>
 		<a href='del?{$param}'>删除</a>
 	</xsl:if>
-	<a href='ccc?{$param}'>转载</a>
+	<a href='ccc?{$param}' class='crosspost'>转载</a>
 	<a href='fwd?{$param}'>转寄</a>
 </xsl:template>
 
@@ -454,7 +454,7 @@ table.post{width:100%}
 			<div class='plink'>
 				<xsl:if test='@nore'><span class='disabled'>本文不可回复</span></xsl:if>
 				<xsl:if test='not(@nore)'><a class='reply' href='pst?bid={../@bid}&amp;f={@fid}'>回复本文</a></xsl:if>
-				<a href='ccc?bid={../@bid}&amp;f={@fid}'>转载</a>
+				<a href='ccc?bid={../@bid}&amp;f={@fid}' class='crosspost'>转载</a>
 				<a href='con?new=1&amp;bid={../@bid}&amp;f={@fid}'><img src='../images/button/content.gif'/>本文链接</a>
 			</div>
 		</div>
@@ -777,6 +777,7 @@ table.post{width:100%}
 	<xsl:choose>
 		<xsl:when test='not(@bid)'>
 			<p>转载成功</p>
+			<p><a id='url' href='con?new=1&amp;bid={@b}&amp;f={@f}'>进入转载文章</a></p>
 			<p><a href='doc?bid={@b}'>[ <img src='../images/button/back.gif'/>返回原先版面 ]</a></p>
 			<p><a href='doc?bid={@t}'>[ <img src='../images/button/forward.gif'/>进入目标版面 ]</a></p>
 		</xsl:when>

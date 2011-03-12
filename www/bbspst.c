@@ -140,6 +140,9 @@ int bbsccc_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
+
+	parse_post_data(ctx->r);
+
 	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
@@ -187,9 +190,10 @@ int bbsccc_main(web_ctx_t *ctx)
 			return BBS_EINTNL;
 
 		xml_header(NULL);
-		printf("<bbsccc t='%ld' b='%ld'>", bp2 - bcache + 1, bp - bcache + 1);
+		printf("<bbsccc t='%ld' b='%ld' f='%u'>",
+				bp2 - bcache + 1, bp - bcache + 1, ret);
 		print_session(ctx);
-		printf("/bbsccc>");
+		printf("</bbsccc>");
 	} else {
 		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",

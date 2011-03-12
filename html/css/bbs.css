@@ -307,6 +307,7 @@ a.reply, a.newpost {
 .quick_reply .title input[type="text"] { height: 22px; }
 .quick_upload_ifrm { display: none; }
 form.quick_upload { display: inline-block; }
+form.quick_cp { display: none; margin: 8px 0; }
 
 .disabled { color: #808080; }
 form.sig_option {
