@@ -205,8 +205,7 @@ function replyFormSubmit() {
 		success: function(data) {
 			var url = $(data).filter('#url');
 			if (url.length) {
-				form.after("<div class='preply'></div>");
-				form.next().text($('textarea', form).val().replace(/【 [\s\S]+/, " ...")).prepend('<a class="success" href="' + url.attr('href') + '">回复成功</a>');
+				$('<div class="preply"></div>').text($('textarea', form).val().replace(/【 [\s\S]+/, " ...")).prepend('<a class="success" href="' + url.attr('href') + '">回复成功</a>').insertAfter(form.parent());
 				form.parent().slideUp().prev().slideDown();
 			} else {
 				alert($(data).filter('div').text());
