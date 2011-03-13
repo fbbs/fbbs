@@ -392,8 +392,13 @@ const char *get_doc_mode_str(void)
 {
 	if (!loginok)
 		return "";
-	if ((uidshm->passwd[u_info->uid - 1].flags[1] & 0xf) == MODE_THREAD)
-		return "t";
+	char flag = uidshm->passwd[u_info->uid - 1].flags[1] & 0xf;
+	switch (flag) {
+		case MODE_THREAD:
+			return "t";
+		case MODE_FORUM:
+			return "f";
+	}
 	return "";
 }
 

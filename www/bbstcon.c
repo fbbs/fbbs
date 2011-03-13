@@ -3,10 +3,6 @@
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
-enum {
-	POSTS_PER_PAGE = 20,
-};
-
 extern const struct fileheader *dir_bsearch(const struct fileheader *begin, 
 		const struct fileheader *end, unsigned int fid);
 

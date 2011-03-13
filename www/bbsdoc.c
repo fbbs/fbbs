@@ -8,6 +8,7 @@
 
 enum {
 	BFIND_MAX = 100,
+	TOPICS_PER_PAGE = 13,
 };
 
 typedef struct criteria_t {
@@ -21,6 +22,9 @@ typedef struct criteria_t {
 	const char *user;
 	int found;
 } criteria_t;
+
+extern const struct fileheader *dir_bsearch(const struct fileheader *begin,
+        const struct fileheader *end, unsigned int fid);
 
 bool allow_reply(const struct fileheader *fh)
 {
@@ -162,6 +166,19 @@ void set_doc_mode(int mode)
 	}
 }
 
+static void _print_board_img(const char *board)
+{
+	char path[HOMELEN];
+
+	snprintf(path, sizeof(path), "%s/info/boards/%s/icon.jpg", BBSHOME, board);
+	if (dashf(path))
+		printf(" icon='../info/boards/%s/icon.jpg'", board);
+
+	sprintf(path, "%s/info/boards/%s/banner.jpg", BBSHOME, board);
+	if (dashf(path))
+		printf(" banner='../info/boards/%s/banner.jpg'", board);
+}
+
 static int bbsdoc(web_ctx_t *ctx, int mode)
 {
 	char board[STRLEN];
@@ -222,15 +239,9 @@ static int bbsdoc(web_ctx_t *ctx, int mode)
 			break;
 	}
 	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
-			"bid='%d' page='%d' link='%s' ", bp->filename, get_board_desc(bp),
+			"bid='%d' page='%d' link='%s'", bp->filename, get_board_desc(bp),
 			bp->BM, total, start, bid, my_t_lines, cgi_name);
-	char path[HOMELEN];
-	sprintf(path, "%s/info/boards/%s/icon.jpg", BBSHOME, board);
-	if(dashf(path))
-		printf("icon='../info/boards/%s/icon.jpg' ", board);
-	sprintf(path, "%s/info/boards/%s/banner.jpg", BBSHOME, board);
-	if(dashf(path))	
-		printf("banner='../info/boards/%s/banner.jpg' ", board);
+	_print_board_img(board);
 	printf("/>\n</bbsdoc>");
 
 	// TODO: marquee, recommend
@@ -324,5 +335,151 @@ int bbsbfind_main(web_ctx_t *ctx)
 	}
 	print_session(ctx);
 	printf("</bbsbfind>");
+	return 0;
+}
+
+typedef struct topic_t {
+	unsigned int gid;
+	unsigned int lastpage;
+	int posts;
+	fb_time_t potime;
+	fb_time_t uptime;
+	char mark;
+	char owner[IDLEN + 1];
+	char uper[IDLEN + 1];
+	char title[STRLEN - IDLEN - 1];
+} topic_t;
+
+static void _init_topic(topic_t *tp, const struct fileheader *fp)
+{
+	strlcpy(tp->owner, fp->owner, sizeof(tp->owner));
+	strlcpy(tp->title, fp->title, sizeof(tp->title));
+	tp->mark = get_post_mark(fp, brc_unread(fp->filename));
+	tp->potime = getfiletime(fp);
+}
+
+static int _find_topic(topic_t *t, int posts, const struct fileheader *fp)
+{
+	int i, found = -1;
+	for (i = 0; i < posts && found < 0; ++i) {
+		if (fp->gid == t[i].gid) {
+			found = i;
+			++t[i].posts;
+			if (fp->id == t[i].gid) {
+				_init_topic(t + i, fp);
+			} else if (t[i].posts == POSTS_PER_PAGE)
+				t[i].lastpage = fp->id;
+		}
+	}
+	return found;
+}
+
+static void _push_topic(topic_t *t, int posts, const struct fileheader *fp)
+{
+	topic_t *tp = t + posts;
+	tp->gid = fp->gid;
+	tp->lastpage = 0;
+	tp->posts = 1;
+	tp->uptime = getfiletime(fp);
+	strlcpy(tp->uper, fp->owner, sizeof(tp->uper));
+	tp->owner[0] = '\0';
+	if (fp->id == fp->gid) {
+		_init_topic(tp, fp);
+	} else {
+		if (strncmp(fp->title, "Re: ", 4) == 0)
+			strlcpy(tp->title, fp->title + 4, sizeof(tp->title));
+		else
+			strlcpy(tp->title, fp->title, sizeof(tp->title));
+	}
+}
+
+static topic_t *_get_topics(const char *dir, int *count, unsigned int start,
+		unsigned int *next)
+{
+	topic_t *t = malloc(sizeof(topic_t) * *count);
+	if (!t) {
+		*count = 0;
+		return NULL;
+	}
+
+	mmap_t m = { .oflag = O_RDONLY };
+	if (mmap_open(dir, &m) != 0) {
+		free(t);
+		*count = 0;
+		return NULL;
+	}
+
+	int posts = 0, finished = 0;
+	const struct fileheader *begin = m.ptr, *end = begin + (m.size / sizeof(*end)) - 1;
+	if (start)
+		end = dir_bsearch(begin, end, start);
+
+	const struct fileheader *fp;
+	for (fp = end; fp >= begin && finished < *count; --fp) {
+		int i = _find_topic(t, posts, fp);
+		if (i >= 0) {
+			if (t[i].gid == fp->id)
+				++finished;
+		} else if (posts < *count) {
+			_push_topic(t, posts++, fp);
+			if (posts == *count)
+				*next = fp->id;
+		}
+	}
+
+	mmap_close(&m);
+	*count = posts;
+	return t;
+}
+
+int web_forum(web_ctx_t *ctx)
+{
+	struct boardheader *bp = getbcache2(strtol(get_param(ctx->r, "bid"), NULL, 10));
+	if (!bp)
+		bp = getbcache(get_param(ctx->r, "board"));
+	
+	if (!bp || !hasreadperm(&currentuser, bp))
+		return BBS_ENOBRD;
+	if (is_board_dir(bp))
+		return bbsboa_main();
+
+	if (get_doc_mode() != MODE_FORUM)
+		set_doc_mode(MODE_FORUM);
+
+	brc_fcgi_init(currentuser.userid, bp->filename);
+
+	char dir[HOMELEN];
+	setbfile(dir, bp->filename, DOT_DIR);
+	int count = TOPICS_PER_PAGE;
+	unsigned int next = 0;
+	topic_t *t = _get_topics(dir, &count,
+			strtoul(get_param(ctx->r, "start"), NULL, 10), &next);
+
+	xml_header(NULL);
+	printf("<forum title='%s' desc='%s' bm='%s' bid='%d' next='%u'>", 
+			bp->filename, get_board_desc(bp), bp->BM, bp - bcache + 1, next);
+	_print_board_img(bp->filename);
+	print_session(ctx);
+
+	for (int i = 0; i < count; ++i) {
+		printf("<po gid='%u' m='%c' posts='%d'",
+				t[i].gid, t[i].mark, t[i].posts);
+		if (t[i].owner[0] != '\0') {
+			printf(" owner='%s' potime='%s'",
+					t[i].owner, getdatestring(t[i].potime, DATE_XML));
+		}
+		if (t[i].posts > 1) {
+			printf(" upuser='%s' uptime='%s'",
+				t[i].uper, getdatestring(t[i].uptime, DATE_XML));
+		}
+		if (t[i].lastpage)
+			printf(" lastpage='%u'", t[i].lastpage);
+		printf(">");
+		xml_fputs2(t[i].title, check_gbk(t[i].title) - t[i].title, stdout);
+		printf("</po>\n");
+	}
+	free(t);
+	printf("</forum>");
+
 	return 0;
 }

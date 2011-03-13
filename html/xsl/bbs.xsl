@@ -146,6 +146,7 @@
 		<xsl:when test='bbsall'>全部讨论区</xsl:when>
 		<xsl:when test='bbssel'>选择讨论区</xsl:when>
 		<xsl:when test='bbsdoc'><xsl:value-of select='bbsdoc/brd/@desc'/></xsl:when>
+		<xsl:when test='forum'><xsl:value-of select='forum/@desc'/></xsl:when>
 		<xsl:when test='bbscon'>文章阅读</xsl:when>
 		<xsl:when test='bbstcon'>同主题文章阅读</xsl:when>
 		<xsl:when test='bbsqry'>查询网友</xsl:when>
@@ -303,6 +304,50 @@ table.post{width:100%}
 	<xsl:if test='notfound'>没有找到符合条件的版面</xsl:if>
 </xsl:template>
 
+<xsl:template match='forum'>
+	<xsl:choose>
+		<xsl:when test='@banner'><img src='{@banner}'/></xsl:when>
+		<xsl:otherwise><h2><xsl:if test='@icon'><img src='{@icon}'/></xsl:if><a href='fdoc?bid={@bid}'><xsl:value-of select='@desc'/> [<xsl:value-of select='@title'/>] - 论坛模式</a></h2></xsl:otherwise>
+	</xsl:choose>
+	<div class='btop'>
+		<a class='newpost' href='pst?bid={@bid}'>发表文章</a>
+		<a href='brdadd?bid={@bid}'>收藏本版</a>
+		<a href='not?board={@title}'>进版画面</a>
+		<span>版主: <xsl:call-template name='splitbm'><xsl:with-param name='names' select='@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template></span>
+	</div>
+	<div class='bnav'>
+		<xsl:if test='@next!=0'><a href='fdoc?bid={@bid}&amp;start={@next}'><img src='../images/button/down.gif'/>下一页</a></xsl:if>
+		<a href='clear?board={@title}'>清除未读</a>
+	</div>
+	<table class='content' id='forum'>
+		<tr><th class='mark'>标记</th><th class='replies'>回帖</th><th class='owner'>作者</th><th class='owner'>最新回复</th><th class='ptitle'>标题</th></tr>
+		<xsl:for-each select='po'><tr>
+			<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
+			<td class='mark'><xsl:value-of select='@m'/></td>
+			<td class='replies'><xsl:choose><xsl:when test='@posts=1'>-</xsl:when><xsl:otherwise><xsl:value-of select='@posts - 1'/></xsl:otherwise></xsl:choose></td>
+			<td class='owner'><xsl:if test='@owner'><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a><div class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@potime'/></xsl:call-template></div></xsl:if></td>
+			<td class='owner'><xsl:choose><xsl:when test='@upuser'><a class='owner' href='qry?u={@upuser}'><xsl:value-of select='@upuser'/></a><div class='time uptime'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@uptime'/></xsl:call-template></div></xsl:when><xsl:otherwise>---</xsl:otherwise></xsl:choose></td>
+			<td class='ptitle'><a class='ptitle'>
+				<xsl:attribute name='href'>tcon?new=1&amp;bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@gid'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
+				<xsl:call-template name='ansi-escape'>
+					<xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param>
+					<xsl:with-param name='fgcolor'>37</xsl:with-param>
+					<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
+					<xsl:with-param name='ishl'>0</xsl:with-param>
+				</xsl:call-template>
+			</a><xsl:if test='@lastpage'><a class='lastpage' href='tcon?new=1&amp;bid={../@bid}&amp;g={@gid}&amp;f={@lastpage}&amp;a=n'>[最新页]</a></xsl:if></td>
+		</tr></xsl:for-each>
+	</table>
+	<div class='blink'>
+		<a href='doc?bid={@bid}'>一般模式</a>
+		<a href='tdoc?bid={@bid}'><img src='../images/button/content.gif'/>主题模式</a>
+		<a href='gdoc?bid={@bid}'>文摘区</a>
+		<a href='0an?bid={@bid}'><img src='../images/announce.gif'/>精华区</a>
+		<a href='bfind?bid={@bid}'><img src='../images/search.gif'/>版内搜索</a>
+		<a href='rss?bid={@bid}'>RSS</a>
+	</div>
+</xsl:template>
+
 <xsl:template match='bbsdoc'>
 	<xsl:choose>
 		<xsl:when test='brd/@banner'><img src='{brd/@banner}'/></xsl:when>
@@ -351,7 +396,8 @@ table.post{width:100%}
 	</table>
 
 	<div class='blink'>
-		<xsl:if test='brd/@link != ""'><a href='doc?bid={brd/@bid}'><img src='../images/button/home.gif'/>一般模式</a></xsl:if>
+		<a href='fdoc?bid={brd/@bid}'>论坛模式</a>
+		<xsl:if test='brd/@link != ""'><a href='doc?bid={brd/@bid}'>一般模式</a></xsl:if>
 		<xsl:if test='brd/@link != "t"'><a href='tdoc?bid={brd/@bid}'><img src='../images/button/content.gif'/>主题模式</a></xsl:if>
 		<xsl:if test='brd/@link != "g"'><a href='gdoc?bid={brd/@bid}'>文摘区</a></xsl:if>
 		<a href='0an?bid={brd/@bid}'><img src='../images/announce.gif'/>精华区</a>
@@ -464,7 +510,7 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template name='tcon-navbar'>
-		<a href='tdoc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
+		<a href='{/bbstcon/session/@m}doc?bid={@bid}'><img src='../images/button/home.gif'/>本讨论区</a>
 		<xsl:if test='count(po) = @page'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[last()]/@fid}&amp;a=n'><img src='../images/button/down.gif'/>下页</a></xsl:if>
 		<xsl:if test='po[1]/@fid != @gid'><a href='tcon?new=1&amp;bid={@bid}&amp;g={@gid}&amp;f={po[1]/@fid}&amp;a=p'><img src='../images/button/up.gif'/>上页</a></xsl:if>
 		<xsl:if test='not(@tlast)'><a href='tcon?new=1&amp;bid={@bid}&amp;f={@gid}&amp;a=a'>下一主题</a></xsl:if>

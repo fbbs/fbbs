@@ -40,6 +40,7 @@ enum {
 
 enum {
 	TLINES = 20,
+	POSTS_PER_PAGE = 20,
 	NEWMAIL_EXPIRE = 30,
 };
 
@@ -53,6 +54,7 @@ enum {
 	MODE_AUTHOR = 6,
 	MODE_KEYWORD = 7,
 	MODE_NOTICE = 8,
+	MODE_FORUM = 9,
 
 	PREF_NOSIG = 0x10,
 	PREF_NOSIGIMG = 0x20,

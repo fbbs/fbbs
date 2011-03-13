@@ -304,4 +304,10 @@ $(document).ready(function() {
 	$('.reply').click(replyButton);
 	$('a.sig_option').click(signatureOption);
 	$('.crosspost').click(crossPostButton);
+	$('#forum td.ptitle').mouseenter(function() {
+		if ($('a.lastpage', this).length)
+			$('a', this).css('display', 'inline-block');
+	}).mouseleave(function() {
+		$('a.lastpage', this).hide();
+	});
 });
