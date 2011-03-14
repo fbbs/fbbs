@@ -326,7 +326,7 @@ table.post{width:100%}
 			<td class='mark'><xsl:value-of select='@m'/></td>
 			<td class='replies'><xsl:choose><xsl:when test='@posts=1'>-</xsl:when><xsl:otherwise><xsl:value-of select='@posts - 1'/></xsl:otherwise></xsl:choose></td>
 			<td class='owner'><xsl:if test='@owner'><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a><div class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@potime'/></xsl:call-template></div></xsl:if></td>
-			<td class='owner'><xsl:choose><xsl:when test='@upuser'><a class='owner' href='qry?u={@upuser}'><xsl:value-of select='@upuser'/></a><div class='time uptime'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@uptime'/></xsl:call-template></div></xsl:when><xsl:otherwise>---</xsl:otherwise></xsl:choose></td>
+			<td class='owner'><xsl:choose><xsl:when test='@upuser'><a class='owner' href='qry?u={@upuser}'><xsl:value-of select='@upuser'/></a><div class='uptime'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@uptime'/></xsl:call-template></div></xsl:when><xsl:otherwise>---</xsl:otherwise></xsl:choose></td>
 			<td class='ptitle'><a class='ptitle'>
 				<xsl:attribute name='href'>tcon?new=1&amp;bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@gid'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
 				<xsl:call-template name='ansi-escape'>

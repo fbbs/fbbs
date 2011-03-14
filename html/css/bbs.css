@@ -191,7 +191,7 @@ a.title, a.desc, a.owner, a.ptitle { display: block; }
 a.idesc { display: inline-block; margin-left: 2px; }
 td.time, span.time { color: gray;}
 th.replies, td.replies { width: 40px; text-align: center; }
-#forum div.time { color: gray; font-size: 11px; line-height: 15px; }
+#forum div.time, #forum div.uptime { color: gray; font-size: 11px; line-height: 15px; }
 #forum th.owner, #forum td.owner { text-align: center; width: 120px; }
 #forum a.owner { font-size: 12px; line-height: 16px; }
 #forum a.lastpage { margin-left: 20px; color: #224466; display: none; }

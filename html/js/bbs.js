@@ -276,6 +276,39 @@ function crossPostButton()
 	return false;
 }
 
+function HumanReadableDate() {
+	const s = 86400000;
+	this.n = new Date();
+	var t = new Date(this.n.getFullYear(), this.n.getMonth(), this.n.getDate(), 0, 0, 0, 0);
+	this.t1 = new Date(t.getTime() - s);
+	this.t2 = new Date(t.getTime() - s * 2);
+	this.t3 = new Date(this.n.getFullYear(), 0, 1, 0, 0, 0, 0);
+	this.get = function (str, opt) {
+		var m = str.match(/(\d+)-(\d+)-(\d+) (\d+):(\d+)/);
+		var d = new Date(m[1], m[2] - 1, m[3], m[4], m[5], 0, 0);
+		var e = this.n.getTime() - d.getTime();
+		if (e < 0)
+			return str;
+		if (opt != 'short') {
+			if (e < 60000)
+				return '刚才';
+			if (e < s / 24)
+				return Math.floor(e / 60000) + ' 分钟前';
+			if (e < s)
+				return Math.floor(e / 3600000) + ' 小时前';
+			if (d > this.t1)
+				return '昨天 ' + m[4] + ':' + m[5];
+			if (d > this.t2)
+				return '前天 ' + m[4] + ':' + m[5];
+			if (e < s * 8)
+				return Math.floor(e / s) + ' 天前';
+		}
+		if (d > this.t3)
+			return m[2] + '-' + m[3] + ' ' + m[4] + ':' + m[5];
+		return str;
+	}
+}
+
 $(document).ready(function() {
 	$('#navnm').hide();
 
@@ -309,5 +342,19 @@ $(document).ready(function() {
 			$('a', this).css('display', 'inline-block');
 	}).mouseleave(function() {
 		$('a.lastpage', this).hide();
+	});
+
+	var h = new HumanReadableDate();
+	$('div.uptime').each(function () {
+		var text = $(this).text();
+		var t = h.get(text);
+		$(this).attr('title', text);
+		$(this).text(t);
+	});
+	$('div.time').each(function () {
+		var text = $(this).text();
+		var t = h.get(text, 'short');
+		$(this).attr('title', text);
+		$(this).text(t);
 	});
 });
