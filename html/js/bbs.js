@@ -277,7 +277,7 @@ function crossPostButton()
 }
 
 function HumanReadableDate() {
-	const s = 86400000;
+	var s = 86400000;
 	this.n = new Date();
 	var t = new Date(this.n.getFullYear(), this.n.getMonth(), this.n.getDate(), 0, 0, 0, 0);
 	this.t1 = new Date(t.getTime() - s);

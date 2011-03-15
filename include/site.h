@@ -27,7 +27,7 @@ CVS: $Id: config.h 323 2006-10-27 14:13:52Z danielfree $
 #define BBSVERSION      "〔FB2000 v-Distribution〕"
 
 //#define USE_SHMFS
-//#define FDQUAN	//定义复旦泉用
+#define FDQUAN	//定义复旦泉用
 //#define SPARC	//SPARC机器专用
 #define USE_METALOG //定义系统日志使用Metalog Daemon
 
