@@ -3,7 +3,7 @@
 <xsl:import href='showpost.xsl'/>
 <xsl:output method='html' encoding='gb2312' indent='no' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
 
-<xsl:variable name='bbsname'>复旦泉</xsl:variable>
+<xsl:variable name='bbsname'>日月光华</xsl:variable>
 
 <xsl:template name='timeconvert'>
 	<xsl:param name='time'/>
