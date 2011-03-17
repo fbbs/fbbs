@@ -75,6 +75,19 @@ ul.brd li{
 	margin-right: 16px;
 	float: right;
 }
+.prompt {
+	position: fixed;
+	margin: 0 auto;
+	top: 4px;
+	left: 40%;
+	line-height: 24px;
+	-moz-border-radius: 6px; border-radius: 6px;
+	padding: 0 20px;
+	display: none;
+}
+#loading { background-color: #ccddff; }
+#error { background-color: #ffc0cb; }
+
 #ft {	
 	clear: both;
 	margin: 8px 8px 8px 144px;
@@ -184,7 +197,7 @@ th.bm, td.bm { _width: 280px; }
 th.cate, td.cate { width: 70px; }
 th.desc, td.desc { width: 225px; }
 th.read, td.read { width: 75px; }
-th.chkbox, td.chkbox { width: 75px; }
+th.chkbox, td.chkbox { width: 12px; }
 td.idesc { min-width: 140px; }
 th.cate, td.cate, th.mark, td.mark, th.time, td.time, th.read, td.read { text-align: center; }
 a.title, a.desc, a.owner, a.ptitle { display: block; }
@@ -196,7 +209,13 @@ th.replies, td.replies { width: 40px; text-align: center; }
 #forum a.owner { font-size: 12px; line-height: 16px; }
 #forum a.lastpage { margin-left: 20px; color: #224466; display: none; }
 
-div.bnav {
+#maillist { border-collapse: collapse; }
+#maillist tr { border-bottom: 1px dotted #d0d0d0; }
+#maillist .light { font-weight: bold; }
+#maillist .light .time { font-weight: normal; }
+.mailsum { display: inline-block; float: right; }
+
+div.bnav, div.mnav {
 	margin: 8px 0;
 }
 div.btop {
@@ -224,7 +243,7 @@ div.post {
 div.ptop, div.pbot {
 	padding: 3px 7px;
 }
-.ptop a, .plink a, .pnav a, .btop a, .blink a, .bnav a {
+.ptop a, .plink a, .pnav a, .btop a, .blink a, .bnav a, .mnav a {
 	border-bottom: 1px dotted #6699cc;
 	padding: 3px 0;
 	margin-right: 7px;
@@ -311,7 +330,7 @@ a.reply, a.newpost {
 .quick_reply textarea { margin: 8px 0 0 0; }
 .quick_reply .title input[type="text"] { height: 22px; }
 .quick_upload_ifrm { display: none; }
-form.quick_upload { display: inline-block; }
+form.quick_upload, .mnav form { display: inline-block; }
 form.quick_cp { display: none; margin: 8px 0; }
 
 .disabled { color: #808080; }
@@ -390,10 +409,3 @@ form.jump { display:inline; }
 
 .column-3 { -moz-column-count: 3; -webkit-column-count: 3; -column-count: 3; }
 li { margin: 0 0 6px 0; }
-
-.loading {
-	background: #f0f0f0 no-repeat center url('../images/indicator.gif');
-	border: solid #a0a0a0 1px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-}

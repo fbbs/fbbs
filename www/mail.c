@@ -5,50 +5,71 @@
 #include "fbbs/mail.h"
 #include "fbbs/web.h"
 
+static bool _is_mail_read(const struct fileheader *fp)
+{
+	return (fp->accessed[0] & FILE_READ);
+}
+
+static int _get_mail_mark(const struct fileheader *fp)
+{
+	int mark = ' ';
+	if (fp->accessed[0] & MAIL_REPLY)
+		mark = 'r';
+	if (fp->accessed[0] & FILE_MARKED) {
+		if (mark == 'r')
+			mark = 'b';
+		else
+			mark = 'm';
+	}
+	if (!_is_mail_read(fp)) {
+		if (mark == ' ')
+			mark = '+';
+		else
+			mark = toupper(mark);
+	}
+	return mark;
+}
+
 int bbsmail_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
 	int start = strtol(get_param(ctx->r, "start"), NULL, 10);
+	int page = strtol(get_param(ctx->r, "page"), NULL, 10);
+	if (page <= 0 || page > TLINES)
+		page = TLINES;
+	
 	char buf[HOMELEN];
 	setmdir(buf, currentuser.userid);
-	mmap_t m;
-	m.oflag = O_RDONLY;
+	mmap_t m = { .oflag = O_RDONLY };
 	if (mmap_open(buf, &m) < 0)
 		return BBS_ENOFILE;
+
 	int total = m.size / sizeof(struct fileheader);
-	if (start <= 0)
-		start = total - TLINES + 1;
+	if (start <= 0 || start > total - page + 1)
+		start = total - page + 1;
 	if (start < 1)
 		start = 1;
-	struct fileheader *fh = (struct fileheader *)m.ptr + start - 1;
-	struct fileheader *end = (struct fileheader *)m.ptr + total;
+
+	const struct fileheader *begin = m.ptr, *end = begin + total;
+	const struct fileheader *fp = begin + start + page - 2;
+	if (fp >= end)
+		fp = end - 1;
+
 	xml_header(NULL);
-	printf("<bbsmail start='%d' total='%d' page='%d'>", start, total, TLINES);
+	printf("<bbsmail start='%d' total='%d' page='%d' dpage='%d'>",
+			start, total, page, TLINES);
 	print_session(ctx);
-	for (int i = 0; i < TLINES && fh != end; ++i) {
-		int mark = ' ';
-		if (fh->accessed[0] & MAIL_REPLY)
-			mark = 'r';
-		if (fh->accessed[0] & FILE_MARKED) {
-			if (mark == 'r')
-				mark = 'b';
-			else
-				mark = 'm';
-		}
-		if (!(fh->accessed[0] & FILE_READ)) {
-			if (mark == ' ')
-				mark = '+';
-			else
-				mark = toupper(mark);
-		}
-		printf("<mail m='%c' from='%s' date='%s' name='%s'>", mark, fh->owner,
-				getdatestring(getfiletime(fh), DATE_XML), fh->filename);
-		xml_fputs2(fh->title, check_gbk(fh->title) - fh->title, stdout);
+
+	for (int i = 0; i < page && fp >= begin; ++i, --fp) {
+		printf("\n<mail r='%d' m='%c' from='%s' date='%s' name='%s'>",
+				_is_mail_read(fp), _get_mail_mark(fp), fp->owner,
+				getdatestring(getfiletime(fp), DATE_XML), fp->filename);
+		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title, stdout);
 		printf("</mail>");
-		fh++;
 	}
+
 	mmap_close(&m);
 	printf("</bbsmail>");
 	return 0;
@@ -90,29 +111,34 @@ int bbsmailcon_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
+
 	char file[40];
 	strlcpy(file, get_param(ctx->r, "f"), sizeof(file));
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
+
 	char buf[HOMELEN];
-	mmap_t m;
-	m.oflag = O_RDWR;
+	mmap_t m = { .oflag = O_RDWR };
 	// deal with index
 	setmdir(buf, currentuser.userid);
 	if (mmap_open(buf, &m) < 0)
 		return BBS_ENOFILE;
+
+	int total = m.size / sizeof(struct fileheader);
 	struct fileheader *fh = bbsmail_search(m.ptr, m.size, file);
-	if (fh == NULL) {
+	if (!fh) {
 		mmap_close(&m);
 		return BBS_ENOFILE;
 	}
+
 	bool newmail = false;
 	if (!(fh->accessed[0] & FILE_READ)) {
 		newmail = true;
 		fh->accessed[0] |= FILE_READ;
 	}
+
 	xml_header(NULL);
-	printf("<bbsmailcon ");
+	printf("<bbsmailcon total='%d'", total);
 	struct fileheader *prev = fh - 1;
 	if (prev >= (struct fileheader *)m.ptr)
 		printf(" prev='%s'", prev->filename);
@@ -124,6 +150,7 @@ int bbsmailcon_main(web_ctx_t *ctx)
 	printf("><t>");
 	xml_fputs2(fh->title, check_gbk(fh->title) - fh->title, stdout);
 	printf("</t>");
+
 	mmap_close(&m);
 
 	// show mail content.
@@ -131,6 +158,7 @@ int bbsmailcon_main(web_ctx_t *ctx)
 		strlcpy(buf, file, sizeof(buf));
 	else
 		setmfile(buf, currentuser.userid, file);
+
 	m.oflag = O_RDONLY;
 	if (mmap_open(buf, &m) < 0)
 		return BBS_ENOFILE;
@@ -138,6 +166,7 @@ int bbsmailcon_main(web_ctx_t *ctx)
 	xml_fputs((char *)m.ptr, stdout);
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);
+
 	print_session(ctx);
 	printf("</bbsmailcon>");
 	return 0;

@@ -120,6 +120,8 @@
 		<xsl:if test='$user = ""'><a id='navl' href='login'>登录</a></xsl:if>
 		<a id='navnm' href='newmail'>您有[<span id='navmc'></span>]封新信件</a>
 		<a id='navte' href='telnet://bbs.fudan.sh.cn:23'>终端登录</a>
+		<div id='loading' class='prompt'><img src='../images/indicator.gif'/> 载入中...</div>
+		<div id='error' class='prompt'></div>
 		<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 7]><![endif]]]></xsl:comment></span>
 	</div>
 </xsl:template>
@@ -674,18 +676,17 @@ table.post{width:100%}
 
 <xsl:template match='bbsmail'>
 	<h2>信件列表</h2>
-	<p>信件总数 [<xsl:value-of select='@total'/>]封</p>
-	<form name='list' method='post' action='mailman'>
-		<table class='content'>
-			<tr><th class='no'>序号</th><th class='chkbox'>管理</th><th class='mark'>状态</th><th class='owner'>发信人</th><th class='time'>日期</th><th class='ptitle'>信件标题</th></tr>
+	<div class='mnav'><xsl:call-template name='bbsmail-nav'/></div>
+	<form name='maillist' method='post' action='mailman'>
+		<table class='content' id='maillist'>
+			<tr><th class='chkbox'></th><th class='mark'>状态</th><th class='owner'>发信人</th><th class='time'>日期</th><th class='ptitle'>信件标题</th></tr>
 			<xsl:for-each select='mail'><tr>
-				<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-				<td class='no'><xsl:value-of select='position() - 1 + ../@start'/></td>
+				<xsl:if test='@r=0'><xsl:attribute name='class'>light</xsl:attribute></xsl:if>
 				<td class='chkbox'><input type="checkbox" name='box{@name}'></input></td>
 				<td class='mark'><xsl:value-of select='@m'/></td>
 				<td><a class='owner' href='qry?u={@from}'><xsl:value-of select='@from'/></a></td>
 				<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></td>
-				<td class='ptitle'><a class='ptitle' href='mailcon?f={@name}&amp;n={position()-1+../@start}'>
+				<td class='ptitle'><a class='ptitle' href='mailcon?f={@name}&amp;n={../@start + count(../mail) - position()}'>
 					<xsl:call-template name='ansi-escape'>
 						<xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param>
 						<xsl:with-param name='fgcolor'>37</xsl:with-param>
@@ -697,42 +698,44 @@ table.post{width:100%}
 		</table>
 		<input name='mode' value='' type='hidden'/>
 	</form>
-	<div>[<a href="#"  onclick="checkAll();">本页全选</a>] [<a href="#"  onclick="checkReverse();">本页反选</a>] [<a href="#" onclick="delSelected()">删除所选信件</a>]</div>
-	<div>
-		<xsl:if test='@start &gt; 1'>
-			<xsl:variable name='prev'>
-				<xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page'/></xsl:otherwise></xsl:choose>
-			</xsl:variable>
-			<a href='mail?start={$prev}'>[ <img src='../images/button/up.gif'/>上一页 ]</a>
-		</xsl:if>
-		<xsl:if test='@total &gt; @start + @page - 1'>
-			<xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
-			<a href='mail?start={$next}'>[ <img src='../images/button/down.gif'/>下一页 ]</a>
-		</xsl:if>
-		<form><input value='跳转到' type='submit'/>第<input name='start' size='4' type='text'/>封</form>
-	</div>
+	<div class='mnav'><xsl:call-template name='bbsmail-nav'/></div>
+</xsl:template>
+
+<xsl:template name='bbsmail-nav'>
+<a href="#" class='check_all'>全选</a>
+<a href="#" class='check_rev'>反选</a>
+<input type='button' class='del_mail' value='删除'/>
+<div class='mailsum'>
+<xsl:if test='@total &gt; @start + @page - 1'>
+<xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
+<a href='mail?start={$next}'>&lt; 新信件</a>
+</xsl:if>
+第 <xsl:value-of select='@total - @start - count(mail) + 2'/> - <xsl:value-of select='@total - @start + 1'/> 封 共 <xsl:value-of select='@total'/> 封
+<xsl:if test='@start &gt; 1'>
+<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @dpage &lt; 1'>1&amp;page=<xsl:value-of select='@start - 1'/></xsl:when><xsl:otherwise><xsl:value-of select='@start - @dpage'/></xsl:otherwise></xsl:choose></xsl:variable>
+<a href='mail?start={$prev}'>旧信件 &gt;</a>
+</xsl:if>
+</div>
 </xsl:template>
 
 <xsl:template match='bbsmailcon'>
+	<div class='mnav'><xsl:call-template name='mailcon-navbar'/></div>
 	<div class='post'>
-		<div class='ptop'><xsl:call-template name='mailcon-navbar'/></div>
-		<div class='plink'><xsl:call-template name='mailcon-linkbar'/></div>
 		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='mail'/></xsl:call-template></div>
-		<div class='plink'><xsl:call-template name='mailcon-linkbar'/></div>
-		<div class='pbot'><xsl:call-template name='mailcon-navbar'/></div>
 	</div>
+	<div class='mnav'><xsl:call-template name='mailcon-navbar'/></div>
 	<xsl:if test='@new'><script type='text/javascript' defer='defer'>bbs.init();bbs.store.set('last', 0);</script></xsl:if>
 </xsl:template>
 
 <xsl:template name='mailcon-navbar'>
-	<a href='mail'>[ <img src='../images/button/back.gif'/>信件列表 ]</a>
-	<xsl:if test='@prev'><a href='mailcon?f={@prev}&amp;n={mail/@n-1}'>[ <img src='../images/button/up.gif'/>上一封 ]</a></xsl:if>
-	<xsl:if test='@next'><a href='mailcon?f={@next}&amp;n={mail/@n+1}'>[ <img src='../images/button/down.gif'/>下一封 ]</a></xsl:if>
-</xsl:template>
-
-<xsl:template name='mailcon-linkbar'>
-	<a href='pstmail?n={mail/@n}'>[ <img src='../images/button/edit.gif'/>回复此信 ]</a>
-	<a onclick='return confirm("您真的要删除这封信吗？")' href='delmail?f={mail/@f}'>[ 删除此信 ]</a>
+	<a href='mail'>&lt;&lt; 回信件列表</a>
+	<form method='post' action='pstmail?n={mail/@n}'><input type='submit' value='回复'/></form>
+	<form method='post' action='delmail?f={mail/@f}'><input type='submit' onclick='return confirm("您真的要删除这封信吗？")' value='删除'/></form>
+	<div class='mailsum'>
+		<xsl:if test='@next'><a href='mailcon?f={@next}&amp;n={mail/@n + 1}'>&lt; 新一封</a></xsl:if>
+		第 <xsl:value-of select='mail/@n'/> 封 共 <xsl:value-of select='@total'/> 封 
+		<xsl:if test='@prev'><a href='mailcon?f={@prev}&amp;n={mail/@n - 1}'>旧一封 &gt;</a></xsl:if>
+	</div>
 </xsl:template>
 
 <xsl:template match='bbspstmail'>

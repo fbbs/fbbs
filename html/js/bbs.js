@@ -28,17 +28,6 @@ function preUpload()
 	return false;
 }
 
-// for bbsmail
-function checkAll() {
-	$('form[name="list"] input:checkbox').attr('checked', true);
-	return false;
-}
-function checkReverse() {
-	$('form[name="list"] input:checkbox').attr('checked', function() {
-		return !this.checked;
-	});
-	return false;
-}
 function delSelected() {
 	document.list.mode.value = 1;
 	document.list.submit();
@@ -132,11 +121,25 @@ $.fn.selectRange = function(b, e) {
 		});
 }
 
+function hideP()
+{
+	$('.prompt').hide();
+}
+
 $.fn.toggleLoading = function() {
-	if (this.attr('disabled'))
-		return this.attr('disabled', false).removeClass('loading');
-	else
-		return this.attr('disabled', true).addClass('loading');
+	if (this.attr('disabled')) {
+		$('#loading').hide();
+		return this.attr('disabled', false);
+	} else {
+		hideP();
+		$('#loading').show();
+		return this.attr('disabled', true);
+	}
+}
+
+function error(text) {
+	hideP();
+	$('#error').text(text).fadeIn('fast');
 }
 
 function replyButton() {
@@ -174,7 +177,7 @@ function replyButton() {
 			q.push(': ' + p[i]);
 		}
 		$('[name="text"]', f).val(q.join('\n'));
-		$('.cancel', f).click(function() { f.hide(); $('.plink', div).show(); });
+		$('.cancel', f).click(function() { hideP(); f.hide(); $('.plink', div).show(); });
 		$('.confirm', f).click(replyFormSubmit);
 
 		$('iframe').load(function() {
@@ -214,11 +217,11 @@ function replyFormSubmit() {
 				$('<div class="preply"></div>').text($('textarea', form).val().replace(/【 [\s\S]+/, " ...")).prepend('<a class="success" href="' + url.attr('href') + '">回复成功</a>').insertAfter(form.parent());
 				form.parent().slideUp().prev().slideDown();
 			} else {
-				alert($(data).filter('div').text());
+				error($(data).filter('div').text());
 			}
 		},
 		error: function() {
-			alert('发送失败，请稍候重试');
+			error('发送失败，请稍候重试');
 		},
 		complete: function() {
 			button.toggleLoading();
@@ -356,5 +359,27 @@ $(document).ready(function() {
 		var t = h.get(text, 'short');
 		$(this).attr('title', text);
 		$(this).text(t);
+	});
+
+	$('.check_all').click(function () {
+		$('form[name="maillist"] input:checkbox').attr('checked', true);
+		return false;
+	});
+	$('.check_rev').click(function () {
+		$('form[name="maillist"] input:checkbox').attr('checked', function() { return !this.checked; });
+		return false;
+	});
+
+	$('.del_mail').click(function () {
+		var f = $('form[name="maillist"]');
+		if (!$('input:checked', f).length) {
+			error('您还没有选择信件@.@');
+			return false;
+		}
+		var b = $(this).toggleLoading();
+		$.ajax({
+			type: 'POST', url: f.attr('action'), data: f.serialize(),
+			complete: function () {	b.toggleLoading(); }
+		});
 	});
 });
