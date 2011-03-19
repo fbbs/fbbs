@@ -155,7 +155,6 @@
 		<xsl:when test='bbspst'><xsl:choose><xsl:when test='bbspst/@edit="0"'>发表</xsl:when><xsl:otherwise>修改</xsl:otherwise></xsl:choose>文章</xsl:when>
 		<xsl:when test='bbstop10'>本日十大</xsl:when>
 		<xsl:when test='bbsbfind'>版内文章查询</xsl:when>
-		<xsl:when test='bbsnewmail'>阅览新信件</xsl:when>
 		<xsl:when test='bbsmail'>信件列表</xsl:when>
 		<xsl:when test='bbsmailcon'>信件阅读</xsl:when>
 		<xsl:when test='bbspstmail'>寄语信鸽</xsl:when>
@@ -647,46 +646,22 @@ table.post{width:100%}
 	</form></xsl:otherwise></xsl:choose>
 </xsl:template>
 
-<xsl:template match='bbsnewmail'>
-	<h2>阅览新信件</h2>
-	<p><a href='mail'><xsl:choose><xsl:when test='count(mail)=0'>您没有30天内的未读信件</xsl:when><xsl:otherwise>本页仅显示30天内未读信件</xsl:otherwise></xsl:choose>，查看全部信件请点此处</a></p>
-	<xsl:if test='count(mail)!=0'><form name='list' method='post' action='mailman'>
-		<table class='content'>
-			<tr><th class='no'>序号</th><th class='chkbox'>管理</th><th class='owner'>发信人</th><th class='time'>日期</th><th class='ptitle'>信件标题</th></tr>
-			<xsl:for-each select='mail'><tr>
-				<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-				<td class='no'><xsl:value-of select='@n'/></td>
-				<td class='chkbox'><input type='checkbox' name='box{@name}'></input></td>
-				<td class='owner'><a class='owner' href='qry?u={@from}'><xsl:value-of select='@from'/></a></td>
-				<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></td>
-				<td class='ptitle'><a class='ptitle' href='mailcon?f={@name}&amp;n={@n}'>
-					<xsl:call-template name='ansi-escape'>
-						<xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param>
-						<xsl:with-param name='fgcolor'>37</xsl:with-param>
-						<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
-						<xsl:with-param name='ishl'>0</xsl:with-param>
-					</xsl:call-template>
-				</a></td>
-			</tr></xsl:for-each>
-		</table>
-		<input name='mode' value='' type='hidden'/>
-	</form>
-	<div>[<a href="#"  onclick="checkAll();">全选</a>] [<a href="#"  onclick="checkReverse();">反选</a>] [<a href="#" onclick="delSelected()">删除所选信件</a>]</div></xsl:if>
-</xsl:template>
-
 <xsl:template match='bbsmail'>
 	<h2>信件列表</h2>
+	<xsl:if test='@new'><p><a href='mail'><xsl:choose><xsl:when test='count(mail)=0'>您没有30天内的未读信件</xsl:when><xsl:otherwise>本页仅显示30天内未读信件</xsl:otherwise></xsl:choose>，查看全部信件请点此处</a></p></xsl:if>
 	<div class='mnav'><xsl:call-template name='bbsmail-nav'/></div>
 	<form name='maillist' method='post' action='mailman'>
 		<table class='content' id='maillist'>
 			<tr><th class='chkbox'></th><th class='mark'>状态</th><th class='owner'>发信人</th><th class='time'>日期</th><th class='ptitle'>信件标题</th></tr>
 			<xsl:for-each select='mail'><tr>
-				<xsl:if test='@r=0'><xsl:attribute name='class'>light</xsl:attribute></xsl:if>
+				<xsl:if test='@r=0 or ../@new'><xsl:attribute name='class'>light</xsl:attribute></xsl:if>
 				<td class='chkbox'><input type="checkbox" name='box{@name}'></input></td>
 				<td class='mark'><xsl:value-of select='@m'/></td>
 				<td><a class='owner' href='qry?u={@from}'><xsl:value-of select='@from'/></a></td>
 				<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></td>
-				<td class='ptitle'><a class='ptitle' href='mailcon?f={@name}&amp;n={../@start + count(../mail) - position()}'>
+				<td class='ptitle'>
+					<a class='ptitle'>
+					<xsl:attribute name='href'>mailcon?f=<xsl:value-of select='@name'/>&amp;n=<xsl:choose><xsl:when test='../@new'><xsl:value-of select='@n'/></xsl:when><xsl:otherwise><xsl:value-of select='../@start + count(../mail) - position()'/></xsl:otherwise></xsl:choose></xsl:attribute>
 					<xsl:call-template name='ansi-escape'>
 						<xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param>
 						<xsl:with-param name='fgcolor'>37</xsl:with-param>
@@ -710,7 +685,7 @@ table.post{width:100%}
 <xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
 <a href='mail?start={$next}'>&lt; 新信件</a>
 </xsl:if>
-第 <xsl:value-of select='@total - @start - count(mail) + 2'/> - <xsl:value-of select='@total - @start + 1'/> 封 共 <xsl:value-of select='@total'/> 封
+<xsl:if test='not(@new)'>第 <xsl:value-of select='@total - @start - count(mail) + 2'/> - <xsl:value-of select='@total - @start + 1'/> 封 共 <xsl:value-of select='@total'/> 封</xsl:if>
 <xsl:if test='@start &gt; 1'>
 <xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @dpage &lt; 1'>1&amp;page=<xsl:value-of select='@start - 1'/></xsl:when><xsl:otherwise><xsl:value-of select='@start - @dpage'/></xsl:otherwise></xsl:choose></xsl:variable>
 <a href='mail?start={$prev}'>旧信件 &gt;</a>

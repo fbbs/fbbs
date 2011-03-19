@@ -96,14 +96,14 @@ int bbsnewmail_main(web_ctx_t *ctx)
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
-	printf("<bbsnewmail>");
+	printf("<bbsmail new='1'>");
 	print_session(ctx);
 	char file[HOMELEN];
 	setmdir(file, currentuser.userid);
 	time_t limit = time(NULL) - 24 * 60 * 60 * NEWMAIL_EXPIRE;
 	apply_record(file, print_new_mail, sizeof(struct fileheader), &limit,
 			false, true, true);
-	printf("</bbsnewmail>");
+	printf("</bbsmail>");
 	return 0;
 }
 
