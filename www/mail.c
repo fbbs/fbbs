@@ -138,7 +138,7 @@ int bbsmailcon_main(web_ctx_t *ctx)
 	}
 
 	xml_header(NULL);
-	printf("<bbsmailcon total='%d'", total);
+	printf("<bbsmailcon total='%d' dpage='%d'", total, TLINES);
 	struct fileheader *prev = fh - 1;
 	if (prev >= (struct fileheader *)m.ptr)
 		printf(" prev='%s'", prev->filename);

@@ -728,7 +728,7 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template name='mailcon-navbar'>
-	<a href='mail'>&lt;&lt; 回信件列表</a>
+	<a><xsl:attribute name='href'>mail<xsl:choose><xsl:when test='mail/@n &gt; @total - @dpage'></xsl:when><xsl:when test='mail/@n &lt;= @total mod @dpage'>?start=1&amp;page=<xsl:value-of select='@total mod @dpage'/></xsl:when><xsl:otherwise>?start=<xsl:value-of select='floor((mail/@n - 1 - @total mod @dpage) div @dpage) * @dpage + @total mod @dpage + 1'/></xsl:otherwise></xsl:choose></xsl:attribute>&lt;&lt; 回信件列表</a>
 	<form method='post' action='pstmail?n={mail/@n}'><input type='submit' value='回复'/></form>
 	<form method='post' action='delmail?f={mail/@f}'><input type='submit' onclick='return confirm("您真的要删除这封信吗？")' value='删除'/></form>
 	<div class='mailsum'>
