@@ -221,15 +221,17 @@ int delete_record(const char *file, int size, int id,
 		if (mmap_open(file, &m) < 0)
 			BBS_RETURN(-1);
 		ret = 0;
+		int count = m.size / size;
+
 		if (id * size> m.size) {
 			ret = -2;
 		} else {
 			if (check) {
 				if (!(*check)((char *)m.ptr + (id - 1) * size, arg)) {
-					for (id = 0; id * size < m.size; id++)
+					for (id = 1; id <= count; id++)
 						if ((*check) ((char *)m.ptr + (id - 1) * size, arg))
 							break;
-					if (id * size >= m.size)
+					if (id > count)
 						ret = -2;
 				}
 			}
