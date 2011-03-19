@@ -55,6 +55,7 @@ extern int fcgi_activate(web_ctx_t *ctx);
 extern int fcgi_exist(web_ctx_t *ctx);
 extern int web_sigopt(web_ctx_t *ctx);
 extern int web_forum(web_ctx_t *ctx);
+extern int web_mailman(web_ctx_t *ctx);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -114,6 +115,7 @@ const static web_handler_t applets[] = {
 		{"exist", fcgi_exist, QUERY},
 		{"sigopt", web_sigopt, GMENU},
 		{"fdoc", web_forum, READING},
+		{"mailman", web_mailman, RMAIL},
 		{NULL, NULL, 0}
 };
 

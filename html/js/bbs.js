@@ -379,7 +379,12 @@ $(document).ready(function() {
 		var b = $(this).toggleLoading();
 		$.ajax({
 			type: 'POST', url: f.attr('action'), data: f.serialize(),
-			complete: function () {	b.toggleLoading(); }
+			success: function(data) {
+				$(data).find('mail').each(function() {
+					$('[name="box' + $(this).attr('f') + '"]', f).parent().parent().fadeOut('slow');
+				});
+			},
+			complete: function() { b.toggleLoading(); }
 		});
 	});
 });

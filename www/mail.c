@@ -308,3 +308,43 @@ int bbssndmail_main(web_ctx_t *ctx)
 			"</body>\n</html>\n", ref);
 	return 0;
 }
+
+static int _mail_checked(void *ptr, void *file)
+{
+	struct fileheader *p = ptr;
+	return streq(p->filename, file);
+}
+
+int web_mailman(web_ctx_t *ctx)
+{
+	if (!loginok)
+		return BBS_ELGNREQ;
+
+	parse_post_data(ctx->r);
+
+	char index[HOMELEN];
+	setmdir(index, currentuser.userid);
+
+	xml_header(NULL);
+	printf("<mailman>");
+	print_session(ctx);
+
+	for (int i = 0; i < ctx->r->count; ++i) {
+		pair_t *p = ctx->r->params + i;
+		if (streq(p->val, "on") && strncmp(p->key, "box", 3) == 0) {
+			const char *file = p->key + sizeof("box") - 1;
+			if (delete_record(index, sizeof(struct fileheader), 1,
+					_mail_checked, (void *)file) == 0) {
+				if (file[0] != 's') { // not shared mail
+					char buf[HOMELEN];
+					setmfile(buf, currentuser.userid, file);
+					unlink(buf);
+				}
+				printf("<mail f='%s'/>", file);
+			}
+		}
+	}
+
+	printf("</mailman>");
+	return 0;
+}
