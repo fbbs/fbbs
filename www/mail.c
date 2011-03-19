@@ -83,8 +83,9 @@ int print_new_mail(void *buf, int count, void *args)
 	if (date < limit)
 		return QUIT;
 	if (!(fp->accessed[0] & FILE_READ)) {
-		printf("<mail from='%s' date='%s' name='%s' n='%d'>", fp->owner, 
-				getdatestring(date, DATE_XML), fp->filename, count);
+		printf("<mail m='%c' from='%s' name='%s' n='%d' date='%s'>",
+				_get_mail_mark(fp), fp->owner, fp->filename, count,
+				getdatestring(date, DATE_XML));
 		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title, stdout);
 		printf("</mail>");
 	}
