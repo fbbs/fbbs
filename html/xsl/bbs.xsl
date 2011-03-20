@@ -456,11 +456,11 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template match='po'>
-<div class='post_h'>
+<xsl:if test='owner'><div class='post_h'>
 	<p>发信人: <a class='powner' href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>), 信区: <a href='doc?board={board}'><xsl:value-of select='board'/></a></p>
 	<p>标&#160;&#160;题: <span class='ptitle'><xsl:value-of select='title'/></span></p>
 	<p>发信站: <xsl:value-of select='$bbsname'/> (<xsl:value-of select='date'/>), 站内信件</p>
-</div>
+</div></xsl:if>
 <xsl:for-each select='pa'>
 	<div class='post_{@m}'>
 		<xsl:for-each select='p'><p><xsl:apply-templates select='.'/></p></xsl:for-each>
