@@ -306,20 +306,27 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template match='forum'>
-	<xsl:choose>
-		<xsl:when test='@banner'><img src='{@banner}'/></xsl:when>
-		<xsl:otherwise><h2><xsl:if test='@icon'><img src='{@icon}'/></xsl:if><a href='fdoc?bid={@bid}'><xsl:value-of select='@desc'/> [<xsl:value-of select='@title'/>] - 论坛模式</a></h2></xsl:otherwise>
-	</xsl:choose>
+	<div class='heading'>
+		<xsl:choose>
+			<xsl:when test='@banner'><img src='{@banner}'/></xsl:when>
+			<xsl:otherwise><div class='h2'><xsl:if test='@icon'><img src='{@icon}'/></xsl:if><a href='fdoc?bid={@bid}'><xsl:value-of select='@desc'/> [<xsl:value-of select='@title'/>] - 论坛</a></div></xsl:otherwise>
+		</xsl:choose>
+		<div class='modelist'><span>切换模式</span>
+			<a href='tdoc?bid={@bid}'>主题</a>
+			<a href='doc?bid={@bid}'>传统</a>
+		</div>
+		<div class='bmlist'><span>版主</span><xsl:call-template name='splitbm'><xsl:with-param name='names' select='@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template></div>
+	</div>
 	<div class='btop'>
 		<a class='newpost' href='pst?bid={@bid}'>发表文章</a>
 		<a href='brdadd?bid={@bid}'>收藏本版</a>
+		<a href='gdoc?bid={@bid}'>文摘区</a>
+		<a href='0an?bid={@bid}'><img src='../images/announce.gif'/>精华区</a>
+		<a href='bfind?bid={@bid}'><img src='../images/search.gif'/>版内搜索</a>
 		<a href='not?board={@title}'>进版画面</a>
-		<span>版主: <xsl:call-template name='splitbm'><xsl:with-param name='names' select='@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template></span>
+		<a href='rss?bid={@bid}'>RSS</a>
 	</div>
-	<div class='bnav'>
-		<xsl:if test='@next!=0'><a href='fdoc?bid={@bid}&amp;start={@next}'><img src='../images/button/down.gif'/>下一页</a></xsl:if>
-		<a href='clear?board={@title}'>清除未读</a>
-	</div>
+	<xsl:call-template name='forum-nav'/>
 	<table class='content' id='forum'>
 		<tr><th class='mark'>标记</th><th class='replies'>回帖</th><th class='owner'>作者</th><th class='owner'>最新回复</th><th class='ptitle'>标题</th></tr>
 		<xsl:for-each select='po'><tr>
@@ -339,42 +346,42 @@ table.post{width:100%}
 			</a><xsl:if test='@lastpage'><a class='lastpage' href='tcon?new=1&amp;bid={../@bid}&amp;g={@gid}&amp;f={@lastpage}&amp;a=n'>[最新页]</a></xsl:if></td>
 		</tr></xsl:for-each>
 	</table>
-	<div class='blink'>
-		<a href='doc?bid={@bid}'>一般模式</a>
-		<a href='tdoc?bid={@bid}'><img src='../images/button/content.gif'/>主题模式</a>
-		<a href='gdoc?bid={@bid}'>文摘区</a>
-		<a href='0an?bid={@bid}'><img src='../images/announce.gif'/>精华区</a>
-		<a href='bfind?bid={@bid}'><img src='../images/search.gif'/>版内搜索</a>
-		<a href='rss?bid={@bid}'>RSS</a>
+	<xsl:call-template name='forum-nav'/>
+</xsl:template>
+
+<xsl:template name='forum-nav'>
+	<div class='bnav'>
+		<xsl:if test='@next!=0'><a href='fdoc?bid={@bid}&amp;start={@next}'><img src='../images/button/down.gif'/>下一页</a></xsl:if>
+		<a href='clear?board={@title}'>清除未读</a>
 	</div>
 </xsl:template>
 
 <xsl:template match='bbsdoc'>
+	<div class='heading'>
 	<xsl:choose>
 		<xsl:when test='brd/@banner'><img src='{brd/@banner}'/></xsl:when>
-		<xsl:otherwise><h2><xsl:if test='brd/@icon'><img src='{brd/@icon}'/></xsl:if><a href='{brd/@link}doc?bid={brd/@bid}'><xsl:value-of select='brd/@desc'/> [<xsl:value-of select='brd/@title'/>]<xsl:if test='brd/@link = "g"'> - 文摘区</xsl:if><xsl:if test='brd/@link = "t"'> - 主题模式</xsl:if></a></h2></xsl:otherwise>
+		<xsl:otherwise><div class='h2'>
+		<xsl:if test='brd/@icon'><img src='{brd/@icon}'/></xsl:if><a href='{brd/@link}doc?bid={brd/@bid}'><xsl:value-of select='brd/@desc'/> [<xsl:value-of select='brd/@title'/>]<xsl:if test='brd/@link = "g"'> - 文摘</xsl:if><xsl:if test='brd/@link = "t"'> - 主题</xsl:if></a></div></xsl:otherwise>
 	</xsl:choose>
+	<div class='modelist'><span>切换模式</span>
+		<a href='fdoc?bid={brd/@bid}'>论坛</a>
+		<xsl:if test='brd/@link != "t"'><a href='tdoc?bid={brd/@bid}'>主题</a></xsl:if>
+		<xsl:if test='brd/@link != ""'><a href='doc?bid={brd/@bid}'>传统</a></xsl:if>
+	</div>
+	<div class='bmlist'><span>版主</span><xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template></div>
+	</div>
+	
 	<div class='btop'>
 		<a class='newpost' href='pst?bid={brd/@bid}'>发表文章</a>
 		<a href='brdadd?bid={brd/@bid}'>收藏本版</a>
+		<xsl:if test='brd/@link != "g"'><a href='gdoc?bid={brd/@bid}'>文摘区</a></xsl:if>
+		<a href='0an?bid={brd/@bid}'>精华区</a>
+		<a href='bfind?bid={brd/@bid}'>版内搜索</a>
 		<a href='not?board={brd/@title}'>进版画面</a>
-		<span>版主: <xsl:call-template name='splitbm'><xsl:with-param name='names' select='brd/@bm'/><xsl:with-param name='isdir'>0</xsl:with-param><xsl:with-param name='isfirst' select='1'/></xsl:call-template></span>
+		<a href='rss?bid={brd/@bid}'>RSS</a>
 	</div>
 
-	<div class='bnav'>
-		<a href='javascript:location=location'><img src='../images/button/reload.gif'/>刷新</a>
-		<xsl:if test='brd/@start > 1'>
-			<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
-			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$prev}'><img src='../images/button/up.gif'/>上一页</a>
-		</xsl:if>
-		<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
-			<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
-			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'><img src='../images/button/down.gif'/>下一页</a>
-		</xsl:if>
-		<a href='clear?board={brd/@title}&amp;start={brd/@start}'>清除未读</a>
-		<form class='jump' method='get' action='{brd/@link}doc'><input type='hidden' name='bid' value='{brd/@bid}'></input><img src='../images/button/forward.gif'/>跳转到<input type='text' name='start' size='6'/>篇</form>
-	</div>
-
+	<xsl:call-template name='bbsdoc-nav'/>
 	<table class='content' id='postlist'>
 		<tr><th class='no'>序号</th><th class='mark'>标记</th><th>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
 		<xsl:for-each select='po'><tr>
@@ -395,15 +402,22 @@ table.post{width:100%}
 			</a></td>
 		</tr></xsl:for-each>
 	</table>
+	<xsl:call-template name='bbsdoc-nav'/>
+</xsl:template>
 
-	<div class='blink'>
-		<a href='fdoc?bid={brd/@bid}'>论坛模式</a>
-		<xsl:if test='brd/@link != ""'><a href='doc?bid={brd/@bid}'>一般模式</a></xsl:if>
-		<xsl:if test='brd/@link != "t"'><a href='tdoc?bid={brd/@bid}'><img src='../images/button/content.gif'/>主题模式</a></xsl:if>
-		<xsl:if test='brd/@link != "g"'><a href='gdoc?bid={brd/@bid}'>文摘区</a></xsl:if>
-		<a href='0an?bid={brd/@bid}'><img src='../images/announce.gif'/>精华区</a>
-		<a href='bfind?bid={brd/@bid}'><img src='../images/search.gif'/>版内搜索</a>
-		<a href='rss?bid={brd/@bid}'>RSS</a>
+<xsl:template name='bbsdoc-nav'>
+	<div class='bnav'>
+		<a href='javascript:location=location'><img src='../images/button/reload.gif'/>刷新</a>
+		<xsl:if test='brd/@start > 1'>
+			<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
+			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$prev}'><img src='../images/button/up.gif'/>上一页</a>
+		</xsl:if>
+		<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
+			<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
+			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'><img src='../images/button/down.gif'/>下一页</a>
+		</xsl:if>
+		<a href='clear?board={brd/@title}&amp;start={brd/@start}'>清除未读</a>
+		<form class='jump' method='get' action='{brd/@link}doc'><input type='hidden' name='bid' value='{brd/@bid}'></input><img src='../images/button/forward.gif'/>跳转到<input type='text' name='start' size='6'/>篇</form>
 	</div>
 </xsl:template>
 

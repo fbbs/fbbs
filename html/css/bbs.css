@@ -174,10 +174,40 @@ a#navu { font-weight: bold; padding: 0 14px 0 0; }
 .sf { padding: 0; font-size: 12px; }
 #navf ul li.sf a { padding: 0; line-height: 18px; height: 18px; }
 
+.heading {
+	margin-bottom: 6px;
+}
+.heading a {
+	color: #224466;
+	margin-right: 5px;
+}
+.heading span {
+	margin: 0 5px;
+}
+div.h2, div.bmlist, div.modelist {
+	display: inline-block;
+	margin: 0 10px 0 0;
+}
+.h2 {
+	font-weight: bold;
+	font-size: 18px;
+}
+.h2 a {
+	color: #000000;
+}
+.bmlist {
+	font-weight: normal;
+	font-size: 14px;
+}
+.bmlist a {
+	border: none;
+	padding: 0;
+	margin-right: 3px;
+}
+
 table.content {
 	border-collapse: separate;
 	border-spacing: 2px;
-	margin-bottom: 7px;
 	width: 100%;
 	font-size: 14px;
 }
@@ -221,14 +251,6 @@ div.bnav, div.mnav {
 div.btop {
 	margin: 2px 0 0;
 }
-.btop span {
-	margin-left: 20px;
-}
-.btop span a {
-	border: none;
-	padding: 0;
-	margin-right: 3px;
-}
 
 div.post {
 	-moz-border-radius: 11px;
@@ -246,7 +268,7 @@ div.ptop, div.pbot {
 .ptop a, .plink a, .pnav a, .btop a, .blink a, .bnav a, .mnav a {
 	border-bottom: 1px dotted #6699cc;
 	padding: 3px 0;
-	margin-right: 7px;
+	margin-right: 10px;
 	color: #224466;
 }
 .plink span.disabled {
