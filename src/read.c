@@ -971,7 +971,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		unlink(buf);
 	}
 	/* The End */
-	if (!in_mail && BMch != 7) {
+	if (!in_mail && BMch != 7 && !(dotype == 1 && BMch == 1)) {
 		sprintf (buf, "%s°æ\"b\"%s%s", currboard, subBMitems[dotype
 				- 1], SR_BMitems[BMch - 1]);
 		securityreport(buf, 0, 2);
