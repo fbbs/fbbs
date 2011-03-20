@@ -160,11 +160,12 @@ int bbsmailcon_main(web_ctx_t *ctx)
 	else
 		setmfile(buf, currentuser.userid, file);
 
-	m.oflag = O_RDONLY;
-	if (mmap_open(buf, &m) < 0)
-		return BBS_ENOFILE;
 	printf("<mail f='%s' n='%s'>", file, get_param(ctx->r, "n"));
-	xml_fputs((char *)m.ptr, stdout);
+
+	m.oflag = O_RDONLY;
+	if (mmap_open(buf, &m) == 0 && m.size != 0)
+		xml_fputs2((char *)m.ptr, m.size, stdout);
+
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);
 
