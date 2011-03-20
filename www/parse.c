@@ -315,7 +315,7 @@ static void _print_body(const char *begin, const char *end, int option)
 			}
 		}
 		fputs("<p>", stdout);
-		if (e == s + 1) {
+		if (e == s + 1 || (e == s + 2 && *s == '\r')) {
 			fputs("<br/>", stdout);
 		} else {
 			int opt = option;
