@@ -1861,6 +1861,8 @@ int post_cross(char islocal, int mode)
 	getcross(filepath, mode);
 
 	strlcpy(postfile.title, save_title, sizeof(postfile.title));
+	valid_title(postfile.title);
+
 	if (local_article == YEA || !(bp->flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';

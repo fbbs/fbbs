@@ -946,28 +946,21 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			if(result == -1) break;
 		}
 	}
-	/* Add by everlove 制作合集 */
-	if(/* (dotype == 1 || dotype == 3) &&*/BMch == 7) // add by jieer 2001.06.23
-	{
-		/*
-		   if( !strncmp(keyword, "Re: ", 4)||!strncmp(keyword,"RE: ",4) )
-		   sprintf(buf, "【合集】%s", keyword + 4);
-		   else
-		   sprintf(buf, "【合集】%s", keyword);
-		   */
-		//modified by iamfat 2002.08.17
-		if( !strncmp(keyword, "Re: ", 4)||!strncmp(keyword,"RE: ",4) )
-			sprintf(buf, "[合集]%s", keyword + 4);
+
+	if (BMch == 7) {
+		if (strneq(keyword, "Re: ", 4) || strneq(keyword, "RE: ", 4))
+			snprintf(buf, sizeof(buf), "[合集]%s", keyword + 4);
 		else
-			sprintf(buf, "[合集]%s", keyword);
-		//modified end
+			snprintf(buf, sizeof(buf), "[合集]%s", keyword);
+
 		ansi_filter(keyword, buf);
+
 		sprintf(buf, "tmp/%s.combine", currentuser.userid);
-		//modified by iamfat 2003.03.25
+
 		if (in_mail)
 			mail_file(buf, currentuser.userid, keyword);
 		else
-			Postfile(buf,currboard,keyword,2);
+			Postfile(buf, currboard, keyword, 2);
 		unlink(buf);
 	}
 	/* The End */
