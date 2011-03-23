@@ -6,7 +6,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define streq(a, b)  (!strcmp(a, b))
+#define streq(a, b)          (!strcmp(a, b))
+#define strneq(a, b, n)      (!strncmp(a, b, n))
+#define strcaseeq(a, b)      (!strcasecmp(a, b))
+#define strcaseneq(a, b, n)  (!strcasencmp(a, b, n))
 
 extern char *strtolower(char *dst, const char *src);
 extern char *strtoupper(char *dst, const char *src);
