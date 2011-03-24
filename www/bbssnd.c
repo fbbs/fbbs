@@ -69,6 +69,27 @@ static int edit_article(const char *file, const char *content, const char *ip)
 	return BBS_EINTNL;	
 }
 
+static char *_check_character(char *text)
+{
+	char *dst = text, *src;
+	for (src = text; *src != '\0'; ++src) {
+		switch (*src) {
+			case '\x1': case '\x2': case '\x3': case '\x4': case '\x5':
+			case '\x6': case '\x7': case '\x8': case '\xb': case '\xc':
+			case '\xe': case '\xf': case '\x10': case '\x11': case '\x12':
+			case '\x13': case '\x14': case '\x15': case '\x16': case '\x17':
+			case '\x18': case '\x19': case '\x1a': case '\x1c': case '\x1d':
+			case '\x1e': case '\x1f': case '\r':
+				break;
+			default:
+				*dst++ = *src;
+				break;
+		}
+	}
+	*dst = '\0';
+	return text;
+}
+
 int bbssnd_main(web_ctx_t *ctx)
 {
 	if (!loginok)
@@ -120,15 +141,18 @@ int bbssnd_main(web_ctx_t *ctx)
 	if (diff < 6)
 		return BBS_EPFREQ;
 
+	char *text = (char *)get_param(ctx->r, "text");
+	_check_character(text);
+
 	if (isedit) {
 		char file[HOMELEN];
 		setbfile(file, bp->filename, fh.filename);
-		if (edit_article(file, get_param(ctx->r, "text"), mask_host(fromhost)) < 0)
+		if (edit_article(file, text, mask_host(fromhost)) < 0)
 			return BBS_EINTNL;
 	} else {
 		post_request_t pr = { .autopost = false, .crosspost = false,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.bp = bp, .title = title, .content = get_param(ctx->r, "text"),
+			.bp = bp, .title = title, .content = text,
 			.sig = strtol(get_param(ctx->r, "sig"), NULL, 0), .ip = mask_host(fromhost),
 			.o_fp = reply ? &fh : NULL, .mmark = false,
 			.noreply = reply && fh.accessed[0] & FILE_NOREPLY,
