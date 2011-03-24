@@ -106,8 +106,12 @@ static void _xml_escape(const char *begin, const char *end)
 			case ' ':
 				fputs("&#160;", stdout);
 				break;
-			case '\r':
-			case '\n':
+			case '\x1': case '\x2': case '\x3': case '\x4': case '\x5':
+			case '\x6': case '\x7': case '\x8': case '\xb': case '\xc':
+			case '\xe': case '\xf': case '\x10': case '\x11': case '\x12':
+			case '\x13': case '\x14': case '\x15': case '\x16': case '\x17':
+			case '\x18': case '\x19': case '\x1a': case '\x1b': case '\x1c':
+			case '\x1d': case '\x1e': case '\x1f': case '\r': case '\n':
 				break;
 			default:
 				fputc(*s, stdout);
