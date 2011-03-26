@@ -1,25 +1,17 @@
-#include <sys/resource.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <arpa/telnet.h>
-#include <arpa/inet.h>
-#ifdef SYSV
-#include <sys/termios.h>
-#else
-#include <termios.h>
-#endif
-#ifdef LINUX
-#include <sys/ioctl.h>
-#endif
+#include <netdb.h>
 #include <poll.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+
 #ifdef SSHBBS
 #include "libssh/libssh.h"
 #include "libssh/server.h"
 #endif // SSHBBS
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/fileio.h"
+#include "fbbs/string.h"
 
 #ifndef NSIG
 #ifdef _NSIG
