@@ -6,13 +6,13 @@
 <xsl:template match='/'>
 <html>
 <head>
-	<title>文章阅读 - <xsl:call-template name='bbsname'/></title>
+	<title>文章阅读 - <xsl:value-of select='$bbsname'/></title>
 	<meta http-equiv="content-type" content="text/html; charset=gb2312"/>
 	<xsl:call-template name='include-css'/>
 </head>
 <body>
 	<div class='post'>
-		<div class='pmain'><xsl:call-template name='showpost'><xsl:with-param name='content' select='bbscon/po'/></xsl:call-template></div>
+		<div class='pmain'><xsl:apply-templates select='bbscon/po'/></div>
 	</div>
 </body>
 </html>
