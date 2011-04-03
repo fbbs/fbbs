@@ -113,8 +113,7 @@ int bbsmailcon_main(web_ctx_t *ctx)
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	char file[40];
-	strlcpy(file, get_param(ctx->r, "f"), sizeof(file));
+	const char *file = get_param(ctx->r, "f");
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 
@@ -178,10 +177,11 @@ int bbsdelmail_main(web_ctx_t *ctx)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	char file[40];
-	strlcpy(file, get_param(ctx->r, "f"), sizeof(file));
+
+	const char *file = get_param(ctx->r, "f");
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
+
 	char buf[HOMELEN];
 	mmap_t m;
 	setmdir(buf, currentuser.userid);
