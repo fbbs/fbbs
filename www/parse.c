@@ -272,6 +272,8 @@ static void _print_paragraph(const char *begin, const char *end, int option)
 	const char *s = begin;
 	while (s != end) {
 		const char *url = _memstr(s, "http://", end - s);
+		if (!url)
+			url = _memstr(s, "https://", end - s);
 		if (url) {
 			_print_ansi_text(s, url, &ansi);
 			s = _print_url(url, end, option);
