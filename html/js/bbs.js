@@ -34,20 +34,11 @@ function delSelected() {
 }
 
 function ie6fix() {
-	var nav = document.getElementById('nav');
-    nav.style.height = document.documentElement.clientHeight - 10;
+	$('#nav').css('height', document.documentElement.clientHeight - 10);
     var width = document.documentElement.clientWidth - 150;
-    document.getElementById('hd').style.width = width;
-    var div = document.getElementsByTagName('table');
-    for (var i = 0; i < div.length; ++i) {
-		if (div[i].className == 'content')
-			div[i].style.width = width;
-	}
-    div = document.getElementsByTagName('div');
-    for (var i = 0; i < div.length; ++i) {
-		if (div[i].className == 'post')
-			div[i].style.width = width;
-	}
+	$('#hd').css('width', width);
+	$('table.content').css('width', width);
+	$('div.post').css('width', width);
 }
 
 var bbs = {
