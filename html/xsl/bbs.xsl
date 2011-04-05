@@ -201,7 +201,7 @@ table.post{width:100%}
 			<div id='main'><xsl:apply-templates/></div>
 			<xsl:call-template name='foot'/>
 		</body>
-		<xsl:comment><![CDATA[[if lt IE 7]><script type='text/javascript' defer='defer'>addLoadEvent(ie6fix);window.onresize=ie6fix;</script><![endif]]]></xsl:comment>
+		<xsl:comment><![CDATA[[if lt IE 7]><script defer='defer'>$(document).ready(function(){ie6fix();$(window).resize(function(){ie6fix();});});</script><![endif]]]></xsl:comment>
 	</html>
 </xsl:template>
 
