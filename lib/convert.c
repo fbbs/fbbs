@@ -44,6 +44,8 @@ void convert_reset(convert_t *cp)
 int convert(convert_t *cp, const char *from, size_t len,
 		char *buf, size_t size, convert_handler_t handler, void *arg)
 {
+	convert_reset(cp);
+
 	if (len == 0)
 		len = strlen(from);
 
