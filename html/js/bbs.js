@@ -35,10 +35,8 @@ function delSelected() {
 
 function ie6fix() {
 	$('#nav').css('height', document.documentElement.clientHeight - 10);
-    var width = document.documentElement.clientWidth - 150;
-	$('#hd').css('width', width);
-	$('table.content').css('width', width);
-	$('div.post').css('width', width);
+	var width = document.documentElement.clientWidth - 150;
+	$('#hd, table.content, div.post').css('width', width);
 }
 
 var bbs = {
