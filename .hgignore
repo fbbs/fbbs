@@ -1,6 +1,7 @@
 syntax: glob
 
 tags
+cscope*.out
 
 CMakeFiles
 CMakeCache.txt
