@@ -241,7 +241,7 @@ static const char *_print_header(const char *begin, size_t size)
 static const char *_get_url(const char *begin, const char *end)
 {
 	const char *url = "0123456789abcdefghijklmnopqrstuvwxyz"
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ~$-_.+!*')(,/:;=?@%#[]";
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ~$-_.+!*')(,/:;=?@%#[]&";
 	const char *s = begin;
 	while (s != end) {
 		if (!strchr(url, *s))
@@ -261,7 +261,7 @@ static const char *_print_url(const char *begin, const char *end, int option)
 		printf("i='i' ");
 	}
 	printf("href='");
-	fwrite((char *)begin, e - begin, 1, stdout);
+	_xml_escape(begin, e);
 	printf("'/>");
 	return e;
 }
