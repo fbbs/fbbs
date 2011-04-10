@@ -33,7 +33,7 @@ install(TARGETS admintool
 if(ENABLE_SSH)
 	link_directories(../lib ../libssh)
 	add_executable(sshbbsd bbsd.c io.c main.c)
-	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DSSHBBS")
+	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DENABLE_SSH")
 	set_target_properties(sshbbsd PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/so")
 	target_link_libraries(sshbbsd crypt dl BBS fbssh fbcmn)
 	install(TARGETS sshbbsd

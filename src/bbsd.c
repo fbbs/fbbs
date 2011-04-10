@@ -4,10 +4,10 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 #include "libssh/libssh.h"
 #include "libssh/server.h"
-#endif // SSHBBS
+#endif // ENABLE_SSH
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/fbbs.h"
@@ -22,12 +22,12 @@
 #endif
 #endif
 
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 #define KEYS_FOLDER BBSHOME"/etc/ssh"
 #define PID_FILE	BBSHOME"/reclog/sshbbsd.pid"
-#else // SSHBBS
+#else // ENABLE_SSH
 #define PID_FILE	BBSHOME"/reclog/bbsd.pid"
-#endif // SSHBBS
+#endif // ENABLE_SSH
 #define LOG_FILE	BBSHOME"/reclog/bbsd.log"
 #define NOLOGIN		BBSHOME"/NOLOGIN"
 #ifdef IP_2_NAME
@@ -46,9 +46,9 @@ bbs_env_t env;
 // TODO: deprecate this
 char genbuf[1024]; ///< global buffer for strings. 
 
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 ssh_channel ssh_chan;
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 sighandler_t fb_signal(int signum, sighandler_t handler)
 {
@@ -174,7 +174,7 @@ static int bbsd_log(const char *str)
 	return file_append(LOG_FILE, buf);
 }
 
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 // TODO: rewrite this
 static void telnet_init(void)
 {
@@ -257,7 +257,7 @@ static int check_nologin(int fd)
 }
 #endif // NOLOGIN
 
-#else // SSHBBS
+#else // ENABLE_SSH
 static bool channel_reply(ssh_session session, enum ssh_channel_requests_e req)
 {
 	ssh_message msg;
@@ -363,10 +363,10 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 	}
 	return chan;
 }
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 		, ssh_bind sshbind, ssh_session session
 #endif
 )
@@ -380,15 +380,15 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 			close(nfds);
 		dup2(fd, STDIN_FILENO);
 		get_ip_addr(p);
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 		ssh_chan = sshbbs_accept(sshbind, session);
 		if (!ssh_chan)
 			exit(1);
-#else // SSHBBS
+#else // ENABLE_SSH
 		close(fd);
 		dup2(STDIN_FILENO, STDOUT_FILENO);
 		telnet_init();
-#endif // SSHBBS
+#endif // ENABLE_SSH
 		start_client();
 	} else {
 		close(fd);
@@ -416,7 +416,7 @@ int main(int argc, char *argv[])
 	if (!env.c)
 		return EXIT_FAILURE;
 
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 	ssh_bind sshbind = ssh_bind_new();
 	ssh_session session;
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_DSAKEY,
@@ -425,11 +425,11 @@ int main(int argc, char *argv[])
 			KEYS_FOLDER"/ssh_host_rsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_LOG_VERBOSITY,
 			SSH_LOG_NOLOG);
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 	char buf[80];
 	int nfds;
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 	// libssh server does not support ipv6 until upcoming version 0.5,
 	// so let's just bind to ipv4 socket.
 	int port = strtol(argv[1], NULL, 10);
@@ -443,10 +443,10 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	nfds = ssh_bind_get_fd(sshbind) + 1;
-#else // SSHBBS
+#else // ENABLE_SSH
 	struct pollfd fds[2];
 	nfds = bind_port(argv[1], fds, sizeof(fds) / sizeof(fds[0]));
-#endif // SSHBBS
+#endif // ENABLE_SSH
 	if (nfds < 0)
 		return EXIT_FAILURE;
 
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 	while (1) {
 		struct sockaddr_storage sa;
 		socklen_t slen = sizeof(sa);
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 		session = ssh_new();
 		if (ssh_bind_accept(sshbind, session) == SSH_ERROR) {
 			ssh_free(session);
@@ -474,7 +474,7 @@ int main(int argc, char *argv[])
 		int fd = ssh_get_fd(session);
 		getpeername(fd, (struct sockaddr *)&sa, &slen);
 		accept_connection(fd, nfds, &sa, sshbind, session);
-#else // SSHBBS
+#else // ENABLE_SSH
 		int n = poll(fds, nfds, -1);
 		if (n > 0) {
 			for (int i = 0; i < nfds; ++i) {
@@ -490,7 +490,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-#endif // SSHBBS
+#endif // ENABLE_SSH
 	}
 	return 0;
 }

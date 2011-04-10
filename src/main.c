@@ -437,7 +437,7 @@ static void logattempt(char *uid, char *frm)
 	file_append(fname, genbuf);
 }
 
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 // Get height of client window.
 // See RFC 1073 "Telnet Window Size Option"
 static void check_tty_lines(void)
@@ -476,7 +476,7 @@ static void check_tty_lines(void)
 		t_lines = 24;
 	return;
 }
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 struct max_log_record {
 	int year;
@@ -571,24 +571,24 @@ int bbs_auth(const char *user, const char *passwd)
 
 static int login_query(void)
 {
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 	char uid[IDLEN + 2];
 	char passbuf[PASSLEN];
 	int attempts;
 	char *ptr;
 	int recover; // For giveupBBS
 	bool auth = false;
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 	// Deny new logins if too many users (>=MAXACTIVE) online.
 	resolve_utmp();
 	int curr_login_num = count_online();
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 	if (curr_login_num >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
 		return -1;
 	}
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 	if (fill_shmfile(1, "etc/issue", "ISSUE_SHMKEY")) {
 		show_issue();
@@ -608,7 +608,7 @@ static int login_query(void)
 			utmpshm->usersum, MAXUSERS, utmpshm->total_num, MAXACTIVE);
 	visitlog();
 
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 	attempts = 0;
 	while (!auth) {
 		if (attempts++ >= LOGINATTEMPTS) {
@@ -682,17 +682,17 @@ static int login_query(void)
 			memset(passbuf, 0, PASSLEN - 1);
 		}
 	}
-#else // SSHBBS
+#else // ENABLE_SSH
 	presskeyfor("\033[1;33m欢迎使用ssh方式访问本站，请按任意键继续", t_lines - 1);
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 	if (multi_user_check() == -1)
 		return -1;
 
 	dumb_term = false;
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 	check_tty_lines();
-#endif // SSHBBS
+#endif // ENABLE_SSH
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);
