@@ -10,6 +10,7 @@
 #endif // SSHBBS
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 
@@ -40,6 +41,8 @@ enum {
 
 extern char fromhost[];
 
+bbs_env_t env;
+
 // TODO: deprecate this
 char genbuf[1024]; ///< global buffer for strings. 
 
@@ -47,9 +50,7 @@ char genbuf[1024]; ///< global buffer for strings.
 ssh_channel ssh_chan;
 #endif // SSHBBS
 
-typedef void (*sighandler_t)(int);
-
-static sighandler_t fb_signal(int signum, sighandler_t handler)
+sighandler_t fb_signal(int signum, sighandler_t handler)
 {
 	struct sigaction act, oact;
 	act.sa_handler = handler;
@@ -115,7 +116,7 @@ static void reapchild(int notused)
 /**
  * Daemonize the process.
  */
-static void start_daemon(void)
+void start_daemon(void)
 {
 	int n, pid;
 
@@ -406,6 +407,14 @@ int main(int argc, char *argv[])
 
 	fb_signal(SIGCHLD, reapchild);
 	fb_signal(SIGTERM, close_daemon);
+
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	if (!env.p)
+		return EXIT_FAILURE;
+
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	if (!env.c)
+		return EXIT_FAILURE;
 
 #ifdef SSHBBS
 	ssh_bind sshbind = ssh_bind_new();
