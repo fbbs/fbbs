@@ -241,7 +241,7 @@ static const char *_print_header(const char *begin, size_t size)
 static const char *_get_url(const char *begin, const char *end)
 {
 	const char *url = "0123456789abcdefghijklmnopqrstuvwxyz"
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ~$-_.+!*')(,/:;=?@%#[]";
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ~$-_.+!*)(,/:;=?@%#[]";
 	const char *s = begin;
 	while (s != end) {
 		if (!strchr(url, *s))
@@ -254,6 +254,10 @@ static const char *_get_url(const char *begin, const char *end)
 static const char *_print_url(const char *begin, const char *end, int option)
 {
 	const char *e = _get_url(begin, end);
+	if (e < begin + 11) {
+		fwrite((char *)begin, e - begin, 1, stdout);
+		return e;
+	}
 	printf("<a ");
 	if (!(option & (PARSE_NOQUOTEIMG | PARSE_NOSIGIMG))
 			&& (END_WITH(begin, e, ".jpg") || END_WITH(begin, e, ".gif")
