@@ -10,6 +10,7 @@ enum {
 };
 
 extern int get_user_id(db_conn_t *c, const char *name);
+extern int get_user_count(db_conn_t *c);
 extern int user_data_add_by_name(db_conn_t *c, const char *name,
 		int field, int delta);
 extern int user_data_add(db_conn_t *c, int uid, int field, int delta);
