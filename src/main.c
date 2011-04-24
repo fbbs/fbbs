@@ -3,6 +3,8 @@
 #include "bbs.h"
 #include "sysconf.h"
 
+#include "fbbs/fbbs.h"
+
 #ifndef DLM
 #undef  ALLOWGAME
 #endif
@@ -19,6 +21,8 @@ enum {
 	MAX_LOGINS_BM = 4,       ///< max logins for a board manager.
 	MAX_LOGINS_DIRECTOR = 6, ///< max logins for a director(zhanwu).
 };
+
+bbs_env_t env;
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
@@ -988,6 +992,13 @@ void tlog_recover(void)
 void start_client(void)
 {
 	extern char currmaildir[];
+
+	env.d = db_connect(config_get(env.c, "host"), config_get(env.c, "port"),
+			config_get(env.c, "dbname"), config_get(env.c, "user"),
+			config_get(env.c, "password"));
+	if (db_status(env.d) != DB_CONNECTION_OK)
+		exit(EXIT_FAILURE);
+
 #ifdef ALLOWSWITCHCODE
 	if (resolve_gbkbig5_table() < 0)
 		exit(1);
