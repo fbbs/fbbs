@@ -55,6 +55,11 @@ const char *db_errmsg(db_conn_t *conn)
 	return PQerrorMessage(conn);
 }
 
+db_res_t *db_exec(db_conn_t *conn, const char *cmd)
+{
+	return PQexec(conn, cmd);
+}
+
 db_res_t *db_exec_params(db_conn_t *conn, const char *cmd, int count,
 		db_param_t *params, bool binary)
 {
