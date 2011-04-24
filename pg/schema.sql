@@ -74,4 +74,13 @@ CREATE TABLE posts (
 	time TIMESTAMPTZ
 );
 
+CREATE TABLE sessions (
+	id BIGSERIAL PRIMARY KEY,
+	user_id INTEGER,
+	key BIGINTEGER,
+	property INTEGER,
+	start_time TIMESTAMPTZ,
+	expire_time TIMESTAMPTZ
+);
+
 COMMIT;
