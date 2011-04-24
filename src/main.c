@@ -631,15 +631,10 @@ static int login_query(void)
 			return -1;
 		}
 		if (strcaseeq(uname, "new")) {
-#ifdef LOGINASNEW
 			memset(&currentuser, 0, sizeof(currentuser));
 			new_register();
 			oflush();
 			exit(1);
-#else
-			prints("\033[1;37m本系统目前无法以 \033[36mnew\033[37m 注册, "
-				"请用\033[36m guest\033[37m 进入...\033[m\n");
-#endif
 		} else if (*uname == '\0')
 			;
 		else if (get_user_id(env.d, uname) == 0) {
