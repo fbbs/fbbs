@@ -8,5 +8,6 @@ enum {
 };
 
 extern int create_user(const struct userec *user);
+extern int get_login_quota(const struct userec *user);
 
 #endif // FB_UCACHE_H

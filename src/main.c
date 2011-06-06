@@ -3,6 +3,8 @@
 #include "bbs.h"
 #include "sysconf.h"
 
+#include "fbbs/string.h"
+
 #ifndef DLM
 #undef  ALLOWGAME
 #endif
@@ -13,12 +15,6 @@
 
 #define BADLOGINFILE   "logins.bad"
 #define VISITLOG    BBSHOME"/.visitlog"
-
-enum {
-	MAX_LOGINS_NORMAL = 2,   ///< max logins for a single account.
-	MAX_LOGINS_BM = 4,       ///< max logins for a board manager.
-	MAX_LOGINS_DIRECTOR = 6, ///< max logins for a director(zhanwu).
-};
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
@@ -314,30 +310,19 @@ static int count_user(int unum)
  */
 static int check_duplicate_login(const struct userec *user, int *max)
 {
-	// No limit for sysops.
-	if (HAS_PERM2(PERM_MULTILOG, user))
+	*max = get_login_quota(user);
+
+	if (*max == INT_MAX)
 		return 0;
 
 	int logins = count_user(usernum);
 
-	if (strcasecmp("guest", user->userid) == 0) {
-		*max = MAXGUEST;
-		if (logins >= *max)
+	if (logins >= *max) {
+		if (strcaseeq("guest", user->userid))
 			return BBS_E2MANY;
-		return 0;
-	}
-	
-	if (!HAS_PERM2(PERM_SPECIAL0, user)) {
-		if (HAS_PERM2(PERM_BOARDS, user))
-			*max = MAX_LOGINS_BM;
 		else
-			*max = MAX_LOGINS_NORMAL;
-	} else {
-		*max = MAX_LOGINS_DIRECTOR;
+			return logins;
 	}
-	if (logins >= *max)
-		return logins;
-
 	return 0;
 }
 
