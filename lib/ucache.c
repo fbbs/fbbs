@@ -13,6 +13,12 @@
 
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)
 
+enum {
+	MAX_LOGINS_NORMAL = 2,   ///< max logins for a single account.
+	MAX_LOGINS_BM = 4,       ///< max logins for a board manager.
+	MAX_LOGINS_DIRECTOR = 6, ///< max logins for a director(zhanwu).
+};
+
 // The starting address of cache for online users.
 struct UTMPFILE *utmpshm = NULL;
 // The starting address of cache for all users.
@@ -632,4 +638,21 @@ int create_user(const struct userec *user)
 	report(buf, user->userid);
 
 	return 0;
+}
+
+int get_login_quota(const struct userec *user)
+{
+	if (strcaseeq("guest", user->userid))
+		return MAXGUEST;
+
+	if (HAS_PERM2(PERM_MULTILOG, user))
+		return INT_MAX;
+
+	if (HAS_PERM2(PERM_SPECIAL0, user))
+		return MAX_LOGINS_DIRECTOR;
+	
+	if (HAS_PERM2(PERM_BOARDS, user))
+		return MAX_LOGINS_BM;
+
+	return MAX_LOGINS_NORMAL;
 }

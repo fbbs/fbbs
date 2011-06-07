@@ -4,9 +4,9 @@
 #include <sys/select.h>
 #endif
 #include <arpa/telnet.h>
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 #include "libssh/libssh.h"
-#endif // SSHBBS
+#endif // ENABLE_SSH
 #include "bbs.h"
 #include "fbbs/string.h"
 
@@ -33,9 +33,9 @@ typedef struct {
 extern int convcode;
 #endif
 extern struct screenline *big_picture;
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 extern ssh_channel ssh_chan;
-#endif // SSHBBS
+#endif // ENABLE_SSH
 extern int msg_num, RMSG;
 
 static iobuf_t inbuf;   ///< Input buffer.
@@ -74,11 +74,11 @@ void init_alarm() {
  */
 int read_stdin(unsigned char *buf, size_t size)
 {
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 	return channel_read(ssh_chan, buf, size, 0);
-#else // SSHBBS
+#else // ENABLE_SSH
 	return read(STDIN_FILENO, buf, size);
-#endif // SSHBBS
+#endif // ENABLE_SSH
 }
 
 /**
@@ -86,11 +86,11 @@ int read_stdin(unsigned char *buf, size_t size)
  */
 int write_stdout(const unsigned char *buf, size_t len)
 {
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 	return channel_write(ssh_chan, buf, len);
-#else // SSHBBS
+#else // ENABLE_SSH
 	return write(STDIN_FILENO, buf, len);
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 }
 
@@ -224,7 +224,7 @@ static int get_raw_ch(void)
 
 		to.tv_sec = to.tv_usec = 0;
 		ret = select(nfds, &rset, NULL, NULL, &to);
-#ifdef SSHBBS
+#ifdef ENABLE_SSH
 		if (FD_ISSET(STDIN_FILENO, &rset))
 			ret = channel_poll(ssh_chan, 0);
 #endif

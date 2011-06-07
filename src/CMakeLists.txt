@@ -1,4 +1,4 @@
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic -Wno-implicit -Werror")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic -Wno-implicit")
 
 add_definitions(-D_XOPEN_SOURCE=500 -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM
 	-DBACKUP_RANGE_DELETE)
@@ -33,7 +33,7 @@ install(TARGETS admintool
 if(ENABLE_SSH)
 	link_directories(../lib ../libssh)
 	add_executable(sshbbsd bbsd.c io.c main.c)
-	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DSSHBBS")
+	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DENABLE_SSH")
 	set_target_properties(sshbbsd PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/so")
 	target_link_libraries(sshbbsd crypt dl BBS fbssh fbcmn)
 	install(TARGETS sshbbsd
