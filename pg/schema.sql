@@ -12,6 +12,7 @@ CREATE TABLE users (
 	nick TEXT,
 	email INTEGER,
 	options BIGINT,
+	level INTEGER,
 	logins INTEGER DEFAULT 0,
 	posts INTEGER DEFAULT 0,
 	stay INTEGER DEFAULT 0,
@@ -72,6 +73,15 @@ CREATE TABLE posts (
 	property INTEGER, --?
 	filename TEXT,
 	time TIMESTAMPTZ
+);
+
+CREATE TABLE sessions (
+	id BIGSERIAL PRIMARY KEY,
+	user_id INTEGER,
+	key BIGINTEGER,
+	property INTEGER,
+	start_time TIMESTAMPTZ,
+	expire_time TIMESTAMPTZ
 );
 
 COMMIT;

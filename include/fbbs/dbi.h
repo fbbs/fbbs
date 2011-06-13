@@ -41,6 +41,7 @@ extern void db_finish(db_conn_t *conn);
 extern db_conn_status_t db_status(db_conn_t *conn);
 extern const char *db_errmsg(db_conn_t *conn);
 
+extern db_res_t *db_exec(db_conn_t *conn, const char *cmd);
 extern db_res_t *db_exec_params(db_conn_t *conn, const char *cmd, int count,
 		db_param_t *params, bool binary);
 extern db_exec_status_t db_res_status(const db_res_t *res);

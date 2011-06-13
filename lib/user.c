@@ -10,7 +10,7 @@ int get_user_id(db_conn_t *c, const char *name)
 {
 	db_param_t param[1] = { PARAM_TEXT(name) };
 	db_res_t *res = db_exec_params(c,
-			"SELECT id FROM users WHERE lower(name) = $1",
+			"SELECT id FROM users WHERE lower(name) = lower($1)",
 			1, param, true);
 	if (db_res_status(res) != DBRES_TUPLES_OK) {
 		db_clear(res);
@@ -24,6 +24,17 @@ int get_user_id(db_conn_t *c, const char *name)
 	return ret;
 }
 
+int get_user_count(db_conn_t *c)
+{
+	int count = -1;
+	// TODO: need to optimize later
+	db_res_t *r = db_exec(c, "SELECT count(*) FROM users");
+	if (db_res_status(r) == DBRES_TUPLES_OK)
+		count = db_get_integer(r, 0, 0);
+	db_clear(r);
+	return count;
+}
+
 static int _user_data_add(db_conn_t *c, const char *name, int uid,
 		int field, int delta)
 {
@@ -34,7 +45,7 @@ static int _user_data_add(db_conn_t *c, const char *name, int uid,
 	char query[128];
 	int bytes = snprintf(query, sizeof(query),
 		"UPDATE users SET %s = %s + %d WHERE %s", fields[field],
-		fields[field], delta, name ? "lower(name) = $1" : "id = $1");
+		fields[field], delta, name ? "lower(name) = lower($1)" : "id = $1");
 	if (bytes >= sizeof(query))
 		return -1;
 

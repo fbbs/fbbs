@@ -3,7 +3,9 @@
 #include "bbs.h"
 #include "sysconf.h"
 
+#include "fbbs/fbbs.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -520,18 +522,26 @@ enum {
 /**
  *
  */
-int bbs_auth(const char *user, const char *passwd)
+int bbs_auth(const char *name, const char *passwd)
 {
-	resolve_utmp();
-	if (!user || *user == '\0')
+	if (!name || *name == '\0')
 		return BBS_ENOUSR;
-	if (currentuser.userid[0] == '\0') {
-		if (count_online() > MAXACTIVE)
-			return BBS_E2MANY;
-		if (!dosearchuser(user, &currentuser, &usernum))
-			return BBS_ENOUSR;
+
+	if (get_online_count(env.d) > MAXACTIVE)
+		return BBS_E2MANY;
+
+	char pw[PASSLEN];
+	int level;
+	db_param_t param[1] = { PARAM_TEXT(name) };
+	db_res_t *res = db_exec_params(env.d,
+			"SELECT name, passwd, level FROM users WHERE lower(name) = lower($1)",
+			NELEMS(param), param, 1);
+	if (db_res_status(res) != DBRES_TUPLES_OK || db_num_rows(res) != 1) {
+		db_clear(res);
+		return BBS_ENOUSR;
 	}
-	if (!checkpasswd(currentuser.passwd, passwd)) {
+	
+	if (!checkpasswd(pw, passwd)) {
 		logattempt(currentuser.userid, fromhost);
 		return BBS_EWPSWD;
 	}
@@ -557,7 +567,7 @@ int bbs_auth(const char *user, const char *passwd)
 static int login_query(void)
 {
 #ifndef ENABLE_SSH
-	char uid[IDLEN + 2];
+	char uname[IDLEN + 2];
 	char passbuf[PASSLEN];
 	int attempts;
 	char *ptr;
@@ -565,11 +575,10 @@ static int login_query(void)
 	bool auth = false;
 #endif // ENABLE_SSH
 
-	// Deny new logins if too many users (>=MAXACTIVE) online.
-	resolve_utmp();
-	int curr_login_num = count_online();
+	// Deny new logins if too many users online.
+	int online = get_online_count(env.d);
 #ifndef ENABLE_SSH
-	if (curr_login_num >= MAXACTIVE) {
+	if (online >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
 		return -1;
 	}
@@ -580,17 +589,12 @@ static int login_query(void)
 	}
 	prints("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
-			BoardName);
+			BBSNAME);
 
-	utmpshm->total_num = curr_login_num;
-	if (utmpshm->max_login_num < utmpshm->total_num)
-		utmpshm->max_login_num = utmpshm->total_num;
-	if (utmpshm->usersum <= 0)
-		utmpshm->usersum = allusers();
-
+	int users = get_user_count(env.d);
 	prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
 			"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
-			utmpshm->usersum, MAXUSERS, utmpshm->total_num, MAXACTIVE);
+			users, MAXUSERS, online, MAXACTIVE);
 	visitlog();
 
 #ifndef ENABLE_SSH
@@ -603,34 +607,28 @@ static int login_query(void)
 		getdata(0, 0, "\033[1;33m请输入帐号\033[m"
 				"(试用请输入'\033[1;36mguest\033[m', "
 				"注册请输入'\033[1;31mnew\033[m'): ",
-				uid, IDLEN + 1, DOECHO, YEA);
+				uname, IDLEN + 1, DOECHO, YEA);
 #ifdef ALLOWSWITCHCODE
-		ptr = strchr(uid, '.');
+		ptr = strchr(uname, '.');
 		if (ptr) {
 			convcode = 1;
 			*ptr = '\0';
 		}
 #endif
-		if ((strcasecmp(uid, "guest") == 0)
-				&& (MAXACTIVE - curr_login_num < 10)) {
-				ansimore("etc/loginfull", NA);
+		if (strcaseeq(uname, "guest") && (online > MAXACTIVE - 10)) {
+			ansimore("etc/loginfull", NA);
 			return -1;
 		}
-		if (strcasecmp(uid, "new") == 0) {
-#ifdef LOGINASNEW
+		if (strcaseeq(uname, "new")) {
 			memset(&currentuser, 0, sizeof(currentuser));
 			new_register();
 			oflush();
 			exit(1);
-#else
-			prints("\033[1;37m本系统目前无法以 \033[36mnew\033[37m 注册, "
-				"请用\033[36m guest\033[37m 进入...\033[m\n");
-#endif
-		} else if (*uid == '\0')
+		} else if (*uname == '\0')
 			;
-		else if (!dosearchuser(uid, &currentuser, &usernum)) {
+		else if (get_user_id(env.d, uname) == 0) {
 			prints("\033[1;31m经查证，无此 ID。\033[m\n");
-		} else if (strcasecmp(uid, "guest") == 0) {
+		} else if (strcaseeq(uname, "guest")) {
 			currentuser.userlevel = 0;
 			break;
 		} else {
@@ -641,7 +639,7 @@ static int login_query(void)
 			getdata(0, 0, "\033[1;37m请输入密码: \033[m", passbuf, PASSLEN,
 					NOECHO, YEA);
 			passbuf[8] = '\0';
-			switch (bbs_auth(currentuser.userid, passbuf)) {
+			switch (bbs_auth(uname, passbuf)) {
 				case BBS_EWPSWD:
 					prints("\033[1;31m密码输入错误...\033[m\n");
 					break;
@@ -660,8 +658,11 @@ static int login_query(void)
 				case BBS_ELFREQ:
 					prints("登录过于频繁，请稍候再来\n");
 					return -1;
-				default:
+				case 0:
 					auth = true;
+					break;
+				default:
+					auth = false;
 					break;
 			}
 			memset(passbuf, 0, PASSLEN - 1);
@@ -973,6 +974,13 @@ void tlog_recover(void)
 void start_client(void)
 {
 	extern char currmaildir[];
+
+	env.d = db_connect(config_get(env.c, "host"), config_get(env.c, "port"),
+			config_get(env.c, "dbname"), config_get(env.c, "user"),
+			config_get(env.c, "password"));
+	if (db_status(env.d) != DB_CONNECTION_OK)
+		exit(EXIT_FAILURE);
+
 #ifdef ALLOWSWITCHCODE
 	if (resolve_gbkbig5_table() < 0)
 		exit(1);
