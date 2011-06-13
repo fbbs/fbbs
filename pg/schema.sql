@@ -12,6 +12,7 @@ CREATE TABLE users (
 	nick TEXT,
 	email INTEGER,
 	options BIGINT,
+	level INTEGER,
 	logins INTEGER DEFAULT 0,
 	posts INTEGER DEFAULT 0,
 	stay INTEGER DEFAULT 0,
