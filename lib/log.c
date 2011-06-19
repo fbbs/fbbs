@@ -1,6 +1,5 @@
-// For logging.
-
-#include <bbs.h>
+#include "bbs.h"
+#include "fbbs/fileio.h"
 
 void report(const char *s, const char *userid)
 {
@@ -22,3 +21,13 @@ void log_usies(const char *mode, const char *mesg, const struct userec *user)
 	return;
 }
 
+void log_attempt(const char *name, const char *addr, const char *type)
+{
+	char file[STRLEN], buf[256];
+
+	snprintf(buf, sizeof(buf), "%-12.12s  %-30s %s %s\n", name,
+			getdatestring(time(NULL), DATE_ZH), addr, type);
+	file_append(BADLOGINFILE, buf);
+	sethomefile(file, name, BADLOGINFILE);
+	file_append(file, buf);
+}

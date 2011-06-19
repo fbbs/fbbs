@@ -15,8 +15,9 @@
 #define ALLOWGAME
 #endif
 
-#define BADLOGINFILE   "logins.bad"
 #define VISITLOG    BBSHOME"/.visitlog"
+
+bbs_env_t env;
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
@@ -412,18 +413,6 @@ static void system_abort(void)
 	exit(0);
 }
 
-// Log login attempts.
-static void logattempt(char *uid, char *frm)
-{
-	char fname[STRLEN];
-
-	snprintf(genbuf, sizeof(genbuf), "%-12.12s  %-30s %s\n", uid,
-			getdatestring(time(NULL), DATE_ZH), frm);
-	file_append(BADLOGINFILE, genbuf);
-	sethomefile(fname, uid, BADLOGINFILE);
-	file_append(fname, genbuf);
-}
-
 #ifndef ENABLE_SSH
 // Get height of client window.
 // See RFC 1073 "Telnet Window Size Option"
@@ -542,7 +531,7 @@ int bbs_auth(const char *name, const char *passwd)
 	}
 	
 	if (!checkpasswd(pw, passwd)) {
-		logattempt(currentuser.userid, fromhost);
+		log_attempt(currentuser.userid, fromhost, "telnet");
 		return BBS_EWPSWD;
 	}
 	if (strcasecmp(currentuser.userid, "guest") && !HAS_PERM(PERM_LOGIN)) {
