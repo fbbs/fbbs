@@ -57,4 +57,7 @@ extern int32_t db_get_integer(const db_res_t *res, int row, int col);
 extern int64_t db_get_bigint(const db_res_t *res, int row, int col);
 extern bool db_get_bool(const db_res_t *res, int row, int col);
 
+extern db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary, ...);
+extern db_res_t *db_exec_query(db_conn_t *conn, const char *cmd, bool binary, ...);
+
 #endif // FB_DBI_H

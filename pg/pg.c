@@ -10,9 +10,12 @@
 #endif
 
 #include <arpa/inet.h>
+#include <glib.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "fbbs/dbi.h"
+#include "fbbs/pool.h"
 #include "fbbs/util.h"
 
 /** Postgresql epoch (Jan 1, 2000) in unix time. */
@@ -178,4 +181,141 @@ fb_time_t db_get_time(const db_res_t *res, int row, int col)
 		return ts_to_time(ts);
 	}
 	return 0;
+}
+
+#define is_supported_format(c) (c == 'd' || c == 'l' || c == 's' || c == 't')
+
+static int get_num_args(const char *cmd)
+{
+	int argc = 0;
+	while (*cmd != '\0') {
+		if (*cmd == '%') {
+			++cmd;
+			if (is_supported_format(*cmd)) {
+				++argc;
+			}
+		}
+		++cmd;
+	}
+	return argc;
+}
+
+typedef struct query_t {
+	GString *s;
+	pool_t *p;
+	const char **vals;
+	int *lens;
+	int *fmts;
+} query_t;
+
+static query_t *query_new(const char *cmd, int argc, va_list ap)
+{
+	pool_t *p = pool_create(DEFAULT_POOL_SIZE);
+	query_t *q = pool_alloc(p, sizeof(*q));
+	q->p = p;
+	q->vals = pool_alloc(p, sizeof(*q->vals) * argc);
+	q->lens = pool_alloc(p, sizeof(*q->lens) * argc);
+	q->fmts = pool_alloc(p, sizeof(*q->fmts) * argc);
+	q->s = g_string_sized_new(strlen(cmd));
+
+	int n = 0;
+	while (*cmd != '\0') {
+		if (*cmd == '%') {
+			int d;
+			gint64 l;
+			const char *s;
+			fb_time_t t;
+
+			++cmd;
+			switch (*cmd) {
+				case 'd':
+					d = va_arg(ap, int);
+					int *dp = pool_alloc(p, sizeof(*dp));
+					*dp = g_htonl(d);
+					q->vals[n] = (const char *) dp;
+					q->lens[n] = sizeof(int);
+					q->fmts[n] = 1;
+					break;
+				case 'l':
+					l = va_arg(ap, gint64);
+					gint64 *lp = pool_alloc(p, sizeof(*lp));
+					*lp = GINT64_TO_BE(l);
+					q->vals[n] = (const char *) lp;
+					q->lens[n] = sizeof(gint64);
+					q->fmts[n] = 1;
+					break;
+				case 's':
+					s = va_arg(ap, const char *);
+					q->vals[n] = s;
+					q->lens[n] = 0;
+					q->fmts[n] = 0;
+					break;
+				case 't':
+					t = va_arg(ap, fb_time_t);
+					timestamp ts = time_to_ts(t);
+					timestamp *tsp = pool_alloc(p, sizeof(*tsp));
+					*tsp = GINT64_TO_BE(ts);
+					q->vals[n] = (const char *) tsp;
+					q->lens[n] = sizeof(gint64);
+					q->fmts[n] = 1;
+					break;
+				default:
+					g_string_append_c(q->s, *cmd);
+					break;
+			}
+			if (is_supported_format(*cmd)) {
+				g_string_append_printf(q->s, "$%d", ++n);
+			}
+		} else {
+			g_string_append_c(q->s, *cmd);
+		}
+		++cmd;
+	}
+	return q;
+}
+
+static void query_free(query_t *q)
+{
+	g_string_free(q->s, TRUE);
+	pool_destroy(q->p);
+}
+
+static db_res_t *_db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary,
+		int expected, va_list ap)
+{
+	db_res_t *res;
+	int argc = get_num_args(cmd);
+	if (argc > 0) {
+		query_t *q = query_new(cmd, argc, ap);
+		res = PQexecParams(conn, q->s->str, argc, NULL, q->vals, q->lens,
+				q->fmts, binary);
+		query_free(q);
+	} else {
+		res = PQexecParams(conn, cmd, 0, NULL, NULL, NULL, NULL, binary);
+	}
+
+	if (db_res_status(res) != expected) {
+		db_clear(res);
+		return NULL;
+	}
+
+	return res;
+}
+
+db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary, ...)
+{
+	va_list ap;
+	va_start(ap, binary);
+	db_res_t *res = _db_exec_cmd(conn, cmd, binary, DBRES_COMMAND_OK, ap);
+	va_end(ap);
+	return res;
+}
+
+db_res_t *db_exec_query(db_conn_t *conn, const char *cmd, bool binary, ...)
+{
+	va_list ap;
+	va_start(ap, binary);
+	db_res_t *res = _db_exec_cmd(conn, cmd, binary, DBRES_TUPLES_OK, ap);
+	va_end(ap);
+	return res;
 }
