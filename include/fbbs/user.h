@@ -3,6 +3,8 @@
 
 #include "fbbs/dbi.h"
 
+#define has_permission(p, x)  ((x) ? p & (x) : 1)
+
 enum {
 	USER_FIELD_LOGINS = 0,
 	USER_FIELD_POSTS,
