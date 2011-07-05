@@ -91,7 +91,8 @@ db_exec_status_t db_res_status(const db_res_t *res)
 
 void db_clear(db_res_t *res)
 {
-	PQclear(res);
+	if (res)
+		PQclear(res);
 }
 
 int db_num_rows(const db_res_t *res)
