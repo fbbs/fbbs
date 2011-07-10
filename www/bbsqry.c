@@ -29,7 +29,8 @@ int bbsqry_main(web_ctx_t *ctx)
 				printf(" gender='%c'", user.gender);
 		}
 		printf("><ip>");
-		xml_fputs(mask_host(user.lasthost), stdout);
+		xml_fputs(streq(currentuser.userid, user.userid) ?
+				user.lasthost : mask_host(user.lasthost), stdout);
 		printf("</ip><nick>");
 		xml_fputs(user.username, stdout);
 		printf("</nick><ident>");
