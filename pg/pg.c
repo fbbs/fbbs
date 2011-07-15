@@ -320,3 +320,13 @@ db_res_t *db_exec_query(db_conn_t *conn, const char *cmd, bool binary, ...)
 	va_end(ap);
 	return res;
 }
+
+int db_begin_trans(db_conn_t *conn)
+{
+	return (PQexec(conn, "BEGIN") == DBRES_COMMAND_OK ? 0 : -1);
+}
+
+int db_end_trans(db_conn_t *conn)
+{
+	return (PQexec(conn, "END") == DBRES_COMMAND_OK ? 0 : -1);
+}

@@ -60,4 +60,7 @@ extern bool db_get_bool(const db_res_t *res, int row, int col);
 extern db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary, ...);
 extern db_res_t *db_exec_query(db_conn_t *conn, const char *cmd, bool binary, ...);
 
+extern int db_begin_trans(db_conn_t *conn);
+extern int db_end_trans(db_conn_t *conn);
+
 #endif // FB_DBI_H
