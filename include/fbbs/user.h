@@ -19,4 +19,6 @@ extern int user_data_add(db_conn_t *c, int uid, int field, int delta);
 
 extern int get_online_count(db_conn_t *c);
 
+extern int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout);
+
 #endif // FB_USER_H

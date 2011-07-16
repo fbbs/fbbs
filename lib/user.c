@@ -75,3 +75,13 @@ int user_data_add(db_conn_t *c, int uid, int field, int delta)
 {
 	return _user_data_add(c, NULL, uid, field, delta);
 }
+
+int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)
+{
+	time_t now = time(NULL);
+	time_t last = logout > login ? logout : login;
+	int stay = now - last;
+	if (stay < 0 || (is_login && !is_dup))
+		stay = 0;
+	return stay;	
+}
