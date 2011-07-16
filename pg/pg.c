@@ -303,11 +303,11 @@ static db_res_t *_db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary,
 	return res;
 }
 
-db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary, ...)
+db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, ...)
 {
 	va_list ap;
-	va_start(ap, binary);
-	db_res_t *res = _db_exec_cmd(conn, cmd, binary, DBRES_COMMAND_OK, ap);
+	va_start(ap, cmd);
+	db_res_t *res = _db_exec_cmd(conn, cmd, true, DBRES_COMMAND_OK, ap);
 	va_end(ap);
 	return res;
 }
