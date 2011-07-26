@@ -79,9 +79,18 @@ CREATE TABLE sessions (
 	id BIGSERIAL PRIMARY KEY,
 	user_id INTEGER,
 	key BIGINTEGER,
+	pid INTEGER,
 	property INTEGER,
+        -- bits: invisible, sockactive, pager, in_chat
+	status INTEGER, --(mode)
+	board_id INTEGER, --(currbrdnum)
+	fromhost TEXT,
+	chat_id TEXT,
 	start_time TIMESTAMPTZ,
-	expire_time TIMESTAMPTZ
+	expire_time TIMESTAMPTZ,
+	idle_time TIMESTAMPTZ
+	-- sockaddr(sim_port), destuid, last_post_time
 );
+
 
 COMMIT;
