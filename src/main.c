@@ -3,6 +3,7 @@
 #include "bbs.h"
 #include "sysconf.h"
 
+#include "fbbs/dbi.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/string.h"
 #include "fbbs/user.h"
@@ -960,10 +961,16 @@ void tlog_recover(void)
 }
 #endif
 
+static void db_disconnect(void)
+{
+	db_finish(env.d);
+}
+
 void start_client(void)
 {
 	extern char currmaildir[];
 
+	atexit(db_disconnect);
 	env.d = db_connect(config_get(env.c, "host"), config_get(env.c, "port"),
 			config_get(env.c, "dbname"), config_get(env.c, "user"),
 			config_get(env.c, "password"));
