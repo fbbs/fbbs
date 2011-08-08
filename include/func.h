@@ -5,6 +5,8 @@
 
 #include "bbs.h"
 
+#define BADLOGINFILE   "logins.bad"
+
 //brdcache.c (bcache.c)
 extern struct BCACHE *brdshm;
 extern struct boardheader *bcache;
@@ -61,6 +63,7 @@ int cmpfnames(void *user, void *over);
 //log.c
 void report(const char *s, const char *userid);
 void log_usies(const char *mode, const char *mesg, const struct userec *user);
+void log_attempt(const char *name, const char *addr, const char *type);
 
 //stuffs.c
 char *sethomefile(char *buf, const char *userid, const char *filename);

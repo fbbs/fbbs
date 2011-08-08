@@ -36,7 +36,6 @@ typedef struct http_req_t {
 
 typedef struct web_ctx_t {
 	config_t *c;
-	db_conn_t *d;
 	pool_t *p;
 	http_req_t *r;
 	convert_t *u2g;
