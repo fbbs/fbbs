@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "bbs.h"
+#include "fbbs/cfg.h"
+#include "fbbs/dbi.h"
+#include "fbbs/pool.h"
 #include "fbbs/uinfo.h"
 
 static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
@@ -53,6 +56,68 @@ static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 #endif
 }
 
+typedef struct {
+	int fd;
+	FILE *log;
+	FILE *data;
+	FILE *post;
+	pool_t *pool;
+	config_t *conf;
+	db_conn_t *db;
+	int lock;
+} _my_data_t;
+static _my_data_t _env;
+
+static void cleanup(void)
+{
+	ucache_unlock(_env.lock);
+	db_finish(_env.db);
+	pool_destroy(_env.pool);
+	fclose(_env.post);
+	fclose(_env.data);
+	fclose(_env.log);
+	close(_env.fd);
+}
+
+static int init_env(_my_data_t *e)
+{
+	atexit(cleanup);
+
+	memset(e, 0, sizeof(*e));
+	
+	e->fd = open("tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);
+	if (e->fd < 0)
+		return -1;
+	
+	unlink("tmp/killuser");
+	
+	e->log = fopen("tomb/log", "w+");
+	e->data = fopen("tomb/PASSWDS", "w+");
+	e->post = fopen("tomb/post", "w+");
+	if (!e->log || !e->data || !e->post)
+		return -1;
+
+	e->pool = pool_create(DEFAULT_POOL_SIZE);
+	if (!e->pool)
+		return -1;
+
+	e->conf = config_load(e->pool, DEFAULT_CFG_FILE);
+	if (!e->conf)
+		return -1;
+
+	e->db = db_connect(config_get(e->conf, "host"), config_get(e->conf, "port"),
+			config_get(e->conf, "dbname"), config_get(e->conf, "user"),
+			config_get(e->conf, "password"));
+	if (db_status(e->db) != DB_CONNECTION_OK)
+		return -1;
+
+	e->lock = ucache_lock();
+	if (e->lock < 0)
+		return -1;
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	bool pretend = (argc != 2) || (strcasecmp(argv[1], "-f") != 0);
@@ -60,27 +125,9 @@ int main(int argc, char **argv)
 	if (chdir(BBSHOME) < 0)
 		return EXIT_FAILURE;
 
-	int fd = 0;
-	FILE *log = NULL, *data = NULL, *post = NULL;
-
 	if (!pretend) {
-		int fd = open("tmp/killuser", O_RDWR | O_CREAT | O_EXCL, 0600);
-		if (fd < 0)
+		if (init_env(&_env) != 0)
 			return EXIT_FAILURE;
-		unlink("tmp/killuser");
-	
-		log = fopen("tomb/log", "w+");
-		if (!log)
-			return EXIT_FAILURE;
-
-		data = fopen("tomb/PASSWDS", "w+");
-		if (!data)
-			return EXIT_FAILURE;
-
-		post = fopen("tomb/post", "w+");
-		if (!post)
-			return EXIT_FAILURE;
-
 		log_usies("CLEAN", "dated users.", NULL);
 	}
 
@@ -89,13 +136,6 @@ int main(int argc, char **argv)
 	struct userec user, zero;
 	memset(&zero, 0, sizeof(zero));
 	char file[HOMELEN], buf[HOMELEN];
-
-	int lock;
-	if (!pretend) {
-		lock = ucache_lock();
-		if (lock < 0)
-			return EXIT_FAILURE;
-	}
 
 	for (int i = 0; i < MAXUSERS; ++i) {
 		getuserbyuid(&user, i + 1);
@@ -110,9 +150,9 @@ int main(int argc, char **argv)
 				continue;
 			}
 
-			post_add(post, &user, now);
-			fwrite(&user, sizeof(user), 1, data);
-			fprintf(log, "%s\n", user.userid);
+			post_add(_env.post, &user, now);
+			fwrite(&user, sizeof(user), 1, _env.data);
+			fprintf(_env.log, "%s\n", user.userid);
 			
 			snprintf(file, sizeof(file), "mail/%c/%s",
 					toupper(user.userid[0]), user.userid);
@@ -126,15 +166,14 @@ int main(int argc, char **argv)
 
 			substitut_record(PASSFILE, &zero, sizeof(zero), i + 1);
 			del_uidshm(i + 1, user.userid);
+
+			// for now, we just delete them one by one.
+			db_res_t *res = db_exec_cmd(_env.db,
+					"DELETE FROM users WHERE lower(name) = lower(%s)",
+					user.userid);
+			db_clear(res);
 		}
 	}
 
-	if (!pretend) {
-		ucache_unlock(lock);
-		fclose(post);
-		fclose(data);
-		fclose(log);
-		close(fd);
-	}
 	return EXIT_SUCCESS;
 }

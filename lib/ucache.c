@@ -7,6 +7,8 @@
 #include <time.h>
 #include "record.h"
 
+#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/ucache.h"
@@ -18,6 +20,8 @@ enum {
 	MAX_LOGINS_BM = 4,       ///< max logins for a board manager.
 	MAX_LOGINS_DIRECTOR = 6, ///< max logins for a director(zhanwu).
 };
+
+bbs_env_t env;
 
 // The starting address of cache for online users.
 struct UTMPFILE *utmpshm = NULL;
@@ -612,15 +616,16 @@ int create_user(const struct userec *user)
 			toupper(user->userid[0]), user->userid);
 	if (dashd(path))
 		return UCACHE_EEXIST;
+	
+	db_res_t *res = db_exec_cmd(env.d, "INSERT INTO users (name) VALUES (%s)",
+			user->userid);
+	db_clear(res);
+	if (!res)
+		return UCACHE_EEXIST;
 
 	int fd = ucache_lock();
 	if (fd < 0)
 		return UCACHE_EINTNL;
-
-	if (searchuser(user->userid) != 0) {
-		ucache_unlock(fd);
-		return UCACHE_EEXIST;
-	}
 
 	int i = searchnewuser();
 	if (i == 0) {

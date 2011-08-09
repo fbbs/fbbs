@@ -18,8 +18,6 @@
 
 #define VISITLOG    BBSHOME"/.visitlog"
 
-bbs_env_t env;
-
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
 #endif
