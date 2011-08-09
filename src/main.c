@@ -514,24 +514,19 @@ enum {
  */
 int bbs_auth(const char *name, const char *passwd)
 {
+	resolve_utmp();
+
 	if (!name || *name == '\0')
 		return BBS_ENOUSR;
 
-	if (get_online_count(env.d) > MAXACTIVE)
-		return BBS_E2MANY;
-
-	char pw[PASSLEN];
-	int level;
-	db_param_t param[1] = { PARAM_TEXT(name) };
-	db_res_t *res = db_exec_params(env.d,
-			"SELECT name, passwd, level FROM users WHERE lower(name) = lower($1)",
-			NELEMS(param), param, 1);
-	if (db_res_status(res) != DBRES_TUPLES_OK || db_num_rows(res) != 1) {
-		db_clear(res);
-		return BBS_ENOUSR;
+	if (currentuser.userid[0] == '\0') {
+		if (count_online() > MAXACTIVE)
+			return BBS_E2MANY;
+		if (!dosearchuser(name, &currentuser, &usernum))
+			return BBS_ENOUSR;
 	}
-	
-	if (!checkpasswd(pw, passwd)) {
+
+	if (!checkpasswd(currentuser.passwd, passwd)) {
 		log_attempt(currentuser.userid, fromhost, "telnet");
 		return BBS_EWPSWD;
 	}
@@ -566,7 +561,7 @@ static int login_query(void)
 #endif // ENABLE_SSH
 
 	// Deny new logins if too many users online.
-	int online = get_online_count(env.d);
+	int online = count_online();
 #ifndef ENABLE_SSH
 	if (online >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
@@ -580,11 +575,16 @@ static int login_query(void)
 	prints("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
 			BBSNAME);
+	
+	utmpshm->total_num = online;
+	if (utmpshm->max_login_num < utmpshm->total_num)
+		utmpshm->max_login_num = utmpshm->total_num;
+	if (utmpshm->usersum <= 0)
+		utmpshm->usersum = allusers();
 
-	int users = get_user_count(env.d);
 	prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
 			"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
-			users, MAXUSERS, online, MAXACTIVE);
+			utmpshm->usersum, MAXUSERS, online, MAXACTIVE);
 	visitlog();
 
 #ifndef ENABLE_SSH
@@ -616,7 +616,7 @@ static int login_query(void)
 			exit(1);
 		} else if (*uname == '\0')
 			;
-		else if (get_user_id(env.d, uname) == 0) {
+		else if (!dosearchuser(uname, &currentuser, &usernum)) {
 			prints("\033[1;31m经查证，无此 ID。\033[m\n");
 		} else if (strcaseeq(uname, "guest")) {
 			currentuser.userlevel = 0;
