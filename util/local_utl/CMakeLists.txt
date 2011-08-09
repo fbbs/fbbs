@@ -6,13 +6,13 @@ link_directories(../../lib)
 
 foreach(name averun account newacct horoscope zodiac)
 	add_executable(${name} ${name}.c chart.c)
-	target_link_libraries(${name} BBS)
+	target_link_libraries(${name} fbbs)
 endforeach(name)
 
 foreach(name bbstop birthday toppost bbsuptime badbms AnnIndex showbm statBM
 		cleanuser)
 	add_executable(${name} ${name}.c)
-	target_link_libraries(${name} BBS)
+	target_link_libraries(${name} fbbs)
 endforeach(name)
 
 install(TARGETS averun account newacct horoscope zodiac bbstop birthday
