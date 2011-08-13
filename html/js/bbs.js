@@ -376,4 +376,16 @@ $(document).ready(function() {
 			complete: function() { b.toggleLoading(); }
 		});
 	});
+
+	$('#login-dialog-form').dialog({
+		autoOpen: false, modal: true, resizable: false,
+		buttons: {
+			'µÇÂ¼': function() { $('#login-dialog-form form').submit(); },
+			'È¡Ïû': function() { $(this).dialog('close'); }
+		}
+	});
+	$('#navl').click(function() {
+		$('#login-dialog-form').dialog('open');
+		return false;
+	});
 });

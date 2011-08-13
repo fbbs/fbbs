@@ -123,6 +123,11 @@
 		<div id='loading' class='prompt'><img src='../images/indicator.gif'/> ‘ÿ»Î÷–...</div>
 		<div id='error' class='prompt'></div>
 		<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 7]><![endif]]]></xsl:comment></span>
+
+		<div id='login-dialog-form' title='µ«¬ºΩ¯’æ'><form action='login' method='post'>
+			<label for='id'>’À∫≈</label><input type='text' name='id' class="text ui-widget-content ui-corner-all"/>
+			<label for='pw'>√‹¬Î</label><input type="password" name="pw" value='' class='text ui-widget-content ui-corner-all'/>
+		</form></div>
 	</div>
 </xsl:template>
 
@@ -132,11 +137,13 @@
 
 <xsl:template name='include-css'>
 	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1283'/>
+	<link rel='stylesheet' type='text/css' href='/css/redmond/jquery-ui-1.8.15.custom.css'/>
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1283'/><![endif]]]></xsl:comment>
 </xsl:template>
 <xsl:template name='include-js'>
 	<script src='../js/persist-all-min.js'></script>
 	<script src='/js/jquery-1.5.1.min.js'></script>
+	<script src='/js/jquery-ui-1.8.15.custom.min.js'></script>
 	<script src='../js/bbs.js?v1307' charset='gb2312' defer='defer'></script>
 </xsl:template>
 
