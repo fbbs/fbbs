@@ -204,6 +204,7 @@
 			</div>
 		</div>
 	</xsl:for-each>
+	<a href='tdoc?bid={@bid}'>[∞Ê√Ê]</a>
 </xsl:template>
 
 <xsl:template match='bbsboa'>

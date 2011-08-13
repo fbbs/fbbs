@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
+#include "fbbs/ucache.h"
 #include "fbbs/uinfo.h"
 #include "fbbs/web.h"
 
@@ -8,12 +9,29 @@ static int check_multi(const struct userec *user)
 {
 	int i, total = 0;
 	int uid = searchuser(user->userid);
+
+	int idle_time = time(NULL);
+	struct user_info *idle_session = NULL;
+
 	for (i = 0; i < MAXACTIVE; i++) {
-		if (utmpshm->uinfo[i].active == 0)
+		struct user_info *up = utmpshm->uinfo + i;
+		if (up->active == 0)
 			continue;
-		if (utmpshm->uinfo[i].uid == uid)
+		if (up->uid == uid) {
 			total++;
+			if (is_web_user(up->mode) && up->idle_time < idle_time) {
+				idle_time = up->idle_time;
+				idle_session = up;
+			}
+		}
 	}
+
+	int max = get_login_quota(user);
+	if (total == max && idle_session) {
+		if (bbskill(idle_session, SIGHUP) == 0)
+			--total;
+	}
+
 	return total;
 }
 

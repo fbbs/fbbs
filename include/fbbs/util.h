@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define NELEMS(x)  (sizeof(x) / sizeof(x[0]))
+
 typedef uint64_t ulong_t;
 typedef uint32_t uint_t;
 typedef uint16_t ushort_t;

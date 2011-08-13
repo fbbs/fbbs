@@ -1,11 +1,16 @@
 BEGIN;
 
+CREATE TABLE emails (
+	id SERIAL PRIMARY KEY,
+	addr TEXT
+);
+
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
 	passwd TEXT,
 	nick TEXT,
-	email TEXT,
+	email INTEGER,
 	options BIGINT,
 	logins INTEGER DEFAULT 0,
 	posts INTEGER DEFAULT 0,
