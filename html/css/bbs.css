@@ -353,7 +353,6 @@ a.reply, a.newpost {
 .quick_reply .title input[type="text"] { height: 22px; }
 .quick_upload_ifrm { display: none; }
 form.quick_upload, .mnav form { display: inline-block; }
-form.quick_cp { display: none; margin: 8px 0; }
 
 .disabled { color: #808080; }
 form.sig_option {
@@ -435,3 +434,8 @@ li { margin: 0 0 6px 0; }
 #login-dialog-form { display: none; }
 #login-dialog-form label, #login-dialog-form input { display: block; }
 #login-dialog-form input { margin: 0 0 10px; width: 95%; }
+
+#quick-cp { display: none; }
+#quick-cp div.ui-state-highlight { margin: 0 0 10px; }
+#quick-cp label, #quick-cp input { display: block; }
+#quick-cp input { width: 95%; }

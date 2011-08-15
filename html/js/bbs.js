@@ -322,37 +322,39 @@ function signatureOption()
 
 function crossPostButton()
 {
-	var div = $(this).parent().parent();
-	var f = $('form.quick_cp', div);
-	var toggle = function() { f.toggle(); $('.plink', div).toggle(); };
-	if (!f.length) {
-		f = $('<form class="quick_cp"><input type="button" class="cancel" value="取消"/>转载到版面 <input type="text" name="t"/><input type="submit" value="转载"/></form>').attr('action', $(this).attr('href'));
-		f.insertAfter($(this).parent());
-		$('.cancel').click(toggle);
-		$('[type="submit"]', f).click(function() {
-			if (!$('[name="t"]', f).val())
-				return false;
-			$(this).toggleLoading();
-			$.ajax({
-				type: 'POST', url: f.attr('action'), data: f.serialize(),
-				success: function(data) {
-					var node = $(data).find('bbsccc');
-					if (node.length) {
-						var fid = node.attr('f');
-						var b = node.attr('b');
-						$('<div class="preply"></div>').text($('[name="t"]', f).val()).prepend('<a class="success" href=con?new=1&bid="' + b + '&f=' + fid + '">转载成功</a>').insertAfter(f);
-						toggle();
-					} else {
-						alert($(data).filter('div').text());
-					}
-				},
-				complete: function() { $('[type="submit"]', f).toggleLoading(); }
-			});
-			return false;
-		});
-	}
-	toggle();
-	$('[name="t"]', f).focus();
+	var link = $(this);
+	var div = $('#quick-cp');
+	$('form', div).attr('action', $(this).attr('href'));
+	div.dialog({
+		autoOpen: false, modal: true, resizable: false,
+		buttons: {
+			'转载': function() { crossPostSubmit(link); },
+			'取消': function() { $(this).dialog('close'); }
+		}
+	}).dialog('open');
+	return false;
+}
+
+function crossPostSubmit(link)
+{
+	var f = $('#quick-cp form');
+	if (!$('[name="t"]', f).val())
+		return false;
+	$('#quick-cp').dialog('disable');
+	$.ajax({
+		type: 'POST', url: f.attr('action'), data: f.serialize(),
+		success: function(data) {
+			var node = $(data).find('bbsccc');
+			if (node.length) {
+				var fid = node.attr('f');
+				var b = node.attr('b');
+				$('<div class="preply"></div>').text($('[name="t"]', f).val()).prepend('<a class="success" href=con?new=1&bid="' + b + '&f=' + fid + '">转载成功</a>').insertAfter(link.parent()).hide().slideDown();
+			} else {
+				alert($(data).filter('div').text());
+			}
+		},
+		complete: function() { $('#quick-cp').dialog('enable').dialog('close'); }
+	});
 	return false;
 }
 

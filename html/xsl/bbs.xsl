@@ -137,13 +137,13 @@
 
 <xsl:template name='include-css'>
 	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1283'/>
-	<link rel='stylesheet' type='text/css' href='/css/redmond/jquery-ui-1.8.15.custom.css'/>
+	<link rel='stylesheet' type='text/css' href='../css/redmond/jquery-ui-1.8.15.custom.css'/>
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1283'/><![endif]]]></xsl:comment>
 </xsl:template>
 <xsl:template name='include-js'>
 	<script src='../js/persist-all-min.js'></script>
 	<script src='/js/jquery-1.5.1.min.js'></script>
-	<script src='/js/jquery-ui-1.8.15.custom.min.js'></script>
+	<script src='../js/jquery-ui-1.8.15.custom.min.js'></script>
 	<script src='../js/bbs.js?v1307' charset='gb2312' defer='defer'></script>
 </xsl:template>
 
@@ -453,6 +453,14 @@ table.post{width:100%}
 		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
 	</div>
 	<xsl:call-template name='quick-reply-form'/>
+	<xsl:call-template name='quick-cp-form'/>
+</xsl:template>
+
+<xsl:template name='quick-cp-form'>
+<div id='quick-cp' title='转载文章'>
+	<div class='ui-state-highlight'>未经站务委员会批准，多版面转贴相同或相似文章超过五个版的，将受到全站处罚。</div>
+	<form class='quick-cp'><label for='t'>转载到版面</label><input type='text' name='t'/></form>
+</div>
 </xsl:template>
 
 <xsl:template name='quick-reply-form'>
@@ -529,6 +537,7 @@ table.post{width:100%}
 	</xsl:for-each>
 	<div class='pnav'><xsl:call-template name='tcon-navbar'/></div>
 	<xsl:call-template name='quick-reply-form'/>
+	<xsl:call-template name='quick-cp-form'/>
 </xsl:template>
 
 <xsl:template name='tcon-navbar'>
