@@ -439,3 +439,8 @@ li { margin: 0 0 6px 0; }
 #quick-cp div.ui-state-highlight { margin: 0 0 10px; }
 #quick-cp label, #quick-cp input { display: block; }
 #quick-cp input { width: 95%; }
+
+/* overwrite jQuery UI default fonts */
+.ui-widget { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 14px; }
+.ui-widget .ui-widget { font-size: 14px; }
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 14px; }
