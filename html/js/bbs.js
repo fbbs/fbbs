@@ -347,8 +347,8 @@ function crossPostSubmit(link)
 			var node = $(data).find('bbsccc');
 			if (node.length) {
 				var fid = node.attr('f');
-				var b = node.attr('b');
-				$('<div class="preply"></div>').text($('[name="t"]', f).val()).prepend('<a class="success" href=con?new=1&bid="' + b + '&f=' + fid + '">转载成功</a>').insertAfter(link.parent()).hide().slideDown();
+				var b = node.attr('t');
+				$('<div class="preply"></div>').text($('[name="t"]', f).val()).prepend('<a class="success" href=con?new=1&bid=' + b + '&f=' + fid + '>转载成功</a>').insertAfter(link.parent()).hide().slideDown();
 			} else {
 				alert($(data).filter('div').text());
 			}
