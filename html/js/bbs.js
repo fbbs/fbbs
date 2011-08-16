@@ -332,6 +332,9 @@ function crossPostButton()
 			'È¡Ïû': function() { $(this).dialog('close'); }
 		}
 	}).dialog('open');
+	var boards = [];
+	$('#navf li.sf').each(function() { boards.push($(this).text()); });
+	$('input', div).autocomplete({ source: boards, delay: 100 });
 	return false;
 }
 
