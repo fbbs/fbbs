@@ -431,7 +431,7 @@ li { margin: 0 0 6px 0; }
 #quick-cp input { width: 95%; }
 
 #quick-reply, .quick-upload-ifrm { display: none; }
-#quick-reply textarea { width: 100%; margin: 10px 0 0; }
+#quick-reply textarea { width: 98%; margin: 10px 0 0; }
 #quick-reply-error { margin-bottom: 10px; }
 #quick-upload { display: block; margin: 10px 0 0; }
 #quick-reply-anony, #quick-reply-sig-label { margin-left: 5px; }
