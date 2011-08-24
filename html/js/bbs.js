@@ -413,7 +413,7 @@ $(document).ready(function() {
 			'È¡Ïû(Esc)': function() { $(this).dialog('close'); }
 		}
 	});
-	$('#quick-upload input').change(function() { $(this).toggleLoading().parent().submit(); });
+	$('#quick-upload input').change(function() { $('#quick-upload').submit(); $(this).toggleLoading(); });
 	$('#quick-reply form textarea').bind('keydown', 'ctrl+return', replyFormSubmit);
 	$('.reply').click(replyButton);
 
