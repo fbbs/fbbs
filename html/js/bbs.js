@@ -263,13 +263,15 @@ function replyButton() {
 }
 
 function quickUpload() {
-	$('#quick-upload input').toggleLoading();
-	var url = $(this).contents().find('#url');
-	if (url.length) {
-		var text = $('#quick-reply textarea');
-		text.val(text.val() + "\n" + url.text() + "\n");
-	} else {
-		alert("Error!");
+	if ($(this).contents().find('title').length) {
+		$('#quick-upload input').toggleLoading();
+		var url = $(this).contents().find('#url');
+		if (url.length) {
+			var text = $('#quick-reply textarea');
+			text.val(text.val() + "\n" + url.text() + "\n");
+		} else {
+			alert("Error!");
+		}
 	}
 }
 
