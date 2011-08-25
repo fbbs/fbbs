@@ -123,6 +123,11 @@
 		<div id='loading' class='prompt'><img src='../images/indicator.gif'/> 载入中...</div>
 		<div id='error' class='prompt'></div>
 		<span id='iewarn'><xsl:comment><![CDATA[[if lt IE 7]><![endif]]]></xsl:comment></span>
+
+		<div id='login-dialog-form' title='登录进站'><form action='login' method='post'>
+			<label for='id'>账号</label><input type='text' name='id' class="text ui-widget-content ui-corner-all"/>
+			<label for='pw'>密码</label><input type="password" name="pw" value='' class='text ui-widget-content ui-corner-all'/>
+		</form></div>
 	</div>
 </xsl:template>
 
@@ -131,13 +136,16 @@
 </xsl:template>
 
 <xsl:template name='include-css'>
-	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1283'/>
+	<link rel='stylesheet' type='text/css' href='../css/redmond/jquery-ui-1.8.15.custom.css'/>
+	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1416'/>
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1283'/><![endif]]]></xsl:comment>
 </xsl:template>
+
 <xsl:template name='include-js'>
 	<script src='../js/persist-all-min.js'></script>
-	<script src='/js/jquery-1.5.1.min.js'></script>
-	<script src='../js/bbs.js?v1307' charset='gb2312' defer='defer'></script>
+	<script src='/js/jquery-1.6.2.min.js'></script>
+	<script src='../js/jquery-ui-1.8.15.custom.min.js'></script>
+	<script src='../js/bbs.js?v1416' charset='gb2312' defer='defer'></script>
 </xsl:template>
 
 <xsl:template name='page-title'>
@@ -446,27 +454,30 @@ table.post{width:100%}
 		<div class='plink'><xsl:call-template name='con-linkbar'/></div>
 	</div>
 	<xsl:call-template name='quick-reply-form'/>
+	<xsl:call-template name='quick-cp-form'/>
+</xsl:template>
+
+<xsl:template name='quick-cp-form'>
+<div id='quick-cp' title='转载文章'>
+	<div class='ui-state-highlight'>未经站务委员会批准，多版面转贴相同或相似文章超过五个版的，将受到全站处罚。</div>
+	<form class='quick-cp'><label for='t'>转载到版面</label><input type='text' name='t'/></form>
+</div>
 </xsl:template>
 
 <xsl:template name='quick-reply-form'>
-<div id='quick_reply' class='quick_reply'>
-<div class='buttons'>
-<input type='button' class='cancel' value='取消'/>
-<input type='button' value='发表' class='confirm'/>
+<xsl:if test='@attach&gt;0'><iframe name='quick-upload-ifrm' class='quick-upload-ifrm'></iframe></xsl:if>
+<div id='quick-reply' title='回复文章'>
+<div id='quick-reply-error' class='ui-state-error'></div>
+<form id='quick-reply-form' method='post'>
+<label for='title'>标题 </label><input class='text ui-widget-content ui-corner-all' type='text' name='title' size='60' maxlength='50'></input>
+<xsl:if test='@anony=1'><input type='checkbox' id='quick-reply-anony' name='anony' value='1' checked='checked'/><label for='quick-reply-anony'>匿名</label></xsl:if>
+<label for='sig' id='quick-reply-sig-label'>签名档 </label><select name='sig'><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+<textarea class='binput' name='text' rows='15' cols='85' wrap='virtual'></textarea>
+</form>
 <xsl:if test='@attach&gt;0'>
-上传文件<form class='quick_upload' method='post' enctype='multipart/form-data' target='quick_upload_ifrm' action='upload?bid={@bid}'><input type='file' name='up'/></form>
+<form id='quick-upload' method='post' enctype='multipart/form-data' target='quick-upload-ifrm' action='upload?bid={@bid}'><label for='up'>上传文件</label><input type='file' name='up'/></form>
 </xsl:if>
 </div>
-<form class='quick_reply' method='post'>
-<div class='title'>
-标题 <input class='binput' type='text' name='title' size='60' maxlength='50'></input>
-<xsl:if test='@anony=1'><input type="checkbox" name="anony" value="1" checked="checked"/>匿名</xsl:if>
-签名档 <select name='sig'><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
-</div>
-<textarea class='binput' name='text' rows='10' cols='85' wrap='virtual'></textarea>
-</form>
-</div>
-<xsl:if test='@attach&gt;0'><iframe name='quick_upload_ifrm' class='quick_upload_ifrm'></iframe></xsl:if>
 </xsl:template>
 
 <xsl:template match='po'>
@@ -522,6 +533,7 @@ table.post{width:100%}
 	</xsl:for-each>
 	<div class='pnav'><xsl:call-template name='tcon-navbar'/></div>
 	<xsl:call-template name='quick-reply-form'/>
+	<xsl:call-template name='quick-cp-form'/>
 </xsl:template>
 
 <xsl:template name='tcon-navbar'>
