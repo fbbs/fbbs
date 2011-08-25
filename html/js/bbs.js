@@ -407,7 +407,7 @@ $(document).ready(function() {
 	};
 
 	$('#quick-reply').dialog({
-		autoOpen: false, modal: true, minWidth: 640, resizable: false,
+		autoOpen: false, modal: false, minWidth: 640, resizable: false,
 		buttons: {
 			'发表(Ctrl+Enter)': replyFormSubmit,
 			'取消(Esc)': function() { $(this).dialog('close'); }
