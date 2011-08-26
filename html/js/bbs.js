@@ -475,7 +475,7 @@ $(document).ready(function() {
 			'µÇÂ¼': function() { $('#login-dialog-form form').submit(); },
 			'È¡Ïû': function() { $(this).dialog('close'); }
 		}
-	});
+	}).bind('keydown', 'return', function() { $('form', this).submit(); });
 	$('#navl').click(function() {
 		$('#login-dialog-form').dialog('open');
 		return false;
