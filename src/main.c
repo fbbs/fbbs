@@ -817,7 +817,7 @@ static void user_login(void)
 			//show_welcomeshm();
 		ansimore("Welcome2", YEA);
 	}
-	show_statshm("etc/posts/day", 1);
+	show_statshm("0Announce/bbslist/day", 1);
 	refresh();
 	move(t_lines - 2, 0);
 	clrtoeol();

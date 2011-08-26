@@ -188,6 +188,10 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 	count_t c[limits[DAY_F]];
 	memset(c, 0, sizeof(c));
 
+	FILE *out = NULL;
+	if (type == DAY_F)
+		out = fopen(BASEPATH"/day_f.data", "w");
+
 	for (i = 0; i < ht->count && j < limit; ++i) {
 		top = tops[i];
 		if (type == DAY_F && exceed_board_limit(top, c, sizeof(c) / sizeof(c[0])))
@@ -198,7 +202,12 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 				"\033[33m%13.13s\n     \033[37m标题 : \033[1;44m%-60.60s"
 				"\033[40m\n", ++j, top->board, date, top->count, top->owner,
 				ansi_filter(title, top->title));
+		if (out)
+			fwrite(top, sizeof(*top), 1, fp);
 	}
+
+	if (out)
+		fclose(out);
 
 	if (type == DAY_F && i > j)
 		fprintf(fp, "\033[1;30m  【有 %d 个主题因超出版面限制而被省略】\033[m", i - j);
