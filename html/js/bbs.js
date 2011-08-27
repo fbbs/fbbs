@@ -263,13 +263,15 @@ function replyButton() {
 }
 
 function quickUpload() {
-	$('#quick-upload input').toggleLoading();
-	var url = $(this).contents().find('#url');
-	if (url.length) {
-		var text = $('#quick-reply textarea');
-		text.val(text.val() + "\n" + url.text() + "\n");
-	} else {
-		alert("Error!");
+	if ($(this).contents().find('title').length) {
+		$('#quick-upload input').toggleLoading();
+		var url = $(this).contents().find('#url');
+		if (url.length) {
+			var text = $('#quick-reply textarea');
+			text.val(text.val() + "\n" + url.text() + "\n");
+		} else {
+			alert("Error!");
+		}
 	}
 }
 
@@ -407,7 +409,7 @@ $(document).ready(function() {
 	};
 
 	$('#quick-reply').dialog({
-		autoOpen: false, modal: true, minWidth: 640, resizable: false,
+		autoOpen: false, modal: false, minWidth: 640, resizable: false,
 		buttons: {
 			'发表(Ctrl+Enter)': replyFormSubmit,
 			'取消(Esc)': function() { $(this).dialog('close'); }
@@ -473,7 +475,7 @@ $(document).ready(function() {
 			'登录': function() { $('#login-dialog-form form').submit(); },
 			'取消': function() { $(this).dialog('close'); }
 		}
-	});
+	}).bind('keydown', 'return', function() { $('form', this).submit(); });
 	$('#navl').click(function() {
 		$('#login-dialog-form').dialog('open');
 		return false;
