@@ -203,7 +203,7 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 				"\033[40m\n", ++j, top->board, date, top->count, top->owner,
 				ansi_filter(title, top->title));
 		if (out)
-			fwrite(top, sizeof(*top), 1, fp);
+			fwrite(top, sizeof(*top), 1, out);
 	}
 
 	if (out)
