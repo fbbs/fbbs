@@ -47,6 +47,13 @@
 #define LOGINATTEMPTS 3
 
 /**
+ * Turn this on to allow users to create their own accounts by typing 'new'
+ * at the "Enter userid:" prompt. Comment out to restrict access to accounts
+ * created by the Sysop (see important note in README.install).
+ */
+#define LOGINASNEW 1
+
+/**
  * Defined means when BM delete a post, the posting record of the owner will
  * decrease by 1
  */
