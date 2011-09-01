@@ -1,6 +1,10 @@
 #include "bbs.h"
 #include <crypt.h>
 
+#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/string.h"
+
 #ifndef MD5
 #ifndef DES
 /* nor DES, MD5, fatal error!! */
@@ -50,9 +54,35 @@ char *genpasswd(const char *pw)
 	return crypt(pw, salt);
 }
 
-// Checks if encrypted 'pw_try' matches 'pw_crypted'.
-// Returns 1 if match, 0 otherwise.
-int checkpasswd(const char *pw_crypted, const char *pw_try)
+/**
+ * Check if \a pw_try matches \a pw_crypted.
+ * @param pw_crypted The crypted password.
+ * @param pw_try The password in plain text.
+ * @return True if they match, false otherwise.
+ */
+bool passwd_match(const char *pw_crypted, const char *pw_try)
 {
-	return !strcmp(crypt(pw_try, pw_crypted), pw_crypted);
+	return streq(crypt(pw_try, pw_crypted), pw_crypted);
+}
+
+/**
+ * Check if \a pw_try could be the password of user \a name.
+ * @param name The username.
+ * @param pw_try The password in plain text.
+ * @return True if they match, false otherwise.
+ */
+bool passwd_check(const char *name, const char *pw_try)
+{
+	db_res_t *res = db_exec_query(env.d,
+			"SELECT passwd FROM users WHERE lower(name) = lower(%s)", name);
+	if (!res)
+		return false;
+	if (db_num_rows(res) < 1) {
+		db_clear(res);
+		return false;
+	}
+
+	bool match = passwd_match(db_get_value(res, 0, 0), pw_try);
+	db_clear(res);
+	return match;
 }

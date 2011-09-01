@@ -167,7 +167,7 @@ int web_login(web_ctx_t *ctx)
 	if (strcasecmp(id, "guest")) {
 		int total;
 		time_t now = time(NULL);
-		if (!checkpasswd(user.passwd, pw)) {
+		if (!passwd_check(user.userid, pw)) {
 			sprintf(buf, "%-12.12s %s @%s\n", user.userid,
 					getdatestring(now, DATE_ZH), fromhost);
 			sethomefile(fname, user.userid, "logins.bad"); 

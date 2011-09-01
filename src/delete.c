@@ -67,7 +67,7 @@ int offline() {
 		return 0;
 	}
 	getdata(1, 0, "请输入您的密码: ", buf, PASSLEN, NOECHO, YEA);
-	if (*buf == '\0' || !checkpasswd(currentuser.passwd, buf)) {
+	if (*buf == '\0' || !passwd_check(currentuser.userid, buf)) {
 		prints("\n\n很抱歉, 您输入的密码不正确。\n");
 		pressreturn();
 		clear();
@@ -317,7 +317,7 @@ int giveUpBBS() {
 
 	if (askyn("你确定要戒网吗？", 0) == 1) {
 		getdata(15, 0, "请输入密码: ", buf, 39, NOECHO, NULL);
-		if (*buf == '\0' || !checkpasswd(lookupuser.passwd, buf)) {
+		if (*buf == '\0' || !passwd_check(lookupuser.userid, buf)) {
 			prints("\n\n很抱歉, 您输入的密码不正确。\n");
 			pressanykey();
 			return 0;

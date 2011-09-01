@@ -13,4 +13,7 @@ typedef struct bbs_env_t {
 
 extern bbs_env_t env;
 
+extern bool passwd_match(const char *pw_crypted, const char *pw_try);
+extern bool passwd_check(const char *name, const char *pw_try);
+
 #endif // FB_FBBS_H

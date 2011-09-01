@@ -1429,7 +1429,7 @@ int d_user(char *cid) {
 	// ¿³µôÕËºÅÊ±Ôö¼ÓÃÜÂëÑéÖ¤
 	getdata(1, 0, "[1;37mÇëÊäÈëÃÜÂë: [m", passbuf, PASSLEN, NOECHO, YEA);
 	passbuf[8] = '\0';
-	if (!checkpasswd(currentuser.passwd, passbuf)) {
+	if (!passwd_check(currentuser.userid, passbuf)) {
 		prints("[1;31mÃÜÂëÊäÈë´íÎó...[m\n");
 		return 0;
 	}
@@ -1679,7 +1679,7 @@ int wall() {
 	stand_title("È«Õ¾¹ã²¥!");
 	getdata(1, 0, "[1;37mÇëÊäÈëÃÜÂë: [m", passbuf, PASSLEN, NOECHO, YEA);
 	passbuf[8] = '\0';
-	if (!checkpasswd(currentuser.passwd, passbuf)) {
+	if (!passwd_check(currentuser.userid, passbuf)) {
 		prints("[1;31mÃÜÂëÊäÈë´íÎó...[m\n");
 		return 0;
 	}

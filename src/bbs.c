@@ -2912,7 +2912,7 @@ int check_notespasswd() {
 		getdata(2, 0, "ÇëÊäÈëÃØÃÜ±¸ÍüÂ¼ÃÜÂë: ", passbuf, 19, NOECHO, YEA);
 		if (passbuf[0] == '\0' || passbuf[0] == '\n')
 			return NA;
-		if (!checkpasswd(prepass, passbuf)) {
+		if (!passwd_match(prepass, passbuf)) {
 			move(3, 0);
 			prints("´íÎóµÄÃØÃÜ±¸ÍüÂ¼ÃÜÂë...");
 			pressanykey();

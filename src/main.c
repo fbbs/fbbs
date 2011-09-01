@@ -524,7 +524,7 @@ int bbs_auth(const char *name, const char *passwd)
 			return BBS_ENOUSR;
 	}
 
-	if (!checkpasswd(currentuser.passwd, passwd)) {
+	if (!passwd_check(currentuser.userid, passwd)) {
 		log_attempt(currentuser.userid, fromhost, "telnet");
 		return BBS_EWPSWD;
 	}

@@ -83,7 +83,7 @@ int bbsinfo_main(web_ctx_t *ctx)
 
 static int set_password(const char *orig, const char *new1, const char *new2)
 {
-	if (!checkpasswd(currentuser.passwd, orig))
+	if (!passwd_check(currentuser.userid, orig))
 		return BBS_EWPSWD;
 	if (strcmp(new1, new2))
 		return BBS_EINVAL;

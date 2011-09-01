@@ -314,7 +314,7 @@ int x_lockscreen() {
 	prints("\n      (____/' (_____) (____/' (_) (_) (____/' (____/'   |__|\n");
 	prints("\n\033[1;36m屏幕已在\033[33m %s\033[36m 时被%s暂时锁住了...\033[m",
 			getdatestring(time(NULL), DATE_ZH), currentuser.userid);
-	while (*buf == '\0' || !checkpasswd(currentuser.passwd, buf)) {
+	while (*buf == '\0' || !passwd_check(currentuser.userid, buf)) {
 		move(18, 0);
 		clrtobot();
 		getdata(19, 0, "请输入您的密码以解锁: ", buf, PASSLEN, NOECHO, YEA);

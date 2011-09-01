@@ -294,7 +294,7 @@ void uinfo_query(struct userec *u, int real, int unum) {
 		case '2':
 			if (!real) {
 				getdata(i++, 0, "请输入原密码: ", buf, PASSLEN, NOECHO, YEA);
-				if (*buf == '\0' || !checkpasswd(u->passwd, buf)) {
+				if (*buf == '\0' || !passwd_check(u->userid, buf)) {
 					prints("\n\n很抱歉, 您输入的密码不正确。\n");
 					fail++;
 					break;
