@@ -186,8 +186,8 @@ void tui_check_reg_mail(void)
 	sethomefile(file, currentuser.userid, REG_CODE_FILE);
 	if (!dashf(file)) {
 		move(1, 0);
-		outs("    请输入您的复旦邮箱(username@fudan.edu.cn)\n");
-		outs("    \033[1;32m本站采用复旦邮箱绑定认证，将发送认证码至您的复旦邮箱\033[m");
+		outs("    请输入您的复旦邮箱(username@fudan.edu.cn/alu.fudan.edu.cn)\n"
+				"    \033[1;32m本站采用复旦邮箱绑定认证，将发送认证码至您的复旦邮箱\033[m");
 		do {
 			getdata(3, 0, "    E-Mail:> ", email, sizeof(email), DOECHO, YEA);
 			if (!valid_addr(email) || !domain_allowed(email) ||

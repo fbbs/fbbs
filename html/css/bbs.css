@@ -342,18 +342,7 @@ a.reply, a.newpost {
 	border-width: 1px;
 	padding: 3px 10px;
 }
-#quick_reply, div.quick_reply {
-	display: none;
-	margin: 3px;
-	font-size: 14px;
-}
-.quick_reply .buttons { margin: 0 8px 8px 0; }
-.quick_reply .confirm { width: 200px; }
-.quick_reply textarea { margin: 8px 0 0 0; }
-.quick_reply .title input[type="text"] { height: 22px; }
-.quick_upload_ifrm { display: none; }
-form.quick_upload, .mnav form { display: inline-block; }
-form.quick_cp { display: none; margin: 8px 0; }
+.mnav form { display: inline-block; }
 
 .disabled { color: #808080; }
 form.sig_option {
@@ -431,3 +420,25 @@ form.jump { display:inline; }
 
 .column-3 { -moz-column-count: 3; -webkit-column-count: 3; -column-count: 3; }
 li { margin: 0 0 6px 0; }
+
+#login-dialog-form { display: none; }
+#login-dialog-form label, #login-dialog-form input { display: block; }
+#login-dialog-form input { margin: 0 0 10px; width: 95%; }
+
+#quick-cp { display: none; }
+#quick-cp div.ui-state-highlight { margin: 0 0 10px; }
+#quick-cp label, #quick-cp input { display: block; }
+#quick-cp input { width: 95%; }
+
+#quick-reply, .quick-upload-ifrm { display: none; }
+#quick-reply textarea { width: 98%; margin: 10px 0 0; }
+#quick-reply-error { margin-bottom: 10px; }
+#quick-upload { display: block; margin: 10px 0 0; }
+#quick-reply-anony, #quick-reply-sig-label { margin-left: 5px; }
+
+/* overwrite jQuery UI default fonts */
+.ui-widget { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 14px; }
+.ui-widget .ui-widget { font-size: 14px; }
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 14px; }
+
+

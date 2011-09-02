@@ -224,6 +224,7 @@ int main(void)
 #endif // FDQUAN
 		}
 		check_bbserr(ret);
+		pool_destroy(p);
 	}
 	return 0;
 }

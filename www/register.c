@@ -18,6 +18,7 @@ typedef struct reg_req_t {
 	const char *pw;
 	const char *pw2;
 	const char *mail;
+	const char *domain;
 	const char *nick;
 	const char *gender;
 	const char *name;
@@ -55,7 +56,7 @@ static const char *_reg(const reg_req_t *r)
 
 #ifndef FDQUAN
 	char email[sizeof(user.email)];
-	snprintf(email, sizeof(email), "%s@fudan.edu.cn", r->mail);
+	snprintf(email, sizeof(email), "%s@%s", r->mail, r->domain);
 	if (!valid_addr(email) || !domain_allowed(email)
 			|| is_banned_email(email)) {
 		return "电子邮件地址无效，或不在允许范围";
@@ -112,6 +113,7 @@ int fcgi_reg(web_ctx_t *ctx)
 		.pw = get_param(ctx->r, "pw"),
 		.pw2 = get_param(ctx->r, "pw2"),
 		.mail = get_param(ctx->r, "mail"),
+		.domain = get_param(ctx->r, "domain"),
 		.nick = get_param(ctx->r, "nick"),
 		.gender = get_param(ctx->r, "gender"),
 		.name = get_param(ctx->r, "name"),

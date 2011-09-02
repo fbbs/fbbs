@@ -21,7 +21,7 @@ int bbstop10_main(web_ctx_t *ctx)
 	printf("<bbstop10>");
 	print_session(ctx);
 	top_t top;
-	FILE *fp = fopen(BBSHOME"/etc/posts/day.0", "rb");
+	FILE *fp = fopen(BBSHOME"/etc/posts/day_f.data", "rb");
 	if (fp != NULL) {
 		for (int i = 0; i < 10; ++i) {
 			if (fread(&top, sizeof(top), 1, fp) != 1)
