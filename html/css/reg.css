@@ -4,7 +4,7 @@ dl { display: block; margin: 0.5em 0; }
 .warn { background: #ff6666; }
 dt { display: inline-block; width: 5em; text-align: right;}
 dd { display: inline-block; margin-left: 0.5em; }
-input[type="text"], input[type="password"] { font-size: 1em; width: 18em; margin: 2px; border: 1px solid #6699cc; }
+input[type="text"], input[type="password"] { font-size: 1em; width: 21em; margin: 2px; border: 1px solid #6699cc; }
 input:focus { -moz-box-shadow: 0px 0px 0.5em #336699; box-shadow: 0px 0px 0.5em #336699; }
 input[type="submit"] { font-size: 1.5em; width: 17em; margin: 0.5em 0; }
 label { padding: 0 0.5em; }
@@ -17,3 +17,4 @@ span.hint { margin-left: 0.5em; color: green; }
 #e0 { color: green; margin-left: 1em; }
 #prompt { color: red; }
 #loading { display: none; margin-left: 1em; }
+#domain { width: 10em; }

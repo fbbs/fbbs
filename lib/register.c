@@ -323,7 +323,7 @@ bool is_banned_email(const char *mail)
 
 bool domain_allowed(const char *mail)
 {
-	return strstr(mail, "@fudan.edu.cn");
+	return strstr(mail, "@fudan.edu.cn") || strstr(mail, "@alu.fudan.edu.cn");
 }
 
 /**

@@ -4,11 +4,11 @@ $(document).ready(function() {
 	$("span").hide();
 	$('#exist').show();
 	$("input").focus(focus).blur(blur).keyup(check);
-	$("input[type=button]").unbind('focus').unbind('blur').attr("disabled", true);
+	$("input[type=button]").unbind('focus').unbind('blur').prop("disabled", true);
 	$('#id').focus();
 	$("input[name=agree]").click(check);
 	$("input[type=button]").click(function() {
-		$(this).attr("disabled", true);
+		$(this).prop("disabled", true);
 		$('#e0').hide();
 		$('#e1').hide();
 		$('#loading').show();
@@ -45,12 +45,12 @@ function check() {
 		$(this).addClass('warn');
 		ok = false;
 		if (this.name == 'id')
-			$("input[type=button]").attr("disabled", true);
+			$("input[type=button]").prop("disabled", true);
 	} else {
 		$(this).removeClass('warn');
 		$('#prompt').hide();
 		if (this.name == 'id')
-			$("input[type=button]").attr("disabled", false);
+			$("input[type=button]").prop("disabled", false);
 	}
 }
 
