@@ -113,11 +113,9 @@
 
 function switchPanel() {
 	var item = $(this).next();
-	item.toggle();
-
-	var expand = item.is(':visible');
+	var expand = !item.is(':visible');
+	item.slideToggle();
 	var id = item.parent().attr('id');
-
 	bbs.store.get('navbar', function(ok, val) {
 		var str = '0000000';
 		if (ok && val && val.toString().length == 7)

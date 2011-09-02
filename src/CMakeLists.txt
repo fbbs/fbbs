@@ -10,19 +10,19 @@ add_library(fbcmn STATIC announce.c bbs.c bcache.c bm.c boards.c chat.c
 	mail.c maintain.c more.c namecomplete.c postheader.c read.c register.c
 	screen.c sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c readabc.c
 	convert.c bbsnet.c users.c)
-target_link_libraries(fbcmn BBS)
+target_link_libraries(fbcmn fbbs)
 
 add_executable(bbsd bbsd.c io.c main.c)
-target_link_libraries(bbsd crypt dl BBS fbcmn)
+target_link_libraries(bbsd crypt dl fbbs fbcmn)
 
 add_executable(miscd miscd.c io.c main.c)
-target_link_libraries(miscd crypt dl BBS fbcmn)
+target_link_libraries(miscd crypt dl fbbs fbcmn)
 
 add_executable(chatd station.c)
-target_link_libraries(chatd BBS)
+target_link_libraries(chatd fbbs)
 
 add_executable(thread thread.c)
-target_link_libraries(thread BBS)
+target_link_libraries(thread fbbs)
 
 add_library(admintool MODULE admintool.c)
 
@@ -35,7 +35,7 @@ if(ENABLE_SSH)
 	add_executable(sshbbsd bbsd.c io.c main.c)
 	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DENABLE_SSH")
 	set_target_properties(sshbbsd PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/so")
-	target_link_libraries(sshbbsd crypt dl BBS fbssh fbcmn)
+	target_link_libraries(sshbbsd crypt dl fbbs fbssh fbcmn)
 	install(TARGETS sshbbsd
 		RUNTIME DESTINATION bin)
 endif(ENABLE_SSH)

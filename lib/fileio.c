@@ -50,7 +50,6 @@ int safer_write(int fd, const void *buf, int size)
 	do {
 		cc = write(fd, bp, sz);
 		if ((cc < 0) && (errno != EINTR)) {
-			report("safer_write() err!", "");
 			return -1;
 		}
 		if (cc > 0) {

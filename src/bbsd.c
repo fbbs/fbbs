@@ -41,8 +41,6 @@ enum {
 
 extern char fromhost[];
 
-bbs_env_t env;
-
 // TODO: deprecate this
 char genbuf[1024]; ///< global buffer for strings. 
 

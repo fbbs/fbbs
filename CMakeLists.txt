@@ -9,8 +9,6 @@ if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0015 OLD)
 endif(COMMAND cmake_policy)
 
-include_directories(include)
-
 option(ENABLE_SSH "compile ssh module" off)
 option(ENABLE_DEBUG "compile debug version" on)
 option(ENABLE_WWW "compile www module" on)
@@ -23,6 +21,11 @@ endif(ENABLE_DEBUG)
 
 set(CMAKE_INSTALL_PREFIX "/home/bbs")
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+find_package(Glib REQUIRED)
+
+include_directories(include ${GLIB2_INCLUDE_DIRS})
+
 add_subdirectory(lib)
 if(ENABLE_PG)
 	add_subdirectory(pg)
@@ -30,7 +33,6 @@ endif(ENABLE_PG)
 add_subdirectory(src)
 if(ENABLE_SSH)
 	add_subdirectory(libssh)
-	set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/libssh/cmake)
 	find_package(GCrypt REQUIRED)
 	if(GCRYPT_FOUND)
 	    set(HAVE_LIBGCRYPT 1)
@@ -42,10 +44,6 @@ if(ENABLE_WWW)
 	add_subdirectory(www)
 endif(ENABLE_WWW)
 add_subdirectory(util/local_utl EXCLUDE_FROM_ALL)
-
-if(COMMAND cmake_policy)
-	cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
 
 include(CheckIncludeFiles)
 check_include_files(fcntl.h HAVE_FCNTL_H)

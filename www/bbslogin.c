@@ -143,7 +143,7 @@ static int login_screen(web_ctx_t *ctx)
 	return 0;
 }
 
-int bbslogin_main(web_ctx_t *ctx)
+int web_login(web_ctx_t *ctx)
 {
 	char fname[STRLEN];
 	char buf[256], id[IDLEN + 1], pw[PASSLEN];
