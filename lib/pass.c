@@ -86,3 +86,19 @@ bool passwd_check(const char *name, const char *pw_try)
 	db_clear(res);
 	return match;
 }
+
+/**
+ * Set one's password.
+ * @param name The user name.
+ * @param pw The password in plain text.
+ * @return 0 on sucess, -1 on error.
+ */
+int passwd_set(const char *name, const char *pw)
+{
+	db_res_t *res = db_exec_cmd(env.d,
+			"UPDATE users SET passwd = %s WHERE lower(name) = lower(%s)",
+			genpasswd(pw), name);
+	int ret = res ? 0 : -1;
+	db_clear(res);
+	return ret;
+}

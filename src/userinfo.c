@@ -320,7 +320,6 @@ void uinfo_query(struct userec *u, int real, int unum) {
 					break;
 				}
 				buf[8] = '\0';
-				strlcpy(newinfo.passwd, genpasswd(buf), ENCPASSLEN);
 				break;
 			}
 			break;
@@ -366,8 +365,12 @@ void uinfo_query(struct userec *u, int real, int unum) {
 			strlcpy(uinfo.username, newinfo.username, NAMELEN);
 			WishNum = 9999;
 		}
-		memcpy(u, &newinfo, (size_t)sizeof(currentuser));
-		substitut_record(PASSFILE, &newinfo, sizeof(newinfo), unum);
+		if (ans[0] != 2) {
+			memcpy(u, &newinfo, (size_t)sizeof(currentuser));
+			substitut_record(PASSFILE, &newinfo, sizeof(newinfo), unum);
+		} else {
+			passwd_set(currentuser.userid, buf);
+		}
 	}
 	clear();
 	return;

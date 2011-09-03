@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "record.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
@@ -85,13 +86,14 @@ static int set_password(const char *orig, const char *new1, const char *new2)
 {
 	if (!passwd_check(currentuser.userid, orig))
 		return BBS_EWPSWD;
-	if (strcmp(new1, new2))
+
+	if (!streq(new1, new2))
 		return BBS_EINVAL;
+
 	if (strlen(new1) < 2)
 		return BBS_EINVAL;
-	strlcpy(currentuser.passwd, crypt(new1, new1), sizeof(currentuser.passwd));
-	save_user_data(&currentuser);
-	return 0;
+
+	return (passwd_set(currentuser.userid, new1) == 0 ? 0 : BBS_EINTNL);
 }
 
 int bbspwd_main(web_ctx_t *ctx)
@@ -118,6 +120,8 @@ int bbspwd_main(web_ctx_t *ctx)
 		case BBS_EINVAL:
 			printf("ÐÂÃÜÂë²»Æ¥Åä »ò ÐÂÃÜÂëÌ«¶Ì");
 			break;
+		case BBS_EINTNL:
+			printf("ÄÚ²¿´íÎó");
 		default:
 			break;
 	}

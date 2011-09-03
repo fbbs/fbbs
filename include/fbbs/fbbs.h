@@ -15,5 +15,6 @@ extern bbs_env_t env;
 
 extern bool passwd_match(const char *pw_crypted, const char *pw_try);
 extern bool passwd_check(const char *name, const char *pw_try);
+extern int passwd_set(const char *name, const char *pw);
 
 #endif // FB_FBBS_H
