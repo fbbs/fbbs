@@ -29,10 +29,10 @@ extern int bbsgdoc_main(web_ctx_t *ctx);
 extern int bbstdoc_main(web_ctx_t *ctx);
 extern int bbsgcon_main(web_ctx_t *ctx);
 extern int bbstcon_main(web_ctx_t *ctx);
-extern int bbsmybrd_main(web_ctx_t *ctx);
-extern int bbsbrdadd_main(web_ctx_t *ctx);
+extern int web_mybrd(web_ctx_t *ctx);
+extern int web_brdadd(web_ctx_t *ctx);
 extern int bbsccc_main(web_ctx_t *ctx);
-extern int bbsfav_main(web_ctx_t *ctx);
+extern int web_fav(web_ctx_t *ctx);
 extern int bbspstmail_main(web_ctx_t *ctx);
 extern int bbssndmail_main(web_ctx_t *ctx);
 extern int bbsfall_main(web_ctx_t *ctx);
@@ -89,10 +89,10 @@ const static web_handler_t handlers[] = {
 		{"tdoc" ,bbstdoc_main, READING},
 		{"gcon", bbsgcon_main, READING},
 		{"tcon", bbstcon_main, READING},
-		{"mybrd", bbsmybrd_main, READING},
-		{"brdadd", bbsbrdadd_main, READING},
+		{"mybrd", web_mybrd, READING},
+		{"brdadd", web_brdadd, READING},
 		{"ccc", bbsccc_main, POSTING},
-		{"fav", bbsfav_main, READING},
+		{"fav", web_fav, READING},
 		{"pstmail", bbspstmail_main, SMAIL},
 		{"sndmail", bbssndmail_main, SMAIL},
 		{"fall", bbsfall_main, GMENU},
