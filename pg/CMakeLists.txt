@@ -3,4 +3,4 @@ add_definitions(-D_XOPEN_SOURCE=500 -D_BSD_SOURCE)
 
 add_library(fbbs_pg SHARED pg.c)
 target_link_libraries(fbbs_pg fbbs_base pq ${GLIB2_LIBRARIES})
-install(TARGETS fbbs_pg LIBRARY DESTINATION so)
+install(TARGETS fbbs_pg LIBRARY DESTINATION lib)

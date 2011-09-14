@@ -28,13 +28,11 @@ add_library(admintool MODULE admintool.c)
 
 install(TARGETS bbsd miscd chatd thread
 	RUNTIME DESTINATION bin)
-install(TARGETS admintool
-	LIBRARY DESTINATION so)
+install(TARGETS admintool LIBRARY DESTINATION lib)
 if(ENABLE_SSH)
 	link_directories(../lib ../libssh)
 	add_executable(sshbbsd bbsd.c io.c main.c)
 	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DENABLE_SSH")
-	set_target_properties(sshbbsd PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/so")
 	target_link_libraries(sshbbsd crypt dl fbbs fbssh fbcmn)
 	install(TARGETS sshbbsd
 		RUNTIME DESTINATION bin)

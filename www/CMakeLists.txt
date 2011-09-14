@@ -11,5 +11,6 @@ add_executable(bbswebd libweb.c main.c bbssec.c bbsall.c bbslogin.c
 	bbsfall.c bbsplan.c bbsdel.c bbsinfo.c bbssel.c bbsrss.c
 	bbstop10.c register.c parse.c web.c favorite.c)
 target_link_libraries(bbswebd crypt fcgi fbbs)
-install(TARGETS bbswebd
-	RUNTIME DESTINATION bin)
+install(TARGETS bbswebd RUNTIME DESTINATION bin
+		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+		GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE SETUID SETGID)

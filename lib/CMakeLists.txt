@@ -8,3 +8,5 @@ add_library(fbbs STATIC board.c boardrc.c brdcache.c goodbrd.c log.c mail.c
 		modetype.c pass.c post.c record.c shm.c stuffs.c sysconf.c ucache.c
 		uinfo.c register.c user.c session.c)
 target_link_libraries(fbbs m fbbs_base fbbs_pg)
+
+install(TARGETS fbbs_base LIBRARY DESTINATION lib)

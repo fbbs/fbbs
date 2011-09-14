@@ -7,5 +7,4 @@ add_library(fbssh SHARED agent.c auth.c auth1.c base64.c buffer.c callbacks.c
 	session.c sftp.c sftpserver.c socket.c string.c wrapper.c)
 target_link_libraries(fbssh gcrypt)
 
-install(TARGETS fbssh
-	LIBRARY DESTINATION so)
+install(TARGETS fbssh LIBRARY DESTINATION lib)
