@@ -163,6 +163,10 @@ static int _init_all(void)
 	if(geteuid() != BBSUID)
 		return -1;
 
+	if (resolve_ucache() == -1)
+		return -1;
+	resolve_utmp();
+
 	if (resolve_boards() < 0)
 		return -1;
 	if (!brdshm)
