@@ -312,10 +312,10 @@ db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, ...)
 	return res;
 }
 
-db_res_t *db_exec_query(db_conn_t *conn, const char *cmd, bool binary, ...)
+db_res_t *db_exec_query(db_conn_t *conn, bool binary, const char *cmd, ...)
 {
 	va_list ap;
-	va_start(ap, binary);
+	va_start(ap, cmd);
 	db_res_t *res = _db_exec_cmd(conn, cmd, binary, DBRES_TUPLES_OK, ap);
 	va_end(ap);
 	return res;

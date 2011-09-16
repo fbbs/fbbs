@@ -73,7 +73,7 @@ bool passwd_match(const char *pw_crypted, const char *pw_try)
  */
 bool passwd_check(const char *name, const char *pw_try)
 {
-	db_res_t *res = db_exec_query(env.d,
+	db_res_t *res = db_exec_query(env.d, true,
 			"SELECT passwd FROM users WHERE lower(name) = lower(%s)", name);
 	if (!res)
 		return false;
