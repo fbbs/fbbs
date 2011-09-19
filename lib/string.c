@@ -1,8 +1,9 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <time.h>
+#include <wchar.h>
 #include "fbbs/string.h"
 
 /**
@@ -308,4 +309,74 @@ const char *check_gbk(const char *title)
 		title++;
 	}
 	return (gbk ? title - 1 : title);
+}
+
+/** Check continuation byte (10xxxxxx) */
+#define is_cont(c) ((c & 0xc0) == 0x80)
+
+/**
+ * Get next wchar from a UTF-8 multibyte sequence.
+ * @param[in, out] str The UTF-8 multibyte string. On valid input, *str will
+ * be incremented accordingly.
+ * @param[in, out] leftp Bytes left in the string. Could be left NULL for a
+ * NUL-terminated string. On valid input, *leftp will be decremented accordingly.
+ * @return The wchar on success, 0 on string end, WEOF on invalid sequence.
+ */
+static wchar_t next_wchar(const char **str, size_t *leftp)
+{
+	unsigned char *s = (unsigned char *)*str;
+	wchar_t wc;
+	size_t incr = 0, left = leftp ? *leftp : 9;
+	if (left && *s) {
+		if (*s < 0x80) {
+			wc = *s;
+			incr = 1;
+		} else if ((*s & 0xe0) == 0xc0 && left > 1 && is_cont(s[1])) {
+			wc = ((s[0] & 0x1f) << 6) | (s[1] & 0x3f);
+			incr = 2;
+		} else if ((*s & 0xf0) == 0xe0 && left > 2
+				&& is_cont(s[1]) && is_cont(s[2]) ) {
+			wc = ((s[0] & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f);
+			incr = 3;
+		} else if ((*s & 0xf8) == 0xf0 && left > 3
+				&& is_cont(s[1]) && is_cont(s[2]) && is_cont(s[3])) {
+			wc = ((s[0] & 0x07) << 18) | ((s[1] & 0x3f) << 12) |
+					((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
+			incr = 4;
+		}
+	} else {
+		return 0;
+	}
+	if (incr) {
+		*str += incr;
+		if (leftp)
+			*leftp -= incr;
+		return wc;
+	}
+	return WEOF;
+}
+
+/**
+ * Validate a UTF-8 string, while checking its width and length.
+ * @param[in] str The UTF-8 string to be validated.
+ * @param[in] max_chinese_chars maximum column width and string length,
+ * assuming each chinese character occupies 2 columns and max 4 bytes.
+ * @return If the input is valid UTF-8 sequence and do not exceed any of the
+ * limits, its column width is returned, -1 otherwise.
+ */
+int validate_utf8_input(const char *str, size_t max_chinese_chars)
+{
+	const char *s = str;
+	size_t width = 0;
+	while (1) {
+		wchar_t wc = next_wchar(&s, NULL);
+		if (wc == WEOF)
+			return -1;
+		if (!wc) {
+			if (s - str > max_chinese_chars * 4 || width > max_chinese_chars * 2)
+				return -1;
+			return width;
+		}
+		width += wcwidth(wc);
+	}
 }
