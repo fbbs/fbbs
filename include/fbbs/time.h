@@ -2,6 +2,7 @@
 #define FB_TIME_H
 
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -19,5 +20,7 @@ enum DATE_FORMAT {
 typedef int64_t fb_time_t;
 
 extern char *getdatestring(time_t time, enum DATE_FORMAT mode);
+
+extern bool valid_date(int year, int month, int day);
 
 #endif // FB_TIME_H

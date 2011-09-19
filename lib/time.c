@@ -50,4 +50,35 @@ char *getdatestring(time_t time, enum DATE_FORMAT mode)
 	return str;
 }
 
+/**
+ * Validate date.
+ * @param year Year. Not checked except for determining leap year.
+ * @param month Month (1-12)
+ * @param day Day (1-31)
+ * @return True if valid, false otherwise.
+ */
+bool valid_date(int year, int month, int day)
+{
+	if (month < 1 || month > 12)
+		return false;
 
+	int days = 31;
+	switch (month) {
+		case 2:
+			if (year % 4 == 0 && !(year % 100 == 0 && year % 400 != 0))
+				days = 29;
+			else
+				days = 28;
+			break;
+		case 4:
+		case 6:
+		case 9:
+		case 11:
+			days = 30;
+			break;
+	}
+	if (day < 1 || day > days)
+		return false;
+
+	return true;
+}

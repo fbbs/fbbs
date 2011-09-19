@@ -354,36 +354,6 @@ void show_position(const struct userec *user, char *buf, size_t size)
  *
  *
  */
-static bool valid_birth_date(int year, int month, int day)
-{
-	if (year < MIN_BIRTH_YEAR || year > MAX_BIRTH_YEAR
-			|| month < 1 || month > 12)
-		return false;
-
-	int days = 31;
-	switch (month) {
-		case 2:
-			if (year % 4 == 0 && !(year % 100 == 0 && year % 400 != 0))
-				days = 29;
-			else
-				days = 28;
-			break;
-		case 4:
-		case 6:
-		case 9:
-		case 11:
-			days = 30;
-			break;
-	}
-	if (day < 1 || day > days)
-		return false;
-	return true;
-}
-
-/**
- *
- *
- */
 int check_user_profile(const struct userec *u)
 {
 	if (strlen(u->username) < 2 || strstr(u->username, "  ")
@@ -393,7 +363,9 @@ int check_user_profile(const struct userec *u)
 	if (strchr("MF", u->gender) == NULL)
 		return UINFO_EGENDER;
 
-	if (!valid_birth_date(u->birthyear + 1900, u->birthmonth, u->birthday))
+	if (u->birthyear + 1900 < MIN_BIRTH_YEAR || u->birthyear + 1900 > MAX_BIRTH_YEAR)
+		return UINFO_EBIRTH;
+	if (!valid_date(u->birthyear + 1900, u->birthmonth, u->birthday))
 		return UINFO_EBIRTH;
 
 	return 0;
