@@ -361,8 +361,9 @@ static wchar_t next_wchar(const char **str, size_t *leftp)
  * @param[in] str The UTF-8 string to be validated.
  * @param[in] max_chinese_chars maximum column width and string length,
  * assuming each chinese character occupies 2 columns and max 4 bytes.
- * @return If the input is valid UTF-8 sequence and do not exceed any of the
- * limits, its column width is returned, -1 otherwise.
+ * @return If the input a) is valid UTF-8 sequence b) does not exceed any of
+ * the limits, and c) only contain characters with positive column width,
+ * its total column width is returned, -1 otherwise.
  */
 int validate_utf8_input(const char *str, size_t max_chinese_chars)
 {
@@ -377,6 +378,9 @@ int validate_utf8_input(const char *str, size_t max_chinese_chars)
 				return -1;
 			return width;
 		}
+		int w = wcwidth(wc);
+		if (w <= 0)
+			return -1;
 		width += wcwidth(wc);
 	}
 }
