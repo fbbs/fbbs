@@ -618,7 +618,7 @@ int create_user(const struct userec *user)
 		return UCACHE_EEXIST;
 	
 	db_res_t *res = db_exec_cmd(env.d,
-			"INSERT INTO users (name, passwd) VALUES (%s, %s)",
+			"INSERT INTO all_users (name, passwd) VALUES (%s, %s)",
 			user->userid, user->passwd);
 	db_clear(res);
 	if (!res)
