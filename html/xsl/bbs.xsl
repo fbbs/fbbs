@@ -137,6 +137,7 @@
 
 <xsl:template name='include-css'>
 	<link rel='stylesheet' type='text/css' href='../css/redmond/jquery-ui-1.8.16.custom.css'/>
+	<link rel='stylesheet' type='text/css' href='../css/common.css'/>
 	<link rel='stylesheet' type='text/css' href='../css/bbs.css?v1416'/>
 	<xsl:comment><![CDATA[[if lt IE 7]><link rel='stylesheet' type='text/css' href='../css/ie6fix.css?v1283'/><![endif]]]></xsl:comment>
 </xsl:template>
