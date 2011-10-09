@@ -304,7 +304,7 @@ static void _print_body(const char *begin, const char *end, int option)
 	 * <pa m='s'></pa> signature
 	 */
 	printf("<pa m='t'>");
-	bool in_text = true, in_signature = false, in_quote = false;
+	bool in_signature = false, in_quote = false;
 
 	const char *s, *e;
 	for (s = begin; s != end; s = e) {
@@ -313,7 +313,6 @@ static void _print_body(const char *begin, const char *end, int option)
 			if (e - s == 3 && memcmp(s, "--\n", 3) == 0) {
 				if (option & PARSE_NOSIG)
 					break;
-				in_text = false;
 				in_quote = false;
 				in_signature = true;
 				printf("</pa><pa m='s'><p>--</p>");
