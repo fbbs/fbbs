@@ -14,12 +14,12 @@ static int cmp_fid(const void *key, const void *buf)
 	return 0;
 }
 
-int bbsdel_main(web_ctx_t *ctx)
+int bbsdel_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
-	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
+	unsigned int fid = strtoul(get_param("f"), NULL, 10);
 	if (fid == 0)
 		return BBS_EINVAL;
 	struct boardheader *bp = getbcache2(bid);

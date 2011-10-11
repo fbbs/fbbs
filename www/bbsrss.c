@@ -9,9 +9,9 @@ enum {
 	MAXRSS = 10, ///< max. number of posts output
 };
 
-int bbsrss_main(web_ctx_t *ctx)
+int bbsrss_main(void)
 {
-	struct boardheader *bp = getbcache2(strtol(get_param(ctx->r, "bid"), NULL, 10));
+	struct boardheader *bp = getbcache2(strtol(get_param("bid"), NULL, 10));
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (is_board_dir(bp))

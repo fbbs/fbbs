@@ -133,9 +133,9 @@ static bool check_upload(char *buf, size_t size, char **begin, char **end, char 
 	return true;
 }
 
-int bbspreupload_main(web_ctx_t *ctx)
+int bbspreupload_main(void)
 {
-	const char *board = get_param(ctx->r, "board");
+	const char *board = get_param("board");
 	if (!loginok)
 		return BBS_ELGNREQ;
 	struct boardheader *bp = getbcache(board);
@@ -152,15 +152,15 @@ int bbspreupload_main(web_ctx_t *ctx)
 	return 0;
 }
 
-int bbsupload_main(web_ctx_t *ctx)
+int bbsupload_main(void)
 {
 	if (!loginok) 
 		return BBS_ELGNREQ;
 
 	struct boardheader *bp;
-	const char *bid = get_param(ctx->r, "bid");
+	const char *bid = get_param("bid");
 	if (*bid == '\0')
-		bp = getbcache(get_param(ctx->r, "b"));
+		bp = getbcache(get_param("b"));
 	else
 		bp = getbcache2(strtol(bid, NULL, 10));
 

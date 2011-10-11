@@ -2,9 +2,9 @@
 #include "mmap.h"
 #include "fbbs/web.h"
 
-int bbsnot_main(web_ctx_t *ctx)
+int bbsnot_main(void)
 {
-	struct boardheader *bp = getbcache(get_param(ctx->r, "board"));
+	struct boardheader *bp = getbcache(get_param("board"));
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
@@ -19,7 +19,7 @@ int bbsnot_main(web_ctx_t *ctx)
 	printf("<bbsnot brd='%s'>", bp->filename);
 	xml_fputs((char *)m.ptr, stdout);
 	mmap_close(&m);
-	print_session(ctx);
+	print_session();
 	printf("</bbsnot>");
 	return 0;
 }

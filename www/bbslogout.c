@@ -18,7 +18,7 @@ static void abort_program(void)
 	}
 }
 
-int bbslogout_main(web_ctx_t *ctx)
+int bbslogout_main(void)
 {
 	if (!loginok) {
 		printf("Location: sec\n\n");

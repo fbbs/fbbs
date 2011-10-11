@@ -105,50 +105,50 @@ static const char *_reg(const reg_req_t *r)
 	return NULL;
 }
 
-int fcgi_reg(web_ctx_t *ctx)
+int fcgi_reg(void)
 {
-	parse_post_data(ctx->r);
+	parse_post_data(ctx.r);
 	reg_req_t request = {
-		.id = get_param(ctx->r, "id"),
-		.pw = get_param(ctx->r, "pw"),
-		.pw2 = get_param(ctx->r, "pw2"),
-		.mail = get_param(ctx->r, "mail"),
-		.domain = get_param(ctx->r, "domain"),
-		.nick = get_param(ctx->r, "nick"),
-		.gender = get_param(ctx->r, "gender"),
-		.name = get_param(ctx->r, "name"),
-		.tel = get_param(ctx->r, "tel"),
-		.agree = get_param(ctx->r, "agree"),
-		.year = strtol(get_param(ctx->r, "byear"), NULL, 10),
-		.month = strtol(get_param(ctx->r, "bmon"), NULL, 10),
-		.day = strtol(get_param(ctx->r, "bday"), NULL, 10)
+		.id = get_param("id"),
+		.pw = get_param("pw"),
+		.pw2 = get_param("pw2"),
+		.mail = get_param("mail"),
+		.domain = get_param("domain"),
+		.nick = get_param("nick"),
+		.gender = get_param("gender"),
+		.name = get_param("name"),
+		.tel = get_param("tel"),
+		.agree = get_param("agree"),
+		.year = strtol(get_param("byear"), NULL, 10),
+		.month = strtol(get_param("bmon"), NULL, 10),
+		.day = strtol(get_param("bday"), NULL, 10)
 	};
 
 	const char *error = _reg(&request);
 
 	xml_header(NULL);
 	printf("<bbsreg error='%d'>", error ? 1 : 0);
-	print_session(ctx);
+	print_session();
 	if (error)
 		printf("%s", error);
 	printf("</bbsreg>");
 	return 0;
 }
 
-int fcgi_activate(web_ctx_t *ctx)
+int fcgi_activate(void)
 {
-	const char *code = get_param(ctx->r, "code");
-	const char *user = get_param(ctx->r, "user");
+	const char *code = get_param("code");
+	const char *user = get_param("user");
 	xml_header(NULL);
 	printf("<bbsactivate success='%d'>", activate_email(user, code));
-	print_session(ctx);
+	print_session();
 	printf("</bbsactivate>");
 	return 0;
 }
 
-int fcgi_exist(web_ctx_t *ctx)
+int fcgi_exist(void)
 {
-	const char *user = get_param(ctx->r, "user");
+	const char *user = get_param("user");
 	xml_header(NULL);
 	printf("<bbsexist>%d</bbsexist>", searchuser(user) != 0);
 	return 0;

@@ -69,13 +69,13 @@ static char *getbfroma(const char *path)
 	return "";
 }
 
-int bbs0an_main(web_ctx_t *ctx)
+int bbs0an_main(void)
 {
 	char path[512];
 	struct boardheader *bp = NULL;
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	if (bid <= 0) {
-		strlcpy(path, get_param(ctx->r, "path"), sizeof(path));
+		strlcpy(path, get_param("path"), sizeof(path));
 		if (strstr(path, "..") || strstr(path, "SYSHome"))
 			return BBS_EINVAL;
 		char *board = getbfroma(path);
@@ -136,7 +136,7 @@ int bbs0an_main(web_ctx_t *ctx)
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
-	print_session(ctx);
+	print_session();
 	
 	char name[STRLEN], fpath[1024], *id = NULL, *ptr;
 	struct stat st;
@@ -180,9 +180,9 @@ int bbs0an_main(web_ctx_t *ctx)
 	return 0;
 }
 
-int bbsanc_main(web_ctx_t *ctx)
+int bbsanc_main(void)
 {
-	const char *path = get_param(ctx->r, "path");
+	const char *path = get_param("path");
 	if (strstr(path, "bbslist") || strstr(path, ".Search")
 			|| strstr(path, ".Names") || strstr(path, "..")
 			|| strstr(path, "SYSHome"))
@@ -202,7 +202,7 @@ int bbsanc_main(web_ctx_t *ctx)
 	if (bp != NULL)
 		printf(" brd='%s'", bp->filename);
 	printf(">");
-	print_session(ctx);
+	print_session();
 	printf("<po>");
 	xml_printfile(fname, stdout);
 	printf("</po></bbsanc>");

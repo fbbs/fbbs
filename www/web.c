@@ -154,8 +154,9 @@ static int _parse_http_req(http_req_t *r)
  * @param key The name of the parameter.
  * @return the value corresponding to 'key', an empty string if not found.
  */
-const char *get_param(http_req_t *r, const char *key)
+const char *get_param(const char *key)
 {
+	http_req_t *r = ctx.r;
 	for (int i = 0; i < r->count; ++i) {
 		if (streq(r->params[i].key, key))
 			return r->params[i].val;
@@ -168,7 +169,7 @@ struct _option_pairs {
 	int flag;
 };
 
-static void _get_global_options(http_req_t *r)
+static void get_global_options(void)
 {
 	struct _option_pairs pairs[] = {
 		{ "api", REQUEST_API },
@@ -177,10 +178,10 @@ static void _get_global_options(http_req_t *r)
 		{ "utf8", REQUEST_UTF8 }
 	};
 
-	r->flag = 0;
+	ctx.r->flag = 0;
 	for (int i = 0; i < sizeof(pairs) / sizeof(pairs[0]); ++i) {
-		if (*get_param(r, pairs[i].param) == '1')
-			r->flag |= pairs[i].flag;
+		if (*get_param(pairs[i].param) == '1')
+			ctx.r->flag |= pairs[i].flag;
 	}
 }
 
@@ -195,6 +196,7 @@ http_req_t *get_request(pool_t *p)
 	http_req_t *r = pool_alloc(p, sizeof(*r));
 	if (!r)
 		return NULL;
+	ctx.r = r;
 
 	r->p = p;
 	r->count = 0;
@@ -208,7 +210,7 @@ http_req_t *get_request(pool_t *p)
 		return NULL;
 	strlcpy(r->from, from, len);
 
-	_get_global_options(r);
+	get_global_options();
 
 	return r;
 }
@@ -217,7 +219,7 @@ http_req_t *get_request(pool_t *p)
  * Parse parameters submitted by POST method.
  * @return 0 on success, -1 on error.
  */
-int parse_post_data(http_req_t *r)
+int parse_post_data(void)
 {
 	unsigned long size = strtoul(_get_server_env("CONTENT_LENGTH"), NULL, 10);
 	if (size == 0)
@@ -225,14 +227,14 @@ int parse_post_data(http_req_t *r)
 	else if (size > MAX_CONTENT_LENGTH)
 		size = MAX_CONTENT_LENGTH;
 
-	char *buf = pool_alloc(r->p, size + 1);
+	char *buf = pool_alloc(ctx.p, size + 1);
 	if (!buf)
 		return -1;
 	if (fread(buf, size, 1, stdin) != 1)
 		return -1;
 
 	buf[size] = '\0';
-	_parse_params(r, buf, '&');
+	_parse_params(ctx.r, buf, '&');
 	return 0;
 }
 

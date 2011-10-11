@@ -3,10 +3,10 @@
 #include "fbbs/uinfo.h"
 #include "fbbs/web.h"
 
-int bbsqry_main(web_ctx_t *ctx)
+int bbsqry_main(void)
 {
 	char userid[IDLEN + 1];
-	strlcpy(userid, get_param(ctx->r, "u"), sizeof(userid));
+	strlcpy(userid, get_param("u"), sizeof(userid));
 	if (!loginok)
 		return BBS_ELGNREQ;
 	struct userec user;
@@ -72,7 +72,7 @@ int bbsqry_main(web_ctx_t *ctx)
 	} else {
 		printf("<bbsqry id='%s'>", userid);
 	}
-	print_session(ctx);
+	print_session();
 	printf("</bbsqry>");
 	return 0;
 }

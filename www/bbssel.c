@@ -2,12 +2,12 @@
 #include "libweb.h"
 #include "fbbs/web.h"
 
-int bbssel_main(web_ctx_t *ctx)
+int bbssel_main(void)
 {
 	xml_header("bbssel");
 	printf("<bbssel>");
-	print_session(ctx);
-	const char *brd = get_param(ctx->r, "brd");
+	print_session();
+	const char *brd = get_param("brd");
 	if (*brd != '\0') {
 		struct boardheader *bp;
 		int found = 0;

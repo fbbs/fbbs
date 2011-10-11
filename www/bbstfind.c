@@ -7,8 +7,8 @@ int main() {
 	struct fileheader x, x0;
 	int sum=0, total=0;
  	init_all();
-	strlcpy(board, get_param(ctx->r, "board"), 32);
-	strlcpy(title, get_param(ctx->r, "title"), 42);
+	strlcpy(board, get_param("board"), 32);
+	strlcpy(title, get_param("title"), 42);
 	x1=getbcache(board);
 	if(x1==0) 
 	{

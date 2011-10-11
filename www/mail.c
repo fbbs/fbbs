@@ -30,13 +30,13 @@ static int _get_mail_mark(const struct fileheader *fp)
 	return mark;
 }
 
-int bbsmail_main(web_ctx_t *ctx)
+int bbsmail_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	int start = strtol(get_param(ctx->r, "start"), NULL, 10);
-	int page = strtol(get_param(ctx->r, "page"), NULL, 10);
+	int start = strtol(get_param("start"), NULL, 10);
+	int page = strtol(get_param("page"), NULL, 10);
 	if (page <= 0 || page > TLINES)
 		page = TLINES;
 	
@@ -60,7 +60,7 @@ int bbsmail_main(web_ctx_t *ctx)
 	xml_header(NULL);
 	printf("<bbsmail start='%d' total='%d' page='%d' dpage='%d'>",
 			start, total, page, TLINES);
-	print_session(ctx);
+	print_session();
 
 	for (int i = 0; i < page && fp >= begin; ++i, --fp) {
 		printf("\n<mail r='%d' m='%c' from='%s' date='%s' name='%s'>",
@@ -92,13 +92,13 @@ int print_new_mail(void *buf, int count, void *args)
 	return 0;
 }
 
-int bbsnewmail_main(web_ctx_t *ctx)
+int bbsnewmail_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsmail new='1'>");
-	print_session(ctx);
+	print_session();
 	char file[HOMELEN];
 	setmdir(file, currentuser.userid);
 	time_t limit = time(NULL) - 24 * 60 * 60 * NEWMAIL_EXPIRE;
@@ -108,12 +108,12 @@ int bbsnewmail_main(web_ctx_t *ctx)
 	return 0;
 }
 
-int bbsmailcon_main(web_ctx_t *ctx)
+int bbsmailcon_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	const char *file = get_param(ctx->r, "f");
+	const char *file = get_param("f");
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 
@@ -159,7 +159,7 @@ int bbsmailcon_main(web_ctx_t *ctx)
 	else
 		setmfile(buf, currentuser.userid, file);
 
-	printf("<mail f='%s' n='%s'>", file, get_param(ctx->r, "n"));
+	printf("<mail f='%s' n='%s'>", file, get_param("n"));
 
 	m.oflag = O_RDONLY;
 	if (mmap_open(buf, &m) == 0 && m.size != 0)
@@ -168,17 +168,17 @@ int bbsmailcon_main(web_ctx_t *ctx)
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);
 
-	print_session(ctx);
+	print_session();
 	printf("</bbsmailcon>");
 	return 0;
 }
 
-int bbsdelmail_main(web_ctx_t *ctx)
+int bbsdelmail_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	const char *file = get_param(ctx->r, "f");
+	const char *file = get_param("f");
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 
@@ -211,7 +211,7 @@ int bbsdelmail_main(web_ctx_t *ctx)
 
 extern int web_quotation(const char *str, size_t size, const char *owner, bool ismail);
 
-int bbspstmail_main(web_ctx_t *ctx)
+int bbspstmail_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
@@ -222,7 +222,7 @@ int bbspstmail_main(web_ctx_t *ctx)
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	char file[HOMELEN];
-	const char *str = get_param(ctx->r, "n"); // 1-based
+	const char *str = get_param("n"); // 1-based
 	const struct fileheader *fh = NULL;
 	if (*str != '\0') {
 		num = strtol(str, NULL, 10);
@@ -247,7 +247,7 @@ int bbspstmail_main(web_ctx_t *ctx)
 		ref = "pstmail";
 	xml_fputs(ref, stdout);
 
-	printf("' recv='%s'>", fh == NULL ? get_param(ctx->r, "recv") : fh->owner);
+	printf("' recv='%s'>", fh == NULL ? get_param("recv") : fh->owner);
 
 	if (fh != NULL) {
 		printf("<t>");
@@ -263,32 +263,32 @@ int bbspstmail_main(web_ctx_t *ctx)
 		printf("</m>");
 	}
 	mmap_close(&m);
-	print_session(ctx);
+	print_session();
 	printf("</bbspstmail>");
 	return 0;
 }
 
-int bbssndmail_main(web_ctx_t *ctx)
+int bbssndmail_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
-	if (parse_post_data(ctx->r) < 0)
+	if (parse_post_data(ctx.r) < 0)
 		return BBS_EINVAL;
 
-	const char *recv = get_param(ctx->r, "recv");
+	const char *recv = get_param("recv");
 	if (*recv == '\0')
 		return BBS_EINVAL;
 
 	char title[STRLEN];
-	strlcpy(title, get_param(ctx->r, "title"), sizeof(title));
+	strlcpy(title, get_param("title"), sizeof(title));
 	printable_filter(title);
 	valid_title(title);
 	if (*title == '\0')
 		strlcpy(title, "没主题", sizeof(title));
 
-	const char *text = get_param(ctx->r, "text");
+	const char *text = get_param("text");
 	int len = strlen(text);
 	char header[320];
 	snprintf(header, sizeof(header), "寄信人: %s (%s)\n标  题: %s\n发信站: "
@@ -298,12 +298,12 @@ int bbssndmail_main(web_ctx_t *ctx)
 	// TODO: signature, error code
 	if (do_mail_file(recv, title, header, text, len, NULL) < 0)
 		return BBS_EINVAL;
-	if (*get_param(ctx->r, "backup") != '\0') {
+	if (*get_param("backup") != '\0') {
 		char title2[STRLEN];
 		snprintf(title2, sizeof(title2), "{%s} %s", recv, title);
 		do_mail_file(currentuser.userid, title2, header, text, len, NULL);
 	}
-	const char *ref = get_param(ctx->r, "ref");
+	const char *ref = get_param("ref");
 	http_header();
 	refreshto(1, ref);
 	printf("</head>\n<body>发表成功，1秒钟后自动转到<a href='%s'>原页面</a>\n"
@@ -317,22 +317,22 @@ static int _mail_checked(void *ptr, void *file)
 	return streq(p->filename, file);
 }
 
-int web_mailman(web_ctx_t *ctx)
+int web_mailman(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	parse_post_data(ctx->r);
+	parse_post_data(ctx.r);
 
 	char index[HOMELEN];
 	setmdir(index, currentuser.userid);
 
 	xml_header(NULL);
 	printf("<mailman>");
-	print_session(ctx);
+	print_session();
 
-	for (int i = 0; i < ctx->r->count; ++i) {
-		pair_t *p = ctx->r->params + i;
+	for (int i = 0; i < ctx.r->count; ++i) {
+		pair_t *p = ctx.r->params + i;
 		if (streq(p->val, "on") && strncmp(p->key, "box", 3) == 0) {
 			const char *file = p->key + sizeof("box") - 1;
 			if (delete_record(index, sizeof(struct fileheader), 1,

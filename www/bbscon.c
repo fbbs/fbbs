@@ -95,17 +95,17 @@ int bbscon_search(const struct boardheader *bp, unsigned int fid,
 	return ret;
 }
 
-int bbscon_main(web_ctx_t *ctx)
+int bbscon_main(void)
 {
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
-	const char *action = get_param(ctx->r, "a");
-	bool sticky = *get_param(ctx->r, "s");
+	unsigned int fid = strtoul(get_param("f"), NULL, 10);
+	const char *action = get_param("a");
+	bool sticky = *get_param("s");
 
 	int ret;
 	struct fileheader fh;
@@ -131,7 +131,7 @@ int bbscon_main(web_ctx_t *ctx)
 			opt & PREF_NOSIG ? " nosig='1'" : "",
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 
-	print_session(ctx);
+	print_session();
 
 	bool isbm = chkBM(bp, &currentuser);
 	bool noreply = fh.accessed[0] & FILE_NOREPLY && !isbm;
@@ -150,7 +150,7 @@ int bbscon_main(web_ctx_t *ctx)
 
 	char file[HOMELEN];
 	setbfile(file, bp->filename, fh.filename);
-	xml_print_file(ctx->r, file);
+	xml_print_file(ctx.r, file);
 
 	printf("</po></bbscon>");
 
@@ -160,25 +160,25 @@ int bbscon_main(web_ctx_t *ctx)
 	return 0;
 }
 
-int bbsgcon_main(web_ctx_t *ctx)
+int bbsgcon_main(void)
 {
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	const char *f = get_param(ctx->r, "f");
+	const char *f = get_param("f");
 	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
 		return BBS_EINVAL;
 	xml_header(NULL);
 	printf("<bbscon link='gcon' bid='%d'>", bid);
-	print_session(ctx);
+	print_session();
 	printf("<po>");
 
 	char file[HOMELEN];
 	setbfile(file, bp->filename, f);
-	xml_print_file(ctx->r, file);
+	xml_print_file(ctx.r, file);
 
 	printf("</po></bbscon>");
 	brc_fcgi_init(currentuser.userid, bp->filename);

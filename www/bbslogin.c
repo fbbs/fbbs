@@ -112,9 +112,9 @@ static int wwwlogin(struct userec *user, const char *ref)
 	return 0;
 }
 
-static const char *get_login_referer(web_ctx_t *ctx)
+static const char *get_login_referer(void)
 {
-	const char *next = get_param(ctx->r, "next");
+	const char *next = get_param("next");
 	if (*next != '\0' && !strchr(next, '.'))
 		return next;
 	const char *referer = get_referer();
@@ -127,10 +127,10 @@ static const char *get_login_referer(web_ctx_t *ctx)
 	return ref;
 }
 
-static int login_screen(web_ctx_t *ctx)
+static int login_screen(void)
 {
 	http_header();
-	const char *ref = get_login_referer(ctx);
+	const char *ref = get_login_referer();
 	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
 			"<link rel='stylesheet' type='text/css' href='../css/%s.css' />"
 			"<title>用户登录 - "BBSNAME"</title></head>"
@@ -140,24 +140,24 @@ static int login_screen(web_ctx_t *ctx)
 			"<input type='hidden' name='ref' value='%s'/>"
 			"<input type='submit' value='登录' />"
 			"</form></body></html>",
-			(ctx->r->flag & REQUEST_MOBILE) ? "mobile" : "bbs", ref);
+			(ctx.r->flag & REQUEST_MOBILE) ? "mobile" : "bbs", ref);
 	return 0;
 }
 
-int web_login(web_ctx_t *ctx)
+int web_login(void)
 {
 	char fname[STRLEN];
 	char buf[256], id[IDLEN + 1], pw[PASSLEN];
 	struct userec user;
 
-	if (parse_post_data(ctx->r) < 0)
+	if (parse_post_data(ctx.r) < 0)
 		return BBS_EINVAL;
-	strlcpy(id, get_param(ctx->r, "id"), sizeof(id));
+	strlcpy(id, get_param("id"), sizeof(id));
 	if (*id == '\0')
-		return login_screen(ctx);
-	strlcpy(pw, get_param(ctx->r, "pw"), sizeof(pw));
+		return login_screen();
+	strlcpy(pw, get_param("pw"), sizeof(pw));
 	if (loginok && !strcasecmp(id, currentuser.userid)) {
-		const char *ref = get_login_referer(ctx);
+		const char *ref = get_login_referer();
 		printf("Location: %s\n\n", ref);
 		return 0;
 	}
@@ -207,6 +207,6 @@ int web_login(web_ctx_t *ctx)
 
 	log_usies("ENTER", fromhost, &user);
 	if (!loginok && strcasecmp(id, "guest"))
-		wwwlogin(&user, get_param(ctx->r, "ref"));
+		wwwlogin(&user, get_param("ref"));
 	return 0;
 }

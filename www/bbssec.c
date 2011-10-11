@@ -27,12 +27,12 @@ static int showbrdlist(const char *filename)
 	return showed;
 }
 
-int bbssec_main(web_ctx_t *ctx)
+int bbssec_main(void)
 {
 	char path[HOMELEN];
 	xml_header(NULL);
 	printf("<bbssec>");
-	print_session(ctx);
+	print_session();
 	for(int i = 0; i < SECNUM; i++) {
 		printf("<sec id='%X' desc='%s %s'>", i, secname[i][0], secname[i][1]);
 		sprintf(path, "%s/info/egroup%d/recommend", BBSHOME, i);

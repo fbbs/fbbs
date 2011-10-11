@@ -203,14 +203,14 @@ static int http_init(void)
  * @return 1 on valid user login, 0 on error.
  */
  // TODO: no lock?
-static int user_init(web_ctx_t *ctx, struct userec *x, struct user_info **y, int mode)
+static int user_init(struct userec *x, struct user_info **y, int mode)
 {
 	memset(x, 0, sizeof(*x));
 
 	// Get information from cookie.
-	const char *id = get_param(ctx->r, "utmpuserid");
-	int i = strtol(get_param(ctx->r, "utmpnum"), NULL, 10);
-	int key = strtol(get_param(ctx->r, "utmpkey"), NULL, 10);
+	const char *id = get_param("utmpuserid");
+	int i = strtol(get_param("utmpnum"), NULL, 10);
+	int key = strtol(get_param("utmpkey"), NULL, 10);
 
 	// Boundary check.
 	if (i <= 0 || i > MAXACTIVE) {
@@ -259,10 +259,10 @@ static int user_init(web_ctx_t *ctx, struct userec *x, struct user_info **y, int
  * @return 0
  */
 // TODO: return value?
-int fcgi_init_loop(web_ctx_t *ctx, int mode)
+int fcgi_init_loop(int mode)
 {
 	http_init();
-	loginok = user_init(ctx, &currentuser, &u_info, mode);
+	loginok = user_init(&currentuser, &u_info, mode);
 	return 0;
 }
 
@@ -413,11 +413,11 @@ void set_user_flag(int flag)
 		uidshm->passwd[u_info->uid - 1].flags[1] = flag;
 }
 
-void print_session(web_ctx_t *ctx)
+void print_session(void)
 {
-	if (ctx->r->flag & REQUEST_API)
+	if (ctx.r->flag & REQUEST_API)
 		return;
-	bool mobile = ctx->r->flag & REQUEST_MOBILE;
+	bool mobile = ctx.r->flag & REQUEST_MOBILE;
 
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);

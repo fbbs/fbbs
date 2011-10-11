@@ -116,11 +116,11 @@ int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
-int fcgi_init_loop(web_ctx_t *ctx, int mode);
+int fcgi_init_loop(int mode);
 int get_user_flag(void);
 void set_user_flag(int flag);
 const char *get_doc_mode_str(void);
-void print_session(web_ctx_t *ctx);
+void print_session(void);
 void printable_filter(char *str);
 
 extern int xml_print_post(const char *file, int option);

@@ -179,13 +179,13 @@ static void _print_board_img(const char *board)
 		printf(" banner='../info/boards/%s/banner.jpg'", board);
 }
 
-static int bbsdoc(web_ctx_t *ctx, int mode)
+static int bbsdoc(int mode)
 {
 	char board[STRLEN];
-	const char *bidstr = get_param(ctx->r, "bid");
+	const char *bidstr = get_param("bid");
 	struct boardheader *bp;
 	if (*bidstr == '\0') {
-		bp = getbcache(get_param(ctx->r, "board"));
+		bp = getbcache(get_param("board"));
 	} else {
 		bp = getbcache2(strtol(bidstr, NULL, 10));
 	}
@@ -204,8 +204,8 @@ static int bbsdoc(web_ctx_t *ctx, int mode)
 			setbfile(dir, board, DOT_DIR);
 			break;
 	}
-	int start = strtol(get_param(ctx->r, "start"), NULL, 10);
-	int my_t_lines = strtol(get_param(ctx->r, "my_t_lines"), NULL, 10);
+	int start = strtol(get_param("start"), NULL, 10);
+	int my_t_lines = strtol(get_param("my_t_lines"), NULL, 10);
 	int bid = getbnum2(bp);
 	if (my_t_lines < 10 || my_t_lines > 40)
 		my_t_lines = TLINES;
@@ -215,7 +215,7 @@ static int bbsdoc(web_ctx_t *ctx, int mode)
 
 	xml_header(NULL);
 	printf("<bbsdoc>");
-	print_session(ctx);
+	print_session();
 	brc_fcgi_init(currentuser.userid, board);
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 
@@ -248,24 +248,24 @@ static int bbsdoc(web_ctx_t *ctx, int mode)
 	return 0;
 }
 
-int bbsdoc_main(web_ctx_t *ctx)
+int bbsdoc_main(void)
 {
-	return bbsdoc(ctx, MODE_NORMAL);
+	return bbsdoc(MODE_NORMAL);
 }
 
-int bbsgdoc_main(web_ctx_t *ctx)
+int bbsgdoc_main(void)
 {
-	return bbsdoc(ctx, MODE_DIGEST);
+	return bbsdoc(MODE_DIGEST);
 }
 
-int bbstdoc_main(web_ctx_t *ctx)
+int bbstdoc_main(void)
 {
-	return bbsdoc(ctx, MODE_THREAD);
+	return bbsdoc(MODE_THREAD);
 }
 
-int bbsodoc_main(web_ctx_t *ctx)
+int bbsodoc_main(void)
 {
-	return bbsdoc(ctx, MODE_TOPICS);
+	return bbsdoc(MODE_TOPICS);
 }
 
 int do_bfind(void *buf, int count, void *args)
@@ -294,30 +294,30 @@ int do_bfind(void *buf, int count, void *args)
 	return 0;
 }
 
-int bbsbfind_main(web_ctx_t *ctx)
+int bbsbfind_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
 	criteria_t cri;
-	cri.bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	cri.bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(cri.bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	cri.mark = false;
-	if (!strcasecmp(get_param(ctx->r, "mark"), "on"))
+	if (!strcasecmp(get_param("mark"), "on"))
 		cri.mark = true;
 	cri.nore = false;
-	if (!strcasecmp(get_param(ctx->r, "nore"), "on"))
+	if (!strcasecmp(get_param("nore"), "on"))
 		cri.nore = true;
-	long day = strtol(get_param(ctx->r, "limit"), NULL, 10);
+	long day = strtol(get_param("limit"), NULL, 10);
 	if (day < 0)
 		day = 0;
 	cri.limit = time(NULL) - 24 * 60 * 60 * day;
-	cri.t1 = get_param(ctx->r, "t1");
-	cri.t2 = get_param(ctx->r, "t2");
-	cri.t3 = get_param(ctx->r, "t3");
-	cri.user = get_param(ctx->r, "user");
+	cri.t1 = get_param("t1");
+	cri.t2 = get_param("t2");
+	cri.t3 = get_param("t3");
+	cri.user = get_param("user");
 	cri.found = 0;
 
 	xml_header(NULL);
@@ -333,7 +333,7 @@ int bbsbfind_main(web_ctx_t *ctx)
 	} else {
 		printf(">");
 	}
-	print_session(ctx);
+	print_session();
 	printf("</bbsbfind>");
 	return 0;
 }
@@ -432,11 +432,11 @@ static topic_t *_get_topics(const char *dir, int *count, unsigned int start,
 	return t;
 }
 
-int web_forum(web_ctx_t *ctx)
+int web_forum(void)
 {
-	struct boardheader *bp = getbcache2(strtol(get_param(ctx->r, "bid"), NULL, 10));
+	struct boardheader *bp = getbcache2(strtol(get_param("bid"), NULL, 10));
 	if (!bp)
-		bp = getbcache(get_param(ctx->r, "board"));
+		bp = getbcache(get_param("board"));
 	
 	if (!bp || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
@@ -453,13 +453,13 @@ int web_forum(web_ctx_t *ctx)
 	int count = TOPICS_PER_PAGE;
 	unsigned int next = 0;
 	topic_t *t = _get_topics(dir, &count,
-			strtoul(get_param(ctx->r, "start"), NULL, 10), &next);
+			strtoul(get_param("start"), NULL, 10), &next);
 
 	xml_header(NULL);
 	printf("<forum title='%s' desc='%s' bm='%s' bid='%d' next='%u'>", 
 			bp->filename, get_board_desc(bp), bp->BM, bp - bcache + 1, next);
 	_print_board_img(bp->filename);
-	print_session(ctx);
+	print_session();
 
 	for (int i = 0; i < count; ++i) {
 		printf("<po gid='%u' m='%c' posts='%d'",

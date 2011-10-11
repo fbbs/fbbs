@@ -15,11 +15,11 @@ typedef struct top_t {
     time_t last;
 } top_t;
 
-int bbstop10_main(web_ctx_t *ctx)
+int bbstop10_main(void)
 {
 	xml_header(NULL);
 	printf("<bbstop10>");
-	print_session(ctx);
+	print_session();
 	top_t top;
 	FILE *fp = fopen(BBSHOME"/etc/posts/day_f.data", "rb");
 	if (fp != NULL) {

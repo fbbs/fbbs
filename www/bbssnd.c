@@ -90,13 +90,13 @@ static char *_check_character(char *text)
 	return text;
 }
 
-int bbssnd_main(web_ctx_t *ctx)
+int bbssnd_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	if (parse_post_data(ctx->r) < 0)
+	if (parse_post_data(ctx.r) < 0)
 		return BBS_EINVAL;
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_ENOBRD;
@@ -104,10 +104,10 @@ int bbssnd_main(web_ctx_t *ctx)
 		return BBS_EINVAL;
 	bid = bp - bcache + 1;
 
-	bool isedit = (*(get_param(ctx->r, "e")) == '1');
+	bool isedit = (*(get_param("e")) == '1');
 	unsigned int fid;
 	struct fileheader fh;
-	const char *f = get_param(ctx->r, "f");
+	const char *f = get_param("f");
 	bool reply = !(*f == '\0');
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
@@ -123,11 +123,11 @@ int bbssnd_main(web_ctx_t *ctx)
 
 	char title[sizeof(fh.title)];
 	if (!isedit) {
-		if (ctx->r->flag & REQUEST_UTF8) {
-			convert(ctx->u2g, get_param(ctx->r, "title"), 0,
+		if (ctx.r->flag & REQUEST_UTF8) {
+			convert(ctx.u2g, get_param("title"), 0,
 					title, sizeof(title), NULL, NULL);
 		} else {
-			strlcpy(title, get_param(ctx->r, "title"), sizeof(title));
+			strlcpy(title, get_param("title"), sizeof(title));
 		}
 		printable_filter(title);
 		valid_title(title);
@@ -141,7 +141,7 @@ int bbssnd_main(web_ctx_t *ctx)
 	if (diff < 6)
 		return BBS_EPFREQ;
 
-	char *text = (char *)get_param(ctx->r, "text");
+	char *text = (char *)get_param("text");
 	_check_character(text);
 
 	if (isedit) {
@@ -153,11 +153,11 @@ int bbssnd_main(web_ctx_t *ctx)
 		post_request_t pr = { .autopost = false, .crosspost = false,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
 			.bp = bp, .title = title, .content = text,
-			.sig = strtol(get_param(ctx->r, "sig"), NULL, 0), .ip = mask_host(fromhost),
+			.sig = strtol(get_param("sig"), NULL, 0), .ip = mask_host(fromhost),
 			.o_fp = reply ? &fh : NULL, .mmark = false,
 			.noreply = reply && fh.accessed[0] & FILE_NOREPLY,
-			.anony = strtol(get_param(ctx->r, "anony"), NULL, 0),
-			.cp = (ctx->r->flag & REQUEST_UTF8) ? ctx->u2g : NULL
+			.anony = strtol(get_param("anony"), NULL, 0),
+			.cp = (ctx.r->flag & REQUEST_UTF8) ? ctx.u2g : NULL
 		};
 		if (!(fid = do_post_article(&pr)))
 			return BBS_EINTNL;

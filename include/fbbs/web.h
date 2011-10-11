@@ -42,9 +42,11 @@ typedef struct web_ctx_t {
 	convert_t *g2u;
 } web_ctx_t;
 
+extern web_ctx_t ctx;
+
 extern http_req_t *get_request(pool_t *p);
-extern const char *get_param(http_req_t *r, const char *name);
-extern int parse_post_data(http_req_t *r);
+extern const char *get_param(const char *name);
+extern int parse_post_data();
 
 extern void html_header(void);
 extern void xml_header(const char *xslfile);

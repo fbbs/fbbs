@@ -20,13 +20,13 @@ static int print_override(void *buf, int count, void *args)
 	return 0;
 }
 
-int bbsfall_main(web_ctx_t *ctx)
+int bbsfall_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsfall>");
-	print_session(ctx);
+	print_session();
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, "friends");
 	apply_record(file, print_override, sizeof(override_t), NULL, false,
@@ -47,12 +47,12 @@ static int cmp_override(const void *key, const void *buf)
 	return strncasecmp(((override_t *)key)->id, ov->id, sizeof(ov->id));
 }
 
-int bbsfadd_main(web_ctx_t *ctx)
+int bbsfadd_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	const char *id = get_param(ctx->r, "id");
-	const char *desc = get_param(ctx->r, "desc");
+	const char *id = get_param("id");
+	const char *desc = get_param("desc");
 	if (*id != '\0') {
 		override_t ov;
 		memset(&ov, 0, sizeof(ov));
@@ -72,16 +72,16 @@ int bbsfadd_main(web_ctx_t *ctx)
 	}
 	xml_header(NULL);
 	printf("<bbsfadd>");
-	print_session(ctx);
+	print_session();
 	printf("%s</bbsfadd>", id);
 	return 0;
 }
 
-int bbsfdel_main(web_ctx_t *ctx)
+int bbsfdel_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	const char *user = get_param(ctx->r, "u");
+	const char *user = get_param("u");
 	if (*user != '\0') {
 		char file[HOMELEN];
 		sethomefile(file, currentuser.userid, "friends");
@@ -150,13 +150,13 @@ static void override_info(void)
 	mmap_close(&m);
 }
 
-int bbsovr_main(web_ctx_t *ctx)
+int bbsovr_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsovr>");
-	print_session(ctx);
+	print_session();
 	override_info();
 	printf("</bbsovr>");
 	return 0;

@@ -66,11 +66,11 @@ static void get_post_body(char **begin, char **end)
 	}
 }
 
-static int do_bbspst(web_ctx_t *ctx, bool isedit)
+static int do_bbspst(bool isedit)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !haspostperm(&currentuser, bp))
 		return BBS_EPST;
@@ -79,7 +79,7 @@ static int do_bbspst(web_ctx_t *ctx, bool isedit)
 	unsigned long fid = 0;
 	mmap_t m;
 	struct fileheader fh;
-	const char *f = get_param(ctx->r, "f");
+	const char *f = get_param("f");
 	bool reply = !(*f == '\0');
 	if (isedit && !reply)
 		return BBS_EINVAL;
@@ -105,7 +105,7 @@ static int do_bbspst(web_ctx_t *ctx, bool isedit)
 	bool anony = bp->flag & BOARD_ANONY_FLAG;
 	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d' anony='%d'>",
 			bp->filename, bid, isedit, dashd(path), anony);
-	print_session(ctx);
+	print_session();
 	if (reply) {
 		printf("<t>");
 		ansi_filter(fh.title, fh.title);
@@ -126,36 +126,36 @@ static int do_bbspst(web_ctx_t *ctx, bool isedit)
 	return 0;
 }
 
-int bbspst_main(web_ctx_t *ctx)
+int bbspst_main(void)
 {
-	return do_bbspst(ctx, false);
+	return do_bbspst(false);
 }
 
-int bbsedit_main(web_ctx_t *ctx)
+int bbsedit_main(void)
 {
-	return do_bbspst(ctx, true);
+	return do_bbspst(true);
 }
 
-int bbsccc_main(web_ctx_t *ctx)
+int bbsccc_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	parse_post_data(ctx->r);
+	parse_post_data(ctx.r);
 
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
+	unsigned int fid = strtoul(get_param("f"), NULL, 10);
 	struct fileheader fh;
 	if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
 		return BBS_ENOFILE;
 
-	const char *target = get_param(ctx->r, "t");
+	const char *target = get_param("t");
 	if (*target != '\0') {
 		struct boardheader *bp2 = getbcache(target);
 		if (bp2 == NULL)
@@ -192,14 +192,14 @@ int bbsccc_main(web_ctx_t *ctx)
 		xml_header(NULL);
 		printf("<bbsccc t='%ld' b='%ld' f='%u'>",
 				bp2 - bcache + 1, bp - bcache + 1, ret);
-		print_session(ctx);
+		print_session();
 		printf("</bbsccc>");
 	} else {
 		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",
 				fh.owner, bp->filename, bp - bcache + 1, fid);
 		xml_fputs(fh.title, stdout);
-		print_session(ctx);
+		print_session();
 		printf("</bbsccc>");
 	}
 	return 0;
@@ -210,28 +210,28 @@ int bbsccc_main(web_ctx_t *ctx)
  * @return 0 on success, bbserrno on error.
  */
 // fwd?bid=[bid]&f=[fid]&u=[recipient]
-int bbsfwd_main(web_ctx_t *ctx)
+int bbsfwd_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	parse_post_data(ctx->r);
-	const char *reci = get_param(ctx->r, "u");
+	parse_post_data(ctx.r);
+	const char *reci = get_param("u");
 	if (*reci == '\0') {
 		xml_header(NULL);
 		printf("<bbsfwd bid='%s' f='%s'>",
-				get_param(ctx->r, "bid"), get_param(ctx->r, "f"));
-		print_session(ctx);
+				get_param("bid"), get_param("f"));
+		print_session();
 		printf("</bbsfwd>");
 	} else {
 		if (!HAS_PERM(PERM_MAIL))
 			return BBS_EACCES;
-		int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+		int bid = strtol(get_param("bid"), NULL, 10);
 		struct boardheader *bp = getbcache2(bid);
 		if (bp == NULL || !hasreadperm(&currentuser, bp))
 			return BBS_ENOBRD;
 		if (bp->flag & BOARD_DIR_FLAG)
 			return BBS_EINVAL;
-		unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
+		unsigned int fid = strtoul(get_param("f"), NULL, 10);
 		struct fileheader fh;
 		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;

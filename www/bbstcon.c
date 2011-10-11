@@ -95,12 +95,12 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 	return fh;
 }
 
-int bbstcon_main(web_ctx_t *ctx)
+int bbstcon_main(void)
 {
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp;
 	if (bid <= 0) {
-		bp = getbcache(get_param(ctx->r, "board"));
+		bp = getbcache(get_param("board"));
 		bid = getbnum2(bp);
 	} else {
 		bp = getbcache2(bid);
@@ -110,9 +110,9 @@ int bbstcon_main(web_ctx_t *ctx)
 	if (bp->flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	unsigned int gid = strtoul(get_param(ctx->r, "g"), NULL, 10);
-	unsigned int fid = strtoul(get_param(ctx->r, "f"), NULL, 10);
-	char action = *(get_param(ctx->r, "a"));
+	unsigned int gid = strtoul(get_param("g"), NULL, 10);
+	unsigned int fid = strtoul(get_param("f"), NULL, 10);
+	char action = *(get_param("a"));
 	if (gid == 0)
 		gid = fid;
 
@@ -135,7 +135,7 @@ int bbstcon_main(web_ctx_t *ctx)
 			flag & THREAD_FIRST ? " tfirst='1'" : "",
 			opt & PREF_NOSIG ? " nosig='1'" : "",
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
-	print_session(ctx);
+	print_session();
 
 	bool isbm = chkBM(bp, &currentuser);
 	if (action != 'p') {
@@ -151,7 +151,7 @@ int bbstcon_main(web_ctx_t *ctx)
 		printf("<po fid='%u' owner='%s'%s>", begin->id, begin->owner,
 				!isbm && begin->accessed[0] & FILE_NOREPLY ? " nore='1'" : "");
 		setbfile(file, bp->filename, begin->filename);
-		xml_print_file(ctx->r, file);
+		xml_print_file(ctx.r, file);
 		puts("</po>");
 		brc_addlist(begin->filename);
 	}
@@ -161,13 +161,13 @@ int bbstcon_main(web_ctx_t *ctx)
 	return 0;
 }
 
-int web_sigopt(web_ctx_t *ctx)
+int web_sigopt(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	bool hidesig = streq(get_param(ctx->r, "hidesig"), "on");
-	bool hideimg = streq(get_param(ctx->r, "hideimg"), "on");
+	bool hidesig = streq(get_param("hidesig"), "on");
+	bool hideimg = streq(get_param("hideimg"), "on");
 
 	int flag = get_user_flag();
 

@@ -4,14 +4,14 @@
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
-int web_fav(web_ctx_t *ctx)
+int web_fav(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
 	xml_header(NULL);
 	printf("<bbsfav>");
-	print_session(ctx);
+	print_session();
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
@@ -37,12 +37,12 @@ int web_fav(web_ctx_t *ctx)
 	return 0;
 }
 
-int web_brdadd(web_ctx_t *ctx)
+int web_brdadd(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	int bid = strtol(get_param(ctx->r, "bid"), NULL, 10);
+	int bid = strtol(get_param("bid"), NULL, 10);
 	struct boardheader *bp = getbcache2(bid);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
@@ -86,25 +86,25 @@ int web_brdadd(web_ctx_t *ctx)
 		return ret;
 	xml_header(NULL);
 	printf("<bbsbrdadd>");
-	print_session(ctx);
+	print_session();
 	printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", bp->filename, bid);
 	return 0;
 }
 
 // TODO: Handle user-defined directories.
-static int read_submit(web_ctx_t *ctx)
+static int read_submit(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	if (parse_post_data(ctx->r) < 0)
+	if (parse_post_data(ctx.r) < 0)
 		return BBS_EINVAL;
 
 	// Read parameters.
 	bool boards[MAXBOARD] = {0};
 	int num = 0;
-	for (int i = 0; i < ctx->r->count; i++) {
-		if (!strcasecmp(ctx->r->params[i].val, "on")) {
-			int bid = strtol(ctx->r->params[i].key, NULL, 10);
+	for (int i = 0; i < ctx.r->count; i++) {
+		if (!strcasecmp(ctx.r->params[i].val, "on")) {
+			int bid = strtol(ctx.r->params[i].key, NULL, 10);
 			if (bid > 0 && bid <= MAXBOARD
 					&& hasreadperm(&currentuser, bcache + bid - 1)) {
 				boards[bid - 1] = true;
@@ -164,18 +164,18 @@ static int read_submit(web_ctx_t *ctx)
 	mmap_close(&m);
 	xml_header(NULL);
 	printf("<bbsmybrd limit='%d' selected='%d'>", GOOD_BRC_NUM, num);
-	print_session(ctx);
+	print_session();
 	printf("</bbsmybrd>");
 	return 0;
 }
 
-int web_mybrd(web_ctx_t *ctx)
+int web_mybrd(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	int type = strtol(get_param(ctx->r, "type"), NULL, 10);
+	int type = strtol(get_param("type"), NULL, 10);
 	if (type != 0)
-		return read_submit(ctx);
+		return read_submit();
 
 	// Print 'bid's of favorite boards.
 	xml_header(NULL);
@@ -211,7 +211,7 @@ int web_mybrd(web_ctx_t *ctx)
 				b->title + 11, b->filename,
 				is_board_dir(b) ? "dir='1'" : "");
 	}
-	print_session(ctx);
+	print_session();
 	printf("</bbsmybrd>");
 	return 0;	
 }

@@ -1,15 +1,15 @@
 #include "libweb.h"
 #include "fbbs/web.h"
 
-int bbsclear_main(web_ctx_t *ctx)
+int bbsclear_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	const char *board = get_param(ctx->r, "board");
+	const char *board = get_param("board");
 	struct boardheader *bp = getbcache(board);
 	if (bp == NULL || !hasreadperm(&currentuser, bp))
 		return BBS_ENOBRD;
-	const char *start = get_param(ctx->r, "start");
+	const char *start = get_param("start");
 	brc_fcgi_init(currentuser.userid, board);
 	brc_clear(NA, NULL, YEA);
 	brc_update(currentuser.userid, board);
