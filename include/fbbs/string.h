@@ -6,10 +6,16 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "fbbs/pool.h"
+
 #define streq(a, b)          (!strcmp(a, b))
 #define strneq(a, b, n)      (!strncmp(a, b, n))
 #define strcaseeq(a, b)      (!strcasecmp(a, b))
 #define strcaseneq(a, b, n)  (!strcasencmp(a, b, n))
+
+enum {
+	PSTRING_DEFAULT_LEN = 7,
+};
 
 extern char *strtolower(char *dst, const char *src);
 extern char *strtoupper(char *dst, const char *src);
@@ -31,5 +37,16 @@ static inline bool isprint2(int ch)
 	unsigned char c = ch;
 	return (((c & 0x80) && c != 0xFF) || isprint(c));
 }
+
+typedef struct pstring_t {
+	char *str;
+	uint_t len;
+	uint_t size;
+} pstring_t;
+
+extern pstring_t *pstring_new(pool_t *p);
+extern pstring_t *pstring_sized_new(pool_t *p, uint_t size);
+extern pstring_t *pstring_append_c(pool_t *p, pstring_t *s, int c);
+extern pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ...);
 
 #endif // FB_STRING_H

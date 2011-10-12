@@ -1,21 +1,11 @@
-#include <endian.h>
-
-#ifndef be64toh
-# if __BYTE_ORDER == __LITTLE_ENDIAN
-#  include <byteswap.h>
-#  define be64toh(x) bswap_64(x)
-# else
-#  define be64toh(x) (x)
-# endif
-#endif
-
 #include <arpa/inet.h>
-#include <glib.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "fbbs/dbi.h"
 #include "fbbs/pool.h"
+#include "fbbs/string.h"
 #include "fbbs/util.h"
 
 /** Postgresql epoch (Jan 1, 2000) in unix time. */
@@ -202,7 +192,7 @@ static int get_num_args(const char *cmd)
 }
 
 typedef struct query_t {
-	GString *s;
+	pstring_t *s;
 	pool_t *p;
 	const char **vals;
 	int *lens;
@@ -217,13 +207,13 @@ static query_t *query_new(const char *cmd, int argc, va_list ap)
 	q->vals = pool_alloc(p, sizeof(*q->vals) * argc);
 	q->lens = pool_alloc(p, sizeof(*q->lens) * argc);
 	q->fmts = pool_alloc(p, sizeof(*q->fmts) * argc);
-	q->s = g_string_sized_new(strlen(cmd));
+	q->s = pstring_sized_new(p, strlen(cmd));
 
 	int n = 0;
 	while (*cmd != '\0') {
 		if (*cmd == '%') {
 			int d;
-			gint64 l;
+			int64_t l;
 			const char *s;
 			fb_time_t t;
 
@@ -232,17 +222,17 @@ static query_t *query_new(const char *cmd, int argc, va_list ap)
 				case 'd':
 					d = va_arg(ap, int);
 					int *dp = pool_alloc(p, sizeof(*dp));
-					*dp = g_htonl(d);
+					*dp = htonl(d);
 					q->vals[n] = (const char *) dp;
 					q->lens[n] = sizeof(int);
 					q->fmts[n] = 1;
 					break;
 				case 'l':
-					l = va_arg(ap, gint64);
-					gint64 *lp = pool_alloc(p, sizeof(*lp));
-					*lp = GINT64_TO_BE(l);
+					l = va_arg(ap, int64_t);
+					int64_t *lp = pool_alloc(p, sizeof(*lp));
+					*lp = htobe64(l);
 					q->vals[n] = (const char *) lp;
-					q->lens[n] = sizeof(gint64);
+					q->lens[n] = sizeof(int64_t);
 					q->fmts[n] = 1;
 					break;
 				case 's':
@@ -255,20 +245,20 @@ static query_t *query_new(const char *cmd, int argc, va_list ap)
 					t = va_arg(ap, fb_time_t);
 					timestamp ts = time_to_ts(t);
 					timestamp *tsp = pool_alloc(p, sizeof(*tsp));
-					*tsp = GINT64_TO_BE(ts);
+					*tsp = htobe64(ts);
 					q->vals[n] = (const char *) tsp;
-					q->lens[n] = sizeof(gint64);
+					q->lens[n] = sizeof(int64_t);
 					q->fmts[n] = 1;
 					break;
 				default:
-					g_string_append_c(q->s, *cmd);
+					pstring_append_c(p, q->s, *cmd);
 					break;
 			}
 			if (is_supported_format(*cmd)) {
-				g_string_append_printf(q->s, "$%d", ++n);
+				pstring_append_printf(p, q->s, "$%d", ++n);
 			}
 		} else {
-			g_string_append_c(q->s, *cmd);
+			pstring_append_c(p, q->s, *cmd);
 		}
 		++cmd;
 	}
@@ -277,7 +267,6 @@ static query_t *query_new(const char *cmd, int argc, va_list ap)
 
 static void query_free(query_t *q)
 {
-	g_string_free(q->s, TRUE);
 	pool_destroy(q->p);
 }
 

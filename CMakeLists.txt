@@ -24,9 +24,8 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH true)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-find_package(Glib REQUIRED)
 
-include_directories(include ${GLIB2_INCLUDE_DIRS})
+include_directories(include)
 
 add_subdirectory(lib)
 if(ENABLE_PG)

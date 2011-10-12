@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -383,4 +384,73 @@ int validate_utf8_input(const char *str, size_t max_chinese_chars)
 			return -1;
 		width += wcwidth(wc);
 	}
+}
+
+static uint_t pstring_round_size(uint_t size)
+{
+	if (size == FB_UINT_MAX)
+		return FB_UINT_MAX;
+	uint_t s = PSTRING_DEFAULT_LEN + 1;
+	while (s <= size)
+		s *= 2;
+	return s;
+}
+
+pstring_t *pstring_sized_new(pool_t *p, uint_t size)
+{
+	size = pstring_round_size(size);
+	pstring_t *s = pool_alloc(p, sizeof(*s));
+	s->str = pool_alloc(p, size);
+	s->len = 0;
+	s->size = size;
+	return s;
+}
+
+pstring_t *pstring_new(pool_t *p)
+{
+	return pstring_sized_new(p, PSTRING_DEFAULT_LEN);
+}
+
+static pstring_t *_pstring_realloc(pool_t *p, pstring_t *s, uint_t size)
+{
+	s->size = size;
+	char *str = s->str;
+	s->str = pool_alloc(p, size);
+	memcpy(s->str, str, s->len + 1);
+	return s;
+}
+
+static pstring_t *pstring_realloc(pool_t *p, pstring_t *s)
+{
+	if (s->size == FB_UINT_MAX)
+		return NULL;
+	return _pstring_realloc(p, s, s->size * 2);
+}
+
+pstring_t *pstring_append_c(pool_t *p, pstring_t *s, int c)
+{
+	if (s->len == s->size - 1)
+		s = pstring_realloc(p, s);
+	s->str[s->len++] = c;
+	s->str[s->len] = '\0';
+	return s;
+}
+
+pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ...)
+{
+	va_list ap, ap2;
+	va_start(ap, format);
+	va_copy(ap2, ap);
+
+	uint_t remain = s->size - s->len;
+	uint_t chars = vsnprintf(s->str + s->len, remain, format, ap);
+	if (chars >= remain) {
+		_pstring_realloc(p, s, pstring_round_size(s->len + chars + 1));
+		vsnprintf(s->str + s->len, s->size - s->len, format, ap2);
+	}
+	s->len += chars;
+
+	va_end(ap2);
+	va_end(ap);
+	return s;
 }
