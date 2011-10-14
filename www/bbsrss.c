@@ -1,6 +1,7 @@
 #include <time.h>
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/helper.h"
 #include "fbbs/web.h"
 
 #define BASEURL BBSHOST"/bbs"

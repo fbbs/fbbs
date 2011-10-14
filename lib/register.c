@@ -1,6 +1,7 @@
 #include "libBBS.h"
 #include "bbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/register.h"
 #include "fbbs/string.h"

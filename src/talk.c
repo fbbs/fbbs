@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
 

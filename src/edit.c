@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "edit.h"
 #include "mmap.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/post.h"
 USE_TRY;

@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
@@ -320,4 +321,13 @@ char *valid_title(char *title)
 	*end = '\0';
 	valid_gbk((unsigned char *)title, strlen(title), '?');
 	return title;
+}
+
+void initialize_convert_env(void)
+{
+	env.u2g = pool_alloc(env.p, sizeof(*env.u2g));
+	env.g2u = pool_alloc(env.p, sizeof(*env.g2u));
+	if (convert_open(env.u2g, "GBK", "UTF-8") < 0
+			|| convert_open(env.g2u, "UTF-8", "GBK") < 0)
+		exit(EXIT_FAILURE);
 }

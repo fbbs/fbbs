@@ -5,6 +5,7 @@
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 
 #define BUFSIZE (MAXUSERS + 244)
 

@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 

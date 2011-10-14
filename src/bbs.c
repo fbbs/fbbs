@@ -8,6 +8,7 @@
 #include <rpcsvc/rstat.h>
 #endif
 #include "mmap.h"
+#include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 

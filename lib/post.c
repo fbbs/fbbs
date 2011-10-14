@@ -3,6 +3,7 @@
 #include "bbs.h"
 #include "record.h"
 #include "fbbs/convert.h"
+#include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 

@@ -25,6 +25,7 @@
 
 extern struct postheader header;
 #include "bbs.h"
+#include "fbbs/helper.h"
 
 /*For read.c*/
 int auth_search_down();

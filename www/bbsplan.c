@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/web.h"
 
 static int edit_user_file(const char *file, const char *desc, const char *submit)

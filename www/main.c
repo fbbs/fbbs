@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "fbbs/fbbs.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
@@ -202,10 +203,7 @@ int main(void)
 	if (_init_all() < 0)
 		return EXIT_FAILURE;
 
-	convert_t u2g, g2u;
-	if (convert_open(&u2g, "GBK", "UTF-8") < 0
-			|| convert_open(&g2u, "UTF-8", "GBK") < 0)
-		return EXIT_FAILURE;
+	initialize_convert_env();
 
 	while (FCGI_Accept() >= 0) {
 		pool_t *p = pool_create(DEFAULT_POOL_SIZE);
@@ -213,8 +211,6 @@ int main(void)
 		ctx.r = get_request(p);
 		if (!ctx.r)
 			return EXIT_FAILURE;
-		ctx.u2g = &u2g;
-		ctx.g2u = &g2u;
 
 		const web_handler_t *h = _get_handler();
 		int ret;

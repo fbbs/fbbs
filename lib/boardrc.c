@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include "bbs.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 
 #define BRC_MAXSIZE     50000

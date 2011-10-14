@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 
 void report(const char *s, const char *userid)
 {

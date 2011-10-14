@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/mail.h"
 #include "fbbs/post.h"

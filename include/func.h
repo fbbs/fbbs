@@ -65,23 +65,6 @@ void report(const char *s, const char *userid);
 void log_usies(const char *mode, const char *mesg, const struct userec *user);
 void log_attempt(const char *name, const char *addr, const char *type);
 
-//stuffs.c
-char *sethomefile(char *buf, const char *userid, const char *filename);
-char *setbpath(char *buf, const char *boardname);
-char *setwbdir(char *buf, const char *boardname);
-char *setbfile(char *buf, const char *boardname, const char *filename);
-char *setmfile(char *buf, const char *userid, const char *filename);
-char *setmdir(char *buf, const char *userid);
-extern sigjmp_buf bus_jump;
-void sigbus(int signo);
-int bbskill(struct user_info *user, int sig);
-void SpecialID(const char *uid, char *host, int len);
-bool seek_in_file(const char *filename, const char *seekstr);
-const char *mask_host(const char *host);
-void add_signature(FILE *fp, const char *user, int sig);
-int valid_gbk_file(const char *file, int replace);
-char *valid_title(char *title);
-
 //board.c
 int changeboard(struct boardheader **bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
