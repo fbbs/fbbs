@@ -2,6 +2,12 @@
 #include <string.h>
 #include "fbbs/convert.h"
 
+#ifdef LINUX
+# define fb_iconv(cd, i, ib, o, ob)  iconv(cd, (char **)i, ib, o, ob)
+#else
+# define fb_iconv(cd, i, ib, o, ob) iconv(cd, i, ib, o, ob)
+#endif
+
 /**
  * Open a conversion descriptor.
  * @param cp The conversion descriptor.
@@ -49,7 +55,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 	if (len == 0)
 		len = strlen(from);
 
-	const char *f = from;
+	char *f = (char *)from;
 	size_t l = len;
 
 	char *buffer = buf ? buf : cp->buf;
@@ -64,7 +70,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 			oleft = size;
 		}
 
-		size_t s = iconv(cp->cd, &f, &l, &b, &oleft);
+		size_t s = fb_iconv(cp->cd, &f, &l, &b, &oleft);
 		buffer[size - oleft] = '\0';
 
 		if (s == (size_t) -1) {
@@ -110,10 +116,10 @@ int convert_close(convert_t *cp)
 
 static int write_to_file(char *buf, size_t len, void *arg)
 {
-	return fwrite(buf, 1, len, arg);
+	return fwrite(buf, 1, len, arg) < len ? -1 : 0;
 }
 
-void convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp)
+int convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp)
 {
 	return convert(cp, from, len, NULL, 0, write_to_file, fp);
 }

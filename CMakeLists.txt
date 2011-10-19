@@ -30,6 +30,7 @@ include_directories("include" "/usr/local/include")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(FB_XOPEN_SOURCE_DEFINE -D_XOPEN_SOURCE=600)
+	set(FB_PLATFORM_DEFINE -DLINUX)
 	set(FB_LIBDL_LINK dl)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 

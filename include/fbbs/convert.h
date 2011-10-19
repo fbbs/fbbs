@@ -21,6 +21,6 @@ extern int convert(convert_t *cp, const char *from, size_t len,
 		char *buf, size_t size, convert_handler_t handler, void *arg);
 extern int convert_close(convert_t *cp);
 
-extern void convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp);
+extern int convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp);
 
 #endif // FB_CONVERT_H

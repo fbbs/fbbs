@@ -42,14 +42,6 @@ static FILE *get_fname(const char *dir, const char *pfx,
 	return NULL;
 }
 
-static int convert_to_file(char *buf, size_t len, void *arg)
-{
-	FILE *fp = arg;
-	if (fwrite(buf, 1, len, fp) < len)
-		return -1;
-	return 0;
-}
-
 /**
  * Post an article.
  * @param pr The post request.
@@ -90,7 +82,7 @@ unsigned int do_post_article(const post_request_t *pr)
 			getdatestring(time(NULL), DATE_ZH));
 
 	if (pr->cp)
-		convert(pr->cp, pr->content, 0, NULL, 0, convert_to_file, fptr);
+		convert_to_file(pr->cp, pr->content, 0, fptr);
 	else
 		fputs(pr->content, fptr);
 

@@ -1,5 +1,5 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic")
-add_definitions(${FB_XOPEN_SOURCE_DEFINE})
+add_definitions(${FB_XOPEN_SOURCE_DEFINE} ${FB_PLATFORM_DEFINE})
 
 if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 NEW)

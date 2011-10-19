@@ -1,6 +1,8 @@
 #ifndef FB_UTIL_H
 #define FB_UTIL_H
 
+#include "config.h"
+
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
 #else
