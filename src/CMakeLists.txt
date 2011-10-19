@@ -1,9 +1,9 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic -Wno-implicit")
 
-add_definitions(-D_XOPEN_SOURCE=500 -DLINUX -DTERMIOS -DSHOW_IDLE_TIME -DDLM
-	-DBACKUP_RANGE_DELETE)
+add_definitions(${FB_XOPEN_SOURCE_DEFINE} -DLINUX -DTERMIOS -DSHOW_IDLE_TIME
+		-DDLM -DBACKUP_RANGE_DELETE)
 
-link_directories(../lib)
+link_directories(/usr/local/lib ../lib)
 
 add_library(fbcmn STATIC announce.c bbs.c bcache.c bm.c boards.c chat.c
 	comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c help.c list.c
@@ -13,10 +13,10 @@ add_library(fbcmn STATIC announce.c bbs.c bcache.c bm.c boards.c chat.c
 target_link_libraries(fbcmn fbbs)
 
 add_executable(bbsd bbsd.c io.c main.c)
-target_link_libraries(bbsd crypt dl fbbs fbcmn)
+target_link_libraries(bbsd crypt ${FB_LIBDL_LINK} fbbs fbcmn)
 
 add_executable(miscd miscd.c io.c main.c)
-target_link_libraries(miscd crypt dl fbbs fbcmn)
+target_link_libraries(miscd crypt ${FB_LIBDL_LINK} fbbs fbcmn)
 
 add_executable(chatd station.c)
 target_link_libraries(chatd fbbs)
@@ -33,7 +33,7 @@ if(ENABLE_SSH)
 	link_directories(../lib ../libssh)
 	add_executable(sshbbsd bbsd.c io.c main.c)
 	set_target_properties(sshbbsd PROPERTIES COMPILE_FLAGS "-DENABLE_SSH")
-	target_link_libraries(sshbbsd crypt dl fbbs fbssh fbcmn)
+	target_link_libraries(sshbbsd crypt ${FB_LIBDL_LINK} fbbs fbssh fbcmn)
 	install(TARGETS sshbbsd
 		RUNTIME DESTINATION bin)
 endif(ENABLE_SSH)

@@ -138,7 +138,8 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 			return BBS_EINTNL;
 	}
 	// TODO: get_fname?
-	sprintf(fname, "M.%ld.A", time(NULL));
+	fb_time_t now = time(NULL);
+	sprintf(fname, "M.%"PRIdFBT".A", now);
 	sprintf(filepath, "mail/%c/%s/%s", toupper(user[0]), user, fname);
 	ip = strrchr(fname, 'A');
 	count = 0;

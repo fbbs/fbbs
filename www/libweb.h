@@ -5,7 +5,9 @@
 #include "sys/ipc.h"
 #include "sys/shm.h"
 #include "stdarg.h"
+#ifdef HAVE_CRYPT_H
 #include <crypt.h>
+#endif
 #include <fcgi_stdio.h>  //Should be included last.
 #include "fbbs/web.h"
 

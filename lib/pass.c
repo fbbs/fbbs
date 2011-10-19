@@ -1,5 +1,10 @@
 #include "bbs.h"
-#include <crypt.h>
+
+#ifdef HAVE_CRYPT_H
+# include <crypt.h>
+#else
+# include <unistd.h>
+#endif
 
 #include "fbbs/dbi.h"
 #include "fbbs/fbbs.h"

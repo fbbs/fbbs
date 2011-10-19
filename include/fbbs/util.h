@@ -1,29 +1,34 @@
 #ifndef FB_UTIL_H
 #define FB_UTIL_H
 
+#ifdef HAVE_ENDIAN_H
 #include <endian.h>
+#else
+#include <sys/endian.h>
+#endif
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef be64toh
-# if __BYTE_ORDER == __LITTLE_ENDIAN
-#  include <byteswap.h>
-#  define be64toh(x) bswap_64(x)
-# else
-#  define be64toh(x) (x)
+#ifdef HAVE_ENDIAN_H
+# ifndef be64toh
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#   include <byteswap.h>
+#   define be64toh(x) bswap_64(x)
+#  else
+#   define be64toh(x) (x)
+#  endif
 # endif
-#endif
 
-#ifndef htobe64
-# if __BYTE_ORDER == __LITTLE_ENDIAN
-#  include <byteswap.h>
-#  define htobe64(x) bswap_64(x)
-# else
-#  define htobe64(x) (x)
+# ifndef htobe64
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#   include <byteswap.h>
+#   define htobe64(x) bswap_64(x)
+#  else
+#   define htobe64(x) (x)
+#  endif
 # endif
-#endif
-
+#endif // HAVE_ENDIAN_H
 #define NELEMS(x)  (sizeof(x) / sizeof(x[0]))
 
 #define FB_ULONG_MAX  UINT64_MAX

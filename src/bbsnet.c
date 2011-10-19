@@ -1,6 +1,7 @@
 #include <arpa/telnet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <sys/socket.h>
 #include "bbs.h"
 
 enum {

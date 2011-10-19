@@ -221,7 +221,7 @@ int send_regmail(const struct userec *user, const char *mail)
 			"本站地址(Site address)     : %s (%s)\n"
 			"您注册的账号(Your account) : %s\n"
 			"申请日期(Application date) : %s\n\n",
-			BBSHOST, BBSIP, user->userid, ctime(&user->firstlogin));
+			BBSHOST, BBSIP, user->userid, ctime((time_t *)&user->firstlogin));
 	fprintf(fout, "本信件由系统自动发送，请不要回复。\n"
 			"Note: this is an automated email. Please don't reply.\n"
 			"如果您从未注册以上账号，请忽略此信。\n"

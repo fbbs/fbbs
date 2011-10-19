@@ -25,7 +25,13 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-include_directories(include)
+set(CMAKE_REQUIRED_INCLUDES "/usr/local/include/;${CMAKE_REQUIRED_INCLUDES}")
+include_directories("include" "/usr/local/include")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set(FB_XOPEN_SOURCE_DEFINE -D_XOPEN_SOURCE=600)
+	set(FB_LIBDL_LINK dl)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 add_subdirectory(lib)
 if(ENABLE_PG)
@@ -47,7 +53,10 @@ endif(ENABLE_WWW)
 add_subdirectory(util/local_utl EXCLUDE_FROM_ALL)
 
 include(CheckIncludeFiles)
+check_include_files(crypt.h HAVE_CRYPT_H)
 check_include_files(fcntl.h HAVE_FCNTL_H)
+check_include_files(features.h HAVE_FEATURES_H)
+check_include_files(endian.h HAVE_ENDIAN_H)
 
 include(CheckFunctionExists)
 check_function_exists(select HAVE_SELECT)
