@@ -55,7 +55,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 	if (len == 0)
 		len = strlen(from);
 
-	char *f = (char *)from;
+	const char *f = from;
 	size_t l = len;
 
 	char *buffer = buf ? buf : cp->buf;
