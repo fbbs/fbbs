@@ -115,8 +115,11 @@ static int bbsdoc(post_list_type_e type)
 	post_filter_t filter = {
 		.bid = board.id, .type = type, .max = start,
 	};
+	if (type == POST_LIST_DIGEST)
+		filter.flag |= POST_FLAG_DIGEST;
 	print_posts(&filter, page);
-	print_sticky_posts(board.id, type);
+	if (type != POST_LIST_DIGEST)
+		print_sticky_posts(board.id, type);
 
 	char *cgi_name = "";
 	if (type == POST_LIST_DIGEST)
@@ -163,48 +166,43 @@ int bbsbfind_main(void)
 			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
 
-	char query[512] = "";
-	size_t size = sizeof(query);
-	char *q = query;
+	post_filter_t filter = { .bid = bid, .type = POST_LIST_NORMAL };
+	if (strcaseeq(get_param("mark"), "on"))
+		filter.flag |= POST_FLAG_MARKED;
+	if (strcaseeq(get_param("nore"), "on"))
+		filter.flag |= POST_FLAG_DIGEST;
 
-	strappend(&q, &size,
-			"SELECT "POST_LIST_FIELDS" FROM posts.recent WHERE board = %%d");
+	const char *uname = get_param("user");
+	user_id_t uid = get_user_id(uname);
+	if (uid)
+		filter.uid = uid;
 
-	bool marked = strcaseeq(get_param("mark"), "on");
-	if (marked)
-		strappend(&q, &size, " AND marked");
-
-	bool locked = strcaseeq(get_param("nore"), "on");
-	if (locked)
-		strappend(&q, &size, " AND locked");
+	query_builder_t *b = query_builder_new(0);
+	b->sappend(b, "SELECT", POST_LIST_FIELDS);
+	b->sappend(b, "FROM", "posts.recent");
+	build_post_filter(b, &filter, NULL);
 
 	long day = strtol(get_param("limit"), NULL, 10);
 	if (day < 0)
 		day = 0;
 	fb_time_t begin = time(NULL) - 24 * 60 * 60 * day;
-	strappend(&q, &size, " AND stamp > %t");
+	b->sappend(b, "AND", "stamp > %t", begin);
 
-	const char *uname = get_param("user");
-	user_id_t uid = get_user_id(uname);
-	if (uid) {
-		char s[16];
-		snprintf(s, sizeof(s), "%"PRIdUID, uid);
-		strappend(&q, &size, " AND owner = ");
-		strappend(&q, &size, s);
-	}
-
-	const char *names[] = { "t1", "t2", "t3" };
-	const char *k[] = { NULL, NULL, NULL };
 	int count = 0;
-	for (int i = 0; i < 3; ++i) {
+	const char *names[] = { "t1", "t2", "t3" };
+	for (int i = 0; i < NELEMS(names); ++i) {
 		const char *s = get_param(names[i]);
-		if (*s) {
-			k[count++] = s;
-			strappend(&q, &size, " AND title ILIKE %s");
+		if (s && *s) {
+			++count;
+			b->sappend(b, "AND", "title ILIKE '%%' || %s || '%%'", s);
 		}
 	}
 
-	strappend(&q, &size, " ORDER BY id DESC LIMIT "BFIND_MAX);
+	b->sappend(b, "ORDER BY", "id DESC");
+	b->append(b, "LIMIT "BFIND_MAX);
+
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
 
 	xml_header(NULL);
 	printf("<bbsbfind ");
@@ -212,22 +210,6 @@ int bbsbfind_main(void)
 
 	if (count || uid) {
 		printf(" result='1'>");
-		db_res_t *res;
-		switch (count) {
-			case 0:
-				res = db_query(query, bid, begin);
-				break;
-			case 1:
-				res = db_query(query, bid, begin, k[0]);
-				break;
-			case 2:
-				res = db_query(query, bid, begin, k[0], k[1]);
-				break;
-			default:
-				res = db_query(query, bid, begin, k[0], k[1], k[2]);
-				break;
-		}
-
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			post_info_t info;
 			res_to_post_info(res, i, 0, &info);
@@ -236,6 +218,7 @@ int bbsbfind_main(void)
 	} else {
 		printf(">");
 	}
+	db_clear(res);
 
 	print_session();
 	printf("</bbsbfind>");
