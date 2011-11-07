@@ -4,7 +4,8 @@ CREATE TABLE all_users (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
 	passwd TEXT,
-	alive BOOLEAN DEFAULT TRUE
+	alive BOOLEAN DEFAULT TRUE,
+	money BIGINT DEFAULT 0
 );
 
 CREATE VIEW users AS

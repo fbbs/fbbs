@@ -14,6 +14,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
@@ -411,18 +413,25 @@ int tui_query_result(const char *userid)
 			user.numposts, user.nummedals, cnummedals(user.nummedals),
 			compute_user_value(&user));
 #else
-	prints("发文 [\033[1;32m%d\033[m] 经验值"
-#ifdef SHOWEXP
-			"%d(\033[1;33m%-10s\033[m)"
-#else
-			"[\033[1;33m%-10s\033[m]"
+	prints("发文 [\033[1;32m%d\033[m] ", user.numposts);
+#ifdef ENABLE_BANK
+	if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
+		int64_t money = 0;
+		db_res_t *res = db_exec_query(env.d, true,
+				"SELECT money FROM users WHERE lower(name) = lower(%s)",
+				currentuser.userid);
+		if (res) {
+			money = db_get_bigint(res, 0, 0);
+			db_clear(res);
+		}
+		prints("光华币 [\033[1;32m%d\033[m] ", TO_YUAN_INT(money));
+	}
 #endif
-			" 生命力 [\033[1;32m%d\033[m]\n",
-			user.numposts,
+	prints("经验值 [\033[1;33m%-10s\033[m]", cexpstr(exp));
 #ifdef SHOWEXP
-			exp,
+	prints("(%d)", exp);
 #endif
-			cexpstr(exp), compute_user_value(&user));
+	prints(" 生命力 [\033[1;32m%d\033[m]\n", compute_user_value(&user));
 #endif
 
 	char buf[160];

@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
@@ -14,6 +15,9 @@ int bbsqry_main(void)
 	int uid;
 	xml_header(NULL);
 	uid = getuserec(userid, &user);
+
+	bool self = streq(currentuser.userid, user.userid);
+
 	if (uid != 0) {
 		int level, repeat;
 		level = iconexp(countexp(&user), &repeat);		
@@ -23,6 +27,19 @@ int bbsqry_main(void)
 				getdatestring(user.lastlogin, DATE_XML),
 				cperf(countperf(&user)), user.numposts,
 				compute_user_value(&user), level, repeat);
+#ifdef ENABLE_BANK
+		if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
+			int64_t money = 0;
+			db_res_t *res = db_exec_query(env.d, true,
+					"SELECT money FROM users WHERE lower(name) = lower(%s)",
+					currentuser.userid);
+			if (res) {
+				money = db_get_bigint(res, 0, 0);
+				db_clear(res);
+			}
+			printf("money=%d ", TO_YUAN_INT(money));
+		}
+#endif
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
 			printf(" horo='%s'", 
 					horoscope(user.birthmonth, user.birthday));
@@ -30,8 +47,7 @@ int bbsqry_main(void)
 				printf(" gender='%c'", user.gender);
 		}
 		printf("><ip>");
-		xml_fputs(streq(currentuser.userid, user.userid) ?
-				user.lasthost : mask_host(user.lasthost), stdout);
+		xml_fputs(self ? user.lasthost : mask_host(user.lasthost), stdout);
 		printf("</ip><nick>");
 		xml_fputs(user.username, stdout);
 		printf("</nick><ident>");
