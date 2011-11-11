@@ -19,6 +19,8 @@ enum DATE_FORMAT {
 
 typedef int64_t fb_time_t;
 
+#define fb_time() ((fb_time_t)time(NULL))
+
 extern char *getdatestring(time_t time, enum DATE_FORMAT mode);
 
 extern bool valid_date(int year, int month, int day);
