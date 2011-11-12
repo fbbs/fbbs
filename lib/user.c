@@ -6,16 +6,16 @@
  * @param name The user name.
  * @return user id on success, 0 if not exist, -1 on error.
  */
-int get_user_id(db_conn_t *c, const char *name)
+user_id_t get_user_id(db_conn_t *c, const char *name)
 {
 	db_res_t *res = db_exec_query(c, true,
 			"SELECT id FROM users WHERE lower(name) = lower(%s)", name);
 	if (!res)
 		return -1;
 
-	int ret = 0;
+	user_id_t ret = 0;
 	if (db_num_rows(res) > 0)
-		ret = db_get_integer(res, 0, 0);
+		ret = db_get_user_id(res, 0, 0);
 	db_clear(res);
 	return ret;
 }

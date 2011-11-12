@@ -50,4 +50,6 @@ extern db_res_t *db_exec_query(db_conn_t *conn, bool binary, const char *cmd, ..
 extern int db_begin_trans(db_conn_t *conn);
 extern int db_end_trans(db_conn_t *conn);
 
+#include "fbbs/schema.h"
+
 #endif // FB_DBI_H
