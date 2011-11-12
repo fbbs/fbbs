@@ -17,12 +17,12 @@
  */
 #define HAVE_INT64_TIMESTAMP
 
-fb_time_t ts_to_time(timestamp ts)
+fb_time_t ts_to_time(db_timestamp ts)
 {
 	return ts / INT64_C(1000000) + POSTGRES_EPOCH_TIME;
 }
 
-timestamp time_to_ts(fb_time_t t)
+db_timestamp time_to_ts(fb_time_t t)
 {
 	return (t - POSTGRES_EPOCH_TIME) * INT64_C(1000000);
 }
@@ -51,27 +51,6 @@ const char *db_errmsg(db_conn_t *conn)
 db_res_t *db_exec(db_conn_t *conn, const char *cmd)
 {
 	return PQexec(conn, cmd);
-}
-
-db_res_t *db_exec_params(db_conn_t *conn, const char *cmd, int count,
-		db_param_t *params, bool binary)
-{
-	if (count > 0) {
-		const char *values[count];
-		int lengths[count];
-		int formats[count];
-		
-		for (int i = 0; i < count; ++i) {
-			values[i] = params[i].value;
-			lengths[i] = params[i].length;
-			formats[i] = params[i].format;
-		}
-		
-		return PQexecParams(conn, cmd, count, NULL, values, lengths,
-			formats, binary);
-	} else {
-		return PQexecParams(conn, cmd, 0, NULL, NULL, NULL, NULL, binary);
-	}
 }
 
 db_exec_status_t db_res_status(const db_res_t *res)
@@ -164,10 +143,10 @@ fb_time_t db_get_time(const db_res_t *res, int row, int col)
 	const char *r = PQgetvalue(res, row, col);
 	if (_is_binary_field(res, col)) {
 #ifdef HAVE_INT64_TIMESTAMP
-		timestamp ts = (int64_t)be64toh(*(uint64_t *)r);
+		db_timestamp ts = (int64_t)be64toh(*(uint64_t *)r);
 #else
 		uint64_t t = be64toh(*(uint64_t *)r);
-		timestamp ts = *(double *)&t * 1000000;
+		db_timestamp ts = *(double *)&t * 1000000;
 #endif
 		return ts_to_time(ts);
 	}
@@ -243,8 +222,8 @@ static query_t *query_new(const char *cmd, int argc, va_list ap)
 					break;
 				case 't':
 					t = va_arg(ap, fb_time_t);
-					timestamp ts = time_to_ts(t);
-					timestamp *tsp = pool_alloc(p, sizeof(*tsp));
+					db_timestamp ts = time_to_ts(t);
+					db_timestamp *tsp = pool_alloc(p, sizeof(*tsp));
 					*tsp = htobe64(ts);
 					q->vals[n] = (const char *) tsp;
 					q->lens[n] = sizeof(int64_t);

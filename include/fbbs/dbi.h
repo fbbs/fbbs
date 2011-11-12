@@ -10,7 +10,7 @@
 typedef PGconn db_conn_t;
 typedef PGresult db_res_t;
 
-typedef int64_t timestamp;
+typedef int64_t db_timestamp;
 
 typedef enum db_conn_status_t {
 	DB_CONNECTION_OK = CONNECTION_OK,
@@ -21,13 +21,7 @@ typedef enum db_exec_status_t {
 	DBRES_TUPLES_OK = PGRES_TUPLES_OK,
 } db_exec_status_t;
 
-typedef struct db_param_t {
-	const char *value;
-	int length;
-	int format;
-} db_param_t;
-
-extern timestamp time_to_ts(fb_time_t t);
+extern db_timestamp time_to_ts(fb_time_t t);
 
 extern db_conn_t *db_connect(const char *host, const char *port,
 		const char *db, const char *user, const char *pwd);
@@ -36,8 +30,6 @@ extern db_conn_status_t db_status(db_conn_t *conn);
 extern const char *db_errmsg(db_conn_t *conn);
 
 extern db_res_t *db_exec(db_conn_t *conn, const char *cmd);
-extern db_res_t *db_exec_params(db_conn_t *conn, const char *cmd, int count,
-		db_param_t *params, bool binary);
 extern db_exec_status_t db_res_status(const db_res_t *res);
 extern void db_clear(db_res_t *res);
 
