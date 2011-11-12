@@ -8,14 +8,10 @@
  */
 int get_user_id(db_conn_t *c, const char *name)
 {
-	db_param_t param[1] = { PARAM_TEXT(name) };
-	db_res_t *res = db_exec_params(c,
-			"SELECT id FROM users WHERE lower(name) = lower($1)",
-			1, param, true);
-	if (db_res_status(res) != DBRES_TUPLES_OK) {
-		db_clear(res);
+	db_res_t *res = db_exec_query(c, true,
+			"SELECT id FROM users WHERE lower(name) = lower(%s)", name);
+	if (!res)
 		return -1;
-	}
 
 	int ret = 0;
 	if (db_num_rows(res) > 0)
@@ -45,25 +41,18 @@ static int _user_data_add(db_conn_t *c, const char *name, int uid,
 	char query[128];
 	int bytes = snprintf(query, sizeof(query),
 		"UPDATE users SET %s = %s + %d WHERE %s", fields[field],
-		fields[field], delta, name ? "lower(name) = lower($1)" : "id = $1");
+		fields[field], delta, name ? "lower(name) = lower(%s)" : "id = %d");
 	if (bytes >= sizeof(query))
 		return -1;
 
-	const char *param = name;
-	char buf[16];
-	if (!name) {
-		param = buf;
-		snprintf(buf, sizeof(buf), "%d", uid);
-	}
-
-	db_param_t params[1] = { PARAM_TEXT(param) };
-	db_res_t *res = db_exec_params(c, query, 1, params, true);
-
-	int ret = 0;
-	if (db_res_status(res) != DBRES_COMMAND_OK)
-		ret = -1;
-	db_clear(res);
-	return ret;
+	db_res_t *res;
+	if (name)
+		res = db_exec_query(c, true, query, name);
+	else
+		res = db_exec_query(c, true, query, uid);
+	if (!res)
+		return -1;
+	return 0;
 }
 
 int user_data_add_by_name(db_conn_t *c, const char *name, int field, int delta)
