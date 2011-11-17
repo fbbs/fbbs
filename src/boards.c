@@ -243,7 +243,7 @@ static void goodbrd_rmdir(choose_board_t *cbrd, int id)
 /**
  *
  */
-static int tui_goodbrd_add(choose_t *cp)
+static int tui_goodbrd_add(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 
@@ -296,7 +296,7 @@ static int tui_goodbrd_add(choose_t *cp)
  * @param cp browsing status.
  * @return update status.
  */
-static int tui_goodbrd_copy(choose_t *cp)
+static int tui_goodbrd_copy(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 
@@ -316,7 +316,7 @@ static int tui_goodbrd_copy(choose_t *cp)
  * @param cp browsing status.
  * @return update status.
  */
-static int tui_goodbrd_paste(choose_t *cp)
+static int tui_goodbrd_paste(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 
@@ -336,7 +336,7 @@ static int tui_goodbrd_paste(choose_t *cp)
  * @param cp browsing status.
  * @return update status.
  */
-static int tui_goodbrd_mkdir(choose_t *cp)
+static int tui_goodbrd_mkdir(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 
@@ -373,7 +373,7 @@ static int tui_goodbrd_mkdir(choose_t *cp)
  * @param cp browsing status.
  * @return update status.
  */
-static int tui_goodbrd_rename(choose_t *cp)
+static int tui_goodbrd_rename(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 
@@ -416,7 +416,7 @@ static int tui_goodbrd_rename(choose_t *cp)
  * @param cp browsing status.
  * @return update status.
  */
-static int tui_goodbrd_rm(choose_t *cp)
+static int tui_goodbrd_rm(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 
@@ -461,7 +461,7 @@ static bool check_newpost(board_data_t *ptr)
 /**
  *
  */
-static choose_loader_t choose_board_load(choose_t *cp)
+static tui_list_loader_t choose_board_load(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 	struct boardheader *bptr;
@@ -700,7 +700,7 @@ int unread_position(char *dirfile, board_data_t *ptr)
 /**
  *
  */
-static choose_display_t choose_board_display(choose_t *cp)
+static tui_list_display_t choose_board_display(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 	board_data_t *ptr;
@@ -847,7 +847,7 @@ static int choose_board(choose_board_t *cbrd);
 /**
  *
  */
-static int choose_board_read(choose_t *cp)
+static int choose_board_read(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 	board_data_t *ptr = cbrd->brds + cp->cur;
@@ -936,7 +936,7 @@ static int choose_board_init(choose_board_t *cbrd)
 /**
  *
  */
-static choose_title_t choose_board_title(choose_t *cp)
+static tui_list_title_t choose_board_title(tui_list_t *cp)
 {
 	choose_board_t *cbrd = cp->data;
 
@@ -964,7 +964,7 @@ static choose_title_t choose_board_title(choose_t *cp)
 			cbrd->newflag ? "全 部  未" : "编 号  未", "中  文  叙  述");
 }
 
-static choose_handler_t choose_board_handler(choose_t *cp, int ch)
+static tui_list_handler_t choose_board_handler(tui_list_t *cp, int ch)
 {
 	choose_board_t *cbrd = cp->data;
 	board_data_t *ptr;
@@ -1101,17 +1101,18 @@ static int choose_board(choose_board_t *cbrd)
 {
 	choose_board_init(cbrd);
 
-	choose_t cs;
-	cs.data = cbrd;
-	cs.loader = choose_board_load;
-	cs.title = choose_board_title;
-	cs.display = choose_board_display;
-	cs.handler = choose_board_handler;
-	cs.query = NULL;
+	tui_list_t t = {
+		.data = cbrd,
+		.loader = choose_board_load,
+		.title = choose_board_title,
+		.display = choose_board_display,
+		.handler = choose_board_handler,
+		.query = NULL,
+	};
 
 	modify_user_mode(cbrd->newflag ? READNEW : READBRD);
 
-	choose2(&cs);
+	tui_list(&t);
 
 	if (!cbrd->recursive) {
 		clear();

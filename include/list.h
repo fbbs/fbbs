@@ -1,13 +1,13 @@
 #ifndef FB_LIST_H
 #define FB_LIST_H
 
-typedef int choose_loader_t;
-typedef void choose_title_t;
-typedef int choose_display_t;
-typedef int choose_handler_t;
-typedef int choose_query_t;
+typedef int tui_list_loader_t;
+typedef void tui_list_title_t;
+typedef int tui_list_display_t;
+typedef int tui_list_handler_t;
+typedef int tui_list_query_t;
 
-typedef struct choose_t {
+typedef struct tui_list_t {
 	int all;       ///< Number of entries.
 	int cur;       ///< Current entry.
 	int start;     ///< Starting entry of the page.
@@ -16,13 +16,13 @@ typedef struct choose_t {
 	bool eod;      ///< True if the end of data are reached.
 	bool in_query; ///< True if in query mode.
 	void *data;    ///< Data.
-	int (*loader)(struct choose_t *);   ///< Data loader.
-	void (*title)(struct choose_t *);   ///< Function that shows title.
-	int (*display)(struct choose_t *);  ///< Display function.
-	int (*handler)(struct choose_t *, int);  ///< Key handler.
-	int (*query)(struct choose_t *); ///< Query handler.
-} choose_t;
+	int (*loader)(struct tui_list_t *);   ///< Data loader.
+	void (*title)(struct tui_list_t *);   ///< Function that shows title.
+	int (*display)(struct tui_list_t *);  ///< Display function.
+	int (*handler)(struct tui_list_t *, int);  ///< Key handler.
+	int (*query)(struct tui_list_t *); ///< Query handler.
+} tui_list_t;
 
-extern int choose2(choose_t *cp);
+extern int tui_list(tui_list_t *p);
 
 #endif // FB_LIST_H

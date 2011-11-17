@@ -87,14 +87,14 @@ static void online_users_swap(online_users_t *up, int a, int b)
 	up->users[b] = tmp;
 }
 
-static choose_loader_t online_users_load(choose_t *cp)
+static tui_list_loader_t online_users_load(tui_list_t *p)
 {
-	online_users_t *up = cp->data;
-	cp->eod = true;
+	online_users_t *up = p->data;
+	p->eod = true;
 
 	time_t now = time(NULL);
 	if (now < up->uptime + REFRESH_TIME)
-		return cp->all;
+		return p->all;
 	up->uptime = now;
 
 	resolve_utmp();
@@ -132,15 +132,15 @@ static choose_loader_t online_users_load(choose_t *cp)
 			comparators[up->sort]);
 
 	if (up->ovr_only)
-		cp->all = up->onum;
+		p->all = up->onum;
 	else
-		cp->all = up->num;
-	return cp->all;
+		p->all = up->num;
+	return p->all;
 }
 
-static choose_title_t online_users_title(choose_t *cp)
+static tui_list_title_t online_users_title(tui_list_t *p)
 {
-	online_users_t *up = cp->data;
+	online_users_t *up = p->data;
 	docmdtitle(up->ovr_only ? "[好朋友列表]" : "[使用者列表]",
 			" 聊天[\033[1;32mt\033[m] 寄信[\033[1;32mm\033[m] 送讯息["
 			"\033[1;32ms\033[m] 加,减朋友[\033[1;32mo\033[m,\033[1;32md\033[m]"
@@ -181,18 +181,18 @@ static void get_override_note(const char *userid, char *buf, size_t size)
 
 extern const char *idle_str(struct user_info *uent);
 
-static choose_display_t online_users_display(choose_t *cp)
+static tui_list_display_t online_users_display(tui_list_t *p)
 {
-	online_users_t *up = cp->data;
+	online_users_t *up = p->data;
 
 	struct user_info *uin;
 	int i;
 	bool is_ovr;
 	char buf[STRLEN], line[256];
 	int limit = up->ovr_only ? up->onum : up->num;
-	if (limit > cp->start + BBS_PAGESIZE)
-		limit = cp->start + BBS_PAGESIZE;
-	for (i = cp->start; i < limit; ++i) {
+	if (limit > p->start + BBS_PAGESIZE)
+		limit = p->start + BBS_PAGESIZE;
+	for (i = p->start; i < limit; ++i) {
 		is_ovr = up->ovr_only || i < up->onum;
 		uin = up->users[i];
 		if (!uin || !uin->active || !uin->pid || *uin->userid == '\0') {
@@ -244,11 +244,11 @@ static choose_display_t online_users_display(choose_t *cp)
 	return 0;
 }
 
-static choose_query_t online_users_query(choose_t *cp)
+static tui_list_query_t online_users_query(tui_list_t *p)
 {
-	online_users_t *up = cp->data;
-	struct user_info *uin = up->users[cp->cur];
-	cp->in_query = true;
+	online_users_t *up = p->data;
+	struct user_info *uin = up->users[p->cur];
+	p->in_query = true;
 	if (!uin)
 		return DONOTHING;
 	t_query(uin->userid);
@@ -262,13 +262,13 @@ static choose_query_t online_users_query(choose_t *cp)
 }
 
 extern int friendflag;
-static choose_handler_t online_users_handler(choose_t *cp, int ch)
+static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 {
 	char buf[STRLEN], tmp[EXT_IDLEN], *ptr;
-	online_users_t *up = cp->data;
-	struct user_info *uin = up->users[cp->cur];
+	online_users_t *up = p->data;
+	struct user_info *uin = up->users[p->cur];
 	
-	cp->valid = false;
+	p->valid = false;
 	switch (ch) {
 		case 'h':
 		case 'H':
@@ -338,7 +338,7 @@ static choose_handler_t online_users_handler(choose_t *cp, int ch)
 				return PARTUPDATE;
 			}		
 	}
-	if (cp->in_query)
+	if (p->in_query)
 		return DONOTHING;
 
 	switch (ch) {
@@ -425,7 +425,7 @@ static choose_handler_t online_users_handler(choose_t *cp, int ch)
 		case '\r':
 		case '\n':
 		case KEY_RIGHT:
-			online_users_query(cp);
+			online_users_query(p);
 			return DONOTHING;
 		default:
 			return DONOTHING;
@@ -434,15 +434,16 @@ static choose_handler_t online_users_handler(choose_t *cp, int ch)
 
 static int online_users(online_users_t *op)
 {
-	choose_t cs;
-	cs.data = op;
-	cs.loader = online_users_load;
-	cs.title = online_users_title;
-	cs.display = online_users_display;
-	cs.handler = online_users_handler;
-	cs.query = online_users_query;
+	tui_list_t t = {
+		.data = op,
+		.loader = online_users_load,
+		.title = online_users_title,
+		.display = online_users_display,
+		.handler = online_users_handler,
+		.query = online_users_query,
+	};
 	
-	choose2(&cs);
+	tui_list(&t);
 
 	free(op->users);
 	free(op->ovrs);

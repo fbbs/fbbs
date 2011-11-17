@@ -429,79 +429,82 @@ int (*read)();
 }
 
 enum {
-	LIST_START = 3,
+	TUI_LIST_START = 3,
 };
 
-int choose2(choose_t *cp)
+static void tui_list_init(tui_list_t *p)
+{
+	p->all = p->cur = p->start = 0;
+	p->update = FULLUPDATE;
+	p->valid = false;
+	p->in_query = false;
+}
+
+int tui_list(tui_list_t *p)
 {
 	int ch, ret, number = 0;
 	bool end = false;
 
-	cp->all = 0;
-	cp->cur = 0;
-	cp->start = 0;
-	cp->update = FULLUPDATE;
-	cp->valid = false;
-	cp->in_query = false;
+	tui_list_init(p);
 	
 	while (!end) {
-		if (!cp->in_query && !cp->valid) {
-			cp->eod = false;
-			if ((*cp->loader)(cp) < 0)
+		if (!p->in_query && !p->valid) {
+			p->eod = false;
+			if ((*p->loader)(p) < 0)
 				break;
-			cp->valid = true;
-			if (cp->update != FULLUPDATE)
-				cp->update = PARTUPDATE;
+			p->valid = true;
+			if (p->update != FULLUPDATE)
+				p->update = PARTUPDATE;
 		}
 
-		if (!cp->eod) {
-			(*cp->loader)(cp);
+		if (!p->eod) {
+			(*p->loader)(p);
 		} else {
-			if (cp->cur >= cp->all)
-				cp->cur = cp->all - 1;
-			if (cp->cur < 0)
-				cp->cur = 0;
+			if (p->cur >= p->all)
+				p->cur = p->all - 1;
+			if (p->cur < 0)
+				p->cur = 0;
 		}
 
-		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
-			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
-			if (cp->update != FULLUPDATE)
-				cp->update = PARTUPDATE;
+		if (p->cur < p->start || p->cur >= p->start + BBS_PAGESIZE) {
+			p->start = (p->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
+			if (p->update != FULLUPDATE)
+				p->update = PARTUPDATE;
 		}
 
-		if (cp->update != DONOTHING) {
-			if (cp->update == FULLUPDATE) {
+		if (p->update != DONOTHING) {
+			if (p->update == FULLUPDATE) {
 				clear();
-				(*cp->title)(cp);
-				cp->update = PARTUPDATE;
+				(*p->title)(p);
+				p->update = PARTUPDATE;
 			}
-			if (cp->update == PARTUPDATE) {
-				move(LIST_START, 0);
+			if (p->update == PARTUPDATE) {
+				move(TUI_LIST_START, 0);
 				clrtobot();
-				if ((*cp->display)(cp) == -1)
+				if ((*p->display)(p) == -1)
 					return -1;
 			}
 			update_endline();
-			cp->update = DONOTHING;
+			p->update = DONOTHING;
 		}
 
-		if (cp->cur < cp->start || cp->cur >= cp->start + BBS_PAGESIZE) {
-			cp->start = (cp->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
-			if ((*cp->display)(cp) == -1)
+		if (p->cur < p->start || p->cur >= p->start + BBS_PAGESIZE) {
+			p->start = (p->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
+			if ((*p->display)(p) == -1)
 				return -1;
 			update_endline();
 			continue;
 		}
 
-		if (!cp->in_query) {
-			move(LIST_START + cp->cur - cp->start, 0);
+		if (!p->in_query) {
+			move(TUI_LIST_START + p->cur - p->start, 0);
 			outs(">");
 		}
 
 		ch = igetkey();
 
-		if (!cp->in_query) {
-			move(LIST_START + cp->cur - cp->start, 0);
+		if (!p->in_query) {
+			move(TUI_LIST_START + p->cur - p->start, 0);
 			outs(" ");
 		}
 
@@ -510,9 +513,9 @@ int choose2(choose_t *cp)
 			case 'e':
 			case KEY_LEFT:
 			case EOF:
-				if (cp->in_query) {
-					cp->in_query = false;
-					cp->update = FULLUPDATE;
+				if (p->in_query) {
+					p->in_query = false;
+					p->update = FULLUPDATE;
 				} else {
 					end = true;
 				}
@@ -520,46 +523,46 @@ int choose2(choose_t *cp)
 			case 'b':
 			case Ctrl('B'):
 			case KEY_PGUP:
-				if (cp->cur == 0)
-					cp->cur = cp->all - 1;
+				if (p->cur == 0)
+					p->cur = p->all - 1;
 				else
-					cp->cur -= BBS_PAGESIZE;
+					p->cur -= BBS_PAGESIZE;
 				break;
 			case 'N':
 			case Ctrl('F'):
 			case KEY_PGDN:
 			case ' ':
-				if (cp->cur == cp->all - 1)
-					cp->cur = 0;
+				if (p->cur == p->all - 1)
+					p->cur = 0;
 				else
-					cp->cur += BBS_PAGESIZE;
+					p->cur += BBS_PAGESIZE;
 				break;
 			case 'k':
 			case KEY_UP:
-				if (--cp->cur < 0)
-					cp->cur = cp->all - 1;
-				if (cp->in_query && cp->query)
-					(*cp->query)(cp);
+				if (--p->cur < 0)
+					p->cur = p->all - 1;
+				if (p->in_query && p->query)
+					(*p->query)(p);
 				break;
 			case 'j':
 			case KEY_DOWN:
-				++cp->cur;
-				if (cp->eod && cp->cur >= cp->all)
-					cp->cur = 0;
-				if (cp->in_query && cp->query)
-					(*cp->query)(cp);
+				++p->cur;
+				if (p->eod && p->cur >= p->all)
+					p->cur = 0;
+				if (p->in_query && p->query)
+					(*p->query)(p);
 				break;
 			case '$':
 			case KEY_END:
-				cp->cur = cp->all - 1;
+				p->cur = p->all - 1;
 				break;
 			case KEY_HOME:
-				cp->cur = 0;
+				p->cur = 0;
 				break;
 			case '\n':
 			case '\r':
 				if (number > 0) {
-					cp->cur = number - 1;
+					p->cur = number - 1;
 					number = 0;
 					break;
 				}
@@ -570,11 +573,11 @@ int choose2(choose_t *cp)
 					ch = '\0';
 				} else {
 					number = 0;
-					ret = (*cp->handler)(cp, ch);
+					ret = (*p->handler)(p, ch);
 					if (ret < 0)
 						end = true;
 					else
-						cp->update = ret;
+						p->update = ret;
 				}
 				break;
 		}
