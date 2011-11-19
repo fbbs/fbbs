@@ -403,17 +403,6 @@ int tui_query_result(const char *userid)
 			, cperf(perf), (check_query_mail(path) == 1) ? "信" : "  ");
 
 	int exp = countexp(&user);
-#ifdef ALLOWGAME
-	prints("存款 [\033[1;32m%d元\033[m] 贷款 [\033[1;32m%d元\033[m]"
-			"(\033[1;33m%s\033[m) 经验值 [\033[1;32m%d\033[m]"
-			"(\033[1;33m%s\033[m)\n", user.money, user.bet,
-			cmoney(user.money - user.bet), exp, cexpstr(exp));
-	prints("发文 [\033[1;32m%d\033[m] 奖章 [\033[1;32m%d\033[m]"
-			"(\033[1;33m%s\033[m) 生命力 [\033[1;32m%d\033[m]\n",
-			user.numposts, user.nummedals, cnummedals(user.nummedals),
-			compute_user_value(&user));
-#else
-	prints("发文 [\033[1;32m%d\033[m] ", user.numposts);
 #ifdef ENABLE_BANK
 	if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
 		int64_t money = 0;
@@ -427,6 +416,17 @@ int tui_query_result(const char *userid)
 		prints("光华币 [\033[1;32m%d\033[m] ", TO_YUAN_INT(money));
 	}
 #endif
+#ifdef ALLOWGAME
+	prints("存款 [\033[1;32m%d元\033[m] 贷款 [\033[1;32m%d元\033[m]"
+			"(\033[1;33m%s\033[m) 经验值 [\033[1;32m%d\033[m]"
+			"(\033[1;33m%s\033[m)\n", user.money, user.bet,
+			cmoney(user.money - user.bet), exp, cexpstr(exp));
+	prints("发文 [\033[1;32m%d\033[m] 奖章 [\033[1;32m%d\033[m]"
+			"(\033[1;33m%s\033[m) 生命力 [\033[1;32m%d\033[m]\n",
+			user.numposts, user.nummedals, cnummedals(user.nummedals),
+			compute_user_value(&user));
+#else
+	prints("发文 [\033[1;32m%d\033[m] ", user.numposts);
 	prints("经验值 [\033[1;33m%-10s\033[m]", cexpstr(exp));
 #ifdef SHOWEXP
 	prints("(%d)", exp);
