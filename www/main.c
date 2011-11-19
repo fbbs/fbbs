@@ -1,5 +1,4 @@
 #include "libweb.h"
-#include <locale.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "fbbs/fbbs.h"
@@ -158,8 +157,6 @@ static const web_handler_t *_get_handler(void)
  */
 static int _init_all(void)
 {
-	setlocale(LC_CTYPE, "zh_CN.UTF-8");
-
 	srand(time(NULL) * 2 + getpid());
 
 	if (chdir(BBSHOME) != 0)

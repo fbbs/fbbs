@@ -1,7 +1,5 @@
 // Handle user login.
 
-#include <locale.h>
-
 #include "bbs.h"
 #include "sysconf.h"
 
@@ -978,7 +976,6 @@ void start_client(void)
 	if (db_status(env.d) != DB_CONNECTION_OK)
 		exit(EXIT_FAILURE);
 
-	setlocale(LC_CTYPE, "zh_CN.UTF-8");
 	initialize_convert_env();
 #ifdef ALLOWSWITCHCODE
 	if (resolve_gbkbig5_table() < 0)
