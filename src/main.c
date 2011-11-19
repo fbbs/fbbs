@@ -560,6 +560,7 @@ static int login_query(void)
 	bool auth = false;
 #endif // ENABLE_SSH
 
+	resolve_utmp();
 	// Deny new logins if too many users online.
 	int online = count_online();
 #ifndef ENABLE_SSH
