@@ -965,16 +965,21 @@ static void db_disconnect(void)
 	db_finish(env.d);
 }
 
-void start_client(void)
+void initialize_db(void)
 {
-	extern char currmaildir[];
-
 	atexit(db_disconnect);
 	env.d = db_connect(config_get(env.c, "host"), config_get(env.c, "port"),
 			config_get(env.c, "dbname"), config_get(env.c, "user"),
 			config_get(env.c, "password"));
 	if (db_status(env.d) != DB_CONNECTION_OK)
 		exit(EXIT_FAILURE);
+}
+
+void start_client(void)
+{
+	extern char currmaildir[];
+
+	initialize_db();
 
 	initialize_convert_env();
 #ifdef ALLOWSWITCHCODE

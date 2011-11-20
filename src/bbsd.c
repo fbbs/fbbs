@@ -380,6 +380,9 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 		dup2(fd, STDIN_FILENO);
 		get_ip_addr(p);
 #ifdef ENABLE_SSH
+		extern void initialize_db(void);
+		initialize_db();
+
 		ssh_chan = sshbbs_accept(sshbind, session);
 		if (!ssh_chan)
 			exit(1);
