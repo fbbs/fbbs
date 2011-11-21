@@ -5,7 +5,8 @@ CREATE TABLE all_users (
 	name TEXT,
 	passwd TEXT,
 	alive BOOLEAN DEFAULT TRUE,
-	money BIGINT DEFAULT 0
+	money BIGINT DEFAULT 0,
+	paid_posts INTEGER DEFAULT 0,
 );
 
 CREATE VIEW users AS
