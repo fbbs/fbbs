@@ -408,7 +408,7 @@ int tui_query_result(const char *userid)
 		int64_t money = 0;
 		db_res_t *res = db_exec_query(env.d, true,
 				"SELECT money FROM users WHERE lower(name) = lower(%s)",
-				currentuser.userid);
+				user.userid);
 		if (res) {
 			money = db_get_bigint(res, 0, 0);
 			db_clear(res);
