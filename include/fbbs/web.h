@@ -38,8 +38,6 @@ typedef struct web_ctx_t {
 	config_t *c;
 	pool_t *p;
 	http_req_t *r;
-	convert_t *u2g;
-	convert_t *g2u;
 } web_ctx_t;
 
 extern web_ctx_t ctx;

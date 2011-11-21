@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
@@ -125,7 +126,7 @@ int bbssnd_main(void)
 	char title[sizeof(fh.title)];
 	if (!isedit) {
 		if (ctx.r->flag & REQUEST_UTF8) {
-			convert(ctx.u2g, get_param("title"), 0,
+			convert(env.u2g, get_param("title"), 0,
 					title, sizeof(title), NULL, NULL);
 		} else {
 			strlcpy(title, get_param("title"), sizeof(title));
@@ -158,7 +159,7 @@ int bbssnd_main(void)
 			.o_fp = reply ? &fh : NULL, .mmark = false,
 			.noreply = reply && fh.accessed[0] & FILE_NOREPLY,
 			.anony = strtol(get_param("anony"), NULL, 0),
-			.cp = (ctx.r->flag & REQUEST_UTF8) ? ctx.u2g : NULL
+			.cp = (ctx.r->flag & REQUEST_UTF8) ? env.u2g : NULL
 		};
 		if (!(fid = do_post_article(&pr)))
 			return BBS_EINTNL;
