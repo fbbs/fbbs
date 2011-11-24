@@ -1,5 +1,5 @@
-#ifndef FB_LIST_H
-#define FB_LIST_H
+#ifndef FB_TUI_LIST_H
+#define FB_TUI_LIST_H
 
 typedef int tui_list_loader_t;
 typedef void tui_list_title_t;
@@ -18,11 +18,11 @@ typedef struct tui_list_t {
 	void *data;    ///< Data.
 	int (*loader)(struct tui_list_t *);   ///< Data loader.
 	void (*title)(struct tui_list_t *);   ///< Function that shows title.
-	int (*display)(struct tui_list_t *);  ///< Display function.
+	int (*display)(struct tui_list_t *, int);  ///< Display function.
 	int (*handler)(struct tui_list_t *, int);  ///< Key handler.
 	int (*query)(struct tui_list_t *); ///< Query handler.
 } tui_list_t;
 
 extern int tui_list(tui_list_t *p);
 
-#endif // FB_LIST_H
+#endif // FB_TUI_LIST_H

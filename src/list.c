@@ -1,5 +1,5 @@
 #include "bbs.h"
-#include "list.h"
+#include "fbbs/tui_list.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -440,6 +440,18 @@ static void tui_list_init(tui_list_t *p)
 	p->in_query = false;
 }
 
+static int tui_list_display_loop(tui_list_t *p)
+{
+	int end = p->start + BBS_PAGESIZE;
+	if (end > p->all)
+		end = p->all;
+	for (int i = p->start; i < end; ++i) {
+		if ((*p->display)(p, i) == -1)
+			return -1;
+	}
+	return 0;
+}
+
 int tui_list(tui_list_t *p)
 {
 	int ch, ret, number = 0;
@@ -481,8 +493,7 @@ int tui_list(tui_list_t *p)
 			if (p->update == PARTUPDATE) {
 				move(TUI_LIST_START, 0);
 				clrtobot();
-				if ((*p->display)(p) == -1)
-					return -1;
+				tui_list_display_loop(p);
 			}
 			update_endline();
 			p->update = DONOTHING;
@@ -490,8 +501,7 @@ int tui_list(tui_list_t *p)
 
 		if (p->cur < p->start || p->cur >= p->start + BBS_PAGESIZE) {
 			p->start = (p->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
-			if ((*p->display)(p) == -1)
-				return -1;
+			tui_list_display_loop(p);
 			update_endline();
 			continue;
 		}

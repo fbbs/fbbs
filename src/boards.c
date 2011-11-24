@@ -1,8 +1,8 @@
 #include "bbs.h"
-#include "list.h"
 #include "sysconf.h"
 #include "record.h"
 #include "fbbs/string.h"
+#include "fbbs/tui_list.h"
 
 #define BBS_PAGESIZE    (t_lines - 4)
 
@@ -697,63 +697,52 @@ int unread_position(char *dirfile, board_data_t *ptr)
 	return num;
 }
 
-/**
- *
- */
-static tui_list_display_t choose_board_display(tui_list_t *cp)
+static tui_list_display_t choose_board_display(tui_list_t *cp, int n)
 {
 	choose_board_t *cbrd = cp->data;
-	board_data_t *ptr;
+	board_data_t *ptr = cbrd->brds + n;
 	char tmpBM[BM_LEN - 1];
 
 	char cate[7], title[STRLEN];
 
-	int n;
-	for (n = cp->start; n < cp->start + BBS_PAGESIZE; n++) {
-		if (n >= cbrd->num) {
-			prints("\n");
-			continue;
-		}
-		ptr = cbrd->brds + n;
-		if (ptr->total == -1) {
-			refresh();
-			check_newpost(ptr);
-		}
-
-		if (!cbrd->newflag)
-			prints(" %5d", n + 1);
-		else if (ptr->flag & BOARD_DIR_FLAG)
-			prints("  目录");
-		else
-			prints(" %5d", ptr->total);
-
-		if (ptr->flag & BOARD_DIR_FLAG)
-			prints("  ＋");
-		else
-			prints("  %s", ptr->unread ? "◆" : "◇");
-
-		if (!(ptr->flag & BOARD_CUSTOM_FLAG))
-			strcpy(tmpBM, ptr->BM);
-
-		strlcpy(cate, ptr->title + 1, sizeof(cate));
-		strlcpy(title, ptr->title + 11, sizeof(title));
-		ellipsis(title, 20);
-
-		prints("%c%-17s %s%s%6s %-20s %c ",
-				(ptr->zap && !(ptr->flag & BOARD_NOZAP_FLAG)) ? '*' : ' ',
-				ptr->name,
-				(ptr->flag & BOARD_VOTE_FLAG) ? "\033[1;31mV\033[m" : " ",
-				(ptr->flag & BOARD_CLUB_FLAG) ? (ptr->flag & BOARD_READ_FLAG)
-				? "\033[1;31mc\033[m" : "\033[1;33mc\033[m" : " ",
-				cate, title, HAS_PERM (PERM_POST) ? ptr->property : ' ');
-
-		if (ptr->flag & BOARD_DIR_FLAG)
-			prints("[目录]\n");
-		else
-			prints("%-12s %4d\n",
-					ptr->BM[0] <= ' ' ? "诚征版主中" : strtok(tmpBM, " "),
-					brdshm->bstatus[ptr->pos].inboard);
+	if (ptr->total == -1) {
+		refresh();
+		check_newpost(ptr);
 	}
+
+	if (!cbrd->newflag)
+		prints(" %5d", n + 1);
+	else if (ptr->flag & BOARD_DIR_FLAG)
+		prints("  目录");
+	else
+		prints(" %5d", ptr->total);
+
+	if (ptr->flag & BOARD_DIR_FLAG)
+		prints("  ＋");
+	else
+		prints("  %s", ptr->unread ? "◆" : "◇");
+
+	if (!(ptr->flag & BOARD_CUSTOM_FLAG))
+		strcpy(tmpBM, ptr->BM);
+
+	strlcpy(cate, ptr->title + 1, sizeof(cate));
+	strlcpy(title, ptr->title + 11, sizeof(title));
+	ellipsis(title, 20);
+
+	prints("%c%-17s %s%s%6s %-20s %c ",
+			(ptr->zap && !(ptr->flag & BOARD_NOZAP_FLAG)) ? '*' : ' ',
+			ptr->name,
+			(ptr->flag & BOARD_VOTE_FLAG) ? "\033[1;31mV\033[m" : " ",
+			(ptr->flag & BOARD_CLUB_FLAG) ? (ptr->flag & BOARD_READ_FLAG)
+			? "\033[1;31mc\033[m" : "\033[1;33mc\033[m" : " ",
+			cate, title, HAS_PERM (PERM_POST) ? ptr->property : ' ');
+
+	if (ptr->flag & BOARD_DIR_FLAG)
+		prints("[目录]\n");
+	else
+		prints("%-12s %4d\n",
+				ptr->BM[0] <= ' ' ? "诚征版主中" : strtok(tmpBM, " "),
+				brdshm->bstatus[ptr->pos].inboard);
 	return 0;
 }
 

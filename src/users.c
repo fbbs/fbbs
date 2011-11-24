@@ -1,7 +1,7 @@
 #include "bbs.h"
-#include "list.h"
 #include "record.h"
 #include "fbbs/helper.h"
+#include "fbbs/tui_list.h"
 
 #define BBS_PAGESIZE (t_lines - 4)
 
@@ -87,6 +87,12 @@ static void online_users_swap(online_users_t *up, int a, int b)
 	up->users[b] = tmp;
 }
 
+static void set_num_rows(tui_list_t *p)
+{
+	online_users_t *up = p->data;
+	p->all = up->ovr_only ? up->onum : up->num;
+}
+
 static tui_list_loader_t online_users_load(tui_list_t *p)
 {
 	online_users_t *up = p->data;
@@ -131,10 +137,7 @@ static tui_list_loader_t online_users_load(tui_list_t *p)
 	qsort(up->users + up->onum, up->num - up->onum, sizeof(*up->users),
 			comparators[up->sort]);
 
-	if (up->ovr_only)
-		p->all = up->onum;
-	else
-		p->all = up->num;
+	set_num_rows(p);
 	return p->all;
 }
 
@@ -181,66 +184,61 @@ static void get_override_note(const char *userid, char *buf, size_t size)
 
 extern const char *idle_str(struct user_info *uent);
 
-static tui_list_display_t online_users_display(tui_list_t *p)
+static tui_list_display_t online_users_display(tui_list_t *p, int i)
 {
 	online_users_t *up = p->data;
 
 	struct user_info *uin;
-	int i;
 	bool is_ovr;
 	char buf[STRLEN], line[256];
-	int limit = up->ovr_only ? up->onum : up->num;
-	if (limit > p->start + BBS_PAGESIZE)
-		limit = p->start + BBS_PAGESIZE;
-	for (i = p->start; i < limit; ++i) {
-		is_ovr = up->ovr_only || i < up->onum;
-		uin = up->users[i];
-		if (!uin || !uin->active || !uin->pid || *uin->userid == '\0') {
-			outs("  \033[1;44m啊..我刚走\033[m\n");
-			continue;
-		}
 
-		if (is_ovr && up->show_note)
-			get_override_note(uin->userid, buf, sizeof(buf));
-		else
-			strlcpy(buf, uin->username, sizeof(buf));
-		ellipsis(buf, 20);
-
-		const char *host;
-		if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
-			host = uin->from;
-		} else {
-			if (is_hide_ip(uin))
-				host = "......";
-			else
-				host = mask_host(uin->from);
-		}
-
-		char pager;
-		if (uin->mode == FIVE || uin->mode == BBSNET || uin->mode == LOCKSCREEN)
-			pager = '@';
-		else
-			pager = pagerchar(hisfriend(uin), uin->pager);
-
-		const char *color;
-		if (uin->invisible)
-			color = "\033[1;30m";
-		else if (is_web_user(uin->mode))
-			color = "\033[36m";
-		else if (uin->mode == POSTING || uin->mode == MARKET)
-			color = "\033[32m";
-		else if (uin->mode == FIVE || uin->mode == BBSNET)
-			color = "\033[33m";
-		else
-			color = "";
-
-		snprintf(line, sizeof(line), " \033[m%4d%s%-12.12s\033[37m %-20.20s"
-				"\033[m %-15.15s %c %c %c %s%-10.10s\033[37m %5.5s\033[m\n",
-				i + 1, is_ovr ? "\033[32m√" : "  ", uin->userid,
-				buf, host, pager, msgchar(uin), uin->invisible ? '@' : ' ',
-				color, mode_type(uin->mode), idle_str(uin));
-		prints("%s", line);
+	is_ovr = up->ovr_only || i < up->onum;
+	uin = up->users[i];
+	if (!uin || !uin->active || !uin->pid || *uin->userid == '\0') {
+		outs("  \033[1;44m啊..我刚走\033[m\n");
+		return 0;
 	}
+
+	if (is_ovr && up->show_note)
+		get_override_note(uin->userid, buf, sizeof(buf));
+	else
+		strlcpy(buf, uin->username, sizeof(buf));
+	ellipsis(buf, 20);
+
+	const char *host;
+	if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
+		host = uin->from;
+	} else {
+		if (is_hide_ip(uin))
+			host = "......";
+		else
+			host = mask_host(uin->from);
+	}
+
+	char pager;
+	if (uin->mode == FIVE || uin->mode == BBSNET || uin->mode == LOCKSCREEN)
+		pager = '@';
+	else
+		pager = pagerchar(hisfriend(uin), uin->pager);
+
+	const char *color;
+	if (uin->invisible)
+		color = "\033[1;30m";
+	else if (is_web_user(uin->mode))
+		color = "\033[36m";
+	else if (uin->mode == POSTING || uin->mode == MARKET)
+		color = "\033[32m";
+	else if (uin->mode == FIVE || uin->mode == BBSNET)
+		color = "\033[33m";
+	else
+		color = "";
+
+	snprintf(line, sizeof(line), " \033[m%4d%s%-12.12s\033[37m %-20.20s"
+			"\033[m %-15.15s %c %c %c %s%-10.10s\033[37m %5.5s\033[m\n",
+			i + 1, is_ovr ? "\033[32m√" : "  ", uin->userid,
+			buf, host, pager, msgchar(uin), uin->invisible ? '@' : ' ',
+			color, mode_type(uin->mode), idle_str(uin));
+	prints("%s", line);
 	return 0;
 }
 
@@ -407,6 +405,7 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			else
 				modify_user_mode(LUSERS);
 			up->uptime = 0;
+			set_num_rows(p);
 			return PARTUPDATE;
 		case 'W':
 		case 'w':
