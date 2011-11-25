@@ -257,12 +257,12 @@ static int check_nologin(int fd)
 #endif // NOLOGIN
 
 #else // ENABLE_SSH
-static bool channel_reply(ssh_session session, enum ssh_channel_requests_e req)
+static bool channel_reply(ssh_session s, enum ssh_channel_requests_e req)
 {
 	ssh_message msg;
 	bool expect = false;
 	do {
-		msg = ssh_message_get(session);
+		msg = ssh_message_get(s);
 		if (msg && ssh_message_type(msg)==SSH_REQUEST_CHANNEL &&
 				ssh_message_subtype(msg) == req) {
 			expect = true;
@@ -282,16 +282,16 @@ static bool channel_reply(ssh_session session, enum ssh_channel_requests_e req)
 /**
  *
  */
-static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
+static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session s)
 {
 	ssh_message msg;
 	ssh_channel chan = NULL;
 	bool auth = false;
 	int ret;
 	int attempt = 0;
-	if (ssh_accept(session) == 0) {
+	if (ssh_accept(s) == 0) {
 		do {
-			msg = ssh_message_get(session);
+			msg = ssh_message_get(s);
 			if (!msg)
 				break;
 			switch (ssh_message_type(msg)) {
@@ -311,7 +311,7 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 									ssh_message_auth_reply_success(msg, 0);
 									break;
 								default:
-									ssh_disconnect(session);
+									ssh_disconnect(s);
 									return NULL;
 							}
 							break;
@@ -331,12 +331,12 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 		} while (!auth && attempt < LOGINATTEMPTS);
 	}
 	if (!auth) {
-		ssh_disconnect(session);
+		ssh_disconnect(s);
 		return NULL;
 	}
 	
     do {
-        msg = ssh_message_get(session);
+        msg = ssh_message_get(s);
         if (msg) {
 			switch(ssh_message_type(msg)) {
 				case SSH_REQUEST_CHANNEL_OPEN:
@@ -351,13 +351,13 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
         }
     } while (msg && !chan);
 	if (!chan) {
-        ssh_disconnect(session);
+        ssh_disconnect(s);
         return NULL;
     }
 
-	if (!channel_reply(session, SSH_CHANNEL_REQUEST_PTY)
-			|| !channel_reply(session, SSH_CHANNEL_REQUEST_SHELL)) {
-		ssh_disconnect(session);
+	if (!channel_reply(s, SSH_CHANNEL_REQUEST_PTY)
+			|| !channel_reply(s, SSH_CHANNEL_REQUEST_SHELL)) {
+		ssh_disconnect(s);
 		return NULL;
 	}
 	return chan;
@@ -366,7 +366,7 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session session)
 
 static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 #ifdef ENABLE_SSH
-		, ssh_bind sshbind, ssh_session session
+		, ssh_bind sshbind, ssh_session s
 #endif
 )
 {
@@ -383,7 +383,7 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 		extern void initialize_db(void);
 		initialize_db();
 
-		ssh_chan = sshbbs_accept(sshbind, session);
+		ssh_chan = sshbbs_accept(sshbind, s);
 		if (!ssh_chan)
 			exit(1);
 #else // ENABLE_SSH
@@ -420,7 +420,7 @@ int main(int argc, char *argv[])
 
 #ifdef ENABLE_SSH
 	ssh_bind sshbind = ssh_bind_new();
-	ssh_session session;
+	ssh_session my_ssh_session;
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_DSAKEY,
 			KEYS_FOLDER"/ssh_host_dsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,
@@ -468,14 +468,14 @@ int main(int argc, char *argv[])
 		struct sockaddr_storage sa;
 		socklen_t slen = sizeof(sa);
 #ifdef ENABLE_SSH
-		session = ssh_new();
-		if (ssh_bind_accept(sshbind, session) == SSH_ERROR) {
-			ssh_free(session);
+		my_ssh_session = ssh_new();
+		if (ssh_bind_accept(sshbind, my_ssh_session) == SSH_ERROR) {
+			ssh_free(my_ssh_session);
 			continue;
 		}
-		int fd = ssh_get_fd(session);
+		int fd = ssh_get_fd(my_ssh_session);
 		getpeername(fd, (struct sockaddr *)&sa, &slen);
-		accept_connection(fd, nfds, &sa, sshbind, session);
+		accept_connection(fd, nfds, &sa, sshbind, my_ssh_session);
 #else // ENABLE_SSH
 		int n = poll(fds, nfds, -1);
 		if (n > 0) {
