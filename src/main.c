@@ -544,6 +544,9 @@ int bbs_auth(const char *name, const char *passwd)
 		return BBS_ELFREQ;
 	}
 #endif
+
+	session.uid = get_user_id(name);
+
 	return 0;
 }
 

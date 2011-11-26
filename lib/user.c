@@ -1,14 +1,13 @@
-#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
 
 /**
  * Get user id by name.
- * @param c The database connection.
  * @param name The user name.
  * @return user id on success, 0 if not exist, -1 on error.
  */
-user_id_t get_user_id(db_conn_t *c, const char *name)
+user_id_t get_user_id(const char *name)
 {
-	db_res_t *res = db_exec_query(c, true,
+	db_res_t *res = db_exec_query(env.d, true,
 			"SELECT id FROM users WHERE lower(name) = lower(%s)", name);
 	if (!res)
 		return -1;

@@ -1,4 +1,6 @@
-#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
+
+bbs_session_t session;
 
 int get_online_count(db_conn_t *c)
 {
