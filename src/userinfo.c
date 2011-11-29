@@ -365,7 +365,7 @@ void uinfo_query(struct userec *u, int real, int unum) {
 			strlcpy(uinfo.username, newinfo.username, NAMELEN);
 			WishNum = 9999;
 		}
-		if (ans[0] != 2) {
+		if (ans[0] != '2') {
 			memcpy(u, &newinfo, (size_t)sizeof(currentuser));
 			substitut_record(PASSFILE, &newinfo, sizeof(newinfo), unum);
 		} else {

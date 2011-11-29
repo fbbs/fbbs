@@ -101,7 +101,7 @@ bool passwd_check(const char *name, const char *pw_try)
 int passwd_set(const char *name, const char *pw)
 {
 	db_res_t *res = db_exec_cmd(env.d, "UPDATE all_users"
-			" SET passwd = %s WHERE lower(name) = lower(%s) AND alive = 1",
+			" SET passwd = %s WHERE lower(name) = lower(%s) AND alive",
 			genpasswd(pw), name);
 	int ret = res ? 0 : -1;
 	db_clear(res);
