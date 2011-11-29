@@ -13,7 +13,7 @@ user_id_t get_user_id(const char *name)
 		return -1;
 
 	user_id_t ret = 0;
-	if (db_num_rows(res) > 0)
+	if (db_res_rows(res) > 0)
 		ret = db_get_user_id(res, 0, 0);
 	db_clear(res);
 	return ret;

@@ -27,67 +27,13 @@ db_timestamp time_to_ts(fb_time_t t)
 	return (t - POSTGRES_EPOCH_TIME) * INT64_C(1000000);
 }
 
-db_conn_t *db_connect(const char *host, const char *port,
-        const char *db, const char *user, const char *pwd)
-{
-	return PQsetdbLogin(host, port, NULL, NULL, db, user, pwd);
-}
-
-void db_finish(db_conn_t *conn)
-{
-	PQfinish(conn);
-}
-
-db_conn_status_t db_status(db_conn_t *conn)
-{
-	return PQstatus(conn);
-}
-
-const char *db_errmsg(db_conn_t *conn)
-{
-	return PQerrorMessage(conn);
-}
-
-db_res_t *db_exec(db_conn_t *conn, const char *cmd)
-{
-	return PQexec(conn, cmd);
-}
-
-db_exec_status_t db_res_status(const db_res_t *res)
-{
-	return PQresultStatus(res);
-}
-
 void db_clear(db_res_t *res)
 {
 	if (res)
 		PQclear(res);
 }
 
-int db_num_rows(const db_res_t *res)
-{
-	return PQntuples(res);
-}
-
-int db_num_fields(const db_res_t *res)
-{
-	return PQnfields(res);
-}
-
-bool _is_binary_field(const db_res_t *res, int col)
-{
-	return PQfformat(res, col);
-}
-
-bool db_get_is_null(const db_res_t *res, int row, int col)
-{
-	return PQgetisnull(res, row, col);
-}
-
-const char *db_get_value(const db_res_t *res, int row, int col)
-{
-	return PQgetvalue(res, row, col);
-}
+#define _is_binary_field(res, col)  PQfformat(res, col)
 
 int16_t db_get_smallint(const db_res_t *res, int row, int col)
 {

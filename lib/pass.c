@@ -82,7 +82,7 @@ bool passwd_check(const char *name, const char *pw_try)
 			"SELECT passwd FROM users WHERE lower(name) = lower(%s)", name);
 	if (!res)
 		return false;
-	if (db_num_rows(res) < 1) {
+	if (db_res_rows(res) < 1) {
 		db_clear(res);
 		return false;
 	}

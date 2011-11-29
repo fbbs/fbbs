@@ -23,21 +23,22 @@ typedef enum db_exec_status_t {
 
 extern db_timestamp time_to_ts(fb_time_t t);
 
-extern db_conn_t *db_connect(const char *host, const char *port,
-		const char *db, const char *user, const char *pwd);
-extern void db_finish(db_conn_t *conn);
-extern db_conn_status_t db_status(db_conn_t *conn);
-extern const char *db_errmsg(db_conn_t *conn);
+#define db_connect(host, port, db, user, pwd) \
+		((db_conn_t *)PQsetdbLogin(host, port, NULL, NULL, db, user, pwd));
+#define db_finish(conn)  PQfinish(conn)
+#define db_status(conn)  ((db_conn_status_t)PQstatus(conn))
+#define db_errmsg(conn)  ((const char *)PQerrorMessage(conn))
 
-extern db_res_t *db_exec(db_conn_t *conn, const char *cmd);
-extern db_exec_status_t db_res_status(const db_res_t *res);
+#define db_exec(conn, cmd)  ((db_res_t *)PQexec(conn, cmd))
+#define db_res_status(res)  ((db_exec_status_t)PQresultStatus(res))
 extern void db_clear(db_res_t *res);
 
-extern int db_num_rows(const db_res_t *res);
-extern int db_num_fields(const db_res_t *res);
+#define db_res_rows(res)  (PQntuples(res))
+#define db_res_cols(res)  (PQnfields(res))
+#define db_cmd_rows(res)  (strtol(PQcmdTuples(res), NULL, 10))
 
-extern bool db_get_is_null(const db_res_t *res, int row, int col);
-extern const char *db_get_value(const db_res_t *res, int row, int col);
+#define db_get_is_null(res, row, col)  ((bool)PQgetisnull(res, row, col))
+#define db_get_value(res, row, col) ((const char *)PQgetvalue(res, row, col))
 extern int16_t db_get_smallint(const db_res_t *res, int row, int col);
 extern int32_t db_get_integer(const db_res_t *res, int row, int col);
 extern int64_t db_get_bigint(const db_res_t *res, int row, int col);
