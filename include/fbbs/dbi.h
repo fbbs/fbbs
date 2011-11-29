@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <libpq-fe.h>
 #include "fbbs/time.h"
 #include "fbbs/util.h"
