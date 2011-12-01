@@ -529,7 +529,7 @@ int validate_utf8_input(const char *str, size_t max_chinese_chars)
 		int w = fb_wcwidth(wc);
 		if (w <= 0)
 			return -1;
-		width += fb_wcwidth(wc);
+		width += w;
 	}
 }
 
