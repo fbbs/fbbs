@@ -23,4 +23,7 @@ extern int convert_close(convert_t *cp);
 
 extern int convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp);
 
+#define convert_u2g(orig, buf)  convert(env.u2g, orig, 0, buf, sizeof(buf), NULL, NULL)
+#define convert_g2u(orig, buf)  convert(env.g2u, orig, 0, buf, sizeof(buf), NULL, NULL)
+
 #endif // FB_CONVERT_H
