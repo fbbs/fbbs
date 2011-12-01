@@ -126,8 +126,7 @@ int bbssnd_main(void)
 	char title[sizeof(fh.title)];
 	if (!isedit) {
 		if (ctx.r->flag & REQUEST_UTF8) {
-			convert(env.u2g, get_param("title"), 0,
-					title, sizeof(title), NULL, NULL);
+			convert_u2g(get_param("title"), title);
 		} else {
 			strlcpy(title, get_param("title"), sizeof(title));
 		}

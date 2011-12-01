@@ -5,7 +5,8 @@
 #include <stdio.h>
 
 enum {
-	CONVERT_BUFSIZE = 1024
+	CONVERT_ALL = -1,
+	CONVERT_BUFSIZE = 1024,
 };
 
 typedef struct convert_t {
@@ -23,7 +24,9 @@ extern int convert_close(convert_t *cp);
 
 extern int convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp);
 
-#define convert_u2g(orig, buf)  convert(env.u2g, orig, 0, buf, sizeof(buf), NULL, NULL)
-#define convert_g2u(orig, buf)  convert(env.g2u, orig, 0, buf, sizeof(buf), NULL, NULL)
+#define convert_u2g(orig, buf) \
+	convert(env.u2g, orig, CONVERT_ALL, buf, sizeof(buf), NULL, NULL)
+#define convert_g2u(orig, buf) \
+	convert(env.g2u, orig, CONVERT_ALL, buf, sizeof(buf), NULL, NULL)
 
 #endif // FB_CONVERT_H
