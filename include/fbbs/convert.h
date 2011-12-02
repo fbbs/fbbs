@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 enum {
-	CONVERT_ALL = -1,
 	CONVERT_BUFSIZE = 1024,
 };
 
@@ -24,6 +23,7 @@ extern int convert_close(convert_t *cp);
 
 extern int convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp);
 
+#define CONVERT_ALL  ((size_t) -1)
 #define convert_u2g(orig, buf) \
 	convert(env.u2g, orig, CONVERT_ALL, buf, sizeof(buf), NULL, NULL)
 #define convert_g2u(orig, buf) \

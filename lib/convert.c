@@ -52,7 +52,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 {
 	convert_reset(cp);
 
-	if (len < 0)
+	if (len == (size_t) -1)
 		len = strlen(from);
 
 	const char *f = from;
@@ -101,6 +101,8 @@ int convert(convert_t *cp, const char *from, size_t len,
 			if (s < 0)
 				return ret;
 		}
+		if (l == 0)
+			return ret;
 	}
 	return ret;
 }
