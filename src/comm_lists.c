@@ -38,10 +38,11 @@ int m_internet();
 #endif
 
 int online_users_show_override(), t_list(), t_monitor();
-int t_query(), t_talk(), t_pager(), t_friend(), t_reject(), x_cloak();
+int t_query(), t_talk(), t_pager(), t_reject(), x_cloak();
 int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
+extern int tui_following_list(void);
 
 #ifndef WITHOUT_ADMIN_TOOLS
 int kick_user(), m_vote();
@@ -109,7 +110,7 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "SetCloak", x_cloak },
 		{ "SendMsg", s_msg },
 		{ "ShowMsg", msg_more },
-		{ "SetFriends", t_friend },
+		{ "SetFriends", tui_following_list },
 		{ "SetRejects", t_reject },
 		{ "RFriendWall", friend_wall },
 		{ "EnterChat", ent_chat },
