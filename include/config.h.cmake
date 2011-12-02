@@ -17,5 +17,6 @@
 #cmakedefine ENABLE_DEBUG
 #cmakedefine ENABLE_WWW
 #cmakedefine ENABLE_BANK
+#cmakedefine ENABLE_FDQUAN
 
 #endif // FB_CONFIG_H

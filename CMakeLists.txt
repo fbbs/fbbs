@@ -14,6 +14,7 @@ option(ENABLE_DEBUG "compile debug version" on)
 option(ENABLE_WWW "compile www module" on)
 option(ENABLE_PG "compile postgresql module" on)
 option(ENABLE_BANK "compile bbs bank module" on)
+option(ENABLE_FDQUAN "compile for Fudan Quan BBS" on)
 
 set(CMAKE_C_FLAGS "-O2 -pipe -Wall")
 if(ENABLE_DEBUG)

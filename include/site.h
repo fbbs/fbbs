@@ -1,7 +1,11 @@
 #ifndef FB_SITE_H
 #define FB_SITE_H
 
-//#define FDQUAN	//定义复旦泉用
+#include "config.h"
+
+#ifdef ENABLE_FDQUAN
+# define FDQUAN	//定义复旦泉用
+#endif // ENABLE_FDQUAN
 #define USE_METALOG //定义系统日志使用Metalog Daemon
 
 /*
