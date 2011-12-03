@@ -7,10 +7,6 @@
 #include "fbbs/pool.h"
 #include "fbbs/schema.h"
 
-#define TO_CENTS(y)  (y * 100)
-#define TO_YUAN(c)  (c / 100.0L)
-#define TO_YUAN_INT(c)  ((int)(c / 100.0L))
-
 typedef struct bbs_env_t {
 	config_t *c;
 	db_conn_t *d;
