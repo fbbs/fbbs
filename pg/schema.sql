@@ -6,6 +6,7 @@ CREATE TABLE all_users (
 	passwd TEXT,
 	alive BOOLEAN DEFAULT TRUE,
 	money BIGINT DEFAULT 0,
+	rank REAL DEFAULT 0,
 	paid_posts INTEGER DEFAULT 0,
 );
 

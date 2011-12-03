@@ -30,14 +30,16 @@ int bbsqry_main(void)
 #ifdef ENABLE_BANK
 		if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
 			int64_t money = 0;
+			float rank = 0.0;
 			db_res_t *res = db_exec_query(env.d, true,
-					"SELECT money FROM users WHERE lower(name) = lower(%s)",
+					"SELECT money, rank FROM users WHERE lower(name) = lower(%s)",
 					currentuser.userid);
 			if (res) {
 				money = db_get_bigint(res, 0, 0);
+				rank = db_get_float(res, 0, 1);
 				db_clear(res);
 			}
-			printf("money=%d ", TO_YUAN_INT(money));
+			printf("money=%d rank='%.1f'", TO_YUAN_INT(money), PERCENT_RANK(rank));
 		}
 #endif
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
