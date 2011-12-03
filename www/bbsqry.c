@@ -39,7 +39,8 @@ int bbsqry_main(void)
 				rank = db_get_float(res, 0, 1);
 				db_clear(res);
 			}
-			printf("money=%d rank='%.1f'", TO_YUAN_INT(money), PERCENT_RANK(rank));
+			printf("money='%d' rank='%.1f'",
+					TO_YUAN_INT(money), PERCENT_RANK(rank));
 		}
 #endif
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {

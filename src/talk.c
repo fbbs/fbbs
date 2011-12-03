@@ -417,7 +417,7 @@ int tui_query_result(const char *userid)
 		}
 		char rank_buf[8];
 		snprintf(rank_buf, sizeof(rank_buf), "%.1f%%", PERCENT_RANK(rank));
-		prints("光华币 [\033[1;32m%d\033[m(%s)] ", TO_YUAN_INT(money), rank_buf);
+		prints("光华币 [\033[1;32m%d\033[m](%s) ", TO_YUAN_INT(money), rank_buf);
 	}
 #endif
 #ifdef ALLOWGAME
