@@ -45,6 +45,7 @@ extern int32_t db_get_integer(const db_res_t *res, int row, int col);
 extern int64_t db_get_bigint(const db_res_t *res, int row, int col);
 extern bool db_get_bool(const db_res_t *res, int row, int col);
 extern fb_time_t db_get_time(const db_res_t *res, int row, int col);
+extern float db_get_float(const db_res_t *res, int row, int col);
 
 extern db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, ...);
 extern db_res_t *db_exec_query(db_conn_t *conn, bool binary, const char *cmd, ...);
