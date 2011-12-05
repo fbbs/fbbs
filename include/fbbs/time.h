@@ -22,6 +22,7 @@ typedef int64_t fb_time_t;
 #define fb_time() ((fb_time_t)time(NULL))
 
 extern char *getdatestring(time_t time, enum DATE_FORMAT mode);
+extern char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t);
 
 extern bool valid_date(int year, int month, int day);
 
