@@ -4,6 +4,10 @@
 #include <iconv.h>
 #include <stdio.h>
 
+#define GBK_BUFFER(buf, cchars)  char gbk_##buf[cchars * 2 + 1]
+#define UTF8_BUFFER(buf, cchars)  char utf8_##buf[cchars * 4 + 1]
+#define GBK_UTF8_BUFFER(buf, cchars)  char gbk_##buf[cchars * 2 + 1], utf8_##buf[cchars * 4 + 1]
+
 enum {
 	CONVERT_BUFSIZE = 1024,
 };
