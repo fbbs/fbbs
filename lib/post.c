@@ -82,7 +82,7 @@ unsigned int do_post_article(const post_request_t *pr)
 			getdatestring(time(NULL), DATE_ZH));
 
 	if (pr->cp)
-		convert_to_file(pr->cp, pr->content, 0, fptr);
+		convert_to_file(pr->cp, pr->content, CONVERT_ALL, fptr);
 	else
 		fputs(pr->content, fptr);
 
