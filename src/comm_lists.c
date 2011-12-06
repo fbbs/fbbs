@@ -59,6 +59,8 @@ int wall();
 int friend_wall();
 static int exec_mbem(const char *s);
 
+extern int tui_shop(void);
+
 typedef int (*telnet_handler_t)();
 
 typedef struct {
@@ -128,6 +130,7 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowWelcome", Welcome },
 		{ "AddPCorpus", AddPCorpus },
 		{ "GoodWish", sendgoodwish },
+		{ "Shop", tui_shop },
 #ifdef ALLOWSWITCHCODE
 		{ "SwitchCode", switch_code },
 #endif
