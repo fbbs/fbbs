@@ -162,6 +162,7 @@ so we don't need define this by passing make argument to the complier
 	#define BBSGID   9999
 	#define BBSHOME "/home/bbs"
 	#define BBSNAME "复旦泉"
+	#define SHORT_BBSNAME  "泉站"
 	#define BBSID   "FDQuanBBS"
 	#define BBSHOST "10.8.225.9"
 	#define BBSIP	"10.8.225.9"
@@ -170,6 +171,7 @@ so we don't need define this by passing make argument to the complier
 	#define BBSGID  9999
 	#define BBSHOME "/home/bbs"
 	#define BBSNAME "日月光华"
+	#define SHORT_BBSNAME  "光华"
 	#define BBSID   "Fudan BBS"
 	#define BBSHOST "bbs.fudan.edu.cn"
 	#define BBSIP	"61.129.42.9"
