@@ -15,4 +15,24 @@ CREATE VIEW users AS
 
 CREATE UNIQUE INDEX user_name_idx ON all_users (lower(name)) WHERE alive = TRUE;
 
+CREATE TABLE shopping_categories (
+	id SERIAL PRIMARY KEY,
+	name TEXT
+);
+
+CREATE TABLE shopping_items (
+	id SERIAL PRIMARY KEY,
+	category INTEGER REFERENCES shopping_categories,
+	name TEXT,
+	price INTEGER
+);
+
+CREATE TABLE shopping_records (
+	id SERIAL PRIMARY KEY,
+	user_id REFERENCES all_users,
+	item INTEGER REFERENCES shopping_items,
+	price TEXT,
+	order_time TIMESTAMPTZ
+);
+
 COMMIT;

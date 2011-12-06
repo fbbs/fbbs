@@ -82,3 +82,9 @@ bool valid_date(int year, int month, int day)
 
 	return true;
 }
+
+char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t)
+{
+	strftime(buf, size, fmt, localtime(&t));
+	return buf;
+}
