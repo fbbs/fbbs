@@ -266,6 +266,7 @@ div.pmain, div.umain, div.usmd {
 	border-top: 1px solid #ccddff;
 	border-bottom: 1px solid #ccddff;
 }
+.post_h p, .post_t p, .post_q p { height: 20px; }
 div.umain {
 	padding: 3px 7px;
 	font-size: 14px;
