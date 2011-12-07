@@ -7,6 +7,13 @@
 #include "fbbs/pool.h"
 #include "fbbs/schema.h"
 
+#ifdef ENABLE_BANK
+# define TO_CENTS(y)  (y * 100)
+# define TO_YUAN(c)  (c / 100.0L)
+# define TO_YUAN_INT(c)  ((int)(c / 100.0L))
+# define PERCENT_RANK(r)  (((int)(r * 1000)) / 10.0)
+#endif // ENABLE_BANK
+
 typedef struct bbs_env_t {
 	config_t *c;
 	db_conn_t *d;

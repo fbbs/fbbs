@@ -1,13 +1,6 @@
 #ifndef FB_HELPER_H
 #define FB_HELPER_H
 
-#ifdef ENABLE_BANK
-# define TO_CENTS(y)  (y * 100)
-# define TO_YUAN(c)  (c / 100.0L)
-# define TO_YUAN_INT(c)  ((int)(c / 100.0L))
-# define PERCENT_RANK(r)  (((int)(r * 1000)) / 10.0)
-#endif // ENABLE_BANK
-
 extern sigjmp_buf bus_jump;
 
 extern char *sethomefile(char *buf, const char *userid, const char *filename);
