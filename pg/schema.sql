@@ -35,4 +35,15 @@ CREATE TABLE shopping_records (
 	order_time TIMESTAMPTZ
 );
 
+CREATE TABLE titles (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER REFERENCES all_users,
+	granter INTEGER REFERENCES all_users,
+	title TEXT NOT NULL,
+	add_time TIMESTAMPTZ,
+	expire TIMESTAMPTZ,
+	approved BOOLEAN DEFAULT FALSE,
+	paid INTEGER
+);
+
 COMMIT;

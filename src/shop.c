@@ -2,6 +2,8 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/shop.h"
+#include "fbbs/string.h"
+#include "fbbs/title.h"
 #include "fbbs/tui_list.h"
 
 static tui_list_loader_t tui_shop_loader(tui_list_t *p)
@@ -37,17 +39,37 @@ static tui_list_display_t tui_shop_display(tui_list_t *p, int n)
 	return 0;
 }
 
-static tui_list_handler_t tui_shop_handler(tui_list_t *p, int key)
+static int tui_title_buy(int type, int price)
 {
-	return DONOTHING;
+	if (title_check_existence(session.uid)) {
+		presskeyfor("您已购买了自定义身份，请至我的商品中查看", t_lines - 1);
+		return MINIUPDATE;
+	}
+
+	GBK_UTF8_BUFFER(title, TITLE_CCHARS);
+	getdata(t_lines - 1, 0, "请输入自定义身份: ", gbk_title,
+			sizeof(gbk_title), YEA, YEA);
+	convert_g2u(gbk_title, utf8_title);
+	if (validate_utf8_input(utf8_title, TITLE_CCHARS) <= 0)
+		return MINIUPDATE;
+
+	if (title_submit_request(type, utf8_title)) {
+		presskeyfor("购买成功。请您耐心等待审核。", t_lines - 1);
+	} else {
+		presskeyfor("购买失败: 光华币余额不足或系统错误", t_lines - 1);
+	}
+	return MINIUPDATE;
 }
 
-static tui_list_query_t tui_shop_query(tui_list_t *p)
+static tui_list_handler_t tui_shop_handler(tui_list_t *p, int key)
 {
-	switch (shopping_list_get_id(p->data, p->cur)) {
+	int type = shopping_list_get_id(p->data, p->cur);
+	int price = shopping_list_get_price(p->data, p->cur);
+	switch (type) {
 		case SHOP_TITLE_90DAYS:
 		case SHOP_TITLE_180DAYS:
 		case SHOP_TITLE_365DAYS:
+			return tui_title_buy(type, price);
 		default:
 			break;
 	}
@@ -62,7 +84,7 @@ int tui_shop(void)
 		.title = tui_shop_title,
 		.display = tui_shop_display,
 		.handler = tui_shop_handler,
-		.query = tui_shop_query,
+		.query = NULL,
 	};
 
 	tui_list(&t);
