@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/terminal.h"
 
 #ifndef DLM
 #undef  ALLOWGAME

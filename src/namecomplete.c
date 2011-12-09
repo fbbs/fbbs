@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "fbbs/terminal.h"
 
 //      宏定义toupper(c),但有负作用,用时注意
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)

@@ -26,6 +26,7 @@
 extern struct postheader header;
 #include "bbs.h"
 #include "fbbs/helper.h"
+#include "fbbs/terminal.h"
 
 /*For read.c*/
 int auth_search_down();
@@ -201,7 +202,7 @@ int mailall() {
 	/****modify function: Add a parameter fname*****/
 	mailtoall(ans[0] - '0', fname);
 	/****end****/
-	move(t_lines - 1);
+	move(t_lines - 1, 0);
 	clrtoeol();
 	/****type 2共享文件不需要删除****/
 	if (ans[0] - '0' != 2)

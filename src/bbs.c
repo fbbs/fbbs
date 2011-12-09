@@ -11,6 +11,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 #ifndef DLM
 #undef	ALLOWGAME

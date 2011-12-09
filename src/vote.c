@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "vote.h"
 #include "mmap.h"
+#include "fbbs/terminal.h"
 
 extern int cmpbnames();
 extern int page, range;

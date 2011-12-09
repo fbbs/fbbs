@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 extern int RMSG;
 extern int msg_num;

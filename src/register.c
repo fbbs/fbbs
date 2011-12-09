@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/register.h"
+#include "fbbs/terminal.h"
 
 enum {
 	MAX_NEW_TRIES = 9,

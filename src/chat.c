@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include "chat.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
 
 char chatname[IDLEN]; /* Chat-Room Name */

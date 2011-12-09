@@ -9,6 +9,7 @@
 #endif // ENABLE_SSH
 #include "bbs.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 enum {
 	INPUT_ACTIVE = 0,
@@ -177,7 +178,8 @@ static int i_newfd = 0;
 static struct timeval i_to, *i_top = NULL;
 static int (*flushf)() = NULL;
 
-void add_io(int fd, int timeout) {
+void add_io(int fd, int timeout)
+{
 	i_newfd = fd;
 	if (timeout) {
 		i_to.tv_sec = timeout;
@@ -188,7 +190,8 @@ void add_io(int fd, int timeout) {
 }
 
 //	将flushf函数指针指向函数flushfunc
-void add_flush(int (*flushfunc)()) {
+void add_flush(int (*flushfunc)())
+{
 	flushf = flushfunc;
 }
 
@@ -392,7 +395,7 @@ int igetch(void)
 	return ch;
 }
 
-int do_igetkey(void)
+static int do_igetkey(void)
 {
 	int ch;
 #ifdef ALLOWSWITCHCODE
@@ -455,7 +458,8 @@ int egetch(void)
 	return rval;
 }
 
-void top_show(char *prompt) {
+static void top_show(const char *prompt)
+{
 	if (editansi) {
 		outs(ANSI_RESET);
 		refresh();
@@ -467,7 +471,8 @@ void top_show(char *prompt) {
 	standend();
 }
 
-int ask(char *prompt) {
+int ask(const char *prompt)
+{
 	int ch;
 	top_show(prompt);
 	ch = igetkey();
@@ -791,7 +796,7 @@ void update_endline(void)
 	orderWish++;
 }
 
-void showtitle(char *title, char *mid)
+void showtitle(const char *title, const char *mid)
 {
 	extern char BoardName[]; //main.c
 	char buf[STRLEN], *note;
@@ -821,7 +826,8 @@ void showtitle(char *title, char *mid)
 	move(1, 0);
 }
 
-void firsttitle(char *title) {
+void firsttitle(const char *title)
+{
 	extern int mailXX; //main.c
 	extern char BoardName[]; //main.c
 	char middoc[30];
@@ -838,7 +844,8 @@ void firsttitle(char *title) {
 }
 
 // Show 'title' on line 0, 'prompt' on line1.
-void docmdtitle(char *title, char *prompt) {
+void docmdtitle(const char *title, const char *prompt)
+{
 	firsttitle(title);
 	move(1, 0);
 	clrtoeol();
@@ -884,7 +891,8 @@ int show_data(const char *buf, int maxcol, int line, int col)
     return line;
 }
 
-int multi_getdata(int line, int col, int maxcol, char *prompt, char *buf, int len, int maxline, int clearlabel, int textmode)
+int multi_getdata(int line, int col, int maxcol, const char *prompt,
+		char *buf, int len, int maxline, int clearlabel, int textmode)
 {
 	extern int RMSG;
 	extern int msg_num;

@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/terminal.h"
 
 #define DENY_LEVEL_LIST ".DenyLevel"
 #define DENY_LEVEL_FILE "etc/denylevel"

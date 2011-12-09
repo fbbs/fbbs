@@ -1,10 +1,9 @@
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/terminal.h"
 
 static time_t calltime = 0;
 void R_monitor();
-//Added by Ashinmarch to support multi-line msg
-extern void show_data(char *buf, int maxcol, int line, int col);
 
 struct ACSHM {
 	char    data[ACBOARD_MAXLINE][ACBOARD_BUFSIZE];

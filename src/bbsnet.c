@@ -3,6 +3,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include "bbs.h"
+#include "fbbs/terminal.h"
 
 enum {
 	MAX_BBSNET_SITES = 54,  ///<

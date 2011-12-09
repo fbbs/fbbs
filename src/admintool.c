@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "bbs.h"
 #include "fbbs/register.h"
+#include "fbbs/terminal.h"
 
 extern int cmpbnames();
 extern char *chgrp();

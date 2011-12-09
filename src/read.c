@@ -25,6 +25,7 @@
 
 #include "bbs.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 //将光标移到当前的位置,并显示成>
 #define PUTCURS   move(3+locmem->crs_line-locmem->top_line,0);prints(">");

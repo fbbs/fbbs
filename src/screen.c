@@ -4,6 +4,7 @@
 #include <sys/param.h>
 #include <stdarg.h>
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 /**
  * String of commands to clear the entire screen and position the cursor at the
@@ -29,7 +30,7 @@
 #define TERM_CMD_SE "\033[m"
 
 /** Send a terminal command. */
-#define term_cmd(cmd)  output(cmd, sizeof(cmd) - 1)
+#define term_cmd(cmd)  output((unsigned char *)cmd, sizeof(cmd) - 1)
 
 extern int iscolor;
 extern int editansi;
@@ -149,7 +150,8 @@ static void init_screen(int slns, int scols)
 
 //对于哑终端或是big_picture中尚无内存映射,将t_columns设置成WRAPMARGIN
 //	调用init_screen初始化终端
-void initscr() {
+void initscr(void)
+{
 	if (!dumb_term && !big_picture)
 		t_columns = WRAPMARGIN;
 	init_screen(t_lines, WRAPMARGIN);
@@ -170,7 +172,8 @@ static void do_move(int col, int line)
 }
 
 //	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
-void rel_move(int was_col, int was_ln, int new_col, int new_ln) {
+static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
+{
 	if (new_ln >= t_lines || new_col >= t_columns) //越界,返回
 		return;
 	tc_col = new_col;
@@ -200,7 +203,8 @@ void rel_move(int was_col, int was_ln, int new_col, int new_ln) {
 //		有交集时,取合集
 //			但下限以ds为准,上限以de为准				跟直接取ds,de有什么区别?
 ///		对o_standup,o_standdown作用不太清楚
-void standoutput(unsigned char *buf, int ds, int de, int sso, int eso) {
+static void standoutput(unsigned char *buf, int ds, int de, int sso, int eso)
+{
 	int st_start, st_end;
 	if (eso <= ds || sso >= de) {
 		output(buf + ds, de - ds);
@@ -259,7 +263,8 @@ void redoscr(void)
 }
 
 //刷新缓冲区,重新显示屏幕?
-void refresh() {
+void refresh(void)
+{
 	register int i, j;
 	register struct screenline *bp = big_picture;
 	if (!inbuf_empty())
@@ -362,7 +367,8 @@ void clear(void)
 }
 
 //清除big_picture中的第i行,将mode与len置0
-void clear_whole_line(int i) {
+void clear_whole_line(int i)
+{
 	register struct screenline *slp = &big_picture[i];
 	slp->mode = slp->len = 0;
 	slp->oldlen = 79;
@@ -385,7 +391,8 @@ void clrtoeol(void)
 }
 
 //从当前行清除到最后一行
-void clrtobot() {
+void clrtobot(void)
+{
 	register struct screenline *slp;
 	register int i, j;
 	if (dumb_term)
@@ -529,7 +536,8 @@ int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
 		1000, 100, 10, 1 };
 
 /*以ANSI格式输出可变参数的字符串序列*/
-void prints(char *fmt, ...) {
+void prints(const char *fmt, ...)
+{
 	va_list ap;
 	char *bp;
 	register int i, count, hd, indx;
@@ -667,7 +675,8 @@ void scroll(void)
 }
 
 //将big_picture输出位置1,标准输出区间为(cur_col,cur_col)
-void standout() {
+void standout(void)
+{
 	register struct screenline *slp;
 	register int ln;
 	if (dumb_term)
@@ -685,7 +694,8 @@ void standout() {
 }
 //	如果standing为真,将当前行在big_picture中的映射设成真
 //		并将eso设成eso,cur_col的最大值
-void standend() {
+void standend(void)
+{
 	register struct screenline *slp;
 	register int ln;
 	if (dumb_term)

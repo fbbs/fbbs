@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "record.h"
 #include "fbbs/helper.h"
+#include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
 #define BBS_PAGESIZE (t_lines - 4)

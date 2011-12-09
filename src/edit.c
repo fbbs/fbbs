@@ -4,6 +4,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/post.h"
+#include "fbbs/terminal.h"
 USE_TRY;
 
 extern int local_article;

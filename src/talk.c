@@ -18,6 +18,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
 
 #define M_INT 8			/* monitor mode update interval */

@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/terminal.h"
 
 #define MAXITEMS        1024
 #define PATHLEN         256

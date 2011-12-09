@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
 
 #ifndef DLM

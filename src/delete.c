@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "fbbs/terminal.h"
 
 void mail_info(char *lastword);
 
@@ -268,7 +269,7 @@ int giveUpBBS() {
 	move(7, 0);
 	prints("(4) - 发信权限");
 
-	getdata(10, 0, "请选择 [0]", ans, 2, DOECHO, NULL);
+	getdata(10, 0, "请选择 [0]", ans, 2, DOECHO, NA);
 	if (ans[0] < '1' || ans[0] > '4') {
 		return 0;
 	}
@@ -294,7 +295,7 @@ int giveUpBBS() {
 		return 0;
 	}
 
-	getdata(11, 0, "请输入戒网天数 [0]", day, 4, DOECHO, NULL);
+	getdata(11, 0, "请输入戒网天数 [0]", day, 4, DOECHO, NA);
 	i = 0;
 	while (day[i]) {
 		if (!isdigit(day[i]))
@@ -315,8 +316,8 @@ int giveUpBBS() {
 
 	move(13, 0);
 
-	if (askyn("你确定要戒网吗？", 0) == 1) {
-		getdata(15, 0, "请输入密码: ", buf, 39, NOECHO, NULL);
+	if (askyn("你确定要戒网吗？", NA, NA) == 1) {
+		getdata(15, 0, "请输入密码: ", buf, 39, NOECHO, NA);
 		if (*buf == '\0' || !passwd_check(lookupuser.userid, buf)) {
 			prints("\n\n很抱歉, 您输入的密码不正确。\n");
 			pressanykey();
