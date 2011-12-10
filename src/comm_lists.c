@@ -204,6 +204,7 @@ static const char *sysconf_funcstr(const char *name)
 		{ "BoardDel", "@mod:so/admintool.so#d_board" },
 		{ "SysFiles", "@mod:so/admintool.so#a_edits" },
 		{ "Wall", "@mod:so/admintool.so#wall" },
+		{ "TitleAdmin", "@mod:so/admintool.so#tui_title_list" },
 		{ NULL, NULL }
 	};
 

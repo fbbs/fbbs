@@ -36,3 +36,16 @@ bool title_submit_request(int type, const char *title)
 	db_clear(res);
 	return ok;
 }
+
+void title_approve(int id)
+{
+	db_res_t *res = db_exec_cmd(env.d, "UPDATE titles SET approved = true"
+			" WHERE id = %d", id);
+	db_clear(res);
+}
+
+void title_disapprove(int id)
+{
+	db_res_t *res = db_exec_cmd(env.d, "DELETE FROM titles WHERE id = %d", id);
+	db_clear(res);
+}

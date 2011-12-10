@@ -8,9 +8,10 @@ CREATE TABLE all_users (
 	money BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
 	paid_posts INTEGER DEFAULT 0,
+	title TEXT,
 );
 
-CREATE VIEW users AS
+CREATE OR REPLACE VIEW users AS
 	SELECT * FROM all_users WHERE alive = TRUE;
 
 CREATE UNIQUE INDEX user_name_idx ON all_users (lower(name)) WHERE alive = TRUE;

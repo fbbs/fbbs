@@ -4,6 +4,7 @@
 #include "fbbs/shop.h"
 #include "fbbs/string.h"
 #include "fbbs/title.h"
+#include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
 static tui_list_loader_t tui_shop_loader(tui_list_t *p)
