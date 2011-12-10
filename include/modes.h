@@ -65,5 +65,7 @@ enum {
 	BBSST_UPLOAD = 71,
 	WWW = 0x40000000,
 };
+
+void modify_user_mode(int mode);
 #endif // FB_MODES_H
 

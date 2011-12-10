@@ -41,10 +41,10 @@ extern struct UCACHE *uidshm;
 
 
 //更改用户 模式状态至mode
-int modify_user_mode(int mode) {
+void modify_user_mode(int mode)
+{
 	uinfo.mode = mode;
 	update_ulist(&uinfo, utmpent);
-	return 0; //sdjfielsdfje
 }
 
 //      对于权限定义值,判断其第i位是否为真,并根据use_define的值来
