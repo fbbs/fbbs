@@ -27,20 +27,13 @@ int bbsqry_main(void)
 				getdatestring(user.lastlogin, DATE_XML),
 				cperf(countperf(&user)), user.numposts,
 				compute_user_value(&user), level, repeat);
+
+		uinfo_t u;
+		uinfo_load(currentuser.userid, &u);
 #ifdef ENABLE_BANK
 		if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
-			int64_t money = 0;
-			float rank = 0.0;
-			db_res_t *res = db_exec_query(env.d, true,
-					"SELECT money, rank FROM users WHERE lower(name) = lower(%s)",
-					currentuser.userid);
-			if (res) {
-				money = db_get_bigint(res, 0, 0);
-				rank = db_get_float(res, 0, 1);
-				db_clear(res);
-			}
 			printf("money='%d' rank='%.1f'",
-					TO_YUAN_INT(money), PERCENT_RANK(rank));
+					TO_YUAN_INT(u.money), PERCENT_RANK(u.rank));
 		}
 #endif
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
@@ -55,8 +48,11 @@ int bbsqry_main(void)
 		xml_fputs(user.username, stdout);
 		printf("</nick><ident>");
 		char ident[160];
-		show_position(&user, ident, sizeof(ident));
+		show_position(&user, ident, sizeof(ident), u.title);
 		xml_fputs(ident, stdout);
+
+		uinfo_free(&u);
+
 		printf("</ident><smd>");
 		char file[HOMELEN];
 		sethomefile(file, user.userid, "plans");

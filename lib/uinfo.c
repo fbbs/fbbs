@@ -1,8 +1,10 @@
 #include <math.h>
 #include "bbs.h"
 #include "glossary.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
+#include "fbbs/title.h"
 #include "fbbs/uinfo.h"
 
 #define MAX_PERF (1000)
@@ -257,24 +259,6 @@ int compute_user_value(const struct userec *urec)
 #endif
 }
 
-static int show_volunteer(const char *userid, char **buf, size_t *size)
-{
-	char file[HOMELEN], tmp[STRLEN];
-	sethomefile(file, userid, ".volunteer");
-	FILE *fp = fopen(file, "r");
-	if (fp) {
-		strappend(buf, size, "[\033[1;33m");
-		while (fgets(tmp, sizeof(tmp), fp) != NULL) {
-			tmp[strlen(tmp)] = '\0';
-			strappend(buf, size, tmp);
-		}
-		strappend(buf, size, "\033[m]");
-		fclose(fp);
-		return 1;
-	}
-	return 0;
-}
-
 static int show_bm(const char *userid, char **buf, size_t *size)
 {
 	char file[HOMELEN], tmp[STRLEN];
@@ -293,7 +277,7 @@ static int show_bm(const char *userid, char **buf, size_t *size)
 	return 0;
 }
 
-void show_position(const struct userec *user, char *buf, size_t size)
+void show_position(const struct userec *user, char *buf, size_t size, const char *title)
 {
 	if (user->userlevel & PERM_SPECIAL9) {
 		if (user->userlevel & PERM_SYSOPS) {
@@ -315,8 +299,16 @@ void show_position(const struct userec *user, char *buf, size_t size)
 			strappend(&buf, &size, "[\033[1;32mÈÙÓþ°æÖ÷\033[m]");
 			normal = 0;
 		}
-		if (show_volunteer(user->userid, &buf, &size))
+
+		if (title && *title) {
+			GBK_BUFFER(title, TITLE_CCHARS);
+			convert_u2g(title, gbk_title);
+			char tbuf[TITLE_CCHARS * 2 + 11];
+			snprintf(tbuf, sizeof(tbuf), "[\033[1;33m%s\033[m]", gbk_title);
+			strappend(&buf, &size, tbuf);
 			normal = 0;
+		}
+
 		if ((user->userlevel & PERM_BOARDS)
 				&& show_bm(user->userid, &buf, &size)) {
 			normal = 0;
@@ -391,4 +383,32 @@ int update_user_stay(struct userec *u, bool is_login, bool is_dup)
 	else
 		u->lastlogout = now;
 	return stay;
+}
+
+int uinfo_load(const char *name, uinfo_t *u)
+{
+	u->money = 0;
+	u->rank = 0;
+	u->title = NULL;
+
+	u->res = db_exec_query(env.d, true, "SELECT title"
+#ifdef ENABLE_BANK
+			", money, rank"
+#endif
+			" FROM users WHERE lower(name) = lower(%s)", name);
+	if (!u->res)
+		return -1;
+
+	u->title = db_get_value(u->res, 0, 0);
+#ifdef ENABLE_BANK
+	u->money = db_get_bigint(u->res, 0, 1);
+	u->rank = db_get_float(u->res, 0, 2);
+#endif
+	return 0;
+}
+
+void uinfo_free(uinfo_t *u)
+{
+	if (u && u->res)
+		db_clear(u->res);
 }

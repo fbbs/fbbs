@@ -404,23 +404,18 @@ int tui_query_result(const char *userid)
 			, cperf(perf), (check_query_mail(path) == 1) ? "信" : "  ");
 
 	int exp = countexp(&user);
+
+	uinfo_t u;
+	uinfo_load(user.userid, &u);
+
 #ifdef ENABLE_BANK
 	if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
-		int64_t money = 0;
-		float rank = 0.0;
-		db_res_t *res = db_exec_query(env.d, true,
-				"SELECT money, rank FROM users WHERE lower(name) = lower(%s)",
-				user.userid);
-		if (res) {
-			money = db_get_bigint(res, 0, 0);
-			rank = db_get_float(res, 0, 1);
-			db_clear(res);
-		}
 		char rank_buf[8];
-		snprintf(rank_buf, sizeof(rank_buf), "%.1f%%", PERCENT_RANK(rank));
-		prints("光华币 [\033[1;32m%d\033[m](%s) ", TO_YUAN_INT(money), rank_buf);
+		snprintf(rank_buf, sizeof(rank_buf), "%.1f%%", PERCENT_RANK(u.rank));
+		prints("财富 [\033[1;32m%d\033[m](%s) ", TO_YUAN_INT(u.money), rank_buf);
 	}
 #endif
+
 #ifdef ALLOWGAME
 	prints("存贷款 [\033[1;32m%d\033[m/\033[1;32m%d\033[m]"
 			"(\033[1;33m%s\033[m) 经验值 [\033[1;32m%d\033[m]\n",
@@ -439,8 +434,10 @@ int tui_query_result(const char *userid)
 #endif
 
 	char buf[160];
-	show_position(&user, buf, sizeof(buf));
+	show_position(&user, buf, sizeof(buf), u.title);
 	prints("身份 %s\n", buf);
+	
+	uinfo_free(&u);
 
 	t_search_ulist(&uin, t_cmpuids, unum, YEA, NA);
 	show_user_plan(userid);
