@@ -93,3 +93,115 @@ int tui_shop(void)
 	shopping_list_free(t.data);
 	return 0;
 }
+
+typedef struct goods_handler_t {
+	const char *descr;
+	int (*handler)(void);
+} goods_handler_t;
+
+typedef struct goods_handlers_t {
+	size_t size;
+	const goods_handler_t *handlers;
+} goods_handlers_t;
+
+static tui_list_loader_t tui_goods_loader(tui_list_t *p)
+{
+	p->eod = true;
+	return (p->all = ((goods_handlers_t *)p->data)->size);
+}
+
+static tui_list_title_t tui_goods_title(tui_list_t *p)
+{
+	prints("\033[1;33;44m[我的商品]\033[K\033[m\n"
+			" 查看详情 [\033[1;32mEnter\033[m,\033[1;32m→\033[m] "
+			"返回 [\033[1;32m←\033[m,\033[1;32me\033[m]\n"
+			"\033[1;44m  编号  商品\033[K\033[m\n");
+}
+
+static tui_list_display_t tui_goods_display(tui_list_t *p, int n)
+{
+	const goods_handler_t *handler =
+			((goods_handlers_t *)p->data)->handlers + n;
+	prints("  %4d  %s\n", n + 1, handler->descr);
+	return 0;
+}
+
+static tui_list_handler_t tui_goods_handler(tui_list_t *p, int key)
+{
+	const goods_handler_t *handler =
+			((goods_handlers_t *)p->data)->handlers + p->cur;
+	switch (key) {
+		case '\n':
+		case KEY_RIGHT:
+			return (*handler->handler)();
+		default:
+			return DONOTHING;
+	}
+}
+
+int tui_my_titles(void)
+{
+	db_res_t *res = db_exec_query(env.d, true,
+			"SELECT id, title, add_time, expire, approved, paid FROM titles"
+			" WHERE user_id = %d ORDER BY paid DESC", session.uid);
+	if (!res || db_res_rows(res) < 1) {
+		db_clear(res);
+		presskeyfor("您目前没有自定义身份", t_lines - 1);
+		return MINIUPDATE;
+	}
+
+	clear();
+	GBK_BUFFER(title, TITLE_CCHARS);
+	int paid = db_get_integer(res, 0, 5);
+	if (paid) {
+		move(1, 0);
+		convert_u2g(db_get_value(res, 0, 1), gbk_title);
+		prints("自定义身份: %s\n购买时间:   %s\n", gbk_title,
+				getdatestring(db_get_time(res, 0, 2), DATE_ZH));
+		if (db_get_bool(res, 0, 4)) {
+			prints("过期时间:   %s\n",
+					getdatestring(db_get_time(res, 0, 3), DATE_ZH));
+		} else {
+			prints("尚在审核，请耐心等待");
+		}
+	}
+
+	int rows = db_res_rows(res);
+	if (rows > 1) {
+		move(6, 0);
+		prints("您还有以下身份: \n");
+	}
+
+	for (int i = 1; i < db_res_rows(res); ++i) {
+		convert_u2g(db_get_value(res, i, 1), gbk_title);
+		prints("  [%d] %s\n", i, gbk_title);
+	}
+
+	db_clear(res);
+	pressanykey();
+	return FULLUPDATE;
+}
+
+int tui_goods(void)
+{
+	goods_handler_t handlers[] = {
+		{ "自定义身份", tui_my_titles }
+	};
+
+	goods_handlers_t g = {
+		.size = NELEMS(handlers),
+		.handlers = handlers,
+	};
+
+	tui_list_t t = {
+		.data = &g,
+		.loader = tui_goods_loader,
+		.title = tui_goods_title,
+		.display = tui_goods_display,
+		.handler = tui_goods_handler,
+		.query = NULL,
+	};
+
+	tui_list(&t);
+	return 0;
+}
