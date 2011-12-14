@@ -102,8 +102,12 @@ fb_time_t db_get_time(const db_res_t *res, int row, int col)
 float db_get_float(const db_res_t *res, int row, int col)
 {
 	if (_is_binary_field(res, col)) {
-		int32_t i = db_get_integer(res, row, col);
-		return *(float *)&i;
+		union {
+			int32_t integer;
+			float my_float;
+		} i;
+		i.integer = db_get_integer(res, row, col);
+		return i.my_float;
 	} else {
 		return strtof(PQgetvalue(res, row, col), NULL);
 	}
