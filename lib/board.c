@@ -138,7 +138,7 @@ const char *get_board_desc(const struct boardheader *bp)
 
 int get_board(const char *name, board_t *bp)
 {
-	db_res_t *res = db_exec_query(env.d, true, "SELECT id, name, descr, parent, flag, perm, bms"
+	db_res_t *res = db_query("SELECT id, name, descr, parent, flag, perm, bms"
 			" FROM boards WHERE lower(name) = lower(%s)", name);
 	if (!res || db_res_rows(res) < 1) {
 		db_clear(res);

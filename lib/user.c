@@ -7,8 +7,8 @@
  */
 user_id_t get_user_id(const char *name)
 {
-	db_res_t *res = db_exec_query(env.d, true,
-			"SELECT id FROM users WHERE lower(name) = lower(%s)", name);
+	db_res_t *res = db_query("SELECT id FROM users"
+			" WHERE lower(name) = lower(%s)", name);
 	if (!res)
 		return -1;
 
