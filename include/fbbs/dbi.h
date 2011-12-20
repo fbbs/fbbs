@@ -49,6 +49,8 @@ extern float db_get_float(const db_res_t *res, int row, int col);
 
 extern db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, ...);
 extern db_res_t *db_exec_query(db_conn_t *conn, bool binary, const char *cmd, ...);
+#define db_cmd(cmd, ...)  db_exec_cmd(env.d, cmd, __VA_ARGS__)
+#define db_query(cmd, ...)  db_exec_query(env.d, true, cmd, __VA_ARGS__)
 
 extern int db_begin_trans(db_conn_t *conn);
 extern int db_end_trans(db_conn_t *conn);
