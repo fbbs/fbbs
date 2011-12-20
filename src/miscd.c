@@ -3,7 +3,6 @@
 //退出时执行的函数
 void do_exit() {
 	flush_ucache();
-	flush_bcache();
 }
 
 int main(int argc, char *argv[]) {
@@ -43,14 +42,12 @@ int main(int argc, char *argv[]) {
 			refresh_utmp(); //刷新用户临时数据
 			b_closepolls(); //关闭投票
 			flush_ucache(); //将用户在内存中的数据写回.PASSWDS
-			flush_bcache();
 			sleep(60 * 15); //睡眠十分钟,即每十五分钟同步一次.        
 		}
 	} else if ( !strcasecmp(argv[1], "flushed") ) { //miscd flushed
 		if (resolve_ucache() == -1)
 			exit(1);
 		flush_ucache();
-		flush_bcache();
 	} else if ( !strcasecmp(argv[1], "reload") ) { //miscd reload
 		if (load_ucache() != 0) {
 			printf("load ucache error\n");
