@@ -166,3 +166,56 @@ int get_board_gbk(const char *name, board_t *bp)
 	strlcpy(bp->descr, gbk_descr, sizeof(bp->descr));
 	return bp->id;
 }
+
+bool is_board_manager(const struct userec *up, const board_t *bp)
+{
+	if ((bp->flag & BOARD_CLUB_FLAG) && (up->userlevel & PERM_OCLUB))
+		return true;
+	if (up->userlevel & PERM_BLEVELS)
+		return true;
+	if (!(up->userlevel & PERM_BOARDS))
+		return false;
+
+	// TODO: load from database when uid is ready
+	char buf[BOARD_BM_LEN + 1];
+	strlcpy(buf, bp->bms, sizeof(buf));
+	const char *ptr = strtok(buf, ",: ;|&()\0\n");
+	while (ptr) {
+		if (streq(ptr, up->userid))
+			return true;
+		ptr = strtok(NULL, ",: ;|&()\0\n");
+	}
+	return false;
+}
+
+bool has_read_perm(const struct userec *up, const board_t *bp)
+{
+	// Read restricted club
+	if ((bp->flag & BOARD_CLUB_FLAG) && (bp->flag & BOARD_READ_FLAG)
+			&& !is_board_manager(up, bp)
+			&& !isclubmember(up->userid, bp->name))
+		return false;
+
+	if (bp->perm == 0)
+		return true;
+	if (bp->flag & (BOARD_POST_FLAG | BOARD_NOZAP_FLAG))
+		return true;
+	if (up->userlevel & bp->perm)
+		return true;
+
+	return false;
+}
+
+bool has_post_perm(const struct userec *up, const board_t *bp)
+{
+	if (!HAS_PERM2(PERM_POST, up) || !HAS_PERM2(bp->perm, up))
+		return false;
+
+	if ((bp->flag & BOARD_CLUB_FLAG) && !is_board_manager(up, bp)
+			&& !isclubmember(up->userid, bp->name))
+		return false;
+
+	char buf[STRLEN];
+	setbfile(buf, bp->name, "deny_users");
+	return !seek_in_file(buf, up->userid);
+}

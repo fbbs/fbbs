@@ -9,7 +9,7 @@ enum {
 	BOARD_BM_LEN = 55,
 };
 
-typedef struct board_t {
+typedef struct {
 	int id;
 	int parent;
 	uint_t flag;
@@ -21,5 +21,8 @@ typedef struct board_t {
 
 extern int get_board(const char *name, board_t *bp);
 extern int get_board_gbk(const char *name, board_t *bp);
+extern bool is_board_manager(const struct userec *up, const board_t *bp);
+extern bool has_read_perm(const struct userec *up, const board_t *bp);
+extern bool has_post_perm(const struct userec *up, const board_t *bp);
 
 #endif // FB_BOARD_H
