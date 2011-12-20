@@ -136,15 +136,8 @@ const char *get_board_desc(const struct boardheader *bp)
 	return (bp->title + 11);
 }
 
-int get_board(const char *name, board_t *bp)
+static void res_to_board(db_res_t *res, board_t *bp)
 {
-	db_res_t *res = db_query("SELECT id, name, descr, parent, flag, perm, bms"
-			" FROM boards WHERE lower(name) = lower(%s)", name);
-	if (!res || db_res_rows(res) < 1) {
-		db_clear(res);
-		return 0;
-	}
-
 	bp->id = db_get_integer(res, 0, 0);
 	bp->parent = db_get_integer(res, 0, 3);
 	bp->flag = (uint_t) db_get_integer(res, 0, 4);
@@ -152,7 +145,26 @@ int get_board(const char *name, board_t *bp)
 	strlcpy(bp->name, db_get_value(res, 0, 1), sizeof(bp->name));
 	strlcpy(bp->bms, db_get_value(res, 0, 6), sizeof(bp->bms));
 	strlcpy(bp->descr, db_get_value(res, 0, 2), sizeof(bp->descr));
+}
 
+int get_board(const char *name, board_t *bp)
+{
+	bp->id = 0;
+	db_res_t *res = db_query("SELECT id, name, descr, parent, flag, perm, bms"
+			" FROM boards WHERE lower(name) = lower(%s)", name);
+	if (res && db_res_rows(res) > 0)
+		res_to_board(res, bp);
+	db_clear(res);
+	return bp->id;
+}
+
+int get_board_by_bid(int bid, board_t *bp)
+{
+	bp->id = 0;
+	db_res_t *res = db_query("SELECT id, name, descr, parent, flag, perm, bms"
+			" FROM boards WHERE id = %d", bid);
+	if (res && db_res_rows(res) > 0)
+		res_to_board(res, bp);
 	db_clear(res);
 	return bp->id;
 }
