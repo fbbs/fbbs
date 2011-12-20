@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "sysconf.h"
 #include "record.h"
+#include "fbbs/board.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
@@ -770,52 +771,49 @@ static int board_cmp_default(const void *brd1, const void *brd2)
 	return type;
 }
 
-static int show_board_info(const char *board)
+static int show_board_info(const char *name)
 {
 	int i;
-	struct boardheader *bp;
 	struct bstat *bs;
 	char secu[40];
-	bp = getbcache(board);
-	bs = getbstat(board);
+
+	board_t board, parent;
+	if (!get_board_gbk(name, &board))
+		return DONOTHING;
+	if (board.parent)
+		get_board_by_bid(board.parent, &parent);
+
+	bs = getbstat(name);
 	clear();
 	prints("版面详细信息:\n\n");
-	prints("number  :     %d\n", getbnum(bp->filename, &currentuser));
-	prints("英文名称:     %s\n", bp->filename);
-	prints("中文名称:     %s\n", (HAS_PERM(PERM_SPECIAL0)) ? bp->title
-			: (bp->title + 11));
-	prints("版    主:     %s\n", bp->BM);
-	prints("所属讨论区:   %s\n", bp->group ? bcache[bp->group - 1].filename
-			: "无");
-	prints("是否目录:     %s\n", (bp->flag & BOARD_DIR_FLAG) ? "目录" : "版面");
-	prints("可以 ZAP:     %s\n", (bp->flag & BOARD_NOZAP_FLAG) ? "不可以"
-			: "可以");
+	prints("number  :     %d\n", getbnum(board.name, &currentuser));
+	prints("英文名称:     %s\n", board.name);
+	prints("中文名称:     %s\n", board.descr);
+	prints("版    主:     %s\n", board.bms);
+	prints("所属讨论区:   %s\n", board.parent ? parent.name : "无");
+	prints("是否目录:     %s\n", (board.flag & BOARD_DIR_FLAG) ? "目录" : "版面");
+	prints("可以 ZAP:     %s\n", (board.flag & BOARD_NOZAP_FLAG) ? "不可以" : "可以");
 
-	if (!(bp->flag & BOARD_DIR_FLAG)) {
+	if (!(board.flag & BOARD_DIR_FLAG)) {
 		prints("在线人数:     %d 人\n", bs->inboard);
-		prints("文 章 数:     %s\n", (bp->flag & BOARD_JUNK_FLAG) ? "不计算"
-				: "计算");
-		prints("可以回复:     %s\n", (bp->flag & BOARD_NOREPLY_FLAG) ? "不可以"
-				: "可以");
-		//prints ("可以 ZAP:     %s\n",
-		//	    (bp->flag & BOARD_NOZAP_FLAG) ? "不可以" : "可以");
-		prints("匿 名 版:     %s\n", (bp->flag & BOARD_ANONY_FLAG) ? "是"
-				: "否");
+		prints("文 章 数:     %s\n", (board.flag & BOARD_JUNK_FLAG) ? "不计算" : "计算");
+		prints("可以回复:     %s\n", (board.flag & BOARD_NOREPLY_FLAG) ? "不可以" : "可以");
+		prints("匿 名 版:     %s\n", (board.flag & BOARD_ANONY_FLAG) ? "是" : "否");
 #ifdef ENABLE_PREFIX
-		prints ("强制前缀:     %s\n",
-				(bp->flag & BOARD_PREFIX_FLAG) ? "必须" : "不必");
+		prints ("强制前缀:     %s\n", (board.flag & BOARD_PREFIX_FLAG) ? "必须" : "不必");
 #endif
-		prints("俱 乐 部:     %s\n", (bp->flag & BOARD_CLUB_FLAG) ? (bp-> flag
-				& BOARD_READ_FLAG) ? "读限制俱乐部" : "普通俱乐部" : "非俱乐部");
+		prints("俱 乐 部:     %s\n", (board.flag & BOARD_CLUB_FLAG) ?
+				(board.flag & BOARD_READ_FLAG) ? "读限制俱乐部" : "普通俱乐部"
+				: "非俱乐部");
 		prints("now id  :     %d\n", bs->nowid);
-		prints("读写限制:     %s\n", (bp->flag & BOARD_POST_FLAG) ? "限制发文"
-				: (bp->level ==0) ? "没有限制" : "限制阅读");
+		prints("读写限制:     %s\n", (board.flag & BOARD_POST_FLAG) ? "限制发文" :
+				(board.perm == 0) ? "没有限制" : "限制阅读");
 	}
-	if (HAS_PERM(PERM_SPECIAL0) && bp->level != 0) {
+	if (HAS_PERM(PERM_SPECIAL0) && board.perm != 0) {
 		prints("权    限:     ");
 		strcpy(secu, "ltmprbBOCAMURS#@XLEast0123456789");
 		for (i = 0; i < 32; i++) {
-			if (!(bp->level & (1 << i)))
+			if (!(board.perm & (1 << i)))
 				secu[i] = '-';
 			else {
 				prints("%s\n              ", permstrings[i]);
@@ -825,11 +823,9 @@ static int show_board_info(const char *board)
 		prints("\n权 限 位:     %s\n", secu);
 	}
 
-	prints("URL 地址:     http://"BBSHOST"/bbs/doc?bid=%d\n",
-			bp - bcache + 1);
+	prints("URL 地址:     http://"BBSHOST"/bbs/doc?bid=%d\n", board.id);
 	pressanykey();
 	return FULLUPDATE;
-
 }
 
 static int choose_board(choose_board_t *cbrd);
