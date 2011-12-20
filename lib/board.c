@@ -1,4 +1,6 @@
 #include "bbs.h"
+#include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 
@@ -132,4 +134,35 @@ bool is_board_dir(const struct boardheader *bp)
 const char *get_board_desc(const struct boardheader *bp)
 {
 	return (bp->title + 11);
+}
+
+int get_board(const char *name, board_t *bp)
+{
+	db_res_t *res = db_exec_query(env.d, true, "SELECT id, name, descr, parent, flag, perm, bms"
+			" FROM boards WHERE lower(name) = lower(%s)", name);
+	if (!res || db_res_rows(res) < 1) {
+		db_clear(res);
+		return 0;
+	}
+
+	bp->id = db_get_integer(res, 0, 0);
+	bp->parent = db_get_integer(res, 0, 3);
+	bp->flag = (uint_t) db_get_integer(res, 0, 4);
+	bp->perm = (uint_t) db_get_integer(res, 0, 5);
+	strlcpy(bp->name, db_get_value(res, 0, 1), sizeof(bp->name));
+	strlcpy(bp->bms, db_get_value(res, 0, 6), sizeof(bp->bms));
+	strlcpy(bp->descr, db_get_value(res, 0, 2), sizeof(bp->descr));
+
+	db_clear(res);
+	return bp->id;
+}
+
+int get_board_gbk(const char *name, board_t *bp)
+{
+	if (get_board(name, bp) == 0)
+		return 0;
+	GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
+	convert_u2g(bp->descr, gbk_descr);
+	strlcpy(bp->descr, gbk_descr, sizeof(bp->descr));
+	return bp->id;
 }

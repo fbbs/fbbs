@@ -23,6 +23,7 @@ CREATE TABLE boards (
 	perm INTEGER,
 	bms TEXT
 );
+CREATE UNIQUE INDEX ON boards (lower(bms));
 CREATE TABLE bms (
 	user_id INTEGER REFERENCES all_users,
 	board_id INTEGER REFERENCES boards,
