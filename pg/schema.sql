@@ -14,6 +14,10 @@ CREATE OR REPLACE VIEW users AS
 	SELECT * FROM all_users WHERE alive = TRUE;
 CREATE UNIQUE INDEX user_name_idx ON all_users (lower(name)) WHERE alive = TRUE;
 
+CREATE TABLE board_categs (
+	id SERIAL PRIMARY KEY,
+	name TEXT
+);
 CREATE TABLE boards (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
@@ -21,6 +25,7 @@ CREATE TABLE boards (
 	parent INTEGER,
 	flag INTEGER,
 	perm INTEGER,
+	categ INTEGER REFERENCES board_categs,
 	bms TEXT
 );
 CREATE UNIQUE INDEX ON boards (lower(bms));

@@ -145,13 +145,16 @@ static void res_to_board(db_res_t *res, board_t *bp)
 	strlcpy(bp->name, db_get_value(res, 0, 1), sizeof(bp->name));
 	strlcpy(bp->bms, db_get_value(res, 0, 6), sizeof(bp->bms));
 	strlcpy(bp->descr, db_get_value(res, 0, 2), sizeof(bp->descr));
+	strlcpy(bp->categ, db_get_value(res, 0, 7), sizeof(bp->categ));
 }
 
 int get_board(const char *name, board_t *bp)
 {
 	bp->id = 0;
-	db_res_t *res = db_query("SELECT id, name, descr, parent, flag, perm, bms"
-			" FROM boards WHERE lower(name) = lower(%s)", name);
+	db_res_t *res = db_query(
+			"SELECT b.id,b.name,b.descr,b.parent,b.flag,b.perm,b.bms,b.categ"
+			" FROM boards b JOIN board_categs c ON b.categ = c.id"
+			" WHERE lower(name) = lower(%s)", name);
 	if (res && db_res_rows(res) > 0)
 		res_to_board(res, bp);
 	db_clear(res);
@@ -161,8 +164,10 @@ int get_board(const char *name, board_t *bp)
 int get_board_by_bid(int bid, board_t *bp)
 {
 	bp->id = 0;
-	db_res_t *res = db_query("SELECT id, name, descr, parent, flag, perm, bms"
-			" FROM boards WHERE id = %d", bid);
+	db_res_t *res = db_query(
+			"SELECT b.id,b.name,b.descr,b.parent,b.flag,b.perm,b.bms,b.categ"
+			" FROM boards b JOIN board_categs c ON b.categ = c.id"
+			" WHERE id = %d", bid);
 	if (res && db_res_rows(res) > 0)
 		res_to_board(res, bp);
 	db_clear(res);
@@ -176,6 +181,9 @@ int get_board_gbk(const char *name, board_t *bp)
 	GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
 	convert_u2g(bp->descr, gbk_descr);
 	strlcpy(bp->descr, gbk_descr, sizeof(bp->descr));
+	GBK_BUFFER(categ, BOARD_CATEG_CCHARS);
+	convert_u2g(bp->categ, gbk_categ);
+	strlcpy(bp->categ, gbk_categ, sizeof(bp->categ));
 	return bp->id;
 }
 

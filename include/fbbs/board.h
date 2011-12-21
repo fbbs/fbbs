@@ -7,6 +7,7 @@ enum {
 	BOARD_NAME_LEN = 17,
 	BOARD_DESCR_CCHARS = 24,
 	BOARD_BM_LEN = 55,
+	BOARD_CATEG_CCHARS = 2,
 };
 
 typedef struct {
@@ -17,6 +18,7 @@ typedef struct {
 	char name[BOARD_NAME_LEN + 1];
 	char bms[BOARD_BM_LEN + 1];
 	char descr[BOARD_DESCR_CCHARS * 4 + 1];
+	char categ[BOARD_CATEG_CCHARS * 4 + 1];
 } board_t;
 
 extern int get_board(const char *name, board_t *bp);
