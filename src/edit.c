@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "edit.h"
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/post.h"
@@ -703,7 +704,6 @@ void write_header(FILE *fp, int mode) {
 	extern char BoardName[];
 	extern char fromhost[];
 	extern struct postheader header;
-	struct boardheader *bp;
 	char uid[20];
 	char uname[NAMELEN];
 
@@ -717,9 +717,11 @@ void write_header(FILE *fp, int mode) {
 		strlcpy(uname, currentuser.username, NAMELEN);
 	uname[NAMELEN-1] = '\0';
 	save_title[STRLEN - 10] = '\0';
-	bp = getbcache(currboard);
-	noname = bp->flag & BOARD_ANONY_FLAG;
-	if (!(bp->flag & BOARD_OUT_FLAG))
+	
+	board_t board;
+	get_board(currboard, &board);
+	noname = board.flag & BOARD_ANONY_FLAG;
+	if (!(board.flag & BOARD_OUT_FLAG))
 		local_article = YEA;
 	if (in_mail)
 		fprintf(fp, "¼ÄÐÅÈË: %s (%s)\n", uid, uname);
@@ -885,9 +887,9 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		int color, noidboard;
 		char fname[STRLEN];
 		extern struct postheader header;
-		struct boardheader *bp;
-		bp = getbcache(currboard);
-		noidboard = (bp->flag & BOARD_ANONY_FLAG) && (header.chk_anony);
+		board_t board;
+		get_board(currboard, &board);
+		noidboard = (board.flag & BOARD_ANONY_FLAG) && (header.chk_anony);
 		color = (currentuser.numlogins % 7) + 31;
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || noidboard)
