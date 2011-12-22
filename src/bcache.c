@@ -3,6 +3,7 @@
 #include <sys/shm.h>
 #include <stdio.h>
 #include <time.h>
+#include "fbbs/board.h"
 
 void setoboard(char *bname) {
 	register int i;

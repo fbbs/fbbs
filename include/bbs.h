@@ -165,17 +165,6 @@ extern char ULIST[];
 #define FILE_IMPORTED   0x08
 
 /*	版面的标志		*/
-#define BOARD_VOTE_FLAG    	0x1		//投票模式
-#define BOARD_NOZAP_FLAG   	0x2		//no zap
-#define BOARD_OUT_FLAG     	0x4		//转信
-#define BOARD_ANONY_FLAG   	0x8		//匿名模式
-#define BOARD_NOREPLY_FLAG 	0x10		//No reply board
-#define BOARD_JUNK_FLAG	        0x20		//不记文章数
-#define BOARD_CLUB_FLAG         0x40		//俱乐部版面
-#define BOARD_READ_FLAG		0x80		//读限制版面
-#define BOARD_POST_FLAG         0x100		//postmask
-#define BOARD_DIR_FLAG		0x200		//目录
-#define BOARD_PREFIX_FLAG	0x400	//前缀
 #define BOARD_CUSTOM_FLAG	0x80000000		//收藏夹自定义目录 defined by cometcaptor 2007-04-16 因为是目录是自定义，故选用标志的最高位，和标准的属性分开
 #define ZAPPED  		0x1         /* For boards...tells if board is Zapped */
 
