@@ -2,26 +2,31 @@
 
 #include "libweb.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/web.h"
 
 int bbsall_main(void)
 {
-	struct boardheader *x;
-	int i;
 	xml_header(NULL);
 	printf("<bbsall>");
 	print_session();
-	for (i = 0; i < MAXBOARD; i++) {
-		x = &(bcache[i]);
-		if (x->filename[0] <= 0x20 || x->filename[0] > 'z')
+
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	if (!res)
+		return BBS_EINTNL;
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		board_t board;
+		res_to_board(res, i, &board);
+		if (!has_read_perm(&currentuser, &board))
 			continue;
-		if (!hasreadperm(&currentuser, x))
-			continue;
-		printf("<brd dir='%d' title='%s' cate='%6.6s' desc='%s' bm='%s' />",
-				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename, x->title + 1,
-				get_board_desc(x), x->BM);
+		board_to_gbk(&board);
+		printf("<brd dir='%d' title='%s' cate='%s' desc='%s' bm='%s' />",
+				(board.flag & BOARD_DIR_FLAG) ? 1 : 0, board.name, board.categ,
+				board.descr, board.bms);
 	}
+	db_clear(res);
+
 	printf("</bbsall>");
 	return 0;
 }

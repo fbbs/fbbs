@@ -136,27 +136,25 @@ const char *get_board_desc(const struct boardheader *bp)
 	return (bp->title + 11);
 }
 
-static void res_to_board(db_res_t *res, board_t *bp)
+void res_to_board(db_res_t *res, int row, board_t *bp)
 {
-	bp->id = db_get_integer(res, 0, 0);
-	bp->parent = db_get_integer(res, 0, 3);
-	bp->flag = (uint_t) db_get_integer(res, 0, 4);
-	bp->perm = (uint_t) db_get_integer(res, 0, 5);
-	strlcpy(bp->name, db_get_value(res, 0, 1), sizeof(bp->name));
-	strlcpy(bp->bms, db_get_value(res, 0, 6), sizeof(bp->bms));
-	strlcpy(bp->descr, db_get_value(res, 0, 2), sizeof(bp->descr));
-	strlcpy(bp->categ, db_get_value(res, 0, 7), sizeof(bp->categ));
+	bp->id = db_get_integer(res, row, 0);
+	bp->parent = db_get_integer(res, row, 3);
+	bp->flag = (uint_t) db_get_integer(res, row, 4);
+	bp->perm = (uint_t) db_get_integer(res, row, 5);
+	strlcpy(bp->name, db_get_value(res, row, 1), sizeof(bp->name));
+	strlcpy(bp->bms, db_get_value(res, row, 6), sizeof(bp->bms));
+	strlcpy(bp->descr, db_get_value(res, row, 2), sizeof(bp->descr));
+	strlcpy(bp->categ, db_get_value(res, row, 7), sizeof(bp->categ));
 }
 
 int get_board(const char *name, board_t *bp)
 {
 	bp->id = 0;
 	db_res_t *res = db_query(
-			"SELECT b.id,b.name,b.descr,b.parent,b.flag,b.perm,b.bms,b.categ"
-			" FROM boards b JOIN board_categs c ON b.categ = c.id"
-			" WHERE lower(name) = lower(%s)", name);
+			BOARD_SELECT_QUERY_BASE "WHERE lower(name) = lower(%s)", name);
 	if (res && db_res_rows(res) > 0)
-		res_to_board(res, bp);
+		res_to_board(res, 0, bp);
 	db_clear(res);
 	return bp->id;
 }
@@ -165,11 +163,9 @@ int get_board_by_bid(int bid, board_t *bp)
 {
 	bp->id = 0;
 	db_res_t *res = db_query(
-			"SELECT b.id,b.name,b.descr,b.parent,b.flag,b.perm,b.bms,b.categ"
-			" FROM boards b JOIN board_categs c ON b.categ = c.id"
-			" WHERE id = %d", bid);
+			BOARD_SELECT_QUERY_BASE "WHERE id = %d", bid);
 	if (res && db_res_rows(res) > 0)
-		res_to_board(res, bp);
+		res_to_board(res, 0, bp);
 	db_clear(res);
 	return bp->id;
 }

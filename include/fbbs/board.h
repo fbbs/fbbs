@@ -34,8 +34,13 @@ typedef struct {
 	char categ[BOARD_CATEG_CCHARS * 4 + 1];
 } board_t;
 
+#define BOARD_SELECT_QUERY_BASE \
+	"SELECT b.id, b.name, b.descr, b.parent, b.flag, b.perm, b.bms, b.categ" \
+	" FROM boards b JOIN board_categs c ON b.categ = c.id "
+
 extern int get_board(const char *name, board_t *bp);
 extern int get_board_by_bid(int bid, board_t *bp);
+extern void res_to_board(db_res_t *res, int row, board_t *bp);
 extern void board_to_gbk(board_t *bp);
 extern bool is_board_manager(const struct userec *up, const board_t *bp);
 extern bool has_read_perm(const struct userec *up, const board_t *bp);
