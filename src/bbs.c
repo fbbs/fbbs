@@ -437,7 +437,8 @@ static void readtitle(void)
 	const char *readmode;
 
 	board_t board;
-	get_board_gbk(currboard, &board);
+	get_board(currboard, &board);
+	board_to_gbk(&board);
 	struct bstat *bs = getbstat(currboard);
 
 	bnum = 0;

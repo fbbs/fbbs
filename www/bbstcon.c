@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -10,10 +11,10 @@ extern const struct fileheader *dir_bsearch(const struct fileheader *begin,
 // If 'action' == 'n', return at most 'count' posts
 // after 'fid' in thread 'gid', otherwise, posts before 'fid'.
 // Return NULL if not found, otherwise, memory should be freed by caller.
-static struct fileheader *bbstcon_search(const struct boardheader *bp,
-		unsigned int *gid, unsigned int fid, char action, int *count, int *flag)
+static struct fileheader *bbstcon_search(const char *board, unsigned int *gid,
+		unsigned int fid, char action, int *count, int *flag)
 {
-	if (!bp || !count || *count < 1)
+	if (!board || !count || *count < 1)
 		return NULL;
 	struct fileheader *fh = malloc(sizeof(struct fileheader) * (*count));
 	if (!fh)
@@ -21,7 +22,7 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 
 	// Open index file.
 	char dir[HOMELEN];
-	setbfile(dir, bp->filename, DOT_DIR);
+	setbfile(dir, board, DOT_DIR);
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(dir, &m) < 0) {
@@ -98,17 +99,16 @@ static struct fileheader *bbstcon_search(const struct boardheader *bp,
 
 int bbstcon_main(void)
 {
+	board_t board;
 	int bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp;
 	if (bid <= 0) {
-		bp = getbcache(get_param("board"));
-		bid = getbnum2(bp);
+		get_board(get_param("board"), &board);
 	} else {
-		bp = getbcache2(bid);
+		get_board_by_bid(bid, &board);
 	}
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+	if (!board.id || !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
 	unsigned int gid = strtoul(get_param("g"), NULL, 10);
@@ -119,7 +119,7 @@ int bbstcon_main(void)
 
 	int count = POSTS_PER_PAGE;
 	int c = count, flag = 0;
-	struct fileheader *fh = bbstcon_search(bp, &gid, fid, action, &c, &flag);
+	struct fileheader *fh = bbstcon_search(board.name, &gid, fid, action, &c, &flag);
 	if (!fh)
 		return BBS_ENOFILE;
 	if (action == 'a' || action == 'b')
@@ -130,7 +130,7 @@ int bbstcon_main(void)
 	struct fileheader *begin, *end;
 	xml_header(NULL);
 	printf("<bbstcon bid='%d' gid='%u' page='%d' attach='%d'%s%s%s%s%s>",
-			bid, gid, count, maxlen(bp->filename),
+			bid, gid, count, maxlen(board.name),
 			flag & THREAD_LAST_POST ? " last='1'" : "",
 			flag & THREAD_LAST ? " tlast='1'" : "",
 			flag & THREAD_FIRST ? " tfirst='1'" : "",
@@ -138,7 +138,7 @@ int bbstcon_main(void)
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session();
 
-	bool isbm = chkBM(bp, &currentuser);
+	bool isbm = is_board_manager(&currentuser, &board);
 	if (action != 'p') {
 		begin = fh;
 		end = fh + c;
@@ -147,18 +147,18 @@ int bbstcon_main(void)
 		end = fh + count;
 	}
 	char file[HOMELEN];
-	brc_fcgi_init(currentuser.userid, bp->filename);
+	brc_fcgi_init(currentuser.userid, board.name);
 	for (; begin != end; ++begin) {
 		printf("<po fid='%u' owner='%s'%s>", begin->id, begin->owner,
 				!isbm && begin->accessed[0] & FILE_NOREPLY ? " nore='1'" : "");
-		setbfile(file, bp->filename, begin->filename);
+		setbfile(file, board.name, begin->filename);
 		xml_print_file(ctx.r, file);
 		puts("</po>");
 		brc_addlist(begin->filename);
 	}
 	free(fh);
 	puts("</bbstcon>");
-	brc_update(currentuser.userid, bp->filename);
+	brc_update(currentuser.userid, board.name);
 	return 0;
 }
 

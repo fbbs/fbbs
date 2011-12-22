@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "record.h"
+#include "fbbs/board.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -23,14 +24,16 @@ int bbsdel_main(void)
 	unsigned int fid = strtoul(get_param("f"), NULL, 10);
 	if (fid == 0)
 		return BBS_EINVAL;
-	struct boardheader *bp = getbcache2(bid);
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+
+	board_t board;
+	if (!get_board_by_bid(bid, &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
 	char file[HOMELEN];
-	setwbdir(file, bp->filename);
+	setwbdir(file, board.name);
 	record_t r;
 	record_open(file, O_RDWR, &r);
 	struct fileheader fh;
@@ -42,7 +45,7 @@ int bbsdel_main(void)
 		return BBS_ENOFILE;
 	}
 	bool self = !strcmp(ptr->owner, currentuser.userid);
-	if (!self && !chkBM(bp, &currentuser)) {
+	if (!self && !is_board_manager(&currentuser, &board)) {
 		record_close(&r);
 		return BBS_EACCES;
 	}
@@ -50,7 +53,7 @@ int bbsdel_main(void)
 	record_delete(&r, ptr, sizeof(*ptr));
 	record_close(&r);
 
-	if (!junkboard(bp)) {
+	if (!(board.flag & BOARD_JUNK_FLAG)) {
 		struct userec user;
 		getuserec(fh.owner, &user);
 		if (user.numposts > 0)
@@ -59,7 +62,7 @@ int bbsdel_main(void)
 	}
 
 	char buf[STRLEN];
-	sprintf(buf, "deleted[www] '%u' on %s\n", fid, bp->filename);
+	sprintf(buf, "deleted[www] '%u' on %s\n", fid, board.name);
 	report(buf, currentuser.userid);
 	strlcpy(fh.szEraser, currentuser.userid, sizeof(fh.szEraser));
 	fh.timeDeleted = time(NULL);
@@ -68,9 +71,9 @@ int bbsdel_main(void)
 		trash = TRASH_DIR;
 	}
 	fh.accessed[1] |= FILE_SUBDEL;
-	setbfile(file, bp->filename, trash);
+	setbfile(file, board.name, trash);
 	append_record(file, &fh, sizeof(fh));
-	updatelastpost(bp->filename);
+	updatelastpost(board.name);
 
 	printf("Location: doc?bid=%d\n\n", bid);
 	return 0;

@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
@@ -43,10 +44,11 @@ int web_brdadd(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	int bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
+	board_to_gbk(&board);
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".goodbrd");
@@ -58,7 +60,7 @@ int web_brdadd(void)
 	struct goodbrdheader gbrd;
 	bool found = false;
 	while (fread(&gbrd, sizeof(gbrd), 1, fp) == 1) {
-		if (gbrd.pos == bid - 1) {
+		if (gbrd.pos == board.id - 1) {
 			found = true;
 			break;
 		}
@@ -71,9 +73,9 @@ int web_brdadd(void)
 		if (size < GOOD_BRC_NUM) {
 			gbrd.id = size + 1;
 			gbrd.pid = 0;
-			gbrd.pos = bid - 1;
-			memcpy(gbrd.title, bp->title, sizeof(gbrd.title));
-			memcpy(gbrd.filename, bp->filename, sizeof(gbrd.filename));
+			gbrd.pos = board.id - 1;
+			memcpy(gbrd.title, board.descr, sizeof(gbrd.title));
+			memcpy(gbrd.filename, board.name, sizeof(gbrd.filename));
 			if (fwrite(&gbrd, sizeof(gbrd), 1, fp) != 1)
 				ret = BBS_EINTNL;
 		} else {
@@ -88,7 +90,7 @@ int web_brdadd(void)
 	xml_header(NULL);
 	printf("<bbsbrdadd>");
 	print_session();
-	printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", bp->filename, bid);
+	printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", board.name, board.id);
 	return 0;
 }
 

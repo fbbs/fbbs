@@ -15,13 +15,12 @@ int updatelastpost(const char *board);
 int resolve_boards(void);
 void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
-unsigned int get_nextid2(const struct boardheader *bp);
+unsigned int get_nextid2(int bid);
 int getblankbnum(void);
 struct boardheader *getbcache(const char *bname);
 struct boardheader *getbcache2(int bid);
 struct bstat *getbstat(const char *bname);
 int getbnum(const char *bname, const struct userec *cuser);
-int getbnum2(const struct boardheader *bp);
 int apply_boards(int (*func) (), const struct userec *cuser);
 void bonlinesync(time_t now);
 

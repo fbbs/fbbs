@@ -174,17 +174,14 @@ int get_board_by_bid(int bid, board_t *bp)
 	return bp->id;
 }
 
-int get_board_gbk(const char *name, board_t *bp)
+void board_to_gbk(board_t *bp)
 {
-	if (get_board(name, bp) == 0)
-		return 0;
 	GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
 	convert_u2g(bp->descr, gbk_descr);
 	strlcpy(bp->descr, gbk_descr, sizeof(bp->descr));
 	GBK_BUFFER(categ, BOARD_CATEG_CCHARS);
 	convert_u2g(bp->categ, gbk_categ);
 	strlcpy(bp->categ, gbk_categ, sizeof(bp->categ));
-	return bp->id;
 }
 
 bool is_board_manager(const struct userec *up, const board_t *bp)

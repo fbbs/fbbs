@@ -49,10 +49,10 @@ static FILE *get_fname(const char *dir, const char *pfx,
  */
 unsigned int do_post_article(const post_request_t *pr)
 {
-	if (!pr || !pr->title || !pr->content || !pr->bp)
+	if (!pr || !pr->title || !pr->content || !pr->board)
 		return 0;
 
-	bool anony = pr->anony && (pr->bp->flag & BOARD_ANONY_FLAG);
+	bool anony = pr->anony && (pr->board->flag & BOARD_ANONY_FLAG);
 	const char *userid = NULL, *nick = NULL, *ip = pr->ip;
 	if (anony) {
 		userid = ANONYMOUS_ACCOUNT;
@@ -69,7 +69,7 @@ unsigned int do_post_article(const post_request_t *pr)
 		return 0;
 
 	char dir[HOMELEN];
-	int idx = snprintf(dir, sizeof(dir), "boards/%s/", pr->bp->filename);
+	int idx = snprintf(dir, sizeof(dir), "boards/%s/", pr->board->name);
 	const char *pfx = "M.";
 
 	char fname[HOMELEN];
@@ -78,7 +78,7 @@ unsigned int do_post_article(const post_request_t *pr)
 		return 0;
 
 	fprintf(fptr, "发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n",
-			userid, nick, pr->bp->filename, pr->title, BBSNAME,
+			userid, nick, pr->board->name, pr->title, BBSNAME,
 			getdatestring(time(NULL), DATE_ZH));
 
 	if (pr->cp)
@@ -118,7 +118,7 @@ unsigned int do_post_article(const post_request_t *pr)
 		fh.accessed[0] |= FILE_MARKED;
 
 	// TODO: assure fid order in .DIR
-	fh.id = get_nextid2(pr->bp);
+	fh.id = get_nextid2(pr->board->id);
 	if (pr->o_fp) { // reply
 		fh.reid = pr->o_fp->id;
 		fh.gid = pr->o_fp->gid;
@@ -127,14 +127,14 @@ unsigned int do_post_article(const post_request_t *pr)
 		fh.gid = fh.id;
 	}
 
-	setwbdir(dir, pr->bp->filename);
+	setwbdir(dir, pr->board->name);
 	append_record(dir, &fh, sizeof(fh));
-	updatelastpost(pr->bp->filename);
+	updatelastpost(pr->board->name);
 
 	if (!pr->autopost) {
-		brc_fcgi_init(userid, pr->bp->filename);
+		brc_fcgi_init(userid, pr->board->name);
 		brc_addlist(fh.filename);
-		brc_update(userid, pr->bp->filename);
+		brc_update(userid, pr->board->name);
 	}
 
 	return fh.id;

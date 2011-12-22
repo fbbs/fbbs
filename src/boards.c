@@ -778,8 +778,9 @@ static int show_board_info(const char *name)
 	char secu[40];
 
 	board_t board, parent;
-	if (!get_board_gbk(name, &board))
+	if (!get_board(name, &board))
 		return DONOTHING;
+	board_to_gbk(&board);
 	if (board.parent)
 		get_board_by_bid(board.parent, &parent);
 

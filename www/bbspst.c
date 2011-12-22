@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
@@ -71,12 +72,14 @@ static int do_bbspst(bool isedit)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	int bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
-	if (bp == NULL || !haspostperm(&currentuser, bp))
+
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			|| !has_post_perm(&currentuser, &board))
 		return BBS_EPST;
-	if (bp->flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+
 	unsigned long fid = 0;
 	mmap_t m;
 	struct fileheader fh;
@@ -86,15 +89,15 @@ static int do_bbspst(bool isedit)
 		return BBS_EINVAL;
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
-		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
+		if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
 		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
 			return BBS_EPST;
-		if (isedit && !chkBM(bp, &currentuser)
+		if (isedit && !is_board_manager(&currentuser, &board)
 				&& strcmp(fh.owner, currentuser.userid))
 			return BBS_EACCES;
 		char file[HOMELEN];
-		setbfile(file, bp->filename, fh.filename);
+		setbfile(file, board.name, fh.filename);
 		m.oflag = O_RDONLY;
 		if (mmap_open(file, &m) < 0)
 			return BBS_ENOFILE;
@@ -102,10 +105,10 @@ static int do_bbspst(bool isedit)
 	
 	xml_header(NULL);
 	char path[HOMELEN];
-	snprintf(path, sizeof(path), BBSHOME"/upload/%s", bp->filename);
-	bool anony = bp->flag & BOARD_ANONY_FLAG;
+	snprintf(path, sizeof(path), BBSHOME"/upload/%s", board.name);
+	bool anony = board.flag & BOARD_ANONY_FLAG;
 	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d' anony='%d'>",
-			bp->filename, bid, isedit, dashd(path), anony);
+			board.name, board.id, isedit, dashd(path), anony);
 	print_session();
 	if (reply) {
 		printf("<t>");
@@ -144,33 +147,32 @@ int bbsccc_main(void)
 
 	parse_post_data(ctx.r);
 
-	int bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
 	unsigned int fid = strtoul(get_param("f"), NULL, 10);
 	struct fileheader fh;
-	if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
+	if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
 		return BBS_ENOFILE;
 
 	const char *target = get_param("t");
 	if (*target != '\0') {
-		struct boardheader *bp2 = getbcache(target);
-		if (bp2 == NULL)
+		board_t to;
+		if (!get_board(target, &to))
 			return BBS_ENOBRD;
-		if (bp2->flag & BOARD_DIR_FLAG || bp2 == bp)
+		if ((to.flag & BOARD_DIR_FLAG) || to.id == board.id)
 			return BBS_EINVAL;
-		if (!haspostperm(&currentuser, bp2))
+		if (!has_post_perm(&currentuser, &to))
 			return BBS_EPST;
-		if (bp2 == bp)
-			return BBS_EINVAL;
+
 		mmap_t m;
 		m.oflag = O_RDONLY;
 		char file[HOMELEN];
-		setbfile(file, bp->filename, fh.filename);
+		setbfile(file, board.name, fh.filename);
 
 		char title[sizeof(fh.title)];
 		if (strncmp(fh.title, "[×ªÔØ]", sizeof("[×ªÔØ]") - 1) == 0)
@@ -182,7 +184,7 @@ int bbsccc_main(void)
 
 		post_request_t pr = { .autopost = false, .crosspost = true,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.bp = bp2, .title = title, .content = m.ptr, .sig = 0,
+			.board = &to, .title = title, .content = m.ptr, .sig = 0,
 			.ip = mask_host(fromhost), .o_fp = NULL, .noreply = false,
 			.mmark = false, .anony = false };
 		int ret = do_post_article(&pr);
@@ -192,13 +194,13 @@ int bbsccc_main(void)
 
 		xml_header(NULL);
 		printf("<bbsccc t='%ld' b='%ld' f='%u'>",
-				bp2 - bcache + 1, bp - bcache + 1, ret);
+				to.id, board.id, ret);
 		print_session();
 		printf("</bbsccc>");
 	} else {
 		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",
-				fh.owner, bp->filename, bp - bcache + 1, fid);
+				fh.owner, board.name, board.id, fid);
 		xml_fputs(fh.title, stdout);
 		print_session();
 		printf("</bbsccc>");
@@ -226,18 +228,20 @@ int bbsfwd_main(void)
 	} else {
 		if (!HAS_PERM(PERM_MAIL))
 			return BBS_EACCES;
-		int bid = strtol(get_param("bid"), NULL, 10);
-		struct boardheader *bp = getbcache2(bid);
-		if (bp == NULL || !hasreadperm(&currentuser, bp))
+
+		board_t board;
+		if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+				|| !has_read_perm(&currentuser, &board))
 			return BBS_ENOBRD;
-		if (bp->flag & BOARD_DIR_FLAG)
+		if (board.flag & BOARD_DIR_FLAG)
 			return BBS_EINVAL;
+
 		unsigned int fid = strtoul(get_param("f"), NULL, 10);
 		struct fileheader fh;
-		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
+		if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
 		char file[HOMELEN];
-		setbfile(file, bp->filename, fh.filename);
+		setbfile(file, board.name, fh.filename);
 		char title[STRLEN];
 		snprintf(title, sizeof(title), "[×ª¼Ä]%s", fh.title);
 		int ret = mail_file(file, reci, title);

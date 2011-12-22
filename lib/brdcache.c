@@ -118,6 +118,14 @@ static void bcache_unlock(int fd)
 	close(fd);
 }
 
+unsigned int get_nextid2(int bid)
+{
+	int fd = bcache_lock();
+	int ret = ++(brdshm->bstatus[bid].nowid);
+	bcache_unlock(fd);
+	return ret;
+}
+
 int get_nextid(const char *boardname)
 {
 	db_res_t *res = db_exec_query(env.d, true, "SELECT id FROM boards"
@@ -129,15 +137,7 @@ int get_nextid(const char *boardname)
 	int bid = db_get_integer(res, 0, 0);
 	db_clear(res);
 
-	int fd = bcache_lock();
-	int ret = ++(brdshm->bstatus[bid].nowid);
-	bcache_unlock(fd);
-	return ret;
-}
-
-unsigned int get_nextid2(const struct boardheader *bp)
-{
-	return (unsigned int)get_nextid(bp->filename);
+	return get_nextid2(bid);
 }
 
 int getblankbnum(void)
@@ -199,17 +199,6 @@ int getbnum(const char *bname, const struct userec *cuser)
 		}
 	}
 	return 0;
-}
-
-// Returns bid according to board pointer 'bp', 0 on error.
-int getbnum2(const struct boardheader *bp)
-{
-	if (bp == NULL)
-		return 0;
-	int bid = bp - bcache + 1;
-	if (bid > numboards || bid <= 0)
-		return 0;
-	return bid;
 }
 
 int apply_boards(int (*func) (), const struct userec *cuser)
