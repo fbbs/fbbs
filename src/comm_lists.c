@@ -1,6 +1,8 @@
 #include <dlfcn.h>
 #include "bbs.h"
 #include "sysconf.h"
+#include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -59,8 +61,8 @@ int wall();
 int friend_wall();
 static int exec_mbem(const char *s);
 
-extern int tui_shop(void);
-extern int tui_goods(void);
+extern int tui_props(void);
+extern int tui_my_props(void);
 
 typedef int (*telnet_handler_t)();
 
@@ -131,8 +133,8 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowWelcome", Welcome },
 		{ "AddPCorpus", AddPCorpus },
 		{ "GoodWish", sendgoodwish },
-		{ "Shop", tui_shop },
-		{ "Goods", tui_goods },
+		{ "Props", tui_props },
+		{ "MyProps", tui_my_props },
 #ifdef ALLOWSWITCHCODE
 		{ "SwitchCode", switch_code },
 #endif

@@ -16,24 +16,27 @@ CREATE OR REPLACE VIEW users AS
 
 CREATE UNIQUE INDEX user_name_idx ON all_users (lower(name)) WHERE alive = TRUE;
 
-CREATE TABLE shopping_categories (
+CREATE TABLE prop_categs (
 	id SERIAL PRIMARY KEY,
 	name TEXT
 );
 
-CREATE TABLE shopping_items (
+CREATE TABLE prop_items (
 	id SERIAL PRIMARY KEY,
-	category INTEGER REFERENCES shopping_categories,
+	categ INTEGER REFERENCES prop_categs,
 	name TEXT,
-	price INTEGER
+	price INTEGER,
+	expire INTERVAL,
+	valid BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE shopping_records (
+CREATE TABLE prop_records (
 	id SERIAL PRIMARY KEY,
-	user_id REFERENCES all_users,
-	item INTEGER REFERENCES shopping_items,
-	price TEXT,
-	order_time TIMESTAMPTZ
+	user_id INTEGER REFERENCES all_users,
+	item INTEGER REFERENCES prop_items,
+	price INTEGER,
+	order_time TIMESTAMPTZ,
+	expire TIMESTAMPTZ
 );
 
 CREATE TABLE titles (
@@ -41,10 +44,8 @@ CREATE TABLE titles (
 	user_id INTEGER REFERENCES all_users,
 	granter INTEGER REFERENCES all_users,
 	title TEXT NOT NULL,
-	add_time TIMESTAMPTZ,
-	expire TIMESTAMPTZ,
 	approved BOOLEAN DEFAULT FALSE,
-	paid INTEGER
+	record_id INTEGER REFERENCES prop_records
 );
 
 COMMIT;

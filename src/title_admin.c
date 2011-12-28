@@ -60,7 +60,7 @@ static tui_list_title_t title_list_title(tui_list_t *p)
 			break;
 	}
 
-	prints("\033[1;33;44m[自定义身份管理][%s]\033[K\033[m", t);
+	prints("\033[1;33;44m[自定义身份管理][%s]\033[K\033[m\n", t);
 	prints("批准[\033[1;32m.\033[m] 驳回[\033[1;32md\033[m]\n"
 			"\033[1;44m编号 用户名       批准人       自定义身份"
 			"                     购买日期 过期时间\033[m\n");
@@ -79,7 +79,7 @@ static tui_list_display_t title_list_display(tui_list_t *p, int n)
 	char a[12], e[12];
 	prints("%4d %-12s %-12s %-30s %s %s\n", n + 1,
 			title_list_get_name(l, n), granter, gbk_title,
-			fb_strftime(a, sizeof(a), "%Y%m%d", title_list_get_add_time(l, n)),
+			fb_strftime(a, sizeof(a), "%Y%m%d", title_list_get_order_time(l, n)),
 			fb_strftime(e, sizeof(e), "%Y%m%d", title_list_get_expire(l, n)));
 	return 0;
 }
