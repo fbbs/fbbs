@@ -1,7 +1,7 @@
 #include "bbs.h"
-#include "modes.h"
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/time.h"
@@ -120,7 +120,7 @@ int tui_title_list(void)
 		.query = NULL,
 	};
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	tui_list(&t);
 
 	title_list_data_free(t.data);

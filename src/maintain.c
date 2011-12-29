@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 #ifndef DLM
@@ -41,7 +42,7 @@ void securityreport(char *str, int save, int mode)
 		    Postfile(fname, "vote", str, 2);
 		}
 		unlink(fname);
-		modify_user_mode(savemode);
+		set_user_status(savemode);
 	}
 }
 
@@ -104,7 +105,7 @@ int autoreport(char *title,char *str,int toboard,char *userid,int mode)
 		}
 		/* Modify end. */
         unlink(fname);
-        modify_user_mode( savemode );
+        set_user_status(savemode);
     }
 	return 0;	//返回值现无意义
 }
@@ -263,7 +264,7 @@ int kick_user(void)
 	char user[IDLEN + 1], buf[STRLEN];
 	if (!(HAS_PERM(PERM_OBOARDS)))
 		return -1;
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 
 	stand_title("踢使用者下站");
 	move(1, 0);

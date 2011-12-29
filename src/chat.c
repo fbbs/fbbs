@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "chat.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
@@ -274,12 +275,12 @@ int ent_chat(char *chatbuf) {
 	/* add end */
 	if (chatroom == 2) {
 		strcpy(chat_station, CHATNAME2);
-		modify_user_mode(CHAT2);
+		set_user_status(ST_CHAT2);
 		chatport = CHATPORT2;
 	} else {
 		chatroom = 1;
 		strcpy(chat_station, CHATNAME1);
-		modify_user_mode(CHAT1);
+		set_user_status(ST_CHAT1);
 		chatport = CHATPORT1;
 	}
 

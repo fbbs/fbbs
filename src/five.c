@@ -12,7 +12,7 @@
 #define b_lines 24
 #define LCECHO (2)
 #define cuser currentuser
-#define setutmpmode(a) modify_user_mode( a )
+#define setutmpmode(a) set_user_status(ST_ a )
 
 int player,winner=0,quitf;
 int px,py,hand,tdeadf,tlivef,livethree,threefour;

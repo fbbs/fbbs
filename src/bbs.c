@@ -10,6 +10,7 @@
 #include "mmap.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
@@ -93,7 +94,7 @@ extern struct bstat *getbstat();
 
 int check_stuffmode() {
 	//if (uinfo.mode == RMAIL || (uinfo.mode == READING && junkboard()))
-	if (uinfo.mode == RMAIL) //modified by roly 02.03.27
+	if (uinfo.mode == ST_RMAIL) //modified by roly 02.03.27
 		return YEA;
 	else
 		return NA;
@@ -237,7 +238,7 @@ char *setbdir(char *buf, char *boardname) {
 
 /*Add by SmallPig*/
 void shownotepad() {
-	modify_user_mode(NOTEPAD);
+	set_user_status(ST_NOTEPAD);
 	ansimore("etc/notepad", YEA);
 	return;
 }
@@ -319,7 +320,7 @@ void Poststring(char *str, char *nboard, char *posttitle, int mode) {
 		fclose(se);
 		Postfile(fname, nboard, posttitle, mode);
 		unlink(fname);
-		modify_user_mode(savemode);
+		set_user_status(savemode);
 	}
 }
 
@@ -378,7 +379,7 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 		return DONOTHING;
 	}
 	//add end
-	if (uinfo.mode != RMAIL)
+	if (uinfo.mode != ST_RMAIL)
 		sprintf(genbuf, "boards/%s/%s", currboard, fileinfo->filename);
 	else
 		sprintf(genbuf, "mail/%c/%s/%s", toupper(currentuser.userid[0]),
@@ -392,7 +393,7 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!get_a_boardname(bname, "请输入要转贴的讨论区名称(取消转载请按回车): ")) {
 		return FULLUPDATE;
 	}
-	if (!strcmp(bname, currboard) && uinfo.mode != RMAIL) {
+	if (!strcmp(bname, currboard) && uinfo.mode != ST_RMAIL) {
 		prints("\n\n             很抱歉，您不能把文章转到同一个版上。");
 		pressreturn();
 		clear();
@@ -980,7 +981,7 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	char bname[STRLEN], bpath[STRLEN];
 	struct stat st;
 
-	modify_user_mode(SELECT);
+	set_user_status(ST_SELECT);
 
 	if (digestmode == TRASH_MODE || digestmode == JUNK_MODE || digestmode
 			== ATTACH_MODE)
@@ -1633,7 +1634,7 @@ int post_reply(int ent, struct fileheader *fileinfo, char *direct) {
 		pressreturn();
 		return FULLUPDATE;
 	}
-	modify_user_mode(SMAIL);
+	set_user_status(ST_SMAIL);
 
 	// indicate the quote file/user
 	setbfile(quote_file, currboard, fileinfo->filename);
@@ -1713,7 +1714,7 @@ int post_reply(int ent, struct fileheader *fileinfo, char *direct) {
 			prints("信件已成功地寄给原作者 %s\n", uid);
 	}
 	pressreturn();
-	modify_user_mode(savemode);
+	set_user_status(savemode);
 	in_mail = NA;
 	return FULLUPDATE;
 }
@@ -1858,7 +1859,7 @@ int post_cross(char islocal, int mode)
 	if ((islocal == 'S' || islocal == 's') && (bp->flag & BOARD_OUT_FLAG))
 		local_article = NA;
 
-	modify_user_mode(POSTING);
+	set_user_status(ST_POSTING);
 
 	getcross(filepath, mode);
 
@@ -1987,7 +1988,7 @@ int post_article(char *postboard, char *mailid) {
 	static time_t lastposttime = 0;
 	static int failure = 0;
 
-	modify_user_mode(POSTING);
+	set_user_status(ST_POSTING);
 
 	/* added by roly 02.05.18 灌水机 */
 	if ((abs(now - lastposttime) < 3 || failure >= 9999)) {
@@ -2111,7 +2112,7 @@ int post_article(char *postboard, char *mailid) {
 	strlcpy(postfile.owner, (header.chk_anony) ? "Anonymous"
 			: currentuser.userid, STRLEN);
 	setbfile(filepath, postboard, postfile.filename);
-	modify_user_mode(POSTING);
+	set_user_status(ST_POSTING);
 	do_quote(quote_file, filepath, header.include_mode);
 	aborted = vedit(filepath, YEA, YEA);
 	if (aborted == -1) {
@@ -2263,7 +2264,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 				return DONOTHING;
 		}
 	}
-	modify_user_mode(EDIT);
+	set_user_status(ST_EDIT);
 	clear();
 	if (in_mail)
 		strcpy(buf, currmaildir);
@@ -2642,7 +2643,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	char num[8];
 	int inum1, inum2;
 
-	if (uinfo.mode == READING) {
+	if (uinfo.mode == ST_READING) {
 		if (!chkBM(currbp, &currentuser)) {
 			return DONOTHING;
 		}
@@ -2669,7 +2670,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	if (askyn("确定删除", NA, NA) == YEA) {
 		delete_range(direct, inum1, inum2);
 		fixkeep(direct, inum1, inum2);
-		if (uinfo.mode == READING) {
+		if (uinfo.mode == ST_READING) {
 			sprintf(genbuf, "Range delete %d-%d on %s", inum1, inum2,
 					currboard);
 			//securityreport (genbuf, 0, 2);
@@ -2866,13 +2867,13 @@ int del_post(int ent, struct fileheader *fileinfo, char *direct) {
 }
 
 int new_flag_clearto(int ent, struct fileheader *fileinfo, char *direct) {
-	if (uinfo.mode != READING)
+	if (uinfo.mode != ST_READING)
 		return DONOTHING;
 	return brc_clear(ent, direct, NA);
 }
 
 int new_flag_clear(int ent, struct fileheader *fileinfo, char *direct) {
-	if (uinfo.mode != READING)
+	if (uinfo.mode != ST_READING)
 		return DONOTHING;
 	return brc_clear(ent, direct, YEA);
 }
@@ -3200,7 +3201,7 @@ int board_read() {
 	}
 
 	usetime = time(0);
-	i_read(READING, buf, readtitle, readdoent, &read_comms[0],
+	i_read(ST_READING, buf, readtitle, readdoent, &read_comms[0],
 			sizeof(struct fileheader));
 	//commented by iamfat 2004.03.14
 	board_usage(currboard, time(0) - usetime);
@@ -3232,7 +3233,7 @@ void notepad() {
 	clear();
 	move(0, 0);
 	prints("开始您的留言吧！大家正拭目以待....\n");
-	modify_user_mode(WNOTEPAD);
+	set_user_status(ST_WNOTEPAD);
 	sprintf(tmpname, "tmp/notepad.%s.%05d", currentuser.userid, uinfo.pid);
 	if ((in = fopen(tmpname, "w")) != NULL) {
 		for (i = 0; i < 3; i++)
@@ -3511,14 +3512,14 @@ void board_usage(char *mode, time_t usetime) {
 #endif
 
 int Info() {
-	modify_user_mode(XMENU);
+	set_user_status(ST_XMENU);
 	ansimore("Version.Info", YEA);
 	clear();
 	return 0;
 }
 
 int Conditions() {
-	modify_user_mode(XMENU);
+	set_user_status(ST_XMENU);
 	ansimore("COPYING", YEA);
 	clear();
 	return 0;
@@ -3527,7 +3528,7 @@ int Conditions() {
 int Welcome() {
 	char ans[3];
 
-	modify_user_mode(XMENU);
+	set_user_status(ST_XMENU);
 	if (!dashf("Welcome2"))
 		ansimore("Welcome", YEA);
 	else {
@@ -3862,7 +3863,7 @@ int count_range(int ent, struct fileheader *fileinfo, char *direct) {
 	int numlevel = 1;
 	char title[STRLEN];
 
-	if (uinfo.mode == READING) {
+	if (uinfo.mode == ST_READING) {
 		if (!chkBM(currbp, &currentuser)) {
 			return DONOTHING;
 		}

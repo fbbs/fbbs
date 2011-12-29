@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
@@ -203,7 +204,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 	int num, entries;
 
 	screen_len = t_lines - 4;
-	modify_user_mode(cmdmode);
+	set_user_status(cmdmode);
 	ptr = pnt = calloc(screen_len, ssize);
 	strcpy(currdirect, direct);
 	draw_title(dotitle);
@@ -222,12 +223,12 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 
 	if (last_line == 0) {
 		switch (cmdmode) {
-			case RMAIL:
+			case ST_RMAIL:
 				prints("没有任何新信件...");
 				pressreturn();
 				clear();
 				break;
-			case GMENU: {
+			case ST_GMENU: {
 				char desc[5];
 				char buf[40];
 				if (friendflag)
@@ -240,7 +241,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 					(friendflag) ? friend_add() : reject_add();
 			}
 				break;
-			case ADMIN:
+			case ST_ADMIN:
 				prints("目前无注册单...");
 				pressreturn();
 				clear();
@@ -255,7 +256,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 		return;
 	}
 	num = last_line - screen_len + 2;
-	if (cmdmode==ADMIN)
+	if (cmdmode==ST_ADMIN)
 		locmem = getkeep(currdirect, 1, 1);
 	else
 		locmem = getkeep(currdirect, num < 1 ? 1 : num, last_line);
@@ -342,7 +343,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 				num = locmem->crs_line - locmem->top_line;
 				mode = i_read_key(rcmdlist, locmem, ch, ssize);
 			}
-			modify_user_mode(cmdmode);
+			set_user_status(cmdmode);
 		}
 		if (mode == DOQUIT)
 			break;
@@ -456,7 +457,7 @@ int ch, ssize;
 		case 'e':
 		case KEY_LEFT:
 		//if ( digestmode )
-		if( digestmode && uinfo.mode != RMAIL ) //chenhao
+		if( digestmode && uinfo.mode != ST_RMAIL ) //chenhao
 		return acction_mode();
 		else
 		return DOQUIT;
@@ -469,13 +470,13 @@ int ch, ssize;
 		m_new();
 		in_mail=NA;
 		//m_read();
-		modify_user_mode(savemode);
+		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'u':
 		savemode = uinfo.mode;
-		modify_user_mode(QUERY);
+		set_user_status(ST_QUERY);
 		t_query();
-		modify_user_mode(savemode);
+		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'H':
 		getdata(t_lines - 1, 0, "您选择?(1) 本日十大  (2) 系统热点 [1]",ans, 2, DOECHO, YEA);
@@ -525,7 +526,7 @@ int ch, ssize;
 		 if(uinfo.mode == RMAIL) return DONOTHING;
 		 savemode = uinfo.mode;
 		 m_read();
-		 modify_user_mode(savemode);
+		 set_user_status(ST_savemode);
 		 return MODECHANGED;
 		 */
 		//wait for new key -> look all mail. 1.12. by money
@@ -544,9 +545,9 @@ int ch, ssize;
 		break;
 		case '@':
 		savemode = uinfo.mode;
-		modify_user_mode(QUERY);
+		set_user_status(ST_QUERY);
 		show_online();
-		modify_user_mode(savemode);
+		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'P':
 		case Ctrl('B'):
@@ -716,7 +717,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	char subBMitems[3][9] = { "相同主题", "相同作者", "相关主题" };
 
 	if (!in_mail) {
-		if (uinfo.mode != READING)
+		if (uinfo.mode != ST_READING)
 			return DONOTHING;
 		if (fileinfo->owner[0] == '-')
 			return DONOTHING;
@@ -1000,7 +1001,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 	extern int SR_BMDELFLAG;
 	extern char quote_file[120], quote_title[120], quote_board[120];
 
-	if (uinfo.mode != READING)
+	if (uinfo.mode != ST_READING)
 		return DONOTHING;
 	if (!chkBM(currbp, &currentuser))
 		return DONOTHING;
@@ -1077,7 +1078,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 		prints("当前版面是：[ %s ] \n", currboard);
 		if (!get_a_boardname(bname, "请输入要转贴的讨论区名称: "))
 			return FULLUPDATE;
-		if (!strcmp(bname, currboard)&&uinfo.mode != RMAIL) {
+		if (!strcmp(bname, currboard)&&uinfo.mode != ST_RMAIL) {
 			prints("\n\n对不起，本文就在您要转载的版面上，所以无需转载。\n");
 			pressreturn();
 			clear();
@@ -1137,7 +1138,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 				makeDELETEDflag(num1, &fhdr, direct);
 				break;
 			case 7:
-				if (uinfo.mode != RMAIL)
+				if (uinfo.mode != ST_RMAIL)
 					sprintf(genbuf, "boards/%s/%s", currboard,
 							fhdr.filename);
 				else
@@ -1507,7 +1508,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle) {
 					0)==-1)
 				break;
 		}
-		if (uinfo.mode != RMAIL)
+		if (uinfo.mode != ST_RMAIL)
 			setbfile(tempbuf, currboard, SR_fptr.filename);
 		else
 			sprintf(tempbuf, "mail/%c/%s/%s",
@@ -1716,7 +1717,7 @@ int search_articles(struct keeploc *locmem, const char *query, int gid,
 
 		if (aflag == SEARCH_CONTENT) {
 			char p_name[256];
-			if (uinfo.mode != RMAIL) {
+			if (uinfo.mode != ST_RMAIL) {
 				setbfile(p_name, currboard, SR_fptr.filename);
 			} else {
 				sprintf(p_name, "mail/%c/%s/%s",
@@ -1829,7 +1830,7 @@ int r_searchall() {
 	int all;
 	int flag;
 	all = NA;
-	modify_user_mode(QUERY);
+	set_user_status(ST_QUERY);
 	clear();
 	usercomplete("请输入您想查询的作者帐号: ", id);
 	if (id[0] == 0) {

@@ -11,6 +11,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/ucache.h"
 
@@ -445,7 +446,7 @@ int refresh_utmp(void)
 				continue;
 			} else {
 				// Kick idle users out.
-				if (uentp->mode != BBSNET
+				if (uentp->mode != ST_BBSNET
 						&& now - uentp->idle_time > IDLE_TIMEOUT) {
 					bbskill(uentp, SIGHUP);
 					memset(uentp, 0, sizeof(struct user_info));

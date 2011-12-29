@@ -26,6 +26,7 @@
 extern struct postheader header;
 #include "bbs.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 /*For read.c*/
@@ -148,7 +149,7 @@ int mailall() {
 	char doc[5][STRLEN], buf[STRLEN];
 	int i;
 	strcpy(title, "没主题");
-	modify_user_mode(SMAIL);
+	set_user_status(ST_SMAIL);
 	clear();
 	move(0, 0);
 	sprintf(fname, "tmp/mailall.%s", currentuser.userid);
@@ -217,7 +218,7 @@ void
 m_internet()
 {
 	char receiver[68];
-	modify_user_mode(SMAIL);
+	set_user_status(ST_SMAIL);
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();
@@ -449,18 +450,18 @@ char userid[];
 		pressreturn();
 		return 0;
 	}
-	if (uinfo.mode != LUSERS && uinfo.mode != LAUSERS && uinfo.mode != FRIEND
-			&& uinfo.mode != GMENU) {
+	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_LAUSERS
+			&& uinfo.mode != ST_FRIEND && uinfo.mode != ST_GMENU) {
 		move(1, 0);
 		clrtoeol();
-		modify_user_mode(SMAIL);
+		set_user_status(ST_SMAIL);
 		usercomplete("收信人： ", uident);
 		if (uident[0] == '\0') {
 			return FULLUPDATE;
 		}
 	} else
 	strcpy(uident, userid);
-	modify_user_mode(SMAIL);
+	set_user_status(ST_SMAIL);
 	clear();
 	*quote_file = '\0';
 	switch (do_send(uident, NULL)) {
@@ -569,7 +570,7 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 int m_new() {
 	clear();
 	mrd = 0;
-	modify_user_mode(RMAIL);
+	set_user_status(ST_RMAIL);
 	read_new_mail(NULL, 0, NULL);
 	apply_record(currmaildir, read_new_mail, sizeof(struct fileheader), 0,
 			1, 0, false);
@@ -827,7 +828,7 @@ char *direct;
 	char uid[STRLEN];
 	char title[STRLEN];
 	char *t;
-	modify_user_mode(SMAIL);
+	set_user_status(ST_SMAIL);
 	sprintf(genbuf, "MAILER-DAEMON@%s", BBSHOST);
 	if (strstr(fileinfo->owner, genbuf)) {
 		ansimore("help/mailerror-explain", YEA);
@@ -1108,7 +1109,7 @@ int m_read() {
 	if (!strcmp(currentuser.userid, "guest"))
 		return DONOTHING;
 	in_mail = YEA;
-	i_read(RMAIL, currmaildir, mailtitle, maildoent, &mail_comms[0],
+	i_read(ST_RMAIL, currmaildir, mailtitle, maildoent, &mail_comms[0],
 			sizeof(struct fileheader));
 	in_mail = NA;
 	return 0;
@@ -1177,7 +1178,7 @@ int g_send() {
 	char current_maillist = '0';
 	char s_current_maillist[2] = { 0, 0 };
 
-	modify_user_mode(SMAIL);
+	set_user_status(ST_SMAIL);
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();
@@ -1525,7 +1526,7 @@ int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
 /*Add by SmallPig*/
 int ov_send() {
 	int all, i;
-	modify_user_mode(SMAIL);
+	set_user_status(ST_SMAIL);
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();

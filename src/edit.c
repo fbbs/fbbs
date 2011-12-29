@@ -2,6 +2,7 @@
 #include "edit.h"
 #include "mmap.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/post.h"
 #include "fbbs/terminal.h"
@@ -749,7 +750,7 @@ void valid_article(char *pmt, char *abort, int sure) {
 	int w;
 
 	w = NA;
-	if (uinfo.mode == POSTING || uinfo.mode == EDIT) {
+	if (uinfo.mode == ST_POSTING || uinfo.mode == ST_EDIT) {
 		total = lines = len = 0;
 		while (p && p != can_edit_end) {
 			ch = p->data[0];
@@ -798,12 +799,12 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 
 	signal(SIGALRM, SIG_IGN);
 	clear();
-	if (uinfo.mode == POSTING) {
+	if (uinfo.mode == ST_POSTING) {
 		if (local_article == YEA)
 			strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
 		else
 			strcpy(p_buf, "S.转信, L.本站发表, A.取消, T.更改标题 or E.再编辑? [S]: ");
-	} else if (uinfo.mode == SMAIL)
+	} else if (uinfo.mode == ST_SMAIL)
 		strcpy(p_buf, "(S)寄出, (A)取消, or (E)再编辑? [S]: ");
 	else
 		strcpy(p_buf, "(S)储存档案, (A)放弃编辑, (E)继续编辑? [S]: ");
@@ -820,8 +821,8 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	} else if (abort[0] == 'e' || abort[0] == 'E') {
 		msg();
 		return KEEP_EDITING;
-	} else if ((abort[0] == 't' || abort[0] == 'T')&& uinfo.mode
-			== POSTING) {
+	} else if ((abort[0] == 't' || abort[0] == 'T')
+			&& uinfo.mode == ST_POSTING) {
 		char buf[STRLEN];
 		move(1, 0);
 		prints("旧标题: %s", save_title);
@@ -831,9 +832,9 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			check_title(buf);
 			strlcpy(save_title, buf, STRLEN);
 		}
-	} else if ((abort[0] == 's' || abort[0] == 'S')&&(uinfo.mode==POSTING)) {
+	} else if ((abort[0] == 's' || abort[0] == 'S') && (uinfo.mode == ST_POSTING)) {
 		local_article = NA;
-	} else if ((abort[0] == 'l' || abort[0] == 'L')&&(uinfo.mode==POSTING)) {
+	} else if ((abort[0] == 'l' || abort[0] == 'L') && (uinfo.mode == ST_POSTING)) {
 		local_article = YEA;
 	}
 	if (aborted != -1) {
@@ -874,14 +875,15 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	}
 	//added by iamfat 2002.08.17
 	extern char fromhost[];
-	if (aborted != -1 && uinfo.mode == EDIT && ADD_EDITMARK) {
+	if (aborted != -1 && uinfo.mode == ST_EDIT && ADD_EDITMARK) {
 		fprintf(fp, "\033[m\033[1;36m※ 修改:·%s 于 %22.22s·[FROM: %s]"
 				"\033[m\n", currentuser.userid,
 				getdatestring(time(NULL), DATE_ZH), mask_host(fromhost));
 	}
 	//added end
-	if ((uinfo.mode==POSTING||uinfo.mode==SMAIL||uinfo.mode==EDIT)
-			&&addfrom!=0&&aborted!=-1) {
+	if ((uinfo.mode == ST_POSTING || uinfo.mode == ST_SMAIL
+				|| uinfo.mode == ST_EDIT)
+			&& addfrom != 0 && aborted != -1) {
 		int color, noidboard;
 		char fname[STRLEN];
 		extern struct postheader header;
@@ -1651,10 +1653,11 @@ int vedit(char *filename, int write_header_to_file, int modifyheader) {
 	int ans, t = showansi;
 	showansi = 0;
 #ifdef ALLOWAUTOWRAP
-	//Modified by IAMFAT 2002.06.03
-	if( DEFINE(DEF_AUTOWRAP)&&
-			(uinfo.mode == POSTING || uinfo.mode == SMAIL || uinfo.mode == EDIT)
-	) {
+	if (DEFINE(DEF_AUTOWRAP)
+			&& (uinfo.mode == ST_POSTING
+				|| uinfo.mode == ST_SMAIL
+				|| uinfo.mode == ST_EDIT)
+			) {
 		linelen = 79;
 	} else
 #endif

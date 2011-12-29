@@ -217,7 +217,6 @@ enum {
 #ifndef NO_STRUCT_H
 #include "struct.h"
 #endif
-#include "modes.h"              /* The list of valid user modes */
 
 enum {
 	DONOTHING   = 0,  /* Read menu command return states */

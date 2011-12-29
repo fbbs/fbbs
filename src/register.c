@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/register.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 enum {
@@ -427,7 +428,7 @@ int fill_reg_form(void)
 	if (!strcmp("guest", currentuser.userid))
 		return 0;
 
-	modify_user_mode(NEW);
+	set_user_status(ST_NEW);
 
 	clear();
 	move(2, 0);

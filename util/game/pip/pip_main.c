@@ -39,7 +39,7 @@ int mod_default()
  setutmpmode(CHICKEN);
  more("src/maple/pipgame/pip.welcome",YEA);
 #else
- modify_user_mode( CHICKEN );
+ set_user_status(ST_ CHICKEN );
  refresh();
  move(1,0);
  clrtobot();

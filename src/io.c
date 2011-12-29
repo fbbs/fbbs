@@ -8,6 +8,7 @@
 #include "libssh/libssh.h"
 #endif // ENABLE_SSH
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
@@ -58,7 +59,7 @@ void hit_alarm_clock() {
 		kill(getpid(), SIGHUP);
 	}
 	i_mode = INPUT_IDLE;
-	if (uinfo.mode == LOGIN)
+	if (uinfo.mode == ST_LOGIN)
 		alarm(LOGIN_TIMEOUT);
 	else
 		alarm(IDLE_TIMEOUT);
@@ -424,7 +425,7 @@ static int do_igetkey(void)
 int igetkey(void)
 {
 	int ch = do_igetkey();
-	while ((RMSG || msg_num) && uinfo.mode != LOCKSCREEN) {
+	while ((RMSG || msg_num) && uinfo.mode != ST_LOCKSCREEN) {
 		msg_reply(ch);
 		ch = do_igetkey();
 	}
@@ -551,8 +552,8 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	}
 	clrtoeol();
 	while (1) {
-		if ( (uinfo.in_chat == YEA || uinfo.mode == TALK || uinfo.mode
-				== FIVE) && RMSG == YEA) {
+		if ( (uinfo.in_chat == YEA || uinfo.mode == ST_TALK
+					|| uinfo.mode == ST_FIVE) && RMSG == YEA) {
 			refresh();
 		}
 		ch = igetkey();

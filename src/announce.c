@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 #define MAXITEMS        1024
@@ -412,7 +413,7 @@ int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
 	char title[STRLEN];
 	char currBM_bak[BM_LEN-1];
 
-	modify_user_mode(DIGEST);
+	set_user_status(ST_DIGEST);
 	sethomefile(buf, currentuser.userid, ".announcepath");
 	if ((fn = fopen(buf, "r")) == NULL) {
 		presskeyfor("对不起, 您没有设定丝路. 请先设定丝路.", t_lines-1);
@@ -1302,9 +1303,9 @@ void a_manager(MENU *pm, int ch) {
 						sprintf(fpath, "0Announce/.Search");
 
 					if (dashf(fpath)) {
-						modify_user_mode(EDITANN);
+						set_user_status(ST_EDITANN);
 						vedit(fpath, 0, YEA);
-						modify_user_mode(DIGEST);
+						set_user_status(ST_DIGEST);
 					}
 					pm->page = 9999;
 				}
@@ -1378,10 +1379,10 @@ void a_manager(MENU *pm, int ch) {
 				if (readonly==YEA)
 					break;
 				if (dashf(fpath)) {
-					modify_user_mode(EDITANN);
+					set_user_status(ST_EDITANN);
 					//vedit(fpath,0,NA);
 					vedit(fpath, 0, YEA);
-					modify_user_mode(DIGEST);
+					set_user_status(ST_DIGEST);
 				}
 				pm->page = 9999;
 				break;
@@ -1454,7 +1455,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 	int savemode;
 	char something[PATHLEN+20];//add by wujian
 
-	modify_user_mode(DIGEST);
+	set_user_status(ST_DIGEST);
 	strcpy(something, path);
 	strcat(something, "/welcome");
 	me.path = path;
@@ -1597,19 +1598,9 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 			case 'M':
 				savemode = uinfo.mode;
 				m_new();
-				modify_user_mode(savemode);
+				set_user_status(savemode);
 				me.page = 9999;
 				break;
-#if 0
-
-				case 'L':
-				savemode = uinfo.mode;
-				m_read();
-				modify_user_mode(savemode);
-				me.page = 9999;
-				break;
-#endif
-
 			case 'h':
 				show_help("help/announcereadhelp");
 				me.page = 9999;
@@ -1874,7 +1865,7 @@ int AddPCorpus() {
 	char *title1 = title;
 	time_t now;
 	int id;
-	modify_user_mode(DIGEST);
+	set_user_status(ST_DIGEST);
 	sprintf(Log, "%s/Log", digestpath);
 	if (!check_systempasswd()) {
 		return 1;

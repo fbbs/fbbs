@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 void mail_info(char *lastword);
@@ -38,7 +39,7 @@ int offline() {
 	int i;
 	char buf[STRLEN], lastword[640];
 
-	modify_user_mode(OFFLINE);
+	set_user_status(ST_OFFLINE);
 	clear();
 	/*2003.04.22 modified by stephen to deny the user who is under punishing to suicide*/
 	if (!HAS_PERM(PERM_POST)|| !HAS_PERM(PERM_MAIL)
@@ -121,7 +122,7 @@ int offline() {
 		substitut_record(PASSFILE, &currentuser, sizeof(struct userec),
 				usernum);
 		mail_info(lastword);
-		modify_user_mode(OFFLINE);
+		set_user_status(ST_OFFLINE);
 		do_kick_user(&uinfo);
 		exit(0);
 	}
@@ -198,7 +199,7 @@ int giveUpBBS() {
 
 	id = getuser(currentuser.userid);
 
-	modify_user_mode(GIVEUPBBS);
+	set_user_status(ST_GIVEUPBBS);
 	if (!HAS_PERM(PERM_REGISTER)) {
 		clear();
 		move(11, 28);

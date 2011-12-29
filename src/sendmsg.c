@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
@@ -64,7 +65,7 @@ int get_msg(const char *uid, char *msg, int line)
 
 char msgchar(struct user_info *uin)
 {
-	if (uin->mode == FIVE|| uin->mode == BBSNET || uin->mode == LOCKSCREEN) 
+	if (uin->mode == ST_FIVE || uin->mode == ST_BBSNET || uin->mode == ST_LOCKSCREEN)
 		return '@';
 	if (isreject(uin))
 		return '*';
@@ -128,7 +129,7 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 	if (mode == 0) {
 		move(2, 0);
 		clrtobot();
-		modify_user_mode(MSG);
+		set_user_status(ST_MSG);
 	}
 	if (uentp == NULL) {
 		prints("<输入使用者代号>\n");
@@ -154,9 +155,9 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 			clrtoeol();
 			return -1;
 		}
-		if (is_web_user(uin->mode) || uin->mode == BBSNET
-				||uin->mode == LOCKSCREEN || uin->mode == PAGE
-				|| uin->mode == FIVE || !canmsg(uin)) {
+		if (is_web_user(uin->mode) || uin->mode == ST_BBSNET
+				||uin->mode == ST_LOCKSCREEN || uin->mode == ST_PAGE
+				|| uin->mode == ST_FIVE || !canmsg(uin)) {
 			move(2, 0);
 			prints("目前无法传送讯息给对方.\n");
 			pressreturn();
@@ -168,9 +169,9 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 		if (uentp->uid == usernum)
 			return 0;
 		uin = uentp;
-		if (is_web_user(uin->mode) || uin->mode == BBSNET
-				|| uin->mode == PAGE || uin->mode == LOCKSCREEN 
-				|| uin->mode == FIVE || (mode != 2 && !canmsg(uin))) //add mode!=2 by quickmouse
+		if (is_web_user(uin->mode) || uin->mode == ST_BBSNET
+				|| uin->mode == ST_PAGE || uin->mode == ST_LOCKSCREEN
+				|| uin->mode == ST_FIVE || (mode != 2 && !canmsg(uin)))
 			return 0;
 		strcpy(uident, uin->userid);
 	}
@@ -327,7 +328,7 @@ int friend_wall(void)
 
 	char wholebuf[MAX_MSG_SIZE+2];
 
-	modify_user_mode(MSG);
+	set_user_status(ST_MSG);
 	move(2, 0);
 	clrtobot();
 	getdata(1, 0, "送讯息给 [1] 我的好朋友，[2] 与我为友者: ",
@@ -648,7 +649,7 @@ static int msg_show(msg_status_t *st, char *head, size_t hsize,
 	if (st->rpid) {
 		strlcpy(st->receiver, head + 12, sizeof(st->receiver));
 		strtok(st->receiver, " ");
-		int line = (uinfo.mode == TALK ? t_lines / 2 - 1 : 0);
+		int line = (uinfo.mode == ST_TALK ? t_lines / 2 - 1 : 0);
 		st->cury = show_msg(currentuser.userid, head, buf, line,
 				st->status == MSG_REPLYING);
 	}

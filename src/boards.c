@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "sysconf.h"
 #include "record.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
@@ -984,7 +985,7 @@ static tui_list_handler_t choose_board_handler(tui_list_t *cp, int ch)
 			modify_mode = true;
 			break;
 		case 'u':
-			modify_user_mode(QUERY);
+			set_user_status(ST_QUERY);
 			t_query();
 			modify_mode = true;
 			break;
@@ -1080,7 +1081,7 @@ static tui_list_handler_t choose_board_handler(tui_list_t *cp, int ch)
 			return DONOTHING;
 	}
 	if (modify_mode)
-		modify_user_mode(cbrd->newflag ? READNEW : READBRD);
+		set_user_status(cbrd->newflag ? ST_READNEW : ST_READBRD);
 	return FULLUPDATE;
 }
 
@@ -1100,7 +1101,7 @@ static int choose_board(choose_board_t *cbrd)
 		.query = NULL,
 	};
 
-	modify_user_mode(cbrd->newflag ? READNEW : READBRD);
+	set_user_status(cbrd->newflag ? ST_READNEW : ST_READBRD);
 
 	tui_list(&t);
 

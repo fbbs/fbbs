@@ -9,6 +9,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/user.h"
 #include "fbbs/web.h"
@@ -250,7 +251,7 @@ static int user_init(struct userec *x, struct user_info **y, int mode)
 
 	// Refresh idle time, set user mode.
 	(*y)->idle_time = time(NULL);
-	if (get_web_mode(IDLE) != mode)
+	if (get_web_mode(ST_IDLE) != mode)
 		(*y)->mode = mode;
 
 	session.uid = get_user_id(id);

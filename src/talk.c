@@ -17,6 +17,7 @@
 #include "fbbs/dbi.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
@@ -143,9 +144,9 @@ const char *idle_str(struct user_info *uent)
 
 	now = time(NULL);
 
-	if ( uent->mode == TALK )
+	if ( uent->mode == ST_TALK )
 	diff = talkidletime; /* ÁÄÌìÁíÓÐ×Ô¼ºµÄ idle kick »úÖÆ */
-	else if (uent->mode == BBSNET )
+	else if (uent->mode == ST_BBSNET )
 	diff = 0;
 	else
 	diff = now - uent->idle_time;
@@ -206,7 +207,7 @@ int t_pager() {
 		uinfo.pager |= FRIEND_PAGER;
 	}
 
-	if (!uinfo.in_chat && uinfo.mode != TALK) {
+	if (!uinfo.in_chat && uinfo.mode != ST_TALK) {
 		move(t_lines - 1, 0);
 		clrtoeol();
 		prints("ÄúµÄºô½ÐÆ÷ (pager) ÒÑ¾­[1m%s[mÁË!",
@@ -289,9 +290,9 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 			mode = get_raw_mode(uentp->mode);
 			if (uentp->invisible)
 				col = "\033[1;30m";
-			else if (mode == POSTING || mode == MARKET)
+			else if (mode == ST_POSTING || mode == ST_MARKET)
 				col = "\033[1;32m";
-			else if (mode == FIVE || mode == BBSNET)
+			else if (mode == ST_FIVE || mode == ST_BBSNET)
 				col = "\033[1;33m";
 			else if (is_web_user(uentp->mode))
 				col = "\033[1;36m";
@@ -312,7 +313,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 			} else {
 				prints("%s%s\033[m", col, mode_type(uentp->mode));
 				idle = (time(NULL) - uentp->idle_time) / 60;
-				if (idle >= 1 && mode != BBSNET)
+				if (idle >= 1 && mode != ST_BBSNET)
 					prints("[%d] ", idle);
 				else
 					prints("    ");
@@ -451,20 +452,20 @@ int t_query(const char *user)
 
 	char userid[EXT_IDLEN + 1];
 	switch (uinfo.mode) {
-		case LUSERS:
-		case LAUSERS:
-		case FRIEND:
-		case READING:
-		case MAIL:
-		case RMAIL:
-		case GMENU:
+		case ST_LUSERS:
+		case ST_LAUSERS:
+		case ST_FRIEND:
+		case ST_READING:
+		case ST_MAIL:
+		case ST_RMAIL:
+		case ST_GMENU:
 			if (*user == '\0')
 				return DONOTHING;
 			strlcpy(userid, user, sizeof(userid));
 			strtok(userid, " ");
 			break;
 		default:
-			modify_user_mode(QUERY);
+			set_user_status(ST_QUERY);
 			refresh();
 			move(1, 0);
 			clrtobot();
@@ -484,8 +485,8 @@ int t_query(const char *user)
 		return FULLUPDATE;
 	}
 
-	if (uinfo.mode != LUSERS && uinfo.mode != LAUSERS && uinfo.mode != FRIEND
-			&& uinfo.mode != GMENU)
+	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_LAUSERS
+			&& uinfo.mode != ST_FRIEND && uinfo.mode != ST_GMENU)
 	pressanykey();
 	uinfo.destuid = 0;
 	return FULLUPDATE;
@@ -517,9 +518,9 @@ int count_useshell(struct user_info *uentp) {
 	}
 	if (!uentp->active || !uentp->pid)
 		return 0;
-	if (uentp->mode == SYSINFO	|| uentp->mode == DICT
-		|| uentp->mode == BBSNET || uentp->mode == FIVE
-		|| uentp->mode == LOGIN)
+	if (uentp->mode == ST_SYSINFO	|| uentp->mode == ST_DICT
+		|| uentp->mode == ST_BBSNET || uentp->mode == ST_FIVE
+		|| uentp->mode == ST_LOGIN)
 		count++;
 	return 1;
 }
@@ -614,7 +615,7 @@ struct user_info *userinfo;
 	 return 0;
 	 }
 	 */
-	if (uinfo.mode != LUSERS && uinfo.mode != FRIEND) {
+	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_FRIEND) {
 		move(2, 0);
 		prints("<ÊäÈëÊ¹ÓÃÕß´úºÅ>\n");
 		move(1, 0);
@@ -681,11 +682,10 @@ struct user_info *userinfo;
 		clrtoeol();
 		return -1;
 	}
-	if (uin.mode == SYSINFO || uin.mode == BBSNET
-			|| uin.mode == DICT || uin.mode == ADMIN
-			|| uin.mode == LOCKSCREEN
-			|| uin.mode == PAGE
-			|| uin.mode == FIVE || uin.mode == LOGIN) {
+	if (uin.mode == ST_SYSINFO || uin.mode == ST_BBSNET
+			|| uin.mode == ST_DICT || uin.mode == ST_ADMIN
+			|| uin.mode == ST_LOCKSCREEN || uin.mode == ST_PAGE
+			|| uin.mode == ST_FIVE || uin.mode == ST_LOGIN) {
 		move(2, 0);
 		prints("Ä¿Ç°ÎÞ·¨ºô½Ð.\n");
 		clrtobot();
@@ -756,12 +756,12 @@ struct user_info *userinfo;
 #ifndef FIVEGAME
 		/* modified by djq,99.07.19,for FIVE */
 
-		modify_user_mode(PAGE);
+		set_user_status(ST_PAGE);
 #else
 		if( five == 1)
-		modify_user_mode(PAGE_FIVE);
+		set_user_status(ST_PAGE_FIVE);
 		else
-		modify_user_mode(PAGE);
+		set_user_status(ST_PAGE);
 
 		/* modified end */
 #endif
@@ -942,9 +942,9 @@ char *mesg;
 	if (!talkrequest) {
 		if (page_requestor[0]) {
 			switch (uinfo.mode) {
-				case TALK:
+				case ST_TALK:
 #ifdef FIVEGAME
-				case FIVE: //added by djq,for five
+				case ST_FIVE: //added by djq,for five
 #endif
 				move(line, 0);
 				printdash(mesg);
@@ -965,7 +965,7 @@ char *mesg;
 			return NA;
 			else
 			switch (uinfo.mode) {
-				case TALK:
+				case ST_TALK:
 				move(line, 0);
 				sprintf(buf, "** %s ÕýÔÚºô½ÐÄã", page_requestor);
 				printdash(buf);
@@ -1233,7 +1233,7 @@ int do_talk(int fd) {
 	endmsg();
 	refresh();
 	previous_mode = uinfo.mode;
-	modify_user_mode(TALK);
+	set_user_status(ST_TALK);
 	sprintf(mid_line, " %s (%s) ºÍ %s ÕýÔÚ³©Ì¸ÖÐ", currentuser.userid,
 			currentuser.username, save_page_requestor);
 
@@ -1363,7 +1363,7 @@ int do_talk(int fd) {
 	talkflush();
 	signal(SIGALRM, SIG_IGN);
 	add_flush(NULL);
-	modify_user_mode(previous_mode);
+	set_user_status(previous_mode);
 
 #ifdef TALK_LOG
 	/* edwardc.990106 ÁÄÌì¼ÍÂ¼ */
@@ -1465,7 +1465,7 @@ char *modestr;
 	sprintf(buf, "  %-12s %-10s", "Ê¹ÓÃÕß´úºÅ", "Ä¿Ç°¶¯Ì¬");
 	prints("[1;33;44m%s |%s |%s[m", buf, buf, buf);
 	count = shortulist();
-	if (uinfo.mode == MONITOR) {
+	if (uinfo.mode == ST_MONITOR) {
 		move(t_lines - 1, 0);
 		sprintf(genbuf,"[1;44;33m  Ä¿Ç°ÓÐ [32m%3d[33m %6sÉÏÏß, Ê±¼ä: [32m%22.22s [33m, Ä¿Ç°×´Ì¬£º[36m%10s   [m"
 				,count, friendmode ? "ºÃÅóÓÑ" : "Ê¹ÓÃÕß", getdatestring(time(NULL), DATE_ZH), friendmode ? "ÄãµÄºÃÅóÓÑ" : "ËùÓÐÊ¹ÓÃÕß");
@@ -1476,7 +1476,7 @@ char *modestr;
 }
 
 int t_list() {
-	modify_user_mode(LUSERS);
+	set_user_status(ST_LUSERS);
 	report("t_list", currentuser.userid);
 	do_list("Ê¹ÓÃÕß×´Ì¬");
 	pressreturn();
@@ -1487,7 +1487,7 @@ int t_list() {
 
 void sig_catcher() {
 	ulistpage++;
-	if (uinfo.mode != MONITOR) {
+	if (uinfo.mode != ST_MONITOR) {
 #ifdef DOTIMEOUT
 		init_alarm();
 #else
@@ -1508,7 +1508,7 @@ int t_monitor() {
 	signal(SIGALRM, sig_catcher);
 	/*    idle_monitor_time = 0; */
 	report("monitor", currentuser.userid);
-	modify_user_mode(MONITOR);
+	set_user_status(ST_MONITOR);
 	ulistpage = 0;
 	do_list(modestr);
 	alarm(M_INT);
@@ -1632,7 +1632,7 @@ char *uident;
 			return -1;
 		}
 	}
-	if (uinfo.mode != LUSERS && uinfo.mode != LAUSERS && uinfo.mode != FRIEND)
+	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_LAUSERS && uinfo.mode != ST_FRIEND)
 	n = 2;
 	else
 	n = t_lines - 2;
@@ -1925,7 +1925,7 @@ void t_friend() {
 	char buf[STRLEN];
 	friendflag = YEA;
 	setuserfile(buf, "friends");
-	i_read(GMENU, buf, override_title, override_doentry, friend_list,
+	i_read(ST_GMENU, buf, override_title, override_doentry, friend_list,
 			sizeof(struct override));
 	clear();
 	return;
@@ -1935,7 +1935,7 @@ void t_reject() {
 	char buf[STRLEN];
 	friendflag = NA;
 	setuserfile(buf, "rejects");
-	i_read(GMENU, buf, override_title, override_doentry, reject_list,
+	i_read(ST_GMENU, buf, override_title, override_doentry, reject_list,
 			sizeof(struct override));
 	clear();
 	return;

@@ -1,6 +1,7 @@
 #include <dlfcn.h>
 #include "bbs.h"
 #include "sysconf.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
@@ -338,7 +339,7 @@ int domenu(const char *menu_name)
 		now = i;
 	}
 
-	modify_user_mode(MMENU);
+	set_user_status(ST_MMENU);
 
 	// TODO: deprecate
 	R_monitor();
@@ -367,7 +368,7 @@ int domenu(const char *menu_name)
 					abort_bbs(0);
 				}
 				draw_menu(pm);
-				modify_user_mode(MMENU);
+				set_user_status(ST_MMENU);
 				R_monitor();
 				break;
 			case KEY_RIGHT:
@@ -404,7 +405,7 @@ int domenu(const char *menu_name)
 #endif // DLM
 					}
 					draw_menu(pm);
-					modify_user_mode(MMENU);
+					set_user_status(ST_MMENU);
 					R_monitor();
 				}
 				break;

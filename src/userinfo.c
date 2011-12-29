@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
 
@@ -381,7 +382,7 @@ void uinfo_query(struct userec *u, int real, int unum) {
 void x_info() {
 	if (!strcmp("guest", currentuser.userid))
 		return;
-	modify_user_mode(GMENU);
+	set_user_status(ST_GMENU);
 	disply_userinfo(&currentuser);
 	uinfo_query(&currentuser, 0, usernum);
 }

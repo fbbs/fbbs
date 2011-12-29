@@ -50,6 +50,7 @@
 #include <sys/select.h>
 #endif
 
+#include "fbbs/status.h"
 #if NO_SETPGID
 #define setpgid setpgrp
 #endif
@@ -353,7 +354,7 @@ char *msg;
 		send_to_unum(unum, "[1;31m¡ò [37mÇëÖ¸¶¨ĞÂµÄÁÄÌìÊÒÃû³Æ [31m¡ò[m");
 		return;
 	}
-	strlcpy(rooms[rnum].name, msg, IDLE);
+	strlcpy(rooms[rnum].name, msg, sizeof(rooms[rnum].name));
 	sprintf(chatbuf, "/r%.11s", msg);
 	send_to_room(rnum, chatbuf);
 	sprintf(chatbuf, "[1;37m¡ï [32m[[36m%s[32m] ½«ÁÄÌìÊÒÃû³Æ¸ÄÎª [1;33m%.11s [37m¡ï[37m", users[unum].chatid, msg);

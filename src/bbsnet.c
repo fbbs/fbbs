@@ -3,6 +3,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 enum {
@@ -81,7 +82,7 @@ static int bbsnet_log(const site_t *site)
  */
 static void do_bbsnet(const site_t *site)
 {
-	modify_user_mode(BBSNET);
+	set_user_status(ST_BBSNET);
 	clear();
 	prints("\033[1;32m连往: %s (%s)\n连不上时请稍候，%d 秒后将自动退出\n",
 			site->name, site->ip, CONNECT_TIMEOUT);
@@ -103,19 +104,19 @@ static void do_bbsnet(const site_t *site)
 		} else {
 			if ((sock.sin_addr.s_addr = inet_addr(site->ip)) < 0) {
 				close(fd);
-				modify_user_mode(MMENU);
+				set_user_status(ST_MMENU);
 				return;
 			}
 		}
 		if (connect(fd, (struct sockaddr *)&sock, sizeof(sock)) < 0) {
 			close(fd);
-			modify_user_mode(MMENU);
+			set_user_status(ST_MMENU);
 			return;
 		}
 	} else {
 		if (fd > 0)
 			close(fd);
-		modify_user_mode(MMENU);
+		set_user_status(ST_MMENU);
 		return;
 	}
 	signal(SIGALRM, SIG_IGN);
@@ -151,7 +152,7 @@ static void do_bbsnet(const site_t *site)
 		}
 	}
 	close(fd);
-	modify_user_mode(MMENU);
+	set_user_status(ST_MMENU);
 }
 
 /**
