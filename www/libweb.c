@@ -6,9 +6,11 @@
 
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 #include "fbbs/web.h"
 
 char seccode[SECNUM][6]={
@@ -250,6 +252,8 @@ static int user_init(struct userec *x, struct user_info **y, int mode)
 	(*y)->idle_time = time(NULL);
 	if (get_web_mode(IDLE) != mode)
 		(*y)->mode = mode;
+
+	session.uid = get_user_id(id);
 
 	return 1;
 }
