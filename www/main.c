@@ -59,6 +59,8 @@ extern int fcgi_exist(void);
 extern int web_sigopt(void);
 extern int web_forum(void);
 extern int web_mailman(void);
+extern int web_props(void);
+extern int web_my_props(void);
 
 typedef struct {
 	char *name;          ///< name of the cgi.
@@ -121,6 +123,8 @@ const static web_handler_t handlers[] = {
 		{"sigopt", web_sigopt, GMENU},
 		{"fdoc", web_forum, READING},
 		{"mailman", web_mailman, RMAIL},
+		{"prop", web_props, GMENU},
+		{"myprop", web_my_props, GMENU},
 		{NULL, NULL, 0}
 };
 
