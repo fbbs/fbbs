@@ -1,6 +1,6 @@
 #include "libweb.h"
-#include <sys/types.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
@@ -64,7 +64,7 @@ extern int web_props(void);
 extern int web_my_props(void);
 
 typedef struct {
-	char *name;          ///< name of the cgi.
+	const char *name;    ///< name of the cgi.
 	int (*func)(void);   ///< handler function.
 	int mode;            ///< user mode. @see mode_type
 } web_handler_t;
@@ -72,64 +72,69 @@ typedef struct {
 web_ctx_t ctx;
 
 const static web_handler_t handlers[] = {
-	{ "sec", bbssec_main, ST_READBRD },
-	{ "all", bbsall_main, ST_READBRD },
-	{ "boa", bbsboa_main, ST_READNEW },
-	{ "login", web_login, ST_LOGIN},
-	{ "logout", bbslogout_main, ST_MMENU },
-	{ "doc", bbsdoc_main, ST_READING },
-	{ "con", bbscon_main, ST_READING },
-	{ "pst", bbspst_main, ST_POSTING },
-	{ "snd", bbssnd_main, ST_POSTING },
-	{ "qry", bbsqry_main, ST_QUERY },
-	{ "clear", bbsclear_main, ST_READING },
-	{ "upload", bbsupload_main, ST_UPLOAD },
-	{ "preupload", bbspreupload_main, ST_UPLOAD },
 	{ "0an", bbs0an_main, ST_DIGEST },
+	{ "activate", fcgi_activate, ST_NEW },
+	{ "all", bbsall_main, ST_READBRD },
 	{ "anc", bbsanc_main, ST_DIGEST },
-	{ "not", bbsnot_main, ST_READING },
-	{ "mail", bbsmail_main, ST_RMAIL },
-	{ "mailcon", bbsmailcon_main, ST_RMAIL },
-	{ "delmail", bbsdelmail_main, ST_RMAIL },
-	{ "gdoc", bbsgdoc_main, ST_READING },
-	{ "tdoc" ,bbstdoc_main, ST_READING },
-	{ "gcon", bbsgcon_main, ST_READING },
-	{ "tcon", bbstcon_main, ST_READING },
-	{ "mybrd", web_mybrd, ST_READING },
+	{ "bfind", bbsbfind_main, ST_READING },
+	{ "boa", bbsboa_main, ST_READNEW },
 	{ "brdadd", web_brdadd, ST_READING },
 	{ "ccc", bbsccc_main, ST_POSTING },
-	{ "fav", web_fav, ST_READING },
-	{ "pstmail", bbspstmail_main, ST_SMAIL },
-	{ "sndmail", bbssndmail_main, ST_SMAIL },
-	{ "fall", bbsfall_main, ST_GMENU },
-	{ "fadd", bbsfadd_main, ST_GMENU },
-	{ "fdel", bbsfdel_main, ST_GMENU },
-	{ "plan", bbsplan_main, ST_EDITUFILE },
-	{ "sig", bbssig_main, ST_EDITUFILE },
+	{ "clear", bbsclear_main, ST_READING },
+	{ "con", bbscon_main, ST_READING },
 	{ "del", bbsdel_main, ST_READING },
-	{ "fwd", bbsfwd_main, ST_SMAIL },
-	{ "info", bbsinfo_main, ST_GMENU },
-	{ "pwd", bbspwd_main, ST_GMENU },
+	{ "delmail", bbsdelmail_main, ST_RMAIL },
+	{ "doc", bbsdoc_main, ST_READING },
 	{ "edit", bbsedit_main, ST_EDIT },
-	{ "sel", bbssel_main, ST_SELECT },
-	{ "rss", bbsrss_main, ST_READING },
-	{ "ovr", bbsovr_main, ST_FRIEND },
-	{ "top10", bbstop10_main, ST_READING },
-	{ "newmail", bbsnewmail_main, ST_RMAIL },
-	{ "bfind", bbsbfind_main, ST_READING },
-	{ "idle", bbsidle_main, ST_IDLE },
-	{ "reg", fcgi_reg, ST_NEW },
-	{ "activate", fcgi_activate, ST_NEW },
 	{ "exist", fcgi_exist, ST_QUERY },
-	{ "sigopt", web_sigopt, ST_GMENU },
+	{ "fadd", bbsfadd_main, ST_GMENU },
+	{ "fall", bbsfall_main, ST_GMENU },
+	{ "fav", web_fav, ST_READING },
+	{ "fdel", bbsfdel_main, ST_GMENU },
 	{ "fdoc", web_forum, ST_READING },
+	{ "fwd", bbsfwd_main, ST_SMAIL },
+	{ "gcon", bbsgcon_main, ST_READING },
+	{ "gdoc", bbsgdoc_main, ST_READING },
+	{ "idle", bbsidle_main, ST_IDLE },
+	{ "info", bbsinfo_main, ST_GMENU },
+	{ "login", web_login, ST_LOGIN},
+	{ "logout", bbslogout_main, ST_MMENU },
+	{ "mail", bbsmail_main, ST_RMAIL },
+	{ "mailcon", bbsmailcon_main, ST_RMAIL },
 	{ "mailman", web_mailman, ST_RMAIL },
-	{ "prop", web_props, ST_GMENU },
+	{ "mybrd", web_mybrd, ST_READING },
 	{ "myprop", web_my_props, ST_GMENU },
-	{ NULL, NULL, 0 }
+	{ "newmail", bbsnewmail_main, ST_RMAIL },
+	{ "not", bbsnot_main, ST_READING },
+	{ "ovr", bbsovr_main, ST_FRIEND },
+	{ "plan", bbsplan_main, ST_EDITUFILE },
+	{ "preupload", bbspreupload_main, ST_UPLOAD },
+	{ "prop", web_props, ST_GMENU },
+	{ "pst", bbspst_main, ST_POSTING },
+	{ "pstmail", bbspstmail_main, ST_SMAIL },
+	{ "pwd", bbspwd_main, ST_GMENU },
+	{ "qry", bbsqry_main, ST_QUERY },
+	{ "reg", fcgi_reg, ST_NEW },
+	{ "rss", bbsrss_main, ST_READING },
+	{ "sec", bbssec_main, ST_READBRD },
+	{ "sel", bbssel_main, ST_SELECT },
+	{ "sig", bbssig_main, ST_EDITUFILE },
+	{ "sigopt", web_sigopt, ST_GMENU },
+	{ "snd", bbssnd_main, ST_POSTING },
+	{ "sndmail", bbssndmail_main, ST_SMAIL },
+	{ "tcon", bbstcon_main, ST_READING },
+	{ "tdoc" ,bbstdoc_main, ST_READING },
+	{ "top10", bbstop10_main, ST_READING },
+	{ "upload", bbsupload_main, ST_UPLOAD },
 };
 
 bbs_env_t env;
+
+static int compare_handler(const void *l, const void *r)
+{
+	const web_handler_t *h1 = l, *h2 = r;
+	return strcmp(h1->name, h2->name);
+}
 
 /**
  * Get an web request handler according to its name.
@@ -147,13 +152,8 @@ static const web_handler_t *_get_handler(void)
 	else
 		++name;
 
-	const web_handler_t *h = handlers;
-	while (h->name) {
-		if (streq(name, h->name))
-			return h;
-		++h;
-	}
-	return NULL;
+	web_handler_t h = { .name = name, .func = NULL, .mode = 0 };
+	return bsearch(&h, handlers, NELEMS(handlers), sizeof(h), compare_handler);
 }
 
 /**
