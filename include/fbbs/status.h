@@ -63,6 +63,8 @@ enum {
 	ST_GOODWISH = 69,
 	ST_GIVEUPBBS = 70,
 	ST_UPLOAD = 71,
+	ST_PROP,
+	ST_MY_PROP,
 	ST_WWW = 0x40000000,
 };
 

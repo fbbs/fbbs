@@ -18,7 +18,7 @@ static tui_list_loader_t tui_prop_loader(tui_list_t *p)
 
 static tui_list_title_t tui_prop_title(tui_list_t *p)
 {
-	prints("\033[1;33;44m["SHORT_BBSNAME"商城]\033[K\033[m\n"
+	prints("\033[1;33;44m[聚宝盆]\033[K\033[m\n"
 			" 购买[\033[1;32m→\033[m,\033[1;32mRtn\033[m]"
 			" 选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m]"
 			" 离开[\033[1;32m←\033[m,\033[1;32me\033[m]"
@@ -43,7 +43,7 @@ static tui_list_display_t tui_prop_display(tui_list_t *p, int n)
 static int tui_title_buy(int type, int price)
 {
 	if (title_check_existence(session.uid)) {
-		presskeyfor("您已购买了自定义身份，请至我的商品中查看", t_lines - 1);
+		presskeyfor("您已购买了自定义身份，请至[藏经阁]中查看", t_lines - 1);
 		return MINIUPDATE;
 	}
 
@@ -115,7 +115,7 @@ static tui_list_loader_t tui_my_props_loader(tui_list_t *p)
 
 static tui_list_title_t tui_my_props_title(tui_list_t *p)
 {
-	prints("\033[1;33;44m[我的商品]\033[K\033[m\n"
+	prints("\033[1;33;44m[藏经阁]\033[K\033[m\n"
 			" 查看详情 [\033[1;32mEnter\033[m,\033[1;32m→\033[m] "
 			"返回 [\033[1;32m←\033[m,\033[1;32me\033[m]\n"
 			"\033[1;44m  编号   价格  购买时间   过期时间  类别 / 项目\033[K\033[m\n");

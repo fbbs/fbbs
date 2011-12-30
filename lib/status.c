@@ -139,6 +139,10 @@ const char *mode_type(int mode)
 			return "戒网中";
 		case ST_UPLOAD:
 			return "上传文件";
+		case ST_PROP:
+			return "聚宝盆";
+		case ST_MY_PROP:
+			return "藏经阁";
 		default:
 			return "去了哪里!?";
 	}
