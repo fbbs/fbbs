@@ -108,6 +108,7 @@
 				<li><a href='sel'>查找版面</a></li>
 			</ul>
 		</li>
+		<li><a href='prop'>道具市场</a></li>
 	</ul>
 </xsl:template>
 
@@ -181,6 +182,8 @@
 		<xsl:when test='bbspwd'>修改密码</xsl:when>
 		<xsl:when test='bbsnot'>进版画面</xsl:when>
 		<xsl:when test='bbsreg'>注册帐号</xsl:when>
+		<xsl:when test='bbsprop'>道具市场</xsl:when>
+		<xsl:when test='bbsmyprop'>我的道具</xsl:when>
 		<xsl:otherwise></xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
@@ -1017,6 +1020,57 @@ table.post{width:100%}
 	<xsl:if test='@success=0'>
 		<p>帐号激活失败 :( 请检查激活链接</p>
 	</xsl:if>
+</xsl:template>
+
+<xsl:template match='bbsprop'>
+<h2>藏经阁</h2>
+<a href='myprop'>我的道具</a>
+<table>
+<tr><th></th><th>价格</th><th>类别</th><th>项目</th></tr>
+<xsl:for-each select='item'><tr>
+<td><a href='buyprop?item={@id}'>购买</a></td>
+<td><xsl:value-of select='@price'/></td>
+<td><xsl:value-of select='@categ'/></td>
+<td><xsl:value-of select='@name'/></td>
+</tr></xsl:for-each>
+</table>
+</xsl:template>
+
+<xsl:template match='bbsmyprop'>
+<table>
+<tr><th></th><th>价格</th><th>购买时间</th><th>过期时间</th><th>类别</th><th>项目</th></tr>
+<xsl:for-each select='prop'><tr>
+<td><a id='prop-detail' href='myprop?record={@record}&amp;item={@item}'>查看详情</a></td>
+<td><xsl:value-of select='@price'/></td>
+<td><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@order'/></xsl:call-template></td>
+<td><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@expire'/></xsl:call-template></td>
+<td><xsl:value-of select='@categ'/></td>
+<td><xsl:value-of select='@name'/></td>
+<td></td>
+</tr></xsl:for-each>
+</table>
+</xsl:template>
+
+<xsl:template match='bbspropdetail'>
+<xsl:value-of select='prop'/>
+</xsl:template>
+
+<xsl:template match='bbsbuyprop'>
+<xsl:choose>
+<xsl:when test='inputs'>
+<form action='buyprop'>
+<xsl:copy-of select='inputs/*'/>
+<input type='hidden' name='item' value='{inputs/@item}'/>
+<input type='submit' value='提交'></input>
+</form>
+</xsl:when>
+<xsl:when test='success'>
+<p>购买自定义身份成功!</p>
+</xsl:when>
+<xsl:otherwise>
+<p>购买自定义身份失败..</p>
+</xsl:otherwise>
+</xsl:choose>
 </xsl:template>
 
 </xsl:stylesheet>

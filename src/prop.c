@@ -31,12 +31,12 @@ static tui_list_display_t tui_prop_display(tui_list_t *p, int n)
 	prop_list_t *l = p->data;
 
 	GBK_BUFFER(item, PROP_ITEM_CCHARS);
-	GBK_BUFFER(categ, PROP_CATEGORY_CCHARS);
+	GBK_BUFFER(categ, PROP_CATEG_CCHARS);
 	convert_u2g(prop_list_get_name(l, n), gbk_item);
-	convert_u2g(prop_list_get_category_name(l, n), gbk_categ);
+	convert_u2g(prop_list_get_categ_name(l, n), gbk_categ);
 
 	prints(" %4d %7d  %s / %s\n", n + 1,
-			TO_YUAN_INT(prop_list_get_price(l, n)), gbk_item, gbk_categ);
+			TO_YUAN_INT(prop_list_get_price(l, n)), gbk_categ, gbk_item);
 	return 0;
 }
 
@@ -118,7 +118,7 @@ static tui_list_title_t tui_my_props_title(tui_list_t *p)
 	prints("\033[1;33;44m[藏经阁]\033[K\033[m\n"
 			" 查看详情 [\033[1;32mEnter\033[m,\033[1;32m→\033[m] "
 			"返回 [\033[1;32m←\033[m,\033[1;32me\033[m]\n"
-			"\033[1;44m  编号   价格  购买时间   过期时间  类别 / 项目\033[K\033[m\n");
+			"\033[1;44m  编号   价格  购买时间   过期时间   类别 / 项目\033[K\033[m\n");
 }
 
 static tui_list_display_t tui_my_props_display(tui_list_t *p, int n)
@@ -130,7 +130,7 @@ static tui_list_display_t tui_my_props_display(tui_list_t *p, int n)
 	fb_strftime(e, sizeof(e), "%Y-%m-%d", my_prop_get_expire(r, n));
 
 	GBK_BUFFER(item, PROP_ITEM_CCHARS);
-	GBK_BUFFER(categ, PROP_CATEGORY_CCHARS);
+	GBK_BUFFER(categ, PROP_CATEG_CCHARS);
 	convert_u2g(my_prop_get_item_name(r, n), gbk_item);
 	convert_u2g(my_prop_get_categ_name(r, n), gbk_categ);
 

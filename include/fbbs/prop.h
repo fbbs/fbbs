@@ -5,7 +5,7 @@
 
 enum {
 	PROP_ITEM_CCHARS = 15,
-	PROP_CATEGORY_CCHARS = 15,
+	PROP_CATEG_CCHARS = 15,
 	PROP_TITLE_FREE = 1,
 	PROP_TITLE_90DAYS,
 	PROP_TITLE_180DAYS,
@@ -23,8 +23,8 @@ typedef db_res_t prop_list_t;
 
 #define prop_list_num_rows(list)  db_res_rows(list)
 #define prop_list_get_id(l, i)  db_get_integer(l, i, 0)
-#define prop_list_get_name(l, i)  db_get_value(l, i, 1)
-#define prop_list_get_category_name(l, i)  db_get_value(l, i, 2)
+#define prop_list_get_categ_name(l, i)  db_get_value(l, i, 1)
+#define prop_list_get_name(l, i)  db_get_value(l, i, 2)
 #define prop_list_get_price(l, i)  db_get_integer(l, i, 3)
 
 typedef db_res_t my_props_t;
