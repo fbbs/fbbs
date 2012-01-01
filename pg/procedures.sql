@@ -54,7 +54,7 @@ BEGIN
 				WHERE a.id = OLD.user_id AND r.id = OLD.record_id;
 	END IF;
 	UPDATE all_users SET title =
-        (SELECT string_agg(title, ' ') FROM titles WHERE user_id = NEW.user_id AND approved)
+        (SELECT string_agg(title, ' ') FROM titles WHERE user_id = OLD.user_id AND approved)
         WHERE id = OLD.user_id;
 	RETURN NULL;
 END;
