@@ -381,6 +381,22 @@ function HumanReadableDate() {
 	}
 }
 
+function buyPropClick() {
+	var s = $(this);
+	var p = s.parent().parent();
+	var m = s.attr('href').match(/(\d+)$/);
+	if (m[1] == 2 || m[1] == 3 || m[1] == 4) {
+		p.after('<tr><td colspan="4"><form method="POST"><label for="title">请输入自定义身份</label><input name="title" type="text" width="15"></input><input type="submit" value="提交"></input></form></td></tr>');
+		$('form', p.next()).attr('action', s.attr('href'));
+		s.unbind('click').bind('click', function() {
+			p.next().remove();
+			s.unbind('click').bind('click', buyPropClick);
+			return false;
+		});
+	}
+	return false;
+}
+
 $(document).ready(function() {
 	$('#navnm').hide();
 
@@ -480,4 +496,6 @@ $(document).ready(function() {
 	});
 
 	$('iframe').load(quickUpload);
+
+	$('.buy-prop').click(buyPropClick);
 });

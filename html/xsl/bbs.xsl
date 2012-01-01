@@ -1023,12 +1023,12 @@ table.post{width:100%}
 </xsl:template>
 
 <xsl:template match='bbsprop'>
-<h2>藏经阁</h2>
+<h2>道具市场</h2>
 <a href='myprop'>我的道具</a>
 <table>
 <tr><th></th><th>价格</th><th>类别</th><th>项目</th></tr>
 <xsl:for-each select='item'><tr>
-<td><a href='buyprop?item={@id}'>购买</a></td>
+<td><a class='buy-prop' href='buyprop?item={@id}'>购买</a></td>
 <td><xsl:value-of select='@price'/></td>
 <td><xsl:value-of select='@categ'/></td>
 <td><xsl:value-of select='@name'/></td>

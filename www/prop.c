@@ -138,6 +138,8 @@ int web_buy_prop(void)
 	if (item <= 0)
 		return BBS_EINVAL;
 
+	parse_post_data();
+
 	switch (item) {
 		case PROP_TITLE_90DAYS:
 		case PROP_TITLE_180DAYS:
