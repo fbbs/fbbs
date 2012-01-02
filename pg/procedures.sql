@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION prop_record_before_insert_trigger() RETURNS TRIGGER A
 BEGIN
 	PERFORM money FROM all_users WHERE id = NEW.user_id AND money > NEW.price FOR UPDATE;
 	IF FOUND THEN
-		UPDATE all_users SET money = money - NEW.price;
+		UPDATE all_users SET money = money - NEW.price WHERE id = NEW.user_id;
 		RETURN NEW;
 	ELSE
 		RAISE 'insufficient money';
