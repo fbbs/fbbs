@@ -40,6 +40,10 @@ BEGIN
 	UPDATE all_users SET title =
 		(SELECT string_agg(title, ' ') FROM titles WHERE user_id = NEW.user_id AND approved)
 		WHERE id = NEW.user_id;
+	IF NEW.approved AND NOT OLD.approved THEN
+		UPDATE prop_records r SET order_time = current_timestamp, expire = current_timestamp + i.expire
+		FROM prop_items i WHERE r.id = NEW.record_id AND r.item = i.id;
+	END IF;
 	RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
