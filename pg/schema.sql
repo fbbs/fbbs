@@ -1,5 +1,11 @@
 BEGIN;
 
+CREATE TABLE emails (
+	id SERIAL PRIMARY KEY,
+	addr TEXT
+);
+CREATE UNIQUE INDEX ON emails(addr);
+
 CREATE TABLE all_users (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
