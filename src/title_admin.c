@@ -28,10 +28,10 @@ static tui_list_loader_t title_list_loader(tui_list_t *p)
 			append("WHERE NOT t.approved");
 			break;
 		case TITLE_LIST_APPROVED:
-			append("WHERE t.paid > 0 AND t.approved");
+			append("WHERE r.price > 0 AND t.approved");
 			break;
 		case TITLE_LIST_GRANTED:
-			append("WHERE t.paid = 0");
+			append("WHERE r.price = 0");
 			break;
 		case TITLE_LIST_ALL:
 			break;
@@ -61,7 +61,7 @@ static tui_list_title_t title_list_title(tui_list_t *p)
 	}
 
 	prints("\033[1;33;44m[自定义身份管理][%s]\033[K\033[m\n", t);
-	prints("批准[\033[1;32m.\033[m] 驳回[\033[1;32md\033[m]\n"
+	prints("批准[\033[1;32m.\033[m] 驳回[\033[1;32md\033[m] 切换[\033[1;32ms\033[m]\n"
 			"\033[1;44m编号 用户名       批准人       自定义身份"
 			"                     购买日期 过期时间\033[m\n");
 }
@@ -86,17 +86,27 @@ static tui_list_display_t title_list_display(tui_list_t *p, int n)
 
 static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 {
-	db_res_t *l = ((title_list_t *)p->data)->list;
+	title_list_t *l = p->data;
+	db_res_t *r = l->list;
 
 	switch (key) {
+		case 's':
+			if (++l->type > TITLE_LIST_ALL)
+				l->type = TITLE_LIST_PENDING;
+			p->valid = false;
+			return FULLUPDATE;
 		case '.':
-			title_approve(title_list_get_id(l, p->cur));
+			if (l->type != TITLE_LIST_PENDING)
+				return DONOTHING;
+			title_approve(title_list_get_id(r, p->cur));
 			p->valid = false;
 			break;
 		case 'd':
+			if (l->type != TITLE_LIST_PENDING)
+				return DONOTHING;
 			if (!askyn("确定驳回?", NA, YEA))
 				return MINIUPDATE;
-			title_disapprove(title_list_get_id(l, p->cur));
+			title_disapprove(title_list_get_id(r, p->cur));
 			p->valid = false;
 			break;
 		default:
