@@ -99,9 +99,9 @@ int web_my_props(void)
 	} else {
 		switch (item) {
 			case PROP_TITLE_FREE:
+			case PROP_TITLE_30DAYS:
 			case PROP_TITLE_90DAYS:
 			case PROP_TITLE_180DAYS:
-			case PROP_TITLE_365DAYS:
 				return show_title_detail(record);
 			default:
 				return BBS_EINVAL;
@@ -141,9 +141,9 @@ int web_buy_prop(void)
 	parse_post_data();
 
 	switch (item) {
+		case PROP_TITLE_30DAYS:
 		case PROP_TITLE_90DAYS:
 		case PROP_TITLE_180DAYS:
-		case PROP_TITLE_365DAYS:
 			return buy_title(item, get_param("title"));
 		default:
 			return BBS_EINVAL;
