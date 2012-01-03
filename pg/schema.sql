@@ -10,6 +10,7 @@ CREATE TABLE all_users (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
 	passwd TEXT,
+	email INTEGER REFERENCES emails,
 	alive BOOLEAN DEFAULT TRUE,
 	money BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
