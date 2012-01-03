@@ -44,12 +44,14 @@ void disply_userinfo(struct userec *u) {
 	prints(" (累计生活天数 : %d)\n", days_elapsed(u->birthyear + 1900, 
 			u->birthmonth, u->birthday, now));
 
+#ifndef ENABLE_FDQUAN
 	db_res_t *res = db_query("SELECT e.addr FROM users u"
 			" JOIN emails e ON u.email = e.id"
 			" WHERE lower(u.name) = lower(%s) ", u->userid);
 	if (res && db_res_rows(res) == 1)
 		prints("电子邮件信箱 : %s\n", db_get_value(res, 0, 0));
 	db_clear(res);
+#endif
 
 	prints("最近光临机器 : %-22s\n", u->lasthost);
 	prints("帐号建立日期 : %s[距今 %d 天]\n",
