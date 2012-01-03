@@ -119,7 +119,7 @@ static int buy_title(int item, const char *title)
 		UTF8_BUFFER(title, TITLE_CCHARS);
 		convert_g2u(title, utf8_title);
 		if (validate_utf8_input(utf8_title, TITLE_CCHARS) > 0
-				&& title_submit_request(item, utf8_title)) {
+				&& title_submit_request(item, session.uid, utf8_title, 0)) {
 			printf("<success/>");
 		}
 	} else {

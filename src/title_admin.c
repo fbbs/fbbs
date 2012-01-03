@@ -1,12 +1,14 @@
 #include "bbs.h"
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/prop.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/time.h"
 #include "fbbs/title.h"
 #include "fbbs/tui_list.h"
+#include "fbbs/user.h"
 
 enum { ADDITIONAL_LEN = 64 };
 
@@ -44,8 +46,9 @@ static tui_list_loader_t title_list_loader(tui_list_t *p)
 
 static tui_list_title_t title_list_title(tui_list_t *p)
 {
+	title_list_t *l = p->data;
 	const char *t;
-	switch (((title_list_t *)p->data)->type) {
+	switch (l->type) {
 		case TITLE_LIST_PENDING:
 			t = "待批准";
 			break;
@@ -61,8 +64,9 @@ static tui_list_title_t title_list_title(tui_list_t *p)
 	}
 
 	prints("\033[1;33;44m[自定义身份管理][%s]\033[K\033[m\n", t);
-	prints("批准[\033[1;32m.\033[m] 驳回[\033[1;32md\033[m] 切换[\033[1;32ms\033[m]\n"
-			"\033[1;44m编号 用户名       批准人       自定义身份"
+	prints(" 批准[\033[1;32m.\033[m] 驳回[\033[1;32md\033[m]"
+			" 切换[\033[1;32ms\033[m] 授予[\033[1;32mg\033[m]\n");
+	prints("\033[1;44m编号 用户名       批准人       自定义身份"
 			"                     购买日期 过期时间\033[m\n");
 }
 
@@ -82,6 +86,42 @@ static tui_list_display_t title_list_display(tui_list_t *p, int n)
 			fb_strftime(a, sizeof(a), "%Y%m%d", title_list_get_order_time(l, n)),
 			fb_strftime(e, sizeof(e), "%Y%m%d", title_list_get_expire(l, n)));
 	return 0;
+}
+
+static int grant_title(user_id_t uid, const char *title)
+{
+	if (validate_utf8_input(title, TITLE_CCHARS) < 0)
+		return -1;
+
+	return title_submit_request(PROP_TITLE_FREE, uid, title, session.uid);
+}
+
+static int tui_grant_title(tui_list_t *p)
+{
+	char name[IDLEN + 1];
+	getdata(t_lines - 1, 0, "请输入用户名: ", name, sizeof(name), YEA, YEA);
+	if (!*name)
+		return MINIUPDATE;
+
+	user_id_t uid = get_user_id(name);
+	if (uid <= 0)
+		return MINIUPDATE;
+
+	GBK_UTF8_BUFFER(title, TITLE_CCHARS);
+	getdata(t_lines - 1, 0, "请输入身份: ", gbk_title, sizeof(gbk_title),
+			YEA, YEA);
+	if (!*gbk_title)
+		return MINIUPDATE;
+
+	convert_g2u(gbk_title, utf8_title);
+	if (grant_title(uid, utf8_title)) {
+		title_list_t *l = p->data;
+		if (l->type == TITLE_LIST_GRANTED || l->type == TITLE_LIST_ALL) {
+			p->valid = false;
+			return PARTUPDATE;
+		}
+	}
+	return MINIUPDATE;
 }
 
 static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
@@ -109,6 +149,8 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 			title_disapprove(title_list_get_id(r, p->cur));
 			p->valid = false;
 			break;
+		case 'g':
+			return tui_grant_title(p);
 		default:
 			break;
 	}

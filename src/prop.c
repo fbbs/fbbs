@@ -54,7 +54,7 @@ static int tui_title_buy(int type, int price)
 	if (validate_utf8_input(utf8_title, TITLE_CCHARS) <= 0)
 		return MINIUPDATE;
 
-	if (title_submit_request(type, utf8_title)) {
+	if (title_submit_request(type, session.uid, utf8_title, 0)) {
 		presskeyfor("¹ºÂò³É¹¦¡£ÇëÄúÄÍÐÄµÈ´ýÉóºË¡£", t_lines - 1);
 	} else {
 		presskeyfor("¹ºÂòÊ§°Ü: ¹â»ª±ÒÓà¶î²»×ã»òÏµÍ³´íÎó", t_lines - 1);

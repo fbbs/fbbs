@@ -107,30 +107,6 @@ void disply_userinfo(struct userec *u) {
 void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 	char buf[STRLEN], genbuf[128];
 
-	if (currentuser.userlevel & PERM_SYSOPS) {
-		char temp[30];
-		temp[0] = 0;
-		FILE *fp;
-		sethomefile(genbuf, u->userid, ".volunteer");
-		if ((fp = fopen(genbuf, "r")) != NULL) {
-			fgets(temp, 30, fp);
-			fclose(fp);
-			sprintf(genbuf, "输入身份(输空格取消身份)：[%s]", temp);
-		} else
-			sprintf(genbuf, "输入身份：");
-		getdata(i++, 0, genbuf, buf, 30, DOECHO, YEA);
-		if (buf[0]) {
-			sethomefile(genbuf, u->userid, ".volunteer");
-			if ((fp = fopen(genbuf, "w")) != NULL) {
-				if (buf[0] != ' ') {
-					fputs(buf, fp);
-					fclose(fp);
-				} else
-					unlink(genbuf);
-			}
-		}
-	}
-
 	sprintf(genbuf, "上线次数 [%d]: ", u->numlogins);
 	getdata(i++, 0, genbuf, buf, 10, DOECHO, YEA);
 	if (atoi(buf) > 0)

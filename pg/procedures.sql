@@ -13,7 +13,7 @@ DROP TRIGGER IF EXISTS prop_record_before_insert_trigger ON prop_records;
 CREATE TRIGGER prop_record_before_insert_trigger AFTER INSERT ON prop_records
     FOR EACH ROW EXECUTE PROCEDURE prop_record_before_insert_trigger();
 
-CREATE OR REPLACE FUNCTION buy_title_request(_uid INTEGER, _item INTEGER, _title TEXT) RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION buy_title_request(_uid INTEGER, _item INTEGER, _title TEXT, _granter INTEGER) RETURNS VOID AS $$
 DECLARE
 	_row RECORD;
 	_record prop_records.id%TYPE;
@@ -22,16 +22,26 @@ BEGIN
 	IF NOT FOUND THEN
 		RAISE 'no item found';
 	END IF;
-	PERFORM t.id FROM titles t JOIN prop_records r ON t.record_id = r.id
-			WHERE t.user_id = _uid AND r.item <> 1;
-	IF FOUND THEN
-		RAISE 'title exists';
+	IF _item <> 1 THEN
+		PERFORM t.id FROM titles t JOIN prop_records r ON t.record_id = r.id
+				WHERE t.user_id = _uid AND r.item <> 1;
+		IF FOUND THEN
+			RAISE 'title exists';
+		END IF;
 	END IF;
 	INSERT INTO prop_records (user_id, item, price, order_time, expire)
 			VALUES (_uid, _item, _row.price, current_timestamp, current_timestamp + _row.expire);
 	SELECT lastval() INTO _record;
-	INSERT INTO titles (user_id, granter, title, record_id)
-			VALUES (_uid, _uid, _title, _record);
+	IF _granter <> 0 THEN
+		INSERT INTO titles (user_id, granter, title, record_id, approved)
+				VALUES (_uid, _granter, _title, _record, TRUE);
+		UPDATE all_users SET title =
+			(SELECT string_agg(title, ' ') FROM titles WHERE user_id = _uid AND approved)
+			WHERE id = _uid;
+	ELSE
+		INSERT INTO titles (user_id, granter, title, record_id, approved)
+				VALUES (_uid, _uid, _title, _record, FALSE);
+	END IF;
 END;
 $$ LANGUAGE plpgsql;
 

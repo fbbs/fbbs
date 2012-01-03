@@ -13,10 +13,10 @@ bool title_check_existence(user_id_t uid)
 	return rows;
 }
 
-bool title_submit_request(int type, const char *title)
+bool title_submit_request(int type, user_id_t uid, const char *title, user_id_t granter)
 {
-	db_res_t *res = db_query("SELECT buy_title_request(%d, %d, %s)",
-			session.uid, type, title);
+	db_res_t *res = db_query("SELECT buy_title_request(%d, %d, %s, %d)",
+			uid, type, title, granter);
 	bool ok = res;
 	db_clear(res);
 	return ok;

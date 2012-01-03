@@ -37,7 +37,7 @@ typedef struct title_list_t {
 #define title_list_data_free(data)  db_clear(((title_list_t *)data)->list)
 
 extern bool title_check_existence(user_id_t uid);
-extern bool title_submit_request(int type, const char *title);
+extern bool title_submit_request(int type, user_id_t uid, const char *title, user_id_t granter);
 extern void title_approve(int id);
 extern void title_disapprove(int id);
 
