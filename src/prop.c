@@ -2,6 +2,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/prop.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/title.h"
 #include "fbbs/terminal.h"
@@ -88,6 +89,7 @@ int tui_props(void)
 		.query = NULL,
 	};
 
+	set_user_status(ST_PROP);
 	tui_list(&t);
 
 	prop_list_free(t.data);
@@ -189,6 +191,7 @@ int tui_my_props(void)
 		.query = NULL,
 	};
 
+	set_user_status(ST_MY_PROP);
 	tui_list(&t);
 
 	my_props_free(t.data);
