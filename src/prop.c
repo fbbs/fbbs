@@ -158,6 +158,9 @@ static int tui_my_title(int record)
 
 static tui_list_handler_t tui_my_props_handler(tui_list_t *p, int key)
 {
+	if (p->cur >= p->all)
+		return DONOTHING;
+
 	my_props_t *r = p->data;
 	int id = my_prop_get_item_id(r, p->cur);
 	switch (key) {

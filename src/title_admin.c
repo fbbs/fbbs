@@ -129,6 +129,8 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 	title_list_t *l = p->data;
 	db_res_t *r = l->list;
 
+	bool valid = p->cur < p->all;
+
 	switch (key) {
 		case 's':
 			if (++l->type > TITLE_LIST_ALL)
@@ -136,13 +138,13 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 			p->valid = false;
 			return FULLUPDATE;
 		case '.':
-			if (l->type != TITLE_LIST_PENDING)
+			if (l->type != TITLE_LIST_PENDING || !valid)
 				return DONOTHING;
 			title_approve(title_list_get_id(r, p->cur));
 			p->valid = false;
 			break;
 		case 'd':
-			if (l->type != TITLE_LIST_PENDING)
+			if (l->type != TITLE_LIST_PENDING || !valid)
 				return DONOTHING;
 			if (!askyn("È·¶¨²µ»Ø?", NA, YEA))
 				return MINIUPDATE;
@@ -150,7 +152,9 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 			p->valid = false;
 			break;
 		case 'g':
-			return tui_grant_title(p);
+			if (valid)
+				return tui_grant_title(p);
+			break;
 		default:
 			break;
 	}

@@ -584,13 +584,11 @@ int tui_list(tui_list_t *p)
 					ch = '\0';
 				} else {
 					number = 0;
-					if (p->all > 0) {
-						ret = (*p->handler)(p, ch);
-						if (ret < 0)
-							end = true;
-						else
-							p->update = ret;
-					}
+					ret = (*p->handler)(p, ch);
+					if (ret < 0)
+						end = true;
+					else
+						p->update = ret;
 				}
 				break;
 		}
