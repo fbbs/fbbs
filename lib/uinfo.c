@@ -395,7 +395,7 @@ int uinfo_load(const char *name, uinfo_t *u)
 #ifdef ENABLE_BANK
 			", money, rank"
 #endif
-			" FROM users WHERE lower(name) = lower(%s)", name);
+			" FROM alive_users WHERE lower(name) = lower(%s)", name);
 	if (!u->res)
 		return -1;
 

@@ -251,7 +251,7 @@ static bool _activate_email(const char *name, const char *email)
 	if (!id)
 		return false;
 
-	db_res_t *res = db_cmd("UPDATE all_users SET email = %d"
+	db_res_t *res = db_cmd("UPDATE users SET email = %d"
 			" WHERE alive AND lower(name) = lower(%s)", id, name);
 	if (!res)
 		return false;

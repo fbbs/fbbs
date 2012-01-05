@@ -1,8 +1,8 @@
 CREATE OR REPLACE FUNCTION prop_record_before_insert_trigger() RETURNS TRIGGER AS $$
 BEGIN
-	PERFORM money FROM all_users WHERE id = NEW.user_id AND money > NEW.price FOR UPDATE;
+	PERFORM money FROM users WHERE id = NEW.user_id AND money > NEW.price FOR UPDATE;
 	IF FOUND THEN
-		UPDATE all_users SET money = money - NEW.price WHERE id = NEW.user_id;
+		UPDATE users SET money = money - NEW.price WHERE id = NEW.user_id;
 		RETURN NEW;
 	ELSE
 		RAISE 'insufficient money';
@@ -35,7 +35,7 @@ BEGIN
 	IF _granter <> 0 THEN
 		INSERT INTO titles (user_id, granter, title, record_id, approved)
 				VALUES (_uid, _granter, _title, _record, TRUE);
-		UPDATE all_users SET title =
+		UPDATE users SET title =
 			(SELECT string_agg(title, ' ') FROM titles WHERE user_id = _uid AND approved)
 			WHERE id = _uid;
 	ELSE
@@ -47,7 +47,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION title_after_update_trigger() RETURNS TRIGGER AS $$
 BEGIN
-	UPDATE all_users SET title =
+	UPDATE users SET title =
 		(SELECT string_agg(title, ' ') FROM titles WHERE user_id = NEW.user_id AND approved)
 		WHERE id = NEW.user_id;
 	IF NEW.approved AND NOT OLD.approved THEN
@@ -64,10 +64,10 @@ CREATE TRIGGER title_after_update_trigger AFTER UPDATE ON titles
 CREATE OR REPLACE FUNCTION title_after_delete_trigger() RETURNS TRIGGER AS $$
 BEGIN
 	IF NOT OLD.approved THEN
-		UPDATE all_users a SET money = money + r.price FROM prop_records r
+		UPDATE users a SET money = money + r.price FROM prop_records r
 				WHERE a.id = OLD.user_id AND r.id = OLD.record_id;
 	END IF;
-	UPDATE all_users SET title =
+	UPDATE users SET title =
         (SELECT string_agg(title, ' ') FROM titles WHERE user_id = OLD.user_id AND approved)
         WHERE id = OLD.user_id;
 	RETURN NULL;

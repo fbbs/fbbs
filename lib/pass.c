@@ -78,7 +78,7 @@ bool passwd_match(const char *pw_crypted, const char *pw_try)
  */
 bool passwd_check(const char *name, const char *pw_try)
 {
-	db_res_t *res = db_query("SELECT passwd FROM users"
+	db_res_t *res = db_query("SELECT passwd FROM alive_users"
 			" WHERE lower(name) = lower(%s)", name);
 	if (!res)
 		return false;
@@ -100,7 +100,7 @@ bool passwd_check(const char *name, const char *pw_try)
  */
 int passwd_set(const char *name, const char *pw)
 {
-	db_res_t *res = db_cmd("UPDATE all_users"
+	db_res_t *res = db_cmd("UPDATE users"
 			" SET passwd = %s WHERE lower(name) = lower(%s) AND alive",
 			genpasswd(pw), name);
 	int ret = res ? 0 : -1;

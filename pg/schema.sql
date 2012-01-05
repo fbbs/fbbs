@@ -6,7 +6,7 @@ CREATE TABLE emails (
 );
 CREATE UNIQUE INDEX ON emails(addr);
 
-CREATE TABLE all_users (
+CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
 	passwd TEXT,
@@ -18,10 +18,10 @@ CREATE TABLE all_users (
 	title TEXT,
 );
 
-CREATE OR REPLACE VIEW users AS
-	SELECT * FROM all_users WHERE alive = TRUE;
+CREATE OR REPLACE VIEW alive_users AS
+	SELECT * FROM users WHERE alive = TRUE;
 
-CREATE UNIQUE INDEX user_name_idx ON all_users (lower(name)) WHERE alive = TRUE;
+CREATE UNIQUE INDEX ON users (lower(name)) WHERE alive = TRUE;
 
 CREATE TABLE prop_categs (
 	id SERIAL PRIMARY KEY,
@@ -39,7 +39,7 @@ CREATE TABLE prop_items (
 
 CREATE TABLE prop_records (
 	id SERIAL PRIMARY KEY,
-	user_id INTEGER REFERENCES all_users,
+	user_id INTEGER REFERENCES users,
 	item INTEGER REFERENCES prop_items,
 	price INTEGER,
 	order_time TIMESTAMPTZ,
@@ -48,8 +48,8 @@ CREATE TABLE prop_records (
 
 CREATE TABLE titles (
 	id SERIAL PRIMARY KEY,
-	user_id INTEGER REFERENCES all_users,
-	granter INTEGER REFERENCES all_users,
+	user_id INTEGER REFERENCES users,
+	granter INTEGER REFERENCES users,
 	title TEXT NOT NULL,
 	approved BOOLEAN DEFAULT FALSE,
 	record_id INTEGER REFERENCES prop_records

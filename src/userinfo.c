@@ -45,7 +45,7 @@ void disply_userinfo(struct userec *u) {
 			u->birthmonth, u->birthday, now));
 
 #ifndef ENABLE_FDQUAN
-	db_res_t *res = db_query("SELECT e.addr FROM users u"
+	db_res_t *res = db_query("SELECT e.addr FROM alive_users u"
 			" JOIN emails e ON u.email = e.id"
 			" WHERE lower(u.name) = lower(%s) ", u->userid);
 	if (res && db_res_rows(res) == 1)

@@ -21,8 +21,8 @@ typedef struct title_list_t {
 
 #define TITLE_LIST_QUERY_BASE \
 	"SELECT t.id, u1.name, u2.name, t.title, r.order_time, r.expire, t.approved, r.price" \
-	" FROM titles t JOIN all_users u1 ON t.user_id = u1.id" \
-	" JOIN all_users u2 ON t.granter = u2.id" \
+	" FROM titles t JOIN users u1 ON t.user_id = u1.id" \
+	" JOIN users u2 ON t.granter = u2.id" \
 	" JOIN prop_records r ON t.record_id = r.id "
 
 #define title_list_get_id(list, i)  db_get_user_id(list, i, 0)
