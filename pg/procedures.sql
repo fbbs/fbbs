@@ -63,8 +63,11 @@ CREATE TRIGGER title_after_update_trigger AFTER UPDATE ON titles
 
 CREATE OR REPLACE FUNCTION title_after_delete_trigger() RETURNS TRIGGER AS $$
 BEGIN
-	IF NOT OLD.approved THEN
-		UPDATE all_users a SET money = money + r.price FROM prop_records r
+	IF OLD.approved THEN
+		UPDATE all_users a SET money = money + GREATEST(0, r.price / 2 * (1 - EXTRACT(EPOCH FROM (current_timestamp - r.order_time)) / EXTRACT(EPOCH FROM (r.expire - r.order_time))))
+				FROM prop_records r WHERE a.id = OLD.user_id AND r.id = OLD.record_id;
+	ELSE
+		UPDATE all_users a SET money = money + r.price * 0.90 FROM prop_records r
 				WHERE a.id = OLD.user_id AND r.id = OLD.record_id;
 	END IF;
 	UPDATE all_users SET title =
