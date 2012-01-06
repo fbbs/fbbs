@@ -39,6 +39,6 @@ typedef struct title_list_t {
 extern bool title_check_existence(user_id_t uid);
 extern bool title_submit_request(int type, user_id_t uid, const char *title, user_id_t granter);
 extern void title_approve(int id);
-extern void title_disapprove(int id);
+extern void title_remove(int id);
 
 #endif // FB_TITLE_H
