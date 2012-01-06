@@ -6,7 +6,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/web.h"
 
-int bbsall_main(void)
+int web_all_boards(void)
 {
 	xml_header(NULL);
 	printf("<bbsall>");
@@ -42,67 +42,77 @@ static int filenum(char *board)
 	return st.st_size / sizeof(struct fileheader);
 }
 
-int bbsboa_main(void)
+static void show_board(db_res_t *res)
 {
-	int sector = (int)strtol(get_param("s"), NULL, 16);
-	if (sector < 0 || sector >= SECNUM)
-		return BBS_EINVAL;
-	char *cgi;
-	if (strtol(get_param("my_def_mode"), NULL, 10) != 0)
-		cgi = "tdoc";
-	else
-		cgi = "doc";
-	
-	xml_header(NULL);
-	printf("<bbsboa link='%s' ", cgi);
-
-	struct boardheader *parent = NULL;
-    int parent_bid = 0;
-	const char *parent_name = get_param("board");
-    if (*parent_name) {
-        parent = getbcache(parent_name);
-        parent_bid = getbnum(parent_name, &currentuser);
-	} else {
-		parent_bid = strtol(get_param("bid"), NULL, 10);
-		parent = getbcache2(parent_bid);
-	}
-	if (parent == NULL || parent_bid <= 0 || !(parent->flag & BOARD_DIR_FLAG)) {
-		parent = NULL;
-		parent_bid = 0;
-	}
-
-	if (parent == NULL) {
-		char path[HOMELEN];
-		sprintf(path, "%s/info/egroup%d/icon.jpg", BBSHOME, sector);
-		if (dashf(path))
-			printf(" icon='%s'", path);
-		printf(" title='%s'>", secname[sector][0]);
-	} else {
-		printf(" dir= '1' title='%s'>", get_board_desc(parent));
-	}
-
-	// TODO: Marquee BBSHOME/info/egroup(sector)/headline.txt
-	struct boardheader *x;
-	int i;
-	for (i = 0; i < MAXBOARD; i++) {
-		x = &(bcache[i]);
-		if (x->filename[0] <= 0x20 || x->filename[0] > 'z')
-			continue;
-		if (!hasreadperm(&currentuser, x))
-			continue;
-		if (parent != NULL) {
-			if (x->group != parent_bid) // directory listing
-				continue;
-		} else {  // section listing
-			if (!strchr(seccode[sector], x->title[0]))
-				continue;
-		}
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		board_t board;
+		res_to_board(res, i, &board);
+		board_to_gbk(&board);
 		printf("<brd dir='%d' title='%s' cate='%.6s' desc='%s' bm='%s' "
 				"read='%d' count='%d' />",
-				x->flag & BOARD_DIR_FLAG ? 1 : 0, x->filename,
-				x->title + 1, get_board_desc(x), x->BM,
-				brc_board_unread(currentuser.userid, x), filenum(x->filename));
+				(board.flag & BOARD_DIR_FLAG) ? 1 : 0, board.name,
+				board.categ, board.descr, board.bms,
+				brc_board_unread(currentuser.userid, &board),
+				filenum(board.name));
 	}
+}
+
+int web_sector(void)
+{
+	int sid = 0;
+	board_t parent;
+	db_res_t *res = NULL;
+
+	const char *sname = get_param("s");
+	if (*sname) {
+		res = db_query("SELECT id, descr"
+				" FROM board_sectors WHERE name = %s", sname);
+		if (!res || db_res_rows(res) < 1) {
+			db_clear(res);
+			return BBS_EINVAL;
+		}
+	} else {
+		const char *pname = get_param("board");
+		if (*pname)
+			get_board(pname, &parent);
+		else
+			get_board_by_bid(strtol(get_param("bid"), NULL, 10), &parent);
+		if (!parent.id || !(parent.flag & BOARD_DIR_FLAG)
+				|| !has_read_perm(&currentuser, &parent))
+			return BBS_ENOBRD;
+	}
+
+	xml_header(NULL);
+	printf("<bbsboa link='%sdoc' ", get_doc_mode_str());
+
+	if (*sname) {
+		char path[HOMELEN];
+		sprintf(path, "%s/info/egroup%d/icon.jpg", BBSHOME,
+				(int) strtol(sname, NULL, 16));
+		if (dashf(path))
+			printf(" icon='%s'", path);
+		
+		GBK_BUFFER(sector, BOARD_SECTOR_NAME_CCHARS);
+		convert_u2g(db_get_value(res, 0, 1), gbk_sector);
+		printf(" title='%s'>", gbk_sector);
+
+		sid = db_get_integer(res, 0, 0);
+		db_clear(res);
+	} else {
+		GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
+		convert_u2g(parent.descr, gbk_descr);
+		printf(" dir= '1' title='%s'>", gbk_descr);
+	}
+
+	if (sid)
+		res = db_query(BOARD_SELECT_QUERY_BASE "WHERE b.sector = %d", sid);
+	else
+		res = db_query(BOARD_SELECT_QUERY_BASE "WHERE b.parent = %d", parent.id);
+
+	if (res && db_res_rows(res) > 0)
+		show_board(res);
+	db_clear(res);
+
 	print_session();
 	printf("</bbsboa>");
 	return 0;

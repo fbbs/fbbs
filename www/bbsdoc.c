@@ -154,7 +154,7 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 	return total;
 }
 
-extern int bbsboa_main();
+extern int web_sector(void);
 
 int get_doc_mode(void)
 {
@@ -194,7 +194,7 @@ static int bbsdoc(int mode)
 	if (!board.id || !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
-		return bbsboa_main();
+		return web_sector();
 
 	board_to_gbk(&board);
 
@@ -449,7 +449,7 @@ int web_forum(void)
 	if (!has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
-		return bbsboa_main();
+		return web_sector();
 	board_to_gbk(&board);
 
 	if (get_doc_mode() != MODE_FORUM)

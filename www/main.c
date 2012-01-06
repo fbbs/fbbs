@@ -8,8 +8,8 @@
 
 void check_bbserr(int err);
 extern int bbssec_main(void);
-extern int bbsall_main(void);
-extern int bbsboa_main(void);
+extern int web_all_boards(void);
+extern int web_sector(void);
 extern int web_login(void);
 extern int bbslogout_main(void);
 extern int bbsdoc_main(void);
@@ -70,8 +70,8 @@ web_ctx_t ctx;
 
 const static web_handler_t handlers[] = {
 		{"sec", bbssec_main, READBRD},
-		{"all", bbsall_main, READBRD},
-		{"boa", bbsboa_main, READNEW},
+		{"all", web_all_boards, READBRD},
+		{"boa", web_sector, READNEW},
 		{"login", web_login, LOGIN},
 		{"logout", bbslogout_main, MMENU},
 		{"doc", bbsdoc_main, READING},
