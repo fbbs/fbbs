@@ -124,6 +124,25 @@ static int tui_grant_title(tui_list_t *p)
 	return MINIUPDATE;
 }
 
+static int tui_remove_title(tui_list_t *p)
+{
+	title_list_t *l = p->data;
+	db_res_t *r = l->list;
+
+	const char *prompt;
+	if (title_list_get_price(r, p->cur) > 0) {
+		prompt = "该用户只能获得一小部分退款，确定吗?";
+	} else {
+		prompt = "确定收回这个免费身份?";
+	}
+	
+	if (askyn(prompt, NA, YEA)) {
+		title_remove(title_list_get_record_id(r, p->cur));
+		p->valid = false;
+	}
+	return MINIUPDATE;
+}
+
 static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 {
 	title_list_t *l = p->data;
@@ -144,12 +163,16 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 			p->valid = false;
 			break;
 		case 'd':
-			if (l->type != TITLE_LIST_PENDING || !valid)
+			if (!valid)
 				return DONOTHING;
-			if (!askyn("确定驳回?", NA, YEA))
-				return MINIUPDATE;
-			title_disapprove(title_list_get_id(r, p->cur));
-			p->valid = false;
+			if (l->type == TITLE_LIST_PENDING) {
+				if (!askyn("确定驳回?", NA, YEA))
+					return MINIUPDATE;
+				title_remove(title_list_get_record_id(r, p->cur));
+				p->valid = false;
+			} else {
+				return tui_remove_title(p);
+			}
 			break;
 		case 'g':
 			if (valid)

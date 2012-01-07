@@ -96,16 +96,6 @@ int tui_props(void)
 	return 0;
 }
 
-typedef struct goods_handler_t {
-	const char *descr;
-	int (*handler)(void);
-} goods_handler_t;
-
-typedef struct goods_handlers_t {
-	size_t size;
-	const goods_handler_t *handlers;
-} goods_handlers_t;
-
 static tui_list_loader_t tui_my_props_loader(tui_list_t *p)
 {
 	if (p->data)
@@ -158,6 +148,19 @@ static int tui_my_title(int record)
 	return MINIUPDATE;
 }
 
+static int tui_remove_title(tui_list_t *p)
+{
+	my_props_t *r = p->data;
+
+	if (my_prop_get_price(r, p->cur) > 0) {
+		if (askyn("您将只能获得一小部分退款，确定吗?", NA, YEA)) {
+			title_remove(my_prop_get_record_id(r, p->cur));
+			p->valid = false;
+		}
+	}
+	return MINIUPDATE;
+}
+
 static tui_list_handler_t tui_my_props_handler(tui_list_t *p, int key)
 {
 	if (p->cur >= p->all)
@@ -176,6 +179,8 @@ static tui_list_handler_t tui_my_props_handler(tui_list_t *p, int key)
 					return tui_my_title(my_prop_get_record_id(r, p->cur));
 			}
 			return DONOTHING;
+		case 'd':
+			return tui_remove_title(p);
 	}
 	return DONOTHING;
 }

@@ -1,8 +1,9 @@
 CREATE OR REPLACE FUNCTION prop_record_before_insert_trigger() RETURNS TRIGGER AS $$
 BEGIN
-	PERFORM money FROM users WHERE id = NEW.user_id AND money > NEW.price FOR UPDATE;
+	PERFORM money FROM users WHERE id = NEW.user_id AND money >= NEW.price FOR UPDATE;
 	IF FOUND THEN
 		UPDATE users SET money = money - NEW.price WHERE id = NEW.user_id;
+		INSERT INTO audit.money (user_id, delta, stamp, reason) VALUES (NEW.user_id, -NEW.price, current_timestamp, 'buy ' || NEW.item);
 		RETURN NEW;
 	ELSE
 		RAISE 'insufficient money';
@@ -62,11 +63,19 @@ CREATE TRIGGER title_after_update_trigger AFTER UPDATE ON titles
 	FOR EACH ROW EXECUTE PROCEDURE title_after_update_trigger();
 
 CREATE OR REPLACE FUNCTION title_after_delete_trigger() RETURNS TRIGGER AS $$
+DECLARE
+	_delta INTEGER := 0;
 BEGIN
-	IF NOT OLD.approved THEN
-		UPDATE users a SET money = money + r.price FROM prop_records r
-				WHERE a.id = OLD.user_id AND r.id = OLD.record_id;
+	IF OLD.approved THEN
+		SELECT GREATEST(0, price / 2 * (1 - EXTRACT(EPOCH FROM (current_timestamp - order_time)) / EXTRACT(EPOCH FROM (expire - order_time)))) INTO _delta FROM prop_records WHERE id = OLD.record_id;
+	ELSE
+		SELECT price * 0.9 INTO _delta FROM prop_records WHERE id = OLD.record_id;
 	END IF;
+
+	UPDATE users SET money = money + _delta;
+	INSERT INTO audit.money (user_id, delta, stamp, reason) VALUES (NEW.user_id, _delta, current_timestamp, 'D title');
+
+	DELETE FROM prop_records WHERE id = OLD.record_id;
 	UPDATE users SET title =
         (SELECT string_agg(title, ' ') FROM titles WHERE user_id = OLD.user_id AND approved)
         WHERE id = OLD.user_id;

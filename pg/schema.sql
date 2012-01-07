@@ -52,7 +52,16 @@ CREATE TABLE titles (
 	granter INTEGER REFERENCES users,
 	title TEXT NOT NULL,
 	approved BOOLEAN DEFAULT FALSE,
-	record_id INTEGER REFERENCES prop_records
+	record_id INTEGER REFERENCES prop_records ON DELETE CASCADE
+);
+
+CREATE SCHEMA audit;
+
+CREATE TABLE audit.money (
+	user_id INTEGER NOT NULL,
+	delta INTEGER NOT NULL,
+	stamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+	reason TEXT,
 );
 
 COMMIT;

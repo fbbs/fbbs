@@ -30,8 +30,8 @@ void title_approve(int id)
 	db_clear(res);
 }
 
-void title_disapprove(int id)
+void title_remove(int record)
 {
-	db_res_t *res = db_cmd("DELETE FROM titles WHERE id = %d", id);
+	db_res_t *res = db_cmd("DELETE FROM titles WHERE record_id = %d", record);
 	db_clear(res);
 }
