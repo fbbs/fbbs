@@ -55,4 +55,13 @@ CREATE TABLE titles (
 	record_id INTEGER REFERENCES prop_records ON DELETE CASCADE
 );
 
+CREATE SCHEMA audit;
+
+CREATE TABLE audit.money (
+	user_id INTEGER NOT NULL,
+	delta INTEGER NOT NULL,
+	stamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+	reason TEXT,
+);
+
 COMMIT;

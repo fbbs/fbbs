@@ -161,7 +161,6 @@ static int tui_remove_title(tui_list_t *p)
 	return MINIUPDATE;
 }
 
-
 static tui_list_handler_t tui_my_props_handler(tui_list_t *p, int key)
 {
 	if (p->cur >= p->all)
