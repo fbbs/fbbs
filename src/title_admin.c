@@ -124,7 +124,7 @@ static int tui_grant_title(tui_list_t *p)
 	return MINIUPDATE;
 }
 
-int tui_remove_title(tui_list_t *p)
+static int tui_remove_title(tui_list_t *p)
 {
 	title_list_t *l = p->data;
 	db_res_t *r = l->list;
@@ -137,7 +137,7 @@ int tui_remove_title(tui_list_t *p)
 	}
 	
 	if (askyn(prompt, NA, YEA)) {
-		title_remove(title_list_get_id(r, p->cur));
+		title_remove(title_list_get_record_id(r, p->cur));
 		p->valid = false;
 	}
 	return MINIUPDATE;
@@ -168,7 +168,7 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 			if (l->type == TITLE_LIST_PENDING) {
 				if (!askyn("È·¶¨²µ»Ø?", NA, YEA))
 					return MINIUPDATE;
-				title_remove(title_list_get_id(r, p->cur));
+				title_remove(title_list_get_record_id(r, p->cur));
 				p->valid = false;
 			} else {
 				return tui_remove_title(p);

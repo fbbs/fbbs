@@ -52,7 +52,7 @@ CREATE TABLE titles (
 	granter INTEGER REFERENCES all_users,
 	title TEXT NOT NULL,
 	approved BOOLEAN DEFAULT FALSE,
-	record_id INTEGER REFERENCES prop_records
+	record_id INTEGER REFERENCES prop_records ON DELETE CASCADE
 );
 
 COMMIT;

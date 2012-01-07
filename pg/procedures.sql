@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION prop_record_before_insert_trigger() RETURNS TRIGGER AS $$
 BEGIN
-	PERFORM money FROM all_users WHERE id = NEW.user_id AND money > NEW.price FOR UPDATE;
+	PERFORM money FROM all_users WHERE id = NEW.user_id AND money >= NEW.price FOR UPDATE;
 	IF FOUND THEN
 		UPDATE all_users SET money = money - NEW.price WHERE id = NEW.user_id;
 		RETURN NEW;
@@ -70,6 +70,7 @@ BEGIN
 		UPDATE all_users a SET money = money + r.price * 0.90 FROM prop_records r
 				WHERE a.id = OLD.user_id AND r.id = OLD.record_id;
 	END IF;
+	DELETE FROM prop_records WHERE id = OLD.record_id;
 	UPDATE all_users SET title =
         (SELECT string_agg(title, ' ') FROM titles WHERE user_id = OLD.user_id AND approved)
         WHERE id = OLD.user_id;

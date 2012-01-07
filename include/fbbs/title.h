@@ -20,7 +20,7 @@ typedef struct title_list_t {
 } title_list_t;
 
 #define TITLE_LIST_QUERY_BASE \
-	"SELECT t.id, u1.name, u2.name, t.title, r.order_time, r.expire, t.approved, r.price" \
+	"SELECT t.id, u1.name, u2.name, t.title, r.order_time, r.expire, t.approved, r.price, r.id" \
 	" FROM titles t JOIN all_users u1 ON t.user_id = u1.id" \
 	" JOIN all_users u2 ON t.granter = u2.id" \
 	" JOIN prop_records r ON t.record_id = r.id "
@@ -33,6 +33,7 @@ typedef struct title_list_t {
 #define title_list_get_expire(list, i)  db_get_time(list, i, 5)
 #define title_list_get_approved(list, i)  db_get_bool(list, i, 6)
 #define title_list_get_price(list, i)  db_get_integer(list, i, 7)
+#define title_list_get_record_id(list, i)  db_get_integer(list, i, 8)
 
 #define title_list_data_free(data)  db_clear(((title_list_t *)data)->list)
 
