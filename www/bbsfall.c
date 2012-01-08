@@ -2,6 +2,7 @@
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
@@ -135,7 +136,7 @@ static void override_info(void)
 					ip = mask_host(uinfo->from);
 				else
 					ip = "......";
-				if (uinfo->mode == BBSNET)
+				if (uinfo->mode == ST_BBSNET)
 					idle = 0;
 				else
 					idle = (now - uinfo->idle_time) / 60;

@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
 #include "fbbs/web.h"
@@ -68,7 +69,7 @@ int bbsqry_main(void)
 					continue;
 				num++;
 				int idle = (time(NULL) - uinfo->idle_time) / 60;
-				if (idle < 1 || get_raw_mode(uinfo->mode) == BBSNET)
+				if (idle < 1 || get_raw_mode(uinfo->mode) == ST_BBSNET)
 					idle = 0;
 				printf("<st vis='%d' web='%d' idle='%d' desc='%s'/>",
 						!uinfo->invisible, is_web_user(uinfo->mode),

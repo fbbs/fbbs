@@ -169,8 +169,8 @@ int main(int argc, char **argv)
 
 			// for now, we just delete them one by one.
 			db_res_t *res = db_exec_cmd(_env.db,
-					"UPDATE all_users SET alive = FALSE"
-					" WHERE lower(name) = lower(%s) AND alive = TRUE",
+					"UPDATE users SET alive = FALSE"
+					" WHERE lower(name) = lower(%s) AND alive",
 					user.userid);
 			db_clear(res);
 		}

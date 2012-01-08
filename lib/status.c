@@ -1,6 +1,6 @@
 #include "site.h"
-#include "modes.h"
 #include <stdbool.h>
+#include "fbbs/status.h"
 
 /**
  * Get raw user mode.
@@ -19,126 +19,130 @@ int get_raw_mode(int mode)
 const char *mode_type(int mode)
 {
 	switch (get_raw_mode(mode)) {
-		case IDLE:
+		case ST_IDLE:
 			return "无所事事";
-		case NEW:
+		case ST_NEW:
 			return "新站友注册";
-		case LOGIN:
+		case ST_LOGIN:
 			return "进入本站";
-		case DIGEST:
+		case ST_DIGEST:
 			return "汲取精华";
-		case MMENU:
+		case ST_MMENU:
 			return "游大街";
-		case ADMIN:
+		case ST_ADMIN:
 			return "修路铺桥";
-		case SELECT:
+		case ST_SELECT:
 			return "选择讨论区";
-		case READBRD:
+		case ST_READBRD:
 			return "览遍天下";
-		case READNEW:
+		case ST_READNEW:
 			return "览新文章";
-		case READING:
+		case ST_READING:
 			return "品味文章";
-		case POSTING:
+		case ST_POSTING:
 			return "文豪挥笔";
-		case MAIL:
+		case ST_MAIL:
 			return "处理信笺";
-		case SMAIL:
+		case ST_SMAIL:
 			return "寄语信鸽";
-		case RMAIL:
+		case ST_RMAIL:
 			return "阅览信笺";
-		case TMENU:
+		case ST_TMENU:
 			return "上鹊桥";
-		case LUSERS:
+		case ST_LUSERS:
 			return "环顾四方";
-		case FRIEND:
+		case ST_FRIEND:
 			return "夜探好友";
-		case MONITOR:
+		case ST_MONITOR:
 			return "探视民情";
-		case QUERY:
+		case ST_QUERY:
 			return "查询网友";
-		case TALK:
+		case ST_TALK:
 			return "鹊桥细语";
-		case PAGE:
+		case ST_PAGE:
 			return "巴峡猿啼";
-		case CHAT2:
+		case ST_CHAT2:
 			return "燕园夜话";
-		case CHAT1:
+		case ST_CHAT1:
 			return "燕园夜话";
-		case LAUSERS:
+		case ST_LAUSERS:
 			return "探视网友";
-		case XMENU:
+		case ST_XMENU:
 			return "系统资讯";
-		case BBSNET:
+		case ST_BBSNET:
 #ifdef FDQUAN
 			return "有泉穿梭";
 #else
 			return "饮复旦泉";
 #endif
-		case EDITUFILE:
+		case ST_EDITUFILE:
 			return "编辑个人档";
-		case EDITSFILE:
+		case ST_EDITSFILE:
 			return "动手动脚";
-		case SYSINFO:
+		case ST_SYSINFO:
 			return "检查系统";
-		case DICT:
+		case ST_DICT:
 			return "翻查字典";
-		case LOCKSCREEN:
+		case ST_LOCKSCREEN:
 			return "屏幕锁定";
-		case NOTEPAD:
+		case ST_NOTEPAD:
 			return "留言板";
-		case GMENU:
+		case ST_GMENU:
 			return "工具箱";
-		case MSG:
+		case ST_MSG:
 			return "送讯息";
-		case USERDEF:
+		case ST_USERDEF:
 			return "自订参数";
-		case EDIT:
+		case ST_EDIT:
 			return "修改文章";
-		case OFFLINE:
+		case ST_OFFLINE:
 			return "自杀中..";
-		case EDITANN:
+		case ST_EDITANN:
 			return "编修精华";
-		case LOOKMSGS:
+		case ST_LOOKMSGS:
 			return "查看讯息";
-		case WFRIEND:
+		case ST_WFRIEND:
 			return "寻人名册";
-		case WNOTEPAD:
+		case ST_WNOTEPAD:
 			return "欲走还留";
-		case BBSPAGER:
+		case ST_BBSPAGER:
 			return "网路传呼";
-		case M_BLACKJACK:
+		case ST_M_BLACKJACK:
 			return "★黑甲克★";
-		case M_XAXB:
+		case ST_M_XAXB:
 			return "★猜数字★";
-		case M_DICE:
+		case ST_M_DICE:
 			return "★西八拉★";
-		case M_GP:
+		case ST_M_GP:
 			return "金扑克梭哈";
-		case M_NINE:
+		case ST_M_NINE:
 			return "天地九九";
-		case WINMINE:
+		case ST_WINMINE:
 			return "键盘扫雷";
-		case M_BINGO:
+		case ST_M_BINGO:
 			return "宾果宾果";
-		case FIVE:
+		case ST_FIVE:
 			return "决战五子棋";
-		case MARKET:
+		case ST_MARKET:
 			return "交易市场";
-		case PAGE_FIVE:
+		case ST_PAGE_FIVE:
 			return "邀请下棋";
-		case CHICK:
+		case ST_CHICK:
 			return "电子小鸡";
-		case MARY:
+		case ST_MARY:
 			return "超级玛丽";
-		case CHICKEN:
+		case ST_CHICKEN:
 			return "星空战斗鸡";
-		case GOODWISH:
+		case ST_GOODWISH:
 			return "给朋友祝福";
-		case GIVEUPBBS:
+		case ST_GIVEUPBBS:
 			return "戒网中";
-		case BBSST_UPLOAD:
+		case ST_UPLOAD:
 			return "上传文件";
+		case ST_PROP:
+			return "聚宝盆";
+		case ST_MY_PROP:
+			return "藏经阁";
 		default:
 			return "去了哪里!?";
 	}
@@ -151,7 +155,7 @@ const char *mode_type(int mode)
  */
 bool is_web_user(int mode)
 {
-	return (mode & WWW);
+	return (mode & ST_WWW);
 }
 
 /**
@@ -161,6 +165,6 @@ bool is_web_user(int mode)
  */
 int get_web_mode(int mode)
 {
-	return (mode | WWW);
+	return (mode | ST_WWW);
 }
 

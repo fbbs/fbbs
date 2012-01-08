@@ -64,7 +64,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 	char *b;
 	size_t oleft;
 	int ret = 0;
-	for (b = buffer, oleft = size; l >= 0; ) {
+	for (b = buffer, oleft = size; l; ) {
 		if (handler) {
 			b = buffer;
 			oleft = size;
@@ -97,12 +97,9 @@ int convert(convert_t *cp, const char *from, size_t len,
 		}
 
 		if (handler && oleft < size) {
-			s = (*handler)(buffer, size - oleft, arg);
-			if (s < 0)
+			if ((*handler)(buffer, size - oleft, arg) < 0)
 				return ret;
 		}
-		if (l == 0)
-			return ret;
 	}
 	return ret;
 }

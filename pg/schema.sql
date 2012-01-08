@@ -1,18 +1,25 @@
 BEGIN;
 
-CREATE TABLE all_users (
+CREATE TABLE emails (
+	id SERIAL PRIMARY KEY,
+	addr TEXT
+);
+CREATE UNIQUE INDEX ON emails(addr);
+
+CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
 	passwd TEXT,
+	email INTEGER REFERENCES emails,
 	alive BOOLEAN DEFAULT TRUE,
 	money BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
 	paid_posts INTEGER DEFAULT 0,
 	title TEXT,
 );
-CREATE OR REPLACE VIEW users AS
-	SELECT * FROM all_users WHERE alive = TRUE;
-CREATE UNIQUE INDEX user_name_idx ON all_users (lower(name)) WHERE alive = TRUE;
+CREATE OR REPLACE VIEW alive_users AS
+	SELECT * FROM users WHERE alive = TRUE;
+CREATE UNIQUE INDEX ON users (lower(name)) WHERE alive = TRUE;
 
 CREATE TABLE board_sectors (
 	id SERIAL PRIMARY KEY,
@@ -42,33 +49,43 @@ CREATE TABLE bms (
 	UNIQUE (user_id, board_id)
 );
 
-CREATE TABLE shopping_categories (
+CREATE TABLE prop_categs (
 	id SERIAL PRIMARY KEY,
 	name TEXT
 );
-CREATE TABLE shopping_items (
+CREATE TABLE prop_items (
 	id SERIAL PRIMARY KEY,
-	category INTEGER REFERENCES shopping_categories,
+	categ INTEGER REFERENCES prop_categs,
 	name TEXT,
-	price INTEGER
+	price INTEGER,
+	expire INTERVAL,
+	valid BOOLEAN DEFAULT TRUE
 );
-CREATE TABLE shopping_records (
+CREATE TABLE prop_records (
 	id SERIAL PRIMARY KEY,
-	user_id REFERENCES all_users,
-	item INTEGER REFERENCES shopping_items,
-	price TEXT,
-	order_time TIMESTAMPTZ
+	user_id INTEGER REFERENCES users,
+	item INTEGER REFERENCES prop_items,
+	price INTEGER,
+	order_time TIMESTAMPTZ,
+	expire TIMESTAMPTZ
 );
 
 CREATE TABLE titles (
 	id SERIAL PRIMARY KEY,
-	user_id INTEGER REFERENCES all_users,
-	granter INTEGER REFERENCES all_users,
+	user_id INTEGER REFERENCES users,
+	granter INTEGER REFERENCES users,
 	title TEXT NOT NULL,
-	add_time TIMESTAMPTZ,
-	expire TIMESTAMPTZ,
 	approved BOOLEAN DEFAULT FALSE,
-	paid INTEGER
+	record_id INTEGER REFERENCES prop_records ON DELETE CASCADE
+);
+
+CREATE SCHEMA audit;
+
+CREATE TABLE audit.money (
+	user_id INTEGER NOT NULL,
+	delta INTEGER NOT NULL,
+	stamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+	reason TEXT,
 );
 
 COMMIT;

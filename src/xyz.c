@@ -25,6 +25,7 @@
 
 #define EXTERN
 #include "bbs.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 int use_define = 0;
 int child_pid = 0;
@@ -40,10 +41,9 @@ extern struct UCACHE *uidshm;
 #define TH_HIGH	15
 
 
-//¸ü¸ÄÓÃ»§ Ä£Ê½×´Ì¬ÖÁmode
-void modify_user_mode(int mode)
+void set_user_status(int status)
 {
-	uinfo.mode = mode;
+	uinfo.mode = status;
 	update_ulist(&uinfo, utmpent);
 }
 
@@ -102,7 +102,7 @@ unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showf
 int x_userdefine() {
 	int id;
 	unsigned int newlevel;
-	modify_user_mode(USERDEF);
+	set_user_status(ST_USERDEF);
 	if (!(id = getuser(currentuser.userid))) {
 		move(3, 0);
 		prints("´íÎóµÄÊ¹ÓÃÕß ID...");
@@ -165,7 +165,7 @@ int x_userdefine() {
 
 //¸ü¸ÄÒşÉíÊõÉèÖÃ,get_statusÀïËÆºõ´íÁË,ÕâÀïÒÔÇ°¸ü¸Äuinfo.invisibleµÄ
 int x_cloak() {
-	modify_user_mode(GMENU);
+	set_user_status(ST_GMENU);
 	report("toggle cloak", currentuser.userid);
 	uinfo.invisible = (uinfo.invisible) ? NA : YEA;
 	if (uinfo.invisible == YEA) {
@@ -194,7 +194,7 @@ void x_edits() {
 			"GoodWish", NULL };
 	static char *explain_file[] = { "¸öÈËËµÃ÷µµ", "Ç©Ãûµµ", "×Ô¼ºµÄ±¸ÍüÂ¼", "ÀëÕ¾µÄ»­Ãæ",
 			"µ×²¿Á÷¶¯ĞÅÏ¢", NULL };
-	modify_user_mode(GMENU);
+	set_user_status(ST_GMENU);
 	clear();
 	move(1, 0);
 	prints("±àĞŞ¸öÈËµµ°¸\n\n");
@@ -235,7 +235,7 @@ void x_edits() {
 		clear();
 		return;
 	}
-	modify_user_mode(EDITUFILE);
+	set_user_status(ST_EDITUFILE);
 	aborted = vedit(genbuf, NA, YEA);
 	clear();
 	if (!aborted) {
@@ -301,7 +301,7 @@ int gettheboardname(int x, char *title, int *pos, struct boardheader *fh,
 int x_lockscreen() {
 	char buf[PASSLEN + 1];
 
-	modify_user_mode(LOCKSCREEN);
+	set_user_status(ST_LOCKSCREEN);
 	move(9, 0);
 	clrtobot();
 	buf[0] = '\0';
@@ -331,7 +331,7 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	int save_pager, i;
 
 	signal(SIGALRM, SIG_IGN);
-	modify_user_mode(umode);
+	set_user_status(umode);
 	clear();
 	move(2, 0);
 	if (num_useshell() > MAX_USESHELL) {
@@ -396,7 +396,7 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 //²éÑ¯Ê¹ÓÃÕß×ÊÁÏ
 void x_showuser() {
 	char buf[STRLEN];
-	modify_user_mode(SYSINFO);
+	set_user_status(ST_SYSINFO);
 	clear();
 	stand_title("±¾Õ¾Ê¹ÓÃÕß×ÊÁÏ²éÑ¯");
 	ansimore("etc/showuser.msg", NA);
@@ -404,7 +404,7 @@ void x_showuser() {
 	if ((buf[0] == '\0') || dashf("tmp/showuser.result"))
 		return;
 	securityreport("²éÑ¯Ê¹ÓÃÕß×ÊÁÏ", 0, 0);
-	exec_cmd(SYSINFO, YEA, "bin/showuser", buf);
+	exec_cmd(ST_SYSINFO, YEA, "bin/showuser", buf);
 	sprintf(buf, "tmp/showuser.result");
 	if (dashf(buf)) {
 		mail_file(buf, currentuser.userid, "Ê¹ÓÃÕß×ÊÁÏ²éÑ¯½á¹û");
@@ -416,7 +416,7 @@ void x_showuser() {
 int ent_winmine() {
 	char buf[80];
 	sprintf(buf, "%s %s", currentuser.userid, currentuser.lasthost);
-	exec_cmd(WINMINE, NA, "so/winmine", buf);
+	exec_cmd(ST_WINMINE, NA, "so/winmine", buf);
 	return 0;
 }
 
@@ -499,7 +499,7 @@ int sendGoodWish(char *userid) {
 	char buf[5][STRLEN], tmpbuf[STRLEN];
 	char uid[IDLEN + 1], *ptr, *timestr;
 
-	modify_user_mode(GOODWISH);
+	set_user_status(ST_GOODWISH);
 	clear();
 	move(1, 0);
 	prints("[0;1;32mÁôÑÔ±¾[m\nÄú¿ÉÒÔÔÚÕâÀï¸øÄúµÄÅóÓÑËÍÈ¥ÄúµÄ×£¸££¬");

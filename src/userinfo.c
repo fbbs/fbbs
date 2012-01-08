@@ -1,4 +1,7 @@
 #include "bbs.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
 
@@ -40,7 +43,16 @@ void disply_userinfo(struct userec *u) {
 			u->birthday);
 	prints(" (累计生活天数 : %d)\n", days_elapsed(u->birthyear + 1900, 
 			u->birthmonth, u->birthday, now));
-	prints("电子邮件信箱 : %s\n", u->email);
+
+#ifndef ENABLE_FDQUAN
+	db_res_t *res = db_query("SELECT e.addr FROM alive_users u"
+			" JOIN emails e ON u.email = e.id"
+			" WHERE lower(u.name) = lower(%s) ", u->userid);
+	if (res && db_res_rows(res) == 1)
+		prints("电子邮件信箱 : %s\n", db_get_value(res, 0, 0));
+	db_clear(res);
+#endif
+
 	prints("最近光临机器 : %-22s\n", u->lasthost);
 	prints("帐号建立日期 : %s[距今 %d 天]\n",
 			getdatestring(u->firstlogin, DATE_ZH),
@@ -96,36 +108,6 @@ void disply_userinfo(struct userec *u) {
 //		i为所显示的行
 void uinfo_change1(int i, struct userec *u, struct userec *newinfo) {
 	char buf[STRLEN], genbuf[128];
-
-	if (currentuser.userlevel & PERM_SYSOPS) {
-		char temp[30];
-		temp[0] = 0;
-		FILE *fp;
-		sethomefile(genbuf, u->userid, ".volunteer");
-		if ((fp = fopen(genbuf, "r")) != NULL) {
-			fgets(temp, 30, fp);
-			fclose(fp);
-			sprintf(genbuf, "输入身份(输空格取消身份)：[%s]", temp);
-		} else
-			sprintf(genbuf, "输入身份：");
-		getdata(i++, 0, genbuf, buf, 30, DOECHO, YEA);
-		if (buf[0]) {
-			sethomefile(genbuf, u->userid, ".volunteer");
-			if ((fp = fopen(genbuf, "w")) != NULL) {
-				if (buf[0] != ' ') {
-					fputs(buf, fp);
-					fclose(fp);
-				} else
-					unlink(genbuf);
-			}
-		}
-	}
-
-	sprintf(genbuf, "电子信箱 [%s]: ", u->email);
-	getdata(i++, 0, genbuf, buf, STRLEN - 1, DOECHO, YEA);
-	if (buf[0]) {
-		strlcpy(newinfo->email, buf, STRLEN-12);
-	}
 
 	sprintf(genbuf, "上线次数 [%d]: ", u->numlogins);
 	getdata(i++, 0, genbuf, buf, 10, DOECHO, YEA);
@@ -381,7 +363,7 @@ void uinfo_query(struct userec *u, int real, int unum) {
 void x_info() {
 	if (!strcmp("guest", currentuser.userid))
 		return;
-	modify_user_mode(GMENU);
+	set_user_status(ST_GMENU);
 	disply_userinfo(&currentuser);
 	uinfo_query(&currentuser, 0, usernum);
 }

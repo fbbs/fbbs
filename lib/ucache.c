@@ -11,6 +11,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/ucache.h"
 
@@ -445,7 +446,7 @@ int refresh_utmp(void)
 				continue;
 			} else {
 				// Kick idle users out.
-				if (uentp->mode != BBSNET
+				if (uentp->mode != ST_BBSNET
 						&& now - uentp->idle_time > IDLE_TIMEOUT) {
 					bbskill(uentp, SIGHUP);
 					memset(uentp, 0, sizeof(struct user_info));
@@ -618,7 +619,7 @@ int create_user(const struct userec *user)
 	if (dashd(path))
 		return UCACHE_EEXIST;
 	
-	db_res_t *res = db_cmd("INSERT INTO all_users (name, passwd)"
+	db_res_t *res = db_cmd("INSERT INTO users (name, passwd)"
 			" VALUES (%s, %s)", user->userid, user->passwd);
 	db_clear(res);
 	if (!res)

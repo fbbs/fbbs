@@ -5,6 +5,7 @@
 
 #include "fbbs/dbi.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/user.h"
@@ -128,7 +129,7 @@ static void u_enter(void)
 		currentuser.flags[0] &= ~CLOAK_FLAG;
 	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
 		uinfo.invisible = YEA;
-	uinfo.mode = LOGIN;
+	uinfo.mode = ST_LOGIN;
 	uinfo.pager = 0;
 
 	chk_giveupbbs();
@@ -263,9 +264,9 @@ void abort_bbs(int nothing)
 	}
 
 	// Save user's work.
-	if (uinfo.mode == POSTING || uinfo.mode == SMAIL || uinfo.mode == EDIT
-			|| uinfo.mode == EDITUFILE || uinfo.mode == EDITSFILE
-			|| uinfo.mode == EDITANN)
+	if (uinfo.mode == ST_POSTING || uinfo.mode == ST_SMAIL
+			|| uinfo.mode == ST_EDIT || uinfo.mode == ST_EDITUFILE
+			|| uinfo.mode == ST_EDITSFILE || uinfo.mode == ST_EDITANN)
 		keep_fail_post();
 
 	if (started) {
@@ -375,7 +376,7 @@ static void system_init(void)
 	signal(SIGPIPE, SIG_IGN);
 #ifdef DOTIMEOUT
 	init_alarm();
-	uinfo.mode = LOGIN;
+	uinfo.mode = ST_LOGIN;
 	alarm(LOGIN_TIMEOUT);
 #else
 	signal(SIGALRM, SIG_SIG);

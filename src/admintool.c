@@ -2,6 +2,7 @@
 #include "bbs.h"
 #include "fbbs/board.h"
 #include "fbbs/register.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 extern int cmpbnames();
@@ -51,7 +52,7 @@ int m_info() {
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return 0;
 	}
@@ -82,7 +83,7 @@ int m_ordainBM() {
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd())
 		return 0;
 
@@ -288,7 +289,7 @@ int m_retireBM() {
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd())
 		return 0;
 
@@ -491,7 +492,7 @@ int m_newbrd() {
 	if (!(HAS_PERM(PERM_BLEVELS)))
 		return 0;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return 0;
 	}
@@ -695,7 +696,7 @@ int m_editbrd() {
 		return 0;
 	//add end
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return 0;
 	}
@@ -1197,7 +1198,7 @@ void show_register() {
 	if (!(HAS_PERM(PERM_USER)))
 		return;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return;
 	}
@@ -1237,7 +1238,7 @@ int m_register() {
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return 0;
 	}
@@ -1309,7 +1310,7 @@ int m_register() {
 			pressanykey();
 			break;
 		case '1':
-			i_read(ADMIN, "unregistered", regtitle, regdoent,
+			i_read(ST_ADMIN, "unregistered", regtitle, regdoent,
 					&reg_comms[0], sizeof(reginfo_t));
 			break;
 	}
@@ -1328,7 +1329,7 @@ int d_board() {
 	if (!HAS_PERM(PERM_BLEVELS)) {
 		return 0;
 	}
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return 0;
 	}
@@ -1421,7 +1422,7 @@ int d_user(char *cid) {
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return 0;
 	}
@@ -1519,7 +1520,7 @@ int x_level() {
 	if (!HAS_PERM(PERM_SYSOPS))
 		return 0;
 
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return 0;
 	}
@@ -1597,7 +1598,7 @@ void a_edits() {
 			"只能登陆5id的ip设定档", "不受5 id限制的ip设定档", "注册成功信件", "注册失败信件",
 			"新用户注册范例", "用户第一次登陆公告", "国际会议厅清单", "区段删除不需备份之清单",
 			"BBSNET 转站清单", "穿梭限制ip", "BBSNET2 转站清单", "穿梭2限制IP", NULL };
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd()) {
 		return;
 	}
@@ -1647,7 +1648,7 @@ void a_edits() {
 		clear();
 		return;
 	}
-	modify_user_mode(EDITSFILE);
+	set_user_status(ST_EDITSFILE);
 	aborted = vedit(buf2, NA, YEA); /* 不添加文件头, 允许修改头部信息 */
 	clear();
 	if (aborted != -1) {
@@ -1687,7 +1688,7 @@ int wall() {
 	}
 	// Add end.
 
-	modify_user_mode(MSG);
+	set_user_status(ST_MSG);
 	move(2, 0);
 	clrtobot();
 	if (!get_msg("所有使用者", buf2, 1)) {
@@ -1707,7 +1708,7 @@ int wall() {
 int setsystempasswd() {
 	FILE *pass;
 	char passbuf[20], prepass[20];
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	if (!check_systempasswd())
 		return 0;
 	if (strcmp(currentuser.userid, "SYSOP")) {
@@ -1768,7 +1769,7 @@ int x_new_denylevel(void)
 {
 	if (!HAS_PERM(PERM_OBOARDS) && !HAS_PERM(PERM_SPECIAL0))
 		return DONOTHING;
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	list_text(DENY_LEVEL_LIST, denylist_title_show, denylist_key_deal, NULL);
 	return FULLUPDATE;
 }

@@ -1,6 +1,9 @@
 #include <dlfcn.h>
 #include "bbs.h"
 #include "sysconf.h"
+#include "fbbs/status.h"
+#include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -59,8 +62,8 @@ int wall();
 int friend_wall();
 static int exec_mbem(const char *s);
 
-extern int tui_shop(void);
-extern int tui_goods(void);
+extern int tui_props(void);
+extern int tui_my_props(void);
 
 typedef int (*telnet_handler_t)();
 
@@ -131,8 +134,8 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowWelcome", Welcome },
 		{ "AddPCorpus", AddPCorpus },
 		{ "GoodWish", sendgoodwish },
-		{ "Shop", tui_shop },
-		{ "Goods", tui_goods },
+		{ "Props", tui_props },
+		{ "MyProps", tui_my_props },
 #ifdef ALLOWSWITCHCODE
 		{ "SwitchCode", switch_code },
 #endif
@@ -336,7 +339,7 @@ int domenu(const char *menu_name)
 		now = i;
 	}
 
-	modify_user_mode(MMENU);
+	set_user_status(ST_MMENU);
 
 	// TODO: deprecate
 	R_monitor();
@@ -365,7 +368,7 @@ int domenu(const char *menu_name)
 					abort_bbs(0);
 				}
 				draw_menu(pm);
-				modify_user_mode(MMENU);
+				set_user_status(ST_MMENU);
 				R_monitor();
 				break;
 			case KEY_RIGHT:
@@ -402,7 +405,7 @@ int domenu(const char *menu_name)
 #endif // DLM
 					}
 					draw_menu(pm);
-					modify_user_mode(MMENU);
+					set_user_status(ST_MMENU);
 					R_monitor();
 				}
 				break;

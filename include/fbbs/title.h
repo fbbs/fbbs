@@ -20,24 +20,26 @@ typedef struct title_list_t {
 } title_list_t;
 
 #define TITLE_LIST_QUERY_BASE \
-	"SELECT t.id, u1.name, u2.name, t.title, t.add_time, t.expire, t.approved, t.paid" \
-	" FROM titles t JOIN all_users u1 ON t.user_id = u1.id" \
-	" JOIN all_users u2 ON t.granter = u2.id "
+	"SELECT t.id, u1.name, u2.name, t.title, r.order_time, r.expire, t.approved, r.price, r.id" \
+	" FROM titles t JOIN users u1 ON t.user_id = u1.id" \
+	" JOIN users u2 ON t.granter = u2.id" \
+	" JOIN prop_records r ON t.record_id = r.id "
 
 #define title_list_get_id(list, i)  db_get_user_id(list, i, 0)
 #define title_list_get_name(list, i)  db_get_value(list, i, 1)
 #define title_list_get_granter(list, i)  db_get_value(list, i, 2)
 #define title_list_get_title(list, i)  db_get_value(list, i, 3)
-#define title_list_get_add_time(list, i)  db_get_time(list, i, 4)
+#define title_list_get_order_time(list, i)  db_get_time(list, i, 4)
 #define title_list_get_expire(list, i)  db_get_time(list, i, 5)
 #define title_list_get_approved(list, i)  db_get_bool(list, i, 6)
-#define title_list_get_paid(list, i)  db_get_integer(list, i, 7)
+#define title_list_get_price(list, i)  db_get_integer(list, i, 7)
+#define title_list_get_record_id(list, i)  db_get_integer(list, i, 8)
 
 #define title_list_data_free(data)  db_clear(((title_list_t *)data)->list)
 
 extern bool title_check_existence(user_id_t uid);
-extern bool title_submit_request(int type, const char *title);
+extern bool title_submit_request(int type, user_id_t uid, const char *title, user_id_t granter);
 extern void title_approve(int id);
-extern void title_disapprove(int id);
+extern void title_remove(int id);
 
 #endif // FB_TITLE_H

@@ -28,7 +28,7 @@ int chicken_main()
    char fname[50];
    
    agetmp=1; 
-   modify_user_mode(CHICK);
+   set_user_status(ST_CHICK);
    time(&now);
    ptime = localtime(&now);
    setuserfile(fname, DATA_FILE);
@@ -668,7 +668,7 @@ p_bf()
 {
   FILE *fp;
   char fname[50];
-  modify_user_mode(CHICK);
+  set_user_status(ST_CHICK);
   clear();
   move(21,0);
   if(currentuser.money<100){
@@ -918,7 +918,7 @@ int nam(char *useri)
 int mary_m()
 {
    FILE *fp;
-   modify_user_mode(MARY);
+   set_user_status(ST_MARY);
      if ((fp = fopen("game/bank", "r")) == NULL){
             fp = fopen("game/bank", "w");
                  fprintf(fp,"%ld",1000000);

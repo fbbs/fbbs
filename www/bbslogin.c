@@ -2,6 +2,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/ucache.h"
 #include "fbbs/uinfo.h"
@@ -53,7 +54,7 @@ static int wwwlogin(struct userec *user, const char *ref)
 	info.active = 1;
 	info.uid = searchuser(user->userid);
 	info.pid = getpid();
-	info.mode = WWW | LOGIN;
+	info.mode = ST_WWW | ST_LOGIN;
 	if (HAS_PERM(PERM_LOGINCLOAK)
 			&& (currentuser.flags[0] & CLOAK_FLAG))
 		info.invisible = YEA;

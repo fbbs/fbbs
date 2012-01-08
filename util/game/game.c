@@ -22,7 +22,7 @@ BlackJack()
 
 	int             CHEAT = 0;	/* 做弊参数, 1 就作弊, 0 就不作 */
 
-	modify_user_mode(M_BLACKJACK);
+	set_user_status(ST_M_BLACKJACK);
 	money = get_money(0,"game/blackjack.welcome");
 	if(!money) return 0;
 	move(1, 0);
@@ -288,7 +288,7 @@ gagb()
 	float           bet[11] = {0, 100, 50, 10, 3, 1.5, 1.2, 0.9, 0.8, 0.5, 0.1};
 	int             a, b, c, count;
 
-	modify_user_mode(M_XAXB);
+	set_user_status(ST_M_XAXB);
 	srandom(time(0));
 	money = get_money(0,"game/gagb.welcome");
 	if(!money) return 0;
@@ -444,7 +444,7 @@ x_dice()
 	srandom(time(0));
 	time(&now);
 
-	modify_user_mode(M_DICE);
+	set_user_status(ST_M_DICE);
 	while (1) {
 		money = get_money(0,"game/xdice.welcome");
 		if(!money) return 0;
@@ -556,7 +556,7 @@ p_gp()
 	int             bet, i, j, k, tmp, x, xx, doub, gw = 0, cont = 0;
 
 	srandom(time(0));
-	modify_user_mode(M_GP);
+	set_user_status(ST_M_GP);
 	bet = 0;
 	while (1) {
 		clear();
@@ -1034,7 +1034,7 @@ p_nine()
 	int             bet, i, j, k, tmp, x, xx;
 	srandom(time(0));
 	while (1) {
-		modify_user_mode(M_NINE);
+		set_user_status(ST_M_NINE);
 		bet = get_money(bet=0,"game/99.welcome");
 		if (!bet)
 			return 0;
@@ -1485,7 +1485,7 @@ bingo()
 	char            co[2];
 	int             may = 20, money;
 	char	buf[200];
-	modify_user_mode(M_BINGO);
+	set_user_status(ST_M_BINGO);
 
 	while (1) {
 		account = 13;

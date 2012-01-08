@@ -108,7 +108,7 @@ static bool check_upload(char *buf, size_t size, char **begin, char **end, char 
 		// so no parsing needed
 		fname += strlen("filename=\"");
 	}
-	if ((p = strchr(fname, '\"')) != NULL);
+	if ((p = strchr(fname, '\"')) != NULL)
 		*p = '\0';
 	// Check filename extension
 	// Only .jpg/.jpeg/.gif/.png/.pdf are allowed.

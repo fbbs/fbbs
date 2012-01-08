@@ -1,5 +1,7 @@
 #include "libBBS.h"
 #include "bbs.h"
+#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
@@ -230,6 +232,34 @@ int send_regmail(const struct userec *user, const char *mail)
 	return 0;
 }
 
+static int insert_email(const char *email)
+{
+	db_res_t *res = db_cmd("INSERT INTO emails (addr) VALUES (%s)", email);
+	db_clear(res);
+
+	int id = 0;
+	res = db_query("SELECT id FROM emails WHERE addr = %s", email);
+	if (res && db_res_rows(res) == 1)
+		id = db_get_integer(res, 0, 0);
+	db_clear(res);
+	return id;
+}
+
+static bool _activate_email(const char *name, const char *email)
+{
+	int id = insert_email(email);
+	if (!id)
+		return false;
+
+	db_res_t *res = db_cmd("UPDATE users SET email = %d"
+			" WHERE alive AND lower(name) = lower(%s)", id, name);
+	if (!res)
+		return false;
+
+	db_clear(res);
+	return true;
+}
+
 bool activate_email(const char *userid, const char *attempt)
 {
 	char file[HOMELEN];
@@ -246,12 +276,13 @@ bool activate_email(const char *userid, const char *attempt)
 	if (strcmp(code, attempt) != 0)
 		return false;
 
+	if (!_activate_email(userid, email))
+		return false;
+
 	int num = getuserec(userid, &currentuser);
 	if (!num)
 		return false;
-
 	currentuser.userlevel |= (PERM_DEFAULT | PERM_BINDMAIL);
-	strlcpy(currentuser.email, email, sizeof(currentuser.email));
 	substitut_record(NULL, &currentuser, sizeof(currentuser), num);
 
 	unlink(file);

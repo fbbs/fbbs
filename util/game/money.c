@@ -12,7 +12,7 @@ typedef struct exchanges {
 int gotomarket(char *title)
 {
         if (!strcmp("guest", currentuser.userid)) return 1;
-        modify_user_mode(MARKET);
+        set_user_status(ST_MARKET);
         clear();
         set_safe_record();
         move(2,0);

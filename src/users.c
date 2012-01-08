@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "record.h"
 #include "fbbs/helper.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
@@ -217,7 +218,8 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 	}
 
 	char pager;
-	if (uin->mode == FIVE || uin->mode == BBSNET || uin->mode == LOCKSCREEN)
+	if (uin->mode == ST_FIVE || uin->mode == ST_BBSNET
+			|| uin->mode == ST_LOCKSCREEN)
 		pager = '@';
 	else
 		pager = pagerchar(hisfriend(uin), uin->pager);
@@ -227,9 +229,9 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 		color = "\033[1;30m";
 	else if (is_web_user(uin->mode))
 		color = "\033[36m";
-	else if (uin->mode == POSTING || uin->mode == MARKET)
+	else if (uin->mode == ST_POSTING || uin->mode == ST_MARKET)
 		color = "\033[32m";
-	else if (uin->mode == FIVE || uin->mode == BBSNET)
+	else if (uin->mode == ST_FIVE || uin->mode == ST_BBSNET)
 		color = "\033[33m";
 	else
 		color = "";
@@ -402,9 +404,9 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 		case 'F':
 			up->ovr_only = !up->ovr_only;
 			if (up->ovr_only)
-				modify_user_mode(FRIEND);
+				set_user_status(ST_FRIEND);
 			else
-				modify_user_mode(LUSERS);
+				set_user_status(ST_LUSERS);
 			up->uptime = 0;
 			set_num_rows(p);
 			return PARTUPDATE;
@@ -456,13 +458,13 @@ int online_users_show(void)
 	if (online_users_init(&ou) < 0)
 		return -1;
 
-	modify_user_mode(LUSERS);
+	set_user_status(ST_LUSERS);
 	return online_users(&ou);
 }
 
 int online_users_show_override(void)
 {
-	modify_user_mode(FRIEND);
+	set_user_status(ST_FRIEND);
 
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, "friends");
@@ -488,6 +490,6 @@ int online_users_show_board(void)
 
 	ou.board = true;
 
-	modify_user_mode(LUSERS);
+	set_user_status(ST_LUSERS);
 	return online_users(&ou);
 }

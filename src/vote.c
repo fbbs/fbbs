@@ -2,6 +2,7 @@
 #include "vote.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
 extern int cmpbnames();
@@ -1166,7 +1167,7 @@ int m_vote() {
 
 	strcpy(buf, currboard);
 	strcpy(currboard, DEFAULTBOARD);
-	modify_user_mode(ADMIN);
+	set_user_status(ST_ADMIN);
 	vote_maintain(DEFAULTBOARD);
 	strcpy(currboard, buf);
 	return 0;
@@ -1176,7 +1177,7 @@ int m_vote() {
 int x_vote() {
 	char buf[STRLEN];
 
-	modify_user_mode(XMENU);
+	set_user_status(ST_XMENU);
 	strcpy(buf, currboard);
 	strcpy(currboard, DEFAULTBOARD);
 	b_vote();
@@ -1186,6 +1187,6 @@ int x_vote() {
 
 //显示sysop版投票结果
 int x_results() {
-	modify_user_mode(XMENU); //更改用户 模式状态至??
+	set_user_status(ST_XMENU); //更改用户 模式状态至??
 	return vote_results(DEFAULTBOARD); //显示sysop版投票结果
 }

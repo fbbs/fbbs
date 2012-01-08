@@ -279,6 +279,9 @@ static int show_bm(const char *userid, char **buf, size_t *size)
 
 void show_position(const struct userec *user, char *buf, size_t size, const char *title)
 {
+	buf[0] = '\0';
+	const char *orig = buf;
+
 	if (user->userlevel & PERM_SPECIAL9) {
 		if (user->userlevel & PERM_SYSOPS) {
 			strappend(&buf, &size, "[\033[1;32m站长\033[m]");
@@ -292,55 +295,35 @@ void show_position(const struct userec *user, char *buf, size_t size, const char
 			strappend(&buf, &size, "[\033[1;32m离任站务\033[m]");
 		}
 	} else {
-		int normal = 1;
 		if ((user->userlevel & PERM_XEMPT)
 				&& (user->userlevel & PERM_LONGLIFE)
 				&& (user->userlevel & PERM_LARGEMAIL)) {
 			strappend(&buf, &size, "[\033[1;32m荣誉版主\033[m]");
-			normal = 0;
 		}
-
-		if (title && *title) {
-			GBK_BUFFER(title, TITLE_CCHARS);
-			convert_u2g(title, gbk_title);
-			char tbuf[TITLE_CCHARS * 2 + 11];
-			snprintf(tbuf, sizeof(tbuf), "[\033[1;33m%s\033[m]", gbk_title);
-			strappend(&buf, &size, tbuf);
-			normal = 0;
-		}
-
-		if ((user->userlevel & PERM_BOARDS)
-				&& show_bm(user->userid, &buf, &size)) {
-			normal = 0;
-		}
-		if (user->userlevel & PERM_ARBI) {
+		if (user->userlevel & PERM_BOARDS)
+			show_bm(user->userid, &buf, &size);
+		if (user->userlevel & PERM_ARBI)
 			strappend(&buf, &size, "[\033[1;32m仲裁组\033[m]");
-			normal = 0;
-		}
-		if (user->userlevel & PERM_SERV) {
+		if (user->userlevel & PERM_SERV)
 			strappend(&buf, &size, "[\033[1;32m培训组\033[m]");
-			normal = 0;
-		}
-		if (user->userlevel & PERM_SPECIAL2) {
+		if (user->userlevel & PERM_SPECIAL2)
 			strappend(&buf, &size, "[\033[1;32m服务组\033[m]");
-			normal = 0;
-		}
-		if (user->userlevel & PERM_SPECIAL3) {
+		if (user->userlevel & PERM_SPECIAL3)
 			strappend(&buf, &size, "[\033[1;32m美工组\033[m]");
-			normal = 0;
-		}
-		if (user->userlevel & PERM_TECH) {
+		if (user->userlevel & PERM_TECH)
 			strappend(&buf, &size, "[\033[1;32m技术组\033[m]");
-			normal = 0;
-		}
-		if (normal) {
-#ifndef FDQUAN
-			snprintf(buf, size, "[\033[1;32m光华网友\033[m]");
-#else
-			snprintf(buf, size, "[\033[1;32m泉站网友\033[m]");
-#endif
-		}
 	}
+
+	if (title && *title) {
+		GBK_BUFFER(title, TITLE_CCHARS);
+		convert_u2g(title, gbk_title);
+		char tbuf[TITLE_CCHARS * 2 + 11];
+		snprintf(tbuf, sizeof(tbuf), "[\033[1;33m%s\033[m]", gbk_title);
+		strappend(&buf, &size, tbuf);
+	}
+
+	if (!*orig)
+		snprintf(buf, size, "[\033[1;32m"SHORT_BBSNAME"网友\033[m]");
 }
 
 /**
@@ -395,7 +378,7 @@ int uinfo_load(const char *name, uinfo_t *u)
 #ifdef ENABLE_BANK
 			", money, rank"
 #endif
-			" FROM users WHERE lower(name) = lower(%s)", name);
+			" FROM alive_users WHERE lower(name) = lower(%s)", name);
 	if (!u->res)
 		return -1;
 
