@@ -67,9 +67,9 @@ DECLARE
 	_delta INTEGER := 0;
 BEGIN
 	IF OLD.approved THEN
-		SELECT GREATEST(0, price / 2 * (1 - EXTRACT(EPOCH FROM (current_timestamp - order_time)) / EXTRACT(EPOCH FROM (expire - order_time)))) INTO _delta FROM prop_records WHERE id = OLD.record_id;
+		SELECT FLOOR(GREATEST(0, price / 2 * (1 - EXTRACT(EPOCH FROM (current_timestamp - order_time)) / EXTRACT(EPOCH FROM (expire - order_time))))) INTO _delta FROM prop_records WHERE id = OLD.record_id;
 	ELSE
-		SELECT price * 0.9 INTO _delta FROM prop_records WHERE id = OLD.record_id;
+		SELECT FLOOR(price * 0.9) INTO _delta FROM prop_records WHERE id = OLD.record_id;
 	END IF;
 
 	UPDATE users SET money = money + _delta;
