@@ -102,6 +102,7 @@ int web_my_props(void)
 			case PROP_TITLE_30DAYS:
 			case PROP_TITLE_90DAYS:
 			case PROP_TITLE_180DAYS:
+			case PROP_TITLE_1YEAR:
 				return show_title_detail(record);
 			default:
 				return BBS_EINVAL;

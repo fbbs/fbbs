@@ -71,6 +71,7 @@ static tui_list_handler_t tui_prop_handler(tui_list_t *p, int key)
 		case PROP_TITLE_30DAYS:
 		case PROP_TITLE_90DAYS:
 		case PROP_TITLE_180DAYS:
+		case PROP_TITLE_1YEAR:
 			return tui_title_buy(type, price);
 		default:
 			break;
@@ -176,6 +177,7 @@ static tui_list_handler_t tui_my_props_handler(tui_list_t *p, int key)
 				case PROP_TITLE_30DAYS:
 				case PROP_TITLE_90DAYS:
 				case PROP_TITLE_180DAYS:
+				case PROP_TITLE_1YEAR:
 					return tui_my_title(my_prop_get_record_id(r, p->cur));
 			}
 			return DONOTHING;

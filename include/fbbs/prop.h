@@ -10,6 +10,7 @@ enum {
 	PROP_TITLE_30DAYS,
 	PROP_TITLE_90DAYS,
 	PROP_TITLE_180DAYS,
+	PROP_TITLE_1YEAR,
 };
 
 typedef db_res_t prop_list_t;
