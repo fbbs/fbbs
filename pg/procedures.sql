@@ -73,7 +73,7 @@ BEGIN
 	END IF;
 
 	UPDATE users SET money = money + _delta;
-	INSERT INTO audit.money (user_id, delta, stamp, reason) VALUES (NEW.user_id, _delta, current_timestamp, 'D title');
+	INSERT INTO audit.money (user_id, delta, stamp, reason) VALUES (OLD.user_id, _delta, current_timestamp, 'D title');
 
 	DELETE FROM prop_records WHERE id = OLD.record_id;
 	UPDATE users SET title =

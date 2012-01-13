@@ -5,6 +5,7 @@ CREATE TABLE emails (
 	addr TEXT
 );
 CREATE UNIQUE INDEX ON emails(addr);
+INSERT INTO emails (addr) VALUES (NULL);
 
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
@@ -15,7 +16,7 @@ CREATE TABLE users (
 	money BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
 	paid_posts INTEGER DEFAULT 0,
-	title TEXT,
+	title TEXT
 );
 
 CREATE OR REPLACE VIEW alive_users AS
@@ -60,8 +61,8 @@ CREATE SCHEMA audit;
 CREATE TABLE audit.money (
 	user_id INTEGER NOT NULL,
 	delta INTEGER NOT NULL,
-	stamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-	reason TEXT,
+	stamp TIMESTAMPTZ NOT NULL,
+	reason TEXT
 );
 
 COMMIT;
