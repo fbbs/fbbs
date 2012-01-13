@@ -145,6 +145,7 @@ int web_buy_prop(void)
 		case PROP_TITLE_30DAYS:
 		case PROP_TITLE_90DAYS:
 		case PROP_TITLE_180DAYS:
+		case PROP_TITLE_1YEAR:
 			return buy_title(item, get_param("title"));
 		default:
 			return BBS_EINVAL;
