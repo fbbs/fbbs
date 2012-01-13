@@ -72,7 +72,7 @@ BEGIN
 		SELECT FLOOR(price * 0.9) INTO _delta FROM prop_records WHERE id = OLD.record_id;
 	END IF;
 
-	UPDATE users SET money = money + _delta;
+	UPDATE users SET money = money + _delta WHERE id = OLD.user_id;
 	INSERT INTO audit.money (user_id, delta, stamp, reason) VALUES (OLD.user_id, _delta, current_timestamp, 'D title');
 
 	DELETE FROM prop_records WHERE id = OLD.record_id;
