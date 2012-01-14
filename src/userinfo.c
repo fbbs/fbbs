@@ -352,7 +352,7 @@ void uinfo_query(struct userec *u, int real, int unum) {
 			memcpy(u, &newinfo, (size_t)sizeof(currentuser));
 			substitut_record(PASSFILE, &newinfo, sizeof(newinfo), unum);
 		} else {
-			passwd_set(currentuser.userid, buf);
+			passwd_set(u->userid, buf);
 		}
 	}
 	clear();
