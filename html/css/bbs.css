@@ -1,14 +1,6 @@
-ul.sec>li {
-	font-size: 14px;
-	margin: 6px 0;
-	border-bottom: #336699 2px dotted;
-}
-ul.brd li{
-	padding-left: 20px;
-	display: inline;
-	background: transparent url('/images/types/folder.gif') no-repeat left center;
-	margin-left: 6px;
-}
+ul.sec>li { font-size: 16px; margin: 6px 0; padding-bottom: 4px; border-bottom: #336699 2px dotted; }
+ul.brd { line-height: 24px; }
+ul.brd li { padding-left: 20px; display: inline; background: transparent url('/images/types/folder.gif') no-repeat left center; margin-left: 6px; line-height: 18px; }
 #main {
 	margin: 6px 6px 6px 144px;
 	font-size: 14px;
@@ -266,7 +258,7 @@ div.pmain, div.umain, div.usmd {
 	border-top: 1px solid #ccddff;
 	border-bottom: 1px solid #ccddff;
 }
-.post_h p, .post_t p, .post_q p { height: 20px; }
+.post_h p, .post_t p, .post_q p { line-height: 20px; }
 div.umain {
 	padding: 3px 7px;
 	font-size: 14px;
