@@ -30,7 +30,7 @@ int bbsqry_main(void)
 				compute_user_value(&user), level, repeat);
 
 		uinfo_t u;
-		uinfo_load(currentuser.userid, &u);
+		uinfo_load(user.userid, &u);
 #ifdef ENABLE_BANK
 		if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
 			printf("money='%d' rank='%.1f'",
