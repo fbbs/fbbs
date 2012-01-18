@@ -219,13 +219,13 @@ int brc_fcgi_init(const char *user, const char *board)
 	return brc_initial(user, board);
 }
 
-bool brc_board_unread(const char *user, const board_t *bp)
+bool brc_board_unread(const char *user, const char *bname, int bid)
 {
 	brc_buf[0] = '\0';
-	if (!brc_initial(currentuser.userid, bp->name)) {
+	if (!brc_initial(currentuser.userid, bname)) {
 		return true;
 	} else {
-		if (brc_unread1((brdshm->bstatus[bp->id]).lastpost))
+		if (brc_unread1((brdshm->bstatus[bid]).lastpost))
 			return true;
 		return false;
 	}

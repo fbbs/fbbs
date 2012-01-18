@@ -52,7 +52,7 @@ static void show_board(db_res_t *res)
 				"read='%d' count='%d' />",
 				(board.flag & BOARD_DIR_FLAG) ? 1 : 0, board.name,
 				board.categ, board.descr, board.bms,
-				brc_board_unread(currentuser.userid, &board),
+				brc_board_unread(currentuser.userid, board.name, board.id),
 				filenum(board.name));
 	}
 }
