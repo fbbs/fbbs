@@ -31,7 +31,6 @@ extern int bbsgdoc_main(void);
 extern int bbstdoc_main(void);
 extern int bbsgcon_main(void);
 extern int bbstcon_main(void);
-extern int web_mybrd(void);
 extern int web_brdadd(void);
 extern int bbsccc_main(void);
 extern int web_fav(void);
@@ -104,7 +103,6 @@ const static web_handler_t handlers[] = {
 	{ "mail", bbsmail_main, ST_RMAIL },
 	{ "mailcon", bbsmailcon_main, ST_RMAIL },
 	{ "mailman", web_mailman, ST_RMAIL },
-	{ "mybrd", web_mybrd, ST_READING },
 	{ "myprop", web_my_props, ST_MY_PROP },
 	{ "newmail", bbsnewmail_main, ST_RMAIL },
 	{ "not", bbsnot_main, ST_READING },
