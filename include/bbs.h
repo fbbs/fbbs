@@ -374,7 +374,6 @@ enum {
 };
 
 #include "func.h"
-#include "../lib/goodbrd.h"
 #include "libBBS.h"
 
 #endif /* of _BBS_H_ */

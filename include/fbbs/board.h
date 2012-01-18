@@ -23,6 +23,9 @@ enum {
 	BOARD_DIR_FLAG = 0x200,
 	BOARD_PREFIX_FLAG = 0x400,
 	BOARD_RECOMMEND_FLAG = 0x800,
+
+	FAV_BOARD_ROOT_FOLDER = 1,
+	FAV_BOARD_LIMIT = 70,
 };
 
 typedef struct {
@@ -36,9 +39,12 @@ typedef struct {
 	char categ[BOARD_CATEG_CCHARS * 4 + 1];
 } board_t;
 
+#define BOARD_BASE_FIELDS \
+	"b.id, b.name, b.descr, b.parent, b.flag, b.perm, b.bms, c.name "
+#define BOARD_BASE_TABLES \
+	"boards b JOIN board_categs c ON b.categ = c.id "
 #define BOARD_SELECT_QUERY_BASE \
-	"SELECT b.id, b.name, b.descr, b.parent, b.flag, b.perm, b.bms, b.categ" \
-	" FROM boards b JOIN board_categs c ON b.categ = c.id "
+	"SELECT " BOARD_BASE_FIELDS "FROM " BOARD_BASE_TABLES
 
 extern int get_board(const char *name, board_t *bp);
 extern int get_board_by_bid(int bid, board_t *bp);
@@ -47,5 +53,7 @@ extern void board_to_gbk(board_t *bp);
 extern bool is_board_manager(const struct userec *up, const board_t *bp);
 extern bool has_read_perm(const struct userec *up, const board_t *bp);
 extern bool has_post_perm(const struct userec *up, const board_t *bp);
+
+extern bool fav_board_add(user_id_t uid, int bid, int folder);
 
 #endif // FB_BOARD_H

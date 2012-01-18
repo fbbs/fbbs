@@ -232,3 +232,19 @@ bool has_post_perm(const struct userec *up, const board_t *bp)
 	setbfile(buf, bp->name, "deny_users");
 	return !seek_in_file(buf, up->userid);
 }
+
+bool fav_board_add(user_id_t uid, int bid, int folder)
+{
+	board_t b;
+	if (!get_board_by_bid(bid, &b) || !has_read_perm(&currentuser, &b))
+		return false;
+
+	if (folder <= FAV_BOARD_ROOT_FOLDER)
+		folder = FAV_BOARD_ROOT_FOLDER;
+
+	db_res_t *res = db_cmd("INSERT INTO fav_boards (user_id, board, folder)"
+			" VALUES (%"PRIdUID", %d, %d)", uid, bid, folder);
+	bool ok = res;
+	db_clear(res);
+	return ok;
+}

@@ -44,10 +44,23 @@ CREATE TABLE boards (
 );
 CREATE UNIQUE INDEX ON boards (lower(bms));
 CREATE TABLE bms (
-	user_id INTEGER REFERENCES all_users,
+	user_id INTEGER REFERENCES users,
 	board_id INTEGER REFERENCES boards,
 	UNIQUE (user_id, board_id)
 );
+
+CREATE TABLE fav_board_folders (
+	id SERIAL PRIMARY KEY,
+	name TEXT
+);
+INSERT INTO fav_board_folders (name) VALUES ('ROOT');
+CREATE TABLE fav_boards (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER REFERENCES users,
+	board INTEGER REFERENCES boards,
+	folder INTEGER REFERENCES fav_board_folders
+);
+CREATE UNIQUE INDEX ON fav_boards (user_id, board);
 
 CREATE TABLE prop_categs (
 	id SERIAL PRIMARY KEY,
@@ -84,8 +97,8 @@ CREATE SCHEMA audit;
 CREATE TABLE audit.money (
 	user_id INTEGER NOT NULL,
 	delta INTEGER NOT NULL,
-	stamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-	reason TEXT,
+	stamp TIMESTAMPTZ NOT NULL,
+	reason TEXT
 );
 
 COMMIT;
