@@ -55,7 +55,6 @@ CREATE TABLE fav_board_folders (
 );
 INSERT INTO fav_board_folders (name) VALUES ('ROOT');
 CREATE TABLE fav_boards (
-	id SERIAL PRIMARY KEY,
 	user_id INTEGER REFERENCES users,
 	board INTEGER REFERENCES boards,
 	folder INTEGER REFERENCES fav_board_folders

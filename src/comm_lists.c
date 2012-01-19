@@ -14,8 +14,8 @@
 #endif
 
 int domenu(const char *menu_name);
-int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodbye();
-int board_read_new(), goodbrd_show(), board_read(), board_select(), Welcome();
+int Announce(), Personal(), Info(), Goodbye();
+int board_read(), board_select(), Welcome();
 int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), online_users_show(), x_info(), x_vote();
@@ -65,6 +65,11 @@ static int exec_mbem(const char *s);
 extern int tui_props(void);
 extern int tui_my_props(void);
 
+extern int tui_all_boards(const char *);
+extern int tui_unread_boards(const char *);
+extern int tui_read_sector(const char *);
+extern int tui_favorite_boards(const char *);
+
 typedef int (*telnet_handler_t)();
 
 typedef struct {
@@ -83,10 +88,10 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 {
 	static const cmd_list_t cmdlist[] = {
 		{ "domenu", domenu },
-		{ "EGroups", board_read_group },
-		{ "BoardsAll", board_read_all },
-		{ "BoardsGood", goodbrd_show },
-		{ "BoardsNew", board_read_new },
+		{ "EGroups", tui_read_sector },
+		{ "BoardsAll", tui_all_boards },
+		{ "BoardsGood", tui_favorite_boards },
+		{ "BoardsNew", tui_unread_boards },
 		{ "LeaveBBS", Goodbye },
 		{ "Announce", Announce },
 		{ "Personal", Personal },
