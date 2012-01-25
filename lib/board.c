@@ -233,10 +233,19 @@ bool has_post_perm(const struct userec *up, const board_t *bp)
 	return !seek_in_file(buf, up->userid);
 }
 
-bool fav_board_add(user_id_t uid, int bid, int folder)
+bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder)
 {
 	board_t b;
-	if (!get_board_by_bid(bid, &b) || !has_read_perm(&currentuser, &b))
+
+	if (bname) {
+		if (!get_board(bname, &b))
+			return false;
+	} else {
+		if (!get_board_by_bid(bid, &b))
+			return false;
+	}
+	
+	if (!has_read_perm(&currentuser, &b))
 		return false;
 
 	if (folder <= FAV_BOARD_ROOT_FOLDER)

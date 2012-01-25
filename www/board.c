@@ -43,7 +43,7 @@ int web_brdadd(void)
 		return BBS_ELGNREQ;
 
 	int bid = strtol(get_param("bid"), NULL, 10);
-	int ok = fav_board_add(session.uid, bid, FAV_BOARD_ROOT_FOLDER);
+	int ok = fav_board_add(session.uid, NULL, bid, FAV_BOARD_ROOT_FOLDER);
 	if (ok) {
 		xml_header(NULL);
 		printf("<bbsbrdadd>");

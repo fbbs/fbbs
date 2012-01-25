@@ -54,6 +54,6 @@ extern bool is_board_manager(const struct userec *up, const board_t *bp);
 extern bool has_read_perm(const struct userec *up, const board_t *bp);
 extern bool has_post_perm(const struct userec *up, const board_t *bp);
 
-extern bool fav_board_add(user_id_t uid, int bid, int folder);
+extern bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder);
 
 #endif // FB_BOARD_H
