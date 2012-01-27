@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "record.h"
+#include "fbbs/autocomplete.h"
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
@@ -27,7 +28,7 @@ typedef struct {
 	bool newflag;         ///< True if jump to unread board.
 	bool favorite;        ///< True if reading favorite boards.
 	bool recursive;       ///< True if called recursively.
-//	int copy_bnum;        ///< Copy/paste buffer.
+	int copy_bid;         ///< Copy/paste buffer.
 } board_list_t;
 
 static int load_zapbuf(board_list_t *l)
@@ -66,354 +67,189 @@ int save_zapbuf(const board_list_t *l)
 	return -1;
 }
 
-#if 0
-/**
- *
- */
-static void load_default_board(choose_board_t *cbrd)
+static ac_list *build_board_ac_list(void)
 {
-	if (cbrd->gnum == 0) {
-		cbrd->gnum = 1;
-		int i = getbnum(DEFAULTBOARD, &currentuser);
-		if (i == 0)
-			i = getbnum(currboard, &currentuser);
-		cbrd->gbrds->id = 1;
-		cbrd->gbrds->pid = 0;
-		cbrd->gbrds->pos = i - 1;
-		cbrd->gbrds->flag = bcache[i - 1].flag;
-		strlcpy(cbrd->gbrds->filename, bcache[i - 1].filename,
-				sizeof(cbrd->gbrds->filename));
-		strlcpy(cbrd->gbrds->title, bcache[i - 1].title,
-				sizeof(cbrd->gbrds->title));
-	}
-}
+	ac_list *acl = ac_list_new();
+	if (!acl)
+		return NULL;
 
-/**
- *
- */
-static void goodbrd_load(choose_board_t *cbrd)
-{
-	cbrd->gnum = 0;
-
-	char file[HOMELEN];
-	sethomefile(file, currentuser.userid, ".goodbrd");
-	FILE *fp = fopen(file, "r");
-	if (fp) {
-		while (fread(cbrd->gbrds + cbrd->gnum, sizeof(*cbrd->gbrds), 1, fp)) {
-			if (cbrd->gbrds[cbrd->gnum].flag & BOARD_CUSTOM_FLAG) {
-				cbrd->gnum++;
-			} else {
-				if (hasreadperm(&currentuser,
-						bcache + cbrd->gbrds[cbrd->gnum].pos)) {
-					cbrd->gnum++;
-				}
-			}
-			if (cbrd->gnum == GOOD_BRC_NUM)
-				break;
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	if (res) {
+		for (int i = 0; i < db_res_rows(res); ++i) {
+			board_t board;
+			res_to_board(res, i, &board);
+			if (has_read_perm(&currentuser, &board))
+				ac_list_add(acl, board.name);
 		}
-		fclose(fp);
 	}
+	db_clear(res);
 
-	load_default_board(cbrd);
+	return acl;
 }
 
-/**
- *
- */
-static int goodbrd_save(choose_board_t *cbrd)
+static void board_complete(int row, const char *prompt, char *name, size_t size)
 {
-	load_default_board(cbrd);
+	ac_list *acl = build_board_ac_list();
+	if (!acl)
+		return;
 
-	char file[HOMELEN];
-	setuserfile(file, ".goodbrd");
-	FILE *fp = fopen(file, "w");
-	if (fp) {
-		fwrite(cbrd->gbrds, sizeof(*cbrd->gbrds), cbrd->gnum, fp);
-		fclose(fp);
-		return 0;
-	}
-	return -1;
-}
+	move(row, 0);
+	autocomplete(acl, prompt, name, size);
 
-/**
- * 
- */
-static int goodbrd_add(choose_board_t *cbrd, int bnum, int pid)
-{
-	if (cbrd->gnum >= GOOD_BRC_NUM)
-		return -1;
-
-	if (--bnum < 0 || inGoodBrds(cbrd, bnum))
-		return -1;
-
-	if (!hasreadperm(&currentuser, bcache + bnum))
-		return -1;
-
-	gbrdh_t *ptr = cbrd->gbrds + cbrd->gnum;
-	ptr->pid = pid;
-	ptr->pos = bnum;
-	strlcpy(ptr->filename, bcache[bnum].filename, sizeof(ptr->filename));
-	strlcpy(ptr->title, bcache[bnum].title, sizeof(ptr->title));
-	ptr->flag = bcache[bnum].flag;
-
-	if (cbrd->gnum)
-		ptr->id = (ptr - 1)->id + 1;
-	else
-		ptr->id = 1;
-
-	cbrd->gnum++;
-	goodbrd_save(cbrd);
+	ac_list_free(acl);
 	return 0;
 }
 
-// TODO: pid暂时是个不使用的参数，因为不打算建二级目录（删除目录的代码目录仍不完善）
-static int goodbrd_mkdir(choose_board_t *cbrd, const char *name,
-		const char *title, int pid)
+static int tui_favorite_add(tui_list_t *p)
 {
-	if (cbrd->gnum < GOOD_BRC_NUM) {
-		gbrdh_t *ptr = cbrd->gbrds + cbrd->gnum;
-		ptr->pid = 0;
-		strlcpy(ptr->filename, name, sizeof(ptr->filename));
-		strlcpy(ptr->title, "~[收藏] ○ ", sizeof(ptr->title));
-		if (title[0] != '\0')
-			strlcpy(ptr->title + 11, title, sizeof(ptr->title) - 11);
-		else
-			strlcpy(ptr->title + 11, "自定义目录", sizeof(ptr->title) - 11);
-		ptr->flag = BOARD_DIR_FLAG | BOARD_CUSTOM_FLAG;
-		ptr->pos = -1;
-		if (cbrd->gnum)
-			ptr->id = (ptr - 1)->id + 1;
-		else
-			ptr->id = 1;
-		cbrd->gnum++;
-		return goodbrd_save(cbrd);
-	}
-	return -1;
-}
-
-//目录没有对二级目录嵌套删除的功能，也因为这个限制，收藏夹目录不允许建立二级目录
-static void goodbrd_rmdir(choose_board_t *cbrd, int id)
-{
-	int i, n = 0;
-	for (i = 0; i < cbrd->gnum; i++) {
-		gbrdh_t *ptr = cbrd->gbrds + i;
-		if (((ptr->flag & BOARD_CUSTOM_FLAG) && (ptr->id == id))
-				|| (ptr->pid == id)) {
-			continue;
-		} else {
-			if (i != n)
-				memcpy(cbrd->gbrds + n, cbrd->gbrds + i, sizeof(cbrd->gbrds[0]));
-			n++;
-		}
-	}
-	cbrd->gnum = n;
-	goodbrd_save(cbrd);
-}
-
-/**
- *
- */
-static int tui_goodbrd_add(tui_list_t *cp)
-{
-	choose_board_t *cbrd = cp->data;
-
 	if (!HAS_PERM(PERM_LOGIN))
 		return DONOTHING;
 
-	if (cbrd->goodbrd && (cbrd->parent == -1))
-		return DONOTHING;
+	board_list_t *l = p->data;
 
-	if (cbrd->goodbrd) {
-		if (cbrd->parent == -1)
-			return DONOTHING;
-
-		if (cbrd->gnum >= GOOD_BRC_NUM) {
+	if (l->favorite) {
+		if (l->fcount >= FAV_BOARD_LIMIT) {
 			presskeyfor("收藏夹已满", t_lines - 1);
 			return MINIUPDATE;
 		}
 
-		int pos;
-		char bname[STRLEN];
-		struct boardheader fh;
-		if (gettheboardname(1, "输入讨论区名 (按空白键自动搜寻): ",
-				&pos, &fh, bname, 1)) {
-			if (goodbrd_add(cbrd, pos, cbrd->parent) == 0)
-				cp->valid = false;
-		}
+		char name[BOARD_NAME_LEN + 1];
+		board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
+				name, sizeof(name));
+		if (fav_board_add(session.uid, name, 0, FAV_BOARD_ROOT_FOLDER))
+			p->valid = false;
 		return FULLUPDATE;
 	} else {
-		goodbrd_load(cbrd);
-		if (cbrd->gnum >= GOOD_BRC_NUM) {
-			presskeyfor("收藏夹已满", t_lines - 1);
-			return MINIUPDATE;
-		} else {
-			char buf[STRLEN];
-			snprintf(buf, sizeof(buf), "您确定要添加 %s 到收藏夹吗?",
-					cbrd->brds[cp->cur].name);
-			if (askyn(buf, false, true)) {
-				if (goodbrd_add(cbrd, cbrd->brds[cp->cur].pos + 1, 0) == 0) {
-					cp->valid = false;
-					return PARTUPDATE;
-				}
-			}
-			return MINIUPDATE;
+		const char *bname = l->indices[p->cur]->board.name;
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "您确定要添加 %s 到收藏夹吗?", bname);
+		if (askyn(buf, false, true)) {
+			fav_board_add(session.uid, bname, 0, FAV_BOARD_ROOT_FOLDER);
 		}
+		return MINIUPDATE;
 	}
 }
 
-/**
- * Copy board when browsing favorites.
- * @param cp browsing status.
- * @return update status.
- */
-static int tui_goodbrd_copy(tui_list_t *cp)
+static int tui_favorite_copy(tui_list_t *p)
 {
-	choose_board_t *cbrd = cp->data;
+	board_list_t *l = p->data;
 
-	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
+	if (!HAS_PERM(PERM_LOGIN) || !l->favorite)
 		return DONOTHING;
 
-	if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)
+	board_t *bp = &(l->indices[p->cur]->board);
+
+	if (bp->flag & BOARD_CUSTOM_FLAG)
 		return DONOTHING;
 
-	cbrd->copy_bnum = cbrd->brds[cp->cur].pos + 1;
-	presskeyfor("版面已复制 请按P粘贴", t_lines - 1);
+	l->copy_bid = bp->id;
+	presskeyfor("版面已剪切 请按P粘贴", t_lines - 1);
 	return MINIUPDATE;
 }
 
-/**
- * Paste copied board when browsing favorites.
- * @param cp browsing status.
- * @return update status.
- */
-static int tui_goodbrd_paste(tui_list_t *cp)
+static int tui_favorite_paste(tui_list_t *p)
 {
-	choose_board_t *cbrd = cp->data;
+	board_list_t *l = p->data;
 
-	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
+	if (!HAS_PERM(PERM_LOGIN) || !l->favorite)
 		return DONOTHING;
 
-	if (goodbrd_add(cbrd, cbrd->copy_bnum, cbrd->parent) == 0) {
-		cbrd->copy_bnum = 0;
-		cp->valid = false;
+	if (fav_board_mv(session.uid, l->copy_bid, l->parent)) {
+		p->valid = false;
 		return PARTUPDATE;
 	}
 	return DONOTHING;
 }
 
-/**
- * Create directory when browsing favorites.
- * @param cp browsing status.
- * @return update status.
- */
-static int tui_goodbrd_mkdir(tui_list_t *cp)
+static int tui_favorite_mkdir(tui_list_t *p)
 {
-	choose_board_t *cbrd = cp->data;
+	board_list_t *l = p->data;
 
-	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
+	if (!HAS_PERM(PERM_LOGIN) || !l->favorite || l->parent)
 		return DONOTHING;
 
-	if (cbrd->parent == 0) {
-		if (cbrd->gnum >= GOOD_BRC_NUM) {
-			presskeyfor("收藏夹已满", t_lines - 1);
-			return MINIUPDATE;
-		}
-
-		char name[STRLEN];
-		char title[STRLEN];
-		name[0] = '\0';
-		getdata(t_lines - 1, 0, "创建自定义目录: ", name, 17,
-				DOECHO, NA);
-		if (name[0] != '\0') {
-			strlcpy(title, "自定义目录", sizeof(title));
-			getdata(t_lines - 1, 0, "自定义目录描述: ", title, 21,
-					DOECHO, NA);
-			if (goodbrd_mkdir(cbrd, name, title, 0) == 0) {
-				cp->valid = false;
-				return PARTUPDATE;
-			}
-		}
+	if (l->fcount >= FAV_BOARD_LIMIT) {
+		presskeyfor("收藏夹已满", t_lines - 1);
 		return MINIUPDATE;
+	}
+
+	GBK_UTF8_BUFFER(name, BOARD_NAME_LEN);
+	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
+
+	getdata(t_lines - 1, 0, "创建自定义目录: ", gbk_name, BOARD_NAME_LEN + 1,
+			DOECHO, YEA);
+	if (gbk_name[0] != '\0') {
+		strlcpy(gbk_descr, "自定义目录", sizeof(gbk_descr));
+		getdata(t_lines - 1, 0, "自定义目录描述: ", gbk_descr,
+				sizeof(gbk_descr), DOECHO, NA);
+
+		convert_g2u(gbk_name, utf8_name);
+		convert_g2u(gbk_descr, utf8_descr);
+
+		if (fav_board_mkdir(session.uid, utf8_name, utf8_descr)) {
+			p->valid = false;
+			return PARTUPDATE;
+		}
+	}
+	return MINIUPDATE;
+}
+
+static int tui_favorite_rename(tui_list_t *p)
+{
+	board_list_t *l = p->data;
+
+	board_t *bp = &(l->indices[p->cur]->board);
+
+	if (!HAS_PERM(PERM_LOGIN) || !l->favorite
+			|| !(bp->flag & BOARD_CUSTOM_FLAG))
+		return DONOTHING;
+
+	GBK_UTF8_BUFFER(name, BOARD_NAME_LEN);
+	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
+
+	strlcpy(gbk_name, bp->name, sizeof(gbk_name));
+	getdata(t_lines - 1, 0, "修改自定义目录名: ", gbk_name, BOARD_NAME_LEN,
+			DOECHO, NA);
+	if (gbk_name[0] != '\0' && !streq(gbk_name, bp->name)) {
+		strlcpy(gbk_descr, bp->descr, sizeof(gbk_descr));
+		getdata(t_lines - 1, 0, "自定义目录描述: ", gbk_descr,
+				BOARD_DESCR_CCHARS, DOECHO, NA);
+
+		convert_g2u(gbk_name, utf8_name);
+		convert_g2u(gbk_descr, utf8_descr);
+
+		if (fav_board_rename(session.uid, bp->id, utf8_name, utf8_descr)) {
+			strlcpy(bp->name, gbk_name, sizeof(bp->name));
+			strlcpy(bp->descr, gbk_descr, sizeof(bp->descr));
+			return PARTUPDATE;
+		}
 	}
 	return DONOTHING;
 }
 
-/**
- * Rename directory when browsing favorites.
- * @param cp browsing status.
- * @return update status.
- */
-static int tui_goodbrd_rename(tui_list_t *cp)
+static int tui_favorite_rm(tui_list_t *p)
 {
-	choose_board_t *cbrd = cp->data;
+	board_list_t *l = p->data;
+	board_t *bp = &(l->indices[p->cur]->board);
 
-	if (!HAS_PERM(PERM_LOGIN) || !cbrd->goodbrd)
-		return DONOTHING;
-
-	if ((cbrd->parent == 0) && cbrd->num
-			&& (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG)) {
-
-		int gbid;
-		for (gbid = 0; gbid < cbrd->gnum; gbid++) {
-			if (cbrd->gbrds[gbid].id == cbrd->brds[cp->cur].pos)
-				break;
-		}
-		if (gbid == cbrd->gnum)
-			return DONOTHING;
-
-		gbrdh_t *gbp = cbrd->gbrds + gbid;
-		char name[STRLEN];
-		char title[STRLEN];
-		strlcpy(name, gbp->filename, sizeof(name));
-		getdata(t_lines - 1, 0, "修改自定义目录名: ", name, 17, DOECHO, NA);
-		if (name[0] != '\0') {
-			strlcpy(title, gbp->title + 11, sizeof(title));
-			getdata(t_lines - 1, 0, "自定义目录描述: ", title, 21, DOECHO, NA);
-			if (title[0] == '\0')
-				strlcpy(title, gbp->title + 11, sizeof(title));
-			strlcpy(gbp->filename, name, sizeof(gbp->filename));
-			strlcpy(gbp->title + 11, title, sizeof(gbp->title) - 11);
-			if (goodbrd_save(cbrd) == 0)
-				return PARTUPDATE;
-		}
-		return MINIUPDATE;
-	}
-	return DONOTHING;
-}
-
-/**
- * Remove board/directory from favorites.
- * @param cp browsing status.
- * @return update status.
- */
-static int tui_goodbrd_rm(tui_list_t *cp)
-{
-	choose_board_t *cbrd = cp->data;
-
-	if (cbrd->goodbrd && cbrd->num > 0) {
+	if (l->favorite) {
 		char buf[STRLEN];
-		snprintf(buf, sizeof(buf), "要把 %s 从收藏夹中去掉？",
-				cbrd->brds[cp->cur].name);
+		snprintf(buf, sizeof(buf), "要把 %s 从收藏夹中去掉？", bp->name);
+
 		if (askyn(buf, false, true)) {
-			if (cbrd->brds[cp->cur].flag & BOARD_CUSTOM_FLAG) {
-				goodbrd_rmdir(cbrd, cbrd->brds[cp->cur].pos);
-			} else {
-				int pos = inGoodBrds(cbrd, cbrd->brds[cp->cur].pos);
-				if (pos) {
-					memmove(cbrd->gbrds + pos - 1, cbrd->gbrds + pos,
-							sizeof(gbrdh_t) * (cbrd->gnum - pos));
-					cbrd->gnum--;
-					goodbrd_save(cbrd);
-				}
-			}
-			cp->valid = false;
+			int ok;
+			if (bp->flag & BOARD_CUSTOM_FLAG)
+				ok = fav_board_rmdir(session.uid, bp->id);
+			else
+				ok = fav_board_rm(session.uid, bp->id);
+			if (ok)
+				p->valid = false;
 			return PARTUPDATE;
 		}
 		return MINIUPDATE;
 	}
 	return DONOTHING;
 }
-#endif
 
 static bool check_newpost(board_t *board)
 {
@@ -972,6 +808,10 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			online_users_show_override();
 			st_changed = true;
 			break;
+		case 'a':
+			return tui_favorite_add(p);
+		case 'A':
+			return tui_favorite_mkdir(p);
 	}
 
 	if (p->cur >= p->all)
@@ -1006,19 +846,15 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			}
 			p->valid = false;
 			return PARTUPDATE;
-		case 'a':
-			return tui_goodbrd_add(cp);
-		case 'A':
-			return tui_goodbrd_mkdir(cp);
-		case 'T':
-			return tui_goodbrd_rename(cp);
-		case 'd':
-			return tui_goodbrd_rm(cp);
-		case 'C':
-			return tui_goodbrd_copy(cp);
-		case 'P':
-			return tui_goodbrd_paste(cp);
 #endif
+		case 'T':
+			return tui_favorite_rename(p);
+		case 'd':
+			return tui_favorite_rm(p);
+		case 'C':
+			return tui_favorite_copy(p);
+		case 'P':
+			return tui_favorite_paste(p);
 		case '\r':
 		case '\n':
 		case KEY_RIGHT:

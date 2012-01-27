@@ -253,7 +253,57 @@ bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder)
 
 	db_res_t *res = db_cmd("INSERT INTO fav_boards (user_id, board, folder)"
 			" VALUES (%"PRIdUID", %d, %d)", uid, bid, folder);
-	bool ok = res;
 	db_clear(res);
-	return ok;
+	return res;
+}
+
+bool fav_board_mkdir(user_id_t uid, const char *name, const char *descr)
+{
+	if (validate_utf8_input(name, BOARD_NAME_LEN) <= 0
+			|| validate_utf8_input(descr, BOARD_DESCR_CCHARS) <= 0)
+		return false;
+
+	db_res_t *res = db_cmd("INSERT INTO fav_board_folders (user_id, name, descr)"
+			" VALUES (%"PRIdUID", %s, %s)", uid, name, descr);
+	db_clear(res);
+	return res;
+}
+
+bool fav_board_rename(user_id_t uid, int id, const char *name, const char *descr)
+{
+	if (validate_utf8_input(name, BOARD_NAME_LEN) <= 0
+			|| validate_utf8_input(descr, BOARD_DESCR_CCHARS) <= 0)
+		return false;
+
+	db_res_t *res = db_cmd("UPDATE fav_board_folders (name, descr)"
+			" VALUES (%s, %s) WHERE id = %d AND user_id = %"PRIdUID,
+			name, descr, id, uid);
+	db_clear(res);
+	return res;
+}
+
+bool fav_board_rmdir(user_id_t uid, int id)
+{
+	db_res_t *res = db_cmd("DELETE FROM fav_board_folders WHERE id = %d"
+			" AND user_id = %"PRIdUID, id, uid);
+	db_clear(res);
+	return res;
+}
+
+bool fav_board_rm(user_id_t uid, int id)
+{
+	db_res_t *res = db_cmd("DELETE FROM fav_boards WHERE id = %d"
+			" AND user_id = %"PRIdUID, id, uid);
+	db_clear(res);
+	return res;
+}
+
+bool fav_board_mv(user_id_t uid, int id, int parent)
+{
+	if (parent < FAV_BOARD_ROOT_FOLDER)
+		parent = FAV_BOARD_ROOT_FOLDER;
+	db_res_t *res = db_cmd("UPDATE fav_boards SET folder = %d"
+			"WHERE user_id = %"PRIdUID" AND board = %d", parent, uid, id);
+	db_clear(res);
+	return res;
 }

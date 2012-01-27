@@ -51,7 +51,9 @@ CREATE TABLE bms (
 
 CREATE TABLE fav_board_folders (
 	id SERIAL PRIMARY KEY,
-	name TEXT
+	user_id INTEGER,
+	name TEXT,
+	descr TEXT
 );
 INSERT INTO fav_board_folders (name) VALUES ('ROOT');
 CREATE TABLE fav_boards (
