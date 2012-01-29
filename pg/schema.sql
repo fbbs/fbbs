@@ -21,34 +21,6 @@ CREATE OR REPLACE VIEW alive_users AS
 	SELECT * FROM users WHERE alive = TRUE;
 CREATE UNIQUE INDEX ON users (lower(name)) WHERE alive = TRUE;
 
-CREATE TABLE board_sectors (
-	id SERIAL PRIMARY KEY,
-	name CHAR,
-	descr TEXT,
-	short_descr TEXT
-);
-CREATE TABLE board_categs (
-	id SERIAL PRIMARY KEY,
-	name TEXT
-);
-CREATE TABLE boards (
-	id SERIAL PRIMARY KEY,
-	name TEXT,
-	descr TEXT,
-	parent INTEGER,
-	flag INTEGER,
-	perm INTEGER,
-	categ INTEGER REFERENCES board_categs,
-	sector INTEGER REFERENCES board_sectors,
-	bms TEXT
-);
-CREATE UNIQUE INDEX ON boards (lower(bms));
-CREATE TABLE bms (
-	user_id INTEGER REFERENCES users,
-	board_id INTEGER REFERENCES boards,
-	UNIQUE (user_id, board_id)
-);
-
 CREATE TABLE fav_board_folders (
 	id SERIAL PRIMARY KEY,
 	user_id INTEGER,
