@@ -21,20 +21,6 @@ CREATE OR REPLACE VIEW alive_users AS
 	SELECT * FROM users WHERE alive = TRUE;
 CREATE UNIQUE INDEX ON users (lower(name)) WHERE alive = TRUE;
 
-CREATE TABLE fav_board_folders (
-	id SERIAL PRIMARY KEY,
-	user_id INTEGER,
-	name TEXT,
-	descr TEXT
-);
-INSERT INTO fav_board_folders (name) VALUES ('ROOT');
-CREATE TABLE fav_boards (
-	user_id INTEGER REFERENCES users,
-	board INTEGER REFERENCES boards,
-	folder INTEGER REFERENCES fav_board_folders
-);
-CREATE UNIQUE INDEX ON fav_boards (user_id, board);
-
 CREATE TABLE prop_categs (
 	id SERIAL PRIMARY KEY,
 	name TEXT

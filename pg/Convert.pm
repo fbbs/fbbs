@@ -1,7 +1,7 @@
 package Convert;
 
 use Exporter 'import';
-@EXPORT = qw(get_options db_connect convert $host $port $db $user $dir $dbh);
+@EXPORT = qw(get_options db_connect convert read_boards $dir $dbh);
 
 use DBI;
 use Encode;
@@ -37,6 +37,32 @@ sub convert
 {
 	my $s = shift;
 	encode('utf8', decode('gbk', $s));
+}
+
+sub read_boards
+{
+	#0 filename 1 nowid 2 group 3 owner 4 bm 5 flag
+	#6 sector 7 category 8 nonsense 9 title
+	#10 level 11 accessed (12 bid [1-based]) (13 db_bid)
+	my ($buf, %hash, @temp, %boards);
+	my $i = 0;
+	my $id = 1;
+	open my $fh, '<', "$dir/.BOARDS" or die "can't open .BOARDS\n";
+	while (1) {
+		last if (read($fh, $buf, 256) != 256);
+		my @t = unpack "Z72IiZ20Z56ia2a4a5Z69ia12", $buf;
+		++$i;
+		if ($t[0]) {
+			push @t, $i, $id;
+			$hash{$i} = $id;
+			$boards{$t[0]} = $id;
+			++$id;
+			push @temp, \@t;
+		}
+	}
+
+	$_->[2] = $_->[2] ? $hash{$_->[2]} : undef foreach (@temp);
+	return \@temp;
 }
 
 1;
