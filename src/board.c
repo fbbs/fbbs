@@ -97,7 +97,6 @@ static void board_complete(int row, const char *prompt, char *name, size_t size)
 	autocomplete(acl, prompt, name, size);
 
 	ac_list_free(acl);
-	return 0;
 }
 
 static int tui_favorite_add(tui_list_t *p)
@@ -288,7 +287,11 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 
 			board->id = db_get_integer(r2, i, 0);
 			convert_u2g(db_get_value(r2, i, 1), board->name);
-			board->flag |= BOARD_CUSTOM_FLAG;
+			convert_u2g(db_get_value(r2, i, 2), board->descr);
+			strlcpy(board->categ, "ÊÕ²Ø", sizeof(board->categ));
+
+			board->flag |= BOARD_CUSTOM_FLAG | BOARD_DIR_FLAG;
+			((board_extra_t *)board)->folder = FAV_BOARD_ROOT_FOLDER;
 
 			++l->count;
 		}
@@ -301,7 +304,7 @@ static void load_favorite_boards(board_list_t *l)
 		db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder "
 				"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
 				"WHERE f.user_id = %"PRIdUID, session.uid);
-		db_res_t *r2 = db_query("SELECT id, name FROM fav_board_folders "
+		db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
 				"WHERE user_id = %"PRIdUID, session.uid);
 
 		res_to_board_array(l, r1, r2);
@@ -338,6 +341,7 @@ static void index_favorite_boards(board_list_t *l)
 		if (p->folder == l->parent)
 			l->indices[l->fcount++] = p;
 	}
+	qsort(l->indices, l->fcount, sizeof(*l->indices), l->cmp);
 }
 
 static void index_boards(board_list_t *l)
@@ -434,44 +438,48 @@ static int search_board(const choose_board_t *cbrd, int *num)
 	}
 	return 1;
 }
+#endif
 
-int unread_position(char *dirfile, board_data_t *ptr)
+// TODO: rewrite
+int unread_position(board_t *bp)
 {
 	struct fileheader fh;
-	char filename[STRLEN];
-	int fd, offset, step, num;
-	num = ptr->total + 1;
-	if (ptr->unread && (fd = open (dirfile, O_RDWR))> 0) {
-		if (!brc_initial (currentuser.userid, ptr->name)) {
-			num = 1;
-		} else {
-			offset = (int) ((char *) &(fh.filename[0]) - (char *) &(fh));
-			num = ptr->total - 1;
-			step = 4;
-			while (num> 0) {
-				lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
-				if (read (fd, filename, STRLEN) <= 0 || !brc_unread (filename))
+
+	char file[HOMELEN];
+	setbdir(file, currboard);
+	int fd = open(file, O_RDONLY);
+	if (fd < 0)
+		return 0;
+
+	int offset = offsetof(struct fileheader, filename);
+	int num, total = lseek(fd, 0, SEEK_END) / sizeof(fh);
+
+	if (brc_unread1((brdshm->bstatus[bp->id]).lastpost)) {
+		char filename[STRLEN];
+		num = total - 1;
+		int step = 4;
+		while (num > 0) {
+			lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
+			if (read (fd, filename, STRLEN) <= 0 || !brc_unread (filename))
 				break;
-				num -= step;
-				if (step < 32)
+			num -= step;
+			if (step < 32)
 				step += step / 2;
-			}
-			if (num < 0)
+		}
+		if (num < 0)
 			num = 0;
-			while (num < ptr->total) {
-				lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
-				if (read (fd, filename, STRLEN) <= 0 || brc_unread (filename))
+		while (num < total) {
+			lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
+			if (read (fd, filename, STRLEN) <= 0 || brc_unread (filename))
 				break;
-				num++;
-			}
+			num++;
 		}
 		close (fd);
 	}
 	if (num < 0)
-	num = 0;
+		num = 0;
 	return num;
 }
-#endif
 
 static bool is_zapped(board_list_t *l, board_t *board)
 {
@@ -519,7 +527,7 @@ static tui_list_display_t board_list_display(tui_list_t *p, int n)
 	strlcpy(descr, board->descr, sizeof(descr));
 	ellipsis(descr, 20);
 
-	prints("%c%-17s %s%s%6s %-20s %c ",
+	prints("%c%-17s %s%s[%4s] %-20s %c ",
 			(is_zapped(l, board)) ? '*' : ' ', board->name,
 			(board->flag & BOARD_VOTE_FLAG) ? "\033[1;31mV\033[m" : " ",
 			(board->flag & BOARD_CLUB_FLAG) ? (board->flag & BOARD_READ_FLAG)
@@ -631,6 +639,31 @@ static int show_hotspot(void)
 
 static int read_board(tui_list_t *p)
 {
+	board_list_t *l = p->data;
+	board_t *bp = &(l->indices[p->cur]->board);
+
+	if (bp->flag & BOARD_DIR_FLAG) {
+		;
+	} else {
+		brc_initial(currentuser.userid, bp->name);
+		changeboard(&currbp, currboard, bp->name);
+		memcpy(currBM, bp->bms, BM_LEN - 1);
+
+		if (DEFINE(DEF_FIRSTNEW)) {
+			int tmp = unread_position(bp);
+			int page = tmp - t_lines / 2;
+
+			char file[STRLEN];
+			setbdir(file, currboard);
+			getkeep(file, page > 1 ? page : 1, tmp + 1);
+		}
+
+		board_read();
+
+		brc_zapbuf(l->zapbuf + bp->id);
+		currBM[0] = '\0';
+	}
+
 	return FULLUPDATE;
 }
 
@@ -710,7 +743,7 @@ static int board_list_init(board_list_t *p)
 	
 	load_zapbuf(p);
 
-	if (streq(currentuser.userid, "guest"))
+	if (!streq(currentuser.userid, "guest"))
 		p->yank = true;
 
 	char flag = currentuser.flags[0];
@@ -901,14 +934,14 @@ int tui_board_list(board_list_t *l)
 
 int tui_all_boards(const char *cmd)
 {
-	board_list_t l;
+	board_list_t l = { .recursive = 0 };
 	board_list_init(&l);
 	return tui_board_list(&l);
 }
 
 int tui_unread_boards(const char *cmd)
 {
-	board_list_t l;
+	board_list_t l = { .recursive = 0 };
 	board_list_init(&l);
 	l.newflag = true;
 	return tui_board_list(&l);
@@ -916,17 +949,21 @@ int tui_unread_boards(const char *cmd)
 
 int tui_read_sector(const char *cmd)
 {
-	board_list_t l;
+	board_list_t l = { .recursive = 0 };
 	board_list_init(&l);
 
-	// TODO: figure out how to integrate with terminal menu
+	char c = *cmd;
+	if (c > 'A')
+		l.sector = c - 'A' + 1;
+	else
+		l.sector = c - '0' + 1;
 
 	return tui_board_list(&l);
 }
 
 int tui_favorite_boards(const char *cmd)
 {
-	board_list_t l;
+	board_list_t l = { .recursive = 0 };
 	board_list_init(&l);
 
 	l.favorite = true;

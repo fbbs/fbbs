@@ -152,7 +152,7 @@ int get_board(const char *name, board_t *bp)
 {
 	bp->id = 0;
 	db_res_t *res = db_query(
-			BOARD_SELECT_QUERY_BASE "WHERE lower(name) = lower(%s)", name);
+			BOARD_SELECT_QUERY_BASE "WHERE lower(b.name) = lower(%s)", name);
 	if (res && db_res_rows(res) > 0)
 		res_to_board(res, 0, bp);
 	db_clear(res);
@@ -175,9 +175,16 @@ void board_to_gbk(board_t *bp)
 	GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
 	convert_u2g(bp->descr, gbk_descr);
 	strlcpy(bp->descr, gbk_descr, sizeof(bp->descr));
+
 	GBK_BUFFER(categ, BOARD_CATEG_CCHARS);
 	convert_u2g(bp->categ, gbk_categ);
 	strlcpy(bp->categ, gbk_categ, sizeof(bp->categ));
+
+	if ((bp->flag & BOARD_DIR_FLAG) && (bp->name[0] & 0x80)) {
+		GBK_BUFFER(name, BOARD_NAME_LEN / 2);
+		convert_u2g(bp->name, gbk_name);
+		strlcpy(bp->name, gbk_name, sizeof(bp->name));
+	}
 }
 
 bool is_board_manager(const struct userec *up, const board_t *bp)
@@ -244,6 +251,7 @@ bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder)
 		if (!get_board_by_bid(bid, &b))
 			return false;
 	}
+	bid = b.id;
 	
 	if (!has_read_perm(&currentuser, &b))
 		return false;
@@ -292,7 +300,7 @@ bool fav_board_rmdir(user_id_t uid, int id)
 
 bool fav_board_rm(user_id_t uid, int id)
 {
-	db_res_t *res = db_cmd("DELETE FROM fav_boards WHERE id = %d"
+	db_res_t *res = db_cmd("DELETE FROM fav_boards WHERE board = %d"
 			" AND user_id = %"PRIdUID, id, uid);
 	db_clear(res);
 	return res;
