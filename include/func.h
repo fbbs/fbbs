@@ -64,7 +64,6 @@ void log_usies(const char *mode, const char *mesg, const struct userec *user);
 void log_attempt(const char *name, const char *addr, const char *type);
 
 //board.c
-int changeboard(struct boardheader **bp, char *cboard, const char *board);
 int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
 int hasreadperm(const struct userec *user, const struct boardheader *bp);

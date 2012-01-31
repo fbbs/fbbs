@@ -45,7 +45,7 @@ int bbsdel_main(void)
 		return BBS_ENOFILE;
 	}
 	bool self = !strcmp(ptr->owner, currentuser.userid);
-	if (!self && !is_board_manager(&currentuser, &board)) {
+	if (!self && !am_bm(&board)) {
 		record_close(&r);
 		return BBS_EACCES;
 	}

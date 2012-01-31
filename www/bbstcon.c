@@ -138,7 +138,7 @@ int bbstcon_main(void)
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session();
 
-	bool isbm = is_board_manager(&currentuser, &board);
+	bool isbm = am_bm(&board);
 	if (action != 'p') {
 		begin = fh;
 		end = fh + c;

@@ -50,7 +50,8 @@ extern int get_board(const char *name, board_t *bp);
 extern int get_board_by_bid(int bid, board_t *bp);
 extern void res_to_board(db_res_t *res, int row, board_t *bp);
 extern void board_to_gbk(board_t *bp);
-extern bool is_board_manager(const struct userec *up, const board_t *bp);
+extern bool is_bm(const struct userec *up, const board_t *bp);
+#define am_bm(bp)  is_bm(&currentuser, bp)
 extern bool has_read_perm(const struct userec *up, const board_t *bp);
 extern bool has_post_perm(const struct userec *up, const board_t *bp);
 
@@ -60,5 +61,9 @@ extern bool fav_board_rename(user_id_t uid, int id, const char *name, const char
 extern bool fav_board_rmdir(user_id_t uid, int id);
 extern bool fav_board_rm(user_id_t uid, int id);
 extern bool fav_board_mv(user_id_t uid, int id, int parent);
-	
+
+extern char currboard[];
+extern board_t *currbp;
+extern void change_board(board_t *bp);
+
 #endif // FB_BOARD_H

@@ -274,7 +274,6 @@ extern struct userec lookupuser; /* Used when searching for other user info */
 
 extern char currboard[]; /* name of currently selected board */
 extern char currBM[]; /* BM of currently selected board */
-extern struct boardheader *currbp; // boardheader pointer to currently selected board
 
 extern int selboard; /* THis flag is true if above is active */
 

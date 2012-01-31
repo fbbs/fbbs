@@ -4,19 +4,16 @@
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 
-// Copies 'board' to 'cboard' and sets 'bpp' accordingly.
-// Returns 0 on success, -1 on error.
-int changeboard(struct boardheader **bpp, char *cboard, const char *board)
+char currboard[STRLEN - BM_LEN];
+static board_t curr_board;
+board_t *currbp = &curr_board;
+
+void change_board(board_t *bp)
 {
-	if (bpp == NULL || cboard == NULL || board == NULL)
-		return -1;
-
-	*bpp = getbcache(board);
-	if (*bpp == NULL)
-		return -1;
-
-	strcpy(cboard, board);
-	return 0;
+	if (!bp)
+		return;
+	memcpy(currbp, bp, sizeof(*currbp));
+	strcpy(currboard, bp->name);
 }
 
 int chkBM(const struct boardheader *bp, const struct userec *up)
@@ -30,8 +27,7 @@ int chkBM(const struct boardheader *bp, const struct userec *up)
 	if (bp->flag & BOARD_CLUB_FLAG) {
 		if(up->userlevel & PERM_OCLUB)
 			return YEA;
-	}
-	else {
+	} else {
 		if (up->userlevel & PERM_BLEVELS)
 			return YEA;
 	}
@@ -187,7 +183,7 @@ void board_to_gbk(board_t *bp)
 	}
 }
 
-bool is_board_manager(const struct userec *up, const board_t *bp)
+bool is_bm(const struct userec *up, const board_t *bp)
 {
 	if ((bp->flag & BOARD_CLUB_FLAG) && (up->userlevel & PERM_OCLUB))
 		return true;
@@ -212,8 +208,7 @@ bool has_read_perm(const struct userec *up, const board_t *bp)
 {
 	// Read restricted club
 	if ((bp->flag & BOARD_CLUB_FLAG) && (bp->flag & BOARD_READ_FLAG)
-			&& !is_board_manager(up, bp)
-			&& !isclubmember(up->userid, bp->name))
+			&& !is_bm(up, bp) && !isclubmember(up->userid, bp->name))
 		return false;
 
 	if (bp->perm == 0)
@@ -231,7 +226,7 @@ bool has_post_perm(const struct userec *up, const board_t *bp)
 	if (!HAS_PERM2(PERM_POST, up) || !HAS_PERM2(bp->perm, up))
 		return false;
 
-	if ((bp->flag & BOARD_CLUB_FLAG) && !is_board_manager(up, bp)
+	if ((bp->flag & BOARD_CLUB_FLAG) && !is_bm(up, bp)
 			&& !isclubmember(up->userid, bp->name))
 		return false;
 

@@ -116,7 +116,7 @@ int bbssnd_main(void)
 		fid = strtoul(f, NULL, 10);
 		if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
-		if (!is_board_manager(&currentuser, &board)
+		if (!am_bm(&board)
 				&& !streq(fh.owner, currentuser.userid)) {
 			if (!isedit && fh.accessed[0] & FILE_NOREPLY)
 				return BBS_EPST;

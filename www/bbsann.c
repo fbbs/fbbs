@@ -13,7 +13,7 @@ static bool hasannperm(const char *title, const struct userec *user,
 {
 	if ((strstr(title, "BM: SYSOPS") && !HAS_PERM2(PERM_SYSOPS, user))
 			|| (strstr(title, "BM: OBOARDS") && !HAS_PERM2(PERM_OBOARDS, user))
-			|| (strstr(title, "BM: BMS") && !is_board_manager(user, board)))
+			|| (strstr(title, "BM: BMS") && !is_bm(user, board)))
 		return false;
 	return true;		
 }

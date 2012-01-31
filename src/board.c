@@ -646,7 +646,7 @@ static int read_board(tui_list_t *p)
 		;
 	} else {
 		brc_initial(currentuser.userid, bp->name);
-		changeboard(&currbp, currboard, bp->name);
+		change_board(bp);
 		memcpy(currBM, bp->bms, BM_LEN - 1);
 
 		if (DEFINE(DEF_FIRSTNEW)) {

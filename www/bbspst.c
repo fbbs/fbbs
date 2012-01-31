@@ -93,7 +93,7 @@ static int do_bbspst(bool isedit)
 			return BBS_ENOFILE;
 		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
 			return BBS_EPST;
-		if (isedit && !is_board_manager(&currentuser, &board)
+		if (isedit && !am_bm(&board)
 				&& strcmp(fh.owner, currentuser.userid))
 			return BBS_EACCES;
 		char file[HOMELEN];

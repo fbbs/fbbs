@@ -28,9 +28,7 @@ int hisfriend_wall_logout();
 int digestmode;
 int local_article;
 struct userec currentuser;
-struct boardheader *currbp;
 int usernum = 0;
-char currboard[STRLEN - BM_LEN];
 char currBM[BM_LEN - 1];
 int selboard = 0;
 char someoneID[31];
@@ -1024,7 +1022,7 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	selboard = 1;
 	brc_update(currentuser.userid, currboard);
 	brc_initial(currentuser.userid, bname);
-	changeboard(&currbp, currboard, bname);
+	change_board(&board);
 
 	move(0, 0);
 	clrtoeol();
@@ -1529,7 +1527,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 			strcpy(type, "ÆÕÍ¨");
 	} else {
 		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%"PRIdPTR"&f=%u%s\n",
-				BBSHOST, currbp - bcache + 1, fileinfo->id,
+				BBSHOST, currbp->id, fileinfo->id,
 				fileinfo->accessed[1] & FILE_NOTICE ? "&s=1" : "");
 		unread = brc_unread(fileinfo->filename);
 		if (fileinfo->accessed[0] & FILE_DIGEST) {

@@ -162,7 +162,7 @@ int bm_log(const char *user, const char *name, int type, int value)
 	char direct[STRLEN];
 
 	board_t board;
-	if (!get_board(name, &board) || !is_board_manager(&currentuser, &board))
+	if (!get_board(name, &board) || !am_bm(&board))
 		return 0;
 
 	sprintf(direct, "boards/%s/.bm.%s", name, user);

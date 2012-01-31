@@ -136,7 +136,7 @@ int bbscon_main(void)
 
 	print_session();
 
-	bool isbm = is_board_manager(&currentuser, &board);
+	bool isbm = am_bm(&board);
 	bool noreply = fh.accessed[0] & FILE_NOREPLY && !isbm;
 	bool self = streq(fh.owner, currentuser.userid);
 	printf("<po fid='%u'%s%s%s%s%s%s", fid,
