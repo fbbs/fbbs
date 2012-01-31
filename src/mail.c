@@ -27,6 +27,7 @@ extern struct postheader header;
 #include "bbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 /*For read.c*/

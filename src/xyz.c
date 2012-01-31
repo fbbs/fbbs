@@ -26,6 +26,7 @@
 #define EXTERN
 #include "bbs.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 int use_define = 0;
 int child_pid = 0;

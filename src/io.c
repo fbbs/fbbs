@@ -907,7 +907,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 	int ingetdata = true;
 
 	if (clearlabel == YEA)
-		memset(buf, 0, sizeof(buf));
+		memset(buf, 0, len);
 	move(line, col);
 	if (prompt)
 		prints("%s", prompt);

@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 static time_t calltime = 0;

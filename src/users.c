@@ -2,6 +2,7 @@
 #include "record.h"
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
