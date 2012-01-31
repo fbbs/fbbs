@@ -66,7 +66,6 @@ void log_attempt(const char *name, const char *addr, const char *type);
 //board.c
 int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
-bool haspostperm(const struct userec *user, const struct boardheader *bp);
 const char *get_board_desc(const struct boardheader *bp);
 
 //mail.c

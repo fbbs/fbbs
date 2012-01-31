@@ -66,20 +66,6 @@ int isclubmember(const char *member, const char *board)
 	return 0;
 }
 
-bool haspostperm(const struct userec *user, const struct boardheader *bp)
-{
-	if (bp == NULL || user == NULL || !HAS_PERM2(PERM_POST, user)
-			|| !HAS_PERM2(bp->level, user))
-		return false;
-	if ((bp->flag & BOARD_CLUB_FLAG)
-			&& !chkBM(bp, user)
-			&& !isclubmember(user->userid, bp->filename))
-		return false;
-	char buf[STRLEN];
-	setbfile(buf, bp->filename, "deny_users");
-	return !seek_in_file(buf, user->userid);
-}
-
 bool is_junk_board(const board_t *bp)
 {
 	if (bp && (bp->flag & BOARD_JUNK_FLAG))

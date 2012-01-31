@@ -870,7 +870,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 #ifndef NOREPLY
 		move(t_lines - 1, 0);
 		clrtoeol();
-		if (haspostperm(&currentuser, currbp)) {
+		if (has_post_perm(&currentuser, currbp)) {
 			prints("\033[0;1;44;31m[阅读文章]  \033[33m回信 R │ 结束 Q,← │上一封 ↑│下一封 <Space>,↓│主题阅读 ^s或p \033[m");
 		} else {
 			prints("\033[1;44;31m[阅读文章]  \033[33m结束 Q,← │上一封 ↑│下一封 <Space>,<Enter>,↓│主题阅读 p       \033[m");
