@@ -68,7 +68,6 @@ int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
 int hasreadperm(const struct userec *user, const struct boardheader *bp);
 bool haspostperm(const struct userec *user, const struct boardheader *bp);
-int junkboard(const struct boardheader *bp);
 bool is_board_dir(const struct boardheader *bp);
 const char *get_board_desc(const struct boardheader *bp);
 

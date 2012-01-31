@@ -65,5 +65,6 @@ extern bool fav_board_mv(user_id_t uid, int id, int parent);
 extern char currboard[];
 extern board_t *currbp;
 extern void change_board(board_t *bp);
+extern bool junkboard(const board_t *bp);
 
 #endif // FB_BOARD_H

@@ -91,7 +91,6 @@ extern struct bstat *getbstat();
 
 
 int check_stuffmode() {
-	//if (uinfo.mode == RMAIL || (uinfo.mode == READING && junkboard()))
 	if (uinfo.mode == ST_RMAIL) //modified by roly 02.03.27
 		return YEA;
 	else
@@ -2143,7 +2142,7 @@ int post_article(char *postboard, char *mailid) {
 	sprintf(buf, "posted '%s' on %s", postfile.title, currboard);
 	report(buf, currentuser.userid);
 
-	if (!junkboard(currbp) && !header.chk_anony) {
+	if (!is_junk_board(currbp) && !header.chk_anony) {
 		set_safe_record();
 		currentuser.numposts++;
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
@@ -2549,7 +2548,7 @@ int delete_range(char *filename, int id1, int id2)
 						subflag = rptr->accessed[0] & FILE_DELETED ? YEA : NA;
 						canceltotrash(filename, currentuser.userid, rptr,
 								subflag, !HAS_PERM(PERM_OBOARDS));
-						if (subflag == YEA && !junkboard(currbp)) {
+						if (subflag == YEA && !is_junk_board(currbp)) {
 							lookupuid = getuser(rptr->owner);
 							if (lookupuid> 0 && lookupuser.numposts > 0) {
 								lookupuser.numposts--;
@@ -2688,7 +2687,7 @@ int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 	delete_record(buf, sizeof(struct fileheader), ent, cmpfilename,
 			fileinfo->filename);
 	owned = getuser(fileinfo->owner);
-	if (!junkboard(currbp) && subflag && owned != 0 && atoi(fileinfo->filename
+	if (!is_junk_board(currbp) && subflag && owned != 0 && atoi(fileinfo->filename
 			+ 2) > lookupuser.firstlogin) {
 		lookupuser.numposts++;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec),
@@ -2789,7 +2788,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		sprintf(genbuf, "%s/%s", buf, fileinfo->filename);
 		if (digestmode > 0)
 			unlink(genbuf);
-		if (!junkboard(currbp) && !digestmode) {
+		if (!is_junk_board(currbp) && !digestmode) {
 			if (owned && IScurrent) {
 				set_safe_record();
 				if (currentuser.numposts > 0 && subflag == YEA)

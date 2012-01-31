@@ -105,16 +105,11 @@ bool haspostperm(const struct userec *user, const struct boardheader *bp)
 	return !seek_in_file(buf, user->userid);
 }
 
-// Check if board 'bp' is JUNK (posts not counted).
-// Returns 1 if 'bp' is JUNK, 0 if 'bp' is NULL or not JUNK.
-int junkboard(const struct boardheader *bp)
+bool is_junk_board(const board_t *bp)
 {
-	if (bp == NULL)
-		return 0;
-	if (bp->flag & BOARD_JUNK_FLAG)
-		return 1;
-
-	return 0;
+	if (bp && (bp->flag & BOARD_JUNK_FLAG))
+		return true;
+	return false;
 }
 
 bool is_board_dir(const struct boardheader *bp)
