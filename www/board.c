@@ -56,3 +56,35 @@ int web_brdadd(void)
 	}
 	return BBS_EBRDQE;
 }
+
+int web_sel(void)
+{
+	xml_header("bbssel");
+	printf("<bbssel>");
+	print_session();
+
+	const char *brd = get_param("brd");
+	if (*brd != '\0') {
+		char name[BOARD_NAME_LEN + 3];
+		snprintf(name, sizeof(name), "%%%s%%", brd);
+
+		db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE
+				"WHERE lower(b.name) LIKE %s", name);
+		if (res && db_res_rows(res) > 0) {
+			board_t board;
+			for (int i = 0; i < db_res_rows(res); ++i) {
+				res_to_board(res, i, &board);
+				if (has_read_perm(&currentuser, &board)) {
+					board_to_gbk(&board);
+					printf("<brd dir='%d' title='%s' desc='%s' />",
+							is_board_dir(&board), board.name, board.descr);
+				}
+			}
+		} else {
+			printf("<notfound/>");
+		}
+		db_clear(res);
+	}
+	printf("</bbssel>");
+	return 0;
+}

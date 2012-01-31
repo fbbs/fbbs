@@ -46,7 +46,7 @@ extern int bbsfwd_main(void);
 extern int bbsinfo_main(void);
 extern int bbspwd_main(void);
 extern int bbsedit_main(void);
-extern int bbssel_main(void);
+extern int web_sel(void);
 extern int bbsrss_main(void);
 extern int bbsovr_main(void);
 extern int bbstop10_main(void);
@@ -117,7 +117,7 @@ const static web_handler_t handlers[] = {
 	{ "reg", fcgi_reg, ST_NEW },
 	{ "rss", bbsrss_main, ST_READING },
 	{ "sec", bbssec_main, ST_READBRD },
-	{ "sel", bbssel_main, ST_SELECT },
+	{ "sel", web_sel, ST_SELECT },
 	{ "sig", bbssig_main, ST_EDITUFILE },
 	{ "sigopt", web_sigopt, ST_GMENU },
 	{ "snd", bbssnd_main, ST_POSTING },

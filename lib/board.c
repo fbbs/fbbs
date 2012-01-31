@@ -66,31 +66,6 @@ int isclubmember(const char *member, const char *board)
 	return 0;
 }
 
-// Checks if 'user' have read permission to board 'bp'.
-// Returns 1 for true, 0 for false or NULL pointers.
-int hasreadperm(const struct userec *user, const struct boardheader *bp)
-{
-	if (bp == NULL || user == NULL)
-		return 0;
-
-	// Read restricted club
-	if ((bp->flag & BOARD_CLUB_FLAG)
-			&& (bp->flag & BOARD_READ_FLAG)
-			&& !chkBM(bp, user)
-			&& !isclubmember(user->userid, bp->filename))
-		return 0;
-
-	// Following lines deal with non-clubs.
-	if (bp->level == 0)
-		return 1;
-	if (bp->flag & (BOARD_POST_FLAG | BOARD_NOZAP_FLAG))
-		return 1;
-	if (user->userlevel & bp->level)
-		return 1;
-
-	return 0;
-}
-
 bool haspostperm(const struct userec *user, const struct boardheader *bp)
 {
 	if (bp == NULL || user == NULL || !HAS_PERM2(PERM_POST, user)
@@ -112,7 +87,7 @@ bool is_junk_board(const board_t *bp)
 	return false;
 }
 
-bool is_board_dir(const struct boardheader *bp)
+bool is_board_dir(const board_t *bp)
 {
 	return (bp->flag & BOARD_DIR_FLAG);
 }
