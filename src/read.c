@@ -697,7 +697,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			return DONOTHING;
 		if (fileinfo->owner[0] == '-')
 			return DONOTHING;
-		if (!chkBM(currbp, &currentuser))
+		if (!am_curr_bm())
 			return DONOTHING;
 	}
 	saveline(t_lines - 1, 0);
@@ -979,7 +979,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 
 	if (uinfo.mode != ST_READING)
 		return DONOTHING;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return DONOTHING;
 	saveline(t_lines - 1, 0);
 	if (digestmode != TRASH_MODE && digestmode != JUNK_MODE)
@@ -1524,7 +1524,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle) {
 					return DONOTHING;
 				noreply = (ptitle->accessed[0] & FILE_NOREPLY)
 						|| (board.flag & BOARD_NOREPLY_FLAG);
-				if (!noreply || chkBM(currbp, &currentuser)) {
+				if (!noreply || am_curr_bm()) {
 					local_article=!(ptitle->filename[STRLEN-1]=='S');
 					do_reply(ptitle);
 				} else {

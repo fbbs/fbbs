@@ -147,7 +147,7 @@ int club_user(void)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if ((board.flag & BOARD_CLUB_FLAG) && chkBM(currbp, &currentuser)) {
+	if ((board.flag & BOARD_CLUB_FLAG) && am_curr_bm()) {
 		setbfile(file, currboard, "club_users");
 		list_text(file, club_title_show, club_key_deal, NULL);
 		return FULLUPDATE;

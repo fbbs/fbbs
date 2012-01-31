@@ -90,7 +90,7 @@ int b_notes_edit()
 	int aborted;
 	int notetype;
 
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	clear();
 	move(0, 0);
@@ -160,7 +160,7 @@ int b_notes_edit() {
 	char ans[4];
 	int aborted;
 	int notetype;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	clear();
 	move(1, 0);
@@ -218,7 +218,7 @@ int b_notes_passwd() {
 	char passbuf[20], prepass[20];
 	char buf[STRLEN];
 
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	clear();
 	move(1, 0);
@@ -510,7 +510,7 @@ int vote_maintain(char *bname) {
 	struct votebal *ball = &currvote;
 
 	setcontrolfile();
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	stand_title("¿ªÆôÍ¶Æ±Ïä");
 	makevdir(bname);
@@ -1027,14 +1027,14 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'A':
 		case 'a':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return YEA;
 			vote_maintain(currboard);
 			deal = 1;
 			break;
 		case 'O':
 		case 'o':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return YEA;
 			clear();
 			deal = 1;
@@ -1057,7 +1057,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'M':
 		case 'm':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return YEA;
 			clear();
 			deal = 1;
@@ -1082,7 +1082,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'D':
 		case 'd':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return 1;
 			deal = 1;
 			get_record(controlfile, &currvote, sizeof(struct votebal),

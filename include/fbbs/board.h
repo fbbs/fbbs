@@ -52,6 +52,7 @@ extern void res_to_board(db_res_t *res, int row, board_t *bp);
 extern void board_to_gbk(board_t *bp);
 extern bool is_bm(const struct userec *up, const board_t *bp);
 #define am_bm(bp)  is_bm(&currentuser, bp)
+#define am_curr_bm()  is_bm(&currentuser, currbp)
 extern bool has_read_perm(const struct userec *up, const board_t *bp);
 extern bool has_post_perm(const struct userec *up, const board_t *bp);
 

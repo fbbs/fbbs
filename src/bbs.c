@@ -619,7 +619,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 		else
 			type = 'W';
 	}
-	if (ent->accessed[1] & FILE_IMPORTED && chkBM(currbp, &currentuser)){
+	if (ent->accessed[1] & FILE_IMPORTED && am_curr_bm()){
 		if (type == ' ')
 			strcpy(typeprefix, "\033[42m");
 		else
@@ -923,7 +923,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 			noreply = (fileinfo->accessed[0] & FILE_NOREPLY)
 					|| (board.flag & BOARD_NOREPLY_FLAG);
 			local_article = !(fileinfo->filename[STRLEN - 2] == 'S');
-			if (!noreply || chkBM(currbp, &currentuser)) {
+			if (!noreply || am_curr_bm()) {
 				do_reply(fileinfo);
 			} else {
 				clear();
@@ -1171,7 +1171,7 @@ void dele_digest(char *dname, char *direc) {
 int digest_post(int ent, struct fileheader *fhdr, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
 
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 	if (digestmode == YEA)
@@ -1996,7 +1996,7 @@ int post_article(char *postboard, char *mailid) {
 
 	memset(&postfile, 0, sizeof (postfile));
 	//俱乐部
-	if ((board.flag & BOARD_CLUB_FLAG) && !chkBM(currbp, &currentuser)
+	if ((board.flag & BOARD_CLUB_FLAG) && !am_curr_bm()
 			&& !isclubmember(currentuser.userid, postboard)) {
 		move(3, 0);
 		clrtobot();
@@ -2211,7 +2211,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 		return DONOTHING;
 
 	if (!in_mail) {
-		if (!chkBM(currbp, &currentuser)) {
+		if (!am_curr_bm()) {
 			if (!IsTheFileOwner(fileinfo))
 				return DONOTHING;
 			board_t board;
@@ -2275,7 +2275,7 @@ int edit_title(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!strcmp(currboard, "GoneWithTheWind") || digestmode == ATTACH_MODE)
 		return DONOTHING;
 
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		if (!IsTheFileOwner(fileinfo))
 			return DONOTHING;
 		board_t board;
@@ -2339,7 +2339,7 @@ int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
 
 	/* Modified by Amigo 2002.06.27. Poster can't set or unset noreply tag. */
 	//      if(!chk_currBM(currBM)&&!IsTheFileOwner(fileinfo)) {
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 #ifdef ENABLE_NOTICE
@@ -2380,7 +2380,7 @@ int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
 }
 
 int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct) {
-	if (!(chkBM(currbp, &currentuser)) || fileinfo->accessed[0] & (FILE_MARKED
+	if (!(am_curr_bm()) || fileinfo->accessed[0] & (FILE_MARKED
 			| FILE_DIGEST)) {
 		return DONOTHING;
 	}
@@ -2407,7 +2407,7 @@ int make_notice (int ent, struct fileheader *fh, char *direct)
 
 	if (digestmode != NA)
 	return DONOTHING;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 	return DONOTHING;
 	get_noticedirect (direct, path);
 	if (fh->accessed[1] & FILE_NOTICE) {
@@ -2451,7 +2451,7 @@ int move_notice(int ent, struct fileheader *fh, char *direct) {
 	int lockfd;
 	if (digestmode!=NA)
 		return DONOTHING;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return DONOTHING;
 	if (fh->accessed[1]&FILE_NOTICE) {
 		get_noticedirect(direct, path);
@@ -2479,7 +2479,7 @@ int move_notice(int ent, struct fileheader *fh, char *direct) {
 int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
 
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 #ifdef ENABLE_NOTICE
@@ -2599,7 +2599,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	int inum1, inum2;
 
 	if (uinfo.mode == ST_READING) {
-		if (!chkBM(currbp, &currentuser)) {
+		if (!am_curr_bm()) {
 			return DONOTHING;
 		}
 	}
@@ -2740,7 +2740,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 	} else
 		owned = posttime > currentuser.firstlogin;
 
-	if (hasjudge == YEA && !chkBM(currbp, &currentuser)) {
+	if (hasjudge == YEA && !am_curr_bm()) {
 		if (!(owned && IScurrent))
 			return DONOTHING;
 		board_t board;
@@ -2836,7 +2836,7 @@ int new_flag_clear(int ent, struct fileheader *fileinfo, char *direct) {
 int Save_post(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!HAS_PERM(PERM_BOARDS) || digestmode == ATTACH_MODE)
 		return DONOTHING;
-	if (!in_mail && !chkBM(currbp, &currentuser))
+	if (!in_mail && !am_curr_bm())
 		return DONOTHING;
 
 	return (a_Save("0Announce", currboard, fileinfo, NA));
@@ -2991,7 +2991,7 @@ int forward_u_post (int ent, struct fileheader *fileinfo, char *direct)
 int read_trash(int ent, struct fileheader *fileinfo, char *direct) {
 	extern char currdirect[STRLEN];
 
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 	digestmode = TRASH_MODE;
@@ -3045,7 +3045,7 @@ int show_online(void)
 		return DONOTHING;
 	}
 #ifndef FDQUAN
-	if (!(currbp->flag & BOARD_CLUB_FLAG) || !(chkBM(currbp, &currentuser)
+	if (!(currbp->flag & BOARD_CLUB_FLAG) || !(am_curr_bm()
 			|| isclubmember(currentuser.userid, currboard))) {
 		return DONOTHING;
 	}
@@ -3812,7 +3812,7 @@ int count_range(int ent, struct fileheader *fileinfo, char *direct) {
 	char title[STRLEN];
 
 	if (uinfo.mode == ST_READING) {
-		if (!chkBM(currbp, &currentuser)) {
+		if (!am_curr_bm()) {
 			return DONOTHING;
 		}
 	}

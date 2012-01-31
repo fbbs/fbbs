@@ -528,7 +528,7 @@ static int deny_key_deal(const char *file, int ch, char *line)
  */
 int deny_user(void)
 {
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return DONOTHING;
 	char buf[HOMELEN];
 	setbfile(buf, currboard, "deny_users");
