@@ -80,7 +80,7 @@ static const char *best_match(ac_name_list *l, const char *prefix)
 	return first ? first->name : NULL;
 }
 
-static void _autocomplete(ac_list *acl, char *buf, size_t size)
+static int _autocomplete(ac_list *acl, char *buf, size_t size)
 {
 	int rows = t_lines - acl->ybase - 2, extra = 0;
 	const char *base = NULL;
@@ -88,21 +88,27 @@ static void _autocomplete(ac_list *acl, char *buf, size_t size)
 	if (!acl->seek || acl->seek == acl->head) {
 		ac_name_list *l1 = next_match(acl->head, buf);
 		if (!l1)
-			return;
+			return 0;
 
-		ac_name_list *l2 = next_match(l1, buf);
+		ac_name_list *l2 = next_match(l1->next, buf);
 		if (!l2) {
+			extra = strlen(l1->name) - strlen(buf);
 			strlcpy(buf, l1->name, size);
-			return;
+			return extra;
 		}
 
 		base = l1->name;
 		extra = strlen(base) - strlen(buf);
 
+
 		if (!acl->col) {
 			acl->col = pool_alloc(acl->pool, sizeof(*acl->col) * rows);
 		}
 	}
+
+	move(acl->ybase + 1, 0);
+	clrtobot();
+	printdash(" 列表 ");
 
 	const int columns = 80;
 	int xbase = 0, width = 0, count = 0;
@@ -128,15 +134,20 @@ static void _autocomplete(ac_list *acl, char *buf, size_t size)
 				}
 			}
 
-			if (count == rows || !l->next) {
+			if (count == rows - 1 || !l->next) {
 				if (xbase + width > columns) {
 					acl->seek = *acl->col;
+					move(t_lines - 1, 0);
+					prints("\033[1;34m -- 还有 --\033[m");
 					break;
 				} else {
+					acl->seek = NULL;
 					for (int i = 0; i < count; ++i) {
 						move(acl->ybase + i + 2, xbase);
-						outs(l->name);
+						outs(acl->col[i]->name);
 					}
+					move(t_lines - 1, 0);
+					clrtoeol();
 					xbase += width + 1;
 					width = 0;
 					count = 0;
@@ -149,6 +160,7 @@ static void _autocomplete(ac_list *acl, char *buf, size_t size)
 		extra = size - 1 - len;
 	if (extra > 0)
 		strlcpy(buf + len, (*acl->col)->name + len, extra + 1);
+	return extra;
 }
 
 void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
@@ -175,15 +187,18 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 				return;
 			case ' ':
 			case KEY_TAB:
-				_autocomplete(acl, buf, size);
+				len += _autocomplete(acl, buf, size);
 				move(acl->ybase, acl->xbase);
 				outs(buf);
 				break;
 			case KEY_BACKSPACE:
-				buf[--len] = '\0';
-				move(acl->ybase, acl->xbase + len);
-				outc(' ');
-				acl->seek = NULL;
+				if (len) {
+					buf[--len] = '\0';
+					move(acl->ybase, acl->xbase + len);
+					outc(' ');
+					move(acl->ybase, acl->xbase + len);
+					acl->seek = NULL;
+				}
 				break;
 			default:
 				if (len < size - 1) {
@@ -195,6 +210,7 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 						buf[--len] = '\0';
 						move(acl->ybase, acl->xbase + len);
 						outc(' ');
+						move(acl->ybase, acl->xbase + len);
 					}
 				}
 				acl->seek = NULL;

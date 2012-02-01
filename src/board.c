@@ -78,8 +78,15 @@ static ac_list *build_board_ac_list(void)
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			board_t board;
 			res_to_board(res, i, &board);
-			if (has_read_perm(&currentuser, &board))
-				ac_list_add(acl, board.name);
+			if (has_read_perm(&currentuser, &board)) {
+				if (board.name[0] & 0x80) {
+					GBK_BUFFER(name, BOARD_NAME_LEN);
+					convert_u2g(board.name, gbk_name);
+					ac_list_add(acl, gbk_name);
+				} else {
+					ac_list_add(acl, board.name);
+				}
+			}
 		}
 	}
 	db_clear(res);
