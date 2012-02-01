@@ -69,4 +69,12 @@ extern void change_board(board_t *bp);
 extern bool is_junk_board(const board_t *bp);
 extern bool is_board_dir(const board_t *bp);
 
+extern void board_complete_all(int row, const char *prompt, char *name, size_t size);
+extern void board_complete(int row, const char *prompt, char *name, size_t size);
+
+extern int tui_all_boards(const char *cmd);
+extern int tui_unread_boards(const char *cmd);
+extern int tui_read_sector(const char *cmd);
+extern int tui_favorite_boards(const char *cmd);
+
 #endif // FB_BOARD_H

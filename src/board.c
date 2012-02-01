@@ -54,7 +54,7 @@ static int load_zapbuf(board_list_t *l)
 	return 0;
 }
 
-int save_zapbuf(const board_list_t *l)
+static int save_zapbuf(const board_list_t *l)
 {
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".lastread");
@@ -67,7 +67,12 @@ int save_zapbuf(const board_list_t *l)
 	return -1;
 }
 
-static ac_list *build_board_ac_list(void)
+enum {
+	AC_LIST_BOARDS_AND_DIR,
+	AC_LIST_BOARDS_ONLY,
+};
+
+static ac_list *build_board_ac_list(int mode)
 {
 	ac_list *acl = ac_list_new();
 	if (!acl)
@@ -78,6 +83,10 @@ static ac_list *build_board_ac_list(void)
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			board_t board;
 			res_to_board(res, i, &board);
+
+			if (mode == AC_LIST_BOARDS_ONLY && (board.flag & BOARD_DIR_FLAG))
+				continue;
+
 			if (has_read_perm(&currentuser, &board)) {
 				if (board.name[0] & 0x80) {
 					GBK_BUFFER(name, BOARD_NAME_LEN);
@@ -94,9 +103,9 @@ static ac_list *build_board_ac_list(void)
 	return acl;
 }
 
-static void board_complete(int row, const char *prompt, char *name, size_t size)
+static void _board_complete(int row, const char *prompt, char *name, size_t size, int mode)
 {
-	ac_list *acl = build_board_ac_list();
+	ac_list *acl = build_board_ac_list(mode);
 	if (!acl)
 		return;
 
@@ -104,6 +113,16 @@ static void board_complete(int row, const char *prompt, char *name, size_t size)
 	autocomplete(acl, prompt, name, size);
 
 	ac_list_free(acl);
+}
+
+void board_complete_all(int row, const char *prompt, char *name, size_t size)
+{
+	_board_complete(row, prompt, name, size, AC_LIST_BOARDS_AND_DIR);
+}
+
+void board_complete(int row, const char *prompt, char *name, size_t size)
+{
+	_board_complete(row, prompt, name, size, AC_LIST_BOARDS_ONLY);
 }
 
 static int tui_favorite_add(tui_list_t *p)
@@ -120,7 +139,7 @@ static int tui_favorite_add(tui_list_t *p)
 		}
 
 		char name[BOARD_NAME_LEN + 1];
-		board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
+		board_complete_all(1, "输入讨论区名 (按空白键自动搜寻): ",
 				name, sizeof(name));
 		if (fav_board_add(session.uid, name, 0, FAV_BOARD_ROOT_FOLDER))
 			p->valid = false;
@@ -448,7 +467,7 @@ static int search_board(const choose_board_t *cbrd, int *num)
 #endif
 
 // TODO: rewrite
-int unread_position(board_t *bp)
+static int unread_position(board_t *bp)
 {
 	struct fileheader fh;
 
@@ -912,7 +931,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 	return FULLUPDATE;
 }
 
-int tui_board_list(board_list_t *l)
+static int tui_board_list(board_list_t *l)
 {
 	tui_list_t t = {
 		.data = l,

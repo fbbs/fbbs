@@ -65,11 +65,6 @@ static int exec_mbem(const char *s);
 extern int tui_props(void);
 extern int tui_my_props(void);
 
-extern int tui_all_boards(const char *);
-extern int tui_unread_boards(const char *);
-extern int tui_read_sector(const char *);
-extern int tui_favorite_boards(const char *);
-
 typedef int (*telnet_handler_t)();
 
 typedef struct {
