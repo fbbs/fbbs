@@ -53,7 +53,6 @@ int x_new_denylevel();
 int x_level(), m_info();
 int d_user(), m_register();
 int d_board(), m_editbrd(), m_newbrd();
-int m_ordainBM(), m_retireBM();
 int setsystempasswd();
 #endif
 #endif
@@ -64,6 +63,9 @@ static int exec_mbem(const char *s);
 
 extern int tui_props(void);
 extern int tui_my_props(void);
+
+extern int tui_ordain_bm(const char *cmd);
+extern int tui_retire_bm(const char *cmd);
 
 typedef int (*telnet_handler_t)();
 
@@ -152,8 +154,8 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowRegister", show_register },
 		{ "Info", m_info },
 		{ "Level", x_level },
-		{ "OrdainBM", m_ordainBM },
-		{ "RetireBM", m_retireBM },
+		{ "OrdainBM", tui_ordain_bm },
+		{ "RetireBM", tui_retire_bm },
 		{ "NewChangeLevel", x_new_denylevel },
 		{ "DelUser", d_user },
 		{ "NewBoard", m_newbrd },
@@ -199,8 +201,8 @@ static const char *sysconf_funcstr(const char *name)
 		{ "ShowRegister", "@mod:so/admintool.so#show_register" },
 		{ "Info", "@mod:so/admintool.so#m_info" },
 		{ "Level", "@mod:so/admintool.so#x_level" },
-		{ "OrdainBM", "@mod:so/admintool.so#m_ordainBM" },
-		{ "RetireBM", "@mod:so/admintool.so#m_retireBM" },
+		{ "OrdainBM", "@mod:so/admintool.so#tui_ordain_bm" },
+		{ "RetireBM", "@mod:so/admintool.so#tui_retire_bm" },
 		{ "ChangeLevel", "@mod:so/admintool.so#x_denylevel" },
 		{ "NewChangeLevel", "@mod:so/admintool.so#x_new_denylevel" },
 		{ "DelUser", "@mod:so/admintool.so#d_user" },

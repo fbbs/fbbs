@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "bbs.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/register.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
@@ -21,7 +22,8 @@ FILE *cleanlog;
 //ÔÚuseridµÄÖ÷Ä¿Â¼ÏÂ ´ò¿ª.bmfileÎÄ¼ş,²¢½«ÀïÃæµÄÄÚÈİÓëbnameÏà±È½Ï
 //              find´æ·Å´Ó1¿ªÊ¼·µ»ØËùÈÎ°æÃæµÄĞòºÅ,Îª0±íÊ¾Ã»ÕÒµ½
 //º¯ÊıµÄ·µ»ØÖµÎªuseridµ£ÈÎ°æÖ÷µÄ°æÃæÊı
-int getbnames(char *userid, char *bname, int *find) {
+static int getbnames(const char *userid, const char *bname, int *find)
+{
 	int oldbm = 0;
 	FILE *bmfp;
 	char bmfilename[STRLEN], tmp[20];
@@ -72,15 +74,45 @@ int m_info() {
 	return 0;
 }
 
-//ÈÎÃü°æÖ÷
-int m_ordainBM() {
+static const char *ordain_bm_check(const board_t *board, const char *uname)
+{
+	if (strneq(board->bms, "SYSOPs", 6))
+		return "ÌÖÂÛÇøµÄ°æÖ÷ÊÇ SYSOPs Äã²»ÄÜÔÙÈÎÃü°æÖ÷";
+	if (strlen(uname) + strlen(board->bms) > BMNAMEMAXLEN)
+		return "ÌÖÂÛÇø°æÖ÷ÁĞ±íÌ«³¤,ÎŞ·¨¼ÓÈë!";
+	if (streq(uname, "guest"))
+		return "Äã²»ÄÜÈÎÃü guest µ±°æÖ÷";
 
-	int id, pos, oldbm = 0, i, find, bm = 1;
-	struct boardheader fh;
-	FILE *bmfp;
-	char bmfilename[STRLEN], bname[STRLEN];
-	char buf[5][STRLEN];
+	int find;
+	int bms = getbnames(lookupuser.userid, board->name, &find);
+	if (find || bms >= 3)
+		return "ÒÑ¾­ÊÇ¸Ã/Èı¸ö°æµÄ°æÖ÷ÁË";
 
+	bms = 1;
+	for (const char *s = board->bms; *s; ++s) {
+		if (*s == ' ')
+			++bms;
+	}
+	if (bms >= BMMAXNUM)
+		return "ÌÖÂÛÇøÒÑÓĞ 5 Ãû°æÖ÷";
+
+	return NULL;
+}
+
+static bool ordain_bm(int bid, const char *uname)
+{
+	user_id_t uid = get_user_id(uname);
+	if (uid <= 0)
+		return false;
+
+	db_res_t *res = db_cmd("INSERT INTO bms b (user_id, board_id, stamp) "
+			"VALUES (%d, %d, current_timestamp) ", uid, bid);
+	db_clear(res);
+	return res;
+}
+
+int tui_ordain_bm(const char *cmd)
+{
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
 
@@ -91,117 +123,82 @@ int m_ordainBM() {
 	clear();
 	stand_title("ÈÎÃü°æÖ÷\n");
 	clrtoeol();
+
+	int id;
 	if (!gettheuserid(2, "ÊäÈëÓûÈÎÃüµÄÊ¹ÓÃÕßÕÊºÅ: ", &id))
 		return 0;
-	if (!gettheboardname(3, "ÊäÈë¸ÃÊ¹ÓÃÕß½«¹ÜÀíµÄÌÖÂÛÇøÃû³Æ: ", &pos, &fh, bname, 0))
-		return -1;
-	if (fh.BM[0] != '\0') {
-		if (!strncmp(fh.BM, "SYSOPs", 6)) {
-			move(5, 0);
-			prints("%s ÌÖÂÛÇøµÄ°æÖ÷ÊÇ SYSOPs Äã²»ÄÜÔÙÈÎÃü°æÖ÷", bname);
-			pressreturn();
-			clear();
-			return -1;
-		}
-		for (i = 0, oldbm = 1; fh.BM[i] != '\0'; i++) {
-			if (fh.BM[i] == ' ')
-				oldbm++;
-		}
-		//added by infotech,·ÀÖ¹°æÖ÷ÁĞ±í¹ı³¤
-		if (i + strlen(lookupuser.userid) > BMNAMEMAXLEN) {
-			move(5, 0);
-			prints("%s ÌÖÂÛÇø°æÖ÷ÁĞ±íÌ«³¤,ÎŞ·¨¼ÓÈë!", bname);
-			pressreturn();
-			clear();
-			return -1;
-		}
-		//add end
-		if (oldbm >= 3) {
-			move(5, 0);
-			prints("%s ÌÖÂÛÇøÒÑÓĞ %d Ãû°æÖ÷", bname, oldbm);
-			pressreturn();
-			if (oldbm >= BMMAXNUM) {
-				clear();
-				return -1;
-			}
-		}
 
-		bm = 0;
-	}
-	if (!strcmp(lookupuser.userid, "guest")) {
+	char bname[BOARD_NAME_LEN];
+	board_t board;
+	board_complete(3, "ÊäÈë¸ÃÊ¹ÓÃÕß½«¹ÜÀíµÄÌÖÂÛÇøÃû³Æ: ", bname, sizeof(bname));
+	if (!*bname || !get_board(bname, &board))
+		return -1;
+	board_to_gbk(&board);
+
+	const char *error = ordain_bm_check(&board, lookupuser.userid);
+	if (error) {
 		move(5, 0);
-		prints("Äã²»ÄÜÈÎÃü guest µ±°æÖ÷");
+		outs(error);
 		pressanykey();
 		clear();
 		return -1;
 	}
-	oldbm = getbnames(lookupuser.userid, bname, &find);
-	if (find || oldbm == 3) { //Í¬Ò»ID²»ÄÜ¼æÈÎ³¬¹ıÈı¸ö°æµÄ°æÖ÷
-		move(5, 0);
-		prints(" %s ÒÑ¾­ÊÇ%s°æµÄ°æÖ÷ÁË", lookupuser.userid, find ? "¸Ã" : "Èı¸ö");
-		pressanykey();
-		clear();
-		return -1;
-	}
-	prints("\nÄã½«ÈÎÃü %s Îª %s °æ°æ%s.\n", lookupuser.userid, bname, bm ? "Ö÷"
-			: "¸±");
+
+	bool bm1 = !board.bms[0];
+	const char *bm_s = bm1 ? "Ö÷" : "¸±";
+	prints("\nÄã½«ÈÎÃü %s Îª %s °æ°æ%s.\n", lookupuser.userid, bname, bm_s);
 	if (askyn("ÄãÈ·¶¨ÒªÈÎÃüÂğ?", NA, NA) == NA) {
 		prints("È¡ÏûÈÎÃü°æÖ÷");
 		pressanykey();
 		clear();
 		return -1;
 	}
-	strcpy(bnames[oldbm], bname);
-	if (!oldbm) { //µÚÒ»´Î×ö°æÖ÷
-		char secu[STRLEN];
 
+	if (!ordain_bm(board.id, lookupuser.userid)) {
+		prints("Error");
+		pressanykey();
+		clear();
+		return -1;
+	}
+
+	if (!HAS_PERM2(PERM_BOARDS, &lookupuser)) {
 		lookupuser.userlevel |= PERM_BOARDS;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);
-		sprintf(secu, "°æÖ÷ÈÎÃü, ¸øÓè %s µÄ°æÖ÷È¨ÏŞ", lookupuser.userid);
-		securityreport(secu, 0, 1);
+
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "°æÖ÷ÈÎÃü, ¸øÓè %s °æÖ÷È¨ÏŞ",
+				lookupuser.userid);
+		securityreport(buf, 0, 1);
 		move(15, 0);
-		outs(secu);
+		outs(buf);
 		pressanykey();
 		clear();
 	}
-	if (fh.BM[0] == '\0')
-		strcpy(genbuf, lookupuser.userid);
-	else
-		sprintf(genbuf, "%s %s", fh.BM, lookupuser.userid);
-	strlcpy(fh.BM, genbuf, sizeof (fh.BM));
-	//added by infotech
-	strcpy(buf[0], fh.BM);
-#ifdef  BMNAMELISTLIMIT
-	for (i = 0; i < BMNAMELISTLEN && buf[0][i]; i++);
-	if (i == BMNAMELISTLEN) {
-		buf[0][i++] = '.';
-		buf[0][i++] = '.';
-		buf[0][i++] = '.';
-		buf[0][i] = '\0';
-	}
-#endif
-	//endadd
+
+	char old_descr[STRLEN];
+	snprintf(old_descr, sizeof(old_descr), "¡ğ %s", board.descr);
+
 	//sprintf(genbuf, "%-38.38s(BM: %s)", fh.title +8, fh.BM);
 	//¾«»ªÇøµÄÏÔÊ¾: ¶¯Ì¬·ÖÅä        ÏÔÊ¾10¸ö¿Õ¸ñ printf("%*c",10,' ');
 	{
 		int blanklen; //Ç°Á½¸ö¿Õ¼ä´óĞ¡
 		static const char BLANK = ' ';
-		blanklen = STRLEN - strlen(fh.title + 8) - strlen(buf[0]) - 7;
+		blanklen = STRLEN - strlen(old_descr) - strlen(board.bms) - 7;
 		blanklen /= 2;
 		blanklen = (blanklen > 0) ? blanklen : 1;
-		sprintf(genbuf, "%s%*c(BM: %s)", fh.title + 8, blanklen, BLANK,
-				buf[0]);
+		sprintf(genbuf, "%s%*c(BM: %s)",
+				old_descr, blanklen, BLANK, board.bms);
 	}
-	buf[0][0] = '\0';
-	get_grp(fh.filename);
-	edit_grp(fh.filename, lookgrp, fh.title + 8, genbuf);
-	substitute_record(BOARDS, &fh, sizeof (fh), pos);
-	sethomefile(bmfilename, lookupuser.userid, ".bmfile");
-	bmfp = fopen(bmfilename, "w+");
-	for (i = 0; i < oldbm + 1; i++) {
-		fprintf(bmfp, "%s\n", bnames[i]);
-	}
-	fclose(bmfp);
+
+	get_grp(board.name);
+	edit_grp(board.name, lookgrp, old_descr, genbuf);
+
+	char file[HOMELEN];
+	sethomefile(file, lookupuser.userid, ".bmfile");
+	FILE *fp = fopen(file, "a");
+	fprintf(fp, "%s\n", lookupuser.userid);
+	fclose(fp);
+
 	/* Modified by Amigo 2002.07.01. Add reference to BM-Guide. */
 	//sprintf (genbuf, "\n\t\t\t¡¾ Í¨¸æ ¡¿\n\n"
 	//	   "\tÈÎÃü %s Îª %s °æ%s£¡\n"
@@ -213,79 +210,72 @@ int m_ordainBM() {
 	sprintf(
 			genbuf,
 			"\n"
-				" 		[1;31m   ¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[										 [m\n"
-				" 	 [31m©ï©¤©¤[1m¨U[33mÈÕ[31m¨U¨U[33mÔÂ[31m¨U¨U[33m¹â[31m¨U¨U[33m»ª[31m¨U[0;33m©¤©¤[1;36m¡¼Áì»áÕ¾¹æ¾«Éñ¡¤ÊìÏ¤°æÖ÷²Ù×÷¡½[0;33m©¤¡ó¡ô  [m\n"
-				" 	 [31m©¦    [1m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a										  [m\n"
-				" 	 [31m©¦																	  [m\n"
-				" 		 [1;33m¦î	[37mÈÎÃü  %s  Îª  %s  °æ%s¡£							   [m\n"
-				" 		 [1;33mÍ¨																  [m\n"
-				" 		[1m	»¶Ó­  %s  Ç°Íù BM_Home °æºÍ±¾Çø Zone °æÏò´ó¼ÒÎÊºÃ¡£			 [m\n"
-				" 		 [1;33m¸æ																  [m\n"
-				" 		 [1;33m¦ï	[37m¿ªÊ¼¹¤×÷Ç°£¬ÇëÏÈÍ¨¶ÁBM_Home°æ¾«»ªÇøµÄ°æÖ÷Ö¸ÄÏÄ¿Â¼¡£		   [m\n"
-				" 																		 [33m©¦  [m\n"
-				" 											 [1;33m¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[   [0;33m ©¦  [m\n"
-				" 	 [31m¡ó¡ô©¤[1;35m¡¼Î¬»¤°æÃæÖÈĞò¡¤½¨ÉèºÍĞ³¹â»ª¡½[0;31m©¤©¤[1;33m¨U[31m°æ[33m¨U¨U[31mÖ÷[33m¨U¨U[31mÎ¯[33m¨U¨U[31mÈÎ[33m¨U[0;33m©¤©¤©ï	[m\n"
-				" 											 [1;33m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a		  [m\n"
-				" 																			 [m\n", lookupuser.userid, bname,
-			bm ? "°æÖ÷" : "°æ¸±", lookupuser.userid);
+			" 		[1;31m   ¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[										 [m\n"
+			" 	 [31m©ï©¤©¤[1m¨U[33mÈÕ[31m¨U¨U[33mÔÂ[31m¨U¨U[33m¹â[31m¨U¨U[33m»ª[31m¨U[0;33m©¤©¤[1;36m¡¼Áì»áÕ¾¹æ¾«Éñ¡¤ÊìÏ¤°æÖ÷²Ù×÷¡½[0;33m©¤¡ó¡ô  [m\n"
+			" 	 [31m©¦    [1m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a										  [m\n"
+			" 	 [31m©¦																	  [m\n"
+			" 		 [1;33m¦î	[37mÈÎÃü  %s  Îª  %s  °æ°æ%s¡£							   [m\n"
+			" 		 [1;33mÍ¨																  [m\n"
+			" 		[1m	»¶Ó­  %s  Ç°Íù BM_Home °æºÍ±¾Çø Zone °æÏò´ó¼ÒÎÊºÃ¡£			 [m\n"
+			" 		 [1;33m¸æ																  [m\n"
+			" 		 [1;33m¦ï	[37m¿ªÊ¼¹¤×÷Ç°£¬ÇëÏÈÍ¨¶ÁBM_Home°æ¾«»ªÇøµÄ°æÖ÷Ö¸ÄÏÄ¿Â¼¡£		   [m\n"
+			" 																		 [33m©¦  [m\n"
+			" 											 [1;33m¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[   [0;33m ©¦  [m\n"
+			" 	 [31m¡ó¡ô©¤[1;35m¡¼Î¬»¤°æÃæÖÈĞò¡¤½¨ÉèºÍĞ³¹â»ª¡½[0;31m©¤©¤[1;33m¨U[31m°æ[33m¨U¨U[31mÖ÷[33m¨U¨U[31mÎ¯[33m¨U¨U[31mÈÎ[33m¨U[0;33m©¤©¤©ï	[m\n"
+			" 											 [1;33m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a		  [m\n"
+			" 																			 [m\n", lookupuser.userid, bname,
+			bm_s, lookupuser.userid);
 	//add end
-	for (i = 0; i < 5; i++)
-		buf[i][0] = '\0';
+
+	char ps[5][STRLEN];
 	move(8, 0);
 	prints("ÇëÊäÈëÈÎÃü¸½ÑÔ(×î¶àÎåĞĞ£¬°´ Enter ½áÊø)");
-	for (i = 0; i < 5; i++) {
-		getdata(i + 9, 0, ": ", buf[i], STRLEN - 5, DOECHO, YEA);
-		if (buf[i][0] == '\0')
+	for (int i = 0; i < 5; i++) {
+		getdata(i + 9, 0, ": ", ps[i], STRLEN - 5, DOECHO, YEA);
+		if (ps[i][0] == '\0')
 			break;
 	}
-	for (i = 0; i < 5; i++) {
-		if (buf[i][0] == '\0')
+	for (int i = 0; i < 5; i++) {
+		if (ps[i][0] == '\0')
 			break;
 		if (i == 0)
 			strcat(genbuf, "\n\n");
 		strcat(genbuf, "\t");
-		strcat(genbuf, buf[i]);
+		strcat(genbuf, ps[i]);
 		strcat(genbuf, "\n");
 	}
-	strcpy(currboard, bname);
-	sprintf(bmfilename, "ÈÎÃü %s Îª %s °æ%s", lookupuser.userid, fh.filename,
-			bm ? "°æÖ÷" : "°æ¸±");
-	//autoreport(bmfilename,genbuf,YEA,NULL);
-	autoreport(bmfilename, genbuf, YEA, lookupuser.userid, 1); //3x rubing and erebus:)   
-#ifdef ORDAINBM_POST_BOARDNAME
-	strcpy (currboard, ORDAINBM_POST_BOARDNAME);
-	//autoreport(bmfilename,genbuf,YEA,NULL);
-	autoreport (bmfilename, genbuf, YEA, lookupuser.userid, 1);
-#endif
-	/* Added by Amigo 2002.07.01. Send BM assign mail to user's mail box. */
-	//{
-	//  FILE *se;
-	//  char fname[STRLEN];
 
-	//  sprintf( fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, uinfo.pid );
-	//  if( ( se = fopen(fname,"w") ) != NULL ){
-	//          fprintf( se, "%s", genbuf );
-	//          fclose( se );
-	//          if( lookupuser.userid != NULL )
-	//          mail_file( fname, lookupuser.userid, bmfilename );
-	//  }
-	//}
-	/* Add end. */
-	securityreport(bmfilename, 0, 1);
+	char buf[STRLEN];
+	strcpy(currboard, bname);
+	snprintf(buf, sizeof(buf), "ÈÎÃü %s Îª %s °æ°æ%s", lookupuser.userid,
+			board.name, bm_s);
+	autoreport(buf, genbuf, YEA, lookupuser.userid, 1);
+#ifdef ORDAINBM_POST_BOARDNAME
+	strcpy(currboard, ORDAINBM_POST_BOARDNAME);
+	autoreport(buf, genbuf, YEA, lookupuser.userid, 1);
+#endif
+	securityreport(buf, 0, 1);
 	move(16, 0);
-	outs(bmfilename);
+	outs(buf);
 	pressanykey();
 	return 0;
 }
 
-//°æÖ÷ÀëÖ°
-int m_retireBM() {
-	int id, pos, right = 0, oldbm = 0, i, j, bmnum;
+static bool retire_bm(int bid, const char *uname)
+{
+	db_res_t *res = db_cmd("DELETE FROM bms b USING users u "
+			"WHERE b.user_id = u.id AND b.board_id = %d AND u.name = %s",
+			bid, uname);
+	db_clear(res);
+	return res;
+}
+
+int tui_retire_bm(const char *cmd)
+{
+	int id, pos, right = 0, j = 0, bmnum;
 	int find, bm = 1;
-	struct boardheader fh;
 	FILE *bmfp;
-	char bmfilename[STRLEN], buf[5][STRLEN];
-	char bname[STRLEN], usernames[BMMAXNUM][STRLEN];
+	char bmfilename[STRLEN], usernames[BMMAXNUM][STRLEN];
 
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
@@ -299,9 +289,15 @@ int m_retireBM() {
 	clrtoeol();
 	if (!gettheuserid(2, "ÊäÈëÓûÀëÖ°µÄ°æÖ÷ÕÊºÅ: ", &id))
 		return -1;
-	if (!gettheboardname(3, "ÇëÊäÈë¸Ã°æÖ÷Òª´ÇÈ¥µÄ°æÃû: ", &pos, &fh, bname, 0))
+
+	char bname[BOARD_NAME_LEN];
+	board_t board;
+	board_complete(3, "ÇëÊäÈë¸Ã°æÖ÷Òª´ÇÈ¥µÄ°æÃû: ", bname, sizeof(bname));
+	if (!*bname || !get_board(bname, &board))
 		return -1;
-	oldbm = getbnames(lookupuser.userid, bname, &find);
+	board_to_gbk(&board);
+
+	int oldbm = getbnames(lookupuser.userid, bname, &find);
 	if (!oldbm || !find) {
 		move(5, 0);
 		prints(" %s %s°æ°æÖ÷£¬ÈçÓĞ´íÎó£¬ÇëÍ¨Öª³ÌĞòÕ¾³¤¡£", lookupuser.userid,
@@ -310,22 +306,22 @@ int m_retireBM() {
 		clear();
 		return -1;
 	}
-	for (i = find - 1; i < oldbm; i++) {
+	for (int i = find - 1; i < oldbm; i++) {
 		if (i != oldbm - 1)
 			strcpy(bnames[i], bnames[i + 1]);
 	}
 	bmnum = 0;
-	for (i = 0, j = 0; fh.BM[i] != '\0'; i++) {
-		if (fh.BM[i] == ' ') {
+	for (int i = 0; board.bms[i] != '\0'; i++) {
+		if (board.bms[i] == ' ') {
 			usernames[bmnum][j] = '\0';
 			bmnum++;
 			j = 0;
 		} else {
-			usernames[bmnum][j++] = fh.BM[i];
+			usernames[bmnum][j++] = board.bms[i];
 		}
 	}
 	usernames[bmnum++][j] = '\0';
-	for (i = 0, right = 0; i < bmnum; i++) {
+	for (int i = 0; i < bmnum; i++) {
 		if (!strcmp(usernames[i], lookupuser.userid)) {
 			right = 1;
 			if (i)
@@ -350,53 +346,37 @@ int m_retireBM() {
 		clear();
 		return -1;
 	}
-	if (bmnum - 1) { //»¹ÓĞ°æÖ÷,ÎªÊ²Ã´²»ÓÃstrcat ?
-		char *genbuf1 = genbuf;
-		genbuf1 += sprintf(genbuf, "%s", usernames[0]);
-		for (i = 1; i < bmnum - 1; i++)
-			genbuf1 += sprintf(genbuf1, " %s", usernames[i]);
-	} else {
-		genbuf[0] = '\0';
-	}
-	strlcpy(fh.BM, genbuf, sizeof (fh.BM));
-	if (fh.BM[0] != '\0') {
-		//added by infotech
-		strcpy(buf[0], fh.BM);
-#ifdef BMNAMELISTLIMIT
-		for (i = 0; i < BMNAMELISTLEN && buf[0][i]; i++);
-		if (i == BMNAMELISTLEN) {
-			buf[0][i++] = '.';
-			buf[0][i++] = '.';
-			buf[0][i++] = '.';
-			buf[0][i] = '\0';
-		}
-#endif
-		//endadd
+
+	retire_bm(board.id, lookupuser.userid);
+
+	char old_descr[STRLEN];
+	snprintf(old_descr, sizeof(old_descr), "¡ğ %s", board.descr);
+
+	if (!streq(board.bms, lookupuser.userid)) {
 		//sprintf(genbuf, "%-38.38s(BM: %s)", fh.title +8, fh.BM);
 		//¾«»ªÇøµÄÏÔÊ¾: ¶¯Ì¬·ÖÅä        ÏÔÊ¾10¸ö¿Õ¸ñ printf("%*c",10,' ');
 		{
 			int blanklen; //Ç°Á½¸ö¿Õ¼ä´óĞ¡
 			static const char BLANK = ' ';
-			blanklen = STRLEN - strlen(fh.title + 8) - strlen(buf[0]) - 7;
+			blanklen = STRLEN - strlen(old_descr) - strlen(board.bms) - 7;
 			blanklen /= 2;
 			blanklen = (blanklen > 0) ? blanklen : 1;
-			sprintf(genbuf, "%s%*c(BM: %s)", fh.title + 8, blanklen,
-					BLANK, buf[0]);
+			sprintf(genbuf, "%s%*c(BM: %s)", old_descr, blanklen,
+					BLANK, board.bms);
 		}
 	} else {
-		sprintf(genbuf, "%-38.38s", fh.title + 8);
+		sprintf(genbuf, "%-38.38s", old_descr);
 	}
-	get_grp(fh.filename);
-	edit_grp(fh.filename, lookgrp, fh.title + 8, genbuf);
-	substitute_record(BOARDS, &fh, sizeof (fh), pos);
-	sprintf(genbuf, "È¡Ïû %s µÄ %s °æ°æÖ÷Ö°Îñ", lookupuser.userid, fh.filename);
+	get_grp(board.name);
+	edit_grp(board.name, lookgrp, old_descr, genbuf);
+	sprintf(genbuf, "È¡Ïû %s µÄ %s °æ°æÖ÷Ö°Îñ", lookupuser.userid, board.name);
 	securityreport(genbuf, 0, 1);
 	move(8, 0);
 	outs(genbuf);
 	sethomefile(bmfilename, lookupuser.userid, ".bmfile");
 	if (oldbm - 1) {
 		bmfp = fopen(bmfilename, "w+");
-		for (i = 0; i < oldbm - 1; i++)
+		for (int i = 0; i < oldbm - 1; i++)
 			fprintf(bmfp, "%s\n", bnames[i]);
 		fclose(bmfp);
 	} else {
@@ -445,11 +425,13 @@ int m_retireBM() {
 			"\t³·³ı %s °æ%s %s µÄ%sÖ°Îñ¡£\n", bname, bm ? "°æÖ÷" : "°æ¸±",
 				lookupuser.userid, bm ? "°æÖ÷" : "°æ¸±");
 	}
-	for (i = 0; i < 5; i++)
+
+	char buf[5][STRLEN];
+	for (int i = 0; i < 5; i++)
 		buf[i][0] = '\0';
 	move(14, 0);
 	prints("ÇëÊäÈë%s¸½ÑÔ(×î¶àÎåĞĞ£¬°´ Enter ½áÊø)", right ? "°æÖ÷ÀëÈÎ" : "°æÖ÷³·Ö°");
-	for (i = 0; i < 5; i++) {
+	for (int i = 0; i < 5; i++) {
 		getdata(i + 15, 0, ": ", buf[i], STRLEN - 5, DOECHO, YEA);
 		if (buf[i][0] == '\0')
 			break;
@@ -460,23 +442,8 @@ int m_retireBM() {
 		strcat(genbuf, buf[i]);
 		strcat(genbuf, "\n");
 	}
-	//autoreport(bmfilename,genbuf,YEA,NULL);
 	autoreport(bmfilename, genbuf, YEA, lookupuser.userid, 1);
 
-	/* Added by Amigo 2002.07.01. Send BM assign mail to mail box. */
-	/*	{
-	 FILE *	se;
-	 char 	fname[STRLEN];
-
-	 sprintf( fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, uinfo.pid );
-	 if( ( se = fopen(fname,"w") ) != NULL ){
-	 fprintf( se, "%s", genbuf );
-	 fclose( se );
-	 if( lookupuser.userid != NULL )
-	 mail_file( fname, lookupuser.userid, bmfilename );
-	 }
-	 }*/
-	/* Add end. */
 	prints("\nÖ´ĞĞÍê±Ï£¡");
 	pressanykey();
 	return 0;
