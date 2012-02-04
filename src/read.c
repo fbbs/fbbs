@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -1843,12 +1844,11 @@ int r_searchall() {
 
 int searchallboard(char *id, char *patten, int dt, int all, int del,
 		int flag) {
-	FILE *fp, *fp2, *fp3;
+	FILE *fp, *fp3;
 	char f[100], buf2[150];
 	char fname[STRLEN];
 	char INDEX[20];
 	struct fileheader xx;
-	struct boardheader xx2;
 	int counts = 0, n2 = 0, n3, now;
 	long t0;
 
@@ -1859,18 +1859,22 @@ int searchallboard(char *id, char *patten, int dt, int all, int del,
 	else if (del == 3)
 		strcpy(INDEX, ".JUNK");
 	now = time(0);
-	fp2 = fopen(".BOARDS", "r");
+
 	sprintf(fname, "tmp/searchall.%s.%05d", currentuser.userid, uinfo.pid);
 	fp3 = fopen(fname, "w");
 	fprintf(fp3, "在所有板查询%s网友%d天以内的大作, 关键字'%s'.\n\n", id, dt, patten);
 	dt = dt * 86400;
-	while (!feof(fp2)) {
-		fread(&xx2, sizeof (xx2), 1, fp2);
-		if (xx2.flag & BOARD_POST_FLAG || HAS_PERM(xx2.level) || (xx2.flag
-				& BOARD_NOZAP_FLAG)) {
+
+	board_t board;
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		res_to_board(res, i, &board);
+
+		if (board.flag & BOARD_POST_FLAG || HAS_PERM(board.perm)
+				|| (board.flag & BOARD_NOZAP_FLAG)) {
 			int n = 0;
 
-			sprintf(f, "boards/%s/%s", xx2.filename, INDEX);
+			sprintf(f, "boards/%s/%s", board.name, INDEX);
 
 			if ((fp = fopen(f, "r")) != NULL) {
 				n2 = 0;
@@ -1898,16 +1902,16 @@ int searchallboard(char *id, char *patten, int dt, int all, int del,
 				fclose(fp);
 				if (n2 != 0)
 					fprintf(fp3, "Above %d is found in board %s.\n\n", n2,
-							xx2.filename);
+							board.name);
 			}
 		}
 		if (counts >= 1000)
 			break;
 	}
+	db_clear(res);
 	sprintf(buf2, "[%s]查询%s在%d天内关键字'%.10s'", del==1 ? "版面"
 			: (del==2 ? "Trash" : "Junk"), id, dt/86400, patten);
 	fprintf(fp3, "%d matched found.\n", counts);
-	fclose(fp2);
 	fclose(fp3);
 	mail_file(fname, currentuser.userid, buf2);
 	unlink(fname);

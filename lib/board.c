@@ -16,34 +16,6 @@ void change_board(board_t *bp)
 	strcpy(currboard, bp->name);
 }
 
-int chkBM(const struct boardheader *bp, const struct userec *up)
-{
-	char *ptr;
-	char BMstrbuf[BM_LEN - 1];
-
-	if (bp == NULL || up == NULL)
-		return 0;
-
-	if (bp->flag & BOARD_CLUB_FLAG) {
-		if(up->userlevel & PERM_OCLUB)
-			return YEA;
-	} else {
-		if (up->userlevel & PERM_BLEVELS)
-			return YEA;
-	}
-	if (!(up->userlevel & PERM_BOARDS))
-		return NA;
-
-	strlcpy(BMstrbuf, bp->BM, sizeof(BMstrbuf));
-	ptr = strtok(BMstrbuf, ",: ;|&()\0\n");
-	while (ptr) {
-		if (!strcmp(ptr, up->userid))
-			return YEA;
-		ptr = strtok(NULL, ",: ;|&()\0\n");
-	}
-	return NA;
-}
-
 int isclubmember(const char *member, const char *board)
 {
 	FILE* fp;
@@ -76,16 +48,6 @@ bool is_junk_board(const board_t *bp)
 bool is_board_dir(const board_t *bp)
 {
 	return (bp->flag & BOARD_DIR_FLAG);
-}
-
-/**
- * Get board description.
- * @param bp pointer to board header.
- * @return board description.
- */
-const char *get_board_desc(const struct boardheader *bp)
-{
-	return (bp->title + 11);
 }
 
 void res_to_board(db_res_t *res, int row, board_t *bp)

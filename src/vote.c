@@ -2,6 +2,7 @@
 #include "vote.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
@@ -34,15 +35,18 @@ static int cmpvuid(void *userid, void *uv)
 //bname:版面名,flag版面标志
 //1:开启投票,0:关闭投票 返回值:无..
 int setvoteflag(char *bname, int flag) {
-	int pos;
-	struct boardheader fh;
+	board_t board;
+	get_board(bname, &board);
 
-	pos = search_record(BOARDS, &fh, sizeof(fh), cmpbnames, bname);
 	if (flag == 0)
-		fh.flag = fh.flag & ~BOARD_VOTE_FLAG;
+		board.flag = board.flag & ~BOARD_VOTE_FLAG;
 	else
-		fh.flag = fh.flag | BOARD_VOTE_FLAG;
-	if (substitute_record(BOARDS, &fh, sizeof(fh), pos) == -1)
+		board.flag = board.flag | BOARD_VOTE_FLAG;
+
+	db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
+			board.flag, board.id);
+	db_clear(res);
+	if (!res)
 		prints("Error updating BOARDS file...\n");
 	return 0;
 }
@@ -114,16 +118,16 @@ int b_notes_edit()
 	} else if (notetype == 1) {
 		setvfile(buf, currboard, "notes");
 	} else if (notetype == 4 ) {
-		int pos;
-		struct boardheader fh;
-		pos = search_record(BOARDS, &fh, sizeof(fh), cmpbnames, currboard);
-
-		if (askyn("是否强制使用前缀？", (fh.flag & BOARD_PREFIX_FLAG)?YEA:NA,NA)) {
-			fh.flag |= BOARD_PREFIX_FLAG;
+		int flag;
+		if (askyn("是否强制使用前缀？",
+					(currbp->flag & BOARD_PREFIX_FLAG) ? YEA : NA, NA)) {
+			flag |= BOARD_PREFIX_FLAG;
 		} else {
-			fh.flag &= ~BOARD_PREFIX_FLAG;
+			flag &= ~BOARD_PREFIX_FLAG;
 		}
-		substitute_record(BOARDS, &fh, sizeof(fh), pos);
+		db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
+				flag, currbp->id);
+		db_clear(res);
 		return FULLUPDATE;
 	}
 	sprintf(buf2, "(E)编辑 (D)删除 %4s? [E]: ",

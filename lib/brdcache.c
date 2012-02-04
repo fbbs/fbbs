@@ -202,27 +202,6 @@ int getbnum(const char *bname, const struct userec *cuser)
 	return 0;
 }
 
-int apply_boards(int (*func) (), const struct userec *cuser)
-{
-	register int i;
-	if (resolve_boards() < 0)
-		exit(1);
-	for (i = 0; i < numboards; i++) {
-		if (bcache[i].flag & BOARD_POST_FLAG
-			|| HAS_PERM2(bcache[i].level, cuser)
-			|| (bcache[i].flag & BOARD_NOZAP_FLAG)) {
-			if ((bcache[i].flag & BOARD_CLUB_FLAG)
-				&& (bcache[i].flag	& BOARD_READ_FLAG)
-				&& !chkBM(bcache + i, cuser)
-				&& !isclubmember(cuser->userid, bcache[i].filename))
-				continue;
-			if ((*func)(&bcache[i]) == QUIT)
-				return QUIT;
-		}
-	}
-	return 0;
-}
-
 void bonlinesync(time_t now)
 {
 	int i;

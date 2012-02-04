@@ -21,7 +21,6 @@ struct boardheader *getbcache(const char *bname);
 struct boardheader *getbcache2(int bid);
 struct bstat *getbstat(const char *bname);
 int getbnum(const char *bname, const struct userec *cuser);
-int apply_boards(int (*func) (), const struct userec *cuser);
 void bonlinesync(time_t now);
 
 //ucache.c (bcache.c)
@@ -64,9 +63,7 @@ void log_usies(const char *mode, const char *mesg, const struct userec *user);
 void log_attempt(const char *name, const char *addr, const char *type);
 
 //board.c
-int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
-const char *get_board_desc(const struct boardheader *bp);
 
 //mail.c
 int check_maxmail(void);
