@@ -940,11 +940,7 @@ char *direct;
 }
 #ifdef INTERNET_EMAIL
 
-int
-mail_forward(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
+int mail_forward(int ent, struct fileheader *fileinfo, const char *direct)
 {
 	char buf[STRLEN];
 	char *p;
@@ -988,11 +984,7 @@ char *direct;
 	return FULLUPDATE;
 }
 
-int
-mail_u_forward(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
+int mail_u_forward(int ent, struct fileheader *fileinfo, const char *direct)
 {
 	char buf[STRLEN];
 	char *p;
@@ -1593,11 +1585,7 @@ int cnt;
 }
 #ifdef INTERNET_EMAIL
 
-int
-doforward(direct, fh, mode)
-char *direct;
-struct boardheader *fh;
-int mode;
+int doforward(const char *direct, struct fileheader *fh, int mode)
 {
 	int lookupuserlevel;//added by roly 02.03.25
 	static char address[STRLEN];

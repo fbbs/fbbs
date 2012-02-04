@@ -291,7 +291,6 @@ int Postfile(char *filename, char *nboard, char *posttitle, int mode) {
 	//char bname[STRLEN];
 	char dbname[STRLEN];
 
-	//struct boardheader fh;
 	//added by iamfat 2003.11.21
 	int old_inmail = in_mail;
 
