@@ -8,7 +8,6 @@
 #include "fbbs/terminal.h"
 
 extern int cmpbnames();
-extern char *chgrp();
 extern int dowall();
 extern int t_cmpuids();
 extern void rebuild_brdshm();
@@ -46,6 +45,31 @@ static int getbnames(const char *userid, const char *bname, int *find)
 	fclose(bmfp);
 	return oldbm;
 }
+
+static int get_grp(char *seekstr)
+{
+	FILE   *fp;
+	char    buf[STRLEN];
+	char   *namep;
+	if ((fp = fopen("0Announce/.Search", "r")) == NULL)
+		return 0;
+	while (fgets(buf, STRLEN, fp) != NULL) {
+		namep = strtok(buf, ": \n\r\t");
+		if (namep != NULL && strcasecmp(namep, seekstr) == 0) {
+			fclose(fp);
+			strtok(NULL, "/");
+			namep = strtok(NULL, "/");
+			if (strlen(namep) < 30) {
+				strcpy(lookgrp, namep);
+				return 1;
+			} else
+				return 0;
+		}
+	}
+	fclose(fp);
+	return 0;
+}
+
 //      修改使用者资料
 int m_info() {
 	struct userec uinfo;
@@ -130,7 +154,8 @@ int tui_ordain_bm(const char *cmd)
 
 	char bname[BOARD_NAME_LEN];
 	board_t board;
-	board_complete(3, "输入该使用者将管理的讨论区名称: ", bname, sizeof(bname));
+	board_complete(3, "输入该使用者将管理的讨论区名称: ", bname, sizeof(bname),
+			AC_LIST_BOARDS_ONLY);
 	if (!*bname || !get_board(bname, &board))
 		return -1;
 	board_to_gbk(&board);
@@ -272,7 +297,7 @@ static bool retire_bm(int bid, const char *uname)
 
 int tui_retire_bm(const char *cmd)
 {
-	int id, pos, right = 0, j = 0, bmnum;
+	int id, right = 0, j = 0, bmnum;
 	int find, bm = 1;
 	FILE *bmfp;
 	char bmfilename[STRLEN], usernames[BMMAXNUM][STRLEN];
@@ -292,7 +317,8 @@ int tui_retire_bm(const char *cmd)
 
 	char bname[BOARD_NAME_LEN];
 	board_t board;
-	board_complete(3, "请输入该版主要辞去的版名: ", bname, sizeof(bname));
+	board_complete(3, "请输入该版主要辞去的版名: ", bname, sizeof(bname),
+			AC_LIST_BOARDS_ONLY);
 	if (!*bname || !get_board(bname, &board))
 		return -1;
 	board_to_gbk(&board);
@@ -449,14 +475,73 @@ int tui_retire_bm(const char *cmd)
 	return 0;
 }
 
-//  开设新版
-int m_newbrd() {
-	struct boardheader newboard, fh;
-	char ans[20];
-	char vbuf[100];
-	char *group;
-	int bid, pos;
+static bool valid_board_name(const char *name)
+{
+	for (const char *s = name; *s; ++s) {
+		char ch = *s;
+		if (!isalnum(ch) && ch != '_' && ch != '.')
+			return false;
+	}
+	return true;
+}
 
+static int select_section(void)
+{
+	int id = 0;
+	char buf[3];
+	getdata(5, 0, "请输入分区: ", buf, sizeof(buf), DOECHO, YEA);
+	if (*buf) {
+		db_res_t *res = db_query("SELECT id FROM board_sectors "
+				"WHERE lower(name) = lower(%s)", buf);
+		if (res && db_res_rows(res) == 1)
+			id = db_get_integer(res, 0, 0);
+	}
+	return id;
+}
+
+const char *chgrp(void)
+{
+	const char *explain[] = {
+		"BBS 系统", "复旦大学", "院系风采", "电脑技术", "休闲娱乐", "文学艺术",
+		"体育健身", "感性空间", "新闻信息", "学科学术", "音乐影视", "交易专区",
+		"隐藏分区", NULL
+	};
+	const char *groups[] = {
+        "system.faq", "campus.faq", "ccu.faq", "comp.faq", "rec.faq",
+		"literal.faq", "sport.faq", "talk.faq", "news.faq", "sci.faq",
+		"other.faq", "business.faq", "hide.faq", NULL
+	};
+
+	clear();
+	move(2, 0);
+	prints("选择精华区的目录\n\n");
+
+	int i, ch;
+	for (i = 0; ; ++i) {
+		if (!explain[i] || !groups[i])
+			break;
+		prints("\033[1;32m%2d\033[m. %-20s%-20s\n", i, explain[i], groups[i]);
+	}
+
+	char buf[STRLEN], ans[6];
+	snprintf(buf, sizeof(buf), "请输入您的选择(0~%d): ", --i);
+	while (1) {
+		getdata(i + 6, 0, buf, ans, sizeof(ans), DOECHO, YEA);
+		if (!isdigit(ans[0]))
+			continue;
+		ch = atoi(ans);
+		if (ch < 0 || ch > i || ans[0] == '\r' || ans[0] == '\0')
+			continue;
+		else
+			break;
+	}
+	snprintf(cexplain, sizeof(cexplain), "%s", explain[ch]);
+
+	return groups[ch];
+}
+
+int tui_new_board(const char *cmd)
+{
 	if (!(HAS_PERM(PERM_BLEVELS)))
 		return 0;
 
@@ -464,17 +549,16 @@ int m_newbrd() {
 	if (!check_systempasswd()) {
 		return 0;
 	}
+
 	clear();
 	stand_title("开启新讨论区");
-	memset(&newboard, 0, sizeof (newboard));
-	move(2, 0);
-	ansimore2("etc/boardref", NA, 3, 7);
+
+	char bname[BOARD_NAME_LEN + 1];
 	while (1) {
-		getdata(10, 0, "讨论区名称:   ", newboard.filename, 18, DOECHO, YEA);
-		if (newboard.filename[0] != 0) {
-			struct boardheader dh;
-			if (search_record(BOARDS, &dh, sizeof (dh), cmpbnames,
-					newboard.filename)) {
+		getdata(2, 0, "讨论区名称:   ", bname, sizeof(bname), DOECHO, YEA);
+		if (*bname) {
+			board_t board;
+			if (get_board(bname, &board)) {
 				prints("\n错误! 此讨论区已经存在!!");
 				pressanykey();
 				return -1;
@@ -482,153 +566,118 @@ int m_newbrd() {
 		} else {
 			return -1;
 		}
-		if (valid_brdname(newboard.filename))
+
+		if (valid_board_name(bname))
 			break;
 		prints("\n不合法名称!!");
 	}
-	newboard.flag = 0;
-	while (1) {
-		getdata(11, 0, "讨论区说明:   ", newboard.title, 60, DOECHO, YEA);
-		if (newboard.title[0] == '\0')
-			return -1;
-		if (strstr(newboard.title, "●") || strstr(newboard.title, "⊙")) {
-			newboard.flag |= BOARD_OUT_FLAG;
-			break;
-		} else if (strstr(newboard.title, "○")) {
-			newboard.flag &= ~BOARD_OUT_FLAG;
-			break;
-		} else {
-			prints("错误的格式, 无法判断是否转信!!");
-		}
-	}
-	strcpy(vbuf, "vote/");
-	strcat(vbuf, newboard.filename);
-	setbpath(genbuf, newboard.filename);
-	if (getbnum(newboard.filename, &currentuser) > 0 || mkdir(genbuf, 0755) == -1
-			|| mkdir(vbuf, 0755) == -1) {
-		prints("\n错误的讨论区名称!!\n");
-		pressreturn();
-		clear();
-		return -1;
-	}
-	//sprintf(vbuf, "/dev/shm/bbs/boards/%s", newboard.filename);
-	//mkdir(vbuf, 0755);
 
-	move(12, 0);
-	if (gettheboardname(12, "输入所属讨论区名: ", &pos, &fh, ans, 2)) {
-		newboard.group = pos;
-	} else {
-		newboard.group = 0;
-		newboard.flag |= BOARD_NOZAP_FLAG; //root dir can't zap.Danielfree 06.2.22
-	}
-	if (askyn("本版是目录吗?", NA, NA) == YEA) {
-		newboard.flag |= BOARD_DIR_FLAG;
-		//suggest by monoply.06.2.22
-		newboard.flag |= BOARD_JUNK_FLAG;
-		newboard.flag |= BOARD_NOREPLY_FLAG;
-		newboard.flag |= BOARD_POST_FLAG;
-		if (askyn("是否限制存取权力", NA, NA) == YEA) {
-			getdata(14, 0, "限制 Read? [R]: ", ans, 2, DOECHO, YEA);
+	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
+	getdata(3, 0, "讨论区说明: ", gbk_descr, sizeof(gbk_descr), DOECHO, YEA);
+	if (!*gbk_descr)
+		return -1;
+	convert_g2u(gbk_descr, utf8_descr);
+
+	GBK_UTF8_BUFFER(categ, BOARD_CATEG_CCHARS);
+	getdata(4, 0, "讨论区类别: ", gbk_categ, sizeof(gbk_categ), DOECHO, YEA);
+	convert_g2u(gbk_categ, utf8_categ);
+	
+	int sector = select_section();
+
+	char pname[BOARD_NAME_LEN];
+	board_complete(6, "输入所属目录: ", pname, sizeof(pname),
+			AC_LIST_DIR_ONLY);
+	board_t parent;
+	get_board(pname, &parent);
+
+	int flag = 0, perm = 0;
+	if (askyn("本版是目录吗?", NA, NA)) {
+		flag |= (BOARD_DIR_FLAG | BOARD_JUNK_FLAG
+				| BOARD_NOREPLY_FLAG | BOARD_POST_FLAG);
+		if (askyn("是否限制存取权利?", NA, NA)) {
+			char ans[2];
+			getdata(7, 0, "限制读? [R]: ", ans, sizeof(ans), DOECHO, YEA);
 			move(1, 0);
 			clrtobot();
 			move(2, 0);
-			prints("设定 %s 权力. 讨论区: '%s'\n", "READ", newboard.filename);
-			newboard.level = setperms(newboard.level, "权限", NUMPERMS,
-					showperminfo);
+			prints("设定 %s 权利. 讨论区: '%s'\n", "READ", bname);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			clear();
-		} else {
-			newboard.level = 0;
 		}
-		//add  end
 	} else {
-		newboard.flag &= ~BOARD_DIR_FLAG;
-
-		if (askyn("本版诚征版主吗(否则由SYSOPs管理)?", YEA, NA) == NA) {
-			strcpy(newboard.BM, "SYSOPs");
-		} else {
-			newboard.BM[0] = '\0';
+		if (askyn("该版的全部文章均不可以回复", NA, NA))
+			flag |= BOARD_NOREPLY_FLAG;
+		if (askyn("是否是俱乐部版面", NA, NA)) {
+			flag |= BOARD_CLUB_FLAG;
+			if (askyn("是否读限制俱乐部版面", NA, NA))
+				flag |= BOARD_READ_FLAG;
 		}
-
-		if (askyn("该版的全部文章均不可以回复", NA, NA) == YEA) {
-			newboard.flag |= BOARD_NOREPLY_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_NOREPLY_FLAG;
-		}
-
-		if (askyn("是否是俱乐部版面", NA, NA) == YEA) {
-			newboard.flag |= BOARD_CLUB_FLAG;
-			if (askyn("是否读限制俱乐部版面", NA, NA) == YEA) {
-				newboard.flag |= BOARD_READ_FLAG;
-			} else {
-				newboard.flag &= ~BOARD_READ_FLAG;
-			}
-		} else {
-			newboard.flag &= ~BOARD_CLUB_FLAG;
-		}
-
-		if (askyn("是否不计算文章数", NA, NA) == YEA) {
-			newboard.flag |= BOARD_JUNK_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_JUNK_FLAG;
-		}
-
-		if (askyn("是否加入匿名版", NA, NA) == YEA) {
-			newboard.flag |= BOARD_ANONY_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_ANONY_FLAG;
-		}
+		if (askyn("是否不计算文章数", NA, NA))
+			flag |= BOARD_JUNK_FLAG;
+		if (askyn("是否为匿名版", NA, NA))
+			flag |= BOARD_ANONY_FLAG;
 #ifdef ENABLE_PREFIX
-		if (askyn ("是否强制使用前缀", NA, NA) == YEA) {
-			newboard.flag |= BOARD_PREFIX_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_PREFIX_FLAG;
-		}
+		if (askyn ("是否强制使用前缀", NA, NA))
+			flag |= BOARD_PREFIX_FLAG;
 #endif
-		if (askyn("是否限制存取权力", NA, NA) == YEA) {
-			getdata(14, 0, "限制 Read/Post? [R]: ", ans, 2, DOECHO, YEA);
-			if (*ans == 'P' || *ans == 'p') {
-				newboard.flag |= BOARD_POST_FLAG;
-			} else {
-				newboard.flag &= ~BOARD_POST_FLAG;
-			}
+		if (askyn("是否限制存取权力", NA, NA)) {
+			char ans[2];
+			getdata(11, 0, "限制读(R)/写(P)? [R]: ", ans, sizeof(ans),
+					DOECHO, YEA);
+			if (*ans == 'P' || *ans == 'p')
+				flag |= BOARD_POST_FLAG;
 			move(1, 0);
 			clrtobot();
 			move(2, 0);
-			prints("设定 %s 权力. 讨论区: '%s'\n", (newboard.flag
-					& BOARD_POST_FLAG ? "POST" : "READ"),
-					newboard.filename);
-			newboard.level = setperms(newboard.level, "权限", NUMPERMS,
-					showperminfo);
+			prints("设定 %s 权利. 讨论区: '%s'\n",
+					(flag & BOARD_POST_FLAG ? "写" : "读"), bname);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			clear();
-		} else {
-			newboard.level = 0;
 		}
 	}
-	if (askyn("是否 可以 ZAP讨论区？", (newboard.flag & BOARD_NOZAP_FLAG) ? NA
-			: YEA, YEA) == NA) {
-		newboard.flag |= BOARD_NOZAP_FLAG;
-	} else {
-		newboard.flag &= ~BOARD_NOZAP_FLAG;
+
+	db_res_t *res = db_query("INSERT INTO boards "
+			"(name, descr, parent, flag, perm, categ, sector) "
+			"VALUES (%s, %s, %d, %d, %d, %d, %d, %d) RETURNING id",
+			bname, utf8_descr, parent.id, flag, perm, utf8_categ, sector);
+	if (!res) {
+		prints("\n建立新版出错\n");
+		pressanykey();
+		clear();
+		return -1;
 	}
-	if ((bid = getblankbnum()) > 0) {
-		substitute_record(BOARDS, &newboard, sizeof (newboard), bid);
-		flush_bcache();
-	} else if (append_record(BOARDS, &newboard, sizeof (newboard)) == -1) {
+	int bid = db_get_integer(res, 0, 0);
+	db_clear(res);
+
+	char *bms = NULL;
+	if (!(flag & BOARD_DIR_FLAG)
+			&& !askyn("本版诚征版主吗(否则由SYSOPs管理)?", YEA, NA)) {
+		bms = "SYSOPs";
+		ordain_bm(bid, bms);
+	}
+
+	char vdir[HOMELEN];
+	snprintf(vdir, sizeof(vdir), "vote/%s", bname);
+	char bdir[HOMELEN];
+	snprintf(bdir, sizeof(bdir), "boards/%s", bname);
+	if (mkdir(bdir, 0755) != 0 || mkdir(vdir, 0755) != 0) {
+		prints("\n新建目录出错!\n");
 		pressreturn();
 		clear();
 		return -1;
 	}
 
-	if (!(newboard.flag & BOARD_DIR_FLAG)) {
-		group = chgrp();
-		if (group != NULL) {
-			if (newboard.BM[0] != '\0') {
-				sprintf(vbuf, "%-38.38s(BM: %s)", newboard.title + 8,
-						newboard.BM);
+	if (!(flag & BOARD_DIR_FLAG)) {
+		const char *group = chgrp();
+		if (group) {
+			char buf[STRLEN];
+			if (*bms) {
+				snprintf(buf, sizeof(buf), "○ %-35.35s(BM: %s)",
+						gbk_descr, bms);
 			} else {
-				sprintf(vbuf, "%-38.38s", newboard.title + 8);
+				snprintf(buf, sizeof(buf), "○ %-35.35s", gbk_descr);
 			}
-			if (add_grp(group, cexplain, newboard.filename, vbuf) == -1) {
+			if (add_grp(group, cexplain, bname, buf) == -1) {
 				prints("\n成立精华区失败....\n");
 			} else {
 				prints("已经置入精华区...\n");
@@ -636,356 +685,321 @@ int m_newbrd() {
 		}
 	}
 
-	flush_bcache();
 	rebuild_brdshm(); //add by cometcaptor 2006-10-13
 	prints("\n新讨论区成立\n");
 
-	char secu[STRLEN];
-	sprintf(secu, "成立新版：%s", newboard.filename);
-	securityreport(secu, 0, 1);
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "成立新版：%s", bname);
+	securityreport(buf, 0, 1);
 
 	pressreturn();
 	clear();
 	return 0;
 }
 
-//      修改讨论区设定
-int m_editbrd() {
-	char bname[STRLEN], buf[STRLEN], oldtitle[STRLEN], vbuf[256], *group;
-	char type[10];
-	char oldpath[STRLEN], newpath[STRLEN], tmp_grp[30];
-	int pos, tmppos, a_mv;
-	struct boardheader fh, newfh, tmpfh;
+static void show_edit_board_menu(board_t *bp, board_t *pp)
+{
+	prints("1)修改名称:        %s\n", bp->name);
+	prints("2)修改说明:        %s\n", bp->descr);
+	prints("4)修改所属目录:    %s(%d)\n", pp->name, pp->id);
+	if (bp->flag & BOARD_DIR_FLAG) {
+		prints("5)修改读写属性:    %s\n",
+				(bp->perm == 0) ? "没有限制" : "r(限制阅读)");
+	} else {
+		prints("5)修改读写属性:    %s\n",
+				(bp->flag & BOARD_POST_FLAG) ? "p(限制发文)"
+				: (bp->perm == 0) ? "没有限制" : "r(限制阅读)");
+	}
 
-	a_mv = 0; // added by Danielfree 05.12.4
+	if (!(bp->flag & BOARD_DIR_FLAG)) {
+		prints("8)匿名版面:            %s\n",
+				(bp->flag & BOARD_ANONY_FLAG) ? "是" : "否");
+		prints("9)可以回复:            %s\n",
+				(bp->flag & BOARD_NOREPLY_FLAG) ? "否" : "是");
+		prints("A)是否计算文章数:      %s\n",
+				(bp->flag & BOARD_JUNK_FLAG) ? "否" : "是");
+		prints("B)俱乐部属性:          %s\n",
+				(bp->flag & BOARD_CLUB_FLAG) ?
+				(bp->flag & BOARD_READ_FLAG) ?
+				"\033[1;31mc\033[0m(读限制)"
+				: "\033[1;33mc\033[0m(写限制)"
+				: "非俱乐部");
+#ifdef ENABLE_PREFIX
+		prints ("C)是否强制使用前缀:    %s\n",
+				(bp->flag & BOARD_PREFIX_FLAG) ? "是" : "否");
+#endif
+	}
+}
 
-	//added by roly 02.03.07
+static bool alter_board_name(board_t *bp)
+{
+	char bname[BOARD_NAME_LEN + 1];
+	getdata(t_lines - 2, 0, "新讨论区名称: ", bname, sizeof(bname),
+			DOECHO, YEA);
+	if (!*bname || streq(bp->name, bname) || !valid_brdname(bname))
+		return 0;
+
+	if (!askyn("确定修改版名?", NA, YEA))
+		return 0;
+
+	db_res_t *res = db_cmd("UPDATE boards SET name = %s WHERE id = %d",
+			bname, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_descr(board_t *bp)
+{
+	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
+	getdata(t_lines - 2, 0, "新讨论区说明: ", gbk_descr, sizeof(gbk_descr),
+			DOECHO, YEA);
+	if (!gbk_descr)
+		return 0;
+
+	convert_g2u(gbk_descr, utf8_descr);
+	db_res_t *res = db_cmd("UPDATE boards SET descr = %s WHERE id = %d",
+			utf8_descr, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_parent(board_t *bp)
+{
+	char bname[BOARD_NAME_LEN + 1];
+	board_complete(15, "输入所属讨论区名: ", bname, sizeof(bname),
+			AC_LIST_DIR_ONLY);
+	board_t parent;
+	get_board(bname, &parent);
+
+	db_res_t *res = db_cmd("UPDATE boards SET parent = %d WHERE id = %d",
+			parent.id, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_perm(board_t *bp)
+{
+	char buf[STRLEN], ans[2];
+	int flag = bp->flag, perm = bp->perm;
+	if (bp->flag & BOARD_DIR_FLAG) {
+		snprintf(buf, sizeof(buf), "(N)不限制 (R)限制阅读 [%c]: ",
+				(bp->perm) ? 'R' : 'N');
+		getdata(15, 0, buf, ans, sizeof(ans), DOECHO, YEA);
+		if (ans[0] == 'N' || ans[0] == 'n') {
+			flag &= ~BOARD_POST_FLAG;
+			perm = 0;
+		} else {
+			if (ans[0] == 'R' || ans[0] == 'r')
+				flag &= ~BOARD_POST_FLAG;
+			clear();
+			move(2, 0);
+			prints("设定 %s '%s' 讨论区的权限\n", "阅读", bp->name);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
+			clear();
+		}
+	} else {
+		snprintf(buf, sizeof(buf), "(N)不限制 (R)限制阅读 (P)限制张贴 文章 [%c]: ",
+				(flag & BOARD_POST_FLAG) ? 'P' : (perm) ? 'R' : 'N');
+		getdata(15, 0, buf, ans, sizeof(ans), DOECHO, YEA);
+		if (ans[0] == 'N' || ans[0] == 'n') {
+			flag &= ~BOARD_POST_FLAG;
+			perm = 0;
+		} else {
+			if (ans[0] == 'R' || ans[0] == 'r')
+				flag &= ~BOARD_POST_FLAG;
+			else if (ans[0] == 'P' || ans[0] == 'p')
+				flag |= BOARD_POST_FLAG;
+			clear();
+			move(2, 0);
+			prints("设定 %s '%s' 讨论区的权限\n",
+					(flag & BOARD_POST_FLAG) ? "张贴" : "阅读", bp->name);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
+			clear();
+		}
+	}
+
+	db_res_t *res = db_cmd("UPDATE boards SET flag = %d, perm = %d "
+			"WHERE id = %d", flag, perm, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_flag(board_t *bp, const char *prompt, int flag)
+{
+	int f = bp->flag;
+	if (askyn(prompt, (bp->flag & flag) ? YEA : NA, YEA)) {
+		f |= flag;
+	} else {
+		f &= ~flag;
+	}
+
+	if (flag == BOARD_CLUB_FLAG && (f & BOARD_CLUB_FLAG)) {
+		if (askyn("是否读限制俱乐部?",
+					(bp->flag & BOARD_READ_FLAG) ? YEA : NA, NA)) {
+			f |= BOARD_READ_FLAG;
+		} else {
+			f &= ~BOARD_READ_FLAG;
+		}
+	}
+
+	db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
+			f, bp->id);
+	db_clear(res);
+	return res;
+}
+
+int tui_edit_board(const char *cmd)
+{
 	if (!(HAS_PERM(PERM_BLEVELS)))
 		return 0;
-	//add end
 
 	set_user_status(ST_ADMIN);
-	if (!check_systempasswd()) {
+	if (!check_systempasswd())
 		return 0;
-	}
-	clear();
-	stand_title("修改讨论区资讯");
-	if (!gettheboardname(2, "输入讨论区名称: ", &pos, &fh, bname, 0))
-		return -1;
-	if (fh.flag & BOARD_DIR_FLAG)
-		sprintf(type, "目录");
-	else
-		sprintf(type, "版面");
-	move(2, 0);
-	memcpy(&newfh, &fh, sizeof (newfh));
-	while (1) {
-		clear();
-		stand_title("修改讨论区资讯");
-		move(2, 0);
-		prints("1)修改%s名称:            %s\n", type, newfh.filename);
-		prints("2)修改%s说明:            %s\n", type, newfh.title);
-		prints("3)修改%s管理员:          %s\n", type, newfh.BM);
-		prints("4)修改%s所属目录:        %s(%d)\n", type,
-				bcache[fh.group - 1].filename, newfh.group);
-		if (fh.flag & BOARD_DIR_FLAG) {
-			prints("5)修改%s读写属性:        %s\n", type,
-					(newfh.level == 0) ? "没有限制" : "r(限制阅读)");
-		} else {
-			prints("5)修改%s读写属性:        %s\n", type, (newfh.flag
-					& BOARD_POST_FLAG) ? "p(限制发文)"
-					: (newfh.level == 0) ? "没有限制" : "r(限制阅读)");
-		}
-		//zap dir and board. Danielfree 06.2.22
-		prints("6)可以ZAP%s:             %s\n", type, (newfh.flag
-				& BOARD_NOZAP_FLAG) ? "可" : "否");
-		if (!(newfh.flag & BOARD_DIR_FLAG)) {
-			prints("7)移动精华区位置\n");
-			//prints ("7)可以ZAP版面:             %s\n",
-			//    (newfh.flag & BOARD_POST_FLAG) ? "可" : "否");
-			prints("8)匿名版面:                %s\n", (newfh.flag
-					& BOARD_ANONY_FLAG) ? "匿名" : "不匿名");
-			prints("9)可以回复:                %s\n", (newfh.flag
-					& BOARD_NOREPLY_FLAG) ? "不可回复" : "可以回复");
-			prints("A)是否计算文章数:          %s\n", (newfh.flag
-					& BOARD_JUNK_FLAG) ? "不计算" : "计算");
-			prints(
-					"B)俱乐部属性:              %s\n",
-					(newfh.flag & BOARD_CLUB_FLAG) ? (newfh.flag
-							& BOARD_READ_FLAG) ? "\033[1;31mc\033[0m(读限制俱乐部)"
-							: "\033[1;33mc\033[0m(普通俱乐部)"
-							: "不是俱乐部");
-#ifdef ENABLE_PREFIX
-			prints ("C)是否强制使用前缀:        %s\n",
-					(newfh.flag & BOARD_PREFIX_FLAG) ? "必须" : "不必");
-#endif
-			getdata(14, 0, "更改哪项资讯？[1-9,A,B][0]", genbuf, 2, DOECHO, YEA);
-		} else {
-			getdata(14, 0, "更改哪项资讯？[1-6][0]", genbuf, 2, DOECHO, YEA);
-		}
-		if (genbuf[0] == '0' || genbuf[0] == 0)
-			break;
-		move(15, 0);
-		strcpy(oldtitle, fh.title);
-		switch (genbuf[0]) {
-			case '1':
-				while (1) {
-					sprintf(buf, "新讨论区名称[%s]: ", fh.filename);
-					getdata(15, 0, buf, genbuf, 18, DOECHO, YEA);
-					if (*genbuf != 0) {
-						struct boardheader dh;
-						if (search_record(BOARDS, &dh, sizeof (dh),
-								cmpbnames, genbuf)) {
-							move(16, 0);
-							prints("错误! 此讨论区已经存在!!");
-							move(0, 0);
-							clrtoeol();
-							continue;
-						}
-						if (valid_brdname(genbuf)) {
-							strlcpy(newfh.filename, genbuf,
-									sizeof (newfh.filename));
-							strcpy(bname, genbuf);
-							break;
-						} else {
-							move(16, 0);
-							prints("不合法的讨论区名称!");
-							move(0, 0);
-							clrtoeol();
-							continue;
-						}
-					} else {
-						break;
-					}
-				}
-				break;
-			case '2':
-				ansimore2("etc/boardref", NA, 11, 7);
-				snprintf(genbuf, sizeof(newfh.title), "%s", newfh.title);
-				while (1) {
-					getdata(22, 0, "新讨论区说明: ", genbuf, 60, DOECHO, YEA);
-					if (*genbuf != 0) {
-						strlcpy(newfh.title, genbuf, sizeof (newfh.title));
-					} else {
-						break;
-					}
-					if (strstr(newfh.title, "●") || strstr(newfh.title,
-							"⊙")) {
-						newfh.flag |= BOARD_OUT_FLAG;
-						break;
-					} else if (strstr(newfh.title, "○")) {
-						newfh.flag &= ~BOARD_OUT_FLAG;
-						break;
-					} else {
-						prints("\n错误的格式, 无法判断是否转信!!");
-					}
-				}
-				break;
-			case '3':
-				if (fh.BM[0] != '\0' && strcmp(fh.BM, "SYSOPs")) {
-					if (askyn("修改讨论区管理员。注意：仅供出错修正使用，版主任免请勿改动此处！", NA, NA)
-							== YEA) {
-						getdata(16, 0, "讨论区管理员: ", newfh.BM,
-								sizeof (newfh.BM), DOECHO, YEA);
-						if (newfh.BM[0] == '\0') {
-							strcpy(newfh.BM, fh.BM);
-						} else if (newfh.BM[0] == ' ') {
-							newfh.BM[0] = '\0';
-						}
-					}
-				} else {
-					if (askyn("本版诚征版主吗(否，则由SYSOPs管理)?", YEA, NA) == NA) {
-						strlcpy(newfh.BM, "SYSOPs", sizeof (newfh.BM));
-					} else {
-						strlcpy(newfh.BM, "\0", sizeof (newfh.BM));
-					}
-				}
-				break;
-			case '4':
-				if (gettheboardname(15, "输入所属讨论区名: ", &tmppos, &tmpfh,
-						genbuf, 2))
-					newfh.group = tmppos;
-				else if (askyn("所属讨论区为根目录么？", NA, NA) == YEA)
-					newfh.group = 0;
-				break;
-			case '5':
-				if (fh.flag & BOARD_DIR_FLAG) { //modiy for dir. Danielfree 06.2.23
-					sprintf(buf, "(N)不限制 (R)限制阅读 [%c]: ",
-							(newfh.level) ? 'R' : 'N');
-					getdata(15, 0, buf, genbuf, 2, DOECHO, YEA);
-					if (genbuf[0] == 'N' || genbuf[0] == 'n') {
-						newfh.flag &= ~BOARD_POST_FLAG;
-						newfh.level = 0;
-					} else {
-						if (genbuf[0] == 'R' || genbuf[0] == 'r')
-							newfh.flag &= ~BOARD_POST_FLAG;
-						clear();
-						move(2, 0);
-						prints("设定 %s '%s' 讨论区的权限\n", "阅读", newfh.filename);
-						newfh.level = setperms(newfh.level, "权限",
-								NUMPERMS, showperminfo);
-						clear();
-					}
-				} // if dir
-				else { //if board
-					sprintf(buf, "(N)不限制 (R)限制阅读 (P)限制张贴 文章 [%c]: ",
-							(newfh.flag & BOARD_POST_FLAG) ? 'P' : (newfh.
-							level) ? 'R' : 'N');
-					getdata(15, 0, buf, genbuf, 2, DOECHO, YEA);
-					if (genbuf[0] == 'N' || genbuf[0] == 'n') {
-						newfh.flag &= ~BOARD_POST_FLAG;
-						newfh.level = 0;
-					} else {
-						if (genbuf[0] == 'R' || genbuf[0] == 'r')
-							newfh.flag &= ~BOARD_POST_FLAG;
-						else if (genbuf[0] == 'P' || genbuf[0] == 'p')
-							newfh.flag |= BOARD_POST_FLAG;
-						clear();
-						move(2, 0);
-						prints("设定 %s '%s' 讨论区的权限\n", newfh.flag
-								& BOARD_POST_FLAG ? "张贴" : "阅读",
-								newfh.filename);
-						newfh.level = setperms(newfh.level, "权限",
-								NUMPERMS, showperminfo);
-						clear();
-					}
-				}
-				break;
-				//both dir and board can zap. Danielfree 06.2.22
-			case '6':
-				if (askyn("是否 可以 ZAP讨论区？",
-						(fh.flag & BOARD_NOZAP_FLAG) ? NA : YEA, YEA)
-						== NA) {
-					newfh.flag |= BOARD_NOZAP_FLAG;
-				} else {
-					newfh.flag &= ~BOARD_NOZAP_FLAG;
-				}
-				break;
-				//modify end
-			default:
-				if (!(fh.flag & BOARD_DIR_FLAG)) {
-					switch (genbuf[0]) {
-						case '7':
-							a_mv = 2;
-							break; // move from out of default into default -.- Danielfree 05.12.4
-						case '8':
-							if (askyn("是否匿名版？", (fh.flag
-									& BOARD_ANONY_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_ANONY_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_ANONY_FLAG;
-							}
 
-							break;
-						case '9':
-							if (askyn("文章是否 可以 回复？", (fh.flag
-									& BOARD_NOREPLY_FLAG) ? NA : YEA, YEA)
-									== NA) {
-								newfh.flag |= BOARD_NOREPLY_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_NOREPLY_FLAG;
-							}
-							break;
-						case 'a':
-						case 'A':
-							if (askyn("是否 不计算 文章数？", (fh.flag
-									& BOARD_JUNK_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_JUNK_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_JUNK_FLAG;
-							}
-							break;
-						case 'b':
-						case 'B':
-							if (askyn("是否俱乐部版面？", (fh.flag
-									& BOARD_CLUB_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_CLUB_FLAG;
-								if (askyn("是否读限制俱乐部？", (fh.flag
-										& BOARD_READ_FLAG) ? YEA : NA, NA)
-										== YEA) {
-									newfh.flag |= BOARD_READ_FLAG;
-								} else {
-									newfh.flag &= ~BOARD_READ_FLAG;
-								}
-							} else {
-								newfh.flag &= ~BOARD_CLUB_FLAG;
-								newfh.flag &= ~BOARD_READ_FLAG;
-							}
-							break;
+	clear();
+	stand_title("修改讨论区设置");
+
+	char bname[BOARD_NAME_LEN + 1];
+	board_complete(2, "输入讨论区名称: ", bname, sizeof(bname),
+			AC_LIST_BOARDS_AND_DIR);
+	board_t board;
+	if (!*bname || !get_board(bname, &board))
+		return -1;
+	board_to_gbk(&board);
+
+	board_t parent = { .id = 0, .name = { '\0' } };
+	if (board.parent) {
+		get_board_by_bid(board.parent, &parent);
+		board_to_gbk(&parent);
+	}
+
+	clear();
+	stand_title("修改讨论区设置");
+	move(2, 0);
+
+	show_edit_board_menu(&board, &parent);
+
+	char ans[2];
+	getdata(14, 0, "更改哪项设置[0]", ans, sizeof(ans), DOECHO, YEA);
+	if (!ans[0])
+		return 0;
+
+	int res = 0;
+	move(15, 0);
+	switch (ans[0]) {
+		case '1':
+			res = alter_board_name(&board);
+			break;
+		case '2':
+			res = alter_board_descr(&board);
+			break;
+		case '4':
+			res = alter_board_parent(&board);
+			break;
+		case '5':
+			res = alter_board_perm(&board);
+			break;
+		default:
+			break;
+	}
+
+	if (!(board.flag & BOARD_DIR_FLAG)) {
+		switch (ans[0]) {
+			case '7':
+				res = askyn("移动精华区", NA, YEA);
+				break;
+			case '8':
+				res = alter_board_flag(&board, "是否匿名?", BOARD_ANONY_FLAG);
+				break;
+			case '9':
+				res = alter_board_flag(&board, "禁止回复?", BOARD_NOREPLY_FLAG);
+				break;
+			case 'a':
+			case 'A':
+				res = alter_board_flag(&board, "不计文章数?", BOARD_JUNK_FLAG);
+				break;
+			case 'b':
+			case 'B':
+				res = alter_board_flag(&board, "是否俱乐部?", BOARD_CLUB_FLAG);
+				break;
 #ifdef ENABLE_PREFIX
-							case 'c':
-							case 'C':
-							if (askyn("是否强制使用前缀？", (fh.flag & BOARD_PREFIX_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_PREFIX_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_PREFIX_FLAG;
-							}
+			case 'c':
+			case 'C':
+				res = alter_board_flag(&board, "强制前缀?", BOARD_PREFIX_FLAG);
+				break;
 #endif
-					}//wswitch
-				}//if dir
-		}//switch
-	}//while
-	getdata(23, 0, "确定要更改吗? (Y/N) [N]: ", genbuf, 4, DOECHO, YEA);
-	if (*genbuf == 'Y' || *genbuf == 'y') {
-		char secu[STRLEN];
-		sprintf(secu, "修改讨论区：%s(%s)", fh.filename, newfh.filename);
-		securityreport(secu, 0, 1);
-		if (strcmp(fh.filename, newfh.filename)) {
-			char old[256], tar[256];
-			a_mv = 1;
-			setbpath(old, fh.filename);
-			setbpath(tar, newfh.filename);
+		}
+	}
+
+	if (res) {
+		board_t nb;
+		get_board_by_bid(board.id, &nb);
+		board_to_gbk(&board);
+
+		if (ans[0] == '1') {
+			char secu[STRLEN];
+			sprintf(secu, "修改讨论区：%s(%s)", board.name, nb.name);
+			securityreport(secu, 0, 1);
+
+			char old[HOMELEN], tar[HOMELEN];
+			setbpath(old, board.name);
+			setbpath(tar, nb.name);
 			rename(old, tar);
-			sprintf(old, "vote/%s", fh.filename);
-			sprintf(tar, "vote/%s", newfh.filename);
+			sprintf(old, "vote/%s", board.name);
+			sprintf(tar, "vote/%s", nb.name);
 			rename(old, tar);
 		}
-		if (newfh.BM[0] != '\0')
-			sprintf(vbuf, "%-38.38s(BM: %s)", newfh.title + 8, newfh.BM);
-		else
-			sprintf(vbuf, "%-38.38s", newfh.title + 8);
-		get_grp(fh.filename);
-		edit_grp(fh.filename, lookgrp, oldtitle + 8, vbuf);
-		if (a_mv >= 1) {
-			group = chgrp();
-			get_grp(fh.filename);
+
+		char vbuf[STRLEN];
+		if (*nb.bms) {
+			snprintf(vbuf, sizeof(vbuf), "○ %-35.35s(BM: %s)",
+					nb.descr, nb.bms);
+		} else {
+			snprintf(vbuf, sizeof(vbuf), "○ %-35.35s", nb.descr);
+		}
+
+		char old_descr[STRLEN];
+		snprintf(old_descr, sizeof(old_descr), "○ %s", board.descr);
+
+		if (ans[1] == '2') {
+			get_grp(board.name);
+			edit_grp(board.name, lookgrp, old_descr, vbuf);
+		}
+
+		if (ans[1] == '1' || ans[1] == '7') {
+			const char *group = chgrp();
+			get_grp(board.name);
+			char tmp_grp[STRLEN];
 			strcpy(tmp_grp, lookgrp);
-			if (strcmp(tmp_grp, group) || a_mv == 1) {
+			if (strcmp(tmp_grp, group)) {
 				char tmpbuf[160];
-				sprintf(tmpbuf, "%s:", fh.filename);
+				sprintf(tmpbuf, "%s:", board.name);
 				del_from_file("0Announce/.Search", tmpbuf);
 				if (group != NULL) {
-					if (newfh.BM[0] != '\0')
-						sprintf(vbuf, "%-38.38s(BM: %s)", newfh.title + 8,
-								newfh.BM);
-					else
-						sprintf(vbuf, "%-38.38s", newfh.title + 8);
-					if (add_grp(group, cexplain, newfh.filename, vbuf)
-							== -1)
+					if (add_grp(group, cexplain, nb.name, vbuf) == -1)
 						prints("\n成立精华区失败....\n");
 					else
 						prints("已经置入精华区...\n");
-					sprintf(newpath, "0Announce/groups/%s/%s", group,
-							newfh.filename);
-					sprintf(oldpath, "0Announce/groups/%s/%s", tmp_grp,
-							fh.filename);
+
+					char newpath[HOMELEN], oldpath[HOMELEN];
+					sprintf(newpath, "0Announce/groups/%s/%s",
+							group, nb.name);
+					sprintf(oldpath, "0Announce/groups/%s/%s",
+							tmp_grp, board.name);
 					if (strcmp(oldpath, newpath) != 0 && dashd(oldpath)) {
 						deltree(newpath);
 						rename(oldpath, newpath);
-						del_grp(tmp_grp, fh.filename, fh.title + 8);
-					} // add by Danielfree,suggest by fancitron 05.12.4
-				} // if group !=NULL
-			} // if strcmp
-		} // if a_mv >= 1
-		substitute_record(BOARDS, &newfh, sizeof (newfh), pos);
-		sprintf(genbuf, "更改讨论区 %s 的资料 --> %s", fh.filename, newfh.filename);
-		report(genbuf, currentuser.userid);
-		// numboards = -1;/* force re-caching */
-		flush_bcache();
-	} // if askyn
+						del_grp(tmp_grp, board.name, old_descr);
+					}
+				}
+			}
+		}
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "更改讨论区 %s 的资料 --> %s", board.name, nb.name);
+		report(buf, currentuser.userid);
+	}
+
 	clear();
 	return 0;
 
@@ -1223,34 +1237,6 @@ int m_register() {
 		}
 	}
 	switch (ans[0]) {
-		/*
-		 case '1':
-		 fname = "new_register";
-		 if ((fn = fopen(fname, "r")) == NULL) {
-		 prints("\n\n目前并无新注册资料.");
-		 pressreturn();
-		 } else {
-		 y = 3, x = wid = 0;
-		 while (fgets(genbuf, STRLEN, fn) != NULL && x < 65) {
-		 if (strncmp(genbuf, "userid: ", 8) == 0) {
-		 move(y++, x);
-		 prints("%s",genbuf + 8);
-		 len = strlen(genbuf + 8);
-		 if (len > wid)
-		 wid = len;
-		 if (y >= t_lines - 2) {
-		 y = 3;
-		 x += wid + 2;
-		 }
-		 }
-		 }
-		 fclose(fn);
-		 if (askyn("设定资料吗", NA, YEA) == YEA) {
-		 securityreport("设定使用者注册资料");
-		 scan_register_form(fname);
-		 }
-		 }
-		 break; */
 		case '2':
 			move(1, 0);
 			usercomplete("请输入要查询的代号: ", uident);
@@ -1282,100 +1268,6 @@ int m_register() {
 					&reg_comms[0], sizeof(reginfo_t));
 			break;
 	}
-	clear();
-	return 0;
-}
-
-//      删除讨论区
-int d_board() {
-	struct boardheader binfo;
-	int bid, ans;
-	char bname[STRLEN];
-	extern char lookgrp[];
-	char genbuf_rm[STRLEN]; //added by roly 02.03.24
-
-	if (!HAS_PERM(PERM_BLEVELS)) {
-		return 0;
-	}
-	set_user_status(ST_ADMIN);
-	if (!check_systempasswd()) {
-		return 0;
-	}
-	clear();
-	stand_title("删除讨论区");
-	make_blist(0); //生成讨论区列表
-	move(1, 0);
-	namecomplete("请输入讨论区: ", bname);
-	if (bname[0] == '\0')
-		return 0;
-	bid = getbnum(bname, &currentuser);
-	if (get_record(BOARDS, &binfo, sizeof (binfo), bid) == -1) { //取得讨论区的记录
-		move(2, 0);
-		prints("不正确的讨论区\n");
-		pressreturn();
-		clear();
-		return 0;
-	}
-	if (binfo.BM[0] != '\0' && strcmp(binfo.BM, "SYSOPs")) { //还有不是叫SYSOPs的版主
-		move(5, 0);
-		prints("该版还有版主，在删除本版前，请先取消版主的任命。\n");
-		pressanykey();
-		clear();
-		return 0;
-	}
-	ans = askyn("你确定要删除这个讨论区", NA, NA);
-	if (ans != 1) {
-		move(2, 0);
-		prints("取消删除行动\n");
-		pressreturn();
-		clear();
-		return 0;
-	}
-	{
-		char secu[STRLEN];
-		sprintf(secu, "删除讨论区：%s", binfo.filename);
-		securityreport(secu, 0, 1);
-	}
-	if (seek_in_file("0Announce/.Search", bname)) {
-		move(4, 0);
-		if (askyn("移除精华区", NA, NA) == YEA) {
-			get_grp(binfo.filename);
-			del_grp(lookgrp, binfo.filename, binfo.title + 8);
-		}
-	}
-	if (seek_in_file("etc/junkboards", bname))
-		del_from_file("etc/junkboards", bname);
-	if (seek_in_file("0Announce/.Search", bname)) {
-		char tmpbuf[160];
-		sprintf(tmpbuf, "%s:", bname);
-		del_from_file("0Announce/.Search", tmpbuf);
-	}
-	if (binfo.filename[0] == '\0') {
-		return -1; /* rrr - precaution */
-	}
-	sprintf(genbuf, "boards/%s", binfo.filename);
-	//f_rm(genbuf);
-	/* added by roly 02.03.24 */
-	sprintf(genbuf_rm, "/bin/rm -fr %s", genbuf); //added by roly 02.03.24
-	system(genbuf_rm); //与f_rm(genbuf)是不是重复了?
-	/* add end */
-	sprintf(genbuf, "vote/%s", binfo.filename);
-	//f_rm(genbuf);
-	/* added by roly 02.03.24 */
-	sprintf(genbuf_rm, "/bin/rm -fr %s", genbuf); //added by roly 02.03.24
-	system(genbuf_rm);
-	/* add end */
-	sprintf(genbuf, " << '%s' 被 %s 删除 >>", binfo.filename,
-			currentuser.userid);
-	memset(&binfo, 0, sizeof (binfo));
-	strlcpy(binfo.title, genbuf, STRLEN);
-	binfo.level = PERM_SYSOPS;
-	substitute_record(BOARDS, &binfo, sizeof (binfo), bid);
-
-	move(4, 0);
-	prints("\n本讨论区已经删除...\n");
-	pressreturn();
-	flush_bcache();
 	clear();
 	return 0;
 }

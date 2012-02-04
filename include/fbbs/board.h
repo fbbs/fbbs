@@ -28,6 +28,12 @@ enum {
 	FAV_BOARD_LIMIT = 70,
 };
 
+enum {
+	AC_LIST_BOARDS_AND_DIR,
+	AC_LIST_BOARDS_ONLY,
+	AC_LIST_DIR_ONLY,
+};
+
 typedef struct {
 	int id;
 	int parent;
@@ -69,8 +75,7 @@ extern void change_board(board_t *bp);
 extern bool is_junk_board(const board_t *bp);
 extern bool is_board_dir(const board_t *bp);
 
-extern void board_complete_all(int row, const char *prompt, char *name, size_t size);
-extern void board_complete(int row, const char *prompt, char *name, size_t size);
+extern void board_complete(int row, const char *prompt, char *name, size_t size, int mode);
 
 extern int tui_all_boards(const char *cmd);
 extern int tui_unread_boards(const char *cmd);

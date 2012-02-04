@@ -110,32 +110,6 @@ int autoreport(char *title,char *str,int toboard,char *userid,int mode)
 	return 0;	//∑µªÿ÷µœ÷Œﬁ“‚“Â
 }
 
-int
-get_grp(seekstr)
-char    seekstr[STRLEN];
-{
-	FILE   *fp;
-	char    buf[STRLEN];
-	char   *namep;
-	if ((fp = fopen("0Announce/.Search", "r")) == NULL)
-		return 0;
-	while (fgets(buf, STRLEN, fp) != NULL) {
-		namep = strtok(buf, ": \n\r\t");
-		if (namep != NULL && strcasecmp(namep, seekstr) == 0) {
-			fclose(fp);
-			strtok(NULL, "/");
-			namep = strtok(NULL, "/");
-			if (strlen(namep) < 30) {
-				strcpy(lookgrp, namep);
-				return 1;
-			} else
-				return 0;
-		}
-	}
-	fclose(fp);
-	return 0;
-}
-
 // «Â∆¡,≤¢‘⁄µ⁄“ª––œ‘ ætitle
 void	stand_title(char   *title)
 {
@@ -143,84 +117,6 @@ void	stand_title(char   *title)
 	standout();
 	prints("%s",title);
 	standend();
-}
-
-int
-valid_brdname(brd)
-char   *brd;
-{
-	char    ch;
-	ch = *brd++;
-	if (!isalnum(ch) && ch != '_' && ch != '.' )
-		return 0;
-	while ((ch = *brd++) != '\0') {
-		if (!isalnum(ch) && ch != '_' && ch != '.')
-			return 0;
-	}
-	return 1;
-}
-
-char   *
-chgrp()
-{
-	int     i, ch;
-	char    buf[STRLEN], ans[6];
-	static char *explain[] = {
-		"BBS œµÕ≥",
-		"∏¥µ©¥Û—ß",
- 		"‘∫œµ∑Á≤…",
- 		"µÁƒ‘ºº ı",
- 		"–›œ–”È¿÷",
- 		"Œƒ—ß“’ ı",
- 		"ÃÂ”˝Ω°…Ì",
-		"∏––‘ø’º‰",
-		"–¬Œ≈–≈œ¢",
- 		"—ßø∆—ß ı",
- 		"“Ù¿÷”∞ ”",
-		"Ωª“◊◊®«¯",
-		"“˛≤ÿ∑÷«¯",
-		NULL
-	};
-
-	static char *groups[] = {
-        "system.faq",
- 		"campus.faq",
- 		"ccu.faq",
- 		"comp.faq",
- 		"rec.faq",
- 		"literal.faq",
- 		"sport.faq",
-		"talk.faq",
-		"news.faq",
- 		"sci.faq",
-		"other.faq",
-		"business.faq",
-		"hide.faq",
-		NULL
-	};
-//modified by roly 02.03.08
-	clear();
-	move(2, 0);
-	prints("—°‘Òæ´ª™«¯µƒƒø¬º\n\n");
-	for (i = 0;; i++) {
-		if (explain[i] == NULL || groups[i] == NULL)
-			break;
-		prints("[1;32m%2d[m. %-20s%-20s\n", i, explain[i], groups[i]);
-	}
-	sprintf(buf, "«Î ‰»Îƒ˙µƒ—°‘Ò(0~%d): ", --i);
-	while (1) {
-		getdata(i + 6, 0, buf, ans, 4, DOECHO, YEA);
-		if (!isdigit(ans[0]))
-			continue;
-		ch = atoi(ans);
-		if (ch < 0 || ch > i || ans[0] == '\r' || ans[0] == '\0')
-			continue;
-		else
-			break;
-	}
-	sprintf(cexplain, "%s", explain[ch]);
-
-	return groups[ch];
 }
 
 char    curruser[IDLEN + 2];

@@ -67,10 +67,6 @@ static int save_zapbuf(const board_list_t *l)
 	return -1;
 }
 
-enum {
-	AC_LIST_BOARDS_AND_DIR,
-	AC_LIST_BOARDS_ONLY,
-};
 
 static ac_list *build_board_ac_list(int mode)
 {
@@ -84,8 +80,13 @@ static ac_list *build_board_ac_list(int mode)
 			board_t board;
 			res_to_board(res, i, &board);
 
-			if (mode == AC_LIST_BOARDS_ONLY && (board.flag & BOARD_DIR_FLAG))
-				continue;
+			if (board.flag & BOARD_DIR_FLAG) {
+				if (mode == AC_LIST_BOARDS_ONLY)
+					continue;
+			} else {
+				if (mode == AC_LIST_DIR_ONLY)
+					continue;
+			}
 
 			if (has_read_perm(&currentuser, &board)) {
 				if (board.name[0] & 0x80) {
@@ -103,7 +104,7 @@ static ac_list *build_board_ac_list(int mode)
 	return acl;
 }
 
-static void _board_complete(int row, const char *prompt, char *name, size_t size, int mode)
+void board_complete(int row, const char *prompt, char *name, size_t size, int mode)
 {
 	ac_list *acl = build_board_ac_list(mode);
 	if (!acl)
@@ -113,16 +114,6 @@ static void _board_complete(int row, const char *prompt, char *name, size_t size
 	autocomplete(acl, prompt, name, size);
 
 	ac_list_free(acl);
-}
-
-void board_complete_all(int row, const char *prompt, char *name, size_t size)
-{
-	_board_complete(row, prompt, name, size, AC_LIST_BOARDS_AND_DIR);
-}
-
-void board_complete(int row, const char *prompt, char *name, size_t size)
-{
-	_board_complete(row, prompt, name, size, AC_LIST_BOARDS_ONLY);
 }
 
 static int tui_favorite_add(tui_list_t *p)
@@ -139,8 +130,8 @@ static int tui_favorite_add(tui_list_t *p)
 		}
 
 		char name[BOARD_NAME_LEN + 1];
-		board_complete_all(1, "输入讨论区名 (按空白键自动搜寻): ",
-				name, sizeof(name));
+		board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
+				name, sizeof(name), AC_LIST_BOARDS_AND_DIR);
 		if (fav_board_add(session.uid, name, 0, FAV_BOARD_ROOT_FOLDER))
 			p->valid = false;
 		return FULLUPDATE;
