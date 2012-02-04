@@ -1564,7 +1564,9 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 				if (me.now < me.num) {
 					char bname[30];
 					clear();
-					if (get_a_boardname(bname, "请输入要转贴的讨论区名称: ")) {
+					board_complete(0, "请输入要转贴的讨论区名称: ",
+							bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
+					if (*bname) {
 						move(1, 0);
 						
 						board_t board;

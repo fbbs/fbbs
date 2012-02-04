@@ -1052,8 +1052,11 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 		clear();
 		prints("\n\n您将进行区段转载。转载范围是：[%d -- %d]\n", num1, num2);
 		prints("当前版面是：[ %s ] \n", currboard);
-		if (!get_a_boardname(bname, "请输入要转贴的讨论区名称: "))
+		board_complete(6, "请输入要转贴的讨论区名称: ", bname, sizeof(bname),
+				AC_LIST_BOARDS_ONLY);
+		if (!*bname)
 			return FULLUPDATE;
+
 		if (!strcmp(bname, currboard)&&uinfo.mode != ST_RMAIL) {
 			prints("\n\n对不起，本文就在您要转载的版面上，所以无需转载。\n");
 			pressreturn();

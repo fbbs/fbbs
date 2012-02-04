@@ -263,42 +263,6 @@ int uleveltochar(char *buf, unsigned int lvl) {
 	return 1;
 }
 
-int g_board_names(struct boardheader *fhdrp) {
-	if (!(fhdrp->flag & BOARD_DIR_FLAG)
-			&& ((fhdrp->flag & BOARD_POST_FLAG) || HAS_PERM(fhdrp->level)
-					|| (fhdrp->flag & BOARD_NOZAP_FLAG))) {
-		AddNameList(fhdrp->filename);
-	}
-	return 0;
-}
-
-int g_dir_names(struct boardheader *fhdrp) {
-	if ((fhdrp->flag & BOARD_DIR_FLAG) && ((fhdrp->flag & BOARD_POST_FLAG)
-			|| HAS_PERM(fhdrp->level) || (fhdrp->flag & BOARD_NOZAP_FLAG))) {
-		AddNameList(fhdrp->filename);
-	}
-	return 0;
-}
-
-int g_all_names(struct boardheader *fhdrp) {
-	if ((fhdrp->flag & BOARD_POST_FLAG) || HAS_PERM(fhdrp->level)
-			|| (fhdrp->flag & BOARD_NOZAP_FLAG)) {
-		AddNameList(fhdrp->filename);
-	}
-	return 0;
-}
-
-// Éú³ÉÌÖÂÛÇøÁÐ±í
-void make_blist(int mode) {
-	CreateNameList();
-	if (mode == 1)
-		apply_boards(g_board_names, &currentuser);
-	else if (mode == 2)
-		apply_boards(g_dir_names, &currentuser);
-	else
-		apply_boards(g_all_names, &currentuser);
-}
-
 int board_select() {
 	do_select(0, NULL, genbuf);
 	return 0;
@@ -343,24 +307,6 @@ int Postfile(char *filename, char *nboard, char *posttitle, int mode) {
 	return 0;
 }
 
-int get_a_boardname(char *bname, char *prompt) {
-	struct boardheader fh;
-
-	make_blist(1);
-	namecomplete(prompt, bname);
-	if (*bname == '\0') {
-		return 0;
-	}
-	if (search_record(BOARDS, &fh, sizeof (fh), cmpbnames, bname) <= 0) {
-		move(1, 0);
-		prints("´íÎóµÄÌÖÂÛÇøÃû³Æ\n");
-		pressreturn();
-		move(1, 0);
-		return 0;
-	}
-	return 1;
-}
-
 /* Add by SmallPig */
 int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	char bname[STRLEN];
@@ -385,11 +331,15 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	strcpy(quote_title, fileinfo->title);
 
 	clear();
-	prints("[1;33mÇëÕäÏ§±¾Õ¾×ÊÔ´£¬ÇëÔÚ×ªÔØºóÉ¾³ý²»±ØÒªµÄÎÄÕÂ£¬Ð»Ð»£¡ \n[1;32m²¢ÇÒ£¬Äú²»ÄÜ½«±¾ÎÄ×ªÔØµ½±¾°æ£¬Èç¹ûÄú¾õµÃ²»·½±ãµÄ»°£¬ÇëÓëÕ¾³¤ÁªÏµ¡£[m\n\n");
-	prints("ÄúÑ¡Ôñ×ªÔØµÄÎÄÕÂÊÇ: [[1;33m%s[m]\n", quote_title);
-	if (!get_a_boardname(bname, "ÇëÊäÈëÒª×ªÌùµÄÌÖÂÛÇøÃû³Æ(È¡Ïû×ªÔØÇë°´»Ø³µ): ")) {
+	prints("\033[1;33mÇëÕäÏ§±¾Õ¾×ÊÔ´£¬ÇëÔÚ×ªÔØºóÉ¾³ý²»±ØÒªµÄÎÄÕÂ£¬Ð»Ð»£¡ \n"
+			"\033[1;32m²¢ÇÒ£¬Äú²»ÄÜ½«±¾ÎÄ×ªÔØµ½±¾°æ£¬"
+			"Èç¹ûÄú¾õµÃ²»·½±ãµÄ»°£¬ÇëÓëÕ¾³¤ÁªÏµ¡£\033[m\n\n");
+	prints("ÄúÑ¡Ôñ×ªÔØµÄÎÄÕÂÊÇ: [\033[1;33m%s\033[m]\n", quote_title);
+	board_complete(6, "ÇëÊäÈëÒª×ªÌùµÄÌÖÂÛÇøÃû³Æ(È¡Ïû×ªÔØÇë°´»Ø³µ): ",
+			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
+	if (!*bname)
 		return FULLUPDATE;
-	}
+
 	if (!strcmp(bname, currboard) && uinfo.mode != ST_RMAIL) {
 		prints("\n\n             ºÜ±§Ç¸£¬Äú²»ÄÜ°ÑÎÄÕÂ×ªµ½Í¬Ò»¸ö°æÉÏ¡£");
 		pressreturn();
@@ -988,12 +938,13 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	prints("Ñ¡ÔñÒ»¸öÌÖÂÛÇø (Ó¢ÎÄ×ÖÄ¸´óÐ¡Ð´½Ô¿É)\n");
 	clrtoeol();
 
-	make_blist(1);
-	namecomplete("ÊäÈëÌÖÂÛÇøÃû (°´¿Õ°×¼ü×Ô¶¯ËÑÑ°): ", bname);
+	board_complete(1, "ÊäÈëÌÖÂÛÇøÃû (°´¿Õ°×¼ü×Ô¶¯ËÑÑ°): ",
+			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (*bname == '\0')
 		return FULLUPDATE;
+
 	setbpath(bpath, bname);
-	if ( /* (*bname == '\0') || */(stat(bpath, &st) == -1)) {
+	if ((stat(bpath, &st) == -1)) {
 		move(2, 0);
 		prints("²»ÕýÈ·µÄÌÖÂÛÇø.\n");
 		pressreturn();
@@ -1037,19 +988,6 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 
 	return NEWDIRECT;
 }
-
-/*
-
- int
- read_letter(ent, fileinfo, direct)
- int     ent;
- struct fileheader *fileinfo;
- char   *direct;
- {
- setmdir(direct,currentuser.userid);
- return NEWDIRECT;
- }
- */
 
 void do_acction(int type) {
 	char buf[STRLEN];
@@ -1525,7 +1463,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 		else
 			strcpy(type, "ÆÕÍ¨");
 	} else {
-		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%"PRIdPTR"&f=%u%s\n",
+		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%d&f=%u%s\n",
 				BBSHOST, currbp->id, fileinfo->id,
 				fileinfo->accessed[1] & FILE_NOTICE ? "&s=1" : "");
 		unread = brc_unread(fileinfo->filename);
@@ -1775,7 +1713,6 @@ int date_to_fname(char *postboard, time_t now, char *fname) {
 int post_cross(char islocal, int mode)
 {
 	struct fileheader postfile;
-	struct boardheader *bp;
 	char filepath[STRLEN], fname[STRLEN];
 	char buf[256], buf4[STRLEN], whopost[IDLEN + 2];
 
