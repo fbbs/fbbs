@@ -132,7 +132,8 @@ static int tui_favorite_add(tui_list_t *p)
 		char name[BOARD_NAME_LEN + 1];
 		board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
 				name, sizeof(name), AC_LIST_BOARDS_AND_DIR);
-		if (fav_board_add(session.uid, name, 0, FAV_BOARD_ROOT_FOLDER))
+		if (fav_board_add(session.uid, name, 0,
+					FAV_BOARD_ROOT_FOLDER, &currentuser))
 			p->valid = false;
 		return FULLUPDATE;
 	} else {
@@ -140,7 +141,8 @@ static int tui_favorite_add(tui_list_t *p)
 		char buf[STRLEN];
 		snprintf(buf, sizeof(buf), "您确定要添加 %s 到收藏夹吗?", bname);
 		if (askyn(buf, false, true)) {
-			fav_board_add(session.uid, bname, 0, FAV_BOARD_ROOT_FOLDER);
+			fav_board_add(session.uid, bname, 0,
+					FAV_BOARD_ROOT_FOLDER, &currentuser);
 		}
 		return MINIUPDATE;
 	}

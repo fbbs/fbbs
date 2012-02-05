@@ -62,7 +62,7 @@ extern bool is_bm(const struct userec *up, const board_t *bp);
 extern bool has_read_perm(const struct userec *up, const board_t *bp);
 extern bool has_post_perm(const struct userec *up, const board_t *bp);
 
-extern bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder);
+extern bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder, const struct userec *up);
 extern bool fav_board_mkdir(user_id_t uid, const char *name, const char *descr);
 extern bool fav_board_rename(user_id_t uid, int id, const char *name, const char *descr);
 extern bool fav_board_rmdir(user_id_t uid, int id);
