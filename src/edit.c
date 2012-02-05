@@ -671,6 +671,17 @@ char save_title[STRLEN];
 //char    save_filename[4096];
 int in_mail;
 
+static bool normal_board(const board_t *bp)
+{
+	if (streq(bp->name, DEFAULTBOARD))
+		return true;
+	if (bp->flag & BOARD_NOZAP_FLAG)
+		return true;
+	if ((bp->flag & BOARD_POST_FLAG) || bp->perm)
+		return false;
+	return true;
+}
+
 void write_posts() {
 	char *ptr;
 	time_t now;
@@ -683,7 +694,7 @@ void write_posts() {
 		int number;
 	} postlog;
 	char buf[255];
-	if (is_junk_board(currbp) || normal_board(currboard) != 1)
+	if (is_junk_board(currbp) || !normal_board(currbp))
 		return;
 	now = time(0);
 	strcpy(postlog.author, currentuser.userid);

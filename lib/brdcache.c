@@ -6,8 +6,6 @@
 #include "fbbs/helper.h"
 
 struct BCACHE *brdshm = NULL;
-struct boardheader *bcache = NULL;
-int numboards = -1;
 
 static int getlastpost(const char *board, int *lastpost, int *total)
 {
@@ -40,17 +38,10 @@ static int getlastpost(const char *board, int *lastpost, int *total)
 }
 
 // TODO:
-int updatelastpost(const char *board)
+int updatelastpost(const board_t *bp)
 {
-	int pos;
-
-	pos = getbnum(board, &currentuser);
-	if (pos > 0) {
-		getlastpost(board, &brdshm->bstatus[pos - 1].lastpost,
-				&brdshm->bstatus[pos - 1].total);
-		return 0;
-	} else
-		return -1;
+	return getlastpost(bp->name, &brdshm->bstatus[bp->id].lastpost,
+			&brdshm->bstatus[bp->id].total);
 }
 
 int resolve_boards(void)
@@ -141,65 +132,9 @@ int get_nextid(const char *boardname)
 	return get_nextid2(bid);
 }
 
-int getblankbnum(void)
+struct bstat *getbstat(int bid)
 {
-	int i;
-	for (i = 0; i < MAXBOARD; i++) {
-		if (!(bcache[i].filename[0]))
-			return i + 1;
-	}
-	return 0;
-}
-
-//	返回版面的缓存
-struct boardheader *getbcache(const char *bname)
-{
-	register int i;
-
-	if (resolve_boards() < 0)
-		exit(1);
-	for (i = 0; i < numboards; i++) {
-		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
-			return &bcache[i];
-	}
-	return NULL;
-}
-
-// Returns board pointer according to 'bid', NULL on error.
-struct boardheader *getbcache2(int bid)
-{
-	if (bid <= 0 || bid > numboards || resolve_boards() < 0)
-		return NULL;
-	return bcache + bid - 1;
-}
-
-struct bstat *getbstat(const char *bname)
-{
-	register int i;
-
-	for (i = 0; i < numboards; i++) {
-		if (!strncasecmp(bname, bcache[i].filename, STRLEN))
-			return &brdshm->bstatus[i];
-	}
-	return NULL;
-}
-
-//	根据版名,返回其在bcache中的记录位置
-int getbnum(const char *bname, const struct userec *cuser)
-{
-	register int i;
-
-	if (resolve_boards() < 0)
-		exit(1);
-	for (i = 0; i < numboards; i++) {
-		if (bcache[i].flag & BOARD_POST_FLAG //p限制版面
-			|| HAS_PERM2(bcache[i].level, cuser)
-		||(bcache[i].flag & BOARD_NOZAP_FLAG)) {//不可zap
-			if (!strncasecmp(bname, bcache[i].filename, STRLEN)) //找到版名
-				return i + 1;
-		}
-	}
-	return 0;
+	return &brdshm->bstatus[bid];
 }
 
 void bonlinesync(time_t now)
@@ -211,7 +146,7 @@ void bonlinesync(time_t now)
 		return;
 	brdshm->inboarduptime = now;
 
-	for (i = 0; i < numboards; i++)
+	for (i = 0; i < MAXBOARD; i++)
 		brdshm->bstatus[i].inboard = 0;
 
 	for (i = 0; i < USHM_SIZE; i++) {

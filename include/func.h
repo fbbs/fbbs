@@ -9,18 +9,11 @@
 
 //brdcache.c (bcache.c)
 extern struct BCACHE *brdshm;
-extern struct boardheader *bcache;
-extern int numboards;
-int updatelastpost(const char *board);
 int resolve_boards(void);
 void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
 unsigned int get_nextid2(int bid);
-int getblankbnum(void);
-struct boardheader *getbcache(const char *bname);
-struct boardheader *getbcache2(int bid);
-struct bstat *getbstat(const char *bname);
-int getbnum(const char *bname, const struct userec *cuser);
+struct bstat *getbstat(int bid);
 void bonlinesync(time_t now);
 
 //ucache.c (bcache.c)

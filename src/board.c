@@ -597,7 +597,7 @@ static int show_board_info(board_t *board)
 	if (board->parent)
 		get_board_by_bid(board->parent, &parent);
 
-	struct bstat *bs = getbstat(board->name);
+	struct bstat *bs = getbstat(board->id);
 	clear();
 	prints("°æÃæÏêÏ¸ĞÅÏ¢:\n\n");
 	prints("ID      :     %d\n", board->id);

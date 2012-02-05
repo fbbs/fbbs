@@ -73,7 +73,7 @@ int bbsdel_main(void)
 	fh.accessed[1] |= FILE_SUBDEL;
 	setbfile(file, board.name, trash);
 	append_record(file, &fh, sizeof(fh));
-	updatelastpost(board.name);
+	updatelastpost(&board);
 
 	printf("Location: doc?bid=%d\n\n", bid);
 	return 0;

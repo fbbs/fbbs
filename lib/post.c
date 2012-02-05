@@ -129,7 +129,7 @@ unsigned int do_post_article(const post_request_t *pr)
 
 	setwbdir(dir, pr->board->name);
 	append_record(dir, &fh, sizeof(fh));
-	updatelastpost(pr->board->name);
+	updatelastpost(pr->board);
 
 	if (!pr->autopost) {
 		brc_fcgi_init(userid, pr->board->name);

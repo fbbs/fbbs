@@ -81,14 +81,11 @@ int b_notes_passwd();
 int post_cross(char islocal, int mod);
 int BM_range();
 int lock();
-extern int numboards;
 extern int x_lockscreen();
 extern time_t login_start_time;
 extern char BoardName[];
 extern int cmpbnames();
 extern char fromhost[];
-extern struct bstat *getbstat();
-
 
 int check_stuffmode() {
 	if (uinfo.mode == ST_RMAIL) //modified by roly 02.03.27
@@ -386,7 +383,7 @@ static void readtitle(void)
 	board_t board;
 	get_board(currboard, &board);
 	board_to_gbk(&board);
-	struct bstat *bs = getbstat(currboard);
+	struct bstat *bs = getbstat(currbp->id);
 
 	bnum = 0;
 	// Copy ID of BMs ('bp->BM') to 'bmlists'.
@@ -603,8 +600,8 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 		idcolor = "1;30";
 	} else if (uin.invisible && HAS_PERM(PERM_SEECLOAK)) {
 		idcolor = "1;36";
-	} else if (uin.currbrdnum == getbnum (currboard, &currentuser)
-		|| !strcmp (uin.userid, currentuser.userid)) {
+	} else if (uin.currbrdnum == currbp->id
+			|| !strcmp (uin.userid, currentuser.userid)) {
 		idcolor = "1;37";
 	}
 #endif
@@ -978,10 +975,10 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	move(1, 0);
 	clrtoeol();
 	setbdir(direct, currboard);
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
+	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard > 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
-	uinfo.currbrdnum = getbnum (bname, &currentuser);
+	uinfo.currbrdnum = board.id;
 	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 
@@ -1429,7 +1426,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 
 	board_t board;
 	get_board(currboard, &board);
-	struct bstat *bs = getbstat(currboard);
+	struct bstat *bs = getbstat(currbp->id);
 	if (in_mail)
 		setmfile(filepath, currentuser.userid, fileinfo->filename);
 	else
@@ -1796,7 +1793,7 @@ int post_cross(char islocal, int mode)
 		return 1;
 	}
 	/* brc_addlist( postfile.filename ) ; */
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 	if (mode == 0 || mode == 4) {
 		add_crossinfo(filepath, 1);
 		//commented by roly 2002.02.26 to disable add_crossinfo for compatible with crosspost form 0Announce
@@ -2074,7 +2071,7 @@ int post_article(char *postboard, char *mailid) {
 		return FULLUPDATE;
 	}
 	brc_addlist(postfile.filename);
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 	sprintf(buf, "posted '%s' on %s", postfile.title, currboard);
 	report(buf, currentuser.userid);
 
@@ -2377,7 +2374,7 @@ int make_notice (int ent, struct fileheader *fh, char *direct)
 			unlink (file2);
 		}
 	}
-	updatelastpost (currboard);
+	updatelastpost(currbp);
 	return DIRCHANGED;
 }
 #endif
@@ -2408,7 +2405,7 @@ int move_notice(int ent, struct fileheader *fh, char *direct) {
 		fb_flock(lockfd, LOCK_UN);
 		close(lockfd);
 	}
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 	return DIRCHANGED;
 }
 //add end
@@ -2566,7 +2563,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 					currboard);
 			//securityreport (genbuf, 0, 2);
 			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);
-			updatelastpost(currboard);
+			updatelastpost(currbp);
 		} else {
 			sprintf(genbuf, "Range delete %d-%d in mailbox", inum1, inum2);
 			report(genbuf, currentuser.userid);
@@ -2616,7 +2613,7 @@ int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 			!= 0) {
 		return DONOTHING;
 	}
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 
 	sprintf(buf, "boards/%s/%s", currboard,
 			digestmode == TRASH_MODE ? ".TRASH" : ".JUNK");
@@ -2703,7 +2700,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		sprintf(genbuf, "Del '%s' on %s", fileinfo->title, currboard);
 		report(genbuf, currentuser.userid);
 
-		updatelastpost(currboard);
+		updatelastpost(currbp);
 		/*if(subflag==NA)
 		 cancelpost (currboard, currentuser.userid, fileinfo, 2);
 		 else cancelpost (currboard, currentuser.userid, fileinfo, owned && IScurrent); */
@@ -3064,7 +3061,7 @@ int board_read() {
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
-	uinfo.currbrdnum = getbnum (currboard, &currentuser);
+	uinfo.currbrdnum = board.id;
 	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 
