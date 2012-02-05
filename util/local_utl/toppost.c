@@ -281,6 +281,8 @@ int main(int argc, char **argv)
 	hash_create(&stat, 0, top_hash);
 	load_stat(&stat, DAY);
 
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
 	initialize_convert_env();
 	initialize_db();
 

@@ -314,13 +314,21 @@ int b_closepolls(void)
 {
 	time_t now = time(NULL);
 	if (resolve_boards() < 0)
-		exit(1);
+		exit(EXIT_FAILURE);
 
 	if (now < brdshm->pollvote) {
 		return 0;
 	}
 
 	time_t nextpoll = now + 7 * 3600;
+
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	if (!env.p)
+		exit(EXIT_FAILURE);
+
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	if (!env.c)
+		exit(EXIT_FAILURE);
 
 	initialize_db();
 	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
