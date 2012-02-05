@@ -374,8 +374,10 @@ static void index_boards(board_list_t *l)
 static tui_list_loader_t board_list_load(tui_list_t *p)
 {
 	board_list_t *l = p->data;
-	free(l->indices);
-	free(l->boards);
+	if (!l->recursive) {
+		free(l->indices);
+		free(l->boards);
+	}
 
 	if (l->favorite)
 		load_favorite_boards(l);
@@ -383,7 +385,8 @@ static tui_list_loader_t board_list_load(tui_list_t *p)
 		load_boards(l);
 
 	if (l->count) {
-		l->indices = malloc(sizeof(*l->indices) * l->count);
+		if (!l->recursive)
+			l->indices = malloc(sizeof(*l->indices) * l->count);
 		if (l->favorite)
 			index_favorite_boards(l);
 		else
@@ -656,13 +659,31 @@ static int show_hotspot(void)
 	return FULLUPDATE;
 }
 
+static int board_list_init(board_list_t *p);
+static int tui_board_list(board_list_t *l);
+
 static int read_board(tui_list_t *p)
 {
 	board_list_t *l = p->data;
 	board_t *bp = &(l->indices[p->cur]->board);
 
 	if (bp->flag & BOARD_DIR_FLAG) {
-		;
+		if (bp->flag & BOARD_CUSTOM_FLAG) {
+			l->recursive = true;
+			l->parent = bp->id;
+			tui_board_list(l);
+
+			l->recursive = false;
+			l->parent = FAV_BOARD_ROOT_FOLDER;
+			index_favorite_boards(l);
+			return PARTUPDATE;
+		} else {
+			board_list_t nl;
+			board_list_init(&nl);
+			nl.parent = bp->id;
+			tui_board_list(&nl);
+			return PARTUPDATE;
+		}
 	} else {
 		brc_initial(currentuser.userid, bp->name);
 		change_board(bp);
@@ -707,51 +728,6 @@ static int sort_boards(tui_list_t *p)
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	return FULLUPDATE;
 }
-
-#if 0
-static int choose_board_read(tui_list_t *cp)
-{
-	choose_board_t *cbrd = cp->data;
-	board_data_t *ptr = cbrd->brds + cp->cur;
-	if (ptr->flag & BOARD_DIR_FLAG) {
-		int parent = cbrd->parent;
-		const char *prefix = cbrd->prefix;
-		bool recursive = cbrd->recursive;
-		bool goodbrd = cbrd->goodbrd;
-		int cur = cp->cur;
-
-		cbrd->parent = ptr->pos;
-		cbrd->prefix = NULL;
-		cbrd->recursive = true;
-		cbrd->goodbrd = (ptr->flag & BOARD_CUSTOM_FLAG) ? true : false;
-
-		choose_board(cbrd);
-
-		cbrd->parent = parent;
-		cbrd->prefix = prefix;
-		cbrd->recursive = recursive;
-		cbrd->goodbrd = goodbrd;
-		cp->cur = cur;
-	} else {
-		brc_initial(currentuser.userid, ptr->name);
-		changeboard(&currbp, currboard, ptr->name);
-		memcpy(currBM, ptr->BM, BM_LEN - 1);
-
-		char buf[STRLEN];
-		if (DEFINE(DEF_FIRSTNEW)) {
-			setbdir(buf, currboard);
-			int tmp = unread_position(buf, ptr);
-			int page = tmp - t_lines / 2;
-			getkeep(buf, page > 1 ? page : 1, tmp + 1);
-		}
-		board_read();
-		brc_zapbuf(cbrd->zapbuf + ptr->pos);
-		ptr->total = -1;
-		currBM[0] = '\0';
-	}
-	return FULLUPDATE;
-}
-#endif
 
 static int board_list_init(board_list_t *p)
 {
@@ -939,10 +915,9 @@ static int tui_board_list(board_list_t *l)
 
 	tui_list(&t);
 
-	free(l->boards);
-	free(l->indices);
-
 	if (!l->recursive) {
+		free(l->boards);
+		free(l->indices);
 		clear();
 		save_zapbuf(l);
 		free(l->zapbuf);
