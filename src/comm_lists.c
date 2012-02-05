@@ -14,8 +14,8 @@
 #endif
 
 int domenu(const char *menu_name);
-int Announce(), Personal(), board_read_all(), board_read_group(), Info(), Goodbye();
-int board_read_new(), goodbrd_show(), board_read(), board_select(), Welcome();
+int Announce(), Personal(), Info(), Goodbye();
+int board_read(), board_select(), Welcome();
 int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), online_users_show(), x_info(), x_vote();
@@ -53,7 +53,6 @@ int x_new_denylevel();
 int x_level(), m_info();
 int d_user(), m_register();
 int d_board(), m_editbrd(), m_newbrd();
-int m_ordainBM(), m_retireBM();
 int setsystempasswd();
 #endif
 #endif
@@ -64,6 +63,11 @@ static int exec_mbem(const char *s);
 
 extern int tui_props(void);
 extern int tui_my_props(void);
+
+extern int tui_ordain_bm(const char *);
+extern int tui_retire_bm(const char *);
+extern int tui_new_board(const char *);
+extern int tui_edit_board(const char *);
 
 typedef int (*telnet_handler_t)();
 
@@ -83,10 +87,10 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 {
 	static const cmd_list_t cmdlist[] = {
 		{ "domenu", domenu },
-		{ "EGroups", board_read_group },
-		{ "BoardsAll", board_read_all },
-		{ "BoardsGood", goodbrd_show },
-		{ "BoardsNew", board_read_new },
+		{ "EGroups", tui_read_sector },
+		{ "BoardsAll", tui_all_boards },
+		{ "BoardsGood", tui_favorite_boards },
+		{ "BoardsNew", tui_unread_boards },
 		{ "LeaveBBS", Goodbye },
 		{ "Announce", Announce },
 		{ "Personal", Personal },
@@ -152,12 +156,12 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowRegister", show_register },
 		{ "Info", m_info },
 		{ "Level", x_level },
-		{ "OrdainBM", m_ordainBM },
-		{ "RetireBM", m_retireBM },
+		{ "OrdainBM", tui_ordain_bm },
+		{ "RetireBM", tui_retire_bm },
 		{ "NewChangeLevel", x_new_denylevel },
 		{ "DelUser", d_user },
-		{ "NewBoard", m_newbrd },
-		{ "ChangeBrd", m_editbrd },
+		{ "NewBoard", tui_new_board },
+		{ "ChangeBrd", tui_edit_board },
 		{ "BoardDel", d_board },
 		{ "SysFiles", a_edits },
 		{ "Wall", wall },
@@ -199,13 +203,13 @@ static const char *sysconf_funcstr(const char *name)
 		{ "ShowRegister", "@mod:so/admintool.so#show_register" },
 		{ "Info", "@mod:so/admintool.so#m_info" },
 		{ "Level", "@mod:so/admintool.so#x_level" },
-		{ "OrdainBM", "@mod:so/admintool.so#m_ordainBM" },
-		{ "RetireBM", "@mod:so/admintool.so#m_retireBM" },
+		{ "OrdainBM", "@mod:so/admintool.so#tui_ordain_bm" },
+		{ "RetireBM", "@mod:so/admintool.so#tui_retire_bm" },
 		{ "ChangeLevel", "@mod:so/admintool.so#x_denylevel" },
 		{ "NewChangeLevel", "@mod:so/admintool.so#x_new_denylevel" },
 		{ "DelUser", "@mod:so/admintool.so#d_user" },
-		{ "NewBoard", "@mod:so/admintool.so#m_newbrd" },
-		{ "ChangeBrd", "@mod:so/admintool.so#m_editbrd" },
+		{ "NewBoard", "@mod:so/admintool.so#tui_new_board" },
+		{ "ChangeBrd", "@mod:so/admintool.so#tui_edit_board" },
 		{ "BoardDel", "@mod:so/admintool.so#d_board" },
 		{ "SysFiles", "@mod:so/admintool.so#a_edits" },
 		{ "Wall", "@mod:so/admintool.so#wall" },

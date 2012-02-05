@@ -1,4 +1,6 @@
 #include "bbs.h"
+#include "fbbs/board.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 //定义页面大小
@@ -140,11 +142,12 @@ static int club_key_deal(const char* fname, int ch, char* line)
  */
 int club_user(void)
 {
-	struct boardheader *bp = getbcache(currboard);
-	if (!bp)
+	board_t board;
+	if (!get_board(currboard, &board))
 		return DONOTHING;
+
 	char file[HOMELEN];
-	if ((bp->flag & BOARD_CLUB_FLAG) && chkBM(currbp, &currentuser)) {
+	if ((board.flag & BOARD_CLUB_FLAG) && am_curr_bm()) {
 		setbfile(file, currboard, "club_users");
 		list_text(file, club_title_show, club_key_deal, NULL);
 		return FULLUPDATE;
@@ -152,29 +155,18 @@ int club_user(void)
 	return DONOTHING;
 }
 
-int bm_log(const char *user, const char *board, int type, int value)
+int bm_log(const char *user, const char *name, int type, int value)
 {
 	int fd, data[BMLOGLEN];
 	struct flock ldata;
 	struct stat buf;
-	struct boardheader *btemp;
-	char direct[STRLEN], BM[BM_LEN];
-	char *ptr;
+	char direct[STRLEN];
 
-	btemp = getbcache(board);
-	if (btemp == NULL)
+	board_t board;
+	if (!get_board(name, &board) || !am_bm(&board))
 		return 0;
-	strlcpy(BM, btemp->BM, sizeof(BM) - 1);
-	BM[sizeof(BM) - 1] = '\0';
-	ptr = strtok(BM, ",: ;|&()\0\n");
-	while (ptr) {
-		if (!strcmp(ptr, currentuser.userid))
-			break;
-		ptr = strtok(NULL, ",: ;|&()\0\n");
-	}
-	if (!ptr)
-		return 0;
-	sprintf(direct, "boards/%s/.bm.%s", board, user);
+
+	sprintf(direct, "boards/%s/.bm.%s", name, user);
 	if ((fd = open(direct, O_RDWR | O_CREAT, 0644)) == -1)
 		return 0;
 	ldata.l_type = F_RDLCK;

@@ -428,29 +428,20 @@ void print_session(void)
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);
 
-	char file[HOMELEN];
-	sethomefile(file, currentuser.userid, ".goodbrd");
-	mmap_t m;
-	m.oflag = O_RDONLY;
-	if (mmap_open(file, &m) == 0) {
-		struct goodbrdheader *iter, *end;
-		int num = m.size / sizeof(struct goodbrdheader);
-		if (num > GOOD_BRC_NUM)
-			num = GOOD_BRC_NUM;
-		end = (struct goodbrdheader *)m.ptr + num;
-		for (iter = m.ptr; iter != end; ++iter) {
-			if (!gbrd_is_custom_dir(iter)) {
-				struct boardheader *bp = bcache + iter->pos;
-				printf("<b");
-				if (!isascii(bp->filename[0]))
-					printf(" bid='%d'", iter->pos + 1);
-				if (mobile && !brc_board_unread(currentuser.userid, bp))
-					printf(" r='1'");
-				printf(">%s</b>", bp->filename);
-			}
+	db_res_t *res = db_query("SELECT b.id, b.name FROM boards b"
+			" JOIN fav_boards f ON b.id = f.board WHERE f.user_id = %d",
+			session.uid);
+	if (res) {
+		for (int i = 0; i < db_res_rows(res); ++i) {
+			int bid = db_get_integer(res, i, 0);
+			const char *name = db_get_value(res, i, 1);
+			printf("<b bid='%d'", bid);
+			if (mobile && !brc_board_unread(currentuser.userid, name, bid))
+				printf(" r='1'");
+			printf(">%s</b>", name);
 		}
-		mmap_close(&m);
 	}
+	db_clear(res);
 
 	printf("</f></session>");
 }

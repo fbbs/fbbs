@@ -1,15 +1,15 @@
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wno-implicit")
 
 add_definitions(${FB_XOPEN_SOURCE_DEFINE} ${FB_PLATFORM_DEFINE} -DTERMIOS
 		-DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE)
 
 link_directories(/usr/local/lib ../lib)
 
-add_library(fbcmn STATIC announce.c bbs.c bcache.c bm.c boards.c chat.c
+add_library(fbcmn STATIC announce.c bbs.c bm.c board.c chat.c
 	comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c help.c list.c
 	mail.c maintain.c more.c namecomplete.c postheader.c read.c register.c
 	screen.c sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c readabc.c
-	convert.c bbsnet.c users.c prop.c)
+	convert.c bbsnet.c users.c prop.c autocomplete.c)
 target_link_libraries(fbcmn fbbs)
 
 add_executable(bbsd bbsd.c io.c main.c)

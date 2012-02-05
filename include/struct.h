@@ -87,18 +87,6 @@ struct override {
 };
 typedef struct override override_t;
 
-struct boardheader { /* This structure is used to hold data in */
-	char filename[STRLEN - 8]; /* the BOARDS files */
-	unsigned int nowid;
-	int group;
-	char owner[STRLEN - BM_LEN];
-	char BM[BM_LEN - 4];
-	unsigned int flag;
-	char title[STRLEN];
-	unsigned int level;
-	unsigned char accessed[12];
-};
-
 struct fileheader { /* This structure is used to hold data in */
 	char filename[STRLEN-8]; /* the DIR files */
 	unsigned int id;

@@ -1,5 +1,3 @@
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-
 add_definitions(-D_XOPEN_SOURCE=600 -I../../include)
 
 link_directories(../../lib)

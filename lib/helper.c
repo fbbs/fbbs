@@ -331,3 +331,18 @@ void initialize_convert_env(void)
 			|| convert_open(env.g2u, "UTF-8", "GBK") < 0)
 		exit(EXIT_FAILURE);
 }
+
+static void db_disconnect(void)
+{
+	db_finish(env.d);
+}
+
+void initialize_db(void)
+{
+	atexit(db_disconnect);
+	env.d = db_connect(config_get(env.c, "host"), config_get(env.c, "port"),
+			config_get(env.c, "dbname"), config_get(env.c, "user"),
+			config_get(env.c, "password"));
+	if (db_status(env.d) != DB_CONNECTION_OK)
+		exit(EXIT_FAILURE);
+}

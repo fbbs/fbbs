@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "edit.h"
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
@@ -670,6 +671,17 @@ char save_title[STRLEN];
 //char    save_filename[4096];
 int in_mail;
 
+static bool normal_board(const board_t *bp)
+{
+	if (streq(bp->name, DEFAULTBOARD))
+		return true;
+	if (bp->flag & BOARD_NOZAP_FLAG)
+		return true;
+	if ((bp->flag & BOARD_POST_FLAG) || bp->perm)
+		return false;
+	return true;
+}
+
 void write_posts() {
 	char *ptr;
 	time_t now;
@@ -682,7 +694,7 @@ void write_posts() {
 		int number;
 	} postlog;
 	char buf[255];
-	if (junkboard(currbp) || normal_board(currboard) != 1)
+	if (is_junk_board(currbp) || !normal_board(currbp))
 		return;
 	now = time(0);
 	strcpy(postlog.author, currentuser.userid);
@@ -704,7 +716,6 @@ void write_header(FILE *fp, int mode) {
 	extern char BoardName[];
 	extern char fromhost[];
 	extern struct postheader header;
-	struct boardheader *bp;
 	char uid[20];
 	char uname[NAMELEN];
 
@@ -718,9 +729,11 @@ void write_header(FILE *fp, int mode) {
 		strlcpy(uname, currentuser.username, NAMELEN);
 	uname[NAMELEN-1] = '\0';
 	save_title[STRLEN - 10] = '\0';
-	bp = getbcache(currboard);
-	noname = bp->flag & BOARD_ANONY_FLAG;
-	if (!(bp->flag & BOARD_OUT_FLAG))
+	
+	board_t board;
+	get_board(currboard, &board);
+	noname = board.flag & BOARD_ANONY_FLAG;
+	if (!(board.flag & BOARD_OUT_FLAG))
 		local_article = YEA;
 	if (in_mail)
 		fprintf(fp, "¼ÄÐÅÈË: %s (%s)\n", uid, uname);
@@ -887,9 +900,9 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		int color, noidboard;
 		char fname[STRLEN];
 		extern struct postheader header;
-		struct boardheader *bp;
-		bp = getbcache(currboard);
-		noidboard = (bp->flag & BOARD_ANONY_FLAG) && (header.chk_anony);
+		board_t board;
+		get_board(currboard, &board);
+		noidboard = (board.flag & BOARD_ANONY_FLAG) && (header.chk_anony);
 		color = (currentuser.numlogins % 7) + 31;
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || noidboard)

@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include "bbs.h"
+#include "fbbs/board.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 
@@ -218,13 +219,13 @@ int brc_fcgi_init(const char *user, const char *board)
 	return brc_initial(user, board);
 }
 
-bool brc_board_unread(const char *user, const struct boardheader *bp)
+bool brc_board_unread(const char *user, const char *bname, int bid)
 {
 	brc_buf[0] = '\0';
-	if (!brc_initial(currentuser.userid, bp->filename)) {
+	if (!brc_initial(currentuser.userid, bname)) {
 		return true;
 	} else {
-		if (brc_unread1((brdshm->bstatus[bp - bcache]).lastpost))
+		if (brc_unread1((brdshm->bstatus[bid]).lastpost))
 			return true;
 		return false;
 	}

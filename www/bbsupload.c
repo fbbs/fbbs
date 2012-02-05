@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "record.h"
+#include "fbbs/board.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -135,20 +136,21 @@ static bool check_upload(char *buf, size_t size, char **begin, char **end, char 
 
 int bbspreupload_main(void)
 {
-	const char *board = get_param("board");
 	if (!loginok)
 		return BBS_ELGNREQ;
-	struct boardheader *bp = getbcache(board);
-	if (bp == NULL || !haspostperm(&currentuser, bp))
+
+	board_t board;
+	if (!get_board(get_param("board"), &board)
+			|| !has_post_perm(&currentuser, &board))
 		return BBS_EPST;
 
-	int max = maxlen(bp->filename);
+	int max = maxlen(board.name);
 	if (max <= 0)
 		return BBS_ENODIR;
 
 	xml_header("bbspreupload");
 	printf("<bbspreupload><board>%s</board><user>%s</user><max>%d</max>"
-			"</bbspreupload>", board, currentuser.userid, max);
+			"</bbspreupload>", board.name, currentuser.userid, max);
 	return 0;
 }
 
@@ -157,16 +159,15 @@ int bbsupload_main(void)
 	if (!loginok) 
 		return BBS_ELGNREQ;
 
-	struct boardheader *bp;
+	board_t board;
 	const char *bid = get_param("bid");
 	if (*bid == '\0')
-		bp = getbcache(get_param("b"));
+		get_board(get_param("b"), &board);
 	else
-		bp = getbcache2(strtol(bid, NULL, 10));
+		get_board_by_bid(strtol(bid, NULL, 10), &board);
 
-	if (!bp || !haspostperm(&currentuser, bp))
+	if (!board.id || !has_post_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	const char *board = bp->filename;
 
 	size_t size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);
 	if (size > UPLOAD_MAX + UPLOAD_OVERHEAD)
@@ -180,11 +181,11 @@ int bbsupload_main(void)
 		free(buf);
 		return BBS_EINVAL;
 	}
-	if (end - begin > maxlen(board)) {
+	if (end - begin > maxlen(board.name)) {
 		free(buf);
 		return BBS_EFBIG;
 	}
-	if (quota_exceeded(board)) {
+	if (quota_exceeded(board.name)) {
 		free(buf);
 		return BBS_EATTQE;
 	}
@@ -192,7 +193,7 @@ int bbsupload_main(void)
 	char fname[HOMELEN], fpath[HOMELEN];
 	sprintf(fname, "%ld-%04d%s", time(NULL), 
 			(int)(10000.0 * rand() / RAND_MAX), fileext);
-	snprintf(fpath, sizeof(fpath), BBSHOME"/upload/%s/%s", board, fname);
+	snprintf(fpath, sizeof(fpath), BBSHOME"/upload/%s/%s", board.name, fname);
 	FILE *fp = fopen(fpath, "w");
 	if (fp != NULL) {
 		fwrite(begin, 1, end - begin, fp);
@@ -202,5 +203,5 @@ int bbsupload_main(void)
 		return BBS_EINTNL;
 	}
 	free(buf);
-	return addtodir(board, fname);
+	return addtodir(board.name, fname);
 }

@@ -8,6 +8,7 @@
 #include <rpcsvc/rstat.h>
 #endif
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/status.h"
@@ -27,9 +28,7 @@ int hisfriend_wall_logout();
 int digestmode;
 int local_article;
 struct userec currentuser;
-struct boardheader *currbp;
 int usernum = 0;
-char currboard[STRLEN - BM_LEN];
 char currBM[BM_LEN - 1];
 int selboard = 0;
 char someoneID[31];
@@ -82,18 +81,13 @@ int b_notes_passwd();
 int post_cross(char islocal, int mod);
 int BM_range();
 int lock();
-extern int numboards;
 extern int x_lockscreen();
 extern time_t login_start_time;
 extern char BoardName[];
 extern int cmpbnames();
 extern char fromhost[];
-extern struct boardheader *getbcache();
-extern struct bstat *getbstat();
-
 
 int check_stuffmode() {
-	//if (uinfo.mode == RMAIL || (uinfo.mode == READING && junkboard()))
 	if (uinfo.mode == ST_RMAIL) //modified by roly 02.03.27
 		return YEA;
 	else
@@ -266,42 +260,6 @@ int uleveltochar(char *buf, unsigned int lvl) {
 	return 1;
 }
 
-int g_board_names(struct boardheader *fhdrp) {
-	if (!(fhdrp->flag & BOARD_DIR_FLAG)
-			&& ((fhdrp->flag & BOARD_POST_FLAG) || HAS_PERM(fhdrp->level)
-					|| (fhdrp->flag & BOARD_NOZAP_FLAG))) {
-		AddNameList(fhdrp->filename);
-	}
-	return 0;
-}
-
-int g_dir_names(struct boardheader *fhdrp) {
-	if ((fhdrp->flag & BOARD_DIR_FLAG) && ((fhdrp->flag & BOARD_POST_FLAG)
-			|| HAS_PERM(fhdrp->level) || (fhdrp->flag & BOARD_NOZAP_FLAG))) {
-		AddNameList(fhdrp->filename);
-	}
-	return 0;
-}
-
-int g_all_names(struct boardheader *fhdrp) {
-	if ((fhdrp->flag & BOARD_POST_FLAG) || HAS_PERM(fhdrp->level)
-			|| (fhdrp->flag & BOARD_NOZAP_FLAG)) {
-		AddNameList(fhdrp->filename);
-	}
-	return 0;
-}
-
-// Éú³ÉÌÖÂÛÇøÁĞ±í
-void make_blist(int mode) {
-	CreateNameList();
-	if (mode == 1)
-		apply_boards(g_board_names, &currentuser);
-	else if (mode == 2)
-		apply_boards(g_dir_names, &currentuser);
-	else
-		apply_boards(g_all_names, &currentuser);
-}
-
 int board_select() {
 	do_select(0, NULL, genbuf);
 	return 0;
@@ -330,7 +288,6 @@ int Postfile(char *filename, char *nboard, char *posttitle, int mode) {
 	//char bname[STRLEN];
 	char dbname[STRLEN];
 
-	//struct boardheader fh;
 	//added by iamfat 2003.11.21
 	int old_inmail = in_mail;
 
@@ -344,24 +301,6 @@ int Postfile(char *filename, char *nboard, char *posttitle, int mode) {
 	strcpy(currboard, dbname);
 	in_mail = old_inmail;
 	return 0;
-}
-
-int get_a_boardname(char *bname, char *prompt) {
-	struct boardheader fh;
-
-	make_blist(1);
-	namecomplete(prompt, bname);
-	if (*bname == '\0') {
-		return 0;
-	}
-	if (search_record(BOARDS, &fh, sizeof (fh), cmpbnames, bname) <= 0) {
-		move(1, 0);
-		prints("´íÎóµÄÌÖÂÛÇøÃû³Æ\n");
-		pressreturn();
-		move(1, 0);
-		return 0;
-	}
-	return 1;
 }
 
 /* Add by SmallPig */
@@ -388,11 +327,15 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	strcpy(quote_title, fileinfo->title);
 
 	clear();
-	prints("[1;33mÇëÕäÏ§±¾Õ¾×ÊÔ´£¬ÇëÔÚ×ªÔØºóÉ¾³ı²»±ØÒªµÄÎÄÕÂ£¬Ğ»Ğ»£¡ \n[1;32m²¢ÇÒ£¬Äú²»ÄÜ½«±¾ÎÄ×ªÔØµ½±¾°æ£¬Èç¹ûÄú¾õµÃ²»·½±ãµÄ»°£¬ÇëÓëÕ¾³¤ÁªÏµ¡£[m\n\n");
-	prints("ÄúÑ¡Ôñ×ªÔØµÄÎÄÕÂÊÇ: [[1;33m%s[m]\n", quote_title);
-	if (!get_a_boardname(bname, "ÇëÊäÈëÒª×ªÌùµÄÌÖÂÛÇøÃû³Æ(È¡Ïû×ªÔØÇë°´»Ø³µ): ")) {
+	prints("\033[1;33mÇëÕäÏ§±¾Õ¾×ÊÔ´£¬ÇëÔÚ×ªÔØºóÉ¾³ı²»±ØÒªµÄÎÄÕÂ£¬Ğ»Ğ»£¡ \n"
+			"\033[1;32m²¢ÇÒ£¬Äú²»ÄÜ½«±¾ÎÄ×ªÔØµ½±¾°æ£¬"
+			"Èç¹ûÄú¾õµÃ²»·½±ãµÄ»°£¬ÇëÓëÕ¾³¤ÁªÏµ¡£\033[m\n\n");
+	prints("ÄúÑ¡Ôñ×ªÔØµÄÎÄÕÂÊÇ: [\033[1;33m%s\033[m]\n", quote_title);
+	board_complete(6, "ÇëÊäÈëÒª×ªÌùµÄÌÖÂÛÇøÃû³Æ(È¡Ïû×ªÔØÇë°´»Ø³µ): ",
+			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
+	if (!*bname)
 		return FULLUPDATE;
-	}
+
 	if (!strcmp(bname, currboard) && uinfo.mode != ST_RMAIL) {
 		prints("\n\n             ºÜ±§Ç¸£¬Äú²»ÄÜ°ÑÎÄÕÂ×ªµ½Í¬Ò»¸ö°æÉÏ¡£");
 		pressreturn();
@@ -430,8 +373,6 @@ extern int t_cmpuids(int uid, const struct user_info *up);
 // Show title when entering a board.
 static void readtitle(void)
 {
-	struct boardheader *bp;
-	struct bstat *bs;
 	int i, j, bnum, tuid;
 	struct user_info uin;
 	char tmp[STRLEN];
@@ -439,18 +380,20 @@ static void readtitle(void)
 	char header[120], title[STRLEN];
 	const char *readmode;
 
-	bp = getbcache(currboard);
-	bs = getbstat(currboard);
+	board_t board;
+	get_board(currboard, &board);
+	board_to_gbk(&board);
+	struct bstat *bs = getbstat(currbp->id);
 
 	bnum = 0;
 	// Copy ID of BMs ('bp->BM') to 'bmlists'.
-	for (i = 0, j = 0; bp->BM[i] != '\0' && i < BMNAMELISTLEN; i++) {
-		if (bp->BM[i] == ' ') {
+	for (i = 0, j = 0; board.bms[i] != '\0' && i < BMNAMELISTLEN; i++) {
+		if (board.bms[i] == ' ') {
 			bmlists[bnum][j] = '\0';
 			bnum++;
 			j = 0;
 		} else {
-			bmlists[bnum][j++] = bp->BM[i];
+			bmlists[bnum][j++] = board.bms[i];
 		}
 	}
 #ifdef BMNAMELISTLIMIT
@@ -464,7 +407,7 @@ static void readtitle(void)
 #endif
 	bmlists[bnum++][j] = '\0';
 
-	if (bp->BM[0] == '\0' || bp->BM[0] == ' ') {
+	if (board.bms[0] == '\0' || board.bms[0] == ' ') {
 		strcpy(header, "³ÏÕ÷°æÖ÷ÖĞ");
 	} else {
 		strcpy(header, "°æÖ÷: ");
@@ -487,10 +430,10 @@ static void readtitle(void)
 	}
 	if (chkmail())
 		strcpy(title, "[ÄúÓĞĞÅ¼ş£¬°´ M ¿´ĞÂĞÅ]");
-	else if ((bp->flag & BOARD_VOTE_FLAG))
+	else if ((board.flag & BOARD_VOTE_FLAG))
 		sprintf(title, "¡ùÍ¶Æ±ÖĞ,°´ v ½øÈëÍ¶Æ±¡ù");
 	else
-		strcpy(title, bp->title + 8);
+		strcpy(title, board.descr);
 
 	showtitle(header, title);
 	prints(" Àë¿ª[\033[1;32m¡û\033[m,\033[1;32me\033[m] "
@@ -553,7 +496,7 @@ static void readtitle(void)
 			" \033[m\n",
 			"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", readmode);
 	else {
-		if (bp->flag & BOARD_NOREPLY_FLAG) {
+		if (board.flag & BOARD_NOREPLY_FLAG) {
 			prints("\033[1;37;44m  ±àºÅ   %-12s %6s %-8s  \033[33m"
 				"±¾°æ²»¿É»Ø¸´\033[37m    ÔÚÏß:%-4d    [%4sÄ£Ê½] \033[m\n",
 				"¿¯ µÇ Õß", "ÈÕ  ÆÚ", " ±ê  Ìâ", bs->inboard, readmode);
@@ -622,7 +565,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 		else
 			type = 'W';
 	}
-	if (ent->accessed[1] & FILE_IMPORTED && chkBM(currbp, &currentuser)){
+	if (ent->accessed[1] & FILE_IMPORTED && am_curr_bm()){
 		if (type == ' ')
 			strcpy(typeprefix, "\033[42m");
 		else
@@ -657,8 +600,8 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 		idcolor = "1;30";
 	} else if (uin.invisible && HAS_PERM(PERM_SEECLOAK)) {
 		idcolor = "1;36";
-	} else if (uin.currbrdnum == getbnum (currboard, &currentuser)
-		|| !strcmp (uin.userid, currentuser.userid)) {
+	} else if (uin.currbrdnum == currbp->id
+			|| !strcmp (uin.userid, currentuser.userid)) {
 		idcolor = "1;37";
 	}
 #endif
@@ -873,7 +816,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 #ifndef NOREPLY
 		move(t_lines - 1, 0);
 		clrtoeol();
-		if (haspostperm(&currentuser, currbp)) {
+		if (has_post_perm(&currentuser, currbp)) {
 			prints("\033[0;1;44;31m[ÔÄ¶ÁÎÄÕÂ]  \033[33m»ØĞÅ R ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,¡ı©¦Ö÷ÌâÔÄ¶Á ^s»òp \033[m");
 		} else {
 			prints("\033[1;44;31m[ÔÄ¶ÁÎÄÕÂ]  \033[33m½áÊø Q,¡û ©¦ÉÏÒ»·â ¡ü©¦ÏÂÒ»·â <Space>,<Enter>,¡ı©¦Ö÷ÌâÔÄ¶Á p       \033[m");
@@ -921,13 +864,12 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		case 'R':
 		case 'y':
 		case 'r': {
-			struct boardheader *bp;
-
-			bp = getbcache(currboard);
-			noreply = fileinfo->accessed[0] & FILE_NOREPLY || bp->flag
-					& BOARD_NOREPLY_FLAG;
+			board_t board;
+			get_board(currboard, &board);
+			noreply = (fileinfo->accessed[0] & FILE_NOREPLY)
+					|| (board.flag & BOARD_NOREPLY_FLAG);
 			local_article = !(fileinfo->filename[STRLEN - 2] == 'S');
-			if (!noreply || chkBM(currbp, &currentuser)) {
+			if (!noreply || am_curr_bm()) {
 				do_reply(fileinfo);
 			} else {
 				clear();
@@ -992,12 +934,13 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	prints("Ñ¡ÔñÒ»¸öÌÖÂÛÇø (Ó¢ÎÄ×ÖÄ¸´óĞ¡Ğ´½Ô¿É)\n");
 	clrtoeol();
 
-	make_blist(1);
-	namecomplete("ÊäÈëÌÖÂÛÇøÃû (°´¿Õ°×¼ü×Ô¶¯ËÑÑ°): ", bname);
+	board_complete(1, "ÊäÈëÌÖÂÛÇøÃû (°´¿Õ°×¼ü×Ô¶¯ËÑÑ°): ",
+			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (*bname == '\0')
 		return FULLUPDATE;
+
 	setbpath(bpath, bname);
-	if ( /* (*bname == '\0') || */(stat(bpath, &st) == -1)) {
+	if ((stat(bpath, &st) == -1)) {
 		move(2, 0);
 		prints("²»ÕıÈ·µÄÌÖÂÛÇø.\n");
 		pressreturn();
@@ -1010,13 +953,11 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 		return FULLUPDATE;
 	}
 
-	struct boardheader *bp;
+	board_t board;
+	if (!get_board(bname, &board))
+		return FULLUPDATE;
 
-	bp = getbcache(bname);
-
-	if ((bp->flag & BOARD_CLUB_FLAG) && (bp->flag & BOARD_READ_FLAG)
-			&& !chkBM(currbp, &currentuser) && !isclubmember(currentuser.userid,
-			bname)) {
+	if (!has_read_perm(&currentuser, &board)) {
 		clear();
 		move(5, 10);
 		prints("Äú²»ÊÇ¾ãÀÖ²¿°æ %s µÄ³ÉÔ±£¬ÎŞÈ¨½øÈë¸Ã°æ", bname);
@@ -1027,35 +968,22 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	selboard = 1;
 	brc_update(currentuser.userid, currboard);
 	brc_initial(currentuser.userid, bname);
-	changeboard(&currbp, currboard, bname);
+	change_board(&board);
 
 	move(0, 0);
 	clrtoeol();
 	move(1, 0);
 	clrtoeol();
 	setbdir(direct, currboard);
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
+	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard > 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
-	uinfo.currbrdnum = getbnum (bname, &currentuser);
+	uinfo.currbrdnum = board.id;
 	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 
 	return NEWDIRECT;
 }
-
-/*
-
- int
- read_letter(ent, fileinfo, direct)
- int     ent;
- struct fileheader *fileinfo;
- char   *direct;
- {
- setmdir(direct,currentuser.userid);
- return NEWDIRECT;
- }
- */
 
 void do_acction(int type) {
 	char buf[STRLEN];
@@ -1177,7 +1105,7 @@ void dele_digest(char *dname, char *direc) {
 int digest_post(int ent, struct fileheader *fhdr, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 ¼ì²éÒ»ÏÂ ±ÜÃâ³öÏÖ.DIRÆÆ»µ
 
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 	if (digestmode == YEA)
@@ -1406,30 +1334,6 @@ void getcross(char *filepath, int mode) {
 			in_mail = YEA;
 		} else
 			write_header(of, 1 /* ²»Ğ´Èë .posts */);
-		/*
-		 if (in_mail && strncmp(buf, "¼ÄĞÅÈË: ", 8)) {
-		 strcpy(owner, currentuser.userid);
-		 owner_found = 0;
-		 } else {
-		 */
-		/*
-		 if(fgets(buf,256,inf))
-		 if(strncmp (buf+2, "ĞÅÈË: ", 6))
-		 {
-		 owner_found = 0;
-		 strcpy (owner, "Unkown User");
-		 }
-		 else
-		 {
-		 for (count = 8;
-		 buf[count] != ' ' && buf[count] != '\n'
-		 && buf[count] != '\0'; count++)
-		 owner[count - 8] = buf[count];
-		 owner[count - 8] = '\0';
-		 owner_found = 1;
-		 }
-		 */
-		//optimized by iamfat 2002.08.18
 		if (fgets(buf, 256, inf) && (p = strstr(buf, "ĞÅÈË: "))) {
 			p += 6;
 			strtok(p, " \n\r");
@@ -1439,20 +1343,15 @@ void getcross(char *filepath, int mode) {
 			owner_found = 0;
 			strcpy(owner, "Unkown User");
 		}
-		//optimized end.
-		//                      }
 		if (in_mail == YEA)
 			fprintf(of, "[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô [32m%s [37mµÄĞÅÏä ¡¿[m\n",
 					currentuser.userid);
 		else {
-			struct boardheader *bp;
-
-			bp = getbcache(quote_board);
-
-			fprintf(
-					of,
-					"[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô [32m%s [37m%sÇø ¡¿[m\n",
-					((bp->flag & BOARD_POST_FLAG) || (bp->level == 0)) ? quote_board
+			board_t board;
+			get_board(quote_board, &board);
+			fprintf(of,
+					"\033[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô \033[32m%s \033[37m%sÇø ¡¿\033[m\n",
+					((board.flag & BOARD_POST_FLAG) || (board.perm == 0)) ? quote_board
 							: "Î´Öª", mode ? "¾«»ª" : "ÌÖÂÛ");
 			mode = 0;
 		}
@@ -1520,15 +1419,14 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 	char weblink[256], tmp[80], type[20], filepath[STRLEN];
 	time_t filetime;
 	struct stat filestat;
-	struct boardheader *bp;
-	struct bstat *bs;
 	int i, len, unread;
 
 	if (digestmode == ATTACH_MODE)
 		return DONOTHING;
 
-	bp = getbcache(currboard);
-	bs = getbstat(currboard);
+	board_t board;
+	get_board(currboard, &board);
+	struct bstat *bs = getbstat(currbp->id);
 	if (in_mail)
 		setmfile(filepath, currentuser.userid, fileinfo->filename);
 	else
@@ -1561,8 +1459,8 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 		else
 			strcpy(type, "ÆÕÍ¨");
 	} else {
-		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%"PRIdPTR"&f=%u%s\n",
-				BBSHOST, currbp - bcache + 1, fileinfo->id,
+		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%d&f=%u%s\n",
+				BBSHOST, currbp->id, fileinfo->id,
 				fileinfo->accessed[1] & FILE_NOTICE ? "&s=1" : "");
 		unread = brc_unread(fileinfo->filename);
 		if (fileinfo->accessed[0] & FILE_DIGEST) {
@@ -1582,8 +1480,8 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 	move(0, 0);
 	prints("%sµÄÏêÏ¸ĞÅÏ¢:\n\n", in_mail ? "ÓÊÏäĞÅ¼ş" : "°æÃæÎÄÕÂ");
 	if (!in_mail) {
-		prints("°æ    Ãû:     %s\n", bp->filename);
-		prints("°æ    Ö÷:     %s\n", bp->BM);
+		prints("°æ    Ãû:     %s\n", board.name);
+		prints("°æ    Ö÷:     %s\n", board.bms);
 		prints("ÔÚÏßÈËÊı:     %d ÈË\n", bs->inboard);
 	}
 	prints("Ğò    ºÅ:     µÚ %d %s\n", ent, in_mail ? "·â" : "Æª");
@@ -1811,32 +1709,25 @@ int date_to_fname(char *postboard, time_t now, char *fname) {
 int post_cross(char islocal, int mode)
 {
 	struct fileheader postfile;
-	struct boardheader *bp;
 	char filepath[STRLEN], fname[STRLEN];
 	char buf[256], buf4[STRLEN], whopost[IDLEN + 2];
 
-	time_t now;
-
-	bp = getbcache(currboard);
-	if (!haspostperm(&currentuser, bp) && !mode) {
+	board_t board;
+	get_board(currboard, &board);
+	if (!has_post_perm(&currentuser, &board) && !mode) {
 		prints("\n\n ÄúÉĞÎŞÈ¨ÏŞÔÚ %s °æ·¢±íÎÄÕÂ.\n", currboard);
 		return -1;
 	}
 	memset(&postfile, 0, sizeof (postfile));
-	//  strncpy (save_filename, fname, 4096);
-	now = time(0);
-	//sprintf (fname, "M.%d.A", now);
-	//optimized by iamfat 2002.08.18
+	time_t now = time(0);
 	if ((mode == 0 || mode == 4) && (strncmp(quote_title, "[×ªÔØ]", 6)
 			&& strncmp(quote_title, "Re: [×ªÔØ]", 10)))
 		sprintf(buf4, "[×ªÔØ]%.70s", quote_title);
 	else if ((mode == 0 || mode == 4) && !strncmp(quote_title, "Re: [×ªÔØ]",
 			10))
-		//modified by money 04.01.17 for judge Re & cross
 		sprintf(buf4, "[×ªÔØ]Re: %.70s", quote_title + 10);
 	else
 		strcpy(buf4, quote_title);
-	//optimized end
 
 	strlcpy(save_title, buf4, STRLEN);
 
@@ -1856,7 +1747,7 @@ int post_cross(char islocal, int mode)
 	setbfile(filepath, currboard, postfile.filename);
 
 	local_article = YEA;
-	if ((islocal == 'S' || islocal == 's') && (bp->flag & BOARD_OUT_FLAG))
+	if ((islocal == 'S' || islocal == 's') && (board.flag & BOARD_OUT_FLAG))
 		local_article = NA;
 
 	set_user_status(ST_POSTING);
@@ -1866,7 +1757,7 @@ int post_cross(char islocal, int mode)
 	strlcpy(postfile.title, save_title, sizeof(postfile.title));
 	valid_title(postfile.title);
 
-	if (local_article == YEA || !(bp->flag & BOARD_OUT_FLAG)) {
+	if (local_article == YEA || !(board.flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';
 	} else {
@@ -1902,7 +1793,7 @@ int post_cross(char islocal, int mode)
 		return 1;
 	}
 	/* brc_addlist( postfile.filename ) ; */
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 	if (mode == 0 || mode == 4) {
 		add_crossinfo(filepath, 1);
 		//commented by roly 2002.02.26 to disable add_crossinfo for compatible with crosspost form 0Announce
@@ -1980,7 +1871,6 @@ int outgo_post(struct fileheader *fh, char *board) {
 
 int post_article(char *postboard, char *mailid) {
 	struct fileheader postfile;
-	struct boardheader *bp;
 	char filepath[STRLEN], fname[STRLEN], buf[120];
 	int aborted;
 	time_t now = time(0);
@@ -2019,10 +1909,12 @@ int post_article(char *postboard, char *mailid) {
 		return FULLUPDATE;
 	} // if (abs..)
 
-	/* add end */
-	bp = getbcache(postboard);
-	if (bp == NULL || !haspostperm(&currentuser, bp) || digestmode == DIGIST_MODE 
-			|| digestmode == TRASH_MODE || digestmode == JUNK_MODE) {
+	board_t board;
+	get_board(postboard, &board);
+	if (!board.id || !has_post_perm(&currentuser, &board)
+			|| digestmode == DIGIST_MODE
+			|| digestmode == TRASH_MODE
+			|| digestmode == JUNK_MODE) {
 		move(3, 0);
 		clrtobot();
 		if (digestmode == NA) {
@@ -2037,7 +1929,7 @@ int post_article(char *postboard, char *mailid) {
 
 	memset(&postfile, 0, sizeof (postfile));
 	//¾ãÀÖ²¿
-	if ((bp->flag & BOARD_CLUB_FLAG) && !chkBM(currbp, &currentuser)
+	if ((board.flag & BOARD_CLUB_FLAG) && !am_curr_bm()
 			&& !isclubmember(currentuser.userid, postboard)) {
 		move(3, 0);
 		clrtobot();
@@ -2050,7 +1942,7 @@ int post_article(char *postboard, char *mailid) {
 
 	clear();
 	show_board_notes(postboard, 1);
-	if ((bp->flag & BOARD_OUT_FLAG) && replytitle[0] == '\0') {
+	if ((board.flag & BOARD_OUT_FLAG) && replytitle[0] == '\0') {
 		local_article = NA;
 	}
 #ifndef NOREPLY
@@ -2076,7 +1968,7 @@ int post_article(char *postboard, char *mailid) {
 #ifdef ENABLE_PREFIX
 		if (!header.reply_mode && header.prefix[0]) {
 #ifdef FDQUAN
-			if (bp->flag & BOARD_PREFIX_FLAG)
+			if (board.flag & BOARD_PREFIX_FLAG)
 				snprintf(postfile.title, sizeof(postfile.title),
 						"\033[1;33m[%s]\033[m%s", header.prefix, header.title);
 			else
@@ -2126,7 +2018,7 @@ int post_article(char *postboard, char *mailid) {
 	valid_title(postfile.title);
 
 	// TODO: ...
-	if ((local_article == YEA) || !(bp->flag & BOARD_OUT_FLAG)) {
+	if ((local_article == YEA) || !(board.flag & BOARD_OUT_FLAG)) {
 		postfile.filename[STRLEN - 9] = 'L';
 		postfile.filename[STRLEN - 10] = 'L';
 	} else {
@@ -2179,11 +2071,11 @@ int post_article(char *postboard, char *mailid) {
 		return FULLUPDATE;
 	}
 	brc_addlist(postfile.filename);
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 	sprintf(buf, "posted '%s' on %s", postfile.title, currboard);
 	report(buf, currentuser.userid);
 
-	if (!junkboard(currbp) && !header.chk_anony) {
+	if (!is_junk_board(currbp) && !header.chk_anony) {
 		set_safe_record();
 		currentuser.numposts++;
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
@@ -2252,15 +2144,13 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 		return DONOTHING;
 
 	if (!in_mail) {
-		if (!chkBM(currbp, &currentuser)) {
-			struct boardheader *bp;
-
-			//if (strcmp(fileinfo->owner, currentuser.userid)) return DONOTHING;
+		if (!am_curr_bm()) {
 			if (!IsTheFileOwner(fileinfo))
 				return DONOTHING;
-			bp = getbcache(currboard);
-			if ((bp->flag & BOARD_ANONY_FLAG) && !strcmp(fileinfo->owner,
-					currboard))
+			board_t board;
+			get_board(currboard, &board);
+			if ((board.flag & BOARD_ANONY_FLAG)
+					&& streq(fileinfo->owner, currboard))
 				return DONOTHING;
 		}
 	}
@@ -2318,15 +2208,13 @@ int edit_title(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!strcmp(currboard, "GoneWithTheWind") || digestmode == ATTACH_MODE)
 		return DONOTHING;
 
-	if (!chkBM(currbp, &currentuser)) {
-		struct boardheader *bp;
-
-		//      if(strcmp(fileinfo->owner,currentuser.userid))return DONOTHING;
+	if (!am_curr_bm()) {
 		if (!IsTheFileOwner(fileinfo))
 			return DONOTHING;
-		bp = getbcache(currboard);
-		if ((bp->flag & BOARD_ANONY_FLAG) && !strcmp(fileinfo->owner,
-				currboard))
+		board_t board;
+		get_board(currboard, &board);
+		if ((board.flag & BOARD_ANONY_FLAG)
+				&& streq(fileinfo->owner, currboard))
 			return DONOTHING;
 	}
 #ifdef ENABLE_NOTICE
@@ -2384,7 +2272,7 @@ int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
 
 	/* Modified by Amigo 2002.06.27. Poster can't set or unset noreply tag. */
 	//      if(!chk_currBM(currBM)&&!IsTheFileOwner(fileinfo)) {
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 #ifdef ENABLE_NOTICE
@@ -2425,7 +2313,7 @@ int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
 }
 
 int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct) {
-	if (!(chkBM(currbp, &currentuser)) || fileinfo->accessed[0] & (FILE_MARKED
+	if (!(am_curr_bm()) || fileinfo->accessed[0] & (FILE_MARKED
 			| FILE_DIGEST)) {
 		return DONOTHING;
 	}
@@ -2452,7 +2340,7 @@ int make_notice (int ent, struct fileheader *fh, char *direct)
 
 	if (digestmode != NA)
 	return DONOTHING;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 	return DONOTHING;
 	get_noticedirect (direct, path);
 	if (fh->accessed[1] & FILE_NOTICE) {
@@ -2486,7 +2374,7 @@ int make_notice (int ent, struct fileheader *fh, char *direct)
 			unlink (file2);
 		}
 	}
-	updatelastpost (currboard);
+	updatelastpost(currbp);
 	return DIRCHANGED;
 }
 #endif
@@ -2496,7 +2384,7 @@ int move_notice(int ent, struct fileheader *fh, char *direct) {
 	int lockfd;
 	if (digestmode!=NA)
 		return DONOTHING;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return DONOTHING;
 	if (fh->accessed[1]&FILE_NOTICE) {
 		get_noticedirect(direct, path);
@@ -2517,14 +2405,14 @@ int move_notice(int ent, struct fileheader *fh, char *direct) {
 		fb_flock(lockfd, LOCK_UN);
 		close(lockfd);
 	}
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 	return DIRCHANGED;
 }
 //add end
 int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 ¼ì²éÒ»ÏÂ ±ÜÃâ³öÏÖ.DIRÆÆ»µ
 
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 #ifdef ENABLE_NOTICE
@@ -2593,7 +2481,7 @@ int delete_range(char *filename, int id1, int id2)
 						subflag = rptr->accessed[0] & FILE_DELETED ? YEA : NA;
 						canceltotrash(filename, currentuser.userid, rptr,
 								subflag, !HAS_PERM(PERM_OBOARDS));
-						if (subflag == YEA && !junkboard(currbp)) {
+						if (subflag == YEA && !is_junk_board(currbp)) {
 							lookupuid = getuser(rptr->owner);
 							if (lookupuid> 0 && lookupuser.numposts > 0) {
 								lookupuser.numposts--;
@@ -2644,7 +2532,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	int inum1, inum2;
 
 	if (uinfo.mode == ST_READING) {
-		if (!chkBM(currbp, &currentuser)) {
+		if (!am_curr_bm()) {
 			return DONOTHING;
 		}
 	}
@@ -2675,7 +2563,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 					currboard);
 			//securityreport (genbuf, 0, 2);
 			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);
-			updatelastpost(currboard);
+			updatelastpost(currbp);
 		} else {
 			sprintf(genbuf, "Range delete %d-%d in mailbox", inum1, inum2);
 			report(genbuf, currentuser.userid);
@@ -2725,14 +2613,14 @@ int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 			!= 0) {
 		return DONOTHING;
 	}
-	updatelastpost(currboard);
+	updatelastpost(currbp);
 
 	sprintf(buf, "boards/%s/%s", currboard,
 			digestmode == TRASH_MODE ? ".TRASH" : ".JUNK");
 	delete_record(buf, sizeof(struct fileheader), ent, cmpfilename,
 			fileinfo->filename);
 	owned = getuser(fileinfo->owner);
-	if (!junkboard(currbp) && subflag && owned != 0 && atoi(fileinfo->filename
+	if (!is_junk_board(currbp) && subflag && owned != 0 && atoi(fileinfo->filename
 			+ 2) > lookupuser.firstlogin) {
 		lookupuser.numposts++;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec),
@@ -2785,13 +2673,12 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 	} else
 		owned = posttime > currentuser.firstlogin;
 
-	if (hasjudge == YEA && !chkBM(currbp, &currentuser)) {
-		struct boardheader *bp;
-
+	if (hasjudge == YEA && !am_curr_bm()) {
 		if (!(owned && IScurrent))
 			return DONOTHING;
-		bp = getbcache(currboard);
-		if ((bp->flag & BOARD_ANONY_FLAG) && !strcmp(usrid, currboard))
+		board_t board;
+		get_board(currboard, &board);
+		if ((board.flag & BOARD_ANONY_FLAG) && streq(usrid, currboard))
 			return DONOTHING;
 	}
 	if (!SR_BMDELFLAG) {
@@ -2813,7 +2700,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		sprintf(genbuf, "Del '%s' on %s", fileinfo->title, currboard);
 		report(genbuf, currentuser.userid);
 
-		updatelastpost(currboard);
+		updatelastpost(currbp);
 		/*if(subflag==NA)
 		 cancelpost (currboard, currentuser.userid, fileinfo, 2);
 		 else cancelpost (currboard, currentuser.userid, fileinfo, owned && IScurrent); */
@@ -2834,7 +2721,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		sprintf(genbuf, "%s/%s", buf, fileinfo->filename);
 		if (digestmode > 0)
 			unlink(genbuf);
-		if (!junkboard(currbp) && !digestmode) {
+		if (!is_junk_board(currbp) && !digestmode) {
 			if (owned && IScurrent) {
 				set_safe_record();
 				if (currentuser.numposts > 0 && subflag == YEA)
@@ -2882,7 +2769,7 @@ int new_flag_clear(int ent, struct fileheader *fileinfo, char *direct) {
 int Save_post(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!HAS_PERM(PERM_BOARDS) || digestmode == ATTACH_MODE)
 		return DONOTHING;
-	if (!in_mail && !chkBM(currbp, &currentuser))
+	if (!in_mail && !am_curr_bm())
 		return DONOTHING;
 
 	return (a_Save("0Announce", currboard, fileinfo, NA));
@@ -3037,7 +2924,7 @@ int forward_u_post (int ent, struct fileheader *fileinfo, char *direct)
 int read_trash(int ent, struct fileheader *fileinfo, char *direct) {
 	extern char currdirect[STRLEN];
 
-	if (!chkBM(currbp, &currentuser)) {
+	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
 	digestmode = TRASH_MODE;
@@ -3091,7 +2978,7 @@ int show_online(void)
 		return DONOTHING;
 	}
 #ifndef FDQUAN
-	if (!(currbp->flag & BOARD_CLUB_FLAG) || !(chkBM(currbp, &currentuser)
+	if (!(currbp->flag & BOARD_CLUB_FLAG) || !(am_curr_bm()
 			|| isclubmember(currentuser.userid, currboard))) {
 		return DONOTHING;
 	}
@@ -3156,18 +3043,12 @@ int board_read() {
 
 	in_mail = NA;
 
-	//bcache_online_num(currboard,1);
-
-	struct boardheader *bp;
-
-	bp = getbcache(currboard);
-	//dir can't post. Danielfree 06.2.23
-	if (bp->flag & BOARD_DIR_FLAG)
+	board_t board;
+	get_board(currboard, &board);
+	if (board.flag & BOARD_DIR_FLAG)
 		return FULLUPDATE;
-	//add end
-	if ((bp->flag & BOARD_CLUB_FLAG) && (bp->flag & BOARD_READ_FLAG)
-			&& !chkBM(currbp, &currentuser) && !isclubmember(currentuser.userid,
-			currboard)) {
+
+	if (!has_read_perm(&currentuser, &board)) {
 		clear();
 		move(5, 10);
 		prints("Äú²»ÊÇ¾ãÀÖ²¿°æ %s µÄ³ÉÔ±£¬ÎŞÈ¨½øÈë¸Ã°æ", currboard);
@@ -3180,7 +3061,7 @@ int board_read() {
 	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
 		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
 	}
-	uinfo.currbrdnum = getbnum (currboard, &currentuser);
+	uinfo.currbrdnum = board.id;
 	update_ulist(&uinfo, utmpent);
 	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
 
@@ -3864,7 +3745,7 @@ int count_range(int ent, struct fileheader *fileinfo, char *direct) {
 	char title[STRLEN];
 
 	if (uinfo.mode == ST_READING) {
-		if (!chkBM(currbp, &currentuser)) {
+		if (!am_curr_bm()) {
 			return DONOTHING;
 		}
 	}

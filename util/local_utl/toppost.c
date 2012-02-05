@@ -1,4 +1,7 @@
 #include "bbs.h"
+#include "fbbs/board.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 
 #define BASEPATH BBSHOME"/etc/posts"
@@ -67,21 +70,21 @@ void load_stat(hash_t *ht, int type)
 	}
 }
 
-bool should_stat(const struct boardheader *bp)
+bool should_stat(const board_t *bp)
 {
 	if ((bp->flag & (BOARD_DIR_FLAG | BOARD_POST_FLAG | BOARD_JUNK_FLAG))
-			|| bp->level)
+			|| bp->perm)
 		return 0;
 	return 1;
 }
 
-void process(hash_t *ht, const struct boardheader *bp)
+void process(hash_t *ht, const board_t *bp)
 {
 	if (!should_stat(bp))
 		return;
 	time_t recent = time(NULL) - 24 * 60 * 60;
 	char file[HOMELEN];
-	setwbdir(file, bp->filename);
+	setwbdir(file, bp->name);
 	FILE *fp = fopen(file, "r");
 	if (!fp)
 		return;
@@ -93,7 +96,7 @@ void process(hash_t *ht, const struct boardheader *bp)
 		if (last < recent)
 			break;
 		top.gid = fh.gid;
-		strlcpy(top.board, bp->filename, sizeof(top.board));
+		strlcpy(top.board, bp->name, sizeof(top.board));
 		top_t *entry = hash_get(ht, &top, HASH_KEY_STRING);
 		if (entry) {
 			entry->count++;
@@ -106,7 +109,7 @@ void process(hash_t *ht, const struct boardheader *bp)
 		} else {
 			entry = top_alloc();
 			entry->gid = fh.gid;
-			strlcpy(entry->board, bp->filename, sizeof(entry->board));
+			strlcpy(entry->board, bp->name, sizeof(entry->board));
 			strlcpy(entry->title, fh.title, sizeof(entry->title));
 			strlcpy(entry->owner, fh.owner, sizeof(entry->owner));
 			entry->count = 1;
@@ -278,16 +281,16 @@ int main(int argc, char **argv)
 	hash_create(&stat, 0, top_hash);
 	load_stat(&stat, DAY);
 
-	FILE *fp = fopen(BBSHOME"/.BOARDS", "r");
-	if (fp) {
-		struct boardheader board;
-		while (fread(&board, sizeof(board), 1, fp) == 1) {
-			if (board.filename[0] != '\0')
-				process(&stat, &board);
-		}
-		fclose(fp);
-	} else {
-		return EXIT_FAILURE;
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	initialize_convert_env();
+	initialize_db();
+
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		board_t board;
+		res_to_board(res, i, &board);
+		process(&stat, &board);
 	}
 
 	top_t **tops = sort_stat(&stat);

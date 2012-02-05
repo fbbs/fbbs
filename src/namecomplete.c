@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 //      宏定义toupper(c),但有负作用,用时注意

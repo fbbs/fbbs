@@ -26,6 +26,7 @@
 #define EXTERN
 #include "bbs.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 int use_define = 0;
 int child_pid = 0;
@@ -267,29 +268,6 @@ int gettheuserid(int x, char *title, int *id) {
 		move(x + 3, 0);
 		prints("错误的使用者代号");
 		clrtoeol();
-		pressreturn();
-		clear();
-		return 0;
-	}
-	return 1;
-}
-
-// 得到用户输入的讨论区名,将讨论区的位置保存在pos中返回,
-//              返回值为1表示成功,为0失败
-int gettheboardname(int x, char *title, int *pos, struct boardheader *fh,
-		char *bname, int mode) {
-	extern int cmpbnames();
-	move(x, 0);
-	make_blist(mode);
-	namecomplete(title, bname);
-	if (*bname == '\0') {
-		return 0;
-	}
-	*pos = search_record(BOARDS, fh, sizeof(struct boardheader),
-			cmpbnames, bname);
-	if (!(*pos)) {
-		move(x + 3, 0);
-		prints("不正确的讨论区名称");
 		pressreturn();
 		clear();
 		return 0;

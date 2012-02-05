@@ -9,21 +9,11 @@
 
 //brdcache.c (bcache.c)
 extern struct BCACHE *brdshm;
-extern struct boardheader *bcache;
-extern int numboards;
-int updatelastpost(const char *board);
 int resolve_boards(void);
-void flush_bcache(void);
 void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
-unsigned int get_nextid2(const struct boardheader *bp);
-int getblankbnum(void);
-struct boardheader *getbcache(const char *bname);
-struct boardheader *getbcache2(int bid);
-struct bstat *getbstat(const char *bname);
-int getbnum(const char *bname, const struct userec *cuser);
-int getbnum2(const struct boardheader *bp);
-int apply_boards(int (*func) (), const struct userec *cuser);
+unsigned int get_nextid2(int bid);
+struct bstat *getbstat(int bid);
 void bonlinesync(time_t now);
 
 //ucache.c (bcache.c)
@@ -66,14 +56,7 @@ void log_usies(const char *mode, const char *mesg, const struct userec *user);
 void log_attempt(const char *name, const char *addr, const char *type);
 
 //board.c
-int changeboard(struct boardheader **bp, char *cboard, const char *board);
-int chkBM(const struct boardheader *bp, const struct userec *up);
 int isclubmember(const char *member, const char *board);
-int hasreadperm(const struct userec *user, const struct boardheader *bp);
-bool haspostperm(const struct userec *user, const struct boardheader *bp);
-int junkboard(const struct boardheader *bp);
-bool is_board_dir(const struct boardheader *bp);
-const char *get_board_desc(const struct boardheader *bp);
 
 //mail.c
 int check_maxmail(void);

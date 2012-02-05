@@ -51,6 +51,7 @@
 #endif
 
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #if NO_SETPGID
 #define setpgid setpgrp
 #endif

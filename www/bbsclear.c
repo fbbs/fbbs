@@ -1,20 +1,23 @@
 #include "libweb.h"
+#include "fbbs/board.h"
 #include "fbbs/web.h"
 
 int bbsclear_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	const char *board = get_param("board");
-	struct boardheader *bp = getbcache(board);
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+
+	board_t board;
+	if (!get_board(get_param("board"), &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
+
 	const char *start = get_param("start");
-	brc_fcgi_init(currentuser.userid, board);
+	brc_fcgi_init(currentuser.userid, board.name);
 	brc_clear(NA, NULL, YEA);
-	brc_update(currentuser.userid, board);
+	brc_update(currentuser.userid, board.name);
 	char buf[STRLEN];
-	snprintf(buf, sizeof(buf), "doc?board=%s&start=%s", board, start);
+	snprintf(buf, sizeof(buf), "doc?board=%s&start=%s", board.name, start);
 	http_header();
 	refreshto(0, buf);
 	printf("</head></html>");

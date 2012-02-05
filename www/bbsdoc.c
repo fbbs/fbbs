@@ -2,6 +2,8 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
@@ -152,7 +154,7 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 	return total;
 }
 
-extern int bbsboa_main();
+extern int web_sector(void);
 
 int get_doc_mode(void)
 {
@@ -182,32 +184,33 @@ static void _print_board_img(const char *board)
 
 static int bbsdoc(int mode)
 {
-	char board[STRLEN];
+	board_t board;
 	const char *bidstr = get_param("bid");
-	struct boardheader *bp;
-	if (*bidstr == '\0') {
-		bp = getbcache(get_param("board"));
-	} else {
-		bp = getbcache2(strtol(bidstr, NULL, 10));
-	}
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+	if (*bidstr == '\0')
+		get_board(get_param("board"), &board);
+	else
+		get_board_by_bid(strtol(bidstr, NULL, 10), &board);
+
+	if (!board.id || !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (is_board_dir(bp))
-		return bbsboa_main();
-	strlcpy(board, bp->filename, sizeof(board));
+	if (board.flag & BOARD_DIR_FLAG)
+		return web_sector();
+
+	board_to_gbk(&board);
 
 	char dir[HOMELEN];
 	switch (mode) {
 		case MODE_DIGEST:
-			setbfile(dir, board, DIGEST_DIR);
+			setbfile(dir, board.name, DIGEST_DIR);
 			break;
 		default:
-			setbfile(dir, board, DOT_DIR);
+			setbfile(dir, board.name, DOT_DIR);
 			break;
 	}
+
 	int start = strtol(get_param("start"), NULL, 10);
+
 	int my_t_lines = strtol(get_param("my_t_lines"), NULL, 10);
-	int bid = getbnum2(bp);
 	if (my_t_lines < 10 || my_t_lines > 40)
 		my_t_lines = TLINES;
 
@@ -217,11 +220,11 @@ static int bbsdoc(int mode)
 	xml_header(NULL);
 	printf("<bbsdoc>");
 	print_session();
-	brc_fcgi_init(currentuser.userid, board);
+	brc_fcgi_init(currentuser.userid, board.name);
 	int total = get_bbsdoc(dir, &start, my_t_lines, mode);
 
 	if (mode == MODE_NORMAL) {
-		setbfile(dir, board, NOTICE_DIR);
+		setbfile(dir, board.name, NOTICE_DIR);
 		mmap_t m = { .oflag = O_RDONLY };
 		if (mmap_open(dir, &m) == 0) {
 			int count = m.size / sizeof(struct fileheader);
@@ -239,10 +242,11 @@ static int bbsdoc(int mode)
 			cgi_name = "t";
 			break;
 	}
+
 	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
-			"bid='%d' page='%d' link='%s'", bp->filename, get_board_desc(bp),
-			bp->BM, total, start, bid, my_t_lines, cgi_name);
-	_print_board_img(board);
+			"bid='%d' page='%d' link='%s'", board.name, board.descr, board.bms,
+			total, start, board.id, my_t_lines, cgi_name);
+	_print_board_img(board.name);
 	printf("/>\n</bbsdoc>");
 
 	// TODO: marquee, recommend
@@ -302,9 +306,12 @@ int bbsbfind_main(void)
 
 	criteria_t cri;
 	cri.bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(cri.bid);
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+
+	board_t board;
+	if (!get_board_by_bid(cri.bid, &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
+
 	cri.mark = false;
 	if (!strcasecmp(get_param("mark"), "on"))
 		cri.mark = true;
@@ -328,7 +335,7 @@ int bbsbfind_main(void)
 	if (*cri.t1 || *cri.t2 || *cri.t3 || *cri.user) {
 		printf(" result='1'>");
 		char file[HOMELEN];
-		setwbdir(file, bp->filename);
+		setwbdir(file, board.name);
 		apply_record(file, do_bfind, sizeof(struct fileheader), &cri, false,
 				true, true);
 	} else {
@@ -435,22 +442,23 @@ static topic_t *_get_topics(const char *dir, int *count, unsigned int start,
 
 int web_forum(void)
 {
-	struct boardheader *bp = getbcache2(strtol(get_param("bid"), NULL, 10));
-	if (!bp)
-		bp = getbcache(get_param("board"));
-	
-	if (!bp || !hasreadperm(&currentuser, bp))
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			&& !get_board(get_param("board"), &board))
 		return BBS_ENOBRD;
-	if (is_board_dir(bp))
-		return bbsboa_main();
+	if (!has_read_perm(&currentuser, &board))
+		return BBS_ENOBRD;
+	if (board.flag & BOARD_DIR_FLAG)
+		return web_sector();
+	board_to_gbk(&board);
 
 	if (get_doc_mode() != MODE_FORUM)
 		set_doc_mode(MODE_FORUM);
 
-	brc_fcgi_init(currentuser.userid, bp->filename);
+	brc_fcgi_init(currentuser.userid, board.name);
 
 	char dir[HOMELEN];
-	setbfile(dir, bp->filename, DOT_DIR);
+	setbfile(dir, board.name, DOT_DIR);
 	int count = TOPICS_PER_PAGE;
 	unsigned int next = 0;
 	topic_t *t = _get_topics(dir, &count,
@@ -458,8 +466,8 @@ int web_forum(void)
 
 	xml_header(NULL);
 	printf("<forum title='%s' desc='%s' bm='%s' bid='%d' next='%u'>", 
-			bp->filename, get_board_desc(bp), bp->BM, bp - bcache + 1, next);
-	_print_board_img(bp->filename);
+			board.name, board.descr, board.bms, board.id, next);
+	_print_board_img(board.name);
 	print_session();
 
 	for (int i = 0; i < count; ++i) {

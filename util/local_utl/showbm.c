@@ -13,7 +13,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "../../include/bbs.h"
+#include "bbs.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/helper.h"
 #include "showbm.h"
 
 static int articles_BrdBM_AnnSum = -1;      /* the summary num of articales in announce */
@@ -231,85 +233,20 @@ getbmrec (struct userec *bmrec, char *currbm)
 }
 
 /*
- * function brdSort:
- * sorting by brd name 
- */
-	void
-brdSort (struct boardheader *buffer, int *bsort, int total)
-{
-	int change, i, j;
-
-	for (i = total - 1, change = 1; i > 1 && change; --i)
-	{
-		change = 0;
-		for (j = 0; j < i; ++j)
-			if (strcmp (buffer[bsort[j]].filename,
-						buffer[bsort[j + 1]].filename) > 0)
-			{
-				int temp;
-				temp = bsort[j];
-				bsort[j] = bsort[j + 1];
-				bsort[j + 1] = temp;
-				change = 1;
-			}
-	}
-
-	for (i = total - 1, change = 1; i > 1 && change; --i)
-	{
-		change = 0;
-		for (j = 0; j < i; ++j)
-			if (buffer[bsort[j]].title[0] > buffer[bsort[j + 1]].title[0])
-			{
-				int temp;
-				temp = bsort[j];
-				bsort[j] = bsort[j + 1];
-				bsort[j + 1] = temp;
-				change = 1;
-			}
-	}
-}
-
-/*
  * function main:
  * do the main loop to print the info
  */
-	int
-main (void)
+int main (int argc, char **argv)
 {
 	char pathname0[256];          /* target path to write data */
 	char filename0[20];           /* target file to write data */
 	FILE *fp0;                    /* post to announce */
 
-	int fd, index, total;         /* init and main loop */
-	char pathname[256];           /* pathname temp */
-	struct boardheader *buffer;
+	int fd;         /* init and main loop */
+
 	struct stat st;
 	struct userec bmrec;
-	int idxsort, *bsort;          /* for sorting */
 	static int board_num, bm_num; /* for summary */
-
-	sprintf (pathname, "%s/.BOARDS", BBSHOME);
-	fd = open (pathname, O_RDONLY);
-	if (fd == -1)
-	{
-		fprintf (stderr, "Error open .BOARDS file!\n");
-		exit (-1);
-	}
-	fstat (fd, &st);
-	total = st.st_size / sizeof (struct boardheader);
-	buffer = (struct boardheader *)
-		calloc ((size_t) total, sizeof (struct boardheader));
-	if (buffer == NULL)
-	{
-		fprintf (stderr, "Out of memory!\n");
-		exit (-1);
-	}
-	if (read (fd, buffer, (size_t) st.st_size) < (ssize_t) st.st_size)
-	{
-		fprintf (stderr, "Can not read .BOARDS file!\n");
-		exit (-1);
-	}
-	close (fd);
 
 	board_num = 0;
 	bm_num = 0;
@@ -318,33 +255,24 @@ main (void)
 	sprintf (pathname0, "%s/0Announce/bmstat/", BBSHOME);
 	sprintf (filename0, "M.%ld.A", time (0));
 	strcat (pathname0, filename0);
-	/*
-#ifdef DEBUG
-printf ("pathname = %s\n", pathname0);
-#endif
-*/
-	fp0 = stdout; //fopen (pathname0, "w");
-	/*
-	   if (fp0 == NULL)
-	   {
-	   fprintf (stderr, "Error open file %s for write.\n", filename0);
-	   exit (-1);
-	   }
-	   */
 
+	fp0 = stdout;
 #ifndef PRINTOFF
 	fprintf (fp0, "%s", head);
 #endif
 
-	/* sort boards */
-	bsort = (int *) malloc (total * sizeof (int));
-	for (index = 0; index < total; index++)
-		bsort[index] = index;
-	brdSort (buffer, bsort, total);
+	board_t board;
 
-	/* main loop */
-	for (idxsort = 0; idxsort < total; idxsort++, index = bsort[idxsort])
-	{
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	initialize_convert_env();
+	initialize_db();
+
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		res_to_board(res, i, &board);
+		board_to_gbk(&board);
+
 		int count;                /* counter of local board */
 		char pathname[256];
 		char filename[80];        /* pathname = pathname + filename */
@@ -353,14 +281,13 @@ printf ("pathname = %s\n", pathname0);
 
 		char bms[BM_LEN - 1];     /* 给strtok()用 */
 		char *bm;                 /* pointer to BM */
-		//      int bmflag = 0;           /* flag of BM, 0-BM1 , 1-BM2 */
-
-		if (buffer[index].level > 0)
+		
+		if (board.perm)
 			continue;               /* limit Read/Post */
-		if ((buffer[index].flag & BOARD_ANONY_FLAG) == BOARD_ANONY_FLAG)
+		if ((board.flag & BOARD_ANONY_FLAG))
 			continue;               /* Anonymous boards */
 		sprintf (pathname, "%s/boards/%s/.DIR", BBSHOME,
-				buffer[index].filename);
+				board.name);
 		fd = open (pathname, O_RDONLY);
 		if (fd == -1)
 			continue;
@@ -370,7 +297,7 @@ printf ("pathname = %s\n", pathname0);
 		(void) close (fd);
 
 		/* chinese board's name */
-		strcpy (boardtitles, buffer[index].title);
+		strcpy (boardtitles, board.descr);
 		{
 			char *p;
 			boardtitle[0] = '\0';
@@ -401,7 +328,7 @@ printf ("pathname = %s\n", pathname0);
 
 		/* num of all articles_BrdBM on the board */
 		sprintf (pathname, "%s/0Announce/", BBSHOME);
-		if (!getpath (filename, buffer[index].filename))
+		if (!getpath (filename, board.name))
 		{
 			strcat (pathname, filename);
 			articles_BrdBM_AnnSum = 0;        /* init */
@@ -412,11 +339,11 @@ printf ("pathname = %s\n", pathname0);
 		/* else cant find Announce .Search file, error announce data. */
 
 		sprintf (pathname, "%s/boards/", BBSHOME);
-		strcat (pathname, buffer[index].filename);
+		strcat (pathname, board.name);
 		strcat (pathname, "/.DIR");
 
 		/* BM */
-		sprintf (bms, "%s", buffer[index].BM);
+		sprintf (bms, "%s", board.bms);
 		bm = strtok (bms, " \t\n");
 
 		lastpost_Brd=0;
@@ -424,7 +351,7 @@ printf ("pathname = %s\n", pathname0);
 		bmfilecount (pathname, NULL);       
 
 #ifndef PRINTOFF
-		fprintf (fp0, "%-16.16s", buffer[index].filename);
+		fprintf (fp0, "%-16.16s", board.name);
 
 		fprintf (fp0, " %6d", lastNarticles_Brd);
 
@@ -486,30 +413,5 @@ printf ("pathname = %s\n", pathname0);
 #endif
 		board_num++;
 	}
-
-	free (buffer);
-	free (bsort);
-
-	/*
-#ifndef PRINTOFF
-fprintf (fp0, "---------------------------------------\n");
-fprintf (fp0, "总共 %d 个板, %d 个板主(有重复计)在表中.\n",
-board_num, bm_num);
-#endif
-*/
-	//fclose (fp0);
-	/*
-	   sprintf (pathname0, "%s/0Announce/bmstat/.Names", BBSHOME);
-	   fp0 = fopen (pathname0, "a");
-	   if (fp0 == NULL)
-	   {
-	   fprintf (stderr, "Error open file %s for write.\n", ".Names");
-	   exit (-1);
-	   }
-	   fprintf (fp0, "%-44s%s\n", "Name=板主表现统计","deliver");
-	   fprintf (fp0, "Path=~/%s\n", filename0);
-	   fprintf (fp0, "Numb=1\n#\n");
-	   */
-
 	return 0;
 }

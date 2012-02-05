@@ -18,5 +18,6 @@ extern void add_signature(FILE *fp, const char *user, int sig);
 extern int valid_gbk_file(const char *file, int replace);
 extern char *valid_title(char *title);
 extern void initialize_convert_env(void);
+extern void initialize_db(void);
 
 #endif // FB_HELPER_H

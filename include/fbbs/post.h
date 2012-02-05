@@ -1,6 +1,7 @@
 #ifndef FB_POST_H
 #define FB_POST_H
 
+#include "fbbs/board.h"
 #include "fbbs/convert.h"
 
 #define ANONYMOUS_ACCOUNT "Anonymous"
@@ -13,7 +14,7 @@ typedef struct {
 	const char *userid;
 	const char *nick;
 	const struct userec *user;
-	const struct boardheader *bp;
+	const board_t *board;
 	const char *title;
 	const char *content;
 	int sig;

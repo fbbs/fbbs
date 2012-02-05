@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/board.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -8,11 +9,11 @@ enum {
 };
 
 static bool hasannperm(const char *title, const struct userec *user,
-		const struct boardheader *bp)
+		const board_t *board)
 {
 	if ((strstr(title, "BM: SYSOPS") && !HAS_PERM2(PERM_SYSOPS, user))
 			|| (strstr(title, "BM: OBOARDS") && !HAS_PERM2(PERM_OBOARDS, user))
-			|| (strstr(title, "BM: BMS") && !chkBM(bp, user)))
+			|| (strstr(title, "BM: BMS") && !is_bm(user, board)))
 		return false;
 	return true;		
 }
@@ -72,32 +73,33 @@ static char *getbfroma(const char *path)
 int bbs0an_main(void)
 {
 	char path[512];
-	struct boardheader *bp = NULL;
+	board_t board;
 	int bid = strtol(get_param("bid"), NULL, 10);
 	if (bid <= 0) {
 		strlcpy(path, get_param("path"), sizeof(path));
 		if (strstr(path, "..") || strstr(path, "SYSHome"))
 			return BBS_EINVAL;
-		char *board = getbfroma(path);
-		if (*board != '\0') {
-			bp = getbcache(board);
-			if (!hasreadperm(&currentuser, bp))
+		char *bname = getbfroma(path);
+		if (*bname != '\0') {
+			if (!get_board(bname, &board)
+					|| !has_read_perm(&currentuser, &board))
 				return BBS_ENODIR;
 		}
 	} else {
-		bp = getbcache2(bid);
-		if (bp == NULL || !hasreadperm(&currentuser, bp))
+		if (!get_board_by_bid(bid, &board)
+				|| !has_read_perm(&currentuser, &board))
 			return BBS_ENOBRD;
-		if (bp->flag & BOARD_DIR_FLAG)
+		if (board.flag & BOARD_DIR_FLAG)
 			return BBS_EINVAL;
+
 		path[0] = '\0';
 		FILE *fp = fopen("0Announce/.Search", "r");
 		if (fp == NULL)
 			return BBS_EINTNL;
 		char tmp[256];
-		int len = strlen(bp->filename);
+		int len = strlen(board.name);
 		while (fgets(tmp, sizeof(tmp), fp) != NULL) {
-			if (!strncmp(tmp, bp->filename, len) && tmp[len] == ':'
+			if (!strncmp(tmp, board.name, len) && tmp[len] == ':'
 					&& tmp[len + 1] == ' ') {
 				tmp[len + 1] = '/';
 				strlcpy(path, tmp + len + 1, sizeof(path));
@@ -123,7 +125,7 @@ int bbs0an_main(void)
 		}
 		if(!strncmp(buf, "# Title=", 8)) {
 			title = buf + 8;
-			if (!hasannperm(title, &currentuser, bp)) {
+			if (!hasannperm(title, &currentuser, &board)) {
 				fclose(fp);
 				return BBS_ENODIR;
 			}
@@ -133,8 +135,8 @@ int bbs0an_main(void)
 
 	xml_header(NULL);
 	printf("<bbs0an path='%s' v='%d' ", path, get_count(path));
-	if (bp != NULL)
-		printf(" brd='%s'", bp->filename);
+	if (board.id)
+		printf(" brd='%s'", board.name);
 	printf(">");
 	print_session();
 	
@@ -145,7 +147,7 @@ int bbs0an_main(void)
 			strlcpy(name, trim(buf + 5), sizeof(name));
 			if (strlen(name) > ANN_TITLE_LENGTH) {
 				id = name + ANN_TITLE_LENGTH;
-				if (!hasannperm(name + ANN_TITLE_LENGTH, &currentuser, bp))
+				if (!hasannperm(name + ANN_TITLE_LENGTH, &currentuser, &board))
 					continue;
 				name[ANN_TITLE_LENGTH -  1] = '\0';
 				if (!strncmp(id, "BM: ", 4))
@@ -187,11 +189,11 @@ int bbsanc_main(void)
 			|| strstr(path, ".Names") || strstr(path, "..")
 			|| strstr(path, "SYSHome"))
 		return BBS_EINVAL;
-	char *board = getbfroma(path);
-	struct boardheader *bp = NULL;
-	if (*board != '\0') {
-		bp = getbcache(board);
-		if (!hasreadperm(&currentuser, bp))
+
+	char *bname = getbfroma(path);	
+	board_t board;
+	if (*bname) {
+		if (!get_board(bname, &board) || !has_read_perm(&currentuser, &board))
 			return BBS_ENOFILE;
 	}
 
@@ -199,8 +201,8 @@ int bbsanc_main(void)
 	sprintf(fname, "0Announce%s", path);
 	xml_header(NULL);
 	printf("<bbsanc ");
-	if (bp != NULL)
-		printf(" brd='%s'", bp->filename);
+	if (board.id)
+		printf(" brd='%s'", board.name);
 	printf(">");
 	print_session();
 	printf("<po>");

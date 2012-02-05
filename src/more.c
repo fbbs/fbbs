@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 static time_t calltime = 0;
@@ -241,16 +242,16 @@ void netty_more(void)
 void printacbar(void)
 {
 #ifndef BIGGER_MOVIE
-	struct boardheader *bp;
 	int x,y;
-
-	getyx(&y,&x);
-	bp = getbcache(DEFAULTBOARD);
+	getyx(&y, &x);
 	move(2,0);
-	if(bp->flag&VOTE_FLAG) prints(" [1;36m©°¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È[37mÏµÍ³Í¶Æ±ÖÐ [ Config->Vote ] [36m©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©´ [m\n");
-	else prints(" [1;36m©°¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È[37m»î  ¶¯  ¿´  °å[36m©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©´ [m\n");
-	move(2+MAXMOVIE,0);
-	prints(" [1;36m©¸¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©¼[m\n");
+
+	prints(" \033[1;36m©°¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È"
+			"\033[37m»î  ¶¯  ¿´  °å\033[36m"
+			"©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©´ \033[m\n");
+	move(2 + MAXMOVIE, 0);
+	prints(" \033[1;36m©¸¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª"
+			"¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©¼\033[m\n");
 	move (y,x);
 #endif
 	refresh();

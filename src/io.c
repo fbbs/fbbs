@@ -685,9 +685,11 @@ static char *boardmargin(void)
 		snprintf(buf, sizeof(buf), "讨论区 [%s]", currboard);
 	else {
 		brc_initial(currentuser.userid, DEFAULTBOARD);
-		changeboard(&currbp, currboard, DEFAULTBOARD);
-		if (!getbnum(currboard, &currentuser))
-			setoboard(currboard);
+
+		board_t board;
+		get_board(DEFAULTBOARD, &board);
+		change_board(&board);
+
 		selboard = 1;
 		sprintf(buf, "讨论区 [%s]", currboard);
 	}
@@ -903,7 +905,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 	int ingetdata = true;
 
 	if (clearlabel == YEA)
-		memset(buf, 0, sizeof(buf));
+		memset(buf, 0, len);
 	move(line, col);
 	if (prompt)
 		prints("%s", prompt);

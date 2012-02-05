@@ -1,4 +1,8 @@
 #include "bbs.h"
+#include "fbbs/board.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/helper.h"
+#include "fbbs/string.h"
 
 int type=-1, flag=0, timed=0, sorttype=0;
 char groupid=0;
@@ -12,13 +16,6 @@ struct libtruct {
 int total=0;
 
 int order[10000];
-int step(int steps){
-//	printf("step: %d \n",steps);
-}
-
-int debug(char* msg){
-//	printf("debug: %s\n",msg);
-}
 
 int show(int k,int i)
 {
@@ -105,7 +102,7 @@ void showall()
 		show(i, order[i]);
 }
 
-int check_BM(char* board, char* bmname,void* arg)
+int check_BM(const char* board, char* bmname,void* arg)
 {
     int i, fd, data[BMLOGLEN];
     struct flock ldata;
@@ -113,9 +110,6 @@ int check_BM(char* board, char* bmname,void* arg)
     char direct[STRLEN];
     char bm[20];
 
-//	debug("checkBM");
-//	debug(board);
-//	debug(bmname);
     strcpy(bm,bmname); 
     sprintf(direct, "boards/%s/.bm.%s%s", board, bm, suffix[timed]);
     if ((fd = open(direct, O_RDWR | O_CREAT, 0644)) == -1) return 0;
@@ -150,7 +144,6 @@ int check_BM(char* board, char* bmname,void* arg)
    	ldata.l_type = F_UNLCK;
    	fcntl(fd, F_SETLKW, &ldata);
    	close(fd);
-   	step(1000);
    	if (flag==-1) {
    		unlink(direct);
    	}
@@ -167,72 +160,55 @@ int check_BM(char* board, char* bmname,void* arg)
     return 0;
 }
 
-int query_BM()
+static void query_BM(const board_t *boards, int count)
 {
-	int fd;
-	int i;
-	struct boardheader bh;
-	char *bm;
-	char buf[80];
+	char bms[BOARD_BM_LEN + 1], *bm;
 
-  	sprintf (buf, "/home/bbs/.BOARDS");
-	if ((fd = open (buf, O_RDONLY)) == 0) {
-		printf ("Can't open record data file.\n");
-		return 1;
-	}
-	for (i = 0;; i++)  {
-		if (read (fd, &bh, sizeof (bh)) <= 0)
-			break;
-		bm = strtok(bh.BM, " ");
-		while( bh.filename!=NULL && bm != NULL ) {
-			if (strncmp(bm,"SYSOP", 5) && strncmp(bm, "SYSOPs", 6) )
-				check_BM(bh.filename, bm, NULL);
-			bm = strtok( NULL,  " ");
+	for (int i = 0; i < count; ++i) {
+		const board_t *bp = boards + i;
+		strlcpy(bms, bp->bms, sizeof(bms));
+		bm = strtok(bms, " ");
+		while (bm) {
+			if (strncmp(bm, "SYSOP", 5) && strncmp(bm, "SYSOPs", 6))
+				check_BM(bp->name, bm, NULL);
+			bm = strtok(NULL,  " ");
 		}
-
 	}
-	close(fd);
 }
 
-int update_BM()
+static void update_BM(const board_t *boards, int count)
 {
-	int i, j, k, data[BMLOGLEN], datatmp[BMLOGLEN];
-	int fdtmp, fd;
-	struct boardheader bh;
+	int j, k, data[BMLOGLEN], datatmp[BMLOGLEN];
+	int fdtmp;
 	char *bm;
-	char buf[80];
+	char buf[80], bms[BOARD_BM_LEN + 1];
 	time_t t;
 	struct tm *res;
 
-
-  	sprintf (buf, "/home/bbs/.BOARDS");
-	if ((fd = open (buf, O_RDONLY)) == 0) {
-		printf ("Can't open record data file.\n");
-		return 1;
-	}
 	time(&t);
 	res = localtime(&t);
-	for (i = 0;; i++)  {
-		if (read (fd, &bh, sizeof (bh)) <= 0)
-			break;
-		bm = strtok(bh.BM, " ");
-		while( bh.filename!=NULL && bm != NULL ){
+
+	for (int i = 0; i < count; ++i) {
+		const board_t *bp = boards + count;
+		strlcpy(bms, bp->bms, sizeof(bms));
+		bm = strtok(bms, " ");
+		while (bm) {
 			if (strncmp(bm,"SYSOP", 5) && strncmp(bm, "SYSOPs", 6) ){
-				sprintf(buf, "boards/%s/.bm.%s", bh.filename, bm);
-				if (fdtmp = open(buf, O_RDONLY, 0644)){
+				sprintf(buf, "boards/%s/.bm.%s", bp->name, bm);
+				if ((fdtmp = open(buf, O_RDONLY, 0644))) {
 					bzero(data, sizeof(data));
 					read(fdtmp, data, sizeof(data));
 					close(fdtmp);
 					unlink(buf);
 					for (j = 1; j < 4 ; j++ )
 					{
-						sprintf(buf, "boards/%s/.bm.%s%s", bh.filename, bm, suffix[j]);
+						sprintf(buf, "boards/%s/.bm.%s%s", bp->name, bm, suffix[j]);
 						if ((j == 1 && res->tm_wday == 0 )
 							|| (j == 2 && res->tm_mday == 1 )
 							||(j == 3 && res->tm_yday == 0 ))
 						{
 							unlink(buf);
-						}else if (fdtmp = open(buf, O_RDWR | O_CREAT, 0644)){
+						} else if ((fdtmp = open(buf, O_RDWR | O_CREAT, 0644))) {
 							bzero(datatmp, sizeof(datatmp));
 							read(fdtmp, datatmp, sizeof(datatmp));
 							for(k=0;k<BMLOGLEN;k++){
@@ -251,13 +227,13 @@ int update_BM()
 		}
 
 	}
-	close(fd);
 }
-main(int argc, char ** argv)
+
+int main(int argc, char ** argv)
 {
 	if (argc<=1) {
 		printf("usage: statBM day|week|month|year|update|clear\n");
-		return;
+		return EXIT_FAILURE;
 	}
 	if (!strcasecmp(argv[1],"clear")) type=0;
 	if (!strcasecmp(argv[1],"day")) type=1;
@@ -268,23 +244,38 @@ main(int argc, char ** argv)
 	if (argc>=3&&!strcasecmp(argv[2],"id")) sorttype=1;
 	if (type==-1) {
 		printf("usage: statBM day|week|month|year|update|clear\n");
-		return;
+		return EXIT_FAILURE;
 	}
+
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	initialize_convert_env();
+	initialize_db();
+
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	int count = db_res_rows(res);
+	if (count < 1)
+		return EXIT_FAILURE;
+	board_t *boards = malloc(sizeof(*boards) * count);
+	for (int i = 0; i < count; ++i) {
+		res_to_board(res, i, boards + i);
+	}
+
     chdir(BBSHOME);
     switch(type) {
     	case 0:
 			timed=0;
 			flag=-1;
-			query_BM();
+			query_BM(boards, count);
     		timed=1;
     		flag=-1;
-    		query_BM();
+    		query_BM(boards, count);
 			timed=2;
     		flag=-1;
-			query_BM();
+			query_BM(boards, count);
     		timed=3;
     		flag=-1;
-    		query_BM();
+    		query_BM(boards, count);
 		break;
     	case 1:
     	case 2:
@@ -292,16 +283,16 @@ main(int argc, char ** argv)
     	case 4:
     		timed=type-1;
     		flag=0;
-			query_BM();
+			query_BM(boards, count);
 			lib = malloc(sizeof(struct libtruct)*total);
 			total=0;
     		flag=2;
-    		query_BM();
+    		query_BM(boards, count);
 			sort();
     		showall();
     		break;
     	case 5:
-			update_BM();
+			update_BM(boards, count);
 		    break;
     }
 }

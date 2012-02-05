@@ -1,5 +1,7 @@
 #include "bbs.h"
+#include "fbbs/board.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 #define MAXITEMS        1024
@@ -14,9 +16,7 @@
 void a_menu();
 
 extern char BoardName[];
-struct boardheader *getbcache();
 void a_prompt(); /* added by netty */
-extern struct boardheader *getbcache();
 extern char ANN_LOG_PATH[];
 int readonly=NA;
 
@@ -493,7 +493,6 @@ int a_menusearch(char *path, char* key, char * found) {
 	char bname[20], flag='0';
 	char buf[PATHLEN], *ptr;
 	int searchmode = 0;
-	struct boardheader *bp;
 	if (key == NULL) {
 		key = bname;
 		a_prompt(-1, "输入欲搜寻之讨论区名称: ", key, 18);
@@ -511,18 +510,12 @@ int a_menusearch(char *path, char* key, char * found) {
 				*ptr = '\0';
 				ptr = strtok(ptr + 1, " \t\n");
 			}
-			if (!strcasecmp(buf, key)) {
-				bp = getbcache(key);
-				if (hasreadperm(&currentuser, bp))
-				{
-					if ((bp->flag & BOARD_CLUB_FLAG)
-						&& (bp->flag & BOARD_READ_FLAG)
-						&& !chk_currBM(bp->BM, 1)
-						&& !isclubmember(currentuser.userid, bp->filename))
-						break;
+			if (strcaseeq(buf, key)) {
+				board_t board;
+				if (get_board(key, &board)
+						&& has_read_perm(&currentuser, &board)) {
 					sprintf(found, "0Announce/%s", ptr);
 					flag = '1';
-					break;
 				}
 			}
 		}
@@ -551,7 +544,7 @@ int b_menusearch(MENU *pm) {
 
 #ifdef INTERNET_EMAIL
 void a_forward(char *path,ITEM* pitem,int mode) {
-	struct boardheader fhdr;
+	struct fileheader fhdr;
 	char fname[PATHLEN], *mesg;
 	sprintf(fname, "%s/%s", path, pitem->fname);
 	if (dashf(fname)) {
@@ -1571,10 +1564,14 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 				if (me.now < me.num) {
 					char bname[30];
 					clear();
-					if (get_a_boardname(bname, "请输入要转贴的讨论区名称: ")) {
+					board_complete(0, "请输入要转贴的讨论区名称: ",
+							bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
+					if (*bname) {
 						move(1, 0);
-						struct boardheader *bp = getbcache(bname);
-						if (bp == NULL || !haspostperm(&currentuser, bp)) {
+						
+						board_t board;
+						if (!get_board(bname, &board)
+								|| !has_post_perm(&currentuser, &board)) {
 							prints("\n\n您尚无权限在 %s 发表文章.", bname);
 							pressreturn();
 							me.page = 9999;

@@ -9,8 +9,8 @@
 
 void check_bbserr(int err);
 extern int bbssec_main(void);
-extern int bbsall_main(void);
-extern int bbsboa_main(void);
+extern int web_all_boards(void);
+extern int web_sector(void);
 extern int web_login(void);
 extern int bbslogout_main(void);
 extern int bbsdoc_main(void);
@@ -31,7 +31,6 @@ extern int bbsgdoc_main(void);
 extern int bbstdoc_main(void);
 extern int bbsgcon_main(void);
 extern int bbstcon_main(void);
-extern int web_mybrd(void);
 extern int web_brdadd(void);
 extern int bbsccc_main(void);
 extern int web_fav(void);
@@ -47,7 +46,7 @@ extern int bbsfwd_main(void);
 extern int bbsinfo_main(void);
 extern int bbspwd_main(void);
 extern int bbsedit_main(void);
-extern int bbssel_main(void);
+extern int web_sel(void);
 extern int bbsrss_main(void);
 extern int bbsovr_main(void);
 extern int bbstop10_main(void);
@@ -75,10 +74,10 @@ web_ctx_t ctx;
 const static web_handler_t handlers[] = {
 	{ "0an", bbs0an_main, ST_DIGEST },
 	{ "activate", fcgi_activate, ST_NEW },
-	{ "all", bbsall_main, ST_READBRD },
+	{ "all", web_all_boards, ST_READBRD },
 	{ "anc", bbsanc_main, ST_DIGEST },
 	{ "bfind", bbsbfind_main, ST_READING },
-	{ "boa", bbsboa_main, ST_READNEW },
+	{ "boa", web_sector, ST_READNEW },
 	{ "brdadd", web_brdadd, ST_READING },
 	{ "buyprop", web_buy_prop, ST_PROP },
 	{ "ccc", bbsccc_main, ST_POSTING },
@@ -104,7 +103,6 @@ const static web_handler_t handlers[] = {
 	{ "mail", bbsmail_main, ST_RMAIL },
 	{ "mailcon", bbsmailcon_main, ST_RMAIL },
 	{ "mailman", web_mailman, ST_RMAIL },
-	{ "mybrd", web_mybrd, ST_READING },
 	{ "myprop", web_my_props, ST_MY_PROP },
 	{ "newmail", bbsnewmail_main, ST_RMAIL },
 	{ "not", bbsnot_main, ST_READING },
@@ -119,7 +117,7 @@ const static web_handler_t handlers[] = {
 	{ "reg", fcgi_reg, ST_NEW },
 	{ "rss", bbsrss_main, ST_READING },
 	{ "sec", bbssec_main, ST_READBRD },
-	{ "sel", bbssel_main, ST_SELECT },
+	{ "sel", web_sel, ST_SELECT },
 	{ "sig", bbssig_main, ST_EDITUFILE },
 	{ "sigopt", web_sigopt, ST_GMENU },
 	{ "snd", bbssnd_main, ST_POSTING },

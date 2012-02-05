@@ -1,6 +1,8 @@
 #include "bbs.h"
 #include "vote.h"
 #include "mmap.h"
+#include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/status.h"
 #include "fbbs/terminal.h"
 
@@ -33,15 +35,18 @@ static int cmpvuid(void *userid, void *uv)
 //bname:∞Ê√Ê√˚,flag∞Ê√Ê±Í÷æ
 //1:ø™∆ÙÕ∂∆±,0:πÿ±’Õ∂∆± ∑µªÿ÷µ:Œﬁ..
 int setvoteflag(char *bname, int flag) {
-	int pos;
-	struct boardheader fh;
+	board_t board;
+	get_board(bname, &board);
 
-	pos = search_record(BOARDS, &fh, sizeof(fh), cmpbnames, bname);
 	if (flag == 0)
-		fh.flag = fh.flag & ~BOARD_VOTE_FLAG;
+		board.flag = board.flag & ~BOARD_VOTE_FLAG;
 	else
-		fh.flag = fh.flag | BOARD_VOTE_FLAG;
-	if (substitute_record(BOARDS, &fh, sizeof(fh), pos) == -1)
+		board.flag = board.flag | BOARD_VOTE_FLAG;
+
+	db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
+			board.flag, board.id);
+	db_clear(res);
+	if (!res)
 		prints("Error updating BOARDS file...\n");
 	return 0;
 }
@@ -89,7 +94,7 @@ int b_notes_edit()
 	int aborted;
 	int notetype;
 
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	clear();
 	move(0, 0);
@@ -113,16 +118,16 @@ int b_notes_edit()
 	} else if (notetype == 1) {
 		setvfile(buf, currboard, "notes");
 	} else if (notetype == 4 ) {
-		int pos;
-		struct boardheader fh;
-		pos = search_record(BOARDS, &fh, sizeof(fh), cmpbnames, currboard);
-
-		if (askyn(" «∑Ò«ø÷∆ π”√«∞◊∫£ø", (fh.flag & BOARD_PREFIX_FLAG)?YEA:NA,NA)) {
-			fh.flag |= BOARD_PREFIX_FLAG;
+		int flag = currbp->flag;
+		if (askyn(" «∑Ò«ø÷∆ π”√«∞◊∫£ø",
+					(currbp->flag & BOARD_PREFIX_FLAG) ? YEA : NA, NA)) {
+			flag |= BOARD_PREFIX_FLAG;
 		} else {
-			fh.flag &= ~BOARD_PREFIX_FLAG;
+			flag &= ~BOARD_PREFIX_FLAG;
 		}
-		substitute_record(BOARDS, &fh, sizeof(fh), pos);
+		db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
+				flag, currbp->id);
+		db_clear(res);
 		return FULLUPDATE;
 	}
 	sprintf(buf2, "(E)±‡º≠ (D)…æ≥˝ %4s? [E]: ",
@@ -159,7 +164,7 @@ int b_notes_edit() {
 	char ans[4];
 	int aborted;
 	int notetype;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	clear();
 	move(1, 0);
@@ -217,7 +222,7 @@ int b_notes_passwd() {
 	char passbuf[20], prepass[20];
 	char buf[STRLEN];
 
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	clear();
 	move(1, 0);
@@ -305,48 +310,49 @@ char *fname;
 	return 0;
 }
 
-//πÿ±’Õ∂∆±
-//∑µªÿ÷µ:πÃ∂®Œ™0
-int b_closepolls() {
-	char buf[80];
-	time_t now, nextpoll;
-	int i, end;
-
-	now = time(0);
+int b_closepolls(void)
+{
+	time_t now = time(NULL);
 	if (resolve_boards() < 0)
-		exit(1);
+		exit(EXIT_FAILURE);
 
-	if (now < brdshm->pollvote) { //œ÷‘⁄ ±º‰–°”⁄œ¬¥Œø…Õ∂∆± ±º‰‘Ú∑µªÿ£ø
+	if (now < brdshm->pollvote) {
 		return 0;
 	}
-	//πÿ±’œ‘ æ ∫Ø ˝µ˜”√“∆µΩmiscd
-	/*
-	 move(t_lines - 1, 0);
-	 prints("∂‘≤ª∆£¨œµÕ≥πÿ±’Õ∂∆±÷–£¨«Î…‘∫Ú...");
-	 refresh();
-	 */
 
-	nextpoll = now + 7 * 3600;
+	time_t nextpoll = now + 7 * 3600;
 
-	strcpy(buf, currboard);
-	for (i = 0; i < brdshm->number; i++) {
-		strcpy(currboard, (&bcache[i])->filename);
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	if (!env.p)
+		exit(EXIT_FAILURE);
+
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	if (!env.c)
+		exit(EXIT_FAILURE);
+
+	initialize_db();
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		board_t board;
+		res_to_board(res, i, &board);
+		strcpy(currboard, board.name);
 		setcontrolfile();
-		end = get_num_records(controlfile, sizeof(currvote));
+		int end = get_num_records(controlfile, sizeof(currvote));
 		for (vnum = end; vnum >= 1; vnum--) {
 			time_t closetime;
 
 			get_record(controlfile, &currvote, sizeof(currvote), vnum);
 			closetime = currvote.opendate + currvote.maxdays * 86400;
 			if (now > closetime)
-				mk_result(vnum); //»ÙÕ∂∆±∆⁄œﬁ“—π˝–¥»ÎÕ∂∆±Ω·π˚
+				mk_result(vnum);
 			else if (nextpoll > closetime)
 				nextpoll = closetime + 300;
 		}
 	}
-	strcpy(currboard, buf);
+	db_clear(res);
+	db_finish(env.d);
 
-	brdshm->pollvote = nextpoll; //œ¬¥Œø…Õ∂∆± ±º‰£ø
+	brdshm->pollvote = nextpoll;
 	return 0;
 }
 
@@ -435,7 +441,7 @@ int mk_result(int num) {
 		report("open vote newresult file error", currentuser.userid);
 		//prints("Error: Ω· ¯Õ∂∆±¥ÌŒÛ...\n");
 	}
-	get_result_title(sug);
+	get_result_title();
 	//º∆À„Õ∂∆±Ω·π˚
 	fprintf(sug, "** Õ∂∆±Ω·π˚:\n\n");
 	if (currvote.type == VOTE_VALUE) {
@@ -509,7 +515,7 @@ int vote_maintain(char *bname) {
 	struct votebal *ball = &currvote;
 
 	setcontrolfile();
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return 0;
 	stand_title("ø™∆ÙÕ∂∆±œ‰");
 	makevdir(bname);
@@ -548,7 +554,7 @@ int vote_maintain(char *bname) {
 			strcpy(genbuf, ball->title);
 			ellipsis(genbuf, 31 - strlen(currboard));
 			sprintf(buf, "[Õ®÷™] %s æŸ∞ÏÕ∂∆±: %s", currboard, ball->title);
-			get_result_title(sug);
+			get_result_title();
 			if (ball->type != VOTE_ASKING && ball->type != VOTE_VALUE) {
 				fprintf(sug, "\n°æ[1m—°œÓ»Áœ¬[m°ø\n");
 				for (i = 0; i < ball->totalitems; i++) {
@@ -1026,14 +1032,14 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'A':
 		case 'a':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return YEA;
 			vote_maintain(currboard);
 			deal = 1;
 			break;
 		case 'O':
 		case 'o':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return YEA;
 			clear();
 			deal = 1;
@@ -1056,7 +1062,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'M':
 		case 'm':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return YEA;
 			clear();
 			deal = 1;
@@ -1081,7 +1087,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			break;
 		case 'D':
 		case 'd':
-			if (!chkBM(currbp, &currentuser))
+			if (!am_curr_bm())
 				return 1;
 			deal = 1;
 			get_record(controlfile, &currvote, sizeof(struct votebal),

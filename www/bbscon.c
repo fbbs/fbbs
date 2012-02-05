@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/board.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
@@ -34,14 +35,14 @@ const struct fileheader *dir_bsearch(const struct fileheader *begin,
 	return begin;
 }
 
-int bbscon_search(const struct boardheader *bp, unsigned int fid,
+int bbscon_search(const char *board, unsigned int fid,
 		int action, struct fileheader *fp, bool extra)
 {
-	if (!bp || !fp)
+	if (!board || !fp)
 		return -1;
 
 	char dir[HOMELEN];
-	setbfile(dir, bp->filename, DOT_DIR);
+	setbfile(dir, board, DOT_DIR);
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(dir, &m) < 0)
@@ -98,25 +99,26 @@ int bbscon_search(const struct boardheader *bp, unsigned int fid,
 
 int bbscon_main(void)
 {
-	int bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+
 	unsigned int fid = strtoul(get_param("f"), NULL, 10);
 	const char *action = get_param("a");
 	bool sticky = *get_param("s");
 
-	int ret;
+	int ret = 0;
 	struct fileheader fh;
 	if (sticky) {
 		char file[HOMELEN];
-		setbfile(file, bp->filename, NOTICE_DIR);
+		setbfile(file, board.name, NOTICE_DIR);
 		if (!search_record(file, &fh, sizeof(fh), cmp_fid, &fid))
 			return BBS_ENOFILE;
 	} else {
-		ret = bbscon_search(bp, fid, *action, &fh, true);
+		ret = bbscon_search(board.name, fid, *action, &fh, true);
 		if (ret <= 0)
 			return BBS_ENOFILE;
 	}
@@ -124,17 +126,17 @@ int bbscon_main(void)
 
 	xml_header(NULL);
 
-	bool anony = bp->flag & BOARD_ANONY_FLAG;
+	bool anony = board.flag & BOARD_ANONY_FLAG;
 	int opt = get_user_flag();
 
 	printf("<bbscon link='con' bid='%d' anony='%d' attach='%d'%s%s>",
-			bid, anony, maxlen(bp->filename),
+			board.id, anony, maxlen(board.name),
 			opt & PREF_NOSIG ? " nosig='1'" : "",
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 
 	print_session();
 
-	bool isbm = chkBM(bp, &currentuser);
+	bool isbm = am_bm(&board);
 	bool noreply = fh.accessed[0] & FILE_NOREPLY && !isbm;
 	bool self = streq(fh.owner, currentuser.userid);
 	printf("<po fid='%u'%s%s%s%s%s%s", fid,
@@ -150,41 +152,42 @@ int bbscon_main(void)
 		printf(">");
 
 	char file[HOMELEN];
-	setbfile(file, bp->filename, fh.filename);
+	setbfile(file, board.name, fh.filename);
 	xml_print_file(ctx.r, file);
 
 	printf("</po></bbscon>");
 
-	brc_fcgi_init(currentuser.userid, bp->filename);
+	brc_fcgi_init(currentuser.userid, board.name);
 	brc_addlist(fh.filename);
-	brc_update(currentuser.userid, bp->filename);
+	brc_update(currentuser.userid, board.name);
 	return 0;
 }
 
 int bbsgcon_main(void)
 {
-	int bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+
 	const char *f = get_param("f");
 	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
 		return BBS_EINVAL;
 	xml_header(NULL);
-	printf("<bbscon link='gcon' bid='%d'>", bid);
+	printf("<bbscon link='gcon' bid='%d'>", board.id);
 	print_session();
 	printf("<po>");
 
 	char file[HOMELEN];
-	setbfile(file, bp->filename, f);
+	setbfile(file, board.name, f);
 	xml_print_file(ctx.r, file);
 
 	printf("</po></bbscon>");
-	brc_fcgi_init(currentuser.userid, bp->filename);
+	brc_fcgi_init(currentuser.userid, board.name);
 	brc_addlist(f);
-	brc_update(currentuser.userid, bp->filename);
+	brc_update(currentuser.userid, board.name);
 	return 0;
 }
 

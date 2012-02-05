@@ -1,14 +1,11 @@
-/*
- $Id: postheader.c 366 2007-05-12 16:35:51Z danielfree $
- 本页面主要处理发表文章，回复文章和发信件时的头处理
- */
-
 #include "bbs.h"
+#include "fbbs/board.h"
+#include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 extern int numofsig;
 extern int noreply;
 extern int mailtoauther;
-extern struct boardheader *getbcache();
 #ifdef ENABLE_PREFIX
 char prefixbuf[MAX_PREFIX][6];
 int numofprefix;
@@ -71,8 +68,6 @@ int post_header(struct postheader *header) {
 #endif
 	char r_prompt[20], mybuf[256], ans[5];
 	char titlebuf[STRLEN];
-	//在回复模式和投条时作为标题的buffer
-	struct boardheader *bp;
 #ifdef IP_2_NAME
 	extern char fromhost[];
 #endif
@@ -110,12 +105,12 @@ int post_header(struct postheader *header) {
 #endif
 	}
 
-	//bp记录当前所在版面的信息
-	bp = getbcache(currboard);
+	board_t board;
+	get_board(currboard, &board);
 
 	//如果是发表文章，则首先检查所在版面是否匿名（发信时不存在这个问题）
 	if (header->postboard) {
-		anonyboard = bp->flag & BOARD_ANONY_FLAG;
+		anonyboard = board.flag & BOARD_ANONY_FLAG;
 	}
 
 #ifdef IP_2_NAME
@@ -163,7 +158,7 @@ int post_header(struct postheader *header) {
 						: (header->postboard) ? "]" : "");
 #ifdef ENABLE_PREFIX
 		if (!header->reply_mode && numofprefix) {
-			if (bp->flag & BOARD_PREFIX_FLAG && !header->title[0]) {
+			if ((board.flag & BOARD_PREFIX_FLAG) && !header->title[0]) {
 				index = 0;
 				print_prefixbuf(pbuf, index);
 				while (1) {
@@ -299,7 +294,7 @@ int post_header(struct postheader *header) {
 			getdata(t_lines - 1, 0, pbuf, ans, 3, DOECHO, YEA);
 			i = ans[0] - '0';
 			if (i >= 0 && i <= numofprefix &&
-					!(i == 0 && (bp->flag & BOARD_PREFIX_FLAG)))
+					!(i == 0 && (board.flag & BOARD_PREFIX_FLAG)))
 			index = i;
 		}
 #endif

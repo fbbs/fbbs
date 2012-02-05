@@ -1,29 +1,6 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: read.c 338 2006-11-25 06:44:42Z danielfree $
- */
-
 #include "bbs.h"
+#include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -721,7 +698,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			return DONOTHING;
 		if (fileinfo->owner[0] == '-')
 			return DONOTHING;
-		if (!chkBM(currbp, &currentuser))
+		if (!am_curr_bm())
 			return DONOTHING;
 	}
 	saveline(t_lines - 1, 0);
@@ -1003,7 +980,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 
 	if (uinfo.mode != ST_READING)
 		return DONOTHING;
-	if (!chkBM(currbp, &currentuser))
+	if (!am_curr_bm())
 		return DONOTHING;
 	saveline(t_lines - 1, 0);
 	if (digestmode != TRASH_MODE && digestmode != JUNK_MODE)
@@ -1076,8 +1053,11 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 		clear();
 		prints("\n\n您将进行区段转载。转载范围是：[%d -- %d]\n", num1, num2);
 		prints("当前版面是：[ %s ] \n", currboard);
-		if (!get_a_boardname(bname, "请输入要转贴的讨论区名称: "))
+		board_complete(6, "请输入要转贴的讨论区名称: ", bname, sizeof(bname),
+				AC_LIST_BOARDS_ONLY);
+		if (!*bname)
 			return FULLUPDATE;
+
 		if (!strcmp(bname, currboard)&&uinfo.mode != ST_RMAIL) {
 			prints("\n\n对不起，本文就在您要转载的版面上，所以无需转载。\n");
 			pressreturn();
@@ -1540,16 +1520,15 @@ int sread(int readfirst, int auser, struct fileheader *ptitle) {
 			case 'R':
 			case 'y':
 			case 'r': {
-				struct boardheader *bp;
-				extern struct boardheader *getbcache();
-
-				bp = getbcache(currboard);
+				board_t board;
+				if (!get_board(currboard, &board))
+					return DONOTHING;
 				if (!get_records(currdirect, ptitle, sizeof(*ptitle),
 						rem_crs, 1))
 					return DONOTHING;
-				noreply=ptitle->accessed[0]&FILE_NOREPLY||bp->flag
-						& BOARD_NOREPLY_FLAG;
-				if (!noreply || chkBM(currbp, &currentuser)) {
+				noreply = (ptitle->accessed[0] & FILE_NOREPLY)
+						|| (board.flag & BOARD_NOREPLY_FLAG);
+				if (!noreply || am_curr_bm()) {
 					local_article=!(ptitle->filename[STRLEN-1]=='S');
 					do_reply(ptitle);
 				} else {
@@ -1865,12 +1844,11 @@ int r_searchall() {
 
 int searchallboard(char *id, char *patten, int dt, int all, int del,
 		int flag) {
-	FILE *fp, *fp2, *fp3;
+	FILE *fp, *fp3;
 	char f[100], buf2[150];
 	char fname[STRLEN];
 	char INDEX[20];
 	struct fileheader xx;
-	struct boardheader xx2;
 	int counts = 0, n2 = 0, n3, now;
 	long t0;
 
@@ -1881,18 +1859,22 @@ int searchallboard(char *id, char *patten, int dt, int all, int del,
 	else if (del == 3)
 		strcpy(INDEX, ".JUNK");
 	now = time(0);
-	fp2 = fopen(".BOARDS", "r");
+
 	sprintf(fname, "tmp/searchall.%s.%05d", currentuser.userid, uinfo.pid);
 	fp3 = fopen(fname, "w");
 	fprintf(fp3, "在所有板查询%s网友%d天以内的大作, 关键字'%s'.\n\n", id, dt, patten);
 	dt = dt * 86400;
-	while (!feof(fp2)) {
-		fread(&xx2, sizeof (xx2), 1, fp2);
-		if (xx2.flag & BOARD_POST_FLAG || HAS_PERM(xx2.level) || (xx2.flag
-				& BOARD_NOZAP_FLAG)) {
+
+	board_t board;
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		res_to_board(res, i, &board);
+
+		if (board.flag & BOARD_POST_FLAG || HAS_PERM(board.perm)
+				|| (board.flag & BOARD_NOZAP_FLAG)) {
 			int n = 0;
 
-			sprintf(f, "boards/%s/%s", xx2.filename, INDEX);
+			sprintf(f, "boards/%s/%s", board.name, INDEX);
 
 			if ((fp = fopen(f, "r")) != NULL) {
 				n2 = 0;
@@ -1920,16 +1902,16 @@ int searchallboard(char *id, char *patten, int dt, int all, int del,
 				fclose(fp);
 				if (n2 != 0)
 					fprintf(fp3, "Above %d is found in board %s.\n\n", n2,
-							xx2.filename);
+							board.name);
 			}
 		}
 		if (counts >= 1000)
 			break;
 	}
+	db_clear(res);
 	sprintf(buf2, "[%s]查询%s在%d天内关键字'%.10s'", del==1 ? "版面"
 			: (del==2 ? "Trash" : "Junk"), id, dt/86400, patten);
 	fprintf(fp3, "%d matched found.\n", counts);
-	fclose(fp2);
 	fclose(fp3);
 	mail_file(fname, currentuser.userid, buf2);
 	unlink(fname);

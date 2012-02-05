@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
@@ -98,24 +99,25 @@ int bbssnd_main(void)
 		return BBS_ELGNREQ;
 	if (parse_post_data(ctx.r) < 0)
 		return BBS_EINVAL;
-	int bid = strtol(get_param("bid"), NULL, 10);
-	struct boardheader *bp = getbcache2(bid);
-	if (bp == NULL || !haspostperm(&currentuser, bp))
+
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			|| !has_post_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	bid = bp - bcache + 1;
 
 	bool isedit = (*(get_param("e")) == '1');
-	unsigned int fid;
+	unsigned int fid = 0;
 	struct fileheader fh;
 	const char *f = get_param("f");
 	bool reply = !(*f == '\0');
 	if (reply) {
 		fid = strtoul(f, NULL, 10);
-		if (bbscon_search(bp, fid, 0, &fh, false) <= 0)
+		if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
 			return BBS_ENOFILE;
-		if (!chkBM(bp, &currentuser) && !streq(fh.owner, currentuser.userid)) {
+		if (!am_bm(&board)
+				&& !streq(fh.owner, currentuser.userid)) {
 			if (!isedit && fh.accessed[0] & FILE_NOREPLY)
 				return BBS_EPST;
 			if (isedit)
@@ -147,13 +149,13 @@ int bbssnd_main(void)
 
 	if (isedit) {
 		char file[HOMELEN];
-		setbfile(file, bp->filename, fh.filename);
+		setbfile(file, board.name, fh.filename);
 		if (edit_article(file, text, mask_host(fromhost)) < 0)
 			return BBS_EINTNL;
 	} else {
 		post_request_t pr = { .autopost = false, .crosspost = false,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.bp = bp, .title = title, .content = text,
+			.board = &board, .title = title, .content = text,
 			.sig = strtol(get_param("sig"), NULL, 0), .ip = mask_host(fromhost),
 			.o_fp = reply ? &fh : NULL, .mmark = false,
 			.noreply = reply && fh.accessed[0] & FILE_NOREPLY,
@@ -164,22 +166,22 @@ int bbssnd_main(void)
 			return BBS_EINTNL;
 	}
 
-	if (!isedit && !junkboard(bp)) {
+	if (!isedit && !(board.flag & BOARD_JUNK_FLAG)) {
 		currentuser.numposts++;
 		save_user_data(&currentuser);
 	}
 
-	char buf[sizeof(fh.title) + sizeof(bp->filename)];
+	char buf[sizeof(fh.title) + sizeof(board.name)];
 	snprintf(buf, sizeof(buf), "%sed '%s' on %s", isedit ? "edit" : "post",
-			title, bp->filename);
+			title, board.name);
 	report(buf, currentuser.userid);
 
 	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_doc_mode_str(),
-			bp->filename);
+			board.name);
 	http_header();
 	refreshto(1, buf);
 	printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>发表</a>"
 			"成功，1秒钟后自动转到<a href='%s'>版面</a>\n</body>\n</html>\n",
-			bid, fid, buf);
+			board.id, fid, buf);
 	return 0;
 }

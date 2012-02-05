@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include "bbs.h"
+#include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/register.h"
 #include "fbbs/status.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 extern int cmpbnames();
-extern char *chgrp();
 extern int dowall();
 extern int t_cmpuids();
 extern void rebuild_brdshm();
@@ -19,7 +21,8 @@ FILE *cleanlog;
 //ÔÚuseridµÄÖ÷Ä¿Â¼ÏÂ ´ò¿ª.bmfileÎÄ¼ş,²¢½«ÀïÃæµÄÄÚÈİÓëbnameÏà±È½Ï
 //              find´æ·Å´Ó1¿ªÊ¼·µ»ØËùÈÎ°æÃæµÄĞòºÅ,Îª0±íÊ¾Ã»ÕÒµ½
 //º¯ÊıµÄ·µ»ØÖµÎªuseridµ£ÈÎ°æÖ÷µÄ°æÃæÊı
-int getbnames(char *userid, char *bname, int *find) {
+static int getbnames(const char *userid, const char *bname, int *find)
+{
 	int oldbm = 0;
 	FILE *bmfp;
 	char bmfilename[STRLEN], tmp[20];
@@ -42,6 +45,31 @@ int getbnames(char *userid, char *bname, int *find) {
 	fclose(bmfp);
 	return oldbm;
 }
+
+static int get_grp(char *seekstr)
+{
+	FILE   *fp;
+	char    buf[STRLEN];
+	char   *namep;
+	if ((fp = fopen("0Announce/.Search", "r")) == NULL)
+		return 0;
+	while (fgets(buf, STRLEN, fp) != NULL) {
+		namep = strtok(buf, ": \n\r\t");
+		if (namep != NULL && strcasecmp(namep, seekstr) == 0) {
+			fclose(fp);
+			strtok(NULL, "/");
+			namep = strtok(NULL, "/");
+			if (strlen(namep) < 30) {
+				strcpy(lookgrp, namep);
+				return 1;
+			} else
+				return 0;
+		}
+	}
+	fclose(fp);
+	return 0;
+}
+
 //      ĞŞ¸ÄÊ¹ÓÃÕß×ÊÁÏ
 int m_info() {
 	struct userec uinfo;
@@ -70,15 +98,45 @@ int m_info() {
 	return 0;
 }
 
-//ÈÎÃü°æÖ÷
-int m_ordainBM() {
+static const char *ordain_bm_check(const board_t *board, const char *uname)
+{
+	if (strneq(board->bms, "SYSOPs", 6))
+		return "ÌÖÂÛÇøµÄ°æÖ÷ÊÇ SYSOPs Äã²»ÄÜÔÙÈÎÃü°æÖ÷";
+	if (strlen(uname) + strlen(board->bms) > BMNAMEMAXLEN)
+		return "ÌÖÂÛÇø°æÖ÷ÁĞ±íÌ«³¤,ÎŞ·¨¼ÓÈë!";
+	if (streq(uname, "guest"))
+		return "Äã²»ÄÜÈÎÃü guest µ±°æÖ÷";
 
-	int id, pos, oldbm = 0, i, find, bm = 1;
-	struct boardheader fh;
-	FILE *bmfp;
-	char bmfilename[STRLEN], bname[STRLEN];
-	char buf[5][STRLEN];
+	int find;
+	int bms = getbnames(lookupuser.userid, board->name, &find);
+	if (find || bms >= 3)
+		return "ÒÑ¾­ÊÇ¸Ã/Èı¸ö°æµÄ°æÖ÷ÁË";
 
+	bms = 1;
+	for (const char *s = board->bms; *s; ++s) {
+		if (*s == ' ')
+			++bms;
+	}
+	if (bms >= BMMAXNUM)
+		return "ÌÖÂÛÇøÒÑÓĞ 5 Ãû°æÖ÷";
+
+	return NULL;
+}
+
+static bool ordain_bm(int bid, const char *uname)
+{
+	user_id_t uid = get_user_id(uname);
+	if (uid <= 0)
+		return false;
+
+	db_res_t *res = db_cmd("INSERT INTO bms (user_id, board_id, stamp) "
+			"VALUES (%d, %d, current_timestamp) ", uid, bid);
+	db_clear(res);
+	return res;
+}
+
+int tui_ordain_bm(const char *cmd)
+{
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
 
@@ -89,117 +147,88 @@ int m_ordainBM() {
 	clear();
 	stand_title("ÈÎÃü°æÖ÷\n");
 	clrtoeol();
+
+	int id;
 	if (!gettheuserid(2, "ÊäÈëÓûÈÎÃüµÄÊ¹ÓÃÕßÕÊºÅ: ", &id))
 		return 0;
-	if (!gettheboardname(3, "ÊäÈë¸ÃÊ¹ÓÃÕß½«¹ÜÀíµÄÌÖÂÛÇøÃû³Æ: ", &pos, &fh, bname, 0))
-		return -1;
-	if (fh.BM[0] != '\0') {
-		if (!strncmp(fh.BM, "SYSOPs", 6)) {
-			move(5, 0);
-			prints("%s ÌÖÂÛÇøµÄ°æÖ÷ÊÇ SYSOPs Äã²»ÄÜÔÙÈÎÃü°æÖ÷", bname);
-			pressreturn();
-			clear();
-			return -1;
-		}
-		for (i = 0, oldbm = 1; fh.BM[i] != '\0'; i++) {
-			if (fh.BM[i] == ' ')
-				oldbm++;
-		}
-		//added by infotech,·ÀÖ¹°æÖ÷ÁĞ±í¹ı³¤
-		if (i + strlen(lookupuser.userid) > BMNAMEMAXLEN) {
-			move(5, 0);
-			prints("%s ÌÖÂÛÇø°æÖ÷ÁĞ±íÌ«³¤,ÎŞ·¨¼ÓÈë!", bname);
-			pressreturn();
-			clear();
-			return -1;
-		}
-		//add end
-		if (oldbm >= 3) {
-			move(5, 0);
-			prints("%s ÌÖÂÛÇøÒÑÓĞ %d Ãû°æÖ÷", bname, oldbm);
-			pressreturn();
-			if (oldbm >= BMMAXNUM) {
-				clear();
-				return -1;
-			}
-		}
 
-		bm = 0;
-	}
-	if (!strcmp(lookupuser.userid, "guest")) {
+	char bname[BOARD_NAME_LEN];
+	board_t board;
+	board_complete(3, "ÊäÈë¸ÃÊ¹ÓÃÕß½«¹ÜÀíµÄÌÖÂÛÇøÃû³Æ: ", bname, sizeof(bname),
+			AC_LIST_BOARDS_ONLY);
+	if (!*bname || !get_board(bname, &board))
+		return -1;
+	board_to_gbk(&board);
+
+	move(4, 0);
+	clrtobot();
+
+	const char *error = ordain_bm_check(&board, lookupuser.userid);
+	if (error) {
 		move(5, 0);
-		prints("Äã²»ÄÜÈÎÃü guest µ±°æÖ÷");
+		outs(error);
 		pressanykey();
 		clear();
 		return -1;
 	}
-	oldbm = getbnames(lookupuser.userid, bname, &find);
-	if (find || oldbm == 3) { //Í¬Ò»ID²»ÄÜ¼æÈÎ³¬¹ıÈı¸ö°æµÄ°æÖ÷
-		move(5, 0);
-		prints(" %s ÒÑ¾­ÊÇ%s°æµÄ°æÖ÷ÁË", lookupuser.userid, find ? "¸Ã" : "Èı¸ö");
-		pressanykey();
-		clear();
-		return -1;
-	}
-	prints("\nÄã½«ÈÎÃü %s Îª %s °æ°æ%s.\n", lookupuser.userid, bname, bm ? "Ö÷"
-			: "¸±");
+
+	bool bm1 = !board.bms[0];
+	const char *bm_s = bm1 ? "Ö÷" : "¸±";
+	prints("\nÄã½«ÈÎÃü %s Îª %s °æ°æ%s.\n", lookupuser.userid, bname, bm_s);
 	if (askyn("ÄãÈ·¶¨ÒªÈÎÃüÂğ?", NA, NA) == NA) {
 		prints("È¡ÏûÈÎÃü°æÖ÷");
 		pressanykey();
 		clear();
 		return -1;
 	}
-	strcpy(bnames[oldbm], bname);
-	if (!oldbm) { //µÚÒ»´Î×ö°æÖ÷
-		char secu[STRLEN];
 
+	if (!ordain_bm(board.id, lookupuser.userid)) {
+		prints("Error");
+		pressanykey();
+		clear();
+		return -1;
+	}
+
+	if (!HAS_PERM2(PERM_BOARDS, &lookupuser)) {
 		lookupuser.userlevel |= PERM_BOARDS;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);
-		sprintf(secu, "°æÖ÷ÈÎÃü, ¸øÓè %s µÄ°æÖ÷È¨ÏŞ", lookupuser.userid);
-		securityreport(secu, 0, 1);
+
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "°æÖ÷ÈÎÃü, ¸øÓè %s °æÖ÷È¨ÏŞ",
+				lookupuser.userid);
+		securityreport(buf, 0, 1);
 		move(15, 0);
-		outs(secu);
+		outs(buf);
 		pressanykey();
 		clear();
 	}
-	if (fh.BM[0] == '\0')
-		strcpy(genbuf, lookupuser.userid);
-	else
-		sprintf(genbuf, "%s %s", fh.BM, lookupuser.userid);
-	strlcpy(fh.BM, genbuf, sizeof (fh.BM));
-	//added by infotech
-	strcpy(buf[0], fh.BM);
-#ifdef  BMNAMELISTLIMIT
-	for (i = 0; i < BMNAMELISTLEN && buf[0][i]; i++);
-	if (i == BMNAMELISTLEN) {
-		buf[0][i++] = '.';
-		buf[0][i++] = '.';
-		buf[0][i++] = '.';
-		buf[0][i] = '\0';
-	}
-#endif
-	//endadd
+
+	char old_descr[STRLEN];
+	snprintf(old_descr, sizeof(old_descr), "¡ğ %s", board.descr);
+
 	//sprintf(genbuf, "%-38.38s(BM: %s)", fh.title +8, fh.BM);
 	//¾«»ªÇøµÄÏÔÊ¾: ¶¯Ì¬·ÖÅä        ÏÔÊ¾10¸ö¿Õ¸ñ printf("%*c",10,' ');
 	{
 		int blanklen; //Ç°Á½¸ö¿Õ¼ä´óĞ¡
 		static const char BLANK = ' ';
-		blanklen = STRLEN - strlen(fh.title + 8) - strlen(buf[0]) - 7;
+		blanklen = STRLEN - strlen(old_descr) - strlen(board.bms) - 7;
 		blanklen /= 2;
 		blanklen = (blanklen > 0) ? blanklen : 1;
-		sprintf(genbuf, "%s%*c(BM: %s)", fh.title + 8, blanklen, BLANK,
-				buf[0]);
+		sprintf(genbuf, "%s%*c(BM: %s)",
+				old_descr, blanklen, BLANK, board.bms);
 	}
-	buf[0][0] = '\0';
-	get_grp(fh.filename);
-	edit_grp(fh.filename, lookgrp, fh.title + 8, genbuf);
-	substitute_record(BOARDS, &fh, sizeof (fh), pos);
-	sethomefile(bmfilename, lookupuser.userid, ".bmfile");
-	bmfp = fopen(bmfilename, "w+");
-	for (i = 0; i < oldbm + 1; i++) {
-		fprintf(bmfp, "%s\n", bnames[i]);
+
+	get_grp(board.name);
+	edit_grp(board.name, lookgrp, old_descr, genbuf);
+
+	char file[HOMELEN];
+	sethomefile(file, lookupuser.userid, ".bmfile");
+	FILE *fp = fopen(file, "a");
+	if (fp) {
+		fprintf(fp, "%s\n", lookupuser.userid);
+		fclose(fp);
 	}
-	fclose(bmfp);
+
 	/* Modified by Amigo 2002.07.01. Add reference to BM-Guide. */
 	//sprintf (genbuf, "\n\t\t\t¡¾ Í¨¸æ ¡¿\n\n"
 	//	   "\tÈÎÃü %s Îª %s °æ%s£¡\n"
@@ -211,79 +240,72 @@ int m_ordainBM() {
 	sprintf(
 			genbuf,
 			"\n"
-				" 		[1;31m   ¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[										 [m\n"
-				" 	 [31m©ï©¤©¤[1m¨U[33mÈÕ[31m¨U¨U[33mÔÂ[31m¨U¨U[33m¹â[31m¨U¨U[33m»ª[31m¨U[0;33m©¤©¤[1;36m¡¼Áì»áÕ¾¹æ¾«Éñ¡¤ÊìÏ¤°æÖ÷²Ù×÷¡½[0;33m©¤¡ó¡ô  [m\n"
-				" 	 [31m©¦    [1m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a										  [m\n"
-				" 	 [31m©¦																	  [m\n"
-				" 		 [1;33m¦î	[37mÈÎÃü  %s  Îª  %s  °æ%s¡£							   [m\n"
-				" 		 [1;33mÍ¨																  [m\n"
-				" 		[1m	»¶Ó­  %s  Ç°Íù BM_Home °æºÍ±¾Çø Zone °æÏò´ó¼ÒÎÊºÃ¡£			 [m\n"
-				" 		 [1;33m¸æ																  [m\n"
-				" 		 [1;33m¦ï	[37m¿ªÊ¼¹¤×÷Ç°£¬ÇëÏÈÍ¨¶ÁBM_Home°æ¾«»ªÇøµÄ°æÖ÷Ö¸ÄÏÄ¿Â¼¡£		   [m\n"
-				" 																		 [33m©¦  [m\n"
-				" 											 [1;33m¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[   [0;33m ©¦  [m\n"
-				" 	 [31m¡ó¡ô©¤[1;35m¡¼Î¬»¤°æÃæÖÈĞò¡¤½¨ÉèºÍĞ³¹â»ª¡½[0;31m©¤©¤[1;33m¨U[31m°æ[33m¨U¨U[31mÖ÷[33m¨U¨U[31mÎ¯[33m¨U¨U[31mÈÎ[33m¨U[0;33m©¤©¤©ï	[m\n"
-				" 											 [1;33m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a		  [m\n"
-				" 																			 [m\n", lookupuser.userid, bname,
-			bm ? "°æÖ÷" : "°æ¸±", lookupuser.userid);
+			" 		[1;31m   ¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[										 [m\n"
+			" 	 [31m©ï©¤©¤[1m¨U[33mÈÕ[31m¨U¨U[33mÔÂ[31m¨U¨U[33m¹â[31m¨U¨U[33m»ª[31m¨U[0;33m©¤©¤[1;36m¡¼Áì»áÕ¾¹æ¾«Éñ¡¤ÊìÏ¤°æÖ÷²Ù×÷¡½[0;33m©¤¡ó¡ô  [m\n"
+			" 	 [31m©¦    [1m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a										  [m\n"
+			" 	 [31m©¦																	  [m\n"
+			" 		 [1;33m¦î	[37mÈÎÃü  %s  Îª  %s  °æ°æ%s¡£							   [m\n"
+			" 		 [1;33mÍ¨																  [m\n"
+			" 		[1m	»¶Ó­  %s  Ç°Íù BM_Home °æºÍ±¾Çø Zone °æÏò´ó¼ÒÎÊºÃ¡£			 [m\n"
+			" 		 [1;33m¸æ																  [m\n"
+			" 		 [1;33m¦ï	[37m¿ªÊ¼¹¤×÷Ç°£¬ÇëÏÈÍ¨¶ÁBM_Home°æ¾«»ªÇøµÄ°æÖ÷Ö¸ÄÏÄ¿Â¼¡£		   [m\n"
+			" 																		 [33m©¦  [m\n"
+			" 											 [1;33m¨X¨T¨[¨X¨T¨[¨X¨T¨[¨X¨T¨[   [0;33m ©¦  [m\n"
+			" 	 [31m¡ó¡ô©¤[1;35m¡¼Î¬»¤°æÃæÖÈĞò¡¤½¨ÉèºÍĞ³¹â»ª¡½[0;31m©¤©¤[1;33m¨U[31m°æ[33m¨U¨U[31mÖ÷[33m¨U¨U[31mÎ¯[33m¨U¨U[31mÈÎ[33m¨U[0;33m©¤©¤©ï	[m\n"
+			" 											 [1;33m¨^¨T¨a¨^¨T¨a¨^¨T¨a¨^¨T¨a		  [m\n"
+			" 																			 [m\n", lookupuser.userid, bname,
+			bm_s, lookupuser.userid);
 	//add end
-	for (i = 0; i < 5; i++)
-		buf[i][0] = '\0';
+
+	char ps[5][STRLEN];
 	move(8, 0);
 	prints("ÇëÊäÈëÈÎÃü¸½ÑÔ(×î¶àÎåĞĞ£¬°´ Enter ½áÊø)");
-	for (i = 0; i < 5; i++) {
-		getdata(i + 9, 0, ": ", buf[i], STRLEN - 5, DOECHO, YEA);
-		if (buf[i][0] == '\0')
+	for (int i = 0; i < 5; i++) {
+		getdata(i + 9, 0, ": ", ps[i], STRLEN - 5, DOECHO, YEA);
+		if (ps[i][0] == '\0')
 			break;
 	}
-	for (i = 0; i < 5; i++) {
-		if (buf[i][0] == '\0')
+	for (int i = 0; i < 5; i++) {
+		if (ps[i][0] == '\0')
 			break;
 		if (i == 0)
 			strcat(genbuf, "\n\n");
 		strcat(genbuf, "\t");
-		strcat(genbuf, buf[i]);
+		strcat(genbuf, ps[i]);
 		strcat(genbuf, "\n");
 	}
-	strcpy(currboard, bname);
-	sprintf(bmfilename, "ÈÎÃü %s Îª %s °æ%s", lookupuser.userid, fh.filename,
-			bm ? "°æÖ÷" : "°æ¸±");
-	//autoreport(bmfilename,genbuf,YEA,NULL);
-	autoreport(bmfilename, genbuf, YEA, lookupuser.userid, 1); //3x rubing and erebus:)   
-#ifdef ORDAINBM_POST_BOARDNAME
-	strcpy (currboard, ORDAINBM_POST_BOARDNAME);
-	//autoreport(bmfilename,genbuf,YEA,NULL);
-	autoreport (bmfilename, genbuf, YEA, lookupuser.userid, 1);
-#endif
-	/* Added by Amigo 2002.07.01. Send BM assign mail to user's mail box. */
-	//{
-	//  FILE *se;
-	//  char fname[STRLEN];
 
-	//  sprintf( fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, uinfo.pid );
-	//  if( ( se = fopen(fname,"w") ) != NULL ){
-	//          fprintf( se, "%s", genbuf );
-	//          fclose( se );
-	//          if( lookupuser.userid != NULL )
-	//          mail_file( fname, lookupuser.userid, bmfilename );
-	//  }
-	//}
-	/* Add end. */
-	securityreport(bmfilename, 0, 1);
+	char buf[STRLEN];
+	strcpy(currboard, bname);
+	snprintf(buf, sizeof(buf), "ÈÎÃü %s Îª %s °æ°æ%s", lookupuser.userid,
+			board.name, bm_s);
+	autoreport(buf, genbuf, YEA, lookupuser.userid, 1);
+#ifdef ORDAINBM_POST_BOARDNAME
+	strcpy(currboard, ORDAINBM_POST_BOARDNAME);
+	autoreport(buf, genbuf, YEA, lookupuser.userid, 1);
+#endif
+	securityreport(buf, 0, 1);
 	move(16, 0);
-	outs(bmfilename);
+	outs(buf);
 	pressanykey();
 	return 0;
 }
 
-//°æÖ÷ÀëÖ°
-int m_retireBM() {
-	int id, pos, right = 0, oldbm = 0, i, j, bmnum;
+static bool retire_bm(int bid, const char *uname)
+{
+	db_res_t *res = db_cmd("DELETE FROM bms b USING users u "
+			"WHERE b.user_id = u.id AND b.board_id = %d AND u.name = %s",
+			bid, uname);
+	db_clear(res);
+	return res;
+}
+
+int tui_retire_bm(const char *cmd)
+{
+	int id, right = 0, j = 0, bmnum;
 	int find, bm = 1;
-	struct boardheader fh;
 	FILE *bmfp;
-	char bmfilename[STRLEN], buf[5][STRLEN];
-	char bname[STRLEN], usernames[BMMAXNUM][STRLEN];
+	char bmfilename[STRLEN], usernames[BMMAXNUM][STRLEN];
 
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
@@ -297,9 +319,16 @@ int m_retireBM() {
 	clrtoeol();
 	if (!gettheuserid(2, "ÊäÈëÓûÀëÖ°µÄ°æÖ÷ÕÊºÅ: ", &id))
 		return -1;
-	if (!gettheboardname(3, "ÇëÊäÈë¸Ã°æÖ÷Òª´ÇÈ¥µÄ°æÃû: ", &pos, &fh, bname, 0))
+
+	char bname[BOARD_NAME_LEN];
+	board_t board;
+	board_complete(3, "ÇëÊäÈë¸Ã°æÖ÷Òª´ÇÈ¥µÄ°æÃû: ", bname, sizeof(bname),
+			AC_LIST_BOARDS_ONLY);
+	if (!*bname || !get_board(bname, &board))
 		return -1;
-	oldbm = getbnames(lookupuser.userid, bname, &find);
+	board_to_gbk(&board);
+
+	int oldbm = getbnames(lookupuser.userid, bname, &find);
 	if (!oldbm || !find) {
 		move(5, 0);
 		prints(" %s %s°æ°æÖ÷£¬ÈçÓĞ´íÎó£¬ÇëÍ¨Öª³ÌĞòÕ¾³¤¡£", lookupuser.userid,
@@ -308,22 +337,22 @@ int m_retireBM() {
 		clear();
 		return -1;
 	}
-	for (i = find - 1; i < oldbm; i++) {
+	for (int i = find - 1; i < oldbm; i++) {
 		if (i != oldbm - 1)
 			strcpy(bnames[i], bnames[i + 1]);
 	}
 	bmnum = 0;
-	for (i = 0, j = 0; fh.BM[i] != '\0'; i++) {
-		if (fh.BM[i] == ' ') {
+	for (int i = 0; board.bms[i] != '\0'; i++) {
+		if (board.bms[i] == ' ') {
 			usernames[bmnum][j] = '\0';
 			bmnum++;
 			j = 0;
 		} else {
-			usernames[bmnum][j++] = fh.BM[i];
+			usernames[bmnum][j++] = board.bms[i];
 		}
 	}
 	usernames[bmnum++][j] = '\0';
-	for (i = 0, right = 0; i < bmnum; i++) {
+	for (int i = 0; i < bmnum; i++) {
 		if (!strcmp(usernames[i], lookupuser.userid)) {
 			right = 1;
 			if (i)
@@ -348,53 +377,37 @@ int m_retireBM() {
 		clear();
 		return -1;
 	}
-	if (bmnum - 1) { //»¹ÓĞ°æÖ÷,ÎªÊ²Ã´²»ÓÃstrcat ?
-		char *genbuf1 = genbuf;
-		genbuf1 += sprintf(genbuf, "%s", usernames[0]);
-		for (i = 1; i < bmnum - 1; i++)
-			genbuf1 += sprintf(genbuf1, " %s", usernames[i]);
-	} else {
-		genbuf[0] = '\0';
-	}
-	strlcpy(fh.BM, genbuf, sizeof (fh.BM));
-	if (fh.BM[0] != '\0') {
-		//added by infotech
-		strcpy(buf[0], fh.BM);
-#ifdef BMNAMELISTLIMIT
-		for (i = 0; i < BMNAMELISTLEN && buf[0][i]; i++);
-		if (i == BMNAMELISTLEN) {
-			buf[0][i++] = '.';
-			buf[0][i++] = '.';
-			buf[0][i++] = '.';
-			buf[0][i] = '\0';
-		}
-#endif
-		//endadd
+
+	retire_bm(board.id, lookupuser.userid);
+
+	char old_descr[STRLEN];
+	snprintf(old_descr, sizeof(old_descr), "¡ğ %s", board.descr);
+
+	if (!streq(board.bms, lookupuser.userid)) {
 		//sprintf(genbuf, "%-38.38s(BM: %s)", fh.title +8, fh.BM);
 		//¾«»ªÇøµÄÏÔÊ¾: ¶¯Ì¬·ÖÅä        ÏÔÊ¾10¸ö¿Õ¸ñ printf("%*c",10,' ');
 		{
 			int blanklen; //Ç°Á½¸ö¿Õ¼ä´óĞ¡
 			static const char BLANK = ' ';
-			blanklen = STRLEN - strlen(fh.title + 8) - strlen(buf[0]) - 7;
+			blanklen = STRLEN - strlen(old_descr) - strlen(board.bms) - 7;
 			blanklen /= 2;
 			blanklen = (blanklen > 0) ? blanklen : 1;
-			sprintf(genbuf, "%s%*c(BM: %s)", fh.title + 8, blanklen,
-					BLANK, buf[0]);
+			sprintf(genbuf, "%s%*c(BM: %s)", old_descr, blanklen,
+					BLANK, board.bms);
 		}
 	} else {
-		sprintf(genbuf, "%-38.38s", fh.title + 8);
+		sprintf(genbuf, "%-38.38s", old_descr);
 	}
-	get_grp(fh.filename);
-	edit_grp(fh.filename, lookgrp, fh.title + 8, genbuf);
-	substitute_record(BOARDS, &fh, sizeof (fh), pos);
-	sprintf(genbuf, "È¡Ïû %s µÄ %s °æ°æÖ÷Ö°Îñ", lookupuser.userid, fh.filename);
+	get_grp(board.name);
+	edit_grp(board.name, lookgrp, old_descr, genbuf);
+	sprintf(genbuf, "È¡Ïû %s µÄ %s °æ°æÖ÷Ö°Îñ", lookupuser.userid, board.name);
 	securityreport(genbuf, 0, 1);
 	move(8, 0);
 	outs(genbuf);
 	sethomefile(bmfilename, lookupuser.userid, ".bmfile");
 	if (oldbm - 1) {
 		bmfp = fopen(bmfilename, "w+");
-		for (i = 0; i < oldbm - 1; i++)
+		for (int i = 0; i < oldbm - 1; i++)
 			fprintf(bmfp, "%s\n", bnames[i]);
 		fclose(bmfp);
 	} else {
@@ -443,11 +456,13 @@ int m_retireBM() {
 			"\t³·³ı %s °æ%s %s µÄ%sÖ°Îñ¡£\n", bname, bm ? "°æÖ÷" : "°æ¸±",
 				lookupuser.userid, bm ? "°æÖ÷" : "°æ¸±");
 	}
-	for (i = 0; i < 5; i++)
+
+	char buf[5][STRLEN];
+	for (int i = 0; i < 5; i++)
 		buf[i][0] = '\0';
 	move(14, 0);
 	prints("ÇëÊäÈë%s¸½ÑÔ(×î¶àÎåĞĞ£¬°´ Enter ½áÊø)", right ? "°æÖ÷ÀëÈÎ" : "°æÖ÷³·Ö°");
-	for (i = 0; i < 5; i++) {
+	for (int i = 0; i < 5; i++) {
 		getdata(i + 15, 0, ": ", buf[i], STRLEN - 5, DOECHO, YEA);
 		if (buf[i][0] == '\0')
 			break;
@@ -458,36 +473,101 @@ int m_retireBM() {
 		strcat(genbuf, buf[i]);
 		strcat(genbuf, "\n");
 	}
-	//autoreport(bmfilename,genbuf,YEA,NULL);
 	autoreport(bmfilename, genbuf, YEA, lookupuser.userid, 1);
 
-	/* Added by Amigo 2002.07.01. Send BM assign mail to mail box. */
-	/*	{
-	 FILE *	se;
-	 char 	fname[STRLEN];
-
-	 sprintf( fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, uinfo.pid );
-	 if( ( se = fopen(fname,"w") ) != NULL ){
-	 fprintf( se, "%s", genbuf );
-	 fclose( se );
-	 if( lookupuser.userid != NULL )
-	 mail_file( fname, lookupuser.userid, bmfilename );
-	 }
-	 }*/
-	/* Add end. */
 	prints("\nÖ´ĞĞÍê±Ï£¡");
 	pressanykey();
 	return 0;
 }
 
-//  ¿ªÉèĞÂ°æ
-int m_newbrd() {
-	struct boardheader newboard, fh;
-	char ans[20];
-	char vbuf[100];
-	char *group;
-	int bid, pos;
+static bool valid_board_name(const char *name)
+{
+	for (const char *s = name; *s; ++s) {
+		char ch = *s;
+		if (!isalnum(ch) && ch != '_' && ch != '.')
+			return false;
+	}
+	return true;
+}
 
+static int select_section(void)
+{
+	int id = 0;
+	char buf[3];
+	getdata(5, 0, "ÇëÊäÈë·ÖÇø: ", buf, sizeof(buf), DOECHO, YEA);
+	if (*buf) {
+		db_res_t *res = db_query("SELECT id FROM board_sectors "
+				"WHERE lower(name) = lower(%s)", buf);
+		if (res && db_res_rows(res) == 1)
+			id = db_get_integer(res, 0, 0);
+	}
+	return id;
+}
+
+const char *chgrp(void)
+{
+	const char *explain[] = {
+		"BBS ÏµÍ³", "¸´µ©´óÑ§", "ÔºÏµ·ç²É", "µçÄÔ¼¼Êõ", "ĞİÏĞÓéÀÖ", "ÎÄÑ§ÒÕÊõ",
+		"ÌåÓı½¡Éí", "¸ĞĞÔ¿Õ¼ä", "ĞÂÎÅĞÅÏ¢", "Ñ§¿ÆÑ§Êõ", "ÒôÀÖÓ°ÊÓ", "½»Ò××¨Çø",
+		"Òş²Ø·ÖÇø", NULL
+	};
+	const char *groups[] = {
+        "system.faq", "campus.faq", "ccu.faq", "comp.faq", "rec.faq",
+		"literal.faq", "sport.faq", "talk.faq", "news.faq", "sci.faq",
+		"other.faq", "business.faq", "hide.faq", NULL
+	};
+
+	clear();
+	move(2, 0);
+	prints("Ñ¡Ôñ¾«»ªÇøµÄÄ¿Â¼\n\n");
+
+	int i, ch;
+	for (i = 0; ; ++i) {
+		if (!explain[i] || !groups[i])
+			break;
+		prints("\033[1;32m%2d\033[m. %-20s%-20s\n", i, explain[i], groups[i]);
+	}
+
+	char buf[STRLEN], ans[6];
+	snprintf(buf, sizeof(buf), "ÇëÊäÈëÄúµÄÑ¡Ôñ(0~%d): ", --i);
+	while (1) {
+		getdata(i + 6, 0, buf, ans, sizeof(ans), DOECHO, YEA);
+		if (!isdigit(ans[0]))
+			continue;
+		ch = atoi(ans);
+		if (ch < 0 || ch > i || ans[0] == '\r' || ans[0] == '\0')
+			continue;
+		else
+			break;
+	}
+	snprintf(cexplain, sizeof(cexplain), "%s", explain[ch]);
+
+	return groups[ch];
+}
+
+static int insert_categ(const char *categ)
+{
+	int id;
+	db_res_t *res = db_query("SELECT id FROM board_categs "
+			"WHERE name = %s", categ);
+	if (res && db_res_rows(res) == 1) {
+		id = db_get_integer(res, 0, 0);
+		db_clear(res);
+		return id;
+	}
+
+	res = db_query("INSERT INTO board_categs (name) "
+			"VALUES (%s) RETURNING id", categ);
+	if (res && db_res_rows(res) == 1) {
+		id = db_get_integer(res, 0, 0);
+		db_clear(res);
+		return id;
+	}
+	return 0;
+}
+
+int tui_new_board(const char *cmd)
+{
 	if (!(HAS_PERM(PERM_BLEVELS)))
 		return 0;
 
@@ -495,17 +575,16 @@ int m_newbrd() {
 	if (!check_systempasswd()) {
 		return 0;
 	}
+
 	clear();
 	stand_title("¿ªÆôĞÂÌÖÂÛÇø");
-	memset(&newboard, 0, sizeof (newboard));
-	move(2, 0);
-	ansimore2("etc/boardref", NA, 3, 7);
+
+	char bname[BOARD_NAME_LEN + 1];
 	while (1) {
-		getdata(10, 0, "ÌÖÂÛÇøÃû³Æ:   ", newboard.filename, 18, DOECHO, YEA);
-		if (newboard.filename[0] != 0) {
-			struct boardheader dh;
-			if (search_record(BOARDS, &dh, sizeof (dh), cmpbnames,
-					newboard.filename)) {
+		getdata(2, 0, "ÌÖÂÛÇøÃû³Æ:   ", bname, sizeof(bname), DOECHO, YEA);
+		if (*bname) {
+			board_t board;
+			if (get_board(bname, &board)) {
 				prints("\n´íÎó! ´ËÌÖÂÛÇøÒÑ¾­´æÔÚ!!");
 				pressanykey();
 				return -1;
@@ -513,153 +592,121 @@ int m_newbrd() {
 		} else {
 			return -1;
 		}
-		if (valid_brdname(newboard.filename))
+
+		if (valid_board_name(bname))
 			break;
 		prints("\n²»ºÏ·¨Ãû³Æ!!");
 	}
-	newboard.flag = 0;
-	while (1) {
-		getdata(11, 0, "ÌÖÂÛÇøËµÃ÷:   ", newboard.title, 60, DOECHO, YEA);
-		if (newboard.title[0] == '\0')
-			return -1;
-		if (strstr(newboard.title, "¡ñ") || strstr(newboard.title, "¡Ñ")) {
-			newboard.flag |= BOARD_OUT_FLAG;
-			break;
-		} else if (strstr(newboard.title, "¡ğ")) {
-			newboard.flag &= ~BOARD_OUT_FLAG;
-			break;
-		} else {
-			prints("´íÎóµÄ¸ñÊ½, ÎŞ·¨ÅĞ¶ÏÊÇ·ñ×ªĞÅ!!");
-		}
-	}
-	strcpy(vbuf, "vote/");
-	strcat(vbuf, newboard.filename);
-	setbpath(genbuf, newboard.filename);
-	if (getbnum(newboard.filename, &currentuser) > 0 || mkdir(genbuf, 0755) == -1
-			|| mkdir(vbuf, 0755) == -1) {
-		prints("\n´íÎóµÄÌÖÂÛÇøÃû³Æ!!\n");
-		pressreturn();
-		clear();
-		return -1;
-	}
-	//sprintf(vbuf, "/dev/shm/bbs/boards/%s", newboard.filename);
-	//mkdir(vbuf, 0755);
 
-	move(12, 0);
-	if (gettheboardname(12, "ÊäÈëËùÊôÌÖÂÛÇøÃû: ", &pos, &fh, ans, 2)) {
-		newboard.group = pos;
-	} else {
-		newboard.group = 0;
-		newboard.flag |= BOARD_NOZAP_FLAG; //root dir can't zap.Danielfree 06.2.22
-	}
-	if (askyn("±¾°æÊÇÄ¿Â¼Âğ?", NA, NA) == YEA) {
-		newboard.flag |= BOARD_DIR_FLAG;
-		//suggest by monoply.06.2.22
-		newboard.flag |= BOARD_JUNK_FLAG;
-		newboard.flag |= BOARD_NOREPLY_FLAG;
-		newboard.flag |= BOARD_POST_FLAG;
-		if (askyn("ÊÇ·ñÏŞÖÆ´æÈ¡È¨Á¦", NA, NA) == YEA) {
-			getdata(14, 0, "ÏŞÖÆ Read? [R]: ", ans, 2, DOECHO, YEA);
+	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
+	getdata(3, 0, "ÌÖÂÛÇøËµÃ÷: ", gbk_descr, sizeof(gbk_descr), DOECHO, YEA);
+	if (!*gbk_descr)
+		return -1;
+	convert_g2u(gbk_descr, utf8_descr);
+
+	GBK_UTF8_BUFFER(categ, BOARD_CATEG_CCHARS);
+	getdata(4, 0, "ÌÖÂÛÇøÀà±ğ: ", gbk_categ, sizeof(gbk_categ), DOECHO, YEA);
+	convert_g2u(gbk_categ, utf8_categ);
+	int categ = insert_categ(utf8_categ);
+	
+	int sector = select_section();
+
+	char pname[BOARD_NAME_LEN];
+	board_complete(6, "ÊäÈëËùÊôÄ¿Â¼: ", pname, sizeof(pname),
+			AC_LIST_DIR_ONLY);
+	board_t parent;
+	get_board(pname, &parent);
+
+	int flag = 0, perm = 0;
+	move(7, 0);
+	clrtobot();
+	if (askyn("±¾°æÊÇÄ¿Â¼Âğ?", NA, NA)) {
+		flag |= (BOARD_DIR_FLAG | BOARD_JUNK_FLAG
+				| BOARD_NOREPLY_FLAG | BOARD_POST_FLAG);
+		if (askyn("ÊÇ·ñÏŞÖÆ´æÈ¡È¨Àû?", NA, NA)) {
+			char ans[2];
+			getdata(7, 0, "ÏŞÖÆ¶Á? [R]: ", ans, sizeof(ans), DOECHO, YEA);
 			move(1, 0);
 			clrtobot();
 			move(2, 0);
-			prints("Éè¶¨ %s È¨Á¦. ÌÖÂÛÇø: '%s'\n", "READ", newboard.filename);
-			newboard.level = setperms(newboard.level, "È¨ÏŞ", NUMPERMS,
-					showperminfo);
+			prints("Éè¶¨ %s È¨Àû. ÌÖÂÛÇø: '%s'\n", "READ", bname);
+			perm = setperms(perm, "È¨ÏŞ", NUMPERMS, showperminfo);
 			clear();
-		} else {
-			newboard.level = 0;
 		}
-		//add  end
 	} else {
-		newboard.flag &= ~BOARD_DIR_FLAG;
-
-		if (askyn("±¾°æ³ÏÕ÷°æÖ÷Âğ(·ñÔòÓÉSYSOPs¹ÜÀí)?", YEA, NA) == NA) {
-			strcpy(newboard.BM, "SYSOPs");
-		} else {
-			newboard.BM[0] = '\0';
+		if (askyn("¸Ã°æµÄÈ«²¿ÎÄÕÂ¾ù²»¿ÉÒÔ»Ø¸´", NA, NA))
+			flag |= BOARD_NOREPLY_FLAG;
+		if (askyn("ÊÇ·ñÊÇ¾ãÀÖ²¿°æÃæ", NA, NA)) {
+			flag |= BOARD_CLUB_FLAG;
+			if (askyn("ÊÇ·ñ¶ÁÏŞÖÆ¾ãÀÖ²¿°æÃæ", NA, NA))
+				flag |= BOARD_READ_FLAG;
 		}
-
-		if (askyn("¸Ã°æµÄÈ«²¿ÎÄÕÂ¾ù²»¿ÉÒÔ»Ø¸´", NA, NA) == YEA) {
-			newboard.flag |= BOARD_NOREPLY_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_NOREPLY_FLAG;
-		}
-
-		if (askyn("ÊÇ·ñÊÇ¾ãÀÖ²¿°æÃæ", NA, NA) == YEA) {
-			newboard.flag |= BOARD_CLUB_FLAG;
-			if (askyn("ÊÇ·ñ¶ÁÏŞÖÆ¾ãÀÖ²¿°æÃæ", NA, NA) == YEA) {
-				newboard.flag |= BOARD_READ_FLAG;
-			} else {
-				newboard.flag &= ~BOARD_READ_FLAG;
-			}
-		} else {
-			newboard.flag &= ~BOARD_CLUB_FLAG;
-		}
-
-		if (askyn("ÊÇ·ñ²»¼ÆËãÎÄÕÂÊı", NA, NA) == YEA) {
-			newboard.flag |= BOARD_JUNK_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_JUNK_FLAG;
-		}
-
-		if (askyn("ÊÇ·ñ¼ÓÈëÄäÃû°æ", NA, NA) == YEA) {
-			newboard.flag |= BOARD_ANONY_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_ANONY_FLAG;
-		}
+		if (askyn("ÊÇ·ñ²»¼ÆËãÎÄÕÂÊı", NA, NA))
+			flag |= BOARD_JUNK_FLAG;
+		if (askyn("ÊÇ·ñÎªÄäÃû°æ", NA, NA))
+			flag |= BOARD_ANONY_FLAG;
 #ifdef ENABLE_PREFIX
-		if (askyn ("ÊÇ·ñÇ¿ÖÆÊ¹ÓÃÇ°×º", NA, NA) == YEA) {
-			newboard.flag |= BOARD_PREFIX_FLAG;
-		} else {
-			newboard.flag &= ~BOARD_PREFIX_FLAG;
-		}
+		if (askyn ("ÊÇ·ñÇ¿ÖÆÊ¹ÓÃÇ°×º", NA, NA))
+			flag |= BOARD_PREFIX_FLAG;
 #endif
-		if (askyn("ÊÇ·ñÏŞÖÆ´æÈ¡È¨Á¦", NA, NA) == YEA) {
-			getdata(14, 0, "ÏŞÖÆ Read/Post? [R]: ", ans, 2, DOECHO, YEA);
-			if (*ans == 'P' || *ans == 'p') {
-				newboard.flag |= BOARD_POST_FLAG;
-			} else {
-				newboard.flag &= ~BOARD_POST_FLAG;
-			}
+		if (askyn("ÊÇ·ñÏŞÖÆ´æÈ¡È¨Á¦", NA, NA)) {
+			char ans[2];
+			getdata(11, 0, "ÏŞÖÆ¶Á(R)/Ğ´(P)? [R]: ", ans, sizeof(ans),
+					DOECHO, YEA);
+			if (*ans == 'P' || *ans == 'p')
+				flag |= BOARD_POST_FLAG;
 			move(1, 0);
 			clrtobot();
 			move(2, 0);
-			prints("Éè¶¨ %s È¨Á¦. ÌÖÂÛÇø: '%s'\n", (newboard.flag
-					& BOARD_POST_FLAG ? "POST" : "READ"),
-					newboard.filename);
-			newboard.level = setperms(newboard.level, "È¨ÏŞ", NUMPERMS,
-					showperminfo);
+			prints("Éè¶¨ %s È¨Àû. ÌÖÂÛÇø: '%s'\n",
+					(flag & BOARD_POST_FLAG ? "Ğ´" : "¶Á"), bname);
+			perm = setperms(perm, "È¨ÏŞ", NUMPERMS, showperminfo);
 			clear();
-		} else {
-			newboard.level = 0;
 		}
 	}
-	if (askyn("ÊÇ·ñ ¿ÉÒÔ ZAPÌÖÂÛÇø£¿", (newboard.flag & BOARD_NOZAP_FLAG) ? NA
-			: YEA, YEA) == NA) {
-		newboard.flag |= BOARD_NOZAP_FLAG;
-	} else {
-		newboard.flag &= ~BOARD_NOZAP_FLAG;
+
+	db_res_t *res = db_query("INSERT INTO boards "
+			"(name, descr, parent, flag, perm, categ, sector) "
+			"VALUES (%s, %s, %d, %d, %d, %d, %d) RETURNING id",
+			bname, utf8_descr, parent.id, flag, perm, categ, sector);
+	if (!res) {
+		prints("\n½¨Á¢ĞÂ°æ³ö´í\n");
+		pressanykey();
+		clear();
+		return -1;
 	}
-	if ((bid = getblankbnum()) > 0) {
-		substitute_record(BOARDS, &newboard, sizeof (newboard), bid);
-		flush_bcache();
-	} else if (append_record(BOARDS, &newboard, sizeof (newboard)) == -1) {
+	int bid = db_get_integer(res, 0, 0);
+	db_clear(res);
+
+	char *bms = NULL;
+	if (!(flag & BOARD_DIR_FLAG)
+			&& !askyn("±¾°æ³ÏÕ÷°æÖ÷Âğ(·ñÔòÓÉSYSOPs¹ÜÀí)?", YEA, NA)) {
+		bms = "SYSOPs";
+		ordain_bm(bid, bms);
+	}
+
+	char vdir[HOMELEN];
+	snprintf(vdir, sizeof(vdir), "vote/%s", bname);
+	char bdir[HOMELEN];
+	snprintf(bdir, sizeof(bdir), "boards/%s", bname);
+	if (mkdir(bdir, 0755) != 0 || mkdir(vdir, 0755) != 0) {
+		prints("\nĞÂ½¨Ä¿Â¼³ö´í!\n");
 		pressreturn();
 		clear();
 		return -1;
 	}
 
-	if (!(newboard.flag & BOARD_DIR_FLAG)) {
-		group = chgrp();
-		if (group != NULL) {
-			if (newboard.BM[0] != '\0') {
-				sprintf(vbuf, "%-38.38s(BM: %s)", newboard.title + 8,
-						newboard.BM);
+	if (!(flag & BOARD_DIR_FLAG)) {
+		const char *group = chgrp();
+		if (group) {
+			char buf[STRLEN];
+			if (bms) {
+				snprintf(buf, sizeof(buf), "¡ğ %-35.35s(BM: %s)",
+						gbk_descr, bms);
 			} else {
-				sprintf(vbuf, "%-38.38s", newboard.title + 8);
+				snprintf(buf, sizeof(buf), "¡ğ %-35.35s", gbk_descr);
 			}
-			if (add_grp(group, cexplain, newboard.filename, vbuf) == -1) {
+			if (add_grp(group, cexplain, bname, buf) == -1) {
 				prints("\n³ÉÁ¢¾«»ªÇøÊ§°Ü....\n");
 			} else {
 				prints("ÒÑ¾­ÖÃÈë¾«»ªÇø...\n");
@@ -667,356 +714,321 @@ int m_newbrd() {
 		}
 	}
 
-	flush_bcache();
 	rebuild_brdshm(); //add by cometcaptor 2006-10-13
 	prints("\nĞÂÌÖÂÛÇø³ÉÁ¢\n");
 
-	char secu[STRLEN];
-	sprintf(secu, "³ÉÁ¢ĞÂ°æ£º%s", newboard.filename);
-	securityreport(secu, 0, 1);
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "³ÉÁ¢ĞÂ°æ£º%s", bname);
+	securityreport(buf, 0, 1);
 
 	pressreturn();
 	clear();
 	return 0;
 }
 
-//      ĞŞ¸ÄÌÖÂÛÇøÉè¶¨
-int m_editbrd() {
-	char bname[STRLEN], buf[STRLEN], oldtitle[STRLEN], vbuf[256], *group;
-	char type[10];
-	char oldpath[STRLEN], newpath[STRLEN], tmp_grp[30];
-	int pos, tmppos, a_mv;
-	struct boardheader fh, newfh, tmpfh;
+static void show_edit_board_menu(board_t *bp, board_t *pp)
+{
+	prints("1)ĞŞ¸ÄÃû³Æ:        %s\n", bp->name);
+	prints("2)ĞŞ¸ÄËµÃ÷:        %s\n", bp->descr);
+	prints("4)ĞŞ¸ÄËùÊôÄ¿Â¼:    %s(%d)\n", pp->name, pp->id);
+	if (bp->flag & BOARD_DIR_FLAG) {
+		prints("5)ĞŞ¸Ä¶ÁĞ´ÊôĞÔ:    %s\n",
+				(bp->perm == 0) ? "Ã»ÓĞÏŞÖÆ" : "r(ÏŞÖÆÔÄ¶Á)");
+	} else {
+		prints("5)ĞŞ¸Ä¶ÁĞ´ÊôĞÔ:    %s\n",
+				(bp->flag & BOARD_POST_FLAG) ? "p(ÏŞÖÆ·¢ÎÄ)"
+				: (bp->perm == 0) ? "Ã»ÓĞÏŞÖÆ" : "r(ÏŞÖÆÔÄ¶Á)");
+	}
 
-	a_mv = 0; // added by Danielfree 05.12.4
+	if (!(bp->flag & BOARD_DIR_FLAG)) {
+		prints("8)ÄäÃû°æÃæ:            %s\n",
+				(bp->flag & BOARD_ANONY_FLAG) ? "ÊÇ" : "·ñ");
+		prints("9)¿ÉÒÔ»Ø¸´:            %s\n",
+				(bp->flag & BOARD_NOREPLY_FLAG) ? "·ñ" : "ÊÇ");
+		prints("A)ÊÇ·ñ¼ÆËãÎÄÕÂÊı:      %s\n",
+				(bp->flag & BOARD_JUNK_FLAG) ? "·ñ" : "ÊÇ");
+		prints("B)¾ãÀÖ²¿ÊôĞÔ:          %s\n",
+				(bp->flag & BOARD_CLUB_FLAG) ?
+				(bp->flag & BOARD_READ_FLAG) ?
+				"\033[1;31mc\033[0m(¶ÁÏŞÖÆ)"
+				: "\033[1;33mc\033[0m(Ğ´ÏŞÖÆ)"
+				: "·Ç¾ãÀÖ²¿");
+#ifdef ENABLE_PREFIX
+		prints ("C)ÊÇ·ñÇ¿ÖÆÊ¹ÓÃÇ°×º:    %s\n",
+				(bp->flag & BOARD_PREFIX_FLAG) ? "ÊÇ" : "·ñ");
+#endif
+	}
+}
 
-	//added by roly 02.03.07
+static bool alter_board_name(board_t *bp)
+{
+	char bname[BOARD_NAME_LEN + 1];
+	getdata(t_lines - 2, 0, "ĞÂÌÖÂÛÇøÃû³Æ: ", bname, sizeof(bname),
+			DOECHO, YEA);
+	if (!*bname || streq(bp->name, bname) || !valid_brdname(bname))
+		return 0;
+
+	if (!askyn("È·¶¨ĞŞ¸Ä°æÃû?", NA, YEA))
+		return 0;
+
+	db_res_t *res = db_cmd("UPDATE boards SET name = %s WHERE id = %d",
+			bname, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_descr(board_t *bp)
+{
+	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
+	getdata(t_lines - 2, 0, "ĞÂÌÖÂÛÇøËµÃ÷: ", gbk_descr, sizeof(gbk_descr),
+			DOECHO, YEA);
+	if (!gbk_descr)
+		return 0;
+
+	convert_g2u(gbk_descr, utf8_descr);
+	db_res_t *res = db_cmd("UPDATE boards SET descr = %s WHERE id = %d",
+			utf8_descr, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_parent(board_t *bp)
+{
+	char bname[BOARD_NAME_LEN + 1];
+	board_complete(15, "ÊäÈëËùÊôÌÖÂÛÇøÃû: ", bname, sizeof(bname),
+			AC_LIST_DIR_ONLY);
+	board_t parent;
+	get_board(bname, &parent);
+
+	db_res_t *res = db_cmd("UPDATE boards SET parent = %d WHERE id = %d",
+			parent.id, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_perm(board_t *bp)
+{
+	char buf[STRLEN], ans[2];
+	int flag = bp->flag, perm = bp->perm;
+	if (bp->flag & BOARD_DIR_FLAG) {
+		snprintf(buf, sizeof(buf), "(N)²»ÏŞÖÆ (R)ÏŞÖÆÔÄ¶Á [%c]: ",
+				(bp->perm) ? 'R' : 'N');
+		getdata(15, 0, buf, ans, sizeof(ans), DOECHO, YEA);
+		if (ans[0] == 'N' || ans[0] == 'n') {
+			flag &= ~BOARD_POST_FLAG;
+			perm = 0;
+		} else {
+			if (ans[0] == 'R' || ans[0] == 'r')
+				flag &= ~BOARD_POST_FLAG;
+			clear();
+			move(2, 0);
+			prints("Éè¶¨ %s '%s' ÌÖÂÛÇøµÄÈ¨ÏŞ\n", "ÔÄ¶Á", bp->name);
+			perm = setperms(perm, "È¨ÏŞ", NUMPERMS, showperminfo);
+			clear();
+		}
+	} else {
+		snprintf(buf, sizeof(buf), "(N)²»ÏŞÖÆ (R)ÏŞÖÆÔÄ¶Á (P)ÏŞÖÆÕÅÌù ÎÄÕÂ [%c]: ",
+				(flag & BOARD_POST_FLAG) ? 'P' : (perm) ? 'R' : 'N');
+		getdata(15, 0, buf, ans, sizeof(ans), DOECHO, YEA);
+		if (ans[0] == 'N' || ans[0] == 'n') {
+			flag &= ~BOARD_POST_FLAG;
+			perm = 0;
+		} else {
+			if (ans[0] == 'R' || ans[0] == 'r')
+				flag &= ~BOARD_POST_FLAG;
+			else if (ans[0] == 'P' || ans[0] == 'p')
+				flag |= BOARD_POST_FLAG;
+			clear();
+			move(2, 0);
+			prints("Éè¶¨ %s '%s' ÌÖÂÛÇøµÄÈ¨ÏŞ\n",
+					(flag & BOARD_POST_FLAG) ? "ÕÅÌù" : "ÔÄ¶Á", bp->name);
+			perm = setperms(perm, "È¨ÏŞ", NUMPERMS, showperminfo);
+			clear();
+		}
+	}
+
+	db_res_t *res = db_cmd("UPDATE boards SET flag = %d, perm = %d "
+			"WHERE id = %d", flag, perm, bp->id);
+	db_clear(res);
+	return res;
+}
+
+static bool alter_board_flag(board_t *bp, const char *prompt, int flag)
+{
+	int f = bp->flag;
+	if (askyn(prompt, (bp->flag & flag) ? YEA : NA, YEA)) {
+		f |= flag;
+	} else {
+		f &= ~flag;
+	}
+
+	if (flag == BOARD_CLUB_FLAG && (f & BOARD_CLUB_FLAG)) {
+		if (askyn("ÊÇ·ñ¶ÁÏŞÖÆ¾ãÀÖ²¿?",
+					(bp->flag & BOARD_READ_FLAG) ? YEA : NA, NA)) {
+			f |= BOARD_READ_FLAG;
+		} else {
+			f &= ~BOARD_READ_FLAG;
+		}
+	}
+
+	db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
+			f, bp->id);
+	db_clear(res);
+	return res;
+}
+
+int tui_edit_board(const char *cmd)
+{
 	if (!(HAS_PERM(PERM_BLEVELS)))
 		return 0;
-	//add end
 
 	set_user_status(ST_ADMIN);
-	if (!check_systempasswd()) {
+	if (!check_systempasswd())
 		return 0;
-	}
-	clear();
-	stand_title("ĞŞ¸ÄÌÖÂÛÇø×ÊÑ¶");
-	if (!gettheboardname(2, "ÊäÈëÌÖÂÛÇøÃû³Æ: ", &pos, &fh, bname, 0))
-		return -1;
-	if (fh.flag & BOARD_DIR_FLAG)
-		sprintf(type, "Ä¿Â¼");
-	else
-		sprintf(type, "°æÃæ");
-	move(2, 0);
-	memcpy(&newfh, &fh, sizeof (newfh));
-	while (1) {
-		clear();
-		stand_title("ĞŞ¸ÄÌÖÂÛÇø×ÊÑ¶");
-		move(2, 0);
-		prints("1)ĞŞ¸Ä%sÃû³Æ:            %s\n", type, newfh.filename);
-		prints("2)ĞŞ¸Ä%sËµÃ÷:            %s\n", type, newfh.title);
-		prints("3)ĞŞ¸Ä%s¹ÜÀíÔ±:          %s\n", type, newfh.BM);
-		prints("4)ĞŞ¸Ä%sËùÊôÄ¿Â¼:        %s(%d)\n", type,
-				bcache[fh.group - 1].filename, newfh.group);
-		if (fh.flag & BOARD_DIR_FLAG) {
-			prints("5)ĞŞ¸Ä%s¶ÁĞ´ÊôĞÔ:        %s\n", type,
-					(newfh.level == 0) ? "Ã»ÓĞÏŞÖÆ" : "r(ÏŞÖÆÔÄ¶Á)");
-		} else {
-			prints("5)ĞŞ¸Ä%s¶ÁĞ´ÊôĞÔ:        %s\n", type, (newfh.flag
-					& BOARD_POST_FLAG) ? "p(ÏŞÖÆ·¢ÎÄ)"
-					: (newfh.level == 0) ? "Ã»ÓĞÏŞÖÆ" : "r(ÏŞÖÆÔÄ¶Á)");
-		}
-		//zap dir and board. Danielfree 06.2.22
-		prints("6)¿ÉÒÔZAP%s:             %s\n", type, (newfh.flag
-				& BOARD_NOZAP_FLAG) ? "¿É" : "·ñ");
-		if (!(newfh.flag & BOARD_DIR_FLAG)) {
-			prints("7)ÒÆ¶¯¾«»ªÇøÎ»ÖÃ\n");
-			//prints ("7)¿ÉÒÔZAP°æÃæ:             %s\n",
-			//    (newfh.flag & BOARD_POST_FLAG) ? "¿É" : "·ñ");
-			prints("8)ÄäÃû°æÃæ:                %s\n", (newfh.flag
-					& BOARD_ANONY_FLAG) ? "ÄäÃû" : "²»ÄäÃû");
-			prints("9)¿ÉÒÔ»Ø¸´:                %s\n", (newfh.flag
-					& BOARD_NOREPLY_FLAG) ? "²»¿É»Ø¸´" : "¿ÉÒÔ»Ø¸´");
-			prints("A)ÊÇ·ñ¼ÆËãÎÄÕÂÊı:          %s\n", (newfh.flag
-					& BOARD_JUNK_FLAG) ? "²»¼ÆËã" : "¼ÆËã");
-			prints(
-					"B)¾ãÀÖ²¿ÊôĞÔ:              %s\n",
-					(newfh.flag & BOARD_CLUB_FLAG) ? (newfh.flag
-							& BOARD_READ_FLAG) ? "\033[1;31mc\033[0m(¶ÁÏŞÖÆ¾ãÀÖ²¿)"
-							: "\033[1;33mc\033[0m(ÆÕÍ¨¾ãÀÖ²¿)"
-							: "²»ÊÇ¾ãÀÖ²¿");
-#ifdef ENABLE_PREFIX
-			prints ("C)ÊÇ·ñÇ¿ÖÆÊ¹ÓÃÇ°×º:        %s\n",
-					(newfh.flag & BOARD_PREFIX_FLAG) ? "±ØĞë" : "²»±Ø");
-#endif
-			getdata(14, 0, "¸ü¸ÄÄÄÏî×ÊÑ¶£¿[1-9,A,B][0]", genbuf, 2, DOECHO, YEA);
-		} else {
-			getdata(14, 0, "¸ü¸ÄÄÄÏî×ÊÑ¶£¿[1-6][0]", genbuf, 2, DOECHO, YEA);
-		}
-		if (genbuf[0] == '0' || genbuf[0] == 0)
-			break;
-		move(15, 0);
-		strcpy(oldtitle, fh.title);
-		switch (genbuf[0]) {
-			case '1':
-				while (1) {
-					sprintf(buf, "ĞÂÌÖÂÛÇøÃû³Æ[%s]: ", fh.filename);
-					getdata(15, 0, buf, genbuf, 18, DOECHO, YEA);
-					if (*genbuf != 0) {
-						struct boardheader dh;
-						if (search_record(BOARDS, &dh, sizeof (dh),
-								cmpbnames, genbuf)) {
-							move(16, 0);
-							prints("´íÎó! ´ËÌÖÂÛÇøÒÑ¾­´æÔÚ!!");
-							move(0, 0);
-							clrtoeol();
-							continue;
-						}
-						if (valid_brdname(genbuf)) {
-							strlcpy(newfh.filename, genbuf,
-									sizeof (newfh.filename));
-							strcpy(bname, genbuf);
-							break;
-						} else {
-							move(16, 0);
-							prints("²»ºÏ·¨µÄÌÖÂÛÇøÃû³Æ!");
-							move(0, 0);
-							clrtoeol();
-							continue;
-						}
-					} else {
-						break;
-					}
-				}
-				break;
-			case '2':
-				ansimore2("etc/boardref", NA, 11, 7);
-				snprintf(genbuf, sizeof(newfh.title), "%s", newfh.title);
-				while (1) {
-					getdata(22, 0, "ĞÂÌÖÂÛÇøËµÃ÷: ", genbuf, 60, DOECHO, YEA);
-					if (*genbuf != 0) {
-						strlcpy(newfh.title, genbuf, sizeof (newfh.title));
-					} else {
-						break;
-					}
-					if (strstr(newfh.title, "¡ñ") || strstr(newfh.title,
-							"¡Ñ")) {
-						newfh.flag |= BOARD_OUT_FLAG;
-						break;
-					} else if (strstr(newfh.title, "¡ğ")) {
-						newfh.flag &= ~BOARD_OUT_FLAG;
-						break;
-					} else {
-						prints("\n´íÎóµÄ¸ñÊ½, ÎŞ·¨ÅĞ¶ÏÊÇ·ñ×ªĞÅ!!");
-					}
-				}
-				break;
-			case '3':
-				if (fh.BM[0] != '\0' && strcmp(fh.BM, "SYSOPs")) {
-					if (askyn("ĞŞ¸ÄÌÖÂÛÇø¹ÜÀíÔ±¡£×¢Òâ£º½ö¹©³ö´íĞŞÕıÊ¹ÓÃ£¬°æÖ÷ÈÎÃâÇëÎğ¸Ä¶¯´Ë´¦£¡", NA, NA)
-							== YEA) {
-						getdata(16, 0, "ÌÖÂÛÇø¹ÜÀíÔ±: ", newfh.BM,
-								sizeof (newfh.BM), DOECHO, YEA);
-						if (newfh.BM[0] == '\0') {
-							strcpy(newfh.BM, fh.BM);
-						} else if (newfh.BM[0] == ' ') {
-							newfh.BM[0] = '\0';
-						}
-					}
-				} else {
-					if (askyn("±¾°æ³ÏÕ÷°æÖ÷Âğ(·ñ£¬ÔòÓÉSYSOPs¹ÜÀí)?", YEA, NA) == NA) {
-						strlcpy(newfh.BM, "SYSOPs", sizeof (newfh.BM));
-					} else {
-						strlcpy(newfh.BM, "\0", sizeof (newfh.BM));
-					}
-				}
-				break;
-			case '4':
-				if (gettheboardname(15, "ÊäÈëËùÊôÌÖÂÛÇøÃû: ", &tmppos, &tmpfh,
-						genbuf, 2))
-					newfh.group = tmppos;
-				else if (askyn("ËùÊôÌÖÂÛÇøÎª¸ùÄ¿Â¼Ã´£¿", NA, NA) == YEA)
-					newfh.group = 0;
-				break;
-			case '5':
-				if (fh.flag & BOARD_DIR_FLAG) { //modiy for dir. Danielfree 06.2.23
-					sprintf(buf, "(N)²»ÏŞÖÆ (R)ÏŞÖÆÔÄ¶Á [%c]: ",
-							(newfh.level) ? 'R' : 'N');
-					getdata(15, 0, buf, genbuf, 2, DOECHO, YEA);
-					if (genbuf[0] == 'N' || genbuf[0] == 'n') {
-						newfh.flag &= ~BOARD_POST_FLAG;
-						newfh.level = 0;
-					} else {
-						if (genbuf[0] == 'R' || genbuf[0] == 'r')
-							newfh.flag &= ~BOARD_POST_FLAG;
-						clear();
-						move(2, 0);
-						prints("Éè¶¨ %s '%s' ÌÖÂÛÇøµÄÈ¨ÏŞ\n", "ÔÄ¶Á", newfh.filename);
-						newfh.level = setperms(newfh.level, "È¨ÏŞ",
-								NUMPERMS, showperminfo);
-						clear();
-					}
-				} // if dir
-				else { //if board
-					sprintf(buf, "(N)²»ÏŞÖÆ (R)ÏŞÖÆÔÄ¶Á (P)ÏŞÖÆÕÅÌù ÎÄÕÂ [%c]: ",
-							(newfh.flag & BOARD_POST_FLAG) ? 'P' : (newfh.
-							level) ? 'R' : 'N');
-					getdata(15, 0, buf, genbuf, 2, DOECHO, YEA);
-					if (genbuf[0] == 'N' || genbuf[0] == 'n') {
-						newfh.flag &= ~BOARD_POST_FLAG;
-						newfh.level = 0;
-					} else {
-						if (genbuf[0] == 'R' || genbuf[0] == 'r')
-							newfh.flag &= ~BOARD_POST_FLAG;
-						else if (genbuf[0] == 'P' || genbuf[0] == 'p')
-							newfh.flag |= BOARD_POST_FLAG;
-						clear();
-						move(2, 0);
-						prints("Éè¶¨ %s '%s' ÌÖÂÛÇøµÄÈ¨ÏŞ\n", newfh.flag
-								& BOARD_POST_FLAG ? "ÕÅÌù" : "ÔÄ¶Á",
-								newfh.filename);
-						newfh.level = setperms(newfh.level, "È¨ÏŞ",
-								NUMPERMS, showperminfo);
-						clear();
-					}
-				}
-				break;
-				//both dir and board can zap. Danielfree 06.2.22
-			case '6':
-				if (askyn("ÊÇ·ñ ¿ÉÒÔ ZAPÌÖÂÛÇø£¿",
-						(fh.flag & BOARD_NOZAP_FLAG) ? NA : YEA, YEA)
-						== NA) {
-					newfh.flag |= BOARD_NOZAP_FLAG;
-				} else {
-					newfh.flag &= ~BOARD_NOZAP_FLAG;
-				}
-				break;
-				//modify end
-			default:
-				if (!(fh.flag & BOARD_DIR_FLAG)) {
-					switch (genbuf[0]) {
-						case '7':
-							a_mv = 2;
-							break; // move from out of default into default -.- Danielfree 05.12.4
-						case '8':
-							if (askyn("ÊÇ·ñÄäÃû°æ£¿", (fh.flag
-									& BOARD_ANONY_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_ANONY_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_ANONY_FLAG;
-							}
 
-							break;
-						case '9':
-							if (askyn("ÎÄÕÂÊÇ·ñ ¿ÉÒÔ »Ø¸´£¿", (fh.flag
-									& BOARD_NOREPLY_FLAG) ? NA : YEA, YEA)
-									== NA) {
-								newfh.flag |= BOARD_NOREPLY_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_NOREPLY_FLAG;
-							}
-							break;
-						case 'a':
-						case 'A':
-							if (askyn("ÊÇ·ñ ²»¼ÆËã ÎÄÕÂÊı£¿", (fh.flag
-									& BOARD_JUNK_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_JUNK_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_JUNK_FLAG;
-							}
-							break;
-						case 'b':
-						case 'B':
-							if (askyn("ÊÇ·ñ¾ãÀÖ²¿°æÃæ£¿", (fh.flag
-									& BOARD_CLUB_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_CLUB_FLAG;
-								if (askyn("ÊÇ·ñ¶ÁÏŞÖÆ¾ãÀÖ²¿£¿", (fh.flag
-										& BOARD_READ_FLAG) ? YEA : NA, NA)
-										== YEA) {
-									newfh.flag |= BOARD_READ_FLAG;
-								} else {
-									newfh.flag &= ~BOARD_READ_FLAG;
-								}
-							} else {
-								newfh.flag &= ~BOARD_CLUB_FLAG;
-								newfh.flag &= ~BOARD_READ_FLAG;
-							}
-							break;
+	clear();
+	stand_title("ĞŞ¸ÄÌÖÂÛÇøÉèÖÃ");
+
+	char bname[BOARD_NAME_LEN + 1];
+	board_complete(2, "ÊäÈëÌÖÂÛÇøÃû³Æ: ", bname, sizeof(bname),
+			AC_LIST_BOARDS_AND_DIR);
+	board_t board;
+	if (!*bname || !get_board(bname, &board))
+		return -1;
+	board_to_gbk(&board);
+
+	board_t parent = { .id = 0, .name = { '\0' } };
+	if (board.parent) {
+		get_board_by_bid(board.parent, &parent);
+		board_to_gbk(&parent);
+	}
+
+	clear();
+	stand_title("ĞŞ¸ÄÌÖÂÛÇøÉèÖÃ");
+	move(2, 0);
+
+	show_edit_board_menu(&board, &parent);
+
+	char ans[2];
+	getdata(14, 0, "¸ü¸ÄÄÄÏîÉèÖÃ[0]", ans, sizeof(ans), DOECHO, YEA);
+	if (!ans[0])
+		return 0;
+
+	int res = 0;
+	move(15, 0);
+	switch (ans[0]) {
+		case '1':
+			res = alter_board_name(&board);
+			break;
+		case '2':
+			res = alter_board_descr(&board);
+			break;
+		case '4':
+			res = alter_board_parent(&board);
+			break;
+		case '5':
+			res = alter_board_perm(&board);
+			break;
+		default:
+			break;
+	}
+
+	if (!(board.flag & BOARD_DIR_FLAG)) {
+		switch (ans[0]) {
+			case '7':
+				res = askyn("ÒÆ¶¯¾«»ªÇø", NA, YEA);
+				break;
+			case '8':
+				res = alter_board_flag(&board, "ÊÇ·ñÄäÃû?", BOARD_ANONY_FLAG);
+				break;
+			case '9':
+				res = alter_board_flag(&board, "½ûÖ¹»Ø¸´?", BOARD_NOREPLY_FLAG);
+				break;
+			case 'a':
+			case 'A':
+				res = alter_board_flag(&board, "²»¼ÆÎÄÕÂÊı?", BOARD_JUNK_FLAG);
+				break;
+			case 'b':
+			case 'B':
+				res = alter_board_flag(&board, "ÊÇ·ñ¾ãÀÖ²¿?", BOARD_CLUB_FLAG);
+				break;
 #ifdef ENABLE_PREFIX
-							case 'c':
-							case 'C':
-							if (askyn("ÊÇ·ñÇ¿ÖÆÊ¹ÓÃÇ°×º£¿", (fh.flag & BOARD_PREFIX_FLAG) ? YEA : NA, NA)
-									== YEA) {
-								newfh.flag |= BOARD_PREFIX_FLAG;
-							} else {
-								newfh.flag &= ~BOARD_PREFIX_FLAG;
-							}
+			case 'c':
+			case 'C':
+				res = alter_board_flag(&board, "Ç¿ÖÆÇ°×º?", BOARD_PREFIX_FLAG);
+				break;
 #endif
-					}//wswitch
-				}//if dir
-		}//switch
-	}//while
-	getdata(23, 0, "È·¶¨Òª¸ü¸ÄÂğ? (Y/N) [N]: ", genbuf, 4, DOECHO, YEA);
-	if (*genbuf == 'Y' || *genbuf == 'y') {
-		char secu[STRLEN];
-		sprintf(secu, "ĞŞ¸ÄÌÖÂÛÇø£º%s(%s)", fh.filename, newfh.filename);
-		securityreport(secu, 0, 1);
-		if (strcmp(fh.filename, newfh.filename)) {
-			char old[256], tar[256];
-			a_mv = 1;
-			setbpath(old, fh.filename);
-			setbpath(tar, newfh.filename);
+		}
+	}
+
+	if (res) {
+		board_t nb;
+		get_board_by_bid(board.id, &nb);
+		board_to_gbk(&board);
+
+		if (ans[0] == '1') {
+			char secu[STRLEN];
+			sprintf(secu, "ĞŞ¸ÄÌÖÂÛÇø£º%s(%s)", board.name, nb.name);
+			securityreport(secu, 0, 1);
+
+			char old[HOMELEN], tar[HOMELEN];
+			setbpath(old, board.name);
+			setbpath(tar, nb.name);
 			rename(old, tar);
-			sprintf(old, "vote/%s", fh.filename);
-			sprintf(tar, "vote/%s", newfh.filename);
+			sprintf(old, "vote/%s", board.name);
+			sprintf(tar, "vote/%s", nb.name);
 			rename(old, tar);
 		}
-		if (newfh.BM[0] != '\0')
-			sprintf(vbuf, "%-38.38s(BM: %s)", newfh.title + 8, newfh.BM);
-		else
-			sprintf(vbuf, "%-38.38s", newfh.title + 8);
-		get_grp(fh.filename);
-		edit_grp(fh.filename, lookgrp, oldtitle + 8, vbuf);
-		if (a_mv >= 1) {
-			group = chgrp();
-			get_grp(fh.filename);
+
+		char vbuf[STRLEN];
+		if (*nb.bms) {
+			snprintf(vbuf, sizeof(vbuf), "¡ğ %-35.35s(BM: %s)",
+					nb.descr, nb.bms);
+		} else {
+			snprintf(vbuf, sizeof(vbuf), "¡ğ %-35.35s", nb.descr);
+		}
+
+		char old_descr[STRLEN];
+		snprintf(old_descr, sizeof(old_descr), "¡ğ %s", board.descr);
+
+		if (ans[1] == '2') {
+			get_grp(board.name);
+			edit_grp(board.name, lookgrp, old_descr, vbuf);
+		}
+
+		if (ans[1] == '1' || ans[1] == '7') {
+			const char *group = chgrp();
+			get_grp(board.name);
+			char tmp_grp[STRLEN];
 			strcpy(tmp_grp, lookgrp);
-			if (strcmp(tmp_grp, group) || a_mv == 1) {
+			if (strcmp(tmp_grp, group)) {
 				char tmpbuf[160];
-				sprintf(tmpbuf, "%s:", fh.filename);
+				sprintf(tmpbuf, "%s:", board.name);
 				del_from_file("0Announce/.Search", tmpbuf);
 				if (group != NULL) {
-					if (newfh.BM[0] != '\0')
-						sprintf(vbuf, "%-38.38s(BM: %s)", newfh.title + 8,
-								newfh.BM);
-					else
-						sprintf(vbuf, "%-38.38s", newfh.title + 8);
-					if (add_grp(group, cexplain, newfh.filename, vbuf)
-							== -1)
+					if (add_grp(group, cexplain, nb.name, vbuf) == -1)
 						prints("\n³ÉÁ¢¾«»ªÇøÊ§°Ü....\n");
 					else
 						prints("ÒÑ¾­ÖÃÈë¾«»ªÇø...\n");
-					sprintf(newpath, "0Announce/groups/%s/%s", group,
-							newfh.filename);
-					sprintf(oldpath, "0Announce/groups/%s/%s", tmp_grp,
-							fh.filename);
+
+					char newpath[HOMELEN], oldpath[HOMELEN];
+					sprintf(newpath, "0Announce/groups/%s/%s",
+							group, nb.name);
+					sprintf(oldpath, "0Announce/groups/%s/%s",
+							tmp_grp, board.name);
 					if (strcmp(oldpath, newpath) != 0 && dashd(oldpath)) {
 						deltree(newpath);
 						rename(oldpath, newpath);
-						del_grp(tmp_grp, fh.filename, fh.title + 8);
-					} // add by Danielfree,suggest by fancitron 05.12.4
-				} // if group !=NULL
-			} // if strcmp
-		} // if a_mv >= 1
-		substitute_record(BOARDS, &newfh, sizeof (newfh), pos);
-		sprintf(genbuf, "¸ü¸ÄÌÖÂÛÇø %s µÄ×ÊÁÏ --> %s", fh.filename, newfh.filename);
-		report(genbuf, currentuser.userid);
-		// numboards = -1;/* force re-caching */
-		flush_bcache();
-	} // if askyn
+						del_grp(tmp_grp, board.name, old_descr);
+					}
+				}
+			}
+		}
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "¸ü¸ÄÌÖÂÛÇø %s µÄ×ÊÁÏ --> %s", board.name, nb.name);
+		report(buf, currentuser.userid);
+	}
+
 	clear();
 	return 0;
 
@@ -1254,34 +1266,6 @@ int m_register() {
 		}
 	}
 	switch (ans[0]) {
-		/*
-		 case '1':
-		 fname = "new_register";
-		 if ((fn = fopen(fname, "r")) == NULL) {
-		 prints("\n\nÄ¿Ç°²¢ÎŞĞÂ×¢²á×ÊÁÏ.");
-		 pressreturn();
-		 } else {
-		 y = 3, x = wid = 0;
-		 while (fgets(genbuf, STRLEN, fn) != NULL && x < 65) {
-		 if (strncmp(genbuf, "userid: ", 8) == 0) {
-		 move(y++, x);
-		 prints("%s",genbuf + 8);
-		 len = strlen(genbuf + 8);
-		 if (len > wid)
-		 wid = len;
-		 if (y >= t_lines - 2) {
-		 y = 3;
-		 x += wid + 2;
-		 }
-		 }
-		 }
-		 fclose(fn);
-		 if (askyn("Éè¶¨×ÊÁÏÂğ", NA, YEA) == YEA) {
-		 securityreport("Éè¶¨Ê¹ÓÃÕß×¢²á×ÊÁÏ");
-		 scan_register_form(fname);
-		 }
-		 }
-		 break; */
 		case '2':
 			move(1, 0);
 			usercomplete("ÇëÊäÈëÒª²éÑ¯µÄ´úºÅ: ", uident);
@@ -1313,100 +1297,6 @@ int m_register() {
 					&reg_comms[0], sizeof(reginfo_t));
 			break;
 	}
-	clear();
-	return 0;
-}
-
-//      É¾³ıÌÖÂÛÇø
-int d_board() {
-	struct boardheader binfo;
-	int bid, ans;
-	char bname[STRLEN];
-	extern char lookgrp[];
-	char genbuf_rm[STRLEN]; //added by roly 02.03.24
-
-	if (!HAS_PERM(PERM_BLEVELS)) {
-		return 0;
-	}
-	set_user_status(ST_ADMIN);
-	if (!check_systempasswd()) {
-		return 0;
-	}
-	clear();
-	stand_title("É¾³ıÌÖÂÛÇø");
-	make_blist(0); //Éú³ÉÌÖÂÛÇøÁĞ±í
-	move(1, 0);
-	namecomplete("ÇëÊäÈëÌÖÂÛÇø: ", bname);
-	if (bname[0] == '\0')
-		return 0;
-	bid = getbnum(bname, &currentuser);
-	if (get_record(BOARDS, &binfo, sizeof (binfo), bid) == -1) { //È¡µÃÌÖÂÛÇøµÄ¼ÇÂ¼
-		move(2, 0);
-		prints("²»ÕıÈ·µÄÌÖÂÛÇø\n");
-		pressreturn();
-		clear();
-		return 0;
-	}
-	if (binfo.BM[0] != '\0' && strcmp(binfo.BM, "SYSOPs")) { //»¹ÓĞ²»ÊÇ½ĞSYSOPsµÄ°æÖ÷
-		move(5, 0);
-		prints("¸Ã°æ»¹ÓĞ°æÖ÷£¬ÔÚÉ¾³ı±¾°æÇ°£¬ÇëÏÈÈ¡Ïû°æÖ÷µÄÈÎÃü¡£\n");
-		pressanykey();
-		clear();
-		return 0;
-	}
-	ans = askyn("ÄãÈ·¶¨ÒªÉ¾³ıÕâ¸öÌÖÂÛÇø", NA, NA);
-	if (ans != 1) {
-		move(2, 0);
-		prints("È¡ÏûÉ¾³ıĞĞ¶¯\n");
-		pressreturn();
-		clear();
-		return 0;
-	}
-	{
-		char secu[STRLEN];
-		sprintf(secu, "É¾³ıÌÖÂÛÇø£º%s", binfo.filename);
-		securityreport(secu, 0, 1);
-	}
-	if (seek_in_file("0Announce/.Search", bname)) {
-		move(4, 0);
-		if (askyn("ÒÆ³ı¾«»ªÇø", NA, NA) == YEA) {
-			get_grp(binfo.filename);
-			del_grp(lookgrp, binfo.filename, binfo.title + 8);
-		}
-	}
-	if (seek_in_file("etc/junkboards", bname))
-		del_from_file("etc/junkboards", bname);
-	if (seek_in_file("0Announce/.Search", bname)) {
-		char tmpbuf[160];
-		sprintf(tmpbuf, "%s:", bname);
-		del_from_file("0Announce/.Search", tmpbuf);
-	}
-	if (binfo.filename[0] == '\0') {
-		return -1; /* rrr - precaution */
-	}
-	sprintf(genbuf, "boards/%s", binfo.filename);
-	//f_rm(genbuf);
-	/* added by roly 02.03.24 */
-	sprintf(genbuf_rm, "/bin/rm -fr %s", genbuf); //added by roly 02.03.24
-	system(genbuf_rm); //Óëf_rm(genbuf)ÊÇ²»ÊÇÖØ¸´ÁË?
-	/* add end */
-	sprintf(genbuf, "vote/%s", binfo.filename);
-	//f_rm(genbuf);
-	/* added by roly 02.03.24 */
-	sprintf(genbuf_rm, "/bin/rm -fr %s", genbuf); //added by roly 02.03.24
-	system(genbuf_rm);
-	/* add end */
-	sprintf(genbuf, " << '%s' ±» %s É¾³ı >>", binfo.filename,
-			currentuser.userid);
-	memset(&binfo, 0, sizeof (binfo));
-	strlcpy(binfo.title, genbuf, STRLEN);
-	binfo.level = PERM_SYSOPS;
-	substitute_record(BOARDS, &binfo, sizeof (binfo), bid);
-
-	move(4, 0);
-	prints("\n±¾ÌÖÂÛÇøÒÑ¾­É¾³ı...\n");
-	pressreturn();
-	flush_bcache();
 	clear();
 	return 0;
 }

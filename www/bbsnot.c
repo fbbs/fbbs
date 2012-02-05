@@ -1,22 +1,26 @@
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/web.h"
 
 int bbsnot_main(void)
 {
-	struct boardheader *bp = getbcache(get_param("board"));
-	if (bp == NULL || !hasreadperm(&currentuser, bp))
+	board_t board;
+	if (!get_board(get_param("board"), &board)
+			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-	if (bp->flag & BOARD_DIR_FLAG)
+
+	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+
 	char fname[HOMELEN];
-	snprintf(fname, sizeof(fname), "vote/%s/notes", bp->filename);
+	snprintf(fname, sizeof(fname), "vote/%s/notes", board.name);
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(fname, &m) < 0)
 		return BBS_ENOFILE;
 	xml_header(NULL);
-	printf("<bbsnot brd='%s'>", bp->filename);
+	printf("<bbsnot brd='%s'>", board.name);
 	xml_fputs((char *)m.ptr, stdout);
 	mmap_close(&m);
 	print_session();

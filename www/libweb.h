@@ -128,7 +128,7 @@ void printable_filter(char *str);
 extern int xml_print_post(const char *file, int option);
 extern int xml_print_file(http_req_t *r, const char *file);
 
-extern int bbscon_search(const struct boardheader *bp, unsigned int fid,
+extern int bbscon_search(const char *board, unsigned int fid,
 		int action, struct fileheader *fp, bool extra);
 #endif  //FB_LIBWEB_H
 

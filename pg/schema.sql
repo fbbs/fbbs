@@ -18,17 +18,14 @@ CREATE TABLE users (
 	paid_posts INTEGER DEFAULT 0,
 	title TEXT
 );
-
 CREATE OR REPLACE VIEW alive_users AS
 	SELECT * FROM users WHERE alive = TRUE;
-
 CREATE UNIQUE INDEX ON users (lower(name)) WHERE alive = TRUE;
 
 CREATE TABLE prop_categs (
 	id SERIAL PRIMARY KEY,
 	name TEXT
 );
-
 CREATE TABLE prop_items (
 	id SERIAL PRIMARY KEY,
 	categ INTEGER REFERENCES prop_categs,
@@ -37,7 +34,6 @@ CREATE TABLE prop_items (
 	expire INTERVAL,
 	valid BOOLEAN DEFAULT TRUE
 );
-
 CREATE TABLE prop_records (
 	id SERIAL PRIMARY KEY,
 	user_id INTEGER REFERENCES users,
