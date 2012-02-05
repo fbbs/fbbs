@@ -1,4 +1,4 @@
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic")
 add_definitions(${FB_XOPEN_SOURCE_DEFINE} ${FB_PLATFORM_DEFINE} -DTERMIOS)
 
 add_library(fbbs_base SHARED cfg.c convert.c fileio.c hash.c mmap.c mmdecode.c
