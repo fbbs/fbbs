@@ -77,7 +77,7 @@ int get_board_by_bid(int bid, board_t *bp)
 {
 	bp->id = 0;
 	db_res_t *res = db_query(
-			BOARD_SELECT_QUERY_BASE "WHERE id = %d", bid);
+			BOARD_SELECT_QUERY_BASE "WHERE b.id = %d", bid);
 	if (res && db_res_rows(res) > 0)
 		res_to_board(res, 0, bp);
 	db_clear(res);

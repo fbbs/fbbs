@@ -129,7 +129,7 @@ static bool ordain_bm(int bid, const char *uname)
 	if (uid <= 0)
 		return false;
 
-	db_res_t *res = db_cmd("INSERT INTO bms b (user_id, board_id, stamp) "
+	db_res_t *res = db_cmd("INSERT INTO bms (user_id, board_id, stamp) "
 			"VALUES (%d, %d, current_timestamp) ", uid, bid);
 	db_clear(res);
 	return res;
@@ -159,6 +159,9 @@ int tui_ordain_bm(const char *cmd)
 	if (!*bname || !get_board(bname, &board))
 		return -1;
 	board_to_gbk(&board);
+
+	move(4, 0);
+	clrtobot();
 
 	const char *error = ordain_bm_check(&board, lookupuser.userid);
 	if (error) {
@@ -221,8 +224,10 @@ int tui_ordain_bm(const char *cmd)
 	char file[HOMELEN];
 	sethomefile(file, lookupuser.userid, ".bmfile");
 	FILE *fp = fopen(file, "a");
-	fprintf(fp, "%s\n", lookupuser.userid);
-	fclose(fp);
+	if (fp) {
+		fprintf(fp, "%s\n", lookupuser.userid);
+		fclose(fp);
+	}
 
 	/* Modified by Amigo 2002.07.01. Add reference to BM-Guide. */
 	//sprintf (genbuf, "\n\t\t\t【 通告 】\n\n"
@@ -540,6 +545,27 @@ const char *chgrp(void)
 	return groups[ch];
 }
 
+static int insert_categ(const char *categ)
+{
+	int id;
+	db_res_t *res = db_query("SELECT id FROM board_categs "
+			"WHERE name = %s", categ);
+	if (res && db_res_rows(res) == 1) {
+		id = db_get_integer(res, 0, 0);
+		db_clear(res);
+		return id;
+	}
+
+	res = db_query("INSERT INTO board_categs (name) "
+			"VALUES (%s) RETURNING id", categ);
+	if (res && db_res_rows(res) == 1) {
+		id = db_get_integer(res, 0, 0);
+		db_clear(res);
+		return id;
+	}
+	return 0;
+}
+
 int tui_new_board(const char *cmd)
 {
 	if (!(HAS_PERM(PERM_BLEVELS)))
@@ -581,6 +607,7 @@ int tui_new_board(const char *cmd)
 	GBK_UTF8_BUFFER(categ, BOARD_CATEG_CCHARS);
 	getdata(4, 0, "讨论区类别: ", gbk_categ, sizeof(gbk_categ), DOECHO, YEA);
 	convert_g2u(gbk_categ, utf8_categ);
+	int categ = insert_categ(utf8_categ);
 	
 	int sector = select_section();
 
@@ -591,6 +618,8 @@ int tui_new_board(const char *cmd)
 	get_board(pname, &parent);
 
 	int flag = 0, perm = 0;
+	move(7, 0);
+	clrtobot();
 	if (askyn("本版是目录吗?", NA, NA)) {
 		flag |= (BOARD_DIR_FLAG | BOARD_JUNK_FLAG
 				| BOARD_NOREPLY_FLAG | BOARD_POST_FLAG);
@@ -638,8 +667,8 @@ int tui_new_board(const char *cmd)
 
 	db_res_t *res = db_query("INSERT INTO boards "
 			"(name, descr, parent, flag, perm, categ, sector) "
-			"VALUES (%s, %s, %d, %d, %d, %d, %d, %d) RETURNING id",
-			bname, utf8_descr, parent.id, flag, perm, utf8_categ, sector);
+			"VALUES (%s, %s, %d, %d, %d, %d, %d) RETURNING id",
+			bname, utf8_descr, parent.id, flag, perm, categ, sector);
 	if (!res) {
 		prints("\n建立新版出错\n");
 		pressanykey();
@@ -671,7 +700,7 @@ int tui_new_board(const char *cmd)
 		const char *group = chgrp();
 		if (group) {
 			char buf[STRLEN];
-			if (*bms) {
+			if (bms) {
 				snprintf(buf, sizeof(buf), "○ %-35.35s(BM: %s)",
 						gbk_descr, bms);
 			} else {

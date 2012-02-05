@@ -599,8 +599,11 @@ static int show_board_info(board_t *board)
 		return DONOTHING;
 
 	board_t parent;
-	if (board->parent)
+	if (board->parent) {
 		get_board_by_bid(board->parent, &parent);
+		if (board->name[0] & 0x80)
+			board_to_gbk(&parent);
+	}
 
 	struct bstat *bs = getbstat(board->id);
 	clear();

@@ -49,6 +49,7 @@ BEGIN
 		(SELECT string_agg(u.name, ' ' ORDER BY b.stamp)
 			FROM bms b JOIN users u ON b.user_id = u.id WHERE b.board_id = _row.board_id)
 		WHERE id = _row.board_id;
+	RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS bms_trigger ON bms;
