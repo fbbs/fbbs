@@ -27,7 +27,6 @@ extern char buf2[STRLEN];
 int hisfriend_wall_logout();
 int digestmode;
 int local_article;
-struct userec currentuser;
 int usernum = 0;
 char currBM[BM_LEN - 1];
 int selboard = 0;

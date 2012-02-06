@@ -58,7 +58,7 @@ endif(ENABLE_SSH)
 if(ENABLE_WWW)
 	add_subdirectory(www)
 endif(ENABLE_WWW)
-add_subdirectory(util/local_utl EXCLUDE_FROM_ALL)
+add_subdirectory(util/local_utl)
 
 include(CheckIncludeFiles)
 check_include_files(crypt.h HAVE_CRYPT_H)

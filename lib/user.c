@@ -1,4 +1,7 @@
+#include "bbs.h"
 #include "fbbs/fbbs.h"
+
+struct userec currentuser;
 
 /**
  * Get user id by name.
