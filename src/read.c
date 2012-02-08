@@ -215,7 +215,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 				sprintf(buf, "没有任何%s (A)新增%s (Q)离开？[Q] ", desc, desc);
 				getdata(t_lines - 1, 0, buf, genbuf, 4, DOECHO, YEA);
 				if (genbuf[0] == 'a' || genbuf[0] == 'A')
-					(friendflag) ? friend_add() : reject_add();
+					reject_add();
 			}
 				break;
 			case ST_ADMIN:

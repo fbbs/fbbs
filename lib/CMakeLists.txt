@@ -6,7 +6,7 @@ add_library(fbbs_base SHARED cfg.c convert.c fileio.c hash.c mmap.c mmdecode.c
 
 add_library(fbbs SHARED board.c boardrc.c brdcache.c log.c mail.c
 		status.c pass.c post.c record.c shm.c helper.c sysconf.c ucache.c
-		uinfo.c register.c user.c session.c title.c)
+		uinfo.c register.c user.c session.c title.c friend.c)
 target_link_libraries(fbbs m crypt fbbs_base fbbs_pg)
 
 install(TARGETS fbbs_base fbbs LIBRARY DESTINATION lib)

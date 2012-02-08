@@ -31,12 +31,6 @@ extern int numf, friendmode;
 int talkidletime = 0;
 int ulistpage;
 int friendflag = 1;
-int friend_query();
-int friend_mail();
-int friend_dele();
-int friend_add();
-int friend_edit();
-int friend_help();
 int reject_dele();
 int reject_add();
 int reject_edit();
@@ -47,20 +41,6 @@ void do_log();
 int talkrec = -1;
 char partner[IDLEN + 1];
 #endif
-
-struct one_key friend_list[] = {
-		{ 'r', friend_query },
-		{ 'm', friend_mail },
-		{ 'M', friend_mail },
-		{ 'a', friend_add },
-		{ 'A', friend_add },
-		{ 'd', friend_dele },
-		{ 'D', friend_dele },
-		{ 'E', friend_edit },
-		{ 'h', friend_help },
-		{ 'H', friend_help },
-		{ '\0', NULL }
-};
 
 struct one_key reject_list[] = {
 		{ 'a', reject_add },
@@ -1799,94 +1779,6 @@ char *direct;
 }
 
 int
-friend_edit(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = YEA;
-	return override_edit(ent, fh, direct);
-}
-
-int
-friend_add(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = YEA;
-	return override_add(ent, fh, direct);
-}
-
-int
-friend_dele(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = YEA;
-	return override_dele(ent, fh, direct);
-}
-
-int
-friend_mail(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	/* Following line modified by Amigo 2002.06.08. To add mail right. */
-	/*	if (!HAS_PERM(PERM_POST))*/
-	if (!HAS_PERM(PERM_MAIL))
-	return DONOTHING;
-	m_send(fh->id);
-	return FULLUPDATE;
-}
-
-int
-friend_query(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	int ch;
-	if (t_query(fh->id) == -1)
-	return FULLUPDATE;
-	move(t_lines - 1, 0);
-	clrtoeol();
-	prints("[0;1;44;31m[¶ÁÈ¡ºÃÓÑËµÃ÷µµ][33m ¼ÄÐÅ¸øºÃÓÑ m ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»Î» ¡ü©¦ÏÂÒ»Î» <Space>,¡ý      [m");
-	ch = egetch();
-	switch (ch) {
-		case 'N':
-		case 'Q':
-		case 'n':
-		case 'q':
-		case KEY_LEFT:
-		break;
-		case 'm':
-		case 'M':
-		m_send(fh->id);
-		break;
-		case ' ':
-		case 'j':
-		case KEY_RIGHT:
-		case KEY_DOWN:
-		case KEY_PGDN:
-		return READ_NEXT;
-		case KEY_UP:
-		case KEY_PGUP:
-		return READ_PREV;
-		default:
-		break;
-	}
-	return FULLUPDATE;
-}
-
-int friend_help() {
-	show_help("help/friendshelp");
-	return FULLUPDATE;
-}
-
-int
 reject_edit(ent, fh, direct)
 int ent;
 struct override *fh;
@@ -1919,16 +1811,6 @@ char *direct;
 int reject_help() {
 	show_help("help/rejectshelp");
 	return FULLUPDATE;
-}
-
-void t_friend() {
-	char buf[STRLEN];
-	friendflag = YEA;
-	setuserfile(buf, "friends");
-	i_read(ST_GMENU, buf, override_title, override_doentry, friend_list,
-			sizeof(struct override));
-	clear();
-	return;
 }
 
 void t_reject() {
