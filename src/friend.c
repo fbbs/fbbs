@@ -2,6 +2,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
+#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/tui_list.h"
 
@@ -135,7 +136,7 @@ int tui_following_list(void)
 		.query = following_list_query
 	};
 
-	modify_user_mode(GMENU);
+	set_user_status(ST_GMENU);
 	tui_list(&t);
 
 	following_list_free(t.data);
