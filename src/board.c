@@ -394,7 +394,6 @@ static tui_list_loader_t board_list_load(tui_list_t *p)
 	}
 
 	p->all = l->favorite ? l->fcount : l->count;
-	p->eod = true;
 	return 0;
 }
 

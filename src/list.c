@@ -462,7 +462,6 @@ int tui_list(tui_list_t *p)
 	
 	while (!end) {
 		if (!p->in_query && !p->valid) {
-			p->eod = false;
 			if ((*p->loader)(p) < 0)
 				break;
 			p->valid = true;
@@ -470,14 +469,10 @@ int tui_list(tui_list_t *p)
 				p->update = PARTUPDATE;
 		}
 
-		if (!p->eod) {
-			(*p->loader)(p);
-		} else {
-			if (p->cur >= p->all)
-				p->cur = p->all - 1;
-			if (p->cur < 0)
-				p->cur = 0;
-		}
+		if (p->cur >= p->all)
+			p->cur = p->all - 1;
+		if (p->cur < 0)
+			p->cur = 0;
 
 		if (p->cur < p->start || p->cur >= p->start + BBS_PAGESIZE) {
 			p->start = (p->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
@@ -498,13 +493,6 @@ int tui_list(tui_list_t *p)
 			}
 			update_endline();
 			p->update = DONOTHING;
-		}
-
-		if (p->cur < p->start || p->cur >= p->start + BBS_PAGESIZE) {
-			p->start = (p->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
-			tui_list_display_loop(p);
-			update_endline();
-			continue;
 		}
 
 		if (!p->in_query) {
@@ -535,7 +523,7 @@ int tui_list(tui_list_t *p)
 			case Ctrl('B'):
 			case KEY_PGUP:
 				if (p->cur == 0)
-					p->cur = p->all - 1;
+			p->cur = p->all - 1;
 				else
 					p->cur -= BBS_PAGESIZE;
 				break;
@@ -544,7 +532,7 @@ int tui_list(tui_list_t *p)
 			case KEY_PGDN:
 			case ' ':
 				if (p->cur == p->all - 1)
-					p->cur = 0;
+			p->cur = 0;
 				else
 					p->cur += BBS_PAGESIZE;
 				break;
@@ -558,7 +546,7 @@ int tui_list(tui_list_t *p)
 			case 'j':
 			case KEY_DOWN:
 				++p->cur;
-				if (p->eod && p->cur >= p->all)
+				if (p->cur >= p->all)
 					p->cur = 0;
 				if (p->in_query && p->query)
 					(*p->query)(p);

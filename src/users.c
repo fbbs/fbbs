@@ -99,7 +99,6 @@ static void set_num_rows(tui_list_t *p)
 static tui_list_loader_t online_users_load(tui_list_t *p)
 {
 	online_users_t *up = p->data;
-	p->eod = true;
 
 	time_t now = time(NULL);
 	if (now < up->uptime + REFRESH_TIME)

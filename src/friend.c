@@ -11,7 +11,6 @@ static tui_list_loader_t following_list_loader(tui_list_t *p)
 	if (p->data)
 		following_list_free(p->data);
 	p->data = following_list_load(session.uid);
-	p->eod = true;
 	return (p->all = following_list_rows(p->data));
 }
 
