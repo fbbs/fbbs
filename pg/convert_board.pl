@@ -87,17 +87,15 @@ sub insert_boards
 		$categ = $categs{$categ};
 
 		$bqry->execute($name, $descr, $parent, $flag, $perm, $categ, $sector, $bms) or die $dbh->errstr;
-		for my $bm (uniq(split /\s+/, $bms)) {
-			if (exists $users->{$bm}) {
+
+		my %inserted = ();
+		for my $bm (split /\s+/, $bms) {
+			if (exists $users->{$bm} and not exists $inserted{$bm}) {
 				$bmqry->execute($users->{$bm}, $bid) or die $dbh->errstr;
+				$inserted{$bm} = 1;
 			}
 		}
 		++$bid;
 	}
 	$dbh->commit;
 }
-
-sub uniq {
-	return keys %{{ map { $_ => 1 } @_ }};
-}
-

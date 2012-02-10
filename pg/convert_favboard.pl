@@ -51,9 +51,15 @@ sub convert_favboard
 		}
 
 		my @boards = grep { $_->[3] >= 0} @$favs;
+		my %inserted = ();
 		for (@boards) {
-			next if not exists $hash{$_->[2] + 1};
-			$bqry->execute($uid, $hash{$_->[2] + 1}, $_->[1] ? $cdir{$_->[1]} : 1);
+			if (exists $hash{$_->[2] + 1}) {
+				my $bid = $hash{$_->[2] + 1};
+				if (not exists $inserted{$bid}) {
+					$bqry->execute($uid, $bid, $_->[1] ? $cdir{$_->[1]} : 1);
+					$inserted{$bid} = 1;
+				}
+			}
 		}
 		$dbh->commit;
 	}
