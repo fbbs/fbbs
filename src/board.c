@@ -67,7 +67,6 @@ static int save_zapbuf(const board_list_t *l)
 	return -1;
 }
 
-
 static ac_list *build_board_ac_list(int mode)
 {
 	ac_list *acl = ac_list_new();
@@ -309,7 +308,7 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 			convert_u2g(db_get_value(r2, i, 2), board->descr);
 			strlcpy(board->categ, "ÊÕ²Ø", sizeof(board->categ));
 
-			board->flag |= BOARD_CUSTOM_FLAG | BOARD_DIR_FLAG;
+			board->flag = BOARD_CUSTOM_FLAG | BOARD_DIR_FLAG;
 			((board_extra_t *)board)->folder = FAV_BOARD_ROOT_FOLDER;
 
 			++l->count;
@@ -371,6 +370,21 @@ static void index_boards(board_list_t *l)
 	qsort(l->indices, l->count, sizeof(*l->indices), l->cmp);
 }
 
+static void jump_to_first_unread(tui_list_t *p)
+{
+	board_list_t *l = p->data;
+	if (l->newflag) {
+		int i;
+		for (i = p->cur; i < p->all; ++i) {
+			board_t *bp = &(l->indices[i]->board);
+			if (!(bp->flag & BOARD_DIR_FLAG) && check_newpost(bp))
+				break;
+		}
+		if (i < p->all)
+			p->cur = i;
+	}
+}
+
 static tui_list_loader_t board_list_load(tui_list_t *p)
 {
 	board_list_t *l = p->data;
@@ -394,6 +408,7 @@ static tui_list_loader_t board_list_load(tui_list_t *p)
 	}
 
 	p->all = l->favorite ? l->fcount : l->count;
+	jump_to_first_unread(p);
 	p->eod = true;
 	return 0;
 }
@@ -474,7 +489,10 @@ static int unread_position(board_t *bp)
 		return 0;
 
 	int offset = offsetof(struct fileheader, filename);
-	int num, total = lseek(fd, 0, SEEK_END) / sizeof(fh);
+	int total = lseek(fd, 0, SEEK_END) / sizeof(fh), num = total - 1;
+
+	if (!brc_initial(currentuser.userid, bp->name))
+		return 0;
 
 	if (brc_unread1((brdshm->bstatus[bp->id]).lastpost)) {
 		char filename[STRLEN];
@@ -601,7 +619,7 @@ static int show_board_info(board_t *board)
 	board_t parent;
 	if (board->parent) {
 		get_board_by_bid(board->parent, &parent);
-		if (board->name[0] & 0x80)
+		if (parent.name[0] & 0x80)
 			board_to_gbk(&parent);
 	}
 
@@ -683,6 +701,8 @@ static int read_board(tui_list_t *p)
 		} else {
 			board_list_t nl;
 			board_list_init(&nl);
+			nl.recursive = true;
+			nl.favorite = false;
 			nl.parent = bp->id;
 			tui_board_list(&nl);
 			return PARTUPDATE;

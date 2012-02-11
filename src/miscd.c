@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/fbbs.h"
 
 //退出时执行的函数
 void do_exit() {
@@ -16,6 +17,7 @@ int main(int argc, char *argv[]) {
 		printf("usage: daemon | flushed | reload\n");
 		exit(0);
 	}
+
 	if ( !strcasecmp(argv[1], "daemon") ) { // miscd daemon
 		switch (fork()) { //后台程序:需要创建一个子进程,由子进程杀死父进程
 			case -1: //
@@ -28,6 +30,10 @@ int main(int argc, char *argv[]) {
 				exit(0); //父进程
 				break;
 		}
+
+		env.p = pool_create(DEFAULT_POOL_SIZE);
+		env.c = config_load(env.p, DEFAULT_CFG_FILE);
+		initialize_db();
 
 		if (load_ucache() != 0) { //将用户的数据映射到内存
 			printf("load ucache error\n");

@@ -974,12 +974,12 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	move(1, 0);
 	clrtoeol();
 	setbdir(direct, currboard);
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard > 0) {
-		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
+	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum].inboard > 0) {
+		brdshm->bstatus[uinfo.currbrdnum].inboard--;
 	}
 	uinfo.currbrdnum = board.id;
 	update_ulist(&uinfo, utmpent);
-	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
+	brdshm->bstatus[uinfo.currbrdnum].inboard++;
 
 	return NEWDIRECT;
 }
@@ -3057,12 +3057,12 @@ int board_read() {
 
 	brc_initial(currentuser.userid, currboard);
 	setbdir(buf, currboard);
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
-		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
+	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum].inboard> 0) {
+		brdshm->bstatus[uinfo.currbrdnum].inboard--;
 	}
 	uinfo.currbrdnum = board.id;
 	update_ulist(&uinfo, utmpent);
-	brdshm->bstatus[uinfo.currbrdnum - 1].inboard++;
+	brdshm->bstatus[uinfo.currbrdnum].inboard++;
 
 	setvfile(notename, currboard, "notes");
 	if (stat(notename, &st) != -1) {
@@ -3089,8 +3089,8 @@ int board_read() {
 			- usetime);
 	bm_log(currentuser.userid, currboard, BMLOG_INBOARD, 1);
 
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
-		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
+	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum].inboard> 0) {
+		brdshm->bstatus[uinfo.currbrdnum].inboard--;
 	}
 	uinfo.currbrdnum = 0;
 	update_ulist(&uinfo, utmpent);

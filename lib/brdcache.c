@@ -152,6 +152,6 @@ void bonlinesync(time_t now)
 	for (i = 0; i < USHM_SIZE; i++) {
 		uentp = &(utmpshm->uinfo[i]);
 		if (uentp->active && uentp->pid && uentp->currbrdnum)
-			brdshm->bstatus[uentp->currbrdnum - 1].inboard++;
+			brdshm->bstatus[uentp->currbrdnum].inboard++;
 	}
 }
