@@ -138,7 +138,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 				if (xbase + width > columns) {
 					acl->seek = *acl->col;
 					move(t_lines - 1, 0);
-					prints("\033[1;34m -- 还有 --\033[m");
+					prints("\033[1m -- 还有 --\033[m");
 					break;
 				} else {
 					acl->seek = NULL;

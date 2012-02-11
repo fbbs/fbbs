@@ -128,10 +128,16 @@ static int tui_favorite_add(tui_list_t *p)
 			return MINIUPDATE;
 		}
 
-		char name[BOARD_NAME_LEN + 1];
+		GBK_UTF8_BUFFER(name, BOARD_NAME_LEN / 2);
 		board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
-				name, sizeof(name), AC_LIST_BOARDS_AND_DIR);
-		if (fav_board_add(session.uid, name, 0,
+				gbk_name, sizeof(gbk_name), AC_LIST_BOARDS_AND_DIR);
+
+		if (gbk_name[0] & 0x80)
+			convert_g2u(gbk_name, utf8_name);
+		else
+			strlcpy(utf8_name, gbk_name, sizeof(utf8_name));
+
+		if (fav_board_add(session.uid, utf8_name, 0,
 					FAV_BOARD_ROOT_FOLDER, &currentuser))
 			p->valid = false;
 		return FULLUPDATE;
@@ -345,6 +351,7 @@ static void load_boards(board_list_t *l)
 		res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
 	}
 	res_to_board_array(l, res, NULL);
+	db_clear(res);
 }
 
 static void index_favorite_boards(board_list_t *l)
@@ -399,7 +406,7 @@ static tui_list_loader_t board_list_load(tui_list_t *p)
 		load_boards(l);
 
 	if (l->count) {
-		if (!l->recursive)
+		if (!l->recursive || !l->favorite)
 			l->indices = malloc(sizeof(*l->indices) * l->count);
 		if (l->favorite)
 			index_favorite_boards(l);
@@ -699,11 +706,15 @@ static int read_board(tui_list_t *p)
 			index_favorite_boards(l);
 			return PARTUPDATE;
 		} else {
-			board_list_t nl;
-			board_list_init(&nl);
-			nl.recursive = true;
-			nl.favorite = false;
-			nl.parent = bp->id;
+			board_list_t nl = {
+				.recursive = true,
+				.favorite = false,
+				.newflag = l->newflag,
+				.cmp = l->cmp,
+				.parent = bp->id,
+				.sector = 0,
+				.zapbuf = l->zapbuf,
+			};
 			tui_board_list(&nl);
 			return PARTUPDATE;
 		}
@@ -758,7 +769,7 @@ static int board_list_init(board_list_t *p)
 		return 0;
 
 	memset(p, 0, sizeof(*p));
-	
+
 	load_zapbuf(p);
 
 	if (!streq(currentuser.userid, "guest"))
@@ -910,7 +921,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 		case '\n':
 		case KEY_RIGHT:
 			read_board(p);
-//			cp->valid = false;
+			jump_to_first_unread(p);
 			st_changed = true;
 			break;
 		default:
@@ -938,9 +949,12 @@ static int tui_board_list(board_list_t *l)
 
 	tui_list(&t);
 
-	if (!l->recursive) {
+	if (!l->recursive || !l->favorite) {
 		free(l->boards);
 		free(l->indices);
+	}
+
+	if (!l->recursive) {
 		clear();
 		save_zapbuf(l);
 		free(l->zapbuf);

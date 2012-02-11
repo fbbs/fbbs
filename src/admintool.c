@@ -500,6 +500,7 @@ static int select_section(void)
 				"WHERE lower(name) = lower(%s)", buf);
 		if (res && db_res_rows(res) == 1)
 			id = db_get_integer(res, 0, 0);
+		db_clear(res);
 	}
 	return id;
 }

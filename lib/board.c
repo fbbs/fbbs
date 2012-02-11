@@ -224,7 +224,7 @@ bool fav_board_mv(user_id_t uid, int id, int parent)
 	if (parent < FAV_BOARD_ROOT_FOLDER)
 		parent = FAV_BOARD_ROOT_FOLDER;
 	db_res_t *res = db_cmd("UPDATE fav_boards SET folder = %d"
-			"WHERE user_id = %"PRIdUID" AND board = %d", parent, uid, id);
+			" WHERE user_id = %"PRIdUID" AND board = %d", parent, uid, id);
 	db_clear(res);
 	return res;
 }
