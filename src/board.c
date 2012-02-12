@@ -27,7 +27,7 @@ typedef struct {
 	bool yank;            ///< True if hide unsubscribed boards.
 	bool newflag;         ///< True if jump to unread board.
 	bool favorite;        ///< True if reading favorite boards.
-	bool recursive;       ///< True if called recursively.
+	bool skip_reload;     ///< True if reload can be skipped.
 	int copy_bid;         ///< Copy/paste buffer.
 } board_list_t;
 
@@ -326,18 +326,16 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 
 static void load_favorite_boards(board_list_t *l)
 {
-	if (!l->recursive) {
-		db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder "
-				"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
-				"WHERE f.user_id = %"PRIdUID, session.uid);
-		db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
-				"WHERE user_id = %"PRIdUID, session.uid);
+	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder "
+			"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
+			"WHERE f.user_id = %"PRIdUID, session.uid);
+	db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
+			"WHERE user_id = %"PRIdUID, session.uid);
 
-		res_to_board_array(l, r1, r2);
+	res_to_board_array(l, r1, r2);
 
-		db_clear(r1);
-		db_clear(r2);
-	}
+	db_clear(r1);
+	db_clear(r2);
 }
 
 static void load_boards(board_list_t *l)
@@ -397,18 +395,21 @@ static void jump_to_first_unread(tui_list_t *p)
 static tui_list_loader_t board_list_load(tui_list_t *p)
 {
 	board_list_t *l = p->data;
-	if (!l->recursive) {
+	bool skip = l->skip_reload && p->valid;
+	if (!skip) {
 		free(l->indices);
 		free(l->boards);
 	}
 
-	if (l->favorite)
-		load_favorite_boards(l);
-	else
+	if (l->favorite) {
+		if (!skip)
+			load_favorite_boards(l);
+	} else {
 		load_boards(l);
+	}
 
 	if (l->count) {
-		if (!l->recursive || !l->favorite)
+		if (!skip)
 			l->indices = malloc(sizeof(*l->indices) * l->count);
 		if (l->favorite)
 			index_favorite_boards(l);
@@ -699,23 +700,25 @@ static int read_board(tui_list_t *p)
 
 	if (bp->flag & BOARD_DIR_FLAG) {
 		if (bp->flag & BOARD_CUSTOM_FLAG) {
-			l->recursive = true;
+			l->skip_reload = true;
 			l->parent = bp->id;
 			tui_board_list(l);
 
-			l->recursive = false;
+			l->skip_reload = false;
 			l->parent = FAV_BOARD_ROOT_FOLDER;
 			index_favorite_boards(l);
 			return PARTUPDATE;
 		} else {
 			board_list_t nl = {
-				.recursive = true,
+				.skip_reload = false,
 				.favorite = false,
 				.newflag = l->newflag,
 				.cmp = l->cmp,
 				.parent = bp->id,
 				.sector = 0,
 				.zapbuf = l->zapbuf,
+				.boards = NULL,
+				.indices = NULL,
 			};
 			tui_board_list(&nl);
 			return PARTUPDATE;
@@ -767,12 +770,7 @@ static int sort_boards(tui_list_t *p)
 
 static int board_list_init(board_list_t *p)
 {
-	if (p->recursive)
-		return 0;
-
 	memset(p, 0, sizeof(*p));
-
-	load_zapbuf(p);
 
 	if (!streq(currentuser.userid, "guest"))
 		p->yank = true;
@@ -936,6 +934,10 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 
 static int tui_board_list(board_list_t *l)
 {
+	bool alloc_zapbuf = !l->zapbuf;
+	if (alloc_zapbuf)
+		load_zapbuf(l);
+
 	tui_list_t t = {
 		.data = l,
 		.loader = board_list_load,
@@ -948,31 +950,31 @@ static int tui_board_list(board_list_t *l)
 	set_user_status(l->newflag ? ST_READNEW : ST_READBRD);
 
 	tui_list(&t);
-
-	if (!l->recursive || !l->favorite) {
+	
+	if (!l->skip_reload) {
 		free(l->boards);
 		free(l->indices);
 	}
 
-	if (!l->recursive) {
-		clear();
+	if (alloc_zapbuf) {
 		save_zapbuf(l);
 		free(l->zapbuf);
 	}
 
+	clear();
 	return 0;
 }
 
 int tui_all_boards(const char *cmd)
 {
-	board_list_t l = { .recursive = 0 };
+	board_list_t l;
 	board_list_init(&l);
 	return tui_board_list(&l);
 }
 
 int tui_unread_boards(const char *cmd)
 {
-	board_list_t l = { .recursive = 0 };
+	board_list_t l;
 	board_list_init(&l);
 	l.newflag = true;
 	return tui_board_list(&l);
@@ -980,7 +982,7 @@ int tui_unread_boards(const char *cmd)
 
 int tui_read_sector(const char *cmd)
 {
-	board_list_t l = { .recursive = 0 };
+	board_list_t l;
 	board_list_init(&l);
 
 #ifdef FDQUAN
@@ -1003,7 +1005,7 @@ int tui_read_sector(const char *cmd)
 
 int tui_favorite_boards(const char *cmd)
 {
-	board_list_t l = { .recursive = 0 };
+	board_list_t l;
 	board_list_init(&l);
 
 	l.favorite = true;
