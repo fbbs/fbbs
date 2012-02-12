@@ -93,7 +93,7 @@ input.txt {
 #reg { width: 145px; }
 
 #main {
-	background: url('../images/banner/74-2011-newyear-soulfox.jpg') no-repeat;
+	background: url('/images/banner/74-2011-newyear-soulfox.jpg') no-repeat;
 	padding-top: 480px;
 	width: 640px;
 	float: left;

@@ -13,6 +13,7 @@
 typedef struct {
 	board_t board;
 	int folder;
+	int sector;
 } board_extra_t;
 
 typedef struct {
@@ -300,8 +301,9 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 		res_to_board(r1, i, board);
 		board_to_gbk(board);
 
-		if (l->favorite)
-			((board_extra_t *)board)->folder = db_get_integer(r1, i, 8);
+		board_extra_t *e = (board_extra_t *)board;
+		e->folder = l->favorite ? db_get_integer(r1, i, 8) : 0;
+		e->sector = l->favorite ? db_get_integer(r1, i, 9) : 0;
 
 		if (has_read_perm(&currentuser, board))
 			++l->count;
@@ -326,7 +328,7 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 
 static void load_favorite_boards(board_list_t *l)
 {
-	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder "
+	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder, b.sector "
 			"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
 			"WHERE f.user_id = %"PRIdUID, session.uid);
 	db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
@@ -613,12 +615,13 @@ static int board_cmp_online(const void *p1, const void *p2)
 
 static int board_cmp_default(const void *p1, const void *p2)
 {
-	board_t *b1 = *(board_t * const *)p1;
-	board_t *b2 = *(board_t * const *)p2;
-	int type = strcasecmp(b1->categ, b2->categ);
-	if (type == 0)
-		type = strcasecmp(b1->name, b2->name);
-	return type;
+	const board_extra_t *e1 = p1, *e2 = p2;
+	int diff = e1->sector - e2->sector;
+	if (!diff)
+		diff = strcasecmp(e1->board.categ, e2->board.categ);
+	if (!diff)
+		diff = strcasecmp(e1->board.name, e2->board.name);
+	return diff;
 }
 
 static int show_board_info(board_t *board)
