@@ -180,6 +180,8 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 			case '\n':
 			case '\r':
 				{
+					if (!*buf)
+						return;
 					const char *match = best_match(acl->head, buf);
 					if (match)
 						strlcpy(buf, match, size);
@@ -191,6 +193,7 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 				move(acl->ybase, acl->xbase);
 				outs(buf);
 				break;
+			case Ctrl('H'):
 			case KEY_BACKSPACE:
 				if (len) {
 					buf[--len] = '\0';
