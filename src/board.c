@@ -137,8 +137,10 @@ static int tui_favorite_add(tui_list_t *p)
 		else
 			strlcpy(utf8_name, gbk_name, sizeof(utf8_name));
 
-		if (fav_board_add(session.uid, utf8_name, 0,
-					FAV_BOARD_ROOT_FOLDER, &currentuser))
+		int parent = FAV_BOARD_ROOT_FOLDER;
+		if (l->favorite && l->parent)
+			parent = l->parent;
+		if (fav_board_add(session.uid, utf8_name, 0, parent, &currentuser))
 			p->valid = false;
 		return FULLUPDATE;
 	} else {
@@ -829,12 +831,10 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			return PARTUPDATE;
 		case 'L':
 			m_read();
-			p->valid = false;
 			st_changed = true;
 			break;
 		case 'M':
 			m_new();
-			p->valid = false;
 			st_changed = true;
 			break;
 		case 'u':
@@ -923,9 +923,9 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			read_board(p);
 			jump_to_first_unread(p);
 			st_changed = true;
-			break;
+			return FULLUPDATE;
 		default:
-			return DONOTHING;
+			break;
 	}
 
 	if (st_changed)
@@ -983,12 +983,21 @@ int tui_read_sector(const char *cmd)
 	board_list_t l = { .recursive = 0 };
 	board_list_init(&l);
 
+#ifdef FDQUAN
+	char s[] = "a";
+	s[0] = *cmd;
+	db_res_t *res = db_query("SELECT id FROM board_sectors"
+			" WHERE name = %s", s);
+	if (res && db_res_rows(res) > 0)
+		l.sector = db_get_integer(res, 0, 0);
+	db_clear(res);
+#else
 	char c = *cmd;
 	if (c > 'A')
 		l.sector = c - 'A' + 1;
 	else
 		l.sector = c - '0' + 1;
-
+#endif
 	return tui_board_list(&l);
 }
 
