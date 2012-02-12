@@ -438,7 +438,14 @@ void print_session(void)
 			printf("<b bid='%d'", bid);
 			if (mobile && !brc_board_unread(currentuser.userid, name, bid))
 				printf(" r='1'");
-			printf(">%s</b>", name);
+
+			if (*name & 0x80) {
+				GBK_BUFFER(name, BOARD_NAME_LEN / 2);
+				convert_u2g(name, gbk_name);
+				printf(">%s</b>", gbk_name);
+			} else {
+				printf(">%s</b>", name);
+			}
 		}
 	}
 	db_clear(res);
