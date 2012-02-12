@@ -984,6 +984,7 @@ int tui_read_sector(const char *cmd)
 {
 	board_list_t l;
 	board_list_init(&l);
+	l.newflag = true;
 
 #ifdef FDQUAN
 	char s[] = "a";
