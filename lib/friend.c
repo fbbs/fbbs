@@ -2,6 +2,7 @@
 #include "fbbs/friend.h"
 #include "fbbs/dbi.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 
 /**
  * Follow a person.
@@ -56,4 +57,46 @@ following_list_t *following_list_load(user_id_t uid)
 {
 	return (following_list_t *)db_exec_query(env.d, true,
 			FOLLOWING_LIST_LOAD_QUERY, uid);
+}
+
+black_list_t *black_list_load(user_id_t uid)
+{
+	return (black_list_t *)db_query(BLACK_LIST_LOAD_QUERY, uid);
+}
+
+bool black_list_add(user_id_t uid, const char *blocked, const char *notes)
+{
+	if (validate_utf8_input(notes, BLACK_LIST_NOTE_CCHARS) < 0)
+		return false;
+
+	user_id_t block_id = get_user_id(blocked);
+	if (block_id <= 0 || block_id == uid)
+		return false;
+	
+	db_res_t *res = db_cmd("INSERT INTO blacklists"
+			" (user_id, blocked, notes, stamp)"
+			" VALUES (%d, %d, %s, current_timestamp)", uid, block_id, notes);
+	db_clear(res);
+	return res;
+}
+
+bool black_list_rm(user_id_t uid, user_id_t blocked)
+{
+	db_res_t *res = db_cmd("DELETE FROM blacklists"
+			" WHERE user_id = %"PRIdUID" AND blocked = %"PRIdUID,
+			uid, blocked);
+	db_clear(res);
+	return res;
+}
+
+bool black_list_edit(user_id_t uid, user_id_t blocked, const char *notes)
+{
+	if (validate_utf8_input(notes, BLACK_LIST_NOTE_CCHARS) < 0)
+		return false;
+
+	db_res_t *res = db_cmd("UPDATE blacklists SET notes = %s"
+			" WHERE user_id = %"PRIdUID" AND blocked = %"PRIdUID,
+			notes, uid, blocked);
+	db_clear(res);
+	return res;
 }

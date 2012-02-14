@@ -1,3 +1,8 @@
+BEGIN;
+
+DROP TABLE IF EXISTS blacklists;
+DROP TABLE IF EXISTS follows;
+
 CREATE TABLE follows (
 	user_id INTEGER NOT NULL REFERENCES users,
 	follower INTEGER NOT NULL REFERENCES users,
@@ -5,6 +10,14 @@ CREATE TABLE follows (
 	notes TEXT,
 	is_friend BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (user_id, follower)
+);
+
+CREATE TABLE blacklists (
+	user_id INTEGER NOT NULL REFERENCES users,
+	blocked INTEGER NOT NULL REFERENCES users,
+	notes TEXT,
+	stamp TIMESTAMPTZ,
+	PRIMARY KEY (user_id, blocked)
 );
 
 CREATE OR REPLACE FUNCTION follow_before_trigger() RETURNS TRIGGER AS $$
@@ -56,3 +69,16 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS unfollow_trigger ON follows;
 CREATE TRIGGER unfollow_trigger AFTER DELETE ON follows
 	FOR EACH ROW EXECUTE PROCEDURE unfollow_trigger();
+
+CREATE OR REPLACE FUNCTION blacklist_after_trigger() RETURNS TRIGGER AS $$
+BEGIN
+	DELETE FROM follows WHERE (user_id = NEW.user_id AND follower = NEW.blocked)
+			OR (user_id = NEW.blocked AND follower = NEW.user_id);
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS blacklist_after_trigger ON blacklists;
+CREATE TRIGGER blacklist_after_trigger AFTER INSERT ON blacklists
+	FOR EACH ROW EXECUTE PROCEDURE blacklist_after_trigger();
+
+COMMIT;

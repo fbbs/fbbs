@@ -41,11 +41,12 @@ int m_internet();
 #endif
 
 int online_users_show_override(), t_list(), t_monitor();
-int t_query(), t_talk(), t_pager(), t_reject(), x_cloak();
+int t_query(), t_talk(), t_pager(), x_cloak();
 int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
 extern int tui_following_list(void);
+extern int tui_black_list(void);
 
 #ifndef WITHOUT_ADMIN_TOOLS
 int kick_user(), m_vote();
@@ -121,7 +122,7 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "SendMsg", s_msg },
 		{ "ShowMsg", msg_more },
 		{ "SetFriends", tui_following_list },
-		{ "SetRejects", t_reject },
+		{ "SetRejects", tui_black_list },
 		{ "RFriendWall", friend_wall },
 		{ "EnterChat", ent_chat },
 		{ "ListLogins", t_list },
