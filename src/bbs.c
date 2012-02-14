@@ -9,6 +9,7 @@
 #endif
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/status.h"
@@ -2035,12 +2036,7 @@ int post_article(char *postboard, char *mailid) {
 		if (header.chk_anony) {
 			prints("对不起，您不能在匿名版使用寄信给原作者功能。");
 		} else {
-			extern int cmpfnames();
-			struct override or;
-
-			sethomefile(buf, mailid, "rejects");
-			if (!search_record
-					(buf, &or, sizeof (or), cmpfnames, currentuser.userid)
+			if (!is_blocked(mailid)
 					&& !mail_file (filepath, mailid, postfile.title)) {
 				prints ("信件已成功地寄给原作者 %s", mailid);
 			}
