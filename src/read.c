@@ -173,7 +173,6 @@ void get_noticedirect(char *curr, char *notice) {
 #endif
 void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize) {
 	extern int talkrequest;
-	extern int friendflag;
 	struct keeploc * locmem;
 	char lbuf[11];
 	char * ptr;
@@ -204,19 +203,6 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 				prints("没有任何新信件...");
 				pressreturn();
 				clear();
-				break;
-			case ST_GMENU: {
-				char desc[5];
-				char buf[40];
-				if (friendflag)
-					strcpy(desc, "好友");
-				else
-					strcpy(desc, "坏人");
-				sprintf(buf, "没有任何%s (A)新增%s (Q)离开？[Q] ", desc, desc);
-				getdata(t_lines - 1, 0, buf, genbuf, 4, DOECHO, YEA);
-				if (genbuf[0] == 'a' || genbuf[0] == 'A')
-					reject_add();
-			}
 				break;
 			case ST_ADMIN:
 				prints("目前无注册单...");
