@@ -315,19 +315,19 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 		case 'D':
 			if (!strcmp(currentuser.userid, "guest"))
 				return DONOTHING;
-			snprintf(buf, sizeof(buf), "确定要把 %s 从好友名单删除吗",
+			snprintf(buf, sizeof(buf), "确定不再关注 %s 吗?",
 					uin->userid);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
-			if (deleteoverride(uin->userid, "friends") == -1) {
-				snprintf(buf, sizeof(buf), "%s 本就不在名单中", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return MINIUPDATE;
-			} else {
-				snprintf(buf, sizeof(buf), "%s 已从名单中删除", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return PARTUPDATE;
+			{
+				user_id_t uid = get_user_id(uin->userid);
+				if (uid > 0 && unfollow(session.uid, uid)) {
+					snprintf(buf, sizeof(buf), "已取消关注 %s", uin->userid);
+					presskeyfor(buf, t_lines - 1);
+					return PARTUPDATE;
+				}
 			}		
+			return MINIUPDATE;
 	}
 	if (p->in_query)
 		return DONOTHING;

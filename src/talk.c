@@ -1525,30 +1525,6 @@ int listfilecontent(char *fname, int y) {
 	return cnt;
 }
 
-int
-deleteoverride(uident, filename)
-char *uident;
-char *filename;
-{
-	int deleted;
-	struct override fh;
-	char buf[STRLEN];
-	int oldstate=in_mail;
-	setuserfile(buf, filename);
-	deleted = search_record(buf, &fh, sizeof(fh), cmpfnames, uident);
-	if (deleted> 0) {
-		in_mail=YEA;
-		if (delete_record(buf, sizeof(fh), deleted,NULL,NULL) != -1) {
-			(friendflag) ? getfriendstr() : getrejectstr();
-		} else {
-			deleted = -1;
-			report("delete override error", currentuser.userid);
-		}
-		in_mail=oldstate;
-	}
-	return (deleted> 0) ? 1 : -1;
-}
-
 struct user_info *t_search(char *sid, int pid) {
 	int i;
 	struct user_info *cur, *tmp = NULL;
@@ -1599,9 +1575,6 @@ int getfriendstr() {
 	get_records(genbuf, tmp, sizeof(struct override), 1, uinfo.fnum);
 	for (i = 0; i < uinfo.fnum; i++) {
 		uinfo.friend[i] = searchuser(tmp[i].id);
-		if (uinfo.friend[i] == 0)
-		deleteoverride(tmp[i].id, "friends");
-		/* Ë³±ãÉ¾³ýÒÑ²»´æÔÚÕÊºÅµÄºÃÓÑ */
 	}
 	free(tmp);
 	qsort(&uinfo.friend, uinfo.fnum, sizeof(uinfo.friend[0]), cmpfuid);
@@ -1622,8 +1595,6 @@ int getrejectstr() {
 	get_records(genbuf, tmp, sizeof(struct override), 1, nr);
 	for (i = 0; i < nr; i++) {
 		uinfo.reject[i] = searchuser(tmp[i].id);
-		if (uinfo.reject[i] == 0)
-			deleteoverride(tmp[i].id, "rejects");
 	}
 	free(tmp);
 	update_ulist(&uinfo, utmpent);
