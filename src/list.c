@@ -72,19 +72,6 @@ struct user_info *uentp;
 	return friend_search(uinfo.uid, uentp, uentp->fnum);
 }
 
-//	用户uentp.uid与用户uinfo.uid是否被对方设进了黑名单
-int isreject(struct user_info *uentp) {
-	int i;
-
-	if (uentp->uid != uinfo.uid) {
-		for (i = 0; i<MAXREJECTS&&(uentp->reject[i]||uinfo.reject[i]); i++) {
-			if (uentp->reject[i]==uinfo.uid||uentp->uid==uinfo.reject[i])
-				return YEA; /* 被设为黑名单 */
-		}
-	}
-	return NA;
-}
-
 void update_data() {
 	if (readplan == YEA)
 		return;
@@ -166,8 +153,7 @@ int fill_userlist() {
 	totalusernum = 0;
 	numf = 0;
 	for (i = 0; i < USHM_SIZE; i++) {
-		if ( !utmpshm->uinfo[i].active ||!utmpshm->uinfo[i].pid
-				||isreject(&utmpshm->uinfo[i]))
+		if ( !utmpshm->uinfo[i].active ||!utmpshm->uinfo[i].pid)
 			continue;
 		if (SHOWONEBRD && utmpshm->uinfo[i].currbrdnum!=uinfo.currbrdnum)
 			continue;

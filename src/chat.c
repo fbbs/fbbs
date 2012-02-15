@@ -588,7 +588,7 @@ int printuserent(struct user_info *uentp) {
 	if (!uentp->active || !uentp->pid)
 		return 0;
 	if ((uentp->invisible && !(HAS_PERM(PERM_SEECLOAK) || usernum
-			==uentp->uid)) || isreject(uentp))
+			==uentp->uid)))
 		return 0;
 
 	sprintf(pline, " %s%-13s[m%c%-10.10s",

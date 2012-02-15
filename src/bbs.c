@@ -3349,10 +3349,6 @@ int Goodbye() {
 		if (HAS_PERM (PERM_POST) && choose == 3)
 		notepad ();
 #endif
-		/* 
-		 if( choose == 4)
-		 friend_wall();
-		 *///commented by roly  02.03.21
 	}
 	return Q_Goodbye();
 

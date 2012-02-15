@@ -146,7 +146,7 @@ int listcuent(struct user_info *uentp) {
 	}
 	if (uentp->uid == usernum)
 		return 0;
-	if (!uentp->active || !uentp->pid || isreject(uentp))
+	if (!uentp->active || !uentp->pid)
 		return 0;
 	if (uentp->invisible && !(HAS_PERM(PERM_SEECLOAK)))
 		return 0;
@@ -239,7 +239,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 	for (i = 0; i < USHM_SIZE; i++) {
 		*uentp = utmpshm->uinfo[i];
 		if ((*fptr)(farg, uentp)) {
-			if (!uentp->active || !uentp->pid || isreject(uentp)) {
+			if (!uentp->active || !uentp->pid) {
 				continue;
 			}
 			if ( (uentp->invisible==0) ||(uentp->uid == usernum)
@@ -1623,7 +1623,7 @@ struct user_info *t_search(char *sid, int pid) {
 			continue;
 		if (!strcasecmp(cur->userid, sid)) {
 			if (pid == 0)
-				return isreject(cur) ? NULL : cur;
+				return cur;
 			tmp = cur;
 			if (pid == cur->pid)
 				break;
@@ -1635,7 +1635,7 @@ struct user_info *t_search(char *sid, int pid) {
 	 return NULL;  
 	 }
 	 */
-	return isreject(cur) ? NULL : tmp;
+	return tmp;
 }
 
 int

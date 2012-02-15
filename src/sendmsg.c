@@ -67,8 +67,6 @@ char msgchar(struct user_info *uin)
 {
 	if (uin->mode == ST_FIVE || uin->mode == ST_BBSNET || uin->mode == ST_LOCKSCREEN)
 		return '@';
-	if (isreject(uin))
-		return '*';
 	if ((uin->pager & ALLMSG_PAGER))
 		return ' ';
 	if (hisfriend(uin)) {
@@ -82,7 +80,7 @@ char msgchar(struct user_info *uin)
 
 int canmsg(const struct user_info *uin)
 {
-	if (isreject(uin))
+	if (is_blocked(uin->userid))
 		return NA;
 	if ((uin->pager & ALLMSG_PAGER) || HAS_PERM(PERM_OCHAT))
 		return YEA;
@@ -279,108 +277,25 @@ int dowall(const struct user_info *uin)
 	return 0;
 }
 
-int myfriend_wall(const struct user_info *uin)
-{
-	if ((uin->pid - uinfo.pid == 0) || !uin->active || !uin->pid || isreject(uin))
-		return -1;
-	if (myfriend(uin->uid)) {
-		move(1, 0);
-		clrtoeol();
-		prints("\033[1;32mÕıÔÚËÍÑ¶Ï¢¸ø %s...  \033[m", uin->userid);
-		refresh();
-		do_sendmsg(uin, buf2, 3, uin->pid);
-	}
-	return 0;
-}
-
 int hisfriend_wall_logout(const struct user_info *uin)
 {
 	if ((uin->pid - uinfo.pid == 0) || !uin->active || !uin->pid 
-			|| isreject(uin) || !(uin->pager & LOGOFFMSG_PAGER))
+			|| !(uin->pager & LOGOFFMSG_PAGER))
 		return -1;
-	if (hisfriend(uin)) {
+	if (hisfriend(uin) && !is_blocked(uin->userid)) {
 		refresh();
 		do_sendmsg(uin, buf2, 4, uin->pid);
 	}
 	return 0;
 }
 
-int hisfriend_wall(const struct user_info *uin)
-{
-	if ((uin->pid - uinfo.pid == 0) || !uin->active || !uin->pid || isreject(uin))
-		return -1;
-	if (hisfriend(uin)) {
-		refresh();
-		do_sendmsg(uin, buf2, 3, uin->pid);
-	}
-	return 0;
-}
-
-int friend_wall(void)
-{
-	char    buf[3];
-	char    msgbuf[MAX_MSG_SIZE + 256], filename[80];
-	time_t  now;
-	char   *timestr;
-	now = time(0);
-	timestr = ctime(&now) + 11;
-	*(timestr + 8) = '\0';
-
-	char wholebuf[MAX_MSG_SIZE+2];
-
-	set_user_status(ST_MSG);
-	move(2, 0);
-	clrtobot();
-	getdata(1, 0, "ËÍÑ¶Ï¢¸ø [1] ÎÒµÄºÃÅóÓÑ£¬[2] ÓëÎÒÎªÓÑÕß: ",
-			buf, 2, DOECHO, YEA);
-	switch (buf[0]) {
-		case '1':
-			if (!get_msg("ÎÒµÄºÃÅóÓÑ", buf2, 1))
-				return 0;
-			if (apply_ulist(myfriend_wall) == -1) {
-				move(2, 0);
-				prints("ÏßÉÏ¿ÕÎŞÒ»ÈË\n");
-				pressanykey();
-			} else {
-				sprintf(msgbuf, "\033[0;1;45;36mËÍÑ¶Ï¢¸øºÃÓÑ\033[33m(\033[36m%-24.24s\033[33m):\033[37m%-39.39s\033[31m(^Z»Ø)\033[m\033[%05dm\n", timestr," ",  uinfo.pid); 
-				sprintf(wholebuf, "%s\n", buf2);
-				strcat(msgbuf, wholebuf);
-				setuserfile(filename, "msgfile.me");
-				file_append(filename, msgbuf);
-			}
-			break;
-		case '2':
-			if (!get_msg("ÓëÎÒÎªÓÑÕß", buf2, 1))
-				return 0;
-			if (apply_ulist(hisfriend_wall) == -1) {
-				move(2, 0);
-				prints("ÏßÉÏ¿ÕÎŞÒ»ÈË\n");
-				pressanykey();
-			} else {
-				sprintf(msgbuf, "[0;1;45;36mËÍ¸øÓëÎÒÎªÓÑ[33m([36m%-24.24s[33m):[37m%-39.39s[31m(^Z»Ø)[m[%05dm\n", timestr," ",  uinfo.pid); 
-				sprintf(wholebuf, "%s\n", buf2);
-				strcat(msgbuf, wholebuf);
-				setuserfile(filename, "msgfile.me");
-				file_append(filename, msgbuf);
-
-			}
-			break;
-		default:
-			return 0;
-	}
-	move(7, 0);
-	prints("Ñ¶Ï¢´«ËÍÍê±Ï...");
-	pressanykey();
-	return 1;
-}
-
 int friend_login_wall(const struct user_info *pageinfo)
 {
 	char    msg[MAX_MSG_SIZE+2];
 	int     x, y;
-	if (!pageinfo->active || !pageinfo->pid || isreject(pageinfo))
+	if (!pageinfo->active || !pageinfo->pid)
 		return 0;
-	if (hisfriend(pageinfo)) {
+	if (hisfriend(pageinfo) && !is_blocked(pageinfo->userid)) {
 		if (getuser(pageinfo->userid) <= 0)
 			return 0;
 		if (!(lookupuser.userdefine & DEF_LOGINFROM))

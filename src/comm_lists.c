@@ -60,7 +60,6 @@ int setsystempasswd();
 #endif
 
 int wall();
-int friend_wall();
 static int exec_mbem(const char *s);
 
 extern int tui_props(void);
@@ -123,7 +122,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowMsg", msg_more },
 		{ "SetFriends", tui_following_list },
 		{ "SetRejects", tui_black_list },
-		{ "RFriendWall", friend_wall },
 		{ "EnterChat", ent_chat },
 		{ "ListLogins", t_list },
 		{ "Monitor", t_monitor },
