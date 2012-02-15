@@ -263,7 +263,6 @@ static tui_list_query_t online_users_query(tui_list_t *p)
 	return DONOTHING;
 }
 
-extern int friendflag;
 static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 {
 	char buf[STRLEN], tmp[EXT_IDLEN], *ptr;

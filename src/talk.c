@@ -30,7 +30,6 @@ extern int iscolor;
 extern int numf, friendmode;
 int talkidletime = 0;
 int ulistpage;
-int friendflag = 1;
 
 #ifdef TALK_LOG
 void do_log();
