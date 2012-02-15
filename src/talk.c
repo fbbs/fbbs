@@ -1582,25 +1582,6 @@ int getfriendstr() {
 	return 0;
 }
 
-int getrejectstr() {
-	int nr, i;
-	struct override *tmp;
-	memset(uinfo.reject, 0, sizeof(uinfo.reject));
-	setuserfile(genbuf, "rejects");
-	nr = get_num_records(genbuf, sizeof(struct override));
-	if (nr <= 0)
-		return 0;
-	nr = (nr >= MAXREJECTS) ? MAXREJECTS : nr;
-	tmp = (struct override *) calloc(sizeof(struct override), nr);
-	get_records(genbuf, tmp, sizeof(struct override), 1, nr);
-	for (i = 0; i < nr; i++) {
-		uinfo.reject[i] = searchuser(tmp[i].id);
-	}
-	free(tmp);
-	update_ulist(&uinfo, utmpent);
-	return 0;
-}
-
 #ifdef TALK_LOG
 /* edwardc.990106 分别为两位聊天的人作纪录 */
 /* -=> 自己说的话 */
