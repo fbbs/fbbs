@@ -1526,65 +1526,6 @@ int listfilecontent(char *fname, int y) {
 }
 
 int
-addtooverride(uident)
-char *uident;
-{
-	struct override tmp;
-	int n;
-	char buf[STRLEN];
-	char desc[5];
-	memset(&tmp, 0, sizeof(tmp));
-	if (friendflag) {
-		setuserfile(buf, "friends");
-		n = MAXFRIENDS;
-		strcpy(desc, "好友");
-	} else {
-		setuserfile(buf, "rejects");
-		n = MAXREJECTS;
-		strcpy(desc, "坏人");
-	}
-	if (get_num_records(buf, sizeof(struct override)) >= n) {
-		move(t_lines - 2, 0);
-		clrtoeol();
-		prints("抱歉，本站目前仅可以设定 %d 个%s, 请按任何件继续...", n, desc);
-		igetkey();
-		move(t_lines - 2, 0);
-		clrtoeol();
-		return -1;
-	} else {
-		if (friendflag) {
-			if (myfriend(searchuser(uident))) {
-				sprintf(buf, "%s 已在好友名单", uident);
-				show_message(buf);
-				return -1;
-			}
-		} else if (search_record(buf, &tmp, sizeof(tmp), cmpfnames, uident)> 0) {
-			sprintf(buf, "%s 已在坏人名单", uident);
-			show_message(buf);
-			return -1;
-		}
-	}
-	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_LAUSERS && uinfo.mode != ST_FRIEND)
-	n = 2;
-	else
-	n = t_lines - 2;
-
-	strcpy(tmp.id, uident);
-	move(n, 0);
-	clrtoeol();
-	refresh();
-	sprintf(genbuf, "请输入给%s【%s】的说明: ", desc, tmp.id);
-	getdata(n, 0, genbuf, tmp.exp, 40, DOECHO, YEA);
-
-	n = append_record(buf, &tmp, sizeof(struct override));
-	if (n != -1)
-	(friendflag) ? getfriendstr() : getrejectstr();
-	else
-	report("append override error", currentuser.userid);
-	return n;
-}
-
-int
 deleteoverride(uident, filename)
 char *uident;
 char *filename;

@@ -451,10 +451,6 @@ int ch, ssize;
 		case 'O':
 		if (!strcmp("guest", currentuser.userid))
 		break;
-		//move(23, 0);
-		//modified by iamfat 2003.11.20
-		//if (askyn("您想添加网友到好友名单吗", NA, NA) == NA)
-		//        return PARTUPDATE;
 		{
 			char *userid=
 			((struct fileheader*)&pnt[(locmem->crs_line - locmem->top_line) * ssize])->owner;
@@ -464,12 +460,10 @@ int ch, ssize;
 			sprintf(genbuf, "确定要把 %s 加入好友名单吗",userid);
 			if (askyn(genbuf, NA, NA) == NA)
 			return FULLUPDATE;
-			if (addtooverride(userid) == -1) {
-				sprintf(genbuf,"%s 已在朋友名单", userid);
-			} else {
-				sprintf(genbuf, "%s 列入朋友名单", userid);
+			if (follow(session.uid, userid, NULL)) {
+				sprintf(genbuf, "成功关注 %s", userid);
+				show_message(genbuf);
 			}
-			show_message(genbuf);
 		}
 		return FULLUPDATE;
 		case 'k':

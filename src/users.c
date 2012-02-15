@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "record.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
@@ -300,26 +301,15 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			return FULLUPDATE;
 		case 'o':
 		case 'O':
-		case 'r':
-		case 'R':
 			if (!strcmp(currentuser.userid, "guest"))
 				return DONOTHING;
-			if (ch == 'o' || ch == 'O') {
-				friendflag = true;
-				ptr = "好友";
-			} else {
-				friendflag = false;
-				ptr = "坏人";
-			}
-			snprintf(buf, sizeof(buf), "确定要把 %s 加入%s名单吗",
-					uin->userid, ptr);
+			snprintf(buf, sizeof(buf), "确定关注 %s 吗?", uin->userid);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
-			if (addtooverride(uin->userid) == -1)
-				snprintf(buf, sizeof(buf), "%s 已在%s名单", uin->userid, ptr);
-			else
-				snprintf(buf, sizeof(buf), "%s 列入%s名单", uin->userid, ptr);
-			presskeyfor(buf, t_lines - 1);
+			if (follow(session.uid, uin->userid, NULL)) {
+				snprintf(buf, sizeof(buf), "成功关注 %s", uin->userid);
+				presskeyfor(buf, t_lines - 1);
+			}
 			return MINIUPDATE;
 		case 'd':
 		case 'D':
