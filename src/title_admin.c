@@ -40,7 +40,6 @@ static tui_list_loader_t title_list_loader(tui_list_t *p)
 	}
 	db_res_t *res = db_exec_query(env.d, true, query);
 	l->list = res;
-	p->eod = true;
 	return (p->all = db_res_rows(res));
 }
 

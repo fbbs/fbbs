@@ -173,7 +173,6 @@ void get_noticedirect(char *curr, char *notice) {
 #endif
 void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize) {
 	extern int talkrequest;
-	extern int friendflag;
 	struct keeploc * locmem;
 	char lbuf[11];
 	char * ptr;
@@ -204,19 +203,6 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 				prints("没有任何新信件...");
 				pressreturn();
 				clear();
-				break;
-			case ST_GMENU: {
-				char desc[5];
-				char buf[40];
-				if (friendflag)
-					strcpy(desc, "好友");
-				else
-					strcpy(desc, "坏人");
-				sprintf(buf, "没有任何%s (A)新增%s (Q)离开？[Q] ", desc, desc);
-				getdata(t_lines - 1, 0, buf, genbuf, 4, DOECHO, YEA);
-				if (genbuf[0] == 'a' || genbuf[0] == 'A')
-					(friendflag) ? friend_add() : reject_add();
-			}
 				break;
 			case ST_ADMIN:
 				prints("目前无注册单...");
@@ -465,10 +451,6 @@ int ch, ssize;
 		case 'O':
 		if (!strcmp("guest", currentuser.userid))
 		break;
-		//move(23, 0);
-		//modified by iamfat 2003.11.20
-		//if (askyn("您想添加网友到好友名单吗", NA, NA) == NA)
-		//        return PARTUPDATE;
 		{
 			char *userid=
 			((struct fileheader*)&pnt[(locmem->crs_line - locmem->top_line) * ssize])->owner;
@@ -478,12 +460,10 @@ int ch, ssize;
 			sprintf(genbuf, "确定要把 %s 加入好友名单吗",userid);
 			if (askyn(genbuf, NA, NA) == NA)
 			return FULLUPDATE;
-			if (addtooverride(userid) == -1) {
-				sprintf(genbuf,"%s 已在朋友名单", userid);
-			} else {
-				sprintf(genbuf, "%s 列入朋友名单", userid);
+			if (follow(session.uid, userid, NULL)) {
+				sprintf(genbuf, "成功关注 %s", userid);
+				show_message(genbuf);
 			}
-			show_message(genbuf);
 		}
 		return FULLUPDATE;
 		case 'k':

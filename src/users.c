@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "record.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
@@ -99,7 +100,6 @@ static void set_num_rows(tui_list_t *p)
 static tui_list_loader_t online_users_load(tui_list_t *p)
 {
 	online_users_t *up = p->data;
-	p->eod = true;
 
 	time_t now = time(NULL);
 	if (now < up->uptime + REFRESH_TIME)
@@ -301,44 +301,33 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			return FULLUPDATE;
 		case 'o':
 		case 'O':
-		case 'r':
-		case 'R':
 			if (!strcmp(currentuser.userid, "guest"))
 				return DONOTHING;
-			if (ch == 'o' || ch == 'O') {
-				friendflag = true;
-				ptr = "好友";
-			} else {
-				friendflag = false;
-				ptr = "坏人";
-			}
-			snprintf(buf, sizeof(buf), "确定要把 %s 加入%s名单吗",
-					uin->userid, ptr);
+			snprintf(buf, sizeof(buf), "确定关注 %s 吗?", uin->userid);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
-			if (addtooverride(uin->userid) == -1)
-				snprintf(buf, sizeof(buf), "%s 已在%s名单", uin->userid, ptr);
-			else
-				snprintf(buf, sizeof(buf), "%s 列入%s名单", uin->userid, ptr);
-			presskeyfor(buf, t_lines - 1);
+			if (follow(session.uid, uin->userid, NULL)) {
+				snprintf(buf, sizeof(buf), "成功关注 %s", uin->userid);
+				presskeyfor(buf, t_lines - 1);
+			}
 			return MINIUPDATE;
 		case 'd':
 		case 'D':
 			if (!strcmp(currentuser.userid, "guest"))
 				return DONOTHING;
-			snprintf(buf, sizeof(buf), "确定要把 %s 从好友名单删除吗",
+			snprintf(buf, sizeof(buf), "确定不再关注 %s 吗?",
 					uin->userid);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
-			if (deleteoverride(uin->userid, "friends") == -1) {
-				snprintf(buf, sizeof(buf), "%s 本就不在名单中", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return MINIUPDATE;
-			} else {
-				snprintf(buf, sizeof(buf), "%s 已从名单中删除", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return PARTUPDATE;
+			{
+				user_id_t uid = get_user_id(uin->userid);
+				if (uid > 0 && unfollow(session.uid, uid)) {
+					snprintf(buf, sizeof(buf), "已取消关注 %s", uin->userid);
+					presskeyfor(buf, t_lines - 1);
+					return PARTUPDATE;
+				}
 			}		
+			return MINIUPDATE;
 	}
 	if (p->in_query)
 		return DONOTHING;

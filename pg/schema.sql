@@ -16,6 +16,9 @@ CREATE TABLE users (
 	money BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
 	paid_posts INTEGER DEFAULT 0,
+	followings INTEGER DEFAULT 0,
+	followers INTEGER DEFAULT 0,
+	friends	INTEGER DEFAULT 0,
 	title TEXT
 );
 CREATE OR REPLACE VIEW alive_users AS

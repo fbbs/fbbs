@@ -47,7 +47,6 @@ int orderWish = 0;
 extern int enabledbchar;
 int refscreen = NA;
 int friend_login_wall();
-struct user_info *t_search();
 void msg_handler(int signum);
 
 // Handle giveupBBS(½äÍø) transactions.
@@ -164,7 +163,6 @@ static void u_enter(void)
 	strlcpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
 	strlcpy(uinfo.username, currentuser.username, sizeof(uinfo.username));
 	getfriendstr();
-	getrejectstr();
 
 	// Try to get an entry in user cache.
 	int ucount = 0;

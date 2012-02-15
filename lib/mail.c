@@ -2,8 +2,10 @@
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/fileio.h"
+#include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 
 int getmailboxsize(unsigned int userlevel)
 {
@@ -93,18 +95,10 @@ int getmailnum(const char *userid)
 	return mail_count;
 }
 
-static int cmpfname(void *userid ,void *ov)
-{
-	const char *user = userid;
-	const struct override *uv = ov;
-	return !strcasecmp(user, uv->id);
-}
-
 int do_mail_file(const char *recv, const char *title, const char *header,
 		const char *text, int len, const char *source)
 {
 	struct fileheader fh;
-	struct override ov;
 	struct stat st;
 	char fname[HOMELEN], filepath[HOMELEN], *ip;
 	int fd, count;
@@ -114,9 +108,8 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	if (!getuser(recv))
 		return BBS_EINTNL;
 	user = lookupuser.userid;
-	sethomefile(filepath, user, "rejects");
-	if (search_record(filepath, &ov, sizeof(ov), cmpfname,
-			currentuser.userid))
+
+	if (is_blocked(recv))
 		return BBS_EBLKLST;
 	if (getmailboxsize(lookupuser.userlevel) * 2
 		< getmailsize(lookupuser.userid))

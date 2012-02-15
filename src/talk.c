@@ -31,47 +31,12 @@ extern int numf, friendmode;
 int talkidletime = 0;
 int ulistpage;
 int friendflag = 1;
-int friend_query();
-int friend_mail();
-int friend_dele();
-int friend_add();
-int friend_edit();
-int friend_help();
-int reject_dele();
-int reject_add();
-int reject_edit();
-int reject_help();
 
 #ifdef TALK_LOG
 void do_log();
 int talkrec = -1;
 char partner[IDLEN + 1];
 #endif
-
-struct one_key friend_list[] = {
-		{ 'r', friend_query },
-		{ 'm', friend_mail },
-		{ 'M', friend_mail },
-		{ 'a', friend_add },
-		{ 'A', friend_add },
-		{ 'd', friend_dele },
-		{ 'D', friend_dele },
-		{ 'E', friend_edit },
-		{ 'h', friend_help },
-		{ 'H', friend_help },
-		{ '\0', NULL }
-};
-
-struct one_key reject_list[] = {
-		{ 'a', reject_add },
-		{ 'A', reject_add },
-		{ 'd', reject_dele },
-		{ 'D', reject_dele },
-		{ 'E', reject_edit },
-		{ 'h', reject_help },
-		{ 'H', reject_help },
-		{ '\0', NULL }
-};
 
 struct talk_win {
 	int curcol, curln;
@@ -181,7 +146,7 @@ int listcuent(struct user_info *uentp) {
 	}
 	if (uentp->uid == usernum)
 		return 0;
-	if (!uentp->active || !uentp->pid || isreject(uentp))
+	if (!uentp->active || !uentp->pid)
 		return 0;
 	if (uentp->invisible && !(HAS_PERM(PERM_SEECLOAK)))
 		return 0;
@@ -274,7 +239,7 @@ int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, 
 	for (i = 0; i < USHM_SIZE; i++) {
 		*uentp = utmpshm->uinfo[i];
 		if ((*fptr)(farg, uentp)) {
-			if (!uentp->active || !uentp->pid || isreject(uentp)) {
+			if (!uentp->active || !uentp->pid) {
 				continue;
 			}
 			if ( (uentp->invisible==0) ||(uentp->uid == usernum)
@@ -492,22 +457,6 @@ int t_query(const char *user)
 	return FULLUPDATE;
 }
 
-int
-count_active(uentp)
-struct user_info *uentp;
-{
-	static int count;
-	if (uentp == NULL) {
-		int c = count;
-		count = 0;
-		return c;
-	}
-	if (!uentp->active || !uentp->pid)
-	return 0;
-	count++;
-	return 1;
-}
-
 // ¼ÆËãÊ¹ÓÃÍâ²¿³ÌÐòµÄÈËÊý
 int count_useshell(struct user_info *uentp) {
 	static int count;
@@ -522,23 +471,6 @@ int count_useshell(struct user_info *uentp) {
 		|| uentp->mode == ST_BBSNET || uentp->mode == ST_FIVE
 		|| uentp->mode == ST_LOGIN)
 		count++;
-	return 1;
-}
-
-int
-count_user_logins(uentp)
-struct user_info *uentp;
-{
-	static int count;
-	if (uentp == NULL) {
-		int c = count;
-		count = 0;
-		return c;
-	}
-	if (!uentp->active || !uentp->pid)
-	return 0;
-	if (!strcmp(uentp->userid, save_page_requestor))
-	count++;
 	return 1;
 }
 
@@ -1593,354 +1525,6 @@ int listfilecontent(char *fname, int y) {
 	return cnt;
 }
 
-int
-addtooverride(uident)
-char *uident;
-{
-	struct override tmp;
-	int n;
-	char buf[STRLEN];
-	char desc[5];
-	memset(&tmp, 0, sizeof(tmp));
-	if (friendflag) {
-		setuserfile(buf, "friends");
-		n = MAXFRIENDS;
-		strcpy(desc, "ºÃÓÑ");
-	} else {
-		setuserfile(buf, "rejects");
-		n = MAXREJECTS;
-		strcpy(desc, "»µÈË");
-	}
-	if (get_num_records(buf, sizeof(struct override)) >= n) {
-		move(t_lines - 2, 0);
-		clrtoeol();
-		prints("±§Ç¸£¬±¾Õ¾Ä¿Ç°½ö¿ÉÒÔÉè¶¨ %d ¸ö%s, Çë°´ÈÎºÎ¼þ¼ÌÐø...", n, desc);
-		igetkey();
-		move(t_lines - 2, 0);
-		clrtoeol();
-		return -1;
-	} else {
-		if (friendflag) {
-			if (myfriend(searchuser(uident))) {
-				sprintf(buf, "%s ÒÑÔÚºÃÓÑÃûµ¥", uident);
-				show_message(buf);
-				return -1;
-			}
-		} else if (search_record(buf, &tmp, sizeof(tmp), cmpfnames, uident)> 0) {
-			sprintf(buf, "%s ÒÑÔÚ»µÈËÃûµ¥", uident);
-			show_message(buf);
-			return -1;
-		}
-	}
-	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_LAUSERS && uinfo.mode != ST_FRIEND)
-	n = 2;
-	else
-	n = t_lines - 2;
-
-	strcpy(tmp.id, uident);
-	move(n, 0);
-	clrtoeol();
-	refresh();
-	sprintf(genbuf, "ÇëÊäÈë¸ø%s¡¾%s¡¿µÄËµÃ÷: ", desc, tmp.id);
-	getdata(n, 0, genbuf, tmp.exp, 40, DOECHO, YEA);
-
-	n = append_record(buf, &tmp, sizeof(struct override));
-	if (n != -1)
-	(friendflag) ? getfriendstr() : getrejectstr();
-	else
-	report("append override error", currentuser.userid);
-	return n;
-}
-
-int
-deleteoverride(uident, filename)
-char *uident;
-char *filename;
-{
-	int deleted;
-	struct override fh;
-	char buf[STRLEN];
-	int oldstate=in_mail;
-	setuserfile(buf, filename);
-	deleted = search_record(buf, &fh, sizeof(fh), cmpfnames, uident);
-	if (deleted> 0) {
-		in_mail=YEA;
-		if (delete_record(buf, sizeof(fh), deleted,NULL,NULL) != -1) {
-			(friendflag) ? getfriendstr() : getrejectstr();
-		} else {
-			deleted = -1;
-			report("delete override error", currentuser.userid);
-		}
-		in_mail=oldstate;
-	}
-	return (deleted> 0) ? 1 : -1;
-}
-
-void override_title(void)
-{
-	char desc[5];
-	if (chkmail())
-		strcpy(genbuf, "[ÄúÓÐÐÅ¼þ]");
-	else
-		strcpy(genbuf, BoardName);
-	if (friendflag) {
-		showtitle("[±à¼­ºÃÓÑÃûµ¥]", genbuf);
-		strcpy(desc, "ºÃÓÑ");
-	} else {
-		showtitle("[±à¼­»µÈËÃûµ¥]", genbuf);
-		strcpy(desc, "»µÈË");
-	}
-	prints(
-			" [[1;32m¡û[m,[1;32me[m] Àë¿ª [[1;32mh[m] ÇóÖú [[1;32m¡ú[m,[1;32mRtn[m] %sËµÃ÷µµ [[1;32m¡ü[m,[1;32m¡ý[m] Ñ¡Ôñ [[1;32ma[m] Ôö¼Ó%s [[1;32md[m] É¾³ý%s\n",
-			desc, desc, desc);
-	prints(
-			"[1;44m ±àºÅ  %s´úºÅ      %sËµÃ÷                                                   [m\n",
-			desc, desc);
-}
-
-char *
-override_doentry(ent, fh)
-int ent;
-struct override *fh;
-{
-	static char buf[STRLEN];
-	sprintf(buf, " %4d  %-12.12s  %s", ent, fh->id, fh->exp);
-	return buf;
-}
-
-int
-override_edit(ent, fh, direc)
-int ent;
-struct override *fh;
-char *direc;
-{
-	struct override nh;
-	char buf[STRLEN / 2];
-	int pos;
-	pos = search_record(direc, &nh, sizeof(nh), cmpfnames, fh->id);
-	move(t_lines - 2, 0);
-	clrtoeol();
-	if (pos> 0) {
-		sprintf(buf, "ÇëÊäÈë %s µÄÐÂ%sËµÃ÷: ", fh->id, (friendflag) ? "ºÃÓÑ" : "»µÈË");
-		getdata(t_lines - 2, 0, buf, nh.exp, 40, DOECHO, NA);
-	}
-	if (substitute_record(direc, &nh, sizeof(nh), pos) < 0)
-	report("Override files subs err", currentuser.userid);
-	move(t_lines - 2, 0);
-	clrtoeol();
-	return NEWDIRECT;
-}
-
-int
-override_add(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	char uident[13];
-	clear();
-	move(1, 0);
-	usercomplete("ÇëÊäÈëÒªÔö¼ÓµÄ´úºÅ: ", uident);
-	while (uident[0] != '\0') {
-		if (getuser(uident) <= 0) {
-			move(2, 0);
-			prints("´íÎóµÄÊ¹ÓÃÕß´úºÅ...");
-			pressanykey();
-			return FULLUPDATE;
-		} else
-		addtooverride(uident);
-		move(2,0);
-		prints("\n°Ñ %s ¼ÓÈë%sÃûµ¥ÖÐ...", uident, (friendflag) ? "ºÃÓÑ" : "»µÈË");
-		//		pressanykey();
-		move(1,0);
-		usercomplete("ÇëÊäÈëÒªÔö¼ÓµÄ´úºÅ: ", uident);
-	}
-	return FULLUPDATE;
-}
-
-int
-override_dele(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	char buf[STRLEN];
-	char desc[5];
-	char fname[10];
-	int deleted = NA;
-	if (friendflag) {
-		strcpy(desc, "ºÃÓÑ");
-		strcpy(fname, "friends");
-	} else {
-		strcpy(desc, "»µÈË");
-		strcpy(fname, "rejects");
-	}
-	saveline(t_lines - 2, 0);
-	move(t_lines - 2, 0);
-	sprintf(buf, "ÊÇ·ñ°Ñ¡¾%s¡¿´Ó%sÃûµ¥ÖÐÈ¥³ý", fh->id, desc);
-	if (askyn(buf, NA, NA) == YEA) {
-		move(t_lines - 2, 0);
-		clrtoeol();
-		if (deleteoverride(fh->id, fname) == 1) {
-			prints("ÒÑ´Ó%sÃûµ¥ÖÐÒÆ³ý¡¾%s¡¿,°´ÈÎºÎ¼ü¼ÌÐø...", desc, fh->id);
-			deleted = YEA;
-		} else
-		prints("ÕÒ²»µ½¡¾%s¡¿,°´ÈÎºÎ¼ü¼ÌÐø...", fh->id);
-	} else {
-		move(t_lines - 2, 0);
-		clrtoeol();
-		prints("È¡ÏûÉ¾³ý%s...", desc);
-	}
-	igetkey();
-	move(t_lines - 2, 0);
-	clrtoeol();
-	saveline(t_lines - 2, 1);
-	return (deleted) ? PARTUPDATE : DONOTHING;
-}
-
-int
-friend_edit(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = YEA;
-	return override_edit(ent, fh, direct);
-}
-
-int
-friend_add(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = YEA;
-	return override_add(ent, fh, direct);
-}
-
-int
-friend_dele(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = YEA;
-	return override_dele(ent, fh, direct);
-}
-
-int
-friend_mail(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	/* Following line modified by Amigo 2002.06.08. To add mail right. */
-	/*	if (!HAS_PERM(PERM_POST))*/
-	if (!HAS_PERM(PERM_MAIL))
-	return DONOTHING;
-	m_send(fh->id);
-	return FULLUPDATE;
-}
-
-int
-friend_query(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	int ch;
-	if (t_query(fh->id) == -1)
-	return FULLUPDATE;
-	move(t_lines - 1, 0);
-	clrtoeol();
-	prints("[0;1;44;31m[¶ÁÈ¡ºÃÓÑËµÃ÷µµ][33m ¼ÄÐÅ¸øºÃÓÑ m ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»Î» ¡ü©¦ÏÂÒ»Î» <Space>,¡ý      [m");
-	ch = egetch();
-	switch (ch) {
-		case 'N':
-		case 'Q':
-		case 'n':
-		case 'q':
-		case KEY_LEFT:
-		break;
-		case 'm':
-		case 'M':
-		m_send(fh->id);
-		break;
-		case ' ':
-		case 'j':
-		case KEY_RIGHT:
-		case KEY_DOWN:
-		case KEY_PGDN:
-		return READ_NEXT;
-		case KEY_UP:
-		case KEY_PGUP:
-		return READ_PREV;
-		default:
-		break;
-	}
-	return FULLUPDATE;
-}
-
-int friend_help() {
-	show_help("help/friendshelp");
-	return FULLUPDATE;
-}
-
-int
-reject_edit(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = NA;
-	return override_edit(ent, fh, direct);
-}
-
-int
-reject_add(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = NA;
-	return override_add(ent, fh, direct);
-}
-
-int
-reject_dele(ent, fh, direct)
-int ent;
-struct override *fh;
-char *direct;
-{
-	friendflag = NA;
-	return override_dele(ent, fh, direct);
-}
-
-int reject_help() {
-	show_help("help/rejectshelp");
-	return FULLUPDATE;
-}
-
-void t_friend() {
-	char buf[STRLEN];
-	friendflag = YEA;
-	setuserfile(buf, "friends");
-	i_read(ST_GMENU, buf, override_title, override_doentry, friend_list,
-			sizeof(struct override));
-	clear();
-	return;
-}
-
-void t_reject() {
-	char buf[STRLEN];
-	friendflag = NA;
-	setuserfile(buf, "rejects");
-	i_read(ST_GMENU, buf, override_title, override_doentry, reject_list,
-			sizeof(struct override));
-	clear();
-	return;
-}
-
 struct user_info *t_search(char *sid, int pid) {
 	int i;
 	struct user_info *cur, *tmp = NULL;
@@ -1956,7 +1540,7 @@ struct user_info *t_search(char *sid, int pid) {
 			continue;
 		if (!strcasecmp(cur->userid, sid)) {
 			if (pid == 0)
-				return isreject(cur) ? NULL : cur;
+				return cur;
 			tmp = cur;
 			if (pid == cur->pid)
 				break;
@@ -1968,7 +1552,7 @@ struct user_info *t_search(char *sid, int pid) {
 	 return NULL;  
 	 }
 	 */
-	return isreject(cur) ? NULL : tmp;
+	return tmp;
 }
 
 int
@@ -1991,33 +1575,9 @@ int getfriendstr() {
 	get_records(genbuf, tmp, sizeof(struct override), 1, uinfo.fnum);
 	for (i = 0; i < uinfo.fnum; i++) {
 		uinfo.friend[i] = searchuser(tmp[i].id);
-		if (uinfo.friend[i] == 0)
-		deleteoverride(tmp[i].id, "friends");
-		/* Ë³±ãÉ¾³ýÒÑ²»´æÔÚÕÊºÅµÄºÃÓÑ */
 	}
 	free(tmp);
 	qsort(&uinfo.friend, uinfo.fnum, sizeof(uinfo.friend[0]), cmpfuid);
-	update_ulist(&uinfo, utmpent);
-	return 0;
-}
-
-int getrejectstr() {
-	int nr, i;
-	struct override *tmp;
-	memset(uinfo.reject, 0, sizeof(uinfo.reject));
-	setuserfile(genbuf, "rejects");
-	nr = get_num_records(genbuf, sizeof(struct override));
-	if (nr <= 0)
-		return 0;
-	nr = (nr >= MAXREJECTS) ? MAXREJECTS : nr;
-	tmp = (struct override *) calloc(sizeof(struct override), nr);
-	get_records(genbuf, tmp, sizeof(struct override), 1, nr);
-	for (i = 0; i < nr; i++) {
-		uinfo.reject[i] = searchuser(tmp[i].id);
-		if (uinfo.reject[i] == 0)
-			deleteoverride(tmp[i].id, "rejects");
-	}
-	free(tmp);
 	update_ulist(&uinfo, utmpent);
 	return 0;
 }

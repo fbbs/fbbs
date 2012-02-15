@@ -13,7 +13,6 @@ static tui_list_loader_t tui_prop_loader(tui_list_t *p)
 	if (p->data)
 		prop_list_free(p->data);
 	p->data = prop_list_load();
-	p->eod = true;
 	return (p->all = prop_list_num_rows(p->data));
 }
 
@@ -101,7 +100,6 @@ static tui_list_loader_t tui_my_props_loader(tui_list_t *p)
 {
 	if (p->data)
 		my_props_free(p->data);
-	p->eod = true;
 	p->data = my_props_load(session.uid);
 	return (p->all = my_props_count(p->data));
 }

@@ -25,6 +25,7 @@
 
 extern struct postheader header;
 #include "bbs.h"
+#include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
@@ -262,7 +263,6 @@ char *userid, *title;
 
 	int lookupuserlevel; //added by roly 02.03.25
 	struct fileheader newmessage;
-	struct override fh;
 	struct stat st;
 	char filepath[STRLEN], fname[STRLEN], *ip;
 	char save_title2[STRLEN];
@@ -287,8 +287,8 @@ char *userid, *title;
 	if (!(lookupuser.userlevel & PERM_READMAIL))
 	return -3;
 
-	sethomefile(filepath, userid, "rejects");
-	if(search_record(filepath, &fh, sizeof(fh), cmpfnames, currentuser.userid))return -5;
+	if (is_blocked(userid))
+		return -5;
 	if(getmailboxsize(lookupuser.userlevel)*2<getmailsize(lookupuser.userid))
 	return -4;
 
@@ -1398,7 +1398,6 @@ int num;
 char current_maillist;
 {
 	struct stat st;
-	struct override or;
 	char filepath[STRLEN], tmpfile[STRLEN];
 	int cnt, result;
 	FILE *mp;
@@ -1462,9 +1461,8 @@ char current_maillist;
 				strcpy(uid, userid[cnt]);
 				break;
 		}
-		sethomefile(filepath, uid, "rejects");
-		if(search_record(filepath, &or, sizeof(or), cmpfnames, currentuser.userid))
-		continue;
+		if (is_blocked(uid))
+			continue;
 		sprintf(filepath, "mail/%c/%s", toupper(uid[0]), uid);
 		if (stat(filepath, &st) == -1) {
 			if (mkdir(filepath, 0755) == -1) {
@@ -1639,8 +1637,7 @@ int doforward(const char *direct, struct fileheader *fh, int mode)
 			prints("[%s] 信箱容量已满，无法收信。\n",address);
 			return BBS_ERMQE;
 		}
-		sethomefile(fname, lookupuser.userid, "rejects");
-		if(search_record(fname, &fh, sizeof(fh), cmpfnames, currentuser.userid))
+		if (is_blocked(lookupuser.userid));
 			return BBS_EBLKLST;
 
 		/* added by roly 03.03.10*/
