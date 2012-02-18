@@ -100,7 +100,6 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 		base = l1->name;
 		extra = strlen(base) - strlen(buf);
 
-
 		if (!acl->col) {
 			acl->col = pool_alloc(acl->pool, sizeof(*acl->col) * rows);
 		}
@@ -133,25 +132,25 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 					}
 				}
 			}
+		}
 
-			if (count == rows - 1 || !l->next) {
-				if (xbase + width > columns) {
-					acl->seek = *acl->col;
-					move(t_lines - 1, 0);
-					prints("\033[1m -- 还有 --\033[m");
-					break;
-				} else {
-					acl->seek = NULL;
-					for (int i = 0; i < count; ++i) {
-						move(acl->ybase + i + 2, xbase);
-						outs(acl->col[i]->name);
-					}
-					move(t_lines - 1, 0);
-					clrtoeol();
-					xbase += width + 1;
-					width = 0;
-					count = 0;
+		if (count == rows - 1 || !l->next) {
+			if (xbase + width > columns) {
+				acl->seek = *acl->col;
+				move(t_lines - 1, 0);
+				prints("\033[1m -- 还有 --\033[m");
+				break;
+			} else {
+				acl->seek = NULL;
+				for (int i = 0; i < count; ++i) {
+					move(acl->ybase + i + 2, xbase);
+					outs(acl->col[i]->name);
 				}
+				move(t_lines - 1, 0);
+				clrtoeol();
+				xbase += width + 1;
+				width = 0;
+				count = 0;
 			}
 		}
 	}
