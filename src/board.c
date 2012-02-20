@@ -20,8 +20,8 @@ typedef struct {
 	board_extra_t *boards;      ///< Array of boards.
 	board_extra_t **indices;
 	comparator_t cmp;     ///< Compare function pointer.
-	int count;            ///< Number of boards loaded.
-	int fcount;           ///< Number of favorite boards indexed.
+	int count;            ///< Number of boards indexed.
+	int bcount;           ///< Number of boards loaded.
 	int sector;
 	int parent;
 	int *zapbuf;          ///< Subscribing record.
@@ -124,7 +124,7 @@ static int tui_favorite_add(tui_list_t *p)
 	board_list_t *l = p->data;
 
 	if (l->favorite) {
-		if (l->fcount >= FAV_BOARD_LIMIT) {
+		if (l->count >= FAV_BOARD_LIMIT) {
 			presskeyfor("收藏夹已满", t_lines - 1);
 			return MINIUPDATE;
 		}
@@ -194,7 +194,7 @@ static int tui_favorite_mkdir(tui_list_t *p)
 	if (!HAS_PERM(PERM_LOGIN) || !l->favorite || l->parent)
 		return DONOTHING;
 
-	if (l->fcount >= FAV_BOARD_LIMIT) {
+	if (l->count >= FAV_BOARD_LIMIT) {
 		presskeyfor("收藏夹已满", t_lines - 1);
 		return MINIUPDATE;
 	}
@@ -294,10 +294,10 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 	int rows = db_res_rows(r1) + db_res_rows(r2);
 	l->boards = malloc(sizeof(*l->boards) * rows);
 
-	l->count = 0;
+	l->bcount = 0;
 
 	for (int i = 0; i < db_res_rows(r1); ++i) {
-		board_t *board = &(l->boards + l->count)->board;
+		board_t *board = &(l->boards + l->bcount)->board;
 		res_to_board(r1, i, board);
 		board_to_gbk(board);
 
@@ -306,12 +306,12 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 		e->sector = l->favorite ? db_get_integer(r1, i, 9) : 0;
 
 		if (has_read_perm(&currentuser, board))
-			++l->count;
+			++l->bcount;
 	}
 
 	if (r2) {
 		for (int i = 0; i < db_res_rows(r2); ++i) {
-			board_t *board = &(l->boards + l->count)->board;
+			board_t *board = &(l->boards + l->bcount)->board;
 
 			board->id = db_get_integer(r2, i, 0);
 			convert_u2g(db_get_value(r2, i, 1), board->name);
@@ -321,7 +321,7 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 			board->flag = BOARD_CUSTOM_FLAG | BOARD_DIR_FLAG;
 			((board_extra_t *)board)->folder = FAV_BOARD_ROOT_FOLDER;
 
-			++l->count;
+			++l->bcount;
 		}
 	}
 }
@@ -361,20 +361,22 @@ static void index_favorite_boards(board_list_t *l)
 	if (!l->parent)
 		l->parent = 1;
 
-	l->fcount = 0;
+	l->count = 0;
 
-	for (int i = 0; i < l->count; ++i) {
+	for (int i = 0; i < l->bcount; ++i) {
 		board_extra_t *p = l->boards + i;
 		if (p->folder == l->parent)
-			l->indices[l->fcount++] = p;
+			l->indices[l->count++] = p;
 	}
-	qsort(l->indices, l->fcount, sizeof(*l->indices), l->cmp);
+	qsort(l->indices, l->count, sizeof(*l->indices), l->cmp);
 }
 
 static void index_boards(board_list_t *l)
 {
-	for (int i = 0; i < l->count; ++i) {
-		l->indices[i] = l->boards + i;
+	l->count = 0;
+	for (int i = 0; i < l->bcount; ++i) {
+		if (!l->yank || l->zapbuf[l->boards[i].board.id])
+		l->indices[l->count++] = l->boards + i;
 	}
 	qsort(l->indices, l->count, sizeof(*l->indices), l->cmp);
 }
@@ -410,16 +412,16 @@ static tui_list_loader_t board_list_load(tui_list_t *p)
 		load_boards(l);
 	}
 
-	if (l->count) {
+	if (l->bcount) {
 		if (!skip)
-			l->indices = malloc(sizeof(*l->indices) * l->count);
+			l->indices = malloc(sizeof(*l->indices) * l->bcount);
 		if (l->favorite)
 			index_favorite_boards(l);
 		else
 			index_boards(l);
 	}
 
-	p->all = l->favorite ? l->fcount : l->count;
+	p->all = l->count;
 	jump_to_first_unread(p);
 	return 0;
 }
@@ -721,6 +723,7 @@ static int read_board(tui_list_t *p)
 				.zapbuf = l->zapbuf,
 				.boards = NULL,
 				.indices = NULL,
+				.yank = l->yank,
 			};
 			tui_board_list(&nl);
 			return PARTUPDATE;
@@ -889,26 +892,25 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			break;
 		case 's':
 			return sort_boards(p);
-#if 0
 		case 'y':
-			if (cbrd->gnum)
+			if (l->favorite)
 				return DONOTHING;
 			l->yank = !l->yank;
-			p->valid = false;
+			index_boards(l);
+			p->all = l->count;
 			return PARTUPDATE;
 		case 'z':
-			if (cbrd->gnum)
+			if (l->favorite)
 				return DONOTHING;
 			if (HAS_PERM(PERM_LOGIN)
-					&& !(cbrd->brds[cp->cur].flag & BOARD_NOZAP_FLAG)) {
-				ptr = cbrd->brds + cp->cur;
-				ptr->zap = !ptr->zap;
-				ptr->total = -1;
-				cbrd->zapbuf[ptr->pos] = (ptr->zap ? 0 : login_start_time);
+					&& !(board->flag & BOARD_NOZAP_FLAG)) {
+				if (l->zapbuf[board->id] && !askyn("确实要隐藏吗?", NA, YEA))
+					return MINIUPDATE;
+				l->zapbuf[board->id] = !l->zapbuf[board->id];
 			}
-			p->valid = false;
+			index_boards(l);
+			p->all = l->count;
 			return PARTUPDATE;
-#endif
 		case 'T':
 			return tui_favorite_rename(p);
 		case 'd':
