@@ -346,3 +346,16 @@ void initialize_db(void)
 	if (db_status(env.d) != DB_CONNECTION_OK)
 		exit(EXIT_FAILURE);
 }
+
+static void mdb_disconnect(void)
+{
+	mdb_finish(env.m);
+}
+
+void initialize_mdb(void)
+{
+	atexit(mdb_disconnect);
+	env.m = mdb_connect_unix(config_get(env.c, "mdb"));
+	if (env.m->err)
+		exit(EXIT_FAILURE);
+}

@@ -41,6 +41,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(FB_LIBDL_LINK dl)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
+find_package(HiRedis REQUIRED)
+
 add_subdirectory(lib)
 if(ENABLE_PG)
 	add_subdirectory(pg)

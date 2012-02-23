@@ -188,13 +188,9 @@ static int _init_all(void)
 	if (!env.c)
 		return -1;
 
-	env.d = db_connect(config_get(env.c, "host"), config_get(env.c, "port"),
-			config_get(env.c, "dbname"), config_get(env.c, "user"),
-			config_get(env.c, "password"));
-	if (db_status(env.d) != DB_CONNECTION_OK) {
-		db_finish(env.d);
-		return -1;
-	}
+	initialize_db();
+
+	initialize_mdb();
 
 	return 0;
 }

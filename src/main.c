@@ -968,6 +968,7 @@ void start_client(void)
 	extern char currmaildir[];
 
 	initialize_db();
+	initialize_mdb();
 
 	initialize_convert_env();
 #ifdef ALLOWSWITCHCODE
