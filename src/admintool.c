@@ -783,7 +783,7 @@ static bool alter_board_descr(board_t *bp)
 	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
 	getdata(t_lines - 2, 0, "新讨论区说明: ", gbk_descr, sizeof(gbk_descr),
 			DOECHO, YEA);
-	if (!gbk_descr)
+	if (!*gbk_descr)
 		return 0;
 
 	convert_g2u(gbk_descr, utf8_descr);
