@@ -1,11 +1,13 @@
 #ifndef FB_WEB_H
 #define FB_WEB_H
 
+#include <fcgi_stdio.h>
+#include <gcrypt.h>
+
 #include "fbbs/cfg.h"
 #include "fbbs/convert.h"
 #include "fbbs/dbi.h"
 #include "fbbs/pool.h"
-#include <fcgi_stdio.h>
 
 enum {
 	MAX_PARAMETERS = 32,
@@ -38,6 +40,7 @@ typedef struct web_ctx_t {
 	config_t *c;
 	pool_t *p;
 	http_req_t *r;
+	gcry_md_hd_t sha1;
 } web_ctx_t;
 
 extern web_ctx_t ctx;

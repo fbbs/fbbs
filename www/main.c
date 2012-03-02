@@ -156,6 +156,23 @@ static const web_handler_t *_get_handler(void)
 	return bsearch(&h, handlers, NELEMS(handlers), sizeof(h), compare_handler);
 }
 
+static int initialize_gcrypt(void)
+{
+	if (!gcry_check_version(GCRYPT_VERSION))
+		return -1;
+
+	if (gcry_control(GCRYCTL_DISABLE_SECMEM, 0) != 0)
+		return -1;
+
+	if (gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0) != 0)
+		return -1;
+
+	if (gcry_md_open(&ctx.sha1, GCRY_MD_SHA1, 0) != 0)
+		return -1;
+
+	return 0;
+}
+
 /**
  * Initialization before entering FastCGI loop.
  * @return 0 on success, -1 on error.
@@ -186,6 +203,9 @@ static int _init_all(void)
 
 	env.c = config_load(env.p, DEFAULT_CFG_FILE);
 	if (!env.c)
+		return -1;
+
+	if (initialize_gcrypt() != 0)
 		return -1;
 
 	initialize_db();
