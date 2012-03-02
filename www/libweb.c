@@ -52,7 +52,6 @@ char secname[SECNUM][2][20] = {
 int loginok = 0;
 struct userec currentuser;
 struct user_info *u_info;
-char fromhost[IP_LEN]; // IPv6 addresses can be represented in 39 chars.
 
 /**
  * Get an environment variable.
@@ -175,28 +174,6 @@ int xml_printfile(const char *file, FILE *stream)
 	return 0;
 }
 
-/**
- * Parse HTTP header and get client IP address.
- * @return 0
- */
-static int http_init(void)
-{
-#ifdef SQUID
-	char *from;
-	from = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
-	if (from == NULL) {
-		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), sizeof(fromhost));
-	} else {
-		while ((*from < '0') && (*from != '\0'))
-			from++;
-		strlcpy(fromhost, from, sizeof(fromhost));
-	}
-#else
-	strlcpy(fromhost, getsenv("REMOTE_ADDR"), sizeof(fromhost));
-#endif
-	return 0;
-}
-
 static char *digest_to_hex(const uchar_t *digest, char *buf, size_t size)
 {
 	const char *str = "0123456789abcdef";
@@ -304,7 +281,6 @@ static int user_init(struct userec *x, struct user_info **y, int mode)
 // TODO: return value?
 int fcgi_init_loop(int mode)
 {
-	http_init();
 	loginok = user_init(&currentuser, &u_info, mode);
 	return 0;
 }

@@ -70,6 +70,7 @@ typedef struct {
 } web_handler_t;
 
 web_ctx_t ctx;
+char fromhost[IP_LEN];
 
 const static web_handler_t handlers[] = {
 	{ "0an", bbs0an_main, ST_DIGEST },
@@ -216,6 +217,26 @@ static int _init_all(void)
 }
 
 /**
+ * Get client IP address.
+ */
+static void get_client_ip(void)
+{
+#ifdef SQUID
+	char *from;
+	from = strrchr(getsenv("HTTP_X_FORWARDED_FOR"), ',');
+	if (from == NULL) {
+		strlcpy(fromhost, getsenv("HTTP_X_FORWARDED_FOR"), sizeof(fromhost));
+	} else {
+		while ((*from < '0') && (*from != '\0'))
+			from++;
+		strlcpy(fromhost, from, sizeof(fromhost));
+	}
+#else
+	strlcpy(fromhost, getsenv("REMOTE_ADDR"), sizeof(fromhost));
+#endif
+}
+
+/**
  * The main entrance of bbswebd.
  * @return 0 on success, 1 on initialization error.
  */
@@ -239,6 +260,8 @@ int main(void)
 		if (!h) {
 			ret = BBS_ENOURL;
 		} else {
+			get_client_ip();
+
 			fcgi_init_loop(get_web_mode(h->mode));
 #ifdef FDQUAN
 			if (!loginok && h->func != web_login && h->func != fcgi_reg
