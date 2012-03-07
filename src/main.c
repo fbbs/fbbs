@@ -116,82 +116,61 @@ int chk_giveupbbs(void)
 	return recover;
 }
 
-// Some initialization when user enters.
+static int load_pager(void)
+{
+	int pager = 0;
+
+	if (DEFINE(DEF_FRIENDCALL)) {
+		pager |= FRIEND_PAGER;
+	}
+	if (currentuser.flags[0] & PAGER_FLAG) {
+		pager |= ALL_PAGER;
+		pager |= FRIEND_PAGER;
+	}
+	if (DEFINE(DEF_FRIENDMSG)) {
+		pager |= FRIENDMSG_PAGER;
+	}
+	if (DEFINE(DEF_ALLMSG)) {
+		pager |= ALLMSG_PAGER;
+		pager |= FRIENDMSG_PAGER;
+	}
+	if (DEFINE(DEF_LOGOFFMSG)) {
+		pager |= LOGOFFMSG_PAGER;
+	}
+
+	return pager;
+}
+
+static void set_pager(int pager)
+{
+	// TODO: this should be in db
+	return;
+}
+
 static void u_enter(void)
 {
-	// Initialization.
-	memset(&uinfo, 0, sizeof(uinfo));
-	uinfo.active = YEA;
-	uinfo.pid = getpid();
-	uinfo.currbrdnum = 0;
+#if 0
 	if (!HAS_PERM(PERM_CLOAK))
 		currentuser.flags[0] &= ~CLOAK_FLAG;
 	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
 		uinfo.invisible = YEA;
 	uinfo.mode = ST_LOGIN;
-	uinfo.pager = 0;
-
+#endif
 	chk_giveupbbs();
 
-	uinfo.idle_time = time(NULL);
-
-	// Load user preferences.
 	if (DEFINE(DEF_DELDBLCHAR))
 		enabledbchar = 1;
 	else
 		enabledbchar = 0;
-	if (DEFINE(DEF_FRIENDCALL)) {
-		uinfo.pager |= FRIEND_PAGER;
-	}
-	if (currentuser.flags[0] & PAGER_FLAG) {
-		uinfo.pager |= ALL_PAGER;
-		uinfo.pager |= FRIEND_PAGER;
-	}
-	if (DEFINE(DEF_FRIENDMSG)) {
-		uinfo.pager |= FRIENDMSG_PAGER;
-	}
-	if (DEFINE(DEF_ALLMSG)) {
-		uinfo.pager |= ALLMSG_PAGER;
-		uinfo.pager |= FRIENDMSG_PAGER;
-	}
-	if (DEFINE(DEF_LOGOFFMSG)) {
-		uinfo.pager |= LOGOFFMSG_PAGER;
-	}
-	uinfo.uid = usernum;
-	strlcpy(uinfo.from, fromhost, sizeof(uinfo.from));
+
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
-	strlcpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
-	strlcpy(uinfo.username, currentuser.username, sizeof(uinfo.username));
 	getfriendstr();
-
-	// Try to get an entry in user cache.
-	int ucount = 0;
-	while (1) {
-		utmpent = getnewutmpent(&uinfo);
-		if (utmpent >= 0 || utmpent == -1)
-			break;
-		if (utmpent == -2 && ucount <= 100) {
-			ucount++;
-			struct timeval t = {0, 250000};
-			select( 0, NULL, NULL, NULL, &t); // wait 0.25s before another try
-			continue;
-		}
-		if (ucount > 100) {
-			char buf1[] = "getnewutmpent(): too much times, give up.";
-			report(buf1, currentuser.userid);
-			prints("getnewutmpent(): 失败太多次, 放弃. 请回报站长.\n");
-			sleep(3);
-			exit(0);
-		}
-	}
-	if (utmpent < 0) {
-		char buf2[STRLEN];
-		snprintf(buf2, sizeof(buf2),
-			"Fault: No utmpent slot for %s", uinfo.userid);
-		report(buf2, currentuser.userid);
-	}
-
 	digestmode = NA;
+
+	session.id = session_new(NULL, 0, session.uid, fromhost);
+
+	int pager = load_pager();
+	set_pager(pager);
 }
 
 // Set 'mask'ed bit in 'currentuser.flags[0]'  according to 'value'.

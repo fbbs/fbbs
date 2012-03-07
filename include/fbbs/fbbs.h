@@ -7,6 +7,7 @@
 #include "fbbs/mdbi.h"
 #include "fbbs/pool.h"
 #include "fbbs/schema.h"
+#include "fbbs/session.h"
 
 #ifdef ENABLE_BANK
 # define TO_CENTS(y)  (y * 100)
@@ -27,6 +28,7 @@ typedef struct bbs_env_t {
 extern bbs_env_t env;
 
 typedef struct bbs_session_t {
+	session_id_t id;
 	user_id_t uid;
 } bbs_session_t;
 
