@@ -1,4 +1,8 @@
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "fbbs/fbbs.h"
+#include "fbbs/session.h"
 
 bbs_session_t session;
 
@@ -10,4 +14,37 @@ int get_online_count(db_conn_t *c)
 		ret = db_get_integer(res, 0, 0);
 	db_clear(res);
 	return ret;
+}
+
+session_id_t session_new_id(void)
+{
+	db_res_t *res = db_exec_query(env.d, true,
+			"SELECT nextval('sessions_id_seq')");
+	if (!res)
+		return 0;
+
+	session_id_t sid = db_get_session_id(res, 0, 0);
+	db_clear(res);
+	return sid;
+}
+
+// TODO
+char *session_generate_key(char *buf, size_t size)
+{
+	return buf;
+}
+
+session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
+		const char *ip_addr)
+{
+	int pid = getpid();
+
+	db_res_t *res = db_cmd("INSERT INTO sessions"
+			" (id, session_key, user_id, pid, ip_addr)"
+			" VALUES (%"PRIdSID", %s, %"PRIdUID", %d, %s)",
+			sid ? sid : session_new_id(), key, uid, pid, ip_addr);
+	if (!res)
+		return 0;
+	db_clear(res);
+	return sid;
 }
