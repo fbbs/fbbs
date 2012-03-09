@@ -333,9 +333,9 @@ static void load_favorite_boards(board_list_t *l)
 {
 	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder, b.sector "
 			"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
-			"WHERE f.user_id = %"PRIdUID, session.uid);
+			"WHERE f.user_id = %"DBIdUID, session.uid);
 	db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
-			"WHERE user_id = %"PRIdUID, session.uid);
+			"WHERE user_id = %"DBIdUID, session.uid);
 
 	res_to_board_array(l, r1, r2);
 

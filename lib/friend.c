@@ -18,7 +18,7 @@ int follow(user_id_t follower, const char *followed, const char *notes)
 
 	db_res_t *res = db_exec_cmd(env.d, "INSERT INTO follows"
 			" (user_id, follower, notes)"
-			" SELECT id, %"PRIdUID", %s FROM users"
+			" SELECT id, %"DBIdUID", %s FROM users"
 			" WHERE lower(name) = lower(%s)", follower, notes, followed);
 	if (res) {
 		int ret = db_cmd_rows(res);
@@ -31,8 +31,8 @@ int follow(user_id_t follower, const char *followed, const char *notes)
 int unfollow(user_id_t follower, user_id_t followed)
 {
 	db_res_t *res = db_exec_cmd(env.d,
-			"DELETE FROM follows WHERE user_id = %"PRIdUID
-			" AND follower = %"PRIdUID,
+			"DELETE FROM follows WHERE user_id = %"DBIdUID
+			" AND follower = %"DBIdUID,
 			followed, follower);
 	if (res) {
 		int ret = db_cmd_rows(res);
@@ -48,7 +48,7 @@ void edit_followed_note(user_id_t follower, user_id_t followed, const char *note
 		return;
 
 	db_res_t *res = db_exec_cmd(env.d, "UPDATE follows SET notes = %s"
-			"WHERE user_id = %"PRIdUID" AND follower = %"PRIdUID,
+			"WHERE user_id = %"DBIdUID" AND follower = %"DBIdUID,
 			notes, followed, follower);
 	db_clear(res);
 }
@@ -83,7 +83,7 @@ bool black_list_add(user_id_t uid, const char *blocked, const char *notes)
 bool black_list_rm(user_id_t uid, user_id_t blocked)
 {
 	db_res_t *res = db_cmd("DELETE FROM blacklists"
-			" WHERE user_id = %"PRIdUID" AND blocked = %"PRIdUID,
+			" WHERE user_id = %"DBIdUID" AND blocked = %"DBIdUID,
 			uid, blocked);
 	db_clear(res);
 	return res;
@@ -95,7 +95,7 @@ bool black_list_edit(user_id_t uid, user_id_t blocked, const char *notes)
 		return false;
 
 	db_res_t *res = db_cmd("UPDATE blacklists SET notes = %s"
-			" WHERE user_id = %"PRIdUID" AND blocked = %"PRIdUID,
+			" WHERE user_id = %"DBIdUID" AND blocked = %"DBIdUID,
 			notes, uid, blocked);
 	db_clear(res);
 	return res;
@@ -105,7 +105,7 @@ bool is_blocked(const char *blocked)
 {
 	db_res_t *res = db_query("SELECT b.blocked FROM blacklists b"
 			" JOIN alive_users u ON b.blocked = u.id"
-			" WHERE b.user_id = %"PRIdUID" AND lower(u.name) = lower(%s)",
+			" WHERE b.user_id = %"DBIdUID" AND lower(u.name) = lower(%s)",
 			session.uid, blocked);
 	int rows = res ? db_res_rows(res) : 0;
 	db_clear(res);

@@ -4,7 +4,8 @@
 #include <stdint.h>
 
 typedef int64_t session_id_t;
-#define PRIdSID  "l"
+#define PRIdSID  PRId64
+#define DBIdSID  "l"
 
 #define db_get_session_id(res, row, col)  db_get_bigint(res, row, col)
 

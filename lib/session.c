@@ -35,11 +35,20 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 
 	db_res_t *res = db_cmd("INSERT INTO sessions"
 			" (id, session_key, user_id, pid, ip_addr, web, secure)"
-			" VALUES (%"PRIdSID", %s, %"PRIdUID", %d, %s, %d, %d)",
+			" VALUES (%"DBIdSID", %s, %"DBIdUID", %d, %s, %d, %d)",
 			sid ? sid : session_new_id(),
 			key, uid, pid, ip_addr, is_web, is_secure);
 	if (!res)
 		return 0;
 	db_clear(res);
 	return sid;
+}
+
+int set_idle_time(session_id_t sid, fb_time_t t)
+{
+	char sid_buf[26], time_buf[26];
+	snprintf(sid_buf, sizeof(sid_buf), "%"PRIdSID, sid);
+	snprintf(time_buf, sizeof(time_buf), "%"PRIdFBT, t);
+
+	mdb_cmd("ZADD idle %s %s", sid, t);
 }

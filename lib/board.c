@@ -173,7 +173,7 @@ bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder, const 
 		folder = FAV_BOARD_ROOT_FOLDER;
 
 	db_res_t *res = db_cmd("INSERT INTO fav_boards (user_id, board, folder)"
-			" VALUES (%"PRIdUID", %d, %d)", uid, bid, folder);
+			" VALUES (%"DBIdUID", %d, %d)", uid, bid, folder);
 	db_clear(res);
 	return res;
 }
@@ -185,7 +185,7 @@ bool fav_board_mkdir(user_id_t uid, const char *name, const char *descr)
 		return false;
 
 	db_res_t *res = db_cmd("INSERT INTO fav_board_folders (user_id, name, descr)"
-			" VALUES (%"PRIdUID", %s, %s)", uid, name, descr);
+			" VALUES (%"DBIdUID", %s, %s)", uid, name, descr);
 	db_clear(res);
 	return res;
 }
@@ -197,7 +197,7 @@ bool fav_board_rename(user_id_t uid, int id, const char *name, const char *descr
 		return false;
 
 	db_res_t *res = db_cmd("UPDATE fav_board_folders (name, descr)"
-			" VALUES (%s, %s) WHERE id = %d AND user_id = %"PRIdUID,
+			" VALUES (%s, %s) WHERE id = %d AND user_id = %"DBIdUID,
 			name, descr, id, uid);
 	db_clear(res);
 	return res;
@@ -206,7 +206,7 @@ bool fav_board_rename(user_id_t uid, int id, const char *name, const char *descr
 bool fav_board_rmdir(user_id_t uid, int id)
 {
 	db_res_t *res = db_cmd("DELETE FROM fav_board_folders WHERE id = %d"
-			" AND user_id = %"PRIdUID, id, uid);
+			" AND user_id = %"DBIdUID, id, uid);
 	db_clear(res);
 	return res;
 }
@@ -214,7 +214,7 @@ bool fav_board_rmdir(user_id_t uid, int id)
 bool fav_board_rm(user_id_t uid, int id)
 {
 	db_res_t *res = db_cmd("DELETE FROM fav_boards WHERE board = %d"
-			" AND user_id = %"PRIdUID, id, uid);
+			" AND user_id = %"DBIdUID, id, uid);
 	db_clear(res);
 	return res;
 }
@@ -224,7 +224,7 @@ bool fav_board_mv(user_id_t uid, int id, int parent)
 	if (parent < FAV_BOARD_ROOT_FOLDER)
 		parent = FAV_BOARD_ROOT_FOLDER;
 	db_res_t *res = db_cmd("UPDATE fav_boards SET folder = %d"
-			" WHERE user_id = %"PRIdUID" AND board = %d", parent, uid, id);
+			" WHERE user_id = %"DBIdUID" AND board = %d", parent, uid, id);
 	db_clear(res);
 	return res;
 }

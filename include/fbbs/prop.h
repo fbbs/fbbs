@@ -33,7 +33,7 @@ typedef db_res_t my_props_t;
 		"SELECT r.id, c.name, i.id, i.name, r.price, r.order_time, r.expire" \
 		" FROM prop_records r JOIN prop_items i ON r.item = i.id" \
 		" JOIN prop_categs c ON i.categ = c.id" \
-		" WHERE r.expire > current_timestamp AND r.user_id = %"PRIdUID \
+		" WHERE r.expire > current_timestamp AND r.user_id = %"DBIdUID \
 		" ORDER BY r.order_time ASC"
 #define my_props_load(uid) \
 	(my_props_t *)db_exec_query(env.d, true, MY_PROPS_QUERY, uid)

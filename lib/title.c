@@ -6,7 +6,7 @@ bool title_check_existence(user_id_t uid)
 {
 	db_res_t *res = db_query("SELECT t.id"
 			" FROM titles t JOIN prop_records r ON t.record_id = r.id"
-			" WHERE r.item <> %d AND t.user_id = %"PRIdUID,
+			" WHERE r.item <> %d AND t.user_id = %"DBIdUID,
 			PROP_TITLE_FREE, uid);
 	int rows = db_res_rows(res);
 	db_clear(res);

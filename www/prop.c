@@ -54,7 +54,7 @@ static void show_my_prop(my_props_t *p, int i)
 static int show_title_detail(int record)
 {
 	db_res_t *res = db_query("SELECT title, approved FROM titles"
-			" WHERE record_id = %d AND user_id = %"PRIdUID,
+			" WHERE record_id = %d AND user_id = %"DBIdUID,
 			record, session.uid);
 	if (!res || db_res_rows(res) <= 0) {
 		db_clear(res);
