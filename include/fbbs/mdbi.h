@@ -3,11 +3,19 @@
 
 #include <hiredis/hiredis.h>
 
-typedef redisContext mdb_conn_t;
+enum {
+	MDB_CMD_BUF_LEN = 128,
+};
+
+typedef struct {
+	redisContext *c;
+	char buf[MDB_CMD_BUF_LEN];
+} mdb_conn_t;
+
 typedef redisReply mdb_res_t;
 
-#define mdb_connect_unix(path)  redisConnectUnix(path)
-#define mdb_cmd(cmd, ...)  redisCommand(env.m, cmd, __VA_ARGS__)
+extern int mdb_connect_unix(const char *path);
+extern mdb_res_t *mdb_cmd(const char *cmd, ...);
 #define mdb_clear(res)  freeReplyObject(res)
 #define mdb_finish(conn)  redisFree(conn)
 

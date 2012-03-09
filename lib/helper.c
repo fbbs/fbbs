@@ -349,13 +349,13 @@ void initialize_db(void)
 
 static void mdb_disconnect(void)
 {
-	mdb_finish(env.m);
+	mdb_finish(env.m->c);
 }
 
 void initialize_mdb(void)
 {
 	atexit(mdb_disconnect);
-	env.m = mdb_connect_unix(config_get(env.c, "mdb"));
-	if (env.m->err)
+	mdb_conn_t *c = pool_alloc(env.p, sizeof(*c));
+	if (mdb_connect_unix(config_get(env.c, "mdb")) < 0)
 		exit(EXIT_FAILURE);
 }
