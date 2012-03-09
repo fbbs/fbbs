@@ -626,7 +626,7 @@ int tui_new_board(const char *cmd)
 				| BOARD_NOREPLY_FLAG | BOARD_POST_FLAG);
 		if (askyn("是否限制存取权利?", NA, NA)) {
 			char ans[2];
-			getdata(7, 0, "限制读? [R]: ", ans, sizeof(ans), DOECHO, YEA);
+			getdata(8, 0, "限制读? [R]: ", ans, sizeof(ans), DOECHO, YEA);
 			move(1, 0);
 			clrtobot();
 			move(2, 0);
@@ -650,16 +650,16 @@ int tui_new_board(const char *cmd)
 		if (askyn ("是否强制使用前缀", NA, NA))
 			flag |= BOARD_PREFIX_FLAG;
 #endif
-		if (askyn("是否限制存取权力", NA, NA)) {
+		if (askyn("是否限制读写", NA, NA)) {
 			char ans[2];
-			getdata(11, 0, "限制读(R)/写(P)? [R]: ", ans, sizeof(ans),
+			getdata(15, 0, "限制读(R)/写(P)? [R]: ", ans, sizeof(ans),
 					DOECHO, YEA);
 			if (*ans == 'P' || *ans == 'p')
 				flag |= BOARD_POST_FLAG;
 			move(1, 0);
 			clrtobot();
 			move(2, 0);
-			prints("设定 %s 权利. 讨论区: '%s'\n",
+			prints("设定 %s 限制. 讨论区: '%s'\n",
 					(flag & BOARD_POST_FLAG ? "写" : "读"), bname);
 			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			clear();
@@ -722,7 +722,6 @@ int tui_new_board(const char *cmd)
 	snprintf(buf, sizeof(buf), "成立新版：%s", bname);
 	securityreport(buf, 0, 1);
 
-	pressreturn();
 	clear();
 	return 0;
 }
@@ -1030,9 +1029,9 @@ int tui_edit_board(const char *cmd)
 		report(buf, currentuser.userid);
 	}
 
+	pressanykey();
 	clear();
 	return 0;
-
 }
 
 // 批注册单时显示的标题
