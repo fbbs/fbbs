@@ -370,13 +370,12 @@ int update_user_stay(struct userec *u, bool is_login, bool is_dup)
 
 int uinfo_load(const char *name, uinfo_t *u)
 {
-	u->money = 0;
-	u->rank = 0;
+	u->contrib = u->money = u->rank = 0;
 	u->title = NULL;
 
 	u->res = db_exec_query(env.d, true, "SELECT title"
 #ifdef ENABLE_BANK
-			", money, rank"
+			", contrib, money, rank"
 #endif
 			" FROM alive_users WHERE lower(name) = lower(%s)", name);
 	if (!u->res)
@@ -384,8 +383,9 @@ int uinfo_load(const char *name, uinfo_t *u)
 
 	u->title = db_get_value(u->res, 0, 0);
 #ifdef ENABLE_BANK
-	u->money = db_get_bigint(u->res, 0, 1);
-	u->rank = db_get_float(u->res, 0, 2);
+	u->contrib = db_get_bigint(u->res, 0, 1);
+	u->money = db_get_bigint(u->res, 0, 2);
+	u->rank = db_get_float(u->res, 0, 3);
 #endif
 	return 0;
 }

@@ -222,17 +222,17 @@ int t_pager() {
 /*´Ëº¯ÊýÖ»¸ºÔðÁÐÓ¡ËµÃ÷µµ£¬²¢²»¹ÜÇå³ý»ò¶¨Î»µÄÎÊÌâ¡£*/
 
 int
-show_user_plan(userid)
-char *userid;
+show_user_plan(const char *userid)
 {
 	char pfile[STRLEN];
 	sethomefile(pfile, userid, "plans");
 	if (show_one_file(pfile)==NA) {
-		prints("[1;36mÃ»ÓÐ¸öÈËËµÃ÷µµ[m\n");
+		prints("\033[1;36mÃ»ÓÐ¸öÈËËµÃ÷µµ\033[m\n");
 		return NA;
 	}
 	return YEA;
 }
+
 int show_one_file(char *filename) {
 	int i, j, ci;
 	char pbuf[256];
@@ -410,10 +410,11 @@ int tui_query_result(const char *userid)
 	uinfo_load(user.userid, &u);
 
 #ifdef ENABLE_BANK
+	char rank_buf[8];
+	snprintf(rank_buf, sizeof(rank_buf), "%.1f%%", PERCENT_RANK(u.rank));
+	prints("¹±Ï× [\033[1;32m%d\033[m](%s) ", TO_YUAN_INT(u.contrib), rank_buf);
 	if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
-		char rank_buf[8];
-		snprintf(rank_buf, sizeof(rank_buf), "%.1f%%", PERCENT_RANK(u.rank));
-		prints("²Æ¸» [\033[1;32m%d\033[m](%s) ", TO_YUAN_INT(u.money), rank_buf);
+		prints("²Æ¸» [\033[1;32m%d\033[m] ", TO_YUAN_INT(u.money));
 	}
 #endif
 

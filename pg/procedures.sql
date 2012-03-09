@@ -1,13 +1,8 @@
 CREATE OR REPLACE FUNCTION prop_record_before_insert_trigger() RETURNS TRIGGER AS $$
 BEGIN
-	PERFORM money FROM users WHERE id = NEW.user_id AND money >= NEW.price FOR UPDATE;
-	IF FOUND THEN
-		UPDATE users SET money = money - NEW.price WHERE id = NEW.user_id;
-		INSERT INTO audit.money (user_id, delta, stamp, reason) VALUES (NEW.user_id, -NEW.price, current_timestamp, 'buy ' || NEW.item);
-		RETURN NEW;
-	ELSE
-		RAISE 'insufficient money';
-	END IF;
+	UPDATE users SET money = money - NEW.price WHERE id = NEW.user_id;
+	INSERT INTO audit.money (user_id, delta, stamp, reason) VALUES (NEW.user_id, -NEW.price, current_timestamp, 'buy ' || NEW.item);
+	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS prop_record_before_insert_trigger ON prop_records;
