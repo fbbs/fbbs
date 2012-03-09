@@ -297,11 +297,12 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 	l->bcount = 0;
 
 	for (int i = 0; i < db_res_rows(r1); ++i) {
-		board_t *board = &(l->boards + l->bcount)->board;
+		board_extra_t *e = l->boards + l->bcount;
+		board_t *board = &e->board;
+
 		res_to_board(r1, i, board);
 		board_to_gbk(board);
 
-		board_extra_t *e = (board_extra_t *)board;
 		e->folder = l->favorite ? db_get_integer(r1, i, 8) : 0;
 		e->sector = l->favorite ? db_get_integer(r1, i, 9) : 0;
 
@@ -311,7 +312,8 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 
 	if (r2) {
 		for (int i = 0; i < db_res_rows(r2); ++i) {
-			board_t *board = &(l->boards + l->bcount)->board;
+			board_extra_t *e = l->boards + l->bcount;
+			board_t *board = &e->board;
 
 			board->id = db_get_integer(r2, i, 0);
 			convert_u2g(db_get_value(r2, i, 1), board->name);
@@ -319,7 +321,8 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 			strlcpy(board->categ, "ÊÕ²Ø", sizeof(board->categ));
 
 			board->flag = BOARD_CUSTOM_FLAG | BOARD_DIR_FLAG;
-			((board_extra_t *)board)->folder = FAV_BOARD_ROOT_FOLDER;
+			e->folder = FAV_BOARD_ROOT_FOLDER;
+			e->sector = 0;
 
 			++l->bcount;
 		}
@@ -616,7 +619,8 @@ static int board_cmp_online(const void *p1, const void *p2)
 
 static int board_cmp_default(const void *p1, const void *p2)
 {
-	const board_extra_t *e1 = p1, *e2 = p2;
+	const board_extra_t *e1 = *(const board_extra_t **)p1;
+	const board_extra_t *e2 = *(const board_extra_t **)p2;
 	int diff = e1->sector - e2->sector;
 	if (!diff)
 		diff = strcasecmp(e1->board.categ, e2->board.categ);

@@ -32,9 +32,11 @@ int bbsqry_main(void)
 		uinfo_t u;
 		uinfo_load(user.userid, &u);
 #ifdef ENABLE_BANK
+		printf("contrib='%d' rank='%.1f'",
+				TO_YUAN_INT(u.contrib), PERCENT_RANK(u.rank));
 		if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
-			printf("money='%d' rank='%.1f'",
-					TO_YUAN_INT(u.money), PERCENT_RANK(u.rank));
+			printf(" money='%d'",
+					TO_YUAN_INT(u.money));
 		}
 #endif
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
