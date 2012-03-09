@@ -11,7 +11,6 @@
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
-#include "fbbs/user.h"
 #include "fbbs/web.h"
 
 char seccode[SECNUM][6]={
@@ -171,117 +170,6 @@ int xml_printfile(const char *file, FILE *stream)
 	if (m.size > 0)
 		xml_fputs2((char *)m.ptr, m.size, stream);
 	mmap_close(&m);
-	return 0;
-}
-
-static char *digest_to_hex(const uchar_t *digest, char *buf, size_t size)
-{
-	const char *str = "0123456789abcdef";
-	for (int i = 0; i < size / 2; ++i) {
-		buf[i * 2] = str[(digest[i] & 0xf0) >> 4];
-		buf[i * 2 + 1] = str[digest[i] & 0x0f];
-	}
-	buf[size - 1] = '\0';
-	return buf;
-}
-
-static char *generate_session_key(char *buf, size_t size, session_id_t sid)
-{
-	struct {
-		time_t sec;
-		int usec;
-		int random;
-		session_id_t sid;
-	} s;
-
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	s.sec = tv.tv_sec;
-	s.usec = tv.tv_usec;
-
-	s.random = rand();
-
-	s.sid = sid;
-
-	gcry_md_reset(ctx.sha1);
-	gcry_md_write(ctx.sha1, &s, sizeof(s));
-	gcry_md_final(ctx.sha1);
-
-	const uchar_t *digest = gcry_md_read(ctx.sha1, 0);
-	return digest_to_hex(digest, buf, size);
-}
-
-/**
- * Load user information from cookie.
- * If everything is OK, initializes @a x and @a y.
- * Otherwise, @a x is cleared and @a y is set to NULL.
- * @param[in,out] x pointer to user infomation struct.
- * @param[in,out] y pointer to pointer to user online cache.
- * @param[in] mode user mode.
- * @return 1 on valid user login, 0 on error.
- */
- // TODO: no lock?
-static int user_init(struct userec *x, struct user_info **y, int mode)
-{
-	memset(x, 0, sizeof(*x));
-
-	// Get information from cookie.
-	const char *id = get_param("utmpuserid");
-	int i = strtol(get_param("utmpnum"), NULL, 10);
-	int key = strtol(get_param("utmpkey"), NULL, 10);
-
-	// Boundary check.
-	if (i <= 0 || i > MAXACTIVE) {
-		*y = NULL;
-		return 0;
-	}
-	// Get user_info from utmp.
-	(*y) = &(utmpshm->uinfo[i - 1]);
-
-	// Verify cookie and user status.
-	if (strcmp((*y)->from, fromhost)
-			|| (*y)->utmpkey != key
-			|| (*y)->active == 0
-			|| (*y)->userid[0] == '\0'
-			|| !is_web_user((*y)->mode)) {
-		*y = NULL;
-		return 0;
-	}
-
-	// If not normal user.
-	if (!strcasecmp((*y)->userid, "new")
-			|| !strcasecmp((*y)->userid, "guest")) {
-		*y = NULL;
-		return 0;
-	}
-
-	// Get userec from ucache.
-	getuserbyuid(x, (*y)->uid);
-	if (strcmp(x->userid, id)) {
-		memset(x, 0, sizeof(*x));
-		*y = NULL;
-		return 0;
-	}
-
-	// Refresh idle time, set user mode.
-	(*y)->idle_time = time(NULL);
-	if (get_web_mode(ST_IDLE) != mode)
-		(*y)->mode = mode;
-
-	session.uid = get_user_id(id);
-
-	return 1;
-}
-
-/**
- * Initialization inside a FastCGI loop.
- * @param mode user mode.
- * @return 0
- */
-// TODO: return value?
-int fcgi_init_loop(int mode)
-{
-	loginok = user_init(&currentuser, &u_info, mode);
 	return 0;
 }
 

@@ -29,14 +29,15 @@ session_id_t session_new_id(void)
 }
 
 session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
-		const char *ip_addr)
+		const char *ip_addr, bool is_web, bool is_secure)
 {
 	int pid = getpid();
 
 	db_res_t *res = db_cmd("INSERT INTO sessions"
-			" (id, session_key, user_id, pid, ip_addr)"
-			" VALUES (%"PRIdSID", %s, %"PRIdUID", %d, %s)",
-			sid ? sid : session_new_id(), key, uid, pid, ip_addr);
+			" (id, session_key, user_id, pid, ip_addr, web, secure)"
+			" VALUES (%"PRIdSID", %s, %"PRIdUID", %d, %s, %d, %d)",
+			sid ? sid : session_new_id(),
+			key, uid, pid, ip_addr, is_web, is_secure);
 	if (!res)
 		return 0;
 	db_clear(res);

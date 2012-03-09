@@ -10,6 +10,9 @@ CREATE TABLE sessions (
 	pid INTEGER DEFAULT 0,
 	visible BOOLEAN DEFAULT TRUE,
 	ip_addr TEXT,
+	web BOOLEAN,
+	secure BOOLEAN,
+	expire TIMESTAMPTZ
 );
 
 COMMIT;

@@ -167,7 +167,13 @@ static void u_enter(void)
 	getfriendstr();
 	digestmode = NA;
 
-	session.id = session_new(NULL, 0, session.uid, fromhost);
+	session.id = session_new(NULL, 0, session.uid, fromhost, SESSION_TELNET,
+#ifdef ENABLE_SSH
+			SESSION_SECURE
+#else
+			SESSION_PLAIN
+#endif
+			);
 
 	int pager = load_pager();
 	set_pager(pager);

@@ -26,12 +26,6 @@ typedef struct bbs_env_t {
 } bbs_env_t;
 
 extern bbs_env_t env;
-
-typedef struct bbs_session_t {
-	session_id_t id;
-	user_id_t uid;
-} bbs_session_t;
-
 extern bbs_session_t session;
 
 extern bool passwd_match(const char *pw_crypted, const char *pw_try);

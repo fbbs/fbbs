@@ -5,6 +5,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 #include "fbbs/web.h"
 
 void check_bbserr(int err);
@@ -236,6 +237,79 @@ static void get_client_ip(void)
 #endif
 }
 
+static char *digest_to_hex(const uchar_t *digest, char *buf, size_t size)
+{
+	const char *str = "0123456789abcdef";
+	for (int i = 0; i < size / 2; ++i) {
+		buf[i * 2] = str[(digest[i] & 0xf0) >> 4];
+		buf[i * 2 + 1] = str[digest[i] & 0x0f];
+	}
+	buf[size - 1] = '\0';
+	return buf;
+}
+
+static char *generate_session_key(char *buf, size_t size, session_id_t sid)
+{
+	struct {
+		time_t sec;
+		int usec;
+		int random;
+		session_id_t sid;
+	} s;
+
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	s.sec = tv.tv_sec;
+	s.usec = tv.tv_usec;
+
+	s.random = rand();
+
+	s.sid = sid;
+
+	gcry_md_reset(ctx.sha1);
+	gcry_md_write(ctx.sha1, &s, sizeof(s));
+	gcry_md_final(ctx.sha1);
+
+	const uchar_t *digest = gcry_md_read(ctx.sha1, 0);
+	return digest_to_hex(digest, buf, size);
+}
+
+static bool _get_session(const char *uname, const char *key)
+{
+	bool login = false;
+
+	// TODO: cache
+	db_res_t *res = db_query("SELECT s.id, u.id, s.active, s.expire"
+			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
+			" WHERE u.name = %s AND s.key = %s AND s.web", uname, key);
+	if (res && db_res_rows(res) == 1) {
+		if (db_get_bool(res, 0, 2)) {
+			session.id = db_get_session_id(res, 0, 0);
+			session.uid = db_get_user_id(res, 0, 1);
+			login = true;
+		} else {
+			// TODO: re-activate
+			session.id = session.uid = 0;
+		}
+	} else {
+		session.id = session.uid = 0;
+	}
+
+	db_clear(res);
+	return login;
+}
+
+static bool get_session(void)
+{
+	const char *uname = get_param("utmpuserid");
+	const char *key = get_param("utmpkey");
+
+	memset(&currentuser, 0, sizeof(currentuser));
+	getuserec(uname, &currentuser);
+
+	return _get_session(uname, key);
+}
+
 /**
  * The main entrance of bbswebd.
  * @return 0 on success, 1 on initialization error.
@@ -261,8 +335,12 @@ int main(void)
 			ret = BBS_ENOURL;
 		} else {
 			get_client_ip();
+			loginok = get_session();
 
-			fcgi_init_loop(get_web_mode(h->mode));
+			if (loginok) {
+				get_web_mode(h->mode);
+				// TODO: refresh idle time
+			}
 #ifdef FDQUAN
 			if (!loginok && h->func != web_login && h->func != fcgi_reg
 					&& h->func != fcgi_activate)
