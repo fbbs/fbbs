@@ -49,7 +49,7 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 
 int set_idle_time(session_id_t sid, fb_time_t t)
 {
-	mdb_res_t *res = mdb_cmd("ZADD idle %"PRIdSID" %"PRIdFBT, sid, t);
+	mdb_res_t *res = mdb_cmd("ZADD idle %"PRIdFBT" %"PRIdSID, t, sid);
 	mdb_clear(res);
 	return !res;
 }
@@ -63,4 +63,22 @@ fb_time_t get_idle_time(session_id_t sid)
 	fb_time_t t = res->type == MDB_RES_INTEGER ? res->integer : 0;
 	mdb_clear(res);
 	return t;
+}
+
+int set_current_board(session_id_t sid, int bid)
+{
+	mdb_res_t *res = mdb_cmd("ZADD current_board %d %"PRIdSID, bid, sid);
+	mdb_clear(res);
+	return !res;
+}
+
+int get_current_board(session_id_t sid)
+{
+	mdb_res_t *res = mdb_cmd("ZSCORE current_board %"PRIdSID, sid);
+	if (!res)
+		return 0;
+
+	int bid = res->type == MDB_RES_INTEGER ? res->integer : 0;
+	mdb_clear(res);
+	return bid;
 }

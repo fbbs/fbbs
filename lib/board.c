@@ -3,6 +3,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
+#include "fbbs/mdbi.h"
 #include "fbbs/string.h"
 
 char currboard[STRLEN - BM_LEN];
@@ -228,4 +229,14 @@ bool fav_board_mv(user_id_t uid, int id, int parent)
 			" WHERE user_id = %"DBIdUID" AND board = %d", parent, uid, id);
 	db_clear(res);
 	return res;
+}
+
+int board_online_count(int bid)
+{
+	mdb_res_t *res = mdb_cmd("ZCOUNT current_board %d %d", bid, bid);
+	if (!res)
+		return 0;
+	int count = res->type == MDB_RES_INTEGER ? res->integer : 0;
+	mdb_clear(res);
+	return count;
 }
