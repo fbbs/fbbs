@@ -1,11 +1,7 @@
 #ifndef FB_FBBS_H
 #define FB_FBBS_H
 
-#include "fbbs/cfg.h"
-#include "fbbs/convert.h"
 #include "fbbs/dbi.h"
-#include "fbbs/mdbi.h"
-#include "fbbs/pool.h"
 #include "fbbs/schema.h"
 #include "fbbs/session.h"
 
@@ -16,13 +12,18 @@
 # define PERCENT_RANK(r)  (((int)(r * 1000)) / 10.0)
 #endif // ENABLE_BANK
 
+struct config_t;
+struct convert_t;
+struct mdb_conn_t;
+struct pool_t;
+
 typedef struct bbs_env_t {
-	config_t *c;
+	struct config_t *c;
 	db_conn_t *d;
-	mdb_conn_t *m;
-	pool_t *p;
-	convert_t *u2g;
-	convert_t *g2u;
+	struct mdb_conn_t *m;
+	struct pool_t *p;
+	struct convert_t *u2g;
+	struct convert_t *g2u;
 } bbs_env_t;
 
 extern bbs_env_t env;

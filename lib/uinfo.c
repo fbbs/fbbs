@@ -1,6 +1,7 @@
 #include <math.h>
 #include "bbs.h"
 #include "glossary.h"
+#include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"

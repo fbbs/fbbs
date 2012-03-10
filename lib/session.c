@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include "fbbs/fbbs.h"
+#include "fbbs/mdbi.h"
 #include "fbbs/session.h"
 
 bbs_session_t session;

@@ -1,7 +1,10 @@
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/cfg.h"
+#include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/mdbi.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
 

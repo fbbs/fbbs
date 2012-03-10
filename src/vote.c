@@ -2,7 +2,9 @@
 #include "vote.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/cfg.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/pool.h"
 #include "fbbs/status.h"
 #include "fbbs/terminal.h"
 

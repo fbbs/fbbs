@@ -7,7 +7,7 @@ enum {
 	MDB_CMD_BUF_LEN = 128,
 };
 
-typedef struct {
+typedef struct mdb_conn_t {
 	redisContext *c;
 	char buf[MDB_CMD_BUF_LEN];
 } mdb_conn_t;

@@ -11,6 +11,7 @@
 #endif // ENABLE_SSH
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/cfg.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"

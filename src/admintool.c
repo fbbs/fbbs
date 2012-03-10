@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "bbs.h"
 #include "fbbs/board.h"
+#include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/register.h"
 #include "fbbs/status.h"
