@@ -275,7 +275,7 @@ int bbssndmail_main(void)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
-	if (parse_post_data(ctx.r) < 0)
+	if (parse_post_data() < 0)
 		return BBS_EINVAL;
 
 	const char *recv = get_param("recv");
@@ -323,7 +323,7 @@ int web_mailman(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	parse_post_data(ctx.r);
+	parse_post_data();
 
 	char index[HOMELEN];
 	setmdir(index, currentuser.userid);

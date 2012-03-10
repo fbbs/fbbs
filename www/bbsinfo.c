@@ -57,7 +57,7 @@ int bbsinfo_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	parse_post_data(ctx.r);
+	parse_post_data();
 	const char *type = get_param("type");
 	xml_header(NULL);
 	if (*type != '\0') {
@@ -101,7 +101,7 @@ int bbspwd_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	parse_post_data(ctx.r);
+	parse_post_data();
 	xml_header(NULL);
 	printf("<bbspwd ");
 	const char *pw1 = get_param("pw1");

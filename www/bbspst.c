@@ -145,7 +145,7 @@ int bbsccc_main(void)
 	if (!loginok)
 		return BBS_ELGNREQ;
 
-	parse_post_data(ctx.r);
+	parse_post_data();
 
 	board_t board;
 	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
@@ -217,7 +217,7 @@ int bbsfwd_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	parse_post_data(ctx.r);
+	parse_post_data();
 	const char *reci = get_param("u");
 	if (*reci == '\0') {
 		xml_header(NULL);

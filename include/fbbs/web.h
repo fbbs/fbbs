@@ -47,7 +47,7 @@ extern web_ctx_t ctx;
 
 extern http_req_t *get_request(pool_t *p);
 extern const char *get_param(const char *name);
-extern int parse_post_data();
+extern int parse_post_data(void);
 
 extern void html_header(void);
 extern void xml_header(const char *xslfile);

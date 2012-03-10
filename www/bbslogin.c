@@ -152,7 +152,7 @@ int web_login(void)
 	char buf[256], id[IDLEN + 1], pw[PASSLEN];
 	struct userec user;
 
-	if (parse_post_data(ctx.r) < 0)
+	if (parse_post_data() < 0)
 		return BBS_EINVAL;
 	strlcpy(id, get_param("id"), sizeof(id));
 	if (*id == '\0')

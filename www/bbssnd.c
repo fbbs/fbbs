@@ -97,7 +97,7 @@ int bbssnd_main(void)
 {
 	if (!loginok)
 		return BBS_ELGNREQ;
-	if (parse_post_data(ctx.r) < 0)
+	if (parse_post_data() < 0)
 		return BBS_EINVAL;
 
 	board_t board;

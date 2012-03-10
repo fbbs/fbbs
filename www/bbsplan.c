@@ -9,7 +9,7 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		return BBS_ELGNREQ;
 	char buf[HOMELEN];
 	sethomefile(buf, currentuser.userid, file);
-	parse_post_data(ctx.r);
+	parse_post_data();
 	const char *text = get_param("text");
 	if (*text != '\0') {
 		int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
