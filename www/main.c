@@ -305,9 +305,12 @@ static bool get_session(void)
 	const char *key = get_param("utmpkey");
 
 	memset(&currentuser, 0, sizeof(currentuser));
-	getuserec(uname, &currentuser);
 
-	return _get_session(uname, key);
+	bool ok = _get_session(uname, key);
+	if (ok)
+		getuserec(uname, &currentuser);
+
+	return ok;
 }
 
 /**
