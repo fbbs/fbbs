@@ -233,10 +233,5 @@ bool fav_board_mv(user_id_t uid, int id, int parent)
 
 int board_online_count(int bid)
 {
-	mdb_res_t *res = mdb_cmd("ZCOUNT current_board %d %d", bid, bid);
-	if (!res)
-		return 0;
-	int count = res->type == MDB_RES_INTEGER ? res->integer : 0;
-	mdb_clear(res);
-	return count;
+	return (int) mdb_get_integer(0, "ZCOUNT current_board %d %d", bid, bid);
 }

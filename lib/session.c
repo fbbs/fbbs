@@ -56,13 +56,7 @@ int set_idle_time(session_id_t sid, fb_time_t t)
 
 fb_time_t get_idle_time(session_id_t sid)
 {
-	mdb_res_t *res = mdb_cmd("ZSCORE idle %"PRIdSID, sid);
-	if (!res)
-		return 0;
-	
-	fb_time_t t = res->type == MDB_RES_INTEGER ? res->integer : 0;
-	mdb_clear(res);
-	return t;
+	return (fb_time_t) mdb_get_integer(0, "ZSCORE idle %"PRIdSID, sid);
 }
 
 int set_current_board(session_id_t sid, int bid)
@@ -74,11 +68,5 @@ int set_current_board(session_id_t sid, int bid)
 
 int get_current_board(session_id_t sid)
 {
-	mdb_res_t *res = mdb_cmd("ZSCORE current_board %"PRIdSID, sid);
-	if (!res)
-		return 0;
-
-	int bid = res->type == MDB_RES_INTEGER ? res->integer : 0;
-	mdb_clear(res);
-	return bid;
+	return (int) mdb_get_integer(0, "ZSCORE current_board %"PRIdSID, sid);
 }

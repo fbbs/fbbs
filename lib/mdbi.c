@@ -11,11 +11,9 @@ int mdb_connect_unix(const char *path)
 	return -1;
 }
 
-mdb_res_t *mdb_cmd(const char *cmd, ...)
+static mdb_res_t *mdb_vcmd(const char *cmd, va_list ap)
 {
-	va_list ap, aq;
-	va_start(ap, cmd);
-
+	va_list aq;
 	va_copy(aq, ap);
 	size_t size = vsnprintf(env.m->buf, sizeof(env.m->buf), cmd, aq);
 	va_end(aq);
@@ -24,11 +22,9 @@ mdb_res_t *mdb_cmd(const char *cmd, ...)
 	if (size >= sizeof(env.m->buf)) {
 		char *buf = malloc(size + 1);
 		vsnprintf(buf, size + 1, cmd, ap);
-		va_end(ap);
 		res = redisCommand(env.m->c, buf);
 		free(buf);
 	} else {
-		va_end(ap);
 		res = redisCommand(env.m->c, env.m->buf);
 	}
 
@@ -37,4 +33,28 @@ mdb_res_t *mdb_cmd(const char *cmd, ...)
 		return NULL;
 	}
 	return res;
+}
+
+mdb_res_t *mdb_cmd(const char *cmd, ...)
+{
+	va_list ap;
+	va_start(ap, cmd);
+	mdb_res_t *res = mdb_vcmd(cmd, ap);
+	va_end(ap);
+	return res;
+}
+
+long long mdb_get_integer(long long invalid, const char *cmd, ...)
+{
+	va_list ap;
+	va_start(ap, cmd);
+	mdb_res_t *res = mdb_vcmd(cmd, ap);
+	va_end(ap);
+
+	if (!res)
+		return invalid;
+
+	long long i = (res->type == MDB_RES_INTEGER ? res->integer : invalid);
+	mdb_clear(res);
+	return i;
 }

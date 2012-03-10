@@ -23,6 +23,8 @@ typedef redisReply mdb_res_t;
 
 extern int mdb_connect_unix(const char *path);
 extern mdb_res_t *mdb_cmd(const char *cmd, ...);
+extern long long mdb_get_integer(long long invalid, const char *cmd, ...);
+
 #define mdb_clear(res)  freeReplyObject(res)
 #define mdb_finish(conn)  redisFree(conn)
 
