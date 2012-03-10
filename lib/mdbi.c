@@ -20,15 +20,21 @@ mdb_res_t *mdb_cmd(const char *cmd, ...)
 	size_t size = vsnprintf(env.m->buf, sizeof(env.m->buf), cmd, aq);
 	va_end(aq);
 
+	mdb_res_t *res;
 	if (size >= sizeof(env.m->buf)) {
 		char *buf = malloc(size + 1);
 		vsnprintf(buf, size + 1, cmd, ap);
 		va_end(ap);
-		void *r = redisCommand(env.m->c, buf);
+		res = redisCommand(env.m->c, buf);
 		free(buf);
-		return r;
 	} else {
 		va_end(ap);
-		return redisCommand(env.m->c, env.m->buf);
+		res = redisCommand(env.m->c, env.m->buf);
 	}
+
+	if (!res || res->type == MDB_RES_ERROR) {
+		mdb_clear(res);
+		return NULL;
+	}
+	return res;
 }

@@ -42,14 +42,25 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	if (!res)
 		return 0;
 	db_clear(res);
+
+	set_idle_time(sid, time(NULL));
 	return sid;
 }
 
 int set_idle_time(session_id_t sid, fb_time_t t)
 {
-	char sid_buf[26], time_buf[26];
-	snprintf(sid_buf, sizeof(sid_buf), "%"PRIdSID, sid);
-	snprintf(time_buf, sizeof(time_buf), "%"PRIdFBT, t);
+	mdb_res_t *res = mdb_cmd("ZADD idle %"PRIdSID" %"PRIdFBT, sid, t);
+	mdb_clear(res);
+	return !res;
+}
 
-	mdb_cmd("ZADD idle %s %s", sid, t);
+fb_time_t get_idle_time(session_id_t sid)
+{
+	mdb_res_t *res = mdb_cmd("ZSCORE idle %"PRIdSID, sid);
+	if (!res)
+		return 0;
+	
+	fb_time_t t = res->type == MDB_RES_INTEGER ? res->integer : 0;
+	mdb_clear(res);
+	return t;
 }
