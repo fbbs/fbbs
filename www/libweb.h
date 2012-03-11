@@ -98,7 +98,6 @@ struct post_log {
 extern int loginok;
 
 extern struct userec currentuser;
-extern struct user_info *u_info;
 extern char fromhost[];
 
 

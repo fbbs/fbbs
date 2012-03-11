@@ -51,7 +51,6 @@ char secname[SECNUM][2][20] = {
 
 int loginok = 0;
 struct userec currentuser;
-struct user_info *u_info;
 
 /**
  * Get an environment variable.
@@ -318,8 +317,12 @@ int get_user_flag(void)
 
 void set_user_flag(int flag)
 {
-	if (loginok)
-		uidshm->passwd[u_info->uid - 1].flags[1] = flag;
+	if (loginok) {
+		int n = searchuser(currentuser.userid) - 1;
+		if (n < 0 || n >= MAXUSERS)
+			return;
+		uidshm->passwd[n].flags[1] = flag;
+	}
 }
 
 void print_session(void)
