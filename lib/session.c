@@ -84,3 +84,16 @@ int get_current_board(session_id_t sid)
 {
 	return (int) mdb_get_integer(0, "ZSCORE current_board %"PRIdSID, sid);
 }
+
+int set_user_status(int status)
+{
+	mdb_res_t *res = mdb_cmd("HSET user_status %"PRIdSID" %d",
+			session.id, status);
+	mdb_clear(res);
+	return !res;
+}
+
+int get_user_status(session_id_t sid)
+{
+	return (int) mdb_get_integer(0, "HGET user_status %"PRIdSID, sid);
+}

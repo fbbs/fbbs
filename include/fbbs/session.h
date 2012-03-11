@@ -38,5 +38,7 @@ extern int set_idle_time(session_id_t sid, fb_time_t t);
 extern fb_time_t get_idle_time(session_id_t sid);
 extern int set_current_board(session_id_t sid, int bid);
 extern int get_current_board(session_id_t sid);
+extern int set_user_status(int status);
+extern int get_user_status(session_id_t sid);
 
 #endif // FB_SESSION_H

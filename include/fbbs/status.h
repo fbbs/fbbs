@@ -68,6 +68,4 @@ enum {
 	ST_WWW = 0x40000000,
 };
 
-void set_user_status(int status);
-
 #endif // FB_STATUS_H
