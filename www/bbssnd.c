@@ -5,6 +5,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 #include "fbbs/web.h"
 
 static int edit_article(const char *file, const char *content, const char *ip)
@@ -139,8 +140,8 @@ int bbssnd_main(void)
 	}
 
 	time_t now = time(NULL);
-	int diff = now - u_info->last_post_time;
-	u_info->last_post_time = now;
+	int diff = now - get_last_post_time();
+	set_last_post_time(now);
 	if (diff < 6)
 		return BBS_EPFREQ;
 
