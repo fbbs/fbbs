@@ -32,6 +32,7 @@ typedef struct {
 extern session_id_t session_new_id(void);
 extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 		const char *ip_addr, bool is_web, bool is_secure);
+extern int session_destroy(session_id_t sid);
 
 extern int set_idle_time(session_id_t sid, fb_time_t t);
 extern fb_time_t get_idle_time(session_id_t sid);

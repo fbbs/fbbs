@@ -47,6 +47,20 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	return sid;
 }
 
+int session_destroy(session_id_t sid)
+{
+	db_res_t *res = db_cmd("DELETE from sessions WHERE id = %"DBIdSID, sid);
+	db_clear(res);
+
+	mdb_res_t *r = mdb_cmd("ZREM current_board %"PRIdSID, sid);
+	mdb_clear(r);
+
+	r = mdb_cmd("ZREM idle %"PRIdSID, sid);
+	mdb_clear(r);
+
+	return !res;
+}
+
 int set_idle_time(session_id_t sid, fb_time_t t)
 {
 	mdb_res_t *res = mdb_cmd("ZADD idle %"PRIdFBT" %"PRIdSID, t, sid);
