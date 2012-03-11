@@ -237,43 +237,6 @@ static void get_client_ip(void)
 #endif
 }
 
-static char *digest_to_hex(const uchar_t *digest, char *buf, size_t size)
-{
-	const char *str = "0123456789abcdef";
-	for (int i = 0; i < size / 2; ++i) {
-		buf[i * 2] = str[(digest[i] & 0xf0) >> 4];
-		buf[i * 2 + 1] = str[digest[i] & 0x0f];
-	}
-	buf[size - 1] = '\0';
-	return buf;
-}
-
-static char *generate_session_key(char *buf, size_t size, session_id_t sid)
-{
-	struct {
-		time_t sec;
-		int usec;
-		int random;
-		session_id_t sid;
-	} s;
-
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	s.sec = tv.tv_sec;
-	s.usec = tv.tv_usec;
-
-	s.random = rand();
-
-	s.sid = sid;
-
-	gcry_md_reset(ctx.sha1);
-	gcry_md_write(ctx.sha1, &s, sizeof(s));
-	gcry_md_final(ctx.sha1);
-
-	const uchar_t *digest = gcry_md_read(ctx.sha1, 0);
-	return digest_to_hex(digest, buf, size);
-}
-
 static bool _get_session(const char *uname, const char *key)
 {
 	bool login = false;
