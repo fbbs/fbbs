@@ -975,12 +975,7 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	move(1, 0);
 	clrtoeol();
 	setbdir(direct, currboard);
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum].inboard > 0) {
-		brdshm->bstatus[uinfo.currbrdnum].inboard--;
-	}
-	uinfo.currbrdnum = board.id;
-	update_ulist(&uinfo, utmpent);
-	brdshm->bstatus[uinfo.currbrdnum].inboard++;
+	set_current_board(board.id);
 
 	return NEWDIRECT;
 }
@@ -3053,12 +3048,7 @@ int board_read() {
 
 	brc_initial(currentuser.userid, currboard);
 	setbdir(buf, currboard);
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum].inboard> 0) {
-		brdshm->bstatus[uinfo.currbrdnum].inboard--;
-	}
-	uinfo.currbrdnum = board.id;
-	update_ulist(&uinfo, utmpent);
-	brdshm->bstatus[uinfo.currbrdnum].inboard++;
+	set_current_board(board.id);
 
 	setvfile(notename, currboard, "notes");
 	if (stat(notename, &st) != -1) {
@@ -3085,13 +3075,8 @@ int board_read() {
 			- usetime);
 	bm_log(currentuser.userid, currboard, BMLOG_INBOARD, 1);
 
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum].inboard> 0) {
-		brdshm->bstatus[uinfo.currbrdnum].inboard--;
-	}
-	uinfo.currbrdnum = 0;
-	update_ulist(&uinfo, utmpent);
-	bonlinesync (usetime);
-
+	set_current_board(0);
+	
 	brc_update(currentuser.userid, currboard);
 	return 0;
 }
@@ -3270,11 +3255,7 @@ int Q_Goodbye() {
 		u_exit();
 	}
 
-	if (uinfo.currbrdnum && brdshm->bstatus[uinfo.currbrdnum - 1].inboard> 0) {
-		brdshm->bstatus[uinfo.currbrdnum - 1].inboard--;
-	}
-	uinfo.currbrdnum = 0;
-	update_ulist(&uinfo, utmpent);
+	set_current_board(0);
 
 	sleep(1);
 	exit(0);

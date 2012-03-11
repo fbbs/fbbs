@@ -73,9 +73,9 @@ fb_time_t get_idle_time(session_id_t sid)
 	return (fb_time_t) mdb_get_integer(0, "ZSCORE idle %"PRIdSID, sid);
 }
 
-int set_current_board(session_id_t sid, int bid)
+int set_current_board(int bid)
 {
-	mdb_res_t *res = mdb_cmd("ZADD current_board %d %"PRIdSID, bid, sid);
+	mdb_res_t *res = mdb_cmd("ZADD current_board %d %"PRIdSID, bid, session.id);
 	mdb_clear(res);
 	return !res;
 }
