@@ -30,7 +30,6 @@ int iscolor = 1;
 int mailXX = 0; // If mail quota is exceeded.
 int numofsig = 0;
 jmp_buf byebye;
-int talkrequest = NA;
 time_t lastnote;
 struct user_info uinfo;
 char fromhost[IP_LEN];
@@ -220,23 +219,6 @@ void u_exit(void)
 	update_ulist(&uinfo, utmpent);
 }
 
-// Bell when user receives an talk request.
-static void talk_request(int nothing)
-{
-	signal(SIGUSR1, talk_request);
-	talkrequest = YEA;
-	bell();
-	bell();
-	bell();
-	sleep(1);
-	bell();
-	bell();
-	bell();
-	bell();
-	bell();
-	return;
-}
-
 // Handle abnormal exit.
 void abort_bbs(int nothing)
 {
@@ -369,7 +351,6 @@ static void system_init(void)
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGTTIN, SIG_IGN);
 #endif
-	signal(SIGUSR1, talk_request);
 
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = SA_NODEFER;

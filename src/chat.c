@@ -22,8 +22,6 @@ char buftopic[STRLEN];
 char chat_station[19];
 
 extern char BoardName[];
-extern char page_requestor[];
-extern int talkrequest;
 extern char pagerchar();
 extern void t_pager();
 void set_rec();
@@ -258,7 +256,6 @@ int ent_chat(char *chatbuf) {
 	int currchar;
 	int newmail;
 	extern int talkidletime, enabledbchar;
-	int page_pending = NA;
 	int chatting = YEA;
 	int i, j;
 	char runchatbuf[STRLEN];
@@ -437,10 +434,6 @@ int ent_chat(char *chatbuf) {
 		move(b_lines, currchar + 10);
 		ch = igetkey();
 		talkidletime = 0;
-		if (talkrequest)
-			page_pending = YEA;
-		if (page_pending)
-			page_pending = servicepage(0, NULL);
 		switch (ch) {
 			case KEY_UP: //这里有问题?
 				cmdpos += MAXLASTCMD - 2;

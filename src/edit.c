@@ -43,7 +43,6 @@ void process_MARK_action(int arg, char *msg);
 void msgline() {
 	char buf[256], buf2[STRLEN * 2];
 	void display_buffer();
-	extern int talkrequest;
 	int tmpshow;
 	time_t now;
 
@@ -52,13 +51,6 @@ void msgline() {
 	now = time(0);
 	tmpshow = showansi;
 	showansi = 1;
-	if (talkrequest) {
-		talkreply();
-		clear();
-		showansi = 0;
-		display_buffer();
-		showansi = 1;
-	}
 	strcpy(buf, "[1;33;44m");
 	if (chkmail())
 		strcat(buf, "°æ[5;32m–≈[m[1;33;44m°ø");

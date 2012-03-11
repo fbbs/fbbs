@@ -458,26 +458,6 @@ void update_ulist(struct user_info *uentp, int uent)
 	}
 }
 
-/* added by djq 99.7.19*/
-/* function added by douglas 990305
- set uentp to the user who is calling me
- solve the "one of 2 line call sb. to five" problem
- */
-
-int who_callme(struct user_info *uentp, int (*fptr)(), int farg, int me)
-{
-	int i;
-
-	resolve_utmp();
-	for( i = 0; i < USHM_SIZE; i++ )
-	{
-		*uentp = utmpshm->uinfo[ i ];
-		if( (*fptr)( farg, uentp ) && uentp->destuid==me )
-		return i+1;
-	}
-	return 0;
-}
-
 // Returns count of online users.
 int count_online(void)
 {

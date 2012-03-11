@@ -8,7 +8,6 @@ extern int oflush(void);
 extern void ochar(int ch);
 extern void output(const unsigned char *str, int size);
 extern void add_io(int fd, int timeout);
-extern void add_flush(int (*flushfunc)());
 extern bool inbuf_empty(void);
 extern int igetch(void);
 extern int igetkey(void);

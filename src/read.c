@@ -244,10 +244,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 	lbc = 0;
 	mode = DONOTHING;
 	while ((ch = egetch()) != EOF) {
-		if (talkrequest) {
-			talkreply();
-			mode = FULLUPDATE;
-		} else if (ch >= '0' && ch <= '9') {
+		if (ch >= '0' && ch <= '9') {
 			if (lbc < 6) {
 				if (lbc==1 && lbuf[0]=='0')
 					lbc=0;

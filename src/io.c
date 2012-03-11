@@ -177,7 +177,6 @@ void output(const unsigned char *str, int size)
 
 static int i_newfd = 0;
 static struct timeval i_to, *i_top = NULL;
-static int (*flushf)() = NULL;
 
 void add_io(int fd, int timeout)
 {
@@ -188,12 +187,6 @@ void add_io(int fd, int timeout)
 		i_top = &i_to;
 	} else
 		i_top = NULL;
-}
-
-//	将flushf函数指针指向函数flushfunc
-void add_flush(int (*flushfunc)())
-{
-	flushf = flushfunc;
 }
 
 bool inbuf_empty(void)
@@ -233,8 +226,6 @@ static int get_raw_ch(void)
 			ret = channel_poll(ssh_chan, 0);
 #endif
 		if (ret <= 0) {
-			if (flushf)
-				(*flushf) ();
 			if (big_picture)
 				refresh();
 			else
@@ -434,28 +425,15 @@ int igetkey(void)
 
 int egetch(void)
 {
-	extern int talkrequest; //main.c
-	extern int refscreen; //main.c
 	int rval;
 
 	check_calltime();
-	if (talkrequest) {
-		talkreply();
-		refscreen = YEA;
-		return -1;
-	}
 	while (1) {
 		rval = igetkey();
-		if (talkrequest) {
-			talkreply();
-			refscreen = YEA;
-			return -1;
-		}
 		if (rval != Ctrl('L'))
 			break;
 		redoscr();
 	}
-	refscreen = NA;
 	return rval;
 }
 
