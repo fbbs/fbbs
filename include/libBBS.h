@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include "bbs.h"
-#include "hash.h"
 #include "fbbs/board.h"
 
 //mmdecode.c

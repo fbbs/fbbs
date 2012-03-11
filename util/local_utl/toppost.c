@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "hash.h"
 #include "fbbs/board.h"
 #include "fbbs/cfg.h"
 #include "fbbs/fbbs.h"
