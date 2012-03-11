@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/mdbi.h"
 
 struct userec currentuser;
 
@@ -75,4 +76,16 @@ int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)
 	if (stay < 0 || (is_login && !is_dup))
 		stay = 0;
 	return stay;	
+}
+
+int set_last_post_time(user_id_t uid, fb_time_t t)
+{
+	mdb_res_t *res = mdb_cmd("HSET last_post_time %"PRIdUID" %"PRIdFBT, uid, t);
+	mdb_clear(res);
+	return !res;
+}
+
+fb_time_t get_last_post_time(user_id_t uid)
+{
+	return (fb_time_t) mdb_get_integer(0, "HGET last_post_time %"PRIdUID, uid);
 }

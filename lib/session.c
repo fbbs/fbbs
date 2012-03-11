@@ -70,15 +70,3 @@ int get_current_board(session_id_t sid)
 {
 	return (int) mdb_get_integer(0, "ZSCORE current_board %"PRIdSID, sid);
 }
-
-int set_last_post_time(user_id_t uid, fb_time_t t)
-{
-	mdb_res_t *res = mdb_cmd("HSET last_post_time %"PRIdUID" %"PRIdFBT, uid, t);
-	mdb_clear(res);
-	return !res;
-}
-
-fb_time_t get_last_post_time(user_id_t uid)
-{
-	return (fb_time_t) mdb_get_integer(0, "HGET last_post_time %"PRIdUID, uid);
-}
