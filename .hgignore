@@ -27,18 +27,18 @@ sshbbsd
 thread
 bbswebd
 
-util/local_utl/AnnIndex
-util/local_utl/account
-util/local_utl/averun
-util/local_utl/badbms
-util/local_utl/bbstop
-util/local_utl/bbsuptime
-util/local_utl/birthday
-util/local_utl/cleanuser
-util/local_utl/horoscope
-util/local_utl/newacct
-util/local_utl/showbm
-util/local_utl/statBM
-util/local_utl/toppost
-util/local_utl/zodiac
+util/AnnIndex
+util/account
+util/averun
+util/badbms
+util/bbstop
+util/bbsuptime
+util/birthday
+util/cleanuser
+util/horoscope
+util/newacct
+util/showbm
+util/statBM
+util/toppost
+util/zodiac
 

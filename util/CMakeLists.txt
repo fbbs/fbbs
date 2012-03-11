@@ -1,6 +1,6 @@
-add_definitions(-D_XOPEN_SOURCE=600 -I../../include)
+add_definitions(-D_XOPEN_SOURCE=600 -I../include)
 
-link_directories(../../lib)
+link_directories(../lib)
 
 foreach(name averun account newacct horoscope zodiac)
 	add_executable(${name} ${name}.c chart.c)

@@ -2,7 +2,7 @@
 
 #include <time.h>
 #include <stdio.h>
-#include "../../include/bbs.h"
+#include "bbs.h"
 
 int main (int argc, char *argv[])
 {
