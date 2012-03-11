@@ -42,7 +42,6 @@ int get_online(void);
 int apply_ulist(int (*fptr)());
 int search_ulist(struct user_info *uentp,
 		int (*fptr)(int, const struct user_info *), int farg);
-int search_ulistn(struct user_info *uentp, int (*fptr)(), int farg, int unum);
 void update_ulist(struct user_info *uentp, int uent);
 int who_callme(struct user_info *uentp, int (*fptr)(), int farg, int me);
 int count_online(void);

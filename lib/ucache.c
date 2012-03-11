@@ -449,23 +449,6 @@ int search_ulist(struct user_info *uentp,
 	return 0;
 }
 
-int search_ulistn(struct user_info *uentp, int (*fptr)(), int farg, int unum)
-{
-	int i, j;
-	j = 1;
-	resolve_utmp();
-	for (i = 0; i < USHM_SIZE; i++) {
-		*uentp = utmpshm->uinfo[i];
-		if ((*fptr) (farg, uentp)) {
-			if (j == unum)
-			return i + 1;
-			else
-			j++;
-		}
-	}
-	return 0;
-}
-
 // Copies user_info *'uentp' to ('uent'th - 1) entry of utmp.
 void update_ulist(struct user_info *uentp, int uent)
 {

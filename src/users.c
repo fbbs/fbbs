@@ -275,12 +275,6 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 		case 'H':
 			show_help("help/userlisthelp");
 			return FULLUPDATE;
-		case 't':
-		case 'T':
-			if (!HAS_PERM(PERM_TALK) || uin->uid == usernum)
-				return DONOTHING;
-			ttt_talk(uin);
-			return FULLUPDATE;
 		case 'm':
 		case 'M':
 			if (!HAS_PERM(PERM_MAIL))

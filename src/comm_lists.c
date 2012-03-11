@@ -41,7 +41,7 @@ int m_internet();
 #endif
 
 int online_users_show_override(), t_list(), t_monitor();
-int t_query(), t_talk(), t_pager(), x_cloak();
+int t_query(), t_pager(), x_cloak();
 int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
@@ -115,7 +115,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowFriends", online_users_show_override },
 		{ "ShowLogins", online_users_show },
 		{ "QueryUser", t_query },
-		{ "Talk", t_talk },
 		{ "SetPager", t_pager },
 		{ "SetCloak", x_cloak },
 		{ "SendMsg", s_msg },
