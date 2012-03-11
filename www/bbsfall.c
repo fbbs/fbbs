@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -102,54 +103,47 @@ int bbsfdel_main(void)
 	return 0;
 }
 
-static void override_info(void)
+static void show_sessions_of_friends(void)
 {
-	char file[HOMELEN];
-	sethomefile(file, currentuser.userid, "friends");
-	mmap_t m;
-	m.oflag = O_RDONLY;
-	if (mmap_open(file, &m) < 0)
+	db_res_t *res = db_query("SELECT s.id, u.name, s.visible, s.ip_addr, s.web"
+			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
+			" JOIN users u ON s.user_id = u.id"
+			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
+	if (!res)
 		return;
-	hash_t ht;
-	if (hash_create(&ht, 0, NULL) < 0) {
-		mmap_close(&m);
-		return;
-	}
-	int count = m.size / sizeof(override_t);
-	if (count > 0) {
-		override_t *ov = m.ptr;
-		for (int i = 0; i < count; i++) {
-			hash_set(&ht, ov->id, HASH_KEY_STRING, ov->id);
-			ov++;
-		}
-		time_t now = time(NULL);
-		struct user_info *uinfo = utmpshm->uinfo;
-		struct userec *user;
-		const char *ip;
+
+	fb_time_t now = time(NULL);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		bool visible = db_get_bool(res, i, 2);
+		if (!visible && !HAS_PERM(PERM_SEECLOAK))
+			continue;
+
+		session_id_t sid = db_get_session_id(res, i, 0);
+		const char *uname = db_get_value(res, i, 1);
+		const char *ip = db_get_value(res, i, 3);
+		fb_time_t refresh = get_idle_time(sid);
+		int status = get_user_status(sid);
+
+		struct userec user;
+		getuserec(uname, &user);
+
 		int idle;
-		for (int i = 0; i < MAXACTIVE; ++i) {
-			if (uinfo->active
-					&& !(uinfo->invisible && !HAS_PERM(PERM_SEECLOAK))
-					&& hash_get(&ht, uinfo->userid, HASH_KEY_STRING)) {
-				user = uidshm->passwd + (uinfo->uid - 1);
-				if (HAS_DEFINE(user->userdefine, DEF_NOTHIDEIP))
-					ip = mask_host(uinfo->from);
-				else
-					ip = "......";
-				if (uinfo->mode == ST_BBSNET)
-					idle = 0;
-				else
-					idle = (now - uinfo->idle_time) / 60;
-				printf("<ov id='%s' action='%s' idle='%d' ip='%s'>",
-						uinfo->userid, mode_type(uinfo->mode), idle, ip);
-				xml_fputs(uinfo->username, stdout);
-				printf("</ov>");
-			}
-			uinfo++;
-		}
+		if (refresh < 1 || status == ST_BBSNET)
+			idle = 0;
+		else
+			idle = (now - refresh) / 60;
+
+		if (HAS_DEFINE(user.userdefine, DEF_NOTHIDEIP))
+			ip = mask_host(ip);
+		else
+			ip = "......";
+
+		printf("<ov id='%s' action='%s' idle='%d' ip='%s'>",
+				uname, mode_type(status), idle, ip);
+		xml_fputs(user.username, stdout);
+		printf("</ov>");
 	}
-	hash_destroy(&ht);
-	mmap_close(&m);
+	db_clear(res);
 }
 
 int bbsovr_main(void)
@@ -159,7 +153,9 @@ int bbsovr_main(void)
 	xml_header(NULL);
 	printf("<bbsovr>");
 	print_session();
-	override_info();
+
+	show_sessions_of_friends();
+
 	printf("</bbsovr>");
 	return 0;
 }
