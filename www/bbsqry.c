@@ -6,6 +6,43 @@
 #include "fbbs/uinfo.h"
 #include "fbbs/web.h"
 
+static int show_sessions(const char *uname)
+{
+	int num = 0;
+	db_res_t *res = db_query("SELECT s.id, s.visible, s.web"
+			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
+			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
+	if (!res)
+		return 0;
+
+	fb_time_t now = time(NULL);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		bool visible = db_get_bool(res, i, 1);
+		if (!visible && !HAS_PERM(PERM_SEECLOAK))
+			continue;
+
+		++num;
+
+		session_id_t sid = db_get_session_id(res, i, 0);
+		bool web = db_get_bool(res, i, 2);
+
+		fb_time_t refresh = get_idle_time(sid);
+		int status = get_user_status(sid);
+		
+		int idle;
+		if (refresh < 1 || status == ST_BBSNET)
+			idle = 0;
+		else
+			idle = (now - refresh) / 60;
+
+		printf("<st vis='%d' web='%d' idle='%d' desc='%s'/>",
+				visible, web, idle, mode_type(status));
+	}
+
+	db_clear(res);
+	return num;
+}
+
 int bbsqry_main(void)
 {
 	char userid[IDLEN + 1];
@@ -62,22 +99,7 @@ int bbsqry_main(void)
 		xml_printfile(file, stdout);
 		printf("</smd>");
 
-		// TODO: blacklist?
-		int num = 0;
-		struct user_info *uinfo = utmpshm->uinfo;
-		for (int i = 0; i < USHM_SIZE; ++i, ++uinfo) {
-			if (uinfo->active && uinfo->uid == uid) {
-				if (uinfo->invisible && !HAS_PERM(PERM_SEECLOAK))
-					continue;
-				num++;
-				int idle = (time(NULL) - uinfo->idle_time) / 60;
-				if (idle < 1 || get_raw_mode(uinfo->mode) == ST_BBSNET)
-					idle = 0;
-				printf("<st vis='%d' web='%d' idle='%d' desc='%s'/>",
-						!uinfo->invisible, is_web_user(uinfo->mode),
-						idle, mode_type(uinfo->mode));
-			}
-		}
+		int num = show_sessions(user.userid);
 		if (!num) {
 			time_t logout = user.lastlogout;
 			if (logout < user.lastlogin) {
