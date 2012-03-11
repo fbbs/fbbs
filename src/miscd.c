@@ -47,7 +47,6 @@ int main(int argc, char *argv[]) {
 		atexit(do_exit); //注册退出前运行的函数.正常退出前须执行此函数
 
 		while (1) { //循环
-			refresh_utmp(); //刷新用户临时数据
 			b_closepolls(); //关闭投票
 			flush_ucache(); //将用户在内存中的数据写回.PASSWDS
 			sleep(60 * 15); //睡眠十分钟,即每十五分钟同步一次.        

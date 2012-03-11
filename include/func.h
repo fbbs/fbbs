@@ -39,7 +39,6 @@ int getuserbyuid(struct userec *u, int uid);
 void resolve_utmp(void);
 int allusers(void);
 int get_online(void);
-int refresh_utmp(void);
 int apply_ulist(int (*fptr)());
 int search_ulist(struct user_info *uentp,
 		int (*fptr)(int, const struct user_info *), int farg);

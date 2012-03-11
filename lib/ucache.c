@@ -415,59 +415,6 @@ int get_online(void)
 	return utmpshm->total_num;
 }
 
-// Refreshes utmp(cache for online users.)
-int refresh_utmp(void)
-{
-	int utmpfd, ucachefd;
-	struct user_info *uentp;
-	int n;
-	int count = 0; // Online users count.
-	time_t now;
-
-	resolve_utmp();
-	if (resolve_ucache() == -1)
-		return -1;
-	now = time(NULL);
-	// Lock caches.
-	utmpfd = utmp_lock();
-	if (utmpfd == -1)
-		return -1;
-	ucachefd = ucache_lock();
-	if (ucachefd == -1)
-		return -1;
-
-	memset(uidshm->status, 0, sizeof(uidshm->status));
-	for (n = 0; n < USHM_SIZE; n++) {
-		uentp = &(utmpshm->uinfo[n]);
-		if (uentp->active && uentp->pid) {
-			 // See if pid exists.
-			if (bbskill(uentp, 0) == -1) {
-				memset(uentp, 0, sizeof(struct user_info));
-				continue;
-			} else {
-				// Kick idle users out.
-				if (uentp->mode != ST_BBSNET
-						&& now - uentp->idle_time > IDLE_TIMEOUT) {
-					bbskill(uentp, SIGHUP);
-					memset(uentp, 0, sizeof(struct user_info));
-				} else {
-					// Increase status.
-					uidshm->status[uentp->uid - 1]++;
-					// Count online users.
-					++count;
-				}
-			}
-		}
-	}
-	utmpshm->total_num = count;
-	// Get count of all users from ucache.
-	utmpshm->usersum = allusers();
-	// Unlock caches.
-	ucache_unlock(ucachefd);
-	utmp_unlock(utmpfd);
-	return count;
-}
-
 int apply_ulist(int (*fptr)())
 {
 	struct user_info *uentp, utmp;
