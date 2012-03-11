@@ -1023,7 +1023,7 @@ void define_alias(char *arg) {
 		strlcpy(chat_aliases[chat_alias_count].cmd, arg, 8);
 		chat_aliases[chat_alias_count].cmd[8]=0;
 		strlcpy(chat_aliases[chat_alias_count].action, action, 80);
-		chat_aliases[chat_alias_count].action[81]=0;
+		chat_aliases[chat_alias_count].action[80]=0;
 		sprintf(buf, "自定义alias-%s已经创建\n", arg);
 		printchatline(buf);
 		i=chat_alias_count;
@@ -1179,21 +1179,3 @@ int chat_cmd(char *buf, int cfd) {
 		}
 	return 0;
 }
-/* Above All *//* KCN alias emote , 1999.11.25 */
-/*
- int
- chat_cmd(buf)
- char   *buf;
- {
- int     i;
- if (*buf++ != '/')
- return 0;
- 
- for (i = 0; chat_cmdtbl[i].cmdname; i++) {
- if (*buf != '\0' && chat_cmd_match(buf, chat_cmdtbl[i].cmdname)) {
- chat_cmdtbl[i].cmdfunc(buf);
- return 1;
- }
- }
- return 0;
- } */

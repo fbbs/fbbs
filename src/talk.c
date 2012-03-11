@@ -1221,7 +1221,7 @@ int do_talk(int fd) {
 				/* existing do_log() overflow problem       */
 				else if (isprint2(data[i])) {
 					if (ilen >= 80) {
-						itswords[80] = '\0';
+						itswords[sizeof(itswords) - 1] = '\0';
 						(void) do_log(itswords, 2);
 						ilen = 0;
 					} else {
@@ -1256,7 +1256,7 @@ int do_talk(int fd) {
 						mlen++;
 					}
 				} else if (mlen >= 80) {
-					mywords[80] = '\0';
+					mywords[sizeof(mywords) - 1] = '\0';
 					(void) do_log(mywords, 1);
 					mlen = 0;
 				}

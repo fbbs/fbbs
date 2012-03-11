@@ -538,8 +538,7 @@ int login_user(int unum, char *msg)
 
 	users[unum].utent = utent;
 	strcpy(users[unum].userid, userid);
-	strlcpy(users[unum].chatid, chatid, CHAT_IDLEN - 1);
-	users[unum].chatid[CHAT_IDLEN] = '\0';
+	strlcpy(users[unum].chatid, chatid, sizeof(users[unum].chatid));
 	send_to_unum(unum, CHAT_LOGIN_OK);
 	print_user_counts(unum);
 	enter_room(unum, mainroom, (char *) NULL);
