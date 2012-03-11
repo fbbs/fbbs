@@ -50,7 +50,7 @@
 #include <sys/select.h>
 #endif
 
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #if NO_SETPGID
 #define setpgid setpgrp

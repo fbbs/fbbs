@@ -12,7 +12,7 @@
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 

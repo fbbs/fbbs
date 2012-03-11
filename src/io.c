@@ -8,7 +8,7 @@
 #include "libssh/libssh.h"
 #endif // ENABLE_SSH
 #include "bbs.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 

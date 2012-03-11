@@ -2,7 +2,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/tui_list.h"
 

@@ -25,7 +25,7 @@
 
 #define EXTERN
 #include "bbs.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 int use_define = 0;
@@ -40,13 +40,6 @@ extern int convcode;
 extern struct UCACHE *uidshm;
 #define TH_LOW	10
 #define TH_HIGH	15
-
-
-void set_user_status(int status)
-{
-	uinfo.mode = status;
-	update_ulist(&uinfo, utmpent);
-}
 
 //      对于权限定义值,判断其第i位是否为真,并根据use_define的值来
 //      调整其对应位的权限显示字符串

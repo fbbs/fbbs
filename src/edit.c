@@ -3,7 +3,7 @@
 #include "mmap.h"
 #include "fbbs/board.h"
 #include "fbbs/helper.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/post.h"
 #include "fbbs/terminal.h"

@@ -17,7 +17,7 @@
 #include "fbbs/dbi.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"

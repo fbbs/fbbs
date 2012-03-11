@@ -4,7 +4,6 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/register.h"
-#include "fbbs/status.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 

@@ -1,6 +1,6 @@
 #include "bbs.h"
 #include "fbbs/register.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 

@@ -1,6 +1,6 @@
 #include "site.h"
 #include <stdbool.h>
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 
 /**
  * Get raw user mode.

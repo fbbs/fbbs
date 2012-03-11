@@ -1,7 +1,7 @@
 #include <dlfcn.h>
 #include "bbs.h"
 #include "sysconf.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 

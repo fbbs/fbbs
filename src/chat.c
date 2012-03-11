@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "chat.h"
-#include "fbbs/status.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/uinfo.h"
