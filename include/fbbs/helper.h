@@ -1,6 +1,8 @@
 #ifndef FB_HELPER_H
 #define FB_HELPER_H
 
+#include "fbbs/session.h"
+
 extern sigjmp_buf bus_jump;
 
 extern char *sethomefile(char *buf, const char *userid, const char *filename);
@@ -11,6 +13,7 @@ extern char *setmfile(char *buf, const char *userid, const char *filename);
 extern char *setmdir(char *buf, const char *userid);
 extern void sigbus(int signo);
 extern int bbskill(struct user_info *user, int sig);
+extern int bbs_kill(session_id_t sid, int pid, int sig);
 extern void SpecialID(const char *uid, char *host, int len);
 extern bool seek_in_file(const char *filename, const char *seekstr);
 extern const char *mask_host(const char *host);

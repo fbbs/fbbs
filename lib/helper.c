@@ -5,6 +5,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/mdbi.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"
 
@@ -97,6 +98,22 @@ int bbskill(struct user_info *user, int sig)
 	}
 	// Sending signals to multiple processes is not allowed.
 	return -1;
+}
+
+int bbs_kill(session_id_t sid, int pid, int sig)
+{
+	if (sid <= 0)
+		return -1;
+
+	if (pid > 0) {
+		return kill(pid, sig);
+	} else {
+		if (sig == SIGHUP) {
+			return session_destroy(sid);
+		} else {
+			return 0;
+		}
+	}
 }
 
 // Search 'uid' in id-host pairs in "etc/special.ini"(case insensitive)
