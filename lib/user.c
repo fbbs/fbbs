@@ -89,3 +89,15 @@ fb_time_t get_last_post_time(user_id_t uid)
 {
 	return (fb_time_t) mdb_get_integer(0, "HGET last_post_time %"PRIdUID, uid);
 }
+
+int set_doc_mode(int mode)
+{
+	mdb_res_t *res = mdb_cmd("HSET doc_mode %"PRIdUID" %d", session.uid, mode);
+	mdb_clear(res);
+	return !res;
+}
+
+int get_doc_mode(void)
+{
+	return (int) mdb_get_integer(0, "HGET doc_mode %"PRIdUID, session.uid);
+}

@@ -23,5 +23,7 @@ extern int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logou
 
 extern int set_last_post_time(user_id_t uid, fb_time_t t);
 extern fb_time_t get_last_post_time(user_id_t uid);
+extern int set_doc_mode(int mode);
+extern int get_doc_mode(void);
 
 #endif // FB_USER_H

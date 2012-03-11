@@ -11,6 +11,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/status.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 #include "fbbs/web.h"
 
 char seccode[SECNUM][6]={
@@ -299,8 +300,9 @@ const char *get_doc_mode_str(void)
 {
 	if (!loginok)
 		return "";
-	char flag = uidshm->passwd[u_info->uid - 1].flags[1] & 0xf;
-	switch (flag) {
+
+	int mode = get_doc_mode();
+	switch (mode) {
 		case MODE_THREAD:
 			return "t";
 		case MODE_FORUM:

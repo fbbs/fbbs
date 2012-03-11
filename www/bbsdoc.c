@@ -7,6 +7,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
+#include "fbbs/user.h"
 #include "fbbs/web.h"
 
 enum {
@@ -155,19 +156,6 @@ static int get_bbsdoc(const char *dir, int *start, int count, int mode)
 }
 
 extern int web_sector(void);
-
-int get_doc_mode(void)
-{
-	return get_user_flag() & 0xf;
-}
-
-void set_doc_mode(int mode)
-{
-	if (loginok) {
-		char flag = uidshm->passwd[u_info->uid - 1].flags[1] & 0xf0;
-		uidshm->passwd[u_info->uid - 1].flags[1] = flag | (mode & 0x0f);
-	}
-}
 
 static void _print_board_img(const char *board)
 {
