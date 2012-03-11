@@ -42,7 +42,6 @@ int m_internet();
 
 int online_users_show_override(), t_list(), t_monitor();
 int t_query(), t_pager(), x_cloak();
-int ent_chat();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
 extern int tui_following_list(void);
@@ -121,7 +120,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowMsg", msg_more },
 		{ "SetFriends", tui_following_list },
 		{ "SetRejects", tui_black_list },
-		{ "EnterChat", ent_chat },
 		{ "ListLogins", t_list },
 		{ "Monitor", t_monitor },
 		{ "FillForm", fill_reg_form },

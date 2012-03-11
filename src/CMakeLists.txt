@@ -5,7 +5,7 @@ add_definitions(${FB_XOPEN_SOURCE_DEFINE} ${FB_PLATFORM_DEFINE} -DTERMIOS
 
 link_directories(/usr/local/lib ../lib)
 
-add_library(fbcmn STATIC announce.c bbs.c bm.c board.c chat.c
+add_library(fbcmn STATIC announce.c bbs.c bm.c board.c
 	comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c help.c list.c
 	mail.c maintain.c more.c namecomplete.c postheader.c read.c register.c
 	screen.c sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c readabc.c
@@ -18,15 +18,12 @@ target_link_libraries(bbsd crypt ${FB_LIBDL_LINK} fbbs fbcmn)
 add_executable(miscd miscd.c io.c main.c)
 target_link_libraries(miscd crypt ${FB_LIBDL_LINK} fbbs fbcmn)
 
-add_executable(chatd station.c)
-target_link_libraries(chatd fbbs)
-
 add_executable(thread thread.c)
 target_link_libraries(thread fbbs)
 
 add_library(admintool MODULE admintool.c title_admin.c)
 
-install(TARGETS bbsd miscd chatd thread
+install(TARGETS bbsd miscd thread
 	RUNTIME DESTINATION bin)
 install(TARGETS admintool LIBRARY DESTINATION lib)
 if(ENABLE_SSH)

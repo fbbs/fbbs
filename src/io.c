@@ -176,18 +176,7 @@ void output(const unsigned char *str, int size)
 }
 
 static int i_newfd = 0;
-static struct timeval i_to, *i_top = NULL;
-
-void add_io(int fd, int timeout)
-{
-	i_newfd = fd;
-	if (timeout) {
-		i_to.tv_sec = timeout;
-		i_to.tv_usec = 0;
-		i_top = &i_to;
-	} else
-		i_top = NULL;
-}
+static struct timeval *i_top = NULL;
 
 bool inbuf_empty(void)
 {
