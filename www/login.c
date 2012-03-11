@@ -190,3 +190,25 @@ int web_login(void)
 	login_redirect(key);
 	return 0;
 }
+
+static void logout(void)
+{
+	update_user_stay(&currentuser, false, false);
+	save_user_data(&currentuser);
+}
+
+int web_logout(void)
+{
+	if (!session.id) {
+		printf("Location: sec\n\n");
+		return 0;
+	}
+
+	logout();
+
+	printf("Set-cookie: utmpnum=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+			"Set-cookie: utmpkey=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+			"Set-cookie: utmpuserid=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+			"Location: sec\n\n");
+	return 0;
+}

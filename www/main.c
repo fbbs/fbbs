@@ -13,7 +13,7 @@ extern int bbssec_main(void);
 extern int web_all_boards(void);
 extern int web_sector(void);
 extern int web_login(void);
-extern int bbslogout_main(void);
+extern int web_logout(void);
 extern int bbsdoc_main(void);
 extern int bbscon_main(void);
 extern int bbspst_main(void);
@@ -101,7 +101,7 @@ const static web_handler_t handlers[] = {
 	{ "idle", bbsidle_main, ST_IDLE },
 	{ "info", bbsinfo_main, ST_GMENU },
 	{ "login", web_login, ST_LOGIN},
-	{ "logout", bbslogout_main, ST_MMENU },
+	{ "logout", web_logout, ST_MMENU },
 	{ "mail", bbsmail_main, ST_RMAIL },
 	{ "mailcon", bbsmailcon_main, ST_RMAIL },
 	{ "mailman", web_mailman, ST_RMAIL },
