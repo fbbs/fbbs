@@ -468,44 +468,6 @@ int refresh_utmp(void)
 	return count;
 }
 
-int getnewutmpent(struct user_info *up)
-{
-	int utmpfd, ucachefd;
-	struct user_info *uentp;
-	int i;
-
-	resolve_utmp();
-	if (resolve_ucache() == -1)
-		return -1;
-
-	utmpfd=utmp_lock();
-	if (utmpfd == -1) {
-		return -1;
-	}
-
-	if (utmpshm->max_login_num < get_online())
-		utmpshm->max_login_num = get_online();
-	for (i = 0; i < USHM_SIZE; i++) {
-		uentp = &(utmpshm->uinfo[i]);
-		if (!uentp->active || !uentp->pid)
-			break;
-	}
-	if (i >= USHM_SIZE) {
-		utmp_unlock(utmpfd);
-		return -2;
-	}
-	utmpshm->uinfo[i] = *up;
-	utmpshm->total_num++;
-
-	utmp_unlock(utmpfd);
-
-	ucachefd=ucache_lock();
-	uidshm->status[up->uid-1]++;
-	ucache_unlock(ucachefd);
-
-	return i + 1;
-}
-
 int apply_ulist(int (*fptr)())
 {
 	struct user_info *uentp, utmp;
