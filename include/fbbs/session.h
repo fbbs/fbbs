@@ -110,4 +110,6 @@ extern int get_current_board(session_id_t sid);
 extern int set_user_status(int status);
 extern int get_user_status(session_id_t sid);
 
+extern db_res_t *get_sessions_of_followings(void);
+
 #endif // FB_SESSION_H

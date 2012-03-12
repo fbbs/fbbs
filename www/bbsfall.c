@@ -105,10 +105,7 @@ int bbsfdel_main(void)
 
 static void show_sessions_of_friends(void)
 {
-	db_res_t *res = db_query("SELECT s.id, u.name, s.visible, s.ip_addr, s.web"
-			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
-			" JOIN users u ON s.user_id = u.id"
-			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
+	db_res_t *res = get_sessions_of_followings();
 	if (!res)
 		return;
 

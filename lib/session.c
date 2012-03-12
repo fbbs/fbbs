@@ -97,3 +97,11 @@ int get_user_status(session_id_t sid)
 {
 	return (int) mdb_get_integer(0, "HGET user_status %"PRIdSID, sid);
 }
+
+db_res_t *get_sessions_of_followings(void)
+{
+	return db_query("SELECT s.id, u.name, s.visible, s.ip_addr, s.web"
+			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
+			" JOIN users u ON s.user_id = u.id"
+			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
+}
