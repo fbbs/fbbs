@@ -562,7 +562,7 @@ int ch, ssize;
 		case 'o':
 			if (!HAS_PERM(PERM_LOGIN))
 				break;
-			online_users_show_override();
+			show_online_followings();
 			return FULLUPDATE;
 		break;
 		case '!': /* youzi leave */

@@ -74,7 +74,7 @@ int SR_read();
 int SR_author();
 int SR_BMfunc();
 int Q_Goodbye();
-int online_users_show_override();
+int show_online_followings(void);
 int s_msg();
 int send_msg();
 int b_notes_passwd();
@@ -2973,7 +2973,7 @@ int show_online(void)
 		return DONOTHING;
 	}
 #endif
-	online_users_show_board();
+	show_users_in_board();
 	return FULLUPDATE;
 }
 
@@ -3012,7 +3012,7 @@ struct one_key read_comms[] = {
 		{'=', SR_first}, {Ctrl('S'), SR_read}, {'p', SR_read},
 		{Ctrl('U'), SR_author}, {'b', SR_BMfunc}, {Ctrl('T'), acction_mode},
 		{'t', thesis_mode}, {'!', Q_Goodbye}, {'S', s_msg},
-		{'f', new_flag_clear}, {'o', online_users_show_override}, {'L', BM_range},
+		{'f', new_flag_clear}, {'o', show_online_followings}, {'L', BM_range},
 		{'*', show_file_info}, {'Z', send_msg}, {'|', lock}, {'\0', NULL}
 };
 

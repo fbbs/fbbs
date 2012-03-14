@@ -18,7 +18,7 @@ int Announce(), Personal(), Info(), Goodbye();
 int board_read(), board_select(), Welcome();
 int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
-int Conditions(), x_cloak(), online_users_show(), x_info(), x_vote();
+int Conditions(), x_cloak(), show_online_users(), x_info(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();
 int shownotepad(), x_userdefine();
 int m_new(), m_read(), m_send(), g_send();
@@ -40,7 +40,7 @@ int ent_winmine();
 int m_internet();
 #endif
 
-int online_users_show_override(), t_list(), t_monitor();
+int show_online_followings(), t_list(), t_monitor();
 int t_query(), t_pager(), x_cloak();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
@@ -111,8 +111,8 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "SendNetMail", m_internet },
 #endif
 		{ "UserDefine", x_userdefine },
-		{ "ShowFriends", online_users_show_override },
-		{ "ShowLogins", online_users_show },
+		{ "ShowFriends", show_online_followings },
+		{ "ShowLogins", show_online_users },
 		{ "QueryUser", t_query },
 		{ "SetPager", t_pager },
 		{ "SetCloak", x_cloak },

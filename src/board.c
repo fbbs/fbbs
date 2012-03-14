@@ -875,7 +875,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 		case 'o':
 			if (!HAS_PERM(PERM_LOGIN))
 				return DONOTHING;
-			online_users_show_override();
+			show_online_followings();
 			st_changed = true;
 			break;
 		case 'a':

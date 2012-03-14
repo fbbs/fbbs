@@ -100,8 +100,14 @@ int get_user_status(session_id_t sid)
 
 db_res_t *get_sessions_of_followings(void)
 {
-	return db_query("SELECT s.id, u.name, s.visible, s.ip_addr, s.web"
+	return db_query("SELECT s.id, u.name, s.visible, s.ip_addr, s.web,"
+			"f.notes, u.id"
 			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
 			" JOIN users u ON s.user_id = u.id"
 			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
+}
+
+db_res_t *get_active_sessions(void)
+{
+	return db_exec_query(env.d, true, SESSION_ACTIVE_QUERY);
 }

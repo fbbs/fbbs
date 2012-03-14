@@ -981,7 +981,7 @@ void start_client(void)
 
 	num_alcounter();
 	if (count_friends > 0 && DEFINE(DEF_LOGFRIEND))
-		online_users_show_override();
+		show_online_followings();
 
 	sysconf_load(false);
 	while (1) {
