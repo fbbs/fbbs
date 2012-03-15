@@ -582,7 +582,6 @@ void sig_catcher() {
 	ulistpage++;
 	if (uinfo.mode != ST_MONITOR) {
 #ifdef DOTIMEOUT
-		init_alarm();
 #else
 		signal(SIGALRM, SIG_IGN);
 #endif

@@ -44,32 +44,9 @@ static iobuf_t inbuf;   ///< Input buffer.
 static iobuf_t outbuf;  ///< Output buffer.
 
 int KEY_ESC_arg;
-static int i_mode= INPUT_ACTIVE;
 
 // TODO: why here..
 struct user_info uinfo;
-
-//	超时处理函数,将非特权ID超时时踢出bbs
-void hit_alarm_clock() {
-	if (HAS_PERM(PERM_NOTIMEOUT))
-		return;
-	if (i_mode == INPUT_IDLE) {
-		clear();
-		prints("Idle timeout exceeded! Booting...\n");
-		kill(getpid(), SIGHUP);
-	}
-	i_mode = INPUT_IDLE;
-	if (uinfo.mode == ST_LOGIN)
-		alarm(LOGIN_TIMEOUT);
-	else
-		alarm(IDLE_TIMEOUT);
-}
-
-//初始化超时时钟信号,将hit_alarm_clock函数挂在此信号处理句柄上
-void init_alarm() {
-	signal(SIGALRM, hit_alarm_clock);
-	alarm(IDLE_TIMEOUT);
-}
 
 /**
  *
@@ -244,7 +221,6 @@ static int get_raw_ch(void)
 		}
 		inbuf.cur = 0;
 		inbuf.size = ret;
-		i_mode = INPUT_ACTIVE;
 	}
 	return inbuf.buf[inbuf.cur++];
 }

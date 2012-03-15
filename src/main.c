@@ -340,7 +340,6 @@ static void system_init(void)
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 #ifdef DOTIMEOUT
-	init_alarm();
 	uinfo.mode = ST_LOGIN;
 	alarm(LOGIN_TIMEOUT);
 #else

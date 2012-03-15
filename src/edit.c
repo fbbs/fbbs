@@ -1669,7 +1669,6 @@ int vedit(char *filename, int write_header_to_file, int modifyheader) {
 	{
 		linelen = WRAPMARGIN;
 	}
-	init_alarm();
 	ismsgline = (DEFINE(DEF_EDITMSG)) ? 1 : 0;
 	msg();
 	ans = raw_vedit(filename, write_header_to_file, modifyheader);
