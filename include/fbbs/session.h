@@ -101,6 +101,7 @@ typedef struct {
 	user_id_t uid;
 	int pid;
 	int flag;
+	int status;
 } bbs_session_t;
 
 extern session_id_t session_new_id(void);

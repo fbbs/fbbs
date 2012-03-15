@@ -8,6 +8,7 @@
 #include "libssh/libssh.h"
 #endif // ENABLE_SSH
 #include "bbs.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -381,7 +382,7 @@ static int do_igetkey(void)
 int igetkey(void)
 {
 	int ch = do_igetkey();
-	while ((RMSG || msg_num) && uinfo.mode != ST_LOCKSCREEN) {
+	while ((RMSG || msg_num) && session.status != ST_LOCKSCREEN) {
 		msg_reply(ch);
 		ch = do_igetkey();
 	}
@@ -495,8 +496,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	}
 	clrtoeol();
 	while (1) {
-		if ( (uinfo.in_chat == YEA || uinfo.mode == ST_TALK
-					|| uinfo.mode == ST_FIVE) && RMSG == YEA) {
+		if (RMSG) {
 			refresh();
 		}
 		ch = igetkey();

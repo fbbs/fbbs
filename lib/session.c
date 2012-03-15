@@ -87,6 +87,7 @@ int get_current_board(session_id_t sid)
 
 int set_user_status(int status)
 {
+	session.status = status;
 	mdb_res_t *res = mdb_cmd("HSET user_status %"PRIdSID" %d",
 			session.id, status);
 	mdb_clear(res);
