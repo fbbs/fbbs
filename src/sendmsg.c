@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "fbbs/fbbs.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -564,7 +565,7 @@ static int msg_show(msg_status_t *st, char *head, size_t hsize,
 	if (st->rpid) {
 		strlcpy(st->receiver, head + 12, sizeof(st->receiver));
 		strtok(st->receiver, " ");
-		int line = (uinfo.mode == ST_TALK ? t_lines / 2 - 1 : 0);
+		int line = (session.status == ST_TALK ? t_lines / 2 - 1 : 0);
 		st->cury = show_msg(currentuser.userid, head, buf, line,
 				st->status == MSG_REPLYING);
 	}

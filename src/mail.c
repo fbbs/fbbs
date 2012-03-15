@@ -1,35 +1,12 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: mail.c 369 2007-05-12 17:18:27Z danielfree $
- */
-
-extern struct postheader header;
 #include "bbs.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
+
+extern struct postheader header;
 
 /*For read.c*/
 int auth_search_down();
@@ -451,8 +428,8 @@ char userid[];
 		pressreturn();
 		return 0;
 	}
-	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_LAUSERS
-			&& uinfo.mode != ST_FRIEND && uinfo.mode != ST_GMENU) {
+	if (session.status != ST_LUSERS && session.status != ST_LAUSERS
+			&& session.status != ST_FRIEND && session.status != ST_GMENU) {
 		move(1, 0);
 		clrtoeol();
 		set_user_status(ST_SMAIL);
@@ -1637,7 +1614,7 @@ int doforward(const char *direct, struct fileheader *fh, int mode)
 			prints("[%s] 信箱容量已满，无法收信。\n",address);
 			return BBS_ERMQE;
 		}
-		if (is_blocked(lookupuser.userid));
+		if (is_blocked(lookupuser.userid))
 			return BBS_EBLKLST;
 
 		/* added by roly 03.03.10*/

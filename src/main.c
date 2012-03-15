@@ -153,7 +153,7 @@ static void u_enter(void)
 		currentuser.flags[0] &= ~CLOAK_FLAG;
 	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
 		uinfo.invisible = YEA;
-	uinfo.mode = ST_LOGIN;
+	session.status = ST_LOGIN;
 #endif
 	chk_giveupbbs();
 
@@ -229,9 +229,9 @@ void abort_bbs(int nothing)
 	}
 
 	// Save user's work.
-	if (uinfo.mode == ST_POSTING || uinfo.mode == ST_SMAIL
-			|| uinfo.mode == ST_EDIT || uinfo.mode == ST_EDITUFILE
-			|| uinfo.mode == ST_EDITSFILE || uinfo.mode == ST_EDITANN)
+	if (session.status == ST_POSTING || session.status == ST_SMAIL
+			|| session.status == ST_EDIT || session.status == ST_EDITUFILE
+			|| session.status == ST_EDITSFILE || session.status == ST_EDITANN)
 		keep_fail_post();
 
 	if (started) {
@@ -340,7 +340,7 @@ static void system_init(void)
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 #ifdef DOTIMEOUT
-	uinfo.mode = ST_LOGIN;
+	session.status = ST_LOGIN;
 	alarm(LOGIN_TIMEOUT);
 #else
 	signal(SIGALRM, SIG_SIG);

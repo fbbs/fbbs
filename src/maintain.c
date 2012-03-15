@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/session.h"
 #include "fbbs/terminal.h"
 
@@ -20,7 +21,7 @@ void securityreport(char *str, int save, int mode)
 	FILE*	se;
 	char    fname[STRLEN];
 	int     savemode;
-	savemode = uinfo.mode;
+	savemode = session.status;
 	report(str, currentuser.userid);
 	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, uinfo.pid);
 	if ((se = fopen(fname, "w")) != NULL) {
@@ -83,7 +84,7 @@ int autoreport(char *title,char *str,int toboard,char *userid,int mode)
     char	fname[STRLEN];
     int 	savemode;
 	
-    savemode = uinfo.mode;
+    savemode = session.status;
     report(title, currentuser.userid);
     sprintf(fname,"tmp/AutoPoster.%s.%05d",currentuser.userid,uinfo.pid);
     if((se=fopen(fname,"w"))!=NULL) {

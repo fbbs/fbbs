@@ -9,6 +9,7 @@
 #endif
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
@@ -86,13 +87,6 @@ extern time_t login_start_time;
 extern char BoardName[];
 extern int cmpbnames();
 extern char fromhost[];
-
-int check_stuffmode() {
-	if (uinfo.mode == ST_RMAIL) //modified by roly 02.03.27
-		return YEA;
-	else
-		return NA;
-}
 
 //  取得用户ID为userid的用户信息,保存在currentuser中
 static int getcurrentuser(char *userid)
@@ -267,18 +261,17 @@ int board_select() {
 
 /* added by roly */
 void Poststring(char *str, char *nboard, char *posttitle, int mode) {
-	int savemode;
 	FILE *se;
 	char fname[STRLEN];
 
-	savemode = uinfo.mode;
+	int status = session.status;
 	sprintf(fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, uinfo.pid);
 	if ((se = fopen(fname, "w")) != NULL) {
 		fprintf(se, "%s", str);
 		fclose(se);
 		Postfile(fname, nboard, posttitle, mode);
 		unlink(fname);
-		set_user_status(savemode);
+		set_user_status(status);
 	}
 }
 
@@ -318,7 +311,7 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 		return DONOTHING;
 	}
 	//add end
-	if (uinfo.mode != ST_RMAIL)
+	if (session.status != ST_RMAIL)
 		sprintf(genbuf, "boards/%s/%s", currboard, fileinfo->filename);
 	else
 		sprintf(genbuf, "mail/%c/%s/%s", toupper(currentuser.userid[0]),
@@ -336,7 +329,7 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!*bname)
 		return FULLUPDATE;
 
-	if (!strcmp(bname, currboard) && uinfo.mode != ST_RMAIL) {
+	if (!strcmp(bname, currboard) && session.status != ST_RMAIL) {
 		prints("\n\n             很抱歉，您不能把文章转到同一个版上。");
 		pressreturn();
 		clear();
@@ -1503,14 +1496,11 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 	return FULLUPDATE;
 }
 
-/*ARGSUSED*/
 int post_reply(int ent, struct fileheader *fileinfo, char *direct) {
 	char uid[STRLEN];
 	char title[STRLEN];
 
-	//char *t;
-	//FILE *fp;
-	int savemode = uinfo.mode;
+	int status = session.status;
 
 	if (!strcmp(currentuser.userid, "guest"))
 		return DONOTHING;
@@ -1533,63 +1523,15 @@ int post_reply(int ent, struct fileheader *fileinfo, char *direct) {
 	setbfile(quote_file, currboard, fileinfo->filename);
 	strcpy(quote_user, fileinfo->owner);
 
-	// find the author
-	// comment by iamfat 2002.08.18 这段对我们没有用处
-	/*
-	 if (!getuser (quote_user))
-	 {
-	 genbuf[0] = '\0';
-	 fp = fopen (quote_file, "r");
-	 if (fp != NULL)
-	 {
-	 fgets (genbuf, 255, fp);
-	 fclose (fp);
-	 }
-	 t = strtok (genbuf, ":");
-	 if (strncmp (t, "发信人", 6) == 0 ||
-	 strncmp (t, "寄信人", 6) == 0 ||
-	 strncmp (t, "Posted By", 9) == 0 || 
-	 strncmp (t, "作  者", 6) == 0) {
-	 while (t != NULL) {
-	 t = (char *) strtok (NULL, " \r\t\n<>");
-	 if (t == NULL)
-	 break;
-	 if (!invalidaddr (t))
-	 break;
-	 }
-	 if (t != NULL)strncpy (uid, t, STRLEN);
-	 }
-	 else {
-	 prints ("对不起，该帐号已经不存在。\n");
-	 pressreturn ();
-	 }
-	 }
-	 else
-	 strcpy (uid, quote_user);
-	 */
-	//rewrote one.  iamfat 2002.08.18 写一个简单的
 	if (!getuser(quote_user)) {
 		prints("对不起，该帐号已经不存在!\n");
 		pressreturn();
 	} else
 		strcpy(uid, quote_user);
-	//rewrote end.
 
-	//make the title
-	/*
-	 if(  toupper (fileinfo->title[0]) != 'R' || 
-	 fileinfo->title[1] != 'e' ||
-	 fileinfo->title[2] != ':')
-	 strcpy (title, "Re: ");
-	 else
-	 title[0] = '\0';
-	 strncat (title, fileinfo->title, STRLEN - 5); */
-	//optimized by iamfat 2002.08.18
 	sprintf(title, "%s%s", strncmp(fileinfo->title, "Re: ", 4) ? "Re: "
 			: "", fileinfo->title);
-	//optimized end.
 
-	// edit, then send the mail
 	switch (do_send(uid, title)) {
 		case -1:
 			prints("系统无法送信\n");
@@ -1607,7 +1549,7 @@ int post_reply(int ent, struct fileheader *fileinfo, char *direct) {
 			prints("信件已成功地寄给原作者 %s\n", uid);
 	}
 	pressreturn();
-	set_user_status(savemode);
+	set_user_status(status);
 	in_mail = NA;
 	return FULLUPDATE;
 }
@@ -2521,7 +2463,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	char num[8];
 	int inum1, inum2;
 
-	if (uinfo.mode == ST_READING) {
+	if (session.status == ST_READING) {
 		if (!am_curr_bm()) {
 			return DONOTHING;
 		}
@@ -2548,7 +2490,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	if (askyn("确定删除", NA, NA) == YEA) {
 		delete_range(direct, inum1, inum2);
 		fixkeep(direct, inum1, inum2);
-		if (uinfo.mode == ST_READING) {
+		if (session.status == ST_READING) {
 			sprintf(genbuf, "Range delete %d-%d on %s", inum1, inum2,
 					currboard);
 			//securityreport (genbuf, 0, 2);
@@ -2744,13 +2686,13 @@ int del_post(int ent, struct fileheader *fileinfo, char *direct) {
 }
 
 int new_flag_clearto(int ent, struct fileheader *fileinfo, char *direct) {
-	if (uinfo.mode != ST_READING)
+	if (session.status != ST_READING)
 		return DONOTHING;
 	return brc_clear(ent, direct, NA);
 }
 
 int new_flag_clear(int ent, struct fileheader *fileinfo, char *direct) {
-	if (uinfo.mode != ST_READING)
+	if (session.status != ST_READING)
 		return DONOTHING;
 	return brc_clear(ent, direct, YEA);
 }
@@ -3712,7 +3654,7 @@ int count_range(int ent, struct fileheader *fileinfo, char *direct) {
 	int numlevel = 1;
 	char title[STRLEN];
 
-	if (uinfo.mode == ST_READING) {
+	if (session.status == ST_READING) {
 		if (!am_curr_bm()) {
 			return DONOTHING;
 		}

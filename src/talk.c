@@ -140,7 +140,7 @@ int t_pager() {
 		uinfo.pager |= FRIEND_PAGER;
 	}
 
-	if (!uinfo.in_chat && uinfo.mode != ST_TALK) {
+	if (!uinfo.in_chat && session.status != ST_TALK) {
 		move(t_lines - 1, 0);
 		clrtoeol();
 		prints("ÄúµÄºô½ÐÆ÷ (pager) ÒÑ¾­[1m%s[mÁË!",
@@ -385,7 +385,7 @@ int t_query(const char *user)
 		return DONOTHING;
 
 	char userid[EXT_IDLEN + 1];
-	switch (uinfo.mode) {
+	switch (session.status) {
 		case ST_LUSERS:
 		case ST_LAUSERS:
 		case ST_FRIEND:
@@ -419,8 +419,8 @@ int t_query(const char *user)
 		return FULLUPDATE;
 	}
 
-	if (uinfo.mode != ST_LUSERS && uinfo.mode != ST_LAUSERS
-			&& uinfo.mode != ST_FRIEND && uinfo.mode != ST_GMENU)
+	if (session.status != ST_LUSERS && session.status != ST_LAUSERS
+			&& session.status != ST_FRIEND && session.status != ST_GMENU)
 	pressanykey();
 	uinfo.destuid = 0;
 	return FULLUPDATE;
@@ -558,7 +558,7 @@ char *modestr;
 	sprintf(buf, "  %-12s %-10s", "Ê¹ÓÃÕß´úºÅ", "Ä¿Ç°¶¯Ì¬");
 	prints("[1;33;44m%s |%s |%s[m", buf, buf, buf);
 	count = shortulist();
-	if (uinfo.mode == ST_MONITOR) {
+	if (session.status == ST_MONITOR) {
 		move(t_lines - 1, 0);
 		sprintf(genbuf,"[1;44;33m  Ä¿Ç°ÓÐ [32m%3d[33m %6sÉÏÏß, Ê±¼ä: [32m%22.22s [33m, Ä¿Ç°×´Ì¬£º[36m%10s   [m"
 				,count, friendmode ? "ºÃÅóÓÑ" : "Ê¹ÓÃÕß", getdatestring(time(NULL), DATE_ZH), friendmode ? "ÄãµÄºÃÅóÓÑ" : "ËùÓÐÊ¹ÓÃÕß");
@@ -580,7 +580,7 @@ int t_list() {
 
 void sig_catcher() {
 	ulistpage++;
-	if (uinfo.mode != ST_MONITOR) {
+	if (session.status != ST_MONITOR) {
 #ifdef DOTIMEOUT
 #else
 		signal(SIGALRM, SIG_IGN);

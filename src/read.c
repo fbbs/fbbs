@@ -137,10 +137,10 @@ int num, ssize;
 	clrtobot();
 	for (i = 0; i < num; i++) {
 		str = (*doentry) (base + i, &pnt[i * ssize]);
-		if (!check_stuffmode())
-		prints("%s", str);
+		if (session.status != ST_RMAIL)
+			prints("%s", str);
 		else
-		showstuff(str);
+			showstuff(str);
 		prints("\n");
 	}
 	move(t_lines - 1, 0);
@@ -417,7 +417,7 @@ int ch, ssize;
 		case 'e':
 		case KEY_LEFT:
 		//if ( digestmode )
-		if( digestmode && uinfo.mode != ST_RMAIL ) //chenhao
+		if( digestmode && session.status != ST_RMAIL ) //chenhao
 		return acction_mode();
 		else
 		return DOQUIT;
@@ -425,7 +425,7 @@ int ch, ssize;
 		redoscr();
 		break;
 		case 'M':
-		savemode = uinfo.mode;
+		savemode = session.status;
 		in_mail=YEA;
 		m_new();
 		in_mail=NA;
@@ -433,7 +433,7 @@ int ch, ssize;
 		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'u':
-		savemode = uinfo.mode;
+		savemode = session.status;
 		set_user_status(ST_QUERY);
 		t_query();
 		set_user_status(savemode);
@@ -477,8 +477,8 @@ int ch, ssize;
 			msg_more();
 			return FULLUPDATE;
 		/*        case 'L':		//chenhao 解决在文章列表时看信的问题
-		 if(uinfo.mode == RMAIL) return DONOTHING;
-		 savemode = uinfo.mode;
+		 if(session.status == RMAIL) return DONOTHING;
+		 savemode = session.status;
 		 m_read();
 		 set_user_status(ST_savemode);
 		 return MODECHANGED;
@@ -498,7 +498,7 @@ int ch, ssize;
 		PUTCURS;
 		break;
 		case '@':
-		savemode = uinfo.mode;
+		savemode = session.status;
 		set_user_status(ST_QUERY);
 		show_online();
 		set_user_status(savemode);
@@ -671,7 +671,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	char subBMitems[3][9] = { "相同主题", "相同作者", "相关主题" };
 
 	if (!in_mail) {
-		if (uinfo.mode != ST_READING)
+		if (session.status != ST_READING)
 			return DONOTHING;
 		if (fileinfo->owner[0] == '-')
 			return DONOTHING;
@@ -955,7 +955,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 	extern int SR_BMDELFLAG;
 	extern char quote_file[120], quote_title[120], quote_board[120];
 
-	if (uinfo.mode != ST_READING)
+	if (session.status != ST_READING)
 		return DONOTHING;
 	if (!am_curr_bm())
 		return DONOTHING;
@@ -1035,7 +1035,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 		if (!*bname)
 			return FULLUPDATE;
 
-		if (!strcmp(bname, currboard)&&uinfo.mode != ST_RMAIL) {
+		if (!strcmp(bname, currboard)&&session.status != ST_RMAIL) {
 			prints("\n\n对不起，本文就在您要转载的版面上，所以无需转载。\n");
 			pressreturn();
 			clear();
@@ -1095,7 +1095,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 				makeDELETEDflag(num1, &fhdr, direct);
 				break;
 			case 7:
-				if (uinfo.mode != ST_RMAIL)
+				if (session.status != ST_RMAIL)
 					sprintf(genbuf, "boards/%s/%s", currboard,
 							fhdr.filename);
 				else
@@ -1465,7 +1465,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle) {
 					0)==-1)
 				break;
 		}
-		if (uinfo.mode != ST_RMAIL)
+		if (session.status != ST_RMAIL)
 			setbfile(tempbuf, currboard, SR_fptr.filename);
 		else
 			sprintf(tempbuf, "mail/%c/%s/%s",
@@ -1673,7 +1673,7 @@ int search_articles(struct keeploc *locmem, const char *query, int gid,
 
 		if (aflag == SEARCH_CONTENT) {
 			char p_name[256];
-			if (uinfo.mode != ST_RMAIL) {
+			if (session.status != ST_RMAIL) {
 				setbfile(p_name, currboard, SR_fptr.filename);
 			} else {
 				sprintf(p_name, "mail/%c/%s/%s",

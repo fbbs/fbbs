@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -1593,7 +1594,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
 				show_message(NULL);
 				break;
 			case 'M':
-				savemode = uinfo.mode;
+				savemode = session.status;
 				m_new();
 				set_user_status(savemode);
 				me.page = 9999;

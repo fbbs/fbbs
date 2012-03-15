@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -261,7 +262,7 @@ int check_calltime(void)
 {
 	int     line;
 	if ( calltime != 0 && time(0) >= calltime ) {
-		if (uinfo.mode == ST_TALK)
+		if (session.status == ST_TALK)
 			line = t_lines / 2 - 1;
 		else
 			line = 0;
@@ -284,13 +285,13 @@ int check_calltime(void)
 
 void R_monitor()
 {
-	if (uinfo.mode != ST_MMENU)
+	if (session.status != ST_MMENU)
 		return;
 
 	/* Added by Ashinmarch on 2007.12.01
 	 * used to support multi-line msgs
 	 */
-	if (uinfo.mode == ST_LOOKMSGS || uinfo.mode == ST_MSG || RMSG == YEA)
+	if (session.status == ST_LOOKMSGS || session.status == ST_MSG || RMSG == YEA)
 		return;
 	/*end*/
 	if (!DEFINE(DEF_ACBOARD) && !DEFINE(DEF_ENDLINE))
