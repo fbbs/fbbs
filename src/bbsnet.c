@@ -14,6 +14,8 @@ enum {
 	DATA_TIMEOUT    = 2400  ///<
 };
 
+extern char fromhost[];
+
 /**
  *
  */
@@ -103,7 +105,7 @@ static void do_bbsnet(const site_t *site)
 		if (he) {
 			memcpy(&sock.sin_addr, he->h_addr_list[0], he->h_length);
 		} else {
-			if ((sock.sin_addr.s_addr = inet_addr(site->ip)) < 0) {
+			if (!inet_aton(site->ip, &sock.sin_addr.s_addr)) {
 				close(fd);
 				set_user_status(ST_MMENU);
 				return;
@@ -129,7 +131,7 @@ static void do_bbsnet(const site_t *site)
 	struct timeval tv;
 	fd_set fds;
 	int ret;
-	char buf[2048];
+	uchar_t buf[2048];
 	while (1) {
 		tv.tv_sec = DATA_TIMEOUT;
 		tv.tv_usec = 0;
@@ -323,7 +325,7 @@ static void bbsnet(const char *config, const char *user)
  */
 int ent_bnet(void)
 {
-	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip", uinfo.from)) {
+	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip", fromhost)) {
 		bbsnet("etc/bbsnet.ini", currentuser.userid);
 	} else {
 		clear();
@@ -339,7 +341,7 @@ int ent_bnet(void)
  */
 int ent_bnet2(void)
 {
-	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip2", uinfo.from)) {
+	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip2", fromhost)) {
 		bbsnet("etc/bbsnet2.ini", currentuser.userid);
 	} else {
 		clear();
