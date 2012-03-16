@@ -13,11 +13,6 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-enum {
-	INPUT_ACTIVE = 0,
-	INPUT_IDLE = 1,
-};
-
 /** ESC process status */
 enum {
 	ESCST_BEG,  ///< begin
@@ -182,9 +177,7 @@ static int get_raw_ch(void)
 			nfds = 1;
 		}
 
-		// TODO: simplify it
-		uinfo.idle_time = time(0);
-		update_ulist(&uinfo, utmpent);
+		cached_set_idle_time();
 
 		to.tv_sec = to.tv_usec = 0;
 		ret = select(nfds, &rset, NULL, NULL, &to);

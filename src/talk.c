@@ -48,64 +48,21 @@ char pagerchar(int friend, int pager) {
 	if (pager & ALL_PAGER)
 		return ' ';
 	if ((friend)
-			) {
-				if (pager & FRIEND_PAGER) return 'O';
-				else return '#';
-			}
-			return '*';
-		}
-
-		int canpage(int friend, int pager) {
-			if ((pager & ALL_PAGER) || HAS_PERM(PERM_OCHAT))
-				return YEA;
-			if ((pager & FRIEND_PAGER)) {
-				if (friend) return YEA;
-			}
-			return NA;
-		}
-
-#ifdef SHOW_IDLE_TIME
-const char *idle_str(struct user_info *uent)
-{
-	static char hh_mm_ss[32];
-	time_t now, diff;
-	int hh, mm;
-	if (uent == NULL) {
-		strcpy(hh_mm_ss, "不详");
-		return hh_mm_ss;
+	   ) {
+		if (pager & FRIEND_PAGER) return 'O';
+		else return '#';
 	}
-
-	now = time(NULL);
-
-	if ( uent->mode == ST_TALK )
-	diff = talkidletime; /* 聊天另有自己的 idle kick 机制 */
-	else if (uent->mode == ST_BBSNET )
-	diff = 0;
-	else
-	diff = now - uent->idle_time;
-
-#ifdef DOTIMEOUT
-	/*
-	 * the 60 * 60 * 24 * 5 is to prevent fault /dev mount from kicking
-	 * out all users
-	 */
-	if (diff > IDLE_TIMEOUT && diff < 86400 * 5 && uent->pid)
-		bbskill(uent, SIGHUP);
-#endif
-
-	hh = diff / 3600;
-	mm = (diff / 60) % 60;
-
-	if (hh> 0)
-	sprintf(hh_mm_ss, "%02d:%02d", hh, mm);
-	else if (mm> 0)
-	sprintf(hh_mm_ss, "%d", mm);
-	else
-	sprintf(hh_mm_ss, "   ");
-
-	return hh_mm_ss;
+	return '*';
 }
-#endif
+
+int canpage(int friend, int pager) {
+	if ((pager & ALL_PAGER) || HAS_PERM(PERM_OCHAT))
+		return YEA;
+	if ((pager & FRIEND_PAGER)) {
+		if (friend) return YEA;
+	}
+	return NA;
+}
 
 int listcuent(struct user_info *uentp) {
 	if (uentp == NULL) {

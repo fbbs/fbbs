@@ -231,16 +231,12 @@ static int mailto(void *uentpv, int index, void *args) {
 			|| (uentp->userlevel & PERM_SPECIAL0 && mailmode == 4)
 			|| (uentp->userlevel & PERM_SPECIAL9 && mailmode == 5)) {
 		mail_file(filename, uentp->userid, save_title);
-		//added by iamfat 2003.11.03 to avoid offline for timeout
-		uinfo.idle_time = time(0);
-		update_ulist(&uinfo, utmpent);
-		//added end.
+		cached_set_idle_time();
 	}
 	/***************把type2独立出来做判断，调用sharedmail_file函数************************/
 	else if (uentp->userlevel & PERM_POST && mailmode == 2) {
 		sharedmail_file(args, uentp->userid, save_title);
-		uinfo.idle_time = time(0);
-		update_ulist(&uinfo, utmpent);
+		cached_set_idle_time();
 	}
 	/******end*******/
 	return 1;

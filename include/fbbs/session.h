@@ -102,6 +102,7 @@ typedef struct {
 	int pid;
 	int flag;
 	int status;
+	fb_time_t idle;
 } bbs_session_t;
 
 extern session_id_t session_new_id(void);
@@ -110,6 +111,7 @@ extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid
 extern int session_destroy(session_id_t sid);
 
 extern int set_idle_time(session_id_t sid, fb_time_t t);
+extern void cached_set_idle_time(void);
 extern fb_time_t get_idle_time(session_id_t sid);
 extern int set_current_board(int bid);
 extern int get_current_board(session_id_t sid);

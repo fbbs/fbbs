@@ -1455,10 +1455,7 @@ char current_maillist;
 			}
 		}
 		mail_file(tmpfile, uid, save_title);
-		//added by iamfat 2003.11.03 avoid offline for timeout
-		uinfo.idle_time = time(0);
-		update_ulist(&uinfo, utmpent);
-		//added end
+		cached_set_idle_time();
 	}
 	unlink(tmpfile);
 	clear();

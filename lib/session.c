@@ -5,6 +5,10 @@
 #include "fbbs/mdbi.h"
 #include "fbbs/session.h"
 
+enum {
+	REFRESH_THRESHOLD = 5,
+};
+
 bbs_session_t session;
 
 int get_online_count(db_conn_t *c)
@@ -66,6 +70,14 @@ int set_idle_time(session_id_t sid, fb_time_t t)
 	mdb_res_t *res = mdb_cmd("ZADD idle %"PRIdFBT" %"PRIdSID, t, sid);
 	mdb_clear(res);
 	return !res;
+}
+
+void cached_set_idle_time(void)
+{
+	time_t now = time(NULL);
+	if (now > session.idle + REFRESH_THRESHOLD)
+		set_idle_time(session.id, now);
+	session.idle = now;
 }
 
 fb_time_t get_idle_time(session_id_t sid)
