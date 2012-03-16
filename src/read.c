@@ -172,7 +172,6 @@ void get_noticedirect(char *curr, char *notice) {
 }
 #endif
 void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize) {
-	extern int talkrequest;
 	struct keeploc * locmem;
 	char lbuf[11];
 	char * ptr;
@@ -1837,7 +1836,7 @@ int searchallboard(char *id, char *patten, int dt, int all, int del,
 		strcpy(INDEX, ".JUNK");
 	now = time(0);
 
-	sprintf(fname, "tmp/searchall.%s.%05d", currentuser.userid, uinfo.pid);
+	sprintf(fname, "tmp/searchall.%s.%05d", currentuser.userid, session.pid);
 	fp3 = fopen(fname, "w");
 	fprintf(fp3, "在所有板查询%s网友%d天以内的大作, 关键字'%s'.\n\n", id, dt, patten);
 	dt = dt * 86400;

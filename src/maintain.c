@@ -23,7 +23,7 @@ void securityreport(char *str, int save, int mode)
 	int     savemode;
 	savemode = session.status;
 	report(str, currentuser.userid);
-	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, uinfo.pid);
+	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, session.pid);
 	if ((se = fopen(fname, "w")) != NULL) {
 		fprintf(se, "ÏµÍ³°²È«¼ÇÂ¼\n[1mÔ­Òò£º%s[m\n", str);
 		if (save){
@@ -86,7 +86,7 @@ int autoreport(char *title,char *str,int toboard,char *userid,int mode)
 	
     savemode = session.status;
     report(title, currentuser.userid);
-    sprintf(fname,"tmp/AutoPoster.%s.%05d",currentuser.userid,uinfo.pid);
+    sprintf(fname,"tmp/AutoPoster.%s.%05d",currentuser.userid, session.pid);
     if((se=fopen(fname,"w"))!=NULL) {
 	    fprintf(se,"%s",str);
         fclose(se);

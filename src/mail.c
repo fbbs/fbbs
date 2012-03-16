@@ -253,7 +253,7 @@ char *userid, *title;
 	/* I hate go to , but I use it again for the noodle code :-) */
 	if (strchr(userid, '@')) {
 		internet_mail = YEA;
-		sprintf(tmp_fname, "tmp/imail.%s.%05d", currentuser.userid, uinfo.pid);
+		sprintf(tmp_fname, "tmp/imail.%s.%05d", currentuser.userid, session.pid);
 		strcpy(filepath, tmp_fname);
 		goto edit_mail_file;
 	}
@@ -1388,7 +1388,7 @@ char current_maillist;
 	strcpy(header.title, "没主题");
 	strcpy(header.ds, "寄信给一群人");
 	header.postboard = NA;
-	sprintf(tmpfile, "tmp/gsend.%s.%05d", currentuser.userid, uinfo.pid);
+	sprintf(tmpfile, "tmp/gsend.%s.%05d", currentuser.userid, session.pid);
 	result = post_header(&header);
 	if( result == -1) {
 		clear();
@@ -1638,7 +1638,7 @@ int doforward(const char *direct, struct fileheader *fh, int mode)
 	if (!valid_addr(address))
 		if (!getuser(address))
 			return -2;
-	sprintf(tmpfname, "tmp/forward.%s.%05d", currentuser.userid, uinfo.pid);
+	sprintf(tmpfname, "tmp/forward.%s.%05d", currentuser.userid, session.pid);
 
 	sprintf(genbuf, "%s/%s", direct, fh->filename);
 	f_cp(genbuf, tmpfname, O_CREAT);
@@ -1669,9 +1669,9 @@ int doforward(const char *direct, struct fileheader *fh, int mode)
 	if (mode == 0)
 	strcpy(fname, tmpfname);
 	else if (mode == 1) {
-		sprintf(fname, "tmp/file.uu%05d", uinfo.pid);
+		sprintf(fname, "tmp/file.uu%05d", session.pid);
 		sprintf(genbuf, "uuencode %s fb-bbs.%05d > %s",
-				tmpfname, uinfo.pid, fname);
+				tmpfname, session.pid, fname);
 		system(genbuf);
 	}
 	if( !strstr(fh->title,"(转寄)"))

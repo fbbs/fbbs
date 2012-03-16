@@ -214,7 +214,7 @@ void u_exit(void)
 	uinfo.sockactive = NA;
 	uinfo.sockaddr = 0;
 	uinfo.destuid = 0;
-	uinfo.pid = 0;
+	session.pid = 0;
 	uinfo.active = NA;
 	update_ulist(&uinfo, utmpent);
 }

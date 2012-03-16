@@ -265,7 +265,7 @@ void Poststring(char *str, char *nboard, char *posttitle, int mode) {
 	char fname[STRLEN];
 
 	int status = session.status;
-	sprintf(fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, uinfo.pid);
+	sprintf(fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, session.pid);
 	if ((se = fopen(fname, "w")) != NULL) {
 		fprintf(se, "%s", str);
 		fclose(se);
@@ -1632,7 +1632,7 @@ static int undelcheck(void *fh1, void *fh2)
 int date_to_fname(char *postboard, time_t now, char *fname) {
 	static unsigned ref = 0;
 
-	sprintf(fname, "M.%ld.%X%X", now, uinfo.pid, ref);
+	sprintf(fname, "M.%ld.%X%X", now, session.pid, ref);
 	ref++;
 	return 0;
 }
@@ -2043,7 +2043,7 @@ int change_title(char *fname, char *title) {
 	if ((fp = fopen(fname, "r")) == NULL)
 		return 0;
 
-	sprintf(outname, "tmp/editpost.%s.%05d", currentuser.userid, uinfo.pid);
+	sprintf(outname, "tmp/editpost.%s.%05d", currentuser.userid, session.pid);
 	if ((out = fopen(outname, "w")) == NULL)
 		return 0;
 
@@ -3036,7 +3036,7 @@ void notepad() {
 	move(0, 0);
 	prints("开始您的留言吧！大家正拭目以待....\n");
 	set_user_status(ST_WNOTEPAD);
-	sprintf(tmpname, "tmp/notepad.%s.%05d", currentuser.userid, uinfo.pid);
+	sprintf(tmpname, "tmp/notepad.%s.%05d", currentuser.userid, session.pid);
 	if ((in = fopen(tmpname, "w")) != NULL) {
 		for (i = 0; i < 3; i++)
 			memset(note[i], 0, STRLEN - 4);

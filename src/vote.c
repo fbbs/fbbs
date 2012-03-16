@@ -424,7 +424,7 @@ int mk_result(int num) {
 	sprintf(fname, "vote/%s/flag.%d", currboard, currvote.opendate); //投票记录文件路径为 vote/版名/flag.开启投票日
 	/*	count_result(NULL); */
 	sug = NULL;
-	sprintf(sugname, "vote/%s/tmp.%d", currboard, uinfo.pid); //投票临时文件路径为 vote/版名/tmp.用户id
+	sprintf(sugname, "vote/%s/tmp.%d", currboard, session.pid); //投票临时文件路径为 vote/版名/tmp.用户id
 	if ((sug = fopen(sugname, "w")) == NULL) {
 		report("open vote tmp file error", currentuser.userid);
 		//prints("Error: 结束投票错误...\n");
@@ -549,7 +549,7 @@ int vote_maintain(char *bname) {
 		prints("投票箱开启了！\n");
 		range++;;
 		sprintf(votename, "tmp/votetmp.%s.%05d", currentuser.userid,
-				uinfo.pid);
+				session.pid);
 		if ((sug = fopen(votename, "w")) != NULL) {
 			//Modified by IAMFAT 2002.06.13
 			//sprintf(buf, "[通知] %s 举办投票：%s", currboard, ball->title);

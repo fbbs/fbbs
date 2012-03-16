@@ -188,7 +188,7 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 	timestr = ctime(&now);
 	strcpy(ret_str, "^Z»Ø");
 	if (msgstr == NULL || mode == 2) {
-		sprintf(msgbuf, "\033[0;1;44;36m%-12.12s\033[33m(\033[36m%-24.24s\033[33m):\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr , " ", ret_str, uinfo.pid);
+		sprintf(msgbuf, "\033[0;1;44;36m%-12.12s\033[33m(\033[36m%-24.24s\033[33m):\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr , " ", ret_str, session.pid);
 		sprintf(wholebuf, "%s\n", msgstr == NULL ? buf : msgstr);
 		strcat(msgbuf, wholebuf);
 #ifdef LOG_MY_MESG
@@ -204,16 +204,16 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 		}
 #endif
 	} else if (mode == 0) {
-		sprintf(msgbuf, "\033[0;1;5;44;33mÕ¾³¤ ÓÚ\033[36m %24.24s \033[33m¹ã²¥£º\033[m\033[1;37;44m%-39.39s\033[m\033[%05dm\n", timestr," ",  uinfo.pid); 
+		sprintf(msgbuf, "\033[0;1;5;44;33mÕ¾³¤ ÓÚ\033[36m %24.24s \033[33m¹ã²¥£º\033[m\033[1;37;44m%-39.39s\033[m\033[%05dm\n", timestr," ",  session.pid); 
 		sprintf(wholebuf, "%s\n", msgstr);
 		strcat(msgbuf, wholebuf);        
 
 	} else if (mode == 1) {
-		sprintf(msgbuf, "\033[0;1;44;36m%-12.12s\033[37m(\033[36m%-24.24s\033[37m) ÑûÇëÄã\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr, " ", ret_str, uinfo.pid); 
+		sprintf(msgbuf, "\033[0;1;44;36m%-12.12s\033[37m(\033[36m%-24.24s\033[37m) ÑûÇëÄã\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr, " ", ret_str, session.pid); 
 		sprintf(wholebuf, "%s\n", msgstr); 
 		strcat(msgbuf, wholebuf);
 	} else if (mode == 3) {
-		sprintf(msgbuf, "\033[0;1;45;36m%-12.12s\033[33m(\033[36m%-24.24s\033[33m):\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr, " ", ret_str, uinfo.pid); 
+		sprintf(msgbuf, "\033[0;1;45;36m%-12.12s\033[33m(\033[36m%-24.24s\033[33m):\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr, " ", ret_str, session.pid);
 		sprintf(wholebuf, "%s\n", msgstr == NULL ? buf : msgstr);
 		strcat(msgbuf, wholebuf);
 	}
@@ -280,7 +280,7 @@ int dowall(const struct user_info *uin)
 
 int hisfriend_wall_logout(const struct user_info *uin)
 {
-	if ((uin->pid - uinfo.pid == 0) || !uin->active || !uin->pid 
+	if ((uin->pid - session.pid == 0) || !uin->active || !uin->pid 
 			|| !(uin->pager & LOGOFFMSG_PAGER))
 		return -1;
 	if (hisfriend(uin) && !is_blocked(uin->userid)) {

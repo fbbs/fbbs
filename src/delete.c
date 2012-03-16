@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/session.h"
 #include "fbbs/terminal.h"
 
@@ -6,7 +7,7 @@ void mail_info(char *lastword);
 
 int cmpuids3(int unum, const struct user_info *urec)
 {
-	return ((unum == urec->uid) && (uinfo.pid != urec->pid));
+	return ((unum == urec->uid) && (session.pid != urec->pid));
 }
 
 //×ÔÉ±,ÏêÇéºóÐð
