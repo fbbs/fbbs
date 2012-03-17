@@ -356,10 +356,6 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 				return PARTUPDATE;
 			}
 			return DONOTHING;
-		case 'P':
-			t_pager();
-			up->uptime = 0;
-			return PARTUPDATE;
 		case 'C': case 'c':
 			return alter_nick(up);
 		case 'k': case 'K':

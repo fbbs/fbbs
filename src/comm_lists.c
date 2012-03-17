@@ -41,7 +41,7 @@ int m_internet();
 #endif
 
 int show_online_followings(), t_list(), t_monitor();
-int t_query(), t_pager(), x_cloak();
+int t_query(), x_cloak();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
 extern int tui_following_list(void);
@@ -114,7 +114,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowFriends", show_online_followings },
 		{ "ShowLogins", show_online_users },
 		{ "QueryUser", t_query },
-		{ "SetPager", t_pager },
 		{ "SetCloak", x_cloak },
 		{ "SendMsg", s_msg },
 		{ "ShowMsg", msg_more },

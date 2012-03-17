@@ -84,30 +84,6 @@ void creat_list() {
 	apply_ulist(listcuent);
 }
 
-int t_pager() {
-
-	if (uinfo.pager & ALL_PAGER) {
-		uinfo.pager &= ~ALL_PAGER;
-		if (DEFINE(DEF_FRIENDCALL))
-			uinfo.pager |= FRIEND_PAGER;
-		else
-			uinfo.pager &= ~FRIEND_PAGER;
-	} else {
-		uinfo.pager |= ALL_PAGER;
-		uinfo.pager |= FRIEND_PAGER;
-	}
-
-	if (!uinfo.in_chat && session.status != ST_TALK) {
-		move(t_lines - 1, 0);
-		clrtoeol();
-		prints("ÄúµÄºô½ÐÆ÷ (pager) ÒÑ¾­[1m%s[mÁË!",
-				(uinfo.pager & ALL_PAGER) ? "´ò¿ª" : "¹Ø±Õ");
-		pressreturn();
-	}
-	update_ulist(&uinfo, utmpent);
-	return 0;
-}
-
 /*Add by SmallPig*/
 /*´Ëº¯ÊýÖ»¸ºÔðÁÐÓ¡ËµÃ÷µµ£¬²¢²»¹ÜÇå³ý»ò¶¨Î»µÄÎÊÌâ¡£*/
 
@@ -442,8 +418,6 @@ void endmsg() {
 	talkidletime += 60;
 	if (talkidletime >= IDLE_TIMEOUT)
 		kill(getpid(), SIGHUP);
-	if (uinfo.in_chat == YEA)
-		return;
 	getyx(&x, &y);
 	update_endline();
 	signal(SIGALRM, endmsg);
