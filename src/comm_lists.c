@@ -119,8 +119,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ShowMsg", msg_more },
 		{ "SetFriends", tui_following_list },
 		{ "SetRejects", tui_black_list },
-		{ "ListLogins", t_list },
-		{ "Monitor", t_monitor },
 		{ "FillForm", fill_reg_form },
 		{ "Information", x_info },
 		{ "EditUFiles", x_edits },

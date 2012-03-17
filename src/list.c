@@ -16,16 +16,13 @@ extern time_t login_start_time;
 extern char BoardName[];
 time_t update_time = 0;
 int freshmode = 0;
-int SHOWONEBRD=0;
 
 extern int cmpfnames();
 
-int mailmode, numf;
+int mailmode;
 int friendmode = 0;
 int range, page, readplan;
 
-struct user_info *user_record[USHM_SIZE];
-struct userec *user_data;
 // add by Flier - 2000.5.12 - Begin
 enum sort_type {stUserID, stUserName, stIP, stState} st = stUserID;
 // add by Flier - 2000.5.12 - End
@@ -92,111 +89,6 @@ char msg[];
 	if (msg != NULL)
 	prints("[1m%s[m", msg);
 	refresh();
-}
-
-void
-swap_user_record(a, b)
-int a, b;
-{
-	struct user_info *c;
-	c = user_record[a];
-	user_record[a] = user_record[b];
-	user_record[b] = c;
-}
-// Add by Flier - 2000.5.12 - Begin
-int compare_user_record(left, right)
-struct user_info *left, *right;
-{
-	int retCode;
-
-	switch(st) {
-		case stUserID:
-		retCode = strcasecmp(left->userid, right->userid);
-		break;
-		case stUserName:
-		retCode = strcasecmp(left->username, right->username);
-		break;
-		case stIP:
-		retCode = strncmp(left->from, right->from,20);
-		break;
-		case stState:
-		retCode = left->mode - right->mode;
-		break;
-	}
-	return retCode;
-}
-// Add by Filer - 2000.5.12 - End
-
-void sort_user_record(int left, int right) {
-	int i, last;
-
-	if (left >= right)
-		return;
-	swap_user_record(left, (left + right) / 2);
-	last = left;
-	for (i = left + 1; i <= right; i++) {
-		// Modified by Flier - 2000.5.12
-		if (compare_user_record(user_record[i], user_record[left])<0) {
-			swap_user_record(++last, i);
-		}
-	}
-	swap_user_record(left, last);
-	sort_user_record(left, last - 1);
-	sort_user_record(last + 1, right);
-}
-
-int fill_userlist() {
-	register int i, n, totalusernum;
-	int friendno[MAXACTIVE];
-
-	resolve_utmp();
-	totalusernum = 0;
-	numf = 0;
-	for (i = 0; i < USHM_SIZE; i++) {
-		if ( !utmpshm->uinfo[i].active ||!utmpshm->uinfo[i].pid)
-			continue;
-		if (SHOWONEBRD && utmpshm->uinfo[i].currbrdnum!=uinfo.currbrdnum)
-			continue;
-		if ( (utmpshm->uinfo[i].invisible) &&(usernum
-				!= utmpshm->uinfo[i].uid) &&(!HAS_PERM(PERM_SEECLOAK)))
-			continue;
-		if (myfriend(utmpshm->uinfo[i].uid)) {
-			friendno[numf++] = totalusernum;
-		} else if (friendmode)
-			continue;
-		user_record[totalusernum++] = &utmpshm->uinfo[i];
-	}
-	if (!friendmode) {
-		for (i=0, n=0; i < totalusernum; i++) {
-			if (n >= numf)
-				break;
-			if (friendno[n] == i) {
-				if (i != n)
-					swap_user_record(n, i);
-				n ++;
-			}
-		}
-		if (numf > 2) {
-			sort_user_record(0, numf - 1);
-		} else if (numf == 2) {
-			/* The following line is modified by Amigo 2002.04.02. Fix bug of wrong sort. */
-			/*         if(compare_user_record(user_record[0], user_record[1])<0)*/
-			if (compare_user_record(user_record[0], user_record[1])>0)
-				swap_user_record(0, 1);
-		}
-		sort_user_record(numf, totalusernum - 1);
-	} else {
-		if (totalusernum > 2) {
-			sort_user_record(0, totalusernum - 1);
-		} else if (totalusernum == 2) {
-			/* The following line is modified by Amigo 2002.04.02. Fix bug of wrong sort. */
-			/*         if(compare_user_record(user_record[0], user_record[1])<0)*/
-			if (compare_user_record(user_record[0], user_record[1])>0)
-				swap_user_record(0, 1);
-		}
-	}
-	range = totalusernum;
-	return totalusernum == 0 ? -1 : 1;
 }
 
 extern const char *idle_str(struct user_info *uent);
@@ -365,14 +257,6 @@ int (*read)();
 			case KEY_DOWN:
 			if (++num >= range)
 			num = 0;
-			break;
-			case KEY_TAB:
-			if (HAS_PERM(PERM_OCHAT)) {
-				if(st!=stState)st++;
-				else st=stUserID;
-				fill_userlist();
-				freshmode=1;
-			}
 			break;
 			case '$':
 			case KEY_END:
