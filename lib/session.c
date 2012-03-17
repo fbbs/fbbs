@@ -111,6 +111,14 @@ int get_user_status(session_id_t sid)
 	return (int) mdb_get_integer(0, "HGET user_status %"PRIdSID, sid);
 }
 
+int set_visibility(bool visible)
+{
+	db_res_t *res = db_cmd("UPDATE sessions SET visible = %d"
+			" WHERE id = %"DBIdSID, visible, session.id);
+	db_clear(res);
+	return !res;
+}
+
 db_res_t *get_sessions_of_followings(void)
 {
 	return db_query("SELECT s.id, u.name, s.visible, s.ip_addr, s.web,"

@@ -3121,7 +3121,7 @@ int Q_Goodbye() {
 	prints("\n\n\n\n");
 
 	/* added by roly 02.03.21 */
-	if (!uinfo.invisible) {
+	if (session.visible) {
 		if ((sysops = fopen("etc/friendbye", "r")) != NULL) {
 			byes = 0;
 			while (byes < 8 && fgets(buf, STRLEN, sysops) != NULL) {

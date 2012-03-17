@@ -148,13 +148,12 @@ static void set_pager(int pager)
 
 static void u_enter(void)
 {
-#if 0
 	if (!HAS_PERM(PERM_CLOAK))
 		currentuser.flags[0] &= ~CLOAK_FLAG;
 	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
-		uinfo.invisible = YEA;
+		session.visible = false;
 	session.status = ST_LOGIN;
-#endif
+
 	chk_giveupbbs();
 
 	if (DEFINE(DEF_DELDBLCHAR))
@@ -203,14 +202,13 @@ void u_exit(void)
 
 	setflags(PAGER_FLAG, (uinfo.pager & ALL_PAGER));
 	if (HAS_PERM(PERM_LOGINCLOAK))
-		setflags(CLOAK_FLAG, uinfo.invisible);
+		setflags(CLOAK_FLAG, !session.visible);
 
 	set_safe_record();
 	update_user_stay(&currentuser, false, false);
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	uidshm->status[usernum - 1]--;
 
-	uinfo.invisible = YEA;
 	uinfo.sockactive = NA;
 	uinfo.sockaddr = 0;
 	uinfo.destuid = 0;
@@ -969,7 +967,7 @@ void start_client(void)
 		move(9, 0);
 		clrtobot();
 		if (!DEFINE(DEF_NOLOGINSEND))
-			if (!uinfo.invisible)
+			if (session.visible)
 				apply_ulist(friend_login_wall);
 		clear();
 		set_numofsig();

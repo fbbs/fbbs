@@ -674,7 +674,7 @@ void update_endline(void)
 			(uinfo.pager & ALLMSG_PAGER) ? 'M' : 'm',
 			(uinfo.pager & FRIENDMSG_PAGER) ? 'F' : 'f',
 			(DEFINE(DEF_MSGGETKEY)) ? 'X' : 'x',
-			(uinfo.invisible == 1) ? 'C' : 'c',
+			session.visible ? 'c' : 'C',
 			buf, (allstay / 60) % 1000, allstay % 60);
 		return;
 	}

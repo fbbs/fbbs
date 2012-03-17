@@ -103,6 +103,7 @@ typedef struct {
 	int flag;
 	int status;
 	fb_time_t idle;
+	bool visible;
 } bbs_session_t;
 
 extern session_id_t session_new_id(void);
@@ -117,6 +118,7 @@ extern int set_current_board(int bid);
 extern int get_current_board(session_id_t sid);
 extern int set_user_status(int status);
 extern int get_user_status(session_id_t sid);
+extern int set_visibility(bool visible);
 
 extern db_res_t *get_sessions_of_followings(void);
 extern db_res_t *get_active_sessions(void);

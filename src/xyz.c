@@ -1,30 +1,6 @@
-/*
- Pirate Bulletin Board System
- Copyright (C) 1990, Edward Luke, lush@Athena.EE.MsState.EDU
- Eagles Bulletin Board System
- Copyright (C) 1992, Raymond Rocker, rocker@rock.b11.ingr.com
- Guy Vega, gtvega@seabass.st.usm.edu
- Dominic Tynes, dbtynes@seabass.st.usm.edu
- Firebird Bulletin Board System
- Copyright (C) 1996, Hsien-Tsung Chang, Smallpig.bbs@bbs.cs.ccu.edu.tw
- Peng Piaw Foong, ppfoong@csie.ncu.edu.tw
-
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 1, or (at your option)
- any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- */
-/*
- $Id: xyz.c 325 2006-10-27 15:38:46Z danielfree $
- */
-
 #define EXTERN
 #include "bbs.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -157,22 +133,16 @@ int x_userdefine() {
 	return 0;
 }
 
-//更改隐身术设置,get_status里似乎错了,这里以前更改uinfo.invisible的
-int x_cloak() {
-	set_user_status(ST_GMENU);
-	report("toggle cloak", currentuser.userid);
-	uinfo.invisible = (uinfo.invisible) ? NA : YEA;
-	if (uinfo.invisible == YEA) {
-		uidshm->passwd[uinfo.uid - 1].flags[0] |= CLOAK_FLAG;
-	} else {
-		uidshm->passwd[uinfo.uid - 1].flags[0] &= ~CLOAK_FLAG;
-	}
-	//end add
-	update_ulist(&uinfo, utmpent);
-	if (!uinfo.in_chat) {
+int x_cloak(void)
+{
+	if (set_visibility(!session.visible) == 0) {
+		session.visible = !session.visible;
+
+		report("toggle cloak", currentuser.userid);
+
 		move(t_lines - 1, 0);
 		clrtoeol();
-		prints("隐身术 (cloak) 已经%s了!", (uinfo.invisible) ? "启动" : "停止");
+		prints("隐身术已经 %s 了!", session.visible ? "停止" : "启动");
 		pressreturn();
 	}
 	return 0;
