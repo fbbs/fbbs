@@ -231,9 +231,6 @@ int tui_query_result(const char *userid)
 	if (!unum)
 		return -1;
 
-	uinfo.destuid = unum;
-	update_ulist(&uinfo, utmpent);
-
 	move(0, 0);
 	clrtobot();
 
@@ -379,7 +376,6 @@ int t_query(const char *user)
 	if (session.status != ST_LUSERS && session.status != ST_LAUSERS
 			&& session.status != ST_FRIEND && session.status != ST_GMENU)
 	pressanykey();
-	uinfo.destuid = 0;
 	return FULLUPDATE;
 }
 

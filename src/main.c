@@ -209,9 +209,6 @@ void u_exit(void)
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	uidshm->status[usernum - 1]--;
 
-	uinfo.sockactive = NA;
-	uinfo.sockaddr = 0;
-	uinfo.destuid = 0;
 	session.pid = 0;
 	uinfo.active = NA;
 	update_ulist(&uinfo, utmpent);
