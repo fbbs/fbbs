@@ -135,8 +135,7 @@ int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int 
 		move(1, 0);
 		clrtoeol();
 		prints("ËÍÑ¶Ï¢¸ø: ");
-		creat_list();
-		namecomplete(NULL, uident);
+		usercomplete(NULL, uident);
 		if (uident[0] == '\0') {
 			clear();
 			return 0;

@@ -52,26 +52,6 @@ int canpage(int friend, int pager) {
 	return NA;
 }
 
-int listcuent(struct user_info *uentp) {
-	if (uentp == NULL) {
-		CreateNameList();
-		return 0;
-	}
-	if (uentp->uid == usernum)
-		return 0;
-	if (!uentp->active || !uentp->pid)
-		return 0;
-	if (uentp->invisible && !(HAS_PERM(PERM_SEECLOAK)))
-		return 0;
-	AddNameList(uentp->userid);
-	return 0;
-}
-
-void creat_list() {
-	listcuent(NULL);
-	apply_ulist(listcuent);
-}
-
 /*Add by SmallPig*/
 /*此函数只负责列印说明档，并不管清除或定位的问题。*/
 
