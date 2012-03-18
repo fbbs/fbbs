@@ -275,11 +275,6 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	set_user_status(umode);
 	clear();
 	move(2, 0);
-	if (num_useshell() > MAX_USESHELL) {
-		prints("太多人使用外部程式了，您等一下再用吧...");
-		pressanykey();
-		return;
-	}
 	if (!dashf(cmdfile)) {
 		prints("文件 [%s] 不存在！\n", cmdfile);
 		pressreturn();

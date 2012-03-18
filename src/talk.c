@@ -43,17 +43,6 @@ extern int t_cmpuids();
 int cmpfnames();
 char *ModeType();
 
-char pagerchar(int friend, int pager) {
-	if (pager & ALL_PAGER)
-		return ' ';
-	if ((friend)
-	   ) {
-		if (pager & FRIEND_PAGER) return 'O';
-		else return '#';
-	}
-	return '*';
-}
-
 int canpage(int friend, int pager) {
 	if ((pager & ALL_PAGER) || HAS_PERM(PERM_OCHAT))
 		return YEA;
@@ -354,23 +343,6 @@ int t_query(const char *user)
 	return FULLUPDATE;
 }
 
-// 计算使用外部程序的人数
-int count_useshell(struct user_info *uentp) {
-	static int count;
-	if (uentp == NULL) {
-		int c = count;
-		count = 0;
-		return c;
-	}
-	if (!uentp->active || !uentp->pid)
-		return 0;
-	if (uentp->mode == ST_SYSINFO	|| uentp->mode == ST_DICT
-		|| uentp->mode == ST_BBSNET || uentp->mode == ST_FIVE
-		|| uentp->mode == ST_LOGIN)
-		count++;
-	return 1;
-}
-
 int get_status(int uid)
 {
 	if (resolve_ucache() == -1)
@@ -395,13 +367,6 @@ void num_alcounter(void)
 		count_friends+=get_status(uinfo.friend[i]);
 	}
 	return;
-}
-
-//	返回使用外部程序的人数
-int num_useshell() {
-	count_useshell(NULL);
-	apply_ulist(count_useshell);
-	return count_useshell(NULL);
 }
 
 int t_cmpuids(int uid, const struct user_info *up)
