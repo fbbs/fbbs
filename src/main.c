@@ -241,86 +241,56 @@ void abort_bbs(int nothing)
 	exit(0);
 }
 
-// Compare 'unum' to 'urec'->uid. (uid)
-static int cmpuids2(int unum, const struct user_info *urec)
+static db_res_t *get_my_sessions(void)
 {
-	return (unum == urec->uid);
-}
-
-/**
- * Count logins of an account.
- * @param unum User num.
- * @return The count.
- */
-static int count_user(int unum)
-{
-	int count = 0;
-	struct user_info *begin = utmpshm->uinfo, *ptr;
-	struct user_info *end = begin + sizeof(utmpshm->uinfo) / sizeof(*begin);
-	
-	for (ptr = begin; ptr != end; ++ptr) {
-		if (ptr->active && ptr->pid && ptr->uid == unum)
-			++count;
-	}
-	return count;
-}
-
-/**
- * Check whether user exceeds login quota.
- * @param[in] user The user.
- * @param[out] max Login quota.
- * @return 0 when OK. On error, return current number of logins for non-guests,
- *         ::BBS_E2MANY for guest.
- */
-static int check_duplicate_login(const struct userec *user, int *max)
-{
-	*max = get_login_quota(user);
-
-	if (*max == INT_MAX)
-		return 0;
-
-	int logins = count_user(usernum);
-
-	if (logins >= *max) {
-		if (strcaseeq("guest", user->userid))
-			return BBS_E2MANY;
-		else
-			return logins;
-	}
-	return 0;
+	return db_query("SELECT s.id, s.pid FROM sessions"
+			" WHERE active AND user_id = %"DBIdUID, session.uid);
 }
 
 // Prevent too many logins of same account.
 static int multi_user_check(void)
 {
-	int max;
-	int ret = check_duplicate_login(&currentuser, &max);
+	int max = get_login_quota(&currentuser);
+	if (max == INT_MAX)
+		return 0;
 
-	if (ret == BBS_E2MANY) {
+	int logins = INT_MAX;
+	db_res_t *res = get_my_sessions();
+	if (res) {
+		logins = db_res_rows(res);
+	}
+
+	if (strcaseeq("guest", currentuser.userid) && logins >= max) {
 		prints("\033[1;33m抱歉, 目前已有太多 \033[1;36mguest\033[33m, "
 				"请稍后再试。\033[m\n");
+		db_clear(res);
 		return -1;
 	}
 
-	if (ret > 0) {
+	if (logins >= max) {
 		prints("\033[1;32m为确保他人上站权益, "
 				"本站仅允许您用该帐号登录 %d 个。\n\033[m"
 				"\033[1;36m您目前已经使用该帐号登录了 %d 个，"
-				"您必须断开其他的连接方能进入本站！\n\033[m", max, ret);
+				"您必须断开其他的连接方能进入本站！\n\033[m", max, logins);
 		bool kick = askyn("您想删除重复的连接吗", false, false);
-		if (!kick) {
+		if (kick) {
+			bbs_kill(db_get_session_id(res, 0, 0),
+					db_get_integer(res, 0, 1), SIGHUP);
+			report("kicked (multi-login)", currentuser.userid);
+			db_clear(res);
+
+			sleep(2);
+			res = get_my_sessions();
+			logins = db_res_rows(res);
+		}
+
+		db_clear(res);
+		if (logins >= max) {
 			prints("\033[33m很抱歉，您已经用该帐号登录 %d 个，"
-					"所以，此连线将被取消。\033[m\n", ret);
+					"所以，此连线将被取消。\033[m\n", logins);
 			return -1;
-		} else {
-			struct user_info uin;
-			if (search_ulist(&uin, cmpuids2, usernum)) {
-				bbskill(&uin, SIGHUP);
-				report("kicked (multi-login)", currentuser.userid);
-			}
 		}
 	}
-
 	return 0;
 }
 
@@ -723,14 +693,6 @@ static void user_login(void)
 	report("Enter", currentuser.userid);
 	started = 1;
 
-	int max;
-	int ret = check_duplicate_login(&currentuser, &max);
-	// The process just created should be excluded.
-	if (ret > 0 && ret > max) {
-		report("kicked (multi-login)[漏网之鱼]", currentuser.userid);
-		abort_bbs(0);
-	}
-
 	initscr();
 #ifdef USE_NOTEPAD
 	notepad_init();
@@ -800,7 +762,10 @@ static void user_login(void)
 			|| currentuser.numlogins < 100) {
 		currentuser.numlogins++;
 	}
-	update_user_stay(&currentuser, true, count_user(usernum) > 1);
+
+	db_res_t *res = get_my_sessions();
+	update_user_stay(&currentuser, true, db_res_rows(res) > 1);
+	db_clear(res);
 
 #ifdef ALLOWGAME
 	if (currentuser.money> 1000000) {
