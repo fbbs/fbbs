@@ -241,12 +241,6 @@ void abort_bbs(int nothing)
 	exit(0);
 }
 
-static db_res_t *get_my_sessions(void)
-{
-	return db_query("SELECT s.id, s.pid FROM sessions"
-			" WHERE active AND user_id = %"DBIdUID, session.uid);
-}
-
 // Prevent too many logins of same account.
 static int multi_user_check(void)
 {

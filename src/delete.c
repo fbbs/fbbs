@@ -5,9 +5,17 @@
 
 void mail_info(char *lastword);
 
-int cmpuids3(int unum, const struct user_info *urec)
+static void kill_other_sessions(void)
 {
-	return ((unum == urec->uid) && (session.pid != urec->pid));
+	db_res_t *res = get_my_sessions();
+	if (res) {
+		for (int i = 0; i < db_res_rows(res); ++i) {
+			session_id_t sid = db_get_session_id(res, i, 0);
+			if (sid != session.id)
+				bbs_kill(sid, db_get_integer(res, i, 1), SIGHUP);
+		}
+	}
+	db_clear(res);
 }
 
 //自杀,详情后叙
@@ -85,15 +93,7 @@ int offline() {
 	move(i + 10, 0);
 	if (askyn("你确定要离开这个大家庭", NA, NA) == 1) {
 		clear();
-		{
-			struct user_info uin;
-			if (search_ulist(&uin, cmpuids3, usernum)) {
-				if (!uin.active || (uin.pid && bbskill(&uin, 0) == -1))
-					;
-				else if (uin.pid)
-					bbskill(&uin, SIGHUP);
-			}
-		}
+		kill_other_sessions();
 		currentuser.userlevel = 0;
 		substitut_record(PASSFILE, &currentuser, sizeof(struct userec),
 				usernum);
