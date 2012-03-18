@@ -14,7 +14,6 @@ void rebuild_brdshm(void);
 int get_nextid(const char* boardname);
 unsigned int get_nextid2(int bid);
 struct bstat *getbstat(int bid);
-void bonlinesync(time_t now);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;

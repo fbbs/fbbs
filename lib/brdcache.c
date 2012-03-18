@@ -136,22 +136,3 @@ struct bstat *getbstat(int bid)
 {
 	return &brdshm->bstatus[bid];
 }
-
-void bonlinesync(time_t now)
-{
-	int i;
-	struct user_info *uentp;
-
-	if (now - brdshm->inboarduptime < 300)
-		return;
-	brdshm->inboarduptime = now;
-
-	for (i = 0; i < MAXBOARD; i++)
-		brdshm->bstatus[i].inboard = 0;
-
-	for (i = 0; i < USHM_SIZE; i++) {
-		uentp = &(utmpshm->uinfo[i]);
-		if (uentp->active && uentp->pid && uentp->currbrdnum)
-			brdshm->bstatus[uentp->currbrdnum].inboard++;
-	}
-}
