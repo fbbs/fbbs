@@ -175,11 +175,11 @@ static const char *get_host(const online_user_info_t *ip)
 	return host;
 }
 
-static const char *get_color(const online_user_info_t *ip, int status)
+const char *get_status_color(int status, bool visible, bool web)
 {
-	if (ip->flag & SESSION_FLAG_INVISIBLE)
+	if (!visible)
 		return "\033[1;30m";
-	else if (ip->flag & SESSION_FLAG_WEB)
+	else if (web)
 		return "\033[36m";
 	else if (status == ST_POSTING || status == ST_MARKET)
 		return "\033[32m";
@@ -213,7 +213,9 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 	const char *host = get_host(ip);
 
 	int status = get_status(ip->uid);
-	const char *color = get_color(ip, status);
+	const char *color = get_status_color(status,
+			!(ip->flag & SESSION_FLAG_INVISIBLE),
+			ip->flag & SESSION_FLAG_WEB);
 
 	int idle = get_idle_time(ip->sid);
 	char idle_str[8];

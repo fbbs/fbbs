@@ -98,72 +98,38 @@ int show_one_file(char *filename) {
 
 extern char fromhost[60];
 
-int t_search_ulist(struct user_info *uentp, int (*fptr) (), int farg, int show, int doTalk)
-{
-	int i, num, mode, idle;
-	const char *col;
-
-	resolve_utmp();
-	num = 0;
-	for (i = 0; i < USHM_SIZE; i++) {
-		*uentp = utmpshm->uinfo[i];
-		if ((*fptr)(farg, uentp)) {
-			if (!uentp->active || !uentp->pid) {
-				continue;
-			}
-			if ( (uentp->invisible==0) ||(uentp->uid == usernum)
-					|| (uentp->invisible && HAS_PERM(PERM_SEECLOAK))) {
-				num++;
-			} else {
-				continue;
-			}
-			if (!show)
-				continue;
-			if (num == 1)
-				prints("目前 %s 状态如下：\n", uentp->userid);
-			mode = get_raw_mode(uentp->mode);
-			if (uentp->invisible)
-				col = "\033[1;30m";
-			else if (mode == ST_POSTING || mode == ST_MARKET)
-				col = "\033[1;32m";
-			else if (mode == ST_FIVE || mode == ST_BBSNET)
-				col = "\033[1;33m";
-			else if (is_web_user(uentp->mode))
-				col = "\033[1;36m";
-			else
-				col = "\033[1m";
-			const char *host;
-			if (HAS_PERM2(PERM_OCHAT, &currentuser)) {
-				host = uentp->from;
-			} else {
-				if (is_hide_ip(uentp))
-					host = "......";
-				else
-					host = mask_host(uentp->from);
-			}
-			if (doTalk) {
-				prints("(%d) 状态：%s%-10s\033[m，来自：%.20s\n", num, col,
-						mode_type(uentp->mode), host);
-			} else {
-				prints("%s%s\033[m", col, mode_type(uentp->mode));
-				idle = (time(NULL) - uentp->idle_time) / 60;
-				if (idle >= 1 && mode != ST_BBSNET)
-					prints("[%d] ", idle);
-				else
-					prints("    ");
-				if ((num) % 5 == 0)
-					outc('\n');
-			}
-		}
-	}
-	if (show)
-		outc('\n');
-	return num;
-}
-
 enum {
 	IPADDR_OMIT_THRES = 36,
 };
+
+static void show_statuses(db_res_t *res)
+{
+	if (db_res_rows(res) > 0)
+		prints("目前状态如下：\n");
+
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		bool visible = db_get_bool(res, i, 2);
+		if (!visible && !HAS_PERM(PERM_SEECLOAK))
+			continue;
+
+		session_id_t sid = db_get_session_id(res, i, 0);
+		bool web = db_get_bool(res, i, 3);
+		int status = get_user_status(sid);
+		int idle = (time(NULL) - get_idle_time(sid)) / 60;
+
+		const char *color = get_status_color(status, visible, web);
+		prints("\033[1m%s%s\033[m", color, mode_type(status));
+
+		if (idle >= 1 && status != ST_BBSNET)
+			prints("[%d] ", idle);
+		else
+			prints("    ");
+
+		if ((i + 1) % 5 == 0)
+			outc('\n');
+	}
+	outc('\n');
+}
 
 /**
  *
@@ -204,14 +170,12 @@ int tui_query_result(const char *userid)
 			getdatestring(user.lastlogin, DATE_ZH),
 			strlen(host) > IPADDR_OMIT_THRES ? "" : "来自 ", host);
 
-	struct user_info uin;
-	int num = t_search_ulist(&uin, t_cmpuids, unum, NA, NA);
-	if (num) {
-		search_ulist(&uin, t_cmpuids, unum);
-		prints("在线 [\033[1;32m讯息器:(\033[36m%s\033[32m) "
-				"呼叫器:(\033[36m%s\033[32m)\033[m] ",
-				canmsg(&uin) ? "打开" : "关闭",
-				canpage(hisfriend(&uin), uin.pager) ? "打开" : "关闭");
+	user_id_t uid = get_user_id(userid);
+	db_res_t *res = get_sessions(uid);
+
+	if (res && db_res_rows(res) > 0) {
+		prints("在线 [\033[1;32m讯息器:(\033[36m%s\033[32m)\033[m] ",
+				"打开");// : "关闭",
 	} else {
 		fb_time_t t = user.lastlogout;
 		if (user.lastlogout < user.lastlogin)
@@ -272,7 +236,9 @@ int tui_query_result(const char *userid)
 	
 	uinfo_free(&u);
 
-	t_search_ulist(&uin, t_cmpuids, unum, YEA, NA);
+	show_statuses(res);
+	db_clear(res);
+
 	show_user_plan(userid);
 	return 0;
 }

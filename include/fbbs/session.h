@@ -125,4 +125,6 @@ extern db_res_t *get_active_sessions(void);
 db_res_t *get_sessions(user_id_t uid);
 extern db_res_t *get_my_sessions(void);
 
+extern const char *get_status_color(int status, bool visible, bool web);
+
 #endif // FB_SESSION_H
