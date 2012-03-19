@@ -122,8 +122,16 @@ extern int set_visibility(bool visible);
 
 extern db_res_t *get_sessions_of_followings(void);
 extern db_res_t *get_active_sessions(void);
-db_res_t *get_sessions(user_id_t uid);
-extern db_res_t *get_my_sessions(void);
+
+typedef db_res_t basic_session_info_t;
+extern basic_session_info_t *get_sessions(user_id_t uid);
+extern basic_session_info_t *get_my_sessions(void);
+#define basic_session_info_count(r)  db_res_rows(r)
+#define basic_session_info_sid(r, i)  db_get_session_id(r, i, 0)
+#define basic_session_info_pid(r, i)  db_get_integer(r, i, 1)
+#define basic_session_info_visible(r, i)  db_get_bool(r, i, 2)
+#define basic_session_info_web(r, i)  db_get_session_id(r, i, 3)
+#define basic_session_info_clear(r)  db_clear(r)
 
 extern const char *get_status_color(int status, bool visible, bool web);
 

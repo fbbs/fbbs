@@ -7,15 +7,15 @@ void mail_info(char *lastword);
 
 static void kill_other_sessions(void)
 {
-	db_res_t *res = get_my_sessions();
+	basic_session_info_t *res = get_my_sessions();
 	if (res) {
-		for (int i = 0; i < db_res_rows(res); ++i) {
-			session_id_t sid = db_get_session_id(res, i, 0);
+		for (int i = 0; i < basic_session_info_count(res); ++i) {
+			session_id_t sid = basic_session_info_sid(res, i);
 			if (sid != session.id)
-				bbs_kill(sid, db_get_integer(res, i, 1), SIGHUP);
+				bbs_kill(sid, basic_session_info_pid(res, i), SIGHUP);
 		}
 	}
-	db_clear(res);
+	basic_session_info_clear(res);
 }
 
 //×ÔÉ±,ÏêÇéºóÐð

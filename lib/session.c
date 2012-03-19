@@ -133,13 +133,13 @@ db_res_t *get_active_sessions(void)
 	return db_exec_query(env.d, true, SESSION_ACTIVE_QUERY);
 }
 
-db_res_t *get_sessions(user_id_t uid)
+basic_session_info_t *get_sessions(user_id_t uid)
 {
 	return db_query("SELECT s.id, s.pid, s.visible, s.web FROM sessions"
 			" WHERE active AND user_id = %"DBIdUID, uid);
 }
 
-db_res_t *get_my_sessions(void)
+basic_session_info_t *get_my_sessions(void)
 {
 	return get_sessions(session.uid);
 }

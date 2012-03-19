@@ -1697,11 +1697,11 @@ int kick_user(void)
 		return 0;
 	}
 
-	db_res_t *res = get_sessions(uid);
-	if (res && db_res_rows(res) > 0) {
-		for (int i = 0; i < db_res_rows(res); ++i) {
-			bbs_kill(db_get_session_id(res, i, 0),
-					db_get_integer(res, i, 1), SIGHUP);
+	basic_session_info_t *res = get_sessions(uid);
+	if (res && basic_session_info_count(res) > 0) {
+		for (int i = 0; i < basic_session_info_count(res); ++i) {
+			bbs_kill(basic_session_info_sid(res, i),
+					basic_session_info_pid(res, i), SIGHUP);
 		}
 		presskeyfor("该用户已经被踢下站", 4);
 	} else {
@@ -1709,7 +1709,7 @@ int kick_user(void)
 		presskeyfor("该用户不在线上或无法踢出站外..", 3);
 	}
 
-	db_clear(res);
+	basic_session_info_clear(res);
 	clear();
 	return 0;
 }

@@ -249,15 +249,15 @@ static int multi_user_check(void)
 		return 0;
 
 	int logins = INT_MAX;
-	db_res_t *res = get_my_sessions();
+	basic_session_info_t *res = get_my_sessions();
 	if (res) {
-		logins = db_res_rows(res);
+		logins = basic_session_info_count(res);
 	}
 
 	if (strcaseeq("guest", currentuser.userid) && logins >= max) {
 		prints("\033[1;33m抱歉, 目前已有太多 \033[1;36mguest\033[33m, "
 				"请稍后再试。\033[m\n");
-		db_clear(res);
+		basic_session_info_clear(res);
 		return -1;
 	}
 
@@ -268,17 +268,17 @@ static int multi_user_check(void)
 				"您必须断开其他的连接方能进入本站！\n\033[m", max, logins);
 		bool kick = askyn("您想删除重复的连接吗", false, false);
 		if (kick) {
-			bbs_kill(db_get_session_id(res, 0, 0),
-					db_get_integer(res, 0, 1), SIGHUP);
+			bbs_kill(basic_session_info_sid(res, 0),
+					basic_session_info_pid(res, 0), SIGHUP);
 			report("kicked (multi-login)", currentuser.userid);
-			db_clear(res);
+			basic_session_info_clear(res);
 
 			sleep(2);
 			res = get_my_sessions();
-			logins = db_res_rows(res);
+			logins = basic_session_info_count(res);
 		}
 
-		db_clear(res);
+		basic_session_info_clear(res);
 		if (logins >= max) {
 			prints("\033[33m很抱歉，您已经用该帐号登录 %d 个，"
 					"所以，此连线将被取消。\033[m\n", logins);
@@ -757,9 +757,9 @@ static void user_login(void)
 		currentuser.numlogins++;
 	}
 
-	db_res_t *res = get_my_sessions();
-	update_user_stay(&currentuser, true, db_res_rows(res) > 1);
-	db_clear(res);
+	basic_session_info_t *res = get_my_sessions();
+	update_user_stay(&currentuser, true, basic_session_info_count(res) > 1);
+	basic_session_info_clear(res);
 
 #ifdef ALLOWGAME
 	if (currentuser.money> 1000000) {

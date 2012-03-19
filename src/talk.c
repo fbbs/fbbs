@@ -102,18 +102,18 @@ enum {
 	IPADDR_OMIT_THRES = 36,
 };
 
-static void show_statuses(db_res_t *res)
+static void show_statuses(basic_session_info_t *res)
 {
-	if (db_res_rows(res) > 0)
+	if (basic_session_info_count(res) > 0)
 		prints("目前状态如下：\n");
 
-	for (int i = 0; i < db_res_rows(res); ++i) {
-		bool visible = db_get_bool(res, i, 2);
+	for (int i = 0; i < basic_session_info_count(res); ++i) {
+		bool visible = basic_session_info_visible(res, i);
 		if (!visible && !HAS_PERM(PERM_SEECLOAK))
 			continue;
 
-		session_id_t sid = db_get_session_id(res, i, 0);
-		bool web = db_get_bool(res, i, 3);
+		session_id_t sid = basic_session_info_sid(res, i);
+		bool web = basic_session_info_web(res, i);
 		int status = get_user_status(sid);
 		int idle = (time(NULL) - get_idle_time(sid)) / 60;
 
@@ -171,9 +171,9 @@ int tui_query_result(const char *userid)
 			strlen(host) > IPADDR_OMIT_THRES ? "" : "来自 ", host);
 
 	user_id_t uid = get_user_id(userid);
-	db_res_t *res = get_sessions(uid);
+	basic_session_info_t *res = get_sessions(uid);
 
-	if (res && db_res_rows(res) > 0) {
+	if (res && basic_session_info_count(res) > 0) {
 		prints("在线 [\033[1;32m讯息器:(\033[36m%s\033[32m)\033[m] ",
 				"打开");// : "关闭",
 	} else {
@@ -237,7 +237,7 @@ int tui_query_result(const char *userid)
 	uinfo_free(&u);
 
 	show_statuses(res);
-	db_clear(res);
+	basic_session_info_clear(res);
 
 	show_user_plan(userid);
 	return 0;
