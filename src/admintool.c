@@ -1662,3 +1662,54 @@ int x_new_denylevel(void)
 	list_text(DENY_LEVEL_LIST, denylist_title_show, denylist_key_deal, NULL);
 	return FULLUPDATE;
 }
+
+int kick_user(void)
+{
+	if (!(HAS_PERM(PERM_OBOARDS)))
+		return -1;
+	set_user_status(ST_ADMIN);
+
+	stand_title("踢使用者下站");
+	move(1, 0);
+
+	char uname[IDLEN + 1];
+	usercomplete("输入使用者帐号: ", uname);
+	if (*uname == '\0') {
+		clear();
+		return -1;
+	}
+
+	user_id_t uid = get_user_id(uname);
+	if (!uid) {
+		presskeyfor("无此用户..", 3);
+		clear();
+		return 0;
+	}
+
+	move(1, 0);
+	clrtoeol();
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "踢掉使用者 : [%s].", uname);
+	move(2, 0);
+	if (!askyn(buf, NA, NA)) {
+		presskeyfor("取消踢使用者..", 2);
+		clear();
+		return 0;
+	}
+
+	db_res_t *res = get_sessions(uid);
+	if (res && db_res_rows(res) > 0) {
+		for (int i = 0; i < db_res_rows(res); ++i) {
+			bbs_kill(db_get_session_id(res, i, 0),
+					db_get_integer(res, i, 1), SIGHUP);
+		}
+		presskeyfor("该用户已经被踢下站", 4);
+	} else {
+		move(3, 0);
+		presskeyfor("该用户不在线上或无法踢出站外..", 3);
+	}
+
+	db_clear(res);
+	clear();
+	return 0;
+}

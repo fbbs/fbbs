@@ -122,6 +122,7 @@ extern int set_visibility(bool visible);
 
 extern db_res_t *get_sessions_of_followings(void);
 extern db_res_t *get_active_sessions(void);
+db_res_t *get_sessions(user_id_t uid);
 extern db_res_t *get_my_sessions(void);
 
 #endif // FB_SESSION_H

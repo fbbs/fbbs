@@ -48,7 +48,7 @@ extern int tui_following_list(void);
 extern int tui_black_list(void);
 
 #ifndef WITHOUT_ADMIN_TOOLS
-int kick_user(), m_vote();
+int m_vote();
 #ifndef DLM
 int x_new_denylevel();
 int x_level(), m_info();
@@ -141,7 +141,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "WinMine", ent_winmine },
 #endif
 		{ "RunMBEM", exec_mbem },
-		{ "Kick", kick_user },
 		{ "OpenVote", m_vote },
 		{ "SearchAll", r_searchall },
 #ifndef DLM
@@ -192,6 +191,7 @@ static const char *sysconf_funcstr(const char *name)
 		{ "Lending", "@mod:so/game.so#lending" },
 		{ "StarChicken", "@mod:so/pip.so#mod_default" },
 #endif // ALLOWGAME
+		{ "Kick", "@mod:so/admintool.so#kick_user" },
 		{ "Setsyspass", "@mod:so/admintool.so#setsystempasswd" },
 		{ "Register", "@mod:so/admintool.so#m_register" },
 		{ "ShowRegister", "@mod:so/admintool.so#show_register" },

@@ -155,51 +155,6 @@ struct fileheader *fhdrp;
 	}
 }
 
-extern int t_cmpuids();
-int kick_user(void)
-{
-	char user[IDLEN + 1], buf[STRLEN];
-	if (!(HAS_PERM(PERM_OBOARDS)))
-		return -1;
-	set_user_status(ST_ADMIN);
-
-	stand_title("踢使用者下站");
-	move(1, 0);
-	usercomplete("输入使用者帐号: ", user);
-	if (*user == '\0') {
-		clear();
-		return -1;
-	}
-
-	int uid = getuser(user);
-	if (!uid) {
-		presskeyfor("无此用户..", 3);
-		clear();
-		return 0;
-	}
-
-	move(1, 0);
-	clrtoeol();
-	snprintf(buf, sizeof(buf), "踢掉使用者 : [%s].", user);
-	move(2, 0);
-	if (!askyn(buf, NA, NA)) {
-		presskeyfor("取消踢使用者..", 2);
-		clear();
-		return 0;
-	}
-
-	struct user_info uin;
-	if (!search_ulist(&uin, t_cmpuids, uid) || do_kick_user(&uin) < 0) {
-		move(3, 0);
-		presskeyfor("该用户不在线上或无法踢出站外..", 3);
-		clear();
-		return 0;
-	}
-	presskeyfor("该用户已经被踢下站（如该用户有多进程请重复本操作）", 4);
-	clear();
-	return 1;
-}
-
 /**
  *
  */
