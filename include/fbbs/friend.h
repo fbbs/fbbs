@@ -43,6 +43,6 @@ extern black_list_t *black_list_load(user_id_t uid);
 extern bool black_list_add(user_id_t uid, const char *blocked, const char *notes);
 extern bool black_list_rm(user_id_t uid, user_id_t blocked);
 extern bool black_list_edit(user_id_t uid, user_id_t blocked, const char *notes);
-extern bool is_blocked(const char *blocked);
+extern bool is_blocked(const char *uname);
 
 #endif // FB_FRIEND_H

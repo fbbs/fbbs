@@ -101,12 +101,12 @@ bool black_list_edit(user_id_t uid, user_id_t blocked, const char *notes)
 	return res;
 }
 
-bool is_blocked(const char *blocked)
+bool is_blocked(const char *uname)
 {
 	db_res_t *res = db_query("SELECT b.blocked FROM blacklists b"
-			" JOIN alive_users u ON b.blocked = u.id"
-			" WHERE b.user_id = %"DBIdUID" AND lower(u.name) = lower(%s)",
-			session.uid, blocked);
+			" JOIN alive_users u ON b.user_id = u.id"
+			" WHERE b.blocked = %"DBIdUID" AND lower(u.name) = lower(%s)",
+			session.uid, uname);
 	int rows = res ? db_res_rows(res) : 0;
 	db_clear(res);
 	return rows;
