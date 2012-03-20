@@ -12,6 +12,8 @@ extern int follow(user_id_t follower, const char *followed, const char *notes);
 extern int unfollow(user_id_t follower, user_id_t followed);
 extern void edit_followed_note(user_id_t follower, user_id_t followed, const char *notes);
 
+extern bool am_followed_by(const char *uname);
+
 typedef db_res_t following_list_t;
 
 extern following_list_t *following_list_load(user_id_t uid);

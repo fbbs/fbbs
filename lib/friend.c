@@ -53,6 +53,17 @@ void edit_followed_note(user_id_t follower, user_id_t followed, const char *note
 	db_clear(res);
 }
 
+bool am_followed_by(const char *uname)
+{
+	db_res_t *res = db_query("SELECT f.followed"
+			" FROM follows f JOIN users u ON f.follower = u.id"
+			" WHERE user_id = %"DBIdUID" AND lower(u.name) = lower(%s)",
+			session.uid, uname);
+	int rows = res ? db_res_rows(res) : 0;
+	db_clear(res);
+	return rows;
+}
+
 following_list_t *following_list_load(user_id_t uid)
 {
 	return (following_list_t *)db_exec_query(env.d, true,
