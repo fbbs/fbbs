@@ -102,13 +102,12 @@ int bbskill(struct user_info *user, int sig)
 
 int bbs_kill(session_id_t sid, int pid, int sig)
 {
-	if (sid <= 0)
-		return -1;
-
 	if (pid > 0) {
 		return kill(pid, sig);
 	} else {
 		if (sig == SIGHUP) {
+			if (sid <= 0)
+				return -1;
 			return session_destroy(sid);
 		} else {
 			return 0;
