@@ -39,8 +39,6 @@ void resolve_utmp(void);
 int allusers(void);
 int get_online(void);
 int apply_ulist(int (*fptr)());
-int search_ulist(struct user_info *uentp,
-		int (*fptr)(int, const struct user_info *), int farg);
 void update_ulist(struct user_info *uentp, int uent);
 int count_online(void);
 int cmpfnames(void *user, void *over);

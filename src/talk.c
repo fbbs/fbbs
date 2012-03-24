@@ -29,7 +29,6 @@ extern char BoardName[];
 extern int iscolor;
 extern int numf, friendmode;
 extern int t_columns;
-extern int t_cmpuids();
 int cmpfnames();
 
 /*Add by SmallPig*/
@@ -293,9 +292,4 @@ void num_alcounter(void)
 		count_friends+=get_status(uinfo.friend[i]);
 	}
 	return;
-}
-
-int t_cmpuids(int uid, const struct user_info *up)
-{
-	return (up->active && uid == up->uid);
 }

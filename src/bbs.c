@@ -359,8 +359,6 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 	return FULLUPDATE;
 }
 
-extern int t_cmpuids(int uid, const struct user_info *up);
-
 static basic_session_info_t *get_sessions_by_name(const char *uname)
 {
 	return db_query("SELECT s.id, s.pid, s.visible, s.web"

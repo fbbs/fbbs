@@ -9,7 +9,6 @@
 #include "fbbs/terminal.h"
 
 extern int cmpbnames();
-extern int t_cmpuids();
 extern void rebuild_brdshm();
 int showperminfo(int, int);
 char cexplain[STRLEN];
