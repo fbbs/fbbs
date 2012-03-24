@@ -348,11 +348,6 @@ int check_user_profile(const struct userec *u)
 	return 0;
 }
 
-bool is_hide_ip(const struct user_info *u)
-{
-	return !((uidshm->passwd + u->uid - 1)->userdefine & DEF_NOTHIDEIP);
-}
-
 int update_user_stay(struct userec *u, bool is_login, bool is_dup)
 {
 	time_t now = time(NULL);
