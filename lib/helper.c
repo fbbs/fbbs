@@ -58,48 +58,6 @@ void sigbus(int signo)
 	siglongjmp(bus_jump, 1);
 }
 
-static int kick_web_user(struct user_info *user)
-{
-	int uid = user->uid;
-	if (uid < 1 || uid > MAXUSERS)
-		return -1;
-	uidshm->status[uid - 1]--;
-
-	struct userec *up = uidshm->passwd + uid - 1;
-	int stay = update_user_stay(up, false, false);
-	char buf[STRLEN];
-	snprintf(buf, sizeof(buf), "Stay: %3d", stay / 60);
-	log_usies("AXXED", buf, up);
-
-	memset(user, 0, sizeof(*user));
-	return 0;
-}
-
-// Sends signal 'sig' to 'user'.
-// Returns 0 on success (the same as kill does), -1 on error.
-// If the 'user' is web user, does not send signal and returns -1.
-int bbskill(struct user_info *user, int sig)
-{
-	if (user == NULL)
-		return -1;
-
-	if (user->pid > 0) {
-		if (!is_web_user(user->mode)) {
-			return kill(user->pid, sig);
-		} else {
-			if (sig == SIGHUP) {
-				// kick web users off, below should be moved out later.
-				return kick_web_user(user);
-			} else {
-				// other signals TBD
-				return 0;
-			}
-		}
-	}
-	// Sending signals to multiple processes is not allowed.
-	return -1;
-}
-
 int bbs_kill(session_id_t sid, int pid, int sig)
 {
 	if (pid > 0) {
