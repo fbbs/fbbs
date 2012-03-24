@@ -361,11 +361,37 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 
 extern int t_cmpuids(int uid, const struct user_info *up);
 
+static basic_session_info_t *get_sessions_by_name(const char *uname)
+{
+	return db_query("SELECT s.id, s.pid, s.visible, s.web"
+			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
+			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
+}
+
+static int bm_color(const char *uname)
+{
+	basic_session_info_t *s = get_sessions_by_name(uname);
+	int visible = 0, color = 33;
+
+	if (s) {
+		for (int i = 0; i < basic_session_info_count(s); ++i) {
+			if (basic_session_info_visible(s, i))
+				++visible;
+		}
+
+		if (visible)
+			color = 32;
+		else if (HAS_PERM(PERM_SEECLOAK) && basic_session_info_count(s) > 0)
+			color = 36;
+	}
+	basic_session_info_clear(s);
+	return color;
+}
+
 // Show title when entering a board.
 static void readtitle(void)
 {
-	int i, j, bnum, tuid;
-	struct user_info uin;
+	int i, j, bnum;
 	char tmp[STRLEN];
 	char bmlists[5][IDLEN + 1]; // up to 5 BMs.
 	char header[120], title[STRLEN];
@@ -406,18 +432,15 @@ static void readtitle(void)
 		// Online BMs are shown in green, offline yellow, cloaking cyan
 		// (if currentuser have PERM_SEECLOAK, otherwise in yellow).
 		for (i = 0; i < bnum; i++) {
-			tuid = getuser(bmlists[i]);
-			tuid = search_ulist(&uin, t_cmpuids, tuid);
-			if (tuid && uin.active && uin.pid && !uin.invisible)
-				sprintf(tmp, "\033[32m%s\033[33m ", bmlists[i]);
-			else if (tuid && uin.active && uin.pid && uin.invisible
-					&& (HAS_PERM(PERM_SEECLOAK) || usernum == uin.uid))
-				sprintf(tmp, "\033[36m%s\033[33m ", bmlists[i]);
-			else
-				sprintf(tmp, "%s ", bmlists[i]);
+			int color = bm_color(bmlists[i]);
+			if (color == 33) {
+				snprintf(tmp, sizeof(tmp), "%s ", bmlists[i]);
+			} else {
+				snprintf(tmp, sizeof(tmp), "\033[%dm%s\033[33m ", color,
+						bmlists[i]);
+			}
 			strcat(header, tmp);
 		}
-
 	}
 	if (chkmail())
 		strcpy(title, "[您有信件，按 M 看新信]");
@@ -515,13 +538,6 @@ char *getshortdate(time_t time) {
 #endif
 
 #ifdef ENABLE_COLOR_ONLINE_STATUS
-basic_session_info_t *get_sessions_by_name(const char *uname)
-{
-	return db_query("SELECT s.id, s.pid, s.visible, s.web"
-			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
-			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
-}
-
 const char *get_board_online_color(const char *uname, int bid)
 {
 	if (streq(uname, currentuser.userid))
