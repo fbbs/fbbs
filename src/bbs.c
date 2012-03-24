@@ -510,6 +510,61 @@ char *getshortdate(time_t time) {
 	return str;
 }
 
+#ifdef ENABLE_FDQUAN
+#define ENABLE_COLOR_ONLINE_STATUS
+#endif
+
+#ifdef ENABLE_COLOR_ONLINE_STATUS
+basic_session_info_t *get_sessions_by_name(const char *uname)
+{
+	return db_query("SELECT s.id, s.pid, s.visible, s.web"
+			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
+			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
+}
+
+const char *get_board_online_color(const char *uname, int bid)
+{
+	if (streq(uname, currentuser.userid))
+		return session.visible ? "1:37" : "1:36";
+
+	const char *color = "";
+	bool online = false;
+	int invisible = 0;
+
+	basic_session_info_t *s = get_sessions_by_name(uname);
+	if (s) {
+		for (int i = 0; i < basic_session_info_count(s); ++i) {
+			if (!basic_session_info_visible(s, i)) {
+				if (HAS_PERM(PERM_SEECLOAK))
+					++invisible;
+				else
+					continue;
+			}
+
+			online = true;
+			if (get_current_board(basic_session_info_sid(s, i)) == bid) {
+				if (basic_session_info_visible(s, i))
+					color = "1;37";
+				else
+					color = "1;36";
+				basic_session_info_clear(s);
+				return color;
+			}
+		}
+	}
+
+	if (!online)
+		color = "1;30";
+	else if (invisible > 0 && invisible == basic_session_info_count(s))
+		color = "36";
+
+	basic_session_info_clear(s);
+	return color;
+}
+#else
+#define get_board_online_color(n, i)  ""
+#endif
+
 char *readdoent(int num, struct fileheader *ent) //Post list
 {
 	static char buf[128];
@@ -519,11 +574,6 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 	char title[STRLEN], typeprefix[6] = "", typesufix[4] = "";
 #ifdef COLOR_POST_DATE
 	struct tm *mytm;
-#endif
-#ifdef FDQUAN
-	struct user_info uin;
-	const char *idcolor = "";
-	extern int t_cmpuids();
 #endif
 	type = brc_unread(ent->filename) ?
 		(!DEFINE(DEF_NOT_N_MASK) ? 'N' : '+') : ' ';
@@ -585,18 +635,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 		date = "";
 	}
 
-#ifdef FDQUAN
-	if (!search_ulist(&uin, t_cmpuids, getuser(ent->owner)) || !uin.active
-		|| (uin.active && uin.invisible && !HAS_PERM (PERM_SEECLOAK))) {
-		idcolor = "1;30";
-	} else if (uin.invisible && HAS_PERM(PERM_SEECLOAK)) {
-		idcolor = "1;36";
-	} else if (uin.currbrdnum == currbp->id
-			|| !strcmp (uin.userid, currentuser.userid)) {
-		idcolor = "1;37";
-	}
-#endif
-
+	const char *idcolor = get_board_online_color(ent->owner, currbp->id);
 #ifdef COLOR_POST_DATE
 	mytm = localtime(&filetime);
 	sprintf (color, "\033[1;%dm", 30 + mytm->tm_wday + 1);
@@ -624,18 +663,10 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 	else
 		ellipsis(title, 38 - strlen(ent->szEraser));
 	if (digestmode == TRASH_MODE || digestmode == JUNK_MODE) {
-		sprintf(buf,
-#ifdef FDQUAN
-				" \033[%sm%5d\033[m %s%c%s \033[%sm%-12.12s %s%6.6s%c%s\033[%sm%s\033[%sm[%s.%s]\033[m",
-#else
-				" \033[%sm%5d\033[m %s%c%s %-12.12s %s%6.6s%c%s\033[%sm%s\033[%sm[%s.%s]\033[m",
-#endif
+		snprintf(buf, sizeof(buf), " \033[%sm%5d\033[m %s%c%s \033[%sm%-12.12s"
+				" %s%6.6s%c%s\033[%sm%s\033[%sm[%s.%s]\033[m",
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
-#ifdef FDQUAN
 				typeprefix, type, typesufix, idcolor, ent->owner, color, date, 
-#else
-				typeprefix, type, typesufix, ent->owner, color, date, 
-#endif
 				(FFLL & sameflag) ? '.' : ' ', 
 				noreply ? "\033[1;33mx" : " ",
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "",
@@ -647,34 +678,21 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 	} else {
 #ifdef ENABLE_NOTICE
 		if (ent->accessed[1] & FILE_NOTICE) {
-			sprintf (buf,
-#ifdef FDQUAN
-					" \033[1;31m [¡Þ]\033[m %c \033[%sm%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
+			snprintf(buf, sizeof(buf), " \033[1;31m [¡Þ]\033[m %c \033[%sm"
+					"%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
 					type, idcolor, ent->owner, color, date,
-#else
-					" \033[1;31m [¡Þ]\033[m %c %-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
-					type, ent->owner, color, date,
-#endif
 					(FFLL & sameflag) ? '.' : ' ',
 					noreply ? "\033[1;33mx" : " ",
 					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
 		} else {
 #endif
-			sprintf(buf,
-#ifdef FDQUAN
-				" \033[%sm%5d\033[m %s%c%s \033[%sm%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
-#else
-				" \033[%sm%5d\033[m %s%c%s %-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
-#endif
-				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
-#ifdef FDQUAN
-				typeprefix, type, typesufix, idcolor, ent->owner, color, date,
-#else
-				typeprefix, type, typesufix, ent->owner, color, date,
-#endif
-				(FFLL & sameflag) ? '.' : ' ',
-				noreply ? "\033[1;33mx" : " ",
-				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
+			snprintf(buf, sizeof(buf), " \033[%sm%5d\033[m %s%c%s \033[%sm"
+					"%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
+					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
+					typeprefix, type, typesufix, idcolor, ent->owner, color,
+					date, (FFLL & sameflag) ? '.' : ' ',
+					noreply ? "\033[1;33mx" : " ",
+					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
 #ifdef ENABLE_NOTICE
 		}
 #endif
