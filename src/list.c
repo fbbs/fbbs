@@ -27,48 +27,6 @@ int range, page, readplan;
 enum sort_type {stUserID, stUserName, stIP, stState} st = stUserID;
 // add by Flier - 2000.5.12 - End
 
-int
-friend_search(uid, uentp, tblsize)
-int uid;
-struct user_info *uentp;
-int tblsize;
-{
-	int hi, low, mid;
-	int cmp;
-
-	if (uid == 0) {
-		return NA;
-	}
-	hi = tblsize - 1;
-	low = 0;
-	while (low <= hi) {
-		mid = (low + hi) / 2;
-		cmp = uentp->friend[mid] - uid;
-		if (cmp == 0) {
-			return YEA;
-		}
-		if (cmp> 0)
-		hi = mid - 1;
-		else
-		low = mid + 1;
-	}
-	return NA;
-}
-
-int
-myfriend(uid)
-int uid;
-{
-	return friend_search(uid, &uinfo, uinfo.fnum);
-}
-
-int
-hisfriend(uentp)
-struct user_info *uentp;
-{
-	return friend_search(uinfo.uid, uentp, uentp->fnum);
-}
-
 void update_data() {
 	if (readplan == YEA)
 		return;
@@ -90,8 +48,6 @@ char msg[];
 	prints("[1m%s[m", msg);
 	refresh();
 }
-
-extern const char *idle_str(struct user_info *uent);
 
 int
 countusers(uentp)
