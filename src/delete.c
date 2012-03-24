@@ -99,7 +99,7 @@ int offline() {
 				usernum);
 		mail_info(lastword);
 		set_user_status(ST_OFFLINE);
-		do_kick_user(&uinfo);
+		bbs_kill(session.id, session.pid, SIGHUP);
 		exit(0);
 	}
 	return 0;

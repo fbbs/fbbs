@@ -154,20 +154,3 @@ struct fileheader *fhdrp;
 		delmsgs[delcnt++] = idc;
 	}
 }
-
-/**
- *
- */
-int do_kick_user(struct user_info *user)
-{
-	if (!user->active || !user->pid)
-		return -1;
-	char buf[STRLEN], buf2[STRLEN];
-	snprintf(buf, sizeof(buf), "kick out %s", user->userid);
-	snprintf(buf2, sizeof(buf2), "%s", user->userid);
-	if (bbskill(user, SIGHUP) < 0)
-		return -1;
-	report(buf, currentuser.userid);
-	log_usies("KICK ", buf2, &currentuser);
-	return 0;
-}
