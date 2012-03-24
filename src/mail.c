@@ -2,6 +2,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
+#include "fbbs/msg.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -32,10 +33,8 @@ int SR_first();
 int SR_read();
 int SR_author();
 int Q_Goodbye();
-int s_msg();
 int G_SENDMODE = NA;
 int show_file_info();
-int send_msg();
 extern char quote_file[], quote_user[];
 char currmaildir[STRLEN];
 #define maxrecp 300
@@ -1071,7 +1070,7 @@ struct one_key mail_comms[] = {
 		{ '!', Q_Goodbye },
 		{ 'S', s_msg },
 		{ '*', show_file_info },
-		{ 'Z', send_msg },
+		{ 'Z', msg_author },
 		{ '\0', NULL }
 };
 

@@ -1,8 +1,5 @@
 #include "bbs.h"
 #include "screen.h"
-#ifdef lint
-#include <sys/uio.h>
-#endif
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -11,14 +8,32 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
+enum {
+	NORMAL_MSG = 0,
+	LOGIN_MSG,
+	LOGOUT_MSG,
+	BROADCAST_MSG,
+};
+
+typedef db_res_t msg_session_info_t;
+
+#define MSG_SESSION_INFO_FIELDS  "s.id, s.pid, s.web, s.visible, u.name"
+#define MSG_SESSION_INFO_QUERY  "SELECT "MSG_SESSION_INFO_FIELDS \
+	" FROM sessions s JOIN users u ON s.user_id = u.id"
+
+#define msg_session_info_sid(s, i)  db_get_session_id(s, i, 0)
+#define msg_session_info_pid(s, i)  db_get_integer(s, i, 1)
+#define msg_session_info_web(s, i)  db_get_bool(s, i, 2)
+#define msg_session_info_visible(s, i)  db_get_bool(s, i, 3)
+#define msg_session_info_uname(s, i)  db_get_value(s, i, 4)
+
+#define msg_session_info_count(s)  db_res_rows(s)
+#define msg_session_info_clear(s)  db_clear(s)
+
 extern int RMSG;
 extern int msg_num;
-struct user_info *t_search();
 
-char buf2[MAX_MSG_SIZE+2];
-
-//»ñÈ¡msg¼ÇÂ¼ÊýÄ¿
-int get_num_msgs(const char *filename)
+static int get_num_msgs(const char *filename)
 {
 	int i = 0;
 	struct stat st;
@@ -64,258 +79,227 @@ int get_msg(const char *uid, char *msg, int line)
 	} //while
 }
 
-char msgchar(struct user_info *uin)
+static msg_session_info_t *get_msg_sessions(const char *uname)
 {
-	if (uin->mode == ST_FIVE || uin->mode == ST_BBSNET || uin->mode == ST_LOCKSCREEN)
-		return '@';
-	if ((uin->pager & ALLMSG_PAGER))
-		return ' ';
-	if (hisfriend(uin)) {
-		if ((uin->pager & FRIENDMSG_PAGER))
-			return 'O';
-		else
-			return '#';
+	return db_query(MSG_SESSION_INFO_QUERY
+			" WHERE lower(u.name) = lower(%s)", uname);
+}
+
+static void generate_full_msg(const char *msg, int type,
+		char *full, size_t fsize)
+{
+	time_t now = time(NULL);
+	const char *timestr = ctime(&now);
+	const char *ret_str = "^Z»Ø";
+
+	char head[MAX_MSG_SIZE + 2];
+	switch (type) {
+		case NORMAL_MSG:
+		case LOGIN_MSG:
+			snprintf(head, sizeof(head), "\033[0;1;44;36m%-12.12s\033[33m"
+					"(\033[36m%-24.24s\033[33m):\033[37m%-34.34s"
+					"\033[31m(%s)\033[m\033[%05dm\n",
+					currentuser.userid, timestr , " ", ret_str, session.pid);
+			break;
+		case LOGOUT_MSG:
+			snprintf(head, sizeof(head), "\033[0;1;45;36m%-12.12s\033[36m"
+					"ÏòÄú¸æ±ð(\033[1;36;45m%24.24s\033[36m)£º\033[m"
+					"\033[1;36;45m%-38.38s\033[m\033[%05dm\n",
+					currentuser.userid, timestr, " ", 0);
+			break;
+		case BROADCAST_MSG:
+			snprintf(head, sizeof(head), "\033[1;5;44;33mÕ¾³¤ ÓÚ\033[36m "
+					"%24.24s \033[33m¹ã²¥£º\033[m\033[1;37;44m%-39.39s\033[m"
+					"\033[%05dm\n", timestr," ",  session.pid);
+			break;
 	}
-	return '*';
+	snprintf(full, fsize, "%s%s\n", head, msg);
 }
 
-int canmsg(const struct user_info *uin)
+static void log_my_msg(const char *uname, const char *msg, int type)
 {
-	if (is_blocked(uin->userid))
-		return NA;
-	if ((uin->pager & ALLMSG_PAGER) || HAS_PERM(PERM_OCHAT))
-		return YEA;
-	if ((uin->pager & FRIENDMSG_PAGER) && hisfriend(uin))
-		return YEA;
-	return NA;
-}
-
-void s_msg(void)
-{
-	do_sendmsg(NULL, NULL, 0, 0);
-}
-
-int send_msg(int ent, const struct fileheader *fileinfo, char *direct)
-{
-	struct user_info* uin;
-	if (!strcmp(currentuser.userid,"guest"))
-		return DONOTHING;
-	uin = t_search(fileinfo->owner, NA);
-	if (uin == NULL || (uin->invisible && !HAS_PERM(PERM_SEECLOAK))) {
-		move(2, 0);
-		prints("¶Ô·½Ä¿Ç°²»ÔÚÏßÉÏ...\n");
-		pressreturn();
-	} else {
-		do_sendmsg(uin, NULL, 0, uin->pid);
-	}
-	return FULLUPDATE;
-}
-
-int do_sendmsg(const struct user_info *uentp, const char *msgstr, int mode, int userpid)
-{
-	char uident[STRLEN], ret_str[20];
-	time_t now;
-	const struct user_info *uin;
-	char buf[MAX_MSG_SIZE+2], *msgbuf, *timestr;
 #ifdef LOG_MY_MESG
-	char *mymsg, buf2[MAX_MSG_SIZE+2];
-	int ishelo = 0; /* ÊÇ²»ÊÇºÃÓÑÉÏÕ¾Í¨ÖªÑ¶Ï¢ */
-	mymsg = (char *) malloc(MAX_MSG_SIZE + 256);
-#endif
-	msgbuf = (char *) malloc(MAX_MSG_SIZE + 256);
+	if (type == LOGIN_MSG || type == LOGOUT_MSG)
+		return;
 
-	char wholebuf[MAX_MSG_SIZE+2];
-	if (mode == 0) {
-		move(2, 0);
-		clrtobot();
-		set_user_status(ST_MSG);
+	time_t now = time(NULL);
+	const char *timestr = ctime(&now);
+	char buf[MAX_MSG_SIZE + 256];
+	snprintf(buf, sizeof(buf), "\033[1;32;40mTo \033[1;33;40m%-12.12s\033[m"
+			"(%-24.24s):%-38.38s\n%s\n", uname, timestr, " ", msg);
+
+	char file[HOMELEN];
+	sethomefile(file, currentuser.userid, "msgfile.me");
+	file_append(file, buf);
+#endif
+	return;
+}
+
+static bool session_msgable(const msg_session_info_t *s, int i)
+{
+	if (!msg_session_info_visible(s, i) && !HAS_PERM(PERM_SEECLOAK))
+		return false;
+
+	if (msg_session_info_web(s, i))
+		return false;
+
+	int status = get_user_status(msg_session_info_sid(s, i));
+	if (status == ST_BBSNET || status == ST_LOCKSCREEN)
+		return false;
+
+	return true;
+}
+
+static bool user_msgable(const msg_session_info_t *s)
+{
+	if (!s || !msg_session_info_count(s))
+		return false;
+
+	const char *uname = msg_session_info_uname(s, 0);
+	if (is_blocked(uname))
+		return false;
+
+	if (!HAS_PERM(PERM_OCHAT)) {
+		if (!getuser(uname))
+			return false;
+
+		if (HAS_DEFINE(lookupuser.userdefine, FRIENDMSG_PAGER)
+				&& !am_followed_by(uname))
+			return false;
 	}
-	if (uentp == NULL) {
+
+	for (int i = 0; i < msg_session_info_count(s); ++i) {
+		if (session_msgable(s, i))
+			return true;
+	}
+	return false;
+}
+
+static int send_one_msg(int pid, const char *uname, const char *full)
+{
+	char file[HOMELEN];
+	sethomefile(file, uname, "msgfile");
+	file_append(file, full);
+
+	return !bbs_kill(0, pid, SIGUSR2);
+}
+
+static int send_msg(const msg_session_info_t *s, const char *msg, int type)
+{
+	char full[MAX_MSG_SIZE + 2];
+	generate_full_msg(msg, type, full, sizeof(full));
+
+	int sent = 0;
+	for (int i = 0; i < msg_session_info_count(s); ++i) {
+		if (session_msgable(s, i)
+				&& send_one_msg(msg_session_info_pid(s, i), 
+					msg_session_info_uname(s, i), full))
+			++sent;
+	}
+
+	if (sent && type == NORMAL_MSG)
+		log_my_msg(msg_session_info_uname(s, 0), msg, type);
+
+	return sent;
+}
+
+static int tui_send_msg(const char *uname)
+{
+	char name[IDLEN + 1];
+	if (!uname || !*uname) {
 		prints("<ÊäÈëÊ¹ÓÃÕß´úºÅ>\n");
 		move(1, 0);
 		clrtoeol();
 		prints("ËÍÑ¶Ï¢¸ø: ");
-		usercomplete(NULL, uident);
-		if (uident[0] == '\0') {
-			clear();
-			return 0;
-		}
-		if(!strcasecmp(uident, "guest")) {
-			clear();
-			return 0;
-		}
-		uin = t_search(uident, NA);
-		if (uin == NULL) {
-			move(2, 0);
-			prints("¶Ô·½Ä¿Ç°²»ÔÚÏßÉÏ...\n");
-			pressreturn();
-			move(2, 0);
-			clrtoeol();
-			return -1;
-		}
-		if (is_web_user(uin->mode) || uin->mode == ST_BBSNET
-				||uin->mode == ST_LOCKSCREEN || uin->mode == ST_PAGE
-				|| uin->mode == ST_FIVE || !canmsg(uin)) {
-			move(2, 0);
-			prints("Ä¿Ç°ÎÞ·¨´«ËÍÑ¶Ï¢¸ø¶Ô·½.\n");
-			pressreturn();
-			move(2, 0);
-			clrtoeol();
-			return -1;
-		}
-	} else {
-		if (uentp->uid == usernum)
-			return 0;
-		uin = uentp;
-		if (is_web_user(uin->mode) || uin->mode == ST_BBSNET
-				|| uin->mode == ST_PAGE || uin->mode == ST_LOCKSCREEN
-				|| uin->mode == ST_FIVE || (mode != 2 && !canmsg(uin)))
-			return 0;
-		strcpy(uident, uin->userid);
-	}
-	if (msgstr == NULL) {
-		if (!get_msg(uident, buf, 1)) {
-			int i;
-			for(i = 1; i <= MAX_MSG_LINE+ 1; i++) {
-				move(i, 0);
-				clrtoeol();
-			}
-			return 0;
-		}
-	}
-	now = time(NULL);
-	timestr = ctime(&now);
-	strcpy(ret_str, "^Z»Ø");
-	if (msgstr == NULL || mode == 2) {
-		sprintf(msgbuf, "\033[0;1;44;36m%-12.12s\033[33m(\033[36m%-24.24s\033[33m):\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr , " ", ret_str, session.pid);
-		sprintf(wholebuf, "%s\n", msgstr == NULL ? buf : msgstr);
-		strcat(msgbuf, wholebuf);
-#ifdef LOG_MY_MESG
-		sprintf(mymsg, "\033[1;32;40mTo \033[1;33;40m%-12.12s\033[m(%-24.24s):%-38.38s\n", uin->userid, timestr, " ");
-		sprintf(wholebuf, "%s\n", msgstr == NULL ? buf : msgstr);
-		strcat(mymsg, wholebuf);
-		sprintf(buf2, "ÄãµÄºÃÅóÓÑ %s ÒÑ¾­ÉÏÕ¾ÂÞ£¡", currentuser.userid);
-		if (msgstr != NULL) {
-			if (strcmp(msgstr, buf2) == 0)
-				ishelo = 1;
-			else if (strcmp(buf, buf2) == 0)
-				ishelo = 1;
-		}
-#endif
-	} else if (mode == 0) {
-		sprintf(msgbuf, "\033[0;1;5;44;33mÕ¾³¤ ÓÚ\033[36m %24.24s \033[33m¹ã²¥£º\033[m\033[1;37;44m%-39.39s\033[m\033[%05dm\n", timestr," ",  session.pid); 
-		sprintf(wholebuf, "%s\n", msgstr);
-		strcat(msgbuf, wholebuf);        
 
-	} else if (mode == 1) {
-		sprintf(msgbuf, "\033[0;1;44;36m%-12.12s\033[37m(\033[36m%-24.24s\033[37m) ÑûÇëÄã\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr, " ", ret_str, session.pid); 
-		sprintf(wholebuf, "%s\n", msgstr); 
-		strcat(msgbuf, wholebuf);
-	} else if (mode == 3) {
-		sprintf(msgbuf, "\033[0;1;45;36m%-12.12s\033[33m(\033[36m%-24.24s\033[33m):\033[37m%-34.34s\033[31m(%s)\033[m\033[%05dm\n", currentuser.userid, timestr, " ", ret_str, session.pid);
-		sprintf(wholebuf, "%s\n", msgstr == NULL ? buf : msgstr);
-		strcat(msgbuf, wholebuf);
+		*name = '\0';
+		usercomplete(NULL, name);
+		uname = name;
 	}
-	else if (mode == 4) {
-		sprintf(msgbuf, "\033[0;1;45;36m%-12.12s\033[36mÏòÄú¸æ±ð(\033[1;36;45m%24.24s\033[36m)£º\033[m\033[1;36;45m%-38.38s\033[m\033[%05dm\n", currentuser.userid, timestr, " ", 0); 
-		sprintf(wholebuf, "%s\n", msgstr); 
-		strcat(msgbuf, wholebuf);
-	}
-	if (userpid) {
-		if (userpid != uin->pid) {
-			saveline(0, 0);	/* Save line */
-			move(0, 0);
-			clrtoeol();
-			prints("[1m¶Ô·½ÒÑ¾­ÀëÏß...[m\n");
-			sleep(1);
-			saveline(0, 1);	/* restore line */
-			return -1;
-		}
-	}
-	if (!uin->active || bbskill((struct user_info *)uin, 0) == -1) {
-		if (msgstr == NULL) {
-			prints("\n¶Ô·½ÒÑ¾­ÀëÏß...\n");
-			pressreturn();
-			clear();
-		}
-		return -1;
-	}
-	sethomefile(buf, uident, "msgfile");
-	file_append(buf, msgbuf);
-#ifdef LOG_MY_MESG
-	if (mode == 2 || (mode == 0 && msgstr == NULL)) {
-		if (ishelo == 0) {
-			sethomefile(buf, currentuser.userid, "msgfile.me");
-			file_append(buf, mymsg);
-		}
-	}
-	sethomefile(buf, uident, "msgfile.me");
-	file_append(buf, msgbuf);
-	free(mymsg);
-#endif
-	free(msgbuf);
-	if(uin->pid) {
-		bbskill((struct user_info *)uin, SIGUSR2);
-	}
-	if (msgstr == NULL) {
-		prints("\nÒÑËÍ³öÑ¶Ï¢...\n");
-		pressreturn();
+
+	if (!*uname || strcaseeq(uname, "guest")
+			|| strcaseeq(uname, currentuser.userid)) {
 		clear();
-	}
-	return 1;
-}
-
-int dowall(const struct user_info *uin)
-{
-	if (!uin->active || !uin->pid)
-		return -1;
-	move(1, 0);
-	clrtoeol();
-	prints("\033[1;32mÕý¶Ô %s ¹ã²¥.... Ctrl-D Í£Ö¹¶Ô´ËÎ» User ¹ã²¥¡£\033[m", uin->userid);
-	refresh();
-	do_sendmsg(uin, buf2, 0, uin->pid);
-	return 0;
-}
-
-int hisfriend_wall_logout(const struct user_info *uin)
-{
-	if ((uin->pid - session.pid == 0) || !uin->active || !uin->pid 
-			|| !(uin->pager & LOGOFFMSG_PAGER))
-		return -1;
-	if (hisfriend(uin) && !is_blocked(uin->userid)) {
-		refresh();
-		do_sendmsg(uin, buf2, 4, uin->pid);
-	}
-	return 0;
-}
-
-int friend_login_wall(const struct user_info *pageinfo)
-{
-	char    msg[MAX_MSG_SIZE+2];
-	int     x, y;
-	if (!pageinfo->active || !pageinfo->pid)
 		return 0;
-	if (hisfriend(pageinfo) && !is_blocked(pageinfo->userid)) {
-		if (getuser(pageinfo->userid) <= 0)
-			return 0;
-		if (!(lookupuser.userdefine & DEF_LOGINFROM))
-			return 0;
-		if (pageinfo->uid ==usernum)
-			return 0;
-		/* edwardc.990427 ºÃÓÑÒþÉí¾Í²»ÏÔÊ¾ËÍ³öÉÏÕ¾Í¨Öª */
-		if (pageinfo->invisible)
-			return 0;
-		getyx(&y, &x);
-		if (y > 22) {
-			pressanykey();
-			move(7, 0);
-			clrtobot();
-		}
-		prints("ËÍ³öºÃÓÑÉÏÕ¾Í¨Öª¸ø %s\n", pageinfo->userid);
-		sprintf(msg, "ÄãµÄºÃÅóÓÑ %s ÒÑ¾­ÉÏÕ¾ÂÞ£¡", currentuser.userid);
-		do_sendmsg(pageinfo, msg, 2, pageinfo->pid);
 	}
-	return 0;
+
+	msg_session_info_t *s = get_msg_sessions(uname);
+
+	if (!user_msgable(s)) {
+		msg_session_info_clear(s);
+		move(2, 0);
+		prints("¶Ô·½Ä¿Ç°²»ÔÚÏß»òÎÞ·¨½ÓÊÜÑ¶Ï¢...\n");
+		pressreturn();
+		move(2, 0);
+		clrtoeol();
+		return 0;
+	}
+
+	char msg[MAX_MSG_SIZE + 2];
+	if (!get_msg(uname, msg, 1)) {
+		for (int i = 1; i <= MAX_MSG_LINE+ 1; i++) {
+			move(i, 0);
+			clrtoeol();
+		}
+		msg_session_info_clear(s);
+		return 0;
+	}
+
+	int r = send_msg(s, msg, NORMAL_MSG);
+	msg_session_info_clear(s);
+
+	if (r)
+		prints("\nÒÑËÍ³öÑ¶Ï¢...\n");
+	else
+		prints("\033[1m¶Ô·½ÒÑ¾­ÀëÏß...\033[m\n");
+	pressreturn();
+	clear();
+	return r;
+}
+
+int s_msg(void)
+{
+	return tui_send_msg(NULL);
+}
+
+int msg_author(int ent, const struct fileheader *fileinfo, char *direct)
+{
+	if (streq(currentuser.userid, "guest"))
+		return DONOTHING;
+	tui_send_msg(fileinfo->owner);
+	return FULLUPDATE;
+}
+
+int broadcast_msg(const char *msg)
+{
+	msg_session_info_t *all = db_exec_query(env.d, true,
+			MSG_SESSION_INFO_QUERY);
+	int r = send_msg(all, msg, BROADCAST_MSG);
+	msg_session_info_clear(all);
+	return r;
+}
+
+static msg_session_info_t *get_sessions_of_followers(void)
+{
+	return db_query(MSG_SESSION_INFO_QUERY
+			" JOIN follows f ON s.user_id = f.follower"
+			" WHERE f.user_id = %"DBIdUID, session.uid);
+}
+
+int logout_msg(const char *msg)
+{
+	msg_session_info_t *s = get_sessions_of_followers();
+	int r = send_msg(s, msg, LOGOUT_MSG);
+	msg_session_info_clear(s);
+	return r;
+}
+
+int login_msg(void)
+{
+	msg_session_info_t *s = get_sessions_of_followers();
+	int r = send_msg(s, NULL, LOGIN_MSG);
+	msg_session_info_clear(s);
+	return r;
 }
 
 enum {
@@ -488,20 +472,17 @@ static void getdata_r(char *buf, size_t size, size_t *len,
 	}
 }
 
-/**
- *
- */
-static void send_msg3(const char *receiver, int pid, const char *msg, int line)
+static void _msg_reply(const char *receiver, int pid, const char *msg, int line)
 {
 	char buf[STRLEN];
 	bool success = false;
 
 	if (*msg != '\0') {
-		struct user_info *uin = t_search(receiver, pid);
-		if (!uin) {
+		msg_session_info_t *s = get_msg_sessions(receiver);
+		if (!user_msgable(s)) {
 			snprintf(buf, sizeof(buf), "\033[1;32mÕÒ²»µ½·¢Ñ¶Ï¢µÄ %s.\033[m",
 					receiver);
-		} else if (do_sendmsg(uin, msg, 2, uin->pid)) {
+		} else if (send_msg(s, msg, NORMAL_MSG)) {
 			success = true;
 		} else {
 			strlcpy(buf, "\033[1;32mÑ¶Ï¢ÎÞ·¨ËÍ³ö.\033[m", sizeof(buf));
@@ -643,7 +624,7 @@ void msg_reply(int ch)
 			switch (ch) {
 				case '\r':
 				case '\n':
-					send_msg3(st.receiver, st.rpid, st.msg, st.cury);
+					_msg_reply(st.receiver, st.rpid, st.msg, st.cury);
 					msg_backup(currentuser.userid);
 					st.msg[0] = '\0';
 					st.len = 0;

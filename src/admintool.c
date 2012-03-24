@@ -3,12 +3,12 @@
 #include "fbbs/board.h"
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/msg.h"
 #include "fbbs/register.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
 extern int cmpbnames();
-extern int dowall();
 extern int t_cmpuids();
 extern void rebuild_brdshm();
 int showperminfo(int, int);
@@ -1580,10 +1580,13 @@ int wall() {
 	set_user_status(ST_MSG);
 	move(2, 0);
 	clrtobot();
-	if (!get_msg("所有使用者", buf2, 1)) {
+
+	char msg[MAX_MSG_SIZE + 2];
+	if (!get_msg("所有使用者", msg, 1)) {
 		return 0;
 	}
-	if (apply_ulist(dowall) == -1) {
+
+	if (!broadcast_msg(msg)) {
 		move(2, 0);
 		prints("线上空无一人\n");
 		pressanykey();

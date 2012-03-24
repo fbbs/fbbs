@@ -5,6 +5,7 @@
 
 #include "fbbs/dbi.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/msg.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -45,7 +46,6 @@ int WishNum = 0;
 int orderWish = 0;
 extern int enabledbchar;
 int refscreen = NA;
-int friend_login_wall();
 void msg_handler(int signum);
 
 // Handle giveupBBS(½äÍø) transactions.
@@ -924,7 +924,7 @@ void start_client(void)
 		clrtobot();
 		if (!DEFINE(DEF_NOLOGINSEND))
 			if (session.visible)
-				apply_ulist(friend_login_wall);
+				login_msg();
 		clear();
 		set_numofsig();
 	}

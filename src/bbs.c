@@ -12,6 +12,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
+#include "fbbs/msg.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -26,7 +27,6 @@ char ANN_LOG_PATH[256];
 struct postheader header;
 
 extern char buf2[STRLEN];
-int hisfriend_wall_logout();
 int digestmode;
 int local_article;
 int usernum = 0;
@@ -76,8 +76,6 @@ int SR_author();
 int SR_BMfunc();
 int Q_Goodbye();
 int show_online_followings(void);
-int s_msg();
-int send_msg();
 int b_notes_passwd();
 int post_cross(char islocal, int mod);
 int BM_range();
@@ -2955,7 +2953,7 @@ struct one_key read_comms[] = {
 		{Ctrl('U'), SR_author}, {'b', SR_BMfunc}, {Ctrl('T'), acction_mode},
 		{'t', thesis_mode}, {'!', Q_Goodbye}, {'S', s_msg},
 		{'f', new_flag_clear}, {'o', show_online_followings}, {'L', BM_range},
-		{'*', show_file_info}, {'Z', send_msg}, {'|', lock}, {'\0', NULL}
+		{'*', show_file_info}, {'Z', msg_author}, {'|', lock}, {'\0', NULL}
 };
 
 int board_read() {
@@ -3153,8 +3151,10 @@ int Q_Goodbye() {
 
 			if (choose == byes)
 				get_msg("‘⁄œﬂ∫√”—", buftemp, byes + 4);
-			sprintf(buf2, "%s", buftemp); //added by roly 02.03.24                 
-			apply_ulist(hisfriend_wall_logout);
+
+			char msg[MAX_MSG_SIZE + 2];
+			sprintf(msg, "%s", buftemp); //added by roly 02.03.24
+			logout_msg(msg);
 		}
 		clear();
 		prints("\n\n\n\n\n\n\n");
