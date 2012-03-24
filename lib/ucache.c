@@ -415,24 +415,6 @@ int get_online(void)
 	return utmpshm->total_num;
 }
 
-int apply_ulist(int (*fptr)())
-{
-	struct user_info *uentp, utmp;
-	int i, max;
-
-	resolve_utmp();
-	max = USHM_SIZE - 1;
-	while (max > 0 && utmpshm->uinfo[max].active == 0)
-		max--;
-	for (i = 0; i <= max; i++) {
-		uentp = &(utmpshm->uinfo[i]);
-		utmp = *uentp;
-		if ((*fptr)(&utmp) == QUIT)
-			return QUIT;
-	}
-	return 0;
-}
-
 // Copies user_info *'uentp' to ('uent'th - 1) entry of utmp.
 void update_ulist(struct user_info *uentp, int uent)
 {
