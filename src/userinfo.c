@@ -158,7 +158,6 @@ void tui_check_uinfo(struct userec *u)
 						u->username, NAMELEN, DOECHO, YEA);
 				strlcpy(uinfo.username, u->username, sizeof(uinfo.username));
 				printable_filter(uinfo.username);
-				update_ulist(&uinfo, utmpent);
 				break;
 			case UINFO_EGENDER:
 				getdata(3, 0, "请输入您的性别: M.男 F.女 [M]: ",

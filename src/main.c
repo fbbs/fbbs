@@ -210,7 +210,6 @@ void u_exit(void)
 
 	session.pid = 0;
 	uinfo.active = NA;
-	update_ulist(&uinfo, utmpent);
 }
 
 // Handle abnormal exit.

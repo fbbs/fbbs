@@ -415,15 +415,6 @@ int get_online(void)
 	return utmpshm->total_num;
 }
 
-// Copies user_info *'uentp' to ('uent'th - 1) entry of utmp.
-void update_ulist(struct user_info *uentp, int uent)
-{
-	resolve_utmp();
-	if (uent > 0 && uent <= USHM_SIZE) {
-		utmpshm->uinfo[uent - 1] = *uentp;
-	}
-}
-
 // Returns count of online users.
 int count_online(void)
 {

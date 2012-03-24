@@ -3425,7 +3425,6 @@ int thesis_mode() {
 	lookupuser.userdefine = pbits;
 	currentuser.userdefine = pbits;
 	substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);
-	update_ulist(&uinfo, utmpent);
 	return FULLUPDATE;
 }
 
