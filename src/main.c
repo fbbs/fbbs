@@ -162,7 +162,6 @@ static void u_enter(void)
 		enabledbchar = 0;
 
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
-	getfriendstr();
 	digestmode = NA;
 
 	session.id = session_new(NULL, 0, session.uid, fromhost, SESSION_TELNET,

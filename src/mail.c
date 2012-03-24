@@ -1140,6 +1140,59 @@ int filter;
 }
 #endif
 
+static int listfilecontent(char *fname, int y)
+{
+	FILE *fp;
+	int x = 0, cnt = 0, max = 0, len;
+	//char    u_buf[20], line[STRLEN], *nick;
+	char u_buf[20], line[512], *nick;
+	//modified by roly 02.03.22 »º´æÇøÒç³ö
+	move(y, x);
+	CreateNameList();
+	strcpy(genbuf, fname);
+	if ((fp = fopen(genbuf, "r")) == NULL) {
+		prints("(none)\n");
+		return 0;
+	}
+	while (fgets(genbuf, 1024, fp) != NULL) {
+		strtok(genbuf, " \n\r\t");
+		strlcpy(u_buf, genbuf, 20);
+		u_buf[19] = '\0';
+		if (!AddNameList(u_buf))
+			continue;
+		nick = (char *) strtok(NULL, "\n\r\t");
+		if (nick != NULL) {
+			while (*nick == ' ')
+				nick++;
+			if (*nick == '\0')
+				nick = NULL;
+		}
+		if (nick == NULL) {
+			strcpy(line, u_buf);
+		} else {
+			sprintf(line, "%-12s%s", u_buf, nick);
+		}
+		if ((len = strlen(line)) > max)
+			max = len;
+		if (x + len > 78)
+			line[78 - x] = '\0';
+		prints("%s", line);
+		cnt++;
+		if ((++y) >= t_lines - 1) {
+			y = 3;
+			x += max + 2;
+			max = 0;
+			if (x > 70)
+				break;
+		}
+		move(y, x);
+	}
+	fclose(fp);
+	if (cnt == 0)
+		prints("(none)\n");
+	return cnt;
+}
+
 int g_send() {
 	char uident[13], tmp[3];
 	int cnt, i, n, fmode = NA;
