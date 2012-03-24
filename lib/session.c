@@ -135,7 +135,7 @@ db_res_t *get_active_sessions(void)
 
 basic_session_info_t *get_sessions(user_id_t uid)
 {
-	return db_query("SELECT s.id, s.pid, s.visible, s.web FROM sessions"
+	return db_query("SELECT s.id, s.pid, s.visible, s.web FROM sessions s"
 			" WHERE active AND user_id = %"DBIdUID, uid);
 }
 
