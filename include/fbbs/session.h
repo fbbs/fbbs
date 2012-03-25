@@ -123,6 +123,8 @@ extern int set_visibility(bool visible);
 extern db_res_t *get_sessions_of_followings(void);
 extern db_res_t *get_active_sessions(void);
 
+#define BASIC_SESSION_INFO_FIELDS  "s.id, s.pid, s.visible, s.web"
+
 typedef db_res_t basic_session_info_t;
 extern basic_session_info_t *get_sessions(user_id_t uid);
 extern basic_session_info_t *get_my_sessions(void);

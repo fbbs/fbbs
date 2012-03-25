@@ -361,7 +361,7 @@ int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
 
 static basic_session_info_t *get_sessions_by_name(const char *uname)
 {
-	return db_query("SELECT s.id, s.pid, s.visible, s.web"
+	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
 			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
 			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
 }

@@ -135,11 +135,18 @@ db_res_t *get_active_sessions(void)
 
 basic_session_info_t *get_sessions(user_id_t uid)
 {
-	return db_query("SELECT s.id, s.pid, s.visible, s.web FROM sessions s"
+	return db_query("SELECT " BASIC_SESSION_INFO_FIELDS " FROM sessions s"
 			" WHERE active AND user_id = %"DBIdUID, uid);
 }
 
 basic_session_info_t *get_my_sessions(void)
 {
 	return get_sessions(session.uid);
+}
+
+db_res_t *basic_sessions_of_followings(void)
+{
+	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
+			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
+			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
 }
