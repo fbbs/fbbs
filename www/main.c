@@ -192,7 +192,6 @@ static int _init_all(void)
 
 	if (resolve_ucache() == -1)
 		return -1;
-	resolve_utmp();
 
 	if (resolve_boards() < 0)
 		return -1;

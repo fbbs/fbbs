@@ -39,33 +39,6 @@ struct userec {
 	char reserved[8];         ///< reserved for future use.
 };
 
-struct user_info { /* Structure used in UTMP file */
-	/* added by roly for compatiable with NJU 0.9 */
-	int utmpkey;
-	/* add end */
-	int active; /* When allocated this field is true */
-	int uid; /* Used to find user name in passwd file */
-	int pid; /* kill() to notify user of talk request */
-	int invisible; /* Used by cloaking function in Xyz menu */
-	int sockactive; /* Used to coordinate talk requests */
-	int sockaddr; /* ... */
-	int destuid; /* talk uses this to identify who called */
-	int mode; /* UL/DL, Talk Mode, Chat Mode, ... */
-	int pager; /* pager toggle, YEA, or NA */
-	int in_chat; /* for in_chat commands   */
-	int fnum; /* number of friends */
-	int last_post_time;
-	char chatid[ 10 ]; /* chat id, if in chat mode */
-	char from[60];
-	int currbrdnum;
-	time_t idle_time; /* to keep idle time */
-	char userid[ 20 ];
-	char realname[ 20 ];
-	char username[NAMELEN];
-	int friend[MAXFRIENDS];
-	int reject[MAXREJECTS];
-};
-
 /*add by Ashinmarch*/
 #define SCHOOLNUMLEN    9
 #define IDCARDLEN       18
@@ -111,14 +84,6 @@ struct bstat { /* used for caching files and boards */
 struct one_key { /* Used to pass commands to the readmenu */
 	int key; //输入字符与动作函数一一对应
 	int (*fptr)();
-};
-
-#define USHM_SIZE       (MAXACTIVE + 150)
-struct UTMPFILE {
-	struct user_info uinfo[ USHM_SIZE ]; // Cache for online users.
-	int usersum; // Count of all users.
-	int max_login_num;
-	int total_num; // Count of online users.
 };
 
 struct BCACHE { //版面的缓冲?

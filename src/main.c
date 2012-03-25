@@ -428,8 +428,6 @@ enum {
  */
 int bbs_auth(const char *name, const char *passwd)
 {
-	resolve_utmp();
-
 	if (!name || *name == '\0')
 		return BBS_ENOUSR;
 
@@ -477,7 +475,6 @@ static int login_query(void)
 	bool auth = false;
 #endif // ENABLE_SSH
 
-	resolve_utmp();
 	// Deny new logins if too many users online.
 	int online = online_count();
 #ifndef ENABLE_SSH

@@ -25,8 +25,6 @@ enum {
 
 bbs_env_t env;
 
-// The starting address of cache for online users.
-struct UTMPFILE *utmpshm = NULL;
 // The starting address of cache for all users.
 struct UCACHE *uidshm = NULL;
 // A global variable to hold result when searching users.
@@ -381,17 +379,6 @@ int getuserbyuid(struct userec *u, int uid)
 		return -1;
 	*u = uidshm->passwd[uid - 1];
 	return uid;
-}
-
-// If 'utmpshm' == NULL, gets shared memory for online users
-// and puts its starting address in utmpshm.
-void resolve_utmp(void)
-{
-	if (utmpshm == NULL) {
-		utmpshm = attach_shm("UTMP_SHMKEY", 3699, sizeof(*utmpshm));
-		if (utmpshm == NULL)
-			exit(1); // TODO: leave to callers.
-	}
 }
 
 int cmpfnames(void *user, void *over)
