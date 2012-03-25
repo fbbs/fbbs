@@ -37,7 +37,6 @@ int getuser(const char *userid);
 int getuserbyuid(struct userec *u, int uid);
 void resolve_utmp(void);
 int allusers(void);
-int get_online(void);
 int cmpfnames(void *user, void *over);
 
 //log.c

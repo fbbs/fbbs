@@ -408,13 +408,6 @@ int allusers(void)
 	return count;
 }
 
-// Returns (non-realtime) count of online users.
-int get_online(void)
-{
-	resolve_utmp();
-	return utmpshm->total_num;
-}
-
 int cmpfnames(void *user, void *over)
 {
 	const char *userid = user;
