@@ -7,6 +7,7 @@
 
 enum {
 	REFRESH_THRESHOLD = 5,
+	ONLINE_FOLLOWS_COUNT_REFRESH_INTERVAL = 15,
 };
 
 bbs_session_t session;
@@ -144,9 +145,37 @@ basic_session_info_t *get_my_sessions(void)
 	return get_sessions(session.uid);
 }
 
-db_res_t *basic_sessions_of_followings(void)
+static basic_session_info_t *basic_sessions_of_follows(void)
 {
 	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
 			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
 			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
+}
+
+int online_follows_count(bool visible_only)
+{
+	static time_t uptime = 0;
+	static int count = 0;
+
+	time_t now = time(NULL);
+	if (now <= uptime + ONLINE_FOLLOWS_COUNT_REFRESH_INTERVAL)
+		return count;
+	uptime = now;
+
+	basic_session_info_t *s = basic_sessions_of_follows();
+	if (s) {
+		if (!visible_only) {
+			count = basic_session_info_count(s);
+		} else {
+			count = 0;
+			for (int i = 0; i < basic_session_info_count(s); ++i) {
+				if (basic_session_info_visible(s, i))
+					++count;
+			}
+		}
+	} else {
+		count = 0;
+	}
+	basic_session_info_clear(s);
+	return count;
 }

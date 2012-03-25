@@ -267,29 +267,3 @@ int t_query(const char *user)
 	pressanykey();
 	return FULLUPDATE;
 }
-
-int get_status(int uid)
-{
-	if (resolve_ucache() == -1)
-		return 0;
-	if (!HAS_PERM(PERM_SEECLOAK)
-			&& (uidshm->passwd[uid - 1].userlevel & PERM_LOGINCLOAK)
-			&& (uidshm->passwd[uid - 1].flags[0] & CLOAK_FLAG))
-		return 0;
-	return uidshm->status[uid - 1];
-}
-
-void num_alcounter(void)
-{
-	static time_t last=0;
-	register int i;
-	time_t now = time(0);
-	if (last+10 > now)
-		return;
-	last=now;
-	count_friends=0;
-	for(i = 0; i < MAXFRIENDS && uinfo.friend[i]; i++) {
-		count_friends+=get_status(uinfo.friend[i]);
-	}
-	return;
-}

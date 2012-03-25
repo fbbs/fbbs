@@ -664,12 +664,11 @@ void update_endline(void)
 	if (cur_sec < 5) {
 		allstay = (now - login_start_time) / 60;
 		sprintf(buf, "[\033[36m%.12s\033[33m]", currentuser.userid);
-		num_alcounter();
 		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
 			"[\033[36m%4d\033[33mÈË/\033[36m%3d\033[33mÓÑ]"
 			"  [\033[36m%c%c\033[33m]  "
 			"ÕÊºÅ%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
-			date, get_online(), count_friends,
+			date, get_online(), online_follows_count(!HAS_PERM(PERM_SEECLOAK)),
 			(DEFINE(DEF_MSGGETKEY)) ? 'X' : 'x',
 			session.visible ? 'c' : 'C',
 			buf, (allstay / 60) % 1000, allstay % 60);

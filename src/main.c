@@ -26,7 +26,6 @@ extern int convcode;
 #endif
 int RMSG = false;
 int msg_num = 0;
-int count_friends = 0;
 int iscolor = 1;
 int mailXX = 0; // If mail quota is exceeded.
 int numofsig = 0;
@@ -928,8 +927,8 @@ void start_client(void)
 	ActiveBoard_Init();
 	fill_date();
 
-	num_alcounter();
-	if (count_friends > 0 && DEFINE(DEF_LOGFRIEND))
+	if (DEFINE(DEF_LOGFRIEND)
+			&& online_follows_count(!HAS_PERM(PERM_SEECLOAK)) > 0)
 		show_online_followings();
 
 	sysconf_load(false);

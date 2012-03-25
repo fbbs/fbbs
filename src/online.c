@@ -212,7 +212,7 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 
 	const char *host = get_host(ip);
 
-	int status = get_status(ip->uid);
+	int status = get_user_status(ip->uid);
 	const char *color = get_status_color(status,
 			!(ip->flag & SESSION_FLAG_INVISIBLE),
 			ip->flag & SESSION_FLAG_WEB);
