@@ -71,7 +71,7 @@ static int get_grp(char *seekstr)
 
 //      ÐÞ¸ÄÊ¹ÓÃÕß×ÊÁÏ
 int m_info() {
-	struct userec uinfo;
+	struct userec user;
 	char reportbuf[30];
 	int id;
 
@@ -86,14 +86,14 @@ int m_info() {
 	stand_title("ÐÞ¸ÄÊ¹ÓÃÕß×ÊÁÏ");
 	if (!gettheuserid(1, "ÇëÊäÈëÊ¹ÓÃÕß´úºÅ: ", &id))
 		return -1;
-	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
-	sprintf(reportbuf, "check info: %s", uinfo.userid);
+	memcpy(&user, &lookupuser, sizeof(user));
+	sprintf(reportbuf, "check info: %s", user.userid);
 	report(reportbuf, currentuser.userid);
 
 	move(1, 0);
 	clrtobot();
-	disply_userinfo(&uinfo);
-	uinfo_query(&uinfo, 1, id);
+	disply_userinfo(&user);
+	uinfo_query(&user, 1, id);
 	return 0;
 }
 
@@ -1075,7 +1075,7 @@ int delete_register(int index, reginfo_t* ent, char *direct) {
 //      Í¨¹ý×¢²áµ¥
 int pass_register(int index, reginfo_t* ent, char *direct) {
 	int unum;
-	struct userec uinfo;
+	struct userec user;
 	char buf[80];
 	FILE *fout;
 
@@ -1091,12 +1091,12 @@ int pass_register(int index, reginfo_t* ent, char *direct) {
 
 	delete_record(direct, sizeof(reginfo_t), index, filecheck, ent->userid);
 
-	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
+	memcpy(&user, &lookupuser, sizeof(user));
 #ifdef ALLOWGAME
-	uinfo.money = 1000;
+	user.money = 1000;
 #endif
-	substitut_record(PASSFILE, &uinfo, sizeof (uinfo), unum);
-	sethomefile(buf, uinfo.userid, "register");
+	substitut_record(PASSFILE, &user, sizeof (user), unum);
+	sethomefile(buf, user.userid, "register");
 	if ((fout = fopen(buf, "a")) != NULL) {
 		fprintf(fout, "×¢²áÊ±¼ä     : %s\n", getdatestring(ent->regdate, DATE_EN));
 		fprintf(fout, "ÉêÇëÕÊºÅ     : %s\n", ent->userid);
@@ -1112,10 +1112,10 @@ int pass_register(int index, reginfo_t* ent, char *direct) {
 		fprintf(fout, "Åú×¼ÈË       : %s\n", currentuser.userid);
 		fclose(fout);
 	}
-	mail_file("etc/s_fill", uinfo.userid, "¹§ìûÄú£¬ÄúÒÑ¾­Íê³É×¢²á¡£");
-	sethomefile(buf, uinfo.userid, "mailcheck");
+	mail_file("etc/s_fill", user.userid, "¹§ìûÄú£¬ÄúÒÑ¾­Íê³É×¢²á¡£");
+	sethomefile(buf, user.userid, "mailcheck");
 	unlink(buf);
-	sprintf(genbuf, "ÈÃ %s Í¨¹ýÉí·ÖÈ·ÈÏ.", uinfo.userid);
+	sprintf(genbuf, "ÈÃ %s Í¨¹ýÉí·ÖÈ·ÈÏ.", user.userid);
 	securityreport(genbuf, 0, 0);
 
 	return DIRCHANGED;
@@ -1124,7 +1124,7 @@ int pass_register(int index, reginfo_t* ent, char *direct) {
 //      ´¦Àí×¢²áµ¥
 int do_register(int index, reginfo_t* ent, char *direct) {
 	int unum;
-	struct userec uinfo;
+	struct userec user;
 	//char ps[80];
 	register int ch;
 	static char *reason[] = { "ÇëÈ·ÊµÌîÐ´ÕæÊµÐÕÃû.", "ÇëÏêÌîÑ§Ð£¿ÆÏµÓëÄê¼¶.", "ÇëÌîÐ´ÍêÕûµÄ×¡Ö·×ÊÁÏ.",
@@ -1142,7 +1142,7 @@ int do_register(int index, reginfo_t* ent, char *direct) {
 		return DIRCHANGED;
 	}
 
-	memcpy(&uinfo, &lookupuser, sizeof (uinfo));
+	memcpy(&user, &lookupuser, sizeof (user));
 	clear();
 	move(0, 0);
 	prints("[1;33;44m ÏêÏ¸×ÊÁÏ                                                                      [m\n");
@@ -1150,7 +1150,7 @@ int do_register(int index, reginfo_t* ent, char *direct) {
 
 	//strcpy(ps, "(ÎÞ)");
 	for (;;) {
-		disply_userinfo(&uinfo);
+		disply_userinfo(&user);
 		move(14, 0);
 		printdash(NULL);
 		prints("   ×¢²áÊ±¼ä   : %s\n", getdatestring(ent->regdate, DATE_EN));
@@ -1169,13 +1169,13 @@ int do_register(int index, reginfo_t* ent, char *direct) {
 				pass_register(index, ent, direct);
 				return READ_AGAIN;
 			case '+':
-				uinfo.userlevel &= ~PERM_SPECIAL4;
-				substitut_record(PASSFILE, &uinfo, sizeof (uinfo), unum);
-				//mail_file("etc/f_fill", uinfo.userid, "ÇëÖØÐÂÌîÐ´ÄúµÄ×¢²á×ÊÁÏ");
-				mail_file("etc/f_fill", uinfo.userid, reason[rejectindex]);
+				user.userlevel &= ~PERM_SPECIAL4;
+				substitut_record(PASSFILE, &user, sizeof (user), unum);
+				//mail_file("etc/f_fill", user.userid, "ÇëÖØÐÂÌîÐ´ÄúµÄ×¢²á×ÊÁÏ");
+				mail_file("etc/f_fill", user.userid, reason[rejectindex]);
 			case 'd':
-				uinfo.userlevel &= ~PERM_SPECIAL4;
-				substitut_record(PASSFILE, &uinfo, sizeof (uinfo), unum);
+				user.userlevel &= ~PERM_SPECIAL4;
+				substitut_record(PASSFILE, &user, sizeof (user), unum);
 				delete_register(index, ent, direct);
 				return READ_AGAIN;
 			case KEY_DOWN:
@@ -1186,7 +1186,6 @@ int do_register(int index, reginfo_t* ent, char *direct) {
 			default:
 				if (ch >= '0' && ch <= '6') {
 					rejectindex = ch - '0';
-					//strcpy(uinfo.address, reason[ch-'0']);
 				}
 				break;
 		}
