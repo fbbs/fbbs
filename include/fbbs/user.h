@@ -17,8 +17,6 @@ extern int user_data_add_by_name(db_conn_t *c, const char *name,
 		int field, int delta);
 extern int user_data_add(db_conn_t *c, int uid, int field, int delta);
 
-extern int get_online_count(db_conn_t *c);
-
 extern int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout);
 
 extern int set_last_post_time(fb_time_t t);

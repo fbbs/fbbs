@@ -415,19 +415,6 @@ int get_online(void)
 	return utmpshm->total_num;
 }
 
-// Returns count of online users.
-int count_online(void)
-{
-	int i, total = 0;
-	for (i = 0; i < MAXACTIVE; i++)
-		if (utmpshm->uinfo[i].active)
-			total++;
-	return total;
-}
-
-/**
- *
- */
 int cmpfnames(void *user, void *over)
 {
 	const char *userid = user;

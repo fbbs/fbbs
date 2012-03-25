@@ -6,20 +6,35 @@
 #include "fbbs/session.h"
 
 enum {
-	REFRESH_THRESHOLD = 5,
+	IDLE_TIME_REFRESH_THRESHOLD = 5,
 	ONLINE_FOLLOWS_COUNT_REFRESH_INTERVAL = 15,
+	ONLINE_COUNT_REFRESH_INTERVAL = 15,
 };
 
 bbs_session_t session;
 
-int get_online_count(db_conn_t *c)
+#define ONLINE_COUNT_CACHE_KEY  "c:online"
+
+int online_count(void)
 {
-	int ret = -1;
-	db_res_t *res = db_exec(c, "SELECT count(*) FROM sessions");
-	if (db_res_status(res) == DBRES_TUPLES_OK)
-		ret = db_get_integer(res, 0, 0);
+	int cached = mdb_get_integer(-1, "GET "ONLINE_COUNT_CACHE_KEY);
+	if (cached >= 0)
+		return cached;
+
+	int online = 0;
+	db_res_t *res = db_cmd(env.d, true,
+			"SELECT count(*) FROM sessions WHERE active");
+	if (res && db_res_rows(res) > 0)
+		online = db_get_integer(res, 0, 0);
 	db_clear(res);
-	return ret;
+
+	mdb_res_t *r = mdb_cmd("SET "ONLINE_COUNT_CACHE_KEY" %d", online);
+	mdb_clear(r);
+	r = mdb_cmd("EXPIRE "ONLINE_COUNT_CACHE_KEY" %d",
+			ONLINE_COUNT_REFRESH_INTERVAL);
+	mdb_clear(r);
+
+	return online;
 }
 
 session_id_t session_new_id(void)
@@ -76,7 +91,7 @@ int set_idle_time(session_id_t sid, fb_time_t t)
 void cached_set_idle_time(void)
 {
 	time_t now = time(NULL);
-	if (now > session.idle + REFRESH_THRESHOLD)
+	if (now > session.idle + IDLE_TIME_REFRESH_THRESHOLD)
 		set_idle_time(session.id, now);
 	session.idle = now;
 }
