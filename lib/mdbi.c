@@ -6,7 +6,7 @@
 int mdb_connect_unix(const char *path)
 {
 	env.m->c = redisConnectUnix(path);
-	if (env.m->c || env.m->c->err)
+	if (!env.m->c || env.m->c->err)
 		return 0;
 	return -1;
 }
