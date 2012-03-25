@@ -199,7 +199,6 @@ void u_exit(void)
 	signal(SIGUSR1, SIG_IGN);
 	signal(SIGUSR2, SIG_IGN);
 
-	setflags(PAGER_FLAG, (uinfo.pager & ALL_PAGER));
 	if (HAS_PERM(PERM_LOGINCLOAK))
 		setflags(CLOAK_FLAG, !session.visible);
 
@@ -209,7 +208,6 @@ void u_exit(void)
 	uidshm->status[usernum - 1]--;
 
 	session.pid = 0;
-	uinfo.active = NA;
 }
 
 // Handle abnormal exit.

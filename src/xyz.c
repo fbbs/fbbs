@@ -99,30 +99,10 @@ int x_userdefine() {
 		lookupuser.userdefine = newlevel;
 		currentuser.userdefine = newlevel;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);
-		uinfo.pager |= FRIEND_PAGER;
-		if (!(uinfo.pager & ALL_PAGER)) {
-			if (!DEFINE(DEF_FRIENDCALL))
-				uinfo.pager &= ~FRIEND_PAGER;
-		}
-		uinfo.pager &= ~ALLMSG_PAGER;
-		uinfo.pager &= ~FRIENDMSG_PAGER;
-		/* Following line added by Amigo 2002.04.03. For close logoff msg. */
-		uinfo.pager &= ~LOGOFFMSG_PAGER;
 		if (DEFINE(DEF_DELDBLCHAR))
 			enabledbchar = 1;
 		else
 			enabledbchar = 0;
-		if (DEFINE(DEF_FRIENDMSG)) {
-			uinfo.pager |= FRIENDMSG_PAGER;
-		}
-		if (DEFINE(DEF_ALLMSG)) {
-			uinfo.pager |= ALLMSG_PAGER;
-			uinfo.pager |= FRIENDMSG_PAGER;
-		}
-		/* Following 3 lines added by Amigo 2002.04.03. For close logoff msg. */
-		if (DEFINE(DEF_LOGOFFMSG)) {
-			uinfo.pager |= LOGOFFMSG_PAGER;
-		}
 		prints("新的参数设定完成...\n\n");
 	}
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
@@ -268,7 +248,6 @@ int x_lockscreen() {
 void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	char buf[160];
 	char *my_argv[18], *ptr;
-	int save_pager, i;
 
 	signal(SIGALRM, SIG_IGN);
 	set_user_status(umode);
@@ -279,10 +258,6 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 		pressreturn();
 		return;
 	}
-	save_pager = uinfo.pager;
-	if (pager == NA) {
-		uinfo.pager = 0;
-	}
 	sprintf(buf, "%s %s %s %d", cmdfile, param1, currentuser.userid,
 			getpid());
 	report(buf, currentuser.userid);
@@ -292,7 +267,7 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 		ptr = strtok(buf, " \t");
 	else
 		ptr = NULL;
-	for (i = 1; i < 18; i++) {
+	for (int i = 1; i < 18; i++) {
 		if (ptr) {
 			my_argv[i] = ptr;
 			ptr = strtok(NULL, " \t");
@@ -324,7 +299,6 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	}
 #endif
 	child_pid = 0;
-	uinfo.pager = save_pager;
 	clear();
 }
 

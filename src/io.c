@@ -667,13 +667,9 @@ void update_endline(void)
 		num_alcounter();
 		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
 			"[\033[36m%4d\033[33m»À/\033[36m%3d\033[33m”—]"
-			"[\033[36m%c%c%c%c%c%c\033[33m]"
+			"  [\033[36m%c%c\033[33m]  "
 			"’ ∫≈%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
 			date, get_online(), count_friends,
-			(uinfo.pager & ALL_PAGER) ? 'P' : 'p',
-			(uinfo.pager & FRIEND_PAGER) ? 'O' : 'o',
-			(uinfo.pager & ALLMSG_PAGER) ? 'M' : 'm',
-			(uinfo.pager & FRIENDMSG_PAGER) ? 'F' : 'f',
 			(DEFINE(DEF_MSGGETKEY)) ? 'X' : 'x',
 			session.visible ? 'c' : 'C',
 			buf, (allstay / 60) % 1000, allstay % 60);
