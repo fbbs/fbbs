@@ -1193,6 +1193,13 @@ static int listfilecontent(char *fname, int y)
 	return cnt;
 }
 
+static db_res_t *load_names_of_follows(void)
+{
+	return db_query("SELECT u.name"
+			" FROM follows f JOIN alive_users u ON f.user_id = u.id"
+			" WHERE f.follower = %"DBIdUID, session.uid);
+}
+
 int g_send() {
 	char uident[13], tmp[3];
 	int cnt, i, n, fmode = NA;
@@ -1340,51 +1347,53 @@ int g_send() {
 				break;
 			}
 			case 'I':
-			case 'i':
-				n = 0;
-				clear();
-				for (i = cnt; i < maxrecp && n < uinfo.fnum; i++) {
-					int key;
-					move(2, 0);
-					if (getuserid(uident, uinfo.friend[n], sizeof(uident)) == -1)
-						exit(0);
-					prints("%s\n", uident);
-					move(3, 0);
-					n++;
-					prints("(A)È«²¿¼ÓÈë (Y)¼ÓÈë (N)²»¼ÓÈë (Q)½áÊø? [Y]:");
-					if (!fmode)
-						key = igetkey();
-					else
-						key = 'Y';
-					if (key == 'q' || key == 'Q')
-						break;
-					if (key == 'A' || key == 'a') {
-						fmode = YEA;
-						key = 'Y';
-					}
-					if (key == '\0' || key == '\n' || key == 'y' || key
-							== 'Y') {
-						if (!getuser(uident)) {
-							move(4, 0);
-							prints("Õâ¸öÊ¹ÓÃÕß´úºÅÊÇ´íÎóµÄ.\n");
-							i--;
-							continue;
-						} else if (!(lookupuser.userlevel & PERM_READMAIL)) {
-							move(4, 0);
-							prints("ÎÞ·¨ËÍÐÅ¸ø: [1m%s[m\n", lookupuser.userid);
-							i--;
-							continue;
-						} else if (seek_in_file(maillists, uident)) {
-							i--;
-							continue;
+			case 'i': {
+					n = 0;
+					clear();
+
+					db_res_t *res = load_names_of_follows();
+					for (i = cnt; i < maxrecp && n < db_res_rows(res); i++) {
+						int key;
+						move(2, 0);
+						const char *uname = db_get_value(res, n, 0);
+						prints("%s\n", uname);
+						move(3, 0);
+						n++;
+						prints("(A)È«²¿¼ÓÈë (Y)¼ÓÈë (N)²»¼ÓÈë (Q)½áÊø? [Y]:");
+						if (!fmode)
+							key = igetkey();
+						else
+							key = 'Y';
+						if (key == 'q' || key == 'Q')
+							break;
+						if (key == 'A' || key == 'a') {
+							fmode = YEA;
+							key = 'Y';
 						}
-						snprintf(buf, sizeof(buf), "%s\n", uident);
-						file_append(maillists, buf);
-						cnt++;
+						if (key == '\0' || key == '\n' || key == 'y' || key == 'Y') {
+							if (!getuser(uname)) {
+								move(4, 0);
+								prints("Õâ¸öÊ¹ÓÃÕß´úºÅÊÇ´íÎóµÄ.\n");
+								i--;
+								continue;
+							} else if (!(lookupuser.userlevel & PERM_READMAIL)) {
+								move(4, 0);
+								prints("ÎÞ·¨ËÍÐÅ¸ø: [1m%s[m\n", lookupuser.userid);
+								i--;
+								continue;
+							} else if (seek_in_file(maillists, uname)) {
+								i--;
+								continue;
+							}
+							snprintf(buf, sizeof(buf), "%s\n", uname);
+							file_append(maillists, buf);
+							cnt++;
+						}
 					}
+					db_clear(res);
+					fmode = NA;
+					clear();
 				}
-				fmode = NA;
-				clear();
 				break;
 			case 'C':
 			case 'c':
@@ -1458,6 +1467,8 @@ char current_maillist;
 	}
 	clear();
 	prints("[5;1;32mÕýÔÚ¼Ä¼þÖÐ£¬ÇëÉÔºò...[m");
+
+	db_res_t *res = NULL;
 	if (G_SENDMODE == 2) {
 		char maillists[STRLEN];
 		setuserfile(maillists, "maillist");
@@ -1466,14 +1477,17 @@ char current_maillist;
 		if ((mp = fopen(maillists, "r")) == NULL) {
 			return -3;
 		}
+		res = load_names_of_follows();
 	}
+
 	for (cnt = 0; cnt < num; cnt++) {
 		char uid[13];
 		char buf[STRLEN];
 		switch (G_SENDMODE) {
 			case 1:
-				if (getuserid(uid, uinfo.friend[cnt], sizeof(uid)) == -1)
-					exit(0);
+				if (cnt >= db_res_rows(res))
+					break;
+				strlcpy(uid, db_get_value(res, cnt, 0), sizeof(uid));
 				break;
 			case 2:
 				if (fgets(buf, STRLEN, mp) != NULL) {
@@ -1495,14 +1509,18 @@ char current_maillist;
 		sprintf(filepath, "mail/%c/%s", toupper(uid[0]), uid);
 		if (stat(filepath, &st) == -1) {
 			if (mkdir(filepath, 0755) == -1) {
-				if (G_SENDMODE == 2)
-				fclose(mp);
+				if (G_SENDMODE == 2) {
+					fclose(mp);
+					db_clear(res);
+				}
 				return -1;
 			}
 		} else {
 			if (!(st.st_mode & S_IFDIR)) {
-				if (G_SENDMODE == 2)
-				fclose(mp);
+				if (G_SENDMODE == 2) {
+					fclose(mp);
+					db_clear(res);
+				}
 				return -1;
 			}
 		}
@@ -1511,8 +1529,10 @@ char current_maillist;
 	}
 	unlink(tmpfile);
 	clear();
-	if (G_SENDMODE == 2)
-	fclose(mp);
+	if (G_SENDMODE == 2) {
+		fclose(mp);
+		db_clear(res);
+	}
 	return 0;
 }
 
@@ -1561,24 +1581,26 @@ int ov_send() {
 	clrtobot();
 	move(2, 0);
 	prints("¼ÄÐÅ¸øºÃÓÑÃûµ¥ÖÐµÄÈË£¬Ä¿Ç°±¾Õ¾ÏÞÖÆ½ö¿ÉÒÔ¼Ä¸ø [1m%d[m Î»¡£\n", maxrecp);
-	if (uinfo.fnum <= 0) {
+
+	db_res_t *res = load_names_of_follows();
+	if (!res || db_res_rows(res) < 1) {
 		prints("Äú²¢Ã»ÓÐÉè¶¨ºÃÓÑ¡£\n");
 		pressanykey();
 		clear();
+		db_clear(res);
 		return 0;
 	} else {
 		prints("Ãûµ¥ÈçÏÂ£º\n");
 	}
 	G_SENDMODE = 1;
-	all = (uinfo.fnum >= maxrecp) ? maxrecp : uinfo.fnum;
+	all = (db_res_rows(res) >= maxrecp) ? maxrecp : db_res_rows(res);
 	for (i = 0; i < all; i++) {
-		char uid[IDLEN + 2];
-		if (getuserid(uid, uinfo.friend[i], sizeof(uid)) == -1)
-			exit(0);
-		prints("%-12s ", uid);
+		prints("%-12s ", db_get_value(res, i, 0));
 		if ((i + 1) % 6 == 0)
 			outc('\n');
 	}
+	db_clear(res);
+
 	pressanykey();
 	switch (do_gsend(NULL, NULL, all, '0')) {
 		case -1:
