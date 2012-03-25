@@ -156,8 +156,7 @@ void tui_check_uinfo(struct userec *u)
 			case UINFO_ENICK:
 				getdata(2, 0, "请输入您的昵称 (Enter nickname): ",
 						u->username, NAMELEN, DOECHO, YEA);
-				strlcpy(uinfo.username, u->username, sizeof(uinfo.username));
-				printable_filter(uinfo.username);
+				printable_filter(u->username);
 				break;
 			case UINFO_EGENDER:
 				getdata(3, 0, "请输入您的性别: M.男 F.女 [M]: ",
@@ -344,7 +343,6 @@ void uinfo_query(struct userec *u, int real, int unum) {
 		}
 		if (!strcmp(u->userid, currentuser.userid)) {
 			extern int WishNum;
-			strlcpy(uinfo.username, newinfo.username, NAMELEN);
 			WishNum = 9999;
 		}
 		if (ans[0] != '2') {
