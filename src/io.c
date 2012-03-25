@@ -42,9 +42,6 @@ static iobuf_t outbuf;  ///< Output buffer.
 
 int KEY_ESC_arg;
 
-// TODO: why here..
-struct user_info uinfo;
-
 /**
  *
  */

@@ -260,9 +260,6 @@ extern struct userec currentuser;/*  user structure is loaded from passwd */
 /*  file at logon, and remains for the   */
 /*  entire session */
 
-extern struct user_info uinfo; /* Ditto above...utmp entry is stored here
- and written back to the utmp file when
- necessary (pretty darn often). */
 extern int usernum; /* Index into passwds file user record */
 extern int utmpent; /* Index into this users utmp file entry */
 

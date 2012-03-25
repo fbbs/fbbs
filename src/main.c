@@ -31,7 +31,6 @@ int mailXX = 0; // If mail quota is exceeded.
 int numofsig = 0;
 jmp_buf byebye;
 time_t lastnote;
-struct user_info uinfo;
 char fromhost[IP_LEN];
 char BoardName[STRLEN]; // TODO: Can be replaced by macro.
 
