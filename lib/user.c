@@ -23,14 +23,30 @@ user_id_t get_user_id(const char *name)
 	return ret;
 }
 
-int get_user_count(db_conn_t *c)
+#define USER_COUNT_CACHE_KEY  "c:users"
+
+enum {
+	USER_COUNT_REFRESH_INTERVAL = 3600,
+};
+
+int get_user_count(void)
 {
-	int count = -1;
-	// TODO: need to optimize later
-	db_res_t *r = db_exec(c, "SELECT count(*) FROM alive_users");
-	if (db_res_status(r) == DBRES_TUPLES_OK)
-		count = db_get_integer(r, 0, 0);
-	db_clear(r);
+	int cached = mdb_get_integer(-1, "GET "USER_COUNT_CACHE_KEY);
+	if (cached >= 0)
+		return cached;
+
+	int count = 0;
+	db_res_t *res = db_cmd(env.d, true, "SELECT count(*) FROM alive_users");
+	if (res && db_res_rows(res) > 0)
+		count = db_get_integer(res, 0, 0);
+	db_clear(res);
+
+	mdb_res_t *r = mdb_cmd("SET "USER_COUNT_CACHE_KEY" %d", count);
+	mdb_clear(r);
+	r = mdb_cmd("EXPIRE "USER_COUNT_CACHE_KEY" %d",
+			USER_COUNT_REFRESH_INTERVAL);
+	mdb_clear(r);
+	
 	return count;
 }
 

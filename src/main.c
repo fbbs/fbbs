@@ -500,12 +500,9 @@ static int login_query(void)
 		peak = online;
 	}
 
-	if (utmpshm->usersum <= 0)
-		utmpshm->usersum = allusers();
-
 	prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
 			"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
-			utmpshm->usersum, MAXUSERS, online, MAXACTIVE);
+			get_user_count(), MAXUSERS, online, MAXACTIVE);
 	visitlog(peak);
 
 #ifndef ENABLE_SSH

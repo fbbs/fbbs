@@ -394,20 +394,6 @@ void resolve_utmp(void)
 	}
 }
 
-// Returns realtime count of all users who has logged on more than once.
-int allusers(void)
-{
-	if (resolve_ucache() == -1)
-		return 0;
-	struct userec *user;
-	struct userec *end = uidshm->passwd 
-			+ sizeof(uidshm->passwd) / sizeof(uidshm->passwd[0]);
-	int count = 0;
-	for (user = uidshm->passwd; user != end; ++user)
-		count += (user->numlogins != 0 && user->userid[0] != '\0');
-	return count;
-}
-
 int cmpfnames(void *user, void *over)
 {
 	const char *userid = user;
