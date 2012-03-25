@@ -37,6 +37,17 @@ int online_count(void)
 	return online;
 }
 
+void update_peak_online(int online)
+{
+	mdb_res_t *r = mdb_cmd("SET c:max_online %d", online);
+	mdb_clear(r);
+}
+
+int get_peak_online(void)
+{
+	return mdb_get_integer(0, "GET c:max_online");
+}
+
 session_id_t session_new_id(void)
 {
 	db_res_t *res = db_exec_query(env.d, true,

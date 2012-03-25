@@ -380,7 +380,7 @@ struct max_log_record {
 };
 
 // Show visit count and save it.
-static void visitlog(void)
+static void visitlog(int peak)
 {
 	time_t now;
 	struct tm *tm;
@@ -401,10 +401,8 @@ static void visitlog(void)
 		}
 		else {
 			max_log.visit++;
-			if (max_log.logins > utmpshm->max_login_num)
-				utmpshm->max_login_num = max_log.logins;
-			else
-				max_log.logins = utmpshm->max_login_num;
+			if (peak > max_log.logins)
+				max_log.logins = peak;
 		}
 		fseek(fp, 0, SEEK_SET);
 		fwrite(&max_log, sizeof(max_log), 1, fp);
@@ -495,17 +493,20 @@ static int login_query(void)
 	prints("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
 			BBSNAME);
-	
-	utmpshm->total_num = online;
-	if (utmpshm->max_login_num < utmpshm->total_num)
-		utmpshm->max_login_num = utmpshm->total_num;
+
+	int peak = get_peak_online();
+	if (peak < online) {
+		update_peak_online(online);
+		peak = online;
+	}
+
 	if (utmpshm->usersum <= 0)
 		utmpshm->usersum = allusers();
 
 	prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
 			"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
 			utmpshm->usersum, MAXUSERS, online, MAXACTIVE);
-	visitlog();
+	visitlog(peak);
 
 #ifndef ENABLE_SSH
 	attempts = 0;

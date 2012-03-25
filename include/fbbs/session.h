@@ -136,6 +136,8 @@ extern basic_session_info_t *get_my_sessions(void);
 #define basic_session_info_clear(r)  db_clear(r)
 
 extern int online_count(void);
+extern int get_peak_online(void);
+extern void update_peak_online(int online);
 extern int online_follows_count(bool visible_only);
 
 extern const char *get_status_color(int status, bool visible, bool web);
