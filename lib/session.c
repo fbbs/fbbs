@@ -22,7 +22,7 @@ int online_count(void)
 		return cached;
 
 	int online = 0;
-	db_res_t *res = db_cmd(env.d, true,
+	db_res_t *res = db_exec_query(env.d, true,
 			"SELECT count(*) FROM sessions WHERE active");
 	if (res && db_res_rows(res) > 0)
 		online = db_get_integer(res, 0, 0);
