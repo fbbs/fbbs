@@ -36,7 +36,8 @@ int get_user_count(void)
 		return cached;
 
 	int count = 0;
-	db_res_t *res = db_cmd(env.d, true, "SELECT count(*) FROM alive_users");
+	db_res_t *res = db_exec_query(env.d, true,
+			"SELECT count(*) FROM alive_users");
 	if (res && db_res_rows(res) > 0)
 		count = db_get_integer(res, 0, 0);
 	db_clear(res);
