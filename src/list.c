@@ -11,11 +11,8 @@
 #endif
 //modified by money 2002.11.15
 #define BBS_PAGESIZE    (t_lines - 4)
-#define refreshtime     (30)
 extern time_t login_start_time;
 extern char BoardName[];
-time_t update_time = 0;
-int freshmode = 0;
 
 extern int cmpfnames();
 
@@ -27,17 +24,6 @@ int range, page, readplan;
 enum sort_type {stUserID, stUserName, stIP, stState} st = stUserID;
 // add by Flier - 2000.5.12 - End
 
-void update_data() {
-	if (readplan == YEA)
-		return;
-	if (time(0) >= update_time + refreshtime - 1) {
-		freshmode = 1;
-	}
-	signal(SIGALRM, update_data);
-	alarm(refreshtime);
-	return;
-}
-
 void show_message(msg)
 char msg[];
 {
@@ -47,24 +33,6 @@ char msg[];
 	if (msg != NULL)
 	prints("[1m%s[m", msg);
 	refresh();
-}
-
-int
-countusers(uentp)
-struct userec *uentp;
-{
-	static int totalusers;
-	char permstr[11];
-	if (uentp == NULL) {
-		int c = totalusers;
-		totalusers = 0;
-		return c;
-	}
-	if (uentp->numlogins != 0 && uleveltochar(permstr, uentp->userlevel) != 0) {
-		totalusers++;
-		return 1;
-	}
-	return 0;
 }
 
 /*******************Modify following two functions to support Type 2 mailall by Ashinmarch 2008.3.30*******************/
@@ -123,8 +91,6 @@ int (*read)();
 	readplan = NA;
 	(*title_show) ();
 	signal(SIGALRM, SIG_IGN);
-	if (update == 1)
-		update_data();
 	page = -1;
 	number = 0;
 	num = defaultn;
@@ -133,8 +99,7 @@ int (*read)();
 		num = 0;
 		if (num >= range)
 		num = range - 1;
-		if (page < 0 || freshmode == 1) {
-			freshmode = 0;
+		if (page < 0) {
 			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
 			move(3, 0);
 			clrtobot();
