@@ -7,8 +7,8 @@ int mdb_connect_unix(const char *path)
 {
 	env.m->c = redisConnectUnix(path);
 	if (!env.m->c || env.m->c->err)
-		return 0;
-	return -1;
+		return -1;
+	return 0;
 }
 
 static mdb_res_t *mdb_vcmd(const char *cmd, va_list ap)
