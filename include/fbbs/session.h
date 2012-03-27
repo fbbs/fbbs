@@ -11,8 +11,11 @@ typedef int64_t session_id_t;
 
 #define db_get_session_id(res, row, col)  db_get_bigint(res, row, col)
 
-#define SESSION_ACTIVE_QUERY \
-	"SELECT s.id, u.name, s.visible, s.ip_addr, s.web" \
+#define ACTIVE_SESSION_FIELDS \
+	"s.id, s.user_id, u.name, s.visible, s.ip_addr, s.web"
+
+#define ACTIVE_SESSION_QUERY \
+	"SELECT " ACTIVE_SESSION_FIELDS \
 	" FROM sessions s JOIN users u ON s.user_id = u.id"
 
 enum {

@@ -39,7 +39,7 @@ static void _fill_session_array(tui_list_t *p, int i)
 	online_users_t *up = p->data;
 	db_res_t *res = up->res;
 
-	bool visible = db_get_bool(res, i, 2);
+	bool visible = db_get_bool(res, i, 3);
 	if (!visible && !HAS_PERM(PERM_SEECLOAK))
 		return;
 
@@ -51,11 +51,11 @@ static void _fill_session_array(tui_list_t *p, int i)
 	memset(ip, 0, sizeof(*ip));
 
 	ip->sid = sid;
-	ip->name = db_get_value(res, i, 1);
-	ip->host = db_get_value(res, i, 3);
-	ip->note = db_get_value(res, i, 5);
-	ip->uid = db_get_user_id(res, i, 6);
-	ip->flag = (db_get_bool(res, i, 4) ? SESSION_FLAG_WEB : 0)
+	ip->name = db_get_value(res, i, 2);
+	ip->host = db_get_value(res, i, 4);
+	ip->note = up->follow ? db_get_value(res, i, 6) : NULL;
+	ip->uid = db_get_user_id(res, i, 1);
+	ip->flag = (db_get_bool(res, i, 5) ? SESSION_FLAG_WEB : 0)
 			| (visible ? 0 : SESSION_FLAG_INVISIBLE);
 
 	++up->num;

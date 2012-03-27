@@ -111,13 +111,13 @@ static void show_sessions_of_friends(void)
 
 	fb_time_t now = time(NULL);
 	for (int i = 0; i < db_res_rows(res); ++i) {
-		bool visible = db_get_bool(res, i, 2);
+		bool visible = db_get_bool(res, i, 3);
 		if (!visible && !HAS_PERM(PERM_SEECLOAK))
 			continue;
 
 		session_id_t sid = db_get_session_id(res, i, 0);
-		const char *uname = db_get_value(res, i, 1);
-		const char *ip = db_get_value(res, i, 3);
+		const char *uname = db_get_value(res, i, 2);
+		const char *ip = db_get_value(res, i, 4);
 		fb_time_t refresh = get_idle_time(sid);
 		int status = get_user_status(sid);
 
