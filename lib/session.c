@@ -67,7 +67,7 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 
 	db_res_t *res = db_cmd("INSERT INTO sessions"
 			" (id, session_key, user_id, pid, ip_addr, web, secure)"
-			" VALUES (%"DBIdSID", %s, %"DBIdUID", %d, %s, %d, %d)",
+			" VALUES (%"DBIdSID", %s, %"DBIdUID", %d, %s, %b, %b)",
 			sid ? sid : session_new_id(),
 			key, uid, pid, ip_addr, is_web, is_secure);
 	if (!res)
@@ -140,7 +140,7 @@ int get_user_status(session_id_t sid)
 
 int set_visibility(bool visible)
 {
-	db_res_t *res = db_cmd("UPDATE sessions SET visible = %d"
+	db_res_t *res = db_cmd("UPDATE sessions SET visible = %b"
 			" WHERE id = %"DBIdSID, visible, session.id);
 	db_clear(res);
 	return !res;

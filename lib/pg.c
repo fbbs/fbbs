@@ -113,7 +113,8 @@ float db_get_float(const db_res_t *res, int row, int col)
 	}
 }
 
-#define is_supported_format(c) (c == 'd' || c == 'l' || c == 's' || c == 't')
+#define is_supported_format(c) \
+	(c == 'd' || c == 'l' || c == 's' || c == 't' || c == 'b')
 
 static int get_num_args(const char *cmd)
 {
@@ -158,6 +159,14 @@ static query_t *query_new(const char *cmd, int argc, va_list ap)
 
 			++cmd;
 			switch (*cmd) {
+				case 'b':
+					d = va_arg(ap, int);
+					char *bp = pool_alloc(p, sizeof(*bp));
+					*bp = d ? 1 : 0;
+					q->vals[n] = (const char *) bp;
+					q->lens[n] = sizeof(*bp);
+					q->fmts[n] = 1;
+					break;
 				case 'd':
 					d = va_arg(ap, int);
 					int *dp = pool_alloc(p, sizeof(*dp));
