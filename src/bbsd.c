@@ -365,6 +365,12 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session s)
 }
 #endif // ENABLE_SSH
 
+static void clear_bbs_env(void)
+{
+	memset(&env, 0, sizeof(env));
+	memset(&session, 0, sizeof(session));
+}
+
 static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 #ifdef ENABLE_SSH
 		, ssh_bind sshbind, ssh_session s
@@ -376,12 +382,13 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 		return -1;
 
 	if (pid == 0) {
+		clear_bbs_env();
+
 		while (--nfds >= 0)
 			close(nfds);
 		dup2(fd, STDIN_FILENO);
 		get_ip_addr(p);
 #ifdef ENABLE_SSH
-		extern void initialize_db(void);
 		initialize_db();
 
 		ssh_chan = sshbbs_accept(sshbind, s);

@@ -3123,7 +3123,6 @@ void notepad() {
 
 /* youzi quick goodbye */
 int Q_Goodbye() {
-	extern int started;
 	char fname[STRLEN];
 	int logouts;
 
@@ -3214,7 +3213,7 @@ int Q_Goodbye() {
 
 	CreateNameList();
 
-	if (started) {
+	if (session.id) {
 		time_t stay;
 
 		stay = time(0) - login_start_time;

@@ -38,7 +38,6 @@ char BoardName[STRLEN]; // TODO: Can be replaced by macro.
 int utmpent = -1;
 time_t login_start_time;
 int showansi = 1;
-int started = 0;
 
 char GoodWish[20][STRLEN - 3];
 int WishNum = 0;
@@ -206,10 +205,10 @@ void u_exit(void)
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	uidshm->status[usernum - 1]--;
 
+	session_destroy(session.id);
 	session.pid = 0;
 }
 
-// Handle abnormal exit.
 void abort_bbs(int nothing)
 {
 	extern int child_pid;
@@ -224,7 +223,7 @@ void abort_bbs(int nothing)
 			|| session.status == ST_EDITSFILE || session.status == ST_EDITANN)
 		keep_fail_post();
 
-	if (started) {
+	if (session.id) {
 		time_t stay;
 		stay = time(0) - login_start_time;
 		snprintf(genbuf, sizeof(genbuf), "Stay: %3ld", stay / 60);
@@ -321,7 +320,7 @@ static void system_init(void)
 
 static void system_abort(void)
 {
-	if (started) {
+	if (session.id) {
 		log_usies("ABORT", "", &currentuser);
 		u_exit();
 	}
@@ -675,7 +674,6 @@ static void user_login(void)
 
 	u_enter();
 	report("Enter", currentuser.userid);
-	started = 1;
 
 	initscr();
 #ifdef USE_NOTEPAD
