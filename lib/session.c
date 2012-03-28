@@ -64,18 +64,21 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 		const char *ip_addr, bool is_web, bool is_secure)
 {
 	int pid = getpid();
+	if (!sid)
+		sid = session_new_id();
 
 	db_res_t *res = db_cmd("INSERT INTO sessions"
 			" (id, session_key, user_id, pid, ip_addr, web, secure)"
 			" VALUES (%"DBIdSID", %s, %"DBIdUID", %d, %s, %b, %b)",
-			sid ? sid : session_new_id(),
-			key, uid, pid, ip_addr, is_web, is_secure);
-	if (!res)
+			sid, key, uid, pid, ip_addr, is_web, is_secure);
+	if (res) {
+		db_clear(res);
+		session.id = sid;
+		set_idle_time(sid, time(NULL));
+		return sid;
+	} else {
 		return 0;
-	db_clear(res);
-
-	set_idle_time(sid, time(NULL));
-	return sid;
+	}
 }
 
 int session_destroy(session_id_t sid)
