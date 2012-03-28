@@ -68,6 +68,8 @@ static tui_list_loader_t fill_session_array(tui_list_t *p)
 
 	if (!res || db_res_rows(res) < 1) {
 		up->users = NULL;
+		up->num = 0;
+		p->all = 0;
 		return 0;
 	}
 
