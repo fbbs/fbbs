@@ -367,7 +367,8 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session s)
 
 static void clear_bbs_env(void)
 {
-	memset(&env, 0, sizeof(env));
+	env.d = NULL;
+	env.m = NULL;
 	memset(&session, 0, sizeof(session));
 }
 
