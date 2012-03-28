@@ -874,7 +874,9 @@ void start_client(void)
 {
 	extern char currmaildir[];
 
+#ifndef ENABLE_SSH
 	initialize_db();
+#endif
 	initialize_mdb();
 
 	initialize_convert_env();
