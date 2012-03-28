@@ -663,12 +663,10 @@ void update_endline(void)
 		sprintf(buf, "[\033[36m%.12s\033[33m]", currentuser.userid);
 		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
 			"[\033[36m%4d\033[33m»À/\033[36m%3d\033[33m”—]"
-			"  [\033[36m%c%c\033[33m]  "
+			"      "
 			"’ ∫≈%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
 			date, online_count(),
 			online_follows_count(!HAS_PERM(PERM_SEECLOAK)),
-			(DEFINE(DEF_MSGGETKEY)) ? 'X' : 'x',
-			session.visible ? 'c' : 'C',
 			buf, (allstay / 60) % 1000, allstay % 60);
 		return;
 	}
