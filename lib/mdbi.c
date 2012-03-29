@@ -54,7 +54,14 @@ long long mdb_get_integer(long long invalid, const char *cmd, ...)
 	if (!res)
 		return invalid;
 
-	long long i = (res->type == MDB_RES_INTEGER ? res->integer : invalid);
+	long long i;
+	if (res->type == MDB_RES_INTEGER)
+		i = res->integer;
+	else if (res->type == MDB_RES_STRING)
+		i = strtoll(res->str, NULL, 10);
+	else
+		i = invalid;
+
 	mdb_clear(res);
 	return i;
 }
