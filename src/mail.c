@@ -2,6 +2,7 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
+#include "fbbs/mail.h"
 #include "fbbs/msg.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"

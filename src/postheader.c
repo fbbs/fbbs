@@ -267,7 +267,7 @@ int post_header(struct postheader *header) {
 		else if (ans[0] == 'V') {
 			setuserfile(mybuf, "signatures");
 			if (askyn("预设显示前三个签名档, 要显示全部吗", NA, YEA) == YEA)
-				ansimore(mybuf);
+				ansimore(mybuf, YEA);
 			else {
 				clear();
 				ansimore2(mybuf, NA, 0, 18);

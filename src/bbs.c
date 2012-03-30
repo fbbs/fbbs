@@ -10,8 +10,10 @@
 #include "mmap.h"
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
+#include "fbbs/mail.h"
 #include "fbbs/msg.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
@@ -1816,7 +1818,7 @@ int show_user_notes() {
 
 	setuserfile(buf, "notes");
 	if (dashf(buf)) {
-		ansimore(buf);
+		ansimore(buf, YEA);
 		return FULLUPDATE;
 	}
 	clear();

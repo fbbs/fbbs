@@ -9,6 +9,7 @@
 #endif // ENABLE_SSH
 #include "bbs.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
 #include "fbbs/msg.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"

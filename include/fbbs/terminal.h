@@ -49,4 +49,18 @@ extern bool askyn(const char *str, bool defa, bool gobottom);
 extern void printdash(const char *mesg);
 extern void bell(void);
 
+// src/more.c
+
+void ActiveBoard_Init(void);
+void setcalltime(void);
+int countln(char *fname);
+void netty_more(void);
+void printacbar(void);
+int check_calltime(void);
+void R_monitor(void);
+int msg_more(void);
+int ansimore4(char *filename, int promptend, char *board, char *path, int ent);
+int ansimore(char *filename, int promptend);
+int ansimore2(char *filename, int promptend, int row, int numlines);
+
 #endif // FB_TERMINAL_H

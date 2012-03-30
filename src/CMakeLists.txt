@@ -1,4 +1,4 @@
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wno-implicit")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic")
 
 add_definitions(${FB_XOPEN_SOURCE_DEFINE} ${FB_PLATFORM_DEFINE} -DTERMIOS
 		-DSHOW_IDLE_TIME -DDLM -DBACKUP_RANGE_DELETE)

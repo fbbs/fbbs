@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -17,13 +18,11 @@ struct ACSHM {
 
 static struct ACSHM *movieshm = NULL;
 static int nnline = 0;
-char    more_buf[MORE_BUFSIZE];
-int     more_size, more_num;
 
 /*Added by Ashinmarch on 2007.12.01*/
 extern int RMSG;
 
-void empty_movie(int x)
+static void empty_movie(int x)
 {
 	sprintf(genbuf, "Empty Movie!!! (error = %d)", x);
 	report(genbuf, currentuser.userid); 
@@ -127,7 +126,7 @@ void setcalltime( void )
 	calltime = time(0) + ttt * 60;
 }
 
-int morekey( void )
+static int morekey(void)
 {
 	int     ch;
 	while (1) {
@@ -942,17 +941,3 @@ int ansimore2(char *filename, int promptend, int row, int numlines)
 	refresh();
 	return ch;
 }
-/* edwardc.990624 œ»‘› ±”√ ansimore3() ¥˙ÃÊ ... */
-
-int ansimore3(char *filename, int promptend)
-{
-	int     ch;
-	clear();
-	ch = rawmore2(filename, promptend, 0, 0, YEA);
-	move(t_lines - 1, 0);
-	prints("[0m[m");
-	refresh();
-	return ch;
-}
-
-// deardragon 2000.08.28  over

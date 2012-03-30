@@ -1,4 +1,6 @@
 #include "bbs.h"
+#include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/register.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"

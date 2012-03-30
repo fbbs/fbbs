@@ -4,6 +4,7 @@
 #include "fbbs/board.h"
 #include "fbbs/cfg.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
 #include "fbbs/pool.h"
 #include "fbbs/session.h"
 #include "fbbs/terminal.h"

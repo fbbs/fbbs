@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/mail.h"
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 

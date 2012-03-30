@@ -16,7 +16,6 @@
 int domenu(const char *menu_name);
 int Announce(), Personal(), Info(), Goodbye();
 int board_read(), board_select(), Welcome();
-int setcalltime();
 int msg_more(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), show_online_users(), x_info(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();

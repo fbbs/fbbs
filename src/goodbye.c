@@ -116,7 +116,6 @@ void showstuff(char *buf) {
 		return;
 	}
 	now = time(0);
-	/* for ansimore3() */
 
 	if (currentuser.numlogins> 0) {
 		tmpnum = countexp(&currentuser);
