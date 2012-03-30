@@ -100,7 +100,8 @@ static int getcurrentuser(char *userid)
 }
 
 //取得用户信息,不成功返回-1
-int set_safe_record() {
+int set_safe_record(void)
+{
 	if (getcurrentuser(currentuser.userid) == 0)
 		return -1;
 	return 0;

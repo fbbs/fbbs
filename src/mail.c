@@ -40,7 +40,8 @@ extern char quote_file[], quote_user[];
 char currmaildir[STRLEN];
 #define maxrecp 300
 
-int chkmail() {
+int chkmail(void)
+{
 	static long lasttime = 0;
 	static int ismail = 0;
 	struct fileheader fh;

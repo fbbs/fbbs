@@ -66,4 +66,13 @@ void show_help(const char *fname);
 int mainreadhelp(void);
 int mailreadhelp(void);
 
+int usercomplete(char *prompt, char *data);
+
+// Following function declarations are put here solely to eliminate warnings
+int Postfile(char *filename, char *nboard, char *posttitle, int mode);
+char *setuserfile(char *buf, char *filename);
+void securityreport(char *str, int save, int mode);
+int set_safe_record(void);
+void abort_bbs(int nothing);
+
 #endif // FB_TERMINAL_H

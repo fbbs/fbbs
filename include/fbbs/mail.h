@@ -12,4 +12,5 @@ extern int do_mail_file(const char *recv, const char *title,
 extern int mail_file(const char *file, const char *recv, const char *title);
 extern bool valid_addr(const char *addr);
 
+int chkmail(void);
 #endif // FB_MAIL_H
