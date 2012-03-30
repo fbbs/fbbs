@@ -941,3 +941,21 @@ int ansimore2(char *filename, int promptend, int row, int numlines)
 	refresh();
 	return ch;
 }
+
+void show_help(const char *fname)
+{
+	ansimore(fname, YEA);
+	clear();
+}
+
+int mainreadhelp(void)
+{
+	show_help("help/mainreadhelp");
+	return FULLUPDATE;
+}
+
+int mailreadhelp(void)
+{
+	show_help("help/mailreadhelp");
+	return FULLUPDATE;
+}

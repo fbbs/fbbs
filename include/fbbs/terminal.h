@@ -62,5 +62,8 @@ int msg_more(void);
 int ansimore4(char *filename, int promptend, char *board, char *path, int ent);
 int ansimore(char *filename, int promptend);
 int ansimore2(char *filename, int promptend, int row, int numlines);
+void show_help(const char *fname);
+int mainreadhelp(void);
+int mailreadhelp(void);
 
 #endif // FB_TERMINAL_H

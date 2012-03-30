@@ -6,7 +6,7 @@ add_definitions(${FB_XOPEN_SOURCE_DEFINE} ${FB_PLATFORM_DEFINE} -DTERMIOS
 link_directories(/usr/local/lib ../lib)
 
 add_library(fbcmn STATIC announce.c bbs.c bm.c board.c
-	comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c help.c list.c
+	comm_lists.c delete.c deny.c edit.c fileshm.c goodbye.c list.c
 	mail.c maintain.c more.c namecomplete.c postheader.c read.c register.c
 	screen.c sendmsg.c stuff.c talk.c userinfo.c vote.c xyz.c readabc.c
 	convert.c bbsnet.c online.c prop.c autocomplete.c friend.c)
