@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "bbs.h"
+#include "record.h"
 #include "fbbs/board.h"
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
@@ -767,7 +768,7 @@ static bool alter_board_name(board_t *bp)
 	char bname[BOARD_NAME_LEN + 1];
 	getdata(t_lines - 2, 0, "新讨论区名称: ", bname, sizeof(bname),
 			DOECHO, YEA);
-	if (!*bname || streq(bp->name, bname) || !valid_brdname(bname))
+	if (!*bname || streq(bp->name, bname) || !valid_board_name(bname))
 		return 0;
 
 	if (!askyn("确定修改版名?", NA, YEA))

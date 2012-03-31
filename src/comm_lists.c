@@ -1,6 +1,7 @@
 #include <dlfcn.h>
 #include "bbs.h"
 #include "sysconf.h"
+#include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -19,7 +20,7 @@ int board_read(), board_select(), Welcome();
 int msg_more(), x_lockscreen(), x_showuser();
 int Conditions(), x_cloak(), show_online_users(), x_info(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();
-int shownotepad(), x_userdefine();
+int x_userdefine();
 int m_new(), m_read(), m_send(), g_send();
 int ov_send(), s_msg(), mailall(), offline();
 int r_searchall();

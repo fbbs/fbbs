@@ -49,6 +49,8 @@ extern bool askyn(const char *str, bool defa, bool gobottom);
 extern void printdash(const char *mesg);
 extern void bell(void);
 
+int num_ans_chr(const char *str);
+
 // src/more.c
 
 void ActiveBoard_Init(void);
@@ -67,6 +69,8 @@ int mainreadhelp(void);
 int mailreadhelp(void);
 
 int usercomplete(char *prompt, char *data);
+int t_query(const char *user);
+int vedit(char *filename, int write_header_to_file, int modifyheader);
 
 // Following function declarations are put here solely to eliminate warnings
 int Postfile(char *filename, char *nboard, char *posttitle, int mode);
@@ -74,5 +78,72 @@ char *setuserfile(char *buf, char *filename);
 void securityreport(char *str, int save, int mode);
 int set_safe_record(void);
 void abort_bbs(int nothing);
+int bm_log(const char *user, const char *name, int type, int value);
+void stand_title(char *title);
+int autoreport(char *title,char *str,int toboard,char *userid,int mode);
+int	check_systempasswd(void);
+int deltree(const char *dst);
+int gettheuserid(int x, char *title, int *id);
+void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize);
+void list_text(const char *file,
+		void (*title_show)(void),
+		int (*key_deal)(const char *, int, char *),
+		int (*check)(const char *));
+int m_new(void);
+int set_ann_path(char *title, char *path, int mode);
+struct MENU;
+int a_a_Import(struct MENU *pm, int msg, int menuitem);
+int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
+		char title[STRLEN]);
+int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
+		char * direct, int nomsg);
+int Goodbye(void);
+char *sethomepath(char *buf, const char *userid);
+int show_online_followings(void);
+int fill_shmfile(int mode, char* fname, char * shmkey);
+void showstuff(char *buf);
+int vote_flag(char *bname, char val, int mode);
+void check_register_info(void);
+void check_title(char *title);
+void CreateNameList(void);
+int digest_post(int ent, struct fileheader *fhdr, char *direct);
+int do_reply(struct fileheader *fh);
+int fill_date(void);
+int is_birth(const struct userec *user);
+void keep_fail_post(void);
+int locate_the_post(struct fileheader *fileinfo, char *query, int offset, int aflag, int newflag);
+int mail_del(int ent, struct fileheader *fileinfo, char *direct);
+int m_send(const char *userid);
+void new_register(void);
+int post_header(struct postheader *header);
+int post_reply(int ent, struct fileheader *fileinfo, char *direct);
+void Poststring(char *str, char *nboard, char *posttitle, int mode);
+char *setbdir(char *buf, char *boardname);
+int domenu(const char *menu_name);
+void setqtitle(char *stitle, int gid);
+void setquotefile(const char *filepath);
+void setvfile(char *buf, const char *bname, const char *filename);
+void show_issue(void);
+void show_message(const char *msg);
+void shownotepad(void);
+int show_statshm(char* fh, int mode);
+int s_msg(void);
+int sread(int readfirst, int auser, struct fileheader *ptitle);
+void disply_userinfo(const struct userec *u);
+void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly);
+int a_menusearch(char *path, char* key, char * found);
+int a_repair(struct MENU *pm);
+int a_Save(char *path, char* key, struct fileheader *fileinfo, int nomsg,
+		int full);
+int board_read(void);
+int catnotepad(FILE *fp, const char *fname);
+int clear_ann_path(void);
+int countlogouts(char *filename);
+int del_grp(char grp[STRLEN], char bname[STRLEN], char title[STRLEN]);
+void uinfo_query(struct userec *u, int real, int unum);
+int edit_grp(char bname[STRLEN], char grp[STRLEN], char title[STRLEN],
+		char newtitle[STRLEN]);
+unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showfunc) ());
+int show_file_info(int ent, struct fileheader *fileinfo, char *direct);
 
 #endif // FB_TERMINAL_H

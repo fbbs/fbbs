@@ -17,6 +17,7 @@
 #include "fbbs/dbi.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
+#include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -31,22 +32,8 @@ extern int numf, friendmode;
 extern int t_columns;
 int cmpfnames();
 
-/*Add by SmallPig*/
-/*此函数只负责列印说明档，并不管清除或定位的问题。*/
-
-int
-show_user_plan(const char *userid)
+static int show_one_file(const char *filename)
 {
-	char pfile[STRLEN];
-	sethomefile(pfile, userid, "plans");
-	if (show_one_file(pfile)==NA) {
-		prints("\033[1;36m没有个人说明档\033[m\n");
-		return NA;
-	}
-	return YEA;
-}
-
-int show_one_file(char *filename) {
 	int i, j, ci;
 	char pbuf[256];
 	FILE *pf;
@@ -73,6 +60,21 @@ int show_one_file(char *filename) {
 		fclose(pf);
 		return YEA;
 	}
+}
+
+/*Add by SmallPig*/
+/*此函数只负责列印说明档，并不管清除或定位的问题。*/
+
+int
+show_user_plan(const char *userid)
+{
+	char pfile[STRLEN];
+	sethomefile(pfile, userid, "plans");
+	if (show_one_file(pfile)==NA) {
+		prints("\033[1;36m没有个人说明档\033[m\n");
+		return NA;
+	}
+	return YEA;
 }
 
 extern char fromhost[60];

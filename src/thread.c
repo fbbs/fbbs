@@ -24,6 +24,7 @@
  */
 
 #include "bbs.h"
+#include "record.h"
 
 char tname[STRLEN]; //.THREAD文件名,暂存中间结果
 char fname[STRLEN]; //.DIR2文件,暂存中间结果

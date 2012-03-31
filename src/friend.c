@@ -2,8 +2,10 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
+#include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
 static tui_list_loader_t following_list_loader(tui_list_t *p)

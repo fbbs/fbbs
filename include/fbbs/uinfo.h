@@ -38,5 +38,5 @@ extern int compute_user_value(const struct userec *urec);
 extern void show_position(const struct userec *user, char *buf, size_t size, const char *title);
 extern int check_user_profile(const struct userec *u);
 extern int update_user_stay(struct userec *u, bool is_login, bool is_dup);
-
+extern void tui_check_uinfo(struct userec *u);
 #endif // FB_UINFO_H

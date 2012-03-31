@@ -1,6 +1,8 @@
 #include "bbs.h"
 #include <sys/param.h>
 #include <sys/sem.h>
+#include "fbbs/fileio.h"
+#include "fbbs/terminal.h"
 
 extern char fromhost[];
 
@@ -115,7 +117,8 @@ void bell(void)
 //若dst为目录,且并非.,..,最后一个字符不为/,
 //			将其删除,成功返回	1
 //					 否则返回	0
-int deltree(char *dst) {
+int deltree(const char *dst)
+{
 	if (strstr(dst, "//") || strstr(dst, "..") || strchr(dst, ' '))
 		return 0; /* precaution */
 	if (dst[strlen(dst) - 1] == '/')

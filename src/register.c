@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/mail.h"
 #include "fbbs/register.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -324,7 +325,8 @@ void check_reg_extra() {
 
 /*add end*/
 
-void check_register_info() {
+void check_register_info(void)
+{
 	struct userec *urec = &currentuser;
 	FILE *fout;
 	char buf[192], buf2[STRLEN];

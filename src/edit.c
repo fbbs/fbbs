@@ -1,10 +1,12 @@
 #include "bbs.h"
 #include "edit.h"
 #include "mmap.h"
+#include "record.h"
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/post.h"
@@ -914,7 +916,8 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	return aborted;
 }
 
-void keep_fail_post() {
+void keep_fail_post(void)
+{
 	char filename[STRLEN];
 	struct textline *p = firstline;
 	FILE *fp;

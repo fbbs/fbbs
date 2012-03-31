@@ -10,6 +10,7 @@
 #include "bbs.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/mail.h"
 #include "fbbs/msg.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -680,7 +681,7 @@ void update_endline(void)
 		WishNum = 0;
 		orderWish = 0;
 
-		if (is_birth(currentuser)) {
+		if (is_birth(&currentuser)) {
 			strcpy(GoodWish[WishNum],
 					"                     啦啦～～，生日快乐!"
 					"   记得要请客哟 :P                   ");

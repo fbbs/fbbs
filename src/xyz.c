@@ -35,7 +35,8 @@ int showperminfo(int pbits, int i) {
 }
 
 //      更改用户的权限设定
-unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showfunc) ()) {
+unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showfunc) ())
+{
 	int lastperm = numbers - 1;
 	int i, done = NA;
 	char choice[3], buf[80];
@@ -382,18 +383,19 @@ int fill_date(void)
 }
 
 //  今天是生日?
-int is_birth(struct userec user) {
+int is_birth(const struct userec *user)
+{
 	struct tm *tm;
 	time_t now;
 
 	now = time(0);
 	tm = localtime(&now);
 
-	if (strcasecmp(user.userid, "guest") == 0)
+	if (strcasecmp(user->userid, "guest") == 0)
 		return NA;
 
-	if (user.birthmonth == (tm->tm_mon + 1) && user.birthday
-			== tm->tm_mday)
+	if (user->birthmonth == (tm->tm_mon + 1)
+			&& user->birthday == tm->tm_mday)
 		return YEA;
 	else
 		return NA;

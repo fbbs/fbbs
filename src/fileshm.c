@@ -1,8 +1,6 @@
-/*
- $Id: fileshm.c 366 2007-05-12 16:35:51Z danielfree $
- */
-
+#include <sys/shm.h>
 #include "bbs.h"
+#include "fbbs/terminal.h"
 
 struct FILESHM { //内存映射文件结构
 	char line[FILE_MAXLINE][FILE_BUFSIZE]; //[25][200]
@@ -141,7 +139,8 @@ void show_shmfile(struct FILESHM *fh) {
 	}
 }
 // 显示映射在内存中的STATSHM结构的文件内容
-int show_statshm(char* fh, int mode) {
+int show_statshm(char* fh, int mode)
+{
 	int i;
 	char buf[FILE_BUFSIZE];
 	if (fill_statshmfile(fh, mode)) {
@@ -181,8 +180,8 @@ void show_welcomeshm() {
 	shmdt(welcomeshm);
 }
 
-//显示issueshm中的内容?
-void show_issue() {
+void show_issue(void)
+{
 	int issues = issueshm[0].max;
 	show_shmfile(&issueshm[(issues <= 1) ? 0 :((time(0) / 86400) % (issues))]);
 	shmdt(issueshm);

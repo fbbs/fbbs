@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"

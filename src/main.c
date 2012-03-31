@@ -12,6 +12,8 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
+#include "fbbs/ucache.h"
+#include "fbbs/uinfo.h"
 #include "fbbs/user.h"
 
 #ifndef DLM

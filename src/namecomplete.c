@@ -50,7 +50,8 @@ void FreeNameList() {
 }
 
 //      清空NameList内存,将toplev,current复置为NULL
-void CreateNameList() {
+void CreateNameList(void)
+{
 	if (toplev)
 		FreeNameList();
 	toplev = NULL;

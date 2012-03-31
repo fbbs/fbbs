@@ -3,6 +3,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include "bbs.h"
+#include "fbbs/fileio.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"

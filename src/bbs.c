@@ -8,6 +8,7 @@
 #include <rpcsvc/rstat.h>
 #endif
 #include "mmap.h"
+#include "record.h"
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
@@ -112,7 +113,8 @@ int set_safe_record(void)
  input: userid
  output: path such as "home/a/abc" when userid="abc"
  */
-char *sethomepath(char *buf, char *userid) {
+char *sethomepath(char *buf, const char *userid)
+{
 	sprintf(buf, "home/%c/%s", toupper(userid[0]), userid);
 	return buf;
 }
@@ -126,7 +128,8 @@ char *sethomepath(char *buf, char *userid) {
 //Modified by IAMFAT 2002-05-27
 //      取得stitle字符串所表示的标题,保存在全局变量topic中返回
 //              如果是回复文章,去掉前面的 "Re: "这4个字符
-void setqtitle(char *stitle, int gid) {
+void setqtitle(char *stitle, int gid)
+{
 	FFLL = 1;
 	o_gid = gid;
 	if (strncmp(stitle, "Re: ", 4) != 0)
@@ -169,7 +172,8 @@ int chk_currBM(char BMstr[BM_LEN-1], int isclub)
 }
 
 // set quotefile as filepath
-void setquotefile(char filepath[]) {
+void setquotefile(const char *filepath)
+{
 	strcpy(quote_file, filepath);
 }
 
@@ -180,7 +184,8 @@ char *setuserfile(char *buf, char *filename) {
 	return buf;
 }
 
-char *setbdir(char *buf, char *boardname) {
+char *setbdir(char *buf, char *boardname)
+{
 	char *dir;
 
 	switch (digestmode) {
@@ -225,8 +230,8 @@ char *setbdir(char *buf, char *boardname) {
 	return buf;
 }
 
-/*Add by SmallPig*/
-void shownotepad() {
+void shownotepad(void)
+{
 	set_user_status(ST_NOTEPAD);
 	ansimore("etc/notepad", YEA);
 	return;
@@ -255,13 +260,9 @@ int uleveltochar(char *buf, unsigned int lvl) {
 	return 1;
 }
 
-int board_select() {
-	do_select(0, NULL, genbuf);
-	return 0;
-}
-
 /* added by roly */
-void Poststring(char *str, char *nboard, char *posttitle, int mode) {
+void Poststring(char *str, char *nboard, char *posttitle, int mode)
+{
 	FILE *se;
 	char fname[STRLEN];
 
@@ -1006,6 +1007,12 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	return NEWDIRECT;
 }
 
+int board_select(void)
+{
+	do_select(0, NULL, genbuf);
+	return 0;
+}
+
 void do_acction(int type) {
 	char buf[STRLEN];
 
@@ -1436,7 +1443,8 @@ int do_post() {
 	return post_article(currboard, (char *) NULL);
 }
 
-int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
+int show_file_info(int ent, struct fileheader *fileinfo, char *direct)
+{
 	char weblink[256], tmp[80], type[20], filepath[STRLEN];
 	time_t filetime;
 	struct stat filestat;
@@ -1529,7 +1537,8 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct) {
 	return FULLUPDATE;
 }
 
-int post_reply(int ent, struct fileheader *fileinfo, char *direct) {
+int post_reply(int ent, struct fileheader *fileinfo, char *direct)
+{
 	char uid[STRLEN];
 	char title[STRLEN];
 
@@ -2235,8 +2244,6 @@ int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
 	char *path = direct;
 
-	/* Modified by Amigo 2002.06.27. Poster can't set or unset noreply tag. */
-	//      if(!chk_currBM(currBM)&&!IsTheFileOwner(fileinfo)) {
 	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
@@ -2737,12 +2744,11 @@ int Save_post(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!in_mail && !am_curr_bm())
 		return DONOTHING;
 
-	return (a_Save("0Announce", currboard, fileinfo, NA));
+	return (a_Save("0Announce", currboard, fileinfo, NA, YEA));
 }
 
 /* Added by netty to handle post saving into (0)Announce */
 int Import_post(int ent, struct fileheader *fileinfo, char *direct) {
-	//if (!chk_currBM(currBM, 0))
 	if (!HAS_PERM(PERM_BOARDS) || digestmode == ATTACH_MODE)
 		return DONOTHING;
 	if (DEFINE(DEF_MULTANNPATH) && set_ann_path(NULL, NULL,
@@ -2991,7 +2997,8 @@ struct one_key read_comms[] = {
 		{'*', show_file_info}, {'Z', msg_author}, {'|', lock}, {'\0', NULL}
 };
 
-int board_read() {
+int board_read(void)
+{
 	char buf[STRLEN];
 	char notename[STRLEN];
 	time_t usetime;
@@ -3234,7 +3241,8 @@ int Q_Goodbye() {
 	return -1;
 }
 
-int Goodbye() {
+int Goodbye(void)
+{
 	char sysoplist[20][15], syswork[20][21], buf[STRLEN];
 	int i, num_sysop, choose;
 	FILE *sysops;

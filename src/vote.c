@@ -1,10 +1,12 @@
 #include "bbs.h"
 #include "vote.h"
 #include "mmap.h"
+#include "record.h"
 #include "fbbs/board.h"
 #include "fbbs/cfg.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/pool.h"
 #include "fbbs/session.h"
 #include "fbbs/terminal.h"
@@ -78,7 +80,8 @@ void makevdir(char *bname) {
 //bname£º°æÃæÃû
 //filename:ÎÄ¼şÃû
 //buf:·µ»ØµÄÎÄ¼şÃû
-void setvfile(char *buf, char *bname, char *filename) {
+void setvfile(char *buf, const char *bname, const char *filename)
+{
 	sprintf(buf, "vote/%s/%s", bname, filename);
 }
 
@@ -288,10 +291,7 @@ int b_suckinfile(FILE * fp, char *fname) {
 //Èç¹û²»ÄÜ´ò¿ªĞ´ÈëÒ»ÌõºáÏß
 //fp: ÒÑ¾­´ò¿ªµÄÎÄ¼şÖ¸Õë,£¨±»Ğ´ÈëÎÄ¼ş£©
 //fname: ĞèÒªĞ´ÈëµÄÎÄ¼şµÄÂ·¾¶
-/*Add by SmallPig*/
-int catnotepad(fp, fname)
-FILE *fp;
-char *fname;
+int catnotepad(FILE *fp, const char *fname)
 {
 	char inbuf[256];
 	FILE *sfp;
@@ -300,7 +300,8 @@ char *fname;
 	count = 0;
 	if ((sfp = fopen(fname, "r")) == NULL) {
 		fprintf(fp,
-				"[1;34m  ¡õ[44m__________________________________________________________________________[m \n\n");
+				"\033[1;34m  ¡õ\033[44m_______________________________________"
+				"___________________________________\033[m \n\n");
 		return -1;
 	}
 	while (fgets(inbuf, sizeof(inbuf), sfp) != NULL) {

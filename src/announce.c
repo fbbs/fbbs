@@ -1,8 +1,10 @@
 #include "bbs.h"
+#include "record.h"
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -30,7 +32,7 @@ typedef struct {
 
 int a_fmode = 0;
 
-typedef struct {
+typedef struct MENU {
 	ITEM *item[MAXITEMS];
 	char mtitle[STRLEN];
 	char *path;
@@ -278,7 +280,8 @@ void a_prompt(int bot, char* pmt, char* buf, int len) {
 /* added by netty to handle post saving into (0)Announce */
 
 int a_Save(char *path, char* key, struct fileheader *fileinfo, int nomsg,
-		int full) {
+		int full)
+{
 	FILE *fp;
 	char board[40];
 	int ans = NA;
@@ -1440,7 +1443,8 @@ void a_file_info(MENU *pm)
 	pressanykey();
 }
 
-void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly) {
+void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
+{
 	MENU me;
 	char fname[PATHLEN], tmp[STRLEN];
 	int ch;
@@ -1787,7 +1791,8 @@ int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
 
 }
 
-int del_grp(char grp[STRLEN], char bname[STRLEN], char title[STRLEN]) {
+int del_grp(char grp[STRLEN], char bname[STRLEN], char title[STRLEN])
+{
 	char buf[STRLEN], buf2[STRLEN], buf3[30];
 	char gpath[STRLEN * 2];
 	char bpath[STRLEN * 2];
@@ -1946,7 +1951,8 @@ void Announce() {
 /* 寻找丢失条目 */
 /* 返回值：添加了几条 */
 
-int a_repair(MENU *pm) {
+int a_repair(MENU *pm)
+{
 	DIR *dirp;
 	struct dirent *direntp;
 	int i, changed;
@@ -2060,7 +2066,8 @@ int del_ann_path(int index) {
 	return save_import_path();
 }
 
-int clear_ann_path() {
+int clear_ann_path(void)
+{
 	int i;
 	for (i = 0; i < MAXANNPATHS; i++) {
 		import_path[i].num = -1;

@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "record.h"
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
@@ -437,7 +438,7 @@ int ch, ssize;
 		case 'u':
 		savemode = session.status;
 		set_user_status(ST_QUERY);
-		t_query();
+		t_query(NULL);
 		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'H':
@@ -1415,7 +1416,8 @@ struct fileheader *fh;
 	return search_articles(locmem, title, fh->gid, offset, 0, 0);
 }
 
-int sread(int readfirst, int auser, struct fileheader *ptitle) {
+int sread(int readfirst, int auser, struct fileheader *ptitle)
+{
 	struct keeploc *locmem;
 	int rem_top, rem_crs, ch;
 	int isend = 0, isstart = 0, isnext = 1;

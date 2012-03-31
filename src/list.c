@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "record.h"
 #include "fbbs/mail.h"
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
@@ -25,14 +26,12 @@ int range, page, readplan;
 enum sort_type {stUserID, stUserName, stIP, stState} st = stUserID;
 // add by Flier - 2000.5.12 - End
 
-void show_message(msg)
-char msg[];
+void show_message(const char *msg)
 {
-
 	move(BBS_PAGESIZE + 2, 0);
 	clrtoeol();
-	if (msg != NULL)
-	prints("[1m%s[m", msg);
+	if (msg)
+		prints("\033[1m%s\033[m", msg);
 	refresh();
 }
 

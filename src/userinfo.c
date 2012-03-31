@@ -28,8 +28,8 @@ void filter_ff(char *ptr) {
 	return;
 }
 
-//	用于	设定个人资料  选单时显示的信息,即显示个人资料
-void disply_userinfo(struct userec *u) {
+void disply_userinfo(const struct userec *u)
+{
 	int num, exp;
 	time_t now;
 
@@ -184,7 +184,8 @@ void tui_check_uinfo(struct userec *u)
 }
 
 //	查询u所指向的用户的资料信息
-void uinfo_query(struct userec *u, int real, int unum) {
+void uinfo_query(struct userec *u, int real, int unum)
+{
 	struct userec newinfo;
 	char ans[3], buf[STRLEN], genbuf[128];
 	char src[STRLEN], dst[STRLEN];

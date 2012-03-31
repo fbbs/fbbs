@@ -1,5 +1,7 @@
 #include "bbs.h"
+#include "record.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
@@ -35,7 +37,6 @@ int SR_read();
 int SR_author();
 int Q_Goodbye();
 int G_SENDMODE = NA;
-int show_file_info();
 extern char quote_file[], quote_user[];
 char currmaildir[STRLEN];
 #define maxrecp 300
@@ -83,9 +84,7 @@ int chkmail(void)
 	return (ismail = 0);
 }
 
-int
-check_query_mail(qry_mail_dir)
-char qry_mail_dir[STRLEN];
+int check_query_mail(const char *qry_mail_dir)
 {
 	struct fileheader fh;
 	struct stat st;
@@ -234,9 +233,7 @@ m_internet()
 }
 #endif
 
-int
-do_send(userid, title)
-char *userid, *title;
+int do_send(const char *userid, const char *title)
 {
 
 	int lookupuserlevel; //added by roly 02.03.25
@@ -411,9 +408,7 @@ char *userid, *title;
 	}
 }
 
-int
-m_send(userid)
-char userid[];
+int m_send(const char *userid)
 {
 	char uident[STRLEN];
 	/* Added by Amigo 2002.06.10. To add mail right check. */
@@ -546,7 +541,8 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 	return 0;
 }
 
-int m_new() {
+int m_new(void)
+{
 	clear();
 	mrd = 0;
 	set_user_status(ST_RMAIL);
@@ -733,11 +729,7 @@ char * maildoent(int num, struct fileheader *ent) {
 	return buf;
 }
 
-int
-mail_read(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
+int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 {
 	char buf[512], notgenbuf[128];
 	char *t;
@@ -745,7 +737,7 @@ char *direct;
 	char done = NA, delete_it, replied;
 	clear();
 	readpn = FULLUPDATE;
-	setqtitle(fileinfo->title);
+	setqtitle(fileinfo->title, 0);
 	strcpy(buf, direct);
 	if ((t = strrchr(buf, '/')) != NULL)
 	*t = '\0';
@@ -876,11 +868,7 @@ char *direct;
 	return FULLUPDATE;
 }
 
-int
-mail_del(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
+int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 {
 	char buf[512];
 	char *t;

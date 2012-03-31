@@ -847,7 +847,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			break;
 		case 'u':
 			set_user_status(ST_QUERY);
-			t_query();
+			t_query(NULL);
 			st_changed = true;
 			break;
 		case 'H':

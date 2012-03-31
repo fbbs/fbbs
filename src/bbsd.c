@@ -4,6 +4,7 @@
 #include <poll.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #ifdef ENABLE_SSH
 #include "libssh/libssh.h"
@@ -14,6 +15,7 @@
 #include "fbbs/cfg.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 
 #ifndef NSIG
@@ -120,8 +122,8 @@ void start_daemon(void)
 {
 	int n, pid;
 
-	umask(0); // Clear file creation mask.
-	n = getdtablesize(); // Get maximum number of file descriptors.
+	umask(0);
+	n = sysconf(_SC_OPEN_MAX);
 
 	// Fork to ensure not being a process group leader.
 	if ((pid = fork()) < 0) {

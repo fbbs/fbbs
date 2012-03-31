@@ -60,7 +60,8 @@ void print_prefixbuf(char *buf, int index) {
 	sprintf(buf, "[%d]:", index);
 }
 #endif
-int post_header(struct postheader *header) {
+int post_header(struct postheader *header)
+{
 	int anonyboard = 0;
 #ifdef ENABLE_PREFIX
 	int index = 0;

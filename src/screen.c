@@ -89,7 +89,8 @@ int seekthestr(char *str, int num)
 #endif	
 
 //返回字符串中属于 ansi的个数?	对后一个continue不太理解 
-int num_ans_chr(char *str) {
+int num_ans_chr(const char *str)
+{
 	int len, i, ansinum, ansi;
 
 	ansinum=0;

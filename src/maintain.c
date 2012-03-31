@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "record.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"
@@ -49,7 +50,7 @@ void securityreport(char *str, int save, int mode)
 }
 
 //	∫À∂‘œµÕ≥√‹¬Î
-int	check_systempasswd()
+int	check_systempasswd(void)
 {
 	FILE*	pass;
 	char    passbuf[20], prepass[STRLEN];
