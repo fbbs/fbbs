@@ -1,3 +1,5 @@
+#define _BSD_SOURCE
+#include <arpa/inet.h>
 #include <arpa/telnet.h>
 #include <netinet/in.h>
 #include <netdb.h>

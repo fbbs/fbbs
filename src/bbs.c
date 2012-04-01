@@ -1035,7 +1035,8 @@ void do_acction(int type) {
 	}
 }
 
-int acction_mode(int ent, struct fileheader *fileinfo, char *direct) {
+int acction_mode(int ent, struct fileheader *fileinfo, char *direct)
+{
 	int type;
 	extern char currdirect[STRLEN];
 	char ch[4];
@@ -1838,7 +1839,8 @@ int show_user_notes() {
 	return FULLUPDATE;
 }
 
-int outgo_post(struct fileheader *fh, char *board) {
+int outgo_post(struct fileheader *fh, char *board)
+{
 	char buf[256];
 
 	sprintf(buf, "%s\t%s\t%s\t%s\t%s\n", board, fh->filename,
@@ -1848,7 +1850,8 @@ int outgo_post(struct fileheader *fh, char *board) {
 	return 0;
 }
 
-int post_article(char *postboard, char *mailid) {
+int post_article(char *postboard, char *mailid)
+{
 	struct fileheader postfile;
 	char filepath[STRLEN], fname[STRLEN], buf[120];
 	int aborted;
@@ -2838,7 +2841,8 @@ int into_PAnnounce() {
 	return FULLUPDATE;
 }
 
-int Personal(char *userid) {
+int Personal(const char *userid)
+{
 	char found[256], lookid[IDLEN + 6];
 	int id;
 
@@ -3131,8 +3135,8 @@ void notepad() {
 	return;
 }
 
-/* youzi quick goodbye */
-int Q_Goodbye() {
+int Q_Goodbye(void)
+{
 	char fname[STRLEN];
 	int logouts;
 

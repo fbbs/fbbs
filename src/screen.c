@@ -56,8 +56,8 @@ static bool standing = false;
 struct screenline *big_picture = NULL;
 
 #ifdef ALLOWAUTOWRAP
-//返回str中前num个字符中以ansi格式实际显示的字符数?
-int seekthestr(char *str, int num)
+//返回str中前num个字符中以ansi格式实际显示的字符数
+int seekthestr(const char *str, int num)
 {
 	int len, i, ansi= NA;
 	len = strlen(str);

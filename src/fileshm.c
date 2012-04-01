@@ -162,7 +162,8 @@ int show_statshm(char* fh, int mode)
 	return 0;
 }
 // œ‘ æ¿Î∞Êª≠√Ê
-void show_goodbyeshm() {
+void show_goodbyeshm(void)
+{
 	int logouts;
 	logouts = goodbyeshm[0].max;
 	clear();

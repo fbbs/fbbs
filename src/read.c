@@ -3,6 +3,7 @@
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"
@@ -42,7 +43,8 @@ int notice_lastline, dir_lastline;
 //在局部表态链表中查找与关键字符串s相匹配的项
 //		找到:	直接返回
 //		否则:	新加一项,放在链表表头,并返回新加项
-struct keeploc * getkeep(char *s, int def_topline, int def_cursline) {
+struct keeploc * getkeep(char *s, int def_topline, int def_cursline)
+{
 	static struct keeploc *keeplist = NULL;
 	struct keeploc *p;
 	for (p = keeplist; p != NULL; p = p->next) {
@@ -63,7 +65,8 @@ struct keeploc * getkeep(char *s, int def_topline, int def_cursline) {
 	return p;
 }
 
-void fixkeep(char *s, int first, int last) {
+void fixkeep(char *s, int first, int last)
+{
 	struct keeploc *k;
 	k = getkeep(s, 1, 1);
 	if (k->crs_line >= first) {
@@ -163,7 +166,8 @@ void draw_bottom(char *buf) {
 }
 
 #ifdef ENABLE_NOTICE
-void get_noticedirect(char *curr, char *notice) {
+void get_noticedirect(char *curr, char *notice)
+{
 	char *ptr;
 	strcpy(notice, curr);
 	ptr=strrchr(notice,'/');
@@ -336,7 +340,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 				last_line+=notice_lastline;
 #endif
 				if (last_line == 0 && digestmode > 0) {
-					acction_mode();
+					acction_mode(0, NULL, direct);
 				}
 				if (mode == NEWDIRECT) {
 					num = last_line - screen_len + 1;
@@ -407,11 +411,7 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 	free(pnt);
 }
 
-int
-i_read_key(rcmdlist, locmem, ch, ssize)
-struct one_key *rcmdlist;
-struct keeploc *locmem;
-int ch, ssize;
+int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, int ssize)
 {
 	int i, mode = DONOTHING,savemode;
 	char ans[4];
@@ -421,7 +421,7 @@ int ch, ssize;
 		case KEY_LEFT:
 		//if ( digestmode )
 		if( digestmode && session.status != ST_RMAIL ) //chenhao
-		return acction_mode();
+		return acction_mode(0, NULL, NULL);
 		else
 		return DOQUIT;
 		case Ctrl('L'):

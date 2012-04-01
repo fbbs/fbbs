@@ -13,6 +13,30 @@ char    cexplain[STRLEN];
 char    lookgrp[30];
 FILE   *cleanlog;
 
+//保存用户近期信息
+static int getuinfo(FILE *fn)
+{
+	int num;
+	char buf[40];
+	fprintf(fn, "\n\n他的代号     : %s\n", currentuser.userid);
+	fprintf(fn, "他的昵称     : %s\n", currentuser.username);
+	fprintf(fn, "电子邮件信箱 : %s\n", currentuser.email);
+	fprintf(fn, "帐号建立日期 : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
+	fprintf(fn, "最近光临日期 : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
+	fprintf(fn, "最近光临机器 : %s\n", currentuser.lasthost);
+	fprintf(fn, "上站次数     : %d 次\n", currentuser.numlogins);
+	fprintf(fn, "文章数目     : %d\n", currentuser.numposts);
+	fprintf(fn, "上站总时数   : %d 小时 %d 分钟\n", currentuser.stay / 3600,
+			(currentuser.stay / 60) % 60);
+	strcpy(buf, "ltmprbBOCAMURS#@XLEast0123456789");
+	for (num = 0; num < 30; num++)
+		if (!(currentuser.userlevel & (1 << num)))
+			buf[num] = '-';
+	buf[num] = '\0';
+	fprintf(fn, "使用者权限   : %s\n\n", buf);
+	return 0;
+}
+
 //	系统安全记录,自动发送到syssecurity版
 //  mode == 0		syssecurity
 //	mode == 1		boardsecurity

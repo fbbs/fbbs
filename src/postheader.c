@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/board.h"
+#include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 

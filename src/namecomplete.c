@@ -69,7 +69,8 @@ int SeekInNameList(char *name) {
 	return 0;
 }
 
-int AddNameList(char *name) {
+int AddNameList(const char *name)
+{
 	struct word *node;
 	if (SeekInNameList(name))
 		return 0;

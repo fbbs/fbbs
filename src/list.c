@@ -18,7 +18,6 @@ extern char BoardName[];
 
 extern int cmpfnames();
 
-int mailmode;
 int friendmode = 0;
 int range, page, readplan;
 
@@ -33,42 +32,6 @@ void show_message(const char *msg)
 	if (msg)
 		prints("\033[1m%s\033[m", msg);
 	refresh();
-}
-
-/*******************Modify following two functions to support Type 2 mailall by Ashinmarch 2008.3.30*******************/
-/*******************详细说明见mail.c的mailtoall函数********************************************************************/
-static int mailto(void *uentpv, int index, void *args) {
-	char filename[STRLEN];
-	sprintf(filename, "tmp/mailall.%s", currentuser.userid);
-
-	struct userec *uentp = (struct userec *)uentpv;
-	if ((!(uentp->userlevel & PERM_BINDMAIL) && mailmode == 1) ||
-			(uentp->userlevel & PERM_BOARDS && mailmode == 3)
-			|| (uentp->userlevel & PERM_SPECIAL0 && mailmode == 4)
-			|| (uentp->userlevel & PERM_SPECIAL9 && mailmode == 5)) {
-		mail_file(filename, uentp->userid, save_title);
-		cached_set_idle_time();
-	}
-	/***************把type2独立出来做判断，调用sharedmail_file函数************************/
-	else if (uentp->userlevel & PERM_POST && mailmode == 2) {
-		sharedmail_file(args, uentp->userid, save_title);
-		cached_set_idle_time();
-	}
-	/******end*******/
-	return 1;
-}
-
-int mailtoall(int mode, char *fname)
-{
-	/********使用apply_record函数中的void *args参数传递共享文件的文件名*********/
-	mailmode = mode;
-	if (apply_record(PASSFILE, mailto, sizeof(struct userec),
-			(char*)fname , 0, 0, false) == -1) {
-		prints("No Users Exist");
-		pressreturn();
-		return 0;
-	}
-	return 1;
 }
 
 void setlistrange(i)

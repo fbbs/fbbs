@@ -44,9 +44,43 @@ void process_MARK_action(int arg, char *msg);
 #define CLEAR_MARK()  mark_on = 0; mark_begin = mark_end = NULL;
 /* copy/paste */
 
-void msgline() {
+static void strnput(const char *str)
+{
+	int count = 0;
+	while ((*str != '\0') && (++count < STRLEN)) {
+		if (*str == KEY_ESC) {
+			outc('*');
+			str++;
+			continue;
+		}
+		outc(*str++);
+	}
+}
+
+static void cstrnput(const char *str)
+{
+	int count = 0, tmp = 0;
+
+	tmp = num_ans_chr(str);
+	prints("%s", ANSI_REVERSE);
+	while ((*str != '\0') && (++count < STRLEN)) {
+		if (*str == KEY_ESC) {
+			outc('*');
+			tmp --;
+			str++;
+			continue;
+		}
+		outc(*str++);
+	}
+	while (++count < STRLEN+tmp)
+		outc(' ');
+	clrtoeol();
+	prints("%s", ANSI_RESET);
+}
+
+static void msgline(void)
+{
 	char buf[256], buf2[STRLEN * 2];
-	void display_buffer();
 	int tmpshow;
 	time_t now;
 
@@ -76,7 +110,45 @@ void msgline() {
 	showansi = tmpshow;
 }
 
-void msg() {
+static void display_buffer(void)
+{
+	register struct textline *p;
+	register int i;
+	int shift;
+	int temp_showansi;
+	temp_showansi = showansi;
+
+	for (p = top_of_win, i = 0; i < t_lines - 1; i++) {
+		move(i, 0);
+		if (p != can_edit_end) {
+			shift = (currpnt + 2 > STRLEN) ? (currpnt
+					/ (STRLEN - scrollen)) * (STRLEN - scrollen) : 0;
+			if (editansi) {
+				showansi = 1;
+				prints("%s", p->data);
+			} else if ((p->attr & M_MARK)) {
+				showansi = 1;
+				clear_whole_line(i);
+				cstrnput(p->data + shift);
+			} else {
+				if (p->len >= shift) {
+					showansi = 0;
+					strnput(p->data + shift);
+				} else
+					clrtoeol();
+			}
+			p = p->next;
+		} else
+			prints("%s~", editansi ? ANSI_RESET : "");
+		clrtoeol();
+	}
+	showansi = temp_showansi;
+	msgline();
+	return;
+}
+
+void msg(void)
+{
 	int x, y;
 	int tmpansi;
 
@@ -557,26 +629,8 @@ void delete_char() {
 		currline->len--;
 }
 
-void vedit_init() {
-	register struct textline *p = alloc_line();
-	firstline = p;
-	can_edit_begin = p;
-	currline = p;
-	currpnt = 0;
-	process_ESC_action('M', '0');
-	top_of_win = p;
-	p = alloc_line();
-	can_edit_begin->next = p;
-	p->prev = can_edit_begin;
-	can_edit_end = p;
-	curr_window_line = 0;
-	currln = 0;
-	redraw_everything = NA;
-	CLEAR_MARK()
-	;
-}
-
-void insert_to_fp(FILE *fp) {
+static void insert_to_fp(FILE *fp)
+{
 	int ansi = 0;
 	struct textline *p;
 
@@ -591,7 +645,8 @@ void insert_to_fp(FILE *fp) {
 		fprintf(fp, "%s\n", ANSI_RESET);
 }
 
-void insertch_from_fp(int ch) {
+void insertch_from_fp(int ch)
+{
 	int backup_linelen = linelen;
 	linelen = WRAPMARGIN;
 	if (isprint2(ch) || ch == 27) {
@@ -628,6 +683,136 @@ void insert_from_fp(FILE *fp)
 	BBS_CATCH {
 	}
 	BBS_END mmap_close(&m);
+}
+
+static int process_ESC_action(int action, int arg)
+/* valid action are I/E/S/B/F/R/C/O/= */
+/* valid arg are    '0' - '7' */
+{
+	int newch = 0;
+	char msg[80], buf[80];
+	char filename[80];
+	FILE *fp;
+
+	msg[0] = '\0';
+	switch (action) {
+		case 'L':
+			if (ismsgline >= 1) {
+				ismsgline = 0;
+				move(t_lines - 1, 0);
+				clrtoeol();
+				refresh();
+			} else
+				ismsgline = 1;
+			break;
+		case 'M':
+			process_MARK_action(arg, msg);
+			break;
+		case 'I':
+			sprintf(filename, "home/%c/%s/clip_%c",
+					toupper(currentuser.userid[0]), currentuser.userid,
+					arg);
+			if ((fp = fopen(filename, "r")) != NULL) {
+				insert_from_fp(fp);
+				fclose(fp);
+				sprintf(msg, "ÒÑÈ¡³ö¼ôÌù²¾µÚ %c Ò³", arg);
+			} else
+				sprintf(msg, "ÎÞ·¨È¡³ö¼ôÌù²¾µÚ %c Ò³", arg);
+			break;
+#ifdef ALLOWAUTOWRAP
+			case 'X':
+			set();
+			break;
+#endif
+		case 'G':
+			go();
+			redraw_everything = YEA;
+			break;
+		case 'E':
+			sprintf(filename, "home/%c/%s/clip_%c",
+					toupper(currentuser.userid[0]), currentuser.userid,
+					arg);
+			if ((fp = fopen(filename, "w")) != NULL) {
+				if (mark_on) {
+					struct textline *p;
+					for (p = mark_begin; p != can_edit_end; p = p->next) {
+						if (p->attr & M_MARK)
+							fprintf(fp, "%s\n", p->data);
+						else
+							break;
+					}
+				} else
+					insert_to_fp(fp);
+				fclose(fp);
+				sprintf(msg, "ÒÑÌùÖÁ¼ôÌù²¾µÚ %c Ò³", arg);
+			} else
+				sprintf(msg, "ÎÞ·¨ÌùÖÁ¼ôÌù²¾µÚ %c Ò³", arg);
+			break;
+		case 'N':
+			searchline(searchtext);
+			redraw_everything = YEA;
+			break;
+		case 'S':
+			search();
+			redraw_everything = YEA;
+			break;
+		case 'F':
+			sprintf(buf, "%c[3%cm", 27, arg);
+			ve_insert_str(buf);
+			break;
+		case 'B':
+			sprintf(buf, "%c[4%cm", 27, arg);
+			ve_insert_str(buf);
+			break;
+		case 'R':
+			ve_insert_str(ANSI_RESET);
+			break;
+		case 'C':
+			editansi = showansi = 1;
+			redraw_everything = YEA;
+			clear();
+			display_buffer();
+			redoscr();
+			strcpy(msg, "ÒÑÏÔÊ¾²ÊÉ«±à¼­³É¹û£¬¼´½«ÇÐ»Øµ¥É«Ä£Ê½");
+			break;
+	}
+	if (strchr("FBRCM", action))
+		redraw_everything = YEA;
+	if (msg[0] != '\0') {
+		if (action == 'C') { /* need redraw */
+			move(t_lines - 2, 0);
+			clrtoeol();
+			prints("[1m%s%s%s[m", msg, ", Çë°´ÈÎÒâ¼ü·µ»Ø±à¼­»­Ãæ...", ANSI_RESET);
+			igetkey();
+			newch = '\0';
+			editansi = showansi = 0;
+			clear();
+			display_buffer();
+		} else
+			newch = ask(strcat(msg, "£¬Çë¼ÌÐø±à¼­¡£"));
+	} else
+		newch = '\0';
+	return newch;
+}
+
+void vedit_init(void)
+{
+	register struct textline *p = alloc_line();
+	firstline = p;
+	can_edit_begin = p;
+	currline = p;
+	currpnt = 0;
+	process_ESC_action('M', '0');
+	top_of_win = p;
+	p = alloc_line();
+	can_edit_begin->next = p;
+	p->prev = can_edit_begin;
+	can_edit_end = p;
+	curr_window_line = 0;
+	currln = 0;
+	redraw_everything = NA;
+	CLEAR_MARK()
+	;
 }
 
 int read_file(char *filename) {
@@ -707,7 +892,8 @@ void write_posts() {
 	append_record("tmp/.post", &postlog, sizeof(postlog));
 }
 
-void write_header(FILE *fp, int mode) {
+void write_header(FILE *fp, int mode)
+{
 	int noname;
 	extern char BoardName[];
 	extern char fromhost[];
@@ -939,72 +1125,46 @@ void keep_fail_post(void)
 	return;
 }
 
-void strnput(char *str) {
-	int count = 0;
-	while ((*str != '\0') && (++count < STRLEN)) {
-		if (*str == KEY_ESC) {
-			outc('*');
-			str++;
+/* mark_block() 
+ 0	mark_begin == NULL; mark_end == NULL;
+ 1	mark_begin != NULL; mark_end == NULL;
+ 2	mark_begin != NULL; mark_end != NULL;
+ */
+
+int mark_block(void)
+{
+	struct textline *p;
+	int pass_mark = 0;
+
+	for (p = can_edit_begin; p && p != can_edit_end; p = p->next)
+		p->attr &= ~(M_MARK);
+
+	if (mark_begin == NULL && mark_end == NULL)
+		return 0;
+	if (mark_begin == mark_end) {
+		mark_begin->attr |= M_MARK;
+		return 2;
+	}
+	if (mark_begin == NULL) {
+		mark_end->attr |= M_MARK;
+		return 1;
+	}
+	if (mark_end == NULL) {
+		mark_begin->attr |= M_MARK;
+		return 1;
+	}
+	for (p = can_edit_begin; p != can_edit_end; p = p->next) {
+		if (p == mark_begin || p == mark_end) {
+			pass_mark++;
+			p->attr |= M_MARK;
 			continue;
 		}
-		outc(*str++);
+		if (pass_mark == 1)
+			p->attr |= M_MARK;
+		else
+			p->attr &= ~(M_MARK);
 	}
-}
-
-void cstrnput(char *str) {
-	int count = 0, tmp = 0;
-
-	tmp = num_ans_chr(str);
-	prints("%s", ANSI_REVERSE);
-	while ((*str != '\0') && (++count < STRLEN)) {
-		if (*str == KEY_ESC) {
-			outc('*');
-			tmp --;
-			str++;
-			continue;
-		}
-		outc(*str++);
-	}
-	while (++count < STRLEN+tmp)
-		outc(' ');
-	clrtoeol();
-	prints("%s", ANSI_RESET);
-}
-
-void display_buffer() {
-	register struct textline *p;
-	register int i;
-	int shift;
-	int temp_showansi;
-	temp_showansi = showansi;
-
-	for (p = top_of_win, i = 0; i < t_lines - 1; i++) {
-		move(i, 0);
-		if (p != can_edit_end) {
-			shift = (currpnt + 2 > STRLEN) ? (currpnt
-					/ (STRLEN - scrollen)) * (STRLEN - scrollen) : 0;
-			if (editansi) {
-				showansi = 1;
-				prints("%s", p->data);
-			} else if ((p->attr & M_MARK)) {
-				showansi = 1;
-				clear_whole_line(i);
-				cstrnput(p->data + shift);
-			} else {
-				if (p->len >= shift) {
-					showansi = 0;
-					strnput(p->data + shift);
-				} else
-					clrtoeol();
-			}
-			p = p->next;
-		} else
-			prints("%s~", editansi ? ANSI_RESET : "");
-		clrtoeol();
-	}
-	showansi = temp_showansi;
-	msgline();
-	return;
+	return 2;
 }
 
 int vedit_process_ESC(int arg) /* ESC + x */
@@ -1108,47 +1268,6 @@ int vedit_process_ESC(int arg) /* ESC + x */
 	}
 }
 
-/* mark_block() 
- 0	mark_begin == NULL; mark_end == NULL;
- 1	mark_begin != NULL; mark_end == NULL;
- 2	mark_begin != NULL; mark_end != NULL;
- */
-
-int mark_block() {
-	struct textline *p;
-	int pass_mark = 0;
-
-	for (p = can_edit_begin; p && p != can_edit_end; p = p->next)
-		p->attr &= ~(M_MARK);
-
-	if (mark_begin == NULL && mark_end == NULL)
-		return 0;
-	if (mark_begin == mark_end) {
-		mark_begin->attr |= M_MARK;
-		return 2;
-	}
-	if (mark_begin == NULL) {
-		mark_end->attr |= M_MARK;
-		return 1;
-	}
-	if (mark_end == NULL) {
-		mark_begin->attr |= M_MARK;
-		return 1;
-	}
-	for (p = can_edit_begin; p != can_edit_end; p = p->next) {
-		if (p == mark_begin || p == mark_end) {
-			pass_mark++;
-			p->attr |= M_MARK;
-			continue;
-		}
-		if (pass_mark == 1)
-			p->attr |= M_MARK;
-		else
-			p->attr &= ~(M_MARK);
-	}
-	return 2;
-}
-
 void process_MARK_action(int arg, char *msg) {
 	struct textline *p;
 
@@ -1203,116 +1322,6 @@ void process_MARK_action(int arg, char *msg) {
 		default:
 			strcpy(msg, CHOOSE_ERROR);
 	}
-}
-
-int process_ESC_action(int action, int arg)
-/* valid action are I/E/S/B/F/R/C/O/= */
-/* valid arg are    '0' - '7' */
-{
-	int newch = 0;
-	char msg[80], buf[80];
-	char filename[80];
-	FILE *fp;
-
-	msg[0] = '\0';
-	switch (action) {
-		case 'L':
-			if (ismsgline >= 1) {
-				ismsgline = 0;
-				move(t_lines - 1, 0);
-				clrtoeol();
-				refresh();
-			} else
-				ismsgline = 1;
-			break;
-		case 'M':
-			process_MARK_action(arg, msg);
-			break;
-		case 'I':
-			sprintf(filename, "home/%c/%s/clip_%c",
-					toupper(currentuser.userid[0]), currentuser.userid,
-					arg);
-			if ((fp = fopen(filename, "r")) != NULL) {
-				insert_from_fp(fp);
-				fclose(fp);
-				sprintf(msg, "ÒÑÈ¡³ö¼ôÌù²¾µÚ %c Ò³", arg);
-			} else
-				sprintf(msg, "ÎÞ·¨È¡³ö¼ôÌù²¾µÚ %c Ò³", arg);
-			break;
-#ifdef ALLOWAUTOWRAP
-			case 'X':
-			set();
-			break;
-#endif
-		case 'G':
-			go();
-			redraw_everything = YEA;
-			break;
-		case 'E':
-			sprintf(filename, "home/%c/%s/clip_%c",
-					toupper(currentuser.userid[0]), currentuser.userid,
-					arg);
-			if ((fp = fopen(filename, "w")) != NULL) {
-				if (mark_on) {
-					struct textline *p;
-					for (p = mark_begin; p != can_edit_end; p = p->next) {
-						if (p->attr & M_MARK)
-							fprintf(fp, "%s\n", p->data);
-						else
-							break;
-					}
-				} else
-					insert_to_fp(fp);
-				fclose(fp);
-				sprintf(msg, "ÒÑÌùÖÁ¼ôÌù²¾µÚ %c Ò³", arg);
-			} else
-				sprintf(msg, "ÎÞ·¨ÌùÖÁ¼ôÌù²¾µÚ %c Ò³", arg);
-			break;
-		case 'N':
-			searchline(searchtext);
-			redraw_everything = YEA;
-			break;
-		case 'S':
-			search();
-			redraw_everything = YEA;
-			break;
-		case 'F':
-			sprintf(buf, "%c[3%cm", 27, arg);
-			ve_insert_str(buf);
-			break;
-		case 'B':
-			sprintf(buf, "%c[4%cm", 27, arg);
-			ve_insert_str(buf);
-			break;
-		case 'R':
-			ve_insert_str(ANSI_RESET);
-			break;
-		case 'C':
-			editansi = showansi = 1;
-			redraw_everything = YEA;
-			clear();
-			display_buffer();
-			redoscr();
-			strcpy(msg, "ÒÑÏÔÊ¾²ÊÉ«±à¼­³É¹û£¬¼´½«ÇÐ»Øµ¥É«Ä£Ê½");
-			break;
-	}
-	if (strchr("FBRCM", action))
-		redraw_everything = YEA;
-	if (msg[0] != '\0') {
-		if (action == 'C') { /* need redraw */
-			move(t_lines - 2, 0);
-			clrtoeol();
-			prints("[1m%s%s%s[m", msg, ", Çë°´ÈÎÒâ¼ü·µ»Ø±à¼­»­Ãæ...", ANSI_RESET);
-			igetkey();
-			newch = '\0';
-			editansi = showansi = 0;
-			clear();
-			display_buffer();
-		} else
-			newch = ask(strcat(msg, "£¬Çë¼ÌÐø±à¼­¡£"));
-	} else
-		newch = '\0';
-	return newch;
 }
 
 void vedit_key(int ch) {

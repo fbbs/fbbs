@@ -1,4 +1,5 @@
 #define EXTERN
+#include <sys/wait.h>
 #include "bbs.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
@@ -401,11 +402,6 @@ int is_birth(const struct userec *user)
 		return NA;
 }
 
-//      ∑¢ÀÕ¡Ù—‘
-int sendgoodwish(char *uid) {
-	return sendGoodWish(NULL);
-}
-
 int sendGoodWish(char *userid) {
 	FILE *fp;
 	int tuid, i, count;
@@ -494,4 +490,9 @@ int sendGoodWish(char *userid) {
 	pressanykey();
 	clear();
 	return 0;
+}
+
+//      ∑¢ÀÕ¡Ù—‘
+int sendgoodwish(char *uid) {
+	return sendGoodWish(NULL);
 }

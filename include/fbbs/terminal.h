@@ -50,6 +50,7 @@ extern void printdash(const char *mesg);
 extern void bell(void);
 
 int num_ans_chr(const char *str);
+int seekthestr(const char *str, int num);
 
 // src/more.c
 
@@ -69,6 +70,7 @@ int mainreadhelp(void);
 int mailreadhelp(void);
 
 int usercomplete(char *prompt, char *data);
+int namecomplete(char *prompt, char *data);
 int t_query(const char *user);
 int vedit(char *filename, int write_header_to_file, int modifyheader);
 
@@ -100,6 +102,8 @@ int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
 int Goodbye(void);
 char *sethomepath(char *buf, const char *userid);
 int show_online_followings(void);
+int show_online_users(void);
+int show_users_in_board(void);
 int fill_shmfile(int mode, char* fname, char * shmkey);
 void showstuff(char *buf);
 int vote_flag(char *bname, char val, int mode);
@@ -145,5 +149,31 @@ int edit_grp(char bname[STRLEN], char grp[STRLEN], char title[STRLEN],
 		char newtitle[STRLEN]);
 unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showfunc) ());
 int show_file_info(int ent, struct fileheader *fileinfo, char *direct);
+int chk_currBM(char *BMstr, int isclub);
+bool garbage_line(const char *str);
+int Q_Goodbye(void);
+int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
+		int response);
+int acction_mode(int ent, struct fileheader *fileinfo, char *direct);
+void Add_Combine(char *board, struct fileheader *fileinfo, int has_cite);
+void add_crossinfo(char *filepath, int mode);
+int AddNameList(const char *name);
+int marked_all(int type);
+int post_article(char *postboard, char *mailid);
+void write_header(FILE *fp, int mode);
+int outgo_post(struct fileheader *fh, char *board);
+void get_noticedirect(char *curr, char *notice);
+void fixkeep(char *s, int first, int last);
+int Personal(const char *userid);
+void user_display(char *filename, int number, int mode);
+void show_goodbyeshm(void);
+void u_exit(void);
+struct keeploc * getkeep(char *s, int def_topline, int def_cursline);
+void do_quote(const char *orig, const char *file, char mode);
+int del_range(int ent, struct fileheader *fileinfo, char *direct);
+int x_cloak(void);
+int show_online(void);
+void do_report(const char *filename, const char *s);
+void set_numofsig(void);
 
 #endif // FB_TERMINAL_H

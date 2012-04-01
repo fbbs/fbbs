@@ -13,7 +13,8 @@ extern char someoneID[31];
 //				2时,同作者
 //				3时,同作者,模糊查找
 //				4时,标题关键字
-int marked_all(int type) {
+int marked_all(int type)
+{
 	struct fileheader post;
 	int num = 0;
 	int fd;
