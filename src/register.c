@@ -6,6 +6,7 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
+#include "fbbs/ucache.h"
 
 enum {
 	MAX_NEW_TRIES = 9,
@@ -323,7 +324,89 @@ void check_reg_extra() {
 	tui_check_reg_mail();
 }
 
-/*add end*/
+static void getfield(int line, char *info, char *desc, char *buf, int len)
+{
+	move(line, 0);
+	prints("  原先设定: %s \033[1;32m(%s)\033[m",
+			(buf[0] == '\0') ? "(未设定)" : buf, info);
+	char prompt[STRLEN];
+	snprintf(prompt, sizeof(prompt), "  %s: ", desc);
+	getdata(line + 1, 0, prompt, buf, len, DOECHO, YEA);
+	printable_filter(buf);
+	move(line, 0);
+	clrtoeol();
+	prints("  %s: %s\n", desc, buf);
+	clrtoeol();
+}
+
+int fill_reg_form(void)
+{
+	reginfo_t reg;
+
+	if (!strcmp("guest", currentuser.userid))
+		return 0;
+
+	set_user_status(ST_NEW);
+
+	clear();
+	move(2, 0);
+	clrtobot();
+	if (currentuser.userlevel & PERM_REGISTER) {
+		prints("您已经完成本站的使用者注册手续, 欢迎加入本站的行列.");
+		pressreturn();
+		return 0;
+	}
+
+	if (is_reg_pending(currentuser.userid)) {
+		prints("站长尚未处理您的注册申请单, 您先到处看看吧.");
+		pressreturn();
+		return 0;
+	}
+
+	memset(&reg, 0, sizeof(reg));
+	strlcpy(reg.userid, currentuser.userid, sizeof(reg.userid));
+	strlcpy(reg.email, currentuser.email, sizeof(reg.email));
+	while (1) {
+		move(3, 0);
+		clrtoeol();
+		prints("%s 您好, 请据实填写以下的资料:\n", currentuser.userid);
+		do {
+			getfield(6, "请用中文", "真实姓名",
+					reg.realname, sizeof(reg.realname));
+		} while (strlen(reg.realname) < 4);
+
+		do {
+			getfield(8, "学校系级或所在单位", "学校系级",
+					reg.dept, sizeof(reg.dept));
+		} while (strlen(reg.dept) < 6);
+
+		do {
+			getfield(10, "包括寝室或门牌号码", "目前住址",
+					reg.addr, sizeof(reg.addr));
+		} while (strlen(reg.addr) < 10);
+
+		do {
+			getfield(12, "包括可联络时间", "联络电话",
+					reg.phone, sizeof(reg.phone));
+		} while (strlen(reg.phone) < 8);
+
+		getfield(14, "校友会或毕业学校", "校 友 会",
+				reg.assoc, sizeof(reg.assoc));
+
+		char ans[3];
+		getdata(t_lines - 1, 0,
+				"以上资料是否正确, 按 Q 放弃注册 (Y/N/Quit)? [Y]: ",
+				ans, sizeof(ans), DOECHO, YEA);
+		if (ans[0] == 'Q' || ans[0] == 'q')
+			return 0;
+		if (ans[0] != 'N' && ans[0] != 'n')
+			break;
+	}
+
+	reg.regdate = time(NULL);
+	append_reg_list(&reg);
+	return 0;
+}
 
 void check_register_info(void)
 {
@@ -409,88 +492,4 @@ void check_register_info(void)
 
 	if (!chkmail())
 		fill_reg_form();
-}
-
-static void getfield(int line, char *info, char *desc, char *buf, int len)
-{
-	move(line, 0);
-	prints("  原先设定: %s \033[1;32m(%s)\033[m",
-			(buf[0] == '\0') ? "(未设定)" : buf, info);
-	char prompt[STRLEN];
-	snprintf(prompt, sizeof(prompt), "  %s: ", desc);
-	getdata(line + 1, 0, prompt, buf, len, DOECHO, YEA);
-	printable_filter(buf);
-	move(line, 0);
-	clrtoeol();
-	prints("  %s: %s\n", desc, buf);
-	clrtoeol();
-}
-
-int fill_reg_form(void)
-{
-	reginfo_t reg;
-
-	if (!strcmp("guest", currentuser.userid))
-		return 0;
-
-	set_user_status(ST_NEW);
-
-	clear();
-	move(2, 0);
-	clrtobot();
-	if (currentuser.userlevel & PERM_REGISTER) {
-		prints("您已经完成本站的使用者注册手续, 欢迎加入本站的行列.");
-		pressreturn();
-		return 0;
-	}
-
-	if (is_reg_pending(currentuser.userid)) {
-		prints("站长尚未处理您的注册申请单, 您先到处看看吧.");
-		pressreturn();
-		return 0;
-	}
-
-	memset(&reg, 0, sizeof(reg));
-	strlcpy(reg.userid, currentuser.userid, sizeof(reg.userid));
-	strlcpy(reg.email, currentuser.email, sizeof(reg.email));
-	while (1) {
-		move(3, 0);
-		clrtoeol();
-		prints("%s 您好, 请据实填写以下的资料:\n", currentuser.userid);
-		do {
-			getfield(6, "请用中文", "真实姓名",
-					reg.realname, sizeof(reg.realname));
-		} while (strlen(reg.realname) < 4);
-
-		do {
-			getfield(8, "学校系级或所在单位", "学校系级",
-					reg.dept, sizeof(reg.dept));
-		} while (strlen(reg.dept) < 6);
-
-		do {
-			getfield(10, "包括寝室或门牌号码", "目前住址",
-					reg.addr, sizeof(reg.addr));
-		} while (strlen(reg.addr) < 10);
-
-		do {
-			getfield(12, "包括可联络时间", "联络电话",
-					reg.phone, sizeof(reg.phone));
-		} while (strlen(reg.phone) < 8);
-
-		getfield(14, "校友会或毕业学校", "校 友 会",
-				reg.assoc, sizeof(reg.assoc));
-
-		char ans[3];
-		getdata(t_lines - 1, 0,
-				"以上资料是否正确, 按 Q 放弃注册 (Y/N/Quit)? [Y]: ",
-				ans, sizeof(ans), DOECHO, YEA);
-		if (ans[0] == 'Q' || ans[0] == 'q')
-			return 0;
-		if (ans[0] != 'N' && ans[0] != 'n')
-			break;
-	}
-
-	reg.regdate = time(NULL);
-	append_reg_list(&reg);
-	return 0;
 }

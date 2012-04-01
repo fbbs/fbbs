@@ -4,6 +4,8 @@
 #include "fbbs/helper.h"
 #include "fbbs/pool.h"
 
+extern int b_closepolls(void);
+
 //退出时执行的函数
 void do_exit() {
 	flush_ucache();

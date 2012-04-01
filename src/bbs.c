@@ -1437,7 +1437,8 @@ void getcross(char *filepath, int mode) {
 }
 
 //发文动作
-int do_post() {
+int do_post(void)
+{
 	*quote_file = '\0';
 	*quote_user = '\0';
 	local_article = YEA;
@@ -2763,7 +2764,8 @@ int Import_post(int ent, struct fileheader *fileinfo, char *direct) {
 	return DONOTHING;
 }
 
-int check_notespasswd() {
+int check_notespasswd(void)
+{
 	FILE *pass;
 	char passbuf[20], prepass[STRLEN];
 	char buf[STRLEN];

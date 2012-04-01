@@ -9,20 +9,181 @@
 #include "fbbs/helper.h"
 #include "fbbs/pool.h"
 #include "fbbs/session.h"
+#include "fbbs/string.h"
 #include "fbbs/terminal.h"
-
-extern int cmpbnames();
-extern int page, range;
 
 static const char *vote_type[] = { "ÊÇ·Ç", "µ¥Ñ¡", "¸´Ñ¡", "Êı×Ö", "ÎÊ´ğ" };
 
-struct votebal currvote; //µ±Ç°Í¶Æ±
-char controlfile[STRLEN];
-unsigned int result[33]; //Í¶Æ±½á¹ûÊı×é
-int vnum;
-int voted_flag;
-FILE *sug; //Í¶Æ±½á¹ûµÄÎÄ¼şÖ¸Õë
+static struct votebal currvote; //µ±Ç°Í¶Æ±
+static char controlfile[STRLEN];
+static unsigned int result[33]; //Í¶Æ±½á¹ûÊı×é
+
+static int vnum;
+static int voted_flag;
+static FILE *sug; //Í¶Æ±½á¹ûµÄÎÄ¼şÖ¸Õë
 int makevote(struct votebal *ball, char *bname); //ÉèÖÃÍ¶Æ±Ïä
+
+#ifndef DLM
+#undef  ALLOWGAME
+#endif
+
+#ifdef FDQUAN
+#define ALLOWGAME
+#endif
+#define BBS_PAGESIZE    (t_lines - 4)
+
+static int range, page, readplan;
+
+// add by Flier - 2000.5.12 - Begin
+enum sort_type {stUserID, stUserName, stIP, stState} st = stUserID;
+// add by Flier - 2000.5.12 - End
+
+void show_message(const char *msg)
+{
+	move(BBS_PAGESIZE + 2, 0);
+	clrtoeol();
+	if (msg)
+		prints("\033[1m%s\033[m", msg);
+	refresh();
+}
+
+static void setlistrange(int i)
+{
+	range = i;
+}
+
+static int choose(int update, int defaultn, int (*title_show)(),
+		int (*key_deal)(), int (*list_show)(), int (*read)())
+{
+	int num = 0;
+	int ch, number, deal;
+	readplan = NA;
+	(*title_show) ();
+	signal(SIGALRM, SIG_IGN);
+	page = -1;
+	number = 0;
+	num = defaultn;
+	while (1) {
+		if (num <= 0)
+		num = 0;
+		if (num >= range)
+		num = range - 1;
+		if (page < 0) {
+			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
+			move(3, 0);
+			clrtobot();
+			if ((*list_show) () == -1)
+			return -1;
+			update_endline();
+		}
+		if (num < page || num >= page + BBS_PAGESIZE) {
+			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
+			if ((*list_show) () == -1)
+			return -1;
+			update_endline();
+			continue;
+		}
+		if (readplan == YEA) {
+			if ((*read) (page, num) == -1)
+			return num;
+		} else {
+			move(3 + num - page, 0);
+			prints(">", number);
+		}
+		ch = egetch();
+		if (readplan == NA)
+		move(3 + num - page, 0);
+		prints(" ");
+		if (ch == 'q' || ch == 'e' || ch == KEY_LEFT || ch == EOF) {
+			if (readplan == YEA) {
+				readplan = NA;
+				move(1, 0);
+				clrtobot();
+				if ((*list_show) () == -1)
+				return -1;
+				(*title_show) ();
+				continue;
+			}
+			break;
+		}
+		deal = (*key_deal) (ch, num, page);
+		if (range == 0)
+		break;
+		if (deal == 1)
+		continue;
+		else if (deal == -1)
+		break;
+		switch (ch) {
+			case 'b':
+			case Ctrl('B'):
+			case KEY_PGUP:
+			if (num == 0)
+			num = range - 1;
+			else
+			num -= BBS_PAGESIZE;
+			break;
+			case ' ':
+			if (readplan == YEA) {
+				if (++num >= range)
+				num = 0;
+				break;
+			}
+			case 'N':
+			case Ctrl('F'):
+			case KEY_PGDN:
+			if (num == range - 1)
+			num = 0;
+			else
+			num += BBS_PAGESIZE;
+			break;
+			case 'p':
+			case 'l':
+			case KEY_UP:
+			if (num-- <= 0)
+			num = range - 1;
+			break;
+			case 'n':
+			case 'j':
+			case KEY_DOWN:
+			if (++num >= range)
+			num = 0;
+			break;
+			case '$':
+			case KEY_END:
+			num = range - 1;
+			break;
+			case KEY_HOME:
+			num = 0;
+			break;
+			case '\n':
+			case '\r':
+			if (number> 0) {
+				num = number - 1;
+				break;
+			}
+			/* fall through */
+			case KEY_RIGHT:
+			{
+				if (readplan == YEA) {
+					if (++num >= range)
+					num = 0;
+				} else
+				readplan = YEA;
+				break;
+			}
+			default:
+			;
+		}
+		if (ch >= '0' && ch <= '9') {
+			number = number * 10 + (ch - '0');
+			ch = '\0';
+		} else {
+			number = 0;
+		}
+	}
+	signal(SIGALRM, SIG_IGN);
+	return -1;
+}
 
 //commented by jacobson
 
@@ -314,52 +475,6 @@ int catnotepad(FILE *fp, const char *fname)
 	return 0;
 }
 
-int b_closepolls(void)
-{
-	time_t now = time(NULL);
-	if (resolve_boards() < 0)
-		exit(EXIT_FAILURE);
-
-	if (now < brdshm->pollvote) {
-		return 0;
-	}
-
-	time_t nextpoll = now + 7 * 3600;
-
-	env.p = pool_create(DEFAULT_POOL_SIZE);
-	if (!env.p)
-		exit(EXIT_FAILURE);
-
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
-	if (!env.c)
-		exit(EXIT_FAILURE);
-
-	initialize_db();
-	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
-	for (int i = 0; i < db_res_rows(res); ++i) {
-		board_t board;
-		res_to_board(res, i, &board);
-		strcpy(currboard, board.name);
-		setcontrolfile();
-		int end = get_num_records(controlfile, sizeof(currvote));
-		for (vnum = end; vnum >= 1; vnum--) {
-			time_t closetime;
-
-			get_record(controlfile, &currvote, sizeof(currvote), vnum);
-			closetime = currvote.opendate + currvote.maxdays * 86400;
-			if (now > closetime)
-				mk_result(vnum);
-			else if (nextpoll > closetime)
-				nextpoll = closetime + 300;
-		}
-	}
-	db_clear(res);
-	db_finish(env.d);
-
-	brdshm->pollvote = nextpoll;
-	return 0;
-}
-
 //¼ÆËãÒ»´ÎµÄÍ¶Æ±½á¹û,²¢·ÅÈëresultÊı×éÖĞ,ÓÃÓÚmk_resultÖĞµÄapply_recordº¯ÊıÖĞµÄ»Øµ÷º¯Êı -.-!
 //result[32]¼ÇÂ¼µ÷ÓÃ´ÎÊı
 //²ÎÊıptr:Ò»´ÎµÄÍ¶Æ±½á¹û
@@ -398,7 +513,7 @@ static int count_result(void *ptrv, int notused1, void *notused2)
 }
 
 //½«Í¶Æ±µÄÌ§Í·Ğ´ÈësugÍ¶Æ±½á¹ûÎÄ¼ş
-void get_result_title()
+static void get_result_title(void)
 {
 	char buf[STRLEN];
 
@@ -413,9 +528,32 @@ void get_result_title()
 	b_suckinfile(sug, buf);
 }
 
+//É¾³ıÍ¶Æ±ÎÄ¼ş
+//num Í¶Æ±controlfileÖĞµÚ¼¸¸ö¼ÇÂ¼
+//·µ»ØÖµ ÎŞ
+int dele_vote(int num)
+{
+	char buf[STRLEN];
+
+	sprintf(buf, "vote/%s/flag.%d", currboard, currvote.opendate);
+	unlink(buf);
+	sprintf(buf, "vote/%s/desc.%d", currboard, currvote.opendate);
+	unlink(buf);
+	if (delete_record(controlfile, sizeof(currvote), num, NULL, NULL) == -1) {
+		prints("·¢Éú´íÎó£¬ÇëÍ¨ÖªÕ¾³¤....");
+		pressanykey();
+	}
+	range--;
+	if (get_num_records(controlfile, sizeof(currvote)) == 0) {
+		setvoteflag(currboard, 0);
+	}
+	return 0;
+}
+
 //½áÊøÍ¶Æ±,¼ÆËãÍ¶Æ±½á¹û
 //num:Í¶Æ±controlÎÄ¼şÖĞµÚ¼¸¸ö¼ÇÂ¼
-int mk_result(int num) {
+int mk_result(int num)
+{
 	char fname[STRLEN], nname[STRLEN];
 	char sugname[STRLEN];
 	char title[STRLEN];
@@ -485,6 +623,52 @@ int mk_result(int num) {
 	if (strcmp(currboard, "vote"))
 		Postfile(nname, currboard, title, 1); //Í¶Æ±½á¹ûÌùÈëµ±Ç°°æ
 	dele_vote(num); //¹Ø±ÕÍ¶Æ±,É¾³ıÁÙÊ±ÎÄ¼ş
+	return 0;
+}
+
+int b_closepolls(void)
+{
+	time_t now = time(NULL);
+	if (resolve_boards() < 0)
+		exit(EXIT_FAILURE);
+
+	if (now < brdshm->pollvote) {
+		return 0;
+	}
+
+	time_t nextpoll = now + 7 * 3600;
+
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	if (!env.p)
+		exit(EXIT_FAILURE);
+
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	if (!env.c)
+		exit(EXIT_FAILURE);
+
+	initialize_db();
+	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		board_t board;
+		res_to_board(res, i, &board);
+		strcpy(currboard, board.name);
+		setcontrolfile();
+		int end = get_num_records(controlfile, sizeof(currvote));
+		for (vnum = end; vnum >= 1; vnum--) {
+			time_t closetime;
+
+			get_record(controlfile, &currvote, sizeof(currvote), vnum);
+			closetime = currvote.opendate + currvote.maxdays * 86400;
+			if (now > closetime)
+				mk_result(vnum);
+			else if (nextpoll > closetime)
+				nextpoll = closetime + 300;
+		}
+	}
+	db_clear(res);
+	db_finish(env.d);
+
+	brdshm->pollvote = nextpoll;
 	return 0;
 }
 
@@ -953,28 +1137,6 @@ static int printvote(void *entv, int notused1, void *notused2)
 	return 0;
 }
 
-//É¾³ıÍ¶Æ±ÎÄ¼ş
-//num Í¶Æ±controlfileÖĞµÚ¼¸¸ö¼ÇÂ¼
-//·µ»ØÖµ ÎŞ
-int dele_vote(int num)
-{
-	char buf[STRLEN];
-
-	sprintf(buf, "vote/%s/flag.%d", currboard, currvote.opendate);
-	unlink(buf);
-	sprintf(buf, "vote/%s/desc.%d", currboard, currvote.opendate);
-	unlink(buf);
-	if (delete_record(controlfile, sizeof(currvote), num, NULL, NULL) == -1) {
-		prints("·¢Éú´íÎó£¬ÇëÍ¨ÖªÕ¾³¤....");
-		pressanykey();
-	}
-	range--;
-	if (get_num_records(controlfile, sizeof(currvote)) == 0) {
-		setvoteflag(currboard, 0);
-	}
-	return 0;
-}
-
 //ÏÔÊ¾Í¶Æ±½á¹û
 //bname:°æÃû
 //·µ»ØÖµ:¹Ì¶¨ÎªFULLUPDATE
@@ -1004,6 +1166,23 @@ void vote_title() {
 			"[Í¶Æ±ÏäÁĞ±í]",
 			"[[1;32m¡û[m,[1;32me[m] Àë¿ª [[1;32mh[m] ÇóÖú [[1;32m¡ú[m,[1;32mr <cr>[m] ½øĞĞÍ¶Æ± [[1;32m¡ü[m,[1;32m¡ı[m] ÉÏ,ÏÂÑ¡Ôñ [1m¸ßÁÁ¶È[m±íÊ¾ÉĞÎ´Í¶Æ±");
 	update_endline();
+}
+
+//ÏÔÊ¾Í¶Æ±ÏäĞÅÏ¢
+int Show_Votes(void)
+{
+	move(3, 0);
+	clrtobot();
+	printvote(NULL, 0, NULL);
+	setcontrolfile();
+	if (apply_record(controlfile, printvote, sizeof(struct votebal), NULL, 0,
+			0, true) == -1) {
+		prints("´íÎó£¬Ã»ÓĞÍ¶Æ±Ïä¿ªÆô....");
+		pressreturn();
+		return 0;
+	}
+	clrtobot();
+	return 0;
 }
 
 //¸ù¾İÓÃ»§µÄ°´¼ü¶ÔÍ¶Æ±Ïä½øĞĞ²Ù×÷,¿ÉÒÔ½áÊø/ĞŞ¸Ä/Ç¿ÖÆ¹Ø±Õ/ÏÔÊ¾Í¶Æ±½á¹û
@@ -1120,23 +1299,6 @@ int vote_key(int ch, int allnum, int pagenum) {
 		vote_title();
 	}
 	return 1;
-}
-
-//ÏÔÊ¾Í¶Æ±ÏäĞÅÏ¢
-int Show_Votes() {
-
-	move(3, 0);
-	clrtobot();
-	printvote(NULL, 0, NULL);
-	setcontrolfile();
-	if (apply_record(controlfile, printvote, sizeof(struct votebal), NULL, 0,
-			0, true) == -1) {
-		prints("´íÎó£¬Ã»ÓĞÍ¶Æ±Ïä¿ªÆô....");
-		pressreturn();
-		return 0;
-	}
-	clrtobot();
-	return 0;
 }
 
 //ÓÃ»§¶Ô±¾°æ½øĞĞÍ¶Æ±£¬bbs.cµ÷ÓÃ

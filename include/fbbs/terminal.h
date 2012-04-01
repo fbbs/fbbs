@@ -175,5 +175,15 @@ int x_cloak(void);
 int show_online(void);
 void do_report(const char *filename, const char *s);
 void set_numofsig(void);
+int _del_post(int ent, struct fileheader *fileinfo, char *direct,
+		int subflag, int hasjudge);
+int mark_post(int ent, struct fileheader *fileinfo, char *direct);
+int do_post(void);
+int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct);
+int underline_post(int ent, struct fileheader *fileinfo, char *direct);
+int _combine_thread(int ent, struct fileheader *fileinfo, char *direct, int gid);
+int del_post(int ent, struct fileheader *fileinfo, char *direct);
+int post_cross(char islocal, int mode);
+int check_notespasswd(void);
 
 #endif // FB_TERMINAL_H

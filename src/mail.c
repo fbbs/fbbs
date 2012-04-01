@@ -1080,11 +1080,7 @@ char *direct;
 	return (del_range(ent, fileinfo, direct));
 }
 
-int
-mail_mark(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
+int mail_mark(int ent, struct fileheader *fileinfo, char *direct)
 {
 	if (fileinfo->accessed[0] & FILE_MARKED)
 	fileinfo->accessed[0] &= ~FILE_MARKED;

@@ -40,6 +40,9 @@ char noticedirect[256];
 int notice_lastline, dir_lastline;
 #endif
 
+static int search_articles(struct keeploc *locmem, const char *query, int gid,
+		int offset, int aflag, int newflag);
+
 //ÔÚ¾Ö²¿±íÌ¬Á´±íÖĞ²éÕÒÓë¹Ø¼ü×Ö·û´®sÏàÆ¥ÅäµÄÏî
 //		ÕÒµ½:	Ö±½Ó·µ»Ø
 //		·ñÔò:	ĞÂ¼ÓÒ»Ïî,·ÅÔÚÁ´±í±íÍ·,²¢·µ»ØĞÂ¼ÓÏî
@@ -179,6 +182,211 @@ void get_noticedirect(char *curr, char *notice)
 	strcpy(ptr, NOTICE_DIR);
 }
 #endif
+
+/* calc cursor pos and show cursor correctly -cuteyu */
+//½«¹â±êÒÆµ½ºÏÊÊµÄÎ»ÖÃ,²¢ÏÔÊ¾
+//	¹â±êµÄ¸ü¸Ä·´Ó³ÔÚlocmemµÄÊı¾İÖĞ
+static int cursor_pos(struct keeploc *locmem, int val, int from_top)
+{
+	if (val > last_line) {
+		val = DEFINE(DEF_CIRCLE) ? 1 : last_line;
+	}
+	if (val <= 0) {
+		val = DEFINE(DEF_CIRCLE) ? last_line : 1;
+	}
+	if (val >= locmem->top_line && val < locmem->top_line + screen_len - 1) {
+		RMVCURS
+		;
+		locmem->crs_line = val;
+		PUTCURS
+		;
+		return 0;
+	}
+	locmem->top_line = val - from_top;
+	if (locmem->top_line <= 0)
+		locmem->top_line = 1;
+	locmem->crs_line = val;
+	return 1;
+}
+
+static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, int ssize)
+{
+	int i, mode = DONOTHING,savemode;
+	char ans[4];
+	switch (ch) {
+		case 'q':
+		case 'e':
+		case KEY_LEFT:
+		//if ( digestmode )
+		if( digestmode && session.status != ST_RMAIL ) //chenhao
+		return acction_mode(0, NULL, NULL);
+		else
+		return DOQUIT;
+		case Ctrl('L'):
+		redoscr();
+		break;
+		case 'M':
+		savemode = session.status;
+		in_mail=YEA;
+		m_new();
+		in_mail=NA;
+		//m_read();
+		set_user_status(savemode);
+		return FULLUPDATE;
+		case 'u':
+		savemode = session.status;
+		set_user_status(ST_QUERY);
+		t_query(NULL);
+		set_user_status(savemode);
+		return FULLUPDATE;
+		case 'H':
+		getdata(t_lines - 1, 0, "ÄúÑ¡Ôñ?(1) ±¾ÈÕÊ®´ó  (2) ÏµÍ³ÈÈµã [1]",ans, 2, DOECHO, YEA);
+		if (ans[0] == '2')
+		show_help("etc/hotspot");
+		else
+		show_help("0Announce/bbslist/day");
+		return FULLUPDATE;
+		case 'O':
+		if (!strcmp("guest", currentuser.userid))
+		break;
+		{
+			char *userid=
+			((struct fileheader*)&pnt[(locmem->crs_line - locmem->top_line) * ssize])->owner;
+			if(!strcmp(userid, currentuser.userid))
+			break;
+			move(t_lines-1, 0);
+			sprintf(genbuf, "È·¶¨Òª°Ñ %s ¼ÓÈëºÃÓÑÃûµ¥Âğ",userid);
+			if (askyn(genbuf, NA, NA) == NA)
+			return FULLUPDATE;
+			if (follow(session.uid, userid, NULL)) {
+				sprintf(genbuf, "³É¹¦¹Ø×¢ %s", userid);
+				show_message(genbuf);
+			}
+		}
+		return FULLUPDATE;
+		case 'k':
+		case KEY_UP:
+		if (cursor_pos(locmem, locmem->crs_line - 1, screen_len - 2))
+		return PARTUPDATE;
+		break;
+		case 'j':
+		case KEY_DOWN:
+		if (cursor_pos(locmem, locmem->crs_line + 1, 0))
+		return PARTUPDATE;
+		break;
+		case 'l': /* ppfoong */
+			msg_more();
+			return FULLUPDATE;
+		/*        case 'L':		//chenhao ½â¾öÔÚÎÄÕÂÁĞ±íÊ±¿´ĞÅµÄÎÊÌâ
+		 if(session.status == RMAIL) return DONOTHING;
+		 savemode = session.status;
+		 m_read();
+		 set_user_status(ST_savemode);
+		 return MODECHANGED;
+		 */
+		//wait for new key -> look all mail. 1.12. by money
+		case 'N':
+		case Ctrl('F'):
+		case KEY_PGDN:
+		case ' ':
+		if (last_line >= locmem->top_line + screen_len) {
+			locmem->top_line += screen_len - 1;
+			locmem->crs_line = locmem->top_line;
+			return PARTUPDATE;
+		}
+		RMVCURS;
+		locmem->crs_line = last_line;
+		PUTCURS;
+		break;
+		case '@':
+		savemode = session.status;
+		set_user_status(ST_QUERY);
+		show_online();
+		set_user_status(savemode);
+		return FULLUPDATE;
+		case 'P':
+		case Ctrl('B'):
+		case KEY_PGUP:
+		if (locmem->top_line> 1) {
+			locmem->top_line -= screen_len - 1;
+			if (locmem->top_line <= 0)
+			locmem->top_line = 1;
+			locmem->crs_line = locmem->top_line;
+			return PARTUPDATE;
+		} else {
+			RMVCURS;
+			locmem->crs_line = locmem->top_line;
+			PUTCURS;
+		}
+		break;
+		case KEY_HOME:
+		locmem->top_line = 1;
+		locmem->crs_line = 1;
+		return PARTUPDATE;
+		case '$':
+		case KEY_END:
+#ifdef ENABLE_NOTICE
+		if(locmem->crs_line>dir_lastline) {
+			if (dir_lastline >= locmem->top_line + screen_len) {
+				locmem->top_line = dir_lastline - screen_len + 1;
+				if (locmem->top_line <= 0)
+				locmem->top_line = 1;
+				locmem->crs_line = dir_lastline;
+				return PARTUPDATE;
+			}
+			RMVCURS;
+			locmem->crs_line = dir_lastline;
+			PUTCURS;
+		} else {
+#endif
+			if (last_line >= locmem->top_line + screen_len) {
+				locmem->top_line = last_line - screen_len + 1;
+				if (locmem->top_line <= 0)
+				locmem->top_line = 1;
+				locmem->crs_line = last_line;
+				return PARTUPDATE;
+			}
+			RMVCURS;
+			locmem->crs_line = last_line;
+			PUTCURS;
+#ifdef ENABLE_NOTICE
+		}
+#endif
+		break;
+		case 'S': /* youzi */
+		if (!HAS_PERM(PERM_TALK))
+		break;
+		s_msg();
+		return FULLUPDATE;
+		break;
+		/*case 'f':	modified by Seaman *//* youzi */
+		case 'o':
+			if (!HAS_PERM(PERM_LOGIN))
+				break;
+			show_online_followings();
+			return FULLUPDATE;
+		break;
+		case '!': /* youzi leave */
+		return Goodbye();
+		break;
+		case '\n':
+		case '\r':
+		case KEY_RIGHT:
+		ch = 'r';
+		/* lookup command table */
+		default:
+		for (i = 0; rcmdlist[i].fptr != NULL; i++) {
+			if (rcmdlist[i].key == ch) {
+				mode = (*(rcmdlist[i].fptr)) (locmem->crs_line,
+						&pnt[(locmem->crs_line - locmem->top_line) * ssize],
+						currdirect);
+				break;
+			}
+		}
+	}
+	return mode;
+}
+
 void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize) {
 	struct keeploc * locmem;
 	char lbuf[11];
@@ -411,182 +619,25 @@ void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), s
 	free(pnt);
 }
 
-int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, int ssize)
+static int search_author(struct keeploc *locmem, int offset, char *powner)
 {
-	int i, mode = DONOTHING,savemode;
-	char ans[4];
-	switch (ch) {
-		case 'q':
-		case 'e':
-		case KEY_LEFT:
-		//if ( digestmode )
-		if( digestmode && session.status != ST_RMAIL ) //chenhao
-		return acction_mode(0, NULL, NULL);
-		else
-		return DOQUIT;
-		case Ctrl('L'):
-		redoscr();
-		break;
-		case 'M':
-		savemode = session.status;
-		in_mail=YEA;
-		m_new();
-		in_mail=NA;
-		//m_read();
-		set_user_status(savemode);
-		return FULLUPDATE;
-		case 'u':
-		savemode = session.status;
-		set_user_status(ST_QUERY);
-		t_query(NULL);
-		set_user_status(savemode);
-		return FULLUPDATE;
-		case 'H':
-		getdata(t_lines - 1, 0, "ÄúÑ¡Ôñ?(1) ±¾ÈÕÊ®´ó  (2) ÏµÍ³ÈÈµã [1]",ans, 2, DOECHO, YEA);
-		if (ans[0] == '2')
-		show_help("etc/hotspot");
-		else
-		show_help("0Announce/bbslist/day");
-		return FULLUPDATE;
-		case 'O':
-		if (!strcmp("guest", currentuser.userid))
-		break;
-		{
-			char *userid=
-			((struct fileheader*)&pnt[(locmem->crs_line - locmem->top_line) * ssize])->owner;
-			if(!strcmp(userid, currentuser.userid))
-			break;
-			move(t_lines-1, 0);
-			sprintf(genbuf, "È·¶¨Òª°Ñ %s ¼ÓÈëºÃÓÑÃûµ¥Âğ",userid);
-			if (askyn(genbuf, NA, NA) == NA)
-			return FULLUPDATE;
-			if (follow(session.uid, userid, NULL)) {
-				sprintf(genbuf, "³É¹¦¹Ø×¢ %s", userid);
-				show_message(genbuf);
-			}
-		}
-		return FULLUPDATE;
-		case 'k':
-		case KEY_UP:
-		if (cursor_pos(locmem, locmem->crs_line - 1, screen_len - 2))
-		return PARTUPDATE;
-		break;
-		case 'j':
-		case KEY_DOWN:
-		if (cursor_pos(locmem, locmem->crs_line + 1, 0))
-		return PARTUPDATE;
-		break;
-		case 'l': /* ppfoong */
-			msg_more();
-			return FULLUPDATE;
-		/*        case 'L':		//chenhao ½â¾öÔÚÎÄÕÂÁĞ±íÊ±¿´ĞÅµÄÎÊÌâ
-		 if(session.status == RMAIL) return DONOTHING;
-		 savemode = session.status;
-		 m_read();
-		 set_user_status(ST_savemode);
-		 return MODECHANGED;
-		 */
-		//wait for new key -> look all mail. 1.12. by money
-		case 'N':
-		case Ctrl('F'):
-		case KEY_PGDN:
-		case ' ':
-		if (last_line >= locmem->top_line + screen_len) {
-			locmem->top_line += screen_len - 1;
-			locmem->crs_line = locmem->top_line;
-			return PARTUPDATE;
-		}
-		RMVCURS;
-		locmem->crs_line = last_line;
-		PUTCURS;
-		break;
-		case '@':
-		savemode = session.status;
-		set_user_status(ST_QUERY);
-		show_online();
-		set_user_status(savemode);
-		return FULLUPDATE;
-		case 'P':
-		case Ctrl('B'):
-		case KEY_PGUP:
-		if (locmem->top_line> 1) {
-			locmem->top_line -= screen_len - 1;
-			if (locmem->top_line <= 0)
-			locmem->top_line = 1;
-			locmem->crs_line = locmem->top_line;
-			return PARTUPDATE;
-		} else {
-			RMVCURS;
-			locmem->crs_line = locmem->top_line;
-			PUTCURS;
-		}
-		break;
-		case KEY_HOME:
-		locmem->top_line = 1;
-		locmem->crs_line = 1;
-		return PARTUPDATE;
-		case '$':
-		case KEY_END:
-#ifdef ENABLE_NOTICE
-		if(locmem->crs_line>dir_lastline) {
-			if (dir_lastline >= locmem->top_line + screen_len) {
-				locmem->top_line = dir_lastline - screen_len + 1;
-				if (locmem->top_line <= 0)
-				locmem->top_line = 1;
-				locmem->crs_line = dir_lastline;
-				return PARTUPDATE;
-			}
-			RMVCURS;
-			locmem->crs_line = dir_lastline;
-			PUTCURS;
-		} else {
-#endif
-			if (last_line >= locmem->top_line + screen_len) {
-				locmem->top_line = last_line - screen_len + 1;
-				if (locmem->top_line <= 0)
-				locmem->top_line = 1;
-				locmem->crs_line = last_line;
-				return PARTUPDATE;
-			}
-			RMVCURS;
-			locmem->crs_line = last_line;
-			PUTCURS;
-#ifdef ENABLE_NOTICE
-		}
-#endif
-		break;
-		case 'S': /* youzi */
-		if (!HAS_PERM(PERM_TALK))
-		break;
-		s_msg();
-		return FULLUPDATE;
-		break;
-		/*case 'f':	modified by Seaman *//* youzi */
-		case 'o':
-			if (!HAS_PERM(PERM_LOGIN))
-				break;
-			show_online_followings();
-			return FULLUPDATE;
-		break;
-		case '!': /* youzi leave */
-		return Goodbye();
-		break;
-		case '\n':
-		case '\r':
-		case KEY_RIGHT:
-		ch = 'r';
-		/* lookup command table */
-		default:
-		for (i = 0; rcmdlist[i].fptr != NULL; i++) {
-			if (rcmdlist[i].key == ch) {
-				mode = (*(rcmdlist[i].fptr)) (locmem->crs_line,
-						&pnt[(locmem->crs_line - locmem->top_line) * ssize],
-						currdirect);
-				break;
-			}
-		}
-	}
-	return mode;
+	static char author[IDLEN + 1];
+	char ans[IDLEN + 1], pmt[STRLEN];
+	char currauth[STRLEN];
+	strcpy(currauth, powner);
+
+	sprintf(pmt, "%sµÄÎÄÕÂËÑÑ°×÷Õß [%s]: ", offset> 0 ? "ÍùááÀ´" : "ÍùÏÈÇ°", currauth);
+	move(t_lines - 1, 0);
+	clrtoeol();
+	//Modified by IAMFAT 2002-05-27
+	//IDLEN->IDLEN+1
+	getdata(t_lines - 1, 0, pmt, ans, IDLEN+1, DOECHO, YEA);
+	if (ans[0] != '\0')
+	strcpy(author, ans);
+	else
+	strcpy(author, currauth);
+
+	return search_articles(locmem, author, 0, offset, 1,0);
 }
 
 int
@@ -617,6 +668,21 @@ char *direct;
 	else
 	update_endline();
 	return DONOTHING;
+}
+
+static int search_post(struct keeploc *locmem, int offset)
+{
+	static char query[STRLEN];
+	char ans[STRLEN], pmt[STRLEN];
+	strcpy(ans, query);
+	sprintf(pmt, "ËÑÑ°%sµÄÎÄÕÂ [%s]: ", offset> 0 ? "ÍùááÀ´" : "ÍùÏÈÇ°", ans);
+	move(t_lines - 1, 0);
+	clrtoeol();
+	getdata(t_lines - 1, 0, pmt, ans, 50, DOECHO, YEA);
+	if (ans[0] != '\0')
+	strcpy(query, ans);
+
+	return search_articles(locmem, query, 0, offset, -1, 0);
 }
 
 int
@@ -1174,10 +1240,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 	return DIRCHANGED;
 }
 
-int combine_thread(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
+int combine_thread(int ent, struct fileheader *fileinfo, char *direct)
 {
 	char buf[16];
 	int num;
@@ -1251,29 +1314,186 @@ char *direct;
 	return FULLUPDATE;
 }
 
-int
-search_author(locmem, offset, powner)
-struct keeploc *locmem;
-int offset;
-char *powner;
-{
-	static char author[IDLEN + 1];
-	char ans[IDLEN + 1], pmt[STRLEN];
-	char currauth[STRLEN];
-	strcpy(currauth, powner);
+enum {
+	SEARCH_BACKWARD = -1,
+	SEARCH_FORWARD = 1,
+	SEARCH_FIRST = 5,
+	SEARCH_LAST = 3,
 
-	sprintf(pmt, "%sµÄÎÄÕÂËÑÑ°×÷Õß [%s]: ", offset> 0 ? "ÍùááÀ´" : "ÍùÏÈÇ°", currauth);
+	SEARCH_CONTENT = -1,
+	SEARCH_THREAD = 0,
+	SEARCH_AUTHOR = 1,
+	SEARCH_RELATED = 2,
+};
+
+static int searchpattern(const char *filename, const char *query)
+{
+	FILE *fp;
+	char buf[256];
+	if ((fp = fopen(filename, "r")) == NULL)
+	return 0;
+	while (fgets(buf, 256, fp) != NULL) {
+		//Modified by IAMFAT 2002-05-25
+		if (strcasestr_gbk(buf, query)) {
+			fclose(fp);
+			return YEA;
+		}
+	}
+	fclose(fp);
+	return NA;
+}
+
+static int strcasecmp2(const char *s1, const char *s2)
+{
+	register int c1, c2;
+	while (*s1 && *s2) {
+		c1 = tolower(*s1);
+		c2 = tolower(*s2);
+		if (c1 != c2)
+			return (c1 - c2);
+		s1++;
+		s2++;
+	}
+	if (!*s1 && !*s2)
+		return 0;
+	else if (*s1)
+		return -1;
+	else
+		return 1;
+}
+
+static int search_articles(struct keeploc *locmem, const char *query, int gid,
+		int offset, int aflag, int newflag)
+{
+	int complete, ent, oldent, lastent = 0;
+	char *ptr;
+
+	if (*query == '\0')
+		return 0;
+	if (aflag == SEARCH_RELATED) {
+		complete = 0;
+		aflag = SEARCH_THREAD;
+	} else {
+		complete = 1;
+	}
+	if ((offset == SEARCH_FIRST || offset == SEARCH_LAST)
+			&& aflag != SEARCH_CONTENT) {
+		ent = 0;
+		oldent = 0;
+		if (offset == SEARCH_FIRST)
+			offset = SEARCH_FORWARD;
+		else
+			offset = SEARCH_BACKWARD;
+	} else {
+		ent = locmem->crs_line;
+		oldent = locmem->crs_line;
+	}
+	if (aflag != SEARCH_CONTENT && offset < 0)
+		ent = 0;
+
+	if (aflag == SEARCH_CONTENT) {
+		move(t_lines - 1, 0);
+		clrtoeol();
+		prints("\033[1;44;33mËÑÑ°ÖĞ£¬ÇëÉÔºò....                      "
+				"                                       \033[m");
+		refresh();
+	}
+
+	FILE *fp = fopen(currdirect, "rb");
+	if (fp == NULL)
+		return -1;
+	
+	if (ent) {
+		if (aflag == SEARCH_CONTENT && offset < 0)
+			ent -= 2;
+		if (ent < 0 || fseek(fp, ent * sizeof(struct fileheader), SEEK_SET) < 0) {
+			fclose(fp);
+			return -1;
+		}
+	}
+	if (aflag != SEARCH_CONTENT && offset > 0)
+		ent = oldent;
+	if (aflag == SEARCH_CONTENT && offset < 0)
+		ent += 2;
+	while (fread(&SR_fptr, sizeof(SR_fptr), 1, fp) == 1) {
+		if (aflag == SEARCH_CONTENT && offset < 0)
+			ent--;
+		else
+			ent++;
+		if (aflag != SEARCH_CONTENT && offset < 0 && oldent > 0
+				&& ent >= oldent)
+			break;
+		if (newflag && !brc_unread(SR_fptr.filename))
+			continue;
+
+		if (aflag == SEARCH_CONTENT) {
+			char p_name[256];
+			if (session.status != ST_RMAIL) {
+				setbfile(p_name, currboard, SR_fptr.filename);
+			} else {
+				sprintf(p_name, "mail/%c/%s/%s",
+						toupper(currentuser.userid[0]),
+						currentuser.userid, SR_fptr.filename);
+			}
+			if (searchpattern(p_name, query)) {
+				lastent = ent;
+				break;
+			} else if (offset > 0) {
+				continue;
+			} else {
+				if (fseek(fp, -2 * sizeof(SR_fptr), SEEK_CUR) < 0) {
+					fclose(fp);
+					return -1;
+				}
+				continue;
+			}
+		}
+
+		ptr = (aflag == SEARCH_AUTHOR) ? SR_fptr.owner : SR_fptr.title;
+		if (complete) {
+			if (aflag == SEARCH_AUTHOR) {
+				if (!strcasecmp(ptr, query)) {
+					lastent = ent;
+					if (offset > 0)
+						break;
+				}
+			} else { // SEARCH_THREAD
+				if (in_mail) {
+					if (!strncasecmp(ptr, "Re: ", 4))
+						ptr += 4;
+					if (!strcasecmp2(ptr, query)) {
+						lastent = ent;
+						if (offset > 0)
+							break;
+					}
+				} else {
+					if (SR_fptr.gid == gid) {
+						lastent = ent;
+						if (offset > 0)
+							break;
+					}
+				}
+			}
+		} else {// SEARCH_RELATED
+			if (strcasestr_gbk(ptr, query) != NULL) {
+				if (aflag) {
+					if (strcasecmp(ptr, query))
+						continue;
+				}
+				lastent = ent;
+				if (offset > 0)
+					break;
+			}
+		}
+	}
 	move(t_lines - 1, 0);
 	clrtoeol();
-	//Modified by IAMFAT 2002-05-27
-	//IDLEN->IDLEN+1
-	getdata(t_lines - 1, 0, pmt, ans, IDLEN+1, DOECHO, YEA);
-	if (ans[0] != '\0')
-	strcpy(author, ans);
-	else
-	strcpy(author, currauth);
-
-	return search_articles(locmem, author, 0, offset, 1,0);
+	fclose(fp);
+	if (lastent == 0)
+		return -1;
+	get_record(currdirect, &SR_fptr, sizeof(SR_fptr), lastent);
+	last_line = get_num_records(currdirect, sizeof(SR_fptr));
+	return (cursor_pos(locmem, lastent, 10));
 }
 
 int
@@ -1306,6 +1526,20 @@ char *direct;
 	return DONOTHING;
 }
 
+int search_title(struct keeploc *locmem, int offset)
+{
+	static char title[STRLEN];
+	char ans[STRLEN], pmt[STRLEN];
+	strcpy(ans, title);
+	sprintf(pmt, "%sËÑÑ°±êÌâ [%.16s]: ", offset> 0 ? "Íùáá" : "ÍùÇ°", ans);
+	move(t_lines - 1, 0);
+	clrtoeol();
+	getdata(t_lines - 1, 0, pmt, ans, 46, DOECHO, YEA);
+	if (*ans != '\0')
+		strcpy(title, ans);
+	return search_articles(locmem, title, 0, offset, 2, 0);
+}
+
 int
 t_search_down(ent, fileinfo, direct)
 int ent;
@@ -1335,6 +1569,17 @@ char *direct;
 	update_endline();
 	return DONOTHING;
 }
+
+int search_thread(struct keeploc *locmem, int offset, struct fileheader *fh)
+{
+	char *title = fh->title;
+
+	if (title[0] == 'R' && (title[1] == 'e' || title[1] == 'E') && title[2] == ':')
+	title += 4;
+	setqtitle(title, fh->gid);
+	return search_articles(locmem, title, fh->gid, offset, 0, 0);
+}
+
 int
 thread_up(ent, fileinfo, direct)
 int ent;
@@ -1365,55 +1610,6 @@ char *direct;
 	}
 	update_endline();
 	return DONOTHING;
-}
-
-int
-search_post(locmem, offset)
-struct keeploc *locmem;
-int offset;
-{
-	static char query[STRLEN];
-	char ans[STRLEN], pmt[STRLEN];
-	strcpy(ans, query);
-	sprintf(pmt, "ËÑÑ°%sµÄÎÄÕÂ [%s]: ", offset> 0 ? "ÍùááÀ´" : "ÍùÏÈÇ°", ans);
-	move(t_lines - 1, 0);
-	clrtoeol();
-	getdata(t_lines - 1, 0, pmt, ans, 50, DOECHO, YEA);
-	if (ans[0] != '\0')
-	strcpy(query, ans);
-
-	return search_articles(locmem, query, 0, offset, -1, 0);
-}
-
-int
-search_title(locmem, offset)
-struct keeploc *locmem;
-int offset;
-{
-	static char title[STRLEN];
-	char ans[STRLEN], pmt[STRLEN];
-	strcpy(ans, title);
-	sprintf(pmt, "%sËÑÑ°±êÌâ [%.16s]: ", offset> 0 ? "Íùáá" : "ÍùÇ°", ans);
-	move(t_lines - 1, 0);
-	clrtoeol();
-	getdata(t_lines - 1, 0, pmt, ans, 46, DOECHO, YEA);
-	if (*ans != '\0')
-	strcpy(title, ans);
-	return search_articles(locmem, title, 0, offset, 2, 0);
-}
-
-int
-search_thread(locmem, offset, fh)
-struct keeploc *locmem;
-int offset;
-struct fileheader *fh;
-{
-	char *title = fh->title;
-
-	if (title[0] == 'R' && (title[1] == 'e' || title[1] == 'E') && title[2] == ':')
-	title += 4;
-	setqtitle(title, fh->gid);
-	return search_articles(locmem, title, fh->gid, offset, 0, 0);
 }
 
 int sread(int readfirst, int auser, struct fileheader *ptitle)
@@ -1559,192 +1755,6 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 	return 1;
 }
 
-//Added by IAMFAT 2002-05-27
-int strcasecmp2(const char *s1, const char *s2) {
-	register int c1, c2;
-	while (*s1 && *s2) {
-		c1 = tolower(*s1);
-		c2 = tolower(*s2);
-		if (c1 != c2)
-			return (c1 - c2);
-		s1++;
-		s2++;
-	}
-	if (!*s1 && !*s2)
-		return 0;
-	else if (*s1)
-		return -1;
-	else
-		return 1;
-}
-//End IAMFAT
-
-int
-searchpattern(filename, query)
-char *filename;
-char *query;
-{
-	FILE *fp;
-	char buf[256];
-	if ((fp = fopen(filename, "r")) == NULL)
-	return 0;
-	while (fgets(buf, 256, fp) != NULL) {
-		//Modified by IAMFAT 2002-05-25
-		if (strcasestr_gbk(buf, query)) {
-			fclose(fp);
-			return YEA;
-		}
-	}
-	fclose(fp);
-	return NA;
-}
-
-enum {
-	SEARCH_BACKWARD = -1,
-	SEARCH_FORWARD = 1,
-	SEARCH_FIRST = 5,
-	SEARCH_LAST = 3,
-
-	SEARCH_CONTENT = -1,
-	SEARCH_THREAD = 0,
-	SEARCH_AUTHOR = 1,
-	SEARCH_RELATED = 2,
-};
-
-int search_articles(struct keeploc *locmem, const char *query, int gid,
-		int offset, int aflag, int newflag)
-{
-	int complete, ent, oldent, lastent = 0;
-	char *ptr;
-
-	if (*query == '\0')
-		return 0;
-	if (aflag == SEARCH_RELATED) {
-		complete = 0;
-		aflag = SEARCH_THREAD;
-	} else {
-		complete = 1;
-	}
-	if ((offset == SEARCH_FIRST || offset == SEARCH_LAST)
-			&& aflag != SEARCH_CONTENT) {
-		ent = 0;
-		oldent = 0;
-		if (offset == SEARCH_FIRST)
-			offset = SEARCH_FORWARD;
-		else
-			offset = SEARCH_BACKWARD;
-	} else {
-		ent = locmem->crs_line;
-		oldent = locmem->crs_line;
-	}
-	if (aflag != SEARCH_CONTENT && offset < 0)
-		ent = 0;
-
-	if (aflag == SEARCH_CONTENT) {
-		move(t_lines - 1, 0);
-		clrtoeol();
-		prints("\033[1;44;33mËÑÑ°ÖĞ£¬ÇëÉÔºò....                      "
-				"                                       \033[m");
-		refresh();
-	}
-
-	FILE *fp = fopen(currdirect, "rb");
-	if (fp == NULL)
-		return -1;
-	
-	if (ent) {
-		if (aflag == SEARCH_CONTENT && offset < 0)
-			ent -= 2;
-		if (ent < 0 || fseek(fp, ent * sizeof(struct fileheader), SEEK_SET) < 0) {
-			fclose(fp);
-			return -1;
-		}
-	}
-	if (aflag != SEARCH_CONTENT && offset > 0)
-		ent = oldent;
-	if (aflag == SEARCH_CONTENT && offset < 0)
-		ent += 2;
-	while (fread(&SR_fptr, sizeof(SR_fptr), 1, fp) == 1) {
-		if (aflag == SEARCH_CONTENT && offset < 0)
-			ent--;
-		else
-			ent++;
-		if (aflag != SEARCH_CONTENT && offset < 0 && oldent > 0
-				&& ent >= oldent)
-			break;
-		if (newflag && !brc_unread(SR_fptr.filename))
-			continue;
-
-		if (aflag == SEARCH_CONTENT) {
-			char p_name[256];
-			if (session.status != ST_RMAIL) {
-				setbfile(p_name, currboard, SR_fptr.filename);
-			} else {
-				sprintf(p_name, "mail/%c/%s/%s",
-						toupper(currentuser.userid[0]),
-						currentuser.userid, SR_fptr.filename);
-			}
-			if (searchpattern(p_name, query)) {
-				lastent = ent;
-				break;
-			} else if (offset > 0) {
-				continue;
-			} else {
-				if (fseek(fp, -2 * sizeof(SR_fptr), SEEK_CUR) < 0) {
-					fclose(fp);
-					return -1;
-				}
-				continue;
-			}
-		}
-
-		ptr = (aflag == SEARCH_AUTHOR) ? SR_fptr.owner : SR_fptr.title;
-		if (complete) {
-			if (aflag == SEARCH_AUTHOR) {
-				if (!strcasecmp(ptr, query)) {
-					lastent = ent;
-					if (offset > 0)
-						break;
-				}
-			} else { // SEARCH_THREAD
-				if (in_mail) {
-					if (!strncasecmp(ptr, "Re: ", 4))
-						ptr += 4;
-					if (!strcasecmp2(ptr, query)) {
-						lastent = ent;
-						if (offset > 0)
-							break;
-					}
-				} else {
-					if (SR_fptr.gid == gid) {
-						lastent = ent;
-						if (offset > 0)
-							break;
-					}
-				}
-			}
-		} else {// SEARCH_RELATED
-			if (strcasestr_gbk(ptr, query) != NULL) {
-				if (aflag) {
-					if (strcasecmp(ptr, query))
-						continue;
-				}
-				lastent = ent;
-				if (offset > 0)
-					break;
-			}
-		}
-	}
-	move(t_lines - 1, 0);
-	clrtoeol();
-	fclose(fp);
-	if (lastent == 0)
-		return -1;
-	get_record(currdirect, &SR_fptr, sizeof(SR_fptr), lastent);
-	last_line = get_num_records(currdirect, sizeof(SR_fptr));
-	return (cursor_pos(locmem, lastent, 10));
-}
-
 int locate_the_post(struct fileheader *fileinfo, char *query, int offset, //-1 µ±Ç°ÏòÉÏ  1 µ±Ç°ÏòÏÂ  3 ×îºóÒ»Æª 5 µÚÒ»Æª
 		int aflag, // 1 owner  0 Í¬Ö÷Ìâ   2 Ïà¹ØÖ÷Ìâ
 		int newflag // 1 ±ØĞëÎªĞÂÎÄÕÂ   0 ĞÂ¾É¾ù¿É
@@ -1757,73 +1767,8 @@ int locate_the_post(struct fileheader *fileinfo, char *query, int offset, //-1 µ
 	return search_articles(locmem, query, fileinfo->gid, offset, aflag,
 			newflag);
 }
-/* calc cursor pos and show cursor correctly -cuteyu */
-//½«¹â±êÒÆµ½ºÏÊÊµÄÎ»ÖÃ,²¢ÏÔÊ¾
-//	¹â±êµÄ¸ü¸Ä·´Ó³ÔÚlocmemµÄÊı¾İÖĞ
-int cursor_pos(struct keeploc *locmem, int val, int from_top) {
-	if (val > last_line) {
-		val = DEFINE(DEF_CIRCLE) ? 1 : last_line;
-	}
-	if (val <= 0) {
-		val = DEFINE(DEF_CIRCLE) ? last_line : 1;
-	}
-	if (val >= locmem->top_line && val < locmem->top_line + screen_len - 1) {
-		RMVCURS
-		;
-		locmem->crs_line = val;
-		PUTCURS
-		;
-		return 0;
-	}
-	locmem->top_line = val - from_top;
-	if (locmem->top_line <= 0)
-		locmem->top_line = 1;
-	locmem->crs_line = val;
-	return 1;
-}
 
-int r_searchall() {
-	char id[20], patten[30], buf[5];
-	char ans[5];
-	int dt;
-	int junk;
-	int all;
-	int flag;
-	all = NA;
-	set_user_status(ST_QUERY);
-	clear();
-	usercomplete("ÇëÊäÈëÄúÏë²éÑ¯µÄ×÷ÕßÕÊºÅ: ", id);
-	if (id[0] == 0) {
-		getdata(0, 30, "²éÑ¯ËùÓĞµÄ×÷ÕßÂğ?[Y/N]: ", ans, 7, DOECHO, YEA);
-		if ((*ans != 'Y') && (*ans != 'y')) {
-			return 0;
-		} else
-			all = YEA;
-	} else if (!getuser(id)) {
-		prints("²»ÕıÈ·µÄÊ¹ÓÃÕß´úºÅ\n");
-		pressreturn();
-		return 0;
-	}
-	getdata(1, 0, "ÇëÊäÈëÎÄÕÂ±êÌâ¹Ø¼ü×Ö: ", patten, 29, DOECHO, YEA);
-	getdata(2, 0, "²éÑ¯¾à½ñ¶àÉÙÌìÒÔÄÚµÄÎÄÕÂ?: ", buf, 4, DOECHO, YEA);
-	dt = atoi(buf);
-	if (dt == 0)
-		return 0;
-	getdata(3, 0, "ËÑË÷ 0)È¡Ïû 1) °æÃæ 2)°æÖ÷À¬»øÏä 3)Õ¾ÎñÀ¬»øÏä[0]:", buf, 4, DOECHO, YEA);
-	junk = atoi(buf);
-	if (junk < 1 || junk > 3)
-		return 0;
-	getdata(4,0,"ÊÇ·ñÉ¾³ıÎÄÕÂ?[Y/N]",ans,2,DOECHO,YEA);
-	if ((*ans != 'Y') && (*ans != 'y'))
-	flag=NA;
-	else
-	flag = YEA;
-	searchallboard (id, patten, dt, all, junk,flag);
-	report ("ÍøÓÑ´ó×÷²éÑ¯", currentuser.userid);
-	return 0;
-}
-
-int searchallboard(char *id, char *patten, int dt, int all, int del,
+static int searchallboard(char *id, char *patten, int dt, int all, int del,
 		int flag) {
 	FILE *fp, *fp3;
 	char f[100], buf2[150];
@@ -1899,3 +1844,44 @@ int searchallboard(char *id, char *patten, int dt, int all, int del,
 	return 0;
 }
 
+int r_searchall(void)
+{
+	char id[20], patten[30], buf[5];
+	char ans[5];
+	int dt;
+	int junk;
+	int all;
+	int flag;
+	all = NA;
+	set_user_status(ST_QUERY);
+	clear();
+	usercomplete("ÇëÊäÈëÄúÏë²éÑ¯µÄ×÷ÕßÕÊºÅ: ", id);
+	if (id[0] == 0) {
+		getdata(0, 30, "²éÑ¯ËùÓĞµÄ×÷ÕßÂğ?[Y/N]: ", ans, 7, DOECHO, YEA);
+		if ((*ans != 'Y') && (*ans != 'y')) {
+			return 0;
+		} else
+			all = YEA;
+	} else if (!getuser(id)) {
+		prints("²»ÕıÈ·µÄÊ¹ÓÃÕß´úºÅ\n");
+		pressreturn();
+		return 0;
+	}
+	getdata(1, 0, "ÇëÊäÈëÎÄÕÂ±êÌâ¹Ø¼ü×Ö: ", patten, 29, DOECHO, YEA);
+	getdata(2, 0, "²éÑ¯¾à½ñ¶àÉÙÌìÒÔÄÚµÄÎÄÕÂ?: ", buf, 4, DOECHO, YEA);
+	dt = atoi(buf);
+	if (dt == 0)
+		return 0;
+	getdata(3, 0, "ËÑË÷ 0)È¡Ïû 1) °æÃæ 2)°æÖ÷À¬»øÏä 3)Õ¾ÎñÀ¬»øÏä[0]:", buf, 4, DOECHO, YEA);
+	junk = atoi(buf);
+	if (junk < 1 || junk > 3)
+		return 0;
+	getdata(4,0,"ÊÇ·ñÉ¾³ıÎÄÕÂ?[Y/N]",ans,2,DOECHO,YEA);
+	if ((*ans != 'Y') && (*ans != 'y'))
+	flag=NA;
+	else
+	flag = YEA;
+	searchallboard (id, patten, dt, all, junk,flag);
+	report ("ÍøÓÑ´ó×÷²éÑ¯", currentuser.userid);
+	return 0;
+}

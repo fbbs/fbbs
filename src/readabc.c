@@ -1,6 +1,7 @@
 #include <string.h>
 #include "bbs.h"
 #include "record.h"
+#include "fbbs/string.h"
 
 char tname[STRLEN];
 char fname[STRLEN];

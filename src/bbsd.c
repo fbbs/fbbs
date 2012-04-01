@@ -17,6 +17,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
 #ifndef NSIG
 #ifdef _NSIG
@@ -44,6 +45,8 @@ enum {
 };
 
 extern char fromhost[];
+
+extern void start_client(void);
 
 // TODO: deprecate this
 char genbuf[1024]; ///< global buffer for strings. 
