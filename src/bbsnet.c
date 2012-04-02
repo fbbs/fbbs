@@ -108,7 +108,7 @@ static void do_bbsnet(const site_t *site)
 		if (he) {
 			memcpy(&sock.sin_addr, he->h_addr_list[0], he->h_length);
 		} else {
-			if (!inet_aton(site->ip, &sock.sin_addr.s_addr)) {
+			if (!inet_aton(site->ip, &sock.sin_addr)) {
 				close(fd);
 				set_user_status(ST_MMENU);
 				return;

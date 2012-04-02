@@ -109,7 +109,7 @@ int fill_shmfile(int mode, char* fname, char * shmkey);
 void showstuff(char *buf);
 int vote_flag(char *bname, char val, int mode);
 void check_register_info(void);
-void check_title(char *title);
+void check_title(char *title, size_t size);
 void CreateNameList(void);
 int digest_post(int ent, struct fileheader *fhdr, char *direct);
 int do_reply(struct fileheader *fh);

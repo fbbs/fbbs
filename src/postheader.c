@@ -11,13 +11,13 @@ extern int mailtoauther;
 char prefixbuf[MAX_PREFIX][6];
 int numofprefix;
 #endif
-void check_title(char *title)
+void check_title(char *title, size_t size)
 {
 	char temp[50];
 	trim(title);
 	if (!strncasecmp(title, "Re:", 3) && !HAS_PERM(PERM_SYSOPS)) {
 		snprintf(temp, sizeof(temp), "Re：%s", &title[3]);
-		strlcpy(title, temp, sizeof(temp));
+		strlcpy(title, temp, sizeof(title));
 	}
 	valid_title(title);
 }
@@ -202,7 +202,7 @@ int post_header(struct postheader *header)
 
 			//从当前行获得用户输入放到titlebuf中，最多存入50-1个字节(此处会阻塞在用户输入上，只到响应enter)
 			getdata(t_lines - 1, 0, "标题: ", titlebuf, 50, DOECHO, NA);
-			check_title(titlebuf);
+			check_title(titlebuf, sizeof(titlebuf));
 
 			//在用户输入为空的情况下，如果是发表文章则直接取消，如果是投条用户还可以继续，信头为没主题
 			if (titlebuf[0] == '\0') {

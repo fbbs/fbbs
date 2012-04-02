@@ -897,7 +897,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 			get_board(currboard, &board);
 			noreply = (fileinfo->accessed[0] & FILE_NOREPLY)
 					|| (board.flag & BOARD_NOREPLY_FLAG);
-			local_article = !(fileinfo->filename[STRLEN - 2] == 'S');
+			local_article = true;
 			if (!noreply || am_curr_bm()) {
 				do_reply(fileinfo);
 			} else {
@@ -2206,7 +2206,7 @@ int edit_title(int ent, struct fileheader *fileinfo, char *direct) {
 	getdata(t_lines - 1, 0, "新文章标题: ", buf, 50, DOECHO, NA);
 	if (!strcmp(buf, fileinfo->title))
 		return PARTUPDATE;
-	check_title(buf);
+	check_title(buf, sizeof(buf));
 	if (buf[0] != '\0') {
 		/*
 		 char    tmp[STRLEN * 2], *t;

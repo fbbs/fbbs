@@ -1024,7 +1024,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		ansi_filter(buf, save_title);
 		getdata(2, 0, "ÐÂ±êÌâ: ", buf, 50, DOECHO, NA);
 		if (strcmp(save_title, buf) && strlen(buf) != 0) {
-			check_title(buf);
+			check_title(buf, sizeof(buf));
 			strlcpy(save_title, buf, STRLEN);
 		}
 	} else if ((abort[0] == 's' || abort[0] == 'S') && (session.status == ST_POSTING)) {

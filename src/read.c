@@ -1706,7 +1706,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 				noreply = (ptitle->accessed[0] & FILE_NOREPLY)
 						|| (board.flag & BOARD_NOREPLY_FLAG);
 				if (!noreply || am_curr_bm()) {
-					local_article=!(ptitle->filename[STRLEN-1]=='S');
+					local_article = true;
 					do_reply(ptitle);
 				} else {
 					clear();
