@@ -24,4 +24,30 @@ typedef struct tui_list_t {
 
 extern int tui_list(tui_list_t *p);
 
+enum {
+	SLIDE_LIST_CURRENT = 0,
+	SLIDE_LIST_TOPDOWN,
+	SLIDE_LIST_PREV,
+	SLIDE_LIST_NEXT,
+	SLIDE_LIST_BOTTOMUP,
+};
+
+typedef int slide_list_loader_t;
+typedef void slide_list_title_t;
+typedef int slide_list_display_t;
+typedef int slide_list_handler_t;
+
+typedef struct slide_list_t {
+	int cur;
+	int update;
+	bool in_query;
+	void *data;
+	int (*loader)(struct slide_list_t *, int);
+	void (*title)(struct slide_list_t *);
+	int (*display)(struct slide_list_t *, int);
+	int (*handler)(struct slide_list_t *, int);
+} slide_list_t;
+
+extern int slide_list(slide_list_t *p);
+
 #endif // FB_TUI_LIST_H
