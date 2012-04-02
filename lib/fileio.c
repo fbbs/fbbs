@@ -264,10 +264,13 @@ int fb_flock(int fd, int operation)
 	switch (operation) {
 		case LOCK_EX:
 			type = F_WRLCK;
+			break;
 		case LOCK_SH:
 			type = F_RDLCK;
+			break;
 		default:
 			type = F_UNLCK;
+			break;
 	}
 
 	struct flock lock = { .l_type = type, .l_start = 0, .l_whence = SEEK_SET,

@@ -103,7 +103,6 @@ static void sysconf_addmenu(FILE *fp, const char *key, sysconf_t *conf)
 	menuitem_t *pm;
 	char buf[LINE_BUFSIZE];
 	char *cmd, *arg[5], *ptr;
-	int n;
 
 	sysconf_addkey(key, "menu", conf->items, conf);
 	while (fgets(buf, sizeof(buf), fp) != NULL && buf[0] != '%') {
@@ -111,8 +110,7 @@ static void sysconf_addmenu(FILE *fp, const char *key, sysconf_t *conf)
 		if (cmd == NULL || *cmd == '#')
 			continue;
 		arg[0] = arg[1] = arg[2] = arg[3] = arg[4] = "";
-		n = 0;
-		for (n = 0; n < 5; n++) {
+		for (int n = 0; n < 5; n++) {
 			if ((ptr = strtok(NULL, ",\n")) == NULL)
 				break;
 			while (*ptr == ' ' || *ptr == '\t')
