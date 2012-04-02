@@ -75,28 +75,29 @@ int t_query(const char *user);
 int vedit(char *filename, int write_header_to_file, int modifyheader);
 
 // Following function declarations are put here solely to eliminate warnings
-int Postfile(char *filename, char *nboard, char *posttitle, int mode);
+int Postfile(const char *filename, const char *nboard, const char *posttitle, int mode);
 char *setuserfile(char *buf, char *filename);
 void securityreport(char *str, int save, int mode);
 int set_safe_record(void);
 void abort_bbs(int nothing);
 int bm_log(const char *user, const char *name, int type, int value);
 void stand_title(char *title);
-int autoreport(char *title,char *str,int toboard,char *userid,int mode);
+int autoreport(const char *title, const char *str, int toboard,
+		const char *userid,int mode);
 int	check_systempasswd(void);
 int deltree(const char *dst);
 int gettheuserid(int x, char *title, int *id);
-void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize);
+void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize);
 void list_text(const char *file,
 		void (*title_show)(void),
-		int (*key_deal)(const char *, int, char *),
+		int (*key_deal)(const char *, int, const char *),
 		int (*check)(const char *));
 int m_new(void);
-int set_ann_path(char *title, char *path, int mode);
+int set_ann_path(const char *title, const char *path, int mode);
 struct MENU;
 int a_a_Import(struct MENU *pm, int msg, int menuitem);
-int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
-		char title[STRLEN]);
+int add_grp(const char *group, const char *gname,
+		const char *bname, const char *title);
 int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
 		char * direct, int nomsg);
 int Goodbye(void);
@@ -154,7 +155,7 @@ bool garbage_line(const char *str);
 int Q_Goodbye(void);
 int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 		int response);
-int acction_mode(int ent, struct fileheader *fileinfo, char *direct);
+int acction_mode(int ent, struct fileheader *fileinfo, const char *direct);
 void Add_Combine(char *board, struct fileheader *fileinfo, int has_cite);
 void add_crossinfo(char *filepath, int mode);
 int AddNameList(const char *name);

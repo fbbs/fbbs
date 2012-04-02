@@ -104,7 +104,8 @@ int	check_systempasswd(void)
 //			userid		发送到的用户名,为null则不发送.
 //			mode		分别奖惩,1表示BMS任命,0表示deliver处罚
 //					2表示当前用户
-int autoreport(char *title,char *str,int toboard,char *userid,int mode)
+int autoreport(const char *title, const char *str, int toboard,
+		const char *userid,int mode)
 {
 	FILE	*se;
     char	fname[STRLEN];

@@ -35,7 +35,7 @@ int a_fmode = 0;
 typedef struct MENU {
 	ITEM *item[MAXITEMS];
 	char mtitle[STRLEN];
-	char *path;
+	const char *path;
 	int num, page, now;
 	int level;
 } MENU;
@@ -146,7 +146,8 @@ void a_showmenu(MENU *pm) {
 //	显示名称为 title
 //	硬盘存储名为 fname
 //	但是只保存在内存中,并未实际存储在硬盘中
-void a_additem(MENU *pm, char *title, char *fname) {
+static void a_additem(MENU *pm, const char *title, const char *fname)
+{
 	ITEM *newitem;
 	if (pm->num < MAXITEMS) {
 		newitem = (ITEM *) malloc(sizeof(ITEM));
@@ -1707,7 +1708,8 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 }
 
 //将文件名为fname,标题为title的文件加入到精华区中路径为path处保存
-int linkto(char *path, char *fname, char *title) {
+static int linkto(const char *path, const char *fname, const char *title)
+{
 	MENU pm;
 	pm.path = path;
 
@@ -1720,8 +1722,9 @@ int linkto(char *path, char *fname, char *title) {
 	return 0;
 }
 
-int add_grp(char group[STRLEN], char gname[STRLEN], char bname[STRLEN],
-		char title[STRLEN]) {
+int add_grp(const char *group, const char *gname,
+		const char *bname, const char *title)
+{
 	FILE *fn;
 	char buf[PATHLEN];
 	char searchname[STRLEN];
@@ -2041,7 +2044,8 @@ int load_import_path() {
 	return 1;
 }
 
-int change_ann_path(int index, char* title, char *path, int mode) {
+static int change_ann_path(int index, const char *title, const char *path, int mode)
+{
 	import_path[index].num = index;
 	char anntitle[STRLEN];
 	strlcpy(anntitle, title, STRLEN);
@@ -2084,7 +2088,8 @@ int clear_ann_path(void)
 //show_mode == 0	丝路名
 //show_mode == 1	丝路精华区目录
 //show_mode == 2	丝路档名
-int set_ann_path(char *title, char *path, int mode) {
+int set_ann_path(const char *title, const char *path, int mode)
+{
 	int from = curr_annpath / A_PAGESIZE * A_PAGESIZE, to = 0;
 	int ch;
 	int redrawflag = 1;

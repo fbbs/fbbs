@@ -73,7 +73,7 @@ static int text_find(FILE *fp, int n, const char *str)
  */
 void list_text(const char *file,
 		void (*title_show)(void),
-		int (*key_deal)(const char *, int, char *),
+		int (*key_deal)(const char *, int, const char *),
 		int (*check)(const char *))
 {
 	bool redraw = true, empty = true;
@@ -255,7 +255,7 @@ static void reason_title_show(void)
  * @param[in] line Current line content.
  * @return redraw the screen or not (1/0).
  */
-static int reason_key_deal(const char *file, int ch, char *line)
+static int reason_key_deal(const char *file, int ch, const char *line)
 {
 	if (!line)
 		return 0;
@@ -491,7 +491,7 @@ static void deny_release(const char *line)
  * @param[in] line Current line.
  * @return Whether redraw the screen.
  */
-static int deny_key_deal(const char *file, int ch, char *line)
+static int deny_key_deal(const char *file, int ch, const char *line)
 {
 	switch (ch) {
 		case 'a':

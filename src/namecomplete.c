@@ -58,7 +58,8 @@ void CreateNameList(void)
 	current = NULL;
 }
 
-int SeekInNameList(char *name) {
+static int SeekInNameList(const char *name)
+{
 	struct word *p;
 	if (name == NULL || !strcmp(name, ""))
 		return 0;

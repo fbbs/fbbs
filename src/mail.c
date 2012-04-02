@@ -271,7 +271,7 @@ m_internet()
 #endif
 
 #ifdef INTERNET_EMAIL
-static int bbs_sendmail(char *fname, char *title, char *receiver, int filter, int mime)
+static int bbs_sendmail(const char *fname, const char *title, const char *receiver, int filter, int mime)
 {
 	FILE *fin, *fout;
 	sprintf(genbuf, "%s -f %s.bbs@%s %s", MTA,
@@ -718,28 +718,18 @@ int m_new(void)
 	return -1;
 }
 
-/*
- void
- mailtitle()
- {
- showtitle("ĞÅ¼şÑ¡µ¥    ", BoardName);
- prints("Àë¿ª[[1;32m¡û[m,[1;32me[m]  Ñ¡Ôñ[[1;32m¡ü[m,[1;32m¡ı[m]  ÔÄ¶ÁĞÅ¼ş[[1;32m¡ú[m,[1;32mRtn[m]  »ØĞÅ[[1;32mR[m]  ¿³ĞÅ£¯Çå³ı¾ÉĞÅ[[1;32md[m,[1;32mD[m]  ÇóÖú[[1;32mh[m][m\n");
- prints("[1;44m ±àºÅ  %-12s %6s  %-50s[m\n", "·¢ĞÅÕß", "ÈÕ  ÆÚ", "±ê  Ìâ");
- clrtobot();
- }
- */
-void mailtitle() {
+int mailtitle(void)
+{
 	int total, used;
 	total=getmailboxsize(currentuser.userlevel) ;
 	used=getmailsize(currentuser.userid);
 	showtitle("ĞÅ¼şÑ¡µ¥    ", BoardName);
-	prints(" Àë¿ª[[1;32m¡û[m,[1;32me[m] Ñ¡Ôñ[[1;32m¡ü[m, [1;32m¡ı[m] ÔÄ¶ÁĞÅ¼ş[[1;32m¡ú[m,[1;32mRtn[m] »Ø ĞÅ[[1;32mR[m] ¿³ĞÅ£¯Çå³ı¾ÉĞÅ[[1;32md[m,[1;32mD[m] ÇóÖú[[1;32mh[m][m\n");
-	//Modified by IAMFAT 2002-05-26
-	//prints("[1;44m±àºÅ   ·¢ĞÅÕß       ÈÕ ÆÚ      ±êÌâ  ([33mÄúµÄĞÅÏäÈİÁ¿Îª[%4dK]£¬µ±Ç°ÒÑÓÃ[%4dK][37m) [m\n",total,used);
+	prints(" Àë¿ª[\033[1;32m¡û\033[m,\033[1;32me\033[m] Ñ¡Ôñ[\033[1;32m¡ü\033[m, \033[1;32m¡ı\033[m] ÔÄ¶ÁĞÅ¼ş[\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m] »Ø ĞÅ[\033[1;32mR\033[m] ¿³ĞÅ£¯Çå³ı¾ÉĞÅ[\033[1;32md\033[m,\033[1;32mD\033[m] ÇóÖú[\033[1;32mh\033[m]\033[m\n");
 	prints(
-			"[1;44m ±àºÅ   ·¢ĞÅÕß        ÈÕÆÚ   ±êÌâ    ([33mÄúµÄĞÅÏäÈİÁ¿Îª[%5dK]£¬µ±Ç°ÒÑÓÃ[%4dK][37m) [m\n",
+			"\033[1;44m ±àºÅ   ·¢ĞÅÕß        ÈÕÆÚ   ±êÌâ    (\033[33mÄúµÄĞÅÏäÈİÁ¿Îª[%5dK]£¬µ±Ç°ÒÑÓÃ[%4dK]\033[37m) \033[m\n",
 			total, used);
-	clrtobot() ;
+	clrtobot();
+	return 0;
 }
 
 // Check if user exceeds mail quota or max number of mails.
@@ -1208,7 +1198,7 @@ static db_res_t *load_names_of_follows(void)
 			" WHERE f.follower = %"DBIdUID, session.uid);
 }
 
-static int do_gsend(char *userid, char *title, int num, char current_maillist)
+static int do_gsend(char **userid, char *title, int num, char current_maillist)
 {
 	struct stat st;
 	char filepath[STRLEN], tmpfile[STRLEN];

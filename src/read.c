@@ -387,7 +387,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 	return mode;
 }
 
-void i_read(int cmdmode, char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize) {
+void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize) {
 	struct keeploc * locmem;
 	char lbuf[11];
 	char * ptr;
@@ -896,7 +896,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 					mail_mark(locmem->crs_line, &SR_fptr, currdirect);
 					break;
 				case 4:
-					a_Import("0Announce",currboard,NULL, &SR_fptr,annpath, YEA);
+					a_Import("0Announce",currboard, 0, &SR_fptr,annpath, YEA);
 					break;
 					/* Add by everlove 制作合集 */
 				case 7:
@@ -933,7 +933,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 					digest_post(locmem->crs_line, &SR_fptr, currdirect);
 					break;
 				case 4:
-					a_Import("0Announce",currboard,NULL, &SR_fptr,annpath, YEA);
+					a_Import("0Announce",currboard, 0, &SR_fptr,annpath, YEA);
 					break;
 				case 5:
 					makeDELETEDflag(locmem->crs_line,&SR_fptr,currdirect);
@@ -1157,7 +1157,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 				break;
 			}
 			case 5:
-				a_Import("0Announce", currboard, NULL, &fhdr, annpath, YEA);
+				a_Import("0Announce", currboard, 0, &fhdr, annpath, YEA);
 				//a_Import( "0Announce", currboard, locmem->crs_line, &fhdr, currdirect, YEA);
 				break;
 			case 6:

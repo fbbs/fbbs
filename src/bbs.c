@@ -279,7 +279,8 @@ void Poststring(char *str, char *nboard, char *posttitle, int mode)
 
 /* add end */
 
-int Postfile(char *filename, char *nboard, char *posttitle, int mode) {
+int Postfile(const char *filename, const char *nboard, const char *posttitle, int mode)
+{
 	//char bname[STRLEN];
 	char dbname[STRLEN];
 
@@ -1035,7 +1036,7 @@ void do_acction(int type) {
 	}
 }
 
-int acction_mode(int ent, struct fileheader *fileinfo, char *direct)
+int acction_mode(int ent, struct fileheader *fileinfo, const char *direct)
 {
 	int type;
 	extern char currdirect[STRLEN];

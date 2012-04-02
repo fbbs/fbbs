@@ -107,7 +107,7 @@ static void club_title_show(void)
 /**
  *
  */
-static int club_key_deal(const char* fname, int ch, char* line)
+static int club_key_deal(const char *fname, int ch, const char *line)
 {
 	char user[IDLEN + 1], buf[STRLEN];
 	if (line) {

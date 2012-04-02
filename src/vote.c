@@ -52,7 +52,7 @@ static void setlistrange(int i)
 	range = i;
 }
 
-static int choose(int update, int defaultn, int (*title_show)(),
+static int choose(int update, int defaultn, void (*title_show)(),
 		int (*key_deal)(), int (*list_show)(), int (*read)())
 {
 	int num = 0;
