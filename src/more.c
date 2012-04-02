@@ -116,7 +116,7 @@ void ActiveBoard_Init( void )
 	return ;
 }
 
-void setcalltime( void )
+int setcalltime(void)
 {
 	char    ans[6];
 	int     ttt;
@@ -124,8 +124,9 @@ void setcalltime( void )
 	clrtoeol();
 	getdata(1, 0, "几分钟后要系统提醒您: ", ans, 3, DOECHO, YEA);
 	ttt = atoi(ans);
-	if (ttt <= 0) return;
-	calltime = time(0) + ttt * 60;
+	if (ttt > 0)
+		calltime = time(0) + ttt * 60;
+	return 0;
 }
 
 static int morekey(void)
@@ -284,7 +285,7 @@ int check_calltime(void)
 	return 0;
 }
 
-void R_monitor()
+void R_monitor(int unused)
 {
 	if (session.status != ST_MMENU)
 		return;
@@ -925,7 +926,7 @@ int ansimore4(char *filename, int promptend, char *board, char *path, int ent)
 	return rawmore2(filename, promptend, 0, 0, NA);
 }
 
-int ansimore(char *filename, int promptend)
+int ansimore(const char *filename, int promptend)
 {
 	int ch;
 	clear();

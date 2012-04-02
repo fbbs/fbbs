@@ -340,7 +340,7 @@ int domenu(const char *menu_name)
 	set_user_status(ST_MMENU);
 
 	// TODO: deprecate
-	R_monitor();
+	R_monitor(0);
 
 	while (1) {
 		printacbar();
@@ -367,7 +367,7 @@ int domenu(const char *menu_name)
 				}
 				draw_menu(pm);
 				set_user_status(ST_MMENU);
-				R_monitor();
+				R_monitor(0);
 				break;
 			case KEY_RIGHT:
 				for (i = 0; i < size; i++) {
@@ -404,7 +404,7 @@ int domenu(const char *menu_name)
 					}
 					draw_menu(pm);
 					set_user_status(ST_MMENU);
-					R_monitor();
+					R_monitor(0);
 				}
 				break;
 			case KEY_LEFT:

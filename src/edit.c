@@ -147,7 +147,7 @@ static void display_buffer(void)
 	return;
 }
 
-void msg(void)
+void msg(int unused)
 {
 	int x, y;
 	int tmpansi;
@@ -271,7 +271,7 @@ void set()
 	sprintf(theinfo,"自动换行: 每行最多字符数(10 -- %d)[%d]: ",
 			WRAPMARGIN-1,linelen-1);
 	getdata(23,0,theinfo,tmp,7,DOECHO,YEA);
-	msg();
+	msg(0);
 	if( tmp[0] == '\0')return;
 	templinelen = atoi(tmp) + 1;
 	if ( templinelen < 11 ) templinelen = 11;
@@ -287,7 +287,7 @@ void go() {
 
 	signal(SIGALRM, SIG_IGN);
 	getdata(23, 0, "请问要跳到第几行: ", tmp, 7, DOECHO, YEA);
-	msg();
+	msg(0);
 	if (tmp[0] == '\0')
 		return;
 	line = atoi(tmp);
@@ -327,7 +327,7 @@ void search() {
 
 	signal(SIGALRM, SIG_IGN);
 	getdata(t_lines-1, 0, "搜寻字串: ", tmp, 65, DOECHO, YEA);
-	msg();
+	msg(0);
 	if (tmp[0] == '\0')
 		return;
 	else
@@ -1014,7 +1014,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			unlink(filename);
 		aborted = -1;
 	} else if (abort[0] == 'e' || abort[0] == 'E') {
-		msg();
+		msg(0);
 		return KEEP_EDITING;
 	} else if ((abort[0] == 't' || abort[0] == 'T')
 			&& session.status == ST_POSTING) {
@@ -1684,7 +1684,7 @@ int vedit(char *filename, int write_header_to_file, int modifyheader) {
 		linelen = WRAPMARGIN;
 	}
 	ismsgline = (DEFINE(DEF_EDITMSG)) ? 1 : 0;
-	msg();
+	msg(0);
 	ans = raw_vedit(filename, write_header_to_file, modifyheader);
 	showansi = t;
 	signal(SIGALRM, SIG_IGN);

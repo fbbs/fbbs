@@ -55,15 +55,15 @@ int seekthestr(const char *str, int num);
 // src/more.c
 
 void ActiveBoard_Init(void);
-void setcalltime(void);
+int setcalltime(void);
 int countln(char *fname);
 void netty_more(void);
 void printacbar(void);
 int check_calltime(void);
-void R_monitor(void);
+void R_monitor(int);
 int msg_more(void);
 int ansimore4(char *filename, int promptend, char *board, char *path, int ent);
-int ansimore(char *filename, int promptend);
+int ansimore(const char *filename, int promptend);
 int ansimore2(char *filename, int promptend, int row, int numlines);
 void show_help(const char *fname);
 int mainreadhelp(void);
@@ -130,7 +130,7 @@ void setquotefile(const char *filepath);
 void setvfile(char *buf, const char *bname, const char *filename);
 void show_issue(void);
 void show_message(const char *msg);
-void shownotepad(void);
+int shownotepad(void);
 int show_statshm(char* fh, int mode);
 int s_msg(void);
 int sread(int readfirst, int auser, struct fileheader *ptitle);

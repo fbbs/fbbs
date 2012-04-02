@@ -230,11 +230,11 @@ char *setbdir(char *buf, char *boardname)
 	return buf;
 }
 
-void shownotepad(void)
+int shownotepad(void)
 {
 	set_user_status(ST_NOTEPAD);
 	ansimore("etc/notepad", YEA);
-	return;
+	return 0;
 }
 
 int uleveltochar(char *buf, unsigned int lvl) {
@@ -392,7 +392,7 @@ static int bm_color(const char *uname)
 }
 
 // Show title when entering a board.
-static void readtitle(void)
+static int readtitle(void)
 {
 	int i, j, bnum;
 	char tmp[STRLEN];
@@ -524,6 +524,7 @@ static void readtitle(void)
 		}
 	}
 	clrtobot();
+	return 0;
 }
 
 char *getshortdate(time_t time) {
