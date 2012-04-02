@@ -139,48 +139,4 @@ struct countheader {
 };
 //End IAMFAT
 
-
-typedef struct _ANONCACHE { //wwwƒ‰√˚”√ªßª∫≥Â
-	time_t item[MAX_ANON];
-	int next[MAX_ANON];
-	int freenode;
-	int usednode;
-	int used;
-} ANONCACHE;
-
-typedef struct _NUMFONT {
-	int width;
-	int height;
-	char empty[80];
-	char map[10][20][80];
-} NUMFONT;
-
-#define TEMPLATE_DIR ".templ"
-#define MAX_TEMPLATE 10
-#define MAX_CONTENT 20
-#define TMPL_BM_FLAG 0x1
-#define TMPL_NOW_VERSION 1
-
-struct s_content {
-	char text[50];
-	int length;
-};
-
-struct s_template {
-	char title[50];
-	char title_prefix[20];
-	int content_num;
-	char filename[STRLEN];
-	int flag;
-	int version;
-	char unused[16];
-	char title_tmpl[STRLEN];
-};
-
-struct a_template {
-	struct s_template * tmpl;
-	struct s_content * cont;
-};
-
 #endif //FB_STRUCT_H
-
