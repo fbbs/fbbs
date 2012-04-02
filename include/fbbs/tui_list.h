@@ -1,6 +1,8 @@
 #ifndef FB_TUI_LIST_H
 #define FB_TUI_LIST_H
 
+#include <stdbool.h>
+
 typedef int tui_list_loader_t;
 typedef void tui_list_title_t;
 typedef int tui_list_display_t;
@@ -24,13 +26,13 @@ typedef struct tui_list_t {
 
 extern int tui_list(tui_list_t *p);
 
-enum {
+typedef enum {
 	SLIDE_LIST_CURRENT = 0,
 	SLIDE_LIST_TOPDOWN,
 	SLIDE_LIST_PREV,
 	SLIDE_LIST_NEXT,
 	SLIDE_LIST_BOTTOMUP,
-};
+} slide_list_base_e;
 
 typedef int slide_list_loader_t;
 typedef void slide_list_title_t;
@@ -42,7 +44,7 @@ typedef struct slide_list_t {
 	int update;
 	bool in_query;
 	void *data;
-	int (*loader)(struct slide_list_t *, int);
+	int (*loader)(struct slide_list_t *, slide_list_base_e);
 	void (*title)(struct slide_list_t *);
 	int (*display)(struct slide_list_t *, int);
 	int (*handler)(struct slide_list_t *, int);

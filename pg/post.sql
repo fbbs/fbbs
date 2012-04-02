@@ -14,6 +14,7 @@ CREATE TABLE posts_base (
 
 	replies INTEGER DEFAULT 0,
 	comments INTEGER DEFAULT 0,
+	score INTEGER DEFAULT 0,
 
 	title TEXT,
 	content TEXT

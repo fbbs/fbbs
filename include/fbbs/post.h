@@ -8,6 +8,21 @@
 #define ANONYMOUS_NICK    "我是匿名天使"
 #define ANONYMOUS_SOURCE  "匿名天使的家"
 
+typedef int64_t post_id_t;
+#define PRIdPID  PRId64
+#define DBIdPID  "l"
+#define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
+
+enum {
+	POST_FLAG_DIGEST = 0x1,
+	POST_FLAG_MARKED = 0x2,
+	POST_FLAG_LOCKED = 0x4,
+	POST_FLAG_IMPORT = 0x8,
+	POST_FLAG_STICKY = 0x10,
+
+	POST_TITLE_CCHARS = 33,
+};
+
 typedef struct {
 	bool autopost;
 	bool crosspost;

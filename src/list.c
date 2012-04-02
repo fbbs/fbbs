@@ -188,19 +188,13 @@ int slide_list(slide_list_t *p)
 			case 'b':
 			case Ctrl('B'):
 			case KEY_PGUP:
-				if (p->cur == 0)
-			type = SLIDE_LIST_BOTTOMUP;
-				else
-					type = SLIDE_LIST_PREV;
+				type = SLIDE_LIST_PREV;
 				break;
 			case 'N':
 			case Ctrl('F'):
 			case KEY_PGDN:
 			case ' ':
-				if (p->cur == BBS_PAGESIZE - 1)
-			type = SLIDE_LIST_TOPDOWN;
-				else
-					type = SLIDE_LIST_NEXT;
+				type = SLIDE_LIST_NEXT;
 				break;
 			case 'k':
 			case KEY_UP:
