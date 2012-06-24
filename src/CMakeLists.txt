@@ -24,7 +24,7 @@ target_link_libraries(chatd fbbs)
 add_executable(thread thread.c)
 target_link_libraries(thread fbbs)
 
-add_library(admintool MODULE admintool.c title_admin.c)
+add_library(admintool MODULE admintool.c title_admin.c money_admin.c)
 
 install(TARGETS bbsd miscd chatd thread
 	RUNTIME DESTINATION bin)
