@@ -5,7 +5,7 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-typedef int (*callback_t)(const char *, const char *, int64_t);
+typedef int (*callback_t)(const char *, const char *, money_t);
 
 enum {
 	NOTE_CCHARS = 30,
@@ -41,7 +41,7 @@ static int parse(const char *file, callback_t cb)
 				fclose(fp);
 				return -line;
 			}
-			int value = strtol(ptr, NULL, 10);
+			money_t value = strtol(ptr, NULL, 10);
 
 			if (cb) {
 				if ((*cb)(utf8_notes, name, value * 100) < 0) {
@@ -60,7 +60,7 @@ static bool check_for_errors(const char *file)
 	return (parse(file, NULL) < 0);
 }
 
-static int callback(const char *note, const char *name, int64_t delta)
+static int callback(const char *note, const char *name, money_t delta)
 {
 	user_id_t uid = 0;
 	db_res_t *res = db_query("SELECT id FROM alive_users"
@@ -79,18 +79,18 @@ static int callback(const char *note, const char *name, int64_t delta)
 	db_clear(res);
 
 	res = db_cmd("INSERT INTO audit.money (user_id, delta, stamp, reason)"
-			" VALUES (%"DBIdUID", %d, current_timestamp, %s || ' ' || %s)",
+			" VALUES (%"DBIdUID", %"DBIdMONEY","
+			" current_timestamp, %s || ' ' || %s)",
 			uid, delta, note, currentuser.userid);
 	if (!res)
 		return -1;
 	db_clear(res);
 
-	res = db_cmd("UPDATE users SET money = money + %l WHERE id = %d",
+	res = db_cmd("UPDATE users SET money = money + %"DBIdMONEY
+			" WHERE id = %"DBIdUID,
 			delta, uid);
-	if (!res) {
-		report(PQerrorMessage(env.d), currentuser.userid);
+	if (!res)
 		return -1;
-	}
 	db_clear(res);
 
 	return 0;
