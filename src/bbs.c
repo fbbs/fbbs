@@ -2506,7 +2506,7 @@ int delete_range(char *filename, int id1, int id2)
 			}
 		}
 		if (ret == 0) {
-			memcpy(wptr, rptr, m.size - sizeof(struct fileheader) * id2);
+			memmove(wptr, rptr, m.size - sizeof(struct fileheader) * id2);
 			mmap_truncate(&m, m.size - sizeof(struct fileheader) * deleted);
 		}
 	}
