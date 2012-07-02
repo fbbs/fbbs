@@ -387,7 +387,7 @@ static void more_close(more_file_t *more)
  */
 static ssize_t more_getline(more_file_t *d)
 {
-	static const char code[] = "[0123456789;";
+	const char *code = "[0123456789;";
 	if (d->width < 2) {
 		return -1;
 	}
