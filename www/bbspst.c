@@ -7,39 +7,6 @@
 #include "fbbs/post.h"
 #include "fbbs/web.h"
 
-int web_quotation(const char *str, size_t size, const char *owner, bool ismail)
-{
-	printf("【 在 %s 的%s中提到: 】\n", owner, ismail ? "来信" : "大作");
-	int lines = 0;
-	const char *start = str;
-	const char *end = str + size;
-	for (const char *ptr = start; ptr != end; start = ++ptr) {
-		while (ptr != end && *ptr != '\n') {
-			++ptr;
-		}
-		if (ptr == end) {
-			xml_fputs2(start, ptr - start, stdout);
-			break;
-		} else {
-			if (ptr == start)
-				continue;
-			if (!strncmp(start, ": 【", 4) || !strncmp(start, ": : ", 4))
-				continue;
-			if (!strncmp(start, "--\n", 3))
-				break;
-			if (lines++ < 3)
-				continue;			
-			if (lines >= 10) {
-				fputs(": .................（以下省略）", stdout);
-				break;
-			}
-			fwrite(": ", sizeof(char), 2, stdout);
-			xml_fputs2(start, ptr - start + 1, stdout);
-		}
-	}
-	return lines;	
-}
-
 static void get_post_body(char **begin, char **end)
 {
 	char *ptr = *begin, *e = *end;
@@ -118,7 +85,7 @@ static int do_bbspst(bool isedit)
 			if (end > begin)
 				xml_fputs2(begin, end - begin, stdout);
 		} else {
-			web_quotation(m.ptr, m.size, fh.owner, false);
+			quote_string(m.ptr, m.size, NULL, QUOTE_AUTO, false, xml_fputs3);
 		}
 		mmap_close(&m);
 		fputs("</po>", stdout);

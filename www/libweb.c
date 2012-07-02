@@ -155,6 +155,12 @@ void xml_fputs(const char *s, FILE *stream)
 	xml_fputs2(s, 0, stream);
 }
 
+size_t xml_fputs3(const char *s, size_t size, FILE *stream)
+{
+	xml_fputs2(s, size, stdout);
+	return 0;
+}
+
 /**
  * Print a file with XML escaped.
  * @param file filename to print
