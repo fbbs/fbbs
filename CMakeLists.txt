@@ -29,6 +29,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 set(CMAKE_REQUIRED_INCLUDES "/usr/local/include/;${CMAKE_REQUIRED_INCLUDES}")
 include_directories("include" "/usr/local/include")
+if(ENABLE_PG)
+	set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES};/usr/include/postgresql")
+	include_directories("include" "/usr/include/postgresql")
+endif(ENABLE_PG)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(FB_XOPEN_SOURCE_DEFINE -D_XOPEN_SOURCE=600)
