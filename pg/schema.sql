@@ -56,7 +56,7 @@ CREATE SCHEMA audit;
 
 CREATE TABLE audit.money (
 	user_id INTEGER NOT NULL,
-	delta INTEGER NOT NULL,
+	delta BIGINT NOT NULL,
 	stamp TIMESTAMPTZ NOT NULL,
 	reason TEXT
 );

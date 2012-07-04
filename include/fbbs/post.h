@@ -8,6 +8,14 @@
 #define ANONYMOUS_NICK    "我是匿名天使"
 #define ANONYMOUS_SOURCE  "匿名天使的家"
 
+enum {
+	QUOTE_NOTHING = 'N',
+	QUOTE_AUTO = 'R',
+	QUOTE_LONG = 'Y',
+	QUOTE_SOURCE = 'S',
+	QUOTE_ALL = 'A',
+};
+
 typedef struct {
 	bool autopost;
 	bool crosspost;
@@ -27,6 +35,11 @@ typedef struct {
 } post_request_t;
 
 extern unsigned int do_post_article(const post_request_t *pr);
+
+extern void quote_string(const char *str, size_t size, const char *output,
+		int mode, bool mail, size_t (*filter)(const char *, size_t, FILE *));
+extern void quote_file_(const char *orig, const char *output, int mode,
+		bool mail, size_t (*filter)(const char *, size_t, FILE *));
 
 #endif // FB_POST_H
 
