@@ -795,11 +795,13 @@ static bool alter_board_descr(board_t *bp)
 
 static bool alter_board_parent(board_t *bp)
 {
-	char bname[BOARD_NAME_LEN + 1];
-	board_complete(15, "输入所属讨论区名: ", bname, sizeof(bname),
+	GBK_UTF8_BUFFER(bname, BOARD_NAME_LEN / 2);
+	board_complete(15, "输入所属讨论区名: ", gbk_bname, sizeof(gbk_bname),
 			AC_LIST_DIR_ONLY);
+	convert_g2u(gbk_bname, utf8_bname);
+
 	board_t parent;
-	get_board(bname, &parent);
+	get_board(utf8_bname, &parent);
 
 	db_res_t *res = db_cmd("UPDATE boards SET parent = %d WHERE id = %d",
 			parent.id, bp->id);
