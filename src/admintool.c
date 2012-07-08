@@ -567,20 +567,8 @@ static int insert_categ(const char *categ)
 	return 0;
 }
 
-int tui_new_board(const char *cmd)
+static int set_board_name(char *bname, size_t size)
 {
-	if (!(HAS_PERM(PERM_BLEVELS)))
-		return 0;
-
-	set_user_status(ST_ADMIN);
-	if (!check_systempasswd()) {
-		return 0;
-	}
-
-	clear();
-	stand_title("开启新讨论区");
-
-	char bname[BOARD_NAME_LEN + 1];
 	while (1) {
 		getdata(2, 0, "讨论区名称:   ", bname, sizeof(bname), DOECHO, YEA);
 		if (*bname) {
@@ -597,7 +585,27 @@ int tui_new_board(const char *cmd)
 		if (valid_board_name(bname))
 			break;
 		prints("\n不合法名称!!");
+		return -1;
 	}
+	return 0;
+}
+
+int tui_new_board(const char *cmd)
+{
+	if (!(HAS_PERM(PERM_BLEVELS)))
+		return 0;
+
+	set_user_status(ST_ADMIN);
+	if (!check_systempasswd()) {
+		return 0;
+	}
+
+	clear();
+	stand_title("开启新讨论区");
+
+	char bname[BOARD_NAME_LEN + 1];
+	if (set_board_name(bname, sizeof(bname)) != 0)
+		return -1;
 
 	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
 	getdata(3, 0, "讨论区说明: ", gbk_descr, sizeof(gbk_descr), DOECHO, YEA);
