@@ -14,8 +14,8 @@ CREATE TABLE users (
 	email INTEGER REFERENCES emails,
 	alive BOOLEAN DEFAULT TRUE,
 	money BIGINT DEFAULT 0,
+	contrib BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
-	paid_posts INTEGER DEFAULT 0,
 	title TEXT
 );
 

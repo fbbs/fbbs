@@ -86,13 +86,6 @@ static int callback(const char *note, const char *name, money_t delta)
 		return -1;
 	db_clear(res);
 
-	res = db_cmd("UPDATE users SET money = money + %"DBIdMONEY
-			" WHERE id = %"DBIdUID,
-			delta, uid);
-	if (!res)
-		return -1;
-	db_clear(res);
-
 	return 0;
 }
 
