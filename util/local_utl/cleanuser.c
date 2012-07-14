@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 
 		int val = compute_user_value(&user);
 
-		if (user.userid[0] != '\0' && val < -30) {
+		if (user.userid[0] != '\0' && val < 0) {
 			user.userid[sizeof(user.userid) - 1] = '\0';
 
 			if (pretend) {
