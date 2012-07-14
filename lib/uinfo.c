@@ -210,6 +210,23 @@ const char *horoscope(char month, char day)
 	return ("²»Ïê×ù");
 }
 
+enum {
+	HP_NEW = 14,
+#ifdef FDQUAN
+	HP_NORMAL1 = 150,
+	HP_NORMAL2 = 365,
+	HP_NORMAL3 = 666,
+	HP_PERMANENT = 999,
+#else
+	HP_NORMAL1 = 180,
+	HP_NORMAL2 = 240,
+	HP_LONG1 = 365,
+	HP_LONG2 = 527,
+	HP_PERMANENT1 = 666,
+	HP_PERMANENT2 = 999,
+#endif
+};
+
 /**
  * Compute user's hp.
  * @param urec User record.
@@ -217,45 +234,39 @@ const char *horoscope(char month, char day)
  */
 int compute_user_value(const struct userec *urec)
 {
-	int value, value2;
 	time_t now = time(NULL);
-	value = (now - urec->lastlogin);
-	value2 = (now - urec->firstlogin);
-	// new user should register in 30 mins
-	if (strcmp(urec->userid, "new") == 0) {
-		return 30 * 60 - value;
-	}
+	int deduction = (now - urec->lastlogin) / (24 * 60 * 60);
+	int rdays = (now - urec->firstlogin) / (24 * 60 * 60);
+
 #ifdef FDQUAN
 	if ((urec->userlevel & PERM_XEMPT)
-			|| strcmp(urec->userid, "SYSOP") == 0
-			|| strcmp(urec->userid, "guest") == 0)
-		return 999;
+			|| streq(urec->userid, "SYSOP") || streq(urec->userid, "guest"))
+		return HP_PERMANENT;
 	if (!(urec->userlevel & PERM_REGISTER))
-		return 14 - value / (24 * 60 * 60);
-	if (value2 >= 5 * 365 * 24 * 60 * 60)
-		return 666 - value / (24 * 60 * 60);
-	if (value2 >= 2 * 365 * 24 * 60 * 60)
-		return 365 - value / (24 * 60 * 60);
-	return 150 - value / (24 * 60 * 60);
+		return HP_NEW - deduction;
+	if (rdays >= 5 * 365)
+		return HP_NORMAL3 - deduction;
+	if (rdays >= 2 * 365)
+		return HP_NORMAL2 - deduction;
+	return HP_NORMAL1 - deduction;
 #else
 	if (((urec->userlevel & PERM_XEMPT) 
 			&& (urec->userlevel & PERM_LONGLIFE))
-			|| strcmp(urec->userid, "SYSOP") == 0
-			|| strcmp(urec->userid, "guest") == 0)
-		return 999;
+			|| streq(urec->userid, "SYSOP") || streq(urec->userid, "guest"))
+		return HP_PERMANENT2;
 	if ((urec->userlevel & PERM_XEMPT) 
 			&& !(urec->userlevel & PERM_LONGLIFE))
-		return 666;
+		return HP_PERMANENT1;
 	if (!(urec->userlevel & PERM_REGISTER))
-		return 14 - value / (24 * 60 * 60);
+		return HP_NEW - deduction;
 	if (urec->userlevel & PERM_SPECIAL1 && !(urec->userlevel & PERM_SPECIAL0))
-		return 527 - value / (24 * 60 * 60);
+		return HP_LONG2 - deduction;
 	if (!(urec->userlevel & PERM_XEMPT)
 			&& (urec->userlevel	& PERM_LONGLIFE))
-		return 365 - value / (24 * 60 * 60);
-	if (value2 >= 3 * 365 * 24 * 60 * 60)
-		return 180 - value / (24 * 60 * 60);
-	return 120 - value / (24 * 60 * 60);
+		return HP_LONG1 - deduction;
+	if (rdays >= 2 * 365)
+		return HP_NORMAL2 - deduction;
+	return HP_NORMAL1 - deduction;
 #endif
 }
 
@@ -376,7 +387,7 @@ int uinfo_load(const char *name, uinfo_t *u)
 
 	u->res = db_exec_query(env.d, true, "SELECT title"
 #ifdef ENABLE_BANK
-			", money, rank"
+			", money, rank, contrib"
 #endif
 			" FROM alive_users WHERE lower(name) = lower(%s)", name);
 	if (!u->res)
@@ -386,6 +397,7 @@ int uinfo_load(const char *name, uinfo_t *u)
 #ifdef ENABLE_BANK
 	u->money = db_get_bigint(u->res, 0, 1);
 	u->rank = db_get_float(u->res, 0, 2);
+	u->contrib = db_get_bigint(u->res, 0, 3);
 #endif
 	return 0;
 }
