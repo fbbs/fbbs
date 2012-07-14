@@ -391,7 +391,7 @@ static void more_close(more_file_t *more)
  */
 static ssize_t more_getline(more_file_t *d)
 {
-	static const char code[] = "[0123456789;";
+	const char *code = "[0123456789;";
 	if (d->width < 2) {
 		return -1;
 	}
@@ -429,7 +429,7 @@ static ssize_t more_getline(more_file_t *d)
 			continue;
 		}
 		if (in_esc) {
-			if (!memchr(code, *ptr, sizeof(code) - 1))
+			if (!memchr(code, *ptr, strlen(code)))
 				in_esc = false;
 			continue;
 		}
@@ -466,7 +466,7 @@ static ssize_t more_getline(more_file_t *d)
 	if (len == 0) {
 		// trailing escape sequence
 		if (*ptr == '\033') {
-			while (++ptr < end && memchr(code, *ptr, sizeof(code) - 1))
+			while (++ptr < end && memchr(code, *ptr, strlen(code)))
 				;
 			++ptr;
 		}

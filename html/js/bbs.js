@@ -111,6 +111,11 @@
 	}
 })(jQuery);
 
+String.prototype.getBytes = function() {
+	var c = this.match(/[^\x00-\xff]/ig);
+	return this.length + (c == null ? 0 : c.length);
+}
+
 function switchPanel() {
 	var item = $(this).next();
 	var expand = !item.is(':visible');
@@ -169,7 +174,7 @@ var bbs = {
 			$('#navnm').hide();
 		}
 	},
-	check: function () {
+	check: function() {
 		bbs.init();
 		bbs.store.get('last', function(ok, val) {
 			var now = new Date().getTime();
@@ -222,23 +227,48 @@ function generateReplyTitle(div) {
 	return title;
 }
 
-function generateQuote(div) {
+function shouldTruncateAt(s)
+{
+	var limit = s.substring(0, 2) == ': ' ? 78 : 76;
+	var i = Math.floor(limit / 2);
+	var len = s.substring(0, i).getBytes();
+	for (; i < s.length; ++i) {
+		var code = s.charCodeAt(i);
+		len += code > 127 ? 2 : 1;
+		if (len > limit)
+			return i;
+	}
+	return i;
+}
+
+function truncateString(s) {
+	var a = [];
+	while (s.length) {
+		i = shouldTruncateAt(s);
+		a.push(s.substring(0, i));
+		s = s.substring(i);
+	}
+	return a;
+}
+
+function quoteArticle(div) {
 	var q = [ '', '【 在 ' + $('.powner', div).text() + ' 的大作中提到: 】' ];
 	var p = [];
 	$('p', div).each(function() { p.push($(this).text()) });
 	p.splice(0, 3);
 	var quoted = 0;
 	for (var i = 0; i < p.length; ++i) {
-		p[i] = p[i].replace(/\xa0/g, ' ');
-		if (!p[i].length || p[i].substring(0, 4) == ': 【 ' || p[i].substring(0, 4) == ': : ')
+		var s = p[i].replace(/\xa0/g, ' ');
+		if (!s.length || s.substring(0, 4) == ': 【 ' || s.substring(0, 4) == ': : ')
 			continue;
-		if (p[i].substring(0, 2) == '--')
+		if (s.substring(0, 2) == '--')
 			break;
-		if (++quoted >= 10) {
-			q.push(': ' + ': .................（以下省略）');
+		var a = truncateString(s);
+		$.each(a, function(i, v) { if (++quoted <= 5) { q.push(': ' + v); } });
+		if (quoted > 5) {
+			q.push(': .................（以下省略）');
 			break;
 		}
-		q.push(': ' + p[i]);
 	}
 	return q;
 }
@@ -251,7 +281,7 @@ function replyButton() {
 	var form = $('#quick-reply-form');
 	form.attr('action', $(this).attr('href').replace(/^pst/, 'snd') + '&utf8=1');
 	$('[name="title"]', form).val(generateReplyTitle(div));
-	$('[name="text"]', form).val(generateQuote(div).join('\n'));
+	$('[name="text"]', form).val(quoteArticle(div).join('\n'));
 
 	$('#quick-reply-error').hide();
 	$('#quick-reply').dialog('open');

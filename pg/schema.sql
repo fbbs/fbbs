@@ -13,7 +13,7 @@ CREATE TABLE users (
 	passwd TEXT,
 	email INTEGER REFERENCES emails,
 	alive BOOLEAN DEFAULT TRUE,
-	money BIGINT DEFAULT 0 CHECK (money >= 0),
+	money BIGINT DEFAULT 0,
 	contrib BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
 	paid_posts INTEGER DEFAULT 0,
@@ -60,7 +60,7 @@ CREATE SCHEMA audit;
 
 CREATE TABLE audit.money (
 	user_id INTEGER NOT NULL,
-	delta INTEGER NOT NULL,
+	delta BIGINT NOT NULL,
 	stamp TIMESTAMPTZ NOT NULL,
 	reason TEXT
 );

@@ -4,6 +4,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/mail.h"
+#include "fbbs/post.h"
 #include "fbbs/web.h"
 
 static bool _is_mail_read(const struct fileheader *fp)
@@ -210,8 +211,6 @@ int bbsdelmail_main(void)
 	return 0;
 }
 
-extern int web_quotation(const char *str, size_t size, const char *owner, bool ismail);
-
 int bbspstmail_main(void)
 {
 	if (!loginok)
@@ -254,13 +253,7 @@ int bbspstmail_main(void)
 		printf("<t>");
 		xml_fputs(fh->title, stdout);
 		printf("</t><m>");
-		mmap_t m2;
-		m2.oflag = O_RDONLY;
-		setmfile(file, currentuser.userid, fh->filename);
-		if (mmap_open(file, &m2) == 0) {
-			web_quotation(m2.ptr, m2.size, fh->owner, true);
-		}
-		mmap_close(&m2);
+		quote_file_(file, NULL, QUOTE_AUTO, true, xml_fputs3);
 		printf("</m>");
 	}
 	mmap_close(&m);

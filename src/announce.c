@@ -351,64 +351,6 @@ int a_Save2(char *path, char* key, struct fileheader* fileinfo, int nomsg) {
 	return FULLUPDATE;
 }
 
-/* Add by shun . 1999.11.2.  to qutoesave to clipboard; change by money. 2002.1.12.*/
-int quote_save(char *path, char *key, struct fileheader *fileinfo,
-		int nomsg) {
-	FILE *inf, *outf;
-	char buf[256];
-	//, *ptr;
-	//char        op;
-	//int         bflag;
-	char qfile[STRLEN];
-	char board[STRLEN ];
-	char tmpfile[STRLEN];
-	char ans[STRLEN ];
-
-	sprintf(board, "bm/%s", currentuser.userid);
-	sprintf(tmpfile, "bm/bmtmp.%s", currentuser.userid);
-	sprintf(qfile, "boards/%s/%s", key, fileinfo->filename);
-	outf = fopen(tmpfile, "w");
-	if ( *qfile != '\0' && (inf = fopen(qfile, "r")) != NULL) {
-		fgets(buf, 256, inf);
-		fprintf(outf, "%s", buf);
-		while (fgets(buf, 256, inf) != NULL)
-			if (buf[0] == '\n')
-				break;
-		while (fgets(buf, 256, inf) != NULL) {
-			if (strcmp(buf, "--\n") == 0)
-				break;
-			if (buf[ 250 ] != '\0')
-				strcpy(buf+250, "\n");
-			if ( !garbage_line(buf) )
-				fprintf(outf, "%s", buf);
-		}
-		fprintf(outf, "\n");
-		fclose(inf);
-	}
-	fclose(outf);
-	/* 去头掐尾去引言，留下的部分存成文件 */
-	if (dashf(board) ) {
-		sprintf(genbuf, "要附加在旧暂存档之后吗?(Y/N) [N]: ");
-		if (!nomsg)
-			a_prompt( -1, genbuf, ans, 39);
-		if (ans[0] == 'Y' || ans[0] == 'y' ||nomsg)
-			sprintf(genbuf, "/bin/cat bm/bmtmp.%s >> %s",
-					currentuser.userid, board);
-		else
-			sprintf(genbuf, "/bin/cp -r bm/bmtmp.%s %s",
-					currentuser.userid, board);
-	} else {
-		sprintf(genbuf, "/bin/cp -r bm/bmtmp.%s  %s", currentuser.userid,
-				board);
-	}
-	system(genbuf);
-	sprintf(genbuf, " 已将该文章存入暂存档, 请按任何键以继续 << ");
-	if (!nomsg)
-		a_prompt( -1, genbuf, ans, 39);
-	return 1;
-}
-/* End */
-
 /* added by netty to handle post saving into (0)Announce */
 int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
 		char * direct, int nomsg) {
