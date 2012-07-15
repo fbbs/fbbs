@@ -118,7 +118,7 @@ void login_redirect(const char *key)
 
 	// TODO: these cookies should be merged into one.
 	printf("Content-type: text/html; charset=%s\n"
-			"Set-cookie: utmpkey=%d\n"
+			"Set-cookie: utmpkey=%s\n"
 			"Set-cookie: utmpuserid=%s\nLocation: %s\n\n",
 			CHARSET, key, currentuser.userid, referer);
 }

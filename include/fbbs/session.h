@@ -19,7 +19,7 @@ typedef int64_t session_id_t;
 	" FROM sessions s JOIN users u ON s.user_id = u.id"
 
 enum {
-	SESSION_KEY_LEN = 20,
+	SESSION_KEY_LEN = 40,
 
 	SESSION_TELNET = 0,
 	SESSION_WEB = 1,

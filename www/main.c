@@ -243,7 +243,7 @@ static bool _get_session(const char *uname, const char *key)
 	// TODO: cache
 	db_res_t *res = db_query("SELECT s.id, u.id, s.active, s.expire"
 			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
-			" WHERE u.name = %s AND s.key = %s AND s.web", uname, key);
+			" WHERE u.name = %s AND s.session_key = %s AND s.web", uname, key);
 	if (res && db_res_rows(res) == 1) {
 		if (db_get_bool(res, 0, 2)) {
 			session.id = db_get_session_id(res, 0, 0);
@@ -304,7 +304,8 @@ int main(void)
 
 			if (loginok) {
 				get_web_mode(h->mode);
-				// TODO: refresh idle time
+				set_user_status(h->mode);
+				set_idle_time(session.id, time(NULL));
 			}
 #ifdef FDQUAN
 			if (!loginok && h->func != web_login && h->func != fcgi_reg
