@@ -60,16 +60,18 @@ void sigbus(int signo)
 
 int bbs_kill(session_id_t sid, int pid, int sig)
 {
+	int r = 0;
 	if (pid > 0) {
-		return kill(pid, sig);
-	} else {
-		if (sig == SIGHUP) {
-			if (sid <= 0)
-				return -1;
-			return session_destroy(sid);
-		} else {
+		if ((r = kill(pid, sig)) == 0)
 			return 0;
-		}
+	}
+
+	if (sig == SIGHUP) {
+		if (sid <= 0)
+			return -1;
+		return session_destroy(sid);
+	} else {
+		return r;
 	}
 }
 
