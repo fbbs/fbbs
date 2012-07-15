@@ -61,24 +61,37 @@ static void _fill_session_array(tui_list_t *p, int i)
 	++up->num;
 }
 
+static int session_cmp(const void *s1, const void *s2)
+{
+	const online_user_info_t *i1 = s1, *i2 = s2;
+	int diff = strcmp(i1->name, i2->name);
+	if (diff)
+		return diff;
+	else
+		return i1->sid - i2->sid;
+}
+
 static tui_list_loader_t fill_session_array(tui_list_t *p)
 {
 	online_users_t *up = p->data;
 	db_res_t *res = up->res;
 
+	p->all = up->num = 0;
+
 	if (!res || db_res_rows(res) < 1) {
+		free(up->users);
 		up->users = NULL;
-		up->num = 0;
-		p->all = 0;
 		return 0;
 	}
 
-	up->users = malloc(db_res_rows(res) * sizeof(*up->users));
-	for (int i = 0; i < db_res_rows(res); ++i) {
+	int count = db_res_rows(res);
+	up->users = malloc(count * sizeof(*up->users));
+	for (int i = 0; i < count; ++i) {
 		_fill_session_array(p, i);
 	}
-	p->all = up->num;
-	return p->all;
+	qsort(up->users, count, sizeof(*up->users), session_cmp);
+
+	return p->all = up->num;
 }
 
 static tui_list_loader_t online_users_load_followings(tui_list_t *p)
@@ -107,6 +120,7 @@ static void online_users_free(online_users_t *up)
 {
 	db_clear(up->res);
 	free(up->users);
+	up->users = NULL;
 }
 
 static tui_list_loader_t online_users_load(tui_list_t *p)
@@ -142,9 +156,9 @@ static tui_list_title_t online_users_title(tui_list_t *p)
 	const char *field = up->show_note ? "备注" : "昵称";
 
 	char title[256];
-	snprintf(title, sizeof(title), "\033[1;44m 编号 使用者代号 %s          "
-			"     上站位置       P M %c目前动态  时:分\033[m\n",
-			field, HAS_PERM(PERM_CLOAK) ? 'C' : ' ');
+	snprintf(title, sizeof(title), "\033[1;44m 编号  使用者代号   %s        "
+			"         上站位置            目前动态   发呆   \033[m\n",
+			field);
 
 	move(2, 0);
 	clrtoeol();
@@ -202,7 +216,10 @@ static void get_idle_str(char *buf, size_t size, fb_time_t refresh, int status)
 	if (!idle) {
 		*buf = '\0';
 	} else {
-		snprintf(buf, size, "%d", idle);
+		if (idle > 999)
+			strlcpy(buf, "999+", sizeof(buf));
+		else
+			snprintf(buf, size, "%d", idle);
 	}
 }
 
@@ -226,11 +243,10 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 	get_idle_str(idle_str, sizeof(idle_str), idle, status);
 
 	char buf[128];
-	snprintf(buf, sizeof(buf), " \033[m%4d%s  %-12.12s\033[37m %-20.20s"
-			"\033[m %-19.19s     %c %s%-10.10s\033[37m %5.5s\033[m\n",
+	snprintf(buf, sizeof(buf), " \033[m%4d%s  %-12.12s\033[m %-20.20s"
+			"\033[m %-19.19s %s%-10.10s\033[37m %4s\033[m\n",
 			i + 1, up->follow ? "\033[32m" : "", ip->name,
-			nick, host, (ip->flag & SESSION_FLAG_INVISIBLE) ? '@' : ' ',
-			color, mode_type(status), idle_str);
+			nick, host, color, mode_type(status), idle_str);
 	prints("%s", buf);
 	return 0;
 }
@@ -373,7 +389,7 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			else
 				set_user_status(ST_LUSERS);
 			up->uptime = 0;
-			return PARTUPDATE;
+			return FULLUPDATE;
 		case 'W': case 'w':
 			if (streq(currentuser.userid, "guest"))
 				return DONOTHING;
