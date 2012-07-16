@@ -236,6 +236,14 @@ static void get_client_ip(void)
 #endif
 }
 
+static bool activate_session(session_id_t sid)
+{
+	db_res_t *res = db_cmd("UPDATE sessions SET active = TRUE"
+			" WHERE id = %"DBIdSID, sid);
+	db_clear(res);
+	return res;
+}
+
 static bool _get_session(const char *uname, const char *key)
 {
 	bool login = false;
@@ -245,13 +253,15 @@ static bool _get_session(const char *uname, const char *key)
 			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
 			" WHERE u.name = %s AND s.session_key = %s AND s.web", uname, key);
 	if (res && db_res_rows(res) == 1) {
-		if (db_get_bool(res, 0, 2)) {
-			session.id = db_get_session_id(res, 0, 0);
-			session.uid = db_get_user_id(res, 0, 1);
-			login = true;
-		} else {
-			// TODO: re-activate
-			session.id = session.uid = 0;
+		session.id = db_get_session_id(res, 0, 0);
+		session.uid = db_get_user_id(res, 0, 1);
+		login = true;
+
+		if (!db_get_bool(res, 0, 2)) {
+			if (!activate_session(session.id)) {
+				session.id = session.uid = 0;
+				login = false;
+			}
 		}
 	} else {
 		session.id = session.uid = 0;
