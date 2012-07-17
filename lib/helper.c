@@ -4,6 +4,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -337,4 +338,17 @@ void initialize_mdb(void)
 	env.m = pool_alloc(env.p, sizeof(*env.m));
 	if (mdb_connect_unix(config_get(env.c, "mdb")) < 0)
 		exit(EXIT_FAILURE);
+}
+
+void initialize_environment(int flags)
+{
+	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+
+	if (flags & INIT_CONV)
+		initialize_convert_env();
+	if (flags & INIT_DB)
+		initialize_db();
+	if (flags & INIT_MDB)
+		initialize_mdb();
 }

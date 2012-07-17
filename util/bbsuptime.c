@@ -1,16 +1,11 @@
 #include "fbbs/cfg.h"
 #include "fbbs/fbbs.h"
+#include "fbbs/helper.h"
 #include "fbbs/pool.h"
-
-extern void initialize_db(void);
-extern void initialize_mdb(void);
 
 int main(void)
 {
-	env.p = pool_create(DEFAULT_POOL_SIZE);
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
-	initialize_db();
-	initialize_mdb();
+	initialize_environment(INIT_DB | INIT_MDB);
 
 	int online = online_count();
 	time_t t = time(NULL);

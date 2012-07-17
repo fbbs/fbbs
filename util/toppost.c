@@ -283,10 +283,7 @@ int main(int argc, char **argv)
 	hash_create(&stat, 0, top_hash);
 	load_stat(&stat, DAY);
 
-	env.p = pool_create(DEFAULT_POOL_SIZE);
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
-	initialize_convert_env();
-	initialize_db();
+	initialize_environment(INIT_CONV | INIT_DB);
 
 	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
 	for (int i = 0; i < db_res_rows(res); ++i) {
