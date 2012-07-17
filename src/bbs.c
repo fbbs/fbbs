@@ -25,6 +25,8 @@
 #undef	ALLOWGAME
 #endif
 
+extern sigjmp_buf bus_jump;
+
 //用于保存版主对精华区操作记录的文件名,硬盘上的位置是logs/boardname
 char ANN_LOG_PATH[256];
 struct postheader header;

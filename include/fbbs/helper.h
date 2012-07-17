@@ -3,8 +3,6 @@
 
 #include "fbbs/session.h"
 
-extern sigjmp_buf bus_jump;
-
 extern char *sethomefile(char *buf, const char *userid, const char *filename);
 extern char *setbpath(char *buf, const char *boardname);
 extern char *setwbdir(char *buf, const char *boardname);
