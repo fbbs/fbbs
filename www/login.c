@@ -98,6 +98,7 @@ static int login_screen(void)
 	http_header();
 	const char *ref = get_login_referer();
 	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
+			"<meta name='viewport' content='width=device-width'/>"
 			"<link rel='stylesheet' type='text/css' href='../css/%s.css' />"
 			"<title>用户登录 - "BBSNAME"</title></head>"
 			"<body><form action='login' method='post'>"
@@ -110,21 +111,26 @@ static int login_screen(void)
 	return 0;
 }
 
-void login_redirect(const char *key)
+static int login_redirect(const char *key)
 {
 	const char *referer = get_param("ref");
 	if (*referer == '\0')
 		referer = "sec";
 
-	// TODO: these cookies should be merged into one.
-	printf("Content-type: text/html; charset=%s\n"
-			"Set-cookie: utmpkey=%s\n"
-			"Set-cookie: utmpuserid=%s\nLocation: %s\n\n",
-			CHARSET, key, currentuser.userid, referer);
+	printf("Content-type: text/html; charset=%s\n", CHARSET);
+	if (key) {
+		printf("Set-cookie: utmpkey=%s\nSet-cookie: utmpuserid=%s\n",
+				key, currentuser.userid);
+	}
+	printf("Location: %s\n\n", referer);
+	return 0;
 }
 
 int web_login(void)
 {
+	if (session.id)
+		return login_redirect(NULL);
+
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;
 
@@ -187,8 +193,7 @@ int web_login(void)
 
 	log_usies("ENTER", fromhost, &user);
 
-	login_redirect(key);
-	return 0;
+	return login_redirect(key);
 }
 
 static void logout(void)
