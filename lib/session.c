@@ -63,7 +63,7 @@ session_id_t session_new_id(void)
 session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 		const char *ip_addr, bool is_web, bool is_secure)
 {
-	int pid = getpid();
+	int pid = is_web ? 0 : getpid();
 	if (!sid)
 		sid = session_new_id();
 
