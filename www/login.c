@@ -11,6 +11,7 @@
 
 enum {
 	WEB_ACTIVE_LOGIN_QUOTA = 2,
+	COOKIE_PERSISTENT_PERIOD = 2 * 7 * 24 * 60 * 60,
 };
 
 static int check_web_login_quota(const char *uname, bool force)
@@ -185,11 +186,13 @@ int web_login(void)
 	save_user_data(&user);
 	currentuser = user;
 
+	int duration = *get_param("persistent") ? COOKIE_PERSISTENT_PERIOD : 0;
+
 	char key[SESSION_KEY_LEN + 1];
 	session.id = session_new_id();
 	generate_session_key(key, sizeof(key), session.id);
 	session.id = session_new(key, session.id, session.uid, fromhost,
-			SESSION_WEB, SESSION_PLAIN);
+			SESSION_WEB, SESSION_PLAIN, duration);
 
 	log_usies("ENTER", fromhost, &user);
 

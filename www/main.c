@@ -238,8 +238,8 @@ static void get_client_ip(void)
 
 static bool activate_session(session_id_t sid)
 {
-	db_res_t *res = db_cmd("UPDATE sessions SET active = TRUE"
-			" WHERE id = %"DBIdSID, sid);
+	db_res_t *res = db_cmd("UPDATE sessions SET active = TRUE, stamp = %t"
+			" WHERE id = %"DBIdSID, sid, time(NULL));
 	db_clear(res);
 	return res;
 }

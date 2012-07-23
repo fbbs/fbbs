@@ -61,16 +61,19 @@ session_id_t session_new_id(void)
 }
 
 session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
-		const char *ip_addr, bool is_web, bool is_secure)
+		const char *ip_addr, bool is_web, bool is_secure, int duration)
 {
 	int pid = is_web ? 0 : getpid();
 	if (!sid)
 		sid = session_new_id();
 
-	db_res_t *res = db_cmd("INSERT INTO sessions"
-			" (id, session_key, user_id, pid, ip_addr, web, secure)"
-			" VALUES (%"DBIdSID", %s, %"DBIdUID", %d, %s, %b, %b)",
-			sid, key, uid, pid, ip_addr, is_web, is_secure);
+	fb_time_t now = time(NULL);
+	fb_time_t expire = now + duration;
+
+	db_res_t *res = db_cmd("INSERT INTO sessions (id, session_key, user_id,"
+			" pid, ip_addr, web, secure, stamp, expire)"
+			" VALUES (%"DBIdSID", %s, %"DBIdUID", %d, %s, %b, %b, %t, %t)",
+			sid, key, uid, pid, ip_addr, is_web, is_secure, now, expire);
 	if (res) {
 		db_clear(res);
 		session.id = sid;
