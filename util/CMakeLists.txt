@@ -4,7 +4,7 @@ link_directories(../lib)
 
 set(UTILS1 averun account newacct horoscope zodiac)
 set(UTILS2 bbstop birthday toppost bbsuptime badbms AnnIndex showbm statBM
-	cleanuser)
+	cleanuser clean_session)
 
 foreach(name ${UTILS1})
 	add_executable(${name} ${name}.c chart.c)
