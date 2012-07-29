@@ -70,16 +70,17 @@ static bool get_user_name(user_id_t uid, char *name, size_t size)
 
 static void kill_session(const struct _session *s, bool is_dup)
 {
-	if (s->web) {
+	if (s->web || bbs_kill(s->sid, s->pid, SIGHUP) != 0) {
 		char uname[IDLEN + 1];
 		struct userec user;
+		int legacy_uid;
+
 		if (get_user_name(s->uid, uname, sizeof(uname))
-				&& getuserec(uname, &user)) {
+				&& (legacy_uid = getuserec(uname, &user))) {
 			update_user_stay(&user, false, is_dup);
+			substitut_record(NULL, &user, sizeof(user), legacy_uid);
 		}
 		session_destroy(s->sid);
-	} else {
-		bbs_kill(s->sid, s->pid, SIGHUP);
 	}
 }
 
@@ -127,7 +128,7 @@ int main(int argc, char **argv)
 
 	db_res_t *res = db_exec_query(env.d, true,
 			"SELECT id, active, user_id, pid, web, stamp, expire"
-			"FROM sessions");
+			" FROM sessions");
 
 	int count = db_res_rows(res);
 	struct _session *sessions = malloc(sizeof(*sessions) * count);
