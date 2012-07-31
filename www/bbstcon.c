@@ -125,12 +125,14 @@ int bbstcon_main(void)
 	if (action == 'a' || action == 'b')
 		action = 'n';
 
+	bool anony = bp->flag & BOARD_ANONY_FLAG;
 	int opt = get_user_flag();
 
 	struct fileheader *begin, *end;
 	xml_header(NULL);
-	printf("<bbstcon bid='%d' gid='%u' page='%d' attach='%d'%s%s%s%s%s>",
-			bid, gid, count, maxlen(bp->filename),
+	printf("<bbstcon bid='%d' gid='%u' anony='%d' page='%d'"
+			" attach='%d'%s%s%s%s%s>",
+			bid, gid, anony, count, maxlen(bp->filename),
 			flag & THREAD_LAST_POST ? " last='1'" : "",
 			flag & THREAD_LAST ? " tlast='1'" : "",
 			flag & THREAD_FIRST ? " tfirst='1'" : "",
