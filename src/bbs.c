@@ -1184,48 +1184,6 @@ int do_reply(struct fileheader *fh) {
 #endif
 
 /**
- * Tell if a line is meaningless.
- * @param str The string to be checked.
- * @return True if str is quotation of a quotation or contains only white
-           spaces, false otherwise.
- */
-bool garbage_line(const char *str)
-{
-	int qlevel = 0;
-
-	while (*str == ':' || *str == '>') {
-		str++;
-		if (*str == ' ')
-			str++;
-		if (qlevel++ >= 1)
-			return true;
-	}
-	while (*str == ' ' || *str == '\t' || *str == '\r')
-		str++;
-	return (*str == '\n');
-}
-
-/**
- * Find newline in [begin, end).
- * @param begin The head pointer.
- * @param end The off-the-end pointer.
- * @return Off-the-end pointer to the first newline, 'end' if not found.
- */
-static const char *get_newline(const char *begin, const char *end)
-{
-	while (begin < end) {
-		if (*begin++ == '\n')
-			return begin;
-	}
-	return begin;
-}
-
-enum {
-	MAX_QUOTE_LINES = 9,     ///< Maximum quoted lines (for mode 'R').
-	MAX_QUOTE_BYTES = 1024,  ///< Maximum quoted bytes (for mode 'R').
-};
-
-/**
  * Quote in given mode.
  * @param orig The file to be quoted.
  * @param file The output file.
@@ -1234,75 +1192,12 @@ enum {
 // TODO: do not use quote_file in callers.
 void do_quote(const char *orig, const char *file, char mode)
 {
-	bool mail = !strncmp(orig, "mail", 4);
-	FILE *fp = fopen(file, "w");
+	bool mail = strneq(orig, "mail", 4);
+	quote_file_(orig, file, mode, mail, NULL);
+
+	FILE *fp = fopen(file, "a");
 	if (!fp)
 		return;
-	if (mode != 'N') {
-		mmap_t m;
-		m.oflag = O_RDONLY;
-		if (mmap_open(orig, &m) == 0) {
-			const char *begin = m.ptr;
-			const char *end = begin + m.size;
-			const char *lend = get_newline(begin, end);
-
-			// Parse author & nick.
-			const char *quser = begin, *ptr = lend;
-			while (quser < lend) {
-				if (*quser++ == ' ')
-					break;
-			}
-			while (--ptr >= begin) {
-				if (*ptr == ')')
-					break;
-			}
-			++ptr;
-			fprintf(fp, "\n【 在 ");
-			if (ptr > quser)
-				fwrite(quser, ptr - quser, sizeof(char), fp);
-			fprintf(fp, " 的%s中提到: 】\n", mail ? "来信" : "大作");
-
-			bool header = true, tail = false;
-			size_t lines = 0, bytes= 0;
-			while (1) {
-				ptr = lend;
-				if (ptr >= end)
-					break;
-				lend = get_newline(ptr, end);
-				if (header && *ptr == '\n') {
-					header = false;
-					continue;
-				}
-				if (lend - ptr == 3 && !memcmp(ptr, "--\n", 3)) {
-					tail = true;
-					if (mode == 'Y' || mode == 'R')
-						break;
-				}
-				if (!header || mode == 'A') {
-					if ((mode == 'Y' || mode == 'R')
-							&& garbage_line(ptr)) {
-						continue;
-					}
-					if (mode == 'S' && lend - ptr > 10 + sizeof("※ 来源:·")
-							&& !memcmp(ptr + 10, "※ 来源:·", sizeof("※ 来源:·"))) {
-						break;
-					}
-					if (mode == 'R') {
-						bytes += lend - ptr;
-						if (++lines > MAX_QUOTE_LINES
-								|| bytes > MAX_QUOTE_BYTES) {
-							fputs(": .................（以下省略）", fp);
-							break;
-						}
-					}
-					if (mode != 'S')
-						fputs(": ", fp);
-					fwrite(ptr, lend - ptr, sizeof(char), fp);
-				}
-			}
-			mmap_close(&m);
-		}
-	}
 	if (currentuser.signature && !header.chk_anony)
 		add_signature(fp, currentuser.userid, currentuser.signature);
 	fclose(fp);

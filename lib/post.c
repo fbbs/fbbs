@@ -139,3 +139,206 @@ unsigned int do_post_article(const post_request_t *pr)
 
 	return fh.id;
 }
+
+enum {
+	MAX_QUOTED_LINES = 5,     ///< Maximum quoted lines (for QUOTE_AUTO).
+	/** A line will be truncated at this width (78 for quoted line) */
+	TRUNCATE_WIDTH = 76,
+};
+
+/**
+ * Find newline in [begin, end), truncate at TRUNCATE_WIDTH.
+ * @param begin The head pointer.
+ * @param end The off-the-end pointer.
+ * @return Off-the-end pointer to the first (truncated) line.
+ */
+static const char *get_truncated_line(const char *begin, const char *end)
+{
+	const char *code = "[0123456789;";
+	bool ansi = false;
+
+	int width = TRUNCATE_WIDTH;
+	if (end - begin >= 2 && *begin == ':' && *(begin + 1) == ' ')
+		width += 2;
+
+	for (const char *s = begin; s < end; ++s) {
+		if (*s == '\n')
+			return s + 1;
+
+		if (*s == '\033') {
+			ansi = true;
+			continue;
+		}
+
+		if (ansi) {
+			if (!memchr(code, *s, sizeof(code) - 1))
+				ansi = false;
+			continue;
+		}
+
+		if (*s & 0x80) {
+			width -= 2;
+			if (width < 0)
+				return s;
+			++s;
+			if (width == 0)
+				return (s + 1 > end ? end : s + 1);
+		} else {
+			if (--width == 0)
+				return s + 1;
+		}
+	}
+	return end;
+}
+
+/**
+ * Tell if a line is meaningless.
+ * @param begin The beginning of the line.
+ * @param end The off-the-end pointer.
+ * @return True if str is quotation of a quotation or contains only white
+           spaces, false otherwise.
+ */
+static bool qualify_quotation(const char *begin, const char *end)
+{
+	const char *s = begin;
+	if (end - s > 2 && (*s == ':' || *s == '>') && *(s + 1) == ' ') {
+		s += 2;
+		if (end - s > 2 && (*s == ':' || *s == '>') && *(s + 1) == ' ')
+			return false;
+	}
+
+	while (s < end && (*s == ' ' || *s == '\t' || *s == '\r'))
+		++s;
+
+	return (s < end && *s != '\n');
+}
+
+typedef size_t (*filter_t)(const char *, size_t, FILE *);
+
+static size_t default_filter(const char *s, size_t size, FILE *fp)
+{
+	return fwrite(s, size, 1, fp);
+}
+
+static const char *get_newline(const char *begin, const char *end)
+{
+	while (begin < end) {
+		if (*begin++ == '\n')
+			return begin;
+	}
+	return begin;
+}
+
+#define PRINT_CONST_STRING(s)  (*filter)(s, sizeof(s) - 1, fp)
+
+static void quote_author(const char *begin, const char *lend, bool mail,
+		FILE *fp, filter_t filter)
+{
+	const char *quser = begin, *ptr = lend;
+	while (quser < lend) {
+		if (*quser++ == ' ')
+			break;
+	}
+	while (--ptr >= begin) {
+		if (*ptr == ')')
+			break;
+	}
+	++ptr;
+
+	PRINT_CONST_STRING("\n【 在 ");
+	if (ptr > quser)
+		(*filter)(quser, ptr - quser, fp);
+	PRINT_CONST_STRING(" 的");
+	if (mail)
+		PRINT_CONST_STRING("来信");
+	else
+		PRINT_CONST_STRING("大作");
+	PRINT_CONST_STRING("中提到: 】\n");
+}
+
+/**
+ * Make quotation from a string.
+ * @param str String to be quoted.
+ * @param size Size of the string.
+ * @param output Output file. If NULL, will output to stdout (web).
+ * @param mode Quotation mode. See QUOTE_* enums.
+ * @param mail Whether the referenced post is a mail.
+ */
+void quote_string(const char *str, size_t size, const char *output, int mode,
+		bool mail, filter_t filter)
+{
+	FILE *fp = NULL;
+	if (output) {
+		if (!(fp = fopen(output, "w")))
+			return;
+	}
+
+	if (!filter)
+		filter = default_filter;
+
+	const char *begin = str, *end = str + size;
+	const char *lend = get_newline(begin, end);
+	quote_author(begin, lend, mail, fp, filter);
+
+	bool header = true, tail = false;
+	size_t lines = 0;
+	const char *ptr;
+	while (1) {
+		ptr = lend;
+		if (ptr >= end)
+			break;
+
+		lend = get_truncated_line(ptr, end);
+		if (header && *ptr == '\n') {
+			header = false;
+			continue;
+		}
+
+		if (lend - ptr == 3 && !memcmp(ptr, "--\n", 3)) {
+			tail = true;
+			if (mode == QUOTE_LONG || mode == QUOTE_AUTO)
+				break;
+		}
+
+		if (!header || mode == QUOTE_ALL) {
+			if ((mode == QUOTE_LONG || mode == QUOTE_AUTO)
+					&& !qualify_quotation(ptr, lend)) {
+				if (*(lend - 1) != '\n')
+					lend = get_newline(lend, end);
+				continue;
+			}
+
+			if (mode == QUOTE_SOURCE && lend - ptr > 10 + sizeof("※ 来源:·")
+					&& !memcmp(ptr + 10, "※ 来源:·", sizeof("※ 来源:·"))) {
+				break;
+			}
+
+			if (mode == QUOTE_AUTO) {
+				if (++lines > MAX_QUOTED_LINES) {
+					PRINT_CONST_STRING(": .................（以下省略）");
+					break;
+				}
+			}
+
+			if (mode != QUOTE_SOURCE)
+				PRINT_CONST_STRING(": ");
+			(*filter)(ptr, lend - ptr, fp);
+			if (*(lend - 1) != '\n')
+				PRINT_CONST_STRING("\n");
+		}
+	}
+	if (fp)
+		fclose(fp);
+}
+
+void quote_file_(const char *orig, const char *output, int mode, bool mail,
+		filter_t filter)
+{
+	if (mode != QUOTE_NOTHING) {
+		mmap_t m = { .oflag = O_RDONLY };
+		if (mmap_open(orig, &m) == 0) {
+			quote_string(m.ptr, m.size, output, mode, mail, filter);
+			mmap_close(&m);
+		}
+	}
+}

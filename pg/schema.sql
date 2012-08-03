@@ -14,8 +14,8 @@ CREATE TABLE users (
 	email INTEGER REFERENCES emails,
 	alive BOOLEAN DEFAULT TRUE,
 	money BIGINT DEFAULT 0,
+	contrib BIGINT DEFAULT 0,
 	rank REAL DEFAULT 0,
-	paid_posts INTEGER DEFAULT 0,
 	title TEXT
 );
 CREATE OR REPLACE VIEW alive_users AS
@@ -56,7 +56,7 @@ CREATE SCHEMA audit;
 
 CREATE TABLE audit.money (
 	user_id INTEGER NOT NULL,
-	delta INTEGER NOT NULL,
+	delta BIGINT NOT NULL,
 	stamp TIMESTAMPTZ NOT NULL,
 	reason TEXT
 );

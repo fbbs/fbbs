@@ -14,6 +14,7 @@ typedef struct uinfo_t {
 	db_res_t *res;
 	const char *title;
 #ifdef ENABLE_BANK
+	int64_t contrib;
 	int64_t money;
 	float rank;
 #endif
