@@ -5,7 +5,8 @@
 <title>欢迎光临复旦大学日月光华BBS</title>
 <style type="text/css">
 body, div, img, ul, li, h1, p, input { margin: 0; padding: 0; }
-body, label, input { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 16px; width: 100%; }
+body, label, input { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 16px; }
+body { width: 100%; }
 img { border: none; }
 a { text-decoration: none; }
 
@@ -21,6 +22,9 @@ input { border: 1px solid #c0c0c0; }
 #login { width: 282px; background-color: #369; }
 #reg { display: block; width: 282px; background-color: #b0281a; line-height: 36px; }
 #login, #reg { height: 36px; text-align: center; color: #fff; font-weight: bold; font-size: 18px; border: none; margin: 12px 0 0; }
+#persistent { display: inline-block; text-align: left; margin: 12px 5px 0 5px; }
+#for_cb { display: inline; font-weight: normal; font-size: 14px; }
+#tip { color: #808080; }
 
 ul { list-style-type: none; }
 ul#links { margin: 15px 0 0; }
@@ -46,6 +50,7 @@ li#guest a { color: #000; }
 <input id='id' type='text' name='id' class='txt' placeholder='请输入账号'/>
 <label for='pw'>密码</label>
 <input id='pw' type='password' name='pw' class='txt' placeholder='请输入密码'/>
+<input id='persistent' type='checkbox' name='persistent' checked='checked'/><label id='for_cb' for='persistent'>下次自动登录<span id='tip'>（公用电脑请勿选择）</span></label>
 <input id='login' type='submit' value='登录'/>
 </form>
 
