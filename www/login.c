@@ -112,7 +112,18 @@ static int login_screen(void)
 	return 0;
 }
 
-static int login_redirect(const char *key)
+static void set_cookie(const char *name, const char *value, int max_age)
+{
+	printf("Set-cookie: %s=%s", name, value);
+	if (max_age > 0) {
+		printf(";Max-Age=%d", max_age);
+	} else if (max_age < 0) {
+		printf(";Expires=Fri, 19-Apr-1996 11:11:11 GMT");
+	}
+	printf("\n");
+}
+
+static int login_redirect(const char *key, int max_age)
 {
 	const char *referer = get_param("ref");
 	if (*referer == '\0')
@@ -120,8 +131,8 @@ static int login_redirect(const char *key)
 
 	printf("Content-type: text/html; charset=%s\n", CHARSET);
 	if (key) {
-		printf("Set-cookie: utmpkey=%s\nSet-cookie: utmpuserid=%s\n",
-				key, currentuser.userid);
+		set_cookie("utmpkey", key, max_age);
+		set_cookie("utmpuserid", currentuser.userid, max_age);
 	}
 	printf("Location: %s\n\n", referer);
 	return 0;
@@ -130,7 +141,7 @@ static int login_redirect(const char *key)
 int web_login(void)
 {
 	if (session.id)
-		return login_redirect(NULL);
+		return login_redirect(NULL, 0);
 
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;
@@ -186,17 +197,18 @@ int web_login(void)
 	save_user_data(&user);
 	currentuser = user;
 
-	int duration = *get_param("persistent") ? COOKIE_PERSISTENT_PERIOD : 0;
+	bool persistent = *get_param("persistent");
+	int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
 
 	char key[SESSION_KEY_LEN + 1];
 	session.id = session_new_id();
 	generate_session_key(key, sizeof(key), session.id);
 	session.id = session_new(key, session.id, session.uid, fromhost,
-			SESSION_WEB, SESSION_PLAIN, duration);
+			SESSION_WEB, SESSION_PLAIN, max_age);
 
 	log_usies("ENTER", fromhost, &user);
 
-	return login_redirect(key);
+	return login_redirect(key, persistent);
 }
 
 static void logout(void)
