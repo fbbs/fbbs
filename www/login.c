@@ -9,6 +9,8 @@
 #include "fbbs/user.h"
 #include "fbbs/web.h"
 
+#define LOGIN_HOMEPAGE  "top10"
+
 enum {
 	WEB_ACTIVE_LOGIN_QUOTA = 2,
 	COOKIE_PERSISTENT_PERIOD = 2 * 7 * 24 * 60 * 60,
@@ -88,7 +90,7 @@ static const char *get_login_referer(void)
 	const char *ref;
 	if (!strcmp(referer, "/") || !strcmp(referer, "/index.htm")
 			|| strstr(referer, "login"))
-		ref = "sec";
+		ref = LOGIN_HOMEPAGE;
 	else
 		ref = referer;
 	return ref;
@@ -127,7 +129,7 @@ static int login_redirect(const char *key, int max_age)
 {
 	const char *referer = get_param("ref");
 	if (*referer == '\0')
-		referer = "sec";
+		referer = LOGIN_HOMEPAGE;
 
 	printf("Content-type: text/html; charset=%s\n", CHARSET);
 	if (key) {
@@ -219,16 +221,13 @@ static void logout(void)
 
 int web_logout(void)
 {
-	if (!session.id) {
-		printf("Location: sec\n\n");
-		return 0;
+	if (session.id) {
+		logout();
+		printf("Set-cookie: utmpnum=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+				"Set-cookie: utmpkey=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+				"Set-cookie: utmpuserid=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
+				"Location: sec\n\n");
 	}
-
-	logout();
-
-	printf("Set-cookie: utmpnum=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-			"Set-cookie: utmpkey=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-			"Set-cookie: utmpuserid=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-			"Location: sec\n\n");
+	printf("Location: ../..\n\n");
 	return 0;
 }
