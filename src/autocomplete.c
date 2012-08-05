@@ -38,11 +38,7 @@ ac_list *ac_list_new(void)
 void ac_list_add(ac_list *acl, const char *name)
 {
 	ac_name_list *l = pool_alloc(acl->pool, sizeof(*l));
-
-	size_t len = strlen(name) + 1;
-	l->name = pool_alloc(acl->pool, len);
-	memcpy((void *)l->name, name, len);
-
+	l->name = pool_strdup(acl->pool, name, 0);
 	l->next = NULL;
 
 	if (acl->tail)

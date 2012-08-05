@@ -3,6 +3,7 @@
 
 #include "fbbs/pool.h"
 #include "fbbs/util.h"
+#include <string.h>
 
 enum {
 	ALIGNMENT = sizeof(unsigned long),
@@ -39,7 +40,7 @@ static inline void *_align_ptr(void *ptr)
 
 /**
  * Create a memory pool.
- * @param size Size of each memory block.
+ * @param size Size of each memory block. Use default value if 0.
  * @return A pointer to created pool, NULL on error.
  */
 pool_t *pool_create(size_t size)
@@ -175,4 +176,25 @@ void *pool_alloc(pool_t *p, size_t size)
 		return _pool_alloc_block(p, size);
 	}
 	return _pool_alloc_large(p, size);
+}
+
+/**
+ * Duplicate a string using memory allocated from a pool.
+ * @param p The pool to allocate from.
+ * @param str The string to duplicate.
+ * @param size Length of the string. If 0, the length will be calculated.
+ * @return Pointer to the newly allocated string.
+ */
+char *pool_strdup(pool_t *p, const char *str, size_t size)
+{
+	if (!str)
+		return NULL;
+
+	if (!size)
+		size = strlen(str) + 1;
+
+	char *dst = pool_alloc(p, size);
+	if (dst)
+		memcpy(dst, str, size);
+	return dst;
 }
