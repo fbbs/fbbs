@@ -8,6 +8,22 @@ enum {
 	ALIGNMENT = sizeof(unsigned long),
 };
 
+typedef struct pool_large_t {
+	void *ptr;
+	struct pool_large_t *next;
+} pool_large_t;
+
+typedef struct pool_block_t {
+	uchar_t *last;
+	uchar_t *end;
+	struct pool_block_t *next;
+} pool_block_t;
+
+struct pool_t {
+	struct pool_block_t *head;
+	pool_large_t *large;
+};
+
 static int _max_pool_alloc = 0;
 
 /**
