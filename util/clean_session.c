@@ -41,6 +41,7 @@ static void res_to_session(db_res_t *res, struct _session *sessions, int count)
 		s->web = db_get_bool(res, i, 4);
 		s->stamp = db_get_time(res, i, 5);
 		s->expire = db_get_time(res, i, 6);
+		++s;
 	}
 	qsort(sessions, count, sizeof(*sessions), comparator);
 }
@@ -52,6 +53,7 @@ static const struct _session *find_same_uid(const struct _session *begin,
 	while (s < end) {
 		if (s->uid != begin->uid)
 			break;
+		++s;
 	}
 	return s;
 }

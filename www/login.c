@@ -215,7 +215,7 @@ int web_login(void)
 
 	log_usies("ENTER", fromhost, &user);
 
-	return login_redirect(key, persistent);
+	return login_redirect(key, max_age);
 }
 
 int web_logout(void)
