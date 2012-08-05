@@ -16,7 +16,7 @@ typedef int64_t session_id_t;
 
 #define ACTIVE_SESSION_QUERY \
 	"SELECT " ACTIVE_SESSION_FIELDS \
-	" FROM sessions s JOIN users u ON s.user_id = u.id"
+	" FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.active"
 
 enum {
 	SESSION_KEY_LEN = 40,
