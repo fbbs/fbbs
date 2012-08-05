@@ -179,7 +179,7 @@ static int initialize_gcrypt(void)
  * Initialization before entering FastCGI loop.
  * @return 0 on success, -1 on error.
  */
-static int _init_all(void)
+static int initialize(void)
 {
 	srand(time(NULL) * 2 + getpid());
 
@@ -198,20 +198,8 @@ static int _init_all(void)
 	if (!brdshm)
 		return -1;
 
-	env.p = pool_create(DEFAULT_POOL_SIZE);
-	if (!env.p)
-		return -1;
-
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
-	if (!env.c)
-		return -1;
-
 	if (initialize_gcrypt() != 0)
 		return -1;
-
-	initialize_db();
-
-	initialize_mdb();
 
 	return 0;
 }
@@ -287,10 +275,9 @@ static bool get_session(void)
  */
 int main(void)
 {
-	if (_init_all() < 0)
+	if (initialize() < 0)
 		return EXIT_FAILURE;
-
-	initialize_convert_env();
+	initialize_environment(INIT_CONV | INIT_DB | INIT_MDB);
 
 	while (FCGI_Accept() >= 0) {
 		pool_t *p = pool_create(DEFAULT_POOL_SIZE);
