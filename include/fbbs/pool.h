@@ -1,7 +1,7 @@
 #ifndef FB_POOL_H
 #define FB_POOL_H
 
-#include "fbbs/util.h"
+#include <stdlib.h>
 
 typedef struct pool_t pool_t;
 
