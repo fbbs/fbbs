@@ -97,7 +97,7 @@ static int init_env(_my_data_t *e)
 	if (!e->log || !e->data || !e->post)
 		return -1;
 
-	e->pool = pool_create(DEFAULT_POOL_SIZE);
+	e->pool = pool_create(0);
 	if (!e->pool)
 		return -1;
 

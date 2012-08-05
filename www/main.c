@@ -298,7 +298,7 @@ int main(void)
 	initialize_environment(INIT_CONV | INIT_DB | INIT_MDB);
 
 	while (FCGI_Accept() >= 0) {
-		pool_t *p = pool_create(DEFAULT_POOL_SIZE);
+		pool_t *p = pool_create(0);
 
 		ctx.p = p;
 		ctx.r = get_request(p);

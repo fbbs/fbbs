@@ -342,7 +342,7 @@ void initialize_mdb(void)
 
 void initialize_environment(int flags)
 {
-	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.p = pool_create(0);
 	env.c = config_load(env.p, DEFAULT_CFG_FILE);
 
 	if (flags & INIT_CONV)

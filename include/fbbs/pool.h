@@ -3,10 +3,6 @@
 
 #include "fbbs/util.h"
 
-enum {
-	DEFAULT_POOL_SIZE = 16 * 1024,
-};
-
 typedef struct pool_t pool_t;
 
 extern pool_t *pool_create(size_t size);
