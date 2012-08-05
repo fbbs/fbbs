@@ -96,6 +96,11 @@ static const char *get_login_referer(void)
 	return ref;
 }
 
+static void redirect_homepage(void)
+{
+	printf("Location: ..\n\n");
+}
+
 static int login_screen(void)
 {
 	http_header();
@@ -227,6 +232,6 @@ int web_logout(void)
 		expire_cookie("utmpkey");
 		expire_cookie("utmpuserid");
 	}
-	printf("Location: ../..\n\n");
+	redirect_homepage();
 	return 0;
 }
