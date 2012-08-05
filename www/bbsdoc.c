@@ -289,7 +289,7 @@ int do_bfind(void *buf, int count, void *args)
 
 int bbsbfind_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	criteria_t cri;

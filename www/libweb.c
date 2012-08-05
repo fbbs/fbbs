@@ -49,7 +49,6 @@ char secname[SECNUM][2][20] = {
 #endif
 };
 
-int loginok = 0;
 struct userec currentuser;
 
 /**
@@ -293,7 +292,7 @@ bool valid_mailname(const char *file)
 static char *get_permission(void)
 {
 	static char c[5];
-	c[0] = loginok ? 'l' : ' ';
+	c[0] = session.id ? 'l' : ' ';
 	c[1] = HAS_PERM(PERM_TALK) ? 't' : ' ';
 	c[2] = HAS_PERM(PERM_CLOAK) ? '#': ' ';
 	c[3] = HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0) ? 'f' : ' ';
@@ -303,7 +302,7 @@ static char *get_permission(void)
 
 const char *get_doc_mode_str(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return "";
 
 	int mode = get_doc_mode();
@@ -323,7 +322,7 @@ int get_user_flag(void)
 
 void set_user_flag(int flag)
 {
-	if (loginok) {
+	if (session.id) {
 		int n = searchuser(currentuser.userid) - 1;
 		if (n < 0 || n >= MAXUSERS)
 			return;

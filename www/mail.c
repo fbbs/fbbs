@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/mail.h"
@@ -34,7 +35,7 @@ static int _get_mail_mark(const struct fileheader *fp)
 
 int bbsmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	int start = strtol(get_param("start"), NULL, 10);
@@ -96,7 +97,7 @@ int print_new_mail(void *buf, int count, void *args)
 
 int bbsnewmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsmail new='1'>");
@@ -112,7 +113,7 @@ int bbsnewmail_main(void)
 
 int bbsmailcon_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	const char *file = get_param("f");
@@ -177,7 +178,7 @@ int bbsmailcon_main(void)
 
 int bbsdelmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	const char *file = get_param("f");
@@ -213,7 +214,7 @@ int bbsdelmail_main(void)
 
 int bbspstmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
@@ -264,7 +265,7 @@ int bbspstmail_main(void)
 
 int bbssndmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
@@ -313,7 +314,7 @@ static int _mail_checked(void *ptr, void *file)
 
 int web_mailman(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	parse_post_data();

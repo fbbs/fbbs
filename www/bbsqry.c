@@ -47,7 +47,7 @@ int bbsqry_main(void)
 {
 	char userid[IDLEN + 1];
 	strlcpy(userid, get_param("u"), sizeof(userid));
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	struct userec user;
 	int uid;

@@ -96,7 +96,7 @@ static char *_check_character(char *text)
 
 int bbssnd_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;

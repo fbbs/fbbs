@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "record.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -18,7 +19,7 @@ static int cmp_fid(const void *key, const void *buf)
 
 int bbsdel_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	int bid = strtol(get_param("bid"), NULL, 10);
 	unsigned int fid = strtoul(get_param("f"), NULL, 10);

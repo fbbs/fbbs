@@ -25,7 +25,7 @@ static int print_override(void *buf, int count, void *args)
 
 int bbsfall_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsfall>");
@@ -52,7 +52,7 @@ static int cmp_override(const void *key, const void *buf)
 
 int bbsfadd_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	const char *id = get_param("id");
 	const char *desc = get_param("desc");
@@ -82,7 +82,7 @@ int bbsfadd_main(void)
 
 int bbsfdel_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	const char *user = get_param("u");
 	if (*user != '\0') {
@@ -145,7 +145,7 @@ static void show_sessions_of_friends(void)
 
 int bbsovr_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsovr>");

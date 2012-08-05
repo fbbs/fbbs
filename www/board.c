@@ -9,7 +9,7 @@
 
 int web_fav(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	xml_header(NULL);
@@ -39,7 +39,7 @@ int web_fav(void)
 
 int web_brdadd(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	int bid = strtol(get_param("bid"), NULL, 10);

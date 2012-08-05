@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -166,7 +167,7 @@ int bbstcon_main(void)
 
 int web_sigopt(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	bool hidesig = streq(get_param("hidesig"), "on");

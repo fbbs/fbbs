@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
@@ -37,7 +38,7 @@ static void get_post_body(char **begin, char **end)
 
 static int do_bbspst(bool isedit)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	board_t board;
@@ -109,7 +110,7 @@ int bbsedit_main(void)
 
 int bbsccc_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	parse_post_data();
@@ -182,7 +183,7 @@ int bbsccc_main(void)
 // fwd?bid=[bid]&f=[fid]&u=[recipient]
 int bbsfwd_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	parse_post_data();
 	const char *reci = get_param("u");

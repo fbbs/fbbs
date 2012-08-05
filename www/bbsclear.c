@@ -1,10 +1,11 @@
 #include "libweb.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/web.h"
 
 int bbsclear_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	board_t board;
