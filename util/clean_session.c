@@ -82,7 +82,11 @@ static void kill_session(const struct _session *s, bool is_dup)
 			update_user_stay(&user, false, is_dup);
 			substitut_record(NULL, &user, sizeof(user), legacy_uid);
 		}
-		session_destroy(s->sid);
+
+		if (s->web && s->expire > time(NULL))
+			session_inactivate(s->sid);
+		else
+			session_destroy(s->sid);
 	}
 }
 
