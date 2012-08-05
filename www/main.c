@@ -269,6 +269,24 @@ static bool get_session(void)
 	return ok;
 }
 
+static bool require_login(const web_handler_t *h)
+{
+#ifdef FDQUAN
+	int (*f)(void) = h->func;
+	return !(f == web_login || f == fcgi_reg || f == fcgi_activate);
+#else
+	return false;
+#endif
+}
+
+static int execute(const web_handler_t *h)
+{
+	if (!session.id && require_login(h))
+		return BBS_ELGNREQ;
+	else
+		return h->func();
+}
+
 /**
  * The main entrance of bbswebd.
  * @return 0 on success, 1 on initialization error.
@@ -293,22 +311,14 @@ int main(void)
 			ret = BBS_ENOURL;
 		} else {
 			get_client_ip();
-			loginok = get_session();
+			get_session();
 
-			if (loginok) {
-				get_web_mode(h->mode);
+			if (session.id) {
 				set_user_status(h->mode);
 				set_idle_time(session.id, time(NULL));
 			}
-#ifdef FDQUAN
-			if (!loginok && h->func != web_login && h->func != fcgi_reg
-					&& h->func != fcgi_activate)
-				ret = BBS_ELGNREQ;
-			else
-				ret = (*(h->func))();
-#else
-			ret = (*(h->func))();
-#endif // FDQUAN
+
+			ret = execute(h);
 		}
 		check_bbserr(ret);
 		pool_destroy(p);
