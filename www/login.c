@@ -125,6 +125,11 @@ static void set_cookie(const char *name, const char *value, int max_age)
 	printf("\n");
 }
 
+static void expire_cookie(const char *name)
+{
+	set_cookie(name, "", -1);
+}
+
 static int login_redirect(const char *key, int max_age)
 {
 	const char *referer = get_param("ref");
@@ -213,20 +218,14 @@ int web_login(void)
 	return login_redirect(key, persistent);
 }
 
-static void logout(void)
-{
-	update_user_stay(&currentuser, false, false);
-	save_user_data(&currentuser);
-}
-
 int web_logout(void)
 {
 	if (session.id) {
-		logout();
-		printf("Set-cookie: utmpnum=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-				"Set-cookie: utmpkey=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-				"Set-cookie: utmpuserid=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-				"Location: sec\n\n");
+		update_user_stay(&currentuser, false, false);
+		save_user_data(&currentuser);
+
+		expire_cookie("utmpkey");
+		expire_cookie("utmpuserid");
 	}
 	printf("Location: ../..\n\n");
 	return 0;

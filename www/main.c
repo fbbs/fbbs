@@ -246,8 +246,6 @@ static bool activate_session(session_id_t sid)
 
 static bool _get_session(const char *uname, const char *key)
 {
-	bool login = false;
-
 	// TODO: cache
 	db_res_t *res = db_query("SELECT s.id, u.id, s.active, s.expire"
 			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
@@ -255,12 +253,10 @@ static bool _get_session(const char *uname, const char *key)
 	if (res && db_res_rows(res) == 1) {
 		session.id = db_get_session_id(res, 0, 0);
 		session.uid = db_get_user_id(res, 0, 1);
-		login = true;
 
 		if (!db_get_bool(res, 0, 2)) {
 			if (!activate_session(session.id)) {
 				session.id = session.uid = 0;
-				login = false;
 			}
 		}
 	} else {
@@ -268,7 +264,7 @@ static bool _get_session(const char *uname, const char *key)
 	}
 
 	db_clear(res);
-	return login;
+	return session.id;
 }
 
 static bool get_session(void)
