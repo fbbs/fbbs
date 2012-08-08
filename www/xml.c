@@ -29,16 +29,6 @@ struct xml_document_t {
 	xml_node_t *root;
 };
 
-static inline void *palloc(size_t size)
-{
-	return pool_alloc(ctx.p, size);
-}
-
-static inline char *pstrdup(const char *s)
-{
-	return pool_strdup(ctx.p, s, 0);
-}
-
 xml_document_t *xml_new_doc(void)
 {
 	xml_document_t *doc = palloc(sizeof(*doc));

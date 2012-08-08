@@ -70,7 +70,6 @@ typedef struct {
 	int mode;            ///< user mode. @see mode_type
 } web_handler_t;
 
-web_ctx_t ctx;
 char fromhost[IP_LEN];
 
 const static web_handler_t handlers[] = {
@@ -158,23 +157,6 @@ static const web_handler_t *_get_handler(void)
 	return bsearch(&h, handlers, NELEMS(handlers), sizeof(h), compare_handler);
 }
 
-static int initialize_gcrypt(void)
-{
-	if (!gcry_check_version(GCRYPT_VERSION))
-		return -1;
-
-	if (gcry_control(GCRYCTL_DISABLE_SECMEM, 0) != 0)
-		return -1;
-
-	if (gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0) != 0)
-		return -1;
-
-	if (gcry_md_open(&ctx.sha1, GCRY_MD_SHA1, 0) != 0)
-		return -1;
-
-	return 0;
-}
-
 /**
  * Initialization before entering FastCGI loop.
  * @return 0 on success, -1 on error.
@@ -196,9 +178,6 @@ static int initialize(void)
 	if (resolve_boards() < 0)
 		return -1;
 	if (!brdshm)
-		return -1;
-
-	if (initialize_gcrypt() != 0)
 		return -1;
 
 	return 0;
@@ -298,11 +277,7 @@ int main(void)
 	initialize_environment(INIT_CONV | INIT_DB | INIT_MDB);
 
 	while (FCGI_Accept() >= 0) {
-		pool_t *p = pool_create(0);
-
-		ctx.p = p;
-		ctx.r = get_request(p);
-		if (!ctx.r)
+		if (!web_ctx_init())
 			return EXIT_FAILURE;
 
 		const web_handler_t *h = _get_handler();
@@ -321,7 +296,8 @@ int main(void)
 			ret = execute(h);
 		}
 		check_bbserr(ret);
-		pool_destroy(p);
+
+		web_ctx_destroy();
 	}
 	return 0;
 }

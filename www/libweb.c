@@ -332,9 +332,9 @@ void set_user_flag(int flag)
 
 void print_session(void)
 {
-	if (ctx.r->flag & REQUEST_API)
+	if (request_type(REQUEST_API))
 		return;
-	bool mobile = ctx.r->flag & REQUEST_MOBILE;
+	bool mobile = request_type(REQUEST_MOBILE);
 
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);

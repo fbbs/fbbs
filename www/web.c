@@ -1,10 +1,27 @@
 #include <ctype.h>
+#include <gcrypt.h>
 #include <stdlib.h>
 #include <string.h>
 #include "libweb.h"
 #include "fbbs/pool.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
+
+typedef struct http_req_t {
+	const char *from;
+	pair_t params[MAX_PARAMETERS];
+	int count;
+	int flag;
+} http_req_t;
+
+struct web_ctx_t {
+	pool_t *p;
+	http_req_t r;
+	gcry_md_hd_t sha1;
+	bool inited;
+};
+
+static struct web_ctx_t ctx = { .inited = false };
 
 /**
  * Get an environment variable.
@@ -92,7 +109,7 @@ static int _parse_param(http_req_t *r, const char *begin, size_t len)
 	if (len == 0)
 		return 0;
 
-	char *s = pool_alloc(r->p, len + 1);
+	char *s = pool_alloc(ctx.p, len + 1);
 	if (!s)
 		return -1;
 
@@ -156,12 +173,19 @@ static int _parse_http_req(http_req_t *r)
  */
 const char *get_param(const char *key)
 {
-	http_req_t *r = ctx.r;
+	http_req_t *r = &ctx.r;
 	for (int i = 0; i < r->count; ++i) {
 		if (streq(r->params[i].key, key))
 			return r->params[i].val;
 	}
 	return "";
+}
+
+const pair_t *get_param_pair(int idx)
+{
+	if (idx >= 0 && idx < ctx.r.count)
+		return ctx.r.params + idx;
+	return NULL;
 }
 
 struct _option_pairs {
@@ -178,41 +202,34 @@ static void get_global_options(void)
 		{ "utf8", REQUEST_UTF8 }
 	};
 
-	ctx.r->flag = 0;
+	ctx.r.flag = 0;
 	for (int i = 0; i < sizeof(pairs) / sizeof(pairs[0]); ++i) {
 		if (*get_param(pairs[i].param) == '1')
-			ctx.r->flag |= pairs[i].flag;
+			ctx.r.flag |= pairs[i].flag;
 	}
 }
 
 /**
  * Get an http request.
  * The GET request and cookies are parsed into key=value pairs.
- * @param p A memory pool to use.
- * @return A parsed http request struct, NULL on error.
+ * @return True on success, false on error.
  */
-http_req_t *get_request(pool_t *p)
+bool get_web_request(void)
 {
-	http_req_t *r = pool_alloc(p, sizeof(*r));
-	if (!r)
-		return NULL;
-	ctx.r = r;
+	ctx.r.count = 0;
+	if (_parse_http_req(&ctx.r) != 0)
+		return false;
 
-	r->p = p;
-	r->count = 0;
-	if (_parse_http_req(r) != 0)
-		return NULL;
-
-	const char *from = _get_server_env("REMOTE_ADDR");
-	size_t len = strlen(from) + 1;
-	r->from = pool_alloc(p, len);
-	if (!r->from)
-		return NULL;
-	strlcpy(r->from, from, len);
+	ctx.r.from = _get_server_env("REMOTE_ADDR");
 
 	get_global_options();
 
-	return r;
+	return true;
+}
+
+bool request_type(int type)
+{
+	return ctx.r.flag & type;
 }
 
 /**
@@ -234,8 +251,44 @@ int parse_post_data(void)
 		return -1;
 
 	buf[size] = '\0';
-	_parse_params(ctx.r, buf, '&');
+	_parse_params(&ctx.r, buf, '&');
 	return 0;
+}
+
+static int initialize_gcrypt(void)
+{
+	if (!gcry_check_version(GCRYPT_VERSION))
+		return -1;
+
+	if (gcry_control(GCRYCTL_DISABLE_SECMEM, 0) != 0)
+		return -1;
+
+	if (gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0) != 0)
+		return -1;
+
+	if (gcry_md_open(&ctx.sha1, GCRY_MD_SHA1, 0) != 0)
+		return -1;
+
+	return 0;
+}
+
+bool web_ctx_init(void)
+{
+	if (!ctx.inited) {
+		if (initialize_gcrypt() == 0)
+			ctx.inited = true;
+		else
+			return false;
+	}
+
+	ctx.p = pool_create(0);
+
+	return get_web_request();
+}
+
+void web_ctx_destroy(void)
+{
+	pool_destroy(ctx.p);
 }
 
 /**
@@ -294,4 +347,22 @@ void xml_print(const char *s)
 		}
 	}
 	fwrite(last, 1, c - last, stdout);
+}
+
+const unsigned char *calc_digest(const void *s, size_t size)
+{
+	gcry_md_reset(ctx.sha1);
+	gcry_md_write(ctx.sha1, s, size);
+	gcry_md_final(ctx.sha1);
+	return gcry_md_read(ctx.sha1, 0);
+}
+
+void *palloc(size_t size)
+{
+	return pool_alloc(ctx.p, size);
+}
+
+char *pstrdup(const char *s)
+{
+	return pool_strdup(ctx.p, s, 0);
 }

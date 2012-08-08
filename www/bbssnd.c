@@ -128,7 +128,7 @@ int bbssnd_main(void)
 
 	char title[sizeof(fh.title)];
 	if (!isedit) {
-		if (ctx.r->flag & REQUEST_UTF8) {
+		if (request_type(REQUEST_UTF8)) {
 			convert_u2g(get_param("title"), title);
 		} else {
 			strlcpy(title, get_param("title"), sizeof(title));
@@ -161,7 +161,7 @@ int bbssnd_main(void)
 			.o_fp = reply ? &fh : NULL, .mmark = false,
 			.noreply = reply && fh.accessed[0] & FILE_NOREPLY,
 			.anony = strtol(get_param("anony"), NULL, 0),
-			.cp = (ctx.r->flag & REQUEST_UTF8) ? env.u2g : NULL
+			.cp = request_type(REQUEST_UTF8) ? env.u2g : NULL
 		};
 		if (!(fid = do_post_article(&pr)))
 			return BBS_EINTNL;

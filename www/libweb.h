@@ -126,7 +126,7 @@ void print_session(void);
 void printable_filter(char *str);
 
 extern int xml_print_post(const char *file, int option);
-extern int xml_print_file(http_req_t *r, const char *file);
+extern int xml_print_file(const char *file);
 
 extern int bbscon_search(const char *board, unsigned int fid,
 		int action, struct fileheader *fp, bool extra);

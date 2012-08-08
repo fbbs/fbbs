@@ -62,11 +62,7 @@ static char *generate_session_key(char *buf, size_t size, session_id_t sid)
 
 	s.sid = sid;
 
-	gcry_md_reset(ctx.sha1);
-	gcry_md_write(ctx.sha1, &s, sizeof(s));
-	gcry_md_final(ctx.sha1);
-
-	const uchar_t *digest = gcry_md_read(ctx.sha1, 0);
+	const uchar_t *digest = calc_digest(&s, sizeof(s));
 	return digest_to_hex(digest, buf, size);
 }
 
@@ -115,7 +111,7 @@ static int login_screen(void)
 			"<input type='hidden' name='ref' value='%s'/>"
 			"<input type='submit' value='µÇÂ¼' />"
 			"</form></body></html>",
-			(ctx.r->flag & REQUEST_MOBILE) ? "mobile" : "bbs", ref);
+			request_type(REQUEST_MOBILE) ? "mobile" : "bbs", ref);
 	return 0;
 }
 

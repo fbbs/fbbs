@@ -2,7 +2,6 @@
 #define FB_WEB_H
 
 #include <fcgi_stdio.h>
-#include <gcrypt.h>
 
 #include "fbbs/cfg.h"
 #include "fbbs/convert.h"
@@ -28,31 +27,23 @@ typedef struct pair_t {
 	char *val;
 } pair_t;
 
-typedef struct http_req_t {
-	pool_t *p;
-	char *from;
-	pair_t params[MAX_PARAMETERS];
-	int count;
-	int flag;
-} http_req_t;
+extern bool web_ctx_init(void);
+extern void web_ctx_destroy(void);
 
-typedef struct web_ctx_t {
-	config_t *c;
-	pool_t *p;
-	http_req_t *r;
-	gcry_md_hd_t sha1;
-} web_ctx_t;
-
-extern web_ctx_t ctx;
-
-extern http_req_t *get_request(pool_t *p);
 extern const char *get_param(const char *name);
+extern const pair_t *get_param_pair(int idx);
 extern int parse_post_data(void);
+extern bool request_type(int type);
 
 extern void html_header(void);
 extern void xml_header(const char *xslfile);
 
 extern void xml_print(const char *s);
 extern int xml_print_post(const char *file, int option);
+
+extern const unsigned char *calc_digest(const void *s, size_t size);
+
+extern void *palloc(size_t size);
+extern char *pstrdup(const char *s);
 
 #endif // FB_WEB_H

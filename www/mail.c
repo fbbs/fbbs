@@ -312,6 +312,8 @@ static int _mail_checked(void *ptr, void *file)
 	return streq(p->filename, file);
 }
 
+
+
 int web_mailman(void)
 {
 	if (!session.id)
@@ -326,8 +328,8 @@ int web_mailman(void)
 	printf("<mailman>");
 	print_session();
 
-	for (int i = 0; i < ctx.r->count; ++i) {
-		pair_t *p = ctx.r->params + i;
+	const pair_t *p = NULL;
+	for (int i = 0; (p = get_param_pair(i)); ++i) {
 		if (streq(p->val, "on") && strncmp(p->key, "box", 3) == 0) {
 			const char *file = p->key + sizeof("box") - 1;
 			if (delete_record(index, sizeof(struct fileheader), 1,
