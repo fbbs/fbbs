@@ -4,8 +4,14 @@
 #include "fbbs/xml.h"
 
 struct xml_attr_t {
+	int type;
 	const char *name;
-	const char *value;
+	union {
+		const char *str;
+		int integer;
+		int64_t bigint;
+		bool boolean;
+	} value;
 	SLIST_FIELD(xml_attr_t) next;
 };
 
@@ -54,96 +60,48 @@ xml_node_t *xml_new_node(const char *name)
 	return node;
 }
 
-xml_node_t *xml_attach_child(xml_node_t *parent, xml_node_t *child)
+xml_node_t *xml_add_child(xml_node_t *parent, xml_node_t *child)
 {
 	SLIST_INSERT_HEAD(&parent->child, child, next);
 	return child;
 }
 
-static xml_attr_t *xml_attach_attr(xml_node_t *node, xml_attr_t *attr)
+static xml_attr_t *xml_add_attr(xml_node_t *node, xml_attr_t *attr)
 {
 	SLIST_INSERT_HEAD(&node->attr, attr, next);
 	return attr;
 }
 
-static xml_attr_t *_xml_attr_str(const char *name, const char *value,
-		bool copy)
+#define XML_ATTR_HELPER(attr_type, field, attr_value)  \
+	do { \
+		xml_attr_t *attr = palloc(sizeof(*attr)); \
+		attr->name = name; \
+		attr->type = attr_type; \
+		attr->value.field = attr_value; \
+		return xml_add_attr(node, attr); \
+	} while (0)
+
+xml_attr_t *xml_attr_value(xml_node_t *node, const char *name, const char *value)
 {
-	xml_attr_t *attr = palloc(sizeof(*attr));
-	attr->name = name;
-	attr->value = copy ? pstrdup(value) : value;
-	return attr;
+	XML_ATTR_HELPER(XML_ATTR_TYPE_VALUE, str, pstrdup(value));
 }
 
-xml_attr_t *xml_attr_str(xml_node_t *node, const char *name, const char *value)
+xml_attr_t *xml_attr_text(xml_node_t *node, const char *name, const char *value)
 {
-	return xml_attach_attr(node, _xml_attr_str(name, value, true));
+	XML_ATTR_HELPER(XML_ATTR_TYPE_TEXT, str, pstrdup(value));
 }
 
-static xml_attr_t *xml_attr_vprintf(const char *name, const char *fmt,
-		va_list ap)
+xml_attr_t *xml_attr_integer(xml_node_t *node, const char *name, int value)
 {
-	char buf[16];
-	va_list aq;
-	va_copy(aq, ap);
-	size_t size = vsnprintf(buf, sizeof(buf), fmt, aq);
-	va_end(aq);
-
-	if (size >= sizeof(buf)) {
-		char *str = palloc(size + 1);
-		vsnprintf(str, size, fmt, ap);
-		return _xml_attr_str(name, str, false);
-	}
-
-	return _xml_attr_str(name, buf, true);
+	XML_ATTR_HELPER(XML_ATTR_TYPE_INTEGER, integer, value);
 }
 
-xml_attr_t *xml_attr(xml_node_t *node, const char *name, const char *fmt, ...)
+xml_attr_t *xml_attr_bigint(xml_node_t *node, const char *name, int64_t value)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	xml_attr_t *attr = xml_attr_vprintf(name, fmt, ap);
-	va_end(ap);
-	return xml_attach_attr(node, attr);
+	XML_ATTR_HELPER(XML_ATTR_TYPE_BIGINT, bigint, value);
 }
 
-static xml_attr_t *xml_attr_int(xml_node_t *node, const char *name, int value)
+xml_attr_t *xml_attr_boolean(xml_node_t *node, const char *name, bool value)
 {
-	return xml_attr(node, name, "%d", value);
-}
-
-static xml_attr_t *xml_attr_bigint(xml_node_t *node, const char *name, int64_t value)
-{
-	return xml_attr(node, name, "%"PRId64, value);
-}
-
-static xml_attr_t *xml_attr_bool_default(xml_node_t *node, const char *name,
-		bool value)
-{
-	if (value)
-		return xml_attach_attr(node, _xml_attr_str(name, "1", false));
-	return NULL;
-}
-
-xml_attr_t *xml_attrs(xml_node_t *node, xml_attr_pair_t *attrs, size_t size)
-{
-	for (size_t i = 0; i < size; ++i) {
-		switch (attrs->type) {
-			case XML_ATTR_ENUM_STRING:
-				xml_attr_str(node, attrs->name, attrs->value.str);
-				break;
-			case XML_ATTR_ENUM_INTEGER:
-				xml_attr_int(node, attrs->name, attrs->value.integer);
-				break;
-			case XML_ATTR_ENUM_BIGINT:
-				xml_attr_bigint(node, attrs->name, attrs->value.bigint);
-				break;
-			case XML_ATTR_ENUM_BOOLEAN:
-				xml_attr_bool_default(node, attrs->name, attrs->value.boolean);
-			default:
-				break;
-		}
-		++attrs;
-	}
-	return SLIST_FIRST(&node->attr);
+	XML_ATTR_HELPER(XML_ATTR_TYPE_BOOLEAN, boolean, value);
 }
