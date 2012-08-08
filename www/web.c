@@ -6,6 +6,7 @@
 #include "fbbs/pool.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
+#include "fbbs/xml.h"
 
 typedef struct http_req_t {
 	const char *from;
@@ -16,7 +17,7 @@ typedef struct http_req_t {
 
 struct web_ctx_t {
 	pool_t *p;
-	http_req_t r;
+	http_req_t req;
 	gcry_md_hd_t sha1;
 	bool inited;
 };
@@ -173,7 +174,7 @@ static int _parse_http_req(http_req_t *r)
  */
 const char *get_param(const char *key)
 {
-	http_req_t *r = &ctx.r;
+	http_req_t *r = &ctx.req;
 	for (int i = 0; i < r->count; ++i) {
 		if (streq(r->params[i].key, key))
 			return r->params[i].val;
@@ -183,8 +184,8 @@ const char *get_param(const char *key)
 
 const pair_t *get_param_pair(int idx)
 {
-	if (idx >= 0 && idx < ctx.r.count)
-		return ctx.r.params + idx;
+	if (idx >= 0 && idx < ctx.req.count)
+		return ctx.req.params + idx;
 	return NULL;
 }
 
@@ -202,10 +203,10 @@ static void get_global_options(void)
 		{ "utf8", REQUEST_UTF8 }
 	};
 
-	ctx.r.flag = 0;
+	ctx.req.flag = 0;
 	for (int i = 0; i < sizeof(pairs) / sizeof(pairs[0]); ++i) {
 		if (*get_param(pairs[i].param) == '1')
-			ctx.r.flag |= pairs[i].flag;
+			ctx.req.flag |= pairs[i].flag;
 	}
 }
 
@@ -216,11 +217,11 @@ static void get_global_options(void)
  */
 bool get_web_request(void)
 {
-	ctx.r.count = 0;
-	if (_parse_http_req(&ctx.r) != 0)
+	ctx.req.count = 0;
+	if (_parse_http_req(&ctx.req) != 0)
 		return false;
 
-	ctx.r.from = _get_server_env("REMOTE_ADDR");
+	ctx.req.from = _get_server_env("REMOTE_ADDR");
 
 	get_global_options();
 
@@ -229,7 +230,7 @@ bool get_web_request(void)
 
 bool request_type(int type)
 {
-	return ctx.r.flag & type;
+	return ctx.req.flag & type;
 }
 
 /**
@@ -251,7 +252,7 @@ int parse_post_data(void)
 		return -1;
 
 	buf[size] = '\0';
-	_parse_params(&ctx.r, buf, '&');
+	_parse_params(&ctx.req, buf, '&');
 	return 0;
 }
 
