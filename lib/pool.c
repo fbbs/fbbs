@@ -48,11 +48,11 @@ pool_t *pool_create(size_t size)
 	if (!_max_pool_alloc)
 		_max_pool_alloc = sysconf(_SC_PAGESIZE);
 
-	if (size <= sizeof(pool_block_t))
-		return NULL;
-
 	if (!size)
 		size = DEFAULT_POOL_SIZE;
+
+	if (size <= sizeof(pool_block_t))
+		return NULL;
 
 	pool_block_t *b = malloc(size);
 	if (!b)
