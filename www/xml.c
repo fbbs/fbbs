@@ -66,32 +66,32 @@ static xml_attr_t *xml_add_attr(xml_node_t *node, xml_attr_t *attr)
 	do { \
 		xml_attr_t *attr = palloc(sizeof(*attr)); \
 		attr->name = name; \
-		attr->type = attr_type; \
+		attr->type = attr_type | as_node; \
 		attr->value.field = attr_value; \
 		return xml_add_attr(node, attr); \
 	} while (0)
 
-xml_attr_t *xml_attr_value(xml_node_t *node, const char *name, const char *value)
+xml_attr_t *xml_attr_value(xml_node_t *node, const char *name,
+		const char *value, bool as_node)
 {
 	XML_ATTR_HELPER(XML_ATTR_TYPE_VALUE, str, pstrdup(value));
 }
 
-xml_attr_t *xml_attr_text(xml_node_t *node, const char *name, const char *value)
-{
-	XML_ATTR_HELPER(XML_ATTR_TYPE_TEXT, str, pstrdup(value));
-}
-
-xml_attr_t *xml_attr_integer(xml_node_t *node, const char *name, int value)
+xml_attr_t *xml_attr_integer(xml_node_t *node, const char *name, int value,
+		bool as_node)
 {
 	XML_ATTR_HELPER(XML_ATTR_TYPE_INTEGER, integer, value);
 }
 
-xml_attr_t *xml_attr_bigint(xml_node_t *node, const char *name, int64_t value)
+xml_attr_t *xml_attr_bigint(xml_node_t *node, const char *name, int64_t value,
+		bool as_node)
 {
 	XML_ATTR_HELPER(XML_ATTR_TYPE_BIGINT, bigint, value);
 }
 
-xml_attr_t *xml_attr_boolean(xml_node_t *node, const char *name, bool value)
+xml_attr_t *xml_attr_boolean(xml_node_t *node, const char *name, bool value,
+		bool as_node)
 {
 	XML_ATTR_HELPER(XML_ATTR_TYPE_BOOLEAN, boolean, value);
 }
+
