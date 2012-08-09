@@ -19,6 +19,7 @@ SLIST_HEAD(xml_attr_list_t, xml_attr_t);
 SLIST_HEAD(xml_node_list_t, xml_node_t);
 
 struct xml_node_t {
+	int type;
 	const char *name;
 	struct xml_attr_list_t attr;
 	struct xml_node_list_t child;
@@ -41,10 +42,11 @@ void xml_set_doc_root(xml_document_t *doc, xml_node_t *root)
 	doc->root = root;
 }
 
-xml_node_t *xml_new_node(const char *name)
+xml_node_t *xml_new_node(const char *name, int type)
 {
 	xml_node_t *node = palloc(sizeof(*node));
-	node->name = pstrdup(name);
+	node->name = name;
+	node->type = type;
 	SLIST_INIT_HEAD(&node->attr);
 	SLIST_INIT_HEAD(&node->child);
 	return node;
