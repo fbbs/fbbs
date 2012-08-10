@@ -187,9 +187,90 @@ static void print_as_xml(const xml_document_t *doc)
 	_print_as_xml(doc->root);
 }
 
+static void _json_string(const char *s)
+{
+	int c;
+	while ((c = *s)) {
+		if (c == '"') {
+			printf("\\\"");
+		} else if (c == '\\') {
+			printf("\\\\");
+		} else if (c >= 0 && c <= 0x1f) {
+			printf("\\u00%02x", c);
+		} else {
+			putchar(c);
+		}
+		++s;
+	}
+}
+
+static void json_string(const char *s)
+{
+	if (s) {
+		putchar('\"');
+		_json_string(s);
+		putchar('\"');
+	} else {
+		printf("null");
+	}
+}
+
+static void json_print_attr(const xml_attr_t *attr)
+{
+	json_string(attr->name);
+	putchar(':');
+
+	switch (real_type(attr)) {
+		case XML_ATTR_TYPE_INTEGER:
+			printf("%d", attr->value.integer);
+			break;
+		case XML_ATTR_TYPE_BIGINT:
+			printf("%"PRId64, attr->value.bigint);
+			break;
+		case XML_ATTR_TYPE_BOOLEAN:
+			if (attr->value.boolean)
+				printf("true");
+			else
+				printf("false");
+			break;
+		default:
+			json_string(attr->value.str);
+			break;
+	}
+}
+
+static void _print_as_json(const xml_node_t *node)
+{
+	if (!(node->type & XML_NODE_ANONYMOUS_JSON)) {
+		json_string(node->name);
+		putchar(':');
+	}
+
+	bool child = SLIST_FIRST(&node->child) || SLIST_FIRST(&node->attr);
+	bool array = node->type & XML_NODE_CHILD_ARRAY;
+
+	if (child) {
+		putchar(array ? '[' : '{');
+
+		SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
+			json_print_attr(attr);
+			if (SLIST_NEXT(attr, next) || SLIST_FIRST(&node->child))
+				putchar(',');
+		}
+
+		SLIST_FOREACH(xml_node_t, child, &node->child, next) {
+			_print_as_json(child);
+			if (SLIST_NEXT(child, next))
+				putchar(',');
+		}
+
+		putchar(array ? ']' : '}');
+	}
+}
+
 static void print_as_json(const xml_document_t *doc)
 {
-	return;
+	_print_as_json(doc->root);
 }
 
 void xml_dump(const xml_document_t *doc, int type)
