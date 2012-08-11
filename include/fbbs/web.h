@@ -20,6 +20,8 @@ enum {
 	REQUEST_PARSED = 0x2,
 	REQUEST_MOBILE = 0x4,
 	REQUEST_UTF8 = 0x8,
+	REQUEST_XML = 0x10,
+	REQUEST_JSON = 0x20,
 };
 
 enum {

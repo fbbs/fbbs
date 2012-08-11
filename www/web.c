@@ -200,6 +200,16 @@ struct _option_pairs {
 	int flag;
 };
 
+static bool ends_with(const char *s, const char *pattern)
+{
+	size_t len_s = strlen(s), len_p = strlen(pattern);
+
+	if (len_s >= len_p)
+		return !memcmp(s + len_s - len_p, pattern, len_p);
+
+	return false;
+}
+
 static void get_global_options(void)
 {
 	struct _option_pairs pairs[] = {
@@ -214,6 +224,14 @@ static void get_global_options(void)
 		if (*get_param(pairs[i].param) == '1')
 			ctx.req.flag |= pairs[i].flag;
 	}
+
+	const char *name = getenv("SCRIPT_NAME");
+	if (name) {
+		if (ends_with(name, ".xml"))
+			ctx.req.flag |= REQUEST_XML;
+		if (ends_with(name, ".json"))
+			ctx.req.flag |= REQUEST_JSON;
+	}
 }
 
 /**
@@ -221,7 +239,7 @@ static void get_global_options(void)
  * The GET request and cookies are parsed into key=value pairs.
  * @return True on success, false on error.
  */
-bool get_web_request(void)
+static bool get_web_request(void)
 {
 	ctx.req.count = 0;
 	if (_parse_http_req(&ctx.req) != 0)
