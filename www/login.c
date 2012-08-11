@@ -139,8 +139,8 @@ static int login_redirect(const char *key, int max_age)
 
 	printf("Content-type: text/html; charset=%s\n", CHARSET);
 	if (key) {
-		set_cookie("utmpkey", key, max_age);
-		set_cookie("utmpuserid", currentuser.userid, max_age);
+		set_cookie(COOKIE_KEY, key, max_age);
+		set_cookie(COOKIE_USER, currentuser.userid, max_age);
 	}
 	printf("Location: %s\n\n", referer);
 	return 0;
@@ -225,8 +225,8 @@ int web_logout(void)
 		update_user_stay(&currentuser, false, false);
 		save_user_data(&currentuser);
 
-		expire_cookie("utmpkey");
-		expire_cookie("utmpuserid");
+		expire_cookie(COOKIE_KEY);
+		expire_cookie(COOKIE_USER);
 	}
 	redirect_homepage();
 	return 0;

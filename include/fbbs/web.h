@@ -8,6 +8,9 @@
 #include "fbbs/dbi.h"
 #include "fbbs/pool.h"
 
+#define COOKIE_KEY  "key"
+#define COOKIE_USER  "user"
+
 enum {
 	MAX_PARAMETERS = 32,
 	MAX_CONTENT_LENGTH = 1 * 1024 * 1024,

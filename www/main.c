@@ -242,8 +242,8 @@ static bool _get_session(const char *uname, const char *key)
 
 static bool get_session(void)
 {
-	const char *uname = get_param("utmpuserid");
-	const char *key = get_param("utmpkey");
+	const char *uname = get_param(COOKIE_USER);
+	const char *key = get_param(COOKIE_KEY);
 
 	memset(&currentuser, 0, sizeof(currentuser));
 
