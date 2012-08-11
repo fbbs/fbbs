@@ -1,3 +1,4 @@
+#include "fbbs/fbbs.h"
 #include "fbbs/list.h"
 #include "fbbs/pool.h"
 #include "fbbs/web.h"
@@ -212,20 +213,31 @@ static void _json_string(const char *s)
 	}
 }
 
-static void json_string(const char *s)
+static int json_string_helper(const char *s, size_t len, void *arg)
+{
+	_json_string(s);
+	return 0;
+}
+
+static void json_string(const char *s, int encoding)
 {
 	if (s) {
 		putchar('\"');
-		_json_string(s);
+
+		if (encoding == XML_ENCODING_UTF8)
+			_json_string(s);
+		else
+			convert(env.g2u, s, CONVERT_ALL, NULL, 0, json_string_helper, NULL);
+
 		putchar('\"');
 	} else {
 		printf("null");
 	}
 }
 
-static void json_print_attr(const xml_attr_t *attr)
+static void json_print_attr(const xml_attr_t *attr, int encoding)
 {
-	json_string(attr->name);
+	json_string(attr->name, encoding);
 	putchar(':');
 
 	switch (real_type(attr)) {
@@ -242,15 +254,15 @@ static void json_print_attr(const xml_attr_t *attr)
 				printf("false");
 			break;
 		default:
-			json_string(attr->value.str);
+			json_string(attr->value.str, encoding);
 			break;
 	}
 }
 
-static void _print_as_json(const xml_node_t *node)
+static void _print_as_json(const xml_node_t *node, int encoding)
 {
 	if (!(node->type & XML_NODE_ANONYMOUS_JSON)) {
-		json_string(node->name);
+		json_string(node->name, encoding);
 		putchar(':');
 	}
 
@@ -261,13 +273,13 @@ static void _print_as_json(const xml_node_t *node)
 		putchar(array ? '[' : '{');
 
 		SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
-			json_print_attr(attr);
+			json_print_attr(attr, encoding);
 			if (SLIST_NEXT(attr, next) || SLIST_FIRST(&node->child))
 				putchar(',');
 		}
 
 		SLIST_FOREACH(xml_node_t, child, &node->child, next) {
-			_print_as_json(child);
+			_print_as_json(child, encoding);
 			if (SLIST_NEXT(child, next))
 				putchar(',');
 		}
@@ -278,7 +290,7 @@ static void _print_as_json(const xml_node_t *node)
 
 static void print_as_json(const xml_document_t *doc)
 {
-	_print_as_json(doc->root);
+	_print_as_json(doc->root, doc->encoding);
 }
 
 void xml_dump(const xml_document_t *doc, int type)
