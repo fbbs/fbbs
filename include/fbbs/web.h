@@ -34,6 +34,19 @@ enum {
 	HTTP_SERVICE_UNAVAILABLE = 503,
 };
 
+enum {
+	ERROR_INCORRECT_PASSWORD = 0,
+	ERROR_USER_SUSPENDED,
+	ERROR_BAD_REQUEST = 400,
+};
+
+enum {
+	RESPONSE_DEFAULT = 0,
+	RESPONSE_HTML = 1,
+	RESPONSE_XML = 2,
+	RESPONSE_JSON = 3,
+};
+
 typedef struct pair_t {
 	char *key;
 	char *val;
@@ -61,5 +74,7 @@ extern char *pstrdup(const char *s);
 extern void set_response_type(int type);
 extern void set_response_root(const char *name, int type, int encoding);
 extern void respond(int code);
+
+int error_msg(int code);
 
 #endif // FB_WEB_H

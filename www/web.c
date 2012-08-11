@@ -308,6 +308,7 @@ bool web_ctx_init(void)
 
 	ctx.p = pool_create(0);
 	ctx.r.doc = xml_new_doc();
+	ctx.r.type = RESPONSE_DEFAULT;
 
 	return get_web_request();
 }
@@ -405,7 +406,64 @@ void set_response_root(const char *name, int type, int encoding)
 	xml_set_encoding(ctx.r.doc, encoding);
 }
 
+static int response_type(void)
+{
+	int type = ctx.r.type;
+	if (type == RESPONSE_DEFAULT) {
+		if (request_type(REQUEST_JSON))
+			return RESPONSE_JSON;
+		return RESPONSE_XML;
+	}
+	return type;
+}
+
+static const char *content_type(int type)
+{
+	switch (type) {
+		case RESPONSE_HTML:
+			return "text/html";
+		case RESPONSE_JSON:
+			return "application/json";
+		default:
+			return "text/xml";
+	}
+}
+
 void respond(int code)
 {
-	;
+	int type = response_type();
+
+	printf("Content-type: %s;  charset=utf-8\n"
+			"Status: %d\n\n", content_type(type), code);
+
+	xml_dump(ctx.r.doc, type == RESPONSE_JSON ? XML_AS_JSON : XML_AS_XML);
+	FCGI_Finish();
+}
+
+struct error_msg_t {
+	int code;
+	int http_status_code;
+	const char *msg;
+};
+
+static const struct error_msg_t error_msgs[] = {
+	{ ERROR_INCORRECT_PASSWORD, HTTP_UNAUTHORIZED, "incorrect username or password" },
+	{ ERROR_USER_SUSPENDED, HTTP_FORBIDDEN, "permission denied" },
+	{ ERROR_BAD_REQUEST, HTTP_BAD_REQUEST, "bad request" },
+};
+
+int error_msg(int code)
+{
+	xml_node_t *node = xml_new_node("bbs_error", XML_NODE_ANONYMOUS_JSON);
+	xml_set_doc_root(ctx.r.doc, node);
+	xml_set_encoding(ctx.r.doc, XML_ENCODING_UTF8);
+
+	const struct error_msg_t *e = error_msgs;
+	if (code >= 0 && code < NELEMS(error_msgs))
+		e = error_msgs + code;
+
+	xml_attr_string(node, "msg", e->msg, false);
+	xml_attr_integer(node, "code", e->code + 10000);
+
+	return e->http_status_code;
 }

@@ -152,7 +152,7 @@ int web_login(void)
 		return login_redirect(NULL, 0);
 
 	if (parse_post_data() < 0)
-		return BBS_EINVAL;
+		return error_msg(ERROR_BAD_REQUEST);
 
 	const char *uname = get_param("id");
 	if (*uname == '\0' || strcaseeq(uname, "guest"))
@@ -166,14 +166,14 @@ int web_login(void)
 
 	struct userec user;
 	if (getuserec(uname, &user) == 0)
-		return BBS_ENOUSR;
+		return error_msg(ERROR_INCORRECT_PASSWORD);
 	session.uid = get_user_id(uname);
 
 	char pw[PASSLEN];
 	strlcpy(pw, get_param("pw"), sizeof(pw));
 	if (!passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
-		return BBS_EWPSWD;
+		return error_msg(ERROR_INCORRECT_PASSWORD);
 	}
 
 	int sessions = check_web_login_quota(uname, false);
@@ -181,7 +181,7 @@ int web_login(void)
 		return BBS_ELGNQE;
 
 	if (!HAS_PERM2(PERM_LOGIN, &user))
-		return BBS_EACCES;
+		return error_msg(ERROR_USER_SUSPENDED);
 
 	time_t now = time(NULL);
 	if (now - user.lastlogin >= 20 * 60

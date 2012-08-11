@@ -203,6 +203,7 @@ static void _print_as_xml(const xml_node_t *node, int encoding)
 
 static void print_as_xml(const xml_document_t *doc)
 {
+	printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 	_print_as_xml(doc->root, doc->encoding);
 }
 
