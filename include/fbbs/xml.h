@@ -20,11 +20,17 @@ enum {
 	XML_AS_XML = 1,
 };
 
+enum {
+	XML_ENCODING_UTF8 = 0,
+	XML_ENCODING_GBK = 1,
+};
+
 typedef struct xml_document_t xml_document_t;
 typedef struct xml_node_t xml_node_t;
 typedef struct xml_attr_t xml_attr_t;
 
 extern xml_document_t *xml_new_doc(void);
+extern xml_document_t *xml_set_encoding(xml_document_t *doc, int encoding);
 extern void xml_set_doc_root(xml_document_t *doc, xml_node_t *root);
 
 extern xml_node_t *xml_new_node(const char *name, int type);

@@ -398,10 +398,11 @@ void set_response_type(int type)
 	ctx.r.type = type;
 }
 
-void set_response_root(const char *name, int type)
+void set_response_root(const char *name, int type, int encoding)
 {
 	xml_node_t *node = xml_new_node(name, type);
 	xml_set_doc_root(ctx.r.doc, node);
+	xml_set_encoding(ctx.r.doc, encoding);
 }
 
 void respond(int code)

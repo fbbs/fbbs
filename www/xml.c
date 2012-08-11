@@ -27,6 +27,7 @@ struct xml_node_t {
 };
 
 struct xml_document_t {
+	int encoding;
 	xml_node_t *root;
 };
 
@@ -34,6 +35,13 @@ xml_document_t *xml_new_doc(void)
 {
 	xml_document_t *doc = palloc(sizeof(*doc));
 	doc->root = NULL;
+	doc->encoding = XML_ENCODING_UTF8;
+	return doc;
+}
+
+xml_document_t *xml_set_encoding(xml_document_t *doc, int encoding)
+{
+	doc->encoding = encoding;
 	return doc;
 }
 
