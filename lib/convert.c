@@ -113,7 +113,7 @@ int convert_close(convert_t *cp)
 	return iconv_close(cp->cd);
 }
 
-static int write_to_file(char *buf, size_t len, void *arg)
+static int write_to_file(const char *buf, size_t len, void *arg)
 {
 	return fwrite(buf, 1, len, arg) < len ? -1 : 0;
 }
