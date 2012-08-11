@@ -153,7 +153,13 @@ static const web_handler_t *_get_handler(void)
 	else
 		++name;
 
-	web_handler_t h = { .name = name, .func = NULL, .mode = 0 };
+	char buf[16];
+	strlcpy(buf, name, sizeof(buf));
+	char *tmp = strrchr(buf, '.');
+	if (tmp)
+		*tmp = '\0';
+
+	web_handler_t h = { .name = buf, .func = NULL, .mode = 0 };
 	return bsearch(&h, handlers, NELEMS(handlers), sizeof(h), compare_handler);
 }
 
