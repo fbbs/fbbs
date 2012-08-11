@@ -116,7 +116,12 @@ static inline int real_type(const xml_attr_t *attr)
 	return attr->type & 0x7f;
 }
 
-static void _xml_attr_print(const xml_attr_t *attr)
+static int xml_string_helper(const char *s, size_t size, void *arg)
+{
+	return fwrite((void *)s, 1, size, stdout);
+}
+
+static void _xml_attr_print(const xml_attr_t *attr, int encoding)
 {
 	switch (real_type(attr)) {
 		case XML_ATTR_TYPE_INTEGER:
@@ -130,16 +135,21 @@ static void _xml_attr_print(const xml_attr_t *attr)
 				printf("1");
 			break;
 		default:
-			printf("%s", attr->value.str);
+			if (encoding == XML_ENCODING_UTF8) {
+				printf("%s", attr->value.str);
+			} else {
+				convert(env.g2u, attr->value.str, CONVERT_ALL, NULL, 0,
+						xml_string_helper, NULL);
+			}
 			break;
 	}
 }
 
-static void xml_attr_print(const xml_attr_t *attr)
+static void xml_attr_print(const xml_attr_t *attr, int encoding)
 {
 	if (real_type(attr) != XML_ATTR_TYPE_BOOLEAN || attr->value.boolean) {
 		printf(" %s='", attr->name);
-		_xml_attr_print(attr);
+		_xml_attr_print(attr, encoding);
 		printf("'");
 	}
 }
@@ -149,11 +159,11 @@ static inline bool anonymous(const xml_node_t *node)
 	return node->type & XML_NODE_ANONYMOUS;
 }
 
-static void _print_as_xml(const xml_node_t *node)
+static void _print_as_xml(const xml_node_t *node, int encoding)
 {
 	if (anonymous(node)) {
 		SLIST_FOREACH(xml_node_t, child, &node->child, next) {
-			_print_as_xml(child);
+			_print_as_xml(child, encoding);
 		}
 		return;
 	}
@@ -165,7 +175,7 @@ static void _print_as_xml(const xml_node_t *node)
 		if (attr->type & XML_ATTR_AS_NODE) {
 			attr_as_node = true;
 		} else {
-			xml_attr_print(attr);
+			xml_attr_print(attr, encoding);
 		}
 	}
 
@@ -178,14 +188,14 @@ static void _print_as_xml(const xml_node_t *node)
 			SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
 				if (attr->type & XML_ATTR_AS_NODE) {
 					printf("<%s>", attr->name);
-					_xml_attr_print(attr);
+					_xml_attr_print(attr, encoding);
 					printf("</%s>", attr->name);
 				}
 			}
 		}
 
 		SLIST_FOREACH(xml_node_t, child, &node->child, next) {
-			_print_as_xml(child);
+			_print_as_xml(child, encoding);
 		}
 		printf("</%s>", node->name);
 	}
@@ -193,7 +203,7 @@ static void _print_as_xml(const xml_node_t *node)
 
 static void print_as_xml(const xml_document_t *doc)
 {
-	_print_as_xml(doc->root);
+	_print_as_xml(doc->root, doc->encoding);
 }
 
 static void _json_string(const char *s)
