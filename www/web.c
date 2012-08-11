@@ -228,9 +228,9 @@ static void get_global_options(void)
 	const char *name = getenv("SCRIPT_NAME");
 	if (name) {
 		if (ends_with(name, ".xml"))
-			ctx.req.flag |= REQUEST_XML;
+			ctx.req.flag |= REQUEST_XML | REQUEST_API | REQUEST_UTF8;
 		if (ends_with(name, ".json"))
-			ctx.req.flag |= REQUEST_JSON;
+			ctx.req.flag |= REQUEST_JSON | REQUEST_API | REQUEST_UTF8;
 	}
 }
 
