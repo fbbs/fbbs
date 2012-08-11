@@ -281,10 +281,8 @@ int main(void)
 			return EXIT_FAILURE;
 
 		const web_handler_t *h = _get_handler();
-		int ret;
-		if (!h) {
-			ret = BBS_ENOURL;
-		} else {
+		int code = BBS_ENOURL;
+		if (h) {
 			get_client_ip();
 			get_session();
 
@@ -293,9 +291,13 @@ int main(void)
 				set_idle_time(session.id, time(NULL));
 			}
 
-			ret = execute(h);
+			code = execute(h);
 		}
-		check_bbserr(ret);
+
+		if (code > 0)
+			respond(code);
+		else
+			check_bbserr(code);
 
 		web_ctx_destroy();
 	}

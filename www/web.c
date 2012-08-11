@@ -15,11 +15,17 @@ typedef struct http_req_t {
 	int flag;
 } http_req_t;
 
+typedef struct http_response_t {
+	int type;
+	xml_document_t *doc;
+} http_response_t;
+
 struct web_ctx_t {
 	pool_t *p;
 	http_req_t req;
 	gcry_md_hd_t sha1;
 	bool inited;
+	http_response_t r;
 };
 
 static struct web_ctx_t ctx = { .inited = false };
@@ -283,6 +289,7 @@ bool web_ctx_init(void)
 	}
 
 	ctx.p = pool_create(0);
+	ctx.r.doc = xml_new_doc();
 
 	return get_web_request();
 }
@@ -366,4 +373,20 @@ void *palloc(size_t size)
 char *pstrdup(const char *s)
 {
 	return pool_strdup(ctx.p, s, 0);
+}
+
+void set_response_type(int type)
+{
+	ctx.r.type = type;
+}
+
+void set_response_root(const char *name, int type)
+{
+	xml_node_t *node = xml_new_node(name, type);
+	xml_set_doc_root(ctx.r.doc, node);
+}
+
+void respond(int code)
+{
+	;
 }

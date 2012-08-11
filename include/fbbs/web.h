@@ -46,4 +46,8 @@ extern const unsigned char *calc_digest(const void *s, size_t size);
 extern void *palloc(size_t size);
 extern char *pstrdup(const char *s);
 
+extern void set_response_type(int type);
+extern void set_response_root(const char *name, int type);
+extern void respond(int code);
+
 #endif // FB_WEB_H
