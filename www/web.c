@@ -448,6 +448,7 @@ struct error_msg_t {
 };
 
 static const struct error_msg_t error_msgs[] = {
+	{ ERROR_NONE, HTTP_OK, "success" },
 	{ ERROR_INCORRECT_PASSWORD, HTTP_UNAUTHORIZED, "incorrect username or password" },
 	{ ERROR_USER_SUSPENDED, HTTP_FORBIDDEN, "permission denied" },
 	{ ERROR_BAD_REQUEST, HTTP_BAD_REQUEST, "bad request" },
@@ -459,8 +460,8 @@ int error_msg(int code)
 			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
 
 	const struct error_msg_t *e = error_msgs;
-	if (code >= 0 && code < NELEMS(error_msgs))
-		e = error_msgs + code;
+	if (code > 0 && code <= NELEMS(error_msgs))
+		e = error_msgs + code - 1;
 
 	xml_attr_string(node, "msg", e->msg, false);
 	xml_attr_integer(node, "code", e->code + 10000);

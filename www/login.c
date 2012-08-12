@@ -148,6 +148,13 @@ static int login_redirect(const char *key, int max_age)
 
 int web_login(void)
 {
+	if (request_type(REQUEST_API)) {
+		if (session.id)
+			return error_msg(ERROR_NONE);
+		else
+			return error_msg(ERROR_INCORRECT_PASSWORD);
+	}
+
 	if (session.id)
 		return login_redirect(NULL, 0);
 
