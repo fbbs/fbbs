@@ -90,6 +90,14 @@ li#guest a { color: #000; }
 $(document).ready(function() {
 	$('#id').focus();
 	$('#sw').click(function() { $('#more').toggle(); return false; });
+	$('#login').click(function() {
+		if ($('#id').val().length < 1 || $('#pw').val().length < 1)
+			return false;
+	});
+
+	$.getJSON('bbs/login.json', function(data) {
+		if (data.code == 10001) { window.location.replace('bbs/top10'); }
+	});
 });
 </script>
 </body>
