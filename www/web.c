@@ -399,11 +399,12 @@ void set_response_type(int type)
 	ctx.r.type = type;
 }
 
-void set_response_root(const char *name, int type, int encoding)
+xml_node_t *set_response_root(const char *name, int type, int encoding)
 {
 	xml_node_t *node = xml_new_node(name, type);
 	xml_set_doc_root(ctx.r.doc, node);
 	xml_set_encoding(ctx.r.doc, encoding);
+	return node;
 }
 
 static int response_type(void)
@@ -454,9 +455,8 @@ static const struct error_msg_t error_msgs[] = {
 
 int error_msg(int code)
 {
-	xml_node_t *node = xml_new_node("bbs_error", XML_NODE_ANONYMOUS_JSON);
-	xml_set_doc_root(ctx.r.doc, node);
-	xml_set_encoding(ctx.r.doc, XML_ENCODING_UTF8);
+	xml_node_t *node = set_response_root("bbs_error",
+			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
 
 	const struct error_msg_t *e = error_msgs;
 	if (code >= 0 && code < NELEMS(error_msgs))

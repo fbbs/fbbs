@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/prop.h"
 #include "fbbs/string.h"

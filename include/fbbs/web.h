@@ -3,10 +3,7 @@
 
 #include <fcgi_stdio.h>
 
-#include "fbbs/cfg.h"
-#include "fbbs/convert.h"
-#include "fbbs/dbi.h"
-#include "fbbs/pool.h"
+#include "fbbs/xml.h"
 
 #define COOKIE_KEY  "key"
 #define COOKIE_USER  "user"
@@ -75,7 +72,7 @@ extern void *palloc(size_t size);
 extern char *pstrdup(const char *s);
 
 extern void set_response_type(int type);
-extern void set_response_root(const char *name, int type, int encoding);
+extern xml_node_t *set_response_root(const char *name, int type, int encoding);
 extern void respond(int code);
 
 int error_msg(int code);

@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
