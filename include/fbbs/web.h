@@ -5,8 +5,8 @@
 
 #include "fbbs/xml.h"
 
-#define COOKIE_KEY  "key"
-#define COOKIE_USER  "user"
+#define COOKIE_KEY  "utmpkey"
+#define COOKIE_USER  "utmpuser"
 
 enum {
 	MAX_PARAMETERS = 32,
