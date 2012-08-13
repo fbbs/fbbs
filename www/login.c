@@ -92,26 +92,9 @@ static const char *get_login_referer(void)
 	return ref;
 }
 
-static void redirect_homepage(void)
+static int redirect_homepage(void)
 {
 	printf("Location: ..\n\n");
-}
-
-static int login_screen(void)
-{
-	http_header();
-	const char *ref = get_login_referer();
-	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
-			"<meta name='viewport' content='width=device-width'/>"
-			"<link rel='stylesheet' type='text/css' href='../css/%s.css' />"
-			"<title>用户登录 - "BBSNAME"</title></head>"
-			"<body><form action='login' method='post'>"
-			"<label for='id'>帐号</label><input type='text' name='id' /><br />"
-			"<label for='pw'>密码</label><input type='password' name='pw' /><br />"
-			"<input type='hidden' name='ref' value='%s'/>"
-			"<input type='submit' value='登录' />"
-			"</form></body></html>",
-			request_type(REQUEST_MOBILE) ? "mobile" : "bbs", ref);
 	return 0;
 }
 
@@ -146,6 +129,49 @@ static int login_redirect(const char *key, int max_age)
 	return 0;
 }
 
+int do_web_login(const char *uname, const char *pw)
+{
+	struct userec user;
+	if (getuserec(uname, &user) == 0)
+		return error_msg(ERROR_INCORRECT_PASSWORD);
+	session.uid = get_user_id(uname);
+
+	if (!passwd_check(uname, pw)) {
+		log_attempt(user.userid, fromhost, "web");
+		return error_msg(ERROR_INCORRECT_PASSWORD);
+	}
+
+	int sessions = check_web_login_quota(uname, false);
+	if (!HAS_PERM2(PERM_SYSOPS, &user) && sessions >= WEB_ACTIVE_LOGIN_QUOTA)
+		return BBS_ELGNQE;
+
+	if (!HAS_PERM2(PERM_LOGIN, &user))
+		return error_msg(ERROR_USER_SUSPENDED);
+
+	time_t now = time(NULL);
+	if (now - user.lastlogin >= 20 * 60 || user.numlogins < 100)
+		user.numlogins++;
+
+#ifdef CHECK_FREQUENTLOGIN
+	time_t last = user.lastlogin;
+	if (!HAS_PERM(PERM_SYSOPS) && abs(last - now) < 10) {
+		report("Too Frequent", user.userid);
+		return BBS_ELFREQ;
+	}
+#endif
+
+	update_user_stay(&user, true, sessions >= 1);
+
+	grant_permission(&user);
+
+	strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
+	save_user_data(&user);
+	currentuser = user;
+
+	log_usies("ENTER", fromhost, &user);
+	return 0;
+}
+
 int web_login(void)
 {
 	if (request_type(REQUEST_API)) {
@@ -163,67 +189,25 @@ int web_login(void)
 
 	const char *uname = get_param("id");
 	if (*uname == '\0' || strcaseeq(uname, "guest"))
-		return login_screen();
-
-	if (session.uid && streq(uname, currentuser.userid)) {
-		const char *ref = get_login_referer();
-		printf("Location: %s\n\n", ref);
-		return 0;
-	}
-
-	struct userec user;
-	if (getuserec(uname, &user) == 0)
-		return error_msg(ERROR_INCORRECT_PASSWORD);
-	session.uid = get_user_id(uname);
+		return redirect_homepage();
 
 	char pw[PASSLEN];
 	strlcpy(pw, get_param("pw"), sizeof(pw));
-	if (!passwd_check(uname, pw)) {
-		log_attempt(user.userid, fromhost, "web");
-		return error_msg(ERROR_INCORRECT_PASSWORD);
+
+	int ret = do_web_login(uname, pw);
+	if (ret == 0) {
+		bool persistent = *get_param("persistent");
+		int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
+
+		char key[SESSION_KEY_LEN + 1];
+		session.id = session_new_id();
+		generate_session_key(key, sizeof(key), session.id);
+		session.id = session_new(key, session.id, session.uid, fromhost,
+				SESSION_WEB, SESSION_PLAIN, max_age);
+
+		return login_redirect(key, max_age);
 	}
-
-	int sessions = check_web_login_quota(uname, false);
-	if (!HAS_PERM2(PERM_SYSOPS, &user) && sessions >= WEB_ACTIVE_LOGIN_QUOTA)
-		return BBS_ELGNQE;
-
-	if (!HAS_PERM2(PERM_LOGIN, &user))
-		return error_msg(ERROR_USER_SUSPENDED);
-
-	time_t now = time(NULL);
-	if (now - user.lastlogin >= 20 * 60
-			|| user.numlogins < 100)
-		user.numlogins++;
-
-#ifdef CHECK_FREQUENTLOGIN
-	time_t last = user.lastlogin;
-	if (!HAS_PERM(PERM_SYSOPS)
-			&& abs(last - now) < 10) {
-		report("Too Frequent", user.userid);
-		return BBS_ELFREQ;
-	}
-#endif
-
-	update_user_stay(&user, true, sessions >= 1);
-
-	grant_permission(&user);
-
-	strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
-	save_user_data(&user);
-	currentuser = user;
-
-	bool persistent = *get_param("persistent");
-	int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
-
-	char key[SESSION_KEY_LEN + 1];
-	session.id = session_new_id();
-	generate_session_key(key, sizeof(key), session.id);
-	session.id = session_new(key, session.id, session.uid, fromhost,
-			SESSION_WEB, SESSION_PLAIN, max_age);
-
-	log_usies("ENTER", fromhost, &user);
-
-	return login_redirect(key, max_age);
+	return ret;
 }
 
 int web_logout(void)
