@@ -12,7 +12,7 @@
 #define LOGIN_HOMEPAGE  "top10"
 
 enum {
-	WEB_ACTIVE_LOGIN_QUOTA = 2,
+	WEB_ACTIVE_LOGIN_QUOTA = 4,
 	COOKIE_PERSISTENT_PERIOD = 2 * 7 * 24 * 60 * 60,
 };
 
@@ -136,7 +136,7 @@ int do_web_login(const char *uname, const char *pw)
 		return error_msg(ERROR_INCORRECT_PASSWORD);
 	session.uid = get_user_id(uname);
 
-	if (!passwd_check(uname, pw)) {
+	if (pw && !passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
 		return error_msg(ERROR_INCORRECT_PASSWORD);
 	}

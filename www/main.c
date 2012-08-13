@@ -209,12 +209,16 @@ static void get_client_ip(void)
 #endif
 }
 
-static bool activate_session(session_id_t sid)
+static bool activate_session(session_id_t sid, const char *uname)
 {
 	db_res_t *res = db_cmd("UPDATE sessions SET active = TRUE, stamp = %t"
 			" WHERE id = %"DBIdSID, sid, time(NULL));
 	db_clear(res);
-	return res;
+
+	if (res)
+		return !do_web_login(uname, NULL);
+
+	return false;
 }
 
 static bool _get_session(const char *uname, const char *key)
@@ -228,9 +232,8 @@ static bool _get_session(const char *uname, const char *key)
 		session.uid = db_get_user_id(res, 0, 1);
 
 		if (!db_get_bool(res, 0, 2)) {
-			if (!activate_session(session.id)) {
+			if (!activate_session(session.id, uname))
 				session.id = session.uid = 0;
-			}
 		}
 	} else {
 		session.id = session.uid = 0;
