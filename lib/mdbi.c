@@ -28,10 +28,15 @@ static char *smart_vsnprintf(char *buf, size_t size,
 	return s;
 }
 
-static mdb_res_t *mdb_vcmd(const char *cmd, va_list ap)
+static mdb_res_t *mdb_vcmd(const char *cmd, const char *fmt, va_list ap)
 {
+	char real_fmt[32];
+	size_t bytes = snprintf(real_fmt, sizeof(real_fmt), "%s %s", cmd, fmt);
+	if (bytes >= sizeof(real_fmt))
+		return NULL;
+
 	char *buf = env.m->buf;
-	char *s = smart_vsnprintf(buf, sizeof(env.m->buf), cmd, ap);
+	char *s = smart_vsnprintf(buf, sizeof(env.m->buf), real_fmt, ap);
 
 	mdb_res_t *res = redisCommand(env.m->c, s);
 
@@ -45,20 +50,20 @@ static mdb_res_t *mdb_vcmd(const char *cmd, va_list ap)
 	return res;
 }
 
-mdb_res_t *mdb_cmd(const char *cmd, ...)
+mdb_res_t *mdb_cmd(const char *cmd, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	mdb_res_t *res = mdb_vcmd(cmd, ap);
+	mdb_res_t *res = mdb_vcmd(cmd, fmt, ap);
 	va_end(ap);
 	return res;
 }
 
-long long mdb_get_integer(long long invalid, const char *cmd, ...)
+long long mdb_integer(long long invalid, const char *cmd, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	mdb_res_t *res = mdb_vcmd(cmd, ap);
+	mdb_res_t *res = mdb_vcmd(cmd, fmt, ap);
 	va_end(ap);
 
 	if (!res)

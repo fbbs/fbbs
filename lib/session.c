@@ -17,7 +17,7 @@ bbs_session_t session;
 
 int online_count(void)
 {
-	int cached = mdb_get_integer(-1, "GET "ONLINE_COUNT_CACHE_KEY);
+	int cached = mdb_integer(-1, "GET", ONLINE_COUNT_CACHE_KEY);
 	if (cached >= 0)
 		return cached;
 
@@ -28,9 +28,9 @@ int online_count(void)
 		online = db_get_integer(res, 0, 0);
 	db_clear(res);
 
-	mdb_res_t *r = mdb_cmd("SET "ONLINE_COUNT_CACHE_KEY" %d", online);
+	mdb_res_t *r = mdb_cmd("SET", ONLINE_COUNT_CACHE_KEY" %d", online);
 	mdb_clear(r);
-	r = mdb_cmd("EXPIRE "ONLINE_COUNT_CACHE_KEY" %d",
+	r = mdb_cmd("EXPIRE", ONLINE_COUNT_CACHE_KEY" %d",
 			ONLINE_COUNT_REFRESH_INTERVAL);
 	mdb_clear(r);
 
@@ -39,13 +39,13 @@ int online_count(void)
 
 void update_peak_online(int online)
 {
-	mdb_res_t *r = mdb_cmd("SET c:max_online %d", online);
+	mdb_res_t *r = mdb_cmd("SET", "c:max_online %d", online);
 	mdb_clear(r);
 }
 
 int get_peak_online(void)
 {
-	return mdb_get_integer(0, "GET c:max_online");
+	return mdb_integer(0, "GET", "c:max_online");
 }
 
 session_id_t session_new_id(void)
@@ -86,10 +86,10 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 
 static void purge_session_cache(session_id_t sid)
 {
-	mdb_res_t *r = mdb_cmd("ZREM current_board %"PRIdSID, sid);
+	mdb_res_t *r = mdb_cmd("ZREM", "current_board %"PRIdSID, sid);
 	mdb_clear(r);
 
-	r = mdb_cmd("ZREM idle %"PRIdSID, sid);
+	r = mdb_cmd("ZREM", "idle %"PRIdSID, sid);
 	mdb_clear(r);
 }
 
@@ -116,7 +116,7 @@ int session_inactivate(session_id_t sid)
 
 int set_idle_time(session_id_t sid, fb_time_t t)
 {
-	mdb_res_t *res = mdb_cmd("ZADD idle %"PRIdFBT" %"PRIdSID, t, sid);
+	mdb_res_t *res = mdb_cmd("ZADD", "idle %"PRIdFBT" %"PRIdSID, t, sid);
 	mdb_clear(res);
 	return !res;
 }
@@ -131,25 +131,25 @@ void cached_set_idle_time(void)
 
 fb_time_t get_idle_time(session_id_t sid)
 {
-	return (fb_time_t) mdb_get_integer(0, "ZSCORE idle %"PRIdSID, sid);
+	return (fb_time_t) mdb_integer(0, "ZSCORE", "idle %"PRIdSID, sid);
 }
 
 int set_current_board(int bid)
 {
-	mdb_res_t *res = mdb_cmd("ZADD current_board %d %"PRIdSID, bid, session.id);
+	mdb_res_t *res = mdb_cmd("ZADD", "current_board %d %"PRIdSID, bid, session.id);
 	mdb_clear(res);
 	return !res;
 }
 
 int get_current_board(session_id_t sid)
 {
-	return (int) mdb_get_integer(0, "ZSCORE current_board %"PRIdSID, sid);
+	return (int) mdb_integer(0, "ZSCORE", "current_board %"PRIdSID, sid);
 }
 
 int set_user_status(int status)
 {
 	session.status = status;
-	mdb_res_t *res = mdb_cmd("HSET user_status %"PRIdSID" %d",
+	mdb_res_t *res = mdb_cmd("HSET", "user_status %"PRIdSID" %d",
 			session.id, status);
 	mdb_clear(res);
 	return !res;
@@ -157,7 +157,7 @@ int set_user_status(int status)
 
 int get_user_status(session_id_t sid)
 {
-	return (int) mdb_get_integer(0, "HGET user_status %"PRIdSID, sid);
+	return (int) mdb_integer(0, "HGET", "user_status %"PRIdSID, sid);
 }
 
 int set_visibility(bool visible)

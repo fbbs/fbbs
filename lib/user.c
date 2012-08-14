@@ -31,7 +31,7 @@ enum {
 
 int get_user_count(void)
 {
-	int cached = mdb_get_integer(-1, "GET "USER_COUNT_CACHE_KEY);
+	int cached = mdb_integer(-1, "GET", USER_COUNT_CACHE_KEY);
 	if (cached >= 0)
 		return cached;
 
@@ -42,9 +42,9 @@ int get_user_count(void)
 		count = db_get_integer(res, 0, 0);
 	db_clear(res);
 
-	mdb_res_t *r = mdb_cmd("SET "USER_COUNT_CACHE_KEY" %d", count);
+	mdb_res_t *r = mdb_cmd("SET", USER_COUNT_CACHE_KEY" %d", count);
 	mdb_clear(r);
-	r = mdb_cmd("EXPIRE "USER_COUNT_CACHE_KEY" %d",
+	r = mdb_cmd("EXPIRE", USER_COUNT_CACHE_KEY" %d",
 			USER_COUNT_REFRESH_INTERVAL);
 	mdb_clear(r);
 	
@@ -97,26 +97,27 @@ int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)
 
 int set_last_post_time(fb_time_t t)
 {
-	mdb_res_t *res = mdb_cmd(
-			"HSET last_post_time %"PRIdUID" %"PRIdFBT, session.uid, t);
+	mdb_res_t *res = mdb_cmd("HSET",
+			"last_post_time %"PRIdUID" %"PRIdFBT, session.uid, t);
 	mdb_clear(res);
 	return !res;
 }
 
 fb_time_t get_last_post_time(void)
 {
-	return (fb_time_t) mdb_get_integer(0,
-			"HGET last_post_time %"PRIdUID, session.uid);
+	return (fb_time_t) mdb_integer(0, "HGET",
+			"last_post_time %"PRIdUID, session.uid);
 }
 
 int set_doc_mode(int mode)
 {
-	mdb_res_t *res = mdb_cmd("HSET doc_mode %"PRIdUID" %d", session.uid, mode);
+	mdb_res_t *res = mdb_cmd("HSET",
+			"doc_mode %"PRIdUID" %d", session.uid, mode);
 	mdb_clear(res);
 	return !res;
 }
 
 int get_doc_mode(void)
 {
-	return (int) mdb_get_integer(0, "HGET doc_mode %"PRIdUID, session.uid);
+	return (int) mdb_integer(0, "HGET", "doc_mode %"PRIdUID, session.uid);
 }
