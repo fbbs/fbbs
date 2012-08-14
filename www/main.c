@@ -209,6 +209,8 @@ static void get_client_ip(void)
 #endif
 }
 
+extern int do_web_login(const char *uname, const char *pw);
+
 static bool activate_session(session_id_t sid, const char *uname)
 {
 	db_res_t *res = db_cmd("UPDATE sessions SET active = TRUE, stamp = %t"

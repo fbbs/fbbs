@@ -56,7 +56,7 @@ static tui_list_title_t title_list_title(tui_list_t *p)
 		case TITLE_LIST_GRANTED:
 			t = "ÒÑÊÚÓè";
 			break;
-		case TITLE_LIST_ALL:
+		default:
 			t = "È«²¿";
 			break;
 	}

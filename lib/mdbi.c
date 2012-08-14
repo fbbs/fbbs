@@ -53,7 +53,7 @@ static mdb_res_t *mdb_vcmd(const char *cmd, const char *fmt, va_list ap)
 mdb_res_t *mdb_cmd(const char *cmd, const char *fmt, ...)
 {
 	va_list ap;
-	va_start(ap, cmd);
+	va_start(ap, fmt);
 	mdb_res_t *res = mdb_vcmd(cmd, fmt, ap);
 	va_end(ap);
 	return res;
@@ -62,7 +62,7 @@ mdb_res_t *mdb_cmd(const char *cmd, const char *fmt, ...)
 long long mdb_integer(long long invalid, const char *cmd, const char *fmt, ...)
 {
 	va_list ap;
-	va_start(ap, cmd);
+	va_start(ap, fmt);
 	mdb_res_t *res = mdb_vcmd(cmd, fmt, ap);
 	va_end(ap);
 
