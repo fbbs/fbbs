@@ -11,22 +11,32 @@ int mdb_connect_unix(const char *path)
 	return 0;
 }
 
-static mdb_res_t *mdb_vcmd(const char *cmd, va_list ap)
+static char *smart_vsnprintf(char *buf, size_t size,
+		const char *fmt, va_list ap)
 {
 	va_list aq;
 	va_copy(aq, ap);
-	size_t size = vsnprintf(env.m->buf, sizeof(env.m->buf), cmd, aq);
-	va_end(aq);
 
-	mdb_res_t *res;
-	if (size >= sizeof(env.m->buf)) {
-		char *buf = malloc(size + 1);
-		vsnprintf(buf, size + 1, cmd, ap);
-		res = redisCommand(env.m->c, buf);
-		free(buf);
-	} else {
-		res = redisCommand(env.m->c, env.m->buf);
+	char *s = buf;
+	size_t len = vsnprintf(buf, size, fmt, ap);
+	if (len >= size) {
+		s = malloc(len + 1);
+		vsnprintf(s, len + 1, fmt, aq);
 	}
+
+	va_end(aq);
+	return s;
+}
+
+static mdb_res_t *mdb_vcmd(const char *cmd, va_list ap)
+{
+	char *buf = env.m->buf;
+	char *s = smart_vsnprintf(buf, sizeof(env.m->buf), cmd, ap);
+
+	mdb_res_t *res = redisCommand(env.m->c, s);
+
+	if (s != buf)
+		free(s);
 
 	if (!res || res->type == MDB_RES_ERROR) {
 		mdb_clear(res);
