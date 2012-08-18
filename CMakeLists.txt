@@ -1,13 +1,14 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.8)
 
 project(fbbs)
-set(fbbs_VERSION_MAJOR 2010)
-set(fbbs_VERSION_MINOR 0)
 
 if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 NEW)
 	cmake_policy(SET CMP0015 OLD)
 endif(COMMAND cmake_policy)
+
+set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
+set(CMAKE_COLOR_MAKEFILE off)
 
 option(ENABLE_SSH "compile ssh module" off)
 option(ENABLE_DEBUG "compile debug version" on)
@@ -75,7 +76,5 @@ check_function_exists(getaddrinfo HAVE_GETADDRINFO)
 check_function_exists(poll HAVE_POLL)
 check_function_exists(gethostbyname HAVE_GETHOSTBYNAME)
 check_function_exists(regcomp HAVE_REGCOMP)
-	
-configure_file(include/config.h.cmake include/config.h)
 
-#set(CMAKE_COLOR_MAKEFILE off)
+configure_file(include/config.h.cmake include/config.h)
