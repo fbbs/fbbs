@@ -10,7 +10,6 @@ CREATE TABLE posts_base (
 	marked BOOLEAN,
 	locked BOOLEAN,
 	imported BOOLEAN,
-	sticky BOOLEAN,
 
 	replies INTEGER DEFAULT 0,
 	comments INTEGER DEFAULT 0,
@@ -27,8 +26,13 @@ CREATE TABLE posts_deleted (
 	eraser INTEGER,
 	deleted TIMESTAMPTZ,
 	junk BOOLEAN DEFAULT FALSE,
-	scope SMALLINT
+	bm_visible BOOLEAN
 ) INHERITS (posts_base);
+
+CREATE TABLE posts_sticked (
+	pid BIGINT REFERECES posts,
+	stamp TIMESTAMP
+);
 
 CREATE TABLE threads (
 	id BIGINT,

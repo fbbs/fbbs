@@ -11,6 +11,7 @@
 typedef int64_t post_id_t;
 #define PRIdPID  PRId64
 #define DBIdPID  "l"
+#define POST_ID_MAX  INT64_MAX
 #define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
 
 enum {
