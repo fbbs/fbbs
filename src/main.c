@@ -172,7 +172,7 @@ static void u_enter(void)
 #else
 			SESSION_PLAIN
 #endif
-			);
+			, 0);
 
 	int pager = load_pager();
 	set_pager(pager);

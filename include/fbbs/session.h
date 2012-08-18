@@ -16,10 +16,10 @@ typedef int64_t session_id_t;
 
 #define ACTIVE_SESSION_QUERY \
 	"SELECT " ACTIVE_SESSION_FIELDS \
-	" FROM sessions s JOIN users u ON s.user_id = u.id"
+	" FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.active"
 
 enum {
-	SESSION_KEY_LEN = 20,
+	SESSION_KEY_LEN = 40,
 
 	SESSION_TELNET = 0,
 	SESSION_WEB = 1,
@@ -111,8 +111,9 @@ typedef struct {
 
 extern session_id_t session_new_id(void);
 extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
-		const char *ip_addr, bool is_web, bool is_secure);
+		const char *ip_addr, bool is_web, bool is_secure, int duration);
 extern int session_destroy(session_id_t sid);
+extern int session_inactivate(session_id_t sid);
 
 extern int set_idle_time(session_id_t sid, fb_time_t t);
 extern void cached_set_idle_time(void);

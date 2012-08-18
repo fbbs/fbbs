@@ -28,7 +28,7 @@ static int show_sessions(const char *uname)
 
 		fb_time_t refresh = get_idle_time(sid);
 		int status = get_user_status(sid);
-		
+
 		int idle;
 		if (refresh < 1 || status == ST_BBSNET)
 			idle = 0;
@@ -47,7 +47,7 @@ int bbsqry_main(void)
 {
 	char userid[IDLEN + 1];
 	strlcpy(userid, get_param("u"), sizeof(userid));
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	struct userec user;
 	int uid;
@@ -72,12 +72,13 @@ int bbsqry_main(void)
 		printf("contrib='%d' rank='%.1f'",
 				TO_YUAN_INT(u.contrib), PERCENT_RANK(u.rank));
 		if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
-			printf(" money='%d'",
-					TO_YUAN_INT(u.money));
+			printf("money='%d' ", TO_YUAN_INT(u.money));
 		}
+		printf("contrib='%d' rank='%.1f' ",
+				TO_YUAN_INT(u.contrib), PERCENT_RANK(u.rank));
 #endif
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
-			printf(" horo='%s'", 
+			printf("horo='%s'",
 					horoscope(user.birthmonth, user.birthday));
 			if (HAS_DEFINE(user.userdefine, DEF_COLOREDSEX))
 				printf(" gender='%c'", user.gender);

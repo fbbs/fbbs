@@ -141,7 +141,7 @@ typedef struct query_t {
 
 static query_t *query_new(const char *cmd, int argc, va_list ap)
 {
-	pool_t *p = pool_create(DEFAULT_POOL_SIZE);
+	pool_t *p = pool_create(0);
 	query_t *q = pool_alloc(p, sizeof(*q));
 	q->p = p;
 	q->vals = pool_alloc(p, sizeof(*q->vals) * argc);

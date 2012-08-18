@@ -1,9 +1,11 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "record.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/mail.h"
+#include "fbbs/post.h"
 #include "fbbs/web.h"
 
 static bool _is_mail_read(const struct fileheader *fp)
@@ -33,7 +35,7 @@ static int _get_mail_mark(const struct fileheader *fp)
 
 int bbsmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	int start = strtol(get_param("start"), NULL, 10);
@@ -95,7 +97,7 @@ int print_new_mail(void *buf, int count, void *args)
 
 int bbsnewmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsmail new='1'>");
@@ -111,7 +113,7 @@ int bbsnewmail_main(void)
 
 int bbsmailcon_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	const char *file = get_param("f");
@@ -176,7 +178,7 @@ int bbsmailcon_main(void)
 
 int bbsdelmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	const char *file = get_param("f");
@@ -210,11 +212,9 @@ int bbsdelmail_main(void)
 	return 0;
 }
 
-extern int web_quotation(const char *str, size_t size, const char *owner, bool ismail);
-
 int bbspstmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
@@ -254,13 +254,7 @@ int bbspstmail_main(void)
 		printf("<t>");
 		xml_fputs(fh->title, stdout);
 		printf("</t><m>");
-		mmap_t m2;
-		m2.oflag = O_RDONLY;
-		setmfile(file, currentuser.userid, fh->filename);
-		if (mmap_open(file, &m2) == 0) {
-			web_quotation(m2.ptr, m2.size, fh->owner, true);
-		}
-		mmap_close(&m2);
+		quote_file_(file, NULL, QUOTE_AUTO, true, xml_fputs3);
 		printf("</m>");
 	}
 	mmap_close(&m);
@@ -271,7 +265,7 @@ int bbspstmail_main(void)
 
 int bbssndmail_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
@@ -318,9 +312,11 @@ static int _mail_checked(void *ptr, void *file)
 	return streq(p->filename, file);
 }
 
+
+
 int web_mailman(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	parse_post_data();
@@ -332,8 +328,8 @@ int web_mailman(void)
 	printf("<mailman>");
 	print_session();
 
-	for (int i = 0; i < ctx.r->count; ++i) {
-		pair_t *p = ctx.r->params + i;
+	const pair_t *p = NULL;
+	for (int i = 0; (p = get_param_pair(i)); ++i) {
 		if (streq(p->val, "on") && strncmp(p->key, "box", 3) == 0) {
 			const char *file = p->key + sizeof("box") - 1;
 			if (delete_record(index, sizeof(struct fileheader), 1,

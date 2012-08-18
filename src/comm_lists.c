@@ -208,6 +208,7 @@ static const char *sysconf_funcstr(const char *name)
 		{ "SysFiles", "@mod:so/admintool.so#a_edits" },
 		{ "Wall", "@mod:so/admintool.so#wall" },
 		{ "TitleAdmin", "@mod:so/admintool.so#tui_title_list" },
+		{ "MoneyAdmin", "@mod:so/admintool.so#grant_money" },
 		{ NULL, NULL }
 	};
 

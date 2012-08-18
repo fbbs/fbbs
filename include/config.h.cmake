@@ -13,6 +13,7 @@
 #cmakedefine HAVE_POLL
 #cmakedefine HAVE_GETHOSTBYNAME
 #cmakedefine HAVE_REGCOMP
+#cmakedefine HAVE_STRLCPY
 
 #cmakedefine ENABLE_DEBUG
 #cmakedefine ENABLE_WWW

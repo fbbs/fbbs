@@ -13,8 +13,12 @@
  */
 int follow(user_id_t follower, const char *followed, const char *notes)
 {
-	if (validate_utf8_input(notes, FOLLOW_NOTE_CCHARS) < 0)
-		return 0;
+	if (notes) {
+		if (validate_utf8_input(notes, FOLLOW_NOTE_CCHARS) < 0)
+			return 0;
+	} else {
+		notes = "";
+	}
 
 	db_res_t *res = db_exec_cmd(env.d, "INSERT INTO follows"
 			" (user_id, follower, notes)"

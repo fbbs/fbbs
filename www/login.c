@@ -9,8 +9,11 @@
 #include "fbbs/user.h"
 #include "fbbs/web.h"
 
+#define LOGIN_HOMEPAGE  "top10"
+
 enum {
-	WEB_ACTIVE_LOGIN_QUOTA = 2,
+	WEB_ACTIVE_LOGIN_QUOTA = 4,
+	COOKIE_PERSISTENT_PERIOD = 2 * 7 * 24 * 60 * 60,
 };
 
 static int check_web_login_quota(const char *uname, bool force)
@@ -59,11 +62,7 @@ static char *generate_session_key(char *buf, size_t size, session_id_t sid)
 
 	s.sid = sid;
 
-	gcry_md_reset(ctx.sha1);
-	gcry_md_write(ctx.sha1, &s, sizeof(s));
-	gcry_md_final(ctx.sha1);
-
-	const uchar_t *digest = gcry_md_read(ctx.sha1, 0);
+	const uchar_t *digest = calc_digest(&s, sizeof(s));
 	return digest_to_hex(digest, buf, size);
 }
 
@@ -87,67 +86,59 @@ static const char *get_login_referer(void)
 	const char *ref;
 	if (!strcmp(referer, "/") || !strcmp(referer, "/index.htm")
 			|| strstr(referer, "login"))
-		ref = "sec";
+		ref = LOGIN_HOMEPAGE;
 	else
 		ref = referer;
 	return ref;
 }
 
-static int login_screen(void)
+static int redirect_homepage(void)
 {
-	http_header();
-	const char *ref = get_login_referer();
-	printf("<meta http-equiv='Content-Type' content='text/html; charset=gb2312' />"
-			"<link rel='stylesheet' type='text/css' href='../css/%s.css' />"
-			"<title>”√ªßµ«¬º - "BBSNAME"</title></head>"
-			"<body><form action='login' method='post'>"
-			"<label for='id'>’ ∫≈</label><input type='text' name='id' /><br />"
-			"<label for='pw'>√‹¬Î</label><input type='password' name='pw' /><br />"
-			"<input type='hidden' name='ref' value='%s'/>"
-			"<input type='submit' value='µ«¬º' />"
-			"</form></body></html>",
-			(ctx.r->flag & REQUEST_MOBILE) ? "mobile" : "bbs", ref);
+	printf("Location: ..\n\n");
 	return 0;
 }
 
-void login_redirect(const char *key)
+static void set_cookie(const char *name, const char *value, int max_age)
+{
+	printf("Set-cookie: %s=%s", name, value);
+	if (max_age > 0) {
+		printf(";Max-Age=%d", max_age);
+	} else if (max_age < 0) {
+		printf(";Expires=Fri, 19-Apr-1996 11:11:11 GMT");
+	}
+	printf("\n");
+}
+
+static void expire_cookie(const char *name)
+{
+	set_cookie(name, "", -1);
+}
+
+static int login_redirect(const char *key, int max_age)
 {
 	const char *referer = get_param("ref");
 	if (*referer == '\0')
-		referer = "sec";
+		referer = LOGIN_HOMEPAGE;
 
-	// TODO: these cookies should be merged into one.
-	printf("Content-type: text/html; charset=%s\n"
-			"Set-cookie: utmpkey=%d\n"
-			"Set-cookie: utmpuserid=%s\nLocation: %s\n\n",
-			CHARSET, key, currentuser.userid, referer);
+	printf("Content-type: text/html; charset=%s\n", CHARSET);
+	if (key) {
+		set_cookie(COOKIE_KEY, key, max_age);
+		set_cookie(COOKIE_USER, currentuser.userid, max_age);
+	}
+	printf("Location: %s\n\n", referer);
+	return 0;
 }
 
-int web_login(void)
+int do_web_login(const char *uname, const char *pw)
 {
-	if (parse_post_data() < 0)
-		return BBS_EINVAL;
-
-	const char *uname = get_param("id");
-	if (*uname == '\0' || strcaseeq(uname, "guest"))
-		return login_screen();
-
-	if (session.uid && streq(uname, currentuser.userid)) {
-		const char *ref = get_login_referer();
-		printf("Location: %s\n\n", ref);
-		return 0;
-	}
-
 	struct userec user;
 	if (getuserec(uname, &user) == 0)
-		return BBS_ENOUSR;
+		return error_msg(ERROR_INCORRECT_PASSWORD);
 	session.uid = get_user_id(uname);
 
-	char pw[PASSLEN];
-	strlcpy(pw, get_param("pw"), sizeof(pw));
-	if (!passwd_check(uname, pw)) {
+	if (pw && !passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
-		return BBS_EWPSWD;
+		return error_msg(ERROR_INCORRECT_PASSWORD);
 	}
 
 	int sessions = check_web_login_quota(uname, false);
@@ -155,17 +146,15 @@ int web_login(void)
 		return BBS_ELGNQE;
 
 	if (!HAS_PERM2(PERM_LOGIN, &user))
-		return BBS_EACCES;
+		return error_msg(ERROR_USER_SUSPENDED);
 
 	time_t now = time(NULL);
-	if (now - user.lastlogin >= 20 * 60
-			|| user.numlogins < 100)
+	if (now - user.lastlogin >= 20 * 60 || user.numlogins < 100)
 		user.numlogins++;
 
 #ifdef CHECK_FREQUENTLOGIN
 	time_t last = user.lastlogin;
-	if (!HAS_PERM(PERM_SYSOPS)
-			&& abs(last - now) < 10) {
+	if (!HAS_PERM(PERM_SYSOPS) && abs(last - now) < 10) {
 		report("Too Frequent", user.userid);
 		return BBS_ELFREQ;
 	}
@@ -179,36 +168,57 @@ int web_login(void)
 	save_user_data(&user);
 	currentuser = user;
 
-	char key[SESSION_KEY_LEN + 1];
-	session.id = session_new_id();
-	generate_session_key(key, sizeof(key), session.id);
-	session.id = session_new(key, session.id, session.uid, fromhost,
-			SESSION_WEB, SESSION_PLAIN);
-
 	log_usies("ENTER", fromhost, &user);
-
-	login_redirect(key);
 	return 0;
 }
 
-static void logout(void)
+int web_login(void)
 {
-	update_user_stay(&currentuser, false, false);
-	save_user_data(&currentuser);
+	if (request_type(REQUEST_API)) {
+		if (session.id)
+			return error_msg(ERROR_NONE);
+		else
+			return error_msg(ERROR_INCORRECT_PASSWORD);
+	}
+
+	if (session.id)
+		return login_redirect(NULL, 0);
+
+	if (parse_post_data() < 0)
+		return error_msg(ERROR_BAD_REQUEST);
+
+	const char *uname = get_param("id");
+	if (*uname == '\0' || strcaseeq(uname, "guest"))
+		return redirect_homepage();
+
+	char pw[PASSLEN];
+	strlcpy(pw, get_param("pw"), sizeof(pw));
+
+	int ret = do_web_login(uname, pw);
+	if (ret == 0) {
+		bool persistent = *get_param("persistent");
+		int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
+
+		char key[SESSION_KEY_LEN + 1];
+		session.id = session_new_id();
+		generate_session_key(key, sizeof(key), session.id);
+		session.id = session_new(key, session.id, session.uid, fromhost,
+				SESSION_WEB, SESSION_PLAIN, max_age);
+
+		return login_redirect(key, max_age);
+	}
+	return ret;
 }
 
 int web_logout(void)
 {
-	if (!session.id) {
-		printf("Location: sec\n\n");
-		return 0;
+	if (session.id) {
+		update_user_stay(&currentuser, false, false);
+		save_user_data(&currentuser);
+
+		expire_cookie(COOKIE_KEY);
+		expire_cookie(COOKIE_USER);
 	}
-
-	logout();
-
-	printf("Set-cookie: utmpnum=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-			"Set-cookie: utmpkey=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-			"Set-cookie: utmpuserid=;expires=Fri, 19-Apr-1996 11:11:11 GMT\n"
-			"Location: sec\n\n");
+	redirect_homepage();
 	return 0;
 }

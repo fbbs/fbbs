@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -125,12 +126,14 @@ int bbstcon_main(void)
 	if (action == 'a' || action == 'b')
 		action = 'n';
 
+	bool anony = board.flag & BOARD_ANONY_FLAG;
 	int opt = get_user_flag();
 
 	struct fileheader *begin, *end;
 	xml_header(NULL);
-	printf("<bbstcon bid='%d' gid='%u' page='%d' attach='%d'%s%s%s%s%s>",
-			bid, gid, count, maxlen(board.name),
+	printf("<bbstcon bid='%d' gid='%u' anony='%d' page='%d'"
+			" attach='%d'%s%s%s%s%s>",
+			bid, gid, anony, count, maxlen(board.name),
 			flag & THREAD_LAST_POST ? " last='1'" : "",
 			flag & THREAD_LAST ? " tlast='1'" : "",
 			flag & THREAD_FIRST ? " tfirst='1'" : "",
@@ -152,7 +155,7 @@ int bbstcon_main(void)
 		printf("<po fid='%u' owner='%s'%s>", begin->id, begin->owner,
 				!isbm && begin->accessed[0] & FILE_NOREPLY ? " nore='1'" : "");
 		setbfile(file, board.name, begin->filename);
-		xml_print_file(ctx.r, file);
+		xml_print_file(file);
 		puts("</po>");
 		brc_addlist(begin->filename);
 	}
@@ -164,7 +167,7 @@ int bbstcon_main(void)
 
 int web_sigopt(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	bool hidesig = streq(get_param("hidesig"), "on");

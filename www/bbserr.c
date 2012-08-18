@@ -24,7 +24,7 @@ static int http_fatal2(int status, const char *prompt)
  */
 static int http_fatal(const char *prompt)
 {
-	return http_fatal2(HTTP_ST_OK, prompt);
+	return http_fatal2(HTTP_OK, prompt);
 }
 
 /**
@@ -38,7 +38,7 @@ int check_bbserr(int err)
 		return 0;
 	switch (err) {
 		case BBS_EINVAL:
-			return http_fatal2(HTTP_ST_BADREQUEST, "参数错误");
+			return http_fatal2(HTTP_BAD_REQUEST, "参数错误");
 		case BBS_ELGNREQ:
 			return http_fatal("请先<a href='login'>登录</a>");
 		case BBS_EACCES:
@@ -80,7 +80,7 @@ int check_bbserr(int err)
 		case BBS_E2MANY:
 			return http_fatal("在线用户数已达上限");
 		case BBS_EINTNL:
-			return http_fatal2(HTTP_ST_INTERNAL_ERROR, "内部错误");
+			return http_fatal2(HTTP_INTERNAL_SERVER_ERROR, "内部错误");
 		case BBS_ERMQE:
 			return http_fatal("对方信箱已满");
 		default:

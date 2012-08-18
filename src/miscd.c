@@ -36,9 +36,7 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 
-		env.p = pool_create(DEFAULT_POOL_SIZE);
-		env.c = config_load(env.p, DEFAULT_CFG_FILE);
-		initialize_db();
+		initialize_environment(INIT_DB);
 
 		if (load_ucache() != 0) { //将用户的数据映射到内存
 			printf("load ucache error\n");

@@ -186,12 +186,16 @@ int tui_query_result(const char *userid)
 	uinfo_load(user.userid, &u);
 
 #ifdef ENABLE_BANK
-	char rank_buf[8];
-	snprintf(rank_buf, sizeof(rank_buf), "%.1f%%", PERCENT_RANK(u.rank));
-	prints("¹±Ï× [\033[1;32m%d\033[m](%s) ", TO_YUAN_INT(u.contrib), rank_buf);
+	prints("¹±Ï× [\033[1;32m%d\033[m", TO_YUAN_INT(u.contrib));
 	if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
-		prints("²Æ¸» [\033[1;32m%d\033[m] ", TO_YUAN_INT(u.money));
+		prints("/\033[1;33m%d\033[m", TO_YUAN_INT(u.money));
 	}
+	{
+		char rank_buf[8];
+		snprintf(rank_buf, sizeof(rank_buf), "%.1f%%", PERCENT_RANK(u.rank));
+		prints("](%s) ", rank_buf);
+	}
+
 #endif
 
 #ifdef ALLOWGAME

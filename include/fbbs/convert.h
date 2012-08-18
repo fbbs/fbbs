@@ -17,7 +17,7 @@ typedef struct convert_t {
 	char buf[CONVERT_BUFSIZE];
 } convert_t;
 
-typedef int (*convert_handler_t)(char *buf, size_t len, void *arg);
+typedef int (*convert_handler_t)(const char *buf, size_t len, void *arg);
 
 extern int convert_open(convert_t *cp, const char *to, const char *from);
 extern void convert_reset(convert_t *cp);

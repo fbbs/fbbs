@@ -36,7 +36,7 @@ void convert_reset(convert_t *cp)
  * Convert string.
  * @param cp The conversion descriptor.
  * @param from Input string.
- * @param len Length of the input string. If negative, the length will be
+ * @param len Length of the input string. If CONVERT_ALL, the length will be
  *            counted automatically.
  * @param buf If not NULL, it will be used instead of internal buffer.
  * @param size Size of buf.
@@ -83,7 +83,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 					++f;
 					--l;
 					if (handler)
-						(*handler)("?", 1, arg);
+						handler("?", 1, arg);
 					else
 						;
 					break;
@@ -97,7 +97,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 		}
 
 		if (handler && oleft < size) {
-			if ((*handler)(buffer, size - oleft, arg) < 0)
+			if (handler(buffer, size - oleft, arg) < 0)
 				return ret;
 		}
 	}
@@ -113,7 +113,7 @@ int convert_close(convert_t *cp)
 	return iconv_close(cp->cd);
 }
 
-static int write_to_file(char *buf, size_t len, void *arg)
+static int write_to_file(const char *buf, size_t len, void *arg)
 {
 	return fwrite(buf, 1, len, arg) < len ? -1 : 0;
 }

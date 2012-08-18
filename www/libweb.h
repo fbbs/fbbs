@@ -20,15 +20,6 @@
 	#define SECNUM 12
 #endif
 
-enum HTTP_STATUS {
-	HTTP_ST_OK = 200,
-	HTTP_ST_BADREQUEST = 400,
-	HTTP_ST_FORBIDDEN = 403,
-	HTTP_ST_NOTFOUND = 404,
-	HTTP_ST_INTERNAL_ERROR = 500,
-	HTTP_ST_SERVICE_UNAVAILABLE = 503
-};
-
 enum {
 	UPLOAD_MAX = 1 * 1024 * 1024,
 	UPLOAD_OVERHEAD = 1024,
@@ -103,6 +94,7 @@ extern char fromhost[];
 
 void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);
+size_t xml_fputs3(const char *s, size_t size, FILE *stream);
 int xml_printfile(const char *file, FILE *stream);
 
 void xml_header(const char *xslfile);
@@ -125,7 +117,7 @@ void print_session(void);
 void printable_filter(char *str);
 
 extern int xml_print_post(const char *file, int option);
-extern int xml_print_file(http_req_t *r, const char *file);
+extern int xml_print_file(const char *file);
 
 extern int bbscon_search(const char *board, unsigned int fid,
 		int action, struct fileheader *fp, bool extra);

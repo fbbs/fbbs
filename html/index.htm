@@ -1,59 +1,104 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns='http://www.w3.org/1999/xhtml'>
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv='Content-Type' content='text/html; charset=gb2312'/>
-<link rel='stylesheet' href='css/index.css?v=20110201' style='text/css'/>
-<script src="/js/jquery-1.4.2.min.js" defer="defer"></script>
-<script src="js/index.js" defer="defer"></script>
 <title>欢迎光临复旦大学日月光华BBS</title>
+<style type="text/css">
+body, div, img, ul, li, h1, p, input { margin: 0; padding: 0; }
+body, label, input { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 16px; }
+body { width: 100%; }
+img { border: none; }
+a { text-decoration: none; }
+
+#container { width: 950px; margin: 20px auto 0; }
+#left { float: left; width: 300px; }
+#right { float: right; width: 645px; margin: 0 0 10px 0; }
+#footer { clear: both; border-top: 1px solid #e0e0e0; padding: 7px 0 0; font-size: 14px; }
+
+h1 { font-size: 32px; color: #369; margin: 18px 0 18px 0; }
+label { display: block; font-weight: bold; font-size: 16px; margin: 5px 0 2px 0; }
+input { border: 1px solid #c0c0c0; }
+#id, #pw { height: 36px; width: 275px; padding: 0 0 0 5px; }
+#login { width: 282px; background-color: #369; }
+#reg { display: block; width: 282px; background-color: #b0281a; line-height: 36px; }
+#login, #reg { height: 36px; text-align: center; color: #fff; font-weight: bold; font-size: 18px; border: none; margin: 12px 0 0; }
+#persistent { display: inline-block; text-align: left; margin: 12px 5px 0 5px; }
+#for_cb { display: inline; font-weight: normal; font-size: 14px; }
+#tip { color: #808080; }
+
+ul { list-style-type: none; }
+ul#links { margin: 15px 0 0; }
+#links li { font-size: 14px; margin: 4px 0; width: 280px; text-align: center; }
+#links li a, #more li a { color: #00a2e8; }
+#more { display: none; -moz-column-count: 3; -webkit-column-count: 3; -column-count: 3; }
+#more li { font-size: 14px; text-align: center; }
+li#guest { margin: 0 0 15px; }
+li#guest a { color: #000; }
+
+#footer, #footer a { color: #808080; }
+#extra { float: left; }
+#extra li { display: inline; padding: 0 16px 0 0; }
+#copyright { float: right; }
+</style>
 </head>
 <body>
 <div id='container'>
 <div id='left'>
-<div id='menu' class='box'>
-<ul>
-<li><a href='bbs/0an'><img src='images/announce.gif' alt='icon'/>本站精华区</a></li>
-<li><a href='telnet://bbs.fudan.edu.cn'><img src='images/telnet.gif' alt='icon'/>Telnet进站</a></li>
-<li id='sw'>
-<a href='#'><img src='images/software.gif' alt='icon'/>常用软件</a>
-<div id='software' class='box'>
-<ul>
-<li><a href='/software/FTerm2.5.0.154.exe'>FTerm 2.5.0.154 (4,187KB)</a></li>
-<li><a href='/software/CTerm3.24.rar'>Cterm 3.24 (2,574KB)</a></li>
-<li><a href='/software/netterm32428.exe'>NetTerm 4.28 (929KB)</a></li>
-<li><a href='/software/Cterm2000.exe'>CTerm 2000 (498KB)</a></li>
-<li><a href='/software/STerm2.549.rar'>S-Term 2.549 (2,300KB)</a></li>
-<li><a href='/software/qterm-0.4.0pre1.tar.gz'>Qterm 0.4pre1 (1,053KB)</a></li>
-<li><a href='/software/Ansieditor2.03e.exe'>AnsiEditor (330KB)</a></li>
-<li><a href='/software/Bmp2Ascii.exe'>Bmp2Ascii (536KB)</a></li>
-</ul>
-</div>
-</li>
-<li><a href='banner.htm'><img src='images/web.gif' alt='icon'/>Web进站展示</a></li>
-<li><a href='wallpaper.htm'><img src='images/xcc.gif' alt='icon'/>光华壁纸下载</a></li>
-</ul>
-</div>
-<div id='loginbox' class='box'>
-<form method='post' action='bbs/login'>
-<ul>
-<li><img src='images/user.gif' alt='id'/><input id='id' type='text' name='id' class='txt'/></li>
-<li><img src='images/password.gif' alt='password'/><input type='password' name='pw' class='txt'/></li>
-<li><input id='login' type='submit' value='登录'/><input id='guest' type='button' value='游客'/></li>
-</ul>
+<h1>日月光华</h1>
+<form id='box' method='post' action='bbs/login'>
+<label for='id'>账号</label>
+<input id='id' type='text' name='id' class='txt' placeholder='请输入账号'/>
+<label for='pw'>密码</label>
+<input id='pw' type='password' name='pw' class='txt' placeholder='请输入密码'/>
+<input id='persistent' type='checkbox' name='persistent' checked='checked'/><label id='for_cb' for='persistent'>下次自动登录<span id='tip'>（公用电脑请勿选择）</span></label>
+<input id='login' type='submit' value='登录'/>
 </form>
-<form method='get' action='reg.htm'><input id='reg' type='submit' value='注册'/></form>
+
+<a id='reg' href='reg.htm'>注册</a>
+
+<ul id='links'>
+<li id='guest'><a href='bbs/top10'>随便看看</a></li>
+<li><a href='/banner.htm'>Web进站展示</a></li>
+<li><a href='/wallpaper.htm'>光华壁纸下载</a></li>
+<li><a href='/software/FTerm2.5.0.154.exe'>FTerm</a> / <a href='/software/CTerm3.24.rar'>Cterm</a> / <a href='#' id='sw'>其他工具</a></li>
+</ul>
+<ul id='more'>
+<li><a href='/software/Ansieditor2.03e.exe'>AnsiEditor</a></li>
+<li><a href='/software/Bmp2Ascii.exe'>Bmp2Ascii</a></li>
+<li><a href='/software/netterm32428.exe'>NetTerm</a></li>
+<li><a href='/software/Cterm2000.exe'>CTerm2000</a></li>
+<li><a href='/software/STerm2.549.rar'>S-Term</a></li>
+<li><a href='/software/qterm-0.4.0pre1.tar.gz'>Qterm</a></li>
+</ul>
+
 </div>
-<div id='links' class='box'>
-<ul>
+<div id='right'>
+<img src='/images/bbswebpic.jpg'>
+<!--<embed id="flash" width="640" height="480" quality="high" bgcolor="#ffffff" wmode="transparent" name="flash" style="" src="images/home/85-2011-summer-angelstep.swf" type="application/x-shockwave-flash"/>-->
+</div>
+<footer id='footer'>
+<ul id='extra'>
 <li><a href='/m/'>手机登录（测试）</a></li>
 <li><a href='/q/'>附属站复旦泉</a></li>
 <li><a href='/qm/'>复旦泉手机登录</a></li>
 </ul>
+<p id='copyright'><strong>日月光华站 版权所有 &copy;1996-2012 </strong><a href='http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407'>沪ICP备042465</a></p>
+</footer>
 </div>
-</div>
-<div id='main'>
-<p><strong>日月光华站 版权所有 &copy;1996-2012 </strong><a href='http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407'>沪ICP备042465</a></p>
-</div>
-</div>
+<script src='/js/jquery-1.4.2.min.js'></script>
+<script>
+$(document).ready(function() {
+	$('#id').focus();
+	$('#sw').click(function() { $('#more').toggle(); return false; });
+	$('#login').click(function() {
+		if ($('#id').val().length < 1 || $('#pw').val().length < 1)
+			return false;
+	});
+
+	$.getJSON('bbs/login.json', function(data) {
+		if (data.code == 10001) { window.location.replace('bbs/top10'); }
+	});
+});
+</script>
 </body>
 </html>

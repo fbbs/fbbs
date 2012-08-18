@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/prop.h"
 #include "fbbs/string.h"
@@ -17,7 +18,7 @@ static void show_prop(prop_list_t *p, int i)
 
 int web_props(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	prop_list_t *p = prop_list_load();
@@ -76,7 +77,7 @@ static int show_title_detail(int record)
 
 int web_my_props(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	int record = strtol(get_param("record"), NULL, 10);

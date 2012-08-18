@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "fbbs/pool.h"
+#include "fbbs/util.h"
 
 #define streq(a, b)          (!strcmp(a, b))
 #define strneq(a, b, n)      (!strncmp(a, b, n))

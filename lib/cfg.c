@@ -33,28 +33,13 @@ static config_t *_config_init(pool_t *p)
 	return c;
 }
 
-static const char *pool_strdup(pool_t *p, const char *str)
-{
-	if (!str)
-		return NULL;
-
-	size_t len = strlen(str);
-	char *s = pool_alloc(p, len + 1);
-	if (!s)
-		return NULL;
-
-	memcpy(s, str, len);
-	s[len] = '\0';
-	return s;
-}
-
 static int _config_add(config_t *c, const char *key, const char *val)
 {
 	if (!key || !val || !c || c->pairs >= CONFIG_MAX_KEYS)
 		return -1;
 
-	c->keys[c->pairs] = pool_strdup(c->pool, key);
-	c->vals[c->pairs] = pool_strdup(c->pool, val);
+	c->keys[c->pairs] = pool_strdup(c->pool, key, 0);
+	c->vals[c->pairs] = pool_strdup(c->pool, val, 0);
 	if (!c->keys[c->pairs] || !c->vals[c->pairs])
 		return -1;
 

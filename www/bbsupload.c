@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "record.h"
 #include "fbbs/board.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
@@ -136,7 +137,7 @@ static bool check_upload(char *buf, size_t size, char **begin, char **end, char 
 
 int bbspreupload_main(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return BBS_ELGNREQ;
 
 	board_t board;
@@ -156,7 +157,7 @@ int bbspreupload_main(void)
 
 int bbsupload_main(void)
 {
-	if (!loginok) 
+	if (!session.id) 
 		return BBS_ELGNREQ;
 
 	board_t board;

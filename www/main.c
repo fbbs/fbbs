@@ -70,7 +70,6 @@ typedef struct {
 	int mode;            ///< user mode. @see mode_type
 } web_handler_t;
 
-web_ctx_t ctx;
 char fromhost[IP_LEN];
 
 const static web_handler_t handlers[] = {
@@ -154,32 +153,21 @@ static const web_handler_t *_get_handler(void)
 	else
 		++name;
 
-	web_handler_t h = { .name = name, .func = NULL, .mode = 0 };
+	char buf[16];
+	strlcpy(buf, name, sizeof(buf));
+	char *tmp = strrchr(buf, '.');
+	if (tmp)
+		*tmp = '\0';
+
+	web_handler_t h = { .name = buf, .func = NULL, .mode = 0 };
 	return bsearch(&h, handlers, NELEMS(handlers), sizeof(h), compare_handler);
-}
-
-static int initialize_gcrypt(void)
-{
-	if (!gcry_check_version(GCRYPT_VERSION))
-		return -1;
-
-	if (gcry_control(GCRYCTL_DISABLE_SECMEM, 0) != 0)
-		return -1;
-
-	if (gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0) != 0)
-		return -1;
-
-	if (gcry_md_open(&ctx.sha1, GCRY_MD_SHA1, 0) != 0)
-		return -1;
-
-	return 0;
 }
 
 /**
  * Initialization before entering FastCGI loop.
  * @return 0 on success, -1 on error.
  */
-static int _init_all(void)
+static int initialize(void)
 {
 	srand(time(NULL) * 2 + getpid());
 
@@ -197,21 +185,6 @@ static int _init_all(void)
 		return -1;
 	if (!brdshm)
 		return -1;
-
-	env.p = pool_create(DEFAULT_POOL_SIZE);
-	if (!env.p)
-		return -1;
-
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
-	if (!env.c)
-		return -1;
-
-	if (initialize_gcrypt() != 0)
-		return -1;
-
-	initialize_db();
-
-	initialize_mdb();
 
 	return 0;
 }
@@ -236,35 +209,46 @@ static void get_client_ip(void)
 #endif
 }
 
+extern int do_web_login(const char *uname, const char *pw);
+
+static bool activate_session(session_id_t sid, const char *uname)
+{
+	db_res_t *res = db_cmd("UPDATE sessions SET active = TRUE, stamp = %t"
+			" WHERE id = %"DBIdSID, sid, time(NULL));
+	db_clear(res);
+
+	if (res)
+		return !do_web_login(uname, NULL);
+
+	return false;
+}
+
 static bool _get_session(const char *uname, const char *key)
 {
-	bool login = false;
-
 	// TODO: cache
 	db_res_t *res = db_query("SELECT s.id, u.id, s.active, s.expire"
 			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
-			" WHERE u.name = %s AND s.key = %s AND s.web", uname, key);
+			" WHERE u.name = %s AND s.session_key = %s AND s.web", uname, key);
 	if (res && db_res_rows(res) == 1) {
-		if (db_get_bool(res, 0, 2)) {
-			session.id = db_get_session_id(res, 0, 0);
-			session.uid = db_get_user_id(res, 0, 1);
-			login = true;
-		} else {
-			// TODO: re-activate
-			session.id = session.uid = 0;
+		session.id = db_get_session_id(res, 0, 0);
+		session.uid = db_get_user_id(res, 0, 1);
+
+		if (!db_get_bool(res, 0, 2)) {
+			if (!activate_session(session.id, uname))
+				session.id = session.uid = 0;
 		}
 	} else {
 		session.id = session.uid = 0;
 	}
 
 	db_clear(res);
-	return login;
+	return session.id;
 }
 
 static bool get_session(void)
 {
-	const char *uname = get_param("utmpuserid");
-	const char *key = get_param("utmpkey");
+	const char *uname = get_param(COOKIE_USER);
+	const char *key = get_param(COOKIE_KEY);
 
 	memset(&currentuser, 0, sizeof(currentuser));
 
@@ -275,49 +259,58 @@ static bool get_session(void)
 	return ok;
 }
 
+static bool require_login(const web_handler_t *h)
+{
+#ifdef FDQUAN
+	int (*f)(void) = h->func;
+	return !(f == web_login || f == fcgi_reg || f == fcgi_activate);
+#else
+	return false;
+#endif
+}
+
+static int execute(const web_handler_t *h)
+{
+	if (!session.id && require_login(h))
+		return BBS_ELGNREQ;
+	else
+		return h->func();
+}
+
 /**
  * The main entrance of bbswebd.
  * @return 0 on success, 1 on initialization error.
  */
 int main(void)
 {
-	if (_init_all() < 0)
+	if (initialize() < 0)
 		return EXIT_FAILURE;
-
-	initialize_convert_env();
+	initialize_environment(INIT_CONV | INIT_DB | INIT_MDB);
 
 	while (FCGI_Accept() >= 0) {
-		pool_t *p = pool_create(DEFAULT_POOL_SIZE);
-
-		ctx.p = p;
-		ctx.r = get_request(p);
-		if (!ctx.r)
+		if (!web_ctx_init())
 			return EXIT_FAILURE;
 
 		const web_handler_t *h = _get_handler();
-		int ret;
-		if (!h) {
-			ret = BBS_ENOURL;
-		} else {
+		int code = BBS_ENOURL;
+		if (h) {
 			get_client_ip();
-			loginok = get_session();
+			get_session();
 
-			if (loginok) {
-				get_web_mode(h->mode);
-				// TODO: refresh idle time
+			if (session.id) {
+				set_user_status(h->mode);
+				set_idle_time(session.id, time(NULL));
 			}
-#ifdef FDQUAN
-			if (!loginok && h->func != web_login && h->func != fcgi_reg
-					&& h->func != fcgi_activate)
-				ret = BBS_ELGNREQ;
-			else
-				ret = (*(h->func))();
-#else
-			ret = (*(h->func))();
-#endif // FDQUAN
+
+			code = execute(h);
 		}
-		check_bbserr(ret);
-		pool_destroy(p);
+
+		if (code > 0)
+			respond(code);
+		else
+			check_bbserr(code);
+
+		web_ctx_destroy();
 	}
 	return 0;
 }

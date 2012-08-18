@@ -6,6 +6,7 @@
 
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
@@ -49,7 +50,6 @@ char secname[SECNUM][2][20] = {
 #endif
 };
 
-int loginok = 0;
 struct userec currentuser;
 
 /**
@@ -151,6 +151,12 @@ void xml_fputs2(const char *s, size_t size, FILE *stream)
 void xml_fputs(const char *s, FILE *stream)
 {
 	xml_fputs2(s, 0, stream);
+}
+
+size_t xml_fputs3(const char *s, size_t size, FILE *stream)
+{
+	xml_fputs2(s, size, stdout);
+	return 0;
 }
 
 /**
@@ -287,7 +293,7 @@ bool valid_mailname(const char *file)
 static char *get_permission(void)
 {
 	static char c[5];
-	c[0] = loginok ? 'l' : ' ';
+	c[0] = session.id ? 'l' : ' ';
 	c[1] = HAS_PERM(PERM_TALK) ? 't' : ' ';
 	c[2] = HAS_PERM(PERM_CLOAK) ? '#': ' ';
 	c[3] = HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0) ? 'f' : ' ';
@@ -297,7 +303,7 @@ static char *get_permission(void)
 
 const char *get_doc_mode_str(void)
 {
-	if (!loginok)
+	if (!session.id)
 		return "";
 
 	int mode = get_doc_mode();
@@ -317,7 +323,7 @@ int get_user_flag(void)
 
 void set_user_flag(int flag)
 {
-	if (loginok) {
+	if (session.id) {
 		int n = searchuser(currentuser.userid) - 1;
 		if (n < 0 || n >= MAXUSERS)
 			return;
@@ -327,9 +333,9 @@ void set_user_flag(int flag)
 
 void print_session(void)
 {
-	if (ctx.r->flag & REQUEST_API)
+	if (request_type(REQUEST_API))
 		return;
-	bool mobile = ctx.r->flag & REQUEST_MOBILE;
+	bool mobile = request_type(REQUEST_MOBILE);
 
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);

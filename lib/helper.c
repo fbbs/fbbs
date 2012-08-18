@@ -4,6 +4,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
+#include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -60,16 +61,18 @@ void sigbus(int signo)
 
 int bbs_kill(session_id_t sid, int pid, int sig)
 {
+	int r = 0;
 	if (pid > 0) {
-		return kill(pid, sig);
-	} else {
-		if (sig == SIGHUP) {
-			if (sid <= 0)
-				return -1;
-			return session_destroy(sid);
-		} else {
+		if ((r = kill(pid, sig)) == 0)
 			return 0;
-		}
+	}
+
+	if (sig == SIGHUP) {
+		if (sid <= 0)
+			return -1;
+		return session_destroy(sid);
+	} else {
+		return r;
 	}
 }
 
@@ -335,4 +338,17 @@ void initialize_mdb(void)
 	env.m = pool_alloc(env.p, sizeof(*env.m));
 	if (mdb_connect_unix(config_get(env.c, "mdb")) < 0)
 		exit(EXIT_FAILURE);
+}
+
+void initialize_environment(int flags)
+{
+	env.p = pool_create(0);
+	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+
+	if (flags & INIT_CONV)
+		initialize_convert_env();
+	if (flags & INIT_DB)
+		initialize_db();
+	if (flags & INIT_MDB)
+		initialize_mdb();
 }

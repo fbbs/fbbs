@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
 	fb_signal(SIGCHLD, reapchild);
 	fb_signal(SIGTERM, close_daemon);
 
-	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.p = pool_create(0);
 	if (!env.p)
 		return EXIT_FAILURE;
 

@@ -25,7 +25,7 @@ struct ac_list {
 
 ac_list *ac_list_new(void)
 {
-	pool_t *p = pool_create(DEFAULT_POOL_SIZE);
+	pool_t *p = pool_create(0);
 	ac_list *acl = pool_alloc(p, sizeof(*acl));
 	acl->pool = p;
 	acl->head = NULL;
@@ -38,11 +38,7 @@ ac_list *ac_list_new(void)
 void ac_list_add(ac_list *acl, const char *name)
 {
 	ac_name_list *l = pool_alloc(acl->pool, sizeof(*l));
-
-	size_t len = strlen(name) + 1;
-	l->name = pool_alloc(acl->pool, len);
-	memcpy((void *)l->name, name, len);
-
+	l->name = pool_strdup(acl->pool, name, 0);
 	l->next = NULL;
 
 	if (acl->tail)

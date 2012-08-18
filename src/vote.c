@@ -638,7 +638,7 @@ int b_closepolls(void)
 
 	time_t nextpoll = now + 7 * 3600;
 
-	env.p = pool_create(DEFAULT_POOL_SIZE);
+	env.p = pool_create(0);
 	if (!env.p)
 		exit(EXIT_FAILURE);
 

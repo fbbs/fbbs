@@ -12,6 +12,7 @@ CREATE TABLE sessions (
 	ip_addr TEXT,
 	web BOOLEAN,
 	secure BOOLEAN,
+	stamp TIMESTAMPTZ,
 	expire TIMESTAMPTZ
 );
 

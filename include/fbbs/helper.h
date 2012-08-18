@@ -3,7 +3,11 @@
 
 #include "fbbs/session.h"
 
-extern sigjmp_buf bus_jump;
+enum {
+	INIT_CONV = 1,
+	INIT_DB = 2,
+	INIT_MDB = 4,
+};
 
 extern char *sethomefile(char *buf, const char *userid, const char *filename);
 extern char *setbpath(char *buf, const char *boardname);
@@ -25,5 +29,6 @@ extern char *valid_title(char *title);
 extern void initialize_convert_env(void);
 extern void initialize_db(void);
 extern void initialize_mdb(void);
+extern void initialize_environment(int flags);
 
 #endif // FB_HELPER_H
