@@ -24,7 +24,7 @@ static int tui_list_display_loop(tui_list_t *p)
 	if (end > p->all)
 		end = p->all;
 	for (int i = p->start; i < end; ++i) {
-		if ((*p->display)(p, i) == -1)
+		if (p->display(p, i) == -1)
 			return -1;
 	}
 	return 0;
@@ -39,7 +39,7 @@ int tui_list(tui_list_t *p)
 	
 	while (!end) {
 		if (!p->in_query && !p->valid) {
-			if ((*p->loader)(p) < 0)
+			if (p->loader(p) < 0)
 				break;
 			p->valid = true;
 			if (p->update != FULLUPDATE)
@@ -60,7 +60,7 @@ int tui_list(tui_list_t *p)
 		if (p->update != DONOTHING) {
 			if (p->update == FULLUPDATE) {
 				clear();
-				(*p->title)(p);
+				p->title(p);
 				p->update = PARTUPDATE;
 			}
 			if (p->update == PARTUPDATE) {
@@ -118,7 +118,7 @@ int tui_list(tui_list_t *p)
 				if (--p->cur < 0)
 					p->cur = p->all - 1;
 				if (p->in_query && p->query)
-					(*p->query)(p);
+					p->query(p);
 				break;
 			case 'j':
 			case KEY_DOWN:
@@ -126,7 +126,7 @@ int tui_list(tui_list_t *p)
 				if (p->cur >= p->all)
 					p->cur = 0;
 				if (p->in_query && p->query)
-					(*p->query)(p);
+					p->query(p);
 				break;
 			case '$':
 			case KEY_END:
@@ -149,7 +149,7 @@ int tui_list(tui_list_t *p)
 					ch = '\0';
 				} else {
 					number = 0;
-					ret = (*p->handler)(p, ch);
+					ret = p->handler(p, ch);
 					if (ret < 0)
 						end = true;
 					else
@@ -167,7 +167,7 @@ int slide_list(slide_list_t *p)
 	int type = SLIDE_LIST_CURRENT;
 
 	while (!end) {
-		if ((*p->loader)(p, type) < 0)
+		if (p->loader(p, type) < 0)
 			break;
 
 		int ch = igetkey();
@@ -221,7 +221,7 @@ int slide_list(slide_list_t *p)
 				break;
 			default:
 				{
-					int ret = (*p->handler)(p, ch);
+					int ret = p->handler(p, ch);
 					if (ret < 0)
 						end = true;
 					else
