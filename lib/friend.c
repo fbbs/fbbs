@@ -20,8 +20,7 @@ int follow(user_id_t follower, const char *followed, const char *notes)
 		notes = "";
 	}
 
-	db_res_t *res = db_exec_cmd(env.d, "INSERT INTO follows"
-			" (user_id, follower, notes)"
+	db_res_t *res = db_cmd("INSERT INTO follows (user_id, follower, notes)"
 			" SELECT id, %"DBIdUID", %s FROM users"
 			" WHERE lower(name) = lower(%s)", follower, notes, followed);
 	if (res) {
@@ -34,8 +33,7 @@ int follow(user_id_t follower, const char *followed, const char *notes)
 
 int unfollow(user_id_t follower, user_id_t followed)
 {
-	db_res_t *res = db_exec_cmd(env.d,
-			"DELETE FROM follows WHERE user_id = %"DBIdUID
+	db_res_t *res = db_cmd("DELETE FROM follows WHERE user_id = %"DBIdUID
 			" AND follower = %"DBIdUID,
 			followed, follower);
 	if (res) {
@@ -51,7 +49,7 @@ void edit_followed_note(user_id_t follower, user_id_t followed, const char *note
 	if (validate_utf8_input(notes, FOLLOW_NOTE_CCHARS) < 0)
 		return;
 
-	db_res_t *res = db_exec_cmd(env.d, "UPDATE follows SET notes = %s"
+	db_res_t *res = db_cmd("UPDATE follows SET notes = %s"
 			"WHERE user_id = %"DBIdUID" AND follower = %"DBIdUID,
 			notes, followed, follower);
 	db_clear(res);
@@ -70,8 +68,7 @@ bool am_followed_by(const char *uname)
 
 following_list_t *following_list_load(user_id_t uid)
 {
-	return (following_list_t *)db_exec_query(env.d, true,
-			FOLLOWING_LIST_LOAD_QUERY, uid);
+	return (following_list_t *)db_query(FOLLOWING_LIST_LOAD_QUERY, uid);
 }
 
 black_list_t *black_list_load(user_id_t uid)

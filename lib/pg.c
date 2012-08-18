@@ -17,6 +17,31 @@
  */
 #define HAVE_INT64_TIMESTAMP
 
+typedef PGconn db_conn_t;
+
+static db_conn_t *global_db_conn;
+
+bool db_connect(const char *host, const char *port, const char *db,
+		const char *user, const char *pwd)
+{
+	global_db_conn = PQsetdbLogin(host, port, NULL, NULL, db, user, pwd);
+
+	if (PQstatus(global_db_conn) != CONNECTION_OK)
+		global_db_conn = NULL;
+
+	return global_db_conn;
+}
+
+void db_finish(void)
+{
+	PQfinish(global_db_conn);
+}
+
+const char *db_errmsg(void)
+{
+	return PQerrorMessage(global_db_conn);
+}
+
 fb_time_t ts_to_time(db_timestamp ts)
 {
 	return ts / INT64_C(1000000) + POSTGRES_EPOCH_TIME;
@@ -240,35 +265,35 @@ static db_res_t *_db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary,
 	return res;
 }
 
-db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, ...)
+db_res_t *db_cmd(const char *cmd, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	db_res_t *res = _db_exec_cmd(conn, cmd, true, DBRES_COMMAND_OK, ap);
+	db_res_t *res = _db_exec_cmd(global_db_conn, cmd, true, DBRES_COMMAND_OK, ap);
 	va_end(ap);
 	return res;
 }
 
-db_res_t *db_exec_query(db_conn_t *conn, bool binary, const char *cmd, ...)
+db_res_t *db_query(const char *cmd, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	db_res_t *res = _db_exec_cmd(conn, cmd, binary, DBRES_TUPLES_OK, ap);
+	db_res_t *res = _db_exec_cmd(global_db_conn, cmd, true, DBRES_TUPLES_OK, ap);
 	va_end(ap);
 	return res;
 }
 
-int db_begin_trans(db_conn_t *conn)
+int db_begin_trans(void)
 {
-	db_res_t *res = PQexec(conn, "BEGIN");
+	db_res_t *res = PQexec(global_db_conn, "BEGIN");
 	int r = (PQresultStatus(res) == PGRES_COMMAND_OK ? 0 : -1);
 	PQclear(res);
 	return r;
 }
 
-int db_end_trans(db_conn_t *conn)
+int db_end_trans(void)
 {
-	db_res_t *res = PQexec(conn, "END");
+	db_res_t *res = PQexec(global_db_conn, "END");
 	int r = (PQresultStatus(res) == PGRES_COMMAND_OK ? 0 : -1);
 	PQclear(res);
 	return r;

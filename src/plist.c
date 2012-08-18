@@ -189,7 +189,7 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	db_res_t *r = db_exec_query(env.d, true, "SELECT " POST_LIST_FIELDS " FROM posts_sticked");
+	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts_sticked");
 
 	return;
 }

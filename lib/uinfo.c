@@ -380,7 +380,7 @@ int uinfo_load(const char *name, uinfo_t *u)
 	u->contrib = u->money = u->rank = 0;
 	u->title = NULL;
 
-	u->res = db_exec_query(env.d, true, "SELECT title"
+	u->res = db_query("SELECT title"
 #ifdef ENABLE_BANK
 			", money, rank, contrib"
 #endif

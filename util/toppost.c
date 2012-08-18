@@ -2,7 +2,6 @@
 #include "hash.h"
 #include "fbbs/board.h"
 #include "fbbs/cfg.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"
 
@@ -285,7 +284,7 @@ int main(int argc, char **argv)
 
 	initialize_environment(INIT_CONV | INIT_DB);
 
-	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		board_t board;
 		res_to_board(res, i, &board);

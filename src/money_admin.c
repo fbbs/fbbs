@@ -92,11 +92,11 @@ static int callback(const char *note, const char *name, money_t delta)
 
 static int submit_changes(const char *file)
 {
-	if (db_begin_trans(env.d) != 0)
+	if (db_begin_trans() != 0)
 		return -1;
 
 	int ret = parse(file, callback);
-	db_end_trans(env.d);
+	db_end_trans();
 
 	return ret;
 }

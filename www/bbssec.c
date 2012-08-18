@@ -23,8 +23,7 @@ static int show_sector(int sid, db_res_t *res, int last)
 
 int bbssec_main(void)
 {
-	db_res_t *r1 = db_exec_query(env.d, true,
-			"SELECT id, name, descr, short_descr"
+	db_res_t *r1 = db_query("SELECT id, name, descr, short_descr"
 			" FROM board_sectors ORDER BY name ASC");
 	if (!r1)
 		return BBS_EINVAL;

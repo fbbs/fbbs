@@ -276,8 +276,7 @@ int msg_author(int ent, const struct fileheader *fileinfo, char *direct)
 
 int broadcast_msg(const char *msg)
 {
-	msg_session_info_t *all = db_exec_query(env.d, true,
-			MSG_SESSION_INFO_QUERY);
+	msg_session_info_t *all = db_query(MSG_SESSION_INFO_QUERY);
 	int r = send_msg(all, msg, BROADCAST_MSG);
 	msg_session_info_clear(all);
 	return r;

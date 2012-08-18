@@ -1,7 +1,6 @@
 #ifndef FB_FBBS_H
 #define FB_FBBS_H
 
-#include "fbbs/dbi.h"
 #include "fbbs/schema.h"
 #include "fbbs/session.h"
 
@@ -19,7 +18,6 @@ struct pool_t;
 
 typedef struct bbs_env_t {
 	struct config_t *c;
-	db_conn_t *d;
 	struct mdb_conn_t *m;
 	struct pool_t *p;
 	struct convert_t *u2g;

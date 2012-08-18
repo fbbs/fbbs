@@ -2,9 +2,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include "bbs.h"
-#include "fbbs/cfg.h"
 #include "fbbs/dbi.h"
-#include "fbbs/pool.h"
+#include "fbbs/helper.h"
 #include "fbbs/uinfo.h"
 
 static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
@@ -61,9 +60,6 @@ typedef struct {
 	FILE *log;
 	FILE *data;
 	FILE *post;
-	pool_t *pool;
-	config_t *conf;
-	db_conn_t *db;
 	int lock;
 } _my_data_t;
 static _my_data_t _env;
@@ -71,8 +67,6 @@ static _my_data_t _env;
 static void cleanup(void)
 {
 	ucache_unlock(_env.lock);
-	db_finish(_env.db);
-	pool_destroy(_env.pool);
 	fclose(_env.post);
 	fclose(_env.data);
 	fclose(_env.log);
@@ -97,24 +91,11 @@ static int init_env(_my_data_t *e)
 	if (!e->log || !e->data || !e->post)
 		return -1;
 
-	e->pool = pool_create(0);
-	if (!e->pool)
-		return -1;
-
-	e->conf = config_load(e->pool, DEFAULT_CFG_FILE);
-	if (!e->conf)
-		return -1;
-
-	e->db = db_connect(config_get(e->conf, "host"), config_get(e->conf, "port"),
-			config_get(e->conf, "dbname"), config_get(e->conf, "user"),
-			config_get(e->conf, "password"));
-	if (db_status(e->db) != DB_CONNECTION_OK)
-		return -1;
-
 	e->lock = ucache_lock();
 	if (e->lock < 0)
 		return -1;
 
+	initialize_environment(INIT_DB);
 	return 0;
 }
 
@@ -168,10 +149,8 @@ int main(int argc, char **argv)
 			del_uidshm(i + 1, user.userid);
 
 			// for now, we just delete them one by one.
-			db_res_t *res = db_exec_cmd(_env.db,
-					"UPDATE users SET alive = FALSE"
-					" WHERE lower(name) = lower(%s) AND alive",
-					user.userid);
+			db_res_t *res = db_cmd("UPDATE users SET alive = FALSE"
+					" WHERE lower(name) = lower(%s) AND alive", user.userid);
 			db_clear(res);
 		}
 	}

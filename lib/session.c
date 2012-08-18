@@ -1,7 +1,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "fbbs/fbbs.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/session.h"
 
@@ -22,8 +21,7 @@ int online_count(void)
 		return cached;
 
 	int online = 0;
-	db_res_t *res = db_exec_query(env.d, true,
-			"SELECT count(*) FROM sessions WHERE active");
+	db_res_t *res = db_query("SELECT count(*) FROM sessions WHERE active");
 	if (res && db_res_rows(res) > 0)
 		online = db_get_integer(res, 0, 0);
 	db_clear(res);
@@ -50,8 +48,7 @@ int get_peak_online(void)
 
 session_id_t session_new_id(void)
 {
-	db_res_t *res = db_exec_query(env.d, true,
-			"SELECT nextval('sessions_id_seq')");
+	db_res_t *res = db_query("SELECT nextval('sessions_id_seq')");
 	if (!res)
 		return 0;
 
@@ -178,7 +175,7 @@ db_res_t *get_sessions_of_followings(void)
 
 db_res_t *get_active_sessions(void)
 {
-	return db_exec_query(env.d, true, ACTIVE_SESSION_QUERY);
+	return db_query(ACTIVE_SESSION_QUERY);
 }
 
 basic_session_info_t *get_sessions(user_id_t uid)

@@ -36,8 +36,7 @@ int get_user_count(void)
 		return cached;
 
 	int count = 0;
-	db_res_t *res = db_exec_query(env.d, true,
-			"SELECT count(*) FROM alive_users");
+	db_res_t *res = db_query("SELECT count(*) FROM alive_users");
 	if (res && db_res_rows(res) > 0)
 		count = db_get_integer(res, 0, 0);
 	db_clear(res);
@@ -51,8 +50,7 @@ int get_user_count(void)
 	return count;
 }
 
-static int _user_data_add(db_conn_t *c, const char *name, int uid,
-		int field, int delta)
+static int _user_data_add(const char *name, int uid, int field, int delta)
 {
 	const char *fields[] = { "logins", "posts", "stay" };
 	if (field < 0 || field >= NELEMS(fields))
@@ -67,22 +65,22 @@ static int _user_data_add(db_conn_t *c, const char *name, int uid,
 
 	db_res_t *res;
 	if (name)
-		res = db_exec_query(c, true, query, name);
+		res = db_query(query, name);
 	else
-		res = db_exec_query(c, true, query, uid);
+		res = db_query(query, uid);
 	if (!res)
 		return -1;
 	return 0;
 }
 
-int user_data_add_by_name(db_conn_t *c, const char *name, int field, int delta)
+int user_data_add_by_name(const char *name, int field, int delta)
 {
-	return _user_data_add(c, name, 0, field, delta);
+	return _user_data_add(name, 0, field, delta);
 }
 
-int user_data_add(db_conn_t *c, int uid, int field, int delta)
+int user_data_add(int uid, int field, int delta)
 {
-	return _user_data_add(c, NULL, uid, field, delta);
+	return _user_data_add(NULL, uid, field, delta);
 }
 
 int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)

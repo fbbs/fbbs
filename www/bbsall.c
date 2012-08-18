@@ -13,7 +13,7 @@ int web_all_boards(void)
 	printf("<bbsall>");
 	print_session();
 
-	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
 	if (!res)
 		return BBS_EINTNL;
 	for (int i = 0; i < db_res_rows(res); ++i) {

@@ -8,14 +8,9 @@
 #include "fbbs/time.h"
 #include "fbbs/util.h"
 
-typedef PGconn db_conn_t;
 typedef PGresult db_res_t;
 
 typedef int64_t db_timestamp;
-
-typedef enum db_conn_status_t {
-	DB_CONNECTION_OK = CONNECTION_OK,
-} db_conn_status_t;
 
 typedef enum db_exec_status_t {
 	DBRES_COMMAND_OK = PGRES_COMMAND_OK,
@@ -24,13 +19,10 @@ typedef enum db_exec_status_t {
 
 extern db_timestamp time_to_ts(fb_time_t t);
 
-#define db_connect(host, port, db, user, pwd) \
-		((db_conn_t *)PQsetdbLogin(host, port, NULL, NULL, db, user, pwd));
-#define db_finish(conn)  PQfinish(conn)
-#define db_status(conn)  ((db_conn_status_t)PQstatus(conn))
-#define db_errmsg(conn)  ((const char *)PQerrorMessage(conn))
+extern bool db_connect(const char *host, const char *port, const char *db, const char *user, const char *pwd);
+extern void db_finish(void);
+extern const char *db_errmsg(void);
 
-#define db_exec(conn, cmd)  ((db_res_t *)PQexec(conn, cmd))
 #define db_res_status(res)  ((db_exec_status_t)PQresultStatus(res))
 extern void db_clear(db_res_t *res);
 
@@ -47,13 +39,11 @@ extern bool db_get_bool(const db_res_t *res, int row, int col);
 extern fb_time_t db_get_time(const db_res_t *res, int row, int col);
 extern float db_get_float(const db_res_t *res, int row, int col);
 
-extern db_res_t *db_exec_cmd(db_conn_t *conn, const char *cmd, ...);
-extern db_res_t *db_exec_query(db_conn_t *conn, bool binary, const char *cmd, ...);
-#define db_cmd(cmd, ...)  db_exec_cmd(env.d, cmd, __VA_ARGS__)
-#define db_query(cmd, ...)  db_exec_query(env.d, true, cmd, __VA_ARGS__)
+extern db_res_t *db_cmd(const char *cmd, ...);
+extern db_res_t *db_query(const char *cmd, ...);
 
-extern int db_begin_trans(db_conn_t *conn);
-extern int db_end_trans(db_conn_t *conn);
+extern int db_begin_trans(void);
+extern int db_end_trans(void);
 
 #include "fbbs/schema.h"
 

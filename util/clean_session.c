@@ -132,9 +132,8 @@ int main(int argc, char **argv)
 	if (resolve_ucache() != 0)
 		return EXIT_FAILURE;
 
-	db_res_t *res = db_exec_query(env.d, true,
-			"SELECT id, active, user_id, pid, web, stamp, expire"
-			" FROM sessions");
+	db_res_t *res = db_query("SELECT"
+			" id, active, user_id, pid, web, stamp, expire FROM sessions");
 
 	int count = db_res_rows(res);
 	struct _session *sessions = malloc(sizeof(*sessions) * count);

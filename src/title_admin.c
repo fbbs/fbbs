@@ -37,7 +37,7 @@ static tui_list_loader_t title_list_loader(tui_list_t *p)
 		case TITLE_LIST_ALL:
 			break;
 	}
-	db_res_t *res = db_exec_query(env.d, true, query);
+	db_res_t *res = db_query(query);
 	l->list = res;
 	return (p->all = db_res_rows(res));
 }

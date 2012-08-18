@@ -19,7 +19,7 @@ typedef db_res_t prop_list_t;
 		"SELECT i.id, c.name, i.name, i.price FROM prop_items i" \
 		" JOIN prop_categs c ON i.categ = c.id WHERE valid ORDER BY i.id ASC"
 #define prop_list_load() \
-	(prop_list_t *)db_exec_query(env.d, true, PROP_LIST_SELECT_ALL)
+	(prop_list_t *)db_query(PROP_LIST_SELECT_ALL)
 #define prop_list_free(p)  db_clear(p)
 
 #define prop_list_num_rows(list)  db_res_rows(list)
@@ -36,7 +36,7 @@ typedef db_res_t my_props_t;
 		" WHERE r.expire > current_timestamp AND r.user_id = %"DBIdUID \
 		" ORDER BY r.order_time ASC"
 #define my_props_load(uid) \
-	(my_props_t *)db_exec_query(env.d, true, MY_PROPS_QUERY, uid)
+	(my_props_t *)db_query(MY_PROPS_QUERY, uid)
 #define my_props_free(p)  db_clear(p)
 #define my_props_count(p)  db_res_rows(p)
 

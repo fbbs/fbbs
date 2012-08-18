@@ -1,7 +1,6 @@
 #include "bbs.h"
 #include "record.h"
 #include "fbbs/board.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 
@@ -69,7 +68,7 @@ int resolve_boards(void)
 
 void rebuild_brdshm(void)
 {
-	db_res_t *res = db_exec_query(env.d, true, "SELECT id, name FROM boards");
+	db_res_t *res = db_query("SELECT id, name FROM boards");
 	if (!res || db_res_rows(res) < 1) {
 		db_clear(res);
 		return;
@@ -118,10 +117,9 @@ unsigned int get_nextid2(int bid)
 	return ret;
 }
 
-int get_nextid(const char *boardname)
+int get_nextid(const char *bname)
 {
-	db_res_t *res = db_exec_query(env.d, true, "SELECT id FROM boards"
-			" WHERE name = %s", boardname);
+	db_res_t *res = db_query("SELECT id FROM boards WHERE name = %s", bname);
 	if (!res || db_res_rows(res) < 1) {
 		db_clear(res);
 		return 0;

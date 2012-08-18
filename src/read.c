@@ -1792,7 +1792,7 @@ static int searchallboard(char *id, char *patten, int dt, int all, int del,
 	dt = dt * 86400;
 
 	board_t board;
-	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		res_to_board(res, i, &board);
 

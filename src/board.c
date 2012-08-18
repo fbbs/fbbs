@@ -76,7 +76,7 @@ static ac_list *build_board_ac_list(int mode)
 	if (!acl)
 		return NULL;
 
-	db_res_t *res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
 	if (res) {
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			board_t board;
@@ -355,7 +355,7 @@ static void load_boards(board_list_t *l)
 		res = db_query(BOARD_SELECT_QUERY_BASE
 				"WHERE b.parent = %d", l->parent);
 	} else {
-		res = db_exec_query(env.d, true, BOARD_SELECT_QUERY_BASE);
+		res = db_query(BOARD_SELECT_QUERY_BASE);
 	}
 	res_to_board_array(l, res, NULL);
 	db_clear(res);
