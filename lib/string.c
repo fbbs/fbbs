@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <wchar.h>
+#include "config.h"
 #include "fbbs/string.h"
 
 /**
@@ -185,11 +186,17 @@ char *trim(char *str)
 	return str;
 }
 
-// OpenBSD: strlcpy.c,v 1.11
-// Copy 'src' to string 'dst' of size 'siz'.
-// At most siz-1 characters will be copied.
-// Always NUL terminates (unless siz == 0).
-// Returns strlen(src); if retval >= siz, truncation occurred.
+#ifndef HAVE_STRLCPY
+/**
+ * Copy @a src to string @a dst of size @a siz.
+ * At most siz-1 characters will be copied.
+ * Always NUL terminates (unless siz == 0).
+ * From OpenBSD: strlcpy.c,v 1.11.
+ * @param dst The buffer to be copied into.
+ * @param src The string to be copied.
+ * @param siz The size of the buffer.
+ * @return strlen(src); if retval >= siz, truncation occurred.
+ */
 size_t strlcpy(char *dst, const char *src, size_t siz)
 {
 	char *d = dst;
@@ -214,7 +221,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz)
 
 	return(s - src - 1);  //count does not include NUL
 }
-
+#endif
 
 void strtourl(char *url, const char *str)
 {

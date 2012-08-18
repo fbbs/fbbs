@@ -76,5 +76,6 @@ check_function_exists(getaddrinfo HAVE_GETADDRINFO)
 check_function_exists(poll HAVE_POLL)
 check_function_exists(gethostbyname HAVE_GETHOSTBYNAME)
 check_function_exists(regcomp HAVE_REGCOMP)
+check_function_exists(strlcpy HAVE_STRLCPY)
 
 configure_file(include/config.h.cmake include/config.h)
