@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 #include "fbbs/tui_list.h"
@@ -188,7 +189,7 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts_sticked");
+	db_res_t *r = db_exec_query(env.d, true, "SELECT " POST_LIST_FIELDS " FROM posts_sticked");
 
 	return;
 }
@@ -208,7 +209,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p,
 	char query[512];
 	build_query(query, sizeof(query), l->type, asc, page);
 
-	db_res_t *res = exec_query(query, l->type, pid, l->uid, l->keyword);
+	db_res_t *res = exec_query(query, l->type, pid, l->uid, l->utf8_keyword);
 	res_to_array(res, l, base, page);
 
 	if ((base == SLIDE_LIST_NEXT && db_res_rows(res) < page)
