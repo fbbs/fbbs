@@ -170,7 +170,32 @@ int slide_list(slide_list_t *p)
 		if (p->loader(p, type) < 0)
 			break;
 
+		if (p->update != DONOTHING) {
+			if (p->update == FULLUPDATE) {
+				clear();
+				p->title(p);
+				p->update = PARTUPDATE;
+			}
+			if (p->update == PARTUPDATE) {
+				move(TUI_LIST_START, 0);
+				clrtobot();
+				p->display(p);
+			}
+			update_endline();
+			p->update = DONOTHING;
+		}
+
+		if (!p->in_query) {
+			move(TUI_LIST_START + p->cur, 0);
+			outs(">");
+		}
+
 		int ch = igetkey();
+
+		if (!p->in_query) {
+			move(TUI_LIST_START + p->cur, 0);
+			outs(" ");
+		}
 
 		type = SLIDE_LIST_CURRENT;
 		switch (ch) {

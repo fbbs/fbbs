@@ -46,7 +46,7 @@ typedef struct slide_list_t {
 	void *data;
 	int (*loader)(struct slide_list_t *, slide_list_base_e);
 	void (*title)(struct slide_list_t *);
-	int (*display)(struct slide_list_t *, int);
+	int (*display)(struct slide_list_t *);
 	int (*handler)(struct slide_list_t *, int);
 } slide_list_t;
 

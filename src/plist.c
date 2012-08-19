@@ -189,7 +189,17 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
+	if (!l->sposts)
+		l->sposts = malloc(sizeof(*l->sposts) * MAX_NOTICE);
+
 	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts_sticked");
+	if (r) {
+		l->scount = db_res_rows(r);
+		for (int i = 0; i < l->scount; ++i) {
+			res_to_post_info(r, i, l->sposts + i);
+		}
+		db_clear(r);
+	}
 
 	return;
 }
@@ -225,7 +235,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	return;
 }
 
-static slide_list_display_t post_list_display(slide_list_t *p, int i)
+static slide_list_display_t post_list_display(slide_list_t *p)
 {
 	return 0;
 }
@@ -236,14 +246,32 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 }
 
 static int post_list(int bid, post_list_type_e type, post_id_t pid,
-		slide_list_base_e base, const char *owner, const char *keyword)
+		slide_list_base_e base, user_id_t uid, const char *keyword)
 {
+	post_list_t p = {
+		.sposts = NULL, .scount = 0, .posts = NULL, .count = 0,
+		.type = type, .base = base, .pid = pid, .uid = uid,
+	};
+	strlcpy(p.utf8_keyword, keyword, sizeof(p.utf8_keyword));
+
+	slide_list_t s = {
+		.data = &p,
+		.loader = post_list_loader,
+		.title = post_list_title,
+		.display = post_list_display,
+		.handler = post_list_handler,
+	};
+
+	slide_list(&s);
+
+	free(p.sposts);
+	free(p.posts);
 	return 0;
 }
 
 int post_list_normal_range(int bid, post_id_t pid, slide_list_base_e base)
 {
-	return post_list(bid, POST_LIST_NORMAL, pid, base, NULL, NULL);
+	return post_list(bid, POST_LIST_NORMAL, pid, base, 0, NULL);
 }
 
 int post_list_normal(int bid)
