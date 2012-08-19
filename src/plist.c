@@ -239,7 +239,7 @@ static void post_list_display_entry(post_info_t *p)
 {
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(p->utf8_title, gbk_title);
-	printf("%s %s\n", p->owner, p->gbk_title);
+	printf("%s %s\n", p->owner, gbk_title);
 }
 
 static slide_list_display_t post_list_display(slide_list_t *p)
@@ -247,14 +247,14 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 	post_list_t *l = p->data;
 
 	if (!l->posts)
-		return;
-	for (int i = 0; i < l->posts; ++i) {
+		return 0;
+	for (int i = 0; i < l->count; ++i) {
 		post_list_display_entry(l->posts + i);
 	}
 
 	if (!l->sposts)
-		return;
-	int remain = t_lines - 4 - l->posts;
+		return 0;
+	int remain = t_lines - 4 - l->count;
 	for (int i = 0; i < remain && i < l->scount; ++i) {
 		post_list_display_entry(l->sposts + i);
 	}
