@@ -14,7 +14,7 @@ bbs_session_t session;
 
 #define ONLINE_COUNT_CACHE_KEY  "c:online"
 
-int online_count(void)
+int count_online(void)
 {
 	int cached = mdb_integer(-1, "GET", ONLINE_COUNT_CACHE_KEY);
 	if (cached >= 0)

@@ -436,7 +436,7 @@ int bbs_auth(const char *name, const char *passwd)
 		return BBS_ENOUSR;
 
 	if (currentuser.userid[0] == '\0') {
-		if (online_count() > MAXACTIVE)
+		if (count_online() > MAXACTIVE)
 			return BBS_E2MANY;
 		if (!dosearchuser(name, &currentuser, &usernum))
 			return BBS_ENOUSR;
@@ -480,7 +480,7 @@ static int login_query(void)
 #endif // ENABLE_SSH
 
 	// Deny new logins if too many users online.
-	int online = online_count();
+	int online = count_online();
 #ifndef ENABLE_SSH
 	if (online >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);

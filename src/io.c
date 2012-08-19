@@ -667,7 +667,7 @@ void update_endline(void)
 			"[\033[36m%4d\033[33m»À/\033[36m%3d\033[33m”—]"
 			"      "
 			"’ ∫≈%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
-			date, online_count(),
+			date, count_online(),
 			online_follows_count(!HAS_PERM(PERM_SEECLOAK)),
 			buf, (allstay / 60) % 1000, allstay % 60);
 		return;

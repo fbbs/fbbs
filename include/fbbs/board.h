@@ -83,6 +83,6 @@ extern int tui_unread_boards(const char *cmd);
 extern int tui_read_sector(const char *cmd);
 extern int tui_favorite_boards(const char *cmd);
 
-extern int board_online_count(int bid);
+extern int count_onboard(int bid);
 
 #endif // FB_BOARD_H
