@@ -141,7 +141,7 @@ static int tui_favorite_add(tui_list_t *p)
 			strlcpy(utf8_name, gbk_name, sizeof(utf8_name));
 
 		int parent = FAV_BOARD_ROOT_FOLDER;
-		if (l->favorite && l->parent)
+		if (l->favorite)
 			parent = l->parent;
 		if (fav_board_add(session.uid, utf8_name, 0, parent, &currentuser))
 			p->valid = false;
@@ -193,7 +193,8 @@ static int tui_favorite_mkdir(tui_list_t *p)
 {
 	board_list_t *l = p->data;
 
-	if (!HAS_PERM(PERM_LOGIN) || !l->favorite || l->parent)
+	if (!HAS_PERM(PERM_LOGIN) || !l->favorite
+			|| (l->parent != FAV_BOARD_ROOT_FOLDER))
 		return DONOTHING;
 
 	if (l->count >= FAV_BOARD_LIMIT) {
@@ -364,7 +365,7 @@ static void load_boards(board_list_t *l)
 static void index_favorite_boards(board_list_t *l)
 {
 	if (!l->parent)
-		l->parent = 1;
+		l->parent = FAV_BOARD_ROOT_FOLDER;
 
 	l->count = 0;
 
