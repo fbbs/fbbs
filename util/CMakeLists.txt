@@ -3,7 +3,7 @@ add_definitions(-D_XOPEN_SOURCE=600 -I../include)
 link_directories(../lib)
 
 set(UTILS1 averun account newacct horoscope zodiac)
-set(UTILS2 bbstop birthday toppost bbsuptime badbms AnnIndex showbm statBM
+set(UTILS2 bbstop birthday toppost bbsuptime badbms showbm statBM
 	cleanuser clean_session)
 
 foreach(name ${UTILS1})
