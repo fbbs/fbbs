@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include "fbbs/time.h"
 
+static struct tm *fb_localtime(fb_time_t *t)
+{
+	time_t tt = (time_t)*t;
+	return localtime(&tt);
+}
+
 /**
  * Convert time to string in specified format.
  * @param time time to convert.
@@ -85,6 +91,6 @@ bool valid_date(int year, int month, int day)
 
 char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t)
 {
-	strftime(buf, size, fmt, localtime(&t));
+	strftime(buf, size, fmt, fb_localtime(&t));
 	return buf;
 }

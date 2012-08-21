@@ -392,9 +392,9 @@ int main (int argc, char **argv)
 			if ((time (0) - bmrec.lastlogin) / 60 / 60 / 24 > 999)
 				fprintf (fp0, " %s%6d%s", "", 999," ");
 			else if ((time (0) - bmrec.lastlogin) / 60 / 60 / 24 > BMNOLOGIN)
-				fprintf (fp0, " %s%6ld%s",REDMARK,(time (0) - bmrec.lastlogin) / 60 / 60 / 24,ENDREDMARK);
+				fprintf (fp0, " %s%6"PRIdFBT"%s",REDMARK,(time (0) - bmrec.lastlogin) / 60 / 60 / 24,ENDREDMARK);
 			else
-				fprintf (fp0, " %6ld", (time (0) - bmrec.lastlogin) / 60 / 60 / 24);
+				fprintf (fp0, " %6"PRIdFBT, (time (0) - bmrec.lastlogin) / 60 / 60 / 24);
 
 			if ((time (0) - lastbmpost_Brd) / 60 / 60 / 24 > 999)
 				fprintf (fp0, " %6d", 999);

@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdio.h>
 #include "bbs.h"
+#include "fbbs/time.h"
 
 int main (int argc, char *argv[])
 {
@@ -43,7 +44,7 @@ int main (int argc, char *argv[])
 					break;
 		     	fscanf (bmfp, "%s\n", which);
 		      	fprintf (	fout,
-		    		  " ** [1;33m%-16s[m°æÖ÷ [1;32m%-15.15s[m [ %-20.20s ]%6ldÌì\n",
+		    		  " ** [1;33m%-16s[m°æÖ÷ [1;32m%-15.15s[m [ %-20.20s ]%6"PRIdFBT"Ìì\n",
 		       			which, aman.userid, aman.username,(now - aman.lastlogin) / 86400);
 	   		}
 	 		fclose (bmfp);
