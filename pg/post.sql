@@ -1,3 +1,11 @@
+BEGIN;
+
+DROP TABLE IF EXISTS threads;
+DROP TABLE IF EXISTS posts_sticked;
+DROP TABLE IF EXISTS posts_deleted;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS posts_base;
+
 CREATE TABLE posts_base (
 	id BIGSERIAL,
 	reid BIGINT,
@@ -20,6 +28,7 @@ CREATE TABLE posts_base (
 );
 
 CREATE TABLE posts (
+	PRIMARY KEY (id)
 ) INHERITS (posts_base);
 
 CREATE TABLE posts_deleted (
@@ -30,7 +39,7 @@ CREATE TABLE posts_deleted (
 ) INHERITS (posts_base);
 
 CREATE TABLE posts_sticked (
-	pid BIGINT REFERECES posts,
+	pid BIGINT REFERENCES posts,
 	stamp TIMESTAMP
 );
 
