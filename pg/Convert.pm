@@ -1,7 +1,7 @@
 package Convert;
 
 use Exporter 'import';
-@EXPORT = qw(get_options db_connect convert read_boards $dir $dbh);
+@EXPORT = qw(get_options db_connect convert read_boards read_users $dir $dbh);
 
 use DBI;
 use Encode;
@@ -62,6 +62,31 @@ sub read_boards
 	}
 
 	$_->[2] = $_->[2] ? $hash{$_->[2]} : undef foreach (@temp);
+	return \@temp;
+}
+
+sub read_users
+{
+	# 0 uid 1 userlevel 2 numlogins 3 numposts 4 stay
+	# 5 nummedals 6 money 7 bet 8 flags 9 passwd
+	# 10 nummails 11 gender 12 byear 13 bmonth 14 bday
+	# 15 signature 16 userdefine 17 prefs 18 noteline 19 firstlogin
+	# 20 lastlogin 21 lastlogout 22 dateforbet 23 notedate 24 userid
+	# 25 lasthost 26 username 27 email 28 reserved
+	my ($buf, %hash);
+	open my $fh, '<', "$dir/.PASSWDS" or die "can't open .PASSWDS\n";
+	while (1) {
+		last if (read($fh, $buf, 256) != 256);
+		my @t = unpack "IiIiIi3sA14IcC3iI2iq5Z16Z40Z40Z40a8", $buf;
+		if ($t[24] and not exists $hash{$t[24]}) {
+			$hash{$t[24]} = \@t;
+		}
+	}
+	close $fh;
+
+	my @temp = values %hash;
+	@temp = sort { $a->[19] <=> $b->[19] } @temp;
+
 	return \@temp;
 }
 
