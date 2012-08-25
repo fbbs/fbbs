@@ -48,3 +48,5 @@ CREATE TABLE threads (
 	replies INTEGER DEFAULT 0,
 	comments INTEGER DEFAULT 0
 );
+
+COMMIT;

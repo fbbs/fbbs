@@ -1,11 +1,13 @@
 package Convert;
 
 use Exporter 'import';
-@EXPORT = qw(get_options db_connect convert read_boards read_users $dir $dbh);
+@EXPORT = qw(get_options db_connect convert convert_file
+		convert_time read_boards read_users $dir $dbh);
 
 use DBI;
 use Encode;
 use Getopt::Long;
+use POSIX qw(strftime);
 
 our ($host, $port, $db, $user, $dir, $dbh);
 
@@ -37,6 +39,25 @@ sub convert
 {
 	my $s = shift;
 	encode('utf8', decode('gbk', $s));
+}
+
+sub convert_file
+{
+	my $file = shift;
+	open my $fh, '<', $file or return '';
+	my $s;
+	{
+		local $/ = undef;
+		$s = <$fh>;
+	}
+	close $fh;
+	convert($s);
+}
+
+sub convert_time
+{
+	my $stamp = shift;
+	strftime "%b %e %H:%M:%S %Y %z", localtime($stamp);
 }
 
 sub read_boards
