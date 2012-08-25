@@ -547,7 +547,7 @@ char *getshortdate(time_t time) {
 const char *get_board_online_color(const char *uname, int bid)
 {
 	if (streq(uname, currentuser.userid))
-		return session.visible ? "1:37" : "1:36";
+		return session.visible ? "1;37" : "1;36";
 
 	const char *color = "";
 	bool online = false;
