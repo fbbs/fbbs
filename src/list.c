@@ -164,10 +164,10 @@ int tui_list(tui_list_t *p)
 int slide_list(slide_list_t *p)
 {
 	bool end = false;
-	int type = SLIDE_LIST_CURRENT;
+	int base = SLIDE_LIST_INIT;
 
 	while (!end) {
-		if (p->loader(p, type) < 0)
+		if (p->loader(p, base) < 0)
 			break;
 
 		if (p->update != DONOTHING) {
@@ -197,7 +197,7 @@ int slide_list(slide_list_t *p)
 			outs(" ");
 		}
 
-		type = SLIDE_LIST_CURRENT;
+		base = SLIDE_LIST_CURRENT;
 		switch (ch) {
 			case 'q':
 			case 'e':
@@ -213,35 +213,35 @@ int slide_list(slide_list_t *p)
 			case 'b':
 			case Ctrl('B'):
 			case KEY_PGUP:
-				type = SLIDE_LIST_PREV;
+				base = SLIDE_LIST_PREV;
 				break;
 			case 'N':
 			case Ctrl('F'):
 			case KEY_PGDN:
 			case ' ':
-				type = SLIDE_LIST_NEXT;
+				base = SLIDE_LIST_NEXT;
 				break;
 			case 'k':
 			case KEY_UP:
 				if (--p->cur < 0) {
-					type = SLIDE_LIST_PREV;
+					base = SLIDE_LIST_PREV;
 					p->cur = BBS_PAGESIZE - 1;
 				}
 				break;
 			case 'j':
 			case KEY_DOWN:
 				if (++p->cur >= BBS_PAGESIZE) {
-					type = SLIDE_LIST_NEXT;
+					base = SLIDE_LIST_NEXT;
 					p->cur = 0;
 				}
 				break;
 			case '$':
 			case KEY_END:
-				type = SLIDE_LIST_BOTTOMUP;
+				base = SLIDE_LIST_BOTTOMUP;
 				p->cur = BBS_PAGESIZE - 1;
 				break;
 			case KEY_HOME:
-				type = SLIDE_LIST_TOPDOWN;
+				base = SLIDE_LIST_TOPDOWN;
 				p->cur = 0;
 				break;
 			default:

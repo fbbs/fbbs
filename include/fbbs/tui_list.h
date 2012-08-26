@@ -27,7 +27,8 @@ typedef struct tui_list_t {
 extern int tui_list(tui_list_t *p);
 
 typedef enum {
-	SLIDE_LIST_CURRENT = 0,
+	SLIDE_LIST_INIT = 0,
+	SLIDE_LIST_CURRENT,
 	SLIDE_LIST_TOPDOWN,
 	SLIDE_LIST_PREV,
 	SLIDE_LIST_NEXT,

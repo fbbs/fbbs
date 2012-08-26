@@ -6,7 +6,7 @@
 
 #define POST_LIST_FIELDS  \
 	"p.id, p.reid, p.tid, u.id, u.name, p.stamp, p.digest, p.marked," \
-	" p.locked, p.imported, p.sticky, p.replies, p.comments, p.score, p.title"
+	" p.locked, p.imported, p.replies, p.comments, p.score, p.title"
 
 typedef enum {
 	POST_LIST_NORMAL = 1,
@@ -60,12 +60,11 @@ static void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 	p->flag = (db_get_bool(r, i, 6) ? POST_FLAG_DIGEST : 0)
 			| (db_get_bool(r, i, 7) ? POST_FLAG_MARKED : 0)
 			| (db_get_bool(r, i, 8) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(r, i, 9) ? POST_FLAG_IMPORT : 0)
-			| (db_get_bool(r, i, 10) ? POST_FLAG_STICKY : 0);
-	p->replies = db_get_integer(r, i, 11);
-	p->comments = db_get_integer(r, i, 12);
-	p->score = db_get_integer(r, i, 13);
-	strlcpy(p->utf8_title, db_get_value(r, i, 14), sizeof(p->utf8_title));
+			| (db_get_bool(r, i, 9) ? POST_FLAG_IMPORT : 0);
+	p->replies = db_get_integer(r, i, 10);
+	p->comments = db_get_integer(r, i, 11);
+	p->score = db_get_integer(r, i, 12);
+	strlcpy(p->utf8_title, db_get_value(r, i, 13), sizeof(p->utf8_title));
 }
 
 static size_t post_table_name(char *table, size_t size, post_list_type_e type)
@@ -121,7 +120,7 @@ static bool is_asc(slide_list_base_e base)
 	return (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_NEXT);
 }
 
-static post_id_t pid_base(post_id_t pid, slide_list_base_e base)
+static post_id_t pid_base(post_list_t *l, slide_list_base_e base)
 {
 	switch (base) {
 		case SLIDE_LIST_TOPDOWN:
@@ -129,7 +128,9 @@ static post_id_t pid_base(post_id_t pid, slide_list_base_e base)
 		case SLIDE_LIST_BOTTOMUP:
 			return POST_ID_MAX;
 		default:
-			return pid;
+			if (!l->posts || !l->count)
+				return l->pid;
+			return is_asc(base) ? l->posts[l->count - 1].id : l->posts->id;
 	}
 }
 
@@ -197,6 +198,7 @@ static void load_sticky_posts(post_list_t *l)
 		l->scount = db_res_rows(r);
 		for (int i = 0; i < l->scount; ++i) {
 			res_to_post_info(r, i, l->sposts + i);
+			l->sposts[i].flag &= POST_FLAG_STICKY;
 		}
 		db_clear(r);
 	}
@@ -208,13 +210,15 @@ static slide_list_loader_t post_list_loader(slide_list_t *p,
 		slide_list_base_e base)
 {
 	post_list_t *l = p->data;
-	if (l->type == SLIDE_LIST_CURRENT)
+	if (base == SLIDE_LIST_CURRENT)
 		return 0;
+	if (base == SLIDE_LIST_INIT)
+		base = l->base;
 
 	int page = t_lines - 4;
 
 	bool asc = is_asc(base);
-	post_id_t pid = pid_base(l->pid, base);
+	post_id_t pid = pid_base(l, base);
 
 	char query[512];
 	build_query(query, sizeof(query), l->type, asc, page);
@@ -227,6 +231,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p,
 		load_sticky_posts(l);
 
 	db_clear(res);
+	p->update = PARTUPDATE;
 	return 0;
 }
 
@@ -239,7 +244,7 @@ static void post_list_display_entry(post_info_t *p)
 {
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(p->utf8_title, gbk_title);
-	printf("%s %s\n", p->owner, gbk_title);
+	prints("  %s %s\n", p->owner, gbk_title);
 }
 
 static slide_list_display_t post_list_display(slide_list_t *p)
@@ -274,7 +279,8 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 		.sposts = NULL, .scount = 0, .posts = NULL, .count = 0,
 		.type = type, .base = base, .pid = pid, .uid = uid,
 	};
-	strlcpy(p.utf8_keyword, keyword, sizeof(p.utf8_keyword));
+	if (keyword)
+		strlcpy(p.utf8_keyword, keyword, sizeof(p.utf8_keyword));
 
 	slide_list_t s = {
 		.data = &p,
