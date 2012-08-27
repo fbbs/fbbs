@@ -2,11 +2,12 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
+#include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
 #define POST_LIST_FIELDS  \
-	"p.id, p.reid, p.tid, u.id, u.name, p.stamp, p.digest, p.marked," \
-	" p.locked, p.imported, p.replies, p.comments, p.score, p.title"
+	"id, reid, tid, owner, uname, stamp, digest, marked," \
+	" locked, imported, replies, comments, score, title"
 
 typedef enum {
 	POST_LIST_NORMAL = 1,
@@ -54,7 +55,7 @@ static void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 	p->id = db_get_post_id(r, i, 0);
 	p->reid = db_get_post_id(r, i, 1);
 	p->tid = db_get_post_id(r, i, 2);
-	p->uid = db_get_user_id(r, i, 3);
+	p->uid = db_get_is_null(r, i, 3) ? 0 : db_get_user_id(r, i, 3);
 	strlcpy(p->owner, db_get_value(r, i, 4), sizeof(p->owner));
 	p->stamp = db_get_time(r, i, 5);
 	p->flag = (db_get_bool(r, i, 6) ? POST_FLAG_DIGEST : 0)
@@ -109,8 +110,7 @@ static int build_query(char *query, size_t size, post_list_type_e type,
 	post_table_name(table, sizeof(table), type);
 
 	return snprintf(query, size, "SELECT " POST_LIST_FIELDS
-			" FROM %s p JOIN users u ON p.owner = u.id"
-			" WHERE p.id %c %%"DBIdPID" AND %s ORDER BY p.id %s LIMIT %d",
+			" FROM %s WHERE id %c %%"DBIdPID" AND %s ORDER BY id %s LIMIT %d",
 			table, asc ? '>' : '<', post_filter(type),
 			asc ? "ASC" : "DESC", limit);
 }

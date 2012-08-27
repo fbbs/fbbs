@@ -23,6 +23,7 @@ CREATE TABLE posts_base (
 	comments INTEGER DEFAULT 0,
 	score INTEGER DEFAULT 0,
 
+	uname TEXT,
 	title TEXT,
 	content TEXT
 );

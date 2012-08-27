@@ -92,15 +92,15 @@ sub insert_posts
 	my ($posts, $alive_users, $past_users) = @_;
 
 	my $sth = $dbh->prepare(q{
-		INSERT INTO posts (id, reid, tid, owner, stamp, board,
+		INSERT INTO posts (id, reid, tid, owner, uname, stamp, board,
 			digest, marked, locked, imported, title, content)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}) or die $!;
 	my $sth_deleted = $dbh->prepare(q{
-		INSERT INTO posts_deleted (id, reid, tid, owner, stamp, board,
+		INSERT INTO posts_deleted (id, reid, tid, owner, uname, stamp, board,
 			digest, marked, locked, imported, title, content,
 			eraser, deleted, junk, bm_visible)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}) or die $!;
 
 	my $pid_hash = {};
@@ -139,11 +139,11 @@ sub insert_posts
 			$deleted = convert_time($deleted);
 			my $junk = ($access & 0x200) ? 1 : 0;
 			my $bm_visible = ($type eq '.TRASH') ? 1 : 0;
-			$sth_deleted->execute($id, $reid, $gid, $uid, $stamp, $bid,
+			$sth_deleted->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
 				$digest, $marked, $locked, $imported, $title, $content,
 				$eraser, $deleted, $junk, $bm_visible);
 		} else {
-			$sth->execute($id, $reid, $gid, $uid, $stamp, $bid,
+			$sth->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
 				$digest, $marked, $locked, $imported, $title, $content);
 			if ($type eq '.NOTICE') {
 				$dbh->do("INSERT INTO posts_sticked (pid, stamp) VALUES (?, ?)",
@@ -165,11 +165,6 @@ sub get_uid
 	my ($uname, $stamp, $alive_users, $past_users) = @_;
 	if (exists $alive_users->{$uname} and $alive_users->{$uname}[1] <= $stamp) {
 		return $alive_users->{$uname}[0];
-	}
-	if (not exists $past_users->{$uname}) {
-		$past_users->{$uname} = $dbh->selectrow_array(q{
-			INSERT INTO users (name, alive) VALUES (?, FALSE) RETURNING id
-		}, undef, $uname);
 	}
 	$past_users->{$uname};
 }
