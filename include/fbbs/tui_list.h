@@ -27,8 +27,7 @@ typedef struct tui_list_t {
 extern int tui_list(tui_list_t *p);
 
 typedef enum {
-	SLIDE_LIST_INIT = 0,
-	SLIDE_LIST_CURRENT,
+	SLIDE_LIST_CURRENT = 0,
 	SLIDE_LIST_TOPDOWN,
 	SLIDE_LIST_PREV,
 	SLIDE_LIST_NEXT,
@@ -43,9 +42,10 @@ typedef int slide_list_handler_t;
 typedef struct slide_list_t {
 	int cur;
 	int update;
+	slide_list_base_e base;
 	bool in_query;
 	void *data;
-	int (*loader)(struct slide_list_t *, slide_list_base_e);
+	int (*loader)(struct slide_list_t *);
 	void (*title)(struct slide_list_t *);
 	int (*display)(struct slide_list_t *);
 	int (*handler)(struct slide_list_t *, int);

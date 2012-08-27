@@ -44,7 +44,6 @@ typedef struct {
 	int scount;
 	int count;
 	post_list_type_e type;
-	slide_list_base_e base;
 	post_id_t pid;
 	user_id_t uid;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
@@ -193,7 +192,8 @@ static void load_sticky_posts(post_list_t *l)
 	if (!l->sposts)
 		l->sposts = malloc(sizeof(*l->sposts) * MAX_NOTICE);
 
-	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts_sticked");
+	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts"
+			" WHERE sticky ORDER BY id DESC");
 	if (r) {
 		l->scount = db_res_rows(r);
 		for (int i = 0; i < l->scount; ++i) {
@@ -206,29 +206,27 @@ static void load_sticky_posts(post_list_t *l)
 	return;
 }
 
-static slide_list_loader_t post_list_loader(slide_list_t *p,
-		slide_list_base_e base)
+static slide_list_loader_t post_list_loader(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	if (base == SLIDE_LIST_CURRENT)
+	if (p->base == SLIDE_LIST_CURRENT)
 		return 0;
-	if (base == SLIDE_LIST_INIT)
-		base = l->base;
 
 	int page = t_lines - 4;
 
-	bool asc = is_asc(base);
-	post_id_t pid = pid_base(l, base);
+	bool asc = is_asc(p->base);
+	post_id_t pid = pid_base(l, p->base);
 
 	char query[512];
 	build_query(query, sizeof(query), l->type, asc, page);
 
 	db_res_t *res = exec_query(query, l->type, pid, l->uid, l->utf8_keyword);
-	res_to_array(res, l, base, page);
+	res_to_array(res, l, p->base, page);
 
-	if ((base == SLIDE_LIST_NEXT && db_res_rows(res) < page)
-			|| base == SLIDE_LIST_BOTTOMUP)
+	if ((p->base == SLIDE_LIST_NEXT && db_res_rows(res) < page)
+			|| p->base == SLIDE_LIST_BOTTOMUP) {
 		load_sticky_posts(l);
+	}
 
 	db_clear(res);
 	p->update = PARTUPDATE;
@@ -277,12 +275,13 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 {
 	post_list_t p = {
 		.sposts = NULL, .scount = 0, .posts = NULL, .count = 0,
-		.type = type, .base = base, .pid = pid, .uid = uid,
+		.type = type, .pid = pid, .uid = uid,
 	};
 	if (keyword)
 		strlcpy(p.utf8_keyword, keyword, sizeof(p.utf8_keyword));
 
 	slide_list_t s = {
+		.base = base,
 		.data = &p,
 		.loader = post_list_loader,
 		.title = post_list_title,

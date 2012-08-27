@@ -29,8 +29,12 @@ CREATE TABLE posts_base (
 );
 
 CREATE TABLE posts (
+	sticky BOOLEAN,
 	PRIMARY KEY (id)
 ) INHERITS (posts_base);
+
+CREATE INDEX ON posts(id) WHERE sticky;
+CREATE INDEX ON posts(board);
 
 CREATE TABLE posts_deleted (
 	eraser INTEGER,
@@ -38,11 +42,6 @@ CREATE TABLE posts_deleted (
 	junk BOOLEAN DEFAULT FALSE,
 	bm_visible BOOLEAN
 ) INHERITS (posts_base);
-
-CREATE TABLE posts_sticked (
-	pid BIGINT REFERENCES posts,
-	stamp TIMESTAMP
-);
 
 CREATE TABLE threads (
 	id BIGINT,

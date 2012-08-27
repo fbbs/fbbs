@@ -93,8 +93,8 @@ sub insert_posts
 
 	my $sth = $dbh->prepare(q{
 		INSERT INTO posts (id, reid, tid, owner, uname, stamp, board,
-			digest, marked, locked, imported, title, content)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			sticky, digest, marked, locked, imported, title, content)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}) or die $!;
 	my $sth_deleted = $dbh->prepare(q{
 		INSERT INTO posts_deleted (id, reid, tid, owner, uname, stamp, board,
@@ -143,12 +143,9 @@ sub insert_posts
 				$digest, $marked, $locked, $imported, $title, $content,
 				$eraser, $deleted, $junk, $bm_visible);
 		} else {
+			my $sticky = ($type eq '.NOTICE') ? 1 : 0;
 			$sth->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
-				$digest, $marked, $locked, $imported, $title, $content);
-			if ($type eq '.NOTICE') {
-				$dbh->do("INSERT INTO posts_sticked (pid, stamp) VALUES (?, ?)",
-					undef, $id, $stamp);
-			}
+				$sticky, $digest, $marked, $locked, $imported, $title, $content);
 		}
 		
 		if ($pid % 100 == 0) {
