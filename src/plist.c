@@ -147,28 +147,22 @@ static db_res_t *exec_query(const char *query, post_list_type_e type,
 }
 
 static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
-		int page)
+		int size)
 {
-	if (!l->posts) {
-		l->posts = malloc(sizeof(*l->posts) * page);
-		l->count = 0;
-	}
-
 	int rows = db_res_rows(r);
-	if (rows < 1) {
+	if (rows < 1)
 		return;
-	}
 
 	bool asc = is_asc(base);
 
 	if (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_BOTTOMUP
-			|| rows >= page) {
-		rows = rows > page ? page : rows;
+			|| rows >= size) {
+		rows = rows > size ? size : rows;
 		for (int i = 0; i < rows; ++i)
 			res_to_post_info(r, asc ? i : rows - i - 1, l->posts + i);
 		l->count = rows;
 	} else {
-		int extra = l->count + rows - page;
+		int extra = l->count + rows - size;
 		int left = l->count - (extra > 0 ? extra : 0);
 		if (asc) {
 			if (extra > 0) {
@@ -189,9 +183,6 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	if (!l->sposts)
-		l->sposts = malloc(sizeof(*l->sposts) * MAX_NOTICE);
-
 	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts"
 			" WHERE sticky ORDER BY id DESC");
 	if (r) {
@@ -213,6 +204,11 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		return 0;
 
 	int page = t_lines - 4;
+	if (!l->posts) {
+		l->posts = malloc(sizeof(*l->posts) * (size + MAX_NOTICE));
+		l->sposts = l->posts + size;
+		l->count = l->scount = 0;
+	}
 
 	bool asc = is_asc(p->base);
 	post_id_t pid = pid_base(l, p->base);
@@ -221,7 +217,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	build_query(query, sizeof(query), l->type, asc, page);
 
 	db_res_t *res = exec_query(query, l->type, pid, l->uid, l->utf8_keyword);
-	res_to_array(res, l, p->base, page);
+	res_to_array(res, l, p->base, size);
 
 	if ((p->base == SLIDE_LIST_NEXT && db_res_rows(res) < page)
 			|| p->base == SLIDE_LIST_BOTTOMUP) {
