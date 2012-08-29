@@ -4,6 +4,7 @@ use Exporter 'import';
 @EXPORT = qw(get_options db_connect convert convert_file
 		convert_time read_boards read_users $dir $dbh);
 
+use Config;
 use DBI;
 use Encode;
 use Getopt::Long;
@@ -98,7 +99,16 @@ sub read_users
 	open my $fh, '<', "$dir/.PASSWDS" or die "can't open .PASSWDS\n";
 	while (1) {
 		last if (read($fh, $buf, 256) != 256);
-		my @t = unpack "IiIiIi3sA14IcC3iI2iq5Z16Z40Z40Z40a8", $buf;
+		my @t;
+		if ($Config{use64bitint}) {
+			@t = unpack "IiIiIi3sA14IcC3iI2iq5Z16Z40Z40Z40a8", $buf;
+		} else {
+			@t = unpack "IiIiIi3sA14IcC3iI2il10Z16Z40Z40Z40a8", $buf;
+			for (my $i = 19; $i < 24; ++$i) {
+				$t[$i] += $t[$i + 1] << 32;
+				splice @t, $i + 1, 1;
+			}
+		}
 		if ($t[24] and not exists $hash{$t[24]}) {
 			$hash{$t[24]} = \@t;
 		}
