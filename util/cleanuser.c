@@ -152,6 +152,7 @@ int main(int argc, char **argv)
 			db_res_t *res = db_cmd("UPDATE users SET alive = FALSE"
 					" WHERE lower(name) = lower(%s) AND alive", user.userid);
 			db_clear(res);
+			remove_user_id_cache(user.userid);
 		}
 	}
 

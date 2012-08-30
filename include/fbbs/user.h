@@ -11,6 +11,7 @@ enum {
 	USER_FIELD_STAY,
 };
 
+extern void remove_user_id_cache(const char *uname);
 extern user_id_t get_user_id(const char *name);
 extern int get_user_count(void);
 extern int user_data_add_by_name(const char *name, int field, int delta);

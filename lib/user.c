@@ -1,8 +1,40 @@
 #include "bbs.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/mdbi.h"
+#include "fbbs/string.h"
+
+#define USER_ID_HASH_KEY  "user_id"
 
 struct userec currentuser;
+
+static void set_user_id_cache(const char *uname, user_id_t uid)
+{
+	char name[IDLEN + 1];
+	strlcpy(name, uname, sizeof(name));
+	strtolower(name, name);
+
+	mdb_res_t *r = mdb_cmd("HSET", USER_ID_HASH_KEY" %s %"PRIdUID, name, uid);
+	mdb_clear(r);
+}
+
+static user_id_t get_user_id_cache(const char *uname)
+{
+	char name[IDLEN + 1];
+	strlcpy(name, uname, sizeof(name));
+	strtolower(name, name);
+
+	return (user_id_t)mdb_integer(-1, "HGET", USER_ID_HASH_KEY" %s", name);
+}
+
+void remove_user_id_cache(const char *uname)
+{
+	char name[IDLEN + 1];
+	strlcpy(name, uname, sizeof(name));
+	strtolower(name, name);
+
+	mdb_res_t *r = mdb_cmd("HDEL", USER_ID_HASH_KEY" %s", name);
+	mdb_clear(r);
+}
 
 /**
  * Get user id by name.
@@ -11,16 +43,23 @@ struct userec currentuser;
  */
 user_id_t get_user_id(const char *name)
 {
+	user_id_t uid = get_user_id_cache(name);
+	if (uid != -1)
+		return uid;
+
 	db_res_t *res = db_query("SELECT id FROM alive_users"
 			" WHERE lower(name) = lower(%s)", name);
 	if (!res)
 		return -1;
 
-	user_id_t ret = 0;
+	uid = 0;
 	if (db_res_rows(res) > 0)
-		ret = db_get_user_id(res, 0, 0);
+		uid = db_get_user_id(res, 0, 0);
 	db_clear(res);
-	return ret;
+
+	if (uid > 0)
+		set_user_id_cache(name, uid);
+	return uid;
 }
 
 #define USER_COUNT_CACHE_KEY  "c:users"
