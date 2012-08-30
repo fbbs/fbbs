@@ -225,23 +225,22 @@ static bool activate_session(session_id_t sid, const char *uname)
 
 static bool _get_session(const char *uname, const char *key)
 {
-	// TODO: cache
-	db_res_t *res = db_query("SELECT s.id, u.id, s.active, s.expire"
-			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
-			" WHERE u.name = %s AND s.session_key = %s AND s.web", uname, key);
-	if (res && db_res_rows(res) == 1) {
-		session.id = db_get_session_id(res, 0, 0);
-		session.uid = db_get_user_id(res, 0, 1);
+	session.id = session.uid = 0;
 
-		if (!db_get_bool(res, 0, 2)) {
-			if (!activate_session(session.id, uname))
-				session.id = session.uid = 0;
+	user_id_t uid = get_user_id(uname);
+	if (uid > 0) {
+		db_res_t *res = db_query("SELECT id, active FROM sessions"
+				"WHERE user_id = %"DBIdUID" AND session_key = %s AND s.web",
+				uid, key);
+		if (res && db_res_rows(res) == 1) {
+			if (db_get_bool(res, 0, 1)
+					|| activate_session(session.id, uname)) {
+				session.id = db_get_session_id(res, 0, 0);
+				session.uid = uid;
+			}
 		}
-	} else {
-		session.id = session.uid = 0;
+		db_clear(res);
 	}
-
-	db_clear(res);
 	return session.id;
 }
 
