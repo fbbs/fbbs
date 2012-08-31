@@ -19,6 +19,7 @@ struct _session {
 	int pid;
 	fb_time_t stamp;
 	fb_time_t expire;
+	char key[SESSION_KEY_LEN + 1];
 };
 
 static int comparator(const void *v1, const void *v2)
@@ -41,6 +42,8 @@ static void res_to_session(db_res_t *res, struct _session *sessions, int count)
 		s->web = db_get_bool(res, i, 4);
 		s->stamp = db_get_time(res, i, 5);
 		s->expire = db_get_time(res, i, 6);
+		if (s->web)
+			strlcpy(s->key, db_get_value(res, i, 7), sizeof(s->key));
 		++s;
 	}
 	qsort(sessions, count, sizeof(*sessions), comparator);
@@ -87,6 +90,9 @@ static void kill_session(const struct _session *s, bool is_dup)
 			session_inactivate(s->sid);
 		else
 			session_destroy(s->sid);
+
+		if (s->web)
+			remove_web_session_cache(s->uid, s->key);
 	}
 }
 
@@ -132,8 +138,8 @@ int main(int argc, char **argv)
 	if (resolve_ucache() != 0)
 		return EXIT_FAILURE;
 
-	db_res_t *res = db_query("SELECT"
-			" id, active, user_id, pid, web, stamp, expire FROM sessions");
+	db_res_t *res = db_query("SELECT id, active, user_id, pid, web, stamp,"
+			" expire, key FROM sessions");
 
 	int count = db_res_rows(res);
 	struct _session *sessions = malloc(sizeof(*sessions) * count);

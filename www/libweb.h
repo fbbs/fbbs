@@ -86,11 +86,8 @@ struct post_log {
 	int	number;
 };
 
-extern int loginok;
-
 extern struct userec currentuser;
 extern char fromhost[];
-
 
 void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);

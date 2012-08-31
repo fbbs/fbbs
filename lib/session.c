@@ -223,3 +223,10 @@ int online_follows_count(bool visible_only)
 	basic_session_info_clear(s);
 	return count;
 }
+
+void remove_web_session_cache(user_id_t uid, const char *key)
+{
+	mdb_res_t *r = mdb_cmd("HDEL", WEB_SESSION_HASH_KEY" %"PRIdUID":%s",
+			uid, key);
+	mdb_clear(r);
+}

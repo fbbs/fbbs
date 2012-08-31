@@ -146,4 +146,9 @@ extern int online_follows_count(bool visible_only);
 
 extern const char *get_status_color(int status, bool visible, bool web);
 
+#define WEB_SESSION_HASH_KEY  "web_session"
+
+extern void remove_web_session_cache(user_id_t uid, const char *key);
+extern bool get_session(void);
+
 #endif // FB_SESSION_H
