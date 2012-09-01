@@ -342,3 +342,11 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 		}
 	}
 }
+
+bool lock_post_unchecked(int bid, post_id_t pid, bool lock)
+{
+	db_res_t *res = db_cmd("UPDATE posts SET locked = %b WHERE board = %d"
+			" AND id = %"DBIdPID, lock, bid, pid);
+	db_clear(res);
+	return res;
+}

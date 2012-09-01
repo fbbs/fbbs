@@ -52,6 +52,14 @@ typedef struct {
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_list_t;
 
+static void set_flag(post_info_t *ip, int flag, bool set)
+{
+	if (set)
+		ip->flag |= flag;
+	else
+		ip->flag &= ~flag;
+}
+
 static void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 {
 	p->id = db_get_post_id(r, i, 0);
@@ -195,7 +203,7 @@ static void load_sticky_posts(post_list_t *l)
 		l->scount = db_res_rows(r);
 		for (int i = 0; i < l->scount; ++i) {
 			res_to_post_info(r, i, l->sposts + i);
-			l->sposts[i].flag &= POST_FLAG_STICKY;
+			set_flag(l->sposts + i, POST_FLAG_STICKY, true);
 		}
 		db_clear(r);
 	}
@@ -259,16 +267,18 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 	if (!l->posts)
 		return 0;
 
-	int remain = t_lines - 4, limit = remain, start = 0;
-	if (p->base == SLIDE_LIST_BOTTOMUP)
-		start = l->scount;
-	if (p->base == SLIDE_LIST_NEXT)
-		start = l->count - l->last_query_rows;
-	if (start < 0)
-		start = 0;
-	l->start = start;
+	int remain = t_lines - 4, limit = remain;
+	if (p->base != SLIDE_LIST_CURRENT) {
+		l->start = 0;
+		if (p->base == SLIDE_LIST_BOTTOMUP)
+			l->start = l->scount;
+		if (p->base == SLIDE_LIST_NEXT)
+			l->start = l->count - l->last_query_rows;
+		if (l->start < 0)
+			l->start = 0;
+	}
 
-	for (int i = start; i < limit; ++i) {
+	for (int i = l->start; i < limit; ++i) {
 		post_list_display_entry(l->posts + i);
 		--remain;
 	}
@@ -281,9 +291,31 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 	return 0;
 }
 
+static int toggle_post_lock(int bid, post_info_t *ip)
+{
+	bool locked = ip->flag & POST_FLAG_LOCKED;
+	if (am_curr_bm() || (session.id == ip->uid && !locked)) {
+		if (lock_post_unchecked(bid, ip->id, !locked)) {
+			set_flag(ip, POST_FLAG_LOCKED, !locked);
+			return PARTUPDATE;
+		}
+	}
+	return DONOTHING;
+}
+
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 {
-	return 0;
+	post_list_t *l = p->data;
+	post_info_t *ip = p->cur + l->start >= l->count
+			? l->sposts + p->cur + l->start - l->count
+			: l->posts + + l->start + p->cur;
+
+	switch (ch) {
+		case '_':
+			return toggle_post_lock(l->bid, ip);
+		default:
+			return DONOTHING;
+	}
 }
 
 static int post_list(int bid, post_list_type_e type, post_id_t pid,

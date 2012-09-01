@@ -57,5 +57,7 @@ extern void quote_string(const char *str, size_t size, const char *output,
 extern void quote_file_(const char *orig, const char *output, int mode,
 		bool mail, size_t (*filter)(const char *, size_t, FILE *));
 
+extern bool lock_post_unchecked(int bid, post_id_t pid, bool lock);
+
 #endif // FB_POST_H
 
