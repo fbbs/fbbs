@@ -43,6 +43,7 @@ typedef struct {
 	post_info_t *posts;
 	int scount;
 	int count;
+	int start;
 	int last_query_rows;
 	post_list_type_e type;
 	int bid;
@@ -131,7 +132,10 @@ static post_id_t pid_base(post_list_t *l, slide_list_base_e base)
 		default:
 			if (!l->posts || !l->count)
 				return l->pid;
-			return is_asc(base) ? l->posts[l->count - 1].id : l->posts->id;
+			if (is_asc(base))
+				return l->posts[l->count - 1].id;
+			else
+				return l->posts[l->start].id;
 	}
 }
 
@@ -222,13 +226,18 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	res_to_array(res, l, p->base, page);
 	l->last_query_rows = db_res_rows(res);
 
-	if ((p->base == SLIDE_LIST_NEXT && db_res_rows(res) < page)
+	if ((p->base == SLIDE_LIST_NEXT && l->last_query_rows < page)
 			|| p->base == SLIDE_LIST_BOTTOMUP) {
 		load_sticky_posts(l);
 	}
-
 	db_clear(res);
-	p->update = PARTUPDATE;
+
+	if (l->last_query_rows) {
+		if (p->update != FULLUPDATE)
+			p->update = PARTUPDATE;
+	} else {
+		p->cur = p->base == SLIDE_LIST_PREV ? 0 : page - 1;
+	}
 	return 0;
 }
 
@@ -247,19 +256,17 @@ static void post_list_display_entry(post_info_t *p)
 static slide_list_display_t post_list_display(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-
 	if (!l->posts)
 		return 0;
 
-	int remain = t_lines - 4;
-	int limit = remain;
+	int remain = t_lines - 4, limit = remain, start = 0;
 	if (p->base == SLIDE_LIST_BOTTOMUP)
-		limit -= l->scount;
-	int start = 0;
+		start = l->scount;
 	if (p->base == SLIDE_LIST_NEXT)
 		start = l->count - l->last_query_rows;
 	if (start < 0)
 		start = 0;
+	l->start = start;
 
 	for (int i = start; i < limit; ++i) {
 		post_list_display_entry(l->posts + i);
