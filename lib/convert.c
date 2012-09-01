@@ -35,7 +35,7 @@ void convert_reset(convert_t *cp)
 /**
  * Convert string.
  * @param cp The conversion descriptor.
- * @param from Input string.
+ * @param from Input string. NULL will be treated as an empty string.
  * @param len Length of the input string. If CONVERT_ALL, the length will be
  *            counted automatically.
  * @param buf If not NULL, it will be used instead of internal buffer.
@@ -53,13 +53,18 @@ int convert(convert_t *cp, const char *from, size_t len,
 	convert_reset(cp);
 
 	if (len == (size_t) -1)
-		len = strlen(from);
+		len = from ? strlen(from) : 0;
 
 	const char *f = from;
 	size_t l = len;
 
 	char *buffer = buf ? buf : cp->buf;
 	size = buf ? size : sizeof(cp->buf);
+
+	if (!l) {
+		buffer[0] = '\0';
+		return 0;
+	}
 
 	char *b;
 	size_t oleft;
