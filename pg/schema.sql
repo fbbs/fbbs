@@ -1,68 +1,68 @@
 BEGIN;
 
+CREATE TABLE emails (
+	id SERIAL PRIMARY KEY,
+	addr TEXT
+);
+CREATE UNIQUE INDEX ON emails(addr);
+INSERT INTO emails (addr) VALUES (NULL);
+
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
 	passwd TEXT,
-	nick TEXT,
-	email TEXT,
-	flag BIGINT,
-	perm INTEGER,
-	logins INTEGER DEFAULT 0,
-	posts INTEGER DEFAULT 0,
-	stay INTEGER DEFAULT 0,
-	medals INTEGER DEFAULT 0,
-	money INTEGER DEFAULT 0,
-	birth TIMESTAMPTZ,
-	gender CHAR,
-	creation TIMESTAMPTZ,
-	lastlogin TIMESTAMPTZ,
-	lastlogout TIMESTAMPTZ,
-	lasthost TEXT
+	email INTEGER REFERENCES emails,
+	alive BOOLEAN DEFAULT TRUE,
+	money BIGINT DEFAULT 0,
+	contrib BIGINT DEFAULT 0,
+	rank REAL DEFAULT 0,
+	paid_posts INTEGER DEFAULT 0,
+	followings INTEGER DEFAULT 0,
+	followers INTEGER DEFAULT 0,
+	friends	INTEGER DEFAULT 0,
+	title TEXT
 );
-CREATE UNIQUE INDEX user_name_idx ON users (lower(name));
+CREATE OR REPLACE VIEW alive_users AS
+	SELECT * FROM users WHERE alive = TRUE;
+CREATE UNIQUE INDEX ON users (lower(name)) WHERE alive = TRUE;
 
-CREATE TABLE sectors (
+CREATE TABLE prop_categs (
 	id SERIAL PRIMARY KEY,
 	name TEXT
 );
-
-CREATE TABLE boards (
+CREATE TABLE prop_items (
 	id SERIAL PRIMARY KEY,
+	categ INTEGER REFERENCES prop_categs,
 	name TEXT,
-	description TEXT,
-	category TEXT,
-	sector SMALLINT,
-	parent INTEGER,
-	flag INTEGER
+	price INTEGER,
+	expire INTERVAL,
+	valid BOOLEAN DEFAULT TRUE
+);
+CREATE TABLE prop_records (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER REFERENCES users,
+	item INTEGER REFERENCES prop_items,
+	price INTEGER,
+	order_time TIMESTAMPTZ,
+	expire TIMESTAMPTZ
 );
 
-CREATE TABLE managers (
-	user_id INTEGER,
-	board_id INTEGER,
-	appointed TIMESTAMPTZ
+CREATE TABLE titles (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER REFERENCES users,
+	granter INTEGER REFERENCES users,
+	title TEXT NOT NULL,
+	approved BOOLEAN DEFAULT FALSE,
+	record_id INTEGER REFERENCES prop_records ON DELETE CASCADE
 );
 
-CREATE TABLE club_users (
-	user_id INTEGER,
-	board_id INTEGER,
-	granter INTEGER,
-	added TIMESTAMPTZ,
-	comments TEXT
-);
+CREATE SCHEMA audit;
 
-CREATE TABLE posts (
-	id BIGSERIAL PRIMARY KEY,
-	reid BIGINT,
-	gid BIGINT,
-	board_id INTEGER,
-	user_id INTEGER,
-	user_name TEXT, -- for compatability
-	title TEXT,
-	flag INTEGER, --?
-	time TIMESTAMPTZ,
-	t2 TIMESTAMPTZ,
-	itype SMALLINT
+CREATE TABLE audit.money (
+	user_id INTEGER NOT NULL,
+	delta BIGINT NOT NULL,
+	stamp TIMESTAMPTZ NOT NULL,
+	reason TEXT
 );
 
 COMMIT;

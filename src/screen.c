@@ -1,11 +1,10 @@
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
-#include <wchar.h>
+#include "bbs.h"
+#include "screen.h"
+#include "edit.h"
+#include <sys/param.h>
 #include <stdarg.h>
-
 #include "fbbs/string.h"
-#include "fbbs/screen.h"
+#include "fbbs/terminal.h"
 
 /**
  * String of commands to clear the entire screen and position the cursor at the
@@ -31,439 +30,530 @@
 #define TERM_CMD_SE "\033[m"
 
 /** Send a terminal command. */
-#define term_cmd(cmd)  telnet_write(s->tc, (const uchar_t *)cmd, sizeof(cmd) - 1)
+#define term_cmd(cmd)  output((unsigned char *)cmd, sizeof(cmd) - 1)
 
-/** The standard screen. */
-static screen_t stdscr;
+extern int iscolor;
+extern int editansi;
 
-/**
- * Initialize a screen.
- * @param scr The screen to be initialized.
- * @param tc Related telnet connection.
- * @param lines Lines of the screen.
- * @param cols Columns of the screen.
- */
-static void _screen_init(screen_t *scr, telconn_t *tc, int lines, int cols)
+bool dumb_term = true;
+bool automargins = true;
+int t_lines = 24;          ///< Terminal height.
+int t_columns = 255;       ///< Terminal width.
+
+static int scr_lns;     ///< Lines of the screen.
+unsigned int scr_cols;  ///< Columns of the screen.
+static int cur_ln = 0;  ///< Current line.
+static int cur_col = 0; ///< Current column.
+static int roll; //roll 表示首行在big_picture的偏移量
+//因为随着光标滚动,big_picture[0]可能不再保存第一行的数据
+static int scrollcnt;
+static int tc_col;      ///< Terminal's current column.
+static int tc_line;     ///< Terminal's current line.
+unsigned char docls;
+unsigned char downfrom;
+static bool standing = false;
+
+struct screenline *big_picture = NULL;
+
+#ifdef ALLOWAUTOWRAP
+//返回str中前num个字符中以ansi格式实际显示的字符数
+int seekthestr(const char *str, int num)
 {
-	scr->scr_lns = lines;
-	scr->scr_cols = cols;
-	scr->cur_ln = scr->cur_col = scr->roll = scr->scroll_cnt = 0;
-	scr->size = lines;
-	scr->show_ansi = true;
-	scr->clear = true;
-	scr->tc = tc;
-	scr->lines = fb_malloc(sizeof(*scr->lines) * lines);
-	screen_line_t *slp = scr->lines;
-	for (int i = 0; i < lines; ++i) {
-		slp->oldlen = slp->len = 0;
-		slp->modified = false;
-		++slp;
+	int len, i, ansi= NA;
+	len = strlen(str);
+	for(i=0;i<len;i++) {
+		if(!(num--))
+		break;
+		if(str[i] == KEY_ESC) {
+			ansi = YEA;
+			continue;
+		}
+		if( ansi ) {
+			if ( !strchr("[0123456789; ", str[i]))
+			ansi = NA;
+			continue;
+			/*                      if (strchr("[0123456789; ", str[i]))
+			 continue;
+			 else if (isalpha(str[i])) {
+			 ansi = NA;
+			 continue;
+			 }
+			 else
+			 break;
+			 */
+		} //if
+		//		if(!(num--)) break;
+	} //for
+	return i;
+}
+#endif	
+
+//返回字符串中属于 ansi的个数?	对后一个continue不太理解 
+int num_ans_chr(const char *str)
+{
+	int len, i, ansinum, ansi;
+
+	ansinum=0;
+	ansi=NA;
+	len=strlen(str);
+	for (i=0; i < len; i++) {
+		if (str[i] == KEY_ESC) {
+			ansi = YEA;
+			ansinum++;
+			continue;
+		}
+		if (ansi) {
+			if (!strchr("[0123456789; ", str[i]))
+				ansi = NA;
+			ansinum++;
+			continue;
+			/*
+			 if (strchr("[0123456789; ", str[i]))
+			 {
+			 ansinum++;
+			 continue;
+			 }
+			 else if (isalpha(str[i]))
+			 {
+			 ansinum++;
+			 ansi = NA;
+			 continue;
+			 }
+			 else
+			 break;
+			 */
+		}
 	}
+	return ansinum;
 }
 
 /**
- * Initialize the standard screen.
- * @param tc Related telnet connection.
- * @param lines Lines of the screen.
- * @param cols Columns of the screen.
+ * Initialize screen.
+ * @param slns Lines of the screen, ::LINELEN max.
+ * @param scols Columns of the screen.
  */
-void screen_init(telconn_t *tc, int lines, int cols)
+static void init_screen(int slns, int scols)
 {
-	_screen_init(&stdscr, tc, lines, cols);
-}
-
-/**
- * Move to given position.
- * @param s The screen.
- * @param line The line to move to.
- * @param col The column to move to.
- */
-static void _move(screen_t *s, int line, int col)
-{
-	s->cur_ln = line;
-	s->cur_col = col;
-}
-
-/**
- * Move to given position in the standard screen.
- * @param line The line to move to.
- * @param col The column to move to.
- */
-void move(int line, int col)
-{
-	_move(&stdscr, line, col);
-}
-
-/**
- * Clear a screen.
- * @param s The screen.
- */
-static void _clear(screen_t *s)
-{
-	s->roll = 0;
-	s->clear = true;
-
-	screen_line_t *slp = s->lines;
-	for (int i = 0; i < s->scr_lns; ++i) {
-		slp->modified = false;
+	struct screenline *slp;
+	scr_lns = slns;
+	scr_cols = Min(scols, LINELEN);
+	big_picture = calloc(scr_lns, sizeof(*big_picture));
+	for (slns = 0; slns < scr_lns; slns++) {
+		slp = big_picture + slns;
+		slp->mode = 0;
 		slp->len = 0;
 		slp->oldlen = 0;
-		++slp;
 	}
-	_move(s, 0, 0);
+	docls = YEA;
+	downfrom = 0;
+	roll = 0;
+}
+
+//对于哑终端或是big_picture中尚无内存映射,将t_columns设置成WRAPMARGIN
+//	调用init_screen初始化终端
+void initscr(void)
+{
+	if (!dumb_term && !big_picture)
+		t_columns = WRAPMARGIN;
+	init_screen(t_lines, WRAPMARGIN);
 }
 
 /**
- * Clear the standard screen.
+ * Generate and send terminal move cmd.
+ * @param col Column to move to.
+ * @param line Line to move to.
  */
-void clear(void)
+static void do_move(int col, int line)
 {
-	_clear(&stdscr);
+	char buf[16];
+	snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
+	char *p;
+	for (p = buf; *p != '\0'; p++)
+		ochar(*p);
 }
 
-/**
- * Clear from current column to the end of line.
- * @param s The screen.
- */
-static void _clrtoeol(screen_t *s)
+//	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
+static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 {
-	screen_line_t *slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
-	if (s->cur_col > slp->len)
-		memset(slp->data + slp->len, ' ', s->cur_col - slp->len + 1);
-	slp->len = s->cur_col;
-}
-
-/**
- * Clear from current column to the end of line.
- */
-void clrtoeol(void)
-{
-	_clrtoeol(&stdscr);
-}
-
-/**
- * Clear from current line (included) to the bottom of the screen.
- * @param s The screen.
- */
-static void _clrtobot(screen_t *s)
-{
-	screen_line_t *slp;
-	for (int i = s->cur_ln; i < s->scr_lns; ++i) {
-		slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
-		slp->modified = true;
-		slp->len = 0;
+	if (new_ln >= t_lines || new_col >= t_columns) //越界,返回
+		return;
+	tc_col = new_col;
+	tc_line = new_ln;
+	if ((new_col == 0) && (new_ln == was_ln + 1)) { //换行
+		ochar('\n');
+		if (was_col != 0) //到第一列位置,返回
+			ochar('\r');
+		return;
 	}
-}
-
-/**
- * Clear from current line (included) to the bottom of the standard screen.
- */
-void clrtobot(void)
-{
-	_clrtobot(&stdscr);
-}
-
-/**
- * Scroll one line down.
- * @param s The screen.
- */
-static void _scroll(screen_t *s)
-{
-	s->scroll_cnt++;
-	s->roll++;
-	if (s->roll >= s->scr_lns)
-		s->roll -= s->scr_lns;
-	_move(s, s->scr_lns - 1, 0);
-	_clrtoeol(s);
-}
-
-/**
- * Scroll one line down.
- */
-void scroll(void)
-{
-	_scroll(&stdscr);
-}
-
-static inline bool isprint2(int c)
-{
-	return ((c & 0x80) || isprint(c));
-}
-
-static void _outs(screen_t *s, const uchar_t *str, int len)
-{
-	bool newline = true;
-	screen_line_t *slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
-	int col = s->cur_col, c;
-
-	if (len == 0)
-		len = strlen((const char *)str);
-	while (len-- > 0) {
-		if (newline) {
-			slp->modified = true;
-			if (col > slp->len) {
-				memset(slp->data + slp->len, ' ', col - slp->len);
-				slp->len = col;
-			}
-			newline = false;
-		}
-
-		c = *str++;
-
-		if (!isprint2(c)) {
-			if (c == '\n' || c == '\r') {
-				slp->data[col] = ' ';
-				slp->len = col;
-				s->cur_col = 0;
-				if (s->cur_ln < s->scr_lns)
-					++s->cur_ln;
-				newline = true;
-				slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
-				col = s->cur_col;
-				continue;
-			} else {
-				if (c != KEY_ESC || !s->show_ansi)
-					c = '*';
-			}
-		}
-
-		slp->data[col++] = c;
-		if (col >= sizeof(slp->data)) {
-			col = sizeof(slp->data) - 1;
-		}
+	if ((new_col == 0) && (new_ln == was_ln)) { //不换行,到第一列位置,并返回
+		if (was_col != 0)
+			ochar('\r');
+		return;
 	}
-
-	if (col > slp->len)
-		slp->len = col;
-	s->cur_col = col;
-}
-
-void outc(int c)
-{
-	uchar_t ch = c;
-	_outs(&stdscr, &ch, 1);
-}
-
-void outs(const char *str)
-{
-	_outs(&stdscr, (const uchar_t *)str, 0);
-}
-
-static inline void ochar(screen_t *s, int c)
-{
-	telnet_putc(s->tc, c);
-}
-
-/**
- * Move to a new position in terminal.
- * @param s The screen.
- * @param line The new line.
- * @param col The new column.
- */
-static void term_move(screen_t *s, int line, int col)
-{
-	if (col == 0 && line == s->tc_ln + 1) { // newline
-		ochar(s, '\n');
-		if (s->tc_ln != 0)
-			ochar(s, '\r');
-	} else if (col == 0 && line == s->tc_ln) { // return
-		if (s->tc_col != 0)
-			ochar(s, '\r');
-	} else if (col == s->tc_col - 1 && line == s->tc_ln) { // backspace
-		ochar(s, KEY_CTRL_H);
-	} else if (col != s->tc_col || line != s->tc_ln) { // arbitrary move
-		char buf[16];
-		snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
-		for (char *p = buf; *p != '\0'; p++)
-			ochar(s, *p);
+	if (was_col == new_col && was_ln == new_ln)
+		return;
+	if (new_col == was_col - 1 && new_ln == was_ln) {
+		ochar(Ctrl('H'));
+		return;
 	}
-	s->tc_ln = line;
-	s->tc_col = col;
+	do_move(new_col, new_ln);
+}
+
+// 标准输出buf中的数据,	ds,de表示数据的区间,sso,eso也是
+//		但当它们没有交集时,以ds,de为准
+//		有交集时,取合集
+//			但下限以ds为准,上限以de为准				跟直接取ds,de有什么区别?
+///		对o_standup,o_standdown作用不太清楚
+static void standoutput(unsigned char *buf, int ds, int de, int sso, int eso)
+{
+	int st_start, st_end;
+	if (eso <= ds || sso >= de) {
+		output(buf + ds, de - ds);
+		return;
+	}
+	st_start = Max(sso, ds);
+	st_end = Min(eso, de);
+	if (sso > ds)
+		output(buf + ds, sso - ds);
+	term_cmd(TERM_CMD_SO);
+	output(buf + st_start, st_end - st_start);
+	term_cmd(TERM_CMD_SE);
+	if (de > eso)
+		output(buf + eso, de - eso);
 }
 
 /**
  * Redraw the screen.
- * @param s The screen.
- */
-static void _redoscr(screen_t *s)
-{
-	term_cmd(TERM_CMD_CL);
-	s->tc_col = s->tc_ln = 0;
-
-	struct screen_line_t *slp;
-	for (int i = 0; i < s->scr_lns; i++) {
-		slp = s->lines + (i + s->roll) % s->scr_lns;
-		if (slp->len == 0)
-			continue;
-
-		term_move(s, i, 0);
-		telnet_write(s->tc, slp->data, slp->len);
-		s->tc_col += slp->len;
-
-		slp->modified = false;
-		slp->oldlen = slp->len;
-	}
-	term_move(s, s->cur_ln, s->cur_col);
-	s->scroll_cnt = 0;
-	s->clear = false;
-	telnet_flush(s->tc);
-}
-
-/**
- * Redraw the standard screen.
  */
 void redoscr(void)
 {
-	_redoscr(&stdscr);
+	if (dumb_term)
+		return;
+	term_cmd(TERM_CMD_CL);
+	tc_col = 0;
+	tc_line = 0;
+	int i;
+	struct screenline *s;
+	for (i = 0; i < scr_lns; i++) {
+		s = big_picture + (i + roll) % scr_lns;
+		if (s->len == 0)
+			continue;
+		rel_move(tc_col, tc_line, 0, i);
+		if (s->mode & STANDOUT)
+			standoutput(s->data, 0, s->len, s->sso, s->eso);
+		else
+			output(s->data, s->len);
+		tc_col += s->len;
+		if (tc_col >= t_columns) {
+			if (!automargins) {
+				tc_col -= t_columns;
+				tc_line++;
+				if (tc_line >= t_lines)
+					tc_line = t_lines - 1;
+			} else {
+				tc_col = t_columns - 1;
+			}
+		}
+		s->mode &= ~(MODIFIED);
+		s->oldlen = s->len;
+	}
+	rel_move(tc_col, tc_line, cur_col, cur_ln);
+	docls = NA;
+	scrollcnt = 0;
+	oflush();
 }
 
-/**
- * Flush all modifications of a screen to terminal.
- * @param s The screen.
- */
-static void _refresh(screen_t *s)
-{
-	if (!buffer_empty(s->tc))
-		return;
-
-	if (s->clear || s->scroll_cnt >= s->scr_lns - 3) {
-		_redoscr(s);
-		return;
-	}
-
-	if (s->scroll_cnt > 0) {
-		term_move(s, s->tc->lines - 1, 0);
-		while (s->scroll_cnt-- > 0) {
-			ochar(s, '\n');
-		}
-	}
-
-	screen_line_t *slp;
-	for (int i = 0; i < s->scr_lns; ++i) {
-		slp = s->lines + (i + s->roll) % s->scr_lns;
-		if (slp->modified) {
-			slp->modified = false;
-			term_move(s, i, 0);
-			telnet_write(s->tc, slp->data, slp->len);
-			if (slp->len != 0)
-				term_cmd(TERM_CMD_CE);
-			s->tc_col = slp->len + 1;
-		}
-		slp->oldlen = slp->len;
-	}
-	term_move(s, s->cur_ln, s->cur_col);
-	telnet_flush(s->tc);
-}
-
-/**
- * Flush all modifications of the standard screen to terminal.
- */
+//刷新缓冲区,重新显示屏幕?
 void refresh(void)
 {
-	_refresh(&stdscr);
+	register int i, j;
+	register struct screenline *bp = big_picture;
+	if (!inbuf_empty())
+		return;
+	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {
+		redoscr();
+		return;
+	}
+	if (scrollcnt < 0) {
+		rel_move(tc_col, tc_line, 0, 0);
+		while (scrollcnt < 0) {
+			term_cmd(TERM_CMD_SR);
+			scrollcnt++;
+		}
+	}
+	if (scrollcnt > 0) {
+		rel_move(tc_col, tc_line, 0, t_lines - 1);
+		while (scrollcnt > 0) {
+			ochar('\n');
+			scrollcnt--;
+		}
+	}
+	for (i = 0; i < scr_lns; i++) {
+		j = i + roll;
+		while (j >= scr_lns)
+			j -= scr_lns;
+		if (bp[j].mode & MODIFIED && bp[j].smod < bp[j].len) {
+			bp[j].mode &= ~(MODIFIED); //若被修改,则输出
+			if (bp[j].emod >= bp[j].len)
+				bp[j].emod = bp[j].len - 1;
+			rel_move(tc_col, tc_line, bp[j].smod, i);
+			if (bp[j].mode & STANDOUT)
+				standoutput(bp[j].data, bp[j].smod, bp[j].emod + 1,
+						bp[j].sso, bp[j].eso);
+			else
+				output(&bp[j].data[bp[j].smod], bp[j].emod - bp[j].smod
+						+ 1);
+			tc_col = bp[j].emod + 1;
+			if (tc_col >= t_columns) {
+				if (automargins) {
+					tc_col -= t_columns;
+					tc_line++;
+					if (tc_line >= t_lines)
+						tc_line = t_lines - 1;
+				} else
+					tc_col = t_columns - 1;
+			}
+		}
+		if (bp[j].oldlen > bp[j].len) {
+			rel_move(tc_col, tc_line, bp[j].len, i);
+			term_cmd(TERM_CMD_CE);
+		}
+		bp[j].oldlen = bp[j].len;
+	}
+	rel_move(tc_col, tc_line, cur_col, cur_ln);
+	oflush();
 }
 
 /**
- * Get the width of the standard screen.
- * @return The width of the standard screen.
+ * Move to given position.
+ * @param y Line number.
+ * @param x Column number.
  */
-int get_screen_width(void)
+void move(int y, int x)
 {
-	return stdscr.scr_cols;
+	cur_col = x;
+	cur_ln = y;
 }
 
 /**
- * Get the height of the standard screen.
- * @return The height of the standard screen.
+ * Get current position.
+ * @param[out] y Line number.
+ * @param[out] x Column number.
  */
-int get_screen_height(void)
+void getyx(int *y, int *x)
 {
-	return stdscr.scr_lns;
+	*y = cur_ln;
+	*x = cur_col;
 }
 
 /**
- * Print width-limited string.
+ * Reset screen and move to (0, 0).
+ */
+void clear(void)
+{
+	if (dumb_term)
+		return;
+	roll = 0;
+	docls = YEA;
+	downfrom = 0;
+	struct screenline *slp;
+	int i;
+	for (i = 0; i < scr_lns; i++) {
+		slp = big_picture + i;
+		slp->mode = 0;
+		slp->len = 0;
+		slp->oldlen = 0;
+	}
+	move(0, 0);
+}
+
+//清除big_picture中的第i行,将mode与len置0
+void clear_whole_line(int i)
+{
+	register struct screenline *slp = &big_picture[i];
+	slp->mode = slp->len = 0;
+	slp->oldlen = 79;
+}
+
+/**
+ * Clear to end of current line.
+ */
+void clrtoeol(void)
+{
+	if (dumb_term)
+		return;
+	standing = false;
+	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
+	if (cur_col <= slp->sso)
+		slp->mode &= ~STANDOUT;
+	if (cur_col > slp->len)
+		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
+	slp->len = cur_col;
+}
+
+//从当前行清除到最后一行
+void clrtobot(void)
+{
+	register struct screenline *slp;
+	register int i, j;
+	if (dumb_term)
+		return;
+	for (i = cur_ln; i < scr_lns; i++) {
+		j = i + roll;
+		while (j >= scr_lns)
+			//求j%scr_lns ? 因为减法比取余时间少?
+			j -= scr_lns;
+		slp = &big_picture[j];
+		slp->mode = 0;
+		slp->len = 0;
+		if (slp->oldlen > 0)
+			slp->oldlen = 255;
+	}
+}
+
+static char nullstr[] = "(null)";
+
+/**
+ * Output a character.
+ * @param c The character.
+ * @return 1, 0 on ansi control codes.
+ */
+int outc(int c)
+{
+	static bool inansi;
+#ifndef BIT8
+	c &= 0x7f;
+#endif
+
+	if (inansi) {
+		if (c == 'm') {
+			inansi = false;
+			return 0;
+		}
+		return 0;
+	}
+	if (c == KEY_ESC && !iscolor) {
+		inansi = true;
+		return 0;
+	}
+
+	if (dumb_term) {
+		if (!isprint2(c)) {
+			if (c == '\n') {
+				ochar('\r');
+			} else {
+				if (c != KEY_ESC || !showansi)
+					c = '*';
+			}
+		}
+		ochar(c);
+		return 1;
+	}
+
+	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
+	unsigned int col = cur_col;
+
+	if (!isprint2(c)) {
+		if (c == '\n' || c == '\r') {
+			if (standing) {
+				slp->eso = Max(slp->eso, col);
+				standing = false;
+			}
+			if (col > slp->len)
+				memset(slp->data + slp->len, ' ', col - slp->len + 1);
+			slp->len = col;
+			cur_col = 0;
+			if (cur_ln < scr_lns)
+				cur_ln++;
+			return 1;
+		} else {
+			if (c != KEY_ESC || !showansi)
+				c = '*';
+		}
+	}
+
+	if (col > slp->len)
+		memset(slp->data + slp->len, ' ', col - slp->len);
+	if ((slp->mode & MODIFIED) != MODIFIED) {
+		slp->smod = (slp->emod = col);
+	} else {
+		if (col > slp->emod)
+			slp->emod = col;
+		if (col < slp->smod)
+			slp->smod = col;
+	}
+	slp->mode |= MODIFIED;
+	slp->data[col] = c;
+	col++;
+	if (col > slp->len)
+		slp->len = col;
+
+	if (col >= scr_cols) {
+		if (standing && slp->mode & STANDOUT) {
+			standing = false;
+			slp->eso = Max(slp->eso, col);
+		}
+		col = 0;
+		if (cur_ln < scr_lns)
+			cur_ln++;
+	}
+	cur_col = col; /* store cur_col back */
+	return 1;
+}
+
+/**
+ * Output a string.
  * @param str The string.
- * @param max Maxmimum string width (if max > 0).
- * @param min Minimum string width (if min < 0). If the string has fewer
- *            columns, it is padded with spaces.
- * @param left_align Alignment when padding.
  */
-static void outns(const char *str, int max, int min, bool left_align)
+void outs(const char *str)
 {
-	int ret, w;
-	size_t width = 0;
-	wchar_t wc;
-	mbstate_t state;
-	memset(&state, 0, sizeof(state));
-	const char *s = str;
-	while (*s != '\0') {
-		ret = mbrtowc(&wc, s, MB_CUR_MAX, &state);
-		if (ret >= (size_t)-2) {
-			break;
-		} else {
-			w = wcwidth(wc);
-			if (w == -1)
-				w = 0;
-			width += w;
-			if (max > 0 && width > max)
-				break;
-			s += ret;
-		}
-	}
-
-	if (max > 0) {
-		_outs(&stdscr, (const uchar_t *)str, s - str);
-	} else if (min > 0) {
-		if (!left_align) {
-			for (int i = 0; i < min - width; ++i)
-				outc(' ');
-		}
-		_outs(&stdscr, (const uchar_t *)str, s - str);
-		if (left_align) {
-			for (int i = 0; i < min - width; ++i)
-				outc(' ');
-		}
+	while (*str != '\0') {
+		outc(*str++);
 	}
 }
 
-static void outns2(const char *str, int val, int sgn, int sgn2)
+/**
+ * Print first n bytes of a string.
+ * @param str The string.
+ * @param n Maximum output bytes.
+ * @param ansi Whether ansi control codes should be excluded in length or not.
+ */
+static void outns(const char *str, int n, bool ansi)
 {
-	if (val) {
-		if (!sgn2) {
-			outns(str, val, 0, sgn < 0);
-		} else {
-			outns(str, 0, val, sgn < 0);
+	if (!ansi) {
+		while (*str != '\0' && n > 0) {
+			outc(*str++);
+			n--;
 		}
 	} else {
-		_outs(&stdscr, (const uchar_t *)str, 0);
+		while (*str != '\0' && n > 0) {
+			n -= outc(*str++);
+		}
+		outs("\033[m");
 	}
 }
 
-/**
- * Format and print string to the standard screen.
- * Only 3 format specifiers (s, d, c) are supported.
- * Only one of maximum or minimum filed width can be specified.
- * @param fmt The format string.
- */
+int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
+		1000, 100, 10, 1 };
+
+/*以ANSI格式输出可变参数的字符串序列*/
 void prints(const char *fmt, ...)
 {
-	const char *bp;
-	int i;
-	char tmp[16];
-
 	va_list ap;
+	char *bp;
+	register int i, count, hd, indx;
 	va_start(ap, fmt);
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
 			int sgn = 1;
 			int sgn2 = 1;
 			int val = 0;
+			int len, negi;
 			fmt++;
 			switch (*fmt) {
 				case '-':
 					while (*fmt == '-') {
-						sgn = -sgn;
+						sgn *= -1;
 						fmt++;
 					}
 					break;
@@ -472,32 +562,88 @@ void prints(const char *fmt, ...)
 					fmt++;
 					break;
 			}
-
 			while (isdigit(*fmt)) {
 				val *= 10;
 				val += *fmt - '0';
 				fmt++;
 			}
-
 			switch (*fmt) {
 				case 's':
-					bp = va_arg(ap, const char *);
+					bp = va_arg(ap, char *);
 					if (bp == NULL)
-						continue;
-					outns2(bp, val, sgn, sgn2);
+						bp = nullstr;
+					if (val) {
+						register int slen = strlen(bp);
+						if (!sgn2) {
+							if (val <= slen)
+								outns(bp, val, true);
+							else
+								outns(bp, slen, true);
+						} else if (val <= slen)
+							outns(bp, val, false);
+						else if (sgn > 0) {
+							for (slen = val - slen; slen > 0; slen--)
+								outc(' ');
+							outs(bp);
+						} else {
+							outs(bp);
+							for (slen = val - slen; slen > 0; slen--)
+								outc(' ');
+						}
+					} else
+						outs(bp);
 					break;
 				case 'd':
 					i = va_arg(ap, int);
-					snprintf(tmp, sizeof(tmp), "%d", i);
-					outns2(tmp, val, sgn, sgn2);
+
+					negi = NA;
+					if (i < 0) {
+						negi = YEA;
+						i *= -1;
+					}
+					for (indx = 0; indx < 10; indx++)
+						if (i >= dec[indx])
+							break;
+					if (i == 0)
+						len = 1;
+					else
+						len = 10 - indx;
+					if (negi)
+						len++;
+					if (val >= len && sgn > 0) {
+						register int slen;
+						for (slen = val - len; slen > 0; slen--)
+							outc(' ');
+					}
+					if (negi)
+						outc('-');
+					hd = 1, indx = 0;
+					while (indx < 10) {
+						count = 0;
+						while (i >= dec[indx]) {
+							count++;
+							i -= dec[indx];
+						}
+						indx++;
+						if (indx == 10)
+							hd = 0;
+						if (hd && !count)
+							continue;
+						hd = 0;
+						outc('0' + count);
+					}
+					if (val >= len && sgn < 0) {
+						register int slen;
+						for (slen = val - len; slen > 0; slen--)
+							outc(' ');
+					}
 					break;
 				case 'c':
 					i = va_arg(ap, int);
 					outc(i);
 					break;
 				case '\0':
-					va_end(ap);
-					return;
+					goto endprint;
 				default:
 					outc(*fmt);
 					break;
@@ -509,120 +655,108 @@ void prints(const char *fmt, ...)
 		fmt++;
 	}
 	va_end(ap);
-	return;
-}
-
-int getch(void)
-{
-	return term_getch(stdscr.tc);
+	endprint: return;
 }
 
 /**
- * Delete a UTF-8 character.
- * @param backspace If true, delete backward, otherwise forward.
- * @return Bytes deleted.
+ * Scroll down one line.
  */
-int delch(bool backspace)
+void scroll(void)
 {
-	screen_t *s = &stdscr;
-	screen_line_t *slp = s->lines + (s->cur_ln + s->roll) % s->scr_lns;
-	uchar_t *begin = slp->data, *end = slp->data + slp->len;
-	uchar_t *ptr = slp->data + s->cur_col;
-	if (backspace) {
-		while (--ptr >= begin) {
-			if ((*ptr & 0x80) == 0 || (*ptr & 0xC0) == 0xC0)
-				break;
-		}
-		end = slp->data + s->cur_col;
-		if (ptr >= begin) {
-			slp->modified = true;
-			int width = mbwidth((const char *)ptr);
-			memmove(ptr, end, slp->len - s->cur_col);
-			slp->len -= end - ptr;
-			s->cur_col -= width;
-			if (s->cur_col < 0)
-				s->cur_col = 0;
-			return end - ptr;
-		}
-	} else {
-		while (++ptr < end) {
-			if ((*ptr & 0x80) == 0 || (*ptr & 0xC0) == 0xC0)
-				break;
-		}
-		begin = slp->data + s->cur_col;
-		if (ptr < end) {
-			slp->modified = true;
-			memmove(begin, ptr, end - ptr);
-			slp->len -= ptr - begin;
-			return ptr - begin;
-		}
+	if (dumb_term) {
+		prints("\n");
+		return;
 	}
-	return 0;
-}
-
-/**
- * Get user input string.
- * @param line Line to show prompt.
- * @param prompt The prompt message.
- * @param buf The buffer. If not empty, its content is shown.
- * @param len Length of buffer.
- * @param mask Whether to asterisk the echo.
- * @return The user input in bytes.
- */
-int getdata(int line, const char *prompt, char *buf, int len, bool mask)
-{
-	move(line, 0);
+	scrollcnt++;
+	roll++;
+	if (roll >= scr_lns)
+		roll -= scr_lns;
+	move(scr_lns - 1, 0);
 	clrtoeol();
-	if (prompt)
-		outs(prompt);
-
-	int clen = 0;
-	if (buf[0] != '\0') {
-		outs(buf);
-		clen = strlen(buf);
-	}
-	refresh();
-
-	int ch;
-	while (1) {
-		ch = getch();
-		if (ch == '\n')
-			break;
-		switch (ch) {
-			case KEY_BACKSPACE:
-			case KEY_CTRL_H:
-				if (clen == 0)
-					continue;
-				clen -= delch(true);
-				break;
-			case KEY_DEL:
-				if (clen == 0)
-					continue;
-				clen -= delch(false);
-				break;
-			case KEY_LEFT: // TODO: ...
-				break;
-			case KEY_RIGHT:
-				break;
-			case KEY_HOME:
-			case KEY_CTRL_A:
-				break;
-			case KEY_END:
-			case KEY_CTRL_E:
-				break;
-			default:
-				if (!isprint2(ch) || clen >= len - 1)
-					continue;
-				buf[clen++] = ch;
-				if (mask)
-					outc('*');
-				else
-					outc(ch);
-				break;
-		}
-		refresh();
-	}
-	buf[clen] = '\0';
-	return clen;
 }
 
+//将big_picture输出位置1,标准输出区间为(cur_col,cur_col)
+void standout(void)
+{
+	register struct screenline *slp;
+	register int ln;
+	if (dumb_term)
+		return;
+	if (!standing) {
+		ln = cur_ln + roll;
+		while (ln >= scr_lns)
+			ln -= scr_lns;
+		slp = &big_picture[ln];
+		standing = YEA;
+		slp->sso = cur_col;
+		slp->eso = cur_col;
+		slp->mode |= STANDOUT;
+	}
+}
+//	如果standing为真,将当前行在big_picture中的映射设成真
+//		并将eso设成eso,cur_col的最大值
+void standend(void)
+{
+	register struct screenline *slp;
+	register int ln;
+	if (dumb_term)
+		return;
+	if (standing) {
+		ln = cur_ln + roll;
+		while (ln >= scr_lns)
+			ln -= scr_lns;
+		slp = &big_picture[ln];
+		standing = NA;
+		slp->eso = Max(slp->eso, cur_col);
+	}
+}
+//	根据mode来决定 保存或恢复行line的内容
+//		最多只能保存一行,否则会被抹去
+void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
+{
+	register struct screenline *bp = big_picture;
+	static char tmp[2][256];
+	int x, y;
+
+	switch (mode) {
+		case 0:
+		case 2:
+			strlcpy(tmp[mode/2], (const char *)bp[line].data, LINELEN);
+			tmp[mode/2][bp[line].len]='\0';
+			break;
+		case 1:
+		case 3:
+			getyx(&x, &y);
+			move(line, 0);
+			clrtoeol();
+			refresh();
+			prints("%s", tmp[(mode-1)/2]);
+			move(x, y);
+			refresh();
+	}
+}
+
+/* Added by Ashinmarch on 2007.12.01,
+ * to support multi-line msgs
+ * It is used to save screen lines overwrited by msgs
+ */
+void saveline_buf(int line, int mode)//0:save 1:restore
+{
+    static char temp[MAX_MSG_LINE * 2 + 2][LINELEN];
+    struct screenline *bp = big_picture;
+    int x, y;
+    
+    switch (mode) {
+        case 0:
+            strncpy(temp[line], (const char *)bp[line].data, LINELEN);
+            temp[line][bp[line].len] = '\0';
+            break;
+        case 1:
+            getyx(&x, &y);
+            move(line, 0);
+            clear_whole_line(line);
+            prints("%s", temp[line]);
+            move(x,y);
+            break;
+    }
+}

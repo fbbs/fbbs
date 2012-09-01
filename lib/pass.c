@@ -1,11 +1,14 @@
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <string.h>
-#include <crypt.h>
-#include <sys/time.h>
+#include "bbs.h"
 
-#include "fbbs/site.h"
+#ifdef HAVE_CRYPT_H
+# include <crypt.h>
+#else
+# include <unistd.h>
+#endif
+
+#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/string.h"
 
 #ifndef MD5
 #ifndef DES
@@ -14,17 +17,13 @@
 #endif
 #endif
 
-/** Used in integer-string conversion. */
-static const unsigned char itoa64[] =
-		"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+// 0 ... 63 => ascii - 64
+static unsigned char itoa64[] =
+"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-/**
- * Convert a long integer to string.
- * Every 6 bits of the integer is mapped to a char.
- * @param s The resulting string.
- * @param v The long integer.
- * @param n Number of converted characters.
- */
+// Uses 7 least significant bits of 'v' to find counterpart in 'itoa64'.
+// Concatenates result to string 's' and right shifts 'v' for 6 bits.
+// Then loops for 'n' times.
 static void to64(char *s, long v, int n) {
 	while (--n >= 0) {
 		*s++ = itoa64[v & 0x3f];
@@ -32,13 +31,8 @@ static void to64(char *s, long v, int n) {
 	}
 }
 
-/**
- * Encrypt string.
- * When using DES, only the first 8 chars in the string are significant.
- * @param pw The string to be encrypted.
- * @return The encrypted string.
- */
-const char *generate_passwd(const char *pw)
+// Encrypts 'pw' using libcrypt and returns result.
+char *genpasswd(const char *pw)
 {
 	char salt[10];
 	struct timeval tv;
@@ -46,8 +40,8 @@ const char *generate_passwd(const char *pw)
 	if (pw == NULL || pw[0] == '\0')
 		return "";
 
+	srand(time(NULL) % getpid());
 	gettimeofday(&tv, NULL);
-	srand(tv.tv_sec % getpid());
 
 #ifdef MD5			/* use MD5 salt */
 	strncpy(&salt[0], "$1$", 3);
@@ -66,13 +60,50 @@ const char *generate_passwd(const char *pw)
 }
 
 /**
- * Checks if the given plain text could be the original text
- * of encrypted string.
- * @param pw_crypted The encrypted string.
- * @param pw_try The plain text.
- * @return True if match, false otherwise.
+ * Check if \a pw_try matches \a pw_crypted.
+ * @param pw_crypted The crypted password.
+ * @param pw_try The password in plain text.
+ * @return True if they match, false otherwise.
  */
-bool check_passwd(const char *pw_crypted, const char *pw_try)
+bool passwd_match(const char *pw_crypted, const char *pw_try)
 {
-	return !strcmp(crypt(pw_try, pw_crypted), pw_crypted);
+	return streq(crypt(pw_try, pw_crypted), pw_crypted);
+}
+
+/**
+ * Check if \a pw_try could be the password of user \a name.
+ * @param name The username.
+ * @param pw_try The password in plain text.
+ * @return True if they match, false otherwise.
+ */
+bool passwd_check(const char *name, const char *pw_try)
+{
+	db_res_t *res = db_query("SELECT passwd FROM alive_users"
+			" WHERE lower(name) = lower(%s)", name);
+	if (!res)
+		return false;
+	if (db_res_rows(res) < 1) {
+		db_clear(res);
+		return false;
+	}
+
+	bool match = passwd_match(db_get_value(res, 0, 0), pw_try);
+	db_clear(res);
+	return match;
+}
+
+/**
+ * Set one's password.
+ * @param name The user name.
+ * @param pw The password in plain text.
+ * @return 0 on sucess, -1 on error.
+ */
+int passwd_set(const char *name, const char *pw)
+{
+	db_res_t *res = db_cmd("UPDATE users"
+			" SET passwd = %s WHERE lower(name) = lower(%s) AND alive",
+			genpasswd(pw), name);
+	int ret = res ? 0 : -1;
+	db_clear(res);
+	return ret;
 }

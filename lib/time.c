@@ -1,24 +1,31 @@
 #include <stdio.h>
 #include "fbbs/time.h"
 
+static struct tm *fb_localtime(fb_time_t *t)
+{
+	time_t tt = (time_t)*t;
+	return localtime(&tt);
+}
+
 /**
  * Convert time to string in specified format.
  * @param time time to convert.
- * @param mode The format.
+ * @param mode specified format.
  * @return converted string.
  */
-const char *date2str(time_t time, int mode)
+char *getdatestring(time_t time, enum DATE_FORMAT mode)
 {
-	const char *weeknum[] = { "å¤©", "ä¸€", "äºŒ", "ä¸‰", "å››", "äº”", "å…­" };
-	const char *engweek[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+	static char str[32] = {'\0'};
+	struct tm *t;
+	char weeknum[7][3] = {"Ìì", "Ò»", "¶þ", "Èý", "ËÄ", "Îå", "Áù"};
+	char engweek[7][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
-	static char str[40] = { '\0' };
-
-	struct tm *t = localtime(&time);
+	// No multi-thread
+	t = localtime(&time);
 	switch (mode) {
 		case DATE_ZH:
 			snprintf(str, sizeof(str),
-					"%4då¹´%02dæœˆ%02dæ—¥%02d:%02d:%02d æ˜ŸæœŸ%s",
+					"%4dÄê%02dÔÂ%02dÈÕ%02d:%02d:%02d ÐÇÆÚ%2s",
 					t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
 					t->tm_hour, t->tm_min, t->tm_sec, weeknum[t->tm_wday]);
 			break;
@@ -47,4 +54,43 @@ const char *date2str(time_t time, int mode)
 			break;
 	}
 	return str;
+}
+
+/**
+ * Validate date.
+ * @param year Year. Not checked except for determining leap year.
+ * @param month Month (1-12)
+ * @param day Day (1-31)
+ * @return True if valid, false otherwise.
+ */
+bool valid_date(int year, int month, int day)
+{
+	if (month < 1 || month > 12)
+		return false;
+
+	int days = 31;
+	switch (month) {
+		case 2:
+			if (year % 4 == 0 && !(year % 100 == 0 && year % 400 != 0))
+				days = 29;
+			else
+				days = 28;
+			break;
+		case 4:
+		case 6:
+		case 9:
+		case 11:
+			days = 30;
+			break;
+	}
+	if (day < 1 || day > days)
+		return false;
+
+	return true;
+}
+
+char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t)
+{
+	strftime(buf, size, fmt, fb_localtime(&t));
+	return buf;
 }

@@ -1,0 +1,20 @@
+html, body, dl { font-size: 1em; }
+fieldset { font-size: 1em; }
+dl { display: block; margin: 0.5em 0; }
+.warn { background: #ff6666; }
+dt { display: inline-block; width: 5em; text-align: right;}
+dd { display: inline-block; margin-left: 0.5em; }
+input[type="text"], input[type="password"] { font-size: 1em; width: 21em; margin: 2px; border: 1px solid #6699cc; }
+input:focus { -moz-box-shadow: 0px 0px 0.5em #336699; box-shadow: 0px 0px 0.5em #336699; }
+input[type="submit"] { font-size: 1.5em; width: 17em; margin: 0.5em 0; }
+label { padding: 0 0.5em; }
+#mail { width: 10.5em; } #byear { width: 4em; }
+select { font-size: 1em; width: 3em; }
+span.hint { margin-left: 0.5em; color: green; }
+#register { background-color: #f0f7ff; }
+#exist { display: none; }
+#e1 { color: red; margin-left: 1em; }
+#e0 { color: green; margin-left: 1em; }
+#prompt { color: red; }
+#loading { display: none; margin-left: 1em; }
+#domain { width: 10em; }

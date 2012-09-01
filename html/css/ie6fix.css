@@ -6,3 +6,7 @@ table.content{width:100%;}
 th.ptitle,td.ptitle{width:auto;}
 .content tr{line-height:24px;}
 table.post{width:100%;}
+.post_s img {
+	width: expression(this.width > 600 ? 600 : true);
+	height: expression(this.height > 200 ? 200 : true);
+}

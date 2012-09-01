@@ -1,98 +1,92 @@
-#include "fbbs/dbi.h"
-#include "fbbs/post.h"
-#include "fbbs/time.h"
+#include "libweb.h"
+#include "mmap.h"
+#include "fbbs/board.h"
+#include "fbbs/convert.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
+#include "fbbs/helper.h"
+#include "fbbs/string.h"
 #include "fbbs/web.h"
 
-enum {
-	QUERY_LENGTH = 512,
-};
-
-bool allow_reply(uint_t flag)
+int web_fav(void)
 {
-	return !(flag & FILE_NOREPLY);
-}
-
-int get_post_mark(uint_t flag)
-{
-	int mark = ' ';
-	if (flag & FILE_DIGEST)
-		mark = 'G';
-	if (flag & FILE_MARKED) {
-		if (mark == ' ')
-			mark = 'M';
-		else
-			mark = 'B';
-	}
-	if ((flag & FILE_WATER) && mark == ' ')
-		mark = 'W';
-	return mark;
-}
-
-int bbs_board(web_ctx_t *ctx)
-{
-	const char *bid = get_param(ctx->r, "bid");
-	const char *action = get_param(ctx->r, "a");
-	const char *pid = get_param(ctx->r, "pid");
-
-	bool asc = (*action == 'n');
-	bool act = (*action == 'n' || *action == 'p');
-
-	char *query = pool_alloc(ctx->p, QUERY_LENGTH);
-	int len = snprintf(query, QUERY_LENGTH,
-			"SELECT u.name, p.flag, p.time, p.user_name, p.id, p.title "
-			"FROM posts p LEFT JOIN users u ON p.user_id = u.id "
-			"WHERE p.board_id = $1 AND itype = 0 %s "
-			"ORDER BY p.id %s LIMIT 20",
-			asc ? "AND p.id > $2" : (*action == 'p' ? "AND p.id < $2" : ""),
-			asc ? "ASC" : "DESC");
-	if (len >= QUERY_LENGTH)
-		return -1;
-
-	db_param_t param[] = { PARAM_TEXT(bid), PARAM_TEXT(pid) };
-	db_res_t *res = db_exec_params(ctx->d, query, act ? 2 : 1, param, true);
-	if (db_res_status(res) != DBRES_TUPLES_OK) {
-		db_clear(res);
-		return -1;
-	}
+	if (!session.id)
+		return BBS_ELGNREQ;
 
 	xml_header(NULL);
-	printf("<bbs_board>");
+	printf("<bbsfav>");
+	print_session();
 
-	int rows = db_num_rows(res);
-	long begin = 0, end = 0;
-	if (rows > 0) {
-		int e = asc ? rows : -1;
-		int step = asc ? 1 : -1;
-		for (int i = asc ? 0 : rows - 1; i != e; i += step) {
-			uint_t flag = db_get_integer(res, i, 1);
-			printf("<po %sm='%c' o='%s' t='%s' id='%ld'>",
-					allow_reply(flag) ? "" : "nore='1' ",
-					get_post_mark(flag),
-					db_get_value(res, i, 3),
-					date2str(db_get_time(res, i, 2), DATE_XML),
-					db_get_bigint(res, i, 4));
-			xml_print(db_get_value(res, i, 5));
-			printf("</po>\n");
+	db_res_t *res = db_query("SELECT b.id, b.name, b.descr"
+			" FROM boards b JOIN fav_boards f WHERE b.id = f.board");
+	if (res) {
+		for (int i = 0; i < db_res_rows(res); ++i) {
+			int bid = db_get_integer(res, i, 0);
+			const char *name = db_get_value(res, i, 1);
+
+			GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
+			convert_u2g(db_get_value(res, i, 2), gbk_descr);
+
+			printf("<brd bid='%d' brd='%s'", bid, name);
+			xml_fputs(gbk_descr, stdout);
+			printf("</brd>");
 		}
-		begin = db_get_bigint(res, asc ? 0 : rows - 1, 4);
-		end = db_get_bigint(res, asc ? rows - 1 : 0, 4);
 	}
 	db_clear(res);
 
-	const char *q = "SELECT id, name, description FROM boards WHERE id = $1";
-	res = db_exec_params(ctx->d, q, 1, param, true);
-	if (db_res_status(res) != DBRES_TUPLES_OK) {
+	printf("</bbsfav>");
+	return 0;
+}
+
+int web_brdadd(void)
+{
+	if (!session.id)
+		return BBS_ELGNREQ;
+
+	int bid = strtol(get_param("bid"), NULL, 10);
+	int ok = fav_board_add(session.uid, NULL, bid,
+			FAV_BOARD_ROOT_FOLDER, &currentuser);
+	if (ok) {
+		xml_header(NULL);
+		printf("<bbsbrdadd>");
+		print_session();
+
+		board_t board;
+		get_board_by_bid(bid, &board);
+		printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", board.name, board.id);
+		return 0;
+	}
+	return BBS_EBRDQE;
+}
+
+int web_sel(void)
+{
+	xml_header("bbssel");
+	printf("<bbssel>");
+	print_session();
+
+	const char *brd = get_param("brd");
+	if (*brd != '\0') {
+		char name[BOARD_NAME_LEN + 3];
+		snprintf(name, sizeof(name), "%%%s%%", brd);
+
+		db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE
+				"WHERE lower(b.name) LIKE %s", name);
+		if (res && db_res_rows(res) > 0) {
+			board_t board;
+			for (int i = 0; i < db_res_rows(res); ++i) {
+				res_to_board(res, i, &board);
+				if (has_read_perm(&currentuser, &board)) {
+					board_to_gbk(&board);
+					printf("<brd dir='%d' title='%s' desc='%s' />",
+							is_board_dir(&board), board.name, board.descr);
+				}
+			}
+		} else {
+			printf("<notfound/>");
+		}
 		db_clear(res);
-		return -1;
 	}
-	printf("<brd bid='%d' name='%s' desc='%s' begin='%ld' end='%ld'/>",
-			db_get_integer(res, 0, 0),
-			db_get_value(res, 0, 1),
-			db_get_value(res, 0, 2),
-			begin, end);
-
-	printf("</bbs_board>");
-
-	db_clear(res);
+	printf("</bbssel>");
 	return 0;
 }

@@ -1,22 +1,15 @@
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include "bbs.h"
+#include "mmap.h"
+#include "record.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
+#include "fbbs/mail.h"
+#include "fbbs/session.h"
+#include "fbbs/string.h"
+#include "fbbs/terminal.h"
 
-#include "fbbs/i18n.h"
-#include "fbbs/mmap.h"
-#include "fbbs/more.h"
-#include "fbbs/screen.h"
-#include "fbbs/stuff.h"
-
-#if 0
 static time_t calltime = 0;
 void R_monitor();
-//Added by Ashinmarch to support multi-line msg
-extern void show_data(char *buf, int maxcol, int line, int col);
 
 struct ACSHM {
 	char    data[ACBOARD_MAXLINE][ACBOARD_BUFSIZE];
@@ -27,11 +20,24 @@ struct ACSHM {
 
 static struct ACSHM *movieshm = NULL;
 static int nnline = 0;
-char    more_buf[MORE_BUFSIZE];
-int     more_size, more_num;
 
 /*Added by Ashinmarch on 2007.12.01*/
 extern int RMSG;
+
+static void empty_movie(int x)
+{
+	sprintf(genbuf, "Empty Movie!!! (error = %d)", x);
+	report(genbuf, currentuser.userid); 
+
+	strcpy(movieshm->data[2], "[K      ** ÉÐÎ´Éè¶¨»î¶¯¿´°å ** ");
+	strcpy(movieshm->data[3], "[K         ÇëÏê¼û°²×°ËµÃ÷Êé Firebird-2000 ");
+	strcpy(movieshm->data[4], "[K         Éè¶¨ notepad °æ"); 
+
+	movieshm->movielines = MAXMOVIE;
+	movieshm->movieitems = 1;
+	movieshm->update = time(0);
+
+}
 
 void ActiveBoard_Init( void )
 {
@@ -110,22 +116,7 @@ void ActiveBoard_Init( void )
 	return ;
 }
 
-int empty_movie(int x)
-{
-	sprintf(genbuf, "Empty Movie!!! (error = %d)", x);
-	report(genbuf, currentuser.userid); 
-
-	strcpy(movieshm->data[2], "[K      ** ÉÐÎ´Éè¶¨»î¶¯¿´°å ** ");
-	strcpy(movieshm->data[3], "[K         ÇëÏê¼û°²×°ËµÃ÷Êé Firebird-2000 ");
-	strcpy(movieshm->data[4], "[K         Éè¶¨ notepad °æ"); 
-
-	movieshm->movielines = MAXMOVIE;
-	movieshm->movieitems = 1;
-	movieshm->update = time(0);
-
-}
-
-void setcalltime( void )
+int setcalltime(void)
 {
 	char    ans[6];
 	int     ttt;
@@ -133,16 +124,16 @@ void setcalltime( void )
 	clrtoeol();
 	getdata(1, 0, "¼¸·ÖÖÓºóÒªÏµÍ³ÌáÐÑÄú: ", ans, 3, DOECHO, YEA);
 	ttt = atoi(ans);
-	if (ttt <= 0) return;
-	calltime = time(0) + ttt * 60;
+	if (ttt > 0)
+		calltime = time(0) + ttt * 60;
+	return 0;
 }
-#endif
 
 static int morekey(void)
 {
-	int ch;
+	int     ch;
 	while (1) {
-		switch (ch = getch()) {
+		switch (ch = egetch()) { 
 			case 'q':
 			case KEY_LEFT:
 			case EOF:
@@ -150,10 +141,10 @@ static int morekey(void)
 			case ' ':
 			case KEY_RIGHT:
 			case KEY_PGDN:
-			case KEY_CTRL_F:
+			case Ctrl('F'): 
 				return KEY_RIGHT;
 			case KEY_PGUP:
-			case KEY_CTRL_B:
+			case Ctrl('B'):
 				return KEY_PGUP;
 			case '\r':
 			case '\n':
@@ -200,7 +191,6 @@ static int morekey(void)
 	}
 }
 
-#if 0
 /*Add by SmallPig*/
 int countln(char *fname)
 {
@@ -255,16 +245,16 @@ void netty_more(void)
 void printacbar(void)
 {
 #ifndef BIGGER_MOVIE
-	struct boardheader *bp;
 	int x,y;
-
-	getyx(&y,&x);
-	bp = getbcache(DEFAULTBOARD);
+	getyx(&y, &x);
 	move(2,0);
-	if(bp->flag&VOTE_FLAG) prints(" [1;36m©°¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È[37mÏµÍ³Í¶Æ±ÖÐ [ Config->Vote ] [36m©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©´ [m\n");
-	else prints(" [1;36m©°¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È[37m»î  ¶¯  ¿´  °å[36m©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©´ [m\n");
-	move(2+MAXMOVIE,0);
-	prints(" [1;36m©¸¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©¼[m\n");
+
+	prints(" \033[1;36m©°¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È"
+			"\033[37m»î  ¶¯  ¿´  °å\033[36m"
+			"©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©´ \033[m\n");
+	move(2 + MAXMOVIE, 0);
+	prints(" \033[1;36m©¸¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª"
+			"¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©¼\033[m\n");
 	move (y,x);
 #endif
 	refresh();
@@ -274,7 +264,7 @@ int check_calltime(void)
 {
 	int     line;
 	if ( calltime != 0 && time(0) >= calltime ) {
-		if (uinfo.mode == TALK)
+		if (session.status == ST_TALK)
 			line = t_lines / 2 - 1;
 		else
 			line = 0;
@@ -295,15 +285,15 @@ int check_calltime(void)
 	return 0;
 }
 
-void R_monitor()
+void R_monitor(int unused)
 {
-	if (uinfo.mode != MMENU)
+	if (session.status != ST_MMENU)
 		return;
 
 	/* Added by Ashinmarch on 2007.12.01
 	 * used to support multi-line msgs
 	 */
-	if (uinfo.mode == LOOKMSGS || uinfo.mode == MSG || RMSG == YEA)
+	if (session.status == ST_LOOKMSGS || session.status == ST_MSG || RMSG == YEA)
 		return;
 	/*end*/
 	if (!DEFINE(DEF_ACBOARD) && !DEFINE(DEF_ENDLINE))
@@ -318,11 +308,11 @@ void R_monitor()
 	else
 		alarm(10);
 }
-#endif
 
 enum {
 	/** A ::linenum_t will be assigned for every block. */
 	LINENUM_BLOCK_SIZE = 4096, 
+	DEFAULT_TERM_WIDTH = 80,   ///< Default terminal width.
 	TAB_STOP = 4,       ///< Columns of a tab stop.
 	IS_QUOTE = 0x1,     ///< The line is part of quotation if this bit is set.
 	HAS_TABSTOP = 0x2,  ///< The line has tab stop(s) if this bit is set.
@@ -337,7 +327,7 @@ typedef struct linenum_t {
 	int prop;      ///< Properties. See ::IS_QUOTE, ::HAS_TABSTOP.
 } linenum_t;
 
-/** Structure for showing text files. */
+/** Mmap_more stream structure. */
 typedef struct more_file_t {
 	char *buf;        ///< Starting address of the text.
 	size_t size;      ///< Length of the text.
@@ -361,7 +351,7 @@ typedef int (*more_handler_t)(more_file_t *, int);
 /**
  * Open a file as more stream.
  * @param file File to open.
- * @param width Line width, set to standard screen width if 0.
+ * @param width Line width.
  * @param func A function to fill the stream with file content.
  * @return an ::more_file_t pointer on success, NULL on error.
  */
@@ -373,8 +363,6 @@ static more_file_t *more_open(const char *file, int width, more_open_t func)
 
 	memset(more, 0, sizeof(*more));
 	more->total = -1;
-	if (width <= 0)
-		width = get_screen_width();
 	more->width = width;
 
 	if ((*func)(file, more) != 0) {
@@ -395,7 +383,6 @@ static void more_close(more_file_t *more)
 	free(more);
 }
 
-// TODO: rewrite to support utf-8
 /**
  * Get next line from more stream.
  * On success, d->begin, d->row, d->prop is set and returned.
@@ -404,7 +391,7 @@ static void more_close(more_file_t *more)
  */
 static ssize_t more_getline(more_file_t *d)
 {
-	static const char code[] = "[0123456789;";
+	const char *code = "[0123456789;";
 	if (d->width < 2) {
 		return -1;
 	}
@@ -442,7 +429,7 @@ static ssize_t more_getline(more_file_t *d)
 			continue;
 		}
 		if (in_esc) {
-			if (!memchr(code, *ptr, sizeof(code) - 1))
+			if (!memchr(code, *ptr, strlen(code)))
 				in_esc = false;
 			continue;
 		}
@@ -479,7 +466,7 @@ static ssize_t more_getline(more_file_t *d)
 	if (len == 0) {
 		// trailing escape sequence
 		if (*ptr == '\033') {
-			while (++ptr < end && memchr(code, *ptr, sizeof(code) - 1))
+			while (++ptr < end && memchr(code, *ptr, strlen(code)))
 				;
 			++ptr;
 		}
@@ -584,7 +571,6 @@ static void more_puts(more_file_t *d)
 	char *ptr;
 	int offset = 0;
 	for (ptr = d->begin; ptr != d->end; ++ptr) {
-		// TODO: expand tab on opening. forbid \r
 		if (*ptr != '\t' && *ptr != '\r') {
 			outc(*ptr);
 			++offset;
@@ -631,7 +617,7 @@ static int more_prompt_file(more_file_t *more)
 	prints("\033[0;1;44;32mÏÂÃæ»¹ÓÐà¸(%d%%) µÚ(%d-%d)ÐÐ \033[33m|"
 			" l ÉÏÆª | b e ¿ªÍ·Ä©Î² | g Ìø×ª | h °ïÖú\033[K\033[m",
 			(more->end - more->buf) * 100 / more->size,
-			more->line - get_screen_height() + 2, more->line);
+			more->line - t_lines + 2, more->line);
 	return 0;
 }
 
@@ -651,12 +637,12 @@ static int is_quotation(const char *str)
 static int more_main(more_file_t *more, bool promptend, int line, int lines,
 		int stuff, more_prompt_t prompt, more_handler_t handler)
 {
-	int lines_read = 1, pos = 0, i = 0, ch = 0, new_row;
+	int lines_read = 1, pos = 0, i = 0, ch = 0;
 	bool is_quote, is_wrapped, colored = false;
+	int new_row;
 	char *buf_end = more->buf + more->size;
 	char linebuf[7];
 
-	int t_lines = get_screen_height();
 	clrtobot();
 	// TODO: stuffmode
 	while (true) {
@@ -765,9 +751,8 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				more_seek(more, more->total - (t_lines - 1) + i);
 				break;
 			case 'G':
-				linebuf[0] = '\0';
-				getdata(t_lines - 1, _("Jump to: "), linebuf,
-						sizeof(linebuf), false);
+				getdata(t_lines - 1, 0, "Ìø×ªµ½µÄÐÐºÅ:", linebuf,
+						sizeof(linebuf), true, true);
 				new_row = strtol(linebuf, NULL, 10) - 1;
 				if (new_row < 0)
 					new_row = 0;
@@ -805,31 +790,23 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 /**
  * Article reading function for telnet.
  * @param file File to show.
- * @param presskey Whether immediately ask user to press any key.
+ * @param promptend Whether immediately ask user to press any key.
  * @param line The start line (on screen) of the article area.
  * @param numlines Lines shown at most, 0 means no limit.
- * @param expand Whether expand the keywords in the file.
+ * @param stuffmode todo..
  * @return Last dealt key, -1 on error.
  */
-int ansimore(const char *file, bool presskey, int line, int lines, bool expand)
+static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
 {
-	more_file_t *more = more_open(file, get_screen_width(), more_open_file);
+	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_file);
 	if (more == NULL)
 		return -1;
-
-	int ch = more_main(more, presskey, line, lines, expand, more_prompt_file,
-			NULL);
+	int ch = more_main(more, promptend, line, numlines, stuffmode,
+			more_prompt_file, NULL);
 	more_close(more);
 	return ch;
 }
 
-void show_help(const char *file)
-{
-	ansimore(file, false, 0, 0, false);
-	clear();
-}
-
-#if 0
 static int more_open_msg(const char *file, more_file_t *more)
 {
 	more->opt |= NO_QUOTE | NO_EMPHASIZE;
@@ -908,7 +885,7 @@ int msg_more(void)
 #else
 	setuserfile(file, "msgfile");
 #endif
-	modify_user_mode(LOOKMSGS);
+	set_user_status(ST_LOOKMSGS);
 
 	int ch;
 	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_msg);
@@ -918,6 +895,13 @@ int msg_more(void)
 		clear();
 		ch = more_main(more, false, 0, 0, false, more_prompt_msg,
 				more_handle_msg);
+		if (!ch) {
+			move(t_lines - 1, 0);
+			clrtoeol();
+			prints("\033[0;1;44;31m[Ñ¶Ï¢ä¯ÀÀÆ÷]  \033[33mc Çå³ý | "
+					"m ¼Ä»ØÐÅÏä\033[K\033[m");
+			ch = toupper(igetkey());
+		}
 		switch (ch) {
 			case 'C':
 				unlink(file);
@@ -942,7 +926,7 @@ int ansimore4(char *filename, int promptend, char *board, char *path, int ent)
 	return rawmore2(filename, promptend, 0, 0, NA);
 }
 
-int ansimore(char *filename, int promptend)
+int ansimore(const char *filename, int promptend)
 {
 	int ch;
 	clear();
@@ -960,16 +944,21 @@ int ansimore2(char *filename, int promptend, int row, int numlines)
 	refresh();
 	return ch;
 }
-/* edwardc.990624 ÏÈÔÝÊ±ÓÃ ansimore3() ´úÌæ ... */
 
-int ansimore3(char *filename, int promptend)
+void show_help(const char *fname)
 {
-	int     ch;
+	ansimore(fname, YEA);
 	clear();
-	ch = rawmore2(filename, promptend, 0, 0, YEA);
-	move(t_lines - 1, 0);
-	prints("[0m[m");
-	refresh();
-	return ch;
 }
-#endif
+
+int mainreadhelp(void)
+{
+	show_help("help/mainreadhelp");
+	return FULLUPDATE;
+}
+
+int mailreadhelp(void)
+{
+	show_help("help/mailreadhelp");
+	return FULLUPDATE;
+}

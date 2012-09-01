@@ -1,20 +1,25 @@
-#include "fbbs/i18n.h"
-#include "fbbs/screen.h"
+#include "bbs.h"
+#include <sys/param.h>
+#include <sys/sem.h>
+#include "fbbs/fileio.h"
+#include "fbbs/terminal.h"
+
+extern char fromhost[];
 
 /**
  * Prompt and wait user to press any key.
  * @param[in] msg The prompt message.
  * @param[in] x Line number.
  */
-void presskeyfor(const char *msg, int line)
+void presskeyfor(const char *msg, int x)
 {
-	move(line, 0);
+	extern int showansi;
+	showansi = 1;
+	move(x, 0);
 	clrtoeol();
-
-	prints("\033[1;33m%s\033[m", msg);
-	getch();
-
-	move(line, 0);
+	outs(msg);
+	egetch();
+	move(x, 0);
 	clrtoeol();
 }
 
@@ -23,11 +28,12 @@ void presskeyfor(const char *msg, int line)
  */
 void pressanykey(void)
 {
-	presskeyfor(_("Press any key to continue..."), get_screen_height() - 1);
+	presskeyfor("\033[m                                "
+			"\033[5;1;33m°´ÈÎºÎ¼ü¼ÌÐø...[m", t_lines - 1);
 }
 
-#if 0
-int pressreturn() {
+int pressreturn(void)
+{
 	extern int showansi;
 	char buf[3];
 	showansi = 1;
@@ -75,38 +81,6 @@ bool askyn(const char *str, bool defa, bool gobottom)
 	}
 }
 
-int msgmorebar(char *filename) {
-	extern int showansi;
-	char title[256];
-	int ch;
-	showansi = 1;
-	move(t_lines - 1, 0);
-	clrtoeol();
-
-	prints("[0m[1;44;32mÑ¶Ï¢ä¯ÀÀÆ÷   ±£Áô <[1;37mr[32m>    Çå³ý <[1;37mc[1;32m>   ¼Ä»ØÐÅÏä<[1;37mm[1;32m>                                [m");
-	move(t_lines - 1, 0);
-
-	ch = morekey();
-	if (ch == 'C') {
-		if (askyn("È·¶¨ÒªÇå³ýÂð£¿", NA, YEA) == YEA) {
-			unlink(filename);
-		}
-		return ch;
-	} else if (ch == 'M') {
-		if (askyn("È·¶¨Òª¼Ä»ØÂð£¿", NA, YEA) == YEA) {
-			sprintf(title, "[%s] ËùÓÐÑ¶Ï¢±¸·Ý", getdatestring(time(NULL), DATE_ZH));
-			mail_file(filename, currentuser.userid, title);
-			unlink(filename);
-		}
-		return ch;
-	} else if (ch == 'H') {
-		show_help("help/msghelp");
-	}
-	clrtoeol();
-	refresh();
-	return ch;
-}
-
 void printdash(const char *mesg)
 {
 	char buf[80], *ptr;
@@ -143,7 +117,8 @@ void bell(void)
 //ÈôdstÎªÄ¿Â¼,ÇÒ²¢·Ç.,..,×îºóÒ»¸ö×Ö·û²»Îª/,
 //			½«ÆäÉ¾³ý,³É¹¦·µ»Ø	1
 //					 ·ñÔò·µ»Ø	0
-int deltree(char *dst) {
+int deltree(const char *dst)
+{
 	if (strstr(dst, "//") || strstr(dst, "..") || strchr(dst, ' '))
 		return 0; /* precaution */
 	if (dst[strlen(dst) - 1] == '/')
@@ -155,4 +130,3 @@ int deltree(char *dst) {
 	} else
 		return 0;
 }
-#endif

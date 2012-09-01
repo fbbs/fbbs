@@ -1,10 +1,15 @@
 #ifndef FB_TIME_H
 #define FB_TIME_H
 
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <time.h>
 
-enum {
-	DATE_ZH = 0,      ///< "2001å¹´02æœˆ03æ—¥04:05:06 æ˜ŸæœŸå…­"
+#define PRIdFBT PRId64
+
+enum DATE_FORMAT {
+	DATE_ZH = 0,      ///< "2001Äê02ÔÂ03ÈÕ04:05:06 ÐÇÆÚÁù"
 	DATE_EN = 1,      ///< "02/03/01 04:05:06"
 	DATE_SHORT = 2,   ///< "02.03 04:05"
 	DATE_ENWEEK = 4,  ///< "02/03/01 04:05:06 Sat"
@@ -12,6 +17,13 @@ enum {
 	DATE_RSS = 16,    ///< "Sat,03 Feb 2001 04:05:06 +0800"
 };
 
-extern const char *date2str(time_t time, int mode);
+typedef int64_t fb_time_t;
+
+#define fb_time() ((fb_time_t)time(NULL))
+
+extern char *getdatestring(time_t time, enum DATE_FORMAT mode);
+extern char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t);
+
+extern bool valid_date(int year, int month, int day);
 
 #endif // FB_TIME_H

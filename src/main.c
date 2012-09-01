@@ -1,11 +1,20 @@
-#include <unistd.h>
+// Handle user login.
 
-#include "fbbs/termio.h"
-#include "fbbs/screen.h"
-
-#if 0
 #include "bbs.h"
 #include "sysconf.h"
+
+#include "fbbs/dbi.h"
+#include "fbbs/fbbs.h"
+#include "fbbs/fileio.h"
+#include "fbbs/helper.h"
+#include "fbbs/mail.h"
+#include "fbbs/msg.h"
+#include "fbbs/session.h"
+#include "fbbs/string.h"
+#include "fbbs/terminal.h"
+#include "fbbs/ucache.h"
+#include "fbbs/uinfo.h"
+#include "fbbs/user.h"
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -15,43 +24,30 @@
 #define ALLOWGAME
 #endif
 
-#define BADLOGINFILE   "logins.bad"
 #define VISITLOG    BBSHOME"/.visitlog"
-
-enum {
-	MAX_LOGINS_NORMAL = 2,   ///< max logins for a single account.
-	MAX_LOGINS_BM = 4,       ///< max logins for a board manager.
-	MAX_LOGINS_DIRECTOR = 6, ///< max logins for a director(zhanwu).
-};
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
 #endif
 int RMSG = false;
 int msg_num = 0;
-int count_friends = 0;
 int iscolor = 1;
 int mailXX = 0; // If mail quota is exceeded.
 int numofsig = 0;
 jmp_buf byebye;
-int talkrequest = NA;
 time_t lastnote;
-struct user_info uinfo;
 char fromhost[IP_LEN];
 char BoardName[STRLEN]; // TODO: Can be replaced by macro.
 
 int utmpent = -1;
 time_t login_start_time;
 int showansi = 1;
-int started = 0;
 
 char GoodWish[20][STRLEN - 3];
 int WishNum = 0;
 int orderWish = 0;
 extern int enabledbchar;
 int refscreen = NA;
-int friend_login_wall();
-struct user_info *t_search();
 void msg_handler(int signum);
 
 // Handle giveupBBS(戒网) transactions.
@@ -121,87 +117,65 @@ int chk_giveupbbs(void)
 	return recover;
 }
 
-// Some initialization when user enters.
+static int load_pager(void)
+{
+	int pager = 0;
+
+	if (DEFINE(DEF_FRIENDCALL)) {
+		pager |= FRIEND_PAGER;
+	}
+	if (currentuser.flags[0] & PAGER_FLAG) {
+		pager |= ALL_PAGER;
+		pager |= FRIEND_PAGER;
+	}
+	if (DEFINE(DEF_FRIENDMSG)) {
+		pager |= FRIENDMSG_PAGER;
+	}
+	if (DEFINE(DEF_ALLMSG)) {
+		pager |= ALLMSG_PAGER;
+		pager |= FRIENDMSG_PAGER;
+	}
+	if (DEFINE(DEF_LOGOFFMSG)) {
+		pager |= LOGOFFMSG_PAGER;
+	}
+
+	return pager;
+}
+
+static void set_pager(int pager)
+{
+	// TODO: this should be in db
+	return;
+}
+
 static void u_enter(void)
 {
-	// Initialization.
-	memset(&uinfo, 0, sizeof(uinfo));
-	uinfo.active = YEA;
-	uinfo.pid = getpid();
-	uinfo.currbrdnum = 0;
 	if (!HAS_PERM(PERM_CLOAK))
 		currentuser.flags[0] &= ~CLOAK_FLAG;
 	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
-		uinfo.invisible = YEA;
-	uinfo.mode = LOGIN;
-	uinfo.pager = 0;
+		session.visible = false;
+	session.status = ST_LOGIN;
 
 	chk_giveupbbs();
 
-	uinfo.idle_time = time(NULL);
-
-	// Load user preferences.
 	if (DEFINE(DEF_DELDBLCHAR))
 		enabledbchar = 1;
 	else
 		enabledbchar = 0;
-	if (DEFINE(DEF_FRIENDCALL)) {
-		uinfo.pager |= FRIEND_PAGER;
-	}
-	if (currentuser.flags[0] & PAGER_FLAG) {
-		uinfo.pager |= ALL_PAGER;
-		uinfo.pager |= FRIEND_PAGER;
-	}
-	if (DEFINE(DEF_FRIENDMSG)) {
-		uinfo.pager |= FRIENDMSG_PAGER;
-	}
-	if (DEFINE(DEF_ALLMSG)) {
-		uinfo.pager |= ALLMSG_PAGER;
-		uinfo.pager |= FRIENDMSG_PAGER;
-	}
-	if (DEFINE(DEF_LOGOFFMSG)) {
-		uinfo.pager |= LOGOFFMSG_PAGER;
-	}
-	uinfo.uid = usernum;
-	strlcpy(uinfo.from, fromhost, sizeof(uinfo.from));
-	// Terrible..
-	if (!DEFINE(DEF_NOTHIDEIP)) {
-		uinfo.from[22] = 'H';
-	}
+
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
-	strlcpy(uinfo.userid, currentuser.userid, sizeof(uinfo.userid));
-	strlcpy(uinfo.username, currentuser.username, sizeof(uinfo.username));
-	getfriendstr();
-	getrejectstr();
-
-	// Try to get an entry in user cache.
-	int ucount = 0;
-	while (1) {
-		utmpent = getnewutmpent(&uinfo);
-		if (utmpent >= 0 || utmpent == -1)
-			break;
-		if (utmpent == -2 && ucount <= 100) {
-			ucount++;
-			struct timeval t = {0, 250000};
-			select( 0, NULL, NULL, NULL, &t); // wait 0.25s before another try
-			continue;
-		}
-		if (ucount > 100) {
-			char buf1[] = "getnewutmpent(): too much times, give up.";
-			report(buf1, currentuser.userid);
-			prints("getnewutmpent(): 失败太多次, 放弃. 请回报站长.\n");
-			sleep(3);
-			exit(0);
-		}
-	}
-	if (utmpent < 0) {
-		char buf2[STRLEN];
-		snprintf(buf2, sizeof(buf2),
-			"Fault: No utmpent slot for %s", uinfo.userid);
-		report(buf2, currentuser.userid);
-	}
-
 	digestmode = NA;
+
+	session.id = session_new(NULL, 0, session.uid, fromhost, SESSION_TELNET,
+#ifdef ENABLE_SSH
+			SESSION_SECURE
+#else
+			SESSION_PLAIN
+#endif
+			, 0);
+
+	int pager = load_pager();
+	set_pager(pager);
 }
 
 // Set 'mask'ed bit in 'currentuser.flags[0]'  according to 'value'.
@@ -218,10 +192,6 @@ static void setflags(int mask, int value)
 // Save user info on exit.
 void u_exit(void)
 {
-	time_t recent;
-	time_t stay = 0;
-	time_t now;
-
 	// 这些信号的处理要关掉, 否则在离线时等候回车时出现
 	// 信号会导致重写名单, 这个导致的名单混乱比kick user更多  (ylsdd)
 	signal(SIGHUP, SIG_DFL);
@@ -231,53 +201,18 @@ void u_exit(void)
 	signal(SIGUSR1, SIG_IGN);
 	signal(SIGUSR2, SIG_IGN);
 
-	setflags(PAGER_FLAG, (uinfo.pager & ALL_PAGER));
 	if (HAS_PERM(PERM_LOGINCLOAK))
-		setflags(CLOAK_FLAG, uinfo.invisible);
+		setflags(CLOAK_FLAG, !session.visible);
 
 	set_safe_record();
-	now = time(NULL);
-	recent = login_start_time;
-	if (currentuser.lastlogout > recent)
-		recent = currentuser.lastlogout;
-	if (currentuser.lastlogin > recent)
-		recent = currentuser.lastlogin;
-	stay = now - recent;
-	if (stay < 0)
-		stay = 0;
-	
-	currentuser.lastlogout = now;
-	currentuser.stay += stay;
+	update_user_stay(&currentuser, false, false);
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	uidshm->status[usernum - 1]--;
 
-	uinfo.invisible = YEA;
-	uinfo.sockactive = NA;
-	uinfo.sockaddr = 0;
-	uinfo.destuid = 0;
-	uinfo.pid = 0;
-	uinfo.active = NA;
-	update_ulist(&uinfo, utmpent);
+	session_destroy(session.id);
+	session.pid = 0;
 }
 
-// Bell when user receives an talk request.
-static void talk_request(int nothing)
-{
-	signal(SIGUSR1, talk_request);
-	talkrequest = YEA;
-	bell();
-	bell();
-	bell();
-	sleep(1);
-	bell();
-	bell();
-	bell();
-	bell();
-	bell();
-	return;
-}
-
-// Handle abnormal exit.
 void abort_bbs(int nothing)
 {
 	extern int child_pid;
@@ -287,12 +222,12 @@ void abort_bbs(int nothing)
 	}
 
 	// Save user's work.
-	if (uinfo.mode == POSTING || uinfo.mode == SMAIL || uinfo.mode == EDIT
-			|| uinfo.mode == EDITUFILE || uinfo.mode == EDITSFILE
-			|| uinfo.mode == EDITANN)
+	if (session.status == ST_POSTING || session.status == ST_SMAIL
+			|| session.status == ST_EDIT || session.status == ST_EDITUFILE
+			|| session.status == ST_EDITSFILE || session.status == ST_EDITANN)
 		keep_fail_post();
 
-	if (started) {
+	if (session.id) {
 		time_t stay;
 		stay = time(0) - login_start_time;
 		snprintf(genbuf, sizeof(genbuf), "Stay: %3ld", stay / 60);
@@ -304,96 +239,50 @@ void abort_bbs(int nothing)
 	exit(0);
 }
 
-// Compare 'unum' to 'urec'->uid. (uid)
-static int cmpuids2(int unum, const struct user_info *urec)
-{
-	return (unum == urec->uid);
-}
-
-/**
- * Count logins of an account.
- * @param unum User num.
- * @return The count.
- */
-static int count_user(int unum)
-{
-	int count = 0;
-	struct user_info *begin = utmpshm->uinfo, *ptr;
-	struct user_info *end = begin + sizeof(utmpshm->uinfo) / sizeof(*begin);
-	
-	for (ptr = begin; ptr != end; ++ptr) {
-		if (ptr->active && ptr->pid && ptr->uid == unum)
-			++count;
-	}
-	return count;
-}
-
-/**
- * Check whether user exceeds login quota.
- * @param[in] user The user.
- * @param[out] max Login quota.
- * @return 0 when OK. On error, return current number of logins for non-guests,
- *         ::BBS_E2MANY for guest.
- */
-static int check_duplicate_login(const struct userec *user, int *max)
-{
-	// No limit for sysops.
-	if (HAS_PERM2(PERM_MULTILOG, user))
-		return 0;
-
-	int logins = count_user(usernum);
-
-	if (strcasecmp("guest", user->userid) == 0) {
-		*max = MAXGUEST;
-		if (logins >= *max)
-			return BBS_E2MANY;
-	}
-	
-	if (!HAS_PERM2(PERM_SPECIAL0, user)) {
-		if (HAS_PERM2(PERM_BOARDS, user))
-			*max = MAX_LOGINS_BM;
-		else
-			*max = MAX_LOGINS_NORMAL;
-	} else {
-		*max = MAX_LOGINS_DIRECTOR;
-	}
-	if (logins >= *max)
-		return logins;
-
-	return 0;
-}
-
 // Prevent too many logins of same account.
 static int multi_user_check(void)
 {
-	int max;
-	int ret = check_duplicate_login(&currentuser, &max);
+	int max = get_login_quota(&currentuser);
+	if (max == INT_MAX)
+		return 0;
 
-	if (ret == BBS_E2MANY) {
+	int logins = INT_MAX;
+	basic_session_info_t *res = get_my_sessions();
+	if (res) {
+		logins = basic_session_info_count(res);
+	}
+
+	if (strcaseeq("guest", currentuser.userid) && logins >= max) {
 		prints("\033[1;33m抱歉, 目前已有太多 \033[1;36mguest\033[33m, "
 				"请稍后再试。\033[m\n");
+		basic_session_info_clear(res);
 		return -1;
 	}
 
-	if (ret > 0) {
+	if (logins >= max) {
 		prints("\033[1;32m为确保他人上站权益, "
 				"本站仅允许您用该帐号登录 %d 个。\n\033[m"
 				"\033[1;36m您目前已经使用该帐号登录了 %d 个，"
-				"您必须断开其他的连接方能进入本站！\n\033[m", max, ret);
+				"您必须断开其他的连接方能进入本站！\n\033[m", max, logins);
 		bool kick = askyn("您想删除重复的连接吗", false, false);
-		if (!kick) {
+		if (kick) {
+			bbs_kill(basic_session_info_sid(res, 0),
+					basic_session_info_pid(res, 0), SIGHUP);
+			report("kicked (multi-login)", currentuser.userid);
+			basic_session_info_clear(res);
+
+			sleep(2);
+			res = get_my_sessions();
+			logins = basic_session_info_count(res);
+		}
+
+		basic_session_info_clear(res);
+		if (logins >= max) {
 			prints("\033[33m很抱歉，您已经用该帐号登录 %d 个，"
-					"所以，此连线将被取消。\033[m\n", ret);
+					"所以，此连线将被取消。\033[m\n", logins);
 			return -1;
-		} else {
-			struct user_info uin;
-			if (search_ulist(&uin, cmpuids2, usernum)) {
-				bbskill(&uin, SIGHUP);
-				report("kicked (multi-login)", currentuser.userid);
-			}
 		}
 	}
-
 	return 0;
 }
 
@@ -408,8 +297,7 @@ static void system_init(void)
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 #ifdef DOTIMEOUT
-	init_alarm();
-	uinfo.mode = LOGIN;
+	session.status = ST_LOGIN;
 	alarm(LOGIN_TIMEOUT);
 #else
 	signal(SIGALRM, SIG_SIG);
@@ -419,7 +307,6 @@ static void system_init(void)
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGTTIN, SIG_IGN);
 #endif
-	signal(SIGUSR1, talk_request);
 
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = SA_NODEFER;
@@ -437,7 +324,7 @@ static void system_init(void)
 
 static void system_abort(void)
 {
-	if (started) {
+	if (session.id) {
 		log_usies("ABORT", "", &currentuser);
 		u_exit();
 	}
@@ -447,19 +334,7 @@ static void system_abort(void)
 	exit(0);
 }
 
-// Log login attempts.
-static void logattempt(char *uid, char *frm)
-{
-	char fname[STRLEN];
-
-	snprintf(genbuf, sizeof(genbuf), "%-12.12s  %-30s %s\n", uid,
-			getdatestring(time(NULL), DATE_ZH), frm);
-	file_append(BADLOGINFILE, genbuf);
-	sethomefile(fname, uid, BADLOGINFILE);
-	file_append(fname, genbuf);
-}
-
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 // Get height of client window.
 // See RFC 1073 "Telnet Window Size Option"
 static void check_tty_lines(void)
@@ -498,7 +373,7 @@ static void check_tty_lines(void)
 		t_lines = 24;
 	return;
 }
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 struct max_log_record {
 	int year;
@@ -509,7 +384,7 @@ struct max_log_record {
 };
 
 // Show visit count and save it.
-static void visitlog(void)
+static void visitlog(int peak)
 {
 	time_t now;
 	struct tm *tm;
@@ -530,10 +405,8 @@ static void visitlog(void)
 		}
 		else {
 			max_log.visit++;
-			if (max_log.logins > utmpshm->max_login_num)
-				utmpshm->max_login_num = max_log.logins;
-			else
-				max_log.logins = utmpshm->max_login_num;
+			if (peak > max_log.logins)
+				max_log.logins = peak;
 		}
 		fseek(fp, 0, SEEK_SET);
 		fwrite(&max_log, sizeof(max_log), 1, fp);
@@ -557,19 +430,20 @@ enum {
 /**
  *
  */
-int bbs_auth(const char *user, const char *passwd)
+int bbs_auth(const char *name, const char *passwd)
 {
-	resolve_utmp();
-	if (!user || *user == '\0')
+	if (!name || *name == '\0')
 		return BBS_ENOUSR;
+
 	if (currentuser.userid[0] == '\0') {
 		if (count_online() > MAXACTIVE)
 			return BBS_E2MANY;
-		if (!dosearchuser(user, &currentuser, &usernum))
+		if (!dosearchuser(name, &currentuser, &usernum))
 			return BBS_ENOUSR;
 	}
-	if (!checkpasswd(currentuser.passwd, passwd)) {
-		logattempt(currentuser.userid, fromhost);
+
+	if (!passwd_check(currentuser.userid, passwd)) {
+		log_attempt(currentuser.userid, fromhost, "telnet");
 		return BBS_EWPSWD;
 	}
 	if (strcasecmp(currentuser.userid, "guest") && !HAS_PERM(PERM_LOGIN)) {
@@ -588,49 +462,51 @@ int bbs_auth(const char *user, const char *passwd)
 		return BBS_ELFREQ;
 	}
 #endif
+
+	session.uid = get_user_id(name);
+
 	return 0;
 }
 
 static int login_query(void)
 {
-#ifndef SSHBBS
-	char uid[IDLEN + 2];
+#ifndef ENABLE_SSH
+	char uname[IDLEN + 2];
 	char passbuf[PASSLEN];
 	int attempts;
 	char *ptr;
 	int recover; // For giveupBBS
 	bool auth = false;
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
-	// Deny new logins if too many users (>=MAXACTIVE) online.
-	resolve_utmp();
-	int curr_login_num = count_online();
-#ifndef SSHBBS
-	if (curr_login_num >= MAXACTIVE) {
+	// Deny new logins if too many users online.
+	int online = count_online();
+#ifndef ENABLE_SSH
+	if (online >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
 		return -1;
 	}
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 	if (fill_shmfile(1, "etc/issue", "ISSUE_SHMKEY")) {
 		show_issue();
 	}
 	prints("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
-			BoardName);
+			BBSNAME);
 
-	utmpshm->total_num = curr_login_num;
-	if (utmpshm->max_login_num < utmpshm->total_num)
-		utmpshm->max_login_num = utmpshm->total_num;
-	if (utmpshm->usersum <= 0)
-		utmpshm->usersum = allusers();
+	int peak = get_peak_online();
+	if (peak < online) {
+		update_peak_online(online);
+		peak = online;
+	}
 
 	prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
 			"\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
-			utmpshm->usersum, MAXUSERS, utmpshm->total_num, MAXACTIVE);
-	visitlog();
+			get_user_count(), MAXUSERS, online, MAXACTIVE);
+	visitlog(peak);
 
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 	attempts = 0;
 	while (!auth) {
 		if (attempts++ >= LOGINATTEMPTS) {
@@ -640,34 +516,28 @@ static int login_query(void)
 		getdata(0, 0, "\033[1;33m请输入帐号\033[m"
 				"(试用请输入'\033[1;36mguest\033[m', "
 				"注册请输入'\033[1;31mnew\033[m'): ",
-				uid, IDLEN + 1, DOECHO, YEA);
+				uname, IDLEN + 1, DOECHO, YEA);
 #ifdef ALLOWSWITCHCODE
-		ptr = strchr(uid, '.');
+		ptr = strchr(uname, '.');
 		if (ptr) {
 			convcode = 1;
 			*ptr = '\0';
 		}
 #endif
-		if ((strcasecmp(uid, "guest") == 0)
-				&& (MAXACTIVE - curr_login_num < 10)) {
-				ansimore("etc/loginfull", NA);
+		if (strcaseeq(uname, "guest") && (online > MAXACTIVE - 10)) {
+			ansimore("etc/loginfull", NA);
 			return -1;
 		}
-		if (strcasecmp(uid, "new") == 0) {
-#ifdef LOGINASNEW
+		if (strcaseeq(uname, "new")) {
 			memset(&currentuser, 0, sizeof(currentuser));
 			new_register();
 			oflush();
 			exit(1);
-#else
-			prints("\033[1;37m本系统目前无法以 \033[36mnew\033[37m 注册, "
-				"请用\033[36m guest\033[37m 进入...\033[m\n");
-#endif
-		} else if (*uid == '\0')
+		} else if (*uname == '\0')
 			;
-		else if (!dosearchuser(uid, &currentuser, &usernum)) {
+		else if (!dosearchuser(uname, &currentuser, &usernum)) {
 			prints("\033[1;31m经查证，无此 ID。\033[m\n");
-		} else if (strcasecmp(uid, "guest") == 0) {
+		} else if (strcaseeq(uname, "guest")) {
 			currentuser.userlevel = 0;
 			break;
 		} else {
@@ -678,9 +548,8 @@ static int login_query(void)
 			getdata(0, 0, "\033[1;37m请输入密码: \033[m", passbuf, PASSLEN,
 					NOECHO, YEA);
 			passbuf[8] = '\0';
-			switch (bbs_auth(currentuser.userid, passbuf)) {
+			switch (bbs_auth(uname, passbuf)) {
 				case BBS_EWPSWD:
-					logattempt(currentuser.userid, fromhost);
 					prints("\033[1;31m密码输入错误...\033[m\n");
 					break;
 				case BBS_EGIVEUP:
@@ -698,24 +567,27 @@ static int login_query(void)
 				case BBS_ELFREQ:
 					prints("登录过于频繁，请稍候再来\n");
 					return -1;
-				default:
+				case 0:
 					auth = true;
+					break;
+				default:
+					auth = false;
 					break;
 			}
 			memset(passbuf, 0, PASSLEN - 1);
 		}
 	}
-#else // SSHBBS
+#else // ENABLE_SSH
 	presskeyfor("\033[1;33m欢迎使用ssh方式访问本站，请按任意键继续", t_lines - 1);
-#endif // SSHBBS
+#endif // ENABLE_SSH
 
 	if (multi_user_check() == -1)
 		return -1;
 
 	dumb_term = false;
-#ifndef SSHBBS
+#ifndef ENABLE_SSH
 	check_tty_lines();
-#endif // SSHBBS
+#endif // ENABLE_SSH
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);
@@ -806,15 +678,6 @@ static void user_login(void)
 
 	u_enter();
 	report("Enter", currentuser.userid);
-	started = 1;
-
-	int max;
-	int ret = check_duplicate_login(&currentuser, &max);
-	// The process just created should be excluded.
-	if (ret > 0 && ret > max) {
-		report("kicked (multi-login)[漏网之鱼]", currentuser.userid);
-		abort_bbs(0);
-	}
 
 	initscr();
 #ifdef USE_NOTEPAD
@@ -855,7 +718,7 @@ static void user_login(void)
 			//show_welcomeshm();
 		ansimore("Welcome2", YEA);
 	}
-	show_statshm("etc/posts/day", 1);
+	show_statshm("0Announce/bbslist/day", 1);
 	refresh();
 	move(t_lines - 2, 0);
 	clrtoeol();
@@ -878,29 +741,17 @@ static void user_login(void)
 	}
 
 	set_safe_record();
-	check_uinfo(&currentuser, 0);
+	tui_check_uinfo(&currentuser);
 	strlcpy(currentuser.lasthost, fromhost, sizeof(currentuser.lasthost));
-	{
-		time_t stay, recent;
-
-		if (count_user(usernum) > 1) {
-			recent = currentuser.lastlogout;
-			if (currentuser.lastlogin > recent)
-				recent = currentuser.lastlogin;
-			stay = login_start_time - recent;
-			if (stay < 0)
-				stay = 0;
-		} else
-			stay = 0;
-
-		if (login_start_time - currentuser.lastlogin >= 20 * 60
-				|| !strcmp(currentuser.userid, "guest")
-				|| currentuser.numlogins < 100){
-			currentuser.numlogins++;
-		}
-		currentuser.lastlogin = login_start_time;
-		currentuser.stay += stay;
+	if (login_start_time - currentuser.lastlogin >= 20 * 60
+			|| !strcmp(currentuser.userid, "guest")
+			|| currentuser.numlogins < 100) {
+		currentuser.numlogins++;
 	}
+
+	basic_session_info_t *res = get_my_sessions();
+	update_user_stay(&currentuser, true, basic_session_info_count(res) > 1);
+	basic_session_info_clear(res);
 
 #ifdef ALLOWGAME
 	if (currentuser.money> 1000000) {
@@ -1023,13 +874,68 @@ void tlog_recover(void)
 }
 #endif
 
-#endif // 0
-
 void start_client(void)
 {
-	telconn_t tc;
-	telnet_init(&tc, STDIN_FILENO);
+	extern char currmaildir[];
 
-	screen_init(&tc, tc.lines, tc.cols);
+#ifndef ENABLE_SSH
+	initialize_db();
+#endif
+	initialize_mdb();
 
+	initialize_convert_env();
+#ifdef ALLOWSWITCHCODE
+	if (resolve_gbkbig5_table() < 0)
+		exit(1);
+#endif
+	system_init();
+
+	if (setjmp(byebye)) {
+		system_abort();
+	}
+
+	strlcpy(BoardName, BBSNAME, sizeof(BoardName));
+
+	if (login_query() == -1) {
+		oflush();
+		sleep(3);
+		exit(1);
+	}
+	user_login();
+
+	setmdir(currmaildir, currentuser.userid);
+	RMSG = NA;
+	clear();
+	c_recover();
+#ifdef TALK_LOG
+	tlog_recover();
+#endif
+
+	if (strcmp(currentuser.userid, "guest")) {
+		if (check_maxmail())
+			pressanykey();
+		move(9, 0);
+		clrtobot();
+		if (!DEFINE(DEF_NOLOGINSEND))
+			if (session.visible)
+				login_msg();
+		clear();
+		set_numofsig();
+	}
+
+	ActiveBoard_Init();
+	fill_date();
+
+	if (DEFINE(DEF_LOGFRIEND)
+			&& online_follows_count(!HAS_PERM(PERM_SEECLOAK)) > 0)
+		show_online_followings();
+
+	sysconf_load(false);
+	while (1) {
+		if (DEFINE(DEF_NORMALSCR))
+			domenu("TOPMENU");
+		else
+			domenu("TOPMENU2");
+		Goodbye();
+	}
 }

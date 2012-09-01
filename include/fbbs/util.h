@@ -1,22 +1,47 @@
 #ifndef FB_UTIL_H
 #define FB_UTIL_H
 
-#include <stdint.h>
-#include <stddef.h>
+#include "config.h"
+
+#ifdef HAVE_ENDIAN_H
+#include <endian.h>
+#else
+#include <sys/endian.h>
+#endif
 #include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#define elems(x)  (sizeof(x) / sizeof(x[0]))
+#ifdef HAVE_ENDIAN_H
+# ifndef be64toh
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#   include <byteswap.h>
+#   define be64toh(x) bswap_64(x)
+#  else
+#   define be64toh(x) (x)
+#  endif
+# endif
 
-typedef int64_t fb_time_t;
-#define PRIdFBT PRId64
+# ifndef htobe64
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#   include <byteswap.h>
+#   define htobe64(x) bswap_64(x)
+#  else
+#   define htobe64(x) (x)
+#  endif
+# endif
+#endif // HAVE_ENDIAN_H
+#define NELEMS(x)  (sizeof(x) / sizeof(x[0]))
+
+#define FB_ULONG_MAX  UINT64_MAX
+#define FB_UINT_MAX   UINT32_MAX
+#define FB_USHORT_MAX UINT16_MAX
+#define FB_UCHAR_MAX  UINT8_MAX
 
 typedef uint64_t ulong_t;
 typedef uint32_t uint_t;
 typedef uint16_t ushort_t;
 typedef uint8_t uchar_t;
-
-typedef uint32_t seq_t;
-typedef uint32_t varchar_t;
 
 typedef void (*sighandler_t)(int);
 
@@ -25,5 +50,8 @@ extern void start_daemon(void);
 extern sighandler_t fb_signal(int signum, sighandler_t handler);
 
 extern void *fb_malloc(size_t size);
+
+extern int read_urandom(void *buf, size_t size);
+extern int urandom_pos_int(void);
 
 #endif // FB_UTIL_H
