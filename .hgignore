@@ -1,25 +1,5 @@
 syntax: glob
 
-Makefile
-
-CMakeFiles
-CMakeCache.txt
-cmake_install.cmake
-install_manifest.txt
-
 tags
-
-*.so
-
-lib/Makefile
-lib/.deps
-lib/libfbbs.a
-lib/*.o
-
-src/Makefile
-src/.deps
-src/bbsd
-src/cached
-src/*.o
-
-www/fbwebd
+cscope*.out
+build/*
