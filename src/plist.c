@@ -223,6 +223,7 @@ static void load_sticky_posts(post_list_t *l)
 		db_clear(r);
 	}
 
+	l->sreload = false;
 	return;
 }
 
