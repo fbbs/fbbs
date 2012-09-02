@@ -39,18 +39,27 @@ typedef struct {
 } post_info_t;
 
 typedef struct {
-	post_info_t *sposts;
-	post_info_t *posts;
-	int scount;
-	int count;
-	int start;
-	int last_query_rows;
-	post_list_type_e type;
 	int bid;
-	bool reload;
+	post_list_type_e type;
 	post_id_t pid;
 	user_id_t uid;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+} post_list_filter_t;
+
+typedef struct {
+	post_list_filter_t filter;
+
+	bool relocate;
+	bool reload;
+	bool sreload;
+	int last_query_rows;
+
+	post_info_t **index;
+	post_info_t *posts;
+	post_info_t *sposts;
+	int icount;
+	int count;
+	int scount;
 } post_list_t;
 
 static void set_flag(post_info_t *ip, post_flag_e flag, bool set)
@@ -114,15 +123,15 @@ static const char *post_filter(post_list_type_e type)
 	}
 }
 
-static int build_query(char *query, size_t size, int bid,
+static int build_query(char *query, size_t size,
 		post_list_type_e type, bool asc, int limit)
 {
 	char table[16];
 	post_table_name(table, sizeof(table), type);
 
 	return snprintf(query, size, "SELECT " POST_LIST_FIELDS
-			" FROM %s WHERE board = %d AND id %c %%"DBIdPID" AND %s"
-			" ORDER BY id %s LIMIT %d", table, bid, asc ? '>' : '<',
+			" FROM %s WHERE board = %%d AND id %c %%"DBIdPID" AND %s"
+			" ORDER BY id %s LIMIT %d", table, asc ? '>' : '<',
 			post_filter(type), asc ? "ASC" : "DESC", limit);
 }
 
@@ -140,24 +149,23 @@ static post_id_t pid_base(post_list_t *l, slide_list_base_e base)
 			return POST_ID_MAX;
 		default:
 			if (!l->posts || !l->count)
-				return l->pid;
+				return l->filter.pid;
 			if (l->reload || !is_asc(base))
-				return l->posts[l->start].id;
+				return l->index[0]->id;
 			else
 				return l->posts[l->count - 1].id;
 	}
 }
 
-static db_res_t *exec_query(const char *query, post_list_type_e type,
-		post_id_t pid, user_id_t uid, const char *keyword)
+static db_res_t *exec_query(const char *query, post_list_filter_t *f)
 {
-	switch (type) {
+	switch (f->type) {
 		case POST_LIST_AUTHOR:
-			return db_query(query, pid, uid);
+			return db_query(query, f->bid, f->pid, f->uid);
 		case POST_LIST_KEYWORD:
-			return db_query(query, pid, keyword);
+			return db_query(query, f->bid, f->pid, f->utf8_keyword);
 		default:
-			return db_query(query, pid);
+			return db_query(query, f->bid, f->pid);
 	}
 }
 
@@ -198,8 +206,14 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
+	if (!l->sposts)
+		l->sposts = malloc(sizeof(*l->sposts) * MAX_NOTICE);
+	else
+		if (!l->sreload)
+			return;
+
 	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts"
-			" WHERE board = %d AND sticky ORDER BY id DESC", l->bid);
+			" WHERE board = %d AND sticky ORDER BY id DESC", l->filter.bid);
 	if (r) {
 		l->scount = db_res_rows(r);
 		for (int i = 0; i < l->scount; ++i) {
@@ -212,6 +226,31 @@ static void load_sticky_posts(post_list_t *l)
 	return;
 }
 
+static void index_posts(post_list_t *l, int limit, slide_list_base_e base)
+{
+	if (base != SLIDE_LIST_CURRENT) {
+		int remain = limit, start = 0;
+		if (base == SLIDE_LIST_BOTTOMUP)
+			start = l->scount;
+		if (base == SLIDE_LIST_NEXT)
+			start = l->count - l->last_query_rows;
+		if (start < 0)
+			start = 0;
+
+		l->icount = 0;
+		for (int i = start; i < l->count && i < limit; ++i) {
+			l->index[l->icount++] = l->posts + i;
+			--remain;
+		}
+
+		if (l->sposts) {
+			for (int i = 0; i < remain && i < l->scount; ++i) {
+				l->index[l->icount++] = l->sposts + i;
+			}
+		}
+	}
+}
+
 static slide_list_loader_t post_list_loader(slide_list_t *p)
 {
 	post_list_t *l = p->data;
@@ -222,19 +261,20 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		return 0;
 
 	int page = t_lines - 4;
-	if (!l->posts) {
-		l->posts = malloc(sizeof(*l->posts) * (page + MAX_NOTICE));
-		l->sposts = l->posts + page;
-		l->count = l->scount = 0;
+	if (!l->index) {
+		l->index = malloc(sizeof(*l->index) * page);
+		l->posts = malloc(sizeof(*l->posts) * page);
+		l->sposts = NULL;
+		l->icount = l->count = l->scount = 0;
 	}
 
 	bool asc = is_asc(p->base);
-	post_id_t pid = pid_base(l, p->base);
+	l->filter.pid = pid_base(l, p->base);
 
 	char query[512];
-	build_query(query, sizeof(query), l->bid, l->type, asc, page);
+	build_query(query, sizeof(query), l->filter.type, asc, page);
 
-	db_res_t *res = exec_query(query, l->type, pid, l->uid, l->utf8_keyword);
+	db_res_t *res = exec_query(query, &l->filter);
 	res_to_array(res, l, p->base, page);
 	l->last_query_rows = db_res_rows(res);
 
@@ -251,6 +291,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		p->cur = p->base == SLIDE_LIST_PREV ? 0 : page - 1;
 	}
 
+	index_posts(l, page, p->base);
 	l->reload = false;
 	return 0;
 }
@@ -270,29 +311,8 @@ static void post_list_display_entry(post_info_t *p)
 static slide_list_display_t post_list_display(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	if (!l->posts)
-		return 0;
-
-	int remain = t_lines - 4, limit = remain;
-	if (p->base != SLIDE_LIST_CURRENT) {
-		l->start = 0;
-		if (p->base == SLIDE_LIST_BOTTOMUP)
-			l->start = l->scount;
-		if (p->base == SLIDE_LIST_NEXT)
-			l->start = l->count - l->last_query_rows;
-		if (l->start < 0)
-			l->start = 0;
-	}
-
-	for (int i = l->start; i < limit; ++i) {
-		post_list_display_entry(l->posts + i);
-		--remain;
-	}
-
-	if (!l->sposts)
-		return 0;
-	for (int i = 0; i < remain && i < l->scount; ++i) {
-		post_list_display_entry(l->sposts + i);
+	for (int i = 0; i < l->icount; ++i) {
+		post_list_display_entry(l->index[i]);
 	}
 	return 0;
 }
@@ -313,7 +333,7 @@ static int toggle_post_stickiness(int bid, post_info_t *ip, post_list_t *l)
 {
 	bool sticky = ip->flag & POST_FLAG_STICKY;
 	if (am_curr_bm() && sticky_post_unchecked(bid, ip->id, !sticky)) {
-		l->reload = true;
+		l->sreload = l->reload = true;
 		return PARTUPDATE;
 	}
 	return DONOTHING;
@@ -337,21 +357,21 @@ extern int show_online(void);
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 {
 	post_list_t *l = p->data;
-	post_info_t *ip = p->cur + l->start >= l->count
-			? l->sposts + p->cur + l->start - l->count
-			: l->posts + + l->start + p->cur;
+	post_info_t *ip = l->index[p->cur];
 
 	switch (ch) {
 		case '_':
-			return toggle_post_lock(l->bid, ip);
+			return toggle_post_lock(l->filter.bid, ip);
 		case '@':
 			return show_online();
 		case '#':
-			return toggle_post_stickiness(l->bid, ip, l);
+			return toggle_post_stickiness(l->filter.bid, ip, l);
 		case 'm':
-			return toggle_post_flag(l->bid, ip, POST_FLAG_MARKED, "marked");
+			return toggle_post_flag(l->filter.bid, ip,
+					POST_FLAG_MARKED, "marked");
 		case 'g':
-			return toggle_post_flag(l->bid, ip, POST_FLAG_DIGEST, "digest");
+			return toggle_post_flag(l->filter.bid, ip,
+					POST_FLAG_DIGEST, "digest");
 		default:
 			return DONOTHING;
 	}
@@ -361,11 +381,13 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 		slide_list_base_e base, user_id_t uid, const char *keyword)
 {
 	post_list_t p = {
-		.sposts = NULL, .scount = 0, .posts = NULL, .count = 0,
-		.type = type, .bid = bid, .pid = pid, .uid = uid, .reload = false,
+		.filter = { .bid = bid, .type = type, .pid = pid, .uid = uid },
+		.relocate = true, .reload = false, .last_query_rows = 0,
+		.index = NULL, .posts = NULL, .sposts = NULL,
+		.icount = 0, .count = 0, .scount = 0, .sreload = false,
 	};
 	if (keyword)
-		strlcpy(p.utf8_keyword, keyword, sizeof(p.utf8_keyword));
+		strlcpy(p.filter.utf8_keyword, keyword, sizeof(p.filter.utf8_keyword));
 
 	slide_list_t s = {
 		.base = base,
