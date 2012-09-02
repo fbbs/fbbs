@@ -206,6 +206,9 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
+	if (l->filter.type != POST_LIST_NORMAL)
+		return;
+
 	if (!l->sposts)
 		l->sposts = malloc(sizeof(*l->sposts) * MAX_NOTICE);
 	else
@@ -353,6 +356,25 @@ static int toggle_post_flag(int bid, post_info_t *ip, post_flag_e flag,
 	return DONOTHING;
 }
 
+static int post_list(int bid, post_list_type_e type, post_id_t pid,
+		slide_list_base_e base, user_id_t uid, const char *keyword);
+
+static int post_list_deleted(int bid, post_list_type_e type)
+{
+	if (type != POST_LIST_NORMAL || !am_curr_bm())
+		return DONOTHING;
+	post_list(bid, POST_LIST_TRASH, 0, SLIDE_LIST_BOTTOMUP, 0, NULL);
+	return FULLUPDATE;
+}
+
+static int post_list_admin_deleted(int bid, post_list_type_e type)
+{
+	if (type != POST_LIST_NORMAL || !HAS_PERM(PERM_OBOARDS))
+		return DONOTHING;
+	post_list(bid, POST_LIST_JUNK, 0, SLIDE_LIST_BOTTOMUP, 0, NULL);
+	return FULLUPDATE;
+}
+
 extern int show_online(void);
 
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
@@ -373,6 +395,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'g':
 			return toggle_post_flag(l->filter.bid, ip,
 					POST_FLAG_DIGEST, "digest");
+		case '.':
+			return post_list_deleted(l->filter.bid, l->filter.type);
+		case 'J':
+			return post_list_admin_deleted(l->filter.bid, l->filter.type);
 		default:
 			return DONOTHING;
 	}
@@ -393,6 +419,7 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 	slide_list_t s = {
 		.base = base,
 		.data = &p,
+		.update = FULLUPDATE,
 		.loader = post_list_loader,
 		.title = post_list_title,
 		.display = post_list_display,
