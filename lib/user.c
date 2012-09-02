@@ -77,7 +77,7 @@ int get_user_count(void)
 	int count = 0;
 	db_res_t *res = db_query("SELECT count(*) FROM alive_users");
 	if (res && db_res_rows(res) > 0)
-		count = db_get_integer(res, 0, 0);
+		count = db_get_bigint(res, 0, 0);
 	db_clear(res);
 
 	mdb_res_t *r = mdb_cmd("SET", USER_COUNT_CACHE_KEY" %d", count);
