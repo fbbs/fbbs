@@ -343,10 +343,33 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 	}
 }
 
-bool lock_post_unchecked(int bid, post_id_t pid, bool lock)
+bool set_post_flag_unchecked(int bid, post_id_t pid, const char *field,
+		bool on)
 {
-	db_res_t *res = db_cmd("UPDATE posts SET locked = %b WHERE board = %d"
-			" AND id = %"DBIdPID, lock, bid, pid);
+	char query[80];
+	snprintf(query, sizeof(query), "UPDATE posts SET %s = %%b"
+			" WHERE board = %%d AND id = %%"DBIdPID, field);
+	db_res_t *res = db_cmd(query, on, bid, pid);
+	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
-	return res;
+	return rows;
+}
+
+int count_sticky_posts(int bid)
+{
+	db_res_t *r = db_query("SELECT count(*) FROM posts"
+			" WHERE board = %d AND sticky", bid);
+	int rows = r ? db_get_bigint(r, 0, 0) : 0;
+	db_clear(r);
+	return rows;
+}
+
+bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
+{
+	if (sticky) {
+		int count = count_sticky_posts(bid);
+		if (count >= MAX_NOTICE)
+			return false;
+	}
+	return set_post_flag_unchecked(bid, pid, "sticky", sticky);
 }

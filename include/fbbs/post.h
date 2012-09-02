@@ -14,13 +14,15 @@ typedef int64_t post_id_t;
 #define POST_ID_MAX  INT64_MAX
 #define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
 
-enum {
+typedef enum {
 	POST_FLAG_DIGEST = 0x1,
 	POST_FLAG_MARKED = 0x2,
 	POST_FLAG_LOCKED = 0x4,
 	POST_FLAG_IMPORT = 0x8,
 	POST_FLAG_STICKY = 0x10,
+} post_flag_e;
 
+enum {
 	POST_TITLE_CCHARS = 33,
 };
 
@@ -57,7 +59,8 @@ extern void quote_string(const char *str, size_t size, const char *output,
 extern void quote_file_(const char *orig, const char *output, int mode,
 		bool mail, size_t (*filter)(const char *, size_t, FILE *));
 
-extern bool lock_post_unchecked(int bid, post_id_t pid, bool lock);
+extern bool set_post_flag_unchecked(int bid, post_id_t pid, const char *field, bool on);
+extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 
 #endif // FB_POST_H
 

@@ -47,12 +47,13 @@ typedef struct {
 	int last_query_rows;
 	post_list_type_e type;
 	int bid;
+	bool reload;
 	post_id_t pid;
 	user_id_t uid;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_list_t;
 
-static void set_flag(post_info_t *ip, int flag, bool set)
+static void set_flag(post_info_t *ip, post_flag_e flag, bool set)
 {
 	if (set)
 		ip->flag |= flag;
@@ -140,10 +141,10 @@ static post_id_t pid_base(post_list_t *l, slide_list_base_e base)
 		default:
 			if (!l->posts || !l->count)
 				return l->pid;
-			if (is_asc(base))
-				return l->posts[l->count - 1].id;
-			else
+			if (l->reload || !is_asc(base))
 				return l->posts[l->start].id;
+			else
+				return l->posts[l->count - 1].id;
 	}
 }
 
@@ -214,6 +215,9 @@ static void load_sticky_posts(post_list_t *l)
 static slide_list_loader_t post_list_loader(slide_list_t *p)
 {
 	post_list_t *l = p->data;
+
+	if (l->reload)
+		p->base = SLIDE_LIST_NEXT;
 	if (p->base == SLIDE_LIST_CURRENT)
 		return 0;
 
@@ -246,6 +250,8 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	} else {
 		p->cur = p->base == SLIDE_LIST_PREV ? 0 : page - 1;
 	}
+
+	l->reload = false;
 	return 0;
 }
 
@@ -295,13 +301,38 @@ static int toggle_post_lock(int bid, post_info_t *ip)
 {
 	bool locked = ip->flag & POST_FLAG_LOCKED;
 	if (am_curr_bm() || (session.id == ip->uid && !locked)) {
-		if (lock_post_unchecked(bid, ip->id, !locked)) {
+		if (set_post_flag_unchecked(bid, ip->id, "locked", !locked)) {
 			set_flag(ip, POST_FLAG_LOCKED, !locked);
 			return PARTUPDATE;
 		}
 	}
 	return DONOTHING;
 }
+
+static int toggle_post_stickiness(int bid, post_info_t *ip, post_list_t *l)
+{
+	bool sticky = ip->flag & POST_FLAG_STICKY;
+	if (am_curr_bm() && sticky_post_unchecked(bid, ip->id, !sticky)) {
+		l->reload = true;
+		return PARTUPDATE;
+	}
+	return DONOTHING;
+}
+
+static int toggle_post_flag(int bid, post_info_t *ip, post_flag_e flag,
+		const char *field)
+{
+	bool set = ip->flag & flag;
+	if (am_curr_bm()) {
+		if (set_post_flag_unchecked(bid, ip->id, field, !set)) {
+			set_flag(ip, flag, !set);
+			return PARTUPDATE;
+		}
+	}
+	return DONOTHING;
+}
+
+extern int show_online(void);
 
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 {
@@ -313,6 +344,14 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	switch (ch) {
 		case '_':
 			return toggle_post_lock(l->bid, ip);
+		case '@':
+			return show_online();
+		case '#':
+			return toggle_post_stickiness(l->bid, ip, l);
+		case 'm':
+			return toggle_post_flag(l->bid, ip, POST_FLAG_MARKED, "marked");
+		case 'g':
+			return toggle_post_flag(l->bid, ip, POST_FLAG_DIGEST, "digest");
 		default:
 			return DONOTHING;
 	}
@@ -323,7 +362,7 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 {
 	post_list_t p = {
 		.sposts = NULL, .scount = 0, .posts = NULL, .count = 0,
-		.type = type, .bid = bid, .pid = pid, .uid = uid,
+		.type = type, .bid = bid, .pid = pid, .uid = uid, .reload = false,
 	};
 	if (keyword)
 		strlcpy(p.utf8_keyword, keyword, sizeof(p.utf8_keyword));
