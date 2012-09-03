@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "fbbs/board.h"
+#include "fbbs/brc.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/web.h"
 

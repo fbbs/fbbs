@@ -1,4 +1,5 @@
 #include "libweb.h"
+#include "fbbs/brc.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"

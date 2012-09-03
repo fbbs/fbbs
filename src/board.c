@@ -2,6 +2,7 @@
 #include "record.h"
 #include "fbbs/autocomplete.h"
 #include "fbbs/board.h"
+#include "fbbs/brc.h"
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
@@ -285,7 +286,7 @@ static bool check_newpost(board_t *board)
 	if (!brc_initial(currentuser.userid, board->name)) {
 		return true;
 	} else {
-		if (brc_unread1((brdshm->bstatus[board->id]).lastpost)) {
+		if (brc_unread((brdshm->bstatus[board->id]).lastpost)) {
 			return true;
 		}
 	}
@@ -513,13 +514,13 @@ static int unread_position(board_t *bp)
 	if (!brc_initial(currentuser.userid, bp->name))
 		return 0;
 
-	if (brc_unread1((brdshm->bstatus[bp->id]).lastpost)) {
+	if (brc_unread((brdshm->bstatus[bp->id]).lastpost)) {
 		char filename[STRLEN];
 		num = total - 1;
 		int step = 4;
 		while (num > 0) {
 			lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
-			if (read (fd, filename, STRLEN) <= 0 || !brc_unread (filename))
+			if (read (fd, filename, STRLEN) <= 0 || !brc_unread_legacy(filename))
 				break;
 			num -= step;
 			if (step < 32)
@@ -529,7 +530,7 @@ static int unread_position(board_t *bp)
 			num = 0;
 		while (num < total) {
 			lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
-			if (read (fd, filename, STRLEN) <= 0 || brc_unread (filename))
+			if (read (fd, filename, STRLEN) <= 0 || brc_unread_legacy(filename))
 				break;
 			num++;
 		}

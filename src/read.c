@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "record.h"
 #include "fbbs/board.h"
+#include "fbbs/brc.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"
@@ -1423,7 +1424,7 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 		if (aflag != SEARCH_CONTENT && offset < 0 && oldent > 0
 				&& ent >= oldent)
 			break;
-		if (newflag && !brc_unread(SR_fptr.filename))
+		if (newflag && !brc_unread_legacy(SR_fptr.filename))
 			continue;
 
 		if (aflag == SEARCH_CONTENT) {

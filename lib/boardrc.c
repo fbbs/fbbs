@@ -149,37 +149,27 @@ void brc_addlist(const char *filename)
 	}
 }
 
-int brc_unread(const char *filename)
+bool brc_unread(int64_t id)
 {
-	int ftime, n;
-	ftime = atoi (&filename[2]);
-	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.') {
-		return 0;
-	}
+	int r = (int)id;
+
 	if (brc_num <= 0)
-	return 1;
-	for (n = 0; n < brc_num; n++) {
-		if (ftime> brc_list[n]) {
-			return 1;
-		} else if (ftime == brc_list[n]) {
-			return 0;
-		}
+		return true;
+
+	for (int i = 0; i < brc_num; ++i) {
+		if (r > brc_list[i])
+			return true;
+		else if (r == brc_list[i])
+			return false;
 	}
-	return 0;
+	return false;
 }
 
-int brc_unread1(int ftime) {
-	int n;
-	if (brc_num <= 0)
-		return 1;
-	for (n = 0; n < brc_num; n++) {
-		if (ftime > brc_list[n]) {
-			return 1;
-		} else if (ftime == brc_list[n]) {
-			return 0;
-		}
-	}
-	return 0;
+bool brc_unread_legacy(const char *filename)
+{
+	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.')
+		return false;
+	return brc_unread(strtol(filename + 2, NULL, 10));
 }
 
 int brc_clear(int ent, const char *direct, int clearall)
@@ -225,7 +215,7 @@ bool brc_board_unread(const char *user, const char *bname, int bid)
 	if (!brc_initial(currentuser.userid, bname)) {
 		return true;
 	} else {
-		if (brc_unread1((brdshm->bstatus[bid]).lastpost))
+		if (brc_unread((brdshm->bstatus[bid]).lastpost))
 			return true;
 		return false;
 	}

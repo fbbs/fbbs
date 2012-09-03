@@ -2,6 +2,7 @@
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/board.h"
+#include "fbbs/brc.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/string.h"

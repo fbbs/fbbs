@@ -10,6 +10,7 @@
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/board.h"
+#include "fbbs/brc.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"
@@ -598,7 +599,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 #ifdef COLOR_POST_DATE
 	struct tm *mytm;
 #endif
-	type = brc_unread(ent->filename) ?
+	type = brc_unread_legacy(ent->filename) ?
 		(!DEFINE(DEF_NOT_N_MASK) ? 'N' : '+') : ' ';
 	if ((ent->accessed[0] & FILE_DIGEST)) {
 		if (type == ' ')
@@ -744,15 +745,6 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 	char buf[512];
 	int ch = 0;
 
-	//int     cou;
-
-	/*
-	 if(brc_unread(fileinfo->filename))
-	 {
-	 fileinfo->visit_num++;
-	 substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
-	 }
-	 */
 	if (digestmode == ATTACH_MODE) {
 		struct stat filestat;
 		int i, len;
@@ -1393,7 +1385,7 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct)
 		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%d&f=%u%s\n",
 				BBSHOST, currbp->id, fileinfo->id,
 				fileinfo->accessed[1] & FILE_NOTICE ? "&s=1" : "");
-		unread = brc_unread(fileinfo->filename);
+		unread = brc_unread_legacy(fileinfo->filename);
 		if (fileinfo->accessed[0] & FILE_DIGEST) {
 			if (fileinfo->accessed[0] & FILE_MARKED)
 				strcpy(type, "Bнд");

@@ -3,6 +3,7 @@
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/board.h"
+#include "fbbs/brc.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
@@ -78,7 +79,7 @@ static int print_bbsdoc(const struct fileheader *fh, int count, int mode)
 	int mark;
 	const struct fileheader *end = fh + count;
 	for (; fh < end; ++fh) {
-		mark = get_post_mark(fh, brc_unread(fh->filename));
+		mark = get_post_mark(fh, brc_unread_legacy(fh->filename));
 		printf("<po %s%sm='%c' owner='%s' time= '%s' id='",
 				mode == MODE_NOTICE ? "sticky='1' " : "",
 				allow_reply(fh) ? "" : "nore='1' ", mark,
@@ -350,7 +351,7 @@ static void _init_topic(topic_t *tp, const struct fileheader *fp)
 {
 	strlcpy(tp->owner, fp->owner, sizeof(tp->owner));
 	strlcpy(tp->title, fp->title, sizeof(tp->title));
-	tp->mark = get_post_mark(fp, brc_unread(fp->filename));
+	tp->mark = get_post_mark(fp, brc_unread_legacy(fp->filename));
 	tp->potime = getfiletime(fp);
 }
 
