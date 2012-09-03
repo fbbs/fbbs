@@ -375,6 +375,56 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 	return FULLUPDATE;
 }
 
+static int relocate_to_author(slide_list_t *p, user_id_t uid, bool upward)
+{
+	post_list_t *l = p->data;
+
+	int found = -1;
+	if (upward) {
+		for (int i = p->cur - 1; i >= 0; --i) {
+			if (l->index[i]->uid == uid) {
+				found = i;
+				break;
+			}
+		}
+	} else {
+		for (int i = p->cur + 1; i < l->icount; ++i) {
+			if (l->index[i]->flag & POST_FLAG_STICKY)
+				break;
+			if (l->index[i]->uid == uid) {
+				found = i;
+				break;
+			}
+		}
+	}
+
+	if (found >= 0) {
+		p->cur = found;
+		return MINIUPDATE;
+	} else {
+		// TODO
+		return PARTUPDATE;
+	}
+}
+
+static int tui_search_author(slide_list_t *p, bool upward)
+{
+	post_list_t *l = p->data;
+	post_info_t *ip = l->index[p->cur];
+
+	char prompt[80];
+	snprintf(prompt, sizeof(prompt), "向%s搜索作者 [%s]: ",
+			upward ? "上" : "下", ip->owner);
+	char ans[IDLEN + 1];
+	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+
+	user_id_t uid = ip->uid;
+	if (*ans && !streq(ans, ip->owner))
+		uid = get_user_id(ans);
+
+	return relocate_to_author(p, uid, upward);
+}
+
 extern int show_online(void);
 
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
@@ -399,6 +449,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return post_list_deleted(l->filter.bid, l->filter.type);
 		case 'J':
 			return post_list_admin_deleted(l->filter.bid, l->filter.type);
+		case 'a':
+			return tui_search_author(p, false);
+		case 'A':
+			return tui_search_author(p, true);
 		default:
 			return DONOTHING;
 	}

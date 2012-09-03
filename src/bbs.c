@@ -20,6 +20,7 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
+#include "fbbs/tui_list.h"
 
 #ifndef DLM
 #undef	ALLOWGAME
@@ -2954,8 +2955,10 @@ int board_read(void)
 	}
 
 	usetime = time(0);
-	i_read(ST_READING, buf, readtitle, readdoent, &read_comms[0],
-			sizeof(struct fileheader));
+	extern int post_list_normal_range(int bid, post_id_t pid, slide_list_base_e base);
+	post_list_normal_range(board.id, 0, SLIDE_LIST_BOTTOMUP);
+//	i_read(ST_READING, buf, readtitle, readdoent, &read_comms[0],
+//			sizeof(struct fileheader));
 	//commented by iamfat 2004.03.14
 	board_usage(currboard, time(0) - usetime);
 	bm_log(currentuser.userid, currboard, BMLOG_STAYTIME, time(0)
