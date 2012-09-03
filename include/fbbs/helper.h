@@ -26,9 +26,12 @@ extern const char *mask_host(const char *host);
 extern void add_signature(FILE *fp, const char *user, int sig);
 extern int valid_gbk_file(const char *file, int replace);
 extern char *valid_title(char *title);
+
 extern void initialize_convert_env(void);
 extern void initialize_db(void);
 extern void initialize_mdb(void);
 extern void initialize_environment(int flags);
+
+extern const char *status_descr(int status);
 
 #endif // FB_HELPER_H

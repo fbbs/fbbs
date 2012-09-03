@@ -3,22 +3,13 @@
 #include "fbbs/session.h"
 
 /**
- * Get raw user mode.
- * @return user mode without web mask.
- */
-int get_raw_mode(int mode)
-{
-	return (mode & 0xffff);
-}
-
-/**
  * Get descriptions of user mode.
  * @param mode user mode.
  * @return a string describing the mode.
  */
-const char *mode_type(int mode)
+const char *status_descr(int status)
 {
-	switch (get_raw_mode(mode)) {
+	switch (status) {
 		case ST_IDLE:
 			return "无所事事";
 		case ST_NEW:
@@ -147,24 +138,3 @@ const char *mode_type(int mode)
 			return "去了哪里!?";
 	}
 }
-
-/**
- * Get whether user is web browsing.
- * @param mode user mode.
- * @return true if web browsing, false otherwise.
- */
-bool is_web_user(int mode)
-{
-	return (mode & ST_WWW);
-}
-
-/**
- * Get web mode.
- * @param mode user mode.
- * @return correspoding web mode.
- */
-int get_web_mode(int mode)
-{
-	return (mode | ST_WWW);
-}
-

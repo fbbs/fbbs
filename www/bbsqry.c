@@ -36,7 +36,7 @@ static int show_sessions(const char *uname)
 			idle = (now - refresh) / 60;
 
 		printf("<st vis='%d' web='%d' idle='%d' desc='%s'/>",
-				visible, web, idle, mode_type(status));
+				visible, web, idle, status_descr(status));
 	}
 
 	db_clear(res);

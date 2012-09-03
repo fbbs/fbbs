@@ -67,7 +67,7 @@ extern int web_buy_prop(void);
 typedef struct {
 	const char *name;    ///< name of the cgi.
 	int (*func)(void);   ///< handler function.
-	int mode;            ///< user mode. @see mode_type
+	int status;          ///< user status. @see status_descr
 } web_handler_t;
 
 char fromhost[IP_LEN];
@@ -159,7 +159,7 @@ static const web_handler_t *_get_handler(void)
 	if (tmp)
 		*tmp = '\0';
 
-	web_handler_t h = { .name = buf, .func = NULL, .mode = 0 };
+	web_handler_t h = { .name = buf, .func = NULL, .status = 0 };
 	return bsearch(&h, handlers, NELEMS(handlers), sizeof(h), compare_handler);
 }
 
@@ -248,7 +248,7 @@ int main(void)
 			get_session();
 
 			if (session.id) {
-				set_user_status(h->mode);
+				set_user_status(h->status);
 				set_idle_time(session.id, time(NULL));
 			}
 

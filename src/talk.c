@@ -99,7 +99,7 @@ static void show_statuses(basic_session_info_t *res)
 		int idle = (time(NULL) - get_idle_time(sid)) / 60;
 
 		const char *color = get_status_color(status, visible, web);
-		prints("\033[1m%s%s\033[m", color, mode_type(status));
+		prints("\033[1m%s%s\033[m", color, status_descr(status));
 
 		if (idle >= 1 && status != ST_BBSNET)
 			prints("[%d] ", idle);

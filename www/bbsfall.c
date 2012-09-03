@@ -136,7 +136,7 @@ static void show_sessions_of_friends(void)
 			ip = "......";
 
 		printf("<ov id='%s' action='%s' idle='%d' ip='%s'>",
-				uname, mode_type(status), idle, ip);
+				uname, status_descr(status), idle, ip);
 		xml_fputs(user.username, stdout);
 		printf("</ov>");
 	}
