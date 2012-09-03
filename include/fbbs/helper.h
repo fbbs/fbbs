@@ -32,6 +32,4 @@ extern void initialize_db(void);
 extern void initialize_mdb(void);
 extern void initialize_environment(int flags);
 
-extern const char *status_descr(int status);
-
 #endif // FB_HELPER_H

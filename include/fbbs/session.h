@@ -151,4 +151,6 @@ extern const char *get_status_color(int status, bool visible, bool web);
 extern void remove_web_session_cache(user_id_t uid, const char *key);
 extern bool get_session(void);
 
+extern const char *status_descr(int status);
+
 #endif // FB_SESSION_H
