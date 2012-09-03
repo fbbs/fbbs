@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"

@@ -1,6 +1,7 @@
 #include <dlfcn.h>
 #include "bbs.h"
 #include "sysconf.h"
+#include "fbbs/board.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"

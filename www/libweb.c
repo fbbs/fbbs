@@ -6,6 +6,7 @@
 
 #include "libweb.h"
 #include "mmap.h"
+#include "fbbs/board.h"
 #include "fbbs/brc.h"
 #include "fbbs/convert.h"
 #include "fbbs/fbbs.h"

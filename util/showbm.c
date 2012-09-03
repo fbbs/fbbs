@@ -14,6 +14,7 @@
 #include <time.h>
 
 #include "bbs.h"
+#include "fbbs/board.h"
 #include "fbbs/cfg.h"
 #include "fbbs/helper.h"
 #include "showbm.h"

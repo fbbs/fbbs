@@ -8,6 +8,7 @@
 #include "libssh/libssh.h"
 #endif // ENABLE_SSH
 #include "bbs.h"
+#include "fbbs/board.h"
 #include "fbbs/brc.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"

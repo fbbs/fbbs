@@ -369,6 +369,9 @@ enum {
 };
 
 #include "func.h"
-#include "libBBS.h"
+
+void *attach_shm(const char *shmstr, int defaultkey, int shmsize);
+void *attach_shm2(const char *shmstr, int defaultkey, int shmsize, int *iscreate);
+int remove_shm(const char *shmstr, int defaultkey, int shmsize);
 
 #endif /* of _BBS_H_ */

@@ -8,7 +8,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/file.h>
-#include "libBBS.h"
 #include "mmap.h"
 #include "fbbs/fileio.h"
 
