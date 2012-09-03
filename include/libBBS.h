@@ -7,9 +7,6 @@
 #include "bbs.h"
 #include "fbbs/board.h"
 
-//mmdecode.c
-void _mmdecode(unsigned char *str);
-
 //modetype.c
 int get_raw_mode(int mode);
 const char *mode_type(int mode);
