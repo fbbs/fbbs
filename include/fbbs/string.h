@@ -39,15 +39,12 @@ static inline bool isprint2(int ch)
 	return (((c & 0x80) && c != 0xFF) || isprint(c));
 }
 
-typedef struct pstring_t {
-	char *str;
-	uint_t len;
-	uint_t size;
-} pstring_t;
+typedef struct pstring_t pstring_t;
 
 extern pstring_t *pstring_new(pool_t *p);
 extern pstring_t *pstring_sized_new(pool_t *p, uint_t size);
 extern pstring_t *pstring_append_c(pool_t *p, pstring_t *s, int c);
 extern pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ...);
+extern const char *pstring(const pstring_t *s);
 
 #endif // FB_STRING_H

@@ -250,7 +250,7 @@ static db_res_t *_db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary,
 	int argc = get_num_args(cmd);
 	if (argc > 0) {
 		query_t *q = query_new(cmd, argc, ap);
-		res = PQexecParams(conn, q->s->str, argc, NULL, q->vals, q->lens,
+		res = PQexecParams(conn, pstring(q->s), argc, NULL, q->vals, q->lens,
 				q->fmts, binary);
 		query_free(q);
 	} else {

@@ -540,6 +540,12 @@ int validate_utf8_input(const char *str, size_t max_chinese_chars)
 	}
 }
 
+struct pstring_t {
+	char *str;
+	uint_t len;
+	uint_t size;
+};
+
 static uint_t pstring_round_size(uint_t size)
 {
 	if (size == FB_UINT_MAX)
@@ -607,4 +613,9 @@ pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ..
 	va_end(ap2);
 	va_end(ap);
 	return s;
+}
+
+const char *pstring(const pstring_t *s)
+{
+	return s->str;
 }
