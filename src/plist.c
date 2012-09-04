@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/brc.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
@@ -453,6 +454,12 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_search_author(p, false);
 		case 'A':
 			return tui_search_author(p, true);
+		case 'c':
+			brc_clear(ip->id);
+			return PARTUPDATE;
+		case 'f':
+			brc_clear_all();
+			return PARTUPDATE;
 		default:
 			return DONOTHING;
 	}
