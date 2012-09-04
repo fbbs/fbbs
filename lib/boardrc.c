@@ -115,38 +115,43 @@ int brc_initial(const char *userid, const char *board)
 	return 0;
 }
 
-void brc_addlist(const char *filename)
+void brc_mark_as_read(int64_t id)
 {
-	int ftime, n, i;
-	if (!strcmp(currentuser.userid, "guest"))
-		return;
-	ftime = atoi(&filename[2]);
-	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.') {
-		return;
-	}
+	int r = (int)id;
+
 	if (brc_num <= 0) {
-		brc_list[brc_num++] = ftime;
+		brc_list[brc_num++] = r;
 		brc_changed = 1;
 		return;
 	}
-	for (n = 0; n < brc_num; n++) {
-		if (ftime == brc_list[n]) {
+
+	for (int i = 0; i < brc_num; ++i) {
+		if (r == brc_list[i]) {
 			return;
-		} else if (ftime > brc_list[n]) {
+		} else if (r > brc_list[i]) {
 			if (brc_num < BRC_MAXNUM)
 				brc_num++;
-			for (i = brc_num - 1; i > n; i--) {
-				brc_list[i] = brc_list[i - 1];
+			for (int j = brc_num - 1; j > i; --j) {
+				brc_list[j] = brc_list[j - 1];
 			}
-			brc_list[n] = ftime;
+			brc_list[i] = r;
 			brc_changed = 1;
 			return;
 		}
 	}
 	if (brc_num < BRC_MAXNUM) {
-		brc_list[brc_num++] = ftime;
+		brc_list[brc_num++] = r;
 		brc_changed = 1;
 	}
+}
+
+void brc_addlist_legacy(const char *filename)
+{
+	if (streq(currentuser.userid, "guest"))
+		return;
+	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.')
+		return;
+	brc_mark_as_read(strtol(filename + 2, NULL, 10));
 }
 
 bool brc_unread(int64_t id)
@@ -172,27 +177,33 @@ bool brc_unread_legacy(const char *filename)
 	return brc_unread(strtol(filename + 2, NULL, 10));
 }
 
-int brc_clear(int ent, const char *direct, int clearall)
+void brc_clear(int64_t id)
 {
-	int i, fd, posttime, size;
-	char filename[20];
-	struct fileheader f_info;
+	for (int i = id - BRC_MAXNUM + 1; i <= id; ++i)
+		brc_mark_as_read(i);
+}
 
+void brc_clear_all(void)
+{
+	brc_clear(time(NULL));
+}
+
+int brc_clear_legacy(int ent, const char *direct, int clearall)
+{
 	if (clearall) {
-		posttime = time(0) - BRC_MAXNUM + 1;
-	}
-	else {
-		if ((fd = open(direct, O_RDONLY, 0)) == -1)
+		brc_clear_all();
+	} else {
+		struct fileheader fh;
+
+		int fd = open(direct, O_RDONLY, 0);
+		if (fd < 0)
 			return DONOTHING;
-		size = sizeof(struct fileheader);
-		lseek(fd, (off_t) ((ent - 1) * size), SEEK_SET);
-		read(fd, &f_info, size);
+
+		lseek(fd, (off_t) ((ent - 1) * sizeof(fh)), SEEK_SET);
+		read(fd, &fh, sizeof(fh));
 		close(fd);
-		posttime = atoi(&(f_info.filename[2])) - BRC_MAXNUM + 1;
-	}
-	for (i = 0; i < BRC_MAXNUM; i++) {
-		sprintf(filename, "M.%d.A", posttime++);
-		brc_addlist(filename);
+
+		brc_clear(strtol(fh.filename + 2, NULL, 10));
 	}
 	return PARTUPDATE;
 }

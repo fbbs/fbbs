@@ -134,7 +134,7 @@ unsigned int do_post_article(const post_request_t *pr)
 
 	if (!pr->autopost) {
 		brc_fcgi_init(userid, pr->board->name);
-		brc_addlist(fh.filename);
+		brc_addlist_legacy(fh.filename);
 		brc_update(userid, pr->board->name);
 	}
 

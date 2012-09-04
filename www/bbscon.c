@@ -159,7 +159,7 @@ int bbscon_main(void)
 	printf("</po></bbscon>");
 
 	brc_fcgi_init(currentuser.userid, board.name);
-	brc_addlist(fh.filename);
+	brc_addlist_legacy(fh.filename);
 	brc_update(currentuser.userid, board.name);
 	return 0;
 }
@@ -187,7 +187,7 @@ int bbsgcon_main(void)
 
 	printf("</po></bbscon>");
 	brc_fcgi_init(currentuser.userid, board.name);
-	brc_addlist(f);
+	brc_addlist_legacy(f);
 	brc_update(currentuser.userid, board.name);
 	return 0;
 }

@@ -810,7 +810,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 		return FULLUPDATE;
 	} else {
 
-		brc_addlist(fileinfo->filename);
+		brc_addlist_legacy(fileinfo->filename);
 		if (fileinfo->owner[0] == '-')
 			return FULLUPDATE;
 		clear();
@@ -939,7 +939,7 @@ int read_post(int ent, struct fileheader *fileinfo, char *direct) {
 }
 
 int skip_post(int ent, struct fileheader *fileinfo, char *direct) {
-	brc_addlist(fileinfo->filename);
+	brc_addlist_legacy(fileinfo->filename);
 	return GOTO_NEXT;
 }
 
@@ -1665,7 +1665,7 @@ int post_cross(char islocal, int mode)
 		clear();
 		return 1;
 	}
-	/* brc_addlist( postfile.filename ) ; */
+	/* brc_addlist_legacy( postfile.filename ) ; */
 	updatelastpost(currbp);
 	if (mode == 0 || mode == 4) {
 		add_crossinfo(filepath, 1);
@@ -1940,7 +1940,7 @@ int post_article(char *postboard, char *mailid)
 		clear();
 		return FULLUPDATE;
 	}
-	brc_addlist(postfile.filename);
+	brc_addlist_legacy(postfile.filename);
 	updatelastpost(currbp);
 	sprintf(buf, "posted '%s' on %s", postfile.title, currboard);
 	report(buf, currentuser.userid);
@@ -2624,13 +2624,13 @@ int del_post(int ent, struct fileheader *fileinfo, char *direct) {
 int new_flag_clearto(int ent, struct fileheader *fileinfo, char *direct) {
 	if (session.status != ST_READING)
 		return DONOTHING;
-	return brc_clear(ent, direct, NA);
+	return brc_clear_legacy(ent, direct, NA);
 }
 
 int new_flag_clear(int ent, struct fileheader *fileinfo, char *direct) {
 	if (session.status != ST_READING)
 		return DONOTHING;
-	return brc_clear(ent, direct, YEA);
+	return brc_clear_legacy(ent, direct, YEA);
 }
 
 /* Added by netty to handle post saving into (0)Announce */

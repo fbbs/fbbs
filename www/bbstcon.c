@@ -158,7 +158,7 @@ int bbstcon_main(void)
 		setbfile(file, board.name, begin->filename);
 		xml_print_file(file);
 		puts("</po>");
-		brc_addlist(begin->filename);
+		brc_addlist_legacy(begin->filename);
 	}
 	free(fh);
 	puts("</bbstcon>");
