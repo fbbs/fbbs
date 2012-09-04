@@ -482,7 +482,9 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 
 	slide_list(&s);
 
+	free(p.index);
 	free(p.posts);
+	free(p.sposts);
 	return 0;
 }
 
