@@ -427,6 +427,20 @@ static int tui_search_author(slide_list_t *p, bool upward)
 }
 
 extern int show_online(void);
+extern int thesis_mode(void);
+extern int deny_user(void);
+extern int club_user(void);
+extern int tui_send_msg(const char *);
+extern int x_lockscreen(void);
+extern int vote_results(const char *bname);
+extern int b_vote(void);
+extern int vote_maintain(const char *bname);
+extern int b_notes_edit(void);
+extern int b_notes_passwd(void);
+extern int mainreadhelp(void);
+extern int show_b_note(void);
+extern int show_b_secnote(void);
+extern int into_announce(void);
 
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 {
@@ -460,6 +474,46 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'f':
 			brc_clear_all();
 			return PARTUPDATE;
+		case 't':
+			return thesis_mode();
+		case '!':
+			return Q_Goodbye();
+		case 'S':
+			s_msg();
+			return FULLUPDATE;
+		case 'o':
+			show_online_followings();
+			return FULLUPDATE;
+		case 'Z':
+			tui_send_msg(ip->owner);
+			return FULLUPDATE;
+		case '|':
+			return x_lockscreen();
+		case 'R':
+			return vote_results(currboard);
+		case 'v':
+			return b_vote();
+		case 'V':
+			return vote_maintain(currboard);
+		case KEY_TAB:
+			return show_b_note();
+		case 'z':
+			return show_b_secnote();
+		case 'W':
+			return b_notes_edit();
+		case Ctrl('W'):
+			return b_notes_passwd();
+		case 'h': case Ctrl('J'):
+			return mainreadhelp();
+		case Ctrl('A'):
+			return t_query(ip->owner);
+		case Ctrl('D'):
+			return deny_user();
+		case Ctrl('K'):
+			return club_user();
+		case 'x':
+			if (into_announce() != DONOTHING)
+				return FULLUPDATE;
 		default:
 			return DONOTHING;
 	}

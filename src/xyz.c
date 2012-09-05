@@ -222,24 +222,25 @@ int gettheuserid(int x, char *title, int *id) {
 	return 1;
 }
 
-//ËøÆÁ
-int x_lockscreen() {
-	char buf[PASSLEN + 1];
-
+int x_lockscreen(void)
+{
 	set_user_status(ST_LOCKSCREEN);
+
 	move(9, 0);
 	clrtobot();
-	buf[0] = '\0';
 	move(9, 0);
-	prints("[1;37m");
-	prints("\n       _       _____   ___     _   _   ___     ___       __");
-	prints("\n      ( )     (  _  ) (  _`\\  ( ) ( ) (  _`\\  (  _`\\    |  |");
-	prints("\n      | |     | ( ) | | ( (_) | |/'/' | (_(_) | | ) |   |  |");
-	prints("\n      | |  _  | | | | | |  _  | , <   |  _)_  | | | )   |  |");
-	prints("\n      | |_( ) | (_) | | (_( ) | |\\`\\  | (_( ) | |_) |   |==|");
-	prints("\n      (____/' (_____) (____/' (_) (_) (____/' (____/'   |__|\n");
-	prints("\n\033[1;36mÆÁÄ»ÒÑÔÚ\033[33m %s\033[36m Ê±±»%sÔÝÊ±Ëø×¡ÁË...\033[m",
+	prints("\033[1;37m"
+			"\n       _       _____   ___     _   _   ___     ___       __"
+			"\n      ( )     (  _  ) (  _`\\  ( ) ( ) (  _`\\  (  _`\\    |  |"
+			"\n      | |     | ( ) | | ( (_) | |/'/' | (_(_) | | ) |   |  |"
+			"\n      | |  _  | | | | | |  _  | , <   |  _)_  | | | )   |  |"
+			"\n      | |_( ) | (_) | | (_( ) | |\\`\\  | (_( ) | |_) |   |==|"
+			"\n      (____/' (_____) (____/' (_) (_) (____/' (____/'   |__|\n"
+			"\n\033[1;36mÆÁÄ»ÒÑÔÚ\033[33m %s\033[36m Ê±±»%sÔÝÊ±Ëø×¡ÁË...\033[m",
 			getdatestring(time(NULL), DATE_ZH), currentuser.userid);
+
+	char buf[PASSLEN + 1];
+	buf[0] = '\0';
 	while (*buf == '\0' || !passwd_check(currentuser.userid, buf)) {
 		move(18, 0);
 		clrtobot();

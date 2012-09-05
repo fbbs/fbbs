@@ -21,7 +21,7 @@ static unsigned int result[33]; //投票结果数组
 static int vnum;
 static int voted_flag;
 static FILE *sug; //投票结果的文件指针
-int makevote(struct votebal *ball, char *bname); //设置投票箱
+int makevote(struct votebal *ball, const char *bname); //设置投票箱
 
 #ifndef DLM
 #undef  ALLOWGAME
@@ -228,7 +228,8 @@ void b_report(char *str) {
 
 //建立目录,目录为 vote/版名,权限为755
 //bname:版面名字
-void makevdir(char *bname) {
+void makevdir(const char *bname)
+{
 	struct stat st;
 	char buf[STRLEN];
 
@@ -384,7 +385,8 @@ int b_notes_edit() {
 }
 #endif 
 //设置秘密备忘录密码
-int b_notes_passwd() {
+int b_notes_passwd(void)
+{
 	FILE *pass;
 	char passbuf[20], prepass[20];
 	char buf[STRLEN];
@@ -698,7 +700,8 @@ int get_vitems(struct votebal *bal) {
 //开启投票箱并设置投票箱
 //bname:版名
 //返回值:固定为 FULLUPDATE
-int vote_maintain(char *bname) {
+int vote_maintain(const char *bname)
+{
 	char buf[STRLEN];
 	struct votebal *ball = &currvote;
 
@@ -763,7 +766,8 @@ int vote_maintain(char *bname) {
 //ball: 投票箱
 //bname：版名
 //返回值0： 正常退出 1：用户取消
-int makevote(struct votebal *ball, char *bname) {
+int makevote(struct votebal *ball, const char *bname)
+{
 	char buf[STRLEN];
 	int aborted;
 
@@ -1140,7 +1144,8 @@ static int printvote(void *entv, int notused1, void *notused2)
 //显示投票结果
 //bname:版名
 //返回值:固定为FULLUPDATE
-int vote_results(char *bname) {
+int vote_results(const char *bname)
+{
 	char buf[STRLEN];
 
 	setvfile(buf, bname, "results");
@@ -1303,7 +1308,8 @@ int vote_key(int ch, int allnum, int pagenum) {
 
 //用户对本版进行投票，bbs.c调用
 //返回值:固定为FULLUPDATE
-int b_vote() {
+int b_vote(void)
+{
 	int num_of_vote;
 	int voting;
 

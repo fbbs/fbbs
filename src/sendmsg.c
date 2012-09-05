@@ -207,7 +207,7 @@ static int send_msg(const msg_session_info_t *s, const char *msg, int type)
 	return sent;
 }
 
-static int tui_send_msg(const char *uname)
+int tui_send_msg(const char *uname)
 {
 	char name[IDLEN + 1];
 	if (!uname || !*uname) {
