@@ -374,3 +374,98 @@ bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
 	}
 	return set_post_flag_unchecked(bid, pid, "sticky", sticky);
 }
+
+void res_to_post_info(db_res_t *r, int i, post_info_t *p)
+{
+	p->id = db_get_post_id(r, i, 0);
+	p->reid = db_get_post_id(r, i, 1);
+	p->tid = db_get_post_id(r, i, 2);
+	p->uid = db_get_is_null(r, i, 3) ? 0 : db_get_user_id(r, i, 3);
+	strlcpy(p->owner, db_get_value(r, i, 4), sizeof(p->owner));
+	p->stamp = db_get_time(r, i, 5);
+	p->flag = (db_get_bool(r, i, 6) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(r, i, 7) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(r, i, 8) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(r, i, 9) ? POST_FLAG_IMPORT : 0);
+	p->replies = db_get_integer(r, i, 10);
+	p->comments = db_get_integer(r, i, 11);
+	p->score = db_get_integer(r, i, 12);
+	strlcpy(p->utf8_title, db_get_value(r, i, 13), sizeof(p->utf8_title));
+}
+
+void set_post_flag(post_info_t *ip, post_flag_e flag, bool set)
+{
+	if (set)
+		ip->flag |= flag;
+	else
+		ip->flag &= ~flag;
+}
+
+int _load_sticky_posts(post_list_filter_t *filter, post_info_t **posts)
+{
+	if (filter->type != POST_LIST_NORMAL)
+		return 0;
+
+	if (!*posts)
+		*posts = malloc(sizeof(**posts) * MAX_NOTICE);
+
+	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts"
+			" WHERE board = %d AND sticky ORDER BY id DESC", filter->bid);
+	if (r) {
+		int count = db_res_rows(r);
+		for (int i = 0; i < count; ++i) {
+			res_to_post_info(r, i, *posts + i);
+			set_post_flag(*posts + i, POST_FLAG_STICKY, true);
+		}
+		db_clear(r);
+		return count;
+	}
+	return 0;
+}
+
+static size_t post_table_name(char *table, size_t size, post_list_type_e type)
+{
+	const char *t;
+	switch (type) {
+		case POST_LIST_TRASH:
+		case POST_LIST_JUNK:
+			t = "posts_deleted";
+			break;
+		default:
+			t = "posts";
+			break;
+	}
+	return strlcpy(table, t, size);
+}
+
+static const char *post_filter(post_list_type_e type)
+{
+	switch (type) {
+		case POST_LIST_MARKED:
+			return "marked";
+		case POST_LIST_DIGEST:
+			return "digest";
+		case POST_LIST_AUTHOR:
+			return "p.owner = %%"DBIdPID;
+		case POST_LIST_KEYWORD:
+			return "p.title LIKE %%s";
+		case POST_LIST_TRASH:
+			return "bm_visible";
+		case POST_LIST_JUNK:
+			return "NOT bm_visible";
+		default:
+			return "TRUE";
+	}
+}
+
+int build_post_query(char *query, size_t size, post_list_type_e type, bool asc,
+		int limit)
+{
+	char table[16];
+	post_table_name(table, sizeof(table), type);
+
+	return snprintf(query, size, "SELECT " POST_LIST_FIELDS
+			" FROM %s WHERE board = %%d AND id %c %%"DBIdPID" AND %s"
+			" ORDER BY id %s LIMIT %d", table, asc ? '>' : '<',
+			post_filter(type), asc ? "ASC" : "DESC", limit);
+}

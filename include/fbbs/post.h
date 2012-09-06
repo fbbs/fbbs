@@ -14,6 +14,10 @@ typedef int64_t post_id_t;
 #define POST_ID_MAX  INT64_MAX
 #define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
 
+#define POST_LIST_FIELDS  \
+	"id, reid, tid, owner, uname, stamp, digest, marked," \
+	" locked, imported, replies, comments, score, title"
+
 typedef enum {
 	POST_FLAG_DIGEST = 0x1,
 	POST_FLAG_MARKED = 0x2,
@@ -34,6 +38,17 @@ enum {
 	QUOTE_ALL = 'A',
 };
 
+typedef enum {
+	POST_LIST_NORMAL = 1,
+	POST_LIST_THREAD,
+	POST_LIST_MARKED,
+	POST_LIST_DIGEST,
+	POST_LIST_AUTHOR,
+	POST_LIST_KEYWORD,
+	POST_LIST_TRASH,
+	POST_LIST_JUNK,
+} post_list_type_e;
+
 typedef struct {
 	bool autopost;
 	bool crosspost;
@@ -52,6 +67,32 @@ typedef struct {
 	convert_t *cp;
 } post_request_t;
 
+typedef struct {
+	int replies;
+	int comments;
+	int score;
+	int flag;
+	user_id_t uid;
+	post_id_t id;
+	post_id_t reid;
+	post_id_t tid;
+	fb_time_t stamp;
+	char owner[IDLEN + 1];
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+} post_info_t;
+
+enum {
+	POST_LIST_KEYWORD_LEN = 19,
+};
+
+typedef struct {
+	int bid;
+	post_list_type_e type;
+	post_id_t pid;
+	user_id_t uid;
+	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+} post_list_filter_t;
+
 extern unsigned int do_post_article(const post_request_t *pr);
 
 extern void quote_string(const char *str, size_t size, const char *output,
@@ -62,5 +103,9 @@ extern void quote_file_(const char *orig, const char *output, int mode,
 extern bool set_post_flag_unchecked(int bid, post_id_t pid, const char *field, bool on);
 extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 
-#endif // FB_POST_H
+extern void res_to_post_info(db_res_t *r, int i, post_info_t *p);
+void set_post_flag(post_info_t *ip, post_flag_e flag, bool set);
+extern int _load_sticky_posts(post_list_filter_t *filter, post_info_t **posts);
+extern int build_post_query(char *query, size_t size, post_list_type_e type, bool asc, int limit);
 
+#endif // FB_POST_H

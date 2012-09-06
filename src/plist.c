@@ -6,47 +6,6 @@
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
-#define POST_LIST_FIELDS  \
-	"id, reid, tid, owner, uname, stamp, digest, marked," \
-	" locked, imported, replies, comments, score, title"
-
-typedef enum {
-	POST_LIST_NORMAL = 1,
-	POST_LIST_THREAD,
-	POST_LIST_MARKED,
-	POST_LIST_DIGEST,
-	POST_LIST_AUTHOR,
-	POST_LIST_KEYWORD,
-	POST_LIST_TRASH,
-	POST_LIST_JUNK,
-} post_list_type_e;
-
-enum {
-	POST_LIST_KEYWORD_LEN = 19,
-};
-
-typedef struct {
-	int replies;
-	int comments;
-	int score;
-	int flag;
-	user_id_t uid;
-	post_id_t id;
-	post_id_t reid;
-	post_id_t tid;
-	fb_time_t stamp;
-	char owner[IDLEN + 1];
-	UTF8_BUFFER(title, POST_TITLE_CCHARS);
-} post_info_t;
-
-typedef struct {
-	int bid;
-	post_list_type_e type;
-	post_id_t pid;
-	user_id_t uid;
-	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
-} post_list_filter_t;
-
 typedef struct {
 	post_list_filter_t filter;
 
@@ -62,79 +21,6 @@ typedef struct {
 	int count;
 	int scount;
 } post_list_t;
-
-static void set_flag(post_info_t *ip, post_flag_e flag, bool set)
-{
-	if (set)
-		ip->flag |= flag;
-	else
-		ip->flag &= ~flag;
-}
-
-static void res_to_post_info(db_res_t *r, int i, post_info_t *p)
-{
-	p->id = db_get_post_id(r, i, 0);
-	p->reid = db_get_post_id(r, i, 1);
-	p->tid = db_get_post_id(r, i, 2);
-	p->uid = db_get_is_null(r, i, 3) ? 0 : db_get_user_id(r, i, 3);
-	strlcpy(p->owner, db_get_value(r, i, 4), sizeof(p->owner));
-	p->stamp = db_get_time(r, i, 5);
-	p->flag = (db_get_bool(r, i, 6) ? POST_FLAG_DIGEST : 0)
-			| (db_get_bool(r, i, 7) ? POST_FLAG_MARKED : 0)
-			| (db_get_bool(r, i, 8) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(r, i, 9) ? POST_FLAG_IMPORT : 0);
-	p->replies = db_get_integer(r, i, 10);
-	p->comments = db_get_integer(r, i, 11);
-	p->score = db_get_integer(r, i, 12);
-	strlcpy(p->utf8_title, db_get_value(r, i, 13), sizeof(p->utf8_title));
-}
-
-static size_t post_table_name(char *table, size_t size, post_list_type_e type)
-{
-	const char *t;
-	switch (type) {
-		case POST_LIST_TRASH:
-		case POST_LIST_JUNK:
-			t = "posts_deleted";
-			break;
-		default:
-			t = "posts";
-			break;
-	}
-	return strlcpy(table, t, size);
-}
-
-static const char *post_filter(post_list_type_e type)
-{
-	switch (type) {
-		case POST_LIST_MARKED:
-			return "marked";
-		case POST_LIST_DIGEST:
-			return "digest";
-		case POST_LIST_AUTHOR:
-			return "p.owner = %%"DBIdPID;
-		case POST_LIST_KEYWORD:
-			return "p.title LIKE %%s";
-		case POST_LIST_TRASH:
-			return "bm_visible";
-		case POST_LIST_JUNK:
-			return "NOT bm_visible";
-		default:
-			return "TRUE";
-	}
-}
-
-static int build_query(char *query, size_t size,
-		post_list_type_e type, bool asc, int limit)
-{
-	char table[16];
-	post_table_name(table, sizeof(table), type);
-
-	return snprintf(query, size, "SELECT " POST_LIST_FIELDS
-			" FROM %s WHERE board = %%d AND id %c %%"DBIdPID" AND %s"
-			" ORDER BY id %s LIMIT %d", table, asc ? '>' : '<',
-			post_filter(type), asc ? "ASC" : "DESC", limit);
-}
 
 static bool is_asc(slide_list_base_e base)
 {
@@ -207,28 +93,10 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	if (l->filter.type != POST_LIST_NORMAL)
-		return;
-
-	if (!l->sposts)
-		l->sposts = malloc(sizeof(*l->sposts) * MAX_NOTICE);
-	else
-		if (!l->sreload)
-			return;
-
-	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts"
-			" WHERE board = %d AND sticky ORDER BY id DESC", l->filter.bid);
-	if (r) {
-		l->scount = db_res_rows(r);
-		for (int i = 0; i < l->scount; ++i) {
-			res_to_post_info(r, i, l->sposts + i);
-			set_flag(l->sposts + i, POST_FLAG_STICKY, true);
-		}
-		db_clear(r);
+	if (!l->sposts && l->sreload) {
+		l->scount = _load_sticky_posts(&l->filter, &l->sposts);
+		l->sreload = false;
 	}
-
-	l->sreload = false;
-	return;
 }
 
 static void index_posts(post_list_t *l, int limit, slide_list_base_e base)
@@ -276,8 +144,8 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	bool asc = is_asc(p->base);
 	l->filter.pid = pid_base(l, p->base);
 
-	char query[512];
-	build_query(query, sizeof(query), l->filter.type, asc, page);
+	char query[256];
+	build_post_query(query, sizeof(query), l->filter.type, asc, page);
 
 	db_res_t *res = exec_query(query, &l->filter);
 	res_to_array(res, l, p->base, page);
@@ -327,7 +195,7 @@ static int toggle_post_lock(int bid, post_info_t *ip)
 	bool locked = ip->flag & POST_FLAG_LOCKED;
 	if (am_curr_bm() || (session.id == ip->uid && !locked)) {
 		if (set_post_flag_unchecked(bid, ip->id, "locked", !locked)) {
-			set_flag(ip, POST_FLAG_LOCKED, !locked);
+			set_post_flag(ip, POST_FLAG_LOCKED, !locked);
 			return PARTUPDATE;
 		}
 	}
@@ -350,7 +218,7 @@ static int toggle_post_flag(int bid, post_info_t *ip, post_flag_e flag,
 	bool set = ip->flag & flag;
 	if (am_curr_bm()) {
 		if (set_post_flag_unchecked(bid, ip->id, field, !set)) {
-			set_flag(ip, flag, !set);
+			set_post_flag(ip, flag, !set);
 			return PARTUPDATE;
 		}
 	}
