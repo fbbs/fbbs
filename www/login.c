@@ -173,6 +173,9 @@ int do_web_login(const char *uname, const char *pw)
 	return 0;
 }
 
+extern void set_web_session_cache(user_id_t uid, const char *key,
+		session_id_t sid);
+
 int web_login(void)
 {
 	if (request_type(REQUEST_API)) {
@@ -205,6 +208,8 @@ int web_login(void)
 		generate_session_key(key, sizeof(key), session.id);
 		session.id = session_new(key, session.id, session.uid, fromhost,
 				SESSION_WEB, SESSION_PLAIN, max_age);
+		if (session.id)
+			set_web_session_cache(session.uid, key, session.id);
 
 		return login_redirect(key, max_age);
 	}

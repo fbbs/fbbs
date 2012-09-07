@@ -11,8 +11,7 @@ static session_id_t get_web_session_cache(user_id_t uid, const char *key)
 			uid, key);
 }
 
-static void set_web_session_cache(user_id_t uid, const char *key,
-		session_id_t sid)
+void set_web_session_cache(user_id_t uid, const char *key, session_id_t sid)
 {
 	mdb_res_t *r = mdb_cmd("HSET",
 			WEB_SESSION_HASH_KEY" %"PRIdUID":%s %"PRIdSID, uid, key, sid);
@@ -46,7 +45,7 @@ static bool _get_session(const char *uname, const char *key)
 		}
 
 		db_res_t *res = db_query("SELECT id, active FROM sessions"
-				" WHERE user_id = %"DBIdUID" AND session_key = %s AND s.web",
+				" WHERE user_id = %"DBIdUID" AND session_key = %s AND web",
 				uid, key);
 		if (res && db_res_rows(res) == 1) {
 			if (db_get_bool(res, 0, 1)
