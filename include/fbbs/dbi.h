@@ -38,6 +38,7 @@ extern int64_t db_get_bigint(const db_res_t *res, int row, int col);
 extern bool db_get_bool(const db_res_t *res, int row, int col);
 extern fb_time_t db_get_time(const db_res_t *res, int row, int col);
 extern float db_get_float(const db_res_t *res, int row, int col);
+#define db_get_length(res, row, col)  PQgetlength(res, row, col)
 
 extern db_res_t *db_cmd(const char *cmd, ...);
 extern db_res_t *db_query(const char *cmd, ...);
