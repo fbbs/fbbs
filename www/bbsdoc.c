@@ -99,7 +99,11 @@ static void print_posts(post_list_type_e type, int bid, post_id_t pid,
 		pid = POST_ID_MAX;
 	db_res_t *r = db_query(query, bid, pid);
 	if (r) {
-		for (int i = db_res_rows(r); i >= 0; --i) {
+		int rows = db_res_rows(r);
+		if (rows > limit)
+			rows = limit;
+
+		for (int i = rows; i >= 0; --i) {
 			post_info_t info;
 			res_to_post_info(r, i, &info);
 			print_bbsdoc(&info);
