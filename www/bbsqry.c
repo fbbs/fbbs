@@ -97,7 +97,7 @@ int bbsqry_main(void)
 		printf("</ident><smd>");
 		char file[HOMELEN];
 		sethomefile(file, user.userid, "plans");
-		xml_printfile(file, stdout);
+		xml_printfile(file);
 		printf("</smd>");
 
 		int num = show_sessions(user.userid);

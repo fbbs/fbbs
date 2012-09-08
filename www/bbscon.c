@@ -154,7 +154,7 @@ int bbscon_main(void)
 
 	char file[HOMELEN];
 	setbfile(file, board.name, fh.filename);
-	xml_print_file(file);
+	xml_print_post_wrapper(file, 0);
 
 	printf("</po></bbscon>");
 
@@ -183,7 +183,7 @@ int bbsgcon_main(void)
 
 	char file[HOMELEN];
 	setbfile(file, board.name, f);
-	xml_print_file(file);
+	xml_print_post_wrapper(file, 0);
 
 	printf("</po></bbscon>");
 	brc_fcgi_init(currentuser.userid, board.name);
@@ -192,7 +192,7 @@ int bbsgcon_main(void)
 	return 0;
 }
 
-int xml_print_file(const char *file)
+int xml_print_post_wrapper(const char *str, size_t size)
 {
 	if (request_type(REQUEST_PARSED)) {
 		int opt = PARSE_NOQUOTEIMG;
@@ -201,9 +201,11 @@ int xml_print_file(const char *file)
 			opt |= PARSE_NOSIG;
 		if (flag & PREF_NOSIGIMG)
 			opt |= PARSE_NOSIGIMG;
-		return xml_print_post(file, opt);
+		return xml_print_post(str, size, opt);
 	}
-	if (!request_type(REQUEST_MOBILE))
-		return xml_printfile(file, stdout);
-	return xml_print_post(file, PARSE_NOSIG);
+	if (!request_type(REQUEST_MOBILE)) {
+		xml_fputs2(str, size, stdout);
+		return 0;
+	}
+	return xml_print_post(str, size, PARSE_NOSIG);
 }

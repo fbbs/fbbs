@@ -61,7 +61,7 @@ int bbsrss_main(void)
 				"<description><![CDATA[<pre>", board.id, fp->id, fp->owner,
 				getdatestring(getfiletime(fp), DATE_RSS), fp->owner, board.id,
 				fp->id);
-		xml_printfile(file, stdout);
+		xml_printfile(file);
 		printf("<pre>]]></description></item>");
 	}
 	printf("</channel></rss>");

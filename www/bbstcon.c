@@ -156,7 +156,7 @@ int bbstcon_main(void)
 		printf("<po fid='%u' owner='%s'%s>", begin->id, begin->owner,
 				!isbm && begin->accessed[0] & FILE_NOREPLY ? " nore='1'" : "");
 		setbfile(file, board.name, begin->filename);
-		xml_print_file(file);
+		xml_print_post_wrapper(file, 0);
 		puts("</po>");
 		brc_addlist_legacy(begin->filename);
 	}

@@ -2,15 +2,15 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include "fbbs/time.h"
 #include "libweb.h"
-#include "mmap.h"
+#include "fbbs/string.h"
+#include "fbbs/time.h"
 #include "fbbs/web.h"
 
 #define BEGIN_WITH(b, e, s) \
-	(e - b >= sizeof(s) - 1 && strncasecmp(b, s, sizeof(s) - 1) == 0)
+	(e - b >= sizeof(s) - 1 && strncaseeq(b, s, sizeof(s) - 1))
 #define END_WITH(b, e, s) \
-	(e - b >= sizeof(s) - 1 && strncasecmp(e - sizeof(s) + 1, s, sizeof(s) - 1) == 0)
+	(e - b >= sizeof(s) - 1 && strncaseeq(e - sizeof(s) + 1, s, sizeof(s) - 1))
 
 typedef struct string_t {
 	const char *begin;
@@ -18,9 +18,9 @@ typedef struct string_t {
 } string_t;
 
 typedef struct ansi_color_t {
-	int hl;
-	int fg;
-	int bg;
+	char hl;
+	char fg;
+	char bg;
 } ansi_color_t;
 
 /**
@@ -38,20 +38,30 @@ static const char *_get_line_end(const char *begin, const char *end)
 	return (s == end ? s : s + 1);
 }
 
+/** UTF-8 "年" */
+#define YEAR_STRING  "\xe5\xb9\xb4"
+/** UTF-8 "月" */
+#define MONTH_STRING  "\xe6\x9c\x88"
+/** UTF-8 "日"*/
+#define DAY_STRING  "\xe6\x97\xa5"
+
+#define DATETIME_STRING  \
+	"1996"YEAR_STRING"04"MONTH_STRING"19"DAY_STRING"11:11:11"
+
 static fb_time_t _parse_header_date(const string_t *line)
 {
 	const char *begin = memchr(line->begin, '(', line->end - line->begin);
-	if (!begin || begin + sizeof("1996年04月19日11:11:11") > line->end)
+	if (!begin || begin + sizeof(DATETIME_STRING) > line->end)
 		return -1;
 
 	struct tm t;
 	const char *s = begin + 1;
 	t.tm_year = strtol(s, NULL, 10) - 1900;
-	s += sizeof("年") + 3;
+	s += sizeof(YEAR_STRING) + 3;
 	t.tm_mon = strtol(s, NULL, 10) - 1;
-	s += sizeof("月") + 1;
+	s += sizeof(MONTH_STRING) + 1;
 	t.tm_mday = strtol(s, NULL, 10);
-	s += sizeof("日") + 1;
+	s += sizeof(DAY_STRING) + 1;
 	t.tm_hour = strtol(s, NULL, 10);
 	t.tm_min = strtol(s + 3, NULL, 10);
 	t.tm_sec = strtol(s + 6, NULL, 10);
@@ -186,6 +196,11 @@ static void _print_ansi_text(const char *begin, const char *end, ansi_color_t *a
 		printf("</c>");
 }
 
+/** UTF-8 "发信人: " */
+#define SENDER_STRING  "\xe5\x8f\x91\xe4\xbf\xa1\xe4\xba\xba: "
+/** UTF-8 "标  题: " */
+#define TOPIC_STRING  "\xe6\xa0\x87  \xe9\xa2\x98: "
+
 static const char *_print_header(const char *begin, size_t size)
 {
 	const char *end = begin + size;
@@ -194,9 +209,9 @@ static const char *_print_header(const char *begin, size_t size)
 
 	string_t owner, nick, board, title;
 
-	if (!(owner.begin = _memstr(begin, "发信人: ", line.end - begin)))
+	if (!(owner.begin = _memstr(begin, SENDER_STRING, line.end - begin)))
 		return begin;
-	owner.begin += sizeof("发信人: ") - 1;
+	owner.begin += sizeof(SENDER_STRING) - 1;
 	if (!(owner.end = memchr(owner.begin, ' ', line.end - owner.begin)))
 		return begin;
 
@@ -214,7 +229,7 @@ static const char *_print_header(const char *begin, size_t size)
 	line.begin = line.end;
 	line.end = _get_line_end(line.begin, end);
 
-	if ((title.begin = line.begin + sizeof("标  题: ") - 1) >= end)
+	if ((title.begin = line.begin + sizeof(TOPIC_STRING) - 1) >= end)
 		return begin;
 	title.end = line.end - 1;
 
@@ -339,26 +354,17 @@ static void _print_body(const char *begin, const char *end, int option)
 	printf("</pa>");
 }
 
-int xml_print_post(const char *file, int option)
+int xml_print_post(const char *str, size_t size, int option)
 {
-	if (!file)
+	if (!str)
 		return -1;
 
-	mmap_t m = { .oflag = O_RDONLY };
-	if (mmap_open(file, &m) < 0)
-		return -1;
-	if (m.size <= 0) {
-		mmap_close(&m);
-		return 0;
-	}
-
-	const char *begin = _print_header(m.ptr, m.size);
+	const char *begin = _print_header(str, size);
 
 	// skip the blank line after header
-	if (begin != (const char *)m.ptr)
+	if (begin != str)
 		++begin;
-	_print_body(begin, (const char *)m.ptr + m.size, option);
+	_print_body(begin, str + size, option);
 	
-	mmap_close(&m);
 	return 0;
 }

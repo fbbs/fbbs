@@ -164,19 +164,18 @@ size_t xml_fputs3(const char *s, size_t size, FILE *stream)
 /**
  * Print a file with XML escaped.
  * @param file filename to print
- * @param stream output stream
  * @see xml_fputs2
  */
-int xml_printfile(const char *file, FILE *stream)
+int xml_printfile(const char *file)
 {
-	if (file == NULL || stream == NULL)
+	if (!file)
 		return -1;
-	mmap_t m;
-	m.oflag = O_RDONLY;
+
+	mmap_t m = { .oflag = O_RDONLY };
 	if (mmap_open(file, &m) < 0)
 		return -1;
 	if (m.size > 0)
-		xml_fputs2((char *)m.ptr, m.size, stream);
+		xml_fputs2((char *)m.ptr, m.size, stdout);
 	mmap_close(&m);
 	return 0;
 }

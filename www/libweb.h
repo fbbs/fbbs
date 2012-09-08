@@ -85,7 +85,7 @@ extern char fromhost[];
 void xml_fputs(const char *s, FILE *stream);
 void xml_fputs2(const char *s, size_t size, FILE *stream);
 size_t xml_fputs3(const char *s, size_t size, FILE *stream);
-int xml_printfile(const char *file, FILE *stream);
+int xml_printfile(const char *file);
 
 void xml_header(const char *xslfile);
 void http_header(void);
@@ -106,10 +106,6 @@ const char *get_doc_mode_str(void);
 void print_session(void);
 void printable_filter(char *str);
 
-extern int xml_print_post(const char *file, int option);
-extern int xml_print_file(const char *file);
-
 extern int bbscon_search(const char *board, unsigned int fid,
 		int action, struct fileheader *fp, bool extra);
 #endif  //FB_LIBWEB_H
-

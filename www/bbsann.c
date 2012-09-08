@@ -206,7 +206,7 @@ int bbsanc_main(void)
 	printf(">");
 	print_session();
 	printf("<po>");
-	xml_printfile(fname, stdout);
+	xml_printfile(fname);
 	printf("</po></bbsanc>");
 	return 0;
 }

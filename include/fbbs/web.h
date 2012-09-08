@@ -65,7 +65,8 @@ extern void html_header(void);
 extern void xml_header(const char *xslfile);
 
 extern void xml_print(const char *s);
-extern int xml_print_post(const char *file, int option);
+extern int xml_print_post(const char *str, size_t size, int option);
+extern int xml_print_post_wrapper(const char *str, size_t size);
 
 extern const unsigned char *calc_digest(const void *s, size_t size);
 
