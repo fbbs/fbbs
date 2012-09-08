@@ -3,6 +3,7 @@
 
 #include "fbbs/board.h"
 #include "fbbs/convert.h"
+#include "fbbs/dbi.h"
 
 #define ANONYMOUS_ACCOUNT "Anonymous"
 #define ANONYMOUS_NICK    "我是匿名天使"
@@ -17,6 +18,8 @@ typedef int64_t post_id_t;
 #define POST_LIST_FIELDS  \
 	"id, reid, tid, owner, uname, stamp, digest, marked," \
 	" locked, imported, replies, comments, score, title"
+
+#define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ", content"
 
 typedef enum {
 	POST_FLAG_DIGEST = 0x1,
@@ -81,6 +84,13 @@ typedef struct {
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_info_t;
 
+typedef struct {
+	post_info_t p;
+	db_res_t *res;
+	const char *content;
+	size_t length;
+} post_info_full_t;
+
 enum {
 	POST_LIST_KEYWORD_LEN = 19,
 };
@@ -107,5 +117,8 @@ extern void res_to_post_info(db_res_t *r, int i, post_info_t *p);
 void set_post_flag(post_info_t *ip, post_flag_e flag, bool set);
 extern int _load_sticky_posts(post_list_filter_t *filter, post_info_t **posts);
 extern int build_post_query(char *query, size_t size, post_list_type_e type, bool asc, int limit);
+
+extern void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p);
+extern void free_post_info_full(post_info_full_t *p);
 
 #endif // FB_POST_H

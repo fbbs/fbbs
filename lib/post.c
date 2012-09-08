@@ -469,3 +469,16 @@ int build_post_query(char *query, size_t size, post_list_type_e type, bool asc,
 			" ORDER BY id %s LIMIT %d", table, asc ? '>' : '<',
 			post_filter(type), asc ? "ASC" : "DESC", limit);
 }
+
+void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p)
+{
+	res_to_post_info(res, row, &p->p);
+	p->res = res;
+	p->content = db_get_value(res, row, 14);
+	p->length = db_get_length(res, row, 14);
+}
+
+void free_post_info_full(post_info_full_t *p)
+{
+	db_clear(p->res);
+}

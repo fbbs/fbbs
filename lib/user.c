@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/mdbi.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 
 #define USER_ID_HASH_KEY  "user_id"

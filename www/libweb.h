@@ -106,6 +106,4 @@ const char *get_doc_mode_str(void);
 void print_session(void);
 void printable_filter(char *str);
 
-extern int bbscon_search(const char *board, unsigned int fid,
-		int action, struct fileheader *fp, bool extra);
 #endif  //FB_LIBWEB_H
