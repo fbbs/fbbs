@@ -121,4 +121,6 @@ extern int build_post_query(char *query, size_t size, post_list_type_e type, boo
 extern void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p);
 extern void free_post_info_full(post_info_full_t *p);
 
+extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
+		char *file, size_t size);
 #endif // FB_POST_H

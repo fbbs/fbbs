@@ -82,6 +82,11 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 	return ret;
 }
 
+int bbscon_search_pid(int bid, post_id_t pid, post_info_full_t *p)
+{
+	return bbscon_search(bid, pid, 0, 0, false, p);
+}
+
 int bbscon_main(void)
 {
 	board_t board;

@@ -4,6 +4,7 @@
 #include "record.h"
 #include "fbbs/brc.h"
 #include "fbbs/convert.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
@@ -481,4 +482,16 @@ void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p)
 void free_post_info_full(post_info_full_t *p)
 {
 	db_clear(p->res);
+}
+
+int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
+		size_t size)
+{
+	snprintf(file, size, "tmp/gbk_dump.%d", getpid());
+	FILE *fp = fopen(file, "w");
+	if (!fp)
+		return -1;
+	convert_to_file(env.u2g, utf8_str, length, fp);
+	fclose(fp);
+	return 0;
 }

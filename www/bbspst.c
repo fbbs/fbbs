@@ -35,6 +35,8 @@ static void get_post_body(const char **begin, const char **end)
 	}
 }
 
+extern int bbscon_search_pid(int bid, post_id_t pid, post_info_full_t *p);
+
 static int do_bbspst(bool isedit)
 {
 	if (!session.id)
@@ -58,7 +60,7 @@ static int do_bbspst(bool isedit)
 
 	if (reply) {
 		pid = strtol(f, NULL, 10);
-		if (!pid || !bbscon_search(board.id, pid, 0, 0, false))
+		if (!pid || !bbscon_search_pid(board.id, pid, &info))
 			return BBS_ENOFILE;
 
 		if (!isedit && (info.p.flag & POST_FLAG_LOCKED)) {
@@ -136,7 +138,7 @@ int bbsccc_main(void)
 	post_id_t pid = strtol(get_param("f"), NULL, 10);
 
 	post_info_full_t info;
-	if (!bbscon_search(board.id, pid, 0, 0, false, &info))
+	if (!bbscon_search_pid(board.id, pid, &info))
 		return BBS_ENOFILE;
 
 	const char *target = get_param("t");
@@ -220,20 +222,30 @@ int bbsfwd_main(void)
 		if (board.flag & BOARD_DIR_FLAG)
 			return BBS_EINVAL;
 
-		unsigned int fid = strtoul(get_param("f"), NULL, 10);
-		struct fileheader fh;
-		if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
+		post_id_t pid = strtoul(get_param("f"), NULL, 10);
+		post_info_full_t info;
+		if (!bbscon_search_pid(board.id, pid, &info))
 			return BBS_ENOFILE;
+
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		GBK_BUFFER(title2, POST_TITLE_CCHARS);
+		convert_u2g(info.p.utf8_title, gbk_title);
+		snprintf(gbk_title2, sizeof(gbk_title2), "[转寄]%s", gbk_title);
+
 		char file[HOMELEN];
-		setbfile(file, board.name, fh.filename);
-		char title[STRLEN];
-		snprintf(title, sizeof(title), "[转寄]%s", fh.title);
-		int ret = mail_file(file, reci, title);
-		if (ret)
-			return ret;
-		http_header();
-		printf("</head><body><p>文章转寄成功</p>"
-				"<a href='javascript:history.go(-2)'>返回</a></body></html>");
+		if (dump_content_to_gbk_file(info.content, info.length,
+					file, sizeof(file)) == 0) {
+			int ret = mail_file(file, reci, gbk_title2);
+			unlink(file);
+			free_post_info_full(&info);
+
+			if (ret)
+				return ret;
+			http_header();
+			printf("</head><body><p>文章转寄成功</p>"
+					"<a href='javascript:history.go(-2)'>返回</a>"
+					"</body></html>");
+		}
 	}
 	return 0;
 }
