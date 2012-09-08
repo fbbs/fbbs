@@ -395,11 +395,10 @@ table.post{width:100%}
 
 	<xsl:call-template name='bbsdoc-nav'/>
 	<table class='content' id='postlist'>
-		<tr><th class='no'>序号</th><th class='mark'>标记</th><th>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
+		<tr><th class='mark'>标记</th><th>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
 		<xsl:for-each select='po'><tr>
 			<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-			<td class='no'><xsl:choose><xsl:when test='@sticky'>【∞】</xsl:when><xsl:otherwise><xsl:value-of select='position() - 1 + ../brd/@start'/></xsl:otherwise></xsl:choose></td>
-			<td class='mark'><xsl:value-of select='@m'/></td>
+			<td class='mark'><xsl:if test='@sticky'>∞ </xsl:if><xsl:value-of select='@m'/></td>
 			<td class='owner'><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a></td>
 			<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></td>
 			<td class='ptitle'><a class='ptitle'>
@@ -420,10 +419,7 @@ table.post{width:100%}
 <xsl:template name='bbsdoc-nav'>
 	<div class='bnav'>
 		<a href='javascript:location=location'><img src='../images/button/reload.gif'/>刷新</a>
-		<xsl:if test='brd/@start > 1'>
-			<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
-			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$prev}'><img src='../images/button/up.gif'/>上一页</a>
-		</xsl:if>
+		<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={po[1]/@id}'><img src='../images/button/up.gif'/>上一页</a>
 		<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
 			<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
 			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'><img src='../images/button/down.gif'/>下一页</a>
@@ -443,8 +439,8 @@ table.post{width:100%}
 				<xsl:if test='not(po/@first)'><a href='{$baseurl}p'><img src='../images/button/up.gif'/>上篇</a></xsl:if>
 				<xsl:if test='not(po/@last)'><a href='{$baseurl}n'><img src='../images/button/down.gif'/>下篇</a></xsl:if>
 				<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>上楼</a></xsl:if>
-				<xsl:if test='not(po/@tlast)'><a href='{$baseurl}a'>下楼</a></xsl:if>
-				<xsl:if test='po/@gid'><a href='con?new=1&amp;bid={@bid}&amp;f={po/@gid}'>顶楼</a></xsl:if>
+				<xsl:if test='not(po/@tlast)'><a href='{$baseurl}a&amp;t={po/@gid}'>下楼</a></xsl:if>
+				<xsl:if test='po/@gid != po/@id'><a href='con?new=1&amp;bid={@bid}&amp;f={po/@gid}'>顶楼</a></xsl:if>
 				<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
 				<xsl:if test='po/@fid != po/@gid or not(po/@tlast)'><a href='tcon?new=1&amp;bid={@bid}&amp;f={$gid}'>展开主题</a></xsl:if>
 				<xsl:if test='not(po/@tlast)'><a href='tcon?new=1&amp;bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>向后展开</a></xsl:if>

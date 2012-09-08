@@ -210,7 +210,7 @@ int bbsbfind_main(void)
 	if (day < 0)
 		day = 0;
 	fb_time_t begin = time(NULL) - 24 * 60 * 60 * day;
-	strappend(&q, &size, " AND stamp > %%t");
+	strappend(&q, &size, " AND stamp > %t");
 
 	const char *uname = get_param("user");
 	user_id_t uid = get_user_id(uname);
@@ -228,7 +228,7 @@ int bbsbfind_main(void)
 		const char *s = get_param(names[i]);
 		if (*s) {
 			k[count++] = s;
-			strappend(&q, &size, " AND title ILIKE %%s");
+			strappend(&q, &size, " AND title ILIKE %s");
 		}
 	}
 

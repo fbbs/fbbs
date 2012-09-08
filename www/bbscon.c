@@ -51,11 +51,12 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 	char *q = query + orig;
 
 	if (action == 'a' || action == 'b')
-		strappend(&q, &size, " AND gid = %%"DBIdPID);
+		strappend(&q, &size, " AND tid = %"DBIdPID);
 	if (op == '<')
 		strappend(&q, &size, " ORDER BY id DESC");
 	if (op == '>')
 		strappend(&q, &size, " ORDER BY id ASC");
+	strappend(&q, &size, " LIMIT 1");
 
 	db_res_t *res;
 	if (action == 'a' || action == 'b')
@@ -126,10 +127,7 @@ int bbscon_main(void)
 			ret & THREAD_LAST_POST ? " tlast='1'" : "",
 			(info.p.flag & POST_FLAG_LOCKED) ? " nore='1'" : "",
 			self || isbm ? " edit='1'" : "");
-	if (info.p.reid != info.p.id)
-		printf(" reid='%u' gid='%u'>", info.p.reid, info.p.tid);
-	else
-		printf(">");
+	printf(" reid='%"PRIdPID"' gid='%"PRIdPID"'>", info.p.reid, info.p.tid);
 
 	xml_print_post_wrapper(info.content, info.length);
 

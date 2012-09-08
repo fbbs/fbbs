@@ -159,10 +159,9 @@ table.content {
 }
 tr.light { background-color: #ffffff; }
 tr.dark { background-color: #f0f7ff; }
-th.no, td.no { width: 56px; text-align: center; }
 th.title, td.title { width: 168px; }
 th.owner, td.owner { width: 98px;}
-th.mark, td.mark { width: 42px; }
+th.mark, td.mark { width: 54px; }
 th.time, td.time { width: 140px; _width: 140px; text-align: center; padding: 0; margin: 0; }
 td.time { font-size: 11px; }
 th.bm, td.bm { _width: 280px; }
