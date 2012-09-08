@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "libweb.h"
+#include "fbbs/convert.h"
+#include "fbbs/fbbs.h"
 #include "fbbs/string.h"
 #include "fbbs/time.h"
 #include "fbbs/web.h"
@@ -100,7 +102,7 @@ static const char *_memstr(const void *m, const char *s, size_t size)
 	return NULL;
 }
 
-static void _xml_escape(const char *begin, const char *end)
+static void _xml_escape_internal(const char *begin, const char *end)
 {
 	for (const char *s = begin; s != end; ++s) {
 		switch (*s) {
@@ -128,6 +130,17 @@ static void _xml_escape(const char *begin, const char *end)
 				break;
 		}
 	}
+}
+
+static int xml_escape_helper(const char *s, size_t len, void *arg)
+{
+	_xml_escape_internal(s, s + len);
+	return 0;
+}
+
+static void _xml_escape(const char *begin, const char *end)
+{
+	convert(env.u2g, begin, end - begin, NULL, 0, xml_escape_helper, NULL);
 }
 
 static void _print_node(const char *name, string_t *value)

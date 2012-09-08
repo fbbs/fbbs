@@ -44,10 +44,11 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 	}
 
 	char query[256];
-	snprintf(query, sizeof(query), "SELECT " POST_LIST_FIELDS_FULL
-			" FROM posts WHERE board = %d AND id %c %%"DBIdPID, bid, op);
-	size_t size = sizeof(query) - strlen(query);
-	char *q = query;
+	size_t orig = snprintf(query, sizeof(query),
+			"SELECT " POST_LIST_FIELDS_FULL	" FROM posts"
+			" WHERE board = %d AND id %c %%"DBIdPID, bid, op);
+	size_t size = sizeof(query) - orig;
+	char *q = query + orig;
 
 	if (action == 'a' || action == 'b')
 		strappend(&q, &size, " AND gid = %%"DBIdPID);
@@ -118,7 +119,7 @@ int bbscon_main(void)
 
 	bool isbm = am_bm(&board);
 	bool self = (session.uid == info.p.uid);
-	printf("<po fid='%'"PRIdPID"%s%s%s%s%s%s", pid,
+	printf("<po fid='%"PRIdPID"'%s%s%s%s%s%s", info.p.id,
 			(info.p.flag & POST_FLAG_STICKY) ? " sticky='1'" : "",
 			ret & POST_FIRST ? " first='1'" : "",
 			ret & POST_LAST ? " last='1'" : "",
