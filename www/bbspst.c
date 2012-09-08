@@ -108,6 +108,9 @@ int bbsedit_main(void)
 	return do_bbspst(true);
 }
 
+/** UTF-8 "[转载]" */
+#define CP_MARK_STRING  "[\xe8\xbd\xac\xe8\xbd\xbd]"
+
 int bbsccc_main(void)
 {
 	if (!session.id)
@@ -123,8 +126,9 @@ int bbsccc_main(void)
 		return BBS_EINVAL;
 
 	unsigned int fid = strtoul(get_param("f"), NULL, 10);
-	struct fileheader fh;
-	if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
+
+	post_info_full_t info;
+	if (!bbscon_search(board.id, fid, 0, 0, false, &info))
 		return BBS_ENOFILE;
 
 	const char *target = get_param("t");
@@ -137,26 +141,24 @@ int bbsccc_main(void)
 		if (!has_post_perm(&currentuser, &to))
 			return BBS_EPST;
 
-		mmap_t m;
-		m.oflag = O_RDONLY;
-		char file[HOMELEN];
-		setbfile(file, board.name, fh.filename);
-
-		char title[sizeof(fh.title)];
-		if (strncmp(fh.title, "[转载]", sizeof("[转载]") - 1) == 0)
-			strlcpy(title, fh.title, sizeof(title));
-		else
-			snprintf(title, sizeof(title), "[转载]%s", fh.title);
-		if (mmap_open(file, &m) < 0)
-			return BBS_EINTNL;
+		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+		if (strneq(info.p.utf8_title, CP_MARK_STRING,
+					sizeof(CP_MARK_STRING) - 1)) {
+			strlcpy(utf8_title, info.p.utf8_title, sizeof(utf8_title));
+		} else {
+			snprintf(utf8_title, sizeof(utf8_title), CP_MARK_STRING"%s",
+					info.p.utf8_title);
+		}
+		convert_u2g(utf8_title, gbk_title);
 
 		post_request_t pr = { .autopost = false, .crosspost = true,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.board = &to, .title = title, .content = m.ptr, .sig = 0,
-			.ip = mask_host(fromhost), .o_fp = NULL, .noreply = false,
-			.mmark = false, .anony = false };
+			.board = &to, .title = gbk_title, .content = info.content,
+			.sig = 0, .ip = mask_host(fromhost), .o_fp = NULL,
+			.noreply = false, .mmark = false, .anony = false };
 		int ret = do_post_article(&pr);
-		mmap_close(&m);
+
+		free_post_info_full(&info);
 		if (!ret)
 			return BBS_EINTNL;
 
@@ -168,8 +170,12 @@ int bbsccc_main(void)
 	} else {
 		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",
-				fh.owner, board.name, board.id, fid);
-		xml_fputs(fh.title, stdout);
+				info.p.owner, board.name, board.id, fid);
+
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(info.p.utf8_title, gbk_title);
+		xml_fputs(gbk_title, stdout);
+
 		print_session();
 		printf("</bbsccc>");
 	}
