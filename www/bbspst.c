@@ -1,5 +1,4 @@
 #include "libweb.h"
-#include "mmap.h"
 #include "fbbs/board.h"
 #include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
@@ -9,9 +8,9 @@
 #include "fbbs/post.h"
 #include "fbbs/web.h"
 
-static void get_post_body(char **begin, char **end)
+static void get_post_body(const char **begin, const char **end)
 {
-	char *ptr = *begin, *e = *end;
+	const char *ptr = *begin, *e = *end;
 	// skip header.
 	int n = 3;
 	while (ptr != e && n >= 0) {
@@ -48,27 +47,28 @@ static int do_bbspst(bool isedit)
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	unsigned long fid = 0;
-	mmap_t m;
-	struct fileheader fh;
+	post_id_t pid = 0;
+	post_info_full_t info;
+
 	const char *f = get_param("f");
 	bool reply = !(*f == '\0');
+
 	if (isedit && !reply)
 		return BBS_EINVAL;
+
 	if (reply) {
-		fid = strtoul(f, NULL, 10);
-		if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
+		pid = strtol(f, NULL, 10);
+		if (!pid || !bbscon_search(board.id, pid, 0, 0, false))
 			return BBS_ENOFILE;
-		if (!isedit && fh.accessed[0] & FILE_NOREPLY)
+
+		if (!isedit && (info.p.flag & POST_FLAG_LOCKED)) {
+			free_post_info_full(&info);
 			return BBS_EPST;
-		if (isedit && !am_bm(&board)
-				&& strcmp(fh.owner, currentuser.userid))
+		}
+		if (isedit && !am_bm(&board) && session.uid != info.p.uid) {
+			free_post_info_full(&info);
 			return BBS_EACCES;
-		char file[HOMELEN];
-		setbfile(file, board.name, fh.filename);
-		m.oflag = O_RDONLY;
-		if (mmap_open(file, &m) < 0)
-			return BBS_ENOFILE;
+		}
 	}
 	
 	xml_header(NULL);
@@ -78,21 +78,29 @@ static int do_bbspst(bool isedit)
 	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d' anony='%d'>",
 			board.name, board.id, isedit, dashd(path), anony);
 	print_session();
+
 	if (reply) {
 		printf("<t>");
-		ansi_filter(fh.title, fh.title);
-		xml_fputs2(fh.title, check_gbk(fh.title) - fh.title, stdout);
-		printf("</t><po f='%lu'>", fid);
+
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(info.p.utf8_title, gbk_title);
+
+		ansi_filter(gbk_title, gbk_title);
+		xml_fputs2(gbk_title, 0, stdout);
+
+		printf("</t><po f='%lu'>", pid);
 		if (isedit) {
-			char *begin = m.ptr, *end = (char *)(m.ptr) + m.size;
+			const char *begin = info.content;
+			const char *end = info.content + info.length;
 			get_post_body(&begin, &end);
 			if (end > begin)
 				xml_fputs2(begin, end - begin, stdout);
 		} else {
-			quote_string(m.ptr, m.size, NULL, QUOTE_AUTO, false, xml_fputs3);
+			quote_string(info.content, info.length, NULL, QUOTE_AUTO, false,
+					xml_fputs3);
 		}
-		mmap_close(&m);
 		fputs("</po>", stdout);
+		free_post_info_full(&info);
 	}
 	printf("</bbspst>");
 	return 0;
@@ -125,10 +133,10 @@ int bbsccc_main(void)
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	unsigned int fid = strtoul(get_param("f"), NULL, 10);
+	post_id_t pid = strtol(get_param("f"), NULL, 10);
 
 	post_info_full_t info;
-	if (!bbscon_search(board.id, fid, 0, 0, false, &info))
+	if (!bbscon_search(board.id, pid, 0, 0, false, &info))
 		return BBS_ENOFILE;
 
 	const char *target = get_param("t");
@@ -170,7 +178,7 @@ int bbsccc_main(void)
 	} else {
 		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",
-				info.p.owner, board.name, board.id, fid);
+				info.p.owner, board.name, board.id, pid);
 
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(info.p.utf8_title, gbk_title);
@@ -178,6 +186,8 @@ int bbsccc_main(void)
 
 		print_session();
 		printf("</bbsccc>");
+
+		free_post_info_full(&info);
 	}
 	return 0;
 }
