@@ -94,6 +94,8 @@ static char *_check_character(char *text)
 	return text;
 }
 
+extern int bbscon_search_pid(int board, post_id_t pid, post_info_full_t *p);
+
 int bbssnd_main(void)
 {
 	if (!session.id)
@@ -109,33 +111,17 @@ int bbssnd_main(void)
 		return BBS_EINVAL;
 
 	bool isedit = (*(get_param("e")) == '1');
-	unsigned int fid = 0;
-	struct fileheader fh;
-	const char *f = get_param("f");
-	bool reply = !(*f == '\0');
-	if (reply) {
-		fid = strtoul(f, NULL, 10);
-		if (bbscon_search(board.name, fid, 0, &fh, false) <= 0)
-			return BBS_ENOFILE;
-		if (!am_bm(&board)
-				&& !streq(fh.owner, currentuser.userid)) {
-			if (!isedit && fh.accessed[0] & FILE_NOREPLY)
-				return BBS_EPST;
-			if (isedit)
-				return BBS_EACCES;
-		}
-	}
 
-	char title[sizeof(fh.title)];
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	if (!isedit) {
 		if (request_type(REQUEST_UTF8)) {
-			convert_u2g(get_param("title"), title);
+			convert_u2g(get_param("title"), gbk_title);
 		} else {
-			strlcpy(title, get_param("title"), sizeof(title));
+			strlcpy(gbk_title, get_param("title"), sizeof(gbk_title));
 		}
-		printable_filter(title);
-		valid_title(title);
-		if (*title == '\0')
+		printable_filter(gbk_title);
+		valid_title(gbk_title);
+		if (*gbk_title == '\0')
 			return BBS_EINVAL;
 	}
 
@@ -145,25 +131,56 @@ int bbssnd_main(void)
 	if (diff < 6)
 		return BBS_EPFREQ;
 
+	post_id_t pid = 0;
+	post_info_full_t info;
+
+	const char *f = get_param("f");
+	bool reply = !(*f == '\0');
+
+	if (isedit || reply) {
+		pid = strtol(f, NULL, 10);
+		if (!pid || !bbscon_search_pid(board.id, pid, &info))
+			return BBS_ENOFILE;
+
+		if (!am_bm(&board) && session.uid != info.p.uid) {
+			if (!isedit && (info.p.flag & POST_FLAG_LOCKED)) {
+				free_post_info_full(&info);
+				return BBS_EPST;
+			}
+			if (isedit) {
+				free_post_info_full(&info);
+				return BBS_EACCES;
+			}
+		}
+	}
+
 	char *text = (char *)get_param("text");
 	_check_character(text);
 
 	if (isedit) {
 		char file[HOMELEN];
-		setbfile(file, board.name, fh.filename);
-		if (edit_article(file, text, mask_host(fromhost)) < 0)
+		dump_content_to_gbk_file(info.content, info.length,
+				file, sizeof(file));
+		int ret = edit_article(file, text, mask_host(fromhost));
+
+		unlink(file);
+		free_post_info_full(&info);
+
+		if (ret < 0)
 			return BBS_EINTNL;
 	} else {
 		post_request_t pr = { .autopost = false, .crosspost = false,
 			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.board = &board, .title = title, .content = text,
+			.board = &board, .title = gbk_title, .content = text,
 			.sig = strtol(get_param("sig"), NULL, 0), .ip = mask_host(fromhost),
-			.o_fp = reply ? &fh : NULL, .mmark = false,
-			.noreply = reply && fh.accessed[0] & FILE_NOREPLY,
+			.o_fp = reply ? &info.p : NULL, .mmark = false,
+			.noreply = reply && (info.p.flag & POST_FLAG_LOCKED),
 			.anony = strtol(get_param("anony"), NULL, 0),
 			.cp = request_type(REQUEST_UTF8) ? env.u2g : NULL
 		};
-		if (!(fid = do_post_article(&pr)))
+		pid = do_post_article(&pr);
+		free_post_info_full(&info);
+		if (!pid)
 			return BBS_EINTNL;
 	}
 
@@ -172,9 +189,9 @@ int bbssnd_main(void)
 		save_user_data(&currentuser);
 	}
 
-	char buf[sizeof(fh.title) + sizeof(board.name)];
+	char buf[128];
 	snprintf(buf, sizeof(buf), "%sed '%s' on %s", isedit ? "edit" : "post",
-			title, board.name);
+			gbk_title, board.name);
 	report(buf, currentuser.userid);
 
 	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_doc_mode_str(),
@@ -183,6 +200,6 @@ int bbssnd_main(void)
 	refreshto(1, buf);
 	printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>发表</a>"
 			"成功，1秒钟后自动转到<a href='%s'>版面</a>\n</body>\n</html>\n",
-			board.id, fid, buf);
+			board.id, pid, buf);
 	return 0;
 }

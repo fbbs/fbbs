@@ -123,7 +123,7 @@ unsigned int do_post_article(const post_request_t *pr)
 	fh.id = get_nextid2(pr->board->id);
 	if (pr->o_fp) { // reply
 		fh.reid = pr->o_fp->id;
-		fh.gid = pr->o_fp->gid;
+		fh.gid = pr->o_fp->tid;
 	} else {
 		fh.reid = fh.id;
 		fh.gid = fh.id;

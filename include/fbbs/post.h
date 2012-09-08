@@ -53,24 +53,6 @@ typedef enum {
 } post_list_type_e;
 
 typedef struct {
-	bool autopost;
-	bool crosspost;
-	const char *userid;
-	const char *nick;
-	const struct userec *user;
-	const board_t *board;
-	const char *title;
-	const char *content;
-	int sig;
-	const char *ip;
-	const struct fileheader *o_fp;
-	bool noreply;
-	bool mmark;
-	bool anony;
-	convert_t *cp;
-} post_request_t;
-
-typedef struct {
 	int replies;
 	int comments;
 	int score;
@@ -90,6 +72,24 @@ typedef struct {
 	const char *content;
 	size_t length;
 } post_info_full_t;
+
+typedef struct {
+	bool autopost;
+	bool crosspost;
+	const char *userid;
+	const char *nick;
+	const struct userec *user;
+	const board_t *board;
+	const char *title;
+	const char *content;
+	int sig;
+	const char *ip;
+	const post_info_t *o_fp;
+	bool noreply;
+	bool mmark;
+	bool anony;
+	convert_t *cp;
+} post_request_t;
 
 enum {
 	POST_LIST_KEYWORD_LEN = 19,
