@@ -176,7 +176,7 @@ int bbssnd_main(void)
 			.o_fp = reply ? &info.p : NULL, .mmark = false,
 			.noreply = reply && (info.p.flag & POST_FLAG_LOCKED),
 			.anony = strtol(get_param("anony"), NULL, 0),
-			.cp = request_type(REQUEST_UTF8) ? env.u2g : NULL
+			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL
 		};
 		pid = do_post_article(&pr);
 		free_post_info_full(&info);

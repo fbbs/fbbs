@@ -1,21 +1,16 @@
 #ifndef FB_CONVERT_H
 #define FB_CONVERT_H
 
-#include <iconv.h>
 #include <stdio.h>
 
 #define GBK_BUFFER(buf, cchars)  char gbk_##buf[cchars * 2 + 1]
 #define UTF8_BUFFER(buf, cchars)  char utf8_##buf[cchars * 4 + 1]
 #define GBK_UTF8_BUFFER(buf, cchars)  char gbk_##buf[cchars * 2 + 1], utf8_##buf[cchars * 4 + 1]
 
-enum {
-	CONVERT_BUFSIZE = 1024,
-};
+typedef struct convert_t convert_t;
 
-typedef struct convert_t {
-	iconv_t cd;
-	char buf[CONVERT_BUFSIZE];
-} convert_t;
+extern convert_t *env_u2g;
+extern convert_t *env_g2u;
 
 typedef int (*convert_handler_t)(const char *buf, size_t len, void *arg);
 
@@ -29,8 +24,8 @@ extern int convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp
 
 #define CONVERT_ALL  ((size_t) -1)
 #define convert_u2g(orig, buf) \
-	convert(env.u2g, orig, CONVERT_ALL, buf, sizeof(buf), NULL, NULL)
+	convert(env_u2g, orig, CONVERT_ALL, buf, sizeof(buf), NULL, NULL)
 #define convert_g2u(orig, buf) \
-	convert(env.g2u, orig, CONVERT_ALL, buf, sizeof(buf), NULL, NULL)
+	convert(env_g2u, orig, CONVERT_ALL, buf, sizeof(buf), NULL, NULL)
 
 #endif // FB_CONVERT_H

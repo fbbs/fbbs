@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <iconv.h>
 #include <string.h>
 #include "fbbs/convert.h"
 
@@ -7,6 +8,21 @@
 #else
 # define fb_iconv(cd, i, ib, o, ob) iconv(cd, i, ib, o, ob)
 #endif
+
+enum {
+	CONVERT_BUFSIZE = 1024,
+};
+
+struct convert_t {
+	iconv_t cd;
+	char buf[CONVERT_BUFSIZE];
+};
+
+static convert_t _env_u2g;
+static convert_t _env_g2u;
+
+convert_t *env_u2g = &_env_u2g;
+convert_t *env_g2u = &_env_g2u;
 
 /**
  * Open a conversion descriptor.

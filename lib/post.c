@@ -491,7 +491,7 @@ int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
 	FILE *fp = fopen(file, "w");
 	if (!fp)
 		return -1;
-	convert_to_file(env.u2g, utf8_str, length, fp);
+	convert_to_file(env_u2g, utf8_str, length, fp);
 	fclose(fp);
 	return 0;
 }
