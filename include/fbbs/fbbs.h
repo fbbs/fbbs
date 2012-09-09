@@ -12,12 +12,10 @@
 #endif // ENABLE_BANK
 
 struct config_t;
-struct mdb_conn_t;
 struct pool_t;
 
 typedef struct bbs_env_t {
 	struct config_t *c;
-	struct mdb_conn_t *m;
 	struct pool_t *p;
 } bbs_env_t;
 

@@ -3,12 +3,28 @@
 #include "fbbs/fbbs.h"
 #include "fbbs/mdbi.h"
 
+enum {
+	MDB_CMD_BUF_LEN = 128,
+};
+
+struct mdb_conn_t {
+	redisContext *c;
+	char buf[MDB_CMD_BUF_LEN];
+};
+
+static mdb_conn_t _mdb;
+
 int mdb_connect_unix(const char *path)
 {
-	env.m->c = redisConnectUnix(path);
-	if (!env.m->c || env.m->c->err)
+	_mdb.c = redisConnectUnix(path);
+	if (!_mdb.c || _mdb.c->err)
 		return -1;
 	return 0;
+}
+
+void mdb_disconnect(void)
+{
+	mdb_finish(_mdb.c);
 }
 
 static char *smart_vsnprintf(char *buf, size_t size,
@@ -35,10 +51,10 @@ static mdb_res_t *mdb_vcmd(const char *cmd, const char *fmt, va_list ap)
 	if (bytes >= sizeof(real_fmt))
 		return NULL;
 
-	char *buf = env.m->buf;
-	char *s = smart_vsnprintf(buf, sizeof(env.m->buf), real_fmt, ap);
+	char *buf = _mdb.buf;
+	char *s = smart_vsnprintf(buf, sizeof(_mdb.buf), real_fmt, ap);
 
-	mdb_res_t *res = redisCommand(env.m->c, s);
+	mdb_res_t *res = redisCommand(_mdb.c, s);
 
 	if (s != buf)
 		free(s);

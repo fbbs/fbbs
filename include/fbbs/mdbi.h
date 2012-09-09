@@ -4,8 +4,6 @@
 #include <hiredis/hiredis.h>
 
 enum {
-	MDB_CMD_BUF_LEN = 128,
-
 	MDB_RES_STATUS = REDIS_REPLY_STATUS,
 	MDB_RES_ERROR = REDIS_REPLY_ERROR,
 	MDB_RES_INTEGER = REDIS_REPLY_INTEGER,
@@ -14,14 +12,12 @@ enum {
 	MDB_RES_ARRAY = REDIS_REPLY_ARRAY,
 };
 
-typedef struct mdb_conn_t {
-	redisContext *c;
-	char buf[MDB_CMD_BUF_LEN];
-} mdb_conn_t;
+typedef struct mdb_conn_t mdb_conn_t;
 
 typedef redisReply mdb_res_t;
 
 extern int mdb_connect_unix(const char *path);
+extern void mdb_disconnect(void);
 extern mdb_res_t *mdb_cmd(const char *cmd, const char *fmt, ...);
 extern long long mdb_integer(long long invalid, const char *cmd, const char *fmt, ...);
 
