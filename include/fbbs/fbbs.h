@@ -11,15 +11,6 @@
 # define PERCENT_RANK(r)  (((int)(r * 1000)) / 10.0)
 #endif // ENABLE_BANK
 
-struct config_t;
-struct pool_t;
-
-typedef struct bbs_env_t {
-	struct config_t *c;
-	struct pool_t *p;
-} bbs_env_t;
-
-extern bbs_env_t env;
 extern bbs_session_t session;
 
 extern char *genpasswd(const char *pw);

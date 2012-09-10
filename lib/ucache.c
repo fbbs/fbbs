@@ -23,8 +23,6 @@ enum {
 	MAX_LOGINS_DIRECTOR = 6, ///< max logins for a director(zhanwu).
 };
 
-bbs_env_t env;
-
 // The starting address of cache for all users.
 struct UCACHE *uidshm = NULL;
 // A global variable to hold result when searching users.

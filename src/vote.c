@@ -640,12 +640,7 @@ int b_closepolls(void)
 
 	time_t nextpoll = now + 7 * 3600;
 
-	env.p = pool_create(0);
-	if (!env.p)
-		exit(EXIT_FAILURE);
-
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
-	if (!env.c)
+	if (!config_load(DEFAULT_CFG_FILE))
 		exit(EXIT_FAILURE);
 
 	initialize_db();

@@ -313,9 +313,9 @@ void initialize_convert_env(void)
 void initialize_db(void)
 {
 	atexit(db_finish);
-	if (!db_connect(config_get(env.c, "host"), config_get(env.c, "port"),
-			config_get(env.c, "dbname"), config_get(env.c, "user"),
-			config_get(env.c, "password"))) {
+	if (!db_connect(config_get("host"), config_get("port"),
+			config_get("dbname"), config_get("user"),
+			config_get("password"))) {
 		exit(EXIT_FAILURE);
 	}
 }
@@ -323,14 +323,13 @@ void initialize_db(void)
 void initialize_mdb(void)
 {
 	atexit(mdb_disconnect);
-	if (mdb_connect_unix(config_get(env.c, "mdb")) < 0)
+	if (mdb_connect_unix(config_get("mdb")) < 0)
 		exit(EXIT_FAILURE);
 }
 
 void initialize_environment(int flags)
 {
-	env.p = pool_create(0);
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
+	config_load(DEFAULT_CFG_FILE);
 
 	if (flags & INIT_CONV)
 		initialize_convert_env();

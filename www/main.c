@@ -129,8 +129,6 @@ const static web_handler_t handlers[] = {
 	{ "upload", bbsupload_main, ST_UPLOAD },
 };
 
-bbs_env_t env;
-
 static int compare_handler(const void *l, const void *r)
 {
 	const web_handler_t *h1 = l, *h2 = r;

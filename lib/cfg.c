@@ -16,11 +16,11 @@ struct config_t {
 	int pairs;
 };
 
+static config_t env_cfg;
+
 static config_t *_config_init(pool_t *p)
 {
-	config_t *c = pool_alloc(p, sizeof(*c));
-	if (!c)
-		return NULL;
+	config_t *c = &env_cfg;
 
 	c->keys = pool_alloc(p, sizeof(*c->keys) * CONFIG_MAX_KEYS);
 	c->vals = pool_alloc(p, sizeof(*c->vals) * CONFIG_MAX_KEYS);
@@ -47,8 +47,10 @@ static int _config_add(config_t *c, const char *key, const char *val)
 	return 0;
 }
 
-config_t *config_load(pool_t *p, const char *file)
+config_t *config_load(const char *file)
 {
+	pool_t *p = pool_create(0);
+
 	config_t *c = _config_init(p);
 	if (!c)
 		return NULL;
@@ -70,11 +72,11 @@ config_t *config_load(pool_t *p, const char *file)
 	return c;
 }
 
-const char *config_get(const config_t *cfg, const char *key)
+const char *config_get(const char *key)
 {
-	for (int i = 0; i < cfg->pairs; ++i) {
-		if (streq(cfg->keys[i], key))
-			return cfg->vals[i];
+	for (int i = 0; i < env_cfg.pairs; ++i) {
+		if (streq(env_cfg.keys[i], key))
+			return env_cfg.vals[i];
 	}
 	return NULL;
 }

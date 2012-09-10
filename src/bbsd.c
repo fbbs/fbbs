@@ -422,12 +422,7 @@ int main(int argc, char *argv[])
 	fb_signal(SIGCHLD, reapchild);
 	fb_signal(SIGTERM, close_daemon);
 
-	env.p = pool_create(0);
-	if (!env.p)
-		return EXIT_FAILURE;
-
-	env.c = config_load(env.p, DEFAULT_CFG_FILE);
-	if (!env.c)
+	if (!config_load(DEFAULT_CFG_FILE))
 		return EXIT_FAILURE;
 
 #ifdef ENABLE_SSH
