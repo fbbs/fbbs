@@ -1,5 +1,5 @@
-#include "fbbs/fbbs.h"
 #include "fbbs/prop.h"
+#include "fbbs/session.h"
 #include "fbbs/title.h"
 
 bool title_check_existence(user_id_t uid)

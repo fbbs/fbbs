@@ -1,7 +1,6 @@
 #include "bbs.h"
 #include "mmap.h"
 #include "record.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"

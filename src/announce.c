@@ -1,7 +1,6 @@
 #include "bbs.h"
 #include "record.h"
 #include "fbbs/board.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"

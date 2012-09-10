@@ -1,5 +1,4 @@
 #include "bbs.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"

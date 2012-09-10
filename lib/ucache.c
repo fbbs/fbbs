@@ -8,7 +8,6 @@
 #include "record.h"
 
 #include "fbbs/dbi.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/session.h"

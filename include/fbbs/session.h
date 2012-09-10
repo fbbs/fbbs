@@ -109,6 +109,8 @@ typedef struct {
 	bool visible;
 } bbs_session_t;
 
+extern bbs_session_t session;
+
 extern session_id_t session_new_id(void);
 extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 		const char *ip_addr, bool is_web, bool is_secure, int duration);

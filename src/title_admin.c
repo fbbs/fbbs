@@ -1,7 +1,7 @@
 #include "bbs.h"
 #include "fbbs/convert.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/prop.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/time.h"

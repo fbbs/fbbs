@@ -4,7 +4,6 @@
 #include "fbbs/board.h"
 #include "fbbs/brc.h"
 #include "fbbs/convert.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"

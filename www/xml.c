@@ -1,5 +1,6 @@
+#include <inttypes.h>
+#include <stdbool.h>
 #include "fbbs/convert.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/list.h"
 #include "fbbs/pool.h"
 #include "fbbs/web.h"

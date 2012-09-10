@@ -1,7 +1,7 @@
 #include "libweb.h"
 #include "fbbs/board.h"
 #include "fbbs/brc.h"
-#include "fbbs/fbbs.h"
+#include "fbbs/session.h"
 #include "fbbs/web.h"
 
 int bbsclear_main(void)

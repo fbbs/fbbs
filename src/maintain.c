@@ -1,6 +1,6 @@
 #include "bbs.h"
 #include "record.h"
-#include "fbbs/fbbs.h"
+#include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/terminal.h"

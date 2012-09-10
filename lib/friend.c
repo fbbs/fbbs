@@ -1,6 +1,6 @@
-#include "fbbs/fbbs.h"
 #include "fbbs/friend.h"
 #include "fbbs/dbi.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/user.h"
 

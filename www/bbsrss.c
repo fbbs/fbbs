@@ -2,7 +2,6 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/board.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/web.h"
 

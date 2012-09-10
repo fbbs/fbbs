@@ -11,7 +11,6 @@
 #include "record.h"
 #include "fbbs/board.h"
 #include "fbbs/brc.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"

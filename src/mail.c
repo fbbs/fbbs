@@ -1,6 +1,5 @@
 #include "bbs.h"
 #include "record.h"
-#include "fbbs/fbbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"

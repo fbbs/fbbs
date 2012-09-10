@@ -1,6 +1,6 @@
 #include <stdarg.h>
+#include <stdlib.h>
 
-#include "fbbs/fbbs.h"
 #include "fbbs/mdbi.h"
 
 enum {
