@@ -2,6 +2,7 @@
 #define FB_BOARD_H
 
 #include "fbbs/dbi.h"
+#include "fbbs/user.h"
 
 enum {
 	BOARD_NAME_LEN = 17,

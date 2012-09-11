@@ -4,6 +4,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
+#include "fbbs/user.h"
 
 typedef int (*callback_t)(const char *, const char *, money_t);
 

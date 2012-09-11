@@ -2,6 +2,7 @@
 #define FB_FRIEND_H
 
 #include "fbbs/dbi.h"
+#include "fbbs/user.h"
 
 enum {
 	FOLLOW_NOTE_CCHARS = 15,

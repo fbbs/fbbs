@@ -2,6 +2,7 @@
 #define FB_SESSION_H
 
 #include <stdint.h>
+#include "fbbs/dbi.h"
 #include "fbbs/time.h"
 #include "fbbs/user.h"
 
