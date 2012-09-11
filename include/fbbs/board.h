@@ -46,9 +46,9 @@ typedef struct {
 } board_t;
 
 #define BOARD_BASE_FIELDS \
-	"b.id, b.name, b.descr, b.parent, b.flag, b.perm, b.bms, c.name "
+	"b.id, b.name, b.descr, b.parent, b.flag, b.perm, b.bms, b.categ "
 #define BOARD_BASE_TABLES \
-	"boards b JOIN board_categs c ON b.categ = c.id "
+	"boards b "
 #define BOARD_SELECT_QUERY_BASE \
 	"SELECT " BOARD_BASE_FIELDS "FROM " BOARD_BASE_TABLES
 

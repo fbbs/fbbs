@@ -64,10 +64,8 @@ sub insert_boards
 {
 	my ($boards, $codes, $users) = @_;
 
-	my $cqry = $dbh->prepare("INSERT INTO board_categs (name) VALUES (?)");
 	my $bqry = $dbh->prepare("INSERT INTO boards (name, descr, parent, flag, perm, categ, sector, bms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 	my $bmqry = $dbh->prepare("INSERT INTO bms (user_id, board_id) VALUES (?, ?)") or die $dbh->errstr;
-	my %categs;
 	my $cid = 1;
 	my $bid = 1;
 
@@ -78,13 +76,6 @@ sub insert_boards
 		$categ = convert($categ);
 		$bms = convert($bms);
 		$sector = $codes->{substr $sector, 0, 1} || 0;
-
-		if (not exists $categs{$categ}) {
-			$cqry->execute($categ);
-			$categs{$categ} = $cid++;
-			$dbh->commit;
-		}
-		$categ = $categs{$categ};
 
 		$bqry->execute($name, $descr, $parent, $flag, $perm, $categ, $sector, $bms) or die $dbh->errstr;
 

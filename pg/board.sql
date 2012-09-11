@@ -13,10 +13,6 @@ CREATE TABLE board_sectors (
 );
 INSERT INTO board_sectors (id, name) VALUES (0, ' ');
 
-CREATE TABLE board_categs (
-	id SERIAL PRIMARY KEY,
-	name TEXT
-);
 CREATE TABLE boards (
 	id SERIAL PRIMARY KEY,
 	name TEXT,
@@ -24,7 +20,7 @@ CREATE TABLE boards (
 	parent INTEGER,
 	flag INTEGER,
 	perm INTEGER,
-	categ INTEGER REFERENCES board_categs,
+	categ TEXT,
 	sector INTEGER REFERENCES board_sectors,
 	bms TEXT
 );
