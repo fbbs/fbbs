@@ -46,6 +46,4 @@ extern db_res_t *db_query(const char *cmd, ...);
 extern int db_begin_trans(void);
 extern int db_end_trans(void);
 
-#include "fbbs/schema.h"
-
 #endif // FB_DBI_H

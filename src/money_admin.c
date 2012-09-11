@@ -2,6 +2,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/dbi.h"
 #include "fbbs/fileio.h"
+#include "fbbs/money.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/user.h"

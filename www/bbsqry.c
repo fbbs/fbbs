@@ -1,5 +1,6 @@
 #include "libweb.h"
 #include "fbbs/helper.h"
+#include "fbbs/money.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/uinfo.h"

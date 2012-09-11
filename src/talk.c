@@ -17,6 +17,7 @@
 #include "fbbs/dbi.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
+#include "fbbs/money.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
