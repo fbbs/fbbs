@@ -1,6 +1,5 @@
 #include "bbs.h"
 #include "screen.h"
-#include "edit.h"
 #include <sys/param.h>
 #include <stdarg.h>
 #include "fbbs/string.h"

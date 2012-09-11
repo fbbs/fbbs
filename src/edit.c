@@ -1,5 +1,4 @@
 #include "bbs.h"
-#include "edit.h"
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/board.h"
@@ -14,6 +13,16 @@ USE_TRY;
 
 extern int local_article;
 extern char BoardName[];
+
+#define M_MARK  0x01
+
+struct textline {
+	struct textline *prev;
+	struct textline *next;
+	int len;
+	unsigned char attr;
+	char data[WRAPMARGIN + 1];
+};
 
 static struct textline *firstline = NULL;
 static struct textline *can_edit_begin = NULL;
