@@ -165,7 +165,7 @@ int bbsccc_main(void)
 			.board = &to, .title = gbk_title, .content = info.content,
 			.sig = 0, .ip = mask_host(fromhost), .o_fp = NULL,
 			.noreply = false, .mmark = false, .anony = false };
-		int ret = do_post_article(&pr);
+		int ret = publish_post(&pr);
 
 		free_post_info_full(&info);
 		if (!ret)

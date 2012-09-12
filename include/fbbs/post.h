@@ -103,7 +103,7 @@ typedef struct {
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_list_filter_t;
 
-extern unsigned int do_post_article(const post_request_t *pr);
+extern post_id_t publish_post(const post_request_t *pr);
 
 extern void quote_string(const char *str, size_t size, const char *output,
 		int mode, bool mail, size_t (*filter)(const char *, size_t, FILE *));

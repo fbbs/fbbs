@@ -43,43 +43,20 @@ static FILE *get_fname(const char *dir, const char *pfx,
 	return NULL;
 }
 
-/**
- * Post an article.
- * @param pr The post request.
- * @return file id on success, -1 on error.
- */
-unsigned int do_post_article(const post_request_t *pr)
+static char *generate_content(const post_request_t *pr, const char *uname,
+		const char *nick, const char *ip, bool anony)
 {
-	if (!pr || !pr->title || !pr->content || !pr->board)
-		return 0;
-
-	bool anony = pr->anony && (pr->board->flag & BOARD_ANONY_FLAG);
-	const char *userid = NULL, *nick = NULL, *ip = pr->ip;
-	if (anony) {
-		userid = ANONYMOUS_ACCOUNT;
-		nick = ANONYMOUS_NICK;
-		ip = ANONYMOUS_SOURCE;
-	} else if (pr->user) {
-		userid = pr->user->userid;
-		nick = pr->user->username;
-	} else if (pr->autopost) {
-		userid = pr->userid;
-		nick = pr->nick;
-	}
-	if (!userid || !nick)
-		return 0;
-
 	char dir[HOMELEN];
-	int idx = snprintf(dir, sizeof(dir), "boards/%s/", pr->board->name);
+	snprintf(dir, sizeof(dir), "boards/%s/", pr->board->name);
 	const char *pfx = "M.";
 
 	char fname[HOMELEN];
 	FILE *fptr;
 	if ((fptr = get_fname(dir, pfx, fname, sizeof(fname))) == NULL)
-		return 0;
+		return NULL;
 
 	fprintf(fptr, "发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n",
-			userid, nick, pr->board->name, pr->title, BBSNAME,
+			uname, nick, pr->board->name, pr->title, BBSNAME,
 			getdatestring(time(NULL), DATE_ZH));
 
 	if (pr->cp)
@@ -88,7 +65,7 @@ unsigned int do_post_article(const post_request_t *pr)
 		fputs(pr->content, fptr);
 
 	if (!anony && pr->sig > 0)
-		add_signature(fptr, userid, pr->sig);
+		add_signature(fptr, uname, pr->sig);
 	else
 		fputs("\n--", fptr);
 
@@ -105,40 +82,88 @@ unsigned int do_post_article(const post_request_t *pr)
 	}
 
 	fclose(fptr);
-	valid_gbk_file(fname, '?');
 
-	struct fileheader fh;
-	memset(&fh, 0, sizeof(fh));	
-	strlcpy(fh.filename, fname + idx, sizeof(fh.filename));
-	strlcpy(fh.owner, userid, sizeof(fh.owner));
-	strlcpy(fh.title, pr->title, sizeof(fh.title));
+	char *utf8_content = NULL;
+	mmap_t m = { .oflag = O_RDONLY };
+	if (mmap_open(fname, &m) == 0) {
+		utf8_content = malloc(m.size * 2);
+		convert_g2u(m.ptr, utf8_content);
+		mmap_close(&m);
+	}
+	return utf8_content;
+}
 
-	if (pr->noreply)
-		fh.accessed[0] |= FILE_NOREPLY;
-	if (pr->mmark)
-		fh.accessed[0] |= FILE_MARKED;
+static post_id_t insert_post(const post_request_t *pr, const char *uname,
+		const char *content)
+{
+	fb_time_t now = time(NULL);
+	user_id_t uid = get_user_id(uname);
 
-	// TODO: assure fid order in .DIR
-	fh.id = get_nextid2(pr->board->id);
-	if (pr->o_fp) { // reply
-		fh.reid = pr->o_fp->id;
-		fh.gid = pr->o_fp->tid;
-	} else {
-		fh.reid = fh.id;
-		fh.gid = fh.id;
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+	convert_g2u(pr->title, utf8_title);
+
+	post_id_t pid = 0, reid, tid;
+	db_res_t *r = db_query("SELECT nextval('posts_base_id_seq')");
+	if (r) {
+		pid = reid = tid = db_get_post_id(r, 0, 0);
+		db_clear(r);
 	}
 
-	setwbdir(dir, pr->board->name);
-	append_record(dir, &fh, sizeof(fh));
+	if (pid) {
+		reid = pr->o_fp ? pr->o_fp->id : pid;
+		tid = pr->o_fp ? pr->o_fp->tid : pid;
+
+		r = db_cmd("INSERT INTO posts (id, reid, tid, owner, stamp, board,"
+				" uname, title, content, locked, marked) VALUES (%"DBIdPID","
+				" %"DBIdPID", %"DBIdPID", %"DBIdUID", %t, %d, %s, %s, %s, %b,"
+				" %b)", pid, reid, tid, uid, now, pr->board->id, uname,
+				utf8_title, content, pr->noreply, pr->mmark);
+		if (!r || db_cmd_rows(r) != 1)
+			pid = 0;
+		db_clear(r);
+	}
+	return pid;
+}
+
+/**
+ * Publish a post.
+ * @param pr The post request.
+ * @return file id on success, -1 on error.
+ */
+post_id_t publish_post(const post_request_t *pr)
+{
+	if (!pr || !pr->title || !pr->content || !pr->board)
+		return 0;
+
+	bool anony = pr->anony && (pr->board->flag & BOARD_ANONY_FLAG);
+	const char *uname = NULL, *nick = NULL, *ip = pr->ip;
+	if (anony) {
+		uname = ANONYMOUS_ACCOUNT;
+		nick = ANONYMOUS_NICK;
+		ip = ANONYMOUS_SOURCE;
+	} else if (pr->user) {
+		uname = pr->user->userid;
+		nick = pr->user->username;
+	} else if (pr->autopost) {
+		uname = pr->userid;
+		nick = pr->nick;
+	}
+	if (!uname || !nick)
+		return 0;
+
+	char *content = generate_content(pr, uname, nick, ip, anony);
+	post_id_t pid = insert_post(pr, uname, content);
+	free(content);
+
 	updatelastpost(pr->board);
 
 	if (!pr->autopost) {
-		brc_fcgi_init(userid, pr->board->name);
-		brc_addlist_legacy(fh.filename);
-		brc_update(userid, pr->board->name);
+		brc_fcgi_init(uname, pr->board->name);
+		brc_mark_as_read(pid);
+		brc_update(uname, pr->board->name);
 	}
 
-	return fh.id;
+	return pid;
 }
 
 enum {

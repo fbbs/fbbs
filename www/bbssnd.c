@@ -177,7 +177,7 @@ int bbssnd_main(void)
 			.anony = strtol(get_param("anony"), NULL, 0),
 			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL
 		};
-		pid = do_post_article(&pr);
+		pid = publish_post(&pr);
 		free_post_info_full(&info);
 		if (!pid)
 			return BBS_EINTNL;
