@@ -328,6 +328,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'g':
 			return toggle_post_flag(l->filter.bid, ip,
 					POST_FLAG_DIGEST, "digest");
+		case 'w':
+			return toggle_post_flag(l->filter.bid, ip,
+					POST_FLAG_WATER, "water");
 		case '.':
 			return post_list_deleted(l->filter.bid, l->filter.type);
 		case 'J':

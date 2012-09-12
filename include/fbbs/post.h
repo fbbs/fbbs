@@ -16,8 +16,8 @@ typedef int64_t post_id_t;
 #define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
 
 #define POST_LIST_FIELDS  \
-	"id, reid, tid, owner, uname, stamp, digest, marked," \
-	" locked, imported, replies, comments, score, title"
+	"id,reid,tid,owner,uname,stamp,digest,marked,water," \
+	"locked,imported,replies,comments,score,title"
 
 #define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ", content"
 
@@ -27,6 +27,7 @@ typedef enum {
 	POST_FLAG_LOCKED = 0x4,
 	POST_FLAG_IMPORT = 0x8,
 	POST_FLAG_STICKY = 0x10,
+	POST_FLAG_WATER = 0x20,
 } post_flag_e;
 
 enum {
