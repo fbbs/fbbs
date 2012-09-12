@@ -5,6 +5,7 @@
 #include "fbbs/brc.h"
 #include "fbbs/convert.h"
 #include "fbbs/helper.h"
+#include "fbbs/mdbi.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 
@@ -155,14 +156,15 @@ post_id_t publish_post(const post_request_t *pr)
 	post_id_t pid = insert_post(pr, uname, content);
 	free(content);
 
-	updatelastpost(pr->board);
+	if (pid) {
+		set_last_post_id(pr->board->id, pid);
 
-	if (!pr->autopost) {
-		brc_fcgi_init(uname, pr->board->name);
-		brc_mark_as_read(pid);
-		brc_update(uname, pr->board->name);
+		if (!pr->autopost) {
+			brc_fcgi_init(uname, pr->board->name);
+			brc_mark_as_read(pid);
+			brc_update(uname, pr->board->name);
+		}
 	}
-
 	return pid;
 }
 
@@ -518,4 +520,18 @@ int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
 	convert_to_file(env_u2g, utf8_str, length, fp);
 	fclose(fp);
 	return 0;
+}
+
+#define LAST_POST_KEY  "last_post"
+
+bool set_last_post_id(int bid, post_id_t pid)
+{
+	mdb_res_t *res = mdb_cmd("HSET", LAST_POST_KEY " %d %"PRIdPID, bid, pid);
+	mdb_clear(res);
+	return res;
+}
+
+post_id_t get_last_post_id(int bid)
+{
+	return mdb_integer(0, "HGET", LAST_POST_KEY " %d", bid);
 }

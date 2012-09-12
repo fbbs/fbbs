@@ -123,4 +123,8 @@ extern void free_post_info_full(post_info_full_t *p);
 
 extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
 		char *file, size_t size);
+
+extern bool set_last_post_id(int bid, post_id_t pid);
+extern post_id_t get_last_post_id(int bid);
+
 #endif // FB_POST_H
