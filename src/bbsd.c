@@ -76,7 +76,7 @@ sighandler_t fb_signal(int signum, sighandler_t handler)
 
 /**
  * Get remote ip address.
- * @param from socket struct
+ * @param sa The socket struct.
  * @note the result is stored in the global variable 'fromhost'.
  */
 static void get_ip_addr(const struct sockaddr_storage *sa)

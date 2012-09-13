@@ -232,9 +232,9 @@ void remove_web_session_cache(user_id_t uid, const char *key)
 }
 
 /**
- * Get descriptions of user mode.
- * @param mode user mode.
- * @return a string describing the mode.
+ * Get descriptions of user status.
+ * @param status user status.
+ * @return a string describing user status.
  */
 const char *status_descr(int status)
 {

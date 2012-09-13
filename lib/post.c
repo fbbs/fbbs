@@ -291,6 +291,7 @@ static void quote_author(const char *begin, const char *lend, bool mail,
  * @param output Output file. If NULL, will output to stdout (web).
  * @param mode Quotation mode. See QUOTE_* enums.
  * @param mail Whether the referenced post is a mail.
+ * @param filter Output filter function.
  */
 void quote_string(const char *str, size_t size, const char *output, int mode,
 		bool mail, filter_t filter)

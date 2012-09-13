@@ -174,7 +174,6 @@ static int _parse_http_req(http_req_t *r)
 
 /**
  * Get a parameter value.
- * @param r The http request.
  * @param key The name of the parameter.
  * @return the value corresponding to 'key', an empty string if not found.
  */
