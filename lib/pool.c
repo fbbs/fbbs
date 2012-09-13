@@ -7,7 +7,6 @@
 
 enum {
 	ALIGNMENT = sizeof(unsigned long),
-	DEFAULT_POOL_SIZE = 16 * 1024,
 };
 
 typedef struct pool_large_t {
@@ -49,7 +48,7 @@ pool_t *pool_create(size_t size)
 		_max_pool_alloc = sysconf(_SC_PAGESIZE);
 
 	if (!size)
-		size = DEFAULT_POOL_SIZE;
+		size = _max_pool_alloc * 2;
 
 	if (size <= sizeof(pool_block_t))
 		return NULL;
