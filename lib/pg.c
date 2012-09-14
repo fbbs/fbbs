@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "fbbs/dbi.h"
+#include "fbbs/list.h"
 #include "fbbs/pool.h"
 #include "fbbs/string.h"
 #include "fbbs/util.h"
@@ -138,6 +139,228 @@ float db_get_float(const db_res_t *res, int row, int col)
 	}
 }
 
+int db_begin_trans(void)
+{
+	db_res_t *res = PQexec(global_db_conn, "BEGIN");
+	int r = (PQresultStatus(res) == PGRES_COMMAND_OK ? 0 : -1);
+	PQclear(res);
+	return r;
+}
+
+int db_end_trans(void)
+{
+	db_res_t *res = PQexec(global_db_conn, "END");
+	int r = (PQresultStatus(res) == PGRES_COMMAND_OK ? 0 : -1);
+	PQclear(res);
+	return r;
+}
+
+typedef enum {
+	QUERY_PARAM_BOOL,
+	QUERY_PARAM_INT,
+	QUERY_PARAM_BIGINT,
+	QUERY_PARAM_STRING,
+	QUERY_PARAM_TIME,
+} query_param_e;
+
+typedef struct query_param_t {
+	query_param_e type;
+	union {
+		int d;
+		int64_t l;
+		const char *s;
+		fb_time_t t;
+	} val;
+	SLIST_FIELD(query_param_t) next;
+} query_param_t;
+
+SLIST_HEAD(query_param_list_t, query_param_t);
+
+struct query_builder_t {
+	pool_t *p;
+	pstring_t *query;
+	struct query_param_list_t params;
+	query_param_t *tail;
+	int count;
+};
+
+query_builder_t *query_builder_new(size_t size)
+{
+	pool_t *pool = pool_create(0);
+
+	query_builder_t *b = pool_alloc(pool, sizeof(*b));
+	b->p = pool;
+	SLIST_INIT_HEAD(&b->params);
+	b->tail = NULL;
+	b->count = 0;
+
+	if (!size)
+		size = 511;
+	b->query = pstring_sized_new(pool, size);
+
+	return b;
+}
+
+static void query_builder_append_param(query_builder_t *b, query_param_t *p)
+{
+	query_param_t *n = pool_alloc(b->p, sizeof(*n));
+	*n = *p;
+
+	if (b->tail)
+		SLIST_INSERT_AFTER(b->tail, n, next);
+	else
+		SLIST_INSERT_HEAD(&b->params, n, next);
+	b->tail = n;
+
+	pstring_append_printf(b->p, b->query, "$%d", ++b->count);
+}
+
+static void query_builder_vappend(query_builder_t *b, const char *cmd,
+		va_list ap)
+{
+	if (!cmd)
+		return;
+	if (*cmd != ' ')
+		pstring_append_space(b->p, b->query);
+
+	while (*cmd != '\0') {
+		if (*cmd == '%') {
+			query_param_t param;
+			++cmd;
+			switch (*cmd) {
+				case 'b':
+					param.val.d = va_arg(ap, int);
+					param.type = QUERY_PARAM_BOOL;
+					query_builder_append_param(b, &param);
+					break;
+				case 'd':
+					param.val.d = va_arg(ap, int);
+					param.type = QUERY_PARAM_INT;
+					query_builder_append_param(b, &param);
+					break;
+				case 'l':
+					param.val.l = va_arg(ap, int64_t);
+					param.type = QUERY_PARAM_BIGINT;
+					query_builder_append_param(b, &param);
+					break;
+				case 's':
+					param.val.s = va_arg(ap, const char *);
+					param.type = QUERY_PARAM_STRING;
+					query_builder_append_param(b, &param);
+					break;
+				case 't':
+					param.val.t = va_arg(ap, fb_time_t);
+					param.type = QUERY_PARAM_TIME;
+					query_builder_append_param(b, &param);
+					break;
+				default:
+					pstring_append_c(b->p, b->query, *cmd);
+					break;
+			}
+		} else {
+			pstring_append_c(b->p, b->query, *cmd);
+		}
+		++cmd;
+	}
+}
+
+query_builder_t *query_builder_append(query_builder_t *b, const char *cmd, ...)
+{
+	va_list ap;
+	va_start(ap, cmd);
+	query_builder_append(b, cmd, ap);
+	va_end(ap);
+	return b;
+}
+
+static void convert_param_array(const query_builder_t *b, const char **vals,
+		int *lens, int *fmts)
+{
+	int n = 0;
+	SLIST_FOREACH(query_param_t, param, &b->params, next) {
+		switch (param->type) {
+			case QUERY_PARAM_BOOL: {
+					char *p = pool_alloc(b->p, sizeof(*p));
+					*p = param->val.d ? 1 : 0;
+					vals[n] = p;
+					lens[n] = 1;
+					fmts[n] = 1;
+				}
+				break;
+			case QUERY_PARAM_INT: {
+					int *p = pool_alloc(b->p, sizeof(*p));
+					*p = htonl(param->val.d);
+					vals[n] = (const char *)p;
+					lens[n] = sizeof(*p);
+					fmts[n] = 1;
+				}
+				break;
+			case QUERY_PARAM_BIGINT: {
+					int64_t *p = pool_alloc(b->p, sizeof(*p));
+					*p = htobe64(param->val.l);
+					vals[n] = (const char *)p;
+					lens[n] = sizeof(*p);
+					fmts[n] = 1;
+				}
+				break;
+			case QUERY_PARAM_TIME: {
+					db_timestamp ts = time_to_ts(param->val.t);
+					db_timestamp *p = pool_alloc(b->p, sizeof(*p));
+					*p = htobe64(ts);
+					vals[n] = (const char *)p;
+					lens[n] = sizeof(*p);
+					fmts[n] = 1;
+				}
+				break;
+			default: { // QUERY_PARAM_STRING{
+					vals[n] = param->val.s;
+					lens[n] = 0;
+					fmts[n] = 0;
+				}
+				break;
+		}
+		++n;
+	}
+}
+
+static db_res_t *query_builder_exec(const query_builder_t *b, int expected)
+{
+	db_res_t *res;
+	if (b->count) {
+		const char **vals = pool_alloc(b->p, b->count * sizeof(*vals));
+		int *lens = pool_alloc(b->p, b->count * sizeof(*lens));
+		int *fmts = pool_alloc(b->p, b->count * sizeof(*fmts));
+
+		convert_param_array(b, vals, lens, fmts);
+		res = PQexecParams(global_db_conn, pstring(b->query), b->count, NULL,
+				vals, lens, fmts, 1);
+	} else {
+		res = PQexecParams(global_db_conn, pstring(b->query), 0, NULL, NULL,
+				NULL, NULL, 1);
+	}
+
+	if (db_res_status(res) != expected) {
+		db_clear(res);
+		return NULL;
+	}
+	return res;
+}
+
+db_res_t *query_builder_query(const query_builder_t *b)
+{
+	return query_builder_exec(b, DBRES_TUPLES_OK);
+}
+
+db_res_t *query_builder_cmd(const query_builder_t *b)
+{
+	return query_builder_exec(b, DBRES_COMMAND_OK);
+}
+
+void query_builder_free(query_builder_t *b)
+{
+	pool_destroy(b->p);
+}
+
 #define is_supported_format(c) \
 	(c == 'd' || c == 'l' || c == 's' || c == 't' || c == 'b')
 
@@ -156,112 +379,22 @@ static int get_num_args(const char *cmd)
 	return argc;
 }
 
-typedef struct query_t {
-	pstring_t *s;
-	pool_t *p;
-	const char **vals;
-	int *lens;
-	int *fmts;
-} query_t;
-
-static query_t *query_new(const char *cmd, int argc, va_list ap)
-{
-	pool_t *p = pool_create(0);
-	query_t *q = pool_alloc(p, sizeof(*q));
-	q->p = p;
-	q->vals = pool_alloc(p, sizeof(*q->vals) * argc);
-	q->lens = pool_alloc(p, sizeof(*q->lens) * argc);
-	q->fmts = pool_alloc(p, sizeof(*q->fmts) * argc);
-	q->s = pstring_sized_new(p, strlen(cmd));
-
-	int n = 0;
-	while (*cmd != '\0') {
-		if (*cmd == '%') {
-			int d;
-			int64_t l;
-			const char *s;
-			fb_time_t t;
-
-			++cmd;
-			switch (*cmd) {
-				case 'b':
-					d = va_arg(ap, int);
-					char *bp = pool_alloc(p, sizeof(*bp));
-					*bp = d ? 1 : 0;
-					q->vals[n] = (const char *) bp;
-					q->lens[n] = sizeof(*bp);
-					q->fmts[n] = 1;
-					break;
-				case 'd':
-					d = va_arg(ap, int);
-					int *dp = pool_alloc(p, sizeof(*dp));
-					*dp = htonl(d);
-					q->vals[n] = (const char *) dp;
-					q->lens[n] = sizeof(int);
-					q->fmts[n] = 1;
-					break;
-				case 'l':
-					l = va_arg(ap, int64_t);
-					int64_t *lp = pool_alloc(p, sizeof(*lp));
-					*lp = htobe64(l);
-					q->vals[n] = (const char *) lp;
-					q->lens[n] = sizeof(int64_t);
-					q->fmts[n] = 1;
-					break;
-				case 's':
-					s = va_arg(ap, const char *);
-					q->vals[n] = s;
-					q->lens[n] = 0;
-					q->fmts[n] = 0;
-					break;
-				case 't':
-					t = va_arg(ap, fb_time_t);
-					db_timestamp ts = time_to_ts(t);
-					db_timestamp *tsp = pool_alloc(p, sizeof(*tsp));
-					*tsp = htobe64(ts);
-					q->vals[n] = (const char *) tsp;
-					q->lens[n] = sizeof(int64_t);
-					q->fmts[n] = 1;
-					break;
-				default:
-					pstring_append_c(p, q->s, *cmd);
-					break;
-			}
-			if (is_supported_format(*cmd)) {
-				pstring_append_printf(p, q->s, "$%d", ++n);
-			}
-		} else {
-			pstring_append_c(p, q->s, *cmd);
-		}
-		++cmd;
-	}
-	return q;
-}
-
-static void query_free(query_t *q)
-{
-	pool_destroy(q->p);
-}
-
-static db_res_t *_db_exec_cmd(db_conn_t *conn, const char *cmd, bool binary,
-		int expected, va_list ap)
+static db_res_t *db_exec(const char *cmd, va_list ap, int expected)
 {
 	db_res_t *res;
 	int argc = get_num_args(cmd);
 	if (argc > 0) {
-		query_t *q = query_new(cmd, argc, ap);
-		res = PQexecParams(conn, pstring(q->s), argc, NULL, q->vals, q->lens,
-				q->fmts, binary);
-		query_free(q);
+		query_builder_t *builder = query_builder_new(strlen(cmd));
+		query_builder_vappend(builder, cmd, ap);
+		res = query_builder_exec(builder, expected);
+		query_builder_free(builder);
 	} else {
-		res = PQexecParams(conn, cmd, 0, NULL, NULL, NULL, NULL, binary);
+		res = PQexecParams(global_db_conn, cmd, 0, NULL, NULL, NULL, NULL, 1);
+		if (db_res_status(res) != expected) {
+			db_clear(res);
+			return NULL;
+		}
 	}
-
-	if (db_res_status(res) != expected) {
-		db_clear(res);
-		return NULL;
-	}
-
 	return res;
 }
 
@@ -269,7 +402,7 @@ db_res_t *db_cmd(const char *cmd, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	db_res_t *res = _db_exec_cmd(global_db_conn, cmd, true, DBRES_COMMAND_OK, ap);
+	db_res_t *res = db_exec(cmd, ap, DBRES_COMMAND_OK);
 	va_end(ap);
 	return res;
 }
@@ -278,23 +411,7 @@ db_res_t *db_query(const char *cmd, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	db_res_t *res = _db_exec_cmd(global_db_conn, cmd, true, DBRES_TUPLES_OK, ap);
+	db_res_t *res = db_exec(cmd, ap, DBRES_TUPLES_OK);
 	va_end(ap);
 	return res;
-}
-
-int db_begin_trans(void)
-{
-	db_res_t *res = PQexec(global_db_conn, "BEGIN");
-	int r = (PQresultStatus(res) == PGRES_COMMAND_OK ? 0 : -1);
-	PQclear(res);
-	return r;
-}
-
-int db_end_trans(void)
-{
-	db_res_t *res = PQexec(global_db_conn, "END");
-	int r = (PQresultStatus(res) == PGRES_COMMAND_OK ? 0 : -1);
-	PQclear(res);
-	return r;
 }

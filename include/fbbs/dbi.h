@@ -46,4 +46,12 @@ extern db_res_t *db_query(const char *cmd, ...);
 extern int db_begin_trans(void);
 extern int db_end_trans(void);
 
+typedef struct query_builder_t query_builder_t;
+
+extern query_builder_t *query_builder_new(size_t size);
+extern query_builder_t *query_builder_append(query_builder_t *b, const char *cmd, ...);
+extern db_res_t *query_builder_query(const query_builder_t *b);
+extern db_res_t *query_builder_cmd(const query_builder_t *b);
+extern void query_builder_free(query_builder_t *b);
+
 #endif // FB_DBI_H

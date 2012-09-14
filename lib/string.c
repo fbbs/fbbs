@@ -590,7 +590,7 @@ static pstring_t *pstring_realloc(pool_t *p, pstring_t *s)
 pstring_t *pstring_append_c(pool_t *p, pstring_t *s, int c)
 {
 	if (s->len == s->size - 1)
-		s = pstring_realloc(p, s);
+		pstring_realloc(p, s);
 	s->str[s->len++] = c;
 	s->str[s->len] = '\0';
 	return s;
@@ -612,6 +612,13 @@ pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ..
 
 	va_end(ap2);
 	va_end(ap);
+	return s;
+}
+
+pstring_t *pstring_append_space(pool_t *p, pstring_t *s)
+{
+	if (s->len != 0 && s->str[s->len - 1] != ' ')
+		pstring_append_c(p, s, ' ');
 	return s;
 }
 
