@@ -14,10 +14,11 @@ CREATE TABLE posts_base (
 	stamp TIMESTAMPTZ,
 	board INTEGER,
 
-	digest BOOLEAN,
-	marked BOOLEAN,
-	locked BOOLEAN,
-	imported BOOLEAN,
+	digest BOOLEAN DEFAULT FALSE,
+	marked BOOLEAN DEFAULT FALSE,
+	locked BOOLEAN DEFAULT FALSE,
+	imported BOOLEAN DEFAULT FALSE,
+	water BOOLEAN DEFAULT FALSE,
 
 	replies INTEGER DEFAULT 0,
 	comments INTEGER DEFAULT 0,
