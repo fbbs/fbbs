@@ -592,7 +592,6 @@ pstring_t *pstring_append_c(pool_t *p, pstring_t *s, int c)
 	if (s->len == s->size - 1)
 		pstring_realloc(p, s);
 	s->str[s->len++] = c;
-	s->str[s->len] = '\0';
 	return s;
 }
 
@@ -624,5 +623,6 @@ pstring_t *pstring_append_space(pool_t *p, pstring_t *s)
 
 const char *pstring(const pstring_t *s)
 {
+	s->str[s->len] = '\0';
 	return s->str;
 }
