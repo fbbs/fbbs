@@ -104,6 +104,16 @@ typedef struct {
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_list_filter_t;
 
+typedef struct {
+	int bid;
+	int flag;
+	user_id_t uid;
+	post_id_t min;
+	post_id_t max;
+	post_id_t tid;
+	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+} post_filter_t;
+
 extern post_id_t publish_post(const post_request_t *pr);
 
 extern void quote_string(const char *str, size_t size, const char *output,

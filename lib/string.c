@@ -595,6 +595,16 @@ pstring_t *pstring_append_c(pool_t *p, pstring_t *s, int c)
 	return s;
 }
 
+pstring_t *pstring_append_string(pool_t *p, pstring_t *s, const char *str)
+{
+	size_t len = strlen(str);
+	if (s->len + len >= s->size)
+		pstring_realloc(p, s);
+	memmove(s->str + s->len, str, len);
+	s->len += len;
+	return s;
+}
+
 pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ...)
 {
 	va_list ap, ap2;
@@ -616,7 +626,7 @@ pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ..
 
 pstring_t *pstring_append_space(pool_t *p, pstring_t *s)
 {
-	if (s->len != 0 && s->str[s->len - 1] != ' ')
+	if (s->len != 0 && !isspace(s->str[s->len - 1]))
 		pstring_append_c(p, s, ' ');
 	return s;
 }

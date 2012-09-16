@@ -44,6 +44,7 @@ typedef struct pstring_t pstring_t;
 extern pstring_t *pstring_new(pool_t *p);
 extern pstring_t *pstring_sized_new(pool_t *p, uint_t size);
 extern pstring_t *pstring_append_c(pool_t *p, pstring_t *s, int c);
+extern pstring_t *pstring_append_string(pool_t *p, pstring_t *s, const char *str);
 extern pstring_t *pstring_append_printf(pool_t *p, pstring_t *s, const char *format, ...);
 extern pstring_t *pstring_append_space(pool_t *p, pstring_t *s);
 extern const char *pstring(const pstring_t *s);

@@ -50,8 +50,11 @@ typedef struct query_builder_t query_builder_t;
 
 extern query_builder_t *query_builder_new(size_t size);
 extern query_builder_t *query_builder_append(query_builder_t *b, const char *cmd, ...);
+query_builder_t *query_builder_append_symbol(query_builder_t *b, const char *symbol, const char *cmd, ...);
+#define query_builder_append_and(b, ...)  query_builder_append_symbol(b, "AND", __VA_ARGS__)
 extern db_res_t *query_builder_query(const query_builder_t *b);
 extern db_res_t *query_builder_cmd(const query_builder_t *b);
+
 extern void query_builder_free(query_builder_t *b);
 
 #endif // FB_DBI_H

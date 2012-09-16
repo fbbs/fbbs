@@ -499,6 +499,27 @@ int build_post_query(char *query, size_t size, post_list_type_e type, bool asc,
 			post_filter(type), asc ? "ASC" : "DESC", limit);
 }
 
+void build_post_filter(query_builder_t *b, post_filter_t *f)
+{
+	query_builder_append(b, "WHERE TRUE");
+	if (f->bid)
+		query_builder_append_and(b, "board = %d", f->bid);
+	if (f->flag & POST_FLAG_DIGEST)
+		query_builder_append_and(b, "digest");
+	if (f->flag & POST_FLAG_MARKED)
+		query_builder_append_and(b, "marked");
+	if (f->flag & POST_FLAG_WATER)
+		query_builder_append_and(b, "water");
+	if (f->uid)
+		query_builder_append_and(b, "owner = %"DBIdUID, f->uid);
+	if (f->min)
+		query_builder_append_and(b, "id >= %"DBIdPID, f->min);
+	if (f->max)
+		query_builder_append_and(b, "id <= %"DBIdPID, f->max);
+	if (*f->utf8_keyword)
+		query_builder_append_and(b, "title ILIKE '%%%s%%'", f->utf8_keyword);
+}
+
 void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p)
 {
 	res_to_post_info(res, row, &p->p);
