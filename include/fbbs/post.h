@@ -138,4 +138,6 @@ extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
 extern bool set_last_post_id(int bid, post_id_t pid);
 extern post_id_t get_last_post_id(int bid);
 
+extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible);
+
 #endif // FB_POST_H

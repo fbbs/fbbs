@@ -7,6 +7,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/post.h"
+#include "fbbs/session.h"
 #include "fbbs/string.h"
 
 /**
@@ -557,4 +558,52 @@ bool set_last_post_id(int bid, post_id_t pid)
 post_id_t get_last_post_id(int bid)
 {
 	return mdb_integer(0, "HGET", LAST_POST_KEY " %d", bid);
+}
+
+static int adjust_user_post_count(const char *uname, int delta)
+{
+	struct userec urec;
+	int unum = searchuser(uname);
+	getuserbyuid(&urec, unum);
+	urec.numposts += delta;
+	substitut_record(NULL, &urec, sizeof(urec), unum);
+}
+
+int delete_posts(post_filter_t *filter, bool junk, bool bm_visible)
+{
+	fb_time_t now = time(NULL);
+
+	bool decrease = true;
+	board_t board;
+	if (filter->bid && get_board_by_bid(filter->bid, &board)
+			&& is_junk_board(&board)) {
+		decrease = false;
+	}
+
+	query_builder_t *b = query_builder_new(0);
+	query_builder_append(b, "WITH rows AS ( DELETE FROM posts");
+	build_post_filter(b, filter);
+	//	query_builder_append(b, "AND NOT marked");
+	query_builder_append(b, "RETURNING * )");
+	query_builder_append(b, "INSERT INTO posts_deleted");
+	query_builder_append(b, "SELECT *, %"DBIdUID", %t, %b AND (water OR %b),"
+			" %b, %s FROM rows", session.uid, now, decrease, junk, bm_visible,
+			currentuser.userid);
+	query_builder_append(b, "RETURNING owner, uname, junk");
+
+	db_res_t *res = query_builder_query(b);
+
+	int rows = 0;
+	if (res) {
+		rows = db_res_rows(res);
+		for (int i = 0; i < rows; ++i) {
+			user_id_t uid = db_get_user_id(res, i, 0);
+			if (uid && db_get_bool(res, i, 2)) {
+				const char *uname = db_get_value(res, i, 1);
+				adjust_user_post_count(uname, -1);
+			}
+		}
+		db_clear(res);
+	}
+	return rows;
 }

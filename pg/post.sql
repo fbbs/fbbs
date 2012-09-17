@@ -41,7 +41,8 @@ CREATE TABLE posts_deleted (
 	eraser INTEGER,
 	deleted TIMESTAMPTZ,
 	junk BOOLEAN DEFAULT FALSE,
-	bm_visible BOOLEAN
+	bm_visible BOOLEAN,
+	ename TEXT
 ) INHERITS (posts_base);
 
 CREATE TABLE threads (
