@@ -264,24 +264,17 @@ static void query_builder_vappend(query_builder_t *b, const char *cmd,
 	}
 }
 
-query_builder_t *query_builder_append(query_builder_t *b, const char *cmd, ...)
-{
-	va_list ap;
-	va_start(ap, cmd);
-	query_builder_append(b, cmd, ap);
-	va_end(ap);
-	return b;
-}
-
 query_builder_t *query_builder_append_symbol(query_builder_t *b,
 		const char *symbol, const char *cmd, ...)
 {
+	pstring_append_space(b->p, b->query);
+
 	if (symbol && *symbol)
 		pstring_append_string(b->p, b->query, symbol);
 
 	va_list ap;
 	va_start(ap, cmd);
-	query_builder_append(b, cmd, ap);
+	query_builder_vappend(b, cmd, ap);
 	va_end(ap);
 	return b;
 }
