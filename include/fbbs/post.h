@@ -19,7 +19,9 @@ typedef int64_t post_id_t;
 	"id,reid,tid,owner,uname,stamp,digest,marked,water," \
 	"locked,imported,replies,comments,score,title"
 
-#define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ", content"
+#define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ",content"
+
+#define POST_BASE_FIELDS_FULL  POST_LIST_FIELDS_FULL ",board"
 
 typedef enum {
 	POST_FLAG_DIGEST = 0x1,

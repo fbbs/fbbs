@@ -294,6 +294,20 @@ static int tui_search_author(slide_list_t *p, bool upward)
 	return relocate_to_author(p, uid, upward);
 }
 
+static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
+{
+	if (ip->uid == session.uid || am_curr_bm()) {
+		post_filter_t f = {
+			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
+		};
+		if (delete_posts(&f, true, false)) {
+			p->reload = true;
+			return PARTUPDATE;
+		}
+	}
+	return DONOTHING;
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -345,6 +359,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'f':
 			brc_clear_all();
 			return PARTUPDATE;
+		case 'd':
+			return tui_delete_single_post(l, ip);
 		case 't':
 			return thesis_mode();
 		case '!':

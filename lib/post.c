@@ -560,7 +560,7 @@ post_id_t get_last_post_id(int bid)
 	return mdb_integer(0, "HGET", LAST_POST_KEY " %d", bid);
 }
 
-static int adjust_user_post_count(const char *uname, int delta)
+static void adjust_user_post_count(const char *uname, int delta)
 {
 	struct userec urec;
 	int unum = searchuser(uname);
@@ -584,11 +584,12 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible)
 	query_builder_append(b, "WITH rows AS ( DELETE FROM posts");
 	build_post_filter(b, filter);
 	//	query_builder_append(b, "AND NOT marked");
-	query_builder_append(b, "RETURNING * )");
-	query_builder_append(b, "INSERT INTO posts_deleted");
-	query_builder_append(b, "SELECT *, %"DBIdUID", %t, %b AND (water OR %b),"
-			" %b, %s FROM rows", session.uid, now, decrease, junk, bm_visible,
-			currentuser.userid);
+	query_builder_append(b, "RETURNING " POST_BASE_FIELDS_FULL " )");
+	query_builder_append(b, "INSERT INTO posts_deleted ("
+			POST_BASE_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
+	query_builder_append(b, "SELECT " POST_BASE_FIELDS_FULL ","
+			" %"DBIdUID", %t, %b AND (water OR %b),"" %b, %s FROM rows",
+			session.uid, now, decrease, junk, bm_visible, currentuser.userid);
 	query_builder_append(b, "RETURNING owner, uname, junk");
 
 	db_res_t *res = query_builder_query(b);
