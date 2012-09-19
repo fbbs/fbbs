@@ -308,6 +308,21 @@ static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
+static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
+{
+	if (p->filter.type == POST_LIST_JUNK
+			|| p->filter.type == POST_LIST_TRASH) {
+		post_filter_t f = {
+			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
+		};
+		if (undelete_posts(&f, p->filter.type == POST_LIST_TRASH)) {
+			p->reload = true;
+			return PARTUPDATE;
+		}
+	}
+	return DONOTHING;
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -361,6 +376,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return PARTUPDATE;
 		case 'd':
 			return tui_delete_single_post(l, ip);
+		case 'Y':
+			return tui_undelete_single_post(l, ip);
 		case 't':
 			return thesis_mode();
 		case '!':

@@ -584,7 +584,7 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible)
 	query_builder_append(b, "WITH rows AS ( DELETE FROM posts");
 	build_post_filter(b, filter);
 	//	query_builder_append(b, "AND NOT marked");
-	query_builder_append(b, "RETURNING " POST_BASE_FIELDS_FULL " )");
+	query_builder_append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
 	query_builder_append(b, "INSERT INTO posts_deleted ("
 			POST_BASE_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
 	query_builder_append(b, "SELECT " POST_BASE_FIELDS_FULL ","
@@ -593,6 +593,7 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible)
 	query_builder_append(b, "RETURNING owner, uname, junk");
 
 	db_res_t *res = query_builder_query(b);
+	query_builder_free(b);
 
 	int rows = 0;
 	if (res) {
@@ -606,5 +607,41 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible)
 		}
 		db_clear(res);
 	}
+	return rows;
+}
+
+int undelete_posts(post_filter_t *filter, bool bm_visible)
+{
+	query_builder_t *b = query_builder_new(0);
+	query_builder_append(b, "SELECT owner, uname, junk FROM posts_deleted");
+	build_post_filter(b, filter);
+	query_builder_append_and(b, "bm_visible = %b", bm_visible);
+
+	db_res_t *res = query_builder_query(b);
+	if (res) {
+		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+			user_id_t uid = db_get_user_id(res, i, 0);
+			if (uid && db_get_bool(res, i, 2)) {
+				const char *uname = db_get_value(res, i, 1);
+				adjust_user_post_count(uname, 1);
+			}
+		}
+		db_clear(res);
+	}
+	query_builder_free(b);
+
+	b = query_builder_new(0);
+	query_builder_append(b, "WITH rows AS ( DELETE FROM posts_deleted");
+	build_post_filter(b, filter);
+	query_builder_append_and(b, "bm_visible = %b", bm_visible);
+	query_builder_append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
+	query_builder_append(b, "INSERT INTO posts (" POST_BASE_FIELDS_FULL ")");
+	query_builder_append(b, "SELECT " POST_BASE_FIELDS_FULL " FROM rows");
+
+	res = query_builder_cmd(b);
+	int rows = res ? db_cmd_rows(res) : 0;
+
+	db_clear(res);
+	query_builder_free(b);
 	return rows;
 }
