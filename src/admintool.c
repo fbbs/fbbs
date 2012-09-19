@@ -486,7 +486,7 @@ static bool valid_board_name(const char *name)
 {
 	for (const char *s = name; *s; ++s) {
 		char ch = *s;
-		if (!isalnum(ch) && ch != '_' && ch != '.')
+		if (!isalnum(ch) && ch != '_' && ch != '.' && ch != '~')
 			return false;
 	}
 	return true;
