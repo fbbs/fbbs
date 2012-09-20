@@ -71,7 +71,7 @@ void brc_update(const char *userid, const char *board)
 		}
 	}
 	tmp = tmp_buf;
-	while (tmp < &tmp_buf[tmp_size] && (*tmp >= ' ' && *tmp <= 'z')) {
+	while (tmp < &tmp_buf[tmp_size] && (*tmp >= ' ' && *tmp <= '~')) {
 		tmp = brc_getrecord(tmp, tmp_name, &tmp_num, tmp_list);
 		if (strncmp(tmp_name, board, BRC_STRLEN) != 0) {
 			ptr = brc_putrecord(ptr, tmp_name, tmp_num, tmp_list);
@@ -103,7 +103,7 @@ int brc_initial(const char *userid, const char *board)
 		}
 	}
 	ptr = brc_buf;
-	while (ptr < &brc_buf[brc_size] && (*ptr >= ' ' && *ptr <= 'z')) {
+	while (ptr < &brc_buf[brc_size] && (*ptr >= ' ' && *ptr <= '~')) {
 		ptr = brc_getrecord (ptr, brc_name, &brc_num, brc_list);
 		if (strncmp (brc_name, board, BRC_STRLEN) == 0) {
 			return brc_num;
