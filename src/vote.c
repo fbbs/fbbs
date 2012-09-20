@@ -1153,11 +1153,6 @@ int vote_results(const char *bname)
 	return FULLUPDATE;
 }
 
-//开启投票箱并设置投票箱
-int b_vote_maintain() {
-	return vote_maintain(currboard);
-}
-
 //显示投票箱选项
 void vote_title() {
 
@@ -1325,11 +1320,6 @@ int b_vote(void)
 	voting = choose(NA, 0, vote_title, vote_key, Show_Votes, user_vote); //?
 	clear();
 	return /* user_vote( currboard ) */FULLUPDATE;
-}
-
-//显示投票结果  bbs.c调用
-int b_results() {
-	return vote_results(currboard);
 }
 
 //SYSOP版开启投票箱

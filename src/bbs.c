@@ -2199,52 +2199,6 @@ int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct) {
 	return PARTUPDATE;
 }
 
-#ifdef ENABLE_NOTICE
-int make_notice (int ent, struct fileheader *fh, char *direct)
-{
-	char path[256];
-	char file1[STRLEN], file2[STRLEN]; //added by cometcaptor 2006-05-25
-
-	if (digestmode != NA)
-	return DONOTHING;
-	if (!am_curr_bm())
-	return DONOTHING;
-	get_noticedirect (direct, path);
-	if (fh->accessed[1] & FILE_NOTICE) {
-		struct fileheader tmpfh;
-		int pos = search_record (path, &tmpfh, sizeof (struct fileheader),
-				cmpfilename, fh->filename);
-
-		if (pos> 0) {
-			fh->accessed[1] &= ~FILE_NOTICE;
-			//if(0==insert_record(direct, sizeof(struct fileheader), undelcheck, fh)){
-			delete_record (path, sizeof (struct fileheader), pos,
-					cmpfilename, fh->filename);
-			//added by cometcaptor 2006-05-25
-			setbfile (file1, currboard, fh->filename);
-			unlink (file1);
-			//}
-		}
-	} else if (get_num_records (path, sizeof (struct fileheader)) < MAX_NOTICE) {
-		//modified by cometcaptor 2006-05-25
-		setbfile (file1, currboard, fh->filename);
-		fh->filename[0] = 'T';
-		setbfile (file2, currboard, fh->filename);
-
-		fh->accessed[1] |= FILE_NOTICE;
-
-		if (link (file1, file2) == 0) {
-			if (append_record (path, fh, sizeof (struct fileheader)) == 0) {
-				//if(!(fh->accessed[0] & FILE_NOREPLY))
-				//    underline_post(ent, fh, direct);
-			} else
-			unlink (file2);
-		}
-	}
-	updatelastpost(currbp);
-	return DIRCHANGED;
-}
-#endif
 //added by cometcaptor 2006-05-29
 int move_notice(int ent, struct fileheader *fh, char *direct) {
 	char path[256], tmppath[256];
@@ -2620,18 +2574,6 @@ int del_post(int ent, struct fileheader *fileinfo, char *direct) {
 	return _del_post(ent, fileinfo, direct, YEA, YEA);
 }
 
-int new_flag_clearto(int ent, struct fileheader *fileinfo, char *direct) {
-	if (session.status != ST_READING)
-		return DONOTHING;
-	return brc_clear_legacy(ent, direct, NA);
-}
-
-int new_flag_clear(int ent, struct fileheader *fileinfo, char *direct) {
-	if (session.status != ST_READING)
-		return DONOTHING;
-	return brc_clear_legacy(ent, direct, YEA);
-}
-
 /* Added by netty to handle post saving into (0)Announce */
 int Save_post(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!HAS_PERM(PERM_BOARDS) || digestmode == ATTACH_MODE)
@@ -2789,24 +2731,6 @@ int forward_u_post (int ent, struct fileheader *fileinfo, char *direct)
 }
 #endif
 
-int read_trash(int ent, struct fileheader *fileinfo, char *direct) {
-	extern char currdirect[STRLEN];
-
-	if (!am_curr_bm()) {
-		return DONOTHING;
-	}
-	digestmode = TRASH_MODE;
-	setbdir(currdirect, currboard);
-	if (!dashf(currdirect)) {
-		digestmode = NA;
-		setbdir(currdirect, currboard);
-		presskeyfor("版面垃圾箱无内容，按任意键继续...", t_lines-1);
-		update_endline();
-		return DONOTHING;
-	}
-	return NEWDIRECT;
-}
-
 int read_attach(int ent, struct fileheader *fileinfo, char *direct) {
 	extern char currdirect[STRLEN];
 
@@ -2816,23 +2740,6 @@ int read_attach(int ent, struct fileheader *fileinfo, char *direct) {
 		digestmode = NA;
 		setbdir(currdirect, currboard);
 		presskeyfor("版面附件区无内容，按任意键继续...", t_lines-1);
-		update_endline();
-		return DONOTHING;
-	}
-	return NEWDIRECT;
-}
-
-int read_junk(int ent, struct fileheader *fileinfo, char *direct) {
-	extern char currdirect[STRLEN];
-	if (!HAS_PERM(PERM_OBOARDS)) {
-		return DONOTHING;
-	}
-	digestmode = JUNK_MODE;
-	setbdir(currdirect, currboard);
-	if (!dashf(currdirect)) {
-		digestmode = NA;
-		setbdir(currdirect, currboard);
-		presskeyfor("站务垃圾箱无内容，按任意键继续...", t_lines-1);
 		update_endline();
 		return DONOTHING;
 	}
@@ -2857,41 +2764,54 @@ int show_online(void)
 
 extern int mainreadhelp();
 extern int b_vote();
-extern int b_results();
-extern int b_vote_maintain();
 extern int b_notes_edit();
 int count_range(int ent, struct fileheader *fileinfo, char *direct);
 
 struct one_key read_comms[] = {
-		{'_', underline_post}, {'@', show_online},
 #ifdef ENABLE_NOTICE
-		{'#', make_notice}, {';', move_notice},
+		{';', move_notice},
 #endif
-		{'.', read_trash}, {'J', read_junk}, {',', read_attach},
-		{'w', makeDELETEDflag}, {'Y', UndeleteArticle}, {'r', read_post},
-		{'K', skip_post}, {'d', del_post}, {'D', del_range},
-		{'m', mark_post}, {'E', edit_post}, {Ctrl('G'), acction_mode},
-		{'`', acction_mode}, {'g', digest_post}, {'T', edit_title},
-		{'s', do_select}, {Ctrl('C'), do_cross}, {Ctrl('P'), do_post},
-		{'c', new_flag_clearto}, {'C', count_range},
+		{',', read_attach},
+		{'r', read_post},
+		{'K', skip_post},
+		{'D', del_range},
+		{'E', edit_post},
+		{Ctrl('G'), acction_mode},
+		{'`', acction_mode},
+		{'T', edit_title},
+		{'s', do_select},
+		{Ctrl('C'), do_cross},
+		{Ctrl('P'), do_post},
+		{'C', count_range},
 #ifdef INTERNET_EMAIL
-		{'F', forward_post}, {'U', forward_u_post}, {Ctrl ('R'), post_reply},
+		{'F', forward_post},
+		{'U', forward_u_post},
+		{Ctrl ('R'), post_reply},
 #endif
-		{'i', Save_post}, {'I', Import_post}, {'R', b_results},
-		{'v', b_vote}, {'V', b_vote_maintain}, {'W', b_notes_edit},
-		{Ctrl('W'), b_notes_passwd}, {'h', mainreadhelp},
-		{Ctrl('J'), mainreadhelp}, {KEY_TAB, show_b_note},
-		{'z', show_b_secnote}, {'x', into_announce},
-		{'a', auth_search_down}, {'A', auth_search_up}, {'/', t_search_down},
-		{'?', t_search_up}, {'\'', post_search_down}, {'\"', post_search_up},
-		{']', thread_down}, {'[', thread_up}, {Ctrl('D'), deny_user},
-		{Ctrl('K'), club_user}, {Ctrl('A'), show_author},
-		{Ctrl('N'), SR_first_new}, {'n', SR_first_new}, {'\\', SR_last},
-		{'=', SR_first}, {Ctrl('S'), SR_read}, {'p', SR_read},
-		{Ctrl('U'), SR_author}, {'b', SR_BMfunc}, {Ctrl('T'), acction_mode},
-		{'t', thesis_mode}, {'!', Q_Goodbye}, {'S', s_msg},
-		{'f', new_flag_clear}, {'o', show_online_followings}, {'L', BM_range},
-		{'*', show_file_info}, {'Z', msg_author}, {'|', lock}, {'\0', NULL}
+		{'i', Save_post},
+		{'I', Import_post},
+		{'a', auth_search_down},
+		{'A', auth_search_up},
+		{'/', t_search_down},
+		{'?', t_search_up},
+		{'\'', post_search_down},
+		{'\"', post_search_up},
+		{']', thread_down},
+		{'[', thread_up},
+		{Ctrl('A'), show_author},
+		{Ctrl('N'), SR_first_new},
+		{'n', SR_first_new},
+		{'\\', SR_last},
+		{'=', SR_first},
+		{Ctrl('S'), SR_read},
+		{'p', SR_read},
+		{Ctrl('U'), SR_author},
+		{'b', SR_BMfunc},
+		{Ctrl('T'), acction_mode},
+		{'t', thesis_mode},
+		{'L', BM_range},
+		{'*', show_file_info},
+		{'\0', NULL}
 };
 
 int board_read(void)
@@ -3578,11 +3498,6 @@ int _count_range(char *filename, int from, int to, int sortmode,
 	}
 
 	return 0;
-}
-
-int lock(int ent, struct fileheader *fileinfo, char *direct) {
-	x_lockscreen();
-	return FULLUPDATE;
 }
 
 int count_range(int ent, struct fileheader *fileinfo, char *direct) {
