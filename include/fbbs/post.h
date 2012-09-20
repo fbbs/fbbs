@@ -100,14 +100,6 @@ enum {
 
 typedef struct {
 	int bid;
-	post_list_type_e type;
-	post_id_t pid;
-	user_id_t uid;
-	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
-} post_list_filter_t;
-
-typedef struct {
-	int bid;
 	int flag;
 	user_id_t uid;
 	post_id_t min;
@@ -128,9 +120,8 @@ extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 
 extern void res_to_post_info(db_res_t *r, int i, post_info_t *p);
 void set_post_flag(post_info_t *ip, post_flag_e flag, bool set);
-extern int _load_sticky_posts(post_list_filter_t *filter, post_info_t **posts);
-extern int build_post_query(char *query, size_t size, post_list_type_e type, bool asc, int limit);
-
+extern int _load_sticky_posts(int bid, post_info_t **posts);
+extern query_builder_t *build_post_query(post_list_type_e type, post_filter_t *filter, bool asc, int limit);
 extern void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p);
 extern void free_post_info_full(post_info_full_t *p);
 

@@ -78,9 +78,8 @@ static void print_board_logo(const char *board)
 static void print_sticky_posts(int bid, post_list_type_e type)
 {
 	post_info_t *sticky_posts = NULL;
-	post_list_filter_t filter = { .bid = bid, .type = type };
 
-	int count = _load_sticky_posts(&filter, &sticky_posts);
+	int count = _load_sticky_posts(bid, &sticky_posts);
 	for (int i = 0; i < count; ++i) {
 		print_bbsdoc(sticky_posts + i);
 	}
@@ -88,15 +87,13 @@ static void print_sticky_posts(int bid, post_list_type_e type)
 	free(sticky_posts);
 }
 
-static void print_posts(post_list_type_e type, int bid, post_id_t pid,
+static void print_posts(post_list_type_e type, post_filter_t *filter,
 		int limit)
 {
-	char query[256];
-	build_post_query(query, sizeof(query), type, false, limit + 1);
+	query_builder_t *b = build_post_query(type, filter, false, limit + 1);
+	db_res_t *r = query_builder_query(b);
+	query_builder_free(b);
 
-	if (!pid)
-		pid = POST_ID_MAX;
-	db_res_t *r = db_query(query, bid, pid);
 	if (r) {
 		int rows = db_res_rows(r);
 		if (rows > limit)
@@ -142,7 +139,8 @@ static int bbsdoc(post_list_type_e type)
 
 	brc_fcgi_init(currentuser.userid, board.name);
 
-	print_posts(type, board.id, start, page);
+	post_filter_t filter = { .bid = board.id, .max = start };
+	print_posts(type, &filter, page);
 	print_sticky_posts(board.id, type);
 
 	char *cgi_name = "";

@@ -431,16 +431,13 @@ void set_post_flag(post_info_t *ip, post_flag_e flag, bool set)
 		ip->flag &= ~flag;
 }
 
-int _load_sticky_posts(post_list_filter_t *filter, post_info_t **posts)
+int _load_sticky_posts(int bid, post_info_t **posts)
 {
-	if (filter->type != POST_LIST_NORMAL)
-		return 0;
-
 	if (!*posts)
 		*posts = malloc(sizeof(**posts) * MAX_NOTICE);
 
 	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts"
-			" WHERE board = %d AND sticky ORDER BY id DESC", filter->bid);
+			" WHERE board = %d AND sticky ORDER BY id DESC", bid);
 	if (r) {
 		int count = db_res_rows(r);
 		for (int i = 0; i < count; ++i) {
@@ -453,19 +450,15 @@ int _load_sticky_posts(post_list_filter_t *filter, post_info_t **posts)
 	return 0;
 }
 
-static size_t post_table_name(char *table, size_t size, post_list_type_e type)
+static const char *post_table_name(post_list_type_e type)
 {
-	const char *t;
 	switch (type) {
 		case POST_LIST_TRASH:
 		case POST_LIST_JUNK:
-			t = "posts_deleted";
-			break;
+			return "posts_deleted";
 		default:
-			t = "posts";
-			break;
+			return "posts";
 	}
-	return strlcpy(table, t, size);
 }
 
 static const char *post_filter(post_list_type_e type)
@@ -488,18 +481,6 @@ static const char *post_filter(post_list_type_e type)
 	}
 }
 
-int build_post_query(char *query, size_t size, post_list_type_e type, bool asc,
-		int limit)
-{
-	char table[16];
-	post_table_name(table, sizeof(table), type);
-
-	return snprintf(query, size, "SELECT " POST_LIST_FIELDS
-			" FROM %s WHERE board = %%d AND id %c %%"DBIdPID" AND %s"
-			" ORDER BY id %s LIMIT %d", table, asc ? '>' : '<',
-			post_filter(type), asc ? "ASC" : "DESC", limit);
-}
-
 void build_post_filter(query_builder_t *b, post_filter_t *f)
 {
 	query_builder_append(b, "WHERE TRUE");
@@ -519,6 +500,19 @@ void build_post_filter(query_builder_t *b, post_filter_t *f)
 		query_builder_append_and(b, "id <= %"DBIdPID, f->max);
 	if (*f->utf8_keyword)
 		query_builder_append_and(b, "title ILIKE '%%%s%%'", f->utf8_keyword);
+}
+
+query_builder_t *build_post_query(post_list_type_e type, post_filter_t *filter,
+		bool asc, int limit)
+{
+	query_builder_t *b = query_builder_new(0);
+	query_builder_append(b, "SELECT " POST_LIST_FIELDS " FROM");
+	query_builder_append(b, post_table_name(type));
+	build_post_filter(b, filter);
+	query_builder_append(b, "ORDER BY id");
+	query_builder_append(b, asc ? "ASC" : "DESC");
+	query_builder_append(b, "LIMIT %d", limit);
+	return b;
 }
 
 void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p)

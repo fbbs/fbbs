@@ -7,7 +7,8 @@
 #include "fbbs/tui_list.h"
 
 typedef struct {
-	post_list_filter_t filter;
+	post_list_type_e type;
+	post_filter_t filter;
 
 	bool relocate;
 	bool reload;
@@ -25,35 +26,6 @@ typedef struct {
 static bool is_asc(slide_list_base_e base)
 {
 	return (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_NEXT);
-}
-
-static post_id_t pid_base(post_list_t *l, slide_list_base_e base)
-{
-	switch (base) {
-		case SLIDE_LIST_TOPDOWN:
-			return 0;
-		case SLIDE_LIST_BOTTOMUP:
-			return POST_ID_MAX;
-		default:
-			if (!l->posts || !l->count)
-				return l->filter.pid;
-			if (l->reload || !is_asc(base))
-				return l->index[0]->id;
-			else
-				return l->posts[l->count - 1].id;
-	}
-}
-
-static db_res_t *exec_query(const char *query, post_list_filter_t *f)
-{
-	switch (f->type) {
-		case POST_LIST_AUTHOR:
-			return db_query(query, f->bid, f->pid, f->uid);
-		case POST_LIST_KEYWORD:
-			return db_query(query, f->bid, f->pid, f->utf8_keyword);
-		default:
-			return db_query(query, f->bid, f->pid);
-	}
 }
 
 static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
@@ -93,8 +65,8 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	if (!l->sposts && l->sreload) {
-		l->scount = _load_sticky_posts(&l->filter, &l->sposts);
+	if (l->type == POST_LIST_NORMAL && !l->sposts && l->sreload) {
+		l->scount = _load_sticky_posts(l->filter.bid, &l->sposts);
 		l->sreload = false;
 	}
 }
@@ -142,12 +114,9 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	}
 
 	bool asc = is_asc(p->base);
-	l->filter.pid = pid_base(l, p->base);
-
-	char query[256];
-	build_post_query(query, sizeof(query), l->filter.type, asc, page);
-
-	db_res_t *res = exec_query(query, &l->filter);
+	query_builder_t *b = build_post_query(l->type, &l->filter, asc, page);
+	db_res_t *res = query_builder_query(b);
+	query_builder_free(b);
 	res_to_array(res, l, p->base, page);
 	l->last_query_rows = db_res_rows(res);
 
@@ -310,12 +279,11 @@ static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 
 static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 {
-	if (p->filter.type == POST_LIST_JUNK
-			|| p->filter.type == POST_LIST_TRASH) {
+	if (p->type == POST_LIST_JUNK || p->type == POST_LIST_TRASH) {
 		post_filter_t f = {
 			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
 		};
-		if (undelete_posts(&f, p->filter.type == POST_LIST_TRASH)) {
+		if (undelete_posts(&f, p->type == POST_LIST_TRASH)) {
 			p->reload = true;
 			return PARTUPDATE;
 		}
@@ -361,9 +329,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return toggle_post_flag(l->filter.bid, ip,
 					POST_FLAG_WATER, "water");
 		case '.':
-			return post_list_deleted(l->filter.bid, l->filter.type);
+			return post_list_deleted(l->filter.bid, l->type);
 		case 'J':
-			return post_list_admin_deleted(l->filter.bid, l->filter.type);
+			return post_list_admin_deleted(l->filter.bid, l->type);
 		case 'a':
 			return tui_search_author(p, false);
 		case 'A':
@@ -427,13 +395,20 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 		slide_list_base_e base, user_id_t uid, const char *keyword)
 {
 	post_list_t p = {
-		.filter = { .bid = bid, .type = type, .pid = pid, .uid = uid },
+		.type = type, .filter = { .bid = bid, .uid = uid },
 		.relocate = true, .reload = false, .last_query_rows = 0,
 		.index = NULL, .posts = NULL, .sposts = NULL,
 		.icount = 0, .count = 0, .scount = 0, .sreload = false,
 	};
 	if (keyword)
 		strlcpy(p.filter.utf8_keyword, keyword, sizeof(p.filter.utf8_keyword));
+	if (is_asc(base)) {
+		p.filter.min = pid;
+		p.filter.max = 0;
+	} else {
+		p.filter.min = 0;
+		p.filter.max = pid;
+	}
 
 	slide_list_t s = {
 		.base = base,
