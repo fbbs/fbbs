@@ -498,6 +498,8 @@ void build_post_filter(query_builder_t *b, post_filter_t *f)
 		query_builder_append_and(b, "id >= %"DBIdPID, f->min);
 	if (f->max)
 		query_builder_append_and(b, "id <= %"DBIdPID, f->max);
+	if (f->tid)
+		query_builder_append_and(b, "tid = %"DBIdPID, f->tid);
 	if (*f->utf8_keyword)
 		query_builder_append_and(b, "title ILIKE '%%%s%%'", f->utf8_keyword);
 }

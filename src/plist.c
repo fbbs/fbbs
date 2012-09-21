@@ -215,10 +215,16 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 
 static bool match_filter(post_filter_t *filter, post_info_t *p)
 {
-	if (filter->uid) {
-		return p->uid == filter->uid;
-	}
-	return false;
+	bool match = true;
+	if (filter->uid)
+		match &= p->uid == filter->uid;
+	if (filter->min)
+		match &= p->id >= filter->min;
+	if (filter->max)
+		match &= p->id <= filter->max;
+	if (filter->tid)
+		match &= p->id == filter->tid;
+	return match;
 }
 
 static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
@@ -275,6 +281,16 @@ static int tui_search_author(slide_list_t *p, bool upward)
 		uid = get_user_id(ans);
 
 	return relocate_to_author(p, uid, upward);
+}
+
+static int jump_to_thread_first(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	post_info_t *ip = l->index[p->cur];
+	post_filter_t filter = {
+		.bid = l->filter.bid, .tid = ip->tid, .max = ip->tid
+	};
+	return relocate_to_filter(p, &filter, true);
 }
 
 static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
@@ -350,6 +366,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_search_author(p, false);
 		case 'A':
 			return tui_search_author(p, true);
+		case '=':
+			return jump_to_thread_first(p);
 		case 'c':
 			brc_clear(ip->id);
 			return PARTUPDATE;
