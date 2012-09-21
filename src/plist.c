@@ -213,23 +213,30 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 	return FULLUPDATE;
 }
 
-static int relocate_to_author(slide_list_t *p, user_id_t uid, bool upward)
+static bool match_filter(post_filter_t *filter, post_info_t *p)
+{
+	if (filter->uid) {
+		return p->uid == filter->uid;
+	}
+	return false;
+}
+
+static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
+		bool upward)
 {
 	post_list_t *l = p->data;
 
 	int found = -1;
 	if (upward) {
 		for (int i = p->cur - 1; i >= 0; --i) {
-			if (l->index[i]->uid == uid) {
+			if (match_filter(filter, l->index[i])) {
 				found = i;
 				break;
 			}
 		}
 	} else {
 		for (int i = p->cur + 1; i < l->icount; ++i) {
-			if (l->index[i]->flag & POST_FLAG_STICKY)
-				break;
-			if (l->index[i]->uid == uid) {
+			if (match_filter(filter, l->index[i])) {
 				found = i;
 				break;
 			}
@@ -243,6 +250,13 @@ static int relocate_to_author(slide_list_t *p, user_id_t uid, bool upward)
 		// TODO
 		return PARTUPDATE;
 	}
+}
+
+static int relocate_to_author(slide_list_t *p, user_id_t uid, bool upward)
+{
+	post_list_t *l = p->data;
+	post_filter_t filter = { .bid = l->filter.bid, .uid = uid };
+	return relocate_to_filter(p, &filter, upward);
 }
 
 static int tui_search_author(slide_list_t *p, bool upward)
