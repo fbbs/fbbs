@@ -74,8 +74,14 @@ static int callback(const char *note, const char *name, money_t delta)
 	if (!uid)
 		return -1;
 
-	res = db_cmd("UPDATE payment SET awards = awards + %"DBIdMONEY
-			" WHERE user_id = %"DBIdUID, delta, uid);
+	if (delta > 0) {
+		res = db_cmd("UPDATE payment SET awards = awards + %"DBIdMONEY
+				" WHERE user_id = %"DBIdUID, delta, uid);
+	} else {
+		res = db_cmd("UPDATE users SET money = money + %"DBIdMONEY
+				" WHERE user_id = %"DBIdUID, delta, uid);
+	}
+
 	if (!res)
 		return -1;
 	db_clear(res);
