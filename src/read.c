@@ -1015,14 +1015,13 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 	struct fileheader fhdr;
 	char annpath[512];
-	char buf[STRLEN], ans[8], info[STRLEN], bname[STRLEN], dbname[STRLEN];
+	char buf[STRLEN], ans[8], info[STRLEN], bname[STRLEN];
 
 	char items[9][8] = { "保留", "文摘", "不可RE", "删除", "精华区", "水文", "转载",
 			"删水文", "恢复" };
 	int type, num1, num2, i, max = 9;
 	int fdr, ssize;
 	extern int SR_BMDELFLAG;
-	extern char quote_file[120], quote_title[120], quote_board[120];
 
 	if (session.status != ST_READING)
 		return DONOTHING;
@@ -1163,23 +1162,9 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 			case 6:
 				makeDELETEDflag(num1, &fhdr, direct);
 				break;
-			case 7:
-				if (session.status != ST_RMAIL)
-					sprintf(genbuf, "boards/%s/%s", currboard,
-							fhdr.filename);
-				else
-					sprintf(genbuf, "mail/%c/%s/%s",
-							toupper(currentuser.userid[0]),
-							currentuser.userid, fhdr.filename);
-				strlcpy(quote_file, genbuf, sizeof(quote_file));
-				strcpy(quote_title, fhdr.title);
-				strcpy(quote_board, currboard);
-				strcpy(dbname, currboard);
-				strcpy(currboard, bname);
-				post_cross('l', 0);
-				strcpy(currboard, dbname);
-				break;
-
+			case 7: {
+				// TODO: pending rewrite
+				}
 				/**
 				 * Added by phrack to support deletion of water posts on 2007.12.12
 				 * */

@@ -85,6 +85,7 @@ typedef struct {
 	const board_t *board;
 	const char *title;
 	const char *content;
+	const char *gbk_file;
 	int sig;
 	const char *ip;
 	post_id_t reid;

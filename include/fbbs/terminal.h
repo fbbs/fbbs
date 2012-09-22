@@ -74,8 +74,16 @@ int namecomplete(char *prompt, char *data);
 int t_query(const char *user);
 int vedit(char *filename, int write_header_to_file, int modifyheader);
 
+#include "fbbs/post.h"
+typedef enum {
+	POST_FILE_NORMAL = 0,
+	POST_FILE_DELIVER = 1,
+	POST_FILE_AUTO = 2,
+	POST_FILE_BMS = 3,
+	POST_FILE_CP_ANN = 4,
+} post_file_e;
 // Following function declarations are put here solely to eliminate warnings
-int Postfile(const char *filename, const char *nboard, const char *posttitle, int mode);
+post_id_t Postfile(const char *file, const char *bname, const char *title, post_file_e mode);
 char *setuserfile(char *buf, char *filename);
 void securityreport(char *str, int save, int mode);
 int set_safe_record(void);
@@ -184,7 +192,6 @@ int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct);
 int underline_post(int ent, struct fileheader *fileinfo, char *direct);
 int _combine_thread(int ent, struct fileheader *fileinfo, char *direct, int gid);
 int del_post(int ent, struct fileheader *fileinfo, char *direct);
-int post_cross(char islocal, int mode);
 int check_notespasswd(void);
 
 #endif // FB_TERMINAL_H

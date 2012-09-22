@@ -45,6 +45,18 @@ static FILE *get_fname(const char *dir, const char *pfx,
 	return NULL;
 }
 
+static char *convert_file_to_utf8_content(const char *file)
+{
+	char *utf8_content = NULL;
+	mmap_t m = { .oflag = O_RDONLY };
+	if (mmap_open(file, &m) == 0) {
+		utf8_content = malloc(m.size * 2);
+		convert_g2u(m.ptr, utf8_content);
+		mmap_close(&m);
+	}
+	return utf8_content;
+}
+
 static char *generate_content(const post_request_t *pr, const char *uname,
 		const char *nick, const char *ip, bool anony)
 {
@@ -85,14 +97,7 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 
 	fclose(fptr);
 
-	char *utf8_content = NULL;
-	mmap_t m = { .oflag = O_RDONLY };
-	if (mmap_open(fname, &m) == 0) {
-		utf8_content = malloc(m.size * 2);
-		convert_g2u(m.ptr, utf8_content);
-		mmap_close(&m);
-	}
-	return utf8_content;
+	return convert_file_to_utf8_content(fname);
 }
 
 static post_id_t insert_post(const post_request_t *pr, const char *uname,
@@ -134,7 +139,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
  */
 post_id_t publish_post(const post_request_t *pr)
 {
-	if (!pr || !pr->title || !pr->content || !pr->board)
+	if (!pr || !pr->title || (!pr->content && !pr->gbk_file) || !pr->board)
 		return 0;
 
 	bool anony = pr->anony && (pr->board->flag & BOARD_ANONY_FLAG);
@@ -153,7 +158,12 @@ post_id_t publish_post(const post_request_t *pr)
 	if (!uname || !nick)
 		return 0;
 
-	char *content = generate_content(pr, uname, nick, ip, anony);
+	char *content;
+	if (pr->gbk_file)
+		content = convert_file_to_utf8_content(pr->gbk_file);
+	else
+		generate_content(pr, uname, nick, ip, anony);
+
 	post_id_t pid = insert_post(pr, uname, content);
 	free(content);
 

@@ -280,92 +280,6 @@ void Poststring(char *str, char *nboard, char *posttitle, int mode)
 }
 
 /* add end */
-
-int Postfile(const char *filename, const char *nboard, const char *posttitle, int mode)
-{
-	//char bname[STRLEN];
-	char dbname[STRLEN];
-
-	//added by iamfat 2003.11.21
-	int old_inmail = in_mail;
-
-	in_mail = NA;
-	strcpy(quote_board, currboard);
-	strcpy(dbname, currboard);
-	strcpy(currboard, nboard);
-	strcpy(quote_file, filename);
-	strcpy(quote_title, posttitle);
-	post_cross('l', mode);
-	strcpy(currboard, dbname);
-	in_mail = old_inmail;
-	return 0;
-}
-
-/* Add by SmallPig */
-int do_cross(int ent, struct fileheader *fileinfo, char *direct) {
-	char bname[STRLEN];
-	char dbname[STRLEN];
-	char ispost[10];
-
-	set_safe_record();
-	if (!HAS_PERM(PERM_POST) || digestmode == ATTACH_MODE)
-		return DONOTHING;
-	//Added by Ashinmarch to Forbide Cross
-	if (fileinfo->filename[0] == 's') {
-		prints("Type 2 Forbidden to Do cross!!\n");
-		return DONOTHING;
-	}
-	//add end
-	if (session.status != ST_RMAIL)
-		sprintf(genbuf, "boards/%s/%s", currboard, fileinfo->filename);
-	else
-		sprintf(genbuf, "mail/%c/%s/%s", toupper(currentuser.userid[0]),
-				currentuser.userid, fileinfo->filename);
-	strlcpy(quote_file, genbuf, sizeof (quote_file));
-	strcpy(quote_title, fileinfo->title);
-
-	clear();
-	prints("\033[1;33m请珍惜本站资源，请在转载后删除不必要的文章，谢谢！ \n"
-			"\033[1;32m并且，您不能将本文转载到本版，"
-			"如果您觉得不方便的话，请与站长联系。\033[m\n\n");
-	prints("您选择转载的文章是: [\033[1;33m%s\033[m]\n", quote_title);
-	board_complete(6, "请输入要转贴的讨论区名称(取消转载请按回车): ",
-			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
-	if (!*bname)
-		return FULLUPDATE;
-
-	if (!strcmp(bname, currboard) && session.status != ST_RMAIL) {
-		prints("\n\n             很抱歉，您不能把文章转到同一个版上。");
-		pressreturn();
-		clear();
-		return FULLUPDATE;
-	}
-	move(3, 0);
-	clrtoeol();
-	prints("转载 ' %s ' 到 %s 版 ", quote_title, bname);
-	move(4, 0);
-	getdata(4, 0, "(S)转信 (L)本站 (A)取消? [A]: ", ispost, 9, DOECHO, YEA);
-	if (ispost[0] == 's' || ispost[0] == 'S' || ispost[0] == 'L'
-			|| ispost[0] == 'l') {
-		strcpy(quote_board, currboard);
-		strcpy(dbname, currboard);
-		strcpy(currboard, bname);
-		if (post_cross(ispost[0], 0) == -1) {
-			pressreturn();
-			move(2, 0);
-			strcpy(currboard, dbname);
-			return FULLUPDATE;
-		}
-		strcpy(currboard, dbname);
-		prints("\n已把文章 \'%s\' 转贴到 %s 版\n", quote_title, bname);
-	} else {
-		prints("取消");
-	}
-	move(2, 0);
-	pressreturn();
-	return FULLUPDATE;
-}
-
 static basic_session_info_t *get_sessions_by_name(const char *uname)
 {
 	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
@@ -1228,8 +1142,8 @@ void do_quote(const char *orig, const char *file, char mode)
 	fclose(fp);
 }
 
-/* Add by SmallPig */
-void getcross(char *filepath, int mode) {
+static void getcross(const char *filepath, int mode)
+{
 	FILE *inf, *of;
 	char buf[256];
 	char owner[STRLEN];
@@ -1565,116 +1479,168 @@ static int undelcheck(void *fh1, void *fh2)
 
 int date_to_fname(char *postboard, time_t now, char *fname) {
 	static unsigned ref = 0;
-
+	
 	sprintf(fname, "M.%ld.%X%X", now, session.pid, ref);
 	ref++;
 	return 0;
 }
 
-// Add by SmallPig
-// mode = 0 普通
-//        1 deliver
-//        2 
-//        3 BMS
-//        4 精华区zz
-int post_cross(char islocal, int mode)
+static post_id_t post_cross_legacy(board_t *board, const char *file,
+		const char *title, int mode)
 {
-	struct fileheader postfile;
-	char filepath[STRLEN], fname[STRLEN];
-	char buf[256], buf4[STRLEN], whopost[IDLEN + 2];
-
-	board_t board;
-	get_board(currboard, &board);
-	if (!has_post_perm(&currentuser, &board) && !mode) {
+	if ((mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
+			&& !has_post_perm(&currentuser, board)) {
 		prints("\n\n 您尚无权限在 %s 版发表文章.\n", currboard);
 		return -1;
 	}
-	memset(&postfile, 0, sizeof (postfile));
-	time_t now = time(0);
-	if ((mode == 0 || mode == 4) && (strncmp(quote_title, "[转载]", 6)
-			&& strncmp(quote_title, "Re: [转载]", 10)))
-		sprintf(buf4, "[转载]%.70s", quote_title);
-	else if ((mode == 0 || mode == 4) && !strncmp(quote_title, "Re: [转载]",
-			10))
-		sprintf(buf4, "[转载]Re: %.70s", quote_title + 10);
-	else
-		strcpy(buf4, quote_title);
 
-	strlcpy(save_title, buf4, STRLEN);
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
+		if (!strneq(title, "[转载]", 6) && !strneq(title, "Re: [转载]", 10))
+			snprintf(gbk_title, sizeof(gbk_title), "[转载]%.70s", title);
+		else if (strneq(quote_title, "Re: [转载]", 10))
+			snprintf(gbk_title, sizeof(gbk_title), "[转载]Re: %.70s",
+					title + 10);
+		else
+			strlcpy(gbk_title, title, sizeof(gbk_title));
+	} else {
+		strlcpy(gbk_title, title, sizeof(gbk_title));
+	}
 
-	if (date_to_fname(currboard, now, fname) < 0)
-		return -1;
-	strcpy(postfile.filename, fname);
-	if (mode == 1)
-		/* modified by roly 2002.01.13 */
-		strcpy(whopost, "deliver");
-	/* Following 2 lines added by Amigo 2002.04.17. Set BMS announce poster as 'BMS'. */
-	else if (mode == 3)
-		strcpy(whopost, "BMS");
-	else
-		strcpy(whopost, currentuser.userid);
-
-	strlcpy(postfile.owner, whopost, STRLEN);
-	setbfile(filepath, currboard, postfile.filename);
-
-	local_article = YEA;
-	if ((islocal == 'S' || islocal == 's') && (board.flag & BOARD_OUT_FLAG))
-		local_article = NA;
+	strlcpy(save_title, gbk_title, STRLEN);
+	valid_title(gbk_title);
 
 	set_user_status(ST_POSTING);
 
-	getcross(filepath, mode);
+	getcross(file, mode);
+	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
+		add_crossinfo(file, 1);
 
-	strlcpy(postfile.title, save_title, sizeof(postfile.title));
-	valid_title(postfile.title);
+	const char *uname;
+	if (mode == POST_FILE_DELIVER)
+		uname = "deliver";
+	else if (mode == POST_FILE_BMS)
+		uname = "BMS";
+	else
+		uname = currentuser.userid;
 
-	if (local_article == YEA || !(board.flag & BOARD_OUT_FLAG)) {
-		postfile.filename[STRLEN - 9] = 'L';
-		postfile.filename[STRLEN - 10] = 'L';
-	} else {
-		postfile.filename[STRLEN - 9] = 'S';
-		postfile.filename[STRLEN - 10] = 'S';
-		outgo_post(&postfile, currboard);
-	}
-	postfile.id = get_nextid(currboard);
-	postfile.gid = postfile.id;
-	postfile.reid = postfile.id;
-	//合集默认不可re.  eefree 06.6.6
-	if (!strncmp(postfile.title, "[合集]", 6) && (mode == 2)) {
-		postfile.accessed[0] |= FILE_NOREPLY;
-	}
-	//deliver 默认不可re.  eefree 06.6.6  
-	if (mode == 1) {
-		postfile.accessed[0] |= FILE_NOREPLY;
-	}
-	setwbdir(buf, currboard);
+	post_request_t req = {
+		.autopost = mode == POST_FILE_DELIVER || mode == POST_FILE_AUTO
+			|| mode == POST_FILE_BMS,
+		.crosspost = mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN,
+		.uname = uname,
+		.nick = currentuser.username,
+		.user = &currentuser,
+		.board = board,
+		.title = gbk_title,
+		.content = NULL,
+		.gbk_file = file,
+		.sig = 0,
+		.ip = NULL,
+		.reid = 0,
+		.tid = 0,
+		.locked = mode == POST_FILE_DELIVER ||
+			(mode == POST_FILE_AUTO && strneq(gbk_title, "[合集]", 6)),
+		.marked = false,
+		.anony = false,
+		.cp = NULL,
+	};
 
-	if (append_record(buf, &postfile, sizeof (postfile)) == -1) {
-		if (mode == 0 || mode == 4) {
-			sprintf(buf,
+	post_id_t pid = publish_post(&req);
+	
+	char buf[STRLEN];
+	if (!pid) {
+		if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
+			snprintf(buf, sizeof(buf),
 					"cross_posting '%s' on %s: append_record failed!",
-					postfile.title, quote_board);
+					gbk_title, board->name);
 		} else {
-			sprintf(buf, "Posting '%s' on %s: append_record failed!",
-					postfile.title, quote_board);
+			snprintf(buf, sizeof(buf),
+					"Posting '%s' on %s: append_record failed!",
+					gbk_title, board->name);
 		}
 		report(buf, currentuser.userid);
 		pressreturn();
 		clear();
-		return 1;
+	} else {
+		if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
+			snprintf(buf, sizeof(buf), "cross_posted '%s' on %s",
+					gbk_title, board->name);
+			report(buf, currentuser.userid);
+		}
 	}
-	/* brc_addlist_legacy( postfile.filename ) ; */
-	updatelastpost(currbp);
-	if (mode == 0 || mode == 4) {
-		add_crossinfo(filepath, 1);
-		//commented by roly 2002.02.26 to disable add_crossinfo for compatible with crosspost form 0Announce
-		sprintf(buf, "cross_posted '%s' on %s", postfile.title, currboard);
-		report(buf, currentuser.userid);
+	return pid;
+}
+
+post_id_t Postfile(const char *file, const char *bname, const char *title,
+		post_file_e mode)
+{
+	board_t board;
+	if (!get_board(bname, &board))
+		return 0;
+
+	return post_cross_legacy(&board, file, title, mode);
+}
+
+/* Add by SmallPig */
+int do_cross(int ent, struct fileheader *fp, char *direct) {
+	set_safe_record();
+	if (!HAS_PERM(PERM_POST) || digestmode == ATTACH_MODE)
+		return DONOTHING;
+
+	if (fp->filename[0] == 's') {
+		prints("Type 2 Forbidden to Do cross!!\n");
+		return DONOTHING;
 	}
-	/*    else
-	 sprintf(buf,"自动发表系统 POST '%s' on '%s'", postfile.title, currboard) ;
-	 report(buf) ;*/
-	return 1;
+
+	char file[HOMELEN];
+	if (session.status != ST_RMAIL)
+		snprintf(file, sizeof(file), "boards/%s/%s", currboard, fp->filename);
+	else
+		snprintf(file, sizeof(file), "mail/%c/%s/%s",
+				toupper(currentuser.userid[0]), currentuser.userid,
+				fp->filename);
+
+	clear();
+	prints("\033[1;33m请珍惜本站资源，请在转载后删除不必要的文章，谢谢！ \n"
+			"\033[1;32m并且，您不能将本文转载到本版，"
+			"如果您觉得不方便的话，请与站长联系。\033[m\n\n");
+	prints("您选择转载的文章是: [\033[1;33m%s\033[m]\n", fp->title);
+
+	char bname[STRLEN];
+	board_complete(6, "请输入要转贴的讨论区名称(取消转载请按回车): ",
+			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
+	if (!*bname)
+		return FULLUPDATE;
+
+	if (streq(bname, currboard) && session.status != ST_RMAIL) {
+		prints("\n\n             很抱歉，您不能把文章转到同一个版上。");
+		pressreturn();
+		clear();
+		return FULLUPDATE;
+	}
+
+	move(3, 0);
+	clrtoeol();
+	prints("转载 ' %s ' 到 %s 版 ", fp->title, bname);
+	move(4, 0);
+	char ans[10];
+	getdata(4, 0, "(S)转信 (L)本站 (A)取消? [A]: ", ans, 9, DOECHO, YEA);
+	if (ans[0] == 's' || ans[0] == 'S' || ans[0] == 'L' || ans[0] == 'l') {
+		board_t brd;
+		if (!get_board(bname, &brd) ||
+				!post_cross_legacy(&brd, file, fp->title, POST_FILE_NORMAL)) {
+			pressreturn();
+			move(2, 0);
+			return FULLUPDATE;
+		}
+		prints("\n已把文章 \'%s\' 转贴到 %s 版\n", fp->title, bname);
+	} else {
+		prints("取消");
+	}
+	move(2, 0);
+	pressreturn();
+	return FULLUPDATE;
 }
 
 void add_crossinfo(const char *filepath, bool post)
@@ -3538,7 +3504,6 @@ int count_range(int ent, struct fileheader *fileinfo, char *direct) {
 	//mail to user
 	sprintf (title, "[%s]统计文章数(%d-%d)", currboard, from, to);
 	mail_file (resultfile, currentuser.userid, title);
-	//Postfile(resultfile,currboard, title,2);
 	unlink (resultfile);
 
 	securityreport (title, 0, 2);
