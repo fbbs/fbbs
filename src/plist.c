@@ -293,6 +293,30 @@ static int jump_to_thread_first(slide_list_t *p)
 	return relocate_to_filter(p, &filter, true);
 }
 
+static int jump_to_thread_prev(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	post_info_t *ip = l->index[p->cur];
+
+	if (ip->id == ip->tid)
+		return DONOTHING;
+
+	post_filter_t filter = {
+		.bid = l->filter.bid, .tid = ip->tid, .max = ip->id - 1,
+	};
+	return relocate_to_filter(p, &filter, true);
+}
+
+static int jump_to_thread_next(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	post_info_t *ip = l->index[p->cur];
+	post_filter_t filter = {
+		.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
+	};
+	return relocate_to_filter(p, &filter, false);
+}
+
 static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 {
 	if (ip->uid == session.uid || am_curr_bm()) {
@@ -368,6 +392,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_search_author(p, true);
 		case '=':
 			return jump_to_thread_first(p);
+		case '[':
+			return jump_to_thread_prev(p);
+		case ']':
+			return jump_to_thread_next(p);
 		case 'c':
 			brc_clear(ip->id);
 			return PARTUPDATE;
