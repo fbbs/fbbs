@@ -138,4 +138,7 @@ extern post_id_t get_last_post_id(int bid);
 extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible);
 extern int undelete_posts(post_filter_t *filter, bool bm_visible);
 
+db_res_t *query_post_by_pid(post_list_type_e type, post_id_t pid, const char *fields);
+bool alter_title(post_list_type_e type, post_id_t pid, const char *title);
+
 #endif // FB_POST_H

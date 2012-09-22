@@ -24,21 +24,6 @@ typedef struct ansi_color_t {
 	char bg;
 } ansi_color_t;
 
-/**
- * Find line end from string.
- * @param begin The line beginning.
- * @param end Off-the-end pointer of the string.
- * @return Off-the-end pointer of the line.
- */
-static const char *_get_line_end(const char *begin, const char *end)
-{
-	const char *s = begin;
-	while (s != end && *s != '\n') {
-		++s;
-	}
-	return (s == end ? s : s + 1);
-}
-
 /** UTF-8 "Äê" */
 #define YEAR_STRING  "\xe5\xb9\xb4"
 /** UTF-8 "ÔÂ" */
@@ -217,7 +202,7 @@ static const char *_print_header(const char *begin, size_t size)
 {
 	const char *end = begin + size;
 	string_t line = { .begin = begin };
-	line.end = _get_line_end(begin, end);
+	line.end = get_line_end(begin, end);
 
 	string_t owner, nick, board, title;
 
@@ -239,14 +224,14 @@ static const char *_print_header(const char *begin, size_t size)
 		board.end = line.end - 1;
 
 	line.begin = line.end;
-	line.end = _get_line_end(line.begin, end);
+	line.end = get_line_end(line.begin, end);
 
 	if ((title.begin = line.begin + sizeof(TOPIC_STRING) - 1) >= end)
 		return begin;
 	title.end = line.end - 1;
 
 	line.begin = line.end;
-	line.end = _get_line_end(line.begin, end);
+	line.end = get_line_end(line.begin, end);
 	fb_time_t date = _parse_header_date(&line);
 	if (date < 0)
 		return begin;
@@ -335,7 +320,7 @@ static void _print_body(const char *begin, const char *end, int option)
 
 	const char *s, *e;
 	for (s = begin; s != end; s = e) {
-		e = _get_line_end(s, end);
+		e = get_line_end(s, end);
 		if (!in_signature) {
 			if (e - s == 3 && memcmp(s, "--\n", 3) == 0) {
 				if (option & PARSE_NOSIG)

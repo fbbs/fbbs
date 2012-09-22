@@ -636,3 +636,18 @@ const char *pstring(const pstring_t *s)
 	s->str[s->len] = '\0';
 	return s->str;
 }
+
+/**
+ * Find line end from string.
+ * @param begin The line beginning.
+ * @param end Off-the-end pointer of the string.
+ * @return Off-the-end pointer of the line.
+ */
+const char *get_line_end(const char *begin, const char *end)
+{
+	const char *s = begin;
+	while (s != end && *s != '\n') {
+		++s;
+	}
+	return (s == end ? s : s + 1);
+}

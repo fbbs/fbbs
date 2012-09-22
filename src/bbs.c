@@ -1934,40 +1934,6 @@ int IsTheFileOwner(struct fileheader *fileinfo) {
 	return 1;
 }
 
-int change_title(char *fname, char *title) {
-	FILE *fp, *out;
-	char buf[256], outname[STRLEN];
-	int newtitle = 0;
-
-	char systembuf[256];
-
-	if ((fp = fopen(fname, "r")) == NULL)
-		return 0;
-
-	sprintf(outname, "tmp/editpost.%s.%05d", currentuser.userid, session.pid);
-	if ((out = fopen(outname, "w")) == NULL)
-		return 0;
-
-	while ((fgets(buf, 256, fp)) != NULL) {
-		if (!strncmp(buf, "标  题: ", 8) && newtitle == 0) {
-			fprintf(out, "标  题: %s\n", title);
-			newtitle = 1;
-			continue;
-		}
-		fputs(buf, out);
-	}
-	fclose(fp);
-	fclose(out);
-	//rename(outname, fname);
-	sprintf(systembuf, "/bin/mv %s/%s %s/%s", BBSHOME, outname, BBSHOME,
-			fname);
-	//modified by roly 02.03.30
-	system(systembuf);
-	chmod(fname, 0644);
-
-	return 0;
-}
-
 int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 	char buf[512];
 	char *t;
@@ -2014,89 +1980,6 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 		report(genbuf, currentuser.userid);
 	}
 	return FULLUPDATE;
-}
-
-void getnam(char *direct, int num, char *id) {
-	FILE *fp;
-	int size;
-	struct fileheader ff;
-	size = sizeof(struct fileheader);
-	fp = fopen(direct, "r");
-	fseek(fp, (num - 1) * size, SEEK_SET);
-	strcpy(id, "none.");
-	if (fread(&ff, size, 1, fp))
-		strcpy(id, ff.filename);
-	fclose(fp);
-}
-
-int edit_title(int ent, struct fileheader *fileinfo, char *direct) {
-	long i;
-	struct fileheader xfh; //added by roly,02.03.29
-
-	char buf[STRLEN];
-	char id1[20]; //added by zhch, 12.19, to fix T d T bug.
-
-	getnam(direct, ent, id1);
-
-	if (!strcmp(currboard, "GoneWithTheWind") || digestmode == ATTACH_MODE)
-		return DONOTHING;
-
-	if (!am_curr_bm()) {
-		if (!IsTheFileOwner(fileinfo))
-			return DONOTHING;
-		board_t board;
-		get_board(currboard, &board);
-		if ((board.flag & BOARD_ANONY_FLAG)
-				&& streq(fileinfo->owner, currboard))
-			return DONOTHING;
-	}
-#ifdef ENABLE_NOTICE
-	if (fileinfo->accessed[1] & FILE_NOTICE)
-	return DONOTHING;
-#endif
-
-	ansi_filter(buf, fileinfo->title);
-	getdata(t_lines - 1, 0, "新文章标题: ", buf, 50, DOECHO, NA);
-	if (!strcmp(buf, fileinfo->title))
-		return PARTUPDATE;
-	check_title(buf, sizeof(buf));
-	if (buf[0] != '\0') {
-		/*
-		 char    tmp[STRLEN * 2], *t;
-		 getnam(direct, ent,id2);
-		 if(strcmp(id1,id2)) return PARTUPDATE;
-		 strcpy(fileinfo->title, buf);
-		 strcpy(tmp, direct);
-		 if ((t = strrchr(tmp, '/')) != NULL)
-		 *t = '\0';
-		 sprintf(genbuf, "%s/%s", tmp, fileinfo->filename);
-		 change_title(genbuf, buf);
-		 substitute_record(direct, fileinfo, sizeof(*fileinfo), ent);
-		 *///modified by roly 02.03.29
-		char tmp[STRLEN * 2], *t;
-
-		strcpy(fileinfo->title, buf);
-		strcpy(tmp, direct);
-		if ((t = strrchr(tmp, '/')) != NULL)
-			*t = '\0';
-		sprintf(genbuf, "%s/%s", tmp, fileinfo->filename);
-		change_title(genbuf, buf);
-		/* Leeward 99.07.12 added below to fix a big bug */
-		setbdir(buf, currboard);
-		for (i = ent; i > 0; i--) {
-			if (0 == get_record(buf, &xfh, sizeof (xfh), i)) {
-				if (0 == strcmp(xfh.filename, fileinfo->filename)) {
-					ent = i;
-					break;
-				}
-			}
-		}
-		if (0 == i)
-			return PARTUPDATE;
-		/* Leeward 99.07.12 added above to fix a big bug */
-		substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
-	}
-	return PARTUPDATE;
 }
 
 int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
@@ -2726,7 +2609,6 @@ struct one_key read_comms[] = {
 		{'E', edit_post},
 		{Ctrl('G'), acction_mode},
 		{'`', acction_mode},
-		{'T', edit_title},
 		{'s', do_select},
 		{Ctrl('C'), do_cross},
 		{Ctrl('P'), do_post},

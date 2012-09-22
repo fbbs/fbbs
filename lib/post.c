@@ -651,3 +651,73 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 	query_builder_free(b);
 	return rows;
 }
+
+db_res_t *query_post_by_pid(post_list_type_e type, post_id_t pid,
+		const char *fields)
+{
+	query_builder_t *b = query_builder_new(0);
+	query_builder_append(b, "SELECT");
+	query_builder_append(b, fields);
+	query_builder_append(b, "FROM");
+	query_builder_append(b, post_table_name(type));
+	query_builder_append(b, "WHERE id = %"DBIdPID, pid);
+
+	db_res_t *res = query_builder_query(b);
+	query_builder_free(b);
+	return res;
+}
+
+static char *replace_content_title(const char *content, size_t len,
+		const char *title)
+{
+	const char *end = content + len;
+	const char *l1_end = get_line_end(content, end);
+	const char *l2_end = get_line_end(l1_end, end);
+
+	// sizeof("Бъ  Ьт: ") in UTF-8 is 10
+	const char *begin = l1_end + 10;
+	int orig_title_len = l2_end - begin - 1; // exclude '\n'
+	if (orig_title_len < 0)
+		return NULL;
+
+	int new_title_len = strlen(title);
+	char *s = malloc(len + new_title_len - orig_title_len);
+	char *p = s;
+	size_t l = begin - content;
+	memcpy(p, content, l);
+	p += l;
+	memcpy(p, title, new_title_len);
+	p += new_title_len;
+	*p++ = '\n';
+	l = end - l2_end;
+	memcpy(p, l2_end, end - l2_end);
+	return s;
+}
+
+bool alter_title(post_list_type_e type, post_id_t pid, const char *title)
+{
+	db_res_t *res = query_post_by_pid(type, pid, "content");
+	if (res && db_res_rows(res) == 1) {
+		char *content = replace_content_title(db_get_value(res, 0, 0),
+				db_get_length(res, 0, 0), title);
+		db_clear(res);
+		if (!content)
+			return false;
+
+		query_builder_t *b = query_builder_new(0);
+		query_builder_append(b, "UPDATE");
+		query_builder_append(b, post_table_name(type));
+		query_builder_append(b, "SET title = %s, content = %s",
+				title, content);
+		query_builder_append(b, "WHERE id = %"DBIdPID, pid);
+
+		res = query_builder_cmd(b);
+		bool success = res;
+
+		db_clear(res);
+		query_builder_free(b);
+		free(content);
+		return success;
+	}
+	return false;
+}

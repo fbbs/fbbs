@@ -348,14 +348,7 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 
 static int forward_post(post_list_type_e type, post_info_t *ip, bool uuencode)
 {
-	query_builder_t *b = query_builder_new(0);
-	query_builder_append(b, "SELECT title, content FROM");
-	query_builder_append(b, post_table_name(type));
-	query_builder_append(b, "WHERE id = %"DBIdPID, ip->id);
-
-	db_res_t *res = query_builder_query(b);
-	query_builder_free(b);
-
+	db_res_t *res = query_post_by_pid(type, ip->id, "title, content");
 	if (res && db_res_rows(res) == 1) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(db_get_value(res, 0, 0), gbk_title);
@@ -371,6 +364,32 @@ static int forward_post(post_list_type_e type, post_info_t *ip, bool uuencode)
 	} else {
 		return DONOTHING;
 	}
+}
+
+static int tui_edit_post_title(post_list_type_e type, post_info_t *ip)
+{
+	if (ip->uid != session.uid && !am_curr_bm())
+		return DONOTHING;
+
+	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+
+	ansi_filter(utf8_title, ip->utf8_title);
+	convert_u2g(utf8_title, gbk_title);
+
+	getdata(t_lines - 1, 0, "新文章标题: ", gbk_title, sizeof(gbk_title),
+			DOECHO, NA);
+
+	check_title(gbk_title, sizeof(gbk_title));
+	convert_g2u(gbk_title, utf8_title);
+
+	if (!*utf8_title || streq(utf8_title, ip->utf8_title))
+		return MINIUPDATE;
+
+	if (alter_title(type, ip->id, utf8_title)) {
+		strlcpy(ip->utf8_title, utf8_title, sizeof(ip->utf8_title));
+		return PARTUPDATE;
+	}
+	return MINIUPDATE;
 }
 
 extern int show_online(void);
@@ -410,6 +429,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'w':
 			return toggle_post_flag(l->filter.bid, ip,
 					POST_FLAG_WATER, "water");
+		case 'T':
+			return tui_edit_post_title(l->type, ip);
 		case '.':
 			return post_list_deleted(l->filter.bid, l->type);
 		case 'J':
