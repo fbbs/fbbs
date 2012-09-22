@@ -970,95 +970,32 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 	}
 	return PARTUPDATE;
 }
-#ifdef INTERNET_EMAIL
 
-int mail_forward(int ent, struct fileheader *fileinfo, const char *direct)
+int _mail_forward(const char *path, const struct fileheader *fp, bool uuencode)
 {
-	char buf[STRLEN];
-	char *p;
-	if (!HAS_PERM(PERM_FORWARD)) {
+	if (!HAS_PERM(PERM_FORWARD))
 		return DONOTHING;
-	}
-	/****Type 2公告禁止转信****/
-	if(fileinfo->filename[0] == 's')
-	{
+
+	if (fp->filename[0] == 's') {
 		prints("Type 2公告禁止转信!\n");
 		return DONOTHING;
 	}
-	strlcpy(buf, direct, STRLEN);
-	buf[STRLEN - 1] = '\0';
-	if ((p = strrchr(buf, '/')) != NULL)
-	*p = '\0';
-	switch (doforward(buf, fileinfo, 0)) {
-		case 0:
-			prints("文章转寄完成!\n");
-			break;
-		case BBS_EINTNL:
-			prints("转寄失败: 系统发生错误.\n");
-			break;
-		case -2:
-			prints("转寄失败: 不正确的收信地址.\n");
-			break;
-		case BBS_EMAILQE:
-			prints("您的信箱超限，暂时无法使用信件服务.\n");
-			break;
-		case BBS_EACCES:
-			prints("您没有发信权限，暂时无法使用信件服务.\n");
-			break;
-		case BBS_EBLKLST:
-			prints("对方不想收到您的信件.\n");
-			break;
-		default:
-			prints("取消转寄...\n");
-	}
+
+	doforward(path, fp, uuencode);
 	pressreturn();
 	clear();
 	return FULLUPDATE;
+}
+
+int mail_forward(int ent, struct fileheader *fileinfo, const char *direct)
+{
+	return _mail_forward(direct, fileinfo, false);
 }
 
 int mail_u_forward(int ent, struct fileheader *fileinfo, const char *direct)
 {
-	char buf[STRLEN];
-	char *p;
-	if (!HAS_PERM(PERM_FORWARD)) {
-		return DONOTHING;
-	}
-	if(fileinfo->filename[0] == 's')
-	{
-		prints("Type 2公告禁止转信!\n");
-		return DONOTHING;
-	}
-	strlcpy(buf, direct, STRLEN);
-	buf[STRLEN - 1] = '\0';
-	if ((p = strrchr(buf, '/')) != NULL)
-	*p = '\0';
-	switch (doforward(buf, fileinfo, 1)) {
-		case 0:
-			prints("文章转寄完成!\n");
-			break;
-		case BBS_EINTNL:
-			prints("转寄失败: 系统发生错误.\n");
-			break;
-		case -2:
-			prints("转寄失败: 不正确的收信地址.\n");
-			break;
-		case BBS_EMAILQE:
-			prints("您的信箱超限，暂时无法使用信件服务.\n");
-			break;
-		case BBS_EACCES:
-			prints("您没有发信权限，暂时无法使用信件服务.\n");
-			break;
-		case BBS_EBLKLST:
-			prints("对方不想收到您的信件.\n");
-			break;
-		default:
-			prints("取消转寄...\n");
-	}
-	pressreturn();
-	clear();
-	return FULLUPDATE;
+	return _mail_forward(direct, fileinfo, true);
 }
-#endif
 
 int
 mail_del_range(ent, fileinfo, direct)
@@ -1623,7 +1560,6 @@ int cnt;
 	return 0;
 }
 
-#ifdef INTERNET_EMAIL
 static int forward_file(const char *receiver, const char *file,
 		const char *gbk_title, bool uuencode)
 {
@@ -1734,6 +1670,29 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 
 	int ret = forward_file(user.userid, tmpfile, gbk_title, uuencode);
 	unlink(tmpfile);
+
+	switch (ret) {
+		case 0:
+			prints("文章转寄完成!\n");
+			break;
+		case BBS_EINTNL:
+			prints("转寄失败: 系统发生错误.\n");
+			break;
+		case -2:
+			prints("转寄失败: 不正确的收信地址.\n");
+			break;
+		case BBS_EMAILQE:
+			prints("您的信箱超限，暂时无法使用信件服务.\n");
+			break;
+		case BBS_EACCES:
+			prints("您没有发信权限，暂时无法使用信件服务.\n");
+			break;
+		case BBS_EBLKLST:
+			prints("对方不想收到您的信件.\n");
+			break;
+		default:
+			prints("取消转寄...\n");
+	}
 	return ret;
 }
 
@@ -1743,4 +1702,3 @@ int doforward(const char *path, const struct fileheader *fp, bool uuencode)
 	snprintf(file, sizeof(file), "%s/%s", path, fp->filename);
 	return tui_forward(file, fp->title, uuencode);
 }
-#endif

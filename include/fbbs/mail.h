@@ -22,5 +22,6 @@ int m_read(void);
 int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
 		char title[STRLEN]);
 int mail_mark(int ent, struct fileheader *fileinfo, char *direct);
+int tui_forward(const char *file, const char *gbk_title, bool uuencode);
 
 #endif // FB_MAIL_H
