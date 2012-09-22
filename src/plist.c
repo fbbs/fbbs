@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/brc.h"
+#include "fbbs/mail.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -345,6 +346,33 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
+static int forward_post(post_list_type_e type, post_info_t *ip, bool uuencode)
+{
+	query_builder_t *b = query_builder_new(0);
+	query_builder_append(b, "SELECT title, content FROM");
+	query_builder_append(b, post_table_name(type));
+	query_builder_append(b, "WHERE id = %"DBIdPID, ip->id);
+
+	db_res_t *res = query_builder_query(b);
+	query_builder_free(b);
+
+	if (res && db_res_rows(res) == 1) {
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(db_get_value(res, 0, 0), gbk_title);
+
+		char file[HOMELEN];
+		dump_content_to_gbk_file(db_get_value(res, 0, 1),
+				db_get_length(res, 0, 1), file, sizeof(file));
+
+		db_clear(res);
+
+		tui_forward(file, gbk_title, uuencode);
+		return FULLUPDATE;
+	} else {
+		return DONOTHING;
+	}
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -406,6 +434,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_delete_single_post(l, ip);
 		case 'Y':
 			return tui_undelete_single_post(l, ip);
+		case 'F':
+			return forward_post(l->type, ip, false);
+		case 'U':
+			return forward_post(l->type, ip, true);
 		case 't':
 			return thesis_mode();
 		case '!':

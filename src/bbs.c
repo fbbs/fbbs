@@ -2713,22 +2713,6 @@ int Personal(const char *userid)
 	return 1;
 }
 
-#ifdef INTERNET_EMAIL
-int forward_post (int ent, struct fileheader *fileinfo, char *direct)
-{
-	if (strcmp ("guest", currentuser.userid) == 0 || digestmode == ATTACH_MODE)
-	return DONOTHING;
-	return (mail_forward (ent, fileinfo, direct));
-}
-
-int forward_u_post (int ent, struct fileheader *fileinfo, char *direct)
-{
-	if (strcmp ("guest", currentuser.userid) == 0 || digestmode == ATTACH_MODE)
-	return DONOTHING;
-	return (mail_u_forward (ent, fileinfo, direct));
-}
-#endif
-
 int read_attach(int ent, struct fileheader *fileinfo, char *direct) {
 	extern char currdirect[STRLEN];
 
@@ -2781,11 +2765,7 @@ struct one_key read_comms[] = {
 		{Ctrl('C'), do_cross},
 		{Ctrl('P'), do_post},
 		{'C', count_range},
-#ifdef INTERNET_EMAIL
-		{'F', forward_post},
-		{'U', forward_u_post},
 		{Ctrl ('R'), post_reply},
-#endif
 		{'i', Save_post},
 		{'I', Import_post},
 		{'/', t_search_down},
@@ -2801,7 +2781,6 @@ struct one_key read_comms[] = {
 		{Ctrl('U'), SR_author},
 		{'b', SR_BMfunc},
 		{Ctrl('T'), acction_mode},
-		{'t', thesis_mode},
 		{'L', BM_range},
 		{'*', show_file_info},
 		{'\0', NULL}

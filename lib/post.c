@@ -450,7 +450,7 @@ int _load_sticky_posts(int bid, post_info_t **posts)
 	return 0;
 }
 
-static const char *post_table_name(post_list_type_e type)
+const char *post_table_name(post_list_type_e type)
 {
 	switch (type) {
 		case POST_LIST_TRASH:
