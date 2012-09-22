@@ -58,7 +58,6 @@ int	getlist(char *, char **, int, char **, int, char **, int, char **,
 char *filemargin();
 void board_usage();
 void canceltotrash();
-void add_crossinfo();
 int thesis_mode();
 
 /*For read.c*/
@@ -1678,17 +1677,16 @@ int post_cross(char islocal, int mode)
 	return 1;
 }
 
-void add_crossinfo(char *filepath, int mode) {
-	FILE *fp;
-	int color;
-
-	color = (currentuser.numlogins % 7) + 31;
-	if ((fp = fopen(filepath, "a")) == NULL)
-		return;
-	fprintf(fp, "--\n[m[1;%2dm¡ù ×ª%s:¡¤%s %s¡¤[FROM: %s][m\n", color,
-			(mode == 1) ? "ÔØ" : "¼Ä", BoardName, BBSHOST, mask_host(fromhost));
-	fclose(fp);
-	return;
+void add_crossinfo(const char *filepath, bool post)
+{
+	int color = (currentuser.numlogins % 7) + 31;
+	FILE *fp = fopen(filepath, "a");
+	if (fp) {
+		fprintf(fp, "--\n\033[m\033[1;%2dm¡ù ×ª%s:¡¤%s %s¡¤[FROM: %s]\033[m\n",
+				color, post ? "ÔØ" : "¼Ä", BoardName, BBSHOST,
+				mask_host(fromhost));
+		fclose(fp);
+	}
 }
 
 // ÏÔÊ¾°æÃæÌáÊ¾

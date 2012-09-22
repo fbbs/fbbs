@@ -1622,141 +1622,125 @@ int cnt;
 	}
 	return 0;
 }
+
 #ifdef INTERNET_EMAIL
-
-int doforward(const char *direct, struct fileheader *fh, int mode)
+static int forward_file(const char *receiver, const char *file,
+		const char *gbk_title, bool uuencode)
 {
-	int lookupuserlevel;//added by roly 02.03.25
-	static char address[STRLEN];
-	char fname[STRLEN], tmpfname[STRLEN];
-	char receiver[STRLEN];
-	char title[STRLEN];
-	int return_no, internet_mail=0;
-	int filter=YEA;
-	int maxmail;
-	FILE *fp;
-	extern int cmpfnames();
-	extern char fromhost[];
+	add_crossinfo(file, false);
 
-	clear();
+	char fname[HOMELEN];
+	if (uuencode) {
+		char buf[STRLEN];
+		snprintf(fname, sizeof(fname), "tmp/file.uu%05d", session.pid);
+		snprintf(buf, sizeof(buf), "uuencode %s fb-bbs.%05d > %s",
+				file, session.pid, fname);
+		system(buf);
+	} else {
+		strlcpy(fname, file, sizeof(fname));
+	}
+
+	char title[STRLEN];
+	if (!strstr(gbk_title, "(转寄)"))
+		snprintf(title, sizeof(title), "%.70s(转寄)", gbk_title);
+	else
+		strlcpy(title, gbk_title, sizeof(title));
+
+	int ret = mail_file(fname, receiver, title);
+	if (uuencode)
+		unlink(fname);
+	return ret;
+}
+
+extern char fromhost[];
+
+int tui_forward(const char *file, const char *gbk_title, bool uuencode)
+{
+	static char address[STRLEN];
+
 	if (!HAS_PERM(PERM_MAIL))
 		return BBS_EACCES;
 	if (check_maxmail())
 		return BBS_EMAILQE;
-	if (address[0] == '\0') {
-		//strncpy(address, currentuser.email, STRLEN);
-		strlcpy(address, currentuser.userid, STRLEN);
-	}
+
+	if (address[0] == '\0')
+		strlcpy(address, currentuser.userid, sizeof(address));
+
+	char receiver[STRLEN];
+	clear();
 	if (HAS_PERM(PERM_SETADDR)) {
-		prints("本站目前只提供站内转信，请输入要转寄的帐号名。\n");
-		prints("请直接按 Enter 接受括号内提示的地址, 或者输入其他地址\n");
-		prints("把信件转寄给 [%s]\n", address);
-		//getdata(3, 0, "==> ", receiver, 70, DOECHO, YEA);
-		/*2008.02.24 Ashinmarch: usercomplete*/
+		prints("本站目前只提供站内转信，请输入要转寄的帐号名。\n"
+				"请直接按 Enter 接受括号内提示的地址, 或者输入其他地址\n"
+				"把信件转寄给 [%s]\n", address);
 		prints("==>");
 		usercomplete(NULL, receiver);
-	} else strcpy(receiver,currentuser.userid);
-	if (receiver[0] != '\0') {
-		strlcpy(address, receiver, STRLEN);
-	} else
-	strlcpy(receiver,address,STRLEN);
-	sprintf(genbuf, ".bbs@%s", BBSHOST);
-	if (strstr(receiver, genbuf)
-			|| strstr(receiver, ".bbs@localhost")) {
-		char *pos;
-		pos = strchr(address, '.');
-		*pos = '\0';
+	} else {
+		strlcpy(receiver, currentuser.userid, sizeof(receiver));
 	}
-	if( strpbrk(address,"@.")) {
-		internet_mail = YEA;
-		return -2; /* added by Seaman */
-	}
-	if(!internet_mail) {
-		if (!getuser(address))
-			return BBS_EINTNL;
-		if(getmailboxsize(lookupuser.userlevel)*2<getmailsize(lookupuser.userid)) {
-			prints("[%s] 信箱容量已满，无法收信。\n",address);
-			return BBS_ERMQE;
-		}
-		if (is_blocked(lookupuser.userid))
-			return BBS_EBLKLST;
 
-		/* added by roly 03.03.10*/
-		/*   
-		 maxmail = (HAS_PERM(PERM_OBOARDS)||HAS_PERM(PERM_LARGEMAIL)) ?
-		 MAX_SYSOPMAIL_HOLD : (HAS_PERM(PERM_BOARDS)) ?
-		 MAX_BMMAIL_HOLD : MAX_MAIL_HOLD;
-		 */
-		lookupuserlevel=lookupuser.userlevel;
-		maxmail = getmailboxhold(lookupuserlevel);
+	if (receiver[0] != '\0')
+		strlcpy(address, receiver, sizeof(address));
+	else
+		strlcpy(receiver, address, sizeof(receiver));
 
-		if (getmailnum(lookupuser.userid)> maxmail*2) {
-			prints("[%s] 信箱已满，无法收信。\n",address);
-			return BBS_ERMQE;
-		}
-		/* add end */
-	}
-	sprintf(genbuf, "确定将文章寄给 %s 吗", address);
-	if (askyn(genbuf, YEA, NA) == 0)
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "确定将文章寄给 %s 吗", address);
+	if (!askyn(buf, YEA, NA))
 		return 1;
-	if (!valid_addr(address))
-		if (!getuser(address))
-			return -2;
-	sprintf(tmpfname, "tmp/forward.%s.%05d", currentuser.userid, session.pid);
 
-	sprintf(genbuf, "%s/%s", direct, fh->filename);
-	f_cp(genbuf, tmpfname, O_CREAT);
+	struct userec user;
+	if (!getuserec(address, &user))
+		return BBS_EINTNL;
+	if (getmailboxsize(user.userlevel) * 2 < getmailsize(user.userid)) {
+		prints("[%s] 信箱容量已满，无法收信。\n",address);
+		return BBS_ERMQE;
+	}
+	if (is_blocked(user.userid))
+		return BBS_EBLKLST;
 
-	if (askyn("是否修改文章内容", NA, NA) == 1) {
-		if (vedit(tmpfname, NA, NA) == -1) {
+	int maxmail = getmailboxhold(user.userlevel);
+	if (getmailnum(user.userid) > maxmail * 2) {
+		prints("[%s] 信箱已满，无法收信。\n", address);
+		return BBS_ERMQE;
+	}
+
+	char tmpfile[HOMELEN];
+	snprintf(tmpfile, sizeof(tmpfile), "tmp/forward.%s.%05d",
+			currentuser.userid, session.pid);
+	f_cp(file, tmpfile, O_CREAT);
+
+	if (askyn("是否修改文章内容", NA, NA)) {
+		if (vedit(tmpfile, NA, NA) == -1) {
 			if (askyn("是否寄出未修改的文章", YEA, NA) == 0) {
-				unlink(tmpfname);
+				unlink(tmpfile);
 				clear();
 				return 1;
 			}
-		}
-		else if ((fp = fopen(tmpfname, "a")) != NULL) {
-			fprintf(fp,
-					"\n--\n\033[1;36m※ 修改:·%s 于 %16.16s 修改本文·[FROM: %s]\033[m\n",
-					currentuser.userid, getdatestring(time(NULL), DATE_ZH) + 6, mask_host(fromhost));
-			fclose (fp);
+		} else {
+			FILE *fp = fopen(tmpfile, "a");
+			if (fp) {
+				fprintf(fp, "\n--\n\033[1;36m※ 修改:·%s 于 %16.16s 修改本文·"
+						"[FROM: %s]\033[m\n", currentuser.userid,
+						getdatestring(time(NULL), DATE_ZH) + 6,
+						mask_host(fromhost));
+				fclose(fp);
+			}
 		}
 		clear();
-
 	}
-	if(internet_mail)
-	if (askyn("是否过滤ANSI控制符",YEA,NA) == NA ) filter = NA;
-	add_crossinfo(tmpfname, 2);
+
 	prints("转寄信件给 %s, 请稍候....\n", address);
 	refresh();
 
-	if (mode == 0)
-	strcpy(fname, tmpfname);
-	else if (mode == 1) {
-		sprintf(fname, "tmp/file.uu%05d", session.pid);
-		sprintf(genbuf, "uuencode %s fb-bbs.%05d > %s",
-				tmpfname, session.pid, fname);
-		system(genbuf);
-	}
-	if( !strstr(fh->title,"(转寄)"))
-	sprintf(title, "%.70s(转寄)", fh->title);
-	else strcpy(title,fh->title);
-	if (!internet_mail)
-	return_no = mail_file(fname, lookupuser.userid, title);
-	else {
-#ifdef SENDMAIL_MIME_AUTOCONVERT
-		if (askyn("以 MIME 格式送信", NA, NA) == YEA)
-		return_no = bbs_sendmail(fname, title, address, filter,YEA);
-		else
-		return_no = bbs_sendmail(fname, title, address, filter,NA);
-#else
-		return_no = bbs_sendmail(fname, title, address, filter);
-#endif
-	}
-	if (mode == 1) {
-		unlink(fname);
-	}
-	unlink(tmpfname);
-	return (return_no);
+	int ret = forward_file(user.userid, tmpfile, gbk_title, uuencode);
+	unlink(tmpfile);
+	return ret;
+}
+
+int doforward(const char *path, const struct fileheader *fp, bool uuencode)
+{
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "%s/%s", path, fp->filename);
+	return tui_forward(file, fp->title, uuencode);
 }
 #endif

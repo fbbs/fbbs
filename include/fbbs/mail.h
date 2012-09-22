@@ -13,7 +13,7 @@ extern int mail_file(const char *file, const char *recv, const char *title);
 extern bool valid_addr(const char *addr);
 
 int chkmail(void);
-int doforward(const char *direct, struct fileheader *fh, int mode);
+int doforward(const char *direct, const struct fileheader *fh, bool uuencode);
 int do_send(const char *userid, const char *title);
 int check_query_mail(const char *qry_mail_dir);
 int mail_forward(int ent, struct fileheader *fileinfo, const char *direct);
