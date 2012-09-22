@@ -112,14 +112,14 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 	}
 
 	if (pid) {
-		reid = pr->o_fp ? pr->o_fp->id : pid;
-		tid = pr->o_fp ? pr->o_fp->tid : pid;
+		reid = pr->reid ? pr->reid : pid;
+		tid = pr->tid ? pr->tid : pid;
 
 		r = db_cmd("INSERT INTO posts (id, reid, tid, owner, stamp, board,"
 				" uname, title, content, locked, marked) VALUES (%"DBIdPID","
 				" %"DBIdPID", %"DBIdPID", %"DBIdUID", %t, %d, %s, %s, %s, %b,"
 				" %b)", pid, reid, tid, uid, now, pr->board->id, uname,
-				utf8_title, content, pr->noreply, pr->mmark);
+				utf8_title, content, pr->locked, pr->marked);
 		if (!r || db_cmd_rows(r) != 1)
 			pid = 0;
 		db_clear(r);
@@ -147,7 +147,7 @@ post_id_t publish_post(const post_request_t *pr)
 		uname = pr->user->userid;
 		nick = pr->user->username;
 	} else if (pr->autopost) {
-		uname = pr->userid;
+		uname = pr->uname;
 		nick = pr->nick;
 	}
 	if (!uname || !nick)

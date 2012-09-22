@@ -160,11 +160,13 @@ int bbsccc_main(void)
 		}
 		convert_u2g(utf8_title, gbk_title);
 
-		post_request_t pr = { .autopost = false, .crosspost = true,
-			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.board = &to, .title = gbk_title, .content = info.content,
-			.sig = 0, .ip = mask_host(fromhost), .o_fp = NULL,
-			.noreply = false, .mmark = false, .anony = false };
+		post_request_t pr = {
+			.autopost = false, .crosspost = true, .uname = NULL, .nick = NULL,
+			.user = &currentuser, .board = &to, .title = gbk_title,
+			.content = info.content, .sig = 0, .ip = mask_host(fromhost),
+			.reid = 0, .tid = 0, .locked = false, .marked = false,
+			.anony = false,
+		};
 		int ret = publish_post(&pr);
 
 		free_post_info_full(&info);

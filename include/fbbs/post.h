@@ -79,7 +79,7 @@ typedef struct {
 typedef struct {
 	bool autopost;
 	bool crosspost;
-	const char *userid;
+	const char *uname;
 	const char *nick;
 	const struct userec *user;
 	const board_t *board;
@@ -87,9 +87,10 @@ typedef struct {
 	const char *content;
 	int sig;
 	const char *ip;
-	const post_info_t *o_fp;
-	bool noreply;
-	bool mmark;
+	post_id_t reid;
+	post_id_t tid;
+	bool locked;
+	bool marked;
 	bool anony;
 	convert_t *cp;
 } post_request_t;

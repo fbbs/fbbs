@@ -168,14 +168,15 @@ int bbssnd_main(void)
 		if (ret < 0)
 			return BBS_EINTNL;
 	} else {
-		post_request_t pr = { .autopost = false, .crosspost = false,
-			.userid = NULL, .nick = NULL, .user = &currentuser,
-			.board = &board, .title = gbk_title, .content = text,
-			.sig = strtol(get_param("sig"), NULL, 0), .ip = mask_host(fromhost),
-			.o_fp = reply ? &info.p : NULL, .mmark = false,
-			.noreply = reply && (info.p.flag & POST_FLAG_LOCKED),
+		post_request_t pr = {
+			.autopost = false, .crosspost = false, .uname = NULL, .nick = NULL,
+			.user = &currentuser, .board = &board, .title = gbk_title,
+			.content = text, .sig = strtol(get_param("sig"), NULL, 0),
+			.ip = mask_host(fromhost), .reid = reply ? info.p.id : 0,
+			.tid = reply ? info.p.tid : 0, .marked = false,
+			.locked = reply && (info.p.flag & POST_FLAG_LOCKED),
 			.anony = strtol(get_param("anony"), NULL, 0),
-			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL
+			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL,
 		};
 		pid = publish_post(&pr);
 		free_post_info_full(&info);
