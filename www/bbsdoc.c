@@ -87,10 +87,10 @@ static void print_sticky_posts(int bid, post_list_type_e type)
 	free(sticky_posts);
 }
 
-static void print_posts(post_list_type_e type, post_filter_t *filter,
+static void print_posts(post_filter_t *filter,
 		int limit)
 {
-	query_builder_t *b = build_post_query(type, filter, false, limit + 1);
+	query_builder_t *b = build_post_query(filter, false, limit + 1);
 	db_res_t *r = query_builder_query(b);
 	query_builder_free(b);
 
@@ -139,8 +139,10 @@ static int bbsdoc(post_list_type_e type)
 
 	brc_fcgi_init(currentuser.userid, board.name);
 
-	post_filter_t filter = { .bid = board.id, .max = start };
-	print_posts(type, &filter, page);
+	post_filter_t filter = {
+		.bid = board.id, .deleted = is_deleted(type), .max = start,
+	};
+	print_posts(&filter, page);
 	print_sticky_posts(board.id, type);
 
 	char *cgi_name = "";

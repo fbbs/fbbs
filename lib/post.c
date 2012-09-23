@@ -507,15 +507,17 @@ int _load_sticky_posts(int bid, post_info_t **posts)
 	return 0;
 }
 
-const char *post_table_name(post_list_type_e type)
+bool is_deleted(post_list_type_e type)
 {
-	switch (type) {
-		case POST_LIST_TRASH:
-		case POST_LIST_JUNK:
-			return "posts_deleted";
-		default:
-			return "posts";
-	}
+	return type == POST_LIST_TRASH || type == POST_LIST_JUNK;
+}
+
+const char *post_table_name(bool deleted)
+{
+	if (deleted)
+		return "posts_deleted";
+	else
+		return "posts";
 }
 
 static const char *post_filter(post_list_type_e type)
@@ -561,12 +563,11 @@ void build_post_filter(query_builder_t *b, post_filter_t *f)
 		query_builder_append_and(b, "title ILIKE '%%%s%%'", f->utf8_keyword);
 }
 
-query_builder_t *build_post_query(post_list_type_e type, post_filter_t *filter,
-		bool asc, int limit)
+query_builder_t *build_post_query(post_filter_t *filter, bool asc, int limit)
 {
 	query_builder_t *b = query_builder_new(0);
 	query_builder_append(b, "SELECT " POST_LIST_FIELDS " FROM");
-	query_builder_append(b, post_table_name(type));
+	query_builder_append(b, post_table_name(filter->deleted));
 	build_post_filter(b, filter);
 	query_builder_append(b, "ORDER BY id");
 	query_builder_append(b, asc ? "ASC" : "DESC");
@@ -702,14 +703,13 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 	return rows;
 }
 
-db_res_t *query_post_by_pid(post_list_type_e type, post_id_t pid,
-		const char *fields)
+db_res_t *query_post_by_pid(post_id_t pid, bool deleted, const char *fields)
 {
 	query_builder_t *b = query_builder_new(0);
 	query_builder_append(b, "SELECT");
 	query_builder_append(b, fields);
 	query_builder_append(b, "FROM");
-	query_builder_append(b, post_table_name(type));
+	query_builder_append(b, post_table_name(deleted));
 	query_builder_append(b, "WHERE id = %"DBIdPID, pid);
 
 	db_res_t *res = query_builder_query(b);
@@ -744,9 +744,9 @@ static char *replace_content_title(const char *content, size_t len,
 	return s;
 }
 
-bool alter_title(post_list_type_e type, post_id_t pid, const char *title)
+bool alter_title(post_id_t pid, bool deleted, const char *title)
 {
-	db_res_t *res = query_post_by_pid(type, pid, "content");
+	db_res_t *res = query_post_by_pid(pid, deleted, "content");
 	if (res && db_res_rows(res) == 1) {
 		char *content = replace_content_title(db_get_value(res, 0, 0),
 				db_get_length(res, 0, 0), title);
@@ -756,7 +756,7 @@ bool alter_title(post_list_type_e type, post_id_t pid, const char *title)
 
 		query_builder_t *b = query_builder_new(0);
 		query_builder_append(b, "UPDATE");
-		query_builder_append(b, post_table_name(type));
+		query_builder_append(b, post_table_name(deleted));
 		query_builder_append(b, "SET title = %s, content = %s",
 				title, content);
 		query_builder_append(b, "WHERE id = %"DBIdPID, pid);

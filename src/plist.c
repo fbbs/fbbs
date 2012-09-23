@@ -115,7 +115,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	}
 
 	bool asc = is_asc(p->base);
-	query_builder_t *b = build_post_query(l->type, &l->filter, asc, page);
+	query_builder_t *b = build_post_query(&l->filter, asc, page);
 	db_res_t *res = query_builder_query(b);
 	query_builder_free(b);
 	res_to_array(res, l, p->base, page);
@@ -736,7 +736,8 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 		slide_list_base_e base, user_id_t uid, const char *keyword)
 {
 	post_list_t p = {
-		.type = type, .filter = { .bid = bid, .uid = uid },
+		.type = type,
+		.filter = { .deleted = is_deleted(type), .bid = bid, .uid = uid },
 		.relocate = true, .reload = false, .last_query_rows = 0,
 		.index = NULL, .posts = NULL, .sposts = NULL,
 		.icount = 0, .count = 0, .scount = 0, .sreload = false,

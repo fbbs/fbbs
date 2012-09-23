@@ -104,6 +104,7 @@ enum {
 };
 
 typedef struct {
+	bool deleted;
 	int bid;
 	int flag;
 	user_id_t uid;
@@ -129,9 +130,10 @@ extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 extern void res_to_post_info(db_res_t *r, int i, post_info_t *p);
 void set_post_flag(post_info_t *ip, post_flag_e flag, bool set);
 extern int _load_sticky_posts(int bid, post_info_t **posts);
-extern const char *post_table_name(post_list_type_e type);
+extern bool is_deleted(post_list_type_e type);
+extern const char *post_table_name(bool deleted);
 extern void build_post_filter(query_builder_t *b, post_filter_t *f);
-extern query_builder_t *build_post_query(post_list_type_e type, post_filter_t *filter, bool asc, int limit);
+extern query_builder_t *build_post_query(post_filter_t *filter, bool asc, int limit);
 extern void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p);
 extern void free_post_info_full(post_info_full_t *p);
 
@@ -144,7 +146,7 @@ extern post_id_t get_last_post_id(int bid);
 extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
 extern int undelete_posts(post_filter_t *filter, bool bm_visible);
 
-db_res_t *query_post_by_pid(post_list_type_e type, post_id_t pid, const char *fields);
-bool alter_title(post_list_type_e type, post_id_t pid, const char *title);
+db_res_t *query_post_by_pid(post_id_t pid, bool deleted, const char *fields);
+bool alter_title(post_id_t pid, bool deleted, const char *title);
 
 #endif // FB_POST_H
