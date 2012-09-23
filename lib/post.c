@@ -463,6 +463,7 @@ bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
 
 void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 {
+	bool deleted = streq(db_field_name(r, 0), "did");
 	p->id = db_get_post_id(r, i, 0);
 	p->reid = db_get_post_id(r, i, 1);
 	p->tid = db_get_post_id(r, i, 2);
@@ -473,7 +474,8 @@ void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 			| (db_get_bool(r, i, 7) ? POST_FLAG_MARKED : 0)
 			| (db_get_bool(r, i, 8) ? POST_FLAG_WATER : 0)
 			| (db_get_bool(r, i, 9) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(r, i, 10) ? POST_FLAG_IMPORT : 0);
+			| (db_get_bool(r, i, 10) ? POST_FLAG_IMPORT : 0)
+			| (deleted ? POST_FLAG_DELETED : 0);
 	p->replies = db_get_integer(r, i, 11);
 	p->comments = db_get_integer(r, i, 12);
 	p->score = db_get_integer(r, i, 13);
