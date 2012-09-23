@@ -139,6 +139,7 @@ extern void free_post_info_full(post_info_full_t *p);
 
 extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
 		char *file, size_t size);
+extern char *convert_file_to_utf8_content(const char *file);
 
 extern bool set_last_post_id(int bid, post_id_t pid);
 extern post_id_t get_last_post_id(int bid);
@@ -148,5 +149,6 @@ extern int undelete_posts(post_filter_t *filter, bool bm_visible);
 
 db_res_t *query_post_by_pid(post_id_t pid, bool deleted, const char *fields);
 bool alter_title(post_id_t pid, bool deleted, const char *title);
+bool alter_content(post_id_t pid, bool deleted, const char *content);
 
 #endif // FB_POST_H

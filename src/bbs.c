@@ -2406,7 +2406,6 @@ struct one_key read_comms[] = {
 #endif
 		{',', read_attach},
 		{'K', skip_post},
-		{'E', edit_post},
 		{Ctrl('G'), acction_mode},
 		{'`', acction_mode},
 		{'s', do_select},

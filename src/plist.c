@@ -373,7 +373,7 @@ static int forward_post(post_list_type_e type, post_info_t *ip, bool uuencode)
 	}
 }
 
-static int tui_edit_post_title(post_list_type_e type, post_info_t *ip)
+static int tui_edit_post_title(post_info_t *ip, bool deleted)
 {
 	if (ip->uid != session.uid && !am_curr_bm())
 		return DONOTHING;
@@ -392,11 +392,44 @@ static int tui_edit_post_title(post_list_type_e type, post_info_t *ip)
 	if (!*utf8_title || streq(utf8_title, ip->utf8_title))
 		return MINIUPDATE;
 
-	if (alter_title(type, ip->id, utf8_title)) {
+	if (alter_title(ip->id, deleted, utf8_title)) {
 		strlcpy(ip->utf8_title, utf8_title, sizeof(ip->utf8_title));
 		return PARTUPDATE;
 	}
 	return MINIUPDATE;
+}
+
+static int tui_edit_post_content(post_info_t *ip, bool deleted)
+{
+	if (ip->uid != session.uid && !am_curr_bm())
+		return DONOTHING;
+
+	db_res_t *res = query_post_by_pid(ip->id, deleted, "content");
+	if (!res || db_res_rows(res) < 1)
+		return DONOTHING;
+
+	char file[HOMELEN];
+	dump_content_to_gbk_file(db_get_value(res, 0, 0),
+			db_get_length(res, 0, 0), file, sizeof(file));
+
+	set_user_status(ST_EDIT);
+
+	clear();
+	if (vedit(file, NA, NA) != -1) {
+		char *content = convert_file_to_utf8_content(file);
+		if (content) {
+			if (alter_content(ip->id, deleted, content)) {
+				char buf[STRLEN];
+				snprintf(buf, sizeof(buf), "edited post #%"PRIdPID, ip->id);
+				report(buf, currentuser.userid);
+			}
+			free(content);
+		}
+	}
+
+	unlink(file);
+	db_clear(res);
+	return FULLUPDATE;
 }
 
 static int tui_delete_posts_in_range(slide_list_t *p)
@@ -656,7 +689,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return toggle_post_flag(l->filter.bid, ip,
 					POST_FLAG_WATER, "water");
 		case 'T':
-			return tui_edit_post_title(l->type, ip);
+			return tui_edit_post_title(ip, is_deleted(l->type));
+		case 'E':
+			return tui_edit_post_content(ip, is_deleted(l->type));
 		case 'D':
 			return tui_delete_posts_in_range(p);
 		case '.':

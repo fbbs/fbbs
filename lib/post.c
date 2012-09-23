@@ -92,7 +92,7 @@ static FILE *get_fname(const char *dir, const char *pfx,
 	return NULL;
 }
 
-static char *convert_file_to_utf8_content(const char *file)
+char *convert_file_to_utf8_content(const char *file)
 {
 	char *utf8_content = NULL;
 	mmap_t m = { .oflag = O_RDONLY };
@@ -769,4 +769,16 @@ bool alter_title(post_id_t pid, bool deleted, const char *title)
 		return success;
 	}
 	return false;
+}
+
+bool alter_content(post_id_t pid, bool deleted, const char *content)
+{
+	query_builder_t *b = query_builder_new(0);
+	b->append(b, "UPDATE")->append(b, post_table_name(deleted));
+	b->append(b, "SET")->append(b, "content = %s", content);
+	b->append(b, "WHERE")->append(b, "id = %"DBIdPID, pid);
+
+	db_res_t *res = b->cmd(b);
+	db_clear(res);
+	return res;
 }
