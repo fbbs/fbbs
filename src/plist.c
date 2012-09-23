@@ -148,7 +148,11 @@ static void post_list_display_entry(post_info_t *p)
 {
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(p->utf8_title, gbk_title);
-	prints("  %s %s\n", p->owner, gbk_title);
+
+	char id_str[7];
+	pid_to_base32(p->id, id_str, sizeof(id_str));
+
+	prints(" %6s  %s %s\n", id_str, p->owner, gbk_title);
 }
 
 static slide_list_display_t post_list_display(slide_list_t *p)

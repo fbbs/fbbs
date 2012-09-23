@@ -14,6 +14,9 @@ typedef int64_t post_id_t;
 #define DBIdPID  "l"
 #define POST_ID_MAX  INT64_MAX
 #define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
+enum {
+	PID_BUF_LEN = (sizeof(post_id_t) + 4) / 5 + 1,
+};
 
 #define POST_LIST_FIELDS  \
 	"id,reid,tid,owner,uname,stamp,digest,marked,water," \
@@ -109,6 +112,9 @@ typedef struct {
 	post_id_t tid;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;
+
+extern const char *pid_to_base32(post_id_t pid, char *s, size_t size);
+extern post_id_t base32_to_pid(const char *s);
 
 extern post_id_t publish_post(const post_request_t *pr);
 

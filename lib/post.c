@@ -10,6 +10,53 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 
+const char *pid_to_base32(post_id_t pid, char *s, size_t size)
+{
+	if (!pid) {
+		return "a";
+	} else {
+		char buf[PID_BUF_LEN];
+		char *p = buf, *r = s;
+		while (pid) {
+			char c = pid & 0x1f;
+			if (c < 26)
+				c += 'a';
+			else
+				c += '2' - 26;
+
+			*p++ = c;
+			pid >>= 5;
+		}
+
+		--p;
+		if (p > buf + size - 2)
+			p = buf + size - 2;
+		for (; p >= buf; --p) {
+			*s++ = *p;
+		}
+		*s = '\0';
+		return r;
+	}
+}
+
+post_id_t base32_to_pid(const char *s)
+{
+	post_id_t pid = 0;
+	for (char c = *s; (c = *s); ++s) {
+		char d = 0;
+		if (c >= 'a' && c <= 'z')
+			d = c - 'a';
+		else if (c >= '2' && c <= '7')
+			d = c - '2' + 26;
+		else
+			return 0;
+
+		pid <<= 5;
+		pid += d;
+	}
+	return pid;
+}
+
 /**
  * Creates a new file in specific location.
  * @param[in] dir The directory.
