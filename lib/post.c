@@ -563,13 +563,29 @@ void build_post_filter(query_builder_t *b, post_filter_t *f)
 		b->sappend(b, "AND", "title ILIKE '%%%s%%'", f->utf8_keyword);
 }
 
+static const char *post_list_fields(bool deleted)
+{
+	if (deleted)
+		return "d"POST_LIST_FIELDS;
+	else
+		return POST_LIST_FIELDS;
+}
+
+static const char *post_table_index(bool deleted)
+{
+	if (deleted)
+		return "did";
+	else
+		return "id";
+}
+
 query_builder_t *build_post_query(post_filter_t *filter, bool asc, int limit)
 {
 	query_builder_t *b = query_builder_new(0);
-	b->append(b, "SELECT " POST_LIST_FIELDS " FROM");
-	b->append(b, post_table_name(filter->deleted));
+	b->append(b, "SELECT")->append(b, post_list_fields(filter->deleted));
+	b->append(b, "FROM")->append(b, post_table_name(filter->deleted));
 	build_post_filter(b, filter);
-	b->append(b, "ORDER BY id");
+	b->append(b, "ORDER BY")->append(b, post_table_index(filter->deleted));
 	b->append(b, asc ? "ASC" : "DESC");
 	int64_t l = limit;
 	b->append(b, "LIMIT %l", l);

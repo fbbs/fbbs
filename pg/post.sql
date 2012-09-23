@@ -38,12 +38,14 @@ CREATE INDEX ON posts(id) WHERE sticky;
 CREATE INDEX ON posts(board);
 
 CREATE TABLE posts_deleted (
+	did BIGSERIAL,
 	eraser INTEGER,
 	deleted TIMESTAMPTZ,
 	junk BOOLEAN DEFAULT FALSE,
 	bm_visible BOOLEAN,
 	ename TEXT
 ) INHERITS (posts_base);
+CREATE INDEX ON posts_deleted(did);
 
 CREATE TABLE threads (
 	id BIGINT,
