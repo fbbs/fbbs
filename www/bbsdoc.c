@@ -91,7 +91,7 @@ static void print_posts(post_filter_t *filter,
 		int limit)
 {
 	query_builder_t *b = build_post_query(filter, false, limit + 1);
-	db_res_t *r = query_builder_query(b);
+	db_res_t *r = b->query(b);
 	query_builder_free(b);
 
 	if (r) {

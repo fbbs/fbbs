@@ -46,15 +46,22 @@ extern db_res_t *db_query(const char *cmd, ...);
 extern int db_begin_trans(void);
 extern int db_end_trans(void);
 
+typedef struct query_builder_internal_t query_builder_internal_t;
+
 typedef struct query_builder_t query_builder_t;
+typedef query_builder_t *(*query_builder_append_function_t)(query_builder_t *b, const char *cmd, ...);
+typedef query_builder_t *(*query_builder_sappend_function_t)(query_builder_t *b, const char *symbol, const char *cmd, ...);
+typedef db_res_t *(*query_builder_exec_function_t)(const query_builder_t *b);
+
+struct query_builder_t {
+	query_builder_append_function_t append;
+	query_builder_sappend_function_t sappend;
+	query_builder_exec_function_t query;
+	query_builder_exec_function_t cmd;
+	query_builder_internal_t *_b;
+};
 
 extern query_builder_t *query_builder_new(size_t size);
-query_builder_t *query_builder_append_symbol(query_builder_t *b, const char *symbol, const char *cmd, ...);
-#define query_builder_append(b, ...)  query_builder_append_symbol(b, NULL, __VA_ARGS__)
-#define query_builder_append_and(b, ...)  query_builder_append_symbol(b, "AND", __VA_ARGS__)
-extern db_res_t *query_builder_query(const query_builder_t *b);
-extern db_res_t *query_builder_cmd(const query_builder_t *b);
-
 extern void query_builder_free(query_builder_t *b);
 
 #endif // FB_DBI_H

@@ -116,7 +116,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	bool asc = is_asc(p->base);
 	query_builder_t *b = build_post_query(&l->filter, asc, page);
-	db_res_t *res = query_builder_query(b);
+	db_res_t *res = b->query(b);
 	query_builder_free(b);
 	res_to_array(res, l, p->base, page);
 	l->last_query_rows = db_res_rows(res);

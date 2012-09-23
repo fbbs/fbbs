@@ -542,37 +542,37 @@ static const char *post_filter(post_list_type_e type)
 
 void build_post_filter(query_builder_t *b, post_filter_t *f)
 {
-	query_builder_append(b, "WHERE TRUE");
+	b->append(b, "WHERE TRUE");
 	if (f->bid)
-		query_builder_append_and(b, "board = %d", f->bid);
+		b->sappend(b, "AND", "board = %d", f->bid);
 	if (f->flag & POST_FLAG_DIGEST)
-		query_builder_append_and(b, "digest");
+		b->sappend(b, "AND", "digest");
 	if (f->flag & POST_FLAG_MARKED)
-		query_builder_append_and(b, "marked");
+		b->sappend(b, "AND", "marked");
 	if (f->flag & POST_FLAG_WATER)
-		query_builder_append_and(b, "water");
+		b->sappend(b, "AND", "water");
 	if (f->uid)
-		query_builder_append_and(b, "owner = %"DBIdUID, f->uid);
+		b->sappend(b, "AND", "owner = %"DBIdUID, f->uid);
 	if (f->min)
-		query_builder_append_and(b, "id >= %"DBIdPID, f->min);
+		b->sappend(b, "AND", "id >= %"DBIdPID, f->min);
 	if (f->max)
-		query_builder_append_and(b, "id <= %"DBIdPID, f->max);
+		b->sappend(b, "AND", "id <= %"DBIdPID, f->max);
 	if (f->tid)
-		query_builder_append_and(b, "tid = %"DBIdPID, f->tid);
+		b->sappend(b, "AND", "tid = %"DBIdPID, f->tid);
 	if (*f->utf8_keyword)
-		query_builder_append_and(b, "title ILIKE '%%%s%%'", f->utf8_keyword);
+		b->sappend(b, "AND", "title ILIKE '%%%s%%'", f->utf8_keyword);
 }
 
 query_builder_t *build_post_query(post_filter_t *filter, bool asc, int limit)
 {
 	query_builder_t *b = query_builder_new(0);
-	query_builder_append(b, "SELECT " POST_LIST_FIELDS " FROM");
-	query_builder_append(b, post_table_name(filter->deleted));
+	b->append(b, "SELECT " POST_LIST_FIELDS " FROM");
+	b->append(b, post_table_name(filter->deleted));
 	build_post_filter(b, filter);
-	query_builder_append(b, "ORDER BY id");
-	query_builder_append(b, asc ? "ASC" : "DESC");
+	b->append(b, "ORDER BY id");
+	b->append(b, asc ? "ASC" : "DESC");
 	int64_t l = limit;
-	query_builder_append(b, "LIMIT %l", l);
+	b->append(b, "LIMIT %l", l);
 	return b;
 }
 
@@ -636,20 +636,20 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	}
 
 	query_builder_t *b = query_builder_new(0);
-	query_builder_append(b, "WITH rows AS ( DELETE FROM posts");
+	b->append(b, "WITH rows AS ( DELETE FROM posts");
 	build_post_filter(b, filter);
 	if (!force)
-		query_builder_append_and(b, "NOT marked");
-	query_builder_append_and(b, "NOT sticky");
-	query_builder_append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
-	query_builder_append(b, "INSERT INTO posts_deleted ("
+		b->sappend(b, "AND", "NOT marked");
+	b->sappend(b, "AND", "NOT sticky");
+	b->append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
+	b->append(b, "INSERT INTO posts_deleted ("
 			POST_BASE_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
-	query_builder_append(b, "SELECT " POST_BASE_FIELDS_FULL ","
+	b->append(b, "SELECT " POST_BASE_FIELDS_FULL ","
 			" %"DBIdUID", %t, %b AND (water OR %b),"" %b, %s FROM rows",
 			session.uid, now, decrease, junk, bm_visible, currentuser.userid);
-	query_builder_append(b, "RETURNING owner, uname, junk");
+	b->append(b, "RETURNING owner, uname, junk");
 
-	db_res_t *res = query_builder_query(b);
+	db_res_t *res = b->query(b);
 	query_builder_free(b);
 
 	int rows = 0;
@@ -670,11 +670,11 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 int undelete_posts(post_filter_t *filter, bool bm_visible)
 {
 	query_builder_t *b = query_builder_new(0);
-	query_builder_append(b, "SELECT owner, uname, junk FROM posts_deleted");
+	b->append(b, "SELECT owner, uname, junk FROM posts_deleted");
 	build_post_filter(b, filter);
-	query_builder_append_and(b, "bm_visible = %b", bm_visible);
+	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
 
-	db_res_t *res = query_builder_query(b);
+	db_res_t *res = b->query(b);
 	if (res) {
 		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 			user_id_t uid = db_get_user_id(res, i, 0);
@@ -688,14 +688,14 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 	query_builder_free(b);
 
 	b = query_builder_new(0);
-	query_builder_append(b, "WITH rows AS ( DELETE FROM posts_deleted");
+	b->append(b, "WITH rows AS ( DELETE FROM posts_deleted");
 	build_post_filter(b, filter);
-	query_builder_append_and(b, "bm_visible = %b", bm_visible);
-	query_builder_append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
-	query_builder_append(b, "INSERT INTO posts (" POST_BASE_FIELDS_FULL ")");
-	query_builder_append(b, "SELECT " POST_BASE_FIELDS_FULL " FROM rows");
+	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
+	b->append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
+	b->append(b, "INSERT INTO posts (" POST_BASE_FIELDS_FULL ")");
+	b->append(b, "SELECT " POST_BASE_FIELDS_FULL " FROM rows");
 
-	res = query_builder_cmd(b);
+	res = b->cmd(b);
 	int rows = res ? db_cmd_rows(res) : 0;
 
 	db_clear(res);
@@ -706,13 +706,13 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 db_res_t *query_post_by_pid(post_id_t pid, bool deleted, const char *fields)
 {
 	query_builder_t *b = query_builder_new(0);
-	query_builder_append(b, "SELECT");
-	query_builder_append(b, fields);
-	query_builder_append(b, "FROM");
-	query_builder_append(b, post_table_name(deleted));
-	query_builder_append(b, "WHERE id = %"DBIdPID, pid);
+	b->append(b, "SELECT");
+	b->append(b, fields);
+	b->append(b, "FROM");
+	b->append(b, post_table_name(deleted));
+	b->append(b, "WHERE id = %"DBIdPID, pid);
 
-	db_res_t *res = query_builder_query(b);
+	db_res_t *res = b->query(b);
 	query_builder_free(b);
 	return res;
 }
@@ -755,13 +755,12 @@ bool alter_title(post_id_t pid, bool deleted, const char *title)
 			return false;
 
 		query_builder_t *b = query_builder_new(0);
-		query_builder_append(b, "UPDATE");
-		query_builder_append(b, post_table_name(deleted));
-		query_builder_append(b, "SET title = %s, content = %s",
-				title, content);
-		query_builder_append(b, "WHERE id = %"DBIdPID, pid);
+		b->append(b, "UPDATE");
+		b->append(b, post_table_name(deleted));
+		b->append(b, "SET title = %s, content = %s", title, content);
+		b->append(b, "WHERE id = %"DBIdPID, pid);
 
-		res = query_builder_cmd(b);
+		res = b->cmd(b);
 		bool success = res;
 
 		db_clear(res);
