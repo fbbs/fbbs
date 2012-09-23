@@ -400,19 +400,28 @@ static int tui_edit_post_title(post_info_t *ip)
 	return MINIUPDATE;
 }
 
+static bool dump_content(const post_info_t *ip, char *file, size_t size)
+{
+	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
+			"content");
+	if (!res || db_res_rows(res) < 1)
+		return false;
+
+	int ret = dump_content_to_gbk_file(db_get_value(res, 0, 0),
+			db_get_length(res, 0, 0), file, sizeof(file));
+
+	db_clear(res);
+	return ret == 0;
+}
+
 static int tui_edit_post_content(post_info_t *ip)
 {
 	if (ip->uid != session.uid && !am_curr_bm())
 		return DONOTHING;
 
-	bool deleted = ip->flag & POST_FLAG_DELETED;
-	db_res_t *res = query_post_by_pid(ip->id, deleted, "content");
-	if (!res || db_res_rows(res) < 1)
-		return DONOTHING;
-
 	char file[HOMELEN];
-	dump_content_to_gbk_file(db_get_value(res, 0, 0),
-			db_get_length(res, 0, 0), file, sizeof(file));
+	if (!dump_content(ip, file, sizeof(file)))
+		return DONOTHING;
 
 	set_user_status(ST_EDIT);
 
@@ -420,7 +429,7 @@ static int tui_edit_post_content(post_info_t *ip)
 	if (vedit(file, NA, NA) != -1) {
 		char *content = convert_file_to_utf8_content(file);
 		if (content) {
-			if (alter_content(ip->id, deleted, content)) {
+			if (alter_content(ip->id, ip->flag & POST_FLAG_DELETED, content)) {
 				char buf[STRLEN];
 				snprintf(buf, sizeof(buf), "edited post #%"PRIdPID, ip->id);
 				report(buf, currentuser.userid);
@@ -430,7 +439,6 @@ static int tui_edit_post_content(post_info_t *ip)
 	}
 
 	unlink(file);
-	db_clear(res);
 	return FULLUPDATE;
 }
 
@@ -626,15 +634,9 @@ static int read_post(post_list_t *l, post_info_t *ip)
 {
 	brc_mark_as_read(ip->id);
 
-	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
-			"content");
-	if (!res || db_res_rows(res) < 1)
-		return DONOTHING;
-
 	char file[HOMELEN];
-	dump_content_to_gbk_file(db_get_value(res, 0, 0),
-			db_get_length(res, 0, 0), file, sizeof(file));
-	db_clear(res);
+	if (!dump_content(ip, file, sizeof(file)))
+		return DONOTHING;
 
 	int ch = ansimore(file, false);
 
