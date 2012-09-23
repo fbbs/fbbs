@@ -79,7 +79,7 @@ static int callback(const char *note, const char *name, money_t delta)
 				" WHERE user_id = %"DBIdUID, delta, uid);
 	} else {
 		res = db_cmd("UPDATE users SET money = money + %"DBIdMONEY
-				" WHERE user_id = %"DBIdUID, delta, uid);
+				" WHERE id = %"DBIdUID, delta, uid);
 	}
 
 	if (!res)

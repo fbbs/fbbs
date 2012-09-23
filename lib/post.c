@@ -570,7 +570,8 @@ query_builder_t *build_post_query(post_list_type_e type, post_filter_t *filter,
 	build_post_filter(b, filter);
 	query_builder_append(b, "ORDER BY id");
 	query_builder_append(b, asc ? "ASC" : "DESC");
-	query_builder_append(b, "LIMIT %d", limit);
+	int64_t l = limit;
+	query_builder_append(b, "LIMIT %l", l);
 	return b;
 }
 
