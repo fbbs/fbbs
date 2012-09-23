@@ -353,25 +353,39 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
-static int forward_post(post_info_t *ip, bool uuencode)
+static bool dump_content(const post_info_t *ip, char *file, size_t size,
+		char *title, size_t tsize)
 {
 	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
 			"title, content");
-	if (res && db_res_rows(res) == 1) {
+	if (!res || db_res_rows(res) < 1)
+		return false;
+
+	int ret = dump_content_to_gbk_file(db_get_value(res, 0, 1),
+			db_get_length(res, 0, 1), file, sizeof(file));
+
+	if (title) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(db_get_value(res, 0, 0), gbk_title);
-
-		char file[HOMELEN];
-		dump_content_to_gbk_file(db_get_value(res, 0, 1),
-				db_get_length(res, 0, 1), file, sizeof(file));
-
-		db_clear(res);
-
-		tui_forward(file, gbk_title, uuencode);
-		return FULLUPDATE;
-	} else {
-		return DONOTHING;
+		strlcpy(title, gbk_title, tsize);
 	}
+
+	db_clear(res);
+	return ret == 0;
+}
+
+static int forward_post(post_info_t *ip, bool uuencode)
+{
+	char file[HOMELEN];
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+
+	if (!dump_content(ip, file, sizeof(file), gbk_title, sizeof(gbk_title)))
+		return DONOTHING;
+
+	tui_forward(file, gbk_title, uuencode);
+
+	unlink(file);
+	return FULLUPDATE;
 }
 
 static int tui_edit_post_title(post_info_t *ip)
@@ -400,27 +414,13 @@ static int tui_edit_post_title(post_info_t *ip)
 	return MINIUPDATE;
 }
 
-static bool dump_content(const post_info_t *ip, char *file, size_t size)
-{
-	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
-			"content");
-	if (!res || db_res_rows(res) < 1)
-		return false;
-
-	int ret = dump_content_to_gbk_file(db_get_value(res, 0, 0),
-			db_get_length(res, 0, 0), file, sizeof(file));
-
-	db_clear(res);
-	return ret == 0;
-}
-
 static int tui_edit_post_content(post_info_t *ip)
 {
 	if (ip->uid != session.uid && !am_curr_bm())
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(ip, file, sizeof(file), NULL, 0))
 		return DONOTHING;
 
 	set_user_status(ST_EDIT);
@@ -440,6 +440,21 @@ static int tui_edit_post_content(post_info_t *ip)
 
 	unlink(file);
 	return FULLUPDATE;
+}
+
+static int tui_save_post(const post_info_t *ip)
+{
+	if (!am_curr_bm())
+		return DONOTHING;
+
+	char file[HOMELEN];
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	if (!dump_content(ip, file, sizeof(file), gbk_title, sizeof(gbk_title)))
+		return DONOTHING;
+
+	a_Save(gbk_title, file, false, true);
+
+	return MINIUPDATE;
 }
 
 static int tui_delete_posts_in_range(slide_list_t *p)
@@ -635,7 +650,7 @@ static int read_post(post_list_t *l, post_info_t *ip)
 	brc_mark_as_read(ip->id);
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(ip, file, sizeof(file), NULL, 0))
 		return DONOTHING;
 
 	int ch = ansimore(file, false);
@@ -652,7 +667,6 @@ static int read_post(post_list_t *l, post_info_t *ip)
 	unlink(file);
 	return FULLUPDATE;
 }
-
 
 extern int show_online(void);
 extern int thesis_mode(void);
@@ -697,6 +711,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_edit_post_title(ip);
 		case 'E':
 			return tui_edit_post_content(ip);
+		case 'i':
+			return tui_save_post(ip);
 		case 'D':
 			return tui_delete_posts_in_range(p);
 		case '.':
