@@ -353,9 +353,9 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
-static int forward_post(post_list_type_e type, post_info_t *ip, bool uuencode)
+static int forward_post(post_info_t *ip, bool deleted, bool uuencode)
 {
-	db_res_t *res = query_post_by_pid(type, ip->id, "title, content");
+	db_res_t *res = query_post_by_pid(ip->id, deleted, "title, content");
 	if (res && db_res_rows(res) == 1) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(db_get_value(res, 0, 0), gbk_title);
@@ -624,7 +624,7 @@ static int read_post(post_list_t *l, post_info_t *ip)
 {
 	brc_mark_as_read(ip->id);
 
-	db_res_t *res = query_post_by_pid(l->type, ip->id, "content");
+	db_res_t *res = query_post_by_pid(ip->id, is_deleted(l->type), "content");
 	if (!res || db_res_rows(res) < 1)
 		return DONOTHING;
 
@@ -719,9 +719,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'Y':
 			return tui_undelete_single_post(l, ip);
 		case 'F':
-			return forward_post(l->type, ip, false);
+			return forward_post(ip, is_deleted(l->type), false);
 		case 'U':
-			return forward_post(l->type, ip, true);
+			return forward_post(ip, is_deleted(l->type), true);
 		case 't':
 			return thesis_mode();
 		case '!':
