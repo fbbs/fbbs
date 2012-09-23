@@ -141,7 +141,7 @@ extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
 extern bool set_last_post_id(int bid, post_id_t pid);
 extern post_id_t get_last_post_id(int bid);
 
-extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible);
+extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
 extern int undelete_posts(post_filter_t *filter, bool bm_visible);
 
 db_res_t *query_post_by_pid(post_list_type_e type, post_id_t pid, const char *fields);

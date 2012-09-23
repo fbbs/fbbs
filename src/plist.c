@@ -331,7 +331,7 @@ static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 		post_filter_t f = {
 			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
 		};
-		if (delete_posts(&f, true, false)) {
+		if (delete_posts(&f, true, false, true)) {
 			p->reload = true;
 			return PARTUPDATE;
 		}
@@ -399,6 +399,52 @@ static int tui_edit_post_title(post_list_type_e type, post_info_t *ip)
 	return MINIUPDATE;
 }
 
+static int tui_delete_posts_in_range(slide_list_t *p)
+{
+	if (!am_curr_bm())
+		return DONOTHING;
+
+	post_list_t *l = p->data;
+	if (l->type != POST_LIST_NORMAL)
+		return DONOTHING;
+
+	char num[8];
+	getdata(t_lines - 1, 0, "Ê×ÆªÎÄÕÂ±àºÅ: ", num, sizeof(num), DOECHO, YEA);
+	post_id_t min = base32_to_pid(num);
+	if (!min) {
+		move(t_lines - 1, 50);
+		prints("´íÎó±àºÅ...");
+		egetch();
+		return MINIUPDATE;
+	}
+
+	getdata(t_lines - 1, 25, "Ä©ÆªÎÄÕÂ±àºÅ: ", num, sizeof(num), DOECHO, YEA);
+	post_id_t max = base32_to_pid(num);
+	if (max < min) {
+		move(t_lines - 1, 50);
+		prints("´íÎóÇø¼ä...");
+		egetch();
+		return MINIUPDATE;
+	}
+
+	move(t_lines - 1, 50);
+	if (askyn("È·¶¨É¾³ı", NA, NA)) {
+		post_filter_t filter = {
+			.bid = l->filter.bid, .min = min, .max = max
+		};
+		if (delete_posts(&filter, false, !HAS_PERM(PERM_OBOARDS), false)) {
+			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);
+			l->reload = true;
+		}
+		return PARTUPDATE;
+	}
+	move(t_lines - 1, 50);
+	clrtoeol();
+	prints("·ÅÆúÉ¾³ı...");
+	egetch();
+	return MINIUPDATE;
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -438,6 +484,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 					POST_FLAG_WATER, "water");
 		case 'T':
 			return tui_edit_post_title(l->type, ip);
+		case 'D':
+			return tui_delete_posts_in_range(p);
 		case '.':
 			return post_list_deleted(l->filter.bid, l->type);
 		case 'J':

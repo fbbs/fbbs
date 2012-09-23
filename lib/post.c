@@ -623,7 +623,7 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
-int delete_posts(post_filter_t *filter, bool junk, bool bm_visible)
+int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 {
 	fb_time_t now = time(NULL);
 
@@ -637,7 +637,9 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible)
 	query_builder_t *b = query_builder_new(0);
 	query_builder_append(b, "WITH rows AS ( DELETE FROM posts");
 	build_post_filter(b, filter);
-	//	query_builder_append(b, "AND NOT marked");
+	if (!force)
+		query_builder_append_and(b, "NOT marked");
+	query_builder_append_and(b, "NOT sticky");
 	query_builder_append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
 	query_builder_append(b, "INSERT INTO posts_deleted ("
 			POST_BASE_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");

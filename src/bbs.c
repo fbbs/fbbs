@@ -2605,7 +2605,6 @@ struct one_key read_comms[] = {
 		{',', read_attach},
 		{'r', read_post},
 		{'K', skip_post},
-		{'D', del_range},
 		{'E', edit_post},
 		{Ctrl('G'), acction_mode},
 		{'`', acction_mode},

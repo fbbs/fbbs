@@ -997,15 +997,6 @@ int mail_u_forward(int ent, struct fileheader *fileinfo, const char *direct)
 	return _mail_forward(direct, fileinfo, true);
 }
 
-int
-mail_del_range(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
-{
-	return (del_range(ent, fileinfo, direct));
-}
-
 int mail_mark(int ent, struct fileheader *fileinfo, char *direct)
 {
 	if (fileinfo->accessed[0] & FILE_MARKED)
@@ -1021,7 +1012,7 @@ extern int SR_BMfunc();
 
 struct one_key mail_comms[] = {
 		{ 'd', mail_del },
-		{ 'D', mail_del_range },
+		{ 'D', del_range },
 		{ 'b', SR_BMfunc },
 		{ Ctrl('P'), m_send },
 		{ 'E', edit_post },
