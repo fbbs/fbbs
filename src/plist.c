@@ -445,6 +445,177 @@ static int tui_delete_posts_in_range(slide_list_t *p)
 	return MINIUPDATE;
 }
 
+#if 0
+		struct stat filestat;
+		int i, len;
+		char tmp[1024];
+
+		sprintf(genbuf, "upload/%s/%s", currboard, fileinfo->filename);
+		if (stat(genbuf, &filestat) < 0) {
+			clear();
+			move(10, 30);
+			prints("对不起，%s 不存在！\n", genbuf);
+			pressanykey();
+			clear();
+			return FULLUPDATE;
+		}
+
+		clear();
+		prints("文件详细信息\n\n");
+		prints("版    名:     %s\n", currboard);
+		prints("序    号:     第 %d 篇\n", ent);
+		prints("文 件 名:     %s\n", fileinfo->filename);
+		prints("上 传 者:     %s\n", fileinfo->owner);
+		prints("上传日期:     %s\n", getdatestring(fileinfo->timeDeleted, DATE_ZH));
+		prints("文件大小:     %d 字节\n", filestat.st_size);
+		prints("文件说明:     %s\n", fileinfo->title);
+		prints("URL 地址:\n");
+		sprintf(tmp, "http://%s/upload/%s/%s", BBSHOST, currboard,
+				fileinfo->filename);
+		strtourl(genbuf, tmp);
+		len = strlen(genbuf);
+		clrtoeol();
+		for (i = 0; i < len; i += 78) {
+			strlcpy(tmp, genbuf + i, 78);
+			tmp[78] = '\n';
+			tmp[79] = '\0';
+			outs(tmp);
+		}
+		if (!(ch == KEY_UP || ch == KEY_PGUP))
+			ch = egetch();
+		switch (ch) {
+			case 'N':
+			case 'Q':
+			case 'n':
+			case 'q':
+			case KEY_LEFT:
+				break;
+			case ' ':
+			case 'j':
+			case KEY_RIGHT:
+				if (DEFINE(DEF_THESIS)) {
+					sread(0, 0, fileinfo);
+					break;
+				} else
+					return READ_NEXT;
+			case KEY_DOWN:
+			case KEY_PGDN:
+				return READ_NEXT;
+			case KEY_UP:
+			case KEY_PGUP:
+				return READ_PREV;
+			default:
+				break;
+		}
+		return FULLUPDATE;
+#endif
+
+#if 0
+	switch (ch) {
+		case 'N':
+		case 'Q':
+		case 'n':
+		case 'q':
+		case KEY_LEFT:
+			break;
+		case '*':
+			show_file_info(ent, fileinfo, direct);
+			break;
+		case ' ':
+		case 'j':
+		case KEY_RIGHT:
+			if (DEFINE(DEF_THESIS)) {
+				sread(0, 0, fileinfo);
+				break;
+			} else
+				return READ_NEXT;
+		case KEY_DOWN:
+		case KEY_PGDN:
+			return READ_NEXT;
+		case KEY_UP:
+		case KEY_PGUP:
+			return READ_PREV;
+		case 'Y':
+		case 'R':
+		case 'y':
+		case 'r': {
+			board_t board;
+			get_board(currboard, &board);
+			noreply = (fileinfo->accessed[0] & FILE_NOREPLY)
+					|| (board.flag & BOARD_NOREPLY_FLAG);
+			local_article = true;
+			if (!noreply || am_curr_bm()) {
+				do_reply(fileinfo);
+			} else {
+				clear();
+				prints("\n\n    对不起, 该文章有不可 RE 属性, 您不能回复(RE) 这篇文章.    ");
+				pressreturn();
+				clear();
+			}
+		}
+			break;
+		case Ctrl('R'):
+			post_reply(ent, fileinfo, direct);
+			break;
+		case 'g':
+			digest_post(ent, fileinfo, direct);
+			break;
+		case Ctrl('U'):
+			sread(1, 1, fileinfo);
+			break;
+		case Ctrl('N'):
+			locate_the_post(fileinfo, fileinfo->title, 5, 0, 1);
+			sread(1, 0, fileinfo);
+			break;
+		case Ctrl('S'):
+		case 'p':
+			sread(0, 0, fileinfo);
+			break;
+		case Ctrl('A'):
+			clear();
+			show_author(0, fileinfo, '\0');
+			return READ_NEXT;
+			break;
+		case 'S':
+			if (!HAS_PERM(PERM_TALK))
+				break;
+			clear();
+			s_msg();
+			break;
+		default:
+			break;
+	}
+#endif
+
+static int read_post(post_list_t *l, post_info_t *ip)
+{
+	brc_mark_as_read(ip->id);
+
+	db_res_t *res = query_post_by_pid(l->type, ip->id, "content");
+	if (!res || db_res_rows(res) < 1)
+		return DONOTHING;
+
+	char file[HOMELEN];
+	dump_content_to_gbk_file(db_get_value(res, 0, 0),
+			db_get_length(res, 0, 0), file, sizeof(file));
+	db_clear(res);
+
+	int ch = ansimore(file, false);
+
+	move(t_lines - 1, 0);
+	clrtoeol();
+	prints("\033[0;1;44;31m[阅读文章]  \033[33m回信 R │ 结束 Q,← │上一封 ↑"
+			"│下一封 <Space>,↓│主题阅读 ^s或p \033[m");
+	refresh();
+
+	if (!(ch == KEY_UP || ch == KEY_PGUP))
+		ch = egetch();
+
+	unlink(file);
+	return FULLUPDATE;
+}
+
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -467,6 +638,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	post_info_t *ip = l->index[p->cur];
 
 	switch (ch) {
+		case '\n': case '\r': case KEY_RIGHT: case 'r':
+			return read_post(l, ip);
 		case '_':
 			return toggle_post_lock(l->filter.bid, ip);
 		case '@':
@@ -543,7 +716,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return b_notes_edit();
 		case Ctrl('W'):
 			return b_notes_passwd();
-		case 'h': case Ctrl('J'):
+		case 'h':
 			return mainreadhelp();
 		case Ctrl('A'):
 			return t_query(ip->owner);
