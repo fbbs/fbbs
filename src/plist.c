@@ -353,9 +353,10 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
-static int forward_post(post_info_t *ip, bool deleted, bool uuencode)
+static int forward_post(post_info_t *ip, bool uuencode)
 {
-	db_res_t *res = query_post_by_pid(ip->id, deleted, "title, content");
+	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
+			"title, content");
 	if (res && db_res_rows(res) == 1) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(db_get_value(res, 0, 0), gbk_title);
@@ -373,7 +374,7 @@ static int forward_post(post_info_t *ip, bool deleted, bool uuencode)
 	}
 }
 
-static int tui_edit_post_title(post_info_t *ip, bool deleted)
+static int tui_edit_post_title(post_info_t *ip)
 {
 	if (ip->uid != session.uid && !am_curr_bm())
 		return DONOTHING;
@@ -392,18 +393,19 @@ static int tui_edit_post_title(post_info_t *ip, bool deleted)
 	if (!*utf8_title || streq(utf8_title, ip->utf8_title))
 		return MINIUPDATE;
 
-	if (alter_title(ip->id, deleted, utf8_title)) {
+	if (alter_title(ip->id, ip->flag & POST_FLAG_DELETED, utf8_title)) {
 		strlcpy(ip->utf8_title, utf8_title, sizeof(ip->utf8_title));
 		return PARTUPDATE;
 	}
 	return MINIUPDATE;
 }
 
-static int tui_edit_post_content(post_info_t *ip, bool deleted)
+static int tui_edit_post_content(post_info_t *ip)
 {
 	if (ip->uid != session.uid && !am_curr_bm())
 		return DONOTHING;
 
+	bool deleted = ip->flag & POST_FLAG_DELETED;
 	db_res_t *res = query_post_by_pid(ip->id, deleted, "content");
 	if (!res || db_res_rows(res) < 1)
 		return DONOTHING;
@@ -624,7 +626,8 @@ static int read_post(post_list_t *l, post_info_t *ip)
 {
 	brc_mark_as_read(ip->id);
 
-	db_res_t *res = query_post_by_pid(ip->id, is_deleted(l->type), "content");
+	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
+			"content");
 	if (!res || db_res_rows(res) < 1)
 		return DONOTHING;
 
@@ -689,9 +692,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return toggle_post_flag(l->filter.bid, ip,
 					POST_FLAG_WATER, "water");
 		case 'T':
-			return tui_edit_post_title(ip, is_deleted(l->type));
+			return tui_edit_post_title(ip);
 		case 'E':
-			return tui_edit_post_content(ip, is_deleted(l->type));
+			return tui_edit_post_content(ip);
 		case 'D':
 			return tui_delete_posts_in_range(p);
 		case '.':
@@ -719,9 +722,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'Y':
 			return tui_undelete_single_post(l, ip);
 		case 'F':
-			return forward_post(ip, is_deleted(l->type), false);
+			return forward_post(ip, false);
 		case 'U':
-			return forward_post(ip, is_deleted(l->type), true);
+			return forward_post(ip, true);
 		case 't':
 			return thesis_mode();
 		case '!':
