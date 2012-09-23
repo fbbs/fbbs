@@ -277,40 +277,44 @@ void a_prompt(int bot, char* pmt, char* buf, int len) {
 	saveline(t_lines + bot, 1);
 }
 
-/* added by netty to handle post saving into (0)Announce */
-
-int a_Save(char *path, char* key, struct fileheader *fileinfo, int nomsg,
-		int full)
+int a_Save(const char *gbk_title, const char *file, int nomsg, int full)
 {
-	FILE *fp;
-	char board[40];
-	int ans = NA;
+	char buf[STRLEN];
 	if (!nomsg) {
-		sprintf(genbuf, "确定将 [%-.40s] 存入暂存档吗", fileinfo->title);
-		if (askyn(genbuf, NA, YEA) == NA)
+		snprintf(buf, sizeof(buf), "确定将 [%-.40s] 存入暂存档吗", gbk_title);
+		if (!askyn(buf, NA, YEA))
 			return FULLUPDATE;
 	}
-	sprintf(board, "bm/%s", currentuser.userid);
-	if (dashf(board)) {
+
+	bool append = false;
+	snprintf(buf, sizeof(buf), "bm/%s", currentuser.userid);
+	if (dashf(buf)) {
 		if (nomsg)
-			ans = YEA;
+			append = true;
 		else
-			ans = askyn("要附加在旧暂存档之後吗", NA, YEA);
+			append = askyn("要附加在旧暂存档之後吗", NA, YEA);
 	}
+
+	char src[HOMELEN];
 	if (in_mail)
-		sprintf(genbuf, "mail/%c/%s/%s", toupper(currentuser.userid[0]),
-				currentuser.userid, fileinfo->filename);
+		snprintf(src, sizeof(src), "mail/%c/%s/%s",
+				toupper(currentuser.userid[0]), currentuser.userid, file);
 	else
-		sprintf(genbuf, "boards/%s/%s", key, fileinfo->filename);
+		strlcpy(src, file, sizeof(src));
+
 	if (full)
-		f_cp(genbuf, board, (ans ) ? O_APPEND : O_CREAT);
+		f_cp(src, buf, append ? O_APPEND : O_CREAT);
 	else
-		part_cp(genbuf, board, (ans ) ? "a+" : "w+");
-	fp=fopen(board, "a");//增加空行 added by money 2002.3.22
-	fprintf(fp, "\r\n");
-	fclose(fp);
+		part_cp(src, buf, append ? "a+" : "w+");
+
+	FILE *fp = fopen(buf, "a");
+	if (fp) {
+		fprintf(fp, "\r\n");
+		fclose(fp);
+	}
+
 	if (!nomsg)
-		presskeyfor("已将该文章存入暂存档, 请按<Enter>继续...", t_lines-1);
+		presskeyfor("已将该文章存入暂存档, 请按<Enter>继续...", t_lines - 1);
 	return FULLUPDATE;
 }
 

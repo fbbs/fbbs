@@ -146,8 +146,7 @@ void disply_userinfo(const struct userec *u);
 void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly);
 int a_menusearch(char *path, char* key, char * found);
 int a_repair(struct MENU *pm);
-int a_Save(char *path, char* key, struct fileheader *fileinfo, int nomsg,
-		int full);
+int a_Save(const char *gbk_title, const char *file, int nomsg, int full);
 int board_read(void);
 int catnotepad(FILE *fp, const char *fname);
 int clear_ann_path(void);

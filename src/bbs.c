@@ -2223,14 +2223,14 @@ int del_post(int ent, struct fileheader *fileinfo, char *direct) {
 	return _del_post(ent, fileinfo, direct, YEA, YEA);
 }
 
-/* Added by netty to handle post saving into (0)Announce */
-int Save_post(int ent, struct fileheader *fileinfo, char *direct) {
+int Save_post(int ent, struct fileheader *fp, char *direct)
+{
 	if (!HAS_PERM(PERM_BOARDS) || digestmode == ATTACH_MODE)
 		return DONOTHING;
 	if (!in_mail && !am_curr_bm())
 		return DONOTHING;
 
-	return (a_Save("0Announce", currboard, fileinfo, NA, YEA));
+	return (a_Save(fp->title, fp->filename, NA, YEA));
 }
 
 /* Added by netty to handle post saving into (0)Announce */
@@ -2413,7 +2413,6 @@ struct one_key read_comms[] = {
 		{Ctrl('P'), do_post},
 		{'C', count_range},
 		{Ctrl ('R'), post_reply},
-		{'i', Save_post},
 		{'I', Import_post},
 		{'/', t_search_down},
 		{'?', t_search_up},
