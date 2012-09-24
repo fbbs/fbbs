@@ -652,11 +652,6 @@ static int cmpdigestfilename(void *digest_name, void *fhdr)
 	return 0;
 } /* comapare file names for dele_digest function. Luzi 99.3.30 */
 
-int skip_post(int ent, struct fileheader *fileinfo, char *direct) {
-	brc_addlist_legacy(fileinfo->filename);
-	return GOTO_NEXT;
-}
-
 int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	char bname[STRLEN], bpath[STRLEN];
 	struct stat st;
@@ -2404,7 +2399,6 @@ struct one_key read_comms[] = {
 		{';', move_notice},
 #endif
 		{',', read_attach},
-		{'K', skip_post},
 		{Ctrl('G'), acction_mode},
 		{'`', acction_mode},
 		{'s', do_select},
@@ -2412,12 +2406,10 @@ struct one_key read_comms[] = {
 		{Ctrl('P'), do_post},
 		{'C', count_range},
 		{Ctrl ('R'), post_reply},
-		{'I', Import_post},
 		{'/', t_search_down},
 		{'?', t_search_up},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
-		{Ctrl('A'), show_author},
 		{Ctrl('N'), SR_first_new},
 		{'n', SR_first_new},
 		{'\\', SR_last},

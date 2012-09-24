@@ -325,6 +325,16 @@ static int jump_to_thread_next(slide_list_t *p)
 	return relocate_to_filter(p, &filter, false);
 }
 
+static int skip_post(slide_list_t *p, post_id_t pid)
+{
+	brc_mark_as_read(pid);
+	if (++p->cur >= t_lines - 4) {
+		p->base = SLIDE_LIST_NEXT;
+		p->cur = 0;
+	}
+	return DONOTHING;
+}
+
 static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 {
 	if (ip->uid == session.uid || am_curr_bm()) {
@@ -750,6 +760,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return jump_to_thread_prev(p);
 		case ']':
 			return jump_to_thread_next(p);
+		case 'K':
+			return skip_post(p, ip->id);
 		case 'c':
 			brc_clear(ip->id);
 			return PARTUPDATE;
