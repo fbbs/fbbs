@@ -2233,14 +2233,13 @@ int Save_post(int ent, struct fileheader *fp, char *direct)
 	return (a_Save(fp->title, fp->filename, NA, YEA));
 }
 
-/* Added by netty to handle post saving into (0)Announce */
-int Import_post(int ent, struct fileheader *fileinfo, char *direct) {
+int Import_post(int ent, struct fileheader *fp, char *direct) {
 	if (!HAS_PERM(PERM_BOARDS) || digestmode == ATTACH_MODE)
 		return DONOTHING;
-	if (DEFINE(DEF_MULTANNPATH) && set_ann_path(NULL, NULL,
-			ANNPATH_GETMODE) == 0)
+	if (DEFINE(DEF_MULTANNPATH)
+			&& set_ann_path(NULL, NULL, ANNPATH_GETMODE) == 0)
 		return FULLUPDATE;
-	a_Import("0Announce", currboard, ent, fileinfo, direct, NA);
+	a_Import(fp->title, fp->filename, NA);
 	if (DEFINE(DEF_MULTANNPATH))
 		return FULLUPDATE;
 	return DONOTHING;

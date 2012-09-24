@@ -106,8 +106,7 @@ struct MENU;
 int a_a_Import(struct MENU *pm, int msg, int menuitem);
 int add_grp(const char *group, const char *gname,
 		const char *bname, const char *title);
-int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
-		char * direct, int nomsg);
+int a_Import(const char *title, const char *file, int nomsg);
 int Goodbye(void);
 char *sethomepath(char *buf, const char *userid);
 int show_online_followings(void);

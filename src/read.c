@@ -896,7 +896,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 					mail_mark(locmem->crs_line, &SR_fptr, currdirect);
 					break;
 				case 4:
-					a_Import("0Announce",currboard, 0, &SR_fptr,annpath, YEA);
+					a_Import(SR_fptr.title, SR_fptr.filename, YEA);
 					break;
 					/* Add by everlove 制作合集 */
 				case 7:
@@ -933,7 +933,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 					digest_post(locmem->crs_line, &SR_fptr, currdirect);
 					break;
 				case 4:
-					a_Import("0Announce",currboard, 0, &SR_fptr,annpath, YEA);
+					a_Import(SR_fptr.title, SR_fptr.filename, YEA);
 					break;
 				case 5:
 					makeDELETEDflag(locmem->crs_line,&SR_fptr,currdirect);
@@ -1156,8 +1156,7 @@ int BM_range(int ent, struct fileheader *fileinfo, char *direct) {
 				break;
 			}
 			case 5:
-				a_Import("0Announce", currboard, 0, &fhdr, annpath, YEA);
-				//a_Import( "0Announce", currboard, locmem->crs_line, &fhdr, currdirect, YEA);
+				a_Import(fhdr.title, fhdr.filename, YEA);
 				break;
 			case 6:
 				makeDELETEDflag(num1, &fhdr, direct);

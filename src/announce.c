@@ -354,87 +354,79 @@ int a_Save2(char *path, char* key, struct fileheader* fileinfo, int nomsg) {
 	return FULLUPDATE;
 }
 
-/* added by netty to handle post saving into (0)Announce */
-int a_Import(char *path, char* key, int ent, struct fileheader *fileinfo,
-		char * direct, int nomsg) {
-	char fname[STRLEN], *ip, bname[PATHLEN], buf[ 256 ];
-	int ch;
-	MENU pm;
-	FILE *fn;
-	//Added by IAMFAT 2002-05-30
-	char title[STRLEN];
-	char currBM_bak[BM_LEN-1];
-
+int a_Import(const char *title, const char *file, int nomsg)
+{
 	set_user_status(ST_DIGEST);
-	sethomefile(buf, currentuser.userid, ".announcepath");
-	if ((fn = fopen(buf, "r")) == NULL) {
-		presskeyfor("对不起, 您没有设定丝路. 请先设定丝路.", t_lines-1);
-		return DONOTHING;
-	}
-	fscanf(fn, "%s", buf);
-	fclose(fn);
-	if (!dashd(buf)) {
-		presskeyfor("您设定的丝路已丢失, 请重新设定.", t_lines-1);
-		return DONOTHING;
-	}
-	pm.path = buf;
-	strcpy(pm.mtitle, "");
 
-	/* added 2 sentences for change currBM before load .Names and
-	 change it back after load .Names
-	 by money 04.02.11
-	 */
+	char buf[256];
+	sethomefile(buf, currentuser.userid, ".announcepath");
+
+	FILE *fp = fopen(buf, "r");
+	if (!fp) {
+		presskeyfor("对不起, 您没有设定丝路. 请先设定丝路.", t_lines - 1);
+		return DONOTHING;
+	}
+	fscanf(fp, "%s", buf);
+	fclose(fp);
+
+	if (!dashd(buf)) {
+		presskeyfor("您设定的丝路已丢失, 请重新设定.", t_lines - 1);
+		return DONOTHING;
+	}
+
+	MENU pm = { .path = buf, .mtitle = "", };
+
+	char currBM_bak[BM_LEN - 1];
 	memcpy(currBM_bak, currBM, BM_LEN - 1);
 	sprintf(currBM, "%s", currentuser.userid);
 	a_loadnames(&pm);
 	memcpy(currBM, currBM_bak, BM_LEN - 1);
 
-	strcpy(fname, fileinfo->filename);
-	sprintf(bname, "%s/%s", pm.path, fname);
-	ip = &fname[strlen(fname) - 1];
-	while (dashf(bname)) {
-		if (*ip == 'Z')
-			ip++, *ip = 'A', *(ip + 1) = '\0';
-		else
-			(*ip)++;
-		sprintf(bname, "%s/%s", pm.path, fname);
+	char fname[HOMELEN];
+	strlcpy(fname, file, sizeof(fname));
+
+	char bname[PATHLEN];
+	for (char *ip = fname + strlen(fname) - 1; ; ) {
+		snprintf(bname, sizeof(bname), "%s/%s", pm.path, fname);
+		if (dashf(bname)) {
+			if (*ip == 'Z')
+				ip++, *ip = 'A', *(ip + 1) = '\0';
+			else
+				(*ip)++;
+		}
 	}
 
-	//Added by IAMFAT 2002-05-30
-	ansi_filter(title, fileinfo->title);
-	ellipsis(title, 38);
-	sprintf(genbuf, "%-38.38s %s ", title, currentuser.userid);
-	//sprintf(genbuf, "%-38.38s %s ", fileinfo->title, fileinfo->owner);
-	//modified by roly 02.03.30
-	//Removed by IAMFAT 2002-05-30
-	//sprintf(genbuf, "%-38.38s %s ", fileinfo->title, currentuser.userid);
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	ansi_filter(gbk_title, title);
+	ellipsis(gbk_title, 38);
 
-	a_additem(&pm, genbuf, fname);
+	char title_buf[STRLEN];
+	snprintf(title_buf, sizeof(title_buf), "%-38.38s %s ", title,
+			currentuser.userid);
+
+	a_additem(&pm, title_buf, fname);
 	a_savenames(&pm);
-	if (in_mail)
+
+	if (in_mail) {
 		sprintf(genbuf, "/bin/cp -r mail/%c/%s/%s %s",
 				toupper(currentuser.userid[0]), currentuser.userid,
-				fileinfo->filename, bname);
-	else
-		sprintf(genbuf, "/bin/cp -r boards/%s/%s %s", key,
-				fileinfo->filename, bname);
-	system(genbuf);
-	if (!(fileinfo->accessed[1] & FILE_NOTICE)) {
-		fileinfo->accessed[1] |= FILE_IMPORTED;
-		substitute_record(direct, fileinfo, sizeof(*fileinfo), ent);
+				file, bname);
+		system(genbuf);
+	} else {
+		f_cp(file, bname, 0);
 	}
+
 	if (!nomsg && !DEFINE(DEF_MULTANNPATH)) {
 		presskeyfor("已将该文章放进精华区, 请按<Enter>继续...", t_lines-1);
 	}
-	for (ch = 0; ch < pm.num; ch++)
-		free(pm.item[ch]);
-	//add by fangu 2003.2.26, add log
-	//sprintf(genbuf, "ANN IMP file:%s -floss:%s", fname,buf); //前面是source,后面是丝路
-	//modified by iamfat 2003.2.28
+
+	for (int i = 0; i < pm.num; ++i)
+		free(pm.item[i]);
+
 	bm_log(currentuser.userid, currboard, BMLOG_ANNOUNCE, 1);
-	sprintf(genbuf, "%s %s收录 '%-20.20s..'\n", get_short_date(time(0)),
-			currentuser.userid, fileinfo->title);
-	file_append(ANN_LOG_PATH, genbuf);
+	snprintf(buf, sizeof(buf), "%s %s收录 '%-20.20s..'\n", get_short_date(time(0)),
+			currentuser.userid, title);
+	file_append(ANN_LOG_PATH, buf);
 	return FULLUPDATE;
 }
 
