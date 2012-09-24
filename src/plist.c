@@ -457,6 +457,25 @@ static int tui_save_post(const post_info_t *ip)
 	return MINIUPDATE;
 }
 
+static int tui_import_post(const post_info_t *ip)
+{
+	if (!HAS_PERM(PERM_BOARDS))
+		return DONOTHING;
+
+	if (DEFINE(DEF_MULTANNPATH)
+			&& set_ann_path(NULL, NULL, ANNPATH_GETMODE) == 0)
+		return FULLUPDATE;
+
+	char file[HOMELEN];
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	if (dump_content(ip, file, sizeof(file), gbk_title, sizeof(gbk_title)))
+		a_Import(gbk_title, file, NA);
+
+	if (DEFINE(DEF_MULTANNPATH))
+		return FULLUPDATE;
+	return DONOTHING;
+}
+
 static int tui_delete_posts_in_range(slide_list_t *p)
 {
 	if (!am_curr_bm())
@@ -713,6 +732,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_edit_post_content(ip);
 		case 'i':
 			return tui_save_post(ip);
+		case 'I':
+			return tui_import_post(ip);
 		case 'D':
 			return tui_delete_posts_in_range(p);
 		case '.':
