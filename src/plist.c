@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/brc.h"
+#include "fbbs/friend.h"
 #include "fbbs/mail.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
@@ -452,6 +453,159 @@ static int tui_edit_post_content(post_info_t *ip)
 	return FULLUPDATE;
 }
 
+extern int show_board_notes(const char *bname, int command);
+extern int noreply;
+extern int mailtoauther;
+
+static int tui_new_post(int bid, post_info_t *ip)
+{
+	time_t now = time(NULL);
+	if (now - get_last_post_time() < 3) {
+		move(t_lines - 1, 0);
+		clrtoeol();
+		prints("您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。\n");
+		pressreturn();
+		return MINIUPDATE;
+	}
+
+	set_user_status(ST_POSTING);
+
+	board_t board;
+	if (!get_board_by_bid(bid, &board) ||
+			!has_post_perm(&currentuser, &board)) {
+		move(t_lines - 1, 0);
+		clrtoeol();
+		prints("此讨论区是唯读的, 或是您尚无权限在此发表文章。");
+		pressreturn();
+		return FULLUPDATE;
+	}
+
+	clear();
+	show_board_notes(board.name, 1);
+
+	struct postheader header;
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	if (ip) {
+		header.reply_mode = 1;
+		if (strncaseeq(ip->utf8_title, "Re: ", 4)) {
+			convert_u2g(ip->utf8_title, header.title);
+		} else {
+			convert_u2g(ip->utf8_title, gbk_title);
+			snprintf(header.title, sizeof(header.title), "Re: %s", gbk_title);
+		}
+	}
+
+	strlcpy(header.ds, board.name, sizeof(header.ds));
+	header.postboard = true;
+	header.prefix[0] = '\0';
+
+	if (post_header(&header) == YEA) {
+		if (!header.reply_mode && header.prefix[0]) {
+#ifdef FDQUAN
+			if (board.flag & BOARD_PREFIX_FLAG) {
+				snprintf(gbk_title, sizeof(gbk_title),
+						"\033[1;33m[%s]\033[m%s", header.prefix, header.title);
+			} else {
+				snprintf(gbk_title, sizeof(gbk_title),
+						"\033[1m[%s]\033[m%s", header.prefix, header.title);
+			}
+#else
+			snprintf(gbk_title, sizeof(gbk_title),
+					"[%s]%s", header.prefix, header.title);
+#endif
+		} else {
+			ansi_filter(header.title, header.title);
+//			strlcpy(postfile.title, header.title, sizeof(postfile.title));
+		}
+	} else {
+		return FULLUPDATE;
+	}
+
+	now = time(NULL);
+	set_last_post_time(now);
+
+	in_mail = NA;
+
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "tmp/editbuf.%d", getpid());
+	if (ip) {
+		char orig[HOMELEN];
+		dump_content(ip, orig, sizeof(orig), NULL, 0);
+		do_quote(orig, file, header.include_mode);
+		unlink(orig);
+	}
+
+	if (vedit(file, YEA, YEA) == -1) {
+		unlink(file);
+		clear();
+		return FULLUPDATE;
+	}
+
+	// header.chk_anony
+	// save_title
+	// valid_title()
+
+	if (noreply) {
+		noreply = 0;
+	}
+
+	if (mailtoauther) {
+		if (header.chk_anony) {
+			prints("对不起，您不能在匿名版使用寄信给原作者功能。");
+		} else {
+			if (!is_blocked(ip->owner)
+					&& !mail_file(file, ip->owner, gbk_title)) {
+				prints("信件已成功地寄给原作者 %s", ip->owner);
+			}
+			else {
+				prints("信件邮寄失败，%s 无法收信。", ip->owner);
+			}
+		}
+		mailtoauther = 0;
+		pressanykey();
+	}
+
+	post_request_t req = {
+		.autopost = false,
+		.crosspost = false,
+		.uname = currentuser.userid,
+		.nick = currentuser.username,
+		.user = &currentuser,
+		.board = &board,
+		.title = gbk_title,
+		.content = NULL,
+		.gbk_file = file,
+		.sig = 0,
+		.ip = NULL,
+		.reid = ip ? ip->id : 0,
+		.tid = ip ? ip->tid : 0,
+		.locked = noreply,
+		.marked = false,
+		.anony = header.chk_anony,
+		.cp = NULL,
+	};
+
+//	save_gid = postfile.gid;
+	post_id_t pid = publish_post(&req);
+	if (pid) {
+		brc_mark_as_read(pid);
+
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "posted '%s' on %s",
+				gbk_title, board.name);
+		report(buf, currentuser.userid);
+	}
+
+	if (!is_junk_board(&board) && !header.chk_anony) {
+		set_safe_record();
+		currentuser.numposts++;
+		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
+				usernum);
+	}
+	bm_log(currentuser.userid, currboard, BMLOG_POST, 1);
+	return FULLUPDATE;
+}
+
 static int tui_save_post(const post_info_t *ip)
 {
 	if (!am_curr_bm())
@@ -740,6 +894,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_edit_post_title(ip);
 		case 'E':
 			return tui_edit_post_content(ip);
+		case Ctrl('P'):
+			return tui_new_post(l->filter.bid, ip);
 		case 'i':
 			return tui_save_post(ip);
 		case 'I':

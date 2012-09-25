@@ -913,7 +913,7 @@ int do_reply(struct fileheader *fh) {
 	strcpy(replytitle, fh->title);
 	o_id = fh->id;
 	o_gid = fh->gid;
-	post_article(currboard, fh->owner);
+//	post_article(currboard, fh->owner);
 	replytitle[0] = '\0';
 	return FULLUPDATE;
 }
@@ -1043,7 +1043,7 @@ int do_post(void)
 	*quote_file = '\0';
 	*quote_user = '\0';
 	local_article = YEA;
-	return post_article(currboard, (char *) NULL);
+//	return post_article(currboard, (char *) NULL);
 }
 
 int show_file_info(int ent, struct fileheader *fileinfo, char *direct)
@@ -1453,7 +1453,8 @@ void add_crossinfo(const char *filepath, bool post)
 }
 
 // 显示版面提示
-int show_board_notes(char bname[30], int command) {
+int show_board_notes(const char *bname, int command)
+{
 	char buf[256];
 
 	sprintf(buf, "vote/%s/notes", bname);
@@ -1501,218 +1502,6 @@ int outgo_post(struct fileheader *fh, char *board)
 			header.chk_anony ? ANONYMOUS_NICK : currentuser.username, save_title);
 	file_append("innd/out.bntp", buf);
 	return 0;
-}
-
-int post_article(char *postboard, char *mailid)
-{
-	struct fileheader postfile;
-	char filepath[STRLEN], fname[STRLEN], buf[120];
-	int aborted;
-	time_t now = time(0);
-
-	static time_t lastposttime = 0;
-	static int failure = 0;
-
-	set_user_status(ST_POSTING);
-
-	/* added by roly 02.05.18 灌水机 */
-	if ((abs(now - lastposttime) < 3 || failure >= 9999)) {
-		clear();
-		move(5, 10);
-		failure++;
-		if (failure > 9999) {
-			if (failure >= 10020) {
-				abort_bbs(0);
-			}
-			prints("对不起，您在被劝阻多次的情况下，仍不断试图发文。");
-			move(6, 10);
-			prints("您目前被系统认定为灌水机，请退出后重新登陆！[%d/20]", failure - 9999);
-		} else {
-			prints("您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。\n");
-			if (failure > 5) {
-				move(6, 10);
-				prints("您在被劝阻的情况下仍旧试图发表文章。[%d/20]", failure - 5);
-				if (failure >= 25) {
-					securityreport("多次试图发表文章，被系统判定为灌水机", 0, 3);
-					failure = 9999;
-				}
-			}
-			lastposttime = now;
-		}
-		pressreturn();
-		clear();
-		return FULLUPDATE;
-	} // if (abs..)
-
-	board_t board;
-	get_board(postboard, &board);
-	if (!board.id || !has_post_perm(&currentuser, &board)
-			|| digestmode == DIGIST_MODE
-			|| digestmode == TRASH_MODE
-			|| digestmode == JUNK_MODE) {
-		move(3, 0);
-		clrtobot();
-		if (digestmode == NA) {
-			prints("\n\n        此讨论区是唯读的, 或是您尚无权限在此发表文章。");
-		} else {
-			prints("\n\n     目前是文摘模式, 所以不能发表文章 (按左键可离开此模式)。");
-		}
-		pressreturn();
-		clear();
-		return FULLUPDATE;
-	}
-
-	memset(&postfile, 0, sizeof (postfile));
-	//俱乐部
-	if ((board.flag & BOARD_CLUB_FLAG) && !am_curr_bm()
-			&& !isclubmember(currentuser.userid, postboard)) {
-		move(3, 0);
-		clrtobot();
-		prints("\n\n              您不是俱乐部 %s 的成员，请向版主申请加入俱乐部", postboard);
-		pressreturn();
-		clear();
-		return FULLUPDATE;
-
-	}
-
-	clear();
-	show_board_notes(postboard, 1);
-	if ((board.flag & BOARD_OUT_FLAG) && replytitle[0] == '\0') {
-		local_article = NA;
-	}
-#ifndef NOREPLY
-	if (replytitle[0] != '\0') {
-		if (strncasecmp(replytitle, "Re:", 3) == 0) {
-			strlcpy(header.title, replytitle, sizeof(header.title));
-		} else {
-			snprintf(header.title, sizeof(header.title), "Re: %s", replytitle);
-		}
-		header.reply_mode = 1;
-	} else
-#endif
-	{
-		header.title[0] = '\0';
-		header.reply_mode = 0;
-	}
-	strcpy(header.ds, postboard);
-	header.postboard = YEA;
-#ifdef ENABLE_PREFIX
-	header.prefix[0] = '\0';
-#endif
-	if (post_header(&header) == YEA) {
-#ifdef ENABLE_PREFIX
-		if (!header.reply_mode && header.prefix[0]) {
-#ifdef FDQUAN
-			if (board.flag & BOARD_PREFIX_FLAG)
-				snprintf(postfile.title, sizeof(postfile.title),
-						"\033[1;33m[%s]\033[m%s", header.prefix, header.title);
-			else
-				snprintf(postfile.title, sizeof(postfile.title),
-						"\033[1m[%s]\033[m%s", header.prefix, header.title);
-#else
-			snprintf(postfile.title, sizeof(postfile.title),
-					"[%s]%s",header.prefix, header.title);
-#endif
-		}
-		else
-#endif
-		{
-			ansi_filter(header.title, header.title);
-			strlcpy(postfile.title, header.title, sizeof(postfile.title));
-		}
-		strlcpy(save_title, postfile.title, STRLEN);
-		valid_title(save_title);
-
-	} else {
-		return FULLUPDATE;
-	}
-	now = time(0);
-
-	lastposttime = now;
-	failure = 0;
-
-	if (date_to_fname(postboard, now, fname) < 0)
-		return -1;
-	strcpy(postfile.filename, fname);
-	in_mail = NA;
-
-	strlcpy(postfile.owner, (header.chk_anony) ? "Anonymous"
-			: currentuser.userid, STRLEN);
-	setbfile(filepath, postboard, postfile.filename);
-	set_user_status(ST_POSTING);
-	do_quote(quote_file, filepath, header.include_mode);
-	aborted = vedit(filepath, YEA, YEA);
-	if (aborted == -1) {
-		unlink(filepath);
-		clear();
-		return FULLUPDATE;
-	}
-	valid_gbk_file(filepath, '?');
-
-	strlcpy(postfile.title, save_title, sizeof(postfile.title));
-	valid_title(postfile.title);
-
-	// TODO: ...
-	if ((local_article == YEA) || !(board.flag & BOARD_OUT_FLAG)) {
-		postfile.filename[STRLEN - 9] = 'L';
-		postfile.filename[STRLEN - 10] = 'L';
-	} else {
-		postfile.filename[STRLEN - 9] = 'S';
-		postfile.filename[STRLEN - 10] = 'S';
-		outgo_post(&postfile, postboard);
-	}
-
-	if (noreply) {
-		postfile.accessed[0] |= FILE_NOREPLY;
-		noreply = 0;
-	}
-	//added by iamfat 2003.03.19
-	if (mailtoauther) {
-		if (header.chk_anony) {
-			prints("对不起，您不能在匿名版使用寄信给原作者功能。");
-		} else {
-			if (!is_blocked(mailid)
-					&& !mail_file (filepath, mailid, postfile.title)) {
-				prints ("信件已成功地寄给原作者 %s", mailid);
-			}
-			else {
-				prints ("信件邮寄失败，%s 无法收信。", mailid);
-			}
-		}
-		mailtoauther = 0;
-		pressanykey();
-	}
-	setwbdir(buf, postboard);
-	postfile.id = get_nextid(currboard);
-	if (header.reply_mode == 1) {
-		postfile.gid = o_gid;
-		postfile.reid = o_id;
-	} else {
-		postfile.gid = postfile.id;
-		postfile.reid = postfile.id;
-	}
-	save_gid = postfile.gid;
-	if (append_record(buf, &postfile, sizeof (postfile)) == -1) {
-		sprintf(buf, "posting '%s' on %s: append_record failed!",
-				postfile.title, currboard);
-		report(buf, currentuser.userid);
-		pressreturn();
-		clear();
-		return FULLUPDATE;
-	}
-	brc_addlist_legacy(postfile.filename);
-	updatelastpost(currbp);
-	sprintf(buf, "posted '%s' on %s", postfile.title, currboard);
-	report(buf, currentuser.userid);
-
-	if (!is_junk_board(currbp) && !header.chk_anony) {
-		set_safe_record();
-		currentuser.numposts++;
-		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
-				usernum);
-	}
-	bm_log(currentuser.userid, currboard, BMLOG_POST, 1);
-	return FULLUPDATE;
 }
 
 int IsTheFileOwner(struct fileheader *fileinfo) {

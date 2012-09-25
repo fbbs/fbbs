@@ -110,21 +110,14 @@ struct UCACHE { //用户的缓冲
 	int status[MAXUSERS];
 };
 
-struct postheader { //.DIR中的记录格式
+struct postheader {
 	char title[STRLEN];
 	char ds[40]; //board
-#ifdef ENABLE_PREFIX
-	char reply_mode;
-	char include_mode;
-	char chk_anony;
-	char postboard;
-	char prefix[10];
-#else
 	int reply_mode;
 	char include_mode;
 	int chk_anony;
 	int postboard;
-#endif
+	char prefix[10];
 };
 
 //Added by IAMFAT 2002.06.14 For Count Function
