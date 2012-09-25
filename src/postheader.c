@@ -6,7 +6,6 @@
 
 extern int numofsig;
 extern int noreply;
-extern int mailtoauther;
 #ifdef ENABLE_PREFIX
 char prefixbuf[MAX_PREFIX][6];
 int numofprefix;
@@ -97,7 +96,7 @@ int post_header(struct postheader *header)
 
 	/*Èç¹ûµ±Ç°ÊÇ»Ø¸´Ä£Ê½£¬Ôò°ÑÔ­±êÌâcopyµ½µ±Ç°±êÌâÖÐ£¬²¢±ê¼Çµ±Ç°Îª»Ø¸´Ä£Ê½
 	 ·ñÔòµ±Ç°±êÌâÎª¿Õ*/
-	if (header->reply_mode) {
+	if (header->reply) {
 		strcpy(titlebuf, header->title);
 		header->include_mode = 'R'; //exchange 'R' and 'S' by Danielfree 07.04.05
 	} else {
@@ -122,7 +121,7 @@ int post_header(struct postheader *header)
 
 	// modified by roly 02.03.07
 	// modified by iamfat 02.10.30
-	header->chk_anony = (anonyboard) ? 1 : 0;
+	header->anonymous = (anonyboard) ? 1 : 0;
 	//header->chk_anony = 0;
 	//modifiy end
 #ifdef ENABLE_PREFIX
@@ -131,7 +130,7 @@ int post_header(struct postheader *header)
 #endif	
 	while (1) {
 #ifdef ENABLE_PREFIX
-		if (header->reply_mode) {
+		if (header->reply) {
 			sprintf(r_prompt, "ÒýÑÔÄ£Ê½ [[1m%c[m]", header->include_mode);
 			move(t_lines - 4, 0);
 		} else if (numofprefix == 0)
@@ -139,7 +138,7 @@ int post_header(struct postheader *header)
 		else
 		move(t_lines - 5, 0);
 #else
-		if (header->reply_mode)
+		if (header->reply)
 			sprintf(r_prompt, "ÒýÑÔÄ£Ê½ [[1m%c[m]", header->include_mode);
 		move(t_lines - 4, 0);
 #endif
@@ -151,15 +150,16 @@ int post_header(struct postheader *header)
 				"[m%s [1m%s[m      %s    %s%s\n",
 				(header->postboard) ? "·¢±íÎÄÕÂì¶" : "ÊÕÐÅÈË£º",
 				header->ds,
-				(anonyboard) ? (header->chk_anony == 1 ? "[1mÒª[mÊ¹ÓÃÄäÃû"
+				(anonyboard) ? (header->anonymous ? "[1mÒª[mÊ¹ÓÃÄäÃû"
 						: "[1m²»[mÊ¹ÓÃÄäÃû") : "",
-				(header->postboard) ? ((noreply) ? "[±¾ÎÄ[1;33m²»¿ÉÒÔ[m»Ø¸´"
+				(header->postboard) ? ((header->locked) ? "[±¾ÎÄ[1;33m²»¿ÉÒÔ[m»Ø¸´"
 						: "[±¾ÎÄ[1;33m¿ÉÒÔ[m»Ø¸´") : "",
-				(header->postboard&&header->reply_mode) ? ((mailtoauther) ? ",ÇÒ[1;33m·¢ËÍ[m±¾ÎÄÖÁ×÷ÕßÐÅÏä]"
-						: ",ÇÒ[1;33m²»·¢ËÍ[m±¾ÎÄÖÁ×÷ÕßÐÅÏä]")
+				(header->postboard && header->reply) ? ((header->mail_owner)
+					? ",ÇÒ[1;33m·¢ËÍ[m±¾ÎÄÖÁ×÷ÕßÐÅÏä]"
+					: ",ÇÒ[1;33m²»·¢ËÍ[m±¾ÎÄÖÁ×÷ÕßÐÅÏä]")
 						: (header->postboard) ? "]" : "");
 #ifdef ENABLE_PREFIX
-		if (!header->reply_mode && numofprefix) {
+		if (!header->reply && numofprefix) {
 			if ((board.flag & BOARD_PREFIX_FLAG) && !header->title[0]) {
 				index = 0;
 				print_prefixbuf(pbuf, index);
@@ -188,10 +188,10 @@ int post_header(struct postheader *header)
 #ifdef RNDSIGN
 		//ÔÚ»Ø¸´Ä£Ê½ÏÂ»á³öÏÖÏàÓ¦µÄÒýÑÔÄ£Ê½ÐÅÏ¢
 		prints("Ê¹ÓÃµÚ [1m%d[m ¸öÇ©Ãûµµ     %s %s", currentuser.signature
-				,(header->reply_mode) ? r_prompt : "", (rnd_sign == 1) ? "[Ëæ»úÇ©Ãûµµ]" : "");
+				,(header->reply) ? r_prompt : "", (rnd_sign == 1) ? "[Ëæ»úÇ©Ãûµµ]" : "");
 #else
 		prints("Ê¹ÓÃµÚ [1m%d[m ¸öÇ©Ãûµµ     %s", currentuser.signature,
-				(header->reply_mode) ? r_prompt : "");
+				(header->reply) ? r_prompt : "");
 #endif
 		//¶ÔÓÚ·¢±íÎÄÕÂ»òÕßÍ¶ÌõÇé¿ö
 		if (titlebuf[0] == '\0') {
@@ -224,17 +224,17 @@ int post_header(struct postheader *header)
 #ifdef ENABLE_PREFIX	
 		sprintf(mybuf,
 				"[1;32m0[m~[1;32m%d V[m¿´Ç©Ãûµµ%s [1;32mX[mËæ»úÇ©Ãûµµ,[1;32mT[m±êÌâ%s%s%s,[1;32mQ[m·ÅÆú:",
-				numofsig, (header->reply_mode) ? ",[1;32mS[m/[1;32mY[m/[1;32mN[m/[1;32mR[m/[1;32mA[m ÒýÑÔÄ£Ê½" : " \033[1;32mF\033[mÇ°×º",
-				(anonyboard) ? "£¬[1;32mL[mÄäÃû" : "",(header->postboard)?",[1;32mU[mÊôÐÔ":"",(header->postboard&&header->reply_mode)?",[1;32mM[m¼ÄÐÅ":"");
+				numofsig, (header->reply) ? ",[1;32mS[m/[1;32mY[m/[1;32mN[m/[1;32mR[m/[1;32mA[m ÒýÑÔÄ£Ê½" : " \033[1;32mF\033[mÇ°×º",
+				(anonyboard) ? "£¬[1;32mL[mÄäÃû" : "",(header->postboard)?",[1;32mU[mÊôÐÔ":"",(header->postboard&&header->reply)?",[1;32mM[m¼ÄÐÅ":"");
 #else
 		sprintf(
 				mybuf,
 				"[1;32m0[m~[1;32m%d V[m¿´Ç©Ãûµµ%s [1;32mX[mËæ»úÇ©Ãûµµ,[1;32mT[m±êÌâ%s%s%s,[1;32mQ[m·ÅÆú:",
 				numofsig,
-				(header->reply_mode) ? ",[1;32mS[m/[1;32mY[m/[1;32mN[m/[1;32mR[m/[1;32mA[m ÒýÑÔÄ£Ê½"
+				(header->reply) ? ",[1;32mS[m/[1;32mY[m/[1;32mN[m/[1;32mR[m/[1;32mA[m ÒýÑÔÄ£Ê½"
 						: "", (anonyboard) ? "£¬[1;32mL[mÄäÃû" : "",
 				(header->postboard) ? ",[1;32mU[mÊôÐÔ" : "",
-				(header->postboard&&header->reply_mode) ? ",[1;32mM[m¼ÄÐÅ"
+				(header->postboard&&header->reply) ? ",[1;32mM[m¼ÄÐÅ"
 						: "");
 #endif
 		//´òÓ¡³öÌáÊ¾ÐÅÏ¢£¬²¢×èÈûÔÚÓÃ»§ÊäÈë¶¯×÷ÉÏ,ÓÃ»§×î¶àÊäÈë2¸ö×Ö½Ú
@@ -250,7 +250,7 @@ int post_header(struct postheader *header)
 			return -1;
 		}
 		//¶ÔÓÚ»Ø¸´Ä£Ê½
-		else if (header->reply_mode && (ans[0] == 'Y' || ans[0] == 'N'
+		else if (header->reply && (ans[0] == 'Y' || ans[0] == 'N'
 				|| ans[0] == 'A' || ans[0] == 'R'||ans[0]=='S')) {
 			header->include_mode = ans[0];
 		} //ÖØÐÂÉèÖÃ±êÌâ
@@ -258,13 +258,13 @@ int post_header(struct postheader *header)
 			titlebuf[0] = '\0';
 		}//¶ÔÓÚÄäÃû°æµÄÌØ±ð´¦Àí 
 		else if (ans[0] == 'L' && anonyboard) {
-			header->chk_anony = (header->chk_anony == 1) ? 0 : 1;
+			header->anonymous = !header->anonymous;
 		}//¶ÔÓÚÎÄÕÂÖÐ£¬¿É·ñ»Ø¸´µÄ¸ü¸Ä 
 		else if (ans[0] == 'U' && header->postboard) {
-			noreply = ~noreply;
+			header->locked = !header->locked;
 		}//¶ÔÓÚ»Ø¸´ÎÄÕÂÊ±µÄÌØÊâÊôÐÔÉèÖÃ 
-		else if (ans[0] == 'M' && header->postboard && header->reply_mode) {
-			mailtoauther = ~mailtoauther;
+		else if (ans[0] == 'M' && header->postboard && header->reply) {
+			header->mail_owner = !header->mail_owner;
 		}//¶ÔÇ©ÃûµµµÄ´¦Àí 
 		else if (ans[0] == 'V') {
 			setuserfile(mybuf, "signatures");
@@ -291,7 +291,7 @@ int post_header(struct postheader *header)
 		}
 #ifdef ENABLE_PREFIX
 		//ÐÞ¸ÄÇ°×º
-		else if (!header->reply_mode && numofprefix && ans[0] == 'F') {
+		else if (!header->reply && numofprefix && ans[0] == 'F') {
 			int i;
 			getdata(t_lines - 1, 0, pbuf, ans, 3, DOECHO, YEA);
 			i = ans[0] - '0';

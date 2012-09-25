@@ -455,7 +455,6 @@ static int tui_edit_post_content(post_info_t *ip)
 
 extern int show_board_notes(const char *bname, int command);
 extern int noreply;
-extern int mailtoauther;
 
 static int tui_new_post(int bid, post_info_t *ip)
 {
@@ -468,8 +467,6 @@ static int tui_new_post(int bid, post_info_t *ip)
 		return MINIUPDATE;
 	}
 
-	set_user_status(ST_POSTING);
-
 	board_t board;
 	if (!get_board_by_bid(bid, &board) ||
 			!has_post_perm(&currentuser, &board)) {
@@ -480,13 +477,15 @@ static int tui_new_post(int bid, post_info_t *ip)
 		return FULLUPDATE;
 	}
 
+	set_user_status(ST_POSTING);
+
 	clear();
 	show_board_notes(board.name, 1);
 
 	struct postheader header;
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	if (ip) {
-		header.reply_mode = 1;
+		header.reply = true;
 		if (strncaseeq(ip->utf8_title, "Re: ", 4)) {
 			convert_u2g(ip->utf8_title, header.title);
 		} else {
@@ -500,7 +499,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	header.prefix[0] = '\0';
 
 	if (post_header(&header) == YEA) {
-		if (!header.reply_mode && header.prefix[0]) {
+		if (!header.reply && header.prefix[0]) {
 #ifdef FDQUAN
 			if (board.flag & BOARD_PREFIX_FLAG) {
 				snprintf(gbk_title, sizeof(gbk_title),
@@ -545,12 +544,8 @@ static int tui_new_post(int bid, post_info_t *ip)
 	// save_title
 	// valid_title()
 
-	if (noreply) {
-		noreply = 0;
-	}
-
-	if (mailtoauther) {
-		if (header.chk_anony) {
+	if (header.mail_owner) {
+		if (header.anonymous) {
 			prints("对不起，您不能在匿名版使用寄信给原作者功能。");
 		} else {
 			if (!is_blocked(ip->owner)
@@ -561,7 +556,6 @@ static int tui_new_post(int bid, post_info_t *ip)
 				prints("信件邮寄失败，%s 无法收信。", ip->owner);
 			}
 		}
-		mailtoauther = 0;
 		pressanykey();
 	}
 
@@ -579,9 +573,9 @@ static int tui_new_post(int bid, post_info_t *ip)
 		.ip = NULL,
 		.reid = ip ? ip->id : 0,
 		.tid = ip ? ip->tid : 0,
-		.locked = noreply,
+		.locked = header.locked,
 		.marked = false,
-		.anony = header.chk_anony,
+		.anony = header.anonymous,
 		.cp = NULL,
 	};
 
@@ -596,7 +590,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 		report(buf, currentuser.userid);
 	}
 
-	if (!is_junk_board(&board) && !header.chk_anony) {
+	if (!is_junk_board(&board) && !header.anonymous) {
 		set_safe_record();
 		currentuser.numposts++;
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),

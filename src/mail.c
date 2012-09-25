@@ -186,7 +186,7 @@ int mailall(void)
 	if (askyn(buf, NA, NA) == NA)
 		return NA;
 	in_mail = YEA;
-	header.reply_mode = NA;
+	header.reply = false;
 	strcpy(header.title, "没主题");
 	strcpy(header.ds, doc[ans[0] - '0' - 1]);
 	header.postboard = NA;
@@ -387,10 +387,10 @@ int do_send(const char *userid, const char *title)
 
 	edit_mail_file:
 	if (title == NULL) {
-		header.reply_mode = NA;
+		header.reply = false;
 		strcpy(header.title, "没主题");
 	} else {
-		header.reply_mode = YEA;
+		header.reply = true;
 		strcpy(header.title, title);
 	}
 	header.postboard = NA;
@@ -1137,7 +1137,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	s_current_maillist[0] = current_maillist;
 	in_mail = YEA;
 	sprintf(genbuf, "%s", currentuser.userid);
-	header.reply_mode = NA;
+	header.reply = false;
 	strcpy(header.title, "没主题");
 	strcpy(header.ds, "寄信给一群人");
 	header.postboard = NA;

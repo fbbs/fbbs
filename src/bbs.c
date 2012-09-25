@@ -41,8 +41,6 @@ int selboard = 0;
 char someoneID[31];
 char topic[STRLEN] = "";
 int FFLL = 0;
-int noreply = 0;
-int mailtoauther = 0;
 int totalusers;
 char genbuf[1024];
 char quote_title[120], quote_board[120];
@@ -549,10 +547,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 			strcpy(typeprefix, "\033[32m");
 		strcpy(typesufix, "\033[m");
 	}
-	if (ent->accessed[0] & FILE_NOREPLY)
-		noreply = 1;
-	else
-		noreply = 0;
+
 	if (digestmode == ATTACH_MODE) {
 		filetime = ent->timeDeleted;
 	} else {
@@ -604,7 +599,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
 				typeprefix, type, typesufix, idcolor, ent->owner, color, date, 
 				(FFLL & sameflag) ? '.' : ' ', 
-				noreply ? "\033[1;33mx" : " ",
+				(ent->accessed[0] & FILE_NOREPLY) ? "\033[1;33mx" : " ",
 				(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "",
 				title, (ent->accessed[1] & FILE_SUBDEL) ? "1;31" : "1;32",
 				ent->szEraser, getshortdate(ent->timeDeleted));
@@ -618,7 +613,7 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 					"%-12.12s %s%6.6s%c%s\033[%sm%-.49s\033[m",
 					type, idcolor, ent->owner, color, date,
 					(FFLL & sameflag) ? '.' : ' ',
-					noreply ? "\033[1;33mx" : " ",
+					(ent->accessed[0] & FILE_NOREPLY) ? "\033[1;33mx" : " ",
 					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
 		} else {
 #endif
@@ -627,13 +622,12 @@ char *readdoent(int num, struct fileheader *ent) //Post list
 					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", num,
 					typeprefix, type, typesufix, idcolor, ent->owner, color,
 					date, (FFLL & sameflag) ? '.' : ' ',
-					noreply ? "\033[1;33mx" : " ",
+					(ent->accessed[0] & FILE_NOREPLY) ? "\033[1;33mx" : " ",
 					(FFLL & sameflag) ? (reflag ? "1;36" : "1;32") : "", title);
 #ifdef ENABLE_NOTICE
 		}
 #endif
 	}
-	noreply = 0;
 	return buf;
 }
 
@@ -934,7 +928,7 @@ void do_quote(const char *orig, const char *file, char mode)
 	FILE *fp = fopen(file, "a");
 	if (!fp)
 		return;
-	if (currentuser.signature && !header.chk_anony)
+	if (currentuser.signature && !header.anonymous)
 		add_signature(fp, currentuser.userid, currentuser.signature);
 	fclose(fp);
 }
@@ -1498,8 +1492,8 @@ int outgo_post(struct fileheader *fh, char *board)
 	char buf[256];
 
 	sprintf(buf, "%s\t%s\t%s\t%s\t%s\n", board, fh->filename,
-			header.chk_anony ? ANONYMOUS_ACCOUNT : currentuser.userid,
-			header.chk_anony ? ANONYMOUS_NICK : currentuser.username, save_title);
+			header.anonymous ? ANONYMOUS_ACCOUNT : currentuser.userid,
+			header.anonymous ? ANONYMOUS_NICK : currentuser.username, save_title);
 	file_append("innd/out.bntp", buf);
 	return 0;
 }

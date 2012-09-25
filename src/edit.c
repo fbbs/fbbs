@@ -928,12 +928,12 @@ void write_header(FILE *fp, int mode)
 	if (in_mail)
 		fprintf(fp, "寄信人: %s (%s)\n", uid, uname);
 	else {
-		if (mode == 0 && !(noname && header.chk_anony)) {
+		if (mode == 0 && !(noname && header.anonymous)) {
 			write_posts();
 		}
 		fprintf(fp, "发信人: %s (%s), 信区: %s\n",
-				(noname && header.chk_anony) ? ANONYMOUS_ACCOUNT : uid,
-				(noname && header.chk_anony) ? ANONYMOUS_NICK : uname, currboard);
+				(noname && header.anonymous) ? ANONYMOUS_ACCOUNT : uid,
+				(noname && header.anonymous) ? ANONYMOUS_NICK : uname, currboard);
 	}
 	fprintf(fp, "标  题: %s\n", save_title);
 	fprintf(fp, "发信站: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
@@ -1092,7 +1092,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		extern struct postheader header;
 		board_t board;
 		get_board(currboard, &board);
-		noidboard = (board.flag & BOARD_ANONY_FLAG) && (header.chk_anony);
+		noidboard = (board.flag & BOARD_ANONY_FLAG) && (header.anonymous);
 		color = (currentuser.numlogins % 7) + 31;
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || noidboard)

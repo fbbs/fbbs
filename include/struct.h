@@ -111,11 +111,13 @@ struct UCACHE { //ÓÃ»§µÄ»º³å
 };
 
 struct postheader {
+	bool mail_owner;
+	bool reply;
+	bool anonymous;
+	bool locked;
 	char title[STRLEN];
 	char ds[40]; //board
-	int reply_mode;
 	char include_mode;
-	int chk_anony;
 	int postboard;
 	char prefix[10];
 };

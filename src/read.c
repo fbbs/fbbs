@@ -1687,7 +1687,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 				if (!get_records(currdirect, ptitle, sizeof(*ptitle),
 						rem_crs, 1))
 					return DONOTHING;
-				noreply = (ptitle->accessed[0] & FILE_NOREPLY)
+				bool noreply = (ptitle->accessed[0] & FILE_NOREPLY)
 						|| (board.flag & BOARD_NOREPLY_FLAG);
 				if (!noreply || am_curr_bm()) {
 					local_article = true;
