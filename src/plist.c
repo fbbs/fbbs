@@ -222,6 +222,68 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 	return FULLUPDATE;
 }
 
+static int post_list_with_filter(slide_list_base_e base, post_list_type_e type,
+		post_filter_t *filter);
+
+static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
+{
+	if (l->type != POST_LIST_NORMAL)
+		return DONOTHING;
+
+	char ans[3];
+	getdata(t_lines - 1, 0, "切换模式到: 1)文摘 2)同主题 3)被 m 文章 4)原作"
+			" 5)同作者 6)标题关键字 [1]: ", ans, sizeof(ans), DOECHO, YEA);
+
+	int c = ans[0];
+	if (!c)
+		c = '1';
+	c -= '1';
+
+	const post_list_type_e types[] = {
+		POST_LIST_DIGEST, POST_LIST_THREAD, POST_LIST_MARKED,
+		POST_LIST_TOPIC, POST_LIST_AUTHOR, POST_LIST_KEYWORD,
+	};
+
+	if (c < 0 || c >= NELEMS(types))
+		return MINIUPDATE;
+	post_list_type_e type = types[c];
+
+	post_filter_t filter = { .bid = l->filter.bid };
+	switch (type) {
+		case POST_LIST_DIGEST:
+			filter.flag &= POST_FLAG_DIGEST;
+			break;
+		case POST_LIST_MARKED:
+			filter.flag &= POST_FLAG_MARKED;
+		case POST_LIST_AUTHOR: {
+				char uname[IDLEN + 1];
+				strlcpy(uname, ip->owner, sizeof(uname));
+				getdata(t_lines - 1, 0, "您想查找哪位网友的文章? ", uname,
+						sizeof(uname), DOECHO, YEA);
+				user_id_t uid = get_user_id(uname);
+				if (!uid)
+					return MINIUPDATE;
+				filter.uid = uid;
+			}
+			break;
+		case POST_LIST_KEYWORD: {
+				GBK_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+				getdata(t_lines - 1, 0, "您想查找的文章标题关键字: ",
+						gbk_keyword, sizeof(gbk_keyword), DOECHO, YEA);
+				convert_g2u(gbk_keyword, filter.utf8_keyword);
+				if (!filter.utf8_keyword[0])
+					return MINIUPDATE;
+			}
+			break;
+		default:
+			break;
+	}
+
+	post_list_with_filter(SLIDE_LIST_BOTTOMUP, type, &filter);
+	l->reload = true;
+	return FULLUPDATE;
+}
+
 static bool match_filter(post_filter_t *filter, post_info_t *p)
 {
 	bool match = true;
@@ -900,6 +962,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return post_list_deleted(l->filter.bid, l->type);
 		case 'J':
 			return post_list_admin_deleted(l->filter.bid, l->type);
+		case Ctrl('G'): case Ctrl('T'): case '`':
+			return tui_post_list_selected(l, ip);
 		case 'a':
 			return tui_search_author(p, false);
 		case 'A':
@@ -971,25 +1035,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	}
 }
 
-static int post_list(int bid, post_list_type_e type, post_id_t pid,
-		slide_list_base_e base, user_id_t uid, const char *keyword)
+static int post_list_with_filter(slide_list_base_e base, post_list_type_e type,
+		post_filter_t *filter)
 {
-	post_list_t p = {
-		.type = type,
-		.filter = { .deleted = is_deleted(type), .bid = bid, .uid = uid },
-		.relocate = true, .reload = false, .last_query_rows = 0,
-		.index = NULL, .posts = NULL, .sposts = NULL,
-		.icount = 0, .count = 0, .scount = 0, .sreload = false,
-	};
-	if (keyword)
-		strlcpy(p.filter.utf8_keyword, keyword, sizeof(p.filter.utf8_keyword));
-	if (is_asc(base)) {
-		p.filter.min = pid;
-		p.filter.max = 0;
-	} else {
-		p.filter.min = 0;
-		p.filter.max = pid;
-	}
+	post_list_t p = { .type = type, .relocate = true, .filter = *filter };
 
 	slide_list_t s = {
 		.base = base,
@@ -1007,6 +1056,26 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 	free(p.posts);
 	free(p.sposts);
 	return 0;
+}
+
+static int post_list(int bid, post_list_type_e type, post_id_t pid,
+		slide_list_base_e base, user_id_t uid, const char *keyword)
+{
+	post_filter_t filter = {
+		.deleted = is_deleted(type), .bid = bid, .uid = uid
+	};
+
+	if (keyword)
+		strlcpy(filter.utf8_keyword, keyword, sizeof(filter.utf8_keyword));
+	if (is_asc(base)) {
+		filter.min = pid;
+		filter.max = 0;
+	} else {
+		filter.min = 0;
+		filter.max = pid;
+	}
+
+	return post_list_with_filter(base, type, &filter);
 }
 
 int post_list_normal_range(int bid, post_id_t pid, slide_list_base_e base)

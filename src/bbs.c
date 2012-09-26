@@ -2182,8 +2182,6 @@ struct one_key read_comms[] = {
 		{';', move_notice},
 #endif
 		{',', read_attach},
-		{Ctrl('G'), acction_mode},
-		{'`', acction_mode},
 		{'s', do_select},
 		{Ctrl('C'), do_cross},
 		{Ctrl('P'), do_post},
@@ -2200,7 +2198,6 @@ struct one_key read_comms[] = {
 		{'p', SR_read},
 		{Ctrl('U'), SR_author},
 		{'b', SR_BMfunc},
-		{Ctrl('T'), acction_mode},
 		{'L', BM_range},
 		{'*', show_file_info},
 		{'\0', NULL}
