@@ -696,6 +696,29 @@ static int tui_import_post(const post_info_t *ip)
 	return DONOTHING;
 }
 
+static bool tui_input_range(post_id_t *min, post_id_t *max)
+{
+	char num[8];
+	getdata(t_lines - 1, 0, "首篇文章编号: ", num, sizeof(num), DOECHO, YEA);
+	*min = base32_to_pid(num);
+	if (!*min) {
+		move(t_lines - 1, 50);
+		prints("错误编号...");
+		egetch();
+		return false;
+	}
+
+	getdata(t_lines - 1, 25, "末篇文章编号: ", num, sizeof(num), DOECHO, YEA);
+	*max = base32_to_pid(num);
+	if (*max < *min) {
+		move(t_lines - 1, 50);
+		prints("错误区间...");
+		egetch();
+		return false;
+	}
+	return true;
+}
+
 static int tui_delete_posts_in_range(slide_list_t *p)
 {
 	if (!am_curr_bm())
@@ -705,24 +728,9 @@ static int tui_delete_posts_in_range(slide_list_t *p)
 	if (l->type != POST_LIST_NORMAL)
 		return DONOTHING;
 
-	char num[8];
-	getdata(t_lines - 1, 0, "首篇文章编号: ", num, sizeof(num), DOECHO, YEA);
-	post_id_t min = base32_to_pid(num);
-	if (!min) {
-		move(t_lines - 1, 50);
-		prints("错误编号...");
-		egetch();
+	post_id_t min = 0, max = 0;
+	if (!tui_input_range(&min, &max))
 		return MINIUPDATE;
-	}
-
-	getdata(t_lines - 1, 25, "末篇文章编号: ", num, sizeof(num), DOECHO, YEA);
-	post_id_t max = base32_to_pid(num);
-	if (max < min) {
-		move(t_lines - 1, 50);
-		prints("错误区间...");
-		egetch();
-		return MINIUPDATE;
-	}
 
 	move(t_lines - 1, 50);
 	if (askyn("确定删除", NA, NA)) {
@@ -739,6 +747,108 @@ static int tui_delete_posts_in_range(slide_list_t *p)
 	clrtoeol();
 	prints("放弃删除...");
 	egetch();
+	return MINIUPDATE;
+}
+
+static bool count_posts_in_range(post_id_t min, post_id_t max, bool asc,
+		int sort, int least, char *file, size_t size)
+{
+	query_builder_t *b = query_builder_new(0);
+	b->append(b, "SELECT");
+	b->append(b, "uname, COUNT(*) AS a, SUM(marked::integer) AS m");
+	b->append(b, ", SUM(digest::integer) AS g, SUM(water::integer) AS w, ");
+	b->append(b, "SUM((NOT marked AND NOT digest AND NOT water)::integer) as n");
+	b->sappend(b, "FROM", "posts");
+	b->sappend(b, "WHERE", "id >= %"DBIdPID, min);
+	b->sappend(b, "AND", "id <= %"DBIdPID, max);
+	b->sappend(b, "GROUP BY", "uname");
+
+	const char *field[] = { "a", "m", "g", "w", "n" };
+	b->sappend(b, "ORDER BY", field[sort]);
+	b->append(b, asc ? "ASC" : "DESC");
+
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
+
+	if (res) {
+		snprintf(file, sizeof(file), "tmp/count.%d", getpid());
+		FILE *fp = fopen(file, "w");
+		if (fp) {
+			fprintf(fp, "版    面: \033[1;33m%s\033[m\n", currboard);
+
+			int count = 0;
+			for (int i = db_res_rows(res) - 1; i >=0; --i) {
+				count += db_get_bigint(res, i, 1);
+			}
+			char min_str[PID_BUF_LEN], max_str[PID_BUF_LEN];
+			fprintf(fp, "有效篇数: \033[1;33m%d\033[m 篇"
+					" [\033[1;33m%s-%s\033[m]\n", count,
+					pid_to_base32(min, min_str, sizeof(min_str)),
+					pid_to_base32(max, max_str, sizeof(max_str)));
+			
+			const char *descr[] = {
+				"总数", "被m的", "被g的", "被w的", "无标记"
+			};
+			fprintf(fp, "排序方式: \033[1;33m按%s%s\033[m\n", descr[sort],
+					asc ? "升序" : "降序");
+			fprintf(fp, "文章数下限: \033[1;33m%d\033[m\n\n", least);
+			fprintf(fp, "\033[1;44;37m 使用者代号  │总  数│ 被M的│ 被G的"
+					"│ 被w的│无标记 \033[m\n");
+
+			for (int i = 0; i < db_res_rows(res); ++i) {
+				int all = db_get_bigint(res, i, 1);
+				if (all > least) {
+					int m = db_get_bigint(res, i, 2);
+					int g = db_get_bigint(res, i, 3);
+					int w = db_get_bigint(res, i, 4);
+					int n = db_get_bigint(res, i, 5);
+					fprintf(fp, " %-12.12s  %6d  %6d  %6d  %6d  %6d \n",
+							db_get_value(res, i, 0), all, m, g, w, n);
+				}
+			}
+			fclose(fp);
+			db_clear(res);
+			return true;
+		}
+		db_clear(res);
+	}
+	return false;
+}
+
+static int tui_count_posts_in_range(post_list_type_e type)
+{
+	if (type != POST_LIST_NORMAL || !am_curr_bm())
+		return DONOTHING;
+
+	post_id_t min = 0, max = 0;
+	if (!tui_input_range(&min, &max))
+		return MINIUPDATE;
+
+	char num[8];
+	getdata(t_lines - 1, 0, "排序方式 (0)降序 (1)升序 ? : ", num, 2, DOECHO, YEA);
+	bool asc = (num[0] == '1');
+
+	getdata(t_lines - 1, 0, "排序选项 (0)总数 (1)被m (2)被g (3)被w (4)无标记 ? : ",
+			num, 2, DOECHO, YEA);
+	int sort = strtol(num, NULL, 10);
+	if (sort < 0 || sort > 4)
+		sort = 0;
+
+	getdata(t_lines - 1, 0, "文章数下限(默认0): ", num, 6, DOECHO, YEA);
+	int least = strtol(num, NULL, 10);
+
+	char file[HOMELEN];
+	if (!count_posts_in_range(min, max, asc, sort, least, file, sizeof(file)))
+		return MINIUPDATE;
+
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	char min_str[PID_BUF_LEN], max_str[PID_BUF_LEN];
+	snprintf(gbk_title, sizeof(gbk_title), "[%s]统计文章数(%s-%s)",
+			currboard, pid_to_base32(min, min_str, sizeof(min_str)),
+			pid_to_base32(max, max_str, sizeof(max_str)));
+	mail_file(file, currentuser.userid, gbk_title);
+	unlink(file);
+
 	return MINIUPDATE;
 }
 
@@ -958,6 +1068,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_import_post(ip);
 		case 'D':
 			return tui_delete_posts_in_range(p);
+		case 'C':
+			return tui_count_posts_in_range(l->type);
 		case '.':
 			return post_list_deleted(l->filter.bid, l->type);
 		case 'J':

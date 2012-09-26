@@ -15,7 +15,7 @@ typedef int64_t post_id_t;
 #define POST_ID_MAX  INT64_MAX
 #define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
 enum {
-	PID_BUF_LEN = (sizeof(post_id_t) + 4) / 5 + 1,
+	PID_BUF_LEN = (sizeof(post_id_t) * 8 + 4) / 5 + 1,
 };
 
 #define POST_LIST_FIELDS  \
