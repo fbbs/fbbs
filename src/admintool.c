@@ -11,7 +11,6 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-extern int cmpbnames();
 extern void rebuild_brdshm();
 int showperminfo(int, int);
 char cexplain[STRLEN];

@@ -86,7 +86,6 @@ int lock();
 extern int x_lockscreen();
 extern time_t login_start_time;
 extern char BoardName[];
-extern int cmpbnames();
 extern char fromhost[];
 
 //  取得用户ID为userid的用户信息,保存在currentuser中
@@ -2592,14 +2591,6 @@ int Welcome() {
 	}
 	clear();
 	return 0;
-}
-
-//      将bname与brec->filename进行大小为sizeof(brec->filename)的比较
-int cmpbnames(char *bname, struct fileheader *brec) {
-	if (!strncasecmp(bname, brec->filename, sizeof (brec->filename)))
-		return 1;
-	else
-		return 0;
 }
 
 void canceltotrash(char *path, char *userid, struct fileheader *fh,
