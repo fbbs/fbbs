@@ -641,7 +641,6 @@ static int tui_new_post(int bid, post_info_t *ip)
 		.cp = NULL,
 	};
 
-//	save_gid = postfile.gid;
 	post_id_t pid = publish_post(&req);
 	if (pid) {
 		brc_mark_as_read(pid);

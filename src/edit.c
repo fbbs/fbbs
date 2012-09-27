@@ -855,50 +855,9 @@ int read_file(char *filename) {
 	return 0;
 }
 
-int save_gid;
 char save_title[STRLEN];
 //char    save_filename[4096];
 int in_mail;
-
-static bool normal_board(const board_t *bp)
-{
-	if (streq(bp->name, DEFAULTBOARD))
-		return true;
-	if (bp->flag & BOARD_NOZAP_FLAG)
-		return true;
-	if ((bp->flag & BOARD_POST_FLAG) || bp->perm)
-		return false;
-	return true;
-}
-
-void write_posts() {
-	char *ptr;
-	time_t now;
-	struct { //与 BBS2WWW 经常出错相关的地方
-		char author[IDLEN + 1];
-		char board[18];
-		char title[62];
-		int gid;
-		time_t date;
-		int number;
-	} postlog;
-	char buf[255];
-	if (is_junk_board(currbp) || !normal_board(currbp))
-		return;
-	now = time(0);
-	strcpy(postlog.author, currentuser.userid);
-	strcpy(postlog.board, currboard);
-	ptr = save_title;
-	if (!strncmp(ptr, "Re: ", 4))
-		ptr += 4;
-	ansi_filter(buf, ptr);
-	strlcpy(postlog.title, buf, 40);
-	postlog.title[40] = '\0';
-	postlog.date = now;
-	postlog.number = 1;
-	postlog.gid = save_gid;
-	append_record("tmp/.post", &postlog, sizeof(postlog));
-}
 
 void write_header(FILE *fp, int mode)
 {
@@ -928,9 +887,6 @@ void write_header(FILE *fp, int mode)
 	if (in_mail)
 		fprintf(fp, "寄信人: %s (%s)\n", uid, uname);
 	else {
-		if (mode == 0 && !(noname && header.anonymous)) {
-			write_posts();
-		}
 		fprintf(fp, "发信人: %s (%s), 信区: %s\n",
 				(noname && header.anonymous) ? ANONYMOUS_ACCOUNT : uid,
 				(noname && header.anonymous) ? ANONYMOUS_NICK : uname, currboard);
