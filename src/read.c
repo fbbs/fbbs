@@ -217,9 +217,8 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		case 'q':
 		case 'e':
 		case KEY_LEFT:
-		//if ( digestmode )
-		if( digestmode && session.status != ST_RMAIL ) //chenhao
-		return acction_mode(0, NULL, NULL);
+		if( digestmode && session.status != ST_RMAIL)
+			;
 		else
 		return DOQUIT;
 		case Ctrl('L'):
@@ -548,7 +547,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 				last_line+=notice_lastline;
 #endif
 				if (last_line == 0 && digestmode > 0) {
-					acction_mode(0, NULL, direct);
+					;
 				}
 				if (mode == NEWDIRECT) {
 					num = last_line - screen_len + 1;

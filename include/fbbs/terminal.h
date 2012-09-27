@@ -161,11 +161,9 @@ bool garbage_line(const char *str);
 int Q_Goodbye(void);
 int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 		int response);
-int acction_mode(int ent, struct fileheader *fileinfo, const char *direct);
 void Add_Combine(char *board, struct fileheader *fileinfo, int has_cite);
 void add_crossinfo(const char *filepath, bool post);
 int AddNameList(const char *name);
-int marked_all(int type);
 int post_article(char *postboard, char *mailid);
 void write_header(FILE *fp, int mode);
 int outgo_post(struct fileheader *fh, char *board);
