@@ -388,6 +388,47 @@ static int jump_to_thread_next(slide_list_t *p)
 	return relocate_to_filter(p, &filter, false);
 }
 
+static int read_post(post_list_t *l, post_info_t *ip);
+
+static int jump_to_thread_first_unread(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	post_info_t *ip = l->index[p->cur];
+
+	if (l->type != POST_LIST_NORMAL)
+		return DONOTHING;
+
+	post_filter_t filter = {
+		.bid = l->filter.bid, .tid = ip->tid, .min = brc_first_unread()
+	};
+
+	const int limit = 40;
+	bool end = false;
+	while (!end) {
+		query_builder_t *b = build_post_query(&filter, true, limit);
+		db_res_t *res = b->query(b);
+		query_builder_free(b);
+
+		int rows = db_res_rows(res);
+		for (int i = 0; i < rows; ++i) {
+			post_id_t id = db_get_post_id(res, i, 0);
+			if (brc_unread(id)) {
+				post_info_t info;
+				res_to_post_info(res, i, &info);
+				read_post(l, &info);
+				db_clear(res);
+				return FULLUPDATE;
+			}
+		}
+		if (rows < limit)
+			end = true;
+		if (rows > 0)
+			filter.min = db_get_post_id(res, rows - 1, 0) + 1;
+		db_clear(res);
+	}
+	return PARTUPDATE;
+}
+
 static int skip_post(slide_list_t *p, post_id_t pid)
 {
 	brc_mark_as_read(pid);
@@ -1085,6 +1126,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return jump_to_thread_prev(p);
 		case ']':
 			return jump_to_thread_next(p);
+		case 'n':
+			return jump_to_thread_first_unread(p);
 		case 'K':
 			return skip_post(p, ip->id);
 		case 'c':

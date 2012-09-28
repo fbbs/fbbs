@@ -135,7 +135,7 @@ extern int _load_sticky_posts(int bid, post_info_t **posts);
 extern bool is_deleted(post_list_type_e type);
 extern const char *post_table_name(bool deleted);
 extern void build_post_filter(query_builder_t *b, post_filter_t *f);
-extern query_builder_t *build_post_query(post_filter_t *filter, bool asc, int limit);
+extern query_builder_t *build_post_query(const post_filter_t *filter, bool asc, int limit);
 extern void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p);
 extern void free_post_info_full(post_info_full_t *p);
 

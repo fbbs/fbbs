@@ -581,7 +581,8 @@ static const char *post_table_index(bool deleted)
 		return "id";
 }
 
-query_builder_t *build_post_query(post_filter_t *filter, bool asc, int limit)
+query_builder_t *build_post_query(const post_filter_t *filter, bool asc,
+		int limit)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->append(b, "SELECT")->append(b, post_list_fields(filter->deleted));
