@@ -104,10 +104,6 @@ int mmap_close(mmap_t *m)
  */
 int mmap_truncate(mmap_t *m, size_t size)
 {
-	if (size < 0) {
-		mmap_close(m);
-		return -1;
-	}
 	if (size > m->msize)
 		munmap(m->ptr, m->size);
 	if (restart_ftruncate(m->fd, size) < 0) {
