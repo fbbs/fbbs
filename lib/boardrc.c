@@ -177,6 +177,13 @@ bool brc_unread_legacy(const char *filename)
 	return brc_unread(strtol(filename + 2, NULL, 10));
 }
 
+int brc_first_unread(void)
+{
+	if (brc_num > 0 && brc_num <= BRC_MAXNUM)
+		return brc_list[brc_num - 1] + 1;
+	return 1;
+}
+
 void brc_clear(int64_t id)
 {
 	for (int i = id - BRC_MAXNUM + 1; i <= id; ++i)
