@@ -70,8 +70,6 @@ int thread_down();
 int deny_user();
 int club_user();
 int show_author();
-int SR_first_new();
-int SR_last();
 int SR_first();
 int SR_read();
 int SR_read();
@@ -2096,9 +2094,6 @@ struct one_key read_comms[] = {
 		{'?', t_search_up},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
-		{Ctrl('N'), SR_first_new},
-		{'n', SR_first_new},
-		{'\\', SR_last},
 		{Ctrl('S'), SR_read},
 		{'p', SR_read},
 		{Ctrl('U'), SR_author},

@@ -429,6 +429,27 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 	return PARTUPDATE;
 }
 
+static int jump_to_thread_last(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	post_info_t *ip = l->index[p->cur];
+
+	post_filter_t filter = {
+		.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
+	};
+
+	query_builder_t *b = build_post_query(&filter, false, 1);
+	db_res_t *res = b->query(b);
+	if (res && db_res_rows(res) > 0) {
+		post_info_t info;
+		res_to_post_info(res, 0, &info);
+		read_post(l, &info);
+		db_clear(res);
+		return FULLUPDATE;
+	}
+	return DONOTHING;
+}
+
 static int skip_post(slide_list_t *p, post_id_t pid)
 {
 	brc_mark_as_read(pid);
@@ -1126,8 +1147,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return jump_to_thread_prev(p);
 		case ']':
 			return jump_to_thread_next(p);
-		case 'n':
+		case 'n': case Ctrl('N'):
 			return jump_to_thread_first_unread(p);
+		case '\\':
+			return jump_to_thread_last(p);
 		case 'K':
 			return skip_post(p, ip->id);
 		case 'c':
