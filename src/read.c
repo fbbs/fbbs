@@ -424,10 +424,9 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 				clear();
 				break;
 			default:
-				getdata(t_lines - 1, 0, "本版新成立 (P)发表文章 (Q)离开？[Q] ",
-						genbuf, 4, DOECHO, YEA);
-				if (genbuf[0] == 'p' || genbuf[0] == 'P')
-					do_post();
+//				getdata(t_lines - 1, 0, "本版新成立 (P)发表文章 (Q)离开？[Q] ",
+//						genbuf, 4, DOECHO, YEA);
+				break;
 		}
 		free(pnt);
 		return;

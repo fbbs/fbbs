@@ -354,6 +354,29 @@ static int tui_search_author(slide_list_t *p, bool upward)
 	return relocate_to_author(p, uid, upward);
 }
 
+static int tui_search_title(slide_list_t *p, bool upward)
+{
+	post_list_t *l = p->data;
+
+	char prompt[80];
+	static GBK_BUFFER(title, POST_TITLE_CCHARS) = "";
+	snprintf(prompt, sizeof(prompt), "向%s搜索标题[%s]: ",
+			upward ? "上" : "下", gbk_title);
+
+	GBK_BUFFER(ans, POST_TITLE_CCHARS);
+	getdata(t_lines - 1, 0, prompt, gbk_ans, sizeof(gbk_ans), DOECHO, YEA);
+
+	if (*gbk_ans != '\0')
+		strlcpy(gbk_title, gbk_ans, sizeof(gbk_title));
+
+	if (!*gbk_title != '\0')
+		return MINIUPDATE;
+
+	post_filter_t filter = { .bid = l->type };
+	convert_g2u(gbk_title, filter.utf8_keyword);
+	return relocate_to_filter(p, &filter, upward);
+}
+
 static int jump_to_thread_first(slide_list_t *p)
 {
 	post_list_t *l = p->data;
@@ -1141,6 +1164,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_search_author(p, false);
 		case 'A':
 			return tui_search_author(p, true);
+		case '/':
+			return tui_search_title(p, false);
+		case '?':
+			return tui_search_title(p, true);
 		case '=':
 			return jump_to_thread_first(p);
 		case '[':

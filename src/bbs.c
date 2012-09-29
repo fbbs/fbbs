@@ -61,8 +61,6 @@ int thesis_mode();
 /*For read.c*/
 int auth_search_down();
 int auth_search_up();
-int t_search_down();
-int t_search_up();
 int post_search_down();
 int post_search_up();
 int thread_up();
@@ -936,15 +934,6 @@ static void getcross(const char *filepath, int mode)
 	*quote_file = '\0';
 }
 
-//发文动作
-int do_post(void)
-{
-	*quote_file = '\0';
-	*quote_user = '\0';
-	local_article = YEA;
-//	return post_article(currboard, (char *) NULL);
-}
-
 int show_file_info(int ent, struct fileheader *fileinfo, char *direct)
 {
 	char weblink[256], tmp[80], type[20], filepath[STRLEN];
@@ -1127,45 +1116,6 @@ time_t en_gettime(char *str) {
 	tms.tm_year = atoi(str) - 1900;
 	return mktime(&tms);
 }
-
-time_t cn_gettime(char *str) {
-	struct tm tms;
-	char *cval = str;
-
-	tms.tm_isdst = 0;
-	while (*str) {
-		if (!isdigit(*str)) {
-			if (!strncmp(str, "年", 2)) {
-				*str = '\0';
-				tms.tm_year = atoi(cval) - 1900;
-				str += 2;
-			} else if (!strncmp(str, "月", 2)) {
-				*str = '\0';
-				tms.tm_mon = atoi(cval) - 1;
-				str += 2;
-			} else if (!strncmp(str, "日", 2)) {
-				*str = '\0';
-				tms.tm_mday = atoi(cval);
-				str += 2;
-			} else if (*str == ':') {
-				*str = '\0';
-				tms.tm_hour = atoi(str - 2);
-				str += 3;
-				*str = '\0';
-				tms.tm_min = atoi(str - 2);
-				str += 3;
-				*str = '\0';
-				tms.tm_sec = atoi(str - 2);
-				str++;
-			} else
-				str++;
-			cval = str;
-		} else
-			str++;
-	}
-	return mktime(&tms);
-}
-
 
 static int undelcheck(void *fh1, void *fh2)
 {
@@ -2088,10 +2038,7 @@ struct one_key read_comms[] = {
 		{',', read_attach},
 		{'s', do_select},
 		{Ctrl('C'), do_cross},
-		{Ctrl('P'), do_post},
 		{Ctrl ('R'), post_reply},
-		{'/', t_search_down},
-		{'?', t_search_up},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
 		{Ctrl('S'), SR_read},

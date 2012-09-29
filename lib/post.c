@@ -542,7 +542,7 @@ static const char *post_filter(post_list_type_e type)
 	}
 }
 
-void build_post_filter(query_builder_t *b, post_filter_t *f)
+void build_post_filter(query_builder_t *b, const post_filter_t *f)
 {
 	b->append(b, "WHERE TRUE");
 	if (f->bid)
