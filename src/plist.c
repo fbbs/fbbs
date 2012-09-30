@@ -1,6 +1,8 @@
 #include "bbs.h"
 #include "fbbs/brc.h"
+#include "fbbs/fileio.h"
 #include "fbbs/friend.h"
+#include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
@@ -170,10 +172,12 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 
 static int toggle_post_lock(int bid, post_info_t *ip)
 {
+	bool deleted = ip->flag & POST_FLAG_DELETED;
 	bool locked = ip->flag & POST_FLAG_LOCKED;
 	if (am_curr_bm() || (session.id == ip->uid && !locked)) {
-		if (set_post_flag_unchecked(bid, ip->id, "locked", !locked)) {
-			set_post_flag(ip, POST_FLAG_LOCKED, !locked);
+		post_filter_t filter = { .bid = bid, .min = ip->id, .max = ip->id };
+		if (set_post_flag(&filter, "locked", deleted, !locked, false)) {
+			set_post_flag_local(ip, POST_FLAG_LOCKED, !locked);
 			return PARTUPDATE;
 		}
 	}
@@ -182,6 +186,9 @@ static int toggle_post_lock(int bid, post_info_t *ip)
 
 static int toggle_post_stickiness(int bid, post_info_t *ip, post_list_t *l)
 {
+	if (is_deleted(l->type))
+		return DONOTHING;
+
 	bool sticky = ip->flag & POST_FLAG_STICKY;
 	if (am_curr_bm() && sticky_post_unchecked(bid, ip->id, !sticky)) {
 		l->sreload = l->reload = true;
@@ -193,10 +200,12 @@ static int toggle_post_stickiness(int bid, post_info_t *ip, post_list_t *l)
 static int toggle_post_flag(int bid, post_info_t *ip, post_flag_e flag,
 		const char *field)
 {
+	bool deleted = ip->flag & POST_FLAG_DELETED;
 	bool set = ip->flag & flag;
 	if (am_curr_bm()) {
-		if (set_post_flag_unchecked(bid, ip->id, field, !set)) {
-			set_post_flag(ip, flag, !set);
+		post_filter_t filter = { .bid = bid, .min = ip->id, .max = ip->id };
+		if (set_post_flag(&filter, field, deleted, !set, false)) {
+			set_post_flag_local(ip, flag, !set);
 			return PARTUPDATE;
 		}
 	}
@@ -1101,6 +1110,194 @@ static int read_post(post_list_t *l, post_info_t *ip)
 	return FULLUPDATE;
 }
 
+static void construct_prompt(char *s, size_t size, const char **options,
+		size_t len)
+{
+	char *p = s;
+	strappend(&p, &size, "区段:");
+	for (int i = 0; i < len; ++i) {
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%d)%s", i + 1, options[i]);
+		strappend(&p, &size, buf);
+	}
+	strappend(&p, &size, "[0]:");
+}
+
+#if 0
+		clear();
+		prints("\n\n您将进行区段转载。转载范围是：[%d -- %d]\n", num1, num2);
+		prints("当前版面是：[ %s ] \n", currboard);
+		board_complete(6, "请输入要转贴的讨论区名称: ", bname, sizeof(bname),
+				AC_LIST_BOARDS_ONLY);
+		if (!*bname)
+			return FULLUPDATE;
+
+		if (!strcmp(bname, currboard)&&session.status != ST_RMAIL) {
+			prints("\n\n对不起，本文就在您要转载的版面上，所以无需转载。\n");
+			pressreturn();
+			clear();
+			return FULLUPDATE;
+		}
+		if (askyn("确定要转载吗", NA, NA)==NA)
+			return FULLUPDATE;
+			case 4:
+				break;
+			case 5:
+				break;
+			default:
+				break;
+		}
+
+	return DIRCHANGED;
+}
+#endif
+
+extern int import_file(const char *title, const char *file, const char *path);
+
+static int import_posts(bool deleted, post_filter_t *filter, const char *path)
+{
+	query_builder_t *b = query_builder_new(0);
+	b->sappend(b, "UPDATE", post_table_name(deleted));
+	b->sappend(b, "SET", "imported = TRUE");
+	build_post_filter(b, filter);
+	b->sappend(b, "RETURNING", "title, content");
+
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
+
+	if (res) {
+		int rows = db_res_rows(res);
+		for (int i = 0; i < rows; ++i) {
+			GBK_BUFFER(title, POST_TITLE_CCHARS);
+			convert_u2g(db_get_value(res, i, 0), gbk_title);
+
+			char file[HOMELEN];
+			dump_content_to_gbk_file(db_get_value(res, i, 1),
+					db_get_length(res, i, 1), file, sizeof(file));
+
+			import_file(gbk_title, file, path);
+		}
+		db_clear(res);
+		return rows;
+	}
+	return 0;
+}
+
+static int tui_import_posts(bool deleted, post_filter_t *filter)
+{
+	if (DEFINE(DEF_MULTANNPATH) && !!set_ann_path(NULL, NULL, ANNPATH_GETMODE))
+		return FULLUPDATE;
+
+	char annpath[256];
+	sethomefile(annpath, currentuser.userid, ".announcepath");
+
+	FILE *fp = fopen(annpath, "r");
+	if (!fp) {
+		presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.",
+				t_lines - 1);
+		return MINIUPDATE;
+	}
+
+	fscanf(fp, "%s", annpath);
+	fclose(fp);
+
+	if (!dashd(annpath)) {
+		presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.", t_lines - 1);
+		return MINIUPDATE;
+	}
+
+	import_posts(deleted, filter, annpath);
+	return PARTUPDATE;
+}
+
+static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
+		post_id_t max)
+{
+	bool deleted = is_deleted(l->type);
+	post_filter_t filter = { .bid = l->filter.bid, .min = min, .max = max };
+	int ret = PARTUPDATE;
+	switch (choice) {
+		case 0:
+			set_post_flag(&filter, "marked", deleted, true, true);
+			break;
+		case 1:
+			set_post_flag(&filter, "digest", deleted, true, true);
+			break;
+		case 2:
+			set_post_flag(&filter, "locked", deleted, true, true);
+			break;
+		case 3:
+			delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
+			break;
+		case 4:
+			ret = tui_import_posts(is_deleted(l->type), &filter);
+			break;
+		case 5:
+			set_post_flag(&filter, "water", deleted, true, true);
+			break;
+		case 6:
+			break;
+		default:
+			if (deleted) {
+				undelete_posts(&filter, l->type == POST_LIST_TRASH);
+			} else {
+				filter.flag |= POST_FLAG_WATER;
+				delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
+			}
+			break;
+	}
+
+	switch (choice) {
+		case 3:
+			bm_log(currentuser.userid, currboard, BMLOG_RANGEDEL, 1);
+			break;
+		case 4:
+			bm_log(currentuser.userid, currboard, BMLOG_RANGEANN, 1);
+			break;
+		default:
+			bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
+			break;
+	}
+	l->reload = true;
+	return ret;
+}
+
+static int tui_operate_posts_in_range(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+
+	if (!am_curr_bm())
+		return DONOTHING;
+
+	bool trash = l->type == POST_LIST_TRASH || l->type == POST_LIST_JUNK;
+	const char *option8 = trash ? "恢复" : "删水文";
+	const char *options[] = {
+		"保留",  "文摘", "不可RE", "删除",
+		"精华区", "水文", "转载", option8,
+	};
+
+	char prompt[120], ans[8];
+	construct_prompt(prompt, sizeof(prompt), options, NELEMS(options));
+	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+
+	int choice = *ans - '1';
+	if (choice < 0 || choice >= NELEMS(options))
+		return MINIUPDATE;
+
+	post_id_t min, max;
+	if (!tui_input_range(&min, &max))
+		return MINIUPDATE;
+
+	char min_str[PID_BUF_LEN], max_str[PID_BUF_LEN];
+	snprintf(prompt, sizeof(prompt), "区段[%s]操作范围 [ %s -- %s ]，确定吗",
+			options[choice], pid_to_base32(min, min_str, sizeof(min_str)),
+			pid_to_base32(min, max_str, sizeof(max_str)));
+	if (!askyn(prompt, NA, YEA))
+		return MINIUPDATE;
+
+	return operate_posts_in_range(choice, l, min, max);
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -1152,6 +1349,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_import_post(ip);
 		case 'D':
 			return tui_delete_posts_in_range(p);
+		case 'L':
+			return tui_operate_posts_in_range(p);
 		case 'C':
 			return tui_count_posts_in_range(l->type);
 		case '.':

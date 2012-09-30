@@ -77,7 +77,6 @@ int Q_Goodbye();
 int show_online_followings(void);
 int b_notes_passwd();
 int post_cross(char islocal, int mod);
-int BM_range();
 int lock();
 extern int x_lockscreen();
 extern time_t login_start_time;
@@ -2045,7 +2044,6 @@ struct one_key read_comms[] = {
 		{'p', SR_read},
 		{Ctrl('U'), SR_author},
 		{'b', SR_BMfunc},
-		{'L', BM_range},
 		{'*', show_file_info},
 		{'\0', NULL}
 };

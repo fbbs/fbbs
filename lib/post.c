@@ -430,13 +430,21 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 	}
 }
 
-bool set_post_flag_unchecked(int bid, post_id_t pid, const char *field,
-		bool on)
+int set_post_flag(post_filter_t *filter, const char *field, bool deleted,
+		bool set, bool toggle)
 {
-	char query[80];
-	snprintf(query, sizeof(query), "UPDATE posts SET %s = %%b"
-			" WHERE board = %%d AND id = %%"DBIdPID, field);
-	db_res_t *res = db_cmd(query, on, bid, pid);
+	query_builder_t *b = query_builder_new(0);
+	b->sappend(b, "UPDATE", post_table_name(deleted));
+	b->sappend(b, "SET", field);
+	if (toggle)
+		b->sappend(b, "= NOT", field);
+	else
+		b->append(b, "= %b", set);
+	build_post_filter(b, filter);
+
+	db_res_t *res = b->cmd(b);
+	query_builder_free(b);
+
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
 	return rows;
@@ -458,7 +466,9 @@ bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
 		if (count >= MAX_NOTICE)
 			return false;
 	}
-	return set_post_flag_unchecked(bid, pid, "sticky", sticky);
+
+	post_filter_t filter = { .bid = bid, .min = pid, .max = pid };
+	return set_post_flag(&filter, "sticky", false, sticky, false);
 }
 
 void res_to_post_info(db_res_t *r, int i, post_info_t *p)
@@ -482,7 +492,7 @@ void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 	strlcpy(p->utf8_title, db_get_value(r, i, 14), sizeof(p->utf8_title));
 }
 
-void set_post_flag(post_info_t *ip, post_flag_e flag, bool set)
+void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set)
 {
 	if (set)
 		ip->flag |= flag;
@@ -501,7 +511,7 @@ int _load_sticky_posts(int bid, post_info_t **posts)
 		int count = db_res_rows(r);
 		for (int i = 0; i < count; ++i) {
 			res_to_post_info(r, i, *posts + i);
-			set_post_flag(*posts + i, POST_FLAG_STICKY, true);
+			set_post_flag_local(*posts + i, POST_FLAG_STICKY, true);
 		}
 		db_clear(r);
 		return count;

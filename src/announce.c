@@ -354,27 +354,9 @@ int a_Save2(char *path, char* key, struct fileheader* fileinfo, int nomsg) {
 	return FULLUPDATE;
 }
 
-int a_Import(const char *title, const char *file, int nomsg)
+int import_file(const char *title, const char *file, const char *path)
 {
-	set_user_status(ST_DIGEST);
-
-	char buf[256];
-	sethomefile(buf, currentuser.userid, ".announcepath");
-
-	FILE *fp = fopen(buf, "r");
-	if (!fp) {
-		presskeyfor("对不起, 您没有设定丝路. 请先设定丝路.", t_lines - 1);
-		return DONOTHING;
-	}
-	fscanf(fp, "%s", buf);
-	fclose(fp);
-
-	if (!dashd(buf)) {
-		presskeyfor("您设定的丝路已丢失, 请重新设定.", t_lines - 1);
-		return DONOTHING;
-	}
-
-	MENU pm = { .path = buf, .mtitle = "", };
+	MENU pm = { .path = path, .mtitle = "", };
 
 	char currBM_bak[BM_LEN - 1];
 	memcpy(currBM_bak, currBM, BM_LEN - 1);
@@ -416,17 +398,41 @@ int a_Import(const char *title, const char *file, int nomsg)
 		f_cp(file, bname, 0);
 	}
 
-	if (!nomsg && !DEFINE(DEF_MULTANNPATH)) {
-		presskeyfor("已将该文章放进精华区, 请按<Enter>继续...", t_lines-1);
-	}
 
 	for (int i = 0; i < pm.num; ++i)
 		free(pm.item[i]);
 
 	bm_log(currentuser.userid, currboard, BMLOG_ANNOUNCE, 1);
+	char buf[STRLEN];
 	snprintf(buf, sizeof(buf), "%s %s收录 '%-20.20s..'\n", get_short_date(time(0)),
 			currentuser.userid, title);
 	file_append(ANN_LOG_PATH, buf);
+	return 0;
+}
+
+int a_Import(const char *title, const char *file, int nomsg)
+{
+	set_user_status(ST_DIGEST);
+
+	char buf[256];
+	sethomefile(buf, currentuser.userid, ".announcepath");
+
+	FILE *fp = fopen(buf, "r");
+	if (!fp) {
+		presskeyfor("对不起, 您没有设定丝路. 请先设定丝路.", t_lines - 1);
+		return DONOTHING;
+	}
+	fscanf(fp, "%s", buf);
+	fclose(fp);
+
+	if (!dashd(buf)) {
+		presskeyfor("您设定的丝路已丢失, 请重新设定.", t_lines - 1);
+		return DONOTHING;
+	}
+
+	if (!nomsg && !DEFINE(DEF_MULTANNPATH)) {
+		presskeyfor("已将该文章放进精华区, 请按<Enter>继续...", t_lines-1);
+	}
 	return FULLUPDATE;
 }
 
