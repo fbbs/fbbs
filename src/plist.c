@@ -520,22 +520,15 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
-static bool dump_content(const post_info_t *ip, char *file, size_t size,
-		char *title, size_t tsize)
+static bool dump_content(const post_info_t *ip, char *file, size_t size)
 {
 	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
-			"title, content");
+			"content");
 	if (!res || db_res_rows(res) < 1)
 		return false;
 
-	int ret = dump_content_to_gbk_file(db_get_value(res, 0, 1),
-			db_get_length(res, 0, 1), file, sizeof(file));
-
-	if (title) {
-		GBK_BUFFER(title, POST_TITLE_CCHARS);
-		convert_u2g(db_get_value(res, 0, 0), gbk_title);
-		strlcpy(title, gbk_title, tsize);
-	}
+	int ret = dump_content_to_gbk_file(db_get_value(res, 0, 0),
+			db_get_length(res, 0, 0), file, sizeof(file));
 
 	db_clear(res);
 	return ret == 0;
@@ -544,10 +537,11 @@ static bool dump_content(const post_info_t *ip, char *file, size_t size,
 static int forward_post(const post_info_t *ip, bool uuencode)
 {
 	char file[HOMELEN];
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
-
-	if (!dump_content(ip, file, sizeof(file), gbk_title, sizeof(gbk_title)))
+	if (!dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
+
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	convert_u2g(ip->utf8_title, gbk_title);
 
 	tui_forward(file, gbk_title, uuencode);
 
@@ -558,7 +552,7 @@ static int forward_post(const post_info_t *ip, bool uuencode)
 static int reply_with_mail(const post_info_t *ip)
 {
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file), NULL, 0))
+	if (!dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -602,7 +596,7 @@ static int tui_edit_post_content(post_info_t *ip)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file), NULL, 0))
+	if (!dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	set_user_status(ST_EDIT);
@@ -700,7 +694,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	snprintf(file, sizeof(file), "tmp/editbuf.%d", getpid());
 	if (ip) {
 		char orig[HOMELEN];
-		dump_content(ip, orig, sizeof(orig), NULL, 0);
+		dump_content(ip, orig, sizeof(orig));
 		do_quote(orig, file, header.include_mode);
 		unlink(orig);
 	}
@@ -776,9 +770,11 @@ static int tui_save_post(const post_info_t *ip)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	if (!dump_content(ip, file, sizeof(file), gbk_title, sizeof(gbk_title)))
+	if (!dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
+
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	convert_u2g(ip->utf8_title, gbk_title);
 
 	a_Save(gbk_title, file, false, true);
 
@@ -795,9 +791,12 @@ static int tui_import_post(const post_info_t *ip)
 		return FULLUPDATE;
 
 	char file[HOMELEN];
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	if (dump_content(ip, file, sizeof(file), gbk_title, sizeof(gbk_title)))
+	if (dump_content(ip, file, sizeof(file))) {
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(ip->utf8_title, gbk_title);
+
 		a_Import(gbk_title, file, NA);
+	}
 
 	if (DEFINE(DEF_MULTANNPATH))
 		return FULLUPDATE;
@@ -1107,7 +1106,7 @@ static int read_post(post_list_t *l, post_info_t *ip)
 	brc_mark_as_read(ip->id);
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file), NULL, 0))
+	if (!dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	int ch = ansimore(file, false);
