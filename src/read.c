@@ -1505,7 +1505,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 				isnext = -1;
 				break;
 			case Ctrl('R'):
-				post_reply(0, &SR_fptr, (char *) NULL);
+//				post_reply(0, &SR_fptr, (char *) NULL);
 				break;
 			case 'g':
 				digest_post(0, &SR_fptr, currdirect);

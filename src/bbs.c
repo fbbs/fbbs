@@ -1027,10 +1027,9 @@ int show_file_info(int ent, struct fileheader *fileinfo, char *direct)
 	return FULLUPDATE;
 }
 
-int post_reply(int ent, struct fileheader *fileinfo, char *direct)
+int post_reply(const char *owner, const char *title, const char *file)
 {
 	char uid[STRLEN];
-	char title[STRLEN];
 
 	int status = session.status;
 
@@ -1052,8 +1051,8 @@ int post_reply(int ent, struct fileheader *fileinfo, char *direct)
 	set_user_status(ST_SMAIL);
 
 	// indicate the quote file/user
-	setbfile(quote_file, currboard, fileinfo->filename);
-	strcpy(quote_user, fileinfo->owner);
+	setbfile(quote_file, currboard, file);
+	strcpy(quote_user, owner);
 
 	if (!getuser(quote_user)) {
 		prints("对不起，该帐号已经不存在!\n");
@@ -1061,8 +1060,9 @@ int post_reply(int ent, struct fileheader *fileinfo, char *direct)
 	} else
 		strcpy(uid, quote_user);
 
-	sprintf(title, "%s%s", strncmp(fileinfo->title, "Re: ", 4) ? "Re: "
-			: "", fileinfo->title);
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	snprintf(gbk_title, sizeof(gbk_title), "%s%s",
+			strncmp(title, "Re: ", 4) ? "Re: " : "", title);
 
 	switch (do_send(uid, title)) {
 		case -1:
@@ -2037,7 +2037,6 @@ struct one_key read_comms[] = {
 		{',', read_attach},
 		{'s', do_select},
 		{Ctrl('C'), do_cross},
-		{Ctrl ('R'), post_reply},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
 		{Ctrl('S'), SR_read},

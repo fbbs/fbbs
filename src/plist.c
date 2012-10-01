@@ -541,7 +541,7 @@ static bool dump_content(const post_info_t *ip, char *file, size_t size,
 	return ret == 0;
 }
 
-static int forward_post(post_info_t *ip, bool uuencode)
+static int forward_post(const post_info_t *ip, bool uuencode)
 {
 	char file[HOMELEN];
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -550,6 +550,21 @@ static int forward_post(post_info_t *ip, bool uuencode)
 		return DONOTHING;
 
 	tui_forward(file, gbk_title, uuencode);
+
+	unlink(file);
+	return FULLUPDATE;
+}
+
+static int reply_with_mail(const post_info_t *ip)
+{
+	char file[HOMELEN];
+	if (!dump_content(ip, file, sizeof(file), NULL, 0))
+		return DONOTHING;
+
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	convert_u2g(ip->utf8_title, gbk_title);
+
+	post_reply(ip->owner, gbk_title, file);
 
 	unlink(file);
 	return FULLUPDATE;
@@ -1393,6 +1408,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return forward_post(ip, false);
 		case 'U':
 			return forward_post(ip, true);
+		case Ctrl('R'):
+			return reply_with_mail(ip);
 		case 't':
 			return thesis_mode();
 		case '!':

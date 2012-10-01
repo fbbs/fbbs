@@ -128,7 +128,7 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct);
 int m_send(const char *userid);
 void new_register(void);
 int post_header(struct postheader *header);
-int post_reply(int ent, struct fileheader *fileinfo, char *direct);
+int post_reply(const char *owner, const char *title, const char *file);
 void Poststring(char *str, char *nboard, char *posttitle, int mode);
 char *setbdir(char *buf, char *boardname);
 int domenu(const char *menu_name);
