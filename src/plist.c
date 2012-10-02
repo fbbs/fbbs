@@ -517,11 +517,12 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
-static bool dump_content(const post_info_t *ip, char *file, size_t size)
+static bool dump_content(const post_filter_t *fp, const post_info_t *ip,
+		char *file, size_t size)
 {
-	post_filter_t filter = {
-		.min = ip->id, .deleted = ip->flag & POST_FLAG_DELETED
-	};
+	post_filter_t filter = *fp;
+	filter.min = ip->id;
+
 	db_res_t *res = query_post_by_pid(&filter, "content");
 	if (!res || db_res_rows(res) < 1)
 		return false;
@@ -533,10 +534,11 @@ static bool dump_content(const post_info_t *ip, char *file, size_t size)
 	return ret == 0;
 }
 
-static int forward_post(const post_info_t *ip, bool uuencode)
+static int forward_post(const post_filter_t *fp, const post_info_t *ip,
+		bool uuencode)
 {
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(fp, ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -548,10 +550,10 @@ static int forward_post(const post_info_t *ip, bool uuencode)
 	return FULLUPDATE;
 }
 
-static int reply_with_mail(const post_info_t *ip)
+static int reply_with_mail(const post_filter_t *fp, const post_info_t *ip)
 {
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(fp, ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -589,13 +591,13 @@ static int tui_edit_post_title(post_info_t *ip)
 	return MINIUPDATE;
 }
 
-static int tui_edit_post_content(post_info_t *ip)
+static int tui_edit_post_content(const post_filter_t *fp, post_info_t *ip)
 {
 	if (ip->uid != session.uid && !am_curr_bm())
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(fp, ip, file, sizeof(file)))
 		return DONOTHING;
 
 	set_user_status(ST_EDIT);
@@ -620,7 +622,7 @@ static int tui_edit_post_content(post_info_t *ip)
 extern int show_board_notes(const char *bname, int command);
 extern int noreply;
 
-static int tui_new_post(int bid, post_info_t *ip)
+static int tui_new_post(post_filter_t *fp, post_info_t *ip)
 {
 	time_t now = time(NULL);
 	if (now - get_last_post_time() < 3) {
@@ -632,7 +634,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	}
 
 	board_t board;
-	if (!get_board_by_bid(bid, &board) ||
+	if (!get_board_by_bid(fp->bid, &board) ||
 			!has_post_perm(&currentuser, &board)) {
 		move(t_lines - 1, 0);
 		clrtoeol();
@@ -693,7 +695,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	snprintf(file, sizeof(file), "tmp/editbuf.%d", getpid());
 	if (ip) {
 		char orig[HOMELEN];
-		dump_content(ip, orig, sizeof(orig));
+		dump_content(fp, ip, orig, sizeof(orig));
 		do_quote(orig, file, header.include_mode);
 		unlink(orig);
 	}
@@ -763,13 +765,13 @@ static int tui_new_post(int bid, post_info_t *ip)
 	return FULLUPDATE;
 }
 
-static int tui_save_post(const post_info_t *ip)
+static int tui_save_post(const post_filter_t *fp, const post_info_t *ip)
 {
 	if (!am_curr_bm())
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(fp, ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -780,7 +782,7 @@ static int tui_save_post(const post_info_t *ip)
 	return MINIUPDATE;
 }
 
-static int tui_import_post(const post_info_t *ip)
+static int tui_import_post(const post_filter_t *fp, const post_info_t *ip)
 {
 	if (!HAS_PERM(PERM_BOARDS))
 		return DONOTHING;
@@ -790,7 +792,7 @@ static int tui_import_post(const post_info_t *ip)
 		return FULLUPDATE;
 
 	char file[HOMELEN];
-	if (dump_content(ip, file, sizeof(file))) {
+	if (dump_content(fp, ip, file, sizeof(file))) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(ip->utf8_title, gbk_title);
 
@@ -1105,7 +1107,7 @@ static int read_post(post_list_t *l, post_info_t *ip)
 	brc_mark_as_read(ip->id);
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(&l->filter, ip, file, sizeof(file)))
 		return DONOTHING;
 
 	int ch = ansimore(file, false);
@@ -1352,13 +1354,13 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'T':
 			return tui_edit_post_title(ip);
 		case 'E':
-			return tui_edit_post_content(ip);
+			return tui_edit_post_content(&l->filter, ip);
 		case Ctrl('P'):
-			return tui_new_post(l->filter.bid, ip);
+			return tui_new_post(&l->filter, ip);
 		case 'i':
-			return tui_save_post(ip);
+			return tui_save_post(&l->filter, ip);
 		case 'I':
-			return tui_import_post(ip);
+			return tui_import_post(&l->filter, ip);
 		case 'D':
 			return tui_delete_posts_in_range(p);
 		case 'L':
@@ -1402,11 +1404,11 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'Y':
 			return tui_undelete_single_post(l, ip);
 		case 'F':
-			return forward_post(ip, false);
+			return forward_post(&l->filter, ip, false);
 		case 'U':
-			return forward_post(ip, true);
+			return forward_post(&l->filter, ip, true);
 		case Ctrl('R'):
-			return reply_with_mail(ip);
+			return reply_with_mail(&l->filter, ip);
 		case 't':
 			return thesis_mode();
 		case '!':
