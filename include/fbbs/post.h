@@ -107,6 +107,7 @@ enum {
 
 typedef struct {
 	bool deleted;
+	post_list_type_e type;
 	int bid;
 	int flag;
 	user_id_t uid;

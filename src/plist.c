@@ -11,7 +11,6 @@
 #include "fbbs/tui_list.h"
 
 typedef struct {
-	post_list_type_e type;
 	post_filter_t filter;
 
 	bool relocate;
@@ -69,7 +68,7 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	if (l->type == POST_LIST_NORMAL && !l->sposts && l->sreload) {
+	if (l->filter.type == POST_LIST_NORMAL && !l->sposts && l->sreload) {
 		l->scount = _load_sticky_posts(l->filter.bid, &l->sposts);
 		l->sreload = false;
 	}
@@ -186,7 +185,7 @@ static int toggle_post_lock(int bid, post_info_t *ip)
 
 static int toggle_post_stickiness(int bid, post_info_t *ip, post_list_t *l)
 {
-	if (is_deleted(l->type))
+	if (is_deleted(l->filter.type))
 		return DONOTHING;
 
 	bool sticky = ip->flag & POST_FLAG_STICKY;
@@ -231,12 +230,12 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 	return FULLUPDATE;
 }
 
-static int post_list_with_filter(slide_list_base_e base, post_list_type_e type,
+static int post_list_with_filter(slide_list_base_e base,
 		post_filter_t *filter);
 
 static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 {
-	if (l->type != POST_LIST_NORMAL)
+	if (l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	char ans[3];
@@ -252,13 +251,11 @@ static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 		POST_LIST_DIGEST, POST_LIST_THREAD, POST_LIST_MARKED,
 		POST_LIST_TOPIC, POST_LIST_AUTHOR, POST_LIST_KEYWORD,
 	};
-
 	if (c < 0 || c >= NELEMS(types))
 		return MINIUPDATE;
-	post_list_type_e type = types[c];
 
-	post_filter_t filter = { .bid = l->filter.bid };
-	switch (type) {
+	post_filter_t filter = { .bid = l->filter.bid, .type = types[c] };
+	switch (filter.type) {
 		case POST_LIST_DIGEST:
 			filter.flag &= POST_FLAG_DIGEST;
 			break;
@@ -288,7 +285,7 @@ static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 			break;
 	}
 
-	post_list_with_filter(SLIDE_LIST_BOTTOMUP, type, &filter);
+	post_list_with_filter(SLIDE_LIST_BOTTOMUP, &filter);
 	l->reload = true;
 	return FULLUPDATE;
 }
@@ -381,7 +378,7 @@ static int tui_search_title(slide_list_t *p, bool upward)
 	if (!*gbk_title != '\0')
 		return MINIUPDATE;
 
-	post_filter_t filter = { .bid = l->type };
+	post_filter_t filter = { .type = l->filter.type, .bid = l->filter.bid };
 	convert_g2u(gbk_title, filter.utf8_keyword);
 	return relocate_to_filter(p, &filter, upward);
 }
@@ -427,7 +424,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 	post_list_t *l = p->data;
 	post_info_t *ip = l->index[p->cur];
 
-	if (l->type != POST_LIST_NORMAL)
+	if (l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	post_filter_t filter = {
@@ -508,11 +505,11 @@ static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 
 static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 {
-	if (p->type == POST_LIST_JUNK || p->type == POST_LIST_TRASH) {
+	if (is_deleted(p->filter.type)) {
 		post_filter_t f = {
 			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
 		};
-		if (undelete_posts(&f, p->type == POST_LIST_TRASH)) {
+		if (undelete_posts(&f, p->filter.type == POST_LIST_TRASH)) {
 			p->reload = true;
 			return PARTUPDATE;
 		}
@@ -834,7 +831,7 @@ static int tui_delete_posts_in_range(slide_list_t *p)
 		return DONOTHING;
 
 	post_list_t *l = p->data;
-	if (l->type != POST_LIST_NORMAL)
+	if (l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	post_id_t min = 0, max = 0;
@@ -1229,7 +1226,7 @@ static int tui_import_posts(bool deleted, post_filter_t *filter)
 static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
 		post_id_t max)
 {
-	bool deleted = is_deleted(l->type);
+	bool deleted = is_deleted(l->filter.type);
 	post_filter_t filter = { .bid = l->filter.bid, .min = min, .max = max };
 	int ret = PARTUPDATE;
 	switch (choice) {
@@ -1246,7 +1243,7 @@ static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
 			delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
 			break;
 		case 4:
-			ret = tui_import_posts(is_deleted(l->type), &filter);
+			ret = tui_import_posts(is_deleted(l->filter.type), &filter);
 			break;
 		case 5:
 			set_post_flag(&filter, "water", deleted, true, true);
@@ -1255,7 +1252,7 @@ static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
 			break;
 		default:
 			if (deleted) {
-				undelete_posts(&filter, l->type == POST_LIST_TRASH);
+				undelete_posts(&filter, l->filter.type == POST_LIST_TRASH);
 			} else {
 				filter.flag |= POST_FLAG_WATER;
 				delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
@@ -1285,8 +1282,7 @@ static int tui_operate_posts_in_range(slide_list_t *p)
 	if (!am_curr_bm())
 		return DONOTHING;
 
-	bool trash = l->type == POST_LIST_TRASH || l->type == POST_LIST_JUNK;
-	const char *option8 = trash ? "恢复" : "删水文";
+	const char *option8 = is_deleted(l->filter.type) ? "恢复" : "删水文";
 	const char *options[] = {
 		"保留",  "文摘", "不可RE", "删除",
 		"精华区", "水文", "转载", option8,
@@ -1368,11 +1364,11 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'L':
 			return tui_operate_posts_in_range(p);
 		case 'C':
-			return tui_count_posts_in_range(l->type);
+			return tui_count_posts_in_range(l->filter.type);
 		case '.':
-			return post_list_deleted(l->filter.bid, l->type);
+			return post_list_deleted(l->filter.bid, l->filter.type);
 		case 'J':
-			return post_list_admin_deleted(l->filter.bid, l->type);
+			return post_list_admin_deleted(l->filter.bid, l->filter.type);
 		case Ctrl('G'): case Ctrl('T'): case '`':
 			return tui_post_list_selected(l, ip);
 		case 'a':
@@ -1456,10 +1452,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	}
 }
 
-static int post_list_with_filter(slide_list_base_e base, post_list_type_e type,
-		post_filter_t *filter)
+static int post_list_with_filter(slide_list_base_e base, post_filter_t *filter)
 {
-	post_list_t p = { .type = type, .relocate = true, .filter = *filter };
+	post_list_t p = { .relocate = true, .filter = *filter };
 
 	slide_list_t s = {
 		.base = base,
@@ -1482,9 +1477,7 @@ static int post_list_with_filter(slide_list_base_e base, post_list_type_e type,
 static int post_list(int bid, post_list_type_e type, post_id_t pid,
 		slide_list_base_e base, user_id_t uid, const char *keyword)
 {
-	post_filter_t filter = {
-		.deleted = is_deleted(type), .bid = bid, .uid = uid
-	};
+	post_filter_t filter = { .type = type, .bid = bid, .uid = uid };
 
 	if (keyword)
 		strlcpy(filter.utf8_keyword, keyword, sizeof(filter.utf8_keyword));
@@ -1496,7 +1489,7 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 		filter.max = pid;
 	}
 
-	return post_list_with_filter(base, type, &filter);
+	return post_list_with_filter(base, &filter);
 }
 
 int post_list_normal_range(int bid, post_id_t pid, slide_list_base_e base)
