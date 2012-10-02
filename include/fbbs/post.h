@@ -133,7 +133,7 @@ extern void res_to_post_info(db_res_t *r, int i, post_info_t *p);
 void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set);
 extern int _load_sticky_posts(int bid, post_info_t **posts);
 extern bool is_deleted(post_list_type_e type);
-extern const char *post_table_name(bool deleted);
+extern const char *post_table_name(const post_filter_t *filter);
 extern void build_post_filter(query_builder_t *b, const post_filter_t *f);
 extern query_builder_t *build_post_query(const post_filter_t *filter, bool asc, int limit);
 extern void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p);
@@ -149,7 +149,7 @@ extern post_id_t get_last_post_id(int bid);
 extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
 extern int undelete_posts(post_filter_t *filter, bool bm_visible);
 
-db_res_t *query_post_by_pid(post_id_t pid, bool deleted, const char *fields);
+db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields);
 bool alter_title(post_id_t pid, bool deleted, const char *title);
 bool alter_content(post_id_t pid, bool deleted, const char *content);
 

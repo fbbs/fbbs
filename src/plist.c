@@ -522,8 +522,10 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 
 static bool dump_content(const post_info_t *ip, char *file, size_t size)
 {
-	db_res_t *res = query_post_by_pid(ip->id, ip->flag & POST_FLAG_DELETED,
-			"content");
+	post_filter_t filter = {
+		.min = ip->id, .deleted = ip->flag & POST_FLAG_DELETED
+	};
+	db_res_t *res = query_post_by_pid(&filter, "content");
 	if (!res || db_res_rows(res) < 1)
 		return false;
 
@@ -1171,7 +1173,7 @@ extern int import_file(const char *title, const char *file, const char *path);
 static int import_posts(bool deleted, post_filter_t *filter, const char *path)
 {
 	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "UPDATE", post_table_name(deleted));
+	b->sappend(b, "UPDATE", post_table_name(filter));
 	b->sappend(b, "SET", "imported = TRUE");
 	build_post_filter(b, filter);
 	b->sappend(b, "RETURNING", "title, content");

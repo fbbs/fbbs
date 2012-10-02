@@ -434,7 +434,7 @@ int set_post_flag(post_filter_t *filter, const char *field, bool deleted,
 		bool set, bool toggle)
 {
 	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "UPDATE", post_table_name(deleted));
+	b->sappend(b, "UPDATE", post_table_name(filter));
 	b->sappend(b, "SET", field);
 	if (toggle)
 		b->sappend(b, "= NOT", field);
@@ -524,32 +524,12 @@ bool is_deleted(post_list_type_e type)
 	return type == POST_LIST_TRASH || type == POST_LIST_JUNK;
 }
 
-const char *post_table_name(bool deleted)
+const char *post_table_name(const post_filter_t *filter)
 {
-	if (deleted)
+	if (filter->deleted)
 		return "posts_deleted";
 	else
 		return "posts";
-}
-
-static const char *post_filter(post_list_type_e type)
-{
-	switch (type) {
-		case POST_LIST_MARKED:
-			return "marked";
-		case POST_LIST_DIGEST:
-			return "digest";
-		case POST_LIST_AUTHOR:
-			return "p.owner = %%"DBIdPID;
-		case POST_LIST_KEYWORD:
-			return "p.title LIKE %%s";
-		case POST_LIST_TRASH:
-			return "bm_visible";
-		case POST_LIST_JUNK:
-			return "NOT bm_visible";
-		default:
-			return "TRUE";
-	}
 }
 
 void build_post_filter(query_builder_t *b, const post_filter_t *f)
@@ -575,17 +555,17 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f)
 		b->sappend(b, "AND", "title ILIKE '%%%s%%'", f->utf8_keyword);
 }
 
-static const char *post_list_fields(bool deleted)
+static const char *post_list_fields(const post_filter_t *filter)
 {
-	if (deleted)
+	if (filter->deleted)
 		return "d"POST_LIST_FIELDS;
 	else
 		return POST_LIST_FIELDS;
 }
 
-static const char *post_table_index(bool deleted)
+static const char *post_table_index(const post_filter_t *filter)
 {
-	if (deleted)
+	if (filter->deleted)
 		return "did";
 	else
 		return "id";
@@ -595,10 +575,10 @@ query_builder_t *build_post_query(const post_filter_t *filter, bool asc,
 		int limit)
 {
 	query_builder_t *b = query_builder_new(0);
-	b->append(b, "SELECT")->append(b, post_list_fields(filter->deleted));
-	b->append(b, "FROM")->append(b, post_table_name(filter->deleted));
+	b->append(b, "SELECT")->append(b, post_list_fields(filter));
+	b->append(b, "FROM")->append(b, post_table_name(filter));
 	build_post_filter(b, filter);
-	b->append(b, "ORDER BY")->append(b, post_table_index(filter->deleted));
+	b->append(b, "ORDER BY")->append(b, post_table_index(filter));
 	b->append(b, asc ? "ASC" : "DESC");
 	int64_t l = limit;
 	b->append(b, "LIMIT %l", l);
@@ -732,14 +712,14 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 	return rows;
 }
 
-db_res_t *query_post_by_pid(post_id_t pid, bool deleted, const char *fields)
+db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->append(b, "SELECT");
 	b->append(b, fields);
 	b->append(b, "FROM");
-	b->append(b, post_table_name(deleted));
-	b->append(b, "WHERE id = %"DBIdPID, pid);
+	b->append(b, post_table_name(filter));
+	b->append(b, "WHERE id = %"DBIdPID, filter->min);
 
 	db_res_t *res = b->query(b);
 	query_builder_free(b);
@@ -775,7 +755,8 @@ static char *replace_content_title(const char *content, size_t len,
 
 bool alter_title(post_id_t pid, bool deleted, const char *title)
 {
-	db_res_t *res = query_post_by_pid(pid, deleted, "content");
+	post_filter_t filter = { .min = pid, .deleted = deleted };
+	db_res_t *res = query_post_by_pid(&filter, "content");
 	if (res && db_res_rows(res) == 1) {
 		char *content = replace_content_title(db_get_value(res, 0, 0),
 				db_get_length(res, 0, 0), title);
@@ -785,7 +766,7 @@ bool alter_title(post_id_t pid, bool deleted, const char *title)
 
 		query_builder_t *b = query_builder_new(0);
 		b->append(b, "UPDATE");
-		b->append(b, post_table_name(deleted));
+		b->append(b, post_table_name(&filter));
 		b->append(b, "SET title = %s, content = %s", title, content);
 		b->append(b, "WHERE id = %"DBIdPID, pid);
 
@@ -802,8 +783,10 @@ bool alter_title(post_id_t pid, bool deleted, const char *title)
 
 bool alter_content(post_id_t pid, bool deleted, const char *content)
 {
+	post_filter_t filter = { .deleted = deleted };
+
 	query_builder_t *b = query_builder_new(0);
-	b->append(b, "UPDATE")->append(b, post_table_name(deleted));
+	b->append(b, "UPDATE")->append(b, post_table_name(&filter));
 	b->append(b, "SET")->append(b, "content = %s", content);
 	b->append(b, "WHERE")->append(b, "id = %"DBIdPID, pid);
 
