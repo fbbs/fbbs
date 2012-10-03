@@ -317,25 +317,144 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	clrtobot();
 }
 
-static void post_list_display_entry(post_info_t *p)
-{
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(p->utf8_title, gbk_title);
+char *getshortdate(time_t time) {
+	static char str[10];
+	struct tm *tm;
 
+	tm = localtime(&time);
+	sprintf(str, "%02d.%02d.%02d", tm->tm_year - 100, tm->tm_mon + 1,
+			tm->tm_mday);
+	return str;
+}
+
+#ifdef ENABLE_FDQUAN
+#define ENABLE_COLOR_ONLINE_STATUS
+#endif
+
+#ifdef ENABLE_COLOR_ONLINE_STATUS
+const char *get_board_online_color(const char *uname, int bid)
+{
+	if (streq(uname, currentuser.userid))
+		return session.visible ? "1;37" : "1;36";
+
+	const char *color = "";
+	bool online = false;
+	int invisible = 0;
+
+	basic_session_info_t *s = get_sessions_by_name(uname);
+	if (s) {
+		for (int i = 0; i < basic_session_info_count(s); ++i) {
+			if (!basic_session_info_visible(s, i)) {
+				if (HAS_PERM(PERM_SEECLOAK))
+					++invisible;
+				else
+					continue;
+			}
+
+			online = true;
+			if (get_current_board(basic_session_info_sid(s, i)) == bid) {
+				if (basic_session_info_visible(s, i))
+					color = "1;37";
+				else
+					color = "1;36";
+				basic_session_info_clear(s);
+				return color;
+			}
+		}
+	}
+
+	if (!online)
+		color = "1;30";
+	else if (invisible > 0 && invisible == basic_session_info_count(s))
+		color = "36";
+
+	basic_session_info_clear(s);
+	return color;
+}
+#else
+#define get_board_online_color(n, i)  ""
+#endif
+
+static const char *get_post_date(fb_time_t stamp)
+{
+#ifdef FDQUAN
+	if (time(NULL) - stamp < 24 * 60 * 60)
+		return fb_ctime(&stamp) + 10;
+#endif
+	return fb_ctime(&stamp) + 4;
+}
+
+static void post_list_display_entry(post_list_type_e type, post_info_t *p)
+{
 	char id_str[24];
 	if (p->flag & POST_FLAG_STICKY)
 		strlcpy(id_str, " \033[1;31m[¡Þ]\033[m ", sizeof(id_str));
 	else
 		pid_to_base32(p->id, id_str, 7);
 
-	prints(" %s %s %s\n", id_str, p->owner, gbk_title);
+	int mark = get_post_mark(p);
+	char mark_prefix[6] = "", mark_suffix[4] = "";
+#if 0
+	if (ent->accessed[1] & FILE_IMPORTED && am_curr_bm()){
+		if (type == ' ')
+			strcpy(typeprefix, "\033[42m");
+		else
+			strcpy(typeprefix, "\033[32m");
+		strcpy(typesufix, "\033[m");
+	}
+	if (digestmode == ATTACH_MODE) {
+		filetime = ent->timeDeleted;
+	} else {
+		filetime = atoi(ent->filename + 2);
+	}
+#endif
+
+	const char *date = get_post_date(p->stamp);
+
+	const char *idcolor = get_board_online_color(p->owner, currbp->id);
+
+	char color[10] = "";
+#ifdef COLOR_POST_DATE
+	struct tm *mytm = fb_localtime(&p->stamp);
+	snprintf(color, sizeof(color), "\033[1;%dm", 30 + mytm->tm_wday + 1);
+#endif
+
+//		sprintf(title, "%s %s", (digestmode == 2) ? ((ent->accessed[1]
+//				& FILE_LASTONE) ? "©¸" : "©À") : "Re:", ent->title + 4);
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	if (strneq(p->utf8_title, "Re: ", 4)) {
+		convert_u2g(p->utf8_title, gbk_title);
+	} else {
+		GBK_BUFFER(title2, POST_TITLE_CCHARS);
+		convert_u2g(p->utf8_title, gbk_title2);
+		snprintf(gbk_title, sizeof(gbk_title), "¡ô %s", gbk_title2);
+	}
+
+	if (is_deleted(type)) {
+		;
+//		ellipsis(title, 38 - strlen(ent->szEraser));
+	} else {
+		ellipsis(gbk_title, 49);
+	}
+
+//	if (digestmode == ATTACH_MODE) {
+//		sprintf(buf, " %5d %c %-12.12s %s%6.6s\033[m %s", num, type,
+//				ent->owner, color, date, title);
+	char buf[128];
+	snprintf(buf, sizeof(buf),
+			" %s %s%c%s \033[%sm%-12.12s %s%6.6s %s\033[m%s\n",
+			id_str, mark_prefix, mark, mark_suffix,
+			idcolor, p->owner, color, date,
+			(p->flag & POST_FLAG_LOCKED) ? "\033[1;33mx" : " ",
+			gbk_title);
+	outs(buf);
 }
 
 static slide_list_display_t post_list_display(slide_list_t *p)
 {
 	post_list_t *l = p->data;
 	for (int i = 0; i < l->icount; ++i) {
-		post_list_display_entry(l->index[i]);
+		post_list_display_entry(l->filter.type, l->index[i]);
 	}
 	return 0;
 }

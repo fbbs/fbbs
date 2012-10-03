@@ -17,36 +17,9 @@ enum {
 extern const struct fileheader *dir_bsearch(const struct fileheader *begin,
         const struct fileheader *end, unsigned int fid);
 
-int get_post_mark(bool marked, bool digest, bool water, bool unread)
-{
-	int mark = ' ';
-
-	if (digest) {
-		if (marked)
-			mark = 'b';
-		else
-			mark = 'g';
-	} else if (marked) {
-		mark = 'm';
-	}
-
-	if (water && mark == ' ')
-		mark = 'w';
-
-	if (unread) {
-		if (mark == ' ')
-			mark = '+';
-		else
-			mark = toupper(mark);
-	}
-
-	return mark;
-}
-
 static void print_bbsdoc(const post_info_t *p)
 {
-	int mark = get_post_mark(p->flag & POST_FLAG_MARKED,
-			p->flag & POST_FLAG_DIGEST, false, brc_unread(p->id));
+	int mark = get_post_mark(p);
 
 	printf("<po %s%sm='%c' owner='%s' time= '%s' id='%"PRIdPID"'>",
 			(p->flag & POST_FLAG_STICKY) ? "sticky='1' " : "",

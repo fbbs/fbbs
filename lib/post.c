@@ -794,3 +794,29 @@ bool alter_content(post_id_t pid, bool deleted, const char *content)
 	db_clear(res);
 	return res;
 }
+
+int get_post_mark(const post_info_t *p)
+{
+	int mark = ' ';
+
+	if (p->flag & POST_FLAG_DIGEST) {
+		if (p->flag & POST_FLAG_MARKED)
+			mark = 'b';
+		else
+			mark = 'g';
+	} else if (p->flag & POST_FLAG_MARKED) {
+		mark = 'm';
+	}
+
+	if (mark == ' ' && (p->flag & POST_FLAG_WATER))
+		mark = 'w';
+
+	if (brc_unread(p->id)) {
+		if (mark == ' ')
+			mark = DEFINE(DEF_NOT_N_MASK) ? '+' : 'N';
+		else
+			mark = toupper(mark);
+	}
+
+	return mark;
+}

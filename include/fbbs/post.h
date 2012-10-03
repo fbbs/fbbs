@@ -150,8 +150,9 @@ extern post_id_t get_last_post_id(int bid);
 extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
 extern int undelete_posts(post_filter_t *filter, bool bm_visible);
 
-db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields);
-bool alter_title(post_id_t pid, bool deleted, const char *title);
-bool alter_content(post_id_t pid, bool deleted, const char *content);
+extern db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields);
+extern bool alter_title(post_id_t pid, bool deleted, const char *title);
+extern bool alter_content(post_id_t pid, bool deleted, const char *content);
 
+extern int get_post_mark(const post_info_t *p);
 #endif // FB_POST_H
