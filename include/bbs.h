@@ -345,8 +345,6 @@ extern int KEY_ESC_arg;
 
 //add by infotech,supporting for 5 BMS
 #define BMMAXNUM		(5)				//每个版面的最大版主数
-#define BMNAMELISTLIMIT					//显示超过部分时使用...
-#define BMNAMELISTLEN	(56)		//显示版面版主列表的最大数
 #define BMNAMEMAXLEN	(56)		//每个版版主名称时最大数
 //如果BMNAMELISTLEN与BMNAMEMAXLEN不同,显示版主列表时,将用...来表示超过部分
 //BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界

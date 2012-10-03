@@ -254,7 +254,6 @@ int uleveltochar(char *buf, unsigned int lvl) {
 	return 1;
 }
 
-/* added by roly */
 void Poststring(char *str, char *nboard, char *posttitle, int mode)
 {
 	FILE *se;
@@ -271,168 +270,11 @@ void Poststring(char *str, char *nboard, char *posttitle, int mode)
 	}
 }
 
-/* add end */
 static basic_session_info_t *get_sessions_by_name(const char *uname)
 {
 	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
 			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
 			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
-}
-
-static int bm_color(const char *uname)
-{
-	basic_session_info_t *s = get_sessions_by_name(uname);
-	int visible = 0, color = 33;
-
-	if (s) {
-		for (int i = 0; i < basic_session_info_count(s); ++i) {
-			if (basic_session_info_visible(s, i))
-				++visible;
-		}
-
-		if (visible)
-			color = 32;
-		else if (HAS_PERM(PERM_SEECLOAK) && basic_session_info_count(s) > 0)
-			color = 36;
-	}
-	basic_session_info_clear(s);
-	return color;
-}
-
-// Show title when entering a board.
-static int readtitle(void)
-{
-	int i, j, bnum;
-	char tmp[STRLEN];
-	char bmlists[5][IDLEN + 1]; // up to 5 BMs.
-	char header[120], title[STRLEN];
-	const char *readmode;
-
-	board_t board;
-	get_board(currboard, &board);
-	board_to_gbk(&board);
-	struct bstat *bs = getbstat(currbp->id);
-
-	bnum = 0;
-	// Copy ID of BMs ('bp->BM') to 'bmlists'.
-	for (i = 0, j = 0; board.bms[i] != '\0' && i < BMNAMELISTLEN; i++) {
-		if (board.bms[i] == ' ') {
-			bmlists[bnum][j] = '\0';
-			bnum++;
-			j = 0;
-		} else {
-			bmlists[bnum][j++] = board.bms[i];
-		}
-	}
-#ifdef BMNAMELISTLIMIT
-	// If length of BM string exceeds BMNAMELISTLEN, use "...".
-	if (i >= BMNAMELISTLEN) {
-		j = 0;
-		bmlists[bnum][j++] = '.';
-		bmlists[bnum][j++] = '.';
-		bmlists[bnum][j++] = '.';
-	}
-#endif
-	bmlists[bnum++][j] = '\0';
-
-	if (board.bms[0] == '\0' || board.bms[0] == ' ') {
-		strcpy(header, "诚征版主中");
-	} else {
-		strcpy(header, "版主: ");
-
-		// Online BMs are shown in green, offline yellow, cloaking cyan
-		// (if currentuser have PERM_SEECLOAK, otherwise in yellow).
-		for (i = 0; i < bnum; i++) {
-			int color = bm_color(bmlists[i]);
-			if (color == 33) {
-				snprintf(tmp, sizeof(tmp), "%s ", bmlists[i]);
-			} else {
-				snprintf(tmp, sizeof(tmp), "\033[%dm%s\033[33m ", color,
-						bmlists[i]);
-			}
-			strcat(header, tmp);
-		}
-	}
-	if (chkmail())
-		strcpy(title, "[您有信件，按 M 看新信]");
-	else if ((board.flag & BOARD_VOTE_FLAG))
-		sprintf(title, "※投票中,按 v 进入投票※");
-	else
-		strcpy(title, board.descr);
-
-	showtitle(header, title);
-	prints(" 离开[\033[1;32m←\033[m,\033[1;32me\033[m] "
-		"选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m] "
-		"阅读[\033[1;32m→\033[m,\033[1;32mRtn\033[m] "
-		"发文章[\033[1;32mCtrl-P\033[m] 砍信[\033[1;32md\033[m] "
-		"备忘录[\033[1;32mTAB\033[m] 求助[\033[1;32mh\033[m]\n");
-
-	switch (digestmode) {
-		case NORMAL_MODE:
-			if (DEFINE(DEF_THESIS))
-				readmode = "主题";
-			else
-				readmode = "一般";
-			break;
-		case DIGIST_MODE:
-			readmode = "文摘";
-			break;
-		case THREAD_MODE:
-			readmode = "主题";
-			break;
-		case MARK_MODE:
-			readmode = "MARK";
-			break;
-		case ORIGIN_MODE:
-			readmode = "原作";
-			break;
-		case AUTHOR1_MODE:
-			readmode = "模糊";
-			break;
-		case AUTHOR2_MODE:
-			readmode = "精确";
-			break;
-		case KEYWORD_MODE:
-			readmode = "标题关键字";
-			break;
-		case TRASH_MODE:
-			readmode = "垃圾箱";
-			break;
-		case JUNK_MODE:
-			readmode = "站务垃圾箱";
-			break;
-		case ATTACH_MODE:
-			readmode = "附件区";
-			break;
-		default:
-			readmode = "未定义";
-	}
-
-	if (digestmode == AUTHOR1_MODE || digestmode == AUTHOR2_MODE)
-		prints("\033[1;37;44m  编号   %-12s %6s %-9s (关键字: \033[32m%-12s"
-			"\033[37m) [\033[33m%s\033[37m同作者阅读] \033[m\n",
-			"刊 登 者", "日  期", " 标  题", someoneID, readmode);
-	else if (digestmode == KEYWORD_MODE)
-		prints("\033[1;37;44m  编号   %-12s %6s %-19s            "
-			"[\033%10s式看版] \033[m\n",
-			"刊 登 者", "日  期", " 标  题", readmode);
-	else if (digestmode == TRASH_MODE)
-		prints("\033[1;37;44m  编号   %-12s %6s %-25s            [%6s模式]"
-			" \033[m\n",
-			"刊 登 者", "日  期", " 标  题", readmode);
-	else {
-		if (board.flag & BOARD_NOREPLY_FLAG) {
-			prints("\033[1;37;44m  编号   %-12s %6s %-8s  \033[33m"
-				"本版不可回复\033[37m    在线:%-4d    [%4s模式] \033[m\n",
-				"刊 登 者", "日  期", " 标  题", bs->inboard, readmode);
-		} else {
-			prints("\033[1;37;44m  编号   %-12s %6s %-25s 在线:%-4d"
-				"    [%4s模式] \033[m\n",
-				"刊 登 者", "日  期", " 标  题", bs->inboard, readmode);
-		}
-	}
-	clrtobot();
-	return 0;
 }
 
 char *getshortdate(time_t time) {

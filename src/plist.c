@@ -141,9 +141,180 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	return 0;
 }
 
+static basic_session_info_t *get_sessions_by_name(const char *uname)
+{
+	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
+			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
+			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
+}
+
+static int bm_color(const char *uname)
+{
+	basic_session_info_t *s = get_sessions_by_name(uname);
+	int visible = 0, color = 33;
+
+	if (s) {
+		for (int i = 0; i < basic_session_info_count(s); ++i) {
+			if (basic_session_info_visible(s, i))
+				++visible;
+		}
+
+		if (visible)
+			color = 32;
+		else if (HAS_PERM(PERM_SEECLOAK) && basic_session_info_count(s) > 0)
+			color = 36;
+	}
+	basic_session_info_clear(s);
+	return color;
+}
+
+enum {
+	BM_NAME_LIST_LEN = 56,
+};
+
+static int show_board_managers(const board_t *bp)
+{
+	prints("\033[33m");
+
+	if (!bp->bms[0]) {
+		prints("诚征版主中");
+		return 10;
+	}
+
+	char bms[sizeof(bp->bms)];
+	strlcpy(bms, bp->bms, sizeof(bms));
+
+	prints("版主:");
+	int width = 5;
+	for (const char *s = strtok(bms, " "); s; s = strtok(NULL, " ")) {
+		++width;
+		prints(" ");
+
+		int len = strlen(s);
+		if (width + len > BM_NAME_LIST_LEN) {
+			prints("...");
+			return width + 3;
+		}
+
+		width += len;
+		int color = bm_color(s);
+		prints("\033[%dm%s", color, s);
+	}
+
+	prints("\033[36m");
+	return width;
+}
+
+static void repeat(int c, int repeat)
+{
+	for (int i = 0; i < repeat; ++i)
+		outc(c);
+}
+
+static void align_center(const char *s, int remain)
+{
+	int len = strlen(s);
+	if (len > remain) {
+		prints("%s", s);
+	} else {
+		int spaces = (remain - len) / 2;
+		repeat(' ', spaces);
+		prints("%s", s);
+		spaces = remain - len - spaces;
+		repeat(' ', spaces);
+	}
+}
+
+static void show_prompt(const board_t *bp, const char *prompt, int remain)
+{
+	int blen = strlen(bp->name) + 2;
+	int plen = prompt ? strlen(prompt) : strlen(bp->descr);
+
+	if (blen + plen > remain) {
+		if (prompt) {
+			align_center(prompt, remain);
+		} else {
+			repeat(' ', remain - blen);
+			prints("[%s]", bp->name);
+		}
+		return;
+	} else {
+		align_center(prompt, remain - blen);
+		prints("[%s]", bp->name);
+	}
+}
+
+static const char *mode_description(post_list_type_e type)
+{
+	const char *s;
+	switch (type) {
+		case POST_LIST_NORMAL:
+			if (DEFINE(DEF_THESIS))
+				s = "主题";
+			else
+				s =  "一般";
+			break;
+		case POST_LIST_THREAD:
+			s = "主题";
+//			s = "原作";
+			break;
+		case POST_LIST_MARKED:
+			s = "MARK";
+			break;
+		case POST_LIST_DIGEST:
+			s = "文摘";
+			break;
+		case POST_LIST_AUTHOR:
+			s = "精确";
+			break;
+		case POST_LIST_KEYWORD:
+			s = "标题关键字";
+			break;
+		case POST_LIST_TRASH:
+			s = "垃圾箱";
+			break;
+		case POST_LIST_JUNK:
+			s = "站务垃圾箱";
+			break;
+//		case ATTACH_MODE:
+//			readmode = "附件区";
+//			break;
+		default:
+			s = "未定义";
+	}
+	return s;
+}
+
 static slide_list_title_t post_list_title(slide_list_t *p)
 {
-	return;
+	board_t board;
+	get_board(currboard, &board);
+	board_to_gbk(&board);
+
+	prints("\033[1;44m");
+	int width = show_board_managers(&board);
+
+	const char *prompt = NULL;
+	if (chkmail())
+		prompt = "[您有信件，按 M 看新信]";
+	else if ((board.flag & BOARD_VOTE_FLAG))
+		prompt = "※投票中,按 v 进入投票※";
+	show_prompt(&board, prompt, 78 - width);
+
+	move(1, 0);
+	prints(" 离开[\033[1;32m←\033[m,\033[1;32me\033[m] "
+		"选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m] "
+		"阅读[\033[1;32m→\033[m,\033[1;32mRtn\033[m] "
+		"发文章[\033[1;32mCtrl-P\033[m] 砍信[\033[1;32md\033[m] "
+		"备忘录[\033[1;32mTAB\033[m] 求助[\033[1;32mh\033[m]\n");
+
+	post_list_t *l = p->data;
+	const char *mode = mode_description(l->filter.type);
+
+	prints("\033[1;37;44m  编号   %-12s %6s %-25s 在线:%-4d"
+				"    [%4s模式] \033[m\n", "刊 登 者", "日  期", " 标  题",
+				count_onboard(board.id), mode);
+	clrtobot();
 }
 
 static void post_list_display_entry(post_info_t *p)
