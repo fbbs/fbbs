@@ -171,11 +171,10 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 
 static int toggle_post_lock(int bid, post_info_t *ip)
 {
-	bool deleted = ip->flag & POST_FLAG_DELETED;
 	bool locked = ip->flag & POST_FLAG_LOCKED;
 	if (am_curr_bm() || (session.id == ip->uid && !locked)) {
 		post_filter_t filter = { .bid = bid, .min = ip->id, .max = ip->id };
-		if (set_post_flag(&filter, "locked", deleted, !locked, false)) {
+		if (set_post_flag(&filter, "locked", !locked, false)) {
 			set_post_flag_local(ip, POST_FLAG_LOCKED, !locked);
 			return PARTUPDATE;
 		}
@@ -199,11 +198,10 @@ static int toggle_post_stickiness(int bid, post_info_t *ip, post_list_t *l)
 static int toggle_post_flag(int bid, post_info_t *ip, post_flag_e flag,
 		const char *field)
 {
-	bool deleted = ip->flag & POST_FLAG_DELETED;
 	bool set = ip->flag & flag;
 	if (am_curr_bm()) {
 		post_filter_t filter = { .bid = bid, .min = ip->id, .max = ip->id };
-		if (set_post_flag(&filter, field, deleted, !set, false)) {
+		if (set_post_flag(&filter, field, !set, false)) {
 			set_post_flag_local(ip, flag, !set);
 			return PARTUPDATE;
 		}
@@ -1228,7 +1226,7 @@ static void construct_prompt(char *s, size_t size, const char **options,
 
 extern int import_file(const char *title, const char *file, const char *path);
 
-static int import_posts(bool deleted, post_filter_t *filter, const char *path)
+static int import_posts(post_filter_t *filter, const char *path)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->sappend(b, "UPDATE", post_table_name(filter));
@@ -1257,7 +1255,7 @@ static int import_posts(bool deleted, post_filter_t *filter, const char *path)
 	return 0;
 }
 
-static int tui_import_posts(bool deleted, post_filter_t *filter)
+static int tui_import_posts(post_filter_t *filter)
 {
 	if (DEFINE(DEF_MULTANNPATH) && !!set_ann_path(NULL, NULL, ANNPATH_GETMODE))
 		return FULLUPDATE;
@@ -1280,7 +1278,7 @@ static int tui_import_posts(bool deleted, post_filter_t *filter)
 		return MINIUPDATE;
 	}
 
-	import_posts(deleted, filter, annpath);
+	import_posts(filter, annpath);
 	return PARTUPDATE;
 }
 
@@ -1292,22 +1290,22 @@ static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
 	int ret = PARTUPDATE;
 	switch (choice) {
 		case 0:
-			set_post_flag(&filter, "marked", deleted, true, true);
+			set_post_flag(&filter, "marked", true, true);
 			break;
 		case 1:
-			set_post_flag(&filter, "digest", deleted, true, true);
+			set_post_flag(&filter, "digest", true, true);
 			break;
 		case 2:
-			set_post_flag(&filter, "locked", deleted, true, true);
+			set_post_flag(&filter, "locked", true, true);
 			break;
 		case 3:
 			delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
 			break;
 		case 4:
-			ret = tui_import_posts(is_deleted(l->filter.type), &filter);
+			ret = tui_import_posts(&filter);
 			break;
 		case 5:
-			set_post_flag(&filter, "water", deleted, true, true);
+			set_post_flag(&filter, "water", true, true);
 			break;
 		case 6:
 			break;
@@ -1371,6 +1369,184 @@ static int tui_operate_posts_in_range(slide_list_t *p)
 	return operate_posts_in_range(choice, l, min, max);
 }
 
+static void operate_posts_in_batch(post_filter_t *fp, post_info_t *ip, int mode,
+		int choice, bool first, post_id_t pid, bool quote, bool junk,
+		const char *annpath, const char *utf8_keyword, const char *gbk_keyword)
+{
+	post_filter_t filter = { .type = fp->type, .bid = fp->bid };
+	switch (mode) {
+		case 1:
+			filter.uid = ip->uid;
+			break;
+		case 2:
+			strlcpy(filter.utf8_keyword, utf8_keyword,
+					sizeof(filter.utf8_keyword));
+			break;
+		default:
+			filter.tid = ip->tid;
+			break;
+	}
+	if (!first)
+		filter.min = ip->id;
+
+	switch (choice) {
+		case 0:
+			delete_posts(&filter, junk, HAS_PERM(PERM_OBOARDS), false);
+			break;
+		case 1:
+			set_post_flag(&filter, "marked", false, true);
+			break;
+		case 2:
+			set_post_flag(&filter, "digest", false, true);
+			break;
+		case 3:
+			import_posts(&filter, annpath);
+			break;
+		case 4:
+			set_post_flag(&filter, "water", false, true);
+			break;
+		case 5:
+			set_post_flag(&filter, "locked", false, true);
+			break;
+		case 6:
+			// pack thread
+			break;
+		default:
+			if (is_deleted(fp->type)) {
+				undelete_posts(&filter, fp->type == POST_LIST_TRASH);
+			} else {
+				// merge thread
+			}
+			break;
+	}
+
+	switch (choice) {
+		case 0:
+			bm_log(currentuser.userid, currboard, BMLOG_RANGEDEL, 1);
+			break;
+		case 3:
+			bm_log(currentuser.userid, currboard, BMLOG_RANGEANN, 1);
+			break;
+		case 6:
+			bm_log(currentuser.userid, currboard, BMLOG_COMBINE, 1);
+			break;
+		default:
+			bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
+			break;
+	}
+}
+
+static int tui_operate_posts_in_batch(slide_list_t *p)
+{
+	if (!am_curr_bm())
+		return DONOTHING;
+
+	post_list_t *l = p->data;
+	bool deleted = is_deleted(l->filter.type);
+
+	const char *batch_modes[] = { "相同主题", "相同作者", "相关主题" };
+	const char *option8 = deleted ? "恢复" : "合并";
+	const char *options[] = {
+		"删除", "保留", "文摘", "精华区", "水文", "不可RE", "合集", option8
+	};
+
+	char ans[16];
+	move(t_lines - 1, 0);
+	clrtoeol();
+	ans[0] = '\0';
+	getdata(t_lines - 1, 0, "执行: 1) 相同主题  2) 相同作者 3) 相关主题"
+			" 0) 取消 [0]: ", ans, sizeof(ans), DOECHO, YEA);
+	int mode = strtol(ans, NULL, 10) - 1;
+	if (mode < 0 || mode >= NELEMS(batch_modes))
+		return MINIUPDATE;
+
+	char prompt[120];
+	construct_prompt(prompt, sizeof(prompt), options, NELEMS(options));
+	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+	int choice = strtol(ans, NULL, 10) - 1;
+	if (choice < 0 || choice >= NELEMS(options))
+		return MINIUPDATE;
+
+	char buf[STRLEN];
+	move(t_lines - 1, 0);
+	snprintf(buf, sizeof(buf), "确定要执行%s[%s]吗", batch_modes[mode],
+			options[choice]);
+	if (!askyn(buf, NA, NA))
+		return MINIUPDATE;
+
+	post_id_t pid = 0;
+	bool quote = true;
+	if (choice == 6) {
+		move(t_lines-1, 0);
+		quote = askyn("制作的合集需要引言吗？", YEA, YEA);
+	} else if (choice == 7) {
+		if (!deleted) {
+			getdata(t_lines - 1, 0, "本主题加至版面第几篇后？", ans,
+					sizeof(ans), DOECHO, YEA);
+			pid = base32_to_pid(ans);
+		}
+	}
+
+	GBK_UTF8_BUFFER(keyword, POST_TITLE_CCHARS);
+	if (mode == 2) {
+		getdata(t_lines - 1, 0, "请输入主题关键字: ", gbk_keyword,
+				sizeof(gbk_keyword), DOECHO, YEA);
+		if (gbk_keyword[0] == '\0')
+			return MINIUPDATE;
+		convert_g2u(gbk_keyword, utf8_keyword);
+	}
+
+	bool junk = true;
+	if (choice == 0) {
+		junk = askyn("是否小d", YEA, YEA);
+	}
+
+	bool first = false;
+	move(t_lines - 1, 0);
+	snprintf(buf, sizeof(buf), "是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇",
+			(mode == 1) ? "该作者" : "此主题", options[choice]);
+	first = askyn(buf, YEA, NA);
+
+	char annpath[512];
+	if (choice == 3) {
+		if (DEFINE(DEF_MULTANNPATH) &&
+				!set_ann_path(NULL, NULL, ANNPATH_GETMODE))
+			return FULLUPDATE;
+
+		sethomefile(annpath, currentuser.userid, ".announcepath");
+		FILE *fp = fopen(annpath, "r");
+		if (!fp) {
+			presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.", t_lines - 1);
+			return MINIUPDATE;
+		}
+		fscanf(fp, "%s", annpath);
+		fclose(fp);
+		if (!dashd(annpath)) {
+			presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.",t_lines - 1);
+			return MINIUPDATE;
+		}
+	}
+
+	operate_posts_in_batch(&l->filter, l->index[p->cur], mode, choice, first,
+			pid, quote, junk, annpath, utf8_keyword, gbk_keyword);
+#if 0
+	if (BMch == 7) {
+		if (strneq(keyword, "Re: ", 4) || strneq(keyword, "RE: ", 4))
+			snprintf(buf, sizeof(buf), "[合集]%s", keyword + 4);
+		else
+			snprintf(buf, sizeof(buf), "[合集]%s", keyword);
+
+		ansi_filter(keyword, buf);
+
+		sprintf(buf, "tmp/%s.combine", currentuser.userid);
+
+		Postfile(buf, currboard, keyword, 2);
+		unlink(buf);
+	}
+#endif
+	return PARTUPDATE;
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -1424,6 +1600,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_delete_posts_in_range(p);
 		case 'L':
 			return tui_operate_posts_in_range(p);
+		case 'b':
+			return tui_operate_posts_in_batch(p);
 		case 'C':
 			return tui_count_posts_in_range(l->filter.type);
 		case '.':

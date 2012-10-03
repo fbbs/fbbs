@@ -127,7 +127,7 @@ extern void quote_string(const char *str, size_t size, const char *output,
 extern void quote_file_(const char *orig, const char *output, int mode,
 		bool mail, size_t (*filter)(const char *, size_t, FILE *));
 
-extern int set_post_flag(post_filter_t *filter, const char *field, bool deleted, bool set, bool toggle);
+extern int set_post_flag(post_filter_t *filter, const char *field, bool set, bool toggle);
 extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 
 extern void res_to_post_info(db_res_t *r, int i, post_info_t *p);

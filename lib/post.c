@@ -430,8 +430,8 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 	}
 }
 
-int set_post_flag(post_filter_t *filter, const char *field, bool deleted,
-		bool set, bool toggle)
+int set_post_flag(post_filter_t *filter, const char *field, bool set,
+		bool toggle)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->sappend(b, "UPDATE", post_table_name(filter));
@@ -468,7 +468,7 @@ bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
 	}
 
 	post_filter_t filter = { .bid = bid, .min = pid, .max = pid };
-	return set_post_flag(&filter, "sticky", false, sticky, false);
+	return set_post_flag(&filter, "sticky", sticky, false);
 }
 
 void res_to_post_info(db_res_t *r, int i, post_info_t *p)

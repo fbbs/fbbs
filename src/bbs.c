@@ -2042,7 +2042,6 @@ struct one_key read_comms[] = {
 		{Ctrl('S'), SR_read},
 		{'p', SR_read},
 		{Ctrl('U'), SR_author},
-		{'b', SR_BMfunc},
 		{'*', show_file_info},
 		{'\0', NULL}
 };
