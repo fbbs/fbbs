@@ -417,7 +417,7 @@ static int jump_to_thread_next(slide_list_t *p)
 	return relocate_to_filter(p, &filter, false);
 }
 
-static int read_post(post_list_t *l, post_info_t *ip);
+static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user);
 
 static int jump_to_thread_first_unread(slide_list_t *p)
 {
@@ -444,7 +444,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 			if (brc_unread(id)) {
 				post_info_t info;
 				res_to_post_info(res, i, &info);
-				read_post(l, &info);
+				read_posts(l, &info, true, false);
 				db_clear(res);
 				return FULLUPDATE;
 			}
@@ -472,7 +472,7 @@ static int jump_to_thread_last(slide_list_t *p)
 	if (res && db_res_rows(res) > 0) {
 		post_info_t info;
 		res_to_post_info(res, 0, &info);
-		read_post(l, &info);
+		read_posts(l, &info, true, false);
 		db_clear(res);
 		return FULLUPDATE;
 	}
@@ -1027,12 +1027,6 @@ static int tui_count_posts_in_range(post_list_type_e type)
 
 #if 0
 	switch (ch) {
-		case 'N':
-		case 'Q':
-		case 'n':
-		case 'q':
-		case KEY_LEFT:
-			break;
 		case '*':
 			show_file_info(ent, fileinfo, direct);
 			break;
@@ -1102,26 +1096,91 @@ static int tui_count_posts_in_range(post_list_type_e type)
 	}
 #endif
 
-static int read_post(post_list_t *l, post_info_t *ip)
+static int load_full_post(const post_filter_t *fp, post_info_full_t *ip)
 {
-	brc_mark_as_read(ip->id);
+	query_builder_t *b = query_builder_new(0);
+	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
+	b->sappend(b, "FROM", post_table_name(fp));
+	build_post_filter(b, fp);
+
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
+
+	int rows = db_res_rows(res);
+	if (rows > 0)
+		res_to_post_info_full(res, 0, ip);
+	else
+		db_clear(res);
+	return rows;
+}
+
+static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
+{
+	post_info_full_t info = { .p = *ip };
+	post_filter_t filter = l->filter;
 
 	char file[HOMELEN];
-	if (!dump_content(&l->filter, ip, file, sizeof(file)))
+	if (!dump_content(&filter, ip, file, sizeof(file)))
 		return DONOTHING;
 
-	int ch = ansimore(file, false);
+	bool end = false, upward = false;
+	while (!end) {
+		brc_mark_as_read(info.p.id);
 
-	move(t_lines - 1, 0);
-	clrtoeol();
-	prints("\033[0;1;44;31m[阅读文章]  \033[33m回信 R │ 结束 Q,← │上一封 ↑"
-			"│下一封 <Space>,↓│主题阅读 ^s或p \033[m");
-	refresh();
+		int ch = ansimore(file, false);
 
-	if (!(ch == KEY_UP || ch == KEY_PGUP))
-		ch = egetch();
+		move(t_lines - 1, 0);
+		clrtoeol();
+		prints("\033[0;1;44;31m[阅读文章]  \033[33m回信 R │ 结束 Q,← │上一封 ↑"
+				"│下一封 <Space>,↓│主题阅读 ^s或p \033[m");
+		refresh();
 
-	unlink(file);
+		if (!(ch == KEY_UP || ch == KEY_PGUP))
+			ch = egetch();
+		switch (ch) {
+			case 'N': case 'Q': case 'n': case 'q': case KEY_LEFT:
+				end = true;
+				break;
+			case 'Y': case 'R': case 'y': case 'r':
+				// TODO
+				tui_new_post(&filter, &info.p);
+				break;
+			case ' ': case '\n': case KEY_DOWN: case KEY_RIGHT:
+				upward = false;
+				break;
+			case KEY_UP: case 'u': case 'U':
+				upward = true;
+				break;
+			case Ctrl('A'):
+				t_query(info.p.owner);
+				break;
+			case Ctrl('R'):
+				reply_with_mail(&filter, &info.p);
+				break;
+			case 'g':
+				toggle_post_flag(filter.bid, &info.p, POST_FLAG_DIGEST,
+						"digest");
+				break;
+			default:
+				break;
+		}
+
+		unlink(file);
+		free_post_info_full(&info);
+
+		if (!end) {
+			if (upward)
+				filter.max = info.p.id - 1;
+			else
+				filter.min = info.p.id + 1;
+			if (load_full_post(&filter, &info)) {
+				dump_content_to_gbk_file(info.content, info.length,
+						file, sizeof(file));
+			} else {
+				end = true;
+			}
+		}
+	}
 	return FULLUPDATE;
 }
 
@@ -1335,7 +1394,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 
 	switch (ch) {
 		case '\n': case '\r': case KEY_RIGHT: case 'r':
-			return read_post(l, ip);
+			return read_posts(l, ip, false, false);
 		case '_':
 			return toggle_post_lock(l->filter.bid, ip);
 		case '@':
@@ -1356,7 +1415,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'E':
 			return tui_edit_post_content(&l->filter, ip);
 		case Ctrl('P'):
-			return tui_new_post(&l->filter, ip);
+			return tui_new_post(&l->filter, NULL);
 		case 'i':
 			return tui_save_post(&l->filter, ip);
 		case 'I':
