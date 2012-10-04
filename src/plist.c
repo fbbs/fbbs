@@ -99,6 +99,25 @@ static void index_posts(post_list_t *l, int limit, slide_list_base_e base)
 	}
 }
 
+static void adjust_filter(post_list_t *l, slide_list_base_e base)
+{
+	if (l->count) {
+		if (is_asc(base)) {
+			if (base == SLIDE_LIST_TOPDOWN)
+				l->filter.min = 0;
+			else
+				l->filter.min = l->posts[l->count - 1].id + 1;
+			l->filter.max = POST_ID_MAX;
+		} else {
+			l->filter.min = 0;
+			if (base == SLIDE_LIST_BOTTOMUP)
+				l->filter.max = POST_ID_MAX;
+			else
+				l->filter.max = l->posts[0].id - 1;
+		}
+	}
+}
+
 static slide_list_loader_t post_list_loader(slide_list_t *p)
 {
 	post_list_t *l = p->data;
@@ -117,6 +136,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	}
 
 	bool asc = is_asc(p->base);
+	adjust_filter(l, p->base);
 	query_builder_t *b = build_post_query(&l->filter, asc, page);
 	db_res_t *res = b->query(b);
 	query_builder_free(b);
@@ -239,8 +259,8 @@ static void show_prompt(const board_t *bp, const char *prompt, int remain)
 		}
 		return;
 	} else {
-		align_center(prompt, remain - blen);
-		prints("[%s]", bp->name);
+		align_center(prompt ? prompt : bp->descr, remain - blen);
+		prints("\033[33m[%s]", bp->name);
 	}
 }
 
@@ -302,7 +322,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	show_prompt(&board, prompt, 78 - width);
 
 	move(1, 0);
-	prints(" 离开[\033[1;32m←\033[m,\033[1;32me\033[m] "
+	prints("\033[m 离开[\033[1;32m←\033[m,\033[1;32me\033[m] "
 		"选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m] "
 		"阅读[\033[1;32m→\033[m,\033[1;32mRtn\033[m] "
 		"发文章[\033[1;32mCtrl-P\033[m] 砍信[\033[1;32md\033[m] "
@@ -311,7 +331,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	post_list_t *l = p->data;
 	const char *mode = mode_description(l->filter.type);
 
-	prints("\033[1;37;44m  编号   %-12s %6s %-25s 在线:%-4d"
+	prints("\033[1;37;44m  编号    %-12s %6s %-25s 在线:%-4d"
 				"    [%4s模式] \033[m\n", "刊 登 者", "日  期", " 标  题",
 				count_onboard(board.id), mode);
 	clrtobot();
@@ -813,7 +833,7 @@ static bool dump_content(const post_filter_t *fp, const post_info_t *ip,
 		return false;
 
 	int ret = dump_content_to_gbk_file(db_get_value(res, 0, 0),
-			db_get_length(res, 0, 0), file, sizeof(file));
+			db_get_length(res, 0, 0), file, size);
 
 	db_clear(res);
 	return ret == 0;
@@ -1381,12 +1401,16 @@ static int tui_count_posts_in_range(post_list_type_e type)
 	}
 #endif
 
-static int load_full_post(const post_filter_t *fp, post_info_full_t *ip)
+static int load_full_post(const post_filter_t *fp, post_info_full_t *ip,
+		bool upward)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
 	b->sappend(b, "FROM", post_table_name(fp));
 	build_post_filter(b, fp);
+	b->sappend(b, "ORDER BY", post_table_index(fp));
+	b->append(b, upward ? "DESC" : "ASC");
+	b->append(b, "LIMIT 1");
 
 	db_res_t *res = b->query(b);
 	query_builder_free(b);
@@ -1454,11 +1478,14 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 		free_post_info_full(&info);
 
 		if (!end) {
-			if (upward)
+			if (upward) {
+				filter.min = 0;
 				filter.max = info.p.id - 1;
-			else
+			} else {
 				filter.min = info.p.id + 1;
-			if (load_full_post(&filter, &info)) {
+				filter.max = POST_ID_MAX;
+			}
+			if (load_full_post(&filter, &info, upward)) {
 				dump_content_to_gbk_file(info.content, info.length,
 						file, sizeof(file));
 			} else {
@@ -1984,6 +2011,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 static int post_list_with_filter(slide_list_base_e base, post_filter_t *filter)
 {
 	post_list_t p = { .relocate = true, .filter = *filter };
+	if (p.filter.type == POST_LIST_NORMAL)
+		p.sreload = true;
 
 	slide_list_t s = {
 		.base = base,
@@ -2018,7 +2047,11 @@ static int post_list(int bid, post_list_type_e type, post_id_t pid,
 		filter.max = pid;
 	}
 
-	return post_list_with_filter(base, &filter);
+	int status = session.status;
+	set_user_status(ST_READING);
+	post_list_with_filter(base, &filter);
+	set_user_status(status);
+	return 0;
 }
 
 int post_list_normal_range(int bid, post_id_t pid, slide_list_base_e base)

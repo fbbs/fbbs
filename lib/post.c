@@ -563,7 +563,7 @@ static const char *post_list_fields(const post_filter_t *filter)
 		return POST_LIST_FIELDS;
 }
 
-static const char *post_table_index(const post_filter_t *filter)
+const char *post_table_index(const post_filter_t *filter)
 {
 	if (filter->deleted)
 		return "did";
