@@ -393,15 +393,12 @@ static void post_list_display_entry(post_list_type_e type, post_info_t *p)
 		pid_to_base32(p->id, id_str, 7);
 
 	int mark = get_post_mark(p);
-	char mark_prefix[6] = "", mark_suffix[4] = "";
-#if 0
-	if (ent->accessed[1] & FILE_IMPORTED && am_curr_bm()){
-		if (type == ' ')
-			strcpy(typeprefix, "\033[42m");
-		else
-			strcpy(typeprefix, "\033[32m");
-		strcpy(typesufix, "\033[m");
+	const char *mark_prefix = "", *mark_suffix = "";
+	if ((p->flag & POST_FLAG_IMPORT) && am_curr_bm()) {
+		mark_prefix = (type == ' ') ? "\033[42m" : "\033[32m";
+		mark_suffix = "\033[m";
 	}
+#if 0
 	if (digestmode == ATTACH_MODE) {
 		filetime = ent->timeDeleted;
 	} else {
