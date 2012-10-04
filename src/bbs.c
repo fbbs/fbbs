@@ -41,7 +41,6 @@ int selboard = 0;
 char someoneID[31];
 char topic[STRLEN] = "";
 int FFLL = 0;
-int totalusers;
 char genbuf[1024];
 char quote_title[120], quote_board[120];
 char quote_file[120], quote_user[120];
@@ -1684,9 +1683,6 @@ struct one_key read_comms[] = {
 		{Ctrl('C'), do_cross},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
-		{Ctrl('S'), SR_read},
-		{'p', SR_read},
-		{Ctrl('U'), SR_author},
 		{'*', show_file_info},
 		{'\0', NULL}
 };

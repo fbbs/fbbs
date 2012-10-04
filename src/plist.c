@@ -1857,7 +1857,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 
 	switch (ch) {
 		case '\n': case '\r': case KEY_RIGHT: case 'r':
+		case Ctrl('S'): case 'p':
 			return read_posts(l, ip, false, false);
+		case Ctrl('U'):
+			return read_posts(l, ip, false, true);
 		case '_':
 			return toggle_post_lock(l->filter.bid, ip);
 		case '@':
