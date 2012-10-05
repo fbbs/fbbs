@@ -839,6 +839,23 @@ static bool dump_content(const post_filter_t *fp, const post_info_t *ip,
 	return ret == 0;
 }
 
+extern int tui_cross_post_legacy(const char *file, const char *title);
+
+static int tui_cross_post(const post_filter_t *fp, const post_info_t *ip)
+{
+	char file[HOMELEN];
+	if (!dump_content(fp, ip, file, sizeof(file)))
+		return DONOTHING;
+
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	convert_u2g(ip->utf8_title, gbk_title);
+
+	tui_cross_post_legacy(file, gbk_title);
+
+	unlink(file);
+	return FULLUPDATE;
+}
+
 static int forward_post(const post_filter_t *fp, const post_info_t *ip,
 		bool uuencode)
 {
@@ -1957,6 +1974,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_delete_single_post(l, ip);
 		case 'Y':
 			return tui_undelete_single_post(l, ip);
+		case Ctrl('C'):
+			return tui_cross_post(&l->filter, ip);
 		case 'F':
 			return forward_post(&l->filter, ip, false);
 		case 'U':

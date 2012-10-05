@@ -15,7 +15,6 @@ extern char BoardName[];
 /*For read.c*/
 int auth_search_down();
 int auth_search_up();
-int do_cross();
 int edit_post();
 int Import_post();
 int Save_post();
@@ -1009,6 +1008,23 @@ int mail_mark(int ent, struct fileheader *fileinfo, char *direct)
 
 extern int mailreadhelp();
 extern int SR_BMfunc();
+extern int tui_cross_post_legacy(const char *file, const char *title);
+
+static int do_cross(int ent, struct fileheader *fp, char *direct)
+{
+	set_safe_record();
+	if (!HAS_PERM(PERM_POST) || digestmode == ATTACH_MODE)
+		return DONOTHING;
+
+	if (fp->filename[0] == 's') {
+		return DONOTHING;
+	}
+
+	char file[HOMELEN];
+	setmfile(file, currentuser.userid, fp->filename);
+
+	return tui_cross_post_legacy(file, fp->title);
+}
 
 struct one_key mail_comms[] = {
 		{ 'd', mail_del },

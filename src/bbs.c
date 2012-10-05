@@ -871,30 +871,10 @@ post_id_t Postfile(const char *file, const char *bname, const char *title,
 	return post_cross_legacy(&board, file, title, mode);
 }
 
-/* Add by SmallPig */
-int do_cross(int ent, struct fileheader *fp, char *direct) {
-	set_safe_record();
-	if (!HAS_PERM(PERM_POST) || digestmode == ATTACH_MODE)
-		return DONOTHING;
-
-	if (fp->filename[0] == 's') {
-		prints("Type 2 Forbidden to Do cross!!\n");
-		return DONOTHING;
-	}
-
-	char file[HOMELEN];
-	if (session.status != ST_RMAIL)
-		snprintf(file, sizeof(file), "boards/%s/%s", currboard, fp->filename);
-	else
-		snprintf(file, sizeof(file), "mail/%c/%s/%s",
-				toupper(currentuser.userid[0]), currentuser.userid,
-				fp->filename);
-
+int tui_cross_post_legacy(const char *file, const char *title)
+{
 	clear();
-	prints("\033[1;33m请珍惜本站资源，请在转载后删除不必要的文章，谢谢！ \n"
-			"\033[1;32m并且，您不能将本文转载到本版，"
-			"如果您觉得不方便的话，请与站长联系。\033[m\n\n");
-	prints("您选择转载的文章是: [\033[1;33m%s\033[m]\n", fp->title);
+	prints("您选择转载的文章是: [\033[1;33m%s\033[m]\n", title);
 
 	char bname[STRLEN];
 	board_complete(6, "请输入要转贴的讨论区名称(取消转载请按回车): ",
@@ -911,19 +891,19 @@ int do_cross(int ent, struct fileheader *fp, char *direct) {
 
 	move(3, 0);
 	clrtoeol();
-	prints("转载 ' %s ' 到 %s 版 ", fp->title, bname);
+	prints("转载 ' %s ' 到 %s 版 ", title, bname);
 	move(4, 0);
 	char ans[10];
 	getdata(4, 0, "(S)转信 (L)本站 (A)取消? [A]: ", ans, 9, DOECHO, YEA);
 	if (ans[0] == 's' || ans[0] == 'S' || ans[0] == 'L' || ans[0] == 'l') {
 		board_t brd;
 		if (!get_board(bname, &brd) ||
-				!post_cross_legacy(&brd, file, fp->title, POST_FILE_NORMAL)) {
+				!post_cross_legacy(&brd, file, title, POST_FILE_NORMAL)) {
 			pressreturn();
 			move(2, 0);
 			return FULLUPDATE;
 		}
-		prints("\n已把文章 \'%s\' 转贴到 %s 版\n", fp->title, bname);
+		prints("\n已把文章 \'%s\' 转贴到 %s 版\n", title, bname);
 	} else {
 		prints("取消");
 	}
@@ -1680,7 +1660,6 @@ struct one_key read_comms[] = {
 #endif
 		{',', read_attach},
 		{'s', do_select},
-		{Ctrl('C'), do_cross},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
 		{'*', show_file_info},
