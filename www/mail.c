@@ -253,6 +253,8 @@ int bbspstmail_main(void)
 		printf("<t>");
 		xml_fputs(fh->title, stdout);
 		printf("</t><m>");
+
+		setmfile(file, currentuser.userid, fh->filename);
 		quote_file_(file, NULL, QUOTE_AUTO, true, xml_fputs3);
 		printf("</m>");
 	}
