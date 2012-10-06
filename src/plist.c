@@ -826,6 +826,36 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
+static int show_post_info(const post_info_t *ip)
+{
+	clear();
+	move(0, 0);
+	prints("%s的详细信息:\n\n", "版面文章");
+
+	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	convert_u2g(ip->utf8_title, gbk_title);
+	prints("标    题:     %s\n", gbk_title);
+
+	prints("作    者:     %s\n", ip->owner);
+	prints("时    间:     %s\n", getdatestring(ip->stamp, DATE_ZH));
+	//	prints("大    小:     %d 字节\n", filestat.st_size);
+
+	char buf[PID_BUF_LEN];
+	prints("\nID:     %d\n", pid_to_base32(ip->id, buf, sizeof(buf)));
+	prints("\nTID:     %d\n", pid_to_base32(ip->tid, buf, sizeof(buf)));
+	prints("\nREID:     %d\n", pid_to_base32(ip->reid, buf, sizeof(buf)));
+
+	char link[STRLEN];
+	snprintf(link, sizeof(link),
+			"http://%s/bbs/con?new=1&bid=%d&f=%"PRIdPID"%s\n",
+			BBSHOST, currbp->id, ip->id,
+			(ip->flag & POST_FLAG_STICKY) ? "&s=1" : "");
+	prints("URL 地址:\n%s", link);
+
+	pressanykey();
+	return FULLUPDATE;
+}
+
 static bool dump_content(const post_info_t *ip, char *file, size_t size)
 {
 	post_filter_t filter = {
@@ -1973,6 +2003,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_delete_single_post(l, ip);
 		case 'Y':
 			return tui_undelete_single_post(l, ip);
+		case '*':
+			return show_post_info(ip);
 		case Ctrl('C'):
 			return tui_cross_post(ip);
 		case 'F':

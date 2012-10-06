@@ -872,6 +872,53 @@ char * maildoent(int num, struct fileheader *ent) {
 	return buf;
 }
 
+static int show_mail_info(int ent, struct fileheader *fileinfo, char *direct)
+{
+	char filepath[HOMELEN];
+	setmfile(filepath, currentuser.userid, fileinfo->filename);
+
+	struct stat filestat;
+	if (stat(filepath, &filestat) < 0) {
+		clear();
+		move(10, 30);
+		prints("对不起，当前文章不存在！\n", filepath);
+		pressanykey();
+		clear();
+		return FULLUPDATE;
+	}
+
+	bool unread = !(fileinfo->accessed[0] & FILE_READ);
+	const char *type;
+	if (fileinfo->accessed[0] & MAIL_REPLY) {
+		if (fileinfo->accessed[0] & FILE_MARKED)
+			type = "保留且已回复";
+		else
+			type = "已回复";
+	} else if (fileinfo->accessed[0] & FILE_MARKED)
+		type = "保留";
+	else
+		type = "普通";
+
+	clear();
+	move(0, 0);
+	prints("%s的详细信息:\n\n", "邮箱信件");
+	prints("序    号:     第 %d %s\n", ent, "封");
+	prints("标    题:     %s\n", fileinfo->title);
+	prints("发 信 人:     %s\n", fileinfo->owner);
+	time_t filetime = atoi(fileinfo->filename + 2);
+	prints("时    间:     %s\n", getdatestring(filetime, DATE_ZH));
+	prints("阅读状态:     %s\n", unread ? "未读" : "已读");
+	prints("文章类型:     %s\n", type);
+	prints("大    小:     %d 字节\n", filestat.st_size);
+
+	char link[STRLEN];
+	snprintf(link, sizeof(link), "http://%s/bbs/mailcon?f=%s&n=%d\n",
+			BBSHOST, fileinfo->filename, ent - 1);
+	prints("URL 地址:\n%s", link);
+	pressanykey();
+	return FULLUPDATE;
+}
+
 int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 {
 	char buf[512], notgenbuf[128];
@@ -914,7 +961,7 @@ int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 			readpn = READ_NEXT;
 			break;
 			case '*':
-			show_file_info(ent, fileinfo, direct);
+			show_mail_info(ent, fileinfo, direct);
 			break;
 			case 'D':
 			case 'd':
@@ -1065,7 +1112,7 @@ struct one_key mail_comms[] = {
 		{ Ctrl('J'), mailreadhelp },
 		{ '!', Q_Goodbye },
 		{ 'S', s_msg },
-		{ '*', show_file_info },
+		{ '*', show_mail_info },
 		{ 'Z', msg_author },
 		{ '\0', NULL }
 };

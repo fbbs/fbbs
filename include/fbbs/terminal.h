@@ -155,7 +155,6 @@ void uinfo_query(struct userec *u, int real, int unum);
 int edit_grp(char bname[STRLEN], char grp[STRLEN], char title[STRLEN],
 		char newtitle[STRLEN]);
 unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showfunc) ());
-int show_file_info(int ent, struct fileheader *fileinfo, char *direct);
 int chk_currBM(char *BMstr, int isclub);
 bool garbage_line(const char *str);
 int Q_Goodbye(void);

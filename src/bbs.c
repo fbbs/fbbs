@@ -577,100 +577,6 @@ static void getcross(const char *filepath, int mode)
 	*quote_file = '\0';
 }
 
-int show_file_info(int ent, struct fileheader *fileinfo, char *direct)
-{
-	char weblink[256], tmp[80], type[20], filepath[STRLEN];
-	time_t filetime;
-	struct stat filestat;
-	int i, len, unread;
-
-	if (digestmode == ATTACH_MODE)
-		return DONOTHING;
-
-	board_t board;
-	get_board(currboard, &board);
-	struct bstat *bs = getbstat(currbp->id);
-	if (in_mail)
-		setmfile(filepath, currentuser.userid, fileinfo->filename);
-	else
-		setbfile(filepath, currboard, fileinfo->filename);
-
-	if (stat(filepath, &filestat) < 0) {
-		clear();
-		move(10, 30);
-		prints("对不起，当前文章不存在！\n", filepath);
-		pressanykey();
-		clear();
-		return FULLUPDATE;
-	}
-
-	if (in_mail) {
-		snprintf(weblink, 256,
-				"http://%s/bbs/mailcon?f=%s&n=%d\n",
-				BBSHOST, fileinfo->filename, ent - 1);
-		if (fileinfo->accessed[0] & FILE_READ)
-			unread = 0;
-		else
-			unread = 1;
-		if (fileinfo->accessed[0] & MAIL_REPLY) {
-			if (fileinfo->accessed[0] & FILE_MARKED)
-				strcpy(type, "保留且已回复");
-			else
-				strcpy(type, "已回复");
-		} else if (fileinfo->accessed[0] & FILE_MARKED)
-			strcpy(type, "保留");
-		else
-			strcpy(type, "普通");
-	} else {
-		snprintf(weblink, 256, "http://%s/bbs/con?new=1&bid=%d&f=%u%s\n",
-				BBSHOST, currbp->id, fileinfo->id,
-				fileinfo->accessed[1] & FILE_NOTICE ? "&s=1" : "");
-		unread = brc_unread_legacy(fileinfo->filename);
-		if (fileinfo->accessed[0] & FILE_DIGEST) {
-			if (fileinfo->accessed[0] & FILE_MARKED)
-				strcpy(type, "B文");
-			else
-				strcpy(type, "G文");
-		} else if (fileinfo->accessed[0] & FILE_MARKED)
-			strcpy(type, "M文");
-		else if (fileinfo->accessed[0] & FILE_DELETED)
-			strcpy(type, "水文");
-		else
-			strcpy(type, "普通");
-
-	}
-	clear();
-	move(0, 0);
-	prints("%s的详细信息:\n\n", in_mail ? "邮箱信件" : "版面文章");
-	if (!in_mail) {
-		prints("版    名:     %s\n", board.name);
-		prints("版    主:     %s\n", board.bms);
-		prints("在线人数:     %d 人\n", bs->inboard);
-	}
-	prints("序    号:     第 %d %s\n", ent, in_mail ? "封" : "篇");
-	prints("标    题:     %s\n", fileinfo->title);
-	prints("%s:     %s\n", in_mail ? "发 信 人" : "作    者", fileinfo->owner);
-	filetime = atoi(fileinfo->filename + 2);
-	prints("时    间:     %s\n", getdatestring(filetime, DATE_ZH));
-	prints("阅读状态:     %s\n", unread ? "未读" : "已读");
-	prints("文章类型:     %s\n", type);
-	prints("大    小:     %d 字节\n", filestat.st_size);
-	prints("文 章 id:     %d\n", fileinfo->id);
-	prints("文 章gid:     %d\n", fileinfo->gid);
-	prints("文章reid:     %d\n", fileinfo->reid);
-	len = strlen(weblink);
-	prints("URL 地址:\n", weblink);
-	for (i = 0; i < len; i += 78) {
-		strlcpy(tmp, weblink + i, 78);
-		tmp[78] = '\n';
-		tmp[79] = '\0';
-		outs(tmp);
-	}
-
-	pressanykey();
-	return FULLUPDATE;
-}
-
 int post_reply(const char *owner, const char *title, const char *file)
 {
 	char uid[STRLEN];
@@ -1662,7 +1568,6 @@ struct one_key read_comms[] = {
 		{'s', do_select},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
-		{'*', show_file_info},
 		{'\0', NULL}
 };
 
