@@ -476,11 +476,13 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 	return 0;
 }
 
-static int toggle_post_lock(int bid, post_info_t *ip)
+static int toggle_post_lock(post_info_t *ip)
 {
 	bool locked = ip->flag & POST_FLAG_LOCKED;
 	if (am_curr_bm() || (session.id == ip->uid && !locked)) {
-		post_filter_t filter = { .bid = bid, .min = ip->id, .max = ip->id };
+		post_filter_t filter = {
+			.bid = ip->bid, .min = ip->id, .max = ip->id
+		};
 		if (set_post_flag(&filter, "locked", !locked, false)) {
 			set_post_flag_local(ip, POST_FLAG_LOCKED, !locked);
 			return PARTUPDATE;
@@ -489,25 +491,27 @@ static int toggle_post_lock(int bid, post_info_t *ip)
 	return DONOTHING;
 }
 
-static int toggle_post_stickiness(int bid, post_info_t *ip, post_list_t *l)
+static int toggle_post_stickiness(post_info_t *ip, post_list_t *l)
 {
 	if (is_deleted(l->filter.type))
 		return DONOTHING;
 
 	bool sticky = ip->flag & POST_FLAG_STICKY;
-	if (am_curr_bm() && sticky_post_unchecked(bid, ip->id, !sticky)) {
+	if (am_curr_bm() && sticky_post_unchecked(ip->bid, ip->id, !sticky)) {
 		l->sreload = l->reload = true;
 		return PARTUPDATE;
 	}
 	return DONOTHING;
 }
 
-static int toggle_post_flag(int bid, post_info_t *ip, post_flag_e flag,
+static int toggle_post_flag(post_info_t *ip, post_flag_e flag,
 		const char *field)
 {
 	bool set = ip->flag & flag;
 	if (am_curr_bm()) {
-		post_filter_t filter = { .bid = bid, .min = ip->id, .max = ip->id };
+		post_filter_t filter = {
+			.bid = ip->bid, .min = ip->id, .max = ip->id
+		};
 		if (set_post_flag(&filter, field, !set, false)) {
 			set_post_flag_local(ip, flag, !set);
 			return PARTUPDATE;
@@ -1484,8 +1488,7 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 				reply_with_mail(&filter, &info.p);
 				break;
 			case 'g':
-				toggle_post_flag(filter.bid, &info.p, POST_FLAG_DIGEST,
-						"digest");
+				toggle_post_flag(&info.p, POST_FLAG_DIGEST, "digest");
 				break;
 			default:
 				break;
@@ -1906,20 +1909,17 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case Ctrl('U'):
 			return read_posts(l, ip, false, true);
 		case '_':
-			return toggle_post_lock(l->filter.bid, ip);
+			return toggle_post_lock(ip);
 		case '@':
 			return show_online();
 		case '#':
-			return toggle_post_stickiness(l->filter.bid, ip, l);
+			return toggle_post_stickiness(ip, l);
 		case 'm':
-			return toggle_post_flag(l->filter.bid, ip,
-					POST_FLAG_MARKED, "marked");
+			return toggle_post_flag(ip, POST_FLAG_MARKED, "marked");
 		case 'g':
-			return toggle_post_flag(l->filter.bid, ip,
-					POST_FLAG_DIGEST, "digest");
+			return toggle_post_flag(ip, POST_FLAG_DIGEST, "digest");
 		case 'w':
-			return toggle_post_flag(l->filter.bid, ip,
-					POST_FLAG_WATER, "water");
+			return toggle_post_flag(ip, POST_FLAG_WATER, "water");
 		case 'T':
 			return tui_edit_post_title(ip);
 		case 'E':
