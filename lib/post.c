@@ -477,19 +477,20 @@ void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 	p->id = db_get_post_id(r, i, 0);
 	p->reid = db_get_post_id(r, i, 1);
 	p->tid = db_get_post_id(r, i, 2);
-	p->uid = db_get_is_null(r, i, 3) ? 0 : db_get_user_id(r, i, 3);
-	strlcpy(p->owner, db_get_value(r, i, 4), sizeof(p->owner));
-	p->stamp = db_get_time(r, i, 5);
-	p->flag = (db_get_bool(r, i, 6) ? POST_FLAG_DIGEST : 0)
-			| (db_get_bool(r, i, 7) ? POST_FLAG_MARKED : 0)
-			| (db_get_bool(r, i, 8) ? POST_FLAG_WATER : 0)
-			| (db_get_bool(r, i, 9) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(r, i, 10) ? POST_FLAG_IMPORT : 0)
+	p->bid = db_get_integer(r, i, 3);
+	p->uid = db_get_is_null(r, i, 4) ? 0 : db_get_user_id(r, i, 4);
+	strlcpy(p->owner, db_get_value(r, i, 5), sizeof(p->owner));
+	p->stamp = db_get_time(r, i, 6);
+	p->flag = (db_get_bool(r, i, 7) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(r, i, 8) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(r, i, 9) ? POST_FLAG_WATER : 0)
+			| (db_get_bool(r, i, 10) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(r, i, 11) ? POST_FLAG_IMPORT : 0)
 			| (deleted ? POST_FLAG_DELETED : 0);
-	p->replies = db_get_integer(r, i, 11);
-	p->comments = db_get_integer(r, i, 12);
-	p->score = db_get_integer(r, i, 13);
-	strlcpy(p->utf8_title, db_get_value(r, i, 14), sizeof(p->utf8_title));
+	p->replies = db_get_integer(r, i, 12);
+	p->comments = db_get_integer(r, i, 13);
+	p->score = db_get_integer(r, i, 14);
+	strlcpy(p->utf8_title, db_get_value(r, i, 15), sizeof(p->utf8_title));
 }
 
 void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set)
@@ -589,8 +590,8 @@ void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p)
 {
 	res_to_post_info(res, row, &p->p);
 	p->res = res;
-	p->content = db_get_value(res, row, 15);
-	p->length = db_get_length(res, row, 15);
+	p->content = db_get_value(res, row, 16);
+	p->length = db_get_length(res, row, 16);
 }
 
 void free_post_info_full(post_info_full_t *p)

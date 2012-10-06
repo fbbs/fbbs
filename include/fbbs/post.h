@@ -19,7 +19,7 @@ enum {
 };
 
 #define POST_LIST_FIELDS  \
-	"id,reid,tid,owner,uname,stamp,digest,marked,water," \
+	"id,reid,tid,bid,owner,uname,stamp,digest,marked,water," \
 	"locked,imported,replies,comments,score,title"
 
 #define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ",content"
@@ -70,6 +70,7 @@ typedef struct {
 	post_id_t reid;
 	post_id_t tid;
 	fb_time_t stamp;
+	int bid;
 	char owner[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_info_t;
