@@ -90,8 +90,7 @@ int set_safe_record(void);
 void abort_bbs(int nothing);
 int bm_log(const char *user, const char *name, int type, int value);
 void stand_title(char *title);
-int autoreport(const char *title, const char *str, int toboard,
-		const char *userid,int mode);
+void autoreport(const char *board, const char *title, const char *str, const char *uname, int mode);
 int	check_systempasswd(void);
 int deltree(const char *dst);
 int gettheuserid(int x, char *title, int *id);
@@ -129,7 +128,7 @@ int m_send(const char *userid);
 void new_register(void);
 int post_header(struct postheader *header);
 int post_reply(const char *owner, const char *title, const char *file);
-void Poststring(char *str, char *nboard, char *posttitle, int mode);
+void Poststring(const char *str, const char *nboard, const char *posttitle, int mode);
 char *setbdir(char *buf, char *boardname);
 int domenu(const char *menu_name);
 void setqtitle(char *stitle, int gid);

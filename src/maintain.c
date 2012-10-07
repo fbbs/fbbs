@@ -100,42 +100,17 @@ int	check_systempasswd(void)
 //	自动发送到版面
 //			title		标题
 //			str			内容
-//			toboard		决定是否发送到版面	
-//			userid		发送到的用户名,为null则不发送.
-//			mode		分别奖惩,1表示BMS任命,0表示deliver处罚
-//					2表示当前用户
-int autoreport(const char *title, const char *str, int toboard,
-		const char *userid,int mode)
+//			uname		发送到的用户名,为null则不发送.
+void autoreport(const char *board, const char *title, const char *str,
+		const char *uname, int mode)
 {
-	FILE	*se;
-    char	fname[STRLEN];
-    int 	savemode;
-	
-    savemode = session.status;
     report(title, currentuser.userid);
-    sprintf(fname,"tmp/AutoPoster.%s.%05d",currentuser.userid, session.pid);
-    if((se=fopen(fname,"w"))!=NULL) {
-	    fprintf(se,"%s",str);
-        fclose(se);
-        if(userid != NULL) {
-			mail_file(fname,userid,title);
-		}
-		/* Modified by Amigo 2002.04.17. Set BMS announce poster as 'BMS'. */
-//		if(toboard) Postfile( fname,currboard,title,1);
-		if (toboard) {
-    		if (mode == 1) {
-				Postfile(fname, currboard, title, 3);
-			} else if (mode == 2) {
-				Postfile(fname, currboard, title, 2);
-			} else {
-				Postfile(fname, currboard, title, 1);
-			}
-		}
-		/* Modify end. */
-        unlink(fname);
-        set_user_status(savemode);
-    }
-	return 0;	//返回值现无意义
+
+	if (uname)
+		do_mail_file(uname, title, NULL, str, strlen(str), NULL);
+
+	if (board)
+		Poststring(str, board, title, mode);
 }
 
 // 清屏,并在第一行显示title

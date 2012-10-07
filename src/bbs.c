@@ -253,7 +253,8 @@ int uleveltochar(char *buf, unsigned int lvl) {
 	return 1;
 }
 
-void Poststring(char *str, char *nboard, char *posttitle, int mode)
+void Poststring(const char *str, const char *nboard, const char *posttitle,
+		int mode)
 {
 	FILE *se;
 	char fname[STRLEN];

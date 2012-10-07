@@ -277,13 +277,12 @@ int tui_ordain_bm(const char *cmd)
 	}
 
 	char buf[STRLEN];
-	strcpy(currboard, bname);
 	snprintf(buf, sizeof(buf), "任命 %s 为 %s 版版%s", lookupuser.userid,
 			board.name, bm_s);
-	autoreport(buf, genbuf, YEA, lookupuser.userid, 1);
+	autoreport(board.name, buf, genbuf, lookupuser.userid, POST_FILE_BMS);
 #ifdef ORDAINBM_POST_BOARDNAME
-	strcpy(currboard, ORDAINBM_POST_BOARDNAME);
-	autoreport(buf, genbuf, YEA, lookupuser.userid, 1);
+	autoreport(ORDAINBM_POST_BOARDNAME, buf, genbuf, lookupuser.userid,
+			POST_FILE_BMS);
 #endif
 	securityreport(buf, 0, 1);
 	move(16, 0);
@@ -443,7 +442,6 @@ int tui_retire_bm(const char *cmd)
 	else
 		sprintf(bmfilename, "[通告]撤除 %s 版%s %s", bname, bm ? "版主" : "版副",
 				lookupuser.userid);
-	strcpy(currboard, bname);
 	if (right) {
 		sprintf(genbuf, "\n\t\t\t【 通告 】\n\n"
 			"\t经站务委员会讨论：\n"
@@ -474,7 +472,7 @@ int tui_retire_bm(const char *cmd)
 		strcat(genbuf, buf[i]);
 		strcat(genbuf, "\n");
 	}
-	autoreport(bmfilename, genbuf, YEA, lookupuser.userid, 1);
+	autoreport(board.name, bmfilename, genbuf, lookupuser.userid, POST_FILE_BMS);
 
 	prints("\n执行完毕！");
 	pressanykey();

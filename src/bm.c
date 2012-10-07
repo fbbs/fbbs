@@ -41,7 +41,7 @@ static int club_do_add(const char *user, const char *board, const char *ps)
 			currentuser.userid, user, board);
 	snprintf(msg, sizeof(msg), "%s:\n\n    您被邀请加入俱乐部版 %s\n\n补充说明"
 			"：%s\n\n邀请人: %s\n", user, board, ps, currentuser.userid);
-	autoreport(title, msg, YEA, user, 2);
+	autoreport(currboard, title, msg, user, POST_FILE_AUTO);
 	Poststring(msg, "club", title, 2);
 	return 0;
 }
@@ -85,7 +85,7 @@ static int club_del(const char *user, const char *board)
 	char *msg = "";
 	snprintf(title, sizeof(title), "%s取消%s在俱乐部版%s的权利",
 			currentuser.userid, user, board);
-	autoreport(title, msg, YEA, user, 2);
+	autoreport(currboard, title, msg, user, POST_FILE_AUTO);
 	Poststring(msg, "club", title, 2);
 	return 0;
 }
