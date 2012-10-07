@@ -438,14 +438,14 @@ int a_Import(const char *title, const char *file, int nomsg)
 
 // deardragon 0921
 
-int a_menusearch(char *path, char* key, char * found) {
+int a_menusearch(const char *key, char *found) {
 	FILE *fn;
 	char bname[20], flag='0';
 	char buf[PATHLEN], *ptr;
 	int searchmode = 0;
 	if (key == NULL) {
+		a_prompt(-1, "输入欲搜寻之讨论区名称: ", bname, 18);
 		key = bname;
-		a_prompt(-1, "输入欲搜寻之讨论区名称: ", key, 18);
 		searchmode = 1;
 	}
 	sprintf(buf, "0Announce/.Search");

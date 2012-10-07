@@ -177,7 +177,7 @@ char *setuserfile(char *buf, char *filename) {
 	return buf;
 }
 
-char *setbdir(char *buf, char *boardname)
+char *setbdir(char *buf, const char *boardname)
 {
 	char *dir;
 
@@ -1463,15 +1463,9 @@ int show_b_note() {
 int into_announce() {
 	char found[STRLEN];
 
-	//char ablogpath[256];
-	if (a_menusearch("0Announce", currboard, found)) {
+	if (a_menusearch(currboard, found)) {
 		sprintf(ANN_LOG_PATH, "logs/%s", currboard);
-		//sprintf(genbuf, "%s/.log", found);
-		//sprintf(ablogpath, "%s/%s", BBSHOME, ANN_LOG_PATH);
-		//unlink(genbuf);
-		//symlink(ablogpath, genbuf);
 		a_menu("", found, (HAS_PERM(PERM_ANNOUNCE) ? PERM_BOARDS : 0), 0);
-		//return FULLUPDATE;
 		return MODECHANGED;
 	}
 	return DONOTHING;
@@ -1558,7 +1552,6 @@ int show_online(void)
 }
 
 extern int mainreadhelp();
-extern int b_vote();
 extern int b_notes_edit();
 
 struct one_key read_comms[] = {
@@ -2008,7 +2001,7 @@ int thesis_mode() {
 }
 
 /* Add by everlove 07/08/2001 制作合集 */
-void Add_Combine(char *board, struct fileheader * fileinfo, int has_cite) //added by roly 02.05.20
+void Add_Combine(const char *board, struct fileheader * fileinfo, int has_cite) //added by roly 02.05.20
 {
 	FILE *fp;
 	char buf[STRLEN];

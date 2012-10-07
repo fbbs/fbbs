@@ -199,7 +199,8 @@ static int cmpvuid(void *userid, void *uv)
 //ÉèÖÃ°æÃæÍ¶Æ±µÄ±êÖ¾,           
 //bname:°æÃæÃû,flag°æÃæ±êÖ¾
 //1:¿ªÆôÍ¶Æ±,0:¹Ø±ÕÍ¶Æ± ·µ»ØÖµ:ÎŞ..
-int setvoteflag(char *bname, int flag) {
+static int setvoteflag(const char *bname, int flag)
+{
 	board_t board;
 	get_board(bname, &board);
 
@@ -247,8 +248,9 @@ void setvfile(char *buf, const char *bname, const char *filename)
 }
 
 //ÉèÖÃ¿ØÖÆcontrolfileÎÄ¼şÃûÎª vote\°æÃæÃû\control
-void setcontrolfile() {
-	setvfile(controlfile, currboard, "control");
+static void setcontrolfile(const char *bname)
+{
+	setvfile(controlfile, bname, "control");
 }
 
 //±à¼­»òÉ¾³ı°æÃæ±¸ÍüÂ¼
@@ -561,7 +563,7 @@ int mk_result(int num)
 	int i;
 	unsigned int total = 0;
 
-	setcontrolfile();
+	setcontrolfile(currboard);
 	sprintf(fname, "vote/%s/flag.%d", currboard, currvote.opendate); //Í¶Æ±¼ÇÂ¼ÎÄ¼şÂ·¾¶Îª vote/°æÃû/flag.¿ªÆôÍ¶Æ±ÈÕ
 	/*	count_result(NULL); */
 	sug = NULL;
@@ -647,8 +649,7 @@ int b_closepolls(void)
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		board_t board;
 		res_to_board(res, i, &board);
-		strcpy(currboard, board.name);
-		setcontrolfile();
+		setcontrolfile(board.name);
 		int end = get_num_records(controlfile, sizeof(currvote));
 		for (vnum = end; vnum >= 1; vnum--) {
 			time_t closetime;
@@ -699,7 +700,7 @@ int vote_maintain(const char *bname)
 	char buf[STRLEN];
 	struct votebal *ball = &currvote;
 
-	setcontrolfile();
+	setcontrolfile(bname);
 	if (!am_curr_bm())
 		return 0;
 	stand_title("¿ªÆôÍ¶Æ±Ïä");
@@ -718,7 +719,7 @@ int vote_maintain(const char *bname)
 	ball->opendate = time(NULL);
 	if (makevote(ball, bname))
 		return FULLUPDATE; //ÉèÖÃÍ¶Æ±Ïä
-	setvoteflag(currboard, 1);
+	setvoteflag(bname, 1);
 	clear();
 	strcpy(ball->userid, currentuser.userid);
 	if (append_record(controlfile, ball, sizeof(*ball)) == -1) {
@@ -734,11 +735,9 @@ int vote_maintain(const char *bname)
 		sprintf(votename, "tmp/votetmp.%s.%05d", currentuser.userid,
 				session.pid);
 		if ((sug = fopen(votename, "w")) != NULL) {
-			//Modified by IAMFAT 2002.06.13
-			//sprintf(buf, "[Í¨Öª] %s ¾Ù°ìÍ¶Æ±£º%s", currboard, ball->title);
 			strcpy(genbuf, ball->title);
-			ellipsis(genbuf, 31 - strlen(currboard));
-			sprintf(buf, "[Í¨Öª] %s ¾Ù°ìÍ¶Æ±: %s", currboard, ball->title);
+			ellipsis(genbuf, 31 - strlen(bname));
+			sprintf(buf, "[Í¨Öª] %s ¾Ù°ìÍ¶Æ±: %s", bname, ball->title);
 			get_result_title();
 			if (ball->type != VOTE_ASKING && ball->type != VOTE_VALUE) {
 				fprintf(sug, "\n¡¾[1mÑ¡ÏîÈçÏÂ[m¡¿\n");
@@ -844,7 +843,7 @@ int makevote(struct votebal *ball, const char *bname)
 // val:  0£º¼ì²éÄ£Ê½    ²»µÈÓÚ0:Ğ´ÈëÄ£Ê½
 // mode: 1:¼ì²é±¸ÍüÂ¼   2:¼ì²é½øÕ¾Welcome
 // ·µ»ØÖµ 0:Î´¶Á 1:ÒÑ¶Á
-int vote_flag(char *bname, char val, int mode) {
+int vote_flag(const char *bname, char val, int mode) {
 	char buf[STRLEN], flag;
 	int fd, num, size;
 
@@ -1168,7 +1167,7 @@ int Show_Votes(void)
 	move(3, 0);
 	clrtobot();
 	printvote(NULL, 0, NULL);
-	setcontrolfile();
+	setcontrolfile(currboard);
 	if (apply_record(controlfile, printvote, sizeof(struct votebal), NULL, 0,
 			0, true) == -1) {
 		prints("´íÎó£¬Ã»ÓĞÍ¶Æ±Ïä¿ªÆô....");
@@ -1297,7 +1296,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 
 //ÓÃ»§¶Ô±¾°æ½øĞĞÍ¶Æ±£¬bbs.cµ÷ÓÃ
 //·µ»ØÖµ:¹Ì¶¨ÎªFULLUPDATE
-int b_vote(void)
+int b_vote(const char *bname)
 {
 	int num_of_vote;
 	int voting;
@@ -1305,44 +1304,34 @@ int b_vote(void)
 	if (!HAS_PERM(PERM_VOTE) || (currentuser.stay < 1800)) {
 		return 0;
 	}
-	setcontrolfile();
+	setcontrolfile(bname);
 	num_of_vote = get_num_records(controlfile, sizeof(struct votebal));
 	if (num_of_vote == 0) {
 		move(2, 0);
 		clrtobot();
 		prints("\n±§Ç¸, Ä¿Ç°²¢Ã»ÓĞÈÎºÎÍ¶Æ±¾ÙĞĞ¡£\n");
 		pressreturn();
-		setvoteflag(currboard, 0);
+		setvoteflag(bname, 0);
 		return FULLUPDATE;
 	}
 	setlistrange(num_of_vote);
 	clear();
 	voting = choose(NA, 0, vote_title, vote_key, Show_Votes, user_vote); //?
 	clear();
-	return /* user_vote( currboard ) */FULLUPDATE;
+	return FULLUPDATE;
 }
 
 //SYSOP°æ¿ªÆôÍ¶Æ±Ïä
 int m_vote() {
-	char buf[STRLEN];
-
-	strcpy(buf, currboard);
-	strcpy(currboard, DEFAULTBOARD);
 	set_user_status(ST_ADMIN);
 	vote_maintain(DEFAULTBOARD);
-	strcpy(currboard, buf);
 	return 0;
 }
 
 //¶ÔSYSOP°æ½øĞĞÍ¶Æ±
 int x_vote() {
-	char buf[STRLEN];
-
 	set_user_status(ST_XMENU);
-	strcpy(buf, currboard);
-	strcpy(currboard, DEFAULTBOARD);
-	b_vote();
-	strcpy(currboard, buf);
+	b_vote(DEFAULTBOARD);
 	return 0;
 }
 

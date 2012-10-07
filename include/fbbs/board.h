@@ -70,7 +70,7 @@ extern bool fav_board_rmdir(user_id_t uid, int id);
 extern bool fav_board_rm(user_id_t uid, int id);
 extern bool fav_board_mv(user_id_t uid, int id, int parent);
 
-extern char currboard[];
+extern const char *currboard;
 extern board_t *currbp;
 extern void change_board(board_t *bp);
 extern bool is_junk_board(const board_t *bp);

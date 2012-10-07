@@ -5,16 +5,15 @@
 #include "fbbs/mdbi.h"
 #include "fbbs/string.h"
 
-char currboard[STRLEN - BM_LEN];
 static board_t curr_board;
 board_t *currbp = &curr_board;
+const char *currboard = curr_board.name;
 
 void change_board(board_t *bp)
 {
 	if (!bp)
 		return;
 	memcpy(currbp, bp, sizeof(*currbp));
-	strcpy(currboard, bp->name);
 }
 
 int isclubmember(const char *member, const char *board)

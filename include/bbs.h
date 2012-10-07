@@ -266,7 +266,7 @@ extern struct userec lookupuser; /* Used when searching for other user info */
 
 #endif					/* NO_STRUCT_H */
 
-extern char currboard[]; /* name of currently selected board */
+extern const char *currboard; /* name of currently selected board */
 extern char currBM[]; /* BM of currently selected board */
 
 extern int selboard; /* THis flag is true if above is active */
