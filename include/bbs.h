@@ -249,8 +249,6 @@ enum {
 #define BMLOG_RANGEANN		20          //L或者B收入精华
 #define BMLOG_RANGEDEL      21          //L或者B删除
 #define BMLOG_RANGEOTHER    23          //L或者B其他操作
-extern int scrint; /* Set when screen has been initialized */
-/* Used by namecomplete *only* */
 
 extern int digestmode; /*To control Digestmode*/
 

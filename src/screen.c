@@ -1,5 +1,4 @@
 #include "bbs.h"
-#include "screen.h"
 #include <sys/param.h>
 #include <stdarg.h>
 #include "fbbs/string.h"
@@ -30,6 +29,24 @@
 
 /** Send a terminal command. */
 #define term_cmd(cmd)  output((unsigned char *)cmd, sizeof(cmd) - 1)
+
+/* Maximum Screen width in chars */
+#define LINELEN (1024)
+
+/* Line buffer modes             */
+#define MODIFIED (1)   /* if line has been modifed, output to screen   */
+#define STANDOUT (2)   /* if this line has a standout region */
+
+struct screenline {
+	unsigned int oldlen; /* previous line length              */
+	unsigned int len; /* current length of line            */
+	unsigned char mode; /* status of line, as far as update  */
+	unsigned char smod; /* start of modified data            */
+	unsigned char emod; /* end of modified data              */
+	unsigned char sso; /* start stand out */
+	unsigned char eso; /* end stand out */
+	unsigned char data[LINELEN];
+};
 
 extern int iscolor;
 extern int editansi;
