@@ -230,29 +230,6 @@ int shownotepad(void)
 	return 0;
 }
 
-int uleveltochar(char *buf, unsigned int lvl) {
-	if (!(lvl & PERM_LOGIN)) {
-		strcpy(buf, "--------- ");
-		return 0;
-	}
-	if (lvl < PERM_DEFAULT) {
-		strcpy(buf, "- -------- ");
-		return 1;
-	}
-	buf[10] = '\0';
-	buf[9] = (lvl & (PERM_BOARDS)) ? 'B' : ' ';
-	buf[8] = (lvl & (PERM_CLOAK)) ? '#' : ' ';
-	buf[7] = (lvl & (PERM_SEECLOAK)) ? '@' : ' ';
-	buf[6] = (lvl & (PERM_OBOARDS)) ? 'O' : ' ';
-	buf[5] = (lvl & (PERM_OCLUB)) ? 'C' : ' ';
-	buf[4] = (lvl & (PERM_ANNOUNCE)) ? 'N' : ' ';
-	buf[3] = (lvl & (PERM_USER)) ? 'U' : ' ';
-	buf[2] = (lvl & (PERM_OCBOARD)) ? 'M' : ' ';
-	buf[1] = (lvl & (PERM_OCHAT)) ? 'R' : ' ';
-	buf[0] = (lvl & (PERM_SYSOPS)) ? 'S' : ' ';
-	return 1;
-}
-
 void Poststring(const char *str, const char *nboard, const char *posttitle,
 		int mode)
 {
@@ -635,36 +612,6 @@ int post_reply(const char *owner, const char *title, const char *file)
 	set_user_status(status);
 	in_mail = NA;
 	return FULLUPDATE;
-}
-
-//added by iamfat 2002.07.25
-char month[12][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-		"Aug", "Sep", "Oct", "Nov", "Dec" };
-time_t en_gettime(char *str) {
-	struct tm tms;
-	int i;
-
-	tms.tm_isdst = 0;
-	//Thu Jul 25 08:33:34 2002
-	str = strtok(str, " :"); //Ignore the week
-	str = strtok(NULL, " :"); //now is month
-	i = 12;
-	while (i-- && strcmp(str, month[i]))
-		;
-	if (i < 0)
-		return time(0);
-	tms.tm_mon = i;
-	str = strtok(NULL, " :"); //now is day
-	tms.tm_mday = atoi(str);
-	str = strtok(NULL, " :"); //now is hour
-	tms.tm_hour = atoi(str);
-	str = strtok(NULL, " :"); //now is min
-	tms.tm_min = atoi(str);
-	str = strtok(NULL, " :"); //now is sec
-	tms.tm_sec = atoi(str);
-	str = strtok(NULL, " :"); //now is year
-	tms.tm_year = atoi(str) - 1900;
-	return mktime(&tms);
 }
 
 static int undelcheck(void *fh1, void *fh2)
