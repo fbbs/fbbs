@@ -618,7 +618,7 @@ static char *boardmargin(void)
 {
 	static char buf[STRLEN];
 
-	if (selboard)
+	if (currbp->id)
 		snprintf(buf, sizeof(buf), "讨论区 [%s]", currboard);
 	else {
 		brc_initial(currentuser.userid, DEFAULTBOARD);
@@ -627,7 +627,6 @@ static char *boardmargin(void)
 		get_board(DEFAULTBOARD, &board);
 		change_board(&board);
 
-		selboard = 1;
 		sprintf(buf, "讨论区 [%s]", currboard);
 	}
 	return buf;

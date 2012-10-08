@@ -5,7 +5,7 @@
 #include "fbbs/mdbi.h"
 #include "fbbs/string.h"
 
-static board_t curr_board;
+static board_t curr_board = { .id = 0 };
 board_t *currbp = &curr_board;
 const char *currboard = curr_board.name;
 

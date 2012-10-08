@@ -37,7 +37,6 @@ int digestmode;
 int local_article;
 int usernum = 0;
 char currBM[BM_LEN - 1];
-int selboard = 0;
 char someoneID[31];
 char topic[STRLEN] = "";
 int FFLL = 0;
@@ -262,53 +261,32 @@ static int cmpdigestfilename(void *digest_name, void *fhdr)
 	return 0;
 } /* comapare file names for dele_digest function. Luzi 99.3.30 */
 
-int do_select(int ent, struct fileheader *fileinfo, char *direct) {
-	char bname[STRLEN], bpath[STRLEN];
-	struct stat st;
-
+int tui_select_board(void)
+{
 	set_user_status(ST_SELECT);
-
-	if (digestmode == TRASH_MODE || digestmode == JUNK_MODE || digestmode
-			== ATTACH_MODE)
-		return DONOTHING;
 
 	move(0, 0);
 	clrtoeol();
 	prints("选择一个讨论区 (英文字母大小写皆可)\n");
-	clrtoeol();
 
+	char bname[BOARD_NAME_LEN];
 	board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
 			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (*bname == '\0')
-		return FULLUPDATE;
-
-	setbpath(bpath, bname);
-	if ((stat(bpath, &st) == -1)) {
-		move(2, 0);
-		prints("不正确的讨论区.\n");
-		pressreturn();
-		return FULLUPDATE;
-	}
-	if (!(st.st_mode & S_IFDIR)) {
-		move(2, 0);
-		prints("不正确的讨论区.\n");
-		pressreturn();
-		return FULLUPDATE;
-	}
+		return 0;
 
 	board_t board;
 	if (!get_board(bname, &board))
-		return FULLUPDATE;
+		return 0;
 
 	if (!has_read_perm(&currentuser, &board)) {
 		clear();
 		move(5, 10);
 		prints("您不是俱乐部版 %s 的成员，无权进入该版", bname);
 		pressanykey();
-		return FULLUPDATE;
+		return 0;
 	}
 
-	selboard = 1;
 	brc_update(currentuser.userid, currboard);
 	brc_initial(currentuser.userid, bname);
 	change_board(&board);
@@ -317,15 +295,14 @@ int do_select(int ent, struct fileheader *fileinfo, char *direct) {
 	clrtoeol();
 	move(1, 0);
 	clrtoeol();
-	setbdir(direct, currboard);
 	set_current_board(board.id);
 
-	return NEWDIRECT;
+	return board.id;
 }
 
 int board_select(void)
 {
-	do_select(0, NULL, genbuf);
+	tui_select_board();
 	return 0;
 }
 
@@ -1506,7 +1483,6 @@ struct one_key read_comms[] = {
 		{';', move_notice},
 #endif
 		{',', read_attach},
-		{'s', do_select},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
 		{'\0', NULL}
@@ -1514,12 +1490,11 @@ struct one_key read_comms[] = {
 
 int board_read(void)
 {
-	char buf[STRLEN];
 	char notename[STRLEN];
 	time_t usetime;
 	struct stat st;
 
-	if (!selboard) {
+	if (!currbp->id) {
 		move(2, 0);
 		prints("请先选择讨论区\n");
 		pressreturn();
@@ -1544,7 +1519,6 @@ int board_read(void)
 	}
 
 	brc_initial(currentuser.userid, currboard);
-	setbdir(buf, currboard);
 	set_current_board(board.id);
 
 	setvfile(notename, currboard, "notes");
