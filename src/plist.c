@@ -213,9 +213,9 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	if (l->reload) {
 		p->base = SLIDE_LIST_NEXT;
 		if (l->pos->min_pid)
-			l->filter.min = l->pos->min_pid - 1;
+			l->filter.min = l->pos->min_pid;
 		else
-			l->filter.min = brc_last_read();
+			l->filter.min = brc_last_read() + 1;
 	}
 	if (p->base == SLIDE_LIST_CURRENT)
 		return 0;
@@ -2148,6 +2148,29 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	}
 }
 
+static void save_post_list_position(const slide_list_t *p,
+		const post_list_t *l)
+{
+	post_info_t *min = l->icount ? l->index[0] : NULL;
+	if (min && min->flag & POST_FLAG_STICKY)
+		min = l->count ? l->posts + l->count - 1 : NULL;
+
+	post_info_t *cur = NULL;
+	for (int i = l->icount - 1; i >= 0; --i) {
+		if (!(l->index[i]->flag & POST_FLAG_STICKY)) {
+			cur = l->index[i];
+			break;
+		}
+	}
+	if (!cur)
+		cur = min;
+
+	l->pos->min_tid = min ? min->tid : 0;
+	l->pos->cur_tid = cur ? cur->tid : 0;
+	l->pos->min_pid = min ? min->id : 0;
+	l->pos->cur_pid = cur ? cur->id : 0;
+}
+
 static int post_list_with_filter(const post_filter_t *filter)
 {
 	post_list_t p = {
@@ -2172,6 +2195,8 @@ static int post_list_with_filter(const post_filter_t *filter)
 	};
 
 	slide_list(&s);
+
+	save_post_list_position(&s, &p);
 
 	free(p.index);
 	free(p.posts);
