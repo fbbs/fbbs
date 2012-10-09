@@ -1538,8 +1538,9 @@ int board_read(void)
 	}
 
 	usetime = time(0);
-	extern int post_list_normal_range(int bid, post_id_t pid, slide_list_base_e base);
-	post_list_normal_range(board.id, 0, SLIDE_LIST_BOTTOMUP);
+	extern int post_list_normal(int bid);
+	post_list_normal(board.id);
+
 //	i_read(ST_READING, buf, readtitle, readdoent, &read_comms[0],
 //			sizeof(struct fileheader));
 	//commented by iamfat 2004.03.14

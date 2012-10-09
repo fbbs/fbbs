@@ -13,6 +13,7 @@ extern int brc_clear_legacy(int ent, const char *direct, int clearall);
 extern void brc_mark_as_read(int64_t id);
 extern bool brc_unread(int64_t id);
 extern int brc_first_unread(void);
+extern int brc_last_read(void);
 extern void brc_clear(int64_t id);
 extern void brc_clear_all(void);
 

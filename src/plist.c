@@ -3,6 +3,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
+#include "fbbs/list.h"
 #include "fbbs/mail.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
@@ -10,8 +11,58 @@
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
+typedef struct post_list_position_t {
+	post_list_type_e type;
+	user_id_t uid;
+	post_id_t min_pid;
+	post_id_t min_tid;
+	post_id_t cur_pid;
+	post_id_t cur_tid;
+	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+	SLIST_FIELD(post_list_position_t) next;
+} post_list_position_t;
+
+SLIST_HEAD(post_list_position_list_t, post_list_position_t);
+
+static bool match(const post_list_position_t *p, const post_filter_t *fp)
+{
+	return !(p->type != fp->type
+			|| (p->type == POST_LIST_AUTHOR && p->uid != fp->uid)
+			|| (p->type == POST_LIST_KEYWORD
+				&& streq(p->utf8_keyword, fp->utf8_keyword)));
+}
+
+static void filter_to_position_record(const post_filter_t *fp,
+		post_list_position_t *p)
+{
+	p->type = fp->type;
+	p->uid = fp->uid;
+	p->min_pid = p->min_tid = p->cur_pid = p->cur_tid = 0;
+	memcpy(p->utf8_keyword, fp->utf8_keyword, sizeof(p->utf8_keyword));
+}
+
+static post_list_position_t *get_post_list_position(const post_filter_t *fp)
+{
+	static struct post_list_position_list_t *list = NULL;
+	if (!list) {
+		list = malloc(sizeof(*list));
+		SLIST_INIT_HEAD(list);
+	}
+
+	SLIST_FOREACH(post_list_position_t, p, list, next) {
+		if (match(p, fp))
+			return p;
+	}
+
+	post_list_position_t *p = malloc(sizeof(*p));
+	filter_to_position_record(fp, p);
+	SLIST_INSERT_HEAD(list, p, next);
+	return p;
+}
+
 typedef struct {
 	post_filter_t filter;
+	post_list_position_t *pos;
 
 	bool relocate;
 	bool reload;
@@ -101,29 +152,71 @@ static void index_posts(post_list_t *l, int limit, slide_list_base_e base)
 
 static void adjust_filter(post_list_t *l, slide_list_base_e base)
 {
-	if (l->count) {
-		if (is_asc(base)) {
-			if (base == SLIDE_LIST_TOPDOWN)
-				l->filter.min = 0;
-			else
-				l->filter.min = l->posts[l->count - 1].id + 1;
-			l->filter.max = POST_ID_MAX;
-		} else {
+	if (is_asc(base)) {
+		if (base == SLIDE_LIST_TOPDOWN)
 			l->filter.min = 0;
-			if (base == SLIDE_LIST_BOTTOMUP)
-				l->filter.max = POST_ID_MAX;
-			else
-				l->filter.max = l->posts[0].id - 1;
-		}
+		else if (l->count)
+			l->filter.min = l->posts[l->count - 1].id + 1;
+		l->filter.max = 0;
+	} else {
+		l->filter.min = 0;
+		if (base == SLIDE_LIST_BOTTOMUP)
+			l->filter.max = 0;
+		else if (l->count)
+			l->filter.max = l->posts[0].id - 1;
 	}
+}
+
+static void _load_posts(slide_list_t *p, slide_list_base_e base,
+		post_filter_t *fp, int page, int limit)
+{
+	query_builder_t *b = build_post_query(fp, is_asc(base), limit);
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
+
+	post_list_t *l = p->data;
+	res_to_array(res, l, base, page);
+	l->last_query_rows = db_res_rows(res);
+	db_clear(res);
+}
+
+static void load_posts(slide_list_t *p, int page)
+{
+	post_list_t *l = p->data;
+	adjust_filter(l, p->base);
+
+	_load_posts(p, p->base, &l->filter, page, page);
+}
+
+static void reverse_load_posts(slide_list_t *p, int page, int limit)
+{
+	post_list_t *l = p->data;
+	slide_list_base_e base = (p->base == SLIDE_LIST_NEXT ?
+			SLIDE_LIST_PREV : SLIDE_LIST_NEXT);
+
+	post_filter_t filter = l->filter;
+	if (base == SLIDE_LIST_NEXT) {
+		filter.min = l->filter.max + 1;
+		filter.max = 0;
+	} else {
+		filter.min = 0;
+		filter.max = l->filter.min - 1;
+	}
+
+	_load_posts(p, base, &filter, page, limit);
 }
 
 static slide_list_loader_t post_list_loader(slide_list_t *p)
 {
 	post_list_t *l = p->data;
 
-	if (l->reload)
+	if (l->reload) {
 		p->base = SLIDE_LIST_NEXT;
+		if (l->pos->min_pid)
+			l->filter.min = l->pos->min_pid - 1;
+		else
+			l->filter.min = brc_last_read();
+	}
 	if (p->base == SLIDE_LIST_CURRENT)
 		return 0;
 
@@ -135,19 +228,17 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		l->icount = l->count = l->scount = 0;
 	}
 
-	bool asc = is_asc(p->base);
-	adjust_filter(l, p->base);
-	query_builder_t *b = build_post_query(&l->filter, asc, page);
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
-	res_to_array(res, l, p->base, page);
-	l->last_query_rows = db_res_rows(res);
+	load_posts(p, page);
 
 	if ((p->base == SLIDE_LIST_NEXT && l->last_query_rows < page)
 			|| p->base == SLIDE_LIST_BOTTOMUP) {
 		load_sticky_posts(l);
 	}
-	db_clear(res);
+
+	if (l->reload && l->last_query_rows + l->scount < page
+			&& (p->base == SLIDE_LIST_PREV || p->base == SLIDE_LIST_NEXT)) {
+		reverse_load_posts(p, page, page - l->last_query_rows - l->scount);
+	}
 
 	if (l->last_query_rows) {
 		if (p->update != FULLUPDATE)
@@ -520,14 +611,15 @@ static int toggle_post_flag(post_info_t *ip, post_flag_e flag,
 	return DONOTHING;
 }
 
-static int post_list(int bid, post_list_type_e type, post_id_t pid,
-		slide_list_base_e base, user_id_t uid, const char *keyword);
+static int post_list_with_filter(const post_filter_t *filter);
 
 static int post_list_deleted(int bid, post_list_type_e type)
 {
 	if (type != POST_LIST_NORMAL || !am_curr_bm())
 		return DONOTHING;
-	post_list(bid, POST_LIST_TRASH, 0, SLIDE_LIST_BOTTOMUP, 0, NULL);
+
+	post_filter_t filter = { .type = POST_LIST_TRASH, .bid = bid };
+	post_list_with_filter(&filter);
 	return FULLUPDATE;
 }
 
@@ -535,12 +627,11 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 {
 	if (type != POST_LIST_NORMAL || !HAS_PERM(PERM_OBOARDS))
 		return DONOTHING;
-	post_list(bid, POST_LIST_JUNK, 0, SLIDE_LIST_BOTTOMUP, 0, NULL);
+
+	post_filter_t filter = { .type = POST_LIST_JUNK, .bid = bid };
+	post_list_with_filter(&filter);
 	return FULLUPDATE;
 }
-
-static int post_list_with_filter(slide_list_base_e base,
-		post_filter_t *filter);
 
 static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 {
@@ -594,7 +685,7 @@ static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 			break;
 	}
 
-	post_list_with_filter(SLIDE_LIST_BOTTOMUP, &filter);
+	post_list_with_filter(&filter);
 	l->reload = true;
 	return FULLUPDATE;
 }
@@ -834,23 +925,22 @@ static int show_post_info(const post_info_t *ip)
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(ip->utf8_title, gbk_title);
-	prints("标    题:     %s\n", gbk_title);
-
-	prints("作    者:     %s\n", ip->owner);
-	prints("时    间:     %s\n", getdatestring(ip->stamp, DATE_ZH));
+	prints("标题: %s\n", gbk_title);
+	prints("作者: %s\n", ip->owner);
+	prints("时间: %s\n", getdatestring(ip->stamp, DATE_ZH));
 	//	prints("大    小:     %d 字节\n", filestat.st_size);
 
 	char buf[PID_BUF_LEN];
-	prints("\nID:     %d\n", pid_to_base32(ip->id, buf, sizeof(buf)));
-	prints("\nTID:     %d\n", pid_to_base32(ip->tid, buf, sizeof(buf)));
-	prints("\nREID:     %d\n", pid_to_base32(ip->reid, buf, sizeof(buf)));
+	prints("id:   %s\n", pid_to_base32(ip->id, buf, sizeof(buf)));
+	prints("tid:  %s\n", pid_to_base32(ip->tid, buf, sizeof(buf)));
+	prints("reid: %s\n", pid_to_base32(ip->reid, buf, sizeof(buf)));
 
 	char link[STRLEN];
 	snprintf(link, sizeof(link),
 			"http://%s/bbs/con?new=1&bid=%d&f=%"PRIdPID"%s\n",
 			BBSHOST, currbp->id, ip->id,
 			(ip->flag & POST_FLAG_STICKY) ? "&s=1" : "");
-	prints("URL 地址:\n%s", link);
+	prints("\n%s", link);
 
 	pressanykey();
 	return FULLUPDATE;
@@ -1532,7 +1622,7 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 				filter.max = info.p.id - 1;
 			} else {
 				filter.min = info.p.id + 1;
-				filter.max = POST_ID_MAX;
+				filter.max = 0;
 			}
 			if (load_full_post(&filter, &info, upward)) {
 				dump_content_to_gbk_file(info.content, info.length,
@@ -2058,14 +2148,21 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	}
 }
 
-static int post_list_with_filter(slide_list_base_e base, post_filter_t *filter)
+static int post_list_with_filter(const post_filter_t *filter)
 {
-	post_list_t p = { .relocate = true, .filter = *filter };
-	if (p.filter.type == POST_LIST_NORMAL)
-		p.sreload = true;
+	post_list_t p = {
+		.relocate = true,
+		.filter = *filter,
+		.reload = true,
+		.pos = get_post_list_position(filter),
+		.sreload = filter->type == POST_LIST_NORMAL,
+	};
+
+	int status = session.status;
+	set_user_status(ST_READING);
 
 	slide_list_t s = {
-		.base = base,
+		.base = SLIDE_LIST_CURRENT,
 		.data = &p,
 		.update = FULLUPDATE,
 		.loader = post_list_loader,
@@ -2079,37 +2176,13 @@ static int post_list_with_filter(slide_list_base_e base, post_filter_t *filter)
 	free(p.index);
 	free(p.posts);
 	free(p.sposts);
-	return 0;
-}
 
-static int post_list(int bid, post_list_type_e type, post_id_t pid,
-		slide_list_base_e base, user_id_t uid, const char *keyword)
-{
-	post_filter_t filter = { .type = type, .bid = bid, .uid = uid };
-
-	if (keyword)
-		strlcpy(filter.utf8_keyword, keyword, sizeof(filter.utf8_keyword));
-	if (is_asc(base)) {
-		filter.min = pid;
-		filter.max = 0;
-	} else {
-		filter.min = 0;
-		filter.max = pid;
-	}
-
-	int status = session.status;
-	set_user_status(ST_READING);
-	post_list_with_filter(base, &filter);
 	set_user_status(status);
 	return 0;
 }
 
-int post_list_normal_range(int bid, post_id_t pid, slide_list_base_e base)
-{
-	return post_list(bid, POST_LIST_NORMAL, pid, base, 0, NULL);
-}
-
 int post_list_normal(int bid)
 {
-	return 0;
+	post_filter_t filter = { .type = POST_LIST_NORMAL, .bid = bid };
+	return post_list_with_filter(&filter);
 }

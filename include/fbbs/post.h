@@ -19,7 +19,7 @@ enum {
 };
 
 #define POST_LIST_FIELDS  \
-	"id,reid,tid,bid,owner,uname,stamp,digest,marked,water," \
+	"id,reid,tid,board,owner,uname,stamp,digest,marked,water," \
 	"locked,imported,replies,comments,score,title"
 
 #define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ",content"

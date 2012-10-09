@@ -184,6 +184,13 @@ int brc_first_unread(void)
 	return 1;
 }
 
+int brc_last_read(void)
+{
+	if (brc_num > 0)
+		return brc_list[0];
+	return 0;
+}
+
 void brc_clear(int64_t id)
 {
 	for (int i = id - BRC_MAXNUM + 1; i <= id; ++i)
