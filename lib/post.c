@@ -525,9 +525,14 @@ bool is_deleted(post_list_type_e type)
 	return type == POST_LIST_TRASH || type == POST_LIST_JUNK;
 }
 
+bool post_list_type(const post_info_t *ip)
+{
+	return (ip->flag & POST_FLAG_DELETED) ? POST_LIST_TRASH : POST_LIST_NORMAL;
+}
+
 const char *post_table_name(const post_filter_t *filter)
 {
-	if (filter->deleted)
+	if (is_deleted(filter->type))
 		return "posts_deleted";
 	else
 		return "posts";
@@ -558,7 +563,7 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f)
 
 static const char *post_list_fields(const post_filter_t *filter)
 {
-	if (filter->deleted)
+	if (is_deleted(filter->type))
 		return "d"POST_LIST_FIELDS;
 	else
 		return POST_LIST_FIELDS;
@@ -566,7 +571,7 @@ static const char *post_list_fields(const post_filter_t *filter)
 
 const char *post_table_index(const post_filter_t *filter)
 {
-	if (filter->deleted)
+	if (is_deleted(filter->type))
 		return "did";
 	else
 		return "id";
@@ -754,9 +759,9 @@ static char *replace_content_title(const char *content, size_t len,
 	return s;
 }
 
-bool alter_title(post_id_t pid, bool deleted, const char *title)
+bool alter_title(const post_info_t *ip, const char *title)
 {
-	post_filter_t filter = { .min = pid, .deleted = deleted };
+	post_filter_t filter = { .min = ip->id, .type = post_list_type(ip), };
 	db_res_t *res = query_post_by_pid(&filter, "content");
 	if (res && db_res_rows(res) == 1) {
 		char *content = replace_content_title(db_get_value(res, 0, 0),
@@ -769,7 +774,7 @@ bool alter_title(post_id_t pid, bool deleted, const char *title)
 		b->append(b, "UPDATE");
 		b->append(b, post_table_name(&filter));
 		b->append(b, "SET title = %s, content = %s", title, content);
-		b->append(b, "WHERE id = %"DBIdPID, pid);
+		b->append(b, "WHERE id = %"DBIdPID, ip->id);
 
 		res = b->cmd(b);
 		bool success = res;
@@ -782,14 +787,14 @@ bool alter_title(post_id_t pid, bool deleted, const char *title)
 	return false;
 }
 
-bool alter_content(post_id_t pid, bool deleted, const char *content)
+bool alter_content(const post_info_t *ip, const char *content)
 {
-	post_filter_t filter = { .deleted = deleted };
+	post_filter_t filter = { .type = post_list_type(ip), };
 
 	query_builder_t *b = query_builder_new(0);
 	b->append(b, "UPDATE")->append(b, post_table_name(&filter));
 	b->append(b, "SET")->append(b, "content = %s", content);
-	b->append(b, "WHERE")->append(b, "id = %"DBIdPID, pid);
+	b->append(b, "WHERE")->append(b, "id = %"DBIdPID, ip->id);
 
 	db_res_t *res = b->cmd(b);
 	db_clear(res);

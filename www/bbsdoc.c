@@ -113,7 +113,7 @@ static int bbsdoc(post_list_type_e type)
 	brc_fcgi_init(currentuser.userid, board.name);
 
 	post_filter_t filter = {
-		.bid = board.id, .deleted = is_deleted(type), .max = start,
+		.bid = board.id, .type = type, .max = start,
 	};
 	print_posts(&filter, page);
 	print_sticky_posts(board.id, type);

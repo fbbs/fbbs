@@ -949,8 +949,8 @@ static int show_post_info(const post_info_t *ip)
 static bool dump_content(const post_info_t *ip, char *file, size_t size)
 {
 	post_filter_t filter = {
-		.deleted = ip->flag & POST_FLAG_DELETED,
 		.min = ip->id, .max = ip->id, .bid = ip->bid,
+		.type = post_list_type(ip),
 	};
 	db_res_t *res = query_post_by_pid(&filter, "content");
 	if (!res || db_res_rows(res) < 1)
@@ -1029,7 +1029,7 @@ static int tui_edit_post_title(post_info_t *ip)
 	if (!*utf8_title || streq(utf8_title, ip->utf8_title))
 		return MINIUPDATE;
 
-	if (alter_title(ip->id, ip->flag & POST_FLAG_DELETED, utf8_title)) {
+	if (alter_title(ip, utf8_title)) {
 		strlcpy(ip->utf8_title, utf8_title, sizeof(ip->utf8_title));
 		return PARTUPDATE;
 	}
@@ -1051,7 +1051,7 @@ static int tui_edit_post_content(post_info_t *ip)
 	if (vedit(file, NA, NA) != -1) {
 		char *content = convert_file_to_utf8_content(file);
 		if (content) {
-			if (alter_content(ip->id, ip->flag & POST_FLAG_DELETED, content)) {
+			if (alter_content(ip, content)) {
 				char buf[STRLEN];
 				snprintf(buf, sizeof(buf), "edited post #%"PRIdPID, ip->id);
 				report(buf, currentuser.userid);
