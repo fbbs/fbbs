@@ -261,7 +261,7 @@ static int cmpdigestfilename(void *digest_name, void *fhdr)
 	return 0;
 } /* comapare file names for dele_digest function. Luzi 99.3.30 */
 
-int tui_select_board(void)
+int tui_select_board(int current_bid)
 {
 	set_user_status(ST_SELECT);
 
@@ -287,22 +287,24 @@ int tui_select_board(void)
 		return 0;
 	}
 
-	brc_update(currentuser.userid, currboard);
-	brc_initial(currentuser.userid, bname);
-	change_board(&board);
-
 	move(0, 0);
 	clrtoeol();
 	move(1, 0);
 	clrtoeol();
-	set_current_board(board.id);
 
-	return board.id;
+	if (board.id != current_bid) {
+		brc_update(currentuser.userid, currboard);
+		brc_initial(currentuser.userid, bname);
+		change_board(&board);
+		set_current_board(board.id);
+		return board.id;
+	}
+	return 0;
 }
 
 int board_select(void)
 {
-	tui_select_board();
+	tui_select_board(0);
 	return 0;
 }
 

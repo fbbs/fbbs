@@ -2000,6 +2000,22 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 	return PARTUPDATE;
 }
 
+extern int tui_select_board(int);
+
+static int switch_board(post_list_t *l)
+{
+	if (l->filter.type != POST_LIST_NORMAL || !l->filter.bid)
+		return DONOTHING;
+
+	int bid = tui_select_board(l->filter.bid);
+	if (bid) {
+		l->filter.bid = bid;
+		l->relocate = l->reload = l->sreload = true;
+		l->pos = get_post_list_position(&l->filter);
+	}
+	return FULLUPDATE;
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -2143,6 +2159,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'x':
 			if (into_announce() != DONOTHING)
 				return FULLUPDATE;
+		case 's':
+			return switch_board(l);
 		default:
 			return DONOTHING;
 	}
