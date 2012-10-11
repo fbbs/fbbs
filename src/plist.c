@@ -77,6 +77,12 @@ typedef struct {
 	int scount;
 } post_list_t;
 
+static post_info_t *get_post_info(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	return (p->cur >= 0 && p->cur < l->icount) ? l->index[p->cur] : NULL;
+}
+
 static bool is_asc(slide_list_base_e base)
 {
 	return (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_NEXT);
@@ -125,8 +131,10 @@ static void load_sticky_posts(post_list_t *l)
 	}
 }
 
-static void index_posts(post_list_t *l, int limit, slide_list_base_e base)
+static void index_posts(slide_list_t *p, int limit)
 {
+	post_list_t *l = p->data;
+	slide_list_base_e base = p->base;
 	if (base != SLIDE_LIST_CURRENT) {
 		int remain = limit, start = 0;
 		if (base == SLIDE_LIST_BOTTOMUP)
@@ -148,6 +156,7 @@ static void index_posts(post_list_t *l, int limit, slide_list_base_e base)
 			}
 		}
 	}
+	p->max = l->icount;
 }
 
 static void adjust_filter(post_list_t *l, slide_list_base_e base)
@@ -247,7 +256,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		p->cur = p->base == SLIDE_LIST_PREV ? 0 : page - 1;
 	}
 
-	index_posts(l, page, p->base);
+	index_posts(p, page);
 	l->reload = false;
 	return 0;
 }
@@ -569,14 +578,16 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 
 static int toggle_post_lock(post_info_t *ip)
 {
-	bool locked = ip->flag & POST_FLAG_LOCKED;
-	if (am_curr_bm() || (session.id == ip->uid && !locked)) {
-		post_filter_t filter = {
-			.bid = ip->bid, .min = ip->id, .max = ip->id
-		};
-		if (set_post_flag(&filter, "locked", !locked, false)) {
-			set_post_flag_local(ip, POST_FLAG_LOCKED, !locked);
-			return PARTUPDATE;
+	if (ip) {
+		bool locked = ip->flag & POST_FLAG_LOCKED;
+		if (am_curr_bm() || (session.id == ip->uid && !locked)) {
+			post_filter_t filter = {
+				.bid = ip->bid, .min = ip->id, .max = ip->id
+			};
+			if (set_post_flag(&filter, "locked", !locked, false)) {
+				set_post_flag_local(ip, POST_FLAG_LOCKED, !locked);
+				return PARTUPDATE;
+			}
 		}
 	}
 	return DONOTHING;
@@ -584,7 +595,7 @@ static int toggle_post_lock(post_info_t *ip)
 
 static int toggle_post_stickiness(post_info_t *ip, post_list_t *l)
 {
-	if (is_deleted(l->filter.type))
+	if (!ip || is_deleted(l->filter.type))
 		return DONOTHING;
 
 	bool sticky = ip->flag & POST_FLAG_STICKY;
@@ -598,14 +609,16 @@ static int toggle_post_stickiness(post_info_t *ip, post_list_t *l)
 static int toggle_post_flag(post_info_t *ip, post_flag_e flag,
 		const char *field)
 {
-	bool set = ip->flag & flag;
-	if (am_curr_bm()) {
-		post_filter_t filter = {
-			.bid = ip->bid, .min = ip->id, .max = ip->id
-		};
-		if (set_post_flag(&filter, field, !set, false)) {
-			set_post_flag_local(ip, flag, !set);
-			return PARTUPDATE;
+	if (ip) {
+		bool set = ip->flag & flag;
+		if (am_curr_bm()) {
+			post_filter_t filter = {
+				.bid = ip->bid, .min = ip->id, .max = ip->id
+			};
+			if (set_post_flag(&filter, field, !set, false)) {
+				set_post_flag_local(ip, flag, !set);
+				return PARTUPDATE;
+			}
 		}
 	}
 	return DONOTHING;
@@ -635,7 +648,7 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 
 static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 {
-	if (l->filter.type != POST_LIST_NORMAL)
+	if (!ip || l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	char ans[3];
@@ -744,8 +757,9 @@ static int relocate_to_author(slide_list_t *p, user_id_t uid, bool upward)
 
 static int tui_search_author(slide_list_t *p, bool upward)
 {
-	post_list_t *l = p->data;
-	post_info_t *ip = l->index[p->cur];
+	post_info_t *ip = get_post_info(p);
+	if (!ip)
+		return DONOTHING;
 
 	char prompt[80];
 	snprintf(prompt, sizeof(prompt), "向%s搜索作者 [%s]: ",
@@ -786,19 +800,22 @@ static int tui_search_title(slide_list_t *p, bool upward)
 static int jump_to_thread_first(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	post_info_t *ip = l->index[p->cur];
-	post_filter_t filter = {
-		.bid = l->filter.bid, .tid = ip->tid, .max = ip->tid
-	};
-	return relocate_to_filter(p, &filter, true);
+	post_info_t *ip = get_post_info(p);
+	if (ip) {
+		post_filter_t filter = {
+			.bid = l->filter.bid, .tid = ip->tid, .max = ip->tid
+		};
+		return relocate_to_filter(p, &filter, true);
+	}
+	return DONOTHING;
 }
 
 static int jump_to_thread_prev(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	post_info_t *ip = l->index[p->cur];
+	post_info_t *ip = get_post_info(p);
 
-	if (ip->id == ip->tid)
+	if (!ip || ip->id == ip->tid)
 		return DONOTHING;
 
 	post_filter_t filter = {
@@ -810,11 +827,14 @@ static int jump_to_thread_prev(slide_list_t *p)
 static int jump_to_thread_next(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	post_info_t *ip = l->index[p->cur];
-	post_filter_t filter = {
-		.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
-	};
-	return relocate_to_filter(p, &filter, false);
+	post_info_t *ip = get_post_info(p);
+	if (ip) {
+		post_filter_t filter = {
+			.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
+		};
+		return relocate_to_filter(p, &filter, false);
+	}
+	return DONOTHING;
 }
 
 static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user);
@@ -822,9 +842,9 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user);
 static int jump_to_thread_first_unread(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	post_info_t *ip = l->index[p->cur];
+	post_info_t *ip = get_post_info(p);
 
-	if (l->filter.type != POST_LIST_NORMAL)
+	if (!ip || l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	post_filter_t filter = {
@@ -861,37 +881,42 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 static int jump_to_thread_last(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	post_info_t *ip = l->index[p->cur];
+	post_info_t *ip = get_post_info(p);
 
-	post_filter_t filter = {
-		.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
-	};
+	if (ip) {
+		post_filter_t filter = {
+			.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
+		};
 
-	query_builder_t *b = build_post_query(&filter, false, 1);
-	db_res_t *res = b->query(b);
-	if (res && db_res_rows(res) > 0) {
-		post_info_t info;
-		res_to_post_info(res, 0, &info);
-		read_posts(l, &info, true, false);
-		db_clear(res);
-		return FULLUPDATE;
+		query_builder_t *b = build_post_query(&filter, false, 1);
+		db_res_t *res = b->query(b);
+		if (res && db_res_rows(res) > 0) {
+			post_info_t info;
+			res_to_post_info(res, 0, &info);
+			read_posts(l, &info, true, false);
+			db_clear(res);
+			return FULLUPDATE;
+		}
 	}
 	return DONOTHING;
 }
 
-static int skip_post(slide_list_t *p, post_id_t pid)
+static int skip_post(slide_list_t *p)
 {
-	brc_mark_as_read(pid);
-	if (++p->cur >= t_lines - 4) {
-		p->base = SLIDE_LIST_NEXT;
-		p->cur = 0;
+	post_info_t *ip = get_post_info(p);
+	if (ip) {
+		brc_mark_as_read(ip->id);
+		if (++p->cur >= t_lines - 4) {
+			p->base = SLIDE_LIST_NEXT;
+			p->cur = 0;
+		}
 	}
 	return DONOTHING;
 }
 
 static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 {
-	if (ip->uid == session.uid || am_curr_bm()) {
+	if (ip && (ip->uid == session.uid || am_curr_bm())) {
 		post_filter_t f = {
 			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
 		};
@@ -905,7 +930,7 @@ static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 
 static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 {
-	if (is_deleted(p->filter.type)) {
+	if (ip && is_deleted(p->filter.type)) {
 		post_filter_t f = {
 			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
 		};
@@ -919,6 +944,9 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 
 static int show_post_info(const post_info_t *ip)
 {
+	if (!ip)
+		return DONOTHING;
+
 	clear();
 	move(0, 0);
 	prints("%s的详细信息:\n\n", "版面文章");
@@ -968,7 +996,7 @@ extern int tui_cross_post_legacy(const char *file, const char *title);
 static int tui_cross_post(const post_info_t *ip)
 {
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!ip || !dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -983,7 +1011,7 @@ static int tui_cross_post(const post_info_t *ip)
 static int forward_post(const post_info_t *ip, bool uuencode)
 {
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!ip || !dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -998,7 +1026,7 @@ static int forward_post(const post_info_t *ip, bool uuencode)
 static int reply_with_mail(const post_info_t *ip)
 {
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!ip || dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1012,7 +1040,7 @@ static int reply_with_mail(const post_info_t *ip)
 
 static int tui_edit_post_title(post_info_t *ip)
 {
-	if (ip->uid != session.uid && !am_curr_bm())
+	if (!ip || (ip->uid != session.uid && !am_curr_bm()))
 		return DONOTHING;
 
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
@@ -1038,7 +1066,7 @@ static int tui_edit_post_title(post_info_t *ip)
 
 static int tui_edit_post_content(post_info_t *ip)
 {
-	if (ip->uid != session.uid && !am_curr_bm())
+	if (!ip || (ip->uid != session.uid && !am_curr_bm()))
 		return DONOTHING;
 
 	char file[HOMELEN];
@@ -1212,7 +1240,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 
 static int tui_save_post(const post_info_t *ip)
 {
-	if (!am_curr_bm())
+	if (!ip || !am_curr_bm())
 		return DONOTHING;
 
 	char file[HOMELEN];
@@ -1229,7 +1257,7 @@ static int tui_save_post(const post_info_t *ip)
 
 static int tui_import_post(const post_info_t *ip)
 {
-	if (!HAS_PERM(PERM_BOARDS))
+	if (!ip || !HAS_PERM(PERM_BOARDS))
 		return DONOTHING;
 
 	if (DEFINE(DEF_MULTANNPATH)
@@ -1569,7 +1597,7 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 	post_filter_t filter = l->filter;
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!ip || !dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	bool end = false, upward = false;
@@ -1891,7 +1919,7 @@ static void operate_posts_in_batch(post_filter_t *fp, post_info_t *ip, int mode,
 
 static int tui_operate_posts_in_batch(slide_list_t *p)
 {
-	if (!am_curr_bm())
+	if (!am_curr_bm() || !get_post_info(p))
 		return DONOTHING;
 
 	post_list_t *l = p->data;
@@ -1980,7 +2008,7 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 		}
 	}
 
-	operate_posts_in_batch(&l->filter, l->index[p->cur], mode, choice, first,
+	operate_posts_in_batch(&l->filter, get_post_info(p), mode, choice, first,
 			pid, quote, junk, annpath, utf8_keyword, gbk_keyword);
 #if 0
 	if (BMch == 7) {
@@ -2035,7 +2063,7 @@ extern int into_announce(void);
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 {
 	post_list_t *l = p->data;
-	post_info_t *ip = l->index[p->cur];
+	post_info_t *ip = get_post_info(p);
 
 	switch (ch) {
 		case '\n': case '\r': case KEY_RIGHT: case 'r':
@@ -2098,7 +2126,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case '\\':
 			return jump_to_thread_last(p);
 		case 'K':
-			return skip_post(p, ip->id);
+			return skip_post(p);
 		case 'c':
 			brc_clear(ip->id);
 			return PARTUPDATE;
@@ -2151,7 +2179,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'h':
 			return mainreadhelp();
 		case Ctrl('A'):
-			return t_query(ip->owner);
+			return ip ? t_query(ip->owner) : DONOTHING;
 		case Ctrl('D'):
 			return deny_user();
 		case Ctrl('K'):

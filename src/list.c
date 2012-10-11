@@ -184,14 +184,16 @@ int slide_list(slide_list_t *p)
 			p->update = DONOTHING;
 		}
 
-		if (!p->in_query) {
+		if (p->cur >= p->max)
+			p->cur = p->max - 1;
+		if (!p->in_query && p->cur >= 0) {
 			move(TUI_LIST_START + p->cur, 0);
 			outs(">");
 		}
 
 		int ch = igetkey();
 
-		if (!p->in_query) {
+		if (!p->in_query && p->cur >= 0) {
 			move(TUI_LIST_START + p->cur, 0);
 			outs(" ");
 		}
@@ -229,7 +231,7 @@ int slide_list(slide_list_t *p)
 				break;
 			case 'j':
 			case KEY_DOWN:
-				if (++p->cur >= BBS_PAGESIZE) {
+				if (++p->cur >= p->max) {
 					p->base = SLIDE_LIST_NEXT;
 					p->cur = 0;
 				}

@@ -41,6 +41,7 @@ typedef int slide_list_handler_t;
 
 typedef struct slide_list_t {
 	int cur;
+	int max;
 	int update;
 	slide_list_base_e base;
 	bool in_query;
