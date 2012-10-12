@@ -1498,77 +1498,6 @@ static int tui_count_posts_in_range(post_list_type_e type)
 		return FULLUPDATE;
 #endif
 
-#if 0
-	switch (ch) {
-		case '*':
-			show_file_info(ent, fileinfo, direct);
-			break;
-		case ' ':
-		case 'j':
-		case KEY_RIGHT:
-			if (DEFINE(DEF_THESIS)) {
-				sread(0, 0, fileinfo);
-				break;
-			} else
-				return READ_NEXT;
-		case KEY_DOWN:
-		case KEY_PGDN:
-			return READ_NEXT;
-		case KEY_UP:
-		case KEY_PGUP:
-			return READ_PREV;
-		case 'Y':
-		case 'R':
-		case 'y':
-		case 'r': {
-			board_t board;
-			get_board(currboard, &board);
-			noreply = (fileinfo->accessed[0] & FILE_NOREPLY)
-					|| (board.flag & BOARD_NOREPLY_FLAG);
-			local_article = true;
-			if (!noreply || am_curr_bm()) {
-				do_reply(fileinfo);
-			} else {
-				clear();
-				prints("\n\n    对不起, 该文章有不可 RE 属性, 您不能回复(RE) 这篇文章.    ");
-				pressreturn();
-				clear();
-			}
-		}
-			break;
-		case Ctrl('R'):
-			post_reply(ent, fileinfo, direct);
-			break;
-		case 'g':
-			digest_post(ent, fileinfo, direct);
-			break;
-		case Ctrl('U'):
-			sread(1, 1, fileinfo);
-			break;
-		case Ctrl('N'):
-			locate_the_post(fileinfo, fileinfo->title, 5, 0, 1);
-			sread(1, 0, fileinfo);
-			break;
-		case Ctrl('S'):
-		case 'p':
-			sread(0, 0, fileinfo);
-			break;
-		case Ctrl('A'):
-			clear();
-			show_author(0, fileinfo, '\0');
-			return READ_NEXT;
-			break;
-		case 'S':
-			if (!HAS_PERM(PERM_TALK))
-				break;
-			clear();
-			s_msg();
-			break;
-		default:
-			break;
-	}
-#endif
-
 static int load_full_post(const post_filter_t *fp, post_info_full_t *ip,
 		bool upward)
 {
@@ -1622,10 +1551,15 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 				// TODO
 				tui_new_post(info.p.bid, &info.p);
 				break;
-			case ' ': case '\n': case KEY_DOWN: case KEY_RIGHT:
+			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
 				upward = false;
 				break;
-			case KEY_UP: case 'u': case 'U':
+			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
+				upward = false;
+				if (!filter.uid && !filter.tid)
+					filter.tid = info.p.id;
+				break;
+			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
 				upward = true;
 				break;
 			case Ctrl('A'):
@@ -1636,6 +1570,13 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 				break;
 			case 'g':
 				toggle_post_flag(&info.p, POST_FLAG_DIGEST, "digest");
+				break;
+			case '*':
+				show_post_info(&info.p);
+				break;
+			case Ctrl('U'):
+				if (!filter.uid && !filter.tid)
+					filter.uid = info.p.uid;
 				break;
 			default:
 				break;
