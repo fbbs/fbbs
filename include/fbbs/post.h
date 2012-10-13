@@ -132,7 +132,7 @@ extern void res_to_post_info(db_res_t *r, int i, post_info_t *p);
 void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set);
 extern int _load_sticky_posts(int bid, post_info_t **posts);
 extern bool is_deleted(post_list_type_e type);
-extern bool post_list_type(const post_info_t *ip);
+extern post_list_type_e post_list_type(const post_info_t *ip);
 extern const char *post_table_name(const post_filter_t *filter);
 extern const char *post_table_index(const post_filter_t *filter);
 extern void build_post_filter(query_builder_t *b, const post_filter_t *f, const bool *asc);

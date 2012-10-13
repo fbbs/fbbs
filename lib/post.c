@@ -525,7 +525,7 @@ bool is_deleted(post_list_type_e type)
 	return type == POST_LIST_TRASH || type == POST_LIST_JUNK;
 }
 
-bool post_list_type(const post_info_t *ip)
+post_list_type_e post_list_type(const post_info_t *ip)
 {
 	return (ip->flag & POST_FLAG_DELETED) ? POST_LIST_TRASH : POST_LIST_NORMAL;
 }
@@ -575,10 +575,14 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f,
 					" OR tid < %"DBIdPID")", f->tid, f->max, f->tid);
 		}
 	} else {
-		if (f->min)
-			b->sappend(b, "AND", "id >= %"DBIdPID, f->min);
-		if (f->max)
-			b->sappend(b, "AND", "id <= %"DBIdPID, f->max);
+		if (f->min) {
+			b->sappend(b, "AND", post_table_index(f));
+			b->append(b, ">= %"DBIdPID, f->min);
+		}
+		if (f->max) {
+			b->sappend(b, "AND", post_table_index(f));
+			b->append(b, "<= %"DBIdPID, f->max);
+		}
 		if (f->tid)
 			b->sappend(b, "AND", "tid = %"DBIdPID, f->tid);
 	}
@@ -750,7 +754,8 @@ db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields)
 	b->append(b, fields);
 	b->append(b, "FROM");
 	b->append(b, post_table_name(filter));
-	b->append(b, "WHERE id = %"DBIdPID, filter->min);
+	b->sappend(b, "WHERE", post_table_index(filter));
+	b->append(b, "= %"DBIdPID, filter->min);
 
 	db_res_t *res = b->query(b);
 	query_builder_free(b);
