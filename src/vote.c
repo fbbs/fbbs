@@ -314,7 +314,7 @@ int b_notes_edit()
 		} else
 		aborted = -1;
 	} else
-	aborted = vedit(buf, NA, YEA); //编辑备忘录
+	aborted = vedit(buf, NA, YEA, NULL); //编辑备忘录
 	if (aborted == -1) {
 		pressreturn();
 	} else {
@@ -768,7 +768,7 @@ int makevote(struct votebal *ball, const char *bname)
 	igetkey();
 	setvfile(genbuf, bname, "desc");
 	sprintf(buf, "%s.%d", genbuf, ball->opendate);
-	aborted = vedit(buf, NA, YEA);
+	aborted = vedit(buf, NA, YEA, NULL);
 	if (aborted) {
 		clear();
 		prints("取消此次投票设定\n");

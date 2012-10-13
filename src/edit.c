@@ -859,12 +859,11 @@ char save_title[STRLEN];
 //char    save_filename[4096];
 int in_mail;
 
-void write_header(FILE *fp, int mode)
+void write_header(FILE *fp, const struct postheader *header)
 {
 	int noname;
 	extern char BoardName[];
 	extern char fromhost[];
-	extern struct postheader header;
 	char uid[20];
 	char uname[NAMELEN];
 
@@ -888,8 +887,8 @@ void write_header(FILE *fp, int mode)
 		fprintf(fp, "寄信人: %s (%s)\n", uid, uname);
 	else {
 		fprintf(fp, "发信人: %s (%s), 信区: %s\n",
-				(noname && header.anonymous) ? ANONYMOUS_ACCOUNT : uid,
-				(noname && header.anonymous) ? ANONYMOUS_NICK : uname, currboard);
+				(noname && header->anonymous) ? ANONYMOUS_ACCOUNT : uid,
+				(noname && header->anonymous) ? ANONYMOUS_NICK : uname, currboard);
 	}
 	fprintf(fp, "标  题: %s\n", save_title);
 	fprintf(fp, "发信站: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
@@ -950,7 +949,7 @@ void valid_article(char *pmt, char *abort, int sure) {
 }
 
 int write_file(char *filename, int write_header_to_file, int addfrom,
-		int sure) {
+		int sure, const struct postheader *header) {
 	struct textline *p;
 	FILE *fp;
 	char abort[6], p_buf[100];
@@ -1002,7 +1001,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			abort_bbs(0);
 		}
 		if (write_header_to_file)
-			write_header(fp, 0);
+			write_header(fp, header);
 	}
 	p = can_edit_end;
 	if (p!=NULL)
@@ -1568,7 +1567,9 @@ void vedit_key(int ch) {
 	}
 }
 
-int raw_vedit(char *filename, int write_header_to_file, int modifyheader) {
+int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
+		const struct postheader *header)
+{
 	int newch, ch = 0, foo, shift, sure = 0;
 	int addfrom = 0;
 	addfrom = read_file(filename);
@@ -1604,7 +1605,7 @@ int raw_vedit(char *filename, int write_header_to_file, int modifyheader) {
 				sure = 1;
 			case Ctrl('W'):
 				foo = write_file(filename, write_header_to_file, addfrom,
-						sure);
+						sure, header);
 				if (foo != KEEP_EDITING)
 					return foo;
 				redraw_everything = YEA;
@@ -1632,7 +1633,9 @@ int raw_vedit(char *filename, int write_header_to_file, int modifyheader) {
 	return 1;
 }
 
-int vedit(char *filename, int write_header_to_file, int modifyheader) {
+int vedit(char *filename, int write_header_to_file, int modifyheader,
+		const struct postheader *header)
+{
 	int ans, t = showansi;
 	showansi = 0;
 #ifdef ALLOWAUTOWRAP
@@ -1649,7 +1652,7 @@ int vedit(char *filename, int write_header_to_file, int modifyheader) {
 	}
 	ismsgline = (DEFINE(DEF_EDITMSG)) ? 1 : 0;
 	msg(0);
-	ans = raw_vedit(filename, write_header_to_file, modifyheader);
+	ans = raw_vedit(filename, write_header_to_file, modifyheader, header);
 	showansi = t;
 	signal(SIGALRM, SIG_IGN);
 	return ans;

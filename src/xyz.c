@@ -183,7 +183,7 @@ void x_edits() {
 		return;
 	}
 	set_user_status(ST_EDITUFILE);
-	aborted = vedit(genbuf, NA, YEA);
+	aborted = vedit(genbuf, NA, YEA, NULL);
 	clear();
 	if (!aborted) {
 		prints("%s ¸üÐÂ¹ý\n", explain_file[ch]);

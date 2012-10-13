@@ -119,7 +119,7 @@ int grant_money(void)
 
 	bool error = true;
 	while (error) {
-		int aborted = vedit(file, NA, YEA);
+		int aborted = vedit(file, NA, YEA, NULL);
 		if (aborted == -1) {
 			unlink(file);
 			return 0;

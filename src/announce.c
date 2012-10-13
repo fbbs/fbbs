@@ -563,7 +563,7 @@ void a_newitem(MENU *pm, int mode) {
 		return;
 	switch (mode) {
 		case ADDITEM:
-			if (vedit(fpath, 0, YEA) == -1)
+			if (vedit(fpath, 0, YEA, NULL) == -1)
 				return;
 			chmod(fpath, 0644);
 			break;
@@ -1247,7 +1247,7 @@ void a_manager(MENU *pm, int ch) {
 
 					if (dashf(fpath)) {
 						set_user_status(ST_EDITANN);
-						vedit(fpath, 0, YEA);
+						vedit(fpath, 0, YEA, NULL);
 						set_user_status(ST_DIGEST);
 					}
 					pm->page = 9999;
@@ -1324,7 +1324,7 @@ void a_manager(MENU *pm, int ch) {
 				if (dashf(fpath)) {
 					set_user_status(ST_EDITANN);
 					//vedit(fpath,0,NA);
-					vedit(fpath, 0, YEA);
+					vedit(fpath, 0, YEA, NULL);
 					set_user_status(ST_DIGEST);
 				}
 				pm->page = 9999;

@@ -1132,7 +1132,7 @@ static int tui_edit_post_content(post_info_t *ip)
 	set_user_status(ST_EDIT);
 
 	clear();
-	if (vedit(file, NA, NA) != -1) {
+	if (vedit(file, NA, NA, NULL) != -1) {
 		char *content = convert_file_to_utf8_content(file);
 		if (content) {
 			if (alter_content(ip, content)) {
@@ -1229,7 +1229,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 		unlink(orig);
 	}
 
-	if (vedit(file, YEA, YEA) == -1) {
+	if (vedit(file, YEA, YEA, &header) == -1) {
 		unlink(file);
 		clear();
 		return FULLUPDATE;

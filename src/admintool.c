@@ -1552,7 +1552,7 @@ void a_edits() {
 		return;
 	}
 	set_user_status(ST_EDITSFILE);
-	aborted = vedit(buf2, NA, YEA); /* 不添加文件头, 允许修改头部信息 */
+	aborted = vedit(buf2, NA, YEA, NULL);
 	clear();
 	if (aborted != -1) {
 		prints("%s 更新过", explain_file[ch]);

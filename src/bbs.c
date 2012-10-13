@@ -436,13 +436,12 @@ void do_quote(const char *orig, const char *file, char mode, bool anony)
 	fclose(fp);
 }
 
-static void getcross(const char *filepath, int mode)
+static void getcross(const char *filepath, int mode,
+		const struct postheader *header)
 {
 	FILE *inf, *of;
 	char buf[256];
 	char owner[STRLEN];
-
-	//int count, owner_found = 0;
 	int owner_found = 0;
 	char *p = NULL;
 	time_t now;
@@ -457,10 +456,10 @@ static void getcross(const char *filepath, int mode)
 	if (mode == 0 || mode == 4) {
 		if (in_mail == YEA) {
 			in_mail = NA;
-			write_header(of, 1 /* ²»Ð´Èë .posts */);
+			write_header(of, header);
 			in_mail = YEA;
 		} else
-			write_header(of, 1 /* ²»Ð´Èë .posts */);
+			write_header(of, header);
 		if (fgets(buf, 256, inf) && (p = strstr(buf, "ÐÅÈË: "))) {
 			p += 6;
 			strtok(p, " \n\r");
@@ -483,12 +482,6 @@ static void getcross(const char *filepath, int mode)
 			mode = 0;
 		}
 		if (owner_found) {
-			// Clear Post header
-			/*
-			 if(fgets (buf, 256, inf) != NULL)
-			 {
-			 if (buf[0] != '\n')fgets (buf, 256, inf);
-			 } */
 			while (fgets(buf, 256, inf) && buf[0] != '\n')
 				;
 			fprintf(of, "\033[1m¡¾ Ô­ÎÄÓÉ[32m %s[37m Ëù·¢±í ¡¿[m\n\n", owner);
@@ -496,41 +489,22 @@ static void getcross(const char *filepath, int mode)
 			fseek(inf, (long) 0, SEEK_SET);
 	} else if (mode == 1) {
 		fprintf(of,
-		//           "[1;41;33m·¢ÐÅÈË: deliver (×Ô¶¯·¢ÐÅÏµÍ³), ÐÅÇø: %-12.12s                          [m\n",
-				//modified by iamfat 2002.08.18
 				"[1;33m·¢ÐÅÈË: deliver (×Ô¶¯·¢ÐÅÏµÍ³), ÐÅÇø: %s[m\n", currboard);
-		/* modified by roly 2002.01.13 */
-		//              fprintf(of, "1;41;33m·¢ÐÅÈË: deliver (×Ô¶¯·¢ÐÅÏµÍ³), ÐÅÇø: %-12.12s                          m\n", currboard);
 		fprintf(of, "±ê  Ìâ: %s\n", quote_title);
 		fprintf(of, "·¢ÐÅÕ¾: %s×Ô¶¯·¢ÐÅÏµÍ³ (%s)\n\n", BoardName, getdatestring(now, DATE_ZH));
-		/*		fprintf(of, "¡¾´ËÆªÎÄÕÂÊÇÓÉ×Ô¶¯·¢ÐÅÏµÍ³ËùÕÅÌù¡¿\n\n"); */
-		/* Added by Amigo 2002.04.17. Set BMS announce poster as 'BMS'. */
 	} else if (mode == 3) {
 		fprintf(of,
-		//           "[1;41;33m·¢ÐÅÈË: BMS (°æÖ÷¹ÜÀíÔ±), ÐÅÇø: %-12.12s                          [m\n",
-				//modified by iamfat 2002.08.18
 				"[1;33m·¢ÐÅÈË: BMS (°æÖ÷¹ÜÀíÔ±), ÐÅÇø: %s[m\n", currboard);
 		fprintf(of, "±ê  Ìâ: %s\n", quote_title);
 		fprintf(of, "·¢ÐÅÕ¾: %s×Ô¶¯·¢ÐÅÏµÍ³ (%s)\n\n", BoardName, getdatestring(now, DATE_ZH));
-		/* Add end. */
 	} else if (mode == 2) {
-		write_header(of, 0 /* Ð´Èë .posts */);
+		write_header(of, header);
 	}
 	while (fgets(buf, 256, inf) != NULL) {
-		//    if ((strstr (buf, "¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô ") && strstr (buf, "ÌÖÂÛÇø ¡¿"))
-		//      || (strstr (buf, "¡¾ Ô­ÎÄÓÉ") && strstr (buf, "Ëù·¢±í ¡¿")))
-		//      continue;
-		//    else
 		fprintf(of, "%s", buf);
 	}
 	fclose(inf);
 	fclose(of);
-	/* added by roly 2002.02.26 to remove crossinfo from file which is crossposted from 0Announce 
-	 if (strstr(quote_file,"0Announce/")) {
-	 sprintf(buf,"cp %s %s",quote_file,filepath);
-	 system(buf);
-	 }
-	 add end */
 	*quote_file = '\0';
 }
 
@@ -634,7 +608,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 
 	set_user_status(ST_POSTING);
 
-	getcross(file, mode);
+	getcross(file, mode, &header);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
 		add_crossinfo(file, 1);
 
@@ -850,7 +824,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 
 	char file[HOMELEN];
 	sprintf(file, "%s/%s", buf, fileinfo->filename);
-	if (vedit(file, NA, NA) == -1)
+	if (vedit(file, NA, NA, NULL) == -1)
 		return FULLUPDATE;
 	valid_gbk_file(file, '?');
 

@@ -72,7 +72,7 @@ int mailreadhelp(void);
 int usercomplete(char *prompt, char *data);
 int namecomplete(char *prompt, char *data);
 int t_query(const char *user);
-int vedit(char *filename, int write_header_to_file, int modifyheader);
+int vedit(char *filename, int write_header_to_file, int modifyheader, const struct postheader *header);
 
 #include "fbbs/post.h"
 typedef enum {
@@ -163,7 +163,7 @@ void Add_Combine(const char *board, struct fileheader *fileinfo, int has_cite);
 void add_crossinfo(const char *filepath, bool post);
 int AddNameList(const char *name);
 int post_article(char *postboard, char *mailid);
-void write_header(FILE *fp, int mode);
+void write_header(FILE *fp, const struct postheader *header);
 int outgo_post(struct fileheader *fh, char *board);
 void get_noticedirect(char *curr, char *notice);
 void fixkeep(char *s, int first, int last);

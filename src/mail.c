@@ -204,7 +204,7 @@ int mailall(void)
 				time(0));
 	/**********Modified end**********/
 	do_quote(quote_file, fname, header.include_mode, header.anonymous);
-	if (vedit(fname, YEA, YEA) == -1) {
+	if (vedit(fname, YEA, YEA, &header) == -1) {
 		in_mail = NA;
 		unlink(fname);
 		clear();
@@ -417,7 +417,7 @@ int do_send(const char *userid, const char *title)
 		pressanykey();
 #else
 		int res;
-		if (vedit(filepath, YEA, YEA) == -1) {
+		if (vedit(filepath, YEA, YEA, &header) == -1) {
 			unlink(filepath);
 			clear();
 			return -2;
@@ -457,7 +457,7 @@ int do_send(const char *userid, const char *title)
 		return res;
 #endif
 	} else {
-		if (vedit(filepath, YEA, YEA) == -1) {
+		if (vedit(filepath, YEA, YEA, &header) == -1) {
 			unlink(filepath);
 			clear();
 			return -2;
@@ -1215,7 +1215,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 		//		strncpy(save_filename, fname, 4096);
 	}
 	do_quote(quote_file, tmpfile, header.include_mode, header.anonymous);
-	if (vedit(tmpfile, YEA, YEA) == -1) {
+	if (vedit(tmpfile, YEA, YEA, &header) == -1) {
 		unlink(tmpfile);
 		clear();
 		return -2;
@@ -1700,7 +1700,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 	f_cp(file, tmpfile, O_CREAT);
 
 	if (askyn("是否修改文章内容", NA, NA)) {
-		if (vedit(tmpfile, NA, NA) == -1) {
+		if (vedit(tmpfile, NA, NA, NULL) == -1) {
 			if (askyn("是否寄出未修改的文章", YEA, NA) == 0) {
 				unlink(tmpfile);
 				clear();
