@@ -993,6 +993,7 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 {
 	if (ip && is_deleted(p->filter.type)) {
 		post_filter_t f = {
+			.type = POST_LIST_TRASH,
 			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
 		};
 		if (undelete_posts(&f, p->filter.type == POST_LIST_TRASH)) {
