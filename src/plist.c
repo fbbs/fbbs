@@ -1560,8 +1560,18 @@ static int tui_count_posts_in_range(post_list_type_e type)
 		return FULLUPDATE;
 #endif
 
-static int load_full_post(const post_filter_t *fp, post_info_full_t *ip,
-		bool upward)
+enum {
+	POST_LIST_THREAD_CACHE_SIZE = 15,
+};
+
+typedef struct {
+	post_info_full_t posts[POST_LIST_THREAD_CACHE_SIZE];
+	int size;
+	bool inited;
+} thread_post_cache_t;
+
+static int load_full_posts(const post_filter_t *fp, post_info_full_t *ip,
+		bool upward, int limit)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
@@ -1569,23 +1579,67 @@ static int load_full_post(const post_filter_t *fp, post_info_full_t *ip,
 	build_post_filter(b, fp, NULL);
 	b->sappend(b, "ORDER BY", post_table_index(fp));
 	b->append(b, upward ? "DESC" : "ASC");
-	b->append(b, "LIMIT 1");
+	b->sappend(b, "LIMIT", "%l", limit);
 
 	db_res_t *res = b->query(b);
 	query_builder_free(b);
 
 	int rows = db_res_rows(res);
-	if (rows > 0)
-		res_to_post_info_full(res, 0, ip);
-	else
+	if (rows > 0) {
+		for (int i = 0; i < rows; ++i)
+			res_to_post_info_full(res, upward ? rows - 1 - i : i, ip + i);
+	} else {
 		db_clear(res);
+	}
 	return rows;
+}
+
+static void thread_post_cache_free(thread_post_cache_t *cache)
+{
+	if (cache->inited && cache->size > 0) {
+		free_post_info_full(cache->posts);
+		cache->size = 0;
+	}
+}
+
+static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
+		post_id_t tid, post_id_t id, bool upward)
+{
+	post_filter_t filter = { .tid = tid, .min = id };
+	if (id <= tid && upward) {
+		thread_post_cache_free(cache);
+	} else {
+		cache->size = load_full_posts(&filter, cache->posts, upward,
+				NELEMS(cache->posts));
+	}
+	cache->inited = true;
+	if (cache->size)
+		return cache->posts + (upward ? cache->size - 1 : 0);
+	return NULL;
+}
+
+static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
+		post_info_full_t *ip, bool upward)
+{
+	post_info_full_t *next = upward ? ip - 1 : ip + 1;
+	if (next >= cache->posts && next < cache->posts + cache->size)
+		return next;
+
+	if (!upward && cache->size < NELEMS(cache->posts))
+		return NULL;
+
+	post_id_t id = ip->p.id, tid = ip->p.tid;
+	thread_post_cache_free(cache);
+	return thread_post_cache_load(cache, tid,
+			upward ? id - 1 : id + 1, upward);
 }
 
 static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 {
 	post_info_full_t info = { .p = *ip };
+	post_info_full_t *fip = &info;
 	post_filter_t filter = l->filter;
+	thread_post_cache_t cache = { .inited = false };
 
 	char file[HOMELEN];
 	if (!ip || !dump_content(ip, file, sizeof(file)))
@@ -1593,7 +1647,7 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 
 	bool end = false, upward = false;
 	while (!end) {
-		brc_mark_as_read(info.p.id);
+		brc_mark_as_read(fip->p.id);
 
 		int ch = ansimore(file, false);
 
@@ -1611,7 +1665,7 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 				break;
 			case 'Y': case 'R': case 'y': case 'r':
 				// TODO
-				tui_new_post(info.p.bid, &info.p);
+				tui_new_post(fip->p.bid, &fip->p);
 				break;
 			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
 				upward = false;
@@ -1619,53 +1673,70 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
 				upward = false;
 				if (!filter.uid && !filter.tid)
-					filter.tid = info.p.id;
+					filter.tid = fip->p.id;
 				break;
 			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
 				upward = true;
 				break;
 			case Ctrl('A'):
-				t_query(info.p.owner);
+				t_query(fip->p.owner);
 				break;
 			case Ctrl('R'):
-				reply_with_mail(&info.p);
+				reply_with_mail(&fip->p);
 				break;
 			case 'g':
-				toggle_post_flag(&info.p, POST_FLAG_DIGEST, "digest");
+				toggle_post_flag(&fip->p, POST_FLAG_DIGEST, "digest");
 				break;
 			case '*':
-				show_post_info(&info.p);
+				show_post_info(&fip->p);
 				break;
 			case Ctrl('U'):
 				if (!filter.uid && !filter.tid)
-					filter.uid = info.p.uid;
+					filter.uid = fip->p.uid;
 				break;
 			default:
 				break;
 		}
 
 		unlink(file);
-		free_post_info_full(&info);
 
 		if (!end) {
-			if (upward) {
-				filter.min = 0;
-				filter.max = info.p.id - 1;
-			} else {
-				filter.min = info.p.id + 1;
-				filter.max = 0;
+			if (!cache.inited) {
+				if (filter.tid) {
+					fip = thread_post_cache_load(&cache, filter.tid,
+							fip->p.id, upward);
+				}
 			}
-			if (load_full_post(&filter, &info, upward)) {
-				dump_content_to_gbk_file(info.content, info.length,
-						file, sizeof(file));
+
+			if (cache.inited) {
+				fip = thread_post_cache_lookup(&cache, fip, upward);
+				if (fip) {
+					dump_content_to_gbk_file(fip->content, fip->length,
+							file, sizeof(file));
+				} else {
+					break;
+				}
 			} else {
-				end = true;
+				if (upward) {
+					filter.min = 0;
+					filter.max = fip->p.id - 1;
+				} else {
+					filter.min = fip->p.id + 1;
+					filter.max = 0;
+				}
+				if (load_full_posts(&filter, fip, upward, 1)) {
+					dump_content_to_gbk_file(fip->content, fip->length,
+							file, sizeof(file));
+				} else {
+					break;
+				}
 			}
 		}
 	}
+	thread_post_cache_free(&cache);
+	free_post_info_full(&info);
 	return FULLUPDATE;
 }
-
 static void construct_prompt(char *s, size_t size, const char **options,
 		size_t len)
 {
