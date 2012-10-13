@@ -24,6 +24,23 @@ typedef struct post_list_position_t {
 
 SLIST_HEAD(post_list_position_list_t, post_list_position_t);
 
+typedef struct {
+	post_filter_t filter;
+	post_list_position_t *pos;
+
+	bool relocate;
+	bool reload;
+	bool sreload;
+	int last_query_rows;
+
+	post_info_t **index;
+	post_info_t *posts;
+	post_info_t *sposts;
+	int icount;
+	int count;
+	int scount;
+} post_list_t;
+
 static bool match(const post_list_position_t *p, const post_filter_t *fp)
 {
 	return !(p->type != fp->type
@@ -60,22 +77,28 @@ static post_list_position_t *get_post_list_position(const post_filter_t *fp)
 	return p;
 }
 
-typedef struct {
-	post_filter_t filter;
-	post_list_position_t *pos;
+static void save_post_list_position(const slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	post_info_t *min = l->icount ? l->index[0] : NULL;
+	if (min && min->flag & POST_FLAG_STICKY)
+		min = l->count ? l->posts + l->count - 1 : NULL;
 
-	bool relocate;
-	bool reload;
-	bool sreload;
-	int last_query_rows;
+	post_info_t *cur = NULL;
+	for (int i = l->icount - 1; i >= 0; --i) {
+		if (!(l->index[i]->flag & POST_FLAG_STICKY)) {
+			cur = l->index[i];
+			break;
+		}
+	}
+	if (!cur)
+		cur = min;
 
-	post_info_t **index;
-	post_info_t *posts;
-	post_info_t *sposts;
-	int icount;
-	int count;
-	int scount;
-} post_list_t;
+	l->pos->min_tid = min ? min->tid : 0;
+	l->pos->cur_tid = cur ? cur->tid : 0;
+	l->pos->min_pid = min ? min->id : 0;
+	l->pos->cur_pid = cur ? cur->id : 0;
+}
 
 static post_info_t *get_post_info(slide_list_t *p)
 {
@@ -192,7 +215,8 @@ static void _load_posts(slide_list_t *p, slide_list_base_e base,
 static void load_posts(slide_list_t *p, int page)
 {
 	post_list_t *l = p->data;
-	adjust_filter(l, p->base);
+	if (!l->reload)
+		adjust_filter(l, p->base);
 
 	_load_posts(p, p->base, &l->filter, page, page);
 }
@@ -646,8 +670,9 @@ static int post_list_admin_deleted(int bid, post_list_type_e type)
 	return FULLUPDATE;
 }
 
-static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
+static int tui_post_list_selected(slide_list_t *p, post_info_t *ip)
 {
+	post_list_t *l = p->data;
 	if (!ip || l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
@@ -670,15 +695,16 @@ static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 	post_filter_t filter = { .bid = l->filter.bid, .type = types[c] };
 	switch (filter.type) {
 		case POST_LIST_DIGEST:
-			filter.flag &= POST_FLAG_DIGEST;
+			filter.flag |= POST_FLAG_DIGEST;
 			break;
 		case POST_LIST_MARKED:
-			filter.flag &= POST_FLAG_MARKED;
+			filter.flag |= POST_FLAG_MARKED;
+			break;
 		case POST_LIST_AUTHOR: {
 				char uname[IDLEN + 1];
 				strlcpy(uname, ip->owner, sizeof(uname));
 				getdata(t_lines - 1, 0, "您想查找哪位网友的文章? ", uname,
-						sizeof(uname), DOECHO, YEA);
+						sizeof(uname), DOECHO, false);
 				user_id_t uid = get_user_id(uname);
 				if (!uid)
 					return MINIUPDATE;
@@ -698,6 +724,7 @@ static int tui_post_list_selected(post_list_t *l, post_info_t *ip)
 			break;
 	}
 
+	save_post_list_position(p);
 	post_list_with_filter(&filter);
 	l->reload = true;
 	return FULLUPDATE;
@@ -2047,7 +2074,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'J':
 			return post_list_admin_deleted(l->filter.bid, l->filter.type);
 		case Ctrl('G'): case Ctrl('T'): case '`':
-			return tui_post_list_selected(l, ip);
+			return tui_post_list_selected(p, ip);
 		case 'a':
 			return tui_search_author(p, false);
 		case 'A':
@@ -2135,29 +2162,6 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	}
 }
 
-static void save_post_list_position(const slide_list_t *p,
-		const post_list_t *l)
-{
-	post_info_t *min = l->icount ? l->index[0] : NULL;
-	if (min && min->flag & POST_FLAG_STICKY)
-		min = l->count ? l->posts + l->count - 1 : NULL;
-
-	post_info_t *cur = NULL;
-	for (int i = l->icount - 1; i >= 0; --i) {
-		if (!(l->index[i]->flag & POST_FLAG_STICKY)) {
-			cur = l->index[i];
-			break;
-		}
-	}
-	if (!cur)
-		cur = min;
-
-	l->pos->min_tid = min ? min->tid : 0;
-	l->pos->cur_tid = cur ? cur->tid : 0;
-	l->pos->min_pid = min ? min->id : 0;
-	l->pos->cur_pid = cur ? cur->id : 0;
-}
-
 static int post_list_with_filter(const post_filter_t *filter)
 {
 	post_list_t p = {
@@ -2183,7 +2187,7 @@ static int post_list_with_filter(const post_filter_t *filter)
 
 	slide_list(&s);
 
-	save_post_list_position(&s, &p);
+	save_post_list_position(&s);
 
 	free(p.index);
 	free(p.posts);
