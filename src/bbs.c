@@ -32,14 +32,11 @@ extern sigjmp_buf bus_jump;
 char ANN_LOG_PATH[256];
 struct postheader header;
 
-extern char buf2[STRLEN];
 int digestmode;
-int local_article;
 int usernum = 0;
 char currBM[BM_LEN - 1];
 char someoneID[31];
 char topic[STRLEN] = "";
-int FFLL = 0;
 char genbuf[1024];
 char quote_title[120], quote_board[120];
 char quote_file[120], quote_user[120];
@@ -122,7 +119,6 @@ char *sethomepath(char *buf, const char *userid)
 //              如果是回复文章,去掉前面的 "Re: "这4个字符
 void setqtitle(char *stitle, int gid)
 {
-	FFLL = 1;
 	o_gid = gid;
 	if (strncmp(stitle, "Re: ", 4) != 0)
 		//commented by iamfat 2002.07.26

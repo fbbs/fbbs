@@ -11,7 +11,6 @@
 #include "fbbs/terminal.h"
 USE_TRY;
 
-extern int local_article;
 extern char BoardName[];
 
 #define M_MARK  0x01
@@ -881,8 +880,6 @@ void write_header(FILE *fp, const struct postheader *header)
 	board_t board;
 	get_board(currboard, &board);
 	noname = board.flag & BOARD_ANONY_FLAG;
-	if (!(board.flag & BOARD_OUT_FLAG))
-		local_article = YEA;
 	if (in_mail)
 		fprintf(fp, "寄信人: %s (%s)\n", uid, uname);
 	else {
@@ -895,7 +892,7 @@ void write_header(FILE *fp, const struct postheader *header)
 	if (in_mail)
 		fprintf(fp, "\n来  源: %s\n", mask_host(fromhost));
 	else
-		fprintf(fp, ", %s\n", (local_article) ? "站内信件" : "转信");
+		fprintf(fp, ", 站内信件\n");
 	fprintf(fp, "\n");
 }
 
@@ -958,10 +955,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	signal(SIGALRM, SIG_IGN);
 	clear();
 	if (session.status == ST_POSTING) {
-		if (local_article == YEA)
-			strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
-		else
-			strcpy(p_buf, "S.转信, L.本站发表, A.取消, T.更改标题 or E.再编辑? [S]: ");
+		strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
 	} else if (session.status == ST_SMAIL)
 		strcpy(p_buf, "(S)寄出, (A)取消, or (E)再编辑? [S]: ");
 	else
@@ -990,10 +984,6 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			check_title(buf, sizeof(buf));
 			strlcpy(save_title, buf, STRLEN);
 		}
-	} else if ((abort[0] == 's' || abort[0] == 'S') && (session.status == ST_POSTING)) {
-		local_article = NA;
-	} else if ((abort[0] == 'l' || abort[0] == 'L') && (session.status == ST_POSTING)) {
-		local_article = YEA;
 	}
 	if (aborted != -1) {
 		if ((fp = fopen(filename, "w")) == NULL) {

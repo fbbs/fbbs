@@ -14,7 +14,6 @@
 extern void rebuild_brdshm();
 int showperminfo(int, int);
 char cexplain[STRLEN];
-char buf2[STRLEN];
 char lookgrp[30];
 char bnames[3][STRLEN]; //存放用户担任版主的版名,最多为三
 FILE *cleanlog;

@@ -20,7 +20,6 @@ int SR_BMDELFLAG = NA;
 char *pnt;
 
 extern int noreply;
-extern int local_article;
 
 struct keeploc {
 	char *key;
@@ -1476,7 +1475,6 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 				bool noreply = (ptitle->accessed[0] & FILE_NOREPLY)
 						|| (board.flag & BOARD_NOREPLY_FLAG);
 				if (!noreply || am_curr_bm()) {
-					local_article = true;
 					do_reply(ptitle);
 				} else {
 					clear();
