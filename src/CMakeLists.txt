@@ -17,13 +17,9 @@ target_link_libraries(bbsd crypt ${FB_LIBDL_LINK} fbbs fbcmn)
 add_executable(miscd miscd.c io.c main.c)
 target_link_libraries(miscd crypt ${FB_LIBDL_LINK} fbbs fbcmn)
 
-add_executable(thread thread.c)
-target_link_libraries(thread fbbs)
-
 add_library(admintool MODULE admintool.c title_admin.c money_admin.c)
 
-install(TARGETS bbsd miscd thread
-	RUNTIME DESTINATION bin)
+install(TARGETS bbsd miscd RUNTIME DESTINATION bin)
 install(TARGETS admintool LIBRARY DESTINATION lib)
 if(ENABLE_SSH)
 	link_directories(../lib ../libssh)

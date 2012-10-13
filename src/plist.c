@@ -184,18 +184,30 @@ static void index_posts(slide_list_t *p, int limit)
 
 static void adjust_filter(post_list_t *l, slide_list_base_e base)
 {
+	bool thread = l->filter.type == POST_LIST_THREAD;
 	if (is_asc(base)) {
-		if (base == SLIDE_LIST_TOPDOWN)
+		if (base == SLIDE_LIST_TOPDOWN) {
 			l->filter.min = 0;
-		else if (l->count)
-			l->filter.min = l->posts[l->count - 1].id + 1;
+			if (thread)
+				l->filter.tid = 0;
+		} else if (l->count) {
+			post_info_t *ip = l->posts + l->count - 1;
+			l->filter.min = ip->id + 1;
+			if (thread)
+				l->filter.tid = ip->id;
+		}
 		l->filter.max = 0;
 	} else {
 		l->filter.min = 0;
-		if (base == SLIDE_LIST_BOTTOMUP)
+		if (base == SLIDE_LIST_BOTTOMUP) {
 			l->filter.max = 0;
-		else if (l->count)
+			if (thread)
+				l->filter.tid = 0;
+		} else if (l->count) {
 			l->filter.max = l->posts[0].id - 1;
+			if (thread)
+				l->filter.tid = l->posts[0].tid;
+		}
 	}
 }
 
@@ -528,7 +540,8 @@ static const char *get_post_date(fb_time_t stamp)
 	return fb_ctime(&stamp) + 4;
 }
 
-static void post_list_display_entry(post_list_type_e type, post_info_t *p)
+static void post_list_display_entry(post_list_type_e type, post_info_t *p,
+		bool last)
 {
 	char id_str[24];
 	if (p->flag & POST_FLAG_STICKY)
@@ -560,11 +573,16 @@ static void post_list_display_entry(post_list_type_e type, post_info_t *p)
 	snprintf(color, sizeof(color), "\033[1;%dm", 30 + mytm->tm_wday + 1);
 #endif
 
-//		sprintf(title, "%s %s", (digestmode == 2) ? ((ent->accessed[1]
-//				& FILE_LASTONE) ? "©¸" : "©À") : "Re:", ent->title + 4);
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	if (strneq(p->utf8_title, "Re: ", 4)) {
-		convert_u2g(p->utf8_title, gbk_title);
+		if (type == POST_LIST_THREAD) {
+			GBK_BUFFER(title2, POST_TITLE_CCHARS);
+			convert_u2g(p->utf8_title, gbk_title2);
+			snprintf(gbk_title, sizeof(gbk_title), "%s %s",
+					last ? "©¸" : "©À", gbk_title2 + 4);
+		} else {
+			convert_u2g(p->utf8_title, gbk_title);
+		}
 	} else {
 		GBK_BUFFER(title2, POST_TITLE_CCHARS);
 		convert_u2g(p->utf8_title, gbk_title2);
@@ -595,7 +613,12 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 {
 	post_list_t *l = p->data;
 	for (int i = 0; i < l->icount; ++i) {
-		post_list_display_entry(l->filter.type, l->index[i]);
+		bool last = false;
+		if (l->filter.type == POST_LIST_THREAD) {
+			last = i != l->icount - 1
+				&& l->index[i + 1]->tid != l->index[i]->tid;
+		}
+		post_list_display_entry(l->filter.type, l->index[i], last);
 	}
 	return 0;
 }
@@ -696,6 +719,9 @@ static int tui_post_list_selected(slide_list_t *p, post_info_t *ip)
 	switch (filter.type) {
 		case POST_LIST_DIGEST:
 			filter.flag |= POST_FLAG_DIGEST;
+			break;
+		case POST_LIST_THREAD:
+			filter.type = POST_LIST_THREAD;
 			break;
 		case POST_LIST_MARKED:
 			filter.flag |= POST_FLAG_MARKED;
@@ -1534,7 +1560,7 @@ static int load_full_post(const post_filter_t *fp, post_info_full_t *ip,
 	query_builder_t *b = query_builder_new(0);
 	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
 	b->sappend(b, "FROM", post_table_name(fp));
-	build_post_filter(b, fp);
+	build_post_filter(b, fp, NULL);
 	b->sappend(b, "ORDER BY", post_table_index(fp));
 	b->append(b, upward ? "DESC" : "ASC");
 	b->append(b, "LIMIT 1");
@@ -1683,7 +1709,7 @@ static int import_posts(post_filter_t *filter, const char *path)
 	query_builder_t *b = query_builder_new(0);
 	b->sappend(b, "UPDATE", post_table_name(filter));
 	b->sappend(b, "SET", "imported = TRUE");
-	build_post_filter(b, filter);
+	build_post_filter(b, filter, NULL);
 	b->sappend(b, "RETURNING", "title, content");
 
 	db_res_t *res = b->query(b);

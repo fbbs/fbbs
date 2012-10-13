@@ -440,7 +440,7 @@ int set_post_flag(post_filter_t *filter, const char *field, bool set,
 		b->sappend(b, "= NOT", field);
 	else
 		b->append(b, "= %b", set);
-	build_post_filter(b, filter);
+	build_post_filter(b, filter, NULL);
 
 	db_res_t *res = b->cmd(b);
 	query_builder_free(b);
@@ -538,7 +538,16 @@ const char *post_table_name(const post_filter_t *filter)
 		return "posts";
 }
 
-void build_post_filter(query_builder_t *b, const post_filter_t *f)
+const char *post_table_index(const post_filter_t *filter)
+{
+	if (is_deleted(filter->type))
+		return "did";
+	else
+		return "id";
+}
+
+void build_post_filter(query_builder_t *b, const post_filter_t *f,
+		const bool *asc)
 {
 	b->append(b, "WHERE TRUE");
 	if (f->bid)
@@ -551,32 +560,48 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f)
 		b->sappend(b, "AND", "water");
 	if (f->uid)
 		b->sappend(b, "AND", "owner = %"DBIdUID, f->uid);
-	if (f->min)
-		b->sappend(b, "AND", "id >= %"DBIdPID, f->min);
-	if (f->max)
-		b->sappend(b, "AND", "id <= %"DBIdPID, f->max);
-	if (f->tid)
-		b->sappend(b, "AND", "tid = %"DBIdPID, f->tid);
 	if (*f->utf8_keyword)
 		b->sappend(b, "AND", "title ILIKE '%%%s%%'", f->utf8_keyword);
 	if (f->type == POST_LIST_TOPIC)
 		b->sappend(b, "AND", "id = tid");
+
+	if (f->type == POST_LIST_THREAD) {
+		if (f->min && f->tid) {
+			b->sappend(b, "AND", "(tid = %"DBIdPID" AND id >= %"DBIdPID
+					" OR tid > %"DBIdPID")", f->tid, f->min, f->tid);
+		}
+		if (f->max && f->tid) {
+			b->sappend(b, "AND", "(tid = %"DBIdPID" AND id <= %"DBIdPID
+					" OR tid < %"DBIdPID")", f->tid, f->max, f->tid);
+		}
+	} else {
+		if (f->min)
+			b->sappend(b, "AND", "id >= %"DBIdPID, f->min);
+		if (f->max)
+			b->sappend(b, "AND", "id <= %"DBIdPID, f->max);
+		if (f->tid)
+			b->sappend(b, "AND", "tid = %"DBIdPID, f->tid);
+	}
+
+	if (asc) {
+		b->append(b, "ORDER BY");
+		if (f->type == POST_LIST_THREAD) {
+			if (*asc)
+				b->append(b, "tid,");
+			else
+				b->append(b, "tid DESC,");
+		}
+		b->append(b, post_table_index(f));
+		if (!*asc)
+			b->append(b, "DESC");
+	}
 }
 
 static const char *post_list_fields(const post_filter_t *filter)
 {
 	if (is_deleted(filter->type))
 		return "d"POST_LIST_FIELDS;
-	else
-		return POST_LIST_FIELDS;
-}
-
-const char *post_table_index(const post_filter_t *filter)
-{
-	if (is_deleted(filter->type))
-		return "did";
-	else
-		return "id";
+	return POST_LIST_FIELDS;
 }
 
 query_builder_t *build_post_query(const post_filter_t *filter, bool asc,
@@ -585,9 +610,7 @@ query_builder_t *build_post_query(const post_filter_t *filter, bool asc,
 	query_builder_t *b = query_builder_new(0);
 	b->append(b, "SELECT")->append(b, post_list_fields(filter));
 	b->append(b, "FROM")->append(b, post_table_name(filter));
-	build_post_filter(b, filter);
-	b->append(b, "ORDER BY")->append(b, post_table_index(filter));
-	b->append(b, asc ? "ASC" : "DESC");
+	build_post_filter(b, filter, &asc);
 	int64_t l = limit;
 	b->append(b, "LIMIT %l", l);
 	return b;
@@ -654,7 +677,7 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 
 	query_builder_t *b = query_builder_new(0);
 	b->append(b, "WITH rows AS ( DELETE FROM posts");
-	build_post_filter(b, filter);
+	build_post_filter(b, filter, NULL);
 	if (!force)
 		b->sappend(b, "AND", "NOT marked");
 	b->sappend(b, "AND", "NOT sticky");
@@ -688,7 +711,7 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->append(b, "SELECT owner, uname, junk FROM posts_deleted");
-	build_post_filter(b, filter);
+	build_post_filter(b, filter, NULL);
 	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
 
 	db_res_t *res = b->query(b);
@@ -706,7 +729,7 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 
 	b = query_builder_new(0);
 	b->append(b, "WITH rows AS ( DELETE FROM posts_deleted");
-	build_post_filter(b, filter);
+	build_post_filter(b, filter, NULL);
 	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
 	b->append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
 	b->append(b, "INSERT INTO posts (" POST_BASE_FIELDS_FULL ")");
