@@ -798,17 +798,6 @@ int show_user_notes() {
 	return FULLUPDATE;
 }
 
-int outgo_post(struct fileheader *fh, char *board)
-{
-	char buf[256];
-
-	sprintf(buf, "%s\t%s\t%s\t%s\t%s\n", board, fh->filename,
-			header.anonymous ? ANONYMOUS_ACCOUNT : currentuser.userid,
-			header.anonymous ? ANONYMOUS_NICK : currentuser.username, save_title);
-	file_append("innd/out.bntp", buf);
-	return 0;
-}
-
 int IsTheFileOwner(struct fileheader *fileinfo) {
 	char buf[512];
 	int posttime;
