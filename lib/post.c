@@ -559,6 +559,8 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f)
 		b->sappend(b, "AND", "tid = %"DBIdPID, f->tid);
 	if (*f->utf8_keyword)
 		b->sappend(b, "AND", "title ILIKE '%%%s%%'", f->utf8_keyword);
+	if (f->type == POST_LIST_TOPIC)
+		b->sappend(b, "AND", "id = tid");
 }
 
 static const char *post_list_fields(const post_filter_t *filter)

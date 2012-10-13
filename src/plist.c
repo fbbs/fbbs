@@ -700,6 +700,9 @@ static int tui_post_list_selected(slide_list_t *p, post_info_t *ip)
 		case POST_LIST_MARKED:
 			filter.flag |= POST_FLAG_MARKED;
 			break;
+		case POST_LIST_TOPIC:
+			filter.type = POST_LIST_TOPIC;
+			break;
 		case POST_LIST_AUTHOR: {
 				char uname[IDLEN + 1];
 				strlcpy(uname, ip->owner, sizeof(uname));
