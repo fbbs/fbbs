@@ -30,7 +30,7 @@ CREATE TABLE posts_base (
 );
 
 CREATE TABLE posts (
-	sticky BOOLEAN,
+	sticky BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id)
 ) INHERITS (posts_base);
 

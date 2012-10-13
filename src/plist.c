@@ -973,12 +973,17 @@ static int skip_post(slide_list_t *p)
 static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 {
 	if (ip && (ip->uid == session.uid || am_curr_bm())) {
-		post_filter_t f = {
-			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
-		};
-		if (delete_posts(&f, true, false, true)) {
-			p->reload = true;
-			return PARTUPDATE;
+		move(t_lines - 1, 0);
+		if (askyn("确定删除", NA, NA)) {
+			post_filter_t f = {
+				.bid = p->filter.bid, .min = ip->id, .max = ip->id,
+			};
+			if (delete_posts(&f, true, false, true)) {
+				p->reload = true;
+				return PARTUPDATE;
+			}
+		} else {
+			return MINIUPDATE;
 		}
 	}
 	return DONOTHING;
@@ -1177,7 +1182,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	clear();
 	show_board_notes(board.name, 1);
 
-	struct postheader header;
+	struct postheader header = { .mail_owner = false, };
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	if (ip) {
 		header.reply = true;
@@ -1239,7 +1244,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	// save_title
 	// valid_title()
 
-	if (header.mail_owner) {
+	if (header.mail_owner && header.reply) {
 		if (header.anonymous) {
 			prints("对不起，您不能在匿名版使用寄信给原作者功能。");
 		} else {

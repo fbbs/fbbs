@@ -681,10 +681,10 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	if (!force)
 		b->sappend(b, "AND", "NOT marked");
 	b->sappend(b, "AND", "NOT sticky");
-	b->append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
+	b->append(b, "RETURNING " POST_LIST_FIELDS_FULL ")");
 	b->append(b, "INSERT INTO posts_deleted ("
-			POST_BASE_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
-	b->append(b, "SELECT " POST_BASE_FIELDS_FULL ","
+			POST_LIST_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
+	b->append(b, "SELECT " POST_LIST_FIELDS_FULL ","
 			" %"DBIdUID", %t, %b AND (water OR %b),"" %b, %s FROM rows",
 			session.uid, now, decrease, junk, bm_visible, currentuser.userid);
 	b->append(b, "RETURNING owner, uname, junk");
@@ -731,9 +731,9 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 	b->append(b, "WITH rows AS ( DELETE FROM posts_deleted");
 	build_post_filter(b, filter, NULL);
 	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
-	b->append(b, "RETURNING " POST_BASE_FIELDS_FULL ")");
-	b->append(b, "INSERT INTO posts (" POST_BASE_FIELDS_FULL ")");
-	b->append(b, "SELECT " POST_BASE_FIELDS_FULL " FROM rows");
+	b->append(b, "RETURNING " POST_LIST_FIELDS_FULL ")");
+	b->append(b, "INSERT INTO posts (" POST_LIST_FIELDS_FULL ")");
+	b->append(b, "SELECT " POST_LIST_FIELDS_FULL " FROM rows");
 
 	res = b->cmd(b);
 	int rows = res ? db_cmd_rows(res) : 0;

@@ -24,8 +24,6 @@ enum {
 
 #define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ",content"
 
-#define POST_BASE_FIELDS_FULL  POST_LIST_FIELDS_FULL ",board"
-
 typedef enum {
 	POST_FLAG_DIGEST = 0x1,
 	POST_FLAG_MARKED = 0x2,
