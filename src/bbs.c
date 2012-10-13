@@ -423,7 +423,7 @@ int do_reply(struct fileheader *fh) {
  * @param mode Quote mode (R/S/Y/A/N).
  */
 // TODO: do not use quote_file in callers.
-void do_quote(const char *orig, const char *file, char mode)
+void do_quote(const char *orig, const char *file, char mode, bool anony)
 {
 	bool mail = strneq(orig, "mail", 4);
 	quote_file_(orig, file, mode, mail, NULL);
@@ -431,7 +431,7 @@ void do_quote(const char *orig, const char *file, char mode)
 	FILE *fp = fopen(file, "a");
 	if (!fp)
 		return;
-	if (currentuser.signature && !header.anonymous)
+	if (currentuser.signature && !anony)
 		add_signature(fp, currentuser.userid, currentuser.signature);
 	fclose(fp);
 }

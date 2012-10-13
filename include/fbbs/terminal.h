@@ -172,7 +172,7 @@ void user_display(char *filename, int number, int mode);
 void show_goodbyeshm(void);
 void u_exit(void);
 struct keeploc * getkeep(char *s, int def_topline, int def_cursline);
-void do_quote(const char *orig, const char *file, char mode);
+void do_quote(const char *orig, const char *file, char mode, bool anony);
 int del_range(int ent, struct fileheader *fileinfo, char *direct);
 int x_cloak(void);
 int show_online(void);

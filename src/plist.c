@@ -1225,7 +1225,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	if (ip) {
 		char orig[HOMELEN];
 		dump_content(ip, orig, sizeof(orig));
-		do_quote(orig, file, header.include_mode);
+		do_quote(orig, file, header.include_mode, header.anonymous);
 		unlink(orig);
 	}
 
