@@ -28,10 +28,10 @@ typedef struct {
 	post_filter_t filter;
 	post_list_position_t *pos;
 
-	bool relocate;
 	bool reload;
 	bool sreload;
 	int last_query_rows;
+	post_id_t relocate;
 
 	post_info_t **index;
 	post_info_t *posts;
@@ -227,7 +227,7 @@ static void _load_posts(slide_list_t *p, slide_list_base_e base,
 static void load_posts(slide_list_t *p, int page)
 {
 	post_list_t *l = p->data;
-	if (!l->reload)
+	if (!l->reload && !l->relocate)
 		adjust_filter(l, p->base);
 
 	_load_posts(p, p->base, &l->filter, page, page);
@@ -249,6 +249,45 @@ static void reverse_load_posts(slide_list_t *p, int page, int limit)
 	}
 
 	_load_posts(p, base, &filter, page, limit);
+}
+
+static bool match_filter(post_filter_t *filter, post_info_t *p)
+{
+	bool match = true;
+	if (filter->uid)
+		match &= p->uid == filter->uid;
+	if (filter->min)
+		match &= p->id >= filter->min;
+	if (filter->max)
+		match &= p->id <= filter->max;
+	if (filter->tid)
+		match &= p->id == filter->tid;
+	return match;
+}
+
+static int relocate_in_cache(slide_list_t *p, post_filter_t *filter,
+		bool upward)
+{
+	int found = -1;
+	post_list_t *l = p->data;
+	if (upward) {
+		for (int i = p->cur - 1; i >= 0; --i) {
+			if (match_filter(filter, l->index[i])) {
+				found = i;
+				break;
+			}
+		}
+	} else {
+		for (int i = p->cur + 1; i < l->icount; ++i) {
+			if (match_filter(filter, l->index[i])) {
+				found = i;
+				break;
+			}
+		}
+	}
+	if (found >= 0)
+		p->cur = found;
+	return found;
 }
 
 static slide_list_loader_t post_list_loader(slide_list_t *p)
@@ -294,6 +333,15 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	index_posts(p, page);
 	l->reload = false;
+
+	if (l->relocate) {
+		int cur = p->cur;
+		p->cur = 0;
+		post_filter_t filter = { .min = l->relocate };
+		if (relocate_in_cache(p, &filter, false) < 0)
+			p->cur = cur;
+		l->relocate = 0;
+	}
 	return 0;
 }
 
@@ -412,7 +460,9 @@ static const char *mode_description(post_list_type_e type)
 			break;
 		case POST_LIST_THREAD:
 			s = "主题";
-//			s = "原作";
+			break;
+		case POST_LIST_TOPIC:
+			s = "原作";
 			break;
 		case POST_LIST_MARKED:
 			s = "MARK";
@@ -759,56 +809,38 @@ static int tui_post_list_selected(slide_list_t *p, post_info_t *ip)
 	return FULLUPDATE;
 }
 
-static bool match_filter(post_filter_t *filter, post_info_t *p)
-{
-	bool match = true;
-	if (filter->uid)
-		match &= p->uid == filter->uid;
-	if (filter->min)
-		match &= p->id >= filter->min;
-	if (filter->max)
-		match &= p->id <= filter->max;
-	if (filter->tid)
-		match &= p->id == filter->tid;
-	return match;
-}
-
 static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 		bool upward)
 {
 	post_list_t *l = p->data;
+	filter->type = l->filter.type;
+	filter->bid = l->filter.bid;
+	filter->flag = l->filter.flag;
 
-	int found = -1;
-	if (upward) {
-		for (int i = p->cur - 1; i >= 0; --i) {
-			if (match_filter(filter, l->index[i])) {
-				found = i;
-				break;
-			}
-		}
-	} else {
-		for (int i = p->cur + 1; i < l->icount; ++i) {
-			if (match_filter(filter, l->index[i])) {
-				found = i;
-				break;
-			}
-		}
-	}
-
+	int found = relocate_in_cache(p, filter, upward);
 	if (found >= 0) {
-		p->cur = found;
 		return MINIUPDATE;
 	} else {
-		// TODO
+		query_builder_t *b = build_post_query(filter, !upward, 1);
+		db_res_t *res = b->query(b);
+		if (res && db_res_rows(res) == 1) {
+			post_info_t info;
+			res_to_post_info(res, 0, &info);
+			if (upward) {
+				l->filter.min = 0;
+				l->filter.max = info.id;
+			} else {
+				l->filter.min = info.id;
+				l->filter.max = 0;
+			}
+			if (l->filter.type == POST_LIST_THREAD)
+				l->filter.tid = info.tid;
+			p->base = upward ? SLIDE_LIST_PREV : SLIDE_LIST_NEXT;
+			db_clear(res);
+			l->relocate = info.id;
+		}
 		return PARTUPDATE;
 	}
-}
-
-static int relocate_to_author(slide_list_t *p, user_id_t uid, bool upward)
-{
-	post_list_t *l = p->data;
-	post_filter_t filter = { .bid = l->filter.bid, .uid = uid };
-	return relocate_to_filter(p, &filter, upward);
 }
 
 static int tui_search_author(slide_list_t *p, bool upward)
@@ -827,7 +859,12 @@ static int tui_search_author(slide_list_t *p, bool upward)
 	if (*ans && !streq(ans, ip->owner))
 		uid = get_user_id(ans);
 
-	return relocate_to_author(p, uid, upward);
+	post_filter_t filter = { .uid = uid };
+	if (upward)
+		filter.max = ip->id - 1;
+	else
+		filter.min = ip->id + 1;
+	return relocate_to_filter(p, &filter, upward);
 }
 
 static int tui_search_title(slide_list_t *p, bool upward)
@@ -850,17 +887,20 @@ static int tui_search_title(slide_list_t *p, bool upward)
 
 	post_filter_t filter = { .type = l->filter.type, .bid = l->filter.bid };
 	convert_g2u(gbk_title, filter.utf8_keyword);
+
+	post_info_t *ip = get_post_info(p);
+	if (upward)
+		filter.max = ip->id - 1;
+	else
+		filter.min = ip->id + 1;
 	return relocate_to_filter(p, &filter, upward);
 }
 
 static int jump_to_thread_first(slide_list_t *p)
 {
-	post_list_t *l = p->data;
 	post_info_t *ip = get_post_info(p);
 	if (ip) {
-		post_filter_t filter = {
-			.bid = l->filter.bid, .tid = ip->tid, .max = ip->tid
-		};
+		post_filter_t filter = { .tid = ip->tid, .max = ip->tid };
 		return relocate_to_filter(p, &filter, true);
 	}
 	return DONOTHING;
@@ -868,26 +908,20 @@ static int jump_to_thread_first(slide_list_t *p)
 
 static int jump_to_thread_prev(slide_list_t *p)
 {
-	post_list_t *l = p->data;
 	post_info_t *ip = get_post_info(p);
 
 	if (!ip || ip->id == ip->tid)
 		return DONOTHING;
 
-	post_filter_t filter = {
-		.bid = l->filter.bid, .tid = ip->tid, .max = ip->id - 1,
-	};
+	post_filter_t filter = { .tid = ip->tid, .max = ip->id - 1, };
 	return relocate_to_filter(p, &filter, true);
 }
 
 static int jump_to_thread_next(slide_list_t *p)
 {
-	post_list_t *l = p->data;
 	post_info_t *ip = get_post_info(p);
 	if (ip) {
-		post_filter_t filter = {
-			.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
-		};
+		post_filter_t filter = { .tid = ip->tid, .min = ip->id + 1, };
 		return relocate_to_filter(p, &filter, false);
 	}
 	return DONOTHING;
@@ -2112,7 +2146,7 @@ static int switch_board(post_list_t *l)
 	int bid = tui_select_board(l->filter.bid);
 	if (bid) {
 		l->filter.bid = bid;
-		l->relocate = l->reload = l->sreload = true;
+		l->reload = l->sreload = true;
 		l->pos = get_post_list_position(&l->filter);
 	}
 	return FULLUPDATE;
@@ -2271,7 +2305,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 static int post_list_with_filter(const post_filter_t *filter)
 {
 	post_list_t p = {
-		.relocate = true,
+		.relocate = 0,
 		.filter = *filter,
 		.reload = true,
 		.pos = get_post_list_position(filter),
