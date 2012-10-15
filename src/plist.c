@@ -813,9 +813,6 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 		bool upward)
 {
 	post_list_t *l = p->data;
-	filter->type = l->filter.type;
-	filter->bid = l->filter.bid;
-	filter->flag = l->filter.flag;
 
 	int found = relocate_in_cache(p, filter, upward);
 	if (found >= 0) {
@@ -843,6 +840,19 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 	}
 }
 
+static void set_filter_base(post_filter_t *filter, const post_info_t *ip,
+		bool upward)
+{
+	if (upward) {
+		filter->min = 0;
+		filter->max = ip->id - 1;
+	} else {
+		filter->max = 0;
+		filter->min = ip->id + 1;
+	}
+	filter->tid = filter->type == POST_LIST_THREAD ? ip->tid : 0;
+}
+
 static int tui_search_author(slide_list_t *p, bool upward)
 {
 	post_info_t *ip = get_post_info(p);
@@ -859,11 +869,10 @@ static int tui_search_author(slide_list_t *p, bool upward)
 	if (*ans && !streq(ans, ip->owner))
 		uid = get_user_id(ans);
 
-	post_filter_t filter = { .uid = uid };
-	if (upward)
-		filter.max = ip->id - 1;
-	else
-		filter.min = ip->id + 1;
+	post_list_t *l = p->data;
+	post_filter_t filter = l->filter;
+	filter.uid = uid;
+	set_filter_base(&filter, ip, upward);
 	return relocate_to_filter(p, &filter, upward);
 }
 
@@ -885,14 +894,11 @@ static int tui_search_title(slide_list_t *p, bool upward)
 	if (!*gbk_title != '\0')
 		return MINIUPDATE;
 
-	post_filter_t filter = { .type = l->filter.type, .bid = l->filter.bid };
+	post_filter_t filter = l->filter;
 	convert_g2u(gbk_title, filter.utf8_keyword);
 
 	post_info_t *ip = get_post_info(p);
-	if (upward)
-		filter.max = ip->id - 1;
-	else
-		filter.min = ip->id + 1;
+	set_filter_base(&filter, ip, upward);
 	return relocate_to_filter(p, &filter, upward);
 }
 
@@ -900,7 +906,11 @@ static int jump_to_thread_first(slide_list_t *p)
 {
 	post_info_t *ip = get_post_info(p);
 	if (ip) {
-		post_filter_t filter = { .tid = ip->tid, .max = ip->tid };
+		post_list_t *l = p->data;
+		post_filter_t filter = l->filter;
+		filter.tid = ip->tid;
+		filter.min = 0;
+		filter.max = ip->tid;
 		return relocate_to_filter(p, &filter, true);
 	}
 	return DONOTHING;
@@ -909,11 +919,14 @@ static int jump_to_thread_first(slide_list_t *p)
 static int jump_to_thread_prev(slide_list_t *p)
 {
 	post_info_t *ip = get_post_info(p);
-
 	if (!ip || ip->id == ip->tid)
 		return DONOTHING;
 
-	post_filter_t filter = { .tid = ip->tid, .max = ip->id - 1, };
+	post_list_t *l = p->data;
+	post_filter_t filter = l->filter;
+	filter.tid = ip->tid;
+	filter.min = 0;
+	filter.max = ip->id - 1;
 	return relocate_to_filter(p, &filter, true);
 }
 
@@ -921,13 +934,17 @@ static int jump_to_thread_next(slide_list_t *p)
 {
 	post_info_t *ip = get_post_info(p);
 	if (ip) {
-		post_filter_t filter = { .tid = ip->tid, .min = ip->id + 1, };
+		post_list_t *l = p->data;
+		post_filter_t filter = l->filter;
+		filter.tid = ip->tid;
+		filter.min = ip->id + 1;
+		filter.max = 0;
 		return relocate_to_filter(p, &filter, false);
 	}
 	return DONOTHING;
 }
 
-static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user);
+static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user);
 
 static int jump_to_thread_first_unread(slide_list_t *p)
 {
@@ -954,7 +971,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 			if (brc_unread(id)) {
 				post_info_t info;
 				res_to_post_info(res, i, &info);
-				read_posts(l, &info, true, false);
+				read_posts(p, &info, true, false);
 				db_clear(res);
 				return FULLUPDATE;
 			}
@@ -983,7 +1000,7 @@ static int jump_to_thread_last(slide_list_t *p)
 		if (res && db_res_rows(res) > 0) {
 			post_info_t info;
 			res_to_post_info(res, 0, &info);
-			read_posts(l, &info, true, false);
+			read_posts(p, &info, true, false);
 			db_clear(res);
 			return FULLUPDATE;
 		}
@@ -1668,8 +1685,27 @@ static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
 			upward ? id - 1 : id + 1, upward);
 }
 
-static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
+static void back_to_post_list(slide_list_t *p, post_id_t id, post_id_t tid)
 {
+	post_list_t *l = p->data;
+	post_filter_t filter = l->filter;
+	filter.min = id;
+	filter.max = 0;
+	if (filter.type == POST_LIST_THREAD)
+		filter.tid = tid;
+
+	p->cur = 0;
+	int found = relocate_in_cache(p, &filter, false);
+	if (found) {
+		p->cur = found;
+	} else {
+		relocate_to_filter(p, &filter, false);
+	}
+}
+
+static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
+{
+	post_list_t *l = p->data;
 	post_info_full_t info = { .p = *ip };
 	post_info_full_t *fip = &info;
 	post_filter_t filter = l->filter;
@@ -1680,8 +1716,11 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 		return DONOTHING;
 
 	bool end = false, upward = false;
+	post_id_t thread_entry = 0, last_id = 0, last_tid = 0;
 	while (!end) {
 		brc_mark_as_read(fip->p.id);
+		last_id = fip->p.id;
+		last_tid = fip->p.tid;
 
 		int ch = ansimore(file, false);
 
@@ -1703,11 +1742,12 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 				break;
 			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
 				upward = false;
+				thread_entry = 0;
 				break;
 			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
 				upward = false;
 				if (!filter.uid && !filter.tid)
-					filter.tid = fip->p.id;
+					thread_entry = filter.tid = fip->p.id;
 				break;
 			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
 				upward = true;
@@ -1769,8 +1809,11 @@ static int read_posts(post_list_t *l, post_info_t *ip, bool thread, bool user)
 	}
 	thread_post_cache_free(&cache);
 	free_post_info_full(&info);
+
+	back_to_post_list(p, thread_entry ? thread_entry : last_id, last_tid);
 	return FULLUPDATE;
 }
+
 static void construct_prompt(char *s, size_t size, const char **options,
 		size_t len)
 {
@@ -2176,9 +2219,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	switch (ch) {
 		case '\n': case '\r': case KEY_RIGHT: case 'r':
 		case Ctrl('S'): case 'p':
-			return read_posts(l, ip, false, false);
+			return read_posts(p, ip, false, false);
 		case Ctrl('U'):
-			return read_posts(l, ip, false, true);
+			return read_posts(p, ip, false, true);
 		case '_':
 			return toggle_post_lock(ip);
 		case '@':
