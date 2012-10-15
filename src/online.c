@@ -89,7 +89,7 @@ static tui_list_loader_t fill_session_array(tui_list_t *p)
 	for (int i = 0; i < count; ++i) {
 		_fill_session_array(p, i);
 	}
-	qsort(up->users, count, sizeof(*up->users), session_cmp);
+	qsort(up->users, up->num, sizeof(*up->users), session_cmp);
 
 	return p->all = up->num;
 }
