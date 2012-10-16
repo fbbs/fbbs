@@ -37,7 +37,6 @@ char currBM[BM_LEN - 1];
 char someoneID[31];
 char topic[STRLEN] = "";
 char genbuf[1024];
-char quote_title[120], quote_board[120];
 char quote_file[120], quote_user[120];
 #ifndef NOREPLY
 char replytitle[STRLEN];
@@ -591,7 +590,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
 		if (!strneq(title, "[转载]", 6) && !strneq(title, "Re: [转载]", 10))
 			snprintf(gbk_title, sizeof(gbk_title), "[转载]%.70s", title);
-		else if (strneq(quote_title, "Re: [转载]", 10))
+		else if (strneq(title, "Re: [转载]", 10))
 			snprintf(gbk_title, sizeof(gbk_title), "[转载]Re: %.70s",
 					title + 10);
 		else
