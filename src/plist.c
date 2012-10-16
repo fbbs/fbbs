@@ -1265,8 +1265,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 					"[%s]%s", header.prefix, header.title);
 #endif
 		} else {
-			ansi_filter(header.title, header.title);
-//			strlcpy(postfile.title, header.title, sizeof(postfile.title));
+			ansi_filter(gbk_title, header.title);
 		}
 	} else {
 		return FULLUPDATE;
@@ -1332,6 +1331,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	};
 
 	post_id_t pid = publish_post(&req);
+	unlink(file);
 	if (pid) {
 		brc_mark_as_read(pid);
 

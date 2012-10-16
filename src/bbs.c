@@ -431,7 +431,8 @@ void do_quote(const char *orig, const char *file, char mode, bool anony)
 	fclose(fp);
 }
 
-static void getcross(const char *filepath, int mode)
+static void getcross(board_t *board, const char *filepath, int mode,
+		struct postheader *header)
 {
 	FILE *inf, *of;
 	char buf[256];
@@ -447,13 +448,14 @@ static void getcross(const char *filepath, int mode)
 		report("Cross Post error", currentuser.userid);
 		return;
 	}
-	if (mode == 0 || mode == 4) {
-		if (in_mail == YEA) {
+	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
+		if (in_mail) {
 			in_mail = NA;
-			write_header(of, false);
+			write_header(of, header);
 			in_mail = YEA;
 		} else
-			write_header(of, false);
+			write_header(of, header);
+
 		if (fgets(buf, 256, inf) && (p = strstr(buf, "ÐÅÈË: "))) {
 			p += 6;
 			strtok(p, " \n\r");
@@ -463,36 +465,37 @@ static void getcross(const char *filepath, int mode)
 			owner_found = 0;
 			strcpy(owner, "Unkown User");
 		}
-		if (in_mail == YEA)
-			fprintf(of, "[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô [32m%s [37mµÄÐÅÏä ¡¿[m\n",
+
+		if (in_mail)
+			fprintf(of, "\033[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô \033[32m%s \033[37mµÄÐÅÏä ¡¿\033[m\n",
 					currentuser.userid);
 		else {
-			board_t board;
-			get_board(quote_board, &board);
-			fprintf(of,
-					"\033[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô \033[32m%s \033[37m%sÇø ¡¿\033[m\n",
-					((board.flag & BOARD_POST_FLAG) || (board.perm == 0)) ? quote_board
+			fprintf(of, "\033[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô \033[32m%s \033[37m%sÇø ¡¿\033[m\n",
+					((board->flag & BOARD_POST_FLAG) || (board->perm == 0)) ? board->name
 							: "Î´Öª", mode ? "¾«»ª" : "ÌÖÂÛ");
-			mode = 0;
 		}
+
 		if (owner_found) {
 			while (fgets(buf, 256, inf) && buf[0] != '\n')
 				;
-			fprintf(of, "\033[1m¡¾ Ô­ÎÄÓÉ[32m %s[37m Ëù·¢±í ¡¿[m\n\n", owner);
+			fprintf(of, "\033[1m¡¾ Ô­ÎÄÓÉ\033[32m %s\033[37m Ëù·¢±í ¡¿"
+					"\033[m\n\n", owner);
 		} else
 			fseek(inf, (long) 0, SEEK_SET);
-	} else if (mode == 1) {
-		fprintf(of,
-				"[1;33m·¢ÐÅÈË: deliver (×Ô¶¯·¢ÐÅÏµÍ³), ÐÅÇø: %s[m\n", currboard);
-		fprintf(of, "±ê  Ìâ: %s\n", quote_title);
-		fprintf(of, "·¢ÐÅÕ¾: %s×Ô¶¯·¢ÐÅÏµÍ³ (%s)\n\n", BoardName, getdatestring(now, DATE_ZH));
-	} else if (mode == 3) {
-		fprintf(of,
-				"[1;33m·¢ÐÅÈË: BMS (°æÖ÷¹ÜÀíÔ±), ÐÅÇø: %s[m\n", currboard);
-		fprintf(of, "±ê  Ìâ: %s\n", quote_title);
-		fprintf(of, "·¢ÐÅÕ¾: %s×Ô¶¯·¢ÐÅÏµÍ³ (%s)\n\n", BoardName, getdatestring(now, DATE_ZH));
-	} else if (mode == 2) {
-		write_header(of, false);
+	} else if (mode == POST_FILE_DELIVER) {
+		fprintf(of, "\033[1;33m·¢ÐÅÈË: deliver (×Ô¶¯·¢ÐÅÏµÍ³), "
+				"ÐÅÇø: %s\033[m\n", board->name);
+		fprintf(of, "±ê  Ìâ: %s\n", header->title);
+		fprintf(of, "·¢ÐÅÕ¾: %s×Ô¶¯·¢ÐÅÏµÍ³ (%s)\n\n", BoardName,
+				getdatestring(now, DATE_ZH));
+	} else if (mode == POST_FILE_BMS) {
+		fprintf(of, "\033[1;33m·¢ÐÅÈË: BMS (°æÖ÷¹ÜÀíÔ±), ÐÅÇø: %s\033[m\n",
+				board->name);
+		fprintf(of, "±ê  Ìâ: %s\n", header->title);
+		fprintf(of, "·¢ÐÅÕ¾: %s×Ô¶¯·¢ÐÅÏµÍ³ (%s)\n\n", BoardName,
+				getdatestring(now, DATE_ZH));
+	} else if (mode == POST_FILE_AUTO) {
+		write_header(of, header);
 	}
 	while (fgets(buf, 256, inf) != NULL) {
 		fprintf(of, "%s", buf);
@@ -602,7 +605,15 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 
 	set_user_status(ST_POSTING);
 
-	getcross(file, mode);
+	struct postheader header = {
+		.locked = mode == POST_FILE_DELIVER ||
+			(mode == POST_FILE_AUTO && strneq(gbk_title, "[ºÏ¼¯]", 6)),
+		.postboard = true,
+	};
+	strlcpy(header.title, gbk_title, sizeof(header.title));
+	strlcpy(header.ds, board->name, sizeof(header.ds));
+
+	getcross(board, file, mode, &header);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
 		add_crossinfo(file, 1);
 

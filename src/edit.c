@@ -858,7 +858,7 @@ char save_title[STRLEN];
 //char    save_filename[4096];
 int in_mail;
 
-void write_header(FILE *fp, bool anonymous)
+void write_header(FILE *fp, const struct postheader *header)
 {
 	int noname;
 	extern char BoardName[];
@@ -884,8 +884,8 @@ void write_header(FILE *fp, bool anonymous)
 		fprintf(fp, "寄信人: %s (%s)\n", uid, uname);
 	else {
 		fprintf(fp, "发信人: %s (%s), 信区: %s\n",
-				(noname && anonymous) ? ANONYMOUS_ACCOUNT : uid,
-				(noname && anonymous) ? ANONYMOUS_NICK : uname, currboard);
+				(noname && header->anonymous) ? ANONYMOUS_ACCOUNT : uid,
+				(noname && header->anonymous) ? ANONYMOUS_NICK : uname, currboard);
 	}
 	fprintf(fp, "标  题: %s\n", save_title);
 	fprintf(fp, "发信站: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
@@ -991,7 +991,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			abort_bbs(0);
 		}
 		if (write_header_to_file)
-			write_header(fp, header->anonymous);
+			write_header(fp, header);
 	}
 	p = can_edit_end;
 	if (p!=NULL)
