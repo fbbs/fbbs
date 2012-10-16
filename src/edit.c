@@ -1034,10 +1034,9 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			&& addfrom != 0 && aborted != -1) {
 		int color, noidboard;
 		char fname[STRLEN];
-		extern struct postheader header;
 		board_t board;
 		get_board(currboard, &board);
-		noidboard = (board.flag & BOARD_ANONY_FLAG) && (header.anonymous);
+		noidboard = (board.flag & BOARD_ANONY_FLAG) && (header->anonymous);
 		color = (currentuser.numlogins % 7) + 31;
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || noidboard)

@@ -159,6 +159,7 @@ static int mailtoall(int mode, char *fname)
 
 int mailall(void)
 {
+	struct postheader header;
 	char ans[4], fname[STRLEN], title[STRLEN];
 	char doc[5][STRLEN], buf[STRLEN];
 	int i;
@@ -316,7 +317,7 @@ static int bbs_sendmail(const char *fname, const char *title, const char *receiv
 
 int do_send(const char *userid, const char *title)
 {
-
+	struct postheader header;
 	int lookupuserlevel; //added by roly 02.03.25
 	struct fileheader newmessage;
 	struct stat st;
@@ -1200,6 +1201,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	s_current_maillist[0] = current_maillist;
 	in_mail = YEA;
 	sprintf(genbuf, "%s", currentuser.userid);
+	struct postheader header;
 	header.reply = false;
 	strcpy(header.title, "没主题");
 	strcpy(header.ds, "寄信给一群人");
