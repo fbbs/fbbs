@@ -432,8 +432,7 @@ void do_quote(const char *orig, const char *file, char mode, bool anony)
 	fclose(fp);
 }
 
-static void getcross(const char *filepath, int mode,
-		const struct postheader *header)
+static void getcross(const char *filepath, int mode)
 {
 	FILE *inf, *of;
 	char buf[256];
@@ -452,10 +451,10 @@ static void getcross(const char *filepath, int mode,
 	if (mode == 0 || mode == 4) {
 		if (in_mail == YEA) {
 			in_mail = NA;
-			write_header(of, header);
+			write_header(of, false);
 			in_mail = YEA;
 		} else
-			write_header(of, header);
+			write_header(of, false);
 		if (fgets(buf, 256, inf) && (p = strstr(buf, "信人: "))) {
 			p += 6;
 			strtok(p, " \n\r");
@@ -494,7 +493,7 @@ static void getcross(const char *filepath, int mode,
 		fprintf(of, "标  题: %s\n", quote_title);
 		fprintf(of, "发信站: %s自动发信系统 (%s)\n\n", BoardName, getdatestring(now, DATE_ZH));
 	} else if (mode == 2) {
-		write_header(of, header);
+		write_header(of, false);
 	}
 	while (fgets(buf, 256, inf) != NULL) {
 		fprintf(of, "%s", buf);
@@ -604,7 +603,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 
 	set_user_status(ST_POSTING);
 
-	getcross(file, mode, &header);
+	getcross(file, mode);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
 		add_crossinfo(file, 1);
 
