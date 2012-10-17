@@ -1283,9 +1283,11 @@ static int tui_new_post(int bid, post_info_t *ip)
 		dump_content(ip, orig, sizeof(orig));
 		do_quote(orig, file, header.include_mode, header.anonymous);
 		unlink(orig);
+	} else {
+		do_quote("", file, header.include_mode, header.anonymous);
 	}
 
-	if (vedit(file, true, false, &header) == -1) {
+	if (vedit(file, true, true, &header) == -1) {
 		unlink(file);
 		clear();
 		return FULLUPDATE;
