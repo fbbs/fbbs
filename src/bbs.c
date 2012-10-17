@@ -599,7 +599,6 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		strlcpy(gbk_title, title, sizeof(gbk_title));
 	}
 
-	strlcpy(save_title, gbk_title, STRLEN);
 	valid_title(gbk_title);
 
 	set_user_status(ST_POSTING);

@@ -854,8 +854,6 @@ int read_file(char *filename) {
 	return 0;
 }
 
-char save_title[STRLEN];
-//char    save_filename[4096];
 int in_mail;
 
 void write_header(FILE *fp, const struct postheader *header)
@@ -875,7 +873,6 @@ void write_header(FILE *fp, const struct postheader *header)
 	else
 		strlcpy(uname, currentuser.username, NAMELEN);
 	uname[NAMELEN-1] = '\0';
-	save_title[STRLEN - 10] = '\0';
 	
 	board_t board;
 	get_board(currboard, &board);
@@ -887,7 +884,7 @@ void write_header(FILE *fp, const struct postheader *header)
 				(noname && header->anonymous) ? ANONYMOUS_ACCOUNT : uid,
 				(noname && header->anonymous) ? ANONYMOUS_NICK : uname, currboard);
 	}
-	fprintf(fp, "标  题: %s\n", save_title);
+	fprintf(fp, "标  题: %s\n", header->title);
 	fprintf(fp, "发信站: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
 	if (in_mail)
 		fprintf(fp, "\n来  源: %s\n", mask_host(fromhost));
@@ -946,7 +943,7 @@ void valid_article(char *pmt, char *abort, int sure) {
 }
 
 int write_file(char *filename, int write_header_to_file, int addfrom,
-		int sure, const struct postheader *header) {
+		int sure, struct postheader *header) {
 	struct textline *p;
 	FILE *fp;
 	char abort[6], p_buf[100];
@@ -977,12 +974,12 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			&& session.status == ST_POSTING) {
 		char buf[STRLEN];
 		move(1, 0);
-		prints("旧标题: %s", save_title);
-		ansi_filter(buf, save_title);
+		prints("旧标题: %s", header->title);
+		ansi_filter(buf, header->title);
 		getdata(2, 0, "新标题: ", buf, 50, DOECHO, NA);
-		if (strcmp(save_title, buf) && strlen(buf) != 0) {
+		if (strcmp(header->title, buf) && strlen(buf) != 0) {
 			check_title(buf, sizeof(buf));
-			strlcpy(save_title, buf, STRLEN);
+			strlcpy(header->title, buf, STRLEN);
 		}
 	}
 	if (aborted != -1) {
@@ -1557,7 +1554,7 @@ void vedit_key(int ch) {
 }
 
 int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
-		const struct postheader *header)
+		struct postheader *header)
 {
 	int newch, ch = 0, foo, shift, sure = 0;
 	int addfrom = 0;
@@ -1623,7 +1620,7 @@ int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
 }
 
 int vedit(char *filename, int write_header_to_file, int modifyheader,
-		const struct postheader *header)
+		struct postheader *header)
 {
 	int ans, t = showansi;
 	showansi = 0;

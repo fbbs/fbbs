@@ -122,34 +122,39 @@ int check_query_mail(const char *qry_mail_dir)
 	return NA;
 }
 
-int mailmode;
+static int mailmode;
+
+struct mail_all_struct {
+	const struct postheader *header;
+	const char *file;
+};
 
 static int mailto(void *uentpv, int index, void *args) {
 	char filename[STRLEN];
 	sprintf(filename, "tmp/mailall.%s", currentuser.userid);
+
+	struct mail_all_struct *s = args;
 
 	struct userec *uentp = (struct userec *)uentpv;
 	if ((!(uentp->userlevel & PERM_BINDMAIL) && mailmode == 1) ||
 			(uentp->userlevel & PERM_BOARDS && mailmode == 3)
 			|| (uentp->userlevel & PERM_SPECIAL0 && mailmode == 4)
 			|| (uentp->userlevel & PERM_SPECIAL9 && mailmode == 5)) {
-		mail_file(filename, uentp->userid, save_title);
+		mail_file(filename, uentp->userid, s->header->title);
+		cached_set_idle_time();
+	} else if (uentp->userlevel & PERM_POST && mailmode == 2) {
+		sharedmail_file(s->file, uentp->userid, s->header->title);
 		cached_set_idle_time();
 	}
-	/***************°Ñtype2¶ÀÁ¢³öÀ´×öÅÐ¶Ï£¬µ÷ÓÃsharedmail_fileº¯Êý************************/
-	else if (uentp->userlevel & PERM_POST && mailmode == 2) {
-		sharedmail_file(args, uentp->userid, save_title);
-		cached_set_idle_time();
-	}
-	/******end*******/
 	return 1;
 }
 
-static int mailtoall(int mode, char *fname)
+static int mailtoall(int mode, char *fname, const struct postheader *header)
 {
 	mailmode = mode;
+	struct mail_all_struct s = { .header = header, .file = fname };
 	if (apply_record(PASSFILE, mailto, sizeof(struct userec),
-			(char*)fname , 0, 0, false) == -1) {
+			&s, 0, 0, false) == -1) {
 		prints("No Users Exist");
 		pressreturn();
 		return 0;
@@ -193,8 +198,11 @@ int mailall(void)
 	i = post_header(&header);
 	if (i == -1)
 		return NA;
-	if (i == YEA)
-		sprintf(save_title, "[Type %c ¹«¸æ] %.60s", ans[0], header.title);
+	if (i == YEA) {
+		char title[sizeof(header.title)];
+		snprintf(title, sizeof(title), "[Type %c ¹«¸æ] %s", ans[0], header.title);
+		strlcpy(header.title, title, sizeof(header.title));
+	}
 	setquotefile("");
 
 	/***********Modified by Ashinmarch on 08.3.30 to improve Type 2 mailall*******************/
@@ -215,9 +223,9 @@ int mailall(void)
 	clrtoeol();
 	prints("[5;1;32;44mÕýÔÚ¼Ä¼þÖÐ£¬ÇëÉÔºò.....                                                        [m");
 	refresh();
-	/****modify function: Add a parameter fname*****/
-	mailtoall(ans[0] - '0', fname);
-	/****end****/
+
+	mailtoall(ans[0] - '0', fname, &header);
+
 	move(t_lines - 1, 0);
 	clrtoeol();
 	/****type 2¹²ÏíÎÄ¼þ²»ÐèÒªÉ¾³ý****/
@@ -406,9 +414,7 @@ int do_send(const char *userid, const char *title)
 	}
 	if( result == YEA) {
 		memcpy(newmessage.title, header.title, sizeof(header.title));
-		strlcpy(save_title, newmessage.title, STRLEN);
 		sprintf(save_title2, "{%.16s} %.60s", userid, newmessage.title);
-		//		strncpy(save_filename, fname, 4096);
 	}
 	do_quote(quote_file, filepath, header.include_mode, header.anonymous);
 
@@ -1212,9 +1218,10 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 		clear();
 		return -2;
 	}
-	if( result == YEA) {
-		sprintf(save_title, "[ÈºÌåÐÅ¼þ] %-60.60s", header.title);
-		//		strncpy(save_filename, fname, 4096);
+	if (result == YEA) {
+		char title[sizeof(header.title)];
+		snprintf(title, sizeof(title), "[ÈºÌåÐÅ¼þ] %s", header.title);
+		strlcpy(header.title, title, sizeof(header.title));
 	}
 	do_quote(quote_file, tmpfile, header.include_mode, header.anonymous);
 	if (vedit(tmpfile, YEA, YEA, &header) == -1) {
@@ -1281,7 +1288,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 				return -1;
 			}
 		}
-		mail_file(tmpfile, uid, save_title);
+		mail_file(tmpfile, uid, header.title);
 		cached_set_idle_time();
 	}
 	unlink(tmpfile);
@@ -1524,8 +1531,8 @@ int g_send() {
 
 /********************Type2¹«¸æ¹²ÏíÎÄ¼þ by Ashinmarch on 2008.3.30*********************/
 /********************ÎªÁËÌá¸ßÐ§ÂÊ,ÃâÈ¥ºÚÃûµ¥¡¢ÐÅ¼þÈÝÁ¿µÈÅÐ¶Ï**************************/
-int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
-		char title[STRLEN]) {
+int sharedmail_file(const char *tmpfile, const char *userid, const char *title)
+{
 	struct fileheader newmessage;
 	if (!getuser(userid))
 		return -1;
@@ -1535,14 +1542,12 @@ int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
 	sprintf(genbuf, "%s", currentuser.userid);
 	strlcpy(newmessage.owner, genbuf, STRLEN);
 	strlcpy(newmessage.title, title, STRLEN);
-	strlcpy(save_title, newmessage.title, STRLEN);
 	strlcpy(newmessage.filename, tmpfile, STRLEN);
 
-	sprintf(genbuf, "mail/%c/%s/%s", toupper(userid[0]), userid, DOT_DIR);
-	if (append_record(genbuf, &newmessage, sizeof(newmessage)) != -1)
+	char dir[HOMELEN];
+	snprintf(dir, sizeof(dir), "mail/%c/%s/%s", toupper(userid[0]), userid, DOT_DIR);
+	if (append_record(dir, &newmessage, sizeof(newmessage)) != -1)
 		return -1;
-	sprintf(genbuf, "mailed %s: %s", userid, title);
-	report(genbuf, currentuser.userid);
 	return 0;
 }
 

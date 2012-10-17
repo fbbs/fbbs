@@ -19,8 +19,7 @@ int check_query_mail(const char *qry_mail_dir);
 int mail_forward(int ent, struct fileheader *fileinfo, const char *direct);
 int mail_u_forward(int ent, struct fileheader *fileinfo, const char *direct);
 int m_read(void);
-int sharedmail_file(char tmpfile[STRLEN], char userid[STRLEN],
-		char title[STRLEN]);
+int sharedmail_file(const char *tmpfile, const char *userid, const char *title);
 int mail_mark(int ent, struct fileheader *fileinfo, char *direct);
 int tui_forward(const char *file, const char *gbk_title, bool uuencode);
 

@@ -1292,7 +1292,6 @@ static int tui_new_post(int bid, post_info_t *ip)
 	}
 
 	// header.chk_anony
-	// save_title
 	// valid_title()
 
 	if (header.mail_owner && header.reply) {
