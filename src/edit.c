@@ -1029,17 +1029,15 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	if ((session.status == ST_POSTING || session.status == ST_SMAIL
 				|| session.status == ST_EDIT)
 			&& addfrom != 0 && aborted != -1) {
-		int color, noidboard;
 		char fname[STRLEN];
-		board_t board;
-		get_board(currboard, &board);
-		noidboard = (board.flag & BOARD_ANONY_FLAG) && (header->anonymous);
-		color = (currentuser.numlogins % 7) + 31;
+
+		bool anony = (currbp->flag & BOARD_ANONY_FLAG) && (header->anonymous);
+		int color = (currentuser.numlogins % 7) + 31;
 		setuserfile(fname, "signatures");
-		if (!dashf(fname) || currentuser.signature == 0 || noidboard)
+		if (!dashf(fname) || currentuser.signature == 0 || anony)
 			fputs("--\n", fp);
 		fprintf(fp, "[m[1;%2dm¡ù À´Ô´:¡¤%s %s¡¤[FROM: %s][m\n", color,
-				BoardName, BBSHOST, (noidboard) ? ANONYMOUS_SOURCE : mask_host(fromhost));
+				BoardName, BBSHOST, (anony) ? ANONYMOUS_SOURCE : mask_host(fromhost));
 	}
 	if (aborted != -1)
 		fclose(fp);

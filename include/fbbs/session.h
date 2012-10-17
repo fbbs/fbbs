@@ -33,7 +33,7 @@ enum {
 	SESSION_FLAG_INVISIBLE = 0x4,
 };
 
-enum {
+typedef enum {
 	ST_IDLE = 0,
 	ST_TALK = 1,
 	ST_NEW  = 2,
@@ -98,14 +98,14 @@ enum {
 	ST_PROP,
 	ST_MY_PROP,
 	ST_WWW = 0x40000000,
-};
+} session_status_e;
 
 typedef struct {
 	session_id_t id;
 	user_id_t uid;
 	int pid;
 	int flag;
-	int status;
+	session_status_e status;
 	fb_time_t idle;
 	bool visible;
 } bbs_session_t;

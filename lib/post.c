@@ -98,7 +98,8 @@ char *convert_file_to_utf8_content(const char *file)
 	mmap_t m = { .oflag = O_RDONLY };
 	if (mmap_open(file, &m) == 0) {
 		utf8_content = malloc(m.size * 2);
-		convert_g2u(m.ptr, utf8_content);
+		convert(env_g2u, m.ptr, CONVERT_ALL, utf8_content, m.size * 2,
+				NULL, NULL);
 		mmap_close(&m);
 	}
 	return utf8_content;

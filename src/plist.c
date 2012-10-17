@@ -1285,14 +1285,13 @@ static int tui_new_post(int bid, post_info_t *ip)
 		unlink(orig);
 	}
 
-	if (vedit(file, YEA, YEA, &header) == -1) {
+	if (vedit(file, true, false, &header) == -1) {
 		unlink(file);
 		clear();
 		return FULLUPDATE;
 	}
 
-	// header.chk_anony
-	// valid_title()
+	valid_title(header.title);
 
 	if (header.mail_owner && header.reply) {
 		if (header.anonymous) {
