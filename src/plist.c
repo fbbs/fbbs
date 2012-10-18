@@ -30,7 +30,6 @@ typedef struct {
 
 	bool reload;
 	bool sreload;
-	int last_query_rows;
 	post_id_t relocate;
 
 	post_info_t **index;
@@ -137,8 +136,7 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 			for (int i = 0; i < rows; ++i)
 				res_to_post_info(r, i, l->posts + left + i);
 		} else {
-			memmove(l->posts + rows, l->posts,
-					sizeof(*l->posts) * (l->count - left));
+			memmove(l->posts + rows, l->posts, sizeof(*l->posts) * left);
 			for (int i = 0; i < rows; ++i)
 				res_to_post_info(r, rows - i - 1, l->posts + i);
 		}
@@ -154,7 +152,7 @@ static void load_sticky_posts(post_list_t *l)
 	}
 }
 
-static void index_posts(slide_list_t *p, int limit)
+static void index_posts(slide_list_t *p, int limit, int rows)
 {
 	post_list_t *l = p->data;
 	slide_list_base_e base = p->base;
@@ -163,7 +161,7 @@ static void index_posts(slide_list_t *p, int limit)
 		if (base == SLIDE_LIST_BOTTOMUP)
 			start = l->scount;
 		if (base == SLIDE_LIST_NEXT)
-			start = l->count - l->last_query_rows;
+			start = l->count - rows;
 		if (start < 0)
 			start = 0;
 
@@ -211,7 +209,7 @@ static void adjust_filter(post_list_t *l, slide_list_base_e base)
 	}
 }
 
-static void _load_posts(slide_list_t *p, slide_list_base_e base,
+static int _load_posts(slide_list_t *p, slide_list_base_e base,
 		post_filter_t *fp, int page, int limit)
 {
 	query_builder_t *b = build_post_query(fp, is_asc(base), limit);
@@ -220,20 +218,21 @@ static void _load_posts(slide_list_t *p, slide_list_base_e base,
 
 	post_list_t *l = p->data;
 	res_to_array(res, l, base, page);
-	l->last_query_rows = db_res_rows(res);
+	int rows = db_res_rows(res);
 	db_clear(res);
+	return rows;
 }
 
-static void load_posts(slide_list_t *p, int page)
+static int load_posts(slide_list_t *p, int page)
 {
 	post_list_t *l = p->data;
 	if (!l->reload && !l->relocate)
 		adjust_filter(l, p->base);
 
-	_load_posts(p, p->base, &l->filter, page, page);
+	return _load_posts(p, p->base, &l->filter, page, page);
 }
 
-static void reverse_load_posts(slide_list_t *p, int page, int limit)
+static int reverse_load_posts(slide_list_t *p, int page, int limit)
 {
 	post_list_t *l = p->data;
 	slide_list_base_e base = (p->base == SLIDE_LIST_NEXT ?
@@ -248,7 +247,7 @@ static void reverse_load_posts(slide_list_t *p, int page, int limit)
 		filter.max = l->filter.min - 1;
 	}
 
-	_load_posts(p, base, &filter, page, limit);
+	return _load_posts(p, base, &filter, page, limit);
 }
 
 static bool match_filter(post_filter_t *filter, post_info_t *p)
@@ -300,9 +299,12 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 			l->filter.min = l->pos->min_pid;
 		else
 			l->filter.min = brc_last_read() + 1;
+		l->count = 0;
 	}
-	if (p->base == SLIDE_LIST_CURRENT)
+	if (p->base == SLIDE_LIST_CURRENT) {
+		save_post_list_position(p);
 		return 0;
+	}
 
 	int page = t_lines - 4;
 	if (!l->index) {
@@ -312,26 +314,26 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		l->icount = l->count = l->scount = 0;
 	}
 
-	load_posts(p, page);
+	int rows = load_posts(p, page);
 
-	if ((p->base == SLIDE_LIST_NEXT && l->last_query_rows < page)
+	if ((p->base == SLIDE_LIST_NEXT && rows < page)
 			|| p->base == SLIDE_LIST_BOTTOMUP) {
 		load_sticky_posts(l);
 	}
 
-	if (l->reload && l->last_query_rows + l->scount < page
+	if (l->reload && rows + l->scount < page
 			&& (p->base == SLIDE_LIST_PREV || p->base == SLIDE_LIST_NEXT)) {
-		reverse_load_posts(p, page, page - l->last_query_rows - l->scount);
+		rows += reverse_load_posts(p, page, page - rows - l->scount);
 	}
 
-	if (l->last_query_rows) {
+	if (rows) {
 		if (p->update != FULLUPDATE)
 			p->update = PARTUPDATE;
 	} else {
 		p->cur = p->base == SLIDE_LIST_PREV ? 0 : page - 1;
 	}
 
-	index_posts(p, page);
+	index_posts(p, page, rows);
 	l->reload = false;
 
 	if (l->relocate) {
@@ -342,6 +344,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 			p->cur = cur;
 		l->relocate = 0;
 	}
+	save_post_list_position(p);
 	return 0;
 }
 
