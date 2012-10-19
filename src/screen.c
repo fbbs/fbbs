@@ -557,7 +557,7 @@ void prints(const char *fmt, ...)
 {
 	va_list ap;
 	char *bp;
-	register int i, count, hd, indx;
+	int count, hd, indx;
 	va_start(ap, fmt);
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
@@ -565,6 +565,7 @@ void prints(const char *fmt, ...)
 			int sgn2 = 1;
 			int val = 0;
 			int len, negi;
+			bool long_ = false;
 			fmt++;
 			switch (*fmt) {
 				case '-':
@@ -572,6 +573,10 @@ void prints(const char *fmt, ...)
 						sgn *= -1;
 						fmt++;
 					}
+					break;
+				case 'l':
+					long_ = true;
+					++fmt;
 					break;
 				case '.':
 					sgn2 = 0;
@@ -610,53 +615,60 @@ void prints(const char *fmt, ...)
 						outs(bp);
 					break;
 				case 'd':
-					i = va_arg(ap, int);
+					{
+						int64_t n;
+						if (long_)
+							n = va_arg(ap, int64_t);
+						else
+							n = va_arg(ap, int);
 
-					negi = NA;
-					if (i < 0) {
-						negi = YEA;
-						i *= -1;
-					}
-					for (indx = 0; indx < 10; indx++)
-						if (i >= dec[indx])
-							break;
-					if (i == 0)
-						len = 1;
-					else
-						len = 10 - indx;
-					if (negi)
-						len++;
-					if (val >= len && sgn > 0) {
-						register int slen;
-						for (slen = val - len; slen > 0; slen--)
-							outc(' ');
-					}
-					if (negi)
-						outc('-');
-					hd = 1, indx = 0;
-					while (indx < 10) {
-						count = 0;
-						while (i >= dec[indx]) {
-							count++;
-							i -= dec[indx];
+						negi = NA;
+						if (n < 0) {
+							negi = YEA;
+							n *= -1;
 						}
-						indx++;
-						if (indx == 10)
+						for (indx = 0; indx < 10; indx++)
+							if (n >= dec[indx])
+								break;
+						if (n == 0)
+							len = 1;
+						else
+							len = 10 - indx;
+						if (negi)
+							len++;
+						if (val >= len && sgn > 0) {
+							register int slen;
+							for (slen = val - len; slen > 0; slen--)
+								outc(' ');
+						}
+						if (negi)
+							outc('-');
+						hd = 1, indx = 0;
+						while (indx < 10) {
+							count = 0;
+							while (n >= dec[indx]) {
+								count++;
+								n -= dec[indx];
+							}
+							indx++;
+							if (indx == 10)
+								hd = 0;
+							if (hd && !count)
+								continue;
 							hd = 0;
-						if (hd && !count)
-							continue;
-						hd = 0;
-						outc('0' + count);
-					}
-					if (val >= len && sgn < 0) {
-						register int slen;
-						for (slen = val - len; slen > 0; slen--)
-							outc(' ');
+							outc('0' + count);
+						}
+						if (val >= len && sgn < 0) {
+							register int slen;
+							for (slen = val - len; slen > 0; slen--)
+								outc(' ');
+						}
 					}
 					break;
-				case 'c':
-					i = va_arg(ap, int);
-					outc(i);
+				case 'c': {
+						int i = va_arg(ap, int);
+						outc(i);
+					}
 					break;
 				case '\0':
 					goto endprint;
