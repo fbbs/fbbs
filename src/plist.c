@@ -31,6 +31,7 @@ typedef struct {
 	bool reload;
 	bool sreload;
 	post_id_t relocate;
+	post_id_t current_tid;
 
 	post_info_t **index;
 	post_info_t *posts;
@@ -520,7 +521,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	post_list_t *l = p->data;
 	const char *mode = mode_description(l->filter.type);
 
-	prints("\033[1;37;44m  编号    %-12s %6s %-25s 在线:%-4d"
+	prints("\033[1;37;44m     %-12s %6s %-25s 在线:%-4d"
 				"    [%4s模式] \033[m\n", "刊 登 者", "日  期", " 标  题",
 				count_onboard(board.id), mode);
 	clrtobot();
@@ -593,16 +594,20 @@ static const char *get_post_date(fb_time_t stamp)
 	return fb_ctime(&stamp) + 4;
 }
 
-static void post_list_display_entry(post_list_type_e type, post_info_t *p,
-		bool last)
+static void post_list_display_entry(const post_list_t *l, int index, bool last)
 {
-	char id_str[24];
-	if (p->flag & POST_FLAG_STICKY)
-		strlcpy(id_str, " \033[1;31m[∞]\033[m ", sizeof(id_str));
-	else
-		pid_to_base32(p->id, id_str, 7);
+	post_list_type_e type = l->filter.type;
+	post_info_t *p = l->index[index];
 
-	int mark = get_post_mark(p);
+	char mark_buf[16];
+	if (p->flag & POST_FLAG_STICKY) {
+		strlcpy(mark_buf, "\033[1;31m∞\033[m", sizeof(mark_buf));
+	} else {
+		mark_buf[0] = ' ';
+		mark_buf[1] = get_post_mark(p);
+		mark_buf[2] = '\0';
+	}
+
 	const char *mark_prefix = "", *mark_suffix = "";
 	if ((p->flag & POST_FLAG_IMPORT) && am_curr_bm()) {
 		mark_prefix = (type == ' ') ? "\033[42m" : "\033[32m";
@@ -652,13 +657,22 @@ static void post_list_display_entry(post_list_type_e type, post_info_t *p,
 //	if (digestmode == ATTACH_MODE) {
 //		sprintf(buf, " %5d %c %-12.12s %s%6.6s\033[m %s", num, type,
 //				ent->owner, color, date, title);
+
+	const char *thread_color = "0;37";
+	if (p->tid == l->current_tid) {
+		if (p->id == p->tid)
+			thread_color = "1;32";
+		else
+			thread_color = "1;36";
+	}
+
 	char buf[128];
 	snprintf(buf, sizeof(buf),
-			" %s %s%c%s \033[%sm%-12.12s %s%6.6s %s\033[m%s\n",
-			id_str, mark_prefix, mark, mark_suffix,
+			"  %s%s%s \033[%sm%-12.12s %s%6.6s %s\033[%sm%s\n",
+			mark_prefix, mark_buf, mark_suffix,
 			idcolor, p->owner, color, date,
 			(p->flag & POST_FLAG_LOCKED) ? "\033[1;33mx" : " ",
-			gbk_title);
+			thread_color, gbk_title);
 	outs(buf);
 }
 
@@ -671,7 +685,7 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 			last = i != l->icount - 1
 				&& l->index[i + 1]->tid != l->index[i]->tid;
 		}
-		post_list_display_entry(l->filter.type, l->index[i], last);
+		post_list_display_entry(l, i, last);
 	}
 	return 0;
 }
@@ -1075,9 +1089,12 @@ static int show_post_info(const post_info_t *ip)
 	//	prints("大    小:     %d 字节\n", filestat.st_size);
 
 	char buf[PID_BUF_LEN];
-	prints("id:   %s\n", pid_to_base32(ip->id, buf, sizeof(buf)));
-	prints("tid:  %s\n", pid_to_base32(ip->tid, buf, sizeof(buf)));
-	prints("reid: %s\n", pid_to_base32(ip->reid, buf, sizeof(buf)));
+	prints("id:   %s (%"PRIdPID")\n",
+			pid_to_base32(ip->id, buf, sizeof(buf)), ip->id);
+	prints("tid:  %s (%"PRIdPID")\n",
+			pid_to_base32(ip->tid, buf, sizeof(buf)), ip->tid);
+	prints("reid: %s (%"PRIdPID")\n",
+			pid_to_base32(ip->reid, buf, sizeof(buf)), ip->reid);
 
 	char link[STRLEN];
 	snprintf(link, sizeof(link),
@@ -1719,11 +1736,11 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 		return DONOTHING;
 
 	bool end = false, upward = false;
-	post_id_t thread_entry = 0, last_id = 0, last_tid = 0;
+	post_id_t thread_entry = 0, last_id = 0;
 	while (!end) {
 		brc_mark_as_read(fip->p.id);
 		last_id = fip->p.id;
-		last_tid = fip->p.tid;
+		l->current_tid = fip->p.tid;
 
 		int ch = ansimore(file, false);
 
@@ -1813,7 +1830,8 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 	thread_post_cache_free(&cache);
 	free_post_info_full(&info);
 
-	back_to_post_list(p, thread_entry ? thread_entry : last_id, last_tid);
+	back_to_post_list(p, thread_entry ? thread_entry : last_id,
+			l->current_tid);
 	return FULLUPDATE;
 }
 
