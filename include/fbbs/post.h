@@ -32,6 +32,7 @@ typedef enum {
 	POST_FLAG_STICKY = 0x10,
 	POST_FLAG_WATER = 0x20,
 	POST_FLAG_DELETED = 0x40,
+	POST_FLAG_JUNK = 0x80,
 } post_flag_e;
 
 enum {
@@ -68,8 +69,10 @@ typedef struct {
 	post_id_t reid;
 	post_id_t tid;
 	fb_time_t stamp;
+	fb_time_t estamp;
 	int bid;
 	char owner[IDLEN + 1];
+	char ename[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_info_t;
 

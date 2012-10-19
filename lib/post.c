@@ -492,6 +492,12 @@ void res_to_post_info(db_res_t *r, int i, post_info_t *p)
 	p->comments = db_get_integer(r, i, 13);
 	p->score = db_get_integer(r, i, 14);
 	strlcpy(p->utf8_title, db_get_value(r, i, 15), sizeof(p->utf8_title));
+
+	if (deleted) {
+		strlcpy(p->ename, db_get_value(r, i, 16), sizeof(p->ename));
+		p->estamp = db_get_time(r, i, 17);
+		p->flag |= db_get_bool(r, i, 18) ? POST_FLAG_JUNK : 0;
+	}
 }
 
 void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set)
@@ -588,6 +594,11 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f,
 			b->sappend(b, "AND", "tid = %"DBIdPID, f->tid);
 	}
 
+	if (f->type == POST_LIST_TRASH)
+		b->sappend(b, "AND", "bm_visible");
+	if (f->type == POST_LIST_JUNK)
+		b->sappend(b, "AND", "NOT bm_visible");
+
 	if (asc) {
 		b->append(b, "ORDER BY");
 		if (f->type == POST_LIST_THREAD) {
@@ -605,7 +616,7 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f,
 static const char *post_list_fields(const post_filter_t *filter)
 {
 	if (is_deleted(filter->type))
-		return "d"POST_LIST_FIELDS;
+		return "d"POST_LIST_FIELDS",ename,deleted,junk";
 	return POST_LIST_FIELDS;
 }
 

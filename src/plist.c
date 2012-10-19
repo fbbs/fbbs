@@ -647,11 +647,17 @@ static void post_list_display_entry(const post_list_t *l, int index, bool last)
 		snprintf(gbk_title, sizeof(gbk_title), "¡ô %s", gbk_title2);
 	}
 
+	const int title_width = 49;
 	if (is_deleted(type)) {
-		;
-//		ellipsis(title, 38 - strlen(ent->szEraser));
+		char buf[80], date[12];
+		ellipsis(gbk_title, title_width - sizeof(date) - strlen(p->ename) + 1);
+		struct tm *t = fb_localtime(&p->estamp);
+		strftime(date, sizeof(date), "%m-%d %H:%S", t);
+		snprintf(buf, sizeof(buf), "%s\033[1;%dm[%s %s]\033[m", gbk_title,
+				(p->flag & POST_FLAG_JUNK) ? 31 : 32, p->ename, date);
+		strlcpy(gbk_title, buf, sizeof(gbk_title));
 	} else {
-		ellipsis(gbk_title, 49);
+		ellipsis(gbk_title, title_width);
 	}
 
 //	if (digestmode == ATTACH_MODE) {
