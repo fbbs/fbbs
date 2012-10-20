@@ -539,6 +539,12 @@ post_list_type_e post_list_type(const post_info_t *ip)
 
 const char *post_table_name(const post_filter_t *filter)
 {
+	static char buf[24];
+	if (filter->archive) {
+		snprintf(buf, sizeof(buf), "posts_archive_%d", filter->archive);
+		return buf;
+	}
+
 	if (is_deleted(filter->type))
 		return "posts_deleted";
 	else

@@ -109,6 +109,7 @@ enum {
 
 typedef struct {
 	post_list_type_e type;
+	int archive;
 	int bid;
 	int flag;
 	user_id_t uid;
