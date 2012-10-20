@@ -85,7 +85,9 @@ static void save_post_list_position(const slide_list_t *p)
 		min = l->count ? l->posts + l->count - 1 : NULL;
 
 	post_info_t *cur = NULL;
-	for (int i = l->icount - 1; i >= 0; --i) {
+	for (int i = p->cur; i >= 0; --i) {
+		if (i > l->icount - 1)
+			continue;
 		if (!(l->index[i]->flag & POST_FLAG_STICKY)) {
 			cur = l->index[i];
 			break;
@@ -335,17 +337,20 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 	}
 
 	index_posts(p, page, rows);
-	l->reload = false;
 
-	if (l->relocate) {
+	if (l->relocate || l->reload) {
 		int cur = p->cur;
 		p->cur = 0;
-		post_filter_t filter = { .min = l->relocate };
+		post_filter_t filter = {
+			.min = l->relocate ? l->relocate : l->pos->cur_pid
+		};
 		if (relocate_in_cache(p, &filter, false) < 0)
 			p->cur = cur;
 		l->relocate = 0;
 	}
 	save_post_list_position(p);
+
+	l->reload = false;
 	return 0;
 }
 
