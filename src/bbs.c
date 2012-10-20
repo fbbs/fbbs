@@ -172,12 +172,8 @@ char *setuserfile(char *buf, char *filename) {
 
 char *setbdir(char *buf, const char *boardname)
 {
-	char *dir;
-
+	const char *dir;
 	switch (digestmode) {
-		case NA:
-			dir = DOT_DIR;
-			break;
 		case YEA:
 			dir = DIGEST_DIR;
 			break;
@@ -200,12 +196,15 @@ char *setbdir(char *buf, const char *boardname)
 			dir = JUNK_DIR;
 			break;
 #ifdef ENABLE_NOTICE
-			case NOTICE_MODE:
+		case NOTICE_MODE:
 			dir = NOTICE_DIR;
 			break;
 #endif
+		default:
+			dir = DOT_DIR;
+			break;
 	}
-	//dir[STRLEN - 1] = '\0';
+
 	if (digestmode == 5 || digestmode == 6)
 		sprintf(buf, "boards/%s/SOMEONE.%s.DIR.%d", boardname, someoneID,
 				digestmode - 5);
@@ -1598,7 +1597,7 @@ int Q_Goodbye(void)
 
 	/* added by roly 02.03.21*/
 	FILE *sysops;
-	int byes, i, choose;
+	int i, choose;
 	char buf[STRLEN], spbuf[STRLEN];
 	char bye_msgs[9][STRLEN];
 
@@ -1621,8 +1620,8 @@ int Q_Goodbye(void)
 
 	/* added by roly 02.03.21 */
 	if (session.visible) {
+		int byes = 0;
 		if ((sysops = fopen("etc/friendbye", "r")) != NULL) {
-			byes = 0;
 			while (byes < 8 && fgets(buf, STRLEN, sysops) != NULL) {
 				if (buf[0] != '\0') {
 					buf[strlen (buf) - 1] = '\0';

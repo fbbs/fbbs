@@ -210,7 +210,7 @@ post_id_t publish_post(const post_request_t *pr)
 	if (pr->gbk_file)
 		content = convert_file_to_utf8_content(pr->gbk_file);
 	else
-		generate_content(pr, uname, nick, ip, anony);
+		content = generate_content(pr, uname, nick, ip, anony);
 
 	post_id_t pid = insert_post(pr, uname, content);
 	free(content);

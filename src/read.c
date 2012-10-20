@@ -729,7 +729,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	char *buf1 = buf;
 
 	//added by iamfat 2002.10.27 加入同主题大D功能
-	int subflag;
+	int subflag = false;
 
 	struct keeploc *locmem;
 	char SR_BMitems[9][7] = { "删除", "保留", "文摘", "精华区", "水文", "不可RE", "合集",
