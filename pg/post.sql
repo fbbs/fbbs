@@ -1,7 +1,6 @@
 BEGIN;
 
 DROP TABLE IF EXISTS threads;
-DROP TABLE IF EXISTS posts_sticked;
 DROP TABLE IF EXISTS posts_deleted;
 DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS posts_base;

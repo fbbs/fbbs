@@ -49,14 +49,17 @@ sub read_posts
 {
 	my $boards = shift;
 	my @posts;
+	my $count = 0;
 
 	while (my ($bname, $bid) = each %$boards) {
-		for (qw/.DIR .TRASH .JUNK .NOTICE .DIGEST/) {
-			read_index($bname, $bid, $_, \@posts);
+		my %inode;
+		for (qw/.NOTICE .DIGEST .DIR .TRASH .JUNK/) {
+			$count += read_index($bname, $bid, $_, \@posts, \%inode);
 		}
+		print "$count...";
 	}
 
-	print "sorting...";
+	print "\nsorting...";
 	@posts = sort { $a->[10] <=> $b->[10] } @posts;
 	print "finished\n";
 
@@ -68,8 +71,9 @@ sub read_index
 	# 0 filename 1 id 2 gid 3 owner 4 title
 	# 5 eraser 6 level 7 accessed 8 reid 9 timedeleted
 	# 10 (date) 11 (board_id) 12 (type)
-	my ($bname, $bid, $index, $posts) = @_;
-	my ($fh, $buf, $pcount);
+	my ($bname, $bid, $index, $posts, $inode) = @_;
+	my ($fh, $buf);
+	my $pcount = 0;
 	open $fh, '<', "$dir/boards/$bname/$index" and do {
 		while (1) {
 			last if (read($fh, $buf, 256) != 256);
@@ -79,12 +83,18 @@ sub read_index
 				$date = $1;
 				$t[0] = $bname . '/' . $t[0];
 				push @t, $date, $bid, $index;
-				push @$posts, \@t;
+
+				my $node = (stat "$dir/boards/$t[0]")[1];
+				if (defined $node and not exists $inode->{$node}) {
+					push @$posts, \@t;
+					$inode->{$node} = undef;
+					++$pcount;
+				}
 			}
-			print "$pcount..." if (++$pcount % 1000 == 0);
 		}
 		close $fh;
-	}
+	};
+	$pcount;
 }
 
 sub insert_posts
@@ -92,15 +102,15 @@ sub insert_posts
 	my ($posts, $alive_users, $past_users) = @_;
 
 	my $sth = $dbh->prepare(q{
-		INSERT INTO posts (id, reid, tid, owner, uname, stamp, board,
-			sticky, digest, marked, locked, imported, title, content)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO posts (id, reid, tid, owner, uname, stamp, board, sticky,
+			digest, marked, locked, imported, water, title, content)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}) or die $!;
 	my $sth_deleted = $dbh->prepare(q{
 		INSERT INTO posts_deleted (id, reid, tid, owner, uname, stamp, board,
-			digest, marked, locked, imported, title, content,
-			eraser, deleted, junk, bm_visible)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			digest, marked, locked, imported, water, title, content,
+			eraser, deleted, junk, bm_visible, ename)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}) or die $!;
 
 	my $pid_hash = {};
@@ -128,6 +138,7 @@ sub insert_posts
 		my $marked = ($access & 0x8) ? 1 : 0;
 		my $locked = ($access & 0x40) ? 1 : 0;
 		my $imported = ($access & 0x0800) ? 1 : 0;
+		my $water = ($access & 0x80) ? 1 : 0;
 
 		$title = convert($title);
 		my $content = convert_file("$dir/boards/$file");
@@ -135,20 +146,21 @@ sub insert_posts
 		my $stamp = convert_time($date);
 
 		if ($type eq '.TRASH' or $type eq '.JUNK') {
-			my $eraser = get_uid($owner, $deleted, $alive_users, $past_users);
+			my $eid = get_uid($eraser, $deleted, $alive_users, $past_users);
 			$deleted = convert_time($deleted);
 			my $junk = ($access & 0x200) ? 1 : 0;
 			my $bm_visible = ($type eq '.TRASH') ? 1 : 0;
 			$sth_deleted->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
-				$digest, $marked, $locked, $imported, $title, $content,
-				$eraser, $deleted, $junk, $bm_visible);
+				$digest, $marked, $locked, $imported, $water, $title, $content,
+				$eid, $deleted, $junk, $bm_visible, $eraser);
 		} else {
 			my $sticky = ($type eq '.NOTICE') ? 1 : 0;
 			$sth->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
-				$sticky, $digest, $marked, $locked, $imported, $title, $content);
+				$sticky, $digest, $marked, $locked, $imported, $water, $title,
+				$content);
 		}
 		
-		if ($pid % 100 == 0) {
+		if ($pid % 1000 == 0) {
 			print "$pid...";
 			$dbh->commit;
 		}
