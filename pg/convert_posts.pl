@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use Digest::MD5 qw(md5);
+
 use lib '.';
 use Convert;
 
@@ -11,6 +13,7 @@ $| = 1;
 get_options();
 db_connect();
 
+my $post_digests = {};
 my $boards = load_boards();
 my $posts = read_posts($boards);
 
@@ -84,12 +87,18 @@ sub read_index
 				$t[0] = $bname . '/' . $t[0];
 				push @t, $date, $bid, $index;
 
-				my $node = (stat "$dir/boards/$t[0]")[1];
-				if (defined $node and not exists $inode->{$node}) {
-					push @$posts, \@t;
-					$inode->{$node} = undef;
-					++$pcount;
+				if ($index eq '.NOTICE' or $index eq '.DIGEST') {
+					my $content = convert_file("$dir/boards/$t[0]");
+					my $md5 = md5($content);
+					if (exists $post_digests->{$bid}{$md5}) {
+						next;
+					} else {
+						$post_digests->{$bid}{$md5} = undef;
+					}
 				}
+
+				push @$posts, \@t;
+				++$pcount;
 			}
 		}
 		close $fh;
@@ -121,6 +130,14 @@ sub insert_posts
 			$level, $access, $reid, $deleted, $date, $bid, $type) = @$_;
 		my $uid = get_uid($owner, $date, $alive_users, $past_users);
 
+		$title = convert($title);
+		my $content = convert_file("$dir/boards/$file");
+		my $md5 = md5($content);
+		if (exists $post_digests->{$bid}{$md5} and $type ne '.NOTICE'
+				and $type ne '.DIGEST') {
+			next;
+		}
+
 		if ($id != $gid) {
 			if (not exists $pid_hash->{$bid}{$gid}) {
 				$pid_hash->{$bid}{$gid} = ++$pid;
@@ -139,10 +156,6 @@ sub insert_posts
 		my $locked = ($access & 0x40) ? 1 : 0;
 		my $imported = ($access & 0x0800) ? 1 : 0;
 		my $water = ($access & 0x80) ? 1 : 0;
-
-		$title = convert($title);
-		my $content = convert_file("$dir/boards/$file");
-
 		my $stamp = convert_time($date);
 
 		if ($type eq '.TRASH' or $type eq '.JUNK') {
