@@ -168,7 +168,7 @@ int bbsbfind_main(void)
 	char *q = query;
 
 	strappend(&q, &size,
-			"SELECT "POST_LIST_FIELDS" FROM posts WHERE board = %%d");
+			"SELECT "POST_LIST_FIELDS" FROM posts.recent WHERE board = %%d");
 
 	bool marked = strcaseeq(get_param("mark"), "on");
 	if (marked)

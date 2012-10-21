@@ -158,7 +158,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 	convert_g2u(pr->title, utf8_title);
 
 	post_id_t pid = 0, reid, tid;
-	db_res_t *r = db_query("SELECT nextval('posts_base_id_seq')");
+	db_res_t *r = db_query("SELECT nextval('posts.base_id_seq')");
 	if (r) {
 		pid = reid = tid = db_get_post_id(r, 0, 0);
 		db_clear(r);
@@ -168,10 +168,11 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		reid = pr->reid ? pr->reid : pid;
 		tid = pr->tid ? pr->tid : pid;
 
-		r = db_cmd("INSERT INTO posts (id, reid, tid, owner, stamp, board,"
-				" uname, title, content, locked, marked) VALUES (%"DBIdPID","
-				" %"DBIdPID", %"DBIdPID", %"DBIdUID", %t, %d, %s, %s, %s, %b,"
-				" %b)", pid, reid, tid, uid, now, pr->board->id, uname,
+		r = db_cmd("INSERT INTO posts.recent (id, reid, tid, owner, stamp,"
+				" board, uname, title, content, locked, marked)"
+				" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID", %"DBIdUID","
+				" %t, %d, %s, %s, %s, %b, %b)",
+				pid, reid, tid, uid, now, pr->board->id, uname,
 				utf8_title, content, pr->locked, pr->marked);
 		if (!r || db_cmd_rows(r) != 1)
 			pid = 0;
@@ -453,7 +454,7 @@ int set_post_flag(post_filter_t *filter, const char *field, bool set,
 
 int count_sticky_posts(int bid)
 {
-	db_res_t *r = db_query("SELECT count(*) FROM posts"
+	db_res_t *r = db_query("SELECT count(*) FROM posts.recent"
 			" WHERE board = %d AND sticky", bid);
 	int rows = r ? db_get_bigint(r, 0, 0) : 0;
 	db_clear(r);
@@ -513,7 +514,7 @@ int _load_sticky_posts(int bid, post_info_t **posts)
 	if (!*posts)
 		*posts = malloc(sizeof(**posts) * MAX_NOTICE);
 
-	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts"
+	db_res_t *r = db_query("SELECT " POST_LIST_FIELDS " FROM posts.recent"
 			" WHERE board = %d AND sticky ORDER BY id DESC", bid);
 	if (r) {
 		int count = db_res_rows(r);
@@ -541,14 +542,14 @@ const char *post_table_name(const post_filter_t *filter)
 {
 	static char buf[24];
 	if (filter->archive) {
-		snprintf(buf, sizeof(buf), "posts_archive_%d", filter->archive);
+		snprintf(buf, sizeof(buf), "posts.archive_%d", filter->archive);
 		return buf;
 	}
 
 	if (is_deleted(filter->type))
-		return "posts_deleted";
+		return "posts.deleted";
 	else
-		return "posts";
+		return "posts.recent";
 }
 
 const char *post_table_index(const post_filter_t *filter)
@@ -698,13 +699,13 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	}
 
 	query_builder_t *b = query_builder_new(0);
-	b->append(b, "WITH rows AS ( DELETE FROM posts");
+	b->append(b, "WITH rows AS ( DELETE FROM posts.recent");
 	build_post_filter(b, filter, NULL);
 	if (!force)
 		b->sappend(b, "AND", "NOT marked");
 	b->sappend(b, "AND", "NOT sticky");
 	b->append(b, "RETURNING " POST_LIST_FIELDS_FULL ")");
-	b->append(b, "INSERT INTO posts_deleted ("
+	b->append(b, "INSERT INTO posts.deleted ("
 			POST_LIST_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
 	b->append(b, "SELECT " POST_LIST_FIELDS_FULL ","
 			" %"DBIdUID", %t, %b AND (water OR %b),"" %b, %s FROM rows",
@@ -732,7 +733,7 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 int undelete_posts(post_filter_t *filter, bool bm_visible)
 {
 	query_builder_t *b = query_builder_new(0);
-	b->append(b, "SELECT owner, uname, junk FROM posts_deleted");
+	b->append(b, "SELECT owner, uname, junk FROM posts.deleted");
 	build_post_filter(b, filter, NULL);
 	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
 
@@ -750,11 +751,11 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 	query_builder_free(b);
 
 	b = query_builder_new(0);
-	b->append(b, "WITH rows AS ( DELETE FROM posts_deleted");
+	b->append(b, "WITH rows AS ( DELETE FROM posts.deleted");
 	build_post_filter(b, filter, NULL);
 	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
 	b->append(b, "RETURNING " POST_LIST_FIELDS_FULL ")");
-	b->append(b, "INSERT INTO posts (" POST_LIST_FIELDS_FULL ")");
+	b->append(b, "INSERT INTO posts.recent (" POST_LIST_FIELDS_FULL ")");
 	b->append(b, "SELECT " POST_LIST_FIELDS_FULL " FROM rows");
 
 	res = b->cmd(b);

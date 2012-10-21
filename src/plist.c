@@ -1483,7 +1483,7 @@ static bool count_posts_in_range(post_id_t min, post_id_t max, bool asc,
 	b->append(b, "uname, COUNT(*) AS a, SUM(marked::integer) AS m");
 	b->append(b, ", SUM(digest::integer) AS g, SUM(water::integer) AS w, ");
 	b->append(b, "SUM((NOT marked AND NOT digest AND NOT water)::integer) as n");
-	b->sappend(b, "FROM", "posts");
+	b->sappend(b, "FROM", "posts_recent");
 	b->sappend(b, "WHERE", "id >= %"DBIdPID, min);
 	b->sappend(b, "AND", "id <= %"DBIdPID, max);
 	b->sappend(b, "GROUP BY", "uname");

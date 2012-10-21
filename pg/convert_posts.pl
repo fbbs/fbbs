@@ -102,12 +102,12 @@ sub insert_posts
 	my ($posts, $alive_users, $past_users) = @_;
 
 	my $sth = $dbh->prepare(q{
-		INSERT INTO posts (id, reid, tid, owner, uname, stamp, board, sticky,
-			digest, marked, locked, imported, water, title, content)
+		INSERT INTO posts.recent (id, reid, tid, owner, uname, stamp, board,
+			sticky, digest, marked, locked, imported, water, title, content)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}) or die $!;
 	my $sth_deleted = $dbh->prepare(q{
-		INSERT INTO posts_deleted (id, reid, tid, owner, uname, stamp, board,
+		INSERT INTO posts.deleted (id, reid, tid, owner, uname, stamp, board,
 			digest, marked, locked, imported, water, title, content,
 			eraser, deleted, junk, bm_visible, ename)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -165,7 +165,7 @@ sub insert_posts
 			$dbh->commit;
 		}
 	}
-	$dbh->do("SELECT setval('posts_base_id_seq', ?)", undef, $pid + $base + 1);
+	$dbh->do("SELECT setval('posts.base_id_seq', ?)", undef, $pid + $base + 1);
 	$dbh->commit;
 }
 

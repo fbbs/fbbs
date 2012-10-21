@@ -1,11 +1,14 @@
 BEGIN;
 
-DROP TABLE IF EXISTS threads;
-DROP TABLE IF EXISTS posts_deleted;
-DROP TABLE IF EXISTS posts;
-DROP TABLE IF EXISTS posts_base;
+DROP TABLE IF EXISTS posts.threads;
+DROP TABLE IF EXISTS posts.deleted;
+DROP TABLE IF EXISTS posts.recent;
+DROP TABLE IF EXISTS posts.base;
+DROP SCHEMA IF EXISTS posts;
 
-CREATE TABLE posts_base (
+CREATE SCHEMA posts;
+
+CREATE TABLE posts.base (
 	id BIGSERIAL,
 	reid BIGINT,
 	tid BIGINT,
@@ -28,25 +31,25 @@ CREATE TABLE posts_base (
 	content TEXT
 );
 
-CREATE TABLE posts (
+CREATE TABLE posts.recent (
 	sticky BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id)
-) INHERITS (posts_base);
+) INHERITS (posts.base);
 
-CREATE INDEX ON posts(id) WHERE sticky;
-CREATE INDEX ON posts(board);
+CREATE INDEX ON posts.recent(id) WHERE sticky;
+CREATE INDEX ON posts.recent(board);
 
-CREATE TABLE posts_deleted (
+CREATE TABLE posts.deleted (
 	did BIGSERIAL,
 	eraser INTEGER,
 	deleted TIMESTAMPTZ,
 	junk BOOLEAN DEFAULT FALSE,
 	bm_visible BOOLEAN,
 	ename TEXT
-) INHERITS (posts_base);
-CREATE INDEX ON posts_deleted(did);
+) INHERITS (posts.base);
+CREATE INDEX ON posts.deleted(did);
 
-CREATE TABLE threads (
+CREATE TABLE posts.threads (
 	id BIGINT,
 	replies INTEGER DEFAULT 0,
 	comments INTEGER DEFAULT 0

@@ -44,7 +44,7 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 
 	char query[256];
 	size_t orig = snprintf(query, sizeof(query),
-			"SELECT " POST_LIST_FIELDS_FULL	" FROM posts"
+			"SELECT " POST_LIST_FIELDS_FULL	" FROM posts.recent"
 			" WHERE board = %d AND id %c %%"DBIdPID, bid, op);
 	size_t size = sizeof(query) - orig;
 	char *q = query + orig;
