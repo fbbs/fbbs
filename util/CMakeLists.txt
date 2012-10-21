@@ -17,3 +17,8 @@ foreach(name ${UTILS2})
 endforeach(name)
 
 install(TARGETS ${UTILS1} ${UTILS2} RUNTIME DESTINATION tools)
+
+install(FILES Helper.pm DESTINATION tools)
+set(SCRIPTS convert_board.pl convert_favboard.pl convert_posts.pl
+	convert_user.pl)
+install(PROGRAMS ${SCRIPTS} DESTINATION tools)
