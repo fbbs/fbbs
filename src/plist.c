@@ -2373,7 +2373,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 's':
 			return switch_board(l);
 		default:
-			return DONOTHING;
+			return READ_AGAIN;
 	}
 }
 

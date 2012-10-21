@@ -199,6 +199,15 @@ int slide_list(slide_list_t *p)
 		}
 
 		p->base = SLIDE_LIST_CURRENT;
+
+		int ret = p->handler(p, ch);
+		if (ret < 0)
+			break;
+		else if (ret != READ_AGAIN) {
+			p->update = ret;
+			continue;
+		}
+
 		switch (ch) {
 			case 'q':
 			case 'e':
@@ -246,13 +255,6 @@ int slide_list(slide_list_t *p)
 				p->cur = 0;
 				break;
 			default:
-				{
-					int ret = p->handler(p, ch);
-					if (ret < 0)
-						end = true;
-					else
-						p->update = ret;
-				}
 				break;
 		}
 	}
