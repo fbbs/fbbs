@@ -1,0 +1,160 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use DBI;
+use Getopt::Long;
+use POSIX qw(mktime);
+
+use lib '.';
+use Helper;
+
+get_options();
+db_connect();
+
+my $SCHEMA = 'posts';
+my $TEMP = "$SCHEMA.archive_temp";
+my $RECENT = "$SCHEMA.recent";
+my $PID_MAX = 9223372036854775807;
+
+create_table($TEMP);
+
+my %archive_tables = map { $_ => undef } get_archive_tables();
+my $column_string = get_base_columns();
+
+my $boards = load_boards();
+archive_board($_) for (@$boards);
+
+archive_older_posts();
+
+$dbh->disconnect;
+
+sub create_table
+{
+	my $table = shift;
+	$dbh->do("CREATE TABLE $table () INHERITS ($SCHEMA.base)");
+	$dbh->commit;
+}
+
+sub create_table_if_not_exists
+{
+	my $table = shift;
+
+	if (not exists $archive_tables{$table}) {
+		create_table("$SCHEMA.$table");
+		$archive_tables{$table} = undef;
+	}
+}
+
+sub drop_table
+{
+	my $table = shift;
+	$dbh->do("DROP TABLE $table");
+	$dbh->commit;
+}
+
+sub get_archive_tables
+{
+	my $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '$SCHEMA'";
+	my $tables = $dbh->selectcol_arrayref($sql);
+}
+
+sub get_base_columns
+{
+	my $sql = <<SQL;
+SELECT column_name FROM information_schema.columns
+	WHERE table_schema = '$SCHEMA' AND table_name = 'base'
+SQL
+	my $columns = $dbh->selectcol_arrayref($sql);
+	join ',', @$columns;
+}
+
+sub load_boards
+{
+	$dbh->selectcol_arrayref('SELECT id FROM boards');
+}
+
+sub archive_board
+{
+	my $bid = shift;
+	my ($MINIMUM, $DAY) = (500, 30);
+
+	my $id = get_archive_post_id($bid, $MINIMUM);
+	return if ($id < 1);
+
+	my $now = time;
+	my $date = $now - $DAY * 86400;
+
+	my ($table, $begin, $end) = calc_archive_range($date);
+
+	# move new posts directly into archive
+	create_table_if_not_exists($table);
+	my $sql = generate_query($RECENT, "$SCHEMA.$table");
+	$dbh->do($sql, {}, $id, convert_time($begin), convert_time($end));
+
+	# older posts go to temp table
+	$sql = generate_query($RECENT, $TEMP);
+	$dbh->do($sql, {}, $id, convert_time(0), convert_time($begin));
+
+	$dbh->commit;
+}
+
+sub archive_older_posts
+{
+	while (1) {
+		my @stamp = $dbh->selectrow_array(
+			"SELECT EXTRACT(EPOCH FROM MAX(stamp)) FROM $TEMP"
+		);
+		if (not defined $stamp[0]) {
+			drop_table($TEMP);
+			return;
+		}
+
+		my ($table, $begin, $end) = calc_archive_range($stamp[0]);
+		create_table_if_not_exists($table);
+		my $sql = generate_query($TEMP, "$SCHEMA.$table");
+		$dbh->do($sql, {}, $PID_MAX, convert_time($begin), convert_time($end));
+	}
+}
+
+sub calc_archive_range
+{
+	my $stamp = shift;
+	my ($mon, $year) = (localtime($stamp))[4, 5];
+
+	my $begin = mktime(0, 0, 0, 1, $mon, $year);
+	my $table = sprintf "archive_%4d%02d01", $year + 1900, $mon + 1;
+
+	if (++$mon > 11) {
+		$mon = 1;
+		++$year;
+	}
+	my $end = mktime(0, 0, 0, 1, $mon, $year);
+
+	($table, $begin, $end);
+}
+
+sub generate_query
+{
+	my ($from, $to) = @_;
+	my $sql = <<SQL;
+WITH rows AS ( DELETE FROM $from WHERE id <= ? AND stamp >= ? AND stamp < ?
+		RETURNING $column_string )
+	INSERT INTO $to (SELECT $column_string FROM rows)
+SQL
+}
+
+sub get_archive_post_id
+{
+	my ($bid, $limit) = @_;
+	++$limit;
+	my $sql = "SELECT id FROM $RECENT WHERE board = ? ORDER BY id DESC LIMIT $limit";
+	my $ids = $dbh->selectcol_arrayref($sql, {}, $bid);
+
+	my $len = scalar @$ids;
+	return 0 if ($len < $limit);
+	$ids->[$len - 1];
+}
+
+1;
