@@ -130,6 +130,7 @@ sub insert_posts
 			$level, $access, $reid, $deleted, $date, $bid, $type) = @$_;
 		my $uid = get_uid($owner, $date, $alive_users, $past_users);
 
+		$owner = convert($owner);
 		$title = convert($title);
 		my $content = convert_file("$dir/boards/$file");
 		my $md5 = md5($content);
