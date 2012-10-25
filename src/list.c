@@ -220,7 +220,7 @@ int slide_list(slide_list_t *p)
 					end = true;
 				}
 				break;
-			case 'b':
+			case 'P':
 			case Ctrl('B'):
 			case KEY_PGUP:
 				p->base = SLIDE_LIST_PREV;

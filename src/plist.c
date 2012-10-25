@@ -30,6 +30,8 @@ typedef struct {
 
 	bool reload;
 	bool sreload;
+	bool top;
+	bool bottom;
 	post_id_t relocate;
 	post_id_t current_tid;
 
@@ -315,6 +317,9 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		return 0;
 	}
 
+	l->top = p->base == SLIDE_LIST_TOPDOWN;
+	l->bottom = p->base == SLIDE_LIST_BOTTOMUP;
+
 	int page = t_lines - 4;
 	if (!l->index) {
 		l->index = malloc(sizeof(*l->index) * page);
@@ -332,6 +337,10 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	if (l->reload && rows + l->scount < page
 			&& (p->base == SLIDE_LIST_PREV || p->base == SLIDE_LIST_NEXT)) {
+		if (p->base == SLIDE_LIST_PREV)
+			l->top = true;
+		if (p->base == SLIDE_LIST_NEXT)
+			l->bottom = true;
 		rows += reverse_load_posts(p, page, page - rows - l->scount);
 	}
 
@@ -2238,6 +2247,12 @@ static int switch_board(post_list_t *l)
 	return FULLUPDATE;
 }
 
+static int switch_archive(post_list_t *l)
+{
+	// TODO
+	return READ_AGAIN;
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -2383,6 +2398,14 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 				return FULLUPDATE;
 		case 's':
 			return switch_board(l);
+		case 'P': case Ctrl('B'): case KEY_PGUP: case 'j': case KEY_UP:
+			if (l->top)
+				return switch_archive(l);
+			return READ_AGAIN;
+		case 'N': case Ctrl('F'): case KEY_PGDN: case 'k': case KEY_DOWN:
+			if (l->bottom)
+				return switch_archive(l);
+			return READ_AGAIN;
 		default:
 			return READ_AGAIN;
 	}
