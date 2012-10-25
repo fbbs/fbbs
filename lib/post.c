@@ -473,13 +473,14 @@ bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
 	return set_post_flag(&filter, "sticky", sticky, false);
 }
 
-void res_to_post_info(db_res_t *r, int i, post_info_t *p)
+void res_to_post_info(db_res_t *r, int i, int archive, post_info_t *p)
 {
 	bool deleted = streq(db_field_name(r, 0), "did");
 	p->id = db_get_post_id(r, i, 0);
 	p->reid = db_get_post_id(r, i, 1);
 	p->tid = db_get_post_id(r, i, 2);
 	p->bid = db_get_integer(r, i, 3);
+	p->archive = archive;
 	p->uid = db_get_is_null(r, i, 4) ? 0 : db_get_user_id(r, i, 4);
 	strlcpy(p->owner, db_get_value(r, i, 5), sizeof(p->owner));
 	p->stamp = db_get_time(r, i, 6);
@@ -519,7 +520,7 @@ int _load_sticky_posts(int bid, post_info_t **posts)
 	if (r) {
 		int count = db_res_rows(r);
 		for (int i = 0; i < count; ++i) {
-			res_to_post_info(r, i, *posts + i);
+			res_to_post_info(r, i, 0, *posts + i);
 			set_post_flag_local(*posts + i, POST_FLAG_STICKY, true);
 		}
 		db_clear(r);
@@ -639,9 +640,10 @@ query_builder_t *build_post_query(const post_filter_t *filter, bool asc,
 	return b;
 }
 
-void res_to_post_info_full(db_res_t *res, int row, post_info_full_t *p)
+void res_to_post_info_full(db_res_t *res, int row, int archive,
+		post_info_full_t *p)
 {
-	res_to_post_info(res, row, &p->p);
+	res_to_post_info(res, row, archive, &p->p);
 	p->res = res;
 	p->content = db_get_value(res, row, 16);
 	p->length = db_get_length(res, row, 16);

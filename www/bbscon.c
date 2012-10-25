@@ -65,7 +65,7 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 
 	int ret = res && db_res_rows(res) > 0;
 	if (ret)
-		res_to_post_info_full(res, 0, p);
+		res_to_post_info_full(res, 0, 0, p);
 	else
 		db_clear(res);
 

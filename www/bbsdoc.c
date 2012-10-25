@@ -74,7 +74,7 @@ static void print_posts(post_filter_t *filter,
 
 		for (int i = rows; i >= 0; --i) {
 			post_info_t info;
-			res_to_post_info(r, i, &info);
+			res_to_post_info(r, i, 0, &info);
 			print_bbsdoc(&info);
 		}
 		db_clear(r);
@@ -230,7 +230,7 @@ int bbsbfind_main(void)
 
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			post_info_t info;
-			res_to_post_info(res, i, &info);
+			res_to_post_info(res, i, 0, &info);
 			print_bbsdoc(&info);
 		}
 	} else {

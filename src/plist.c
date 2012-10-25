@@ -125,8 +125,10 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 	if (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_BOTTOMUP
 			|| rows >= size) {
 		rows = rows > size ? size : rows;
-		for (int i = 0; i < rows; ++i)
-			res_to_post_info(r, asc ? i : rows - i - 1, l->posts + i);
+		for (int i = 0; i < rows; ++i) {
+			res_to_post_info(r, asc ? i : rows - i - 1, l->filter.archive,
+					l->posts + i);
+		}
 		l->count = rows;
 	} else {
 		int extra = l->count + rows - size;
@@ -136,12 +138,16 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 				memmove(l->posts, l->posts + extra,
 						sizeof(*l->posts) * (l->count - extra));
 			}
-			for (int i = 0; i < rows; ++i)
-				res_to_post_info(r, i, l->posts + left + i);
+			for (int i = 0; i < rows; ++i) {
+				res_to_post_info(r, i, l->filter.archive,
+						l->posts + left + i);
+			}
 		} else {
 			memmove(l->posts + rows, l->posts, sizeof(*l->posts) * left);
-			for (int i = 0; i < rows; ++i)
-				res_to_post_info(r, rows - i - 1, l->posts + i);
+			for (int i = 0; i < rows; ++i) {
+				res_to_post_info(r, rows - i - 1, l->filter.archive,
+						l->posts + i);
+			}
 		}
 		l->count = left + rows;
 	}
@@ -850,7 +856,7 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 		db_res_t *res = b->query(b);
 		if (res && db_res_rows(res) == 1) {
 			post_info_t info;
-			res_to_post_info(res, 0, &info);
+			res_to_post_info(res, 0, filter->archive, &info);
 			if (upward) {
 				l->filter.min = 0;
 				l->filter.max = info.id;
@@ -983,7 +989,8 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 		return DONOTHING;
 
 	post_filter_t filter = {
-		.bid = l->filter.bid, .tid = ip->tid, .min = brc_first_unread()
+		.bid = l->filter.bid, .tid = ip->tid, .min = brc_first_unread(),
+		.archive = l->filter.archive,
 	};
 
 	const int limit = 40;
@@ -998,7 +1005,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 			post_id_t id = db_get_post_id(res, i, 0);
 			if (brc_unread(id)) {
 				post_info_t info;
-				res_to_post_info(res, i, &info);
+				res_to_post_info(res, i, l->filter.archive, &info);
 				read_posts(p, &info, true, false);
 				db_clear(res);
 				return FULLUPDATE;
@@ -1021,13 +1028,14 @@ static int jump_to_thread_last(slide_list_t *p)
 	if (ip) {
 		post_filter_t filter = {
 			.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
+			.archive = l->filter.archive,
 		};
 
 		query_builder_t *b = build_post_query(&filter, false, 1);
 		db_res_t *res = b->query(b);
 		if (res && db_res_rows(res) > 0) {
 			post_info_t info;
-			res_to_post_info(res, 0, &info);
+			res_to_post_info(res, 0, l->filter.archive, &info);
 			read_posts(p, &info, true, false);
 			db_clear(res);
 			return FULLUPDATE;
@@ -1668,8 +1676,10 @@ static int load_full_posts(const post_filter_t *fp, post_info_full_t *ip,
 
 	int rows = db_res_rows(res);
 	if (rows > 0) {
-		for (int i = 0; i < rows; ++i)
-			res_to_post_info_full(res, upward ? rows - 1 - i : i, ip + i);
+		for (int i = 0; i < rows; ++i) {
+			res_to_post_info_full(res, upward ? rows - 1 - i : i,
+					fp->archive, ip + i);
+		}
 	} else {
 		db_clear(res);
 	}
@@ -1685,9 +1695,9 @@ static void thread_post_cache_free(thread_post_cache_t *cache)
 }
 
 static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
-		post_id_t tid, post_id_t id, bool upward)
+		int archive, post_id_t tid, post_id_t id, bool upward)
 {
-	post_filter_t filter = { .tid = tid, .min = id };
+	post_filter_t filter = { .archive = archive, .tid = tid, .min = id };
 	if (id <= tid && upward) {
 		thread_post_cache_free(cache);
 	} else {
@@ -1701,7 +1711,7 @@ static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
 }
 
 static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
-		post_info_full_t *ip, bool upward)
+		int archive, post_info_full_t *ip, bool upward)
 {
 	post_info_full_t *next = upward ? ip - 1 : ip + 1;
 	if (next >= cache->posts && next < cache->posts + cache->size)
@@ -1712,7 +1722,7 @@ static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
 
 	post_id_t id = ip->p.id, tid = ip->p.tid;
 	thread_post_cache_free(cache);
-	return thread_post_cache_load(cache, tid,
+	return thread_post_cache_load(cache, archive, tid,
 			upward ? id - 1 : id + 1, upward);
 }
 
@@ -1808,13 +1818,14 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 		if (!end) {
 			if (!cache.inited) {
 				if (filter.tid) {
-					fip = thread_post_cache_load(&cache, filter.tid,
-							fip->p.id, upward);
+					fip = thread_post_cache_load(&cache, filter.archive,
+							filter.tid, fip->p.id, upward);
 				}
 			}
 
 			if (cache.inited) {
-				fip = thread_post_cache_lookup(&cache, fip, upward);
+				fip = thread_post_cache_lookup(&cache, filter.archive, fip,
+						upward);
 				if (fip) {
 					dump_content_to_gbk_file(fip->content, fip->length,
 							file, sizeof(file));
