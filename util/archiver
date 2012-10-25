@@ -14,7 +14,7 @@ get_options();
 db_connect();
 
 my $SCHEMA = 'posts';
-my $TEMP = "$SCHEMA.archive_temp";
+my $TEMP = "$SCHEMA.temp_archive";
 my $RECENT = "$SCHEMA.recent";
 my $PID_MAX = 9223372036854775807;
 
