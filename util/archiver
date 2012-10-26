@@ -138,11 +138,12 @@ sub calc_archive_range
 sub generate_query
 {
 	my ($from, $to) = @_;
+	my $sticky = ($from eq $RECENT) ? 'NOT sticky AND' : '';
 	my $sql = <<SQL;
 WITH rows AS ( DELETE FROM $from
-		WHERE NOT sticky AND id <= ? AND stamp >= ? AND stamp < ?
+		WHERE $sticky id <= ? AND stamp >= ? AND stamp < ?
 		RETURNING $column_string )
-	INSERT INTO $to (SELECT $column_string FROM rows)
+	INSERT INTO $to ($column_string) (SELECT $column_string FROM rows)
 SQL
 }
 

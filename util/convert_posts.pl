@@ -13,6 +13,7 @@ $| = 1;
 get_options();
 db_connect();
 
+my $SCHEMA = 'posts';
 my $post_digests = {};
 my $boards = load_boards();
 my $posts = read_posts($boards);
@@ -51,22 +52,16 @@ sub load_users
 sub read_posts
 {
 	my $boards = shift;
-	my @posts;
+	my %posts;
 	my $count = 0;
 
 	while (my ($bname, $bid) = each %$boards) {
-		my %inode;
 		for (qw/.NOTICE .DIGEST .DIR .TRASH .JUNK/) {
-			$count += read_index($bname, $bid, $_, \@posts, \%inode);
+			$count += read_index($bname, $bid, $_, \%posts);
 		}
 		print "$count...";
 	}
-
-	print "\nsorting...";
-	@posts = sort { $a->[10] <=> $b->[10] } @posts;
-	print "finished\n";
-
-	\@posts;
+	\%posts;
 }
 
 sub read_index
@@ -97,7 +92,9 @@ sub read_index
 					}
 				}
 
-				push @$posts, \@t;
+				my ($month, $year) = (localtime $date)[4, 5];
+				my $archive = ($year + 1900) * 100 + $month + 1;
+				push @{$posts->{$archive}}, \@t;
 				++$pcount;
 			}
 		}
@@ -110,73 +107,82 @@ sub insert_posts
 {
 	my ($posts, $alive_users, $past_users) = @_;
 
-	my $sth = $dbh->prepare(q{
-		INSERT INTO posts.recent (id, reid, tid, owner, uname, stamp, board,
-			sticky, digest, marked, locked, imported, water, title, content)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	}) or die $!;
-	my $sth_deleted = $dbh->prepare(q{
-		INSERT INTO posts.deleted (id, reid, tid, owner, uname, stamp, board,
-			digest, marked, locked, imported, water, title, content,
-			eraser, deleted, junk, bm_visible, ename)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	}) or die $!;
-
 	my $pid_hash = {};
 	my $base = 200_000_000;
 	my $pid = 0;
-	for (@$posts) {
-		my ($file, $id, $gid, $owner, $title, $eraser,
-			$level, $access, $reid, $deleted, $date, $bid, $type) = @$_;
-		my $uid = get_uid($owner, $date, $alive_users, $past_users);
 
-		$owner = convert($owner);
-		$title = convert($title);
-		my $content = convert_file("$dir/boards/$file");
-		my $md5 = md5($content);
-		if (exists $post_digests->{$bid}{$md5} and $type ne '.NOTICE'
-				and $type ne '.DIGEST') {
-			next;
-		}
+	my @keys = sort keys %$posts;
+	for (@keys) {
+		my $array = delete $posts->{$_};
+		print "sorting $_...";
+		@$array = sort { $a->[10] <=> $b->[10] } @$array;
+		print "finished\n";
 
-		if ($id != $gid) {
-			if (not exists $pid_hash->{$bid}{$gid}) {
-				$pid_hash->{$bid}{$gid} = ++$pid;
+		my $sth = $dbh->prepare(qq{
+				INSERT INTO $SCHEMA.recent (id, reid, tid, owner, uname, stamp, board,
+					sticky, digest, marked, locked, imported, water, title, content)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				}) or die $!;
+		my $sth_deleted = $dbh->prepare(qq{
+				INSERT INTO $SCHEMA.deleted (id, reid, tid, owner, uname, stamp, board,
+					digest, marked, locked, imported, water, title, content,
+					eraser, deleted, junk, bm_visible, ename)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				}) or die $!;
+
+		for (@$array) {
+			my ($file, $id, $gid, $owner, $title, $eraser,
+					$level, $access, $reid, $deleted, $date, $bid, $type) = @$_;
+			my $uid = get_uid($owner, $date, $alive_users, $past_users);
+
+			$owner = convert($owner);
+			$title = convert($title);
+			my $content = convert_file("$dir/boards/$file");
+			my $md5 = md5($content);
+			if (exists $post_digests->{$bid}{$md5} and $type ne '.NOTICE'
+					and $type ne '.DIGEST') {
+				next;
 			}
-			if (not exists $pid_hash->{$bid}{$reid}) {
-				$pid_hash->{$bid}{$reid} = ++$pid;
+
+			if ($id != $gid) {
+				if (not exists $pid_hash->{$bid}{$gid}) {
+					$pid_hash->{$bid}{$gid} = ++$pid;
+				}
+				if (not exists $pid_hash->{$bid}{$reid}) {
+					$pid_hash->{$bid}{$reid} = ++$pid;
+				}
 			}
-		}
-		$pid_hash->{$bid}{$id} = ++$pid;
-		$id = $pid + $base;
-		$gid = $pid_hash->{$bid}{$gid} + $base;
-		$reid = $pid_hash->{$bid}{$reid} + $base;
+			$pid_hash->{$bid}{$id} = ++$pid;
+			$id = $pid + $base;
+			$gid = $pid_hash->{$bid}{$gid} + $base;
+			$reid = $pid_hash->{$bid}{$reid} + $base;
 
-		my $digest = (($access & 0x10) or $type eq '.DIGEST') ? 1 : 0;
-		my $marked = ($access & 0x8) ? 1 : 0;
-		my $locked = ($access & 0x40) ? 1 : 0;
-		my $imported = ($access & 0x0800) ? 1 : 0;
-		my $water = ($access & 0x80) ? 1 : 0;
-		my $stamp = convert_time($date);
+			my $digest = (($access & 0x10) or $type eq '.DIGEST') ? 1 : 0;
+			my $marked = ($access & 0x8) ? 1 : 0;
+			my $locked = ($access & 0x40) ? 1 : 0;
+			my $imported = ($access & 0x0800) ? 1 : 0;
+			my $water = ($access & 0x80) ? 1 : 0;
+			my $stamp = convert_time($date);
 
-		if ($type eq '.TRASH' or $type eq '.JUNK') {
-			my $eid = get_uid($eraser, $deleted, $alive_users, $past_users);
-			$deleted = convert_time($deleted);
-			my $junk = ($access & 0x200) ? 1 : 0;
-			my $bm_visible = ($type eq '.TRASH') ? 1 : 0;
-			$sth_deleted->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
-				$digest, $marked, $locked, $imported, $water, $title, $content,
-				$eid, $deleted, $junk, $bm_visible, $eraser);
-		} else {
-			my $sticky = ($type eq '.NOTICE') ? 1 : 0;
-			$sth->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
-				$sticky, $digest, $marked, $locked, $imported, $water, $title,
-				$content);
-		}
-		
-		if ($pid % 1000 == 0) {
-			print "$pid...";
-			$dbh->commit;
+			if ($type eq '.TRASH' or $type eq '.JUNK') {
+				my $eid = get_uid($eraser, $deleted, $alive_users, $past_users);
+				$deleted = convert_time($deleted);
+				my $junk = ($access & 0x200) ? 1 : 0;
+				my $bm_visible = ($type eq '.TRASH') ? 1 : 0;
+				$sth_deleted->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
+						$digest, $marked, $locked, $imported, $water, $title, $content,
+						$eid, $deleted, $junk, $bm_visible, $eraser);
+			} else {
+				my $sticky = ($type eq '.NOTICE') ? 1 : 0;
+				$sth->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
+						$sticky, $digest, $marked, $locked, $imported, $water, $title,
+						$content);
+			}
+
+			if ($pid % 1000 == 0) {
+				print "$pid...";
+				$dbh->commit;
+			}
 		}
 	}
 	$dbh->do("SELECT setval('posts.base_id_seq', ?)", undef, $pid + $base + 1);
