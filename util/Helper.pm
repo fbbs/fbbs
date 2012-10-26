@@ -7,27 +7,27 @@ use Exporter 'import';
 use Config;
 use DBI;
 use Encode;
-use Getopt::Long;
 use POSIX qw(strftime);
 
 our ($host, $port, $db, $user, $dir, $dbh);
 
 sub get_options
 {
-	GetOptions(
-			"h|host=s" => \$host,
-			"p|port:s" => \$port,
-			"d|database=s" => \$db,
-			"u|user=s" => \$user,
-			"b|basedir:s" => \$dir,
-			);
+	my $file = '/etc/fbbs/fbbs.conf';
+	my %config;
+	open my $fh, '<', $file;
+	while (<$fh>) {
+		chomp;
+		if (m/=/) {
+			my ($key, $val) = split / += +/;
+			$config{$key} = $val;
+		}
+	}
+	close $fh;
 
-	$host = $ENV{PGHOST} if not $host;
-	$user = $ENV{PGUSER} if not $user;
-	$db = $user if not $db;
-	$port = 5432 if not $port;
+	($host, $user, $db, $port) = @config{qw(host user dbname port)};
 	$dir = '/home/bbs' if not $dir;
-	die "Usage: $0 -h host [-p port] -d database -u user -b [base dir]\n" if (not $host or not $db or not $user);
+	die if (not $host or not $db or not $user);
 }
 
 sub db_connect
