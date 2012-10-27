@@ -57,6 +57,7 @@ typedef enum {
 	POST_LIST_KEYWORD,
 	POST_LIST_TRASH,
 	POST_LIST_JUNK,
+	POST_LIST_ARCHIVE,
 } post_list_type_e;
 
 typedef struct {
@@ -160,4 +161,11 @@ extern bool alter_title(const post_info_t *ip, const char *title);
 extern bool alter_content(const post_info_t *ip, const char *content);
 
 extern int get_post_mark(const post_info_t *p);
+
+typedef db_res_t archive_list_t;
+extern archive_list_t *archive_list_load(int bid);
+#define archive_list_count(list)  db_res_rows(list)
+#define archive_list_number(list, i)  db_get_integer(list, i, 0)
+#define archive_list_free(list)  db_clear(list)
+
 #endif // FB_POST_H

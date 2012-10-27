@@ -877,3 +877,14 @@ int get_post_mark(const post_info_t *p)
 
 	return mark;
 }
+
+archive_list_t *archive_list_load(int bid)
+{
+	db_res_t *res = db_query("SELECT archive, min, max"
+			" FROM posts.board_archive WHERE board = %d"
+			" ORDER BY archive", bid);
+	if (res && db_res_rows(res) > 0)
+		return res;
+	db_clear(res);
+	return NULL;
+}

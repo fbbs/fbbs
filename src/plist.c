@@ -27,6 +27,7 @@ SLIST_HEAD(post_list_position_list_t, post_list_position_t);
 typedef struct {
 	post_filter_t filter;
 	post_list_position_t *pos;
+	archive_list_t *archives;
 
 	bool reload;
 	bool sreload;
@@ -335,13 +336,14 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		load_sticky_posts(l);
 	}
 
-	if (l->reload && rows + l->scount < page
-			&& (p->base == SLIDE_LIST_PREV || p->base == SLIDE_LIST_NEXT)) {
+	if ((p->base == SLIDE_LIST_PREV || p->base == SLIDE_LIST_NEXT)
+			&& rows + l->scount < page) {
 		if (p->base == SLIDE_LIST_PREV)
 			l->top = true;
 		if (p->base == SLIDE_LIST_NEXT)
 			l->bottom = true;
-		rows += reverse_load_posts(p, page, page - rows - l->scount);
+		if (l->reload)
+			rows += reverse_load_posts(p, page, page - rows - l->scount);
 	}
 
 	if (rows) {
@@ -2247,10 +2249,80 @@ static int switch_board(post_list_t *l)
 	return FULLUPDATE;
 }
 
+static tui_list_loader_t archive_list_loader(tui_list_t *p)
+{
+	post_list_t *l = p->data;
+	return p->all = archive_list_count(l->archives);
+}
+
+static tui_list_title_t archive_list_title(tui_list_t *p)
+{
+	return;
+}
+
+static tui_list_display_t archive_list_display(tui_list_t *p, int row)
+{
+	post_list_t *l = p->data;
+	int rows = archive_list_count(l->archives);
+	if (row < rows) {
+		prints("   %d\n", archive_list_number(l->archives, row));
+	}
+	return 0;
+}
+
+static tui_list_handler_t archive_list_handler(tui_list_t *p, int ch)
+{
+	post_list_t *l = p->data;
+	switch (ch) {
+		case '\r': case '\n': case KEY_RIGHT:
+			l->filter.type = POST_LIST_ARCHIVE;
+			l->filter.archive = archive_list_number(l->archives, p->cur);
+			l->reload = true;
+			return -1;
+		default:
+			return 0;
+	}
+}
+
+static void archive_list(post_list_t *l)
+{
+	tui_list_t t = {
+		.data = l,
+		.loader = archive_list_loader,
+		.title = archive_list_title,
+		.display = archive_list_display,
+		.handler = archive_list_handler,
+		.query = NULL,
+	};
+	tui_list(&t);
+	return;
+}
+
 static int switch_archive(post_list_t *l)
 {
-	// TODO
+	if (l->filter.bid) {
+		if (!l->archives)
+			l->archives = archive_list_load(l->filter.bid);
+		if (l->archives) {
+			archive_list(l);
+			return FULLUPDATE;
+		}
+	}
 	return READ_AGAIN;
+}
+
+static int tui_jump(slide_list_t *p)
+{
+	char buf[16];
+	getdata(t_lines - 1, 0, "跳转到 (P)文章 (A)存档 (C)取消 ？[C]",
+			buf, sizeof(buf), true, true);
+	char c = tolower(buf[0]);
+	if (c == 'p') {
+		;
+	} else if (c == 'a') {
+		;
+	}
+	return MINIUPDATE;
 }
 
 extern int show_online(void);
@@ -2406,6 +2478,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			if (l->bottom)
 				return switch_archive(l);
 			return READ_AGAIN;
+		case '%':
+			return tui_jump(p);
 		default:
 			return READ_AGAIN;
 	}
