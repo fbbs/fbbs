@@ -4,11 +4,17 @@ use strict;
 use warnings;
 
 use DBI;
+use FindBin qw($Bin);
 use Getopt::Long;
 use POSIX qw(mktime);
 
-use lib '.';
+use lib "$Bin";
 use Helper;
+
+my $opt_update_all = 0;
+GetOptions(
+	'a|all' => \$opt_update_all,
+);
 
 get_options();
 db_connect();
@@ -18,15 +24,24 @@ my $TEMP = "$SCHEMA.temp_archive";
 my $RECENT = "$SCHEMA.recent";
 my $PID_MAX = 9223372036854775807;
 
-create_table($TEMP);
+my $column_string;
+my %archive_tables = map { $_ => undef } @{get_archive_tables()};
+my @touched_tables;
 
-my %archive_tables = map { $_ => undef } get_archive_tables();
-my $column_string = get_base_columns();
+if ($opt_update_all) {
+	@touched_tables = keys %archive_tables;
+} else {
+	create_table($TEMP);
 
-my $boards = load_boards();
-archive_board($_) for (@$boards);
+	$column_string = get_base_columns();
 
-archive_older_posts();
+	my $boards = load_boards();
+	archive_board($_) for (@$boards);
+
+	archive_older_posts();
+}
+
+update_board_archive_stat();
 
 $dbh->disconnect;
 
@@ -92,6 +107,7 @@ sub archive_board
 	create_table_if_not_exists($table);
 	my $sql = generate_query($RECENT, "$SCHEMA.$table");
 	$dbh->do($sql, {}, $id, convert_time($begin), convert_time($end));
+	push @touched_tables, $table;
 
 	# older posts go to temp table
 	$sql = generate_query($RECENT, $TEMP);
@@ -115,6 +131,7 @@ sub archive_older_posts
 		create_table_if_not_exists($table);
 		my $sql = generate_query($TEMP, "$SCHEMA.$table");
 		$dbh->do($sql, {}, $PID_MAX, convert_time($begin), convert_time($end));
+		push @touched_tables, $table;
 	}
 }
 
@@ -157,6 +174,21 @@ sub get_archive_post_id
 	my $len = scalar @$ids;
 	return 0 if ($len < $limit);
 	$ids->[$len - 1];
+}
+
+sub update_board_archive_stat
+{
+	for my $table (@touched_tables) {
+		next if $table !~ /^archive_/;
+		my $archive = substr $table, 8;
+		my $sql = <<SQL;
+DELETE FROM posts.board_archive WHERE archive = $archive;
+INSERT INTO posts.board_archive (archive, board, min, max)
+	SELECT $archive, board, MIN(id), MAX(id) FROM posts.$table GROUP BY board;
+SQL
+		$dbh->do($sql);
+	}
+	$dbh->commit;
 }
 
 1;

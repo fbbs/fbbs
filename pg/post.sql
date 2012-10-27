@@ -55,4 +55,12 @@ CREATE TABLE posts.threads (
 	comments INTEGER DEFAULT 0
 );
 
+CREATE TABLE posts.board_archive (
+	board INTEGER,
+	archive INTEGER,
+	min BIGINT,
+	max BIGINT
+);
+CREATE INDEX ON posts.board_archive(board);
+
 COMMIT;
