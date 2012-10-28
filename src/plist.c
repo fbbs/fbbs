@@ -165,8 +165,8 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	if (l->filter.type == POST_LIST_NORMAL && !l->filter.archive
-			&& !l->sposts && l->sreload) {
+	if ((l->filter.type == POST_LIST_NORMAL && !l->filter.archive
+			&& !l->sposts) || l->sreload) {
 		l->scount = _load_sticky_posts(l->filter.bid, &l->sposts);
 		l->sreload = false;
 	}
@@ -485,8 +485,10 @@ static void align_center(const char *s, int remain)
 
 static void show_prompt(const board_t *bp, const char *prompt, int remain)
 {
+	GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
+	convert_u2g(bp->descr, gbk_descr);
 	int blen = strlen(bp->name) + 2;
-	int plen = prompt ? strlen(prompt) : strlen(bp->descr);
+	int plen = prompt ? strlen(prompt) : strlen(gbk_descr);
 
 	if (blen + plen > remain) {
 		if (prompt) {
@@ -497,7 +499,7 @@ static void show_prompt(const board_t *bp, const char *prompt, int remain)
 		}
 		return;
 	} else {
-		align_center(prompt ? prompt : bp->descr, remain - blen);
+		align_center(prompt ? prompt : gbk_descr, remain - blen);
 		prints("\033[33m[%s]", bp->name);
 	}
 }

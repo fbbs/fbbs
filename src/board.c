@@ -737,7 +737,12 @@ static int read_board(tui_list_t *p)
 		}
 	} else {
 		brc_initial(currentuser.userid, bp->name);
-		change_board(bp);
+
+		board_t orig_board = *bp;
+		convert_g2u(bp->descr, orig_board.descr);
+		convert_g2u(bp->name, orig_board.name);
+		change_board(&orig_board);
+
 		memcpy(currBM, bp->bms, BM_LEN - 1);
 
 		if (DEFINE(DEF_FIRSTNEW)) {
