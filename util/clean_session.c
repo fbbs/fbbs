@@ -100,7 +100,7 @@ static bool check_timeout(const struct _session *s, int count)
 	if (s->active) {
 		fb_time_t refresh = get_idle_time(s->sid);
 		fb_time_t now = time(NULL);
-		if (refresh > 0 && now - refresh > IDLE_TIMEOUT) {
+		if (refresh >= 0 && now - refresh > IDLE_TIMEOUT) {
 			kill_session(s, count > 1);
 			return true;
 		}
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 
 	db_res_t *res = db_query("SELECT id, active, user_id, pid, web, stamp,"
-			" expire, key FROM sessions");
+			" expire, session_key FROM sessions");
 
 	int count = db_res_rows(res);
 	struct _session *sessions = malloc(sizeof(*sessions) * count);
