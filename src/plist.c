@@ -1844,8 +1844,10 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 				break;
 			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
 				upward = false;
-				if (!filter.uid && !filter.tid)
-					thread_entry = filter.tid = fip->p.id;
+				if (!filter.uid && !filter.tid) {
+					thread_entry = fip->p.id;
+					filter.tid = fip->p.tid;
+				}
 				break;
 			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
 				upward = true;
@@ -2581,7 +2583,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'j': case KEY_UP:
 			return l->top && !p->cur ? switch_archive(l, true) : READ_AGAIN;
 		case 'N': case Ctrl('F'): case KEY_PGDN:
-			return (!l->filter.archive && l->bottom)
+			return (l->filter.archive && l->bottom)
 					? switch_archive(l, false) : READ_AGAIN;
 		case 'k': case KEY_DOWN:
 			return (l->filter.archive && l->bottom && p->cur == l->icount - 1)

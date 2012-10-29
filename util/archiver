@@ -48,7 +48,12 @@ $dbh->disconnect;
 sub create_table
 {
 	my $table = shift;
-	$dbh->do("CREATE TABLE $table () INHERITS ($SCHEMA.base)");
+	if ($table =~ /^archive_/) {
+		$dbh->do("CREATE TABLE $table (PRIMARY KEY (id)) INHERITS ($SCHEMA.base)");
+		$dbh->do("CREATE INDEX ON $table(board)");
+	} else {
+		$dbh->do("CREATE TABLE $table () INHERITS ($SCHEMA.base)");
+	}
 	$dbh->commit;
 }
 
@@ -105,12 +110,12 @@ sub archive_board
 
 	# move new posts directly into archive
 	create_table_if_not_exists($table);
-	my $sql = generate_query($RECENT, "$SCHEMA.$table");
+	my $sql = generate_query($RECENT, "$SCHEMA.$table", $bid);
 	$dbh->do($sql, {}, $id, convert_time($begin), convert_time($end));
 	push @touched_tables, $table;
 
 	# older posts go to temp table
-	$sql = generate_query($RECENT, $TEMP);
+	$sql = generate_query($RECENT, $TEMP, $bid);
 	$dbh->do($sql, {}, $id, convert_time(0), convert_time($begin));
 
 	$dbh->commit;
@@ -154,11 +159,12 @@ sub calc_archive_range
 
 sub generate_query
 {
-	my ($from, $to) = @_;
+	my ($from, $to, $bid) = @_;
 	my $sticky = ($from eq $RECENT) ? 'NOT sticky AND' : '';
+	my $board = (defined $bid) ? "board = $bid AND" : '';
 	my $sql = <<SQL;
 WITH rows AS ( DELETE FROM $from
-		WHERE $sticky id <= ? AND stamp >= ? AND stamp < ?
+		WHERE $sticky $board id <= ? AND stamp >= ? AND stamp < ?
 		RETURNING $column_string )
 	INSERT INTO $to ($column_string) (SELECT $column_string FROM rows)
 SQL

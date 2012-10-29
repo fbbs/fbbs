@@ -64,7 +64,7 @@ static void _fill_session_array(tui_list_t *p, int i)
 static int session_cmp(const void *s1, const void *s2)
 {
 	const online_user_info_t *i1 = s1, *i2 = s2;
-	int diff = strcmp(i1->name, i2->name);
+	int diff = strcasecmp(i1->name, i2->name);
 	if (diff)
 		return diff;
 	else
