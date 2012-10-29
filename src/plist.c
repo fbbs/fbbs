@@ -112,6 +112,11 @@ static void save_post_list_position(const slide_list_t *p)
 	l->pos->cur_pid = cur ? cur->id : 0;
 }
 
+static bool has_sticky_posts(const post_filter_t *fp)
+{
+	return fp->type == POST_LIST_NORMAL && !fp->archive;
+}
+
 static post_info_t *get_post_info(slide_list_t *p)
 {
 	post_list_t *l = p->data;
@@ -165,8 +170,7 @@ static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
 
 static void load_sticky_posts(post_list_t *l)
 {
-	if ((l->filter.type == POST_LIST_NORMAL && !l->filter.archive
-			&& !l->sposts) || l->sreload) {
+	if ((has_sticky_posts(&l->filter) && !l->sposts) || l->sreload) {
 		l->scount = _load_sticky_posts(l->filter.bid, &l->sposts);
 		l->sreload = false;
 	}
@@ -176,12 +180,11 @@ static void index_posts(slide_list_t *p, int limit, int rows)
 {
 	post_list_t *l = p->data;
 	slide_list_base_e base = p->base;
-	int scount = (l->filter.type == POST_LIST_NORMAL && !l->filter.archive)
-			? l->scount : 0;
+	int scount = has_sticky_posts(&l->filter) ? l->scount : 0;
 	if (base != SLIDE_LIST_CURRENT) {
 		int remain = limit, start = 0;
 		if (base == SLIDE_LIST_BOTTOMUP)
-			start = scount;
+			start = scount + rows - limit;
 		if (base == SLIDE_LIST_NEXT)
 			start = l->count - rows;
 		if (start < 0)
@@ -193,8 +196,7 @@ static void index_posts(slide_list_t *p, int limit, int rows)
 			--remain;
 		}
 
-		if (l->sposts && l->filter.type == POST_LIST_NORMAL
-				&& !l->filter.archive) {
+		if (l->sposts && has_sticky_posts(&l->filter)) {
 			for (int i = 0; i < remain && i < scount; ++i) {
 				l->index[l->icount++] = l->sposts + i;
 			}
@@ -737,7 +739,7 @@ static void post_list_display_entry(const post_list_t *l, int index, bool last)
 
 	char buf[128];
 	snprintf(buf, sizeof(buf),
-			"  %s%s%s \033[%sm%-12.12s %s%6.6s %s\033[%sm%s\n",
+			"  %s%s%s \033[%sm%-12.12s %s%6.6s %s\033[%sm%s\033[m\n",
 			mark_prefix, mark_buf, mark_suffix,
 			idcolor, p->owner, color, date,
 			(p->flag & POST_FLAG_LOCKED) ? "\033[1;33mx" : " ",
@@ -901,9 +903,7 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 	post_list_t *l = p->data;
 
 	int found = relocate_in_cache(p, filter, upward);
-	if (found >= 0) {
-		return MINIUPDATE;
-	} else {
+	if (found < 0) {
 		query_builder_t *b = build_post_query(filter, !upward, 1);
 		db_res_t *res = b->query(b);
 		if (res && db_res_rows(res) == 1) {
@@ -922,8 +922,8 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 			db_clear(res);
 			l->relocate = info.id;
 		}
-		return PARTUPDATE;
 	}
+	return PARTUPDATE;
 }
 
 static void set_filter_base(post_filter_t *filter, const post_info_t *ip,
@@ -2600,6 +2600,17 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			l->filter.archive = 0;
 			l->reload = true;
 			return FULLUPDATE;
+		case '$': case KEY_END:
+			if (ip->flag & POST_FLAG_STICKY) {
+				for (int i = p->cur - 1; i >= 0; --i) {
+					if (!(l->index[i]->flag & POST_FLAG_STICKY)) {
+						p->cur = i;
+						break;
+					}
+				}
+				return DONOTHING;
+			}
+			return READ_AGAIN;
 		default:
 			return READ_AGAIN;
 	}
