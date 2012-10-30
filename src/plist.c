@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "bbs.h"
 #include "fbbs/brc.h"
 #include "fbbs/fileio.h"
@@ -286,6 +287,8 @@ static bool match_filter(post_filter_t *filter, post_info_t *p)
 		match &= p->id <= filter->max;
 	if (filter->tid)
 		match &= p->id == filter->tid;
+	if (*filter->utf8_keyword)
+		match &= (bool)strcasestr(p->utf8_title, filter->utf8_keyword);
 	return match;
 }
 
@@ -512,24 +515,24 @@ static const char *mode_description(post_list_type_e type)
 	switch (type) {
 		case POST_LIST_NORMAL:
 			if (DEFINE(DEF_THESIS))
-				s = "主题";
+				s = "主题模式";
 			else
-				s =  "一般";
+				s =  "一般模式";
 			break;
 		case POST_LIST_THREAD:
-			s = "主题";
+			s = "同主题";
 			break;
 		case POST_LIST_TOPIC:
 			s = "原作";
 			break;
 		case POST_LIST_MARKED:
-			s = "MARK";
+			s = "保留";
 			break;
 		case POST_LIST_DIGEST:
 			s = "文摘";
 			break;
 		case POST_LIST_AUTHOR:
-			s = "精确";
+			s = "同作者";
 			break;
 		case POST_LIST_KEYWORD:
 			s = "标题关键字";
@@ -586,7 +589,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 		int month = (l->filter.archive % 10000) / 100;
 		prints("[%d年%d月存档]", year, month);
 	} else {
-		prints("      [%s模式]", mode);
+		prints("    [%s]", mode);
 	}
 	prints("\033[K\033[m\n");
 	clrtobot();
@@ -1137,10 +1140,10 @@ static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
 {
 	if (ip && is_deleted(p->filter.type)) {
 		post_filter_t f = {
-			.type = POST_LIST_TRASH,
+			.type = p->filter.type,
 			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
 		};
-		if (undelete_posts(&f, p->filter.type == POST_LIST_TRASH)) {
+		if (undelete_posts(&f)) {
 			p->reload = true;
 			return PARTUPDATE;
 		}
@@ -2045,7 +2048,8 @@ static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
 			break;
 		default:
 			if (deleted) {
-				undelete_posts(&filter, l->filter.type == POST_LIST_TRASH);
+				filter.type = l->filter.type;
+				undelete_posts(&filter);
 			} else {
 				filter.flag |= POST_FLAG_WATER;
 				delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
@@ -2125,7 +2129,7 @@ static void operate_posts_in_batch(post_filter_t *fp, post_info_t *ip, int mode,
 
 	switch (choice) {
 		case 0:
-			delete_posts(&filter, junk, HAS_PERM(PERM_OBOARDS), false);
+			delete_posts(&filter, junk, !HAS_PERM(PERM_OBOARDS), false);
 			break;
 		case 1:
 			set_post_flag(&filter, "marked", false, true);
@@ -2147,7 +2151,8 @@ static void operate_posts_in_batch(post_filter_t *fp, post_info_t *ip, int mode,
 			break;
 		default:
 			if (is_deleted(fp->type)) {
-				undelete_posts(&filter, fp->type == POST_LIST_TRASH);
+				filter.type = fp->type;
+				undelete_posts(&filter);
 			} else {
 				// merge thread
 			}
@@ -2278,6 +2283,7 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 		unlink(buf);
 	}
 #endif
+	l->reload = true;
 	return PARTUPDATE;
 }
 

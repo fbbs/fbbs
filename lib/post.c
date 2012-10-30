@@ -575,8 +575,10 @@ void build_post_filter(query_builder_t *b, const post_filter_t *f,
 		b->sappend(b, "AND", "water");
 	if (f->uid)
 		b->sappend(b, "AND", "owner = %"DBIdUID, f->uid);
-	if (*f->utf8_keyword)
-		b->sappend(b, "AND", "title ILIKE '%%%s%%'", f->utf8_keyword);
+	if (*f->utf8_keyword) {
+		b->sappend(b, "AND", "title ILIKE '%%' || %s || '%%'",
+				f->utf8_keyword);
+	}
 	if (f->type == POST_LIST_TOPIC)
 		b->sappend(b, "AND", "id = tid");
 
@@ -732,12 +734,11 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	return rows;
 }
 
-int undelete_posts(post_filter_t *filter, bool bm_visible)
+int undelete_posts(post_filter_t *filter)
 {
 	query_builder_t *b = query_builder_new(0);
 	b->append(b, "SELECT owner, uname, junk FROM posts.deleted");
 	build_post_filter(b, filter, NULL);
-	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
 
 	db_res_t *res = b->query(b);
 	if (res) {
@@ -755,7 +756,6 @@ int undelete_posts(post_filter_t *filter, bool bm_visible)
 	b = query_builder_new(0);
 	b->append(b, "WITH rows AS ( DELETE FROM posts.deleted");
 	build_post_filter(b, filter, NULL);
-	b->sappend(b, "AND", "bm_visible = %b", bm_visible);
 	b->append(b, "RETURNING " POST_LIST_FIELDS_FULL ")");
 	b->append(b, "INSERT INTO posts.recent (" POST_LIST_FIELDS_FULL ")");
 	b->append(b, "SELECT " POST_LIST_FIELDS_FULL " FROM rows");
@@ -797,7 +797,8 @@ static char *replace_content_title(const char *content, size_t len,
 		return NULL;
 
 	int new_title_len = strlen(title);
-	char *s = malloc(len + new_title_len - orig_title_len);
+	len += new_title_len - orig_title_len;
+	char *s = malloc(len + 1);
 	char *p = s;
 	size_t l = begin - content;
 	memcpy(p, content, l);
@@ -807,6 +808,7 @@ static char *replace_content_title(const char *content, size_t len,
 	*p++ = '\n';
 	l = end - l2_end;
 	memcpy(p, l2_end, end - l2_end);
+	s[len] = '\0';
 	return s;
 }
 

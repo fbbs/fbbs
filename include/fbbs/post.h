@@ -153,7 +153,7 @@ extern bool set_last_post_id(int bid, post_id_t pid);
 extern post_id_t get_last_post_id(int bid);
 
 extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
-extern int undelete_posts(post_filter_t *filter, bool bm_visible);
+extern int undelete_posts(post_filter_t *filter);
 
 extern db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields);
 extern bool alter_title(const post_info_t *ip, const char *title);
