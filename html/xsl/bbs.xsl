@@ -398,7 +398,7 @@ table.post{width:100%}
 		<tr><th class='mark'>标记</th><th>作者</th><th class='time'>发表时间</th><th class='ptitle'>标题</th></tr>
 		<xsl:for-each select='po'><tr>
 			<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-			<td class='mark'><xsl:if test='@sticky'>∞ </xsl:if><xsl:value-of select='@m'/></td>
+			<td class='mark'><xsl:choose><xsl:when test='@sticky'>∞ </xsl:when><xsl:otherwise><xsl:value-of select='@m'/></xsl:otherwise></xsl:choose></td>
 			<td class='owner'><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a></td>
 			<td class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></td>
 			<td class='ptitle'><a class='ptitle'>
@@ -438,7 +438,7 @@ table.post{width:100%}
 			<xsl:if test='not(po/@sticky)'>
 				<xsl:if test='not(po/@first)'><a href='{$baseurl}p'><img src='../images/button/up.gif'/>上篇</a></xsl:if>
 				<xsl:if test='not(po/@last)'><a href='{$baseurl}n'><img src='../images/button/down.gif'/>下篇</a></xsl:if>
-				<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>上楼</a></xsl:if>
+				<xsl:if test='po/@reid != po/@fid'><a href='{$baseurl}b'>上楼</a></xsl:if>
 				<xsl:if test='not(po/@tlast)'><a href='{$baseurl}a&amp;t={po/@gid}'>下楼</a></xsl:if>
 				<xsl:if test='po/@gid != po/@id'><a href='con?new=1&amp;bid={@bid}&amp;f={po/@gid}'>顶楼</a></xsl:if>
 				<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>

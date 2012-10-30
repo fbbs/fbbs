@@ -72,7 +72,7 @@ static void print_posts(post_filter_t *filter,
 		if (rows > limit)
 			rows = limit;
 
-		for (int i = rows; i >= 0; --i) {
+		for (int i = rows - 1; i >= 0; --i) {
 			post_info_t info;
 			res_to_post_info(r, i, 0, &info);
 			print_bbsdoc(&info);

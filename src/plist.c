@@ -2552,6 +2552,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'o':
 			show_online_followings();
 			return FULLUPDATE;
+		case 'u':
+			t_query(NULL);
+			return FULLUPDATE;
 		case 'Z':
 			tui_send_msg(ip->owner);
 			return FULLUPDATE;

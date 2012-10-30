@@ -30,38 +30,27 @@ const struct fileheader *dir_bsearch(const struct fileheader *begin,
 int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 		bool extra, post_info_full_t *p)
 {
-	char op = '=';
-	switch (action) {
-		case 'p':
-		case 'b':
-			op = '<';
-			break;
-		case 'n':
-		case 'a':
-			op = '>';
-			break;
+	bool asc = true;
+	post_filter_t filter = { .type = POST_LIST_NORMAL, .bid = bid };
+	if (action == 'a' || action == 'b')
+		filter.tid = tid;
+	if (action == 'p' || action == 'b') {
+		filter.max = pid - 1;
+		asc = false;
+	} else if (action == 'n' || action == 'a') {
+		filter.min = pid + 1;
+	} else {
+		filter.min = filter.max = pid;
 	}
 
-	char query[256];
-	size_t orig = snprintf(query, sizeof(query),
-			"SELECT " POST_LIST_FIELDS_FULL	" FROM posts.recent"
-			" WHERE board = %d AND id %c %%"DBIdPID, bid, op);
-	size_t size = sizeof(query) - orig;
-	char *q = query + orig;
+	query_builder_t *b = query_builder_new(0);
+	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
+	b->sappend(b, "FROM", "posts.recent");
+	build_post_filter(b, &filter, &asc);
+	b->append(b, "LIMIT 1");
 
-	if (action == 'a' || action == 'b')
-		strappend(&q, &size, " AND tid = %"DBIdPID);
-	if (op == '<')
-		strappend(&q, &size, " ORDER BY id DESC");
-	if (op == '>')
-		strappend(&q, &size, " ORDER BY id ASC");
-	strappend(&q, &size, " LIMIT 1");
-
-	db_res_t *res;
-	if (action == 'a' || action == 'b')
-		res = db_query(query, pid, tid);
-	else
-		res = db_query(query, pid);
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
 
 	int ret = res && db_res_rows(res) > 0;
 	if (ret)
