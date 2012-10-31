@@ -121,7 +121,7 @@ static int bbsdoc(post_list_type_e type)
 	char *cgi_name = "";
 	if (type == POST_LIST_DIGEST)
 		cgi_name = "g";
-	else if (type == POST_LIST_THREAD)
+	else if (type == POST_LIST_TOPIC)
 		cgi_name = "t";
 
 	printf("<brd title='%s' desc='%s' bm='%s' start='%d' "
@@ -145,7 +145,7 @@ int bbsgdoc_main(void)
 
 int bbstdoc_main(void)
 {
-	return bbsdoc(POST_LIST_THREAD);
+	return bbsdoc(POST_LIST_TOPIC);
 }
 int bbsodoc_main(void)
 {

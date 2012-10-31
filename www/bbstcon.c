@@ -3,99 +3,78 @@
 #include "fbbs/board.h"
 #include "fbbs/brc.h"
 #include "fbbs/helper.h"
+#include "fbbs/post.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
 extern const struct fileheader *dir_bsearch(const struct fileheader *begin, 
 		const struct fileheader *end, unsigned int fid);
 
-// If 'action' == 'n', return at most 'count' posts
-// after 'fid' in thread 'gid', otherwise, posts before 'fid'.
-// Return NULL if not found, otherwise, memory should be freed by caller.
-static struct fileheader *bbstcon_search(const char *board, unsigned int *gid,
-		unsigned int fid, char action, int *count, int *flag)
+static post_id_t find_next_tid(int bid, post_id_t tid, char action)
 {
-	if (!board || !count || *count < 1)
+	post_filter_t filter = { .bid = bid, .type = POST_LIST_TOPIC };
+	if (action == 'a')
+		filter.min = tid + 1;
+	else
+		filter.max = tid - 1;
+
+	query_builder_t *b = build_post_query(&filter, action == 'a', 1);
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
+
+	if (res && db_res_rows(res) >= 1) {
+		post_info_t info;
+		res_to_post_info(res, 0, 0, &info);
+		tid = info.tid;
+	}
+	db_clear(res);
+	return tid;
+}
+
+// action 'a' next thread
+// 'b' previous thread
+// 'n' next page
+// 'p' previous page
+// (none): first page
+// TODO: THREAD_FIRST, THREAD_LAST
+static post_info_full_t *bbstcon_search(int bid, post_id_t pid, post_id_t *tid,
+		char action, int *count, int *flag)
+{
+	if (action == 'a' || action == 'b') {
+		*tid = find_next_tid(bid, *tid, action);
+	}
+
+	post_filter_t filter = { .bid = bid, .tid = *tid };
+	if (action == 'p')
+		filter.max = pid - 1;
+	else if (action == 'n')
+		filter.min = pid + 1;
+	bool asc = !(action == 'b' || action == 'p');
+
+	query_builder_t *b = query_builder_new(0);
+	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
+	b->sappend(b, "FROM", "posts.recent");
+	build_post_filter(b, &filter, &asc);
+	b->sappend(b, "LIMIT", "%l", *count + 1);
+
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
+
+	int rows = db_res_rows(res);
+	if (!rows)
 		return NULL;
-	struct fileheader *fh = malloc(sizeof(struct fileheader) * (*count));
-	if (!fh)
-		return NULL;
 
-	// Open index file.
-	char dir[HOMELEN];
-	setbfile(dir, board, DOT_DIR);
-	mmap_t m;
-	m.oflag = O_RDONLY;
-	if (mmap_open(dir, &m) < 0) {
-		free(fh);
-		return NULL;
+	if (rows <= *count) {
+		if (asc)
+			*flag |= THREAD_LAST_POST;
+		*count = rows;
 	}
 
-	struct fileheader *begin = m.ptr, *end;
-	end = begin + (m.size / sizeof(*begin));
-	const struct fileheader *f = dir_bsearch(begin, end, fid), *last = NULL;
-	const struct fileheader *h;
-
-	*flag = 0;
-	if (action == 'a') {
-		while (++f < end && f->id != f->gid)
-			;
-		if (f < end)
-			*gid = f->id;
+	post_info_full_t *p = malloc(sizeof(*p) * rows);
+	for (int i = 0; i < rows; ++i) {
+		res_to_post_info_full(res, i, 0, p + i);
 	}
-	for (h = f; ++h < end && h->id != h->gid; )
-		;
-	if (h >= end)
-		*flag |= THREAD_LAST;
-
-	// find prev thread
-	if (action == 'b') {
-		while (--f >= begin && f->id != f->gid)
-			;
-		if (f >= begin)
-			*gid = f->id;
-	}
-	for (h = f; --h >= begin && h->id != h->gid; )
-		;
-	if (h < begin)
-		*flag |= THREAD_FIRST;
-
-	int c = 0;
-	if (action != 'p') {  // forward
-		if (action == 'n' && f != end && f->id == fid)
-			++f;	// skip current post.
-		for (; f < end; ++f) {
-			if (f->gid == *gid) {
-				fh[c++] = *f;
-				if (c == *count) {
-					last = f;
-					break;
-				}
-			}
-		}
-		*count = c;
-	} else { // backward
-		last = f;
-		c = *count;
-		for (--f; f >= begin && f->id >= *gid; --f) {
-			if (f->gid == *gid) {
-				fh[--c] = *f;
-				if (c == 0)
-					break;
-			}
-		}
-		*count -= c;
-	}
-
-	if (last) {
-		while (++last < end && last->gid != *gid)
-			;
-	}
-	if (!last || last >= end)
-		*flag |= THREAD_LAST_POST;
-
-	mmap_close(&m);
-	return fh;
+	return p;
 }
 
 int bbstcon_main(void)
@@ -112,28 +91,27 @@ int bbstcon_main(void)
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	unsigned int gid = strtoul(get_param("g"), NULL, 10);
-	unsigned int fid = strtoul(get_param("f"), NULL, 10);
+	post_id_t tid = strtoll(get_param("g"), NULL, 10);
+	post_id_t pid = strtoll(get_param("f"), NULL, 10);
 	char action = *(get_param("a"));
-	if (gid == 0)
-		gid = fid;
+	if (!tid)
+		tid = pid;
 
 	int count = POSTS_PER_PAGE;
 	int c = count, flag = 0;
-	struct fileheader *fh = bbstcon_search(board.name, &gid, fid, action, &c, &flag);
-	if (!fh)
+	post_info_full_t *p = bbstcon_search(board.id, pid, &tid, action, &c,
+			&flag);
+	if (!p)
 		return BBS_ENOFILE;
-	if (action == 'a' || action == 'b')
-		action = 'n';
 
 	bool anony = board.flag & BOARD_ANONY_FLAG;
 	int opt = get_user_flag();
+	bool isbm = am_bm(&board);
 
-	struct fileheader *begin, *end;
 	xml_header(NULL);
-	printf("<bbstcon bid='%d' gid='%u' anony='%d' page='%d'"
+	printf("<bbstcon bid='%d' gid='%"PRIdPID"' anony='%d' page='%d'"
 			" attach='%d'%s%s%s%s%s>",
-			bid, gid, anony, count, maxlen(board.name),
+			bid, tid, anony, count, maxlen(board.name),
 			flag & THREAD_LAST_POST ? " last='1'" : "",
 			flag & THREAD_LAST ? " tlast='1'" : "",
 			flag & THREAD_FIRST ? " tfirst='1'" : "",
@@ -141,26 +119,16 @@ int bbstcon_main(void)
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session();
 
-	bool isbm = am_bm(&board);
-	if (action != 'p') {
-		begin = fh;
-		end = fh + c;
-	} else {
-		begin = fh + count - c;
-		end = fh + count;
-	}
-	char file[HOMELEN];
 	brc_fcgi_init(currentuser.userid, board.name);
-	for (; begin != end; ++begin) {
-		printf("<po fid='%u' owner='%s'%s>", begin->id, begin->owner,
-				!isbm && begin->accessed[0] & FILE_NOREPLY ? " nore='1'" : "");
-		setbfile(file, board.name, begin->filename);
-		xml_print_post_wrapper(file, 0);
+	for (post_info_full_t *ip = p; ip < p + c; ++ip) {
+		printf("<po fid='%"PRIdPID"' owner='%s'%s>", ip->p.id, ip->p.owner,
+				!isbm && (ip->p.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
+		xml_print_post_wrapper(ip->content, ip->length);
 		puts("</po>");
-		brc_addlist_legacy(begin->filename);
+		brc_mark_as_read(ip->p.id);
 	}
-	free(fh);
 	puts("</bbstcon>");
+
 	brc_update(currentuser.userid, board.name);
 	return 0;
 }
