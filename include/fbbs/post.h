@@ -33,6 +33,7 @@ typedef enum {
 	POST_FLAG_WATER = 0x20,
 	POST_FLAG_DELETED = 0x40,
 	POST_FLAG_JUNK = 0x80,
+	POST_FLAG_ATTACHMENT = 0x100,
 } post_flag_e;
 
 enum {
