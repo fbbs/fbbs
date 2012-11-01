@@ -689,7 +689,7 @@ static int show_board_info(board_t *board)
 	return FULLUPDATE;
 }
 
-static int show_hotspot(void)
+int show_hotspot(void)
 {
 	char ans[2];
 	getdata(t_lines - 1, 0, "您选择? (1) 本日十大  (2) 系统热点 [1]",

@@ -2454,6 +2454,8 @@ extern int mainreadhelp(void);
 extern int show_b_note(void);
 extern int show_b_secnote(void);
 extern int into_announce(void);
+extern int show_hotspot(void);
+extern int tui_follow_uname(const char *uname);
 
 static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 {
@@ -2620,6 +2622,19 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 				return DONOTHING;
 			}
 			return READ_AGAIN;
+		case Ctrl('L'):
+			redoscr();
+			return DONOTHING;
+		case 'M':
+			m_new();
+			return FULLUPDATE;
+		case 'H':
+			return show_hotspot();
+		case 'O':
+			return ip->uid ? tui_follow_uname(ip->owner) : DONOTHING;
+		case 'l':
+			msg_more();
+			return FULLUPDATE;
 		default:
 			return READ_AGAIN;
 	}

@@ -293,6 +293,21 @@ static int kick_out(online_users_t *up, online_user_info_t *ip)
 	}
 }
 
+int tui_follow_uname(const char *uname)
+{
+	if (streq(currentuser.userid, "guest"))
+		return DONOTHING;
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "确定关注 %s 吗?", uname);
+	if (!askyn(buf, false, true))
+		return MINIUPDATE;
+	if (follow(session.uid, uname, NULL)) {
+		snprintf(buf, sizeof(buf), "成功关注 %s", uname);
+		presskeyfor(buf, t_lines - 1);
+	}
+	return MINIUPDATE;
+}
+
 static tui_list_query_t online_users_query(tui_list_t *p)
 {
 	online_users_t *up = p->data;
@@ -341,16 +356,7 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			return FULLUPDATE;
 #endif
 		case 'o': case 'O':
-			if (streq(currentuser.userid, "guest"))
-				return DONOTHING;
-			snprintf(buf, sizeof(buf), "确定关注 %s 吗?", ip->name);
-			if (!askyn(buf, false, true))
-				return MINIUPDATE;
-			if (follow(session.uid, ip->name, NULL)) {
-				snprintf(buf, sizeof(buf), "成功关注 %s", ip->name);
-				presskeyfor(buf, t_lines - 1);
-			}
-			return MINIUPDATE;
+			return tui_follow_uname(ip->name);
 		case 'd': case 'D':
 			if (streq(currentuser.userid, "guest"))
 				return DONOTHING;
