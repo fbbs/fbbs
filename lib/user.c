@@ -92,7 +92,7 @@ int get_user_count(void)
 static int _user_data_add(const char *name, int uid, int field, int delta)
 {
 	const char *fields[] = { "logins", "posts", "stay" };
-	if (field < 0 || field >= NELEMS(fields))
+	if (field < 0 || field >= ARRAY_SIZE(fields))
 		return -1;
 
 	char query[128];

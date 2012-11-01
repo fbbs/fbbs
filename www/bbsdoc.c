@@ -190,7 +190,7 @@ int bbsbfind_main(void)
 
 	int count = 0;
 	const char *names[] = { "t1", "t2", "t3" };
-	for (int i = 0; i < NELEMS(names); ++i) {
+	for (int i = 0; i < ARRAY_SIZE(names); ++i) {
 		const char *s = get_param(names[i]);
 		if (s && *s) {
 			++count;

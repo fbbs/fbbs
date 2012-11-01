@@ -31,7 +31,8 @@
 #  endif
 # endif
 #endif // HAVE_ENDIAN_H
-#define NELEMS(x)  (sizeof(x) / sizeof(x[0]))
+
+#define ARRAY_SIZE(x)  (sizeof(x) / sizeof(x[0]))
 
 #define FB_ULONG_MAX  UINT64_MAX
 #define FB_UINT_MAX   UINT32_MAX

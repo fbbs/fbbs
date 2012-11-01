@@ -157,7 +157,8 @@ static const web_handler_t *_get_handler(void)
 		*tmp = '\0';
 
 	web_handler_t h = { .name = buf, .func = NULL, .status = 0 };
-	return bsearch(&h, handlers, NELEMS(handlers), sizeof(h), compare_handler);
+	return bsearch(&h, handlers, ARRAY_SIZE(handlers), sizeof(h),
+			compare_handler);
 }
 
 /**

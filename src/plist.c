@@ -853,7 +853,7 @@ static int tui_post_list_selected(slide_list_t *p, post_info_t *ip)
 		POST_LIST_DIGEST, POST_LIST_THREAD, POST_LIST_MARKED,
 		POST_LIST_TOPIC, POST_LIST_AUTHOR, POST_LIST_KEYWORD,
 	};
-	if (c < 0 || c >= NELEMS(types))
+	if (c < 0 || c >= ARRAY_SIZE(types))
 		return MINIUPDATE;
 
 	post_filter_t filter = { .bid = l->filter.bid, .type = types[c] };
@@ -1762,7 +1762,7 @@ static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
 		thread_post_cache_free(cache);
 	} else {
 		cache->size = load_full_posts(&filter, cache->posts, upward,
-				NELEMS(cache->posts));
+				ARRAY_SIZE(cache->posts));
 	}
 	cache->inited = true;
 	if (cache->size)
@@ -1777,7 +1777,7 @@ static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
 	if (next >= cache->posts && next < cache->posts + cache->size)
 		return next;
 
-	if (!upward && cache->size < NELEMS(cache->posts))
+	if (!upward && cache->size < ARRAY_SIZE(cache->posts))
 		return NULL;
 
 	post_id_t id = ip->p.id, tid = ip->p.tid;
@@ -2086,11 +2086,11 @@ static int tui_operate_posts_in_range(slide_list_t *p)
 	};
 
 	char prompt[120], ans[8];
-	construct_prompt(prompt, sizeof(prompt), options, NELEMS(options));
+	construct_prompt(prompt, sizeof(prompt), options, ARRAY_SIZE(options));
 	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
 
 	int choice = *ans - '1';
-	if (choice < 0 || choice >= NELEMS(options))
+	if (choice < 0 || choice >= ARRAY_SIZE(options))
 		return MINIUPDATE;
 
 	post_id_t min, max;
@@ -2196,14 +2196,14 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 	getdata(t_lines - 1, 0, "执行: 1) 相同主题  2) 相同作者 3) 相关主题"
 			" 0) 取消 [0]: ", ans, sizeof(ans), DOECHO, YEA);
 	int mode = strtol(ans, NULL, 10) - 1;
-	if (mode < 0 || mode >= NELEMS(batch_modes))
+	if (mode < 0 || mode >= ARRAY_SIZE(batch_modes))
 		return MINIUPDATE;
 
 	char prompt[120];
-	construct_prompt(prompt, sizeof(prompt), options, NELEMS(options));
+	construct_prompt(prompt, sizeof(prompt), options, ARRAY_SIZE(options));
 	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
 	int choice = strtol(ans, NULL, 10) - 1;
-	if (choice < 0 || choice >= NELEMS(options))
+	if (choice < 0 || choice >= ARRAY_SIZE(options))
 		return MINIUPDATE;
 
 	char buf[STRLEN];

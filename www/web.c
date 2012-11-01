@@ -459,7 +459,7 @@ int error_msg(int code)
 			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
 
 	const struct error_msg_t *e = error_msgs;
-	if (code > 0 && code <= NELEMS(error_msgs))
+	if (code > 0 && code <= ARRAY_SIZE(error_msgs))
 		e = error_msgs + code - 1;
 
 	xml_attr_string(node, "msg", e->msg, false);
