@@ -441,8 +441,8 @@ void respond(int code)
 }
 
 struct error_msg_t {
-	int code;
-	int http_status_code;
+	error_code_e code;
+	http_status_code_e status;
 	const char *msg;
 };
 
@@ -451,9 +451,10 @@ static const struct error_msg_t error_msgs[] = {
 	{ ERROR_INCORRECT_PASSWORD, HTTP_UNAUTHORIZED, "incorrect username or password" },
 	{ ERROR_USER_SUSPENDED, HTTP_FORBIDDEN, "permission denied" },
 	{ ERROR_BAD_REQUEST, HTTP_BAD_REQUEST, "bad request" },
+	{ ERROR_INTERNAL, HTTP_INTERNAL_SERVER_ERROR, "internal error" },
 };
 
-int error_msg(int code)
+http_status_code_e error_msg(int code)
 {
 	xml_node_t *node = set_response_root("bbs_error",
 			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
@@ -465,5 +466,5 @@ int error_msg(int code)
 	xml_attr_string(node, "msg", e->msg, false);
 	xml_attr_integer(node, "code", e->code + 10000);
 
-	return e->http_status_code;
+	return e->status;
 }

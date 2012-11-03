@@ -24,7 +24,7 @@ enum {
 	REQUEST_JSON = 0x20,
 };
 
-enum {
+typedef enum {
 	HTTP_OK = 200,
 	HTTP_BAD_REQUEST = 400,
 	HTTP_UNAUTHORIZED = 401,
@@ -32,14 +32,15 @@ enum {
 	HTTP_NOT_FOUND = 404,
 	HTTP_INTERNAL_SERVER_ERROR = 500,
 	HTTP_SERVICE_UNAVAILABLE = 503,
-};
+} http_status_code_e;
 
-enum {
+typedef enum {
 	ERROR_NONE = 1,
 	ERROR_INCORRECT_PASSWORD,
 	ERROR_USER_SUSPENDED,
 	ERROR_BAD_REQUEST,
-};
+	ERROR_INTERNAL,
+} error_code_e;
 
 enum {
 	RESPONSE_DEFAULT = 0,
@@ -77,6 +78,6 @@ extern void set_response_type(int type);
 extern xml_node_t *set_response_root(const char *name, int type, int encoding);
 extern void respond(int code);
 
-int error_msg(int code);
+http_status_code_e error_msg(int code);
 
 #endif // FB_WEB_H
