@@ -128,6 +128,7 @@ int bbstcon_main(void)
 		brc_mark_as_read(ip->p.id);
 	}
 	puts("</bbstcon>");
+	free_post_info_full(p);
 
 	brc_update(currentuser.userid, board.name);
 	return 0;
