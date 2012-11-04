@@ -333,6 +333,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 			else
 				l->filter.min = brc_last_read() + 1;
 		}
+		l->filter.max = 0;
 		l->count = 0;
 	}
 	if (p->base == SLIDE_LIST_CURRENT) {
@@ -2594,11 +2595,23 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'j': case KEY_UP:
 			return l->top && !p->cur ? switch_archive(l, true) : READ_AGAIN;
 		case 'N': case Ctrl('F'): case KEY_PGDN:
-			return (l->filter.archive && l->bottom)
-					? switch_archive(l, false) : READ_AGAIN;
+			if (l->bottom) {
+				if (l->filter.archive) {
+					return switch_archive(l, false);
+				} else {
+					p->cur = l->icount - 1;
+					return DONOTHING;
+				}
+			}
+			return READ_AGAIN;
 		case 'k': case KEY_DOWN:
-			return (l->filter.archive && l->bottom && p->cur == l->icount - 1)
-					? switch_archive(l, false) : READ_AGAIN;
+			if (l->bottom && p->cur == l->icount - 1) {
+				if (l->filter.archive)
+					return switch_archive(l, false);
+				else
+					return DONOTHING;
+			}
+			return READ_AGAIN;
 		case '%':
 			return tui_jump(p);
 		case 'q': case 'e': case KEY_LEFT: case EOF:
