@@ -60,25 +60,32 @@ static void print_sticky_posts(int bid, post_list_type_e type)
 	free(sticky_posts);
 }
 
-static void print_posts(post_filter_t *filter,
-		int limit)
+static bool print_posts(post_filter_t *filter, int limit, bool asc)
 {
-	query_builder_t *b = build_post_query(filter, false, limit + 1);
+	query_builder_t *b = build_post_query(filter, asc, limit + 1);
 	db_res_t *r = b->query(b);
 	query_builder_free(b);
 
+	post_id_t next = true;
 	if (r) {
 		int rows = db_res_rows(r);
-		if (rows > limit)
+		if (rows > limit) {
 			rows = limit;
+		} else {
+			limit = rows;
+			next = false;
+		}
 
-		for (int i = rows - 1; i >= 0; --i) {
+		for (int i = asc ? 0 : limit - 1;
+				asc ? i < limit : i >= 0;
+				i += asc ? 1 : -1) {
 			post_info_t info;
 			res_to_post_info(r, i, 0, &info);
 			print_bbsdoc(&info);
 		}
 		db_clear(r);
 	}
+	return next;
 }
 
 static int bbsdoc(post_list_type_e type)
@@ -98,6 +105,7 @@ static int bbsdoc(post_list_type_e type)
 	board_to_gbk(&board);
 
 	post_id_t start = strtol(get_param("start"), NULL, 10);
+	char action = *get_param("a");
 
 	int page = strtol(get_param("my_t_lines"), NULL, 10);
 	if (page < TLINES || page > 40)
@@ -115,9 +123,14 @@ static int bbsdoc(post_list_type_e type)
 	post_filter_t filter = {
 		.bid = board.id, .type = type, .max = start,
 	};
+	if (action == 'n') {
+		filter.max = 0;
+		filter.min = start;
+	}
 	if (type == POST_LIST_DIGEST)
 		filter.flag |= POST_FLAG_DIGEST;
-	print_posts(&filter, page);
+
+	post_id_t next = print_posts(&filter, page, action == 'n');
 	if (type != POST_LIST_DIGEST)
 		print_sticky_posts(board.id, type);
 
@@ -130,6 +143,10 @@ static int bbsdoc(post_list_type_e type)
 	printf("<brd title='%s' desc='%s' bm='%s' start='%d' "
 			"bid='%d' page='%d' link='%s'", board.name, board.descr, board.bms,
 			start, board.id, page, cgi_name);
+	if (!start || (action == 'n' && !next))
+		printf(" bottom='1'");
+	if (action != 'n' && !next)
+		printf(" top='1'");
 	print_board_logo(board.name);
 	printf("/>\n</bbsdoc>");
 

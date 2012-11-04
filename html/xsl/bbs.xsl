@@ -419,10 +419,10 @@ table.post{width:100%}
 <xsl:template name='bbsdoc-nav'>
 	<div class='bnav'>
 		<a href='javascript:location=location'><img src='../images/button/reload.gif'/>刷新</a>
-		<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={po[1]/@id}'><img src='../images/button/up.gif'/>上一页</a>
-		<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
-			<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
-			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'><img src='../images/button/down.gif'/>下一页</a>
+		<xsl:if test='not(brd/@top)'><a href='{brd/@link}doc?bid={brd/@bid}&amp;start={po[1]/@id - 1}'><img src='../images/button/up.gif'/>上一页</a></xsl:if>
+		<xsl:if test='not(brd/@bottom)'>
+			<xsl:variable name='next' select='count(po[not(@sticky)])'/>
+			<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={po[$next]/@id + 1}&amp;a=n'><img src='../images/button/down.gif'/>下一页</a>
 		</xsl:if>
 		<a href='clear?board={brd/@title}&amp;start={brd/@start}'>清除未读</a>
 		<form class='jump' method='get' action='{brd/@link}doc'><input type='hidden' name='bid' value='{brd/@bid}'></input><img src='../images/button/forward.gif'/>跳转到<input type='text' name='start' size='6'/>篇</form>
