@@ -286,7 +286,7 @@ static bool match_filter(post_filter_t *filter, post_info_t *p)
 	if (filter->max)
 		match &= p->id <= filter->max;
 	if (filter->tid)
-		match &= p->id == filter->tid;
+		match &= p->tid == filter->tid;
 	if (*filter->utf8_keyword)
 		match &= (bool)strcasestr(p->utf8_title, filter->utf8_keyword);
 	return match;
@@ -335,11 +335,15 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		}
 		l->filter.max = 0;
 		l->count = 0;
+		l->top = l->bottom = false;
 	}
 	if (p->base == SLIDE_LIST_CURRENT) {
 		save_post_list_position(p);
 		return 0;
 	}
+	if ((l->bottom && p->base == SLIDE_LIST_NEXT)
+			|| (l->top && p->base == SLIDE_LIST_PREV))
+		return 0;
 
 	l->top = p->base == SLIDE_LIST_TOPDOWN;
 	l->bottom = p->base == SLIDE_LIST_BOTTOMUP;
@@ -391,7 +395,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	if (l->relocate || l->reload) {
 		int cur = p->cur;
-		p->cur = 0;
+		p->cur = -1;
 		post_filter_t filter = {
 			.min = l->relocate ? l->relocate : l->pos->cur_pid
 		};
@@ -1094,13 +1098,14 @@ static int jump_to_thread_last(slide_list_t *p)
 
 		query_builder_t *b = build_post_query(&filter, false, 1);
 		db_res_t *res = b->query(b);
+
+		post_info_t info = { .id = ip->id };
 		if (res && db_res_rows(res) > 0) {
-			post_info_t info;
 			res_to_post_info(res, 0, l->filter.archive, &info);
-			read_posts(p, &info, true, false);
-			db_clear(res);
-			return FULLUPDATE;
 		}
+		db_clear(res);
+		filter.min = info.id;
+		return relocate_to_filter(p, &filter, false);
 	}
 	return DONOTHING;
 }
@@ -1796,9 +1801,9 @@ static void back_to_post_list(slide_list_t *p, post_id_t id, post_id_t tid)
 	if (filter.type == POST_LIST_THREAD)
 		filter.tid = tid;
 
-	p->cur = 0;
+	p->cur = -1;
 	int found = relocate_in_cache(p, &filter, false);
-	if (found) {
+	if (found >= 0) {
 		p->cur = found;
 	} else {
 		relocate_to_filter(p, &filter, false);
@@ -2632,6 +2637,10 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 						break;
 					}
 				}
+				return DONOTHING;
+			}
+			if (l->bottom) {
+				p->cur = l->icount - 1;
 				return DONOTHING;
 			}
 			return READ_AGAIN;
