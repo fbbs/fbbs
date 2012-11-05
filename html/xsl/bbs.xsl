@@ -340,13 +340,13 @@ table.post{width:100%}
 	</div>
 	<xsl:call-template name='forum-nav'/>
 	<table class='content' id='forum'>
-		<tr><th class='mark'>标记</th><th class='replies'>回帖</th><th class='owner'>作者</th><th class='owner'>最新回复</th><th class='ptitle'>标题</th></tr>
+		<tr><th class='mark'>未读</th><th class='replies'>回帖</th><th class='owner'>作者</th><th class='owner'>最新回复</th><th class='ptitle'>标题</th></tr>
 		<xsl:for-each select='po'><tr>
 			<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
 			<td class='mark'><xsl:value-of select='@m'/></td>
-			<td class='replies'><xsl:choose><xsl:when test='@posts=1'>-</xsl:when><xsl:otherwise><xsl:value-of select='@posts - 1'/></xsl:otherwise></xsl:choose></td>
+			<td class='replies'><xsl:choose><xsl:when test='@posts=0'>-</xsl:when><xsl:otherwise><xsl:value-of select='@posts'/></xsl:otherwise></xsl:choose></td>
 			<td class='owner'><xsl:if test='@owner'><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a><div class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@potime'/></xsl:call-template></div></xsl:if></td>
-			<td class='owner'><xsl:choose><xsl:when test='@upuser'><a class='owner' href='qry?u={@upuser}'><xsl:value-of select='@upuser'/></a><div class='uptime'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@uptime'/></xsl:call-template></div></xsl:when><xsl:otherwise>---</xsl:otherwise></xsl:choose></td>
+			<td class='owner'><xsl:choose><xsl:when test='@uptime'><div class='uptime'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@uptime'/></xsl:call-template></div></xsl:when><xsl:otherwise>---</xsl:otherwise></xsl:choose></td>
 			<td class='ptitle'><a class='ptitle'>
 				<xsl:attribute name='href'>tcon?new=1&amp;bid=<xsl:value-of select='../@bid'/>&amp;f=<xsl:value-of select='@gid'/><xsl:if test='@sticky'>&amp;s=1</xsl:if></xsl:attribute>
 				<xsl:call-template name='ansi-escape'>
@@ -355,7 +355,7 @@ table.post{width:100%}
 					<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
 					<xsl:with-param name='ishl'>0</xsl:with-param>
 				</xsl:call-template>
-			</a><xsl:if test='@lastpage'><a class='lastpage' href='tcon?new=1&amp;bid={../@bid}&amp;g={@gid}&amp;f={@lastpage}&amp;a=n'>[最新页]</a></xsl:if></td>
+			</a><xsl:if test='@posts&gt;19'><a class='lastpage' href='tcon?new=1&amp;bid={../@bid}&amp;g={@gid}&amp;f={@lastpage+1}&amp;a=p'>[最新页]</a></xsl:if></td>
 		</tr></xsl:for-each>
 	</table>
 	<xsl:call-template name='forum-nav'/>
@@ -363,7 +363,9 @@ table.post{width:100%}
 
 <xsl:template name='forum-nav'>
 	<div class='bnav'>
-		<xsl:if test='@next!=0'><a href='fdoc?bid={@bid}&amp;start={@next}'><img src='../images/button/down.gif'/>下一页</a></xsl:if>
+		<xsl:variable name='next'>
+		<xsl:choose><xsl:when test='po[count(../po)]/@lastpage'><xsl:value-of select='po[count(../po)]/@lastpage'/></xsl:when><xsl:otherwise><xsl:value-of select='po[count(../po)]/@gid'/></xsl:otherwise></xsl:choose></xsl:variable>
+		<xsl:if test='count(po)&gt;12'><a href='fdoc?bid={@bid}&amp;start={$next - 1}'><img src='../images/button/down.gif'/>下一页</a></xsl:if>
 		<a href='clear?board={@title}'>清除未读</a>
 	</div>
 </xsl:template>

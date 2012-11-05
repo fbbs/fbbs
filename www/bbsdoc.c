@@ -242,99 +242,49 @@ int bbsbfind_main(void)
 	return 0;
 }
 
-#if 0
-typedef struct topic_t {
-	unsigned int gid;
-	unsigned int lastpage;
-	int posts;
-	fb_time_t potime;
-	fb_time_t uptime;
-	char mark;
-	char owner[IDLEN + 1];
-	char uper[IDLEN + 1];
-	char title[STRLEN - IDLEN - 1];
-} topic_t;
+#define POST_THREAD_FIELDS  \
+	"tid, stamp, last_id, last_stamp, replies, comments, owner, uname, title"
 
-static void _init_topic(topic_t *tp, const struct fileheader *fp)
+typedef struct {
+	post_id_t tid;
+	post_id_t last_id;
+	fb_time_t stamp;
+	fb_time_t last_stamp;
+	int replies;
+	int comments;
+	user_id_t owner;
+	char uname[IDLEN + 1];
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+} post_thread_info_t;
+
+static void res_to_post_thread_info(db_res_t *res, int row,
+		post_thread_info_t *p)
 {
-	strlcpy(tp->owner, fp->owner, sizeof(tp->owner));
-	strlcpy(tp->title, fp->title, sizeof(tp->title));
-	tp->mark = get_post_mark(fp, brc_unread_legacy(fp->filename));
-	tp->potime = getfiletime(fp);
+	p->tid = db_get_post_id(res, row, 0);
+	p->last_id = db_get_post_id(res, row, 2);
+	p->stamp = db_get_time(res, row, 1);
+	p->last_stamp = db_get_time(res, row, 3);
+	p->replies = db_get_integer(res, row, 4);
+	p->comments = db_get_integer(res, row, 5);
+	p->owner = db_get_user_id(res, row, 6);
+	strlcpy(p->uname, db_get_value(res, row, 7), sizeof(p->uname));
+	strlcpy(p->utf8_title, db_get_value(res, row, 8), sizeof(p->utf8_title));
 }
 
-static int _find_topic(topic_t *t, int posts, const struct fileheader *fp)
+static db_res_t *get_post_threads(int bid, int start, int count)
 {
-	int i, found = -1;
-	for (i = 0; i < posts && found < 0; ++i) {
-		if (fp->gid == t[i].gid) {
-			found = i;
-			++t[i].posts;
-			if (fp->id == t[i].gid) {
-				_init_topic(t + i, fp);
-			} else if (t[i].posts == POSTS_PER_PAGE)
-				t[i].lastpage = fp->id;
-		}
-	}
-	return found;
-}
-
-static void _push_topic(topic_t *t, int posts, const struct fileheader *fp)
-{
-	topic_t *tp = t + posts;
-	tp->gid = fp->gid;
-	tp->lastpage = 0;
-	tp->posts = 1;
-	tp->uptime = getfiletime(fp);
-	strlcpy(tp->uper, fp->owner, sizeof(tp->uper));
-	tp->owner[0] = '\0';
-	if (fp->id == fp->gid) {
-		_init_topic(tp, fp);
-	} else {
-		if (strncmp(fp->title, "Re: ", 4) == 0)
-			strlcpy(tp->title, fp->title + 4, sizeof(tp->title));
-		else
-			strlcpy(tp->title, fp->title, sizeof(tp->title));
-	}
-}
-
-static topic_t *_get_topics(const char *dir, int *count, unsigned int start,
-		unsigned int *next)
-{
-	topic_t *t = malloc(sizeof(topic_t) * *count);
-	if (!t) {
-		*count = 0;
-		return NULL;
-	}
-
-	mmap_t m = { .oflag = O_RDONLY };
-	if (mmap_open(dir, &m) != 0) {
-		free(t);
-		*count = 0;
-		return NULL;
-	}
-
-	int posts = 0, finished = 0;
-	const struct fileheader *begin = m.ptr, *end = begin + (m.size / sizeof(*end)) - 1;
+	query_builder_t *b = query_builder_new(0);
+	b->sappend(b, "SELECT", POST_THREAD_FIELDS);
+	b->sappend(b, "FROM", "posts.threads");
+	b->sappend(b, "WHERE", "board = %d", bid);
 	if (start)
-		end = dir_bsearch(begin, end, start);
+		b->sappend(b, "AND", "last_id <= %"DBIdPID, start);
+	b->sappend(b, "ORDER BY", "last_id DESC");
+	b->append(b, "LIMIT %l", count);
 
-	const struct fileheader *fp;
-	for (fp = end; fp >= begin && finished < *count; --fp) {
-		int i = _find_topic(t, posts, fp);
-		if (i >= 0) {
-			if (t[i].gid == fp->id)
-				++finished;
-		} else if (posts < *count) {
-			_push_topic(t, posts++, fp);
-			if (posts == *count)
-				*next = fp->id;
-		}
-	}
-
-	mmap_close(&m);
-	*count = posts;
-	return t;
+	db_res_t *res = b->query(b);
+	query_builder_free(b);
+	return res;
 }
 
 int web_forum(void)
@@ -354,43 +304,37 @@ int web_forum(void)
 
 	brc_fcgi_init(currentuser.userid, board.name);
 
-	char dir[HOMELEN];
-	setbfile(dir, board.name, DOT_DIR);
-	int count = TOPICS_PER_PAGE;
-	unsigned int next = 0;
-	topic_t *t = _get_topics(dir, &count,
-			strtoul(get_param("start"), NULL, 10), &next);
-
 	xml_header(NULL);
-	printf("<forum title='%s' desc='%s' bm='%s' bid='%d' next='%u'>", 
-			board.name, board.descr, board.bms, board.id, next);
+	printf("<forum title='%s' desc='%s' bm='%s' bid='%d'>", 
+			board.name, board.descr, board.bms, board.id);
 	print_board_logo(board.name);
 	print_session();
 
-	for (int i = 0; i < count; ++i) {
-		printf("<po gid='%u' m='%c' posts='%d'",
-				t[i].gid, t[i].mark, t[i].posts);
-		if (t[i].owner[0] != '\0') {
-			printf(" owner='%s' potime='%s'",
-					t[i].owner, getdatestring(t[i].potime, DATE_XML));
-		}
-		if (t[i].posts > 1) {
-			printf(" upuser='%s' uptime='%s'",
-				t[i].uper, getdatestring(t[i].uptime, DATE_XML));
-		}
-		if (t[i].lastpage)
-			printf(" lastpage='%u'", t[i].lastpage);
+	int count = TOPICS_PER_PAGE;
+	int start = strtoll(get_param("start"), NULL, 10);
+
+	db_res_t *res = get_post_threads(board.id, start, count);
+	int rows = db_res_rows(res);
+	for (int i = 0; i < rows; ++i) {
+		post_thread_info_t t;
+		res_to_post_thread_info(res, i, &t);
+
+		printf("<po gid='%"PRIdPID"' m='%c' posts='%d'",
+				t.tid, brc_unread(t.tid) ? '+' : ' ', t.replies);
+		printf(" owner='%s' potime='%s'",
+				t.uname, getdatestring(t.stamp, DATE_XML));
+		if (t.replies > 0)
+			printf(" uptime='%s'", getdatestring(t.last_stamp, DATE_XML));
+		printf(" lastpage='%u'", t.last_id);
 		printf(">");
-		xml_fputs2(t[i].title, check_gbk(t[i].title) - t[i].title, stdout);
+
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(t.utf8_title, gbk_title);
+		xml_fputs2(gbk_title, 0, stdout);
 		printf("</po>\n");
 	}
-	free(t);
+	db_clear(res);
 	printf("</forum>");
 
-	return 0;
-}
-#endif
-int web_forum(void)
-{
 	return 0;
 }

@@ -51,9 +51,16 @@ CREATE TABLE posts.deleted (
 CREATE INDEX ON posts.deleted(did);
 
 CREATE TABLE posts.threads (
-	id BIGINT,
+	tid BIGINT,
+	board INTEGER,
+	stamp TIMESTAMPTZ,
+	last_id BIGINT DEFAULT 0,
+	last_stamp TIMESTAMPTZ,
 	replies INTEGER DEFAULT 0,
-	comments INTEGER DEFAULT 0
+	comments INTEGER DEFAULT 0,
+	owner INTEGER,
+	uname TEXT,
+	title TEXT
 );
 
 CREATE TABLE posts.board_archive (
