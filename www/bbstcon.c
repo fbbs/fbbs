@@ -120,7 +120,13 @@ int bbstcon_main(void)
 	print_session();
 
 	brc_fcgi_init(currentuser.userid, board.name);
-	for (post_info_full_t *ip = p; ip < p + c; ++ip) {
+
+	bool asc = action != 'p';
+	if (c > count)
+		c = count;
+	for (post_info_full_t *ip = asc ? p : p + c - 1;
+			asc ? ip < p + c : ip >= p;
+			ip += asc ? 1 : -1) {
 		printf("<po fid='%"PRIdPID"' owner='%s'%s>", ip->p.id, ip->p.owner,
 				!isbm && (ip->p.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
 		xml_print_post_wrapper(ip->content, ip->length);
