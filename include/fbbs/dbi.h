@@ -47,22 +47,25 @@ extern db_res_t *db_query(const char *cmd, ...);
 extern int db_begin_trans(void);
 extern int db_end_trans(void);
 
-typedef struct query_builder_internal_t query_builder_internal_t;
+typedef struct query_t query_t;
 
-typedef struct query_builder_t query_builder_t;
-typedef query_builder_t *(*query_builder_append_function_t)(query_builder_t *b, const char *cmd, ...);
-typedef query_builder_t *(*query_builder_sappend_function_t)(query_builder_t *b, const char *symbol, const char *cmd, ...);
-typedef db_res_t *(*query_builder_exec_function_t)(const query_builder_t *b);
-
-struct query_builder_t {
-	query_builder_append_function_t append;
-	query_builder_sappend_function_t sappend;
-	query_builder_exec_function_t query;
-	query_builder_exec_function_t cmd;
-	query_builder_internal_t *_b;
-};
-
-extern query_builder_t *query_builder_new(size_t size);
-extern void query_builder_free(query_builder_t *b);
-
+extern query_t *query_new(size_t size);
+extern void query_append(query_t *q, const char *cmd, ...);
+extern void query_sappend(query_t *q, const char *symbol, const char *cmd, ...);
+/** @ingroup query_builder */
+/** @{ */
+#define query_select(q, fields)  query_sappend(q, "SELECT", fields)
+#define query_returning(q, fields)  query_sappend(q, "RETURNING", fields)
+#define query_from(q, table)  query_sappend(q, "FROM", table)
+#define query_update(q, table)  query_sappend(q, "UPDATE", table)
+#define query_groupby(q, field)  query_sappend(q, "GROUP BY", field)
+#define query_set(q, ...)  query_sappend(q, "SET", __VA_ARGS__)
+#define query_where(q, ...)  query_sappend(q, "WHERE", __VA_ARGS__)
+#define query_and(q, ...)  query_sappend(q, "AND", __VA_ARGS__)
+/** @} */
+extern void query_orderby(query_t *q, const char *field, bool asc);
+extern void query_limit(query_t *q, int limit);
+extern db_res_t *query_exec(const query_t *q);
+extern db_res_t *query_cmd(const query_t *q);
+extern void query_free(query_t *q);
 #endif // FB_DBI_H

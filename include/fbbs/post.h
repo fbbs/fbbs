@@ -141,8 +141,8 @@ extern bool is_deleted(post_list_type_e type);
 extern post_list_type_e post_list_type(const post_info_t *ip);
 extern const char *post_table_name(const post_filter_t *filter);
 extern const char *post_table_index(const post_filter_t *filter);
-extern void build_post_filter(query_builder_t *b, const post_filter_t *f, const bool *asc);
-extern query_builder_t *build_post_query(const post_filter_t *filter, bool asc, int limit);
+extern void build_post_filter(query_t *q, const post_filter_t *f, const bool *asc);
+extern query_t *build_post_query(const post_filter_t *filter, bool asc, int limit);
 extern void res_to_post_info_full(db_res_t *res, int row, int archive, post_info_full_t *p);
 extern void free_post_info_full(post_info_full_t *p);
 

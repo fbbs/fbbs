@@ -155,6 +155,9 @@ int db_end_trans(void)
 	return r;
 }
 
+/** @defgroup query_builder Database Query Builder */
+/** @{ */
+
 typedef enum {
 	QUERY_PARAM_BOOL,
 	QUERY_PARAM_INT,
@@ -176,7 +179,7 @@ typedef struct query_param_t {
 
 SLIST_HEAD(query_param_list_t, query_param_t);
 
-struct query_builder_internal_t {
+struct query_t {
 	pool_t *p;
 	pstring_t *query;
 	struct query_param_list_t params;
@@ -184,28 +187,26 @@ struct query_builder_internal_t {
 	int count;
 };
 
-static void query_builder_append_param(query_builder_internal_t *b,
-		query_param_t *p)
+static void query_append_param(query_t *q, query_param_t *p)
 {
-	query_param_t *n = pool_alloc(b->p, sizeof(*n));
+	query_param_t *n = pool_alloc(q->p, sizeof(*n));
 	*n = *p;
 
-	if (b->tail)
-		SLIST_INSERT_AFTER(b->tail, n, next);
+	if (q->tail)
+		SLIST_INSERT_AFTER(q->tail, n, next);
 	else
-		SLIST_INSERT_HEAD(&b->params, n, next);
-	b->tail = n;
+		SLIST_INSERT_HEAD(&q->params, n, next);
+	q->tail = n;
 
-	pstring_append_printf(b->p, b->query, "$%d", ++b->count);
+	pstring_append_printf(q->p, q->query, "$%d", ++q->count);
 }
 
-static void query_builder_vappend(query_builder_internal_t *b,
-		const char *cmd, va_list ap)
+static void query_vappend(query_t *q, const char *cmd, va_list ap)
 {
 	if (!cmd)
 		return;
 	if (*cmd != ' ')
-		pstring_append_space(b->p, b->query);
+		pstring_append_space(q->p, q->query);
 
 	while (*cmd != '\0') {
 		if (*cmd == '%') {
@@ -215,78 +216,87 @@ static void query_builder_vappend(query_builder_internal_t *b,
 				case 'b':
 					param.val.d = va_arg(ap, int);
 					param.type = QUERY_PARAM_BOOL;
-					query_builder_append_param(b, &param);
+					query_append_param(q, &param);
 					break;
 				case 'd':
 					param.val.d = va_arg(ap, int);
 					param.type = QUERY_PARAM_INT;
-					query_builder_append_param(b, &param);
+					query_append_param(q, &param);
 					break;
 				case 'l':
 					param.val.l = va_arg(ap, int64_t);
 					param.type = QUERY_PARAM_BIGINT;
-					query_builder_append_param(b, &param);
+					query_append_param(q, &param);
 					break;
 				case 's':
 					param.val.s = va_arg(ap, const char *);
 					param.type = QUERY_PARAM_STRING;
-					query_builder_append_param(b, &param);
+					query_append_param(q, &param);
 					break;
 				case 't':
 					param.val.t = va_arg(ap, fb_time_t);
 					param.type = QUERY_PARAM_TIME;
-					query_builder_append_param(b, &param);
+					query_append_param(q, &param);
 					break;
 				default:
-					pstring_append_c(b->p, b->query, *cmd);
+					pstring_append_c(q->p, q->query, *cmd);
 					break;
 			}
 		} else {
-			pstring_append_c(b->p, b->query, *cmd);
+			pstring_append_c(q->p, q->query, *cmd);
 		}
 		++cmd;
 	}
 }
 
-static void query_builder_vappend_symbol(query_builder_internal_t *b,
-		const char *symbol, const char *cmd, va_list ap)
+static void query_vappend_symbol(query_t *q, const char *symbol,
+		const char *cmd, va_list ap)
 {
-	pstring_append_space(b->p, b->query);
+	pstring_append_space(q->p, q->query);
 
 	if (symbol && *symbol)
-		pstring_append_string(b->p, b->query, symbol);
+		pstring_append_string(q->p, q->query, symbol);
 
-	query_builder_vappend(b, cmd, ap);
+	query_vappend(q, cmd, ap);
 }
 
-static query_builder_t *query_builder_append(query_builder_t *b,
-		const char *cmd, ...)
+void query_append(query_t *q, const char *cmd, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	query_builder_vappend_symbol(b->_b, NULL, cmd, ap);
+	query_vappend_symbol(q, NULL, cmd, ap);
 	va_end(ap);
-	return b;
 }
 
-static query_builder_t *query_builder_append_symbol(query_builder_t *b,
-		const char *symbol, const char *cmd, ...)
+void query_sappend(query_t *q, const char *symbol, const char *cmd, ...)
 {
 	va_list ap;
 	va_start(ap, cmd);
-	query_builder_vappend_symbol(b->_b, symbol, cmd, ap);
+	query_vappend_symbol(q, symbol, cmd, ap);
 	va_end(ap);
-	return b;
 }
 
-static void convert_param_array(const query_builder_internal_t *b,
+void query_orderby(query_t *q, const char *field, bool asc)
+{
+	query_sappend(q, "ORDER BY", field);
+	if (!asc)
+		query_append(q, "DESC");
+}
+
+void query_limit(query_t *q, int limit)
+{
+	int64_t l = limit;
+	query_sappend(q, "LIMIT", "%l", l);
+}
+
+static void convert_param_array(const query_t *q,
 		const char **vals, int *lens, int *fmts)
 {
 	int n = 0;
-	SLIST_FOREACH(query_param_t, param, &b->params, next) {
+	SLIST_FOREACH(query_param_t, param, &q->params, next) {
 		switch (param->type) {
 			case QUERY_PARAM_BOOL: {
-					char *p = pool_alloc(b->p, sizeof(*p));
+					char *p = pool_alloc(q->p, sizeof(*p));
 					*p = param->val.d ? 1 : 0;
 					vals[n] = p;
 					lens[n] = 1;
@@ -294,7 +304,7 @@ static void convert_param_array(const query_builder_internal_t *b,
 				}
 				break;
 			case QUERY_PARAM_INT: {
-					int *p = pool_alloc(b->p, sizeof(*p));
+					int *p = pool_alloc(q->p, sizeof(*p));
 					*p = htonl(param->val.d);
 					vals[n] = (const char *)p;
 					lens[n] = sizeof(*p);
@@ -302,7 +312,7 @@ static void convert_param_array(const query_builder_internal_t *b,
 				}
 				break;
 			case QUERY_PARAM_BIGINT: {
-					int64_t *p = pool_alloc(b->p, sizeof(*p));
+					int64_t *p = pool_alloc(q->p, sizeof(*p));
 					*p = htobe64(param->val.l);
 					vals[n] = (const char *)p;
 					lens[n] = sizeof(*p);
@@ -311,7 +321,7 @@ static void convert_param_array(const query_builder_internal_t *b,
 				break;
 			case QUERY_PARAM_TIME: {
 					db_timestamp ts = time_to_ts(param->val.t);
-					db_timestamp *p = pool_alloc(b->p, sizeof(*p));
+					db_timestamp *p = pool_alloc(q->p, sizeof(*p));
 					*p = htobe64(ts);
 					vals[n] = (const char *)p;
 					lens[n] = sizeof(*p);
@@ -329,20 +339,19 @@ static void convert_param_array(const query_builder_internal_t *b,
 	}
 }
 
-static db_res_t *query_builder_exec(const query_builder_internal_t *b,
-		int expected)
+static db_res_t *_query_exec(const query_t *q, int expected)
 {
 	db_res_t *res;
-	if (b->count) {
-		const char **vals = pool_alloc(b->p, b->count * sizeof(*vals));
-		int *lens = pool_alloc(b->p, b->count * sizeof(*lens));
-		int *fmts = pool_alloc(b->p, b->count * sizeof(*fmts));
+	if (q->count) {
+		const char **vals = pool_alloc(q->p, q->count * sizeof(*vals));
+		int *lens = pool_alloc(q->p, q->count * sizeof(*lens));
+		int *fmts = pool_alloc(q->p, q->count * sizeof(*fmts));
 
-		convert_param_array(b, vals, lens, fmts);
-		res = PQexecParams(global_db_conn, pstring(b->query), b->count, NULL,
+		convert_param_array(q, vals, lens, fmts);
+		res = PQexecParams(global_db_conn, pstring(q->query), q->count, NULL,
 				vals, lens, fmts, 1);
 	} else {
-		res = PQexecParams(global_db_conn, pstring(b->query), 0, NULL, NULL,
+		res = PQexecParams(global_db_conn, pstring(q->query), 0, NULL, NULL,
 				NULL, NULL, 1);
 	}
 
@@ -353,44 +362,40 @@ static db_res_t *query_builder_exec(const query_builder_internal_t *b,
 	return res;
 }
 
-static db_res_t *query_builder_query(const query_builder_t *b)
+db_res_t *query_exec(const query_t *q)
 {
-	return query_builder_exec(b->_b, DBRES_TUPLES_OK);
+	return _query_exec(q, DBRES_TUPLES_OK);
 }
 
-static db_res_t *query_builder_cmd(const query_builder_t *b)
+db_res_t *query_cmd(const query_t *q)
 {
-	return query_builder_exec(b->_b, DBRES_COMMAND_OK);
+	return _query_exec(q, DBRES_COMMAND_OK);
 }
 
-query_builder_t *query_builder_new(size_t size)
+query_t *query_new(size_t size)
 {
 	pool_t *pool = pool_create(0);
 
-	query_builder_t *b = pool_alloc(pool, sizeof(*b));
-	query_builder_internal_t *i = pool_alloc(pool, sizeof(*i));
-	i->p = pool;
-	SLIST_INIT_HEAD(&i->params);
-	i->tail = NULL;
-	i->count = 0;
+	query_t *q = pool_alloc(pool, sizeof(*q));
+	q->p = pool;
+
+	SLIST_INIT_HEAD(&q->params);
+	q->tail = NULL;
+	q->count = 0;
 
 	if (!size)
 		size = 511;
-	i->query = pstring_sized_new(pool, size);
+	q->query = pstring_sized_new(pool, size);
 
-	b->_b = i;
-	b->append = query_builder_append;
-	b->sappend = query_builder_append_symbol;
-	b->query = query_builder_query;
-	b->cmd = query_builder_cmd;
-
-	return b;
+	return q;
 }
 
-void query_builder_free(query_builder_t *b)
+void query_free(query_t *q)
 {
-	pool_destroy(b->_b->p);
+	pool_destroy(q->p);
 }
+
+/** @} */
 
 #define is_supported_format(c) \
 	(c == 'd' || c == 'l' || c == 's' || c == 't' || c == 'b')
@@ -415,10 +420,10 @@ static db_res_t *db_exec(const char *cmd, va_list ap, int expected)
 	db_res_t *res;
 	int argc = get_num_args(cmd);
 	if (argc > 0) {
-		query_builder_t *builder = query_builder_new(strlen(cmd));
-		query_builder_vappend(builder->_b, cmd, ap);
-		res = query_builder_exec(builder->_b, expected);
-		query_builder_free(builder);
+		query_t *q = query_new(strlen(cmd));
+		query_vappend(q, cmd, ap);
+		res = _query_exec(q, expected);
+		query_free(q);
 	} else {
 		res = PQexecParams(global_db_conn, cmd, 0, NULL, NULL, NULL, NULL, 1);
 		if (db_res_status(res) != expected) {

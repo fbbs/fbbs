@@ -435,17 +435,17 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 int set_post_flag(post_filter_t *filter, const char *field, bool set,
 		bool toggle)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "UPDATE", post_table_name(filter));
-	b->sappend(b, "SET", field);
+	query_t *q = query_new(0);
+	query_update(q, post_table_name(filter));
+	query_sappend(q, "SET", field);
 	if (toggle)
-		b->sappend(b, "= NOT", field);
+		query_sappend(q, "= NOT", field);
 	else
-		b->append(b, "= %b", set);
-	build_post_filter(b, filter, NULL);
+		query_append(q, "= %b", set);
+	build_post_filter(q, filter, NULL);
 
-	db_res_t *res = b->cmd(b);
-	query_builder_free(b);
+	db_res_t *res = query_cmd(q);
+	query_free(q);
 
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
@@ -561,65 +561,62 @@ const char *post_table_index(const post_filter_t *filter)
 		return "id";
 }
 
-void build_post_filter(query_builder_t *b, const post_filter_t *f,
-		const bool *asc)
+void build_post_filter(query_t *q, const post_filter_t *f, const bool *asc)
 {
-	b->append(b, "WHERE TRUE");
+	query_where(q, "TRUE");
 	if (f->bid)
-		b->sappend(b, "AND", "board = %d", f->bid);
+		query_and(q, "board = %d", f->bid);
 	if (f->flag & POST_FLAG_DIGEST)
-		b->sappend(b, "AND", "digest");
+		query_and(q, "digest");
 	if (f->flag & POST_FLAG_MARKED)
-		b->sappend(b, "AND", "marked");
+		query_and(q, "marked");
 	if (f->flag & POST_FLAG_WATER)
-		b->sappend(b, "AND", "water");
+		query_and(q, "water");
 	if (f->uid)
-		b->sappend(b, "AND", "owner = %"DBIdUID, f->uid);
-	if (*f->utf8_keyword) {
-		b->sappend(b, "AND", "title ILIKE '%%' || %s || '%%'",
-				f->utf8_keyword);
-	}
+		query_and(q, "owner = %"DBIdUID, f->uid);
+	if (*f->utf8_keyword)
+		query_and(q, "title ILIKE '%%' || %s || '%%'", f->utf8_keyword);
 	if (f->type == POST_LIST_TOPIC)
-		b->sappend(b, "AND", "id = tid");
+		query_and(q, "id = tid");
 
 	if (f->type == POST_LIST_THREAD) {
 		if (f->min && f->tid) {
-			b->sappend(b, "AND", "(tid = %"DBIdPID" AND id >= %"DBIdPID
+			query_and(q, "(tid = %"DBIdPID" AND id >= %"DBIdPID
 					" OR tid > %"DBIdPID")", f->tid, f->min, f->tid);
 		}
 		if (f->max && f->tid) {
-			b->sappend(b, "AND", "(tid = %"DBIdPID" AND id <= %"DBIdPID
+			query_and(q, "(tid = %"DBIdPID" AND id <= %"DBIdPID
 					" OR tid < %"DBIdPID")", f->tid, f->max, f->tid);
 		}
 	} else {
 		if (f->min) {
-			b->sappend(b, "AND", post_table_index(f));
-			b->append(b, ">= %"DBIdPID, f->min);
+			query_and(q, post_table_index(f));
+			query_append(q, ">= %"DBIdPID, f->min);
 		}
 		if (f->max) {
-			b->sappend(b, "AND", post_table_index(f));
-			b->append(b, "<= %"DBIdPID, f->max);
+			query_and(q, post_table_index(f));
+			query_append(q, "<= %"DBIdPID, f->max);
 		}
 		if (f->tid)
-			b->sappend(b, "AND", "tid = %"DBIdPID, f->tid);
+			query_and(q, "tid = %"DBIdPID, f->tid);
 	}
 
 	if (f->type == POST_LIST_TRASH)
-		b->sappend(b, "AND", "bm_visible");
+		query_and(q, "AND", "bm_visible");
 	if (f->type == POST_LIST_JUNK)
-		b->sappend(b, "AND", "NOT bm_visible");
+		query_and(q, "NOT bm_visible");
 
 	if (asc) {
-		b->append(b, "ORDER BY");
+		query_append(q, "ORDER BY");
 		if (f->type == POST_LIST_THREAD) {
 			if (*asc)
-				b->append(b, "tid,");
+				query_append(q, "tid,");
 			else
-				b->append(b, "tid DESC,");
+				query_append(q, "tid DESC,");
 		}
-		b->append(b, post_table_index(f));
+		query_append(q, post_table_index(f));
 		if (!*asc)
-			b->append(b, "DESC");
+			query_append(q, "DESC");
 	}
 }
 
@@ -630,16 +627,14 @@ static const char *post_list_fields(const post_filter_t *filter)
 	return POST_LIST_FIELDS;
 }
 
-query_builder_t *build_post_query(const post_filter_t *filter, bool asc,
-		int limit)
+query_t *build_post_query(const post_filter_t *filter, bool asc, int limit)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->append(b, "SELECT")->append(b, post_list_fields(filter));
-	b->append(b, "FROM")->append(b, post_table_name(filter));
-	build_post_filter(b, filter, &asc);
-	int64_t l = limit;
-	b->append(b, "LIMIT %l", l);
-	return b;
+	query_t *q = query_new(0);
+	query_select(q, post_list_fields(filter));
+	query_from(q, post_table_name(filter));
+	build_post_filter(q, filter, &asc);
+	query_limit(q, limit);
+	return q;
 }
 
 void res_to_post_info_full(db_res_t *res, int row, int archive,
@@ -702,22 +697,22 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 		decrease = false;
 	}
 
-	query_builder_t *b = query_builder_new(0);
-	b->append(b, "WITH rows AS ( DELETE FROM posts.recent");
-	build_post_filter(b, filter, NULL);
+	query_t *q = query_new(0);
+	query_append(q, "WITH rows AS ( DELETE FROM posts.recent");
+	build_post_filter(q, filter, NULL);
 	if (!force)
-		b->sappend(b, "AND", "NOT marked");
-	b->sappend(b, "AND", "NOT sticky");
-	b->append(b, "RETURNING " POST_LIST_FIELDS_FULL ")");
-	b->append(b, "INSERT INTO posts.deleted ("
+		query_and(q, "NOT marked");
+	query_and(q, "NOT sticky");
+	query_append(q, "RETURNING " POST_LIST_FIELDS_FULL ")");
+	query_append(q, "INSERT INTO posts.deleted ("
 			POST_LIST_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
-	b->append(b, "SELECT " POST_LIST_FIELDS_FULL ","
+	query_append(q, "SELECT " POST_LIST_FIELDS_FULL ","
 			" %"DBIdUID", %t, %b AND (water OR %b),"" %b, %s FROM rows",
 			session.uid, now, decrease, junk, bm_visible, currentuser.userid);
-	b->append(b, "RETURNING owner, uname, junk");
+	query_append(q, "RETURNING owner, uname, junk");
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	int rows = 0;
 	if (res) {
@@ -736,11 +731,12 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 
 int undelete_posts(post_filter_t *filter)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->append(b, "SELECT owner, uname, junk FROM posts.deleted");
-	build_post_filter(b, filter, NULL);
+	query_t *q = query_new(0);
+	query_select(q, "owner, uname, junk FROM posts.deleted");
+	build_post_filter(q, filter, NULL);
 
-	db_res_t *res = b->query(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 	if (res) {
 		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 			user_id_t uid = db_get_user_id(res, i, 0);
@@ -751,35 +747,33 @@ int undelete_posts(post_filter_t *filter)
 		}
 		db_clear(res);
 	}
-	query_builder_free(b);
 
-	b = query_builder_new(0);
-	b->append(b, "WITH rows AS ( DELETE FROM posts.deleted");
-	build_post_filter(b, filter, NULL);
-	b->append(b, "RETURNING " POST_LIST_FIELDS_FULL ")");
-	b->append(b, "INSERT INTO posts.recent (" POST_LIST_FIELDS_FULL ")");
-	b->append(b, "SELECT " POST_LIST_FIELDS_FULL " FROM rows");
+	q = query_new(0);
+	query_append(q, "WITH rows AS ( DELETE FROM posts.deleted");
+	build_post_filter(q, filter, NULL);
+	query_append(q, "RETURNING " POST_LIST_FIELDS_FULL ")");
+	query_append(q, "INSERT INTO posts.recent (" POST_LIST_FIELDS_FULL ")");
+	query_select(q, POST_LIST_FIELDS_FULL);
+	query_from(q, "rows");
 
-	res = b->cmd(b);
+	res = query_cmd(q);
+	query_free(q);
+
 	int rows = res ? db_cmd_rows(res) : 0;
-
 	db_clear(res);
-	query_builder_free(b);
 	return rows;
 }
 
 db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->append(b, "SELECT");
-	b->append(b, fields);
-	b->append(b, "FROM");
-	b->append(b, post_table_name(filter));
-	b->sappend(b, "WHERE", post_table_index(filter));
-	b->append(b, "= %"DBIdPID, filter->min);
+	query_t *q = query_new(0);
+	query_select(q, fields);
+	query_from(q, post_table_name(filter));
+	query_where(q, post_table_index(filter));
+	query_append(q, "= %"DBIdPID, filter->min);
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 	return res;
 }
 
@@ -823,17 +817,16 @@ bool alter_title(const post_info_t *ip, const char *title)
 		if (!content)
 			return false;
 
-		query_builder_t *b = query_builder_new(0);
-		b->append(b, "UPDATE");
-		b->append(b, post_table_name(&filter));
-		b->append(b, "SET title = %s, content = %s", title, content);
-		b->append(b, "WHERE id = %"DBIdPID, ip->id);
+		query_t *q = query_new(0);
+		query_update(q, post_table_name(&filter));
+		query_append(q, "SET title = %s, content = %s", title, content);
+		query_where(q, "id = %"DBIdPID, ip->id);
 
-		res = b->cmd(b);
+		res = query_cmd(q);
 		bool success = res;
 
 		db_clear(res);
-		query_builder_free(b);
+		query_free(q);
 		free(content);
 		return success;
 	}
@@ -844,13 +837,14 @@ bool alter_content(const post_info_t *ip, const char *content)
 {
 	post_filter_t filter = { .type = post_list_type(ip), };
 
-	query_builder_t *b = query_builder_new(0);
-	b->append(b, "UPDATE")->append(b, post_table_name(&filter));
-	b->append(b, "SET")->append(b, "content = %s", content);
-	b->append(b, "WHERE")->append(b, "id = %"DBIdPID, ip->id);
+	query_t *q = query_new(0);
+	query_update(q, post_table_name(&filter));
+	query_set(q, "content = %s", content);
+	query_where(q, "id = %"DBIdPID, ip->id);
 
-	db_res_t *res = b->cmd(b);
+	db_res_t *res = query_cmd(q);
 	db_clear(res);
+	query_free(q);
 	return res;
 }
 

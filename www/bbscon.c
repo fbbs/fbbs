@@ -43,14 +43,14 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 		filter.min = filter.max = pid;
 	}
 
-	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
-	b->sappend(b, "FROM", "posts.recent");
-	build_post_filter(b, &filter, &asc);
-	b->append(b, "LIMIT 1");
+	query_t *q = query_new(0);
+	query_select(q, POST_LIST_FIELDS_FULL);
+	query_from(q, "posts.recent");
+	build_post_filter(q, &filter, &asc);
+	query_limit(q, 1);
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	int ret = res && db_res_rows(res) > 0;
 	if (ret)

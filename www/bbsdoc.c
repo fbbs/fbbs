@@ -8,10 +8,9 @@
 #include "fbbs/user.h"
 #include "fbbs/web.h"
 
-#define BFIND_MAX  "100"
-
 enum {
 	TOPICS_PER_PAGE = 13,
+	BFIND_MAX = 100,
 };
 
 extern const struct fileheader *dir_bsearch(const struct fileheader *begin,
@@ -62,9 +61,9 @@ static void print_sticky_posts(int bid, post_list_type_e type)
 
 static bool print_posts(post_filter_t *filter, int limit, bool asc)
 {
-	query_builder_t *b = build_post_query(filter, asc, limit + 1);
-	db_res_t *r = b->query(b);
-	query_builder_free(b);
+	query_t *q = build_post_query(filter, asc, limit + 1);
+	db_res_t *r = query_exec(q);
+	query_free(q);
 
 	post_id_t next = true;
 	if (r) {
@@ -194,16 +193,16 @@ int bbsbfind_main(void)
 	if (uid)
 		filter.uid = uid;
 
-	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "SELECT", POST_LIST_FIELDS);
-	b->sappend(b, "FROM", "posts.recent");
-	build_post_filter(b, &filter, NULL);
+	query_t *q = query_new(0);
+	query_select(q, POST_LIST_FIELDS);
+	query_from(q, "posts.recent");
+	build_post_filter(q, &filter, NULL);
 
 	long day = strtol(get_param("limit"), NULL, 10);
 	if (day < 0)
 		day = 0;
 	fb_time_t begin = time(NULL) - 24 * 60 * 60 * day;
-	b->sappend(b, "AND", "stamp > %t", begin);
+	query_and(q, "stamp > %t", begin);
 
 	int count = 0;
 	const char *names[] = { "t1", "t2", "t3" };
@@ -211,15 +210,15 @@ int bbsbfind_main(void)
 		const char *s = get_param(names[i]);
 		if (s && *s) {
 			++count;
-			b->sappend(b, "AND", "title ILIKE '%%' || %s || '%%'", s);
+			query_and(q, "title ILIKE '%%' || %s || '%%'", s); 
 		}
 	}
 
-	b->sappend(b, "ORDER BY", "id DESC");
-	b->append(b, "LIMIT "BFIND_MAX);
+	query_orderby(q, "id", false);
+	query_limit(q, BFIND_MAX);
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	xml_header(NULL);
 	printf("<bbsbfind ");
@@ -273,17 +272,17 @@ static void res_to_post_thread_info(db_res_t *res, int row,
 
 static db_res_t *get_post_threads(int bid, int start, int count)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "SELECT", POST_THREAD_FIELDS);
-	b->sappend(b, "FROM", "posts.threads");
-	b->sappend(b, "WHERE", "board = %d", bid);
+	query_t *q = query_new(0);
+	query_select(q, POST_THREAD_FIELDS);
+	query_from(q, "posts.threads");
+	query_where(q, "board = %d", bid);
 	if (start)
-		b->sappend(b, "AND", "last_id <= %"DBIdPID, start);
-	b->sappend(b, "ORDER BY", "last_id DESC");
-	b->append(b, "LIMIT %l", count);
+		query_and(q, "last_id <= %"DBIdPID, start);
+	query_orderby(q, "last_id", false);
+	query_limit(q, count);
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 	return res;
 }
 

@@ -18,9 +18,9 @@ static post_id_t find_next_tid(int bid, post_id_t tid, char action)
 	else
 		filter.max = tid - 1;
 
-	query_builder_t *b = build_post_query(&filter, action == 'a', 1);
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	query_t *q = build_post_query(&filter, action == 'a', 1);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	if (res && db_res_rows(res) >= 1) {
 		post_info_t info;
@@ -51,14 +51,14 @@ static post_info_full_t *bbstcon_search(int bid, post_id_t pid, post_id_t *tid,
 		filter.min = pid + 1;
 	bool asc = !(action == 'b' || action == 'p');
 
-	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
-	b->sappend(b, "FROM", "posts.recent");
-	build_post_filter(b, &filter, &asc);
-	b->sappend(b, "LIMIT", "%l", *count + 1);
+	query_t *q = query_new(0);
+	query_select(q, POST_LIST_FIELDS_FULL);
+	query_from(q, "posts.recent");
+	build_post_filter(q, &filter, &asc);
+	query_limit(q, *count + 1);
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	int rows = db_res_rows(res);
 	if (!rows)

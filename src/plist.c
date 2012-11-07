@@ -238,9 +238,9 @@ static void adjust_filter(post_list_t *l, slide_list_base_e base)
 static int _load_posts(slide_list_t *p, slide_list_base_e base,
 		post_filter_t *fp, int page, int limit)
 {
-	query_builder_t *b = build_post_query(fp, is_asc(base), limit);
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	query_t *q = build_post_query(fp, is_asc(base), limit);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	post_list_t *l = p->data;
 	res_to_array(res, l, base, page);
@@ -912,8 +912,9 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 
 	int found = relocate_in_cache(p, filter, upward);
 	if (found < 0) {
-		query_builder_t *b = build_post_query(filter, !upward, 1);
-		db_res_t *res = b->query(b);
+		query_t *q = build_post_query(filter, !upward, 1);
+		db_res_t *res = query_exec(q);
+		query_free(q);
 		if (res && db_res_rows(res) == 1) {
 			post_info_t info;
 			res_to_post_info(res, 0, filter->archive, &info);
@@ -927,9 +928,9 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 			if (l->filter.type == POST_LIST_THREAD)
 				l->filter.tid = info.tid;
 			p->base = upward ? SLIDE_LIST_PREV : SLIDE_LIST_NEXT;
-			db_clear(res);
 			l->relocate = info.id;
 		}
+		db_clear(res);
 	}
 	return PARTUPDATE;
 }
@@ -1060,9 +1061,9 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 	const int limit = 40;
 	bool end = false;
 	while (!end) {
-		query_builder_t *b = build_post_query(&filter, true, limit);
-		db_res_t *res = b->query(b);
-		query_builder_free(b);
+		query_t *q = build_post_query(&filter, true, limit);
+		db_res_t *res = query_exec(q);
+		query_free(q);
 
 		int rows = db_res_rows(res);
 		for (int i = 0; i < rows; ++i) {
@@ -1096,8 +1097,9 @@ static int jump_to_thread_last(slide_list_t *p)
 			.archive = l->filter.archive,
 		};
 
-		query_builder_t *b = build_post_query(&filter, false, 1);
-		db_res_t *res = b->query(b);
+		query_t *q = build_post_query(&filter, false, 1);
+		db_res_t *res = query_exec(q);
+		query_free(q);
 
 		post_info_t info = { .id = ip->id };
 		if (res && db_res_rows(res) > 0) {
@@ -1552,22 +1554,20 @@ static int tui_delete_posts_in_range(slide_list_t *p)
 static bool count_posts_in_range(post_id_t min, post_id_t max, bool asc,
 		int sort, int least, char *file, size_t size)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->append(b, "SELECT");
-	b->append(b, "uname, COUNT(*) AS a, SUM(marked::integer) AS m");
-	b->append(b, ", SUM(digest::integer) AS g, SUM(water::integer) AS w, ");
-	b->append(b, "SUM((NOT marked AND NOT digest AND NOT water)::integer) as n");
-	b->sappend(b, "FROM", "posts_recent");
-	b->sappend(b, "WHERE", "id >= %"DBIdPID, min);
-	b->sappend(b, "AND", "id <= %"DBIdPID, max);
-	b->sappend(b, "GROUP BY", "uname");
+	query_t *q = query_new(0);
+	query_select(q, "uname, COUNT(*) AS a, SUM(marked::integer) AS m"
+			", SUM(digest::integer) AS g, SUM(water::integer) AS w, "
+			"SUM((NOT marked AND NOT digest AND NOT water)::integer) AS n");
+	query_from(q, "posts_recent");
+	query_where(q, "id >= %"DBIdPID, min);
+	query_and(q, "id <= %"DBIdPID, max);
+	query_groupby(q, "uname");
 
 	const char *field[] = { "a", "m", "g", "w", "n" };
-	b->sappend(b, "ORDER BY", field[sort]);
-	b->append(b, asc ? "ASC" : "DESC");
+	query_orderby(q, field[sort], asc);
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	if (res) {
 		snprintf(file, sizeof(file), "tmp/count.%d", getpid());
@@ -1729,16 +1729,15 @@ typedef struct {
 static int load_full_posts(const post_filter_t *fp, post_info_full_t *ip,
 		bool upward, int limit)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "SELECT", POST_LIST_FIELDS_FULL);
-	b->sappend(b, "FROM", post_table_name(fp));
-	build_post_filter(b, fp, NULL);
-	b->sappend(b, "ORDER BY", post_table_index(fp));
-	b->append(b, upward ? "DESC" : "ASC");
-	b->sappend(b, "LIMIT", "%l", limit);
+	query_t *q = query_new(0);
+	query_select(q, POST_LIST_FIELDS_FULL);
+	query_from(q, post_table_name(fp));
+	build_post_filter(q, fp, NULL);
+	query_orderby(q, post_table_index(fp), !upward);
+	query_limit(q, limit);
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	int rows = db_res_rows(res);
 	if (rows > 0) {
@@ -1971,14 +1970,14 @@ extern int import_file(const char *title, const char *file, const char *path);
 
 static int import_posts(post_filter_t *filter, const char *path)
 {
-	query_builder_t *b = query_builder_new(0);
-	b->sappend(b, "UPDATE", post_table_name(filter));
-	b->sappend(b, "SET", "imported = TRUE");
-	build_post_filter(b, filter, NULL);
-	b->sappend(b, "RETURNING", "title, content");
+	query_t *q = query_new(0);
+	query_update(q, post_table_name(filter));
+	query_set(q, "imported = TRUE");
+	build_post_filter(q, filter, NULL);
+	query_returning(q, "title, content");
 
-	db_res_t *res = b->query(b);
-	query_builder_free(b);
+	db_res_t *res = query_exec(q);
+	query_free(q);
 
 	if (res) {
 		int rows = db_res_rows(res);
