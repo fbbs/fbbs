@@ -2,6 +2,12 @@
 #include "bbs.h"
 #include "fbbs/terminal.h"
 
+#define FILE_BUFSIZE        200    /* max. length of a file in SHM*/
+#define FILE_MAXLINE         25    /* max. line of a file in SHM */
+#define MAX_WELCOME          15    /* 欢迎画面数 */
+#define MAX_GOODBYE          15    /* 离站画面数 */
+#define MAX_ISSUE            15    /* 最大进站画面数 */
+
 struct FILESHM { //内存映射文件结构
 	char line[FILE_MAXLINE][FILE_BUFSIZE]; //[25][200]
 	int fileline;

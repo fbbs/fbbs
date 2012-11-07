@@ -69,15 +69,9 @@
 #define MAX_ANON	2500	//最大WWW匿名数
 #endif
 
-#define FILE_BUFSIZE        200    /* max. length of a file in SHM*/
-#define FILE_MAXLINE         25    /* max. line of a file in SHM */
-#define MAX_WELCOME          15    /* 欢迎画面数 */
-#define MAX_GOODBYE          15    /* 离站画面数 */
-#define MAX_ISSUE            15    /* 最大进站画面数 */
 #define MAX_DIGEST         1000    /* 最大文摘数 */
 #define MAX_POSTRETRY       100
 #define MAX_PREFIX			  9    /* 最大版面前缀数*/
-#define MORE_BUFSIZE       4096
 
 #ifdef BIGGER_MOVIE
 #define MAXMOVIE		8
@@ -166,7 +160,6 @@ extern char ULIST[];
 
 /*	版面的标志		*/
 #define BOARD_CUSTOM_FLAG	0x80000000		//收藏夹自定义目录 defined by cometcaptor 2007-04-16 因为是目录是自定义，故选用标志的最高位，和标准的属性分开
-#define ZAPPED  		0x1         /* For boards...tells if board is Zapped */
 
 /** These are flags in userec.flags[0] */
 enum {
@@ -188,11 +181,6 @@ enum {
 #define ALLMSG_PAGER    0x4
 #define FRIENDMSG_PAGER 0x8
 #define LOGOFFMSG_PAGER 0x10   /* Amigo 2002.04.03 */
-
-#define USERIDSIZE 		(16)
-#define USERNAMESZ 		(24)
-#define TERMTYPESZ 		(10)
-/* END */
 
 /** Some constants. */
 enum {
@@ -313,19 +301,6 @@ extern time_t uptime; /* save user last key-in time, up every 1min */
 
 #define Ctrl(c)         ( c & 037 )		//可以考虑将函数宏改写成inline函数
 
-#ifdef  SYSV						//SYSV中没有定义以下函数
-//#define bzero(tgt, len)         memset( tgt, 0, len )
-#define bcopy(src, tgt, len)    memcpy( tgt, src, len)
-
-#define usleep(usec)            {               \
-    struct timeval t;                           \
-    t.tv_sec = usec / 1000000;                  \
-    t.tv_usec = usec % 1000000;                 \
-    select( 0, NULL, NULL, NULL, &t);           \
-}
-
-#endif  /* SYSV */
-
 /* =============== ANSI EDIT ================== */
 #define   ANSI_RESET    	"\033[0m"
 #define   ANSI_REVERSE  	"\033[7m\033[4m"
@@ -334,8 +309,6 @@ extern int KEY_ESC_arg;
 /* ============================================ */
 
 #define FLOCK(x,y) flock(x,y)
-
-#define SHM_HOMEDIR "tmp"
 
 //add by infotech,supporting for 5 BMS
 #define BMMAXNUM		(5)				//每个版面的最大版主数
