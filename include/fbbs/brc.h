@@ -8,7 +8,6 @@ extern int brc_initial(const char* userid, const char *board);
 
 extern void brc_addlist_legacy(const char *filename);
 extern bool brc_unread_legacy(const char *filename);
-extern int brc_clear_legacy(int ent, const char *direct, int clearall);
 
 extern void brc_mark_as_read(int64_t id);
 extern bool brc_unread(int64_t id);

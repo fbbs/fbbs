@@ -202,26 +202,6 @@ void brc_clear_all(void)
 	brc_clear(time(NULL));
 }
 
-int brc_clear_legacy(int ent, const char *direct, int clearall)
-{
-	if (clearall) {
-		brc_clear_all();
-	} else {
-		struct fileheader fh;
-
-		int fd = open(direct, O_RDONLY, 0);
-		if (fd < 0)
-			return DONOTHING;
-
-		lseek(fd, (off_t) ((ent - 1) * sizeof(fh)), SEEK_SET);
-		read(fd, &fh, sizeof(fh));
-		close(fd);
-
-		brc_clear(strtol(fh.filename + 2, NULL, 10));
-	}
-	return PARTUPDATE;
-}
-
 void brc_zapbuf(int *zbuf)
 {
 	if (*zbuf > 0 && brc_num > 0)
