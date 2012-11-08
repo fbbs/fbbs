@@ -20,8 +20,8 @@ enum DATE_FORMAT {
 typedef int64_t fb_time_t;
 
 #define fb_time() ((fb_time_t)time(NULL))
-extern struct tm *fb_localtime(fb_time_t *t);
-extern const char *fb_ctime(fb_time_t *t);
+extern struct tm *fb_localtime(const fb_time_t *t);
+extern const char *fb_ctime(const fb_time_t *t);
 
 extern char *getdatestring(time_t time, enum DATE_FORMAT mode);
 extern char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t);

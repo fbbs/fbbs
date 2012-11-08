@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include "fbbs/time.h"
 
-struct tm *fb_localtime(fb_time_t *t)
+struct tm *fb_localtime(const fb_time_t *t)
 {
 	time_t tt = (time_t)*t;
 	return localtime(&tt);
 }
 
-const char *fb_ctime(fb_time_t *t)
+const char *fb_ctime(const fb_time_t *t)
 {
 	time_t tt = (time_t)*t;
 	return ctime(&tt);
