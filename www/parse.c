@@ -300,9 +300,12 @@ static void _print_paragraph(const char *begin, const char *end, int option)
 	}
 }
 
+/** UTF-8 "ЁО дк " */
+#define QUOTE_STRING "\xe3\x80\x90\x20\xe5\x9c\xa8\x20"
+
 static bool _is_quote(const char *begin, const char *end)
 {
-	return BEGIN_WITH(begin, end, ": ") || BEGIN_WITH(begin, end, "ЁО дк ");
+	return BEGIN_WITH(begin, end, ": ") || BEGIN_WITH(begin, end, QUOTE_STRING);
 }
 
 static void _print_body(const char *begin, const char *end, int option)
