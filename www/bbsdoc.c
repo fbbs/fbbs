@@ -51,7 +51,7 @@ static void print_sticky_posts(int bid, post_list_type_e type)
 {
 	post_info_t *sticky_posts = NULL;
 
-	int count = _load_sticky_posts(bid, &sticky_posts);
+	int count = load_sticky_posts(bid, &sticky_posts);
 	for (int i = 0; i < count; ++i) {
 		print_bbsdoc(sticky_posts + i);
 	}

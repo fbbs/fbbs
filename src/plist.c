@@ -12,6 +12,319 @@
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
+static bool is_asc(slide_list_base_e base)
+{
+	return (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_NEXT);
+}
+
+static void clear_filter(post_filter_t *filter)
+{
+	filter->min = filter->max = filter->tid = 0;
+	if (filter->type != POST_LIST_AUTHOR)
+		filter->uid = 0;
+	if (filter->type == POST_LIST_NORMAL)
+		filter->flag = 0;
+	if (filter->type != POST_LIST_KEYWORD)
+		filter->utf8_keyword[0] = '\0';
+}
+
+/** @defgroup plist_cache Post List Cache */
+/** @{ */
+
+typedef struct {
+	post_info_t *posts;  ///< Array to hold posts in.
+	int begin;  ///< Index of first visible post.
+	int end;  ///< Off-the-end index of last visible post.
+	int count;  ///< Number of posts in the cache.
+	int scount;  ///< Number of sticky posts in the cache.
+	int capacity;  ///< Maximum number of posts.
+	int scapacity;  ///< Maximum number of sticky posts.
+	int page;  ///< Count of posts in a page.
+	post_id_t top;  ///< The oldest post id.
+	post_id_t bottom;  ///< The newest post id.
+	bool sticky;  ///< True if sticky posts support is on.
+} plist_cache_t;
+
+static void plist_cache_clear(plist_cache_t *c)
+{
+	c->begin = c->end = c->count = 0;
+	c->top = c->bottom = 0;
+}
+
+static void plist_cache_init(plist_cache_t *c, int page, int scapacity)
+{
+	if (!c->posts) {
+		c->scount = -1;
+		c->page = page;
+		c->capacity = page * 3;
+		c->scapacity = scapacity;
+		c->posts = malloc(sizeof(*c->posts) * (c->capacity + c->scapacity));
+		plist_cache_clear(c);
+	}
+}
+
+static post_info_t *plist_cache_get(const plist_cache_t *c, int pos)
+{
+	if (c->begin + pos < c->end)
+		return c->posts + c->begin + pos;
+	pos -= c->end - c->begin;
+	if (c->sticky && pos < c->scount)
+		return c->posts + c->capacity + pos;
+	return NULL;
+}
+
+static post_info_t *plist_cache_get_non_sticky(const plist_cache_t *c,
+		int pos)
+{
+	while (1) {
+		post_info_t *p = plist_cache_get(c, pos);
+		if (!p || !(p->flag & POST_FLAG_STICKY))
+			return p;
+		if (--pos < 0)
+			break;
+	}
+	return NULL;
+}
+
+static bool plist_cache_is_top(const plist_cache_t *c, int pos)
+{
+	if (!c->top)
+		return false;
+	if (pos < 0)
+		pos = 0;
+	post_info_t *p = plist_cache_get(c, pos);
+	return p && p->id <= c->top;
+}
+
+static bool plist_cache_is_bottom(const plist_cache_t *c, int pos)
+{
+	if (!c->bottom)
+		return false;
+	post_info_t *p = NULL;
+	if (pos >= 0)
+		p = plist_cache_get_non_sticky(c, pos);
+	else if (c->count > 0)
+		p = c->posts + c->count - 1;
+	return p && p->id >= c->bottom;
+}
+
+static int plist_cache_max_visible(const plist_cache_t *c)
+{
+	int max = c->end - c->begin;
+	if (c->sticky && plist_cache_is_bottom(c, -1) && c->end == c->count)
+		max += c->scount;
+	return max > c->page ? c->page : max;
+}
+
+static void adjust_window(plist_cache_t *c, int delta)
+{
+	c->begin += delta;
+	c->end += delta;
+	if (c->begin < 0)
+		c->begin = 0;
+	if (c->end > c->count)
+		c->end = c->count;
+	if (c->end - c->begin < c->page) {
+		if (delta > 0) {
+			if (c->sticky && c->bottom
+					&& c->posts[c->count - 1].id >= c->bottom) {
+				if (c->end - c->begin < c->page - c->scount
+						|| c->begin >= c->end)
+					c->begin = c->end + c->scount - c->page;
+			} else {
+				c->begin = c->end - c->page;
+			}
+			if (c->begin < 0)
+				c->begin = 0;
+		} else {
+			c->end = c->begin + c->page;
+			if (c->end > c->count)
+				c->end = c->count;
+		}
+	}
+}
+
+static bool cached_top(const plist_cache_t *c)
+{
+	return c->top && c->posts[0].id <= c->top;
+}
+
+static bool cached_bottom(const plist_cache_t *c)
+{
+	return c->bottom && c->posts[c->count - 1].id >= c->bottom;
+}
+
+static bool already_cached(plist_cache_t *c, slide_list_base_e base)
+{
+	if (base == SLIDE_LIST_TOPDOWN && cached_top(c))
+		adjust_window(c, -c->capacity);
+	else if (base == SLIDE_LIST_BOTTOMUP && cached_bottom(c))
+		adjust_window(c, c->capacity);
+	else if (base == SLIDE_LIST_PREV && (c->begin >= c->page || cached_top(c)))
+		adjust_window(c, -c->page);
+	else if (base == SLIDE_LIST_NEXT &&
+			(c->count - c->end >= c->page || cached_bottom(c)))
+		adjust_window(c, c->page);
+	else
+		return false;
+	return true;
+}
+
+static void set_window(plist_cache_t *c, slide_list_base_e base)
+{
+	if (base == SLIDE_LIST_TOPDOWN) {
+		adjust_window(c, -c->capacity);
+	} else if (base == SLIDE_LIST_BOTTOMUP) {
+		adjust_window(c, c->capacity + c->scapacity);
+	} else {
+		adjust_window(c, is_asc(base) ? c->page : -c->page);
+	}
+}
+
+static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
+		slide_list_base_e base, int limit)
+{
+	bool asc = is_asc(base);
+
+	query_t *q = build_post_query(filter, asc, limit);
+	db_res_t *res = query_exec(q);
+	query_free(q);
+
+	int rows = db_res_rows(res);
+	int extra = rows + c->count - c->capacity;
+	if (extra < 0)
+		extra = 0;
+	if (asc) {
+		memmove(c->posts, c->posts + extra,
+				sizeof(*c->posts) * (c->count - extra));
+		c->begin -= extra;
+		c->end -= extra;
+		for (int i = 0; i < rows; ++i) {
+			res_to_post_info(res, i, filter->archive,
+					c->posts + c->count - extra + i);
+		}
+	} else {
+		memmove(c->posts + extra, c->posts,
+				sizeof(*c->posts) * (c->count - extra));
+		c->begin += extra;
+		c->end += extra;
+		for (int i = 0; i < rows; ++i) {
+			res_to_post_info(res, i, filter->archive, c->posts + rows - i - 1);
+		}
+	}
+	c->count += rows - extra;
+	if (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_BOTTOMUP
+			|| (rows < limit && c->count >= 0)) {
+		if (base == SLIDE_LIST_NEXT || base == SLIDE_LIST_BOTTOMUP)
+			c->bottom = c->posts[c->count - 1].id;
+		else
+			c->top = c->posts[0].id;
+	}
+
+	set_window(c, base);
+	return rows;
+}
+
+static void plist_cache_set_sticky(plist_cache_t *c, const post_filter_t *fp)
+{
+	c->sticky = (fp->type == POST_LIST_NORMAL && !fp->archive);
+}
+
+static int plist_cache_load(plist_cache_t *c, post_filter_t *filter,
+		slide_list_base_e base)
+{
+	if (already_cached(c, base))
+		return 0;
+
+	int limit = 0;
+	if (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_BOTTOMUP) {
+		limit = c->capacity;
+		plist_cache_clear(c);
+	} else if (base == SLIDE_LIST_NEXT) {
+		limit = c->capacity - (c->count - c->begin);
+		if (c->count > 0) {
+			filter->min = c->posts[c->count - 1].id + 1;
+			if (filter->type == POST_LIST_THREAD)
+				filter->tid = c->posts[c->count - 1].tid;
+		}
+	} else if (base == SLIDE_LIST_PREV) {
+		limit = c->capacity - c->end;
+		if (c->count > 0) {
+			filter->max = c->posts[0].id - 1;
+			if (filter->type == POST_LIST_THREAD)
+				filter->tid = c->posts[0].tid;
+		}
+	}
+
+	int rows = load_posts_from_db(c, filter, base, limit);
+	if (rows < c->page && base == SLIDE_LIST_NEXT) {
+		plist_cache_clear(c);
+		clear_filter(filter);
+		rows = load_posts_from_db(c, filter, SLIDE_LIST_BOTTOMUP, limit);
+	}
+	return rows;
+}
+
+static void plist_cache_load_sticky(plist_cache_t *c, post_filter_t *filter,
+		bool force)
+{
+	post_info_t *p = c->posts + c->capacity;
+	if (force || (c->sticky && c->scount < 0))
+		c->scount = load_sticky_posts(filter->bid, &p);
+}
+
+static bool match_filter(post_filter_t *filter, post_info_t *p)
+{
+	bool match = true;
+	if (filter->uid)
+		match &= p->uid == filter->uid;
+	if (filter->min)
+		match &= p->id >= filter->min;
+	if (filter->max)
+		match &= p->id <= filter->max;
+	if (filter->tid)
+		match &= p->tid == filter->tid;
+	if (*filter->utf8_keyword)
+		match &= (bool)strcasestr(p->utf8_title, filter->utf8_keyword);
+	return match;
+}
+
+static int relocate_cursor(plist_cache_t *c, int cursor)
+{
+	if (cursor >= 0 && cursor < c->count)
+	while (cursor < c->begin)
+		adjust_window(c, -c->page);
+	while (cursor >= c->end)
+		adjust_window(c, c->page);
+	return cursor - c->begin;
+}
+
+static int plist_cache_relocate(plist_cache_t *c, int current,
+		post_filter_t *filter, bool upward)
+{
+	int found = -1;
+
+	int delta = upward ? -1 : 1;
+	for (int i = c->begin + current + delta;
+			i >= 0 && i < c->count;
+			i += delta) {
+		if (match_filter(filter, c->posts + i))
+			found = i;
+		break;
+	}
+
+	if (found >= 0)
+		return relocate_cursor(c, found);
+	return found;
+}
+
+static void plist_cache_free(plist_cache_t *c)
+{
+	free(c->posts);
+}
+
+/** @} */
+
 typedef struct post_list_position_t {
 	post_list_type_e type;
 	user_id_t uid;
@@ -33,17 +346,10 @@ typedef struct {
 
 	bool reload;
 	bool sreload;
-	bool top;
-	bool bottom;
 	post_id_t relocate;
 	post_id_t current_tid;
 
-	post_info_t **index;
-	post_info_t *posts;
-	post_info_t *sposts;
-	int icount;
-	int count;
-	int scount;
+	plist_cache_t cache;
 } post_list_t;
 
 static bool match(const post_list_position_t *p, const post_filter_t *fp)
@@ -91,19 +397,8 @@ static void save_post_list_position(const slide_list_t *p)
 	if (!l->pos)
 		return;
 
-	post_info_t *min = l->icount ? l->index[0] : NULL;
-	if (min && min->flag & POST_FLAG_STICKY)
-		min = l->count ? l->posts + l->count - 1 : NULL;
-
-	post_info_t *cur = NULL;
-	for (int i = p->cur; i >= 0; --i) {
-		if (i > l->icount - 1)
-			continue;
-		if (!(l->index[i]->flag & POST_FLAG_STICKY)) {
-			cur = l->index[i];
-			break;
-		}
-	}
+	post_info_t *min = plist_cache_get(&l->cache, 0);
+	post_info_t *cur = plist_cache_get_non_sticky(&l->cache, p->cur);
 	if (!cur)
 		cur = min;
 
@@ -113,215 +408,22 @@ static void save_post_list_position(const slide_list_t *p)
 	l->pos->cur_pid = cur ? cur->id : 0;
 }
 
-static bool has_sticky_posts(const post_filter_t *fp)
-{
-	return fp->type == POST_LIST_NORMAL && !fp->archive;
-}
-
 static post_info_t *get_post_info(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	return (p->cur >= 0 && p->cur < l->icount) ? l->index[p->cur] : NULL;
-}
-
-static bool is_asc(slide_list_base_e base)
-{
-	return (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_NEXT);
-}
-
-static void res_to_array(db_res_t *r, post_list_t *l, slide_list_base_e base,
-		int size)
-{
-	int rows = db_res_rows(r);
-	if (rows < 1)
-		return;
-
-	bool asc = is_asc(base);
-
-	if (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_BOTTOMUP
-			|| rows >= size) {
-		rows = rows > size ? size : rows;
-		for (int i = 0; i < rows; ++i) {
-			res_to_post_info(r, asc ? i : rows - i - 1, l->filter.archive,
-					l->posts + i);
-		}
-		l->count = rows;
-	} else {
-		int extra = l->count + rows - size;
-		int left = l->count - (extra > 0 ? extra : 0);
-		if (asc) {
-			if (extra > 0) {
-				memmove(l->posts, l->posts + extra,
-						sizeof(*l->posts) * (l->count - extra));
-			}
-			for (int i = 0; i < rows; ++i) {
-				res_to_post_info(r, i, l->filter.archive,
-						l->posts + left + i);
-			}
-		} else {
-			memmove(l->posts + rows, l->posts, sizeof(*l->posts) * left);
-			for (int i = 0; i < rows; ++i) {
-				res_to_post_info(r, rows - i - 1, l->filter.archive,
-						l->posts + i);
-			}
-		}
-		l->count = left + rows;
-	}
-}
-
-static void load_sticky_posts(post_list_t *l)
-{
-	if ((has_sticky_posts(&l->filter) && !l->sposts) || l->sreload) {
-		l->scount = _load_sticky_posts(l->filter.bid, &l->sposts);
-		l->sreload = false;
-	}
-}
-
-static void index_posts(slide_list_t *p, int limit, int rows)
-{
-	post_list_t *l = p->data;
-	slide_list_base_e base = p->base;
-	int scount = has_sticky_posts(&l->filter) ? l->scount : 0;
-	if (base != SLIDE_LIST_CURRENT) {
-		int remain = limit, start = 0;
-		if (base == SLIDE_LIST_BOTTOMUP)
-			start = scount + rows - limit;
-		if (base == SLIDE_LIST_NEXT)
-			start = l->count - rows;
-		if (start < 0)
-			start = 0;
-
-		l->icount = 0;
-		for (int i = start; i < l->count && i < limit; ++i) {
-			l->index[l->icount++] = l->posts + i;
-			--remain;
-		}
-
-		if (l->sposts && has_sticky_posts(&l->filter)) {
-			for (int i = 0; i < remain && i < scount; ++i) {
-				l->index[l->icount++] = l->sposts + i;
-			}
-		}
-	}
-	p->max = l->icount;
-}
-
-static void adjust_filter(post_list_t *l, slide_list_base_e base)
-{
-	bool thread = l->filter.type == POST_LIST_THREAD;
-	if (is_asc(base)) {
-		if (base == SLIDE_LIST_TOPDOWN) {
-			l->filter.min = 0;
-			if (thread)
-				l->filter.tid = 0;
-		} else if (l->count) {
-			post_info_t *ip = l->posts + l->count - 1;
-			l->filter.min = ip->id + 1;
-			if (thread)
-				l->filter.tid = ip->id;
-		}
-		l->filter.max = 0;
-	} else {
-		l->filter.min = 0;
-		if (base == SLIDE_LIST_BOTTOMUP) {
-			l->filter.max = 0;
-			if (thread)
-				l->filter.tid = 0;
-		} else if (l->count) {
-			l->filter.max = l->posts[0].id - 1;
-			if (thread)
-				l->filter.tid = l->posts[0].tid;
-		}
-	}
-}
-
-static int _load_posts(slide_list_t *p, slide_list_base_e base,
-		post_filter_t *fp, int page, int limit)
-{
-	query_t *q = build_post_query(fp, is_asc(base), limit);
-	db_res_t *res = query_exec(q);
-	query_free(q);
-
-	post_list_t *l = p->data;
-	res_to_array(res, l, base, page);
-	int rows = db_res_rows(res);
-	db_clear(res);
-	return rows;
-}
-
-static int load_posts(slide_list_t *p, int page)
-{
-	post_list_t *l = p->data;
-	if (!l->reload && !l->relocate)
-		adjust_filter(l, p->base);
-
-	return _load_posts(p, p->base, &l->filter, page, page);
-}
-
-static int reverse_load_posts(slide_list_t *p, int page, int limit)
-{
-	post_list_t *l = p->data;
-	slide_list_base_e base = (p->base == SLIDE_LIST_NEXT ?
-			SLIDE_LIST_PREV : SLIDE_LIST_NEXT);
-
-	post_filter_t filter = l->filter;
-	if (base == SLIDE_LIST_NEXT) {
-		filter.min = l->filter.max + 1;
-		filter.max = 0;
-	} else {
-		filter.min = 0;
-		filter.max = l->filter.min - 1;
-	}
-
-	return _load_posts(p, base, &filter, page, limit);
-}
-
-static bool match_filter(post_filter_t *filter, post_info_t *p)
-{
-	bool match = true;
-	if (filter->uid)
-		match &= p->uid == filter->uid;
-	if (filter->min)
-		match &= p->id >= filter->min;
-	if (filter->max)
-		match &= p->id <= filter->max;
-	if (filter->tid)
-		match &= p->tid == filter->tid;
-	if (*filter->utf8_keyword)
-		match &= (bool)strcasestr(p->utf8_title, filter->utf8_keyword);
-	return match;
-}
-
-static int relocate_in_cache(slide_list_t *p, post_filter_t *filter,
-		bool upward)
-{
-	int found = -1;
-	post_list_t *l = p->data;
-	if (upward) {
-		for (int i = p->cur - 1; i >= 0; --i) {
-			if (match_filter(filter, l->index[i])) {
-				found = i;
-				break;
-			}
-		}
-	} else {
-		for (int i = p->cur + 1; i < l->icount; ++i) {
-			if (match_filter(filter, l->index[i])) {
-				found = i;
-				break;
-			}
-		}
-	}
-	if (found >= 0)
-		p->cur = found;
-	return found;
+	return plist_cache_get(&l->cache, p->cur);
 }
 
 static slide_list_loader_t post_list_loader(slide_list_t *p)
 {
 	post_list_t *l = p->data;
 
+	int page = t_lines - 4;
+	plist_cache_init(&l->cache, page, MAX_NOTICE);
+
 	if (l->reload) {
+		plist_cache_clear(&l->cache);
+
 		if (l->abase != SLIDE_LIST_CURRENT) {
 			p->base = l->abase;
 			l->filter.min = 0;
@@ -334,78 +436,33 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 				l->filter.min = brc_last_read() + 1;
 		}
 		l->filter.max = 0;
-		l->count = 0;
-		l->top = l->bottom = false;
 	}
+
 	if (p->base == SLIDE_LIST_CURRENT) {
 		save_post_list_position(p);
 		return 0;
 	}
-	if ((l->bottom && p->base == SLIDE_LIST_NEXT)
-			|| (l->top && p->base == SLIDE_LIST_PREV))
-		return 0;
 
-	l->top = p->base == SLIDE_LIST_TOPDOWN;
-	l->bottom = p->base == SLIDE_LIST_BOTTOMUP;
-
-	int page = t_lines - 4;
-	if (!l->index) {
-		l->index = malloc(sizeof(*l->index) * page);
-		l->posts = malloc(sizeof(*l->posts) * page);
-		l->sposts = NULL;
-		l->icount = l->count = l->scount = 0;
-	}
-
-	int rows = load_posts(p, page);
-	if (rows < page) {
-		if (is_asc(p->base))
-			l->bottom = true;
-		else
-			l->top = true;
-	}
-
-	if ((p->base == SLIDE_LIST_NEXT && rows < page)
-			|| p->base == SLIDE_LIST_BOTTOMUP) {
-		load_sticky_posts(l);
-	}
-
-	if ((p->base == SLIDE_LIST_PREV || p->base == SLIDE_LIST_NEXT)
-			&& rows + l->scount < page) {
-		if (l->reload) {
-			int limit = page - rows - l->scount;
-			int reverse_rows = reverse_load_posts(p, page, limit);
-			rows += reverse_rows;
-			if (reverse_rows < limit) {
-				if (is_asc(p->base))
-					l->top = true;
-				else
-					l->bottom = true;
-			}
-		}
-	}
-
-	if (rows) {
-		if (p->update != FULLUPDATE)
-			p->update = PARTUPDATE;
-	} else {
-		p->cur = p->base == SLIDE_LIST_PREV ? 0 : page - 1;
-	}
-
-	index_posts(p, page, rows);
+	plist_cache_set_sticky(&l->cache, &l->filter);
+	plist_cache_load_sticky(&l->cache, &l->filter, l->sreload);
+	plist_cache_load(&l->cache, &l->filter, p->base);
+	l->sreload = l->reload = false;
 
 	if (l->relocate || l->reload) {
-		int cur = p->cur;
-		p->cur = -1;
 		post_filter_t filter = {
 			.min = l->relocate ? l->relocate : l->pos->cur_pid
 		};
-		if (relocate_in_cache(p, &filter, false) < 0)
-			p->cur = cur;
+		int pos = plist_cache_relocate(&l->cache, p->cur, &filter, false);
+		if (pos >= 0)
+			p->cur = pos;
 		l->relocate = 0;
 	}
-	save_post_list_position(p);
+	p->max = plist_cache_max_visible(&l->cache);
+	if (p->update != FULLUPDATE)
+		p->update = PARTUPDATE;
 
-	l->reload = false;
+	save_post_list_position(p);
+	clear_filter(&l->filter);
 	return 0;
 }
 
@@ -667,10 +724,10 @@ static const char *get_post_date(fb_time_t stamp)
 	return fb_ctime(&stamp) + 4;
 }
 
-static void post_list_display_entry(const post_list_t *l, int index, bool last)
+static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
+		bool last)
 {
 	post_list_type_e type = l->filter.type;
-	post_info_t *p = l->index[index];
 
 	char mark_buf[16];
 	if (p->flag & POST_FLAG_STICKY) {
@@ -758,13 +815,16 @@ static void post_list_display_entry(const post_list_t *l, int index, bool last)
 static slide_list_display_t post_list_display(slide_list_t *p)
 {
 	post_list_t *l = p->data;
-	for (int i = 0; i < l->icount; ++i) {
+	for (int i = 0; i < l->cache.page; ++i) {
+		post_info_t *ip = plist_cache_get(&l->cache, i);
+		if (!ip)
+			continue;
+		post_info_t *next = plist_cache_get(&l->cache, i + 1);
 		bool last = false;
 		if (l->filter.type == POST_LIST_THREAD) {
-			last = i != l->icount - 1
-				&& l->index[i + 1]->tid != l->index[i]->tid;
+			last = next && ip->tid != next->tid;
 		}
-		post_list_display_entry(l, i, last);
+		post_list_display_entry(l, ip, last);
 	}
 	return 0;
 }
@@ -910,7 +970,7 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 {
 	post_list_t *l = p->data;
 
-	int found = relocate_in_cache(p, filter, upward);
+	int found = plist_cache_relocate(&l->cache, p->cur, filter, upward);
 	if (found < 0) {
 		query_t *q = build_post_query(filter, !upward, 1);
 		db_res_t *res = query_exec(q);
@@ -1801,7 +1861,7 @@ static void back_to_post_list(slide_list_t *p, post_id_t id, post_id_t tid)
 		filter.tid = tid;
 
 	p->cur = -1;
-	int found = relocate_in_cache(p, &filter, false);
+	int found = plist_cache_relocate(&l->cache, p->cur, &filter, false);
 	if (found >= 0) {
 		p->cur = found;
 	} else {
@@ -2595,21 +2655,23 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 's':
 			return switch_board(l);
 		case 'P': case Ctrl('B'): case KEY_PGUP:
-			return l->top ? switch_archive(l, true) : READ_AGAIN;
+			return l->cache.top ? switch_archive(l, true) : READ_AGAIN;
 		case 'j': case KEY_UP:
-			return l->top && !p->cur ? switch_archive(l, true) : READ_AGAIN;
+			if (plist_cache_is_top(&l->cache, p->cur))
+				return switch_archive(l, true);
+			return READ_AGAIN;
 		case 'N': case Ctrl('F'): case KEY_PGDN:
-			if (l->bottom) {
+			if (plist_cache_is_bottom(&l->cache, -1)) {
 				if (l->filter.archive) {
 					return switch_archive(l, false);
 				} else {
-					p->cur = l->icount - 1;
+					p->cur = p->max - 1;
 					return DONOTHING;
 				}
 			}
 			return READ_AGAIN;
 		case 'k': case KEY_DOWN:
-			if (l->bottom && p->cur == l->icount - 1) {
+			if (plist_cache_is_bottom(&l->cache, p->cur)) {
 				if (l->filter.archive)
 					return switch_archive(l, false);
 				else
@@ -2631,15 +2693,16 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case '$': case KEY_END:
 			if (ip->flag & POST_FLAG_STICKY) {
 				for (int i = p->cur - 1; i >= 0; --i) {
-					if (!(l->index[i]->flag & POST_FLAG_STICKY)) {
+					post_info_t *_ip = plist_cache_get(&l->cache, i);
+					if (_ip && !(_ip->flag & POST_FLAG_STICKY)) {
 						p->cur = i;
 						break;
 					}
 				}
 				return DONOTHING;
 			}
-			if (l->bottom) {
-				p->cur = l->icount - 1;
+			if (plist_cache_is_bottom(&l->cache, -1)) {
+				p->cur = plist_cache_max_visible(&l->cache) - 1;
 				return DONOTHING;
 			}
 			return READ_AGAIN;
@@ -2669,6 +2732,7 @@ static int post_list_with_filter(const post_filter_t *filter)
 		.reload = true,
 		.pos = get_post_list_position(filter),
 		.sreload = filter->type == POST_LIST_NORMAL,
+		.cache = { .posts = NULL },
 	};
 
 	int status = session.status;
@@ -2688,9 +2752,7 @@ static int post_list_with_filter(const post_filter_t *filter)
 
 	save_post_list_position(&s);
 
-	free(p.index);
-	free(p.posts);
-	free(p.sposts);
+	plist_cache_free(&p.cache);
 	archive_list_free(p.archives);
 
 	set_user_status(status);

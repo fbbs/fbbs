@@ -136,7 +136,7 @@ extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 
 extern void res_to_post_info(db_res_t *r, int i, int archive, post_info_t *p);
 void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set);
-extern int _load_sticky_posts(int bid, post_info_t **posts);
+extern int load_sticky_posts(int bid, post_info_t **posts);
 extern bool is_deleted(post_list_type_e type);
 extern post_list_type_e post_list_type(const post_info_t *ip);
 extern const char *post_table_name(const post_filter_t *filter);

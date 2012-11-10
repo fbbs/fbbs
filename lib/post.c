@@ -510,7 +510,7 @@ void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set)
 		ip->flag &= ~flag;
 }
 
-int _load_sticky_posts(int bid, post_info_t **posts)
+int load_sticky_posts(int bid, post_info_t **posts)
 {
 	if (!*posts)
 		*posts = malloc(sizeof(**posts) * MAX_NOTICE);
