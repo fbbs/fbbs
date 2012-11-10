@@ -101,10 +101,9 @@ static bool plist_cache_is_bottom(const plist_cache_t *c, int pos)
 	if (!c->bottom)
 		return false;
 	post_info_t *p = NULL;
-	if (pos >= 0)
-		p = plist_cache_get_non_sticky(c, pos);
-	else if (c->count > 0)
-		p = c->posts + c->count - 1;
+	if (pos < 0)
+		pos = c->page - 1;
+	p = plist_cache_get_non_sticky(c, pos);
 	return p && p->id >= c->bottom;
 }
 
@@ -644,7 +643,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	post_list_t *l = p->data;
 	const char *mode = mode_description(l->filter.type);
 
-	prints("\033[1;37;44m     %-12s %6s %-25s     在线:%-4d",
+	prints("\033[1;37;44m编号 %-12s %6s %-25s     在线:%-4d",
 			"刊 登 者", "日  期", " 标  题", count_onboard(currbp->id));
 	if (l->filter.archive) {
 		int year = l->filter.archive / 10000;
@@ -1860,8 +1859,7 @@ static void back_to_post_list(slide_list_t *p, post_id_t id, post_id_t tid)
 	if (filter.type == POST_LIST_THREAD)
 		filter.tid = tid;
 
-	p->cur = -1;
-	int found = plist_cache_relocate(&l->cache, p->cur, &filter, false);
+	int found = plist_cache_relocate(&l->cache, -1, &filter, false);
 	if (found >= 0) {
 		p->cur = found;
 	} else {
@@ -2655,7 +2653,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 's':
 			return switch_board(l);
 		case 'P': case Ctrl('B'): case KEY_PGUP:
-			return l->cache.top ? switch_archive(l, true) : READ_AGAIN;
+			if (plist_cache_is_top(&l->cache, 0))
+				return switch_archive(l, true);
+			return READ_AGAIN;
 		case 'j': case KEY_UP:
 			if (plist_cache_is_top(&l->cache, p->cur))
 				return switch_archive(l, true);
