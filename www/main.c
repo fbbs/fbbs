@@ -63,6 +63,8 @@ extern int web_props(void);
 extern int web_my_props(void);
 extern int web_buy_prop(void);
 
+extern int api_board_all(void);
+
 typedef struct {
 	const char *name;    ///< name of the cgi.
 	int (*func)(void);   ///< handler function.
@@ -78,6 +80,7 @@ const static web_handler_t handlers[] = {
 	{ "anc", bbsanc_main, ST_DIGEST },
 	{ "bfind", bbsbfind_main, ST_READING },
 	{ "boa", web_sector, ST_READNEW },
+	{ "board-all", api_board_all, ST_READBRD },
 	{ "brdadd", web_brdadd, ST_READING },
 	{ "buyprop", web_buy_prop, ST_PROP },
 	{ "ccc", bbsccc_main, ST_POSTING },

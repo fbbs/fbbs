@@ -89,3 +89,32 @@ int web_sel(void)
 	printf("</bbssel>");
 	return 0;
 }
+
+int api_board_all(void)
+{
+	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
+	if (!res)
+		return error_msg(ERROR_INTERNAL);
+
+	xml_node_t *root = set_response_root("bbs-board-all",
+			XML_NODE_ANONYMOUS_JSON | XML_NODE_CHILD_ARRAY,
+			XML_ENCODING_UTF8);
+
+	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+		board_t board;
+		res_to_board(res, i, &board);
+		if (!has_read_perm(&currentuser, &board))
+			continue;
+
+		xml_node_t *node = xml_new_node("board", XML_NODE_ANONYMOUS_JSON);
+		xml_attr_boolean(node, "dir", board.flag & BOARD_DIR_FLAG);
+		xml_attr_string(node, "name", board.name, false);
+		xml_attr_string(node, "categ", board.categ, false);
+		xml_attr_string(node, "descr", board.descr, false);
+		xml_attr_string(node, "bms", board.bms, false);
+
+		xml_add_child(root, node);
+	}
+	db_clear(res);
+	return HTTP_OK;
+}
