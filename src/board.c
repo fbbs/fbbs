@@ -568,18 +568,12 @@ static tui_list_display_t board_list_display(tui_list_t *p, int n)
 	board_list_t *l = p->data;
 	board_t *board = &(l->indices[n]->board);
 
-	if (!l->newflag)
-		prints(" %5d", n + 1);
-	else if (board->flag & BOARD_DIR_FLAG)
-		prints("  目录");
-	else
-		prints(" %5d", (brdshm->bstatus[board->id]).total);
-
+	prints("  %3d ", n + 1);
 	if (board->flag & BOARD_DIR_FLAG) {
-		prints("  ＋");
+		prints("＋");
 	} else {
 		bool unread = check_newpost(board);
-		prints("  %s", unread ? "◆" : "◇");
+		prints(unread ? "◆" : "◇");
 	}
 
 	char descr[24];
@@ -830,9 +824,8 @@ static tui_list_title_t board_list_title(tui_list_t *p)
 			"\033[1;32m↓\033[m] 列出[\033[1;32my\033[m] 排序[\033[1;32ms"
 			"\033[m] 搜寻[\033[1;32m/\033[m] 切换[\033[1;32mc\033[m] 求助"
 			"[\033[1;32mh\033[m]\n");
-	prints("\033[1;44;37m %s 讨论区名称        V  类别  %-20s S 版  主        "
-			"在线 \033[m\n",
-			l->newflag ? "全 部  未" : "编 号  未", "中  文  叙  述");
+	prints("\033[1;44;37m 编号 未 讨论区名称        V  类别  %-20s S 版  主        "
+			"在线 \033[m\n", "中  文  叙  述");
 }
 
 static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
