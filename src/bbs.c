@@ -429,8 +429,8 @@ void do_quote(const char *orig, const char *file, char mode, bool anony)
 	fclose(fp);
 }
 
-static void getcross(board_t *board, const char *filepath, int mode,
-		struct postheader *header)
+static void getcross(board_t *board, const char *input, const char *output,
+		int mode, struct postheader *header)
 {
 	FILE *inf, *of;
 	char buf[256];
@@ -440,8 +440,8 @@ static void getcross(board_t *board, const char *filepath, int mode,
 	time_t now;
 
 	now = time(0);
-	inf = fopen(quote_file, "r");
-	of = fopen(filepath, "w");
+	inf = fopen(input, "r");
+	of = fopen(output, "w");
 	if (inf == NULL || of == NULL) {
 		report("Cross Post error", currentuser.userid);
 		return;
@@ -600,8 +600,6 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 
 	valid_title(gbk_title);
 
-	set_user_status(ST_POSTING);
-
 	struct postheader header = {
 		.locked = mode == POST_FILE_DELIVER ||
 			(mode == POST_FILE_AUTO && strneq(gbk_title, "[合集]", 6)),
@@ -610,7 +608,9 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	strlcpy(header.title, gbk_title, sizeof(header.title));
 	strlcpy(header.ds, board->name, sizeof(header.ds));
 
-	getcross(board, file, mode, &header);
+	char output[HOMELEN];
+	snprintf(output, sizeof(output), "tmp/cp_buffer.%d", getpid());
+	getcross(board, file, output, mode, &header);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
 		add_crossinfo(file, 1);
 
@@ -632,7 +632,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.board = board,
 		.title = gbk_title,
 		.content = NULL,
-		.gbk_file = file,
+		.gbk_file = output,
 		.sig = 0,
 		.ip = NULL,
 		.reid = 0,
@@ -667,6 +667,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 			report(buf, currentuser.userid);
 		}
 	}
+	unlink(output);
 	return pid;
 }
 
@@ -686,7 +687,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 	prints("您选择转载的文章是: [\033[1;33m%s\033[m]\n", title);
 
 	char bname[STRLEN];
-	board_complete(6, "请输入要转贴的讨论区名称(取消转载请按回车): ",
+	board_complete(1, "请输入要转贴的讨论区名称(取消转载请按回车): ",
 			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (!*bname)
 		return FULLUPDATE;
@@ -699,7 +700,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 	}
 
 	move(3, 0);
-	clrtoeol();
+	clrtobot();
 	prints("转载 ' %s ' 到 %s 版 ", title, bname);
 	move(4, 0);
 	char ans[10];

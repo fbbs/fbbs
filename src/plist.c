@@ -126,7 +126,7 @@ static void adjust_window(plist_cache_t *c, int delta)
 	if (c->end - c->begin < c->page) {
 		if (delta > 0) {
 			if (c->sticky && c->bottom
-					&& c->posts[c->count - 1].id >= c->bottom) {
+					&& c->posts[c->end - 1].id >= c->bottom) {
 				if (c->end - c->begin < c->page - c->scount
 						|| c->begin >= c->end)
 					c->begin = c->end + c->scount - c->page;
@@ -230,10 +230,12 @@ static void plist_cache_set_sticky(plist_cache_t *c, const post_filter_t *fp)
 }
 
 static int plist_cache_load(plist_cache_t *c, post_filter_t *filter,
-		slide_list_base_e base)
+		slide_list_base_e base, bool force)
 {
-	if (already_cached(c, base))
+	if (!force && already_cached(c, base))
 		return 0;
+	if (force)
+		plist_cache_clear(c);
 
 	int limit = 0;
 	if (base == SLIDE_LIST_TOPDOWN || base == SLIDE_LIST_BOTTOMUP) {
@@ -307,9 +309,10 @@ static int plist_cache_relocate(plist_cache_t *c, int current,
 	for (int i = c->begin + current + delta;
 			i >= 0 && i < c->count;
 			i += delta) {
-		if (match_filter(filter, c->posts + i))
+		if (match_filter(filter, c->posts + i)) {
 			found = i;
-		break;
+			break;
+		}
 	}
 
 	if (found >= 0)
@@ -444,8 +447,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	plist_cache_set_sticky(&l->cache, &l->filter);
 	plist_cache_load_sticky(&l->cache, &l->filter, l->sreload);
-	plist_cache_load(&l->cache, &l->filter, p->base);
-	l->sreload = l->reload = false;
+	plist_cache_load(&l->cache, &l->filter, p->base, l->reload || l->relocate);
 
 	if (l->relocate || l->reload) {
 		post_filter_t filter = {
@@ -462,6 +464,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	save_post_list_position(p);
 	clear_filter(&l->filter);
+	l->sreload = l->reload = false;
 	return 0;
 }
 
@@ -990,6 +993,8 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 			l->relocate = info.id;
 		}
 		db_clear(res);
+	} else {
+		p->cur = found;
 	}
 	return PARTUPDATE;
 }
@@ -1059,7 +1064,7 @@ static int tui_search_title(slide_list_t *p, bool upward)
 static int jump_to_thread_first(slide_list_t *p)
 {
 	post_info_t *ip = get_post_info(p);
-	if (ip) {
+	if (ip && ip->id != ip->tid) {
 		post_list_t *l = p->data;
 		l->current_tid = ip->tid;
 		post_filter_t filter = l->filter;
@@ -1165,6 +1170,8 @@ static int jump_to_thread_last(slide_list_t *p)
 			res_to_post_info(res, 0, l->filter.archive, &info);
 		}
 		db_clear(res);
+		if (info.id == ip->id)
+			return DONOTHING;
 		filter.min = info.id;
 		return relocate_to_filter(p, &filter, false);
 	}
@@ -1352,6 +1359,7 @@ static int tui_edit_post_content(post_info_t *ip)
 	if (!dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
+	int status = session.status;
 	set_user_status(ST_EDIT);
 
 	clear();
@@ -1368,6 +1376,7 @@ static int tui_edit_post_content(post_info_t *ip)
 	}
 
 	unlink(file);
+	set_user_status(status);
 	return FULLUPDATE;
 }
 
@@ -1395,6 +1404,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 		return FULLUPDATE;
 	}
 
+	int status = session.status;
 	set_user_status(ST_POSTING);
 
 	clear();
@@ -1434,6 +1444,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 			ansi_filter(gbk_title, header.title);
 		}
 	} else {
+		set_user_status(status);
 		return FULLUPDATE;
 	}
 
@@ -1456,6 +1467,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 	if (vedit(file, true, true, &header) == -1) {
 		unlink(file);
 		clear();
+		set_user_status(status);
 		return FULLUPDATE;
 	}
 
@@ -1514,6 +1526,7 @@ static int tui_new_post(int bid, post_info_t *ip)
 				usernum);
 	}
 	bm_log(currentuser.userid, currboard, BMLOG_POST, 1);
+	set_user_status(status);
 	return FULLUPDATE;
 }
 
@@ -2674,7 +2687,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			if (plist_cache_is_bottom(&l->cache, p->cur)) {
 				if (l->filter.archive)
 					return switch_archive(l, false);
-				else
+				if ((ip->flag & POST_FLAG_STICKY) && p->cur == p->max - 1)
 					return DONOTHING;
 			}
 			return READ_AGAIN;
