@@ -50,8 +50,6 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 	query_limit(q, 1);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
-
 	int ret = res && db_res_rows(res) > 0;
 	if (ret)
 		res_to_post_info_full(res, 0, 0, p);

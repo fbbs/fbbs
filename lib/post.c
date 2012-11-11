@@ -445,7 +445,6 @@ int set_post_flag(post_filter_t *filter, const char *field, bool set,
 	build_post_filter(q, filter, NULL);
 
 	db_res_t *res = query_cmd(q);
-	query_free(q);
 
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
@@ -712,7 +711,6 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	query_append(q, "RETURNING owner, uname, junk");
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
 
 	int rows = 0;
 	if (res) {
@@ -736,7 +734,6 @@ int undelete_posts(post_filter_t *filter)
 	build_post_filter(q, filter, NULL);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
 	if (res) {
 		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 			user_id_t uid = db_get_user_id(res, i, 0);
@@ -757,7 +754,6 @@ int undelete_posts(post_filter_t *filter)
 	query_from(q, "rows");
 
 	res = query_cmd(q);
-	query_free(q);
 
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
@@ -773,7 +769,6 @@ db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields)
 	query_append(q, "= %"DBIdPID, filter->min);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
 	return res;
 }
 
@@ -826,7 +821,6 @@ bool alter_title(const post_info_t *ip, const char *title)
 		bool success = res;
 
 		db_clear(res);
-		query_free(q);
 		free(content);
 		return success;
 	}
@@ -844,7 +838,6 @@ bool alter_content(const post_info_t *ip, const char *content)
 
 	db_res_t *res = query_cmd(q);
 	db_clear(res);
-	query_free(q);
 	return res;
 }
 

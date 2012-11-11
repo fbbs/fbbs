@@ -20,7 +20,6 @@ static post_id_t find_next_tid(int bid, post_id_t tid, char action)
 
 	query_t *q = build_post_query(&filter, action == 'a', 1);
 	db_res_t *res = query_exec(q);
-	query_free(q);
 
 	if (res && db_res_rows(res) >= 1) {
 		post_info_t info;
@@ -58,8 +57,6 @@ static post_info_full_t *bbstcon_search(int bid, post_id_t pid, post_id_t *tid,
 	query_limit(q, *count + 1);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
-
 	int rows = db_res_rows(res);
 	if (!rows)
 		return NULL;

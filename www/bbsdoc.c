@@ -63,7 +63,6 @@ static bool print_posts(post_filter_t *filter, int limit, bool asc)
 {
 	query_t *q = build_post_query(filter, asc, limit + 1);
 	db_res_t *r = query_exec(q);
-	query_free(q);
 
 	post_id_t next = true;
 	if (r) {
@@ -218,7 +217,6 @@ int bbsbfind_main(void)
 	query_limit(q, BFIND_MAX);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
 
 	xml_header(NULL);
 	printf("<bbsbfind ");
@@ -282,7 +280,6 @@ static db_res_t *get_post_threads(int bid, int start, int count)
 	query_limit(q, count);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
 	return res;
 }
 

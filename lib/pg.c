@@ -339,7 +339,12 @@ static void convert_param_array(const query_t *q,
 	}
 }
 
-static db_res_t *_query_exec(const query_t *q, int expected)
+static void query_free(query_t *q)
+{
+	pool_destroy(q->p);
+}
+
+static db_res_t *_query_exec(query_t *q, int expected)
 {
 	db_res_t *res;
 	if (q->count) {
@@ -354,6 +359,7 @@ static db_res_t *_query_exec(const query_t *q, int expected)
 		res = PQexecParams(global_db_conn, pstring(q->query), 0, NULL, NULL,
 				NULL, NULL, 1);
 	}
+	query_free(q);
 
 	if (db_res_status(res) != expected) {
 		db_clear(res);
@@ -362,12 +368,12 @@ static db_res_t *_query_exec(const query_t *q, int expected)
 	return res;
 }
 
-db_res_t *query_exec(const query_t *q)
+db_res_t *query_exec(query_t *q)
 {
 	return _query_exec(q, DBRES_TUPLES_OK);
 }
 
-db_res_t *query_cmd(const query_t *q)
+db_res_t *query_cmd(query_t *q)
 {
 	return _query_exec(q, DBRES_COMMAND_OK);
 }
@@ -388,11 +394,6 @@ query_t *query_new(size_t size)
 	q->query = pstring_sized_new(pool, size);
 
 	return q;
-}
-
-void query_free(query_t *q)
-{
-	pool_destroy(q->p);
 }
 
 /** @} */
@@ -423,7 +424,6 @@ static db_res_t *db_exec(const char *cmd, va_list ap, int expected)
 		query_t *q = query_new(strlen(cmd));
 		query_vappend(q, cmd, ap);
 		res = _query_exec(q, expected);
-		query_free(q);
 	} else {
 		res = PQexecParams(global_db_conn, cmd, 0, NULL, NULL, NULL, NULL, 1);
 		if (db_res_status(res) != expected) {

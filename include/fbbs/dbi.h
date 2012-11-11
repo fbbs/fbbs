@@ -65,7 +65,6 @@ extern void query_sappend(query_t *q, const char *symbol, const char *cmd, ...);
 /** @} */
 extern void query_orderby(query_t *q, const char *field, bool asc);
 extern void query_limit(query_t *q, int limit);
-extern db_res_t *query_exec(const query_t *q);
-extern db_res_t *query_cmd(const query_t *q);
-extern void query_free(query_t *q);
+extern db_res_t *query_exec(query_t *q);
+extern db_res_t *query_cmd(query_t *q);
 #endif // FB_DBI_H

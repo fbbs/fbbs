@@ -187,7 +187,6 @@ static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
 
 	query_t *q = build_post_query(filter, asc, limit);
 	db_res_t *res = query_exec(q);
-	query_free(q);
 
 	int rows = db_res_rows(res);
 	int extra = rows + c->count - c->capacity;
@@ -976,7 +975,6 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 	if (found < 0) {
 		query_t *q = build_post_query(filter, !upward, 1);
 		db_res_t *res = query_exec(q);
-		query_free(q);
 		if (res && db_res_rows(res) == 1) {
 			post_info_t info;
 			res_to_post_info(res, 0, filter->archive, &info);
@@ -1127,7 +1125,6 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 	while (!end) {
 		query_t *q = build_post_query(&filter, true, limit);
 		db_res_t *res = query_exec(q);
-		query_free(q);
 
 		int rows = db_res_rows(res);
 		for (int i = 0; i < rows; ++i) {
@@ -1163,7 +1160,6 @@ static int jump_to_thread_last(slide_list_t *p)
 
 		query_t *q = build_post_query(&filter, false, 1);
 		db_res_t *res = query_exec(q);
-		query_free(q);
 
 		post_info_t info = { .id = ip->id };
 		if (res && db_res_rows(res) > 0) {
@@ -1639,7 +1635,6 @@ static bool count_posts_in_range(post_id_t min, post_id_t max, bool asc,
 	query_orderby(q, field[sort], asc);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
 
 	if (res) {
 		snprintf(file, sizeof(file), "tmp/count.%d", getpid());
@@ -1809,8 +1804,6 @@ static int load_full_posts(const post_filter_t *fp, post_info_full_t *ip,
 	query_limit(q, limit);
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
-
 	int rows = db_res_rows(res);
 	if (rows > 0) {
 		for (int i = 0; i < rows; ++i) {
@@ -2048,8 +2041,6 @@ static int import_posts(post_filter_t *filter, const char *path)
 	query_returning(q, "title, content");
 
 	db_res_t *res = query_exec(q);
-	query_free(q);
-
 	if (res) {
 		int rows = db_res_rows(res);
 		for (int i = 0; i < rows; ++i) {
