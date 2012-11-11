@@ -97,8 +97,9 @@ int api_board_all(void)
 		return error_msg(ERROR_INTERNAL);
 
 	xml_node_t *root = set_response_root("bbs-board-all",
-			XML_NODE_ANONYMOUS_JSON | XML_NODE_CHILD_ARRAY,
-			XML_ENCODING_UTF8);
+			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
+	xml_node_t *boards = xml_new_node("boards", XML_NODE_CHILD_ARRAY);
+	xml_add_child(root, boards);
 
 	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 		board_t board;
@@ -113,7 +114,7 @@ int api_board_all(void)
 		xml_attr_string(node, "descr", board.descr, false);
 		xml_attr_string(node, "bms", board.bms, false);
 
-		xml_add_child(root, node);
+		xml_add_child(boards, node);
 	}
 	db_clear(res);
 	return HTTP_OK;
