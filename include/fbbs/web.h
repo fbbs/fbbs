@@ -26,6 +26,7 @@ enum {
 
 typedef enum {
 	HTTP_OK = 200,
+	HTTP_FOUND = 302,
 	HTTP_BAD_REQUEST = 400,
 	HTTP_UNAUTHORIZED = 401,
 	HTTP_FORBIDDEN = 403,
@@ -40,6 +41,7 @@ typedef enum {
 	ERROR_USER_SUSPENDED,
 	ERROR_BAD_REQUEST,
 	ERROR_INTERNAL,
+	ERROR_LOGIN_REQUIRED,
 } error_code_e;
 
 enum {

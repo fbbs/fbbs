@@ -448,10 +448,11 @@ struct error_msg_t {
 
 static const struct error_msg_t error_msgs[] = {
 	{ ERROR_NONE, HTTP_OK, "success" },
-	{ ERROR_INCORRECT_PASSWORD, HTTP_UNAUTHORIZED, "incorrect username or password" },
+	{ ERROR_INCORRECT_PASSWORD, HTTP_FORBIDDEN, "incorrect username or password" },
 	{ ERROR_USER_SUSPENDED, HTTP_FORBIDDEN, "permission denied" },
 	{ ERROR_BAD_REQUEST, HTTP_BAD_REQUEST, "bad request" },
 	{ ERROR_INTERNAL, HTTP_INTERNAL_SERVER_ERROR, "internal error" },
+	{ ERROR_LOGIN_REQUIRED, HTTP_FOUND, "login required" },
 };
 
 http_status_code_e error_msg(int code)
