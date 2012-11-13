@@ -282,9 +282,8 @@ static void _print_as_json(const xml_node_t *node, int encoding)
 	bool child = SLIST_FIRST(&node->child) || SLIST_FIRST(&node->attr);
 	bool array = node->type & XML_NODE_CHILD_ARRAY;
 
+	putchar(array ? '[' : '{');
 	if (child) {
-		putchar(array ? '[' : '{');
-
 		SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
 			json_print_attr(attr, encoding);
 			if (SLIST_NEXT(attr, next) || SLIST_FIRST(&node->child))
@@ -296,9 +295,8 @@ static void _print_as_json(const xml_node_t *node, int encoding)
 			if (SLIST_NEXT(child, next))
 				putchar(',');
 		}
-
-		putchar(array ? ']' : '}');
 	}
+	putchar(array ? ']' : '}');
 }
 
 static void print_as_json(const xml_document_t *doc)
