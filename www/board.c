@@ -28,7 +28,7 @@ int web_fav(void)
 			GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
 			convert_u2g(db_get_value(res, i, 2), gbk_descr);
 
-			printf("<brd bid='%d' brd='%s'", bid, name);
+			printf("<brd bid='%d' brd='%s'>", bid, name);
 			xml_fputs(gbk_descr, stdout);
 			printf("</brd>");
 		}
