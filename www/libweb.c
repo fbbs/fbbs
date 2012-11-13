@@ -340,9 +340,12 @@ void print_session(void)
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
 			get_permission(), currentuser.userid);
 
-	db_res_t *res = db_query("SELECT b.id, b.name FROM boards b"
-			" JOIN fav_boards f ON b.id = f.board WHERE f.user_id = %d",
-			session.uid);
+	query_t *q = query_new(0);
+	query_select(q, "id, name");
+	query_from(q, "fav_boards");
+	query_where(q, "user_id = %"DBIdUID, session.uid);
+	db_res_t *res = query_exec(q);
+
 	if (res) {
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			int bid = db_get_integer(res, i, 0);

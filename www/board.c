@@ -16,8 +16,9 @@ int web_fav(void)
 	printf("<bbsfav>");
 	print_session();
 
-	db_res_t *res = db_query("SELECT b.id, b.name, b.descr"
-			" FROM boards b JOIN fav_boards f WHERE b.id = f.board");
+	db_res_t *res = db_query("SELECT b.id, b.name, b.descr FROM boards b"
+			" JOIN fav_boards f ON b.id = f.board WHERE f.user_id = %d",
+			session.uid);
 	if (res) {
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			int bid = db_get_integer(res, i, 0);

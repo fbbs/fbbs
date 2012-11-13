@@ -13,7 +13,8 @@ INSERT INTO fav_board_folders (name) VALUES ('ROOT');
 CREATE TABLE fav_boards (
 	user_id INTEGER REFERENCES users,
 	board INTEGER REFERENCES boards,
-	folder INTEGER REFERENCES fav_board_folders
+	folder INTEGER REFERENCES fav_board_folders,
+	name TEXT -- cached
 );
 CREATE UNIQUE INDEX ON fav_boards (user_id, board);
 
