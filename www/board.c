@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "mmap.h"
 #include "fbbs/board.h"
+#include "fbbs/brc.h"
 #include "fbbs/convert.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
@@ -118,5 +119,78 @@ int api_board_all(void)
 		xml_add_child(boards, node);
 	}
 	db_clear(res);
+	return HTTP_OK;
+}
+
+static xml_node_t *attach_group(xml_node_t *groups, db_res_t *res, int id)
+{
+	xml_node_t *group = xml_new_child(groups, "group",
+			XML_NODE_ANONYMOUS_JSON);
+	xml_node_t *boards = xml_new_child(group, "boards", XML_NODE_CHILD_ARRAY);
+	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+		int folder = db_get_integer(res, i, 2);
+		if (folder == id) {
+			xml_node_t *board = xml_new_child(boards, "board",
+					XML_NODE_ANONYMOUS_JSON);
+			int bid = db_get_integer(res, i, 0);
+			xml_attr_integer(board, "id", bid);
+			const char *name = db_get_value(res, i, 1);
+			xml_attr_string(board, "name", name, false);
+			xml_attr_boolean(board, "unread",
+					brc_board_unread(currentuser.userid, name, bid));
+		}
+	}
+	return group;
+}
+
+/*
+{
+	groups: [
+		{
+			name: OPTIONAL TEXT,
+			descr: OPTIONAL TEXT,
+			boards: [
+				{ id: INTEGER, name: TEXT, unread: OPTIONAL BOOLEAN },
+				...
+			]
+		},
+		...
+	]
+}
+*/
+int api_board_fav(void)
+{
+	if (!session.id)
+		return error_msg(ERROR_LOGIN_REQUIRED);
+
+	xml_node_t *root = set_response_root("bbs-board-fav",
+			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
+	xml_node_t *groups = xml_new_node("groups", XML_NODE_CHILD_ARRAY);
+	xml_add_child(root, groups);
+
+	query_t *q = query_new(0);
+	query_select(q, "board, name, folder");
+	query_from(q, "fav_boards");
+	query_where(q, "user_id = %"DBIdUID, session.uid);
+	db_res_t *boards = query_exec(q);
+
+	q = query_new(0);
+	query_select(q, "id, name, descr");
+	query_from(q, "fav_board_folders");
+	query_where(q, "user_id = %"DBIdUID, session.uid);
+	db_res_t *folders = query_exec(q);
+
+	if (folders && boards) {
+		attach_group(groups, boards, FAV_BOARD_ROOT_FOLDER);
+		for (int i = db_res_rows(folders) - 1; i >= 0; --i) {
+			int id = db_get_integer(folders, i, 0);
+			xml_node_t *group = attach_group(groups, boards, id);
+			xml_attr_string(group, "name", db_get_value(folders, i, 1), true);
+			xml_attr_string(group, "descr", db_get_value(folders, i, 2), true);
+		}
+	}
+
+	db_clear(folders);
+	db_clear(boards);
 	return HTTP_OK;
 }

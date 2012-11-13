@@ -341,7 +341,7 @@ void print_session(void)
 			get_permission(), currentuser.userid);
 
 	query_t *q = query_new(0);
-	query_select(q, "id, name");
+	query_select(q, "board, name");
 	query_from(q, "fav_boards");
 	query_where(q, "user_id = %"DBIdUID, session.uid);
 	db_res_t *res = query_exec(q);
