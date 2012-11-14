@@ -42,6 +42,7 @@ typedef enum {
 	ERROR_BAD_REQUEST,
 	ERROR_INTERNAL,
 	ERROR_LOGIN_REQUIRED,
+	ERROR_BOARD_NOT_FOUND,
 } error_code_e;
 
 enum {

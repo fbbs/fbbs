@@ -5,6 +5,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/post.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
@@ -192,5 +193,97 @@ int api_board_fav(void)
 
 	db_clear(folders);
 	db_clear(boards);
+	return HTTP_OK;
+}
+
+static int get_board_by_param(board_t *bp)
+{
+	int bid = strtol(get_param("bid"), NULL, 10);
+	if (bid > 0 && get_board_by_bid(bid, bp) > 0)
+		return bp->id;
+
+	const char *bname = get_param("board");
+	if (bname && *bname)
+		return get_board(bname, bp);
+	return 0;
+}
+
+static xml_node_t *create_post_node(const post_info_t *p)
+{
+	xml_node_t *post = xml_new_node("post", XML_NODE_ANONYMOUS_JSON);
+	xml_attr_bigint(post, "id", p->id);
+	xml_attr_bigint(post, "reid", p->reid);
+	xml_attr_bigint(post, "tid", p->tid);
+	xml_attr_string(post, "owner", p->owner, false);
+	xml_attr_string(post, "stamp", getdatestring(p->stamp, DATE_XML), false);
+	xml_attr_string(post, "title", p->utf8_title, true);
+	char mark[2] = "\0";
+	mark[0] = get_post_mark(p);
+	xml_attr_string(post, "mark", mark, false);
+	return post;
+}
+
+static int print_toc(xml_node_t *posts, db_res_t *res, int archive, bool asc)
+{
+	int rows = db_res_rows(res);
+	for (int i = asc ? 0 : rows - 1;
+			asc ? i < rows : i >= 0;
+			i += asc ? 1 : -1) {
+		post_info_t p;
+		res_to_post_info(res, i, archive, &p);
+		xml_node_t *post = create_post_node(&p);
+		xml_add_child(posts, post);
+	}
+	return rows;
+}
+
+static void print_toc_sticky(xml_node_t *root, int bid)
+{
+	xml_node_t *stickies = xml_new_child(root, "stickies",
+			XML_NODE_CHILD_ARRAY);
+	db_res_t *res = db_query("SELECT " POST_LIST_FIELDS " FROM posts.recent"
+			" WHERE board = %d AND sticky ORDER BY id DESC", bid);
+	print_toc(stickies, res, 0, false);
+	db_clear(res);
+}
+
+enum {
+	API_BOARD_TOC_LIMIT_DEFAULT = 20,
+	API_BOARD_TOC_LIMIT_MAX = 50,
+};
+
+int api_board_toc(void)
+{
+	board_t board;
+	if (get_board_by_param(&board) <= 0)
+		return error_msg(ERROR_BOARD_NOT_FOUND);
+
+	bool asc = streq(get_param("page"), "next");
+	post_id_t start = strtoll(get_param("start"), NULL, 10);
+
+	int limit = strtol(get_param("limit"), NULL, 10);
+	if (limit > API_BOARD_TOC_LIMIT_MAX)
+		limit = API_BOARD_TOC_LIMIT_MAX;
+	if (limit <= 0)
+		return error_msg(ERROR_BAD_REQUEST);
+
+	int flag = *get_param("flag");
+
+	xml_node_t *root = set_response_root("bbs-board-toc",
+			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
+	xml_node_t *posts = xml_new_child(root, "posts", XML_NODE_CHILD_ARRAY);
+
+	post_filter_t filter = {
+		.bid = board.id, .flag = flag,
+		.min = asc ? start : 0, .max = asc ? 0 : start,
+	};
+	query_t *q = build_post_query(&filter, asc, limit);
+	db_res_t *res = query_exec(q);
+	print_toc(posts, res, filter.archive, asc);
+	db_clear(res);
+
+	if (!start && !asc && !flag && board.id)
+		print_toc_sticky(root, board.id);
+
 	return HTTP_OK;
 }

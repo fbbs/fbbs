@@ -453,6 +453,7 @@ static const struct error_msg_t error_msgs[] = {
 	{ ERROR_BAD_REQUEST, HTTP_BAD_REQUEST, "bad request" },
 	{ ERROR_INTERNAL, HTTP_INTERNAL_SERVER_ERROR, "internal error" },
 	{ ERROR_LOGIN_REQUIRED, HTTP_FORBIDDEN, "login required" },
+	{ ERROR_BOARD_NOT_FOUND, HTTP_NOT_FOUND, "board not found" },
 };
 
 http_status_code_e error_msg(int code)
