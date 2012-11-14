@@ -452,7 +452,7 @@ static const struct error_msg_t error_msgs[] = {
 	{ ERROR_USER_SUSPENDED, HTTP_FORBIDDEN, "permission denied" },
 	{ ERROR_BAD_REQUEST, HTTP_BAD_REQUEST, "bad request" },
 	{ ERROR_INTERNAL, HTTP_INTERNAL_SERVER_ERROR, "internal error" },
-	{ ERROR_LOGIN_REQUIRED, HTTP_FOUND, "login required" },
+	{ ERROR_LOGIN_REQUIRED, HTTP_FORBIDDEN, "login required" },
 };
 
 http_status_code_e error_msg(int code)
