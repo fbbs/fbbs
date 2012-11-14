@@ -118,6 +118,15 @@ static inline int real_type(const xml_attr_t *attr)
 	return attr->type & 0x7f;
 }
 
+static int print_xml_string(const char *s)
+{
+	for (int c = *s; c; c = *++s) {
+		if (c >= 0 && c < 0x20 && c != '\t' && c != '\r' && c != '\n')
+			continue;
+		putchar(c);
+	}
+}
+
 static int xml_string_helper(const char *s, size_t size, void *arg)
 {
 	return fwrite((void *)s, 1, size, stdout);
@@ -138,7 +147,7 @@ static void _xml_attr_print(const xml_attr_t *attr, int encoding)
 			break;
 		default:
 			if (encoding == XML_ENCODING_UTF8) {
-				printf("%s", attr->value.str);
+				print_xml_string(attr->value.str);
 			} else {
 				convert(env_u2g, attr->value.str, CONVERT_ALL, NULL, 0,
 						xml_string_helper, NULL);
