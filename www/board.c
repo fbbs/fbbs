@@ -257,6 +257,7 @@ int api_board_toc(void)
 	board_t board;
 	if (get_board_by_param(&board) <= 0)
 		return error_msg(ERROR_BOARD_NOT_FOUND);
+	brc_fcgi_init(currentuser.userid, board.name);
 
 	bool asc = streq(get_param("page"), "next");
 	post_id_t start = strtoll(get_param("start"), NULL, 10);
