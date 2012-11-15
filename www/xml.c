@@ -118,7 +118,7 @@ static inline int real_type(const xml_attr_t *attr)
 	return attr->type & 0x7f;
 }
 
-static int print_xml_string(const char *s)
+static void print_xml_string(const char *s)
 {
 	for (int c = *s; c; c = *++s) {
 		if (c >= 0 && c < 0x20 && c != '\t' && c != '\r' && c != '\n')
@@ -198,9 +198,11 @@ static void _print_as_xml(const xml_node_t *node, int encoding)
 		if (attr_as_node) {
 			SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
 				if (attr->type & XML_ATTR_AS_NODE) {
-					printf("<%s>", attr->name);
+					if (attr->name)
+						printf("<%s>", attr->name);
 					_xml_attr_print(attr, encoding);
-					printf("</%s>", attr->name);
+					if (attr->name)
+						printf("</%s>", attr->name);
 				}
 			}
 		}
@@ -259,8 +261,10 @@ static void json_string(const char *s, int encoding)
 
 static void json_print_attr(const xml_attr_t *attr, int encoding)
 {
-	json_string(attr->name, encoding);
-	putchar(':');
+	if (attr->name) {
+		json_string(attr->name, encoding);
+		putchar(':');
+	}
 
 	switch (real_type(attr)) {
 		case XML_ATTR_TYPE_INTEGER:
@@ -290,8 +294,10 @@ static void _print_as_json(const xml_node_t *node, int encoding)
 
 	bool child = SLIST_FIRST(&node->child) || SLIST_FIRST(&node->attr);
 	bool array = node->type & XML_NODE_CHILD_ARRAY;
+	bool plain = node->type & XML_NODE_PLAIN_JSON;
 
-	putchar(array ? '[' : '{');
+	if (!plain)
+		putchar(array ? '[' : '{');
 	if (child) {
 		SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
 			json_print_attr(attr, encoding);
@@ -305,7 +311,8 @@ static void _print_as_json(const xml_node_t *node, int encoding)
 				putchar(',');
 		}
 	}
-	putchar(array ? ']' : '}');
+	if (!plain)
+		putchar(array ? ']' : '}');
 }
 
 static void print_as_json(const xml_document_t *doc)
