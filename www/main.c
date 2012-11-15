@@ -226,10 +226,12 @@ static bool require_login(const web_handler_t *h)
 
 static int execute(const web_handler_t *h)
 {
-	if (!session.id && require_login(h))
+	if (!session.id && require_login(h)) {
+		if (request_type(REQUEST_API))
+			return error_msg(ERROR_LOGIN_REQUIRED);
 		return BBS_ELGNREQ;
-	else
-		return h->func();
+	}
+	return h->func();
 }
 
 /**
