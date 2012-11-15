@@ -93,6 +93,25 @@ int web_sel(void)
 	return 0;
 }
 
+static void board_to_node(const board_t *bp, xml_node_t *node)
+{
+	xml_attr_boolean(node, "dir", bp->flag & BOARD_DIR_FLAG);
+	xml_attr_string(node, "name", bp->name, false);
+	xml_attr_string(node, "categ", bp->categ, false);
+	xml_attr_string(node, "descr", bp->descr, false);
+
+	xml_node_t *b = xml_new_child(node, "bms", XML_NODE_CHILD_ARRAY);
+	if (*bp->bms) {
+		char bms[sizeof(bp->bms)];
+		strlcpy(bms, bp->bms, sizeof(bms));
+		for (const char *s = strtok(bms, " "); s; s = strtok(NULL, " ")) {
+			xml_node_t *t = xml_new_child(b, "name",
+					XML_NODE_ANONYMOUS_JSON | XML_NODE_PLAIN_JSON);
+			xml_attr_string(t, NULL, s, true);
+		}
+	}
+}
+
 int api_board_all(void)
 {
 	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
@@ -111,12 +130,7 @@ int api_board_all(void)
 			continue;
 
 		xml_node_t *node = xml_new_node("board", XML_NODE_ANONYMOUS_JSON);
-		xml_attr_boolean(node, "dir", board.flag & BOARD_DIR_FLAG);
-		xml_attr_string(node, "name", board.name, false);
-		xml_attr_string(node, "categ", board.categ, false);
-		xml_attr_string(node, "descr", board.descr, false);
-		xml_attr_string(node, "bms", board.bms, false);
-
+		board_to_node(&board, node);
 		xml_add_child(boards, node);
 	}
 	db_clear(res);
@@ -265,8 +279,10 @@ int api_board_toc(void)
 	int limit = strtol(get_param("limit"), NULL, 10);
 	if (limit > API_BOARD_TOC_LIMIT_MAX)
 		limit = API_BOARD_TOC_LIMIT_MAX;
-	if (limit <= 0)
+	if (limit < 0)
 		return error_msg(ERROR_BAD_REQUEST);
+	if (!limit)
+		limit = API_BOARD_TOC_LIMIT_DEFAULT;
 
 	int flag = *get_param("flag");
 
@@ -285,6 +301,9 @@ int api_board_toc(void)
 
 	if (!start && !asc && !flag && board.id)
 		print_toc_sticky(root, board.id);
+
+	xml_node_t *bnode = xml_new_child(root, "board", 0);
+	board_to_node(&board, bnode);
 
 	return HTTP_OK;
 }
