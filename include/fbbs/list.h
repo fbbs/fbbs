@@ -35,40 +35,39 @@
 
 /**
  * @defgroup slist Singly-linked Lists
+ * @{
  */
 
-/** @{ */
-
 /**
- * Defines a singly-linked list structure where 'name' is the name of the
- * structure to be defined and 'type' is the type of the elements to be
+ * Define a singly-linked list structure where @a name is the name of the
+ * structure to be defined and @a type is the type of the elements to be
  * linked into the list.
  */
 #define SLIST_HEAD(name, type)  struct name { struct type *first; }
 
-/** Evaluates to an initializer for the list head. */
+/** Evaluate to an initializer for the list head. */
 #define SLIST_HEAD_INITIALIZER  { .first = NULL }
 
-/** Returns the first element in the list or NULL if the list is empty. */
+/** Return the first element in the list or NULL if the list is empty. */
 #define SLIST_FIRST(head)  ((head)->first)
 
-/** Initializes a list. */
+/** Initialize a list. */
 #define SLIST_INIT_HEAD(head)  do { (head)->first = NULL; } while (0)
 
-/** Declares a structure that connects the elements in the list. */
+/** Declare a structure that connects the elements in the list. */
 #define SLIST_FIELD(type)  struct { struct type *next; }
 
-/** Returns the next element in the list. */
+/** Return the element next to @a entry in the list. */
 #define SLIST_NEXT(entry, field)  ((entry)->field.next)
 
-/** Inserts the new element 'entry' at the head of the list. */
+/** Insert the new element @a entry at the head of the list. */
 #define SLIST_INSERT_HEAD(head, entry, field)  \
 	do { \
 		SLIST_NEXT(entry, field) = SLIST_FIRST(head); \
 		SLIST_FIRST(head) = entry; \
 	} while (0)
 
-/** Inserts the new element 'entry' to the list after element 'base' */
+/** Insert the new element @a entry to the list after element @a base. */
 #define SLIST_INSERT_AFTER(base, entry, field) \
 	do { \
 		SLIST_NEXT(entry, field) = SLIST_NEXT(base, field); \
@@ -76,11 +75,77 @@
 	} while (0)
 
 /**
- * Traverses the list referenced by 'head' in the forward direction, assigning
- * each element in turn to var.
+ * Traverse the list referenced by @a head in the forward direction, assigning
+ * each element in turn to @a var.
  */
 #define SLIST_FOREACH(type, var, head, field)  \
 	for (type *var = SLIST_FIRST(head); var; var = SLIST_NEXT(var, field))
+
+/** @} */
+
+/**
+ * @defgroup stailq Singly-linked Tail Queue
+ * @{
+ */
+
+/**
+ * Define a singly-linked tail queue structure where @a name is the name of
+ * the structure to be defined and @a type is the type of the elements to be
+ * linked into the queue.
+ */
+#define STAILQ_HEAD(name, type)  \
+	struct name { struct type *first; struct type **last; }
+
+/** Evaluate to an initializer for the queue head. */
+#define STAILQ_HEAD_INITIALIZER(head)  \
+	{ .first = NULL, .last = &(head).first }
+
+/** Return the first element in the queue or NULL if the queue is empty. */
+#define STAILQ_FIRST(head)  ((head)->first)
+
+/** Initialize a queue. */
+#define STAILQ_INIT_HEAD(head)  \
+	do { \
+		STAILQ_FIRST(head) = NULL; \
+		(head)->last = &STAILQ_FIRST((head)); \
+	} while (0)
+
+/** Declare a structure that connects the elements in the queue. */
+#define STAILQ_FIELD(type)  struct { struct type *next; }
+
+/** Return the element next to @a entry in the queue. */
+#define STAILQ_NEXT(entry, field)  ((entry)->field.next)
+
+/** Insert the new element @a entry at the head of the queue. */
+#define STAILQ_INSERT_HEAD(head, entry, field)  \
+	do { \
+		if ((STAILQ_NEXT(entry, field) = STAILQ_FIRST(head)) == NULL) \
+			(head)->last = &STAILQ_NEXT(entry, field); \
+		STAILQ_FIRST(head) = entry; \
+	} while (0)
+
+/** Insert the new element @a entry to the queue after element @a base. */
+#define STAILQ_INSERT_AFTER(head, base, entry, field)  \
+	do { \
+		if ((STAILQ_NEXT(entry, field) = STAILQ_NEXT(base, field)) == NULL) \
+			(head)->last = &STAILQ_NEXT(entry, field); \
+		STAILQ_NEXT(base, field) = entry; \
+	} while (0)
+
+/** Insert the new element @a entry at the tail of the queue. */
+#define STAILQ_INSERT_TAIL(head, entry, field)  \
+	do { \
+		STAILQ_NEXT(entry, field) = NULL; \
+		*(head)->last = entry; \
+		(head)->last = &STAILQ_NEXT(entry, field); \
+	} while (0)
+
+/**
+ * Traverse the queue referenced by @a head in the forward direction, assigning
+ * each element in turn to @a var.
+ */
+#define STAILQ_FOREACH(type, var, head, field)  \
+	for (type *var = STAILQ_FIRST((head)); var; var = STAILQ_NEXT(var, field))
 
 /** @} */
 
