@@ -349,6 +349,7 @@ typedef struct {
 	bool sreload;
 	post_id_t relocate;
 	post_id_t current_tid;
+	post_id_t mark_pid;
 
 	plist_cache_t cache;
 } post_list_t;
@@ -735,7 +736,7 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 		strlcpy(mark_buf, "\033[1;31m∞\033[m", sizeof(mark_buf));
 	} else {
 		mark_buf[0] = ' ';
-		mark_buf[1] = get_post_mark(p);
+		mark_buf[1] = (p->id == l->mark_pid) ? '@' : get_post_mark(p);
 		mark_buf[2] = '\0';
 	}
 
@@ -1565,43 +1566,47 @@ static int tui_import_post(const post_info_t *ip)
 	return DONOTHING;
 }
 
-static bool tui_input_range(post_id_t *min, post_id_t *max)
+static int tui_mark_range(slide_list_t *p, post_id_t *min, post_id_t *max)
 {
-	char num[8];
-	getdata(t_lines - 1, 0, "首篇文章编号: ", num, sizeof(num), DOECHO, YEA);
-	*min = base32_to_pid(num);
-	if (!*min) {
-		move(t_lines - 1, 50);
-		prints("错误编号...");
-		egetch();
-		return false;
+	*min = *max = 0;
+
+	if (!am_curr_bm())
+		return DONOTHING;
+
+	post_info_t *ip = get_post_info(p);
+	if (ip->flag & POST_FLAG_STICKY)
+		return DONOTHING;
+
+	post_list_t *l = p->data;
+	if (!l->mark_pid) {
+		l->mark_pid = ip->id;
+		return PARTUPDATE;
 	}
 
-	getdata(t_lines - 1, 25, "末篇文章编号: ", num, sizeof(num), DOECHO, YEA);
-	*max = base32_to_pid(num);
-	if (*max < *min) {
-		move(t_lines - 1, 50);
-		prints("错误区间...");
-		egetch();
-		return false;
+	if (ip->id >= l->mark_pid) {
+		*min = l->mark_pid;
+		*max = ip->id;
+	} else {
+		*min = ip->id;
+		*max = l->mark_pid;
 	}
-	return true;
+	l->mark_pid = 0;
+	return DONOTHING;
 }
 
 static int tui_delete_posts_in_range(slide_list_t *p)
 {
-	if (!am_curr_bm())
-		return DONOTHING;
-
 	post_list_t *l = p->data;
 	if (l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
-	post_id_t min = 0, max = 0;
-	if (!tui_input_range(&min, &max))
-		return MINIUPDATE;
+	post_id_t min, max;
+	int ret = tui_mark_range(p, &min, &max);
+	if (!max)
+		return ret;
 
-	move(t_lines - 1, 50);
+	move(t_lines - 1, 0);
+	clrtoeol();
 	if (askyn("确定删除", NA, NA)) {
 		post_filter_t filter = {
 			.bid = l->filter.bid, .min = min, .max = max
@@ -1681,14 +1686,16 @@ static bool count_posts_in_range(post_id_t min, post_id_t max, bool asc,
 	return false;
 }
 
-static int tui_count_posts_in_range(post_list_type_e type)
+static int tui_count_posts_in_range(slide_list_t *p)
 {
-	if (type != POST_LIST_NORMAL || !am_curr_bm())
+	post_list_t *l = p->data;
+	if (l->filter.type != POST_LIST_NORMAL)
 		return DONOTHING;
 
-	post_id_t min = 0, max = 0;
-	if (!tui_input_range(&min, &max))
-		return MINIUPDATE;
+	post_id_t min, max;
+	int ret = tui_mark_range(p, &min, &max);
+	if (!max)
+		return ret;
 
 	char num[8];
 	getdata(t_lines - 1, 0, "排序方式 (0)降序 (1)升序 ? : ", num, 2, DOECHO, YEA);
@@ -2143,8 +2150,10 @@ static int tui_operate_posts_in_range(slide_list_t *p)
 {
 	post_list_t *l = p->data;
 
-	if (!am_curr_bm())
-		return DONOTHING;
+	post_id_t min, max;
+	int ret = tui_mark_range(p, &min, &max);
+	if (!max)
+		return ret;
 
 	const char *option8 = is_deleted(l->filter.type) ? "恢复" : "删水文";
 	const char *options[] = {
@@ -2160,14 +2169,7 @@ static int tui_operate_posts_in_range(slide_list_t *p)
 	if (choice < 0 || choice >= ARRAY_SIZE(options))
 		return MINIUPDATE;
 
-	post_id_t min, max;
-	if (!tui_input_range(&min, &max))
-		return MINIUPDATE;
-
-	char min_str[PID_BUF_LEN], max_str[PID_BUF_LEN];
-	snprintf(prompt, sizeof(prompt), "区段[%s]操作范围 [ %s -- %s ]，确定吗",
-			options[choice], pid_to_base32(min, min_str, sizeof(min_str)),
-			pid_to_base32(min, max_str, sizeof(max_str)));
+	snprintf(prompt, sizeof(prompt), "区段[%s]操作，确定吗", options[choice]);
 	if (!askyn(prompt, NA, YEA))
 		return MINIUPDATE;
 
@@ -2564,7 +2566,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'b':
 			return tui_operate_posts_in_batch(p);
 		case 'C':
-			return tui_count_posts_in_range(l->filter.type);
+			return tui_count_posts_in_range(p);
 		case '.':
 			return post_list_deleted(l->filter.bid, l->filter.type);
 		case 'J':
