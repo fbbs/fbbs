@@ -240,9 +240,9 @@ static xml_node_t *create_post_node(const post_info_t *p)
 static int print_toc(xml_node_t *posts, db_res_t *res, int archive, bool asc)
 {
 	int rows = db_res_rows(res);
-	for (int i = asc ? 0 : rows - 1;
-			asc ? i < rows : i >= 0;
-			i += asc ? 1 : -1) {
+	for (int i = asc ? rows - 1 : 0;
+			asc ? i >= 0 : i < rows;
+			i += asc ? -1 : 1) {
 		post_info_t p;
 		res_to_post_info(res, i, archive, &p);
 		xml_node_t *post = create_post_node(&p);

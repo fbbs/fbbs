@@ -15,18 +15,18 @@ struct xml_attr_t {
 		int64_t bigint;
 		bool boolean;
 	} value;
-	SLIST_FIELD(xml_attr_t) next;
+	STAILQ_FIELD(xml_attr_t) next;
 };
 
-SLIST_HEAD(xml_attr_list_t, xml_attr_t);
-SLIST_HEAD(xml_node_list_t, xml_node_t);
+STAILQ_HEAD(xml_attr_list_t, xml_attr_t);
+STAILQ_HEAD(xml_node_list_t, xml_node_t);
 
 struct xml_node_t {
 	int type;
 	const char *name;
 	struct xml_attr_list_t attr;
 	struct xml_node_list_t child;
-	SLIST_FIELD(xml_node_t) next;
+	STAILQ_FIELD(xml_node_t) next;
 };
 
 struct xml_document_t {
@@ -58,14 +58,14 @@ xml_node_t *xml_new_node(const char *name, int type)
 	xml_node_t *node = palloc(sizeof(*node));
 	node->name = name;
 	node->type = type;
-	SLIST_INIT_HEAD(&node->attr);
-	SLIST_INIT_HEAD(&node->child);
+	STAILQ_INIT_HEAD(&node->attr);
+	STAILQ_INIT_HEAD(&node->child);
 	return node;
 }
 
 xml_node_t *xml_add_child(xml_node_t *parent, xml_node_t *child)
 {
-	SLIST_INSERT_HEAD(&parent->child, child, next);
+	STAILQ_INSERT_TAIL(&parent->child, child, next);
 	return child;
 }
 
@@ -76,7 +76,7 @@ xml_node_t *xml_new_child(xml_node_t *parent, const char *name, int type)
 
 static xml_attr_t *xml_add_attr(xml_node_t *node, xml_attr_t *attr)
 {
-	SLIST_INSERT_HEAD(&node->attr, attr, next);
+	STAILQ_INSERT_TAIL(&node->attr, attr, next);
 	return attr;
 }
 
@@ -173,7 +173,7 @@ static inline bool anonymous(const xml_node_t *node)
 static void _print_as_xml(const xml_node_t *node, int encoding)
 {
 	if (anonymous(node)) {
-		SLIST_FOREACH(xml_node_t, child, &node->child, next) {
+		STAILQ_FOREACH(xml_node_t, child, &node->child, next) {
 			_print_as_xml(child, encoding);
 		}
 		return;
@@ -182,7 +182,7 @@ static void _print_as_xml(const xml_node_t *node, int encoding)
 	printf("<%s", node->name);
 
 	bool attr_as_node = false;
-	SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
+	STAILQ_FOREACH(xml_attr_t, attr, &node->attr, next) {
 		if (attr->type & XML_ATTR_AS_NODE) {
 			attr_as_node = true;
 		} else {
@@ -190,13 +190,13 @@ static void _print_as_xml(const xml_node_t *node, int encoding)
 		}
 	}
 
-	if (!attr_as_node && !SLIST_FIRST(&node->child)) {
+	if (!attr_as_node && !STAILQ_FIRST(&node->child)) {
 		printf("/>");
 	} else {
 		printf(">");
 
 		if (attr_as_node) {
-			SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
+			STAILQ_FOREACH(xml_attr_t, attr, &node->attr, next) {
 				if (attr->type & XML_ATTR_AS_NODE) {
 					if (attr->name)
 						printf("<%s>", attr->name);
@@ -207,7 +207,7 @@ static void _print_as_xml(const xml_node_t *node, int encoding)
 			}
 		}
 
-		SLIST_FOREACH(xml_node_t, child, &node->child, next) {
+		STAILQ_FOREACH(xml_node_t, child, &node->child, next) {
 			_print_as_xml(child, encoding);
 		}
 		printf("</%s>", node->name);
@@ -292,22 +292,22 @@ static void _print_as_json(const xml_node_t *node, int encoding)
 		putchar(':');
 	}
 
-	bool child = SLIST_FIRST(&node->child) || SLIST_FIRST(&node->attr);
+	bool child = STAILQ_FIRST(&node->child) || STAILQ_FIRST(&node->attr);
 	bool array = node->type & XML_NODE_CHILD_ARRAY;
 	bool plain = node->type & XML_NODE_PLAIN_JSON;
 
 	if (!plain)
 		putchar(array ? '[' : '{');
 	if (child) {
-		SLIST_FOREACH(xml_attr_t, attr, &node->attr, next) {
+		STAILQ_FOREACH(xml_attr_t, attr, &node->attr, next) {
 			json_print_attr(attr, encoding);
-			if (SLIST_NEXT(attr, next) || SLIST_FIRST(&node->child))
+			if (STAILQ_NEXT(attr, next) || STAILQ_FIRST(&node->child))
 				putchar(',');
 		}
 
-		SLIST_FOREACH(xml_node_t, child, &node->child, next) {
+		STAILQ_FOREACH(xml_node_t, child, &node->child, next) {
 			_print_as_json(child, encoding);
-			if (SLIST_NEXT(child, next))
+			if (STAILQ_NEXT(child, next))
 				putchar(',');
 		}
 	}
