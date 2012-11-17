@@ -2505,17 +2505,46 @@ static int switch_archive(post_list_t *l, bool upward)
 	return MINIUPDATE;
 }
 
+static int tui_jump_to_id(slide_list_t *p)
+{
+	post_info_t *ip = get_post_info(p);
+	if (!ip)
+		return DONOTHING;
+
+	char buf[16];
+	getdata(t_lines - 1, 0, "Post ID", buf, sizeof(buf), true, true);
+
+	post_id_t pid = strtoll(buf, NULL, 10);
+	if (!pid || pid == ip->id)
+		return MINIUPDATE;
+
+	post_list_t *l = p->data;
+	post_filter_t filter = l->filter;
+	bool upward = pid < ip->id;
+	if (upward) {
+		filter.min = 0;
+		filter.max = pid;
+	} else {
+		filter.min = pid;
+		filter.max = 0;
+	}
+	return relocate_to_filter(p, &filter, pid < ip->id);
+}
+
 static int tui_jump(slide_list_t *p)
 {
-	char buf[16];
+	post_list_t *l = p->data;
+	if (l->filter.type == POST_LIST_THREAD)
+		return DONOTHING;
+
+	char buf[2];
 	getdata(t_lines - 1, 0, "跳转到 (P)文章 (A)存档 (C)取消？[C]",
 			buf, sizeof(buf), true, true);
 	char c = tolower(buf[0]);
-	if (c == 'p') {
-		;
-	} else if (c == 'a') {
+	if (c == 'p')
+		return tui_jump_to_id(p);
+	if (c == 'a')
 		return archive_list(p->data);
-	}
 	return MINIUPDATE;
 }
 
