@@ -65,11 +65,13 @@ static void plist_cache_init(plist_cache_t *c, int page, int scapacity)
 
 static post_info_t *plist_cache_get(const plist_cache_t *c, int pos)
 {
-	if (c->begin + pos < c->end)
-		return c->posts + c->begin + pos;
-	pos -= c->end - c->begin;
-	if (c->sticky && pos < c->scount)
-		return c->posts + c->capacity + pos;
+	if (pos >= 0) {
+		if (c->begin + pos < c->end)
+			return c->posts + c->begin + pos;
+		pos -= c->end - c->begin;
+		if (c->sticky && pos < c->scount)
+			return c->posts + c->capacity + pos;
+	}
 	return NULL;
 }
 
@@ -453,7 +455,7 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 		post_filter_t filter = {
 			.min = l->relocate ? l->relocate : l->pos->cur_pid
 		};
-		int pos = plist_cache_relocate(&l->cache, p->cur, &filter, false);
+		int pos = plist_cache_relocate(&l->cache, -1, &filter, false);
 		if (pos >= 0)
 			p->cur = pos;
 		l->relocate = 0;
@@ -817,10 +819,14 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 static slide_list_display_t post_list_display(slide_list_t *p)
 {
 	post_list_t *l = p->data;
+	bool empty = false;
 	for (int i = 0; i < l->cache.page; ++i) {
 		post_info_t *ip = plist_cache_get(&l->cache, i);
-		if (!ip)
+		if (!ip) {
+			if (i == 0)
+				empty = true;
 			continue;
+		}
 		post_info_t *next = plist_cache_get(&l->cache, i + 1);
 		bool last = false;
 		if (l->filter.type == POST_LIST_THREAD) {
@@ -828,6 +834,9 @@ static slide_list_display_t post_list_display(slide_list_t *p)
 		}
 		post_list_display_entry(l, ip, last);
 	}
+
+	if (empty)
+		prints("     (ÎÞÄÚÈÝ)\n");
 	return 0;
 }
 
@@ -881,23 +890,25 @@ static int toggle_post_flag(post_info_t *ip, post_flag_e flag,
 
 static int post_list_with_filter(const post_filter_t *filter);
 
-static int post_list_deleted(int bid, post_list_type_e type)
+static int post_list_deleted(post_list_t *l)
 {
-	if (type != POST_LIST_NORMAL || !am_curr_bm())
+	if (l->filter.type != POST_LIST_NORMAL || !am_curr_bm())
 		return DONOTHING;
 
-	post_filter_t filter = { .type = POST_LIST_TRASH, .bid = bid };
+	post_filter_t filter = { .type = POST_LIST_TRASH, .bid = l->filter.bid };
 	post_list_with_filter(&filter);
+	l->reload = l->sreload = true;
 	return FULLUPDATE;
 }
 
-static int post_list_admin_deleted(int bid, post_list_type_e type)
+static int post_list_admin_deleted(post_list_t *l)
 {
-	if (type != POST_LIST_NORMAL || !HAS_PERM(PERM_OBOARDS))
+	if (l->filter.type != POST_LIST_NORMAL || !HAS_PERM(PERM_OBOARDS))
 		return DONOTHING;
 
-	post_filter_t filter = { .type = POST_LIST_JUNK, .bid = bid };
+	post_filter_t filter = { .type = POST_LIST_JUNK, .bid = l->filter.bid };
 	post_list_with_filter(&filter);
+	l->reload = l->sreload = true;
 	return FULLUPDATE;
 }
 
@@ -2532,6 +2543,83 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	post_info_t *ip = get_post_info(p);
 
 	switch (ch) {
+		case Ctrl('P'):
+			return tui_new_post(l->filter.bid, NULL);
+		case '@':
+			return show_online();
+		case '.':
+			return post_list_deleted(l);
+		case 'J':
+			return post_list_admin_deleted(l);
+		case 't':
+			return thesis_mode();
+		case '!':
+			return Q_Goodbye();
+		case 'S':
+			s_msg();
+			return FULLUPDATE;
+		case 'o':
+			show_online_followings();
+			return FULLUPDATE;
+		case 'u':
+			t_query(NULL);
+			return FULLUPDATE;
+		case '|':
+			return x_lockscreen();
+		case 'R':
+			return vote_results(currboard);
+		case 'v':
+			return b_vote();
+		case 'V':
+			return vote_maintain(currboard);
+		case KEY_TAB:
+			return show_b_note();
+		case 'z':
+			return show_b_secnote();
+		case 'W':
+			return b_notes_edit();
+		case Ctrl('W'):
+			return b_notes_passwd();
+		case 'h':
+			return mainreadhelp();
+		case Ctrl('D'):
+			return deny_user();
+		case Ctrl('K'):
+			return club_user();
+		case 'x':
+			if (into_announce() != DONOTHING)
+				return FULLUPDATE;
+		case 's':
+			return switch_board(l);
+		case '%':
+			return tui_jump(p);
+		case 'q': case 'e': case KEY_LEFT: case EOF:
+			if (p->in_query) {
+				p->in_query = false;
+				return FULLUPDATE;
+			}
+			if (!l->filter.archive)
+				return -1;
+			l->filter.archive = 0;
+			l->reload = true;
+			return FULLUPDATE;
+		case Ctrl('L'):
+			redoscr();
+			return DONOTHING;
+		case 'M':
+			m_new();
+			return FULLUPDATE;
+		case 'H':
+			return show_hotspot();
+		case 'l':
+			msg_more();
+			return FULLUPDATE;
+		default:
+			if (!ip)
+				return DONOTHING;
+	}
+
+	switch (ch) {
 		case '\n': case '\r': case KEY_RIGHT: case 'r':
 		case Ctrl('S'): case 'p':
 			return read_posts(p, ip, false, false);
@@ -2539,8 +2627,6 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return read_posts(p, ip, false, true);
 		case '_':
 			return toggle_post_lock(ip);
-		case '@':
-			return show_online();
 		case '#':
 			return toggle_post_stickiness(ip, l);
 		case 'm':
@@ -2553,8 +2639,6 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_edit_post_title(ip);
 		case 'E':
 			return tui_edit_post_content(ip);
-		case Ctrl('P'):
-			return tui_new_post(l->filter.bid, NULL);
 		case 'i':
 			return tui_save_post(ip);
 		case 'I':
@@ -2567,10 +2651,6 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return tui_operate_posts_in_batch(p);
 		case 'C':
 			return tui_count_posts_in_range(p);
-		case '.':
-			return post_list_deleted(l->filter.bid, l->filter.type);
-		case 'J':
-			return post_list_admin_deleted(l->filter.bid, l->filter.type);
 		case Ctrl('G'): case Ctrl('T'): case '`':
 			return tui_post_list_selected(p, ip);
 		case 'a':
@@ -2613,51 +2693,11 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return forward_post(ip, true);
 		case Ctrl('R'):
 			return reply_with_mail(ip);
-		case 't':
-			return thesis_mode();
-		case '!':
-			return Q_Goodbye();
-		case 'S':
-			s_msg();
-			return FULLUPDATE;
-		case 'o':
-			show_online_followings();
-			return FULLUPDATE;
-		case 'u':
-			t_query(NULL);
-			return FULLUPDATE;
 		case 'Z':
 			tui_send_msg(ip->owner);
 			return FULLUPDATE;
-		case '|':
-			return x_lockscreen();
-		case 'R':
-			return vote_results(currboard);
-		case 'v':
-			return b_vote();
-		case 'V':
-			return vote_maintain(currboard);
-		case KEY_TAB:
-			return show_b_note();
-		case 'z':
-			return show_b_secnote();
-		case 'W':
-			return b_notes_edit();
-		case Ctrl('W'):
-			return b_notes_passwd();
-		case 'h':
-			return mainreadhelp();
 		case Ctrl('A'):
 			return ip ? t_query(ip->owner) : DONOTHING;
-		case Ctrl('D'):
-			return deny_user();
-		case Ctrl('K'):
-			return club_user();
-		case 'x':
-			if (into_announce() != DONOTHING)
-				return FULLUPDATE;
-		case 's':
-			return switch_board(l);
 		case 'P': case Ctrl('B'): case KEY_PGUP:
 			if (plist_cache_is_top(&l->cache, 0))
 				return switch_archive(l, true);
@@ -2684,18 +2724,6 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 					return DONOTHING;
 			}
 			return READ_AGAIN;
-		case '%':
-			return tui_jump(p);
-		case 'q': case 'e': case KEY_LEFT: case EOF:
-			if (p->in_query) {
-				p->in_query = false;
-				return FULLUPDATE;
-			}
-			if (!l->filter.archive)
-				return -1;
-			l->filter.archive = 0;
-			l->reload = true;
-			return FULLUPDATE;
 		case '$': case KEY_END:
 			if (ip->flag & POST_FLAG_STICKY) {
 				for (int i = p->cur - 1; i >= 0; --i) {
@@ -2712,19 +2740,8 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 				return DONOTHING;
 			}
 			return READ_AGAIN;
-		case Ctrl('L'):
-			redoscr();
-			return DONOTHING;
-		case 'M':
-			m_new();
-			return FULLUPDATE;
-		case 'H':
-			return show_hotspot();
 		case 'O':
 			return ip->uid ? tui_follow_uname(ip->owner) : DONOTHING;
-		case 'l':
-			msg_more();
-			return FULLUPDATE;
 		default:
 			return READ_AGAIN;
 	}
