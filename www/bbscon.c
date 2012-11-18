@@ -27,11 +27,13 @@ const struct fileheader *dir_bsearch(const struct fileheader *begin,
 	return begin;
 }
 
-int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
-		bool extra, post_info_full_t *p)
+int bbscon_search(int bid, int archive, post_id_t pid, post_id_t tid,
+		int action, bool extra, post_info_full_t *p)
 {
 	bool asc = true;
-	post_filter_t filter = { .type = POST_LIST_NORMAL, .bid = bid };
+	post_filter_t filter = {
+		.type = POST_LIST_NORMAL, .bid = bid, .archive = archive,
+	};
 	if (action == 'a' || action == 'b')
 		filter.tid = tid;
 	if (action == 'p' || action == 'b') {
@@ -45,7 +47,7 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 
 	query_t *q = query_new(0);
 	query_select(q, POST_LIST_FIELDS_FULL);
-	query_from(q, "posts.recent");
+	query_from(q, post_table_name(&filter));
 	build_post_filter(q, &filter, &asc);
 	query_limit(q, 1);
 
@@ -72,7 +74,7 @@ int bbscon_search(int bid, post_id_t pid, post_id_t tid, int action,
 
 int bbscon_search_pid(int bid, post_id_t pid, post_info_full_t *p)
 {
-	return bbscon_search(bid, pid, 0, 0, false, p);
+	return bbscon_search(bid, 0, pid, 0, 0, false, p);
 }
 
 int bbscon_main(void)
@@ -87,9 +89,10 @@ int bbscon_main(void)
 	post_id_t pid = strtol(get_param("f"), NULL, 10);
 	post_id_t tid = strtol(get_param("t"), NULL, 10);
 	char action = *get_param("a");
+	int archive = strtol(get_param("archive"), NULL, 10);
 
 	post_info_full_t info;
-	int ret = bbscon_search(board.id, pid, tid, action, true, &info);
+	int ret = bbscon_search(board.id, archive, pid, tid, action, true, &info);
 	if (!ret)
 		return BBS_ENOFILE;
 

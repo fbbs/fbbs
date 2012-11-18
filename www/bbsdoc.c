@@ -102,12 +102,14 @@ static int bbsdoc(post_list_type_e type)
 
 	board_to_gbk(&board);
 
-	post_id_t start = strtol(get_param("start"), NULL, 10);
+	post_id_t start = strtoll(get_param("start"), NULL, 10);
 	char action = *get_param("a");
 
 	int page = strtol(get_param("my_t_lines"), NULL, 10);
 	if (page < TLINES || page > 40)
 		page = TLINES;
+
+	int archive = strtol(get_param("archive"), NULL, 10);
 
 	if (get_doc_mode() != type)
 		set_doc_mode(type);
@@ -119,7 +121,7 @@ static int bbsdoc(post_list_type_e type)
 	brc_fcgi_init(currentuser.userid, board.name);
 
 	post_filter_t filter = {
-		.bid = board.id, .type = type, .max = start,
+		.bid = board.id, .type = type, .max = start, .archive = archive,
 	};
 	if (action == 'n') {
 		filter.max = 0;

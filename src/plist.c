@@ -1259,10 +1259,13 @@ static int show_post_info(const post_info_t *ip)
 
 	char link[STRLEN];
 	snprintf(link, sizeof(link),
-			"http://%s/bbs/con?new=1&bid=%d&f=%"PRIdPID"%s\n",
+			"http://%s/bbs/con?new=1&bid=%d&f=%"PRIdPID"%s",
 			BBSHOST, currbp->id, ip->id,
 			(ip->flag & POST_FLAG_STICKY) ? "&s=1" : "");
 	prints("\n%s", link);
+	if (ip->archive)
+		prints("&archive=%d", ip->archive);
+	prints("\n");
 
 	pressanykey();
 	return FULLUPDATE;
