@@ -14,12 +14,6 @@
 #define CHARSET		"gb18030"
 //#define SQUID
 
-#ifdef FDQUAN
-	#define SECNUM 9
-#else
-	#define SECNUM 12
-#endif
-
 enum {
 	UPLOAD_MAX = 1 * 1024 * 1024,
 	UPLOAD_OVERHEAD = 1024,
@@ -67,17 +61,6 @@ void setcookie(const char *a, const char *b);
 void refreshto(int second, const char *url);
 
 #define FLOCK(x,y) flock(x,y)
-
-extern char seccode[][6];
-extern char secname[][2][20];
-
-struct post_log {
-	char	author[IDLEN+1]; // TODO: is this too short for "id."?
-	char	board[18];
-	char	title[66];
-	time_t	date;
-	int	number;
-};
 
 extern struct userec currentuser;
 extern char fromhost[];
