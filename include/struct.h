@@ -122,16 +122,4 @@ struct postheader {
 	char prefix[10];
 };
 
-//Added by IAMFAT 2002.06.14 For Count Function
-struct countheader {
-	char id[IDLEN+1];
-	int all_num;
-	int m_num;
-	int g_num;
-	int w_num;
-	int other_num;
-	struct countheader* next;
-};
-//End IAMFAT
-
 #endif //FB_STRUCT_H
