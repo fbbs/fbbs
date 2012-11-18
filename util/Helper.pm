@@ -1,13 +1,13 @@
 package Helper;
 
 use Exporter 'import';
-@EXPORT = qw(get_options db_connect convert convert_file
-		convert_time read_boards read_users $dir $dbh);
+@EXPORT_OK = qw(get_options db_connect convert convert_file convert_time
+		read_boards read_users timestamp_to_unix $dir $dbh);
 
 use Config;
 use DBI;
 use Encode;
-use POSIX qw(strftime);
+use POSIX qw(strftime mktime);
 
 our ($host, $port, $db, $user, $dir, $dbh);
 
@@ -59,6 +59,13 @@ sub convert_time
 {
 	my $stamp = shift;
 	strftime "%b %e %H:%M:%S %Y %z", localtime($stamp);
+}
+
+sub timestamp_to_unix
+{
+	my $stamp = shift;
+	$stamp =~ /(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/;
+	mktime($6, $5, $4, $3, $2 - 1, $1 - 1900);
 }
 
 sub read_boards

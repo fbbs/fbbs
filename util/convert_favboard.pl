@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use lib '.';
-use Helper;
+use Helper qw(get_options db_connect convert read_boards $dbh);
 
 $| = 1;
 

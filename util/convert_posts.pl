@@ -6,7 +6,7 @@ use warnings;
 use Digest::MD5 qw(md5);
 
 use lib '.';
-use Helper;
+use Helper qw(get_options db_connect convert convert_time convert_file read_users $dir $dbh);
 
 $| = 1;
 

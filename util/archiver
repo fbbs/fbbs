@@ -9,7 +9,7 @@ use Getopt::Long;
 use POSIX qw(mktime);
 
 use lib "$Bin";
-use Helper;
+use Helper qw(get_options db_connect convert_time $dbh);
 
 my $opt_update_all = 0;
 GetOptions(
