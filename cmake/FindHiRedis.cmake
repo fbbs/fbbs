@@ -1,6 +1,6 @@
 find_path(HIREDIS_INCLUDE_DIR
 	NAMES
-		hiredis/gcrypt.h
+		hiredis/hiredis.h
     PATHS
 		/usr/include
 		/usr/local/include
