@@ -1,5 +1,6 @@
 BEGIN;
 
+DROP TABLE IF EXISTS posts.hot;
 DROP TABLE IF EXISTS posts.threads;
 DROP TABLE IF EXISTS posts.deleted;
 DROP TABLE IF EXISTS posts.recent;
@@ -70,5 +71,16 @@ CREATE TABLE posts.board_archive (
 	max BIGINT
 );
 CREATE INDEX ON posts.board_archive(board);
+
+CREATE TABLE posts.hot (
+	tid BIGINT,
+	score INTEGER,
+	board INTEGER,
+	last_stamp TIMESTAMPTZ,
+	owner INTEGER,
+	uname TEXT,
+	bname TEXT,
+	title TEXT
+);
 
 COMMIT;
