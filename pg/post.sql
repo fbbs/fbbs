@@ -1,12 +1,6 @@
 BEGIN;
 
-DROP TABLE IF EXISTS posts.hot;
-DROP TABLE IF EXISTS posts.threads;
-DROP TABLE IF EXISTS posts.deleted;
-DROP TABLE IF EXISTS posts.recent;
-DROP TABLE IF EXISTS posts.base;
-DROP SCHEMA IF EXISTS posts;
-
+DROP SCHEMA IF EXISTS posts CASCADE;
 CREATE SCHEMA posts;
 
 CREATE TABLE posts.base (
