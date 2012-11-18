@@ -131,14 +131,16 @@ static int login_redirect(const char *key, int max_age)
 
 int do_web_login(const char *uname, const char *pw)
 {
+	bool api = request_type(REQUEST_API);
+
 	struct userec user;
 	if (getuserec(uname, &user) == 0)
-		return error_msg(ERROR_INCORRECT_PASSWORD);
+		return api ? error_msg(ERROR_INCORRECT_PASSWORD) : BBS_EWPSWD;
 	session.uid = get_user_id(uname);
 
 	if (pw && !passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
-		return error_msg(ERROR_INCORRECT_PASSWORD);
+		return api ? error_msg(ERROR_INCORRECT_PASSWORD) : BBS_EWPSWD;
 	}
 
 	int sessions = check_web_login_quota(uname, false);
@@ -146,7 +148,7 @@ int do_web_login(const char *uname, const char *pw)
 		return BBS_ELGNQE;
 
 	if (!HAS_PERM2(PERM_LOGIN, &user))
-		return error_msg(ERROR_USER_SUSPENDED);
+		return api ? error_msg(ERROR_USER_SUSPENDED) : BBS_EACCES;
 
 	time_t now = time(NULL);
 	if (now - user.lastlogin >= 20 * 60 || user.numlogins < 100)
@@ -177,7 +179,8 @@ extern void set_web_session_cache(user_id_t uid, const char *key,
 
 int web_login(void)
 {
-	if (request_type(REQUEST_API)) {
+	bool api = request_type(REQUEST_API);
+	if (api) {
 		if (session.id)
 			return error_msg(ERROR_NONE);
 		else
@@ -188,7 +191,7 @@ int web_login(void)
 		return login_redirect(NULL, 0);
 
 	if (parse_post_data() < 0)
-		return error_msg(ERROR_BAD_REQUEST);
+		return api ? error_msg(ERROR_BAD_REQUEST) : BBS_EINVAL;
 
 	const char *uname = get_param("id");
 	if (*uname == '\0' || strcaseeq(uname, "guest"))
