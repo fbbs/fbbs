@@ -22,9 +22,9 @@ extern following_list_t *following_list_load(user_id_t uid);
 #define following_list_free(list)  db_clear(list)
 
 #define FOLLOWING_LIST_LOAD_QUERY \
-	"SELECT user_id, name, follow_time, is_friend, notes" \
+	"SELECT user_id, name, stamp, is_friend, notes" \
 	" FROM follows f JOIN users u ON f.user_id = u.id" \
-	" WHERE follower = %d ORDER BY follow_time DESC"
+	" WHERE follower = %d ORDER BY stamp DESC"
 #define following_list_get_id(list, i)  db_get_user_id(list, i, 0)
 #define following_list_get_name(list, i)  db_get_value(list, i, 1)
 #define following_list_get_is_friend(list, i)  db_get_bool(list, i, 3)

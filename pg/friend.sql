@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS follows;
 CREATE TABLE follows (
 	user_id INTEGER NOT NULL REFERENCES users,
 	follower INTEGER NOT NULL REFERENCES users,
-	follow_time TIMESTAMPTZ,
+	stamp TIMESTAMPTZ,
 	notes TEXT,
 	is_friend BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (user_id, follower)
@@ -35,7 +35,7 @@ BEGIN
 		UPDATE users SET friends = friends + 1 WHERE id = NEW.user_id OR id = NEW.follower;
 		NEW.is_friend := TRUE;
 	END IF;
-	NEW.follow_time := current_timestamp;
+	NEW.stamp := current_timestamp;
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
