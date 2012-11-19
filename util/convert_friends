@@ -10,6 +10,7 @@ use Helper qw(get_options db_connect convert convert_time $dir $dbh);
 
 $| = 1;
 my $LEN = 53;
+my $TABLE = {};
 
 get_options();
 db_connect();
@@ -45,7 +46,7 @@ SQL
 	my $users = shift;
 	while (my ($name, $uid) = each %$users) {
 		convert_records($users, $name, $uid, 'friends', $friend);
-		convert_records($users, $name, $uid, 'rejects', $friend);
+		convert_records($users, $name, $uid, 'rejects', $black);
 	}
 	$dbh->commit;
 }
@@ -54,7 +55,7 @@ sub convert_records
 {
 	my ($users, $name, $uid, $filename, $sth) = @_;
 
-	my $file = File::Spec->catfile($dir, uc substr($name, 0, 1), $name, $filename);
+	my $file = File::Spec->catfile($dir, 'home', uc substr($name, 0, 1), $name, $filename);
 	my ($size, $mtime) = stat $file;
 	if ($size) {
 		my $base = $mtime - 86400 * $size / $LEN;
@@ -67,9 +68,12 @@ sub convert_records
 			my ($friend, $notes) = unpack 'Z13Z40', $buf;
 			if (exists $users->{$friend}) {
 				my $fid = $users->{$friend};
-				my $time = $base + $order * 86400;
-				++$order;
-				$sth->execute($fid, $uid, convert_time($time), convert($notes));
+				if (not exists $TABLE->{$filename}{$fid}{$uid}) {
+					my $time = $base + $order * 86400;
+					++$order;
+					$sth->execute($fid, $uid, convert_time($time), convert($notes));
+					$TABLE->{$filename}{$fid}{$uid} = 1;
+				}
 			}
 		}
 		close $fh;
