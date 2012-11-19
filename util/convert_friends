@@ -1,0 +1,78 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use DBI;
+use File::Spec;
+use FindBin qw($Bin);
+use lib '$Bin';
+use Helper qw(get_options db_connect convert convert_time $dir $dbh);
+
+$| = 1;
+my $LEN = 53;
+
+get_options();
+db_connect();
+
+main();
+
+$dbh->disconnect;
+
+sub main
+{
+	my $users = load_users();
+	convert_relations($users);
+}
+
+sub load_users
+{
+	my $users = $dbh->selectall_arrayref('SELECT id, name FROM alive_users');
+	my %users = map { $_->[1] => $_->[0] } @$users;
+	\%users;
+}
+
+sub convert_relations
+{
+	my $sql = <<SQL;
+INSERT INTO follows (user_id, follower, stamp, notes) VALUES (?, ?, ?, ?)
+SQL
+	my $friend = $dbh->prepare($sql);
+	$sql = <<SQL;
+INSERT INTO blacklists (blocked, user_id, stamp, notes) VALUES (?, ?, ?, ?)
+SQL
+	my $black = $dbh->prepare($sql);
+
+	my $users = shift;
+	while (my ($name, $uid) = each %$users) {
+		convert_records($users, $name, $uid, 'friends', $friend);
+		convert_records($users, $name, $uid, 'rejects', $friend);
+	}
+	$dbh->commit;
+}
+
+sub convert_records
+{
+	my ($users, $name, $uid, $filename, $sth) = @_;
+
+	my $file = File::Spec->catfile($dir, uc substr($name, 0, 1), $name, $filename);
+	my ($size, $mtime) = stat $file;
+	if ($size) {
+		my $base = $mtime - 86400 * $size / $LEN;
+		my $order = 0;
+
+		open my $fh, '<', $file or return;
+		while (1) {
+			my $buf;
+			last if (read($fh, $buf, $LEN) != $LEN);
+			my ($friend, $notes) = unpack 'Z13Z40', $buf;
+			if (exists $users->{$friend}) {
+				my $fid = $users->{$friend};
+				my $time = $base + $order * 86400;
+				++$order;
+				$sth->execute($fid, $uid, convert_time($time), convert($notes));
+			}
+		}
+		close $fh;
+	}
+
+}
