@@ -58,7 +58,8 @@ session_id_t session_new_id(void)
 }
 
 session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
-		const char *ip_addr, bool is_web, bool is_secure, int duration)
+		const char *ip_addr, bool is_web, bool is_secure, bool visible,
+		int duration)
 {
 	int pid = is_web ? 0 : getpid();
 	if (!sid)
@@ -68,9 +69,9 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	fb_time_t expire = now + duration;
 
 	db_res_t *res = db_cmd("INSERT INTO sessions (id, session_key, user_id,"
-			" pid, ip_addr, web, secure, stamp, expire)"
-			" VALUES (%"DBIdSID", %s, %"DBIdUID", %d, %s, %b, %b, %t, %t)",
-			sid, key, uid, pid, ip_addr, is_web, is_secure, now, expire);
+			" pid, ip_addr, web, secure, stamp, expire, visible) VALUES"
+			" (%"DBIdSID", %s, %"DBIdUID", %d, %s, %b, %b, %t, %t, %b)", sid,
+			key, uid, pid, ip_addr, is_web, is_secure, now, expire, visible);
 	if (res) {
 		db_clear(res);
 		session.id = sid;

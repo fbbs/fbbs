@@ -151,8 +151,8 @@ static void u_enter(void)
 {
 	if (!HAS_PERM(PERM_CLOAK))
 		currentuser.flags[0] &= ~CLOAK_FLAG;
-	if (HAS_PERM(PERM_LOGINCLOAK) && (currentuser.flags[0] & CLOAK_FLAG))
-		session.visible = false;
+	session.visible = !(HAS_PERM(PERM_LOGINCLOAK)
+			&& (currentuser.flags[0] & CLOAK_FLAG));
 	session.status = ST_LOGIN;
 
 	chk_giveupbbs();
@@ -171,7 +171,7 @@ static void u_enter(void)
 #else
 			SESSION_PLAIN
 #endif
-			, 0);
+			, session.visible, 0);
 
 	int pager = load_pager();
 	set_pager(pager);

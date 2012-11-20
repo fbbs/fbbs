@@ -209,7 +209,7 @@ int web_login(void)
 		session.id = session_new_id();
 		generate_session_key(key, sizeof(key), session.id);
 		session.id = session_new(key, session.id, session.uid, fromhost,
-				SESSION_WEB, SESSION_PLAIN, max_age);
+				SESSION_WEB, SESSION_PLAIN, true, max_age);
 		if (session.id)
 			set_web_session_cache(session.uid, key, session.id);
 
