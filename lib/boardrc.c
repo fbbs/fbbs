@@ -4,6 +4,7 @@
 #include "bbs.h"
 #include "fbbs/board.h"
 #include "fbbs/helper.h"
+#include "fbbs/post.h"
 #include "fbbs/string.h"
 
 #define BRC_MAXSIZE     50000
@@ -220,7 +221,7 @@ bool brc_board_unread(const char *user, const char *bname, int bid)
 	if (!brc_initial(currentuser.userid, bname)) {
 		return true;
 	} else {
-		if (brc_unread((brdshm->bstatus[bid]).lastpost))
+		if (brc_unread(get_last_post_id(bid)))
 			return true;
 		return false;
 	}

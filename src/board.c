@@ -285,7 +285,7 @@ static bool check_newpost(board_t *board)
 	if (!brc_initial(currentuser.userid, board->name)) {
 		return true;
 	} else {
-		if (brc_unread((brdshm->bstatus[board->id]).lastpost)) {
+		if (brc_unread(get_last_post_id(board->id))) {
 			return true;
 		}
 	}
@@ -513,7 +513,7 @@ static int unread_position(board_t *bp)
 	if (!brc_initial(currentuser.userid, bp->name))
 		return 0;
 
-	if (brc_unread((brdshm->bstatus[bp->id]).lastpost)) {
+	if (brc_unread(get_last_post_id(bp->id))) {
 		char filename[STRLEN];
 		num = total - 1;
 		int step = 4;
