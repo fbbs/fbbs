@@ -330,6 +330,7 @@ static void plist_cache_free(plist_cache_t *c)
 
 typedef struct post_list_position_t {
 	post_list_type_e type;
+	int bid;
 	user_id_t uid;
 	post_id_t min_pid;
 	post_id_t min_tid;
@@ -358,7 +359,7 @@ typedef struct {
 
 static bool match(const post_list_position_t *p, const post_filter_t *fp)
 {
-	return !(p->type != fp->type
+	return !(p->type != fp->type || p->bid != fp->bid
 			|| (p->type == POST_LIST_AUTHOR && p->uid != fp->uid)
 			|| (p->type == POST_LIST_KEYWORD
 				&& streq(p->utf8_keyword, fp->utf8_keyword)));
@@ -368,6 +369,7 @@ static void filter_to_position_record(const post_filter_t *fp,
 		post_list_position_t *p)
 {
 	p->type = fp->type;
+	p->bid = fp->bid;
 	p->uid = fp->uid;
 	p->min_pid = p->min_tid = p->cur_pid = p->cur_tid = 0;
 	memcpy(p->utf8_keyword, fp->utf8_keyword, sizeof(p->utf8_keyword));
