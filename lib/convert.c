@@ -75,7 +75,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 	size_t l = len;
 
 	char *buffer = buf ? buf : cp->buf;
-	size = buf ? size : sizeof(cp->buf);
+	size = buf ? size - 1: sizeof(cp->buf) - 1;
 
 	if (!l) {
 		buffer[0] = '\0';
