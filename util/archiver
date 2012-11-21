@@ -48,7 +48,7 @@ $dbh->disconnect;
 sub create_table
 {
 	my $table = shift;
-	if ($table =~ /^archive_/) {
+	if ($table =~ /\.archive_/) {
 		$dbh->do("CREATE TABLE $table (PRIMARY KEY (id)) INHERITS ($SCHEMA.base)");
 		$dbh->do("CREATE INDEX ON $table(board)");
 	} else {

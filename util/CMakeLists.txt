@@ -20,5 +20,5 @@ install(TARGETS ${UTILS1} ${UTILS2} RUNTIME DESTINATION tools)
 
 install(FILES Helper.pm DESTINATION tools)
 set(SCRIPTS convert_board.pl convert_favboard.pl convert_posts.pl
-	convert_user.pl archiver)
+	convert_user.pl archiver hot_topics)
 install(PROGRAMS ${SCRIPTS} DESTINATION tools)
