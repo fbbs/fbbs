@@ -76,7 +76,7 @@ sub insert_results
 		if (not exists $board{$bid} or $board{$bid} < $opt{quota}) {
 			my ($uid, $uname, $title) = load_post_info($tid);
 			if (defined $uid) {
-				my @info = ($tid, $score, $bid, $last, $uid, $uname, $title);
+				my @info = ($tid, $score, $bid, $last, $uid, $uname, $title, $boards->{$bid}{name});
 				insert_hot_topic(@info);
 				$board{$bid}++;
 				push @hot_topics, \@info;
@@ -104,8 +104,8 @@ sub insert_hot_topic
 {
 	$_[3] = convert_time($_[3]);
 	my $sql = <<SQL;
-INSERT INTO posts.hot (tid, score, board, last_stamp, owner, uname, title)
-	VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO posts.hot (tid, score, board, last_stamp, owner, uname, title, bname)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 SQL
 	$dbh->do($sql, {}, @_) or die $!;
 }
