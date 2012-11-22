@@ -7,6 +7,7 @@
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/msg.h"
+#include "fbbs/post.h"
 #include "fbbs/register.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -1727,5 +1728,115 @@ int kick_user(void)
 
 	basic_session_info_clear(res);
 	clear();
+	return 0;
+}
+
+enum {
+	SEARCH_ALL_BOARDS_LIMIT = 1000,
+};
+
+static void search_all_boards(const post_filter_t *filter, const char *uname,
+		int days, bool remove)
+{
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "tmp/searchall.%s.%05d",
+			currentuser.userid, session.pid);
+	FILE *fp = fopen(file, "w");
+	if (!fp)
+		return;
+
+	GBK_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+	convert_u2g(filter->utf8_keyword, gbk_keyword);
+	fprintf(fp, "在所有板查询%s网友%d天以内的大作, 关键字'%s'.\n\n",
+			uname, days, gbk_keyword);
+
+	query_t *q = query_new(0);
+	query_select(q, POST_LIST_FIELDS);
+	query_from(q, post_table_name(filter));
+	build_post_filter(q, filter, NULL);
+	fb_time_t stamp = fb_time() - days * 24 * 60 * 60;
+	query_and(q, "stamp > %t", stamp);
+	query_orderby(q, "id", false);
+	query_limit(q, SEARCH_ALL_BOARDS_LIMIT);
+
+	db_res_t *res = query_exec(q);
+	int rows = db_res_rows(res);
+	for (int i = rows - 1; i >= 0; --i) {
+		post_info_t info;
+		res_to_post_info(res, i, 0, &info);
+
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(info.utf8_title, gbk_title);
+
+		char date[26];
+		ctime_r(&info.stamp, date);
+		date[24] = '\0';
+		fprintf(fp, " %s %s\n", date, gbk_title);
+	}
+	db_clear(res);
+
+	fprintf(fp, "%d matched found.\n", rows);
+	fclose(fp);
+
+	char buf[80];
+	snprintf(buf, sizeof(buf), "[%s]查询%s在%d天内关键字'%.10s'",
+			is_deleted(filter->type) ? "Deleted" : "版面",
+			uname, days, gbk_keyword);
+	mail_file(file, currentuser.userid, buf);
+	unlink(file);
+}
+
+int tui_search_all_boards(void)
+{
+	post_filter_t filter = { .bid = 0 };
+
+	set_user_status(ST_QUERY);
+
+	char uname[IDLEN + 1];
+	clear();
+	usercomplete("请输入您想查询的作者帐号: ", uname);
+
+	if (!*uname) {
+		move(1, 0);
+		if (!askyn("查询所有的作者吗?", true, false))
+			return 0;
+	} else {
+		filter.uid = get_user_id(uname);
+		if (!filter.uid) {
+			prints("不正确的使用者代号\n");
+			pressreturn();
+			return 0;
+		}
+	}
+
+	GBK_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+	getdata(2, 0, "请输入文章标题关键字: ", gbk_keyword, sizeof(gbk_keyword),
+			DOECHO, YEA);
+	if (*gbk_keyword) {
+		convert_g2u(gbk_keyword, filter.utf8_keyword);
+	}
+
+	char buf[4];
+	getdata(3, 0, "查询距今多少天以内的文章?: ", buf, sizeof(buf),
+			DOECHO, YEA);
+	int days = strtol(buf, NULL, 10);
+	if (days <= 0)
+		return 0;
+
+	getdata(4, 0, "搜索 0)取消 1) 版面 2) 垃圾箱 [0]:",
+			buf, sizeof(buf), DOECHO, YEA);
+	if (*buf <= '0' || *buf > '2')
+		return 0;
+
+	bool remove = false;
+	if (*buf == '2') {
+		filter.type = POST_LIST_TRASH;
+	} else {
+		move(5, 0);
+		remove = askyn("是否删除文章?", false, false);
+	}
+
+	search_all_boards(&filter, uname, days, remove);
+	report("网友大作查询", currentuser.userid);
 	return 0;
 }

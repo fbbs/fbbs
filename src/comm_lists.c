@@ -143,7 +143,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 #endif
 		{ "RunMBEM", exec_mbem },
 		{ "OpenVote", m_vote },
-		{ "SearchAll", r_searchall },
 #ifndef DLM
 		{ "Setsyspass", setsystempasswd },
 		{ "Register", m_register },
@@ -210,6 +209,7 @@ static const char *sysconf_funcstr(const char *name)
 		{ "Wall", "@mod:so/admintool.so#wall" },
 		{ "TitleAdmin", "@mod:so/admintool.so#tui_title_list" },
 		{ "MoneyAdmin", "@mod:so/admintool.so#grant_money" },
+		{ "SearchAll", "@mod:so/admintool.so#tui_search_all_boards" },
 		{ NULL, NULL }
 	};
 
