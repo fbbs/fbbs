@@ -228,36 +228,27 @@ int tui_query_result(const char *userid)
 	return 0;
 }
 
-int t_query(const char *user)
+int t_query(const char *uname)
 {
-	if (!strcmp(currentuser.userid, "guest"))
+	if (streq(currentuser.userid, "guest"))
 		return DONOTHING;
 
 	char userid[EXT_IDLEN + 1];
-	switch (session.status) {
-		case ST_LUSERS:
-		case ST_LAUSERS:
-		case ST_FRIEND:
-		case ST_READING:
-		case ST_MAIL:
-		case ST_RMAIL:
-		case ST_GMENU:
-			if (*user == '\0')
-				return DONOTHING;
-			strlcpy(userid, user, sizeof(userid));
-			strtok(userid, " ");
-			break;
-		default:
-			set_user_status(ST_QUERY);
-			refresh();
-			move(1, 0);
-			clrtobot();
-			prints("查询谁:\n<输入使用者代号, 按空白键可列出符合字串>\n");
-			move(1, 8);
-			usercomplete(NULL, userid);
-			if (*userid == '\0')
-				return FULLUPDATE;
-			break;
+	if (uname) {
+		if (*uname == '\0')
+			return DONOTHING;
+		strlcpy(userid, uname, sizeof(userid));
+		strtok(userid, " ");
+	} else {
+		set_user_status(ST_QUERY);
+		refresh();
+		move(1, 0);
+		clrtobot();
+		prints("查询谁:\n<输入使用者代号, 按空白键可列出符合字串>\n");
+		move(1, 8);
+		usercomplete(NULL, userid);
+		if (*userid == '\0')
+			return FULLUPDATE;
 	}
 
 	if (tui_query_result(userid) != 0) {
@@ -272,4 +263,9 @@ int t_query(const char *user)
 			&& session.status != ST_FRIEND && session.status != ST_GMENU)
 	pressanykey();
 	return FULLUPDATE;
+}
+
+int tui_query(void)
+{
+	return t_query(NULL);
 }

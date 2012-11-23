@@ -42,11 +42,12 @@ int m_internet();
 #endif
 
 int show_online_followings(), t_list(), t_monitor();
-int t_query(), x_cloak();
+int x_cloak();
 int AddPCorpus(); // deardragon 个人文集 
 int sendgoodwish();
 extern int tui_following_list(void);
 extern int tui_black_list(void);
+extern int tui_query(void);
 
 #ifndef WITHOUT_ADMIN_TOOLS
 int m_vote();
@@ -114,7 +115,7 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "UserDefine", x_userdefine },
 		{ "ShowFriends", show_online_followings },
 		{ "ShowLogins", show_online_users },
-		{ "QueryUser", t_query },
+		{ "QueryUser", tui_query },
 		{ "SetCloak", x_cloak },
 		{ "SendMsg", s_msg },
 		{ "ShowMsg", msg_more },
