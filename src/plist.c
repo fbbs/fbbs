@@ -2728,6 +2728,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case Ctrl('R'):
 			return reply_with_mail(ip);
 		case 'Z':
+			clear();
 			tui_send_msg(ip->owner);
 			return FULLUPDATE;
 		case Ctrl('A'):

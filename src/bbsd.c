@@ -284,6 +284,8 @@ static bool channel_reply(ssh_session s, enum ssh_channel_requests_e req)
 	return true;
 }
 
+extern int bbs_auth(const char *name, const char *passwd);
+
 /**
  *
  */
@@ -386,6 +388,7 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 
 	if (pid == 0) {
 		clear_bbs_env();
+		session.pid = getpid();
 
 		while (--nfds >= 0)
 			close(nfds);
