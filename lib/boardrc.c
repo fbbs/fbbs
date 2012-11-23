@@ -198,9 +198,9 @@ void brc_clear(int64_t id)
 		brc_mark_as_read(i);
 }
 
-void brc_clear_all(void)
+void brc_clear_all(int bid)
 {
-	brc_clear(time(NULL));
+	brc_clear(get_last_post_id(bid));
 }
 
 void brc_zapbuf(int *zbuf)

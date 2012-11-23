@@ -16,7 +16,7 @@ int bbsclear_main(void)
 
 	const char *start = get_param("start");
 	brc_fcgi_init(currentuser.userid, board.name);
-	brc_clear_all();
+	brc_clear_all(board.id);
 	brc_update(currentuser.userid, board.name);
 	char buf[STRLEN];
 	snprintf(buf, sizeof(buf), "doc?board=%s&start=%s", board.name, start);

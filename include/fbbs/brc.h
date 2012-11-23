@@ -14,7 +14,7 @@ extern bool brc_unread(int64_t id);
 extern int brc_first_unread(void);
 extern int brc_last_read(void);
 extern void brc_clear(int64_t id);
-extern void brc_clear_all(void);
+extern void brc_clear_all(int bid);
 
 extern void brc_zapbuf(int *zbuf);
 extern int brc_fcgi_init(const char *user, const char *board);

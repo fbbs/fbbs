@@ -2711,7 +2711,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			brc_clear(ip->id);
 			return PARTUPDATE;
 		case 'f':
-			brc_clear_all();
+			brc_clear_all(l->filter.bid);
 			return PARTUPDATE;
 		case 'd':
 			return tui_delete_single_post(l, ip);
