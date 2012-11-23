@@ -527,7 +527,7 @@ int post_reply(const char *owner, const char *title, const char *file)
 	set_user_status(ST_SMAIL);
 
 	// indicate the quote file/user
-	setbfile(quote_file, currboard, file);
+	strlcpy(quote_file, file, sizeof(quote_file));
 	strcpy(quote_user, owner);
 
 	if (!getuser(quote_user)) {

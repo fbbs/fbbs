@@ -1325,7 +1325,7 @@ static int forward_post(const post_info_t *ip, bool uuencode)
 static int reply_with_mail(const post_info_t *ip)
 {
 	char file[HOMELEN];
-	if (!ip || dump_content(ip, file, sizeof(file)))
+	if (!ip || !dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
