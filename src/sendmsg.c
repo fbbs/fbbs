@@ -137,8 +137,12 @@ static void log_my_msg(const char *uname, const char *msg, int type)
 	return;
 }
 
-static bool session_msgable(const msg_session_info_t *s, int i)
+static bool session_msgable(const msg_session_info_t *s, int i, int type)
 {
+	const char *uname = msg_session_info_uname(s, i);
+	if (streq(uname, currentuser.userid))
+		return false;
+
 	if (!msg_session_info_visible(s, i) && !HAS_PERM(PERM_SEECLOAK))
 		return false;
 
@@ -149,6 +153,17 @@ static bool session_msgable(const msg_session_info_t *s, int i)
 	if (status == ST_BBSNET || status == ST_LOCKSCREEN)
 		return false;
 
+	if (type == LOGIN_MSG || type == LOGOUT_MSG) {
+		struct userec receiver;
+		if (!getuserec(uname, &receiver))
+			return false;
+		if (type == LOGIN_MSG
+				&& !HAS_DEFINE(receiver.userdefine, DEF_LOGINFROM))
+			return false;
+		if (type == LOGOUT_MSG
+				&& !HAS_DEFINE(receiver.userdefine, DEF_LOGOFFMSG))
+			return false;
+	}
 	return true;
 }
 
@@ -174,7 +189,7 @@ static bool user_msgable(const msg_session_info_t *s)
 	}
 
 	for (int i = 0; i < msg_session_info_count(s); ++i) {
-		if (session_msgable(s, i))
+		if (session_msgable(s, i, NORMAL_MSG))
 			return true;
 	}
 	return false;
@@ -196,7 +211,7 @@ static int send_msg(const msg_session_info_t *s, const char *msg, int type)
 
 	int sent = 0;
 	for (int i = 0; i < msg_session_info_count(s); ++i) {
-		if (session_msgable(s, i)
+		if (session_msgable(s, i, type)
 				&& send_one_msg(msg_session_info_pid(s, i), 
 					msg_session_info_uname(s, i), full))
 			++sent;
