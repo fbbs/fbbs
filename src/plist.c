@@ -288,16 +288,19 @@ static bool match_filter(post_filter_t *filter, post_info_t *p)
 		match &= p->tid == filter->tid;
 	if (*filter->utf8_keyword)
 		match &= (bool)strcasestr(p->utf8_title, filter->utf8_keyword);
+	if (filter->flag)
+		match &= (p->flag & filter->flag) == filter->flag;
 	return match;
 }
 
 static int relocate_cursor(plist_cache_t *c, int cursor)
 {
-	if (cursor >= 0 && cursor < c->count)
-	while (cursor < c->begin)
-		adjust_window(c, -c->page);
-	while (cursor >= c->end)
-		adjust_window(c, c->page);
+	if (cursor >= 0 && cursor < c->count) {
+		while (cursor < c->begin)
+			adjust_window(c, -c->page);
+		while (cursor >= c->end)
+			adjust_window(c, c->page);
+	}
 	return cursor - c->begin;
 }
 
@@ -336,6 +339,7 @@ typedef struct post_list_position_t {
 	post_id_t min_tid;
 	post_id_t cur_pid;
 	post_id_t cur_tid;
+	bool sticky;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 	SLIST_FIELD(post_list_position_t) next;
 } post_list_position_t;
@@ -404,7 +408,7 @@ static void save_post_list_position(const slide_list_t *p)
 		return;
 
 	post_info_t *min = plist_cache_get(&l->cache, 0);
-	post_info_t *cur = plist_cache_get_non_sticky(&l->cache, p->cur);
+	post_info_t *cur = plist_cache_get(&l->cache, p->cur);
 	if (!cur)
 		cur = min;
 
@@ -412,6 +416,7 @@ static void save_post_list_position(const slide_list_t *p)
 	l->pos->cur_tid = cur ? cur->tid : 0;
 	l->pos->min_pid = min ? min->id : 0;
 	l->pos->cur_pid = cur ? cur->id : 0;
+	l->pos->sticky = (cur->flag & POST_FLAG_STICKY);
 }
 
 static post_info_t *get_post_info(slide_list_t *p)
@@ -455,7 +460,8 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	if (l->relocate || l->reload) {
 		post_filter_t filter = {
-			.min = l->relocate ? l->relocate : l->pos->cur_pid
+			.min = l->relocate ? l->relocate : l->pos->cur_pid,
+			.flag = l->pos->sticky ? POST_FLAG_STICKY : 0,
 		};
 		int pos = plist_cache_relocate(&l->cache, -1, &filter, false);
 		if (pos >= 0)
@@ -1909,12 +1915,13 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 	if (!ip || !dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
-	bool end = false, upward = false;
+	bool end = false, upward = false, sticky = false;
 	post_id_t thread_entry = 0, last_id = 0;
 	while (!end) {
 		brc_mark_as_read(fip->p.id);
 		last_id = fip->p.id;
 		l->current_tid = fip->p.tid;
+		end = sticky = fip->p.flag & POST_FLAG_STICKY;
 
 		int ch = ansimore(file, false);
 
@@ -2007,8 +2014,9 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 	thread_post_cache_free(&cache);
 	free_post_info_full(&info);
 
-	back_to_post_list(p, thread_entry ? thread_entry : last_id,
-			l->current_tid);
+	if (!sticky)
+		back_to_post_list(p, thread_entry ? thread_entry : last_id,
+				l->current_tid);
 	return FULLUPDATE;
 }
 
