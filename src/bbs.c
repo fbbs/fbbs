@@ -285,6 +285,7 @@ int tui_select_board(int current_bid)
 	move(1, 0);
 	clrtoeol();
 
+	set_user_status(ST_READING);
 	if (board.id != current_bid) {
 		brc_update(currentuser.userid, currboard);
 		brc_initial(currentuser.userid, bname);
@@ -622,13 +623,14 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	else
 		uname = currentuser.userid;
 
+	bool autopost = mode == POST_FILE_DELIVER || mode == POST_FILE_AUTO
+	            || mode == POST_FILE_BMS;
 	post_request_t req = {
-		.autopost = mode == POST_FILE_DELIVER || mode == POST_FILE_AUTO
-			|| mode == POST_FILE_BMS,
+		.autopost = autopost,
 		.crosspost = mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN,
 		.uname = uname,
 		.nick = currentuser.username,
-		.user = &currentuser,
+		.user = autopost ? NULL : &currentuser,
 		.board = board,
 		.title = gbk_title,
 		.content = NULL,
