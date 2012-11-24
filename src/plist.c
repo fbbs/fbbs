@@ -650,7 +650,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	post_list_t *l = p->data;
 	const char *mode = mode_description(l->filter.type);
 
-	prints("\033[1;37;44m  编号   %-12s %6s %-25s     在线:%-4d",
+	prints("\033[1;37;44m  编号   %-12s %6s %-25s 在线:%-4d",
 			"刊 登 者", "日  期", " 标  题", count_onboard(currbp->id));
 	if (l->filter.archive) {
 		int year = l->filter.archive / 10000;
