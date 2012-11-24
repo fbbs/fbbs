@@ -7,6 +7,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
+#include "fbbs/post.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -568,7 +569,14 @@ static tui_list_display_t board_list_display(tui_list_t *p, int n)
 	board_list_t *l = p->data;
 	board_t *board = &(l->indices[n]->board);
 
-	prints("  %3d ", n + 1);
+	if (!l->newflag)
+		prints(" %5d", n + 1);
+	else if (board->flag & BOARD_DIR_FLAG)
+		prints("  Ä¿Â¼");
+	else
+		prints(" %5d", get_last_fake_pid(board->id));
+
+	prints(" ");
 	if (board->flag & BOARD_DIR_FLAG) {
 		prints("£«");
 	} else {
