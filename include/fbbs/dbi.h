@@ -55,6 +55,7 @@ extern void query_sappend(query_t *q, const char *symbol, const char *cmd, ...);
 /** @ingroup query_builder */
 /** @{ */
 #define query_select(q, fields)  query_sappend(q, "SELECT", fields)
+#define query_insert(q, table, fields)  query_sappend(q, "INSERT INTO", table " " fields)
 #define query_returning(q, fields)  query_sappend(q, "RETURNING", fields)
 #define query_from(q, table)  query_sappend(q, "FROM", table)
 #define query_update(q, table)  query_sappend(q, "UPDATE", table)

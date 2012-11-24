@@ -148,6 +148,59 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	return convert_file_to_utf8_content(fname);
 }
 
+static const char *post_archive_name(int archive)
+{
+	static char buf[24];
+	snprintf(buf, sizeof(buf), "posts.archive_%d", archive);
+	return buf;
+}
+
+#define LAST_FAKE_ID_KEY "last_fake_id"
+
+static int get_last_fake_pid(int bid)
+{
+	return mdb_integer(0, "HGET", LAST_FAKE_ID_KEY " %d", bid);
+}
+
+static int incr_last_fake_pid(int bid, int delta)
+{
+	return mdb_integer(0, "HINCRBY", LAST_FAKE_ID_KEY " %d %d", bid, delta);
+}
+
+static void update_fake_pid(int bid, int archive, int delta, post_id_t min)
+{
+	int last;
+	if (archive) {
+		query_t *q = query_new(0);
+		query_select(q, "COUNT(*)");
+		query_from(q, post_archive_name(archive));
+		query_where(q, "board = %d", bid);
+
+		db_res_t *res = query_exec(q);
+		if (res && db_res_rows(res) > 0)
+			last = db_get_bigint(res, 0, 0);
+		else
+			last = 0;
+		db_clear(res);
+		last += delta;
+	} else {
+		last = incr_last_fake_pid(bid, delta);
+	}
+
+	query_t *q = query_new(0);
+	query_append(q, "WITH rank AS ( SELECT id, %d::INTEGER - rank()"
+			" OVER (ORDER BY id DESC) AS r", last + 1);
+	query_from(q, "posts.recent");
+	query_where(q, "board = %d AND id >= %"DBIdPID")", bid, min);
+	query_update(q, "posts.recent p");
+	query_set(q, "fake_id = rank.r");
+	query_from(q, "rank");
+	query_where(q, "rank.id = p.id");
+
+	db_res_t *res = query_cmd(q);
+	db_clear(res);
+}
+
 static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		const char *content)
 {
@@ -167,13 +220,14 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 	if (pid) {
 		reid = pr->reid ? pr->reid : pid;
 		tid = pr->tid ? pr->tid : pid;
+		int fake_pid = incr_last_fake_pid(pr->board->id, 1);
 
 		r = db_cmd("INSERT INTO posts.recent (id, reid, tid, owner, stamp,"
-				" board, uname, title, content, locked, marked)"
+				" board, uname, title, content, locked, marked, fake_pid)"
 				" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID", %"DBIdUID","
 				" %t, %d, %s, %s, %s, %b, %b)",
 				pid, reid, tid, uid, now, pr->board->id, uname,
-				utf8_title, content, pr->locked, pr->marked);
+				utf8_title, content, pr->locked, pr->marked, fake_pid);
 		if (!r || db_cmd_rows(r) != 1)
 			pid = 0;
 		db_clear(r);
@@ -478,26 +532,27 @@ void res_to_post_info(db_res_t *r, int i, int archive, post_info_t *p)
 	p->id = db_get_post_id(r, i, 0);
 	p->reid = db_get_post_id(r, i, 1);
 	p->tid = db_get_post_id(r, i, 2);
-	p->bid = db_get_integer(r, i, 3);
+	p->fake_id = db_get_integer(r, i, 3);
+	p->bid = db_get_integer(r, i, 4);
 	p->archive = archive;
-	p->uid = db_get_is_null(r, i, 4) ? 0 : db_get_user_id(r, i, 4);
-	strlcpy(p->owner, db_get_value(r, i, 5), sizeof(p->owner));
-	p->stamp = db_get_time(r, i, 6);
-	p->flag = (db_get_bool(r, i, 7) ? POST_FLAG_DIGEST : 0)
-			| (db_get_bool(r, i, 8) ? POST_FLAG_MARKED : 0)
-			| (db_get_bool(r, i, 9) ? POST_FLAG_WATER : 0)
-			| (db_get_bool(r, i, 10) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(r, i, 11) ? POST_FLAG_IMPORT : 0)
+	p->uid = db_get_is_null(r, i, 5) ? 0 : db_get_user_id(r, i, 5);
+	strlcpy(p->owner, db_get_value(r, i, 6), sizeof(p->owner));
+	p->stamp = db_get_time(r, i, 7);
+	p->flag = (db_get_bool(r, i, 8) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(r, i, 9) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(r, i, 10) ? POST_FLAG_WATER : 0)
+			| (db_get_bool(r, i, 11) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(r, i, 12) ? POST_FLAG_IMPORT : 0)
 			| (deleted ? POST_FLAG_DELETED : 0);
-	p->replies = db_get_integer(r, i, 12);
-	p->comments = db_get_integer(r, i, 13);
-	p->score = db_get_integer(r, i, 14);
-	strlcpy(p->utf8_title, db_get_value(r, i, 15), sizeof(p->utf8_title));
+	p->replies = db_get_integer(r, i, 13);
+	p->comments = db_get_integer(r, i, 14);
+	p->score = db_get_integer(r, i, 15);
+	strlcpy(p->utf8_title, db_get_value(r, i, 16), sizeof(p->utf8_title));
 
 	if (deleted) {
-		strlcpy(p->ename, db_get_value(r, i, 16), sizeof(p->ename));
-		p->estamp = db_get_time(r, i, 17);
-		p->flag |= db_get_bool(r, i, 18) ? POST_FLAG_JUNK : 0;
+		strlcpy(p->ename, db_get_value(r, i, 17), sizeof(p->ename));
+		p->estamp = db_get_time(r, i, 18);
+		p->flag |= db_get_bool(r, i, 19) ? POST_FLAG_JUNK : 0;
 	}
 }
 
@@ -540,11 +595,8 @@ post_list_type_e post_list_type(const post_info_t *ip)
 
 const char *post_table_name(const post_filter_t *filter)
 {
-	static char buf[24];
-	if (filter->archive) {
-		snprintf(buf, sizeof(buf), "posts.archive_%d", filter->archive);
-		return buf;
-	}
+	if (filter->archive)
+		return post_archive_name(filter->archive);
 
 	if (is_deleted(filter->type))
 		return "posts.deleted";
@@ -641,8 +693,8 @@ void res_to_post_info_full(db_res_t *res, int row, int archive,
 {
 	res_to_post_info(res, row, archive, &p->p);
 	p->res = res;
-	p->content = db_get_value(res, row, 16);
-	p->length = db_get_length(res, row, 16);
+	p->content = db_get_value(res, row, 17);
+	p->length = db_get_length(res, row, 17);
 }
 
 void free_post_info_full(post_info_full_t *p)
@@ -685,6 +737,31 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
+int post_deletion_trigger(db_res_t *res, int bid, int archive, bool deletion)
+{
+	int rows = db_res_rows(res);
+	if (rows > 0) {
+		if (bid) {
+			post_id_t min = POST_ID_MAX;
+			for (int i = 0; i < rows; ++i) {
+				post_id_t pid = db_get_post_id(res, i, 0);
+				if (pid < min)
+					min = pid;
+			}
+			update_fake_pid(bid, archive, deletion ? -rows : rows, min);
+		}
+
+		for (int i = 0; i < rows; ++i) {
+			user_id_t uid = db_get_user_id(res, i, 1);
+			if (uid && db_get_bool(res, i, 3)) {
+				const char *uname = db_get_value(res, i, 2);
+				adjust_user_post_count(uname, deletion ? -1 : 1);
+			}
+		}
+	}
+	return rows;
+}
+
 int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 {
 	fb_time_t now = time(NULL);
@@ -702,60 +779,33 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	if (!force)
 		query_and(q, "NOT marked");
 	query_and(q, "NOT sticky");
-	query_append(q, "RETURNING " POST_LIST_FIELDS_FULL ")");
-	query_append(q, "INSERT INTO posts.deleted ("
-			POST_LIST_FIELDS_FULL ",eraser,deleted,junk,bm_visible,ename)");
+	query_returning(q, POST_LIST_FIELDS_FULL ")");
+	query_insert(q, "posts.deleted ", "("POST_LIST_FIELDS_FULL
+			",eraser,deleted,junk,bm_visible,ename)");
 	query_append(q, "SELECT " POST_LIST_FIELDS_FULL ","
 			" %"DBIdUID", %t, %b AND (water OR %b),"" %b, %s FROM rows",
 			session.uid, now, decrease, junk, bm_visible, currentuser.userid);
-	query_append(q, "RETURNING owner, uname, junk");
+	query_returning(q, "id,owner,uname,junk");
 
 	db_res_t *res = query_exec(q);
-
-	int rows = 0;
-	if (res) {
-		rows = db_res_rows(res);
-		for (int i = 0; i < rows; ++i) {
-			user_id_t uid = db_get_user_id(res, i, 0);
-			if (uid && db_get_bool(res, i, 2)) {
-				const char *uname = db_get_value(res, i, 1);
-				adjust_user_post_count(uname, -1);
-			}
-		}
-		db_clear(res);
-	}
+	int rows = post_deletion_trigger(res, filter->bid, filter->archive, true);
+	db_clear(res);
 	return rows;
 }
 
 int undelete_posts(post_filter_t *filter)
 {
 	query_t *q = query_new(0);
-	query_select(q, "owner, uname, junk FROM posts.deleted");
-	build_post_filter(q, filter, NULL);
-
-	db_res_t *res = query_exec(q);
-	if (res) {
-		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
-			user_id_t uid = db_get_user_id(res, i, 0);
-			if (uid && db_get_bool(res, i, 2)) {
-				const char *uname = db_get_value(res, i, 1);
-				adjust_user_post_count(uname, 1);
-			}
-		}
-		db_clear(res);
-	}
-
-	q = query_new(0);
 	query_append(q, "WITH rows AS ( DELETE FROM posts.deleted");
 	build_post_filter(q, filter, NULL);
-	query_append(q, "RETURNING " POST_LIST_FIELDS_FULL ")");
-	query_append(q, "INSERT INTO posts.recent (" POST_LIST_FIELDS_FULL ")");
-	query_select(q, POST_LIST_FIELDS_FULL);
+	query_returning(q, "junk,"POST_LIST_FIELDS_FULL ")");
+	query_insert(q, "posts.recent", "(junk," POST_LIST_FIELDS_FULL ")");
+	query_select(q, "junk,"POST_LIST_FIELDS_FULL);
 	query_from(q, "rows");
+	query_returning(q, "id,owner,uname,junk");
 
-	res = query_cmd(q);
-
-	int rows = res ? db_cmd_rows(res) : 0;
+	db_res_t *res = query_exec(q);
+	int rows = post_deletion_trigger(res, filter->bid, filter->archive, false);
 	db_clear(res);
 	return rows;
 }

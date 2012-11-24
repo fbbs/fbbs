@@ -19,7 +19,7 @@ enum {
 };
 
 #define POST_LIST_FIELDS  \
-	"id,reid,tid,board,owner,uname,stamp,digest,marked,water," \
+	"id,reid,tid,fake_id,board,owner,uname,stamp,digest,marked,water," \
 	"locked,imported,replies,comments,score,title"
 
 #define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ",content"
@@ -65,6 +65,7 @@ typedef struct {
 	int comments;
 	int score;
 	int flag;
+	int fake_id;
 	user_id_t uid;
 	post_id_t id;
 	post_id_t reid;

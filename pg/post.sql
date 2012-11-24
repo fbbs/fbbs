@@ -7,6 +7,7 @@ CREATE TABLE posts.base (
 	id BIGSERIAL,
 	reid BIGINT,
 	tid BIGINT,
+	fake_id INTEGER,
 	owner INTEGER,
 	stamp TIMESTAMPTZ,
 	board INTEGER,
@@ -28,6 +29,7 @@ CREATE TABLE posts.base (
 );
 
 CREATE TABLE posts.recent (
+	junk BOOLEAN,
 	sticky BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id)
 ) INHERITS (posts.base);

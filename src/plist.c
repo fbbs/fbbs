@@ -650,7 +650,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	post_list_t *l = p->data;
 	const char *mode = mode_description(l->filter.type);
 
-	prints("\033[1;37;44m编号 %-12s %6s %-25s     在线:%-4d",
+	prints("\033[1;37;44m  编号   %-12s %6s %-25s     在线:%-4d",
 			"刊 登 者", "日  期", " 标  题", count_onboard(currbp->id));
 	if (l->filter.archive) {
 		int year = l->filter.archive / 10000;
@@ -735,14 +735,15 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 {
 	post_list_type_e type = l->filter.type;
 
-	char mark_buf[16];
-	if (p->flag & POST_FLAG_STICKY) {
-		strlcpy(mark_buf, "\033[1;31m∞\033[m", sizeof(mark_buf));
-	} else {
-		mark_buf[0] = ' ';
-		mark_buf[1] = (p->id == l->mark_pid) ? '@' : get_post_mark(p);
-		mark_buf[2] = '\0';
-	}
+	char fake_id[16];
+	if (p->flag & POST_FLAG_STICKY)
+		strlcpy(fake_id, " \033[1;31m[∞]\033[m", sizeof(fake_id));
+	else if (p->flag & POST_FLAG_DELETED)
+		snprintf(fake_id, sizeof(fake_id), "     ");
+	else
+		snprintf(fake_id, sizeof(fake_id), "%5d", p->fake_id);
+
+	char mark = (p->id == l->mark_pid) ? '@' : get_post_mark(p);
 
 	const char *mark_prefix = "", *mark_suffix = "";
 	if ((p->flag & POST_FLAG_IMPORT) && am_curr_bm()) {
@@ -810,8 +811,8 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 
 	char buf[128];
 	snprintf(buf, sizeof(buf),
-			"  %s%s%s \033[%sm%-12.12s %s%6.6s %s\033[%sm%s\033[m\n",
-			mark_prefix, mark_buf, mark_suffix,
+			" %s %s%c%s \033[%sm%-12.12s %s%6.6s %s\033[%sm%s\033[m\n",
+			fake_id, mark_prefix, mark, mark_suffix,
 			idcolor, p->owner, color, date,
 			(p->flag & POST_FLAG_LOCKED) ? "\033[1;33mx" : " ",
 			thread_color, gbk_title);
