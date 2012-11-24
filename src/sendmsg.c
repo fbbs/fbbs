@@ -165,9 +165,12 @@ static bool user_msgable(const msg_session_info_t *s)
 		if (!getuser(uname))
 			return false;
 
-		if (HAS_DEFINE(lookupuser.userdefine, FRIENDMSG_PAGER)
-				&& !am_followed_by(uname))
-			return false;
+		if (!HAS_DEFINE(lookupuser.userdefine, DEF_ALLMSG)) {
+			if (!HAS_DEFINE(lookupuser.userdefine, DEF_FRIENDMSG)
+				|| !am_followed_by(uname)) {
+				return false;
+			}
+		}
 	}
 
 	for (int i = 0; i < msg_session_info_count(s); ++i) {

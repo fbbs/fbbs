@@ -139,7 +139,7 @@ extern basic_session_info_t *get_my_sessions(void);
 #define basic_session_info_sid(r, i)  db_get_session_id(r, i, 0)
 #define basic_session_info_pid(r, i)  db_get_integer(r, i, 1)
 #define basic_session_info_visible(r, i)  db_get_bool(r, i, 2)
-#define basic_session_info_web(r, i)  db_get_session_id(r, i, 3)
+#define basic_session_info_web(r, i)  db_get_bool(r, i, 3)
 #define basic_session_info_clear(r)  db_clear(r)
 
 extern int count_online(void);
