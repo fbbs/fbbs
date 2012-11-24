@@ -169,4 +169,7 @@ extern archive_list_t *archive_list_load(int bid);
 #define archive_list_number(list, i)  db_get_integer(list, i, 0)
 #define archive_list_free(list)  db_clear(list)
 
+extern int get_last_fake_pid(int bid);
+extern int incr_last_fake_pid(int bid, int delta);
+
 #endif // FB_POST_H

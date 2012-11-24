@@ -157,12 +157,12 @@ static const char *post_archive_name(int archive)
 
 #define LAST_FAKE_ID_KEY "last_fake_id"
 
-static int get_last_fake_pid(int bid)
+int get_last_fake_pid(int bid)
 {
 	return mdb_integer(0, "HGET", LAST_FAKE_ID_KEY " %d", bid);
 }
 
-static int incr_last_fake_pid(int bid, int delta)
+int incr_last_fake_pid(int bid, int delta)
 {
 	return mdb_integer(0, "HINCRBY", LAST_FAKE_ID_KEY " %d %d", bid, delta);
 }
@@ -223,9 +223,9 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		int fake_pid = incr_last_fake_pid(pr->board->id, 1);
 
 		r = db_cmd("INSERT INTO posts.recent (id, reid, tid, owner, stamp,"
-				" board, uname, title, content, locked, marked, fake_pid)"
+				" board, uname, title, content, locked, marked, fake_id)"
 				" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID", %"DBIdUID","
-				" %t, %d, %s, %s, %s, %b, %b)",
+				" %t, %d, %s, %s, %s, %b, %b, %d)",
 				pid, reid, tid, uid, now, pr->board->id, uname,
 				utf8_title, content, pr->locked, pr->marked, fake_pid);
 		if (!r || db_cmd_rows(r) != 1)
