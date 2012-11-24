@@ -2581,7 +2581,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case Ctrl('P'):
 			return tui_new_post(l->filter.bid, NULL);
 		case '@':
-			return show_online();
+			show_online();
+			set_user_status(ST_READING);
+			return FULLUPDATE;
 		case '.':
 			return post_list_deleted(l);
 		case 'J':
