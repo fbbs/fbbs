@@ -416,7 +416,7 @@ static void save_post_list_position(const slide_list_t *p)
 	l->pos->cur_tid = cur ? cur->tid : 0;
 	l->pos->min_pid = min ? min->id : 0;
 	l->pos->cur_pid = cur ? cur->id : 0;
-	l->pos->sticky = (cur->flag & POST_FLAG_STICKY);
+	l->pos->sticky = cur && (cur->flag & POST_FLAG_STICKY);
 }
 
 static post_info_t *get_post_info(slide_list_t *p)
