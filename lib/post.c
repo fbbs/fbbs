@@ -593,15 +593,43 @@ post_list_type_e post_list_type(const post_info_t *ip)
 	return (ip->flag & POST_FLAG_DELETED) ? POST_LIST_TRASH : POST_LIST_NORMAL;
 }
 
+const char *post_archive_table(const post_filter_t *filter)
+{
+	static char table[24];
+	if (filter->bid) {
+		snprintf(table, sizeof(table), "posts.archive_%d", filter->bid);
+		return table;
+	}
+	return "posts.archives";
+}
+
+const char *post_recent_table(const post_filter_t *filter)
+{
+	static char table[24];
+	if (filter->bid) {
+		snprintf(table, sizeof(table), "posts.recent_%d", filter->bid);
+		return table;
+	}
+	return "posts.recent";
+}
+
+/**
+ * Get name of the database table by filter.
+ * @param filter The post filter.
+ * @return The table name.
+ * @note This function will directly return partition table to the caller
+ *       instead of parent table because of a 2x performance gain (as of
+ *       PostgreSQL 9.2).
+ */
 const char *post_table_name(const post_filter_t *filter)
 {
 	if (filter->archive)
-		return post_archive_name(filter->archive);
+		return post_archive_table(filter);
 
 	if (is_deleted(filter->type))
 		return "posts.deleted";
 	else
-		return "posts.recent";
+		return post_recent_table(filter);
 }
 
 const char *post_table_index(const post_filter_t *filter)
