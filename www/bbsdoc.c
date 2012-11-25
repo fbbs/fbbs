@@ -196,7 +196,7 @@ int bbsbfind_main(void)
 
 	query_t *q = query_new(0);
 	query_select(q, POST_LIST_FIELDS);
-	query_from(q, "posts.recent");
+	query_from(q, post_table_name(&filter));
 	build_post_filter(q, &filter, NULL);
 
 	long day = strtol(get_param("limit"), NULL, 10);

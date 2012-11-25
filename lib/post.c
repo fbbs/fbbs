@@ -640,10 +640,16 @@ const char *post_table_index(const post_filter_t *filter)
 		return "id";
 }
 
+/**
+ * Generate post query for a given filter.
+ * @param[out] q The query.
+ * @param[in] f The post filter.
+ * @param[in] asc Generate proper ORDER BY clause, or nothing if left NULL.
+ */
 void build_post_filter(query_t *q, const post_filter_t *f, const bool *asc)
 {
 	query_where(q, "TRUE");
-	if (f->bid)
+	if (f->bid && is_deleted(f->type))
 		query_and(q, "board = %d", f->bid);
 	if (f->flag & POST_FLAG_DIGEST)
 		query_and(q, "digest");
@@ -802,7 +808,8 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	}
 
 	query_t *q = query_new(0);
-	query_append(q, "WITH rows AS ( DELETE FROM posts.recent");
+	query_append(q, "WITH rows AS ( DELETE FROM");
+	query_append(q, post_table_name(filter));
 	build_post_filter(q, filter, NULL);
 	if (!force)
 		query_and(q, "NOT marked");

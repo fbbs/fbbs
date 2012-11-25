@@ -52,7 +52,7 @@ static post_info_full_t *bbstcon_search(int bid, post_id_t pid, post_id_t *tid,
 
 	query_t *q = query_new(0);
 	query_select(q, POST_LIST_FIELDS_FULL);
-	query_from(q, "posts.recent");
+	query_from(q, post_table_name(&filter));
 	build_post_filter(q, &filter, &asc);
 	query_limit(q, *count + 1);
 
