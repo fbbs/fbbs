@@ -100,4 +100,20 @@ CREATE TRIGGER posts_recent_before_insert_trigger
 	BEFORE INSERT ON posts.recent
 	FOR EACH ROW EXECUTE PROCEDURE posts_recent_before_insert_trigger();
 
+CREATE OR REPLACE FUNCTION create_posts_recent_partition(_board INTEGER) RETURNS VOID AS $$
+BEGIN
+	EXECUTE 'CREATE TABLE posts.recent_' || _board || ' (CHECK (board = ' || _board || ')) INHERITS (posts.recent)';
+	EXECUTE 'CREATE INDEX ON posts.recent_' || _board || ' (id)';
+	EXECUTE 'CREATE INDEX ON posts.recent_' || _board || ' (board)';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION create_posts_archive_partition(_board INTEGER) RETURNS VOID AS $$
+BEGIN
+	EXECUTE 'CREATE TABLE posts.archive_' || _board || ' (CHECK (board = ' || _board || ')) INHERITS (posts.archives)';
+	EXECUTE 'CREATE INDEX ON posts.archive_' || _board || ' (id)';
+	EXECUTE 'CREATE INDEX ON posts.archive_' || _board || ' (board)';
+END;
+$$ LANGUAGE plpgsql;
+
 COMMIT;
