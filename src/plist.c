@@ -1272,8 +1272,8 @@ static int show_post_info(const post_info_t *ip)
 			BBSHOST, currbp->id, ip->id,
 			(ip->flag & POST_FLAG_STICKY) ? "&s=1" : "");
 	prints("\n%s", link);
-	if (ip->archive)
-		prints("&archive=%d", ip->archive);
+	if (ip->flag & POST_FLAG_ARCHIVE)
+		prints("&archive=1");
 	prints("\n");
 
 	pressanykey();
@@ -1284,7 +1284,8 @@ static bool dump_content(const post_info_t *ip, char *file, size_t size)
 {
 	post_filter_t filter = {
 		.min = ip->id, .max = ip->id, .bid = ip->bid,
-		.type = post_list_type(ip), .archive = ip->archive,
+		.type = post_list_type(ip),
+		.flag = (ip->flag & POST_FLAG_ARCHIVE) ? POST_FLAG_ARCHIVE : 0,
 	};
 	db_res_t *res = query_post_by_pid(&filter, "content");
 	if (!res || db_res_rows(res) < 1)

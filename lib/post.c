@@ -526,7 +526,7 @@ bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
 	return set_post_flag(&filter, "sticky", sticky, false);
 }
 
-void res_to_post_info(db_res_t *r, int i, int archive, post_info_t *p)
+void res_to_post_info(db_res_t *r, int i, bool archive, post_info_t *p)
 {
 	bool deleted = streq(db_field_name(r, 0), "did");
 	p->id = db_get_post_id(r, i, 0);
@@ -534,7 +534,6 @@ void res_to_post_info(db_res_t *r, int i, int archive, post_info_t *p)
 	p->tid = db_get_post_id(r, i, 2);
 	p->fake_id = db_get_integer(r, i, 3);
 	p->bid = db_get_integer(r, i, 4);
-	p->archive = archive;
 	p->uid = db_get_is_null(r, i, 5) ? 0 : db_get_user_id(r, i, 5);
 	strlcpy(p->owner, db_get_value(r, i, 6), sizeof(p->owner));
 	p->stamp = db_get_time(r, i, 7);
@@ -543,7 +542,8 @@ void res_to_post_info(db_res_t *r, int i, int archive, post_info_t *p)
 			| (db_get_bool(r, i, 10) ? POST_FLAG_WATER : 0)
 			| (db_get_bool(r, i, 11) ? POST_FLAG_LOCKED : 0)
 			| (db_get_bool(r, i, 12) ? POST_FLAG_IMPORT : 0)
-			| (deleted ? POST_FLAG_DELETED : 0);
+			| (deleted ? POST_FLAG_DELETED : 0)
+			| (archive ? POST_FLAG_ARCHIVE : 0);
 	p->replies = db_get_integer(r, i, 13);
 	p->comments = db_get_integer(r, i, 14);
 	p->score = db_get_integer(r, i, 15);
@@ -722,7 +722,7 @@ query_t *build_post_query(const post_filter_t *filter, bool asc, int limit)
 	return q;
 }
 
-void res_to_post_info_full(db_res_t *res, int row, int archive,
+void res_to_post_info_full(db_res_t *res, int row, bool archive,
 		post_info_full_t *p)
 {
 	res_to_post_info(res, row, archive, &p->p);

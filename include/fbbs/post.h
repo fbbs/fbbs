@@ -34,6 +34,7 @@ typedef enum {
 	POST_FLAG_DELETED = 0x40,
 	POST_FLAG_JUNK = 0x80,
 	POST_FLAG_ATTACHMENT = 0x100,
+	POST_FLAG_ARCHIVE = 0x200,
 } post_flag_e;
 
 enum {
@@ -73,7 +74,6 @@ typedef struct {
 	fb_time_t stamp;
 	fb_time_t estamp;
 	int bid;
-	int archive;
 	char owner[IDLEN + 1];
 	char ename[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
@@ -135,7 +135,7 @@ extern void quote_file_(const char *orig, const char *output, int mode,
 extern int set_post_flag(post_filter_t *filter, const char *field, bool set, bool toggle);
 extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 
-extern void res_to_post_info(db_res_t *r, int i, int archive, post_info_t *p);
+extern void res_to_post_info(db_res_t *r, int i, bool archive, post_info_t *p);
 void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set);
 extern int load_sticky_posts(int bid, post_info_t **posts);
 extern bool is_deleted(post_list_type_e type);
@@ -144,7 +144,7 @@ extern const char *post_table_name(const post_filter_t *filter);
 extern const char *post_table_index(const post_filter_t *filter);
 extern void build_post_filter(query_t *q, const post_filter_t *f, const bool *asc);
 extern query_t *build_post_query(const post_filter_t *filter, bool asc, int limit);
-extern void res_to_post_info_full(db_res_t *res, int row, int archive, post_info_full_t *p);
+extern void res_to_post_info_full(db_res_t *res, int row, bool archive, post_info_full_t *p);
 extern void free_post_info_full(post_info_full_t *p);
 
 extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
