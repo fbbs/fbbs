@@ -112,7 +112,6 @@ enum {
 
 typedef struct {
 	post_list_type_e type;
-	int archive;
 	int bid;
 	int flag;
 	user_id_t uid;
@@ -132,6 +131,8 @@ extern void quote_string(const char *str, size_t size, const char *output,
 extern void quote_file_(const char *orig, const char *output, int mode,
 		bool mail, size_t (*filter)(const char *, size_t, FILE *));
 
+/** Tell which table to filter. True for archives; false for recent posts. */
+#define is_archive(filter)  ((filter)->flag & POST_FLAG_ARCHIVE)
 extern int set_post_flag(post_filter_t *filter, const char *field, bool set, bool toggle);
 extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 
@@ -162,12 +163,6 @@ extern bool alter_title(const post_info_t *ip, const char *title);
 extern bool alter_content(const post_info_t *ip, const char *content);
 
 extern int get_post_mark(const post_info_t *p);
-
-typedef db_res_t archive_list_t;
-extern archive_list_t *archive_list_load(int bid);
-#define archive_list_count(list)  db_res_rows(list)
-#define archive_list_number(list, i)  db_get_integer(list, i, 0)
-#define archive_list_free(list)  db_clear(list)
 
 extern int get_last_fake_pid(int bid);
 extern int incr_last_fake_pid(int bid, int delta);

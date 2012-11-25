@@ -148,13 +148,6 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	return convert_file_to_utf8_content(fname);
 }
 
-static const char *post_archive_name(int archive)
-{
-	static char buf[24];
-	snprintf(buf, sizeof(buf), "posts.archive_%d", archive);
-	return buf;
-}
-
 #define LAST_FAKE_ID_KEY "last_fake_id"
 
 int get_last_fake_pid(int bid)
@@ -167,32 +160,18 @@ int incr_last_fake_pid(int bid, int delta)
 	return mdb_integer(0, "HINCRBY", LAST_FAKE_ID_KEY " %d %d", bid, delta);
 }
 
-static void update_fake_pid(int bid, int archive, int delta, post_id_t min)
+static void update_fake_pid(int bid, int delta, post_id_t min)
 {
-	int last;
-	if (archive) {
-		query_t *q = query_new(0);
-		query_select(q, "COUNT(*)");
-		query_from(q, post_archive_name(archive));
-		query_where(q, "board = %d", bid);
+	int last = incr_last_fake_pid(bid, delta);
 
-		db_res_t *res = query_exec(q);
-		if (res && db_res_rows(res) > 0)
-			last = db_get_bigint(res, 0, 0);
-		else
-			last = 0;
-		db_clear(res);
-		last += delta;
-	} else {
-		last = incr_last_fake_pid(bid, delta);
-	}
+	post_filter_t filter = { .bid = bid, .min = min };
 
 	query_t *q = query_new(0);
 	query_append(q, "WITH rank AS ( SELECT id, %d::INTEGER - rank()"
 			" OVER (ORDER BY id DESC) AS r", last + 1);
-	query_from(q, "posts.recent");
-	query_where(q, "board = %d AND id >= %"DBIdPID")", bid, min);
-	query_update(q, "posts.recent p");
+	query_from(q, post_table_name(&filter));
+	build_post_filter(q, &filter, NULL);
+	query_update(q, post_table_name(&filter));
 	query_set(q, "fake_id = rank.r");
 	query_from(q, "rank");
 	query_where(q, "rank.id = p.id");
@@ -623,7 +602,7 @@ const char *post_recent_table(const post_filter_t *filter)
  */
 const char *post_table_name(const post_filter_t *filter)
 {
-	if (filter->archive)
+	if (is_archive(filter))
 		return post_archive_table(filter);
 
 	if (is_deleted(filter->type))
@@ -771,7 +750,7 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
-int post_deletion_trigger(db_res_t *res, int bid, int archive, bool deletion)
+int post_deletion_trigger(db_res_t *res, int bid, bool archive, bool deletion)
 {
 	int rows = db_res_rows(res);
 	if (rows > 0) {
@@ -782,7 +761,8 @@ int post_deletion_trigger(db_res_t *res, int bid, int archive, bool deletion)
 				if (pid < min)
 					min = pid;
 			}
-			update_fake_pid(bid, archive, deletion ? -rows : rows, min);
+			if (!archive)
+				update_fake_pid(bid, deletion ? -rows : rows, min);
 		}
 
 		for (int i = 0; i < rows; ++i) {
@@ -823,7 +803,8 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	query_returning(q, "id,owner,uname,junk");
 
 	db_res_t *res = query_exec(q);
-	int rows = post_deletion_trigger(res, filter->bid, filter->archive, true);
+	int rows = post_deletion_trigger(res, filter->bid, is_archive(filter),
+			true);
 	db_clear(res);
 	return rows;
 }
@@ -840,7 +821,8 @@ int undelete_posts(post_filter_t *filter)
 	query_returning(q, "id,owner,uname,junk");
 
 	db_res_t *res = query_exec(q);
-	int rows = post_deletion_trigger(res, filter->bid, filter->archive, false);
+	int rows = post_deletion_trigger(res, filter->bid, is_archive(filter),
+			false);
 	db_clear(res);
 	return rows;
 }
@@ -950,15 +932,4 @@ int get_post_mark(const post_info_t *p)
 	}
 
 	return mark;
-}
-
-archive_list_t *archive_list_load(int bid)
-{
-	db_res_t *res = db_query("SELECT archive, min, max"
-			" FROM posts.board_archive WHERE board = %d"
-			" ORDER BY archive", bid);
-	if (res && db_res_rows(res) > 0)
-		return res;
-	db_clear(res);
-	return NULL;
 }

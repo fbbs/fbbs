@@ -109,7 +109,7 @@ static int bbsdoc(post_list_type_e type)
 	if (page < TLINES || page > 40)
 		page = TLINES;
 
-	int archive = strtol(get_param("archive"), NULL, 10);
+	bool archive = *get_param("archive");
 
 	if (get_doc_mode() != type)
 		set_doc_mode(type);
@@ -121,7 +121,8 @@ static int bbsdoc(post_list_type_e type)
 	brc_fcgi_init(currentuser.userid, board.name);
 
 	post_filter_t filter = {
-		.bid = board.id, .type = type, .max = start, .archive = archive,
+		.bid = board.id, .type = type, .max = start,
+		.flag = archive ? POST_FLAG_ARCHIVE : 0,
 	};
 	if (action == 'n') {
 		filter.max = 0;

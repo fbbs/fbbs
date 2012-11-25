@@ -200,7 +200,7 @@ static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
 		c->begin -= extra;
 		c->end -= extra;
 		for (int i = 0; i < rows; ++i) {
-			res_to_post_info(res, i, filter->archive,
+			res_to_post_info(res, i, is_archive(filter),
 					c->posts + c->count - extra + i);
 		}
 	} else {
@@ -209,7 +209,8 @@ static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
 		c->begin += extra;
 		c->end += extra;
 		for (int i = 0; i < rows; ++i) {
-			res_to_post_info(res, i, filter->archive, c->posts + rows - i - 1);
+			res_to_post_info(res, i, is_archive(filter),
+					c->posts + rows - i - 1);
 		}
 	}
 	c->count += rows - extra;
@@ -227,7 +228,7 @@ static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
 
 static void plist_cache_set_sticky(plist_cache_t *c, const post_filter_t *fp)
 {
-	c->sticky = (fp->type == POST_LIST_NORMAL && !fp->archive);
+	c->sticky = (fp->type == POST_LIST_NORMAL && !is_archive(fp));
 }
 
 static int plist_cache_load(plist_cache_t *c, post_filter_t *filter,
@@ -349,7 +350,6 @@ SLIST_HEAD(post_list_position_list_t, post_list_position_t);
 typedef struct {
 	post_filter_t filter;
 	post_list_position_t *pos;
-	archive_list_t *archives;
 	slide_list_base_e abase;
 
 	bool reload;
@@ -387,7 +387,7 @@ static post_list_position_t *get_post_list_position(const post_filter_t *fp)
 		SLIST_INIT_HEAD(list);
 	}
 
-	if (fp->archive)
+	if (fp->flag & POST_FLAG_ARCHIVE)
 		return NULL;
 
 	SLIST_FOREACH(post_list_position_t, p, list, next) {
@@ -658,13 +658,10 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 
 	prints("\033[1;37;44m  编号   %-12s %6s %-25s 在线:%-4d",
 			"刊 登 者", "日  期", " 标  题", count_onboard(currbp->id));
-	if (l->filter.archive) {
-		int year = l->filter.archive / 10000;
-		int month = (l->filter.archive % 10000) / 100;
-		prints("[%d年%d月存档]", year, month);
-	} else {
+	if (l->filter.flag & POST_FLAG_ARCHIVE)
+		prints("[存档]");
+	else
 		prints("    [%s]", mode);
-	}
 	prints("\033[K\033[m\n");
 	clrtobot();
 }
@@ -998,7 +995,7 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 		db_res_t *res = query_exec(q);
 		if (res && db_res_rows(res) == 1) {
 			post_info_t info;
-			res_to_post_info(res, 0, filter->archive, &info);
+			res_to_post_info(res, 0, filter->flag & POST_FLAG_ARCHIVE, &info);
 			if (upward) {
 				l->filter.min = 0;
 				l->filter.max = info.id;
@@ -1138,7 +1135,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 
 	post_filter_t filter = {
 		.bid = l->filter.bid, .tid = ip->tid, .min = brc_first_unread(),
-		.archive = l->filter.archive,
+		.flag = is_archive(&l->filter),
 	};
 
 	const int limit = 40;
@@ -1152,7 +1149,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 			post_id_t id = db_get_post_id(res, i, 0);
 			if (brc_unread(id)) {
 				post_info_t info;
-				res_to_post_info(res, i, l->filter.archive, &info);
+				res_to_post_info(res, i, is_archive(&l->filter), &info);
 				read_posts(p, &info, true, false);
 				db_clear(res);
 				return FULLUPDATE;
@@ -1176,7 +1173,7 @@ static int jump_to_thread_last(slide_list_t *p)
 		l->current_tid = ip->tid;
 		post_filter_t filter = {
 			.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
-			.archive = l->filter.archive,
+			.flag = is_archive(&l->filter),
 		};
 
 		query_t *q = build_post_query(&filter, false, 1);
@@ -1184,7 +1181,7 @@ static int jump_to_thread_last(slide_list_t *p)
 
 		post_info_t info = { .id = ip->id };
 		if (res && db_res_rows(res) > 0) {
-			res_to_post_info(res, 0, l->filter.archive, &info);
+			res_to_post_info(res, 0, is_archive(&l->filter), &info);
 		}
 		db_clear(res);
 		if (info.id == ip->id)
@@ -1839,7 +1836,7 @@ static int load_full_posts(const post_filter_t *fp, post_info_full_t *ip,
 	if (rows > 0) {
 		for (int i = 0; i < rows; ++i) {
 			res_to_post_info_full(res, upward ? rows - 1 - i : i,
-					fp->archive, ip + i);
+					is_archive(fp), ip + i);
 		}
 	} else {
 		db_clear(res);
@@ -1856,9 +1853,11 @@ static void thread_post_cache_free(thread_post_cache_t *cache)
 }
 
 static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
-		int archive, post_id_t tid, post_id_t id, bool upward)
+		bool archive, post_id_t tid, post_id_t id, bool upward)
 {
-	post_filter_t filter = { .archive = archive, .tid = tid, .min = id };
+	post_filter_t filter = {
+		.flag = archive ? POST_FLAG_ARCHIVE : 0, .tid = tid, .min = id
+	};
 	if (id <= tid && upward) {
 		thread_post_cache_free(cache);
 	} else {
@@ -1981,14 +1980,14 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 		if (!end) {
 			if (!cache.inited) {
 				if (filter.tid) {
-					fip = thread_post_cache_load(&cache, filter.archive,
+					fip = thread_post_cache_load(&cache, is_archive(&filter),
 							filter.tid, fip->p.id, upward);
 				}
 			}
 
 			if (cache.inited) {
-				fip = thread_post_cache_lookup(&cache, filter.archive, fip,
-						upward);
+				fip = thread_post_cache_lookup(&cache, is_archive(&filter),
+						fip, upward);
 				if (fip) {
 					dump_content_to_gbk_file(fip->content, fip->length,
 							file, sizeof(file));
@@ -2398,126 +2397,9 @@ static int switch_board(post_list_t *l)
 	return FULLUPDATE;
 }
 
-static tui_list_loader_t archive_list_loader(tui_list_t *p)
-{
-	post_list_t *l = p->data;
-	p->all = archive_list_count(l->archives);
-	p->cur = p->all - 1;
-	return 0;
-}
-
-static tui_list_title_t archive_list_title(tui_list_t *p)
-{
-	post_list_t *l = p->data;
-	_post_list_title(true);
-	move(2, 0);
-	prints("\033[1;44m 选择一个存档 (共 %d 个)\033[K\033[m",
-			archive_list_count(l->archives));
-	return;
-}
-
-static tui_list_display_t archive_list_display(tui_list_t *p, int row)
-{
-	post_list_t *l = p->data;
-	int rows = archive_list_count(l->archives);
-	if (row < rows) {
-		int number = archive_list_number(l->archives, row);
-		int year = number / 10000;
-		int month = (number % 10000) / 100;
-		prints("   %d年%d月\n", year, month);
-	}
-	return 0;
-}
-
-static tui_list_handler_t archive_list_handler(tui_list_t *p, int ch)
-{
-	post_list_t *l = p->data;
-	switch (ch) {
-		case '\r': case '\n': case KEY_RIGHT:
-			l->filter.archive = archive_list_number(l->archives, p->cur);
-			l->abase = SLIDE_LIST_TOPDOWN;
-			l->reload = true;
-			return -1;
-		default:
-			return 0;
-	}
-}
-
-static int archive_list(post_list_t *l)
-{
-	if (!l->archives)
-		l->archives = archive_list_load(l->filter.bid);
-	if (!l->archives)
-		return DONOTHING;
-
-	tui_list_t t = {
-		.data = l,
-		.loader = archive_list_loader,
-		.title = archive_list_title,
-		.display = archive_list_display,
-		.handler = archive_list_handler,
-		.query = NULL,
-	};
-	tui_list(&t);
-	return FULLUPDATE;
-}
-
-static int find_successor(post_list_t *l, bool upward)
-{
-	int current = l->filter.archive, count = archive_list_count(l->archives);
-	if (!current) {
-		return count - 1;
-	} else {
-		for (int i = count - 1; i >= 0; --i) {
-			if (archive_list_number(l->archives, i) == current) {
-				int j = i + (upward ? -1 : 1);
-				if (j >= 0 && j < count)
-					return j;
-				return -1;
-			}
-		}
-		return -1;
-	}
-}
-
 static int switch_archive(post_list_t *l, bool upward)
 {
-	if (!l->filter.bid || l->filter.type != POST_LIST_NORMAL)
-		return READ_AGAIN;
-
-	if (!l->archives)
-		l->archives = archive_list_load(l->filter.bid);
-	if (!l->archives)
-		return READ_AGAIN;
-
-	int successor = find_successor(l, upward);
-
-	char buf[128], defa[STRLEN] = "", default_choice = 'C';
-	if (successor >= 0) {
-		snprintf(defa, sizeof(defa), "(%c)查看%s存档 ", upward ? 'P' : 'N',
-				upward ? (l->filter.archive ? "上一" : "最新" ) : "下一");
-		default_choice = upward ? 'P' : 'N';
-	}
-	snprintf(buf, sizeof(buf), "已到达%s一篇文章。%s(A)所有存档列表 "
-			"(C)取消？[%c]", upward ? "第" : "最后", defa, default_choice);
-	char ans[2];
-	getdata(t_lines - 1, 0, buf, ans, sizeof(ans), true, true);
-
-	char c = toupper(ans[0]);
-	if (!c)
-		c = default_choice;
-	if (c == 'P' || c == 'N') {
-		if (successor >= 0) {
-			l->filter.archive = archive_list_number(l->archives, successor);
-			l->abase = upward ? SLIDE_LIST_BOTTOMUP : SLIDE_LIST_TOPDOWN;
-			l->reload = true;
-			return FULLUPDATE;
-		}
-		return MINIUPDATE;
-	}
-	if (c == 'A')
-		return archive_list(l);
-	return MINIUPDATE;
+	return READ_AGAIN;
 }
 
 static int tui_jump_to_id(slide_list_t *p)
@@ -2548,19 +2430,7 @@ static int tui_jump_to_id(slide_list_t *p)
 
 static int tui_jump(slide_list_t *p)
 {
-	post_list_t *l = p->data;
-	if (l->filter.type == POST_LIST_THREAD)
-		return DONOTHING;
-
-	char buf[2];
-	getdata(t_lines - 1, 0, "跳转到 (P)文章 (A)存档 (C)取消？[C]",
-			buf, sizeof(buf), true, true);
-	char c = tolower(buf[0]);
-	if (c == 'p')
-		return tui_jump_to_id(p);
-	if (c == 'a')
-		return archive_list(p->data);
-	return MINIUPDATE;
+	return DONOTHING;
 }
 
 extern int show_online(void);
@@ -2644,9 +2514,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 				p->in_query = false;
 				return FULLUPDATE;
 			}
-			if (!l->filter.archive)
+			if (!is_archive(&l->filter))
 				return -1;
-			l->filter.archive = 0;
+			l->filter.flag &= ~POST_FLAG_ARCHIVE;
 			l->reload = true;
 			return FULLUPDATE;
 		case Ctrl('L'):
@@ -2755,7 +2625,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return READ_AGAIN;
 		case 'N': case Ctrl('F'): case KEY_PGDN:
 			if (plist_cache_is_bottom(&l->cache, -1)) {
-				if (l->filter.archive) {
+				if (is_archive(&l->filter)) {
 					return switch_archive(l, false);
 				} else {
 					p->cur = p->max - 1;
@@ -2765,7 +2635,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return READ_AGAIN;
 		case 'k': case KEY_DOWN:
 			if (plist_cache_is_bottom(&l->cache, p->cur)) {
-				if (l->filter.archive)
+				if (is_archive(&l->filter))
 					return switch_archive(l, false);
 				if ((ip->flag & POST_FLAG_STICKY) && p->cur == p->max - 1)
 					return DONOTHING;
@@ -2823,7 +2693,6 @@ static int post_list_with_filter(const post_filter_t *filter)
 	save_post_list_position(&s);
 
 	plist_cache_free(&p.cache);
-	archive_list_free(p.archives);
 
 	set_user_status(status);
 	return 0;

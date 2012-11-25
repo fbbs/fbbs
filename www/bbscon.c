@@ -27,12 +27,13 @@ const struct fileheader *dir_bsearch(const struct fileheader *begin,
 	return begin;
 }
 
-int bbscon_search(int bid, int archive, post_id_t pid, post_id_t tid,
+int bbscon_search(int bid, bool archive, post_id_t pid, post_id_t tid,
 		int action, bool extra, post_info_full_t *p)
 {
 	bool asc = true;
 	post_filter_t filter = {
-		.type = POST_LIST_NORMAL, .bid = bid, .archive = archive,
+		.type = POST_LIST_NORMAL, .bid = bid,
+		.flag = archive ? POST_FLAG_ARCHIVE : 0,
 	};
 	if (action == 'a' || action == 'b')
 		filter.tid = tid;
