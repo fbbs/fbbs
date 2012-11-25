@@ -52,4 +52,13 @@ DROP TRIGGER IF EXISTS bms_trigger ON bms;
 CREATE TRIGGER bms_trigger AFTER INSERT OR UPDATE OR DELETE ON bms
 	FOR EACH ROW EXECUTE PROCEDURE bms_trigger();
 
+CREATE OR REPLACE FUNCTION board_after_insert_trigger() RETURNS TRIGGER AS $$
+BEGIN
+	SELECT create_posts_recent_partition(NEW.id);
+	SELECT create_posts_archive_partition(NEW.id);
+END; $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER board_after_insert_trigger AFTER INSERT ON boards
+	FOR EACH ROW EXECUTE PROCEDURE board_after_insert_trigger();
+
 COMMIT;
