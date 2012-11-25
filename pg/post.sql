@@ -7,10 +7,10 @@ CREATE TABLE posts.base (
 	id BIGSERIAL,
 	reid BIGINT,
 	tid BIGINT,
-	fake_id INTEGER,
 	owner INTEGER,
-	stamp TIMESTAMPTZ,
 	board INTEGER,
+	stamp TIMESTAMPTZ,
+	last_timestamp TIMESTAMPTZ,
 
 	digest BOOLEAN DEFAULT FALSE,
 	marked BOOLEAN DEFAULT FALSE,
@@ -28,14 +28,14 @@ CREATE TABLE posts.base (
 	content TEXT
 );
 
-CREATE TABLE posts.recent (
-	junk BOOLEAN,
-	sticky BOOLEAN DEFAULT FALSE,
-	PRIMARY KEY (id)
+CREATE TABLE posts.archives (
 ) INHERITS (posts.base);
 
-CREATE INDEX ON posts.recent(id) WHERE sticky;
-CREATE INDEX ON posts.recent(board);
+CREATE TABLE posts.recent (
+	fake_id INTEGER,
+	junk BOOLEAN,
+	sticky BOOLEAN DEFAULT FALSE
+) INHERITS (posts.base);
 
 CREATE TABLE posts.deleted (
 	did BIGSERIAL,
@@ -78,5 +78,25 @@ CREATE TABLE posts.hot (
 	bname TEXT,
 	title TEXT
 );
+
+CREATE OR REPLACE FUNCTION posts_archives_before_insert_trigger() RETURNS trigger AS $$
+BEGIN
+	EXECUTE 'INSERT INTO posts.archive_' || NEW.board || ' VALUES ($1.*)' USING NEW;
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER posts_archives_before_insert_trigger
+	BEFORE INSERT ON posts.archives
+	FOR EACH ROW EXECUTE PROCEDURE posts_archives_before_insert_trigger();
+
+CREATE OR REPLACE FUNCTION posts_recent_before_insert_trigger() RETURNS trigger AS $$
+BEGIN
+	EXECUTE 'INSERT INTO posts.recent_' || NEW.board || ' VALUES ($1.*)' USING NEW;
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER posts_recent_before_insert_trigger
+	BEFORE INSERT ON posts.recent
+	FOR EACH ROW EXECUTE PROCEDURE posts_recent_before_insert_trigger();
 
 COMMIT;
