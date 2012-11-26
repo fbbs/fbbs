@@ -179,7 +179,8 @@ int bbssnd_main(void)
 			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL,
 		};
 		pid = publish_post(&pr);
-		free_post_info_full(&info);
+		if (reply)
+			free_post_info_full(&info);
 		if (!pid)
 			return BBS_EINTNL;
 	}
