@@ -511,7 +511,7 @@ void res_to_post_info(db_res_t *r, int i, bool archive, post_info_t *p)
 	p->id = db_get_post_id(r, i, 0);
 	p->reid = db_get_post_id(r, i, 1);
 	p->tid = db_get_post_id(r, i, 2);
-	p->fake_id = db_get_integer(r, i, 3);
+	p->fake_id = db_get_is_null(r, i, 3) ? 0 : db_get_integer(r, i, 3);
 	p->bid = db_get_integer(r, i, 4);
 	p->uid = db_get_is_null(r, i, 5) ? 0 : db_get_user_id(r, i, 5);
 	strlcpy(p->owner, db_get_value(r, i, 6), sizeof(p->owner));
@@ -602,7 +602,7 @@ const char *post_recent_table(const post_filter_t *filter)
  */
 const char *post_table_name(const post_filter_t *filter)
 {
-	if (is_archive(filter))
+	if (filter->archive)
 		return post_archive_table(filter);
 
 	if (is_deleted(filter->type))
@@ -803,8 +803,7 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 	query_returning(q, "id,owner,uname,junk");
 
 	db_res_t *res = query_exec(q);
-	int rows = post_deletion_trigger(res, filter->bid, is_archive(filter),
-			true);
+	int rows = post_deletion_trigger(res, filter->bid, filter->archive, true);
 	db_clear(res);
 	return rows;
 }
@@ -821,8 +820,7 @@ int undelete_posts(post_filter_t *filter)
 	query_returning(q, "id,owner,uname,junk");
 
 	db_res_t *res = query_exec(q);
-	int rows = post_deletion_trigger(res, filter->bid, is_archive(filter),
-			false);
+	int rows = post_deletion_trigger(res, filter->bid, filter->archive, false);
 	db_clear(res);
 	return rows;
 }

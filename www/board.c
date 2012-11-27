@@ -296,7 +296,7 @@ int api_board_toc(void)
 	};
 	query_t *q = build_post_query(&filter, asc, limit);
 	db_res_t *res = query_exec(q);
-	print_toc(posts, res, is_archive(&filter), asc);
+	print_toc(posts, res, filter.archive, asc);
 	db_clear(res);
 
 	if (!start && !asc && !flag && board.id)

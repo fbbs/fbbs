@@ -200,7 +200,7 @@ static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
 		c->begin -= extra;
 		c->end -= extra;
 		for (int i = 0; i < rows; ++i) {
-			res_to_post_info(res, i, is_archive(filter),
+			res_to_post_info(res, i, filter->archive,
 					c->posts + c->count - extra + i);
 		}
 	} else {
@@ -209,7 +209,7 @@ static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
 		c->begin += extra;
 		c->end += extra;
 		for (int i = 0; i < rows; ++i) {
-			res_to_post_info(res, i, is_archive(filter),
+			res_to_post_info(res, i, filter->archive,
 					c->posts + rows - i - 1);
 		}
 	}
@@ -228,7 +228,7 @@ static int load_posts_from_db(plist_cache_t *c, post_filter_t *filter,
 
 static void plist_cache_set_sticky(plist_cache_t *c, const post_filter_t *fp)
 {
-	c->sticky = (fp->type == POST_LIST_NORMAL && !is_archive(fp));
+	c->sticky = (fp->type == POST_LIST_NORMAL && !fp->archive);
 }
 
 static int plist_cache_load(plist_cache_t *c, post_filter_t *filter,
@@ -387,7 +387,7 @@ static post_list_position_t *get_post_list_position(const post_filter_t *fp)
 		SLIST_INIT_HEAD(list);
 	}
 
-	if (fp->flag & POST_FLAG_ARCHIVE)
+	if (fp->archive)
 		return NULL;
 
 	SLIST_FOREACH(post_list_position_t, p, list, next) {
@@ -658,7 +658,7 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 
 	prints("\033[1;37;44m  编号   %-12s %6s %-25s 在线:%-4d",
 			"刊 登 者", "日  期", " 标  题", count_onboard(currbp->id));
-	if (l->filter.flag & POST_FLAG_ARCHIVE)
+	if (l->filter.archive)
 		prints("[存档]");
 	else
 		prints("    [%s]", mode);
@@ -995,7 +995,7 @@ static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 		db_res_t *res = query_exec(q);
 		if (res && db_res_rows(res) == 1) {
 			post_info_t info;
-			res_to_post_info(res, 0, filter->flag & POST_FLAG_ARCHIVE, &info);
+			res_to_post_info(res, 0, filter->archive, &info);
 			if (upward) {
 				l->filter.min = 0;
 				l->filter.max = info.id;
@@ -1135,7 +1135,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 
 	post_filter_t filter = {
 		.bid = l->filter.bid, .tid = ip->tid, .min = brc_first_unread(),
-		.flag = is_archive(&l->filter),
+		.archive = l->filter.archive,
 	};
 
 	const int limit = 40;
@@ -1149,7 +1149,7 @@ static int jump_to_thread_first_unread(slide_list_t *p)
 			post_id_t id = db_get_post_id(res, i, 0);
 			if (brc_unread(id)) {
 				post_info_t info;
-				res_to_post_info(res, i, is_archive(&l->filter), &info);
+				res_to_post_info(res, i, l->filter.archive, &info);
 				read_posts(p, &info, true, false);
 				db_clear(res);
 				return FULLUPDATE;
@@ -1173,7 +1173,7 @@ static int jump_to_thread_last(slide_list_t *p)
 		l->current_tid = ip->tid;
 		post_filter_t filter = {
 			.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
-			.flag = is_archive(&l->filter),
+			.archive = l->filter.archive,
 		};
 
 		query_t *q = build_post_query(&filter, false, 1);
@@ -1181,7 +1181,7 @@ static int jump_to_thread_last(slide_list_t *p)
 
 		post_info_t info = { .id = ip->id };
 		if (res && db_res_rows(res) > 0) {
-			res_to_post_info(res, 0, is_archive(&l->filter), &info);
+			res_to_post_info(res, 0, l->filter.archive, &info);
 		}
 		db_clear(res);
 		if (info.id == ip->id)
@@ -1282,7 +1282,7 @@ static bool dump_content(const post_info_t *ip, char *file, size_t size)
 	post_filter_t filter = {
 		.min = ip->id, .max = ip->id, .bid = ip->bid,
 		.type = post_list_type(ip),
-		.flag = (ip->flag & POST_FLAG_ARCHIVE) ? POST_FLAG_ARCHIVE : 0,
+		.archive = (ip->flag & POST_FLAG_ARCHIVE),
 	};
 	db_res_t *res = query_post_by_pid(&filter, "content");
 	if (!res || db_res_rows(res) < 1)
@@ -1836,7 +1836,7 @@ static int load_full_posts(const post_filter_t *fp, post_info_full_t *ip,
 	if (rows > 0) {
 		for (int i = 0; i < rows; ++i) {
 			res_to_post_info_full(res, upward ? rows - 1 - i : i,
-					is_archive(fp), ip + i);
+					fp->archive, ip + i);
 		}
 	} else {
 		db_clear(res);
@@ -1853,10 +1853,10 @@ static void thread_post_cache_free(thread_post_cache_t *cache)
 }
 
 static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
-		bool archive, post_id_t tid, post_id_t id, bool upward)
+		int bid, bool archive, post_id_t tid, post_id_t id, bool upward)
 {
 	post_filter_t filter = {
-		.flag = archive ? POST_FLAG_ARCHIVE : 0, .tid = tid, .min = id
+		.bid = bid, .archive = archive, .tid = tid, .min = id
 	};
 	if (id <= tid && upward) {
 		thread_post_cache_free(cache);
@@ -1871,7 +1871,7 @@ static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
 }
 
 static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
-		int archive, post_info_full_t *ip, bool upward)
+		int bid, bool archive, post_info_full_t *ip, bool upward)
 {
 	post_info_full_t *next = upward ? ip - 1 : ip + 1;
 	if (next >= cache->posts && next < cache->posts + cache->size)
@@ -1882,7 +1882,7 @@ static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
 
 	post_id_t id = ip->p.id, tid = ip->p.tid;
 	thread_post_cache_free(cache);
-	return thread_post_cache_load(cache, archive, tid,
+	return thread_post_cache_load(cache, bid, archive, tid,
 			upward ? id - 1 : id + 1, upward);
 }
 
@@ -1980,14 +1980,14 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 		if (!end) {
 			if (!cache.inited) {
 				if (filter.tid) {
-					fip = thread_post_cache_load(&cache, is_archive(&filter),
-							filter.tid, fip->p.id, upward);
+					fip = thread_post_cache_load(&cache, fip->p.bid,
+							filter.archive, filter.tid, fip->p.id, upward);
 				}
 			}
 
 			if (cache.inited) {
-				fip = thread_post_cache_lookup(&cache, is_archive(&filter),
-						fip, upward);
+				fip = thread_post_cache_lookup(&cache, fip->p.bid,
+						filter.archive, fip, upward);
 				if (fip) {
 					dump_content_to_gbk_file(fip->content, fip->length,
 							file, sizeof(file));
@@ -2430,7 +2430,23 @@ static int tui_jump_to_id(slide_list_t *p)
 
 static int tui_jump(slide_list_t *p)
 {
-	return DONOTHING;
+	post_list_t *l = p->data;
+	if (l->filter.type == POST_LIST_THREAD)
+		return DONOTHING;
+
+	char buf[2];
+	getdata(t_lines - 1, 0, "跳转到 (P)文章 (A)存档 (C)取消？[C]",
+			buf, sizeof(buf), true, true);
+	char c = tolower(buf[0]);
+	if (c == 'p')
+		return tui_jump_to_id(p);
+	if (c == 'a') {
+		l->filter.archive = true;
+		l->abase = SLIDE_LIST_BOTTOMUP;
+		l->reload = true;
+		return FULLUPDATE;
+	}
+	return MINIUPDATE;
 }
 
 extern int show_online(void);
@@ -2514,9 +2530,9 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 				p->in_query = false;
 				return FULLUPDATE;
 			}
-			if (!is_archive(&l->filter))
+			if (!l->filter.archive)
 				return -1;
-			l->filter.flag &= ~POST_FLAG_ARCHIVE;
+			l->filter.archive = false;
 			l->reload = true;
 			return FULLUPDATE;
 		case Ctrl('L'):
@@ -2625,7 +2641,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return READ_AGAIN;
 		case 'N': case Ctrl('F'): case KEY_PGDN:
 			if (plist_cache_is_bottom(&l->cache, -1)) {
-				if (is_archive(&l->filter)) {
+				if (l->filter.archive) {
 					return switch_archive(l, false);
 				} else {
 					p->cur = p->max - 1;
@@ -2635,7 +2651,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			return READ_AGAIN;
 		case 'k': case KEY_DOWN:
 			if (plist_cache_is_bottom(&l->cache, p->cur)) {
-				if (is_archive(&l->filter))
+				if (l->filter.archive)
 					return switch_archive(l, false);
 				if ((ip->flag & POST_FLAG_STICKY) && p->cur == p->max - 1)
 					return DONOTHING;

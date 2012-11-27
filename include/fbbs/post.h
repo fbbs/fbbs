@@ -118,6 +118,7 @@ typedef struct {
 	post_id_t min;
 	post_id_t max;
 	post_id_t tid;
+	bool archive;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;
 
@@ -131,8 +132,6 @@ extern void quote_string(const char *str, size_t size, const char *output,
 extern void quote_file_(const char *orig, const char *output, int mode,
 		bool mail, size_t (*filter)(const char *, size_t, FILE *));
 
-/** Tell which table to filter. True for archives; false for recent posts. */
-#define is_archive(filter)  ((filter)->flag & POST_FLAG_ARCHIVE)
 extern int set_post_flag(post_filter_t *filter, const char *field, bool set, bool toggle);
 extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
 

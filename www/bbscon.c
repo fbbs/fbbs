@@ -32,8 +32,7 @@ int bbscon_search(int bid, bool archive, post_id_t pid, post_id_t tid,
 {
 	bool asc = true;
 	post_filter_t filter = {
-		.type = POST_LIST_NORMAL, .bid = bid,
-		.flag = archive ? POST_FLAG_ARCHIVE : 0,
+		.type = POST_LIST_NORMAL, .bid = bid, .archive = archive,
 	};
 	if (action == 'a' || action == 'b')
 		filter.tid = tid;

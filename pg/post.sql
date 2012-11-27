@@ -7,6 +7,7 @@ CREATE TABLE posts.base (
 	id BIGSERIAL,
 	reid BIGINT,
 	tid BIGINT,
+	fake_id INTEGER,
 	owner INTEGER,
 	board INTEGER,
 	stamp TIMESTAMPTZ,
@@ -32,7 +33,6 @@ CREATE TABLE posts.archives (
 ) INHERITS (posts.base);
 
 CREATE TABLE posts.recent (
-	fake_id INTEGER,
 	junk BOOLEAN,
 	sticky BOOLEAN DEFAULT FALSE
 ) INHERITS (posts.base);
@@ -44,7 +44,6 @@ CREATE TABLE posts.deleted (
 	junk BOOLEAN DEFAULT FALSE,
 	bm_visible BOOLEAN,
 	ename TEXT,
-	fake_id INTEGER
 ) INHERITS (posts.base);
 CREATE INDEX ON posts.deleted(did);
 

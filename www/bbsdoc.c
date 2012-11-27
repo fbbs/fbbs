@@ -121,8 +121,7 @@ static int bbsdoc(post_list_type_e type)
 	brc_fcgi_init(currentuser.userid, board.name);
 
 	post_filter_t filter = {
-		.bid = board.id, .type = type, .max = start,
-		.flag = archive ? POST_FLAG_ARCHIVE : 0,
+		.bid = board.id, .type = type, .max = start, .archive = archive,
 	};
 	if (action == 'n') {
 		filter.max = 0;
