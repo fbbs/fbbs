@@ -2643,10 +2643,13 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 				return switch_archive(l, true);
 			return READ_AGAIN;
 		case 'j': case KEY_UP:
-			if (plist_cache_is_top(&l->cache, p->cur))
-				return switch_archive(l, true);
+			if (plist_cache_is_top(&l->cache, p->cur)) {
+				p->base = SLIDE_LIST_BOTTOMUP;
+				l->relocate = POST_ID_MAX;
+				return FULLUPDATE;
+			}
 			return READ_AGAIN;
-		case 'N': case Ctrl('F'): case KEY_PGDN:
+		case 'N': case Ctrl('F'): case KEY_PGDN: case ' ':
 			if (plist_cache_is_bottom(&l->cache, -1)) {
 				if (l->filter.archive) {
 					return switch_archive(l, false);
@@ -2660,8 +2663,11 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			if (plist_cache_is_bottom(&l->cache, p->cur)) {
 				if (l->filter.archive)
 					return switch_archive(l, false);
-				if ((ip->flag & POST_FLAG_STICKY) && p->cur == p->max - 1)
-					return DONOTHING;
+				if ((ip->flag & POST_FLAG_STICKY) && p->cur == p->max - 1) {
+					p->base = SLIDE_LIST_TOPDOWN;
+					p->cur = 0;
+					return FULLUPDATE;
+				}
 			}
 			return READ_AGAIN;
 		case '$': case KEY_END:
