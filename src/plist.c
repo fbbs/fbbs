@@ -376,6 +376,7 @@ static void filter_to_position_record(const post_filter_t *fp,
 	p->bid = fp->bid;
 	p->uid = fp->uid;
 	p->min_pid = p->min_tid = p->cur_pid = p->cur_tid = 0;
+	p->sticky = false;
 	memcpy(p->utf8_keyword, fp->utf8_keyword, sizeof(p->utf8_keyword));
 }
 
@@ -460,12 +461,18 @@ static slide_list_loader_t post_list_loader(slide_list_t *p)
 
 	if (l->relocate || l->reload) {
 		post_filter_t filter = {
-			.min = l->relocate ? l->relocate : l->pos->cur_pid,
+			.min = l->relocate ? l->relocate :
+				(l->pos->cur_pid ? l->pos->cur_pid : brc_last_read() + 1),
 			.flag = l->pos->sticky ? POST_FLAG_STICKY : 0,
 		};
 		int pos = plist_cache_relocate(&l->cache, -1, &filter, false);
-		if (pos >= 0)
+		if (pos >= 0) {
 			p->cur = pos;
+		} else {
+			p->cur = plist_cache_max_visible(&l->cache) - 1;
+			if (p->cur < 0)
+				p->cur = 0;
+		}
 		l->relocate = 0;
 	}
 	p->max = plist_cache_max_visible(&l->cache);
