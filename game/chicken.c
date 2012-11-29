@@ -1,6 +1,6 @@
-/* µç×Ó¼¦ Ğ¡ÂëÁ¦..¼¸a¼¸bÓÎÏ·.¡õ */
+/* ç”µå­é¸¡ å°ç åŠ›..å‡ aå‡ bæ¸¸æˆ.â–¡ */
 
-/* Writed by Birdman From 140.116.102.125 ´´ÒâÍÛ¹ş¹ş*/
+/* Writed by Birdman From 140.116.102.125 åˆ›æ„å“‡å“ˆå“ˆ*/
   
 
 
@@ -9,10 +9,14 @@
 
 
 char
-*cstate[10]={"ÎÒÔÚ³Ô·¹","Íµ³ÔÁãÊ³","À­±ã±ã","±¿µ°..Êä¸ø¼¦?","¹ş..Ó®Ğ¡¼¦Ò²Ã»¶à¹âÈÙ"
-            ,"Ã»Ê³ÎïÀ²..","Æ£ÀÍÈ«Ïû!"};
-char *cage[9]={"µ®Éú","ÖÜËê","Ó×Äê","ÉÙÄê","ÇàÄê","»îÁ¦","×³Äê","ÖĞÄê"};
-char *menu[8]={"ÓÎÏ·","ÔË¶¯","µ÷½Ì¼ÆÄÜ","ÂòÂô¹¤¾ß","ÇåÀí¼¦Éá"};
+//% *cstate[10]={"æˆ‘åœ¨åƒé¥­","å·åƒé›¶é£Ÿ","æ‹‰ä¾¿ä¾¿","ç¬¨è›‹..è¾“ç»™é¸¡?","å“ˆ..èµ¢å°é¸¡ä¹Ÿæ²¡å¤šå…‰è£"
+*cstate[10]={"\xce\xd2\xd4\xda\xb3\xd4\xb7\xb9","\xcd\xb5\xb3\xd4\xc1\xe3\xca\xb3","\xc0\xad\xb1\xe3\xb1\xe3","\xb1\xbf\xb5\xb0..\xca\xe4\xb8\xf8\xbc\xa6?","\xb9\xfe..\xd3\xae\xd0\xa1\xbc\xa6\xd2\xb2\xc3\xbb\xb6\xe0\xb9\xe2\xc8\xd9"
+            //% ,"æ²¡é£Ÿç‰©å•¦..","ç–²åŠ³å…¨æ¶ˆ!"};
+            ,"\xc3\xbb\xca\xb3\xce\xef\xc0\xb2..","\xc6\xa3\xc0\xcd\xc8\xab\xcf\xfb!"};
+//% char *cage[9]={"è¯ç”Ÿ","å‘¨å²","å¹¼å¹´","å°‘å¹´","é’å¹´","æ´»åŠ›","å£®å¹´","ä¸­å¹´"};
+char *cage[9]={"\xb5\xae\xc9\xfa","\xd6\xdc\xcb\xea","\xd3\xd7\xc4\xea","\xc9\xd9\xc4\xea","\xc7\xe0\xc4\xea","\xbb\xee\xc1\xa6","\xd7\xb3\xc4\xea","\xd6\xd0\xc4\xea"};
+//% char *menu[8]={"æ¸¸æˆ","è¿åŠ¨","è°ƒæ•™è®¡èƒ½","ä¹°å–å·¥å…·","æ¸…ç†é¸¡èˆ"};
+char *menu[8]={"\xd3\xce\xcf\xb7","\xd4\xcb\xb6\xaf","\xb5\xf7\xbd\xcc\xbc\xc6\xc4\xdc","\xc2\xf2\xc2\xf4\xb9\xa4\xbe\xdf","\xc7\xe5\xc0\xed\xbc\xa6\xc9\xe1"};
 
 time_t birth;
 int weight,satis,mon,day,age,angery,sick,oo,happy,clean,tiredstrong,play;
@@ -47,7 +51,7 @@ int chicken_main()
          ,&winn,&losee,&food,&zfood,Name);
       fclose(fp);
    }
-/*¡õ*/
+/*â–¡*/
   if(day<(ptime->tm_mon+1))
    { age=ptime->tm_mday;
     age=age+31-mon;}
@@ -79,8 +83,10 @@ int creat_a_egg()
    move(2,0);
    clrtobot();
    while(strlen(Name)<1){
-      strcpy(Name,"±¦±¦");
-      getdata(2, 0, "°ïĞ¡¼¦È¡¸öºÃÃû×Ö£º", Name, 21, DOECHO,NA);
+      //% strcpy(Name,"å®å®");
+      strcpy(Name,"\xb1\xa6\xb1\xa6");
+      //% getdata(2, 0, "å¸®å°é¸¡å–ä¸ªå¥½åå­—ï¼š", Name, 21, DOECHO,NA);
+      getdata(2, 0, "\xb0\xef\xd0\xa1\xbc\xa6\xc8\xa1\xb8\xf6\xba\xc3\xc3\xfb\xd7\xd6\xa3\xba", Name, 21, DOECHO,NA);
    } 
    setuserfile(fname, DATA_FILE);
    fp = fopen(fname, "w");
@@ -92,7 +98,8 @@ int creat_a_egg()
       prints("Error!!cannot open then 'game/chicken'!\n");
       return ;
    }   
-   fprintf(fp,"[32m%s[m ÔÚ [34;43m[%d/%d  %d:%02d][m  ÑøÁËÒ»Ö»½Ğ [33m%s[m µÄĞ¡¼¦\n",
+   //% fprintf(fp,"[32m%s[m åœ¨ [34;43m[%d/%d  %d:%02d][m  å…»äº†ä¸€åªå« [33m%s[m çš„å°é¸¡\n",
+   fprintf(fp,"[32m%s[m \xd4\xda [34;43m[%d/%d  %d:%02d][m  \xd1\xf8\xc1\xcb\xd2\xbb\xd6\xbb\xbd\xd0 [33m%s[m \xb5\xc4\xd0\xa1\xbc\xa6\n",
           currentuser.userid,ptime->tm_mon + 1, ptime->tm_mday,
           ptime->tm_hour, ptime->tm_min,Name);
    fclose(fp);
@@ -116,7 +123,7 @@ int show_chicken()
     /*food=food-diff*3;*/
   if(weight<0)
     death();
-/*  if((diff-age)>1 && agetmp) »¹ÊÇÓĞÎÊÌâ
+/*  if((diff-age)>1 && agetmp) è¿˜æ˜¯æœ‰é—®é¢˜
    {age++;
     agetmp=0;}
 */
@@ -124,17 +131,27 @@ int show_chicken()
   clrtobot();
   prints(
      "[33mName:%s[m"
-     "  [45mAge :%dËê[m"
-     "  ÖØÁ¿:%d"
-     "  Ê³Îï:%d"
-     "  ÁãÊ³:%d"
-     "  Æ£ÀÍ:%d"
-     "  ±ã±ã:%d\n"
-     "  ÉúÈÕ:%dÔÂ%dÈÕ"
-     "  ÌÇÌÇ:%8d"
-     "  ¿ìÀÖ¶È:%d"
-     "  ÂúÒâ¶È:%d",
-    // "  ´ó²¹Íè:%d\n",
+     //% "  [45mAge :%då²[m"
+     "  [45mAge :%d\xcb\xea[m"
+     //% "  é‡é‡:%d"
+     "  \xd6\xd8\xc1\xbf:%d"
+     //% "  é£Ÿç‰©:%d"
+     "  \xca\xb3\xce\xef:%d"
+     //% "  é›¶é£Ÿ:%d"
+     "  \xc1\xe3\xca\xb3:%d"
+     //% "  ç–²åŠ³:%d"
+     "  \xc6\xa3\xc0\xcd:%d"
+     //% "  ä¾¿ä¾¿:%d\n"
+     "  \xb1\xe3\xb1\xe3:%d\n"
+     //% "  ç”Ÿæ—¥:%dæœˆ%dæ—¥"
+     "  \xc9\xfa\xc8\xd5:%d\xd4\xc2%d\xc8\xd5"
+     //% "  ç³–ç³–:%8d"
+     "  \xcc\xc7\xcc\xc7:%8d"
+     //% "  å¿«ä¹åº¦:%d"
+     "  \xbf\xec\xc0\xd6\xb6\xc8:%d"
+     //% "  æ»¡æ„åº¦:%d",
+     "  \xc2\xfa\xd2\xe2\xb6\xc8:%d",
+    // "  å¤§è¡¥ä¸¸:%d\n",
      Name,age,weight,food,zfood,tiredstrong,clean,day
      ,mon,currentuser.money,happy,satis);//,oo);
 
@@ -144,162 +161,273 @@ int show_chicken()
   {
      case 0:
      case 1:
-      outs("  ¡ñ¡ñ¡ñ¡ñ\n"
-"¡ñ  ¡ñ¡ñ  ¡ñ\n"
-"¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"¡ñ¡ñ    ¡ñ¡ñ\n"
-"¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"  ¡ñ¡ñ¡ñ¡ñ   ");
+      //% outs("  â—â—â—â—\n"
+      outs("  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "â—  â—â—  â—\n"
+"\xa1\xf1  \xa1\xf1\xa1\xf1  \xa1\xf1\n"
+//% "â—â—â—â—â—â—\n"
+"\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "â—â—    â—â—\n"
+"\xa1\xf1\xa1\xf1    \xa1\xf1\xa1\xf1\n"
+//% "â—â—â—â—â—â—\n"
+"\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—â—â—â—   ");
+"  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1   ");
 
       break;
      case 2:
      case 3:
-      outs("    ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"  ¡ñ            ¡ñ\n"
-"¡ñ    ¡ñ    ¡ñ    ¡ñ\n"
-"¡ñ                ¡ñ\n"
-"¡ñ      ¡ñ¡ñ      ¡ñ\n"
-"¡ñ                ¡ñ\n"
-"¡ñ                ¡ñ\n"
-"  ¡ñ            ¡ñ\n"
-"    ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ   ");
+      //% outs("    â—â—â—â—â—â—\n"
+      outs("    \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—            â—\n"
+"  \xa1\xf1            \xa1\xf1\n"
+//% "â—    â—    â—    â—\n"
+"\xa1\xf1    \xa1\xf1    \xa1\xf1    \xa1\xf1\n"
+//% "â—                â—\n"
+"\xa1\xf1                \xa1\xf1\n"
+//% "â—      â—â—      â—\n"
+"\xa1\xf1      \xa1\xf1\xa1\xf1      \xa1\xf1\n"
+//% "â—                â—\n"
+"\xa1\xf1                \xa1\xf1\n"
+//% "â—                â—\n"
+"\xa1\xf1                \xa1\xf1\n"
+//% "  â—            â—\n"
+"  \xa1\xf1            \xa1\xf1\n"
+//% "    â—â—â—â—â—â—   ");
+"    \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1   ");
 
        break;
      case 4:
      case 5:
 
-        outs("      ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"    ¡ñ            ¡ñ\n"
-"  ¡ñ  ¡ñ        ¡ñ  ¡ñ\n"
-"  ¡ñ                ¡ñ\n"
-"  ¡ñ      ¡ñ¡ñ      ¡ñ\n"
-"¡ñ¡ñ¡ñ    ¡ñ¡ñ      ¡ñ¡ñ\n"
-"  ¡ñ                ¡ñ\n"
-"  ¡ñ                ¡ñ\n"
-"    ¡ñ  ¡ñ¡ñ¡ñ¡ñ  ¡ñ\n"
-"      ¡ñ      ¡ñ  ¡ñ\n"
-"                ¡ñ    ");
+        //% outs("      â—â—â—â—â—â—\n"
+        outs("      \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "    â—            â—\n"
+"    \xa1\xf1            \xa1\xf1\n"
+//% "  â—  â—        â—  â—\n"
+"  \xa1\xf1  \xa1\xf1        \xa1\xf1  \xa1\xf1\n"
+//% "  â—                â—\n"
+"  \xa1\xf1                \xa1\xf1\n"
+//% "  â—      â—â—      â—\n"
+"  \xa1\xf1      \xa1\xf1\xa1\xf1      \xa1\xf1\n"
+//% "â—â—â—    â—â—      â—â—\n"
+"\xa1\xf1\xa1\xf1\xa1\xf1    \xa1\xf1\xa1\xf1      \xa1\xf1\xa1\xf1\n"
+//% "  â—                â—\n"
+"  \xa1\xf1                \xa1\xf1\n"
+//% "  â—                â—\n"
+"  \xa1\xf1                \xa1\xf1\n"
+//% "    â—  â—â—â—â—  â—\n"
+"    \xa1\xf1  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1  \xa1\xf1\n"
+//% "      â—      â—  â—\n"
+"      \xa1\xf1      \xa1\xf1  \xa1\xf1\n"
+//% "                â—    ");
+"                \xa1\xf1    ");
         break;
         case 6:
         case 7:
-         outs("   ¡ñ    ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"¡ñ  ¡ñ¡ñ  ¡ñ        ¡ñ\n"
-"¡ñ              ¡ñ    ¡ñ\n"
-"  ¡ñ¡ñ¡ñ                ¡ñ\n"
-"¡ñ                      ¡ñ\n"
-"¡ñ  ¡ñ¡ñ                ¡ñ\n"
-"  ¡ñ  ¡ñ                ¡ñ\n"
-"      ¡ñ                ¡ñ\n"
-"        ¡ñ            ¡ñ\n"
-"          ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ        ");
+         //% outs("   â—    â—â—â—â—â—â—\n"
+         outs("   \xa1\xf1    \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "â—  â—â—  â—        â—\n"
+"\xa1\xf1  \xa1\xf1\xa1\xf1  \xa1\xf1        \xa1\xf1\n"
+//% "â—              â—    â—\n"
+"\xa1\xf1              \xa1\xf1    \xa1\xf1\n"
+//% "  â—â—â—                â—\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1                \xa1\xf1\n"
+//% "â—                      â—\n"
+"\xa1\xf1                      \xa1\xf1\n"
+//% "â—  â—â—                â—\n"
+"\xa1\xf1  \xa1\xf1\xa1\xf1                \xa1\xf1\n"
+//% "  â—  â—                â—\n"
+"  \xa1\xf1  \xa1\xf1                \xa1\xf1\n"
+//% "      â—                â—\n"
+"      \xa1\xf1                \xa1\xf1\n"
+//% "        â—            â—\n"
+"        \xa1\xf1            \xa1\xf1\n"
+//% "          â—â—â—â—â—â—        ");
+"          \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1        ");
         break;
 
         case 8:
         case 9:
         case 10:
-         outs("    ¡ñ¡ñ          ¡ñ¡ñ\n"
-"  ¡ñ¡ñ¡ñ¡ñ      ¡ñ¡ñ¡ñ¡ñ\n"
-"  ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"  ¡ñ                  ¡ñ\n"
-"  ¡ñ    ¡ñ      ¡ñ    ¡ñ\n"
-"¡ñ                      ¡ñ\n"
-"¡ñ        ¡ñ¡ñ¡ñ        ¡ñ\n"
-"  ¡ñ                  ¡ñ\n"
-"¡ñ    ¡ñ          ¡ñ  ¡ñ\n"
-"  ¡ñ¡ñ            ¡ñ¡ñ¡ñ\n"
-"  ¡ñ                  ¡ñ\n"
-"    ¡ñ              ¡ñ\n"
-"      ¡ñ  ¡ñ¡ñ¡ñ  ¡ñ\n"
-"      ¡ñ  ¡ñ    ¡ñ\n"
-"        ¡ñ               ");
+         //% outs("    â—â—          â—â—\n"
+         outs("    \xa1\xf1\xa1\xf1          \xa1\xf1\xa1\xf1\n"
+//% "  â—â—â—â—      â—â—â—â—\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1      \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—â—â—â—â—â—â—â—â—â—â—\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—                  â—\n"
+"  \xa1\xf1                  \xa1\xf1\n"
+//% "  â—    â—      â—    â—\n"
+"  \xa1\xf1    \xa1\xf1      \xa1\xf1    \xa1\xf1\n"
+//% "â—                      â—\n"
+"\xa1\xf1                      \xa1\xf1\n"
+//% "â—        â—â—â—        â—\n"
+"\xa1\xf1        \xa1\xf1\xa1\xf1\xa1\xf1        \xa1\xf1\n"
+//% "  â—                  â—\n"
+"  \xa1\xf1                  \xa1\xf1\n"
+//% "â—    â—          â—  â—\n"
+"\xa1\xf1    \xa1\xf1          \xa1\xf1  \xa1\xf1\n"
+//% "  â—â—            â—â—â—\n"
+"  \xa1\xf1\xa1\xf1            \xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—                  â—\n"
+"  \xa1\xf1                  \xa1\xf1\n"
+//% "    â—              â—\n"
+"    \xa1\xf1              \xa1\xf1\n"
+//% "      â—  â—â—â—  â—\n"
+"      \xa1\xf1  \xa1\xf1\xa1\xf1\xa1\xf1  \xa1\xf1\n"
+//% "      â—  â—    â—\n"
+"      \xa1\xf1  \xa1\xf1    \xa1\xf1\n"
+//% "        â—               ");
+"        \xa1\xf1               ");
 
         break;
 
         case 11:
         case 12:
-        outs("        ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"      ¡ñ    ¡ñ    ¡ñ¡ñ\n"
-"    ¡ñ  ¡ñ      ¡ñ  ¡ñ¡ñ\n"
-"  ¡ñ¡ñ              ¡ñ¡ñ¡ñ\n"
-"¡ñ              ¡ñ    ¡ñ¡ñ\n"
-"¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ      ¡ñ¡ñ\n"
-"  ¡ñ                  ¡ñ¡ñ\n"
-"    ¡ñ        ¡ñ  ¡ñ    ¡ñ\n"
-"    ¡ñ        ¡ñ  ¡ñ    ¡ñ\n"
-"    ¡ñ          ¡ñ      ¡ñ\n"
-"      ¡ñ              ¡ñ\n"
-"        ¡ñ  ¡ñ¡ñ¡ñ  ¡ñ\n"
-"        ¡ñ  ¡ñ  ¡ñ  ¡ñ\n"
-"          ¡ñ      ¡ñ             ");
+        //% outs("        â—â—â—â—â—â—\n"
+        outs("        \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "      â—    â—    â—â—\n"
+"      \xa1\xf1    \xa1\xf1    \xa1\xf1\xa1\xf1\n"
+//% "    â—  â—      â—  â—â—\n"
+"    \xa1\xf1  \xa1\xf1      \xa1\xf1  \xa1\xf1\xa1\xf1\n"
+//% "  â—â—              â—â—â—\n"
+"  \xa1\xf1\xa1\xf1              \xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "â—              â—    â—â—\n"
+"\xa1\xf1              \xa1\xf1    \xa1\xf1\xa1\xf1\n"
+//% "â—â—â—â—â—â—â—â—      â—â—\n"
+"\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1      \xa1\xf1\xa1\xf1\n"
+//% "  â—                  â—â—\n"
+"  \xa1\xf1                  \xa1\xf1\xa1\xf1\n"
+//% "    â—        â—  â—    â—\n"
+"    \xa1\xf1        \xa1\xf1  \xa1\xf1    \xa1\xf1\n"
+//% "    â—        â—  â—    â—\n"
+"    \xa1\xf1        \xa1\xf1  \xa1\xf1    \xa1\xf1\n"
+//% "    â—          â—      â—\n"
+"    \xa1\xf1          \xa1\xf1      \xa1\xf1\n"
+//% "      â—              â—\n"
+"      \xa1\xf1              \xa1\xf1\n"
+//% "        â—  â—â—â—  â—\n"
+"        \xa1\xf1  \xa1\xf1\xa1\xf1\xa1\xf1  \xa1\xf1\n"
+//% "        â—  â—  â—  â—\n"
+"        \xa1\xf1  \xa1\xf1  \xa1\xf1  \xa1\xf1\n"
+//% "          â—      â—             ");
+"          \xa1\xf1      \xa1\xf1             ");
 
         break;
         case 13:
         case 14:
-        outs("              ¡ñ¡ñ¡ñ¡ñ\n"
-"      ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"    ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"  ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"  ¡ñ    ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"¡ñ¡ñ    ¡ñ            ¡ñ¡ñ\n"
-"¡ñ¡ñ¡ñ¡ñ                ¡ñ\n"
-"  ¡ñ                    ¡ñ\n"
-"    ¡ñ¡ñ            ¡ñ¡ñ\n"
-"  ¡ñ    ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ  ¡ñ\n"
-"  ¡ñ                  ¡ñ\n"
-"    ¡ñ                  ¡ñ\n"
-"      ¡ñ                ¡ñ\n"
-"    ¡ñ¡ñ¡ñ            ¡ñ¡ñ¡ñ        ");
+        //% outs("              â—â—â—â—\n"
+        outs("              \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "      â—â—â—â—â—â—â—â—\n"
+"      \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "    â—â—â—â—â—â—â—â—â—â—\n"
+"    \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—â—â—â—â—â—â—â—â—â—â—â—\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—    â—â—â—â—â—â—â—â—â—\n"
+"  \xa1\xf1    \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "â—â—    â—            â—â—\n"
+"\xa1\xf1\xa1\xf1    \xa1\xf1            \xa1\xf1\xa1\xf1\n"
+//% "â—â—â—â—                â—\n"
+"\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1                \xa1\xf1\n"
+//% "  â—                    â—\n"
+"  \xa1\xf1                    \xa1\xf1\n"
+//% "    â—â—            â—â—\n"
+"    \xa1\xf1\xa1\xf1            \xa1\xf1\xa1\xf1\n"
+//% "  â—    â—â—â—â—â—â—  â—\n"
+"  \xa1\xf1    \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1  \xa1\xf1\n"
+//% "  â—                  â—\n"
+"  \xa1\xf1                  \xa1\xf1\n"
+//% "    â—                  â—\n"
+"    \xa1\xf1                  \xa1\xf1\n"
+//% "      â—                â—\n"
+"      \xa1\xf1                \xa1\xf1\n"
+//% "    â—â—â—            â—â—â—        ");
+"    \xa1\xf1\xa1\xf1\xa1\xf1            \xa1\xf1\xa1\xf1\xa1\xf1        ");
         break;
         case 15:
         case 16:
-        outs("  ¡ñ    ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"¡ñ  ¡ñ¡ñ  ¡ñ        ¡ñ\n"
-"¡ñ              ¡ñ    ¡ñ\n"
-"  ¡ñ¡ñ¡ñ                ¡ñ\n"
-"¡ñ                      ¡ñ\n"
-"¡ñ  ¡ñ¡ñ                ¡ñ\n"
-"  ¡ñ  ¡ñ                ¡ñ\n"
-"      ¡ñ        ¡ñ  ¡ñ    ¡ñ\n"
-"      ¡ñ          ¡ñ      ¡ñ\n"
-"      ¡ñ                  ¡ñ\n"
-"        ¡ñ              ¡ñ\n"
-"        ¡ñ  ¡ñ¡ñ  ¡ñ¡ñ¡ñ\n"
-"        ¡ñ  ¡ñ¡ñ  ¡ñ\n"
-"          ¡ñ    ¡ñ             ");
+        //% outs("  â—    â—â—â—â—â—â—\n"
+        outs("  \xa1\xf1    \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "â—  â—â—  â—        â—\n"
+"\xa1\xf1  \xa1\xf1\xa1\xf1  \xa1\xf1        \xa1\xf1\n"
+//% "â—              â—    â—\n"
+"\xa1\xf1              \xa1\xf1    \xa1\xf1\n"
+//% "  â—â—â—                â—\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1                \xa1\xf1\n"
+//% "â—                      â—\n"
+"\xa1\xf1                      \xa1\xf1\n"
+//% "â—  â—â—                â—\n"
+"\xa1\xf1  \xa1\xf1\xa1\xf1                \xa1\xf1\n"
+//% "  â—  â—                â—\n"
+"  \xa1\xf1  \xa1\xf1                \xa1\xf1\n"
+//% "      â—        â—  â—    â—\n"
+"      \xa1\xf1        \xa1\xf1  \xa1\xf1    \xa1\xf1\n"
+//% "      â—          â—      â—\n"
+"      \xa1\xf1          \xa1\xf1      \xa1\xf1\n"
+//% "      â—                  â—\n"
+"      \xa1\xf1                  \xa1\xf1\n"
+//% "        â—              â—\n"
+"        \xa1\xf1              \xa1\xf1\n"
+//% "        â—  â—â—  â—â—â—\n"
+"        \xa1\xf1  \xa1\xf1\xa1\xf1  \xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "        â—  â—â—  â—\n"
+"        \xa1\xf1  \xa1\xf1\xa1\xf1  \xa1\xf1\n"
+//% "          â—    â—             ");
+"          \xa1\xf1    \xa1\xf1             ");
 
        break;
         }
     }
      else{
-        outs("          ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ\n"
-"        ¡ñ          ¡ñ¡ñ¡ñ\n"
-"      ¡ñ    ¡ñ    ¡ñ  ¡ñ¡ñ¡ñ\n"
-"  ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ        ¡ñ¡ñ\n"
-"  ¡ñ          ¡ñ          ¡ñ\n"
-"  ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ          ¡ñ            [1;5;31mÎÒÊÇ´ó¹ÖÄñ[m\n"
-"  ¡ñ        ¡ñ            ¡ñ\n"
-"  ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ            ¡ñ\n"
-"  ¡ñ                    ¡ñ\n"
-"  ¡ñ                    ¡ñ\n"
-"    ¡ñ                ¡ñ\n"
-"¡ñ¡ñ  ¡ñ            ¡ñ\n"
-"¡ñ      ¡ñ¡ñ¡ñ¡ñ¡ñ¡ñ  ¡ñ¡ñ\n"
-"  ¡ñ                      ¡ñ\n"
-"¡ñ¡ñ¡ñ    ÎÒÊÇ´ó¹ÖÄñ       ¡ñ¡ñ¡ñ ");
+        //% outs("          â—â—â—â—â—â—â—\n"
+        outs("          \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "        â—          â—â—â—\n"
+"        \xa1\xf1          \xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "      â—    â—    â—  â—â—â—\n"
+"      \xa1\xf1    \xa1\xf1    \xa1\xf1  \xa1\xf1\xa1\xf1\xa1\xf1\n"
+//% "  â—â—â—â—â—â—â—        â—â—\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1        \xa1\xf1\xa1\xf1\n"
+//% "  â—          â—          â—\n"
+"  \xa1\xf1          \xa1\xf1          \xa1\xf1\n"
+//% "  â—â—â—â—â—â—â—          â—            [1;5;31mæˆ‘æ˜¯å¤§æ€ªé¸Ÿ[m\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1          \xa1\xf1            [1;5;31m\xce\xd2\xca\xc7\xb4\xf3\xb9\xd6\xc4\xf1[m\n"
+//% "  â—        â—            â—\n"
+"  \xa1\xf1        \xa1\xf1            \xa1\xf1\n"
+//% "  â—â—â—â—â—â—            â—\n"
+"  \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1            \xa1\xf1\n"
+//% "  â—                    â—\n"
+"  \xa1\xf1                    \xa1\xf1\n"
+//% "  â—                    â—\n"
+"  \xa1\xf1                    \xa1\xf1\n"
+//% "    â—                â—\n"
+"    \xa1\xf1                \xa1\xf1\n"
+//% "â—â—  â—            â—\n"
+"\xa1\xf1\xa1\xf1  \xa1\xf1            \xa1\xf1\n"
+//% "â—      â—â—â—â—â—â—  â—â—\n"
+"\xa1\xf1      \xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1\xa1\xf1  \xa1\xf1\xa1\xf1\n"
+//% "  â—                      â—\n"
+"  \xa1\xf1                      \xa1\xf1\n"
+//% "â—â—â—    æˆ‘æ˜¯å¤§æ€ªé¸Ÿ       â—â—â— ");
+"\xa1\xf1\xa1\xf1\xa1\xf1    \xce\xd2\xca\xc7\xb4\xf3\xb9\xd6\xc4\xf1       \xa1\xf1\xa1\xf1\xa1\xf1 ");
 
    }
   if(clean>10)
     {
         move(10,30);
-        outs("±ã±ãºÃ¶à..³ô³ô...");
+        //% outs("ä¾¿ä¾¿å¥½å¤š..è‡­è‡­...");
+        outs("\xb1\xe3\xb1\xe3\xba\xc3\xb6\xe0..\xb3\xf4\xb3\xf4...");
         if(clean>15)
           death();
         pressanykey();
      }
 
    move(17,0);
-   outs("[32m[1]-³Ô·¹     [2]-³ÔÁãÊ³   [3]-ÇåÀí¼¦Éá   [4]-¸úĞ¡¼¦²ÂÈ­  [5]-Ä¿Ç°Õ½¼¨[m");
-   outs("\n[32m[6]-Âò¼¦ËÇÁÏ$20  [7]-ÂòÁãÊ³$30  [8]-³Ô´ó²¹Íè  [9]-Âô¼¦à¸ [m");
+   //% outs("[32m[1]-åƒé¥­     [2]-åƒé›¶é£Ÿ   [3]-æ¸…ç†é¸¡èˆ   [4]-è·Ÿå°é¸¡çŒœæ‹³  [5]-ç›®å‰æˆ˜ç»©[m");
+   outs("[32m[1]-\xb3\xd4\xb7\xb9     [2]-\xb3\xd4\xc1\xe3\xca\xb3   [3]-\xc7\xe5\xc0\xed\xbc\xa6\xc9\xe1   [4]-\xb8\xfa\xd0\xa1\xbc\xa6\xb2\xc2\xc8\xad  [5]-\xc4\xbf\xc7\xb0\xd5\xbd\xbc\xa8[m");
+   //% outs("\n[32m[6]-ä¹°é¸¡é¥²æ–™$20  [7]-ä¹°é›¶é£Ÿ$30  [8]-åƒå¤§è¡¥ä¸¸  [9]-å–é¸¡å–” [m");
+   outs("\n[32m[6]-\xc2\xf2\xbc\xa6\xcb\xc7\xc1\xcf$20  [7]-\xc2\xf2\xc1\xe3\xca\xb3$30  [8]-\xb3\xd4\xb4\xf3\xb2\xb9\xcd\xe8  [9]-\xc2\xf4\xbc\xa6\xe0\xb8 [m");
   //pressanykey();
   return;
 }
@@ -315,16 +443,20 @@ int select_menu()
   ptime = localtime(&now);
   //diff = (time(0) /*- login_start_time*/) / 60;
  move(23,0);
- prints("[0;46;31m  Ê¹ÓÃ°ïÖú  [0;47;34m c ¸ÄÃû×Ö   k É±¼¦   t Ïû³ı·ÇÆ£ÀÍ($50)        [m"); 
+ //% prints("[0;46;31m  ä½¿ç”¨å¸®åŠ©  [0;47;34m c æ”¹åå­—   k æ€é¸¡   t æ¶ˆé™¤éç–²åŠ³($50)        [m"); 
+ prints("[0;46;31m  \xca\xb9\xd3\xc3\xb0\xef\xd6\xfa  [0;47;34m c \xb8\xc4\xc3\xfb\xd7\xd6   k \xc9\xb1\xbc\xa6   t \xcf\xfb\xb3\xfd\xb7\xc7\xc6\xa3\xc0\xcd($50)        [m"); 
   while(1)
 {
-        getdata(22, 0, "Òª×öĞ©Ê²÷áÄØ?£º[0]", inbuf, 4, DOECHO,YEA);
+        //% getdata(22, 0, "è¦åšäº›ä»€éº½å‘¢?ï¼š[0]", inbuf, 4, DOECHO,YEA);
+        getdata(22, 0, "\xd2\xaa\xd7\xf6\xd0\xa9\xca\xb2\xf7\xe1\xc4\xd8?\xa3\xba[0]", inbuf, 4, DOECHO,YEA);
         if(tiredstrong>20)
           {
            clear();
            move(15,30);
-           outs("ÎØ~~~Ğ¡¼¦»áÀÛ»µµÄ...ÒªÏÈÈ¥ĞİÏ¢Ò»ÏÂ..");
-           outs("\n\nĞİ    Ñø     ÖĞ");
+           //% outs("å‘œ~~~å°é¸¡ä¼šç´¯åçš„...è¦å…ˆå»ä¼‘æ¯ä¸€ä¸‹..");
+           outs("\xce\xd8~~~\xd0\xa1\xbc\xa6\xbb\xe1\xc0\xdb\xbb\xb5\xb5\xc4...\xd2\xaa\xcf\xc8\xc8\xa5\xd0\xdd\xcf\xa2\xd2\xbb\xcf\xc2..");
+           //% outs("\n\nä¼‘    å…»     ä¸­");
+           outs("\n\n\xd0\xdd    \xd1\xf8     \xd6\xd0");
           }
      switch(inbuf[0])
      {   case '1':
@@ -333,15 +465,24 @@ int select_menu()
                          break;
                        }
         move(10,0);
-        outs("       ¡õ¡õ¡õ¡õ¡õ¡õ\n"
-"         ¡ß¡à ¡õ  ¡õ\n"
-"              ¡õ  ¡õ                             ¡õ¡õ¡õ¡õ  ¡õ\n"
-"              ¡õ  ¡õ     ¡õ              ¡õ      ¡õ¡õ¡õ¡õ¡õ¡õ¡õ\n"
-"         £Ã£ï£ë£å ¡õ    _¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ_    ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ\n"
-"             ¡õ   ¡õ     £¥£¥£¥£¥£¥£¥£¥£¥£¥       ¡õ¡ª¡É¡É¡ª¡õ\n"
-"            ¡õ    ¡õ     ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ       ©¦Mcdonald©¦      ¡¡¡¡¡¡¡¡\n"
-"           ¡õ     ¡õ     ¡ù¡ù¡ù¡ù¡ù¡ù¡ù¡ù¡ù¡¡     ¡õ¡ª¡ª¡ª¡ª¡õ\n"
-"       ¡õ¡õ¡õ¡õ¡õ¡õ      ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ     ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ ");
+        //% outs("       â–¡â–¡â–¡â–¡â–¡â–¡\n"
+        outs("       \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\n"
+//% "         âˆµâˆ´ â–¡  â–¡\n"
+"         \xa1\xdf\xa1\xe0 \xa1\xf5  \xa1\xf5\n"
+//% "              â–¡  â–¡                             â–¡â–¡â–¡â–¡  â–¡\n"
+"              \xa1\xf5  \xa1\xf5                             \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5  \xa1\xf5\n"
+//% "              â–¡  â–¡     â–¡              â–¡      â–¡â–¡â–¡â–¡â–¡â–¡â–¡\n"
+"              \xa1\xf5  \xa1\xf5     \xa1\xf5              \xa1\xf5      \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\n"
+//% "         ï¼£ï½ï½‹ï½… â–¡    _â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡_    â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡\n"
+"         \xa3\xc3\xa3\xef\xa3\xeb\xa3\xe5 \xa1\xf5    _\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5_    \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\n"
+//% "             â–¡   â–¡     ï¼…ï¼…ï¼…ï¼…ï¼…ï¼…ï¼…ï¼…ï¼…       â–¡â€”âˆ©âˆ©â€”â–¡\n"
+"             \xa1\xf5   \xa1\xf5     \xa3\xa5\xa3\xa5\xa3\xa5\xa3\xa5\xa3\xa5\xa3\xa5\xa3\xa5\xa3\xa5\xa3\xa5       \xa1\xf5\xa1\xaa\xa1\xc9\xa1\xc9\xa1\xaa\xa1\xf5\n"
+//% "            â–¡    â–¡     â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡       â”‚Mcdonaldâ”‚      ã€€ã€€ã€€ã€€\n"
+"            \xa1\xf5    \xa1\xf5     \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5       \xa9\xa6Mcdonald\xa9\xa6      \xa1\xa1\xa1\xa1\xa1\xa1\xa1\xa1\n"
+//% "           â–¡     â–¡     â€»â€»â€»â€»â€»â€»â€»â€»â€»ã€€     â–¡â€”â€”â€”â€”â–¡\n"
+"           \xa1\xf5     \xa1\xf5     \xa1\xf9\xa1\xf9\xa1\xf9\xa1\xf9\xa1\xf9\xa1\xf9\xa1\xf9\xa1\xf9\xa1\xf9\xa1\xa1     \xa1\xf5\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xf5\n"
+//% "       â–¡â–¡â–¡â–¡â–¡â–¡      â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡     â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡ ");
+"       \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5      \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5     \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5 ");
 
         pressany(0);
         refresh();
@@ -355,12 +496,14 @@ int select_menu()
           weight++;
         if(weight>100)
           { move(9,30);
-            outs("Ì«ÖØÁËÀ²..·Ê¼¦~~ÄãÏë³ÅËÀ¼¦°¡£¿....ÍÛßÖ¡ğ¡ñ¡Á¡Á");
+            //% outs("å¤ªé‡äº†å•¦..è‚¥é¸¡~~ä½ æƒ³æ’‘æ­»é¸¡å•Šï¼Ÿ....å“‡å’§â—‹â—Ã—Ã—");
+            outs("\xcc\xab\xd6\xd8\xc1\xcb\xc0\xb2..\xb7\xca\xbc\xa6~~\xc4\xe3\xcf\xeb\xb3\xc5\xcb\xc0\xbc\xa6\xb0\xa1\xa3\xbf....\xcd\xdb\xdf\xd6\xa1\xf0\xa1\xf1\xa1\xc1\xa1\xc1");
             pressanykey();
            }
         if(weight>150)
           {move(9,30);
-           outs("¼¦³ÅÔÎÁË~~");
+           //% outs("é¸¡æ’‘æ™•äº†~~");
+           outs("\xbc\xa6\xb3\xc5\xd4\xce\xc1\xcb~~");
            pressanykey();
            }
         if(weight>200)
@@ -371,13 +514,20 @@ int select_menu()
          pressany(5);
          break;}
         move(10,0);
-        outs("             ¡õ\n"
-"       [33;1m¡õ[m¡õ¡ğ\n"
-"       [37;42m¡ö¡ö[m\n"
-"       [32m¡õ¡õ[m\n"
-"       [32;40;1m¡õ¡õ[m\n"
-"       [31m ¡õ [m\n"
-"      [31m ¡õ¡õ[m   [32;1mË®¹û¾Æ±ùä¿ÁÜËÕ´ò[m   àÅ!ºÃºÈ!   ");
+        //% outs("             â–¡\n"
+        outs("             \xa1\xf5\n"
+//% "       [33;1mâ–¡[mâ–¡â—‹\n"
+"       [33;1m\xa1\xf5[m\xa1\xf5\xa1\xf0\n"
+//% "       [37;42mâ– â– [m\n"
+"       [37;42m\xa1\xf6\xa1\xf6[m\n"
+//% "       [32mâ–¡â–¡[m\n"
+"       [32m\xa1\xf5\xa1\xf5[m\n"
+//% "       [32;40;1mâ–¡â–¡[m\n"
+"       [32;40;1m\xa1\xf5\xa1\xf5[m\n"
+//% "       [31m â–¡ [m\n"
+"       [31m \xa1\xf5 [m\n"
+//% "      [31m â–¡â–¡[m   [32;1mæ°´æœé…’å†°æ·‡æ·‹è‹æ‰“[m   å—¯!å¥½å–!   ");
+"      [31m \xa1\xf5\xa1\xf5[m   [32;1m\xcb\xae\xb9\xfb\xbe\xc6\xb1\xf9\xe4\xbf\xc1\xdc\xcb\xd5\xb4\xf2[m   \xe0\xc5!\xba\xc3\xba\xc8!   ");
         pressany(1);
         zfood--;
         tiredstrong++;
@@ -385,7 +535,8 @@ int select_menu()
         weight+=2;
         if(weight>100)
           {move(9,30);
-           outs("Ì«ÖØÁËÀ²..·Ê¼¦~~");
+           //% outs("å¤ªé‡äº†å•¦..è‚¥é¸¡~~");
+           outs("\xcc\xab\xd6\xd8\xc1\xcb\xc0\xb2..\xb7\xca\xbc\xa6~~");
            pressanykey();
            }
         if(weight>200)
@@ -393,16 +544,26 @@ int select_menu()
         break;
      case '3':
         move(10,0);
-        outs("[1;36m                              ¡õ¡õ¡õ¡õ¡õ[m\n"
-"[1;33m                             ¡º[37m¡õ¡õ¡õ¡õ[m\n"
-"[1;37m                               ¡õ¡õ¡õ¡õ[m\n"
-"[1;37m             ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ[32m¡ò[37m¡õ¡õ¡õ¡õ[m\n"
-"[37m             ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ[1;37m¡õ¡õ¡õ¡õ[m\n"
-"[37m             ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ[1;33m ¡õ[m\n"
-"[36m                  ¡õ¡õ¡õ¡õ¡õ¡õ[1;33m¡õ¡õ[m\n"
-"[1;36m                  ¡õ¡õ¡õ¡õ¡õ¡õ[m\n"
-"  [1;37m                ¡õ¡õ¡õ¡õ¡õ¡õ[m\n"
-"                  Ò®Ò®Ò®...±ã±ãÀ­¹â¹â...                              ");
+        //% outs("[1;36m                              â–¡â–¡â–¡â–¡â–¡[m\n"
+        outs("[1;36m                              \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[m\n"
+//% "[1;33m                             ã€[37mâ–¡â–¡â–¡â–¡[m\n"
+"[1;33m                             \xa1\xba[37m\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[m\n"
+//% "[1;37m                               â–¡â–¡â–¡â–¡[m\n"
+"[1;37m                               \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[m\n"
+//% "[1;37m             â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡[32mâ—[37mâ–¡â–¡â–¡â–¡[m\n"
+"[1;37m             \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[32m\xa1\xf2[37m\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[m\n"
+//% "[37m             â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡[1;37mâ–¡â–¡â–¡â–¡[m\n"
+"[37m             \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[1;37m\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[m\n"
+//% "[37m             â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡[1;33m â–¡[m\n"
+"[37m             \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[1;33m \xa1\xf5[m\n"
+//% "[36m                  â–¡â–¡â–¡â–¡â–¡â–¡[1;33mâ–¡â–¡[m\n"
+"[36m                  \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[1;33m\xa1\xf5\xa1\xf5[m\n"
+//% "[1;36m                  â–¡â–¡â–¡â–¡â–¡â–¡[m\n"
+"[1;36m                  \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[m\n"
+//% "  [1;37m                â–¡â–¡â–¡â–¡â–¡â–¡[m\n"
+"  [1;37m                \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5[m\n"
+//% "                  è€¶è€¶è€¶...ä¾¿ä¾¿æ‹‰å…‰å…‰...                              ");
+"                  \xd2\xae\xd2\xae\xd2\xae...\xb1\xe3\xb1\xe3\xc0\xad\xb9\xe2\xb9\xe2...                              ");
 
         pressany(2);
         tiredstrong+=5;
@@ -419,24 +580,30 @@ int select_menu()
      case '6':
           move(20,0);
         if(currentuser.money<20)
-          {    outs("ÌÇ¹û²»×ã!!");
+          //% {    outs("ç³–æœä¸è¶³!!");
+          {    outs("\xcc\xc7\xb9\xfb\xb2\xbb\xd7\xe3!!");
         pressanykey();
         break;}
         food+=5;
-        prints("\nÊ³ÎïÓĞ [33;41m %d [m·İ",food);
-        prints("   Ê£ÏÂ [33;41m %d [mÌÇ",demoney(20));
+        //% prints("\né£Ÿç‰©æœ‰ [33;41m %d [mä»½",food);
+        prints("\n\xca\xb3\xce\xef\xd3\xd0 [33;41m %d [m\xb7\xdd",food);
+        //% prints("   å‰©ä¸‹ [33;41m %d [mç³–",demoney(20));
+        prints("   \xca\xa3\xcf\xc2 [33;41m %d [m\xcc\xc7",demoney(20));
         pressanykey();
         break;
 
      case '7':
           move(20,0);
         if(currentuser.money<30)
-          {    outs("ÌÇ¹û²»×ã!!");
+          //% {    outs("ç³–æœä¸è¶³!!");
+          {    outs("\xcc\xc7\xb9\xfb\xb2\xbb\xd7\xe3!!");
         pressanykey();
         break;}
         zfood+=5;
-        prints("\nÁãÊ³ÓĞ [33;41m %d [m·İ",zfood);
-        prints("  Ê£ÏÂ [33;41m %d [mÌÇ",demoney(30));
+        //% prints("\né›¶é£Ÿæœ‰ [33;41m %d [mä»½",zfood);
+        prints("\n\xc1\xe3\xca\xb3\xd3\xd0 [33;41m %d [m\xb7\xdd",zfood);
+        //% prints("  å‰©ä¸‹ [33;41m %d [mç³–",demoney(30));
+        prints("  \xca\xa3\xcf\xc2 [33;41m %d [m\xcc\xc7",demoney(30));
         pressanykey();
         break;
      case '8':
@@ -445,24 +612,30 @@ int select_menu()
           {
         move(10,0);
         outs("\n"
-"               ¡õ¡õ¡õ¡õ\n"
-"               ¡õ¡õ¡õ¡õ\n"
-"               ¡õ¡õ¡õ¡õ\n"
-"                          Íµ³Ô½ûÒ©´ó²¹Íè.....");
+//% "               â–¡â–¡â–¡â–¡\n"
+"               \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\n"
+//% "               â–¡â–¡â–¡â–¡\n"
+"               \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\n"
+//% "               â–¡â–¡â–¡â–¡\n"
+"               \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\n"
+//% "                          å·åƒç¦è¯å¤§è¡¥ä¸¸.....");
+"                          \xcd\xb5\xb3\xd4\xbd\xfb\xd2\xa9\xb4\xf3\xb2\xb9\xcd\xe8.....");
         tiredstrong = 0;
         happy+=3;
         oo--;
         pressany(6);
         break;  }
         move(20,4);
-        outs("Ã»´ó²¹ÍèÀ²!!");
+        //% outs("æ²¡å¤§è¡¥ä¸¸å•¦!!");
+        outs("\xc3\xbb\xb4\xf3\xb2\xb9\xcd\xe8\xc0\xb2!!");
         pressanykey();
         break;
 
      case '9':
         if(age<5)
         { move(20,4);
-          prints("Ì«Ğ¡ÁË...²»µÃ··ÊÛÎ´³ÉÄêĞ¡¼¦.....");
+          //% prints("å¤ªå°äº†...ä¸å¾—è´©å”®æœªæˆå¹´å°é¸¡.....");
+          prints("\xcc\xab\xd0\xa1\xc1\xcb...\xb2\xbb\xb5\xc3\xb7\xb7\xca\xdb\xce\xb4\xb3\xc9\xc4\xea\xd0\xa1\xbc\xa6.....");
           pressanykey();
           break;
         }
@@ -476,7 +649,8 @@ int select_menu()
         currentuser.money-=50;
         break;
      case 'c':
-        getdata(22, 0, "°ïĞ¡¼¦È¡¸öºÃÃû×Ö£º", Name, 21, DOECHO,YEA);
+        //% getdata(22, 0, "å¸®å°é¸¡å–ä¸ªå¥½åå­—ï¼š", Name, 21, DOECHO,YEA);
+        getdata(22, 0, "\xb0\xef\xd0\xa1\xbc\xa6\xc8\xa1\xb8\xf6\xba\xc3\xc3\xfb\xd7\xd6\xa3\xba", Name, 21, DOECHO,YEA);
         break;
      default:
         return;
@@ -503,12 +677,15 @@ int death()
   if((fp = fopen("game/chicken", "a"))!=NULL) 
    prints("Error!\n");
      /*fp=fopen("game/chicken,"ab");*/
-fprintf(fp,"[32m%s[m ÔÚ [34;43m[%d/%d  %d:%02d][m  µÄĞ¡¼¦ [33m%s  [36m¹ÒÁË~~[m \n",
+//% fprintf(fp,"[32m%s[m åœ¨ [34;43m[%d/%d  %d:%02d][m  çš„å°é¸¡ [33m%s  [36mæŒ‚äº†~~[m \n",
+fprintf(fp,"[32m%s[m \xd4\xda [34;43m[%d/%d  %d:%02d][m  \xb5\xc4\xd0\xa1\xbc\xa6 [33m%s  [36m\xb9\xd2\xc1\xcb~~[m \n",
                  currentuser.userid,ptime->tm_mon + 1, ptime->tm_mday,
                            ptime->tm_hour, ptime->tm_min,Name);
                              fclose(fp);
-    outs("ÎØ...Ğ¡¼¦¹ÒÁË....");
-  outs("\n±¿Ê·ÁË...¸Ï³öÏµÍ³...");
+    //% outs("å‘œ...å°é¸¡æŒ‚äº†....");
+    outs("\xce\xd8...\xd0\xa1\xbc\xa6\xb9\xd2\xc1\xcb....");
+  //% outs("\nç¬¨å²äº†...èµ¶å‡ºç³»ç»Ÿ...");
+  outs("\n\xb1\xbf\xca\xb7\xc1\xcb...\xb8\xcf\xb3\xf6\xcf\xb5\xcd\xb3...");
   pressanykey();
   setuserfile(fname, DATA_FILE);
 
@@ -523,7 +700,8 @@ fprintf(fp,"[32m%s[m ÔÚ [34;43m[%d/%d  %d:%02d][m  µÄĞ¡¼¦ [33m%s  [36m¹ÒÁË
 {
    extern struct commands cmdlist[];
 
-  domenu(MMENU, "Ö÷¹¦\ÄÜ±í", (chkmail(0) ? 'M' : 'C'), cmdlist);
+  //% domenu(MMENU, "ä¸»åŠŸ\èƒ½è¡¨", (chkmail(0) ? 'M' : 'C'), cmdlist);
+  domenu(MMENU, "\xd6\xf7\xb9\xa6\\xc4\xdc\xb1\xed", (chkmail(0) ? 'M' : 'C'), cmdlist);
 }
 */
 
@@ -556,10 +734,12 @@ int guess()
 
    do
    {
-    /*getdata(22, 0, "[1]-¼ôµ¶ [2]-Ê¯Í· [3]-²¼£º", inbuf, 4,
+    //% /*getdata(22, 0, "[1]-å‰ªåˆ€ [2]-çŸ³å¤´ [3]-å¸ƒï¼š", inbuf, 4,
+    /*getdata(22, 0, "[1]-\xbc\xf4\xb5\xb6 [2]-\xca\xaf\xcd\xb7 [3]-\xb2\xbc\xa3\xba", inbuf, 4,
 DOECHO,NULL);*/
     move(23,0);
-    outs("[1]-¼ôµ¶ [2]-Ê¯Í· [3]-²¼£º");
+    //% outs("[1]-å‰ªåˆ€ [2]-çŸ³å¤´ [3]-å¸ƒï¼š");
+    outs("[1]-\xbc\xf4\xb5\xb6 [2]-\xca\xaf\xcd\xb7 [3]-\xb2\xbc\xa3\xba");
     ch = igetkey();
     }while((ch!='1')&&(ch!='2')&&(ch!='3'));
 
@@ -568,13 +748,16 @@ DOECHO,NULL);*/
     move(21,35);
     switch(com){
         case 0:
-          outs("Ğ¡¼¦:¼ôµ¶");
+          //% outs("å°é¸¡:å‰ªåˆ€");
+          outs("\xd0\xa1\xbc\xa6:\xbc\xf4\xb5\xb6");
          break;
         case 1:
-          outs("Ğ¡¼¦:Ê¯Í·");
+          //% outs("å°é¸¡:çŸ³å¤´");
+          outs("\xd0\xa1\xbc\xa6:\xca\xaf\xcd\xb7");
          break;
         case 2:
-          outs("Ğ¡¼¦:²¼");
+          //% outs("å°é¸¡:å¸ƒ");
+          outs("\xd0\xa1\xbc\xa6:\xb2\xbc");
          break;
      }
 
@@ -583,7 +766,8 @@ DOECHO,NULL);*/
 
     switch(ch){
     case '1':
-      outs("±¿¼¦---¿´ÎÒ¼ñÀ´µÄµ¶---");
+      //% outs("ç¬¨é¸¡---çœ‹æˆ‘æ¡æ¥çš„åˆ€---");
+      outs("\xb1\xbf\xbc\xa6---\xbf\xb4\xce\xd2\xbc\xf1\xc0\xb4\xb5\xc4\xb5\xb6---");
       if (com==0)
         tie();
      else  if (com==1)
@@ -592,7 +776,8 @@ DOECHO,NULL);*/
         win_c();
     break;
     case '2':
-      outs("´ô¼¦---ÔÒÄãÒ»¿éÊ¯Í·!!---");
+      //% outs("å‘†é¸¡---ç ¸ä½ ä¸€å—çŸ³å¤´!!---");
+      outs("\xb4\xf4\xbc\xa6---\xd4\xd2\xc4\xe3\xd2\xbb\xbf\xe9\xca\xaf\xcd\xb7!!---");
       if (com==0)
         win_c();
      else if (com==1)
@@ -601,7 +786,8 @@ DOECHO,NULL);*/
         lose();
     break;
     case '3':
-      outs("´À¼¦---ËÍÄãÒ»¶ÑÆÆ²¼!---");
+      //% outs("è ¢é¸¡---é€ä½ ä¸€å †ç ´å¸ƒ!---");
+      outs("\xb4\xc0\xbc\xa6---\xcb\xcd\xc4\xe3\xd2\xbb\xb6\xd1\xc6\xc6\xb2\xbc!---");
       if (com==0)
         lose();
      else if (com==1)
@@ -620,7 +806,8 @@ int win_c()
         winn++;
        /* sleep(1);*/
         move (20,0);
-        outs("ÅĞ¶¨:Ğ¡¼¦ÊäÁË....    >_<~~~~~\n"
+        //% outs("åˆ¤å®š:å°é¸¡è¾“äº†....    >_<~~~~~\n"
+        outs("\xc5\xd0\xb6\xa8:\xd0\xa1\xbc\xa6\xca\xe4\xc1\xcb....    >_<~~~~~\n"
 "\n"
 "                                 ");
         return;
@@ -629,7 +816,8 @@ int tie()
 {
        /* sleep(0);*/
          move (21,0);
-        outs("ÅĞ¶¨:Æ½ÊÖ                    -_-\n"
+        //% outs("åˆ¤å®š:å¹³æ‰‹                    -_-\n"
+        outs("\xc5\xd0\xb6\xa8:\xc6\xbd\xca\xd6                    -_-\n"
 "\n"
 "                                              ");
         return;
@@ -640,8 +828,10 @@ int lose()
         happy+=2;
         /*sleep(0);*/
          move (21,0);
-        outs("Ğ¡¼¦Ó®ÂŞ                      ¡É¡É\n"
-"                               ¡õ       ");
+        //% outs("å°é¸¡èµ¢ç½—                      âˆ©âˆ©\n"
+        outs("\xd0\xa1\xbc\xa6\xd3\xae\xc2\xde                      \xa1\xc9\xa1\xc9\n"
+//% "                               â–¡       ");
+"                               \xa1\xf5       ");
         return;
 }
 
@@ -651,9 +841,11 @@ int situ()
         move(16,0);
         outs("           ");
         move(17,0);
-        prints("Äã:[44m %dÊ¤ %d¸º[m                   ",winn,losee);
+        //% prints("ä½ :[44m %dèƒœ %dè´Ÿ[m                   ",winn,losee);
+        prints("\xc4\xe3:[44m %d\xca\xa4 %d\xb8\xba[m                   ",winn,losee);
         move(18,0);
-        prints("¼¦:[44m %dÊ¤ %d¸º[m                   ",losee,winn);
+        //% prints("é¸¡:[44m %dèƒœ %dè´Ÿ[m                   ",losee,winn);
+        prints("\xbc\xa6:[44m %d\xca\xa4 %d\xb8\xba[m                   ",losee,winn);
 
        if (winn>=losee)
         pressany(4);
@@ -672,13 +864,15 @@ p_bf()
   clear();
   move(21,0);
   if(currentuser.money<100){
-    outs("ÌÇ¹û²»×ã!!");
+    //% outs("ç³–æœä¸è¶³!!");
+    outs("\xcc\xc7\xb9\xfb\xb2\xbb\xd7\xe3!!");
         pressanykey();
         return;}
      setuserfile(fname, "chicken");
   if ((fp = fopen(fname, "r+")) == NULL)
    {
-      outs("Ã»Ñø¼¦..²»¸øÄãÂò..¹ş¹ş...");
+      //% outs("æ²¡å…»é¸¡..ä¸ç»™ä½ ä¹°..å“ˆå“ˆ...");
+      outs("\xc3\xbb\xd1\xf8\xbc\xa6..\xb2\xbb\xb8\xf8\xc4\xe3\xc2\xf2..\xb9\xfe\xb9\xfe...");
        pressanykey();
         return;
     }
@@ -689,8 +883,10 @@ p_bf()
          ,&winn,&losee);
         fclose(fp);
       oo++;
-      prints("\n´ó²¹ÍèÓĞ %d ¿Å",oo);
-      prints("  Ê£ÏÂ %d ÌÇ,»¨Ç®100",demoney(100));
+      //% prints("\nå¤§è¡¥ä¸¸æœ‰ %d é¢—",oo);
+      prints("\n\xb4\xf3\xb2\xb9\xcd\xe8\xd3\xd0 %d \xbf\xc5",oo);
+      //% prints("  å‰©ä¸‹ %d ç³–,èŠ±é’±100",demoney(100));
+      prints("  \xca\xa3\xcf\xc2 %d \xcc\xc7,\xbb\xa8\xc7\xae100",demoney(100));
       pressanykey();
     fp = fopen(fname, "r+");
   /*if (last!=1)
@@ -732,7 +928,8 @@ int sell()
       time(&now);
         ptime = localtime(&now);
 
-  getdata(20, 0, "È·¶¨ÒªÂôµôĞ¡¼¦?[y/N]",ans,3,DOECHO,YEA);
+  //% getdata(20, 0, "ç¡®å®šè¦å–æ‰å°é¸¡?[y/N]",ans,3,DOECHO,YEA);
+  getdata(20, 0, "\xc8\xb7\xb6\xa8\xd2\xaa\xc2\xf4\xb5\xf4\xd0\xa1\xbc\xa6?[y/N]",ans,3,DOECHO,YEA);
   if(ans[0]!='y') return;
   sel+=(happy*10);
   sel+=(satis*7);
@@ -740,12 +937,15 @@ int sell()
   sel+= weight;
   sel+=age*10;
   move(20,0);
-  prints("Ğ¡¼¦Öµ[33;45m$$ %d [mÌÇÌÇ",sel);
-    getdata(19, 0, "ÕæµÄÒªÂôµôĞ¡¼¦?[y/N]",ans,3,DOECHO,YEA);
+  //% prints("å°é¸¡å€¼[33;45m$$ %d [mç³–ç³–",sel);
+  prints("\xd0\xa1\xbc\xa6\xd6\xb5[33;45m$$ %d [m\xcc\xc7\xcc\xc7",sel);
+    //% getdata(19, 0, "çœŸçš„è¦å–æ‰å°é¸¡?[y/N]",ans,3,DOECHO,YEA);
+    getdata(19, 0, "\xd5\xe6\xb5\xc4\xd2\xaa\xc2\xf4\xb5\xf4\xd0\xa1\xbc\xa6?[y/N]",ans,3,DOECHO,YEA);
   if(ans[0]!='y') return;
 
   if((fp = fopen("game/chicken", "a"))!=NULL);
-fprintf(fp,"[32m%s[m ÔÚ [34;43m[%d/%d  %d:%02d][m  °ÑĞ¡¼¦ [33m%s  [31mÒÔ [37;44m%d[m [31mÌÇ¹ûÂôÁË[m\n",
+//% fprintf(fp,"[32m%s[m åœ¨ [34;43m[%d/%d  %d:%02d][m  æŠŠå°é¸¡ [33m%s  [31mä»¥ [37;44m%d[m [31mç³–æœå–äº†[m\n",
+fprintf(fp,"[32m%s[m \xd4\xda [34;43m[%d/%d  %d:%02d][m  \xb0\xd1\xd0\xa1\xbc\xa6 [33m%s  [31m\xd2\xd4 [37;44m%d[m [31m\xcc\xc7\xb9\xfb\xc2\xf4\xc1\xcb[m\n",
                  currentuser.userid,ptime->tm_mon + 1, ptime->tm_mday,
                            ptime->tm_hour, ptime->tm_min,Name,sel);
                              fclose(fp);
@@ -769,10 +969,12 @@ int gagb_c()
     clear();
   do{
    /* while(strlen(buf1)<1)*/
-  getdata(0, 0, "ÒªÑº¶àÉÙÌÇ¹û°¡(×î´ó2000)£º", buf1, 5, DOECHO,YEA);
+  //% getdata(0, 0, "è¦æŠ¼å¤šå°‘ç³–æœå•Š(æœ€å¤§2000)ï¼š", buf1, 5, DOECHO,YEA);
+  getdata(0, 0, "\xd2\xaa\xd1\xba\xb6\xe0\xc9\xd9\xcc\xc7\xb9\xfb\xb0\xa1(\xd7\xee\xb4\xf32000)\xa3\xba", buf1, 5, DOECHO,YEA);
   money=atoi(buf1);
      if(currentuser.money<money){
-      outs("²»¹»$$");
+      //% outs("ä¸å¤Ÿ$$");
+      outs("\xb2\xbb\xb9\xbb$$");
       pressanykey();
       return 0;}
      }while((money<=0)||(money>2000));
@@ -790,18 +992,22 @@ int gagb_c()
   {
    ga(abuf,l);
    if (abuf[0]=='q'&&abuf[1]=='k'){
-     prints("Í¶½µ..²ÂÁË %d´Î",count);
-     prints("\n´ğ°¸ÊÇ:%s",ans);
+     //% prints("æŠ•é™..çŒœäº† %dæ¬¡",count);
+     prints("\xcd\xb6\xbd\xb5..\xb2\xc2\xc1\xcb %d\xb4\xce",count);
+     //% prints("\nç­”æ¡ˆæ˜¯:%s",ans);
+     prints("\n\xb4\xf0\xb0\xb8\xca\xc7:%s",ans);
      pressanykey();
     /*return 0*/;}
    if(abuf[0]=='q'){
-     prints("\n´ğ°¸ÊÇ:%s",ans);
+     //% prints("\nç­”æ¡ˆæ˜¯:%s",ans);
+     prints("\n\xb4\xf0\xb0\xb8\xca\xc7:%s",ans);
      pressanykey();
     return 0;}
    if(compare(ans,abuf,count))
    /* GET=1;*/break;
    if(count>8){
-     outs("[1;32mÍÛßÖ..²ÂÊ®´Î»¹²»¶Ô...ÌÇÌÇÃ»ÊÕ..[m");
+     //% outs("[1;32må“‡å’§..çŒœåæ¬¡è¿˜ä¸å¯¹...ç³–ç³–æ²¡æ”¶..[m");
+     outs("[1;32m\xcd\xdb\xdf\xd6..\xb2\xc2\xca\xae\xb4\xce\xbb\xb9\xb2\xbb\xb6\xd4...\xcc\xc7\xcc\xc7\xc3\xbb\xca\xd5..[m");
      pressanykey();
      return 0;}
    count++;
@@ -841,7 +1047,8 @@ int gagb_c()
      break;}
    inmoney(money);
 
-  prints("\nÖÕì¶¶ÔÁË..²ÂÁË[32m %d[m ´Î ÉÍÌÇÌÇ [33;45m%d[m ¿Å",count,money);
+  //% prints("\nç»ˆæ–¼å¯¹äº†..çŒœäº†[32m %d[m æ¬¡ èµç³–ç³– [33;45m%d[m é¢—",count,money);
+  prints("\n\xd6\xd5\xec\xb6\xb6\xd4\xc1\xcb..\xb2\xc2\xc1\xcb[32m %d[m \xb4\xce \xc9\xcd\xcc\xc7\xcc\xc7 [33;45m%d[m \xbf\xc5",count,money);
   pressanykey();
 
   return 0;
@@ -861,7 +1068,8 @@ int compare(char ans[],char buf[],int c)
    if((ans[i]==buf[j])&&(i!=j))
     B++;
  prints("%s",buf);
- prints("  ½á¹û: %d A %d B Ê£ %d ´Î\n",A,B,9-c);
+ //% prints("  ç»“æœ: %d A %d B å‰© %d æ¬¡\n",A,B,9-c);
+ prints("  \xbd\xe1\xb9\xfb: %d A %d B \xca\xa3 %d \xb4\xce\n",A,B,9-c);
  /*  pressanykey(); */
   if(A==4)
    return 1;
@@ -873,20 +1081,23 @@ int ga(char buf[],int l)
 {
   int q,ok=0;
 
-  getdata(l, 0, "ÊäÈëËù²ÂµÄÊı×Ö(ËÄÎ»²»ÖØ¸²)£º", buf, 5, DOECHO,YEA);
+  //% getdata(l, 0, "è¾“å…¥æ‰€çŒœçš„æ•°å­—(å››ä½ä¸é‡è¦†)ï¼š", buf, 5, DOECHO,YEA);
+  getdata(l, 0, "\xca\xe4\xc8\xeb\xcb\xf9\xb2\xc2\xb5\xc4\xca\xfd\xd7\xd6(\xcb\xc4\xce\xbb\xb2\xbb\xd6\xd8\xb8\xb2)\xa3\xba", buf, 5, DOECHO,YEA);
   if (q=(strlen(buf))!=4){
        if (buf[0]=='z'&&buf[1]=='k')
    return 0;
        if (buf[0]=='q')
    return 0;
-    outs("ÂÒÀ´..²»×ã4Î»");
+    //% outs("ä¹±æ¥..ä¸è¶³4ä½");
+    outs("\xc2\xd2\xc0\xb4..\xb2\xbb\xd7\xe34\xce\xbb");
    /* pressanykey();*/
     return 0; }
   if((buf[0]!=buf[1])&&(buf[0]!=buf[2])&&(buf[0]!=buf[3])
    &&(buf[1]!=buf[2])&&
      (buf[1]!=buf[3])&&(buf[2]!=buf[3])) ok=1;
    if(ok!=1){
-    outs("ÖØ¸²ÂŞ");
+    //% outs("é‡è¦†ç½—");
+    outs("\xd6\xd8\xb8\xb2\xc2\xde");
     /*pressanykey();*/
     return 0;}
 
@@ -944,48 +1155,69 @@ int show_m()
 
    move(0,0);
    clear();
-   outs("              ¡õ¡õ    ¡õ¡õ\n"
-"            £¯    £Ü£¯    £Ü\n"
-"           £ü ¡õ¡õ £ü ¡õ¡õ £ü\n"
-"            £Ü___£¯¡¡£Ü¡õ¡õ£¯\n"
-"            ©¦  ___  ___  ©¦\n"
-"          £¨©¦¡õ_¡ö¡õ_¡ö  ©¦£©\n"
-"        (~~.©¦   £Ü£÷£¯    ©¦.~~)\n"
-"       `£Ü£¯ £Ü    £ï    £¯ £Ü£¯\n"
-"   ¡¡     £Ü   £Ü¡õ¡õ¡õ£¯   £¯\n"
-"   ¡¡       £Ü£¯£ü £ü £ü£Ü£¯\n"
-"     ¡¡      ©¦  ¡õ£Ï¡õ  ©¦\n"
-"     ¡¡     ¡õ___£¯£Ï£Ü___¡õ\n"
-"       ¡¡      £Ü__£ü__£¯    [31;40m»¶Ó­¹âÁÙĞ¡ÂêÀò..[m");
+   //% outs("              â–¡â–¡    â–¡â–¡\n"
+   outs("              \xa1\xf5\xa1\xf5    \xa1\xf5\xa1\xf5\n"
+//% "            ï¼    ï¼¼ï¼    ï¼¼\n"
+"            \xa3\xaf    \xa3\xdc\xa3\xaf    \xa3\xdc\n"
+//% "           ï½œ â–¡â–¡ ï½œ â–¡â–¡ ï½œ\n"
+"           \xa3\xfc \xa1\xf5\xa1\xf5 \xa3\xfc \xa1\xf5\xa1\xf5 \xa3\xfc\n"
+//% "            ï¼¼___ï¼ã€€ï¼¼â–¡â–¡ï¼\n"
+"            \xa3\xdc___\xa3\xaf\xa1\xa1\xa3\xdc\xa1\xf5\xa1\xf5\xa3\xaf\n"
+//% "            â”‚  ___  ___  â”‚\n"
+"            \xa9\xa6  ___  ___  \xa9\xa6\n"
+//% "          ï¼ˆâ”‚â–¡_â– â–¡_â–   â”‚ï¼‰\n"
+"          \xa3\xa8\xa9\xa6\xa1\xf5_\xa1\xf6\xa1\xf5_\xa1\xf6  \xa9\xa6\xa3\xa9\n"
+//% "        (~~.â”‚   ï¼¼ï½—ï¼    â”‚.~~)\n"
+"        (~~.\xa9\xa6   \xa3\xdc\xa3\xf7\xa3\xaf    \xa9\xa6.~~)\n"
+//% "       `ï¼¼ï¼ ï¼¼    ï½    ï¼ ï¼¼ï¼\n"
+"       `\xa3\xdc\xa3\xaf \xa3\xdc    \xa3\xef    \xa3\xaf \xa3\xdc\xa3\xaf\n"
+//% "   ã€€     ï¼¼   ï¼¼â–¡â–¡â–¡ï¼   ï¼\n"
+"   \xa1\xa1     \xa3\xdc   \xa3\xdc\xa1\xf5\xa1\xf5\xa1\xf5\xa3\xaf   \xa3\xaf\n"
+//% "   ã€€       ï¼¼ï¼ï½œ ï½œ ï½œï¼¼ï¼\n"
+"   \xa1\xa1       \xa3\xdc\xa3\xaf\xa3\xfc \xa3\xfc \xa3\xfc\xa3\xdc\xa3\xaf\n"
+//% "     ã€€      â”‚  â–¡ï¼¯â–¡  â”‚\n"
+"     \xa1\xa1      \xa9\xa6  \xa1\xf5\xa3\xcf\xa1\xf5  \xa9\xa6\n"
+//% "     ã€€     â–¡___ï¼ï¼¯ï¼¼___â–¡\n"
+"     \xa1\xa1     \xa1\xf5___\xa3\xaf\xa3\xcf\xa3\xdc___\xa1\xf5\n"
+//% "       ã€€      ï¼¼__ï½œ__ï¼    [31;40mæ¬¢è¿å…‰ä¸´å°ç›è‰..[m");
+"       \xa1\xa1      \xa3\xdc__\xa3\xfc__\xa3\xaf    [31;40m\xbb\xb6\xd3\xad\xb9\xe2\xc1\xd9\xd0\xa1\xc2\xea\xc0\xf2..[m");
 
       move(13,0);
-   sprintf(genbuf,"ÏÖÓĞÌÇ¹û: %-d            ±¾»úÌ¨ÄÚÏÖ½ğ: %-ld",q_mon,bank);
+   //% sprintf(genbuf,"ç°æœ‰ç³–æœ: %-d            æœ¬æœºå°å†…ç°é‡‘: %-ld",q_mon,bank);
+   sprintf(genbuf,"\xcf\xd6\xd3\xd0\xcc\xc7\xb9\xfb: %-d            \xb1\xbe\xbb\xfa\xcc\xa8\xc4\xda\xcf\xd6\xbd\xf0: %-ld",q_mon,bank);
    prints(genbuf);
    move(14,0);
 
 
-prints("[36m¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª[m\n");
+//% prints("[36mâ€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”[m\n");
+prints("[36m\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa[m\n");
 
-   prints("Æ»¹û-1 bar-2  777-3  Íõ¹Ú-4 BAR-5  Áåîõ-6 Î÷¹Ï-7 éÙ×Ó-8 ÀóÖ¦-9\n");
-   prints("x5     x40    x30    x25    x50    x20    x15    x10    x2±¶\n");
+   //% prints("è‹¹æœ-1 bar-2  777-3  ç‹å† -4 BAR-5  é“ƒé“›-6 è¥¿ç“œ-7 æ©˜å­-8 è”æ-9\n");
+   prints("\xc6\xbb\xb9\xfb-1 bar-2  777-3  \xcd\xf5\xb9\xda-4 BAR-5  \xc1\xe5\xee\xf5-6 \xce\xf7\xb9\xcf-7 \xe9\xd9\xd7\xd3-8 \xc0\xf3\xd6\xa6-9\n");
+   //% prints("x5     x40    x30    x25    x50    x20    x15    x10    x2å€\n");
+   prints("x5     x40    x30    x25    x50    x20    x15    x10    x2\xb1\xb6\n");
    prints("%-7d%-7d%-7d%-7d%-7d%-7d%-7d%-7d%-7d\n",x[0],x[1],x[2],x[3],x[4],x[5],
            x[6],x[7],x[8]);
 
-prints("\n[36m¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª°´aÈ«Ñ¹¡ª¡ª¡ª¡ª°´s¿ªÊ¼¡ª¡ª°´qÀë¿ª¡ª¡ª[m");
-   getdata(20, 0, "ÒªÑº¼¸ºÅ(¿ÉÑº¶à´Î)£º", buf, 2, DOECHO,YEA);
+//% prints("\n[36mâ€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”æŒ‰aå…¨å‹â€”â€”â€”â€”æŒ‰så¼€å§‹â€”â€”æŒ‰qç¦»å¼€â€”â€”[m");
+prints("\n[36m\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xb0\xb4a\xc8\xab\xd1\xb9\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xb0\xb4s\xbf\xaa\xca\xbc\xa1\xaa\xa1\xaa\xb0\xb4q\xc0\xeb\xbf\xaa\xa1\xaa\xa1\xaa[m");
+   //% getdata(20, 0, "è¦æŠ¼å‡ å·(å¯æŠ¼å¤šæ¬¡)ï¼š", buf, 2, DOECHO,YEA);
+   getdata(20, 0, "\xd2\xaa\xd1\xba\xbc\xb8\xba\xc5(\xbf\xc9\xd1\xba\xb6\xe0\xb4\xce)\xa3\xba", buf, 2, DOECHO,YEA);
    switch(buf[0]){
    case 's':
         doit();
         return;
         break;
    case 'a':
-        getdata(21, 0, "ÒªÑº¶àÉÙÌÇ£º", buf1, 6, DOECHO,YEA);
+        //% getdata(21, 0, "è¦æŠ¼å¤šå°‘ç³–ï¼š", buf1, 6, DOECHO,YEA);
+        getdata(21, 0, "\xd2\xaa\xd1\xba\xb6\xe0\xc9\xd9\xcc\xc7\xa3\xba", buf1, 6, DOECHO,YEA);
         for(i=0;i<=8;i++)
          x[i]=atoi(buf1);
          j=(x[0]*9);
          j=abs(j);
         if(q_mon<j)
-          {outs("ÌÇ¹û²»×ã");
+          //% {outs("ç³–æœä¸è¶³");
+          {outs("\xcc\xc7\xb9\xfb\xb2\xbb\xd7\xe3");
            pressanykey();
            for(i=0;i<=8;i++)
                 x[i]=0;
@@ -1027,7 +1259,8 @@ prints("\n[36m¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª°´aÈ«Ñ¹¡ª¡ª¡ª¡ª°´s¿ªÊ¼¡ª¡
    }
    k=x[i-1];
    do{
-   getdata(21, 0, "ÒªÑº¶àÉÙÌÇ£º", buf1, 6, DOECHO,YEA);
+   //% getdata(21, 0, "è¦æŠ¼å¤šå°‘ç³–ï¼š", buf1, 6, DOECHO,YEA);
+   getdata(21, 0, "\xd2\xaa\xd1\xba\xb6\xe0\xc9\xd9\xcc\xc7\xa3\xba", buf1, 6, DOECHO,YEA);
    x[i-1]+=atoi(buf1);
         j=atoi(buf1); }while(x[i-1]<0);
 
@@ -1035,7 +1268,8 @@ prints("\n[36m¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª°´aÈ«Ñ¹¡ª¡ª¡ª¡ª°´s¿ªÊ¼¡ª¡
    if(j<0)
         j=abs(j);
    if(q_mon<j)
-        {outs("ÌÇ¹û²»×ã");
+        //% {outs("ç³–æœä¸è¶³");
+        {outs("\xcc\xc7\xb9\xfb\xb2\xbb\xd7\xe3");
          pressanykey();
          x[i-1]=k;
          clear();
@@ -1055,29 +1289,43 @@ int doit()
    clear();
    move(0,0);
 /*   outs("
-                       ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ
-                       ¡õ                  ¡õ
-                       ¡õ                  ¡õ
-                       ¡õ £Î£É£Î£Ô£Å£Î£Ä£Ï ¡õ
-                       ¡õ  ÕıÔÚ×ªµ±ÖĞ      ¡õ
-                       ¡õ      ×ÔĞĞÏëÏñ    ¡õ
-                       ¡õ                  ¡õ
-                       ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ¡õ
+                       //% â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡
+                       \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5
+                       //% â–¡                  â–¡
+                       \xa1\xf5                  \xa1\xf5
+                       //% â–¡                  â–¡
+                       \xa1\xf5                  \xa1\xf5
+                       //% â–¡ ï¼®ï¼©ï¼®ï¼´ï¼¥ï¼®ï¼¤ï¼¯ â–¡
+                       \xa1\xf5 \xa3\xce\xa3\xc9\xa3\xce\xa3\xd4\xa3\xc5\xa3\xce\xa3\xc4\xa3\xcf \xa1\xf5
+                       //% â–¡  æ­£åœ¨è½¬å½“ä¸­      â–¡
+                       \xa1\xf5  \xd5\xfd\xd4\xda\xd7\xaa\xb5\xb1\xd6\xd0      \xa1\xf5
+                       //% â–¡      è‡ªè¡Œæƒ³åƒ    â–¡
+                       \xa1\xf5      \xd7\xd4\xd0\xd0\xcf\xeb\xcf\xf1    \xa1\xf5
+                       //% â–¡                  â–¡
+                       \xa1\xf5                  \xa1\xf5
+                       //% â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡â–¡
+                       \xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5\xa1\xf5
                               NINTENDO
 
-                          ¡ü
-                        ¡û¡ò¡ú           ¡ñ
-                          ¡ı          ¡ñ
-                               ¡õ  ¡õ    .....
+                          //% â†‘
+                          \xa1\xfc
+                        //% â†â—â†’           â—
+                        \xa1\xfb\xa1\xf2\xa1\xfa           \xa1\xf1
+                          //% â†“          â—
+                          \xa1\xfd          \xa1\xf1
+                               //% â–¡  â–¡    .....
+                               \xa1\xf5  \xa1\xf5    .....
                                         .......
-                                        .....¡õ
+                                        //% .....â–¡
+                                        .....\xa1\xf5
                                                               ");
 */
         m=1000000;
         for(i=1;i<=30;i++){
          clear();
          move(10,i);
-         outs("¡ñ");
+         //% outs("â—");
+         outs("\xa1\xf1");
          if(i%23==0)
           m*=10;
           for(j=1;j<=m;j++)
@@ -1102,22 +1350,28 @@ int doit()
 
    move(10,31);
    if(ran<=480)
-     {  outs("ÀóÖ¦");
+     //% {  outs("è”æ");
+     {  outs("\xc0\xf3\xd6\xa6");
         j=8;}
     else if(ran<=670){
-        outs("Æ»¹û");
+        //% outs("è‹¹æœ");
+        outs("\xc6\xbb\xb9\xfb");
         j=0;}
     else if(ran<=765){
-        outs("éÙ×Ó");
+        //% outs("æ©˜å­");
+        outs("\xe9\xd9\xd7\xd3");
         j=7;}
     else if(ran<=830){
-        outs("Î÷¹Ï");
+        //% outs("è¥¿ç“œ");
+        outs("\xce\xf7\xb9\xcf");
         j=6;}
     else if(ran<=875){
-        outs("Áåîõ");
+        //% outs("é“ƒé“›");
+        outs("\xc1\xe5\xee\xf5");
         j=5;}
     else if(ran<=910){
-        outs("Íõ¹Ú");
+        //% outs("ç‹å† ");
+        outs("\xcd\xf5\xb9\xda");
         j=3;}
     else if(ran<=940){
         outs("777!");
@@ -1129,9 +1383,10 @@ int doit()
         outs("BAR!");
         j=4;}
     else {
-      /*  outs("test          ÏûÈ¥ÓÒ±ß  ÔÙÅÜÒ»´Î\n");
+      /*  outs("test          æ¶ˆå»å³è¾¹  å†è·‘ä¸€æ¬¡\n");
         for(i=4;i<=8;i++)*/
-          outs("ÃúĞ»»İ¹Ë");
+          //% outs("é“­è°¢æƒ é¡¾");
+          outs("\xc3\xfa\xd0\xbb\xbb\xdd\xb9\xcb");
        /* for(i=0;i<=8;i++)
          x[i]=0;*/
         j=9;
@@ -1147,7 +1402,8 @@ int doit()
    refresh();
    sleep(1);
    move(11,25);
-   prints("[32;40mÄã¿ÉµÃ[33;41m %d [32;40mÌÇÌÇ[m",gold);
+   //% prints("[32;40mä½ å¯å¾—[33;41m %d [32;40mç³–ç³–[m",gold);
+   prints("[32;40m\xc4\xe3\xbf\xc9\xb5\xc3[33;41m %d [32;40m\xcc\xc7\xcc\xc7[m",gold);
    refresh();
    if (gold>0){
       bank-=gold;

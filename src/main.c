@@ -49,7 +49,7 @@ extern int enabledbchar;
 int refscreen = NA;
 void msg_handler(int signum);
 
-// Handle giveupBBS(½äÍø) transactions.
+// Handle giveupBBS(æˆ’ç½‘) transactions.
 // Return expiration date (in days from epoch).
 // TODO: Better rewrite it..
 int chk_giveupbbs(void)
@@ -191,8 +191,8 @@ static void setflags(int mask, int value)
 // Save user info on exit.
 void u_exit(void)
 {
-	// ÕâĞ©ĞÅºÅµÄ´¦ÀíÒª¹Øµô, ·ñÔòÔÚÀëÏßÊ±µÈºò»Ø³µÊ±³öÏÖ
-	// ĞÅºÅ»áµ¼ÖÂÖØĞ´Ãûµ¥, Õâ¸öµ¼ÖÂµÄÃûµ¥»ìÂÒ±Èkick user¸ü¶à  (ylsdd)
+	// è¿™äº›ä¿¡å·çš„å¤„ç†è¦å…³æ‰, å¦åˆ™åœ¨ç¦»çº¿æ—¶ç­‰å€™å›è½¦æ—¶å‡ºç°
+	// ä¿¡å·ä¼šå¯¼è‡´é‡å†™åå•, è¿™ä¸ªå¯¼è‡´çš„åå•æ··ä¹±æ¯”kick useræ›´å¤š  (ylsdd)
 	signal(SIGHUP, SIG_DFL);
 	signal(SIGALRM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
@@ -252,18 +252,25 @@ static int multi_user_check(void)
 	}
 
 	if (strcaseeq("guest", currentuser.userid) && logins >= max) {
-		prints("\033[1;33m±§Ç¸, Ä¿Ç°ÒÑÓĞÌ«¶à \033[1;36mguest\033[33m, "
-				"ÇëÉÔºóÔÙÊÔ¡£\033[m\n");
+		//% prints("\033[1;33mæŠ±æ­‰, ç›®å‰å·²æœ‰å¤ªå¤š \033[1;36mguest\033[33m, "
+		prints("\033[1;33m\xb1\xa7\xc7\xb8, \xc4\xbf\xc7\xb0\xd2\xd1\xd3\xd0\xcc\xab\xb6\xe0 \033[1;36mguest\033[33m, "
+				//% "è¯·ç¨åå†è¯•ã€‚\033[m\n");
+				"\xc7\xeb\xc9\xd4\xba\xf3\xd4\xd9\xca\xd4\xa1\xa3\033[m\n");
 		basic_session_info_clear(res);
 		return -1;
 	}
 
 	if (logins >= max) {
-		prints("\033[1;32mÎªÈ·±£ËûÈËÉÏÕ¾È¨Òæ, "
-				"±¾Õ¾½öÔÊĞíÄúÓÃ¸ÃÕÊºÅµÇÂ¼ %d ¸ö¡£\n\033[m"
-				"\033[1;36mÄúÄ¿Ç°ÒÑ¾­Ê¹ÓÃ¸ÃÕÊºÅµÇÂ¼ÁË %d ¸ö£¬"
-				"Äú±ØĞë¶Ï¿ªÆäËûµÄÁ¬½Ó·½ÄÜ½øÈë±¾Õ¾£¡\n\033[m", max, logins);
-		bool kick = askyn("ÄúÏëÉ¾³ıÖØ¸´µÄÁ¬½ÓÂğ", false, false);
+		//% prints("\033[1;32mä¸ºç¡®ä¿ä»–äººä¸Šç«™æƒç›Š, "
+		prints("\033[1;32m\xce\xaa\xc8\xb7\xb1\xa3\xcb\xfb\xc8\xcb\xc9\xcf\xd5\xbe\xc8\xa8\xd2\xe6, "
+				//% "æœ¬ç«™ä»…å…è®¸æ‚¨ç”¨è¯¥å¸å·ç™»å½• %d ä¸ªã€‚\n\033[m"
+				"\xb1\xbe\xd5\xbe\xbd\xf6\xd4\xca\xd0\xed\xc4\xfa\xd3\xc3\xb8\xc3\xd5\xca\xba\xc5\xb5\xc7\xc2\xbc %d \xb8\xf6\xa1\xa3\n\033[m"
+				//% "\033[1;36mæ‚¨ç›®å‰å·²ç»ä½¿ç”¨è¯¥å¸å·ç™»å½•äº† %d ä¸ªï¼Œ"
+				"\033[1;36m\xc4\xfa\xc4\xbf\xc7\xb0\xd2\xd1\xbe\xad\xca\xb9\xd3\xc3\xb8\xc3\xd5\xca\xba\xc5\xb5\xc7\xc2\xbc\xc1\xcb %d \xb8\xf6\xa3\xac"
+				//% "æ‚¨å¿…é¡»æ–­å¼€å…¶ä»–çš„è¿æ¥æ–¹èƒ½è¿›å…¥æœ¬ç«™ï¼\n\033[m", max, logins);
+				"\xc4\xfa\xb1\xd8\xd0\xeb\xb6\xcf\xbf\xaa\xc6\xe4\xcb\xfb\xb5\xc4\xc1\xac\xbd\xd3\xb7\xbd\xc4\xdc\xbd\xf8\xc8\xeb\xb1\xbe\xd5\xbe\xa3\xa1\n\033[m", max, logins);
+		//% bool kick = askyn("æ‚¨æƒ³åˆ é™¤é‡å¤çš„è¿æ¥å—", false, false);
+		bool kick = askyn("\xc4\xfa\xcf\xeb\xc9\xbe\xb3\xfd\xd6\xd8\xb8\xb4\xb5\xc4\xc1\xac\xbd\xd3\xc2\xf0", false, false);
 		if (kick) {
 			bbs_kill(basic_session_info_sid(res, 0),
 					basic_session_info_pid(res, 0), SIGHUP);
@@ -277,8 +284,10 @@ static int multi_user_check(void)
 
 		basic_session_info_clear(res);
 		if (logins >= max) {
-			prints("\033[33mºÜ±§Ç¸£¬ÄúÒÑ¾­ÓÃ¸ÃÕÊºÅµÇÂ¼ %d ¸ö£¬"
-					"ËùÒÔ£¬´ËÁ¬Ïß½«±»È¡Ïû¡£\033[m\n", logins);
+			//% prints("\033[33må¾ˆæŠ±æ­‰ï¼Œæ‚¨å·²ç»ç”¨è¯¥å¸å·ç™»å½• %d ä¸ªï¼Œ"
+			prints("\033[33m\xba\xdc\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xd2\xd1\xbe\xad\xd3\xc3\xb8\xc3\xd5\xca\xba\xc5\xb5\xc7\xc2\xbc %d \xb8\xf6\xa3\xac"
+					//% "æ‰€ä»¥ï¼Œæ­¤è¿çº¿å°†è¢«å–æ¶ˆã€‚\033[m\n", logins);
+					"\xcb\xf9\xd2\xd4\xa3\xac\xb4\xcb\xc1\xac\xcf\xdf\xbd\xab\xb1\xbb\xc8\xa1\xcf\xfb\xa1\xa3\033[m\n", logins);
 			return -1;
 		}
 	}
@@ -329,7 +338,8 @@ static void system_abort(void)
 	}
 	clear();
 	refresh();
-	prints("Ğ»Ğ»¹âÁÙ, ¼ÇµÃ³£À´à¸ !\n");
+	//% prints("è°¢è°¢å…‰ä¸´, è®°å¾—å¸¸æ¥å–” !\n");
+	prints("\xd0\xbb\xd0\xbb\xb9\xe2\xc1\xd9, \xbc\xc7\xb5\xc3\xb3\xa3\xc0\xb4\xe0\xb8 !\n");
 	exit(0);
 }
 
@@ -412,9 +422,12 @@ static void visitlog(int peak)
 		fclose(fp);
 	}
 	snprintf(genbuf, sizeof(genbuf), 
-		"\033[1;32m´Ó [\033[36m%4dÄê%2dÔÂ%2dÈÕ\033[32m] Æğ, "
-		"×î¸ßÈËÊı¼ÇÂ¼: [\033[36m%d\033[32m] "
-		"ÀÛ¼Æ·ÃÎÊÈË´Î: [\033[36m%lu\033[32m]\033[m\n",
+		//% "\033[1;32mä» [\033[36m%4då¹´%2dæœˆ%2dæ—¥\033[32m] èµ·, "
+		"\033[1;32m\xb4\xd3 [\033[36m%4d\xc4\xea%2d\xd4\xc2%2d\xc8\xd5\033[32m] \xc6\xf0, "
+		//% "æœ€é«˜äººæ•°è®°å½•: [\033[36m%d\033[32m] "
+		"\xd7\xee\xb8\xdf\xc8\xcb\xca\xfd\xbc\xc7\xc2\xbc: [\033[36m%d\033[32m] "
+		//% "ç´¯è®¡è®¿é—®äººæ¬¡: [\033[36m%lu\033[32m]\033[m\n",
+		"\xc0\xdb\xbc\xc6\xb7\xc3\xce\xca\xc8\xcb\xb4\xce: [\033[36m%lu\033[32m]\033[m\n",
 		max_log.year, max_log.month, max_log.day, max_log.logins,
 		max_log.visit);
 	prints("%s", genbuf);
@@ -490,7 +503,8 @@ static int login_query(void)
 	if (fill_shmfile(1, "etc/issue", "ISSUE_SHMKEY")) {
 		show_issue();
 	}
-	prints("\033[1;35m»¶Ó­¹âÁÙ\033[1;40;33m¡¾ %s ¡¿ \033[m"
+	//% prints("\033[1;35mæ¬¢è¿å…‰ä¸´\033[1;40;33mã€ %s ã€‘ \033[m"
+	prints("\033[1;35m\xbb\xb6\xd3\xad\xb9\xe2\xc1\xd9\033[1;40;33m\xa1\xbe %s \xa1\xbf \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
 			BBSNAME);
 
@@ -500,8 +514,10 @@ static int login_query(void)
 		peak = online;
 	}
 
-	prints("\033[1;32mÄ¿Ç°ÒÑÓĞÕÊºÅÊı: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
-			"\033[32mÄ¿Ç°ÉÏÕ¾ÈËÊı: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
+	//% prints("\033[1;32mç›®å‰å·²æœ‰å¸å·æ•°: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
+	prints("\033[1;32m\xc4\xbf\xc7\xb0\xd2\xd1\xd3\xd0\xd5\xca\xba\xc5\xca\xfd: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
+			//% "\033[32mç›®å‰ä¸Šç«™äººæ•°: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
+			"\033[32m\xc4\xbf\xc7\xb0\xc9\xcf\xd5\xbe\xc8\xcb\xca\xfd: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
 			get_user_count(), MAXUSERS, online, MAXACTIVE);
 	visitlog(peak);
 
@@ -512,9 +528,12 @@ static int login_query(void)
 			ansimore("etc/goodbye", NA);
 			return -1;
 		}
-		getdata(0, 0, "\033[1;33mÇëÊäÈëÕÊºÅ\033[m"
-				"(ÊÔÓÃÇëÊäÈë'\033[1;36mguest\033[m', "
-				"×¢²áÇëÊäÈë'\033[1;31mnew\033[m'): ",
+		//% getdata(0, 0, "\033[1;33mè¯·è¾“å…¥å¸å·\033[m"
+		getdata(0, 0, "\033[1;33m\xc7\xeb\xca\xe4\xc8\xeb\xd5\xca\xba\xc5\033[m"
+				//% "(è¯•ç”¨è¯·è¾“å…¥'\033[1;36mguest\033[m', "
+				"(\xca\xd4\xd3\xc3\xc7\xeb\xca\xe4\xc8\xeb'\033[1;36mguest\033[m', "
+				//% "æ³¨å†Œè¯·è¾“å…¥'\033[1;31mnew\033[m'): ",
+				"\xd7\xa2\xb2\xe1\xc7\xeb\xca\xe4\xc8\xeb'\033[1;31mnew\033[m'): ",
 				uname, IDLEN + 1, DOECHO, YEA);
 #ifdef ALLOWSWITCHCODE
 		ptr = strchr(uname, '.');
@@ -535,7 +554,8 @@ static int login_query(void)
 		} else if (*uname == '\0')
 			;
 		else if (!dosearchuser(uname, &currentuser, &usernum)) {
-			prints("\033[1;31m¾­²éÖ¤£¬ÎŞ´Ë ID¡£\033[m\n");
+			//% prints("\033[1;31mç»æŸ¥è¯ï¼Œæ— æ­¤ IDã€‚\033[m\n");
+			prints("\033[1;31m\xbe\xad\xb2\xe9\xd6\xa4\xa3\xac\xce\xde\xb4\xcb ID\xa1\xa3\033[m\n");
 		} else if (strcaseeq(uname, "guest")) {
 			currentuser.userlevel = 0;
 			break;
@@ -544,27 +564,34 @@ static int login_query(void)
 			if (!convcode)
 				convcode = !(currentuser.userdefine & DEF_USEGB);
 #endif
-			getdata(0, 0, "\033[1;37mÇëÊäÈëÃÜÂë: \033[m", passbuf, PASSLEN,
+			//% getdata(0, 0, "\033[1;37mè¯·è¾“å…¥å¯†ç : \033[m", passbuf, PASSLEN,
+			getdata(0, 0, "\033[1;37m\xc7\xeb\xca\xe4\xc8\xeb\xc3\xdc\xc2\xeb: \033[m", passbuf, PASSLEN,
 					NOECHO, YEA);
 			passbuf[8] = '\0';
 			switch (bbs_auth(uname, passbuf)) {
 				case BBS_EWPSWD:
-					prints("\033[1;31mÃÜÂëÊäÈë´íÎó...\033[m\n");
+					//% prints("\033[1;31må¯†ç è¾“å…¥é”™è¯¯...\033[m\n");
+					prints("\033[1;31m\xc3\xdc\xc2\xeb\xca\xe4\xc8\xeb\xb4\xed\xce\xf3...\033[m\n");
 					break;
 				case BBS_EGIVEUP:
 					recover = chk_giveupbbs();
-					prints("\033[33mÄúÕıÔÚ½äÍø£¬Àë½äÍø½áÊø»¹ÓĞ%dÌì\033[m\n",
+					//% prints("\033[33mæ‚¨æ­£åœ¨æˆ’ç½‘ï¼Œç¦»æˆ’ç½‘ç»“æŸè¿˜æœ‰%då¤©\033[m\n",
+					prints("\033[33m\xc4\xfa\xd5\xfd\xd4\xda\xbd\xe4\xcd\xf8\xa3\xac\xc0\xeb\xbd\xe4\xcd\xf8\xbd\xe1\xca\xf8\xbb\xb9\xd3\xd0%d\xcc\xec\033[m\n",
 							recover - time(NULL) / 3600 / 24);
 					return -1;
 				case BBS_ESUICIDE:
-					prints("\033[32mÄúÒÑ¾­×ÔÉ±\033[m\n");
+					//% prints("\033[32mæ‚¨å·²ç»è‡ªæ€\033[m\n");
+					prints("\033[32m\xc4\xfa\xd2\xd1\xbe\xad\xd7\xd4\xc9\xb1\033[m\n");
 					return -1;
 				case BBS_EBANNED:
-					prints("\033[32m±¾ÕÊºÅÒÑÍ£»ú¡£Çëµ½ "
-							"\033[36mNotice\033[32m°æ ²éÑ¯Ô­Òò\033[m\n");
+					//% prints("\033[32mæœ¬å¸å·å·²åœæœºã€‚è¯·åˆ° "
+					prints("\033[32m\xb1\xbe\xd5\xca\xba\xc5\xd2\xd1\xcd\xa3\xbb\xfa\xa1\xa3\xc7\xeb\xb5\xbd "
+							//% "\033[36mNotice\033[32mç‰ˆ æŸ¥è¯¢åŸå› \033[m\n");
+							"\033[36mNotice\033[32m\xb0\xe6 \xb2\xe9\xd1\xaf\xd4\xad\xd2\xf2\033[m\n");
 					return -1;
 				case BBS_ELFREQ:
-					prints("µÇÂ¼¹ıÓÚÆµ·±£¬ÇëÉÔºòÔÙÀ´\n");
+					//% prints("ç™»å½•è¿‡äºé¢‘ç¹ï¼Œè¯·ç¨å€™å†æ¥\n");
+					prints("\xb5\xc7\xc2\xbc\xb9\xfd\xd3\xda\xc6\xb5\xb7\xb1\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2\xd4\xd9\xc0\xb4\n");
 					return -1;
 				case 0:
 					auth = true;
@@ -577,7 +604,8 @@ static int login_query(void)
 		}
 	}
 #else // ENABLE_SSH
-	presskeyfor("\033[1;33m»¶Ó­Ê¹ÓÃssh·½Ê½·ÃÎÊ±¾Õ¾£¬Çë°´ÈÎÒâ¼ü¼ÌĞø", t_lines - 1);
+	//% presskeyfor("\033[1;33mæ¬¢è¿ä½¿ç”¨sshæ–¹å¼è®¿é—®æœ¬ç«™ï¼Œè¯·æŒ‰ä»»æ„é”®ç»§ç»­", t_lines - 1);
+	presskeyfor("\033[1;33m\xbb\xb6\xd3\xad\xca\xb9\xd3\xc3ssh\xb7\xbd\xca\xbd\xb7\xc3\xce\xca\xb1\xbe\xd5\xbe\xa3\xac\xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8", t_lines - 1);
 #endif // ENABLE_SSH
 
 	if (multi_user_check() == -1)
@@ -622,7 +650,8 @@ static void notepad_init(void)
 	now = time(NULL);
 	if ((now - lastnote) >= maxsec) {
 		move(t_lines - 1, 0);
-		prints("¶Ô²»Æğ£¬ÏµÍ³×Ô¶¯·¢ĞÅ£¬ÇëÉÔºò.....");
+		//% prints("å¯¹ä¸èµ·ï¼Œç³»ç»Ÿè‡ªåŠ¨å‘ä¿¡ï¼Œè¯·ç¨å€™.....");
+		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xcf\xb5\xcd\xb3\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....");
 		refresh();
 		check = fopen("etc/checknotepad", "w");
 		lastnote = now - (now % maxsec);
@@ -641,7 +670,8 @@ static void notepad_init(void)
 							str, str + 23, ntitle);
 					if (dashf(fname)) {
 						Postfile(fname, bname, notetitle, 1);
-						sprintf(tmp, "%s ×Ô¶¯ÕÅÌù", ntitle);
+						//% sprintf(tmp, "%s è‡ªåŠ¨å¼ è´´", ntitle);
+						sprintf(tmp, "%s \xd7\xd4\xb6\xaf\xd5\xc5\xcc\xf9", ntitle);
 						report(tmp, currentuser.userid);
 					}
 				}
@@ -649,13 +679,15 @@ static void notepad_init(void)
 			fclose(check);
 		}
 		char *str = getdatestring(now, DATE_ZH);
-		snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] ÁôÑÔ°å¼ÇÂ¼",
+		//% snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] ç•™è¨€æ¿è®°å½•",
+		snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] \xc1\xf4\xd1\xd4\xb0\xe5\xbc\xc7\xc2\xbc",
 				str, str + 23);
 		if (dashf("etc/notepad")) {
 			Postfile("etc/notepad", "Notepad", notetitle, 1);
 			unlink("etc/notepad");
 		}
-		report("×Ô¶¯·¢ĞÅÊ±¼ä¸ü¸Ä", currentuser.userid);
+		//% report("è‡ªåŠ¨å‘ä¿¡æ—¶é—´æ›´æ”¹", currentuser.userid);
+		report("\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xca\xb1\xbc\xe4\xb8\xfc\xb8\xc4", currentuser.userid);
 	}
 	return;
 }
@@ -707,10 +739,10 @@ static void user_login(void)
 		pressanykey();
 	}
 
-	if ((vote_flag(NULL, '\0', 2 /* ¼ì²é¶Á¹ıĞÂµÄWelcome Ã» */) == 0)) {
+	if ((vote_flag(NULL, '\0', 2 /* æ£€æŸ¥è¯»è¿‡æ–°çš„Welcome æ²¡ */) == 0)) {
 		if (dashf("Welcome")) {
 			ansimore("Welcome", YEA);
-			vote_flag(NULL, 'R', 2 /* Ğ´Èë¶Á¹ıĞÂµÄWelcome */);
+			vote_flag(NULL, 'R', 2 /* å†™å…¥è¯»è¿‡æ–°çš„Welcome */);
 		}
 	} else {
 		//if (fill_shmfile(3, "Welcome2", "WELCOME_SHMKEY"))
@@ -723,19 +755,24 @@ static void user_login(void)
 	clrtoeol();
 	if (currentuser.numlogins < 1) {
 		currentuser.numlogins = 0;
-		prints("\033[1;36m¡î ÕâÊÇÄúµÚ \033[33m1\033[36m ´Î°İ·Ã±¾Õ¾£¬Çë¼Ç×¡½ñÌì°É¡£\n");
-		prints("¡î ÄúµÚÒ»´ÎÁ¬Èë±¾Õ¾µÄÊ±¼äÎª \033[33m%s\033[m ", getdatestring(time(NULL), DATE_ZH));
+		//% prints("\033[1;36mâ˜† è¿™æ˜¯æ‚¨ç¬¬ \033[33m1\033[36m æ¬¡æ‹œè®¿æœ¬ç«™ï¼Œè¯·è®°ä½ä»Šå¤©å§ã€‚\n");
+		prints("\033[1;36m\xa1\xee \xd5\xe2\xca\xc7\xc4\xfa\xb5\xda \033[33m1\033[36m \xb4\xce\xb0\xdd\xb7\xc3\xb1\xbe\xd5\xbe\xa3\xac\xc7\xeb\xbc\xc7\xd7\xa1\xbd\xf1\xcc\xec\xb0\xc9\xa1\xa3\n");
+		//% prints("â˜† æ‚¨ç¬¬ä¸€æ¬¡è¿å…¥æœ¬ç«™çš„æ—¶é—´ä¸º \033[33m%s\033[m ", getdatestring(time(NULL), DATE_ZH));
+		prints("\xa1\xee \xc4\xfa\xb5\xda\xd2\xbb\xb4\xce\xc1\xac\xc8\xeb\xb1\xbe\xd5\xbe\xb5\xc4\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", getdatestring(time(NULL), DATE_ZH));
 	} else {
 		prints(
-				"\033[1;36m¡î ÕâÊÇÄúµÚ \033[33m%d\033[36m ´Î°İ·Ã±¾Õ¾£¬ÉÏ´ÎÄúÊÇ´Ó \033[33m%s\033[36m Á¬Íù±¾Õ¾¡£\n",
+				//% "\033[1;36mâ˜† è¿™æ˜¯æ‚¨ç¬¬ \033[33m%d\033[36m æ¬¡æ‹œè®¿æœ¬ç«™ï¼Œä¸Šæ¬¡æ‚¨æ˜¯ä» \033[33m%s\033[36m è¿å¾€æœ¬ç«™ã€‚\n",
+				"\033[1;36m\xa1\xee \xd5\xe2\xca\xc7\xc4\xfa\xb5\xda \033[33m%d\033[36m \xb4\xce\xb0\xdd\xb7\xc3\xb1\xbe\xd5\xbe\xa3\xac\xc9\xcf\xb4\xce\xc4\xfa\xca\xc7\xb4\xd3 \033[33m%s\033[36m \xc1\xac\xcd\xf9\xb1\xbe\xd5\xbe\xa1\xa3\n",
 				currentuser.numlogins + 1, currentuser.lasthost);
-		prints("¡î ÉÏ´ÎÁ¬ÏßÊ±¼äÎª \033[33m%s\033[m ", getdatestring(currentuser.lastlogin, DATE_ZH));
+		//% prints("â˜† ä¸Šæ¬¡è¿çº¿æ—¶é—´ä¸º \033[33m%s\033[m ", getdatestring(currentuser.lastlogin, DATE_ZH));
+		prints("\xa1\xee \xc9\xcf\xb4\xce\xc1\xac\xcf\xdf\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", getdatestring(currentuser.lastlogin, DATE_ZH));
 	}
 	igetkey();
 	WishNum = 9999;
 	setuserfile(fname, BADLOGINFILE);
 	if (ansimore(fname, NA) != -1) {
-		if (askyn("ÄúÒªÉ¾³ıÒÔÉÏÃÜÂëÊäÈë´íÎóµÄ¼ÇÂ¼Âğ", NA, NA) == YEA)
+		//% if (askyn("æ‚¨è¦åˆ é™¤ä»¥ä¸Šå¯†ç è¾“å…¥é”™è¯¯çš„è®°å½•å—", NA, NA) == YEA)
+		if (askyn("\xc4\xfa\xd2\xaa\xc9\xbe\xb3\xfd\xd2\xd4\xc9\xcf\xc3\xdc\xc2\xeb\xca\xe4\xc8\xeb\xb4\xed\xce\xf3\xb5\xc4\xbc\xc7\xc2\xbc\xc2\xf0", NA, NA) == YEA)
 			unlink(fname);
 	}
 
@@ -797,8 +834,10 @@ static void c_recover(void)
 		return;
 	clear();
 	genbuf[0] = '\0';
-	getdata(0, 0, "\033[1;32mÄúÓĞÒ»¸ö±à¼­×÷Òµ²»Õı³£ÖĞ¶Ï£¬"
-			"(S) Ğ´ÈëÔİ´æµµ (M) ¼Ä»ØĞÅÏä (Q) ËãÁË£¿[M]£º\033[m",
+	//% getdata(0, 0, "\033[1;32mæ‚¨æœ‰ä¸€ä¸ªç¼–è¾‘ä½œä¸šä¸æ­£å¸¸ä¸­æ–­ï¼Œ"
+	getdata(0, 0, "\033[1;32m\xc4\xfa\xd3\xd0\xd2\xbb\xb8\xf6\xb1\xe0\xbc\xad\xd7\xf7\xd2\xb5\xb2\xbb\xd5\xfd\xb3\xa3\xd6\xd0\xb6\xcf\xa3\xac"
+			//% "(S) å†™å…¥æš‚å­˜æ¡£ (M) å¯„å›ä¿¡ç®± (Q) ç®—äº†ï¼Ÿ[M]ï¼š\033[m",
+			"(S) \xd0\xb4\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5 (M) \xbc\xc4\xbb\xd8\xd0\xc5\xcf\xe4 (Q) \xcb\xe3\xc1\xcb\xa3\xbf[M]\xa3\xba\033[m",
 			genbuf, 2, DOECHO, YEA);
 	switch (genbuf[0]) {
 		case 'Q':
@@ -809,7 +848,8 @@ static void c_recover(void)
 		case 's':
 			while (1) {
 				genbuf[0] = '\0';
-				getdata(2, 0, "\033[1;33mÇëÑ¡ÔñÔİ´æµµ [0-7] [0]£º\033[m",
+				//% getdata(2, 0, "\033[1;33mè¯·é€‰æ‹©æš‚å­˜æ¡£ [0-7] [0]ï¼š\033[m",
+				getdata(2, 0, "\033[1;33m\xc7\xeb\xd1\xa1\xd4\xf1\xd4\xdd\xb4\xe6\xb5\xb5 [0-7] [0]\xa3\xba\033[m",
 					genbuf, 2, DOECHO, YEA);
 				if (genbuf[0] == '\0')
 					a = 0;
@@ -821,8 +861,10 @@ static void c_recover(void)
 						currentuser.userid, a);
 					if (dashf(buf)) {
 						getdata(
-							3, 0, "\033[1;31mÔİ´æµµÒÑ´æÔÚ£¬¸²¸Ç»ò¸½¼Ó? "
-							"(O)¸²¸Ç (A)¸½¼Ó [O]£º\033[m",
+							//% 3, 0, "\033[1;31mæš‚å­˜æ¡£å·²å­˜åœ¨ï¼Œè¦†ç›–æˆ–é™„åŠ ? "
+							3, 0, "\033[1;31m\xd4\xdd\xb4\xe6\xb5\xb5\xd2\xd1\xb4\xe6\xd4\xda\xa3\xac\xb8\xb2\xb8\xc7\xbb\xf2\xb8\xbd\xbc\xd3? "
+							//% "(O)è¦†ç›– (A)é™„åŠ  [O]ï¼š\033[m",
+							"(O)\xb8\xb2\xb8\xc7 (A)\xb8\xbd\xbc\xd3 [O]\xa3\xba\033[m",
 							genbuf, 2, DOECHO, YEA);
 						switch (genbuf[0]) {
 							case 'A':
@@ -843,7 +885,8 @@ static void c_recover(void)
 			break;
 		default:
 			mail_file(fname, currentuser.userid,
-				"²»Õı³£¶ÏÏßËù±£ÁôµÄ²¿·İ...");
+				//% "ä¸æ­£å¸¸æ–­çº¿æ‰€ä¿ç•™çš„éƒ¨ä»½...");
+				"\xb2\xbb\xd5\xfd\xb3\xa3\xb6\xcf\xcf\xdf\xcb\xf9\xb1\xa3\xc1\xf4\xb5\xc4\xb2\xbf\xb7\xdd...");
 			unlink(fname);
 			break;
 	}
@@ -861,12 +904,15 @@ void tlog_recover(void)
 
 	clear();
 	genbuf[0] = '\0';
-	getdata(0, 0, "\033[1;32mÄúÓĞÒ»¸ö²»Õı³£¶ÏÏßËùÁôÏÂÀ´µÄÁÄÌì¼ÇÂ¼, "
-			"ÄúÒª .. (M) ¼Ä»ØĞÅÏä (Q) ËãÁË£¿[Q]£º\033[m",
+	//% getdata(0, 0, "\033[1;32mæ‚¨æœ‰ä¸€ä¸ªä¸æ­£å¸¸æ–­çº¿æ‰€ç•™ä¸‹æ¥çš„èŠå¤©è®°å½•, "
+	getdata(0, 0, "\033[1;32m\xc4\xfa\xd3\xd0\xd2\xbb\xb8\xf6\xb2\xbb\xd5\xfd\xb3\xa3\xb6\xcf\xcf\xdf\xcb\xf9\xc1\xf4\xcf\xc2\xc0\xb4\xb5\xc4\xc1\xc4\xcc\xec\xbc\xc7\xc2\xbc, "
+			//% "æ‚¨è¦ .. (M) å¯„å›ä¿¡ç®± (Q) ç®—äº†ï¼Ÿ[Q]ï¼š\033[m",
+			"\xc4\xfa\xd2\xaa .. (M) \xbc\xc4\xbb\xd8\xd0\xc5\xcf\xe4 (Q) \xcb\xe3\xc1\xcb\xa3\xbf[Q]\xa3\xba\033[m",
 			genbuf, 2, DOECHO, YEA);
 
 	if (genbuf[0] == 'M' || genbuf[0] == 'm') {
-		mail_file(buf, currentuser.userid, "ÁÄÌì¼ÇÂ¼");
+		//% mail_file(buf, currentuser.userid, "èŠå¤©è®°å½•");
+		mail_file(buf, currentuser.userid, "\xc1\xc4\xcc\xec\xbc\xc7\xc2\xbc");
 	}
 	unlink(buf);
 	return;

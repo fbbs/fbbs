@@ -56,7 +56,8 @@ int getvalue(struct userec *user, int mode)
 
 void top_info(const char *item, int num, struct userec *users, int mode)
 {
-	printf("Ãû´Î ÕÊºÅ         %6.6s Ãû´Î ÕÊºÅ         %6.6s Ãû´Î ÕÊºÅ         %6.6s\n"
+	//% printf("åæ¬¡ å¸å·         %6.6s åæ¬¡ å¸å·         %6.6s åæ¬¡ å¸å·         %6.6s\n"
+	printf("\xc3\xfb\xb4\xce \xd5\xca\xba\xc5         %6.6s \xc3\xfb\xb4\xce \xd5\xca\xba\xc5         %6.6s \xc3\xfb\xb4\xce \xd5\xca\xba\xc5         %6.6s\n"
 			"==== ============ ====== ==== ============ ====== ==== ============ ======\n",
 			item, item, item);
 	int rows = (num + 2) / 3;
@@ -115,19 +116,23 @@ int main(int argc, char **argv)
 
 	if (mode == KEY_LOGINS || mode == 0) {
 		qsort(alluser, sizeof(alluser) / sizeof(*user), sizeof(*user), login_cmp);
-		top_info("ÉÏÕ¾Êı", num, alluser, KEY_LOGINS);
+		//% top_info("ä¸Šç«™æ•°", num, alluser, KEY_LOGINS);
+		top_info("\xc9\xcf\xd5\xbe\xca\xfd", num, alluser, KEY_LOGINS);
     }
 	if (mode == KEY_POSTS || mode == 0) {
 		qsort(alluser, sizeof(alluser) / sizeof(*user), sizeof(*user), post_cmp);
-		top_info("·¢ÎÄÊı", num, alluser, KEY_POSTS);
+		//% top_info("å‘æ–‡æ•°", num, alluser, KEY_POSTS);
+		top_info("\xb7\xa2\xce\xc4\xca\xfd", num, alluser, KEY_POSTS);
     }
 	if (mode == KEY_STAY || mode == 0) {
 		qsort(alluser, sizeof(alluser) / sizeof(*user), sizeof(*user), stay_cmp);
-		top_info("×ÜÊ±Êı", num, alluser, KEY_STAY);
+		//% top_info("æ€»æ—¶æ•°", num, alluser, KEY_STAY);
+		top_info("\xd7\xdc\xca\xb1\xca\xfd", num, alluser, KEY_STAY);
     }
 	if (mode == KEY_PERF || mode == 0) {
 		qsort(alluser, sizeof(alluser) / sizeof(*user), sizeof(*user), perf_cmp);
-		top_info("×Ü»ı·Ö", num, alluser, KEY_PERF);
+		//% top_info("æ€»ç§¯åˆ†", num, alluser, KEY_PERF);
+		top_info("\xd7\xdc\xbb\xfd\xb7\xd6", num, alluser, KEY_PERF);
     }
 	return 0;
 }

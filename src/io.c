@@ -619,7 +619,8 @@ static char *boardmargin(void)
 	static char buf[STRLEN];
 
 	if (currbp->id)
-		snprintf(buf, sizeof(buf), "ÌÖÂÛÇø [%s]", currboard);
+		//% snprintf(buf, sizeof(buf), "è®¨è®ºåŒº [%s]", currboard);
+		snprintf(buf, sizeof(buf), "\xcc\xd6\xc2\xdb\xc7\xf8 [%s]", currboard);
 	else {
 		brc_initial(currentuser.userid, DEFAULTBOARD);
 
@@ -627,7 +628,8 @@ static char *boardmargin(void)
 		get_board(DEFAULTBOARD, &board);
 		change_board(&board);
 
-		sprintf(buf, "ÌÖÂÛÇø [%s]", currboard);
+		//% sprintf(buf, "è®¨è®ºåŒº [%s]", currboard);
+		sprintf(buf, "\xcc\xd6\xc2\xdb\xc7\xf8 [%s]", currboard);
 	}
 	return buf;
 }
@@ -664,9 +666,11 @@ void update_endline(void)
 		allstay = (now - login_start_time) / 60;
 		sprintf(buf, "[\033[36m%.12s\033[33m]", currentuser.userid);
 		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
-			"[\033[36m%4d\033[33mÈË/\033[36m%3d\033[33mÓÑ]"
+			//% "[\033[36m%4d\033[33mäºº/\033[36m%3d\033[33må‹]"
+			"[\033[36m%4d\033[33m\xc8\xcb/\033[36m%3d\033[33m\xd3\xd1]"
 			"      "
-			"ÕÊºÅ%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
+			//% "å¸å·%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
+			"\xd5\xca\xba\xc5%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
 			date, count_online(),
 			online_follows_count(!HAS_PERM(PERM_SEECLOAK)),
 			buf, (allstay / 60) % 1000, allstay % 60);
@@ -683,8 +687,10 @@ void update_endline(void)
 
 		if (is_birth(&currentuser)) {
 			strcpy(GoodWish[WishNum],
-					"                     À²À²¡«¡«£¬ÉúÈÕ¿ìÀÖ!"
-					"   ¼ÇµÃÒªÇë¿ÍÓ´ :P                   ");
+					//% "                     å•¦å•¦ï½ï½ï¼Œç”Ÿæ—¥å¿«ä¹!"
+					"                     \xc0\xb2\xc0\xb2\xa1\xab\xa1\xab\xa3\xac\xc9\xfa\xc8\xd5\xbf\xec\xc0\xd6!"
+					//% "   è®°å¾—è¦è¯·å®¢å“Ÿ :P                   ");
+					"   \xbc\xc7\xb5\xc3\xd2\xaa\xc7\xeb\xbf\xcd\xd3\xb4 :P                   ");
 			WishNum++;
 		}
 
@@ -741,7 +747,7 @@ void showtitle(const char *title, const char *mid)
 	spc2 = 79 - (strlen(title) - num_ans_chr(title) + spc1 + strlen(note)
 			+ strlen(mid));
 	spc1 += spc2;
-	spc1 = (spc1 > 2) ? spc1 : 2; //·ÀÖ¹¹ıĞ¡
+	spc1 = (spc1 > 2) ? spc1 : 2; //é˜²æ­¢è¿‡å°
 	spc2 = spc1 / 2;
 	spc1 -= spc2;
 	move(0, 0);
@@ -766,10 +772,13 @@ void firsttitle(const char *title)
 	char middoc[30];
 
 	if (chkmail())
-		strcpy(middoc, strstr(title, "ÌÖÂÛÇøÁĞ±í") ? "[ÄúÓĞĞÅ¼ş£¬°´ M ¿´ĞÂĞÅ]"
-				: "[ÄúÓĞĞÅ¼ş]");
+		//% strcpy(middoc, strstr(title, "è®¨è®ºåŒºåˆ—è¡¨") ? "[æ‚¨æœ‰ä¿¡ä»¶ï¼ŒæŒ‰ M çœ‹æ–°ä¿¡]"
+		strcpy(middoc, strstr(title, "\xcc\xd6\xc2\xdb\xc7\xf8\xc1\xd0\xb1\xed") ? "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe\xa3\xac\xb0\xb4 M \xbf\xb4\xd0\xc2\xd0\xc5]"
+				//% : "[æ‚¨æœ‰ä¿¡ä»¶]");
+				: "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe]");
 	else if (mailXX == 1)
-		strcpy(middoc, "[ĞÅ¼ş¹ıÁ¿£¬ÇëÕûÀíĞÅ¼ş!]");
+		//% strcpy(middoc, "[ä¿¡ä»¶è¿‡é‡ï¼Œè¯·æ•´ç†ä¿¡ä»¶!]");
+		strcpy(middoc, "[\xd0\xc5\xbc\xfe\xb9\xfd\xc1\xbf\xa3\xac\xc7\xeb\xd5\xfb\xc0\xed\xd0\xc5\xbc\xfe!]");
 	else
 		strcpy(middoc, BoardName);
 
@@ -854,7 +863,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 			cursory = y;
 			cursorx = x;
 		}
-		//ÒÔÏÂ±éÀúbufµÄ¹¦ÄÜÊÇÏÔÊ¾³öÃ¿´ÎigetkeyµÄ¶¯×÷¡£
+		//ä»¥ä¸‹éå†bufçš„åŠŸèƒ½æ˜¯æ˜¾ç¤ºå‡ºæ¯æ¬¡igetkeyçš„åŠ¨ä½œã€‚
 		size = strlen(buf);
 		for (i = 0; i < size; i++) {
 			if (chk) {
@@ -872,7 +881,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 					y++;
 					move(y, x);
 				}
-				//Ctrl('H')ÖĞÍËĞĞbug
+				//Ctrl('H')ä¸­é€€è¡Œbug
 				if (x == maxcol && y - starty + 1 < MAX_MSG_LINE) {
 					move(y + 1, 0);
 					clrtoeol();
@@ -889,7 +898,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 				y++;
 				move(y, x);
 			}
-			if(i == curr - 1) { //´òÓ¡µ½buf×îºóÒ»¸ö×Ö·ûÊ±µÄxºÍyÊÇÏÂÒ»²½³õÊ¼xy
+			if(i == curr - 1) { //æ‰“å°åˆ°bufæœ€åä¸€ä¸ªå­—ç¬¦æ—¶çš„xå’Œyæ˜¯ä¸‹ä¸€æ­¥åˆå§‹xy
 				cursory = y;
 				cursorx = x;
 			}
@@ -904,7 +913,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 			{
 				buf[0] = Ctrl('Z');
 				x = 1;
-				break; //¿ÉÒÔ¸Ä³Éreturn Ä³¸öĞĞÊÔÊÔ
+				break; //å¯ä»¥æ”¹æˆreturn æŸä¸ªè¡Œè¯•è¯•
 			}
 			if (ch == Ctrl('A') ) 
 			{
@@ -1097,7 +1106,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 							y++;
 						}
 					}
-					//²ÉÓÃÏÈ²åÈëºó¼ì²éÊÇ·ñ³¬¹ımaxline£¬Èç¹û³¬¹ı£¬ÄÇÃ´É¾È¥Õâ¸ö×Ö·ûµ÷Õû
+					//é‡‡ç”¨å…ˆæ’å…¥åæ£€æŸ¥æ˜¯å¦è¶…è¿‡maxlineï¼Œå¦‚æœè¶…è¿‡ï¼Œé‚£ä¹ˆåˆ å»è¿™ä¸ªå­—ç¬¦è°ƒæ•´
 					if (y - starty + 1 > maxline) {
 						memmove(buf + curr -1, buf + curr, size - curr + 1);
 						curr--;

@@ -247,7 +247,8 @@ static int bind_port(const char *port, struct pollfd *fds, int nfds)
  */
 static int check_nologin(int fd)
 {
-	const char banner[] = "±¾Õ¾Ä¿Ç°ÔİÍ£µÇÂ¼£¬Ô­ÒòÈçÏÂ: \r\n";
+	//% const char banner[] = "æœ¬ç«™ç›®å‰æš‚åœç™»å½•ï¼ŒåŸå› å¦‚ä¸‹: \r\n";
+	const char banner[] = "\xb1\xbe\xd5\xbe\xc4\xbf\xc7\xb0\xd4\xdd\xcd\xa3\xb5\xc7\xc2\xbc\xa3\xac\xd4\xad\xd2\xf2\xc8\xe7\xcf\xc2: \r\n";
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(NOLOGIN, &m) == 0) {

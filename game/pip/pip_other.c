@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* º¯Ê½ÌØÇø                                                                  */
+/* å‡½å¼ç‰¹åŒº                                                                  */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #include <time.h>
@@ -10,17 +10,23 @@ extern time_t start_time;
 extern time_t lasttime;
 //#define getdata(a, b, c , d, e, f, g) getdata(a,b,c,d,e,f,NULL,g)
 
-/*Ãû×Ö        ÌåÁ¦MAX·¨Á¦MAX  ¹¥»÷   ·À»¤     ËÙ¶È    ²Æ±¦   ÌØ±ğ   Í¼µµ*/
+/*åå­—        ä½“åŠ›MAXæ³•åŠ›MAX  æ”»å‡»   é˜²æŠ¤     é€Ÿåº¦    è´¢å®   ç‰¹åˆ«   å›¾æ¡£*/
 struct playrule resultmanlist[] = {
-"ÜïÀöÒ¶Ëş",	 60,0,	20,0,	20,	20,	 20,	150, "11101",	0,0,
-"·ÆÅ·ÀûÄÈ",	 60,0,	20,0,	30,	30,	 30,	200, "01111",	0,0,
-"°¢ÄİË¹",	 80,0,	40,0,	50,	35,	 60,	250, "11110",	0,0,
-"ÅÁ¶àÀ×Î÷ÑÇ",	 85,0,	30,0,	80,	90,	 80,	500, "10111",	0,0,
-"¿¨ÃÀÀ­ÃÀ", 	 90,0,  50,0,   75,	70,	 60,	550, "11010",	0,0,
-"æ©ÄÈÀöÍŞ",	 90,0,  40,0,   10,     30,      50,    880, "10100",   0,0,
+//% "èŒ±ä¸½å¶å¡”",	 60,0,	20,0,	20,	20,	 20,	150, "11101",	0,0,
+"\xdc\xef\xc0\xf6\xd2\xb6\xcb\xfe",	 60,0,	20,0,	20,	20,	 20,	150, "11101",	0,0,
+//% "è²æ¬§åˆ©å¨œ",	 60,0,	20,0,	30,	30,	 30,	200, "01111",	0,0,
+"\xb7\xc6\xc5\xb7\xc0\xfb\xc4\xc8",	 60,0,	20,0,	30,	30,	 30,	200, "01111",	0,0,
+//% "é˜¿å¦®æ–¯",	 80,0,	40,0,	50,	35,	 60,	250, "11110",	0,0,
+"\xb0\xa2\xc4\xdd\xcb\xb9",	 80,0,	40,0,	50,	35,	 60,	250, "11110",	0,0,
+//% "å¸•å¤šé›·è¥¿äºš",	 85,0,	30,0,	80,	90,	 80,	500, "10111",	0,0,
+"\xc5\xc1\xb6\xe0\xc0\xd7\xce\xf7\xd1\xc7",	 85,0,	30,0,	80,	90,	 80,	500, "10111",	0,0,
+//% "å¡ç¾æ‹‰ç¾", 	 90,0,  50,0,   75,	70,	 60,	550, "11010",	0,0,
+"\xbf\xa8\xc3\xc0\xc0\xad\xc3\xc0", 	 90,0,  50,0,   75,	70,	 60,	550, "11010",	0,0,
+//% "å§—å¨œä¸½å¨ƒ",	 90,0,  40,0,   10,     30,      50,    880, "10100",   0,0,
+"\xe6\xa9\xc4\xc8\xc0\xf6\xcd\xde",	 90,0,  40,0,   10,     30,      50,    880, "10100",   0,0,
 //NULL,		  0,0,	 0,0,	 0,	 0,	  0,	  0,	NULL,	0,0
 };
-/*Çó»é*/
+/*æ±‚å©š*/
 int
 pip_marriage_offer()
 {
@@ -29,18 +35,24 @@ pip_marriage_offer()
    char ans[4];
    int money;
    int who;
-   char *name[5][2]={{"Å®ÉÌÈË£Á","ÉÌÈË£Á"},
-                     {"Å®ÉÌÈË£Â","ÉÌÈË£Â"},
-                     {"Å®ÉÌÈË£Ã","ÉÌÈË£Ã"},
-                     {"Å®ÉÌÈË£Ä","ÉÌÈË£Ä"},
-                     {"Å®ÉÌÈË£Å","ÉÌÈË£Å"}};
+   //% char *name[5][2]={{"å¥³å•†äººï¼¡","å•†äººï¼¡"},
+   char *name[5][2]={{"\xc5\xae\xc9\xcc\xc8\xcb\xa3\xc1","\xc9\xcc\xc8\xcb\xa3\xc1"},
+                     //% {"å¥³å•†äººï¼¢","å•†äººï¼¢"},
+                     {"\xc5\xae\xc9\xcc\xc8\xcb\xa3\xc2","\xc9\xcc\xc8\xcb\xa3\xc2"},
+                     //% {"å¥³å•†äººï¼£","å•†äººï¼£"},
+                     {"\xc5\xae\xc9\xcc\xc8\xcb\xa3\xc3","\xc9\xcc\xc8\xcb\xa3\xc3"},
+                     //% {"å¥³å•†äººï¼¤","å•†äººï¼¤"},
+                     {"\xc5\xae\xc9\xcc\xc8\xcb\xa3\xc4","\xc9\xcc\xc8\xcb\xa3\xc4"},
+                     //% {"å¥³å•†äººï¼¥","å•†äººï¼¥"}};
+                     {"\xc5\xae\xc9\xcc\xc8\xcb\xa3\xc5","\xc9\xcc\xc8\xcb\xa3\xc5"}};
    do
    { 
      who=rand()%5;
    }while(d.lover==(who+3));
   
    money=rand()%2000+rand()%3000+4000;
-   sprintf(buf,"%s´øÀ´ÁË½ğÇ®%d£¬ÒªÏòÄãµÄĞ¡¼¦Çó»é£¬ÄúÔ¸ÒâÂğ£¿[y/N]",name[who][d.sex-1],money);
+   //% sprintf(buf,"%så¸¦æ¥äº†é‡‘é’±%dï¼Œè¦å‘ä½ çš„å°é¸¡æ±‚å©šï¼Œæ‚¨æ„¿æ„å—ï¼Ÿ[y/N]",name[who][d.sex-1],money);
+   sprintf(buf,"%s\xb4\xf8\xc0\xb4\xc1\xcb\xbd\xf0\xc7\xae%d\xa3\xac\xd2\xaa\xcf\xf2\xc4\xe3\xb5\xc4\xd0\xa1\xbc\xa6\xc7\xf3\xbb\xe9\xa3\xac\xc4\xfa\xd4\xb8\xd2\xe2\xc2\xf0\xa3\xbf[y/N]",name[who][d.sex-1],money);
 #ifdef MAPLE
    getdata(b_lines-1, 1,buf, ans, 2, 1, 0);
 #else
@@ -50,7 +62,8 @@ pip_marriage_offer()
    {
      if(d.wantend!=1 && d.wantend!=4)
      {
-       sprintf(buf,"¨Ú¡«Ö®Ç°ÒÑ¾­ÓĞ»éÔ¼ÁË£¬ÄúÈ·¶¨Òª½â³ı¾É»éÔ¼£¬¸Ä¶¨Á¢»éÔ¼Âğ£¿[y/N]");
+       //% sprintf(buf,"ã„šï½ä¹‹å‰å·²ç»æœ‰å©šçº¦äº†ï¼Œæ‚¨ç¡®å®šè¦è§£é™¤æ—§å©šçº¦ï¼Œæ”¹å®šç«‹å©šçº¦å—ï¼Ÿ[y/N]");
+       sprintf(buf,"\xa8\xda\xa1\xab\xd6\xae\xc7\xb0\xd2\xd1\xbe\xad\xd3\xd0\xbb\xe9\xd4\xbc\xc1\xcb\xa3\xac\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xbd\xe2\xb3\xfd\xbe\xc9\xbb\xe9\xd4\xbc\xa3\xac\xb8\xc4\xb6\xa8\xc1\xa2\xbb\xe9\xd4\xbc\xc2\xf0\xa3\xbf[y/N]");
 #ifdef MAPLE
        getdata(b_lines-1, 1,buf, ans, 2, 1, 0);
 #else
@@ -59,7 +72,8 @@ pip_marriage_offer()
        if(ans[0]!='y' && ans[0]!='Y')
        {
          d.social+=10;
-         pressanykey("»¹ÊÇÎ¬³Ö¾É»éÔ¼ºÃÁË..");
+         //% pressanykey("è¿˜æ˜¯ç»´æŒæ—§å©šçº¦å¥½äº†..");
+         pressanykey("\xbb\xb9\xca\xc7\xce\xac\xb3\xd6\xbe\xc9\xbb\xe9\xd4\xbc\xba\xc3\xc1\xcb..");
          return 0;
        }
        d.social-=rand()%50+100;
@@ -73,9 +87,11 @@ pip_marriage_offer()
      	d.wantend=2;
      else
         d.wantend=5;
-     pressanykey("ÎÒÏë¶Ô·½ÊÇÒ»¸öºÜºÃµÄ°éÂÂ..");
+     //% pressanykey("æˆ‘æƒ³å¯¹æ–¹æ˜¯ä¸€ä¸ªå¾ˆå¥½çš„ä¼´ä¾£..");
+     pressanykey("\xce\xd2\xcf\xeb\xb6\xd4\xb7\xbd\xca\xc7\xd2\xbb\xb8\xf6\xba\xdc\xba\xc3\xb5\xc4\xb0\xe9\xc2\xc2..");
      now=time(0);
-     sprintf(buf, "[1;37m%s %-11sµÄĞ¡¼¦ [%s] ½ÓÊÜÁË %s µÄÇó»é[0m\n", Cdate(&now), cuser.userid,d.name,name[who][d.sex-1]);
+     //% sprintf(buf, "[1;37m%s %-11sçš„å°é¸¡ [%s] æ¥å—äº† %s çš„æ±‚å©š[0m\n", Cdate(&now), cuser.userid,d.name,name[who][d.sex-1]);
+     sprintf(buf, "[1;37m%s %-11s\xb5\xc4\xd0\xa1\xbc\xa6 [%s] \xbd\xd3\xca\xdc\xc1\xcb %s \xb5\xc4\xc7\xf3\xbb\xe9[0m\n", Cdate(&now), cuser.userid,d.name,name[who][d.sex-1]);
      pip_log_record(buf);
    }
    else
@@ -83,18 +99,21 @@ pip_marriage_offer()
      d.charm+=rand()%5+20;
      d.relation+=20;
      if(d.wantend==1 || d.wantend==4){
-	     pressanykey("ÎÒ»¹ÄêÇá  ĞÄÇé»¹²»¶¨...");
+	     //% pressanykey("æˆ‘è¿˜å¹´è½»  å¿ƒæƒ…è¿˜ä¸å®š...");
+	     pressanykey("\xce\xd2\xbb\xb9\xc4\xea\xc7\xe1  \xd0\xc4\xc7\xe9\xbb\xb9\xb2\xbb\xb6\xa8...");
      } else {
-     	     pressanykey("ÎÒÔçÒÑÓĞ»éÔ¼ÁË..¶Ô²»Æğ...");
+     	     //% pressanykey("æˆ‘æ—©å·²æœ‰å©šçº¦äº†..å¯¹ä¸èµ·...");
+     	     pressanykey("\xce\xd2\xd4\xe7\xd2\xd1\xd3\xd0\xbb\xe9\xd4\xbc\xc1\xcb..\xb6\xd4\xb2\xbb\xc6\xf0...");
      }
    }
    d.money+=money;
    return 0;
 }
 
-int pip_results_show()  /*ÊÕ»ñ¼¾*/
+int pip_results_show()  /*æ”¶è·å­£*/
 {
-	char *showname[5]={"  ","Îä¶·´ó»á","ÒÕÊõ´óÕ¹","»Ê¼ÒÎè»á","Åëâ¿´óÈü"};
+	//% char *showname[5]={"  ","æ­¦æ–—å¤§ä¼š","è‰ºæœ¯å¤§å±•","çš‡å®¶èˆä¼š","çƒ¹é¥ªå¤§èµ›"};
+	char *showname[5]={"  ","\xce\xe4\xb6\xb7\xb4\xf3\xbb\xe1","\xd2\xd5\xca\xf5\xb4\xf3\xd5\xb9","\xbb\xca\xbc\xd2\xce\xe8\xbb\xe1","\xc5\xeb\xe2\xbf\xb4\xf3\xc8\xfc"};
 	char buf[256];
 	int pipkey,i=0;
 	int winorlost=0;
@@ -102,11 +121,14 @@ int pip_results_show()  /*ÊÕ»ñ¼¾*/
 
 	clear();
 	move(10,14);
-	prints("[1;33m¶£ßË¶£ßË¡« ĞÁ¿àµÄÓÊ²î°ïÎÒÃÇËÍĞÅÀ´ÁËà¸...[0m");
-	pressanykey("àÅ  °ÑĞÅ´ò¿ª¿´¿´°É...");
+	//% prints("[1;33må®å’šå®å’šï½ è¾›è‹¦çš„é‚®å·®å¸®æˆ‘ä»¬é€ä¿¡æ¥äº†å–”...[0m");
+	prints("[1;33m\xb6\xa3\xdf\xcb\xb6\xa3\xdf\xcb\xa1\xab \xd0\xc1\xbf\xe0\xb5\xc4\xd3\xca\xb2\xee\xb0\xef\xce\xd2\xc3\xc7\xcb\xcd\xd0\xc5\xc0\xb4\xc1\xcb\xe0\xb8...[0m");
+	//% pressanykey("å—¯  æŠŠä¿¡æ‰“å¼€çœ‹çœ‹å§...");
+	pressanykey("\xe0\xc5  \xb0\xd1\xd0\xc5\xb4\xf2\xbf\xaa\xbf\xb4\xbf\xb4\xb0\xc9...");
 	clear();
 	show_resultshow_pic(0);
-	sprintf(buf,"[A]%s [B]%s [C]%s [D]%s [Q]·ÅÆú:",showname[1],showname[2],showname[3],showname[4]);
+	//% sprintf(buf,"[A]%s [B]%s [C]%s [D]%s [Q]æ”¾å¼ƒ:",showname[1],showname[2],showname[3],showname[4]);
+	sprintf(buf,"[A]%s [B]%s [C]%s [D]%s [Q]\xb7\xc5\xc6\xfa:",showname[1],showname[2],showname[3],showname[4]);
 	move(b_lines,0);
 	prints(buf);	
 	do
@@ -124,16 +146,18 @@ int pip_results_show()  /*ÊÕ»ñ¼¾*/
 	{
 		case 'A':
 		case 'a':
-			pressanykey("½ñÄê¹²ÓĞËÄÈË²ÎÈü¡«ÏÖÔÚ±ÈÈü¿ªÊ¼");
+			//% pressanykey("ä»Šå¹´å…±æœ‰å››äººå‚èµ›ï½ç°åœ¨æ¯”èµ›å¼€å§‹");
+			pressanykey("\xbd\xf1\xc4\xea\xb9\xb2\xd3\xd0\xcb\xc4\xc8\xcb\xb2\xce\xc8\xfc\xa1\xab\xcf\xd6\xd4\xda\xb1\xc8\xc8\xfc\xbf\xaa\xca\xbc");
 			for(i=0;i<3;i++)
 			{
 				a=0;
 				b[i][1]=0;
-				sprintf(buf,"ÄãµÄµÚ%d¸ö¶ÔÊÖÊÇ%s",i+1,resultmanlist[b[i][0]].name);
+				//% sprintf(buf,"ä½ çš„ç¬¬%dä¸ªå¯¹æ‰‹æ˜¯%s",i+1,resultmanlist[b[i][0]].name);
+				sprintf(buf,"\xc4\xe3\xb5\xc4\xb5\xda%d\xb8\xf6\xb6\xd4\xca\xd6\xca\xc7%s",i+1,resultmanlist[b[i][0]].name);
 				pressanykey(buf);
 				a=pip_vs_man(b[i][0],resultmanlist,2);
 				if(a==1)
-					b[i][1]=1;/*¶Ô·½ÊäÁË*/
+					b[i][1]=1;/*å¯¹æ–¹è¾“äº†*/
 				winorlost+=a;	
 				d.death=0;
 			}
@@ -195,9 +219,11 @@ int pip_results_show()  /*ÊÕ»ñ¼¾*/
 			break;
 		case 'B':
 		case 'b':
-			pressanykey("½ñÄê¹²ÓĞËÄÈË²ÎÈü¡«ÏÖÔÚ±ÈÈü¿ªÊ¼");
+			//% pressanykey("ä»Šå¹´å…±æœ‰å››äººå‚èµ›ï½ç°åœ¨æ¯”èµ›å¼€å§‹");
+			pressanykey("\xbd\xf1\xc4\xea\xb9\xb2\xd3\xd0\xcb\xc4\xc8\xcb\xb2\xce\xc8\xfc\xa1\xab\xcf\xd6\xd4\xda\xb1\xc8\xc8\xfc\xbf\xaa\xca\xbc");
 			show_resultshow_pic(21);
-			pressanykey("±ÈÈüÇéĞÎ");
+			//% pressanykey("æ¯”èµ›æƒ…å½¢");
+			pressanykey("\xb1\xc8\xc8\xfc\xc7\xe9\xd0\xce");
 			if((d.art*2+d.character)/400>=5)
 			{
 				winorlost=3;
@@ -220,7 +246,8 @@ int pip_results_show()  /*ÊÕ»ñ¼¾*/
 			break;
 		case 'C':
 		case 'c':
-			pressanykey("½ñÄê¹²ÓĞËÄÈË²ÎÈü¡«ÏÖÔÚ±ÈÈü¿ªÊ¼");
+			//% pressanykey("ä»Šå¹´å…±æœ‰å››äººå‚èµ›ï½ç°åœ¨æ¯”èµ›å¼€å§‹");
+			pressanykey("\xbd\xf1\xc4\xea\xb9\xb2\xd3\xd0\xcb\xc4\xc8\xcb\xb2\xce\xc8\xfc\xa1\xab\xcf\xd6\xd4\xda\xb1\xc8\xc8\xfc\xbf\xaa\xca\xbc");
 			if((d.art*2+d.charm)/400>=5)
 			{				
 				winorlost=3;
@@ -243,7 +270,8 @@ int pip_results_show()  /*ÊÕ»ñ¼¾*/
 			break;
 		case 'D':
 		case 'd':
-			pressanykey("½ñÄê¹²ÓĞËÄÈË²ÎÈü¡«ÏÖÔÚ±ÈÈü¿ªÊ¼");
+			//% pressanykey("ä»Šå¹´å…±æœ‰å››äººå‚èµ›ï½ç°åœ¨æ¯”èµ›å¼€å§‹");
+			pressanykey("\xbd\xf1\xc4\xea\xb9\xb2\xd3\xd0\xcb\xc4\xc8\xcb\xb2\xce\xc8\xfc\xa1\xab\xcf\xd6\xd4\xda\xb1\xc8\xc8\xfc\xbf\xaa\xca\xbc");
 			if((d.affect+d.cookskill*2)/200>=4)
 			{
 				winorlost=3;
@@ -266,7 +294,8 @@ int pip_results_show()  /*ÊÕ»ñ¼¾*/
 			break;
 		case 'Q':
 		case 'q':
-			pressanykey("½ñÄê²»²Î¼ÓÀ².....:(");
+			//% pressanykey("ä»Šå¹´ä¸å‚åŠ å•¦.....:(");
+			pressanykey("\xbd\xf1\xc4\xea\xb2\xbb\xb2\xce\xbc\xd3\xc0\xb2.....:(");
 			d.happy-=rand()%10+10;
 			d.satisfy-=rand()%10+10;
 			d.relation-=rand()%10;
@@ -286,8 +315,10 @@ int pip_results_show()  /*ÊÕ»ñ¼¾*/
 int pip_results_show_ending(winorlost,mode,a,b,c)
 int winorlost,mode,a,b,c;
 {
-	char *resultname[4]={"×îááÒ»Ãû","¼¾¾ü","ÑÇ¾ü","¹Ú¾ü"};
-	char *gamename[5]={"  ","Îä¶·´ó»á","ÒÕÊõ´óÕ¹","»Ê¼ÒÎè»á","Åëâ¿´óÈü"};
+	//% char *resultname[4]={"æœ€å¾Œä¸€å","å­£å†›","äºšå†›","å† å†›"};
+	char *resultname[4]={"\xd7\xee\xe1\xe1\xd2\xbb\xc3\xfb","\xbc\xbe\xbe\xfc","\xd1\xc7\xbe\xfc","\xb9\xda\xbe\xfc"};
+	//% char *gamename[5]={"  ","æ­¦æ–—å¤§ä¼š","è‰ºæœ¯å¤§å±•","çš‡å®¶èˆä¼š","çƒ¹é¥ªå¤§èµ›"};
+	char *gamename[5]={"  ","\xce\xe4\xb6\xb7\xb4\xf3\xbb\xe1","\xd2\xd5\xca\xf5\xb4\xf3\xd5\xb9","\xbb\xca\xbc\xd2\xce\xe8\xbb\xe1","\xc5\xeb\xe2\xbf\xb4\xf3\xc8\xfc"};
 	int resultmoney[4]={0,3000,5000,8000};
 	char name1[25],name2[25],name3[25],name4[25];
 	char buf[256];
@@ -322,16 +353,22 @@ int winorlost,mode,a,b,c;
 	}	
 	clear();
 	move(6,13);
-	prints("[1;37m¡«¡«¡« [32m±¾½ì %s ½á¹û½ÒÏş [37m¡«¡«¡«[0m",gamename[mode]);	
+	//% prints("[1;37mï½ï½ï½ [32mæœ¬å±Š %s ç»“æœæ­æ™“ [37mï½ï½ï½[0m",gamename[mode]);	
+	prints("[1;37m\xa1\xab\xa1\xab\xa1\xab [32m\xb1\xbe\xbd\xec %s \xbd\xe1\xb9\xfb\xbd\xd2\xcf\xfe [37m\xa1\xab\xa1\xab\xa1\xab[0m",gamename[mode]);	
 	move(8,15);
-	prints("[1;41m ¹Ú¾ü [0;1m¡« [1;33m%-10s[36m  ½±½ğ %d[0m",name1,resultmoney[3]);
+	//% prints("[1;41m å† å†› [0;1mï½ [1;33m%-10s[36m  å¥–é‡‘ %d[0m",name1,resultmoney[3]);
+	prints("[1;41m \xb9\xda\xbe\xfc [0;1m\xa1\xab [1;33m%-10s[36m  \xbd\xb1\xbd\xf0 %d[0m",name1,resultmoney[3]);
 	move(10,15);
-	prints("[1;41m ÑÇ¾ü [0;1m¡« [1;33m%-10s[36m  ½±½ğ %d[0m",name2,resultmoney[2]);
+	//% prints("[1;41m äºšå†› [0;1mï½ [1;33m%-10s[36m  å¥–é‡‘ %d[0m",name2,resultmoney[2]);
+	prints("[1;41m \xd1\xc7\xbe\xfc [0;1m\xa1\xab [1;33m%-10s[36m  \xbd\xb1\xbd\xf0 %d[0m",name2,resultmoney[2]);
 	move(12,15);
-	prints("[1;41m ¼¾¾ü [0;1m¡« [1;33m%-10s[36m  ½±½ğ %d[0m",name3,resultmoney[1]);
+	//% prints("[1;41m å­£å†› [0;1mï½ [1;33m%-10s[36m  å¥–é‡‘ %d[0m",name3,resultmoney[1]);
+	prints("[1;41m \xbc\xbe\xbe\xfc [0;1m\xa1\xab [1;33m%-10s[36m  \xbd\xb1\xbd\xf0 %d[0m",name3,resultmoney[1]);
 	move(14,15);
-	prints("[1;41m ×îáá [0;1m¡« [1;33m%-10s[36m [0m",name4);	
-	sprintf(buf,"½ñÄêµÄ%s½áÊøÂŞ ááÄêÔÙÀ´°É..",gamename[mode]);
+	//% prints("[1;41m æœ€å¾Œ [0;1mï½ [1;33m%-10s[36m [0m",name4);	
+	prints("[1;41m \xd7\xee\xe1\xe1 [0;1m\xa1\xab [1;33m%-10s[36m [0m",name4);	
+	//% sprintf(buf,"ä»Šå¹´çš„%sç»“æŸç½— å¾Œå¹´å†æ¥å§..",gamename[mode]);
+	sprintf(buf,"\xbd\xf1\xc4\xea\xb5\xc4%s\xbd\xe1\xca\xf8\xc2\xde \xe1\xe1\xc4\xea\xd4\xd9\xc0\xb4\xb0\xc9..",gamename[mode]);
 	d.money+=resultmoney[winorlost];
 	pressanykey(buf);
 	return 0;

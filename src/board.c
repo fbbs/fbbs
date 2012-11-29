@@ -128,12 +128,14 @@ static int tui_favorite_add(tui_list_t *p)
 
 	if (l->favorite) {
 		if (l->count >= FAV_BOARD_LIMIT) {
-			presskeyfor("ÊÕ²Ø¼ĞÒÑÂú", t_lines - 1);
+			//% presskeyfor("æ”¶è—å¤¹å·²æ»¡", t_lines - 1);
+			presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", t_lines - 1);
 			return MINIUPDATE;
 		}
 
 		GBK_UTF8_BUFFER(name, BOARD_NAME_LEN / 2);
-		board_complete(1, "ÊäÈëÌÖÂÛÇøÃû (°´¿Õ°×¼ü×Ô¶¯ËÑÑ°): ",
+		//% board_complete(1, "è¾“å…¥è®¨è®ºåŒºå (æŒ‰ç©ºç™½é”®è‡ªåŠ¨æœå¯»): ",
+		board_complete(1, "\xca\xe4\xc8\xeb\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb (\xb0\xb4\xbf\xd5\xb0\xd7\xbc\xfc\xd7\xd4\xb6\xaf\xcb\xd1\xd1\xb0): ",
 				gbk_name, sizeof(gbk_name), AC_LIST_BOARDS_AND_DIR);
 
 		if (gbk_name[0] & 0x80)
@@ -150,7 +152,8 @@ static int tui_favorite_add(tui_list_t *p)
 	} else {
 		const char *bname = l->indices[p->cur]->board.name;
 		char buf[STRLEN];
-		snprintf(buf, sizeof(buf), "ÄúÈ·¶¨ÒªÌí¼Ó %s µ½ÊÕ²Ø¼ĞÂğ?", bname);
+		//% snprintf(buf, sizeof(buf), "æ‚¨ç¡®å®šè¦æ·»åŠ  %s åˆ°æ”¶è—å¤¹å—?", bname);
+		snprintf(buf, sizeof(buf), "\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xcc\xed\xbc\xd3 %s \xb5\xbd\xca\xd5\xb2\xd8\xbc\xd0\xc2\xf0?", bname);
 		if (askyn(buf, false, true)) {
 			fav_board_add(session.uid, bname, 0,
 					FAV_BOARD_ROOT_FOLDER, &currentuser);
@@ -172,7 +175,8 @@ static int tui_favorite_copy(tui_list_t *p)
 		return DONOTHING;
 
 	l->copy_bid = bp->id;
-	presskeyfor("°æÃæÒÑ¼ôÇĞ Çë°´PÕ³Ìù", t_lines - 1);
+	//% presskeyfor("ç‰ˆé¢å·²å‰ªåˆ‡ è¯·æŒ‰Pç²˜è´´", t_lines - 1);
+	presskeyfor("\xb0\xe6\xc3\xe6\xd2\xd1\xbc\xf4\xc7\xd0 \xc7\xeb\xb0\xb4P\xd5\xb3\xcc\xf9", t_lines - 1);
 	return MINIUPDATE;
 }
 
@@ -199,18 +203,22 @@ static int tui_favorite_mkdir(tui_list_t *p)
 		return DONOTHING;
 
 	if (l->count >= FAV_BOARD_LIMIT) {
-		presskeyfor("ÊÕ²Ø¼ĞÒÑÂú", t_lines - 1);
+		//% presskeyfor("æ”¶è—å¤¹å·²æ»¡", t_lines - 1);
+		presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", t_lines - 1);
 		return MINIUPDATE;
 	}
 
 	GBK_UTF8_BUFFER(name, BOARD_NAME_LEN);
 	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
 
-	getdata(t_lines - 1, 0, "´´½¨×Ô¶¨ÒåÄ¿Â¼: ", gbk_name, BOARD_NAME_LEN + 1,
+	//% getdata(t_lines - 1, 0, "åˆ›å»ºè‡ªå®šä¹‰ç›®å½•: ", gbk_name, BOARD_NAME_LEN + 1,
+	getdata(t_lines - 1, 0, "\xb4\xb4\xbd\xa8\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc: ", gbk_name, BOARD_NAME_LEN + 1,
 			DOECHO, YEA);
 	if (gbk_name[0] != '\0') {
-		strlcpy(gbk_descr, "×Ô¶¨ÒåÄ¿Â¼", sizeof(gbk_descr));
-		getdata(t_lines - 1, 0, "×Ô¶¨ÒåÄ¿Â¼ÃèÊö: ", gbk_descr,
+		//% strlcpy(gbk_descr, "è‡ªå®šä¹‰ç›®å½•", sizeof(gbk_descr));
+		strlcpy(gbk_descr, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc", sizeof(gbk_descr));
+		//% getdata(t_lines - 1, 0, "è‡ªå®šä¹‰ç›®å½•æè¿°: ", gbk_descr,
+		getdata(t_lines - 1, 0, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xe8\xca\xf6: ", gbk_descr,
 				sizeof(gbk_descr), DOECHO, NA);
 
 		convert_g2u(gbk_name, utf8_name);
@@ -238,11 +246,13 @@ static int tui_favorite_rename(tui_list_t *p)
 	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
 
 	strlcpy(gbk_name, bp->name, sizeof(gbk_name));
-	getdata(t_lines - 1, 0, "ĞŞ¸Ä×Ô¶¨ÒåÄ¿Â¼Ãû: ", gbk_name, BOARD_NAME_LEN,
+	//% getdata(t_lines - 1, 0, "ä¿®æ”¹è‡ªå®šä¹‰ç›®å½•å: ", gbk_name, BOARD_NAME_LEN,
+	getdata(t_lines - 1, 0, "\xd0\xde\xb8\xc4\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xfb: ", gbk_name, BOARD_NAME_LEN,
 			DOECHO, NA);
 	if (gbk_name[0] != '\0' && !streq(gbk_name, bp->name)) {
 		strlcpy(gbk_descr, bp->descr, sizeof(gbk_descr));
-		getdata(t_lines - 1, 0, "×Ô¶¨ÒåÄ¿Â¼ÃèÊö: ", gbk_descr,
+		//% getdata(t_lines - 1, 0, "è‡ªå®šä¹‰ç›®å½•æè¿°: ", gbk_descr,
+		getdata(t_lines - 1, 0, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xe8\xca\xf6: ", gbk_descr,
 				BOARD_DESCR_CCHARS, DOECHO, NA);
 
 		convert_g2u(gbk_name, utf8_name);
@@ -264,7 +274,8 @@ static int tui_favorite_rm(tui_list_t *p)
 
 	if (l->favorite) {
 		char buf[STRLEN];
-		snprintf(buf, sizeof(buf), "Òª°Ñ %s ´ÓÊÕ²Ø¼ĞÖĞÈ¥µô£¿", bp->name);
+		//% snprintf(buf, sizeof(buf), "è¦æŠŠ %s ä»æ”¶è—å¤¹ä¸­å»æ‰ï¼Ÿ", bp->name);
+		snprintf(buf, sizeof(buf), "\xd2\xaa\xb0\xd1 %s \xb4\xd3\xca\xd5\xb2\xd8\xbc\xd0\xd6\xd0\xc8\xa5\xb5\xf4\xa3\xbf", bp->name);
 
 		if (askyn(buf, false, true)) {
 			int ok;
@@ -322,7 +333,8 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 			board->id = db_get_integer(r2, i, 0);
 			convert_u2g(db_get_value(r2, i, 1), board->name);
 			convert_u2g(db_get_value(r2, i, 2), board->descr);
-			strlcpy(board->categ, "ÊÕ²Ø", sizeof(board->categ));
+			//% strlcpy(board->categ, "æ”¶è—", sizeof(board->categ));
+			strlcpy(board->categ, "\xca\xd5\xb2\xd8", sizeof(board->categ));
 
 			board->flag = BOARD_CUSTOM_FLAG | BOARD_DIR_FLAG;
 			e->folder = FAV_BOARD_ROOT_FOLDER;
@@ -449,7 +461,8 @@ static int search_board(const choose_board_t *cbrd, int *num)
 	while (1) {
 		move(t_lines - 1, 0);
 		clrtoeol();
-		prints("ÇëÊäÈëÒª²éÕÒµÄ°æÃæÃû³Æ£º%s", bname);
+		//% prints("è¯·è¾“å…¥è¦æŸ¥æ‰¾çš„ç‰ˆé¢åç§°ï¼š%s", bname);
+		prints("\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb2\xe9\xd5\xd2\xb5\xc4\xb0\xe6\xc3\xe6\xc3\xfb\xb3\xc6\xa3\xba%s", bname);
 		ch = egetch();
 
 		if (isprint2(ch)) {
@@ -459,7 +472,8 @@ static int search_board(const choose_board_t *cbrd, int *num)
 					tmpn = YEA;
 					*num = n;
 					if (!strcmp(cbrd->brds[n].name, bname))
-						return 1 /* ÕÒµ½ÀàËÆµÄ°æ£¬»­ÃæÖØ»­
+						//% return 1 /* æ‰¾åˆ°ç±»ä¼¼çš„ç‰ˆï¼Œç”»é¢é‡ç”»
+						return 1 /* \xd5\xd2\xb5\xbd\xc0\xe0\xcb\xc6\xb5\xc4\xb0\xe6\xa3\xac\xbb\xad\xc3\xe6\xd6\xd8\xbb\xad
 						 */;
 				}
 			}
@@ -491,7 +505,8 @@ static int search_board(const choose_board_t *cbrd, int *num)
 	if (find) {
 		move(t_lines - 1, 0);
 		clrtoeol();
-		return 2 /* ½áÊøÁË */;
+		//% return 2 /* ç»“æŸäº† */;
+		return 2 /* \xbd\xe1\xca\xf8\xc1\xcb */;
 	}
 	return 1;
 }
@@ -572,16 +587,19 @@ static tui_list_display_t board_list_display(tui_list_t *p, int n)
 	if (!l->newflag)
 		prints(" %5d", n + 1);
 	else if (board->flag & BOARD_DIR_FLAG)
-		prints("  Ä¿Â¼");
+		//% prints("  ç›®å½•");
+		prints("  \xc4\xbf\xc2\xbc");
 	else
 		prints(" %5d", get_last_fake_pid(board->id));
 
 	prints(" ");
 	if (board->flag & BOARD_DIR_FLAG) {
-		prints("£«");
+		//% prints("ï¼‹");
+		prints("\xa3\xab");
 	} else {
 		bool unread = check_newpost(board);
-		prints(unread ? "¡ô" : "¡ó");
+		//% prints(unread ? "â—†" : "â—‡");
+		prints(unread ? "\xa1\xf4" : "\xa1\xf3");
 	}
 
 	char descr[24];
@@ -596,12 +614,14 @@ static tui_list_display_t board_list_display(tui_list_t *p, int n)
 			board->categ, descr, HAS_PERM(PERM_POST) ? property(board) : ' ');
 
 	if (board->flag & BOARD_DIR_FLAG) {
-		prints("[Ä¿Â¼]\n");
+		//% prints("[ç›®å½•]\n");
+		prints("[\xc4\xbf\xc2\xbc]\n");
 	} else {
 		char bms[IDLEN + 1];
 		strlcpy(bms, board->bms, sizeof(bms));
 		prints("%-12s %4d\n",
-				bms[0] <= ' ' ? "³ÏÕ÷°æÖ÷ÖĞ" : strtok(bms, " "),
+				//% bms[0] <= ' ' ? "è¯šå¾ç‰ˆä¸»ä¸­" : strtok(bms, " "),
+				bms[0] <= ' ' ? "\xb3\xcf\xd5\xf7\xb0\xe6\xd6\xf7\xd6\xd0" : strtok(bms, " "),
 				brdshm->bstatus[board->id].inboard);
 	}
 
@@ -648,32 +668,50 @@ static int show_board_info(board_t *board)
 
 	struct bstat *bs = getbstat(board->id);
 	clear();
-	prints("°æÃæÏêÏ¸ĞÅÏ¢:\n\n");
+	//% prints("ç‰ˆé¢è¯¦ç»†ä¿¡æ¯:\n\n");
+	prints("\xb0\xe6\xc3\xe6\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2:\n\n");
 	prints("ID      :     %d\n", board->id);
-	prints("Ó¢ÎÄÃû³Æ:     %s\n", board->name);
-	prints("ÖĞÎÄÃû³Æ:     %s\n", board->descr);
-	prints("°æ    Ö÷:     %s\n", board->bms);
-	prints("ËùÊôÌÖÂÛÇø:   %s\n", board->parent ? parent.name : "ÎŞ");
-	prints("ÊÇ·ñÄ¿Â¼:     %s\n", (board->flag & BOARD_DIR_FLAG) ? "Ä¿Â¼" : "°æÃæ");
-	prints("¿ÉÒÔ ZAP:     %s\n", (board->flag & BOARD_NOZAP_FLAG) ? "²»¿ÉÒÔ" : "¿ÉÒÔ");
+	//% prints("è‹±æ–‡åç§°:     %s\n", board->name);
+	prints("\xd3\xa2\xce\xc4\xc3\xfb\xb3\xc6:     %s\n", board->name);
+	//% prints("ä¸­æ–‡åç§°:     %s\n", board->descr);
+	prints("\xd6\xd0\xce\xc4\xc3\xfb\xb3\xc6:     %s\n", board->descr);
+	//% prints("ç‰ˆ    ä¸»:     %s\n", board->bms);
+	prints("\xb0\xe6    \xd6\xf7:     %s\n", board->bms);
+	//% prints("æ‰€å±è®¨è®ºåŒº:   %s\n", board->parent ? parent.name : "æ— ");
+	prints("\xcb\xf9\xca\xf4\xcc\xd6\xc2\xdb\xc7\xf8:   %s\n", board->parent ? parent.name : "\xce\xde");
+	//% prints("æ˜¯å¦ç›®å½•:     %s\n", (board->flag & BOARD_DIR_FLAG) ? "ç›®å½•" : "ç‰ˆé¢");
+	prints("\xca\xc7\xb7\xf1\xc4\xbf\xc2\xbc:     %s\n", (board->flag & BOARD_DIR_FLAG) ? "\xc4\xbf\xc2\xbc" : "\xb0\xe6\xc3\xe6");
+	//% prints("å¯ä»¥ ZAP:     %s\n", (board->flag & BOARD_NOZAP_FLAG) ? "ä¸å¯ä»¥" : "å¯ä»¥");
+	prints("\xbf\xc9\xd2\xd4 ZAP:     %s\n", (board->flag & BOARD_NOZAP_FLAG) ? "\xb2\xbb\xbf\xc9\xd2\xd4" : "\xbf\xc9\xd2\xd4");
 
 	if (!(board->flag & BOARD_DIR_FLAG)) {
-		prints("ÔÚÏßÈËÊı:     %d ÈË\n", bs->inboard);
-		prints("ÎÄ ÕÂ Êı:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "²»¼ÆËã" : "¼ÆËã");
-		prints("¿ÉÒÔ»Ø¸´:     %s\n", (board->flag & BOARD_NOREPLY_FLAG) ? "²»¿ÉÒÔ" : "¿ÉÒÔ");
-		prints("Ää Ãû °æ:     %s\n", (board->flag & BOARD_ANONY_FLAG) ? "ÊÇ" : "·ñ");
+		//% prints("åœ¨çº¿äººæ•°:     %d äºº\n", bs->inboard);
+		prints("\xd4\xda\xcf\xdf\xc8\xcb\xca\xfd:     %d \xc8\xcb\n", bs->inboard);
+		//% prints("æ–‡ ç«  æ•°:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "ä¸è®¡ç®—" : "è®¡ç®—");
+		prints("\xce\xc4 \xd5\xc2 \xca\xfd:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "\xb2\xbb\xbc\xc6\xcb\xe3" : "\xbc\xc6\xcb\xe3");
+		//% prints("å¯ä»¥å›å¤:     %s\n", (board->flag & BOARD_NOREPLY_FLAG) ? "ä¸å¯ä»¥" : "å¯ä»¥");
+		prints("\xbf\xc9\xd2\xd4\xbb\xd8\xb8\xb4:     %s\n", (board->flag & BOARD_NOREPLY_FLAG) ? "\xb2\xbb\xbf\xc9\xd2\xd4" : "\xbf\xc9\xd2\xd4");
+		//% prints("åŒ¿ å ç‰ˆ:     %s\n", (board->flag & BOARD_ANONY_FLAG) ? "æ˜¯" : "å¦");
+		prints("\xc4\xe4 \xc3\xfb \xb0\xe6:     %s\n", (board->flag & BOARD_ANONY_FLAG) ? "\xca\xc7" : "\xb7\xf1");
 #ifdef ENABLE_PREFIX
-		prints ("Ç¿ÖÆÇ°×º:     %s\n", (board->flag & BOARD_PREFIX_FLAG) ? "±ØĞë" : "²»±Ø");
+		//% prints ("å¼ºåˆ¶å‰ç¼€:     %s\n", (board->flag & BOARD_PREFIX_FLAG) ? "å¿…é¡»" : "ä¸å¿…");
+		prints ("\xc7\xbf\xd6\xc6\xc7\xb0\xd7\xba:     %s\n", (board->flag & BOARD_PREFIX_FLAG) ? "\xb1\xd8\xd0\xeb" : "\xb2\xbb\xb1\xd8");
 #endif
-		prints("¾ã ÀÖ ²¿:     %s\n", (board->flag & BOARD_CLUB_FLAG) ?
-				(board->flag & BOARD_READ_FLAG) ? "¶ÁÏŞÖÆ¾ãÀÖ²¿" : "ÆÕÍ¨¾ãÀÖ²¿"
-				: "·Ç¾ãÀÖ²¿");
+		//% prints("ä¿± ä¹ éƒ¨:     %s\n", (board->flag & BOARD_CLUB_FLAG) ?
+		prints("\xbe\xe3 \xc0\xd6 \xb2\xbf:     %s\n", (board->flag & BOARD_CLUB_FLAG) ?
+				//% (board->flag & BOARD_READ_FLAG) ? "è¯»é™åˆ¶ä¿±ä¹éƒ¨" : "æ™®é€šä¿±ä¹éƒ¨"
+				(board->flag & BOARD_READ_FLAG) ? "\xb6\xc1\xcf\xde\xd6\xc6\xbe\xe3\xc0\xd6\xb2\xbf" : "\xc6\xd5\xcd\xa8\xbe\xe3\xc0\xd6\xb2\xbf"
+				//% : "éä¿±ä¹éƒ¨");
+				: "\xb7\xc7\xbe\xe3\xc0\xd6\xb2\xbf");
 		prints("now id  :     %d\n", bs->nowid);
-		prints("¶ÁĞ´ÏŞÖÆ:     %s\n", (board->flag & BOARD_POST_FLAG) ? "ÏŞÖÆ·¢ÎÄ" :
-				(board->perm == 0) ? "Ã»ÓĞÏŞÖÆ" : "ÏŞÖÆÔÄ¶Á");
+		//% prints("è¯»å†™é™åˆ¶:     %s\n", (board->flag & BOARD_POST_FLAG) ? "é™åˆ¶å‘æ–‡" :
+		prints("\xb6\xc1\xd0\xb4\xcf\xde\xd6\xc6:     %s\n", (board->flag & BOARD_POST_FLAG) ? "\xcf\xde\xd6\xc6\xb7\xa2\xce\xc4" :
+				//% (board->perm == 0) ? "æ²¡æœ‰é™åˆ¶" : "é™åˆ¶é˜…è¯»");
+				(board->perm == 0) ? "\xc3\xbb\xd3\xd0\xcf\xde\xd6\xc6" : "\xcf\xde\xd6\xc6\xd4\xc4\xb6\xc1");
 	}
 	if (HAS_PERM(PERM_SPECIAL0) && board->perm) {
-		prints("È¨    ÏŞ:     ");
+		//% prints("æƒ    é™:     ");
+		prints("\xc8\xa8    \xcf\xde:     ");
 		char secu[] = "ltmprbBOCAMURS#@XLEast0123456789";
 		for (int i = 0; i < 32; i++) {
 			if (!(board->perm & (1 << i)))
@@ -683,10 +721,12 @@ static int show_board_info(board_t *board)
 			}
 
 		}
-		prints("\nÈ¨ ÏŞ Î»:     %s\n", secu);
+		//% prints("\næƒ é™ ä½:     %s\n", secu);
+		prints("\n\xc8\xa8 \xcf\xde \xce\xbb:     %s\n", secu);
 	}
 
-	prints("URL µØÖ·:     http://"BBSHOST"/bbs/doc?bid=%d\n", board->id);
+	//% prints("URL åœ°å€:     http://"BBSHOST"/bbs/doc?bid=%d\n", board->id);
+	prints("URL \xb5\xd8\xd6\xb7:     http://"BBSHOST"/bbs/doc?bid=%d\n", board->id);
 	pressanykey();
 	return FULLUPDATE;
 }
@@ -694,7 +734,8 @@ static int show_board_info(board_t *board)
 int show_hotspot(void)
 {
 	char ans[2];
-	getdata(t_lines - 1, 0, "ÄúÑ¡Ôñ? (1) ±¾ÈÕÊ®´ó  (2) ÏµÍ³ÈÈµã [1]",
+	//% getdata(t_lines - 1, 0, "æ‚¨é€‰æ‹©? (1) æœ¬æ—¥åå¤§  (2) ç³»ç»Ÿçƒ­ç‚¹ [1]",
+	getdata(t_lines - 1, 0, "\xc4\xfa\xd1\xa1\xd4\xf1? (1) \xb1\xbe\xc8\xd5\xca\xae\xb4\xf3  (2) \xcf\xb5\xcd\xb3\xc8\xc8\xb5\xe3 [1]",
 			ans, 2, DOECHO, YEA);
 	if (ans[0] == '2')
 		show_help("etc/hotspot");
@@ -813,27 +854,39 @@ static tui_list_title_t board_list_title(tui_list_t *p)
 {
 	board_list_t *l = p->data;
 
-	const char *sort = "·ÖÀà";
+	//% const char *sort = "åˆ†ç±»";
+	const char *sort = "\xb7\xd6\xc0\xe0";
 	char flag = currentuser.flags[0];
 	if (flag & BRDSORT_FLAG) {
-		sort = "×ÖÄ¸";
+		//% sort = "å­—æ¯";
+		sort = "\xd7\xd6\xc4\xb8";
 	} else if (flag & BRDSORT_ONLINE) {
-		sort = "ÔÚÏß";
+		//% sort = "åœ¨çº¿";
+		sort = "\xd4\xda\xcf\xdf";
 	} else if (flag & BRDSORT_UDEF) {
-		sort = "×Ô¶¨";
+		//% sort = "è‡ªå®š";
+		sort = "\xd7\xd4\xb6\xa8";
 	} else if (flag & BRDSORT_UPDATE) {
-		sort = "¸üĞÂ";
+		//% sort = "æ›´æ–°";
+		sort = "\xb8\xfc\xd0\xc2";
 	}
 
 	char buf[32];
-	snprintf(buf, sizeof(buf), "[ÌÖÂÛÇøÁĞ±í] [%s]", sort);
-	docmdtitle(buf, " \033[mÖ÷Ñ¡µ¥[\033[1;32m¡û\033[m,\033[1;32me\033[m] ÔÄ¶Á"
-			"[\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m] Ñ¡Ôñ[\033[1;32m¡ü\033[m,"
-			"\033[1;32m¡ı\033[m] ÁĞ³ö[\033[1;32my\033[m] ÅÅĞò[\033[1;32ms"
-			"\033[m] ËÑÑ°[\033[1;32m/\033[m] ÇĞ»»[\033[1;32mc\033[m] ÇóÖú"
+	//% snprintf(buf, sizeof(buf), "[è®¨è®ºåŒºåˆ—è¡¨] [%s]", sort);
+	snprintf(buf, sizeof(buf), "[\xcc\xd6\xc2\xdb\xc7\xf8\xc1\xd0\xb1\xed] [%s]", sort);
+	//% docmdtitle(buf, " \033[mä¸»é€‰å•[\033[1;32mâ†\033[m,\033[1;32me\033[m] é˜…è¯»"
+	docmdtitle(buf, " \033[m\xd6\xf7\xd1\xa1\xb5\xa5[\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xd4\xc4\xb6\xc1"
+			//% "[\033[1;32mâ†’\033[m,\033[1;32mRtn\033[m] é€‰æ‹©[\033[1;32mâ†‘\033[m,"
+			"[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m] \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,"
+			//% "\033[1;32mâ†“\033[m] åˆ—å‡º[\033[1;32my\033[m] æ’åº[\033[1;32ms"
+			"\033[1;32m\xa1\xfd\033[m] \xc1\xd0\xb3\xf6[\033[1;32my\033[m] \xc5\xc5\xd0\xf2[\033[1;32ms"
+			//% "\033[m] æœå¯»[\033[1;32m/\033[m] åˆ‡æ¢[\033[1;32mc\033[m] æ±‚åŠ©"
+			"\033[m] \xcb\xd1\xd1\xb0[\033[1;32m/\033[m] \xc7\xd0\xbb\xbb[\033[1;32mc\033[m] \xc7\xf3\xd6\xfa"
 			"[\033[1;32mh\033[m]\n");
-	prints("\033[1;44;37m ±àºÅ Î´ ÌÖÂÛÇøÃû³Æ        V  Àà±ğ  %-20s S °æ  Ö÷        "
-			"ÔÚÏß \033[m\n", "ÖĞ  ÎÄ  Ğğ  Êö");
+	//% prints("\033[1;44;37m ç¼–å· æœª è®¨è®ºåŒºåç§°        V  ç±»åˆ«  %-20s S ç‰ˆ  ä¸»        "
+	prints("\033[1;44;37m \xb1\xe0\xba\xc5 \xce\xb4 \xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6        V  \xc0\xe0\xb1\xf0  %-20s S \xb0\xe6  \xd6\xf7        "
+			//% "åœ¨çº¿ \033[m\n", "ä¸­  æ–‡  å™  è¿°");
+			"\xd4\xda\xcf\xdf \033[m\n", "\xd6\xd0  \xce\xc4  \xd0\xf0  \xca\xf6");
 }
 
 static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
@@ -917,7 +970,8 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 				return DONOTHING;
 			if (HAS_PERM(PERM_LOGIN)
 					&& !(board->flag & BOARD_NOZAP_FLAG)) {
-				if (l->zapbuf[board->id] && !askyn("È·ÊµÒªÒş²ØÂğ?", NA, YEA))
+				//% if (l->zapbuf[board->id] && !askyn("ç¡®å®è¦éšè—å—?", NA, YEA))
+				if (l->zapbuf[board->id] && !askyn("\xc8\xb7\xca\xb5\xd2\xaa\xd2\xfe\xb2\xd8\xc2\xf0?", NA, YEA))
 					return MINIUPDATE;
 				l->zapbuf[board->id] = !l->zapbuf[board->id];
 			}

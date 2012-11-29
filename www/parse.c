@@ -24,11 +24,11 @@ typedef struct ansi_color_t {
 	char bg;
 } ansi_color_t;
 
-/** UTF-8 "ƒÍ" */
+/** UTF-8 "Âπ¥" */
 #define YEAR_STRING  "\xe5\xb9\xb4"
-/** UTF-8 "‘¬" */
+/** UTF-8 "Êúà" */
 #define MONTH_STRING  "\xe6\x9c\x88"
-/** UTF-8 "»’"*/
+/** UTF-8 "Êó•"*/
 #define DAY_STRING  "\xe6\x97\xa5"
 
 #define DATETIME_STRING  \
@@ -193,9 +193,9 @@ static void _print_ansi_text(const char *begin, const char *end, ansi_color_t *a
 		printf("</c>");
 }
 
-/** UTF-8 "∑¢–≈»À: " */
+/** UTF-8 "Âèë‰ø°‰∫∫: " */
 #define SENDER_STRING  "\xe5\x8f\x91\xe4\xbf\xa1\xe4\xba\xba: "
-/** UTF-8 "±Í  Ã‚: " */
+/** UTF-8 "Ê†á  È¢ò: " */
 #define TOPIC_STRING  "\xe6\xa0\x87  \xe9\xa2\x98: "
 
 static const char *_print_header(const char *begin, size_t size)
@@ -300,7 +300,7 @@ static void _print_paragraph(const char *begin, const char *end, int option)
 	}
 }
 
-/** UTF-8 "°æ ‘⁄ " */
+/** UTF-8 "„Äê Âú® " */
 #define QUOTE_STRING "\xe3\x80\x90\x20\xe5\x9c\xa8\x20"
 
 static bool _is_quote(const char *begin, const char *end)

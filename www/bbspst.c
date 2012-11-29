@@ -24,7 +24,8 @@ static void get_post_body(const char **begin, const char **end)
 		--ptr;
 	if (ptr < *begin)
 		return;
-	if (!strncmp(ptr + 1, "\033[m\033[1;36m¡ù ĞŞ¸Ä", 17)) {
+	//% if (!strncmp(ptr + 1, "\033[m\033[1;36mâ€» ä¿®æ”¹", 17)) {
+	if (!strncmp(ptr + 1, "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4", 17)) {
 		--ptr;
 		while (ptr >= *begin && *ptr != '\n')
 			--ptr;
@@ -117,7 +118,7 @@ int bbsedit_main(void)
 	return do_bbspst(true);
 }
 
-/** UTF-8 "[×ªÔØ]" */
+/** UTF-8 "[è½¬è½½]" */
 #define CP_MARK_STRING  "[\xe8\xbd\xac\xe8\xbd\xbd]"
 
 int bbsccc_main(void)
@@ -231,7 +232,8 @@ int bbsfwd_main(void)
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		GBK_BUFFER(title2, POST_TITLE_CCHARS);
 		convert_u2g(info.p.utf8_title, gbk_title);
-		snprintf(gbk_title2, sizeof(gbk_title2), "[×ª¼Ä]%s", gbk_title);
+		//% snprintf(gbk_title2, sizeof(gbk_title2), "[è½¬å¯„]%s", gbk_title);
+		snprintf(gbk_title2, sizeof(gbk_title2), "[\xd7\xaa\xbc\xc4]%s", gbk_title);
 
 		char file[HOMELEN];
 		if (dump_content_to_gbk_file(info.content, info.length,
@@ -243,8 +245,10 @@ int bbsfwd_main(void)
 			if (ret)
 				return ret;
 			http_header();
-			printf("</head><body><p>ÎÄÕÂ×ª¼Ä³É¹¦</p>"
-					"<a href='javascript:history.go(-2)'>·µ»Ø</a>"
+			//% printf("</head><body><p>æ–‡ç« è½¬å¯„æˆåŠŸ</p>"
+			printf("</head><body><p>\xce\xc4\xd5\xc2\xd7\xaa\xbc\xc4\xb3\xc9\xb9\xa6</p>"
+					//% "<a href='javascript:history.go(-2)'>è¿”å›</a>"
+					"<a href='javascript:history.go(-2)'>\xb7\xb5\xbb\xd8</a>"
 					"</body></html>");
 		}
 	}

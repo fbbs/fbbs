@@ -28,9 +28,12 @@ static void empty_movie(int x)
 	sprintf(genbuf, "Empty Movie!!! (error = %d)", x);
 	report(genbuf, currentuser.userid); 
 
-	strcpy(movieshm->data[2], "[K      ** ÉĞÎ´Éè¶¨»î¶¯¿´°å ** ");
-	strcpy(movieshm->data[3], "[K         ÇëÏê¼û°²×°ËµÃ÷Êé Firebird-2000 ");
-	strcpy(movieshm->data[4], "[K         Éè¶¨ notepad °æ"); 
+	//% strcpy(movieshm->data[2], "[K      ** å°šæœªè®¾å®šæ´»åŠ¨çœ‹æ¿ ** ");
+	strcpy(movieshm->data[2], "[K      ** \xc9\xd0\xce\xb4\xc9\xe8\xb6\xa8\xbb\xee\xb6\xaf\xbf\xb4\xb0\xe5 ** ");
+	//% strcpy(movieshm->data[3], "[K         è¯·è¯¦è§å®‰è£…è¯´æ˜ä¹¦ Firebird-2000 ");
+	strcpy(movieshm->data[3], "[K         \xc7\xeb\xcf\xea\xbc\xfb\xb0\xb2\xd7\xb0\xcb\xb5\xc3\xf7\xca\xe9 Firebird-2000 ");
+	//% strcpy(movieshm->data[4], "[K         è®¾å®š notepad ç‰ˆ"); 
+	strcpy(movieshm->data[4], "[K         \xc9\xe8\xb6\xa8 notepad \xb0\xe6"); 
 
 	movieshm->movielines = MAXMOVIE;
 	movieshm->movieitems = 1;
@@ -46,7 +49,8 @@ void ActiveBoard_Init( void )
 	char    buf[1024], buf2[1024];
 	struct stat st;
 	int     max = 0, i = 0, j = 0, x, y = 0;
-	int     flag; /* flag = 1 ¼´Îª¹ıÂÇµô "--\n" ÒÔááÖ®ÈÎºÎÄÚÈİ */ 
+	//% int     flag; /* flag = 1 å³ä¸ºè¿‡è™‘æ‰ "--\n" ä»¥å¾Œä¹‹ä»»ä½•å†…å®¹ */ 
+	int     flag; /* flag = 1 \xbc\xb4\xce\xaa\xb9\xfd\xc2\xc7\xb5\xf4 "--\n" \xd2\xd4\xe1\xe1\xd6\xae\xc8\xce\xba\xce\xc4\xda\xc8\xdd */ 
 
 	if( movieshm == NULL )
 		movieshm = (void *) attach_shm("ACBOARD_SHMKEY", 4123, sizeof(*movieshm));
@@ -77,7 +81,8 @@ void ActiveBoard_Init( void )
 
 		if (fh.title[0] == '$') flag = (int) (fh.title[1] - '0');
 		else flag = 4;
-		for (x = 0; x < flag; x++)  // Ìø¹ıÍ·²¿ĞÅÏ¢
+		//% for (x = 0; x < flag; x++)  // è·³è¿‡å¤´éƒ¨ä¿¡æ¯
+		for (x = 0; x < flag; x++)  // \xcc\xf8\xb9\xfd\xcd\xb7\xb2\xbf\xd0\xc5\xcf\xa2
 			fgets(buf, 1024, fp); 
 
 		flag = 0;
@@ -110,7 +115,8 @@ void ActiveBoard_Init( void )
 	movieshm->movieitems = y;
 	movieshm->update = time(0); 
 
-	sprintf(buf, "»î¶¯¿´°å¸üĞÂ, ¹² %d ĞĞ, %d ²¿·İ.", j, y);
+	//% sprintf(buf, "æ´»åŠ¨çœ‹æ¿æ›´æ–°, å…± %d è¡Œ, %d éƒ¨ä»½.", j, y);
+	sprintf(buf, "\xbb\xee\xb6\xaf\xbf\xb4\xb0\xe5\xb8\xfc\xd0\xc2, \xb9\xb2 %d \xd0\xd0, %d \xb2\xbf\xb7\xdd.", j, y);
 	report(buf, currentuser.userid); 
 	return ;
 }
@@ -121,7 +127,8 @@ int setcalltime(void)
 	int     ttt;
 	move(1, 0);
 	clrtoeol();
-	getdata(1, 0, "¼¸·ÖÖÓºóÒªÏµÍ³ÌáĞÑÄú: ", ans, 3, DOECHO, YEA);
+	//% getdata(1, 0, "å‡ åˆ†é’Ÿåè¦ç³»ç»Ÿæé†’æ‚¨: ", ans, 3, DOECHO, YEA);
+	getdata(1, 0, "\xbc\xb8\xb7\xd6\xd6\xd3\xba\xf3\xd2\xaa\xcf\xb5\xcd\xb3\xcc\xe1\xd0\xd1\xc4\xfa: ", ans, 3, DOECHO, YEA);
 	ttt = atoi(ans);
 	if (ttt > 0)
 		calltime = time(0) + ttt * 60;
@@ -248,12 +255,17 @@ void printacbar(void)
 	getyx(&y, &x);
 	move(2,0);
 
-	prints(" \033[1;36m©°¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È"
-			"\033[37m»î  ¶¯  ¿´  °å\033[36m"
-			"©À¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©´ \033[m\n");
+	//% prints(" \033[1;36mâ”Œâ€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤"
+	prints(" \033[1;36m\xa9\xb0\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa9\xc8"
+			//% "\033[37mæ´»  åŠ¨  çœ‹  æ¿\033[36m"
+			"\033[37m\xbb\xee  \xb6\xaf  \xbf\xb4  \xb0\xe5\033[36m"
+			//% "â”œâ€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â” \033[m\n");
+			"\xa9\xc0\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa9\xb4 \033[m\n");
 	move(2 + MAXMOVIE, 0);
-	prints(" \033[1;36m©¸¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª"
-			"¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©¼\033[m\n");
+	//% prints(" \033[1;36mâ””â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”"
+	prints(" \033[1;36m\xa9\xb8\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa"
+			//% "â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”˜\033[m\n");
+			"\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa9\xbc\033[m\n");
 	move (y,x);
 #endif
 	refresh();
@@ -274,7 +286,8 @@ int check_calltime(void)
 		bell();
 		move(line, 0);
 		clrtoeol();
-		prints("[1;44;32mÏµÍ³Í¨¸æ: [37m%-65s[m", "ÏµÍ³ÄÖÖÓ Áå¡«¡«¡«¡«¡«¡«");
+		//% prints("[1;44;32mç³»ç»Ÿé€šå‘Š: [37m%-65s[m", "ç³»ç»Ÿé—¹é’Ÿ é“ƒï½ï½ï½ï½ï½ï½");
+		prints("[1;44;32m\xcf\xb5\xcd\xb3\xcd\xa8\xb8\xe6: [37m%-65s[m", "\xcf\xb5\xcd\xb3\xc4\xd6\xd6\xd3 \xc1\xe5\xa1\xab\xa1\xab\xa1\xab\xa1\xab\xa1\xab\xa1\xab");
 		igetkey();
 		move(line, 0);
 		clrtoeol();
@@ -613,8 +626,10 @@ static int more_open_file(const char *file, more_file_t *more)
 
 static int more_prompt_file(more_file_t *more)
 {
-	prints("\033[0;1;44;32mÏÂÃæ»¹ÓĞà¸(%d%%) µÚ(%d-%d)ĞĞ \033[33m|"
-			" l ÉÏÆª | b e ¿ªÍ·Ä©Î² | g Ìø×ª | h °ïÖú\033[K\033[m",
+	//% prints("\033[0;1;44;32mä¸‹é¢è¿˜æœ‰å–”(%d%%) ç¬¬(%d-%d)è¡Œ \033[33m|"
+	prints("\033[0;1;44;32m\xcf\xc2\xc3\xe6\xbb\xb9\xd3\xd0\xe0\xb8(%d%%) \xb5\xda(%d-%d)\xd0\xd0 \033[33m|"
+			//% " l ä¸Šç¯‡ | b e å¼€å¤´æœ«å°¾ | g è·³è½¬ | h å¸®åŠ©\033[K\033[m",
+			" l \xc9\xcf\xc6\xaa | b e \xbf\xaa\xcd\xb7\xc4\xa9\xce\xb2 | g \xcc\xf8\xd7\xaa | h \xb0\xef\xd6\xfa\033[K\033[m",
 			(more->end - more->buf) * 100 / more->size,
 			more->line - t_lines + 2, more->line);
 	return 0;
@@ -622,10 +637,13 @@ static int more_prompt_file(more_file_t *more)
 
 static int is_emphasize(const char *str)
 {
-	return (!strncmp(str, "¡¾ ÔÚ", sizeof("¡¾ ÔÚ") - 1)
+	//% return (!strncmp(str, "ã€ åœ¨", sizeof("ã€ åœ¨") - 1)
+	return (!strncmp(str, "\xa1\xbe \xd4\xda", sizeof("\xa1\xbe \xd4\xda") - 1)
 			|| !strncmp(str, "==>", 3)
-			|| !strncmp(str, "¡õ ÒıÓÃ", sizeof("¡õ ÒıÓÃ") - 1)
-			|| !strncmp(str, "¡ù ÒıÊö", sizeof("¡ù ÒıÊö") - 1));
+			//% || !strncmp(str, "â–¡ å¼•ç”¨", sizeof("â–¡ å¼•ç”¨") - 1)
+			|| !strncmp(str, "\xa1\xf5 \xd2\xfd\xd3\xc3", sizeof("\xa1\xf5 \xd2\xfd\xd3\xc3") - 1)
+			//% || !strncmp(str, "â€» å¼•è¿°", sizeof("â€» å¼•è¿°") - 1));
+			|| !strncmp(str, "\xa1\xf9 \xd2\xfd\xca\xf6", sizeof("\xa1\xf9 \xd2\xfd\xca\xf6") - 1));
 }
 
 static int is_quotation(const char *str)
@@ -750,7 +768,8 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				more_seek(more, more->total - (t_lines - 1) + i);
 				break;
 			case 'G':
-				getdata(t_lines - 1, 0, "Ìø×ªµ½µÄĞĞºÅ:", linebuf,
+				//% getdata(t_lines - 1, 0, "è·³è½¬åˆ°çš„è¡Œå·:", linebuf,
+				getdata(t_lines - 1, 0, "\xcc\xf8\xd7\xaa\xb5\xbd\xb5\xc4\xd0\xd0\xba\xc5:", linebuf,
 						sizeof(linebuf), true, true);
 				new_row = strtol(linebuf, NULL, 10) - 1;
 				if (new_row < 0)
@@ -852,8 +871,10 @@ static int more_open_msg(const char *file, more_file_t *more)
 
 static int more_prompt_msg(more_file_t *more)
 {
-	prints("\033[0;1;44;32mÑ¶Ï¢ä¯ÀÀÆ÷ (%d%%) µÚ(%d-%d)ĞĞ \033[33m| "
-			"c Çå³ı | m ¼Ä»ØĞÅÏä | b e ¿ªÍ·Ä©Î² | g Ìø×ª\033[K\033[m",
+	//% prints("\033[0;1;44;32mè®¯æ¯æµè§ˆå™¨ (%d%%) ç¬¬(%d-%d)è¡Œ \033[33m| "
+	prints("\033[0;1;44;32m\xd1\xb6\xcf\xa2\xe4\xaf\xc0\xc0\xc6\xf7 (%d%%) \xb5\xda(%d-%d)\xd0\xd0 \033[33m| "
+			//% "c æ¸…é™¤ | m å¯„å›ä¿¡ç®± | b e å¼€å¤´æœ«å°¾ | g è·³è½¬\033[K\033[m",
+			"c \xc7\xe5\xb3\xfd | m \xbc\xc4\xbb\xd8\xd0\xc5\xcf\xe4 | b e \xbf\xaa\xcd\xb7\xc4\xa9\xce\xb2 | g \xcc\xf8\xd7\xaa\033[K\033[m",
 			(more->end - more->buf) * 100 / more->size,
 			more->line - t_lines + 2, more->line);
 	return 0;
@@ -863,11 +884,13 @@ static int more_handle_msg(more_file_t *more, int ch)
 {
 	switch (ch) {
 		case 'C':
-			if (askyn("È·¶¨ÒªÇå³ıÂğ£¿", NA, YEA))
+			//% if (askyn("ç¡®å®šè¦æ¸…é™¤å—ï¼Ÿ", NA, YEA))
+			if (askyn("\xc8\xb7\xb6\xa8\xd2\xaa\xc7\xe5\xb3\xfd\xc2\xf0\xa3\xbf", NA, YEA))
 				return ch;
 			break;
 		case 'M':
-			if (askyn("È·¶¨Òª¼Ä»ØÂğ£¿", NA, YEA))
+			//% if (askyn("ç¡®å®šè¦å¯„å›å—ï¼Ÿ", NA, YEA))
+			if (askyn("\xc8\xb7\xb6\xa8\xd2\xaa\xbc\xc4\xbb\xd8\xc2\xf0\xa3\xbf", NA, YEA))
 				return ch;
 			break;
 	}
@@ -889,7 +912,8 @@ int msg_more(void)
 	int ch;
 	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_msg);
 	if (more == NULL) {
-		presskeyfor("Ã»ÓĞÈÎºÎµÄÑ¶Ï¢´æÔÚ...", t_lines - 1);
+		//% presskeyfor("æ²¡æœ‰ä»»ä½•çš„è®¯æ¯å­˜åœ¨...", t_lines - 1);
+		presskeyfor("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xb5\xc4\xd1\xb6\xcf\xa2\xb4\xe6\xd4\xda...", t_lines - 1);
 	} else {
 		clear();
 		ch = more_main(more, false, 0, 0, false, more_prompt_msg,
@@ -897,8 +921,10 @@ int msg_more(void)
 		if (!ch) {
 			move(t_lines - 1, 0);
 			clrtoeol();
-			prints("\033[0;1;44;31m[Ñ¶Ï¢ä¯ÀÀÆ÷]  \033[33mc Çå³ı | "
-					"m ¼Ä»ØĞÅÏä\033[K\033[m");
+			//% prints("\033[0;1;44;31m[è®¯æ¯æµè§ˆå™¨]  \033[33mc æ¸…é™¤ | "
+			prints("\033[0;1;44;31m[\xd1\xb6\xcf\xa2\xe4\xaf\xc0\xc0\xc6\xf7]  \033[33mc \xc7\xe5\xb3\xfd | "
+					//% "m å¯„å›ä¿¡ç®±\033[K\033[m");
+					"m \xbc\xc4\xbb\xd8\xd0\xc5\xcf\xe4\033[K\033[m");
 			ch = toupper(igetkey());
 		}
 		switch (ch) {
@@ -906,7 +932,8 @@ int msg_more(void)
 				unlink(file);
 				break;
 			case 'M':
-				snprintf(title, sizeof(title), "[%s] ËùÓĞÑ¶Ï¢±¸·İ",
+				//% snprintf(title, sizeof(title), "[%s] æ‰€æœ‰è®¯æ¯å¤‡ä»½",
+				snprintf(title, sizeof(title), "[%s] \xcb\xf9\xd3\xd0\xd1\xb6\xcf\xa2\xb1\xb8\xb7\xdd",
 						getdatestring(time(NULL), DATE_ZH));
 				mail_file(file, currentuser.userid, title);
 				unlink(file);

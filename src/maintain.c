@@ -13,31 +13,41 @@ char    cexplain[STRLEN];
 char    lookgrp[30];
 FILE   *cleanlog;
 
-//±£´æÓÃ»§½üÆÚĞÅÏ¢
+//ä¿å­˜ç”¨æˆ·è¿‘æœŸä¿¡æ¯
 static int getuinfo(FILE *fn)
 {
 	int num;
 	char buf[40];
-	fprintf(fn, "\n\nËûµÄ´úºÅ     : %s\n", currentuser.userid);
-	fprintf(fn, "ËûµÄêÇ³Æ     : %s\n", currentuser.username);
-	fprintf(fn, "µç×ÓÓÊ¼şĞÅÏä : %s\n", currentuser.email);
-	fprintf(fn, "ÕÊºÅ½¨Á¢ÈÕÆÚ : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
-	fprintf(fn, "×î½ü¹âÁÙÈÕÆÚ : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
-	fprintf(fn, "×î½ü¹âÁÙ»úÆ÷ : %s\n", currentuser.lasthost);
-	fprintf(fn, "ÉÏÕ¾´ÎÊı     : %d ´Î\n", currentuser.numlogins);
-	fprintf(fn, "ÎÄÕÂÊıÄ¿     : %d\n", currentuser.numposts);
-	fprintf(fn, "ÉÏÕ¾×ÜÊ±Êı   : %d Ğ¡Ê± %d ·ÖÖÓ\n", currentuser.stay / 3600,
+	//% fprintf(fn, "\n\nä»–çš„ä»£å·     : %s\n", currentuser.userid);
+	fprintf(fn, "\n\n\xcb\xfb\xb5\xc4\xb4\xfa\xba\xc5     : %s\n", currentuser.userid);
+	//% fprintf(fn, "ä»–çš„æ˜µç§°     : %s\n", currentuser.username);
+	fprintf(fn, "\xcb\xfb\xb5\xc4\xea\xc7\xb3\xc6     : %s\n", currentuser.username);
+	//% fprintf(fn, "ç”µå­é‚®ä»¶ä¿¡ç®± : %s\n", currentuser.email);
+	fprintf(fn, "\xb5\xe7\xd7\xd3\xd3\xca\xbc\xfe\xd0\xc5\xcf\xe4 : %s\n", currentuser.email);
+	//% fprintf(fn, "å¸å·å»ºç«‹æ—¥æœŸ : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
+	fprintf(fn, "\xd5\xca\xba\xc5\xbd\xa8\xc1\xa2\xc8\xd5\xc6\xda : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
+	//% fprintf(fn, "æœ€è¿‘å…‰ä¸´æ—¥æœŸ : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
+	fprintf(fn, "\xd7\xee\xbd\xfc\xb9\xe2\xc1\xd9\xc8\xd5\xc6\xda : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
+	//% fprintf(fn, "æœ€è¿‘å…‰ä¸´æœºå™¨ : %s\n", currentuser.lasthost);
+	fprintf(fn, "\xd7\xee\xbd\xfc\xb9\xe2\xc1\xd9\xbb\xfa\xc6\xf7 : %s\n", currentuser.lasthost);
+	//% fprintf(fn, "ä¸Šç«™æ¬¡æ•°     : %d æ¬¡\n", currentuser.numlogins);
+	fprintf(fn, "\xc9\xcf\xd5\xbe\xb4\xce\xca\xfd     : %d \xb4\xce\n", currentuser.numlogins);
+	//% fprintf(fn, "æ–‡ç« æ•°ç›®     : %d\n", currentuser.numposts);
+	fprintf(fn, "\xce\xc4\xd5\xc2\xca\xfd\xc4\xbf     : %d\n", currentuser.numposts);
+	//% fprintf(fn, "ä¸Šç«™æ€»æ—¶æ•°   : %d å°æ—¶ %d åˆ†é’Ÿ\n", currentuser.stay / 3600,
+	fprintf(fn, "\xc9\xcf\xd5\xbe\xd7\xdc\xca\xb1\xca\xfd   : %d \xd0\xa1\xca\xb1 %d \xb7\xd6\xd6\xd3\n", currentuser.stay / 3600,
 			(currentuser.stay / 60) % 60);
 	strcpy(buf, "ltmprbBOCAMURS#@XLEast0123456789");
 	for (num = 0; num < 30; num++)
 		if (!(currentuser.userlevel & (1 << num)))
 			buf[num] = '-';
 	buf[num] = '\0';
-	fprintf(fn, "Ê¹ÓÃÕßÈ¨ÏŞ   : %s\n\n", buf);
+	//% fprintf(fn, "ä½¿ç”¨è€…æƒé™   : %s\n\n", buf);
+	fprintf(fn, "\xca\xb9\xd3\xc3\xd5\xdf\xc8\xa8\xcf\xde   : %s\n\n", buf);
 	return 0;
 }
 
-//	ÏµÍ³°²È«¼ÇÂ¼,×Ô¶¯·¢ËÍµ½syssecurity°æ
+//	ç³»ç»Ÿå®‰å…¨è®°å½•,è‡ªåŠ¨å‘é€åˆ°syssecurityç‰ˆ
 //  mode == 0		syssecurity
 //	mode == 1		boardsecurity
 //  mode == 2		bmsecurity
@@ -51,9 +61,11 @@ void securityreport(char *str, int save, int mode)
 	report(str, currentuser.userid);
 	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, session.pid);
 	if ((se = fopen(fname, "w")) != NULL) {
-		fprintf(se, "ÏµÍ³°²È«¼ÇÂ¼\n[1mÔ­Òò£º%s[m\n", str);
+		//% fprintf(se, "ç³»ç»Ÿå®‰å…¨è®°å½•\n[1måŸå› ï¼š%s[m\n", str);
+		fprintf(se, "\xcf\xb5\xcd\xb3\xb0\xb2\xc8\xab\xbc\xc7\xc2\xbc\n[1m\xd4\xad\xd2\xf2\xa3\xba%s[m\n", str);
 		if (save){
-			fprintf(se, "ÒÔÏÂÊÇ¸öÈË×ÊÁÏ:");
+			//% fprintf(se, "ä»¥ä¸‹æ˜¯ä¸ªäººèµ„æ–™:");
+			fprintf(se, "\xd2\xd4\xcf\xc2\xca\xc7\xb8\xf6\xc8\xcb\xd7\xca\xc1\xcf:");
 			getuinfo(se);
 		}
 		fclose(se);
@@ -73,7 +85,7 @@ void securityreport(char *str, int save, int mode)
 	}
 }
 
-//	ºË¶ÔÏµÍ³ÃÜÂë
+//	æ ¸å¯¹ç³»ç»Ÿå¯†ç 
 int	check_systempasswd(void)
 {
 	FILE*	pass;
@@ -83,13 +95,16 @@ int	check_systempasswd(void)
 		fgets(prepass, STRLEN, pass);
 		fclose(pass);
 		prepass[strlen(prepass) - 1] = '\0';
-		getdata(1, 0, "ÇëÊäÈëÏµÍ³ÃÜÂë: ", passbuf, 19, NOECHO, YEA);
+		//% getdata(1, 0, "è¯·è¾“å…¥ç³»ç»Ÿå¯†ç : ", passbuf, 19, NOECHO, YEA);
+		getdata(1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb: ", passbuf, 19, NOECHO, YEA);
 		if (passbuf[0] == '\0' || passbuf[0] == '\n')
 			return NA;
 		if (!passwd_match(prepass, passbuf)) {
 			move(2, 0);
-			prints("´íÎóµÄÏµÍ³ÃÜÂë...");
-			securityreport("ÏµÍ³ÃÜÂëÊäÈë´íÎó...", 0, 0);
+			//% prints("é”™è¯¯çš„ç³»ç»Ÿå¯†ç ...");
+			prints("\xb4\xed\xce\xf3\xb5\xc4\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb...");
+			//% securityreport("ç³»ç»Ÿå¯†ç è¾“å…¥é”™è¯¯...", 0, 0);
+			securityreport("\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb\xca\xe4\xc8\xeb\xb4\xed\xce\xf3...", 0, 0);
 			pressanykey();
 			return NA;
 		}
@@ -97,10 +112,10 @@ int	check_systempasswd(void)
 	return YEA;
 }
 
-//	×Ô¶¯·¢ËÍµ½°æÃæ
-//			title		±êÌâ
-//			str			ÄÚÈİ
-//			uname		·¢ËÍµ½µÄÓÃ»§Ãû,ÎªnullÔò²»·¢ËÍ.
+//	è‡ªåŠ¨å‘é€åˆ°ç‰ˆé¢
+//			title		æ ‡é¢˜
+//			str			å†…å®¹
+//			uname		å‘é€åˆ°çš„ç”¨æˆ·å,ä¸ºnullåˆ™ä¸å‘é€.
 void autoreport(const char *board, const char *title, const char *str,
 		const char *uname, int mode)
 {
@@ -113,7 +128,7 @@ void autoreport(const char *board, const char *title, const char *str,
 		Poststring(str, board, title, mode);
 }
 
-// ÇåÆÁ,²¢ÔÚµÚÒ»ĞĞÏÔÊ¾title
+// æ¸…å±,å¹¶åœ¨ç¬¬ä¸€è¡Œæ˜¾ç¤ºtitle
 void	stand_title(char   *title)
 {
 	clear();

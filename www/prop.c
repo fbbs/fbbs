@@ -70,8 +70,10 @@ static int show_title_detail(int record)
 	xml_header(NULL);
 	printf("<bbspropdetail>");
 	print_session();
-	printf("<prop>×Ô¶¨ÒåÉí·Ý%s: %s</prop></bbspropdetail>",
-			db_get_bool(res, 0, 1) ? "" : "[ÉÐÔÚÉóºË]", gbk_title);
+	//% printf("<prop>è‡ªå®šä¹‰èº«ä»½%s: %s</prop></bbspropdetail>",
+	printf("<prop>\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd%s: %s</prop></bbspropdetail>",
+			//% db_get_bool(res, 0, 1) ? "" : "[å°šåœ¨å®¡æ ¸]", gbk_title);
+			db_get_bool(res, 0, 1) ? "" : "[\xc9\xd0\xd4\xda\xc9\xf3\xba\xcb]", gbk_title);
 
 	db_clear(res);
 	return 0;
@@ -128,7 +130,8 @@ static int buy_title(int item, const char *title)
 		}
 	} else {
 		printf("<inputs item='%d'>"
-				"<label for='title'>ÇëÊäÈë×Ô¶¨ÒåÉí·Ý</label>"
+				//% "<label for='title'>è¯·è¾“å…¥è‡ªå®šä¹‰èº«ä»½</label>"
+				"<label for='title'>\xc7\xeb\xca\xe4\xc8\xeb\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd</label>"
 				"<input name='title' type='text' width='%d'></input>"
 				"</inputs>", item, TITLE_CCHARS);
 	}

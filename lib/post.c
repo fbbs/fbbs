@@ -117,7 +117,8 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	if ((fptr = get_fname(dir, pfx, fname, sizeof(fname))) == NULL)
 		return NULL;
 
-	fprintf(fptr, "∑¢–≈»À: %s (%s), –≈«¯: %s\n±Í  Ã‚: %s\n∑¢–≈’æ: %s (%s)\n\n",
+	//% "Âèë‰ø°‰∫∫: %s (%s), ‰ø°Âå∫: %s\nÊ†á  È¢ò: %s\nÂèë‰ø°Á´ô: %s (%s)\n\n"
+	fprintf(fptr, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n\xb1\xea  \xcc\xe2: %s\n\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)\n\n",
 			uname, nick, pr->board->name, pr->title, BBSNAME,
 			getdatestring(time(NULL), DATE_ZH));
 
@@ -138,9 +139,12 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 		if (buf[0] != '\n')
 			fputs("\n", fptr);
 
-		fprintf(fptr, "\033[m\033[1;%2dm°˘ %s:°§"BBSNAME" "BBSHOST
-			"°§HTTP [FROM: %s]\033[m\n", 31 + rand() % 7,
-			pr->crosspost ? "◊™‘ÿ" : "¿¥‘¥", ip);
+		//% "\033[m\033[1;%2dm‚Äª %s:¬∑"
+		fprintf(fptr, "\033[m\033[1;%2dm\xa1\xf9 %s:\xa1\xa4"BBSNAME" "BBSHOST
+			//% "¬∑HTTP [FROM: %s]\033[m\n"
+			"\xa1\xa4HTTP [FROM: %s]\033[m\n", 31 + rand() % 7,
+			//% "ËΩ¨ËΩΩ" "Êù•Ê∫ê"
+			pr->crosspost ? "\xd7\xaa\xd4\xd8" : "\xc0\xb4\xd4\xb4", ip);
 	}
 
 	fclose(fptr);
@@ -366,15 +370,20 @@ static void quote_author(const char *begin, const char *lend, bool mail,
 	}
 	++ptr;
 
-	PRINT_CONST_STRING("\n°æ ‘⁄ ");
+	//% "\n„Äê Âú® "
+	PRINT_CONST_STRING("\n\xa1\xbe \xd4\xda ");
 	if (ptr > quser)
 		(*filter)(quser, ptr - quser, fp);
-	PRINT_CONST_STRING(" µƒ");
+	//% " ÁöÑ"
+	PRINT_CONST_STRING(" \xb5\xc4");
 	if (mail)
-		PRINT_CONST_STRING("¿¥–≈");
+		//% "Êù•‰ø°"
+		PRINT_CONST_STRING("\xc0\xb4\xd0\xc5");
 	else
-		PRINT_CONST_STRING("¥Û◊˜");
-	PRINT_CONST_STRING("÷–Ã·µΩ: °ø\n");
+		//% "Â§ß‰Ωú"
+		PRINT_CONST_STRING("\xb4\xf3\xd7\xf7");
+	//% "‰∏≠ÊèêÂà∞: „Äë\n"
+	PRINT_CONST_STRING("\xd6\xd0\xcc\xe1\xb5\xbd: \xa1\xbf\n");
 }
 
 /**
@@ -430,14 +439,17 @@ void quote_string(const char *str, size_t size, const char *output, int mode,
 				continue;
 			}
 
-			if (mode == QUOTE_SOURCE && lend - ptr > 10 + sizeof("°˘ ¿¥‘¥:°§")
-					&& !memcmp(ptr + 10, "°˘ ¿¥‘¥:°§", sizeof("°˘ ¿¥‘¥:°§"))) {
+			//% "‚Äª Êù•Ê∫ê:¬∑"
+			if (mode == QUOTE_SOURCE && lend - ptr > 10 + sizeof("\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4")
+					//% "‚Äª Êù•Ê∫ê:¬∑" "‚Äª Êù•Ê∫ê:¬∑"
+					&& !memcmp(ptr + 10, "\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4", sizeof("\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4"))) {
 				break;
 			}
 
 			if (mode == QUOTE_AUTO) {
 				if (++lines > MAX_QUOTED_LINES) {
-					PRINT_CONST_STRING(": .................£®“‘œ¬ °¬‘£©");
+					//% ": .................Ôºà‰ª•‰∏ãÁúÅÁï•Ôºâ"
+					PRINT_CONST_STRING(": .................\xa3\xa8\xd2\xd4\xcf\xc2\xca\xa1\xc2\xd4\xa3\xa9");
 					break;
 				}
 			}
@@ -844,7 +856,7 @@ static char *replace_content_title(const char *content, size_t len,
 	const char *l1_end = get_line_end(content, end);
 	const char *l2_end = get_line_end(l1_end, end);
 
-	// sizeof("±Í  Ã‚: ") in UTF-8 is 10
+	// sizeof("Ê†á  È¢ò: ") in UTF-8 is 10
 	const char *begin = l1_end + 10;
 	int orig_title_len = l2_end - begin - 1; // exclude '\n'
 	if (orig_title_len < 0)

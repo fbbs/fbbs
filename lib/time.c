@@ -23,7 +23,8 @@ char *getdatestring(time_t time, enum DATE_FORMAT mode)
 {
 	static char str[32] = {'\0'};
 	struct tm *t;
-	char weeknum[7][3] = {"Ìì", "Ò»", "¶ş", "Èı", "ËÄ", "Îå", "Áù"};
+	//% "å¤©" "ä¸€" "äºŒ" "ä¸‰" "å››" "äº”" "å…­"
+	char weeknum[7][3] = {"\xcc\xec", "\xd2\xbb", "\xb6\xfe", "\xc8\xfd", "\xcb\xc4", "\xce\xe5", "\xc1\xf9"};
 	char engweek[7][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 	// No multi-thread
@@ -31,7 +32,8 @@ char *getdatestring(time_t time, enum DATE_FORMAT mode)
 	switch (mode) {
 		case DATE_ZH:
 			snprintf(str, sizeof(str),
-					"%4dÄê%02dÔÂ%02dÈÕ%02d:%02d:%02d ĞÇÆÚ%2s",
+					//% "%4då¹´%02dæœˆ%02dæ—¥%02d:%02d:%02d æ˜ŸæœŸ%2s",
+					"%4d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5%02d:%02d:%02d \xd0\xc7\xc6\xda%2s",
 					t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
 					t->tm_hour, t->tm_min, t->tm_sec, weeknum[t->tm_wday]);
 			break;

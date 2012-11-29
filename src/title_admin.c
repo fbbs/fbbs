@@ -48,24 +48,33 @@ static tui_list_title_t title_list_title(tui_list_t *p)
 	const char *t;
 	switch (l->type) {
 		case TITLE_LIST_PENDING:
-			t = "´ıÅú×¼";
+			//% t = "å¾…æ‰¹å‡†";
+			t = "\xb4\xfd\xc5\xfa\xd7\xbc";
 			break;
 		case TITLE_LIST_APPROVED:
-			t = "ÒÑÅú×¼";
+			//% t = "å·²æ‰¹å‡†";
+			t = "\xd2\xd1\xc5\xfa\xd7\xbc";
 			break;
 		case TITLE_LIST_GRANTED:
-			t = "ÒÑÊÚÓè";
+			//% t = "å·²æˆäºˆ";
+			t = "\xd2\xd1\xca\xda\xd3\xe8";
 			break;
 		default:
-			t = "È«²¿";
+			//% t = "å…¨éƒ¨";
+			t = "\xc8\xab\xb2\xbf";
 			break;
 	}
 
-	prints("\033[1;33;44m[×Ô¶¨ÒåÉí·İ¹ÜÀí][%s]\033[K\033[m\n", t);
-	prints(" Åú×¼[\033[1;32m.\033[m] ²µ»Ø[\033[1;32md\033[m]"
-			" ÇĞ»»[\033[1;32ms\033[m] ÊÚÓè[\033[1;32mg\033[m]\n");
-	prints("\033[1;44m±àºÅ ÓÃ»§Ãû       Åú×¼ÈË       ×Ô¶¨ÒåÉí·İ"
-			"                     ¹ºÂòÈÕÆÚ ¹ıÆÚÊ±¼ä\033[m\n");
+	//% prints("\033[1;33;44m[è‡ªå®šä¹‰èº«ä»½ç®¡ç†][%s]\033[K\033[m\n", t);
+	prints("\033[1;33;44m[\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd\xb9\xdc\xc0\xed][%s]\033[K\033[m\n", t);
+	//% prints(" æ‰¹å‡†[\033[1;32m.\033[m] é©³å›[\033[1;32md\033[m]"
+	prints(" \xc5\xfa\xd7\xbc[\033[1;32m.\033[m] \xb2\xb5\xbb\xd8[\033[1;32md\033[m]"
+			//% " åˆ‡æ¢[\033[1;32ms\033[m] æˆäºˆ[\033[1;32mg\033[m]\n");
+			" \xc7\xd0\xbb\xbb[\033[1;32ms\033[m] \xca\xda\xd3\xe8[\033[1;32mg\033[m]\n");
+	//% prints("\033[1;44mç¼–å· ç”¨æˆ·å       æ‰¹å‡†äºº       è‡ªå®šä¹‰èº«ä»½"
+	prints("\033[1;44m\xb1\xe0\xba\xc5 \xd3\xc3\xbb\xa7\xc3\xfb       \xc5\xfa\xd7\xbc\xc8\xcb       \xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd"
+			//% "                     è´­ä¹°æ—¥æœŸ è¿‡æœŸæ—¶é—´\033[m\n");
+			"                     \xb9\xba\xc2\xf2\xc8\xd5\xc6\xda \xb9\xfd\xc6\xda\xca\xb1\xbc\xe4\033[m\n");
 }
 
 static tui_list_display_t title_list_display(tui_list_t *p, int n)
@@ -97,7 +106,8 @@ static int grant_title(user_id_t uid, const char *title)
 static int tui_grant_title(tui_list_t *p)
 {
 	char name[IDLEN + 1];
-	getdata(t_lines - 1, 0, "ÇëÊäÈëÓÃ»§Ãû: ", name, sizeof(name), YEA, YEA);
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥ç”¨æˆ·å: ", name, sizeof(name), YEA, YEA);
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd3\xc3\xbb\xa7\xc3\xfb: ", name, sizeof(name), YEA, YEA);
 	if (!*name)
 		return MINIUPDATE;
 
@@ -106,7 +116,8 @@ static int tui_grant_title(tui_list_t *p)
 		return MINIUPDATE;
 
 	GBK_UTF8_BUFFER(title, TITLE_CCHARS);
-	getdata(t_lines - 1, 0, "ÇëÊäÈëÉí·İ: ", gbk_title, sizeof(gbk_title),
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥èº«ä»½: ", gbk_title, sizeof(gbk_title),
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc9\xed\xb7\xdd: ", gbk_title, sizeof(gbk_title),
 			YEA, YEA);
 	if (!*gbk_title)
 		return MINIUPDATE;
@@ -129,9 +140,11 @@ static int tui_remove_title(tui_list_t *p)
 
 	const char *prompt;
 	if (title_list_get_price(r, p->cur) > 0) {
-		prompt = "¸ÃÓÃ»§Ö»ÄÜ»ñµÃÒ»Ğ¡²¿·ÖÍË¿î£¬È·¶¨Âğ?";
+		//% prompt = "è¯¥ç”¨æˆ·åªèƒ½è·å¾—ä¸€å°éƒ¨åˆ†é€€æ¬¾ï¼Œç¡®å®šå—?";
+		prompt = "\xb8\xc3\xd3\xc3\xbb\xa7\xd6\xbb\xc4\xdc\xbb\xf1\xb5\xc3\xd2\xbb\xd0\xa1\xb2\xbf\xb7\xd6\xcd\xcb\xbf\xee\xa3\xac\xc8\xb7\xb6\xa8\xc2\xf0?";
 	} else {
-		prompt = "È·¶¨ÊÕ»ØÕâ¸öÃâ·ÑÉí·İ?";
+		//% prompt = "ç¡®å®šæ”¶å›è¿™ä¸ªå…è´¹èº«ä»½?";
+		prompt = "\xc8\xb7\xb6\xa8\xca\xd5\xbb\xd8\xd5\xe2\xb8\xf6\xc3\xe2\xb7\xd1\xc9\xed\xb7\xdd?";
 	}
 	
 	if (askyn(prompt, NA, YEA)) {
@@ -164,7 +177,8 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 			if (!valid)
 				return DONOTHING;
 			if (l->type == TITLE_LIST_PENDING) {
-				if (!askyn("È·¶¨²µ»Ø?", NA, YEA))
+				//% if (!askyn("ç¡®å®šé©³å›?", NA, YEA))
+				if (!askyn("\xc8\xb7\xb6\xa8\xb2\xb5\xbb\xd8?", NA, YEA))
 					return MINIUPDATE;
 				title_remove(title_list_get_record_id(r, p->cur));
 				p->valid = false;

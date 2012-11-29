@@ -100,40 +100,40 @@ extern char *permstrings[];
 
 /* You might want to put more descriptive strings for SPECIAL1 and SPECIAL2
  depending on how/if you use them. */
-/* skyo.0507 modify ��������� PERM ����� menu.ini ���գ� */
+/* skyo.0507 modify 加入後面的 PERM 方便跟 menu.ini 对照） */
 char *permstrings[] = {
-	"��վȨ��       (PERM_LOGIN)", /* PERM_LOGIN */
-	"����������     (TALK)", /* PERM_TALK */
-	"�����ż�       (MAIL)", /* PERM_MAIL */
-	"��������       (POST)", /* PERM_POST */
-	"ʹ����������ȷ (REGISTER)", /* PERM_REGISTER*/
-	"������       (BINDMAIL)", /* PERM_BINDMAIL */
-	"����           (BOARDS)", /* PERM_BOARDS */
-	"�������ܹ�     (OBOARDS)", /* PERM_OBOARDS */
-	"���ֲ��ܹ�     (OCLUB)", /* PERM_OCLUB */
-	"�������ܹ�     (ANNOUNCE)", /* PERM_ANNOUNCE*/
-	"������ܹ�   (OCBOARD)", /* PERM_OCBOARD */
-	"�ʺŹ���Ա     (USER)", /* PERM_USER*/
-	"�����ҹ���Ա   (OCHAT)", /* PERM_OCHAT*/
-	"ϵͳά������Ա (SYSOPS)", /* PERM_SYSOPS*/
-	"������         (CLOAK)", /* PERM_CLOAK */
-	"����������     (SEECLOAK)", /* PERM_SEECLOAK */
-	"�ʺ����ñ���   (XEMPT)", /* PERM_XEMPT */
-	"����ֵ��ǿȨ�� (LONGLIFE)", /* PERM_LONGLIFE */
-	"������         (LARGEMAIL)", /* PERM_LARGEMAIL*/
-	"�ٲ���         (ARBI)", /* PERM_ARBI*/
-	"������         (SERV)", /* PERM_SERV*/
-	"������         (TECH)", /* PERM_TECH*/
-	"����Ȩ�� 0     (SPECIAL0)", /* PERM_SPECIAL0*/
-	"����Ȩ�� 1     (SPECIAL1)", /* PERM_SPECIAL1*/
-	"����Ȩ�� 2     (SPECIAL2)", /* PERM_SPECIAL2*/
-	"����Ȩ�� 3     (SPECIAL3)", /* PERM_SPECIAL3*/
-	"����Ȩ�� 4     (SPECIAL4)", /* PERM_SPECIAL4*/
-	"����Ȩ�� 5     (SPECIAL5)", /* PERM_SPECIAL5*/
-	"����Ȩ�� 6     (SPECIAL6)", /* PERM_SPECIAL6*/
-	"����Ȩ�� 7     (SPECIAL7)", /* PERM_SPECIAL7*/
-	"����Ȩ�� 8     (SPECIAL8)", /* PERM_SPECIAL8*/
-	"����Ȩ�� 9     (SPECIAL9)", /* PERM_SPECIAL9*/
+	"上站权力       (PERM_LOGIN)", /* PERM_LOGIN */
+	"与他人聊天     (TALK)", /* PERM_TALK */
+	"发送信件       (MAIL)", /* PERM_MAIL */
+	"发表文章       (POST)", /* PERM_POST */
+	"使用者资料正确 (REGISTER)", /* PERM_REGISTER*/
+	"绑定邮箱       (BINDMAIL)", /* PERM_BINDMAIL */
+	"版主           (BOARDS)", /* PERM_BOARDS */
+	"讨论区总管     (OBOARDS)", /* PERM_OBOARDS */
+	"俱乐部总管     (OCLUB)", /* PERM_OCLUB */
+	"精华区总管     (ANNOUNCE)", /* PERM_ANNOUNCE*/
+	"活动看版总管   (OCBOARD)", /* PERM_OCBOARD */
+	"帐号管理员     (USER)", /* PERM_USER*/
+	"聊天室管理员   (OCHAT)", /* PERM_OCHAT*/
+	"系统维护管理员 (SYSOPS)", /* PERM_SYSOPS*/
+	"隐身术         (CLOAK)", /* PERM_CLOAK */
+	"看穿隐身术     (SEECLOAK)", /* PERM_SEECLOAK */
+	"帐号永久保留   (XEMPT)", /* PERM_XEMPT */
+	"生命值增强权限 (LONGLIFE)", /* PERM_LONGLIFE */
+	"大信箱         (LARGEMAIL)", /* PERM_LARGEMAIL*/
+	"仲裁组         (ARBI)", /* PERM_ARBI*/
+	"服务组         (SERV)", /* PERM_SERV*/
+	"技术组         (TECH)", /* PERM_TECH*/
+	"特殊权限 0     (SPECIAL0)", /* PERM_SPECIAL0*/
+	"特殊权限 1     (SPECIAL1)", /* PERM_SPECIAL1*/
+	"特殊权限 2     (SPECIAL2)", /* PERM_SPECIAL2*/
+	"特殊权限 3     (SPECIAL3)", /* PERM_SPECIAL3*/
+	"特殊权限 4     (SPECIAL4)", /* PERM_SPECIAL4*/
+	"特殊权限 5     (SPECIAL5)", /* PERM_SPECIAL5*/
+	"特殊权限 6     (SPECIAL6)", /* PERM_SPECIAL6*/
+	"特殊权限 7     (SPECIAL7)", /* PERM_SPECIAL7*/
+	"特殊权限 8     (SPECIAL8)", /* PERM_SPECIAL8*/
+	"特殊权限 9     (SPECIAL9)", /* PERM_SPECIAL9*/
 	NULL
 };
 #endif
@@ -178,37 +178,37 @@ extern char *user_definestr[];
 /* You might want to put more descriptive strings for SPECIAL1 and SPECIAL2
  depending on how/if you use them. */
 char *user_definestr[] = {
-	"�������ر�ʱ���ú��Ѻ���", /* DEF_FRIENDCALL */
-	"���������˵�ѶϢ", /* DEF_ALLMSG */
-	"���ܺ��ѵ�ѶϢ", /* DEF_FRIENDMSG */
-	"�յ�ѶϢ��������", /* DEF_SOUNDMSG */
-	"ʹ�ò�ɫ", /* DEF_COLOR */
-	"��ʾ�����", /* DEF_ACBOARD */
-	"��ʾѡ����ѶϢ��", /* DEF_ENDLINE */
-	"�༭ʱ��ʾ״̬��", /* DEF_EDITMSG */
-	"ѶϢ������һ��/����ģʽ", /* DEF_NOTMSGFRIEND */
-	"ѡ������һ��/����ģʽ", /* DEF_NORMALSCR */
-	"������������ New ��ʾ", /* DEF_NEWPOST */
-	"�Ķ������Ƿ�ʹ���ƾ�ѡ��", /* DEF_CIRCLE */
-	"�Ķ������α�ͣ춵�һƪδ��", /* DEF_FIRSTNEW */
-	"��վʱ��ʾ��������", /* DEF_LOGFRIEND */
-	"������վ֪ͨ", /* DEF_LOGINFROM */
-	"�ۿ����԰�", /* DEF_NOTEPAD*/
-	"��Ҫ�ͳ���վ֪ͨ������", /* DEF_NOLOGINSEND */
-	"����ʽ����", /* DEF_THESIS */
-	"�յ�ѶϢ�Ⱥ��Ӧ�����", /* DEF_MSGGETKEY */
-	"��վʱ�ۿ���վ�˴�ͼ", /* DEF_GRAPH */
-	"��վʱ�ۿ�ʮ�����а�", /* DEF_TOP10 */
-	"ʹ������ǩ����", /* DEF_RANDSIGN */
-	"��ʾ����", /* DEF_S_HOROSCOPE */
-	"����ʹ����ɫ����ʾ�Ա�", /* DEF_COLOREDSEX */
-	"ʹ��\'+\'���δ������", /* DEF_NOT_N_MASK */
-	"��������ɾ��", /* DEF_DELDBLCHAR */
-	"�Զ��Ű����Ԥ��Ϊ 78 ��", /* DEF_AUTOWRAP */
-	"ʹ��GB���Ķ�", /* DEF_USEGB KCN 99.09.03 */
-	"�������Լ��� IP", /* DEF_NOTHIDEIP */
-	"������վ֪ͨ", /* DEF_LOGOFFMSG Amigo 2002.04.03 */
-	"ʹ�ö�˿·(����Ȩ����Ч)", /* DEF_MULTANNPATH*/
+	"呼叫器关闭时可让好友呼叫", /* DEF_FRIENDCALL */
+	"接受所有人的讯息", /* DEF_ALLMSG */
+	"接受好友的讯息", /* DEF_FRIENDMSG */
+	"收到讯息发出声音", /* DEF_SOUNDMSG */
+	"使用彩色", /* DEF_COLOR */
+	"显示活动看板", /* DEF_ACBOARD */
+	"显示选单的讯息栏", /* DEF_ENDLINE */
+	"编辑时显示状态栏", /* DEF_EDITMSG */
+	"讯息栏采用一般/精简模式", /* DEF_NOTMSGFRIEND */
+	"选单采用一般/精简模式", /* DEF_NORMALSCR */
+	"分类讨论区以 New 显示", /* DEF_NEWPOST */
+	"阅读文章是否使用绕卷选择", /* DEF_CIRCLE */
+	"阅读文章游标停於第一篇未读", /* DEF_FIRSTNEW */
+	"进站时显示好友名单", /* DEF_LOGFRIEND */
+	"好友上站通知", /* DEF_LOGINFROM */
+	"观看留言板", /* DEF_NOTEPAD*/
+	"不要送出上站通知给好友", /* DEF_NOLOGINSEND */
+	"主题式看版", /* DEF_THESIS */
+	"收到讯息等候回应或清除", /* DEF_MSGGETKEY */
+	"进站时观看上站人次图", /* DEF_GRAPH */
+	"进站时观看十大排行榜", /* DEF_TOP10 */
+	"使用乱数签名档", /* DEF_RANDSIGN */
+	"显示星座", /* DEF_S_HOROSCOPE */
+	"星座使用颜色来显示性别", /* DEF_COLOREDSEX */
+	"使用\'+\'标记未读文章", /* DEF_NOT_N_MASK */
+	"汉字整字删除", /* DEF_DELDBLCHAR */
+	"自动排版宽度预设为 78 列", /* DEF_AUTOWRAP */
+	"使用GB码阅读", /* DEF_USEGB KCN 99.09.03 */
+	"不隐藏自己的 IP", /* DEF_NOTHIDEIP */
+	"好友离站通知", /* DEF_LOGOFFMSG Amigo 2002.04.03 */
+	"使用多丝路(版主权限有效)", /* DEF_MULTANNPATH*/
 	NULL
 };
 #endif

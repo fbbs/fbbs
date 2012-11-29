@@ -42,7 +42,8 @@ static int edit_article(const char *file, const char *content, const char *ip)
 		while (ptr >= buf && *ptr != '\n')
 			--ptr;
 		if (ptr >= buf) {
-			if (!strncmp(ptr + 1, "\033[m\033[1;36m¡ù ĞŞ¸Ä", 17)) {
+			//% if (!strncmp(ptr + 1, "\033[m\033[1;36mâ€» ä¿®æ”¹", 17)) {
+			if (!strncmp(ptr + 1, "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4", 17)) {
 				e = ptr + 1;
 				--ptr;
 				while (ptr >= buf && *ptr != '\n')
@@ -56,8 +57,10 @@ static int edit_article(const char *file, const char *content, const char *ip)
 		int ret = safer_write(fd, content, len);
 		if (ret == 0 && ptr != e)
 			ret = safer_write(fd, ptr, e - ptr);
-		len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m¡ù ĞŞ¸Ä:¡¤%s ÓÚ "
-				"%22.22s¡¤HTTP [FROM: %s]\033[m\n", currentuser.userid,
+		//% len = snprintf(buf, sizeof(buf), "\033[m\033[1;36mâ€» ä¿®æ”¹:Â·%s äº "
+		len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda "
+				//% "%22.22sÂ·HTTP [FROM: %s]\033[m\n", currentuser.userid,
+				"%22.22s\xa1\xa4HTTP [FROM: %s]\033[m\n", currentuser.userid,
 				getdatestring(time(NULL), DATE_ZH), mask_host(ip));
 		if (ret == 0)
 			ret = safer_write(fd, buf, len);
@@ -199,8 +202,10 @@ int bbssnd_main(void)
 			board.name);
 	http_header();
 	refreshto(1, buf);
-	printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>·¢±í</a>"
-			"³É¹¦£¬1ÃëÖÓºó×Ô¶¯×ªµ½<a href='%s'>°æÃæ</a>\n</body>\n</html>\n",
+	//% printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>å‘è¡¨</a>"
+	printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>\xb7\xa2\xb1\xed</a>"
+			//% "æˆåŠŸï¼Œ1ç§’é’Ÿåè‡ªåŠ¨è½¬åˆ°<a href='%s'>ç‰ˆé¢</a>\n</body>\n</html>\n",
+			"\xb3\xc9\xb9\xa6\xa3\xac""1\xc3\xeb\xd6\xd3\xba\xf3\xd7\xd4\xb6\xaf\xd7\xaa\xb5\xbd<a href='%s'>\xb0\xe6\xc3\xe6</a>\n</body>\n</html>\n",
 			board.id, pid, buf);
 	return 0;
 }

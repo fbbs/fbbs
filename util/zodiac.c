@@ -32,9 +32,12 @@ int main(int argc, char **argv)
 
 	int item = draw_chart(&bst);
 	char *mg = left_margin(item, NULL);
-	printf("\033[0;1m%s0©¸©¤©¤©¤ Ä¿Ç°±¾Õ¾×¢²áÊ¹ÓÃÕßÉúĞ¤Í³¼Æ©¤©¤©¤%s©¤©¤\n"
-			"%s\033[1;33m     Êó    Å£    »¢    ÍÃ    Áú    Éß    Âí    Ñò    ºï    ¼¦    ¹·    Öí\n\n"
-			"%s                          \033[1;36m¨€ ÄĞÉú (%d)    \033[35m¨€ Å®Éú (%d)\033[m\n",
+	//% printf("\033[0;1m%s0â””â”€â”€â”€ ç›®å‰æœ¬ç«™æ³¨å†Œä½¿ç”¨è€…ç”Ÿè‚–ç»Ÿè®¡â”€â”€â”€%sâ”€â”€\n"
+	printf("\033[0;1m%s0\xa9\xb8\xa9\xa4\xa9\xa4\xa9\xa4 \xc4\xbf\xc7\xb0\xb1\xbe\xd5\xbe\xd7\xa2\xb2\xe1\xca\xb9\xd3\xc3\xd5\xdf\xc9\xfa\xd0\xa4\xcd\xb3\xbc\xc6\xa9\xa4\xa9\xa4\xa9\xa4%s\xa9\xa4\xa9\xa4\n"
+			//% "%s\033[1;33m     é¼     ç‰›    è™    å…”    é¾™    è›‡    é©¬    ç¾Š    çŒ´    é¸¡    ç‹—    çŒª\n\n"
+			"%s\033[1;33m     \xca\xf3    \xc5\xa3    \xbb\xa2    \xcd\xc3    \xc1\xfa    \xc9\xdf    \xc2\xed    \xd1\xf2    \xba\xef    \xbc\xa6    \xb9\xb7    \xd6\xed\n\n"
+			//% "%s                          \033[1;36mâ–ˆ ç”·ç”Ÿ (%d)    \033[35mâ–ˆ å¥³ç”Ÿ (%d)\033[m\n",
+			"%s                          \033[1;36m\xa8\x80 \xc4\xd0\xc9\xfa (%d)    \033[35m\xa8\x80 \xc5\xae\xc9\xfa (%d)\033[m\n",
 			mg, getdatestring(time(NULL), DATE_ZH), mg, mg, mtotal, ftotal);
 	return 0;
 }

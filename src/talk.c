@@ -63,7 +63,7 @@ static int show_one_file(const char *filename)
 }
 
 /*Add by SmallPig*/
-/*´Ëº¯ÊıÖ»¸ºÔğÁĞÓ¡ËµÃ÷µµ£¬²¢²»¹ÜÇå³ı»ò¶¨Î»µÄÎÊÌâ¡£*/
+/*æ­¤å‡½æ•°åªè´Ÿè´£åˆ—å°è¯´æ˜æ¡£ï¼Œå¹¶ä¸ç®¡æ¸…é™¤æˆ–å®šä½çš„é—®é¢˜ã€‚*/
 
 int
 show_user_plan(const char *userid)
@@ -71,7 +71,8 @@ show_user_plan(const char *userid)
 	char pfile[STRLEN];
 	sethomefile(pfile, userid, "plans");
 	if (show_one_file(pfile)==NA) {
-		prints("\033[1;36mÃ»ÓĞ¸öÈËËµÃ÷µµ\033[m\n");
+		//% prints("\033[1;36mæ²¡æœ‰ä¸ªäººè¯´æ˜æ¡£\033[m\n");
+		prints("\033[1;36m\xc3\xbb\xd3\xd0\xb8\xf6\xc8\xcb\xcb\xb5\xc3\xf7\xb5\xb5\033[m\n");
 		return NA;
 	}
 	return YEA;
@@ -86,7 +87,8 @@ enum {
 static void show_statuses(basic_session_info_t *res)
 {
 	if (basic_session_info_count(res) > 0)
-		prints("Ä¿Ç°×´Ì¬ÈçÏÂ£º\n");
+		//% prints("ç›®å‰çŠ¶æ€å¦‚ä¸‹ï¼š\n");
+		prints("\xc4\xbf\xc7\xb0\xd7\xb4\xcc\xac\xc8\xe7\xcf\xc2\xa3\xba\n");
 
 	for (int i = 0; i < basic_session_info_count(res); ++i) {
 		bool visible = basic_session_info_visible(res, i);
@@ -134,51 +136,62 @@ int tui_query_result(const char *userid)
 		snprintf(horo, sizeof(horo), "[\033[1;3%dm%s\033[m] ",
 				color, horoscope(user.birthmonth, user.birthday));
 	}
-	prints("\033[0;1;37m%s \033[m(\033[1;33m%s\033[m) ¹²ÉÏÕ¾ \033[1;32m%d\033[m "
-			"´Î  %s\n", user.userid, user.username, user.numlogins, horo);
+	//% prints("\033[0;1;37m%s \033[m(\033[1;33m%s\033[m) å…±ä¸Šç«™ \033[1;32m%d\033[m "
+	prints("\033[0;1;37m%s \033[m(\033[1;33m%s\033[m) \xb9\xb2\xc9\xcf\xd5\xbe \033[1;32m%d\033[m "
+			//% "æ¬¡  %s\n", user.userid, user.username, user.numlogins, horo);
+			"\xb4\xce  %s\n", user.userid, user.username, user.numlogins, horo);
 
 	bool self = !strcmp(currentuser.userid, user.userid);
 	const char *host;
 	if (user.lasthost[0] == '\0') {
-		host = "(²»Ïê)";
+		//% host = "(ä¸è¯¦)";
+		host = "(\xb2\xbb\xcf\xea)";
 	} else {
 		if (self || HAS_PERM2(PERM_OCHAT, &currentuser))
 			host = user.lasthost;
 		else 
 			host = mask_host(user.lasthost);
 	}
-	prints("½øÕ¾ [\033[1;32m%s\033[m] %s[\033[1;32m%s\033[m]\n",
+	//% prints("è¿›ç«™ [\033[1;32m%s\033[m] %s[\033[1;32m%s\033[m]\n",
+	prints("\xbd\xf8\xd5\xbe [\033[1;32m%s\033[m] %s[\033[1;32m%s\033[m]\n",
 			getdatestring(user.lastlogin, DATE_ZH),
-			strlen(host) > IPADDR_OMIT_THRES ? "" : "À´×Ô ", host);
+			//% strlen(host) > IPADDR_OMIT_THRES ? "" : "æ¥è‡ª ", host);
+			strlen(host) > IPADDR_OMIT_THRES ? "" : "\xc0\xb4\xd7\xd4 ", host);
 
 	user_id_t uid = get_user_id(userid);
 	basic_session_info_t *res = get_sessions(uid);
 
 	if (res && basic_session_info_count(res) > 0) {
-		prints("ÔÚÏß [\033[1;32mÑ¶Ï¢Æ÷:(\033[36m%s\033[32m)\033[m] ",
-				"´ò¿ª");// : "¹Ø±Õ",
+		//% prints("åœ¨çº¿ [\033[1;32mè®¯æ¯å™¨:(\033[36m%s\033[32m)\033[m] ",
+		prints("\xd4\xda\xcf\xdf [\033[1;32m\xd1\xb6\xcf\xa2\xc6\xf7:(\033[36m%s\033[32m)\033[m] ",
+				//% "æ‰“å¼€");
+				"\xb4\xf2\xbf\xaa");
 	} else {
 		fb_time_t t = user.lastlogout;
 		if (user.lastlogout < user.lastlogin)
 			t = ((time(NULL) - user.lastlogin) / 120) % 47 + 1 + user.lastlogin;
-		prints("ÀëÕ¾ [\033[1;32m%s\033[m] ", getdatestring(t, DATE_ZH));
+		//% prints("ç¦»ç«™ [\033[1;32m%s\033[m] ", getdatestring(t, DATE_ZH));
+		prints("\xc0\xeb\xd5\xbe [\033[1;32m%s\033[m] ", getdatestring(t, DATE_ZH));
 	}
 
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), "mail/%c/%s/%s",
 			toupper(user.userid[0]), user.userid, DOT_DIR);
 	int perf = countperf(&user);
-	prints("±íÏÖÖµ "
+	//% prints("è¡¨ç°å€¼ "
+	prints("\xb1\xed\xcf\xd6\xd6\xb5 "
 #ifdef SHOW_PERF
 			"%d(\033[1;33m%s\033[m)"
 #else
 			"[\033[1;33m%s\033[m]"
 #endif
-			" ĞÅÏä [\033[1;5;32m%2s\033[m]\n"
+			//% " ä¿¡ç®± [\033[1;5;32m%2s\033[m]\n"
+			" \xd0\xc5\xcf\xe4 [\033[1;5;32m%2s\033[m]\n"
 #ifdef SHOW_PERF
 			, perf
 #endif
-			, cperf(perf), (check_query_mail(path) == 1) ? "ĞÅ" : "  ");
+			//% , cperf(perf), (check_query_mail(path) == 1) ? "ä¿¡" : "  ");
+			, cperf(perf), (check_query_mail(path) == 1) ? "\xd0\xc5" : "  ");
 
 	int exp = countexp(&user);
 
@@ -186,7 +199,8 @@ int tui_query_result(const char *userid)
 	uinfo_load(user.userid, &u);
 
 #ifdef ENABLE_BANK
-	prints("¹±Ï× [\033[1;32m%d\033[m", TO_YUAN_INT(u.contrib));
+	//% prints("è´¡çŒ® [\033[1;32m%d\033[m", TO_YUAN_INT(u.contrib));
+	prints("\xb9\xb1\xcf\xd7 [\033[1;32m%d\033[m", TO_YUAN_INT(u.contrib));
 	if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
 		prints("/\033[1;33m%d\033[m", TO_YUAN_INT(u.money));
 	}
@@ -199,25 +213,33 @@ int tui_query_result(const char *userid)
 #endif
 
 #ifdef ALLOWGAME
-	prints("´æ´û¿î [\033[1;32m%d\033[m/\033[1;32m%d\033[m]"
-			"(\033[1;33m%s\033[m) ¾­ÑéÖµ [\033[1;32m%d\033[m]\n",
+	//% prints("å­˜è´·æ¬¾ [\033[1;32m%d\033[m/\033[1;32m%d\033[m]"
+	prints("\xb4\xe6\xb4\xfb\xbf\xee [\033[1;32m%d\033[m/\033[1;32m%d\033[m]"
+			//% "(\033[1;33m%s\033[m) ç»éªŒå€¼ [\033[1;32m%d\033[m]\n",
+			"(\033[1;33m%s\033[m) \xbe\xad\xd1\xe9\xd6\xb5 [\033[1;32m%d\033[m]\n",
 			user.money, user.bet, cmoney(user.money - user.bet), exp);
-	prints("·¢ÎÄ [\033[1;32m%d\033[m] ½±ÕÂ [\033[1;32m%d\033[m]"
-			"(\033[1;33m%s\033[m) ÉúÃüÁ¦ [\033[1;32m%d\033[m]\n",
+	//% prints("å‘æ–‡ [\033[1;32m%d\033[m] å¥–ç«  [\033[1;32m%d\033[m]"
+	prints("\xb7\xa2\xce\xc4 [\033[1;32m%d\033[m] \xbd\xb1\xd5\xc2 [\033[1;32m%d\033[m]"
+			//% "(\033[1;33m%s\033[m) ç”Ÿå‘½åŠ› [\033[1;32m%d\033[m]\n",
+			"(\033[1;33m%s\033[m) \xc9\xfa\xc3\xfc\xc1\xa6 [\033[1;32m%d\033[m]\n",
 			user.numposts, user.nummedals, cnummedals(user.nummedals),
 			compute_user_value(&user));
 #else
-	prints("·¢ÎÄ [\033[1;32m%d\033[m] ", user.numposts);
-	prints("¾­ÑéÖµ [\033[1;33m%-10s\033[m]", cexpstr(exp));
+	//% prints("å‘æ–‡ [\033[1;32m%d\033[m] ", user.numposts);
+	prints("\xb7\xa2\xce\xc4 [\033[1;32m%d\033[m] ", user.numposts);
+	//% prints("ç»éªŒå€¼ [\033[1;33m%-10s\033[m]", cexpstr(exp));
+	prints("\xbe\xad\xd1\xe9\xd6\xb5 [\033[1;33m%-10s\033[m]", cexpstr(exp));
 #ifdef SHOWEXP
 	prints("(%d)", exp);
 #endif
-	prints(" ÉúÃüÁ¦ [\033[1;32m%d\033[m]\n", compute_user_value(&user));
+	//% prints(" ç”Ÿå‘½åŠ› [\033[1;32m%d\033[m]\n", compute_user_value(&user));
+	prints(" \xc9\xfa\xc3\xfc\xc1\xa6 [\033[1;32m%d\033[m]\n", compute_user_value(&user));
 #endif
 
 	char buf[160];
 	show_position(&user, buf, sizeof(buf), u.title);
-	prints("Éí·İ %s\n", buf);
+	//% prints("èº«ä»½ %s\n", buf);
+	prints("\xc9\xed\xb7\xdd %s\n", buf);
 	
 	uinfo_free(&u);
 
@@ -244,7 +266,8 @@ int t_query(const char *uname)
 		refresh();
 		move(1, 0);
 		clrtobot();
-		prints("²éÑ¯Ë­:\n<ÊäÈëÊ¹ÓÃÕß´úºÅ, °´¿Õ°×¼ü¿ÉÁĞ³ö·ûºÏ×Ö´®>\n");
+		//% prints("æŸ¥è¯¢è°:\n<è¾“å…¥ä½¿ç”¨è€…ä»£å·, æŒ‰ç©ºç™½é”®å¯åˆ—å‡ºç¬¦åˆå­—ä¸²>\n");
+		prints("\xb2\xe9\xd1\xaf\xcb\xad:\n<\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5, \xb0\xb4\xbf\xd5\xb0\xd7\xbc\xfc\xbf\xc9\xc1\xd0\xb3\xf6\xb7\xfb\xba\xcf\xd7\xd6\xb4\xae>\n");
 		move(1, 8);
 		usercomplete(NULL, userid);
 		if (*userid == '\0')
@@ -254,7 +277,8 @@ int t_query(const char *uname)
 	if (tui_query_result(userid) != 0) {
 		move(2, 0);
 		clrtoeol();
-		prints("\033[1m²»ÕıÈ·µÄÊ¹ÓÃÕß´úºÅ\033[m\n");
+		//% prints("\033[1mä¸æ­£ç¡®çš„ä½¿ç”¨è€…ä»£å·\033[m\n");
+		prints("\033[1m\xb2\xbb\xd5\xfd\xc8\xb7\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\033[m\n");
 		pressanykey();
 		return FULLUPDATE;
 	}

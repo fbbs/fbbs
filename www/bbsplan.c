@@ -36,11 +36,13 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 
 int bbsplan_main(void)
 {
-	return edit_user_file("plans", "±à¼­ËµÃ÷µµ", "plan");
+	//% return edit_user_file("plans", "ç¼–è¾‘è¯´æ˜æ¡£", "plan");
+	return edit_user_file("plans", "\xb1\xe0\xbc\xad\xcb\xb5\xc3\xf7\xb5\xb5", "plan");
 }
 
 int bbssig_main(void)
 {
-	return edit_user_file("signatures", "±à¼­Ç©Ãûµµ", "sig");
+	//% return edit_user_file("signatures", "ç¼–è¾‘ç­¾åæ¡£", "sig");
+	return edit_user_file("signatures", "\xb1\xe0\xbc\xad\xc7\xa9\xc3\xfb\xb5\xb5", "sig");
 }
 

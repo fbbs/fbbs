@@ -103,7 +103,8 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 
 	move(acl->ybase + 1, 0);
 	clrtobot();
-	printdash(" 列表 ");
+	//% printdash(" 鍒楄〃 ");
+	printdash(" \xc1\xd0\xb1\xed ");
 
 	const int columns = 80;
 	int xbase = 0, width = 0, count = 0;
@@ -134,7 +135,8 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 			if (xbase + width > columns) {
 				acl->seek = *acl->col;
 				move(t_lines - 1, 0);
-				prints("\033[1m -- 还有 --\033[m");
+				//% prints("\033[1m -- 杩樻湁 --\033[m");
+				prints("\033[1m -- \xbb\xb9\xd3\xd0 --\033[m");
 				break;
 			} else {
 				acl->seek = NULL;

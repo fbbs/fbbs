@@ -82,11 +82,11 @@ struct bstat { /* used for caching files and boards */
 };
 
 struct one_key { /* Used to pass commands to the readmenu */
-	int key; //ÊäÈë×Ö·ûÓë¶¯×÷º¯ÊıÒ»Ò»¶ÔÓ¦
+	int key; //è¾“å…¥å­—ç¬¦ä¸åŠ¨ä½œå‡½æ•°ä¸€ä¸€å¯¹åº”
 	int (*fptr)();
 };
 
-struct BCACHE { //°æÃæµÄ»º³å?
+struct BCACHE { //ç‰ˆé¢çš„ç¼“å†²
 	struct bstat bstatus[MAXBOARD ];
 	int number;
 	time_t uptime;
@@ -97,7 +97,7 @@ struct BCACHE { //°æÃæµÄ»º³å?
 	time_t inboarduptime;
 };
 
-struct UCACHE { //ÓÃ»§µÄ»º³å
+struct UCACHE { //ç”¨æˆ·çš„ç¼“å†²
 	char userid[MAXUSERS ][IDLEN + 1 ];
 	int number;	// last occupied slot in 'userid' array.
 	time_t uptime;
@@ -105,7 +105,7 @@ struct UCACHE { //ÓÃ»§µÄ»º³å
 	int next[MAXUSERS];
 	int prev[MAXUSERS];
 	int hash[26][26][256];
-	struct userec passwd[MAXUSERS]; //ÄÚ´æÓ³ÉäµÄÊıÄ¿Ì«¶àÁËÒ»µã?
+	struct userec passwd[MAXUSERS]; //å†…å­˜æ˜ å°„çš„æ•°ç›®å¤ªå¤šäº†ä¸€ç‚¹?
 	/* add end */
 	int status[MAXUSERS];
 };

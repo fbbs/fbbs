@@ -136,14 +136,17 @@ int part_cp(char *src, char *dst, char *mode) {
 			fputs(buf, fdst);
 			break;
 		}
-		if (flag==0&&(!strncmp(buf+2, "ĞÅÈË: ", 6) ||!strncmp(buf,
-				"[1;41;33m·¢ĞÅÈË: ", 18))) {
+		//% "ä¿¡äºº: "
+		if (flag==0&&(!strncmp(buf+2, "\xd0\xc5\xc8\xcb: ", 6) ||!strncmp(buf,
+				//% "\033[1;41;33må‘ä¿¡äºº: "
+				"\033[1;41;33m\xb7\xa2\xd0\xc5\xc8\xcb: ", 18))) {
 			fputs(buf, fdst);
 			continue;
 		}
-		if (flag==0&&(buf[0]=='\0'||buf[0]=='\n'/*||!strncmp(buf+2,"ĞÅÈË: ",6)*/
-		|| !strncmp(buf, "±ê  Ìâ: ", 8)||!strncmp(buf, "·¢ĞÅÕ¾: ", 8)
-		/*|| !strncmp(buf,"[1;41;33m·¢ĞÅÈË: ",18)*/))
+		if (flag==0&&(buf[0]=='\0'||buf[0]=='\n'
+		//% "æ ‡  é¢˜: " "å‘ä¿¡ç«™: "
+		|| !strncmp(buf, "\xb1\xea  \xcc\xe2: ", 8)||!strncmp(buf, "\xb7\xa2\xd0\xc5\xd5\xbe: ", 8)
+		))
 			continue;
 		flag =1;
 		fputs(buf, fdst);
@@ -204,13 +207,13 @@ int valid_fname(char *str) {
  */
 int f_rm(char *fpath) {
 	struct stat st;
-	if (stat(fpath, &st)) //statÎ´ÄÜ³É¹¦
+	if (stat(fpath, &st)) //statæœªèƒ½æˆåŠŸ
 		return -1;
 
-	if (!S_ISDIR(st.st_mode)) //²»ÊÇÄ¿Â¼,ÔòÉ¾³ı´ËÎÄ¼ş
+	if (!S_ISDIR(st.st_mode)) //ä¸æ˜¯ç›®å½•,åˆ™åˆ é™¤æ­¤æ–‡ä»¶
 		return unlink(fpath);
 
-	return rm_dir(fpath); //É¾³ıÄ¿Â¼
+	return rm_dir(fpath); //åˆ é™¤ç›®å½•
 }
 
 /*

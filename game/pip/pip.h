@@ -1,89 +1,89 @@
 /*--------------------------------------------------------------------------*/
-/*  Ğ¡¼¦²ÎÊıÉè¶¨                      					    */
+/*  å°é¸¡å‚æ•°è®¾å®š                      					    */
 /*--------------------------------------------------------------------------*/
 struct chicken {
- /*---»ù±¾µÄ×ÊÁÏ---*/ //14
- char name[20];		/*ĞÕ    Ãû*/
- char birth[21];	/*Éú    ÈÕ*/
- int year;		/*ÉúÈÕ  Äê*/
- int month;		/*ÉúÈÕ  ÔÂ*/
- int day; 		/*ÉúÈÕ  ÈÕ*/
- int sex;		/*ĞÔ    ±ğ 1:¡á   2:¡â  */
- int death;             /*1:  ËÀÍö 2:Å×Æú 3:½á¾Ö*/
- int nodone;		/*1:  Î´×ö*/
- int relation;		/*Á½ÈË¹ØÏµ*/
- int liveagain;		/*¸´»î´ÎÊı*/
+ /*---åŸºæœ¬çš„èµ„æ–™---*/ //14
+ char name[20];		/*å§“    å*/
+ char birth[21];	/*ç”Ÿ    æ—¥*/
+ int year;		/*ç”Ÿæ—¥  å¹´*/
+ int month;		/*ç”Ÿæ—¥  æœˆ*/
+ int day; 		/*ç”Ÿæ—¥  æ—¥*/
+ int sex;		/*æ€§    åˆ« 1:â™‚   2:â™€  */
+ int death;             /*1:  æ­»äº¡ 2:æŠ›å¼ƒ 3:ç»“å±€*/
+ int nodone;		/*1:  æœªåš*/
+ int relation;		/*ä¸¤äººå…³ç³»*/
+ int liveagain;		/*å¤æ´»æ¬¡æ•°*/
  int dataB;
  int dataC;
  int dataD;
  int dataE;
   
- /*---ÉíÌåµÄ²ÎÊı---*/ //12
- int hp;		/*Ìå    Á¦*/
- int maxhp;             /*×î´óÌåÁ¦*/
- int weight;            /*Ìå    ÖØ*/
- int tired;		/*Æ£ ÀÍ ¶È*/
- int sick;		/*²¡    Æø*/
- int shit;		/*Çå ½à ¶È*/ 
- int wrist;		/*Íó    Á¦*/
+ /*---èº«ä½“çš„å‚æ•°---*/ //12
+ int hp;		/*ä½“    åŠ›*/
+ int maxhp;             /*æœ€å¤§ä½“åŠ›*/
+ int weight;            /*ä½“    é‡*/
+ int tired;		/*ç–² åŠ³ åº¦*/
+ int sick;		/*ç—…    æ°”*/
+ int shit;		/*æ¸… æ´ åº¦*/ 
+ int wrist;		/*è…•    åŠ›*/
  int bodyA;
  int bodyB;
  int bodyC;
  int bodyD;
  int bodyE;
  
- /*---ÆÀ¼ÛµÄ²ÎÊı---*/ //9
- int social;		/*Éç½»ÆÀ¼Û*/
- int family;		/*¼ÒÊÂÆÀ¼Û*/
- int hexp;		/*Õ½¶·ÆÀ¼Û*/
- int mexp;		/*Ä§·¨ÆÀ¼Û*/
+ /*---è¯„ä»·çš„å‚æ•°---*/ //9
+ int social;		/*ç¤¾äº¤è¯„ä»·*/
+ int family;		/*å®¶äº‹è¯„ä»·*/
+ int hexp;		/*æˆ˜æ–—è¯„ä»·*/
+ int mexp;		/*é­”æ³•è¯„ä»·*/
  int tmpA;
  int tmpB;
  int tmpC;
  int tmpD;
  int tmpE;
  
- /*---Õ½¶·ÓÃ²ÎÊı---*/ //13
- int mp;		/*·¨    Á¦*/
- int maxmp;             /*×î´ó·¨Á¦*/
- int attack;		/*¹¥ »÷ Á¦*/
- int resist;		/*·À Óù Á¦*/
- int speed;		/*ËÙ    ¶È*/
- int hskill;		/*Õ½¶·¼¼Êõ*/
- int mskill;		/*Ä§·¨¼¼Êõ*/
- int mresist;		/*¿¹Ä§ÄÜÁ¦*/
- int magicmode;		/*Ä§·¨ĞÍÌ¬*/
+ /*---æˆ˜æ–—ç”¨å‚æ•°---*/ //13
+ int mp;		/*æ³•    åŠ›*/
+ int maxmp;             /*æœ€å¤§æ³•åŠ›*/
+ int attack;		/*æ”» å‡» åŠ›*/
+ int resist;		/*é˜² å¾¡ åŠ›*/
+ int speed;		/*é€Ÿ    åº¦*/
+ int hskill;		/*æˆ˜æ–—æŠ€æœ¯*/
+ int mskill;		/*é­”æ³•æŠ€æœ¯*/
+ int mresist;		/*æŠ—é­”èƒ½åŠ›*/
+ int magicmode;		/*é­”æ³•å‹æ€*/
  int fightB;
  int fightC;
  int fightD;
  int fightE;
  
 
- /*---ÎäÆ÷µÄ²ÎÊı---*/ //10
- int weaponhead;	/*Í·²¿ÎäÆ÷*/
- int weaponrhand;	/*ÓÒÊÖÎäÆ÷*/
- int weaponlhand;	/*×óÊÖÎäÆ÷*/
- int weaponbody;	/*ÉíÌåÎäÆ÷*/
- int weaponfoot;	/*½ÅµÄÎäÆ÷*/ 
+ /*---æ­¦å™¨çš„å‚æ•°---*/ //10
+ int weaponhead;	/*å¤´éƒ¨æ­¦å™¨*/
+ int weaponrhand;	/*å³æ‰‹æ­¦å™¨*/
+ int weaponlhand;	/*å·¦æ‰‹æ­¦å™¨*/
+ int weaponbody;	/*èº«ä½“æ­¦å™¨*/
+ int weaponfoot;	/*è„šçš„æ­¦å™¨*/ 
  int weaponA;
  int weaponB;
  int weaponC;
  int weaponD;
  int weaponE;
  
- /*---¸÷ÄÜÁ¦²ÎÊı---*/ //17
- int toman;		/*´ıÈË½ÓÎï*/ 
- int character;		/*Æø ÖÊ ¶È*/ 
- int love;		/*°®    ĞÄ*/ 
- int wisdom;		/*ÖÇ    »Û*/
- int art;		/*ÒÕÊõÄÜÁ¦*/
- int etchics;		/*µÀ    µÂ*/
- int brave;		/*ÓÂ    ¸Ò*/
- int homework;		/*É¨µØÏ´ÒÂ*/
- int charm;		/*÷È	Á¦*/
- int manners;		/*Àñ    ÒÇ*/
- int speech;		/*Ì¸	ÍÂ*/
- int cookskill;		/*Åë    â¿*/
+ /*---å„èƒ½åŠ›å‚æ•°---*/ //17
+ int toman;		/*å¾…äººæ¥ç‰©*/ 
+ int character;		/*æ°” è´¨ åº¦*/ 
+ int love;		/*çˆ±    å¿ƒ*/ 
+ int wisdom;		/*æ™º    æ…§*/
+ int art;		/*è‰ºæœ¯èƒ½åŠ›*/
+ int etchics;		/*é“    å¾·*/
+ int brave;		/*å‹‡    æ•¢*/
+ int homework;		/*æ‰«åœ°æ´—è¡£*/
+ int charm;		/*é­…	åŠ›*/
+ int manners;		/*ç¤¼    ä»ª*/
+ int speech;		/*è°ˆ	å*/
+ int cookskill;		/*çƒ¹    é¥ª*/
  int learnA;
  int learnB;
  int learnC;
@@ -91,85 +91,85 @@ struct chicken {
  int learnE;
  
  
- /*---¸÷×´Ì¬ÊıÖµ---*/ //11
- int happy;		/*¿ì ÀÖ ¶È*/
- int satisfy;		/*Âú Òâ ¶È*/
- int fallinlove;	/*Áµ°®Ö¸Êı*/
- int belief;		/*ĞÅ    Ñö*/
- int offense;		/*×ï    Äõ*/
- int affect;		/*¸Ğ    ÊÜ*/
+ /*---å„çŠ¶æ€æ•°å€¼---*/ //11
+ int happy;		/*å¿« ä¹ åº¦*/
+ int satisfy;		/*æ»¡ æ„ åº¦*/
+ int fallinlove;	/*æ‹çˆ±æŒ‡æ•°*/
+ int belief;		/*ä¿¡    ä»°*/
+ int offense;		/*ç½ª    å­½*/
+ int affect;		/*æ„Ÿ    å—*/
  int stateA;
  int stateB;
  int stateC;
  int stateD;
  int stateE;
  
- /*---³ÔµÄ¶«Î÷À²---*/ //9
- int food;		/*Ê³    Îï*/
- int medicine;          /*Áé    Ö¥*/
- int bighp;             /*´ó ²¹ Íè*/
- int cookie;		/*Áã    Ê³*/
- int ginseng;		/*Ç§ÄêÈË  */
- int snowgrass;		/*ÌìÉ½Ñ©Á«*/
+ /*---åƒçš„ä¸œè¥¿å•¦---*/ //9
+ int food;		/*é£Ÿ    ç‰©*/
+ int medicine;          /*çµ    èŠ*/
+ int bighp;             /*å¤§ è¡¥ ä¸¸*/
+ int cookie;		/*é›¶    é£Ÿ*/
+ int ginseng;		/*åƒå¹´äºº  */
+ int snowgrass;		/*å¤©å±±é›ªè²*/
  int eatC;
  int eatD;
  int eatE;
  
- /*---ÓµÓĞµÄ¶«Î÷---*/ //8
- int book;		/*Êé    ±¾*/
- int playtool; 		/*Íæ    ¾ß*/
- int money;		/*½ğ    Ç®*/
+ /*---æ‹¥æœ‰çš„ä¸œè¥¿---*/ //8
+ int book;		/*ä¹¦    æœ¬*/
+ int playtool; 		/*ç©    å…·*/
+ int money;		/*é‡‘    é’±*/
  int thingA;		
  int thingB;		
  int thingC;
  int thingD;
  int thingE; 
- 
- /*---²ÂÈ­µÄ²ÎÊı---*/ //2
+
+ /*---çŒœæ‹³çš„å‚æ•°---*/ //2
  int winn;		
  int losee;
  
- /*---²Î¼ûÍõ³¼--*/ //16
- int royalA;		/*fromÊØÎÀ*/
- int royalB;		/*from½üÎÀ*/
- int royalC;		/*from½«¾ü*/
- int royalD;		/*from´ó³¼*/
- int royalE;		/*from¼ÀË¾*/ 		
- int royalF;		/*from³èåú*/
- int royalG;		/*fromÍõåú*/
- int royalH;  		/*from¹úÍõ*/
- int royalI;		/*fromĞ¡³ó*/
- int royalJ;		/*fromÍõ×Ó*/
- int seeroyalJ;		/*ÊÇ·ñÒÑ¾­¿´¹ıÍõ×ÓÁË*/
+ /*---å‚è§ç‹è‡£--*/ //16
+ int royalA;		/*fromå®ˆå«*/
+ int royalB;		/*fromè¿‘å«*/
+ int royalC;		/*fromå°†å†›*/
+ int royalD;		/*fromå¤§è‡£*/
+ int royalE;		/*fromç¥­å¸*/ 		
+ int royalF;		/*fromå® å¦ƒ*/
+ int royalG;		/*fromç‹å¦ƒ*/
+ int royalH;  		/*fromå›½ç‹*/
+ int royalI;		/*fromå°ä¸‘*/
+ int royalJ;		/*fromç‹å­*/
+ int seeroyalJ;		/*æ˜¯å¦å·²ç»çœ‹è¿‡ç‹å­äº†*/
  int seeA;
  int seeB;
  int seeC;
  int seeD;
  int seeE;
 
- /*---½á¾Ö----*///2
- int wantend;		/*20Ëê½á¾Ö*/
- /*1:²»ÒªÇÒÎ´»é 2:²»ÒªÇÒÒÑ»é  3:²»ÒªÇÒµ±µÚÈşÕß 4:ÒªÇÒÎ´»é  5:ÒªÇÒÒÑ»é 6:ÒªÇÒµ±µÚÈşÕß*/
- int lover;		/*°®ÈË*/
- /*0:Ã»ÓĞ 1:Ä§Íõ 2:Áú×å 3:A 4:B 5:C 6:D 7:E */ 
+ /*---ç»“å±€----*///2
+ int wantend;		/*20å²ç»“å±€*/
+ /*1:ä¸è¦ä¸”æœªå©š 2:ä¸è¦ä¸”å·²å©š  3:ä¸è¦ä¸”å½“ç¬¬åè€… 4:è¦ä¸”æœªå©š  5:è¦ä¸”å·²å©š 6:è¦ä¸”å½“ç¬¬åè€…*/
+ int lover;		/*çˆ±äºº*/
+ /*0:æ²¡æœ‰ 1:é­”ç‹ 2:é¾™æ— 3:A 4:B 5:C 6:D 7:E */ 
  
- /*-------¹¤×÷´ÎÊı--------*/
- int workA; /*¼ÒÊÂ*/
- int workB; /*±£Ä·*/
- int workC; /*ÂÃµê*/
- int workD; /*Å©³¡*/
- int workE; /*²ÍÌü*/
- int workF; /*½ÌÌÃ*/
- int workG; /*µØÌ¯*/
- int workH; /*·¥Ä¾*/
- int workI; /*ÃÀ·¢*/
- int workJ; /*ÁÔÈË*/
- int workK; /*¹¤µØ*/
- int workL; /*ÊØÄ¹*/
- int workM; /*¼Ò½Ì*/
- int workN; /*¾Æ¼Ò*/
- int workO; /*¾Æµê*/
- int workP; /*Ò¹*/
+ /*-------å·¥ä½œæ¬¡æ•°--------*/
+ int workA; /*å®¶äº‹*/
+ int workB; /*ä¿å§†*/
+ int workC; /*æ—…åº—*/
+ int workD; /*å†œåœº*/
+ int workE; /*é¤å…*/
+ int workF; /*æ•™å ‚*/
+ int workG; /*åœ°æ‘Š*/
+ int workH; /*ä¼æœ¨*/
+ int workI; /*ç¾å‘*/
+ int workJ; /*çŒäºº*/
+ int workK; /*å·¥åœ°*/
+ int workL; /*å®ˆå¢“*/
+ int workM; /*å®¶æ•™*/
+ int workN; /*é…’å®¶*/
+ int workO; /*é…’åº—*/
+ int workP; /*å¤œ*/
  int workQ;
  int workR;
  int workS;
@@ -181,7 +181,7 @@ struct chicken {
  int workY;
  int workZ;
  
- /*-------ÉÏ¿Î´ÎÊı--------*/
+ /*-------ä¸Šè¯¾æ¬¡æ•°--------*/
  int classA;
  int classB;
  int classC;
@@ -198,13 +198,13 @@ struct chicken {
  int classN;
  int classO;
  
- /*---Ğ¡¼¦µÄÊ±¼ä---*/ //1
+ /*---å°é¸¡çš„æ—¶é—´---*/ //1
  time_t bbtime;
 };
 typedef struct chicken chicken;
 
 /*--------------------------------------------------------------------------*/
-/*  Ñ¡µ¥µÄÉè¶¨                                                              */
+/*  é€‰å•çš„è®¾å®š                                                              */
 /*--------------------------------------------------------------------------*/
 struct pipcommands
 {
@@ -215,67 +215,67 @@ struct pipcommands
 typedef struct pipcommands pipcommands;
 
 /*--------------------------------------------------------------------------*/
-/*  ¹ÖÎï²ÎÊıÉè¶¨                                                            */
+/*  æ€ªç‰©å‚æ•°è®¾å®š                                                            */
 /*--------------------------------------------------------------------------*/
 struct playrule
 {
-  //char *name;           /*Ãû×Ö*/  
+  //char *name;           /*åå­—*/  
   char name[20];
-  int hp;		/*ÌåÁ¦*/
+  int hp;		/*ä½“åŠ›*/
   int maxhp; 		/*MAXHP*/
-  int mp;		/*·¨Á¦*/
+  int mp;		/*æ³•åŠ›*/
   int maxmp;		/*MAXMP*/
-  int attack;		/*¹¥»÷*/
-  int resist;		/*·À»¤*/
-  int speed;		/*ËÙ¶È*/
-  int money;		/*²Æ±¦*/
-  char special[6];	/*ÌØ±ğ*/  /*1:ÅÂ»ğ 2:ÅÂ±ù */
-  int map;		/*Í¼µµ*/
-  int death;		/*ËÀ»î*/
+  int attack;		/*æ”»å‡»*/
+  int resist;		/*é˜²æŠ¤*/
+  int speed;		/*é€Ÿåº¦*/
+  int money;		/*è´¢å®*/
+  char special[6];	/*ç‰¹åˆ«*/  /*1:æ€•ç« 2:æ€•å†° */
+  int map;		/*å›¾æ¡£*/
+  int death;		/*æ­»æ´»*/
 };
 typedef struct playrule playrule;
 
-/* d.specialµÄ¶¨Òå            */
-/* 00000 µÚÒ»ÏµµÄÄ§·¨ÉËº¦½ÏĞ¡ */
-/* 10000 µÚÒ»ÏµµÄÄ§·¨ÉËº¦½Ï´ó */
-/* 11000 Ò»¶şÏµµÄÄ§·¨ÉËº¦½Ï´ó */
-/* ÒÔÏÂÀàÍÆ                    */
-/* À×Ïµ ±ùÏµ »ğÏµ ÍÁÏµ ·çÏµ */
+/* d.specialçš„å®šä¹‰            */
+/* 00000 ç¬¬ä¸€ç³»çš„é­”æ³•ä¼¤å®³è¾ƒå° */
+/* 10000 ç¬¬ä¸€ç³»çš„é­”æ³•ä¼¤å®³è¾ƒå¤§ */
+/* 11000 ä¸€äºŒç³»çš„é­”æ³•ä¼¤å®³è¾ƒå¤§ */
+/* ä»¥ä¸‹ç±»æ¨                    */
+/* é›·ç³» å†°ç³» ç«ç³» åœŸç³» é£ç³» */
 /*struct playrule goodmanlist[] = {
 }*/ 
 
-#define PIP_BADMAN       (3)            /* ¹ÖÎïÕûÌå¸öÊı  */   
+#define PIP_BADMAN       (3)            /* æ€ªç‰©æ•´ä½“ä¸ªæ•°  */   
 
 /*--------------------------------------------------------------------------*/
-/*  Ä§·¨²ÎÊıÉè¶¨                                                            */
+/*  é­”æ³•å‚æ•°è®¾å®š                                                            */
 /*--------------------------------------------------------------------------*/
 struct magicset
 {
-  //char *name;           /*Ä§·¨µÄÃû×Ö*/ 
+  //char *name;           /*é­”æ³•çš„åå­—*/ 
   char name[20];
-  int needmp;		/*ĞèÒªµÄ·¨Á¦*/
-  int hpmode;		/*0:¼õÉÙ 1:Ôö¼Ó 2:×î´óÖµ*/
-  int hp;		/*É±ÉËÉúÃüÁ¦*/
-  int tiredmode;        /*0:¼õÉÙ 1:Ôö¼Ó 2:×îĞ¡Öµ*/
-  int tired;		/*Æ£ÀÍ¶È¸Ä±ä*/
-  int map;		/*Í¼µµ*/
+  int needmp;		/*éœ€è¦çš„æ³•åŠ›*/
+  int hpmode;		/*0:å‡å°‘ 1:å¢åŠ  2:æœ€å¤§å€¼*/
+  int hp;		/*æ€ä¼¤ç”Ÿå‘½åŠ›*/
+  int tiredmode;        /*0:å‡å°‘ 1:å¢åŠ  2:æœ€å°å€¼*/
+  int tired;		/*ç–²åŠ³åº¦æ”¹å˜*/
+  int map;		/*å›¾æ¡£*/
 };
 typedef struct magicset magicset;
 
 
 /*--------------------------------------------------------------------------*/
-/*  ²Î¼ûÍõ³¼²ÎÊıÉè¶¨                                                        */
+/*  å‚è§ç‹è‡£å‚æ•°è®¾å®š                                                        */
 /*--------------------------------------------------------------------------*/
 struct royalset
 {
-  //char *num;		/*´úÂë*/
-  //char *name;           /*Íõ³¼µÄÃû×Ö*/ 
+  //char *num;		/*ä»£ç */
+  //char *name;           /*ç‹è‡£çš„åå­—*/ 
   char num[2];
   char name[20];
-  int needmode;		/*ĞèÒªµÄmode*/ /*0:²»ĞèÒª 1:ÀñÒÇ 2:Ì¸ÍÂ*/
-  int needvalue;	/*ĞèÒªµÄvalue*/
-  int addtoman;		/*×î´óµÄÔö¼ÓÁ¿*/
-  int maxtoman;		/*¿â´æÁ¿*/
+  int needmode;		/*éœ€è¦çš„mode*/ /*0:ä¸éœ€è¦ 1:ç¤¼ä»ª 2:è°ˆå*/
+  int needvalue;	/*éœ€è¦çš„value*/
+  int addtoman;		/*æœ€å¤§çš„å¢åŠ é‡*/
+  int maxtoman;		/*åº“å­˜é‡*/
   //char *words1;
   //char *words2;
   char words1[40];
@@ -284,8 +284,10 @@ struct royalset
 typedef struct royalset royalset;
 
 #ifndef  MAPLE
-#define  MSG_UID	"ÇëÊäÈëÊ¹ÓÃÕß´úºÅ£º"
-#define  ERR_UID	"ÕâÀïÃ»ÓĞÕâ¸öÈËÀ²£¡"
+//% #define  MSG_UID	"è¯·è¾“å…¥ä½¿ç”¨è€…ä»£å·ï¼š"
+#define  MSG_UID	"\xc7\xeb\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xa3\xba"
+//% #define  ERR_UID	"è¿™é‡Œæ²¡æœ‰è¿™ä¸ªäººå•¦ï¼"
+#define  ERR_UID	"\xd5\xe2\xc0\xef\xc3\xbb\xd3\xd0\xd5\xe2\xb8\xf6\xc8\xcb\xc0\xb2\xa3\xa1"
 #define  cuser		currentuser
 #define  b_lines	t_lines-1
 #endif  // End MAPLE

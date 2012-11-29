@@ -1,18 +1,26 @@
-#define VOTE_FLAG    	0x1			//Í¶Æ±Ä£Ê½
+//% #define VOTE_FLAG    	0x1			//æŠ•ç¥¨æ¨¡å¼
+#define VOTE_FLAG    	0x1			//\xcd\xb6\xc6\xb1\xc4\xa3\xca\xbd
 #define NOZAP_FLAG   	0x2			//
 #define OUT_FLAG     	0x4			//
-#define ANONY_FLAG   	0x8			//ÄäÃûÄ£Ê½
+//% #define ANONY_FLAG   	0x8			//åŒ¿åæ¨¡å¼
+#define ANONY_FLAG   	0x8			//\xc4\xe4\xc3\xfb\xc4\xa3\xca\xbd
 #define NOREPLY_FLAG 	0x10 		/* No reply board */
 #define BOARDJUNK_FLAG	0x20		//
 
-#define BOARD_VOTE_FLAG         0x1             //Í¶Æ±Ä£Ê½
+//% #define BOARD_VOTE_FLAG         0x1             //æŠ•ç¥¨æ¨¡å¼
+#define BOARD_VOTE_FLAG         0x1             //\xcd\xb6\xc6\xb1\xc4\xa3\xca\xbd
 #define BOARD_NOZAP_FLAG        0x2             //no zap
-#define BOARD_OUT_FLAG          0x4             //×ªĞÅ
-#define BOARD_ANONY_FLAG        0x8             //ÄäÃûÄ£Ê½
+//% #define BOARD_OUT_FLAG          0x4             //è½¬ä¿¡
+#define BOARD_OUT_FLAG          0x4             //\xd7\xaa\xd0\xc5
+//% #define BOARD_ANONY_FLAG        0x8             //åŒ¿åæ¨¡å¼
+#define BOARD_ANONY_FLAG        0x8             //\xc4\xe4\xc3\xfb\xc4\xa3\xca\xbd
 #define BOARD_NOREPLY_FLAG      0x10            //No reply board
-#define BOARD_JUNK_FLAG         0x20            //²»¼ÇÎÄÕÂÊı
-#define BOARD_CLUB_FLAG         0x40            //¾ãÀÖ²¿°æÃæ
-#define BOARD_READ_FLAG         0x80            //Òş²Ø°æÃæ
+//% #define BOARD_JUNK_FLAG         0x20            //ä¸è®°æ–‡ç« æ•°
+#define BOARD_JUNK_FLAG         0x20            //\xb2\xbb\xbc\xc7\xce\xc4\xd5\xc2\xca\xfd
+//% #define BOARD_CLUB_FLAG         0x40            //ä¿±ä¹éƒ¨ç‰ˆé¢
+#define BOARD_CLUB_FLAG         0x40            //\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6\xc3\xe6
+//% #define BOARD_READ_FLAG         0x80            //éšè—ç‰ˆé¢
+#define BOARD_READ_FLAG         0x80            //\xd2\xfe\xb2\xd8\xb0\xe6\xc3\xe6
 #define BOARD_POST_FLAG         0x100           //postmask
 
 #define PERM_POSTMASK  0100000     

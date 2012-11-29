@@ -34,16 +34,19 @@ int rebuild(char* board){
 	DIR *dp;
 	
 	sprintf(pathname, "%s/boards/%s",BBSHOME,board);
-	printf("1. ½øÈëÄ¿Â¼ %s\n",pathname);
+	//% printf("1. è¿›å…¥ç›®å½• %s\n",pathname);
+	printf("1. \xbd\xf8\xc8\xeb\xc4\xbf\xc2\xbc %s\n",pathname);
 	if( (dp = opendir(pathname))==NULL){
 		printf("OpenDir error for %s\n",pathname);
 		return;
 	}
 	
-	printf("2. Éú³É .DIR\n");
+	//% printf("2. ç”Ÿæˆ .DIR\n");
+	printf("2. \xc9\xfa\xb3\xc9 .DIR\n");
 	all = build_dir( pathname);
 	
-	printf("3. ĞŞ¸Ä .BOARDS\n");
+	//% printf("3. ä¿®æ”¹ .BOARDS\n");
+	printf("3. \xd0\xde\xb8\xc4 .BOARDS\n");
   	sprintf (pathname, "/home/bbs/.BOARDS");
 	if ((fd = open (pathname, O_RDWR)) == 0) {
 		printf ("Can't open record data file.\n");
@@ -55,7 +58,8 @@ int rebuild(char* board){
 			bh.nowid = all;
 			if(lseek(fd, (off_t) (sizeof (bh) * (i)), SEEK_SET) != -1){ 
 				write(fd, &bh , sizeof(bh));
-				printf("4. %dºÅ°æÃæ\t%sÓĞÎÄÕÂ%dÆª\n", i, bh.filename, all); 
+				//% printf("4. %då·ç‰ˆé¢\t%sæœ‰æ–‡ç« %dç¯‡\n", i, bh.filename, all); 
+				printf("4. %d\xba\xc5\xb0\xe6\xc3\xe6\t%s\xd3\xd0\xce\xc4\xd5\xc2%d\xc6\xaa\n", i, bh.filename, all); 
 								
 			}
 			break;

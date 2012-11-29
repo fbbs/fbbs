@@ -130,10 +130,13 @@ int grant_money(void)
 
 	move(t_lines - 2, 0);
 	if (submit_changes(file) == 0) {
-		Postfile(file, "Bank_In", "¹â»ª±Ò·¢·Å¼ÇÂ¼", 2);
-		prints("²Ù×÷³É¹¦!");
+		//% Postfile(file, "Bank_In", "å…‰åå¸å‘æ”¾è®°å½•", 2);
+		Postfile(file, "Bank_In", "\xb9\xe2\xbb\xaa\xb1\xd2\xb7\xa2\xb7\xc5\xbc\xc7\xc2\xbc", 2);
+		//% prints("æ“ä½œæˆåŠŸ!");
+		prints("\xb2\xd9\xd7\xf7\xb3\xc9\xb9\xa6!");
 	} else {
-		prints("²Ù×÷Ê§°Ü..");
+		//% prints("æ“ä½œå¤±è´¥..");
+		prints("\xb2\xd9\xd7\xf7\xca\xa7\xb0\xdc..");
 	}
 	pressanykey();
 	unlink(file);

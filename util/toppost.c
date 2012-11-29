@@ -25,7 +25,8 @@ typedef struct top_t {
 
 const char *files[] = { "day", "week", "month", "year", "day_f" };
 const int limits[] = { 10, 50, 100, 200, 10 };
-const char *titles[] = { "ÈÕÊ®", "ÖÜÎåÊ®", "ÔÂÒ»°Ù", "Äê¶È¶þ°Ù", "ÈÕÊ®" };
+//% const char *titles[] = { "æ—¥å", "å‘¨äº”å", "æœˆä¸€ç™¾", "å¹´åº¦äºŒç™¾", "æ—¥å" };
+const char *titles[] = { "\xc8\xd5\xca\xae", "\xd6\xdc\xce\xe5\xca\xae", "\xd4\xc2\xd2\xbb\xb0\xd9", "\xc4\xea\xb6\xc8\xb6\xfe\xb0\xd9", "\xc8\xd5\xca\xae" };
 
 unsigned int top_hash(const char *key, unsigned int *klen)
 {
@@ -181,7 +182,8 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 	sprintf(file, BASEPATH"/%s", files[type]);
 	FILE *fp = fopen(file, "w+");
 	fprintf(fp, "                \033[1;34m-----\033[37m=====\033[41m"
-			" ±¾%s´óÈÈÃÅ»°Ìâ \033[40m=====\033[34m-----\033[m\n\n",
+			//% " æœ¬%så¤§çƒ­é—¨è¯é¢˜ \033[40m=====\033[34m-----\033[m\n\n",
+			" \xb1\xbe%s\xb4\xf3\xc8\xc8\xc3\xc5\xbb\xb0\xcc\xe2 \033[40m=====\033[34m-----\033[m\n\n",
 			titles[type]);
 	top_t *top;
 	int i, j = 0;
@@ -201,9 +203,12 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 		if (type == DAY_F && exceed_board_limit(top, c, sizeof(c) / sizeof(c[0])))
 			continue;
 		strlcpy(date, ctime(&top->last) + 4, 16);
-		fprintf(fp, "\033[1;37mµÚ\033[31m%3u\033[37m Ãû \033[37mÐÅÇø : \033[33m"
-				"%-18s\033[37m¡¼ \033[32m%s\033[37m ¡½\033[36m%4d \033[37mÆª"
-				"\033[33m%13.13s\n     \033[37m±êÌâ : \033[1;44m%-60.60s"
+		//% fprintf(fp, "\033[1;37mç¬¬\033[31m%3u\033[37m å \033[37mä¿¡åŒº : \033[33m"
+		fprintf(fp, "\033[1;37m\xb5\xda\033[31m%3u\033[37m \xc3\xfb \033[37m\xd0\xc5\xc7\xf8 : \033[33m"
+				//% "%-18s\033[37mã€– \033[32m%s\033[37m ã€—\033[36m%4d \033[37mç¯‡"
+				"%-18s\033[37m\xa1\xbc \033[32m%s\033[37m \xa1\xbd\033[36m%4d \033[37m\xc6\xaa"
+				//% "\033[33m%13.13s\n     \033[37mæ ‡é¢˜ : \033[1;44m%-60.60s"
+				"\033[33m%13.13s\n     \033[37m\xb1\xea\xcc\xe2 : \033[1;44m%-60.60s"
 				"\033[40m\n", ++j, top->board, date, top->count, top->owner,
 				ansi_filter(title, top->title));
 		if (out)
@@ -214,7 +219,8 @@ void print_stat(const hash_t *ht, top_t **tops, int type)
 		fclose(out);
 
 	if (type == DAY_F && i > j)
-		fprintf(fp, "\033[1;30m  ¡¾ÓÐ %d ¸öÖ÷ÌâÒò³¬³ö°æÃæÏÞÖÆ¶ø±»Ê¡ÂÔ¡¿\033[m", i - j);
+		//% fprintf(fp, "\033[1;30m  ã€æœ‰ %d ä¸ªä¸»é¢˜å› è¶…å‡ºç‰ˆé¢é™åˆ¶è€Œè¢«çœç•¥ã€‘\033[m", i - j);
+		fprintf(fp, "\033[1;30m  \xa1\xbe\xd3\xd0 %d \xb8\xf6\xd6\xf7\xcc\xe2\xd2\xf2\xb3\xac\xb3\xf6\xb0\xe6\xc3\xe6\xcf\xde\xd6\xc6\xb6\xf8\xb1\xbb\xca\xa1\xc2\xd4\xa1\xbf\033[m", i - j);
 
 	fclose(fp);
 }

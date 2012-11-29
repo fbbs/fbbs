@@ -1,10 +1,15 @@
 /*
-    ¹¦ÄÜ     :  ÁĞ³öÕ¾ÄÚÊ¹ÓÃÕß×ÊÁÏ
-    ×¢ÒâÊÂÏî :  ĞëÒªÄ¿Ç°µÄ bbs.h
+    //% åŠŸèƒ½     :  åˆ—å‡ºç«™å†…ä½¿ç”¨è€…èµ„æ–™
+    \xb9\xa6\xc4\xdc     :  \xc1\xd0\xb3\xf6\xd5\xbe\xc4\xda\xca\xb9\xd3\xc3\xd5\xdf\xd7\xca\xc1\xcf
+    //% æ³¨æ„äº‹é¡¹ :  é¡»è¦ç›®å‰çš„ bbs.h
+    \xd7\xa2\xd2\xe2\xca\xc2\xcf\xee :  \xd0\xeb\xd2\xaa\xc4\xbf\xc7\xb0\xb5\xc4 bbs.h
     Compile  :  gcc -o showuser showuser.c
-    Ê¹ÓÃ·½Ê½ :  showuser i10 l5 e25
-                (ÁĞ³öÊ¹ÓÃÕßµÄ ID, login ´ÎÊı, email µØÖ·)
-    ²é¿´½á¹û £º ÔÚ ~bbs/tmp/showuser.result ÖĞ		
+    //% ä½¿ç”¨æ–¹å¼ :  showuser i10 l5 e25
+    \xca\xb9\xd3\xc3\xb7\xbd\xca\xbd :  showuser i10 l5 e25
+                //% (åˆ—å‡ºä½¿ç”¨è€…çš„ ID, login æ¬¡æ•°, email åœ°å€)
+                (\xc1\xd0\xb3\xf6\xca\xb9\xd3\xc3\xd5\xdf\xb5\xc4 ID, login \xb4\xce\xca\xfd, email \xb5\xd8\xd6\xb7)
+    //% æŸ¥çœ‹ç»“æœ ï¼š åœ¨ ~bbs/tmp/showuser.result ä¸­		
+    \xb2\xe9\xbf\xb4\xbd\xe1\xb9\xfb \xa3\xba \xd4\xda ~bbs/tmp/showuser.result \xd6\xd0		
  */
 
 /* Modify by deardraogn 2000.10.28 */

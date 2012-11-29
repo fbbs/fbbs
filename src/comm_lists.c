@@ -43,7 +43,8 @@ int m_internet();
 
 int show_online_followings(), t_list(), t_monitor();
 int x_cloak();
-int AddPCorpus(); // deardragon 个人文集 
+//% int AddPCorpus(); // deardragon 涓汉鏂囬泦 
+int AddPCorpus(); // deardragon \xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf 
 int sendgoodwish();
 extern int tui_following_list(void);
 extern int tui_black_list(void);

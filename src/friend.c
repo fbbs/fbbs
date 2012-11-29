@@ -17,15 +17,24 @@ static tui_list_loader_t following_list_loader(tui_list_t *p)
 
 static tui_list_title_t following_list_title(tui_list_t *p)
 {
-	const char *middle = chkmail() ? "[ÄúÓĞĞÅ¼ş]" : BBSNAME;
-	showtitle("[±à¼­¹Ø×¢Ãûµ¥]", middle);
-	prints(" [\033[1;32m¡û\033[m,\033[1;32me\033[m] Àë¿ª"
-			" [\033[1;32mh\033[m] ÇóÖú"
-			" [\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m] ËµÃ÷µµ"
-			" [\033[1;32m¡ü\033[m,\033[1;32m¡ı\033[m] Ñ¡Ôñ"
-			" [\033[1;32ma\033[m] ¼Ó¹Ø×¢"
-			" [\033[1;32md\033[m] È¡Ïû¹Ø×¢\n"
-			"\033[1;44m ±àºÅ  ¹Ø×¢µÄÈË     ÓÑ ±¸×¢\033[K\033[m\n");
+	//% const char *middle = chkmail() ? "[æ‚¨æœ‰ä¿¡ä»¶]" : BBSNAME;
+	const char *middle = chkmail() ? "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe]" : BBSNAME;
+	//% showtitle("[ç¼–è¾‘å…³æ³¨åå•]", middle);
+	showtitle("[\xb1\xe0\xbc\xad\xb9\xd8\xd7\xa2\xc3\xfb\xb5\xa5]", middle);
+	//% prints(" [\033[1;32mâ†\033[m,\033[1;32me\033[m] ç¦»å¼€"
+	prints(" [\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xc0\xeb\xbf\xaa"
+			//% " [\033[1;32mh\033[m] æ±‚åŠ©"
+			" [\033[1;32mh\033[m] \xc7\xf3\xd6\xfa"
+			//% " [\033[1;32mâ†’\033[m,\033[1;32mRtn\033[m] è¯´æ˜æ¡£"
+			" [\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m] \xcb\xb5\xc3\xf7\xb5\xb5"
+			//% " [\033[1;32mâ†‘\033[m,\033[1;32mâ†“\033[m] é€‰æ‹©"
+			" [\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd\033[m] \xd1\xa1\xd4\xf1"
+			//% " [\033[1;32ma\033[m] åŠ å…³æ³¨"
+			" [\033[1;32ma\033[m] \xbc\xd3\xb9\xd8\xd7\xa2"
+			//% " [\033[1;32md\033[m] å–æ¶ˆå…³æ³¨\n"
+			" [\033[1;32md\033[m] \xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2\n"
+			//% "\033[1;44m ç¼–å·  å…³æ³¨çš„äºº     å‹ å¤‡æ³¨\033[K\033[m\n");
+			"\033[1;44m \xb1\xe0\xba\xc5  \xb9\xd8\xd7\xa2\xb5\xc4\xc8\xcb     \xd3\xd1 \xb1\xb8\xd7\xa2\033[K\033[m\n");
 }
 
 static tui_list_display_t following_list_display(tui_list_t *p, int i)
@@ -36,18 +45,21 @@ static tui_list_display_t following_list_display(tui_list_t *p, int i)
 	convert_u2g(following_list_get_notes(list, i), gbk_note);
 
 	prints(" %4d  %-12s %s %s\n", i + 1, following_list_get_name(list, i),
-			following_list_get_is_friend(list, i) ? "¡Ì" : "  ", gbk_note);
+			//% following_list_get_is_friend(list, i) ? "âˆš" : "  ", gbk_note);
+			following_list_get_is_friend(list, i) ? "\xa1\xcc" : "  ", gbk_note);
 	return 0;
 }
 
 static int tui_follow(void)
 {
 	char buf[IDLEN + 1];
-	getdata(t_lines - 1, 0, "ÇëÊäÈëÒª¹Ø×¢µÄÈË: ", buf, IDLEN, DOECHO, YEA);
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥è¦å…³æ³¨çš„äºº: ", buf, IDLEN, DOECHO, YEA);
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb9\xd8\xd7\xa2\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
 	if (!*buf)
 		return 0;
 	char note[FOLLOW_NOTE_CCHARS * 2 + 1], utf8_note[FOLLOW_NOTE_CCHARS * 4 + 1];
-	getdata(t_lines - 1, 0, "ÇëÊäÈë±¸×¢: ", note, sizeof(note), DOECHO, YEA);
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥å¤‡æ³¨: ", note, sizeof(note), DOECHO, YEA);
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ", note, sizeof(note), DOECHO, YEA);
 	convert_g2u(note, utf8_note);
 	return follow(session.uid, buf, utf8_note);
 }
@@ -55,13 +67,15 @@ static int tui_follow(void)
 static int tui_unfollow(user_id_t uid)
 {
 	move(t_lines - 1, 0);
-	return askyn("È·¶¨È¡Ïû¹Ø×¢?", false, true) ? unfollow(session.uid, uid) : 0;
+	//% return askyn("ç¡®å®šå–æ¶ˆå…³æ³¨?", false, true) ? unfollow(session.uid, uid) : 0;
+	return askyn("\xc8\xb7\xb6\xa8\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2?", false, true) ? unfollow(session.uid, uid) : 0;
 }
 
 static int tui_edit_followed_note(user_id_t followed, const char *orig)
 {
 	char note[FOLLOW_NOTE_CCHARS * 2 + 1], utf8_note[FOLLOW_NOTE_CCHARS * 4 + 1];
-	getdata(t_lines - 1, 0, "ÇëÊäÈë±¸×¢: ", note, sizeof(note), DOECHO, YEA);
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥å¤‡æ³¨: ", note, sizeof(note), DOECHO, YEA);
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ", note, sizeof(note), DOECHO, YEA);
 	convert_g2u(note, utf8_note);
 
 	if (!*utf8_note || streq(orig, utf8_note))
@@ -78,8 +92,10 @@ static tui_list_query_t following_list_query(tui_list_t *p)
 		return FULLUPDATE;
 	move(t_lines - 1, 0);
 	clrtoeol();
-	prints("\033[0;1;44;31m\033[33m ¼ÄĞÅ m ©¦ ½áÊø Q,¡û ©¦ÉÏÒ»Î» ¡ü©¦"
-			"ÏÂÒ»Î» <Space>,¡ı                            \033[m");
+	//% prints("\033[0;1;44;31m\033[33m å¯„ä¿¡ m â”‚ ç»“æŸ Q,â† â”‚ä¸Šä¸€ä½ â†‘â”‚"
+	prints("\033[0;1;44;31m\033[33m \xbc\xc4\xd0\xc5 m \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6"
+			//% "ä¸‹ä¸€ä½ <Space>,â†“                            \033[m");
+			"\xcf\xc2\xd2\xbb\xce\xbb <Space>,\xa1\xfd                            \033[m");
 	refresh();
 	return DONOTHING;
 }
@@ -153,15 +169,24 @@ static tui_list_loader_t black_list_loader(tui_list_t *p)
 
 static tui_list_title_t black_list_title(tui_list_t *p)
 {
-	const char *middle = chkmail() ? "[ÄúÓĞĞÅ¼ş]" : BBSNAME;
-	showtitle("[±à¼­ºÚÃûµ¥]", middle);
-	prints(" [\033[1;32m¡û\033[m,\033[1;32me\033[m] Àë¿ª"
-			" [\033[1;32mh\033[m] ÇóÖú"
-			" [\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m] ËµÃ÷µµ"
-			" [\033[1;32m¡ü\033[m,\033[1;32m¡ı\033[m] Ñ¡Ôñ"
-			" [\033[1;32ma\033[m] Ìí¼Ó"
-			" [\033[1;32md\033[m] ½â³ı\n"
-			"\033[1;44m ±àºÅ  ÓÃ»§     ±¸×¢\033[K\033[m\n");
+	//% const char *middle = chkmail() ? "[æ‚¨æœ‰ä¿¡ä»¶]" : BBSNAME;
+	const char *middle = chkmail() ? "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe]" : BBSNAME;
+	//% showtitle("[ç¼–è¾‘é»‘åå•]", middle);
+	showtitle("[\xb1\xe0\xbc\xad\xba\xda\xc3\xfb\xb5\xa5]", middle);
+	//% prints(" [\033[1;32mâ†\033[m,\033[1;32me\033[m] ç¦»å¼€"
+	prints(" [\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xc0\xeb\xbf\xaa"
+			//% " [\033[1;32mh\033[m] æ±‚åŠ©"
+			" [\033[1;32mh\033[m] \xc7\xf3\xd6\xfa"
+			//% " [\033[1;32mâ†’\033[m,\033[1;32mRtn\033[m] è¯´æ˜æ¡£"
+			" [\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m] \xcb\xb5\xc3\xf7\xb5\xb5"
+			//% " [\033[1;32mâ†‘\033[m,\033[1;32mâ†“\033[m] é€‰æ‹©"
+			" [\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd\033[m] \xd1\xa1\xd4\xf1"
+			//% " [\033[1;32ma\033[m] æ·»åŠ "
+			" [\033[1;32ma\033[m] \xcc\xed\xbc\xd3"
+			//% " [\033[1;32md\033[m] è§£é™¤\n"
+			" [\033[1;32md\033[m] \xbd\xe2\xb3\xfd\n"
+			//% "\033[1;44m ç¼–å·  ç”¨æˆ·     å¤‡æ³¨\033[K\033[m\n");
+			"\033[1;44m \xb1\xe0\xba\xc5  \xd3\xc3\xbb\xa7     \xb1\xb8\xd7\xa2\033[K\033[m\n");
 }
 
 static tui_list_display_t black_list_display(tui_list_t *p, int i)
@@ -179,11 +204,13 @@ static tui_list_display_t black_list_display(tui_list_t *p, int i)
 static int tui_black_list_add(void)
 {
 	char buf[IDLEN + 1];
-	getdata(t_lines - 1, 0, "ÇëÊäÈëÒªÀ­ºÚµÄÈË: ", buf, IDLEN, DOECHO, YEA);
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥è¦æ‹‰é»‘çš„äºº: ", buf, IDLEN, DOECHO, YEA);
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xc0\xad\xba\xda\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
 	if (!*buf)
 		return 0;
 	GBK_UTF8_BUFFER(note, BLACK_LIST_NOTE_CCHARS);
-	getdata(t_lines - 1, 0, "ÇëÊäÈë±¸×¢: ",
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥å¤‡æ³¨: ",
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
 			gbk_note, sizeof(gbk_note), DOECHO, YEA);
 	convert_g2u(gbk_note, utf8_note);
 	return black_list_add(session.uid, buf, utf8_note);
@@ -192,7 +219,8 @@ static int tui_black_list_add(void)
 static int tui_black_list_edit(user_id_t blocked, const char *orig)
 {
 	GBK_UTF8_BUFFER(note, BLACK_LIST_NOTE_CCHARS);
-	getdata(t_lines - 1, 0, "ÇëÊäÈë±¸×¢: ",
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥å¤‡æ³¨: ",
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
 			gbk_note, sizeof(gbk_note), DOECHO, YEA);
 	convert_g2u(gbk_note, utf8_note);
 
@@ -210,7 +238,8 @@ static tui_list_query_t black_list_query(tui_list_t *p)
 		return FULLUPDATE;
 	move(t_lines - 1, 0);
 	clrtoeol();
-	prints("\033[0;1;33;44m ½áÊø Q,¡û ©¦ÉÏÒ»Î» ¡ü©¦ÏÂÒ»Î» <Space>,¡ı "
+	//% prints("\033[0;1;33;44m ç»“æŸ Q,â† â”‚ä¸Šä¸€ä½ â†‘â”‚ä¸‹ä¸€ä½ <Space>,â†“ "
+	prints("\033[0;1;33;44m \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6\xcf\xc2\xd2\xbb\xce\xbb <Space>,\xa1\xfd "
 			"                           \033[m");
 	refresh();
 	return DONOTHING;

@@ -2,14 +2,17 @@
  $Id: chat.h 2 2005-07-14 15:06:08Z root $
  */
 
-#define MY_BBS_NAME   "ÈÕÔÂ¹â»ª"
+//% "æ—¥æœˆå…‰å"
+#define MY_BBS_NAME   "\xc8\xd5\xd4\xc2\xb9\xe2\xbb\xaa"
 #define MY_BBS_DOMAIN "bbs.fudan.edu.cn"
 
 /* chat.h - port numbers for the chat rooms -- changing them is wise. */
 #define CHATPORT1 7201
 #define CHATPORT2 7202
-#define CHATNAME1 "¹ú¼Ê»áÒéÌü"
-#define CHATNAME2 "ÑàÔ°Ò¹»°"
+//% "å›½é™…ä¼šè®®å…"
+#define CHATNAME1 "\xb9\xfa\xbc\xca\xbb\xe1\xd2\xe9\xcc\xfc"
+//% "ç‡•å›­å¤œè¯"
+#define CHATNAME2 "\xd1\xe0\xd4\xb0\xd2\xb9\xbb\xb0"
 
 #define MAXDEFINEALIAS  60         /* MAX User Define Alias  */
 #define MAXROOM         32         /* MAX number of Chat-Room */

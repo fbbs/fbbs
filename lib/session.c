@@ -241,130 +241,192 @@ const char *status_descr(int status)
 {
 	switch (status) {
 		case ST_IDLE:
-			return "ÎŞËùÊÂÊÂ";
+			//% "æ— æ‰€äº‹äº‹"
+			return "\xce\xde\xcb\xf9\xca\xc2\xca\xc2";
 		case ST_NEW:
-			return "ĞÂÕ¾ÓÑ×¢²á";
+			//% "æ–°ç«™å‹æ³¨å†Œ"
+			return "\xd0\xc2\xd5\xbe\xd3\xd1\xd7\xa2\xb2\xe1";
 		case ST_LOGIN:
-			return "½øÈë±¾Õ¾";
+			//% "è¿›å…¥æœ¬ç«™"
+			return "\xbd\xf8\xc8\xeb\xb1\xbe\xd5\xbe";
 		case ST_DIGEST:
-			return "¼³È¡¾«»ª";
+			//% "æ±²å–ç²¾å"
+			return "\xbc\xb3\xc8\xa1\xbe\xab\xbb\xaa";
 		case ST_MMENU:
-			return "ÓÎ´ó½Ö";
+			//% "æ¸¸å¤§è¡—"
+			return "\xd3\xce\xb4\xf3\xbd\xd6";
 		case ST_ADMIN:
-			return "ĞŞÂ·ÆÌÇÅ";
+			//% "ä¿®è·¯é“ºæ¡¥"
+			return "\xd0\xde\xc2\xb7\xc6\xcc\xc7\xc5";
 		case ST_SELECT:
-			return "Ñ¡ÔñÌÖÂÛÇø";
+			//% "é€‰æ‹©è®¨è®ºåŒº"
+			return "\xd1\xa1\xd4\xf1\xcc\xd6\xc2\xdb\xc7\xf8";
 		case ST_READBRD:
-			return "ÀÀ±éÌìÏÂ";
+			//% "è§ˆéå¤©ä¸‹"
+			return "\xc0\xc0\xb1\xe9\xcc\xec\xcf\xc2";
 		case ST_READNEW:
-			return "ÀÀĞÂÎÄÕÂ";
+			//% "è§ˆæ–°æ–‡ç« "
+			return "\xc0\xc0\xd0\xc2\xce\xc4\xd5\xc2";
 		case ST_READING:
-			return "Æ·Î¶ÎÄÕÂ";
+			//% "å“å‘³æ–‡ç« "
+			return "\xc6\xb7\xce\xb6\xce\xc4\xd5\xc2";
 		case ST_POSTING:
-			return "ÎÄºÀ»Ó±Ê";
+			//% "æ–‡è±ªæŒ¥ç¬”"
+			return "\xce\xc4\xba\xc0\xbb\xd3\xb1\xca";
 		case ST_MAIL:
-			return "´¦ÀíĞÅ¼ã";
+			//% "å¤„ç†ä¿¡ç¬º"
+			return "\xb4\xa6\xc0\xed\xd0\xc5\xbc\xe3";
 		case ST_SMAIL:
-			return "¼ÄÓïĞÅ¸ë";
+			//% "å¯„è¯­ä¿¡é¸½"
+			return "\xbc\xc4\xd3\xef\xd0\xc5\xb8\xeb";
 		case ST_RMAIL:
-			return "ÔÄÀÀĞÅ¼ã";
+			//% "é˜…è§ˆä¿¡ç¬º"
+			return "\xd4\xc4\xc0\xc0\xd0\xc5\xbc\xe3";
 		case ST_TMENU:
-			return "ÉÏÈµÇÅ";
+			//% "ä¸Šé¹Šæ¡¥"
+			return "\xc9\xcf\xc8\xb5\xc7\xc5";
 		case ST_LUSERS:
-			return "»·¹ËËÄ·½";
+			//% "ç¯é¡¾å››æ–¹"
+			return "\xbb\xb7\xb9\xcb\xcb\xc4\xb7\xbd";
 		case ST_FRIEND:
-			return "Ò¹Ì½ºÃÓÑ";
+			//% "å¤œæ¢å¥½å‹"
+			return "\xd2\xb9\xcc\xbd\xba\xc3\xd3\xd1";
 		case ST_MONITOR:
-			return "Ì½ÊÓÃñÇé";
+			//% "æ¢è§†æ°‘æƒ…"
+			return "\xcc\xbd\xca\xd3\xc3\xf1\xc7\xe9";
 		case ST_QUERY:
-			return "²éÑ¯ÍøÓÑ";
+			//% "æŸ¥è¯¢ç½‘å‹"
+			return "\xb2\xe9\xd1\xaf\xcd\xf8\xd3\xd1";
 		case ST_TALK:
-			return "ÈµÇÅÏ¸Óï";
+			//% "é¹Šæ¡¥ç»†è¯­"
+			return "\xc8\xb5\xc7\xc5\xcf\xb8\xd3\xef";
 		case ST_PAGE:
-			return "°ÍÏ¿Ô³Ìä";
+			//% "å·´å³¡çŒ¿å•¼"
+			return "\xb0\xcd\xcf\xbf\xd4\xb3\xcc\xe4";
 		case ST_CHAT2:
-			return "ÑàÔ°Ò¹»°";
+			//% "ç‡•å›­å¤œè¯"
+			return "\xd1\xe0\xd4\xb0\xd2\xb9\xbb\xb0";
 		case ST_CHAT1:
-			return "ÑàÔ°Ò¹»°";
+			//% "ç‡•å›­å¤œè¯"
+			return "\xd1\xe0\xd4\xb0\xd2\xb9\xbb\xb0";
 		case ST_LAUSERS:
-			return "Ì½ÊÓÍøÓÑ";
+			//% "æ¢è§†ç½‘å‹"
+			return "\xcc\xbd\xca\xd3\xcd\xf8\xd3\xd1";
 		case ST_XMENU:
-			return "ÏµÍ³×ÊÑ¶";
+			//% "ç³»ç»Ÿèµ„è®¯"
+			return "\xcf\xb5\xcd\xb3\xd7\xca\xd1\xb6";
 		case ST_BBSNET:
 #ifdef FDQUAN
-			return "ÓĞÈª´©Ëó";
+			//% "æœ‰æ³‰ç©¿æ¢­"
+			return "\xd3\xd0\xc8\xaa\xb4\xa9\xcb\xf3";
 #else
-			return "Òû¸´µ©Èª";
+			//% "é¥®å¤æ—¦æ³‰"
+			return "\xd2\xfb\xb8\xb4\xb5\xa9\xc8\xaa";
 #endif
 		case ST_EDITUFILE:
-			return "±à¼­¸öÈËµµ";
+			//% "ç¼–è¾‘ä¸ªäººæ¡£"
+			return "\xb1\xe0\xbc\xad\xb8\xf6\xc8\xcb\xb5\xb5";
 		case ST_EDITSFILE:
-			return "¶¯ÊÖ¶¯½Å";
+			//% "åŠ¨æ‰‹åŠ¨è„š"
+			return "\xb6\xaf\xca\xd6\xb6\xaf\xbd\xc5";
 		case ST_SYSINFO:
-			return "¼ì²éÏµÍ³";
+			//% "æ£€æŸ¥ç³»ç»Ÿ"
+			return "\xbc\xec\xb2\xe9\xcf\xb5\xcd\xb3";
 		case ST_DICT:
-			return "·­²é×Öµä";
+			//% "ç¿»æŸ¥å­—å…¸"
+			return "\xb7\xad\xb2\xe9\xd7\xd6\xb5\xe4";
 		case ST_LOCKSCREEN:
-			return "ÆÁÄ»Ëø¶¨";
+			//% "å±å¹•é”å®š"
+			return "\xc6\xc1\xc4\xbb\xcb\xf8\xb6\xa8";
 		case ST_NOTEPAD:
-			return "ÁôÑÔ°å";
+			//% "ç•™è¨€æ¿"
+			return "\xc1\xf4\xd1\xd4\xb0\xe5";
 		case ST_GMENU:
-			return "¹¤¾ßÏä";
+			//% "å·¥å…·ç®±"
+			return "\xb9\xa4\xbe\xdf\xcf\xe4";
 		case ST_MSG:
-			return "ËÍÑ¶Ï¢";
+			//% "é€è®¯æ¯"
+			return "\xcb\xcd\xd1\xb6\xcf\xa2";
 		case ST_USERDEF:
-			return "×Ô¶©²ÎÊı";
+			//% "è‡ªè®¢å‚æ•°"
+			return "\xd7\xd4\xb6\xa9\xb2\xce\xca\xfd";
 		case ST_EDIT:
-			return "ĞŞ¸ÄÎÄÕÂ";
+			//% "ä¿®æ”¹æ–‡ç« "
+			return "\xd0\xde\xb8\xc4\xce\xc4\xd5\xc2";
 		case ST_OFFLINE:
-			return "×ÔÉ±ÖĞ..";
+			//% "è‡ªæ€ä¸­.."
+			return "\xd7\xd4\xc9\xb1\xd6\xd0..";
 		case ST_EDITANN:
-			return "±àĞŞ¾«»ª";
+			//% "ç¼–ä¿®ç²¾å"
+			return "\xb1\xe0\xd0\xde\xbe\xab\xbb\xaa";
 		case ST_LOOKMSGS:
-			return "²é¿´Ñ¶Ï¢";
+			//% "æŸ¥çœ‹è®¯æ¯"
+			return "\xb2\xe9\xbf\xb4\xd1\xb6\xcf\xa2";
 		case ST_WFRIEND:
-			return "Ñ°ÈËÃû²á";
+			//% "å¯»äººåå†Œ"
+			return "\xd1\xb0\xc8\xcb\xc3\xfb\xb2\xe1";
 		case ST_WNOTEPAD:
-			return "Óû×ß»¹Áô";
+			//% "æ¬²èµ°è¿˜ç•™"
+			return "\xd3\xfb\xd7\xdf\xbb\xb9\xc1\xf4";
 		case ST_BBSPAGER:
-			return "ÍøÂ·´«ºô";
+			//% "ç½‘è·¯ä¼ å‘¼"
+			return "\xcd\xf8\xc2\xb7\xb4\xab\xba\xf4";
 		case ST_M_BLACKJACK:
-			return "¡ïºÚ¼×¿Ë¡ï";
+			//% "â˜…é»‘ç”²å…‹â˜…"
+			return "\xa1\xef\xba\xda\xbc\xd7\xbf\xcb\xa1\xef";
 		case ST_M_XAXB:
-			return "¡ï²ÂÊı×Ö¡ï";
+			//% "â˜…çŒœæ•°å­—â˜…"
+			return "\xa1\xef\xb2\xc2\xca\xfd\xd7\xd6\xa1\xef";
 		case ST_M_DICE:
-			return "¡ïÎ÷°ËÀ­¡ï";
+			//% "â˜…è¥¿å…«æ‹‰â˜…"
+			return "\xa1\xef\xce\xf7\xb0\xcb\xc0\xad\xa1\xef";
 		case ST_M_GP:
-			return "½ğÆË¿ËËó¹ş";
+			//% "é‡‘æ‰‘å…‹æ¢­å“ˆ"
+			return "\xbd\xf0\xc6\xcb\xbf\xcb\xcb\xf3\xb9\xfe";
 		case ST_M_NINE:
-			return "ÌìµØ¾Å¾Å";
+			//% "å¤©åœ°ä¹ä¹"
+			return "\xcc\xec\xb5\xd8\xbe\xc5\xbe\xc5";
 		case ST_WINMINE:
-			return "¼üÅÌÉ¨À×";
+			//% "é”®ç›˜æ‰«é›·"
+			return "\xbc\xfc\xc5\xcc\xc9\xa8\xc0\xd7";
 		case ST_M_BINGO:
-			return "±ö¹û±ö¹û";
+			//% "å®¾æœå®¾æœ"
+			return "\xb1\xf6\xb9\xfb\xb1\xf6\xb9\xfb";
 		case ST_FIVE:
-			return "¾öÕ½Îå×ÓÆå";
+			//% "å†³æˆ˜äº”å­æ£‹"
+			return "\xbe\xf6\xd5\xbd\xce\xe5\xd7\xd3\xc6\xe5";
 		case ST_MARKET:
-			return "½»Ò×ÊĞ³¡";
+			//% "äº¤æ˜“å¸‚åœº"
+			return "\xbd\xbb\xd2\xd7\xca\xd0\xb3\xa1";
 		case ST_PAGE_FIVE:
-			return "ÑûÇëÏÂÆå";
+			//% "é‚€è¯·ä¸‹æ£‹"
+			return "\xd1\xfb\xc7\xeb\xcf\xc2\xc6\xe5";
 		case ST_CHICK:
-			return "µç×ÓĞ¡¼¦";
+			//% "ç”µå­å°é¸¡"
+			return "\xb5\xe7\xd7\xd3\xd0\xa1\xbc\xa6";
 		case ST_MARY:
-			return "³¬¼¶ÂêÀö";
+			//% "è¶…çº§ç›ä¸½"
+			return "\xb3\xac\xbc\xb6\xc2\xea\xc0\xf6";
 		case ST_CHICKEN:
-			return "ĞÇ¿ÕÕ½¶·¼¦";
+			//% "æ˜Ÿç©ºæˆ˜æ–—é¸¡"
+			return "\xd0\xc7\xbf\xd5\xd5\xbd\xb6\xb7\xbc\xa6";
 		case ST_GOODWISH:
-			return "¸øÅóÓÑ×£¸£";
+			//% "ç»™æœ‹å‹ç¥ç¦"
+			return "\xb8\xf8\xc5\xf3\xd3\xd1\xd7\xa3\xb8\xa3";
 		case ST_GIVEUPBBS:
-			return "½äÍøÖĞ";
+			//% "æˆ’ç½‘ä¸­"
+			return "\xbd\xe4\xcd\xf8\xd6\xd0";
 		case ST_UPLOAD:
-			return "ÉÏ´«ÎÄ¼ş";
+			//% "ä¸Šä¼ æ–‡ä»¶"
+			return "\xc9\xcf\xb4\xab\xce\xc4\xbc\xfe";
 		case ST_PROP:
-			return "¾Û±¦Åè";
+			//% "èšå®ç›†"
+			return "\xbe\xdb\xb1\xa6\xc5\xe8";
 		case ST_MY_PROP:
-			return "²Ø¾­¸ó";
+			//% "è—ç»é˜"
+			return "\xb2\xd8\xbe\xad\xb8\xf3";
 		default:
-			return "È¥ÁËÄÄÀï!?";
+			//% "å»äº†å“ªé‡Œ!?"
+			return "\xc8\xa5\xc1\xcb\xc4\xc4\xc0\xef!?";
 	}
 }

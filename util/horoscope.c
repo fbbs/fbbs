@@ -101,9 +101,12 @@ int main(int argc, char **argv)
 
 	int item = draw_chart(&bst);
 	char *mg = left_margin(item, NULL);
-	printf("\033[0;1m%s0©¸©¤©¤©¤ Ä¿Ç°±¾Õ¾×¢²áÊ¹ÓÃÕßĞÇ×ùÍ³¼Æ©¤©¤©¤%s©¤©¤\n"
-			"%s\033[1;33m   Ä¦ôÉ  Ë®Æ¿  Ë«Óã  ÄµÑò  ½ğÅ£  Ë«×Ó  ¾ŞĞ·  Ê¨×Ó  ´¦Å®  Ìì³Ó  ÌìĞ«  ÉäÊÖ\n\n"
-			"%s                          \033[1;36m¨€ ÄĞÉú (%d)    \033[35m¨€ Å®Éú (%d)\033[m\n",
+	//% printf("\033[0;1m%s0â””â”€â”€â”€ ç›®å‰æœ¬ç«™æ³¨å†Œä½¿ç”¨è€…æ˜Ÿåº§ç»Ÿè®¡â”€â”€â”€%sâ”€â”€\n"
+	printf("\033[0;1m%s0\xa9\xb8\xa9\xa4\xa9\xa4\xa9\xa4 \xc4\xbf\xc7\xb0\xb1\xbe\xd5\xbe\xd7\xa2\xb2\xe1\xca\xb9\xd3\xc3\xd5\xdf\xd0\xc7\xd7\xf9\xcd\xb3\xbc\xc6\xa9\xa4\xa9\xa4\xa9\xa4%s\xa9\xa4\xa9\xa4\n"
+			//% "%s\033[1;33m   æ‘©ç¾¯  æ°´ç“¶  åŒé±¼  ç‰¡ç¾Š  é‡‘ç‰›  åŒå­  å·¨èŸ¹  ç‹®å­  å¤„å¥³  å¤©ç§¤  å¤©è  å°„æ‰‹\n\n"
+			"%s\033[1;33m   \xc4\xa6\xf4\xc9  \xcb\xae\xc6\xbf  \xcb\xab\xd3\xe3  \xc4\xb5\xd1\xf2  \xbd\xf0\xc5\xa3  \xcb\xab\xd7\xd3  \xbe\xde\xd0\xb7  \xca\xa8\xd7\xd3  \xb4\xa6\xc5\xae  \xcc\xec\xb3\xd3  \xcc\xec\xd0\xab  \xc9\xe4\xca\xd6\n\n"
+			//% "%s                          \033[1;36mâ–ˆ ç”·ç”Ÿ (%d)    \033[35mâ–ˆ å¥³ç”Ÿ (%d)\033[m\n",
+			"%s                          \033[1;36m\xa8\x80 \xc4\xd0\xc9\xfa (%d)    \033[35m\xa8\x80 \xc5\xae\xc9\xfa (%d)\033[m\n",
 			mg, getdatestring(time(NULL), DATE_ZH), mg, mg, mtotal, ftotal);
 	return 0;
 }

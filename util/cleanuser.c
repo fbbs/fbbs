@@ -8,44 +8,60 @@
 
 static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 {
-	fprintf(fp, "\033[1;37m%s \033[m(\033[1;33m%s\033[m) ¹²ÉÏÕ¾ "
-			"\033[1;32m%d\033[m ´Î [\033[1;3%dm%s\033[m]\n",
+	//% fprintf(fp, "\033[1;37m%s \033[m(\033[1;33m%s\033[m) å…±ä¸Šç«™ "
+	fprintf(fp, "\033[1;37m%s \033[m(\033[1;33m%s\033[m) \xb9\xb2\xc9\xcf\xd5\xbe "
+			//% "\033[1;32m%d\033[m æ¬¡ [\033[1;3%dm%s\033[m]\n",
+			"\033[1;32m%d\033[m \xb4\xce [\033[1;3%dm%s\033[m]\n",
 			user->userid, user->username, user->numlogins,
 			(user->gender == 'F') ? 5 : 6,
 			horoscope(user->birthmonth, user->birthday));
-	fprintf(fp, "ÉÏ ´Î ÔÚ:[\033[1;32m%s\033[m] ´Ó [\033[1;32m%s\033[m] "
-			"µ½±¾Õ¾Ò»ÓÎ¡£\n", getdatestring(user->lastlogin, DATE_ZH),
-			(user->lasthost[0] == '\0' ? "(²»Ïê)" : user->lasthost));
-	fprintf(fp, "ÀëÕ¾Ê±¼ä:[\033[1;32m%s\033[m] ",
+	//% fprintf(fp, "ä¸Š æ¬¡ åœ¨:[\033[1;32m%s\033[m] ä»Ž [\033[1;32m%s\033[m] "
+	fprintf(fp, "\xc9\xcf \xb4\xce \xd4\xda:[\033[1;32m%s\033[m] \xb4\xd3 [\033[1;32m%s\033[m] "
+			//% "åˆ°æœ¬ç«™ä¸€æ¸¸ã€‚\n", getdatestring(user->lastlogin, DATE_ZH),
+			"\xb5\xbd\xb1\xbe\xd5\xbe\xd2\xbb\xd3\xce\xa1\xa3\n", getdatestring(user->lastlogin, DATE_ZH),
+			//% (user->lasthost[0] == '\0' ? "(ä¸è¯¦)" : user->lasthost));
+			(user->lasthost[0] == '\0' ? "(\xb2\xbb\xcf\xea)" : user->lasthost));
+	//% fprintf(fp, "ç¦»ç«™æ—¶é—´:[\033[1;32m%s\033[m] ",
+	fprintf(fp, "\xc0\xeb\xd5\xbe\xca\xb1\xbc\xe4:[\033[1;32m%s\033[m] ",
 			getdatestring(user->lastlogout, DATE_ZH));
 
 	int exp = countexp(user);
 	int perf = countperf(user);
 #ifdef SHOW_PERF
-	fprintf(fp, "±íÏÖÖµ:%d(\033[1;33m%s\033[m)\n", perf, cperf(perf));
+	//% fprintf(fp, "è¡¨çŽ°å€¼:%d(\033[1;33m%s\033[m)\n", perf, cperf(perf));
+	fprintf(fp, "\xb1\xed\xcf\xd6\xd6\xb5:%d(\033[1;33m%s\033[m)\n", perf, cperf(perf));
 #else
-	fprintf(fp, "±íÏÖÖµ:[\033[1;33m%s\033[m]\n", cperf(perf));
+	//% fprintf(fp, "è¡¨çŽ°å€¼:[\033[1;33m%s\033[m]\n", cperf(perf));
+	fprintf(fp, "\xb1\xed\xcf\xd6\xd6\xb5:[\033[1;33m%s\033[m]\n", cperf(perf));
 #endif
 
 #ifdef ALLOWGAME
-	fprintf(fp, "ÒøÐÐ´æ¿î: [\033[1;32m%dÔª\033[m] "
-			"Ä¿Ç°´û¿î: [\033[1;32m%dÔª\033[m](\033[1;33m%s\033[m) "
-			"¾­ÑéÖµ£º[\033[1;32m%d\033[m](\033[1;33m%s\033[m)¡£\n",
+	//% fprintf(fp, "é“¶è¡Œå­˜æ¬¾: [\033[1;32m%då…ƒ\033[m] "
+	fprintf(fp, "\xd2\xf8\xd0\xd0\xb4\xe6\xbf\xee: [\033[1;32m%d\xd4\xaa\033[m] "
+			//% "ç›®å‰è´·æ¬¾: [\033[1;32m%då…ƒ\033[m](\033[1;33m%s\033[m) "
+			"\xc4\xbf\xc7\xb0\xb4\xfb\xbf\xee: [\033[1;32m%d\xd4\xaa\033[m](\033[1;33m%s\033[m) "
+			//% "ç»éªŒå€¼ï¼š[\033[1;32m%d\033[m](\033[1;33m%s\033[m)ã€‚\n",
+			"\xbe\xad\xd1\xe9\xd6\xb5\xa3\xba[\033[1;32m%d\033[m](\033[1;33m%s\033[m)\xa1\xa3\n",
 			user->money, user->bet, cmoney(user->money - user->bet),
 			exp, cexpstr(exp));
-	fprintf(fp, "ÎÄ ÕÂ Êý: [\033[1;32m%d\033[m] "
-			"½±ÕÂÊý: [\033[1;32m%d\033[m](\033[1;33m%s\033[m) ÉúÃüÁ¦£º"
-			"[\033[1;32m%d\033[m] ÍøÁä[\033[1;32m%"PRIdFBT"Ìì\033[m]\n\n",
+	//% fprintf(fp, "æ–‡ ç«  æ•°: [\033[1;32m%d\033[m] "
+	fprintf(fp, "\xce\xc4 \xd5\xc2 \xca\xfd: [\033[1;32m%d\033[m] "
+			//% "å¥–ç« æ•°: [\033[1;32m%d\033[m](\033[1;33m%s\033[m) ç”Ÿå‘½åŠ›ï¼š"
+			"\xbd\xb1\xd5\xc2\xca\xfd: [\033[1;32m%d\033[m](\033[1;33m%s\033[m) \xc9\xfa\xc3\xfc\xc1\xa6\xa3\xba"
+			//% "[\033[1;32m%d\033[m] ç½‘é¾„[\033[1;32m%"PRIdFBT"å¤©\033[m]\n\n",
+			"[\033[1;32m%d\033[m] \xcd\xf8\xc1\xe4[\033[1;32m%"PRIdFBT"\xcc\xec\033[m]\n\n",
 			user->numposts, user->nummedals, cnummedals(user->nummedals),
 			compute_user_value(user), (now - user->firstlogin) / 86400);
 #else
-	fprintf(fp, "ÎÄ ÕÂ Êý:[\033[1;32m%d\033[m] ¾­ Ñé Öµ:"
+	//% fprintf(fp, "æ–‡ ç«  æ•°:[\033[1;32m%d\033[m] ç» éªŒ å€¼:"
+	fprintf(fp, "\xce\xc4 \xd5\xc2 \xca\xfd:[\033[1;32m%d\033[m] \xbe\xad \xd1\xe9 \xd6\xb5:"
 #ifdef SHOWEXP
 			"%d(\033[1;33m%-10s\033[m)"
 #else
 			"[\033[1;33m%-10s\033[m]"
 #endif
-			" ÉúÃüÁ¦:[\033[1;32m%d\033[m] ÍøÁä[\033[1;32m%"PRIdFBT"Ìì\033[m]\n\n",
+			//% " ç”Ÿå‘½åŠ›:[\033[1;32m%d\033[m] ç½‘é¾„[\033[1;32m%"PRIdFBT"å¤©\033[m]\n\n",
+			" \xc9\xfa\xc3\xfc\xc1\xa6:[\033[1;32m%d\033[m] \xcd\xf8\xc1\xe4[\033[1;32m%"PRIdFBT"\xcc\xec\033[m]\n\n",
 			user->numposts,
 #ifdef SHOWEXP
 			exp,

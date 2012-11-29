@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* ´ò¹¤Ñ¡µ¥:¼ÒÊÂ ¿à¹¤ ¼Ò½Ì µØÌ¯                                              */
+/* æ‰“å·¥é€‰å•:å®¶äº‹ è‹¦å·¥ å®¶æ•™ åœ°æ‘Š                                              */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #include <time.h>
@@ -12,12 +12,12 @@ extern time_t lasttime;
 
 int pip_job_workA()
 {
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦¼ÒÍ¥¹ÜÀí©¦´ıÈË½ÓÎï + N , É¨µØÏ´ÒÂ + N , Åëâ¿¼¼ÇÉ + N  ©¦*/
-/*  ©¦        ©¦ºÍ¸¸Ç×µÄ¹ØÏµ + N , Æ£ÀÍ + 1 , ¸ĞÊÜ - 2      ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦¼ÒÍ¥¹ÜÀí©¦Èô Ìå    Á¦ - RND (Æ£ÀÍ) >=   5 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/  
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å®¶åº­ç®¡ç†â”‚å¾…äººæ¥ç‰© + N , æ‰«åœ°æ´—è¡£ + N , çƒ¹é¥ªæŠ€å·§ + N  â”‚*/
+/*  â”‚        â”‚å’Œçˆ¶äº²çš„å…³ç³» + N , ç–²åŠ³ + 1 , æ„Ÿå— - 2      â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å®¶åº­ç®¡ç†â”‚è‹¥ ä½“    åŠ› - RND (ç–²åŠ³) >=   5 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/  
     float class;
     long workmoney;
     
@@ -40,7 +40,8 @@ int pip_job_workA()
       d.family+=rand()%3+4;
       d.relation+=rand()%3+4;
       workmoney=80+(d.cookskill*2+d.homework+d.family)/40;
-      pressanykey("¼ÒÊÂºÜ³É¹¦à¸..¶àÒ»µãÇ®¸øÄã..");
+      //% pressanykey("å®¶äº‹å¾ˆæˆåŠŸå–”..å¤šä¸€ç‚¹é’±ç»™ä½ ..");
+      pressanykey("\xbc\xd2\xca\xc2\xba\xdc\xb3\xc9\xb9\xa6\xe0\xb8..\xb6\xe0\xd2\xbb\xb5\xe3\xc7\xae\xb8\xf8\xc4\xe3..");
     }
     else if(class<75 && class>=50)
     {
@@ -49,7 +50,8 @@ int pip_job_workA()
       d.family+=rand()%3+3;
       d.relation+=rand()%3+3;
       workmoney=60+(d.cookskill*2+d.homework+d.family)/45;
-      pressanykey("¼ÒÊÂ»¹ÂùË³ÀûµÄà¡..àÅàÅ..");
+      //% pressanykey("å®¶äº‹è¿˜è›®é¡ºåˆ©çš„å”·..å—¯å—¯..");
+      pressanykey("\xbc\xd2\xca\xc2\xbb\xb9\xc2\xf9\xcb\xb3\xc0\xfb\xb5\xc4\xe0\xa1..\xe0\xc5\xe0\xc5..");
     }    
     else if(class<50 && class>=25)
     {
@@ -58,7 +60,8 @@ int pip_job_workA()
       d.family+=rand()%3+2;
       d.relation+=rand()%3+2;
       workmoney=40+(d.cookskill*2+d.homework+d.family)/50;
-      pressanykey("¼ÒÊÂÆÕÆÕÍ¨Í¨À²..¿ÉÒÔ¸üºÃµÄ..¼ÓÓÍ..");      
+      //% pressanykey("å®¶äº‹æ™®æ™®é€šé€šå•¦..å¯ä»¥æ›´å¥½çš„..åŠ æ²¹..");      
+      pressanykey("\xbc\xd2\xca\xc2\xc6\xd5\xc6\xd5\xcd\xa8\xcd\xa8\xc0\xb2..\xbf\xc9\xd2\xd4\xb8\xfc\xba\xc3\xb5\xc4..\xbc\xd3\xd3\xcd..");      
     }    
     else if(class<25)
     {
@@ -67,7 +70,8 @@ int pip_job_workA()
       d.family+=rand()%3+1;
       d.relation+=rand()%3+1;
       workmoney=20+(d.cookskill*2+d.homework+d.family)/60;
-      pressanykey("¼ÒÊÂºÜÔã¸âà¸..ÕâÑù²»ĞĞÀ²..");      
+      //% pressanykey("å®¶äº‹å¾ˆç³Ÿç³•å–”..è¿™æ ·ä¸è¡Œå•¦..");      
+      pressanykey("\xbc\xd2\xca\xc2\xba\xdc\xd4\xe3\xb8\xe2\xe0\xb8..\xd5\xe2\xd1\xf9\xb2\xbb\xd0\xd0\xc0\xb2..");      
     }        
     d.money+=workmoney;
     d.workA+=1;
@@ -76,11 +80,11 @@ int pip_job_workA()
 
 int pip_job_workB()
 {   
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦ÓıÓ×Ôº  ©¦Ä¸ĞÔ + N , ¸ĞÊÜ + 1 , ÷ÈÁ¦ - 1 , Æ£ÀÍ + 3   ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦ÓıÓ×Ôº  ©¦Èô Ìå    Á¦ - RND (Æ£ÀÍ) >=  20 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚è‚²å¹¼é™¢  â”‚æ¯æ€§ + N , æ„Ÿå— + 1 , é­…åŠ› - 1 , ç–²åŠ³ + 3   â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚è‚²å¹¼é™¢  â”‚è‹¥ ä½“    åŠ› - RND (ç–²åŠ³) >=  20 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
     
@@ -103,28 +107,32 @@ int pip_job_workB()
       d.love+=rand()%2+7;
       d.toman+=rand()%2+2;
       workmoney=150+(d.love+d.toman)/50;
-      pressanykey("µ±±£Ä·ºÜ³É¹¦à¸..ÏÂ´ÎÔÙÀ´à¸..");
+      //% pressanykey("å½“ä¿å§†å¾ˆæˆåŠŸå–”..ä¸‹æ¬¡å†æ¥å–”..");
+      pressanykey("\xb5\xb1\xb1\xa3\xc4\xb7\xba\xdc\xb3\xc9\xb9\xa6\xe0\xb8..\xcf\xc2\xb4\xce\xd4\xd9\xc0\xb4\xe0\xb8..");
     }
     else if(class<90 && class>=75)
     {
       d.love+=rand()%2+5;
       d.toman+=rand()%2+2;
       workmoney=120+(d.love+d.toman)/50;
-      pressanykey("±£Ä·»¹µ±µÄ²»´íà¡..àÅàÅ..");
+      //% pressanykey("ä¿å§†è¿˜å½“çš„ä¸é”™å”·..å—¯å—¯..");
+      pressanykey("\xb1\xa3\xc4\xb7\xbb\xb9\xb5\xb1\xb5\xc4\xb2\xbb\xb4\xed\xe0\xa1..\xe0\xc5\xe0\xc5..");
     }    
     else if(class<75 && class>=50)
     {
       d.love+=rand()%2+3;
       d.toman+=rand()%2+1;
       workmoney=100+(d.love+d.toman)/50;
-      pressanykey("Ğ¡ÅóÓÑºÜÆ¤à¸..¼ÓÓÍ..");      
+      //% pressanykey("å°æœ‹å‹å¾ˆçš®å–”..åŠ æ²¹..");      
+      pressanykey("\xd0\xa1\xc5\xf3\xd3\xd1\xba\xdc\xc6\xa4\xe0\xb8..\xbc\xd3\xd3\xcd..");      
     }    
     else if(class<50)
     {
       d.love+=rand()%2+1;
       d.toman+=rand()%2+1;
       workmoney=80+(d.love+d.toman)/50;
-      pressanykey("ºÜÔã¸âà¸..ÄãÕÖ²»×¡Ğ¡ÅóÓÑÒ®...");      
+      //% pressanykey("å¾ˆç³Ÿç³•å–”..ä½ ç½©ä¸ä½å°æœ‹å‹è€¶...");      
+      pressanykey("\xba\xdc\xd4\xe3\xb8\xe2\xe0\xb8..\xc4\xe3\xd5\xd6\xb2\xbb\xd7\xa1\xd0\xa1\xc5\xf3\xd3\xd1\xd2\xae...");      
     }        
     d.money+=workmoney;
     d.workB+=1;
@@ -133,11 +141,11 @@ int pip_job_workB()
              
 int pip_job_workC()
 {
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦ÂÃ¹İ    ©¦É¨µØÏ´ÒÂ + N , Õ½¶·¼¼Êõ - N , Æ£ÀÍ + 2      ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦ÂÃ¹İ    ©¦Èô Ìå    Á¦ - RND (Æ£ÀÍ) >=  30 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚æ—…é¦†    â”‚æ‰«åœ°æ´—è¡£ + N , æˆ˜æ–—æŠ€æœ¯ - N , ç–²åŠ³ + 2      â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚æ—…é¦†    â”‚è‹¥ ä½“    åŠ› - RND (ç–²åŠ³) >=  30 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
     
@@ -158,7 +166,8 @@ int pip_job_workC()
       if(d.hskill<0)
            d.hskill=0;
       workmoney=250+(d.cookskill*2+d.homework*2)/40;
-      pressanykey("ÂÃ¹İÊÂÒµÕôÕôÈÕÉÏ..Ï£ÍûÄãÔÙ¹ıÀ´...");
+      //% pressanykey("æ—…é¦†äº‹ä¸šè’¸è’¸æ—¥ä¸Š..å¸Œæœ›ä½ å†è¿‡æ¥...");
+      pressanykey("\xc2\xc3\xb9\xdd\xca\xc2\xd2\xb5\xd5\xf4\xd5\xf4\xc8\xd5\xc9\xcf..\xcf\xa3\xcd\xfb\xc4\xe3\xd4\xd9\xb9\xfd\xc0\xb4...");
     }
     else if(class<95 && class>=80)
     {
@@ -168,7 +177,8 @@ int pip_job_workC()
       if(d.hskill<0)
            d.hskill=0;
       workmoney=200+(d.cookskill*2+d.homework*2)/50;    
-      pressanykey("ÂÃ¹İ»¹ÂùË³ÀûµÄà¡..àÅàÅ..");
+      //% pressanykey("æ—…é¦†è¿˜è›®é¡ºåˆ©çš„å”·..å—¯å—¯..");
+      pressanykey("\xc2\xc3\xb9\xdd\xbb\xb9\xc2\xf9\xcb\xb3\xc0\xfb\xb5\xc4\xe0\xa1..\xe0\xc5\xe0\xc5..");
     }    
     else if(class<80 && class>=60)
     {
@@ -178,7 +188,8 @@ int pip_job_workC()
       if(d.hskill<0)
            d.hskill=0;
       workmoney=150+(d.cookskill*2+d.homework*2)/50;    
-      pressanykey("ÆÕÆÕÍ¨Í¨À²..¿ÉÒÔ¸üºÃµÄ..¼ÓÓÍ..");      
+      //% pressanykey("æ™®æ™®é€šé€šå•¦..å¯ä»¥æ›´å¥½çš„..åŠ æ²¹..");      
+      pressanykey("\xc6\xd5\xc6\xd5\xcd\xa8\xcd\xa8\xc0\xb2..\xbf\xc9\xd2\xd4\xb8\xfc\xba\xc3\xb5\xc4..\xbc\xd3\xd3\xcd..");      
     }    
     else if(class<60)
     {
@@ -188,7 +199,8 @@ int pip_job_workC()
       if(d.hskill<0)
            d.hskill=0;
       workmoney=100+(d.cookskill*2+d.homework*2)/50;    
-      pressanykey("Õâ¸öºÜÔã¸âà¸..ÄãÕâÑù²»ĞĞÀ²..");      
+      //% pressanykey("è¿™ä¸ªå¾ˆç³Ÿç³•å–”..ä½ è¿™æ ·ä¸è¡Œå•¦..");      
+      pressanykey("\xd5\xe2\xb8\xf6\xba\xdc\xd4\xe3\xb8\xe2\xe0\xb8..\xc4\xe3\xd5\xe2\xd1\xf9\xb2\xbb\xd0\xd0\xc0\xb2..");      
     }        
     d.money+=workmoney;
     d.workC+=1;
@@ -197,11 +209,11 @@ int pip_job_workC()
 
 int pip_job_workD()
 {    
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦Å©³¡    ©¦ÌåÁ¦ + 1 , ÍóÁ¦ + 1 , ÆøÖÊ - 1 , Æ£ÀÍ + 3   ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦Å©³¡    ©¦Èô Ìå    Á¦ - RND (Æ£ÀÍ) >=  30 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/    
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å†œåœº    â”‚ä½“åŠ› + 1 , è…•åŠ› + 1 , æ°”è´¨ - 1 , ç–²åŠ³ + 3   â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å†œåœº    â”‚è‹¥ ä½“    åŠ› - RND (ç–²åŠ³) >=  30 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/    
     float class;
     long workmoney;
     
@@ -221,22 +233,26 @@ int pip_job_workD()
     if(class>=95)
     {
       workmoney=250+(d.wrist*2+d.hp*2)/80;
-      pressanykey("Å£Ñò³¤µÄºÃºÃà¸..Ï£ÍûÄãÔÙÀ´°ïÃ¦...");
+      //% pressanykey("ç‰›ç¾Šé•¿çš„å¥½å¥½å–”..å¸Œæœ›ä½ å†æ¥å¸®å¿™...");
+      pressanykey("\xc5\xa3\xd1\xf2\xb3\xa4\xb5\xc4\xba\xc3\xba\xc3\xe0\xb8..\xcf\xa3\xcd\xfb\xc4\xe3\xd4\xd9\xc0\xb4\xb0\xef\xc3\xa6...");
     }
     else if(class<95 && class>=80)
     {
       workmoney=210+(d.wrist*2+d.hp*2)/80;
-      pressanykey("ºÇºÇ..»¹²»´íà¸..:)");
+      //% pressanykey("å‘µå‘µ..è¿˜ä¸é”™å–”..:)");
+      pressanykey("\xba\xc7\xba\xc7..\xbb\xb9\xb2\xbb\xb4\xed\xe0\xb8..:)");
     }    
     else if(class<80 && class>=60)
     {
       workmoney=160+(d.wrist*2+d.hp*2)/80;
-      pressanykey("ÆÕÆÕÍ¨Í¨À²..¿ÉÒÔ¸üºÃµÄ..");      
+      //% pressanykey("æ™®æ™®é€šé€šå•¦..å¯ä»¥æ›´å¥½çš„..");      
+      pressanykey("\xc6\xd5\xc6\xd5\xcd\xa8\xcd\xa8\xc0\xb2..\xbf\xc9\xd2\xd4\xb8\xfc\xba\xc3\xb5\xc4..");      
     }    
     else if(class<60)
     {
       workmoney=120+(d.wrist*2+d.hp*2)/80;
-      pressanykey("Äã²»Ì«ÊÊºÏÅ©³¡µÄ¹¤×÷  -_-...");      
+      //% pressanykey("ä½ ä¸å¤ªé€‚åˆå†œåœºçš„å·¥ä½œ  -_-...");      
+      pressanykey("\xc4\xe3\xb2\xbb\xcc\xab\xca\xca\xba\xcf\xc5\xa9\xb3\xa1\xb5\xc4\xb9\xa4\xd7\xf7  -_-...");      
     }        
     d.money+=workmoney;
     d.workD+=1;
@@ -245,11 +261,11 @@ int pip_job_workD()
          
 int pip_job_workE()
 {
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦²ÍÌü    ©¦ÁÏÀí + N , Õ½¶·¼¼Êõ - N , Æ£ÀÍ + 2          ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦²ÍÌü    ©¦Èô Åëâ¿¼¼Êõ - RND (Æ£ÀÍ) >=  50 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚é¤å…    â”‚æ–™ç† + N , æˆ˜æ–—æŠ€æœ¯ - N , ç–²åŠ³ + 2          â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚é¤å…    â”‚è‹¥ çƒ¹é¥ªæŠ€æœ¯ - RND (ç–²åŠ³) >=  50 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
     
@@ -271,7 +287,8 @@ int pip_job_workE()
            d.hskill=0;
       d.cookskill+=rand()%2+6;
       workmoney=250+(d.cookskill*2+d.homework*2+d.family*2)/80;        
-      pressanykey("¿ÍÈË¶¼ËµÌ«ºÃ³ÔÁË..ÔÙÀ´Ò»ÅÌ°É...");
+      //% pressanykey("å®¢äººéƒ½è¯´å¤ªå¥½åƒäº†..å†æ¥ä¸€ç›˜å§...");
+      pressanykey("\xbf\xcd\xc8\xcb\xb6\xbc\xcb\xb5\xcc\xab\xba\xc3\xb3\xd4\xc1\xcb..\xd4\xd9\xc0\xb4\xd2\xbb\xc5\xcc\xb0\xc9...");
     }
     else if(class<80 && class>=60)
     {
@@ -282,7 +299,8 @@ int pip_job_workE()
            d.hskill=0;
       d.cookskill+=rand()%2+4;
       workmoney=200+(d.cookskill*2+d.homework*2+d.family*2)/80;        
-      pressanykey("ÖóµÄ»¹²»´í³Ôà¡..:)");
+      //% pressanykey("ç…®çš„è¿˜ä¸é”™åƒå”·..:)");
+      pressanykey("\xd6\xf3\xb5\xc4\xbb\xb9\xb2\xbb\xb4\xed\xb3\xd4\xe0\xa1..:)");
     }    
     else if(class<60 && class>=30)
     {
@@ -293,7 +311,8 @@ int pip_job_workE()
            d.hskill=0;
       d.cookskill+=rand()%2+2;
       workmoney=150+(d.cookskill*2+d.homework*2+d.family*2)/80;            
-      pressanykey("ÆÕÆÕÍ¨Í¨À²..¿ÉÒÔ¸üºÃµÄ..");      
+      //% pressanykey("æ™®æ™®é€šé€šå•¦..å¯ä»¥æ›´å¥½çš„..");      
+      pressanykey("\xc6\xd5\xc6\xd5\xcd\xa8\xcd\xa8\xc0\xb2..\xbf\xc9\xd2\xd4\xb8\xfc\xba\xc3\xb5\xc4..");      
     }    
     else if(class<30)
     {
@@ -304,7 +323,8 @@ int pip_job_workE()
            d.hskill=0;
       d.cookskill+=rand()%2+1;
       workmoney=100+(d.cookskill*2+d.homework*2+d.family*2)/80;            
-      pressanykey("ÄãµÄ³øÒÕ´ı¼ÓÇ¿à¸...");      
+      //% pressanykey("ä½ çš„å¨è‰ºå¾…åŠ å¼ºå–”...");      
+      pressanykey("\xc4\xe3\xb5\xc4\xb3\xf8\xd2\xd5\xb4\xfd\xbc\xd3\xc7\xbf\xe0\xb8...");      
     }        
     d.money+=workmoney;
     d.workE+=1;
@@ -313,9 +333,9 @@ int pip_job_workE()
 
 int pip_job_workF()
 {           
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦½ÌÌÃ    ©¦ĞÅÑö + 2 , µÀµÂ + 1 , ×ïÄõ - 2 , Æ£ÀÍ + 1   ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚æ•™å ‚    â”‚ä¿¡ä»° + 2 , é“å¾· + 1 , ç½ªå­½ - 2 , ç–²åŠ³ + 1   â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
     
@@ -334,22 +354,26 @@ int pip_job_workF()
     if(class>=75)
     {
       workmoney=100+(d.belief+d.etchics-d.offense)/20;
-      pressanykey("Ç®ºÜÉÙ µ«¿´ÄãÕâ÷áÈÏÕæ ¸øÄã¶àÒ»µã...");
+      //% pressanykey("é’±å¾ˆå°‘ ä½†çœ‹ä½ è¿™éº½è®¤çœŸ ç»™ä½ å¤šä¸€ç‚¹...");
+      pressanykey("\xc7\xae\xba\xdc\xc9\xd9 \xb5\xab\xbf\xb4\xc4\xe3\xd5\xe2\xf7\xe1\xc8\xcf\xd5\xe6 \xb8\xf8\xc4\xe3\xb6\xe0\xd2\xbb\xb5\xe3...");
     }
     else if(class<75 && class>=50)
     {
       workmoney=75+(d.belief+d.etchics-d.offense)/20;
-      pressanykey("Ğ»Ğ»ÄãµÄÈÈĞÄ°ïÃ¦..:)");
+      //% pressanykey("è°¢è°¢ä½ çš„çƒ­å¿ƒå¸®å¿™..:)");
+      pressanykey("\xd0\xbb\xd0\xbb\xc4\xe3\xb5\xc4\xc8\xc8\xd0\xc4\xb0\xef\xc3\xa6..:)");
     }    
     else if(class<50 && class>=25)
     {
       workmoney=50+(d.belief+d.etchics-d.offense)/20;
-      pressanykey("ÄãÕæµÄºÜÓĞ°®ĞÄÀ²..²»¹ıÓĞµãĞ¡ÀÛµÄÑù×Ó...");      
+      //% pressanykey("ä½ çœŸçš„å¾ˆæœ‰çˆ±å¿ƒå•¦..ä¸è¿‡æœ‰ç‚¹å°ç´¯çš„æ ·å­...");      
+      pressanykey("\xc4\xe3\xd5\xe6\xb5\xc4\xba\xdc\xd3\xd0\xb0\xae\xd0\xc4\xc0\xb2..\xb2\xbb\xb9\xfd\xd3\xd0\xb5\xe3\xd0\xa1\xc0\xdb\xb5\xc4\xd1\xf9\xd7\xd3...");      
     }    
     else if(class<25)
     {
       workmoney=25+(d.belief+d.etchics-d.offense)/20;
-      pressanykey("À´·îÏ×²»´í..µ«Ò²²»ÄÜ´ò»ì¨Ú....:(");      
+      //% pressanykey("æ¥å¥‰çŒ®ä¸é”™..ä½†ä¹Ÿä¸èƒ½æ‰“æ··ã„š....:(");      
+      pressanykey("\xc0\xb4\xb7\xee\xcf\xd7\xb2\xbb\xb4\xed..\xb5\xab\xd2\xb2\xb2\xbb\xc4\xdc\xb4\xf2\xbb\xec\xa8\xda....:(");      
     }        
     d.money+=workmoney;
     d.workF+=1;
@@ -358,9 +382,9 @@ int pip_job_workF()
 
 int pip_job_workG()
 {   
-/* ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/* ©¦µØÌ¯    ©¦ÌåÁ¦ + 2 , ÷ÈÁ¦ + 1 , Æ£ÀÍ + 3 ,Ì¸ÍÂ +1     ©¦*/
-/* ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/   
+/* â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/* â”‚åœ°æ‘Š    â”‚ä½“åŠ› + 2 , é­…åŠ› + 1 , ç–²åŠ³ + 3 ,è°ˆå +1     â”‚*/
+/* â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/   
     float class;
     long workmoney;
     
@@ -378,7 +402,8 @@ int pip_job_workG()
     d.toman+=rand()%2+3;
     move(4,0);
     show_job_pic(71);
-    pressanykey("°ÚµØÌ¯Òª¶ã¾¯²ìÀ²..:p");
+    //% pressanykey("æ‘†åœ°æ‘Šè¦èº²è­¦å¯Ÿå•¦..:p");
+    pressanykey("\xb0\xda\xb5\xd8\xcc\xaf\xd2\xaa\xb6\xe3\xbe\xaf\xb2\xec\xc0\xb2..:p");
     d.money+=workmoney;
     d.workG+=1;
     return 0;
@@ -386,17 +411,18 @@ int pip_job_workG()
     
 int pip_job_workH()
 {
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦·¥Ä¾³¡  ©¦ÍóÁ¦ + 2 , ÆøÖÊ - 2 , Æ£ÀÍ + 4              ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦·¥Ä¾³¡  ©¦Èô Íó    Á¦ - RND (Æ£ÀÍ) >=  80 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚ä¼æœ¨åœº  â”‚è…•åŠ› + 2 , æ°”è´¨ - 2 , ç–²åŠ³ + 4              â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚ä¼æœ¨åœº  â”‚è‹¥ è…•    åŠ› - RND (ç–²åŠ³) >=  80 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
     
-    if((d.bbtime/60/30)<1) /*Ò»Ëê²ÅĞĞ*/
+    if((d.bbtime/60/30)<1) /*ä¸€å²æ‰è¡Œ*/
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,Ò»ËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,ä¸€å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xd2\xbb\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }
     workmoney=0;       
@@ -415,22 +441,26 @@ int pip_job_workH()
     if(class>=70)
     {
       workmoney=350+d.wrist/20+d.maxhp/80;        
-      pressanykey("ÄãÍóÁ¦ºÜºÃà¡..:)");
+      //% pressanykey("ä½ è…•åŠ›å¾ˆå¥½å”·..:)");
+      pressanykey("\xc4\xe3\xcd\xf3\xc1\xa6\xba\xdc\xba\xc3\xe0\xa1..:)");
     }
     else if(class<70 && class>=50)
     {
       workmoney=300+d.wrist/20+d.maxhp/80;
-      pressanykey("¿³ÁË²»ÉÙÊ÷à¸.....:)");
+      //% pressanykey("ç äº†ä¸å°‘æ ‘å–”.....:)");
+      pressanykey("\xbf\xb3\xc1\xcb\xb2\xbb\xc9\xd9\xca\xf7\xe0\xb8.....:)");
     }    
     else if(class<50 && class>=20)
     {
       workmoney=250+d.wrist/20+d.maxhp/80;
-      pressanykey("ÆÕÆÕÍ¨Í¨À²..¿ÉÒÔ¸üºÃµÄ..");      
+      //% pressanykey("æ™®æ™®é€šé€šå•¦..å¯ä»¥æ›´å¥½çš„..");      
+      pressanykey("\xc6\xd5\xc6\xd5\xcd\xa8\xcd\xa8\xc0\xb2..\xbf\xc9\xd2\xd4\xb8\xfc\xba\xc3\xb5\xc4..");      
     }    
     else if(class<20)
     {
       workmoney=200+d.wrist/20+d.maxhp/80;
-      pressanykey("´ı¼ÓÇ¿à¸..¶Í  ÔÙÀ´°É....");      
+      //% pressanykey("å¾…åŠ å¼ºå–”..é”»  å†æ¥å§....");      
+      pressanykey("\xb4\xfd\xbc\xd3\xc7\xbf\xe0\xb8..\xb6\xcd  \xd4\xd9\xc0\xb4\xb0\xc9....");      
     }        
     d.money+=workmoney;
     d.workH+=1;
@@ -439,17 +469,18 @@ int pip_job_workH()
 
 int pip_job_workI()
 {
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦ÃÀÈİÔº  ©¦¸ĞÊÜ + 1 , ÍóÁ¦ - 1 , Æ£ÀÍ + 3              ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦ÃÀÈİÔº  ©¦Èô ÒÕÊõĞŞÑø - RND (Æ£ÀÍ) >=  40 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚ç¾å®¹é™¢  â”‚æ„Ÿå— + 1 , è…•åŠ› - 1 , ç–²åŠ³ + 3              â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚ç¾å®¹é™¢  â”‚è‹¥ è‰ºæœ¯ä¿®å…» - RND (ç–²åŠ³) >=  40 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
 
-    if((d.bbtime/60/30)<1) /*Ò»Ëê²ÅĞĞ*/
+    if((d.bbtime/60/30)<1) /*ä¸€å²æ‰è¡Œ*/
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,Ò»ËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,ä¸€å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xd2\xbb\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }
     workmoney=0;    
@@ -468,22 +499,26 @@ int pip_job_workI()
     if(class>=80)
     {
       workmoney=400+d.art/10+d.affect/20;        
-      pressanykey("¿ÍÈË¶¼ºÜÏ²»¶ÈÃÄã×öÔìĞÍà¡..:)");
+      //% pressanykey("å®¢äººéƒ½å¾ˆå–œæ¬¢è®©ä½ åšé€ å‹å”·..:)");
+      pressanykey("\xbf\xcd\xc8\xcb\xb6\xbc\xba\xdc\xcf\xb2\xbb\xb6\xc8\xc3\xc4\xe3\xd7\xf6\xd4\xec\xd0\xcd\xe0\xa1..:)");
     }
     else if(class<80 && class>=60)
     {
       workmoney=360+d.art/10+d.affect/20;        
-      pressanykey("×öµÄ²»´íà¸..ÆÄÓĞÌì·İ...:)");
+      //% pressanykey("åšçš„ä¸é”™å–”..é¢‡æœ‰å¤©ä»½...:)");
+      pressanykey("\xd7\xf6\xb5\xc4\xb2\xbb\xb4\xed\xe0\xb8..\xc6\xc4\xd3\xd0\xcc\xec\xb7\xdd...:)");
     }    
     else if(class<60 && class>=40)
     {
       workmoney=320+d.art/10+d.affect/20;        
-      pressanykey("ÂíÂí»¢»¢À²..ÔÙ¼ÓÓÍÒ»µã..");      
+      //% pressanykey("é©¬é©¬è™è™å•¦..å†åŠ æ²¹ä¸€ç‚¹..");      
+      pressanykey("\xc2\xed\xc2\xed\xbb\xa2\xbb\xa2\xc0\xb2..\xd4\xd9\xbc\xd3\xd3\xcd\xd2\xbb\xb5\xe3..");      
     }    
     else if(class<40)
     {
       workmoney=250+d.art/10+d.affect/20;        
-      pressanykey("´ı¼ÓÇ¿à¸..ÒÔááÔÙÀ´°É....");      
+      //% pressanykey("å¾…åŠ å¼ºå–”..ä»¥å¾Œå†æ¥å§....");      
+      pressanykey("\xb4\xfd\xbc\xd3\xc7\xbf\xe0\xb8..\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9....");      
     }        
     d.money+=workmoney;
     d.workI+=1;
@@ -492,21 +527,22 @@ int pip_job_workI()
 
 int pip_job_workJ()
 {           
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦á÷ÁÔÇø  ©¦ÌåÁ¦ + 1 , ÆøÖÊ - 1 , Ä¸ĞÔ - 1 , Æ£ÀÍ + 3   ©¦*/
-/*  ©¦        ©¦Õ½¶·¼¼Êõ + N                                ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦á÷ÁÔÇø  ©¦Èô Ìå    Á¦ - RND (Æ£ÀÍ) >=  80 £¦          ©¦*/
-/*  ©¦        ©¦Èô ÖÇ    Á¦ - RND (Æ£ÀÍ) >=  40 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚ç‹©çŒåŒº  â”‚ä½“åŠ› + 1 , æ°”è´¨ - 1 , æ¯æ€§ - 1 , ç–²åŠ³ + 3   â”‚*/
+/*  â”‚        â”‚æˆ˜æ–—æŠ€æœ¯ + N                                â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚ç‹©çŒåŒº  â”‚è‹¥ ä½“    åŠ› - RND (ç–²åŠ³) >=  80 ï¼†          â”‚*/
+/*  â”‚        â”‚è‹¥ æ™º    åŠ› - RND (ç–²åŠ³) >=  40 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     float class1;
     long workmoney;
 
-    /*Á½ËêÒÔÉÏ²ÅĞĞ*/
+    /*ä¸¤å²ä»¥ä¸Šæ‰è¡Œ*/
     if((d.bbtime/60/30)<2)
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,Á½ËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,ä¸¤å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xc1\xbd\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }          
     workmoney=0;
@@ -532,31 +568,36 @@ int pip_job_workJ()
     {
        d.hskill+=rand()%2+7;
        workmoney=300+d.maxhp/50+d.hskill/20;
-       pressanykey("ÄãÊÇÍêÃÀµÄÁÔÈË..");
+       //% pressanykey("ä½ æ˜¯å®Œç¾çš„çŒäºº..");
+       pressanykey("\xc4\xe3\xca\xc7\xcd\xea\xc3\xc0\xb5\xc4\xc1\xd4\xc8\xcb..");
     }
     else if((class<75 && class>=50) && class1>=60 )  
     {
        d.hskill+=rand()%2+5;
        workmoney=270+d.maxhp/45+d.hskill/20;   
-       pressanykey("ÊÕ»ñ»¹²»´íà¸..¿ÉÒÔ±¥²ÍÒ»¶ÙÁË..:)");
+       //% pressanykey("æ”¶è·è¿˜ä¸é”™å–”..å¯ä»¥é¥±é¤ä¸€é¡¿äº†..:)");
+       pressanykey("\xca\xd5\xbb\xf1\xbb\xb9\xb2\xbb\xb4\xed\xe0\xb8..\xbf\xc9\xd2\xd4\xb1\xa5\xb2\xcd\xd2\xbb\xb6\xd9\xc1\xcb..:)");
     }
     else if((class<50 && class>=25) && class1 >=40 )
     {
        d.hskill+=rand()%2+3;
        workmoney=240+d.maxhp/40+d.hskill/20;
-       pressanykey("¼¼Êõ²îÇ¿ÈËÒâ  ÔÙ¼ÓÓÍà¸..");
+       //% pressanykey("æŠ€æœ¯å·®å¼ºäººæ„  å†åŠ æ²¹å–”..");
+       pressanykey("\xbc\xbc\xca\xf5\xb2\xee\xc7\xbf\xc8\xcb\xd2\xe2  \xd4\xd9\xbc\xd3\xd3\xcd\xe0\xb8..");
     }    
     else if((class<25 && class>=0) && class1 >=20)  
     {
        d.hskill+=rand()%2+1;
        workmoney=210+d.maxhp/30+d.hskill/20;    
-       pressanykey("á÷ÁÔÊÇÌåÁ¦ÓëÖÇÁ¦µÄ½áºÏ....");
+       //% pressanykey("ç‹©çŒæ˜¯ä½“åŠ›ä¸æ™ºåŠ›çš„ç»“åˆ....");
+       pressanykey("\xe1\xf7\xc1\xd4\xca\xc7\xcc\xe5\xc1\xa6\xd3\xeb\xd6\xc7\xc1\xa6\xb5\xc4\xbd\xe1\xba\xcf....");
     }    
     else if(class<0)
     {
        d.hskill+=rand()%2;
        workmoney=190+d.hskill/20;
-       pressanykey("Òª¶à¶à¶Í  ºÍÔö½øÖÇ»ÛÀ²....");
+       //% pressanykey("è¦å¤šå¤šé”»  å’Œå¢è¿›æ™ºæ…§å•¦....");
+       pressanykey("\xd2\xaa\xb6\xe0\xb6\xe0\xb6\xcd  \xba\xcd\xd4\xf6\xbd\xf8\xd6\xc7\xbb\xdb\xc0\xb2....");
     }    
     d.money=d.money+workmoney;        
     d.workJ+=1;
@@ -565,16 +606,17 @@ int pip_job_workJ()
 
 int pip_job_workK()
 { 
-/* ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/* ©¦¹¤µØ    ©¦ÌåÁ¦ + 2 , ÷ÈÁ¦ - 1 , Æ£ÀÍ + 3              ©¦*/
-/* ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/* â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/* â”‚å·¥åœ°    â”‚ä½“åŠ› + 2 , é­…åŠ› - 1 , ç–²åŠ³ + 3              â”‚*/
+/* â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
     
-    /*Á½ËêÒÔÉÏ²ÅĞĞ*/
+    /*ä¸¤å²ä»¥ä¸Šæ‰è¡Œ*/
     if((d.bbtime/60/30)<2)
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,Á½ËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,ä¸¤å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xc1\xbd\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }
     workmoney=0;
@@ -595,27 +637,32 @@ int pip_job_workK()
     if(class>=75)
     {
        workmoney=250+d.maxhp/50;
-       pressanykey("¹¤³ÌºÜÍêÃÀ  Ğ»Ğ»ÄãÁË..");
+       //% pressanykey("å·¥ç¨‹å¾ˆå®Œç¾  è°¢è°¢ä½ äº†..");
+       pressanykey("\xb9\xa4\xb3\xcc\xba\xdc\xcd\xea\xc3\xc0  \xd0\xbb\xd0\xbb\xc4\xe3\xc1\xcb..");
     }
     else if(class<75 && class>=50)  
     {
        workmoney=220+d.maxhp/45;    
-       pressanykey("¹¤³ÌÉĞ³ÆË³Àû  ĞÁ¿àÄãÁË..");
+       //% pressanykey("å·¥ç¨‹å°šç§°é¡ºåˆ©  è¾›è‹¦ä½ äº†..");
+       pressanykey("\xb9\xa4\xb3\xcc\xc9\xd0\xb3\xc6\xcb\xb3\xc0\xfb  \xd0\xc1\xbf\xe0\xc4\xe3\xc1\xcb..");
     }
     else if(class<50 && class>=25)  
     {
        workmoney=200+d.maxhp/40;    
-       pressanykey("¹¤³Ì²îÇ¿ÈËÒâ  ÔÙ¼ÓÓÍà¸..");
+       //% pressanykey("å·¥ç¨‹å·®å¼ºäººæ„  å†åŠ æ²¹å–”..");
+       pressanykey("\xb9\xa4\xb3\xcc\xb2\xee\xc7\xbf\xc8\xcb\xd2\xe2  \xd4\xd9\xbc\xd3\xd3\xcd\xe0\xb8..");
     }    
     else if(class<25 && class>=0)  
     {
        workmoney=180+d.maxhp/30;    
-       pressanykey("¨Ü  ´ı¼ÓÇ¿´ı¼ÓÇ¿....");
+       //% pressanykey("ã„œ  å¾…åŠ å¼ºå¾…åŠ å¼º....");
+       pressanykey("\xa8\xdc  \xb4\xfd\xbc\xd3\xc7\xbf\xb4\xfd\xbc\xd3\xc7\xbf....");
     }    
     else if(class<0)
     {
        workmoney=160;
-       pressanykey("ÏÂ´ÎÌåÁ¦ºÃÒ»µã..Æ£ÀÍ¶ÈµÍÒ»µãÔÙÀ´....");
+       //% pressanykey("ä¸‹æ¬¡ä½“åŠ›å¥½ä¸€ç‚¹..ç–²åŠ³åº¦ä½ä¸€ç‚¹å†æ¥....");
+       pressanykey("\xcf\xc2\xb4\xce\xcc\xe5\xc1\xa6\xba\xc3\xd2\xbb\xb5\xe3..\xc6\xa3\xc0\xcd\xb6\xc8\xb5\xcd\xd2\xbb\xb5\xe3\xd4\xd9\xc0\xb4....");
     }
     
     d.money=d.money+workmoney;
@@ -625,18 +672,19 @@ int pip_job_workK()
 
 int pip_job_workL()
 {   
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦Ä¹Ô°    ©¦¿¹Ä§ÄÜÁ¦ + N , ¸ĞÊÜ + 1 , ÷ÈÁ¦ - 1          ©¦*/
-/*  ©¦        ©¦Æ£ÀÍ + 2                                    ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å¢“å›­    â”‚æŠ—é­”èƒ½åŠ› + N , æ„Ÿå— + 1 , é­…åŠ› - 1          â”‚*/
+/*  â”‚        â”‚ç–²åŠ³ + 2                                    â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     float class1;
     long workmoney;
     
-    /*ÈşËê²ÅĞĞ*/
+    /*åå²æ‰è¡Œ*/
     if((d.bbtime/60/30)<3)
     {
-      pressanykey("Ğ¡¼¦ÏÖÔÚ»¹Ì«Ğ¡ÁË,ÈşËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡ç°åœ¨è¿˜å¤ªå°äº†,åå²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcf\xd6\xd4\xda\xbb\xb9\xcc\xab\xd0\xa1\xc1\xcb,\xc8\xfe\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }
     workmoney=0;
@@ -658,29 +706,34 @@ int pip_job_workL()
     {
       d.mresist+=rand()%2+7;
       workmoney=200+(d.affect+d.brave)/40;
-      pressanykey("ÊØÄ¹³É¹¦à¸  ¸øÄã¶àµãÇ®");
+      //% pressanykey("å®ˆå¢“æˆåŠŸå–”  ç»™ä½ å¤šç‚¹é’±");
+      pressanykey("\xca\xd8\xc4\xb9\xb3\xc9\xb9\xa6\xe0\xb8  \xb8\xf8\xc4\xe3\xb6\xe0\xb5\xe3\xc7\xae");
     }
     else if((class<75 && class>=50)&& class1 >=50)
     {
       d.mresist+=rand()%2+5;
       workmoney=150+(d.affect+d.brave)/50;      
-      pressanykey("ÊØÄ¹»¹Ëã³É¹¦à¸..Ğ»À²..");    
+      //% pressanykey("å®ˆå¢“è¿˜ç®—æˆåŠŸå–”..è°¢å•¦..");    
+      pressanykey("\xca\xd8\xc4\xb9\xbb\xb9\xcb\xe3\xb3\xc9\xb9\xa6\xe0\xb8..\xd0\xbb\xc0\xb2..");    
     }    
     else if((class<50 && class>=25)&& class1 >=25)
     {
       d.mresist+=rand()%2+3;
       workmoney=120+(d.affect+d.brave)/60;
-      pressanykey("ÊØÄ¹»¹Ëã²îÇ¿ÈËÒâà¸..¼ÓÓÍ..");    
+      //% pressanykey("å®ˆå¢“è¿˜ç®—å·®å¼ºäººæ„å–”..åŠ æ²¹..");    
+      pressanykey("\xca\xd8\xc4\xb9\xbb\xb9\xcb\xe3\xb2\xee\xc7\xbf\xc8\xcb\xd2\xe2\xe0\xb8..\xbc\xd3\xd3\xcd..");    
     }    
     else
     {
       d.mresist+=rand()%2+1;
       workmoney=80+(d.affect+d.brave)/70;
-      pressanykey("ÎÒÒ²²»·½±ãËµÉ¶ÁË..ÇëÔÙ¼ÓÓÍ..");    
+      //% pressanykey("æˆ‘ä¹Ÿä¸æ–¹ä¾¿è¯´å•¥äº†..è¯·å†åŠ æ²¹..");    
+      pressanykey("\xce\xd2\xd2\xb2\xb2\xbb\xb7\xbd\xb1\xe3\xcb\xb5\xc9\xb6\xc1\xcb..\xc7\xeb\xd4\xd9\xbc\xd3\xd3\xcd..");    
     }           
     if(rand()%10==5)
     {
-       pressanykey("ÕæÊÇµ¹é¹  ¾¹Óöµ½ËÀÉñÄ§..");
+       //% pressanykey("çœŸæ˜¯å€’æ¥£  ç«Ÿé‡åˆ°æ­»ç¥é­”..");
+       pressanykey("\xd5\xe6\xca\xc7\xb5\xb9\xe9\xb9  \xbe\xb9\xd3\xf6\xb5\xbd\xcb\xc0\xc9\xf1\xc4\xa7..");
        pip_fight_bad(12);
     }
     d.money+=workmoney;
@@ -690,15 +743,16 @@ int pip_job_workL()
 
 int pip_job_workM()
 {
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦¼ÒÍ¥½ÌÊ¦©¦µÀµÂ + 1 , Ä¸ĞÔ + N , ÷ÈÁ¦ - 1 , Æ£ÀÍ + 7   ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å®¶åº­æ•™å¸ˆâ”‚é“å¾· + 1 , æ¯æ€§ + N , é­…åŠ› - 1 , ç–²åŠ³ + 7   â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;    
 
     if((d.bbtime/60/30)<4)
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,ËÄËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,å››å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xcb\xc4\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }    
     workmoney=0;
@@ -714,27 +768,29 @@ int pip_job_workM()
     d.money=d.money+workmoney;
     move(4,0);
     show_job_pic(131);
-    pressanykey("¼Ò½ÌÇáËÉ µ±È»Ç®¾ÍÉÙÒ»µãÂŞ");
+    //% pressanykey("å®¶æ•™è½»æ¾ å½“ç„¶é’±å°±å°‘ä¸€ç‚¹ç½—");
+    pressanykey("\xbc\xd2\xbd\xcc\xc7\xe1\xcb\xc9 \xb5\xb1\xc8\xbb\xc7\xae\xbe\xcd\xc9\xd9\xd2\xbb\xb5\xe3\xc2\xde");
     d.workM+=1;
     return;
 }
 
 int pip_job_workN()
 {   
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦¾Æµê    ©¦Åëâ¿¼¼ÇÉ + N , Ì¸»°¼¼ÇÉ + N , ÖÇÁ¦ - 2      ©¦*/
-/*  ©¦        ©¦Æ£ÀÍ + 5                                    ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦¾Æµê    ©¦Èô Ìå    Á¦ - RND (Æ£ÀÍ) >=  60 £¦          ©¦*/
-/*  ©¦        ©¦Èô ÷È    Á¦ - RND (Æ£ÀÍ) >=  50 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚é…’åº—    â”‚çƒ¹é¥ªæŠ€å·§ + N , è°ˆè¯æŠ€å·§ + N , æ™ºåŠ› - 2      â”‚*/
+/*  â”‚        â”‚ç–²åŠ³ + 5                                    â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚é…’åº—    â”‚è‹¥ ä½“    åŠ› - RND (ç–²åŠ³) >=  60 ï¼†          â”‚*/
+/*  â”‚        â”‚è‹¥ é­…    åŠ› - RND (ç–²åŠ³) >=  50 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     float class1;
     long workmoney;
     
     if((d.bbtime/60/30)<5)
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,ÎåËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,äº”å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xce\xe5\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }         
     workmoney=0;
@@ -755,28 +811,32 @@ int pip_job_workN()
       d.cookskill+=rand()%2+7;
       d.speech+=rand()%2+5;
       workmoney=500+(d.charm)/5;
-      pressanykey("ÄãºÜºìà¡  :)");
+      //% pressanykey("ä½ å¾ˆçº¢å”·  :)");
+      pressanykey("\xc4\xe3\xba\xdc\xba\xec\xe0\xa1  :)");
     }
     else if((class<75 && class>=50)&& class1 >=50)
     {
       d.cookskill+=rand()%2+5;
       d.speech+=rand()%2+5;
       workmoney=400+(d.charm)/5;    
-      pressanykey("ÂùÊÜ»¶Ó­µÄÒ®....");    
+      //% pressanykey("è›®å—æ¬¢è¿çš„è€¶....");    
+      pressanykey("\xc2\xf9\xca\xdc\xbb\xb6\xd3\xad\xb5\xc4\xd2\xae....");    
     }    
     else if((class<50 && class>=25)&& class1 >=25)
     {
       d.cookskill+=rand()%2+4;
       d.speech+=rand()%2+3;
       workmoney=300+(d.charm)/5;    
-      pressanykey("ºÜÆ½·²À²..µ«ÂíÂí»¢»¢...");    
+      //% pressanykey("å¾ˆå¹³å‡¡å•¦..ä½†é©¬é©¬è™è™...");    
+      pressanykey("\xba\xdc\xc6\xbd\xb7\xb2\xc0\xb2..\xb5\xab\xc2\xed\xc2\xed\xbb\xa2\xbb\xa2...");    
     }    
     else
     {
       d.cookskill+=rand()%2+2;
       d.speech+=rand()%2+2;
       workmoney=200+(d.charm)/5;    
-      pressanykey("ÄãµÄÃÄÁ¦²»¹»À²..Çë¼ÓÓÍ....");    
+      //% pressanykey("ä½ çš„åªšåŠ›ä¸å¤Ÿå•¦..è¯·åŠ æ²¹....");    
+      pressanykey("\xc4\xe3\xb5\xc4\xc3\xc4\xc1\xa6\xb2\xbb\xb9\xbb\xc0\xb2..\xc7\xeb\xbc\xd3\xd3\xcd....");    
     }           
     d.money+=workmoney;
     d.workN+=1;
@@ -785,18 +845,19 @@ int pip_job_workN()
 
 int pip_job_workO()
 {         
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦¾Æ¼Ò    ©¦÷ÈÁ¦ + 2 , ×ïÄõ + 2 , µÀµÂ - 3 , ĞÅÑö - 3   ©¦*/
-/*  ©¦        ©¦´ıÈË½ÓÎï - N , ºÍ¸¸Ç×µÄ¹ØÏµ - N , Æ£ÀÍ + 12 ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦¾Æ¼Ò    ©¦Èô ÷È    Á¦ - RND (Æ£ÀÍ) >=  70 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚é…’å®¶    â”‚é­…åŠ› + 2 , ç½ªå­½ + 2 , é“å¾· - 3 , ä¿¡ä»° - 3   â”‚*/
+/*  â”‚        â”‚å¾…äººæ¥ç‰© - N , å’Œçˆ¶äº²çš„å…³ç³» - N , ç–²åŠ³ + 12 â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚é…’å®¶    â”‚è‹¥ é­…    åŠ› - RND (ç–²åŠ³) >=  70 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
     float class;
     long workmoney;
     
     if((d.bbtime/60/30)<4)
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,ËÄËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,å››å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xcb\xc4\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return 0;
     }                 
     workmoney=0;
@@ -822,28 +883,32 @@ int pip_job_workO()
       d.relation-=rand()%5+12;
       d.toman-=rand()%5+12;
       workmoney=600+(d.charm)/5;
-      pressanykey("ÄãÊÇ±¾µêµÄºìÅÆà¡  :)");
+      //% pressanykey("ä½ æ˜¯æœ¬åº—çš„çº¢ç‰Œå”·  :)");
+      pressanykey("\xc4\xe3\xca\xc7\xb1\xbe\xb5\xea\xb5\xc4\xba\xec\xc5\xc6\xe0\xa1  :)");
     }
     else if(class<75 && class>=50)
     {
       d.relation-=rand()%5+8;
       d.toman-=rand()%5+8;
       workmoney=500+(d.charm)/5;    
-      pressanykey("ÄãÂùÊÜ»¶Ó­µÄÒ®..:)");    
+      //% pressanykey("ä½ è›®å—æ¬¢è¿çš„è€¶..:)");    
+      pressanykey("\xc4\xe3\xc2\xf9\xca\xdc\xbb\xb6\xd3\xad\xb5\xc4\xd2\xae..:)");    
     }    
     else if(class<50 && class>=25)
     {
       d.relation-=rand()%5+5;
       d.toman-=rand()%5+5;
       workmoney=400+(d.charm)/5;
-      pressanykey("ÄãºÜÆ½·²..µ«ÂíÂí»¢»¢À²...");    
+      //% pressanykey("ä½ å¾ˆå¹³å‡¡..ä½†é©¬é©¬è™è™å•¦...");    
+      pressanykey("\xc4\xe3\xba\xdc\xc6\xbd\xb7\xb2..\xb5\xab\xc2\xed\xc2\xed\xbb\xa2\xbb\xa2\xc0\xb2...");    
     }    
     else
     {
       d.relation-=rand()%5+1;
       d.toman-=rand()%5+1;
       workmoney=300+(d.charm)/5;    
-      pressanykey("°¦..ÄãµÄÃÄÁ¦²»¹»À²....");    
+      //% pressanykey("å”‰..ä½ çš„åªšåŠ›ä¸å¤Ÿå•¦....");    
+      pressanykey("\xb0\xa6..\xc4\xe3\xb5\xc4\xc3\xc4\xc1\xa6\xb2\xbb\xb9\xbb\xc0\xb2....");    
     }           
     d.money+=workmoney;
     if(d.relation<0)
@@ -856,20 +921,21 @@ int pip_job_workO()
     
 int pip_job_workP()
 {
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦´óÒ¹×Ü»á©¦÷ÈÁ¦ + 3 , ×ïÄõ + 1 , ÆøÖÊ - 2 , ÖÇÁ¦ - 1   ©¦*/
-/*  ©¦        ©¦´ıÈË½ÓÎï - N , Æ£ÀÍ + 8                     ©¦*/
-/*  ©À¡ª¡ª¡ª¡ª©à¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©È*/
-/*  ©¦´óÒ¹×Ü»á©¦Èô ÷È    Á¦ - RND (Æ£ÀÍ) >=  70 £¦          ©¦*/
-/*  ©¦        ©¦Èô ÒÕÊõĞŞÑø - RND (Æ£ÀÍ) >=  30 Ôò¹¤×÷³É¹¦  ©¦*/
-/*  ©¸¡ª¡ª¡ª¡ª©Ø¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª©¼*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å¤§å¤œæ€»ä¼šâ”‚é­…åŠ› + 3 , ç½ªå­½ + 1 , æ°”è´¨ - 2 , æ™ºåŠ› - 1   â”‚*/
+/*  â”‚        â”‚å¾…äººæ¥ç‰© - N , ç–²åŠ³ + 8                     â”‚*/
+/*  â”œâ€”â€”â€”â€”â”¼â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”¤*/
+/*  â”‚å¤§å¤œæ€»ä¼šâ”‚è‹¥ é­…    åŠ› - RND (ç–²åŠ³) >=  70 ï¼†          â”‚*/
+/*  â”‚        â”‚è‹¥ è‰ºæœ¯ä¿®å…» - RND (ç–²åŠ³) >=  30 åˆ™å·¥ä½œæˆåŠŸ  â”‚*/
+/*  â””â€”â€”â€”â€”â”´â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â”˜*/
     float class;
     float class1;
     long workmoney;
     
     if((d.bbtime/60/30)<6)
     {
-      pressanykey("Ğ¡¼¦Ì«Ğ¡ÁË,ÁùËêÒÔááÔÙÀ´°É...");
+      //% pressanykey("å°é¸¡å¤ªå°äº†,å…­å²ä»¥å¾Œå†æ¥å§...");
+      pressanykey("\xd0\xa1\xbc\xa6\xcc\xab\xd0\xa1\xc1\xcb,\xc1\xf9\xcb\xea\xd2\xd4\xe1\xe1\xd4\xd9\xc0\xb4\xb0\xc9...");
       return;
     }                
     workmoney=0;
@@ -895,28 +961,32 @@ int pip_job_workP()
       d.speech+=rand()%5+12;
       d.toman-=rand()%5+12;
       workmoney=1000+(d.charm)/5;
-      pressanykey("ÄãÊÇÒ¹×Ü»á×îÉÁÁÁµÄĞÇĞÇà¡  :)");
+      //% pressanykey("ä½ æ˜¯å¤œæ€»ä¼šæœ€é—ªäº®çš„æ˜Ÿæ˜Ÿå”·  :)");
+      pressanykey("\xc4\xe3\xca\xc7\xd2\xb9\xd7\xdc\xbb\xe1\xd7\xee\xc9\xc1\xc1\xc1\xb5\xc4\xd0\xc7\xd0\xc7\xe0\xa1  :)");
     }
     else if((class<75 && class>=50) && class1>20)
     {
       d.speech+=rand()%5+8;
       d.toman-=rand()%5+8;
       workmoney=800+(d.charm)/5;    
-      pressanykey("àÅàÅ..ÄãÂùÊÜ»¶Ó­µÄÒ®..:)");    
+      //% pressanykey("å—¯å—¯..ä½ è›®å—æ¬¢è¿çš„è€¶..:)");    
+      pressanykey("\xe0\xc5\xe0\xc5..\xc4\xe3\xc2\xf9\xca\xdc\xbb\xb6\xd3\xad\xb5\xc4\xd2\xae..:)");    
     }    
     else if((class<50 && class>=25) && class1>10)
     {
       d.speech+=rand()%5+5;
       d.toman-=rand()%5+5;
       workmoney=600+(d.charm)/5;
-      pressanykey("ÄãÒª¼ÓÓÍÁËÀ²..µ«ÆÕÆÕÀ²...");    
+      //% pressanykey("ä½ è¦åŠ æ²¹äº†å•¦..ä½†æ™®æ™®å•¦...");    
+      pressanykey("\xc4\xe3\xd2\xaa\xbc\xd3\xd3\xcd\xc1\xcb\xc0\xb2..\xb5\xab\xc6\xd5\xc6\xd5\xc0\xb2...");    
     }    
     else
     {
       d.speech+=rand()%5+1;
       d.toman-=rand()%5+1;
       workmoney=400+(d.charm)/5;    
-      pressanykey("°¦..Äã²»ĞĞÀ²....");    
+      //% pressanykey("å”‰..ä½ ä¸è¡Œå•¦....");    
+      pressanykey("\xb0\xa6..\xc4\xe3\xb2\xbb\xd0\xd0\xc0\xb2....");    
     }           
     d.money+=workmoney;
     if(d.toman<0)

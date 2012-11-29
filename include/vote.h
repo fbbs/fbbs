@@ -10,9 +10,9 @@ enum {
 };
 
 struct ballot {
-	char uid[IDLEN+1]; /* Í¶Æ±ÈË       */
-	unsigned int voted; /* Í¶Æ±µÄÄÚÈİ   */
-	char msg[3][STRLEN]; /* ½¨ÒéÊÂÏî     */
+	char uid[IDLEN+1]; /* æŠ•ç¥¨äºº       */
+	unsigned int voted; /* æŠ•ç¥¨çš„å†…å®¹   */
+	char msg[3][STRLEN]; /* å»ºè®®äº‹é¡¹     */
 };
 
 struct votebal {

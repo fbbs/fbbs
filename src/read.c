@@ -10,9 +10,9 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-//½«¹â±êÒÆµ½µ±Ç°µÄÎ»ÖÃ,²¢ÏÔÊ¾³É>
+//å°†å…‰æ ‡ç§»åˆ°å½“å‰çš„ä½ç½®,å¹¶æ˜¾ç¤ºæˆ>
 #define PUTCURS   move(3+locmem->crs_line-locmem->top_line,0);prints(">");
-//Çå³ıÒÔÇ°µÄ¹â±ê±ê¼Ç,¼´°Ñ>¸Ä³É¿Õ¸ñ
+//æ¸…é™¤ä»¥å‰çš„å…‰æ ‡æ ‡è®°,å³æŠŠ>æ”¹æˆç©ºæ ¼
 #define RMVCURS   move(3+locmem->crs_line-locmem->top_line,0);prints(" ");
 
 struct fileheader SR_fptr;
@@ -30,7 +30,7 @@ struct keeploc {
 
 /*struct fileheader *files = NULL;*/
 char currdirect[STRLEN];
-char keyword[STRLEN]; /* for Ïà¹ØÖ÷Ìâ */
+char keyword[STRLEN]; /* for ç›¸å…³ä¸»é¢˜ */
 int screen_len;
 int last_line;
 
@@ -42,9 +42,9 @@ int notice_lastline, dir_lastline;
 static int search_articles(struct keeploc *locmem, const char *query, int gid,
 		int offset, int aflag, int newflag);
 
-//ÔÚ¾Ö²¿±íÌ¬Á´±íÖĞ²éÕÒÓë¹Ø¼ü×Ö·û´®sÏàÆ¥ÅäµÄÏî
-//		ÕÒµ½:	Ö±½Ó·µ»Ø
-//		·ñÔò:	ĞÂ¼ÓÒ»Ïî,·ÅÔÚÁ´±í±íÍ·,²¢·µ»ØĞÂ¼ÓÏî
+//åœ¨å±€éƒ¨è¡¨æ€é“¾è¡¨ä¸­æŸ¥æ‰¾ä¸å…³é”®å­—ç¬¦ä¸²sç›¸åŒ¹é…çš„é¡¹
+//		æ‰¾åˆ°:	ç›´æ¥è¿”å›
+//		å¦åˆ™:	æ–°åŠ ä¸€é¡¹,æ”¾åœ¨é“¾è¡¨è¡¨å¤´,å¹¶è¿”å›æ–°åŠ é¡¹
 struct keeploc * getkeep(char *s, int def_topline, int def_cursline)
 {
 	static struct keeploc *keeplist = NULL;
@@ -183,8 +183,8 @@ void get_noticedirect(char *curr, char *notice)
 #endif
 
 /* calc cursor pos and show cursor correctly -cuteyu */
-//½«¹â±êÒÆµ½ºÏÊÊµÄÎ»ÖÃ,²¢ÏÔÊ¾
-//	¹â±êµÄ¸ü¸Ä·´Ó³ÔÚlocmemµÄÊı¾İÖĞ
+//å°†å…‰æ ‡ç§»åˆ°åˆé€‚çš„ä½ç½®,å¹¶æ˜¾ç¤º
+//	å…‰æ ‡çš„æ›´æ”¹åæ˜ åœ¨locmemçš„æ•°æ®ä¸­
 static int cursor_pos(struct keeploc *locmem, int val, int from_top)
 {
 	if (val > last_line) {
@@ -238,7 +238,8 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'H':
-		getdata(t_lines - 1, 0, "ÄúÑ¡Ôñ?(1) ±¾ÈÕÊ®´ó  (2) ÏµÍ³ÈÈµã [1]",ans, 2, DOECHO, YEA);
+		//% getdata(t_lines - 1, 0, "æ‚¨é€‰æ‹©?(1) æœ¬æ—¥åå¤§  (2) ç³»ç»Ÿçƒ­ç‚¹ [1]",ans, 2, DOECHO, YEA);
+		getdata(t_lines - 1, 0, "\xc4\xfa\xd1\xa1\xd4\xf1?(1) \xb1\xbe\xc8\xd5\xca\xae\xb4\xf3  (2) \xcf\xb5\xcd\xb3\xc8\xc8\xb5\xe3 [1]",ans, 2, DOECHO, YEA);
 		if (ans[0] == '2')
 		show_help("etc/hotspot");
 		else
@@ -253,11 +254,13 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 			if(!strcmp(userid, currentuser.userid))
 			break;
 			move(t_lines-1, 0);
-			sprintf(genbuf, "È·¶¨Òª°Ñ %s ¼ÓÈëºÃÓÑÃûµ¥Âğ",userid);
+			//% sprintf(genbuf, "ç¡®å®šè¦æŠŠ %s åŠ å…¥å¥½å‹åå•å—",userid);
+			sprintf(genbuf, "\xc8\xb7\xb6\xa8\xd2\xaa\xb0\xd1 %s \xbc\xd3\xc8\xeb\xba\xc3\xd3\xd1\xc3\xfb\xb5\xa5\xc2\xf0",userid);
 			if (askyn(genbuf, NA, NA) == NA)
 			return FULLUPDATE;
 			if (follow(session.uid, userid, NULL)) {
-				sprintf(genbuf, "³É¹¦¹Ø×¢ %s", userid);
+				//% sprintf(genbuf, "æˆåŠŸå…³æ³¨ %s", userid);
+				sprintf(genbuf, "\xb3\xc9\xb9\xa6\xb9\xd8\xd7\xa2 %s", userid);
 				show_message(genbuf);
 			}
 		}
@@ -275,7 +278,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		case 'l': /* ppfoong */
 			msg_more();
 			return FULLUPDATE;
-		/*        case 'L':		//chenhao ½â¾öÔÚÎÄÕÂÁĞ±íÊ±¿´ĞÅµÄÎÊÌâ
+		/*        case 'L':		//chenhao è§£å†³åœ¨æ–‡ç« åˆ—è¡¨æ—¶çœ‹ä¿¡çš„é—®é¢˜
 		 if(session.status == RMAIL) return DONOTHING;
 		 savemode = session.status;
 		 m_read();
@@ -413,17 +416,19 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 	if (last_line == 0) {
 		switch (cmdmode) {
 			case ST_RMAIL:
-				prints("Ã»ÓĞÈÎºÎĞÂĞÅ¼ş...");
+				//% prints("æ²¡æœ‰ä»»ä½•æ–°ä¿¡ä»¶...");
+				prints("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xd0\xc2\xd0\xc5\xbc\xfe...");
 				pressreturn();
 				clear();
 				break;
 			case ST_ADMIN:
-				prints("Ä¿Ç°ÎŞ×¢²áµ¥...");
+				//% prints("ç›®å‰æ— æ³¨å†Œå•...");
+				prints("\xc4\xbf\xc7\xb0\xce\xde\xd7\xa2\xb2\xe1\xb5\xa5...");
 				pressreturn();
 				clear();
 				break;
 			default:
-//				getdata(t_lines - 1, 0, "±¾°æĞÂ³ÉÁ¢ (P)·¢±íÎÄÕÂ (Q)Àë¿ª£¿[Q] ",
+//				getdata(t_lines - 1, 0, "æœ¬ç‰ˆæ–°æˆç«‹ (P)å‘è¡¨æ–‡ç«  (Q)ç¦»å¼€ï¼Ÿ[Q] ",
 //						genbuf, 4, DOECHO, YEA);
 				break;
 		}
@@ -526,7 +531,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 		switch (mode) {
 			case NEWDIRECT:
 			case DIRCHANGED:
-			case MODECHANGED: // chenhao ½â¾öÎÄÕÂÁĞ±í¿´ĞÅµÄÎÊÌâ
+			case MODECHANGED: // chenhao è§£å†³æ–‡ç« åˆ—è¡¨çœ‹ä¿¡çš„é—®é¢˜
 				recbase = -1;
 				if (mode == MODECHANGED) { // chenhao
 					setbdir(currdirect, currboard);
@@ -623,7 +628,8 @@ static int search_author(struct keeploc *locmem, int offset, char *powner)
 	char currauth[STRLEN];
 	strcpy(currauth, powner);
 
-	sprintf(pmt, "%sµÄÎÄÕÂËÑÑ°×÷Õß [%s]: ", offset> 0 ? "ÍùááÀ´" : "ÍùÏÈÇ°", currauth);
+	//% sprintf(pmt, "%sçš„æ–‡ç« æœå¯»ä½œè€… [%s]: ", offset> 0 ? "å¾€å¾Œæ¥" : "å¾€å…ˆå‰", currauth);
+	sprintf(pmt, "%s\xb5\xc4\xce\xc4\xd5\xc2\xcb\xd1\xd1\xb0\xd7\xf7\xd5\xdf [%s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1\xc0\xb4" : "\xcd\xf9\xcf\xc8\xc7\xb0", currauth);
 	move(t_lines - 1, 0);
 	clrtoeol();
 	//Modified by IAMFAT 2002-05-27
@@ -672,7 +678,8 @@ static int search_post(struct keeploc *locmem, int offset)
 	static char query[STRLEN];
 	char ans[STRLEN], pmt[STRLEN];
 	strcpy(ans, query);
-	sprintf(pmt, "ËÑÑ°%sµÄÎÄÕÂ [%s]: ", offset> 0 ? "ÍùááÀ´" : "ÍùÏÈÇ°", ans);
+	//% sprintf(pmt, "æœå¯»%sçš„æ–‡ç«  [%s]: ", offset> 0 ? "å¾€å¾Œæ¥" : "å¾€å…ˆå‰", ans);
+	sprintf(pmt, "\xcb\xd1\xd1\xb0%s\xb5\xc4\xce\xc4\xd5\xc2 [%s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1\xc0\xb4" : "\xcd\xf9\xcf\xc8\xc7\xb0", ans);
 	move(t_lines - 1, 0);
 	clrtoeol();
 	getdata(t_lines - 1, 0, pmt, ans, 50, DOECHO, YEA);
@@ -724,17 +731,20 @@ char *direct;
 
 int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	int i, dotype = 0, result = 0, gid = 0;
-	int has_yinyan=0; //Add by everlove ÖÆ×÷ºÏ¼¯
+	int has_yinyan=0; //Add by everlove åˆ¶ä½œåˆé›†
 	char buf[80], ch[32], BMch, annpath[512];
 	char *buf1 = buf;
 
-	//added by iamfat 2002.10.27 ¼ÓÈëÍ¬Ö÷Ìâ´óD¹¦ÄÜ
+	//added by iamfat 2002.10.27 åŠ å…¥åŒä¸»é¢˜å¤§DåŠŸèƒ½
 	int subflag = false;
 
 	struct keeploc *locmem;
-	char SR_BMitems[9][7] = { "É¾³ı", "±£Áô", "ÎÄÕª", "¾«»ªÇø", "Ë®ÎÄ", "²»¿ÉRE", "ºÏ¼¯",
-		"»Ö¸´", "ºÏ²¢" };
-	char subBMitems[3][9] = { "ÏàÍ¬Ö÷Ìâ", "ÏàÍ¬×÷Õß", "Ïà¹ØÖ÷Ìâ" };
+	//% char SR_BMitems[9][7] = { "åˆ é™¤", "ä¿ç•™", "æ–‡æ‘˜", "ç²¾ååŒº", "æ°´æ–‡", "ä¸å¯RE", "åˆé›†",
+	char SR_BMitems[9][7] = { "\xc9\xbe\xb3\xfd", "\xb1\xa3\xc1\xf4", "\xce\xc4\xd5\xaa", "\xbe\xab\xbb\xaa\xc7\xf8", "\xcb\xae\xce\xc4", "\xb2\xbb\xbf\xc9RE", "\xba\xcf\xbc\xaf",
+		//% "æ¢å¤", "åˆå¹¶" };
+		"\xbb\xd6\xb8\xb4", "\xba\xcf\xb2\xa2" };
+	//% char subBMitems[3][9] = { "ç›¸åŒä¸»é¢˜", "ç›¸åŒä½œè€…", "ç›¸å…³ä¸»é¢˜" };
+	char subBMitems[3][9] = { "\xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2", "\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf", "\xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2" };
 
 	if (!in_mail) {
 		if (session.status != ST_READING)
@@ -748,7 +758,8 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	move(t_lines - 1, 0);
 	clrtoeol();
 	ch[0] = '\0';
-	getdata(t_lines - 1, 0, "Ö´ĞĞ: 1) ÏàÍ¬Ö÷Ìâ  2) ÏàÍ¬×÷Õß 3) Ïà¹ØÖ÷Ìâ 0) È¡Ïû [0]: ",
+	//% getdata(t_lines - 1, 0, "æ‰§è¡Œ: 1) ç›¸åŒä¸»é¢˜  2) ç›¸åŒä½œè€… 3) ç›¸å…³ä¸»é¢˜ 0) å–æ¶ˆ [0]: ",
+	getdata(t_lines - 1, 0, "\xd6\xb4\xd0\xd0: 1) \xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2  2) \xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf 3) \xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2 0) \xc8\xa1\xcf\xfb [0]: ",
 			ch, 3, DOECHO, YEA);
 	dotype = atoi(ch);
 	if (dotype < 1 || dotype > 3) { 
@@ -781,14 +792,16 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		return DONOTHING;
 	}
 	move(t_lines - 1, 0);
-	sprintf(buf,"È·¶¨ÒªÖ´ĞĞ%s[%s]Âğ",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
+	//% sprintf(buf,"ç¡®å®šè¦æ‰§è¡Œ%s[%s]å—",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
+	sprintf(buf,"\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0%s[%s]\xc2\xf0",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
 	if (askyn(buf, NA, NA) == 0) {
 		saveline(t_lines - 1, 1);
 		return PARTUPDATE;
 	}
 
 	if (digestmode != TRASH_MODE && digestmode !=JUNK_MODE && BMch == 8) {
-		getdata(t_lines - 1, 0, "±¾Ö÷Ìâ¼ÓÖÁ°æÃæµÚ¼¸Æªºó£¿", ch, 8, DOECHO, YEA);
+		//% getdata(t_lines - 1, 0, "æœ¬ä¸»é¢˜åŠ è‡³ç‰ˆé¢ç¬¬å‡ ç¯‡åï¼Ÿ", ch, 8, DOECHO, YEA);
+		getdata(t_lines - 1, 0, "\xb1\xbe\xd6\xf7\xcc\xe2\xbc\xd3\xd6\xc1\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf", ch, 8, DOECHO, YEA);
 		if (ch[0] < '0' || ch[0]> '9' )
 			return PARTUPDATE;
 		result = atoi(ch);
@@ -799,10 +812,11 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
 	}
 
-	/* Add by everlove ÖÆ×÷ºÏ¼¯ */
+	/* Add by everlove åˆ¶ä½œåˆé›† */
 	if(BMch == 7) {
 		move(t_lines-1,0);
-		if (askyn("ÖÆ×÷µÄºÏ¼¯ĞèÒªÒıÑÔÂğ£¿", YEA, YEA) == YEA)
+		//% if (askyn("åˆ¶ä½œçš„åˆé›†éœ€è¦å¼•è¨€å—ï¼Ÿ", YEA, YEA) == YEA)
+		if (askyn("\xd6\xc6\xd7\xf7\xb5\xc4\xba\xcf\xbc\xaf\xd0\xe8\xd2\xaa\xd2\xfd\xd1\xd4\xc2\xf0\xa3\xbf", YEA, YEA) == YEA)
 			has_yinyan=YEA;
 		else
 			has_yinyan=NA;
@@ -811,7 +825,8 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 
 	if (dotype == 3) {
 		strcpy(keyword, "");
-		getdata(t_lines - 1, 0, "ÇëÊäÈëÖ÷Ìâ¹Ø¼ü×Ö: ", keyword, 50, DOECHO, YEA);
+		//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥ä¸»é¢˜å…³é”®å­—: ", keyword, 50, DOECHO, YEA);
+		getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ", keyword, 50, DOECHO, YEA);
 		if (keyword[0] == '\0') {
 			saveline(t_lines - 1, 1);
 			return DONOTHING;
@@ -822,7 +837,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		strcpy(keyword, fileinfo->owner);
 	}
 
-	/* Add by everlove ÖÆ×÷ºÏ¼¯ */
+	/* Add by everlove åˆ¶ä½œåˆé›† */
 	if( (dotype == 1 || dotype == 3) && (BMch == 7))
 	{
 		sprintf(buf, "tmp/%s.combine", currentuser.userid);
@@ -831,13 +846,16 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	/* The End */
 
 	//added by iamfat 2002.10.30
-	if(BMch==1) { //É¾³ı
-		subflag=askyn("ÊÇ·ñĞ¡d", YEA, YEA);
+	if(BMch==1) { //åˆ é™¤
+		//% subflag=askyn("æ˜¯å¦å°d", YEA, YEA);
+		subflag=askyn("\xca\xc7\xb7\xf1\xd0\xa1""d", YEA, YEA);
 	}
 
 	move(t_lines - 1, 0);
-	sprintf(buf, "ÊÇ·ñ´Ó%sµÚÒ»Æª¿ªÊ¼%s (Y)µÚÒ»Æª (N)Ä¿Ç°ÕâÒ»Æª",
-			(dotype == 2) ? "¸Ã×÷Õß" : "´ËÖ÷Ìâ", SR_BMitems[BMch - 1]);
+	//% sprintf(buf, "æ˜¯å¦ä»%sç¬¬ä¸€ç¯‡å¼€å§‹%s (Y)ç¬¬ä¸€ç¯‡ (N)ç›®å‰è¿™ä¸€ç¯‡",
+	sprintf(buf, "\xca\xc7\xb7\xf1\xb4\xd3%s\xb5\xda\xd2\xbb\xc6\xaa\xbf\xaa\xca\xbc%s (Y)\xb5\xda\xd2\xbb\xc6\xaa (N)\xc4\xbf\xc7\xb0\xd5\xe2\xd2\xbb\xc6\xaa",
+			//% (dotype == 2) ? "è¯¥ä½œè€…" : "æ­¤ä¸»é¢˜", SR_BMitems[BMch - 1]);
+			(dotype == 2) ? "\xb8\xc3\xd7\xf7\xd5\xdf" : "\xb4\xcb\xd6\xf7\xcc\xe2", SR_BMitems[BMch - 1]);
 	if(askyn(buf, YEA, NA) == YEA) {
 		result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
 	} else if(dotype == 3) {
@@ -856,14 +874,16 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			FILE *fn;
 			sethomefile(annpath, currentuser.userid,".announcepath");
 			if((fn = fopen(annpath, "r")) == NULL ) {
-				presskeyfor("¶Ô²»Æğ, ÄúÃ»ÓĞÉè¶¨Ë¿Â·. ÇëÏÈÓÃ f Éè¶¨Ë¿Â·.",t_lines-1);
+				//% presskeyfor("å¯¹ä¸èµ·, æ‚¨æ²¡æœ‰è®¾å®šä¸è·¯. è¯·å…ˆç”¨ f è®¾å®šä¸è·¯.",t_lines-1);
+				presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.",t_lines-1);
 				saveline(t_lines - 1, 1);
 				return DONOTHING;
 			}
 			fscanf(fn,"%s",annpath);
 			fclose(fn);
 			if (!dashd(annpath)) {
-				presskeyfor("ÄúÉè¶¨µÄË¿Â·ÒÑ¶ªÊ§, ÇëÖØĞÂÓÃ f Éè¶¨.",t_lines-1);
+				//% presskeyfor("æ‚¨è®¾å®šçš„ä¸è·¯å·²ä¸¢å¤±, è¯·é‡æ–°ç”¨ f è®¾å®š.",t_lines-1);
+				presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.",t_lines-1);
 				saveline(t_lines - 1, 1);
 				return DONOTHING;
 			}
@@ -895,7 +915,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 				case 4:
 					a_Import(SR_fptr.title, SR_fptr.filename, YEA);
 					break;
-					/* Add by everlove ÖÆ×÷ºÏ¼¯ */
+					/* Add by everlove åˆ¶ä½œåˆé›† */
 				case 7:
 					Add_Combine(currboard,&SR_fptr,has_yinyan);
 					break;
@@ -938,7 +958,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 				case 6:
 					underline_post(locmem->crs_line,&SR_fptr,currdirect);
 					break;
-					/* Add by everlove ÖÆ×÷ºÏ¼¯ */
+					/* Add by everlove åˆ¶ä½œåˆé›† */
 				case 7:
 					Add_Combine(currboard,&SR_fptr,has_yinyan);
 					break;
@@ -971,9 +991,11 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 
 	if (BMch == 7) {
 		if (strneq(keyword, "Re: ", 4) || strneq(keyword, "RE: ", 4))
-			snprintf(buf, sizeof(buf), "[ºÏ¼¯]%s", keyword + 4);
+			//% snprintf(buf, sizeof(buf), "[åˆé›†]%s", keyword + 4);
+			snprintf(buf, sizeof(buf), "[\xba\xcf\xbc\xaf]%s", keyword + 4);
 		else
-			snprintf(buf, sizeof(buf), "[ºÏ¼¯]%s", keyword);
+			//% snprintf(buf, sizeof(buf), "[åˆé›†]%s", keyword);
+			snprintf(buf, sizeof(buf), "[\xba\xcf\xbc\xaf]%s", keyword);
 
 		ansi_filter(keyword, buf);
 
@@ -987,7 +1009,8 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 	/* The End */
 	if (!in_mail && BMch != 7 && !(dotype == 1 && BMch == 1)) {
-		sprintf (buf, "%s°æ\"b\"%s%s", currboard, subBMitems[dotype
+		//% sprintf (buf, "%sç‰ˆ\"b\"%s%s", currboard, subBMitems[dotype
+		sprintf (buf, "%s\xb0\xe6\"b\"%s%s", currboard, subBMitems[dotype
 				- 1], SR_BMitems[BMch - 1]);
 		securityreport(buf, 0, 2);
 	}
@@ -1014,7 +1037,8 @@ int combine_thread(int ent, struct fileheader *fileinfo, char *direct)
 	char buf[16];
 	int num;
 	struct fileheader fh;
-	getdata(t_lines - 1, 0, "ºÏ²¢µ½°æÃæµÚ¼¸Æªºó£¿",buf, 6, DOECHO, YEA);
+	//% getdata(t_lines - 1, 0, "åˆå¹¶åˆ°ç‰ˆé¢ç¬¬å‡ ç¯‡åï¼Ÿ",buf, 6, DOECHO, YEA);
+	getdata(t_lines - 1, 0, "\xba\xcf\xb2\xa2\xb5\xbd\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf",buf, 6, DOECHO, YEA);
 	if (buf[0] < '0'|| buf[0]> '9' )
 	return PARTUPDATE;
 	num = atoi(buf);
@@ -1163,7 +1187,8 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 	if (aflag == SEARCH_CONTENT) {
 		move(t_lines - 1, 0);
 		clrtoeol();
-		prints("\033[1;44;33mËÑÑ°ÖĞ£¬ÇëÉÔºò....                      "
+		//% prints("\033[1;44;33mæœå¯»ä¸­ï¼Œè¯·ç¨å€™....                      "
+		prints("\033[1;44;33m\xcb\xd1\xd1\xb0\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2....                      "
 				"                                       \033[m");
 		refresh();
 	}
@@ -1300,7 +1325,8 @@ int search_title(struct keeploc *locmem, int offset)
 	static char title[STRLEN];
 	char ans[STRLEN], pmt[STRLEN];
 	strcpy(ans, title);
-	sprintf(pmt, "%sËÑÑ°±êÌâ [%.16s]: ", offset> 0 ? "Íùáá" : "ÍùÇ°", ans);
+	//% sprintf(pmt, "%sæœå¯»æ ‡é¢˜ [%.16s]: ", offset> 0 ? "å¾€å¾Œ" : "å¾€å‰", ans);
+	sprintf(pmt, "%s\xcb\xd1\xd1\xb0\xb1\xea\xcc\xe2 [%.16s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1" : "\xcd\xf9\xc7\xb0", ans);
 	move(t_lines - 1, 0);
 	clrtoeol();
 	getdata(t_lines - 1, 0, pmt, ans, 46, DOECHO, YEA);
@@ -1395,8 +1421,10 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 		move(t_lines - 1, 0);
 		clrtoeol();
 		prints(
-				"[1;44;31m[%8s] [33mÏÂÒ»·â <Space>,<Enter>,¡ı©¦ÉÏÒ»·â ¡ü,U                              [m",
-				auser ? "ÏàÍ¬×÷Õß" : "Ö÷ÌâÔÄ¶Á");
+				//% "[1;44;31m[%8s] [33mä¸‹ä¸€å° <Space>,<Enter>,â†“â”‚ä¸Šä¸€å° â†‘,U                              [m",
+				"[1;44;31m[%8s] [33m\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,<Enter>,\xa1\xfd\xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc,U                              [m",
+				//% auser ? "ç›¸åŒä½œè€…" : "ä¸»é¢˜é˜…è¯»");
+				auser ? "\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf" : "\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1");
 		switch (egetch()) {
 			case ' ':
 			case '\n':
@@ -1452,8 +1480,10 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 		move(t_lines - 1, 0);
 		clrtoeol();
 		prints(
-				"\033[1;44;31m[%8s] \033[33m»ØĞÅ R ©¦ ½áÊø Q,¡û ©¦ÏÂÒ»·â ¡ı,Enter©¦ÉÏÒ»·â ¡ü,U ©¦ ^R »Ø¸ø×÷Õß   \033[m",
-				auser ? "ÏàÍ¬×÷Õß" : "Ö÷ÌâÔÄ¶Á");
+				//% "\033[1;44;31m[%8s] \033[33må›ä¿¡ R â”‚ ç»“æŸ Q,â† â”‚ä¸‹ä¸€å° â†“,Enterâ”‚ä¸Šä¸€å° â†‘,U â”‚ ^R å›ç»™ä½œè€…   \033[m",
+				"\033[1;44;31m[%8s] \033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 \xa1\xfd,Enter\xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc,U \xa9\xa6 ^R \xbb\xd8\xb8\xf8\xd7\xf7\xd5\xdf   \033[m",
+				//% auser ? "ç›¸åŒä½œè€…" : "ä¸»é¢˜é˜…è¯»");
+				auser ? "\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf" : "\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1");
 		switch (ch = egetch()) {
 			case KEY_LEFT:
 			case 'N':
@@ -1479,7 +1509,8 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 				} else {
 					clear();
 					move(5, 6);
-					prints("¶Ô²»Æğ, ¸ÃÎÄÕÂÓĞ²»¿É RE ÊôĞÔ, Äú²»ÄÜ»Ø¸´(RE) ÕâÆªÎÄÕÂ.");
+					//% prints("å¯¹ä¸èµ·, è¯¥æ–‡ç« æœ‰ä¸å¯ RE å±æ€§, æ‚¨ä¸èƒ½å›å¤(RE) è¿™ç¯‡æ–‡ç« .");
+					prints("\xb6\xd4\xb2\xbb\xc6\xf0, \xb8\xc3\xce\xc4\xd5\xc2\xd3\xd0\xb2\xbb\xbf\xc9 RE \xca\xf4\xd0\xd4, \xc4\xfa\xb2\xbb\xc4\xdc\xbb\xd8\xb8\xb4(RE) \xd5\xe2\xc6\xaa\xce\xc4\xd5\xc2.");
 					pressreturn();
 				}
 				break;
@@ -1523,9 +1554,9 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 	return 1;
 }
 
-int locate_the_post(struct fileheader *fileinfo, char *query, int offset, //-1 µ±Ç°ÏòÉÏ  1 µ±Ç°ÏòÏÂ  3 ×îºóÒ»Æª 5 µÚÒ»Æª
-		int aflag, // 1 owner  0 Í¬Ö÷Ìâ   2 Ïà¹ØÖ÷Ìâ
-		int newflag // 1 ±ØĞëÎªĞÂÎÄÕÂ   0 ĞÂ¾É¾ù¿É
+int locate_the_post(struct fileheader *fileinfo, char *query, int offset, //-1 å½“å‰å‘ä¸Š  1 å½“å‰å‘ä¸‹  3 æœ€åä¸€ç¯‡ 5 ç¬¬ä¸€ç¯‡
+		int aflag, // 1 owner  0 åŒä¸»é¢˜   2 ç›¸å…³ä¸»é¢˜
+		int newflag // 1 å¿…é¡»ä¸ºæ–°æ–‡ç«    0 æ–°æ—§å‡å¯
 ) {
 	struct keeploc *locmem;
 	locmem = getkeep(currdirect, 1, 1);

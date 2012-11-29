@@ -282,13 +282,16 @@ int bbssndmail_main(void)
 	printable_filter(title);
 	valid_title(title);
 	if (*title == '\0')
-		strlcpy(title, "Ã»Ö÷Ìâ", sizeof(title));
+		//% strlcpy(title, "æ²¡ä¸»é¢˜", sizeof(title));
+		strlcpy(title, "\xc3\xbb\xd6\xf7\xcc\xe2", sizeof(title));
 
 	const char *text = get_param("text");
 	int len = strlen(text);
 	char header[320];
-	snprintf(header, sizeof(header), "¼ÄĞÅÈË: %s (%s)\n±ê  Ìâ: %s\n·¢ĞÅÕ¾: "
-			BBSNAME" (%s)\nÀ´  Ô´: %s\n\n", currentuser.userid,
+	//% snprintf(header, sizeof(header), "å¯„ä¿¡äºº: %s (%s)\næ ‡  é¢˜: %s\nå‘ä¿¡ç«™: "
+	snprintf(header, sizeof(header), "\xbc\xc4\xd0\xc5\xc8\xcb: %s (%s)\n\xb1\xea  \xcc\xe2: %s\n\xb7\xa2\xd0\xc5\xd5\xbe: "
+			//% BBSNAME" (%s)\næ¥  æº: %s\n\n", currentuser.userid,
+			BBSNAME" (%s)\n\xc0\xb4  \xd4\xb4: %s\n\n", currentuser.userid,
 			currentuser.username, title, getdatestring(time(NULL), DATE_ZH),
 			mask_host(fromhost));
 	// TODO: signature, error code
@@ -302,7 +305,8 @@ int bbssndmail_main(void)
 	const char *ref = get_param("ref");
 	http_header();
 	refreshto(1, ref);
-	printf("</head>\n<body>·¢±í³É¹¦£¬1ÃëÖÓºó×Ô¶¯×ªµ½<a href='%s'>Ô­Ò³Ãæ</a>\n"
+	//% printf("</head>\n<body>å‘è¡¨æˆåŠŸï¼Œ1ç§’é’Ÿåè‡ªåŠ¨è½¬åˆ°<a href='%s'>åŸé¡µé¢</a>\n"
+	printf("</head>\n<body>\xb7\xa2\xb1\xed\xb3\xc9\xb9\xa6\xa3\xac""1\xc3\xeb\xd6\xd3\xba\xf3\xd7\xd4\xb6\xaf\xd7\xaa\xb5\xbd<a href='%s'>\xd4\xad\xd2\xb3\xc3\xe6</a>\n"
 			"</body>\n</html>\n", ref);
 	return 0;
 }

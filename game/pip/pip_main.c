@@ -1,7 +1,7 @@
 /* ----------------------------------- */
-/* pip.c  ÑøĞ¡¼¦³ÌÊ½                   */
-/* Ô­×÷Õß: dsyan   ¸ÄĞ´Õß: fennet      */
-/* Í¼Í¼ by tiball.bbs@bbs.nhctc.edu.tw */
+/* pip.c  å…»å°é¸¡ç¨‹å¼                   */
+/* åŸä½œè€…: dsyan   æ”¹å†™è€…: fennet      */
+/* å›¾å›¾ by tiball.bbs@bbs.nhctc.edu.tw */
 /* ----------------------------------- */
 
 //#define getdata(a, b, c , d, e, f, g) getdata(a,b,c,d,e,f,NULL,g)
@@ -24,7 +24,7 @@ void temppress(char *s)
 	egetch();
 }
 
-/*ÓÎÏ·Ö÷³ÌÊ½*/
+/*æ¸¸æˆä¸»ç¨‹å¼*/
 //int p_pipple()
 int mod_default()
 {
@@ -47,7 +47,8 @@ int mod_default()
 //ansimore("game/pipgame/pip.welcome", NA);
 //egetch();
 #endif  // END MAPLE
- showtitle("µç×ÓÑøĞ¡¼¦", BoardName);
+ //% showtitle("ç”µå­å…»å°é¸¡", BoardName);
+ showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName);
  srandom(time(0));
 #ifdef MAPLE
  sprintf(genbuf,"home/%s/new_chicken",cuser.userid);
@@ -58,7 +59,7 @@ int mod_default()
  pip_read_file();
  if((fs=fopen(genbuf, "r")) == NULL)
  {
-//   show_system_pic(11); /* ÔİÊ±ÓÃ½øÓÎÏ·µÄ»­ÃæÀ´´úÌæ */
+//   show_system_pic(11); /* æš‚æ—¶ç”¨è¿›æ¸¸æˆçš„ç”»é¢æ¥ä»£æ›¿ */
  //  move(b_lines,0);
 ansimore("game/pipgame/pip.welcome", NA);
    pipkey=egetch();   
@@ -94,7 +95,7 @@ ansimore("game/pipgame/pip.welcome", NA);
  return 0;
 }
 
-/*Ê±¼ä±íÊ¾·¨*/
+/*æ—¶é—´è¡¨ç¤ºæ³•*/
 char*
 dsyan_time(const time_t *t)
 {
@@ -106,32 +107,39 @@ dsyan_time(const time_t *t)
   return ans;
 }
 
-/*ĞÂÓÎÏ·µÄÉè¶¨*/
+/*æ–°æ¸¸æˆçš„è®¾å®š*/
 int
 pip_new_game()
 {
   char buf[256];
   time_t now;
-  char *pipsex[3]={"£¿","¡á","¡â"};
+  //% char *pipsex[3]={"ï¼Ÿ","â™‚","â™€"};
+  char *pipsex[3]={"\xa3\xbf","\xa1\xe1","\xa1\xe2"};
   struct tm *ptime;
   ptime = localtime(&now);
   
   if(d.death==1 && !(!d.name[0]))
   {
      clear();
-     showtitle("ÍâĞÇÕ½¶·¼¦", BoardName); 
+     //% showtitle("å¤–æ˜Ÿæˆ˜æ–—é¸¡", BoardName); 
+     showtitle("\xcd\xe2\xd0\xc7\xd5\xbd\xb6\xb7\xbc\xa6", BoardName); 
      move(4,6);
-     prints("»¶Ó­À´µ½ [1;5;33mĞÇ¿ÕÉúÎï¿Æ¼¼ÑĞ¾¿Ôº[0m");
+     //% prints("æ¬¢è¿æ¥åˆ° [1;5;33mæ˜Ÿç©ºç”Ÿç‰©ç§‘æŠ€ç ”ç©¶é™¢[0m");
+     prints("\xbb\xb6\xd3\xad\xc0\xb4\xb5\xbd [1;5;33m\xd0\xc7\xbf\xd5\xc9\xfa\xce\xef\xbf\xc6\xbc\xbc\xd1\xd0\xbe\xbf\xd4\xba[0m");
      move(6,6);
-     prints("¾­ÎÒÃÇµ÷²éÏÔÊ¾  ÏÈÇ°ÄãÓĞÑø¹ıĞ¡¼¦à¸  ¿ÉÊÇ±»ÄãÑøËÀÁË...");
+     //% prints("ç»æˆ‘ä»¬è°ƒæŸ¥æ˜¾ç¤º  å…ˆå‰ä½ æœ‰å…»è¿‡å°é¸¡å–”  å¯æ˜¯è¢«ä½ å…»æ­»äº†...");
+     prints("\xbe\xad\xce\xd2\xc3\xc7\xb5\xf7\xb2\xe9\xcf\xd4\xca\xbe  \xcf\xc8\xc7\xb0\xc4\xe3\xd3\xd0\xd1\xf8\xb9\xfd\xd0\xa1\xbc\xa6\xe0\xb8  \xbf\xc9\xca\xc7\xb1\xbb\xc4\xe3\xd1\xf8\xcb\xc0\xc1\xcb...");
      move(8,6);
      if(d.liveagain<4)
      {
-       prints("ÎÒÃÇ¿ÉÒÔ°ïÄã°ïĞ¡¼¦¸´»î  µ«ÊÇĞèÒª¸¶³öÒ»µã´ú¼Û");
+       //% prints("æˆ‘ä»¬å¯ä»¥å¸®ä½ å¸®å°é¸¡å¤æ´»  ä½†æ˜¯éœ€è¦ä»˜å‡ºä¸€ç‚¹ä»£ä»·");
+       prints("\xce\xd2\xc3\xc7\xbf\xc9\xd2\xd4\xb0\xef\xc4\xe3\xb0\xef\xd0\xa1\xbc\xa6\xb8\xb4\xbb\xee  \xb5\xab\xca\xc7\xd0\xe8\xd2\xaa\xb8\xb6\xb3\xf6\xd2\xbb\xb5\xe3\xb4\xfa\xbc\xdb");
 #ifdef MAPLE
-       getdata(10, 6, "ÄãÒªÎÒÃÇÈÃËûÖØÉúÂğ? [y/N]:", buf, 2, 1, 0);
+       //% getdata(10, 6, "ä½ è¦æˆ‘ä»¬è®©ä»–é‡ç”Ÿå—? [y/N]:", buf, 2, 1, 0);
+       getdata(10, 6, "\xc4\xe3\xd2\xaa\xce\xd2\xc3\xc7\xc8\xc3\xcb\xfb\xd6\xd8\xc9\xfa\xc2\xf0? [y/N]:", buf, 2, 1, 0);
 #else
-       getdata(10, 6, "ÄãÒªÎÒÃÇÈÃËûÖØÉúÂğ? [y/N]:", buf, 2, DOECHO, YEA);
+       //% getdata(10, 6, "ä½ è¦æˆ‘ä»¬è®©ä»–é‡ç”Ÿå—? [y/N]:", buf, 2, DOECHO, YEA);
+       getdata(10, 6, "\xc4\xe3\xd2\xaa\xce\xd2\xc3\xc7\xc8\xc3\xcb\xfb\xd6\xd8\xc9\xfa\xc2\xf0? [y/N]:", buf, 2, DOECHO, YEA);
 #endif  // END MAPLE
        if(buf[0]=='y' || buf[0]=='Y')
        {
@@ -140,30 +148,39 @@ pip_new_game()
      }
      else if(d.liveagain>=4)
      {
-       prints("¿ÉÊÇÄã¸´»îÊÖÊõÌ«¶à´ÎÁË  Ğ¡¼¦ÉíÉÏ¶¼ÊÇ¿ªµ¶ºÛ¼£");     
+       //% prints("å¯æ˜¯ä½ å¤æ´»æ‰‹æœ¯å¤ªå¤šæ¬¡äº†  å°é¸¡èº«ä¸Šéƒ½æ˜¯å¼€åˆ€ç—•è¿¹");     
+       prints("\xbf\xc9\xca\xc7\xc4\xe3\xb8\xb4\xbb\xee\xca\xd6\xca\xf5\xcc\xab\xb6\xe0\xb4\xce\xc1\xcb  \xd0\xa1\xbc\xa6\xc9\xed\xc9\xcf\xb6\xbc\xca\xc7\xbf\xaa\xb5\xb6\xba\xdb\xbc\xa3");     
        move(10,6);
-       prints("ÎÒÃÇÕÒ²»µ½¿ÉÒÔÊÖÊõµÄµØ·½ÁË  ËùÒÔ....");
-       pressanykey("ÖØĞÂÔÙÀ´°É....°¦....");    
+       //% prints("æˆ‘ä»¬æ‰¾ä¸åˆ°å¯ä»¥æ‰‹æœ¯çš„åœ°æ–¹äº†  æ‰€ä»¥....");
+       prints("\xce\xd2\xc3\xc7\xd5\xd2\xb2\xbb\xb5\xbd\xbf\xc9\xd2\xd4\xca\xd6\xca\xf5\xb5\xc4\xb5\xd8\xb7\xbd\xc1\xcb  \xcb\xf9\xd2\xd4....");
+       //% pressanykey("é‡æ–°å†æ¥å§....å”‰....");    
+       pressanykey("\xd6\xd8\xd0\xc2\xd4\xd9\xc0\xb4\xb0\xc9....\xb0\xa6....");    
      }
   }
   if(d.death!=0 || !d.name[0])
   {
     clear();
-    showtitle("ÍâĞÇÕ½¶·¼¦", BoardName);   
-    /*Ğ¡¼¦ÃüÃû*/
-    strcpy(buf,"±´±´");
+    //% showtitle("å¤–æ˜Ÿæˆ˜æ–—é¸¡", BoardName);   
+    showtitle("\xcd\xe2\xd0\xc7\xd5\xbd\xb6\xb7\xbc\xa6", BoardName);   
+    /*å°é¸¡å‘½å*/
+    //% strcpy(buf,"è´è´");
+    strcpy(buf,"\xb1\xb4\xb1\xb4");
 #ifdef MAPLE
-    getdata(2, 3, "°ïĞ¡¼¦È¡¸öºÃÌıµÄÃû×Ö°É(Çë²»ÒªÓĞ¿Õ¸ñ):", buf, 11, 1, 0);
+    //% getdata(2, 3, "å¸®å°é¸¡å–ä¸ªå¥½å¬çš„åå­—å§(è¯·ä¸è¦æœ‰ç©ºæ ¼):", buf, 11, 1, 0);
+    getdata(2, 3, "\xb0\xef\xd0\xa1\xbc\xa6\xc8\xa1\xb8\xf6\xba\xc3\xcc\xfd\xb5\xc4\xc3\xfb\xd7\xd6\xb0\xc9(\xc7\xeb\xb2\xbb\xd2\xaa\xd3\xd0\xbf\xd5\xb8\xf1):", buf, 11, 1, 0);
 #else
-    getdata(2, 3, "°ïĞ¡¼¦È¡¸öºÃÌıµÄÃû×Ö°É(Çë²»ÒªÓĞ¿Õ¸ñ):", buf, 11, DOECHO, NA);
+    //% getdata(2, 3, "å¸®å°é¸¡å–ä¸ªå¥½å¬çš„åå­—å§(è¯·ä¸è¦æœ‰ç©ºæ ¼):", buf, 11, DOECHO, NA);
+    getdata(2, 3, "\xb0\xef\xd0\xa1\xbc\xa6\xc8\xa1\xb8\xf6\xba\xc3\xcc\xfd\xb5\xc4\xc3\xfb\xd7\xd6\xb0\xc9(\xc7\xeb\xb2\xbb\xd2\xaa\xd3\xd0\xbf\xd5\xb8\xf1):", buf, 11, DOECHO, NA);
 #endif  // END MAPLE
     if(!buf[0]) return 0;
     strcpy(d.name,buf);
-    /*1:¹« 2:Ä¸ */
+    /*1:å…¬ 2:æ¯ */
 #ifdef MAPLE
-    getdata(4, 3, "[Boy]Ğ¡¹«¼¦¡á or [Girl]Ğ¡Ä¸¼¦¡â [b/G]", buf, 2, 1, 0);
+    //% getdata(4, 3, "[Boy]å°å…¬é¸¡â™‚ or [Girl]å°æ¯é¸¡â™€ [b/G]", buf, 2, 1, 0);
+    getdata(4, 3, "[Boy]\xd0\xa1\xb9\xab\xbc\xa6\xa1\xe1 or [Girl]\xd0\xa1\xc4\xb8\xbc\xa6\xa1\xe2 [b/G]", buf, 2, 1, 0);
 #else
-    getdata(4, 3, "[Boy]Ğ¡¹«¼¦¡á or [Girl]Ğ¡Ä¸¼¦¡â [b/G]", buf, 2, DOECHO, YEA);
+    //% getdata(4, 3, "[Boy]å°å…¬é¸¡â™‚ or [Girl]å°æ¯é¸¡â™€ [b/G]", buf, 2, DOECHO, YEA);
+    getdata(4, 3, "[Boy]\xd0\xa1\xb9\xab\xbc\xa6\xa1\xe1 or [Girl]\xd0\xa1\xc4\xb8\xbc\xa6\xa1\xe2 [b/G]", buf, 2, DOECHO, YEA);
 #endif  // END MAPLE
     if(buf[0]=='b' || buf[0]=='B')
     {
@@ -174,16 +191,22 @@ pip_new_game()
       d.sex=2; 
     }        
     move(6,3);
-    prints("ĞÇ¿ÕÕ½¶·¼¦µÄÓÎÏ·ÏÖ½ñ·Ö³ÉÁ½ÖÖÍæ·¨");
+    //% prints("æ˜Ÿç©ºæˆ˜æ–—é¸¡çš„æ¸¸æˆç°ä»Šåˆ†æˆä¸¤ç§ç©æ³•");
+    prints("\xd0\xc7\xbf\xd5\xd5\xbd\xb6\xb7\xbc\xa6\xb5\xc4\xd3\xce\xcf\xb7\xcf\xd6\xbd\xf1\xb7\xd6\xb3\xc9\xc1\xbd\xd6\xd6\xcd\xe6\xb7\xa8");
     move(7,3);
-    prints("Ñ¡ÓĞ½á¾Ö»áÔÚĞ¡¼¦20ËêÊ±½áÊøÓÎÏ·£¬²¢¸æÖªĞ¡¼¦ááĞøµÄ·¢Õ¹");
+    //% prints("é€‰æœ‰ç»“å±€ä¼šåœ¨å°é¸¡20å²æ—¶ç»“æŸæ¸¸æˆï¼Œå¹¶å‘ŠçŸ¥å°é¸¡å¾Œç»­çš„å‘å±•");
+    prints("\xd1\xa1\xd3\xd0\xbd\xe1\xbe\xd6\xbb\xe1\xd4\xda\xd0\xa1\xbc\xa620\xcb\xea\xca\xb1\xbd\xe1\xca\xf8\xd3\xce\xcf\xb7\xa3\xac\xb2\xa2\xb8\xe6\xd6\xaa\xd0\xa1\xbc\xa6\xe1\xe1\xd0\xf8\xb5\xc4\xb7\xa2\xd5\xb9");
     move(8,3);
-    prints("Ñ¡Ã»ÓĞ½á¾ÖÔòÒ»Ö±Ñøµ½Ğ¡¼¦ËÀÍö²Å½áÊøÓÎÏ·....");
-    /*1:²»ÒªÇÒÎ´»é 4:ÒªÇÒÎ´»é */
+    //% prints("é€‰æ²¡æœ‰ç»“å±€åˆ™ä¸€ç›´å…»åˆ°å°é¸¡æ­»äº¡æ‰ç»“æŸæ¸¸æˆ....");
+    prints("\xd1\xa1\xc3\xbb\xd3\xd0\xbd\xe1\xbe\xd6\xd4\xf2\xd2\xbb\xd6\xb1\xd1\xf8\xb5\xbd\xd0\xa1\xbc\xa6\xcb\xc0\xcd\xf6\xb2\xc5\xbd\xe1\xca\xf8\xd3\xce\xcf\xb7....");
+    //% /*1:ä¸è¦ä¸”æœªå©š 4:è¦ä¸”æœªå©š */
+    /*1:\xb2\xbb\xd2\xaa\xc7\xd2\xce\xb4\xbb\xe9 4:\xd2\xaa\xc7\xd2\xce\xb4\xbb\xe9 */
 #ifdef MAPLE
-    getdata(9, 3, "ÄãÏ£ÍûĞ¡¼¦ÓÎÏ·ÊÇ·ñÒªÓĞ20Ëê½á¾Ö? [Y/n]", buf, 2, 1, 0);
+    //% getdata(9, 3, "ä½ å¸Œæœ›å°é¸¡æ¸¸æˆæ˜¯å¦è¦æœ‰20å²ç»“å±€? [Y/n]", buf, 2, 1, 0);
+    getdata(9, 3, "\xc4\xe3\xcf\xa3\xcd\xfb\xd0\xa1\xbc\xa6\xd3\xce\xcf\xb7\xca\xc7\xb7\xf1\xd2\xaa\xd3\xd020\xcb\xea\xbd\xe1\xbe\xd6? [Y/n]", buf, 2, 1, 0);
 #else
-    getdata(9, 3, "ÄãÏ£ÍûĞ¡¼¦ÓÎÏ·ÊÇ·ñÒªÓĞ20Ëê½á¾Ö? [Y/n]", buf, 2, DOECHO, YEA);
+    //% getdata(9, 3, "ä½ å¸Œæœ›å°é¸¡æ¸¸æˆæ˜¯å¦è¦æœ‰20å²ç»“å±€? [Y/n]", buf, 2, DOECHO, YEA);
+    getdata(9, 3, "\xc4\xe3\xcf\xa3\xcd\xfb\xd0\xa1\xbc\xa6\xd3\xce\xcf\xb7\xca\xc7\xb7\xf1\xd2\xaa\xd3\xd020\xcb\xea\xbd\xe1\xbe\xd6? [Y/n]", buf, 2, DOECHO, YEA);
 #endif  // END MAPLE
     if(buf[0]=='n' || buf[0]=='N')
     {
@@ -193,23 +216,24 @@ pip_new_game()
     {
       d.wantend=4; 
     }        
-    /*¿ªÍ·»­Ãæ*/
+    /*å¼€å¤´ç”»é¢*/
     show_basic_pic(0);
-    pressanykey("Ğ¡¼¦ÖÕì¶µ®ÉúÁË£¬ÇëºÃºÃ°®Ëû....");
+    //% pressanykey("å°é¸¡ç»ˆæ–¼è¯ç”Ÿäº†ï¼Œè¯·å¥½å¥½çˆ±ä»–....");
+    pressanykey("\xd0\xa1\xbc\xa6\xd6\xd5\xec\xb6\xb5\xae\xc9\xfa\xc1\xcb\xa3\xac\xc7\xeb\xba\xc3\xba\xc3\xb0\xae\xcb\xfb....");
 
-    /*¿ªÍ·Éè¶¨*/
+    /*å¼€å¤´è®¾å®š*/
     now=time(0);
     strcpy(d.birth,dsyan_time(&now));
     d.bbtime=0;
 
-    /*»ù±¾×ÊÁÏ*/
+    /*åŸºæœ¬èµ„æ–™*/
     d.year=ptime->tm_year%100;
     d.month=ptime->tm_mon + 1;
     d.day=ptime->tm_mday;
     d.death=d.nodone=d.relation=0;
     d.liveagain=d.dataB=d.dataC=d.dataD=d.dataE=0;
           
-    /*ÉíÌå²ÎÊı*/
+    /*èº«ä½“å‚æ•°*/
     d.hp=rand()%15+20;
     d.maxhp=rand()%20+20;
     if(d.hp>d.maxhp) d.hp=d.maxhp;
@@ -217,50 +241,50 @@ pip_new_game()
     d.tired=d.sick=d.shit=d.wrist=0;
     d.bodyA=d.bodyB=d.bodyC=d.bodyD=d.bodyE=0;
   
-    /*ÆÀ¼Û²ÎÊı*/
+    /*è¯„ä»·å‚æ•°*/
     d.social=d.family=d.hexp=d.mexp=0;
     d.tmpA=d.tmpB=d.tmpC=d.tmpD=d.tmpE=0;
          
-    /*Õ½¶·²ÎÊı*/
+    /*æˆ˜æ–—å‚æ•°*/
     d.mp=d.maxmp=d.attack=d.resist=d.speed=d.hskill=d.mskill=d.mresist=0;
     d.magicmode=d.fightB=d.fightC=d.fightD=d.fightE=0;
   
-    /*ÎäÆ÷²ÎÊı*/
+    /*æ­¦å™¨å‚æ•°*/
     d.weaponhead=d.weaponrhand=d.weaponlhand=d.weaponbody=d.weaponfoot=0;
     d.weaponA=d.weaponB=d.weaponC=d.weaponD=d.weaponE=0;
     
-    /*ÄÜÁ¦²ÎÊı*/
+    /*èƒ½åŠ›å‚æ•°*/
     d.toman=d.character=d.love=d.wisdom=d.art=d.etchics=0;
     d.brave=d.homework=d.charm=d.manners=d.speech=d.cookskill=0;
     d.learnA=d.learnB=d.learnC=d.learnD=d.learnE=0;
   
-    /*×´Ì¬ÊıÖµ*/
+    /*çŠ¶æ€æ•°å€¼*/
     d.happy=rand()%10+20;
     d.satisfy=rand()%10+20;
     d.fallinlove=d.belief=d.offense=d.affect=0;
     d.stateA=d.stateB=d.stateC=d.stateD=d.stateE=0;
 
-    /*Ê³Îï²ÎÊı:Ê³Îï ÁãÊ³ Ò©Æ· ´ó²¹Íè*/
+    /*é£Ÿç‰©å‚æ•°:é£Ÿç‰© é›¶é£Ÿ è¯å“ å¤§è¡¥ä¸¸*/
     d.food=10;
     d.medicine=d.cookie=d.bighp=2;
     d.ginseng=d.snowgrass=d.eatC=d.eatD=d.eatE=0;
 
-    /*ÎïÆ·²ÎÊı:Êé Íæ¾ß*/
+    /*ç‰©å“å‚æ•°:ä¹¦ ç©å…·*/
     d.book=d.playtool=0;
     d.money=1500;
     d.thingA=d.thingB=d.thingC=d.thingD=d.thingE=0;
 
-    /*²ÂÈ­²ÎÊı:Ó® ¸º*/
+    /*çŒœæ‹³å‚æ•°:èµ¢ è´Ÿ*/
     d.winn=d.losee=0;
 
-    /*²Î¼ûÍõ³¼*/
+    /*å‚è§ç‹è‡£*/
     d.royalA=d.royalB=d.royalC=d.royalD=d.royalE=0;
     d.royalF=d.royalG=d.royalH=d.royalI=d.royalJ=0;
     d.seeroyalJ=1;
     d.seeA=d.seeB=d.seeC=d.seeD=d.seeE;
-    /*½ÓÊÜÇó»é°®ÈË*/        
+    /*æ¥å—æ±‚å©šçˆ±äºº*/        
     d.lover=0;
-    /*0:Ã»ÓĞ 1:Ä§Íõ 2:Áú×å 3:A 4:B 5:C 6:D 7:E */
+    /*0:æ²¡æœ‰ 1:é­”ç‹ 2:é¾™æ— 3:A 4:B 5:C 6:D 7:E */
     d.classA=d.classB=d.classC=d.classD=d.classE=0;
     d.classF=d.classG=d.classH=d.classI=d.classJ=0;
     d.classK=d.classL=d.classM=d.classN=d.classO=0;
@@ -270,16 +294,17 @@ pip_new_game()
     d.workK=d.workL=d.workM=d.workN=d.workO=0;
     d.workP=d.workQ=d.workR=d.workS=d.workT=0;
     d.workU=d.workV=d.workW=d.workX=d.workY=d.workZ=0;
-    /*Ñø¼¦¼ÇÂ¼*/
+    /*å…»é¸¡è®°å½•*/
     now=time(0);
-    sprintf(buf, "[1;36m%s %-11sÑøÁËÒ»Ö»½Ğ [%s] µÄ %s Ğ¡¼¦ [0m\n", Cdate(&now), cuser.userid,d.name,pipsex[d.sex]);
+    //% sprintf(buf, "[1;36m%s %-11så…»äº†ä¸€åªå« [%s] çš„ %s å°é¸¡ [0m\n", Cdate(&now), cuser.userid,d.name,pipsex[d.sex]);
+    sprintf(buf, "[1;36m%s %-11s\xd1\xf8\xc1\xcb\xd2\xbb\xd6\xbb\xbd\xd0 [%s] \xb5\xc4 %s \xd0\xa1\xbc\xa6 [0m\n", Cdate(&now), cuser.userid,d.name,pipsex[d.sex]);
     pip_log_record(buf);
   }  
   pip_write_file();
   return 1;
 }
 
-/*Ğ¡¼¦ËÀÍöº¯Ê½*/
+/*å°é¸¡æ­»äº¡å‡½å¼*/
 pipdie(msg,mode)
 char *msg;
 int mode;
@@ -288,37 +313,45 @@ int mode;
  char genbuf[200];
  time_t now;
  clear();
- showtitle("µç×ÓÑøĞ¡¼¦", BoardName); 
+ //% showtitle("ç”µå­å…»å°é¸¡", BoardName); 
+ showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName); 
  if(mode==1)
  {
    show_die_pic(1);
-   pressanykey("ËÀÉñÀ´´ø×ßĞ¡¼¦ÁË");
+   //% pressanykey("æ­»ç¥æ¥å¸¦èµ°å°é¸¡äº†");
+   pressanykey("\xcb\xc0\xc9\xf1\xc0\xb4\xb4\xf8\xd7\xdf\xd0\xa1\xbc\xa6\xc1\xcb");
    clear();
-   showtitle("µç×ÓÑøĞ¡¼¦", BoardName); 
+   //% showtitle("ç”µå­å…»å°é¸¡", BoardName); 
+   showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName); 
    show_die_pic(2);
    move(14,20);
-   prints("¿ÉÁ¯µÄĞ¡¼¦[1;31m%s[m",msg);
-   pressanykey("ĞÇ¿Õ°§µ¿ÖĞ....");
+   //% prints("å¯æ€œçš„å°é¸¡[1;31m%s[m",msg);
+   prints("\xbf\xc9\xc1\xaf\xb5\xc4\xd0\xa1\xbc\xa6[1;31m%s[m",msg);
+   //% pressanykey("æ˜Ÿç©ºå“€æ‚¼ä¸­....");
+   pressanykey("\xd0\xc7\xbf\xd5\xb0\xa7\xb5\xbf\xd6\xd0....");
  }
  else if(mode==2)
  {
    show_die_pic(3);
-   pressanykey("ÎØÎØÎØ..ÎÒ±»¶ªÆúÁË.....");
+   //% pressanykey("å‘œå‘œå‘œ..æˆ‘è¢«ä¸¢å¼ƒäº†.....");
+   pressanykey("\xce\xd8\xce\xd8\xce\xd8..\xce\xd2\xb1\xbb\xb6\xaa\xc6\xfa\xc1\xcb.....");
  } 
  else if(mode==3)
  {
    show_die_pic(0);
-   pressanykey("ÓÎÏ·½áÊøÂŞ.."); 
+   //% pressanykey("æ¸¸æˆç»“æŸç½—.."); 
+   pressanykey("\xd3\xce\xcf\xb7\xbd\xe1\xca\xf8\xc2\xde.."); 
  }
  
  now=time(0);
- sprintf(genbuf, "[1;31m%s %-11sµÄĞ¡¼¦ [%s] %s[m\n", Cdate(&now), cuser.userid,d.name, msg);
+ //% sprintf(genbuf, "[1;31m%s %-11sçš„å°é¸¡ [%s] %s[m\n", Cdate(&now), cuser.userid,d.name, msg);
+ sprintf(genbuf, "[1;31m%s %-11s\xb5\xc4\xd0\xa1\xbc\xa6 [%s] %s[m\n", Cdate(&now), cuser.userid,d.name, msg);
  pip_log_record(genbuf);
  pip_write_file();
 }
 
 
-/*pro:»úÂÊ base:µ×Êı mode:ÀàĞÍ mul:¼ÓÈ¨100=1 cal:¼Ó¼õ*/
+/*pro:æœºç‡ base:åº•æ•° mode:ç±»å‹ mul:åŠ æƒ100=1 cal:åŠ å‡*/
 int
 count_tired(prob,base,mode,mul,cal)
 int prob,base;

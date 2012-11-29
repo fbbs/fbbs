@@ -22,17 +22,19 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	now = time(0);
-	now += 86400;		/* Ö±½ÓËãÃ÷Ìì±È½Ï×¼À²! +1 ²»×¼ */
+	now += 86400;		/* ç›´æŽ¥ç®—æ˜Žå¤©æ¯”è¾ƒå‡†å•¦! +1 ä¸å‡† */
 
 	tmnow = localtime(&now);
-	fprintf(fout, "\n%sÃ÷ÈÕÊÙÐÇÃû±í\n\n", BBSNAME);
-	fprintf(fout, "ÒÔÏÂÊÇ %d ÔÂ %d ÈÕµÄÊÙÐÇ:\n\n",tmnow->tm_mon + 1, tmnow->tm_mday);
+	//% fprintf(fout, "\n%sæ˜Žæ—¥å¯¿æ˜Ÿåè¡¨\n\n", BBSNAME);
+	fprintf(fout, "\n%s\xc3\xf7\xc8\xd5\xca\xd9\xd0\xc7\xc3\xfb\xb1\xed\n\n", BBSNAME);
+	//% fprintf(fout, "ä»¥ä¸‹æ˜¯ %d æœˆ %d æ—¥çš„å¯¿æ˜Ÿ:\n\n",tmnow->tm_mon + 1, tmnow->tm_mday);
+	fprintf(fout, "\xd2\xd4\xcf\xc2\xca\xc7 %d \xd4\xc2 %d \xc8\xd5\xb5\xc4\xca\xd9\xd0\xc7:\n\n",tmnow->tm_mon + 1, tmnow->tm_mday);
 
 	for (i = 0;; i++) {
 		if (fread(&aman, sizeof(struct userec), 1, fp) <= 0)
 			break;
 			
-		/* ÒÔÏÂµÄ  *ÃûÈË* ²»ÐèÒªËãÔÚÄÚ */
+		/* ä»¥ä¸‹çš„  *åäºº* ä¸éœ€è¦ç®—åœ¨å†… */
 		if (!strcasecmp(aman.userid, "SYSOP") || !strcasecmp(aman.userid, "guest") )
 			continue;
 			
@@ -44,7 +46,8 @@ int main(int argc, char **argv)
 			j++;
 		}
 	}
-	fprintf(fout, "\n\n×Ü¹²ÓÐ %d Î»ÊÙÐÇ¡£\n", j);
+	//% fprintf(fout, "\n\næ€»å…±æœ‰ %d ä½å¯¿æ˜Ÿã€‚\n", j);
+	fprintf(fout, "\n\n\xd7\xdc\xb9\xb2\xd3\xd0 %d \xce\xbb\xca\xd9\xd0\xc7\xa1\xa3\n", j);
 	fclose(fout);
 	fclose(fp);
 	return 0;

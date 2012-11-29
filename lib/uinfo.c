@@ -66,7 +66,7 @@ char *cmoney(int num)
 }
 #endif
 
-//	¸ù¾İ±íÏÖÖµperf¼ÆËã±íÏÖÖµÏÔÊ¾ĞÎÊ½
+//	æ ¹æ®è¡¨ç°å€¼perfè®¡ç®—è¡¨ç°å€¼æ˜¾ç¤ºå½¢å¼
 char *cperf(int perf)
 {
 	if (perf <= 100)
@@ -94,7 +94,7 @@ char *cperf(int perf)
 	return GLY_CPERFB;
 }
 
-//¼ÆËã¾­ÑéÖµ,ÎÄÕÂÊı+µÇÂ½ÊıµÄ1/5+ÒÑ×¢²áµÄÌìÊı+Í£ÁôµÄÊ±Êı
+//è®¡ç®—ç»éªŒå€¼,æ–‡ç« æ•°+ç™»é™†æ•°çš„1/5+å·²æ³¨å†Œçš„å¤©æ•°+åœç•™çš„æ—¶æ•°
 int countexp(const struct userec *udata)
 {
 	int exp;
@@ -107,7 +107,7 @@ int countexp(const struct userec *udata)
 	return exp > 0 ? exp : 0;
 }
 
-//	¼ÆËã ±íÏÖÖµ
+//	è®¡ç®— è¡¨ç°å€¼
 int countperf(const struct userec *udata) {
 	int perf;
 	int reg_days;
@@ -143,8 +143,19 @@ int days_elapsed(int year, int month, int day, time_t now)
 const char *horoscope(char month, char day)
 {
 	static const char *name[12] = {
-		"Ä¦ôÉ×ù", "Ë®Æ¿×ù", "Ë«Óã×ù", "ÄµÑò×ù", "½ğÅ£×ù", "Ë«×Ó×ù",
-		"¾ŞĞ·×ù", "Ê¨×Ó×ù", "´¦Å®×ù", "Ìì³Ó×ù", "ÌìĞ«×ù", "ÉäÊÖ×ù" };
+		//% "æ‘©ç¾¯åº§" "æ°´ç“¶åº§"
+		"\xc4\xa6\xf4\xc9\xd7\xf9", "\xcb\xae\xc6\xbf\xd7\xf9",
+		//% "åŒé±¼åº§" "ç‰¡ç¾Šåº§"
+		"\xcb\xab\xd3\xe3\xd7\xf9", "\xc4\xb5\xd1\xf2\xd7\xf9",
+		//% "é‡‘ç‰›åº§" "åŒå­åº§"
+		"\xbd\xf0\xc5\xa3\xd7\xf9", "\xcb\xab\xd7\xd3\xd7\xf9",
+		//% "å·¨èŸ¹åº§" "ç‹®å­åº§"
+		"\xbe\xde\xd0\xb7\xd7\xf9", "\xca\xa8\xd7\xd3\xd7\xf9",
+		//% "å¤„å¥³åº§" "å¤©ç§¤åº§"
+		"\xb4\xa6\xc5\xae\xd7\xf9", "\xcc\xec\xb3\xd3\xd7\xf9",
+		//% "å¤©èåº§" "å°„æ‰‹åº§"
+		"\xcc\xec\xd0\xab\xd7\xf9", "\xc9\xe4\xca\xd6\xd7\xf9"
+	};
 	switch (month) {
 		case 1:
 			if (day < 21)
@@ -207,7 +218,8 @@ const char *horoscope(char month, char day)
 			else
 				return (name[0]);
 	}
-	return ("²»Ïê×ù");
+	//% "ä¸è¯¦åº§"
+	return "\xb2\xbb\xcf\xea\xd7\xf9";
 }
 
 enum {
@@ -281,7 +293,8 @@ static int show_bm(const char *userid, char **buf, size_t *size)
 			tmp[strlen(tmp) - 1] = ' ';
 			strappend(buf, size, tmp);
 		}
-		strappend(buf, size, "\033[32m°æ°æÖ÷\033[m]");
+		//% "\033[32mç‰ˆç‰ˆä¸»\033[m]"
+		strappend(buf, size, "\033[32m\xb0\xe6\xb0\xe6\xd6\xf7\033[m]");
 		fclose(fp);
 		return 1;
 	}
@@ -295,34 +308,45 @@ void show_position(const struct userec *user, char *buf, size_t size, const char
 
 	if (user->userlevel & PERM_SPECIAL9) {
 		if (user->userlevel & PERM_SYSOPS) {
-			strappend(&buf, &size, "[\033[1;32mÕ¾³¤\033[m]");
+			//% "[\033[1;32mç«™é•¿\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xd5\xbe\xb3\xa4\033[m]");
 		} else if (user->userlevel & PERM_ANNOUNCE) {
-			strappend(&buf, &size, "[\033[1;32mÕ¾Îñ\033[m]");
+			//% "[\033[1;32mç«™åŠ¡\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xd5\xbe\xce\xf1\033[m]");
 		} else if (user->userlevel & PERM_OCHAT) {
-			strappend(&buf, &size, "[\033[1;32mÊµÏ°Õ¾Îñ\033[m]");
+			//% "[\033[1;32må®ä¹ ç«™åŠ¡\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xca\xb5\xcf\xb0\xd5\xbe\xce\xf1\033[m]");
 		} else if (user->userlevel & PERM_SPECIAL0) {
-			strappend(&buf, &size, "[\033[1;32mÕ¾ÎñÎ¯Ô±»áÃØÊé\033[m]");
+			//% "[\033[1;32mç«™åŠ¡å§”å‘˜ä¼šç§˜ä¹¦\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xd5\xbe\xce\xf1\xce\xaf\xd4\xb1\xbb\xe1\xc3\xd8\xca\xe9\033[m]");
 		} else {
-			strappend(&buf, &size, "[\033[1;32mÀëÈÎÕ¾Îñ\033[m]");
+			//% "[\033[1;32mç¦»ä»»ç«™åŠ¡\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xc0\xeb\xc8\xce\xd5\xbe\xce\xf1\033[m]");
 		}
 	} else {
 		if ((user->userlevel & PERM_XEMPT)
 				&& (user->userlevel & PERM_LONGLIFE)
 				&& (user->userlevel & PERM_LARGEMAIL)) {
-			strappend(&buf, &size, "[\033[1;32mÈÙÓş°æÖ÷\033[m]");
+			//% "[\033[1;32mè£èª‰ç‰ˆä¸»\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xc8\xd9\xd3\xfe\xb0\xe6\xd6\xf7\033[m]");
 		}
 		if (user->userlevel & PERM_BOARDS)
 			show_bm(user->userid, &buf, &size);
 		if (user->userlevel & PERM_ARBI)
-			strappend(&buf, &size, "[\033[1;32mÖÙ²Ã×é\033[m]");
+			//% "[\033[1;32mä»²è£ç»„\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xd6\xd9\xb2\xc3\xd7\xe9\033[m]");
 		if (user->userlevel & PERM_SERV)
-			strappend(&buf, &size, "[\033[1;32mÅàÑµ×é\033[m]");
+			//% "[\033[1;32måŸ¹è®­ç»„\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xc5\xe0\xd1\xb5\xd7\xe9\033[m]");
 		if (user->userlevel & PERM_SPECIAL2)
-			strappend(&buf, &size, "[\033[1;32m·şÎñ×é\033[m]");
+			//% "[\033[1;32mæœåŠ¡ç»„\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xb7\xfe\xce\xf1\xd7\xe9\033[m]");
 		if (user->userlevel & PERM_SPECIAL3)
-			strappend(&buf, &size, "[\033[1;32mÃÀ¹¤×é\033[m]");
+			//% "[\033[1;32mç¾å·¥ç»„\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xc3\xc0\xb9\xa4\xd7\xe9\033[m]");
 		if (user->userlevel & PERM_TECH)
-			strappend(&buf, &size, "[\033[1;32m¼¼Êõ×é\033[m]");
+			//% "[\033[1;32mæŠ€æœ¯ç»„\033[m]"
+			strappend(&buf, &size, "[\033[1;32m\xbc\xbc\xca\xf5\xd7\xe9\033[m]");
 	}
 
 	if (title && *title) {
@@ -334,7 +358,8 @@ void show_position(const struct userec *user, char *buf, size_t size, const char
 	}
 
 	if (!*orig)
-		snprintf(buf, size, "[\033[1;32m"SHORT_BBSNAME"ÍøÓÑ\033[m]");
+		//% "[\033[1;32m"SHORT_BBSNAME"ç½‘å‹\033[m]"
+		snprintf(buf, size, "[\033[1;32m"SHORT_BBSNAME"\xcd\xf8\xd3\xd1\033[m]");
 }
 
 /**
@@ -344,7 +369,8 @@ void show_position(const struct userec *user, char *buf, size_t size, const char
 int check_user_profile(const struct userec *u)
 {
 	if (strlen(u->username) < 2 || strstr(u->username, "  ")
-			|| (strstr(u->username, "¡¡")))
+			//% "ã€€"
+			|| (strstr(u->username, "\xa1\xa1")))
 		return UINFO_ENICK;
 
 	if (strchr("MF", u->gender) == NULL)

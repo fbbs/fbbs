@@ -15,7 +15,8 @@ static char *check_info(void)
 	unsigned char *t2 = nick;
 	while (*t2 != '\0') {
 		if (*t2 < 0x20 || *t2 == 0xFF)
-			return "êÇ³ÆÌ«¶Ì»ò°üº¬·Ç·¨×Ö·û";
+			//% return "æ˜µç§°å¤ªçŸ­æˆ–åŒ…å«éæ³•å­—ç¬¦";
+			return "\xea\xc7\xb3\xc6\xcc\xab\xb6\xcc\xbb\xf2\xb0\xfc\xba\xac\xb7\xc7\xb7\xa8\xd7\xd6\xb7\xfb";
 		t2++;
 	}
 	strlcpy(currentuser.username, (char *)nick, sizeof(currentuser.username));
@@ -24,21 +25,24 @@ static char *check_info(void)
 	const char *tmp = get_param("year");
 	long num = strtol(tmp, NULL, 10);
 	if (num < 1910 || num > 1998)
-		return "´íÎóµÄ³öÉúÄê·İ";
+		//% return "é”™è¯¯çš„å‡ºç”Ÿå¹´ä»½";
+		return "\xb4\xed\xce\xf3\xb5\xc4\xb3\xf6\xc9\xfa\xc4\xea\xb7\xdd";
 	else
 		currentuser.birthyear = num - 1900;
 
 	tmp = get_param("month");
 	num = strtol(tmp, NULL, 10);
 	if (num <= 0 || num > 12)
-		return "´íÎóµÄ³öÉúÔÂ·İ";
+		//% return "é”™è¯¯çš„å‡ºç”Ÿæœˆä»½";
+		return "\xb4\xed\xce\xf3\xb5\xc4\xb3\xf6\xc9\xfa\xd4\xc2\xb7\xdd";
 	else
 		currentuser.birthmonth = num;
 
 	tmp = get_param("day");
 	num = strtol(tmp, NULL, 10);
 	if (num <= 0 || num > 31)
-		return "´íÎóµÄ³öÉúÈÕÆÚ";
+		//% return "é”™è¯¯çš„å‡ºç”Ÿæ—¥æœŸ";
+		return "\xb4\xed\xce\xf3\xb5\xc4\xb3\xf6\xc9\xfa\xc8\xd5\xc6\xda";
 	else
 		currentuser.birthday = num;
 
@@ -115,13 +119,16 @@ int bbspwd_main(void)
 	const char *pw3 = get_param("pw3");
 	switch (set_password(pw1, pw2, pw3)) {
 		case BBS_EWPSWD:
-			printf("ÃÜÂë´íÎó");
+			//% printf("å¯†ç é”™è¯¯");
+			printf("\xc3\xdc\xc2\xeb\xb4\xed\xce\xf3");
 			break;
 		case BBS_EINVAL:
-			printf("ĞÂÃÜÂë²»Æ¥Åä »ò ĞÂÃÜÂëÌ«¶Ì");
+			//% printf("æ–°å¯†ç ä¸åŒ¹é… æˆ– æ–°å¯†ç å¤ªçŸ­");
+			printf("\xd0\xc2\xc3\xdc\xc2\xeb\xb2\xbb\xc6\xa5\xc5\xe4 \xbb\xf2 \xd0\xc2\xc3\xdc\xc2\xeb\xcc\xab\xb6\xcc");
 			break;
 		case BBS_EINTNL:
-			printf("ÄÚ²¿´íÎó");
+			//% printf("å†…éƒ¨é”™è¯¯");
+			printf("\xc4\xda\xb2\xbf\xb4\xed\xce\xf3");
 		default:
 			break;
 	}

@@ -204,7 +204,8 @@ bmfilecount (char *pathname, char *bm)
 
 /*
  * function getbmrec:
- * get record of bm from .PASSWD¥”.PASSWD
+ //% * get record of bm from .PASSWD‰ªé.PASSWD
+ * get record of bm from .PASSWD\xb4\xd3.PASSWD
  * if success return 0
  */
 	int
@@ -277,7 +278,8 @@ int main (int argc, char **argv)
 		char boardtitles[STRLEN]; /* source of board's chinese name */
 		char boardtitle[STRLEN];  /* fixed chinese name of board */
 
-		char bms[BM_LEN - 1];     /* ∏¯strtok()”√ */
+		//% char bms[BM_LEN - 1];     /* Áªôstrtok()Áî® */
+		char bms[BM_LEN - 1];     /* \xb8\xf8strtok()\xd3\xc3 */
 		char *bm;                 /* pointer to BM */
 		
 		if (board.perm)
@@ -369,7 +371,8 @@ int main (int argc, char **argv)
 #ifndef PRINTOFF
 		if (bm == NULL)
 		{
-			fprintf(fp0, " %s%s%s\n", REDMARK, "≥œ’˜∞Ê÷˜", ENDREDMARK);
+			//% fprintf(fp0, " %s%s%s\n", REDMARK, "ËØöÂæÅÁâà‰∏ª", ENDREDMARK);
+			fprintf(fp0, " %s%s%s\n", REDMARK, "\xb3\xcf\xd5\xf7\xb0\xe6\xd6\xf7", ENDREDMARK);
 			board_num++;
 			continue;             /* no bm board */
 		}

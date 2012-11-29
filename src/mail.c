@@ -111,7 +111,7 @@ int check_query_mail(const char *qry_mail_dir)
 	 }
 	 lseek(fd,(off_t)(-size-1),SEEK_CUR);
 	 }*/
-	/*ÀëÏß²éÑ¯ĞÂĞÅÖ»Òª²éÑ¯×îááÒ»·âÊÇ·ñÎªĞÂĞÅ£¬ÆäËû²¢²»ÖØÒª*/
+	/*ç¦»çº¿æŸ¥è¯¢æ–°ä¿¡åªè¦æŸ¥è¯¢æœ€å¾Œä¸€å°æ˜¯å¦ä¸ºæ–°ä¿¡ï¼Œå…¶ä»–å¹¶ä¸é‡è¦*/
 	/*Modify by SmallPig*/
 	read(fd, &ch, 1);
 	if (!(ch & FILE_READ)) {
@@ -168,31 +168,42 @@ int mailall(void)
 	char ans[4], fname[STRLEN], title[STRLEN];
 	char doc[5][STRLEN], buf[STRLEN];
 	int i;
-	strcpy(title, "Ã»Ö÷Ìâ");
+	//% strcpy(title, "æ²¡ä¸»é¢˜");
+	strcpy(title, "\xc3\xbb\xd6\xf7\xcc\xe2");
 	set_user_status(ST_SMAIL);
 	clear();
 	move(0, 0);
 	sprintf(fname, "tmp/mailall.%s", currentuser.userid);
-	prints("ÄãÒª¼Ä¸øËùÓĞµÄ£º\n");
-	prints("(0) ·ÅÆú\n");
-	strcpy(doc[0], "(1) ÉĞÎ´Í¨¹ıÉí·İÈ·ÈÏµÄÊ¹ÓÃÕß");
-	strcpy(doc[1], "(2) ËùÓĞÍ¨¹ıÉí·İÈ·ÈÏµÄÊ¹ÓÃÕß");
-	strcpy(doc[2], "(3) ËùÓĞµÄ°æÖ÷");
-	strcpy(doc[3], "(4) ËùÓĞÏÖÈÎÕ¾Îñ");
-	strcpy(doc[4], "(5) ÏÖÈÎÕ¾ÎñÒÔ¼°ÀëÈÎÕ¾Îñ");
+	//% prints("ä½ è¦å¯„ç»™æ‰€æœ‰çš„ï¼š\n");
+	prints("\xc4\xe3\xd2\xaa\xbc\xc4\xb8\xf8\xcb\xf9\xd3\xd0\xb5\xc4\xa3\xba\n");
+	//% prints("(0) æ”¾å¼ƒ\n");
+	prints("(0) \xb7\xc5\xc6\xfa\n");
+	//% strcpy(doc[0], "(1) å°šæœªé€šè¿‡èº«ä»½ç¡®è®¤çš„ä½¿ç”¨è€…");
+	strcpy(doc[0], "(1) \xc9\xd0\xce\xb4\xcd\xa8\xb9\xfd\xc9\xed\xb7\xdd\xc8\xb7\xc8\xcf\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf");
+	//% strcpy(doc[1], "(2) æ‰€æœ‰é€šè¿‡èº«ä»½ç¡®è®¤çš„ä½¿ç”¨è€…");
+	strcpy(doc[1], "(2) \xcb\xf9\xd3\xd0\xcd\xa8\xb9\xfd\xc9\xed\xb7\xdd\xc8\xb7\xc8\xcf\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf");
+	//% strcpy(doc[2], "(3) æ‰€æœ‰çš„ç‰ˆä¸»");
+	strcpy(doc[2], "(3) \xcb\xf9\xd3\xd0\xb5\xc4\xb0\xe6\xd6\xf7");
+	//% strcpy(doc[3], "(4) æ‰€æœ‰ç°ä»»ç«™åŠ¡");
+	strcpy(doc[3], "(4) \xcb\xf9\xd3\xd0\xcf\xd6\xc8\xce\xd5\xbe\xce\xf1");
+	//% strcpy(doc[4], "(5) ç°ä»»ç«™åŠ¡ä»¥åŠç¦»ä»»ç«™åŠ¡");
+	strcpy(doc[4], "(5) \xcf\xd6\xc8\xce\xd5\xbe\xce\xf1\xd2\xd4\xbc\xb0\xc0\xeb\xc8\xce\xd5\xbe\xce\xf1");
 	for (i = 0; i < 5; i++)
 		prints("%s\n", doc[i]);
-	getdata(8, 0, "ÇëÊäÈëÄ£Ê½ (0~5)? [0]: ", ans, 2, DOECHO, YEA);
+	//% getdata(8, 0, "è¯·è¾“å…¥æ¨¡å¼ (0~5)? [0]: ", ans, 2, DOECHO, YEA);
+	getdata(8, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc4\xa3\xca\xbd (0~5)? [0]: ", ans, 2, DOECHO, YEA);
 	if (ans[0] - '0' < 1 || ans[0] - '0' > 5) {
 		return NA;
 	}
-	sprintf(buf, "ÊÇ·ñÈ·¶¨¼Ä¸ø%s ", doc[ans[0] - '0' - 1]);
+	//% sprintf(buf, "æ˜¯å¦ç¡®å®šå¯„ç»™%s ", doc[ans[0] - '0' - 1]);
+	sprintf(buf, "\xca\xc7\xb7\xf1\xc8\xb7\xb6\xa8\xbc\xc4\xb8\xf8%s ", doc[ans[0] - '0' - 1]);
 	move(9, 0);
 	if (askyn(buf, NA, NA) == NA)
 		return NA;
 	in_mail = YEA;
 	header.reply = false;
-	strcpy(header.title, "Ã»Ö÷Ìâ");
+	//% strcpy(header.title, "æ²¡ä¸»é¢˜");
+	strcpy(header.title, "\xc3\xbb\xd6\xf7\xcc\xe2");
 	strcpy(header.ds, doc[ans[0] - '0' - 1]);
 	header.postboard = NA;
 	i = post_header(&header);
@@ -200,14 +211,15 @@ int mailall(void)
 		return NA;
 	if (i == YEA) {
 		char title[sizeof(header.title)];
-		snprintf(title, sizeof(title), "[Type %c ¹«¸æ] %s", ans[0], header.title);
+		//% snprintf(title, sizeof(title), "[Type %c å…¬å‘Š] %s", ans[0], header.title);
+		snprintf(title, sizeof(title), "[Type %c \xb9\xab\xb8\xe6] %s", ans[0], header.title);
 		strlcpy(header.title, title, sizeof(header.title));
 	}
 	setquotefile("");
 
 	/***********Modified by Ashinmarch on 08.3.30 to improve Type 2 mailall*******************/
-	/***********Type 2µÄÈºĞÅ¸ÄÎª¹²ÏíÎÄ¼şµÄĞÎÊ½£¬ Ä¿µÄ¼õÉÙÎÄ¼şµÄ¿½±´£¬·ÀÖ¹ËÀ»ú*****************/
-	/***********Ïà¹Ø¸Ä¶¯ÎÄ¼ş£ºlist.c, bbs.c***************************************************/
+	/***********Type 2çš„ç¾¤ä¿¡æ”¹ä¸ºå…±äº«æ–‡ä»¶çš„å½¢å¼ï¼Œ ç›®çš„å‡å°‘æ–‡ä»¶çš„æ‹·è´ï¼Œé˜²æ­¢æ­»æœº*****************/
+	/***********ç›¸å…³æ”¹åŠ¨æ–‡ä»¶ï¼šlist.c, bbs.c***************************************************/
 	if (ans[0] - '0' == 2)
 		sprintf(fname, "sharedmail/mailall.%s.%ld", currentuser.userid,
 				time(0));
@@ -221,14 +233,15 @@ int mailall(void)
 	}
 	move(t_lines - 1, 0);
 	clrtoeol();
-	prints("[5;1;32;44mÕıÔÚ¼Ä¼şÖĞ£¬ÇëÉÔºò.....                                                        [m");
+	//% prints("[5;1;32;44mæ­£åœ¨å¯„ä»¶ä¸­ï¼Œè¯·ç¨å€™.....                                                        [m");
+	prints("[5;1;32;44m\xd5\xfd\xd4\xda\xbc\xc4\xbc\xfe\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....                                                        [m");
 	refresh();
 
 	mailtoall(ans[0] - '0', fname, &header);
 
 	move(t_lines - 1, 0);
 	clrtoeol();
-	/****type 2¹²ÏíÎÄ¼ş²»ĞèÒªÉ¾³ı****/
+	/****type 2å…±äº«æ–‡ä»¶ä¸éœ€è¦åˆ é™¤****/
 	if (ans[0] - '0' != 2)
 		unlink(fname);
 	in_mail = NA;
@@ -246,7 +259,8 @@ m_internet()
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();
 		move(4,0);
-		prints("\n\n        ÄúÉĞÎ´Íê³É×¢²á£¬»òÕß·¢ËÍĞÅ¼şµÄÈ¨ÏŞ±»·â½û¡£");
+		//% prints("\n\n        æ‚¨å°šæœªå®Œæˆæ³¨å†Œï¼Œæˆ–è€…å‘é€ä¿¡ä»¶çš„æƒé™è¢«å°ç¦ã€‚");
+		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
 		pressreturn();
 		return;
 	}
@@ -256,12 +270,14 @@ m_internet()
 		return;
 	}
 
-	getdata(1, 0, "ÊÕĞÅÈËE-mail£º", receiver, 65, DOECHO, YEA);
+	//% getdata(1, 0, "æ”¶ä¿¡äººE-mailï¼š", receiver, 65, DOECHO, YEA);
+	getdata(1, 0, "\xca\xd5\xd0\xc5\xc8\xcb""E-mail\xa3\xba", receiver, 65, DOECHO, YEA);
 	strtolower(genbuf, receiver);
 	if (strstr(genbuf, ".bbs@"BBSHOST)
 			|| strstr(genbuf, ".bbs@localhost")) {
 		move(3, 0);
-		prints("Õ¾ÄÚĞÅ¼ş, ÇëÓÃ (S)end Ö¸ÁîÀ´¼Ä\n");
+		//% prints("ç«™å†…ä¿¡ä»¶, è¯·ç”¨ (S)end æŒ‡ä»¤æ¥å¯„\n");
+		prints("\xd5\xbe\xc4\xda\xd0\xc5\xbc\xfe, \xc7\xeb\xd3\xc3 (S)end \xd6\xb8\xc1\xee\xc0\xb4\xbc\xc4\n");
 		pressreturn();
 	} else if (valid_addr(receiver)) {
 		*quote_file = '\0';
@@ -269,7 +285,8 @@ m_internet()
 		do_send(receiver, NULL);
 	} else {
 		move(3, 0);
-		prints("ÊÕĞÅÈË²»ÕıÈ·, ÇëÖØĞÂÑ¡È¡Ö¸Áî\n");
+		//% prints("æ”¶ä¿¡äººä¸æ­£ç¡®, è¯·é‡æ–°é€‰å–æŒ‡ä»¤\n");
+		prints("\xca\xd5\xd0\xc5\xc8\xcb\xb2\xbb\xd5\xfd\xc8\xb7, \xc7\xeb\xd6\xd8\xd0\xc2\xd1\xa1\xc8\xa1\xd6\xb8\xc1\xee\n");
 		pressreturn();
 	}
 	clear();
@@ -296,7 +313,8 @@ static int bbs_sendmail(const char *fname, const char *title, const char *receiv
 	fprintf(fout, "X-Forwarded-By: %s (%s)\n",
 			currentuser.userid,	currentuser.username);
 
-	fprintf(fout, "X-Disclaimer: %s ¶Ô±¾ĞÅÄÚÈİË¡²»¸ºÔğ¡£\n", BoardName);
+	//% fprintf(fout, "X-Disclaimer: %s å¯¹æœ¬ä¿¡å†…å®¹æ•ä¸è´Ÿè´£ã€‚\n", BoardName);
+	fprintf(fout, "X-Disclaimer: %s \xb6\xd4\xb1\xbe\xd0\xc5\xc4\xda\xc8\xdd\xcb\xa1\xb2\xbb\xb8\xba\xd4\xf0\xa1\xa3\n", BoardName);
 #ifdef SENDMAIL_MIME_AUTOCONVERT
 	if (mime) {
 		fprintf(fout, "MIME-Version: 1.0\n");
@@ -396,7 +414,8 @@ int do_send(const char *userid, const char *title)
 	edit_mail_file:
 	if (title == NULL) {
 		header.reply = false;
-		strcpy(header.title, "Ã»Ö÷Ìâ");
+		//% strcpy(header.title, "æ²¡ä¸»é¢˜");
+		strcpy(header.title, "\xc3\xbb\xd6\xf7\xcc\xe2");
 	} else {
 		header.reply = true;
 		strcpy(header.title, title);
@@ -420,7 +439,8 @@ int do_send(const char *userid, const char *title)
 
 	if (internet_mail) {
 #ifndef INTERNET_EMAIL
-		prints("¶Ô²»Æğ£¬±¾Õ¾Ôİ²»Ìá¹© InterNet Mail ·şÎñ£¡");
+		//% prints("å¯¹ä¸èµ·ï¼Œæœ¬ç«™æš‚ä¸æä¾› InterNet Mail æœåŠ¡ï¼");
+		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb1\xbe\xd5\xbe\xd4\xdd\xb2\xbb\xcc\xe1\xb9\xa9 InterNet Mail \xb7\xfe\xce\xf1\xa3\xa1");
 		pressanykey();
 #else
 		int res;
@@ -430,30 +450,41 @@ int do_send(const char *userid, const char *title)
 			return -2;
 		}
 		clear();
-		prints("ĞÅ¼ş¼´½«¼Ä¸ø %s \n", userid);
-		prints("±êÌâÎª£º %s \n", header.title);
-		if (askyn("È·¶¨Òª¼Ä³öÂğ", YEA, NA) == NA) {
-			prints("\nĞÅ¼şÒÑÈ¡Ïû...\n");
+		//% prints("ä¿¡ä»¶å³å°†å¯„ç»™ %s \n", userid);
+		prints("\xd0\xc5\xbc\xfe\xbc\xb4\xbd\xab\xbc\xc4\xb8\xf8 %s \n", userid);
+		//% prints("æ ‡é¢˜ä¸ºï¼š %s \n", header.title);
+		prints("\xb1\xea\xcc\xe2\xce\xaa\xa3\xba %s \n", header.title);
+		//% if (askyn("ç¡®å®šè¦å¯„å‡ºå—", YEA, NA) == NA) {
+		if (askyn("\xc8\xb7\xb6\xa8\xd2\xaa\xbc\xc4\xb3\xf6\xc2\xf0", YEA, NA) == NA) {
+			//% prints("\nä¿¡ä»¶å·²å–æ¶ˆ...\n");
+			prints("\n\xd0\xc5\xbc\xfe\xd2\xd1\xc8\xa1\xcf\xfb...\n");
 			res = -2;
 		} else {
 			int filter=YEA;
 #ifdef SENDMAIL_MIME_AUTOCONVERT
 			int ans;
-			ans = askyn("ÒÔ MIME ¸ñÊ½ËÍĞÅ", NA, NA);
-			if (askyn("ÊÇ·ñ¹ıÂËANSI¿ØÖÆ·û",YEA,NA) == NA)
+			//% ans = askyn("ä»¥ MIME æ ¼å¼é€ä¿¡", NA, NA);
+			ans = askyn("\xd2\xd4 MIME \xb8\xf1\xca\xbd\xcb\xcd\xd0\xc5", NA, NA);
+			//% if (askyn("æ˜¯å¦è¿‡æ»¤ANSIæ§åˆ¶ç¬¦",YEA,NA) == NA)
+			if (askyn("\xca\xc7\xb7\xf1\xb9\xfd\xc2\xcb""ANSI\xbf\xd8\xd6\xc6\xb7\xfb",YEA,NA) == NA)
 			filter = NA;
-			if (askyn("ÊÇ·ñ±¸·İ¸ø×Ô¼º", NA, NA) == YEA)
+			//% if (askyn("æ˜¯å¦å¤‡ä»½ç»™è‡ªå·±", NA, NA) == YEA)
+			if (askyn("\xca\xc7\xb7\xf1\xb1\xb8\xb7\xdd\xb8\xf8\xd7\xd4\xbc\xba", NA, NA) == YEA)
 			mail_file(tmp_fname, currentuser.userid, save_title2);
-			prints("ÇëÉÔºò, ĞÅ¼ş´«µİÖĞ...\n");
+			//% prints("è¯·ç¨å€™, ä¿¡ä»¶ä¼ é€’ä¸­...\n");
+			prints("\xc7\xeb\xc9\xd4\xba\xf2, \xd0\xc5\xbc\xfe\xb4\xab\xb5\xdd\xd6\xd0...\n");
 			refresh();
 			res = bbs_sendmail(tmp_fname, header.title, userid, filter,ans);
 #else
 
-			if (askyn("ÊÇ·ñ¹ıÂËANSI¿ØÖÆ·û",YEA,NA) == NA)
+			//% if (askyn("æ˜¯å¦è¿‡æ»¤ANSIæ§åˆ¶ç¬¦",YEA,NA) == NA)
+			if (askyn("\xca\xc7\xb7\xf1\xb9\xfd\xc2\xcbANSI\xbf\xd8\xd6\xc6\xb7\xfb",YEA,NA) == NA)
 			filter = NA;
-			if (askyn("ÊÇ·ñ±¸·İ¸ø×Ô¼º", NA, NA) == YEA)
+			//% if (askyn("æ˜¯å¦å¤‡ä»½ç»™è‡ªå·±", NA, NA) == YEA)
+			if (askyn("\xca\xc7\xb7\xf1\xb1\xb8\xb7\xdd\xb8\xf8\xd7\xd4\xbc\xba", NA, NA) == YEA)
 			mail_file(tmp_fname, currentuser.userid, save_title2);
-			prints("ÇëÉÔºò, ĞÅ¼ş´«µİÖĞ...\n");
+			//% prints("è¯·ç¨å€™, ä¿¡ä»¶ä¼ é€’ä¸­...\n");
+			prints("\xc7\xeb\xc9\xd4\xba\xf2, \xd0\xc5\xbc\xfe\xb4\xab\xb5\xdd\xd6\xd0...\n");
 			refresh();
 			res = bbs_sendmail(tmp_fname, header.title, userid, filter);
 #endif
@@ -472,7 +503,8 @@ int do_send(const char *userid, const char *title)
 
 		//backup
 		clear();
-		if (askyn("ÊÇ·ñ±¸·İ¸ø×Ô¼º", NA, NA) == YEA)
+		//% if (askyn("æ˜¯å¦å¤‡ä»½ç»™è‡ªå·±", NA, NA) == YEA)
+		if (askyn("\xca\xc7\xb7\xf1\xb1\xb8\xb7\xdd\xb8\xf8\xd7\xd4\xbc\xba", NA, NA) == YEA)
 		mail_file(filepath, currentuser.userid, save_title2);
 #if 0
 		//-----add by yl to calculate the length of a mail -----
@@ -503,7 +535,8 @@ int m_send(const char *userid)
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();
 		move(4,0);
-		prints("\n\n        ÄúÉĞÎ´Íê³É×¢²á£¬»òÕß·¢ËÍĞÅ¼şµÄÈ¨ÏŞ±»·â½û¡£");
+		//% prints("\n\n        æ‚¨å°šæœªå®Œæˆæ³¨å†Œï¼Œæˆ–è€…å‘é€ä¿¡ä»¶çš„æƒé™è¢«å°ç¦ã€‚");
+		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
 		pressreturn();
 		return 0;
 	}
@@ -517,7 +550,8 @@ int m_send(const char *userid)
 		move(1, 0);
 		clrtoeol();
 		set_user_status(ST_SMAIL);
-		usercomplete("ÊÕĞÅÈË£º ", uident);
+		//% usercomplete("æ”¶ä¿¡äººï¼š ", uident);
+		usercomplete("\xca\xd5\xd0\xc5\xc8\xcb\xa3\xba ", uident);
 		if (uident[0] == '\0') {
 			return FULLUPDATE;
 		}
@@ -528,29 +562,35 @@ int m_send(const char *userid)
 	*quote_file = '\0';
 	switch (do_send(uident, NULL)) {
 		case -1:
-		prints("ÊÕĞÅÕß²»ÕıÈ·\n");
+		//% prints("æ”¶ä¿¡è€…ä¸æ­£ç¡®\n");
+		prints("\xca\xd5\xd0\xc5\xd5\xdf\xb2\xbb\xd5\xfd\xc8\xb7\n");
 		break;
 		case -2:
-		prints("È¡Ïû\n");
+		//% prints("å–æ¶ˆ\n");
+		prints("\xc8\xa1\xcf\xfb\n");
 		break;
 		case -3:
-		prints("[%s] ÎŞ·¨ÊÕĞÅ\n", uident);
+		//% prints("[%s] æ— æ³•æ”¶ä¿¡\n", uident);
+		prints("[%s] \xce\xde\xb7\xa8\xca\xd5\xd0\xc5\n", uident);
 		break;
 		case -4:
-		prints("[%s] ĞÅÏäÒÑÂú£¬ÎŞ·¨ÊÕĞÅ\n",uident);
+		//% prints("[%s] ä¿¡ç®±å·²æ»¡ï¼Œæ— æ³•æ”¶ä¿¡\n",uident);
+		prints("[%s] \xd0\xc5\xcf\xe4\xd2\xd1\xc2\xfa\xa3\xac\xce\xde\xb7\xa8\xca\xd5\xd0\xc5\n",uident);
 		break;
 		case -5:
-		prints("[%s] ²»ÏëÊÕµ½ÄúµÄĞÅ¼ş\n",uident);
+		//% prints("[%s] ä¸æƒ³æ”¶åˆ°æ‚¨çš„ä¿¡ä»¶\n",uident);
+		prints("[%s] \xb2\xbb\xcf\xeb\xca\xd5\xb5\xbd\xc4\xfa\xb5\xc4\xd0\xc5\xbc\xfe\n",uident);
 		break;
 		default:
-		prints("ĞÅ¼şÒÑ¼Ä³ö\n");
+		//% prints("ä¿¡ä»¶å·²å¯„å‡º\n");
+		prints("\xd0\xc5\xbc\xfe\xd2\xd1\xbc\xc4\xb3\xf6\n");
 	}
 	pressreturn();
 	return FULLUPDATE;
 }
 
 int read_mail(struct fileheader *fptr) {
-	/****ÅĞ¶ÏÊÇ·ñÎªsharedmail£¬Èç¹ûÊÇÔò´Ó¹²ÏíÎÄ¼ş¶ÁÈ¡****/
+	/****åˆ¤æ–­æ˜¯å¦ä¸ºsharedmailï¼Œå¦‚æœæ˜¯åˆ™ä»å…±äº«æ–‡ä»¶è¯»å–****/
 	if (fptr->filename[0] == 's')
 		strcpy(genbuf, fptr->filename);
 	else
@@ -581,7 +621,8 @@ static int mail_reply(int ent, struct fileheader *fileinfo, char *direct)
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();
 		move(4,0);
-		prints("\n\n        ÄúÉĞÎ´Íê³É×¢²á£¬»òÕß·¢ËÍĞÅ¼şµÄÈ¨ÏŞ±»·â½û¡£");
+		//% prints("\n\n        æ‚¨å°šæœªå®Œæˆæ³¨å†Œï¼Œæˆ–è€…å‘é€ä¿¡ä»¶çš„æƒé™è¢«å°ç¦ã€‚");
+		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
 		pressreturn();
 		return 0;
 	}
@@ -599,7 +640,8 @@ static int mail_reply(int ent, struct fileheader *fileinfo, char *direct)
 		if (t != NULL)
 			strcpy(uid, t);
 		else {
-			prints("ÎŞ·¨Í¶µİ\n");
+			//% prints("æ— æ³•æŠ•é€’\n");
+			prints("\xce\xde\xb7\xa8\xcd\xb6\xb5\xdd\n");
 			pressreturn();
 			return FULLUPDATE;
 		}
@@ -617,24 +659,30 @@ static int mail_reply(int ent, struct fileheader *fileinfo, char *direct)
 	strcpy(quote_user, fileinfo->owner);
 	switch (do_send(uid, title)) {
 		case -1:
-		prints("ÎŞ·¨Í¶µİ\n");
+		//% prints("æ— æ³•æŠ•é€’\n");
+		prints("\xce\xde\xb7\xa8\xcd\xb6\xb5\xdd\n");
 		break;
 		case -2:
-		prints("È¡Ïû»ØĞÅ\n");
+		//% prints("å–æ¶ˆå›ä¿¡\n");
+		prints("\xc8\xa1\xcf\xfb\xbb\xd8\xd0\xc5\n");
 		break;
 		case -3:
-		prints("[%s] ÎŞ·¨ÊÕĞÅ\n", uid);
+		//% prints("[%s] æ— æ³•æ”¶ä¿¡\n", uid);
+		prints("[%s] \xce\xde\xb7\xa8\xca\xd5\xd0\xc5\n", uid);
 		break;
 		case -4:
-		prints("[%s] ĞÅÏäÒÑÂú£¬ÎŞ·¨ÊÕĞÅ\n", uid);
+		//% prints("[%s] ä¿¡ç®±å·²æ»¡ï¼Œæ— æ³•æ”¶ä¿¡\n", uid);
+		prints("[%s] \xd0\xc5\xcf\xe4\xd2\xd1\xc2\xfa\xa3\xac\xce\xde\xb7\xa8\xca\xd5\xd0\xc5\n", uid);
 		break;
 		case -5:
-		prints("[%s] ²»ÏëÊÕµ½ÄúµÄĞÅ¼ş\n",uid);
+		//% prints("[%s] ä¸æƒ³æ”¶åˆ°æ‚¨çš„ä¿¡ä»¶\n",uid);
+		prints("[%s] \xb2\xbb\xcf\xeb\xca\xd5\xb5\xbd\xc4\xfa\xb5\xc4\xd0\xc5\xbc\xfe\n",uid);
 		break;
 		default:
 		fileinfo->accessed[0] |= MAIL_REPLY;
 		substitute_record(direct, fileinfo, sizeof(*fileinfo), ent);
-		prints("ĞÅ¼şÒÑ¼Ä³ö\n");
+		//% prints("ä¿¡ä»¶å·²å¯„å‡º\n");
+		prints("\xd0\xc5\xbc\xfe\xd2\xd1\xbc\xc4\xb3\xf6\n");
 	}
 	pressreturn();
 	return FULLUPDATE;
@@ -653,9 +701,11 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 	if (fptr->accessed[0] & FILE_READ)
 		return 0;
 	mrd = 1;
-	prints("¶ÁÈ¡ %s ¼ÄÀ´µÄ '%s' ?\n", fptr->owner, fptr->title);
+	//% prints("è¯»å– %s å¯„æ¥çš„ '%s' ?\n", fptr->owner, fptr->title);
+	prints("\xb6\xc1\xc8\xa1 %s \xbc\xc4\xc0\xb4\xb5\xc4 '%s' ?\n", fptr->owner, fptr->title);
 	//prints("(Yes, or No): ");
-	getdata(1, 0, "(Y)¶ÁÈ¡ (N)²»¶Á (Q)Àë¿ª [Y]: ", genbuf, 3, DOECHO, YEA);
+	//% getdata(1, 0, "(Y)è¯»å– (N)ä¸è¯» (Q)ç¦»å¼€ [Y]: ", genbuf, 3, DOECHO, YEA);
+	getdata(1, 0, "(Y)\xb6\xc1\xc8\xa1 (N)\xb2\xbb\xb6\xc1 (Q)\xc0\xeb\xbf\xaa [Y]: ", genbuf, 3, DOECHO, YEA);
 	if (genbuf[0] == 'q' || genbuf[0] == 'Q') {
 		clear();
 		return QUIT;
@@ -673,7 +723,8 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 	delete_it = NA;
 	while (!done) {
 		move(t_lines - 1, 0);
-		prints("(R)»ØĞÅ, (D)É¾³ı, (G)¼ÌĞø? [G]: ");
+		//% prints("(R)å›ä¿¡, (D)åˆ é™¤, (G)ç»§ç»­? [G]: ");
+		prints("(R)\xbb\xd8\xd0\xc5, (D)\xc9\xbe\xb3\xfd, (G)\xbc\xcc\xd0\xf8? [G]: ");
 		switch (egetch()) {
 			case 'R':
 			case 'r':
@@ -690,7 +741,8 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 	}
 	if (delete_it) {
 		clear();
-		sprintf(genbuf, "É¾³ıĞÅ¼ş [%-.55s]", fptr->title);
+		//% sprintf(genbuf, "åˆ é™¤ä¿¡ä»¶ [%-.55s]", fptr->title);
+		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe [%-.55s]", fptr->title);
 		if (askyn(genbuf, NA, NA) == YEA) {
 			sprintf(genbuf, "mail/%c/%s/%s",
 					toupper(currentuser.userid[0]), currentuser.userid,
@@ -717,7 +769,8 @@ int m_new(void)
 	if (!mrd) {
 		clear();
 		move(10, 30);
-		prints("ÄúÏÖÔÚÃ»ÓĞĞÂĞÅ¼ş!");
+		//% prints("æ‚¨ç°åœ¨æ²¡æœ‰æ–°ä¿¡ä»¶!");
+		prints("\xc4\xfa\xcf\xd6\xd4\xda\xc3\xbb\xd3\xd0\xd0\xc2\xd0\xc5\xbc\xfe!");
 		pressanykey();
 	}
 	return -1;
@@ -728,10 +781,13 @@ int mailtitle(void)
 	int total, used;
 	total=getmailboxsize(currentuser.userlevel) ;
 	used=getmailsize(currentuser.userid);
-	showtitle("ĞÅ¼şÑ¡µ¥    ", BoardName);
-	prints(" Àë¿ª[\033[1;32m¡û\033[m,\033[1;32me\033[m] Ñ¡Ôñ[\033[1;32m¡ü\033[m, \033[1;32m¡ı\033[m] ÔÄ¶ÁĞÅ¼ş[\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m] »Ø ĞÅ[\033[1;32mR\033[m] ¿³ĞÅ£¯Çå³ı¾ÉĞÅ[\033[1;32md\033[m,\033[1;32mD\033[m] ÇóÖú[\033[1;32mh\033[m]\033[m\n");
+	//% showtitle("ä¿¡ä»¶é€‰å•    ", BoardName);
+	showtitle("\xd0\xc5\xbc\xfe\xd1\xa1\xb5\xa5    ", BoardName);
+	//% prints(" ç¦»å¼€[\033[1;32mâ†\033[m,\033[1;32me\033[m] é€‰æ‹©[\033[1;32mâ†‘\033[m, \033[1;32mâ†“\033[m] é˜…è¯»ä¿¡ä»¶[\033[1;32mâ†’\033[m,\033[1;32mRtn\033[m] å› ä¿¡[\033[1;32mR\033[m] ç ä¿¡ï¼æ¸…é™¤æ—§ä¿¡[\033[1;32md\033[m,\033[1;32mD\033[m] æ±‚åŠ©[\033[1;32mh\033[m]\033[m\n");
+	prints(" \xc0\xeb\xbf\xaa[\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m, \033[1;32m\xa1\xfd\033[m] \xd4\xc4\xb6\xc1\xd0\xc5\xbc\xfe[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m] \xbb\xd8 \xd0\xc5[\033[1;32mR\033[m] \xbf\xb3\xd0\xc5\xa3\xaf\xc7\xe5\xb3\xfd\xbe\xc9\xd0\xc5[\033[1;32md\033[m,\033[1;32mD\033[m] \xc7\xf3\xd6\xfa[\033[1;32mh\033[m]\033[m\n");
 	prints(
-			"\033[1;44m ±àºÅ   ·¢ĞÅÕß        ÈÕÆÚ   ±êÌâ    (\033[33mÄúµÄĞÅÏäÈİÁ¿Îª[%5dK]£¬µ±Ç°ÒÑÓÃ[%4dK]\033[37m) \033[m\n",
+			//% "\033[1;44m ç¼–å·   å‘ä¿¡è€…        æ—¥æœŸ   æ ‡é¢˜    (\033[33mæ‚¨çš„ä¿¡ç®±å®¹é‡ä¸º[%5dK]ï¼Œå½“å‰å·²ç”¨[%4dK]\033[37m) \033[m\n",
+			"\033[1;44m \xb1\xe0\xba\xc5   \xb7\xa2\xd0\xc5\xd5\xdf        \xc8\xd5\xc6\xda   \xb1\xea\xcc\xe2    (\033[33m\xc4\xfa\xb5\xc4\xd0\xc5\xcf\xe4\xc8\xdd\xc1\xbf\xce\xaa[%5dK]\xa3\xac\xb5\xb1\xc7\xb0\xd2\xd1\xd3\xc3[%4dK]\033[37m) \033[m\n",
 			total, used);
 	clrtobot();
 	return 0;
@@ -756,13 +812,17 @@ int check_maxmail(void)
 		clear();
 		move(4, 0);
 		if (currentuser.nummails > maxmail)
-			prints("ÄúµÄË½ÈËĞÅ¼ş¸ß´ï %d ·â, ÄúµÄĞÅ¼şÉÏÏŞ: %d ·â\n",
+			//% prints("æ‚¨çš„ç§äººä¿¡ä»¶é«˜è¾¾ %d å°, æ‚¨çš„ä¿¡ä»¶ä¸Šé™: %d å°\n",
+			prints("\xc4\xfa\xb5\xc4\xcb\xbd\xc8\xcb\xd0\xc5\xbc\xfe\xb8\xdf\xb4\xef %d \xb7\xe2, \xc4\xfa\xb5\xc4\xd0\xc5\xbc\xfe\xc9\xcf\xcf\xde: %d \xb7\xe2\n",
 				currentuser.nummails, maxmail);
 		if (mailsize > maxsize)
-			prints("ÄúµÄĞÅ¼şÈİÁ¿¸ß´ï %d K£¬ÄúµÄÈİÁ¿ÉÏÏŞ: %d K\n",
+			//% prints("æ‚¨çš„ä¿¡ä»¶å®¹é‡é«˜è¾¾ %d Kï¼Œæ‚¨çš„å®¹é‡ä¸Šé™: %d K\n",
+			prints("\xc4\xfa\xb5\xc4\xd0\xc5\xbc\xfe\xc8\xdd\xc1\xbf\xb8\xdf\xb4\xef %d K\xa3\xac\xc4\xfa\xb5\xc4\xc8\xdd\xc1\xbf\xc9\xcf\xcf\xde: %d K\n",
 				mailsize, maxsize);
-		prints("ÄúµÄË½ÈËĞÅ¼şÒÑ¾­³¬ÏŞ, ÇëÕûÀíĞÅÏä£¬"
-			"·ñÔòÎŞ·¨Ê¹ÓÃ±¾Õ¾µÄËÍĞÅ¹¦ÄÜ¡£\n");
+		//% prints("æ‚¨çš„ç§äººä¿¡ä»¶å·²ç»è¶…é™, è¯·æ•´ç†ä¿¡ç®±ï¼Œ"
+		prints("\xc4\xfa\xb5\xc4\xcb\xbd\xc8\xcb\xd0\xc5\xbc\xfe\xd2\xd1\xbe\xad\xb3\xac\xcf\xde, \xc7\xeb\xd5\xfb\xc0\xed\xd0\xc5\xcf\xe4\xa3\xac"
+			//% "å¦åˆ™æ— æ³•ä½¿ç”¨æœ¬ç«™çš„é€ä¿¡åŠŸèƒ½ã€‚\n");
+			"\xb7\xf1\xd4\xf2\xce\xde\xb7\xa8\xca\xb9\xd3\xc3\xb1\xbe\xd5\xbe\xb5\xc4\xcb\xcd\xd0\xc5\xb9\xa6\xc4\xdc\xa1\xa3\n");
 	} else
 		mailXX = 0;
 
@@ -793,7 +853,7 @@ char * maildoent(int num, struct fileheader *ent) {
 #ifdef COLOR_POST_DATE
 	struct tm *mytm;
 #endif
-	/****ÅĞ¶ÏÊÇ·ñÊÇType2µÄ¹²ÏíÎÄ¼ş:ÎÄ¼şÃûsharedmail/mailall.$userid.$time****/
+	/****åˆ¤æ–­æ˜¯å¦æ˜¯Type2çš„å…±äº«æ–‡ä»¶:æ–‡ä»¶åsharedmail/mailall.$userid.$time****/
 	if (ent->filename[0] == 's')
 		filetime = atoi(ent->filename + strlen(ent->owner) + 20);
 	else
@@ -859,7 +919,8 @@ char * maildoent(int num, struct fileheader *ent) {
 	if (!strncmp("Re:", ent->title, 3) || !strncmp("RE:", ent->title, 3)) {
 		sprintf(title, "Re: %s", ent->title+4);
 	} else {
-		sprintf(title, "¡ï %s", ent->title);
+		//% sprintf(title, "â˜… %s", ent->title);
+		sprintf(title, "\xa1\xef %s", ent->title);
 	}
 
 	ellipsis(title, 49);
@@ -871,7 +932,8 @@ char * maildoent(int num, struct fileheader *ent) {
 	 sprintf(buf, " %s%3d[m %c %-12.12s %s%6.6s[m  %s%.50s[m", same ? c1 : ""
 	 ,num, status, b2, color, date, same ? c1 : "", ent->title);
 	 } else {
-	 sprintf(buf, " %s%3d[m %c %-12.12s %s%6.6s[m  ¡ï  %s%.47s[m"
+	 //% sprintf(buf, " %s%3d[m %c %-12.12s %s%6.6s[m  â˜…  %s%.47s[m"
+	 sprintf(buf, " %s%3d[m %c %-12.12s %s%6.6s[m  \xa1\xef  %s%.47s[m"
 	 ,same ? c2 : "", num, status, b2, color, date, same ? c2 : "", ent->title);
 	 }
 	 */
@@ -888,7 +950,8 @@ static int show_mail_info(int ent, struct fileheader *fileinfo, char *direct)
 	if (stat(filepath, &filestat) < 0) {
 		clear();
 		move(10, 30);
-		prints("¶Ô²»Æğ£¬µ±Ç°ÎÄÕÂ²»´æÔÚ£¡\n", filepath);
+		//% prints("å¯¹ä¸èµ·ï¼Œå½“å‰æ–‡ç« ä¸å­˜åœ¨ï¼\n", filepath);
+		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb5\xb1\xc7\xb0\xce\xc4\xd5\xc2\xb2\xbb\xb4\xe6\xd4\xda\xa3\xa1\n", filepath);
 		pressanykey();
 		clear();
 		return FULLUPDATE;
@@ -898,30 +961,43 @@ static int show_mail_info(int ent, struct fileheader *fileinfo, char *direct)
 	const char *type;
 	if (fileinfo->accessed[0] & MAIL_REPLY) {
 		if (fileinfo->accessed[0] & FILE_MARKED)
-			type = "±£ÁôÇÒÒÑ»Ø¸´";
+			//% type = "ä¿ç•™ä¸”å·²å›å¤";
+			type = "\xb1\xa3\xc1\xf4\xc7\xd2\xd2\xd1\xbb\xd8\xb8\xb4";
 		else
-			type = "ÒÑ»Ø¸´";
+			//% type = "å·²å›å¤";
+			type = "\xd2\xd1\xbb\xd8\xb8\xb4";
 	} else if (fileinfo->accessed[0] & FILE_MARKED)
-		type = "±£Áô";
+		//% type = "ä¿ç•™";
+		type = "\xb1\xa3\xc1\xf4";
 	else
-		type = "ÆÕÍ¨";
+		//% type = "æ™®é€š";
+		type = "\xc6\xd5\xcd\xa8";
 
 	clear();
 	move(0, 0);
-	prints("%sµÄÏêÏ¸ĞÅÏ¢:\n\n", "ÓÊÏäĞÅ¼ş");
-	prints("Ğò    ºÅ:     µÚ %d %s\n", ent, "·â");
-	prints("±ê    Ìâ:     %s\n", fileinfo->title);
-	prints("·¢ ĞÅ ÈË:     %s\n", fileinfo->owner);
+	//% prints("%sçš„è¯¦ç»†ä¿¡æ¯:\n\n", "é‚®ç®±ä¿¡ä»¶");
+	prints("%s\xb5\xc4\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2:\n\n", "\xd3\xca\xcf\xe4\xd0\xc5\xbc\xfe");
+	//% prints("åº    å·:     ç¬¬ %d %s\n", ent, "å°");
+	prints("\xd0\xf2    \xba\xc5:     \xb5\xda %d %s\n", ent, "\xb7\xe2");
+	//% prints("æ ‡    é¢˜:     %s\n", fileinfo->title);
+	prints("\xb1\xea    \xcc\xe2:     %s\n", fileinfo->title);
+	//% prints("å‘ ä¿¡ äºº:     %s\n", fileinfo->owner);
+	prints("\xb7\xa2 \xd0\xc5 \xc8\xcb:     %s\n", fileinfo->owner);
 	time_t filetime = atoi(fileinfo->filename + 2);
-	prints("Ê±    ¼ä:     %s\n", getdatestring(filetime, DATE_ZH));
-	prints("ÔÄ¶Á×´Ì¬:     %s\n", unread ? "Î´¶Á" : "ÒÑ¶Á");
-	prints("ÎÄÕÂÀàĞÍ:     %s\n", type);
-	prints("´ó    Ğ¡:     %d ×Ö½Ú\n", filestat.st_size);
+	//% prints("æ—¶    é—´:     %s\n", getdatestring(filetime, DATE_ZH));
+	prints("\xca\xb1    \xbc\xe4:     %s\n", getdatestring(filetime, DATE_ZH));
+	//% prints("é˜…è¯»çŠ¶æ€:     %s\n", unread ? "æœªè¯»" : "å·²è¯»");
+	prints("\xd4\xc4\xb6\xc1\xd7\xb4\xcc\xac:     %s\n", unread ? "\xce\xb4\xb6\xc1" : "\xd2\xd1\xb6\xc1");
+	//% prints("æ–‡ç« ç±»å‹:     %s\n", type);
+	prints("\xce\xc4\xd5\xc2\xc0\xe0\xd0\xcd:     %s\n", type);
+	//% prints("å¤§    å°:     %d å­—èŠ‚\n", filestat.st_size);
+	prints("\xb4\xf3    \xd0\xa1:     %d \xd7\xd6\xbd\xda\n", filestat.st_size);
 
 	char link[STRLEN];
 	snprintf(link, sizeof(link), "http://%s/bbs/mailcon?f=%s&n=%d\n",
 			BBSHOST, fileinfo->filename, ent - 1);
-	prints("URL µØÖ·:\n%s", link);
+	//% prints("URL åœ°å€:\n%s", link);
+	prints("URL \xb5\xd8\xd6\xb7:\n%s", link);
 	pressanykey();
 	return FULLUPDATE;
 }
@@ -938,7 +1014,7 @@ int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 	strcpy(buf, direct);
 	if ((t = strrchr(buf, '/')) != NULL)
 	*t = '\0';
-	/****ÅĞ¶ÏType2¹«¸æµÄ¹²ÏíÎÄ¼ş****/
+	/****åˆ¤æ–­Type2å…¬å‘Šçš„å…±äº«æ–‡ä»¶****/
 	if(fileinfo->filename[0] == 's')
 	strcpy(notgenbuf, fileinfo->filename);
 	else
@@ -947,7 +1023,8 @@ int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 	while (!done) {
 		ansimore(notgenbuf, NA);
 		move(t_lines - 1, 0);
-		prints("(R)»ØĞÅ, (D)É¾³ı, (G)¼ÌĞø? [G]: ");
+		//% prints("(R)å›ä¿¡, (D)åˆ é™¤, (G)ç»§ç»­? [G]: ");
+		prints("(R)\xbb\xd8\xd0\xc5, (D)\xc9\xbe\xb3\xfd, (G)\xbc\xcc\xd0\xf8? [G]: ");
 		switch (egetch()) {
 			case 'R':
 			case 'r':
@@ -978,8 +1055,8 @@ int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 		}
 	}
 	if (delete_it)
-	return mail_del(ent, fileinfo, direct); /* ĞŞ¸ÄĞÅ¼şÖ®bug
-	 * ¼ÓÁËreturn */
+	return mail_del(ent, fileinfo, direct); /* ä¿®æ”¹ä¿¡ä»¶ä¹‹bug
+	 * åŠ äº†return */
 	else {
 		fileinfo->accessed[0] |= FILE_READ;
 		substitute_record(currmaildir, fileinfo, sizeof(*fileinfo), ent);
@@ -996,10 +1073,12 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 
 	if(SR_BMDELFLAG==NA)
 	{
-		sprintf(genbuf, "É¾³ıĞÅ¼ş [%-.55s]", fileinfo->title);
+		//% sprintf(genbuf, "åˆ é™¤ä¿¡ä»¶ [%-.55s]", fileinfo->title);
+		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe [%-.55s]", fileinfo->title);
 		if (askyn(genbuf, NA, YEA) == NA) {
 			move(t_lines - 1, 0);
-			prints("·ÅÆúÉ¾³ıĞÅ¼ş...");
+			//% prints("æ”¾å¼ƒåˆ é™¤ä¿¡ä»¶...");
+			prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe...");
 			clrtoeol();
 			egetch();
 			return FULLUPDATE;
@@ -1017,7 +1096,8 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 	if(SR_BMDELFLAG==NA)
 	{
 		move(t_lines - 1, 0);
-		prints("É¾³ıÊ§°Ü...");
+		//% prints("åˆ é™¤å¤±è´¥...");
+		prints("\xc9\xbe\xb3\xfd\xca\xa7\xb0\xdc...");
 		clrtoeol();
 		egetch();
 	}
@@ -1030,7 +1110,8 @@ int _mail_forward(const char *path, const struct fileheader *fp, bool uuencode)
 		return DONOTHING;
 
 	if (fp->filename[0] == 's') {
-		prints("Type 2¹«¸æ½ûÖ¹×ªĞÅ!\n");
+		//% prints("Type 2å…¬å‘Šç¦æ­¢è½¬ä¿¡!\n");
+		prints("Type 2\xb9\xab\xb8\xe6\xbd\xfb\xd6\xb9\xd7\xaa\xd0\xc5!\n");
 		return DONOTHING;
 	}
 
@@ -1141,7 +1222,7 @@ static int listfilecontent(char *fname, int y)
 	int x = 0, cnt = 0, max = 0, len;
 	//char    u_buf[20], line[STRLEN], *nick;
 	char u_buf[20], line[512], *nick;
-	//modified by roly 02.03.22 »º´æÇøÒç³ö
+	//modified by roly 02.03.22 ç¼“å­˜åŒºæº¢å‡º
 	move(y, x);
 	CreateNameList();
 	strcpy(genbuf, fname);
@@ -1209,8 +1290,10 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	sprintf(genbuf, "%s", currentuser.userid);
 	struct postheader header;
 	header.reply = false;
-	strcpy(header.title, "Ã»Ö÷Ìâ");
-	strcpy(header.ds, "¼ÄĞÅ¸øÒ»ÈºÈË");
+	//% strcpy(header.title, "æ²¡ä¸»é¢˜");
+	strcpy(header.title, "\xc3\xbb\xd6\xf7\xcc\xe2");
+	//% strcpy(header.ds, "å¯„ä¿¡ç»™ä¸€ç¾¤äºº");
+	strcpy(header.ds, "\xbc\xc4\xd0\xc5\xb8\xf8\xd2\xbb\xc8\xba\xc8\xcb");
 	header.postboard = NA;
 	sprintf(tmpfile, "tmp/gsend.%s.%05d", currentuser.userid, session.pid);
 	result = post_header(&header);
@@ -1220,7 +1303,8 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	}
 	if (result == YEA) {
 		char title[sizeof(header.title)];
-		snprintf(title, sizeof(title), "[ÈºÌåĞÅ¼ş] %s", header.title);
+		//% snprintf(title, sizeof(title), "[ç¾¤ä½“ä¿¡ä»¶] %s", header.title);
+		snprintf(title, sizeof(title), "[\xc8\xba\xcc\xe5\xd0\xc5\xbc\xfe] %s", header.title);
 		strlcpy(header.title, title, sizeof(header.title));
 	}
 	do_quote(quote_file, tmpfile, header.include_mode, header.anonymous);
@@ -1230,7 +1314,8 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 		return -2;
 	}
 	clear();
-	prints("[5;1;32mÕıÔÚ¼Ä¼şÖĞ£¬ÇëÉÔºò...[m");
+	//% prints("[5;1;32mæ­£åœ¨å¯„ä»¶ä¸­ï¼Œè¯·ç¨å€™...[m");
+	prints("[5;1;32m\xd5\xfd\xd4\xda\xbc\xc4\xbc\xfe\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2...[m");
 
 	db_res_t *res = NULL;
 	if (G_SENDMODE == 2) {
@@ -1312,7 +1397,8 @@ int g_send() {
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();
 		move(4, 0);
-		prints("\n\n        ÄúÉĞÎ´Íê³É×¢²á£¬»òÕß·¢ËÍĞÅ¼şµÄÈ¨ÏŞ±»·â½û¡£");
+		//% prints("\n\n        æ‚¨å°šæœªå®Œæˆæ³¨å†Œï¼Œæˆ–è€…å‘é€ä¿¡ä»¶çš„æƒé™è¢«å°ç¦ã€‚");
+		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
 		pressreturn();
 		return 0;
 	}
@@ -1328,12 +1414,15 @@ int g_send() {
 		cnt = listfilecontent(maillists, 3);
 		if (cnt > maxrecp - 10) {
 			move(1, 0);
-			prints("Ä¿Ç°ÏŞÖÆ¼ÄĞÅ¸ø [1m%d[m ÈË", maxrecp);
+			//% prints("ç›®å‰é™åˆ¶å¯„ä¿¡ç»™ [1m%d[m äºº", maxrecp);
+			prints("\xc4\xbf\xc7\xb0\xcf\xde\xd6\xc6\xbc\xc4\xd0\xc5\xb8\xf8 [1m%d[m \xc8\xcb", maxrecp);
 		}
 		move(2, 0);
-		prints("ÏÖÔÚÊÇµÚ %c ¸öÃûµ¥ (0~9)Ñ¡ÔñÆäËûÃûµ¥", current_maillist);
+		//% prints("ç°åœ¨æ˜¯ç¬¬ %c ä¸ªåå• (0~9)é€‰æ‹©å…¶ä»–åå•", current_maillist);
+		prints("\xcf\xd6\xd4\xda\xca\xc7\xb5\xda %c \xb8\xf6\xc3\xfb\xb5\xa5 (0~9)\xd1\xa1\xd4\xf1\xc6\xe4\xcb\xfb\xc3\xfb\xb5\xa5", current_maillist);
 
-		getdata(0, 0, "(A)Ôö¼Ó (D)É¾³ı (I)ÒıÈëºÃÓÑ (C)Çå³ıÄ¿Ç°Ãûµ¥ (E)·ÅÆú (S)¼Ä³ö? [S]£º ",
+		//% getdata(0, 0, "(A)å¢åŠ  (D)åˆ é™¤ (I)å¼•å…¥å¥½å‹ (C)æ¸…é™¤ç›®å‰åå• (E)æ”¾å¼ƒ (S)å¯„å‡º? [S]ï¼š ",
+		getdata(0, 0, "(A)\xd4\xf6\xbc\xd3 (D)\xc9\xbe\xb3\xfd (I)\xd2\xfd\xc8\xeb\xba\xc3\xd3\xd1 (C)\xc7\xe5\xb3\xfd\xc4\xbf\xc7\xb0\xc3\xfb\xb5\xa5 (E)\xb7\xc5\xc6\xfa (S)\xbc\xc4\xb3\xf6? [S]\xa3\xba ",
 				tmp, 2, DOECHO, YEA);
 
 		if (tmp[0] == '\n' || tmp[0] == '\0' || tmp[0] == 's' || tmp[0]
@@ -1345,47 +1434,65 @@ int g_send() {
 			move(1, 0);
 			if (tmp[0] == 'a' || tmp[0] == 'A')
 				/**
-				 * ÈÕ  ÆÚ: 2007.12.19
-				 * Î¬»¤Õß: Anonomous
-				 * ´úÂë¶Î: ´ÓÏÂÃæwhile(1)Óï¾ä¿ªÊ¼µ½while½áÊø£¬Ò»¹²34ĞĞ¡£
-				 * Ä¿  µÄ: Ôö¼ÓÈºĞÅ·¢ĞÅÈËµÄÊ±ºò²»ĞèÒªÃ¿´Î¶¼°´A¼ü£¬ËùÓĞµÄ²Ù×÷Ò»´Î°´A
-				 *         Ö®ºóÍê³É¡£
-				 * ±¸  ×¢: Õâ¸ö×ö·¨ÆäÊµ²»ÊÇºÜºÃ£¬²»¹ıÒòÎªÕû¸öFBÏµÍ³Éè¼ÆµÄ¾ÖÏŞĞÔ£¬Ã»ÓĞ
-				 *         °ì·¨¸Ä³É±È½ÏºÃµÄÁ÷³Ì£¬Ö»ÄÜÔÚÔ­±¾µÄÁ÷³Ì»ù´¡ÉÏÖØ¸´ÀÍ¶¯¡£FBµÄ
-				 *         Éè¼ÆÓĞµãÌ«ËÀ°å£¬Ã¿´ÎÔö¼Ó·¢ĞÅÈËµÄÊ±ºò¶¼Ö»´¦ÀíÒ»¸öid£¬¶øÇÒÕâ
-				 *         ¸ö´¦Àí¹ı³ÌÊÇ¼ĞÔÓÔÚÆäËû²Ù×÷ÖĞ¼äµÄ£¬Õû¸öÁ÷³ÌµÄñîºÏ¶ÈÌ«¸ß£¬Ã»
-				 *         °ì·¨²ğ·Ö£¬Ö»ºÃ²ÉÈ¡ÏÂÃæµÄ·½Ê½£¬Ã¿´ÎÔö¼Ó·¢ĞÅÈËµÄÊ±ºòÖØ»æÕû¸ö
-				 *         ÆÁÄ»£¬²¢ÇÒÍê³ÉÒ»´ÎÌí¼Ó²Ù×÷¡£Ï£ÍûÒÔºó»áÓĞ¸üºÃµÄ°ì·¨¡£-_-||
+				 //% * æ—¥  æœŸ: 2007.12.19
+				 * \xc8\xd5  \xc6\xda: 2007.12.19
+				 //% * ç»´æŠ¤è€…: Anonomous
+				 * \xce\xac\xbb\xa4\xd5\xdf: Anonomous
+				 //% * ä»£ç æ®µ: ä»ä¸‹é¢while(1)è¯­å¥å¼€å§‹åˆ°whileç»“æŸï¼Œä¸€å…±34è¡Œã€‚
+				 * \xb4\xfa\xc2\xeb\xb6\xce: \xb4\xd3\xcf\xc2\xc3\xe6while(1)\xd3\xef\xbe\xe4\xbf\xaa\xca\xbc\xb5\xbdwhile\xbd\xe1\xca\xf8\xa3\xac\xd2\xbb\xb9\xb234\xd0\xd0\xa1\xa3
+				 //% * ç›®  çš„: å¢åŠ ç¾¤ä¿¡å‘ä¿¡äººçš„æ—¶å€™ä¸éœ€è¦æ¯æ¬¡éƒ½æŒ‰Aé”®ï¼Œæ‰€æœ‰çš„æ“ä½œä¸€æ¬¡æŒ‰A
+				 * \xc4\xbf  \xb5\xc4: \xd4\xf6\xbc\xd3\xc8\xba\xd0\xc5\xb7\xa2\xd0\xc5\xc8\xcb\xb5\xc4\xca\xb1\xba\xf2\xb2\xbb\xd0\xe8\xd2\xaa\xc3\xbf\xb4\xce\xb6\xbc\xb0\xb4A\xbc\xfc\xa3\xac\xcb\xf9\xd3\xd0\xb5\xc4\xb2\xd9\xd7\xf7\xd2\xbb\xb4\xce\xb0\xb4A
+				 //% *         ä¹‹åå®Œæˆã€‚
+				 *         \xd6\xae\xba\xf3\xcd\xea\xb3\xc9\xa1\xa3
+				 //% * å¤‡  æ³¨: è¿™ä¸ªåšæ³•å…¶å®ä¸æ˜¯å¾ˆå¥½ï¼Œä¸è¿‡å› ä¸ºæ•´ä¸ªFBç³»ç»Ÿè®¾è®¡çš„å±€é™æ€§ï¼Œæ²¡æœ‰
+				 * \xb1\xb8  \xd7\xa2: \xd5\xe2\xb8\xf6\xd7\xf6\xb7\xa8\xc6\xe4\xca\xb5\xb2\xbb\xca\xc7\xba\xdc\xba\xc3\xa3\xac\xb2\xbb\xb9\xfd\xd2\xf2\xce\xaa\xd5\xfb\xb8\xf6FB\xcf\xb5\xcd\xb3\xc9\xe8\xbc\xc6\xb5\xc4\xbe\xd6\xcf\xde\xd0\xd4\xa3\xac\xc3\xbb\xd3\xd0
+				 //% *         åŠæ³•æ”¹æˆæ¯”è¾ƒå¥½çš„æµç¨‹ï¼Œåªèƒ½åœ¨åŸæœ¬çš„æµç¨‹åŸºç¡€ä¸Šé‡å¤åŠ³åŠ¨ã€‚FBçš„
+				 *         \xb0\xec\xb7\xa8\xb8\xc4\xb3\xc9\xb1\xc8\xbd\xcf\xba\xc3\xb5\xc4\xc1\xf7\xb3\xcc\xa3\xac\xd6\xbb\xc4\xdc\xd4\xda\xd4\xad\xb1\xbe\xb5\xc4\xc1\xf7\xb3\xcc\xbb\xf9\xb4\xa1\xc9\xcf\xd6\xd8\xb8\xb4\xc0\xcd\xb6\xaf\xa1\xa3FB\xb5\xc4
+				 //% *         è®¾è®¡æœ‰ç‚¹å¤ªæ­»æ¿ï¼Œæ¯æ¬¡å¢åŠ å‘ä¿¡äººçš„æ—¶å€™éƒ½åªå¤„ç†ä¸€ä¸ªidï¼Œè€Œä¸”è¿™
+				 *         \xc9\xe8\xbc\xc6\xd3\xd0\xb5\xe3\xcc\xab\xcb\xc0\xb0\xe5\xa3\xac\xc3\xbf\xb4\xce\xd4\xf6\xbc\xd3\xb7\xa2\xd0\xc5\xc8\xcb\xb5\xc4\xca\xb1\xba\xf2\xb6\xbc\xd6\xbb\xb4\xa6\xc0\xed\xd2\xbb\xb8\xf6id\xa3\xac\xb6\xf8\xc7\xd2\xd5\xe2
+				 //% *         ä¸ªå¤„ç†è¿‡ç¨‹æ˜¯å¤¹æ‚åœ¨å…¶ä»–æ“ä½œä¸­é—´çš„ï¼Œæ•´ä¸ªæµç¨‹çš„è€¦åˆåº¦å¤ªé«˜ï¼Œæ²¡
+				 *         \xb8\xf6\xb4\xa6\xc0\xed\xb9\xfd\xb3\xcc\xca\xc7\xbc\xd0\xd4\xd3\xd4\xda\xc6\xe4\xcb\xfb\xb2\xd9\xd7\xf7\xd6\xd0\xbc\xe4\xb5\xc4\xa3\xac\xd5\xfb\xb8\xf6\xc1\xf7\xb3\xcc\xb5\xc4\xf1\xee\xba\xcf\xb6\xc8\xcc\xab\xb8\xdf\xa3\xac\xc3\xbb
+				 //% *         åŠæ³•æ‹†åˆ†ï¼Œåªå¥½é‡‡å–ä¸‹é¢çš„æ–¹å¼ï¼Œæ¯æ¬¡å¢åŠ å‘ä¿¡äººçš„æ—¶å€™é‡ç»˜æ•´ä¸ª
+				 *         \xb0\xec\xb7\xa8\xb2\xf0\xb7\xd6\xa3\xac\xd6\xbb\xba\xc3\xb2\xc9\xc8\xa1\xcf\xc2\xc3\xe6\xb5\xc4\xb7\xbd\xca\xbd\xa3\xac\xc3\xbf\xb4\xce\xd4\xf6\xbc\xd3\xb7\xa2\xd0\xc5\xc8\xcb\xb5\xc4\xca\xb1\xba\xf2\xd6\xd8\xbb\xe6\xd5\xfb\xb8\xf6
+				 //% *         å±å¹•ï¼Œå¹¶ä¸”å®Œæˆä¸€æ¬¡æ·»åŠ æ“ä½œã€‚å¸Œæœ›ä»¥åä¼šæœ‰æ›´å¥½çš„åŠæ³•ã€‚-_-||
+				 *         \xc6\xc1\xc4\xbb\xa3\xac\xb2\xa2\xc7\xd2\xcd\xea\xb3\xc9\xd2\xbb\xb4\xce\xcc\xed\xbc\xd3\xb2\xd9\xd7\xf7\xa1\xa3\xcf\xa3\xcd\xfb\xd2\xd4\xba\xf3\xbb\xe1\xd3\xd0\xb8\xfc\xba\xc3\xb5\xc4\xb0\xec\xb7\xa8\xa1\xa3-_-||
 				 */
 				while (1) {
 					clear();
 					cnt = listfilecontent(maillists, 3);
 					if (cnt > maxrecp - 10) {
 						move(1, 0);
-						prints("Ä¿Ç°ÏŞÖÆ¼ÄĞÅ¸ø [1m%d[m ÈË", maxrecp);
+						//% prints("ç›®å‰é™åˆ¶å¯„ä¿¡ç»™ [1m%d[m äºº", maxrecp);
+						prints("\xc4\xbf\xc7\xb0\xcf\xde\xd6\xc6\xbc\xc4\xd0\xc5\xb8\xf8 [1m%d[m \xc8\xcb", maxrecp);
 					}
 					move(2, 0);
-					prints("ÏÖÔÚÊÇµÚ %c ¸öÃûµ¥ (0~9)Ñ¡ÔñÆäËûÃûµ¥", current_maillist);
+					//% prints("ç°åœ¨æ˜¯ç¬¬ %c ä¸ªåå• (0~9)é€‰æ‹©å…¶ä»–åå•", current_maillist);
+					prints("\xcf\xd6\xd4\xda\xca\xc7\xb5\xda %c \xb8\xf6\xc3\xfb\xb5\xa5 (0~9)\xd1\xa1\xd4\xf1\xc6\xe4\xcb\xfb\xc3\xfb\xb5\xa5", current_maillist);
 					move(0, 0);
-					prints("(A)Ôö¼Ó (D)É¾³ı (I)ÒıÈëºÃÓÑ (C)Çå³ıÄ¿Ç°Ãûµ¥ (E)·ÅÆú (S)¼Ä³ö? [S]£º ");
+					//% prints("(A)å¢åŠ  (D)åˆ é™¤ (I)å¼•å…¥å¥½å‹ (C)æ¸…é™¤ç›®å‰åå• (E)æ”¾å¼ƒ (S)å¯„å‡º? [S]ï¼š ");
+					prints("(A)\xd4\xf6\xbc\xd3 (D)\xc9\xbe\xb3\xfd (I)\xd2\xfd\xc8\xeb\xba\xc3\xd3\xd1 (C)\xc7\xe5\xb3\xfd\xc4\xbf\xc7\xb0\xc3\xfb\xb5\xa5 (E)\xb7\xc5\xc6\xfa (S)\xbc\xc4\xb3\xf6? [S]\xa3\xba ");
 					move(1, 0);
-					usercomplete("ÇëÒÀ´ÎÊäÈëÊ¹ÓÃÕß´úºÅ(Ö»°´ ENTER ½áÊøÊäÈë): ", uident);
+					//% usercomplete("è¯·ä¾æ¬¡è¾“å…¥ä½¿ç”¨è€…ä»£å·(åªæŒ‰ ENTER ç»“æŸè¾“å…¥): ", uident);
+					usercomplete("\xc7\xeb\xd2\xc0\xb4\xce\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5(\xd6\xbb\xb0\xb4 ENTER \xbd\xe1\xca\xf8\xca\xe4\xc8\xeb): ", uident);
 					move(1, 0);
 					clrtoeol();
 					if (uident[0] == '\0')
 						break;
 					if (!getuser(uident)) {
 						move(2, 0);
-						prints("Õâ¸öÊ¹ÓÃÕß´úºÅÊÇ´íÎóµÄ.\n");
+						//% prints("è¿™ä¸ªä½¿ç”¨è€…ä»£å·æ˜¯é”™è¯¯çš„.\n");
+						prints("\xd5\xe2\xb8\xf6\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xca\xc7\xb4\xed\xce\xf3\xb5\xc4.\n");
 						continue;
 					}
 					if (!(lookupuser.userlevel & PERM_READMAIL)) {
 						move(2, 0);
-						prints("ÎŞ·¨ËÍĞÅ¸ø: [1m%s[m\n", lookupuser.userid);
+						//% prints("æ— æ³•é€ä¿¡ç»™: [1m%s[m\n", lookupuser.userid);
+						prints("\xce\xde\xb7\xa8\xcb\xcd\xd0\xc5\xb8\xf8: [1m%s[m\n", lookupuser.userid);
 						continue;
 					} else if (seek_in_file(maillists, uident)) {
 						move(2, 0);
-						prints("ÒÑ¾­ÁĞÎªÊÕ¼şÈËÖ®Ò» \n");
+						//% prints("å·²ç»åˆ—ä¸ºæ”¶ä»¶äººä¹‹ä¸€ \n");
+						prints("\xd2\xd1\xbe\xad\xc1\xd0\xce\xaa\xca\xd5\xbc\xfe\xc8\xcb\xd6\xae\xd2\xbb \n");
 						continue;
 					}
 					snprintf(buf, sizeof(buf), "%s\n", uident);
@@ -1393,15 +1500,17 @@ int g_send() {
 					cnt++;
 				}
 			else
-				namecomplete("ÇëÒÀ´ÎÊäÈëÊ¹ÓÃÕß´úºÅ(Ö»°´ ENTER ½áÊøÊäÈë): ", uident);
+				//% namecomplete("è¯·ä¾æ¬¡è¾“å…¥ä½¿ç”¨è€…ä»£å·(åªæŒ‰ ENTER ç»“æŸè¾“å…¥): ", uident);
+				namecomplete("\xc7\xeb\xd2\xc0\xb4\xce\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5(\xd6\xbb\xb0\xb4 ENTER \xbd\xe1\xca\xf8\xca\xe4\xc8\xeb): ", uident);
 			move(1, 0);
 			clrtoeol();
 			if (uident[0] == '\0')
 				continue;
 			if (!getuser(uident)) {
 				move(2, 0);
-				prints("Õâ¸öÊ¹ÓÃÕß´úºÅÊÇ´íÎóµÄ.\n");
-				continue; //added by infotech. rubing Ìá¹©.·ÀÖ¹¼ÓÈë²»´æÔÚµÄÊ¹ÓÃÕß.
+				//% prints("è¿™ä¸ªä½¿ç”¨è€…ä»£å·æ˜¯é”™è¯¯çš„.\n");
+				prints("\xd5\xe2\xb8\xf6\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xca\xc7\xb4\xed\xce\xf3\xb5\xc4.\n");
+				continue; //added by infotech. rubing æä¾›.é˜²æ­¢åŠ å…¥ä¸å­˜åœ¨çš„ä½¿ç”¨è€….
 			}
 		}
 		if (tmp[0] >= '0' && tmp[0] <= '9') {
@@ -1416,16 +1525,19 @@ int g_send() {
 		switch (tmp[0]) {
 			case 'A':
 			case 'a':
-				/* ÕâÒ»¶ÎcaseÓ¦¸ÃÓÀÔ¶¶¼Ö´ĞĞ²»µ½£¬ÒòÎªÇ°ÃæµÄ²¿·ÖÒÑ¾­Íê³ÉÁËĞ©²Ù×÷£¬
-				 * ±£ÏÕÆğ¼û£¬ÔİÊ±±£Áô¡£
+				/* è¿™ä¸€æ®µcaseåº”è¯¥æ°¸è¿œéƒ½æ‰§è¡Œä¸åˆ°ï¼Œå› ä¸ºå‰é¢çš„éƒ¨åˆ†å·²ç»å®Œæˆäº†äº›æ“ä½œï¼Œ
+				 //% * ä¿é™©èµ·è§ï¼Œæš‚æ—¶ä¿ç•™ã€‚
+				 * \xb1\xa3\xcf\xd5\xc6\xf0\xbc\xfb\xa3\xac\xd4\xdd\xca\xb1\xb1\xa3\xc1\xf4\xa1\xa3
 				 * by Anonomous */
 				if (!(lookupuser.userlevel & PERM_READMAIL)) {
 					move(2, 0);
-					prints("ÎŞ·¨ËÍĞÅ¸ø: [1m%s[m\n", lookupuser.userid);
+					//% prints("æ— æ³•é€ä¿¡ç»™: [1m%s[m\n", lookupuser.userid);
+					prints("\xce\xde\xb7\xa8\xcb\xcd\xd0\xc5\xb8\xf8: [1m%s[m\n", lookupuser.userid);
 					break;
 				} else if (seek_in_file(maillists, uident)) {
 					move(2, 0);
-					prints("ÒÑ¾­ÁĞÎªÊÕ¼şÈËÖ®Ò» \n");
+					//% prints("å·²ç»åˆ—ä¸ºæ”¶ä»¶äººä¹‹ä¸€ \n");
+					prints("\xd2\xd1\xbe\xad\xc1\xd0\xce\xaa\xca\xd5\xbc\xfe\xc8\xcb\xd6\xae\xd2\xbb \n");
 					break;
 				}
 				snprintf(buf, sizeof(buf), "%s\n", uident);
@@ -1459,7 +1571,8 @@ int g_send() {
 						prints("%s\n", uname);
 						move(3, 0);
 						n++;
-						prints("(A)È«²¿¼ÓÈë (Y)¼ÓÈë (N)²»¼ÓÈë (Q)½áÊø? [Y]:");
+						//% prints("(A)å…¨éƒ¨åŠ å…¥ (Y)åŠ å…¥ (N)ä¸åŠ å…¥ (Q)ç»“æŸ? [Y]:");
+						prints("(A)\xc8\xab\xb2\xbf\xbc\xd3\xc8\xeb (Y)\xbc\xd3\xc8\xeb (N)\xb2\xbb\xbc\xd3\xc8\xeb (Q)\xbd\xe1\xca\xf8? [Y]:");
 						if (!fmode)
 							key = igetkey();
 						else
@@ -1473,12 +1586,14 @@ int g_send() {
 						if (key == '\0' || key == '\n' || key == 'y' || key == 'Y') {
 							if (!getuser(uname)) {
 								move(4, 0);
-								prints("Õâ¸öÊ¹ÓÃÕß´úºÅÊÇ´íÎóµÄ.\n");
+								//% prints("è¿™ä¸ªä½¿ç”¨è€…ä»£å·æ˜¯é”™è¯¯çš„.\n");
+								prints("\xd5\xe2\xb8\xf6\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xca\xc7\xb4\xed\xce\xf3\xb5\xc4.\n");
 								i--;
 								continue;
 							} else if (!(lookupuser.userlevel & PERM_READMAIL)) {
 								move(4, 0);
-								prints("ÎŞ·¨ËÍĞÅ¸ø: [1m%s[m\n", lookupuser.userid);
+								//% prints("æ— æ³•é€ä¿¡ç»™: [1m%s[m\n", lookupuser.userid);
+								prints("\xce\xde\xb7\xa8\xcb\xcd\xd0\xc5\xb8\xf8: [1m%s[m\n", lookupuser.userid);
 								i--;
 								continue;
 							} else if (seek_in_file(maillists, uname)) {
@@ -1514,13 +1629,16 @@ int g_send() {
 		G_SENDMODE = 2;
 		switch (do_gsend(NULL, NULL, cnt, current_maillist)) {
 			case -1:
-				prints("ĞÅ¼şÄ¿Â¼´íÎó\n");
+				//% prints("ä¿¡ä»¶ç›®å½•é”™è¯¯\n");
+				prints("\xd0\xc5\xbc\xfe\xc4\xbf\xc2\xbc\xb4\xed\xce\xf3\n");
 				break;
 			case -2:
-				prints("È¡Ïû\n");
+				//% prints("å–æ¶ˆ\n");
+				prints("\xc8\xa1\xcf\xfb\n");
 				break;
 			default:
-				prints("ĞÅ¼şÒÑ¼Ä³ö\n");
+				//% prints("ä¿¡ä»¶å·²å¯„å‡º\n");
+				prints("\xd0\xc5\xbc\xfe\xd2\xd1\xbc\xc4\xb3\xf6\n");
 		}
 		G_SENDMODE = 0;
 		pressreturn();
@@ -1529,8 +1647,8 @@ int g_send() {
 }
 /*Add by SmallPig*/
 
-/********************Type2¹«¸æ¹²ÏíÎÄ¼ş by Ashinmarch on 2008.3.30*********************/
-/********************ÎªÁËÌá¸ßĞ§ÂÊ,ÃâÈ¥ºÚÃûµ¥¡¢ĞÅ¼şÈİÁ¿µÈÅĞ¶Ï**************************/
+/********************Type2å…¬å‘Šå…±äº«æ–‡ä»¶ by Ashinmarch on 2008.3.30*********************/
+/********************ä¸ºäº†æé«˜æ•ˆç‡,å…å»é»‘åå•ã€ä¿¡ä»¶å®¹é‡ç­‰åˆ¤æ–­**************************/
 int sharedmail_file(const char *tmpfile, const char *userid, const char *title)
 {
 	struct fileheader newmessage;
@@ -1559,7 +1677,8 @@ int ov_send() {
 	if (!HAS_PERM(PERM_MAIL)) {
 		clear();
 		move(4, 0);
-		prints("\n\n        ÄúÉĞÎ´Íê³É×¢²á£¬»òÕß·¢ËÍĞÅ¼şµÄÈ¨ÏŞ±»·â½û¡£");
+		//% prints("\n\n        æ‚¨å°šæœªå®Œæˆæ³¨å†Œï¼Œæˆ–è€…å‘é€ä¿¡ä»¶çš„æƒé™è¢«å°ç¦ã€‚");
+		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
 		pressreturn();
 		return 0;
 	}
@@ -1571,17 +1690,20 @@ int ov_send() {
 	move(1, 0);
 	clrtobot();
 	move(2, 0);
-	prints("¼ÄĞÅ¸øºÃÓÑÃûµ¥ÖĞµÄÈË£¬Ä¿Ç°±¾Õ¾ÏŞÖÆ½ö¿ÉÒÔ¼Ä¸ø [1m%d[m Î»¡£\n", maxrecp);
+	//% prints("å¯„ä¿¡ç»™å¥½å‹åå•ä¸­çš„äººï¼Œç›®å‰æœ¬ç«™é™åˆ¶ä»…å¯ä»¥å¯„ç»™ [1m%d[m ä½ã€‚\n", maxrecp);
+	prints("\xbc\xc4\xd0\xc5\xb8\xf8\xba\xc3\xd3\xd1\xc3\xfb\xb5\xa5\xd6\xd0\xb5\xc4\xc8\xcb\xa3\xac\xc4\xbf\xc7\xb0\xb1\xbe\xd5\xbe\xcf\xde\xd6\xc6\xbd\xf6\xbf\xc9\xd2\xd4\xbc\xc4\xb8\xf8 [1m%d[m \xce\xbb\xa1\xa3\n", maxrecp);
 
 	db_res_t *res = load_names_of_follows();
 	if (!res || db_res_rows(res) < 1) {
-		prints("Äú²¢Ã»ÓĞÉè¶¨ºÃÓÑ¡£\n");
+		//% prints("æ‚¨å¹¶æ²¡æœ‰è®¾å®šå¥½å‹ã€‚\n");
+		prints("\xc4\xfa\xb2\xa2\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xba\xc3\xd3\xd1\xa1\xa3\n");
 		pressanykey();
 		clear();
 		db_clear(res);
 		return 0;
 	} else {
-		prints("Ãûµ¥ÈçÏÂ£º\n");
+		//% prints("åå•å¦‚ä¸‹ï¼š\n");
+		prints("\xc3\xfb\xb5\xa5\xc8\xe7\xcf\xc2\xa3\xba\n");
 	}
 	G_SENDMODE = 1;
 	all = (db_res_rows(res) >= maxrecp) ? maxrecp : db_res_rows(res);
@@ -1595,13 +1717,16 @@ int ov_send() {
 	pressanykey();
 	switch (do_gsend(NULL, NULL, all, '0')) {
 		case -1:
-			prints("ĞÅ¼şÄ¿Â¼´íÎó\n");
+			//% prints("ä¿¡ä»¶ç›®å½•é”™è¯¯\n");
+			prints("\xd0\xc5\xbc\xfe\xc4\xbf\xc2\xbc\xb4\xed\xce\xf3\n");
 			break;
 		case -2:
-			prints("ĞÅ¼şÈ¡Ïû\n");
+			//% prints("ä¿¡ä»¶å–æ¶ˆ\n");
+			prints("\xd0\xc5\xbc\xfe\xc8\xa1\xcf\xfb\n");
 			break;
 		default:
-			prints("ĞÅ¼şÒÑ¼Ä³ö\n");
+			//% prints("ä¿¡ä»¶å·²å¯„å‡º\n");
+			prints("\xd0\xc5\xbc\xfe\xd2\xd1\xbc\xc4\xb3\xf6\n");
 	}
 	pressreturn();
 	G_SENDMODE = 0;
@@ -1638,8 +1763,10 @@ static int forward_file(const char *receiver, const char *file,
 	}
 
 	char title[STRLEN];
-	if (!strstr(gbk_title, "(×ª¼Ä)"))
-		snprintf(title, sizeof(title), "%.70s(×ª¼Ä)", gbk_title);
+	//% if (!strstr(gbk_title, "(è½¬å¯„)"))
+	if (!strstr(gbk_title, "(\xd7\xaa\xbc\xc4)"))
+		//% snprintf(title, sizeof(title), "%.70s(è½¬å¯„)", gbk_title);
+		snprintf(title, sizeof(title), "%.70s(\xd7\xaa\xbc\xc4)", gbk_title);
 	else
 		strlcpy(title, gbk_title, sizeof(title));
 
@@ -1666,9 +1793,12 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 	char receiver[STRLEN];
 	clear();
 	if (HAS_PERM(PERM_SETADDR)) {
-		prints("±¾Õ¾Ä¿Ç°Ö»Ìá¹©Õ¾ÄÚ×ªĞÅ£¬ÇëÊäÈëÒª×ª¼ÄµÄÕÊºÅÃû¡£\n"
-				"ÇëÖ±½Ó°´ Enter ½ÓÊÜÀ¨ºÅÄÚÌáÊ¾µÄµØÖ·, »òÕßÊäÈëÆäËûµØÖ·\n"
-				"°ÑĞÅ¼ş×ª¼Ä¸ø [%s]\n", address);
+		//% prints("æœ¬ç«™ç›®å‰åªæä¾›ç«™å†…è½¬ä¿¡ï¼Œè¯·è¾“å…¥è¦è½¬å¯„çš„å¸å·åã€‚\n"
+		prints("\xb1\xbe\xd5\xbe\xc4\xbf\xc7\xb0\xd6\xbb\xcc\xe1\xb9\xa9\xd5\xbe\xc4\xda\xd7\xaa\xd0\xc5\xa3\xac\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xbc\xc4\xb5\xc4\xd5\xca\xba\xc5\xc3\xfb\xa1\xa3\n"
+				//% "è¯·ç›´æ¥æŒ‰ Enter æ¥å—æ‹¬å·å†…æç¤ºçš„åœ°å€, æˆ–è€…è¾“å…¥å…¶ä»–åœ°å€\n"
+				"\xc7\xeb\xd6\xb1\xbd\xd3\xb0\xb4 Enter \xbd\xd3\xca\xdc\xc0\xa8\xba\xc5\xc4\xda\xcc\xe1\xca\xbe\xb5\xc4\xb5\xd8\xd6\xb7, \xbb\xf2\xd5\xdf\xca\xe4\xc8\xeb\xc6\xe4\xcb\xfb\xb5\xd8\xd6\xb7\n"
+				//% "æŠŠä¿¡ä»¶è½¬å¯„ç»™ [%s]\n", address);
+				"\xb0\xd1\xd0\xc5\xbc\xfe\xd7\xaa\xbc\xc4\xb8\xf8 [%s]\n", address);
 		prints("==>");
 		usercomplete(NULL, receiver);
 	} else {
@@ -1681,7 +1811,8 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 		strlcpy(receiver, address, sizeof(receiver));
 
 	char buf[STRLEN];
-	snprintf(buf, sizeof(buf), "È·¶¨½«ÎÄÕÂ¼Ä¸ø %s Âğ", address);
+	//% snprintf(buf, sizeof(buf), "ç¡®å®šå°†æ–‡ç« å¯„ç»™ %s å—", address);
+	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xbd\xab\xce\xc4\xd5\xc2\xbc\xc4\xb8\xf8 %s \xc2\xf0", address);
 	if (!askyn(buf, YEA, NA))
 		return 1;
 
@@ -1689,7 +1820,8 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 	if (!getuserec(address, &user))
 		return BBS_EINTNL;
 	if (getmailboxsize(user.userlevel) * 2 < getmailsize(user.userid)) {
-		prints("[%s] ĞÅÏäÈİÁ¿ÒÑÂú£¬ÎŞ·¨ÊÕĞÅ¡£\n",address);
+		//% prints("[%s] ä¿¡ç®±å®¹é‡å·²æ»¡ï¼Œæ— æ³•æ”¶ä¿¡ã€‚\n",address);
+		prints("[%s] \xd0\xc5\xcf\xe4\xc8\xdd\xc1\xbf\xd2\xd1\xc2\xfa\xa3\xac\xce\xde\xb7\xa8\xca\xd5\xd0\xc5\xa1\xa3\n",address);
 		return BBS_ERMQE;
 	}
 	if (is_blocked(user.userid))
@@ -1697,7 +1829,8 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 
 	int maxmail = getmailboxhold(user.userlevel);
 	if (getmailnum(user.userid) > maxmail * 2) {
-		prints("[%s] ĞÅÏäÒÑÂú£¬ÎŞ·¨ÊÕĞÅ¡£\n", address);
+		//% prints("[%s] ä¿¡ç®±å·²æ»¡ï¼Œæ— æ³•æ”¶ä¿¡ã€‚\n", address);
+		prints("[%s] \xd0\xc5\xcf\xe4\xd2\xd1\xc2\xfa\xa3\xac\xce\xde\xb7\xa8\xca\xd5\xd0\xc5\xa1\xa3\n", address);
 		return BBS_ERMQE;
 	}
 
@@ -1706,9 +1839,11 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 			currentuser.userid, session.pid);
 	f_cp(file, tmpfile, O_CREAT);
 
-	if (askyn("ÊÇ·ñĞŞ¸ÄÎÄÕÂÄÚÈİ", NA, NA)) {
+	//% if (askyn("æ˜¯å¦ä¿®æ”¹æ–‡ç« å†…å®¹", NA, NA)) {
+	if (askyn("\xca\xc7\xb7\xf1\xd0\xde\xb8\xc4\xce\xc4\xd5\xc2\xc4\xda\xc8\xdd", NA, NA)) {
 		if (vedit(tmpfile, NA, NA, NULL) == -1) {
-			if (askyn("ÊÇ·ñ¼Ä³öÎ´ĞŞ¸ÄµÄÎÄÕÂ", YEA, NA) == 0) {
+			//% if (askyn("æ˜¯å¦å¯„å‡ºæœªä¿®æ”¹çš„æ–‡ç« ", YEA, NA) == 0) {
+			if (askyn("\xca\xc7\xb7\xf1\xbc\xc4\xb3\xf6\xce\xb4\xd0\xde\xb8\xc4\xb5\xc4\xce\xc4\xd5\xc2", YEA, NA) == 0) {
 				unlink(tmpfile);
 				clear();
 				return 1;
@@ -1716,7 +1851,8 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 		} else {
 			FILE *fp = fopen(tmpfile, "a");
 			if (fp) {
-				fprintf(fp, "\n--\n\033[1;36m¡ù ĞŞ¸Ä:¡¤%s ÓÚ %16.16s ĞŞ¸Ä±¾ÎÄ¡¤"
+				//% fprintf(fp, "\n--\n\033[1;36mâ€» ä¿®æ”¹:Â·%s äº %16.16s ä¿®æ”¹æœ¬æ–‡Â·"
+				fprintf(fp, "\n--\n\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda %16.16s \xd0\xde\xb8\xc4\xb1\xbe\xce\xc4\xa1\xa4"
 						"[FROM: %s]\033[m\n", currentuser.userid,
 						getdatestring(time(NULL), DATE_ZH) + 6,
 						mask_host(fromhost));
@@ -1726,7 +1862,8 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 		clear();
 	}
 
-	prints("×ª¼ÄĞÅ¼ş¸ø %s, ÇëÉÔºò....\n", address);
+	//% prints("è½¬å¯„ä¿¡ä»¶ç»™ %s, è¯·ç¨å€™....\n", address);
+	prints("\xd7\xaa\xbc\xc4\xd0\xc5\xbc\xfe\xb8\xf8 %s, \xc7\xeb\xc9\xd4\xba\xf2....\n", address);
 	refresh();
 
 	int ret = forward_file(user.userid, tmpfile, gbk_title, uuencode);
@@ -1734,25 +1871,32 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 
 	switch (ret) {
 		case 0:
-			prints("ÎÄÕÂ×ª¼ÄÍê³É!\n");
+			//% prints("æ–‡ç« è½¬å¯„å®Œæˆ!\n");
+			prints("\xce\xc4\xd5\xc2\xd7\xaa\xbc\xc4\xcd\xea\xb3\xc9!\n");
 			break;
 		case BBS_EINTNL:
-			prints("×ª¼ÄÊ§°Ü: ÏµÍ³·¢Éú´íÎó.\n");
+			//% prints("è½¬å¯„å¤±è´¥: ç³»ç»Ÿå‘ç”Ÿé”™è¯¯.\n");
+			prints("\xd7\xaa\xbc\xc4\xca\xa7\xb0\xdc: \xcf\xb5\xcd\xb3\xb7\xa2\xc9\xfa\xb4\xed\xce\xf3.\n");
 			break;
 		case -2:
-			prints("×ª¼ÄÊ§°Ü: ²»ÕıÈ·µÄÊÕĞÅµØÖ·.\n");
+			//% prints("è½¬å¯„å¤±è´¥: ä¸æ­£ç¡®çš„æ”¶ä¿¡åœ°å€.\n");
+			prints("\xd7\xaa\xbc\xc4\xca\xa7\xb0\xdc: \xb2\xbb\xd5\xfd\xc8\xb7\xb5\xc4\xca\xd5\xd0\xc5\xb5\xd8\xd6\xb7.\n");
 			break;
 		case BBS_EMAILQE:
-			prints("ÄúµÄĞÅÏä³¬ÏŞ£¬ÔİÊ±ÎŞ·¨Ê¹ÓÃĞÅ¼ş·şÎñ.\n");
+			//% prints("æ‚¨çš„ä¿¡ç®±è¶…é™ï¼Œæš‚æ—¶æ— æ³•ä½¿ç”¨ä¿¡ä»¶æœåŠ¡.\n");
+			prints("\xc4\xfa\xb5\xc4\xd0\xc5\xcf\xe4\xb3\xac\xcf\xde\xa3\xac\xd4\xdd\xca\xb1\xce\xde\xb7\xa8\xca\xb9\xd3\xc3\xd0\xc5\xbc\xfe\xb7\xfe\xce\xf1.\n");
 			break;
 		case BBS_EACCES:
-			prints("ÄúÃ»ÓĞ·¢ĞÅÈ¨ÏŞ£¬ÔİÊ±ÎŞ·¨Ê¹ÓÃĞÅ¼ş·şÎñ.\n");
+			//% prints("æ‚¨æ²¡æœ‰å‘ä¿¡æƒé™ï¼Œæš‚æ—¶æ— æ³•ä½¿ç”¨ä¿¡ä»¶æœåŠ¡.\n");
+			prints("\xc4\xfa\xc3\xbb\xd3\xd0\xb7\xa2\xd0\xc5\xc8\xa8\xcf\xde\xa3\xac\xd4\xdd\xca\xb1\xce\xde\xb7\xa8\xca\xb9\xd3\xc3\xd0\xc5\xbc\xfe\xb7\xfe\xce\xf1.\n");
 			break;
 		case BBS_EBLKLST:
-			prints("¶Ô·½²»ÏëÊÕµ½ÄúµÄĞÅ¼ş.\n");
+			//% prints("å¯¹æ–¹ä¸æƒ³æ”¶åˆ°æ‚¨çš„ä¿¡ä»¶.\n");
+			prints("\xb6\xd4\xb7\xbd\xb2\xbb\xcf\xeb\xca\xd5\xb5\xbd\xc4\xfa\xb5\xc4\xd0\xc5\xbc\xfe.\n");
 			break;
 		default:
-			prints("È¡Ïû×ª¼Ä...\n");
+			//% prints("å–æ¶ˆè½¬å¯„...\n");
+			prints("\xc8\xa1\xcf\xfb\xd7\xaa\xbc\xc4...\n");
 	}
 	return ret;
 }

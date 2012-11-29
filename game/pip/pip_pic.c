@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* Ğ¡¼¦Í¼ĞÎÇø                                                                */
+/* å°é¸¡å›¾å½¢åŒº                                                                */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #include "bbs.h"
@@ -22,7 +22,7 @@ show_basic_pic(int i)
 }
 
 int
-show_feed_pic(int i)  /*³Ô¶«Î÷*/
+show_feed_pic(int i)  /*åƒä¸œè¥¿*/
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -35,7 +35,7 @@ show_feed_pic(int i)  /*³Ô¶«Î÷*/
 }
 
 int
-show_buy_pic(int i)  /*¹ºÂò¶«Î÷*/
+show_buy_pic(int i)  /*è´­ä¹°ä¸œè¥¿*/
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -50,7 +50,7 @@ show_buy_pic(int i)  /*¹ºÂò¶«Î÷*/
 
 
 int
-show_usual_pic(int i)  /* Æ½³£×´Ì¬ */
+show_usual_pic(int i)  /* å¹³å¸¸çŠ¶æ€ */
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -64,7 +64,7 @@ show_usual_pic(int i)  /* Æ½³£×´Ì¬ */
 }
 
 int
-show_special_pic(int i)  /* ÌØÊâÑ¡µ¥ */
+show_special_pic(int i)  /* ç‰¹æ®Šé€‰å• */
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -78,7 +78,7 @@ show_special_pic(int i)  /* ÌØÊâÑ¡µ¥ */
 }
 
 int
-show_practice_pic(int i)  /*ĞŞĞĞÓÃµÄÍ¼ */
+show_practice_pic(int i)  /*ä¿®è¡Œç”¨çš„å›¾ */
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -91,7 +91,7 @@ show_practice_pic(int i)  /*ĞŞĞĞÓÃµÄÍ¼ */
 }
 
 int
-show_job_pic(int i)    /* ´ò¹¤µÄshowÍ¼ */
+show_job_pic(int i)    /* æ‰“å·¥çš„showå›¾ */
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -106,7 +106,7 @@ show_job_pic(int i)    /* ´ò¹¤µÄshowÍ¼ */
 
 
 int
-show_play_pic(int i)  /*ĞİÏĞµÄÍ¼*/
+show_play_pic(int i)  /*ä¼‘é—²çš„å›¾*/
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -122,7 +122,7 @@ show_play_pic(int i)  /*ĞİÏĞµÄÍ¼*/
 }
 
 int
-show_guess_pic(int i)  /* ²ÂÈ­ÓÃ */
+show_guess_pic(int i)  /* çŒœæ‹³ç”¨ */
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -135,7 +135,7 @@ show_guess_pic(int i)  /* ²ÂÈ­ÓÃ */
 }
 
 int
-show_weapon_pic(int i)  /* ÎäÆ÷ÓÃ */
+show_weapon_pic(int i)  /* æ­¦å™¨ç”¨ */
 {
  char buf[256];
  clrchyiuan(1,10);
@@ -148,7 +148,7 @@ sprintf(buf,"game/pipgame/weapon/pic%d",i);
 }
 
 int
-show_palace_pic(int i)  /* ²Î¼ûÍõ³¼ÓÃ */
+show_palace_pic(int i)  /* å‚è§ç‹è‡£ç”¨ */
 {
  char buf[256];
  clrchyiuan(0,13);
@@ -162,7 +162,7 @@ sprintf(buf,"game/pipgame/palace/pic%d",i);
 }
 
 int
-show_badman_pic(int i)  /* »µÈË */
+show_badman_pic(int i)  /* åäºº */
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -175,7 +175,7 @@ show_badman_pic(int i)  /* »µÈË */
 }
 
 int
-show_fight_pic(int i)  /* ´ò¼Ü */
+show_fight_pic(int i)  /* æ‰“æ¶ */
 {
  char buf[256];
  clrchyiuan(6,18);
@@ -188,7 +188,7 @@ show_fight_pic(int i)  /* ´ò¼Ü */
 }
 
 int
-show_die_pic(int i)  /*ËÀÍö*/
+show_die_pic(int i)  /*æ­»äº¡*/
 {
  char buf[256];
  clrchyiuan(0,23);
@@ -201,7 +201,7 @@ show_die_pic(int i)  /*ËÀÍö*/
 }
 
 int
-show_system_pic(int i)  /*ÏµÍ³*/
+show_system_pic(int i)  /*ç³»ç»Ÿ*/
 {
  char buf[256];
  clrchyiuan(1,23);
@@ -214,7 +214,7 @@ show_system_pic(int i)  /*ÏµÍ³*/
 }
 
 int
-show_ending_pic(int i)  /*½áÊø*/
+show_ending_pic(int i)  /*ç»“æŸ*/
 {
  char buf[256];
  clrchyiuan(1,23);
@@ -227,7 +227,7 @@ show_ending_pic(int i)  /*½áÊø*/
 }
 
 int 
-show_resultshow_pic(int i)	/*ÊÕ»ñ¼¾*/
+show_resultshow_pic(int i)	/*æ”¶è·å­£*/
 {
  char buf[256];
  clrchyiuan(0,24);

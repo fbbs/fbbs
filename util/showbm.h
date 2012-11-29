@@ -1,25 +1,27 @@
 #ifndef _SHOWBM_H_
 #define _SHOWBM_H_
 
-#define NOFILEDAYS      30      /* ±¾°åÎÞÐÂÎÄÌìÊý, >NOFILEDAYSÒÔºìÉ«ÏÔÊ¾ */
-#define NO0FILEDAYS     30      /* ¾«»ªÇøÎ´ÕûÀíÌìÊý, >NO0FILEDAYSÒÔºìÉ«ÏÔÊ¾*/
-#define BMNOLOGIN       30      /* ×î½üÎ´ÉÏÕ¾ÌìÊý, >BMNOLOGINÒÔºìÉ«ÏÔÊ¾ */
-#define BMNOFILEDAYS    30      /* BM±¾°åÎ´·¢ÎÄÌìÊý, >BMNOFILEDAYSÒÔºìÉ«ÏÔÊ¾*/
-#define DAYSN           7       /* ÐÞ¸Ä±¾Êý×ÖÇëÍ¬²½ÐÞ¸ÄÏÂÃæheadÃèÊö */
-#define REDMARK		"\x1B[1;31m"	/* Ê¹ºóÃæµÄ×ÖÌå±ä³ÉºìÉ«*/
-#define ENDREDMARK	"\x1B[m"	/* Ê¹ºóÃæµÄ×Ö±ä³ÉÔ­À´µÄÑÕÉ«*/
+#define NOFILEDAYS      30      /* æœ¬æ¿æ— æ–°æ–‡å¤©æ•°, >NOFILEDAYSä»¥çº¢è‰²æ˜¾ç¤º */
+#define NO0FILEDAYS     30      /* ç²¾åŽåŒºæœªæ•´ç†å¤©æ•°, >NO0FILEDAYSä»¥çº¢è‰²æ˜¾ç¤º*/
+#define BMNOLOGIN       30      /* æœ€è¿‘æœªä¸Šç«™å¤©æ•°, >BMNOLOGINä»¥çº¢è‰²æ˜¾ç¤º */
+#define BMNOFILEDAYS    30      /* BMæœ¬æ¿æœªå‘æ–‡å¤©æ•°, >BMNOFILEDAYSä»¥çº¢è‰²æ˜¾ç¤º*/
+#define DAYSN           7       /* ä¿®æ”¹æœ¬æ•°å­—è¯·åŒæ­¥ä¿®æ”¹ä¸‹é¢headæè¿° */
+#define REDMARK		"\x1B[1;31m"	/* ä½¿åŽé¢çš„å­—ä½“å˜æˆçº¢è‰²*/
+#define ENDREDMARK	"\x1B[m"	/* ä½¿åŽé¢çš„å­—å˜æˆåŽŸæ¥çš„é¢œè‰²*/
 
-/* Èç¹ûÓÐ±ØÒªÐÞ¸ÄÒÔÏÂÊý¾Ý, Çë×¢Òâ¿Õ¸ñµÄÊýÄ¿ */
+/* å¦‚æžœæœ‰å¿…è¦ä¿®æ”¹ä»¥ä¸‹æ•°æ®, è¯·æ³¨æ„ç©ºæ ¼çš„æ•°ç›® */
 /*
   const char *head =
-"\x1B[1;33;44m°æÃæÃû³Æ            ±¾ÖÜ°æÃæÎÄÕÂÊý      ¾«»ªÇøÎÄÕÂ×ÜÊý  Î´ÕûÀí¾«»ªÇøÌìÊý         °æÖ÷ID             °æÖ÷°æÃæÎÄÕÂÊý      °æÖ÷Î´ÉÏÕ¾ÌìÊý   °æÃæÎ´·¢ÎÄÌìÊý \x1B[0m\n\n";
+"\x1B[1;33;44mç‰ˆé¢åç§°            æœ¬å‘¨ç‰ˆé¢æ–‡ç« æ•°      ç²¾åŽåŒºæ–‡ç« æ€»æ•°  æœªæ•´ç†ç²¾åŽåŒºå¤©æ•°         ç‰ˆä¸»ID             ç‰ˆä¸»ç‰ˆé¢æ–‡ç« æ•°      ç‰ˆä¸»æœªä¸Šç«™å¤©æ•°   ç‰ˆé¢æœªå‘æ–‡å¤©æ•° \x1B[0m\n\n";
 */
 
 const char *head=
 "\033[1;33;44m"
- "                  ±¾ÖÜ  ¾«»ªÇø Î´ÕûÀí               ±¾ÖÜ   °æÃæ  Î´ÉÏÕ¾ Î´·¢ÎÄ\033[m\n"
+ //% "                  æœ¬å‘¨  ç²¾åŽåŒº æœªæ•´ç†               æœ¬å‘¨   ç‰ˆé¢  æœªä¸Šç«™ æœªå‘æ–‡\033[m\n"
+ "                  \xb1\xbe\xd6\xdc  \xbe\xab\xbb\xaa\xc7\xf8 \xce\xb4\xd5\xfb\xc0\xed               \xb1\xbe\xd6\xdc   \xb0\xe6\xc3\xe6  \xce\xb4\xc9\xcf\xd5\xbe \xce\xb4\xb7\xa2\xce\xc4\033[m\n"
 "\033[1;33;44m"
- "°æÃæÃû³Æ         ·¢ÎÄÊý ·¢ÎÄÊý  ÌìÊý  °æÖ÷ID       ·¢ÎÄÊý ·¢ÎÄÊý  ÌìÊý   ÌìÊý \033[m\n";
+ //% "ç‰ˆé¢åç§°         å‘æ–‡æ•° å‘æ–‡æ•°  å¤©æ•°  ç‰ˆä¸»ID       å‘æ–‡æ•° å‘æ–‡æ•°  å¤©æ•°   å¤©æ•° \033[m\n";
+ "\xb0\xe6\xc3\xe6\xc3\xfb\xb3\xc6         \xb7\xa2\xce\xc4\xca\xfd \xb7\xa2\xce\xc4\xca\xfd  \xcc\xec\xca\xfd  \xb0\xe6\xd6\xf7ID       \xb7\xa2\xce\xc4\xca\xfd \xb7\xa2\xce\xc4\xca\xfd  \xcc\xec\xca\xfd   \xcc\xec\xca\xfd \033[m\n";
 //BBS_Game             65     49      1 lemonyu          17    151      0      0
 
 #endif

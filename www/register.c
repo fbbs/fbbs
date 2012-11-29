@@ -34,17 +34,20 @@ static const char *_reg(const reg_req_t *r)
 	time_t now = time(NULL);
 	struct tm *t = localtime(&now);
 	if (t->tm_hour >= WEB_NOREG_START && t->tm_hour < WEB_NOREG_END)
-		return "µ±Ç°Ê±¶ÎË¡²»¿ª·Åweb×¢²á£¬ÇëÉÔºóÔÙÊÔ";
+		//% return "å½“å‰æ—¶æ®µæ•ä¸å¼€æ”¾webæ³¨å†Œï¼Œè¯·ç¨åŽå†è¯•";
+		return "\xb5\xb1\xc7\xb0\xca\xb1\xb6\xce\xcb\xa1\xb2\xbb\xbf\xaa\xb7\xc5web\xd7\xa2\xb2\xe1\xa3\xac\xc7\xeb\xc9\xd4\xba\xf3\xd4\xd9\xca\xd4";
 
 	if (strcmp(r->agree, "agree") != 0)
-		return "Äú±ØÐëÍ¬ÒâÕ¾¹æ";
+		//% return "æ‚¨å¿…é¡»åŒæ„ç«™è§„";
+		return "\xc4\xfa\xb1\xd8\xd0\xeb\xcd\xac\xd2\xe2\xd5\xbe\xb9\xe6";
 
 	const char *error = invalid_userid(r->id);
 	if (error)
 		return error;
 
 	if (strcmp(r->pw, r->pw2) != 0)
-		return "Á½´ÎÃÜÂë²»Æ¥Åä";
+		//% return "ä¸¤æ¬¡å¯†ç ä¸åŒ¹é…";
+		return "\xc1\xbd\xb4\xce\xc3\xdc\xc2\xeb\xb2\xbb\xc6\xa5\xc5\xe4";
 
 	error = invalid_password(r->pw, r->id);
 	if (error)
@@ -59,7 +62,8 @@ static const char *_reg(const reg_req_t *r)
 	snprintf(email, sizeof(email), "%s@%s", r->mail, r->domain);
 	if (!valid_addr(email) || !domain_allowed(email)
 			|| is_banned_email(email)) {
-		return "µç×ÓÓÊ¼þµØÖ·ÎÞÐ§£¬»ò²»ÔÚÔÊÐí·¶Î§";
+		//% return "ç”µå­é‚®ä»¶åœ°å€æ— æ•ˆï¼Œæˆ–ä¸åœ¨å…è®¸èŒƒå›´";
+		return "\xb5\xe7\xd7\xd3\xd3\xca\xbc\xfe\xb5\xd8\xd6\xb7\xce\xde\xd0\xa7\xa3\xac\xbb\xf2\xb2\xbb\xd4\xda\xd4\xca\xd0\xed\xb7\xb6\xce\xa7";
 	}
 	user.email[0] = '\0';
 #endif // FDQUAN
@@ -72,10 +76,12 @@ static const char *_reg(const reg_req_t *r)
 	user.birthday = r->day;
 	if (check_user_profile(&user) != 0
 			|| strlen(r->name) < 4 || strlen(r->tel) < 8)
-		return "ÇëÏêÏ¸ÌîÐ´¸öÈË×ÊÁÏ";
+		//% return "è¯·è¯¦ç»†å¡«å†™ä¸ªäººèµ„æ–™";
+		return "\xc7\xeb\xcf\xea\xcf\xb8\xcc\xee\xd0\xb4\xb8\xf6\xc8\xcb\xd7\xca\xc1\xcf";
 
 	if (create_user(&user) != 0)
-		return "ÓÃ»§ÒÑ´æÔÚ£¬»ò³öÏÖÆäËûÄÚ²¿´íÎó";
+		//% return "ç”¨æˆ·å·²å­˜åœ¨ï¼Œæˆ–å‡ºçŽ°å…¶ä»–å†…éƒ¨é”™è¯¯";
+		return "\xd3\xc3\xbb\xa7\xd2\xd1\xb4\xe6\xd4\xda\xa3\xac\xbb\xf2\xb3\xf6\xcf\xd6\xc6\xe4\xcb\xfb\xc4\xda\xb2\xbf\xb4\xed\xce\xf3";
 
 	reginfo_t reg;
 	memset(&reg, 0, sizeof(reg));
@@ -91,15 +97,18 @@ static const char *_reg(const reg_req_t *r)
 	snprintf(file, sizeof(file), "home/%c/%s",
 			toupper(user.userid[0]), user.userid);
 	if (mkdir(file, 0755) != 0)
-		return "ÄÚ²¿´íÎó";
+		//% return "å†…éƒ¨é”™è¯¯";
+		return "\xc4\xda\xb2\xbf\xb4\xed\xce\xf3";
 
 	//TODO: should be put in fcgi_activate
 	if (save_register_file(&reg) != 0)
-		return "Ìá½»×¢²á×ÊÁÏÊ§°Ü";
+		//% return "æäº¤æ³¨å†Œèµ„æ–™å¤±è´¥";
+		return "\xcc\xe1\xbd\xbb\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf\xca\xa7\xb0\xdc";
 
 #ifndef FDQUAN
 	if (send_regmail(&user, email) != 0)
-		return "·¢ËÍ×¢²áÐÅÊ§°Ü";
+		//% return "å‘é€æ³¨å†Œä¿¡å¤±è´¥";
+		return "\xb7\xa2\xcb\xcd\xd7\xa2\xb2\xe1\xd0\xc5\xca\xa7\xb0\xdc";
 #endif // FDQUAN
 
 	return NULL;

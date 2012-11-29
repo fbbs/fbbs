@@ -146,18 +146,22 @@ static bool strisalpha(const char *str)
 const char *invalid_userid(const char *userid)
 {
 	if (!strisalpha(userid))
-		return "ÕÊºÅ±ØĞëÈ«ÎªÓ¢ÎÄ×ÖÄ¸\n";
+		//% "å¸å·å¿…é¡»å…¨ä¸ºè‹±æ–‡å­—æ¯\n"
+		return "\xd5\xca\xba\xc5\xb1\xd8\xd0\xeb\xc8\xab\xce\xaa\xd3\xa2\xce\xc4\xd7\xd6\xc4\xb8\n";
 	if (strlen(userid) < MIN_ID_LEN || strlen(userid) > IDLEN)
-		return "ÕÊºÅ³¤¶ÈÓ¦Îª2~12¸ö×Ö·û\n";
+		//% "å¸å·é•¿åº¦åº”ä¸º2~12ä¸ªå­—ç¬¦\n"
+		return "\xd5\xca\xba\xc5\xb3\xa4\xb6\xc8\xd3\xa6\xce\xaa""2~12""\xb8\xf6\xd7\xd6\xb7\xfb\n";
 	if (bad_user_id(userid))
-		return "±§Ç¸, Äú²»ÄÜÊ¹ÓÃÕâ¸ö×Ö×÷ÎªÕÊºÅ\n";
+		//% "æŠ±æ­‰, æ‚¨ä¸èƒ½ä½¿ç”¨è¿™ä¸ªå­—ä½œä¸ºå¸å·\n"
+		return "\xb1\xa7\xc7\xb8, \xc4\xfa\xb2\xbb\xc4\xdc\xca\xb9\xd3\xc3\xd5\xe2\xb8\xf6\xd7\xd6\xd7\xf7\xce\xaa\xd5\xca\xba\xc5\n";
 	return NULL;
 }
 
 const char *invalid_password(const char *password, const char *userid)
 {
 	if (strlen(password) < MIN_PASSWORD_LEN || !strcmp(password, userid))
-		return "ÃÜÂëÌ«¶Ì»òÓëÊ¹ÓÃÕß´úºÅÏàÍ¬, ÇëÖØĞÂÊäÈë\n";
+		//% "å¯†ç å¤ªçŸ­æˆ–ä¸ä½¿ç”¨è€…ä»£å·ç›¸åŒ, è¯·é‡æ–°è¾“å…¥\n"
+		return "\xc3\xdc\xc2\xeb\xcc\xab\xb6\xcc\xbb\xf2\xd3\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xcf\xe0\xcd\xac, \xc7\xeb\xd6\xd8\xd0\xc2\xca\xe4\xc8\xeb\n";
 	return NULL;
 }
 
@@ -205,26 +209,37 @@ int send_regmail(const struct userec *user, const char *mail)
 	if (!fout)
 		return -1;
 	fprintf(fout, "To: %s\n"
-			"Subject: [%s]ÓÊ¼şÑéÖ¤(Registration Email)\n"
+			//% "Subject: [%s]é‚®ä»¶éªŒè¯(Registration Email)\n"
+			"Subject: [%s]\xd3\xca\xbc\xfe\xd1\xe9\xd6\xa4(Registration Email)\n"
 			"X-Purpose: %s registration mail.\n\n",
 			mail, BBSNAME, BBSNAME);
-	fprintf(fout, "¸ĞĞ»Äú×¢²á %s BBSÕ¾\n"
+	//% fprintf(fout, "æ„Ÿè°¢æ‚¨æ³¨å†Œ %s BBSç«™\n"
+	fprintf(fout, "\xb8\xd0\xd0\xbb\xc4\xfa\xd7\xa2\xb2\xe1 %s BBS\xd5\xbe\n"
 			"Thank you for your registration.\n\n"
-			"Çë·ÃÎÊÒÔÏÂÁ´½Ó¼¤»îÕËºÅ:\n"
+			//% "è¯·è®¿é—®ä»¥ä¸‹é“¾æ¥æ¿€æ´»è´¦å·:\n"
+			"\xc7\xeb\xb7\xc3\xce\xca\xd2\xd4\xcf\xc2\xc1\xb4\xbd\xd3\xbc\xa4\xbb\xee\xd5\xcb\xba\xc5:\n"
 			"Please use the following link to activate your account:\n"
 			"http://%s/bbs/activate?user=%s&code=%s\n\n"
-			"ÄúÒ²¿ÉÒÔÊ¹ÓÃtelnetµÇÂ¼ÊäÈëÏÂÁĞÑéÖ¤Âë¼¤»îÕËºÅ:\n"
+			//% "æ‚¨ä¹Ÿå¯ä»¥ä½¿ç”¨telnetç™»å½•è¾“å…¥ä¸‹åˆ—éªŒè¯ç æ¿€æ´»è´¦å·:\n"
+			"\xc4\xfa\xd2\xb2\xbf\xc9\xd2\xd4\xca\xb9\xd3\xc3telnet\xb5\xc7\xc2\xbc\xca\xe4\xc8\xeb\xcf\xc2\xc1\xd0\xd1\xe9\xd6\xa4\xc2\xeb\xbc\xa4\xbb\xee\xd5\xcb\xba\xc5:\n"
 			"You can also enter the code that follows on telnet login\n"
-			"ÑéÖ¤Âë(Validation code)    : %s (Çë×¢Òâ´óĞ¡Ğ´/Case sensitive)\n\n",
+			//% "éªŒè¯ç (Validation code)    : %s (è¯·æ³¨æ„å¤§å°å†™/Case sensitive)\n\n",
+			"\xd1\xe9\xd6\xa4\xc2\xeb(Validation code)    : %s (\xc7\xeb\xd7\xa2\xd2\xe2\xb4\xf3\xd0\xa1\xd0\xb4/Case sensitive)\n\n",
 			BBSNAME, BBSHOST, user->userid, password, password);
-	fprintf(fout, "¸½¼ÓĞÅÏ¢(Additional Info)\n"
-			"±¾Õ¾µØÖ·(Site address)     : %s (%s)\n"
-			"Äú×¢²áµÄÕËºÅ(Your account) : %s\n"
-			"ÉêÇëÈÕÆÚ(Application date) : %s\n\n",
+	//% "é™„åŠ ä¿¡æ¯(Additional Info)\n"
+	fprintf(fout, "\xb8\xbd\xbc\xd3\xd0\xc5\xcf\xa2(Additional Info)\n"
+			//% "æœ¬ç«™åœ°å€(Site address)     : %s (%s)\n"
+			"\xb1\xbe\xd5\xbe\xb5\xd8\xd6\xb7(Site address)     : %s (%s)\n"
+			//% "æ‚¨æ³¨å†Œçš„è´¦å·(Your account) : %s\n"
+			"\xc4\xfa\xd7\xa2\xb2\xe1\xb5\xc4\xd5\xcb\xba\xc5(Your account) : %s\n"
+			//% "ç”³è¯·æ—¥æœŸ(Application date) : %s\n\n",
+			"\xc9\xea\xc7\xeb\xc8\xd5\xc6\xda(Application date) : %s\n\n",
 			BBSHOST, BBSIP, user->userid, ctime((time_t *)&user->firstlogin));
-	fprintf(fout, "±¾ĞÅ¼şÓÉÏµÍ³×Ô¶¯·¢ËÍ£¬Çë²»Òª»Ø¸´¡£\n"
+	//% "æœ¬ä¿¡ä»¶ç”±ç³»ç»Ÿè‡ªåŠ¨å‘é€ï¼Œè¯·ä¸è¦å›å¤ã€‚\n"
+	fprintf(fout, "\xb1\xbe\xd0\xc5\xbc\xfe\xd3\xc9\xcf\xb5\xcd\xb3\xd7\xd4\xb6\xaf\xb7\xa2\xcb\xcd\xa3\xac\xc7\xeb\xb2\xbb\xd2\xaa\xbb\xd8\xb8\xb4\xa1\xa3\n"
 			"Note: this is an automated email. Please don't reply.\n"
-			"Èç¹ûÄú´ÓÎ´×¢²áÒÔÉÏÕËºÅ£¬ÇëºöÂÔ´ËĞÅ¡£\n"
+			//% "å¦‚æœæ‚¨ä»æœªæ³¨å†Œä»¥ä¸Šè´¦å·ï¼Œè¯·å¿½ç•¥æ­¤ä¿¡ã€‚\n"
+			"\xc8\xe7\xb9\xfb\xc4\xfa\xb4\xd3\xce\xb4\xd7\xa2\xb2\xe1\xd2\xd4\xc9\xcf\xd5\xcb\xba\xc5\xa3\xac\xc7\xeb\xba\xf6\xc2\xd4\xb4\xcb\xd0\xc5\xa1\xa3\n"
 			"If you have never registered this account, please ignore the mail.\n");
 	fclose(fout);
 	return 0;
@@ -394,12 +409,17 @@ int save_register_file(const reginfo_t *reg)
 
 	FILE *fp = fopen(file, "a");
 	if (fp) {
-		fprintf(fp, "×¢²áÊ±¼ä     : %s\n", getdatestring(reg->regdate, DATE_EN));
-		fprintf(fp, "ÉêÇëÕÊºÅ     : %s\n", reg->userid);
-		fprintf(fp, "ÕæÊµĞÕÃû     : %s\n", reg->realname);
-		fprintf(fp, "ÁªÂçµç»°     : %s\n", reg->phone);
+		//% "æ³¨å†Œæ—¶é—´     : %s\n"
+		fprintf(fp, "\xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4     : %s\n", getdatestring(reg->regdate, DATE_EN));
+		//% "ç”³è¯·å¸å·     : %s\n"
+		fprintf(fp, "\xc9\xea\xc7\xeb\xd5\xca\xba\xc5     : %s\n", reg->userid);
+		//% "çœŸå®å§“å     : %s\n"
+		fprintf(fp, "\xd5\xe6\xca\xb5\xd0\xd5\xc3\xfb     : %s\n", reg->realname);
+		//% "è”ç»œç”µè¯     : %s\n"
+		fprintf(fp, "\xc1\xaa\xc2\xe7\xb5\xe7\xbb\xb0     : %s\n", reg->phone);
 #ifndef FDQUAN
-		fprintf(fp, "µç×ÓÓÊ¼ş     : %s\n", reg->email);
+		//% "ç”µå­é‚®ä»¶     : %s\n"
+		fprintf(fp, "\xb5\xe7\xd7\xd3\xd3\xca\xbc\xfe     : %s\n", reg->email);
 #endif
 		fclose(fp);
 	}

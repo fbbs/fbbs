@@ -60,8 +60,8 @@ static int scr_lns;     ///< Lines of the screen.
 unsigned int scr_cols;  ///< Columns of the screen.
 static int cur_ln = 0;  ///< Current line.
 static int cur_col = 0; ///< Current column.
-static int roll; //roll ±íÊ¾Ê×ĞĞÔÚbig_pictureµÄÆ«ÒÆÁ¿
-//ÒòÎªËæ×Å¹â±ê¹ö¶¯,big_picture[0]¿ÉÄÜ²»ÔÙ±£´æµÚÒ»ĞĞµÄÊı¾İ
+static int roll; //roll è¡¨ç¤ºé¦–è¡Œåœ¨big_pictureçš„åç§»é‡
+//å› ä¸ºéšç€å…‰æ ‡æ»šåŠ¨,big_picture[0]å¯èƒ½ä¸å†ä¿å­˜ç¬¬ä¸€è¡Œçš„æ•°æ®
 static int scrollcnt;
 static int tc_col;      ///< Terminal's current column.
 static int tc_line;     ///< Terminal's current line.
@@ -72,7 +72,7 @@ static bool standing = false;
 struct screenline *big_picture = NULL;
 
 #ifdef ALLOWAUTOWRAP
-//·µ»ØstrÖĞÇ°num¸ö×Ö·ûÖĞÒÔansi¸ñÊ½Êµ¼ÊÏÔÊ¾µÄ×Ö·ûÊı
+//è¿”å›strä¸­å‰numä¸ªå­—ç¬¦ä¸­ä»¥ansiæ ¼å¼å®é™…æ˜¾ç¤ºçš„å­—ç¬¦æ•°
 int seekthestr(const char *str, int num)
 {
 	int len, i, ansi= NA;
@@ -104,7 +104,7 @@ int seekthestr(const char *str, int num)
 }
 #endif	
 
-//·µ»Ø×Ö·û´®ÖĞÊôÓÚ ansiµÄ¸öÊı?	¶ÔºóÒ»¸öcontinue²»Ì«Àí½â 
+//è¿”å›å­—ç¬¦ä¸²ä¸­å±äº ansiçš„ä¸ªæ•°?	å¯¹åä¸€ä¸ªcontinueä¸å¤ªç†è§£ 
 int num_ans_chr(const char *str)
 {
 	int len, i, ansinum, ansi;
@@ -165,8 +165,8 @@ static void init_screen(int slns, int scols)
 	roll = 0;
 }
 
-//¶ÔÓÚÑÆÖÕ¶Ë»òÊÇbig_pictureÖĞÉĞÎŞÄÚ´æÓ³Éä,½«t_columnsÉèÖÃ³ÉWRAPMARGIN
-//	µ÷ÓÃinit_screen³õÊ¼»¯ÖÕ¶Ë
+//å¯¹äºå“‘ç»ˆç«¯æˆ–æ˜¯big_pictureä¸­å°šæ— å†…å­˜æ˜ å°„,å°†t_columnsè®¾ç½®æˆWRAPMARGIN
+//	è°ƒç”¨init_screenåˆå§‹åŒ–ç»ˆç«¯
 void initscr(void)
 {
 	if (!dumb_term && !big_picture)
@@ -188,20 +188,20 @@ static void do_move(int col, int line)
 		ochar(*p);
 }
 
-//	´ÓÀÏÎ»ÖÃ(was_col,was_ln)ÒÆ¶¯µ½ĞÂÎ»ÖÃ(new_col,new_ln)
+//	ä»è€ä½ç½®(was_col,was_ln)ç§»åŠ¨åˆ°æ–°ä½ç½®(new_col,new_ln)
 static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 {
-	if (new_ln >= t_lines || new_col >= t_columns) //Ô½½ç,·µ»Ø
+	if (new_ln >= t_lines || new_col >= t_columns) //è¶Šç•Œ,è¿”å›
 		return;
 	tc_col = new_col;
 	tc_line = new_ln;
-	if ((new_col == 0) && (new_ln == was_ln + 1)) { //»»ĞĞ
+	if ((new_col == 0) && (new_ln == was_ln + 1)) { //æ¢è¡Œ
 		ochar('\n');
-		if (was_col != 0) //µ½µÚÒ»ÁĞÎ»ÖÃ,·µ»Ø
+		if (was_col != 0) //åˆ°ç¬¬ä¸€åˆ—ä½ç½®,è¿”å›
 			ochar('\r');
 		return;
 	}
-	if ((new_col == 0) && (new_ln == was_ln)) { //²»»»ĞĞ,µ½µÚÒ»ÁĞÎ»ÖÃ,²¢·µ»Ø
+	if ((new_col == 0) && (new_ln == was_ln)) { //ä¸æ¢è¡Œ,åˆ°ç¬¬ä¸€åˆ—ä½ç½®,å¹¶è¿”å›
 		if (was_col != 0)
 			ochar('\r');
 		return;
@@ -215,11 +215,11 @@ static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 	do_move(new_col, new_ln);
 }
 
-// ±ê×¼Êä³öbufÖĞµÄÊı¾İ,	ds,de±íÊ¾Êı¾İµÄÇø¼ä,sso,esoÒ²ÊÇ
-//		µ«µ±ËüÃÇÃ»ÓĞ½»¼¯Ê±,ÒÔds,deÎª×¼
-//		ÓĞ½»¼¯Ê±,È¡ºÏ¼¯
-//			µ«ÏÂÏŞÒÔdsÎª×¼,ÉÏÏŞÒÔdeÎª×¼				¸úÖ±½ÓÈ¡ds,deÓĞÊ²Ã´Çø±ğ?
-///		¶Ôo_standup,o_standdown×÷ÓÃ²»Ì«Çå³ş
+// æ ‡å‡†è¾“å‡ºbufä¸­çš„æ•°æ®,	ds,deè¡¨ç¤ºæ•°æ®çš„åŒºé—´,sso,esoä¹Ÿæ˜¯
+//		ä½†å½“å®ƒä»¬æ²¡æœ‰äº¤é›†æ—¶,ä»¥ds,deä¸ºå‡†
+//		æœ‰äº¤é›†æ—¶,å–åˆé›†
+//			ä½†ä¸‹é™ä»¥dsä¸ºå‡†,ä¸Šé™ä»¥deä¸ºå‡†				è·Ÿç›´æ¥å–ds,deæœ‰ä»€ä¹ˆåŒºåˆ«?
+///		å¯¹o_standup,o_standdownä½œç”¨ä¸å¤ªæ¸…æ¥š
 static void standoutput(unsigned char *buf, int ds, int de, int sso, int eso)
 {
 	int st_start, st_end;
@@ -279,7 +279,7 @@ void redoscr(void)
 	oflush();
 }
 
-//Ë¢ĞÂ»º³åÇø,ÖØĞÂÏÔÊ¾ÆÁÄ»?
+//åˆ·æ–°ç¼“å†²åŒº,é‡æ–°æ˜¾ç¤ºå±å¹•?
 void refresh(void)
 {
 	register int i, j;
@@ -309,7 +309,7 @@ void refresh(void)
 		while (j >= scr_lns)
 			j -= scr_lns;
 		if (bp[j].mode & MODIFIED && bp[j].smod < bp[j].len) {
-			bp[j].mode &= ~(MODIFIED); //Èô±»ĞŞ¸Ä,ÔòÊä³ö
+			bp[j].mode &= ~(MODIFIED); //è‹¥è¢«ä¿®æ”¹,åˆ™è¾“å‡º
 			if (bp[j].emod >= bp[j].len)
 				bp[j].emod = bp[j].len - 1;
 			rel_move(tc_col, tc_line, bp[j].smod, i);
@@ -383,7 +383,7 @@ void clear(void)
 	move(0, 0);
 }
 
-//Çå³ıbig_pictureÖĞµÄµÚiĞĞ,½«modeÓëlenÖÃ0
+//æ¸…é™¤big_pictureä¸­çš„ç¬¬iè¡Œ,å°†modeä¸lenç½®0
 void clear_whole_line(int i)
 {
 	register struct screenline *slp = &big_picture[i];
@@ -407,7 +407,7 @@ void clrtoeol(void)
 	slp->len = cur_col;
 }
 
-//´Óµ±Ç°ĞĞÇå³ıµ½×îºóÒ»ĞĞ
+//ä»å½“å‰è¡Œæ¸…é™¤åˆ°æœ€åä¸€è¡Œ
 void clrtobot(void)
 {
 	register struct screenline *slp;
@@ -417,7 +417,7 @@ void clrtobot(void)
 	for (i = cur_ln; i < scr_lns; i++) {
 		j = i + roll;
 		while (j >= scr_lns)
-			//Çój%scr_lns ? ÒòÎª¼õ·¨±ÈÈ¡ÓàÊ±¼äÉÙ?
+			//æ±‚j%scr_lns ? å› ä¸ºå‡æ³•æ¯”å–ä½™æ—¶é—´å°‘?
 			j -= scr_lns;
 		slp = &big_picture[j];
 		slp->mode = 0;
@@ -552,7 +552,7 @@ static void outns(const char *str, int n, bool ansi)
 int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
 		1000, 100, 10, 1 };
 
-/*ÒÔANSI¸ñÊ½Êä³ö¿É±ä²ÎÊıµÄ×Ö·û´®ĞòÁĞ*/
+/*ä»¥ANSIæ ¼å¼è¾“å‡ºå¯å˜å‚æ•°çš„å­—ç¬¦ä¸²åºåˆ—*/
 void prints(const char *fmt, ...)
 {
 	va_list ap;
@@ -703,7 +703,7 @@ void scroll(void)
 	clrtoeol();
 }
 
-//½«big_pictureÊä³öÎ»ÖÃ1,±ê×¼Êä³öÇø¼äÎª(cur_col,cur_col)
+//å°†big_pictureè¾“å‡ºä½ç½®1,æ ‡å‡†è¾“å‡ºåŒºé—´ä¸º(cur_col,cur_col)
 void standout(void)
 {
 	register struct screenline *slp;
@@ -721,8 +721,8 @@ void standout(void)
 		slp->mode |= STANDOUT;
 	}
 }
-//	Èç¹ûstandingÎªÕæ,½«µ±Ç°ĞĞÔÚbig_pictureÖĞµÄÓ³ÉäÉè³ÉÕæ
-//		²¢½«esoÉè³Éeso,cur_colµÄ×î´óÖµ
+//	å¦‚æœstandingä¸ºçœŸ,å°†å½“å‰è¡Œåœ¨big_pictureä¸­çš„æ˜ å°„è®¾æˆçœŸ
+//		å¹¶å°†esoè®¾æˆeso,cur_colçš„æœ€å¤§å€¼
 void standend(void)
 {
 	register struct screenline *slp;
@@ -738,8 +738,8 @@ void standend(void)
 		slp->eso = Max(slp->eso, cur_col);
 	}
 }
-//	¸ù¾İmodeÀ´¾ö¶¨ ±£´æ»ò»Ö¸´ĞĞlineµÄÄÚÈİ
-//		×î¶àÖ»ÄÜ±£´æÒ»ĞĞ,·ñÔò»á±»Ä¨È¥
+//	æ ¹æ®modeæ¥å†³å®š ä¿å­˜æˆ–æ¢å¤è¡Œlineçš„å†…å®¹
+//		æœ€å¤šåªèƒ½ä¿å­˜ä¸€è¡Œ,å¦åˆ™ä¼šè¢«æŠ¹å»
 void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
 {
 	register struct screenline *bp = big_picture;

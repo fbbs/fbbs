@@ -110,7 +110,7 @@ static int fillucache(const struct userec *uentp, int count)
 	return 0;
 }
 
-/* hash É¾³ý */
+/* hash åˆ é™¤ */
 int del_uidshm(int num, char *userid)
 {
 	int a1, a2;
@@ -148,7 +148,7 @@ int del_uidshm(int num, char *userid)
 	uidshm->userid[i-1][0]='\0';
 	return 1;
 }
-/* endof hashÉ¾³ý */
+/* endof hashåˆ é™¤ */
 
 // Places an exclusive lock on file 'lockname'.
 // Returns file descriptor if OK, -1 on error.
@@ -278,7 +278,7 @@ void setuserid(int num, const char *userid)
 		if (num > uidshm->number)
 			uidshm->number = num;
 		strlcpy(uidshm->userid[num - 1], userid, IDLEN + 1);
-		/* hash Ìî³ä */
+		/* hash å¡«å…… */
 		if (strcmp(userid, "new") ) {
 			int a1, a2;
 			int key;
@@ -292,14 +292,14 @@ void setuserid(int num, const char *userid)
 				int i;
 				for (i=uidshm->hash[a1][a2][key]; uidshm->next[i-1]; i
 						=uidshm->next[i-1])
-					;//ÕÒµ½Ò»¸ö¿ÕÎ»ÖÃ
+					;//æ‰¾åˆ°ä¸€ä¸ªç©ºä½ç½®
 
 				uidshm->next[i-1] = num;
 				uidshm->prev[num-1] = i;
 				uidshm->next[num-1] = 0;
 			}
 		}
-		/* end of hash Ìî³ä */
+		/* end of hash å¡«å…… */
 	}
 }
 

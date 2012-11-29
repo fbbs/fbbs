@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-int a[32][18];  //À×
+int a[32][18];  //é›·
 int m[32][18];  //marked
 int o[32][18];  //opened
 char topID[20][20],topFROM[20][32];
@@ -25,7 +25,7 @@ int main(int n, char* cmd[]) {
     winmine();
     tcsetattr(0, TCSANOW, &oldtty);
 }
-// added by soff ÏÔÊ¾ËùÓÐµÄÀ×
+// added by soff æ˜¾ç¤ºæ‰€æœ‰çš„é›·
 int show_mines() {
  int x, y;
  for(x=1; x<=30; x++)
@@ -33,7 +33,8 @@ int show_mines() {
       {
        if (a[x][y]) {
            move(x*2-2, y-1);
-           prints("[1;31mÀ×[m");
+           //% prints("[1;31mé›·[m");
+           prints("[1;31m\xc0\xd7[m");
           }
          }
         return;
@@ -108,7 +109,7 @@ int wininit(int x1, int y1) {
     }
 }
 
-/* Ë«¼ü */
+/* åŒé”® */
 int dblclick(int x, int y) {
     int dx, dy;
     if(x<1|| x>30|| y<1|| y>16) return;
@@ -119,7 +120,7 @@ int dblclick(int x, int y) {
         windig(dx, dy);
 }
 
-/* ×ó¼ü */
+/* å·¦é”® */
 int windig(int x, int y) {
     int dx, dy;
     if(x< 1|| x> 30|| y< 1|| y> 16) return;
@@ -138,30 +139,34 @@ int windig(int x, int y) {
     }
 }
 
-/* ÏÔÊ¾[x][y]´¦ */
+/* æ˜¾ç¤º[x][y]å¤„ */
 int winsh(int x, int y) {
     move(x*2-2, y-1);
     winsh0(x, y); 
 }
 
-/* Í¬ÉÏ, ¼Ó¿ìËÙ¶È */
+/* åŒä¸Š, åŠ å¿«é€Ÿåº¦ */
 int winsh0(int x, int y) {
     int c, d;
     static char word[9][10]= {
-        "¡¤", "£±", "£²", "£³", "£´", "£µ", "£¶", "£·", "£¸"
+        //% "Â·", "ï¼‘", "ï¼’", "ï¼“", "ï¼”", "ï¼•", "ï¼–", "ï¼—", "ï¼˜"
+        "\xa1\xa4", "\xa3\xb1", "\xa3\xb2", "\xa3\xb3", "\xa3\xb4", "\xa3\xb5", "\xa3\xb6", "\xa3\xb7", "\xa3\xb8"
     };
     static int cc[9]= {38, 37, 32, 31, 33, 35, 36, 40, 39};  
     char buf[100];
     if (!o[x][y]&&!m[x][y]) {
-        prints("¡ù");
+        //% prints("â€»");
+        prints("\xa1\xf9");
         return;
     }
     if (m[x][y]) {
-        prints("¡ñ");
+        //% prints("â—");
+        prints("\xa1\xf1");
         return;
     }
     if (a[x][y]) {
-        prints("[1;31mÀ×[m"); 
+        //% prints("[1;31mé›·[m"); 
+        prints("[1;31m\xc0\xd7[m"); 
         return;  
     } 
     c= num_mine_beside(x, y);
@@ -188,13 +193,16 @@ int winloop()
         if((c==260||c=='h')&&x>1) x--;
         if((c==259||c=='l')&&x<30) x++;
         move(0, 20);
-        sprintf(buf, "Ê±¼ä: %ld ", time(0)-t0);
+        //% sprintf(buf, "æ—¶é—´: %ld ", time(0)-t0);
+        sprintf(buf, "\xca\xb1\xbc\xe4: %ld ", time(0)-t0);
         prints(buf);
         move(40, 20);
-        sprintf(buf, "±ê¼Ç: %d ", marked);
+        //% sprintf(buf, "æ ‡è®°: %d ", marked);
+        sprintf(buf, "\xb1\xea\xbc\xc7: %d ", marked);
         prints(buf);
         move(0, 21);
-        sprintf(buf, "×ø±ê: %3d, %3d", x, y);
+        //% sprintf(buf, "åæ ‡: %3d, %3d", x, y);
+        sprintf(buf, "\xd7\xf8\xb1\xea: %3d, %3d", x, y);
         prints(buf);
         move(x*2-2, y-1);
         if(c=='H') winhelp();
@@ -218,18 +226,20 @@ int winloop()
         }
         if(checkwin()==1) {
             move(0, 22);
-            prints("×£ºØÄã£¡Äã³É¹¦ÁË£¡                    ");
+            //% prints("ç¥è´ºä½ ï¼ä½ æˆåŠŸäº†ï¼                    ");
+            prints("\xd7\xa3\xba\xd8\xc4\xe3\xa3\xa1\xc4\xe3\xb3\xc9\xb9\xa6\xc1\xcb\xa3\xa1                    ");
             {  char buf[100];
                sprintf(buf, "finished in %ld s.", time(0)-t0);
                syslog(buf);
             }
             gameover= 0;
- 	    win_checkrec(time(0)-t0);/* added by soff ½øÐÐÅÅÐÐ¼ì²é */
+ 	    win_checkrec(time(0)-t0);/* added by soff è¿›è¡ŒæŽ’è¡Œæ£€æŸ¥ */
             return;
         }
         if(gameover) {
             move(0, 22);
-            prints("ºÜÒÅº¶£¬ÄãÊ§°ÜÁË... ÔÙÀ´Ò»´Î°É£¡                                 ");
+            //% prints("å¾ˆé—æ†¾ï¼Œä½ å¤±è´¥äº†... å†æ¥ä¸€æ¬¡å§ï¼                                 ");
+            prints("\xba\xdc\xd2\xc5\xba\xb6\xa3\xac\xc4\xe3\xca\xa7\xb0\xdc\xc1\xcb... \xd4\xd9\xc0\xb4\xd2\xbb\xb4\xce\xb0\xc9\xa3\xa1                                 ");
             {  char buf[100];
                sprintf(buf, "failed in %ld s.", time(0)-t0);
                syslog(buf);
@@ -263,7 +273,8 @@ int winrefresh() {
     int x, y;
     clear();
     move(0, 22);
-    prints("[1;32m¡î¼üÅÌÉ¨À×¡î[0;1m [[35m°ïÖú: H[37m] [[36mÍË³ö: Q[37m] [[35m´ò¿ª: F[37m] [[36m±êÀ×: S][m\n\r");
+    //% prints("[1;32mâ˜†é”®ç›˜æ‰«é›·â˜†[0;1m [[35må¸®åŠ©: H[37m] [[36mé€€å‡º: Q[37m] [[35mæ‰“å¼€: F[37m] [[36mæ ‡é›·: S][m\n\r");
+    prints("[1;32m\xa1\xee\xbc\xfc\xc5\xcc\xc9\xa8\xc0\xd7\xa1\xee[0;1m [[35m\xb0\xef\xd6\xfa: H[37m] [[36m\xcd\xcb\xb3\xf6: Q[37m] [[35m\xb4\xf2\xbf\xaa: F[37m] [[36m\xb1\xea\xc0\xd7: S][m\n\r");
     prints("[v1.00 by zhch.nju 00.3] press \'[1;32mH[m\' to get help, \'[1;32mCtrl+C[m\' to exit.");
     for(y=1; y<=16; y++) { 
         move(0, y-1);
@@ -275,17 +286,28 @@ int winrefresh() {
 
 int winhelp() {
     clear();
-    prints("==»¶Ó­À´Íæ¼üÅÌÉ¨À×ÓÎÏ·==  (³ÌÐòÓÉ nju BBS Õ¾³¤ zhch Éè¼Æ)\r\n---------------------------------\\r\n\r\n");
-    prints("Íæ·¨ºÜ¼òµ¥£¬ºÍ[1;34mwindows[mÏÂµÄÊó±êÉ¨À×²î²»¶à.\r\n");
-        prints("  '[1;32mF[m'¼üµÄ×÷ÓÃÏàµ±ÓÚÊó±êµÄ×ó¼ü¼°Ë«»÷µÄ×÷ÓÃ£¬ ³ÌÐò¸ù¾ÝÄãµã»÷µÄÎ»ÖÃ\r\n");
-        prints("  ×Ô¶¯ÅÐ¶ÏÒª½øÐÐÄÄÖÖ²Ù×÷¡£\r\n");
-        prints("  '[1;32mS[m'¼üÔòÏàµ±ÓÚÊó±êÓÒ¼üµÄ¹¦ÄÜ, ¿ÉÓÃÀ´±êÀ×.\r\n");
-        prints("  '[1;32mH[m'¼üÓÃÀ´ÏÔÊ¾±¾°ïÖúÐÅÏ¢.\r\n");
-        prints("  '[1;32mQ[m'¼üÍË³öÓÎÏ·.\r\n");
-        prints("  µ±ÆÁÄ»ÂÒµôÊ±£¬¿ÉÓÃ'[1;32mD[m'¿ÉÓÃÀ´Ë¢ÐÂÆÁÄ»¡£\r\n");
-        prints("½¨ÒéÓÃ[1;32mNetterm[mÀ´Íæ(µ±È»njutermÒ²¿ÉÒÔ,:)),[1;32mtelnet[mÐ§¹û²»ÊÇÌ«ºÃ\r\n");
-        prints("µÚÒ»´Îµã»÷Ò»¶¨»á¿ªÒ»Æ¬£¬ºÜÊæ·þ°É¡£\r\n");
-        prints("ÊìÁ·ºó£¬ËÙ¶È»¹ÊÇºÜ¿ìµÄ£¬¼¸ºõ¿ÉÒÔ´ïµ½Êó±êÉ¨À×µÄËÙ¶È.\r\n");
+    //% prints("==æ¬¢è¿Žæ¥çŽ©é”®ç›˜æ‰«é›·æ¸¸æˆ==  (ç¨‹åºç”± nju BBS ç«™é•¿ zhch è®¾è®¡)\r\n---------------------------------\\r\n\r\n");
+    prints("==\xbb\xb6\xd3\xad\xc0\xb4\xcd\xe6\xbc\xfc\xc5\xcc\xc9\xa8\xc0\xd7\xd3\xce\xcf\xb7==  (\xb3\xcc\xd0\xf2\xd3\xc9 nju BBS \xd5\xbe\xb3\xa4 zhch \xc9\xe8\xbc\xc6)\r\n---------------------------------\\r\n\r\n");
+    //% prints("çŽ©æ³•å¾ˆç®€å•ï¼Œå’Œ[1;34mwindows[mä¸‹çš„é¼ æ ‡æ‰«é›·å·®ä¸å¤š.\r\n");
+    prints("\xcd\xe6\xb7\xa8\xba\xdc\xbc\xf2\xb5\xa5\xa3\xac\xba\xcd[1;34mwindows[m\xcf\xc2\xb5\xc4\xca\xf3\xb1\xea\xc9\xa8\xc0\xd7\xb2\xee\xb2\xbb\xb6\xe0.\r\n");
+        //% prints("  '[1;32mF[m'é”®çš„ä½œç”¨ç›¸å½“äºŽé¼ æ ‡çš„å·¦é”®åŠåŒå‡»çš„ä½œç”¨ï¼Œ ç¨‹åºæ ¹æ®ä½ ç‚¹å‡»çš„ä½ç½®\r\n");
+        prints("  '[1;32mF[m'\xbc\xfc\xb5\xc4\xd7\xf7\xd3\xc3\xcf\xe0\xb5\xb1\xd3\xda\xca\xf3\xb1\xea\xb5\xc4\xd7\xf3\xbc\xfc\xbc\xb0\xcb\xab\xbb\xf7\xb5\xc4\xd7\xf7\xd3\xc3\xa3\xac \xb3\xcc\xd0\xf2\xb8\xf9\xbe\xdd\xc4\xe3\xb5\xe3\xbb\xf7\xb5\xc4\xce\xbb\xd6\xc3\r\n");
+        //% prints("  è‡ªåŠ¨åˆ¤æ–­è¦è¿›è¡Œå“ªç§æ“ä½œã€‚\r\n");
+        prints("  \xd7\xd4\xb6\xaf\xc5\xd0\xb6\xcf\xd2\xaa\xbd\xf8\xd0\xd0\xc4\xc4\xd6\xd6\xb2\xd9\xd7\xf7\xa1\xa3\r\n");
+        //% prints("  '[1;32mS[m'é”®åˆ™ç›¸å½“äºŽé¼ æ ‡å³é”®çš„åŠŸèƒ½, å¯ç”¨æ¥æ ‡é›·.\r\n");
+        prints("  '[1;32mS[m'\xbc\xfc\xd4\xf2\xcf\xe0\xb5\xb1\xd3\xda\xca\xf3\xb1\xea\xd3\xd2\xbc\xfc\xb5\xc4\xb9\xa6\xc4\xdc, \xbf\xc9\xd3\xc3\xc0\xb4\xb1\xea\xc0\xd7.\r\n");
+        //% prints("  '[1;32mH[m'é”®ç”¨æ¥æ˜¾ç¤ºæœ¬å¸®åŠ©ä¿¡æ¯.\r\n");
+        prints("  '[1;32mH[m'\xbc\xfc\xd3\xc3\xc0\xb4\xcf\xd4\xca\xbe\xb1\xbe\xb0\xef\xd6\xfa\xd0\xc5\xcf\xa2.\r\n");
+        //% prints("  '[1;32mQ[m'é”®é€€å‡ºæ¸¸æˆ.\r\n");
+        prints("  '[1;32mQ[m'\xbc\xfc\xcd\xcb\xb3\xf6\xd3\xce\xcf\xb7.\r\n");
+        //% prints("  å½“å±å¹•ä¹±æŽ‰æ—¶ï¼Œå¯ç”¨'[1;32mD[m'å¯ç”¨æ¥åˆ·æ–°å±å¹•ã€‚\r\n");
+        prints("  \xb5\xb1\xc6\xc1\xc4\xbb\xc2\xd2\xb5\xf4\xca\xb1\xa3\xac\xbf\xc9\xd3\xc3'[1;32mD[m'\xbf\xc9\xd3\xc3\xc0\xb4\xcb\xa2\xd0\xc2\xc6\xc1\xc4\xbb\xa1\xa3\r\n");
+        //% prints("å»ºè®®ç”¨[1;32mNetterm[mæ¥çŽ©(å½“ç„¶njutermä¹Ÿå¯ä»¥,:)),[1;32mtelnet[mæ•ˆæžœä¸æ˜¯å¤ªå¥½\r\n");
+        prints("\xbd\xa8\xd2\xe9\xd3\xc3[1;32mNetterm[m\xc0\xb4\xcd\xe6(\xb5\xb1\xc8\xbbnjuterm\xd2\xb2\xbf\xc9\xd2\xd4,:)),[1;32mtelnet[m\xd0\xa7\xb9\xfb\xb2\xbb\xca\xc7\xcc\xab\xba\xc3\r\n");
+        //% prints("ç¬¬ä¸€æ¬¡ç‚¹å‡»ä¸€å®šä¼šå¼€ä¸€ç‰‡ï¼Œå¾ˆèˆ’æœå§ã€‚\r\n");
+        prints("\xb5\xda\xd2\xbb\xb4\xce\xb5\xe3\xbb\xf7\xd2\xbb\xb6\xa8\xbb\xe1\xbf\xaa\xd2\xbb\xc6\xac\xa3\xac\xba\xdc\xca\xe6\xb7\xfe\xb0\xc9\xa1\xa3\r\n");
+        //% prints("ç†Ÿç»ƒåŽï¼Œé€Ÿåº¦è¿˜æ˜¯å¾ˆå¿«çš„ï¼Œå‡ ä¹Žå¯ä»¥è¾¾åˆ°é¼ æ ‡æ‰«é›·çš„é€Ÿåº¦.\r\n");
+        prints("\xca\xec\xc1\xb7\xba\xf3\xa3\xac\xcb\xd9\xb6\xc8\xbb\xb9\xca\xc7\xba\xdc\xbf\xec\xb5\xc4\xa3\xac\xbc\xb8\xba\xf5\xbf\xc9\xd2\xd4\xb4\xef\xb5\xbd\xca\xf3\xb1\xea\xc9\xa8\xc0\xd7\xb5\xc4\xcb\xd9\xb6\xc8.\r\n");
         pressanykey();
         winrefresh();
 }
@@ -323,7 +345,8 @@ int win_showrec() {
     int n;
     win_loadrec();
     clear();
-    prints("[44;37m                         --== É¨À×ÅÅÐÐ°ñ ==--                             \r\n[m");
+    //% prints("[44;37m                         --== æ‰«é›·æŽ’è¡Œæ¦œ ==--                             \r\n[m");
+    prints("[44;37m                         --== \xc9\xa8\xc0\xd7\xc5\xc5\xd0\xd0\xb0\xf1 ==--                             \r\n[m");
     prints("[41m No.          ID        TIME                         FROM                      [m\r\n");
     for(n=0; n<=19; n++) {
         sprintf(buf, "[1;37m%3d[32m%13s[0;37m%12d[m%29s\r\n", n+1, topID[n], topT[n], topFROM[n]);
@@ -363,7 +386,8 @@ int win_sort() {
     int n, n2, tmp;
     char tmpID[20];
     clear();
-    prints("×£ºØ! ÄúË¢ÐÂÁË×Ô¼ºµÄ¼ÍÂ¼!\r\n");
+    //% prints("ç¥è´º! æ‚¨åˆ·æ–°äº†è‡ªå·±çš„çºªå½•!\r\n");
+    prints("\xd7\xa3\xba\xd8! \xc4\xfa\xcb\xa2\xd0\xc2\xc1\xcb\xd7\xd4\xbc\xba\xb5\xc4\xbc\xcd\xc2\xbc!\r\n");
     pressanykey();
     for(n=0; n<=18; n++)
     for(n2=n+1; n2<=19; n2++)

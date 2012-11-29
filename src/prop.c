@@ -19,12 +19,18 @@ static tui_list_loader_t tui_prop_loader(tui_list_t *p)
 
 static tui_list_title_t tui_prop_title(tui_list_t *p)
 {
-	prints("\033[1;33;44m[¾Û±¦Åè]\033[K\033[m\n"
-			" ¹ºÂò[\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m]"
-			" Ñ¡Ôñ[\033[1;32m¡ü\033[m,\033[1;32m¡ı\033[m]"
-			" Àë¿ª[\033[1;32m¡û\033[m,\033[1;32me\033[m]"
-			" ÇóÖú[\033[1;32mh\033[m]\n"
-			"\033[1;44m ±àºÅ    ¼Û¸ñ  Àà±ğ / ÏîÄ¿\033[K\033[m\n");
+	//% prints("\033[1;33;44m[èšå®ç›†]\033[K\033[m\n"
+	prints("\033[1;33;44m[\xbe\xdb\xb1\xa6\xc5\xe8]\033[K\033[m\n"
+			//% " è´­ä¹°[\033[1;32mâ†’\033[m,\033[1;32mRtn\033[m]"
+			" \xb9\xba\xc2\xf2[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m]"
+			//% " é€‰æ‹©[\033[1;32mâ†‘\033[m,\033[1;32mâ†“\033[m]"
+			" \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd\033[m]"
+			//% " ç¦»å¼€[\033[1;32mâ†\033[m,\033[1;32me\033[m]"
+			" \xc0\xeb\xbf\xaa[\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m]"
+			//% " æ±‚åŠ©[\033[1;32mh\033[m]\n"
+			" \xc7\xf3\xd6\xfa[\033[1;32mh\033[m]\n"
+			//% "\033[1;44m ç¼–å·    ä»·æ ¼  ç±»åˆ« / é¡¹ç›®\033[K\033[m\n");
+			"\033[1;44m \xb1\xe0\xba\xc5    \xbc\xdb\xb8\xf1  \xc0\xe0\xb1\xf0 / \xcf\xee\xc4\xbf\033[K\033[m\n");
 }
 
 static tui_list_display_t tui_prop_display(tui_list_t *p, int n)
@@ -44,21 +50,25 @@ static tui_list_display_t tui_prop_display(tui_list_t *p, int n)
 static int tui_title_buy(int type, int price)
 {
 	if (title_check_existence(session.uid)) {
-		presskeyfor("ÄúÒÑ¹ºÂòÁË×Ô¶¨ÒåÉí·İ£¬ÇëÖÁ[²Ø¾­¸ó]ÖĞ²é¿´", t_lines - 1);
+		//% presskeyfor("æ‚¨å·²è´­ä¹°äº†è‡ªå®šä¹‰èº«ä»½ï¼Œè¯·è‡³[è—ç»é˜]ä¸­æŸ¥çœ‹", t_lines - 1);
+		presskeyfor("\xc4\xfa\xd2\xd1\xb9\xba\xc2\xf2\xc1\xcb\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd\xa3\xac\xc7\xeb\xd6\xc1[\xb2\xd8\xbe\xad\xb8\xf3]\xd6\xd0\xb2\xe9\xbf\xb4", t_lines - 1);
 		return MINIUPDATE;
 	}
 
 	GBK_UTF8_BUFFER(title, TITLE_CCHARS);
-	getdata(t_lines - 1, 0, "ÇëÊäÈë×Ô¶¨ÒåÉí·İ: ", gbk_title,
+	//% getdata(t_lines - 1, 0, "è¯·è¾“å…¥è‡ªå®šä¹‰èº«ä»½: ", gbk_title,
+	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd: ", gbk_title,
 			sizeof(gbk_title), YEA, YEA);
 	convert_g2u(gbk_title, utf8_title);
 	if (validate_utf8_input(utf8_title, TITLE_CCHARS) <= 0)
 		return MINIUPDATE;
 
 	if (title_submit_request(type, session.uid, utf8_title, 0)) {
-		presskeyfor("¹ºÂò³É¹¦¡£ÇëÄúÄÍĞÄµÈ´ıÉóºË¡£", t_lines - 1);
+		//% presskeyfor("è´­ä¹°æˆåŠŸã€‚è¯·æ‚¨è€å¿ƒç­‰å¾…å®¡æ ¸ã€‚", t_lines - 1);
+		presskeyfor("\xb9\xba\xc2\xf2\xb3\xc9\xb9\xa6\xa1\xa3\xc7\xeb\xc4\xfa\xc4\xcd\xd0\xc4\xb5\xc8\xb4\xfd\xc9\xf3\xba\xcb\xa1\xa3", t_lines - 1);
 	} else {
-		presskeyfor("¹ºÂòÊ§°Ü: ¹â»ª±ÒÓà¶î²»×ã»òÏµÍ³´íÎó", t_lines - 1);
+		//% presskeyfor("è´­ä¹°å¤±è´¥: å…‰åå¸ä½™é¢ä¸è¶³æˆ–ç³»ç»Ÿé”™è¯¯", t_lines - 1);
+		presskeyfor("\xb9\xba\xc2\xf2\xca\xa7\xb0\xdc: \xb9\xe2\xbb\xaa\xb1\xd2\xd3\xe0\xb6\xee\xb2\xbb\xd7\xe3\xbb\xf2\xcf\xb5\xcd\xb3\xb4\xed\xce\xf3", t_lines - 1);
 	}
 	return MINIUPDATE;
 }
@@ -107,10 +117,14 @@ static tui_list_loader_t tui_my_props_loader(tui_list_t *p)
 
 static tui_list_title_t tui_my_props_title(tui_list_t *p)
 {
-	prints("\033[1;33;44m[²Ø¾­¸ó]\033[K\033[m\n"
-			" ²é¿´ÏêÇé [\033[1;32mEnter\033[m,\033[1;32m¡ú\033[m] "
-			"·µ»Ø [\033[1;32m¡û\033[m,\033[1;32me\033[m]\n"
-			"\033[1;44m  ±àºÅ   ¼Û¸ñ  ¹ºÂòÊ±¼ä   ¹ıÆÚÊ±¼ä   Àà±ğ / ÏîÄ¿\033[K\033[m\n");
+	//% prints("\033[1;33;44m[è—ç»é˜]\033[K\033[m\n"
+	prints("\033[1;33;44m[\xb2\xd8\xbe\xad\xb8\xf3]\033[K\033[m\n"
+			//% " æŸ¥çœ‹è¯¦æƒ… [\033[1;32mEnter\033[m,\033[1;32mâ†’\033[m] "
+			" \xb2\xe9\xbf\xb4\xcf\xea\xc7\xe9 [\033[1;32mEnter\033[m,\033[1;32m\xa1\xfa\033[m] "
+			//% "è¿”å› [\033[1;32mâ†\033[m,\033[1;32me\033[m]\n"
+			"\xb7\xb5\xbb\xd8 [\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m]\n"
+			//% "\033[1;44m  ç¼–å·   ä»·æ ¼  è´­ä¹°æ—¶é—´   è¿‡æœŸæ—¶é—´   ç±»åˆ« / é¡¹ç›®\033[K\033[m\n");
+			"\033[1;44m  \xb1\xe0\xba\xc5   \xbc\xdb\xb8\xf1  \xb9\xba\xc2\xf2\xca\xb1\xbc\xe4   \xb9\xfd\xc6\xda\xca\xb1\xbc\xe4   \xc0\xe0\xb1\xf0 / \xcf\xee\xc4\xbf\033[K\033[m\n");
 }
 
 static tui_list_display_t tui_my_props_display(tui_list_t *p, int n)
@@ -140,7 +154,8 @@ static int tui_my_title(int record)
 		convert_u2g(db_get_value(res, 0, 1), gbk_title);
 		move(t_lines - 1, 0);
 		clrtoeol();
-		prints("×Ô¶¨ÒåÉí·İ%s: %s", db_get_bool(res, 0, 2) ? "" : "[ÉĞÔÚÉóºË]",
+		//% prints("è‡ªå®šä¹‰èº«ä»½%s: %s", db_get_bool(res, 0, 2) ? "" : "[å°šåœ¨å®¡æ ¸]",
+		prints("\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd%s: %s", db_get_bool(res, 0, 2) ? "" : "[\xc9\xd0\xd4\xda\xc9\xf3\xba\xcb]",
 				gbk_title);
 		egetch();
 	}
@@ -153,7 +168,8 @@ static int tui_remove_title(tui_list_t *p)
 	my_props_t *r = p->data;
 
 	if (my_prop_get_price(r, p->cur) > 0) {
-		if (askyn("Äú½«Ö»ÄÜ»ñµÃÒ»Ğ¡²¿·ÖÍË¿î£¬È·¶¨Âğ?", NA, YEA)) {
+		//% if (askyn("æ‚¨å°†åªèƒ½è·å¾—ä¸€å°éƒ¨åˆ†é€€æ¬¾ï¼Œç¡®å®šå—?", NA, YEA)) {
+		if (askyn("\xc4\xfa\xbd\xab\xd6\xbb\xc4\xdc\xbb\xf1\xb5\xc3\xd2\xbb\xd0\xa1\xb2\xbf\xb7\xd6\xcd\xcb\xbf\xee\xa3\xac\xc8\xb7\xb6\xa8\xc2\xf0?", NA, YEA)) {
 			title_remove(my_prop_get_record_id(r, p->cur));
 			p->valid = false;
 		}

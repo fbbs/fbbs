@@ -4,15 +4,15 @@
 
 #define FILE_BUFSIZE        200    /* max. length of a file in SHM*/
 #define FILE_MAXLINE         25    /* max. line of a file in SHM */
-#define MAX_WELCOME          15    /* »¶Ó­»­ÃæÊı */
-#define MAX_GOODBYE          15    /* ÀëÕ¾»­ÃæÊı */
-#define MAX_ISSUE            15    /* ×î´ó½øÕ¾»­ÃæÊı */
+#define MAX_WELCOME          15    /* æ¬¢è¿ç”»é¢æ•° */
+#define MAX_GOODBYE          15    /* ç¦»ç«™ç”»é¢æ•° */
+#define MAX_ISSUE            15    /* æœ€å¤§è¿›ç«™ç”»é¢æ•° */
 
-struct FILESHM { //ÄÚ´æÓ³ÉäÎÄ¼ş½á¹¹
+struct FILESHM { //å†…å­˜æ˜ å°„æ–‡ä»¶ç»“æ„
 	char line[FILE_MAXLINE][FILE_BUFSIZE]; //[25][200]
 	int fileline;
 	int max;
-	time_t update; //¸üĞÂÊ±¼ä
+	time_t update; //æ›´æ–°æ—¶é—´
 };
 
 struct STATSHM {
@@ -25,7 +25,7 @@ struct FILESHM * goodbyeshm;
 struct FILESHM * issueshm;
 struct STATSHM * statshm;
 
-// ½«ÎÄ¼şfnameÓ³Éäµ½ÄÚ´æ,¼üÖµÎªshmkey,ÓÃmodeÀ´Çø±ğ²»Í¬µÄÎÄ¼ş
+// å°†æ–‡ä»¶fnameæ˜ å°„åˆ°å†…å­˜,é”®å€¼ä¸ºshmkey,ç”¨modeæ¥åŒºåˆ«ä¸åŒçš„æ–‡ä»¶
 int fill_shmfile(int mode, char* fname, char * shmkey) {
 	FILE * fffd;
 	char * ptr;
@@ -97,7 +97,7 @@ int fill_shmfile(int mode, char* fname, char * shmkey) {
 	tmp[0].max = nowfn;
 	return 1;
 }
-// ½«fnameÎÄ¼şÓ³Éäµ½ÄÚ´æ,½á¹¹Îªstruct STATSHM
+// å°†fnameæ–‡ä»¶æ˜ å°„åˆ°å†…å­˜,ç»“æ„ä¸ºstruct STATSHM
 int fill_statshmfile(char* fname, int mode) {
 	FILE * fp;
 	time_t ftime;
@@ -135,7 +135,7 @@ int fill_statshmfile(char* fname, int mode) {
 	return 1;
 }
 
-// ÏÔÊ¾Ò»¸öÓ³ÉäÔÚÄÚ´æµÄÎÄ¼şÄÚÈİ
+// æ˜¾ç¤ºä¸€ä¸ªæ˜ å°„åœ¨å†…å­˜çš„æ–‡ä»¶å†…å®¹
 void show_shmfile(struct FILESHM *fh) {
 	int i;
 	char buf[FILE_BUFSIZE];
@@ -144,7 +144,7 @@ void show_shmfile(struct FILESHM *fh) {
 		showstuff(buf/*, 0*/);
 	}
 }
-// ÏÔÊ¾Ó³ÉäÔÚÄÚ´æÖĞµÄSTATSHM½á¹¹µÄÎÄ¼şÄÚÈİ
+// æ˜¾ç¤ºæ˜ å°„åœ¨å†…å­˜ä¸­çš„STATSHMç»“æ„çš„æ–‡ä»¶å†…å®¹
 int show_statshm(char* fh, int mode)
 {
 	int i;
@@ -167,7 +167,7 @@ int show_statshm(char* fh, int mode)
 	}
 	return 0;
 }
-// ÏÔÊ¾Àë°æ»­Ãæ
+// æ˜¾ç¤ºç¦»ç‰ˆç”»é¢
 void show_goodbyeshm(void)
 {
 	int logouts;
@@ -176,7 +176,7 @@ void show_goodbyeshm(void)
 	show_shmfile(&goodbyeshm[(currentuser.numlogins % ((logouts <= 1) ? 1 : logouts))]);
 	shmdt(goodbyeshm);
 }
-// ÏÔÊ¾½ø°æ»­Ãæ
+// æ˜¾ç¤ºè¿›ç‰ˆç”»é¢
 void show_welcomeshm() {
 	int welcomes;
 	welcomes = welcomeshm[0].max;

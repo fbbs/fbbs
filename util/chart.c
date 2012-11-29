@@ -28,7 +28,8 @@ char *left_margin(int item, int *left)
 
 int draw_chart(const struct bbsstat *st)
 {
-	char *blk[NUMBLKS] = {"®x", "®y", "®z", "®{", "®|", "®}", "®~", "®Ä"};
+	//% char *blk[NUMBLKS] = {"‚ñÅ", "‚ñÇ", "‚ñÉ", "‚ñÑ", "‚ñÖ", "‚ñÜ", "‚ñá", "‚ñà"};
+	char *blk[NUMBLKS] = {"\xa8\x78", "\xa8\x79", "\xa8\x7a", "\xa8\x7b", "\xa8\x7c", "\xa8\x7d", "\xa8\x7e", "\xa8\x80"};
 
 	int max = max_value(st);
 	int item = (max + MAX_HEIGHT - 1)/ MAX_HEIGHT;
@@ -39,11 +40,14 @@ int draw_chart(const struct bbsstat *st)
 	int i, j, height, lastcolor, left;
 	char str[20], fstr[20];
 	char *mg = left_margin(item, &left);
-	sprintf(fstr, "\033[1;%%dm%%%dd©¶", left);
+	//% sprintf(fstr, "\033[1;%%dm%%%dd‚îÇ", left);
+	sprintf(fstr, "\033[1;%%dm%%%dd\xa9\xa6", left);
 	if (max < 1000)
-		printf("\033[1;37m%s ©∞©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§\n", mg);
+		//% printf("\033[1;37m%s ‚îå‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ\n", mg);
+		printf("\033[1;37m%s \xa9\xb0\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\n", mg);
 	else
-		printf("\033[1;37m%s ©∞©§©§©§©§≥¨π˝1000÷ªœ‘ æ«∞»˝Œª ˝◊÷©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§\n", mg);
+		//% printf("\033[1;37m%s ‚îå‚îÄ‚îÄ‚îÄ‚îÄË∂ÖËøá1000Âè™ÊòæÁ§∫Ââç‰∏â‰ΩçÊï∞Â≠ó‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ\n", mg);
+		printf("\033[1;37m%s \xa9\xb0\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xb3\xac\xb9\xfd""1000\xd6\xbb\xcf\xd4\xca\xbe\xc7\xb0\xc8\xfd\xce\xbb\xca\xfd\xd7\xd6\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\n", mg);
 	for (i = MAX_HEIGHT + 1; i > 0; --i) {
 		lastcolor = ANSI_COLOR_WHITE;
 		printf(fstr, lastcolor, i * item);

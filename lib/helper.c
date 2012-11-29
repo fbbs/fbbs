@@ -161,10 +161,10 @@ int add_to_file(const char *file, const char *str, size_t len, bool overwrite,
 
 
 /**
- * ´ÓÎÄ¼þÖÐÉ¾³ýÖ¸¶¨ÐÐ.
- * @param[in] file ÐèÒªÐÞ¸ÄµÄÎÄ¼þ.
- * @param[in] str Æ¥ÅäÐÐµÄ¿ªÍ·, ºó¸ú¿Õ¸ñ/»»ÐÐ.
- * @return ³É¹¦ 0, ³ö´í(°üÀ¨ÎÞÆ¥Åä) -1.
+ * ä»Žæ–‡ä»¶ä¸­åˆ é™¤æŒ‡å®šè¡Œ.
+ * @param[in] file éœ€è¦ä¿®æ”¹çš„æ–‡ä»¶.
+ * @param[in] str åŒ¹é…è¡Œçš„å¼€å¤´, åŽè·Ÿç©ºæ ¼/æ¢è¡Œ.
+ * @return æˆåŠŸ 0, å‡ºé”™(åŒ…æ‹¬æ— åŒ¹é…) -1.
  */
 int del_from_file(const char *file, const char *str)
 {
@@ -275,7 +275,8 @@ void add_signature(FILE *fp, const char *user, int sig)
 			while (blank-- > 0)
 				fputs("\n", fp);
 			blank = 0;
-			if (!strstr(buf, ":¡¤"BBSNAME" "BBSHOST"¡¤[FROM:"))
+			//% ":Â·" "Â·[FROM:"
+			if (!strstr(buf, ":\xa1\xa4"BBSNAME" "BBSHOST"\xa1\xa4[FROM:"))
 				fputs(buf, fp);
 		}
 	}

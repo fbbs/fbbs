@@ -5,7 +5,7 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-//¶¨ÒåÒ³Ãæ´óĞ¡
+//å®šä¹‰é¡µé¢å¤§å°
 #define BBS_PAGESIZE (t_lines-4)
 
 /**
@@ -37,10 +37,13 @@ static int club_do_add(const char *user, const char *board, const char *ps)
 
 	bm_log(currentuser.userid, board, BMLOG_ADDCLUB, 1);
 
-	snprintf(title, sizeof(title), "%sÑûÇë%s¼ÓÈë¾ãÀÖ²¿°æ%s",
+	//% snprintf(title, sizeof(title), "%sé‚€è¯·%såŠ å…¥ä¿±ä¹éƒ¨ç‰ˆ%s",
+	snprintf(title, sizeof(title), "%s\xd1\xfb\xc7\xeb%s\xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6%s",
 			currentuser.userid, user, board);
-	snprintf(msg, sizeof(msg), "%s:\n\n    Äú±»ÑûÇë¼ÓÈë¾ãÀÖ²¿°æ %s\n\n²¹³äËµÃ÷"
-			"£º%s\n\nÑûÇëÈË: %s\n", user, board, ps, currentuser.userid);
+	//% snprintf(msg, sizeof(msg), "%s:\n\n    æ‚¨è¢«é‚€è¯·åŠ å…¥ä¿±ä¹éƒ¨ç‰ˆ %s\n\nè¡¥å……è¯´æ˜"
+	snprintf(msg, sizeof(msg), "%s:\n\n    \xc4\xfa\xb1\xbb\xd1\xfb\xc7\xeb\xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6 %s\n\n\xb2\xb9\xb3\xe4\xcb\xb5\xc3\xf7"
+			//% "ï¼š%s\n\né‚€è¯·äºº: %s\n", user, board, ps, currentuser.userid);
+			"\xa3\xba%s\n\n\xd1\xfb\xc7\xeb\xc8\xcb: %s\n", user, board, ps, currentuser.userid);
 	autoreport(currboard, title, msg, user, POST_FILE_AUTO);
 	Poststring(msg, "club", title, 2);
 	return 0;
@@ -54,16 +57,20 @@ static int club_add(void)
 	struct userec urec;
 	char user[IDLEN + 1], ps[40], buf[STRLEN];
 	move(1, 0);
-	usercomplete("Ôö¼Ó¾ãÀÖ²¿³ÉÔ±: ", user);
+	//% usercomplete("å¢åŠ ä¿±ä¹éƒ¨æˆå‘˜: ", user);
+	usercomplete("\xd4\xf6\xbc\xd3\xbe\xe3\xc0\xd6\xb2\xbf\xb3\xc9\xd4\xb1: ", user);
 	if (*user == '\0' || !getuserec(user, &urec))
 		return -1;
 	if (!strcasecmp(user, "guest")) {
-		presskeyfor("²»ÄÜÑûÇëguest¼ÓÈë¾ãÀÖ²¿", t_lines - 1);
+		//% presskeyfor("ä¸èƒ½é‚€è¯·gueståŠ å…¥ä¿±ä¹éƒ¨", t_lines - 1);
+		presskeyfor("\xb2\xbb\xc4\xdc\xd1\xfb\xc7\xebguest\xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf", t_lines - 1);
 		return -1;
 	}
-	getdata(1, 0, "ÊäÈë²¹³äËµÃ÷:", ps, sizeof(ps), DOECHO, YEA);
+	//% getdata(1, 0, "è¾“å…¥è¡¥å……è¯´æ˜:", ps, sizeof(ps), DOECHO, YEA);
+	getdata(1, 0, "\xca\xe4\xc8\xeb\xb2\xb9\xb3\xe4\xcb\xb5\xc3\xf7:", ps, sizeof(ps), DOECHO, YEA);
 	move(1, 0);
-	snprintf(buf, sizeof(buf), "ÑûÇë %s ¼ÓÈë¾ãÀÖ²¿Âğ?", urec.userid);
+	//% snprintf(buf, sizeof(buf), "é‚€è¯· %s åŠ å…¥ä¿±ä¹éƒ¨å—?", urec.userid);
+	snprintf(buf, sizeof(buf), "\xd1\xfb\xc7\xeb %s \xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf\xc2\xf0?", urec.userid);
 	if (!askyn(buf, YEA, NA))
 		return -1;
 	return club_do_add(urec.userid, currboard, ps);
@@ -83,7 +90,8 @@ static int club_del(const char *user, const char *board)
 
 	char title[STRLEN];
 	char *msg = "";
-	snprintf(title, sizeof(title), "%sÈ¡Ïû%sÔÚ¾ãÀÖ²¿°æ%sµÄÈ¨Àû",
+	//% snprintf(title, sizeof(title), "%så–æ¶ˆ%såœ¨ä¿±ä¹éƒ¨ç‰ˆ%sçš„æƒåˆ©",
+	snprintf(title, sizeof(title), "%s\xc8\xa1\xcf\xfb%s\xd4\xda\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6%s\xb5\xc4\xc8\xa8\xc0\xfb",
 			currentuser.userid, user, board);
 	autoreport(currboard, title, msg, user, POST_FILE_AUTO);
 	Poststring(msg, "club", title, 2);
@@ -96,12 +104,17 @@ static int club_del(const char *user, const char *board)
 static void club_title_show(void)
 {
 	move(0, 0);
-	outs("\033[1;44;36m Éè¶¨¾ãÀÖ²¿Ãûµ¥\033[K\033[m\n"
-			"Àë¿ª[\033[1;32m¡û\033[m] Ñ¡Ôñ[\033[1;32m¡ü\033[m,\033[1;32m¡ı"
-			"\033[m] Ìí¼Ó[\033[1;32ma\033[m] É¾³ı[\033[1;32md\033[m] ²éÕÒ"
+	//% outs("\033[1;44;36m è®¾å®šä¿±ä¹éƒ¨åå•\033[K\033[m\n"
+	outs("\033[1;44;36m \xc9\xe8\xb6\xa8\xbe\xe3\xc0\xd6\xb2\xbf\xc3\xfb\xb5\xa5\033[K\033[m\n"
+			//% "ç¦»å¼€[\033[1;32mâ†\033[m] é€‰æ‹©[\033[1;32mâ†‘\033[m,\033[1;32mâ†“"
+			"\xc0\xeb\xbf\xaa[\033[1;32m\xa1\xfb\033[m] \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd"
+			//% "\033[m] æ·»åŠ [\033[1;32ma\033[m] åˆ é™¤[\033[1;32md\033[m] æŸ¥æ‰¾"
+			"\033[m] \xcc\xed\xbc\xd3[\033[1;32ma\033[m] \xc9\xbe\xb3\xfd[\033[1;32md\033[m] \xb2\xe9\xd5\xd2"
 			"[\033[1;32m/\033[m]\n"
-			"\033[1;44m ÓÃ»§´úºÅ     ¸½¼ÓËµÃ÷                             "
-			"    ÑûÇëÈÕÆÚ   ÑûÇëÈË\033[K\033[m\n");
+			//% "\033[1;44m ç”¨æˆ·ä»£å·     é™„åŠ è¯´æ˜                             "
+			"\033[1;44m \xd3\xc3\xbb\xa7\xb4\xfa\xba\xc5     \xb8\xbd\xbc\xd3\xcb\xb5\xc3\xf7                             "
+			//% "    é‚€è¯·æ—¥æœŸ   é‚€è¯·äºº\033[K\033[m\n");
+			"    \xd1\xfb\xc7\xeb\xc8\xd5\xc6\xda   \xd1\xfb\xc7\xeb\xc8\xcb\033[K\033[m\n");
 }
 
 /**
@@ -122,13 +135,14 @@ static int club_key_deal(const char *fname, int ch, const char *line)
 			if (!line)
 				return 0;
 			move(1, 0);
-			snprintf(buf, sizeof(buf), "É¾³ı¾ãÀÖ²¿³ÉÔ±%sÂğ?", user);
+			//% snprintf(buf, sizeof(buf), "åˆ é™¤ä¿±ä¹éƒ¨æˆå‘˜%så—?", user);
+			snprintf(buf, sizeof(buf), "\xc9\xbe\xb3\xfd\xbe\xe3\xc0\xd6\xb2\xbf\xb3\xc9\xd4\xb1%s\xc2\xf0?", user);
 			if (!askyn(buf, NA, NA))
 				return 1;
 			club_del(user, currboard);
 			break;
 		case Ctrl('A'):
-		case KEY_RIGHT: //ÓÃ»§ĞÅÏ¢
+		case KEY_RIGHT: //ç”¨æˆ·ä¿¡æ¯
 			if (!line)
 				return 0;
 			t_query(user);

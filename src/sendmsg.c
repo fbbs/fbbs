@@ -62,13 +62,15 @@ int get_msg(const char *uid, char *msg, int line)
 	int msg_line;
 	move(line, 0);
 	clrtoeol();
-	prints("ËÍÒôĞÅ¸ø£º%s  °´Ctrl+QÖØĞ´µ±Ç°ÏûÏ¢.     ÒôĞÅ:", uid);
+	//% prints("é€éŸ³ä¿¡ç»™ï¼š%s  æŒ‰Ctrl+Qé‡å†™å½“å‰æ¶ˆæ¯.     éŸ³ä¿¡:", uid);
+	prints("\xcb\xcd\xd2\xf4\xd0\xc5\xb8\xf8\xa3\xba%s  \xb0\xb4""Ctrl+Q\xd6\xd8\xd0\xb4\xb5\xb1\xc7\xb0\xcf\xfb\xcf\xa2.     \xd2\xf4\xd0\xc5:", uid);
 	msg[0] = 0;
 	while (true) {
 		msg_line = multi_getdata(line + 1, 0, LINE_LEN - 1, NULL, msg, MAX_MSG_SIZE + 1, MAX_MSG_LINE, 0, 0);
 		if (msg[0] == '\0')
 			return NA;
-		gdata = getdata(line + 4, 0, "È·¶¨ÒªËÍ³öÂğ(Y)ÊÇµÄ (N)²»Òª (E)ÔÙ±à¼­? [Y]: ",
+		//% gdata = getdata(line + 4, 0, "ç¡®å®šè¦é€å‡ºå—(Y)æ˜¯çš„ (N)ä¸è¦ (E)å†ç¼–è¾‘? [Y]: ",
+		gdata = getdata(line + 4, 0, "\xc8\xb7\xb6\xa8\xd2\xaa\xcb\xcd\xb3\xf6\xc2\xf0(Y)\xca\xc7\xb5\xc4 (N)\xb2\xbb\xd2\xaa (E)\xd4\xd9\xb1\xe0\xbc\xad? [Y]: ",
 				buf, 2, DOECHO, YEA);
 		if (gdata == -1)
 			return NA;
@@ -92,7 +94,8 @@ static void generate_full_msg(const char *msg, int type,
 {
 	time_t now = time(NULL);
 	const char *timestr = ctime(&now);
-	const char *ret_str = "^Z»Ø";
+	//% const char *ret_str = "^Zå›";
+	const char *ret_str = "^Z\xbb\xd8";
 
 	char head[MAX_MSG_SIZE + 2];
 	switch (type) {
@@ -105,13 +108,16 @@ static void generate_full_msg(const char *msg, int type,
 			break;
 		case LOGOUT_MSG:
 			snprintf(head, sizeof(head), "\033[0;1;45;36m%-12.12s\033[36m"
-					"ÏòÄú¸æ±ğ(\033[1;36;45m%24.24s\033[36m)£º\033[m"
+					//% "å‘æ‚¨å‘Šåˆ«(\033[1;36;45m%24.24s\033[36m)ï¼š\033[m"
+					"\xcf\xf2\xc4\xfa\xb8\xe6\xb1\xf0(\033[1;36;45m%24.24s\033[36m)\xa3\xba\033[m"
 					"\033[1;36;45m%-38.38s\033[m\033[%05dm\n",
 					currentuser.userid, timestr, " ", 0);
 			break;
 		case BROADCAST_MSG:
-			snprintf(head, sizeof(head), "\033[1;5;44;33mÕ¾³¤ ÓÚ\033[36m "
-					"%24.24s \033[33m¹ã²¥£º\033[m\033[1;37;44m%-39.39s\033[m"
+			//% snprintf(head, sizeof(head), "\033[1;5;44;33mç«™é•¿ äº\033[36m "
+			snprintf(head, sizeof(head), "\033[1;5;44;33m\xd5\xbe\xb3\xa4 \xd3\xda\033[36m "
+					//% "%24.24s \033[33må¹¿æ’­ï¼š\033[m\033[1;37;44m%-39.39s\033[m"
+					"%24.24s \033[33m\xb9\xe3\xb2\xa5\xa3\xba\033[m\033[1;37;44m%-39.39s\033[m"
 					"\033[%05dm\n", timestr," ",  session.pid);
 			break;
 	}
@@ -227,10 +233,12 @@ int tui_send_msg(const char *uname)
 {
 	char name[IDLEN + 1];
 	if (!uname || !*uname) {
-		prints("<ÊäÈëÊ¹ÓÃÕß´úºÅ>\n");
+		//% prints("<è¾“å…¥ä½¿ç”¨è€…ä»£å·>\n");
+		prints("<\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5>\n");
 		move(1, 0);
 		clrtoeol();
-		prints("ËÍÑ¶Ï¢¸ø: ");
+		//% prints("é€è®¯æ¯ç»™: ");
+		prints("\xcb\xcd\xd1\xb6\xcf\xa2\xb8\xf8: ");
 
 		*name = '\0';
 		usercomplete(NULL, name);
@@ -248,7 +256,8 @@ int tui_send_msg(const char *uname)
 	if (!user_msgable(s)) {
 		msg_session_info_clear(s);
 		move(2, 0);
-		prints("¶Ô·½Ä¿Ç°²»ÔÚÏß»òÎŞ·¨½ÓÊÜÑ¶Ï¢...\n");
+		//% prints("å¯¹æ–¹ç›®å‰ä¸åœ¨çº¿æˆ–æ— æ³•æ¥å—è®¯æ¯...\n");
+		prints("\xb6\xd4\xb7\xbd\xc4\xbf\xc7\xb0\xb2\xbb\xd4\xda\xcf\xdf\xbb\xf2\xce\xde\xb7\xa8\xbd\xd3\xca\xdc\xd1\xb6\xcf\xa2...\n");
 		pressreturn();
 		move(2, 0);
 		clrtoeol();
@@ -269,9 +278,11 @@ int tui_send_msg(const char *uname)
 	msg_session_info_clear(s);
 
 	if (r)
-		prints("\nÒÑËÍ³öÑ¶Ï¢...\n");
+		//% prints("\nå·²é€å‡ºè®¯æ¯...\n");
+		prints("\n\xd2\xd1\xcb\xcd\xb3\xf6\xd1\xb6\xcf\xa2...\n");
 	else
-		prints("\033[1m¶Ô·½ÒÑ¾­ÀëÏß...\033[m\n");
+		//% prints("\033[1må¯¹æ–¹å·²ç»ç¦»çº¿...\033[m\n");
+		prints("\033[1m\xb6\xd4\xb7\xbd\xd2\xd1\xbe\xad\xc0\xeb\xcf\xdf...\033[m\n");
 	pressreturn();
 	clear();
 	return r;
@@ -374,16 +385,19 @@ static int show_msg(const char *user, const char *head, const char *buf,
 
 	prints("\033[1;36;44m%s  \033[33m(%s)\033[37m", sender, date);
 	move(line, 93);
-	outs("\033[31m(^Z»Ø) \033[37m");
+	//% outs("\033[31m(^Zå›) \033[37m");
+	outs("\033[31m(^Z\xbb\xd8) \033[37m");
 	move(++line, 0);
 	clrtoeol();
 	line = show_data(buf, LINE_LEN - 1, line, 0);
 	move(line, 0);
 	clrtoeol();
 	if (!reply) {
-		outs("\033[m°´^Z»Ø¸´");
+		//% outs("\033[mæŒ‰^Zå›å¤");
+		outs("\033[m\xb0\xb4^Z\xbb\xd8\xb8\xb4");
 	} else {
-		prints("\033[mÁ¢¼´»ØÑ¶Ï¢¸ø %s", sender);
+		//% prints("\033[mç«‹å³å›è®¯æ¯ç»™ %s", sender);
+		prints("\033[m\xc1\xa2\xbc\xb4\xbb\xd8\xd1\xb6\xcf\xa2\xb8\xf8 %s", sender);
 		move(++line, 0);
 		clrtoeol();
 	}
@@ -499,15 +513,18 @@ static void _msg_reply(const char *receiver, int pid, const char *msg, int line)
 	if (*msg != '\0') {
 		msg_session_info_t *s = get_msg_sessions(receiver);
 		if (!user_msgable(s)) {
-			snprintf(buf, sizeof(buf), "\033[1;32mÕÒ²»µ½·¢Ñ¶Ï¢µÄ %s.\033[m",
+			//% snprintf(buf, sizeof(buf), "\033[1;32mæ‰¾ä¸åˆ°å‘è®¯æ¯çš„ %s.\033[m",
+			snprintf(buf, sizeof(buf), "\033[1;32m\xd5\xd2\xb2\xbb\xb5\xbd\xb7\xa2\xd1\xb6\xcf\xa2\xb5\xc4 %s.\033[m",
 					receiver);
 		} else if (send_msg(s, msg, NORMAL_MSG)) {
 			success = true;
 		} else {
-			strlcpy(buf, "\033[1;32mÑ¶Ï¢ÎŞ·¨ËÍ³ö.\033[m", sizeof(buf));
+			//% strlcpy(buf, "\033[1;32mè®¯æ¯æ— æ³•é€å‡º.\033[m", sizeof(buf));
+			strlcpy(buf, "\033[1;32m\xd1\xb6\xcf\xa2\xce\xde\xb7\xa8\xcb\xcd\xb3\xf6.\033[m", sizeof(buf));
 		}
 	} else {
-		strlcpy(buf, "\033[1;33m¿ÕÑ¶Ï¢, ËùÒÔ²»ËÍ³ö.\033[m", sizeof(buf));
+		//% strlcpy(buf, "\033[1;33mç©ºè®¯æ¯, æ‰€ä»¥ä¸é€å‡º.\033[m", sizeof(buf));
+		strlcpy(buf, "\033[1;33m\xbf\xd5\xd1\xb6\xcf\xa2, \xcb\xf9\xd2\xd4\xb2\xbb\xcb\xcd\xb3\xf6.\033[m", sizeof(buf));
 	}
 
 	move(line, 0);
@@ -536,7 +553,8 @@ static void msg_backup(const char *user)
 	int num = get_num_msgs(file);
 	if (num > MSG_BAK_THRES) {
 		char title[STRLEN];
-		snprintf(title, sizeof(title), "[%s] Ç¿ÖÆÑ¶Ï¢±¸·İ%dÌõ",
+		//% snprintf(title, sizeof(title), "[%s] å¼ºåˆ¶è®¯æ¯å¤‡ä»½%dæ¡",
+		snprintf(title, sizeof(title), "[%s] \xc7\xbf\xd6\xc6\xd1\xb6\xcf\xa2\xb1\xb8\xb7\xdd%d\xcc\xf5",
 				getdatestring(time(NULL), DATE_ZH), num);
 		mail_file(file, user, title);
 		unlink(file);

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* ÍæÀÖÑ¡µ¥:É¢²½ ÂÃÓÎ ÔË¶¯ Ô¼»á ²ÂÈ­                                         */
+/* ç©ä¹é€‰å•:æ•£æ­¥ æ—…æ¸¸ è¿åŠ¨ çº¦ä¼š çŒœæ‹³                                         */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #include <time.h>
@@ -10,7 +10,7 @@ extern time_t start_time;
 extern time_t lasttime;
 //#define getdata(a, b, c , d, e, f, g) getdata(a,b,c,d,e,f,NULL,g)
 
-int pip_play_stroll()	/*É¢²½*/
+int pip_play_stroll()	/*æ•£æ­¥*/
 {
     int lucky;
     count_tired(3,3,"Y",100,0);
@@ -26,7 +26,8 @@ int pip_play_stroll()	/*É¢²½*/
         show_play_pic(1);
       else
         show_play_pic(2);
-      pressanykey("Óöµ½ÅóÓÑÂŞ  ÕæºÃ.... ^_^");
+      //% pressanykey("é‡åˆ°æœ‹å‹ç½—  çœŸå¥½.... ^_^");
+      pressanykey("\xd3\xf6\xb5\xbd\xc5\xf3\xd3\xd1\xc2\xde  \xd5\xe6\xba\xc3.... ^_^");
      }
     else if(lucky==3)
      {
@@ -37,7 +38,8 @@ int pip_play_stroll()	/*É¢²½*/
       d.hp-=(rand()%3+4);
       move(4,0);
       show_play_pic(3);
-      pressanykey("¼ñµ½ÁË100ÔªÁË..Ò®Ò®Ò®....");
+      //% pressanykey("æ¡åˆ°äº†100å…ƒäº†..è€¶è€¶è€¶....");
+      pressanykey("\xbc\xf1\xb5\xbd\xc1\xcb100\xd4\xaa\xc1\xcb..\xd2\xae\xd2\xae\xd2\xae....");
      }
 
     else if(lucky==4)
@@ -51,13 +53,15 @@ int pip_play_stroll()	/*É¢²½*/
        if(d.money>=50)
         {
          d.money-=50;
-         pressanykey("µôÁË50ÔªÁË..ÎØÎØÎØ....");
+         //% pressanykey("æ‰äº†50å…ƒäº†..å‘œå‘œå‘œ....");
+         pressanykey("\xb5\xf4\xc1\xcb50\xd4\xaa\xc1\xcb..\xce\xd8\xce\xd8\xce\xd8....");
         }
        else
         {
          d.money=0;
          d.hp-=(rand()%3+3);
-         pressanykey("Ç®µô¹â¹âÁË..ÎØÎØÎØ....");
+         //% pressanykey("é’±æ‰å…‰å…‰äº†..å‘œå‘œå‘œ....");
+         pressanykey("\xc7\xae\xb5\xf4\xb9\xe2\xb9\xe2\xc1\xcb..\xce\xd8\xce\xd8\xce\xd8....");
         }
        d.shit+=rand()%3+2;
       }
@@ -70,13 +74,15 @@ int pip_play_stroll()	/*É¢²½*/
         {
          d.money-=50;
          d.hp-=(rand()%3+3);
-         pressanykey("ÓÃÁË50ÔªÁË..²»¿ÉÒÔÂîÎÒà¸....");
+         //% pressanykey("ç”¨äº†50å…ƒäº†..ä¸å¯ä»¥éª‚æˆ‘å–”....");
+         pressanykey("\xd3\xc3\xc1\xcb50\xd4\xaa\xc1\xcb..\xb2\xbb\xbf\xc9\xd2\xd4\xc2\xee\xce\xd2\xe0\xb8....");
         }
        else
         {
          d.money=0;
          d.hp-=(rand()%3+3);
-         pressanykey("Ç®±»ÎÒÍµÓÃ¹â¹âÁË..:p");
+         //% pressanykey("é’±è¢«æˆ‘å·ç”¨å…‰å…‰äº†..:p");
+         pressanykey("\xc7\xae\xb1\xbb\xce\xd2\xcd\xb5\xd3\xc3\xb9\xe2\xb9\xe2\xc1\xcb..:p");
         }
        d.shit+=rand()%3+2;
       }
@@ -91,7 +97,8 @@ int pip_play_stroll()	/*É¢²½*/
         show_play_pic(6);
       else
         show_play_pic(7);
-      pressanykey("ºÃ°ôà¸¼ñµ½Íæ¾ßÁËËµ.....");
+      //% pressanykey("å¥½æ£’å–”æ¡åˆ°ç©å…·äº†è¯´.....");
+      pressanykey("\xba\xc3\xb0\xf4\xe0\xb8\xbc\xf1\xb5\xbd\xcd\xe6\xbe\xdf\xc1\xcb\xcb\xb5.....");
      }
     else if(lucky==6)
      {
@@ -99,7 +106,8 @@ int pip_play_stroll()	/*É¢²½*/
       d.shit+=(rand()%3+20);
       move(4,0);
       show_play_pic(9);
-      pressanykey("ÕæÊÇµ¹é¹  ¿ÉÒÔÈ¥Âò°®¹ú½±È¯");
+      //% pressanykey("çœŸæ˜¯å€’æ¥£  å¯ä»¥å»ä¹°çˆ±å›½å¥–åˆ¸");
+      pressanykey("\xd5\xe6\xca\xc7\xb5\xb9\xe9\xb9  \xbf\xc9\xd2\xd4\xc8\xa5\xc2\xf2\xb0\xae\xb9\xfa\xbd\xb1\xc8\xaf");
      }
     else
     {
@@ -109,12 +117,13 @@ int pip_play_stroll()	/*É¢²½*/
       d.hp-=(rand()%3+2);
       move(4,0);
       show_play_pic(8);
-      pressanykey("Ã»ÓĞÌØ±ğµÄÊÂ·¢ÉúÀ².....");
+      //% pressanykey("æ²¡æœ‰ç‰¹åˆ«çš„äº‹å‘ç”Ÿå•¦.....");
+      pressanykey("\xc3\xbb\xd3\xd0\xcc\xd8\xb1\xf0\xb5\xc4\xca\xc2\xb7\xa2\xc9\xfa\xc0\xb2.....");
     }
     return 0;
 }
 
-int pip_play_sport()	/*ÔË¶¯*/
+int pip_play_sport()	/*è¿åŠ¨*/
 {
     count_tired(3,8,"Y",100,1);
     d.weight-=(rand()%3+2);
@@ -127,15 +136,17 @@ int pip_play_sport()	/*ÔË¶¯*/
     d.speed+=(2+rand()%3);
     move(4,0);
     show_play_pic(10);
-    pressanykey("ÔË¶¯ºÃ´¦¶à¶àÀ²...");
+    //% pressanykey("è¿åŠ¨å¥½å¤„å¤šå¤šå•¦...");
+    pressanykey("\xd4\xcb\xb6\xaf\xba\xc3\xb4\xa6\xb6\xe0\xb6\xe0\xc0\xb2...");
     return 0;
 }
 
-int pip_play_date()	/*Ô¼»á*/
+int pip_play_date()	/*çº¦ä¼š*/
 {
     if(d.money<150)
     {
-     pressanykey("ÄãÇ®²»¹»¶àÀ²! Ô¼»á×ÜµÃ»¨µãÇ®Ç®");
+     //% pressanykey("ä½ é’±ä¸å¤Ÿå¤šå•¦! çº¦ä¼šæ€»å¾—èŠ±ç‚¹é’±é’±");
+     pressanykey("\xc4\xe3\xc7\xae\xb2\xbb\xb9\xbb\xb6\xe0\xc0\xb2! \xd4\xbc\xbb\xe1\xd7\xdc\xb5\xc3\xbb\xa8\xb5\xe3\xc7\xae\xc7\xae");
     }
     else
     {
@@ -148,18 +159,20 @@ int pip_play_date()	/*Ô¼»á*/
      d.money=d.money-150;
      move(4,0);
      show_play_pic(11);
-     pressanykey("Ô¼»áÈ¥  ºôºô");
+     //% pressanykey("çº¦ä¼šå»  å‘¼å‘¼");
+     pressanykey("\xd4\xbc\xbb\xe1\xc8\xa5  \xba\xf4\xba\xf4");
     }
     return 0;
 }
-int pip_play_outing()	/*½¼ÓÎ*/
+int pip_play_outing()	/*éƒŠæ¸¸*/
 {
     int lucky;
     char buf[256];
     
     if(d.money<250)
     {
-     pressanykey("ÄãÇ®²»¹»¶àÀ²! ÂÃÓÎ×ÜµÃ»¨µãÇ®Ç®");
+     //% pressanykey("ä½ é’±ä¸å¤Ÿå¤šå•¦! æ—…æ¸¸æ€»å¾—èŠ±ç‚¹é’±é’±");
+     pressanykey("\xc4\xe3\xc7\xae\xb2\xbb\xb9\xbb\xb6\xe0\xc0\xb2! \xc2\xc3\xd3\xce\xd7\xdc\xb5\xc3\xbb\xa8\xb5\xe3\xc7\xae\xc7\xae");
     }
     else
     { 
@@ -179,9 +192,11 @@ int pip_play_outing()	/*½¼ÓÎ*/
        d.art+=rand()%2;
        show_play_pic(12);
        if(rand()%2>0)
-         pressanykey("ĞÄÖĞÓĞÒ»¹Éµ­µ­µÄ¸Ğ¾õ  ºÃÊæ·şà¸....");
+         //% pressanykey("å¿ƒä¸­æœ‰ä¸€è‚¡æ·¡æ·¡çš„æ„Ÿè§‰  å¥½èˆ’æœå–”....");
+         pressanykey("\xd0\xc4\xd6\xd0\xd3\xd0\xd2\xbb\xb9\xc9\xb5\xad\xb5\xad\xb5\xc4\xb8\xd0\xbe\xf5  \xba\xc3\xca\xe6\xb7\xfe\xe0\xb8....");
        else
-         pressanykey("ÔÆË® ÏĞÇé ĞÄÇéºÃ¶àÁË.....");
+         //% pressanykey("äº‘æ°´ é—²æƒ… å¿ƒæƒ…å¥½å¤šäº†.....");
+         pressanykey("\xd4\xc6\xcb\xae \xcf\xd0\xc7\xe9 \xd0\xc4\xc7\xe9\xba\xc3\xb6\xe0\xc1\xcb.....");
       }
       else if(lucky==1)
       {
@@ -189,45 +204,56 @@ int pip_play_outing()	/*½¼ÓÎ*/
        d.maxmp+=rand()%2;
        show_play_pic(13);
        if(rand()%2>0)
-         pressanykey("ÓĞÉ½ÓĞË®ÓĞÂäÈÕ  ĞÎ³ÉÒ»·ùÃÀÀöµÄ»­..");
+         //% pressanykey("æœ‰å±±æœ‰æ°´æœ‰è½æ—¥  å½¢æˆä¸€å¹…ç¾ä¸½çš„ç”»..");
+         pressanykey("\xd3\xd0\xc9\xbd\xd3\xd0\xcb\xae\xd3\xd0\xc2\xe4\xc8\xd5  \xd0\xce\xb3\xc9\xd2\xbb\xb7\xf9\xc3\xc0\xc0\xf6\xb5\xc4\xbb\xad..");
        else
-         pressanykey("¿´×Å¿´×Å  È«ÉíÆ£±¹¶¼²»¼ûÂŞ..");
+         //% pressanykey("çœ‹ç€çœ‹ç€  å…¨èº«ç–²æƒ«éƒ½ä¸è§ç½—..");
+         pressanykey("\xbf\xb4\xd7\xc5\xbf\xb4\xd7\xc5  \xc8\xab\xc9\xed\xc6\xa3\xb1\xb9\xb6\xbc\xb2\xbb\xbc\xfb\xc2\xde..");
       }
       else if(lucky==2)
       {
        d.love+=rand()%3;
        show_play_pic(14);
        if(rand()%2>0)
-         pressanykey("¿´  Ì«Ñô¿ìÃ»ÈëË®ÖĞÂŞ...");
+         //% pressanykey("çœ‹  å¤ªé˜³å¿«æ²¡å…¥æ°´ä¸­ç½—...");
+         pressanykey("\xbf\xb4  \xcc\xab\xd1\xf4\xbf\xec\xc3\xbb\xc8\xeb\xcb\xae\xd6\xd0\xc2\xde...");
        else
-         pressanykey("ÌıËµÕâÊÇº£±ßÀ²  ÄãËµÄØ?");
+         //% pressanykey("å¬è¯´è¿™æ˜¯æµ·è¾¹å•¦  ä½ è¯´å‘¢?");
+         pressanykey("\xcc\xfd\xcb\xb5\xd5\xe2\xca\xc7\xba\xa3\xb1\xdf\xc0\xb2  \xc4\xe3\xcb\xb5\xc4\xd8?");
       }      
       else if(lucky==3)
       {
        d.maxhp+=rand()%3;
        show_play_pic(15);
        if(rand()%2>0)
-         pressanykey("ÈÃÎÒÃÇ·è¿ñÔÚÒ¹ÀïµÄº£Ì²°É....ºôºô..");
+         //% pressanykey("è®©æˆ‘ä»¬ç–¯ç‹‚åœ¨å¤œé‡Œçš„æµ·æ»©å§....å‘¼å‘¼..");
+         pressanykey("\xc8\xc3\xce\xd2\xc3\xc7\xb7\xe8\xbf\xf1\xd4\xda\xd2\xb9\xc0\xef\xb5\xc4\xba\xa3\xcc\xb2\xb0\xc9....\xba\xf4\xba\xf4..");
        else
-         pressanykey("Á¹Ë¬µÄº£·çÓ­ÃæÏ®À´  ×îÏ²»¶ÕâÖÖ¸Ğ¾õÁË....");
+         //% pressanykey("å‡‰çˆ½çš„æµ·é£è¿é¢è¢­æ¥  æœ€å–œæ¬¢è¿™ç§æ„Ÿè§‰äº†....");
+         pressanykey("\xc1\xb9\xcb\xac\xb5\xc4\xba\xa3\xb7\xe7\xd3\xad\xc3\xe6\xcf\xae\xc0\xb4  \xd7\xee\xcf\xb2\xbb\xb6\xd5\xe2\xd6\xd6\xb8\xd0\xbe\xf5\xc1\xcb....");
       }
       if((rand()%301+rand()%200)%100==12)
       {
         lucky=0;
         clear();
-        sprintf(buf,"[1;41m  ĞÇ¿ÕÕ½¶·¼¦ ¡« %-10s                                                    [0m",d.name); 	 
+        //% sprintf(buf,"[1;41m  æ˜Ÿç©ºæˆ˜æ–—é¸¡ ï½ %-10s                                                    [0m",d.name); 	 
+        sprintf(buf,"[1;41m  \xd0\xc7\xbf\xd5\xd5\xbd\xb6\xb7\xbc\xa6 \xa1\xab %-10s                                                    [0m",d.name); 	 
         show_play_pic(0);
         move(17,10);
-        prints("[1;36mÇ×°®µÄ [1;33m%s ¡«[0m",d.name);
+        //% prints("[1;36mäº²çˆ±çš„ [1;33m%s ï½[0m",d.name);
+        prints("[1;36m\xc7\xd7\xb0\xae\xb5\xc4 [1;33m%s \xa1\xab[0m",d.name);
         move(18,10);
-        prints("[1;37m¿´µ½ÄãÕâÑùÅ¬Á¦µÄÅàÑø×Ô¼ºµÄÄÜÁ¦  ÈÃÎÒĞÄÖĞÊ®·ÖµÄ¸ßĞËà¸..[m");
+        //% prints("[1;37mçœ‹åˆ°ä½ è¿™æ ·åŠªåŠ›çš„åŸ¹å…»è‡ªå·±çš„èƒ½åŠ›  è®©æˆ‘å¿ƒä¸­ååˆ†çš„é«˜å…´å–”..[m");
+        prints("[1;37m\xbf\xb4\xb5\xbd\xc4\xe3\xd5\xe2\xd1\xf9\xc5\xac\xc1\xa6\xb5\xc4\xc5\xe0\xd1\xf8\xd7\xd4\xbc\xba\xb5\xc4\xc4\xdc\xc1\xa6  \xc8\xc3\xce\xd2\xd0\xc4\xd6\xd0\xca\xae\xb7\xd6\xb5\xc4\xb8\xdf\xd0\xcb\xe0\xb8..[m");
         move(19,10);
-        prints("[1;36mĞ¡ÌìÊ¹ÎÒ¾ö¶¨¸øÄã½±ÉÍ¹ÄÀø¹ÄÀø  ÍµÍµµØ°ïÖúÄãÒ»ÏÂ....^_^[0m");
+        //% prints("[1;36må°å¤©ä½¿æˆ‘å†³å®šç»™ä½ å¥–èµé¼“åŠ±é¼“åŠ±  å·å·åœ°å¸®åŠ©ä½ ä¸€ä¸‹....^_^[0m");
+        prints("[1;36m\xd0\xa1\xcc\xec\xca\xb9\xce\xd2\xbe\xf6\xb6\xa8\xb8\xf8\xc4\xe3\xbd\xb1\xc9\xcd\xb9\xc4\xc0\xf8\xb9\xc4\xc0\xf8  \xcd\xb5\xcd\xb5\xb5\xd8\xb0\xef\xd6\xfa\xc4\xe3\xd2\xbb\xcf\xc2....^_^[0m");
         move(20,10);
         lucky=rand()%7;
         if(lucky==6)
         {
-          prints("[1;33mÎÒ½«°ïÄãµÄ¸÷ÏîÄÜÁ¦È«²¿ÌáÉı°Ù·ÖÖ®Îåà¸......[0m");
+          //% prints("[1;33mæˆ‘å°†å¸®ä½ çš„å„é¡¹èƒ½åŠ›å…¨éƒ¨æå‡ç™¾åˆ†ä¹‹äº”å–”......[0m");
+          prints("[1;33m\xce\xd2\xbd\xab\xb0\xef\xc4\xe3\xb5\xc4\xb8\xf7\xcf\xee\xc4\xdc\xc1\xa6\xc8\xab\xb2\xbf\xcc\xe1\xc9\xfd\xb0\xd9\xb7\xd6\xd6\xae\xce\xe5\xe0\xb8......[0m");
           d.maxhp=d.maxhp*105/100;
           d.hp=d.maxhp;
           d.maxmp=d.maxmp*105/100;
@@ -245,7 +271,8 @@ int pip_play_outing()	/*½¼ÓÎ*/
         
         else if(lucky<=5 && lucky>=4)
         {
-          prints("[1;33mÎÒ½«°ïÄãµÄÕ½¶·ÄÜÁ¦È«²¿ÌáÉı°Ù·ÖÖ®Ê®à¸.......[0m");        
+          //% prints("[1;33mæˆ‘å°†å¸®ä½ çš„æˆ˜æ–—èƒ½åŠ›å…¨éƒ¨æå‡ç™¾åˆ†ä¹‹åå–”.......[0m");        
+          prints("[1;33m\xce\xd2\xbd\xab\xb0\xef\xc4\xe3\xb5\xc4\xd5\xbd\xb6\xb7\xc4\xdc\xc1\xa6\xc8\xab\xb2\xbf\xcc\xe1\xc9\xfd\xb0\xd9\xb7\xd6\xd6\xae\xca\xae\xe0\xb8.......[0m");        
           d.attack=d.attack*110/100;
           d.resist=d.resist*110/100;          
           d.speed=d.speed*110/100;        
@@ -254,7 +281,8 @@ int pip_play_outing()	/*½¼ÓÎ*/
                
         else if(lucky<=3 && lucky>=2)
         {
-          prints("[1;33mÎÒ½«°ïÄãµÄÄ§·¨ÄÜÁ¦ºÍÉúÃüÁ¦È«²¿ÌáÉı°Ù·ÖÖ®Ê®à¸.......[0m");        
+          //% prints("[1;33mæˆ‘å°†å¸®ä½ çš„é­”æ³•èƒ½åŠ›å’Œç”Ÿå‘½åŠ›å…¨éƒ¨æå‡ç™¾åˆ†ä¹‹åå–”.......[0m");        
+          prints("[1;33m\xce\xd2\xbd\xab\xb0\xef\xc4\xe3\xb5\xc4\xc4\xa7\xb7\xa8\xc4\xdc\xc1\xa6\xba\xcd\xc9\xfa\xc3\xfc\xc1\xa6\xc8\xab\xb2\xbf\xcc\xe1\xc9\xfd\xb0\xd9\xb7\xd6\xd6\xae\xca\xae\xe0\xb8.......[0m");        
           d.maxhp=d.maxhp*110/100;
           d.hp=d.maxhp;
           d.maxmp=d.maxmp*110/100;
@@ -262,7 +290,8 @@ int pip_play_outing()	/*½¼ÓÎ*/
         }
         else if(lucky<=1 && lucky>=0)
         {
-          prints("[1;33mÎÒ½«°ïÄãµÄ¸ĞÊÜÄÜÁ¦È«²¿ÌáÉı°Ù·ÖÖ®¶şÊ®à¸....[0m");                
+          //% prints("[1;33mæˆ‘å°†å¸®ä½ çš„æ„Ÿå—èƒ½åŠ›å…¨éƒ¨æå‡ç™¾åˆ†ä¹‹äºŒåå–”....[0m");                
+          prints("[1;33m\xce\xd2\xbd\xab\xb0\xef\xc4\xe3\xb5\xc4\xb8\xd0\xca\xdc\xc4\xdc\xc1\xa6\xc8\xab\xb2\xbf\xcc\xe1\xc9\xfd\xb0\xd9\xb7\xd6\xd6\xae\xb6\xfe\xca\xae\xe0\xb8....[0m");                
           d.character=d.character*110/100;          
           d.love=d.love*110/100;          
           d.wisdom=d.wisdom*110/100;     
@@ -270,13 +299,14 @@ int pip_play_outing()	/*½¼ÓÎ*/
           d.homework=d.homework*110/100;                  
         }        
         
-        pressanykey("Çë¼ÌĞø¼ÓÓÍà¸..."); 
+        //% pressanykey("è¯·ç»§ç»­åŠ æ²¹å–”..."); 
+        pressanykey("\xc7\xeb\xbc\xcc\xd0\xf8\xbc\xd3\xd3\xcd\xe0\xb8..."); 
       }
     }
     return 0;
 }
 
-int pip_play_kite()	/*·çóİ*/
+int pip_play_kite()	/*é£ç­*/
 {
     count_tired(4,4,"Y",100,0);
     d.weight+=(rand()%2+2);
@@ -289,7 +319,8 @@ int pip_play_kite()	/*·çóİ*/
     d.affect+=rand()%4+6;
     move(4,0);
     show_play_pic(16);
-    pressanykey("·Å·çóİÕæºÃÍæÀ²...");
+    //% pressanykey("æ”¾é£ç­çœŸå¥½ç©å•¦...");
+    pressanykey("\xb7\xc5\xb7\xe7\xf3\xdd\xd5\xe6\xba\xc3\xcd\xe6\xc0\xb2...");
     return 0;
 }
 
@@ -297,7 +328,8 @@ int pip_play_KTV()	/*KTV*/
 {
     if(d.money<250)
     {
-     pressanykey("ÄãÇ®²»¹»¶àÀ²! ³ª¸è×ÜµÃ»¨µãÇ®Ç®");
+     //% pressanykey("ä½ é’±ä¸å¤Ÿå¤šå•¦! å”±æ­Œæ€»å¾—èŠ±ç‚¹é’±é’±");
+     pressanykey("\xc4\xe3\xc7\xae\xb2\xbb\xb9\xbb\xb6\xe0\xc0\xb2! \xb3\xaa\xb8\xe8\xd7\xdc\xb5\xc3\xbb\xa8\xb5\xe3\xc7\xae\xc7\xae");
     }
     else
     {
@@ -312,12 +344,13 @@ int pip_play_KTV()	/*KTV*/
      d.art+=rand()%4+3;
      move(4,0);
      show_play_pic(17);
-     pressanykey("ÄãËµÄã  ÏëÒªÌÓ...");
+     //% pressanykey("ä½ è¯´ä½   æƒ³è¦é€ƒ...");
+     pressanykey("\xc4\xe3\xcb\xb5\xc4\xe3  \xcf\xeb\xd2\xaa\xcc\xd3...");
     }
     return 0;
 }
 
-int pip_play_guess()   /* ²ÂÈ­³ÌÊ½ */
+int pip_play_guess()   /* çŒœæ‹³ç¨‹å¼ */
 {
    int ch,com;
    int pipkey;
@@ -340,7 +373,8 @@ int pip_play_guess()   /* ²ÂÈ­³ÌÊ½ */
     move(b_lines, 0);
     clrtoeol();
     move(b_lines,0);
-    prints("[1;44;37m  ²ÂÈ­Ñ¡µ¥  [46m[1]ÎÒ³ö¼ôµ¶ [2]ÎÒ³öÊ¯Í· [3]ÎÒ³ö²¼À² [4]²ÂÈ­¼ÇÂ¼ [Q]Ìø³ö£º         [m");   
+    //% prints("[1;44;37m  çŒœæ‹³é€‰å•  [46m[1]æˆ‘å‡ºå‰ªåˆ€ [2]æˆ‘å‡ºçŸ³å¤´ [3]æˆ‘å‡ºå¸ƒå•¦ [4]çŒœæ‹³è®°å½• [Q]è·³å‡ºï¼š         [m");   
+    prints("[1;44;37m  \xb2\xc2\xc8\xad\xd1\xa1\xb5\xa5  [46m[1]\xce\xd2\xb3\xf6\xbc\xf4\xb5\xb6 [2]\xce\xd2\xb3\xf6\xca\xaf\xcd\xb7 [3]\xce\xd2\xb3\xf6\xb2\xbc\xc0\xb2 [4]\xb2\xc2\xc8\xad\xbc\xc7\xc2\xbc [Q]\xcc\xf8\xb3\xf6\xa3\xba         [m");   
     move(b_lines-1, 0);
     clrtoeol();
     pipkey=egetch();
@@ -351,7 +385,8 @@ int pip_play_guess()   /* ²ÂÈ­³ÌÊ½ */
 	     if (currutmp->msgs[0].last_pid)
 	     {
 	      show_last_call_in();
-	      my_write(currutmp->msgs[0].last_pid, "Ë®Çò¶ª»ØÈ¥£º");
+	      //% my_write(currutmp->msgs[0].last_pid, "æ°´çƒä¸¢å›å»ï¼š");
+	      my_write(currutmp->msgs[0].last_pid, "\xcb\xae\xc7\xf2\xb6\xaa\xbb\xd8\xc8\xa5\xa3\xba");
 	     }
 	     break;
 #endif  // END MAPLE
@@ -366,13 +401,16 @@ int pip_play_guess()   /* ²ÂÈ­³ÌÊ½ */
     clrtobot();
     switch(com){
         case 0:
-          outs("Ğ¡¼¦£º¼ôµ¶\n");
+          //% outs("å°é¸¡ï¼šå‰ªåˆ€\n");
+          outs("\xd0\xa1\xbc\xa6\xa3\xba\xbc\xf4\xb5\xb6\n");
          break;
         case 1:
-          outs("Ğ¡¼¦£ºÊ¯Í·\n");
+          //% outs("å°é¸¡ï¼šçŸ³å¤´\n");
+          outs("\xd0\xa1\xbc\xa6\xa3\xba\xca\xaf\xcd\xb7\n");
          break;
         case 2:
-          outs("Ğ¡¼¦£º²¼\n");
+          //% outs("å°é¸¡ï¼šå¸ƒ\n");
+          outs("\xd0\xa1\xbc\xa6\xa3\xba\xb2\xbc\n");
          break;
      }
 
@@ -380,7 +418,8 @@ int pip_play_guess()   /* ²ÂÈ­³ÌÊ½ */
 
     switch(pipkey){
     case '1':
-      outs("Äã  £º¼ôµ¶\n");
+      //% outs("ä½   ï¼šå‰ªåˆ€\n");
+      outs("\xc4\xe3  \xa3\xba\xbc\xf4\xb5\xb6\n");
       if (com==0)
         tie();
       else  if (com==1)
@@ -389,7 +428,8 @@ int pip_play_guess()   /* ²ÂÈ­³ÌÊ½ */
         win();
       break;
     case '2':
-      outs("Äã¡¡£ºÊ¯Í·\n");
+      //% outs("ä½ ã€€ï¼šçŸ³å¤´\n");
+      outs("\xc4\xe3\xa1\xa1\xa3\xba\xca\xaf\xcd\xb7\n");
       if (com==0)
         win();
       else if (com==1)
@@ -398,7 +438,8 @@ int pip_play_guess()   /* ²ÂÈ­³ÌÊ½ */
         lose();
       break;
     case '3':
-      outs("Äã¡¡£º²¼\n");
+      //% outs("ä½ ã€€ï¼šå¸ƒ\n");
+      outs("\xc4\xe3\xa1\xa1\xa3\xba\xb2\xbc\n");
       if (com==0)
         lose();
       else if (com==1)
@@ -419,7 +460,8 @@ int win()
     move(4,0);
     show_guess_pic(2);
     move(b_lines,0);
-    pressanykey("Ğ¡¼¦ÊäÁË....~>_<~");
+    //% pressanykey("å°é¸¡è¾“äº†....~>_<~");
+    pressanykey("\xd0\xa1\xbc\xa6\xca\xe4\xc1\xcb....~>_<~");
     return;
 }
 int tie()
@@ -429,7 +471,8 @@ int tie()
     move(4,0);
     show_guess_pic(3);
     move(b_lines,0);
-    pressanykey("Æ½ÊÖ........-_-");
+    //% pressanykey("å¹³æ‰‹........-_-");
+    pressanykey("\xc6\xbd\xca\xd6........-_-");
         return;
 }
 int lose()
@@ -440,7 +483,8 @@ int lose()
     move(4,0);
     show_guess_pic(1);
     move(b_lines,0);
-    pressanykey("Ğ¡¼¦Ó®ÂŞ....*^_^*");
+    //% pressanykey("å°é¸¡èµ¢ç½—....*^_^*");
+    pressanykey("\xd0\xa1\xbc\xa6\xd3\xae\xc2\xde....*^_^*");
     return;
 }
 
@@ -448,19 +492,23 @@ int situ()
 {
         clrchyiuan(19,21);
         move(19,0);
-        prints("Äã:[44m %dÊ¤ %d¸º[m                     \n",d.winn,d.losee);
+        //% prints("ä½ :[44m %dèƒœ %dè´Ÿ[m                     \n",d.winn,d.losee);
+        prints("\xc4\xe3:[44m %d\xca\xa4 %d\xb8\xba[m                     \n",d.winn,d.losee);
         move(20,0);
-        prints("¼¦:[44m %dÊ¤ %d¸º[m                     \n",d.losee,d.winn);
+        //% prints("é¸¡:[44m %dèƒœ %dè´Ÿ[m                     \n",d.losee,d.winn);
+        prints("\xbc\xa6:[44m %d\xca\xa4 %d\xb8\xba[m                     \n",d.losee,d.winn);
 
        if (d.winn>=d.losee)
        {
         move(b_lines,0);
-        pressanykey("¹ş..Ó®Ğ¡¼¦Ò²Ã»¶à¹âÈÙ");
+        //% pressanykey("å“ˆ..èµ¢å°é¸¡ä¹Ÿæ²¡å¤šå…‰è£");
+        pressanykey("\xb9\xfe..\xd3\xae\xd0\xa1\xbc\xa6\xd2\xb2\xc3\xbb\xb6\xe0\xb9\xe2\xc8\xd9");
        }
        else
        {
         move(b_lines,0);
-        pressanykey("±¿µ°..¾¹Êä¸øÁË¼¦....¨Ü...");
+        //% pressanykey("ç¬¨è›‹..ç«Ÿè¾“ç»™äº†é¸¡....ã„œ...");
+        pressanykey("\xb1\xbf\xb5\xb0..\xbe\xb9\xca\xe4\xb8\xf8\xc1\xcb\xbc\xa6....\xa8\xdc...");
        }
        return;
 }

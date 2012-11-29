@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/* ÉÌµêÑ¡µ¥:Ê³Îï ÁãÊ³ ´ó²¹Íè Íæ¾ß Êé±¾                                       */
+/* å•†åº—é€‰å•:é£Ÿç‰© é›¶é£Ÿ å¤§è¡¥ä¸¸ ç©å…· ä¹¦æœ¬                                       */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #include <time.h>
@@ -15,136 +15,187 @@ extern char BoardName[];
 //#define getdata(a, b, c , d, e, f, g) getdata(a,b,c,d,e,f,NULL,g)
 
 /*---------------------------------------------------------------------------*/
-/* ÉÌµêÑ¡µ¥:Ê³Îï ÁãÊ³ ´ó²¹Íè Íæ¾ß Êé±¾                                       */
-/* ×ÊÁÏ¿â                                                                    */
+/* å•†åº—é€‰å•:é£Ÿç‰© é›¶é£Ÿ å¤§è¡¥ä¸¸ ç©å…· ä¹¦æœ¬                                       */
+/* èµ„æ–™åº“                                                                    */
 /*---------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*  ÎïÆ·²ÎÊıÉè¶¨                                                            */
+/*  ç‰©å“å‚æ•°è®¾å®š                                                            */
 /*--------------------------------------------------------------------------*/
 struct goodsofpip
 {
-   int num;		/*±àºÅ*/
-   char *name;		/*Ãû×Ö*/
-   char *msgbuy;	/*¹¦ÓÃ*/
-   char *msguse;	/*ËµÃ÷*/
-   int money;		/*½ğÇ®*/
-   int change;		/*¸Ä±äÁ¿*/
+   int num;		/*ç¼–å·*/
+   char *name;		/*åå­—*/
+   char *msgbuy;	/*åŠŸç”¨*/
+   char *msguse;	/*è¯´æ˜*/
+   int money;		/*é‡‘é’±*/
+   int change;		/*æ”¹å˜é‡*/
    int pic1;
    int pic2;
 };
 typedef struct goodsofpip goodsofpip;
 
 struct goodsofpip pipfoodlist[] = {
-0,"ÎïÆ·Ãû",	"ËµÃ÷buy",	"ËµÃ÷feed",			0,	0,	0,0,
-1,"ºÃ³ÔµÄÊ³Îï",	"ÌåÁ¦»Ö¸´50",	"Ã¿³ÔÒ»´ÎÊ³Îï»á»Ö¸´ÌåÁ¦50à¸!",	50,	50,	1,1,
-2,"ÃÀÎ¶µÄÁãÊ³",	"ÌåÁ¦»Ö¸´100",	"³ıÁË»Ö¸´ÌåÁ¦£¬Ğ¡¼¦Ò²»á¸ü¿ìÀÖ",	120,	100,	2,3,
+//% 0,"ç‰©å“å",	"è¯´æ˜buy",	"è¯´æ˜feed",			0,	0,	0,0,
+0,"\xce\xef\xc6\xb7\xc3\xfb",	"\xcb\xb5\xc3\xf7buy",	"\xcb\xb5\xc3\xf7feed",			0,	0,	0,0,
+//% 1,"å¥½åƒçš„é£Ÿç‰©",	"ä½“åŠ›æ¢å¤50",	"æ¯åƒä¸€æ¬¡é£Ÿç‰©ä¼šæ¢å¤ä½“åŠ›50å–”!",	50,	50,	1,1,
+1,"\xba\xc3\xb3\xd4\xb5\xc4\xca\xb3\xce\xef",	"\xcc\xe5\xc1\xa6\xbb\xd6\xb8\xb450",	"\xc3\xbf\xb3\xd4\xd2\xbb\xb4\xce\xca\xb3\xce\xef\xbb\xe1\xbb\xd6\xb8\xb4\xcc\xe5\xc1\xa650\xe0\xb8!",	50,	50,	1,1,
+//% 2,"ç¾å‘³çš„é›¶é£Ÿ",	"ä½“åŠ›æ¢å¤100",	"é™¤äº†æ¢å¤ä½“åŠ›ï¼Œå°é¸¡ä¹Ÿä¼šæ›´å¿«ä¹",	120,	100,	2,3,
+2,"\xc3\xc0\xce\xb6\xb5\xc4\xc1\xe3\xca\xb3",	"\xcc\xe5\xc1\xa6\xbb\xd6\xb8\xb4100",	"\xb3\xfd\xc1\xcb\xbb\xd6\xb8\xb4\xcc\xe5\xc1\xa6\xa3\xac\xd0\xa1\xbc\xa6\xd2\xb2\xbb\xe1\xb8\xfc\xbf\xec\xc0\xd6",	120,	100,	2,3,
 0,NULL,NULL,NULL,0,0,0,0
 };
 
 struct goodsofpip pipmedicinelist[] = {
-0,"ÎïÆ·Ãû",	"ËµÃ÷buy",	"ËµÃ÷feed",			0,	0,	0,0,
-1,"ºÃÓÃ´ó²¹Íè",	"ÌåÁ¦»Ö¸´600",	"»Ö¸´´óÁ¿Á÷Ê§ÌåÁ¦µÄÁ¼·½",	500,	600,	4,4,
-2,"Õä¹óµÄÁéÖ¥",	"·¨Á¦»Ö¸´50",	"Ã¿³ÔÒ»´ÎÁéÖ¥»á»Ö¸´·¨Á¦50à¸!",	100,	50,	7,7,
-3,"Ç§ÄêÈË²ÎÍõ",	"·¨Á¦»Ö¸´500",	"»Ö¸´´óÁ¿Á÷Ê§·¨Á¦µÄÁ¼·½",	800,	500,	7,7,
-4,"ÌìÉ½Ñ©Á«",	"·¨Á¦ÌåÁ¦×î´ó",	"Õâ¸ö  ºÃ¹ó......",		10000,	0,	7,7,
+//% 0,"ç‰©å“å",	"è¯´æ˜buy",	"è¯´æ˜feed",			0,	0,	0,0,
+0,"\xce\xef\xc6\xb7\xc3\xfb",	"\xcb\xb5\xc3\xf7buy",	"\xcb\xb5\xc3\xf7feed",			0,	0,	0,0,
+//% 1,"å¥½ç”¨å¤§è¡¥ä¸¸",	"ä½“åŠ›æ¢å¤600",	"æ¢å¤å¤§é‡æµå¤±ä½“åŠ›çš„è‰¯æ–¹",	500,	600,	4,4,
+1,"\xba\xc3\xd3\xc3\xb4\xf3\xb2\xb9\xcd\xe8",	"\xcc\xe5\xc1\xa6\xbb\xd6\xb8\xb4600",	"\xbb\xd6\xb8\xb4\xb4\xf3\xc1\xbf\xc1\xf7\xca\xa7\xcc\xe5\xc1\xa6\xb5\xc4\xc1\xbc\xb7\xbd",	500,	600,	4,4,
+//% 2,"çè´µçš„çµèŠ",	"æ³•åŠ›æ¢å¤50",	"æ¯åƒä¸€æ¬¡çµèŠä¼šæ¢å¤æ³•åŠ›50å–”!",	100,	50,	7,7,
+2,"\xd5\xe4\xb9\xf3\xb5\xc4\xc1\xe9\xd6\xa5",	"\xb7\xa8\xc1\xa6\xbb\xd6\xb8\xb450",	"\xc3\xbf\xb3\xd4\xd2\xbb\xb4\xce\xc1\xe9\xd6\xa5\xbb\xe1\xbb\xd6\xb8\xb4\xb7\xa8\xc1\xa650\xe0\xb8!",	100,	50,	7,7,
+//% 3,"åƒå¹´äººå‚ç‹",	"æ³•åŠ›æ¢å¤500",	"æ¢å¤å¤§é‡æµå¤±æ³•åŠ›çš„è‰¯æ–¹",	800,	500,	7,7,
+3,"\xc7\xa7\xc4\xea\xc8\xcb\xb2\xce\xcd\xf5",	"\xb7\xa8\xc1\xa6\xbb\xd6\xb8\xb4500",	"\xbb\xd6\xb8\xb4\xb4\xf3\xc1\xbf\xc1\xf7\xca\xa7\xb7\xa8\xc1\xa6\xb5\xc4\xc1\xbc\xb7\xbd",	800,	500,	7,7,
+//% 4,"å¤©å±±é›ªè²",	"æ³•åŠ›ä½“åŠ›æœ€å¤§",	"è¿™ä¸ª  å¥½è´µ......",		10000,	0,	7,7,
+4,"\xcc\xec\xc9\xbd\xd1\xa9\xc1\xab",	"\xb7\xa8\xc1\xa6\xcc\xe5\xc1\xa6\xd7\xee\xb4\xf3",	"\xd5\xe2\xb8\xf6  \xba\xc3\xb9\xf3......",		10000,	0,	7,7,
 0,NULL,NULL,NULL,0,0,0,0
 };
 
 struct goodsofpip pipotherlist[] = {
-0,"ÎïÆ·Ãû",	"ËµÃ÷buy",	"ËµÃ÷feed",			0,	0,	0,0,
-1,"ÀÖ¸ßÍæ¾ß×é",	"¿ìÀÖÂúÒâ¶È",	"Íæ¾ßÈÃĞ¡¼¦¸ü¿ìÀÖÀ²...",	50,	0,	5,5,
-2,"°Ù¿ÆÈ«Êé",	"ÖªÊ¶µÄÀ´Ô´",	"Êé±¾ÈÃĞ¡¼¦¸ü´ÏÃ÷¸üÓĞÆøÖÊÀ²...",100,	0,	6,6,
+//% 0,"ç‰©å“å",	"è¯´æ˜buy",	"è¯´æ˜feed",			0,	0,	0,0,
+0,"\xce\xef\xc6\xb7\xc3\xfb",	"\xcb\xb5\xc3\xf7buy",	"\xcb\xb5\xc3\xf7feed",			0,	0,	0,0,
+//% 1,"ä¹é«˜ç©å…·ç»„",	"å¿«ä¹æ»¡æ„åº¦",	"ç©å…·è®©å°é¸¡æ›´å¿«ä¹å•¦...",	50,	0,	5,5,
+1,"\xc0\xd6\xb8\xdf\xcd\xe6\xbe\xdf\xd7\xe9",	"\xbf\xec\xc0\xd6\xc2\xfa\xd2\xe2\xb6\xc8",	"\xcd\xe6\xbe\xdf\xc8\xc3\xd0\xa1\xbc\xa6\xb8\xfc\xbf\xec\xc0\xd6\xc0\xb2...",	50,	0,	5,5,
+//% 2,"ç™¾ç§‘å…¨ä¹¦",	"çŸ¥è¯†çš„æ¥æº",	"ä¹¦æœ¬è®©å°é¸¡æ›´èªæ˜æ›´æœ‰æ°”è´¨å•¦...",100,	0,	6,6,
+2,"\xb0\xd9\xbf\xc6\xc8\xab\xca\xe9",	"\xd6\xaa\xca\xb6\xb5\xc4\xc0\xb4\xd4\xb4",	"\xca\xe9\xb1\xbe\xc8\xc3\xd0\xa1\xbc\xa6\xb8\xfc\xb4\xcf\xc3\xf7\xb8\xfc\xd3\xd0\xc6\xf8\xd6\xca\xc0\xb2...",100,	0,	6,6,
 0,NULL,NULL,NULL,0,0,0,0
 };
 
 /*--------------------------------------------------------------------------*/
-/*  ÎäÆ÷²ÎÊıÉè¶¨                                                            */
+/*  æ­¦å™¨å‚æ•°è®¾å®š                                                            */
 /*--------------------------------------------------------------------------*/
 struct weapon
 {
-  char *name;           /*Ãû×Ö*/  
-  int needmaxhp;	/*ĞèÒªhp*/
-  int needmaxmp;	/*ĞèÒªmp*/
-  int needspeed;	/*ĞèÒªµÄspeed*/
-  int attack;		/*¹¥»÷*/
-  int resist;		/*·À»¤*/
-  int speed;		/*ËÙ¶È*/
-  int cost;		/*Âò¼Û*/
-  int sell;		/*Âô¼Û*/
-  int special;		/*ÌØ±ğ*/
-  int map;		/*Í¼µµ*/
+  char *name;           /*åå­—*/  
+  int needmaxhp;	/*éœ€è¦hp*/
+  int needmaxmp;	/*éœ€è¦mp*/
+  int needspeed;	/*éœ€è¦çš„speed*/
+  int attack;		/*æ”»å‡»*/
+  int resist;		/*é˜²æŠ¤*/
+  int speed;		/*é€Ÿåº¦*/
+  int cost;		/*ä¹°ä»·*/
+  int sell;		/*å–ä»·*/
+  int special;		/*ç‰¹åˆ«*/
+  int map;		/*å›¾æ¡£*/
 
 };
 typedef struct weapon weapon;
 
-/*Ãû×Ö,Ğèhp,Ğèmp,Ğèspeed,¹¥»÷,·À»¤,ËÙ¶È,Âò¼Û,Âô¼Û,ÌØ±ğ,Í¼µµ*/
+/*åå­—,éœ€hp,éœ€mp,éœ€speed,æ”»å‡»,é˜²æŠ¤,é€Ÿåº¦,ä¹°ä»·,å–ä»·,ç‰¹åˆ«,å›¾æ¡£*/
 struct weapon headlist[] = {
-"²»Âò×°±¸",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
-"ËÜ½ºÃ±×Ó",  0,  0,  0,  0,  5,  0,   500,   300,0,0,	
-"Å£Æ¤Ğ¡Ã±",  0,  0,  0,  0, 10,  0,  3500,  1000,0,0,
-"  °²È«Ã±", 60,  0,  0,  0, 20,  0,  5000,  3500,0,0,
-"¸ÖÌúÍ·¿ø",150, 50,  0,  0, 30,  0, 10000,  6000,0,0,
-"Ä§·¨·¢¹¿",100,150,  0,  0, 25,  0, 50000, 10000,0,0, 
-"»Æ½ğÊ¥¿ø",300,300,300,  0,100,  0,300000,100000,0,0,
+//% "ä¸ä¹°è£…å¤‡",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+"\xb2\xbb\xc2\xf2\xd7\xb0\xb1\xb8",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+//% "å¡‘èƒ¶å¸½å­",  0,  0,  0,  0,  5,  0,   500,   300,0,0,	
+"\xcb\xdc\xbd\xba\xc3\xb1\xd7\xd3",  0,  0,  0,  0,  5,  0,   500,   300,0,0,	
+//% "ç‰›çš®å°å¸½",  0,  0,  0,  0, 10,  0,  3500,  1000,0,0,
+"\xc5\xa3\xc6\xa4\xd0\xa1\xc3\xb1",  0,  0,  0,  0, 10,  0,  3500,  1000,0,0,
+//% "  å®‰å…¨å¸½", 60,  0,  0,  0, 20,  0,  5000,  3500,0,0,
+"  \xb0\xb2\xc8\xab\xc3\xb1", 60,  0,  0,  0, 20,  0,  5000,  3500,0,0,
+//% "é’¢é“å¤´ç›”",150, 50,  0,  0, 30,  0, 10000,  6000,0,0,
+"\xb8\xd6\xcc\xfa\xcd\xb7\xbf\xf8",150, 50,  0,  0, 30,  0, 10000,  6000,0,0,
+//% "é­”æ³•å‘ç®",100,150,  0,  0, 25,  0, 50000, 10000,0,0, 
+"\xc4\xa7\xb7\xa8\xb7\xa2\xb9\xbf",100,150,  0,  0, 25,  0, 50000, 10000,0,0, 
+//% "é»„é‡‘åœ£ç›”",300,300,300,  0,100,  0,300000,100000,0,0,
+"\xbb\xc6\xbd\xf0\xca\xa5\xbf\xf8",300,300,300,  0,100,  0,300000,100000,0,0,
 NULL,        0,  0,  0,  0,  0,  0,   0,   0,0,0
 };
 
-/*Ãû×Ö,Ğèhp,Ğèmp,Ğèspeed,¹¥»÷,·À»¤,ËÙ¶È,Âò¼Û,Âô¼Û,ÌØ±ğ,Í¼µµ*/
+/*åå­—,éœ€hp,éœ€mp,éœ€speed,æ”»å‡»,é˜²æŠ¤,é€Ÿåº¦,ä¹°ä»·,å–ä»·,ç‰¹åˆ«,å›¾æ¡£*/
 struct weapon rhandlist[] = {
-"²»Âò×°±¸",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
-"´óÄ¾°ô",    0,  0,  0,  5,  0,  0,  1000,   700,0,0,	
-"½ğÊô°âÊÖ",  0,  0,  0, 10,  0,  0,  2500,  1000,0,0,
-"ÇàÍ­½£",   50,  0,  0, 20,  0,  0,  6000,  4000,0,0,
-"ÇçÀ×½£",   80,  0,  0, 30,  0,  0, 10000,  8000,0,0,
-"²õÒíµ¶",  100, 20,  0, 40,  0,  0, 15000, 10000,0,0, 
-"ÍüÇé½£",  100, 40,  0, 35, 20,  0, 15000, 10000,0,0,
-"Ê¨Í·±¦µ¶",150,  0,  0, 60,  0,  0, 35000, 20000,0,0,
-"ÍÀÁúµ¶",  200,  0,  0,100,  0,  0, 50000, 25000,0,0,
-"»Æ½ğÊ¥ÕÈ",300,300,300,100, 20,  0,150000,100000,0,0,
+//% "ä¸ä¹°è£…å¤‡",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+"\xb2\xbb\xc2\xf2\xd7\xb0\xb1\xb8",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+//% "å¤§æœ¨æ£’",    0,  0,  0,  5,  0,  0,  1000,   700,0,0,	
+"\xb4\xf3\xc4\xbe\xb0\xf4",    0,  0,  0,  5,  0,  0,  1000,   700,0,0,	
+//% "é‡‘å±æ‰³æ‰‹",  0,  0,  0, 10,  0,  0,  2500,  1000,0,0,
+"\xbd\xf0\xca\xf4\xb0\xe2\xca\xd6",  0,  0,  0, 10,  0,  0,  2500,  1000,0,0,
+//% "é’é“œå‰‘",   50,  0,  0, 20,  0,  0,  6000,  4000,0,0,
+"\xc7\xe0\xcd\xad\xbd\xa3",   50,  0,  0, 20,  0,  0,  6000,  4000,0,0,
+//% "æ™´é›·å‰‘",   80,  0,  0, 30,  0,  0, 10000,  8000,0,0,
+"\xc7\xe7\xc0\xd7\xbd\xa3",   80,  0,  0, 30,  0,  0, 10000,  8000,0,0,
+//% "è‰ç¿¼åˆ€",  100, 20,  0, 40,  0,  0, 15000, 10000,0,0, 
+"\xb2\xf5\xd2\xed\xb5\xb6",  100, 20,  0, 40,  0,  0, 15000, 10000,0,0, 
+//% "å¿˜æƒ…å‰‘",  100, 40,  0, 35, 20,  0, 15000, 10000,0,0,
+"\xcd\xfc\xc7\xe9\xbd\xa3",  100, 40,  0, 35, 20,  0, 15000, 10000,0,0,
+//% "ç‹®å¤´å®åˆ€",150,  0,  0, 60,  0,  0, 35000, 20000,0,0,
+"\xca\xa8\xcd\xb7\xb1\xa6\xb5\xb6",150,  0,  0, 60,  0,  0, 35000, 20000,0,0,
+//% "å± é¾™åˆ€",  200,  0,  0,100,  0,  0, 50000, 25000,0,0,
+"\xcd\xc0\xc1\xfa\xb5\xb6",  200,  0,  0,100,  0,  0, 50000, 25000,0,0,
+//% "é»„é‡‘åœ£æ–",300,300,300,100, 20,  0,150000,100000,0,0,
+"\xbb\xc6\xbd\xf0\xca\xa5\xd5\xc8",300,300,300,100, 20,  0,150000,100000,0,0,
 NULL,        0,  0,  0,  0,  0,  0,    0,   0,0,0
 };
 
-/*Ãû×Ö,Ğèhp,Ğèmp,Ğèspeed,¹¥»÷,·À»¤,ËÙ¶È,Âò¼Û,Âô¼Û,ÌØ±ğ,Í¼µµ*/
+/*åå­—,éœ€hp,éœ€mp,éœ€speed,æ”»å‡»,é˜²æŠ¤,é€Ÿåº¦,ä¹°ä»·,å–ä»·,ç‰¹åˆ«,å›¾æ¡£*/
 struct weapon lhandlist[] = {
-"²»Âò×°±¸",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
-"´óÄ¾°ô",    0,  0,  0,  5,  0,  0,  1000,   700,0,0,	
-"½ğÊô°âÊÖ",  0,  0,  0, 10,  0,  0,  1500,  1000,0,0,
-"Ä¾¶Ü",	     0,  0,  0,  0, 10,  0,  2000,  1500,0,0,
-"²»Ğâ¸Ö¶Ü", 60,  0,  0,  0, 25,  0,  5000,  3000,0,0,
-"°×½ğÖ®¶Ü", 80,  0,  0, 10, 40,  0, 15000, 10000,0,0,
-"Ä§·¨¶Ü",   80,100,  0, 20, 60,  0, 80000, 50000,0,0,
-"»Æ½ğÊ¥¶Ü",300,300,300, 30,100,  0,150000,100000,0,0,
+//% "ä¸ä¹°è£…å¤‡",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+"\xb2\xbb\xc2\xf2\xd7\xb0\xb1\xb8",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+//% "å¤§æœ¨æ£’",    0,  0,  0,  5,  0,  0,  1000,   700,0,0,	
+"\xb4\xf3\xc4\xbe\xb0\xf4",    0,  0,  0,  5,  0,  0,  1000,   700,0,0,	
+//% "é‡‘å±æ‰³æ‰‹",  0,  0,  0, 10,  0,  0,  1500,  1000,0,0,
+"\xbd\xf0\xca\xf4\xb0\xe2\xca\xd6",  0,  0,  0, 10,  0,  0,  1500,  1000,0,0,
+//% "æœ¨ç›¾",	     0,  0,  0,  0, 10,  0,  2000,  1500,0,0,
+"\xc4\xbe\xb6\xdc",	     0,  0,  0,  0, 10,  0,  2000,  1500,0,0,
+//% "ä¸é”ˆé’¢ç›¾", 60,  0,  0,  0, 25,  0,  5000,  3000,0,0,
+"\xb2\xbb\xd0\xe2\xb8\xd6\xb6\xdc", 60,  0,  0,  0, 25,  0,  5000,  3000,0,0,
+//% "ç™½é‡‘ä¹‹ç›¾", 80,  0,  0, 10, 40,  0, 15000, 10000,0,0,
+"\xb0\xd7\xbd\xf0\xd6\xae\xb6\xdc", 80,  0,  0, 10, 40,  0, 15000, 10000,0,0,
+//% "é­”æ³•ç›¾",   80,100,  0, 20, 60,  0, 80000, 50000,0,0,
+"\xc4\xa7\xb7\xa8\xb6\xdc",   80,100,  0, 20, 60,  0, 80000, 50000,0,0,
+//% "é»„é‡‘åœ£ç›¾",300,300,300, 30,100,  0,150000,100000,0,0,
+"\xbb\xc6\xbd\xf0\xca\xa5\xb6\xdc",300,300,300, 30,100,  0,150000,100000,0,0,
 NULL,        0,  0,  0,  0,  0,  0,    0,   0,0,0
 };
 
-/*Ãû×Ö,Ğèhp,Ğèmp,Ğèspeed,¹¥»÷,·À»¤,ËÙ¶È,Âò¼Û,Âô¼Û,ÌØ±ğ,Í¼µµ*/
+/*åå­—,éœ€hp,éœ€mp,éœ€speed,æ”»å‡»,é˜²æŠ¤,é€Ÿåº¦,ä¹°ä»·,å–ä»·,ç‰¹åˆ«,å›¾æ¡£*/
 struct weapon bodylist[] = {
-"²»Âò×°±¸",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
-"ËÜ½ºëĞ¼×", 40,  0,  0,  0,  5,  0,  1000,   700,0,0,	
-"ÌØ¼¶Æ¤¼×", 50,  0,  0,  0, 10,  0,  2500,  1000,0,0,
-"¸ÖÌú¿ø¼×", 80,  0,  0,  0, 25,  0,  5000,  3500,0,0,
-"Ä§·¨Åû·ç", 80, 40,  0,  0, 20, 20, 15500, 10000,0,0,
-"°×½ğ¿ø¼×",100, 30,  0,  0, 40, 20, 30000, 20000,0,0, 
-"»Æ½ğÊ¥ÒÂ",300,300,300, 30,100,  0,150000,100000,0,0,
+//% "ä¸ä¹°è£…å¤‡",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+"\xb2\xbb\xc2\xf2\xd7\xb0\xb1\xb8",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+//% "å¡‘èƒ¶èƒ„ç”²", 40,  0,  0,  0,  5,  0,  1000,   700,0,0,	
+"\xcb\xdc\xbd\xba\xeb\xd0\xbc\xd7", 40,  0,  0,  0,  5,  0,  1000,   700,0,0,	
+//% "ç‰¹çº§çš®ç”²", 50,  0,  0,  0, 10,  0,  2500,  1000,0,0,
+"\xcc\xd8\xbc\xb6\xc6\xa4\xbc\xd7", 50,  0,  0,  0, 10,  0,  2500,  1000,0,0,
+//% "é’¢é“ç›”ç”²", 80,  0,  0,  0, 25,  0,  5000,  3500,0,0,
+"\xb8\xd6\xcc\xfa\xbf\xf8\xbc\xd7", 80,  0,  0,  0, 25,  0,  5000,  3500,0,0,
+//% "é­”æ³•æŠ«é£", 80, 40,  0,  0, 20, 20, 15500, 10000,0,0,
+"\xc4\xa7\xb7\xa8\xc5\xfb\xb7\xe7", 80, 40,  0,  0, 20, 20, 15500, 10000,0,0,
+//% "ç™½é‡‘ç›”ç”²",100, 30,  0,  0, 40, 20, 30000, 20000,0,0, 
+"\xb0\xd7\xbd\xf0\xbf\xf8\xbc\xd7",100, 30,  0,  0, 40, 20, 30000, 20000,0,0, 
+//% "é»„é‡‘åœ£è¡£",300,300,300, 30,100,  0,150000,100000,0,0,
+"\xbb\xc6\xbd\xf0\xca\xa5\xd2\xc2",300,300,300, 30,100,  0,150000,100000,0,0,
 NULL,        0,  0,  0,  0,  0,  0,     0,   0,0,0
 };
 
-/*Ãû×Ö,Ğèhp,Ğèmp,Ğèspeed,¹¥»÷,·À»¤,ËÙ¶È,Âò¼Û,Âô¼Û,ÌØ±ğ,Í¼µµ*/
+/*åå­—,éœ€hp,éœ€mp,éœ€speed,æ”»å‡»,é˜²æŠ¤,é€Ÿåº¦,ä¹°ä»·,å–ä»·,ç‰¹åˆ«,å›¾æ¡£*/
 struct weapon footlist[] = {
-"²»Âò×°±¸",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
-"ËÜ½ºÍÏĞ¬",  0,  0,  0,  0,  0, 10,   800,   500,0,0,
-"¶«ÑóÄ¾åì",  0,  0,  0, 15,  0, 10,  1000,   700,0,0, 	
-"ÌØ¼¶ÓêĞ¬",  0,  0,  0,  0, 10, 10,  1500,  1000,0,0,
-"NIKEÔË¶¯Ğ¬",70, 0,  0,  0, 10, 40,  8000,  5000,0,0,
-"öùÓãÆ¤Ñ¥", 80, 20,  0, 10, 25, 20, 12000,  8000,0,0,
-"·ÉÌìÄ§Ñ¥",100,100,  0, 30, 50, 60, 25000, 10000,0,0,
-"»Æ½ğÊ¥Ñ¥",300,300,300, 50,100,100,150000,100000,0,0,
+//% "ä¸ä¹°è£…å¤‡",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+"\xb2\xbb\xc2\xf2\xd7\xb0\xb1\xb8",  0,  0,  0,  0,  0,  0,     0,     0,0,0,
+//% "å¡‘èƒ¶æ‹–é‹",  0,  0,  0,  0,  0, 10,   800,   500,0,0,
+"\xcb\xdc\xbd\xba\xcd\xcf\xd0\xac",  0,  0,  0,  0,  0, 10,   800,   500,0,0,
+//% "ä¸œæ´‹æœ¨å±",  0,  0,  0, 15,  0, 10,  1000,   700,0,0, 	
+"\xb6\xab\xd1\xf3\xc4\xbe\xe5\xec",  0,  0,  0, 15,  0, 10,  1000,   700,0,0, 	
+//% "ç‰¹çº§é›¨é‹",  0,  0,  0,  0, 10, 10,  1500,  1000,0,0,
+"\xcc\xd8\xbc\xb6\xd3\xea\xd0\xac",  0,  0,  0,  0, 10, 10,  1500,  1000,0,0,
+//% "NIKEè¿åŠ¨é‹",70, 0,  0,  0, 10, 40,  8000,  5000,0,0,
+"NIKE\xd4\xcb\xb6\xaf\xd0\xac",70, 0,  0,  0, 10, 40,  8000,  5000,0,0,
+//% "é³„é±¼çš®é´", 80, 20,  0, 10, 25, 20, 12000,  8000,0,0,
+"\xf6\xf9\xd3\xe3\xc6\xa4\xd1\xa5", 80, 20,  0, 10, 25, 20, 12000,  8000,0,0,
+//% "é£å¤©é­”é´",100,100,  0, 30, 50, 60, 25000, 10000,0,0,
+"\xb7\xc9\xcc\xec\xc4\xa7\xd1\xa5",100,100,  0, 30, 50, 60, 25000, 10000,0,0,
+//% "é»„é‡‘åœ£é´",300,300,300, 50,100,100,150000,100000,0,0,
+"\xbb\xc6\xbd\xf0\xca\xa5\xd1\xa5",300,300,300, 50,100,100,150000,100000,0,0,
 NULL,        0,  0,  0,  0,  0,  0,    0,   0,0,0
 };
 
 /*---------------------------------------------------------------------------*/
-/* ÉÌµêÑ¡µ¥:Ê³Îï ÁãÊ³ ´ó²¹Íè Íæ¾ß Êé±¾                                       */
-/* º¯Ê½¿â                                                                    */
+/* å•†åº—é€‰å•:é£Ÿç‰© é›¶é£Ÿ å¤§è¡¥ä¸¸ ç©å…· ä¹¦æœ¬                                       */
+/* å‡½å¼åº“                                                                    */
 /*---------------------------------------------------------------------------*/
 
 int pip_store_food()
@@ -187,27 +238,27 @@ int pip_store_other()
     return 0;
 }
 
-int pip_store_weapon_head()	/*Í·²¿ÎäÆ÷*/
+int pip_store_weapon_head()	/*å¤´éƒ¨æ­¦å™¨*/
 {
      d.weaponhead=pip_weapon_doing_menu(d.weaponhead,0,headlist);
      return 0; 
 }
-int pip_store_weapon_rhand()	/*ÓÒÊÖÎäÆ÷*/
+int pip_store_weapon_rhand()	/*å³æ‰‹æ­¦å™¨*/
 {
      d.weaponrhand=pip_weapon_doing_menu(d.weaponrhand,1,rhandlist);
      return 0;
 }
-int pip_store_weapon_lhand()    /*×óÊÖÎäÆ÷*/
+int pip_store_weapon_lhand()    /*å·¦æ‰‹æ­¦å™¨*/
 {
      d.weaponlhand=pip_weapon_doing_menu(d.weaponlhand,2,lhandlist);
      return 0;
 }
-int pip_store_weapon_body()	/*ÉíÌåÎäÆ÷*/
+int pip_store_weapon_body()	/*èº«ä½“æ­¦å™¨*/
 {
      d.weaponbody=pip_weapon_doing_menu(d.weaponbody,3,bodylist);
      return 0;
 }
-int pip_store_weapon_foot()     /*×ã²¿ÎäÆ÷*/
+int pip_store_weapon_foot()     /*è¶³éƒ¨æ­¦å™¨*/
 {
      d.weaponfoot=pip_weapon_doing_menu(d.weaponfoot,4,footlist);
      return 0;
@@ -220,7 +271,8 @@ int mode;
 int oldnum[];
 struct goodsofpip *p;
 {
-    char *shopname[4]={"µêÃû","±ãÀûÉÌµê","ĞÇ¿ÕÒ©ÆÌ","Ò¹ÀïÊé¾Ö"};
+    //% char *shopname[4]={"åº—å","ä¾¿åˆ©å•†åº—","æ˜Ÿç©ºè¯é“º","å¤œé‡Œä¹¦å±€"};
+    char *shopname[4]={"\xb5\xea\xc3\xfb","\xb1\xe3\xc0\xfb\xc9\xcc\xb5\xea","\xd0\xc7\xbf\xd5\xd2\xa9\xc6\xcc","\xd2\xb9\xc0\xef\xca\xe9\xbe\xd6"};
     char inbuf[256];
     char genbuf[20];
     long smoney;
@@ -231,7 +283,8 @@ struct goodsofpip *p;
     {
 	    clrchyiuan(6,18);
 	    move(6,0);
-	    sprintf(inbuf,"[1;31m  ¡ª[41;37m ±àºÅ [0;1;31m¡ª[41;37m ÉÌ      Æ· [0;1;31m¡ª¡ª[41;37m Ğ§            ÄÜ [0;1;31m¡ª¡ª[41;37m ¼Û     ¸ñ [0;1;31m¡ª[37;41m ÓµÓĞÊıÁ¿ [0;1;31m¡ª[0m  ");
+	    //% sprintf(inbuf,"[1;31m  â€”[41;37m ç¼–å· [0;1;31mâ€”[41;37m å•†      å“ [0;1;31mâ€”â€”[41;37m æ•ˆ            èƒ½ [0;1;31mâ€”â€”[41;37m ä»·     æ ¼ [0;1;31mâ€”[37;41m æ‹¥æœ‰æ•°é‡ [0;1;31mâ€”[0m  ");
+	    sprintf(inbuf,"[1;31m  \xa1\xaa[41;37m \xb1\xe0\xba\xc5 [0;1;31m\xa1\xaa[41;37m \xc9\xcc      \xc6\xb7 [0;1;31m\xa1\xaa\xa1\xaa[41;37m \xd0\xa7            \xc4\xdc [0;1;31m\xa1\xaa\xa1\xaa[41;37m \xbc\xdb     \xb8\xf1 [0;1;31m\xa1\xaa[37;41m \xd3\xb5\xd3\xd0\xca\xfd\xc1\xbf [0;1;31m\xa1\xaa[0m  ");
 	    prints(inbuf);
 	    for(i=1;i<=oldnum[0];i++)
 	    {
@@ -242,7 +295,8 @@ struct goodsofpip *p;
 	    }
 	    clrchyiuan(19,24);
 	    move(b_lines,0); 
-	    sprintf(inbuf,"[1;44;37m  %8sÑ¡µ¥  [46m  [B]ÂòÈëÎïÆ·  [S]Âô³öÎïÆ·  [Q]Ìø³ö£º                         [m",shopname[mode]);
+	    //% sprintf(inbuf,"[1;44;37m  %8sé€‰å•  [46m  [B]ä¹°å…¥ç‰©å“  [S]å–å‡ºç‰©å“  [Q]è·³å‡ºï¼š                         [m",shopname[mode]);
+	    sprintf(inbuf,"[1;44;37m  %8s\xd1\xa1\xb5\xa5  [46m  [B]\xc2\xf2\xc8\xeb\xce\xef\xc6\xb7  [S]\xc2\xf4\xb3\xf6\xce\xef\xc6\xb7  [Q]\xcc\xf8\xb3\xf6\xa3\xba                         [m",shopname[mode]);
 	    prints(inbuf);
 	    pipkey=egetch(); 
 	    switch(pipkey)  
@@ -250,7 +304,8 @@ struct goodsofpip *p;
 		case 'B':
 		case 'b':      
 			move(b_lines-1,1);
-			sprintf(inbuf,"ÏëÒªÂòÈëÉ¶ÄØ? [0]·ÅÆúÂòÈë [1¡«%d]ÎïÆ·ÉÌºÅ",oldnum[0]);
+			//% sprintf(inbuf,"æƒ³è¦ä¹°å…¥å•¥å‘¢? [0]æ”¾å¼ƒä¹°å…¥ [1ï½%d]ç‰©å“å•†å·",oldnum[0]);
+			sprintf(inbuf,"\xcf\xeb\xd2\xaa\xc2\xf2\xc8\xeb\xc9\xb6\xc4\xd8? [0]\xb7\xc5\xc6\xfa\xc2\xf2\xc8\xeb [1\xa1\xab%d]\xce\xef\xc6\xb7\xc9\xcc\xba\xc5",oldnum[0]);
 #ifdef MAPLE
 			getdata(b_lines-1,1,inbuf,genbuf, 3, LCECHO,"0");
 #else
@@ -275,7 +330,8 @@ struct goodsofpip *p;
 					smoney=1;
 				else
 				{
-					sprintf(inbuf,"ÄãÒªÂòÈëÎïÆ· [%s] ¶àÉÙ¸öÄØ?(ÉÏÏŞ %d)",p[choice].name,d.money/p[choice].money);
+					//% sprintf(inbuf,"ä½ è¦ä¹°å…¥ç‰©å“ [%s] å¤šå°‘ä¸ªå‘¢?(ä¸Šé™ %d)",p[choice].name,d.money/p[choice].money);
+					sprintf(inbuf,"\xc4\xe3\xd2\xaa\xc2\xf2\xc8\xeb\xce\xef\xc6\xb7 [%s] \xb6\xe0\xc9\xd9\xb8\xf6\xc4\xd8?(\xc9\xcf\xcf\xde %d)",p[choice].name,d.money/p[choice].money);
 #ifdef MAPLE
 					getdata(b_lines-1,1,inbuf,genbuf,6, 1, 0);
 #else
@@ -285,15 +341,18 @@ struct goodsofpip *p;
 				}
 				if(smoney<0)
 				{
-					pressanykey("·ÅÆúÂòÈë...");
+					//% pressanykey("æ”¾å¼ƒä¹°å…¥...");
+					pressanykey("\xb7\xc5\xc6\xfa\xc2\xf2\xc8\xeb...");
 				}
 				else if(d.money<smoney*p[choice].money)
 				{
-					pressanykey("ÄãµÄÇ®Ã»ÓĞÄÇ÷á¶àà¸..");
+					//% pressanykey("ä½ çš„é’±æ²¡æœ‰é‚£éº½å¤šå–”..");
+					pressanykey("\xc4\xe3\xb5\xc4\xc7\xae\xc3\xbb\xd3\xd0\xc4\xc7\xf7\xe1\xb6\xe0\xe0\xb8..");
 				}
 				else
 				{
-					sprintf(inbuf,"È·¶¨ÂòÈëÎïÆ· [%s] ÊıÁ¿ %d ¸öÂğ?(µê¼ÒÂô¼Û %d) [y/N]:",p[choice].name,smoney,smoney*p[choice].money);
+					//% sprintf(inbuf,"ç¡®å®šä¹°å…¥ç‰©å“ [%s] æ•°é‡ %d ä¸ªå—?(åº—å®¶å–ä»· %d) [y/N]:",p[choice].name,smoney,smoney*p[choice].money);
+					sprintf(inbuf,"\xc8\xb7\xb6\xa8\xc2\xf2\xc8\xeb\xce\xef\xc6\xb7 [%s] \xca\xfd\xc1\xbf %d \xb8\xf6\xc2\xf0?(\xb5\xea\xbc\xd2\xc2\xf4\xbc\xdb %d) [y/N]:",p[choice].name,smoney,smoney*p[choice].money);
 #ifdef MAPLE
 					getdata(b_lines-1,1,inbuf,genbuf, 2, 1, 0); 
 #else
@@ -303,7 +362,8 @@ struct goodsofpip *p;
 					{
 						oldnum[choice]+=smoney;
 						d.money-=smoney*p[choice].money;
-						sprintf(inbuf,"ÀÏ°å¸øÁËÄã%d¸ö%s",smoney,p[choice].name);
+						//% sprintf(inbuf,"è€æ¿ç»™äº†ä½ %dä¸ª%s",smoney,p[choice].name);
+						sprintf(inbuf,"\xc0\xcf\xb0\xe5\xb8\xf8\xc1\xcb\xc4\xe3%d\xb8\xf6%s",smoney,p[choice].name);
 						pressanykey(inbuf);
 						pressanykey(p[choice].msguse);
 						if(mode==3 && choice==1)
@@ -321,13 +381,15 @@ struct goodsofpip *p;
 					}
 					else
 					{
-						pressanykey("·ÅÆúÂòÈë...");
+						//% pressanykey("æ”¾å¼ƒä¹°å…¥...");
+						pressanykey("\xb7\xc5\xc6\xfa\xc2\xf2\xc8\xeb...");
 					}
 				}
 			}
 			else
 			{
-				sprintf(inbuf,"·ÅÆúÂòÈë.....");
+				//% sprintf(inbuf,"æ”¾å¼ƒä¹°å…¥.....");
+				sprintf(inbuf,"\xb7\xc5\xc6\xfa\xc2\xf2\xc8\xeb.....");
 				pressanykey(inbuf);            
 			}
 			break;     
@@ -336,11 +398,13 @@ struct goodsofpip *p;
  		case 's':
  			if(mode==3)
  			{
- 				pressanykey("ÕâĞ©¶«Î÷²»ÄÜÂôà¸....");
+ 				//% pressanykey("è¿™äº›ä¸œè¥¿ä¸èƒ½å–å–”....");
+ 				pressanykey("\xd5\xe2\xd0\xa9\xb6\xab\xce\xf7\xb2\xbb\xc4\xdc\xc2\xf4\xe0\xb8....");
  				break;
  			}
 			move(b_lines-1,1);
-			sprintf(inbuf,"ÏëÒªÂô³öÉ¶ÄØ? [0]·ÅÆúÂô³ö [1¡«%d]ÎïÆ·ÉÌºÅ",oldnum[0]);
+			//% sprintf(inbuf,"æƒ³è¦å–å‡ºå•¥å‘¢? [0]æ”¾å¼ƒå–å‡º [1ï½%d]ç‰©å“å•†å·",oldnum[0]);
+			sprintf(inbuf,"\xcf\xeb\xd2\xaa\xc2\xf4\xb3\xf6\xc9\xb6\xc4\xd8? [0]\xb7\xc5\xc6\xfa\xc2\xf4\xb3\xf6 [1\xa1\xab%d]\xce\xef\xc6\xb7\xc9\xcc\xba\xc5",oldnum[0]);
 #ifdef MAPLE
 			getdata(b_lines-1,1,inbuf,genbuf, 3, LCECHO,"0");
 #else
@@ -360,7 +424,8 @@ struct goodsofpip *p;
 				clrtoeol();  
 				move(b_lines-1,1);       
 				smoney=0;
-				sprintf(inbuf,"ÄãÒªÂô³öÎïÆ· [%s] ¶àÉÙ¸öÄØ?(ÉÏÏŞ %d)",p[choice].name,oldnum[choice]);
+				//% sprintf(inbuf,"ä½ è¦å–å‡ºç‰©å“ [%s] å¤šå°‘ä¸ªå‘¢?(ä¸Šé™ %d)",p[choice].name,oldnum[choice]);
+				sprintf(inbuf,"\xc4\xe3\xd2\xaa\xc2\xf4\xb3\xf6\xce\xef\xc6\xb7 [%s] \xb6\xe0\xc9\xd9\xb8\xf6\xc4\xd8?(\xc9\xcf\xcf\xde %d)",p[choice].name,oldnum[choice]);
 #ifdef MAPLE
 				getdata(b_lines-1,1,inbuf,genbuf,6, 1, 0); 
 #else
@@ -369,16 +434,19 @@ struct goodsofpip *p;
 				smoney=atoi(genbuf);
 				if(smoney<0)
 				{
-					pressanykey("·ÅÆúÂô³ö...");
+					//% pressanykey("æ”¾å¼ƒå–å‡º...");
+					pressanykey("\xb7\xc5\xc6\xfa\xc2\xf4\xb3\xf6...");
 				}
 				else if(smoney>oldnum[choice])
 				{
-					sprintf(inbuf,"ÄãµÄ [%s] Ã»ÓĞÄÇ÷á¶à¸öà¸",p[choice].name);
+					//% sprintf(inbuf,"ä½ çš„ [%s] æ²¡æœ‰é‚£éº½å¤šä¸ªå–”",p[choice].name);
+					sprintf(inbuf,"\xc4\xe3\xb5\xc4 [%s] \xc3\xbb\xd3\xd0\xc4\xc7\xf7\xe1\xb6\xe0\xb8\xf6\xe0\xb8",p[choice].name);
 					pressanykey(inbuf);
 				}
 				else
 				{
-					sprintf(inbuf,"È·¶¨Âô³öÎïÆ· [%s] ÊıÁ¿ %d ¸öÂğ?(µê¼ÒÂò¼Û %d) [y/N]:",p[choice].name,smoney,smoney*p[choice].money*8/10);
+					//% sprintf(inbuf,"ç¡®å®šå–å‡ºç‰©å“ [%s] æ•°é‡ %d ä¸ªå—?(åº—å®¶ä¹°ä»· %d) [y/N]:",p[choice].name,smoney,smoney*p[choice].money*8/10);
+					sprintf(inbuf,"\xc8\xb7\xb6\xa8\xc2\xf4\xb3\xf6\xce\xef\xc6\xb7 [%s] \xca\xfd\xc1\xbf %d \xb8\xf6\xc2\xf0?(\xb5\xea\xbc\xd2\xc2\xf2\xbc\xdb %d) [y/N]:",p[choice].name,smoney,smoney*p[choice].money*8/10);
 #ifdef MAPLE
 					getdata(b_lines-1,1,inbuf,genbuf, 2, 1, 0);
 #else
@@ -388,24 +456,28 @@ struct goodsofpip *p;
 					{
 						oldnum[choice]-=smoney;
 						d.money+=smoney*p[choice].money*8/10;
-						sprintf(inbuf,"ÀÏ°åÄÃ×ßÁËÄãµÄ%d¸ö%s",smoney,p[choice].name);
+						//% sprintf(inbuf,"è€æ¿æ‹¿èµ°äº†ä½ çš„%dä¸ª%s",smoney,p[choice].name);
+						sprintf(inbuf,"\xc0\xcf\xb0\xe5\xc4\xc3\xd7\xdf\xc1\xcb\xc4\xe3\xb5\xc4%d\xb8\xf6%s",smoney,p[choice].name);
 						pressanykey(inbuf);
 					}
 					else
 					{
-						pressanykey("·ÅÆúÂô³ö...");
+						//% pressanykey("æ”¾å¼ƒå–å‡º...");
+						pressanykey("\xb7\xc5\xc6\xfa\xc2\xf4\xb3\xf6...");
 					}
 				}
 			}
 			else
 			{
-				sprintf(inbuf,"·ÅÆúÂô³ö.....");
+				//% sprintf(inbuf,"æ”¾å¼ƒå–å‡º.....");
+				sprintf(inbuf,"\xb7\xc5\xc6\xfa\xc2\xf4\xb3\xf6.....");
 				pressanykey(inbuf);            
 			}
 			break;
 		case 'Q':
 		case 'q':
-			sprintf(inbuf,"½ğÇ®½»Ò×¹² %d Ôª,Àë¿ª %s ",d.money-oldmoney,shopname[mode]);
+			//% sprintf(inbuf,"é‡‘é’±äº¤æ˜“å…± %d å…ƒ,ç¦»å¼€ %s ",d.money-oldmoney,shopname[mode]);
+			sprintf(inbuf,"\xbd\xf0\xc7\xae\xbd\xbb\xd2\xd7\xb9\xb2 %d \xd4\xaa,\xc0\xeb\xbf\xaa %s ",d.money-oldmoney,shopname[mode]);
 			pressanykey(inbuf);
 			break;
 #ifdef MAPLE
@@ -413,7 +485,8 @@ struct goodsofpip *p;
 			if (currutmp->msgs[0].last_pid)
 			{
 				show_last_call_in();
-				my_write(currutmp->msgs[0].last_pid, "Ë®Çò¶ª»ØÈ¥£º");
+				//% my_write(currutmp->msgs[0].last_pid, "æ°´çƒä¸¢å›å»ï¼š");
+				my_write(currutmp->msgs[0].last_pid, "\xcb\xae\xc7\xf2\xb6\xaa\xbb\xd8\xc8\xa5\xa3\xba");
 			}
 			break;
 #endif  // END MAPLE
@@ -423,7 +496,7 @@ struct goodsofpip *p;
 }
 
 int
-pip_weapon_doing_menu(variance,type,p)               /* ÎäÆ÷¹ºÂò»­Ãæ */
+pip_weapon_doing_menu(variance,type,p)               /* æ­¦å™¨è´­ä¹°ç”»é¢ */
 int variance;
 int type;
 struct weapon *p;
@@ -434,7 +507,8 @@ struct weapon *p;
   char buf[256];
   char ans[5];
   char shortbuf[100];
-  char menutitle[5][11]={"Í·²¿×°±¸Çø","ÓÒÊÖ×°±¸Çø","×óÊÖ×°±¸Çø","ÉíÌå×°±¸Çø","×ã²¿×°±¸Çø"};  
+  //% char menutitle[5][11]={"å¤´éƒ¨è£…å¤‡åŒº","å³æ‰‹è£…å¤‡åŒº","å·¦æ‰‹è£…å¤‡åŒº","èº«ä½“è£…å¤‡åŒº","è¶³éƒ¨è£…å¤‡åŒº"};  
+  char menutitle[5][11]={"\xcd\xb7\xb2\xbf\xd7\xb0\xb1\xb8\xc7\xf8","\xd3\xd2\xca\xd6\xd7\xb0\xb1\xb8\xc7\xf8","\xd7\xf3\xca\xd6\xd7\xb0\xb1\xb8\xc7\xf8","\xc9\xed\xcc\xe5\xd7\xb0\xb1\xb8\xc7\xf8","\xd7\xe3\xb2\xbf\xd7\xb0\xb1\xb8\xc7\xf8"};  
   int pipkey;
   char choicekey[5];
   int choice;
@@ -444,28 +518,31 @@ struct weapon *p;
    showtitle(menutitle[type], BoardName);
    show_weapon_pic(0);
 /*   move(10,2); 
-   sprintf(buf,"[1;37mÏÖ½ñÄÜÁ¦:ÌåÁ¦Max:[36m%-5d[37m  ·¨Á¦Max:[36m%-5d[37m  ¹¥»÷:[36m%-5d[37m  ·ÀÓù:[36m%-5d[37m  ËÙ¶È:[36m%-5d [m",
+   //% sprintf(buf,"[1;37mç°ä»Šèƒ½åŠ›:ä½“åŠ›Max:[36m%-5d[37m  æ³•åŠ›Max:[36m%-5d[37m  æ”»å‡»:[36m%-5d[37m  é˜²å¾¡:[36m%-5d[37m  é€Ÿåº¦:[36m%-5d [m",
+   sprintf(buf,"[1;37m\xcf\xd6\xbd\xf1\xc4\xdc\xc1\xa6:\xcc\xe5\xc1\xa6Max:[36m%-5d[37m  \xb7\xa8\xc1\xa6Max:[36m%-5d[37m  \xb9\xa5\xbb\xf7:[36m%-5d[37m  \xb7\xc0\xd3\xf9:[36m%-5d[37m  \xcb\xd9\xb6\xc8:[36m%-5d [m",
            d.maxhp,d.maxmp,d.attack,d.resist,d.speed);
    prints(buf);*/
    move(11,2);
-   sprintf(buf,"[1;37;41m [NO]  [Æ÷¾ßÃû]  [ÌåÁ¦]  [·¨Á¦]  [ËÙ¶È]  [¹¥»÷]  [·ÀÓù]  [ËÙ¶È]  [ÊÛ  ¼Û] [m");
+   //% sprintf(buf,"[1;37;41m [NO]  [å™¨å…·å]  [ä½“åŠ›]  [æ³•åŠ›]  [é€Ÿåº¦]  [æ”»å‡»]  [é˜²å¾¡]  [é€Ÿåº¦]  [å”®  ä»·] [m");
+   sprintf(buf,"[1;37;41m [NO]  [\xc6\xf7\xbe\xdf\xc3\xfb]  [\xcc\xe5\xc1\xa6]  [\xb7\xa8\xc1\xa6]  [\xcb\xd9\xb6\xc8]  [\xb9\xa5\xbb\xf7]  [\xb7\xc0\xd3\xf9]  [\xcb\xd9\xb6\xc8]  [\xca\xdb  \xbc\xdb] [m");
    prints(buf);
    move(12,2);
-   sprintf(buf," [1;31m¡ª¡ª[37m°×É« ¿ÉÒÔ¹ºÂò[31m¡ª¡ª[32mÂÌÉ« ÓµÓĞ×°±¸[31m¡ª¡ª[33m»ÆÉ« Ç®Ç®²»¹»[31m¡ª¡ª[35m×ÏÉ« ÄÜÁ¦²»×ã[31m¡ª¡ª[m");
+   //% sprintf(buf," [1;31mâ€”â€”[37mç™½è‰² å¯ä»¥è´­ä¹°[31mâ€”â€”[32mç»¿è‰² æ‹¥æœ‰è£…å¤‡[31mâ€”â€”[33mé»„è‰² é’±é’±ä¸å¤Ÿ[31mâ€”â€”[35mç´«è‰² èƒ½åŠ›ä¸è¶³[31mâ€”â€”[m");
+   sprintf(buf," [1;31m\xa1\xaa\xa1\xaa[37m\xb0\xd7\xc9\xab \xbf\xc9\xd2\xd4\xb9\xba\xc2\xf2[31m\xa1\xaa\xa1\xaa[32m\xc2\xcc\xc9\xab \xd3\xb5\xd3\xd0\xd7\xb0\xb1\xb8[31m\xa1\xaa\xa1\xaa[33m\xbb\xc6\xc9\xab \xc7\xae\xc7\xae\xb2\xbb\xb9\xbb[31m\xa1\xaa\xa1\xaa[35m\xd7\xcf\xc9\xab \xc4\xdc\xc1\xa6\xb2\xbb\xd7\xe3[31m\xa1\xaa\xa1\xaa[m");
    prints(buf); 
 
    n=0;
    while (s = p[n].name)
    {   
      move(13+n,2);
-     if(variance!=0 && variance==(n))/*±¾ÉíÓĞµÄ*/
+     if(variance!=0 && variance==(n))/*æœ¬èº«æœ‰çš„*/
      {
       sprintf(buf, 
       "[1;32m (%2d)  %-10s %4d    %4d    %4d    %4d    %4d    %4d    %6d[m",     
       n,p[n].name,p[n].needmaxhp,p[n].needmaxmp,p[n].needspeed,
       p[n].attack,p[n].resist,p[n].speed,p[n].cost);        
      }
-     else if(d.maxhp < p[n].needmaxhp || d.maxmp < p[n].needmaxmp || d.speed < p[n].needspeed )/*ÄÜÁ¦²»×ã*/
+     else if(d.maxhp < p[n].needmaxhp || d.maxmp < p[n].needmaxmp || d.speed < p[n].needspeed )/*èƒ½åŠ›ä¸è¶³*/
      {
       sprintf(buf, 
       "[1;35m (%2d)  %-10s %4d    %4d    %4d    %4d    %4d    %4d    %6d[m",
@@ -473,7 +550,7 @@ struct weapon *p;
       p[n].attack,p[n].resist,p[n].speed,p[n].cost);
      }
 
-     else if(d.money < p[n].cost)  /*Ç®²»¹»µÄ*/
+     else if(d.money < p[n].cost)  /*é’±ä¸å¤Ÿçš„*/
      {
       sprintf(buf, 
       "[1;33m (%2d)  %-10s %4d    %4d    %4d    %4d    %4d    %4d    %6d[m",     
@@ -491,7 +568,8 @@ struct weapon *p;
      n++;
    }
    move(b_lines,0); 
-   sprintf(buf,"[1;44;37m  ÎäÆ÷¹ºÂòÑ¡µ¥  [46m  [B]¹ºÂòÎäÆ÷  [S]Âôµô×°±¸  [W]¸öÈË×ÊÁÏ  [Q]Ìø³ö£º            [m");
+   //% sprintf(buf,"[1;44;37m  æ­¦å™¨è´­ä¹°é€‰å•  [46m  [B]è´­ä¹°æ­¦å™¨  [S]å–æ‰è£…å¤‡  [W]ä¸ªäººèµ„æ–™  [Q]è·³å‡ºï¼š            [m");
+   sprintf(buf,"[1;44;37m  \xce\xe4\xc6\xf7\xb9\xba\xc2\xf2\xd1\xa1\xb5\xa5  [46m  [B]\xb9\xba\xc2\xf2\xce\xe4\xc6\xf7  [S]\xc2\xf4\xb5\xf4\xd7\xb0\xb1\xb8  [W]\xb8\xf6\xc8\xcb\xd7\xca\xc1\xcf  [Q]\xcc\xf8\xb3\xf6\xa3\xba            [m");
    prints(buf);   
    now=time(0);
    pip_time_change(now);
@@ -503,7 +581,8 @@ struct weapon *p;
     case 'B':      
     case 'b':
      move(b_lines-1,1);
-     sprintf(shortbuf,"ÏëÒª¹ºÂòÉ¶ÄØ? ÄãµÄÇ®Ç®[%d]Ôª:[Êı×Ö]",d.money);
+     //% sprintf(shortbuf,"æƒ³è¦è´­ä¹°å•¥å‘¢? ä½ çš„é’±é’±[%d]å…ƒ:[æ•°å­—]",d.money);
+     sprintf(shortbuf,"\xcf\xeb\xd2\xaa\xb9\xba\xc2\xf2\xc9\xb6\xc4\xd8? \xc4\xe3\xb5\xc4\xc7\xae\xc7\xae[%d]\xd4\xaa:[\xca\xfd\xd7\xd6]",d.money);
      prints(shortbuf);
 #ifdef MAPLE
      getdata(b_lines-1,1,shortbuf,choicekey, 4, LCECHO,"0");
@@ -518,34 +597,39 @@ struct weapon *p;
        move(b_lines-1,0);
        clrtoeol();  
        move(b_lines-1,1);       
-       if(choice==0)     /*½â³ı*/
+       if(choice==0)     /*è§£é™¤*/
        { 
-          sprintf(shortbuf,"·ÅÆú¹ºÂò...");
+          //% sprintf(shortbuf,"æ”¾å¼ƒè´­ä¹°...");
+          sprintf(shortbuf,"\xb7\xc5\xc6\xfa\xb9\xba\xc2\xf2...");
           pressanykey(shortbuf);
        }
       
-       else if(variance==choice)  /*ÔçÒÑ¾­ÓĞÀ²*/
+       else if(variance==choice)  /*æ—©å·²ç»æœ‰å•¦*/
        {
-          sprintf(shortbuf,"ÄãÔçÒÑ¾­ÓĞ %s ÂŞ",p[variance].name);
+          //% sprintf(shortbuf,"ä½ æ—©å·²ç»æœ‰ %s ç½—",p[variance].name);
+          sprintf(shortbuf,"\xc4\xe3\xd4\xe7\xd2\xd1\xbe\xad\xd3\xd0 %s \xc2\xde",p[variance].name);
           pressanykey(shortbuf);      
        }
       
-       else if(p[choice].cost >= (d.money+p[variance].sell))  /*Ç®²»¹»*/
+       else if(p[choice].cost >= (d.money+p[variance].sell))  /*é’±ä¸å¤Ÿ*/
        {
-          sprintf(shortbuf,"Õâ¸öÒª %d Ôª£¬ÄãµÄÇ®²»¹»À²!",p[choice].cost);
+          //% sprintf(shortbuf,"è¿™ä¸ªè¦ %d å…ƒï¼Œä½ çš„é’±ä¸å¤Ÿå•¦!",p[choice].cost);
+          sprintf(shortbuf,"\xd5\xe2\xb8\xf6\xd2\xaa %d \xd4\xaa\xa3\xac\xc4\xe3\xb5\xc4\xc7\xae\xb2\xbb\xb9\xbb\xc0\xb2!",p[choice].cost);
           pressanykey(shortbuf);      
        }      
      
        else if(d.maxhp < p[choice].needmaxhp || d.maxmp < p[choice].needmaxmp 
-               || d.speed < p[choice].needspeed ) /*ÄÜÁ¦²»×ã*/
+               || d.speed < p[choice].needspeed ) /*èƒ½åŠ›ä¸è¶³*/
        {
-          sprintf(shortbuf,"ĞèÒªHP %d MP %d SPEED %d à¸",
+          //% sprintf(shortbuf,"éœ€è¦HP %d MP %d SPEED %d å–”",
+          sprintf(shortbuf,"\xd0\xe8\xd2\xaaHP %d MP %d SPEED %d \xe0\xb8",
                 p[choice].needmaxhp,p[choice].needmaxmp,p[choice].needspeed);
           pressanykey(shortbuf);            
        }
-       else  /*Ë³Àû¹ºÂò*/
+       else  /*é¡ºåˆ©è´­ä¹°*/
        {
-          sprintf(shortbuf,"ÄãÈ·¶¨Òª¹ºÂò %s Âğ?($%d) [y/N]",p[choice].name,p[choice].cost);
+          //% sprintf(shortbuf,"ä½ ç¡®å®šè¦è´­ä¹° %s å—?($%d) [y/N]",p[choice].name,p[choice].cost);
+          sprintf(shortbuf,"\xc4\xe3\xc8\xb7\xb6\xa8\xd2\xaa\xb9\xba\xc2\xf2 %s \xc2\xf0?($%d) [y/N]",p[choice].name,p[choice].cost);
 #ifdef MAPLE
           getdata(b_lines-1,1,shortbuf, ans, 2, 1, 0); 
 #else
@@ -553,7 +637,8 @@ struct weapon *p;
 #endif  // END MAPLE
           if(ans[0]=='y' || ans[0]=='Y')
           {
-              sprintf(shortbuf,"Ğ¡¼¦ÒÑ¾­×°ÅäÉÏ %s ÁË",p[choice].name);
+              //% sprintf(shortbuf,"å°é¸¡å·²ç»è£…é…ä¸Š %s äº†",p[choice].name);
+              sprintf(shortbuf,"\xd0\xa1\xbc\xa6\xd2\xd1\xbe\xad\xd7\xb0\xc5\xe4\xc9\xcf %s \xc1\xcb",p[choice].name);
               pressanykey(shortbuf);
               d.attack+=(p[choice].attack-p[variance].attack);
               d.resist+=(p[choice].resist-p[variance].resist);
@@ -563,7 +648,8 @@ struct weapon *p;
           }
           else
           {
-              sprintf(shortbuf,"·ÅÆú¹ºÂò.....");
+              //% sprintf(shortbuf,"æ”¾å¼ƒè´­ä¹°.....");
+              sprintf(shortbuf,"\xb7\xc5\xc6\xfa\xb9\xba\xc2\xf2.....");
               pressanykey(shortbuf);            
           }
        }
@@ -574,7 +660,8 @@ struct weapon *p;
    case 's':
      if(variance!=0)
      { 
-        sprintf(shortbuf,"ÄãÈ·¶¨ÒªÂôµô%sÂğ? Âô¼Û:%d [y/N]",p[variance].name,p[variance].sell);
+        //% sprintf(shortbuf,"ä½ ç¡®å®šè¦å–æ‰%så—? å–ä»·:%d [y/N]",p[variance].name,p[variance].sell);
+        sprintf(shortbuf,"\xc4\xe3\xc8\xb7\xb6\xa8\xd2\xaa\xc2\xf4\xb5\xf4%s\xc2\xf0? \xc2\xf4\xbc\xdb:%d [y/N]",p[variance].name,p[variance].sell);
 #ifdef MAPLE
         getdata(b_lines-1,1,shortbuf, ans, 2, 1, 0); 
 #else
@@ -582,7 +669,8 @@ struct weapon *p;
 #endif  // END MAPLE
         if(ans[0]=='y' || ans[0]=='Y')
         {
-           sprintf(shortbuf,"×°±¸ %s ÂôÁË %d",p[variance].name,p[variance].sell);
+           //% sprintf(shortbuf,"è£…å¤‡ %s å–äº† %d",p[variance].name,p[variance].sell);
+           sprintf(shortbuf,"\xd7\xb0\xb1\xb8 %s \xc2\xf4\xc1\xcb %d",p[variance].name,p[variance].sell);
            d.attack-=p[variance].attack;
            d.resist-=p[variance].resist;
            d.speed-=p[variance].speed;
@@ -592,13 +680,15 @@ struct weapon *p;
         }
         else
         {
-           sprintf(shortbuf,"ccc..ÎÒ»ØĞÄ×ªÒâÁË...");
+           //% sprintf(shortbuf,"ccc..æˆ‘å›å¿ƒè½¬æ„äº†...");
+           sprintf(shortbuf,"ccc..\xce\xd2\xbb\xd8\xd0\xc4\xd7\xaa\xd2\xe2\xc1\xcb...");
            pressanykey(shortbuf);         
         }
      }
      else if(variance==0)
      {
-        sprintf(shortbuf,"Äã±¾À´¾ÍÃ»ÓĞ×°±¸ÁË...");
+        //% sprintf(shortbuf,"ä½ æœ¬æ¥å°±æ²¡æœ‰è£…å¤‡äº†...");
+        sprintf(shortbuf,"\xc4\xe3\xb1\xbe\xc0\xb4\xbe\xcd\xc3\xbb\xd3\xd0\xd7\xb0\xb1\xb8\xc1\xcb...");
         pressanykey(shortbuf);
         variance=0;
      }
@@ -614,7 +704,8 @@ struct weapon *p;
      if (currutmp->msgs[0].last_pid)
      {
        show_last_call_in();
-       my_write(currutmp->msgs[0].last_pid, "Ë®Çò¶ª»ØÈ¥£º");
+       //% my_write(currutmp->msgs[0].last_pid, "æ°´çƒä¸¢å›å»ï¼š");
+       my_write(currutmp->msgs[0].last_pid, "\xcb\xae\xc7\xf2\xb6\xaa\xbb\xd8\xc8\xa5\xa3\xba");
      }
      break;
 #endif  // END MAPLE

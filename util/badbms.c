@@ -1,4 +1,4 @@
-/* ÆßÌìÎ´ÉÏÕ¾µÄ°æÖ÷Í³¼Æ by soff of bitbbs.org */
+/* ä¸ƒå¤©æœªä¸Šç«™çš„ç‰ˆä¸»ç»Ÿè®¡ by soff of bitbbs.org */
 
 #include <time.h>
 #include <stdio.h>
@@ -26,7 +26,8 @@ int main (int argc, char *argv[])
       	printf ("Can't write to badbms file.\n");
       	return 1;
     }
-  	fprintf (fout, "\n%sÆßÌìÎ´ÉÏÕ¾µÄ°æÖ÷Ãûµ¥\n\n", BBSNAME);
+  	//% fprintf (fout, "\n%sä¸ƒå¤©æœªä¸Šç«™çš„ç‰ˆä¸»åå•\n\n", BBSNAME);
+  	fprintf (fout, "\n%s\xc6\xdf\xcc\xec\xce\xb4\xc9\xcf\xd5\xbe\xb5\xc4\xb0\xe6\xd6\xf7\xc3\xfb\xb5\xa5\n\n", BBSNAME);
   	for (i = 0;; i++)  {
     	if (fread (&aman, sizeof (struct userec), 1, fp) <= 0)
 			break;
@@ -44,7 +45,8 @@ int main (int argc, char *argv[])
 					break;
 		     	fscanf (bmfp, "%s\n", which);
 		      	fprintf (	fout,
-		    		  " ** [1;33m%-16s[m°æÖ÷ [1;32m%-15.15s[m [ %-20.20s ]%6"PRIdFBT"Ìì\n",
+		    		  //% " ** [1;33m%-16s[mç‰ˆä¸» [1;32m%-15.15s[m [ %-20.20s ]%6"PRIdFBT"å¤©\n",
+		    		  " ** [1;33m%-16s[m\xb0\xe6\xd6\xf7 [1;32m%-15.15s[m [ %-20.20s ]%6"PRIdFBT"\xcc\xec\n",
 		       			which, aman.userid, aman.username,(now - aman.lastlogin) / 86400);
 	   		}
 	 		fclose (bmfp);
@@ -53,11 +55,15 @@ int main (int argc, char *argv[])
 	}
 	fclose (fp);
 	if (j)  {
-    	fprintf (fout, "\n\n×Ü¹²ÓĞ %d Î»ÆßÌìÎ´ÉÏÕ¾µÄ°æÖ÷¡£\n", j);
-      	fprintf (fout, "\n[1;31m    ÇëÒÔÉÏ°æÖ÷×¢Òâ¡£[m\n");
-      	fprintf (fout, "\n\n³¬¹ıÒ»¸öÔÂÁ¬Ğø²»ÉÏÏß½«È¡Ïû°æÖ÷×Ê¸ñ¡£\n");
+    	//% fprintf (fout, "\n\næ€»å…±æœ‰ %d ä½ä¸ƒå¤©æœªä¸Šç«™çš„ç‰ˆä¸»ã€‚\n", j);
+    	fprintf (fout, "\n\n\xd7\xdc\xb9\xb2\xd3\xd0 %d \xce\xbb\xc6\xdf\xcc\xec\xce\xb4\xc9\xcf\xd5\xbe\xb5\xc4\xb0\xe6\xd6\xf7\xa1\xa3\n", j);
+      	//% fprintf (fout, "\n[1;31m    è¯·ä»¥ä¸Šç‰ˆä¸»æ³¨æ„ã€‚[m\n");
+      	fprintf (fout, "\n[1;31m    \xc7\xeb\xd2\xd4\xc9\xcf\xb0\xe6\xd6\xf7\xd7\xa2\xd2\xe2\xa1\xa3[m\n");
+      	//% fprintf (fout, "\n\nè¶…è¿‡ä¸€ä¸ªæœˆè¿ç»­ä¸ä¸Šçº¿å°†å–æ¶ˆç‰ˆä¸»èµ„æ ¼ã€‚\n");
+      	fprintf (fout, "\n\n\xb3\xac\xb9\xfd\xd2\xbb\xb8\xf6\xd4\xc2\xc1\xac\xd0\xf8\xb2\xbb\xc9\xcf\xcf\xdf\xbd\xab\xc8\xa1\xcf\xfb\xb0\xe6\xd6\xf7\xd7\xca\xb8\xf1\xa1\xa3\n");
     }  else    {
-    	fprintf (fout, "\n\n±¾Õ¾Ä¿Ç°ÉĞÎŞÆßÌìÎ´ÉÏÕ¾µÄ°åÖ÷¡£\n");
+    	//% fprintf (fout, "\n\næœ¬ç«™ç›®å‰å°šæ— ä¸ƒå¤©æœªä¸Šç«™çš„æ¿ä¸»ã€‚\n");
+    	fprintf (fout, "\n\n\xb1\xbe\xd5\xbe\xc4\xbf\xc7\xb0\xc9\xd0\xce\xde\xc6\xdf\xcc\xec\xce\xb4\xc9\xcf\xd5\xbe\xb5\xc4\xb0\xe5\xd6\xf7\xa1\xa3\n");
     }
   	fclose (fout);
 	return 0;

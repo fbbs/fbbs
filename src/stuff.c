@@ -29,7 +29,8 @@ void presskeyfor(const char *msg, int x)
 void pressanykey(void)
 {
 	presskeyfor("\033[m                                "
-			"\033[5;1;33m°´ÈÎºÎ¼ü¼ÌĞø...[m", t_lines - 1);
+			//% "\033[5;1;33mæŒ‰ä»»ä½•é”®ç»§ç»­...[m", t_lines - 1);
+			"\033[5;1;33m\xb0\xb4\xc8\xce\xba\xce\xbc\xfc\xbc\xcc\xd0\xf8...[m", t_lines - 1);
 }
 
 int pressreturn(void)
@@ -42,7 +43,8 @@ int pressreturn(void)
 	getdata(
 			t_lines - 1,
 			0,
-			"                              [1;33mÇë°´ ¡ô[5;36mEnter[m[1;33m¡ô ¼ÌĞø\033[m",
+			//% "                              [1;33mè¯·æŒ‰ â—†[5;36mEnter[m[1;33mâ—† ç»§ç»­\033[m",
+			"                              [1;33m\xc7\xeb\xb0\xb4 \xa1\xf4[5;36mEnter[m[1;33m\xa1\xf4 \xbc\xcc\xd0\xf8\033[m",
 			buf, 2, NOECHO, YEA);
 	move(t_lines - 1, 0);
 	clrtoeol();
@@ -114,9 +116,9 @@ void bell(void)
 #define MAXENVS (20)
 #define BINDIR "/bin/"
 
-//ÈôdstÎªÄ¿Â¼,ÇÒ²¢·Ç.,..,×îºóÒ»¸ö×Ö·û²»Îª/,
-//			½«ÆäÉ¾³ı,³É¹¦·µ»Ø	1
-//					 ·ñÔò·µ»Ø	0
+//è‹¥dstä¸ºç›®å½•,ä¸”å¹¶é.,..,æœ€åä¸€ä¸ªå­—ç¬¦ä¸ä¸º/,
+//			å°†å…¶åˆ é™¤,æˆåŠŸè¿”å›	1
+//					 å¦åˆ™è¿”å›	0
 int deltree(const char *dst)
 {
 	if (strstr(dst, "//") || strstr(dst, "..") || strchr(dst, ' '))

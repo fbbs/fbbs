@@ -1,4 +1,4 @@
-/* ¿ìÒâ¹àË®Õ¾ ½»Ò×ÊĞ³¡´úÂë 1999.12.19 */
+/* å¿«æ„çŒæ°´ç«™ äº¤æ˜“å¸‚åœºä»£ç  1999.12.19 */
 #include <string.h>
 #include <stdlib.h>
 
@@ -16,7 +16,8 @@ int gotomarket(char *title)
         clear();
         set_safe_record();
         move(2,0);
-        prints("»¶Ó­½øÈë [[32m%s[37m]....\n\n",title);
+        //% prints("æ¬¢è¿è¿›å…¥ [[32m%s[37m]....\n\n",title);
+        prints("\xbb\xb6\xd3\xad\xbd\xf8\xc8\xeb [[32m%s[37m]....\n\n",title);
 	return 0;
 }
 
@@ -26,43 +27,56 @@ int lending()
 	char	ans[STRLEN];
 	time_t 	now=time(0);
 	extern int gettheuserid();
-	if(gotomarket("½»Ò×ÊĞ³¡")) return 0;
+	//% if(gotomarket("äº¤æ˜“å¸‚åœº")) return 0;
+	if(gotomarket("\xbd\xbb\xd2\xd7\xca\xd0\xb3\xa1")) return 0;
 	maxnum = currentuser.money - currentuser.bet - 1000;
-	prints("»¶Ó­Ê¹ÓÃ[0;1;33m"BBSNAME"[37m½»Ò×ÊĞ³¡[32mÓÑÇé×ªÕÊ[37m¹¦ÄÜ[m");
-	prints("\n\nÄúÄ¿Ç°µÄÇé¿öÊÇ£º\n×¢²áÌìÊı([32m%d[37m Ìì) ÉÏÕ¾×ÜÊ±Êı([32m%d[37m Ğ¡Ê±) [44;37m¿É×ªÕÊ×Ê½ğ([32m%d[37m Ôª)[m[37m",
+	//% prints("æ¬¢è¿ä½¿ç”¨[0;1;33m"BBSNAME"[37mäº¤æ˜“å¸‚åœº[32må‹æƒ…è½¬å¸[37måŠŸèƒ½[m");
+	prints("\xbb\xb6\xd3\xad\xca\xb9\xd3\xc3[0;1;33m"BBSNAME"[37m\xbd\xbb\xd2\xd7\xca\xd0\xb3\xa1[32m\xd3\xd1\xc7\xe9\xd7\xaa\xd5\xca[37m\xb9\xa6\xc4\xdc[m");
+	//% prints("\n\næ‚¨ç›®å‰çš„æƒ…å†µæ˜¯ï¼š\næ³¨å†Œå¤©æ•°([32m%d[37m å¤©) ä¸Šç«™æ€»æ—¶æ•°([32m%d[37m å°æ—¶) [44;37må¯è½¬å¸èµ„é‡‘([32m%d[37m å…ƒ)[m[37m",
+	prints("\n\n\xc4\xfa\xc4\xbf\xc7\xb0\xb5\xc4\xc7\xe9\xbf\xf6\xca\xc7\xa3\xba\n\xd7\xa2\xb2\xe1\xcc\xec\xca\xfd([32m%d[37m \xcc\xec) \xc9\xcf\xd5\xbe\xd7\xdc\xca\xb1\xca\xfd([32m%d[37m \xd0\xa1\xca\xb1) [44;37m\xbf\xc9\xd7\xaa\xd5\xca\xd7\xca\xbd\xf0([32m%d[37m \xd4\xaa)[m[37m",
 		(now - currentuser.firstlogin)/86400,currentuser.stay/3600,currentuser.money-currentuser.bet-1000);
 	if ( currentuser.stay <= 36000 || now - currentuser.firstlogin  <= 2592000 || maxnum <= 0 ) {
-		 prints("\n\nÄ¿Ç°ÊĞ³¡¹æ¶¨£º ²ÎÓë[32mÓÑÇé×ªÕÊ[mµÄ ID ±ØĞë¾ß±¸ÒÔÏÂÈ«²¿Ìõ¼ş£º\n    1. ±¾ÕÊºÅ×¢²áÌìÊı³¬¹ı 30 Ìì;\n    2. ×ÜÉÏÕ¾Ê±Êı³¬¹ı 10 Ğ¡Ê±;\n    3. ×îÖÕÓµÓĞ´æ¿î³¬¹ı 1000 Ôª.\n      (×¢£ºÖ¸´æ¿î¼õÈ¥´û¿îºóµÄ²îÖµ.)");
-		prints("\n\n¸ù¾İÊĞ³¡¹æ¶¨£¬ÄúÄ¿Ç°ÉĞÃ»ÓĞ[32mÓÑÇé×ªÕÊ[mµÄ×Ê¸ñ¡£ :P \n");
+		 //% prints("\n\nç›®å‰å¸‚åœºè§„å®šï¼š å‚ä¸[32må‹æƒ…è½¬å¸[mçš„ ID å¿…é¡»å…·å¤‡ä»¥ä¸‹å…¨éƒ¨æ¡ä»¶ï¼š\n    1. æœ¬å¸å·æ³¨å†Œå¤©æ•°è¶…è¿‡ 30 å¤©;\n    2. æ€»ä¸Šç«™æ—¶æ•°è¶…è¿‡ 10 å°æ—¶;\n    3. æœ€ç»ˆæ‹¥æœ‰å­˜æ¬¾è¶…è¿‡ 1000 å…ƒ.\n      (æ³¨ï¼šæŒ‡å­˜æ¬¾å‡å»è´·æ¬¾åçš„å·®å€¼.)");
+		 prints("\n\n\xc4\xbf\xc7\xb0\xca\xd0\xb3\xa1\xb9\xe6\xb6\xa8\xa3\xba \xb2\xce\xd3\xeb[32m\xd3\xd1\xc7\xe9\xd7\xaa\xd5\xca[m\xb5\xc4 ID \xb1\xd8\xd0\xeb\xbe\xdf\xb1\xb8\xd2\xd4\xcf\xc2\xc8\xab\xb2\xbf\xcc\xf5\xbc\xfe\xa3\xba\n    1. \xb1\xbe\xd5\xca\xba\xc5\xd7\xa2\xb2\xe1\xcc\xec\xca\xfd\xb3\xac\xb9\xfd 30 \xcc\xec;\n    2. \xd7\xdc\xc9\xcf\xd5\xbe\xca\xb1\xca\xfd\xb3\xac\xb9\xfd 10 \xd0\xa1\xca\xb1;\n    3. \xd7\xee\xd6\xd5\xd3\xb5\xd3\xd0\xb4\xe6\xbf\xee\xb3\xac\xb9\xfd 1000 \xd4\xaa.\n      (\xd7\xa2\xa3\xba\xd6\xb8\xb4\xe6\xbf\xee\xbc\xf5\xc8\xa5\xb4\xfb\xbf\xee\xba\xf3\xb5\xc4\xb2\xee\xd6\xb5.)");
+		//% prints("\n\næ ¹æ®å¸‚åœºè§„å®šï¼Œæ‚¨ç›®å‰å°šæ²¡æœ‰[32må‹æƒ…è½¬å¸[mçš„èµ„æ ¼ã€‚ :P \n");
+		prints("\n\n\xb8\xf9\xbe\xdd\xca\xd0\xb3\xa1\xb9\xe6\xb6\xa8\xa3\xac\xc4\xfa\xc4\xbf\xc7\xb0\xc9\xd0\xc3\xbb\xd3\xd0[32m\xd3\xd1\xc7\xe9\xd7\xaa\xd5\xca[m\xb5\xc4\xd7\xca\xb8\xf1\xa1\xa3 :P \n");
 		pressanykey();
 		return 0;
 	}
-        if (!gettheuserid(9,"ÄúÏë×ªÕÊµ½Ë­µÄÕÊ»§ÉÏ£¿ÇëÊäÈëËûµÄÕÊºÅ: ",&id))
+        //% if (!gettheuserid(9,"æ‚¨æƒ³è½¬å¸åˆ°è°çš„å¸æˆ·ä¸Šï¼Ÿè¯·è¾“å…¥ä»–çš„å¸å·: ",&id))
+        if (!gettheuserid(9,"\xc4\xfa\xcf\xeb\xd7\xaa\xd5\xca\xb5\xbd\xcb\xad\xb5\xc4\xd5\xca\xbb\xa7\xc9\xcf\xa3\xbf\xc7\xeb\xca\xe4\xc8\xeb\xcb\xfb\xb5\xc4\xd5\xca\xba\xc5: ",&id))
                 return 0;
 	if(!strcmp(currentuser.userid,lookupuser.userid)) {
-		prints("\nºÇºÇ£¬×ªÕÊ¸ø×Ô¼º°¡£¿ àÅ£¬Ò²ĞĞ¡£²»¹ı±¾Õ¾²»Ìá¹©Õâ¸ö·şÎñ¡£");
+		//% prints("\nå‘µå‘µï¼Œè½¬å¸ç»™è‡ªå·±å•Šï¼Ÿ å—¯ï¼Œä¹Ÿè¡Œã€‚ä¸è¿‡æœ¬ç«™ä¸æä¾›è¿™ä¸ªæœåŠ¡ã€‚");
+		prints("\n\xba\xc7\xba\xc7\xa3\xac\xd7\xaa\xd5\xca\xb8\xf8\xd7\xd4\xbc\xba\xb0\xa1\xa3\xbf \xe0\xc5\xa3\xac\xd2\xb2\xd0\xd0\xa1\xa3\xb2\xbb\xb9\xfd\xb1\xbe\xd5\xbe\xb2\xbb\xcc\xe1\xb9\xa9\xd5\xe2\xb8\xf6\xb7\xfe\xce\xf1\xa1\xa3");
 		pressanykey();
 		return 0;
 	}
         if( lookupuser.money+lookupuser.nummedals*1000 > 90000 ) {
-                prints("\n¶Ô²»Æğ£¬¶Ô·½Ä¿Ç°¾­¼ÃÄÜÁ¦ÉĞ²»ĞèÒªÄúµÄ×ªÕÊ£¡");
+                //% prints("\nå¯¹ä¸èµ·ï¼Œå¯¹æ–¹ç›®å‰ç»æµèƒ½åŠ›å°šä¸éœ€è¦æ‚¨çš„è½¬å¸ï¼");
+                prints("\n\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb6\xd4\xb7\xbd\xc4\xbf\xc7\xb0\xbe\xad\xbc\xc3\xc4\xdc\xc1\xa6\xc9\xd0\xb2\xbb\xd0\xe8\xd2\xaa\xc4\xfa\xb5\xc4\xd7\xaa\xd5\xca\xa3\xa1");
                 pressanykey();
                 return 0;
         }
 	move(10,0);
 	canlending = maxnum > 90000 ? 90000 : maxnum;
-	prints("Äú½«×ªÕÊµ½ [1;32m%s[m µÄÕÊºÅ£¬Äú¿ÉÒÔ×î¶à¿ÉÒÔ×ªÕÊ [1;33m%d[m Ôª¡£",lookupuser.userid, canlending);
-        getdata(12, 0, "È·ÈÏÒª×ªÕÊ£¬ÇëÊäÈë×ªÕÊÊıÄ¿£¬·ñÔò£¬ÇëÖ±½Ó»Ø³µÈ¡Ïû×ªÕÊ: ",ans, 6, DOECHO, YEA);
+	//% prints("æ‚¨å°†è½¬å¸åˆ° [1;32m%s[m çš„å¸å·ï¼Œæ‚¨å¯ä»¥æœ€å¤šå¯ä»¥è½¬å¸ [1;33m%d[m å…ƒã€‚",lookupuser.userid, canlending);
+	prints("\xc4\xfa\xbd\xab\xd7\xaa\xd5\xca\xb5\xbd [1;32m%s[m \xb5\xc4\xd5\xca\xba\xc5\xa3\xac\xc4\xfa\xbf\xc9\xd2\xd4\xd7\xee\xb6\xe0\xbf\xc9\xd2\xd4\xd7\xaa\xd5\xca [1;33m%d[m \xd4\xaa\xa1\xa3",lookupuser.userid, canlending);
+        //% getdata(12, 0, "ç¡®è®¤è¦è½¬å¸ï¼Œè¯·è¾“å…¥è½¬å¸æ•°ç›®ï¼Œå¦åˆ™ï¼Œè¯·ç›´æ¥å›è½¦å–æ¶ˆè½¬å¸: ",ans, 6, DOECHO, YEA);
+        getdata(12, 0, "\xc8\xb7\xc8\xcf\xd2\xaa\xd7\xaa\xd5\xca\xa3\xac\xc7\xeb\xca\xe4\xc8\xeb\xd7\xaa\xd5\xca\xca\xfd\xc4\xbf\xa3\xac\xb7\xf1\xd4\xf2\xa3\xac\xc7\xeb\xd6\xb1\xbd\xd3\xbb\xd8\xb3\xb5\xc8\xa1\xcf\xfb\xd7\xaa\xd5\xca: ",ans, 6, DOECHO, YEA);
         num = atoi(ans);
         if ( num <= 0 || num > canlending ) {
-                prints("\nÊäÈëÓĞ´íÎóÅ¶¡£ »¹ÊÇËãÁË°É¡£¡£¡£");
+                //% prints("\nè¾“å…¥æœ‰é”™è¯¯å“¦ã€‚ è¿˜æ˜¯ç®—äº†å§ã€‚ã€‚ã€‚");
+                prints("\n\xca\xe4\xc8\xeb\xd3\xd0\xb4\xed\xce\xf3\xc5\xb6\xa1\xa3 \xbb\xb9\xca\xc7\xcb\xe3\xc1\xcb\xb0\xc9\xa1\xa3\xa1\xa3\xa1\xa3");
                 pressanykey();
                 return 0;
         }
 	set_safe_record();
 	if(currentuser.money - currentuser.bet - 1000 != maxnum) {
-		prints("\n¶Ô²»Æğ£¬ÄúµÄ¿É×ªÕÊ×Ê½ğÓĞËù±ä»¯£¬È¡Ïû´Ë´Î½»Ò×£¡");
-		prints("\nÇëÖØĞÂÖ´ĞĞ±¾½»Ò×¡£");
+		//% prints("\nå¯¹ä¸èµ·ï¼Œæ‚¨çš„å¯è½¬å¸èµ„é‡‘æœ‰æ‰€å˜åŒ–ï¼Œå–æ¶ˆæ­¤æ¬¡äº¤æ˜“ï¼");
+		prints("\n\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xc4\xfa\xb5\xc4\xbf\xc9\xd7\xaa\xd5\xca\xd7\xca\xbd\xf0\xd3\xd0\xcb\xf9\xb1\xe4\xbb\xaf\xa3\xac\xc8\xa1\xcf\xfb\xb4\xcb\xb4\xce\xbd\xbb\xd2\xd7\xa3\xa1");
+		//% prints("\nè¯·é‡æ–°æ‰§è¡Œæœ¬äº¤æ˜“ã€‚");
+		prints("\n\xc7\xeb\xd6\xd8\xd0\xc2\xd6\xb4\xd0\xd0\xb1\xbe\xbd\xbb\xd2\xd7\xa1\xa3");
 		pressanykey();
 		return 0;
 	}
@@ -70,12 +84,17 @@ int lending()
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser),usernum);
 	lookupuser.money += num;
 	substitut_record(PASSFILE, &lookupuser, sizeof(lookupuser), id);
-	prints("\nĞ»Ğ»Äú£¬ÄúÒÑ¾­¸ø [1;32m%s[m ×ªÕÊ [1;33m%d[m Ôª¡£",lookupuser.userid,num);
-	prints("\nÎª±íÊ¾¶ÔÄãµÄ×ªÕÊĞĞÎªµÄ¸ĞĞ»£¬±¾Õ¾ÒÑ¾­ÓÃĞÅ¼şÍ¨ÖªÁËËû¡£");
-	sprintf(genbuf,"¸ø %s ×ªÕÊ %d Ôª",lookupuser.userid,num);
+	//% prints("\nè°¢è°¢æ‚¨ï¼Œæ‚¨å·²ç»ç»™ [1;32m%s[m è½¬å¸ [1;33m%d[m å…ƒã€‚",lookupuser.userid,num);
+	prints("\n\xd0\xbb\xd0\xbb\xc4\xfa\xa3\xac\xc4\xfa\xd2\xd1\xbe\xad\xb8\xf8 [1;32m%s[m \xd7\xaa\xd5\xca [1;33m%d[m \xd4\xaa\xa1\xa3",lookupuser.userid,num);
+	//% prints("\nä¸ºè¡¨ç¤ºå¯¹ä½ çš„è½¬å¸è¡Œä¸ºçš„æ„Ÿè°¢ï¼Œæœ¬ç«™å·²ç»ç”¨ä¿¡ä»¶é€šçŸ¥äº†ä»–ã€‚");
+	prints("\n\xce\xaa\xb1\xed\xca\xbe\xb6\xd4\xc4\xe3\xb5\xc4\xd7\xaa\xd5\xca\xd0\xd0\xce\xaa\xb5\xc4\xb8\xd0\xd0\xbb\xa3\xac\xb1\xbe\xd5\xbe\xd2\xd1\xbe\xad\xd3\xc3\xd0\xc5\xbc\xfe\xcd\xa8\xd6\xaa\xc1\xcb\xcb\xfb\xa1\xa3");
+	//% sprintf(genbuf,"ç»™ %s è½¬å¸ %d å…ƒ",lookupuser.userid,num);
+	sprintf(genbuf,"\xb8\xf8 %s \xd7\xaa\xd5\xca %d \xd4\xaa",lookupuser.userid,num);
 	gamelog(genbuf);
-	sprintf(ans,"%s ¸øÄú¼ÄÀ´ÁË %d ÔªÓÑÇé×ªÕÊ",currentuser.userid,num);
-	sprintf(genbuf,"\n %s :\n\tÄúºÃ£¡\n\tÄúµÄÅóÓÑ %s ¸øÄú¼ÄÀ´ÁË %d ÔªÓÑÇé×ªÕÊ×Ê½ğ¡£\n\tÇëÄúÔÚ Market °å¶ÔËûµÄÎŞË½ĞĞÎª·¢ÎÄ±íÊ¾¸ĞĞ»£¬\n\tÕâÑù£¬Äú¾Í¿ÉÒÔ»ñµÃÕâ±ÊÓÑÇé×ªÕÊ×Ê½ğ¡£\n\n\tµ±È»£¬ÄúÒ²¿ÉÒÔÍË³öÒ»´Îºó£¬ÔÙ½øÈë±¾Õ¾£¬\n\tÒ»Ñù¿ÉÒÔ»ñµÃÕâ±ÊÓÑÇé×ªÕÊ×Ê½ğ¡£\n  ",lookupuser.userid,currentuser.userid,num);
+	//% sprintf(ans,"%s ç»™æ‚¨å¯„æ¥äº† %d å…ƒå‹æƒ…è½¬å¸",currentuser.userid,num);
+	sprintf(ans,"%s \xb8\xf8\xc4\xfa\xbc\xc4\xc0\xb4\xc1\xcb %d \xd4\xaa\xd3\xd1\xc7\xe9\xd7\xaa\xd5\xca",currentuser.userid,num);
+	//% sprintf(genbuf,"\n %s :\n\tæ‚¨å¥½ï¼\n\tæ‚¨çš„æœ‹å‹ %s ç»™æ‚¨å¯„æ¥äº† %d å…ƒå‹æƒ…è½¬å¸èµ„é‡‘ã€‚\n\tè¯·æ‚¨åœ¨ Market æ¿å¯¹ä»–çš„æ— ç§è¡Œä¸ºå‘æ–‡è¡¨ç¤ºæ„Ÿè°¢ï¼Œ\n\tè¿™æ ·ï¼Œæ‚¨å°±å¯ä»¥è·å¾—è¿™ç¬”å‹æƒ…è½¬å¸èµ„é‡‘ã€‚\n\n\tå½“ç„¶ï¼Œæ‚¨ä¹Ÿå¯ä»¥é€€å‡ºä¸€æ¬¡åï¼Œå†è¿›å…¥æœ¬ç«™ï¼Œ\n\tä¸€æ ·å¯ä»¥è·å¾—è¿™ç¬”å‹æƒ…è½¬å¸èµ„é‡‘ã€‚\n  ",lookupuser.userid,currentuser.userid,num);
+	sprintf(genbuf,"\n %s :\n\t\xc4\xfa\xba\xc3\xa3\xa1\n\t\xc4\xfa\xb5\xc4\xc5\xf3\xd3\xd1 %s \xb8\xf8\xc4\xfa\xbc\xc4\xc0\xb4\xc1\xcb %d \xd4\xaa\xd3\xd1\xc7\xe9\xd7\xaa\xd5\xca\xd7\xca\xbd\xf0\xa1\xa3\n\t\xc7\xeb\xc4\xfa\xd4\xda Market \xb0\xe5\xb6\xd4\xcb\xfb\xb5\xc4\xce\xde\xcb\xbd\xd0\xd0\xce\xaa\xb7\xa2\xce\xc4\xb1\xed\xca\xbe\xb8\xd0\xd0\xbb\xa3\xac\n\t\xd5\xe2\xd1\xf9\xa3\xac\xc4\xfa\xbe\xcd\xbf\xc9\xd2\xd4\xbb\xf1\xb5\xc3\xd5\xe2\xb1\xca\xd3\xd1\xc7\xe9\xd7\xaa\xd5\xca\xd7\xca\xbd\xf0\xa1\xa3\n\n\t\xb5\xb1\xc8\xbb\xa3\xac\xc4\xfa\xd2\xb2\xbf\xc9\xd2\xd4\xcd\xcb\xb3\xf6\xd2\xbb\xb4\xce\xba\xf3\xa3\xac\xd4\xd9\xbd\xf8\xc8\xeb\xb1\xbe\xd5\xbe\xa3\xac\n\t\xd2\xbb\xd1\xf9\xbf\xc9\xd2\xd4\xbb\xf1\xb5\xc3\xd5\xe2\xb1\xca\xd3\xd1\xc7\xe9\xd7\xaa\xd5\xca\xd7\xca\xbd\xf0\xa1\xa3\n  ",lookupuser.userid,currentuser.userid,num);
 	autoreport(ans,genbuf,NA,lookupuser.userid);
 	pressanykey();
 	return 1;
@@ -86,36 +105,52 @@ int popshop(void)
 	int no,num,maxnum,templog;
 	char ans[10];
 	EXCHANGES exchanges[10] = {
-		{"ÉÏÕ¾´ÎÊı",2},
-		{"ÎÄÕÂÊı",5},
-		{"½±ÕÂÊı",10000},
-		{"ÒşÉíÊõ",16000},
-		{"¿´´©ÒşÉíÊõ",4500},
-		{"ÕÊºÅÓÀ¾Ã±£Áô",45000},
-		{"Ç¿ÖÆºô½Ğ",54000}, //expired function 06.1.5
-		{"ÑÓ³¤·¢´ôÊ±¼ä",9000},//expired function 06.1.5
-		{"´óĞÅÏä",45000}
+		//% {"ä¸Šç«™æ¬¡æ•°",2},
+		{"\xc9\xcf\xd5\xbe\xb4\xce\xca\xfd",2},
+		//% {"æ–‡ç« æ•°",5},
+		{"\xce\xc4\xd5\xc2\xca\xfd",5},
+		//% {"å¥–ç« æ•°",10000},
+		{"\xbd\xb1\xd5\xc2\xca\xfd",10000},
+		//% {"éšèº«æœ¯",16000},
+		{"\xd2\xfe\xc9\xed\xca\xf5",16000},
+		//% {"çœ‹ç©¿éšèº«æœ¯",4500},
+		{"\xbf\xb4\xb4\xa9\xd2\xfe\xc9\xed\xca\xf5",4500},
+		//% {"å¸å·æ°¸ä¹…ä¿ç•™",45000},
+		{"\xd5\xca\xba\xc5\xd3\xc0\xbe\xc3\xb1\xa3\xc1\xf4",45000},
+		//% {"å¼ºåˆ¶å‘¼å«",54000}, //expired function 06.1.5
+		{"\xc7\xbf\xd6\xc6\xba\xf4\xbd\xd0",54000}, //expired function 06.1.5
+		//% {"å»¶é•¿å‘å‘†æ—¶é—´",9000},//expired function 06.1.5
+		{"\xd1\xd3\xb3\xa4\xb7\xa2\xb4\xf4\xca\xb1\xbc\xe4",9000},//expired function 06.1.5
+		//% {"å¤§ä¿¡ç®±",45000}
+		{"\xb4\xf3\xd0\xc5\xcf\xe4",45000}
 		};
-	if(gotomarket("ÊĞ³¡µäµ±ĞĞ")) return 1;
-	prints("½ñÈÕµäµ±±¨¼Û:");
+	//% if(gotomarket("å¸‚åœºå…¸å½“è¡Œ")) return 1;
+	if(gotomarket("\xca\xd0\xb3\xa1\xb5\xe4\xb5\xb1\xd0\xd0")) return 1;
+	//% prints("ä»Šæ—¥å…¸å½“æŠ¥ä»·:");
+	prints("\xbd\xf1\xc8\xd5\xb5\xe4\xb5\xb1\xb1\xa8\xbc\xdb:");
 	for(no = 0; no < 9; no ++) {
 		move(5+no, 2);
 		prints("(%2d) %s",no+1,exchanges[no].title);
 		move(5+no, 20);
-		prints("==> %6d Ôª", exchanges[no].value);
+		//% prints("==> %6d å…ƒ", exchanges[no].value);
+		prints("==> %6d \xd4\xaa", exchanges[no].value);
 	}
 	move(16,0);
-	prints("ÄúÄ¿Ç°µÄÇé¿öÊÇ: (1)ÉÏÕ¾´ÎÊı([32m%d[37m)  (2)ÎÄÕÂÊı([32m%d[37m)  (3)½±ÕÂÊı.([32m%d[37m)\n",
+	//% prints("æ‚¨ç›®å‰çš„æƒ…å†µæ˜¯: (1)ä¸Šç«™æ¬¡æ•°([32m%d[37m)  (2)æ–‡ç« æ•°([32m%d[37m)  (3)å¥–ç« æ•°.([32m%d[37m)\n",
+	prints("\xc4\xfa\xc4\xbf\xc7\xb0\xb5\xc4\xc7\xe9\xbf\xf6\xca\xc7: (1)\xc9\xcf\xd5\xbe\xb4\xce\xca\xfd([32m%d[37m)  (2)\xce\xc4\xd5\xc2\xca\xfd([32m%d[37m)  (3)\xbd\xb1\xd5\xc2\xca\xfd.([32m%d[37m)\n",
 	    currentuser.numlogins,currentuser.numposts,currentuser.nummedals);
-	getdata(18, 0, "ÄúÏëµäµ±ÄÄÒ»Ïî£¿", ans, 10, DOECHO, YEA);
+	//% getdata(18, 0, "æ‚¨æƒ³å…¸å½“å“ªä¸€é¡¹ï¼Ÿ", ans, 10, DOECHO, YEA);
+	getdata(18, 0, "\xc4\xfa\xcf\xeb\xb5\xe4\xb5\xb1\xc4\xc4\xd2\xbb\xcf\xee\xa3\xbf", ans, 10, DOECHO, YEA);
 	no = atoi(ans);
 	if ( no < 1 || no > 9 ) {
-		prints("\nºÇºÇ£¬²»µäµ±ÁË£¿ ÄÇ£¬ºÃ×ß¡£¡£»¶Ó­ÔÙÀ´ ;)");
+		//% prints("\nå‘µå‘µï¼Œä¸å…¸å½“äº†ï¼Ÿ é‚£ï¼Œå¥½èµ°ã€‚ã€‚æ¬¢è¿å†æ¥ ;)");
+		prints("\n\xba\xc7\xba\xc7\xa3\xac\xb2\xbb\xb5\xe4\xb5\xb1\xc1\xcb\xa3\xbf \xc4\xc7\xa3\xac\xba\xc3\xd7\xdf\xa1\xa3\xa1\xa3\xbb\xb6\xd3\xad\xd4\xd9\xc0\xb4 ;)");
 		pressanykey();
 		return 0;
 	}
 	move(18, 30);
-	prints("ÄãÑ¡Ôñµäµ±¡°[32m%s[m¡±¡£",exchanges[no-1].title);
+	//% prints("ä½ é€‰æ‹©å…¸å½“â€œ[32m%s[mâ€ã€‚",exchanges[no-1].title);
+	prints("\xc4\xe3\xd1\xa1\xd4\xf1\xb5\xe4\xb5\xb1\xa1\xb0[32m%s[m\xa1\xb1\xa1\xa3",exchanges[no-1].title);
 if(no>3){
 	set_safe_record();
 	maxnum = exchanges[no-1].value;
@@ -161,13 +196,16 @@ if(no>3){
 	}
 	prints("\n\n");
 	if(!num) {
-		prints("¶Ô²»Æğ, Äã»¹Ã»ÓĞÕâÖÖÈ¨ÏŞ. ");
+		//% prints("å¯¹ä¸èµ·, ä½ è¿˜æ²¡æœ‰è¿™ç§æƒé™. ");
+		prints("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xe3\xbb\xb9\xc3\xbb\xd3\xd0\xd5\xe2\xd6\xd6\xc8\xa8\xcf\xde. ");
 		pressanykey();
 		return 0;
 	}
-        if(askyn("ÄúÈ·¶¨Òªµäµ±Âğ£¿",NA,NA) == NA ) {
+        //% if(askyn("æ‚¨ç¡®å®šè¦å…¸å½“å—ï¼Ÿ",NA,NA) == NA ) {
+        if(askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xb5\xe4\xb5\xb1\xc2\xf0\xa3\xbf",NA,NA) == NA ) {
                 move(23,0);clrtoeol();
-                prints("ÏÖÔÚ²»µäµ±ÁË£¿ ÄÇÄãÏÂ´ÎÔÙÀ´¡£ Òª¼ÇµÃÅ¶¡£");
+                //% prints("ç°åœ¨ä¸å…¸å½“äº†ï¼Ÿ é‚£ä½ ä¸‹æ¬¡å†æ¥ã€‚ è¦è®°å¾—å“¦ã€‚");
+                prints("\xcf\xd6\xd4\xda\xb2\xbb\xb5\xe4\xb5\xb1\xc1\xcb\xa3\xbf \xc4\xc7\xc4\xe3\xcf\xc2\xb4\xce\xd4\xd9\xc0\xb4\xa1\xa3 \xd2\xaa\xbc\xc7\xb5\xc3\xc5\xb6\xa1\xa3");
                 pressanykey();
                 return 0;
         }
@@ -199,7 +237,8 @@ if(no>3){
                         break;
 	}
         if(!num) {
-                prints("¶Ô²»Æğ, ÄãµÄÊı¾İ·¢ÉúÁË±ä»¯, ÄãÄ¿Ç°Ã»ÓĞÕâÖÖÈ¨ÏŞ. ");
+                //% prints("å¯¹ä¸èµ·, ä½ çš„æ•°æ®å‘ç”Ÿäº†å˜åŒ–, ä½ ç›®å‰æ²¡æœ‰è¿™ç§æƒé™. ");
+                prints("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xe3\xb5\xc4\xca\xfd\xbe\xdd\xb7\xa2\xc9\xfa\xc1\xcb\xb1\xe4\xbb\xaf, \xc4\xe3\xc4\xbf\xc7\xb0\xc3\xbb\xd3\xd0\xd5\xe2\xd6\xd6\xc8\xa8\xcf\xde. ");
                 pressanykey();
                 return 0;
         }
@@ -208,20 +247,25 @@ if(no>3){
 	else if ( no == 2) maxnum = currentuser.numposts;  
 	else	maxnum = currentuser.nummedals;
 	templog = maxnum;
-	sprintf(genbuf,"ÄúÏëµäµ±¶àÉÙÄØ(×î¶à%d)£¿",maxnum);
+	//% sprintf(genbuf,"æ‚¨æƒ³å…¸å½“å¤šå°‘å‘¢(æœ€å¤š%d)ï¼Ÿ",maxnum);
+	sprintf(genbuf,"\xc4\xfa\xcf\xeb\xb5\xe4\xb5\xb1\xb6\xe0\xc9\xd9\xc4\xd8(\xd7\xee\xb6\xe0%d)\xa3\xbf",maxnum);
 	getdata(19, 0, genbuf,ans, 10, DOECHO, YEA);
 	num = atoi(ans);
 	if ( num <= 0 || num > maxnum ) {
-		prints("ÊäÈëÓĞ´íÎóÅ¶¡£ »¹ÊÇËãÁË°É¡£¡£¡£");
+		//% prints("è¾“å…¥æœ‰é”™è¯¯å“¦ã€‚ è¿˜æ˜¯ç®—äº†å§ã€‚ã€‚ã€‚");
+		prints("\xca\xe4\xc8\xeb\xd3\xd0\xb4\xed\xce\xf3\xc5\xb6\xa1\xa3 \xbb\xb9\xca\xc7\xcb\xe3\xc1\xcb\xb0\xc9\xa1\xa3\xa1\xa3\xa1\xa3");
 		pressanykey();
 		return 0;
 	}
         maxnum = num*exchanges[no-1].value;
 	move(19,0);
-	prints("Äú¹²¼Æµäµ±%s[32m%d[m ·İ£¬ %s [33m%d[m Ôª¡£\n",exchanges[no-1].title,num,"¿ÉÒÔ»ñµÃ",maxnum);
-        if(askyn("ÄúÈ·¶¨Òªµäµ±Âğ£¿",NA,NA) == NA ) {
+	//% prints("æ‚¨å…±è®¡å…¸å½“%s[32m%d[m ä»½ï¼Œ %s [33m%d[m å…ƒã€‚\n",exchanges[no-1].title,num,"å¯ä»¥è·å¾—",maxnum);
+	prints("\xc4\xfa\xb9\xb2\xbc\xc6\xb5\xe4\xb5\xb1%s[32m%d[m \xb7\xdd\xa3\xac %s [33m%d[m \xd4\xaa\xa1\xa3\n",exchanges[no-1].title,num,"\xbf\xc9\xd2\xd4\xbb\xf1\xb5\xc3",maxnum);
+        //% if(askyn("æ‚¨ç¡®å®šè¦å…¸å½“å—ï¼Ÿ",NA,NA) == NA ) {
+        if(askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xb5\xe4\xb5\xb1\xc2\xf0\xa3\xbf",NA,NA) == NA ) {
                 move(21,0);clrtoeol();
-		prints("ÏÖÔÚ²»µäµ±ÁË£¿ ÄÇÄãÏÂ´ÎÔÙÀ´¡£ Òª¼ÇµÃÅ¶¡£");
+		//% prints("ç°åœ¨ä¸å…¸å½“äº†ï¼Ÿ é‚£ä½ ä¸‹æ¬¡å†æ¥ã€‚ è¦è®°å¾—å“¦ã€‚");
+		prints("\xcf\xd6\xd4\xda\xb2\xbb\xb5\xe4\xb5\xb1\xc1\xcb\xa3\xbf \xc4\xc7\xc4\xe3\xcf\xc2\xb4\xce\xd4\xd9\xc0\xb4\xa1\xa3 \xd2\xaa\xbc\xc7\xb5\xc3\xc5\xb6\xa1\xa3");
                 pressanykey();
                 return 0;
         }
@@ -241,7 +285,8 @@ if(no>3){
 	}
 	if( templog == -1) {
 		move(21,0); clrtoeol();
-		prints("¶Ô²»Æğ, ÔÚ½»Ò×¹ı³ÌÖĞÄúµÄÊı¾İ·¢ÉúÁË±ä»¯.\nÎª±£Ö¤½»Ò×µÄÕı³£½øĞĞ, ´Ë´Î½»Ò×È¡Ïû.\nÄú¿ÉÒÔÖØĞÂ½øĞĞ±¾½»Ò×.");
+		//% prints("å¯¹ä¸èµ·, åœ¨äº¤æ˜“è¿‡ç¨‹ä¸­æ‚¨çš„æ•°æ®å‘ç”Ÿäº†å˜åŒ–.\nä¸ºä¿è¯äº¤æ˜“çš„æ­£å¸¸è¿›è¡Œ, æ­¤æ¬¡äº¤æ˜“å–æ¶ˆ.\næ‚¨å¯ä»¥é‡æ–°è¿›è¡Œæœ¬äº¤æ˜“.");
+		prints("\xb6\xd4\xb2\xbb\xc6\xf0, \xd4\xda\xbd\xbb\xd2\xd7\xb9\xfd\xb3\xcc\xd6\xd0\xc4\xfa\xb5\xc4\xca\xfd\xbe\xdd\xb7\xa2\xc9\xfa\xc1\xcb\xb1\xe4\xbb\xaf.\n\xce\xaa\xb1\xa3\xd6\xa4\xbd\xbb\xd2\xd7\xb5\xc4\xd5\xfd\xb3\xa3\xbd\xf8\xd0\xd0, \xb4\xcb\xb4\xce\xbd\xbb\xd2\xd7\xc8\xa1\xcf\xfb.\n\xc4\xfa\xbf\xc9\xd2\xd4\xd6\xd8\xd0\xc2\xbd\xf8\xd0\xd0\xb1\xbe\xbd\xbb\xd2\xd7.");
 		pressanykey();
 		return 0;
 	}
@@ -249,14 +294,17 @@ if(no>3){
 	currentuser.money += maxnum;
 	if( currentuser.money > 400000000 ){
 		move(21,0); clrtoeol();
-		prints("¶Ô²»Æğ£¬½»Ò×Êı¾İ¹ı´ó£¬²úÉúÒç³ö£¬ÇëÖØĞÂ½»Ò×£¡");
+		//% prints("å¯¹ä¸èµ·ï¼Œäº¤æ˜“æ•°æ®è¿‡å¤§ï¼Œäº§ç”Ÿæº¢å‡ºï¼Œè¯·é‡æ–°äº¤æ˜“ï¼");
+		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xbd\xbb\xd2\xd7\xca\xfd\xbe\xdd\xb9\xfd\xb4\xf3\xa3\xac\xb2\xfa\xc9\xfa\xd2\xe7\xb3\xf6\xa3\xac\xc7\xeb\xd6\xd8\xd0\xc2\xbd\xbb\xd2\xd7\xa3\xa1");
 		pressanykey();
 		return 0;
 	}
         substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	move(21,0); clrtoeol();
-        prints("Ë³ÀûÍê³É½»Ò×£¬»¶Ó­ÄúµÄÔÙ´Î»İ¹Ë¡£;P");
-	sprintf(genbuf,"µäµ±%s %d ·İ£¬»¨·Ñ %d Ôª.",exchanges[no-1].title,num,maxnum);
+        //% prints("é¡ºåˆ©å®Œæˆäº¤æ˜“ï¼Œæ¬¢è¿æ‚¨çš„å†æ¬¡æƒ é¡¾ã€‚;P");
+        prints("\xcb\xb3\xc0\xfb\xcd\xea\xb3\xc9\xbd\xbb\xd2\xd7\xa3\xac\xbb\xb6\xd3\xad\xc4\xfa\xb5\xc4\xd4\xd9\xb4\xce\xbb\xdd\xb9\xcb\xa1\xa3;P");
+	//% sprintf(genbuf,"å…¸å½“%s %d ä»½ï¼ŒèŠ±è´¹ %d å…ƒ.",exchanges[no-1].title,num,maxnum);
+	sprintf(genbuf,"\xb5\xe4\xb5\xb1%s %d \xb7\xdd\xa3\xac\xbb\xa8\xb7\xd1 %d \xd4\xaa.",exchanges[no-1].title,num,maxnum);
 	gamelog(genbuf);
         pressanykey();
         return 1;
@@ -266,33 +314,46 @@ int doshopping()
         int no,hasperm=1,maxnum;
         char ans[10];
         EXCHANGES exchanges[10] = {
-                {"ÒşÉíÊõ",40000},
-                {"¿´´©ÒşÉíÊõ",10000},
-                {"ÕÊºÅÓÀ¾Ã±£Áô",100000},
-                {"Ç¿ÖÆºô½Ğ",120000},//expired 06.1.5
-                {"ÑÓ³¤·¢´ôÊ±¼ä",20000},//expired 06.1.5
-                {"´óĞÅÏä",100000}
+                //% {"éšèº«æœ¯",40000},
+                {"\xd2\xfe\xc9\xed\xca\xf5",40000},
+                //% {"çœ‹ç©¿éšèº«æœ¯",10000},
+                {"\xbf\xb4\xb4\xa9\xd2\xfe\xc9\xed\xca\xf5",10000},
+                //% {"å¸å·æ°¸ä¹…ä¿ç•™",100000},
+                {"\xd5\xca\xba\xc5\xd3\xc0\xbe\xc3\xb1\xa3\xc1\xf4",100000},
+                //% {"å¼ºåˆ¶å‘¼å«",120000},//expired 06.1.5
+                {"\xc7\xbf\xd6\xc6\xba\xf4\xbd\xd0",120000},//expired 06.1.5
+                //% {"å»¶é•¿å‘å‘†æ—¶é—´",20000},//expired 06.1.5
+                {"\xd1\xd3\xb3\xa4\xb7\xa2\xb4\xf4\xca\xb1\xbc\xe4",20000},//expired 06.1.5
+                //% {"å¤§ä¿¡ç®±",100000}
+                {"\xb4\xf3\xd0\xc5\xcf\xe4",100000}
                 };
-        if(gotomarket("ÊĞ³¡¹ºÎïÖĞĞÄ")) return 1;
-        prints("½ñÈÕÉÌÆ·±¨¼Û:");
+        //% if(gotomarket("å¸‚åœºè´­ç‰©ä¸­å¿ƒ")) return 1;
+        if(gotomarket("\xca\xd0\xb3\xa1\xb9\xba\xce\xef\xd6\xd0\xd0\xc4")) return 1;
+        //% prints("ä»Šæ—¥å•†å“æŠ¥ä»·:");
+        prints("\xbd\xf1\xc8\xd5\xc9\xcc\xc6\xb7\xb1\xa8\xbc\xdb:");
         for(no = 0; no < 6; no ++) {
                 move(5+no, 2);
                 prints("(%2d) %s",no+1,exchanges[no].title);
                 move(5+no, 20);
-                prints("==> %6d Ôª", exchanges[no].value);
+                //% prints("==> %6d å…ƒ", exchanges[no].value);
+                prints("==> %6d \xd4\xaa", exchanges[no].value);
         }
         move(16,0);
-        prints("ÄúÄ¿Ç°ÉĞÓĞ %d Ôª (½±ÕÂ %d ¸ö)\n",
+        //% prints("æ‚¨ç›®å‰å°šæœ‰ %d å…ƒ (å¥–ç«  %d ä¸ª)\n",
+        prints("\xc4\xfa\xc4\xbf\xc7\xb0\xc9\xd0\xd3\xd0 %d \xd4\xaa (\xbd\xb1\xd5\xc2 %d \xb8\xf6)\n",
             currentuser.money,currentuser.nummedals);
-        getdata(18, 0, "ÄúÏë¹ºÂòÄÄÒ»¼şÉÌÆ·£¿", ans, 10, DOECHO, YEA);
+        //% getdata(18, 0, "æ‚¨æƒ³è´­ä¹°å“ªä¸€ä»¶å•†å“ï¼Ÿ", ans, 10, DOECHO, YEA);
+        getdata(18, 0, "\xc4\xfa\xcf\xeb\xb9\xba\xc2\xf2\xc4\xc4\xd2\xbb\xbc\xfe\xc9\xcc\xc6\xb7\xa3\xbf", ans, 10, DOECHO, YEA);
         no = atoi(ans);
         if ( no < 1 || no > 6 ) {
-                prints("\nºÇºÇ£¬²»ÏëÂòÁË£¿ ÄÇ£¬ºÃ×ß¡£¡£»¶Ó­ÔÙÀ´ ;)");
+                //% prints("\nå‘µå‘µï¼Œä¸æƒ³ä¹°äº†ï¼Ÿ é‚£ï¼Œå¥½èµ°ã€‚ã€‚æ¬¢è¿å†æ¥ ;)");
+                prints("\n\xba\xc7\xba\xc7\xa3\xac\xb2\xbb\xcf\xeb\xc2\xf2\xc1\xcb\xa3\xbf \xc4\xc7\xa3\xac\xba\xc3\xd7\xdf\xa1\xa3\xa1\xa3\xbb\xb6\xd3\xad\xd4\xd9\xc0\xb4 ;)");
                 pressanykey();
                 return 0;
         }
         if ( no == 4 || no == 5 ) {
-                prints("\nĞ¡µê²»Ìá¹©¸ÃÉÌÆ·ÁËÅ¶ :)");
+                //% prints("\nå°åº—ä¸æä¾›è¯¥å•†å“äº†å“¦ :)");
+                prints("\n\xd0\xa1\xb5\xea\xb2\xbb\xcc\xe1\xb9\xa9\xb8\xc3\xc9\xcc\xc6\xb7\xc1\xcb\xc5\xb6 :)");
                 pressanykey();
                 return 0;
        }
@@ -320,18 +381,22 @@ int doshopping()
         }
         prints("\n\n");
         if(hasperm) {
-                prints("ÄúÒÑ¾­ÓĞÕâÖÖÈ¨ÏŞ, ²»ĞèÒªÔÙ¹ºÂò. ");
+                //% prints("æ‚¨å·²ç»æœ‰è¿™ç§æƒé™, ä¸éœ€è¦å†è´­ä¹°. ");
+                prints("\xc4\xfa\xd2\xd1\xbe\xad\xd3\xd0\xd5\xe2\xd6\xd6\xc8\xa8\xcf\xde, \xb2\xbb\xd0\xe8\xd2\xaa\xd4\xd9\xb9\xba\xc2\xf2. ");
                 pressanykey();
                 return 0;
         }
         if(currentuser.money < maxnum) {
-                prints("\n¶Ô²»Æğ, ÄãÃ»ÓĞ×ã¹»µÄÇ®¹ºÂòÕâÖÖÈ¨ÏŞ.");
+                //% prints("\nå¯¹ä¸èµ·, ä½ æ²¡æœ‰è¶³å¤Ÿçš„é’±è´­ä¹°è¿™ç§æƒé™.");
+                prints("\n\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xe3\xc3\xbb\xd3\xd0\xd7\xe3\xb9\xbb\xb5\xc4\xc7\xae\xb9\xba\xc2\xf2\xd5\xe2\xd6\xd6\xc8\xa8\xcf\xde.");
                 pressanykey();
                 return 0;
         }
-        if(askyn("ÄúÈ·¶¨Òª¹ºÂòÂğ£¿",NA,NA) == NA ) {
+        //% if(askyn("æ‚¨ç¡®å®šè¦è´­ä¹°å—ï¼Ÿ",NA,NA) == NA ) {
+        if(askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xb9\xba\xc2\xf2\xc2\xf0\xa3\xbf",NA,NA) == NA ) {
                 move(23,0);clrtoeol();
-                prints("ÏÖÔÚ²»ÂòÁË£¿ ÄÇÄãÏÂ´ÎÔÙÀ´¡£ Òª¼ÇµÃÅ¶¡£");
+                //% prints("ç°åœ¨ä¸ä¹°äº†ï¼Ÿ é‚£ä½ ä¸‹æ¬¡å†æ¥ã€‚ è¦è®°å¾—å“¦ã€‚");
+                prints("\xcf\xd6\xd4\xda\xb2\xbb\xc2\xf2\xc1\xcb\xa3\xbf \xc4\xc7\xc4\xe3\xcf\xc2\xb4\xce\xd4\xd9\xc0\xb4\xa1\xa3 \xd2\xaa\xbc\xc7\xb5\xc3\xc5\xb6\xa1\xa3");
                 pressanykey();
                 return 0;
         }
@@ -363,19 +428,23 @@ int doshopping()
                         break;
         }
         if(hasperm) {
-                prints("ÔÚ½»Ò×½øĞĞÇ°ÄúÒÑ¾­ÓĞÁËÕâÖÖÈ¨ÏŞ, ËùÒÔÈ¡Ïû´Ë´Î½»Ò×. ");
+                //% prints("åœ¨äº¤æ˜“è¿›è¡Œå‰æ‚¨å·²ç»æœ‰äº†è¿™ç§æƒé™, æ‰€ä»¥å–æ¶ˆæ­¤æ¬¡äº¤æ˜“. ");
+                prints("\xd4\xda\xbd\xbb\xd2\xd7\xbd\xf8\xd0\xd0\xc7\xb0\xc4\xfa\xd2\xd1\xbe\xad\xd3\xd0\xc1\xcb\xd5\xe2\xd6\xd6\xc8\xa8\xcf\xde, \xcb\xf9\xd2\xd4\xc8\xa1\xcf\xfb\xb4\xcb\xb4\xce\xbd\xbb\xd2\xd7. ");
                 pressanykey();
                 return 0;
         }
         if(currentuser.money < maxnum) {
-                prints("\n¶Ô²»Æğ, ÄãÃ»ÓĞ×ã¹»µÄÇ®¹ºÂòÕâÖÖÈ¨ÏŞ.");
+                //% prints("\nå¯¹ä¸èµ·, ä½ æ²¡æœ‰è¶³å¤Ÿçš„é’±è´­ä¹°è¿™ç§æƒé™.");
+                prints("\n\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xe3\xc3\xbb\xd3\xd0\xd7\xe3\xb9\xbb\xb5\xc4\xc7\xae\xb9\xba\xc2\xf2\xd5\xe2\xd6\xd6\xc8\xa8\xcf\xde.");
                 pressanykey();
                 return 0;
         }
 	currentuser.money -= maxnum;
         substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);        move(23,0); clrtoeol();
-        prints("Ë³ÀûÍê³É½»Ò×£¬»¶Ó­ÄúµÄÔÙ´Î»İ¹Ë¡£;P");
-        sprintf(genbuf,"¹ºÂò[%s]£¬»¨·Ñ %d Ôª.",exchanges[no-1].title,maxnum);
+        //% prints("é¡ºåˆ©å®Œæˆäº¤æ˜“ï¼Œæ¬¢è¿æ‚¨çš„å†æ¬¡æƒ é¡¾ã€‚;P");
+        prints("\xcb\xb3\xc0\xfb\xcd\xea\xb3\xc9\xbd\xbb\xd2\xd7\xa3\xac\xbb\xb6\xd3\xad\xc4\xfa\xb5\xc4\xd4\xd9\xb4\xce\xbb\xdd\xb9\xcb\xa1\xa3;P");
+        //% sprintf(genbuf,"è´­ä¹°[%s]ï¼ŒèŠ±è´¹ %d å…ƒ.",exchanges[no-1].title,maxnum);
+        sprintf(genbuf,"\xb9\xba\xc2\xf2[%s]\xa3\xac\xbb\xa8\xb7\xd1 %d \xd4\xaa.",exchanges[no-1].title,maxnum);
         gamelog(genbuf);
         pressanykey();
         return 1;
@@ -384,31 +453,40 @@ int doshopping()
 int
 payoff()
 {
-	if(gotomarket("Ë®Õ¾»¹´û´¦")) return 0;
-        prints("±¾´¦¹æ¶¨: ³¥»¹´û¿î±ØĞëÒ»´Î»¹Çå. \n\n");
+	//% if(gotomarket("æ°´ç«™è¿˜è´·å¤„")) return 0;
+	if(gotomarket("\xcb\xae\xd5\xbe\xbb\xb9\xb4\xfb\xb4\xa6")) return 0;
+        //% prints("æœ¬å¤„è§„å®š: å¿è¿˜è´·æ¬¾å¿…é¡»ä¸€æ¬¡è¿˜æ¸…. \n\n");
+        prints("\xb1\xbe\xb4\xa6\xb9\xe6\xb6\xa8: \xb3\xa5\xbb\xb9\xb4\xfb\xbf\xee\xb1\xd8\xd0\xeb\xd2\xbb\xb4\xce\xbb\xb9\xc7\xe5. \n\n");
 	if(currentuser.bet == 0 ) {
-		prints("Äã²¢Ã»ÓĞÔÚ±¾ÊĞ³¡½èÇ®£¬ËùÒÔÎŞĞè»¹Ç®£¬ºÇºÇ");
+		//% prints("ä½ å¹¶æ²¡æœ‰åœ¨æœ¬å¸‚åœºå€Ÿé’±ï¼Œæ‰€ä»¥æ— éœ€è¿˜é’±ï¼Œå‘µå‘µ");
+		prints("\xc4\xe3\xb2\xa2\xc3\xbb\xd3\xd0\xd4\xda\xb1\xbe\xca\xd0\xb3\xa1\xbd\xe8\xc7\xae\xa3\xac\xcb\xf9\xd2\xd4\xce\xde\xd0\xe8\xbb\xb9\xc7\xae\xa3\xac\xba\xc7\xba\xc7");
 		pressanykey();
 		return 0;
 	}
 	if(currentuser.money < currentuser.bet) {
-		prints("ÄãµÄÇ®²»¹»»¹´û¿î£¬ÇëÏÂ´ÎÔÙÀ´»¹ÂŞ¡£");
+		//% prints("ä½ çš„é’±ä¸å¤Ÿè¿˜è´·æ¬¾ï¼Œè¯·ä¸‹æ¬¡å†æ¥è¿˜ç½—ã€‚");
+		prints("\xc4\xe3\xb5\xc4\xc7\xae\xb2\xbb\xb9\xbb\xbb\xb9\xb4\xfb\xbf\xee\xa3\xac\xc7\xeb\xcf\xc2\xb4\xce\xd4\xd9\xc0\xb4\xbb\xb9\xc2\xde\xa1\xa3");
 		pressanykey();
 		return 0;
 	}
-	prints("ÄúÔÚ±¾´¦¹²´û¿î %d Ôª.\n\n", currentuser.bet);
-	 if(askyn("ÄúÏÖÔÚ¾ÍÏë»¹Çå´û¿îÂğ£¿",NA,NA) == NA ) {
-		prints("ÏÖÔÚ²»»¹ÁË£¿ ÄÇÄãÏÂ´ÎÔÙÀ´¡£ Òª¼ÇµÃÅ¶¡£");
+	//% prints("æ‚¨åœ¨æœ¬å¤„å…±è´·æ¬¾ %d å…ƒ.\n\n", currentuser.bet);
+	prints("\xc4\xfa\xd4\xda\xb1\xbe\xb4\xa6\xb9\xb2\xb4\xfb\xbf\xee %d \xd4\xaa.\n\n", currentuser.bet);
+	 //% if(askyn("æ‚¨ç°åœ¨å°±æƒ³è¿˜æ¸…è´·æ¬¾å—ï¼Ÿ",NA,NA) == NA ) {
+	 if(askyn("\xc4\xfa\xcf\xd6\xd4\xda\xbe\xcd\xcf\xeb\xbb\xb9\xc7\xe5\xb4\xfb\xbf\xee\xc2\xf0\xa3\xbf",NA,NA) == NA ) {
+		//% prints("ç°åœ¨ä¸è¿˜äº†ï¼Ÿ é‚£ä½ ä¸‹æ¬¡å†æ¥ã€‚ è¦è®°å¾—å“¦ã€‚");
+		prints("\xcf\xd6\xd4\xda\xb2\xbb\xbb\xb9\xc1\xcb\xa3\xbf \xc4\xc7\xc4\xe3\xcf\xc2\xb4\xce\xd4\xd9\xc0\xb4\xa1\xa3 \xd2\xaa\xbc\xc7\xb5\xc3\xc5\xb6\xa1\xa3");
 		pressanykey();
 		return 0;
 	}
         currentuser.money -= currentuser.bet;
-        sprintf(genbuf,"»¹Çå´û¿î %d Ôª.",currentuser.bet);
+        //% sprintf(genbuf,"è¿˜æ¸…è´·æ¬¾ %d å…ƒ.",currentuser.bet);
+        sprintf(genbuf,"\xbb\xb9\xc7\xe5\xb4\xfb\xbf\xee %d \xd4\xaa.",currentuser.bet);
         gamelog(genbuf);
         currentuser.bet = 0;
         currentuser.dateforbet = 0;
         substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
-        prints("ÄúÒÑ¾­»¹ÇåÁËÔÚ±¾ÊĞ³¡Ëù½èµÄÇ®¡£»¶Ó­ÄúµÄÔÙ´Î»İ¹Ë¡£;P");
+        //% prints("æ‚¨å·²ç»è¿˜æ¸…äº†åœ¨æœ¬å¸‚åœºæ‰€å€Ÿçš„é’±ã€‚æ¬¢è¿æ‚¨çš„å†æ¬¡æƒ é¡¾ã€‚;P");
+        prints("\xc4\xfa\xd2\xd1\xbe\xad\xbb\xb9\xc7\xe5\xc1\xcb\xd4\xda\xb1\xbe\xca\xd0\xb3\xa1\xcb\xf9\xbd\xe8\xb5\xc4\xc7\xae\xa1\xa3\xbb\xb6\xd3\xad\xc4\xfa\xb5\xc4\xd4\xd9\xb4\xce\xbb\xdd\xb9\xcb\xa1\xa3;P");
         pressanykey();
         return 1;
 }
@@ -420,32 +498,42 @@ borrow()
 	int tempbet,maxbet;
 	char 	buf[STRLEN];
 	char *dstr;
-	if(gotomarket("Ë®Õ¾½è´û´¦"))return 0;
-	prints("±¾´¦¹æ¶¨: Ä¿Ç°Ã¿ÈË×î¶à¿ÉÒÔ´û¿î %d Ôª.\n\n", MAXBET);
+	//% if(gotomarket("æ°´ç«™å€Ÿè´·å¤„"))return 0;
+	if(gotomarket("\xcb\xae\xd5\xbe\xbd\xe8\xb4\xfb\xb4\xa6"))return 0;
+	//% prints("æœ¬å¤„è§„å®š: ç›®å‰æ¯äººæœ€å¤šå¯ä»¥è´·æ¬¾ %d å…ƒ.\n\n", MAXBET);
+	prints("\xb1\xbe\xb4\xa6\xb9\xe6\xb6\xa8: \xc4\xbf\xc7\xb0\xc3\xbf\xc8\xcb\xd7\xee\xb6\xe0\xbf\xc9\xd2\xd4\xb4\xfb\xbf\xee %d \xd4\xaa.\n\n", MAXBET);
 	if(!currentuser.bet)
-		prints("ÄúÄ¿Ç°»¹Ã»ÓĞÔÚ±¾´¦´û¿î.\n\n");
+		//% prints("æ‚¨ç›®å‰è¿˜æ²¡æœ‰åœ¨æœ¬å¤„è´·æ¬¾.\n\n");
+		prints("\xc4\xfa\xc4\xbf\xc7\xb0\xbb\xb9\xc3\xbb\xd3\xd0\xd4\xda\xb1\xbe\xb4\xa6\xb4\xfb\xbf\xee.\n\n");
 	else {
-		prints("ÄúÒÑ¾­ÔÚ±¾´¦´û¿î %d Ôª.\n",currentuser.bet);
+		//% prints("æ‚¨å·²ç»åœ¨æœ¬å¤„è´·æ¬¾ %d å…ƒ.\n",currentuser.bet);
+		prints("\xc4\xfa\xd2\xd1\xbe\xad\xd4\xda\xb1\xbe\xb4\xa6\xb4\xfb\xbf\xee %d \xd4\xaa.\n",currentuser.bet);
 		dstr = getdatestring(currentuser.dateforbet, NA);
-		sprintf(genbuf, "Äú³¥»¹´û¿îµÄ×îºóÆÚÏŞÊÇ:  %14.14s(%s) \n\n", dstr, dstr + 23);
+		//% sprintf(genbuf, "æ‚¨å¿è¿˜è´·æ¬¾çš„æœ€åæœŸé™æ˜¯:  %14.14s(%s) \n\n", dstr, dstr + 23);
+		sprintf(genbuf, "\xc4\xfa\xb3\xa5\xbb\xb9\xb4\xfb\xbf\xee\xb5\xc4\xd7\xee\xba\xf3\xc6\xda\xcf\xde\xca\xc7:  %14.14s(%s) \n\n", dstr, dstr + 23);
 		prints(genbuf);
 		if( currentuser.bet>=MAXBET) {
-               		prints("¶Ô²»Æğ, ÄúµÄ´û¿îÒÑ¾­´ïµ½¹æ¶¨ÊıÄ¿, ²»ÄÜÔÙÏíÊÜ´û¿î·şÎñ.");
+               		//% prints("å¯¹ä¸èµ·, æ‚¨çš„è´·æ¬¾å·²ç»è¾¾åˆ°è§„å®šæ•°ç›®, ä¸èƒ½å†äº«å—è´·æ¬¾æœåŠ¡.");
+               		prints("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xb5\xc4\xb4\xfb\xbf\xee\xd2\xd1\xbe\xad\xb4\xef\xb5\xbd\xb9\xe6\xb6\xa8\xca\xfd\xc4\xbf, \xb2\xbb\xc4\xdc\xd4\xd9\xcf\xed\xca\xdc\xb4\xfb\xbf\xee\xb7\xfe\xce\xf1.");
                         pressanykey();
                         return 0;
                 }
 
 	}
-	if(askyn("ÄúÏÖÔÚÏëÏò±¾Õ¾´û¿îÂğ£¿",NA,NA) == NA ) return 0;
+	//% if(askyn("æ‚¨ç°åœ¨æƒ³å‘æœ¬ç«™è´·æ¬¾å—ï¼Ÿ",NA,NA) == NA ) return 0;
+	if(askyn("\xc4\xfa\xcf\xd6\xd4\xda\xcf\xeb\xcf\xf2\xb1\xbe\xd5\xbe\xb4\xfb\xbf\xee\xc2\xf0\xa3\xbf",NA,NA) == NA ) return 0;
 	maxbet = MAXBET-currentuser.bet;
 	if( maxbet > 1000 ) {
-		sprintf(genbuf,  "Äú¿ÉÒÔ´û¿î: ÖÁÉÙ 1000 Ôª, ×î¶à %d Ôª¡£ÄúÏë½è¶àÉÙÄØ£¿",maxbet);
+		//% sprintf(genbuf,  "æ‚¨å¯ä»¥è´·æ¬¾: è‡³å°‘ 1000 å…ƒ, æœ€å¤š %d å…ƒã€‚æ‚¨æƒ³å€Ÿå¤šå°‘å‘¢ï¼Ÿ",maxbet);
+		sprintf(genbuf,  "\xc4\xfa\xbf\xc9\xd2\xd4\xb4\xfb\xbf\xee: \xd6\xc1\xc9\xd9 1000 \xd4\xaa, \xd7\xee\xb6\xe0 %d \xd4\xaa\xa1\xa3\xc4\xfa\xcf\xeb\xbd\xe8\xb6\xe0\xc9\xd9\xc4\xd8\xa3\xbf",maxbet);
 		getdata(10, 0, genbuf, buf, 10, DOECHO, YEA);
 		tempbet = atoi(buf);
 	} else {
-		sprintf(genbuf,"Äú¿ÉÒÔ´û¿î %d Ôª£¬ÄúÈ·¶¨Òª´û¿îÂğ£¿",maxbet);
+		//% sprintf(genbuf,"æ‚¨å¯ä»¥è´·æ¬¾ %d å…ƒï¼Œæ‚¨ç¡®å®šè¦è´·æ¬¾å—ï¼Ÿ",maxbet);
+		sprintf(genbuf,"\xc4\xfa\xbf\xc9\xd2\xd4\xb4\xfb\xbf\xee %d \xd4\xaa\xa3\xac\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xb4\xfb\xbf\xee\xc2\xf0\xa3\xbf",maxbet);
 		if( askyn(genbuf,YEA,NA) == NA) {
-			prints("\nàÅ£¬²»½èÁË£¿ ÄÇºÃ£¬ÏÂ´ÎÔÙÀ´¡£ ;p");
+			//% prints("\nå—¯ï¼Œä¸å€Ÿäº†ï¼Ÿ é‚£å¥½ï¼Œä¸‹æ¬¡å†æ¥ã€‚ ;p");
+			prints("\n\xe0\xc5\xa3\xac\xb2\xbb\xbd\xe8\xc1\xcb\xa3\xbf \xc4\xc7\xba\xc3\xa3\xac\xcf\xc2\xb4\xce\xd4\xd9\xc0\xb4\xa1\xa3 ;p");
 			pressanykey();
 			return 0;
 		}
@@ -458,14 +546,17 @@ borrow()
 		currentuser.dateforbet = now + 10*24*60*60;
 		substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 		dstr = getdatestring(currentuser.dateforbet, NA);
-		sprintf(genbuf, "\nÄãÏò±¾Õ¾×Ü¹²½è¿î %d Ôª£¬ÄúĞèÒªÔÚ %14.14s(%s) »¹Çå´û¿î¡£",currentuser.bet, dstr, dstr + 23);
+		//% sprintf(genbuf, "\nä½ å‘æœ¬ç«™æ€»å…±å€Ÿæ¬¾ %d å…ƒï¼Œæ‚¨éœ€è¦åœ¨ %14.14s(%s) è¿˜æ¸…è´·æ¬¾ã€‚",currentuser.bet, dstr, dstr + 23);
+		sprintf(genbuf, "\n\xc4\xe3\xcf\xf2\xb1\xbe\xd5\xbe\xd7\xdc\xb9\xb2\xbd\xe8\xbf\xee %d \xd4\xaa\xa3\xac\xc4\xfa\xd0\xe8\xd2\xaa\xd4\xda %14.14s(%s) \xbb\xb9\xc7\xe5\xb4\xfb\xbf\xee\xa1\xa3",currentuser.bet, dstr, dstr + 23);
 		prints(genbuf);
-		sprintf(genbuf,"%s ½è¿î %d Ôª.",currentuser.userid,tempbet);
+		//% sprintf(genbuf,"%s å€Ÿæ¬¾ %d å…ƒ.",currentuser.userid,tempbet);
+		sprintf(genbuf,"%s \xbd\xe8\xbf\xee %d \xd4\xaa.",currentuser.userid,tempbet);
 		gamelog(genbuf);
 		pressanykey();
 		return 1;
         }
-	prints("\nÄúÊäÈëµÄÊıÄ¿²»ÕıÈ·£¬È¡Ïû´Ë´Î½»Ò×¡£");
+	//% prints("\næ‚¨è¾“å…¥çš„æ•°ç›®ä¸æ­£ç¡®ï¼Œå–æ¶ˆæ­¤æ¬¡äº¤æ˜“ã€‚");
+	prints("\n\xc4\xfa\xca\xe4\xc8\xeb\xb5\xc4\xca\xfd\xc4\xbf\xb2\xbb\xd5\xfd\xc8\xb7\xa3\xac\xc8\xa1\xcf\xfb\xb4\xcb\xb4\xce\xbd\xbb\xd2\xd7\xa1\xa3");
 	pressanykey();
 	return 0;
 }
@@ -494,7 +585,8 @@ check_money(unsigned int money)
     {
         move(22, 0);
         clrtobot();
-        prints("±§Ç¸£¡Äú²»¿ÉÒÔÏÂ×¢ %d Ôª, ÒòÎªÄúÏÖÔÚÉíÉÏÖ»ÓĞ %d Ôª£¡",
+        //% prints("æŠ±æ­‰ï¼æ‚¨ä¸å¯ä»¥ä¸‹æ³¨ %d å…ƒ, å› ä¸ºæ‚¨ç°åœ¨èº«ä¸Šåªæœ‰ %d å…ƒï¼",
+        prints("\xb1\xa7\xc7\xb8\xa3\xa1\xc4\xfa\xb2\xbb\xbf\xc9\xd2\xd4\xcf\xc2\xd7\xa2 %d \xd4\xaa, \xd2\xf2\xce\xaa\xc4\xfa\xcf\xd6\xd4\xda\xc9\xed\xc9\xcf\xd6\xbb\xd3\xd0 %d \xd4\xaa\xa3\xa1",
 		money,currentuser.money);
 	pressanykey();
         return 1;
@@ -511,7 +603,8 @@ show_money(int m, char *welcome,int Clear)
         move(22, 0);
         clrtobot();
         set_safe_record();
-        prints("[0;1;37;44m                  ÄãÏÖÓĞÏÖ½ğ: [36m%-18d[37mÑº×¢½ğ¶î: [36m%-20d[m  ", currentuser.money, m);
+        //% prints("[0;1;37;44m                  ä½ ç°æœ‰ç°é‡‘: [36m%-18d[37mæŠ¼æ³¨é‡‘é¢: [36m%-20d[m  ", currentuser.money, m);
+        prints("[0;1;37;44m                  \xc4\xe3\xcf\xd6\xd3\xd0\xcf\xd6\xbd\xf0: [36m%-18d[37m\xd1\xba\xd7\xa2\xbd\xf0\xb6\xee: [36m%-20d[m  ", currentuser.money, m);
 }
 
 int get_money(int m, char *welcome)
@@ -520,7 +613,8 @@ int get_money(int m, char *welcome)
    char	buf[5];
    do {
       show_money(m,welcome,YEA);
-      getdata(23,16,"¡îÒªÑº×¢¶àÉÙÇ®(1 - 2000)? ", buf, 5, DOECHO, YEA);
+      //% getdata(23,16,"â˜†è¦æŠ¼æ³¨å¤šå°‘é’±(1 - 2000)? ", buf, 5, DOECHO, YEA);
+      getdata(23,16,"\xa1\xee\xd2\xaa\xd1\xba\xd7\xa2\xb6\xe0\xc9\xd9\xc7\xae(1 - 2000)? ", buf, 5, DOECHO, YEA);
       if(buf[0] == '\0') return 0;
       money = abs(atoi(buf));
       if ( money <= 0) return 0;

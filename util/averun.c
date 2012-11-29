@@ -73,11 +73,14 @@ int main(int argc, char **argv)
 
 	int item = draw_chart(&bst);
 	char *mg = left_margin(item, NULL);
-	printf("\033[0;1m%s0©¸©¤©¤ %-8.8s Æ½¾ù¸ºÔØÈËÊıÍ³¼Æ ©¤©¤©¤ %s ©¤©¤   \n"
+	//% printf("\033[0;1m%s0â””â”€â”€ %-8.8s å¹³å‡è´Ÿè½½äººæ•°ç»Ÿè®¡ â”€â”€â”€ %s â”€â”€   \n"
+	printf("\033[0;1m%s0\xa9\xb8\xa9\xa4\xa9\xa4 %-8.8s \xc6\xbd\xbe\xf9\xb8\xba\xd4\xd8\xc8\xcb\xca\xfd\xcd\xb3\xbc\xc6 \xa9\xa4\xa9\xa4\xa9\xa4 %s \xa9\xa4\xa9\xa4   \n"
 			"\033[1;36m%s   00 01 02 03 04 05 06 07 08 09 10 11 "
 			"\033[31m12 13 14 15 16 17 18 19 20 21 22 23\n\n"
-			"%s                  \033[1;37m1 \033[32m¨~ \033[37m= \033[36m%-5d"
-			"         \033[37mÆ½¾ù¸ºÔØÈËÊı: \033[36m%d\n",
+			//% "%s                  \033[1;37m1 \033[32mâ–‡ \033[37m= \033[36m%-5d"
+			"%s                  \033[1;37m1 \033[32m\xa8\x7e \033[37m= \033[36m%-5d"
+			//% "         \033[37må¹³å‡è´Ÿè½½äººæ•°: \033[36m%d\n",
+			"         \033[37m\xc6\xbd\xbe\xf9\xb8\xba\xd4\xd8\xc8\xcb\xca\xfd: \033[36m%d\n",
 			mg, BBSNAME, getdatestring(time(NULL), DATE_ZH), mg, mg, item, avg);
 	return 0;
 }

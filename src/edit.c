@@ -98,17 +98,23 @@ static void msgline(void)
 	showansi = 1;
 	strcpy(buf, "[1;33;44m");
 	if (chkmail())
-		strcat(buf, "¡¾[5;32mÐÅ[m[1;33;44m¡¿");
+		//% strcat(buf, "ã€[5;32mä¿¡[m[1;33;44mã€‘");
+		strcat(buf, "\xa1\xbe[5;32m\xd0\xc5[m[1;33;44m\xa1\xbf");
 	else
-		strcat(buf, "¡¾  ¡¿");
-	strcat(buf, "ÐÅÏä [[32m°´[31mCtrl-Q[32mÇó¾È[33m] ");
+		//% strcat(buf, "ã€  ã€‘");
+		strcat(buf, "\xa1\xbe  \xa1\xbf");
+	//% strcat(buf, "ä¿¡ç®± [[32mæŒ‰[31mCtrl-Q[32mæ±‚æ•‘[33m] ");
+	strcat(buf, "\xd0\xc5\xcf\xe4 [[32m\xb0\xb4[31mCtrl-Q[32m\xc7\xf3\xbe\xc8[33m] ");
 	sprintf(
 			buf2,
 			"[[32m%s[33m][[32m%4.4d[33m,[32m%3.3d[33m][[32m%d[33m] [[32m%2s[33m]",
-			insert_character ? "²åÈë" : "¸ÄÐ´", currln + 1, currpnt + 1,
-			linelen-1, enabledbchar ? "Ë«" : "µ¥");
+			//% insert_character ? "æ’å…¥" : "æ”¹å†™", currln + 1, currpnt + 1,
+			insert_character ? "\xb2\xe5\xc8\xeb" : "\xb8\xc4\xd0\xb4", currln + 1, currpnt + 1,
+			//% linelen-1, enabledbchar ? "åŒ" : "å•");
+			linelen-1, enabledbchar ? "\xcb\xab" : "\xb5\xa5");
 	strcat(buf, buf2);
-	sprintf(buf2, "\033[1;33m¡¾\033[1;32m%.23s\033[33m¡¿\033[m",
+	//% sprintf(buf2, "\033[1;33mã€\033[1;32m%.23s\033[33mã€‘\033[m",
+	sprintf(buf2, "\033[1;33m\xa1\xbe\033[1;32m%.23s\033[33m\xa1\xbf\033[m",
 			getdatestring(now, DATE_ZH) + 6);
 	strcat(buf, buf2);
 	move(t_lines - 1, 0);
@@ -275,7 +281,8 @@ void set()
 	int templinelen;
 
 	signal(SIGALRM,SIG_IGN);
-	sprintf(theinfo,"×Ô¶¯»»ÐÐ: Ã¿ÐÐ×î¶à×Ö·ûÊý(10 -- %d)[%d]: ",
+	//% sprintf(theinfo,"è‡ªåŠ¨æ¢è¡Œ: æ¯è¡Œæœ€å¤šå­—ç¬¦æ•°(10 -- %d)[%d]: ",
+	sprintf(theinfo,"\xd7\xd4\xb6\xaf\xbb\xbb\xd0\xd0: \xc3\xbf\xd0\xd0\xd7\xee\xb6\xe0\xd7\xd6\xb7\xfb\xca\xfd(10 -- %d)[%d]: ",
 			WRAPMARGIN-1,linelen-1);
 	getdata(23,0,theinfo,tmp,7,DOECHO,YEA);
 	msg(0);
@@ -293,7 +300,8 @@ void go() {
 	int line;
 
 	signal(SIGALRM, SIG_IGN);
-	getdata(23, 0, "ÇëÎÊÒªÌøµ½µÚ¼¸ÐÐ: ", tmp, 7, DOECHO, YEA);
+	//% getdata(23, 0, "è¯·é—®è¦è·³åˆ°ç¬¬å‡ è¡Œ: ", tmp, 7, DOECHO, YEA);
+	getdata(23, 0, "\xc7\xeb\xce\xca\xd2\xaa\xcc\xf8\xb5\xbd\xb5\xda\xbc\xb8\xd0\xd0: ", tmp, 7, DOECHO, YEA);
 	msg(0);
 	if (tmp[0] == '\0')
 		return;
@@ -333,7 +341,8 @@ void search() {
 	char tmp[STRLEN];
 
 	signal(SIGALRM, SIG_IGN);
-	getdata(t_lines-1, 0, "ËÑÑ°×Ö´®: ", tmp, 65, DOECHO, YEA);
+	//% getdata(t_lines-1, 0, "æœå¯»å­—ä¸²: ", tmp, 65, DOECHO, YEA);
+	getdata(t_lines-1, 0, "\xcb\xd1\xd1\xb0\xd7\xd6\xb4\xae: ", tmp, 65, DOECHO, YEA);
 	msg(0);
 	if (tmp[0] == '\0')
 		return;
@@ -583,7 +592,7 @@ void insert_char(register int ch) {
 	}
 	split(p, (s - p->data) + 1);
 	p = p->next;
-	if (wordwrap && p->len >= 1) {//Èç¹ûÊÇ´Ê£¬ÇÒÆäºóÃ»ÓÐ¿Õ¸ñ£¬Ôò×Ô¶¯²¹ÉÏ¿Õ¸ñ
+	if (wordwrap && p->len >= 1) {//å¦‚æžœæ˜¯è¯ï¼Œä¸”å…¶åŽæ²¡æœ‰ç©ºæ ¼ï¼Œåˆ™è‡ªåŠ¨è¡¥ä¸Šç©ºæ ¼
 		i = p->len;
 		if (p->data[i - 1] != ' ') {
 			p->data[i] = ' ';
@@ -722,9 +731,11 @@ static int process_ESC_action(int action, int arg)
 			if ((fp = fopen(filename, "r")) != NULL) {
 				insert_from_fp(fp);
 				fclose(fp);
-				sprintf(msg, "ÒÑÈ¡³ö¼ôÌù²¾µÚ %c Ò³", arg);
+				//% sprintf(msg, "å·²å–å‡ºå‰ªè´´ç°¿ç¬¬ %c é¡µ", arg);
+				sprintf(msg, "\xd2\xd1\xc8\xa1\xb3\xf6\xbc\xf4\xcc\xf9\xb2\xbe\xb5\xda %c \xd2\xb3", arg);
 			} else
-				sprintf(msg, "ÎÞ·¨È¡³ö¼ôÌù²¾µÚ %c Ò³", arg);
+				//% sprintf(msg, "æ— æ³•å–å‡ºå‰ªè´´ç°¿ç¬¬ %c é¡µ", arg);
+				sprintf(msg, "\xce\xde\xb7\xa8\xc8\xa1\xb3\xf6\xbc\xf4\xcc\xf9\xb2\xbe\xb5\xda %c \xd2\xb3", arg);
 			break;
 #ifdef ALLOWAUTOWRAP
 			case 'X':
@@ -751,9 +762,11 @@ static int process_ESC_action(int action, int arg)
 				} else
 					insert_to_fp(fp);
 				fclose(fp);
-				sprintf(msg, "ÒÑÌùÖÁ¼ôÌù²¾µÚ %c Ò³", arg);
+				//% sprintf(msg, "å·²è´´è‡³å‰ªè´´ç°¿ç¬¬ %c é¡µ", arg);
+				sprintf(msg, "\xd2\xd1\xcc\xf9\xd6\xc1\xbc\xf4\xcc\xf9\xb2\xbe\xb5\xda %c \xd2\xb3", arg);
 			} else
-				sprintf(msg, "ÎÞ·¨ÌùÖÁ¼ôÌù²¾µÚ %c Ò³", arg);
+				//% sprintf(msg, "æ— æ³•è´´è‡³å‰ªè´´ç°¿ç¬¬ %c é¡µ", arg);
+				sprintf(msg, "\xce\xde\xb7\xa8\xcc\xf9\xd6\xc1\xbc\xf4\xcc\xf9\xb2\xbe\xb5\xda %c \xd2\xb3", arg);
 			break;
 		case 'N':
 			searchline(searchtext);
@@ -780,7 +793,8 @@ static int process_ESC_action(int action, int arg)
 			clear();
 			display_buffer();
 			redoscr();
-			strcpy(msg, "ÒÑÏÔÊ¾²ÊÉ«±à¼­³É¹û£¬¼´½«ÇÐ»Øµ¥É«Ä£Ê½");
+			//% strcpy(msg, "å·²æ˜¾ç¤ºå½©è‰²ç¼–è¾‘æˆæžœï¼Œå³å°†åˆ‡å›žå•è‰²æ¨¡å¼");
+			strcpy(msg, "\xd2\xd1\xcf\xd4\xca\xbe\xb2\xca\xc9\xab\xb1\xe0\xbc\xad\xb3\xc9\xb9\xfb\xa3\xac\xbc\xb4\xbd\xab\xc7\xd0\xbb\xd8\xb5\xa5\xc9\xab\xc4\xa3\xca\xbd");
 			break;
 	}
 	if (strchr("FBRCM", action))
@@ -789,14 +803,16 @@ static int process_ESC_action(int action, int arg)
 		if (action == 'C') { /* need redraw */
 			move(t_lines - 2, 0);
 			clrtoeol();
-			prints("[1m%s%s%s[m", msg, ", Çë°´ÈÎÒâ¼ü·µ»Ø±à¼­»­Ãæ...", ANSI_RESET);
+			//% prints("[1m%s%s%s[m", msg, ", è¯·æŒ‰ä»»æ„é”®è¿”å›žç¼–è¾‘ç”»é¢...", ANSI_RESET);
+			prints("[1m%s%s%s[m", msg, ", \xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xb7\xb5\xbb\xd8\xb1\xe0\xbc\xad\xbb\xad\xc3\xe6...", ANSI_RESET);
 			igetkey();
 			newch = '\0';
 			editansi = showansi = 0;
 			clear();
 			display_buffer();
 		} else
-			newch = ask(strcat(msg, "£¬Çë¼ÌÐø±à¼­¡£"));
+			//% newch = ask(strcat(msg, "ï¼Œè¯·ç»§ç»­ç¼–è¾‘ã€‚"));
+			newch = ask(strcat(msg, "\xa3\xac\xc7\xeb\xbc\xcc\xd0\xf8\xb1\xe0\xbc\xad\xa1\xa3"));
 	} else
 		newch = '\0';
 	return newch;
@@ -839,9 +855,8 @@ int read_file(char *filename) {
 	}
 	insert_from_fp(fp);
 	fclose(fp);
-	//sprintf(tmp, ":¡¤%s %s¡¤[FROM:", BoardName, BBSHOST);
-	//modified by iamfat 2002.08.17
-	sprintf(tmp, ":¡¤%s %s¡¤", BoardName, BBSHOST);
+	//% sprintf(tmp, ":Â·%s %sÂ·", BoardName, BBSHOST);
+	sprintf(tmp, ":\xa1\xa4%s %s\xa1\xa4", BoardName, BBSHOST);
 	for (p = can_edit_end; p != can_edit_begin; p = p->prev) {
 		//  if(strstr(p->data, tmp)) {
 		if (strstr(p->data, tmp) && p->data[0]!=':') { //modified by roly 02.04.26
@@ -878,18 +893,24 @@ void write_header(FILE *fp, const struct postheader *header)
 	get_board(currboard, &board);
 	noname = board.flag & BOARD_ANONY_FLAG;
 	if (in_mail)
-		fprintf(fp, "¼ÄÐÅÈË: %s (%s)\n", uid, uname);
+		//% fprintf(fp, "å¯„ä¿¡äºº: %s (%s)\n", uid, uname);
+		fprintf(fp, "\xbc\xc4\xd0\xc5\xc8\xcb: %s (%s)\n", uid, uname);
 	else {
-		fprintf(fp, "·¢ÐÅÈË: %s (%s), ÐÅÇø: %s\n",
+		//% fprintf(fp, "å‘ä¿¡äºº: %s (%s), ä¿¡åŒº: %s\n",
+		fprintf(fp, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n",
 				(noname && header->anonymous) ? ANONYMOUS_ACCOUNT : uid,
 				(noname && header->anonymous) ? ANONYMOUS_NICK : uname, currboard);
 	}
-	fprintf(fp, "±ê  Ìâ: %s\n", header->title);
-	fprintf(fp, "·¢ÐÅÕ¾: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
+	//% fprintf(fp, "æ ‡  é¢˜: %s\n", header->title);
+	fprintf(fp, "\xb1\xea  \xcc\xe2: %s\n", header->title);
+	//% fprintf(fp, "å‘ä¿¡ç«™: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
+	fprintf(fp, "\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)", BoardName, getdatestring(now, DATE_ZH));
 	if (in_mail)
-		fprintf(fp, "\nÀ´  Ô´: %s\n", mask_host(fromhost));
+		//% fprintf(fp, "\næ¥  æº: %s\n", mask_host(fromhost));
+		fprintf(fp, "\n\xc0\xb4  \xd4\xb4: %s\n", mask_host(fromhost));
 	else
-		fprintf(fp, ", Õ¾ÄÚÐÅ¼þ\n");
+		//% fprintf(fp, ", ç«™å†…ä¿¡ä»¶\n");
+		fprintf(fp, ", \xd5\xbe\xc4\xda\xd0\xc5\xbc\xfe\n");
 	fprintf(fp, "\n");
 }
 
@@ -907,7 +928,8 @@ void valid_article(char *pmt, char *abort, int sure) {
 		while (p && p != can_edit_end) {
 			ch = p->data[0];
 			if (ch != ':' && ch != '>' && ch != '=' && !strstr(p->data,
-					"µÄ´ó×÷ÖÐÌáµ½: ¡¿")) {
+					//% "çš„å¤§ä½œä¸­æåˆ°: ã€‘")) {
+					"\xb5\xc4\xb4\xf3\xd7\xf7\xd6\xd0\xcc\xe1\xb5\xbd: \xa1\xbf")) {
 				lines++;
 				len += strlen(p->data);
 			}
@@ -917,11 +939,13 @@ void valid_article(char *pmt, char *abort, int sure) {
 		y = 2;
 		if (lines < total * 0.35) {
 			move(y, 0);
-			prints("×¢Òâ£º±¾ÆªÎÄÕÂµÄÒýÑÔ¹ý³¤, ½¨ÒéÄúÉ¾µôÒ»Ð©²»±ØÒªµÄÒýÑÔ.\n");
+			//% prints("æ³¨æ„ï¼šæœ¬ç¯‡æ–‡ç« çš„å¼•è¨€è¿‡é•¿, å»ºè®®æ‚¨åˆ æŽ‰ä¸€äº›ä¸å¿…è¦çš„å¼•è¨€.\n");
+			prints("\xd7\xa2\xd2\xe2\xa3\xba\xb1\xbe\xc6\xaa\xce\xc4\xd5\xc2\xb5\xc4\xd2\xfd\xd1\xd4\xb9\xfd\xb3\xa4, \xbd\xa8\xd2\xe9\xc4\xfa\xc9\xbe\xb5\xf4\xd2\xbb\xd0\xa9\xb2\xbb\xb1\xd8\xd2\xaa\xb5\xc4\xd2\xfd\xd1\xd4.\n");
 			y += 3;
 		}
 		if (w) {
-			strcpy(pmt, "E.ÔÙ±à¼­, S.×ªÐÅ, L.±¾Õ¾·¢±í, A.È¡Ïû or T.¸ü¸Ä±êÌâ?[L]: ");
+			//% strcpy(pmt, "E.å†ç¼–è¾‘, S.è½¬ä¿¡, L.æœ¬ç«™å‘è¡¨, A.å–æ¶ˆ or T.æ›´æ”¹æ ‡é¢˜?[L]: ");
+			strcpy(pmt, "E.\xd4\xd9\xb1\xe0\xbc\xad, S.\xd7\xaa\xd0\xc5, L.\xb1\xbe\xd5\xbe\xb7\xa2\xb1\xed, A.\xc8\xa1\xcf\xfb or T.\xb8\xfc\xb8\xc4\xb1\xea\xcc\xe2?[L]: ");
 		}
 	}
 	if (sure) {
@@ -952,16 +976,20 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	signal(SIGALRM, SIG_IGN);
 	clear();
 	if (session.status == ST_POSTING) {
-		strcpy(p_buf, "L.±¾Õ¾·¢±í, S.×ªÐÅ, A.È¡Ïû, T.¸ü¸Ä±êÌâ or E.ÔÙ±à¼­? [L]: ");
+		//% strcpy(p_buf, "L.æœ¬ç«™å‘è¡¨, S.è½¬ä¿¡, A.å–æ¶ˆ, T.æ›´æ”¹æ ‡é¢˜ or E.å†ç¼–è¾‘? [L]: ");
+		strcpy(p_buf, "L.\xb1\xbe\xd5\xbe\xb7\xa2\xb1\xed, S.\xd7\xaa\xd0\xc5, A.\xc8\xa1\xcf\xfb, T.\xb8\xfc\xb8\xc4\xb1\xea\xcc\xe2 or E.\xd4\xd9\xb1\xe0\xbc\xad? [L]: ");
 	} else if (session.status == ST_SMAIL)
-		strcpy(p_buf, "(S)¼Ä³ö, (A)È¡Ïû, or (E)ÔÙ±à¼­? [S]: ");
+		//% strcpy(p_buf, "(S)å¯„å‡º, (A)å–æ¶ˆ, or (E)å†ç¼–è¾‘? [S]: ");
+		strcpy(p_buf, "(S)\xbc\xc4\xb3\xf6, (A)\xc8\xa1\xcf\xfb, or (E)\xd4\xd9\xb1\xe0\xbc\xad? [S]: ");
 	else
-		strcpy(p_buf, "(S)´¢´æµµ°¸, (A)·ÅÆú±à¼­, (E)¼ÌÐø±à¼­? [S]: ");
+		//% strcpy(p_buf, "(S)å‚¨å­˜æ¡£æ¡ˆ, (A)æ”¾å¼ƒç¼–è¾‘, (E)ç»§ç»­ç¼–è¾‘? [S]: ");
+		strcpy(p_buf, "(S)\xb4\xa2\xb4\xe6\xb5\xb5\xb0\xb8, (A)\xb7\xc5\xc6\xfa\xb1\xe0\xbc\xad, (E)\xbc\xcc\xd0\xf8\xb1\xe0\xbc\xad? [S]: ");
 	valid_article(p_buf, abort, sure);
 	if (abort[0] == 'a' || abort[0] == 'A') {
 		struct stat stbuf;
 		clear();
-		prints("È¡Ïû...\n");
+		//% prints("å–æ¶ˆ...\n");
+		prints("\xc8\xa1\xcf\xfb...\n");
 		refresh();
 		sleep(1);
 		if (stat(filename, &stbuf) || stbuf.st_size == 0)
@@ -974,9 +1002,11 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			&& session.status == ST_POSTING) {
 		char buf[STRLEN];
 		move(1, 0);
-		prints("¾É±êÌâ: %s", header->title);
+		//% prints("æ—§æ ‡é¢˜: %s", header->title);
+		prints("\xbe\xc9\xb1\xea\xcc\xe2: %s", header->title);
 		ansi_filter(buf, header->title);
-		getdata(2, 0, "ÐÂ±êÌâ: ", buf, 50, DOECHO, NA);
+		//% getdata(2, 0, "æ–°æ ‡é¢˜: ", buf, 50, DOECHO, NA);
+		getdata(2, 0, "\xd0\xc2\xb1\xea\xcc\xe2: ", buf, 50, DOECHO, NA);
 		if (strcmp(header->title, buf) && strlen(buf) != 0) {
 			check_title(buf, sizeof(buf));
 			strlcpy(header->title, buf, STRLEN);
@@ -1012,7 +1042,8 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	while (p != NULL) {
 		struct textline *v = p->next;
 		if (aborted != -1) {
-			if (ADD_EDITMARK && strncmp(p->data, "[m[1;36m¡ù ÐÞ¸Ä:¡¤", 17))
+			//% if (ADD_EDITMARK && strncmp(p->data, "[m[1;36mâ€» ä¿®æ”¹:Â·", 17))
+			if (ADD_EDITMARK && strncmp(p->data, "[m[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4", 17))
 				fprintf(fp, "%s\n", p->data);
 		}
 		free(p);
@@ -1021,7 +1052,8 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 	//added by iamfat 2002.08.17
 	extern char fromhost[];
 	if (aborted != -1 && session.status == ST_EDIT && ADD_EDITMARK) {
-		fprintf(fp, "\033[m\033[1;36m¡ù ÐÞ¸Ä:¡¤%s ÓÚ %22.22s¡¤[FROM: %s]"
+		//% fprintf(fp, "\033[m\033[1;36mâ€» ä¿®æ”¹:Â·%s äºŽ %22.22sÂ·[FROM: %s]"
+		fprintf(fp, "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda %22.22s\xa1\xa4[FROM: %s]"
 				"\033[m\n", currentuser.userid,
 				getdatestring(time(NULL), DATE_ZH), mask_host(fromhost));
 	}
@@ -1036,7 +1068,8 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || anony)
 			fputs("--\n", fp);
-		fprintf(fp, "[m[1;%2dm¡ù À´Ô´:¡¤%s %s¡¤[FROM: %s][m\n", color,
+		//% fprintf(fp, "[m[1;%2dmâ€» æ¥æº:Â·%s %sÂ·[FROM: %s][m\n", color,
+		fprintf(fp, "[m[1;%2dm\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4%s %s\xa1\xa4[FROM: %s][m\n", color,
 				BoardName, BBSHOST, (anony) ? ANONYMOUS_SOURCE : mask_host(fromhost));
 	}
 	if (aborted != -1)
@@ -1117,19 +1150,29 @@ int mark_block(void)
 int vedit_process_ESC(int arg) /* ESC + x */
 {
 	int ch2, action;
+//% "(M)åŒºå—å¤„ç† (I/E)è¯»å–/å†™å…¥å‰ªè´´ç°¿ (C)ä½¿ç”¨å½©è‰² (F/B/R)å‰æ™¯/èƒŒæ™¯/è¿˜åŽŸè‰²å½©"
 #define WHICH_ACTION_COLOR    \
-"(M)Çø¿é´¦Àí (I/E)¶ÁÈ¡/Ð´Èë¼ôÌù²¾ (C)Ê¹ÓÃ²ÊÉ« (F/B/R)Ç°¾°/±³¾°/»¹Ô­É«²Ê"
+"(M)\xc7\xf8\xbf\xe9\xb4\xa6\xc0\xed (I/E)\xb6\xc1\xc8\xa1/\xd0\xb4\xc8\xeb\xbc\xf4\xcc\xf9\xb2\xbe (C)\xca\xb9\xd3\xc3\xb2\xca\xc9\xab (F/B/R)\xc7\xb0\xbe\xb0/\xb1\xb3\xbe\xb0/\xbb\xb9\xd4\xad\xc9\xab\xb2\xca"
+//% "(M)åŒºå—å¤„ç† (I/E)è¯»å–/å†™å…¥å‰ªè´´ç°¿ (C)ä½¿ç”¨å•è‰² (F/B/R)å‰æ™¯/èƒŒæ™¯/è¿˜åŽŸè‰²å½©"
 #define WHICH_ACTION_MONO    \
-"(M)Çø¿é´¦Àí (I/E)¶ÁÈ¡/Ð´Èë¼ôÌù²¾ (C)Ê¹ÓÃµ¥É« (F/B/R)Ç°¾°/±³¾°/»¹Ô­É«²Ê"
+"(M)\xc7\xf8\xbf\xe9\xb4\xa6\xc0\xed (I/E)\xb6\xc1\xc8\xa1/\xd0\xb4\xc8\xeb\xbc\xf4\xcc\xf9\xb2\xbe (C)\xca\xb9\xd3\xc3\xb5\xa5\xc9\xab (F/B/R)\xc7\xb0\xbe\xb0/\xb1\xb3\xbe\xb0/\xbb\xb9\xd4\xad\xc9\xab\xb2\xca"
 
-#define CHOOSE_MARK    "(0)È¡Ïû±ê¼Ç (1)Éè¶¨Çø¿é±ê¼Ç (2)¸´ÖÆ±ê¼ÇÄÚÈÝ (3)É¾³ýÇø¿é"
-#define FROM_WHICH_PAGE "¶ÁÈ¡¼ôÌù²¾µÚ¼¸Ò³? (0-7) [Ô¤ÉèÎª 0]"
-#define SAVE_ALL_TO     "°ÑÕûÆªÎÄÕÂÐ´Èë¼ôÌù²¾µÚ¼¸Ò³? (0-7) [Ô¤ÉèÎª 0]"
-#define SAVE_PART_TO    "°ÑÇø¿éÄÚÈÝÐ´Èë¼ôÌù²¾µÚ¼¸Ò³? (0-7) [Ô¤ÉèÎª 0]"
-#define FROM_WHICH_SIG  "È¡³öÇ©Ãû²¾µÚ¼¸Ò³? (0-7) [Ô¤ÉèÎª 0]"
-#define CHOOSE_FG     "Ç°¾°ÑÕÉ«? 0)ºÚ 1)ºì 2)ÂÌ 3)»Æ 4)ÉîÀ¶ 5)·Ûºì 6)Ç³À¶ 7)°× "
-#define CHOOSE_BG     "±³¾°ÑÕÉ«? 0)ºÚ 1)ºì 2)ÂÌ 3)»Æ 4)ÉîÀ¶ 5)·Ûºì 6)Ç³À¶ 7)°× "
-#define CHOOSE_ERROR    "Ñ¡Ïî´íÎó"
+//% #define CHOOSE_MARK    "(0)å–æ¶ˆæ ‡è®° (1)è®¾å®šåŒºå—æ ‡è®° (2)å¤åˆ¶æ ‡è®°å†…å®¹ (3)åˆ é™¤åŒºå—"
+#define CHOOSE_MARK    "(0)\xc8\xa1\xcf\xfb\xb1\xea\xbc\xc7 (1)\xc9\xe8\xb6\xa8\xc7\xf8\xbf\xe9\xb1\xea\xbc\xc7 (2)\xb8\xb4\xd6\xc6\xb1\xea\xbc\xc7\xc4\xda\xc8\xdd (3)\xc9\xbe\xb3\xfd\xc7\xf8\xbf\xe9"
+//% #define FROM_WHICH_PAGE "è¯»å–å‰ªè´´ç°¿ç¬¬å‡ é¡µ? (0-7) [é¢„è®¾ä¸º 0]"
+#define FROM_WHICH_PAGE "\xb6\xc1\xc8\xa1\xbc\xf4\xcc\xf9\xb2\xbe\xb5\xda\xbc\xb8\xd2\xb3? (0-7) [\xd4\xa4\xc9\xe8\xce\xaa 0]"
+//% #define SAVE_ALL_TO     "æŠŠæ•´ç¯‡æ–‡ç« å†™å…¥å‰ªè´´ç°¿ç¬¬å‡ é¡µ? (0-7) [é¢„è®¾ä¸º 0]"
+#define SAVE_ALL_TO     "\xb0\xd1\xd5\xfb\xc6\xaa\xce\xc4\xd5\xc2\xd0\xb4\xc8\xeb\xbc\xf4\xcc\xf9\xb2\xbe\xb5\xda\xbc\xb8\xd2\xb3? (0-7) [\xd4\xa4\xc9\xe8\xce\xaa 0]"
+//% #define SAVE_PART_TO    "æŠŠåŒºå—å†…å®¹å†™å…¥å‰ªè´´ç°¿ç¬¬å‡ é¡µ? (0-7) [é¢„è®¾ä¸º 0]"
+#define SAVE_PART_TO    "\xb0\xd1\xc7\xf8\xbf\xe9\xc4\xda\xc8\xdd\xd0\xb4\xc8\xeb\xbc\xf4\xcc\xf9\xb2\xbe\xb5\xda\xbc\xb8\xd2\xb3? (0-7) [\xd4\xa4\xc9\xe8\xce\xaa 0]"
+//% #define FROM_WHICH_SIG  "å–å‡ºç­¾åç°¿ç¬¬å‡ é¡µ? (0-7) [é¢„è®¾ä¸º 0]"
+#define FROM_WHICH_SIG  "\xc8\xa1\xb3\xf6\xc7\xa9\xc3\xfb\xb2\xbe\xb5\xda\xbc\xb8\xd2\xb3? (0-7) [\xd4\xa4\xc9\xe8\xce\xaa 0]"
+//% #define CHOOSE_FG     "å‰æ™¯é¢œè‰²? 0)é»‘ 1)çº¢ 2)ç»¿ 3)é»„ 4)æ·±è“ 5)ç²‰çº¢ 6)æµ…è“ 7)ç™½ "
+#define CHOOSE_FG     "\xc7\xb0\xbe\xb0\xd1\xd5\xc9\xab? 0)\xba\xda 1)\xba\xec 2)\xc2\xcc 3)\xbb\xc6 4)\xc9\xee\xc0\xb6 5)\xb7\xdb\xba\xec 6)\xc7\xb3\xc0\xb6 7)\xb0\xd7 "
+//% #define CHOOSE_BG     "èƒŒæ™¯é¢œè‰²? 0)é»‘ 1)çº¢ 2)ç»¿ 3)é»„ 4)æ·±è“ 5)ç²‰çº¢ 6)æµ…è“ 7)ç™½ "
+#define CHOOSE_BG     "\xb1\xb3\xbe\xb0\xd1\xd5\xc9\xab? 0)\xba\xda 1)\xba\xec 2)\xc2\xcc 3)\xbb\xc6 4)\xc9\xee\xc0\xb6 5)\xb7\xdb\xba\xec 6)\xc7\xb3\xc0\xb6 7)\xb0\xd7 "
+//% #define CHOOSE_ERROR    "é€‰é¡¹é”™è¯¯"
+#define CHOOSE_ERROR    "\xd1\xa1\xcf\xee\xb4\xed\xce\xf3"
 
 	switch (arg) {
 		case 'M':
@@ -1149,7 +1192,7 @@ int vedit_process_ESC(int arg) /* ESC + x */
 			action = 'E';
 			break;
 		case 'S':
-		case 's': /* ËÑË÷×Ö·û´® */
+		case 's': /* æœç´¢å­—ç¬¦ä¸² */
 			ch2 = '0';
 			action = 'S';
 			break;
@@ -1231,8 +1274,8 @@ void process_MARK_action(int arg, char *msg) {
 			else
 				mark_begin = currline;
 			mark_on = mark_block();
-			//if( mark_on == 2) strcpy(msg, "Çø¿é±ê¼ÇÒÑÉè¶¨Íê³É"); 
-			//else strcpy(msg, "ÒÑÉè¶¨¿ªÍ·±ê¼Ç, ÉÐÎÞ½áÎ²±ê¼Ç");
+			//if( mark_on == 2) strcpy(msg, "åŒºå—æ ‡è®°å·²è®¾å®šå®Œæˆ"); 
+			//else strcpy(msg, "å·²è®¾å®šå¼€å¤´æ ‡è®°, å°šæ— ç»“å°¾æ ‡è®°");
 			break;
 		case '2': /* copy mark */
 			mark_on = mark_block();
@@ -1244,12 +1287,14 @@ void process_MARK_action(int arg, char *msg) {
 					} else
 						break;
 				}
-				//strcpy(msg, "Çø¿é±ê¼ÇÒÑ¾­Õ³Ìùµ½¹â±ê´¦");
+				//strcpy(msg, "åŒºå—æ ‡è®°å·²ç»ç²˜è´´åˆ°å…‰æ ‡å¤„");
 				break;
 			} else if (mark_on)
-				strcpy(msg, "¹â±êÔÚÇø¿éÍâ²Å¿É¸´ÖÆ");
+				//% strcpy(msg, "å…‰æ ‡åœ¨åŒºå—å¤–æ‰å¯å¤åˆ¶");
+				strcpy(msg, "\xb9\xe2\xb1\xea\xd4\xda\xc7\xf8\xbf\xe9\xcd\xe2\xb2\xc5\xbf\xc9\xb8\xb4\xd6\xc6");
 			else
-				strcpy(msg, "ÄúÉÐÎ´ÓÃ Ctrl+U ÉèÖÃÇø¿é");
+				//% strcpy(msg, "æ‚¨å°šæœªç”¨ Ctrl+U è®¾ç½®åŒºå—");
+				strcpy(msg, "\xc4\xfa\xc9\xd0\xce\xb4\xd3\xc3 Ctrl+U \xc9\xe8\xd6\xc3\xc7\xf8\xbf\xe9");
 			bell();
 			break;
 		case '3': /* delete mark */
@@ -1292,7 +1337,7 @@ void vedit_key(int ch) {
 			insert_char(ch);
 	} else {
 		switch (ch) {
-			case Ctrl('I'): //tab¼ü
+			case Ctrl('I'): //tabé”®
 				NO_ANSI_MODIFY
 				;
 				{
@@ -1559,7 +1604,7 @@ int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
 	addfrom = read_file(filename);
 	if (!modifyheader) {
 		top_of_win = firstline;
-		//modified by iamfat 2002.08.18 ²»Ó¦¸ÃÊÇÌø¹ý4ÐÐ Ó¦¸ÃÊÇ·¢ÏÖÊ×¸ö'\n'
+		//modified by iamfat 2002.08.18 ä¸åº”è¯¥æ˜¯è·³è¿‡4è¡Œ åº”è¯¥æ˜¯å‘çŽ°é¦–ä¸ª'\n'
 		/*
 		 while(top_of_win->next != can_edit_end && ch < 4 ){
 		 top_of_win  = top_of_win->next;

@@ -147,17 +147,25 @@ static tui_list_loader_t online_users_load(tui_list_t *p)
 static tui_list_title_t online_users_title(tui_list_t *p)
 {
 	online_users_t *up = p->data;
-	docmdtitle(up->follow ? "[¹Ø×¢ÁÐ±í]" : "[Ê¹ÓÃÕßÁÐ±í]",
-			" ¼ÄÐÅ[\033[1;32mm\033[m] ËÍÑ¶Ï¢[\033[1;32ms\033[m]"
-			" ¼Ó,¼õ¹Ø×¢[\033[1;32mo\033[m,\033[1;32md\033[m]"
-			" ¿´ËµÃ÷µµ[\033[1;32m¡ú\033[m,\033[1;32mRtn\033[m]"
-			" ÇÐ»»Ä£Ê½ [\033[1;32mf\033[m] Çó¾È[\033[1;32mh\033[m]");
+	//% docmdtitle(up->follow ? "[å…³æ³¨åˆ—è¡¨]" : "[ä½¿ç”¨è€…åˆ—è¡¨]",
+	docmdtitle(up->follow ? "[\xb9\xd8\xd7\xa2\xc1\xd0\xb1\xed]" : "[\xca\xb9\xd3\xc3\xd5\xdf\xc1\xd0\xb1\xed]",
+			//% " å¯„ä¿¡[\033[1;32mm\033[m] é€è®¯æ¯[\033[1;32ms\033[m]"
+			" \xbc\xc4\xd0\xc5[\033[1;32mm\033[m] \xcb\xcd\xd1\xb6\xcf\xa2[\033[1;32ms\033[m]"
+			//% " åŠ ,å‡å…³æ³¨[\033[1;32mo\033[m,\033[1;32md\033[m]"
+			" \xbc\xd3,\xbc\xf5\xb9\xd8\xd7\xa2[\033[1;32mo\033[m,\033[1;32md\033[m]"
+			//% " çœ‹è¯´æ˜Žæ¡£[\033[1;32mâ†’\033[m,\033[1;32mRtn\033[m]"
+			" \xbf\xb4\xcb\xb5\xc3\xf7\xb5\xb5[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m]"
+			//% " åˆ‡æ¢æ¨¡å¼ [\033[1;32mf\033[m] æ±‚æ•‘[\033[1;32mh\033[m]");
+			" \xc7\xd0\xbb\xbb\xc4\xa3\xca\xbd [\033[1;32mf\033[m] \xc7\xf3\xbe\xc8[\033[1;32mh\033[m]");
 	
-	const char *field = up->show_note ? "±¸×¢" : "êÇ³Æ";
+	//% const char *field = up->show_note ? "å¤‡æ³¨" : "æ˜µç§°";
+	const char *field = up->show_note ? "\xb1\xb8\xd7\xa2" : "\xea\xc7\xb3\xc6";
 
 	char title[256];
-	snprintf(title, sizeof(title), "\033[1;44m ±àºÅ  Ê¹ÓÃÕß´úºÅ   %s        "
-			"         ÉÏÕ¾Î»ÖÃ            Ä¿Ç°¶¯Ì¬   ·¢´ô   \033[m\n",
+	//% snprintf(title, sizeof(title), "\033[1;44m ç¼–å·  ä½¿ç”¨è€…ä»£å·   %s        "
+	snprintf(title, sizeof(title), "\033[1;44m \xb1\xe0\xba\xc5  \xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5   %s        "
+			//% "         ä¸Šç«™ä½ç½®            ç›®å‰åŠ¨æ€   å‘å‘†   \033[m\n",
+			"         \xc9\xcf\xd5\xbe\xce\xbb\xd6\xc3            \xc4\xbf\xc7\xb0\xb6\xaf\xcc\xac   \xb7\xa2\xb4\xf4   \033[m\n",
 			field);
 
 	move(2, 0);
@@ -257,7 +265,8 @@ static int alter_nick(online_users_t *up)
 	if (streq(currentuser.userid, "guest"))
 		return DONOTHING;
 	buf[0] = '\0';
-	getdata(t_lines - 1, 0, "±ä»»êÇ³Æ(²»ÊÇÁÙÊ±±ä»»)Îª: ", buf, NAMELEN,
+	//% getdata(t_lines - 1, 0, "å˜æ¢æ˜µç§°(ä¸æ˜¯ä¸´æ—¶å˜æ¢)ä¸º: ", buf, NAMELEN,
+	getdata(t_lines - 1, 0, "\xb1\xe4\xbb\xbb\xea\xc7\xb3\xc6(\xb2\xbb\xca\xc7\xc1\xd9\xca\xb1\xb1\xe4\xbb\xbb)\xce\xaa: ", buf, NAMELEN,
 			DOECHO, NA);
 	if (buf[0] != '\0') {
 		set_safe_record();
@@ -277,18 +286,22 @@ static int kick_out(online_users_t *up, online_user_info_t *ip)
 	if (streq(currentuser.userid, "guest"))
 		return DONOTHING;
 	if (ip->sid == session.id)
-		strlcpy(buf, "ÄúÒª°Ñ¡¾×Ô¼º¡¿Ìß³öÈ¥Âð", sizeof(buf));
+		//% strlcpy(buf, "æ‚¨è¦æŠŠã€è‡ªå·±ã€‘è¸¢å‡ºåŽ»å—", sizeof(buf));
+		strlcpy(buf, "\xc4\xfa\xd2\xaa\xb0\xd1\xa1\xbe\xd7\xd4\xbc\xba\xa1\xbf\xcc\xdf\xb3\xf6\xc8\xa5\xc2\xf0", sizeof(buf));
 	else
-		snprintf(buf, sizeof(buf), "ÄãÒª°Ñ %s Ìß³öÕ¾ÍâÂð", ip->name);
+		//% snprintf(buf, sizeof(buf), "ä½ è¦æŠŠ %s è¸¢å‡ºç«™å¤–å—", ip->name);
+		snprintf(buf, sizeof(buf), "\xc4\xe3\xd2\xaa\xb0\xd1 %s \xcc\xdf\xb3\xf6\xd5\xbe\xcd\xe2\xc2\xf0", ip->name);
 	if (!askyn(buf, false, true))
 		return MINIUPDATE;
 
 	if (bbs_kill(ip->sid, ip->pid, SIGHUP) == 0) {
-		snprintf(buf, sizeof(buf), "%s ÒÑ±»Ìß³öÕ¾Íâ", ip->name);
+		//% snprintf(buf, sizeof(buf), "%s å·²è¢«è¸¢å‡ºç«™å¤–", ip->name);
+		snprintf(buf, sizeof(buf), "%s \xd2\xd1\xb1\xbb\xcc\xdf\xb3\xf6\xd5\xbe\xcd\xe2", ip->name);
 		up->uptime = 0;
 		return PARTUPDATE;
 	} else {
-		snprintf(buf, sizeof(buf), "%s ÎÞ·¨Ìß³öÕ¾Íâ", ip->name);
+		//% snprintf(buf, sizeof(buf), "%s æ— æ³•è¸¢å‡ºç«™å¤–", ip->name);
+		snprintf(buf, sizeof(buf), "%s \xce\xde\xb7\xa8\xcc\xdf\xb3\xf6\xd5\xbe\xcd\xe2", ip->name);
 		return MINIUPDATE;
 	}
 }
@@ -298,11 +311,13 @@ int tui_follow_uname(const char *uname)
 	if (streq(currentuser.userid, "guest"))
 		return DONOTHING;
 	char buf[STRLEN];
-	snprintf(buf, sizeof(buf), "È·¶¨¹Ø×¢ %s Âð?", uname);
+	//% snprintf(buf, sizeof(buf), "ç¡®å®šå…³æ³¨ %s å—?", uname);
+	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xb9\xd8\xd7\xa2 %s \xc2\xf0?", uname);
 	if (!askyn(buf, false, true))
 		return MINIUPDATE;
 	if (follow(session.uid, uname, NULL)) {
-		snprintf(buf, sizeof(buf), "³É¹¦¹Ø×¢ %s", uname);
+		//% snprintf(buf, sizeof(buf), "æˆåŠŸå…³æ³¨ %s", uname);
+		snprintf(buf, sizeof(buf), "\xb3\xc9\xb9\xa6\xb9\xd8\xd7\xa2 %s", uname);
 		presskeyfor(buf, t_lines - 1);
 	}
 	return MINIUPDATE;
@@ -319,10 +334,14 @@ static tui_list_query_t online_users_query(tui_list_t *p)
 
 	t_query(ip->name);
 	move(t_lines - 1, 0);
-	prints("\033[0;1;37;44mÁÄÌì[\033[1;32mt\033[37m] ¼ÄÐÅ[\033[1;32mm\033[37m] "
-			"ËÍÑ¶Ï¢[\033[1;32ms\033[37m] ¼Ó,¼õÅóÓÑ[\033[1;32mo\033[37m,\033[1;32md\033[37m] "
-			"Ñ¡ÔñÊ¹ÓÃÕß[\033[1;32m¡ü\033[37m,\033[1;32m¡ý\033[37m] "
-			"Çó¾È[\033[1;32mh\033[37m]");
+	//% prints("\033[0;1;37;44mèŠå¤©[\033[1;32mt\033[37m] å¯„ä¿¡[\033[1;32mm\033[37m] "
+	prints("\033[0;1;37;44m\xc1\xc4\xcc\xec[\033[1;32mt\033[37m] \xbc\xc4\xd0\xc5[\033[1;32mm\033[37m] "
+			//% "é€è®¯æ¯[\033[1;32ms\033[37m] åŠ ,å‡æœ‹å‹[\033[1;32mo\033[37m,\033[1;32md\033[37m] "
+			"\xcb\xcd\xd1\xb6\xcf\xa2[\033[1;32ms\033[37m] \xbc\xd3,\xbc\xf5\xc5\xf3\xd3\xd1[\033[1;32mo\033[37m,\033[1;32md\033[37m] "
+			//% "é€‰æ‹©ä½¿ç”¨è€…[\033[1;32mâ†‘\033[37m,\033[1;32mâ†“\033[37m] "
+			"\xd1\xa1\xd4\xf1\xca\xb9\xd3\xc3\xd5\xdf[\033[1;32m\xa1\xfc\033[37m,\033[1;32m\xa1\xfd\033[37m] "
+			//% "æ±‚æ•‘[\033[1;32mh\033[37m]");
+			"\xc7\xf3\xbe\xc8[\033[1;32mh\033[37m]");
 	refresh();
 	return DONOTHING;
 }
@@ -348,7 +367,8 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			if (!strcmp(currentuser.userid, "guest") || !HAS_PERM(PERM_TALK))
 				return DONOTHING;
 			if (!canmsg(uin)) {
-				snprintf(buf, sizeof(buf), "%s ÒÑ¹Ø±ÕÑ¶Ï¢ºô½ÐÆ÷", uin->userid);
+				//% snprintf(buf, sizeof(buf), "%s å·²å…³é—­è®¯æ¯å‘¼å«å™¨", uin->userid);
+				snprintf(buf, sizeof(buf), "%s \xd2\xd1\xb9\xd8\xb1\xd5\xd1\xb6\xcf\xa2\xba\xf4\xbd\xd0\xc6\xf7", uin->userid);
 				presskeyfor(buf, t_lines - 1);
 				return MINIUPDATE;
 			}
@@ -360,13 +380,15 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 		case 'd': case 'D':
 			if (streq(currentuser.userid, "guest"))
 				return DONOTHING;
-			snprintf(buf, sizeof(buf), "È·¶¨²»ÔÙ¹Ø×¢ %s Âð?", ip->name);
+			//% snprintf(buf, sizeof(buf), "ç¡®å®šä¸å†å…³æ³¨ %s å—?", ip->name);
+			snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xb2\xbb\xd4\xd9\xb9\xd8\xd7\xa2 %s \xc2\xf0?", ip->name);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
 			{
 				user_id_t uid = get_user_id(ip->name);
 				if (uid > 0 && unfollow(session.uid, uid)) {
-					snprintf(buf, sizeof(buf), "ÒÑÈ¡Ïû¹Ø×¢ %s", ip->name);
+					//% snprintf(buf, sizeof(buf), "å·²å–æ¶ˆå…³æ³¨ %s", ip->name);
+					snprintf(buf, sizeof(buf), "\xd2\xd1\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2 %s", ip->name);
 					presskeyfor(buf, t_lines - 1);
 					return PARTUPDATE;
 				}

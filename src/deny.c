@@ -95,7 +95,8 @@ void list_text(const char *file,
 			clear();
 			title_show();
 			if (empty) {
-				prints("(ÎŞÄÚÈİ)\n");
+				//% prints("(æ— å†…å®¹)\n");
+				prints("(\xce\xde\xc4\xda\xc8\xdd)\n");
 			} else {
 				to = from;
 				fseekline(fp, from);
@@ -104,7 +105,8 @@ void list_text(const char *file,
 					strtok(buf, "\n");
 					if (check) {
 						prints(" %-2s%-76s\n",
-								(*check)(buf) ? "¡Ì" : "  ", buf);
+								//% (*check)(buf) ? "âˆš" : "  ", buf);
+								(*check)(buf) ? "\xa1\xcc" : "  ", buf);
 					} else {
 						prints(" %-78s\n", buf);
 					}
@@ -196,7 +198,8 @@ void list_text(const char *file,
 				int old;
 				if (empty)
 					break;
-				getdata(1, 0, "²éÕÒ:", buf, 50, DOECHO, YEA);
+				//% getdata(1, 0, "æŸ¥æ‰¾:", buf, 50, DOECHO, YEA);
+				getdata(1, 0, "\xb2\xe9\xd5\xd2:", buf, 50, DOECHO, YEA);
 				redraw = true;
 				old = line;
 				line++;
@@ -244,8 +247,10 @@ static void reason_copy(const char *r)
 static void reason_title_show(void)
 {
 	move(0, 0);
-	prints("\033[1;44;36m·â½ûÔ­ÒòÁĞ±í\033[K\033[m\n ·â½ûÔ­Òò:%s\n\033[1;44m "
-			"·â½ûµÄÔ­Òò¼°´¦·£½¨Òé\033[K\033[m\n", reason);
+	//% prints("\033[1;44;36må°ç¦åŸå› åˆ—è¡¨\033[K\033[m\n å°ç¦åŸå› :%s\n\033[1;44m "
+	prints("\033[1;44;36m\xb7\xe2\xbd\xfb\xd4\xad\xd2\xf2\xc1\xd0\xb1\xed\033[K\033[m\n \xb7\xe2\xbd\xfb\xd4\xad\xd2\xf2:%s\n\033[1;44m "
+			//% "å°ç¦çš„åŸå› åŠå¤„ç½šå»ºè®®\033[K\033[m\n", reason);
+			"\xb7\xe2\xbd\xfb\xb5\xc4\xd4\xad\xd2\xf2\xbc\xb0\xb4\xa6\xb7\xa3\xbd\xa8\xd2\xe9\033[K\033[m\n", reason);
 }
 
 /**
@@ -305,12 +310,18 @@ static void reason_select(const char *file)
 static void deny_title_show(void)
 {
 	move(0, 0);
-	prints("\033[1;44;36m Éè¶¨ÎŞ·¨·¢ÎÄµÄÃûµ¥\033[K\033[m\n"
-			" Àë¿ª[\033[1;32m¡û\033[m] Ñ¡Ôñ[\033[1;32m¡ü\033[m,\033[1;32m¡ı"
-			"\033[m] Ìí¼Ó[\033[1;32ma\033[m] ĞŞ¸Ä[\033[1;32mc\033[m] ½â·â"
-			"[\033[1;32md\033[m] ²éÕÒ[\033[1;32m/\033[m]\n"
-			"\033[1;44m ÓÃ»§´úºÅ     ·â½ûÔ­Òò(A-Z,;'[])              ÌìÊı"
-			"    ½â·âÈÕÆÚ       °æÖ÷      \033[m\n");
+	//% prints("\033[1;44;36m è®¾å®šæ— æ³•å‘æ–‡çš„åå•\033[K\033[m\n"
+	prints("\033[1;44;36m \xc9\xe8\xb6\xa8\xce\xde\xb7\xa8\xb7\xa2\xce\xc4\xb5\xc4\xc3\xfb\xb5\xa5\033[K\033[m\n"
+			//% " ç¦»å¼€[\033[1;32mâ†\033[m] é€‰æ‹©[\033[1;32mâ†‘\033[m,\033[1;32mâ†“"
+			" \xc0\xeb\xbf\xaa[\033[1;32m\xa1\xfb\033[m] \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd"
+			//% "\033[m] æ·»åŠ [\033[1;32ma\033[m] ä¿®æ”¹[\033[1;32mc\033[m] è§£å°"
+			"\033[m] \xcc\xed\xbc\xd3[\033[1;32ma\033[m] \xd0\xde\xb8\xc4[\033[1;32mc\033[m] \xbd\xe2\xb7\xe2"
+			//% "[\033[1;32md\033[m] æŸ¥æ‰¾[\033[1;32m/\033[m]\n"
+			"[\033[1;32md\033[m] \xb2\xe9\xd5\xd2[\033[1;32m/\033[m]\n"
+			//% "\033[1;44m ç”¨æˆ·ä»£å·     å°ç¦åŸå› (A-Z,;'[])              å¤©æ•°"
+			"\033[1;44m \xd3\xc3\xbb\xa7\xb4\xfa\xba\xc5     \xb7\xe2\xbd\xfb\xd4\xad\xd2\xf2(A-Z,;'[])              \xcc\xec\xca\xfd"
+			//% "    è§£å°æ—¥æœŸ       ç‰ˆä¸»      \033[m\n");
+			"    \xbd\xe2\xb7\xe2\xc8\xd5\xc6\xda       \xb0\xe6\xd6\xf7      \033[m\n");
 }
 
 /**
@@ -375,7 +386,8 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 	time_t date = time(NULL) + days * 24 * 60 * 60;
 	struct tm *t = localtime(&date);
 	char str[STRLEN];
-	snprintf(str, sizeof(str), "%-12s %-31s %2dÌì %02dÄê%02dÔÂ%02dÈÕ½â %-12s\n",
+	//% snprintf(str, sizeof(str), "%-12s %-31s %2då¤© %02då¹´%02dæœˆ%02dæ—¥è§£ %-12s\n",
+	snprintf(str, sizeof(str), "%-12s %-31s %2d\xcc\xec %02d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5\xbd\xe2 %-12s\n",
 			urec.userid, reason, days, t->tm_year % 100, t->tm_mon + 1,
 			t->tm_mday, currentuser.userid);
 
@@ -390,20 +402,26 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 	// Generate notification.
 	char file[HOMELEN], title[STRLEN];
 	if (change) {
-		snprintf(title, sizeof(title), "ĞŞ¸Ä%sÔÚ%s°æµÄ·â½û",
+		//% snprintf(title, sizeof(title), "ä¿®æ”¹%såœ¨%sç‰ˆçš„å°ç¦",
+		snprintf(title, sizeof(title), "\xd0\xde\xb8\xc4%s\xd4\xda%s\xb0\xe6\xb5\xc4\xb7\xe2\xbd\xfb",
 				urec.userid, board);
 	} else {
-		snprintf(title, sizeof(title), "·â½û%sÔÚ%s°æµÄ·¢ÎÄÈ¨ÏŞ",
+		//% snprintf(title, sizeof(title), "å°ç¦%såœ¨%sç‰ˆçš„å‘æ–‡æƒé™",
+		snprintf(title, sizeof(title), "\xb7\xe2\xbd\xfb%s\xd4\xda%s\xb0\xe6\xb5\xc4\xb7\xa2\xce\xc4\xc8\xa8\xcf\xde",
 				urec.userid, board);
 	}
 	snprintf(file, sizeof(file), "tmp/AutoPoster.%s.%05d", currentuser.userid,
 			session.pid);
 	FILE *fpw = fopen(file, "w");
-	fprintf(fpw, "%sÒò:\n", urec.userid);
+	//% fprintf(fpw, "%så› :\n", urec.userid);
+	fprintf(fpw, "%s\xd2\xf2:\n", urec.userid);
 	deny_generate(fpw, DENY_BOARD_FILE);
-	fprintf(fpw, "\nÓ¦±»·â½û%s°æ·¢ÎÄÈ¨ÏŞ%dÌì\nÇëÔÚ´¦·£ÆÚÂúºó(%04d.%02d.%02d)"
-			", Ïò%sĞ´ĞÅÒªÇó½â³ı´¦·£¡£\nÈç²»·ş±¾¾ö¶¨, ¿ÉÒÔÁªÏµ´¦·£¾ö¶¨ÈË»ò"
-			"ÔÚ7ÈÕÄÚµ½AppealÉêÇë¸´Òé¡£\nP.S.: %s\nÖ´ĞĞÈË: %s\n",
+	//% fprintf(fpw, "\nåº”è¢«å°ç¦%sç‰ˆå‘æ–‡æƒé™%då¤©\nè¯·åœ¨å¤„ç½šæœŸæ»¡å(%04d.%02d.%02d)"
+	fprintf(fpw, "\n\xd3\xa6\xb1\xbb\xb7\xe2\xbd\xfb%s\xb0\xe6\xb7\xa2\xce\xc4\xc8\xa8\xcf\xde%d\xcc\xec\n\xc7\xeb\xd4\xda\xb4\xa6\xb7\xa3\xc6\xda\xc2\xfa\xba\xf3(%04d.%02d.%02d)"
+			//% ", å‘%så†™ä¿¡è¦æ±‚è§£é™¤å¤„ç½šã€‚\nå¦‚ä¸æœæœ¬å†³å®š, å¯ä»¥è”ç³»å¤„ç½šå†³å®šäººæˆ–"
+			", \xcf\xf2%s\xd0\xb4\xd0\xc5\xd2\xaa\xc7\xf3\xbd\xe2\xb3\xfd\xb4\xa6\xb7\xa3\xa1\xa3\n\xc8\xe7\xb2\xbb\xb7\xfe\xb1\xbe\xbe\xf6\xb6\xa8, \xbf\xc9\xd2\xd4\xc1\xaa\xcf\xb5\xb4\xa6\xb7\xa3\xbe\xf6\xb6\xa8\xc8\xcb\xbb\xf2"
+			//% "åœ¨7æ—¥å†…åˆ°Appealç”³è¯·å¤è®®ã€‚\nP.S.: %s\næ‰§è¡Œäºº: %s\n",
+			"\xd4\xda""7\xc8\xd5\xc4\xda\xb5\xbd""Appeal\xc9\xea\xc7\xeb\xb8\xb4\xd2\xe9\xa1\xa3\nP.S.: %s\n\xd6\xb4\xd0\xd0\xc8\xcb: %s\n",
 			board, days, 1900 + t->tm_year, t->tm_mon + 1, t->tm_mday,
 			currentuser.userid, ps, currentuser.userid);
 	fclose(fpw);
@@ -429,30 +447,38 @@ static void deny_add(const char *line)
 		reason_copy(line + IDLEN + 1);
 	} else {
 		move(1, 0);
-		usercomplete("·â½ûÊ¹ÓÃÕß: ", id);
+		//% usercomplete("å°ç¦ä½¿ç”¨è€…: ", id);
+		usercomplete("\xb7\xe2\xbd\xfb\xca\xb9\xd3\xc3\xd5\xdf: ", id);
 		if (*id == '\0')
 			return;
 		reason_copy(DEFAULT_REASON);
 	}
 	reason_select(DENY_BOARD_FILE);
-	getdata(1, 0, "ÊäÈë²¹³äËµÃ÷:", ps, sizeof(ps), DOECHO, YEA);
-	getdata(1, 0, "ÊäÈëÌìÊı(Ä¬ÈÏ1Ìì):", ans, sizeof(ans), DOECHO, YEA);
+	//% getdata(1, 0, "è¾“å…¥è¡¥å……è¯´æ˜:", ps, sizeof(ps), DOECHO, YEA);
+	getdata(1, 0, "\xca\xe4\xc8\xeb\xb2\xb9\xb3\xe4\xcb\xb5\xc3\xf7:", ps, sizeof(ps), DOECHO, YEA);
+	//% getdata(1, 0, "è¾“å…¥å¤©æ•°(é»˜è®¤1å¤©):", ans, sizeof(ans), DOECHO, YEA);
+	getdata(1, 0, "\xca\xe4\xc8\xeb\xcc\xec\xca\xfd(\xc4\xac\xc8\xcf""1\xcc\xec):", ans, sizeof(ans), DOECHO, YEA);
 	int yes;
 	move(1, 0);
 	if (line)
-		yes = askyn("ÒªĞŞ¸Ä¶Ô¸ÃÓÃ»§µÄ·â½ûÂğ?", NA, NA);
+		//% yes = askyn("è¦ä¿®æ”¹å¯¹è¯¥ç”¨æˆ·çš„å°ç¦å—?", NA, NA);
+		yes = askyn("\xd2\xaa\xd0\xde\xb8\xc4\xb6\xd4\xb8\xc3\xd3\xc3\xbb\xa7\xb5\xc4\xb7\xe2\xbd\xfb\xc2\xf0?", NA, NA);
 	else
-		yes = askyn("ÕæµÄÒª·â½û¸ÃÓÃ»§Âğ?", NA, NA);
+		//% yes = askyn("çœŸçš„è¦å°ç¦è¯¥ç”¨æˆ·å—?", NA, NA);
+		yes = askyn("\xd5\xe6\xb5\xc4\xd2\xaa\xb7\xe2\xbd\xfb\xb8\xc3\xd3\xc3\xbb\xa7\xc2\xf0?", NA, NA);
 	if (yes) {
 		switch (deny_do_add(currboard, id, ps, strtol(ans, NULL, 10), line)) {
 			case BBS_EDSELF:
-				presskeyfor("ft! ·â×Ô¼ºÍæ!!!??? NO WAY! :P", 1);
+				//% presskeyfor("ft! å°è‡ªå·±ç©!!!??? NO WAY! :P", 1);
+				presskeyfor("ft! \xb7\xe2\xd7\xd4\xbc\xba\xcd\xe6!!!??? NO WAY! :P", 1);
 				break;
 			case BBS_ELEXIST:
-				presskeyfor("¸ÃÓÃ»§ÒÑÔÚ·â½ûÃûµ¥ÖĞ", 1);
+				//% presskeyfor("è¯¥ç”¨æˆ·å·²åœ¨å°ç¦åå•ä¸­", 1);
+				presskeyfor("\xb8\xc3\xd3\xc3\xbb\xa7\xd2\xd1\xd4\xda\xb7\xe2\xbd\xfb\xc3\xfb\xb5\xa5\xd6\xd0", 1);
 				break;
 			case BBS_EDGUEST:
-				presskeyfor("ÄãÔÚ¸ãĞ¦Âğ?·âguest?", 1);
+				//% presskeyfor("ä½ åœ¨æç¬‘å—?å°guest?", 1);
+				presskeyfor("\xc4\xe3\xd4\xda\xb8\xe3\xd0\xa6\xc2\xf0?\xb7\xe2guest?", 1);
 				break;
 			default:
 				break;
@@ -475,9 +501,11 @@ static void deny_release(const char *line)
 	char title[STRLEN], user[IDLEN + 1], buf[256];
 	strlcpy(user, line, sizeof(user));
 	strtok(user, " \r\n\t");
-	snprintf(title, sizeof(title), "»Ö¸´%sÔÚ%s°æµÄ·¢ÎÄÈ¨ÏŞ",
+	//% snprintf(title, sizeof(title), "æ¢å¤%såœ¨%sç‰ˆçš„å‘æ–‡æƒé™",
+	snprintf(title, sizeof(title), "\xbb\xd6\xb8\xb4%s\xd4\xda%s\xb0\xe6\xb5\xc4\xb7\xa2\xce\xc4\xc8\xa8\xcf\xde",
 				user, currboard);
-	snprintf(buf, sizeof(buf), "%s»Ö¸´%sÔÚ%s°æ·¢ÎÄÈ¨ÏŞ.\n",
+	//% snprintf(buf, sizeof(buf), "%sæ¢å¤%såœ¨%sç‰ˆå‘æ–‡æƒé™.\n",
+	snprintf(buf, sizeof(buf), "%s\xbb\xd6\xb8\xb4%s\xd4\xda%s\xb0\xe6\xb7\xa2\xce\xc4\xc8\xa8\xcf\xde.\n",
 			currentuser.userid, user, currboard);
 	Poststring(buf, currboard, title, 1);
 	Poststring(buf, "Notice", title, 1);
@@ -506,7 +534,8 @@ static int deny_key_deal(const char *file, int ch, const char *line)
 			if (!line)
 				return 0;
 			move(1, 0);
-			if (askyn("ÊÍ·Å¸ÃÓÃ»§Âğ?", NA, NA) == NA)
+			//% if (askyn("é‡Šæ”¾è¯¥ç”¨æˆ·å—?", NA, NA) == NA)
+			if (askyn("\xca\xcd\xb7\xc5\xb8\xc3\xd3\xc3\xbb\xa7\xc2\xf0?", NA, NA) == NA)
 				return 1;
 			deny_release(line);
 			break;
@@ -548,10 +577,14 @@ int deny_user(void)
  */
 static int deny_date_cmp(const char *s1, const char *s2)
 {
-	if ((!strncmp(s1, "´ı¶¨", sizeof("´ı¶¨") - 1)
-			|| !strncmp(s1, "ÖÕÉí", sizeof("ÖÕÉí") - 1))
-		&& (!strncmp(s2, "´ı¶¨", sizeof("´ı¶¨") - 1)
-			|| !strncmp(s2, "ÖÕÉí", sizeof("ÖÕÉí") - 1))) {
+	//% if ((!strncmp(s1, "å¾…å®š", sizeof("å¾…å®š") - 1)
+	if ((!strncmp(s1, "\xb4\xfd\xb6\xa8", sizeof("\xb4\xfd\xb6\xa8") - 1)
+			//% || !strncmp(s1, "ç»ˆèº«", sizeof("ç»ˆèº«") - 1))
+			|| !strncmp(s1, "\xd6\xd5\xc9\xed", sizeof("\xd6\xd5\xc9\xed") - 1))
+		//% && (!strncmp(s2, "å¾…å®š", sizeof("å¾…å®š") - 1)
+		&& (!strncmp(s2, "\xb4\xfd\xb6\xa8", sizeof("\xb4\xfd\xb6\xa8") - 1)
+			//% || !strncmp(s2, "ç»ˆèº«", sizeof("ç»ˆèº«") - 1))) {
+			|| !strncmp(s2, "\xd6\xd5\xc9\xed", sizeof("\xd6\xd5\xc9\xed") - 1))) {
 		return 0;
 	}
 	return strncmp(s1, s2, 10);
@@ -568,7 +601,8 @@ static int deny_date_cmp(const char *s1, const char *s2)
 static unsigned int denylist_get_type(const char *orig, int type,
 		char *buf, size_t size)
 {
-	const char *desc[] = {"·¢ÎÄ", "ÉÏÕ¾", "ÁÄÌì", "·¢ĞÅ"};
+	//% const char *desc[] = {"å‘æ–‡", "ä¸Šç«™", "èŠå¤©", "å‘ä¿¡"};
+	const char *desc[] = {"\xb7\xa2\xce\xc4", "\xc9\xcf\xd5\xbe", "\xc1\xc4\xcc\xec", "\xb7\xa2\xd0\xc5"};
 	unsigned int perm[] = {PERM_POST, PERM_LOGIN, PERM_TALK, PERM_MAIL};
 	if (orig) {
 		if (!strncmp(orig, desc[0], strlen(desc[0])))
@@ -613,11 +647,13 @@ static void denylist_release(const char *line)
 	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session.pid);
 	FILE *fp = fopen(file, "w");
 	if (fp) {
-		fprintf(fp, "Ö´ĞĞÈË: %s\n", currentuser.userid);
+		//% fprintf(fp, "æ‰§è¡Œäºº: %s\n", currentuser.userid);
+		fprintf(fp, "\xd6\xb4\xd0\xd0\xc8\xcb: %s\n", currentuser.userid);
 		fclose(fp);
 	}
 	char title[STRLEN];
-	snprintf(title, sizeof(title), "[Õ¾ÄÚ¹«¸æ]»Ö¸´%sµÄ%sÈ¨ÏŞ",
+	//% snprintf(title, sizeof(title), "[ç«™å†…å…¬å‘Š]æ¢å¤%sçš„%sæƒé™",
+	snprintf(title, sizeof(title), "[\xd5\xbe\xc4\xda\xb9\xab\xb8\xe6]\xbb\xd6\xb8\xb4%s\xb5\xc4%s\xc8\xa8\xcf\xde",
 			urec.userid, desc);
 	mail_file(file, urec.userid, title);
 	Postfile(file, "Notice", title, 1);
@@ -718,40 +754,53 @@ static int denylist_do_add(const char *userid, int type, int days,
 	// Generate notification.
 	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session.pid);
 	FILE *fpw = fopen(file, "w");
-	fprintf(fpw, "%sÒò:\n", urec.userid);
+	//% fprintf(fpw, "%så› :\n", urec.userid);
+	fprintf(fpw, "%s\xd2\xf2:\n", urec.userid);
 	deny_generate(fpw, DENY_LEVEL_FILE);
 
 	char str[STRLEN], title[STRLEN];
 	if (days == DENY_FOREVER) {
-		snprintf(str, sizeof(str), "%-12s %-34s %-4s ÖÕÉí       %-12s\n",
+		//% snprintf(str, sizeof(str), "%-12s %-34s %-4s ç»ˆèº«       %-12s\n",
+		snprintf(str, sizeof(str), "%-12s %-34s %-4s \xd6\xd5\xc9\xed       %-12s\n",
 				urec.userid, reason, desc, currentuser.userid);
-		snprintf(title, sizeof(title), "[Õ¾ÄÚ¹«¸æ]·â½û%s%sÈ¨ÏŞÖÕÉí",
+		//% snprintf(title, sizeof(title), "[ç«™å†…å…¬å‘Š]å°ç¦%s%sæƒé™ç»ˆèº«",
+		snprintf(title, sizeof(title), "[\xd5\xbe\xc4\xda\xb9\xab\xb8\xe6]\xb7\xe2\xbd\xfb%s%s\xc8\xa8\xcf\xde\xd6\xd5\xc9\xed",
 				urec.userid, desc);
-		fprintf(fpw, "\nÓ¦±»·â½û %s È¨ÏŞÖÕÉí\n", desc);
+		//% fprintf(fpw, "\nåº”è¢«å°ç¦ %s æƒé™ç»ˆèº«\n", desc);
+		fprintf(fpw, "\n\xd3\xa6\xb1\xbb\xb7\xe2\xbd\xfb %s \xc8\xa8\xcf\xde\xd6\xd5\xc9\xed\n", desc);
 	} else if (days > DENY_TEMP) {
 		time_t date = time(NULL) + days * 24 * 60 * 60;
 		struct tm *t = localtime(&date);
 		snprintf(str, sizeof(str), "%-12s %-34s %-4s %04d.%02d.%02d %-12s\n",
 				urec.userid, reason, desc, 1900 + t->tm_year,
 				t->tm_mon + 1, t->tm_mday, currentuser.userid);
-		snprintf(title, sizeof(title), "[Õ¾ÄÚ¹«¸æ]·â½û%s%sÈ¨ÏŞ%dÌì",
+		//% snprintf(title, sizeof(title), "[ç«™å†…å…¬å‘Š]å°ç¦%s%sæƒé™%då¤©",
+		snprintf(title, sizeof(title), "[\xd5\xbe\xc4\xda\xb9\xab\xb8\xe6]\xb7\xe2\xbd\xfb%s%s\xc8\xa8\xcf\xde%d\xcc\xec",
 				urec.userid, desc, days);
-		fprintf(fpw, "\nÓ¦±»·â½û %s È¨ÏŞ %d Ìì\n\n"
-				"ÇëÔÚ´¦·£ÆÚÂúºó(%04d.%02d.%02d)£¬Ïò%sĞ´ĞÅÒªÇó½â³ı´¦·£¡£",
+		//% fprintf(fpw, "\nåº”è¢«å°ç¦ %s æƒé™ %d å¤©\n\n"
+		fprintf(fpw, "\n\xd3\xa6\xb1\xbb\xb7\xe2\xbd\xfb %s \xc8\xa8\xcf\xde %d \xcc\xec\n\n"
+				//% "è¯·åœ¨å¤„ç½šæœŸæ»¡å(%04d.%02d.%02d)ï¼Œå‘%så†™ä¿¡è¦æ±‚è§£é™¤å¤„ç½šã€‚",
+				"\xc7\xeb\xd4\xda\xb4\xa6\xb7\xa3\xc6\xda\xc2\xfa\xba\xf3(%04d.%02d.%02d)\xa3\xac\xcf\xf2%s\xd0\xb4\xd0\xc5\xd2\xaa\xc7\xf3\xbd\xe2\xb3\xfd\xb4\xa6\xb7\xa3\xa1\xa3",
 				desc, days, 1900 + t->tm_year, t->tm_mon + 1,
 				t->tm_mday, currentuser.userid);
 	} else {
-		snprintf(str, sizeof(str), "%-12s %-34s %-4s ´ı¶¨       %-12s\n",
+		//% snprintf(str, sizeof(str), "%-12s %-34s %-4s å¾…å®š       %-12s\n",
+		snprintf(str, sizeof(str), "%-12s %-34s %-4s \xb4\xfd\xb6\xa8       %-12s\n",
 				urec.userid, reason, desc, currentuser.userid);
-		snprintf(title, sizeof(title), "[Õ¾ÄÚ¹«¸æ]ÔİÊ±·â½û%s%sÈ¨ÏŞ",
+		//% snprintf(title, sizeof(title), "[ç«™å†…å…¬å‘Š]æš‚æ—¶å°ç¦%s%sæƒé™",
+		snprintf(title, sizeof(title), "[\xd5\xbe\xc4\xda\xb9\xab\xb8\xe6]\xd4\xdd\xca\xb1\xb7\xe2\xbd\xfb%s%s\xc8\xa8\xcf\xde",
 				urec.userid, desc);
-		fprintf(fpw, "\nÔİÊ±±»·â½û %s È¨ÏŞ\n\n´¦·£¾ö¶¨ÉÔºó×÷³ö¡£\n", desc);
+		//% fprintf(fpw, "\næš‚æ—¶è¢«å°ç¦ %s æƒé™\n\nå¤„ç½šå†³å®šç¨åä½œå‡ºã€‚\n", desc);
+		fprintf(fpw, "\n\xd4\xdd\xca\xb1\xb1\xbb\xb7\xe2\xbd\xfb %s \xc8\xa8\xcf\xde\n\n\xb4\xa6\xb7\xa3\xbe\xf6\xb6\xa8\xc9\xd4\xba\xf3\xd7\xf7\xb3\xf6\xa1\xa3\n", desc);
 	}
-	fprintf(fpw, "\nÈç²»·ş±¾¾ö¶¨£¬¿ÉÒÔÁªÏµ´¦·£¾ö¶¨ÈË»òÔÚ7ÈÕÄÚµ½Appeal°æ"
-			"ÉêÇë¸´Òé¡£\nP.S.: %s\n\nÖ´ĞĞÈË: %s\n", ps, currentuser.userid);
+	//% fprintf(fpw, "\nå¦‚ä¸æœæœ¬å†³å®šï¼Œå¯ä»¥è”ç³»å¤„ç½šå†³å®šäººæˆ–åœ¨7æ—¥å†…åˆ°Appealç‰ˆ"
+	fprintf(fpw, "\n\xc8\xe7\xb2\xbb\xb7\xfe\xb1\xbe\xbe\xf6\xb6\xa8\xa3\xac\xbf\xc9\xd2\xd4\xc1\xaa\xcf\xb5\xb4\xa6\xb7\xa3\xbe\xf6\xb6\xa8\xc8\xcb\xbb\xf2\xd4\xda""7\xc8\xd5\xc4\xda\xb5\xbd""Appeal\xb0\xe6"
+			//% "ç”³è¯·å¤è®®ã€‚\nP.S.: %s\n\næ‰§è¡Œäºº: %s\n", ps, currentuser.userid);
+			"\xc9\xea\xc7\xeb\xb8\xb4\xd2\xe9\xa1\xa3\nP.S.: %s\n\n\xd6\xb4\xd0\xd0\xc8\xcb: %s\n", ps, currentuser.userid);
 	fclose(fpw);
 	if (orig) {
-		snprintf(title, sizeof(title), "[Õ¾ÄÚ¹«¸æ]ĞŞ¸Ä%sµÄ·â½ûÊ±¼ä",
+		//% snprintf(title, sizeof(title), "[ç«™å†…å…¬å‘Š]ä¿®æ”¹%sçš„å°ç¦æ—¶é—´",
+		snprintf(title, sizeof(title), "[\xd5\xbe\xc4\xda\xb9\xab\xb8\xe6]\xd0\xde\xb8\xc4%s\xb5\xc4\xb7\xe2\xbd\xfb\xca\xb1\xbc\xe4",
 				urec.userid);
 	}
 
@@ -808,30 +857,37 @@ static int denylist_add(const char *line)
 		strlcpy(user, line, sizeof(user));
 		strtok(user, " \n\r\t");
 		reason_copy(line + IDLEN + 1);
-		prints("ĞŞ¸Ä[%s]µÄ·â½ûÊ±¼ä\n", user);
+		//% prints("ä¿®æ”¹[%s]çš„å°ç¦æ—¶é—´\n", user);
+		prints("\xd0\xde\xb8\xc4[%s]\xb5\xc4\xb7\xe2\xbd\xfb\xca\xb1\xbc\xe4\n", user);
 	} else {
-		usercomplete("·â½ûÊ¹ÓÃÕß: ", user);
+		//% usercomplete("å°ç¦ä½¿ç”¨è€…: ", user);
+		usercomplete("\xb7\xe2\xbd\xfb\xca\xb9\xd3\xc3\xd5\xdf: ", user);
 		if (*user == '\0')
 			return 0;
 		reason_copy(DEFAULT_REASON);
 		reason_select(DENY_LEVEL_FILE);
 		clear();
 		move(2, 0);
-		prints("·â½ûÓÃ»§[%s]\n\n(1)·¢ÎÄ (2)µÇÂ¼ (3)ÁÄÌì (4)·¢ĞÅ\n", user);
+		//% prints("å°ç¦ç”¨æˆ·[%s]\n\n(1)å‘æ–‡ (2)ç™»å½• (3)èŠå¤© (4)å‘ä¿¡\n", user);
+		prints("\xb7\xe2\xbd\xfb\xd3\xc3\xbb\xa7[%s]\n\n(1)\xb7\xa2\xce\xc4 (2)\xb5\xc7\xc2\xbc (3)\xc1\xc4\xcc\xec (4)\xb7\xa2\xd0\xc5\n", user);
 		while (!type) {
 			move(12, 0);
 			clrtobot();
-			getdata(10, 0, "ÇëÊäÈëÄãµÄ´¦Àí: ", ans, 3, DOECHO, YEA);
+			//% getdata(10, 0, "è¯·è¾“å…¥ä½ çš„å¤„ç†: ", ans, 3, DOECHO, YEA);
+			getdata(10, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc4\xe3\xb5\xc4\xb4\xa6\xc0\xed: ", ans, 3, DOECHO, YEA);
 			if (ans[0] >= '1' && ans[1] <= '4')
 				type = ans[0];
 		}
 	}
-	getdata(11, 0, "·â½ûÌìÊı(999-ÖÕÉí, 0-´ı¶¨): ", ans, 5, DOECHO, YEA);
+	//% getdata(11, 0, "å°ç¦å¤©æ•°(999-ç»ˆèº«, 0-å¾…å®š): ", ans, 5, DOECHO, YEA);
+	getdata(11, 0, "\xb7\xe2\xbd\xfb\xcc\xec\xca\xfd(999-\xd6\xd5\xc9\xed, 0-\xb4\xfd\xb6\xa8): ", ans, 5, DOECHO, YEA);
 	int days = strtol(ans, NULL, 10);
 	char ps[40];
-	getdata(12, 0, "ÊäÈëËµÃ÷: ", ps, sizeof(ps), DOECHO, YEA);
+	//% getdata(12, 0, "è¾“å…¥è¯´æ˜: ", ps, sizeof(ps), DOECHO, YEA);
+	getdata(12, 0, "\xca\xe4\xc8\xeb\xcb\xb5\xc3\xf7: ", ps, sizeof(ps), DOECHO, YEA);
 	move(13, 0);
-	if (askyn("ÄúÈ·¶¨Âğ?", NA, NA) == NA)
+	//% if (askyn("æ‚¨ç¡®å®šå—?", NA, NA) == NA)
+	if (askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xc2\xf0?", NA, NA) == NA)
 		return 1;
 
 	const char *orig = line ? line + OFFSET_PERM : NULL;
@@ -861,14 +917,16 @@ int denylist_key_deal(const char *file, int ch, const char *line)
 		case 'd':
 			if (!line)
 				break;
-			if (askyn("ÄúÈ·¶¨Âğ?", NA, YEA) == NA) {
+			//% if (askyn("æ‚¨ç¡®å®šå—?", NA, YEA) == NA) {
+			if (askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xc2\xf0?", NA, YEA) == NA) {
 				update_endline();
 				return 0;
 			}
 			denylist_remove(file, line);
 			break;
 		case 'x':
-			if (askyn("ÄúÈ·¶¨Âğ?", NA, YEA) == NA) {
+			//% if (askyn("æ‚¨ç¡®å®šå—?", NA, YEA) == NA) {
+			if (askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xc2\xf0?", NA, YEA) == NA) {
 				update_endline();
 				return 0;
 			}

@@ -90,7 +90,8 @@ static void do_bbsnet(const site_t *site)
 {
 	set_user_status(ST_BBSNET);
 	clear();
-	prints("\033[1;32mÁ¬Íù: %s (%s)\nÁ¬²»ÉÏÊ±ÇëÉÔºò£¬%d Ãëºó½«×Ô¶¯ÍË³ö\n",
+	//% prints("\033[1;32mè¿å¾€: %s (%s)\nè¿ä¸ä¸Šæ—¶è¯·ç¨å€™ï¼Œ%d ç§’åå°†è‡ªåŠ¨é€€å‡º\n",
+	prints("\033[1;32m\xc1\xac\xcd\xf9: %s (%s)\n\xc1\xac\xb2\xbb\xc9\xcf\xca\xb1\xc7\xeb\xc9\xd4\xba\xf2\xa3\xac%d \xc3\xeb\xba\xf3\xbd\xab\xd7\xd4\xb6\xaf\xcd\xcb\xb3\xf6\n",
 			site->name, site->ip, CONNECT_TIMEOUT);
 	refresh();
 
@@ -128,7 +129,8 @@ static void do_bbsnet(const site_t *site)
 	signal(SIGALRM, SIG_IGN);
 
 	bbsnet_log(site);
-	prints("\033[1;32mÒÑ¾­Á¬½ÓÉÏÖ÷»ú£¬°´'ctrl+]'¿ìËÙÍË³ö¡£\033[m\n");
+	//% prints("\033[1;32må·²ç»è¿æ¥ä¸Šä¸»æœºï¼ŒæŒ‰'ctrl+]'å¿«é€Ÿé€€å‡ºã€‚\033[m\n");
+	prints("\033[1;32m\xd2\xd1\xbe\xad\xc1\xac\xbd\xd3\xc9\xcf\xd6\xf7\xbb\xfa\xa3\xac\xb0\xb4'ctrl+]'\xbf\xec\xcb\xd9\xcd\xcb\xb3\xf6\xa1\xa3\033[m\n");
 	refresh();
 
 	struct timeval tv;
@@ -233,9 +235,12 @@ static void show_sites(const site_t *sites, int count)
 {
 	int i;
 	clear();
-	outs("\033[1;44m´©ËóÒøºÓ\033[K\n\033[mÀë¿ª[\033[1;32mCtrl-C Ctrl-D\033[m] "
-			"Ñ¡Ôñ[\033[1;32m¡ü\033[m,\033[1;32m¡ı\033[m,\033[1;32m¡û\033[m,"
-			"\033[1;32m¡ú\033[m]");
+	//% outs("\033[1;44mç©¿æ¢­é“¶æ²³\033[K\n\033[mç¦»å¼€[\033[1;32mCtrl-C Ctrl-D\033[m] "
+	outs("\033[1;44m\xb4\xa9\xcb\xf3\xd2\xf8\xba\xd3\033[K\n\033[m\xc0\xeb\xbf\xaa[\033[1;32mCtrl-C Ctrl-D\033[m] "
+			//% "é€‰æ‹©[\033[1;32mâ†‘\033[m,\033[1;32mâ†“\033[m,\033[1;32mâ†\033[m,"
+			"\xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd\033[m,\033[1;32m\xa1\xfb\033[m,"
+			//% "\033[1;32mâ†’\033[m]");
+			"\033[1;32m\xa1\xfa\033[m]");
 	for (i = 0; i < MAX_BBSNET_SITES / 3; i++) {
 		show_line(sites, count, i, -1);
 	}
@@ -332,8 +337,10 @@ int ent_bnet(void)
 		bbsnet("etc/bbsnet.ini", currentuser.userid);
 	} else {
 		clear();
-		prints("±§Ç¸£¬ÓÉÓÚÄúÊÇĞ£ÄÚÓÃ»§£¬ÄúÎŞ·¨Ê¹ÓÃ±¾´©Ëó¹¦ÄÜ...\n");
-		prints("ÇëÖ±½ÓÁ¬Íù¸´µ©ÈªÕ¾£ºtelnet 10.8.225.9");
+		//% prints("æŠ±æ­‰ï¼Œç”±äºæ‚¨æ˜¯æ ¡å†…ç”¨æˆ·ï¼Œæ‚¨æ— æ³•ä½¿ç”¨æœ¬ç©¿æ¢­åŠŸèƒ½...\n");
+		prints("\xb1\xa7\xc7\xb8\xa3\xac\xd3\xc9\xd3\xda\xc4\xfa\xca\xc7\xd0\xa3\xc4\xda\xd3\xc3\xbb\xa7\xa3\xac\xc4\xfa\xce\xde\xb7\xa8\xca\xb9\xd3\xc3\xb1\xbe\xb4\xa9\xcb\xf3\xb9\xa6\xc4\xdc...\n");
+		//% prints("è¯·ç›´æ¥è¿å¾€å¤æ—¦æ³‰ç«™ï¼štelnet 10.8.225.9");
+		prints("\xc7\xeb\xd6\xb1\xbd\xd3\xc1\xac\xcd\xf9\xb8\xb4\xb5\xa9\xc8\xaa\xd5\xbe\xa3\xbatelnet 10.8.225.9");
 		pressanykey();
 	}
 	return 0;
@@ -348,7 +355,8 @@ int ent_bnet2(void)
 		bbsnet("etc/bbsnet2.ini", currentuser.userid);
 	} else {
 		clear();
-		prints("±§Ç¸£¬ÄúËù´¦µÄÎ»ÖÃÎŞ·¨Ê¹ÓÃ±¾´©Ëó¹¦ÄÜ...");
+		//% prints("æŠ±æ­‰ï¼Œæ‚¨æ‰€å¤„çš„ä½ç½®æ— æ³•ä½¿ç”¨æœ¬ç©¿æ¢­åŠŸèƒ½...");
+		prints("\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xcb\xf9\xb4\xa6\xb5\xc4\xce\xbb\xd6\xc3\xce\xde\xb7\xa8\xca\xb9\xd3\xc3\xb1\xbe\xb4\xa9\xcb\xf3\xb9\xa6\xc4\xdc...");
 		pressanykey();
 	}
 	return 0;

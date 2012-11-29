@@ -44,9 +44,9 @@ int append_record(const char *file, const void *record, int size)
 	return ret;
 }
 
-//È¡µÃ¼ÇÂ¼µÄ¾ä±ú,²¢´æ·ÅÔÚrptrÖĞ
-//	fdÊÇÎÄ¼şµÄÃèÊö·û,size±íÊ¾¼ÇÂ¼µÄ´óĞ¡,id±íÊ¾¼ÇÂ¼µÄÎ»ÖÃ
-//	²»³É¹¦Ê±,·µ»Ø-1 ; ³É¹¦Ê±,·µ»Ø0
+//å–å¾—è®°å½•çš„å¥æŸ„,å¹¶å­˜æ”¾åœ¨rpträ¸­
+//	fdæ˜¯æ–‡ä»¶çš„æè¿°ç¬¦,sizeè¡¨ç¤ºè®°å½•çš„å¤§å°,idè¡¨ç¤ºè®°å½•çš„ä½ç½®
+//	ä¸æˆåŠŸæ—¶,è¿”å›-1 ; æˆåŠŸæ—¶,è¿”å›0
 static int get_record_handle(int fd, void *rptr, int size, int id)
 {
 	if (lseek(fd, size * (id - 1), SEEK_SET) == -1)
@@ -56,7 +56,7 @@ static int get_record_handle(int fd, void *rptr, int size, int id)
 	return 0;
 }
 
-//È¡µÃ¼ÇÂ¼,filename±íÊ¾ÎÄ¼şÃû,ÆäËü²ÎÊı¼ûget_record_handle
+//å–å¾—è®°å½•,filenameè¡¨ç¤ºæ–‡ä»¶å,å…¶å®ƒå‚æ•°è§get_record_handle
 int get_record(char *filename, void *rptr, int size, int id)
 {
 	int fd;
@@ -69,8 +69,8 @@ int get_record(char *filename, void *rptr, int size, int id)
 	return ret;
 }
 
-//ÔÚÎÄ¼şfilenameÖĞµÄµÚid-1¸ö¼ÇÂ¼´¦¶ÁÈ¡´óĞ¡Îªsize,ÊıÁ¿ÎªnumberµÄ¼ÇÂ¼¼¯
-//	Èç¹ûÊ§°Ü,·µ»Ø-1,Èç¹ûÎ´ÄÜ¶ÁÈ¡number¸ö¼ÇÂ¼,Ôò·µ»Ø¶ÁÈ¡µÄ¼ÇÂ¼Êı
+//åœ¨æ–‡ä»¶filenameä¸­çš„ç¬¬id-1ä¸ªè®°å½•å¤„è¯»å–å¤§å°ä¸ºsize,æ•°é‡ä¸ºnumberçš„è®°å½•é›†
+//	å¦‚æœå¤±è´¥,è¿”å›-1,å¦‚æœæœªèƒ½è¯»å–numberä¸ªè®°å½•,åˆ™è¿”å›è¯»å–çš„è®°å½•æ•°
 int get_records(const char *filename, void *rptr, int size, int id,
 		int number)
 {
@@ -177,7 +177,7 @@ int search_record(const char *file, void *rptr, int size, record_func_t func,
 	return 0;
 }
 
-//	½«filenameÎÄ¼şµÚid¸ö¼ÇÂ¼Ìæ»»ÎªrptrËùÖ¸ÏòµÄÊı¾İ
+//	å°†filenameæ–‡ä»¶ç¬¬idä¸ªè®°å½•æ›¿æ¢ä¸ºrptræ‰€æŒ‡å‘çš„æ•°æ®
 int substitute_record(char *filename, void *rptr, int size, int id)
 {
 	struct flock ldata;
@@ -190,11 +190,11 @@ int substitute_record(char *filename, void *rptr, int size, int id)
 	ldata.l_whence = 0;
 	ldata.l_len = size;
 	ldata.l_start = size * (id - 1);
-	if ((retval = fcntl(fd, F_SETLKW, &ldata)) == -1) {//ÒÔ»¥³â·½Ê½ËøÎÄ¼ş
+	if ((retval = fcntl(fd, F_SETLKW, &ldata)) == -1) {//ä»¥äº’æ–¥æ–¹å¼é”æ–‡ä»¶
 		close(fd);
 		return -1;
 	}
-	if (lseek(fd, size * (id - 1), SEEK_SET) == -1) { //ÎŞ·¨µ½ÎÄ¼şµÄÖ¸¶¨Î»ÖÃ
+	if (lseek(fd, size * (id - 1), SEEK_SET) == -1) { //æ— æ³•åˆ°æ–‡ä»¶çš„æŒ‡å®šä½ç½®
 		ldata.l_type = F_UNLCK;
 		fcntl(fd, F_SETLK, &ldata);
 		close(fd);

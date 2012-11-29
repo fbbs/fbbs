@@ -10,8 +10,10 @@ static int http_fatal2(int status, const char *prompt)
 {
 	printf("Content-type: text/html; charset=%s\nStatus: %d\n\n",
 			CHARSET, status);
-	printf("<html><head><title>·¢Éú´íÎó</title></head><body><div>%s</div>"
-			"<a href=javascript:history.go(-1)>¿ìËÙ·µ»Ø</a></body></html>",
+	//% printf("<html><head><title>å‘ç”Ÿé”™è¯¯</title></head><body><div>%s</div>"
+	printf("<html><head><title>\xb7\xa2\xc9\xfa\xb4\xed\xce\xf3</title></head><body><div>%s</div>"
+			//% "<a href=javascript:history.go(-1)>å¿«é€Ÿè¿”å›</a></body></html>",
+			"<a href=javascript:history.go(-1)>\xbf\xec\xcb\xd9\xb7\xb5\xbb\xd8</a></body></html>",
 			prompt);
 	FCGI_Finish();
 	return 0;
@@ -38,52 +40,76 @@ int check_bbserr(int err)
 		return 0;
 	switch (err) {
 		case BBS_EINVAL:
-			return http_fatal2(HTTP_BAD_REQUEST, "²ÎÊı´íÎó");
+			//% return http_fatal2(HTTP_BAD_REQUEST, "å‚æ•°é”™è¯¯");
+			return http_fatal2(HTTP_BAD_REQUEST, "\xb2\xce\xca\xfd\xb4\xed\xce\xf3");
 		case BBS_ELGNREQ:
-			return http_fatal("ÇëÏÈ<a href='login'>µÇÂ¼</a>");
+			//% return http_fatal("è¯·å…ˆ<a href='login'>ç™»å½•</a>");
+			return http_fatal("\xc7\xeb\xcf\xc8<a href='login'>\xb5\xc7\xc2\xbc</a>");
 		case BBS_EACCES:
-			return http_fatal("È¨ÏŞ²»×ã");
+			//% return http_fatal("æƒé™ä¸è¶³");
+			return http_fatal("\xc8\xa8\xcf\xde\xb2\xbb\xd7\xe3");
 		case BBS_EPST:
-			return http_fatal("´ËÎÄ²»¿É»Ø¸´£¬»òÄúÃ»ÓĞ·¢ÎÄÈ¨ÏŞ");
+			//% return http_fatal("æ­¤æ–‡ä¸å¯å›å¤ï¼Œæˆ–æ‚¨æ²¡æœ‰å‘æ–‡æƒé™");
+			return http_fatal("\xb4\xcb\xce\xc4\xb2\xbb\xbf\xc9\xbb\xd8\xb8\xb4\xa3\xac\xbb\xf2\xc4\xfa\xc3\xbb\xd3\xd0\xb7\xa2\xce\xc4\xc8\xa8\xcf\xde");
 		case BBS_ENOFILE:
-			return http_fatal("ÕÒ²»µ½Ö¸¶¨µÄÎÄ¼ş");
+			//% return http_fatal("æ‰¾ä¸åˆ°æŒ‡å®šçš„æ–‡ä»¶");
+			return http_fatal("\xd5\xd2\xb2\xbb\xb5\xbd\xd6\xb8\xb6\xa8\xb5\xc4\xce\xc4\xbc\xfe");
 		case BBS_ENODIR:
-			return http_fatal("ÕÒ²»µ½Ö¸¶¨µÄÄ¿Â¼");
+			//% return http_fatal("æ‰¾ä¸åˆ°æŒ‡å®šçš„ç›®å½•");
+			return http_fatal("\xd5\xd2\xb2\xbb\xb5\xbd\xd6\xb8\xb6\xa8\xb5\xc4\xc4\xbf\xc2\xbc");
 		case BBS_ENOBRD:
-			return http_fatal("ÕÒ²»µ½Ö¸¶¨µÄ°æÃæ£¬»òÈ¨ÏŞ²»×ã");
+			//% return http_fatal("æ‰¾ä¸åˆ°æŒ‡å®šçš„ç‰ˆé¢ï¼Œæˆ–æƒé™ä¸è¶³");
+			return http_fatal("\xd5\xd2\xb2\xbb\xb5\xbd\xd6\xb8\xb6\xa8\xb5\xc4\xb0\xe6\xc3\xe6\xa3\xac\xbb\xf2\xc8\xa8\xcf\xde\xb2\xbb\xd7\xe3");
 		case BBS_ENOUSR:
-			return http_fatal("ÕÒ²»µ½Ö¸¶¨µÄÓÃ»§");
+			//% return http_fatal("æ‰¾ä¸åˆ°æŒ‡å®šçš„ç”¨æˆ·");
+			return http_fatal("\xd5\xd2\xb2\xbb\xb5\xbd\xd6\xb8\xb6\xa8\xb5\xc4\xd3\xc3\xbb\xa7");
 		case BBS_ENOURL:
-			return http_fatal("ÕÒ²»µ½Ö¸¶¨µÄÍøÖ·");
+			//% return http_fatal("æ‰¾ä¸åˆ°æŒ‡å®šçš„ç½‘å€");
+			return http_fatal("\xd5\xd2\xb2\xbb\xb5\xbd\xd6\xb8\xb6\xa8\xb5\xc4\xcd\xf8\xd6\xb7");
 		case BBS_EDUPLGN:
-			return http_fatal("ÄúÔÚ±¾»úÒÑ¾­µÇÂ¼ÁËÒ»¸öÕÊºÅ£¬ÇëÏÈÍË³ö");
+			//% return http_fatal("æ‚¨åœ¨æœ¬æœºå·²ç»ç™»å½•äº†ä¸€ä¸ªå¸å·ï¼Œè¯·å…ˆé€€å‡º");
+			return http_fatal("\xc4\xfa\xd4\xda\xb1\xbe\xbb\xfa\xd2\xd1\xbe\xad\xb5\xc7\xc2\xbc\xc1\xcb\xd2\xbb\xb8\xf6\xd5\xca\xba\xc5\xa3\xac\xc7\xeb\xcf\xc8\xcd\xcb\xb3\xf6");
 		case BBS_EWPSWD:
-			return http_fatal("ÓÃ»§ÃûºÍÃÜÂë²»Æ¥Åä");
+			//% return http_fatal("ç”¨æˆ·åå’Œå¯†ç ä¸åŒ¹é…");
+			return http_fatal("\xd3\xc3\xbb\xa7\xc3\xfb\xba\xcd\xc3\xdc\xc2\xeb\xb2\xbb\xc6\xa5\xc5\xe4");
 		case BBS_EBLKLST:
-			return http_fatal("ÄúÔÚ¶Ô·½µÄºÚÃûµ¥ÖĞ");
+			//% return http_fatal("æ‚¨åœ¨å¯¹æ–¹çš„é»‘åå•ä¸­");
+			return http_fatal("\xc4\xfa\xd4\xda\xb6\xd4\xb7\xbd\xb5\xc4\xba\xda\xc3\xfb\xb5\xa5\xd6\xd0");
 		case BBS_ELGNQE:
-			return http_fatal("Äú²»ÄÜµÇÂ¼¸ü¶àÕÊºÅÁË");
+			//% return http_fatal("æ‚¨ä¸èƒ½ç™»å½•æ›´å¤šå¸å·äº†");
+			return http_fatal("\xc4\xfa\xb2\xbb\xc4\xdc\xb5\xc7\xc2\xbc\xb8\xfc\xb6\xe0\xd5\xca\xba\xc5\xc1\xcb");
 		case BBS_EBRDQE:
-			return http_fatal("ÊÕ²Ø¼Ğ°æÃæÊıÒÑ´ïÉÏÏŞ");
+			//% return http_fatal("æ”¶è—å¤¹ç‰ˆé¢æ•°å·²è¾¾ä¸Šé™");
+			return http_fatal("\xca\xd5\xb2\xd8\xbc\xd0\xb0\xe6\xc3\xe6\xca\xfd\xd2\xd1\xb4\xef\xc9\xcf\xcf\xde");
 		case BBS_EATTQE:
-			return http_fatal("°æÃæ¸½¼şÇøÈİÁ¿ÒÑÂú");
+			//% return http_fatal("ç‰ˆé¢é™„ä»¶åŒºå®¹é‡å·²æ»¡");
+			return http_fatal("\xb0\xe6\xc3\xe6\xb8\xbd\xbc\xfe\xc7\xf8\xc8\xdd\xc1\xbf\xd2\xd1\xc2\xfa");
 		case BBS_EMAILQE:
-			return http_fatal("ĞÅÏäÒÑÂú");
+			//% return http_fatal("ä¿¡ç®±å·²æ»¡");
+			return http_fatal("\xd0\xc5\xcf\xe4\xd2\xd1\xc2\xfa");
 		case BBS_EFRNDQE:
-			return http_fatal("ÄúµÄºÃÓÑÊıÒÑ´ïÉÏÏŞ");
+			//% return http_fatal("æ‚¨çš„å¥½å‹æ•°å·²è¾¾ä¸Šé™");
+			return http_fatal("\xc4\xfa\xb5\xc4\xba\xc3\xd3\xd1\xca\xfd\xd2\xd1\xb4\xef\xc9\xcf\xcf\xde");
 		case BBS_EFBIG:
-			return http_fatal("ÎÄ¼ş´óĞ¡³¬¹ıÏŞÖÆ");
+			//% return http_fatal("æ–‡ä»¶å¤§å°è¶…è¿‡é™åˆ¶");
+			return http_fatal("\xce\xc4\xbc\xfe\xb4\xf3\xd0\xa1\xb3\xac\xb9\xfd\xcf\xde\xd6\xc6");
 		case BBS_ELFREQ:
-			return http_fatal("µÇÂ¼¹ıÓÚÆµ·±");
+			//% return http_fatal("ç™»å½•è¿‡äºé¢‘ç¹");
+			return http_fatal("\xb5\xc7\xc2\xbc\xb9\xfd\xd3\xda\xc6\xb5\xb7\xb1");
 		case BBS_EPFREQ:
-			return http_fatal("·¢ÎÄ¹ıÓÚÆµ·±");
+			//% return http_fatal("å‘æ–‡è¿‡äºé¢‘ç¹");
+			return http_fatal("\xb7\xa2\xce\xc4\xb9\xfd\xd3\xda\xc6\xb5\xb7\xb1");
 		case BBS_E2MANY:
-			return http_fatal("ÔÚÏßÓÃ»§ÊıÒÑ´ïÉÏÏŞ");
+			//% return http_fatal("åœ¨çº¿ç”¨æˆ·æ•°å·²è¾¾ä¸Šé™");
+			return http_fatal("\xd4\xda\xcf\xdf\xd3\xc3\xbb\xa7\xca\xfd\xd2\xd1\xb4\xef\xc9\xcf\xcf\xde");
 		case BBS_EINTNL:
-			return http_fatal2(HTTP_INTERNAL_SERVER_ERROR, "ÄÚ²¿´íÎó");
+			//% return http_fatal2(HTTP_INTERNAL_SERVER_ERROR, "å†…éƒ¨é”™è¯¯");
+			return http_fatal2(HTTP_INTERNAL_SERVER_ERROR, "\xc4\xda\xb2\xbf\xb4\xed\xce\xf3");
 		case BBS_ERMQE:
-			return http_fatal("¶Ô·½ĞÅÏäÒÑÂú");
+			//% return http_fatal("å¯¹æ–¹ä¿¡ç®±å·²æ»¡");
+			return http_fatal("\xb6\xd4\xb7\xbd\xd0\xc5\xcf\xe4\xd2\xd1\xc2\xfa");
 		default:
-			return http_fatal("Î´Öª´íÎó");
+			//% return http_fatal("æœªçŸ¥é”™è¯¯");
+			return http_fatal("\xce\xb4\xd6\xaa\xb4\xed\xce\xf3");
 	}
 }

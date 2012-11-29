@@ -14,7 +14,8 @@
 #define DOTNAME		".Names"
 #define MAXDEPTH	15
 
-static char weeknum[7][3]={"Ìì","Ò»","¶ş","Èı","ËÄ","Îå","Áù"};
+//% static char weeknum[7][3]={"å¤©","ä¸€","äºŒ","ä¸‰","å››","äº”","å…­"};
+static char weeknum[7][3]={"\xcc\xec","\xd2\xbb","\xb6\xfe","\xc8\xfd","\xcb\xc4","\xce\xe5","\xc1\xf9"};
 
 int logChange = 1,
 	debug_mode = 0;
@@ -27,7 +28,7 @@ int debug(char *msg, char *buf){
 }
 
 
-//Èç¹ûfname´æÔÚ,ÇÒÎªÄ¿Â¼,·µ»ØÕæ
+//å¦‚æœfnameå­˜åœ¨,ä¸”ä¸ºç›®å½•,è¿”å›çœŸ
 int dashd(char *fname)
 {
 	struct stat st;
@@ -64,7 +65,8 @@ int insertFile(char *path, char *file, char *title){
 			if (strlen(title) > 38 )
 			    fprintf(fp, "Name=%s\n",title);
 			else
-				fprintf(fp, "Name=%-38sBBSÏµÍ³\n",title);
+				//% fprintf(fp, "Name=%-38sBBSç³»ç»Ÿ\n",title);
+				fprintf(fp, "Name=%-38sBBS\xcf\xb5\xcd\xb3\n",title);
 			fprintf(fp, "Path=~/%s\nNumb=%d\n#\n",file, num+1);
 		}
 		fclose(fp);
@@ -86,19 +88,25 @@ int boardAnnIndex(char *currPath, int level, char *numstr){
 	if( (fpNames = fopen(dotNameFile, "r")) == NULL) return -1;
 			
 	if (level == 0){
-		fprintf(allIndex,"\033[0;1;41;33m ---====== ¡ù¾«»ªÇø×ÜË÷Òı¡ù [¸üĞÂÊ±¼ä£º"
-			"%4dÄê%02dÔÂ%02dÈÕ%02d:%02d:%02d ĞÇÆÚ%2s] ======--- \033[m\n",
+		//% fprintf(allIndex,"\033[0;1;41;33m ---====== â€»ç²¾ååŒºæ€»ç´¢å¼•â€» [æ›´æ–°æ—¶é—´ï¼š"
+		fprintf(allIndex,"\033[0;1;41;33m ---====== \xa1\xf9\xbe\xab\xbb\xaa\xc7\xf8\xd7\xdc\xcb\xf7\xd2\xfd\xa1\xf9 [\xb8\xfc\xd0\xc2\xca\xb1\xbc\xe4\xa3\xba"
+			//% "%4då¹´%02dæœˆ%02dæ—¥%02d:%02d:%02d æ˜ŸæœŸ%2s] ======--- \033[m\n",
+			"%4d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5%02d:%02d:%02d \xd0\xc7\xc6\xda%2s] ======--- \033[m\n",
 			tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,
 			tm->tm_hour,tm->tm_min,tm->tm_sec,
 			weeknum[tm->tm_wday]);
-		fprintf(dirIndex,"\033[0;1;41;33m ---===== ¡ù¾«»ªÇøÄ¿Â¼Ë÷Òı¡ù [¸üĞÂÊ±¼ä£º"
-			"%4dÄê%02dÔÂ%02dÈÕ%02d:%02d:%02d ĞÇÆÚ%2s] =====--- \033[m\n",
+		//% fprintf(dirIndex,"\033[0;1;41;33m ---===== â€»ç²¾ååŒºç›®å½•ç´¢å¼•â€» [æ›´æ–°æ—¶é—´ï¼š"
+		fprintf(dirIndex,"\033[0;1;41;33m ---===== \xa1\xf9\xbe\xab\xbb\xaa\xc7\xf8\xc4\xbf\xc2\xbc\xcb\xf7\xd2\xfd\xa1\xf9 [\xb8\xfc\xd0\xc2\xca\xb1\xbc\xe4\xa3\xba"
+			//% "%4då¹´%02dæœˆ%02dæ—¥%02d:%02d:%02d æ˜ŸæœŸ%2s] =====--- \033[m\n",
+			"%4d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5%02d:%02d:%02d \xd0\xc7\xc6\xda%2s] =====--- \033[m\n",
 			tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,
 			tm->tm_hour,tm->tm_min,tm->tm_sec,
 			weeknum[tm->tm_wday]);
 		if (logChange){
-			fprintf(changeFile,"\033[0;1;41;33m --=== ¡ùÁùÊ®ÈÕ¾«»ªÇøÕûÀí¼ÇÂ¼¡ù [¸üĞÂÊ±¼ä]"
-				"%4dÄê%02dÔÂ%02dÈÕ%02d:%02d:%02d ĞÇÆÚ%2s] ===-- \033[m\n",
+			//% fprintf(changeFile,"\033[0;1;41;33m --=== â€»å…­åæ—¥ç²¾ååŒºæ•´ç†è®°å½•â€» [æ›´æ–°æ—¶é—´]"
+			fprintf(changeFile,"\033[0;1;41;33m --=== \xa1\xf9\xc1\xf9\xca\xae\xc8\xd5\xbe\xab\xbb\xaa\xc7\xf8\xd5\xfb\xc0\xed\xbc\xc7\xc2\xbc\xa1\xf9 [\xb8\xfc\xd0\xc2\xca\xb1\xbc\xe4]"
+				//% "%4då¹´%02dæœˆ%02dæ—¥%02d:%02d:%02d æ˜ŸæœŸ%2s] ===-- \033[m\n",
+				"%4d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5%02d:%02d:%02d \xd0\xc7\xc6\xda%2s] ===-- \033[m\n",
 				tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,
 				tm->tm_hour,tm->tm_min,tm->tm_sec,
 				weeknum[tm->tm_wday]);
@@ -143,7 +151,7 @@ int boardAnnIndex(char *currPath, int level, char *numstr){
 			continue;
 
 
-		//Éú³ÉÄ¿Â¼/ÎÄ¼şÃû
+		//ç”Ÿæˆç›®å½•/æ–‡ä»¶å
 		sprintf(genbuf,"%s/%s", currPath, path);
 		if (stat(genbuf, &st) == -1) {
 			if (debug_mode)
@@ -157,9 +165,11 @@ int boardAnnIndex(char *currPath, int level, char *numstr){
 		strcpy(newpath, genbuf);
 		sprintf(str, "%s%2d.", numstr, num);
 		if (S_ISDIR(st.st_mode)){
-			sprintf(output, "%s[\033[1;32mÄ¿Â¼\033[m]%s", str,title);	
+			//% sprintf(output, "%s[\033[1;32mç›®å½•\033[m]%s", str,title);	
+			sprintf(output, "%s[\033[1;32m\xc4\xbf\xc2\xbc\033[m]%s", str,title);	
 		} else if (S_ISREG(st.st_mode)) {
-			sprintf(output, "%s[\033[1;36mÎÄ¼ş\033[m]%s", str,title); 
+			//% sprintf(output, "%s[\033[1;36mæ–‡ä»¶\033[m]%s", str,title); 
+			sprintf(output, "%s[\033[1;36m\xce\xc4\xbc\xfe\033[m]%s", str,title); 
 		} else{
 			if (debug_mode)
 				printf("Error: Unknown item encountered at line %d of %s\n", title);
@@ -213,25 +223,29 @@ int IndexAnnounce(char *bname){
 			
 			sprintf(genbuf, "%s/.Names", pathname);
 
-			insertFile(genbuf,".annIndex", "¡¾±¾°å¾«»ªÇøË÷Òı¡¿                    (BM: BMS)");
+			//% insertFile(genbuf,".annIndex", "ã€æœ¬æ¿ç²¾ååŒºç´¢å¼•ã€‘                    (BM: BMS)");
+			insertFile(genbuf,".annIndex", "\xa1\xbe\xb1\xbe\xb0\xe5\xbe\xab\xbb\xaa\xc7\xf8\xcb\xf7\xd2\xfd\xa1\xbf                    (BM: BMS)");
 			
 			sprintf(genbuf, "%s/.annIndex/.index_all", pathname);
 			if ((allIndex = fopen(genbuf, "w+")) > 0){
 				sprintf(genbuf, "%s/.annIndex/.Names", pathname);
-				insertFile(genbuf,".index_all", "¾«»ªÇø×ÜË÷Òı");
+				//% insertFile(genbuf,".index_all", "ç²¾ååŒºæ€»ç´¢å¼•");
+				insertFile(genbuf,".index_all", "\xbe\xab\xbb\xaa\xc7\xf8\xd7\xdc\xcb\xf7\xd2\xfd");
 			}
 			
 			sprintf(genbuf, "%s/.annIndex/.index_dir", pathname);
 			if ((dirIndex = fopen(genbuf, "w+")) > 0){
 					sprintf(genbuf, "%s/.annIndex/.Names", pathname);
-					insertFile(genbuf,".index_dir", "¾«»ªÇøÄ¿Â¼Ë÷Òı");
+					//% insertFile(genbuf,".index_dir", "ç²¾ååŒºç›®å½•ç´¢å¼•");
+					insertFile(genbuf,".index_dir", "\xbe\xab\xbb\xaa\xc7\xf8\xc4\xbf\xc2\xbc\xcb\xf7\xd2\xfd");
 			}
 			
 			sprintf(genbuf, "%s/.annIndex/.change_log", pathname);
 			if (logChange)
 				if((changeFile = fopen(genbuf, "w+")) > 0){
 					sprintf(genbuf, "%s/.annIndex/.Names", pathname);
-					insertFile(genbuf,".change_log", "ÁùÊ®ÈÕ¾«»ªÇøÕûÀí¼ÇÂ¼");
+					//% insertFile(genbuf,".change_log", "å…­åæ—¥ç²¾ååŒºæ•´ç†è®°å½•");
+					insertFile(genbuf,".change_log", "\xc1\xf9\xca\xae\xc8\xd5\xbe\xab\xbb\xaa\xc7\xf8\xd5\xfb\xc0\xed\xbc\xc7\xc2\xbc");
 				}
 			
 									

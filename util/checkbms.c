@@ -1,4 +1,4 @@
-/* 七天未上站的版主统计 by soff of bitbbs.org */
+/* 涓冨ぉ鏈笂绔欑殑鐗堜富缁熻 by soff of bitbbs.org */
 
 #include <time.h>
 #include <stdio.h>

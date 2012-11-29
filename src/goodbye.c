@@ -124,7 +124,8 @@ void showstuff(char *buf) {
 		tmpnum = countperf(&currentuser);
 		sprintf(perf, "%d", tmpnum);
 		strcpy(ccperf, cperf(tmpnum));
-		sprintf(alltime, "%dĞ¡Ê±%d·ÖÖÓ", currentuser.stay / 3600,
+		//% sprintf(alltime, "%då°æ—¶%dåˆ†é’Ÿ", currentuser.stay / 3600,
+		sprintf(alltime, "%d\xd0\xa1\xca\xb1%d\xb7\xd6\xd6\xd3", currentuser.stay / 3600,
 				(currentuser.stay / 60) % 60);
 		sprintf(rgtday, "%s", getdatestring(currentuser.firstlogin, DATE_ZH));
 		sprintf(lasttime, "%s", getdatestring(currentuser.lastlogin, DATE_ZH));

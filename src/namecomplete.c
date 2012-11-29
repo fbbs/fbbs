@@ -27,7 +27,7 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-//      ºê¶¨Òåtoupper(c),µ«ÓÐ¸º×÷ÓÃ,ÓÃÊ±×¢Òâ
+//      å®å®šä¹‰toupper(c),ä½†æœ‰è´Ÿä½œç”¨,ç”¨æ—¶æ³¨æ„
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)
 
 #define NUMLINES (t_lines - 4)
@@ -39,7 +39,7 @@ struct word {
 
 struct word *toplev = NULL, *current = NULL;
 
-//  ÊÍ·ÅÃû×ÖÁÐ±í¿Õ¼ä
+//  é‡Šæ”¾åå­—åˆ—è¡¨ç©ºé—´
 void FreeNameList() {
 	struct word *p, *temp;
 	for (p = toplev; p != NULL; p = temp) {
@@ -49,7 +49,7 @@ void FreeNameList() {
 	}
 }
 
-//      Çå¿ÕNameListÄÚ´æ,½«toplev,current¸´ÖÃÎªNULL
+//      æ¸…ç©ºNameListå†…å­˜,å°†toplev,currentå¤ç½®ä¸ºNULL
 void CreateNameList(void)
 {
 	if (toplev)
@@ -96,7 +96,7 @@ int NumInList(register struct word *list) {
 	return i;
 }
 
-//      ¶ÔNameList½øÐÐfptr²Ù×÷
+//      å¯¹NameListè¿›è¡Œfptræ“ä½œ
 void ApplyToNameList(int (*fptr) ()) {
 	struct word *p;
 	for (p = toplev; p != NULL; p = p->next)
@@ -193,7 +193,7 @@ int namecomplete(char *prompt, char *data) {
 			prints("\n");
 			if (NumInList(cwlist) == 1)
 				strcpy(data, cwlist->name);
-			else { /*  °æÃæ ID Ñ¡ÔñµÄÒ»¸ö¾«È·Æ¥ÅäÎÊÌâ  period */
+			else { /*  ç‰ˆé¢ ID é€‰æ‹©çš„ä¸€ä¸ªç²¾ç¡®åŒ¹é…é—®é¢˜  period */
 				struct word *list;
 				for (list = cwlist; list != NULL; list = list->next) {
 					if (!strcasecmp(data, list->name)) {
@@ -253,7 +253,8 @@ int namecomplete(char *prompt, char *data) {
 			move(origy + 1, 0);
 			clrtobot();
 			standout();
-			printdash(" ÁÐ±í ");
+			//% printdash(" åˆ—è¡¨ ");
+			printdash(" \xc1\xd0\xb1\xed ");
 			standend();
 			while (len + col < 80) {
 				int i;
@@ -273,7 +274,8 @@ int namecomplete(char *prompt, char *data) {
 			} //while
 			if (morelist) {
 				move(t_lines - 1, 0);
-				prints("[1;44m-- »¹ÓÐ --                                                                     [m");
+				//% prints("[1;44m-- è¿˜æœ‰ --                                                                     [m");
+				prints("[1;44m-- \xbb\xb9\xd3\xd0 --                                                                     [m");
 			}
 			move(y, x);
 			continue;
@@ -459,7 +461,8 @@ int usercomplete(char *prompt, char *data) {
 			len = UserMaxLen((void *)cwlist, cwnum, morenum, NUMLINES);
 			move(origy + 1, 0);
 			clrtobot();
-			printdash(" ËùÓÐÊ¹ÓÃÕßÁÐ±í ");
+			//% printdash(" æ‰€æœ‰ä½¿ç”¨è€…åˆ—è¡¨ ");
+			printdash(" \xcb\xf9\xd3\xd0\xca\xb9\xd3\xc3\xd5\xdf\xc1\xd0\xb1\xed ");
 			while (len + col < 79) {
 				int i;
 				for (i = 0; morenum < cwnum && i < NUMLINES - origy + 1; i++) {
@@ -477,7 +480,8 @@ int usercomplete(char *prompt, char *data) {
 			}
 			if (morenum < cwnum) {
 				move(t_lines - 1, 0);
-				prints("[1;44m-- »¹ÓÐÊ¹ÓÃÕß --                                                               [m");
+				//% prints("[1;44m-- è¿˜æœ‰ä½¿ç”¨è€… --                                                               [m");
+				prints("[1;44m-- \xbb\xb9\xd3\xd0\xca\xb9\xd3\xc3\xd5\xdf --                                                               [m");
 			} else {
 				morenum = 0;
 			}

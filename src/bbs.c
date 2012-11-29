@@ -28,7 +28,7 @@
 
 extern sigjmp_buf bus_jump;
 
-//ÓÃÓÚ±£´æ°æÖ÷¶Ô¾«»ªÇø²Ù×÷¼ÇÂ¼µÄÎÄ¼şÃû,Ó²ÅÌÉÏµÄÎ»ÖÃÊÇlogs/boardname
+//ç”¨äºä¿å­˜ç‰ˆä¸»å¯¹ç²¾ååŒºæ“ä½œè®°å½•çš„æ–‡ä»¶å,ç¡¬ç›˜ä¸Šçš„ä½ç½®æ˜¯logs/boardname
 char ANN_LOG_PATH[256];
 
 int digestmode;
@@ -76,7 +76,7 @@ extern time_t login_start_time;
 extern char BoardName[];
 extern char fromhost[];
 
-//  È¡µÃÓÃ»§IDÎªuseridµÄÓÃ»§ĞÅÏ¢,±£´æÔÚcurrentuserÖĞ
+//  å–å¾—ç”¨æˆ·IDä¸ºuseridçš„ç”¨æˆ·ä¿¡æ¯,ä¿å­˜åœ¨currentuserä¸­
 static int getcurrentuser(char *userid)
 {
 	int uid = searchuser(userid);
@@ -87,7 +87,7 @@ static int getcurrentuser(char *userid)
 	return uid;
 }
 
-//È¡µÃÓÃ»§ĞÅÏ¢,²»³É¹¦·µ»Ø-1
+//å–å¾—ç”¨æˆ·ä¿¡æ¯,ä¸æˆåŠŸè¿”å›-1
 int set_safe_record(void)
 {
 	if (getcurrentuser(currentuser.userid) == 0)
@@ -113,8 +113,8 @@ char *sethomepath(char *buf, const char *userid)
  */
 /*Add by SmallPig*/
 //Modified by IAMFAT 2002-05-27
-//      È¡µÃstitle×Ö·û´®Ëù±íÊ¾µÄ±êÌâ,±£´æÔÚÈ«¾Ö±äÁ¿topicÖĞ·µ»Ø
-//              Èç¹ûÊÇ»Ø¸´ÎÄÕÂ,È¥µôÇ°ÃæµÄ "Re: "Õâ4¸ö×Ö·û
+//      å–å¾—stitleå­—ç¬¦ä¸²æ‰€è¡¨ç¤ºçš„æ ‡é¢˜,ä¿å­˜åœ¨å…¨å±€å˜é‡topicä¸­è¿”å›
+//              å¦‚æœæ˜¯å›å¤æ–‡ç« ,å»æ‰å‰é¢çš„ "Re: "è¿™4ä¸ªå­—ç¬¦
 void setqtitle(char *stitle, int gid)
 {
 	o_gid = gid;
@@ -163,7 +163,7 @@ void setquotefile(const char *filepath)
 	strcpy(quote_file, filepath);
 }
 
-//·µ»ØÓÃ»§Ö÷Ä¿Â¼ÏÂËùÔÚµÄÎÄ¼şfilenameÂ·¾¶
+//è¿”å›ç”¨æˆ·ä¸»ç›®å½•ä¸‹æ‰€åœ¨çš„æ–‡ä»¶filenameè·¯å¾„
 char *setuserfile(char *buf, char *filename) {
 	sprintf(buf, "home/%c/%s/%s", toupper(currentuser.userid[0]),
 			currentuser.userid, filename);
@@ -186,9 +186,9 @@ char *setbdir(char *buf, const char *boardname)
 		case 4:
 			dir = AUTHOR_DIR;
 			break;
-			//      case 5:                 /* Í¬×÷Õß */
-			//      case 6:                 /* Í¬×÷Õß */
-			//      case 7:                 /* ±êÌâ¹Ø¼ü×Ö */
+			//      case 5:                 /* åŒä½œè€… */
+			//      case 6:                 /* åŒä½œè€… */
+			//      case 7:                 /* æ ‡é¢˜å…³é”®å­— */
 		case TRASH_MODE:
 			dir = TRASH_DIR;
 			break;
@@ -260,10 +260,12 @@ int tui_select_board(int current_bid)
 
 	move(0, 0);
 	clrtoeol();
-	prints("Ñ¡ÔñÒ»¸öÌÖÂÛÇø (Ó¢ÎÄ×ÖÄ¸´óĞ¡Ğ´½Ô¿É)\n");
+	//% prints("é€‰æ‹©ä¸€ä¸ªè®¨è®ºåŒº (è‹±æ–‡å­—æ¯å¤§å°å†™çš†å¯)\n");
+	prints("\xd1\xa1\xd4\xf1\xd2\xbb\xb8\xf6\xcc\xd6\xc2\xdb\xc7\xf8 (\xd3\xa2\xce\xc4\xd7\xd6\xc4\xb8\xb4\xf3\xd0\xa1\xd0\xb4\xbd\xd4\xbf\xc9)\n");
 
 	char bname[BOARD_NAME_LEN];
-	board_complete(1, "ÊäÈëÌÖÂÛÇøÃû (°´¿Õ°×¼ü×Ô¶¯ËÑÑ°): ",
+	//% board_complete(1, "è¾“å…¥è®¨è®ºåŒºå (æŒ‰ç©ºç™½é”®è‡ªåŠ¨æœå¯»): ",
+	board_complete(1, "\xca\xe4\xc8\xeb\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb (\xb0\xb4\xbf\xd5\xb0\xd7\xbc\xfc\xd7\xd4\xb6\xaf\xcb\xd1\xd1\xb0): ",
 			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (*bname == '\0')
 		return 0;
@@ -275,7 +277,8 @@ int tui_select_board(int current_bid)
 	if (!has_read_perm(&currentuser, &board)) {
 		clear();
 		move(5, 10);
-		prints("Äú²»ÊÇ¾ãÀÖ²¿°æ %s µÄ³ÉÔ±£¬ÎŞÈ¨½øÈë¸Ã°æ", bname);
+		//% prints("æ‚¨ä¸æ˜¯ä¿±ä¹éƒ¨ç‰ˆ %s çš„æˆå‘˜ï¼Œæ— æƒè¿›å…¥è¯¥ç‰ˆ", bname);
+		prints("\xc4\xfa\xb2\xbb\xca\xc7\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6 %s \xb5\xc4\xb3\xc9\xd4\xb1\xa3\xac\xce\xde\xc8\xa8\xbd\xf8\xc8\xeb\xb8\xc3\xb0\xe6", bname);
 		pressanykey();
 		return 0;
 	}
@@ -329,7 +332,7 @@ void dele_digest(char *dname, char *direc) {
 }
 
 int digest_post(int ent, struct fileheader *fhdr, char *direct) {
-	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 ¼ì²éÒ»ÏÂ ±ÜÃâ³öÏÖ.DIRÆÆ»µ
+	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 æ£€æŸ¥ä¸€ä¸‹ é¿å…å‡ºç°.DIRç ´å
 
 	if (!am_curr_bm()) {
 		return DONOTHING;
@@ -377,7 +380,8 @@ int digest_post(int ent, struct fileheader *fhdr, char *direct) {
 			move(3, 0);
 			clrtobot();
 			move(4, 10);
-			prints("±§Ç¸£¬ÄúµÄÎÄÕªÎÄÕÂÒÑ¾­³¬¹ı %d Æª£¬ÎŞ·¨ÔÙ¼ÓÈë...\n", MAX_DIGEST);
+			//% prints("æŠ±æ­‰ï¼Œæ‚¨çš„æ–‡æ‘˜æ–‡ç« å·²ç»è¶…è¿‡ %d ç¯‡ï¼Œæ— æ³•å†åŠ å…¥...\n", MAX_DIGEST);
+			prints("\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xb5\xc4\xce\xc4\xd5\xaa\xce\xc4\xd5\xc2\xd2\xd1\xbe\xad\xb3\xac\xb9\xfd %d \xc6\xaa\xa3\xac\xce\xde\xb7\xa8\xd4\xd9\xbc\xd3\xc8\xeb...\n", MAX_DIGEST);
 			pressanykey();
 			return PARTUPDATE;
 		}
@@ -455,7 +459,8 @@ static void getcross(board_t *board, const char *input, const char *output,
 		} else
 			write_header(of, header);
 
-		if (fgets(buf, 256, inf) && (p = strstr(buf, "ĞÅÈË: "))) {
+		//% if (fgets(buf, 256, inf) && (p = strstr(buf, "ä¿¡äºº: "))) {
+		if (fgets(buf, 256, inf) && (p = strstr(buf, "\xd0\xc5\xc8\xcb: "))) {
 			p += 6;
 			strtok(p, " \n\r");
 			strcpy(owner, p);
@@ -466,32 +471,43 @@ static void getcross(board_t *board, const char *input, const char *output,
 		}
 
 		if (in_mail)
-			fprintf(of, "\033[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô \033[32m%s \033[37mµÄĞÅÏä ¡¿\033[m\n",
+			//% fprintf(of, "\033[1;37mã€ ä»¥ä¸‹æ–‡å­—è½¬è½½è‡ª \033[32m%s \033[37mçš„ä¿¡ç®± ã€‘\033[m\n",
+			fprintf(of, "\033[1;37m\xa1\xbe \xd2\xd4\xcf\xc2\xce\xc4\xd7\xd6\xd7\xaa\xd4\xd8\xd7\xd4 \033[32m%s \033[37m\xb5\xc4\xd0\xc5\xcf\xe4 \xa1\xbf\033[m\n",
 					currentuser.userid);
 		else {
-			fprintf(of, "\033[1;37m¡¾ ÒÔÏÂÎÄ×Ö×ªÔØ×Ô \033[32m%s \033[37m%sÇø ¡¿\033[m\n",
+			//% fprintf(of, "\033[1;37mã€ ä»¥ä¸‹æ–‡å­—è½¬è½½è‡ª \033[32m%s \033[37m%såŒº ã€‘\033[m\n",
+			fprintf(of, "\033[1;37m\xa1\xbe \xd2\xd4\xcf\xc2\xce\xc4\xd7\xd6\xd7\xaa\xd4\xd8\xd7\xd4 \033[32m%s \033[37m%s\xc7\xf8 \xa1\xbf\033[m\n",
 					((board->flag & BOARD_POST_FLAG) || (board->perm == 0)) ? board->name
-							: "Î´Öª", mode ? "¾«»ª" : "ÌÖÂÛ");
+							//% : "æœªçŸ¥", mode ? "ç²¾å" : "è®¨è®º");
+							: "\xce\xb4\xd6\xaa", mode ? "\xbe\xab\xbb\xaa" : "\xcc\xd6\xc2\xdb");
 		}
 
 		if (owner_found) {
 			while (fgets(buf, 256, inf) && buf[0] != '\n')
 				;
-			fprintf(of, "\033[1m¡¾ Ô­ÎÄÓÉ\033[32m %s\033[37m Ëù·¢±í ¡¿"
+			//% fprintf(of, "\033[1mã€ åŸæ–‡ç”±\033[32m %s\033[37m æ‰€å‘è¡¨ ã€‘"
+			fprintf(of, "\033[1m\xa1\xbe \xd4\xad\xce\xc4\xd3\xc9\033[32m %s\033[37m \xcb\xf9\xb7\xa2\xb1\xed \xa1\xbf"
 					"\033[m\n\n", owner);
 		} else
 			fseek(inf, (long) 0, SEEK_SET);
 	} else if (mode == POST_FILE_DELIVER) {
-		fprintf(of, "\033[1;33m·¢ĞÅÈË: deliver (×Ô¶¯·¢ĞÅÏµÍ³), "
-				"ĞÅÇø: %s\033[m\n", board->name);
-		fprintf(of, "±ê  Ìâ: %s\n", header->title);
-		fprintf(of, "·¢ĞÅÕ¾: %s×Ô¶¯·¢ĞÅÏµÍ³ (%s)\n\n", BoardName,
+		//% fprintf(of, "\033[1;33må‘ä¿¡äºº: deliver (è‡ªåŠ¨å‘ä¿¡ç³»ç»Ÿ), "
+		fprintf(of, "\033[1;33m\xb7\xa2\xd0\xc5\xc8\xcb: deliver (\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xcf\xb5\xcd\xb3), "
+				//% "ä¿¡åŒº: %s\033[m\n", board->name);
+				"\xd0\xc5\xc7\xf8: %s\033[m\n", board->name);
+		//% fprintf(of, "æ ‡  é¢˜: %s\n", header->title);
+		fprintf(of, "\xb1\xea  \xcc\xe2: %s\n", header->title);
+		//% fprintf(of, "å‘ä¿¡ç«™: %sè‡ªåŠ¨å‘ä¿¡ç³»ç»Ÿ (%s)\n\n", BoardName,
+		fprintf(of, "\xb7\xa2\xd0\xc5\xd5\xbe: %s\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xcf\xb5\xcd\xb3 (%s)\n\n", BoardName,
 				getdatestring(now, DATE_ZH));
 	} else if (mode == POST_FILE_BMS) {
-		fprintf(of, "\033[1;33m·¢ĞÅÈË: BMS (°æÖ÷¹ÜÀíÔ±), ĞÅÇø: %s\033[m\n",
+		//% fprintf(of, "\033[1;33må‘ä¿¡äºº: BMS (ç‰ˆä¸»ç®¡ç†å‘˜), ä¿¡åŒº: %s\033[m\n",
+		fprintf(of, "\033[1;33m\xb7\xa2\xd0\xc5\xc8\xcb: BMS (\xb0\xe6\xd6\xf7\xb9\xdc\xc0\xed\xd4\xb1), \xd0\xc5\xc7\xf8: %s\033[m\n",
 				board->name);
-		fprintf(of, "±ê  Ìâ: %s\n", header->title);
-		fprintf(of, "·¢ĞÅÕ¾: %s×Ô¶¯·¢ĞÅÏµÍ³ (%s)\n\n", BoardName,
+		//% fprintf(of, "æ ‡  é¢˜: %s\n", header->title);
+		fprintf(of, "\xb1\xea  \xcc\xe2: %s\n", header->title);
+		//% fprintf(of, "å‘ä¿¡ç«™: %sè‡ªåŠ¨å‘ä¿¡ç³»ç»Ÿ (%s)\n\n", BoardName,
+		fprintf(of, "\xb7\xa2\xd0\xc5\xd5\xbe: %s\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xcf\xb5\xcd\xb3 (%s)\n\n", BoardName,
 				getdatestring(now, DATE_ZH));
 	} else if (mode == POST_FILE_AUTO) {
 		write_header(of, header);
@@ -516,7 +532,8 @@ int post_reply(const char *owner, const char *title, const char *file)
 	// Added by Amigo 2002.06.10. To add mail right check.
 	if (!HAS_PERM(PERM_MAIL)) {
 		move(4, 0);
-		prints("\n\n        ÄúÉĞÎ´Íê³É×¢²á£¬»òÕß·¢ËÍĞÅ¼şµÄÈ¨ÏŞ±»·â½û¡£");
+		//% prints("\n\n        æ‚¨å°šæœªå®Œæˆæ³¨å†Œï¼Œæˆ–è€…å‘é€ä¿¡ä»¶çš„æƒé™è¢«å°ç¦ã€‚");
+		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
 		pressreturn();
 		return FULLUPDATE;
 	}
@@ -532,7 +549,8 @@ int post_reply(const char *owner, const char *title, const char *file)
 	strcpy(quote_user, owner);
 
 	if (!getuser(quote_user)) {
-		prints("¶Ô²»Æğ£¬¸ÃÕÊºÅÒÑ¾­²»´æÔÚ!\n");
+		//% prints("å¯¹ä¸èµ·ï¼Œè¯¥å¸å·å·²ç»ä¸å­˜åœ¨!\n");
+		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb8\xc3\xd5\xca\xba\xc5\xd2\xd1\xbe\xad\xb2\xbb\xb4\xe6\xd4\xda!\n");
 		pressreturn();
 	} else
 		strcpy(uid, quote_user);
@@ -543,19 +561,24 @@ int post_reply(const char *owner, const char *title, const char *file)
 
 	switch (do_send(uid, title)) {
 		case -1:
-			prints("ÏµÍ³ÎŞ·¨ËÍĞÅ\n");
+			//% prints("ç³»ç»Ÿæ— æ³•é€ä¿¡\n");
+			prints("\xcf\xb5\xcd\xb3\xce\xde\xb7\xa8\xcb\xcd\xd0\xc5\n");
 			break;
 		case -2:
-			prints("ËÍĞÅ¶¯×÷ÒÑ¾­ÖĞÖ¹\n");
+			//% prints("é€ä¿¡åŠ¨ä½œå·²ç»ä¸­æ­¢\n");
+			prints("\xcb\xcd\xd0\xc5\xb6\xaf\xd7\xf7\xd2\xd1\xbe\xad\xd6\xd0\xd6\xb9\n");
 			break;
 		case -3:
-			prints("Ê¹ÓÃÕß '%s' ÎŞ·¨ÊÕĞÅ\n", uid);
+			//% prints("ä½¿ç”¨è€… '%s' æ— æ³•æ”¶ä¿¡\n", uid);
+			prints("\xca\xb9\xd3\xc3\xd5\xdf '%s' \xce\xde\xb7\xa8\xca\xd5\xd0\xc5\n", uid);
 			break;
 		case -4:
-			prints("Ê¹ÓÃÕß '%s' ÎŞ·¨ÊÕĞÅ£¬ĞÅÏäÒÑÂú\n", uid);
+			//% prints("ä½¿ç”¨è€… '%s' æ— æ³•æ”¶ä¿¡ï¼Œä¿¡ç®±å·²æ»¡\n", uid);
+			prints("\xca\xb9\xd3\xc3\xd5\xdf '%s' \xce\xde\xb7\xa8\xca\xd5\xd0\xc5\xa3\xac\xd0\xc5\xcf\xe4\xd2\xd1\xc2\xfa\n", uid);
 			break;
 		default:
-			prints("ĞÅ¼şÒÑ³É¹¦µØ¼Ä¸øÔ­×÷Õß %s\n", uid);
+			//% prints("ä¿¡ä»¶å·²æˆåŠŸåœ°å¯„ç»™åŸä½œè€… %s\n", uid);
+			prints("\xd0\xc5\xbc\xfe\xd2\xd1\xb3\xc9\xb9\xa6\xb5\xd8\xbc\xc4\xb8\xf8\xd4\xad\xd7\xf7\xd5\xdf %s\n", uid);
 	}
 	pressreturn();
 	set_user_status(status);
@@ -582,16 +605,21 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 {
 	if ((mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
 			&& !has_post_perm(&currentuser, board)) {
-		prints("\n\n ÄúÉĞÎŞÈ¨ÏŞÔÚ %s °æ·¢±íÎÄÕÂ.\n", currboard);
+		//% prints("\n\n æ‚¨å°šæ— æƒé™åœ¨ %s ç‰ˆå‘è¡¨æ–‡ç« .\n", currboard);
+		prints("\n\n \xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda %s \xb0\xe6\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2.\n", currboard);
 		return -1;
 	}
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
-		if (!strneq(title, "[×ªÔØ]", 6) && !strneq(title, "Re: [×ªÔØ]", 10))
-			snprintf(gbk_title, sizeof(gbk_title), "[×ªÔØ]%.70s", title);
-		else if (strneq(title, "Re: [×ªÔØ]", 10))
-			snprintf(gbk_title, sizeof(gbk_title), "[×ªÔØ]Re: %.70s",
+		//% if (!strneq(title, "[è½¬è½½]", 6) && !strneq(title, "Re: [è½¬è½½]", 10))
+		if (!strneq(title, "[\xd7\xaa\xd4\xd8]", 6) && !strneq(title, "Re: [\xd7\xaa\xd4\xd8]", 10))
+			//% snprintf(gbk_title, sizeof(gbk_title), "[è½¬è½½]%.70s", title);
+			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]%.70s", title);
+		//% else if (strneq(title, "Re: [è½¬è½½]", 10))
+		else if (strneq(title, "Re: [\xd7\xaa\xd4\xd8]", 10))
+			//% snprintf(gbk_title, sizeof(gbk_title), "[è½¬è½½]Re: %.70s",
+			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]Re: %.70s",
 					title + 10);
 		else
 			strlcpy(gbk_title, title, sizeof(gbk_title));
@@ -603,7 +631,8 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 
 	struct postheader header = {
 		.locked = mode == POST_FILE_DELIVER ||
-			(mode == POST_FILE_AUTO && strneq(gbk_title, "[ºÏ¼¯]", 6)),
+			//% (mode == POST_FILE_AUTO && strneq(gbk_title, "[åˆé›†]", 6)),
+			(mode == POST_FILE_AUTO && strneq(gbk_title, "[\xba\xcf\xbc\xaf]", 6)),
 		.postboard = true,
 	};
 	strlcpy(header.title, gbk_title, sizeof(header.title));
@@ -640,7 +669,8 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.reid = 0,
 		.tid = 0,
 		.locked = mode == POST_FILE_DELIVER ||
-			(mode == POST_FILE_AUTO && strneq(gbk_title, "[ºÏ¼¯]", 6)),
+			//% (mode == POST_FILE_AUTO && strneq(gbk_title, "[åˆé›†]", 6)),
+			(mode == POST_FILE_AUTO && strneq(gbk_title, "[\xba\xcf\xbc\xaf]", 6)),
 		.marked = false,
 		.anony = false,
 		.cp = NULL,
@@ -686,16 +716,19 @@ post_id_t Postfile(const char *file, const char *bname, const char *title,
 int tui_cross_post_legacy(const char *file, const char *title)
 {
 	clear();
-	prints("ÄúÑ¡Ôñ×ªÔØµÄÎÄÕÂÊÇ: [\033[1;33m%s\033[m]\n", title);
+	//% prints("æ‚¨é€‰æ‹©è½¬è½½çš„æ–‡ç« æ˜¯: [\033[1;33m%s\033[m]\n", title);
+	prints("\xc4\xfa\xd1\xa1\xd4\xf1\xd7\xaa\xd4\xd8\xb5\xc4\xce\xc4\xd5\xc2\xca\xc7: [\033[1;33m%s\033[m]\n", title);
 
 	char bname[STRLEN];
-	board_complete(1, "ÇëÊäÈëÒª×ªÌùµÄÌÖÂÛÇøÃû³Æ(È¡Ïû×ªÔØÇë°´»Ø³µ): ",
+	//% board_complete(1, "è¯·è¾“å…¥è¦è½¬è´´çš„è®¨è®ºåŒºåç§°(å–æ¶ˆè½¬è½½è¯·æŒ‰å›è½¦): ",
+	board_complete(1, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xcc\xf9\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6(\xc8\xa1\xcf\xfb\xd7\xaa\xd4\xd8\xc7\xeb\xb0\xb4\xbb\xd8\xb3\xb5): ",
 			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (!*bname)
 		return FULLUPDATE;
 
 	if (streq(bname, currboard) && session.status != ST_RMAIL) {
-		prints("\n\n             ºÜ±§Ç¸£¬Äú²»ÄÜ°ÑÎÄÕÂ×ªµ½Í¬Ò»¸ö°æÉÏ¡£");
+		//% prints("\n\n             å¾ˆæŠ±æ­‰ï¼Œæ‚¨ä¸èƒ½æŠŠæ–‡ç« è½¬åˆ°åŒä¸€ä¸ªç‰ˆä¸Šã€‚");
+		prints("\n\n             \xba\xdc\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xb2\xbb\xc4\xdc\xb0\xd1\xce\xc4\xd5\xc2\xd7\xaa\xb5\xbd\xcd\xac\xd2\xbb\xb8\xf6\xb0\xe6\xc9\xcf\xa1\xa3");
 		pressreturn();
 		clear();
 		return FULLUPDATE;
@@ -703,10 +736,12 @@ int tui_cross_post_legacy(const char *file, const char *title)
 
 	move(3, 0);
 	clrtobot();
-	prints("×ªÔØ ' %s ' µ½ %s °æ ", title, bname);
+	//% prints("è½¬è½½ ' %s ' åˆ° %s ç‰ˆ ", title, bname);
+	prints("\xd7\xaa\xd4\xd8 ' %s ' \xb5\xbd %s \xb0\xe6 ", title, bname);
 	move(4, 0);
 	char ans[10];
-	getdata(4, 0, "(S)×ªĞÅ (L)±¾Õ¾ (A)È¡Ïû? [A]: ", ans, 9, DOECHO, YEA);
+	//% getdata(4, 0, "(S)è½¬ä¿¡ (L)æœ¬ç«™ (A)å–æ¶ˆ? [A]: ", ans, 9, DOECHO, YEA);
+	getdata(4, 0, "(S)\xd7\xaa\xd0\xc5 (L)\xb1\xbe\xd5\xbe (A)\xc8\xa1\xcf\xfb? [A]: ", ans, 9, DOECHO, YEA);
 	if (ans[0] == 's' || ans[0] == 'S' || ans[0] == 'L' || ans[0] == 'l') {
 		board_t brd;
 		if (!get_board(bname, &brd) ||
@@ -715,9 +750,11 @@ int tui_cross_post_legacy(const char *file, const char *title)
 			move(2, 0);
 			return FULLUPDATE;
 		}
-		prints("\nÒÑ°ÑÎÄÕÂ \'%s\' ×ªÌùµ½ %s °æ\n", title, bname);
+		//% prints("\nå·²æŠŠæ–‡ç«  \'%s\' è½¬è´´åˆ° %s ç‰ˆ\n", title, bname);
+		prints("\n\xd2\xd1\xb0\xd1\xce\xc4\xd5\xc2 \'%s\' \xd7\xaa\xcc\xf9\xb5\xbd %s \xb0\xe6\n", title, bname);
 	} else {
-		prints("È¡Ïû");
+		//% prints("å–æ¶ˆ");
+		prints("\xc8\xa1\xcf\xfb");
 	}
 	move(2, 0);
 	pressreturn();
@@ -729,14 +766,16 @@ void add_crossinfo(const char *filepath, bool post)
 	int color = (currentuser.numlogins % 7) + 31;
 	FILE *fp = fopen(filepath, "a");
 	if (fp) {
-		fprintf(fp, "--\n\033[m\033[1;%2dm¡ù ×ª%s:¡¤%s %s¡¤[FROM: %s]\033[m\n",
-				color, post ? "ÔØ" : "¼Ä", BoardName, BBSHOST,
+		//% fprintf(fp, "--\n\033[m\033[1;%2dmâ€» è½¬%s:Â·%s %sÂ·[FROM: %s]\033[m\n",
+		fprintf(fp, "--\n\033[m\033[1;%2dm\xa1\xf9 \xd7\xaa%s:\xa1\xa4%s %s\xa1\xa4[FROM: %s]\033[m\n",
+				//% color, post ? "è½½" : "å¯„", BoardName, BBSHOST,
+				color, post ? "\xd4\xd8" : "\xbc\xc4", BoardName, BBSHOST,
 				mask_host(fromhost));
 		fclose(fp);
 	}
 }
 
-// ÏÔÊ¾°æÃæÌáÊ¾
+// æ˜¾ç¤ºç‰ˆé¢æç¤º
 int show_board_notes(const char *bname, int command)
 {
 	char buf[256];
@@ -772,7 +811,8 @@ int show_user_notes() {
 	}
 	clear();
 	move(10, 15);
-	prints("ÄúÉĞÎ´ÔÚ InfoEdit->WriteFile ±à¼­¸öÈË±¸ÍüÂ¼¡£\n");
+	//% prints("æ‚¨å°šæœªåœ¨ InfoEdit->WriteFile ç¼–è¾‘ä¸ªäººå¤‡å¿˜å½•ã€‚\n");
+	prints("\xc4\xfa\xc9\xd0\xce\xb4\xd4\xda InfoEdit->WriteFile \xb1\xe0\xbc\xad\xb8\xf6\xc8\xcb\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xa3\n");
 	pressanykey();
 	return FULLUPDATE;
 }
@@ -842,7 +882,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 }
 
 int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
-	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 ¼ì²éÒ»ÏÂ ±ÜÃâ³öÏÖ.DIRÆÆ»µ
+	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 æ£€æŸ¥ä¸€ä¸‹ é¿å…å‡ºç°.DIRç ´å
 	char *path = direct;
 
 	if (!am_curr_bm()) {
@@ -937,7 +977,7 @@ int move_notice(int ent, struct fileheader *fh, char *direct) {
 }
 //add end
 int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
-	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 ¼ì²éÒ»ÏÂ ±ÜÃâ³öÏÖ.DIRÆÆ»µ
+	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 æ£€æŸ¥ä¸€ä¸‹ é¿å…å‡ºç°.DIRç ´å
 
 	if (!am_curr_bm()) {
 		return DONOTHING;
@@ -969,7 +1009,7 @@ int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 	return PARTUPDATE;
 }
 
-// Çø¶ÎÉ¾³ı,´Óid1µ½id2;°æÃæÎÄ¼şÓë¾«»ªÇøÓĞÇø±ğ
+// åŒºæ®µåˆ é™¤,ä»id1åˆ°id2;ç‰ˆé¢æ–‡ä»¶ä¸ç²¾ååŒºæœ‰åŒºåˆ«
 int delete_range(char *filename, int id1, int id2)
 {
 	struct fileheader *ptr, *wptr, *rptr;
@@ -994,7 +1034,7 @@ int delete_range(char *filename, int id1, int id2)
 		ret = 0;
 		ptr = m.ptr;
 		if (id1 > id2 || id2 * sizeof(struct fileheader) > m.size) {
-			ret = -2; //Çø¶Î·¶Î§³¬¹ıÎÄ¼ş´óĞ¡
+			ret = -2; //åŒºæ®µèŒƒå›´è¶…è¿‡æ–‡ä»¶å¤§å°
 		} else {
 			wptr = rptr = ptr + id1 - 1;
 			while (id1 <= id2) {
@@ -1065,24 +1105,29 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 	if (digestmode > 1 && digestmode != ATTACH_MODE)
 		return DONOTHING;
-	getdata(t_lines - 1, 0, "Ê×ÆªÎÄÕÂ±àºÅ: ", num, 6, DOECHO, YEA);
+	//% getdata(t_lines - 1, 0, "é¦–ç¯‡æ–‡ç« ç¼–å·: ", num, 6, DOECHO, YEA);
+	getdata(t_lines - 1, 0, "\xca\xd7\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
 	inum1 = atoi(num);
 	if (inum1 <= 0) {
 		move(t_lines - 1, 50);
-		prints("´íÎó±àºÅ...");
+		//% prints("é”™è¯¯ç¼–å·...");
+		prints("\xb4\xed\xce\xf3\xb1\xe0\xba\xc5...");
 		egetch();
 		return PARTUPDATE;
 	}
-	getdata(t_lines - 1, 25, "Ä©ÆªÎÄÕÂ±àºÅ: ", num, 6, DOECHO, YEA);
+	//% getdata(t_lines - 1, 25, "æœ«ç¯‡æ–‡ç« ç¼–å·: ", num, 6, DOECHO, YEA);
+	getdata(t_lines - 1, 25, "\xc4\xa9\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
 	inum2 = atoi(num);
 	if (inum2 < inum1) {
 		move(t_lines - 1, 50);
-		prints("´íÎóÇø¼ä...");
+		//% prints("é”™è¯¯åŒºé—´...");
+		prints("\xb4\xed\xce\xf3\xc7\xf8\xbc\xe4...");
 		egetch();
 		return PARTUPDATE;
 	}
 	move(t_lines - 1, 50);
-	if (askyn("È·¶¨É¾³ı", NA, NA) == YEA) {
+	//% if (askyn("ç¡®å®šåˆ é™¤", NA, NA) == YEA) {
+	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA) == YEA) {
 		delete_range(direct, inum1, inum2);
 		fixkeep(direct, inum1, inum2);
 		if (session.status == ST_READING) {
@@ -1099,7 +1144,8 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 	move(t_lines - 1, 50);
 	clrtoeol();
-	prints("·ÅÆúÉ¾³ı...");
+	//% prints("æ”¾å¼ƒåˆ é™¤...");
+	prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd...");
 	egetch();
 	return PARTUPDATE;
 }
@@ -1107,14 +1153,14 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 //added by iamfat 2002.07.24
 //extern int insert_record(char *filename, char *rptr, int size, int offset, int size2);
 //modified by iamfat 2002.07.24
-int UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct) /* undelete Ò»ÆªÎÄÕÂ Leeward 98.05.18 */
+int UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct) /* undelete ä¸€ç¯‡æ–‡ç«  Leeward 98.05.18 */
 {
 	return _UndeleteArticle(ent, fileinfo, direct, YEA);
 }
 
-//¼ÓÁË¸öresponse±äÁ¿ ·½±ãÇøÓò»Ö¸´µÄÊ±ºò²»»ØÏÔ
+//åŠ äº†ä¸ªresponseå˜é‡ æ–¹ä¾¿åŒºåŸŸæ¢å¤çš„æ—¶å€™ä¸å›æ˜¾
 int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
-		int response) /* undelete Ò»ÆªÎÄÕÂ Leeward 98.05.18 */
+		int response) /* undelete ä¸€ç¯‡æ–‡ç«  Leeward 98.05.18 */
 {
 	char buf[1024];
 	struct stat st;
@@ -1209,10 +1255,12 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 			return DONOTHING;
 	}
 	if (!SR_BMDELFLAG) {
-		sprintf(genbuf, "É¾³ıÎÄÕÂ [%-.55s]", fileinfo->title);
+		//% sprintf(genbuf, "åˆ é™¤æ–‡ç«  [%-.55s]", fileinfo->title);
+		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2 [%-.55s]", fileinfo->title);
 		if (askyn(genbuf, NA, YEA) == NA) {
 			move(t_lines - 1, 0);
-			prints("·ÅÆúÉ¾³ıÎÄÕÂ...");
+			//% prints("æ”¾å¼ƒåˆ é™¤æ–‡ç« ...");
+			prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2...");
 			clrtoeol();
 			egetch();
 			return PARTUPDATE;
@@ -1267,7 +1315,8 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		return -1;
 	}
 	move(t_lines - 1, 0);
-	prints("É¾³ıÊ§°Ü...");
+	//% prints("åˆ é™¤å¤±è´¥...");
+	prints("\xc9\xbe\xb3\xfd\xca\xa7\xb0\xdc...");
 	clrtoeol();
 	egetch();
 	return PARTUPDATE;
@@ -1313,12 +1362,14 @@ int check_notespasswd(void)
 		fgets(prepass, STRLEN, pass);
 		fclose(pass);
 		prepass[strlen (prepass) - 1] = '\0';
-		getdata(2, 0, "ÇëÊäÈëÃØÃÜ±¸ÍüÂ¼ÃÜÂë: ", passbuf, 19, NOECHO, YEA);
+		//% getdata(2, 0, "è¯·è¾“å…¥ç§˜å¯†å¤‡å¿˜å½•å¯†ç : ", passbuf, 19, NOECHO, YEA);
+		getdata(2, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xc3\xdc\xc2\xeb: ", passbuf, 19, NOECHO, YEA);
 		if (passbuf[0] == '\0' || passbuf[0] == '\n')
 			return NA;
 		if (!passwd_match(prepass, passbuf)) {
 			move(3, 0);
-			prints("´íÎóµÄÃØÃÜ±¸ÍüÂ¼ÃÜÂë...");
+			//% prints("é”™è¯¯çš„ç§˜å¯†å¤‡å¿˜å½•å¯†ç ...");
+			prints("\xb4\xed\xce\xf3\xb5\xc4\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xc3\xdc\xc2\xeb...");
 			pressanykey();
 			return NA;
 		}
@@ -1338,7 +1389,8 @@ int show_b_secnote() {
 		ansimore(buf, NA);
 	} else {
 		move(3, 25);
-		prints("´ËÌÖÂÛÇøÉĞÎŞ¡¸ÃØÃÜ±¸ÍüÂ¼¡¹¡£");
+		//% prints("æ­¤è®¨è®ºåŒºå°šæ— ã€Œç§˜å¯†å¤‡å¿˜å½•ã€ã€‚");
+		prints("\xb4\xcb\xcc\xd6\xc2\xdb\xc7\xf8\xc9\xd0\xce\xde\xa1\xb8\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xb9\xa1\xa3");
 	}
 	pressanykey();
 	return FULLUPDATE;
@@ -1348,7 +1400,8 @@ int show_b_note() {
 	clear();
 	if (show_board_notes(currboard, 2) == -1) {
 		move(3, 30);
-		prints("´ËÌÖÂÛÇøÉĞÎŞ¡¸±¸ÍüÂ¼¡¹¡£");
+		//% prints("æ­¤è®¨è®ºåŒºå°šæ— ã€Œå¤‡å¿˜å½•ã€ã€‚");
+		prints("\xb4\xcb\xcc\xd6\xc2\xdb\xc7\xf8\xc9\xd0\xce\xde\xa1\xb8\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xb9\xa1\xa3");
 		pressanykey();
 	}
 	return FULLUPDATE;
@@ -1383,7 +1436,8 @@ int Personal(const char *userid)
 	if (!userid) {
 		clear();
 		move(2, 0);
-		usercomplete("ÄúÏë¿´Ë­µÄ¸öÈËÎÄ¼¯: ", lookid);
+		//% usercomplete("æ‚¨æƒ³çœ‹è°çš„ä¸ªäººæ–‡é›†: ", lookid);
+		usercomplete("\xc4\xfa\xcf\xeb\xbf\xb4\xcb\xad\xb5\xc4\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf: ", lookid);
 		if (lookid[0] == '\0') {
 			clear();
 			return 1;
@@ -1422,7 +1476,8 @@ int read_attach(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!dashf(currdirect)) {
 		digestmode = NA;
 		setbdir(currdirect, currboard);
-		presskeyfor("°æÃæ¸½¼şÇøÎŞÄÚÈİ£¬°´ÈÎÒâ¼ü¼ÌĞø...", t_lines-1);
+		//% presskeyfor("ç‰ˆé¢é™„ä»¶åŒºæ— å†…å®¹ï¼ŒæŒ‰ä»»æ„é”®ç»§ç»­...", t_lines-1);
+		presskeyfor("\xb0\xe6\xc3\xe6\xb8\xbd\xbc\xfe\xc7\xf8\xce\xde\xc4\xda\xc8\xdd\xa3\xac\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8...", t_lines-1);
 		update_endline();
 		return DONOTHING;
 	}
@@ -1466,7 +1521,8 @@ int board_read(void)
 
 	if (!currbp->id) {
 		move(2, 0);
-		prints("ÇëÏÈÑ¡ÔñÌÖÂÛÇø\n");
+		//% prints("è¯·å…ˆé€‰æ‹©è®¨è®ºåŒº\n");
+		prints("\xc7\xeb\xcf\xc8\xd1\xa1\xd4\xf1\xcc\xd6\xc2\xdb\xc7\xf8\n");
 		pressreturn();
 		move(2, 0);
 		clrtoeol();
@@ -1483,7 +1539,8 @@ int board_read(void)
 	if (!has_read_perm(&currentuser, &board)) {
 		clear();
 		move(5, 10);
-		prints("Äú²»ÊÇ¾ãÀÖ²¿°æ %s µÄ³ÉÔ±£¬ÎŞÈ¨½øÈë¸Ã°æ", currboard);
+		//% prints("æ‚¨ä¸æ˜¯ä¿±ä¹éƒ¨ç‰ˆ %s çš„æˆå‘˜ï¼Œæ— æƒè¿›å…¥è¯¥ç‰ˆ", currboard);
+		prints("\xc4\xfa\xb2\xbb\xca\xc7\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6 %s \xb5\xc4\xb3\xc9\xd4\xb1\xa3\xac\xce\xde\xc8\xa8\xbd\xf8\xc8\xeb\xb8\xc3\xb0\xe6", currboard);
 		pressanykey();
 		return FULLUPDATE;
 	}
@@ -1500,10 +1557,10 @@ int board_read(void)
 		}
 	}
 
-	if (vote_flag(currboard, '\0', 1 /* ¼ì²é¶Á¹ıĞÂµÄ±¸ÍüÂ¼Ã» */) == 0) {
+	if (vote_flag(currboard, '\0', 1 /* æ£€æŸ¥è¯»è¿‡æ–°çš„å¤‡å¿˜å½•æ²¡ */) == 0) {
 		if (dashf(notename)) {
 			ansimore(notename, YEA);
-			vote_flag(currboard, 'R', 1 /* Ğ´Èë¶Á¹ıĞÂµÄ±¸ÍüÂ¼ */);
+			vote_flag(currboard, 'R', 1 /* å†™å…¥è¯»è¿‡æ–°çš„å¤‡å¿˜å½• */);
 		}
 	}
 
@@ -1536,7 +1593,8 @@ void notepad() {
 
 	clear();
 	move(0, 0);
-	prints("¿ªÊ¼ÄúµÄÁôÑÔ°É£¡´ó¼ÒÕıÊÃÄ¿ÒÔ´ı....\n");
+	//% prints("å¼€å§‹æ‚¨çš„ç•™è¨€å§ï¼å¤§å®¶æ­£æ‹­ç›®ä»¥å¾…....\n");
+	prints("\xbf\xaa\xca\xbc\xc4\xfa\xb5\xc4\xc1\xf4\xd1\xd4\xb0\xc9\xa3\xa1\xb4\xf3\xbc\xd2\xd5\xfd\xca\xc3\xc4\xbf\xd2\xd4\xb4\xfd....\n");
 	set_user_status(ST_WNOTEPAD);
 	sprintf(tmpname, "tmp/notepad.%s.%05d", currentuser.userid, session.pid);
 	if ((in = fopen(tmpname, "w")) != NULL) {
@@ -1553,7 +1611,8 @@ void notepad() {
 				unlink(tmpname);
 				return;
 			}
-			getdata(5, 0, "ÊÇ·ñ°ÑÄúµÄ´ó×÷·ÅÈëÁôÑÔ°å (Y)ÊÇµÄ (N)²»Òª (E)ÔÙ±à¼­ [Y]: ", note1,
+			//% getdata(5, 0, "æ˜¯å¦æŠŠæ‚¨çš„å¤§ä½œæ”¾å…¥ç•™è¨€æ¿ (Y)æ˜¯çš„ (N)ä¸è¦ (E)å†ç¼–è¾‘ [Y]: ", note1,
+			getdata(5, 0, "\xca\xc7\xb7\xf1\xb0\xd1\xc4\xfa\xb5\xc4\xb4\xf3\xd7\xf7\xb7\xc5\xc8\xeb\xc1\xf4\xd1\xd4\xb0\xe5 (Y)\xca\xc7\xb5\xc4 (N)\xb2\xbb\xd2\xaa (E)\xd4\xd9\xb1\xe0\xbc\xad [Y]: ", note1,
 					3, DOECHO, YEA);
 			if (note1[0] == 'e' || note1[0] == 'E')
 				continue;
@@ -1561,25 +1620,30 @@ void notepad() {
 				break;
 		}
 		if (note1[0] != 'N' && note1[0] != 'n') {
-			sprintf(tmp, "[1;32m%s[37m£¨%.18s£©", currentuser.userid,
+			//% sprintf(tmp, "[1;32m%s[37mï¼ˆ%.18sï¼‰", currentuser.userid,
+			sprintf(tmp, "[1;32m%s[37m\xa3\xa8%.18s\xa3\xa9", currentuser.userid,
 					currentuser.username);
 
 			fprintf(
 					in,
-					"[1;34m¨Š[44m¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰[36mËá[32mÌğ[33m¿à[31mÀ±[37m°å[34m¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰¨‰[44m¨[m\n");
+					//% "[1;34mâ–•[44mâ–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”[36mé…¸[32mç”œ[33mè‹¦[31mè¾£[37mæ¿[34mâ–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”â–”[44mâ—£[m\n");
+					"[1;34m\xa8\x8a[44m\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89[36m\xcb\xe1[32m\xcc\xf0[33m\xbf\xe0[31m\xc0\xb1[37m\xb0\xe5[34m\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89\xa8\x89[44m\xa8\x8e[m\n");
 			
 			fprintf(
 					in,
-					"[1;34m¨Š[32;44m %-44s[32mÔÚ [36m%23.23s[32m Àë¿ªÊ±ÁôÏÂµÄ»°  [m\n",
+					//% "[1;34mâ–•[32;44m %-44s[32måœ¨ [36m%23.23s[32m ç¦»å¼€æ—¶ç•™ä¸‹çš„è¯  [m\n",
+					"[1;34m\xa8\x8a[32;44m %-44s[32m\xd4\xda [36m%23.23s[32m \xc0\xeb\xbf\xaa\xca\xb1\xc1\xf4\xcf\xc2\xb5\xc4\xbb\xb0  [m\n",
 					tmp, getdatestring(thetime, DATE_ZH) + 6);
 			for (n = 0; n < i; n++) {
 				if (note[n][0] == '\0')
 					break;
-				fprintf(in, "[1;34m¨Š[33;44m %-75.75s[1;34m[m \n",
+				//% fprintf(in, "[1;34mâ–•[33;44m %-75.75s[1;34m[m \n",
+				fprintf(in, "[1;34m\xa8\x8a[33;44m %-75.75s[1;34m[m \n",
 						note[n]);
 			}
 			fprintf(in,
-					"[1;34m¨Š[44m ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤ [m \n");
+					//% "[1;34mâ–•[44m â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ [m \n");
+					"[1;34m\xa8\x8a[44m \xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4 [m \n");
 			catnotepad(in, "etc/notepad");
 			fclose(in);
 			f_cp(tmpname, "etc/notepad", O_CREAT);
@@ -1613,7 +1677,7 @@ int Q_Goodbye(void)
 	setuserfile (fname, "msgfile.me");
 #endif
 
-	/* edwardc.990423 Ñ¶Ï¢ä¯ÀÀÆ÷ */
+	/* edwardc.990423 è®¯æ¯æµè§ˆå™¨ */
 	if (dashf(fname)) {
 		clear();
 		msg_more();
@@ -1636,12 +1700,16 @@ int Q_Goodbye(void)
 		}
 		clear();
 		move(0, 0);
-		prints("Äú¾ÍÒªÀë¿ª %s ÏòºÃÓÑÃÇ¸æ¸ö±ğ?\n", BoardName);
+		//% prints("æ‚¨å°±è¦ç¦»å¼€ %s å‘å¥½å‹ä»¬å‘Šä¸ªåˆ«?\n", BoardName);
+		prints("\xc4\xfa\xbe\xcd\xd2\xaa\xc0\xeb\xbf\xaa %s \xcf\xf2\xba\xc3\xd3\xd1\xc3\xc7\xb8\xe6\xb8\xf6\xb1\xf0?\n", BoardName);
 		for (i = 0; i < byes; i++)
 			prints(" %1d. %s\n", i, bye_msgs[i]);
-		prints(" %1d. (ÆäËû)\n", byes);
-		prints(" %1d. (²»Í¨ÖªºÃÓÑ,ÇÄÇÄÀëÈ¥)\n", byes + 1);
-		sprintf(spbuf, "ÄúµÄÑ¡ÔñÊÇ [%1d]:", byes + 1);
+		//% prints(" %1d. (å…¶ä»–)\n", byes);
+		prints(" %1d. (\xc6\xe4\xcb\xfb)\n", byes);
+		//% prints(" %1d. (ä¸é€šçŸ¥å¥½å‹,æ‚„æ‚„ç¦»å»)\n", byes + 1);
+		prints(" %1d. (\xb2\xbb\xcd\xa8\xd6\xaa\xba\xc3\xd3\xd1,\xc7\xc4\xc7\xc4\xc0\xeb\xc8\xa5)\n", byes + 1);
+		//% sprintf(spbuf, "æ‚¨çš„é€‰æ‹©æ˜¯ [%1d]:", byes + 1);
+		sprintf(spbuf, "\xc4\xfa\xb5\xc4\xd1\xa1\xd4\xf1\xca\xc7 [%1d]:", byes + 1);
 		getdata(byes + 3, 0, spbuf, genbuf, 4, DOECHO, YEA);
 		choose = atoi(genbuf);
 		choose = genbuf[0] - '0';
@@ -1653,7 +1721,8 @@ int Q_Goodbye(void)
 				strlcpy(buftemp, bye_msgs[choose], STRLEN);
 
 			if (choose == byes)
-				get_msg("ÔÚÏßºÃÓÑ", buftemp, byes + 4);
+				//% get_msg("åœ¨çº¿å¥½å‹", buftemp, byes + 4);
+				get_msg("\xd4\xda\xcf\xdf\xba\xc3\xd3\xd1", buftemp, byes + 4);
 
 			char msg[MAX_MSG_SIZE + 2];
 			sprintf(msg, "%s", buftemp); //added by roly 02.03.24
@@ -1723,7 +1792,8 @@ int Goodbye(void)
 				if (ptr) {
 					strlcpy(syswork[i], ptr, 20);
 				} else
-					strcpy(syswork[i], "[Ö°Îñ²»Ã÷]");
+					//% strcpy(syswork[i], "[èŒåŠ¡ä¸æ˜]");
+					strcpy(syswork[i], "[\xd6\xb0\xce\xf1\xb2\xbb\xc3\xf7]");
 				i++;
 			}
 		}
@@ -1735,34 +1805,42 @@ int Goodbye(void)
 	alarm(0);
 	clear();
 	move(0, 0);
-	prints("Äú¾ÍÒªÀë¿ª %s £¬¿ÉÓĞÊ²÷á½¨ÒéÂğ£¿\n", BoardName);
-	prints("[[1;33m1[m] ¼ÄĞÅ¸øÕ¾³¤/·şÎñ×éÑ°Çó°ïÖú\n");
-	prints("[[1;33m2[m] °´´íÁËÀ²£¬ÎÒ»¹ÒªÍæ\n");
+	//% prints("æ‚¨å°±è¦ç¦»å¼€ %s ï¼Œå¯æœ‰ä»€éº½å»ºè®®å—ï¼Ÿ\n", BoardName);
+	prints("\xc4\xfa\xbe\xcd\xd2\xaa\xc0\xeb\xbf\xaa %s \xa3\xac\xbf\xc9\xd3\xd0\xca\xb2\xf7\xe1\xbd\xa8\xd2\xe9\xc2\xf0\xa3\xbf\n", BoardName);
+	//% prints("[[1;33m1[m] å¯„ä¿¡ç»™ç«™é•¿/æœåŠ¡ç»„å¯»æ±‚å¸®åŠ©\n");
+	prints("[[1;33m1[m] \xbc\xc4\xd0\xc5\xb8\xf8\xd5\xbe\xb3\xa4/\xb7\xfe\xce\xf1\xd7\xe9\xd1\xb0\xc7\xf3\xb0\xef\xd6\xfa\n");
+	//% prints("[[1;33m2[m] æŒ‰é”™äº†å•¦ï¼Œæˆ‘è¿˜è¦ç©\n");
+	prints("[[1;33m2[m] \xb0\xb4\xb4\xed\xc1\xcb\xc0\xb2\xa3\xac\xce\xd2\xbb\xb9\xd2\xaa\xcd\xe6\n");
 #ifdef USE_NOTEPAD
 	if (strcmp (currentuser.userid, "guest") != 0) {
-		prints ("[[1;33m3[m] Ğ´Ğ´[1;32mÁô[33mÑÔ[35m°å[mÂŞ\n");
+		//% prints ("[[1;33m3[m] å†™å†™[1;32mç•™[33mè¨€[35mæ¿[mç½—\n");
+		prints ("[[1;33m3[m] \xd0\xb4\xd0\xb4[1;32m\xc1\xf4[33m\xd1\xd4[35m\xb0\xe5[m\xc2\xde\n");
 	}
 #endif
-	//prints("[[1;33m4[m][1;32m ¸øÅóÓÑ·¢¸öÏûÏ¢ ;)[m\n");
-	//commented by roly 02.03.21
-	prints("[[1;33m4[m] ²»¼ÄÂŞ£¬ÒªÀë¿ªÀ²\n");
-	sprintf(buf, "ÄúµÄÑ¡ÔñÊÇ [[1;32m4[m]£º");
+	//% prints("[[1;33m4[m] ä¸å¯„ç½—ï¼Œè¦ç¦»å¼€å•¦\n");
+	prints("[[1;33m4[m] \xb2\xbb\xbc\xc4\xc2\xde\xa3\xac\xd2\xaa\xc0\xeb\xbf\xaa\xc0\xb2\n");
+	//% sprintf(buf, "æ‚¨çš„é€‰æ‹©æ˜¯ [[1;32m4[m]ï¼š");
+	sprintf(buf, "\xc4\xfa\xb5\xc4\xd1\xa1\xd4\xf1\xca\xc7 [[1;32m4[m]\xa3\xba");
 	getdata(7, 0, buf, genbuf, 4, DOECHO, YEA);
 	clear();
 	choose = genbuf[0] - '0';
 	if (choose == 1) {
-		prints("     Õ¾³¤µÄ ID    ¸º Ôğ µÄ Ö° Îñ\n");
+		//% prints("     ç«™é•¿çš„ ID    è´Ÿ è´£ çš„ èŒ åŠ¡\n");
+		prints("     \xd5\xbe\xb3\xa4\xb5\xc4 ID    \xb8\xba \xd4\xf0 \xb5\xc4 \xd6\xb0 \xce\xf1\n");
 		prints("     ============ =====================\n");
 		for (i = 1; i <= num_sysop; i++) {
 			prints("[[1;33m%2d[m] %-12s %s\n", i, sysoplist[i - 1],
 					syswork[i - 1]);
 		}
-		prints("[[1;33m%2d[m] »¹ÊÇ×ßÁËÂŞ£¡\n", num_sysop + 1);
-		sprintf(buf, "ÄúµÄÑ¡ÔñÊÇ [[1;32m%d[m]£º", num_sysop + 1);
+		//% prints("[[1;33m%2d[m] è¿˜æ˜¯èµ°äº†ç½—ï¼\n", num_sysop + 1);
+		prints("[[1;33m%2d[m] \xbb\xb9\xca\xc7\xd7\xdf\xc1\xcb\xc2\xde\xa3\xa1\n", num_sysop + 1);
+		//% sprintf(buf, "æ‚¨çš„é€‰æ‹©æ˜¯ [[1;32m%d[m]ï¼š", num_sysop + 1);
+		sprintf(buf, "\xc4\xfa\xb5\xc4\xd1\xa1\xd4\xf1\xca\xc7 [[1;32m%d[m]\xa3\xba", num_sysop + 1);
 		getdata(num_sysop + 5, 0, buf, genbuf, 4, DOECHO, YEA);
 		choose = atoi(genbuf);
 		if (choose >= 1 && choose <= num_sysop)
-			do_send(sysoplist[choose - 1], "Ê¹ÓÃÕß¼ÄÀ´µÄ½¨ÒéĞÅ");
+			//% do_send(sysoplist[choose - 1], "ä½¿ç”¨è€…å¯„æ¥çš„å»ºè®®ä¿¡");
+			do_send(sysoplist[choose - 1], "\xca\xb9\xd3\xc3\xd5\xdf\xbc\xc4\xc0\xb4\xb5\xc4\xbd\xa8\xd2\xe9\xd0\xc5");
 		choose = -1;
 	}
 	if (choose == 2)
@@ -1828,12 +1906,14 @@ int Welcome() {
 		ansimore("Welcome", YEA);
 	else {
 		clear();
-		stand_title("¹Û¿´½øÕ¾»­Ãæ");
+		//% stand_title("è§‚çœ‹è¿›ç«™ç”»é¢");
+		stand_title("\xb9\xdb\xbf\xb4\xbd\xf8\xd5\xbe\xbb\xad\xc3\xe6");
 		for (;;) {
-			getdata(1, 0, "(1)ÌØÊâ½øÕ¾¹«²¼À¸  (2)±¾Õ¾½øÕ¾»­Ãæ ? : ", ans, 2, DOECHO,
+			//% getdata(1, 0, "(1)ç‰¹æ®Šè¿›ç«™å…¬å¸ƒæ   (2)æœ¬ç«™è¿›ç«™ç”»é¢ ? : ", ans, 2, DOECHO,
+			getdata(1, 0, "(1)\xcc\xd8\xca\xe2\xbd\xf8\xd5\xbe\xb9\xab\xb2\xbc\xc0\xb8  (2)\xb1\xbe\xd5\xbe\xbd\xf8\xd5\xbe\xbb\xad\xc3\xe6 ? : ", ans, 2, DOECHO,
 					YEA);
 
-			/* skyo.990427 modify  °´ Enter Ìø³ö  */
+			/* skyo.990427 modify  æŒ‰ Enter è·³å‡º  */
 			if (ans[0] == '\0') {
 				clear();
 				return 0;
@@ -1892,7 +1972,7 @@ int thesis_mode() {
 	return FULLUPDATE;
 }
 
-/* Add by everlove 07/08/2001 ÖÆ×÷ºÏ¼¯ */
+/* Add by everlove 07/08/2001 åˆ¶ä½œåˆé›† */
 void Add_Combine(const char *board, struct fileheader * fileinfo, int has_cite) //added by roly 02.05.20
 {
 	FILE *fp;
@@ -1901,7 +1981,8 @@ void Add_Combine(const char *board, struct fileheader * fileinfo, int has_cite) 
 
 	sprintf(buf, "tmp/%s.combine", currentuser.userid);
 	fp = fopen(buf, "at");
-	fprintf(fp, "[1;32m¡î©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤¡î[0;1m\n");
+	//% fprintf(fp, "[1;32mâ˜†â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â˜†[0;1m\n");
+	fprintf(fp, "[1;32m\xa1\xee\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa1\xee[0;1m\n");
 	{
 		FILE *fp1;
 		char buf[80];
@@ -1919,7 +2000,8 @@ void Add_Combine(const char *board, struct fileheader * fileinfo, int has_cite) 
 			if (e_ptr != NULL)
 				*e_ptr = '\0';
 			s_ptr = &temp2[7];
-			fprintf(fp, "    [0;1;32m%s [0;1mÓÚ", s_ptr);
+			//% fprintf(fp, "    [0;1;32m%s [0;1mäº", s_ptr);
+			fprintf(fp, "    [0;1;32m%s [0;1m\xd3\xda", s_ptr);
 		}
 		fgets(temp2, 256, fp1);
 		if (fgets(temp2, 256, fp1) != NULL) {
@@ -1931,7 +2013,8 @@ void Add_Combine(const char *board, struct fileheader * fileinfo, int has_cite) 
 				s_ptr = temp2;
 			else
 				s_ptr++;
-			fprintf(fp, " [1;36m%s[0;1m Ìáµ½£º[0m\n", s_ptr);
+			//% fprintf(fp, " [1;36m%s[0;1m æåˆ°ï¼š[0m\n", s_ptr);
+			fprintf(fp, " [1;36m%s[0;1m \xcc\xe1\xb5\xbd\xa3\xba[0m\n", s_ptr);
 		}
 		while (!feof(fp1)) {
 			fgets(temp2, 256, fp1);
@@ -1942,8 +2025,8 @@ void Add_Combine(const char *board, struct fileheader * fileinfo, int has_cite) 
 					blankline = 1;
 			} else
 				blankline = 0;
-			//if ((strstr(temp2, "¡¾"))|| + (*temp2==':')) continue;
-			if (strstr(temp2, "¡¾"))
+			//% if (strstr(temp2, "ã€"))
+			if (strstr(temp2, "\xa1\xbe"))
 				continue;
 			if ((has_cite != YEA) && (+(*temp2 == ':')))
 				continue;
