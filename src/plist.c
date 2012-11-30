@@ -1993,7 +1993,7 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 	if (!ip || !dump_content(ip, file, sizeof(file)))
 		return DONOTHING;
 
-	bool end = false, upward = false, sticky = false;
+	bool end = false, upward = false, sticky = false, reload = false;
 	post_id_t thread_entry = 0, last_id = 0;
 	while (!end) {
 		brc_mark_as_read(fip->p.id);
@@ -2018,9 +2018,13 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 				end = true;
 				break;
 			case 'Y': case 'R': case 'y': case 'r':
-				// TODO
-				tui_new_post(fip->p.bid, &fip->p);
-				break;
+				{
+					// TODO
+					int ret = tui_new_post(fip->p.bid, &fip->p);
+					if (ret == FULLUPDATE)
+						reload = true;
+					break;
+				}
 			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
 				upward = false;
 				thread_entry = 0;
@@ -2094,6 +2098,8 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 	thread_post_cache_free(&cache);
 	free_post_info_full(&info);
 
+	if (reload)
+		l->reload = true;
 	if (!sticky)
 		back_to_post_list(p, thread_entry ? thread_entry : last_id,
 				l->current_tid);
@@ -2583,7 +2589,11 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 
 	switch (ch) {
 		case Ctrl('P'):
-			return tui_new_post(l->filter.bid, NULL);
+			{
+				int ret = tui_new_post(l->filter.bid, NULL);
+				l->reload = true;
+				return ret;
+			}
 		case '@':
 			show_online();
 			set_user_status(ST_READING);

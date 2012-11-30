@@ -184,6 +184,16 @@ static void update_fake_pid(int bid, int delta, post_id_t min)
 	db_clear(res);
 }
 
+const char *post_recent_table(int bid)
+{
+	static char table[24];
+	if (bid) {
+		snprintf(table, sizeof(table), "posts.recent_%d", bid);
+		return table;
+	}
+	return "posts.recent";
+}
+
 static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		const char *content)
 {
@@ -205,12 +215,16 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		tid = pr->tid ? pr->tid : pid;
 		int fake_pid = incr_last_fake_pid(pr->board->id, 1);
 
-		r = db_cmd("INSERT INTO posts.recent (id, reid, tid, owner, stamp,"
-				" board, uname, title, content, locked, marked, fake_id)"
-				" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID", %"DBIdUID","
-				" %t, %d, %s, %s, %s, %b, %b, %d)",
+		query_t *q = query_new(0);
+		query_append(q, "INSERT INTO");
+		query_append(q, post_recent_table(pr->board->id));
+		query_append(q, "(id, reid, tid, owner, stamp, board, uname, title,"
+				" content, locked, marked, fake_id)");
+		query_append(q, "VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID","
+				" %"DBIdUID", %t, %d, %s, %s, %s, %b, %b, %d)",
 				pid, reid, tid, uid, now, pr->board->id, uname,
 				utf8_title, content, pr->locked, pr->marked, fake_pid);
+		db_res_t *r = query_cmd(q);
 		if (!r || db_cmd_rows(r) != 1)
 			pid = 0;
 		db_clear(r);
@@ -594,16 +608,6 @@ const char *post_archive_table(const post_filter_t *filter)
 	return "posts.archives";
 }
 
-const char *post_recent_table(const post_filter_t *filter)
-{
-	static char table[24];
-	if (filter->bid) {
-		snprintf(table, sizeof(table), "posts.recent_%d", filter->bid);
-		return table;
-	}
-	return "posts.recent";
-}
-
 /**
  * Get name of the database table by filter.
  * @param filter The post filter.
@@ -620,7 +624,7 @@ const char *post_table_name(const post_filter_t *filter)
 	if (is_deleted(filter->type))
 		return "posts.deleted";
 	else
-		return post_recent_table(filter);
+		return post_recent_table(filter->bid);
 }
 
 const char *post_table_index(const post_filter_t *filter)
