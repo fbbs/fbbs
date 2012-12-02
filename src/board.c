@@ -919,9 +919,6 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			break;
 		case '!':
 			save_zapbuf(l);
-			free(l->zapbuf);
-			free(l->indices);
-			free(l->boards);
 			Goodbye();
 			return -1;
 		case 'h':

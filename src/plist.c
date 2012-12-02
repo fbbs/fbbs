@@ -2296,7 +2296,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 't':
 			return thesis_mode();
 		case '!':
-			return Q_Goodbye();
+			return Goodbye();
 		case 'S':
 			s_msg();
 			return FULLUPDATE;
