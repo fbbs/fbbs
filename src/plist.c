@@ -2445,7 +2445,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			if (plist_cache_is_top(&l->cache, 0))
 				return switch_archive(l, true);
 			return READ_AGAIN;
-		case 'j': case KEY_UP:
+		case 'k': case KEY_UP:
 			if (plist_cache_is_top(&l->cache, p->cur)) {
 				p->base = SLIDE_LIST_BOTTOMUP;
 				l->relocate = POST_ID_MAX;
@@ -2462,7 +2462,7 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 				}
 			}
 			return READ_AGAIN;
-		case 'k': case KEY_DOWN:
+		case 'j': case KEY_DOWN:
 			if (plist_cache_is_bottom(&l->cache, p->cur)) {
 				if (l->filter.archive)
 					return switch_archive(l, false);

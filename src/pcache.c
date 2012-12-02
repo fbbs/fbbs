@@ -9,7 +9,6 @@ void plist_cache_clear(plist_cache_t *c)
 {
 	c->begin = c->end = c->count = 0;
 	c->top = c->bottom = 0;
-	c->sticky = false;
 }
 
 void plist_cache_init(plist_cache_t *c, int page, int scapacity)

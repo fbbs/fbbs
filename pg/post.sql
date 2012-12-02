@@ -43,7 +43,7 @@ CREATE TABLE posts.deleted (
 	deleted TIMESTAMPTZ,
 	junk BOOLEAN DEFAULT FALSE,
 	bm_visible BOOLEAN,
-	ename TEXT,
+	ename TEXT
 ) INHERITS (posts.base);
 CREATE INDEX ON posts.deleted(did);
 
