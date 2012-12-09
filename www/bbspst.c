@@ -98,8 +98,12 @@ static int do_bbspst(bool isedit)
 			if (end > begin)
 				xml_fputs2(begin, end - begin, stdout);
 		} else {
-			quote_string(info.content, info.length, NULL, QUOTE_AUTO, false,
-					xml_fputs3);
+			char *gbk_content = malloc(info.length + 1);
+			convert(env_u2g, info.content, info.length, gbk_content,
+					info.length, NULL, NULL);
+			quote_string(gbk_content, strlen(gbk_content), NULL, QUOTE_AUTO,
+					false, xml_fputs3);
+			free(gbk_content);
 		}
 		fputs("</po>", stdout);
 		free_post_info_full(&info);
