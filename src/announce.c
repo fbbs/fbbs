@@ -390,7 +390,7 @@ int import_file(const char *title, const char *file, const char *path)
 	memcpy(currBM, currBM_bak, BM_LEN - 1);
 
 	char fname[HOMELEN];
-	strlcpy(fname, file, sizeof(fname));
+	sprintf(fname, "I%lX", time(0) + getpid() + getppid() + rand());
 
 	char bname[PATHLEN];
 	for (char *ip = fname + strlen(fname) - 1; ; ) {
@@ -400,6 +400,8 @@ int import_file(const char *title, const char *file, const char *path)
 				ip++, *ip = 'A', *(ip + 1) = '\0';
 			else
 				(*ip)++;
+		} else {
+			break;
 		}
 	}
 
@@ -422,7 +424,6 @@ int import_file(const char *title, const char *file, const char *path)
 	} else {
 		f_cp(file, bname, 0);
 	}
-
 
 	for (int i = 0; i < pm.num; ++i)
 		free(pm.item[i]);
@@ -457,6 +458,8 @@ int a_Import(const char *title, const char *file, int nomsg)
 		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xc9\xe8\xb6\xa8.", t_lines - 1);
 		return DONOTHING;
 	}
+
+	import_file(title, file, buf);
 
 	if (!nomsg && !DEFINE(DEF_MULTANNPATH)) {
 		//% presskeyfor("已将该文章放进精华区, 请按<Enter>继续...", t_lines-1);
