@@ -375,10 +375,20 @@ static slide_list_title_t post_list_title(slide_list_t *p)
 	post_list_t *l = p->data;
 	const char *mode = mode_description(l->filter.type);
 
-	//% prints("\033[1;37;44m  编号   %-12s %6s %-25s 在线:%-4d",
-	prints("\033[1;37;44m  \xb1\xe0\xba\xc5   %-12s %6s %-25s \xd4\xda\xcf\xdf:%-4d",
-			//% "刊 登 者", "日  期", " 标  题", count_onboard(currbp->id));
-			"\xbf\xaf \xb5\xc7 \xd5\xdf", "\xc8\xd5  \xc6\xda", " \xb1\xea  \xcc\xe2", count_onboard(currbp->id));
+	bool show_number = l->filter.type == POST_LIST_NORMAL;
+	//% "编号"
+	prints("\033[1;37;44m");
+	if (show_number)
+		prints("  ");
+	//% "在线"
+	prints("\xb1\xe0\xba\xc5");
+	if (show_number)
+		prints("  ");
+	prints(" %-12s %6s %-25s \xd4\xda\xcf\xdf:%-4d",
+			//% "刊 登 者" "日  期", "标  题"
+			"\xbf\xaf \xb5\xc7 \xd5\xdf", "\xc8\xd5  \xc6\xda",
+			//% "标  题"
+			" \xb1\xea  \xcc\xe2", count_onboard(currbp->id));
 	if (l->filter.archive)
 		//% prints("[存档]");
 		prints("[\xb4\xe6\xb5\xb5]");
@@ -459,15 +469,21 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 		bool last)
 {
 	post_list_type_e type = l->filter.type;
+	bool show_number = l->filter.type == POST_LIST_NORMAL;
 
 	char fake_id[16];
-	if (p->flag & POST_FLAG_STICKY)
-		//% strlcpy(fake_id, " \033[1;31m[∞]\033[m", sizeof(fake_id));
-		strlcpy(fake_id, " \033[1;31m[\xa1\xde]\033[m", sizeof(fake_id));
-	else if (p->flag & POST_FLAG_DELETED)
-		snprintf(fake_id, sizeof(fake_id), "     ");
-	else
-		snprintf(fake_id, sizeof(fake_id), "%5d", p->fake_id);
+	if (show_number) {
+		if (p->flag & POST_FLAG_STICKY)
+			//% "∞"
+			strlcpy(fake_id, " \033[1;31m[\xa1\xde]\033[m", sizeof(fake_id));
+		else if (p->flag & POST_FLAG_DELETED)
+			snprintf(fake_id, sizeof(fake_id), "     ");
+		else
+			snprintf(fake_id, sizeof(fake_id), "%5d", p->fake_id);
+	} else {
+		fake_id[0] = ' ';
+		fake_id[1] = '\0';
+	}
 
 	char mark = (p->id == l->mark_pid) ? '@' : get_post_mark(p);
 
