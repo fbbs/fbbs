@@ -679,6 +679,10 @@ void build_post_filter(query_t *q, const post_filter_t *f, const bool *asc)
 		}
 		if (f->tid)
 			query_and(q, "tid = %"DBIdPID, f->tid);
+		if (f->fake_id_min)
+			query_and(q, "fake_id >= %d", f->fake_id_min);
+		if (f->fake_id_max)
+			query_and(q, "fake_id <= %d", f->fake_id_max);
 	}
 
 	if (f->type == POST_LIST_TRASH)

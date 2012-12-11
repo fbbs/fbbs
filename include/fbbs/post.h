@@ -120,6 +120,8 @@ typedef struct {
 	post_id_t min;
 	post_id_t max;
 	post_id_t tid;
+	int fake_id_min;
+	int fake_id_max;
 	bool archive;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;

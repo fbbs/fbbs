@@ -48,6 +48,7 @@ typedef struct {
 	post_id_t relocate;
 	post_id_t current_tid;
 	post_id_t mark_pid;
+	post_id_t fake_id;
 
 	plist_cache_t cache;
 } post_list_t;
@@ -2246,7 +2247,7 @@ static int tui_jump_to_id(slide_list_t *p)
 		filter.min = pid;
 		filter.max = 0;
 	}
-	return relocate_to_filter(p, &filter, pid < ip->id);
+	return relocate_to_filter(p, &filter, upward);
 }
 
 static int tui_jump(slide_list_t *p)
@@ -2269,6 +2270,43 @@ static int tui_jump(slide_list_t *p)
 		return FULLUPDATE;
 	}
 	return MINIUPDATE;
+}
+
+static void draw_fake_id(int fake_id)
+{
+	char buf[8];
+	if (fake_id)
+		snprintf(buf, sizeof(buf), "%6d", fake_id);
+	else
+		buf[0] = '\0';
+
+	move(t_lines - 1, 69);
+	clrtoeol();
+	prints("\033[0;1;33;44m[%6s]\033[m", buf);
+}
+
+static int jump_to_fake_id(slide_list_t *p)
+{
+	post_list_t *l = p->data;
+	int fake_id = l->fake_id;
+	l->fake_id = 0;
+	draw_fake_id(0);
+
+	post_info_t *ip = get_post_info(p);
+	if (!ip)
+		return DONOTHING;
+
+	post_filter_t filter = l->filter;
+	filter.min = filter.max = 0;
+	bool upward = fake_id < ip->fake_id;
+	if (upward) {
+		filter.fake_id_min = 0;
+		filter.fake_id_max = fake_id;
+	} else {
+		filter.fake_id_min = fake_id;
+		filter.fake_id_max = 0;
+	}
+	return relocate_to_filter(p, &filter, upward);
 }
 
 extern int show_online(void);
@@ -2378,8 +2416,11 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 	}
 
 	switch (ch) {
-		case '\n': case '\r': case KEY_RIGHT: case 'r':
-		case Ctrl('S'): case 'p':
+		case '\n': case '\r':
+			if (l->fake_id)
+				return jump_to_fake_id(p);
+			// fall through
+		case KEY_RIGHT: case 'r': case Ctrl('S'): case 'p':
 			return read_posts(p, ip, false, false);
 		case Ctrl('U'):
 			return read_posts(p, ip, false, true);
@@ -2508,6 +2549,15 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 		case 'O':
 			return ip->uid ? tui_follow_uname(ip->owner) : DONOTHING;
 		default:
+			if (ch >= '0' && ch <= '9') {
+				l->fake_id *= 10;
+				if (l->fake_id > 999999)
+					l->fake_id = 0;
+				l->fake_id += ch - '0';
+			} else {
+				l->fake_id = 0;
+			}
+			draw_fake_id(l->fake_id);
 			return READ_AGAIN;
 	}
 }

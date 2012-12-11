@@ -258,6 +258,10 @@ static bool match_filter(post_filter_t *filter, post_info_t *p)
 		match &= (bool)strcasestr(p->utf8_title, filter->utf8_keyword);
 	if (filter->flag)
 		match &= (p->flag & filter->flag) == filter->flag;
+	if (filter->fake_id_min)
+		match &= p->fake_id >= filter->fake_id_min;
+	if (filter->fake_id_max)
+		match &= p->fake_id <= filter->fake_id_max;
 	return match;
 }
 
