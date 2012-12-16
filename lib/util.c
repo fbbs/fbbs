@@ -1,5 +1,9 @@
 #include <fcntl.h>
+#include <signal.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "fbbs/util.h"
 
 /**
@@ -30,4 +34,42 @@ int urandom_pos_int(void)
 	if (i < 0)
 		return -i;
 	return i;
+}
+
+#ifndef NSIG
+#ifdef _NSIG
+#define NSIG _NSIG
+#else
+#define NSIG 65
+#endif
+#endif
+
+/**
+ * Daemonize the process.
+ */
+void start_daemon(void)
+{
+	umask(0);
+	int n = sysconf(_SC_OPEN_MAX);
+
+	int pid = fork();
+	if (pid < 0) {
+		exit(1);
+	} else if (pid != 0) {
+		exit(0);
+	}
+	if (setsid() == -1)
+		exit(1);
+
+	if ((pid = fork()) < 0) {
+		exit(1);
+	} else if (pid != 0) {
+		exit(0);
+	}
+
+	while (n)
+		close(--n);
+
+	for (n = 1; n <= NSIG; n++)
+		signal(n, SIG_IGN);
 }

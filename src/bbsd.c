@@ -18,14 +18,6 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-#ifndef NSIG
-#ifdef _NSIG
-#define NSIG _NSIG
-#else
-#define NSIG 65
-#endif
-#endif
-
 #ifdef ENABLE_SSH
 #define KEYS_FOLDER BBSHOME"/etc/ssh"
 #define PID_FILE	BBSHOME"/reclog/sshbbsd.pid"
@@ -115,42 +107,6 @@ static void reapchild(int notused)
 	int state, pid;
 	while ((pid = waitpid(-1, &state, WNOHANG | WUNTRACED)) > 0)
 		;
-}
-
-/**
- * Daemonize the process.
- */
-void start_daemon(void)
-{
-	int n, pid;
-
-	umask(0);
-	n = sysconf(_SC_OPEN_MAX);
-
-	// Fork to ensure not being a process group leader.
-	if ((pid = fork()) < 0) {
-		printf("Cannot fork.\n");
-		exit(1);
-	} else if (pid != 0) {
-		exit(0);
-	}
-	if (setsid() == -1)
-		exit(1);
-
-	// Fork again.
-	if ((pid = fork()) < 0) {
-		exit(1);
-	} else if (pid != 0) {
-		exit(0);
-	}
-
-	// Close all open file descriptors.
-	while (n)
-		close(--n);
-
-	// Ignore all signals (except SIGKILL & SIGSTOP of course)
-	for (n = 1; n <= NSIG; n++)
-		signal(n, SIG_IGN);
 }
 
 /**
