@@ -33,7 +33,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 			bytes = read(fd, buf, sizeof(buf));
 			if (bytes < sizeof(buf)) {
 				fb_flock(fd, LOCK_UN);
-				restart_close(fd);
+				file_close(fd);
 				return BBS_EINTNL;
 			}
 			e = buf + bytes;
@@ -67,7 +67,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 		size += (e - ptr) + len;
 		ret = ftruncate(fd, size);
 		fb_flock(fd, LOCK_UN);
-		restart_close(fd);
+		file_close(fd);
 		if (ret == 0)
 			return 0;
 		return BBS_EINTNL;

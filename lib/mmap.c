@@ -92,7 +92,7 @@ int mmap_close(mmap_t *m)
 	munmap(m->ptr, m->msize);
 	if (m->lock != LOCK_UN)
 		fb_flock(m->fd, LOCK_UN);
-	return restart_close(m->fd);
+	return file_close(m->fd);
 }
 
 /**
@@ -106,7 +106,7 @@ int mmap_truncate(mmap_t *m, size_t size)
 {
 	if (size > m->msize)
 		munmap(m->ptr, m->size);
-	if (restart_ftruncate(m->fd, size) < 0) {
+	if (file_truncate(m->fd, size) < 0) {
 		mmap_close(m);
 		return -1;
 	}
@@ -132,7 +132,7 @@ int mmap_shrink(mmap_t *m, size_t size)
 {
 	if (size >= m->msize)
 		return -1;
-	if (restart_ftruncate(m->fd, size) < 0)
+	if (file_truncate(m->fd, size) < 0)
 		return -1;
 	m->size = size;
 	return 0;

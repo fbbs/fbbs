@@ -49,7 +49,7 @@ static int load_zapbuf(board_list_t *l)
 	int fd = open(file, O_RDONLY, 0600);
 	if (fd >= 0) {
 		n = read(fd, l->zapbuf, sizeof(*l->zapbuf) * MAXBOARD);
-		restart_close(fd);
+		file_close(fd);
 	}
 
 	for (int i = n / sizeof(*l->zapbuf); i < MAXBOARD; ++i) {
@@ -65,7 +65,7 @@ static int save_zapbuf(const board_list_t *l)
 	int fd = open(file, O_WRONLY | O_CREAT, 0600);
 	if (fd >= 0) {
 		write(fd, l->zapbuf, sizeof(*l->zapbuf) * MAXBOARD);
-		restart_close(fd);
+		file_close(fd);
 		return 0;
 	}
 	return -1;

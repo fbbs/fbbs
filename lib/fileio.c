@@ -61,12 +61,11 @@ int file_write(int fd, const void *buf, size_t size)
 }
 
 /**
- * Restart version of close.
- * If close is interrupted by a signal, restart.
+ * Close a file descriptor.
  * @param[in] fd file descriptor to close.
  * @return 0 on success, -1 on error.
  */
-int restart_close(int fd)
+int file_close(int fd)
 {
 	while (close(fd) < 0) {
 		if (errno != EINTR)
@@ -76,13 +75,13 @@ int restart_close(int fd)
 }
 
 /**
- * Restart version of ftruncate.
+ * Truncate a file.
  * If ftruncate is interrupted by a signal, restart.
  * @param[in] fd file descriptor to operate.
  * @param[in] size new size of the file.
  * @return 0 on success, -1 on error.
  */
-int restart_ftruncate(int fd, off_t size)
+int file_truncate(int fd, off_t size)
 {
 	while (ftruncate(fd, size) < 0) {
 		if (errno != EINTR)
