@@ -270,6 +270,19 @@ static int rm_dir(char *fpath) {
 	return rmdir(buf);
 }
 
+int file_lock(int fd, file_lock_e type, off_t offset, file_whence_e whence,
+		off_t len)
+{
+	struct flock lock = {
+		.l_type = type,
+		.l_start = offset,
+		.l_whence = whence,
+		.l_len = len,
+	};
+
+	return fcntl(fd, F_SETLKW, &lock);
+}
+
 /**
  * Put an advisory lock on file descriptor using blocking fcntl().
  * @param fd The file descriptor.
@@ -278,22 +291,13 @@ static int rm_dir(char *fpath) {
  */
 int fb_flock(int fd, int operation)
 {
-	short type;
-	switch (operation) {
-		case LOCK_EX:
-			type = F_WRLCK;
-			break;
-		case LOCK_SH:
-			type = F_RDLCK;
-			break;
-		default:
-			type = F_UNLCK;
-			break;
-	}
+	file_lock_e type;
+	if (operation == LOCK_EX)
+		type = FILE_WRLCK;
+	else if (operation == LOCK_SH)
+		type = FILE_RDLCK;
+	else
+		type = FILE_UNLCK;
 
-	struct flock lock = { .l_type = type, .l_start = 0, .l_whence = SEEK_SET,
-		.l_len = 0 };
-
-	return fcntl(fd, F_SETLKW, &lock);
+	return file_lock(fd, type, 0, FILE_SET, 0);
 }
-
