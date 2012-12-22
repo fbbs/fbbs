@@ -16,7 +16,7 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		if (fd < 0)
 			return BBS_EINTNL;
 		fb_flock(fd, LOCK_EX);
-		safer_write(fd, text, strlen(text));
+		file_write(fd, text, strlen(text));
 		fb_flock(fd, LOCK_UN);
 		close(fd);
 		xml_header(NULL);

@@ -38,7 +38,7 @@ int append_record(const char *file, const void *record, int size)
 	if (fd < 0)
 		return -1;
 	fb_flock(fd, LOCK_EX);
-	int ret = safer_write(fd, record, size);
+	int ret = file_write(fd, record, size);
 	fb_flock(fd, LOCK_UN);
 	close(fd);
 	return ret;
@@ -201,7 +201,7 @@ int substitute_record(char *filename, void *rptr, int size, int id)
 		return -1;
 	}
 
-	safer_write(fd, rptr, size);
+	file_write(fd, rptr, size);
 	ldata.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &ldata);
 	close(fd);

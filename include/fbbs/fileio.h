@@ -2,7 +2,7 @@
 #define FB_FILEIO_H
 
 extern int file_append(const char *file, const char *msg);
-extern int safer_write(int fd, const void *buf, int size);
+extern int file_write(int fd, const void *buf, size_t size);
 extern int restart_close(int fd);
 extern int restart_ftruncate(int fd, off_t size);
 extern int dashf(const char *file);

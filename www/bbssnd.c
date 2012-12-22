@@ -54,16 +54,16 @@ static int edit_article(const char *file, const char *content, const char *ip)
 		lseek(fd, begin, SEEK_SET);
 		size_t len = strlen(content);
 		size_t size = begin + len;
-		int ret = safer_write(fd, content, len);
+		int ret = file_write(fd, content, len);
 		if (ret == 0 && ptr != e)
-			ret = safer_write(fd, ptr, e - ptr);
+			ret = file_write(fd, ptr, e - ptr);
 		//% len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m※ 修改:·%s 于 "
 		len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda "
 				//% "%22.22s·HTTP [FROM: %s]\033[m\n", currentuser.userid,
 				"%22.22s\xa1\xa4HTTP [FROM: %s]\033[m\n", currentuser.userid,
 				getdatestring(time(NULL), DATE_ZH), mask_host(ip));
 		if (ret == 0)
-			ret = safer_write(fd, buf, len);
+			ret = file_write(fd, buf, len);
 		size += (e - ptr) + len;
 		ret = ftruncate(fd, size);
 		fb_flock(fd, LOCK_UN);

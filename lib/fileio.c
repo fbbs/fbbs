@@ -42,16 +42,16 @@ int file_append(const char *file, const char *msg)
  * @param size bytes to write.
  * @return 0 on success, -1 on error.
  */
-int safer_write(int fd, const void *buf, int size)
+int file_write(int fd, const void *buf, size_t size)
 {
-	int cc, sz = size;
+	int sz = size;
 	const char *bp = buf;
 
 	do {
-		cc = write(fd, bp, sz);
-		if ((cc < 0) && (errno != EINTR)) {
+		int cc = write(fd, bp, sz);
+		if ((cc < 0) && (errno != EINTR))
 			return -1;
-		}
+
 		if (cc > 0) {
 			bp += cc;
 			sz -= cc;
