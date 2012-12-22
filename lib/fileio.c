@@ -41,7 +41,7 @@ int file_read(int fd, void *buf, size_t size)
 	const char *bp = buf;
 
 	do {
-		int cc = read(fd, bp, sz);
+		int cc = read(fd, (void *) bp, sz);
 		if (cc < 0 && errno != EINTR)
 			return -1;
 
@@ -85,16 +85,14 @@ int file_write(int fd, const void *buf, size_t size)
  */
 int file_close(int fd)
 {
-	while (close(fd) < 0) {
-		if (errno != EINTR)
-			return -1;
-	}
-	return 0;
+	int ret = close(fd);
+	if (ret < 0 && errno == EINTR)
+		return 0;
+	return ret;
 }
 
 /**
  * Truncate a file.
- * If ftruncate is interrupted by a signal, restart.
  * @param[in] fd file descriptor to operate.
  * @param[in] size new size of the file.
  * @return 0 on success, -1 on error.
