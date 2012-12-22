@@ -35,6 +35,24 @@ int file_append(const char *file, const char *msg)
 	return 0;
 }
 
+int file_read(int fd, void *buf, size_t size)
+{
+	int sz = size;
+	const char *bp = buf;
+
+	do {
+		int cc = read(fd, bp, sz);
+		if (cc < 0 && errno != EINTR)
+			return -1;
+
+		if (cc > 0) {
+			bp += cc;
+			sz -= cc;
+		}
+	} while (sz > 0);
+	return 0;
+}
+
 /**
  * Write given bytes to file.
  * @param fd file handle.
