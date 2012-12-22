@@ -40,7 +40,7 @@ typedef enum {
 } post_flag_e;
 
 enum {
-	POST_TITLE_CCHARS = 33,
+	POST_TITLE_CCHARS = 24,
 };
 
 enum {
