@@ -37,20 +37,12 @@ int file_append(const char *file, const char *msg)
 
 int file_read(int fd, void *buf, size_t size)
 {
-	int sz = size;
-	const char *bp = buf;
-
+	int res;
 	do {
-		int cc = read(fd, (void *) bp, sz);
-		if (cc < 0 && errno != EINTR)
-			return -1;
-
-		if (cc > 0) {
-			bp += cc;
-			sz -= cc;
-		}
-	} while (sz > 0);
-	return 0;
+		res = read(fd, buf, size);
+		if (res >= 0 || errno != EINTR)
+			return res;
+	} while (1);
 }
 
 /**
@@ -62,20 +54,12 @@ int file_read(int fd, void *buf, size_t size)
  */
 int file_write(int fd, const void *buf, size_t size)
 {
-	int sz = size;
-	const char *bp = buf;
-
+	int res;
 	do {
-		int cc = write(fd, bp, sz);
-		if ((cc < 0) && (errno != EINTR))
-			return -1;
-
-		if (cc > 0) {
-			bp += cc;
-			sz -= cc;
-		}
-	} while (sz > 0);
-	return 0;
+		res = write(fd, buf, size);
+		if (res >= 0 || errno != EINTR)
+			return res;
+	} while (1);
 }
 
 /**
