@@ -1,11 +1,10 @@
-#ifndef FB_RECORD_H
-#define FB_RECORD_H
+#ifndef RECORD_H
+#define RECORD_H
 
 #include <unistd.h>
 #include "mmap.h"
 
 /** Record stream information. */
-typedef mmap_t record_t;
 typedef int (*record_func_t)(void *, void *);
 typedef int (*apply_func_t)(void *, int, void *);
 /** Comparator function pointer.
@@ -34,11 +33,5 @@ int delete_range(char *filename, int id1, int id2);
 int insert_record(const char *file, int size, record_func_t check, void *arg);
 void *lsearch(const void *key, const void *base, size_t nmemb, size_t size,
 		comparator_t compar);
-int record_open(const char *file, int mode, record_t *r);
-int record_close(record_t *r);
-void *record_search(record_t *r, const void *key, size_t size,
-		search_method_t method, comparator_t compar);
-int record_delete(record_t *r, void *ptr, int size);
 
-#endif // FB_RECORD_H
-
+#endif // RECORD_H

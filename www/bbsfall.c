@@ -87,6 +87,7 @@ int bbsfdel_main(void)
 	if (*user != '\0') {
 		char file[HOMELEN];
 		sethomefile(file, currentuser.userid, "friends");
+#if 0
 		record_t r;
 		if (record_open(file, O_RDWR, &r) < 0)
 			return BBS_EINTNL;
@@ -97,6 +98,7 @@ int bbsfdel_main(void)
 		if (ptr != NULL)
 			record_delete(&r, ptr, sizeof(*ptr));
 		record_close(&r);
+#endif
 	}
 	printf("Location: fall\n\n");
 	return 0;

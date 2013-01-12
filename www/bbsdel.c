@@ -34,9 +34,12 @@ int bbsdel_main(void)
 
 	char file[HOMELEN];
 	setwbdir(file, board.name);
+	struct fileheader fh;
+//	bool self = !strcmp(ptr->owner, currentuser.userid);
+	bool self = false;
+#if 0
 	record_t r;
 	record_open(file, O_RDWR, &r);
-	struct fileheader fh;
 	fh.id = fid;
 	struct fileheader *ptr =
 			record_search(&r, &fh, sizeof(fh), bsearch, cmp_fid);
@@ -44,7 +47,6 @@ int bbsdel_main(void)
 		record_close(&r);
 		return BBS_ENOFILE;
 	}
-	bool self = !strcmp(ptr->owner, currentuser.userid);
 	if (!self && !am_bm(&board)) {
 		record_close(&r);
 		return BBS_EACCES;
@@ -52,7 +54,7 @@ int bbsdel_main(void)
 	memcpy(&fh, ptr, sizeof(fh));
 	record_delete(&r, ptr, sizeof(*ptr));
 	record_close(&r);
-
+#endif
 	if (!(board.flag & BOARD_JUNK_FLAG)) {
 		struct userec user;
 		getuserec(fh.owner, &user);

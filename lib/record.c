@@ -6,8 +6,122 @@
 #include "record.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/record.h"
 
 #define BUFSIZE (MAXUSERS + 244)
+
+enum {
+	RECORD_BUFFER_SIZE = 4096,
+};
+
+int record_open(const char *file, record_cmp_t cmp, int rlen, record_t *rec)
+{
+	rec->rlen = rlen;
+	rec->cmp = cmp;
+
+	int fd = open(file, O_RDWR);
+	if (fd > 0) {
+		rec->fd = fd;
+		return fd;
+	} else if (errno == ENOENT) {
+		fd = open(file, O_RDWR | O_CREAT | O_EXCL);
+		rec->fd = fd;
+		return fd;
+	} else {
+		return -1;
+	}
+}
+
+int record_close(record_t *rec)
+{
+	return file_close(rec->fd);
+}
+
+int record_count(record_t *rec)
+{
+	struct stat st;
+	if (fstat(rec->fd, &st) < 0)
+		return 0;
+	return st.st_size / rec->rlen;
+}
+
+int record_lock(record_t *rec, record_lock_e type, int offset,
+		record_whence_e whence, int count)
+{
+	return file_lock(rec->fd, (file_lock_e) type, offset * rec->rlen,
+			(file_whence_e) whence, count * rec->rlen);
+}
+
+int record_lock_all(record_t *rec, record_lock_e type)
+{
+	return file_lock(rec->fd, (file_lock_e) type, 0, FILE_SET, 0);
+}
+
+int record_seek(record_t *rec, int offset, record_whence_e whence)
+{
+	off_t off = lseek(rec->fd, offset * rec->rlen, whence);
+	return off < 0 ? -1 : off / rec->rlen;
+}
+
+int record_read(record_t *rec, void *ptr, int count)
+{
+	int bytes = file_read(rec->fd, ptr, count * rec->rlen);
+	return bytes < 0 ? -1 : bytes / rec->rlen;
+}
+
+int record_append(record_t *rec, const void *ptr, int count)
+{
+	if (lseek(rec->fd, 0, SEEK_END) < 0)
+		return -1;
+	return file_write(rec->fd, ptr, count * rec->rlen);
+}
+
+static int _record_delete(record_t *rec, mmap_t *m, int offset,
+		record_filter_t filter, void *fargs,
+		record_callback_t callback, void *cargs)
+{
+	int deleted = 0, len = rec->rlen;
+	char *ptr = m->ptr, *end = m->ptr;
+	ptr += offset * rec->rlen;
+	end += m->size;
+
+	for (; ptr < end; ptr += len) {
+		if (filter(ptr, fargs) == 0) {
+			++deleted;
+			if (callback)
+				callback(ptr, cargs);
+		} else if (deleted)
+			memcpy(ptr - deleted * len, ptr, len);
+	}
+
+	if (deleted)
+		file_truncate(rec->fd, m->size - deleted * len);
+	return deleted;
+}
+
+int record_delete(record_t *rec, void *ptr, int offset,
+		record_filter_t filter, void *fargs,
+		record_callback_t callback, void *cargs)
+{
+	if (record_lock_all(rec, RECORD_WRLCK) < 0)
+		return -1;
+
+	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
+	if (mmap_open_fd(&m) < 0)
+		return -1;
+
+	char *p = m.ptr;
+	if (ptr && offset && offset * rec->rlen < m.size
+			&& rec->cmp(p + offset * rec->rlen, ptr) >= 0) {
+		;
+	} else {
+		offset = 0;
+	}
+
+	int deleted = _record_delete(rec, &m, 0, filter, fargs, callback, cargs);
+	mmap_close(&m);
+	return deleted;
+}
 
 USE_TRY;
 
@@ -299,6 +413,7 @@ void *lsearch(const void *key, const void *base, size_t nmemb, size_t size,
 	return NULL;
 }
 
+#if 0
 /**
  * Open file as record stream.
  * @param[in] file file to open.
@@ -359,3 +474,4 @@ int record_delete(record_t *r, void *ptr, int size)
 		return -1;
 	return 0;
 }
+#endif
