@@ -15,6 +15,7 @@ typedef struct {
 
 int mmap_open_fd(mmap_t *m);
 int mmap_open(const char *file, mmap_t *m);
+void mmap_unmap(mmap_t *m);
 int mmap_close(mmap_t *m);
 int mmap_truncate(mmap_t *m, size_t size);
 int mmap_shrink(mmap_t *m, size_t size);

@@ -19,12 +19,18 @@ enum {
  * Map file associated with file descriptor to memory.
  * @param[in,out] m pointer to an ::mmap_t struct (should be set properly).
  * @return 0 on success, -1 on error.
- * @attention This function is exported only for compatability. It will be
- *            made private sooner or later.
  */
 int mmap_open_fd(mmap_t *m)
 {
-	struct stat st;
+	m->lock = LOCK_EX;
+	if (m->oflag & O_RDWR) {
+		m->prot = PROT_READ | PROT_WRITE;
+	} else if (m->oflag & O_WRONLY) {
+		m->prot = PROT_WRITE;
+	} else {
+		m->prot = PROT_READ;
+		m->lock = LOCK_SH;
+	}
 
 	if (m->fd < 0)
 		return -1;
@@ -33,6 +39,7 @@ int mmap_open_fd(mmap_t *m)
 		return -1;
 	}
 
+	struct stat st;
 	// Return error if 'file' is not a regular file or has a wrong size.
 	if (fstat(m->fd, &st) < 0 || !S_ISREG(st.st_mode)
 			|| st.st_size < 0) {
@@ -64,34 +71,28 @@ int mmap_open_fd(mmap_t *m)
  */
 int mmap_open(const char *file, mmap_t *m)
 {
-	// Set mmap and lock flags.
-	m->lock = LOCK_EX;
-	if (m->oflag & O_RDWR) {
-		m->prot = PROT_READ | PROT_WRITE;
-	} else if (m->oflag & O_WRONLY) {
-		m->prot = PROT_WRITE;
-	} else {
-		m->prot = PROT_READ;
-		m->lock = LOCK_SH;
-	}
-
 	m->fd = open(file, m->oflag, 0640);
 	return mmap_open_fd(m);
 }
 
+void mmap_unmap(mmap_t *m)
+{
+	if (m) {
+		munmap(m->ptr, m->msize);
+		if (m->lock != LOCK_UN)
+			fb_flock(m->fd, LOCK_UN);
+	}
+}
+
 /**
- * Unmap memory-mapped file.
+ * Unmap and close memory-mapped file.
  * Related lock is released and file descriptor is closed.
  * @param[in] m pointer to an ::mmap_t struct.
  * @return 0 on success, -1 on error.
  */
 int mmap_close(mmap_t *m)
 {
-	if (m == NULL)
-		return 0;
-	munmap(m->ptr, m->msize);
-	if (m->lock != LOCK_UN)
-		fb_flock(m->fd, LOCK_UN);
+	mmap_unmap(m);
 	return file_close(m->fd);
 }
 
