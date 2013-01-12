@@ -103,9 +103,6 @@ int record_delete(record_t *rec, void *ptr, int offset,
 		record_filter_t filter, void *fargs,
 		record_callback_t callback, void *cargs)
 {
-	if (record_lock_all(rec, RECORD_WRLCK) < 0)
-		return -1;
-
 	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
 	if (mmap_open_fd(&m) < 0)
 		return -1;
@@ -119,8 +116,43 @@ int record_delete(record_t *rec, void *ptr, int offset,
 	}
 
 	int deleted = _record_delete(rec, &m, 0, filter, fargs, callback, cargs);
-	mmap_close(&m);
+	mmap_unmap(&m);
 	return deleted;
+}
+
+int record_insert(record_t *rec, void *ptr, int count)
+{
+	if (count <= 0)
+		return -1;
+
+	int len = rec->rlen;
+	qsort(ptr, count, len, rec->cmp);
+
+	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
+	if (mmap_open_fd(&m) < 0)
+		return -1;
+
+	char *wp = m.ptr, *rp = m.ptr, *begin = m.ptr, *ip = ptr;
+	wp += m.size + (count - 1) * len;
+	rp += m.size - len;
+	ip += (count - 1) * len;
+
+	if (mmap_truncate(&m, m.size + count * len) < 0)
+		return -1;
+
+	while (count > 0) {
+		if (rp >= begin && rec->cmp(ip + (count - 1) * len, rp) <= 0) {
+			memcpy(wp, rp, len);
+			rp -= len;
+		} else {
+			memcpy(wp, ip, len);
+			ip -= len;
+			--count;
+		}
+		wp -= len;
+	}
+	mmap_unmap(&m);
+	return 0;
 }
 
 USE_TRY;

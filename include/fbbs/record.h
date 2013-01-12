@@ -34,5 +34,6 @@ extern int record_seek(record_t *rec, int offset, record_whence_e whence);
 extern int record_read(record_t *rec, void *ptr, int count);
 extern int record_append(record_t *rec, const void *ptr, int count);
 extern int record_delete(record_t *rec, void *ptr, int offset, record_filter_t filter, void *fargs, record_callback_t callback, void *cargs);
+extern int record_insert(record_t *rec, void *ptr, int count);
 
 #endif // FB_RECORD_H
