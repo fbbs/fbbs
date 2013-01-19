@@ -69,6 +69,14 @@ int record_read(record_t *rec, void *ptr, int count)
 	return bytes < 0 ? -1 : bytes / rec->rlen;
 }
 
+int record_read_after(record_t *rec, void *ptr, int count, int offset)
+{
+	if (record_seek(rec, offset, RECORD_SET) < 0)
+		return 0;
+	count = record_read(rec, ptr, count);
+	return count < 0 ? 0 : count;
+}
+
 int record_append(record_t *rec, const void *ptr, int count)
 {
 	if (lseek(rec->fd, 0, SEEK_END) < 0)
