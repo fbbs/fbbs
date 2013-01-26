@@ -126,6 +126,40 @@ typedef struct {
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;
 
+// 24 bytes
+typedef struct {
+	post_id_t id;
+	uint32_t reid_delta;
+	uint32_t tid_delta;
+	user_id_t uid;
+	int flag;
+} post_index_board_t;
+
+typedef struct {
+	post_id_t id;
+	uint32_t reid_delta;
+	uint32_t tid_delta;
+	user_id_t uid;
+	int flag;
+	fb_time_t estamp;
+	char ename[16];
+} post_index_trash_t;
+
+// 128 bytes
+typedef struct {
+	post_id_t id;
+	uint32_t reid_delta;
+	uint32_t tid_delta;
+	uint32_t stamp;
+	user_id_t uid;
+	int flag;
+	int bid;
+	int replies;
+	int comments;
+	int score;
+	char utf8_title[84];
+} post_index_t;
+
 extern const char *pid_to_base32(post_id_t pid, char *s, size_t size);
 extern post_id_t base32_to_pid(const char *s);
 
