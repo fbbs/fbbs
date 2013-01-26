@@ -14,18 +14,14 @@ enum {
 	RECORD_BUFFER_SIZE = 4096,
 };
 
-int record_open(const char *file, record_cmp_t cmp, int rlen, record_t *rec)
+int record_open(const char *file, record_cmp_t cmp, int rlen,
+		record_perm_e rdonly, record_t *rec)
 {
 	rec->rlen = rlen;
 	rec->cmp = cmp;
 
-	return rec->fd = open(file, O_RDONLY);
-}
-
-int record_open_rw(const char *file, record_cmp_t cmp, int rlen, record_t *rec)
-{
-	rec->rlen = rlen;
-	rec->cmp = cmp;
+	if (rdonly)
+		return rec->fd = open(file, O_RDONLY);
 
 	int fd = open(file, O_RDWR);
 	if (fd > 0) {
