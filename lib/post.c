@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "bbs.h"
-#include "record.h"
+#include "mmap.h"
 #include "fbbs/brc.h"
 #include "fbbs/convert.h"
 #include "fbbs/helper.h"
@@ -9,6 +9,45 @@
 #include "fbbs/post.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
+
+int post_index_cmp(const void *p1, const void *p2)
+{
+	const post_index_board_t *r1 = p1, *r2 = p2;
+	return r1->id - r2->id;
+}
+
+int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec)
+{
+	return record_open(file, post_index_cmp, sizeof(post_index_board_t),
+			rdonly, rec);
+}
+
+int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec)
+{
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "brdidx/%d", bid);
+	return post_index_board_open_file(file, rdonly, rec);
+}
+
+int post_index_trash_cmp(const void *p1, const void *p2)
+{
+	const post_index_trash_t *r1 = p1, *r2 = p2;
+	int diff = r1->estamp - r2->estamp;
+	if (diff)
+		return diff;
+	return r1->id - r2->id;
+}
+
+int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec)
+{
+	char file[HOMELEN];
+	if (trash)
+		snprintf(file, sizeof(file), "brdidx/%d.trash", bid);
+	else
+		snprintf(file, sizeof(file), "brdidx/%d.junk", bid);
+	return record_open(file, post_index_trash_cmp, sizeof(post_index_trash_t),
+			RECORD_WRITE, rec);
+}
 
 const char *pid_to_base32(post_id_t pid, char *s, size_t size)
 {

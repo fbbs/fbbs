@@ -4,6 +4,7 @@
 #include "fbbs/board.h"
 #include "fbbs/convert.h"
 #include "fbbs/dbi.h"
+#include "fbbs/record.h"
 
 #define ANONYMOUS_ACCOUNT "Anonymous"
 //% #define ANONYMOUS_NICK    "我是匿名天使"
@@ -145,6 +146,11 @@ typedef struct {
 	char ename[16];
 } post_index_trash_t;
 
+typedef enum {
+	POST_INDEX_TRASH = 1,
+	POST_INDEX_JUNK = 0,
+} post_index_trash_e;
+
 // 128 bytes
 typedef struct {
 	post_id_t id;
@@ -159,6 +165,12 @@ typedef struct {
 	int score;
 	char utf8_title[84];
 } post_index_t;
+
+extern int post_index_cmp(const void *p1, const void *p2);
+extern int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec);
+extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
+extern int post_index_trash_cmp(const void *p1, const void *p2);
+extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
 
 extern const char *pid_to_base32(post_id_t pid, char *s, size_t size);
 extern post_id_t base32_to_pid(const char *s);
