@@ -49,6 +49,65 @@ int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec)
 			RECORD_WRITE, rec);
 }
 
+enum {
+	POST_INDEX_PER_FILE = 100000,
+};
+
+void post_index_record_open(post_index_record_t *rec)
+{
+	rec->base = -1;
+	rec->rdonly = RECORD_READ;
+}
+
+static int post_index_record_check(post_index_record_t *rec, post_id_t id,
+		record_perm_e rdonly)
+{
+	post_id_t base = id / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE;
+	if (rec->base >= 0 && rec->base != base && (rdonly || !rec->rdonly))
+		return 0;
+
+	if (rec->base >= 0)
+		mmap_close(&rec->map);
+
+	rec->base = base;
+	rec->rdonly = rdonly;
+	rec->map.oflag = rdonly ? O_RDONLY : O_RDWR;
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "index/%"PRIdPID, id / POST_INDEX_PER_FILE);
+	return mmap_open(file, &rec->map);
+}
+
+int post_index_record_read(post_index_record_t *rec, post_id_t id,
+		post_index_t *buf)
+{
+	if (post_index_record_check(rec, id, RECORD_READ) == 0) {
+		post_index_t *ptr = rec->map.ptr;
+		*buf = *(ptr + (id - rec->base));
+		return 1;
+	}
+	memset(buf, 0, sizeof(*buf));
+	return 0;
+}
+
+int post_index_record_update(post_index_record_t *rec, post_id_t id,
+		post_index_t *buf)
+{
+	if (post_index_record_check(rec, id, RECORD_WRITE) < 0)
+		return 0;
+
+	post_index_t *ptr = rec->map.ptr;
+	*(ptr + (id - rec->base)) = *buf;
+	return 1;
+}
+
+void post_index_record_close(post_index_record_t *rec)
+{
+	if (rec->base >= 0)
+		mmap_close(&rec->map);
+	rec->base = -1;
+	rec->rdonly = RECORD_READ;
+}
+
 const char *pid_to_base32(post_id_t pid, char *s, size_t size)
 {
 	if (!pid) {

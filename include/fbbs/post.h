@@ -1,6 +1,7 @@
 #ifndef FB_POST_H
 #define FB_POST_H
 
+#include "mmap.h"
 #include "fbbs/board.h"
 #include "fbbs/convert.h"
 #include "fbbs/dbi.h"
@@ -166,11 +167,23 @@ typedef struct {
 	char utf8_title[84];
 } post_index_t;
 
+typedef struct {
+	post_id_t base;
+	record_perm_e rdonly;
+	mmap_t map;
+} post_index_record_t;
+
 extern int post_index_cmp(const void *p1, const void *p2);
 extern int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
+
 extern int post_index_trash_cmp(const void *p1, const void *p2);
 extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
+
+extern void post_index_record_open(post_index_record_t *rec);
+extern int post_index_record_read(post_index_record_t *rec, post_id_t id, post_index_t *buf);
+extern int post_index_record_update(post_index_record_t *rec, post_id_t id, post_index_t *buf);
+extern void post_index_record_close(post_index_record_t *rec);
 
 extern const char *pid_to_base32(post_id_t pid, char *s, size_t size);
 extern post_id_t base32_to_pid(const char *s);
