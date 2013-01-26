@@ -26,6 +26,7 @@ typedef struct record_t {
 } record_t;
 
 extern int record_open(const char *file, record_cmp_t cmp, int rlen, record_t *rec);
+extern int record_open_rw(const char *file, record_cmp_t cmp, int rlen, record_t *rec);
 extern int record_close(record_t *rec);
 extern int record_count(record_t *rec);
 extern int record_lock(record_t *rec, record_lock_e type, int offset, record_whence_e whence, int count);

@@ -19,6 +19,14 @@ int record_open(const char *file, record_cmp_t cmp, int rlen, record_t *rec)
 	rec->rlen = rlen;
 	rec->cmp = cmp;
 
+	return rec->fd = open(file, O_RDONLY);
+}
+
+int record_open_rw(const char *file, record_cmp_t cmp, int rlen, record_t *rec)
+{
+	rec->rlen = rlen;
+	rec->cmp = cmp;
+
 	int fd = open(file, O_RDWR);
 	if (fd > 0) {
 		rec->fd = fd;
