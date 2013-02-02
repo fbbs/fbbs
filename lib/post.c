@@ -29,6 +29,60 @@ int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec)
 	return post_index_board_open_file(file, rdonly, rec);
 }
 
+enum {
+	POST_INDEX_BOARD_BUF_SIZE = 50,
+};
+
+static int post_index_board_to_info(post_index_record_t *pir,
+		post_index_board_t *pib, post_info_t *pi, int count)
+{
+	post_index_t buf;
+	for (int i = 0; i < count; ++i) {
+		post_index_record_read(pir, pib->id, &buf);
+
+		pi->id = pib->id;
+		pi->reid = pib->id + pib->reid_delta;
+		pi->tid = pib->id + pib->tid_delta;
+		pi->flag = pib->flag;
+		pi->uid = pib->uid;
+		pi->stamp = buf.stamp;
+		pi->bid = buf.bid;
+		pi->replies = buf.replies;
+		pi->comments = buf.comments;
+		pi->score = buf.score;
+		strlcpy(pi->owner, buf.owner, sizeof(pi->owner));
+		strlcpy(pi->utf8_title, buf.utf8_title, sizeof(pi->utf8_title));
+		pi->estamp = 0;
+		pi->ename[0] = '\0';
+
+		++pib;
+		++pi;
+	}
+	return count;
+}
+
+int post_index_board_read(record_t *rec, int base, post_index_record_t *pir,
+		post_info_t *buf, int size)
+{
+	if (record_seek(rec, base, RECORD_SET) < 0)
+		return 0;
+
+	int records = 0;
+	post_index_board_t pib_buf[POST_INDEX_BOARD_BUF_SIZE];
+	while (size > 0) {
+		int max = POST_INDEX_BOARD_BUF_SIZE;
+		max = size > max ? max : size;
+
+		int count = record_read(rec, pib_buf, max);
+		if (count <= 0)
+			break;
+
+		post_index_board_to_info(pir, pib_buf, buf, count);
+		records += count;
+		size -= max;
+	}
+}
+
 int post_index_trash_cmp(const void *p1, const void *p2)
 {
 	const post_index_trash_t *r1 = p1, *r2 = p2;
