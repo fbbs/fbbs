@@ -161,10 +161,11 @@ typedef struct {
 	user_id_t uid;
 	int flag;
 	int bid;
-	int replies;
-	int comments;
-	int score;
-	char utf8_title[84];
+	uint16_t replies;
+	uint16_t comments;
+	uint16_t score;
+	char owner[IDLEN + 1];
+	char utf8_title[77];
 } post_index_t;
 
 typedef struct {
