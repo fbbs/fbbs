@@ -177,6 +177,7 @@ typedef struct {
 extern int post_index_cmp(const void *p1, const void *p2);
 extern int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
+extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size);
 
 extern int post_index_trash_cmp(const void *p1, const void *p2);

@@ -29,6 +29,13 @@ int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec)
 	return post_index_board_open_file(file, rdonly, rec);
 }
 
+int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
+{
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "brdidx/%d.sticky", bid);
+	return post_index_board_open_file(file, rdonly, rec);
+}
+
 enum {
 	POST_INDEX_BOARD_BUF_SIZE = 50,
 };
@@ -41,8 +48,8 @@ static int post_index_board_to_info(post_index_record_t *pir,
 		post_index_record_read(pir, pib->id, &buf);
 
 		pi->id = pib->id;
-		pi->reid = pib->id + pib->reid_delta;
-		pi->tid = pib->id + pib->tid_delta;
+		pi->reid = pib->id - pib->reid_delta;
+		pi->tid = pib->id - pib->tid_delta;
 		pi->flag = pib->flag;
 		pi->uid = pib->uid;
 		pi->stamp = buf.stamp;
@@ -81,6 +88,7 @@ int post_index_board_read(record_t *rec, int base, post_index_record_t *pir,
 		records += count;
 		size -= max;
 	}
+	return records;
 }
 
 int post_index_trash_cmp(const void *p1, const void *p2)
