@@ -125,7 +125,7 @@ static int post_index_record_check(post_index_record_t *rec, post_id_t id,
 		record_perm_e rdonly)
 {
 	post_id_t base = id / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE;
-	if (rec->base >= 0 && rec->base != base && (rdonly || !rec->rdonly))
+	if (rec->base >= 0 && rec->base == base && (rdonly || !rec->rdonly))
 		return 0;
 
 	if (rec->base >= 0)
