@@ -16,6 +16,7 @@ typedef struct tui_list_t {
 	int start;     ///< Starting entry of the page.
 	int update;    ///< UI update status.
 	int valid;     ///< True if data are not out-dated.
+	int lines;     ///< Number of available lines for displaying content.
 	bool in_query; ///< True if in query mode.
 	void *data;    ///< Data.
 	int (*loader)(struct tui_list_t *);   ///< Data loader.

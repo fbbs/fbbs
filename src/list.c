@@ -4,14 +4,13 @@
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
-#define BBS_PAGESIZE  (t_lines - 4)
-
 enum {
 	TUI_LIST_START = 3,
 };
 
 static void tui_list_init(tui_list_t *p)
 {
+	p->lines = t_lines - 4;
 	p->all = p->cur = p->start = 0;
 	p->update = FULLUPDATE;
 	p->valid = false;
@@ -20,7 +19,7 @@ static void tui_list_init(tui_list_t *p)
 
 static int tui_list_display_loop(tui_list_t *p)
 {
-	int end = p->start + BBS_PAGESIZE;
+	int end = p->start + p->lines;
 	if (end > p->all)
 		end = p->all;
 	for (int i = p->start; i < end; ++i) {
@@ -51,8 +50,8 @@ int tui_list(tui_list_t *p)
 		if (p->cur < 0)
 			p->cur = 0;
 
-		if (p->cur < p->start || p->cur >= p->start + BBS_PAGESIZE) {
-			p->start = (p->cur / BBS_PAGESIZE) * BBS_PAGESIZE;
+		if (p->cur < p->start || p->cur >= p->start + p->lines) {
+			p->start = (p->cur / p->lines) * p->lines;
 			if (p->update != FULLUPDATE)
 				p->update = PARTUPDATE;
 		}
@@ -93,10 +92,7 @@ int tui_list(tui_list_t *p)
 		}
 
 		switch (ch) {
-			case 'q':
-			case 'e':
-			case KEY_LEFT:
-			case EOF:
+			case 'q': case 'e': case KEY_LEFT: case EOF:
 				if (p->in_query) {
 					p->in_query = false;
 					p->update = FULLUPDATE;
@@ -104,47 +100,38 @@ int tui_list(tui_list_t *p)
 					end = true;
 				}
 				break;
-			case 'b':
-			case Ctrl('B'):
-			case KEY_PGUP:
+			case 'b': case Ctrl('B'): case KEY_PGUP:
 				if (p->cur == 0)
 					p->cur = p->all - 1;
 				else
-					p->cur -= BBS_PAGESIZE;
+					p->cur -= p->lines;
 				break;
-			case 'N':
-			case Ctrl('F'):
-			case KEY_PGDN:
-			case ' ':
+			case 'N': case Ctrl('F'): case KEY_PGDN: case ' ':
 				if (p->cur == p->all - 1)
 					p->cur = 0;
 				else
-					p->cur += BBS_PAGESIZE;
+					p->cur += p->lines;
 				break;
-			case 'k':
-			case KEY_UP:
+			case 'k': case KEY_UP:
 				if (--p->cur < 0)
 					p->cur = p->all - 1;
 				if (p->in_query && p->query)
 					p->query(p);
 				break;
-			case 'j':
-			case KEY_DOWN:
+			case 'j': case KEY_DOWN:
 				++p->cur;
 				if (p->cur >= p->all)
 					p->cur = 0;
 				if (p->in_query && p->query)
 					p->query(p);
 				break;
-			case '$':
-			case KEY_END:
+			case '$': case KEY_END:
 				p->cur = p->all - 1;
 				break;
 			case KEY_HOME:
 				p->cur = 0;
 				break;
-			case '\n':
-			case '\r':
+			case '\n': case '\r':
 				if (number > 0) {
 					p->cur = number - 1;
 					number = 0;
@@ -243,7 +230,7 @@ int slide_list(slide_list_t *p)
 			case KEY_UP:
 				if (--p->cur < 0) {
 					p->base = SLIDE_LIST_PREV;
-					p->cur = BBS_PAGESIZE - 1;
+					p->cur = t_lines - 5;
 				}
 				break;
 			case 'j':
@@ -256,7 +243,7 @@ int slide_list(slide_list_t *p)
 			case '$':
 			case KEY_END:
 				p->base = SLIDE_LIST_BOTTOMUP;
-				p->cur = BBS_PAGESIZE - 1;
+				p->cur = t_lines - 5;
 				break;
 			case KEY_HOME:
 				p->base = SLIDE_LIST_TOPDOWN;
