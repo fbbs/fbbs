@@ -11,7 +11,7 @@ enum {
 static void tui_list_init(tui_list_t *p)
 {
 	p->lines = t_lines - 4;
-	p->all = p->cur = p->start = 0;
+	p->all = p->cur = p->begin = 0;
 	p->update = FULLUPDATE;
 	p->valid = false;
 	p->in_query = false;
@@ -19,10 +19,10 @@ static void tui_list_init(tui_list_t *p)
 
 static int tui_list_display_loop(tui_list_t *p)
 {
-	int end = p->start + p->lines;
+	int end = p->begin + p->lines;
 	if (end > p->all)
 		end = p->all;
-	for (int i = p->start; i < end; ++i) {
+	for (int i = p->begin; i < end; ++i) {
 		if (p->display(p, i) == -1)
 			return -1;
 	}
@@ -50,8 +50,8 @@ int tui_list(tui_list_t *p)
 		if (p->cur < 0)
 			p->cur = 0;
 
-		if (p->cur < p->start || p->cur >= p->start + p->lines) {
-			p->start = (p->cur / p->lines) * p->lines;
+		if (p->cur < p->begin || p->cur >= p->begin + p->lines) {
+			p->begin = (p->cur / p->lines) * p->lines;
 			if (p->update != FULLUPDATE)
 				p->update = PARTUPDATE;
 		}
@@ -72,14 +72,14 @@ int tui_list(tui_list_t *p)
 		}
 
 		if (!p->in_query) {
-			move(TUI_LIST_START + p->cur - p->start, 0);
+			move(TUI_LIST_START + p->cur - p->begin, 0);
 			outs(">");
 		}
 
 		int ch = igetkey();
 
 		if (!p->in_query) {
-			move(TUI_LIST_START + p->cur - p->start, 0);
+			move(TUI_LIST_START + p->cur - p->begin, 0);
 			outs(" ");
 		}
 
