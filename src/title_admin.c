@@ -191,7 +191,7 @@ static tui_list_handler_t title_list_handler(tui_list_t *p, int key)
 				return tui_grant_title(p);
 			break;
 		default:
-			break;
+			return READ_AGAIN;
 	}
 	return DONOTHING;
 }

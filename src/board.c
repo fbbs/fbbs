@@ -943,7 +943,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 	}
 
 	if (p->cur >= p->all)
-		return DONOTHING;
+		return READ_AGAIN;
 
 	board_t *board = &(l->indices[p->cur]->board);
 
@@ -991,12 +991,11 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			st_changed = true;
 			return FULLUPDATE;
 		default:
-			break;
+			return READ_AGAIN;
 	}
 
 	if (st_changed)
 		set_user_status(l->newflag ? ST_READNEW : ST_READBRD);
-
 	return FULLUPDATE;
 }
 

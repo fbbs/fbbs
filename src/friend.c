@@ -134,9 +134,8 @@ static tui_list_handler_t following_list_handler(tui_list_t *p, int key)
 		case 'h':
 			show_help("help/friendshelp");
 			return FULLUPDATE;
-			break;
 		default:
-			return DONOTHING;
+			return READ_AGAIN;
 	}
 	return DONOTHING;
 }
@@ -259,7 +258,7 @@ static tui_list_handler_t black_list_handler(tui_list_t *p, int key)
 	}
 
 	if (p->cur >= p->all)
-		return DONOTHING;
+		return READ_AGAIN;
 
 	switch (key) {
 		case 'd':
@@ -276,6 +275,8 @@ static tui_list_handler_t black_list_handler(tui_list_t *p, int key)
 		case '\n':
 			black_list_query(p);
 			return DONOTHING;
+		default:
+			return READ_AGAIN;
 	}
 	return DONOTHING;
 }

@@ -437,7 +437,7 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			online_users_query(p);
 			return DONOTHING;
 		default:
-			return DONOTHING;
+			return READ_AGAIN;
 	}
 }
 

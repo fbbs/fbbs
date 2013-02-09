@@ -84,9 +84,8 @@ static tui_list_handler_t tui_prop_handler(tui_list_t *p, int key)
 		case PROP_TITLE_1YEAR:
 			return tui_title_buy(type, price);
 		default:
-			break;
+			return READ_AGAIN;
 	}
-	return DONOTHING;
 }
 
 int tui_props(void)
@@ -199,7 +198,7 @@ static tui_list_handler_t tui_my_props_handler(tui_list_t *p, int key)
 		case 'd':
 			return tui_remove_title(p);
 	}
-	return DONOTHING;
+	return READ_AGAIN;
 }
 
 int tui_my_props(void)

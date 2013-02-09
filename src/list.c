@@ -32,7 +32,7 @@ static int tui_list_display_loop(tui_list_t *p)
 
 int tui_list(tui_list_t *p)
 {
-	int ch, ret, number = 0;
+	int number = 0;
 	bool end = false;
 
 	tui_list_init(p);
@@ -77,11 +77,19 @@ int tui_list(tui_list_t *p)
 			outs(">");
 		}
 
-		ch = igetkey();
+		int ch = igetkey();
 
 		if (!p->in_query) {
 			move(TUI_LIST_START + p->cur - p->start, 0);
 			outs(" ");
+		}
+
+		int ret = p->handler(p, ch);
+		if (ret < 0)
+			break;
+		else if (ret != READ_AGAIN) {
+			p->update = ret;
+			continue;
 		}
 
 		switch (ch) {
