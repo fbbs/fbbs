@@ -2,6 +2,7 @@
 #define FB_TUI_LIST_H
 
 #include <stdbool.h>
+#include "fbbs/list.h"
 
 typedef int tui_list_loader_t;
 typedef void tui_list_title_t;
@@ -53,5 +54,18 @@ typedef struct slide_list_t {
 } slide_list_t;
 
 extern int slide_list(slide_list_t *p);
+
+enum {
+	TUI_LIST_POS_KEY_LEN = 16,
+};
+
+typedef struct tui_list_pos_t {
+	char key[TUI_LIST_POS_KEY_LEN];
+	int top;
+	int cursor;
+	SLIST_FIELD(tui_list_pos_t) next;
+} tui_list_pos_t;
+
+SLIST_HEAD(tui_list_pos_list_t, tui_list_pos_t);
 
 #endif // FB_TUI_LIST_H
