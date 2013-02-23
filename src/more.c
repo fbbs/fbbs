@@ -354,7 +354,7 @@ typedef struct more_file_t {
 	int opt;          ///< Options of the more file.
 } more_file_t;
 
-typedef int (*more_open_t)(const char *, more_file_t *);
+typedef int (*more_open_t)(const char *, size_t size, more_file_t *);
 
 typedef int (*more_prompt_t)(more_file_t *);
 
@@ -367,7 +367,8 @@ typedef int (*more_handler_t)(more_file_t *, int);
  * @param func A function to fill the stream with file content.
  * @return an ::more_file_t pointer on success, NULL on error.
  */
-static more_file_t *more_open(const char *file, int width, more_open_t func)
+static more_file_t *more_open(const char *file, size_t size, int width,
+		more_open_t func)
 {
 	more_file_t *more = malloc(sizeof(*more));
 	if (more == NULL)
@@ -377,7 +378,7 @@ static more_file_t *more_open(const char *file, int width, more_open_t func)
 	more->total = -1;
 	more->width = width;
 
-	if ((*func)(file, more) != 0) {
+	if (func(file, size, more) != 0) {
 		free(more);
 		return NULL;
 	}
@@ -599,29 +600,30 @@ static void more_puts(more_file_t *d)
 	return;
 }
 
-/**
- *
- */
-static int more_open_file(const char *file, more_file_t *more)
+static int more_open_buffer(const char *buf, size_t size, more_file_t *more)
 {
-	mmap_t m;
-	m.oflag = O_RDONLY;
+	more->size = size;
+	more->ln_size = size / LINENUM_BLOCK_SIZE + 1; // at least one block
+	more->buf = malloc(size + more->ln_size * sizeof(linenum_t));
+	if (!more->buf)
+		return -1;
+
+	memcpy(more->buf, buf, size);
+	more->ln = (linenum_t *)(more->buf + size);
+	memset(more->ln, 0, more->ln_size * sizeof(linenum_t));
+	return 0;
+}
+
+static int more_open_file(const char *file, size_t size, more_file_t *more)
+{
+	mmap_t m = { .oflag = O_RDONLY };
 	if (mmap_open(file, &m) < 0)
 		return -1;
 
-	more->size = m.size;
-	more->ln_size = m.size / LINENUM_BLOCK_SIZE + 1; // at least one block
-	more->buf = malloc(m.size + more->ln_size * sizeof(linenum_t));
-	if (more->buf != NULL) {
-		memcpy(more->buf, m.ptr, m.size);
-		mmap_close(&m);
-		more->ln = (linenum_t *)(more->buf + m.size);
-		memset(more->ln, 0, more->ln_size * sizeof(linenum_t));
-		return 0;
-	}
+	int ret = more_open_buffer(m.ptr, m.size, more);
 
 	mmap_close(&m);
-	return -1;
+	return ret;
 }
 
 static int more_prompt_file(more_file_t *more)
@@ -816,7 +818,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
  */
 static int rawmore2(const char *file, int promptend, int line, int numlines, int stuffmode)
 {
-	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_file);
+	more_file_t *more = more_open(file, 0, DEFAULT_TERM_WIDTH, more_open_file);
 	if (more == NULL)
 		return -1;
 	int ch = more_main(more, promptend, line, numlines, stuffmode,
@@ -825,7 +827,7 @@ static int rawmore2(const char *file, int promptend, int line, int numlines, int
 	return ch;
 }
 
-static int more_open_msg(const char *file, more_file_t *more)
+static int more_open_msg(const char *file, size_t size, more_file_t *more)
 {
 	more->opt |= NO_QUOTE | NO_EMPHASIZE;
 
@@ -834,7 +836,7 @@ static int more_open_msg(const char *file, more_file_t *more)
 		return -1;
 	fb_flock(fileno(fp), LOCK_EX);
 	fseek(fp, 0, SEEK_END);
-	int size = ftell(fp);
+	size = ftell(fp);
 
 	int len = 0;
 	char head[LINE_BUFSIZE], buf[LINE_BUFSIZE];
@@ -910,7 +912,7 @@ int msg_more(void)
 	set_user_status(ST_LOOKMSGS);
 
 	int ch;
-	more_file_t *more = more_open(file, DEFAULT_TERM_WIDTH, more_open_msg);
+	more_file_t *more = more_open(file, 0, DEFAULT_TERM_WIDTH, more_open_msg);
 	if (more == NULL) {
 		//% presskeyfor("没有任何的讯息存在...", t_lines - 1);
 		presskeyfor("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xb5\xc4\xd1\xb6\xcf\xa2\xb4\xe6\xd4\xda...", t_lines - 1);
@@ -950,6 +952,23 @@ int ansimore4(char *filename, int promptend, char *board, char *path, int ent)
 {
 	clear();
 	return rawmore2(filename, promptend, 0, 0, NA);
+}
+
+int ansimore_buffer(const char *buf, size_t size, int promptend)
+{
+	clear();
+
+	more_file_t *more = more_open(buf, size, DEFAULT_TERM_WIDTH,
+			more_open_buffer);
+	if (!more)
+		return -1;
+	int ch = more_main(more, promptend, 0, 0, NA, more_prompt_file, NULL);
+	more_close(more);
+
+	move(t_lines - 1, 0);
+	prints("\033[m");
+	refresh();
+	return ch;
 }
 
 int ansimore(const char *filename, int promptend)

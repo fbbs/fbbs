@@ -63,6 +63,7 @@ int check_calltime(void);
 void R_monitor(int);
 int msg_more(void);
 int ansimore4(char *filename, int promptend, char *board, char *path, int ent);
+int ansimore_buffer(const char *buf, size_t size, int promptend);
 int ansimore(const char *filename, int promptend);
 int ansimore2(char *filename, int promptend, int row, int numlines);
 void show_help(const char *fname);
