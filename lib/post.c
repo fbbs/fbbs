@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <sys/uio.h>
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/brc.h"
@@ -117,25 +118,26 @@ enum {
 
 void post_index_record_open(post_index_record_t *rec)
 {
-	rec->base = -1;
+	rec->base = 0;
 	rec->rdonly = RECORD_READ;
 }
 
 static int post_index_record_check(post_index_record_t *rec, post_id_t id,
 		record_perm_e rdonly)
 {
-	post_id_t base = id / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE;
-	if (rec->base >= 0 && rec->base == base && (rdonly || !rec->rdonly))
+	post_id_t base = (id - 1) / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE + 1;
+	if (rec->base > 0 && rec->base == base && (rdonly || !rec->rdonly))
 		return 0;
 
-	if (rec->base >= 0)
+	if (rec->base > 0)
 		mmap_close(&rec->map);
 
 	rec->base = base;
 	rec->rdonly = rdonly;
 	rec->map.oflag = rdonly ? O_RDONLY : O_RDWR;
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "index/%"PRIdPID, id / POST_INDEX_PER_FILE);
+	snprintf(file, sizeof(file), "index/%"PRIdPID,
+			(id - 1) / POST_INDEX_PER_FILE);
 	return mmap_open(file, &rec->map);
 }
 
@@ -166,8 +168,143 @@ void post_index_record_close(post_index_record_t *rec)
 {
 	if (rec->base >= 0)
 		mmap_close(&rec->map);
-	rec->base = -1;
+	rec->base = 0;
 	rec->rdonly = RECORD_READ;
+}
+
+enum {
+	POST_CONTENT_PER_FILE = 10000,
+};
+
+typedef struct {
+	uint32_t offset;
+	uint32_t length;
+} post_content_header_t;
+
+static char *post_content_file_name(post_id_t id, char *file, size_t size)
+{
+	snprintf(file, size, "post/%"PRIdPID, (id - 1) / POST_CONTENT_PER_FILE);
+	return file;
+}
+
+enum {
+	POST_CONTENT_NOT_EXIST = 0,
+	POST_CONTENT_NEED_LOCK = 1,
+	POST_CONTENT_READ_ERROR = 2,
+};
+
+static char *post_content_try_get(int fd, post_id_t id, char *buf, size_t size)
+{
+	int relative_id = (id - 1) % POST_CONTENT_PER_FILE;
+
+	post_content_header_t header;
+	lseek(fd, relative_id * sizeof(header), SEEK_SET);
+	file_read(fd, &header, sizeof(header));
+
+	if (!header.offset) {
+		buf[0] = POST_CONTENT_NOT_EXIST;
+		return NULL;
+	}
+
+	if (!header.length) {
+		buf[0] = '\0';
+		return buf;
+	}
+
+	char *sbuf = buf;
+	if (header.length >= size) {
+		sbuf = malloc(header.length + 1);
+	}
+
+	char hdr[3];
+	struct iovec vec[] = {
+		{ .iov_base = hdr, .iov_len = sizeof(hdr) },
+		{ .iov_base = sbuf, .iov_len = header.length + 1 },
+	};
+	lseek(fd, header.offset, SEEK_SET);
+	int ret = readv(fd, vec, ARRAY_SIZE(vec));
+
+	if (ret != sizeof(hdr) + header.length + 1) {
+		if (sbuf != buf)
+			free(sbuf);
+		buf[0] = POST_CONTENT_READ_ERROR;
+		return NULL;
+	}
+
+	uint16_t rel = *(uint16_t *) (hdr + 1);
+	if (hdr[0] != '\n' || rel != relative_id || sbuf[header.length] != '\0') {
+		if (sbuf != buf)
+			free(sbuf);
+		buf[0] = POST_CONTENT_NEED_LOCK;
+		return NULL;
+	}
+	return sbuf;
+}
+
+char *post_content_get(post_id_t id, char *buf, size_t size)
+{
+	char file[HOMELEN];
+	post_content_file_name(id, file, sizeof(file));
+
+	int fd = open(file, O_RDONLY);
+	if (fd < 0)
+		return NULL;
+
+	char *ptr = post_content_try_get(fd, id, buf, size);
+	if (!ptr && buf[0] == POST_CONTENT_NEED_LOCK) {
+		file_lock(fd, FILE_WRLCK, 0, FILE_SET, 0);
+		ptr = post_content_try_get(fd, id, buf, size);
+		file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
+	}
+
+	close(fd);
+	return ptr;
+}
+
+int post_content_write(post_id_t id, char *str, size_t size)
+{
+	char file[HOMELEN];
+	post_content_file_name(id, file, sizeof(file));
+
+	int fd = open(file, O_WRONLY | O_CREAT);
+	if (fd < 0)
+		return -1;
+
+	struct stat st;
+	if (file_lock(fd, FILE_WRLCK, 0, FILE_SET, 0) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	if (fstat(fd, &st) < 0) {
+		file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
+		close(fd);
+		return -1;
+	}
+
+	uint32_t offset = st.st_size;
+	if (offset < sizeof(uint32_t) * POST_CONTENT_PER_FILE)
+		offset = sizeof(uint32_t) * POST_CONTENT_PER_FILE;
+
+	post_id_t base = 1 + (id - 1) / POST_CONTENT_PER_FILE
+			* POST_CONTENT_PER_FILE;
+	uint16_t rel = id - base;
+	lseek(fd, rel * sizeof(post_content_header_t), SEEK_SET);
+	post_content_header_t header = { .offset = offset, .length = size };
+	file_write(fd, &header, sizeof(header));
+
+	char buf[3] = { '\n' };
+	memcpy(buf + 1, &rel, sizeof(rel));
+	struct iovec vec[] = {
+		{ .iov_base = buf, .iov_len = sizeof(buf) },
+		{ .iov_base = str, .iov_len = size + 1 },
+	};
+	lseek(fd, offset, SEEK_SET);
+	int ret = writev(fd, vec, ARRAY_SIZE(vec));
+
+	file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
+	close(fd);
+	return ret;
 }
 
 const char *pid_to_base32(post_id_t pid, char *s, size_t size)
