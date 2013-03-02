@@ -88,48 +88,63 @@ int record_append(record_t *rec, const void *ptr, int count)
 	return file_write(rec->fd, ptr, count * rec->rlen);
 }
 
-static int _record_delete(record_t *rec, mmap_t *m, int offset,
-		record_filter_t filter, void *fargs,
-		record_callback_t callback, void *cargs)
+static int check_offset(const record_t *rec, const mmap_t *m, void *ptr,
+		int offset)
 {
-	int deleted = 0, len = rec->rlen;
-	char *ptr = m->ptr, *end = m->ptr;
-	ptr += offset * rec->rlen;
-	end += m->size;
+	const char *begin = m->ptr;
+	if (ptr && offset && offset * rec->rlen < m->size
+			&& rec->cmp(begin + offset * rec->rlen, ptr) >= 0)
+		return offset;
+	return 0;
+}
 
-	for (; ptr < end; ptr += len) {
-		if (filter(ptr, fargs) == 0) {
-			++deleted;
+static int record_apply(record_t *rec, void *ptr, int offset,
+		record_filter_t filter, void *fargs,
+		record_callback_t callback, void *cargs,
+		record_update_t update, void *uargs)
+{
+	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
+	if (mmap_open_fd(&m) < 0)
+		return -1;
+
+	offset = check_offset(rec, &m, ptr, offset);
+
+	int affected = 0, len = rec->rlen;
+	char *p = m.ptr, *end = m.ptr;
+	p += offset * rec->rlen;
+	end += m.size;
+
+	for (; p < end; p += len) {
+		if (filter(p, fargs) == 0) {
+			++affected;
+			if (update)
+				update(p, uargs);
 			if (callback)
-				callback(ptr, cargs);
-		} else if (deleted)
-			memcpy(ptr - deleted * len, ptr, len);
+				callback(p, cargs);
+		} else if (!update)
+			memcpy(p - affected * len, p, len);
 	}
 
-	if (deleted)
-		file_truncate(rec->fd, m->size - deleted * len);
-	return deleted;
+	if (affected && !update)
+		file_truncate(rec->fd, m.size - affected * len);
+	mmap_unmap(&m);
+	return affected;
 }
 
 int record_delete(record_t *rec, void *ptr, int offset,
 		record_filter_t filter, void *fargs,
 		record_callback_t callback, void *cargs)
 {
-	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
-	if (mmap_open_fd(&m) < 0)
-		return -1;
+	return record_apply(rec, ptr, offset, filter, fargs, callback, cargs,
+			NULL, NULL);
+}
 
-	char *p = m.ptr;
-	if (ptr && offset && offset * rec->rlen < m.size
-			&& rec->cmp(p + offset * rec->rlen, ptr) >= 0) {
-		;
-	} else {
-		offset = 0;
-	}
-
-	int deleted = _record_delete(rec, &m, 0, filter, fargs, callback, cargs);
-	mmap_unmap(&m);
-	return deleted;
+int record_update(record_t *rec, void *ptr, int offset,
+		record_filter_t filter, void *fargs,
+		record_update_t update, void *uargs)
+{
+	return record_apply(rec, ptr, offset, filter, fargs, NULL, NULL,
+			update, uargs);
 }
 
 int record_insert(record_t *rec, void *ptr, int count)

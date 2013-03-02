@@ -23,6 +23,7 @@ typedef enum {
 typedef int (*record_cmp_t)(const void *, const void *);
 typedef int (*record_filter_t)(const void *, void *);
 typedef int (*record_callback_t)(const void *, void *);
+typedef int (*record_update_t)(void *, void *);
 
 typedef struct record_t {
 	int fd;
