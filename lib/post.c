@@ -117,51 +117,50 @@ enum {
 	POST_INDEX_PER_FILE = 100000,
 };
 
-void post_index_record_open(post_index_record_t *rec)
+void post_index_record_open(post_index_record_t *pir)
 {
-	rec->base = 0;
-	rec->rdonly = RECORD_READ;
+	pir->base = 0;
+	pir->rdonly = RECORD_READ;
 }
 
-static int post_index_record_check(post_index_record_t *rec, post_id_t id,
+static int post_index_record_check(post_index_record_t *pir, post_id_t id,
 		record_perm_e rdonly)
 {
 	post_id_t base = (id - 1) / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE + 1;
-	if (rec->base > 0 && rec->base == base && (rdonly || !rec->rdonly))
+	if (pir->base > 0 && pir->base == base && (rdonly || !pir->rdonly))
 		return 0;
 
-	if (rec->base > 0)
-		mmap_close(&rec->map);
+	if (pir->base > 0)
+		mmap_close(&pir->map);
 
-	rec->base = base;
-	rec->rdonly = rdonly;
-	rec->map.oflag = rdonly ? O_RDONLY : O_RDWR;
+	pir->base = base;
+	pir->rdonly = rdonly;
+	pir->map.oflag = rdonly ? O_RDONLY : O_RDWR;
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "index/%"PRIdPID,
 			(id - 1) / POST_INDEX_PER_FILE);
-	return mmap_open(file, &rec->map);
+	return mmap_open(file, &pir->map);
 }
 
-int post_index_record_read(post_index_record_t *rec, post_id_t id,
-		post_index_t *buf)
+int post_index_record_read(post_index_record_t *pir, post_id_t id,
+		post_index_t *pi)
 {
-	if (post_index_record_check(rec, id, RECORD_READ) == 0) {
-		post_index_t *ptr = rec->map.ptr;
-		*buf = *(ptr + (id - rec->base));
+	if (post_index_record_check(pir, id, RECORD_READ) == 0) {
+		post_index_t *ptr = pir->map.ptr;
+		*pi = *(ptr + (id - pir->base));
 		return 1;
 	}
-	memset(buf, 0, sizeof(*buf));
+	memset(pi, 0, sizeof(*pi));
 	return 0;
 }
 
-int post_index_record_update(post_index_record_t *rec, post_id_t id,
-		post_index_t *buf)
+int post_index_record_update(post_index_record_t *pir, const post_index_t *pi)
 {
-	if (post_index_record_check(rec, id, RECORD_WRITE) < 0)
+	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
 		return 0;
 
-	post_index_t *ptr = rec->map.ptr;
-	*(ptr + (id - rec->base)) = *buf;
+	post_index_t *ptr = pir->map.ptr;
+	*(ptr + (pi->id - pir->base)) = *pi;
 	return 1;
 }
 
@@ -185,12 +184,12 @@ static int post_index_record_lock(post_index_record_t *pir, file_lock_e lock,
 			sizeof(post_index_t));
 }
 
-void post_index_record_close(post_index_record_t *rec)
+void post_index_record_close(post_index_record_t *pir)
 {
-	if (rec->base >= 0)
-		mmap_close(&rec->map);
-	rec->base = 0;
-	rec->rdonly = RECORD_READ;
+	if (pir->base >= 0)
+		mmap_close(&pir->map);
+	pir->base = 0;
+	pir->rdonly = RECORD_READ;
 }
 
 enum {
@@ -512,42 +511,48 @@ const char *post_recent_table(int bid)
 	return "posts.recent";
 }
 
+static post_id_t next_post_id(void)
+{
+	return mdb_integer(0, "INCR", "post_id_seq");
+}
+
 static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		const char *content)
 {
-	fb_time_t now = time(NULL);
-	user_id_t uid = get_user_id(uname);
+	post_index_t pi = { .id = next_post_id(), };
+	if (pi.id) {
+		pi.reid_delta = pr->reid ? pi.id - pr->reid : 0;
+		pi.tid_delta = pr->tid ? pi.id - pr->tid : 0;
+		pi.stamp = time(NULL);
+		pi.uid = get_user_id(uname);
+		pi.flag = (pr->marked ? POST_FLAG_MARKED : 0)
+				| (pr->locked ? POST_FLAG_LOCKED : 0);
+		pi.bid = pr->board->id;
+		strlcpy(pi.owner, uname, sizeof(pi.owner));
+		convert_g2u(pr->title, pi.utf8_title);
 
-	UTF8_BUFFER(title, POST_TITLE_CCHARS);
-	convert_g2u(pr->title, utf8_title);
+		post_index_record_t pir;
+		post_index_record_open(&pir);
+		if (!post_index_record_update(&pir, &pi))
+			pi.id = 0;
+		post_index_record_close(&pir);
+	}
+	if (pi.id) {
+		post_index_board_t pib = {
+			.id = pi.id, .reid_delta = pi.reid_delta, .tid_delta = pi.tid_delta,
+			.uid = pi.uid, .flag = pi.flag,
+		};
 
-	post_id_t pid = 0, reid, tid;
-	db_res_t *r = db_query("SELECT nextval('posts.base_id_seq')");
-	if (r) {
-		pid = reid = tid = db_get_post_id(r, 0, 0);
-		db_clear(r);
+		record_t record;
+		post_index_board_open(pi.bid, RECORD_WRITE, &record);
+		record_lock_all(&record, RECORD_WRLCK);
+		if (record_append(&record, &pib, 1) < 0)
+			pi.id = 0;
+		record_lock_all(&record, RECORD_UNLCK);
+		record_close(&record);
 	}
 
-	if (pid) {
-		reid = pr->reid ? pr->reid : pid;
-		tid = pr->tid ? pr->tid : pid;
-		int fake_pid = incr_last_fake_pid(pr->board->id, 1);
-
-		query_t *q = query_new(0);
-		query_append(q, "INSERT INTO");
-		query_append(q, post_recent_table(pr->board->id));
-		query_append(q, "(id, reid, tid, owner, stamp, board, uname, title,"
-				" content, locked, marked, fake_id)");
-		query_append(q, "VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID","
-				" %"DBIdUID", %t, %d, %s, %s, %s, %b, %b, %d)",
-				pid, reid, tid, uid, now, pr->board->id, uname,
-				utf8_title, content, pr->locked, pr->marked, fake_pid);
-		db_res_t *r = query_cmd(q);
-		if (!r || db_cmd_rows(r) != 1)
-			pid = 0;
-		db_clear(r);
-	}
-	return pid;
+	return pi.id;
 }
 
 /**

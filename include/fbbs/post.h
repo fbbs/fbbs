@@ -183,10 +183,10 @@ extern int post_index_board_read(record_t *rec, int base, post_index_record_t *p
 extern int post_index_trash_cmp(const void *p1, const void *p2);
 extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
 
-extern void post_index_record_open(post_index_record_t *rec);
-extern int post_index_record_read(post_index_record_t *rec, post_id_t id, post_index_t *buf);
-extern int post_index_record_update(post_index_record_t *rec, post_id_t id, post_index_t *buf);
-extern void post_index_record_close(post_index_record_t *rec);
+extern void post_index_record_open(post_index_record_t *pir);
+extern int post_index_record_read(post_index_record_t *pir, post_id_t id, post_index_t *pi);
+extern int post_index_record_update(post_index_record_t *pir, const post_index_t *pi);
+extern void post_index_record_close(post_index_record_t *pir);
 
 extern char *post_content_get(post_id_t id, char *buf, size_t size);
 extern int post_content_write(post_id_t id, char *str, size_t size);
