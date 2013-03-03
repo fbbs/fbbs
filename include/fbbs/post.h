@@ -201,11 +201,10 @@ extern void quote_string(const char *str, size_t size, const char *output,
 extern void quote_file_(const char *orig, const char *output, int mode,
 		bool mail, size_t (*filter)(const char *, size_t, FILE *));
 
-extern int set_post_flag(post_filter_t *filter, const char *field, bool set, bool toggle);
-extern bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky);
+extern int set_post_flag(record_t *rec, post_index_record_t *pir, post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
+extern int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset, post_flag_e flag, bool set, bool toggle);
 
 extern void res_to_post_info(db_res_t *r, int i, bool archive, post_info_t *p);
-void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set);
 extern int load_sticky_posts(int bid, post_info_t **posts);
 extern bool is_deleted(post_list_type_e type);
 extern post_list_type_e post_list_type(const post_info_t *ip);

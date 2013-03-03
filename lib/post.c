@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/uio.h>
@@ -162,6 +163,17 @@ int post_index_record_update(post_index_record_t *rec, post_id_t id,
 	post_index_t *ptr = rec->map.ptr;
 	*(ptr + (id - rec->base)) = *buf;
 	return 1;
+}
+
+static void post_index_record_get_title(post_index_record_t *rec,
+		post_id_t id, char *buf, size_t size)
+{
+	if (post_index_record_check(rec, id, RECORD_READ) < 0) {
+		buf[0] = '\0';
+	} else {
+		post_index_t *ptr = rec->map.ptr;
+		strlcpy(buf, ptr->utf8_title, size);
+	}
 }
 
 void post_index_record_close(post_index_record_t *rec)
@@ -788,23 +800,87 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 	}
 }
 
-int set_post_flag(post_filter_t *filter, const char *field, bool set,
-		bool toggle)
+typedef struct {
+	post_index_record_t *pir;
+	const post_filter_t *filter;
+} post_index_board_filter_t;
+
+typedef struct {
+	bool set;
+	bool toggle;
+	post_flag_e flag;
+} post_index_board_update_flag_t;
+
+static int match_filter(const post_index_board_t *pib,
+		post_index_record_t *pir, const post_filter_t *filter, int offset)
 {
-	query_t *q = query_new(0);
-	query_update(q, post_table_name(filter));
-	query_sappend(q, "SET", field);
-	if (toggle)
-		query_sappend(q, "= NOT", field);
+	bool match = true;
+	if (filter->uid)
+		match &= pib->uid == filter->uid;
+	if (filter->min)
+		match &= pib->id >= filter->min;
+	if (filter->max)
+		match &= pib->id <= filter->max;
+	if (filter->tid)
+		match &= pib->id - pib->tid_delta == filter->tid;
+	if (filter->flag)
+		match &= (pib->flag & filter->flag) == filter->flag;
+	if (filter->fake_id_min)
+		match &= offset >= filter->fake_id_min - 1;
+	if (filter->fake_id_max)
+		match &= offset < filter->fake_id_max;
+	if (*filter->utf8_keyword) {
+		UTF8_BUFFER(title, POST_TITLE_CCHARS);
+		post_index_record_get_title(pir, pib->id, utf8_title,
+				sizeof(utf8_title));
+		match &= (bool) strcasestr(utf8_title, filter->utf8_keyword);
+	}
+	return match;
+}
+
+static int post_index_board_filter(const void *pib, void *fargs, int offset)
+{
+	const post_index_board_filter_t *pibf = fargs;
+	return match_filter(pib, pibf->pir, pibf->filter, offset);
+}
+
+static void post_index_board_update_flag(void *ptr, void *uargs)
+{
+	post_index_board_t *pib = ptr;
+	post_index_board_update_flag_t *pibuf = uargs;
+	if (pibuf->toggle)
+		pibuf->set = pib->flag & pibuf->flag;
+	if (pibuf->set)
+		pib->flag |= pibuf->flag;
 	else
-		query_append(q, "= %b", set);
-	build_post_filter(q, filter, NULL);
+		pib->flag &= ~pibuf->flag;
+}
 
-	db_res_t *res = query_cmd(q);
+int set_post_flag(record_t *rec, post_index_record_t *pir,
+		post_filter_t *filter, post_flag_e flag, bool set, bool toggle)
+{
+	post_index_board_filter_t pibf = { .pir = pir, .filter = filter };
+	post_index_board_update_flag_t pibuf = {
+		.set = set, .toggle = toggle, .flag = flag,
+	};
+	return record_update(rec, NULL, 0, post_index_board_filter, &pibf,
+			post_index_board_update_flag, &pibuf);
+}
 
-	int rows = res ? db_cmd_rows(res) : 0;
-	db_clear(res);
-	return rows;
+static int post_index_board_filter_one(const void *ptr, void *fargs,
+		int offset)
+{
+	return post_index_cmp(ptr, fargs);
+}
+
+int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset,
+		post_flag_e flag, bool set, bool toggle)
+{
+	post_index_board_update_flag_t pibuf = {
+		.set = set, .toggle = toggle, .flag = flag,
+	};
+	return record_update(rec, pib, offset, post_index_board_filter_one, pib,
+			post_index_board_update_flag, &pibuf);
 }
 
 int count_sticky_posts(int bid)
@@ -814,18 +890,6 @@ int count_sticky_posts(int bid)
 	int rows = r ? db_get_bigint(r, 0, 0) : 0;
 	db_clear(r);
 	return rows;
-}
-
-bool sticky_post_unchecked(int bid, post_id_t pid, bool sticky)
-{
-	if (sticky) {
-		int count = count_sticky_posts(bid);
-		if (count >= MAX_NOTICE)
-			return false;
-	}
-
-	post_filter_t filter = { .bid = bid, .min = pid, .max = pid };
-	return set_post_flag(&filter, "sticky", sticky, false);
 }
 
 void res_to_post_info(db_res_t *r, int i, bool archive, post_info_t *p)
@@ -858,14 +922,6 @@ void res_to_post_info(db_res_t *r, int i, bool archive, post_info_t *p)
 	}
 }
 
-void set_post_flag_local(post_info_t *ip, post_flag_e flag, bool set)
-{
-	if (set)
-		ip->flag |= flag;
-	else
-		ip->flag &= ~flag;
-}
-
 int load_sticky_posts(int bid, post_info_t **posts)
 {
 	if (!*posts)
@@ -877,7 +933,7 @@ int load_sticky_posts(int bid, post_info_t **posts)
 		int count = db_res_rows(r);
 		for (int i = 0; i < count; ++i) {
 			res_to_post_info(r, i, 0, *posts + i);
-			set_post_flag_local(*posts + i, POST_FLAG_STICKY, true);
+//			set_post_flag_local(*posts + i, POST_FLAG_STICKY, true);
 		}
 		db_clear(r);
 		return count;

@@ -115,7 +115,8 @@ static int record_apply(record_t *rec, void *ptr, int offset,
 	end += m.size;
 
 	for (; p < end; p += len, ++offset) {
-		if (filter(p, fargs, offset) == 0) {
+		int r = filter(p, fargs, offset);
+		if (r == 0) {
 			++affected;
 			if (update)
 				update(p, uargs);
@@ -123,6 +124,8 @@ static int record_apply(record_t *rec, void *ptr, int offset,
 				callback(p, cargs);
 		} else if (!update)
 			memcpy(p - affected * len, p, len);
+		else if (r > 0)
+			break;
 	}
 
 	if (affected && !update)
