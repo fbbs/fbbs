@@ -226,8 +226,7 @@ extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool 
 extern int undelete_posts(post_filter_t *filter);
 
 extern db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields);
-extern bool alter_title(const post_info_t *ip, const char *title);
-extern bool alter_content(const post_info_t *ip, const char *content);
+extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
 
 extern int get_post_mark(const post_info_t *p);
 

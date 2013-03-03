@@ -165,15 +165,24 @@ int post_index_record_update(post_index_record_t *rec, post_id_t id,
 	return 1;
 }
 
-static void post_index_record_get_title(post_index_record_t *rec,
+static void post_index_record_get_title(post_index_record_t *pir,
 		post_id_t id, char *buf, size_t size)
 {
-	if (post_index_record_check(rec, id, RECORD_READ) < 0) {
+	if (post_index_record_check(pir, id, RECORD_READ) < 0) {
 		buf[0] = '\0';
 	} else {
-		post_index_t *ptr = rec->map.ptr;
+		post_index_t *ptr = pir->map.ptr;
+		ptr += id - pir->base;
 		strlcpy(buf, ptr->utf8_title, size);
 	}
+}
+
+static int post_index_record_lock(post_index_record_t *pir, file_lock_e lock,
+		post_id_t id)
+{
+	return file_lock(pir->map.fd, lock,
+			(id - pir->base) * sizeof(post_index_t), FILE_SET,
+			sizeof(post_index_t));
 }
 
 void post_index_record_close(post_index_record_t *rec)
@@ -1239,44 +1248,28 @@ static char *replace_content_title(const char *content, size_t len,
 	return s;
 }
 
-bool alter_title(const post_info_t *ip, const char *title)
+bool alter_title(post_index_record_t *pir, const post_info_t *pi)
 {
-	post_filter_t filter = { .min = ip->id, .type = post_list_type(ip), };
-	db_res_t *res = query_post_by_pid(&filter, "content");
-	if (res && db_res_rows(res) == 1) {
-		char *content = replace_content_title(db_get_value(res, 0, 0),
-				db_get_length(res, 0, 0), title);
-		db_clear(res);
-		if (!content)
-			return false;
+	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
+		return false;
 
-		query_t *q = query_new(0);
-		query_update(q, post_table_name(&filter));
-		query_append(q, "SET title = %s, content = %s", title, content);
-		query_where(q, "id = %"DBIdPID, ip->id);
+	post_index_record_lock(pir, FILE_WRLCK, pi->id);
+	post_index_t *ptr = pir->map.ptr;
+	ptr += pi->id - pir->base;
+	strlcpy(ptr->utf8_title, pi->utf8_title, sizeof(ptr->utf8_title));
+	post_index_record_lock(pir, FILE_UNLCK, pi->id);
 
-		res = query_cmd(q);
-		bool success = res;
-
-		db_clear(res);
+	char buf[4096];
+	char *content = post_content_get(pi->id, buf, sizeof(buf));
+	if (!content)
+		return false;
+	char *new_content =
+		replace_content_title(content, strlen(content), pi->utf8_title);
+	post_content_write(pi->id, new_content, strlen(new_content));
+	free(new_content);
+	if (content != buf)
 		free(content);
-		return success;
-	}
-	return false;
-}
-
-bool alter_content(const post_info_t *ip, const char *content)
-{
-	post_filter_t filter = { .type = post_list_type(ip), };
-
-	query_t *q = query_new(0);
-	query_update(q, post_table_name(&filter));
-	query_set(q, "content = %s", content);
-	query_where(q, "id = %"DBIdPID, ip->id);
-
-	db_res_t *res = query_cmd(q);
-	db_clear(res);
-	return res;
+	return true;
 }
 
 int get_post_mark(const post_info_t *p)
