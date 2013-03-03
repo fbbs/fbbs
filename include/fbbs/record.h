@@ -21,9 +21,9 @@ typedef enum {
 } record_perm_e;
 
 typedef int (*record_cmp_t)(const void *, const void *);
-typedef int (*record_filter_t)(const void *, void *);
+typedef int (*record_filter_t)(const void *, void *, int);
 typedef int (*record_callback_t)(const void *, void *);
-typedef int (*record_update_t)(void *, void *);
+typedef void (*record_update_t)(void *, void *);
 
 typedef struct record_t {
 	int fd;
@@ -41,6 +41,7 @@ extern int record_read(record_t *rec, void *ptr, int count);
 extern int record_read_after(record_t *rec, void *ptr, int count, int offset);
 extern int record_append(record_t *rec, const void *ptr, int count);
 extern int record_delete(record_t *rec, void *ptr, int offset, record_filter_t filter, void *fargs, record_callback_t callback, void *cargs);
+extern int record_update(record_t *rec, void *ptr, int offset, record_filter_t filter, void *fargs, record_update_t update, void *uargs);
 extern int record_insert(record_t *rec, void *ptr, int count);
 
 #endif // FB_RECORD_H

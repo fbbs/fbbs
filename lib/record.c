@@ -114,8 +114,8 @@ static int record_apply(record_t *rec, void *ptr, int offset,
 	p += offset * rec->rlen;
 	end += m.size;
 
-	for (; p < end; p += len) {
-		if (filter(p, fargs) == 0) {
+	for (; p < end; p += len, ++offset) {
+		if (filter(p, fargs, offset) == 0) {
 			++affected;
 			if (update)
 				update(p, uargs);
