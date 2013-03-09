@@ -43,5 +43,6 @@ extern int record_apply(record_t *rec, void *ptr, int offset, record_filter_t fi
 #define record_delete(r, p, o, f, a, c, g)  record_apply(r, p, o, f, a, c, g, true)
 #define record_update(r, p, o, f, a, c, g)  record_apply(r, p, o, f, a, c, g, false)
 extern int record_insert(record_t *rec, void *ptr, int count);
+extern int record_merge(record_t *rec, void *ptr, int count);
 
 #endif // FB_RECORD_H

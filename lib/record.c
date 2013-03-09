@@ -166,6 +166,36 @@ int record_insert(record_t *rec, void *ptr, int count)
 	return 0;
 }
 
+int record_merge(record_t *rec, void *ptr, int count)
+{
+	if (count <= 0)
+		return 0;
+	qsort(ptr, count, rec->rlen, rec->cmp);
+
+	int rlen = rec->rlen;
+	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
+	if (mmap_open_fd(&m) < 0 || mmap_truncate(&m, m.size + count * rlen) < 0)
+		return -1;
+	char *src = m.ptr, *dst = m.ptr;
+	memmove(src + rlen * count, src, rlen * count);
+
+	char *p2 = ptr, *end = ptr;
+	end = p2 + rlen * count;
+	while (p2 < end) {
+		if (rec->cmp(src, p2) <= 0) {
+			memcpy(dst, src, rlen);
+			src += rlen;
+		} else {
+			memcpy(dst, p2, rlen);
+			p2 += rlen;
+		}
+		dst += rlen;
+	}
+
+	mmap_close(&m);
+	return 0;
+}
+
 USE_TRY;
 
 /**
