@@ -98,10 +98,9 @@ static int check_offset(const record_t *rec, const mmap_t *m, void *ptr,
 	return 0;
 }
 
-static int record_apply(record_t *rec, void *ptr, int offset,
+int record_apply(record_t *rec, void *ptr, int offset,
 		record_filter_t filter, void *fargs,
-		record_callback_t callback, void *cargs,
-		record_update_t update, void *uargs)
+		record_callback_t callback, void *cargs, bool delete_)
 {
 	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
 	if (mmap_open_fd(&m) < 0)
@@ -118,36 +117,18 @@ static int record_apply(record_t *rec, void *ptr, int offset,
 		int r = filter(p, fargs, offset);
 		if (r == 0) {
 			++affected;
-			if (update)
-				update(p, uargs);
 			if (callback)
 				callback(p, cargs);
-		} else if (!update)
+		} else if (delete_)
 			memcpy(p - affected * len, p, len);
 		else if (r > 0)
 			break;
 	}
 
-	if (affected && !update)
+	if (affected && delete_)
 		file_truncate(rec->fd, m.size - affected * len);
 	mmap_unmap(&m);
 	return affected;
-}
-
-int record_delete(record_t *rec, void *ptr, int offset,
-		record_filter_t filter, void *fargs,
-		record_callback_t callback, void *cargs)
-{
-	return record_apply(rec, ptr, offset, filter, fargs, callback, cargs,
-			NULL, NULL);
-}
-
-int record_update(record_t *rec, void *ptr, int offset,
-		record_filter_t filter, void *fargs,
-		record_update_t update, void *uargs)
-{
-	return record_apply(rec, ptr, offset, filter, fargs, NULL, NULL,
-			update, uargs);
 }
 
 int record_insert(record_t *rec, void *ptr, int count)
