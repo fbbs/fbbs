@@ -858,7 +858,7 @@ static int post_index_board_filter(const void *pib, void *fargs, int offset)
 	return match_filter(pib, pibf->pir, pibf->filter, offset);
 }
 
-static void post_index_board_update_flag(void *ptr, void *uargs)
+static int post_index_board_update_flag(void *ptr, void *uargs)
 {
 	post_index_board_t *pib = ptr;
 	post_index_board_update_flag_t *pibuf = uargs;
@@ -868,6 +868,7 @@ static void post_index_board_update_flag(void *ptr, void *uargs)
 		pib->flag |= pibuf->flag;
 	else
 		pib->flag &= ~pibuf->flag;
+	return 0;
 }
 
 int set_post_flag(record_t *rec, post_index_record_t *pir,
@@ -1137,35 +1138,81 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
-int post_deletion_trigger(db_res_t *res, int bid, bool archive, bool deletion)
-{
-	int rows = db_res_rows(res);
-	if (rows > 0) {
-		if (bid) {
-			post_id_t min = POST_ID_MAX;
-			for (int i = 0; i < rows; ++i) {
-				post_id_t pid = db_get_post_id(res, i, 0);
-				if (pid < min)
-					min = pid;
-			}
-			if (!archive)
-				update_fake_pid(bid, deletion ? -rows : rows, min);
-		}
+typedef struct {
+	post_index_record_t *pir;
+	bool delete_;
+} post_deletion_callback_t;
 
-		for (int i = 0; i < rows; ++i) {
-			user_id_t uid = db_get_user_id(res, i, 1);
-			if (uid && db_get_bool(res, i, 3)) {
-				const char *uname = db_get_value(res, i, 2);
-				adjust_user_post_count(uname, deletion ? -1 : 1);
-			}
-		}
-	}
+static int post_deletion_callback(void *ptr, void *args)
+{
+	post_index_trash_t *pit = ptr;
+	post_deletion_callback_t *pdc = args;
+	post_index_t pi;
+
+	post_index_record_lock(pdc->pir, FILE_WRLCK, pit->id);
+	post_index_record_read(pdc->pir, pit->id, &pi);
+	if (pdc->delete_)
+		pi.flag |= POST_FLAG_DELETED;
+	else
+		pi.flag &= ~POST_FLAG_DELETED;
+	post_index_record_update(pdc->pir, &pi);
+	post_index_record_lock(pdc->pir, FILE_UNLCK, pit->id);
+
+	if (pit->flag & POST_FLAG_JUNK)
+		adjust_user_post_count(pi.owner, pdc->delete_ ? -1 : 1);
+	return 0;
+}
+
+static int post_deletion_trigger(record_t *trash, const post_filter_t *filter,
+		post_index_record_t *pir, bool deletion)
+{
+	post_index_board_filter_t pibf = { .pir = pir, .filter = filter, };
+	post_deletion_callback_t pdc = { .pir = pir, .delete_ = deletion, };
+	int rows = record_update(trash, NULL, 0, post_index_board_filter, &pibf,
+			post_deletion_callback, &pdc);
 	return rows;
 }
 
-int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
+typedef struct {
+	record_t *trash;
+	const char *ename;
+	fb_time_t estamp;
+	bool junk;
+	bool decrease;
+} post_index_trash_insert_t;
+
+static int post_index_trash_insert(void *rec, void *cargs)
 {
-	fb_time_t now = time(NULL);
+	const post_index_board_t *pib = rec;
+	post_index_trash_insert_t *piti = cargs;
+	post_index_trash_t pit = {
+		.id = pib->id,
+		.reid_delta = pib->reid_delta,
+		.tid_delta = pib->tid_delta,
+		.uid = pib->uid,
+		.flag = pib->flag,
+		.estamp = piti->estamp,
+	};
+	if (piti->decrease && (piti->junk || (pib->flag & POST_FLAG_WATER)))
+		pit.flag |= POST_FLAG_JUNK;
+	strlcpy(pit.ename, piti->ename, sizeof(pit.ename));
+	return record_append(piti->trash, &pit, 1);
+}
+
+static int post_index_board_filter_unmarked(const void *ptr, void *fargs,
+		int offset)
+{
+	const post_index_board_t *pib = ptr;
+	const post_index_board_filter_t *pibf = fargs;
+	return !(pib->flag & POST_FLAG_MARKED)
+			&& match_filter(pib, pibf->pir, pibf->filter, offset);
+}
+
+int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
+		bool junk, bool bm_visible, bool force)
+{
+	if (!filter->bid)
+		return 0;
 
 	bool decrease = true;
 	board_t board;
@@ -1174,42 +1221,88 @@ int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force)
 		decrease = false;
 	}
 
-	query_t *q = query_new(0);
-	query_append(q, "WITH rows AS ( DELETE FROM");
-	query_append(q, post_table_name(filter));
-	build_post_filter(q, filter, NULL);
-	if (!force)
-		query_and(q, "NOT marked");
-	query_and(q, "NOT sticky");
-	query_returning(q, POST_LIST_FIELDS_FULL ")");
-	query_insert(q, "posts.deleted ", "("POST_LIST_FIELDS_FULL
-			",eraser,deleted,junk,bm_visible,ename)");
-	query_append(q, "SELECT " POST_LIST_FIELDS_FULL ","
-			" %"DBIdUID", %t, %b AND (water OR %b),"" %b, %s FROM rows",
-			session.uid, now, decrease, junk, bm_visible, currentuser.userid);
-	query_returning(q, "id,owner,uname,junk");
+	record_t record, trash;
+	post_index_board_open(filter->bid, RECORD_WRITE, &record);
+	post_index_trash_open(filter->bid,
+			bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash);
+	post_index_record_t pir;
+	post_index_record_open(&pir);
 
-	db_res_t *res = query_exec(q);
-	int rows = post_deletion_trigger(res, filter->bid, filter->archive, true);
-	db_clear(res);
-	return rows;
+	post_index_board_filter_t pibf = { .pir = &pir, .filter = filter };
+	post_index_trash_insert_t piti = {
+		.trash = &trash, .ename = currentuser.userid,
+		.estamp = time(NULL), .junk = junk, .decrease = decrease,
+	};
+
+	record_lock_all(&trash, RECORD_WRLCK);
+	int current = record_seek(&trash, 0, RECORD_CUR);
+
+	record_lock_all(&record, RECORD_WRLCK);
+	int deleted = record_delete(&record, ptr, offset,
+			force ? post_index_board_filter : post_index_board_filter_unmarked,
+			&pibf, post_index_trash_insert, &piti);
+	record_lock_all(&record, RECORD_UNLCK);
+
+	post_filter_t filter2 = { .fake_id_min = current + 1 };
+	post_deletion_trigger(&trash, &filter2, &pir, true);
+
+	record_lock_all(&trash, RECORD_UNLCK);
+	return deleted;
 }
 
-int undelete_posts(post_filter_t *filter)
-{
-	query_t *q = query_new(0);
-	query_append(q, "WITH rows AS ( DELETE FROM posts.deleted");
-	build_post_filter(q, filter, NULL);
-	query_returning(q, "junk,"POST_LIST_FIELDS_FULL ")");
-	query_insert(q, "posts.recent", "(junk," POST_LIST_FIELDS_FULL ")");
-	query_select(q, "junk,"POST_LIST_FIELDS_FULL);
-	query_from(q, "rows");
-	query_returning(q, "id,owner,uname,junk");
+typedef struct {
+	post_index_board_t *buf;
+	int count;
+	int max;
+} post_undeletion_callback_t;
 
-	db_res_t *res = query_exec(q);
-	int rows = post_deletion_trigger(res, filter->bid, filter->archive, false);
-	db_clear(res);
-	return rows;
+static int post_undeletion_callback(void *ptr, void *args)
+{
+	const post_index_trash_t *pit = ptr;
+	post_undeletion_callback_t *puc = args;
+	if (puc->count >= puc->max)
+		return -1;
+
+	post_index_board_t *pib = puc->buf + puc->count;
+	pib->id = pit->id;
+	pib->reid_delta = pit->reid_delta;
+	pib->tid_delta = pit->tid_delta;
+	pib->uid = pit->uid;
+	pib->flag = pit->flag;
+	return ++puc->count;
+}
+
+int post_index_board_undelete(const post_filter_t *filter, void *ptr,
+		int offset, bool bm_visible)
+{
+	if (!filter->bid)
+		return 0;
+
+	record_t record, trash;
+	post_index_board_open(filter->bid, RECORD_WRITE, &record);
+	post_index_trash_open(filter->bid,
+			bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash);
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+
+	post_index_board_filter_t pibf = { .pir = &pir, .filter = filter };
+
+	record_lock_all(&trash, RECORD_WRLCK);
+	int undeleted = post_deletion_trigger(&trash, filter, &pir, false);
+	post_index_board_t *buf = malloc(undeleted * sizeof(post_index_board_t));
+	post_undeletion_callback_t puc = {
+		.buf = buf, .count = 0, .max = undeleted,
+	};
+
+	record_lock_all(&record, RECORD_WRLCK);
+	record_delete(&trash, NULL, 0, post_index_board_filter, &pibf,
+			post_undeletion_callback, &puc);
+	record_merge(&record, buf, undeleted);
+	record_lock_all(&record, RECORD_UNLCK);
+
+	record_lock_all(&trash, RECORD_UNLCK);
+	free(buf);
+	return undeleted;
 }
 
 db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields)

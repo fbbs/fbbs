@@ -179,6 +179,8 @@ extern int post_index_board_open_file(const char *file, record_perm_e rdonly, re
 extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size);
+extern int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset, bool junk, bool bm_visible, bool force);
+extern int post_index_board_undelete(const post_filter_t *filter, void *ptr, int offset, bool bm_visible);
 
 extern int post_index_trash_cmp(const void *p1, const void *p2);
 extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
