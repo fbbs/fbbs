@@ -196,6 +196,43 @@ int record_merge(record_t *rec, void *ptr, int count)
 	return 0;
 }
 
+int record_search(record_t *rec, record_filter_t filter, void *fargs,
+		bool reverse)
+{
+	char buf[RECORD_BUFFER_SIZE];
+	int capacity = sizeof(buf) / rec->rlen, all = record_count(rec);
+	int count, base;
+	if (all <= 0)
+		return -1;
+	int rounds = (all + capacity - 1) / capacity;
+	if (reverse) {
+		for (int i = 0; i < rounds; ++i) {
+			base = (rounds - 1 - i) * capacity;
+			record_seek(rec, base, RECORD_SET);
+			count = record_read(rec, buf, capacity);
+			if (count <= 0)
+				return -1;
+			for (int j = count - 1; j >= 0; --j) {
+				if (filter(buf + j * rec->rlen, fargs, base + j) == 0)
+					return base + j;
+			}
+		}
+	} else {
+		record_seek(rec, 0, RECORD_SET);
+		for (int i = 0; i < rounds; ++i) {
+			base = i * capacity;
+			count = record_read(rec, buf, capacity);
+			if (count <= 0)
+				return -1;
+			for (int j = 0; j < count; ++j) {
+				if (filter(buf + j * rec->rlen, fargs, base + j) == 0)
+					return base + j;
+			}
+		}
+	}
+	return -1;
+}
+
 USE_TRY;
 
 /**
