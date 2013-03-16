@@ -213,8 +213,11 @@ int record_search(record_t *rec, record_filter_t filter, void *fargs,
 			if (count <= 0)
 				return -1;
 			for (int j = count - 1; j >= 0; --j) {
-				if (filter(buf + j * rec->rlen, fargs, base + j) == 0)
+				int r = filter(buf + j * rec->rlen, fargs, base + j);
+				if (r == 0)
 					return base + j;
+				else if (r > 0)
+					return -1;
 			}
 		}
 	} else {
@@ -225,8 +228,11 @@ int record_search(record_t *rec, record_filter_t filter, void *fargs,
 			if (count <= 0)
 				return -1;
 			for (int j = 0; j < count; ++j) {
-				if (filter(buf + j * rec->rlen, fargs, base + j) == 0)
+				int r = filter(buf + j * rec->rlen, fargs, base + j);
+				if (r == 0)
 					return base + j;
+				else if (r > 0)
+					return -1;
 			}
 		}
 	}
