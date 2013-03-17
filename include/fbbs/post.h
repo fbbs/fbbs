@@ -171,7 +171,7 @@ typedef struct {
 typedef struct {
 	post_id_t base;
 	record_perm_e rdonly;
-	mmap_t map;
+	record_t record;
 } post_index_record_t;
 
 extern int post_index_cmp(const void *p1, const void *p2);

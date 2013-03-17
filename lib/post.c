@@ -123,6 +123,12 @@ void post_index_record_open(post_index_record_t *pir)
 	pir->rdonly = RECORD_READ;
 }
 
+static int post_index_record_cmp(const void *p1, const void *p2)
+{
+	const post_index_t *pi1 = p1, *pi2 = p2;
+	return pi1->id - pi2->id;
+}
+
 static int post_index_record_check(post_index_record_t *pir, post_id_t id,
 		record_perm_e rdonly)
 {
@@ -131,24 +137,23 @@ static int post_index_record_check(post_index_record_t *pir, post_id_t id,
 		return 0;
 
 	if (pir->base > 0)
-		mmap_close(&pir->map);
+		record_close(&pir->record);
 
 	pir->base = base;
 	pir->rdonly = rdonly;
-	pir->map.oflag = rdonly ? O_RDONLY : O_RDWR;
+
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "index/%"PRIdPID,
 			(id - 1) / POST_INDEX_PER_FILE);
-	return mmap_open(file, &pir->map);
+	return record_open(file, post_index_record_cmp, sizeof(post_index_t),
+			rdonly, &pir->record);
 }
 
 int post_index_record_read(post_index_record_t *pir, post_id_t id,
 		post_index_t *pi)
 {
-	if (post_index_record_check(pir, id, RECORD_READ) == 0) {
-		post_index_t *ptr = pir->map.ptr;
-		*pi = *(ptr + (id - pir->base));
-		return 1;
+	if (post_index_record_check(pir, id, RECORD_READ) >= 0) {
+		return record_read_after(&pir->record, pi, 1, id - pir->base);
 	}
 	memset(pi, 0, sizeof(*pi));
 	return 0;
@@ -158,10 +163,7 @@ int post_index_record_update(post_index_record_t *pir, const post_index_t *pi)
 {
 	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
 		return 0;
-
-	post_index_t *ptr = pir->map.ptr;
-	*(ptr + (pi->id - pir->base)) = *pi;
-	return 1;
+	return record_write(&pir->record, pi, 1, pi->id - pir->base);
 }
 
 static void post_index_record_get_title(post_index_record_t *pir,
@@ -170,24 +172,22 @@ static void post_index_record_get_title(post_index_record_t *pir,
 	if (post_index_record_check(pir, id, RECORD_READ) < 0) {
 		buf[0] = '\0';
 	} else {
-		post_index_t *ptr = pir->map.ptr;
-		ptr += id - pir->base;
-		strlcpy(buf, ptr->utf8_title, size);
+		post_index_t pi;
+		post_index_record_read(pir, id, &pi);
+		strlcpy(buf, pi.utf8_title, size);
 	}
 }
 
-static int post_index_record_lock(post_index_record_t *pir, file_lock_e lock,
+static int post_index_record_lock(post_index_record_t *pir, record_lock_e lock,
 		post_id_t id)
 {
-	return file_lock(pir->map.fd, lock,
-			(id - pir->base) * sizeof(post_index_t), FILE_SET,
-			sizeof(post_index_t));
+	return record_lock(&pir->record, lock, id - pir->base, RECORD_SET, 1);
 }
 
 void post_index_record_close(post_index_record_t *pir)
 {
 	if (pir->base >= 0)
-		mmap_close(&pir->map);
+		record_close(&pir->record);
 	pir->base = 0;
 	pir->rdonly = RECORD_READ;
 }
@@ -1149,14 +1149,14 @@ static int post_deletion_callback(void *ptr, void *args)
 	post_deletion_callback_t *pdc = args;
 	post_index_t pi;
 
-	post_index_record_lock(pdc->pir, FILE_WRLCK, pit->id);
+	post_index_record_lock(pdc->pir, RECORD_WRLCK, pit->id);
 	post_index_record_read(pdc->pir, pit->id, &pi);
 	if (pdc->delete_)
 		pi.flag |= POST_FLAG_DELETED;
 	else
 		pi.flag &= ~POST_FLAG_DELETED;
 	post_index_record_update(pdc->pir, &pi);
-	post_index_record_lock(pdc->pir, FILE_UNLCK, pit->id);
+	post_index_record_lock(pdc->pir, RECORD_UNLCK, pit->id);
 
 	if (pit->flag & POST_FLAG_JUNK)
 		adjust_user_post_count(pi.owner, pdc->delete_ ? -1 : 1);
@@ -1351,11 +1351,12 @@ bool alter_title(post_index_record_t *pir, const post_info_t *pi)
 	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
 		return false;
 
-	post_index_record_lock(pir, FILE_WRLCK, pi->id);
-	post_index_t *ptr = pir->map.ptr;
-	ptr += pi->id - pir->base;
-	strlcpy(ptr->utf8_title, pi->utf8_title, sizeof(ptr->utf8_title));
-	post_index_record_lock(pir, FILE_UNLCK, pi->id);
+	post_index_t tmp;
+	post_index_record_lock(pir, RECORD_WRLCK, pi->id);
+	post_index_record_read(pir, pi->id, &tmp);
+	strlcpy(tmp.utf8_title, pi->utf8_title, sizeof(tmp.utf8_title));
+	post_index_record_update(pir, &tmp);
+	post_index_record_lock(pir, RECORD_UNLCK, pi->id);
 
 	char buf[4096];
 	char *content = post_content_get(pi->id, buf, sizeof(buf));
