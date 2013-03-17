@@ -28,7 +28,7 @@ int record_open(const char *file, record_cmp_t cmp, int rlen,
 		rec->fd = fd;
 		return fd;
 	} else if (errno == ENOENT) {
-		fd = open(file, O_RDWR | O_CREAT | O_EXCL);
+		fd = open(file, O_RDWR | O_CREAT | O_EXCL, 0644);
 		rec->fd = fd;
 		return fd;
 	} else {
