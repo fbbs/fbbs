@@ -863,7 +863,7 @@ static int post_index_board_update_flag(void *ptr, void *uargs)
 	post_index_board_t *pib = ptr;
 	post_index_board_update_flag_t *pibuf = uargs;
 	if (pibuf->toggle)
-		pibuf->set = pib->flag & pibuf->flag;
+		pibuf->set = !(pib->flag & pibuf->flag);
 	if (pibuf->set)
 		pib->flag |= pibuf->flag;
 	else
