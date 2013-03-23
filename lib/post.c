@@ -327,6 +327,51 @@ int post_content_write(post_id_t id, char *str, size_t size)
 	return ret;
 }
 
+static int post_sticky_filter(const void *ptr, void *fargs, int offset)
+{
+	const post_index_board_t *pib = ptr;
+	post_id_t *id = fargs;
+	return pib->id != *id;
+}
+
+int post_remove_sticky(int bid, post_id_t id)
+{
+	record_t record;
+	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
+		return 0;
+	int r = record_delete(&record, NULL, 0, post_sticky_filter, &id,
+			NULL, NULL);
+	record_close(&record);
+	return r;
+}
+
+int post_add_sticky(int bid, const post_info_t *pi)
+{
+	record_t record;
+	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
+		return 0;
+
+	post_index_board_t pib = {
+		.id = pi->id,
+		.reid_delta = pi->id - pi->reid,
+		.tid_delta = pi->id - pi->tid,
+		.uid = pi->uid,
+		.flag = pi->flag | POST_FLAG_STICKY,
+	};
+
+	record_lock_all(&record, RECORD_WRLCK);
+	int r = 0;
+	int count = record_count(&record);
+	if (count < MAX_NOTICE) {
+		if (record_search(&record, post_sticky_filter, &pib.id, false) < 0)
+			r = record_append(&record, &pib, 1);
+	}
+	record_lock_all(&record, RECORD_UNLCK);
+
+	record_close(&record);
+	return r;
+}
+
 const char *pid_to_base32(post_id_t pid, char *s, size_t size)
 {
 	if (!pid) {

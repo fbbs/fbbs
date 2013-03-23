@@ -193,6 +193,9 @@ extern void post_index_record_close(post_index_record_t *pir);
 extern char *post_content_get(post_id_t id, char *buf, size_t size);
 extern int post_content_write(post_id_t id, char *str, size_t size);
 
+extern int post_remove_sticky(int bid, post_id_t id);
+extern int post_add_sticky(int bid, const post_info_t *pi);
+
 extern const char *pid_to_base32(post_id_t pid, char *s, size_t size);
 extern post_id_t base32_to_pid(const char *s);
 
