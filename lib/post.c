@@ -363,7 +363,7 @@ int post_add_sticky(int bid, const post_info_t *pi)
 	int r = 0;
 	int count = record_count(&record);
 	if (count < MAX_NOTICE) {
-		if (record_search(&record, post_sticky_filter, &pib.id, false) < 0)
+		if (record_search(&record, post_sticky_filter, &pib.id, -1, false) < 0)
 			r = record_append(&record, &pib, 1);
 	}
 	record_lock_all(&record, RECORD_UNLCK);

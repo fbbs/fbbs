@@ -46,6 +46,6 @@ extern int record_apply(record_t *rec, void *ptr, int offset, record_filter_t fi
 #define record_foreach(r, p, o, f, a, c, g)  record_update(r, p, o, f, a, c, g)
 extern int record_insert(record_t *rec, void *ptr, int count);
 extern int record_merge(record_t *rec, void *ptr, int count);
-extern int record_search(record_t *rec, record_filter_t filter, void *fargs, bool reverse);
+extern int record_search(record_t *rec, record_filter_t filter, void *fargs, int offset, bool reverse);
 
 #endif // FB_RECORD_H
