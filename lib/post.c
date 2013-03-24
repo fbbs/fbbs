@@ -860,11 +860,6 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 }
 
 typedef struct {
-	post_index_record_t *pir;
-	const post_filter_t *filter;
-} post_index_board_filter_t;
-
-typedef struct {
 	bool set;
 	bool toggle;
 	post_flag_e flag;
@@ -888,6 +883,8 @@ static int match_filter(const post_index_board_t *pib,
 		match &= offset >= filter->fake_id_min - 1;
 	if (filter->fake_id_max)
 		match &= offset < filter->fake_id_max;
+	if (filter->type == POST_LIST_TOPIC)
+		match &= !pib->tid_delta;
 	if (*filter->utf8_keyword) {
 		UTF8_BUFFER(title, POST_TITLE_CCHARS);
 		post_index_record_get_title(pir, pib->id, utf8_title,
@@ -897,7 +894,7 @@ static int match_filter(const post_index_board_t *pib,
 	return match;
 }
 
-static int post_index_board_filter(const void *pib, void *fargs, int offset)
+int post_index_board_filter(const void *pib, void *fargs, int offset)
 {
 	const post_index_board_filter_t *pibf = fargs;
 	return match_filter(pib, pibf->pir, pibf->filter, offset);
