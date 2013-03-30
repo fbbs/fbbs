@@ -13,6 +13,7 @@ typedef int tui_list_query_t;
 typedef struct tui_list_t {
 	int all;       ///< Number of entries.
 	int cur;       ///< Current entry.
+	int jump;      ///< The entry number to jump to.
 	int begin;     ///< Starting entry of the page.
 	int update;    ///< UI update status.
 	int valid;     ///< True if data are not out-dated.

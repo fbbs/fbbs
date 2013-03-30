@@ -31,7 +31,7 @@ static int tui_list_display_loop(tui_list_t *p)
 
 int tui_list(tui_list_t *p)
 {
-	int number = 0;
+	p->jump = 0;
 	bool end = false;
 
 	tui_list_init(p);
@@ -132,18 +132,18 @@ int tui_list(tui_list_t *p)
 				p->cur = 0;
 				break;
 			case '\n': case '\r':
-				if (number > 0) {
-					p->cur = number - 1;
-					number = 0;
+				if (p->jump > 0) {
+					p->cur = p->jump - 1;
+					p->jump = 0;
 					break;
 				}
 				// fall through
 			default:
 				if (ch >= '0' && ch <= '9') {
-					number = number * 10 + (ch - '0');
+					p->jump = p->jump * 10 + (ch - '0');
 					ch = '\0';
 				} else {
-					number = 0;
+					p->jump = 0;
 					ret = p->handler(p, ch);
 					if (ret < 0)
 						end = true;
