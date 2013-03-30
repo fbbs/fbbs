@@ -29,6 +29,15 @@ static int tui_list_display_loop(tui_list_t *p)
 	return 0;
 }
 
+static void adjust_window(tui_list_t *tl)
+{
+	if (tl->cur < tl->begin || tl->cur >= tl->begin + tl->lines) {
+		tl->begin = (tl->cur / tl->lines) * tl->lines;
+		if (tl->update != FULLUPDATE)
+			tl->update = PARTUPDATE;
+	}
+}
+
 int tui_list(tui_list_t *p)
 {
 	p->jump = 0;
@@ -37,6 +46,7 @@ int tui_list(tui_list_t *p)
 	tui_list_init(p);
 	
 	while (!end) {
+		adjust_window(p);
 		if (!p->in_query && !p->valid) {
 			if (p->loader(p) < 0)
 				break;
@@ -49,12 +59,7 @@ int tui_list(tui_list_t *p)
 			p->cur = p->all - 1;
 		if (p->cur < 0)
 			p->cur = 0;
-
-		if (p->cur < p->begin || p->cur >= p->begin + p->lines) {
-			p->begin = (p->cur / p->lines) * p->lines;
-			if (p->update != FULLUPDATE)
-				p->update = PARTUPDATE;
-		}
+		adjust_window(p);
 
 		if (p->update != DONOTHING) {
 			if (p->update == FULLUPDATE) {
