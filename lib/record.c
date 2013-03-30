@@ -225,6 +225,8 @@ int record_search(record_t *rec, record_filter_t filter, void *fargs,
 			count = record_read(rec, buf, capacity);
 			if (count <= 0)
 				return -1;
+			if (all - base < count)
+				count = all - base;
 			for (int j = count - 1; j >= 0; --j) {
 				int r = filter(buf + j * rec->rlen, fargs, base + j);
 				if (r == 0)
@@ -234,9 +236,9 @@ int record_search(record_t *rec, record_filter_t filter, void *fargs,
 			}
 		}
 	} else {
-		if (offset < 0)
+		if (++offset < 0)
 			offset = 0;
-		record_seek(rec, 0, RECORD_SET);
+		record_seek(rec, offset, RECORD_SET);
 		for (int i = 0; i < rounds; ++i) {
 			base = i * capacity + offset;
 			count = record_read(rec, buf, capacity);

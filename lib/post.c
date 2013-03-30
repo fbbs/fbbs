@@ -897,7 +897,7 @@ static int match_filter(const post_index_board_t *pib,
 int post_index_board_filter(const void *pib, void *fargs, int offset)
 {
 	const post_index_board_filter_t *pibf = fargs;
-	return match_filter(pib, pibf->pir, pibf->filter, offset);
+	return match_filter(pib, pibf->pir, pibf->filter, offset) ? 0 : -1;
 }
 
 static int post_index_board_update_flag(void *ptr, void *uargs)
