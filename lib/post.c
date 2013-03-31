@@ -42,8 +42,8 @@ enum {
 	POST_INDEX_BOARD_BUF_SIZE = 50,
 };
 
-static int post_index_board_to_info(post_index_record_t *pir,
-		post_index_board_t *pib, post_info_t *pi, int count)
+int post_index_board_to_info(post_index_record_t *pir, post_index_board_t *pib,
+		post_info_t *pi, int count)
 {
 	post_index_t buf;
 	for (int i = 0; i < count; ++i) {
