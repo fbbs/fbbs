@@ -204,8 +204,8 @@ int record_merge(record_t *rec, void *ptr, int count)
 	return 0;
 }
 
-int record_search(record_t *rec, record_filter_t filter, void *fargs,
-		int offset, bool reverse)
+int record_search_copy(record_t *rec, record_filter_t filter, void *fargs,
+		int offset, bool reverse, void *out)
 {
 	char buf[RECORD_BUFFER_SIZE];
 	int capacity = sizeof(buf) / rec->rlen, all;
@@ -229,9 +229,11 @@ int record_search(record_t *rec, record_filter_t filter, void *fargs,
 				count = all - base;
 			for (int j = count - 1; j >= 0; --j) {
 				int r = filter(buf + j * rec->rlen, fargs, base + j);
-				if (r == 0)
+				if (r == 0) {
+					if (out)
+						memcpy(out, buf + j * rec->rlen, rec->rlen);
 					return base + j;
-				else if (r > 0)
+				} else if (r > 0)
 					return -1;
 			}
 		}
@@ -246,9 +248,11 @@ int record_search(record_t *rec, record_filter_t filter, void *fargs,
 				return -1;
 			for (int j = 0; j < count; ++j) {
 				int r = filter(buf + j * rec->rlen, fargs, base + j);
-				if (r == 0)
+				if (r == 0) {
+					if (out)
+						memcpy(out, buf + j * rec->rlen, rec->rlen);
 					return base + j;
-				else if (r > 0)
+				} else if (r > 0)
 					return -1;
 			}
 		}
