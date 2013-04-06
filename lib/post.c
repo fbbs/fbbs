@@ -166,8 +166,8 @@ int post_index_record_update(post_index_record_t *pir, const post_index_t *pi)
 	return record_write(&pir->record, pi, 1, pi->id - pir->base);
 }
 
-static void post_index_record_get_title(post_index_record_t *pir,
-		post_id_t id, char *buf, size_t size)
+void post_index_record_get_title(post_index_record_t *pir, post_id_t id,
+		char *buf, size_t size)
 {
 	if (post_index_record_check(pir, id, RECORD_READ) < 0) {
 		buf[0] = '\0';
