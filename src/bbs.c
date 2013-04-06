@@ -1565,8 +1565,8 @@ int board_read(void)
 	}
 
 	usetime = time(0);
-	extern int post_list_normal(int bid);
-	post_list_normal(board.id);
+	extern int post_list_board(int);
+	post_list_board(board.id);
 
 //	i_read(ST_READING, buf, readtitle, readdoent, &read_comms[0],
 //			sizeof(struct fileheader));

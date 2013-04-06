@@ -12,67 +12,40 @@
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
-void clear_filter(post_filter_t *filter)
-{
-	filter->min = filter->max = filter->tid = 0;
-	if (filter->type != POST_LIST_AUTHOR)
-		filter->uid = 0;
-	if (filter->type == POST_LIST_NORMAL)
-		filter->flag = 0;
-	if (filter->type != POST_LIST_KEYWORD)
-		filter->utf8_keyword[0] = '\0';
-}
+enum {
+	POST_LIST_POSITION_KEY_LEN = 8,
+};
 
 typedef struct post_list_position_t {
-	post_list_type_e type;
-	int bid;
-	user_id_t uid;
-	post_id_t min_pid;
-	post_id_t min_tid;
-	post_id_t cur_pid;
-	post_id_t cur_tid;
-	bool sticky;
-	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+	char key[POST_LIST_POSITION_KEY_LEN];
+	int top;
+	int cur;
 	SLIST_FIELD(post_list_position_t) next;
 } post_list_position_t;
 
 SLIST_HEAD(post_list_position_list_t, post_list_position_t);
 
 typedef struct {
-	post_filter_t filter;
-	post_list_position_t *pos;
-	slide_list_base_e abase;
-
-	bool reload;
-	bool sreload;
-	post_id_t relocate;
+	record_t *record;
+	record_t *record_sticky;
+	post_index_record_t *pir;
+	post_info_t *buf;
+	post_list_position_t *plp;
 	post_id_t current_tid;
 	post_id_t mark_pid;
-	post_id_t fake_id;
-
-	plist_cache_t cache;
+	post_list_type_e type;
+	int bid;
+	int archive;
+	int record_count;
 } post_list_t;
 
-static bool match(const post_list_position_t *p, const post_filter_t *fp)
+static void post_list_position_key(const post_list_t *pl, char *buf)
 {
-	return !(p->type != fp->type || p->bid != fp->bid
-			|| (p->type == POST_LIST_AUTHOR && p->uid != fp->uid)
-			|| (p->type == POST_LIST_KEYWORD
-				&& streq(p->utf8_keyword, fp->utf8_keyword)));
+	memcpy(buf, &(pl->bid), sizeof(pl->bid));
+	buf[4] = pl->type;
 }
 
-static void filter_to_position_record(const post_filter_t *fp,
-		post_list_position_t *p)
-{
-	p->type = fp->type;
-	p->bid = fp->bid;
-	p->uid = fp->uid;
-	p->min_pid = p->min_tid = p->cur_pid = p->cur_tid = 0;
-	p->sticky = false;
-	memcpy(p->utf8_keyword, fp->utf8_keyword, sizeof(p->utf8_keyword));
-}
-
-static post_list_position_t *get_post_list_position(const post_filter_t *fp)
+static post_list_position_t *get_post_list_position(const post_list_t *pl)
 {
 	static struct post_list_position_list_t *list = NULL;
 	if (!list) {
@@ -80,100 +53,87 @@ static post_list_position_t *get_post_list_position(const post_filter_t *fp)
 		SLIST_INIT_HEAD(list);
 	}
 
-	if (fp->archive)
-		return NULL;
+	char buf[POST_LIST_POSITION_KEY_LEN];
+	post_list_position_key(pl, buf);
 
-	SLIST_FOREACH(post_list_position_t, p, list, next) {
-		if (match(p, fp))
-			return p;
+	SLIST_FOREACH(post_list_position_t, plp, list, next) {
+		if (memcmp(plp->key, buf, sizeof(plp->key)) == 0)
+			return plp;
 	}
 
-	post_list_position_t *p = malloc(sizeof(*p));
-	filter_to_position_record(fp, p);
-	SLIST_INSERT_HEAD(list, p, next);
-	return p;
+	post_list_position_t *plp = malloc(sizeof(*plp));
+	post_list_position_key(pl, plp->key);
+	plp->cur = -1;
+	plp->top = -1;
+	SLIST_INSERT_HEAD(list, plp, next);
+	return plp;
 }
 
-static void save_post_list_position(const slide_list_t *p)
+static void save_post_list_position(tui_list_t *tl)
 {
-	post_list_t *l = p->data;
-	if (!l->pos)
+	post_list_t *pl = tl->data;
+	if (!pl->plp)
 		return;
-
-	post_info_t *min = plist_cache_get(&l->cache, 0);
-	post_info_t *cur = plist_cache_get(&l->cache, p->cur);
-	if (!cur)
-		cur = min;
-
-	l->pos->min_tid = min ? min->tid : 0;
-	l->pos->cur_tid = cur ? cur->tid : 0;
-	l->pos->min_pid = min ? min->id : 0;
-	l->pos->cur_pid = cur ? cur->id : 0;
-	l->pos->sticky = cur && (cur->flag & POST_FLAG_STICKY);
+	pl->plp->top = tl->begin;
+	pl->plp->cur = tl->cur;
 }
 
-static post_info_t *get_post_info(slide_list_t *p)
+static int last_read_filter(const void *ptr, void *args, int offset)
 {
-	post_list_t *l = p->data;
-	return plist_cache_get(&l->cache, p->cur);
+	const post_index_board_t *pib = ptr;
+	post_id_t *id = args;
+	if (pib->id > *id)
+		return -1;
+	return 0;
 }
 
-static slide_list_loader_t post_list_loader(slide_list_t *p)
+static void load_posts(tui_list_t *tl)
 {
-	post_list_t *l = p->data;
+	post_list_t *pl = tl->data;
+	tl->all = pl->record_count = record_count(pl->record);
+	if (pl->record_sticky)
+		tl->all += record_count(pl->record_sticky);
 
-	int page = t_lines - 4;
-	plist_cache_init(&l->cache, page, MAX_NOTICE);
+	if (tl->begin > tl->all)
+		tl->begin = tl->all - tl->lines;
+	if (tl->begin < 0)
+		tl->begin = 0;
 
-	if (l->reload) {
-		plist_cache_clear(&l->cache);
-
-		if (l->abase != SLIDE_LIST_CURRENT) {
-			p->base = l->abase;
-			l->filter.min = 0;
-			l->abase = SLIDE_LIST_CURRENT;
-		} else {
-			p->base = SLIDE_LIST_NEXT;
-			if (l->pos->min_pid)
-				l->filter.min = l->pos->min_pid;
-			else
-				l->filter.min = brc_last_read() + 1;
+	if (tl->begin < pl->record_count) {
+		int loaded = post_index_board_read(pl->record, tl->begin, pl->pir,
+				pl->buf, tl->lines);
+		if (loaded < tl->lines && tl->all > pl->record_count) {
+			post_index_board_read(pl->record_sticky, 0, pl->pir,
+					pl->buf + loaded, tl->lines - loaded);
 		}
-		l->filter.max = 0;
-	}
-
-	if (p->base == SLIDE_LIST_CURRENT) {
-		save_post_list_position(p);
-		return 0;
-	}
-
-	plist_cache_set_sticky(&l->cache, &l->filter);
-	plist_cache_load_sticky(&l->cache, &l->filter, l->sreload);
-	plist_cache_load(&l->cache, &l->filter, p->base, l->reload || l->relocate);
-
-	if (l->relocate || l->reload) {
-		post_filter_t filter = {
-			.min = l->relocate ? l->relocate :
-				(l->pos->cur_pid ? l->pos->cur_pid : brc_last_read() + 1),
-			.flag = l->pos->sticky ? POST_FLAG_STICKY : 0,
-		};
-		int pos = plist_cache_relocate(&l->cache, -1, &filter, false);
-		if (pos >= 0) {
-			p->cur = pos;
-		} else {
-			p->cur = plist_cache_max_visible(&l->cache) - 1;
-			if (p->cur < 0)
-				p->cur = 0;
+	} else {
+		if (pl->record_sticky) {
+			post_index_board_read(pl->record_sticky,
+					tl->begin - pl->record_count, pl->pir, pl->buf, tl->lines);
 		}
-		l->relocate = 0;
 	}
-	p->max = plist_cache_max_visible(&l->cache);
-	if (p->update != FULLUPDATE)
-		p->update = PARTUPDATE;
+}
 
-	save_post_list_position(p);
-	clear_filter(&l->filter);
-	l->sreload = l->reload = false;
+static tui_list_loader_t post_list_loader(tui_list_t *tl)
+{
+	post_list_t *pl = tl->data;
+	if (!pl->plp)
+		pl->plp = get_post_list_position(pl);
+	if (pl->plp->top < 0) {
+		post_id_t id = brc_last_read();
+		int offset = record_search(pl->record, last_read_filter, &id, -1, true);
+		if (offset > 0) {
+			tl->cur = offset + 1;
+			tl->begin = tl->cur - tl->lines / 2;
+			if (tl->begin < 0)
+				tl->begin = 0;
+		} else {
+			tl->cur = tl->begin = 0;
+		}
+		save_post_list_position(tl);
+	}
+
+	load_posts(tl);
 	return 0;
 }
 
@@ -369,28 +329,19 @@ static void _post_list_title(int archive_list)
 	prints(" \xc7\xf3\xd6\xfa[\033[1;32mh\033[m]\n");
 }
 
-static slide_list_title_t post_list_title(slide_list_t *p)
+static tui_list_title_t post_list_title(tui_list_t *tl)
 {
 	_post_list_title(false);
 
-	post_list_t *l = p->data;
-	const char *mode = mode_description(l->filter.type);
+	post_list_t *pl = tl->data;
+	const char *mode = mode_description(pl->type);
 
-	bool show_number = l->filter.type == POST_LIST_NORMAL;
-	//% "编号"
-	prints("\033[1;37;44m");
-	if (show_number)
-		prints("  ");
-	//% "在线"
-	prints("\xb1\xe0\xba\xc5");
-	if (show_number)
-		prints("  ");
-	prints(" %-12s %6s %-25s \xd4\xda\xcf\xdf:%-4d",
-			//% "刊 登 者" "日  期", "标  题"
-			"\xbf\xaf \xb5\xc7 \xd5\xdf", "\xc8\xd5  \xc6\xda",
-			//% "标  题"
-			" \xb1\xea  \xcc\xe2", count_onboard(currbp->id));
-	if (l->filter.archive)
+	//% 编号 在线 刊登者 日期 标题
+	prints("\033[1;37;44m  \xb1\xe0\xba\xc5   %-12s %6s %-25s "
+			"\xd4\xda\xcf\xdf:%-4d", "\xbf\xaf \xb5\xc7 \xd5\xdf",
+			"\xc8\xd5  \xc6\xda", " \xb1\xea  \xcc\xe2",
+			count_onboard(currbp->id));
+	if (pl->archive)
 		//% prints("[存档]");
 		prints("[\xb4\xe6\xb5\xb5]");
 	else
@@ -466,31 +417,23 @@ static const char *get_post_date(fb_time_t stamp)
 	return fb_ctime(&stamp) + 4;
 }
 
-static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
-		bool last)
+static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 {
-	post_list_type_e type = l->filter.type;
-	bool show_number = l->filter.type == POST_LIST_NORMAL;
+	post_list_t *pl = tl->data;
+	post_info_t *pi = pl->buf + offset - tl->begin;
 
-	char fake_id[16];
-	if (show_number) {
-		if (p->flag & POST_FLAG_STICKY)
-			//% "∞"
-			strlcpy(fake_id, " \033[1;31m[\xa1\xde]\033[m", sizeof(fake_id));
-		else if (p->flag & POST_FLAG_DELETED)
-			snprintf(fake_id, sizeof(fake_id), "     ");
-		else
-			snprintf(fake_id, sizeof(fake_id), "%5d", p->fake_id);
-	} else {
-		fake_id[0] = ' ';
-		fake_id[1] = '\0';
-	}
+	char num[16];
+	if (pi->flag & POST_FLAG_STICKY)
+		//% "∞"
+		strlcpy(num, " \033[1;31m[\xa1\xde]\033[m", sizeof(num));
+	else
+		snprintf(num, sizeof(num), "%5d", offset + 1);
 
-	char mark = (p->id == l->mark_pid) ? '@' : get_post_mark(p);
+	char mark = (pi->id == pl->mark_pid) ? '@' : get_post_mark(pi);
 
 	const char *mark_prefix = "", *mark_suffix = "";
-	if ((p->flag & POST_FLAG_IMPORT) && am_curr_bm()) {
-		mark_prefix = (type == ' ') ? "\033[42m" : "\033[32m";
+	if ((pi->flag & POST_FLAG_IMPORT) && am_curr_bm()) {
+		mark_prefix = (mark == ' ') ? "\033[42m" : "\033[32m";
 		mark_suffix = "\033[m";
 	}
 #if 0
@@ -501,42 +444,43 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 	}
 #endif
 
-	const char *date = get_post_date(p->stamp);
+	const char *date = get_post_date(pi->stamp);
 
-	const char *idcolor = get_board_online_color(p->owner, currbp->id);
+	const char *idcolor = get_board_online_color(pi->owner, currbp->id);
 
 	char color[10] = "";
 #ifdef COLOR_POST_DATE
-	struct tm *mytm = fb_localtime(&p->stamp);
+	struct tm *mytm = fb_localtime(&pi->stamp);
 	snprintf(color, sizeof(color), "\033[1;%dm", 30 + mytm->tm_wday + 1);
 #endif
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	if (strneq(p->utf8_title, "Re: ", 4)) {
-		if (type == POST_LIST_THREAD) {
+	if (strneq(pi->utf8_title, "Re: ", 4)) {
+		if (pl->type == POST_LIST_THREAD) {
 			GBK_BUFFER(title2, POST_TITLE_CCHARS);
-			convert_u2g(p->utf8_title, gbk_title2);
+			convert_u2g(pi->utf8_title, gbk_title2);
 			snprintf(gbk_title, sizeof(gbk_title), "%s %s",
-					//% last ? "└" : "├", gbk_title2 + 4);
-					last ? "\xa9\xb8" : "\xa9\xc0", gbk_title2 + 4);
+					//% └├
+					// TODO
+					false ? "\xa9\xb8" : "\xa9\xc0", gbk_title2 + 4);
 		} else {
-			convert_u2g(p->utf8_title, gbk_title);
+			convert_u2g(pi->utf8_title, gbk_title);
 		}
 	} else {
 		GBK_BUFFER(title2, POST_TITLE_CCHARS);
-		convert_u2g(p->utf8_title, gbk_title2);
-		//% snprintf(gbk_title, sizeof(gbk_title), "◆ %s", gbk_title2);
+		convert_u2g(pi->utf8_title, gbk_title2);
+		//% ◆
 		snprintf(gbk_title, sizeof(gbk_title), "\xa1\xf4 %s", gbk_title2);
 	}
 
 	const int title_width = 49;
-	if (is_deleted(type)) {
+	if (is_deleted(pl->type)) {
 		char buf[80], date[12];
-		ellipsis(gbk_title, title_width - sizeof(date) - strlen(p->ename) + 1);
-		struct tm *t = fb_localtime(&p->estamp);
+		ellipsis(gbk_title, title_width - sizeof(date) - strlen(pi->ename) + 1);
+		struct tm *t = fb_localtime(&pi->estamp);
 		strftime(date, sizeof(date), "%m-%d %H:%S", t);
 		snprintf(buf, sizeof(buf), "%s\033[1;%dm[%s %s]\033[m", gbk_title,
-				(p->flag & POST_FLAG_JUNK) ? 31 : 32, p->ename, date);
+				(pi->flag & POST_FLAG_JUNK) ? 31 : 32, pi->ename, date);
 		strlcpy(gbk_title, buf, sizeof(gbk_title));
 	} else {
 		ellipsis(gbk_title, title_width);
@@ -547,8 +491,8 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 //				ent->owner, color, date, title);
 
 	const char *thread_color = "0;37";
-	if (p->tid == l->current_tid) {
-		if (p->id == p->tid)
+	if (pi->tid == pl->current_tid) {
+		if (pi->id == pi->tid)
 			thread_color = "1;32";
 		else
 			thread_color = "1;36";
@@ -557,122 +501,186 @@ static void post_list_display_entry(const post_list_t *l, const post_info_t *p,
 	char buf[128];
 	snprintf(buf, sizeof(buf),
 			" %s %s%c%s \033[%sm%-12.12s %s%6.6s %s\033[%sm%s\033[m\n",
-			fake_id, mark_prefix, mark, mark_suffix,
-			idcolor, p->owner, color, date,
-			(p->flag & POST_FLAG_LOCKED) ? "\033[1;33mx" : " ",
+			num, mark_prefix, mark, mark_suffix,
+			idcolor, pi->owner, color, date,
+			(pi->flag & POST_FLAG_LOCKED) ? "\033[1;33mx" : " ",
 			thread_color, gbk_title);
 	outs(buf);
-}
-
-static slide_list_display_t post_list_display(slide_list_t *p)
-{
-	post_list_t *l = p->data;
-	bool empty = false;
-	for (int i = 0; i < l->cache.page; ++i) {
-		post_info_t *ip = plist_cache_get(&l->cache, i);
-		if (!ip) {
-			if (i == 0)
-				empty = true;
-			continue;
-		}
-		post_info_t *next = plist_cache_get(&l->cache, i + 1);
-		bool last = false;
-		if (l->filter.type == POST_LIST_THREAD) {
-			last = next && ip->tid != next->tid;
-		}
-		post_list_display_entry(l, ip, last);
-	}
-
-	if (empty)
-		//% prints("     (无内容)\n");
-		prints("     (\xce\xde\xc4\xda\xc8\xdd)\n");
 	return 0;
 }
 
-static int toggle_post_lock(post_info_t *ip)
+static void reopen_post_record(post_list_t *pl, post_info_t *pi)
 {
-	if (ip) {
-		bool locked = ip->flag & POST_FLAG_LOCKED;
-		if (am_curr_bm() || (session.id == ip->uid && !locked)) {
-			post_filter_t filter = {
-				.bid = ip->bid, .min = ip->id, .max = ip->id
-			};
-			if (set_post_flag(&filter, "locked", !locked, false)) {
-				set_post_flag_local(ip, POST_FLAG_LOCKED, !locked);
-				return PARTUPDATE;
-			}
+	if (pi->flag & POST_FLAG_STICKY) {
+		record_close(pl->record_sticky);
+		post_index_board_open_sticky(pl->bid, RECORD_WRITE, pl->record_sticky);
+	} else if (pl->type == POST_LIST_NORMAL) {
+		record_close(pl->record);
+		post_index_board_open(pl->bid, RECORD_WRITE, pl->record);
+	}
+}
+
+static int toggle_post_lock(tui_list_t *tl, post_info_t *pi)
+{
+	post_list_t *pl = tl->data;
+	if (pl->type == POST_LIST_NORMAL && pi) {
+		bool locked = pi->flag & POST_FLAG_LOCKED;
+		if (am_curr_bm() || (session.id == pi->uid && !locked)) {
+			reopen_post_record(pl, pi);
+			record_t *rec = (pi->flag & POST_FLAG_STICKY)
+					? pl->record_sticky : pl->record;
+			post_index_board_t pib = { .id = pi->id };
+			set_post_flag_one(rec, &pib, tl->cur, POST_FLAG_LOCKED,
+					false, true);
+			tl->valid = false;
+			return PARTUPDATE;
 		}
 	}
 	return DONOTHING;
 }
 
-static int toggle_post_stickiness(post_info_t *ip, post_list_t *l)
+static int toggle_post_stickiness(tui_list_t *tl, post_info_t *pi)
 {
-	if (!ip || is_deleted(l->filter.type))
-		return DONOTHING;
-
-	bool sticky = ip->flag & POST_FLAG_STICKY;
-	if (am_curr_bm() && sticky_post_unchecked(ip->bid, ip->id, !sticky)) {
-		l->sreload = l->reload = true;
+	post_list_t *pl = tl->data;
+	if (pl->type == POST_LIST_NORMAL && pi) {
+		bool sticky = pi->flag & POST_FLAG_STICKY;
+		if (sticky) {
+			post_remove_sticky(pl->bid, pi->id);
+		} else {
+			post_add_sticky(pl->bid, pi);
+		}
+		tl->valid = false;
 		return PARTUPDATE;
 	}
 	return DONOTHING;
 }
 
-static int toggle_post_flag(post_info_t *ip, post_flag_e flag,
-		const char *field)
+static int toggle_post_flag(tui_list_t *tl, post_info_t *pi, post_flag_e flag)
 {
-	if (ip) {
-		bool set = ip->flag & flag;
-		if (am_curr_bm()) {
-			post_filter_t filter = {
-				.bid = ip->bid, .min = ip->id, .max = ip->id
-			};
-			if (set_post_flag(&filter, field, !set, false)) {
-				set_post_flag_local(ip, flag, !set);
-				return PARTUPDATE;
-			}
-		}
+	post_list_t *pl = tl->data;
+	if (pi && am_curr_bm()) {
+		reopen_post_record(pl, pi);
+		record_t *rec = (pi->flag & POST_FLAG_STICKY)
+			? pl->record_sticky : pl->record;
+		post_index_board_t pib = { .id = pi->id };
+		set_post_flag_one(rec, &pib, tl->cur, flag, false, true);
+		tl->valid = false;
+		return PARTUPDATE;
 	}
 	return DONOTHING;
 }
 
 static int post_list_with_filter(const post_filter_t *filter);
 
-static int post_list_deleted(post_list_t *l)
+static int post_list_deleted(tui_list_t *tl, post_index_trash_e trash)
 {
-	if (l->filter.type != POST_LIST_NORMAL || !am_curr_bm())
+	post_list_t *pl = tl->data;
+	if (pl->type != POST_LIST_NORMAL
+			|| (trash == POST_INDEX_TRASH && !am_curr_bm())
+			|| (trash == POST_INDEX_JUNK && !HAS_PERM(PERM_OBOARDS)))
 		return DONOTHING;
 
-	post_filter_t filter = { .type = POST_LIST_TRASH, .bid = l->filter.bid };
+	post_filter_t filter = {
+		.type = trash == POST_INDEX_TRASH ? POST_LIST_TRASH : POST_LIST_JUNK,
+		.bid = pl->bid,
+	};
 	post_list_with_filter(&filter);
-	l->reload = l->sreload = true;
+
 	return FULLUPDATE;
 }
 
-static int post_list_admin_deleted(post_list_t *l)
-{
-	if (l->filter.type != POST_LIST_NORMAL || !HAS_PERM(PERM_OBOARDS))
-		return DONOTHING;
+typedef struct {
+	post_index_board_t *pib;
+	int size;
+	int capacity;
+} post_index_board_append_t;
 
-	post_filter_t filter = { .type = POST_LIST_JUNK, .bid = l->filter.bid };
-	post_list_with_filter(&filter);
-	l->reload = l->sreload = true;
-	return FULLUPDATE;
+static void filtered_record_name(char *file, size_t size)
+{
+	snprintf(file, size, "tmp/record_%d", getpid());
 }
 
-static int tui_post_list_selected(slide_list_t *p, post_info_t *ip)
+static int post_index_thread_cmp(const void *r1, const void *r2)
 {
-	post_list_t *l = p->data;
-	if (!ip || l->filter.type != POST_LIST_NORMAL)
+	const post_index_board_t *p1 = r1, *p2 = r2;
+	int diff = (p1->id - p1->tid_delta) - (p2->id - p2->tid_delta);
+	if (diff)
+		return diff;
+	return p1->id - p2->id;
+}
+
+static int post_index_board_append(void *p, void *args)
+{
+	post_index_board_t *pib = p;
+	post_index_board_append_t *piba = args;
+	if (piba->size < piba->capacity)
+		piba->pib[piba->size++] = *pib;
+	return 0;
+}
+
+static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
+		char *file, size_t size, record_t *record)
+{
+	record_cmp_t cmp;
+	if (f->type == POST_LIST_THREAD)
+		cmp = post_index_thread_cmp;
+	else
+		cmp = post_index_cmp;
+	return record_open(file, cmp, sizeof(post_index_board_t), rdonly, record);
+}
+
+static int filtered_record_generate(record_t *r, post_filter_t *f,
+		post_index_record_t *pir)
+{
+	if (f->type == POST_LIST_MARKED)
+		f->flag |= POST_FLAG_MARKED;
+	else if (f->type == POST_LIST_DIGEST)
+		f->flag |= POST_FLAG_DIGEST;
+
+	char file[HOMELEN];
+	filtered_record_name(file, sizeof(file));
+	record_t record;
+	filtered_record_open(f, RECORD_WRITE, file, sizeof(file), &record);
+
+	int count = record_count(r);
+	if (count <= 0) {
+		record_close(&record);
+		unlink(file);
+	}
+
+	post_index_board_append_t piba = {
+		.pib = malloc(sizeof(post_index_board_t) * count),
+		.size = 0,
+		.capacity = count,
+	};
+	if (f->type == POST_LIST_THREAD) {
+		piba.size = record_read_after(r, piba.pib, piba.capacity, 0);
+		qsort(piba.pib, piba.size, sizeof(*piba.pib), post_index_thread_cmp);
+	} else {
+		post_index_board_filter_t pibf = { .pir = pir, .filter = f };
+		record_foreach(r, NULL, 0, post_index_board_filter, &pibf,
+				post_index_board_append, &piba);
+	}
+	record_append(&record, piba.pib, piba.size);
+	record_close(&record);
+	free(piba.pib);
+	return 0;
+}
+
+static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
+{
+	post_list_t *pl = tl->data;
+	if (!pi || !pl->bid || pl->type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	char ans[3];
-	//% getdata(t_lines - 1, 0, "切换模式到: 1)文摘 2)同主题 3)被 m 文章 4)原作"
-	getdata(t_lines - 1, 0, "\xc7\xd0\xbb\xbb\xc4\xa3\xca\xbd\xb5\xbd: 1)\xce\xc4\xd5\xaa 2)\xcd\xac\xd6\xf7\xcc\xe2 3)\xb1\xbb m \xce\xc4\xd5\xc2 4)\xd4\xad\xd7\xf7"
-			//% " 5)同作者 6)标题关键字 [1]: ", ans, sizeof(ans), DOECHO, YEA);
-			" 5)\xcd\xac\xd7\xf7\xd5\xdf 6)\xb1\xea\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6 [1]: ", ans, sizeof(ans), DOECHO, YEA);
-
+	//% 切换模式到: 1)文摘 2)同主题 3)被 m 文章 4)原作 5)同作者 6)标题关键字
+	getdata(t_lines - 1, 0, "\xc7\xd0\xbb\xbb\xc4\xa3\xca\xbd\xb5\xbd:"
+			" 1)\xce\xc4\xd5\xaa 2)\xcd\xac\xd6\xf7\xcc\xe2"
+			" 3)\xb1\xbb m \xce\xc4\xd5\xc2 4)\xd4\xad\xd7\xf7"
+			" 5)\xcd\xac\xd7\xf7\xd5\xdf"
+			" 6)\xb1\xea\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6 [1]: ",
+			ans, sizeof(ans), DOECHO, YEA);
 	int c = ans[0];
 	if (!c)
 		c = '1';
@@ -685,52 +693,35 @@ static int tui_post_list_selected(slide_list_t *p, post_info_t *ip)
 	if (c < 0 || c >= ARRAY_SIZE(types))
 		return MINIUPDATE;
 
-	post_filter_t filter = { .bid = l->filter.bid, .type = types[c] };
-	switch (filter.type) {
-		case POST_LIST_DIGEST:
-			filter.flag |= POST_FLAG_DIGEST;
-			break;
-		case POST_LIST_THREAD:
-			filter.type = POST_LIST_THREAD;
-			break;
-		case POST_LIST_MARKED:
-			filter.flag |= POST_FLAG_MARKED;
-			break;
-		case POST_LIST_TOPIC:
-			filter.type = POST_LIST_TOPIC;
-			break;
-		case POST_LIST_AUTHOR: {
-				char uname[IDLEN + 1];
-				strlcpy(uname, ip->owner, sizeof(uname));
-				//% getdata(t_lines - 1, 0, "您想查找哪位网友的文章? ", uname,
-				getdata(t_lines - 1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xc4\xc4\xce\xbb\xcd\xf8\xd3\xd1\xb5\xc4\xce\xc4\xd5\xc2? ", uname,
-						sizeof(uname), DOECHO, false);
-				user_id_t uid = get_user_id(uname);
-				if (!uid)
-					return MINIUPDATE;
-				filter.uid = uid;
-			}
-			break;
-		case POST_LIST_KEYWORD: {
-				GBK_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
-				//% getdata(t_lines - 1, 0, "您想查找的文章标题关键字: ",
-				getdata(t_lines - 1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xb5\xc4\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ",
-						gbk_keyword, sizeof(gbk_keyword), DOECHO, YEA);
-				convert_g2u(gbk_keyword, filter.utf8_keyword);
-				if (!filter.utf8_keyword[0])
-					return MINIUPDATE;
-			}
-			break;
-		default:
-			break;
+	post_filter_t filter = { .bid = pl->bid, .type = types[c] };
+	if (filter.type == POST_LIST_AUTHOR) {
+		char uname[IDLEN + 1];
+		strlcpy(uname, pi->owner, sizeof(uname));
+		//% 您想查找哪位网友的文章
+		getdata(t_lines - 1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xc4\xc4"
+				"\xce\xbb\xcd\xf8\xd3\xd1\xb5\xc4\xce\xc4\xd5\xc2? ",
+				uname, sizeof(uname), DOECHO, false);
+		user_id_t uid = get_user_id(uname);
+		if (!uid)
+			return MINIUPDATE;
+		filter.uid = uid;
+	} else if (filter.type == POST_LIST_KEYWORD) {
+		GBK_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
+		//% 您想查找的文章标题关键字
+		getdata(t_lines - 1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xb5\xc4"
+				"\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ",
+				gbk_keyword, sizeof(gbk_keyword), DOECHO, YEA);
+		convert_g2u(gbk_keyword, filter.utf8_keyword);
+		if (!filter.utf8_keyword[0])
+			return MINIUPDATE;
 	}
 
-	save_post_list_position(p);
+	filtered_record_generate(pl->record, &filter, pl->pir);
 	post_list_with_filter(&filter);
-	l->reload = true;
 	return FULLUPDATE;
 }
 
+#if 0
 static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
 		bool upward)
 {
@@ -774,41 +765,54 @@ static void set_filter_base(post_filter_t *filter, const post_info_t *ip,
 	}
 	filter->tid = filter->type == POST_LIST_THREAD ? ip->tid : 0;
 }
+#endif
 
-static int tui_search_author(slide_list_t *p, bool upward)
+static int post_search(tui_list_t *tl, const post_filter_t *filter,
+		int offset, bool upward)
 {
-	post_info_t *ip = get_post_info(p);
-	if (!ip)
-		return DONOTHING;
+	post_list_t *pl = tl->data;
+	post_index_board_filter_t pibf = {
+		.pir = pl->pir, .filter = filter,
+	};
+	int pos = record_search(pl->record, post_index_board_filter, &pibf,
+			offset, upward);
+	if (pos >= 0) {
+		tl->cur = pos;
+		tl->valid = false;
+		return PARTUPDATE;
+	}
+	return MINIUPDATE;
+}
 
+static int tui_search_author(tui_list_t *tl, post_info_t *pi, bool upward)
+{
 	char prompt[80];
-	//% snprintf(prompt, sizeof(prompt), "向%s搜索作者 [%s]: ",
-	snprintf(prompt, sizeof(prompt), "\xcf\xf2%s\xcb\xd1\xcb\xf7\xd7\xf7\xd5\xdf [%s]: ",
-			//% upward ? "上" : "下", ip->owner);
-			upward ? "\xc9\xcf" : "\xcf\xc2", ip->owner);
+	//% 向%s搜索作者
+	snprintf(prompt, sizeof(prompt),
+			"\xcf\xf2%s\xcb\xd1\xcb\xf7\xd7\xf7\xd5\xdf [%s]: ",
+			//% "上" : "下"
+			upward ? "\xc9\xcf" : "\xcf\xc2", pi->owner);
 	char ans[IDLEN + 1];
 	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
 
-	user_id_t uid = ip->uid;
-	if (*ans && !streq(ans, ip->owner))
+	user_id_t uid = pi->uid;
+	if (*ans && !streq(ans, pi->owner))
 		uid = get_user_id(ans);
+	if (!uid)
+		return MINIUPDATE;
 
-	post_list_t *l = p->data;
-	post_filter_t filter = l->filter;
-	filter.uid = uid;
-	set_filter_base(&filter, ip, upward);
-	return relocate_to_filter(p, &filter, upward);
+	post_filter_t filter = { .uid = uid };
+	return post_search(tl, &filter, tl->cur, upward);
 }
 
-static int tui_search_title(slide_list_t *p, bool upward)
+static int tui_search_title(tui_list_t *tl, bool upward)
 {
-	post_list_t *l = p->data;
-
 	char prompt[80];
 	static GBK_BUFFER(title, POST_TITLE_CCHARS) = "";
-	//% snprintf(prompt, sizeof(prompt), "向%s搜索标题[%s]: ",
-	snprintf(prompt, sizeof(prompt), "\xcf\xf2%s\xcb\xd1\xcb\xf7\xb1\xea\xcc\xe2[%s]: ",
-			//% upward ? "上" : "下", gbk_title);
+	//% 向%s搜索标题
+	snprintf(prompt, sizeof(prompt),
+			"\xcf\xf2%s\xcb\xd1\xcb\xf7\xb1\xea\xcc\xe2[%s]: ",
+			//% "上" : "下"
 			upward ? "\xc9\xcf" : "\xcf\xc2", gbk_title);
 
 	GBK_BUFFER(ans, POST_TITLE_CCHARS);
@@ -820,153 +824,113 @@ static int tui_search_title(slide_list_t *p, bool upward)
 	if (!*gbk_title != '\0')
 		return MINIUPDATE;
 
-	post_filter_t filter = l->filter;
+	post_filter_t filter = { .utf8_keyword = { '\0' } };
 	convert_g2u(gbk_title, filter.utf8_keyword);
-
-	post_info_t *ip = get_post_info(p);
-	set_filter_base(&filter, ip, upward);
-	return relocate_to_filter(p, &filter, upward);
+	return post_search(tl, &filter, tl->cur, upward);
 }
 
-static int jump_to_thread_first(slide_list_t *p)
+static int jump_to_thread_first(tui_list_t *tl, post_info_t *pi)
 {
-	post_info_t *ip = get_post_info(p);
-	if (ip && ip->id != ip->tid) {
-		post_list_t *l = p->data;
-		l->current_tid = ip->tid;
-		post_filter_t filter = l->filter;
-		filter.tid = ip->tid;
-		filter.min = 0;
-		filter.max = ip->tid;
-		return relocate_to_filter(p, &filter, true);
+	if (pi && pi->id != pi->tid) {
+		post_list_t *pl = tl->data;
+		pl->current_tid = pi->tid;
+
+		post_filter_t filter = { .tid = pi->tid };
+		return post_search(tl, &filter, -1, false);
 	}
 	return DONOTHING;
 }
 
-static int jump_to_thread_prev(slide_list_t *p)
+static int jump_to_thread_prev(tui_list_t *tl, post_info_t *pi)
 {
-	post_info_t *ip = get_post_info(p);
-	if (!ip || ip->id == ip->tid)
+	if (!pi || pi->id == pi->tid)
 		return DONOTHING;
 
-	post_list_t *l = p->data;
-	l->current_tid = ip->tid;
-	post_filter_t filter = l->filter;
-	filter.tid = ip->tid;
-	filter.min = 0;
-	filter.max = ip->id - 1;
-	return relocate_to_filter(p, &filter, true);
+	post_list_t *pl = tl->data;
+	pl->current_tid = pi->tid;
+
+	post_filter_t filter = { .tid = pi->tid };
+	return post_search(tl, &filter, tl->cur, true);
 }
 
-static int jump_to_thread_next(slide_list_t *p)
+static int jump_to_thread_next(tui_list_t *tl, post_info_t *pi)
 {
-	post_info_t *ip = get_post_info(p);
-	if (ip) {
-		post_list_t *l = p->data;
-		l->current_tid = ip->tid;
-		post_filter_t filter = l->filter;
-		filter.tid = ip->tid;
-		filter.min = ip->id + 1;
-		filter.max = 0;
-		return relocate_to_filter(p, &filter, false);
+	if (pi) {
+		post_list_t *pl = tl->data;
+		pl->current_tid = pi->tid;
+
+		post_filter_t filter = { .tid = pi->tid };
+		return post_search(tl, &filter, tl->cur, false);
 	}
 	return DONOTHING;
 }
 
-static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user);
+static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user);
 
-static int jump_to_thread_first_unread(slide_list_t *p)
+static int thread_first_unread_filter(const void *ptr, void *args, int offset)
 {
-	post_list_t *l = p->data;
-	post_info_t *ip = get_post_info(p);
+	const post_index_board_t *pib = ptr;
+	post_id_t tid = *(post_id_t *) args;
+	if (pib->id - pib->tid_delta == tid && brc_unread(pib->id))
+		return 0;
+	return -1;
+}
 
-	if (!ip || l->filter.type != POST_LIST_NORMAL)
+static int jump_to_thread_first_unread(tui_list_t *tl, post_info_t *pi)
+{
+	post_list_t *pl = tl->data;
+	if (!pi || pl->type != POST_LIST_NORMAL)
 		return DONOTHING;
-	l->current_tid = ip->tid;
 
-	post_filter_t filter = {
-		.bid = l->filter.bid, .tid = ip->tid, .min = brc_first_unread(),
-		.archive = l->filter.archive,
-	};
-
-	const int limit = 40;
-	bool end = false;
-	while (!end) {
-		query_t *q = build_post_query(&filter, true, limit);
-		db_res_t *res = query_exec(q);
-
-		int rows = db_res_rows(res);
-		for (int i = 0; i < rows; ++i) {
-			post_id_t id = db_get_post_id(res, i, 0);
-			if (brc_unread(id)) {
-				post_info_t info;
-				res_to_post_info(res, i, l->filter.archive, &info);
-				read_posts(p, &info, true, false);
-				db_clear(res);
-				return FULLUPDATE;
-			}
-		}
-		if (rows < limit)
-			end = true;
-		if (rows > 0)
-			filter.min = db_get_post_id(res, rows - 1, 0) + 1;
-		db_clear(res);
-	}
-	return PARTUPDATE;
-}
-
-static int jump_to_thread_last(slide_list_t *p)
-{
-	post_list_t *l = p->data;
-	post_info_t *ip = get_post_info(p);
-
-	if (ip) {
-		l->current_tid = ip->tid;
-		post_filter_t filter = {
-			.bid = l->filter.bid, .tid = ip->tid, .min = ip->id + 1,
-			.archive = l->filter.archive,
-		};
-
-		query_t *q = build_post_query(&filter, false, 1);
-		db_res_t *res = query_exec(q);
-
-		post_info_t info = { .id = ip->id };
-		if (res && db_res_rows(res) > 0) {
-			res_to_post_info(res, 0, l->filter.archive, &info);
-		}
-		db_clear(res);
-		if (info.id == ip->id)
-			return DONOTHING;
-		filter.min = info.id;
-		return relocate_to_filter(p, &filter, false);
+	pl->current_tid = pi->tid;
+	post_index_board_t pib;
+	int pos = record_search_copy(pl->record, thread_first_unread_filter,
+			&pi->tid, 0, false, &pib);
+	if (pos >= 0) {
+		tl->cur = pos;
+		post_info_t pi_buf;
+		post_index_board_to_info(pl->pir, &pib, &pi_buf, 1);
+		read_posts(tl, &pi_buf, true, false);
+		return FULLUPDATE;
 	}
 	return DONOTHING;
 }
 
-static int skip_post(slide_list_t *p)
+static int jump_to_thread_last(tui_list_t *tl, post_info_t *pi)
 {
-	post_info_t *ip = get_post_info(p);
-	if (ip) {
-		brc_mark_as_read(ip->id);
-		if (++p->cur >= t_lines - 4) {
-			p->base = SLIDE_LIST_NEXT;
-			p->cur = 0;
-		}
+	if (pi) {
+		post_list_t *pl = tl->data;
+		pl->current_tid = pi->tid;
+
+		post_filter_t filter = { .tid = pi->tid };
+		return post_search(tl, &filter, -1, true);
 	}
 	return DONOTHING;
 }
 
-static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
+static int skip_post(tui_list_t *tl, post_info_t *pi)
 {
-	if (ip && (ip->uid == session.uid || am_curr_bm())) {
+	if (pi) {
+		brc_mark_as_read(pi->id);
+		if (++tl->cur >= tl->begin + tl->lines)
+			tl->valid = false;
+	}
+	return DONOTHING;
+}
+
+static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi)
+{
+	post_list_t *pl = tl->data;
+	if (pl->type != POST_LIST_NORMAL)
+		return DONOTHING;
+
+	if (pi && (pi->uid == session.uid || am_curr_bm())) {
 		move(t_lines - 1, 0);
-		//% if (askyn("确定删除", NA, NA)) {
+		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
-			post_filter_t f = {
-				.bid = p->filter.bid, .min = ip->id, .max = ip->id,
-			};
-			if (delete_posts(&f, true, false, true)) {
-				p->reload = true;
+			post_filter_t filter = { .min = pi->id, .max = pi->id, };
+			if (post_index_board_delete(&filter, NULL, 0, true, false, true)) {
+				tl->valid = false;
 				return PARTUPDATE;
 			}
 		} else {
@@ -976,56 +940,50 @@ static int tui_delete_single_post(post_list_t *p, post_info_t *ip)
 	return DONOTHING;
 }
 
-static int tui_undelete_single_post(post_list_t *p, post_info_t *ip)
+static int tui_undelete_single_post(tui_list_t *tl, post_info_t *pi)
 {
-	if (ip && is_deleted(p->filter.type)) {
-		post_filter_t f = {
-			.type = p->filter.type,
-			.bid = p->filter.bid, .min = ip->id, .max = ip->id,
-		};
-		if (undelete_posts(&f)) {
-			p->reload = true;
+	post_list_t *pl = tl->data;
+	if (pi && is_deleted(pl->type)) {
+		post_filter_t f = { .min = pi->id, .max = pi->id, };
+		if (post_index_board_undelete(&f, NULL, 0,
+					pl->type == POST_LIST_TRASH)) {
+			tl->valid = false;
 			return PARTUPDATE;
 		}
 	}
 	return DONOTHING;
 }
 
-static int show_post_info(const post_info_t *ip)
+static int show_post_info(const post_info_t *pi)
 {
-	if (!ip)
+	if (!pi)
 		return DONOTHING;
 
 	clear();
 	move(0, 0);
-	//% prints("%s的详细信息:\n\n", "版面文章");
-	prints("%s\xb5\xc4\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2:\n\n", "\xb0\xe6\xc3\xe6\xce\xc4\xd5\xc2");
+	//% 版面文章的详细信息
+	prints("\xb0\xe6\xc3\xe6\xce\xc4\xd5\xc2\xb5\xc4\xcf\xea\xcf\xb8"
+			"\xd0\xc5\xcf\xa2:\n\n");
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(ip->utf8_title, gbk_title);
-	//% prints("标题: %s\n", gbk_title);
+	convert_u2g(pi->utf8_title, gbk_title);
+	//% 标题
 	prints("\xb1\xea\xcc\xe2: %s\n", gbk_title);
-	//% prints("作者: %s\n", ip->owner);
-	prints("\xd7\xf7\xd5\xdf: %s\n", ip->owner);
-	//% prints("时间: %s\n", getdatestring(ip->stamp, DATE_ZH));
-	prints("\xca\xb1\xbc\xe4: %s\n", getdatestring(ip->stamp, DATE_ZH));
-	//	prints("大    小:     %d 字节\n", filestat.st_size);
+	//% 作者
+	prints("\xd7\xf7\xd5\xdf: %s\n", pi->owner);
+	//% 时间
+	prints("\xca\xb1\xbc\xe4: %s\n", getdatestring(pi->stamp, DATE_ZH));
 
-	char buf[PID_BUF_LEN];
-	prints("id:   %s (%"PRIdPID")\n",
-			pid_to_base32(ip->id, buf, sizeof(buf)), ip->id);
-	prints("tid:  %s (%"PRIdPID")\n",
-			pid_to_base32(ip->tid, buf, sizeof(buf)), ip->tid);
-	prints("reid: %s (%"PRIdPID")\n",
-			pid_to_base32(ip->reid, buf, sizeof(buf)), ip->reid);
+	prints("id:   %"PRIdPID"\ntid:  %"PRIdPID"\nreid: %"PRIdPID,
+			pi->id, pi->tid, pi->reid);
 
 	char link[STRLEN];
 	snprintf(link, sizeof(link),
 			"http://%s/bbs/con?new=1&bid=%d&f=%"PRIdPID"%s",
-			BBSHOST, currbp->id, ip->id,
-			(ip->flag & POST_FLAG_STICKY) ? "&s=1" : "");
+			BBSHOST, currbp->id, pi->id,
+			(pi->flag & POST_FLAG_STICKY) ? "&s=1" : "");
 	prints("\n%s", link);
-	if (ip->flag & POST_FLAG_ARCHIVE)
+	if (pi->flag & POST_FLAG_ARCHIVE)
 		prints("&archive=1");
 	prints("\n");
 
@@ -1033,34 +991,30 @@ static int show_post_info(const post_info_t *ip)
 	return FULLUPDATE;
 }
 
-static bool dump_content(const post_info_t *ip, char *file, size_t size)
+static bool dump_content(post_id_t id, char *file, size_t size)
 {
-	post_filter_t filter = {
-		.min = ip->id, .max = ip->id, .bid = ip->bid,
-		.type = post_list_type(ip),
-		.archive = (ip->flag & POST_FLAG_ARCHIVE),
-	};
-	db_res_t *res = query_post_by_pid(&filter, "content");
-	if (!res || db_res_rows(res) < 1)
+	char buf[4096];
+	char *str = post_content_get(id, buf, sizeof(buf));
+	if (!str)
 		return false;
 
-	int ret = dump_content_to_gbk_file(db_get_value(res, 0, 0),
-			db_get_length(res, 0, 0), file, size);
+	int ret = dump_content_to_gbk_file(str, strlen(str), file, size);
 
-	db_clear(res);
+	if (str != buf)
+		free(str);
 	return ret == 0;
 }
 
 extern int tui_cross_post_legacy(const char *file, const char *title);
 
-static int tui_cross_post(const post_info_t *ip)
+static int tui_cross_post(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!ip || !dump_content(ip, file, sizeof(file)))
+	if (!pi || !dump_content(pi->id, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(ip->utf8_title, gbk_title);
+	convert_u2g(pi->utf8_title, gbk_title);
 
 	tui_cross_post_legacy(file, gbk_title);
 
@@ -1068,14 +1022,14 @@ static int tui_cross_post(const post_info_t *ip)
 	return FULLUPDATE;
 }
 
-static int forward_post(const post_info_t *ip, bool uuencode)
+static int forward_post(const post_info_t *pi, bool uuencode)
 {
 	char file[HOMELEN];
-	if (!ip || !dump_content(ip, file, sizeof(file)))
+	if (!pi || !dump_content(pi->id, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(ip->utf8_title, gbk_title);
+	convert_u2g(pi->utf8_title, gbk_title);
 
 	tui_forward(file, gbk_title, uuencode);
 
@@ -1083,55 +1037,55 @@ static int forward_post(const post_info_t *ip, bool uuencode)
 	return FULLUPDATE;
 }
 
-static int reply_with_mail(const post_info_t *ip)
+static int reply_with_mail(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!ip || !dump_content(ip, file, sizeof(file)))
+	if (!pi || !dump_content(pi->id, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(ip->utf8_title, gbk_title);
+	convert_u2g(pi->utf8_title, gbk_title);
 
-	post_reply(ip->owner, gbk_title, file);
+	post_reply(pi->owner, gbk_title, file);
 
 	unlink(file);
 	return FULLUPDATE;
 }
 
-static int tui_edit_post_title(post_info_t *ip)
+static int tui_edit_post_title(tui_list_t *tl, post_info_t *pi)
 {
-	if (!ip || (ip->uid != session.uid && !am_curr_bm()))
+	if (!pi || (pi->uid != session.uid && !am_curr_bm()))
 		return DONOTHING;
 
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
 
-	ansi_filter(utf8_title, ip->utf8_title);
+	ansi_filter(utf8_title, pi->utf8_title);
 	convert_u2g(utf8_title, gbk_title);
 
-	//% getdata(t_lines - 1, 0, "新文章标题: ", gbk_title, sizeof(gbk_title),
-	getdata(t_lines - 1, 0, "\xd0\xc2\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2: ", gbk_title, sizeof(gbk_title),
-			DOECHO, NA);
+	//% 新文章标题
+	getdata(t_lines - 1, 0, "\xd0\xc2\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2: ",
+			gbk_title, sizeof(gbk_title), DOECHO, NA);
 
 	check_title(gbk_title, sizeof(gbk_title));
 	convert_g2u(gbk_title, utf8_title);
 
-	if (!*utf8_title || streq(utf8_title, ip->utf8_title))
+	if (!*utf8_title || streq(utf8_title, pi->utf8_title))
 		return MINIUPDATE;
 
-	if (alter_title(ip, utf8_title)) {
-		strlcpy(ip->utf8_title, utf8_title, sizeof(ip->utf8_title));
+	post_list_t *pl = tl->data;
+	strlcpy(pi->utf8_title, utf8_title, sizeof(pi->utf8_title));
+	if (alter_title(pl->pir, pi))
 		return PARTUPDATE;
-	}
 	return MINIUPDATE;
 }
 
-static int tui_edit_post_content(post_info_t *ip)
+static int tui_edit_post_content(post_info_t *pi)
 {
-	if (!ip || (ip->uid != session.uid && !am_curr_bm()))
+	if (!pi || (pi->uid != session.uid && !am_curr_bm()))
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(pi->id, file, sizeof(file)))
 		return DONOTHING;
 
 	int status = session.status;
@@ -1141,9 +1095,9 @@ static int tui_edit_post_content(post_info_t *ip)
 	if (vedit(file, NA, NA, NULL) != -1) {
 		char *content = convert_file_to_utf8_content(file);
 		if (content) {
-			if (alter_content(ip, content)) {
+			if (post_content_write(pi->id, content, strlen(content))) {
 				char buf[STRLEN];
-				snprintf(buf, sizeof(buf), "edited post #%"PRIdPID, ip->id);
+				snprintf(buf, sizeof(buf), "edited post #%"PRIdPID, pi->id);
 				report(buf, currentuser.userid);
 			}
 			free(content);
@@ -1158,13 +1112,13 @@ static int tui_edit_post_content(post_info_t *ip)
 extern int show_board_notes(const char *bname, int command);
 extern int noreply;
 
-static int tui_new_post(int bid, post_info_t *ip)
+static int tui_new_post(int bid, post_info_t *pi)
 {
 	time_t now = time(NULL);
 	if (now - get_last_post_time() < 3) {
 		move(t_lines - 1, 0);
 		clrtoeol();
-		//% prints("您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。\n");
+		//% 您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。
 		prints("\xc4\xfa\xcc\xab\xd0\xc1\xbf\xe0\xc1\xcb\xa3\xac\xcf\xc8\xba\xc8\xb1\xad\xbf\xa7\xb7\xc8\xd0\xaa\xbb\xe1\xb6\xf9\xa3\xac""3 \xc3\xeb\xd6\xd3\xba\xf3\xd4\xd9\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2\xa1\xa3\n");
 		pressreturn();
 		return MINIUPDATE;
@@ -1189,12 +1143,12 @@ static int tui_new_post(int bid, post_info_t *ip)
 
 	struct postheader header = { .mail_owner = false, };
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	if (ip) {
+	if (pi) {
 		header.reply = true;
-		if (strncaseeq(ip->utf8_title, "Re: ", 4)) {
-			convert_u2g(ip->utf8_title, header.title);
+		if (strncaseeq(pi->utf8_title, "Re: ", 4)) {
+			convert_u2g(pi->utf8_title, header.title);
 		} else {
-			convert_u2g(ip->utf8_title, gbk_title);
+			convert_u2g(pi->utf8_title, gbk_title);
 			snprintf(header.title, sizeof(header.title), "Re: %s", gbk_title);
 		}
 	}
@@ -1232,9 +1186,9 @@ static int tui_new_post(int bid, post_info_t *ip)
 
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "tmp/editbuf.%d", getpid());
-	if (ip) {
+	if (pi) {
 		char orig[HOMELEN];
-		dump_content(ip, orig, sizeof(orig));
+		dump_content(pi->id, orig, sizeof(orig));
 		do_quote(orig, file, header.include_mode, header.anonymous);
 		unlink(orig);
 	} else {
@@ -1255,14 +1209,14 @@ static int tui_new_post(int bid, post_info_t *ip)
 			//% prints("对不起，您不能在匿名版使用寄信给原作者功能。");
 			prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xc4\xfa\xb2\xbb\xc4\xdc\xd4\xda\xc4\xe4\xc3\xfb\xb0\xe6\xca\xb9\xd3\xc3\xbc\xc4\xd0\xc5\xb8\xf8\xd4\xad\xd7\xf7\xd5\xdf\xb9\xa6\xc4\xdc\xa1\xa3");
 		} else {
-			if (!is_blocked(ip->owner)
-					&& !mail_file(file, ip->owner, gbk_title)) {
-				//% prints("信件已成功地寄给原作者 %s", ip->owner);
-				prints("\xd0\xc5\xbc\xfe\xd2\xd1\xb3\xc9\xb9\xa6\xb5\xd8\xbc\xc4\xb8\xf8\xd4\xad\xd7\xf7\xd5\xdf %s", ip->owner);
+			if (!is_blocked(pi->owner)
+					&& !mail_file(file, pi->owner, gbk_title)) {
+				//% 信件已成功地寄给原作者
+				prints("\xd0\xc5\xbc\xfe\xd2\xd1\xb3\xc9\xb9\xa6\xb5\xd8\xbc\xc4\xb8\xf8\xd4\xad\xd7\xf7\xd5\xdf %s", pi->owner);
 			}
 			else {
-				//% prints("信件邮寄失败，%s 无法收信。", ip->owner);
-				prints("\xd0\xc5\xbc\xfe\xd3\xca\xbc\xc4\xca\xa7\xb0\xdc\xa3\xac%s \xce\xde\xb7\xa8\xca\xd5\xd0\xc5\xa1\xa3", ip->owner);
+				//% 信件邮寄失败，%s 无法收信。
+				prints("\xd0\xc5\xbc\xfe\xd3\xca\xbc\xc4\xca\xa7\xb0\xdc\xa3\xac%s \xce\xde\xb7\xa8\xca\xd5\xd0\xc5\xa1\xa3", pi->owner);
 			}
 		}
 		pressanykey();
@@ -1280,8 +1234,8 @@ static int tui_new_post(int bid, post_info_t *ip)
 		.gbk_file = file,
 		.sig = 0,
 		.ip = NULL,
-		.reid = ip ? ip->id : 0,
-		.tid = ip ? ip->tid : 0,
+		.reid = pi ? pi->id : 0,
+		.tid = pi ? pi->tid : 0,
 		.locked = header.locked,
 		.marked = false,
 		.anony = header.anonymous,
@@ -1310,26 +1264,26 @@ static int tui_new_post(int bid, post_info_t *ip)
 	return FULLUPDATE;
 }
 
-static int tui_save_post(const post_info_t *ip)
+static int tui_save_post(const post_info_t *pi)
 {
-	if (!ip || !am_curr_bm())
+	if (!pi || !am_curr_bm())
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(ip, file, sizeof(file)))
+	if (!dump_content(pi->id, file, sizeof(file)))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(ip->utf8_title, gbk_title);
+	convert_u2g(pi->utf8_title, gbk_title);
 
 	a_Save(gbk_title, file, false, true);
 
 	return MINIUPDATE;
 }
 
-static int tui_import_post(const post_info_t *ip)
+static int tui_import_post(const post_info_t *pi)
 {
-	if (!ip || !HAS_PERM(PERM_BOARDS))
+	if (!pi || !HAS_PERM(PERM_BOARDS))
 		return DONOTHING;
 
 	if (DEFINE(DEF_MULTANNPATH)
@@ -1337,9 +1291,9 @@ static int tui_import_post(const post_info_t *ip)
 		return FULLUPDATE;
 
 	char file[HOMELEN];
-	if (dump_content(ip, file, sizeof(file))) {
+	if (dump_content(pi->id, file, sizeof(file))) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
-		convert_u2g(ip->utf8_title, gbk_title);
+		convert_u2g(pi->utf8_title, gbk_title);
 
 		a_Import(gbk_title, file, NA);
 	}
@@ -1349,66 +1303,65 @@ static int tui_import_post(const post_info_t *ip)
 	return DONOTHING;
 }
 
-static int tui_mark_range(slide_list_t *p, post_id_t *min, post_id_t *max)
+static int tui_mark_range(const tui_list_t *tl, const post_info_t *pi,
+		post_id_t *min, post_id_t *max)
 {
 	*min = *max = 0;
-
 	if (!am_curr_bm())
 		return DONOTHING;
 
-	post_info_t *ip = get_post_info(p);
-	if (ip->flag & POST_FLAG_STICKY)
+	if (pi->flag & POST_FLAG_STICKY)
 		return DONOTHING;
 
-	post_list_t *l = p->data;
-	if (!l->mark_pid) {
-		l->mark_pid = ip->id;
+	post_list_t *pl = tl->data;
+	if (!pl->mark_pid) {
+		pl->mark_pid = pi->id;
 		return PARTUPDATE;
 	}
 
-	if (ip->id >= l->mark_pid) {
-		*min = l->mark_pid;
-		*max = ip->id;
+	if (pi->id >= pl->mark_pid) {
+		*min = pl->mark_pid;
+		*max = pi->id;
 	} else {
-		*min = ip->id;
-		*max = l->mark_pid;
+		*min = pi->id;
+		*max = pl->mark_pid;
 	}
-	l->mark_pid = 0;
+	pl->mark_pid = 0;
 	return DONOTHING;
 }
 
-static int tui_delete_posts_in_range(slide_list_t *p)
+static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 {
-	post_list_t *l = p->data;
-	if (l->filter.type != POST_LIST_NORMAL)
+	post_list_t *pl = tl->data;
+	if (pl->type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	post_id_t min, max;
-	int ret = tui_mark_range(p, &min, &max);
+	int ret = tui_mark_range(tl, pi, &min, &max);
 	if (!max)
 		return ret;
 
 	move(t_lines - 1, 0);
 	clrtoeol();
-	//% if (askyn("确定删除", NA, NA)) {
+	//% 确定删除
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
-		post_filter_t filter = {
-			.bid = l->filter.bid, .min = min, .max = max
-		};
-		if (delete_posts(&filter, false, !HAS_PERM(PERM_OBOARDS), false)) {
+		post_filter_t filter = { .min = min, .max = max };
+		if (post_index_board_delete(&filter, NULL, 0, false,
+				!HAS_PERM(PERM_OBOARDS), false)) {
 			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);
-			l->reload = true;
+			tl->valid = false;
 		}
 		return PARTUPDATE;
 	}
 	move(t_lines - 1, 50);
 	clrtoeol();
-	//% prints("放弃删除...");
+	//% 放弃删除
 	prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd...");
 	egetch();
 	return MINIUPDATE;
 }
 
+#if 0
 static bool count_posts_in_range(post_id_t min, post_id_t max, bool asc,
 		int sort, int least, char *file, size_t size)
 {
@@ -1596,127 +1549,39 @@ static int tui_count_posts_in_range(slide_list_t *p)
 		}
 		return FULLUPDATE;
 #endif
+#endif
 
-enum {
-	POST_LIST_THREAD_CACHE_SIZE = 15,
-};
-
-typedef struct {
-	post_info_full_t posts[POST_LIST_THREAD_CACHE_SIZE];
-	int size;
-	bool inited;
-} thread_post_cache_t;
-
-static int load_full_posts(const post_filter_t *fp, post_info_full_t *ip,
-		bool upward, int limit)
+static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 {
-	query_t *q = query_new(0);
-	query_select(q, POST_LIST_FIELDS_FULL);
-	query_from(q, post_table_name(fp));
-	build_post_filter(q, fp, NULL);
-	query_orderby(q, post_table_index(fp), !upward);
-	query_limit(q, limit);
-
-	db_res_t *res = query_exec(q);
-	int rows = db_res_rows(res);
-	if (rows > 0) {
-		for (int i = 0; i < rows; ++i) {
-			res_to_post_info_full(res, upward ? rows - 1 - i : i,
-					fp->archive, ip + i);
-		}
-	} else {
-		db_clear(res);
-	}
-	return rows;
-}
-
-static void thread_post_cache_free(thread_post_cache_t *cache)
-{
-	if (cache->inited && cache->size > 0) {
-		free_post_info_full(cache->posts);
-		cache->size = 0;
-	}
-}
-
-static post_info_full_t *thread_post_cache_load(thread_post_cache_t *cache,
-		int bid, bool archive, post_id_t tid, post_id_t id, bool upward)
-{
-	post_filter_t filter = {
-		.bid = bid, .archive = archive, .tid = tid, .min = id
-	};
-	if (id <= tid && upward) {
-		thread_post_cache_free(cache);
-	} else {
-		cache->size = load_full_posts(&filter, cache->posts, upward,
-				ARRAY_SIZE(cache->posts));
-	}
-	cache->inited = true;
-	if (cache->size)
-		return cache->posts + (upward ? cache->size - 1 : 0);
-	return NULL;
-}
-
-static post_info_full_t *thread_post_cache_lookup(thread_post_cache_t *cache,
-		int bid, bool archive, post_info_full_t *ip, bool upward)
-{
-	post_info_full_t *next = upward ? ip - 1 : ip + 1;
-	if (next >= cache->posts && next < cache->posts + cache->size)
-		return next;
-
-	if (!upward && cache->size < ARRAY_SIZE(cache->posts))
-		return NULL;
-
-	post_id_t id = ip->p.id, tid = ip->p.tid;
-	thread_post_cache_free(cache);
-	return thread_post_cache_load(cache, bid, archive, tid,
-			upward ? id - 1 : id + 1, upward);
-}
-
-static void back_to_post_list(slide_list_t *p, post_id_t id, post_id_t tid)
-{
-	post_list_t *l = p->data;
-	post_filter_t filter = l->filter;
-	filter.min = id;
-	filter.max = 0;
-	if (filter.type == POST_LIST_THREAD)
-		filter.tid = tid;
-
-	int found = plist_cache_relocate(&l->cache, -1, &filter, false);
-	if (found >= 0) {
-		p->cur = found;
-	} else {
-		relocate_to_filter(p, &filter, false);
-	}
-}
-
-static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
-{
-	post_list_t *l = p->data;
-	post_info_full_t info = { .p = *ip };
-	post_info_full_t *fip = &info;
-	post_filter_t filter = l->filter;
-	thread_post_cache_t cache = { .inited = false };
-
+	post_list_t *pl = tl->data;
+	bool end = false, upward = false, sticky = false;
+	post_id_t thread_entry = 0, last_id = 0, tid = 0;
+	user_id_t uid = 0;
 	char file[HOMELEN];
-	if (!ip || !dump_content(ip, file, sizeof(file)))
-		return DONOTHING;
+	post_info_t pi_buf;
 
-	bool end = false, upward = false, sticky = false, reload = false;
-	post_id_t thread_entry = 0, last_id = 0;
 	while (!end) {
-		brc_mark_as_read(fip->p.id);
-		last_id = fip->p.id;
-		l->current_tid = fip->p.tid;
-		end = sticky = fip->p.flag & POST_FLAG_STICKY;
+		if (!pi || !dump_content(pi->id, file, sizeof(file)))
+			return DONOTHING;
+		if (thread)
+			tid = pi->tid;
+
+		brc_mark_as_read(pi->id);
+		last_id = pi->id;
+		pl->current_tid = pi->tid;
+		end = sticky = pi->flag & POST_FLAG_STICKY;
 
 		int ch = ansimore(file, false);
 
 		move(t_lines - 1, 0);
 		clrtoeol();
-		//% prints("\033[0;1;44;31m[阅读文章]  \033[33m回信 R │ 结束 Q,← │上一封 ↑"
-		prints("\033[0;1;44;31m[\xd4\xc4\xb6\xc1\xce\xc4\xd5\xc2]  \033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc"
-				//% "│下一封 <Space>,↓│主题阅读 ^s或p \033[m");
-				"\xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,\xa1\xfd\xa9\xa6\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1 ^s\xbb\xf2p \033[m");
+		//% [阅读文章]  回信 R │ 结束 Q,← │上一封 ↑
+		//% "│下一封 <Space>,↓│主题阅读 ^s或p \033[m");
+		prints("\033[0;1;44;31m[\xd4\xc4\xb6\xc1\xce\xc4\xd5\xc2]  "
+				"\033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 "
+				"Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc"
+				"\xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,\xa1\xfd\xa9\xa6"
+				"\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1 ^s\xbb\xf2p \033[m");
 		refresh();
 
 		if (!(ch == KEY_UP || ch == KEY_PGUP))
@@ -1726,42 +1591,38 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 				end = true;
 				break;
 			case 'Y': case 'R': case 'y': case 'r':
-				{
-					// TODO
-					int ret = tui_new_post(fip->p.bid, &fip->p);
-					if (ret == FULLUPDATE)
-						reload = true;
-					break;
-				}
+				// TODO
+				tui_new_post(pi->bid, pi);
+				break;
 			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
 				upward = false;
 				thread_entry = 0;
 				break;
 			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
 				upward = false;
-				if (!filter.uid && !filter.tid) {
-					thread_entry = fip->p.id;
-					filter.tid = fip->p.tid;
+				if (!uid && !tid) {
+					thread_entry = pi->id;
+					tid = pi->tid;
 				}
 				break;
 			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
 				upward = true;
 				break;
 			case Ctrl('A'):
-				t_query(fip->p.owner);
+				t_query(pi->owner);
 				break;
 			case Ctrl('R'):
-				reply_with_mail(&fip->p);
+				reply_with_mail(pi);
 				break;
 			case 'g':
-				toggle_post_flag(&fip->p, POST_FLAG_DIGEST, "digest");
+				toggle_post_flag(tl, pi, POST_FLAG_DIGEST);
 				break;
 			case '*':
-				show_post_info(&fip->p);
+				show_post_info(pi);
 				break;
 			case Ctrl('U'):
-				if (!filter.uid && !filter.tid)
-					filter.uid = fip->p.uid;
+				if (!uid && !tid)
+					uid = pi->uid;
 				break;
 			default:
 				break;
@@ -1770,47 +1631,25 @@ static int read_posts(slide_list_t *p, post_info_t *ip, bool thread, bool user)
 		unlink(file);
 
 		if (!end) {
-			if (!cache.inited) {
-				if (filter.tid) {
-					fip = thread_post_cache_load(&cache, fip->p.bid,
-							filter.archive, filter.tid, fip->p.id, upward);
-				}
-			}
-
-			if (cache.inited) {
-				fip = thread_post_cache_lookup(&cache, fip->p.bid,
-						filter.archive, fip, upward);
-				if (fip) {
-					dump_content_to_gbk_file(fip->content, fip->length,
-							file, sizeof(file));
-				} else {
-					break;
-				}
+			post_filter_t filter = {
+				.tid = tid,
+				.uid = user ? pi->uid : 0,
+			};
+			post_index_board_filter_t pibf = {
+				.pir = pl->pir, .filter = &filter,
+			};
+			post_index_board_t pib;
+			int pos = record_search_copy(pl->record, post_index_board_filter,
+					&pibf, tl->cur, upward, &pib);
+			if (pos < 0) {
+				end = true;
 			} else {
-				if (upward) {
-					filter.min = 0;
-					filter.max = fip->p.id - 1;
-				} else {
-					filter.min = fip->p.id + 1;
-					filter.max = 0;
-				}
-				if (load_full_posts(&filter, fip, upward, 1)) {
-					dump_content_to_gbk_file(fip->content, fip->length,
-							file, sizeof(file));
-				} else {
-					break;
-				}
+				post_index_board_to_info(pl->pir, &pib, &pi_buf, 1);
+				pi = &pi_buf;
+				tl->cur = pos;
 			}
 		}
 	}
-	thread_post_cache_free(&cache);
-	free_post_info_full(&info);
-
-	if (reload)
-		l->reload = true;
-	if (!sticky)
-		back_to_post_list(p, thread_entry ? thread_entry : last_id,
-				l->current_tid);
 	return FULLUPDATE;
 }
 
@@ -1864,96 +1703,110 @@ static void construct_prompt(char *s, size_t size, const char **options,
 
 extern int import_file(const char *title, const char *file, const char *path);
 
-static int import_posts(post_filter_t *filter, const char *path)
+typedef struct {
+	post_index_record_t *pir;
+	const char *path;
+} import_posts_callback_t;
+
+static int import_posts_callback(void *r, void *args)
 {
-	query_t *q = query_new(0);
-	query_update(q, post_table_name(filter));
-	query_set(q, "imported = TRUE");
-	build_post_filter(q, filter, NULL);
-	query_returning(q, "title, content");
+	post_index_board_t *pib = r;
+	import_posts_callback_t *ipc = args;
 
-	db_res_t *res = query_exec(q);
-	if (res) {
-		int rows = db_res_rows(res);
-		for (int i = 0; i < rows; ++i) {
-			GBK_BUFFER(title, POST_TITLE_CCHARS);
-			convert_u2g(db_get_value(res, i, 0), gbk_title);
+	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+	post_index_record_get_title(ipc->pir, pib->id,
+			utf8_title, sizeof(utf8_title));
+	convert_u2g(utf8_title, gbk_title);
 
-			char file[HOMELEN];
-			dump_content_to_gbk_file(db_get_value(res, i, 1),
-					db_get_length(res, i, 1), file, sizeof(file));
-
-			import_file(gbk_title, file, path);
-		}
-		db_clear(res);
-		return rows;
-	}
+	char file[HOMELEN];
+	dump_content(pib->id, file, sizeof(file));
+	import_file(gbk_title, file, ipc->path);
 	return 0;
 }
 
-static int tui_import_posts(post_filter_t *filter)
+static void import_posts(post_list_t *pl, post_filter_t *filter,
+		const char *path)
+{
+	post_index_board_filter_t pibf = { .filter = filter, .pir = pl->pir };
+	import_posts_callback_t ipc = { .pir = pl->pir, .path = path };
+	record_foreach(pl->record, NULL, 0, post_index_board_filter, &pibf,
+			import_posts_callback, &ipc);
+}
+
+static int tui_import_posts(post_list_t *pl, post_filter_t *filter)
 {
 	if (DEFINE(DEF_MULTANNPATH) && !!set_ann_path(NULL, NULL, ANNPATH_GETMODE))
 		return FULLUPDATE;
 
-	char annpath[256];
-	sethomefile(annpath, currentuser.userid, ".announcepath");
+	char path[256];
+	sethomefile(path, currentuser.userid, ".announcepath");
 
-	FILE *fp = fopen(annpath, "r");
+	FILE *fp = fopen(path, "r");
 	if (!fp) {
-		//% presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.",
-		presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.",
-				t_lines - 1);
+		//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
+		presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0"
+				"\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3"
+				" f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", t_lines - 1);
 		return MINIUPDATE;
 	}
 
-	fscanf(fp, "%s", annpath);
+	fscanf(fp, "%s", path);
 	fclose(fp);
 
-	if (!dashd(annpath)) {
-		//% presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.", t_lines - 1);
-		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", t_lines - 1);
+	if (!dashd(path)) {
+		//% 您设定的丝路已丢失, 请重新用 f 设定.
+		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7"
+				"\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3"
+				" f \xc9\xe8\xb6\xa8.", t_lines - 1);
 		return MINIUPDATE;
 	}
 
-	import_posts(filter, annpath);
+	import_posts(pl, filter, path);
 	return PARTUPDATE;
 }
 
-static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
+static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 		post_id_t max)
 {
-	bool deleted = is_deleted(l->filter.type);
-	post_filter_t filter = { .bid = l->filter.bid, .min = min, .max = max };
+	post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
 	int ret = PARTUPDATE;
 	switch (choice) {
 		case 0:
-			set_post_flag(&filter, "marked", true, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
+					true, true);
 			break;
 		case 1:
-			set_post_flag(&filter, "digest", true, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
+					true, true);
 			break;
 		case 2:
-			set_post_flag(&filter, "locked", true, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
+					true, true);
 			break;
 		case 3:
-			delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
+			if (pl->type == POST_LIST_NORMAL) {
+				post_index_board_delete(&filter, NULL, 0, true,
+						!HAS_PERM(PERM_OBOARDS), false);
+			}
 			break;
 		case 4:
-			ret = tui_import_posts(&filter);
+			ret = tui_import_posts(pl, &filter);
 			break;
 		case 5:
-			set_post_flag(&filter, "water", true, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
+					true, true);
 			break;
 		case 6:
+			// TODO
 			break;
 		default:
-			if (deleted) {
-				filter.type = l->filter.type;
-				undelete_posts(&filter);
+			if (is_deleted(pl->type)) {
+				post_index_board_undelete(&filter, NULL, 0,
+						pl->type == POST_LIST_TRASH);
 			} else {
 				filter.flag |= POST_FLAG_WATER;
-				delete_posts(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
+				post_index_board_delete(&filter, NULL, 0, true,
+						!HAS_PERM(PERM_OBOARDS), false);
 			}
 			break;
 	}
@@ -1969,26 +1822,26 @@ static int operate_posts_in_range(int choice, post_list_t *l, post_id_t min,
 			bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
 			break;
 	}
-	l->reload = true;
 	return ret;
 }
 
-static int tui_operate_posts_in_range(slide_list_t *p)
+static int tui_operate_posts_in_range(tui_list_t *tl, post_info_t *pi)
 {
-	post_list_t *l = p->data;
+	post_list_t *pl = tl->data;
 
 	post_id_t min, max;
-	int ret = tui_mark_range(p, &min, &max);
+	int ret = tui_mark_range(tl, pi, &min, &max);
 	if (!max)
 		return ret;
 
-	//% const char *option8 = is_deleted(l->filter.type) ? "恢复" : "删水文";
-	const char *option8 = is_deleted(l->filter.type) ? "\xbb\xd6\xb8\xb4" : "\xc9\xbe\xcb\xae\xce\xc4";
+	//% 恢复 : 删水文
+	const char *option8 = is_deleted(pl->type)
+			? "\xbb\xd6\xb8\xb4" : "\xc9\xbe\xcb\xae\xce\xc4";
 	const char *options[] = {
-		//% "保留",  "文摘", "不可RE", "删除",
-		"\xb1\xa3\xc1\xf4",  "\xce\xc4\xd5\xaa", "\xb2\xbb\xbf\xc9RE", "\xc9\xbe\xb3\xfd",
-		//% "精华区", "水文", "转载", option8,
-		"\xbe\xab\xbb\xaa\xc7\xf8", "\xcb\xae\xce\xc4", "\xd7\xaa\xd4\xd8", option8,
+		//% 保留 文摘 不可RE 删除 精华区 水文 转载
+		"\xb1\xa3\xc1\xf4",  "\xce\xc4\xd5\xaa", "\xb2\xbb\xbf\xc9RE",
+		"\xc9\xbe\xb3\xfd", "\xbe\xab\xbb\xaa\xc7\xf8", "\xcb\xae\xce\xc4",
+		"\xd7\xaa\xd4\xd8", option8,
 	};
 
 	char prompt[120], ans[8];
@@ -1999,62 +1852,71 @@ static int tui_operate_posts_in_range(slide_list_t *p)
 	if (choice < 0 || choice >= ARRAY_SIZE(options))
 		return MINIUPDATE;
 
-	//% snprintf(prompt, sizeof(prompt), "区段[%s]操作，确定吗", options[choice]);
-	snprintf(prompt, sizeof(prompt), "\xc7\xf8\xb6\xce[%s]\xb2\xd9\xd7\xf7\xa3\xac\xc8\xb7\xb6\xa8\xc2\xf0", options[choice]);
+	//% 区段[%s]操作，确定吗
+	snprintf(prompt, sizeof(prompt), "\xc7\xf8\xb6\xce[%s]\xb2\xd9\xd7\xf7"
+			"\xa3\xac\xc8\xb7\xb6\xa8\xc2\xf0", options[choice]);
 	if (!askyn(prompt, NA, YEA))
 		return MINIUPDATE;
 
-	return operate_posts_in_range(choice, l, min, max);
+	tl->valid = false;
+	return operate_posts_in_range(choice, pl, min, max);
 }
 
-static void operate_posts_in_batch(post_filter_t *fp, post_info_t *ip, int mode,
+static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 		int choice, bool first, post_id_t pid, bool quote, bool junk,
 		const char *annpath, const char *utf8_keyword, const char *gbk_keyword)
 {
-	post_filter_t filter = { .type = fp->type, .bid = fp->bid };
+	post_filter_t filter = { .bid = pl->bid };
 	switch (mode) {
 		case 1:
-			filter.uid = ip->uid;
+			filter.uid = pi->uid;
 			break;
 		case 2:
 			strlcpy(filter.utf8_keyword, utf8_keyword,
 					sizeof(filter.utf8_keyword));
 			break;
 		default:
-			filter.tid = ip->tid;
+			filter.tid = pi->tid;
 			break;
 	}
 	if (!first)
-		filter.min = ip->id;
+		filter.min = pi->id;
 
 	switch (choice) {
 		case 0:
-			delete_posts(&filter, junk, !HAS_PERM(PERM_OBOARDS), false);
+			if (pl->type == POST_LIST_NORMAL) {
+				post_index_board_delete(&filter, NULL, 0, junk,
+						!HAS_PERM(PERM_OBOARDS), false);
+			}
 			break;
 		case 1:
-			set_post_flag(&filter, "marked", false, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
+					true, true);
 			break;
 		case 2:
-			set_post_flag(&filter, "digest", false, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
+					true, true);
 			break;
 		case 3:
-			import_posts(&filter, annpath);
+			import_posts(pl, &filter, annpath);
 			break;
 		case 4:
-			set_post_flag(&filter, "water", false, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
+					true, true);
 			break;
 		case 5:
-			set_post_flag(&filter, "locked", false, true);
+			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
+					true, true);
 			break;
 		case 6:
-			// pack thread
+			// TODO: pack thread
 			break;
 		default:
-			if (is_deleted(fp->type)) {
-				filter.type = fp->type;
-				undelete_posts(&filter);
+			if (is_deleted(pl->type)) {
+				post_index_board_undelete(&filter, NULL, 0,
+						pl->type == POST_LIST_TRASH);
 			} else {
-				// merge thread
+				// TODO: merge thread
 			}
 			break;
 	}
@@ -2075,31 +1937,39 @@ static void operate_posts_in_batch(post_filter_t *fp, post_info_t *ip, int mode,
 	}
 }
 
-static int tui_operate_posts_in_batch(slide_list_t *p)
+static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 {
-	if (!am_curr_bm() || !get_post_info(p))
+	if (!pi || !am_curr_bm())
 		return DONOTHING;
 
-	post_list_t *l = p->data;
-	bool deleted = is_deleted(l->filter.type);
+	post_list_t *pl = tl->data;
+	bool deleted = is_deleted(pl->type);
 
-	//% const char *batch_modes[] = { "相同主题", "相同作者", "相关主题" };
-	const char *batch_modes[] = { "\xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2", "\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf", "\xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2" };
-	//% const char *option8 = deleted ? "恢复" : "合并";
+	//% 相同主题 相同作者 相关主题
+	const char *batch_modes[] = {
+		"\xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2",
+		"\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf",
+		"\xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2"
+	};
+	//% 恢复 : 合并
 	const char *option8 = deleted ? "\xbb\xd6\xb8\xb4" : "\xba\xcf\xb2\xa2";
 	const char *options[] = {
 		//% "删除", "保留", "文摘", "精华区", "水文", "不可RE", "合集", option8
-		"\xc9\xbe\xb3\xfd", "\xb1\xa3\xc1\xf4", "\xce\xc4\xd5\xaa", "\xbe\xab\xbb\xaa\xc7\xf8", "\xcb\xae\xce\xc4", "\xb2\xbb\xbf\xc9RE", "\xba\xcf\xbc\xaf", option8
+		"\xc9\xbe\xb3\xfd", "\xb1\xa3\xc1\xf4", "\xce\xc4\xd5\xaa",
+		"\xbe\xab\xbb\xaa\xc7\xf8", "\xcb\xae\xce\xc4", "\xb2\xbb\xbf\xc9RE",
+		"\xba\xcf\xbc\xaf", option8
 	};
 
 	char ans[16];
 	move(t_lines - 1, 0);
 	clrtoeol();
 	ans[0] = '\0';
-	//% getdata(t_lines - 1, 0, "执行: 1) 相同主题  2) 相同作者 3) 相关主题"
-	getdata(t_lines - 1, 0, "\xd6\xb4\xd0\xd0: 1) \xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2  2) \xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf 3) \xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2"
-			//% " 0) 取消 [0]: ", ans, sizeof(ans), DOECHO, YEA);
-			" 0) \xc8\xa1\xcf\xfb [0]: ", ans, sizeof(ans), DOECHO, YEA);
+	//% 执行: 1) 相同主题  2) 相同作者 3) 相关主题 0) 取消
+	getdata(t_lines - 1, 0, "\xd6\xb4\xd0\xd0: "
+			"1) \xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2  "
+			"2) \xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf "
+			"3) \xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2 "
+			"0) \xc8\xa1\xcf\xfb [0]: ", ans, sizeof(ans), DOECHO, YEA);
 	int mode = strtol(ans, NULL, 10) - 1;
 	if (mode < 0 || mode >= ARRAY_SIZE(batch_modes))
 		return MINIUPDATE;
@@ -2113,31 +1983,36 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 
 	char buf[STRLEN];
 	move(t_lines - 1, 0);
-	//% snprintf(buf, sizeof(buf), "确定要执行%s[%s]吗", batch_modes[mode],
-	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0%s[%s]\xc2\xf0", batch_modes[mode],
-			options[choice]);
+	//% 确定要执行%s[%s]吗
+	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0"
+			"%s[%s]\xc2\xf0", batch_modes[mode], options[choice]);
 	if (!askyn(buf, NA, NA))
 		return MINIUPDATE;
 
 	post_id_t pid = 0;
 	bool quote = true;
 	if (choice == 6) {
-		move(t_lines-1, 0);
-		//% quote = askyn("制作的合集需要引言吗？", YEA, YEA);
-		quote = askyn("\xd6\xc6\xd7\xf7\xb5\xc4\xba\xcf\xbc\xaf\xd0\xe8\xd2\xaa\xd2\xfd\xd1\xd4\xc2\xf0\xa3\xbf", YEA, YEA);
+		move(t_lines - 1, 0);
+		//% 制作的合集需要引言吗？
+		quote = askyn("\xd6\xc6\xd7\xf7\xb5\xc4\xba\xcf\xbc\xaf"
+				"\xd0\xe8\xd2\xaa\xd2\xfd\xd1\xd4\xc2\xf0\xa3\xbf", YEA, YEA);
 	} else if (choice == 7) {
+#if 0
 		if (!deleted) {
-			//% getdata(t_lines - 1, 0, "本主题加至版面第几篇后？", ans,
-			getdata(t_lines - 1, 0, "\xb1\xbe\xd6\xf7\xcc\xe2\xbc\xd3\xd6\xc1\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf", ans,
-					sizeof(ans), DOECHO, YEA);
-			pid = base32_to_pid(ans);
+			//% 本主题加至版面第几篇后？
+			getdata(t_lines - 1, 0, "\xb1\xbe\xd6\xf7\xcc\xe2\xbc\xd3\xd6\xc1"
+					"\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf",
+					ans, sizeof(ans), DOECHO, YEA);
+			pid = strtol(ans);
 		}
+#endif
 	}
 
 	GBK_UTF8_BUFFER(keyword, POST_TITLE_CCHARS);
 	if (mode == 2) {
-		//% getdata(t_lines - 1, 0, "请输入主题关键字: ", gbk_keyword,
-		getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ", gbk_keyword,
+		//% 请输入主题关键字
+		getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2"
+				"\xb9\xd8\xbc\xfc\xd7\xd6: ", gbk_keyword,
 				sizeof(gbk_keyword), DOECHO, YEA);
 		if (gbk_keyword[0] == '\0')
 			return MINIUPDATE;
@@ -2146,16 +2021,21 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 
 	bool junk = true;
 	if (choice == 0) {
-		//% junk = askyn("是否小d", YEA, YEA);
+		//% 是否小d
 		junk = askyn("\xca\xc7\xb7\xf1\xd0\xa1""d", YEA, YEA);
 	}
 
 	bool first = false;
 	move(t_lines - 1, 0);
-	//% snprintf(buf, sizeof(buf), "是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇",
-	snprintf(buf, sizeof(buf), "\xca\xc7\xb7\xf1\xb4\xd3%s\xb5\xda\xd2\xbb\xc6\xaa\xbf\xaa\xca\xbc%s (Y)\xb5\xda\xd2\xbb\xc6\xaa (N)\xc4\xbf\xc7\xb0\xd5\xe2\xd2\xbb\xc6\xaa",
-			//% (mode == 1) ? "该作者" : "此主题", options[choice]);
-			(mode == 1) ? "\xb8\xc3\xd7\xf7\xd5\xdf" : "\xb4\xcb\xd6\xf7\xcc\xe2", options[choice]);
+	//% 是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇
+	snprintf(buf, sizeof(buf), "\xca\xc7\xb7\xf1\xb4\xd3%s"
+			"\xb5\xda\xd2\xbb\xc6\xaa\xbf\xaa\xca\xbc%s "
+			"(Y)\xb5\xda\xd2\xbb\xc6\xaa "
+			"(N)\xc4\xbf\xc7\xb0\xd5\xe2\xd2\xbb\xc6\xaa",
+			//% 该作者 此主题
+			(mode == 1) ? "\xb8\xc3\xd7\xf7\xd5\xdf"
+				: "\xb4\xcb\xd6\xf7\xcc\xe2",
+			options[choice]);
 	first = askyn(buf, YEA, NA);
 
 	char annpath[512];
@@ -2167,20 +2047,25 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 		sethomefile(annpath, currentuser.userid, ".announcepath");
 		FILE *fp = fopen(annpath, "r");
 		if (!fp) {
-			//% presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.", t_lines - 1);
-			presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", t_lines - 1);
+			//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
+			presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0"
+					"\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. "
+					"\xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8"
+					"\xcb\xbf\xc2\xb7.", t_lines - 1);
 			return MINIUPDATE;
 		}
 		fscanf(fp, "%s", annpath);
 		fclose(fp);
 		if (!dashd(annpath)) {
-			//% presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.",t_lines - 1);
-			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.",t_lines - 1);
+			//% 您设定的丝路已丢失, 请重新用 f 设定.
+			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7"
+					"\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2"
+					"\xd3\xc3 f \xc9\xe8\xb6\xa8.",t_lines - 1);
 			return MINIUPDATE;
 		}
 	}
 
-	operate_posts_in_batch(&l->filter, get_post_info(p), mode, choice, first,
+	operate_posts_in_batch(pl, pi, mode, choice, first,
 			pid, quote, junk, annpath, utf8_keyword, gbk_keyword);
 #if 0
 	if (BMch == 7) {
@@ -2199,26 +2084,17 @@ static int tui_operate_posts_in_batch(slide_list_t *p)
 		unlink(buf);
 	}
 #endif
-	l->reload = true;
+	tl->valid = false;
 	return PARTUPDATE;
 }
 
 extern int tui_select_board(int);
 
-static int switch_board(post_list_t *l)
+static int switch_board(tui_list_t *tl)
 {
-	if (l->filter.type != POST_LIST_NORMAL || !l->filter.bid)
-		return DONOTHING;
-
-	int bid = tui_select_board(l->filter.bid);
-	if (bid) {
-		l->filter.bid = bid;
-		l->reload = l->sreload = true;
-		l->pos = get_post_list_position(&l->filter);
-	}
 	return FULLUPDATE;
 }
-
+#if 0
 static int switch_archive(post_list_t *l, bool upward)
 {
 	return READ_AGAIN;
@@ -2308,6 +2184,7 @@ static int jump_to_fake_id(slide_list_t *p)
 	}
 	return relocate_to_filter(p, &filter, upward);
 }
+#endif
 
 extern int show_online(void);
 extern int thesis_mode(void);
@@ -2327,26 +2204,24 @@ extern int into_announce(void);
 extern int show_hotspot(void);
 extern int tui_follow_uname(const char *uname);
 
-static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
+static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 {
-	post_list_t *l = p->data;
-	post_info_t *ip = get_post_info(p);
+	post_list_t *pl = tl->data;
+	post_info_t *pi = tl->cur >= tl->all ? NULL
+			: pl->buf + tl->cur - tl->begin;
 
 	switch (ch) {
 		case Ctrl('P'):
-			{
-				int ret = tui_new_post(l->filter.bid, NULL);
-				l->reload = true;
-				return ret;
-			}
+			tl->valid = false;
+			return tui_new_post(pl->bid, NULL);
 		case '@':
 			show_online();
 			set_user_status(ST_READING);
 			return FULLUPDATE;
 		case '.':
-			return post_list_deleted(l);
+			return post_list_deleted(tl, POST_INDEX_TRASH);
 		case 'J':
-			return post_list_admin_deleted(l);
+			return post_list_deleted(tl, POST_INDEX_JUNK);
 		case 't':
 			return thesis_mode();
 		case '!':
@@ -2386,19 +2261,13 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			if (into_announce() != DONOTHING)
 				return FULLUPDATE;
 		case 's':
-			return switch_board(l);
+			return switch_board(tl);
+#if 0
 		case '%':
 			return tui_jump(p);
+#endif
 		case 'q': case 'e': case KEY_LEFT: case EOF:
-			if (p->in_query) {
-				p->in_query = false;
-				return FULLUPDATE;
-			}
-			if (!l->filter.archive)
-				return -1;
-			l->filter.archive = false;
-			l->reload = true;
-			return FULLUPDATE;
+			return READ_AGAIN;
 		case Ctrl('L'):
 			redoscr();
 			return DONOTHING;
@@ -2411,192 +2280,234 @@ static slide_list_handler_t post_list_handler(slide_list_t *p, int ch)
 			msg_more();
 			return FULLUPDATE;
 		default:
-			if (!ip)
-				return DONOTHING;
+			if (!pi)
+				return READ_AGAIN;
 	}
 
 	switch (ch) {
 		case '\n': case '\r':
-			if (l->fake_id)
-				return jump_to_fake_id(p);
-			// fall through
 		case KEY_RIGHT: case 'r': case Ctrl('S'): case 'p':
-			return read_posts(p, ip, false, false);
+			return read_posts(tl, pi, false, false);
 		case Ctrl('U'):
-			return read_posts(p, ip, false, true);
+			return read_posts(tl, pi, false, true);
 		case '_':
-			return toggle_post_lock(ip);
+			return toggle_post_lock(tl, pi);
 		case '#':
-			return toggle_post_stickiness(ip, l);
+			return toggle_post_stickiness(tl, pi);
 		case 'm':
-			return toggle_post_flag(ip, POST_FLAG_MARKED, "marked");
+			return toggle_post_flag(tl, pi, POST_FLAG_MARKED);
 		case 'g':
-			return toggle_post_flag(ip, POST_FLAG_DIGEST, "digest");
+			return toggle_post_flag(tl, pi, POST_FLAG_DIGEST);
 		case 'w':
-			return toggle_post_flag(ip, POST_FLAG_WATER, "water");
+			return toggle_post_flag(tl, pi, POST_FLAG_WATER);
 		case 'T':
-			return tui_edit_post_title(ip);
+			return tui_edit_post_title(tl, pi);
 		case 'E':
-			return tui_edit_post_content(ip);
+			return tui_edit_post_content(pi);
 		case 'i':
-			return tui_save_post(ip);
+			return tui_save_post(pi);
 		case 'I':
-			return tui_import_post(ip);
+			return tui_import_post(pi);
 		case 'D':
-			return tui_delete_posts_in_range(p);
+			return tui_delete_posts_in_range(tl, pi);
 		case 'L':
-			return tui_operate_posts_in_range(p);
+			return tui_operate_posts_in_range(tl, pi);
 		case 'b':
-			return tui_operate_posts_in_batch(p);
+			return tui_operate_posts_in_batch(tl, pi);
+#if 0
 		case 'C':
 			return tui_count_posts_in_range(p);
+#endif
 		case Ctrl('G'): case Ctrl('T'): case '`':
-			return tui_post_list_selected(p, ip);
+			return tui_post_list_selected(tl, pi);
 		case 'a':
-			return tui_search_author(p, false);
+			return tui_search_author(tl, pi, false);
 		case 'A':
-			return tui_search_author(p, true);
+			return tui_search_author(tl, pi, true);
 		case '/':
-			return tui_search_title(p, false);
+			return tui_search_title(tl, false);
 		case '?':
-			return tui_search_title(p, true);
+			return tui_search_title(tl, true);
 		case '=':
-			return jump_to_thread_first(p);
+			return jump_to_thread_first(tl, pi);
 		case '[':
-			return jump_to_thread_prev(p);
+			return jump_to_thread_prev(tl, pi);
 		case ']':
-			return jump_to_thread_next(p);
+			return jump_to_thread_next(tl, pi);
 		case 'n': case Ctrl('N'):
-			return jump_to_thread_first_unread(p);
+			return jump_to_thread_first_unread(tl, pi);
 		case '\\':
-			return jump_to_thread_last(p);
+			return jump_to_thread_last(tl, pi);
 		case 'K':
-			return skip_post(p);
+			return skip_post(tl, pi);
 		case 'c':
-			brc_clear(ip->id);
+			brc_clear(pi->id);
 			return PARTUPDATE;
 		case 'f':
-			brc_clear_all(l->filter.bid);
+			brc_clear_all(pl->bid);
 			return PARTUPDATE;
 		case 'd':
-			return tui_delete_single_post(l, ip);
+			return tui_delete_single_post(tl, pi);
 		case 'Y':
-			return tui_undelete_single_post(l, ip);
+			return tui_undelete_single_post(tl, pi);
 		case '*':
-			return show_post_info(ip);
+			return show_post_info(pi);
 		case Ctrl('C'):
-			return tui_cross_post(ip);
+			return tui_cross_post(pi);
 		case 'F':
-			return forward_post(ip, false);
+			return forward_post(pi, false);
 		case 'U':
-			return forward_post(ip, true);
+			return forward_post(pi, true);
 		case Ctrl('R'):
-			return reply_with_mail(ip);
+			return reply_with_mail(pi);
 		case 'Z':
 			clear();
-			tui_send_msg(ip->owner);
+			tui_send_msg(pi->owner);
 			return FULLUPDATE;
 		case Ctrl('A'):
-			return ip ? t_query(ip->owner) : DONOTHING;
+			return pi ? t_query(pi->owner) : DONOTHING;
 		case 'P': case Ctrl('B'): case KEY_PGUP:
-			if (plist_cache_is_top(&l->cache, 0))
-				return switch_archive(l, true);
-			return READ_AGAIN;
+			tl->begin -= tl->lines - 1;
+			if (tl->begin < 0)
+				tl->begin = 0;
+			tl->cur = tl->begin;
+			tl->valid = false;
+			return PARTUPDATE;
 		case 'k': case KEY_UP:
-			if (plist_cache_is_top(&l->cache, p->cur)) {
-				p->base = SLIDE_LIST_BOTTOMUP;
-				l->relocate = POST_ID_MAX;
-				return FULLUPDATE;
-			}
-			return READ_AGAIN;
-		case 'N': case Ctrl('F'): case KEY_PGDN: case ' ':
-			if (plist_cache_is_bottom(&l->cache, -1)) {
-				if (l->filter.archive) {
-					return switch_archive(l, false);
-				} else {
-					p->cur = p->max - 1;
-					return DONOTHING;
-				}
-			}
-			return READ_AGAIN;
-		case 'j': case KEY_DOWN:
-			if (plist_cache_is_bottom(&l->cache, p->cur)) {
-				if (l->filter.archive)
-					return switch_archive(l, false);
-				if ((ip->flag & POST_FLAG_STICKY) && p->cur == p->max - 1) {
-					p->base = SLIDE_LIST_TOPDOWN;
-					p->cur = 0;
-					return FULLUPDATE;
-				}
-			}
-			return READ_AGAIN;
-		case '$': case KEY_END:
-			if (ip->flag & POST_FLAG_STICKY) {
-				for (int i = p->cur - 1; i >= 0; --i) {
-					post_info_t *_ip = plist_cache_get(&l->cache, i);
-					if (_ip && !(_ip->flag & POST_FLAG_STICKY)) {
-						p->cur = i;
-						break;
-					}
-				}
+			if (--tl->cur >= tl->begin)
 				return DONOTHING;
-			}
-			if (plist_cache_is_bottom(&l->cache, -1)) {
-				p->cur = plist_cache_max_visible(&l->cache) - 1;
-				return DONOTHING;
-			}
-			return READ_AGAIN;
-		case 'O':
-			return ip->uid ? tui_follow_uname(ip->owner) : DONOTHING;
-		default:
-			if (ch >= '0' && ch <= '9') {
-				l->fake_id *= 10;
-				if (l->fake_id > 999999)
-					l->fake_id = 0;
-				l->fake_id += ch - '0';
+			tl->valid = false;
+			if (tl->cur >= 0) {
+				tl->begin -= tl->lines - 1;
 			} else {
-				l->fake_id = 0;
+				tl->cur = tl->all - 1;
+				if (tl->cur < 0)
+					tl->cur = 0;
+				tl->begin = tl->all - tl->lines + 1;
 			}
-			draw_fake_id(l->fake_id);
+			if (tl->begin < 0)
+				tl->begin = 0;
+			return PARTUPDATE;
+		case 'N': case Ctrl('F'): case KEY_PGDN: case ' ':
+			if (tl->begin + tl->lines - 1 >= tl->all) {
+				tl->cur = tl->all - 1;
+				return DONOTHING;
+			}
+			tl->cur = tl->begin += tl->lines - 1;
+			tl->valid = false;
+			return PARTUPDATE;
+		case 'j': case KEY_DOWN:
+			if (++tl->cur >= tl->all) {
+				tl->begin = tl->cur = 0;
+				tl->valid = false;
+				return PARTUPDATE;
+			} else if (tl->cur >= tl->begin + tl->lines - 1) {
+				tl->begin = tl->cur;
+				tl->valid = false;
+				return PARTUPDATE;
+			} else {
+				return DONOTHING;
+			}
+		case '$': case KEY_END:
+			if (pi->flag & POST_FLAG_STICKY)
+				tl->cur = pl->record_count - 1;
+			else
+				tl->cur = tl->all - 1;
+			if (tl->cur < 0)
+				tl->cur = 0;
+			if (tl->begin + tl->lines <= tl->cur) {
+				tl->begin = tl->cur - tl->lines + 1;
+				if (tl->begin < 0)
+					tl->begin = 0;
+			}
+			tl->valid = false;
+			return PARTUPDATE;
+		case KEY_HOME:
+			tl->begin = tl->cur = 0;
+			tl->valid = false;
+			return PARTUPDATE;
+		case 'O':
+			return pi->uid ? tui_follow_uname(pi->owner) : DONOTHING;
+		default:
 			return READ_AGAIN;
 	}
 }
 
+static void open_post_record(const post_filter_t *filter, record_t *record)
+{
+	if (filter->bid) {
+		switch (filter->type) {
+			case POST_LIST_NORMAL:
+				post_index_board_open(filter->bid, RECORD_READ, record);
+				break;
+			case POST_LIST_TRASH:
+				post_index_trash_open(filter->bid, POST_INDEX_TRASH, record);
+				break;
+			case POST_LIST_JUNK:
+				post_index_trash_open(filter->bid, POST_INDEX_JUNK, record);
+				break;
+			case POST_LIST_DIGEST: case POST_LIST_THREAD:
+			case POST_LIST_MARKED: case POST_LIST_TOPIC:
+			case POST_LIST_AUTHOR: case POST_LIST_KEYWORD: {
+				char file[HOMELEN];
+				filtered_record_name(file, sizeof(file));
+				filtered_record_open(filter, RECORD_READ,file, sizeof(file),
+						record);
+				unlink(file);
+			}
+			break;
+		}
+	};
+}
+
 static int post_list_with_filter(const post_filter_t *filter)
 {
-	post_list_t p = {
-		.relocate = 0,
-		.filter = *filter,
-		.reload = true,
-		.pos = get_post_list_position(filter),
-		.sreload = filter->type == POST_LIST_NORMAL,
-		.cache = { .posts = NULL },
+	int lines = t_lines - 4;
+
+	post_info_t *buf = malloc(lines * sizeof(*buf));
+
+	record_t record, record_sticky;
+	open_post_record(filter, &record);
+
+	bool sticky = filter->type == POST_LIST_NORMAL;
+	if (sticky)
+		post_index_board_open_sticky(filter->bid, RECORD_READ, &record_sticky);
+
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+
+	post_list_t pl = {
+		.record = &record,
+		.record_sticky = sticky ? &record_sticky : NULL,
+		.pir = &pir,
+		.buf = buf,
+		.type = filter->type,
+		.bid = filter->bid,
 	};
 
-	int status = session.status;
-	set_user_status(ST_READING);
-
-	slide_list_t s = {
-		.base = SLIDE_LIST_CURRENT,
-		.data = &p,
-		.update = FULLUPDATE,
+	tui_list_t tl = {
+		.lines = lines,
+		.data = &pl,
 		.loader = post_list_loader,
 		.title = post_list_title,
 		.display = post_list_display,
 		.handler = post_list_handler,
 	};
 
-	slide_list(&s);
-
-	save_post_list_position(&s);
-
-	plist_cache_free(&p.cache);
-
+	int status = session.status;
+	set_user_status(ST_READING);
+	tui_list(&tl);
 	set_user_status(status);
+
+	record_close(&record);
+	if (sticky)
+		record_close(&record_sticky);
+	post_index_record_close(&pir);
+	free(buf);
 	return 0;
 }
 
-int post_list_normal(int bid)
+int post_list_board(int bid)
 {
 	post_filter_t filter = { .type = POST_LIST_NORMAL, .bid = bid };
 	return post_list_with_filter(&filter);
