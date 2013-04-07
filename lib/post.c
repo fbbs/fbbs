@@ -526,26 +526,6 @@ int incr_last_fake_pid(int bid, int delta)
 	return mdb_integer(0, "HINCRBY", LAST_FAKE_ID_KEY " %d %d", bid, delta);
 }
 
-static void update_fake_pid(int bid, int delta, post_id_t min)
-{
-	int last = incr_last_fake_pid(bid, delta);
-
-	post_filter_t filter = { .bid = bid, .min = min };
-
-	query_t *q = query_new(0);
-	query_append(q, "WITH rank AS ( SELECT id, %d::INTEGER - rank()"
-			" OVER (ORDER BY id DESC) AS r", last + 1);
-	query_from(q, post_table_name(&filter));
-	build_post_filter(q, &filter, NULL);
-	query_update(q, post_table_name(&filter));
-	query_set(q, "fake_id = rank.r");
-	query_from(q, "rank");
-	query_where(q, "rank.id = p.id");
-
-	db_res_t *res = query_cmd(q);
-	db_clear(res);
-}
-
 const char *post_recent_table(int bid)
 {
 	static char table[24];
