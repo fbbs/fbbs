@@ -100,8 +100,10 @@ static int check_offset(const record_t *rec, const mmap_t *m, void *ptr,
 		int offset)
 {
 	const char *begin = m->ptr;
-	if (ptr && offset && offset * rec->rlen < m->size
-			&& rec->cmp(begin + offset * rec->rlen, ptr) >= 0)
+	if (!ptr)
+		return offset; // bypass check
+	if (offset && offset * rec->rlen < m->size
+			&& rec->cmp(begin + offset * rec->rlen, ptr) <= 0)
 		return offset;
 	return 0;
 }
