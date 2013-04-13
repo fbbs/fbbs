@@ -2451,7 +2451,7 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 			case POST_LIST_AUTHOR: case POST_LIST_KEYWORD: {
 				char file[HOMELEN];
 				filtered_record_name(file, sizeof(file));
-				filtered_record_open(filter, RECORD_READ,file, sizeof(file),
+				filtered_record_open(filter, RECORD_READ, file, sizeof(file),
 						record);
 				unlink(file);
 			}
