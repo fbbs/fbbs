@@ -11,7 +11,7 @@
 #define BUFSIZE (MAXUSERS + 244)
 
 enum {
-	RECORD_BUFFER_SIZE = 4096,
+	RECORD_BUFFER_SIZE = 8192,
 };
 
 int record_open(const char *file, record_cmp_t cmp, int rlen,
@@ -139,6 +139,44 @@ int record_apply(record_t *rec, void *ptr, int offset,
 		file_truncate(rec->fd, m.size - affected * len);
 	mmap_unmap(&m);
 	return affected;
+}
+
+int record_foreach(record_t *rec, void *ptr, int offset,
+		record_filter_t filter, void *fargs,
+		record_callback_t callback, void *cargs)
+{
+	char buf[RECORD_BUFFER_SIZE];
+	int block = sizeof(buf) / rec->rlen, matched = 0;
+	bool checked = !ptr;
+
+	record_seek(rec, offset, RECORD_SET);
+	int count = 0;
+	do {
+		count = record_read(rec, buf, block);
+		if (count < 0)
+			return matched;
+		if (!checked) {
+			checked = true;
+			if (!count || rec->cmp(buf, ptr) >= 0) {
+				record_seek(rec, 0, RECORD_SET);
+				offset = 0;
+				continue;
+			}
+		}
+
+		for (int i = 0; i < count; ++i) {
+			char *p = buf + i * rec->rlen;
+			int r = filter(p, fargs, offset++);
+			if (r == 0) {
+				++matched;
+				if (callback)
+					callback(p, cargs);
+			} else if (r > 0) {
+				return matched;
+			}
+		}
+	} while (count == block);
+	return matched;
 }
 
 int record_insert(record_t *rec, void *ptr, int count)
