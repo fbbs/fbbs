@@ -13,20 +13,15 @@ enum {
 	BFIND_MAX = 100,
 };
 
-extern const struct fileheader *dir_bsearch(const struct fileheader *begin,
-        const struct fileheader *end, unsigned int fid);
-
-static void print_bbsdoc(const post_info_t *p)
+static void print_post(const post_info_t *pi, bool sticky)
 {
-	int mark = get_post_mark(p);
-
+	int mark = get_post_mark(pi);
 	printf("<po %s%sm='%c' owner='%s' time= '%s' id='%"PRIdPID"'>",
-			(p->flag & POST_FLAG_STICKY) ? "sticky='1' " : "",
-			(p->flag & POST_FLAG_LOCKED) ? "nore='1' " : "",
-			mark, p->owner, getdatestring(p->stamp, DATE_XML), p->id);
-
+			sticky ? "sticky='1' " : "",
+			(pi->flag & POST_FLAG_LOCKED) ? "" : "nore='1' ",
+			mark, pi->owner, getdatestring(pi->stamp, DATE_XML), pi->id);
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(p->utf8_title, gbk_title);
+	convert_u2g(pi->utf8_title, gbk_title);
 	xml_fputs2(gbk_title, 0, stdout);
 	printf("</po>\n");
 }
@@ -47,43 +42,68 @@ static void print_board_logo(const char *board)
 		printf(" banner='../info/boards/%s/banner.jpg'", board);
 }
 
-static void print_sticky_posts(int bid, post_list_type_e type)
+typedef struct {
+	int count;
+	int max;
+	bool thread;
+} print_post_filter_t;
+
+static int print_post_filter(const void *ptr, void *args, int offset)
 {
-	post_info_t *sticky_posts = NULL;
-
-	int count = load_sticky_posts(bid, &sticky_posts);
-	for (int i = 0; i < count; ++i) {
-		print_bbsdoc(sticky_posts + i);
-	}
-
-	free(sticky_posts);
+	const post_index_board_t *pib = ptr;
+	print_post_filter_t *ppf = args;
+	if (ppf->count >= ppf->max)
+		return 1;
+	if (ppf->thread && pib->tid_delta != 0)
+		return -1;
+	++ppf->count;
+	return 0;
 }
 
-static bool print_posts(post_filter_t *filter, int limit, bool asc)
+typedef struct {
+	post_index_record_t *pir;
+	bool sticky;
+} print_post_callback_t;
+
+static int print_post_callback(void *ptr, void *args)
 {
-	query_t *q = build_post_query(filter, asc, limit + 1);
-	db_res_t *r = query_exec(q);
+	const post_index_board_t *pib = ptr;
+	print_post_callback_t *ppc = args;
+	post_info_t pi;
+	post_index_board_to_info(ppc->pir, pib, &pi, 1);
+	print_post(&pi, ppc->sticky);
+	return 0;
+}
 
-	post_id_t next = true;
-	if (r) {
-		int rows = db_res_rows(r);
-		if (rows > limit) {
-			rows = limit;
-		} else {
-			limit = rows;
-			next = false;
-		}
+static int print_posts(record_t *record, post_index_record_t *pir,
+		int *start, int max, post_list_type_e type, bool sticky)
+{
+	print_post_filter_t ppf = {
+		.count = 0, .max = max,
+		.thread = type == POST_LIST_THREAD,
+	};
+	print_post_callback_t ppc = { .pir = pir, .sticky = sticky, };
+	record_foreach(record, NULL, *start, print_post_filter, &ppf,
+			print_post_callback, &ppc);
 
-		for (int i = asc ? 0 : limit - 1;
-				asc ? i < limit : i >= 0;
-				i += asc ? 1 : -1) {
-			post_info_t info;
-			res_to_post_info(r, i, 0, &info);
-			print_bbsdoc(&info);
-		}
-		db_clear(r);
+	int total = record_count(record);
+	if (!sticky) {
+		if (*start <= 0 || *start > total - max)
+			*start = total - max + 1;
+		if (*start < 1)
+			*start = 1;
 	}
-	return next;
+	return total;
+}
+
+static void print_sticky_posts(int bid, post_list_type_e type,
+		post_index_record_t *pir)
+{
+	record_t record;
+	post_index_board_open_sticky(bid, RECORD_READ, &record);
+	int start = 0;
+	print_posts(&record, pir, &start, MAX_NOTICE, type, true);
+	record_close(&record);
 }
 
 static int bbsdoc(post_list_type_e type)
@@ -94,22 +114,16 @@ static int bbsdoc(post_list_type_e type)
 		get_board(get_param("board"), &board);
 	else
 		get_board_by_bid(strtol(bidstr, NULL, 10), &board);
-
 	if (!board.id || !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
-
 	board_to_gbk(&board);
 
-	post_id_t start = strtoll(get_param("start"), NULL, 10);
-	char action = *get_param("a");
-
+	int start = strtoll(get_param("start"), NULL, 10);
 	int page = strtol(get_param("my_t_lines"), NULL, 10);
 	if (page < TLINES || page > 40)
 		page = TLINES;
-
-	bool archive = *get_param("archive");
 
 	if (get_doc_mode() != type)
 		set_doc_mode(type);
@@ -120,19 +134,16 @@ static int bbsdoc(post_list_type_e type)
 
 	brc_fcgi_init(currentuser.userid, board.name);
 
-	post_filter_t filter = {
-		.bid = board.id, .type = type, .max = start, .archive = archive,
-	};
-	if (action == 'n') {
-		filter.max = 0;
-		filter.min = start;
-	}
-	if (type == POST_LIST_DIGEST)
-		filter.flag |= POST_FLAG_DIGEST;
-
-	post_id_t next = print_posts(&filter, page, action == 'n');
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+	record_t record;
+	// TODO: filtered record
+	post_index_board_open(board.id, RECORD_READ, &record);
+	int total = print_posts(&record, &pir, &start, page, type, false);
+	record_close(&record);
 	if (type != POST_LIST_DIGEST)
-		print_sticky_posts(board.id, type);
+		print_sticky_posts(board.id, type, &pir);
+	post_index_record_close(&pir);
 
 	char *cgi_name = "";
 	if (type == POST_LIST_DIGEST)
@@ -140,16 +151,11 @@ static int bbsdoc(post_list_type_e type)
 	else if (type == POST_LIST_TOPIC)
 		cgi_name = "t";
 
-	printf("<brd title='%s' desc='%s' bm='%s' start='%d' "
+	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
 			"bid='%d' page='%d' link='%s'", board.name, board.descr, board.bms,
-			start, board.id, page, cgi_name);
-	if (!start || (action == 'n' && !next))
-		printf(" bottom='1'");
-	if (action != 'n' && !next)
-		printf(" top='1'");
+			start, total, board.id, page, cgi_name);
 	print_board_logo(board.name);
 	printf("/>\n</bbsdoc>");
-
 	return 0;
 }
 
@@ -182,7 +188,7 @@ int bbsbfind_main(void)
 	if (!get_board_by_bid(bid, &board)
 			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-
+#if 0
 	post_filter_t filter = { .bid = bid, .type = POST_LIST_NORMAL };
 	if (strcaseeq(get_param("mark"), "on"))
 		filter.flag |= POST_FLAG_MARKED;
@@ -235,14 +241,11 @@ int bbsbfind_main(void)
 		printf(">");
 	}
 	db_clear(res);
-
+#endif
 	print_session();
 	printf("</bbsbfind>");
 	return 0;
 }
-
-#define POST_THREAD_FIELDS  \
-	"tid, stamp, last_id, last_stamp, replies, comments, owner, uname, title"
 
 typedef struct {
 	post_id_t tid;
@@ -255,35 +258,6 @@ typedef struct {
 	char uname[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_thread_info_t;
-
-static void res_to_post_thread_info(db_res_t *res, int row,
-		post_thread_info_t *p)
-{
-	p->tid = db_get_post_id(res, row, 0);
-	p->last_id = db_get_post_id(res, row, 2);
-	p->stamp = db_get_time(res, row, 1);
-	p->last_stamp = db_get_time(res, row, 3);
-	p->replies = db_get_integer(res, row, 4);
-	p->comments = db_get_integer(res, row, 5);
-	p->owner = db_get_user_id(res, row, 6);
-	strlcpy(p->uname, db_get_value(res, row, 7), sizeof(p->uname));
-	strlcpy(p->utf8_title, db_get_value(res, row, 8), sizeof(p->utf8_title));
-}
-
-static db_res_t *get_post_threads(int bid, int start, int count)
-{
-	query_t *q = query_new(0);
-	query_select(q, POST_THREAD_FIELDS);
-	query_from(q, "posts.threads");
-	query_where(q, "board = %d", bid);
-	if (start)
-		query_and(q, "last_id <= %"DBIdPID, start);
-	query_orderby(q, "last_id", false);
-	query_limit(q, count);
-
-	db_res_t *res = query_exec(q);
-	return res;
-}
 
 int web_forum(void)
 {
@@ -308,6 +282,7 @@ int web_forum(void)
 	print_board_logo(board.name);
 	print_session();
 
+#if 0
 	int count = TOPICS_PER_PAGE;
 	int start = strtoll(get_param("start"), NULL, 10);
 
@@ -333,6 +308,6 @@ int web_forum(void)
 	}
 	db_clear(res);
 	printf("</forum>");
-
+#endif
 	return 0;
 }
