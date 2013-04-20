@@ -153,7 +153,7 @@ static int bbsdoc(post_list_type_e type)
 
 	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
 			"bid='%d' page='%d' link='%s'", board.name, board.descr, board.bms,
-			start, total, board.id, page, cgi_name);
+			total, start, board.id, page, cgi_name);
 	print_board_logo(board.name);
 	printf("/>\n</bbsdoc>");
 	return 0;
