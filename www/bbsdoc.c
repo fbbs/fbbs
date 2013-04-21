@@ -43,20 +43,27 @@ static void print_board_logo(const char *board)
 }
 
 typedef struct {
+	int start;
+	int total;
 	int count;
 	int max;
 	bool thread;
+	bool digest;
 } print_post_filter_t;
 
 static int print_post_filter(const void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
 	print_post_filter_t *ppf = args;
-	if (ppf->count >= ppf->max)
-		return 1;
-	if (ppf->thread && pib->tid_delta != 0)
+	if (ppf->thread && pib->tid_delta)
 		return -1;
-	++ppf->count;
+	if (ppf->digest && !(pib->flag & POST_FLAG_DIGEST))
+		return -1;
+	++ppf->total;
+	if (ppf->total < ppf->start)
+		return -1;
+	if (++ppf->count > ppf->max)
+		return -1;
 	return 0;
 }
 
@@ -78,15 +85,18 @@ static int print_post_callback(void *ptr, void *args)
 static int print_posts(record_t *record, post_index_record_t *pir,
 		int *start, int max, post_list_type_e type, bool sticky)
 {
+	bool normal = type == POST_LIST_NORMAL;
 	print_post_filter_t ppf = {
-		.count = 0, .max = max,
-		.thread = type == POST_LIST_THREAD,
+		.start = normal ? 0 : *start, .max = max,
+		.thread = type == POST_LIST_TOPIC,
+		.digest = type == POST_LIST_DIGEST,
 	};
 	print_post_callback_t ppc = { .pir = pir, .sticky = sticky, };
-	record_foreach(record, NULL, *start, print_post_filter, &ppf,
-			print_post_callback, &ppc);
 
-	int total = record_count(record);
+	record_foreach(record, NULL, normal ? *start : 0,
+			print_post_filter, &ppf, print_post_callback, &ppc);
+	int total = normal ? record_count(record) : ppf.total;
+
 	if (!sticky) {
 		if (*start <= 0 || *start > total - max)
 			*start = total - max + 1;
@@ -137,8 +147,8 @@ static int bbsdoc(post_list_type_e type)
 	post_index_record_t pir;
 	post_index_record_open(&pir);
 	record_t record;
-	// TODO: filtered record
 	post_index_board_open(board.id, RECORD_READ, &record);
+
 	int total = print_posts(&record, &pir, &start, page, type, false);
 	record_close(&record);
 	if (type != POST_LIST_DIGEST)
