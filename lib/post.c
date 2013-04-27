@@ -1393,23 +1393,23 @@ bool alter_title(post_index_record_t *pir, const post_info_t *pi)
 	return true;
 }
 
-int get_post_mark(const post_info_t *p)
+int get_post_mark_raw(post_id_t id, int flag)
 {
 	int mark = ' ';
 
-	if (p->flag & POST_FLAG_DIGEST) {
-		if (p->flag & POST_FLAG_MARKED)
+	if (flag & POST_FLAG_DIGEST) {
+		if (flag & POST_FLAG_MARKED)
 			mark = 'b';
 		else
 			mark = 'g';
-	} else if (p->flag & POST_FLAG_MARKED) {
+	} else if (flag & POST_FLAG_MARKED) {
 		mark = 'm';
 	}
 
-	if (mark == ' ' && (p->flag & POST_FLAG_WATER))
+	if (mark == ' ' && (flag & POST_FLAG_WATER))
 		mark = 'w';
 
-	if (brc_unread(p->id)) {
+	if (brc_unread(id)) {
 		if (mark == ' ')
 			mark = DEFINE(DEF_NOT_N_MASK) ? '+' : 'N';
 		else
@@ -1417,4 +1417,9 @@ int get_post_mark(const post_info_t *p)
 	}
 
 	return mark;
+}
+
+int get_post_mark(const post_info_t *p)
+{
+	return get_post_mark_raw(p->id, p->flag);
 }
