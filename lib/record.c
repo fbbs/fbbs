@@ -166,7 +166,7 @@ int record_foreach(record_t *rec, void *ptr, int offset,
 
 		for (int i = 0; i < count; ++i) {
 			char *p = buf + i * rec->rlen;
-			int r = filter(p, fargs, offset++);
+			int r = filter ? filter(p, fargs, offset++) : 0;
 			if (r == 0) {
 				++matched;
 				if (callback)
