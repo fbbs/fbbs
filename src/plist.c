@@ -78,7 +78,7 @@ static void save_post_list_position(tui_list_t *tl)
 	pl->plp->cur = tl->cur;
 }
 
-static int last_read_filter(const void *ptr, void *args, int offset)
+static int last_read_filter(void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
 	post_id_t *id = args;
@@ -590,7 +590,9 @@ static int post_list_deleted(tui_list_t *tl, post_index_trash_e trash)
 }
 
 typedef struct {
+	post_index_record_t *pir;
 	post_index_board_t *pib;
+	const post_filter_t *filter;
 	int size;
 	int capacity;
 } post_index_board_append_t;
@@ -609,13 +611,17 @@ static int post_index_thread_cmp(const void *r1, const void *r2)
 	return p1->id - p2->id;
 }
 
-static int post_index_board_append(void *p, void *args)
+static int post_index_board_append(void *p, void *args, int offset)
 {
 	post_index_board_t *pib = p;
 	post_index_board_append_t *piba = args;
-	if (piba->size < piba->capacity)
-		piba->pib[piba->size++] = *pib;
-	return 0;
+
+	if (match_filter(pib, piba->pir, piba->filter, offset)) {
+		if (piba->size < piba->capacity)
+			piba->pib[piba->size++] = *pib;
+		return 0;
+	}
+	return -1;
 }
 
 static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
@@ -650,16 +656,13 @@ static int filtered_record_generate(record_t *r, post_filter_t *f,
 
 	post_index_board_append_t piba = {
 		.pib = malloc(sizeof(post_index_board_t) * count),
-		.size = 0,
-		.capacity = count,
+		.size = 0, .capacity = count, .pir = pir, .filter = f,
 	};
 	if (f->type == POST_LIST_THREAD) {
 		piba.size = record_read_after(r, piba.pib, piba.capacity, 0);
 		qsort(piba.pib, piba.size, sizeof(*piba.pib), post_index_thread_cmp);
 	} else {
-		post_index_board_filter_t pibf = { .pir = pir, .filter = f };
-		record_foreach(r, NULL, 0, post_index_board_filter, &pibf,
-				post_index_board_append, &piba);
+		record_foreach(r, NULL, 0, post_index_board_append, &piba);
 	}
 	record_append(&record, piba.pib, piba.size);
 	record_close(&record);
@@ -767,6 +770,17 @@ static void set_filter_base(post_filter_t *filter, const post_info_t *ip,
 }
 #endif
 
+typedef struct {
+	post_index_record_t *pir;
+	const post_filter_t *filter;
+} post_index_board_filter_t;
+
+static int post_index_board_filter(void *ptr, void *args, int offset)
+{
+	const post_index_board_filter_t *pibf = args;
+	return match_filter(ptr, pibf->pir, pibf->filter, offset) ? 0 : -1;
+}
+
 static int post_search(tui_list_t *tl, const post_filter_t *filter,
 		int offset, bool upward)
 {
@@ -867,7 +881,7 @@ static int jump_to_thread_next(tui_list_t *tl, post_info_t *pi)
 
 static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user);
 
-static int thread_first_unread_filter(const void *ptr, void *args, int offset)
+static int thread_first_unread_filter(void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
 	post_id_t tid = *(post_id_t *) args;
@@ -1705,32 +1719,36 @@ extern int import_file(const char *title, const char *file, const char *path);
 
 typedef struct {
 	post_index_record_t *pir;
+	const post_filter_t *filter;
 	const char *path;
 } import_posts_callback_t;
 
-static int import_posts_callback(void *r, void *args)
+static int import_posts_callback(void *r, void *args, int offset)
 {
-	post_index_board_t *pib = r;
+	const post_index_board_t *pib = r;
 	import_posts_callback_t *ipc = args;
 
-	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
-	post_index_record_get_title(ipc->pir, pib->id,
-			utf8_title, sizeof(utf8_title));
-	convert_u2g(utf8_title, gbk_title);
+	if (match_filter(pib, ipc->pir, ipc->filter, offset)) {
+		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+		post_index_record_get_title(ipc->pir, pib->id,
+				utf8_title, sizeof(utf8_title));
+		convert_u2g(utf8_title, gbk_title);
 
-	char file[HOMELEN];
-	dump_content(pib->id, file, sizeof(file));
-	import_file(gbk_title, file, ipc->path);
-	return 0;
+		char file[HOMELEN];
+		dump_content(pib->id, file, sizeof(file));
+		import_file(gbk_title, file, ipc->path);
+		return 0;
+	}
+	return -1;
 }
 
 static void import_posts(post_list_t *pl, post_filter_t *filter,
 		const char *path)
 {
-	post_index_board_filter_t pibf = { .filter = filter, .pir = pl->pir };
-	import_posts_callback_t ipc = { .pir = pl->pir, .path = path };
-	record_foreach(pl->record, NULL, 0, post_index_board_filter, &pibf,
-			import_posts_callback, &ipc);
+	import_posts_callback_t ipc = {
+		.pir = pl->pir, .filter = filter, .path = path,
+	};
+	record_foreach(pl->record, NULL, 0, import_posts_callback, &ipc);
 }
 
 static int tui_import_posts(post_list_t *pl, post_filter_t *filter)

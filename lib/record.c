@@ -109,8 +109,7 @@ static int check_offset(const record_t *rec, const mmap_t *m, void *ptr,
 }
 
 int record_apply(record_t *rec, void *ptr, int offset,
-		record_filter_t filter, void *fargs,
-		record_callback_t callback, void *cargs, bool delete_)
+		record_callback_t callback, void *args, bool delete_)
 {
 	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
 	if (mmap_open_fd(&m) < 0)
@@ -124,11 +123,9 @@ int record_apply(record_t *rec, void *ptr, int offset,
 	end += m.size;
 
 	for (; p < end; p += len, ++offset) {
-		int r = filter(p, fargs, offset);
+		int r = callback(p, args, offset);
 		if (r == 0) {
 			++affected;
-			if (callback)
-				callback(p, cargs);
 		} else if (delete_)
 			memcpy(p - affected * len, p, len);
 		else if (r > 0)
@@ -142,8 +139,7 @@ int record_apply(record_t *rec, void *ptr, int offset,
 }
 
 int record_foreach(record_t *rec, void *ptr, int offset,
-		record_filter_t filter, void *fargs,
-		record_callback_t callback, void *cargs)
+		record_callback_t callback, void *args)
 {
 	char buf[RECORD_BUFFER_SIZE];
 	int block = sizeof(buf) / rec->rlen, matched = 0;
@@ -166,11 +162,9 @@ int record_foreach(record_t *rec, void *ptr, int offset,
 
 		for (int i = 0; i < count; ++i) {
 			char *p = buf + i * rec->rlen;
-			int r = filter ? filter(p, fargs, offset++) : 0;
+			int r = callback(p, args, offset++);
 			if (r == 0) {
 				++matched;
-				if (callback)
-					callback(p, cargs);
 			} else if (r > 0) {
 				return matched;
 			}
@@ -244,7 +238,7 @@ int record_merge(record_t *rec, void *ptr, int count)
 	return 0;
 }
 
-int record_search_copy(record_t *rec, record_filter_t filter, void *fargs,
+int record_search_copy(record_t *rec, record_callback_t filter, void *fargs,
 		int offset, bool reverse, void *out)
 {
 	char buf[RECORD_BUFFER_SIZE];

@@ -43,39 +43,31 @@ static void print_board_logo(const char *board)
 }
 
 typedef struct {
+	post_index_record_t *pir;
 	int start;
 	int total;
 	int count;
 	int max;
 	bool thread;
 	bool digest;
-} print_post_filter_t;
-
-static int print_post_filter(const void *ptr, void *args, int offset)
-{
-	const post_index_board_t *pib = ptr;
-	print_post_filter_t *ppf = args;
-	if (ppf->thread && pib->tid_delta)
-		return -1;
-	if (ppf->digest && !(pib->flag & POST_FLAG_DIGEST))
-		return -1;
-	++ppf->total;
-	if (ppf->total < ppf->start)
-		return -1;
-	if (++ppf->count > ppf->max)
-		return -1;
-	return 0;
-}
-
-typedef struct {
-	post_index_record_t *pir;
 	bool sticky;
 } print_post_callback_t;
 
-static int print_post_callback(void *ptr, void *args)
+static int print_post_callback(void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
 	print_post_callback_t *ppc = args;
+
+	if (ppc->thread && pib->tid_delta)
+		return -1;
+	if (ppc->digest && !(pib->flag & POST_FLAG_DIGEST))
+		return -1;
+	++ppc->total;
+	if (ppc->total < ppc->start)
+		return -1;
+	if (++ppc->count > ppc->max)
+		return -1;
+
 	post_info_t pi;
 	post_index_board_to_info(ppc->pir, pib, &pi, 1);
 	print_post(&pi, ppc->sticky);
@@ -86,16 +78,16 @@ static int print_posts(record_t *record, post_index_record_t *pir,
 		int *start, int max, post_list_type_e type, bool sticky)
 {
 	bool normal = type == POST_LIST_NORMAL;
-	print_post_filter_t ppf = {
+	print_post_callback_t ppc = {
+		.pir = pir, .sticky = sticky,
 		.start = normal ? 0 : *start, .max = max,
 		.thread = type == POST_LIST_TOPIC,
 		.digest = type == POST_LIST_DIGEST,
 	};
-	print_post_callback_t ppc = { .pir = pir, .sticky = sticky, };
 
 	record_foreach(record, NULL, normal ? *start : 0,
-			print_post_filter, &ppf, print_post_callback, &ppc);
-	int total = normal ? record_count(record) : ppf.total;
+			print_post_callback, &ppc);
+	int total = normal ? record_count(record) : ppc.total;
 
 	if (!sticky) {
 		if (*start <= 0 || *start > total - max)
@@ -290,7 +282,7 @@ static int cmp(const void *t, const void *p)
 	return *tid - pts->tid;
 }
 
-static int update_thread_stat(void *r, void *args)
+static int update_thread_stat(void *r, void *args, int offset)
 {
 	const post_index_board_t *pib = r;
 	update_thread_stat_t *uts = args;
@@ -332,8 +324,7 @@ static int prepare_threads(int bid, post_thread_stat_t **pts)
 		*pts = malloc(sizeof(**pts) * posts);
 		if (*pts) {
 			update_thread_stat_t uts = { .pts = *pts, .capacity = posts };
-			record_foreach(&record, NULL, 0, NULL, NULL,
-					update_thread_stat, &uts);
+			record_foreach(&record, NULL, 0, update_thread_stat, &uts);
 			qsort(uts.pts, uts.size, sizeof(*uts.pts), thread_compare);
 			threads = uts.size;
 		}

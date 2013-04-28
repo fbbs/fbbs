@@ -21,8 +21,7 @@ typedef enum {
 } record_perm_e;
 
 typedef int (*record_cmp_t)(const void *, const void *);
-typedef int (*record_filter_t)(const void *, void *, int);
-typedef int (*record_callback_t)(void *, void *);
+typedef int (*record_callback_t)(void *, void *, int);
 
 typedef struct record_t {
 	int fd;
@@ -40,13 +39,13 @@ extern int record_read(record_t *rec, void *ptr, int count);
 extern int record_read_after(record_t *rec, void *ptr, int count, int offset);
 extern int record_write(record_t *rec, const void *ptr, int count, int offset);
 extern int record_append(record_t *rec, const void *ptr, int count);
-extern int record_apply(record_t *rec, void *ptr, int offset, record_filter_t filter, void *fargs, record_callback_t callback, void *cargs, bool delete_);
-#define record_delete(r, p, o, f, a, c, g)  record_apply(r, p, o, f, a, c, g, true)
-#define record_update(r, p, o, f, a, c, g)  record_apply(r, p, o, f, a, c, g, false)
-extern int record_foreach(record_t *rec, void *ptr, int offset, record_filter_t filter, void *fargs, record_callback_t callback, void *cargs);
+extern int record_apply(record_t *rec, void *ptr, int offset, record_callback_t callback, void *args, bool delete_);
+#define record_delete(r, p, o, c, a)  record_apply(r, p, o, c, a, true)
+#define record_update(r, p, o, c, a)  record_apply(r, p, o, c, a, false)
+extern int record_foreach(record_t *rec, void *ptr, int offset, record_callback_t callback, void *args);
 extern int record_insert(record_t *rec, void *ptr, int count);
 extern int record_merge(record_t *rec, void *ptr, int count);
-extern int record_search_copy(record_t *rec, record_filter_t filter, void *fargs, int offset, bool reverse, void *out);
+extern int record_search_copy(record_t *rec, record_callback_t filter, void *args, int offset, bool reverse, void *out);
 #define record_search(r, f, a, o, e)  record_search_copy(r, f, a, o, e, NULL)
 
 #endif // FB_RECORD_H

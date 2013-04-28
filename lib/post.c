@@ -327,7 +327,7 @@ int post_content_write(post_id_t id, char *str, size_t size)
 	return ret;
 }
 
-static int post_sticky_filter(const void *ptr, void *fargs, int offset)
+static int post_sticky_filter(void *ptr, void *fargs, int offset)
 {
 	const post_index_board_t *pib = ptr;
 	post_id_t *id = fargs;
@@ -339,8 +339,7 @@ int post_remove_sticky(int bid, post_id_t id)
 	record_t record;
 	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
 		return 0;
-	int r = record_delete(&record, NULL, 0, post_sticky_filter, &id,
-			NULL, NULL);
+	int r = record_delete(&record, NULL, 0, post_sticky_filter, &id);
 	record_close(&record);
 	return r;
 }
@@ -840,12 +839,15 @@ void quote_file_(const char *orig, const char *output, int mode, bool mail,
 }
 
 typedef struct {
+	post_index_record_t *pir;
+	post_filter_t *filter;
+	post_id_t id;
 	bool set;
 	bool toggle;
 	post_flag_e flag;
 } post_index_board_update_flag_t;
 
-static int match_filter(const post_index_board_t *pib,
+int match_filter(const post_index_board_t *pib,
 		post_index_record_t *pir, const post_filter_t *filter, int offset)
 {
 	bool match = true;
@@ -874,49 +876,42 @@ static int match_filter(const post_index_board_t *pib,
 	return match;
 }
 
-int post_index_board_filter(const void *pib, void *fargs, int offset)
-{
-	const post_index_board_filter_t *pibf = fargs;
-	return match_filter(pib, pibf->pir, pibf->filter, offset) ? 0 : -1;
-}
-
-static int post_index_board_update_flag(void *ptr, void *uargs)
+static int post_index_board_update_flag(void *ptr, void *args, int offset)
 {
 	post_index_board_t *pib = ptr;
-	post_index_board_update_flag_t *pibuf = uargs;
-	if (pibuf->toggle)
-		pibuf->set = !(pib->flag & pibuf->flag);
-	if (pibuf->set)
-		pib->flag |= pibuf->flag;
-	else
-		pib->flag &= ~pibuf->flag;
-	return 0;
+	post_index_board_update_flag_t *pibuf = args;
+
+	if (pibuf->id == pib->id
+			|| match_filter(pib, pibuf->pir, pibuf->filter, offset)) {
+		if (pibuf->toggle)
+			pibuf->set = !(pib->flag & pibuf->flag);
+		if (pibuf->set)
+			pib->flag |= pibuf->flag;
+		else
+			pib->flag &= ~pibuf->flag;
+		return 0;
+	}
+	return pibuf->id ? pib->id - pibuf->id : -1;
 }
 
 int set_post_flag(record_t *rec, post_index_record_t *pir,
 		post_filter_t *filter, post_flag_e flag, bool set, bool toggle)
 {
-	post_index_board_filter_t pibf = { .pir = pir, .filter = filter };
 	post_index_board_update_flag_t pibuf = {
+		.pir = pir, .filter = filter, .id = 0,
 		.set = set, .toggle = toggle, .flag = flag,
 	};
-	return record_update(rec, NULL, 0, post_index_board_filter, &pibf,
-			post_index_board_update_flag, &pibuf);
-}
-
-static int post_index_board_filter_one(const void *ptr, void *fargs,
-		int offset)
-{
-	return post_index_cmp(ptr, fargs);
+	return record_update(rec, NULL, 0, post_index_board_update_flag, &pibuf);
 }
 
 int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset,
 		post_flag_e flag, bool set, bool toggle)
 {
 	post_index_board_update_flag_t pibuf = {
+		.pir = NULL, .filter = NULL, .id = pib->id,
 		.set = set, .toggle = toggle, .flag = flag,
 	};
-	return record_update(rec, pib, offset, post_index_board_filter_one, pib,
+	return record_update(rec, pib, offset,
 			post_index_board_update_flag, &pibuf);
 }
 
@@ -1162,72 +1157,78 @@ static void adjust_user_post_count(const char *uname, int delta)
 
 typedef struct {
 	post_index_record_t *pir;
+	const post_filter_t *filter;
 	bool delete_;
 } post_deletion_callback_t;
 
-static int post_deletion_callback(void *ptr, void *args)
+static int post_deletion_callback(void *ptr, void *args, int offset)
 {
 	post_index_trash_t *pit = ptr;
 	post_deletion_callback_t *pdc = args;
 	post_index_t pi;
 
-	post_index_record_lock(pdc->pir, RECORD_WRLCK, pit->id);
-	post_index_record_read(pdc->pir, pit->id, &pi);
-	if (pdc->delete_)
-		pi.flag |= POST_FLAG_DELETED;
-	else
-		pi.flag &= ~POST_FLAG_DELETED;
-	post_index_record_update(pdc->pir, &pi);
-	post_index_record_lock(pdc->pir, RECORD_UNLCK, pit->id);
+	if (match_filter((post_index_board_t *) pit, pdc->pir,
+				pdc->filter, offset)) {
+		if (post_index_record_lock(pdc->pir, RECORD_WRLCK, pit->id) == 0) {
+			post_index_record_read(pdc->pir, pit->id, &pi);
+			if (pdc->delete_)
+				pi.flag |= POST_FLAG_DELETED;
+			else
+				pi.flag &= ~POST_FLAG_DELETED;
+			post_index_record_update(pdc->pir, &pi);
+			post_index_record_lock(pdc->pir, RECORD_UNLCK, pit->id);
 
-	if (pit->flag & POST_FLAG_JUNK)
-		adjust_user_post_count(pi.owner, pdc->delete_ ? -1 : 1);
-	return 0;
+			if (pit->flag & POST_FLAG_JUNK)
+				adjust_user_post_count(pi.owner, pdc->delete_ ? -1 : 1);
+		}
+		return 0;
+	}
+	return -1;
 }
 
 static int post_deletion_trigger(record_t *trash, const post_filter_t *filter,
 		post_index_record_t *pir, bool deletion)
 {
-	post_index_board_filter_t pibf = { .pir = pir, .filter = filter, };
-	post_deletion_callback_t pdc = { .pir = pir, .delete_ = deletion, };
-	int rows = record_update(trash, NULL, 0, post_index_board_filter, &pibf,
-			post_deletion_callback, &pdc);
+	post_deletion_callback_t pdc = {
+		.pir = pir, .filter = filter, .delete_ = deletion,
+	};
+	int rows = record_update(trash, NULL, 0, post_deletion_callback, &pdc);
 	return rows;
 }
 
 typedef struct {
+	post_index_record_t *pir;
+	const post_filter_t *filter;
 	record_t *trash;
 	const char *ename;
 	fb_time_t estamp;
 	bool junk;
 	bool decrease;
+	bool force;
 } post_index_trash_insert_t;
 
-static int post_index_trash_insert(void *rec, void *cargs)
+static int post_index_trash_insert(void *rec, void *args, int offset)
 {
 	const post_index_board_t *pib = rec;
-	post_index_trash_insert_t *piti = cargs;
-	post_index_trash_t pit = {
-		.id = pib->id,
-		.reid_delta = pib->reid_delta,
-		.tid_delta = pib->tid_delta,
-		.uid = pib->uid,
-		.flag = pib->flag,
-		.estamp = piti->estamp,
-	};
-	if (piti->decrease && (piti->junk || (pib->flag & POST_FLAG_WATER)))
-		pit.flag |= POST_FLAG_JUNK;
-	strlcpy(pit.ename, piti->ename, sizeof(pit.ename));
-	return record_append(piti->trash, &pit, 1);
-}
+	post_index_trash_insert_t *piti = args;
 
-static int post_index_board_filter_unmarked(const void *ptr, void *fargs,
-		int offset)
-{
-	const post_index_board_t *pib = ptr;
-	const post_index_board_filter_t *pibf = fargs;
-	return !(pib->flag & POST_FLAG_MARKED)
-			&& match_filter(pib, pibf->pir, pibf->filter, offset);
+	if (match_filter(pib, piti->pir, piti->filter, offset)
+			&& (piti->force || !(pib->flag & POST_FLAG_MARKED))) {
+		post_index_trash_t pit = {
+			.id = pib->id,
+			.reid_delta = pib->reid_delta,
+			.tid_delta = pib->tid_delta,
+			.uid = pib->uid,
+			.flag = pib->flag,
+			.estamp = piti->estamp,
+		};
+		if (piti->decrease && (piti->junk || (pib->flag & POST_FLAG_WATER)))
+			pit.flag |= POST_FLAG_JUNK;
+		strlcpy(pit.ename, piti->ename, sizeof(pit.ename));
+		record_append(piti->trash, &pit, 1);
+		return 0;
+	}
+	return -1;
 }
 
 int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
@@ -1250,7 +1251,6 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 	post_index_record_t pir;
 	post_index_record_open(&pir);
 
-	post_index_board_filter_t pibf = { .pir = &pir, .filter = filter };
 	post_index_trash_insert_t piti = {
 		.trash = &trash, .ename = currentuser.userid,
 		.estamp = time(NULL), .junk = junk, .decrease = decrease,
@@ -1261,8 +1261,7 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 
 	record_lock_all(&record, RECORD_WRLCK);
 	int deleted = record_delete(&record, ptr, offset,
-			force ? post_index_board_filter : post_index_board_filter_unmarked,
-			&pibf, post_index_trash_insert, &piti);
+			post_index_trash_insert, &piti);
 	record_lock_all(&record, RECORD_UNLCK);
 
 	post_filter_t filter2 = { .fake_id_min = current + 1 };
@@ -1273,25 +1272,33 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 }
 
 typedef struct {
+	post_index_record_t *pir;
+	const post_filter_t *filter;
 	post_index_board_t *buf;
 	int count;
 	int max;
 } post_undeletion_callback_t;
 
-static int post_undeletion_callback(void *ptr, void *args)
+static int post_undeletion_callback(void *ptr, void *args, int offset)
 {
 	const post_index_trash_t *pit = ptr;
 	post_undeletion_callback_t *puc = args;
-	if (puc->count >= puc->max)
-		return -1;
 
-	post_index_board_t *pib = puc->buf + puc->count;
-	pib->id = pit->id;
-	pib->reid_delta = pit->reid_delta;
-	pib->tid_delta = pit->tid_delta;
-	pib->uid = pit->uid;
-	pib->flag = pit->flag;
-	return ++puc->count;
+	if (match_filter((post_index_board_t *)pit, puc->pir,
+				puc->filter, offset)) {
+		if (puc->count >= puc->max)
+			return -1;
+
+		post_index_board_t *pib = puc->buf + puc->count;
+		pib->id = pit->id;
+		pib->reid_delta = pit->reid_delta;
+		pib->tid_delta = pit->tid_delta;
+		pib->uid = pit->uid;
+		pib->flag = pit->flag;
+		++puc->count;
+		return 0;
+	}
+	return -1;
 }
 
 int post_index_board_undelete(const post_filter_t *filter, void *ptr,
@@ -1307,18 +1314,16 @@ int post_index_board_undelete(const post_filter_t *filter, void *ptr,
 	post_index_record_t pir;
 	post_index_record_open(&pir);
 
-	post_index_board_filter_t pibf = { .pir = &pir, .filter = filter };
-
 	record_lock_all(&trash, RECORD_WRLCK);
 	int undeleted = post_deletion_trigger(&trash, filter, &pir, false);
 	post_index_board_t *buf = malloc(undeleted * sizeof(post_index_board_t));
 	post_undeletion_callback_t puc = {
+		.pir = &pir, .filter = filter,
 		.buf = buf, .count = 0, .max = undeleted,
 	};
 
 	record_lock_all(&record, RECORD_WRLCK);
-	record_delete(&trash, NULL, 0, post_index_board_filter, &pibf,
-			post_undeletion_callback, &puc);
+	record_delete(&trash, NULL, 0, post_undeletion_callback, &puc);
 	record_merge(&record, buf, undeleted);
 	record_lock_all(&record, RECORD_UNLCK);
 
