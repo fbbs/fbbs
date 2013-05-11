@@ -611,7 +611,8 @@ static int post_index_thread_cmp(const void *r1, const void *r2)
 	return p1->id - p2->id;
 }
 
-static int post_index_board_append(void *p, void *args, int offset)
+static record_callback_e post_index_board_append(void *p, void *args,
+		int offset)
 {
 	post_index_board_t *pib = p;
 	post_index_board_append_t *piba = args;
@@ -619,9 +620,9 @@ static int post_index_board_append(void *p, void *args, int offset)
 	if (match_filter(pib, piba->pir, piba->filter, offset)) {
 		if (piba->size < piba->capacity)
 			piba->pib[piba->size++] = *pib;
-		return 0;
+		return RECORD_CALLBACK_MATCH;
 	}
-	return -1;
+	return RECORD_CALLBACK_CONTINUE;
 }
 
 static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
@@ -1723,7 +1724,7 @@ typedef struct {
 	const char *path;
 } import_posts_callback_t;
 
-static int import_posts_callback(void *r, void *args, int offset)
+static record_callback_e import_posts_callback(void *r, void *args, int offset)
 {
 	const post_index_board_t *pib = r;
 	import_posts_callback_t *ipc = args;
@@ -1737,9 +1738,9 @@ static int import_posts_callback(void *r, void *args, int offset)
 		char file[HOMELEN];
 		dump_content(pib->id, file, sizeof(file));
 		import_file(gbk_title, file, ipc->path);
-		return 0;
+		return RECORD_CALLBACK_MATCH;
 	}
-	return -1;
+	return RECORD_CALLBACK_CONTINUE;
 }
 
 static void import_posts(post_list_t *pl, post_filter_t *filter,

@@ -124,11 +124,11 @@ int record_apply(record_t *rec, void *ptr, int offset,
 
 	for (; p < end; p += len, ++offset) {
 		int r = callback(p, args, offset);
-		if (r == 0) {
+		if (r == RECORD_CALLBACK_MATCH) {
 			++affected;
 		} else if (delete_)
 			memcpy(p - affected * len, p, len);
-		else if (r > 0)
+		else if (r == RECORD_CALLBACK_BREAK)
 			break;
 	}
 
@@ -163,9 +163,9 @@ int record_foreach(record_t *rec, void *ptr, int offset,
 		for (int i = 0; i < count; ++i) {
 			char *p = buf + i * rec->rlen;
 			int r = callback(p, args, offset++);
-			if (r == 0) {
+			if (r == RECORD_CALLBACK_MATCH) {
 				++matched;
-			} else if (r > 0) {
+			} else if (r == RECORD_CALLBACK_BREAK) {
 				return matched;
 			}
 		}
@@ -263,11 +263,11 @@ int record_search_copy(record_t *rec, record_callback_t filter, void *fargs,
 				count = all - base;
 			for (int j = count - 1; j >= 0; --j) {
 				int r = filter(buf + j * rec->rlen, fargs, base + j);
-				if (r == 0) {
+				if (r == RECORD_CALLBACK_MATCH) {
 					if (out)
 						memcpy(out, buf + j * rec->rlen, rec->rlen);
 					return base + j;
-				} else if (r > 0)
+				} else if (r == RECORD_CALLBACK_BREAK)
 					return -1;
 			}
 		}

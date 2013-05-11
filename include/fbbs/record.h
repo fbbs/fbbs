@@ -20,8 +20,14 @@ typedef enum {
 	RECORD_WRITE = 0,
 } record_perm_e;
 
+typedef enum {
+	RECORD_CALLBACK_MATCH = 0,
+	RECORD_CALLBACK_CONTINUE = -1,
+	RECORD_CALLBACK_BREAK = 1,
+} record_callback_e;
+
 typedef int (*record_cmp_t)(const void *, const void *);
-typedef int (*record_callback_t)(void *, void *, int);
+typedef record_callback_e (*record_callback_t)(void *, void *, int);
 
 typedef struct record_t {
 	int fd;
@@ -47,5 +53,14 @@ extern int record_insert(record_t *rec, void *ptr, int count);
 extern int record_merge(record_t *rec, void *ptr, int count);
 extern int record_search_copy(record_t *rec, record_callback_t filter, void *args, int offset, bool reverse, void *out);
 #define record_search(r, f, a, o, e)  record_search_copy(r, f, a, o, e, NULL)
+
+#define COMPARE_RETURN(a, b)  \
+	do { \
+		if (a > b) \
+			return 1; \
+		if (b > a) \
+			return -1; \
+		return 0; \
+	} while (0)
 
 #endif // FB_RECORD_H

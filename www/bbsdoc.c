@@ -53,25 +53,22 @@ typedef struct {
 	bool sticky;
 } print_post_callback_t;
 
-static int print_post_callback(void *ptr, void *args, int offset)
+static record_callback_e print_post_callback(void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
 	print_post_callback_t *ppc = args;
 
-	if (ppc->thread && pib->tid_delta)
-		return -1;
-	if (ppc->digest && !(pib->flag & POST_FLAG_DIGEST))
-		return -1;
+	if ((ppc->thread && pib->tid_delta)
+			|| (ppc->digest && !(pib->flag & POST_FLAG_DIGEST)))
+		return RECORD_CALLBACK_CONTINUE;
 	++ppc->total;
-	if (ppc->total < ppc->start)
-		return -1;
-	if (++ppc->count > ppc->max)
-		return -1;
+	if ((ppc->total < ppc->start) || (++ppc->count > ppc->max))
+		return RECORD_CALLBACK_CONTINUE;
 
 	post_info_t pi;
 	post_index_board_to_info(ppc->pir, pib, &pi, 1);
 	print_post(&pi, ppc->sticky);
-	return 0;
+	return RECORD_CALLBACK_MATCH;
 }
 
 static int print_posts(record_t *record, post_index_record_t *pir,
@@ -282,7 +279,7 @@ static int cmp(const void *t, const void *p)
 	return *tid - pts->tid;
 }
 
-static int update_thread_stat(void *r, void *args, int offset)
+static record_callback_e update_thread_stat(void *r, void *args, int offset)
 {
 	const post_index_board_t *pib = r;
 	update_thread_stat_t *uts = args;
@@ -301,7 +298,7 @@ static int update_thread_stat(void *r, void *args, int offset)
 		pts->last_id = pib->id;
 		++pts->replies;
 	}
-	return 0;
+	return RECORD_CALLBACK_MATCH;
 }
 
 static int thread_compare(const void *r1, const void *r2)
