@@ -10,7 +10,6 @@
 
 enum {
 	TOPICS_PER_PAGE = 13,
-	BFIND_MAX = 100,
 };
 
 static void print_post(const post_info_t *pi, bool sticky)
@@ -177,6 +176,49 @@ int bbsodoc_main(void)
 	return bbsdoc(MODE_TOPICS);
 }
 
+enum {
+	BFIND_MAX = 100,
+};
+
+typedef struct {
+	bool marked;
+	bool digest;
+	int count;
+	user_id_t uid;
+	fb_time_t begin;
+	post_index_record_t *pir;
+	UTF8_BUFFER(t1, POST_TITLE_CCHARS);
+	UTF8_BUFFER(t2, POST_TITLE_CCHARS);
+	UTF8_BUFFER(t3, POST_TITLE_CCHARS);
+} web_post_filter_t;
+
+static record_callback_e web_post_filter(void *r, void *args, int offset)
+{
+	const post_index_board_t *pib = r;
+	web_post_filter_t *wpf = args;
+
+	if (wpf->count > BFIND_MAX)
+		return RECORD_CALLBACK_BREAK;
+	if ((wpf->marked && !(pib->flag & POST_FLAG_MARKED))
+			|| (wpf->digest && !(pib->flag & POST_FLAG_DIGEST))
+			|| (wpf->uid && pib->uid != wpf->uid))
+		return RECORD_CALLBACK_CONTINUE;
+
+	post_info_t pi;
+	post_index_board_to_info(wpf->pir, pib, &pi, 1);
+
+	if (pi.stamp < wpf->begin)
+		return RECORD_CALLBACK_BREAK;
+	if ((*wpf->utf8_t1 && !strcaseeq(wpf->utf8_t1, pi.utf8_title))
+			|| (*wpf->utf8_t2 && !strcaseeq(wpf->utf8_t2, pi.utf8_title))
+			|| (*wpf->utf8_t3 && strcaseeq(wpf->utf8_t3, pi.utf8_title)))
+		return RECORD_CALLBACK_CONTINUE;
+
+	++wpf->count;
+	print_post(&pi, false);
+	return RECORD_CALLBACK_MATCH;
+}
+
 int bbsbfind_main(void)
 {
 	if (!session.id)
@@ -187,43 +229,42 @@ int bbsbfind_main(void)
 	if (!get_board_by_bid(bid, &board)
 			|| !has_read_perm(&currentuser, &board))
 		return BBS_ENOBRD;
-#if 0
-	post_filter_t filter = { .bid = bid, .type = POST_LIST_NORMAL };
-	if (strcaseeq(get_param("mark"), "on"))
-		filter.flag |= POST_FLAG_MARKED;
-	if (strcaseeq(get_param("nore"), "on"))
-		filter.flag |= POST_FLAG_DIGEST;
+
+	record_t record;
+	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
+		return BBS_EINTNL;
+
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+
+	web_post_filter_t wpf = {
+		.marked = strcaseeq(get_param("mark"), "on"),
+		.digest = strcaseeq(get_param("nore"), "on"),
+	};
 
 	const char *uname = get_param("user");
 	user_id_t uid = get_user_id(uname);
 	if (uid)
-		filter.uid = uid;
-
-	query_t *q = query_new(0);
-	query_select(q, POST_LIST_FIELDS);
-	query_from(q, post_table_name(&filter));
-	build_post_filter(q, &filter, NULL);
+		wpf.uid = uid;
 
 	long day = strtol(get_param("limit"), NULL, 10);
 	if (day < 0)
 		day = 0;
-	fb_time_t begin = time(NULL) - 24 * 60 * 60 * day;
-	query_and(q, "stamp > %t", begin);
+	wpf.begin = time(NULL) - 24 * 60 * 60 * day;
 
-	int count = 0;
 	const char *names[] = { "t1", "t2", "t3" };
+	char *fields[] = { wpf.utf8_t1, wpf.utf8_t2, wpf.utf8_t3 };
+	int count = 0;
 	for (int i = 0; i < ARRAY_SIZE(names); ++i) {
 		const char *s = get_param(names[i]);
 		if (s && *s) {
 			++count;
-			query_and(q, "title ILIKE '%%' || %s || '%%'", s); 
+			GBK_BUFFER(buf, POST_TITLE_CCHARS);
+			strlcpy(gbk_buf, s, sizeof(gbk_buf));
+			convert(env_g2u, gbk_buf, CONVERT_ALL, fields[i],
+					sizeof(wpf.utf8_t1), NULL, NULL);
 		}
 	}
-
-	query_orderby(q, "id", false);
-	query_limit(q, BFIND_MAX);
-
-	db_res_t *res = query_exec(q);
 
 	xml_header(NULL);
 	printf("<bbsbfind ");
@@ -231,16 +272,14 @@ int bbsbfind_main(void)
 
 	if (count || uid) {
 		printf(" result='1'>");
-		for (int i = 0; i < db_res_rows(res); ++i) {
-			post_info_t info;
-			res_to_post_info(res, i, 0, &info);
-			print_bbsdoc(&info);
-		}
+		record_reverse_foreach(&record, web_post_filter, &wpf);
 	} else {
 		printf(">");
 	}
-	db_clear(res);
-#endif
+
+	post_index_record_close(&pir);
+	record_close(&record);
+
 	print_session();
 	printf("</bbsbfind>");
 	return 0;

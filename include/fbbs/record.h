@@ -49,6 +49,7 @@ extern int record_apply(record_t *rec, void *ptr, int offset, record_callback_t 
 #define record_delete(r, p, o, c, a)  record_apply(r, p, o, c, a, true)
 #define record_update(r, p, o, c, a)  record_apply(r, p, o, c, a, false)
 extern int record_foreach(record_t *rec, void *ptr, int offset, record_callback_t callback, void *args);
+extern int record_reverse_foreach(record_t *rec, record_callback_t callback, void *args);
 extern int record_insert(record_t *rec, void *ptr, int count);
 extern int record_merge(record_t *rec, void *ptr, int count);
 extern int record_search_copy(record_t *rec, record_callback_t filter, void *args, int offset, bool reverse, void *out);

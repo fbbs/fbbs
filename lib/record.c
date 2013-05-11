@@ -24,7 +24,7 @@ int record_open(const char *file, record_cmp_t cmp, int rlen,
 		return rec->fd = open(file, O_RDONLY);
 
 	int fd = open(file, O_RDWR);
-	if (fd > 0) {
+	if (fd >= 0) {
 		rec->fd = fd;
 		return fd;
 	} else if (errno == ENOENT) {
@@ -170,6 +170,35 @@ int record_foreach(record_t *rec, void *ptr, int offset,
 			}
 		}
 	} while (count == block);
+	return matched;
+}
+
+int record_reverse_foreach(record_t *rec, record_callback_t callback,
+		void *args)
+{
+	char buf[RECORD_BUFFER_SIZE];
+	int block = sizeof(buf) / rec->rlen, matched = 0;
+
+	int offset = record_count(rec);
+	do {
+		offset -= block;
+		if (offset < 0)
+			offset = 0;
+
+		int count = record_read_after(rec, buf, block, offset);
+		if (count <= 0)
+			return matched;
+
+		for (int i = 0; i < count; ++i) {
+			char *p = buf + (count - 1 - i) * rec->rlen;
+			int r = callback(p, args, offset++);
+			if (r == RECORD_CALLBACK_MATCH) {
+				++matched;
+			} else if (r == RECORD_CALLBACK_BREAK) {
+				return matched;
+			}
+		}
+	} while (offset > 0);
 	return matched;
 }
 
