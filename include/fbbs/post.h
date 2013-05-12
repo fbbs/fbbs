@@ -193,7 +193,7 @@ extern int post_index_record_update(post_index_record_t *pir, const post_index_t
 extern void post_index_record_close(post_index_record_t *pir);
 extern void post_index_record_get_title(post_index_record_t *pir, post_id_t id, char *buf, size_t size);
 extern char *post_content_get(post_id_t id, char *buf, size_t size);
-extern int post_content_write(post_id_t id, char *str, size_t size);
+extern int post_content_write(post_id_t id, const char *str, size_t size);
 
 extern int post_remove_sticky(int bid, post_id_t id);
 extern int post_add_sticky(int bid, const post_info_t *pi);

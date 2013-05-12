@@ -933,7 +933,7 @@ static int skip_post(tui_list_t *tl, post_info_t *pi)
 	return DONOTHING;
 }
 
-static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi)
+static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 {
 	post_list_t *pl = tl->data;
 	if (pl->type != POST_LIST_NORMAL)
@@ -943,7 +943,9 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi)
 		move(t_lines - 1, 0);
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
-			post_filter_t filter = { .min = pi->id, .max = pi->id, };
+			post_filter_t filter = {
+				.bid = bid, .min = pi->id, .max = pi->id,
+			};
 			if (post_index_board_delete(&filter, NULL, 0, true, false, true)) {
 				tl->valid = false;
 				return PARTUPDATE;
@@ -1636,8 +1638,10 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				show_post_info(pi);
 				break;
 			case Ctrl('U'):
-				if (!uid && !tid)
+				if (!uid && !tid) {
 					uid = pi->uid;
+					user = true;
+				}
 				break;
 			default:
 				break;
@@ -2366,7 +2370,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			brc_clear_all(pl->bid);
 			return PARTUPDATE;
 		case 'd':
-			return tui_delete_single_post(tl, pi);
+			return tui_delete_single_post(tl, pi, pl->bid);
 		case 'Y':
 			return tui_undelete_single_post(tl, pi);
 		case '*':

@@ -281,7 +281,7 @@ char *post_content_get(post_id_t id, char *buf, size_t size)
 	return ptr;
 }
 
-int post_content_write(post_id_t id, char *str, size_t size)
+int post_content_write(post_id_t id, const char *str, size_t size)
 {
 	char file[HOMELEN];
 	post_content_file_name(id, file, sizeof(file));
@@ -317,7 +317,7 @@ int post_content_write(post_id_t id, char *str, size_t size)
 	memcpy(buf + 1, &rel, sizeof(rel));
 	struct iovec vec[] = {
 		{ .iov_base = buf, .iov_len = sizeof(buf) },
-		{ .iov_base = str, .iov_len = size + 1 },
+		{ .iov_base = (void *) str, .iov_len = size + 1 },
 	};
 	lseek(fd, offset, SEEK_SET);
 	int ret = writev(fd, vec, ARRAY_SIZE(vec));
@@ -554,6 +554,8 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		pi.bid = pr->board->id;
 		strlcpy(pi.owner, uname, sizeof(pi.owner));
 		convert_g2u(pr->title, pi.utf8_title);
+
+		post_content_write(pi.id, content, strlen(content));
 
 		post_index_record_t pir;
 		post_index_record_open(&pir);
@@ -1257,6 +1259,7 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 	post_index_record_open(&pir);
 
 	post_index_trash_insert_t piti = {
+		.filter = filter, .pir = &pir,
 		.trash = &trash, .ename = currentuser.userid,
 		.estamp = time(NULL), .junk = junk, .decrease = decrease,
 	};
