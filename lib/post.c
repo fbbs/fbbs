@@ -40,6 +40,7 @@ int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
 
 enum {
 	POST_INDEX_BOARD_BUF_SIZE = 50,
+	POST_INDEX_TRASH_BUF_SIZE = 50,
 };
 
 int post_index_board_to_info(post_index_record_t *pir,
@@ -70,25 +71,47 @@ int post_index_board_to_info(post_index_record_t *pir,
 	return count;
 }
 
+int post_index_trash_to_info(post_index_record_t *pir,
+		const post_index_trash_t *pit, post_info_t *pi, int count)
+{
+	for (int i = 0; i < count; ++i) {
+		post_info_t *pii = pi + i;
+		post_index_board_to_info(pir, (post_index_board_t *) (pit + i),
+				pii, 1);
+		pii->estamp = (pit + i)->estamp;
+		strlcpy(pii->ename, pit->ename, sizeof(pii->ename));
+	}
+	return count;
+}
+
+#define POST_INDEX_READ_HELPER(type, bufsize, converter)  \
+	type read_buf[bufsize]; \
+	while (size > 0) { \
+		int max = bufsize; \
+		max = size > max ? max : size; \
+\
+		int count = record_read(rec, read_buf, max); \
+		if (count <= 0) \
+			break; \
+\
+		converter(pir, read_buf, buf, count); \
+		records += count; \
+		size -= max; \
+	}
+
 int post_index_board_read(record_t *rec, int base, post_index_record_t *pir,
-		post_info_t *buf, int size)
+		post_info_t *buf, int size, post_list_type_e type)
 {
 	if (record_seek(rec, base, RECORD_SET) < 0)
 		return 0;
 
 	int records = 0;
-	post_index_board_t pib_buf[POST_INDEX_BOARD_BUF_SIZE];
-	while (size > 0) {
-		int max = POST_INDEX_BOARD_BUF_SIZE;
-		max = size > max ? max : size;
-
-		int count = record_read(rec, pib_buf, max);
-		if (count <= 0)
-			break;
-
-		post_index_board_to_info(pir, pib_buf, buf, count);
-		records += count;
-		size -= max;
+	if (is_deleted(type)) {
+		POST_INDEX_READ_HELPER(post_index_trash_t, POST_INDEX_TRASH_BUF_SIZE,
+				post_index_trash_to_info);
+	} else {
+		POST_INDEX_READ_HELPER(post_index_board_t, POST_INDEX_BOARD_BUF_SIZE,
+				post_index_board_to_info);
 	}
 	return records;
 }

@@ -101,15 +101,17 @@ static void load_posts(tui_list_t *tl)
 
 	if (tl->begin < pl->record_count) {
 		int loaded = post_index_board_read(pl->record, tl->begin, pl->pir,
-				pl->buf, tl->lines);
-		if (loaded < tl->lines && tl->all > pl->record_count) {
+				pl->buf, tl->lines, pl->type);
+		if (loaded < tl->lines && tl->all > pl->record_count
+				&& pl->record_sticky) {
 			post_index_board_read(pl->record_sticky, 0, pl->pir,
-					pl->buf + loaded, tl->lines - loaded);
+					pl->buf + loaded, tl->lines - loaded, POST_LIST_NORMAL);
 		}
 	} else {
 		if (pl->record_sticky) {
 			post_index_board_read(pl->record_sticky,
-					tl->begin - pl->record_count, pl->pir, pl->buf, tl->lines);
+					tl->begin - pl->record_count, pl->pir, pl->buf, tl->lines,
+					POST_LIST_NORMAL);
 		}
 	}
 }
@@ -478,7 +480,7 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 		char buf[80], date[12];
 		ellipsis(gbk_title, title_width - sizeof(date) - strlen(pi->ename) + 1);
 		struct tm *t = fb_localtime(&pi->estamp);
-		strftime(date, sizeof(date), "%m-%d %H:%S", t);
+		strftime(date, sizeof(date), "%m-%d %H:%M", t);
 		snprintf(buf, sizeof(buf), "%s\033[1;%dm[%s %s]\033[m", gbk_title,
 				(pi->flag & POST_FLAG_JUNK) ? 31 : 32, pi->ename, date);
 		strlcpy(gbk_title, buf, sizeof(gbk_title));

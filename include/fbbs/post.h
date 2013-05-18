@@ -179,7 +179,7 @@ extern int post_index_board_open_file(const char *file, record_perm_e rdonly, re
 extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_to_info(post_index_record_t *pir, const post_index_board_t *pib, post_info_t *pi, int count);
-extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size);
+extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size, post_list_type_e type);
 extern int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset, bool junk, bool bm_visible, bool force);
 extern int post_index_board_undelete(const post_filter_t *filter, void *ptr, int offset, bool bm_visible);
 extern int match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
