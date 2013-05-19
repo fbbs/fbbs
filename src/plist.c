@@ -53,7 +53,7 @@ static post_list_position_t *get_post_list_position(const post_list_t *pl)
 		SLIST_INIT_HEAD(list);
 	}
 
-	char buf[POST_LIST_POSITION_KEY_LEN];
+	char buf[POST_LIST_POSITION_KEY_LEN] = { 0 };
 	post_list_position_key(pl, buf);
 
 	SLIST_FOREACH(post_list_position_t, plp, list, next) {
@@ -62,7 +62,7 @@ static post_list_position_t *get_post_list_position(const post_list_t *pl)
 	}
 
 	post_list_position_t *plp = malloc(sizeof(*plp));
-	post_list_position_key(pl, plp->key);
+	memcpy(plp->key, buf, sizeof(plp->key));
 	plp->cur = -1;
 	plp->top = -1;
 	SLIST_INSERT_HEAD(list, plp, next);
@@ -119,23 +119,28 @@ static void load_posts(tui_list_t *tl)
 static tui_list_loader_t post_list_loader(tui_list_t *tl)
 {
 	post_list_t *pl = tl->data;
-	if (!pl->plp)
+	if (!pl->plp) {
 		pl->plp = get_post_list_position(pl);
-	if (pl->plp->top < 0) {
-		post_id_t id = brc_last_read();
-		int offset = record_search(pl->record, last_read_filter, &id, -1, true);
-		if (offset > 0) {
-			tl->cur = offset + 1;
-			tl->begin = tl->cur - tl->lines / 2;
-			if (tl->begin < 0)
-				tl->begin = 0;
+		if (pl->plp->top < 0) {
+			post_id_t id = brc_last_read();
+			int offset = record_search(pl->record, last_read_filter, &id, -1,
+					true);
+			if (offset > 0) {
+				tl->cur = offset + 1;
+				tl->begin = tl->cur - tl->lines / 2;
+				if (tl->begin < 0)
+					tl->begin = 0;
+			} else {
+				tl->cur = tl->begin = 0;
+			}
 		} else {
-			tl->cur = tl->begin = 0;
+			tl->cur = pl->plp->cur;
+			tl->begin = pl->plp->top;
 		}
-		save_post_list_position(tl);
 	}
 
 	load_posts(tl);
+	save_post_list_position(tl);
 	return 0;
 }
 
@@ -1364,7 +1369,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	clrtoeol();
 	//% 确定删除
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
-		post_filter_t filter = { .min = min, .max = max };
+		post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
 		if (post_index_board_delete(&filter, NULL, 0, false,
 				!HAS_PERM(PERM_OBOARDS), false)) {
 			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);

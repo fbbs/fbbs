@@ -907,8 +907,8 @@ static record_callback_e post_index_board_update_flag(void *ptr, void *args,
 	post_index_board_t *pib = ptr;
 	post_index_board_update_flag_t *pibuf = args;
 
-	if (pibuf->id == pib->id
-			|| match_filter(pib, pibuf->pir, pibuf->filter, offset)) {
+	if (pibuf->id == pib->id || (pibuf->pir && pibuf->filter
+				&& match_filter(pib, pibuf->pir, pibuf->filter, offset))) {
 		if (pibuf->toggle)
 			pibuf->set = !(pib->flag & pibuf->flag);
 		if (pibuf->set)
