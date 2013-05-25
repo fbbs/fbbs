@@ -189,9 +189,9 @@ int record_reverse_foreach(record_t *rec, record_callback_t callback,
 		if (count <= 0)
 			return matched;
 
-		for (int i = 0; i < count; ++i) {
-			char *p = buf + (count - 1 - i) * rec->rlen;
-			int r = callback(p, args, offset++);
+		for (int i = count - 1; i >= 0; --i) {
+			char *p = buf + i * rec->rlen;
+			int r = callback(p, args, offset + i);
 			if (r == RECORD_CALLBACK_MATCH) {
 				++matched;
 			} else if (r == RECORD_CALLBACK_BREAK) {
