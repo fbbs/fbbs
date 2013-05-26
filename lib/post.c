@@ -12,6 +12,18 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 
+#define POST_ID_KEY  "post_id_seq"
+
+static post_id_t current_post_id(void)
+{
+	return mdb_integer(0, "GET", POST_ID_KEY);
+}
+
+static post_id_t next_post_id(void)
+{
+	return mdb_integer(0, "INCR", POST_ID_KEY);
+}
+
 int post_index_cmp(const void *p1, const void *p2)
 {
 	const post_index_board_t *r1 = p1, *r2 = p2;
@@ -146,16 +158,31 @@ void post_index_record_open(post_index_record_t *pir)
 	pir->rdonly = RECORD_READ;
 }
 
+static post_id_t post_index_record_base(post_id_t id)
+{
+	return (id - 1) / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE + 1;
+}
+
 static int post_index_record_cmp(const void *p1, const void *p2)
 {
 	const post_index_t *pi1 = p1, *pi2 = p2;
 	return pi1->id - pi2->id;
 }
 
+static int post_index_record_open_file(post_id_t id, record_perm_e rdonly,
+		record_t *record)
+{
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "index/%"PRIdPID,
+			(id - 1) / POST_INDEX_PER_FILE);
+	return record_open(file, post_index_record_cmp, sizeof(post_index_t),
+			rdonly, record);
+}
+
 static int post_index_record_check(post_index_record_t *pir, post_id_t id,
 		record_perm_e rdonly)
 {
-	post_id_t base = (id - 1) / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE + 1;
+	post_id_t base = post_index_record_base(id);
 	if (pir->base > 0 && pir->base == base && (rdonly || !pir->rdonly))
 		return 0;
 
@@ -165,11 +192,7 @@ static int post_index_record_check(post_index_record_t *pir, post_id_t id,
 	pir->base = base;
 	pir->rdonly = rdonly;
 
-	char file[HOMELEN];
-	snprintf(file, sizeof(file), "index/%"PRIdPID,
-			(id - 1) / POST_INDEX_PER_FILE);
-	return record_open(file, post_index_record_cmp, sizeof(post_index_t),
-			rdonly, &pir->record);
+	return post_index_record_open_file(id, rdonly, &pir->record);
 }
 
 int post_index_record_read(post_index_record_t *pir, post_id_t id,
@@ -205,6 +228,57 @@ static int post_index_record_lock(post_index_record_t *pir, record_lock_e lock,
 		post_id_t id)
 {
 	return record_lock(&pir->record, lock, id - pir->base, RECORD_SET, 1);
+}
+
+static record_callback_e post_index_record_for_file(post_id_t base,
+		post_id_t end, post_index_record_callback_t callback, void *args)
+{
+	record_t record;
+	if (post_index_record_open_file(base, RECORD_READ, &record) < 0)
+		return RECORD_CALLBACK_BREAK;
+
+	if (!end)
+		end = base + POST_INDEX_PER_FILE;
+	int offset = end - base;
+
+	record_callback_e ret = RECORD_CALLBACK_CONTINUE;
+	do {
+		post_index_t buf[64];
+		offset -= ARRAY_SIZE(buf);
+		if (offset < 0)
+			offset = 0;
+
+		int count = record_read_after(&record, buf, ARRAY_SIZE(buf), offset);
+		if (count <= 0) {
+			ret = RECORD_CALLBACK_BREAK;
+			break;
+		}
+
+		for (int i = count - 1; i >= 0; --i) {
+			if (callback(buf + i, args) == RECORD_CALLBACK_BREAK) {
+				ret = RECORD_CALLBACK_BREAK;
+				break;
+			}
+		}
+	} while (ret != RECORD_CALLBACK_BREAK && offset > 0);
+
+	record_close(&record);
+	return ret;
+}
+
+int post_index_record_for_recent(post_index_record_callback_t cb, void *args)
+{
+	post_id_t id = current_post_id();
+	if (id) {
+		post_id_t base = post_index_record_base(id);
+		post_id_t end = id + 1;
+		while (base >= 0 && post_index_record_for_file(base, end, cb, args)
+				!= RECORD_CALLBACK_BREAK) {
+			end = 0;
+			base -= POST_INDEX_PER_FILE;
+		}
+	}
+	return 0;
 }
 
 void post_index_record_close(post_index_record_t *pir)
@@ -556,11 +630,6 @@ const char *post_recent_table(int bid)
 		return table;
 	}
 	return "posts.recent";
-}
-
-static post_id_t next_post_id(void)
-{
-	return mdb_integer(0, "INCR", "post_id_seq");
 }
 
 static post_id_t insert_post(const post_request_t *pr, const char *uname,
