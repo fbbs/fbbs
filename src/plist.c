@@ -1575,41 +1575,65 @@ static int tui_count_posts_in_range(slide_list_t *p)
 #endif
 #endif
 
+static const char *get_prompt(bool thread, bool user)
+{
+	if (thread)
+		//% [主题阅读] 下一封 <Space>,<Enter>,↓│上一封 ↑,U
+		return "\033[0;1;31;44m[\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1]"
+			" \033[33m\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,<Enter>,"
+			"\xa1\xfd\xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc,U"
+			"                              ";
+	if (user)
+		//% [相同作者] 回信 R │ 结束 Q,← │下一封 ↓,Enter
+		//% │上一封 ↑,U │ ^R 回给作者
+		return "\033[0;1;31;44m[\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf]"
+			" \033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb"
+			" \xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 \xa1\xfd,Enter\xa9\xa6\xc9\xcf"
+			"\xd2\xbb\xb7\xe2 \xa1\xfc,U \xa9\xa6 ^R \xbb\xd8\xb8\xf8\xd7\xf7"
+			"\xd5\xdf";
+	//% [阅读文章]  回信 R │ 结束 Q,← │上一封 ↑
+	//% "│下一封 <Space>,↓│主题阅读 ^s或p");
+	return "\033[0;1;31;44m[\xd4\xc4\xb6\xc1\xce\xc4\xd5\xc2]  "
+		"\033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 "
+		"Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc"
+		"\xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,\xa1\xfd\xa9\xa6"
+		"\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1 ^s\xbb\xf2p";
+}
+
 static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 {
 	post_list_t *pl = tl->data;
-	bool end = false, upward = false, sticky = false;
+	bool end = false, upward = false, sticky = false, entering = false;
 	post_id_t thread_entry = 0, last_id = 0, tid = 0;
 	user_id_t uid = 0;
 	char file[HOMELEN];
 	post_info_t pi_buf;
 
 	while (!end) {
-		if (!pi || !dump_content(pi->id, file, sizeof(file)))
-			return DONOTHING;
-		if (thread)
-			tid = pi->tid;
+		int ch = 0;
+		if (!entering) {
+			if (!pi || !dump_content(pi->id, file, sizeof(file)))
+				return DONOTHING;
+			if (thread)
+				tid = pi->tid;
 
-		brc_mark_as_read(pi->id);
-		last_id = pi->id;
-		pl->current_tid = pi->tid;
-		end = sticky = pi->flag & POST_FLAG_STICKY;
+			brc_mark_as_read(pi->id);
+			last_id = pi->id;
+			pl->current_tid = pi->tid;
+			end = sticky = pi->flag & POST_FLAG_STICKY;
 
-		int ch = ansimore(file, false);
+			ch = ansimore(file, false);
+		}
 
 		move(t_lines - 1, 0);
 		clrtoeol();
-		//% [阅读文章]  回信 R │ 结束 Q,← │上一封 ↑
-		//% "│下一封 <Space>,↓│主题阅读 ^s或p \033[m");
-		prints("\033[0;1;44;31m[\xd4\xc4\xb6\xc1\xce\xc4\xd5\xc2]  "
-				"\033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 "
-				"Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc"
-				"\xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,\xa1\xfd\xa9\xa6"
-				"\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1 ^s\xbb\xf2p \033[m");
+		prints(get_prompt(tid, uid));
+		prints("\033[m");
 		refresh();
 
 		if (!(ch == KEY_UP || ch == KEY_PGUP))
 			ch = egetch();
+		entering = false;
 		switch (ch) {
 			case 'N': case 'Q': case 'n': case 'q': case KEY_LEFT:
 				end = true;
@@ -1627,6 +1651,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				if (!uid && !tid) {
 					thread_entry = pi->id;
 					tid = pi->tid;
+					entering = true;
 				}
 				break;
 			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
@@ -1654,9 +1679,10 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				break;
 		}
 
-		unlink(file);
+		if (end || !entering)
+			unlink(file);
 
-		if (!end) {
+		if (!end && !entering) {
 			post_filter_t filter = {
 				.tid = tid,
 				.uid = user ? pi->uid : 0,
