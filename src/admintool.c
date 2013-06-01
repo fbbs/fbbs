@@ -1999,9 +1999,11 @@ static record_callback_e search_all_boards_callback(post_index_t *pi,
 {
 	search_all_boards_callback_t *sabc = args;
 
+	if (!pi->id)
+		return RECORD_CALLBACK_CONTINUE;
 	if (pi->stamp < sabc->stamp)
 		return RECORD_CALLBACK_BREAK;
-	if (pi->uid && pi->uid != sabc->filter->uid)
+	if (sabc->filter->uid && pi->uid != sabc->filter->uid)
 		return RECORD_CALLBACK_CONTINUE;
 	if (sabc->filter->utf8_keyword[0] != '\0'
 			&& !strcaseeq(pi->utf8_title, sabc->filter->utf8_keyword))
@@ -2016,7 +2018,7 @@ static record_callback_e search_all_boards_callback(post_index_t *pi,
 	time_t stamp = pi->stamp;
 	ctime_r(&stamp, date);
 	date[24] = '\0';
-	fprintf(sabc->fp, " %s %s\n", date, gbk_title);
+	fprintf(sabc->fp, " %s [%d] %s\n", date, pi->bid, gbk_title);
 
 	if (sabc->remove && !(pi->flag & POST_FLAG_DELETED)) {
 		post_filter_t f = {
