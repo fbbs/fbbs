@@ -27,6 +27,7 @@ typedef struct tui_list_t {
 	int (*query)(struct tui_list_t *); ///< Query handler.
 } tui_list_t;
 
+extern int tui_list_seek(tui_list_t *tl, int operation, bool invalidate, bool loop);
 extern int tui_list(tui_list_t *p);
 
 typedef enum {

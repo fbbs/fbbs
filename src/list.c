@@ -38,6 +38,70 @@ static void adjust_window(tui_list_t *tl)
 	}
 }
 
+int tui_list_seek(tui_list_t *tl, int operation, bool invalidate, bool loop)
+{
+	switch (operation) {
+		case KEY_PGUP:
+			tl->begin -= tl->lines - 1;
+			if (tl->begin < 0)
+				tl->begin = 0;
+			tl->cur = tl->begin;
+			if (invalidate)
+				tl->valid = false;
+			return PARTUPDATE;
+		case KEY_UP:
+			if (--tl->cur >= tl->begin)
+				return DONOTHING;
+			if (invalidate)
+				tl->valid = false;
+			if (tl->cur >= 0) {
+				tl->begin -= tl->lines - 1;
+			} else {
+				if (loop) {
+					tl->cur = tl->all - 1;
+					if (tl->cur < 0)
+						tl->cur = 0;
+					tl->begin = tl->all - tl->lines + 1;
+				} else {
+					tl->cur = 0;
+					return DONOTHING;
+				}
+			}
+			if (tl->begin < 0)
+				tl->begin = 0;
+			return PARTUPDATE;
+		case KEY_PGDN:
+			if (tl->begin + tl->lines - 1 >= tl->all) {
+				tl->cur = tl->all - 1;
+				return DONOTHING;
+			}
+			tl->cur = tl->begin += tl->lines - 1;
+			if (invalidate)
+				tl->valid = false;
+			return PARTUPDATE;
+		case KEY_DOWN:
+			if (++tl->cur >= tl->all) {
+				if (loop) {
+					tl->begin = tl->cur = 0;
+					if (invalidate)
+						tl->valid = false;
+					return PARTUPDATE;
+				} else {
+					--tl->cur;
+					return DONOTHING;
+				}
+			} else if (tl->cur >= tl->begin + tl->lines - 1) {
+				tl->begin = tl->cur;
+				if (invalidate)
+					tl->valid = false;
+				return PARTUPDATE;
+			} else {
+				return DONOTHING;
+			}
+	}
+	return DONOTHING;
+}
+
 int tui_list(tui_list_t *p)
 {
 	p->jump = 0;

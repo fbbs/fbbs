@@ -2423,47 +2423,13 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case Ctrl('A'):
 			return pi ? t_query(pi->owner) : DONOTHING;
 		case 'P': case Ctrl('B'): case KEY_PGUP:
-			tl->begin -= tl->lines - 1;
-			if (tl->begin < 0)
-				tl->begin = 0;
-			tl->cur = tl->begin;
-			tl->valid = false;
-			return PARTUPDATE;
+			return tui_list_seek(tl, KEY_PGUP, true, true);
 		case 'k': case KEY_UP:
-			if (--tl->cur >= tl->begin)
-				return DONOTHING;
-			tl->valid = false;
-			if (tl->cur >= 0) {
-				tl->begin -= tl->lines - 1;
-			} else {
-				tl->cur = tl->all - 1;
-				if (tl->cur < 0)
-					tl->cur = 0;
-				tl->begin = tl->all - tl->lines + 1;
-			}
-			if (tl->begin < 0)
-				tl->begin = 0;
-			return PARTUPDATE;
+			return tui_list_seek(tl, KEY_UP, true, true);
 		case 'N': case Ctrl('F'): case KEY_PGDN: case ' ':
-			if (tl->begin + tl->lines - 1 >= tl->all) {
-				tl->cur = tl->all - 1;
-				return DONOTHING;
-			}
-			tl->cur = tl->begin += tl->lines - 1;
-			tl->valid = false;
-			return PARTUPDATE;
+			return tui_list_seek(tl, KEY_PGDN, true, true);
 		case 'j': case KEY_DOWN:
-			if (++tl->cur >= tl->all) {
-				tl->begin = tl->cur = 0;
-				tl->valid = false;
-				return PARTUPDATE;
-			} else if (tl->cur >= tl->begin + tl->lines - 1) {
-				tl->begin = tl->cur;
-				tl->valid = false;
-				return PARTUPDATE;
-			} else {
-				return DONOTHING;
-			}
+			return tui_list_seek(tl, KEY_DOWN, true, true);
 		case '$': case KEY_END:
 			if (pi->flag & POST_FLAG_STICKY)
 				tl->cur = pl->record_count - 1;
