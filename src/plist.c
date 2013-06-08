@@ -257,47 +257,44 @@ static const char *mode_description(post_list_type_e type)
 	switch (type) {
 		case POST_LIST_NORMAL:
 			if (DEFINE(DEF_THESIS))
-				//% s = "主题模式";
+				//% 主题模式
 				s = "\xd6\xf7\xcc\xe2\xc4\xa3\xca\xbd";
 			else
-				//% s =  "一般模式";
+				//% 一般模式
 				s =  "\xd2\xbb\xb0\xe3\xc4\xa3\xca\xbd";
 			break;
 		case POST_LIST_THREAD:
-			//% s = "同主题";
+			//% 同主题
 			s = "\xcd\xac\xd6\xf7\xcc\xe2";
 			break;
 		case POST_LIST_TOPIC:
-			//% s = "原作";
+			//% 原作
 			s = "\xd4\xad\xd7\xf7";
 			break;
 		case POST_LIST_MARKED:
-			//% s = "保留";
+			//% 保留
 			s = "\xb1\xa3\xc1\xf4";
 			break;
 		case POST_LIST_DIGEST:
-			//% s = "文摘";
+			//% 文摘
 			s = "\xce\xc4\xd5\xaa";
 			break;
 		case POST_LIST_AUTHOR:
-			//% s = "同作者";
+			//% 同作者
 			s = "\xcd\xac\xd7\xf7\xd5\xdf";
 			break;
 		case POST_LIST_KEYWORD:
-			//% s = "标题关键字";
+			//% 标题关键字
 			s = "\xb1\xea\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6";
 			break;
 		case POST_LIST_TRASH:
-			//% s = "垃圾箱";
+			//% 垃圾箱
 			s = "\xc0\xac\xbb\xf8\xcf\xe4";
 			break;
 		case POST_LIST_JUNK:
-			//% s = "站务垃圾箱";
+			//% 站务垃圾箱
 			s = "\xd5\xbe\xce\xf1\xc0\xac\xbb\xf8\xcf\xe4";
 			break;
-//		case ATTACH_MODE:
-//			readmode = "附件区";
-//			break;
 		default:
 			//% s = "未定义";
 			s = "\xce\xb4\xb6\xa8\xd2\xe5";
@@ -305,7 +302,7 @@ static const char *mode_description(post_list_type_e type)
 	return s;
 }
 
-static void _post_list_title(int archive_list)
+void _post_list_title(int archive_list, const char *mode)
 {
 	prints("\033[1;44m");
 	int width = show_board_managers(currbp);
@@ -334,27 +331,27 @@ static void _post_list_title(int archive_list)
 	}
 	//% prints(" 求助[\033[1;32mh\033[m]\n");
 	prints(" \xc7\xf3\xd6\xfa[\033[1;32mh\033[m]\n");
-}
-
-static tui_list_title_t post_list_title(tui_list_t *tl)
-{
-	_post_list_title(false);
-
-	post_list_t *pl = tl->data;
-	const char *mode = mode_description(pl->type);
 
 	//% 编号 在线 刊登者 日期 标题
 	prints("\033[1;37;44m  \xb1\xe0\xba\xc5   %-12s %6s %-25s "
 			"\xd4\xda\xcf\xdf:%-4d", "\xbf\xaf \xb5\xc7 \xd5\xdf",
 			"\xc8\xd5  \xc6\xda", " \xb1\xea  \xcc\xe2",
 			count_onboard(currbp->id));
-	if (pl->archive)
+	if (archive_list)
 		//% prints("[存档]");
 		prints("[\xb4\xe6\xb5\xb5]");
 	else
 		prints("    [%s]", mode);
 	prints("\033[K\033[m\n");
 	clrtobot();
+
+}
+
+static tui_list_title_t post_list_title(tui_list_t *tl)
+{
+	post_list_t *pl = tl->data;
+	const char *mode = mode_description(pl->type);
+	_post_list_title(pl->archive, mode);
 }
 
 char *getshortdate(time_t time) {
@@ -415,7 +412,7 @@ const char *get_board_online_color(const char *uname, int bid)
 #define get_board_online_color(n, i)  ""
 #endif
 
-static const char *get_post_date(fb_time_t stamp)
+const char *get_post_date(fb_time_t stamp)
 {
 #ifdef FDQUAN
 	if (time(NULL) - stamp < 24 * 60 * 60)
@@ -443,13 +440,6 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 		mark_prefix = (mark == ' ') ? "\033[42m" : "\033[32m";
 		mark_suffix = "\033[m";
 	}
-#if 0
-	if (digestmode == ATTACH_MODE) {
-		filetime = ent->timeDeleted;
-	} else {
-		filetime = atoi(ent->filename + 2);
-	}
-#endif
 
 	const char *date = get_post_date(pi->stamp);
 
@@ -492,10 +482,6 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 	} else {
 		ellipsis(gbk_title, title_width);
 	}
-
-//	if (digestmode == ATTACH_MODE) {
-//		sprintf(buf, " %5d %c %-12.12s %s%6.6s\033[m %s", num, type,
-//				ent->owner, color, date, title);
 
 	const char *thread_color = "0;37";
 	if (pi->tid == pl->current_tid) {
@@ -806,7 +792,8 @@ static int post_search(tui_list_t *tl, const post_filter_t *filter,
 	return MINIUPDATE;
 }
 
-static int tui_search_author(tui_list_t *tl, post_info_t *pi, bool upward)
+static int tui_search_author(tui_list_t *tl, const post_info_t *pi,
+		bool upward)
 {
 	char prompt[80];
 	//% 向%s搜索作者
@@ -2259,6 +2246,7 @@ extern int show_b_secnote(void);
 extern int into_announce(void);
 extern int show_hotspot(void);
 extern int tui_follow_uname(const char *uname);
+extern int tui_attachment_list(const board_t *board);
 
 static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 {
@@ -2278,6 +2266,8 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			return post_list_deleted(tl, POST_INDEX_TRASH);
 		case 'J':
 			return post_list_deleted(tl, POST_INDEX_JUNK);
+		case ',':
+			return tui_attachment_list(currbp);
 		case 't':
 			return thesis_mode();
 		case '!':
