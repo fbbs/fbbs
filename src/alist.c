@@ -229,12 +229,23 @@ static int toggle_attachment_flag(tui_list_t *tl, struct fileheader *fp,
 	return DONOTHING;
 }
 
+typedef struct {
+	const tui_attachment_list_t *tal;
+	const struct fileheader *fp;
+} delete_attachment_callback_t;
+
 static record_callback_e delete_attachment_callback(void *ptr, void *args,
 		int offset)
 {
-	const struct fileheader *fp1 = ptr, *fp2 = args;
-	if (streq(fp1->filename, fp2->filename))
+	const struct fileheader *fp = ptr;
+	delete_attachment_callback_t *dac = args;
+	if (streq(fp->filename, dac->fp->filename)) {
+		char file[HOMELEN];
+		snprintf(file, sizeof(file), "upload/%s/%s", dac->tal->bname,
+				dac->fp->filename);
+		unlink(file);
 		return RECORD_CALLBACK_MATCH;
+	}
 	return RECORD_CALLBACK_CONTINUE;
 }
 
@@ -246,8 +257,9 @@ static int delete_attachment(tui_list_t *tl, struct fileheader *fp)
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 			tui_attachment_list_t *tal = tl->data;
+			delete_attachment_callback_t dac = { .tal = tal, .fp = fp };
 			record_delete(tal->record, fp, tl->cur,
-					delete_attachment_callback, fp);
+					delete_attachment_callback, &dac);
 			tl->valid = false;
 			return PARTUPDATE;
 		}
