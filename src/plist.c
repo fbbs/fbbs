@@ -2135,6 +2135,20 @@ extern int tui_select_board(int);
 
 static int switch_board(tui_list_t *tl)
 {
+	post_list_t *pl = tl->data;
+	if (pl->type != POST_LIST_NORMAL || !pl->bid)
+		return DONOTHING;
+
+	int bid = tui_select_board(pl->bid);
+	if (bid) {
+		tl->valid = false;
+		pl->bid = bid;
+		pl->plp = NULL;
+		record_close(pl->record);
+		post_index_board_open(bid, RECORD_READ, pl->record);
+		record_close(pl->record_sticky);
+		post_index_board_open_sticky(bid, RECORD_READ, pl->record_sticky);
+	}
 	return FULLUPDATE;
 }
 #if 0
