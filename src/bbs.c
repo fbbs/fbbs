@@ -499,7 +499,7 @@ static void getcross(board_t *board, const char *input, const char *output,
 		fprintf(of, "\xb1\xea  \xcc\xe2: %s\n", header->title);
 		//% fprintf(of, "发信站: %s自动发信系统 (%s)\n\n", BoardName,
 		fprintf(of, "\xb7\xa2\xd0\xc5\xd5\xbe: %s\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xcf\xb5\xcd\xb3 (%s)\n\n", BoardName,
-				getdatestring(now, DATE_ZH));
+				format_time(now, TIME_FORMAT_ZH));
 	} else if (mode == POST_FILE_BMS) {
 		//% fprintf(of, "\033[1;33m发信人: BMS (版主管理员), 信区: %s\033[m\n",
 		fprintf(of, "\033[1;33m\xb7\xa2\xd0\xc5\xc8\xcb: BMS (\xb0\xe6\xd6\xf7\xb9\xdc\xc0\xed\xd4\xb1), \xd0\xc5\xc7\xf8: %s\033[m\n",
@@ -508,7 +508,7 @@ static void getcross(board_t *board, const char *input, const char *output,
 		fprintf(of, "\xb1\xea  \xcc\xe2: %s\n", header->title);
 		//% fprintf(of, "发信站: %s自动发信系统 (%s)\n\n", BoardName,
 		fprintf(of, "\xb7\xa2\xd0\xc5\xd5\xbe: %s\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xcf\xb5\xcd\xb3 (%s)\n\n", BoardName,
-				getdatestring(now, DATE_ZH));
+				format_time(now, TIME_FORMAT_ZH));
 	} else if (mode == POST_FILE_AUTO) {
 		write_header(of, header);
 	}
@@ -1633,7 +1633,7 @@ void notepad() {
 					in,
 					//% "[1;34m▕[32;44m %-44s[32m在 [36m%23.23s[32m 离开时留下的话  [m\n",
 					"[1;34m\xa8\x8a[32;44m %-44s[32m\xd4\xda [36m%23.23s[32m \xc0\xeb\xbf\xaa\xca\xb1\xc1\xf4\xcf\xc2\xb5\xc4\xbb\xb0  [m\n",
-					tmp, getdatestring(thetime, DATE_ZH) + 6);
+					tmp, format_time(thetime, TIME_FORMAT_ZH) + 6);
 			for (n = 0; n < i; n++) {
 				if (note[n][0] == '\0')
 					break;
@@ -1858,7 +1858,7 @@ int Goodbye(void)
 void do_report(const char *filename, const char *s) {
 	char buf[512];
 	sprintf(buf, "%-12.12s %16.16s %s\n", currentuser.userid,
-			getdatestring(time(NULL), DATE_ZH) + 6, s);
+			format_time(time(NULL), TIME_FORMAT_ZH) + 6, s);
 	file_append(filename, buf);
 }
 
@@ -1878,7 +1878,7 @@ void board_usage(char *mode, time_t usetime) {
 	char buf[256];
 
 	sprintf(buf, "%.22s USE %-20.20s Stay: %5ld (%s)\n",
-			getdatestring(time(NULL), DATE_ZH),
+			format_time(time(NULL), TIME_FORMAT_ZH),
 			mode, usetime, currentuser.userid);
 	file_append("use_board", buf);
 }

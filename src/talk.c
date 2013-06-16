@@ -154,7 +154,7 @@ int tui_query_result(const char *userid)
 	}
 	//% prints("进站 [\033[1;32m%s\033[m] %s[\033[1;32m%s\033[m]\n",
 	prints("\xbd\xf8\xd5\xbe [\033[1;32m%s\033[m] %s[\033[1;32m%s\033[m]\n",
-			getdatestring(user.lastlogin, DATE_ZH),
+			format_time(user.lastlogin, TIME_FORMAT_ZH),
 			//% strlen(host) > IPADDR_OMIT_THRES ? "" : "来自 ", host);
 			strlen(host) > IPADDR_OMIT_THRES ? "" : "\xc0\xb4\xd7\xd4 ", host);
 
@@ -170,8 +170,8 @@ int tui_query_result(const char *userid)
 		fb_time_t t = user.lastlogout;
 		if (user.lastlogout < user.lastlogin)
 			t = ((time(NULL) - user.lastlogin) / 120) % 47 + 1 + user.lastlogin;
-		//% prints("离站 [\033[1;32m%s\033[m] ", getdatestring(t, DATE_ZH));
-		prints("\xc0\xeb\xd5\xbe [\033[1;32m%s\033[m] ", getdatestring(t, DATE_ZH));
+		//% prints("离站 [\033[1;32m%s\033[m] ", format_time(t, TIME_FORMAT_ZH));
+		prints("\xc0\xeb\xd5\xbe [\033[1;32m%s\033[m] ", format_time(t, TIME_FORMAT_ZH));
 	}
 
 	char path[HOMELEN];

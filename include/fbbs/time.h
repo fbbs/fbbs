@@ -8,14 +8,13 @@
 
 #define PRIdFBT PRId32
 
-enum DATE_FORMAT {
-	DATE_ZH = 0,      ///< "2001年02月03日04:05:06 星期六"
-	DATE_EN = 1,      ///< "02/03/01 04:05:06"
-	DATE_SHORT = 2,   ///< "02.03 04:05"
-	DATE_ENWEEK = 4,  ///< "02/03/01 04:05:06 Sat"
-	DATE_XML = 8,     ///< "2001-02-03T04:05:06"
-	DATE_RSS = 16,    ///< "Sat,03 Feb 2001 04:05:06 +0800"
-};
+typedef enum {
+	TIME_FORMAT_ZH,      ///< "2001年02月03日04:05:06 星期六"
+	TIME_FORMAT_EN,      ///< "02/03/01 04:05:06"
+	TIME_FORMAT_SHORT,   ///< "02.03 04:05"
+	TIME_FORMAT_XML,     ///< "2001-02-03T04:05:06"
+	TIME_FORMAT_RSS,     ///< "Sat,03 Feb 2001 04:05:06 +0800"
+} time_format_e;
 
 typedef uint32_t fb_time_t;
 
@@ -23,7 +22,7 @@ typedef uint32_t fb_time_t;
 extern struct tm *fb_localtime(const fb_time_t *t);
 extern const char *fb_ctime(const fb_time_t *t);
 
-extern char *getdatestring(time_t time, enum DATE_FORMAT mode);
+extern char *format_time(time_t time, time_format_e fmt);
 extern char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t);
 
 extern bool valid_date(int year, int month, int day);

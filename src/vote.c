@@ -549,7 +549,7 @@ static void get_result_title(void)
 
 	//% fprintf(sug, "⊙ 投票开启于：\033[1m%s\033[m  类别：\033[1m%s\033[m\n",
 	fprintf(sug, "\xa1\xd1 \xcd\xb6\xc6\xb1\xbf\xaa\xc6\xf4\xd3\xda\xa3\xba\033[1m%s\033[m  \xc0\xe0\xb1\xf0\xa3\xba\033[1m%s\033[m\n",
-			getdatestring(currvote.opendate, DATE_ZH),
+			format_time(currvote.opendate, TIME_FORMAT_ZH),
 			vote_type[currvote.type - 1]);
 	//% fprintf(sug, "⊙ 主题：[1m%s[m\n", currvote.title);
 	fprintf(sug, "\xa1\xd1 \xd6\xf7\xcc\xe2\xa3\xba[1m%s[m\n", currvote.title);
@@ -993,7 +993,7 @@ void show_voteing_title() {
 	closedate = currvote.opendate + currvote.maxdays * 86400;
 	//% prints("投票将结束于: \033[1m%s\033[m  %s  %s\n",
 	prints("\xcd\xb6\xc6\xb1\xbd\xab\xbd\xe1\xca\xf8\xd3\xda: \033[1m%s\033[m  %s  %s\n",
-			getdatestring(closedate, DATE_ZH), buf,
+			format_time(closedate, TIME_FORMAT_ZH), buf,
 			//% (voted_flag) ? "(\033[5;1m修改前次投票\033[m)" : "");
 			(voted_flag) ? "(\033[5;1m\xd0\xde\xb8\xc4\xc7\xb0\xb4\xce\xcd\xb6\xc6\xb1\033[m)" : "");
 	//% prints("投票主题是: [1m%-50s[m类型: [1m%s[m \n", currvote.title,
@@ -1197,7 +1197,7 @@ static int printvote(void *entv, int notused1, void *notused2)
 	ellipsis(title, 39);
 	sprintf(buf, " %s%3d %-12.12s %6.6s %-39.39s %-4.4s %3d  %4d\033[m\n",
 			(voted_flag == NA) ? "[1m" : "", i, ent->userid,
-			getdatestring(ent->opendate, DATE_ZH) + 6, title,
+			format_time(ent->opendate, TIME_FORMAT_ZH) + 6, title,
 			vote_type[ent->type - 1], ent->maxdays, num_voted);
 	//Ended IAMFAT
 	prints("%s", buf);

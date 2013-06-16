@@ -171,7 +171,7 @@ int bbs0an_main(void)
 				}
 				if (id != NULL)
 					printf(" id='%s'", id);
-				printf(" time='%s'>", getdatestring(st.st_mtime, DATE_XML));
+				printf(" time='%s'>", format_time(st.st_mtime, TIME_FORMAT_XML));
 				xml_fputs(trim(name), stdout);
 				printf("</ent>");
 			}

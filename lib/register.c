@@ -410,7 +410,7 @@ int save_register_file(const reginfo_t *reg)
 	FILE *fp = fopen(file, "a");
 	if (fp) {
 		//% "注册时间     : %s\n"
-		fprintf(fp, "\xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4     : %s\n", getdatestring(reg->regdate, DATE_EN));
+		fprintf(fp, "\xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4     : %s\n", format_time(reg->regdate, TIME_FORMAT_EN));
 		//% "申请帐号     : %s\n"
 		fprintf(fp, "\xc9\xea\xc7\xeb\xd5\xca\xba\xc5     : %s\n", reg->userid);
 		//% "真实姓名     : %s\n"

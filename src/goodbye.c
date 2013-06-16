@@ -127,9 +127,9 @@ void showstuff(char *buf) {
 		//% sprintf(alltime, "%d小时%d分钟", currentuser.stay / 3600,
 		sprintf(alltime, "%d\xd0\xa1\xca\xb1%d\xb7\xd6\xd6\xd3", currentuser.stay / 3600,
 				(currentuser.stay / 60) % 60);
-		sprintf(rgtday, "%s", getdatestring(currentuser.firstlogin, DATE_ZH));
-		sprintf(lasttime, "%s", getdatestring(currentuser.lastlogin, DATE_ZH));
-		sprintf(thistime, "%s", getdatestring(now, DATE_ZH));
+		sprintf(rgtday, "%s", format_time(currentuser.firstlogin, TIME_FORMAT_ZH));
+		sprintf(lasttime, "%s", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
+		sprintf(thistime, "%s", format_time(now, TIME_FORMAT_ZH));
 		sprintf(stay, "%ld", (time(0) - login_start_time) / 60);
 		sprintf(numlogins, "%d", currentuser.numlogins);
 		sprintf(numposts, "%d", currentuser.numposts);

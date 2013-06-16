@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 			"%s            \033[1;32m1 \033[33m\xa8\x7e \033[32m= \033[37m%-5d"
 			//% "   \033[32m总上站人次: \033[37m%-9d    \033[32m平均使用时间: \033[37m%d\n",
 			"   \033[32m\xd7\xdc\xc9\xcf\xd5\xbe\xc8\xcb\xb4\xce: \033[37m%-9d    \033[32m\xc6\xbd\xbe\xf9\xca\xb9\xd3\xc3\xca\xb1\xbc\xe4: \033[37m%d\n",
-			mg, BBSNAME, getdatestring(now, DATE_ZH), mg, mg, item, total, 
+			mg, BBSNAME, format_time(now, TIME_FORMAT_ZH), mg, mg, item, total, 
 			(totaltime == 0) ? 0 : totaltime / total + 1);
 	return 0;
 }

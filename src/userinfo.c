@@ -63,12 +63,12 @@ void disply_userinfo(const struct userec *u)
 	prints("\xd7\xee\xbd\xfc\xb9\xe2\xc1\xd9\xbb\xfa\xc6\xf7 : %-22s\n", u->lasthost);
 	//% prints("帐号建立日期 : %s[距今 %d 天]\n",
 	prints("\xd5\xca\xba\xc5\xbd\xa8\xc1\xa2\xc8\xd5\xc6\xda : %s[\xbe\xe0\xbd\xf1 %d \xcc\xec]\n",
-			getdatestring(u->firstlogin, DATE_ZH),
+			format_time(u->firstlogin, TIME_FORMAT_ZH),
 			(now - (u->firstlogin)) / 86400);
-	getdatestring(u->lastlogin, NA);
+	format_time(u->lastlogin, NA);
 	//% prints("最近光临日期 : %s[距今 %d 天]\n",
 	prints("\xd7\xee\xbd\xfc\xb9\xe2\xc1\xd9\xc8\xd5\xc6\xda : %s[\xbe\xe0\xbd\xf1 %d \xcc\xec]\n",
-			getdatestring(u->lastlogin, DATE_ZH),
+			format_time(u->lastlogin, TIME_FORMAT_ZH),
 			(now-(u->lastlogin)) / 86400);
 #ifdef ALLOWGAME
 	//% prints("文章数目     : %-20d 奖章数目 : %d\n",u->numposts,u->nummedals);

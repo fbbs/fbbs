@@ -1461,8 +1461,8 @@ void a_file_info(MENU *pm)
 	prints("\xd0\xde \xb8\xc4 \xd5\xdf:     %s\n", pm->item[pm->now]->title + 39);
 	//% prints("档    名:     %s\n", pm->item[pm->now]->fname);
 	prints("\xb5\xb5    \xc3\xfb:     %s\n", pm->item[pm->now]->fname);
-	//% prints("编辑日期:     %s\n", getdatestring(st.st_mtime, DATE_ZH));
-	prints("\xb1\xe0\xbc\xad\xc8\xd5\xc6\xda:     %s\n", getdatestring(st.st_mtime, DATE_ZH));
+	//% prints("编辑日期:     %s\n", format_time(st.st_mtime, TIME_FORMAT_ZH));
+	prints("\xb1\xe0\xbc\xad\xc8\xd5\xc6\xda:     %s\n", format_time(st.st_mtime, TIME_FORMAT_ZH));
 	//% prints("大    小:     %d 字节\n", st.st_size);
 	prints("\xb4\xf3    \xd0\xa1:     %d \xd7\xd6\xbd\xda\n", st.st_size);
 	//% prints("URL 地址:\n");
@@ -1985,7 +1985,7 @@ int AddPCorpus() {
 	}
 	now = time(NULL);
 	sprintf(genbuf, "\033[36m%-12.12s\033[m %14.14s \033[32m %.38s\033[m\n",
-			lookupuser.userid, getdatestring(now, DATE_ZH), title);
+			lookupuser.userid, format_time(now, TIME_FORMAT_ZH), title);
 	file_append(Log, genbuf);
 	//% presskeyfor("已经创建个人文集, 请按任意键继续...", 12);
 	presskeyfor("\xd2\xd1\xbe\xad\xb4\xb4\xbd\xa8\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf, \xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8...", 12);

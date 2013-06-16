@@ -983,7 +983,7 @@ static int show_post_info(const post_info_t *pi)
 	//% 作者
 	prints("\xd7\xf7\xd5\xdf: %s\n", pi->owner);
 	//% 时间
-	prints("\xca\xb1\xbc\xe4: %s\n", getdatestring(pi->stamp, DATE_ZH));
+	prints("\xca\xb1\xbc\xe4: %s\n", format_time(pi->stamp, TIME_FORMAT_ZH));
 
 	prints("id:   %"PRIdPID"\ntid:  %"PRIdPID"\nreid: %"PRIdPID,
 			pi->id, pi->tid, pi->reid);
@@ -1513,8 +1513,8 @@ static int tui_count_posts_in_range(slide_list_t *p)
 		prints("\xce\xc4 \xbc\xfe \xc3\xfb:     %s\n", fileinfo->filename);
 		//% prints("上 传 者:     %s\n", fileinfo->owner);
 		prints("\xc9\xcf \xb4\xab \xd5\xdf:     %s\n", fileinfo->owner);
-		//% prints("上传日期:     %s\n", getdatestring(fileinfo->timeDeleted, DATE_ZH));
-		prints("\xc9\xcf\xb4\xab\xc8\xd5\xc6\xda:     %s\n", getdatestring(fileinfo->timeDeleted, DATE_ZH));
+		//% prints("上传日期:     %s\n", format_time(fileinfo->timeDeleted, TIME_FORMAT_ZH));
+		prints("\xc9\xcf\xb4\xab\xc8\xd5\xc6\xda:     %s\n", format_time(fileinfo->timeDeleted, TIME_FORMAT_ZH));
 		//% prints("文件大小:     %d 字节\n", filestat.st_size);
 		prints("\xce\xc4\xbc\xfe\xb4\xf3\xd0\xa1:     %d \xd7\xd6\xbd\xda\n", filestat.st_size);
 		//% prints("文件说明:     %s\n", fileinfo->title);

@@ -17,13 +17,13 @@ static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 			horoscope(user->birthmonth, user->birthday));
 	//% fprintf(fp, "上 次 在:[\033[1;32m%s\033[m] 从 [\033[1;32m%s\033[m] "
 	fprintf(fp, "\xc9\xcf \xb4\xce \xd4\xda:[\033[1;32m%s\033[m] \xb4\xd3 [\033[1;32m%s\033[m] "
-			//% "到本站一游。\n", getdatestring(user->lastlogin, DATE_ZH),
-			"\xb5\xbd\xb1\xbe\xd5\xbe\xd2\xbb\xd3\xce\xa1\xa3\n", getdatestring(user->lastlogin, DATE_ZH),
+			//% "到本站一游。\n", format_time(user->lastlogin, TIME_FORMAT_ZH),
+			"\xb5\xbd\xb1\xbe\xd5\xbe\xd2\xbb\xd3\xce\xa1\xa3\n", format_time(user->lastlogin, TIME_FORMAT_ZH),
 			//% (user->lasthost[0] == '\0' ? "(不详)" : user->lasthost));
 			(user->lasthost[0] == '\0' ? "(\xb2\xbb\xcf\xea)" : user->lasthost));
 	//% fprintf(fp, "离站时间:[\033[1;32m%s\033[m] ",
 	fprintf(fp, "\xc0\xeb\xd5\xbe\xca\xb1\xbc\xe4:[\033[1;32m%s\033[m] ",
-			getdatestring(user->lastlogout, DATE_ZH));
+			format_time(user->lastlogout, TIME_FORMAT_ZH));
 
 	int exp = countexp(user);
 	int perf = countperf(user);

@@ -18,7 +18,7 @@ static void print_post(const post_info_t *pi, bool sticky)
 	printf("<po %s%sm='%c' owner='%s' time= '%s' id='%"PRIdPID"'>",
 			sticky ? "sticky='1' " : "",
 			(pi->flag & POST_FLAG_LOCKED) ? "" : "nore='1' ",
-			mark, pi->owner, getdatestring(pi->stamp, DATE_XML), pi->id);
+			mark, pi->owner, format_time(pi->stamp, TIME_FORMAT_XML), pi->id);
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(pi->utf8_title, gbk_title);
 	xml_fputs2(gbk_title, 0, stdout);
@@ -397,10 +397,10 @@ static void print_post_thread_info(const post_thread_info_t *pti)
 	printf("<po gid='%"PRIdPID"' m='%c' posts='%d'",
 			pti->tid, get_post_mark_raw(pti->tid, pti->flag), pti->replies);
 	printf(" owner='%s' potime='%s'",
-			pti->owner, getdatestring(pti->stamp, DATE_XML));
+			pti->owner, format_time(pti->stamp, TIME_FORMAT_XML));
 	if (pti->replies > 1)
 		printf(" upuser='%s' uptime='%s'", pti->last_replier,
-				getdatestring(pti->last_stamp, DATE_XML));
+				format_time(pti->last_stamp, TIME_FORMAT_XML));
 	printf(" lastpage='%u'", pti->last_id);
 	printf(">");
 

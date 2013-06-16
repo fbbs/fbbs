@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 			"%s                  \033[1;33m1 \033[31m\xa8\x7e \033[33m= \033[31m%-5d"
 			//% "         \033[33m新申请帐号数: \033[31m%d\n",
 			"         \033[33m\xd0\xc2\xc9\xea\xc7\xeb\xd5\xca\xba\xc5\xca\xfd: \033[31m%d\n",
-			mg, BBSNAME, getdatestring(now, DATE_ZH), mg, mg, item, total);
+			mg, BBSNAME, format_time(now, TIME_FORMAT_ZH), mg, mg, item, total);
 	return 0;
 }
 

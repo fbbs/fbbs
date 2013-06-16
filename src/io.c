@@ -653,7 +653,7 @@ void update_endline(void)
 		return;
 
 	now = time(NULL);
-	strlcpy(date, getdatestring(now, DATE_ZH), sizeof(date));
+	strlcpy(date, format_time(now, TIME_FORMAT_ZH), sizeof(date));
 	cur_sec = now % 10;
 	if (cur_sec == 0) {
 		nowishfile:

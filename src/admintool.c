@@ -1225,7 +1225,7 @@ char *regdoent(int num, reginfo_t* ent) {
 	ellipsis(dept, 16);
 	ellipsis(addr, 16);
 	sprintf(buf, "  %4d %-12s %-12s %-16s %-16s %s", num, ent->userid,
-			rname, dept, addr, getdatestring(ent->regdate, DATE_SHORT));
+			rname, dept, addr, format_time(ent->regdate, TIME_FORMAT_SHORT));
 	return buf;
 }
 
@@ -1268,8 +1268,8 @@ int pass_register(int index, reginfo_t* ent, char *direct) {
 	substitut_record(PASSFILE, &user, sizeof (user), unum);
 	sethomefile(buf, user.userid, "register");
 	if ((fout = fopen(buf, "a")) != NULL) {
-		//% fprintf(fout, "注册时间     : %s\n", getdatestring(ent->regdate, DATE_EN));
-		fprintf(fout, "\xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4     : %s\n", getdatestring(ent->regdate, DATE_EN));
+		//% fprintf(fout, "注册时间     : %s\n", format_time(ent->regdate, TIME_FORMAT_EN));
+		fprintf(fout, "\xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4     : %s\n", format_time(ent->regdate, TIME_FORMAT_EN));
 		//% fprintf(fout, "申请帐号     : %s\n", ent->userid);
 		fprintf(fout, "\xc9\xea\xc7\xeb\xd5\xca\xba\xc5     : %s\n", ent->userid);
 		//% fprintf(fout, "真实姓名     : %s\n", ent->realname);
@@ -1286,8 +1286,8 @@ int pass_register(int index, reginfo_t* ent, char *direct) {
 #endif
 		//% fprintf(fout, "校 友 会     : %s\n", ent->assoc);
 		fprintf(fout, "\xd0\xa3 \xd3\xd1 \xbb\xe1     : %s\n", ent->assoc);
-		//% fprintf(fout, "成功日期     : %s\n", getdatestring(time(NULL), DATE_EN));
-		fprintf(fout, "\xb3\xc9\xb9\xa6\xc8\xd5\xc6\xda     : %s\n", getdatestring(time(NULL), DATE_EN));
+		//% fprintf(fout, "成功日期     : %s\n", format_time(time(NULL), TIME_FORMAT_EN));
+		fprintf(fout, "\xb3\xc9\xb9\xa6\xc8\xd5\xc6\xda     : %s\n", format_time(time(NULL), TIME_FORMAT_EN));
 		//% fprintf(fout, "批准人       : %s\n", currentuser.userid);
 		fprintf(fout, "\xc5\xfa\xd7\xbc\xc8\xcb       : %s\n", currentuser.userid);
 		fclose(fout);
@@ -1339,8 +1339,8 @@ int do_register(int index, reginfo_t* ent, char *direct) {
 		disply_userinfo(&user);
 		move(14, 0);
 		printdash(NULL);
-		//% prints("   注册时间   : %s\n", getdatestring(ent->regdate, DATE_EN));
-		prints("   \xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4   : %s\n", getdatestring(ent->regdate, DATE_EN));
+		//% prints("   注册时间   : %s\n", format_time(ent->regdate, TIME_FORMAT_EN));
+		prints("   \xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4   : %s\n", format_time(ent->regdate, TIME_FORMAT_EN));
 		//% prints("   申请帐号   : %s\n", ent->userid);
 		prints("   \xc9\xea\xc7\xeb\xd5\xca\xba\xc5   : %s\n", ent->userid);
 		//% prints("   真实姓名   : %s\n", ent->realname);

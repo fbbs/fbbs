@@ -259,7 +259,7 @@ int x_lockscreen(void)
 			"\n      (____/' (_____) (____/' (_) (_) (____/' (____/'   |__|\n"
 			//% "\n\033[1;36m屏幕已在\033[33m %s\033[36m 时被%s暂时锁住了...\033[m",
 			"\n\033[1;36m\xc6\xc1\xc4\xbb\xd2\xd1\xd4\xda\033[33m %s\033[36m \xca\xb1\xb1\xbb%s\xd4\xdd\xca\xb1\xcb\xf8\xd7\xa1\xc1\xcb...\033[m",
-			getdatestring(time(NULL), DATE_ZH), currentuser.userid);
+			format_time(time(NULL), TIME_FORMAT_ZH), currentuser.userid);
 
 	char buf[PASSLEN + 1];
 	buf[0] = '\0';

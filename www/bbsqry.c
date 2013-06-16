@@ -62,7 +62,7 @@ int bbsqry_main(void)
 		printf("<bbsqry id='%s' login='%d' lastlogin='%s' "
 				"perf='%s' post='%d' hp='%d' level='%d' repeat='%d' ",
 				user.userid, user.numlogins,
-				getdatestring(user.lastlogin, DATE_XML),
+				format_time(user.lastlogin, TIME_FORMAT_XML),
 				cperf(countperf(&user)), user.numposts,
 				compute_user_value(&user), level, repeat);
 
@@ -108,7 +108,7 @@ int bbsqry_main(void)
 						+ user.lastlogin;
 			}
 			printf("<logout>%s</logout>",
-					getdatestring(logout, DATE_XML));
+					format_time(logout, TIME_FORMAT_XML));
 		}
 		// TODO: mail
 	} else {

@@ -123,8 +123,8 @@ void mail_info(char *lastword) {
 	char filename[STRLEN];
 
 	now = time(0);
-	//% sprintf(filename, "%s 于 %s 登记自杀", currentuser.userid, getdatestring(now, DATE_ZH));
-	sprintf(filename, "%s \xd3\xda %s \xb5\xc7\xbc\xc7\xd7\xd4\xc9\xb1", currentuser.userid, getdatestring(now, DATE_ZH));
+	//% sprintf(filename, "%s 于 %s 登记自杀", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
+	sprintf(filename, "%s \xd3\xda %s \xb5\xc7\xbc\xc7\xd7\xd4\xc9\xb1", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
 	securityreport(filename, 1, 3);
 	sprintf(filename, "tmp/suicide.%s", currentuser.userid);
 	if ((fn = fopen(filename, "w")) != NULL) {
@@ -135,7 +135,7 @@ void mail_info(char *lastword) {
 				currentuser.userid, currentuser.username);
 		//% fprintf(fn, "自 %14.14s 至今，我已经来此 %d 次了，在这总计 %d 分钟的网络生命中，\n",
 		fprintf(fn, "\xd7\xd4 %14.14s \xd6\xc1\xbd\xf1\xa3\xac\xce\xd2\xd2\xd1\xbe\xad\xc0\xb4\xb4\xcb %d \xb4\xce\xc1\xcb\xa3\xac\xd4\xda\xd5\xe2\xd7\xdc\xbc\xc6 %d \xb7\xd6\xd6\xd3\xb5\xc4\xcd\xf8\xc2\xe7\xc9\xfa\xc3\xfc\xd6\xd0\xa3\xac\n",
-				getdatestring(currentuser.firstlogin, DATE_ZH), currentuser.numlogins, currentuser.stay/60);
+				format_time(currentuser.firstlogin, TIME_FORMAT_ZH), currentuser.numlogins, currentuser.stay/60);
 		//% fprintf(fn, "我又如何会轻易舍弃呢？但是我得走了...  点点滴滴－－尽在我心中！\n\n");
 		fprintf(fn, "\xce\xd2\xd3\xd6\xc8\xe7\xba\xce\xbb\xe1\xc7\xe1\xd2\xd7\xc9\xe1\xc6\xfa\xc4\xd8\xa3\xbf\xb5\xab\xca\xc7\xce\xd2\xb5\xc3\xd7\xdf\xc1\xcb...  \xb5\xe3\xb5\xe3\xb5\xce\xb5\xce\xa3\xad\xa3\xad\xbe\xa1\xd4\xda\xce\xd2\xd0\xc4\xd6\xd0\xa3\xa1\n\n");
 		fprintf(fn, "%s", lastword);
@@ -144,8 +144,8 @@ void mail_info(char *lastword) {
 				currentuser.userid);
 		//% fprintf(fn, "或许有朝一日我会回来的。 珍重!! 再见!!\n\n\n");
 		fprintf(fn, "\xbb\xf2\xd0\xed\xd3\xd0\xb3\xaf\xd2\xbb\xc8\xd5\xce\xd2\xbb\xe1\xbb\xd8\xc0\xb4\xb5\xc4\xa1\xa3 \xd5\xe4\xd6\xd8!! \xd4\xd9\xbc\xfb!!\n\n\n");
-		//% fprintf(fn, "%s 于 %s 留.\n\n", currentuser.userid, getdatestring(now, DATE_ZH));
-		fprintf(fn, "%s \xd3\xda %s \xc1\xf4.\n\n", currentuser.userid, getdatestring(now, DATE_ZH));
+		//% fprintf(fn, "%s 于 %s 留.\n\n", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
+		fprintf(fn, "%s \xd3\xda %s \xc1\xf4.\n\n", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
 		fclose(fn);
 		{
 			char sc_title[128];
@@ -331,7 +331,7 @@ int giveUpBBS() {
 		fprintf(fn, "%d %d\n", ans[0] - 48, j);
 		fclose(fn);
 
-		char *str = getdatestring(time(NULL), DATE_ZH);
+		char *str = format_time(time(NULL), TIME_FORMAT_ZH);
 		switch (ans[0]) {
 			case '1':
 				lookupuser.userlevel &= ~PERM_LOGIN;

@@ -229,7 +229,7 @@ static xml_node_t *create_post_node(const post_info_t *p)
 	xml_attr_bigint(post, "reid", p->reid);
 	xml_attr_bigint(post, "tid", p->tid);
 	xml_attr_string(post, "owner", p->owner, false);
-	xml_attr_string(post, "stamp", getdatestring(p->stamp, DATE_XML), false);
+	xml_attr_string(post, "stamp", format_time(p->stamp, TIME_FORMAT_XML), false);
 	xml_attr_string(post, "title", p->utf8_title, true);
 	char mark[2] = "\0";
 	mark[0] = get_post_mark(p);

@@ -58,7 +58,7 @@ int bbsrss_main(void)
 				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
 				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
 				"<description><![CDATA[<pre>", board.id, fp->id, fp->owner,
-				getdatestring(getfiletime(fp), DATE_RSS), fp->owner, board.id,
+				format_time(getfiletime(fp), TIME_FORMAT_RSS), fp->owner, board.id,
 				fp->id);
 		xml_printfile(file);
 		printf("<pre>]]></description></item>");

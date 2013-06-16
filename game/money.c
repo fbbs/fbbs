@@ -508,7 +508,7 @@ borrow()
 	else {
 		//% prints("您已经在本处贷款 %d 元.\n",currentuser.bet);
 		prints("\xc4\xfa\xd2\xd1\xbe\xad\xd4\xda\xb1\xbe\xb4\xa6\xb4\xfb\xbf\xee %d \xd4\xaa.\n",currentuser.bet);
-		dstr = getdatestring(currentuser.dateforbet, NA);
+		dstr = format_time(currentuser.dateforbet, NA);
 		//% sprintf(genbuf, "您偿还贷款的最后期限是:  %14.14s(%s) \n\n", dstr, dstr + 23);
 		sprintf(genbuf, "\xc4\xfa\xb3\xa5\xbb\xb9\xb4\xfb\xbf\xee\xb5\xc4\xd7\xee\xba\xf3\xc6\xda\xcf\xde\xca\xc7:  %14.14s(%s) \n\n", dstr, dstr + 23);
 		prints(genbuf);
@@ -545,7 +545,7 @@ borrow()
 		currentuser.bet += tempbet;
 		currentuser.dateforbet = now + 10*24*60*60;
 		substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
-		dstr = getdatestring(currentuser.dateforbet, NA);
+		dstr = format_time(currentuser.dateforbet, NA);
 		//% sprintf(genbuf, "\n你向本站总共借款 %d 元，您需要在 %14.14s(%s) 还清贷款。",currentuser.bet, dstr, dstr + 23);
 		sprintf(genbuf, "\n\xc4\xe3\xcf\xf2\xb1\xbe\xd5\xbe\xd7\xdc\xb9\xb2\xbd\xe8\xbf\xee %d \xd4\xaa\xa3\xac\xc4\xfa\xd0\xe8\xd2\xaa\xd4\xda %14.14s(%s) \xbb\xb9\xc7\xe5\xb4\xfb\xbf\xee\xa1\xa3",currentuser.bet, dstr, dstr + 23);
 		prints(genbuf);

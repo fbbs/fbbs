@@ -665,7 +665,7 @@ static void notepad_init(void)
 				if (fname == NULL || bname == NULL || ntitle == NULL)
 					continue;
 				else {
-					char *str = getdatestring(now, DATE_ZH);
+					char *str = format_time(now, TIME_FORMAT_ZH);
 					snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] %s",
 							str, str + 23, ntitle);
 					if (dashf(fname)) {
@@ -678,7 +678,7 @@ static void notepad_init(void)
 			}
 			fclose(check);
 		}
-		char *str = getdatestring(now, DATE_ZH);
+		char *str = format_time(now, TIME_FORMAT_ZH);
 		//% snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] 留言板记录",
 		snprintf(notetitle, sizeof(notetitle), "[%14.14s %6.6s] \xc1\xf4\xd1\xd4\xb0\xe5\xbc\xc7\xc2\xbc",
 				str, str + 23);
@@ -757,15 +757,15 @@ static void user_login(void)
 		currentuser.numlogins = 0;
 		//% prints("\033[1;36m☆ 这是您第 \033[33m1\033[36m 次拜访本站，请记住今天吧。\n");
 		prints("\033[1;36m\xa1\xee \xd5\xe2\xca\xc7\xc4\xfa\xb5\xda \033[33m1\033[36m \xb4\xce\xb0\xdd\xb7\xc3\xb1\xbe\xd5\xbe\xa3\xac\xc7\xeb\xbc\xc7\xd7\xa1\xbd\xf1\xcc\xec\xb0\xc9\xa1\xa3\n");
-		//% prints("☆ 您第一次连入本站的时间为 \033[33m%s\033[m ", getdatestring(time(NULL), DATE_ZH));
-		prints("\xa1\xee \xc4\xfa\xb5\xda\xd2\xbb\xb4\xce\xc1\xac\xc8\xeb\xb1\xbe\xd5\xbe\xb5\xc4\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", getdatestring(time(NULL), DATE_ZH));
+		//% prints("☆ 您第一次连入本站的时间为 \033[33m%s\033[m ", format_time(time(NULL), TIME_FORMAT_ZH));
+		prints("\xa1\xee \xc4\xfa\xb5\xda\xd2\xbb\xb4\xce\xc1\xac\xc8\xeb\xb1\xbe\xd5\xbe\xb5\xc4\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", format_time(time(NULL), TIME_FORMAT_ZH));
 	} else {
 		prints(
 				//% "\033[1;36m☆ 这是您第 \033[33m%d\033[36m 次拜访本站，上次您是从 \033[33m%s\033[36m 连往本站。\n",
 				"\033[1;36m\xa1\xee \xd5\xe2\xca\xc7\xc4\xfa\xb5\xda \033[33m%d\033[36m \xb4\xce\xb0\xdd\xb7\xc3\xb1\xbe\xd5\xbe\xa3\xac\xc9\xcf\xb4\xce\xc4\xfa\xca\xc7\xb4\xd3 \033[33m%s\033[36m \xc1\xac\xcd\xf9\xb1\xbe\xd5\xbe\xa1\xa3\n",
 				currentuser.numlogins + 1, currentuser.lasthost);
-		//% prints("☆ 上次连线时间为 \033[33m%s\033[m ", getdatestring(currentuser.lastlogin, DATE_ZH));
-		prints("\xa1\xee \xc9\xcf\xb4\xce\xc1\xac\xcf\xdf\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", getdatestring(currentuser.lastlogin, DATE_ZH));
+		//% prints("☆ 上次连线时间为 \033[33m%s\033[m ", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
+		prints("\xa1\xee \xc9\xcf\xb4\xce\xc1\xac\xcf\xdf\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
 	}
 	igetkey();
 	WishNum = 9999;

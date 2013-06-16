@@ -27,7 +27,7 @@ void log_attempt(const char *name, const char *addr, const char *type)
 	char file[STRLEN], buf[256];
 
 	snprintf(buf, sizeof(buf), "%-12.12s  %-30s %s %s\n", name,
-			getdatestring(time(NULL), DATE_ZH), addr, type);
+			format_time(time(NULL), TIME_FORMAT_ZH), addr, type);
 	file_append(BADLOGINFILE, buf);
 	sethomefile(file, name, BADLOGINFILE);
 	file_append(file, buf);

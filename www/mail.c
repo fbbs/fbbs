@@ -67,7 +67,7 @@ int bbsmail_main(void)
 	for (int i = 0; i < page && fp >= begin; ++i, --fp) {
 		printf("\n<mail r='%d' m='%c' from='%s' date='%s' name='%s'>",
 				_is_mail_read(fp), _get_mail_mark(fp), fp->owner,
-				getdatestring(getfiletime(fp), DATE_XML), fp->filename);
+				format_time(getfiletime(fp), TIME_FORMAT_XML), fp->filename);
 		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title, stdout);
 		printf("</mail>");
 	}
@@ -87,7 +87,7 @@ int print_new_mail(void *buf, int count, void *args)
 	if (!(fp->accessed[0] & FILE_READ)) {
 		printf("<mail m='%c' from='%s' name='%s' n='%d' date='%s'>",
 				_get_mail_mark(fp), fp->owner, fp->filename, count,
-				getdatestring(date, DATE_XML));
+				format_time(date, TIME_FORMAT_XML));
 		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title, stdout);
 		printf("</mail>");
 	}
@@ -292,7 +292,7 @@ int bbssndmail_main(void)
 	snprintf(header, sizeof(header), "\xbc\xc4\xd0\xc5\xc8\xcb: %s (%s)\n\xb1\xea  \xcc\xe2: %s\n\xb7\xa2\xd0\xc5\xd5\xbe: "
 			//% BBSNAME" (%s)\n来  源: %s\n\n", currentuser.userid,
 			BBSNAME" (%s)\n\xc0\xb4  \xd4\xb4: %s\n\n", currentuser.userid,
-			currentuser.username, title, getdatestring(time(NULL), DATE_ZH),
+			currentuser.username, title, format_time(time(NULL), TIME_FORMAT_ZH),
 			mask_host(fromhost));
 	// TODO: signature, error code
 	if (do_mail_file(recv, title, header, text, len, NULL) < 0)

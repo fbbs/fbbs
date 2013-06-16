@@ -50,8 +50,8 @@ static void show_my_prop(my_props_t *p, int i)
 			" order='%s'", my_prop_get_record_id(p, i),
 			my_prop_get_item_id(p, i), gbk_name, gbk_categ,
 			TO_YUAN_INT(my_prop_get_price(p, i)),
-			getdatestring(my_prop_get_order_time(p, i), DATE_XML));
-	printf(" expire='%s'/>", getdatestring(my_prop_get_expire(p, i), DATE_XML));
+			format_time(my_prop_get_order_time(p, i), TIME_FORMAT_XML));
+	printf(" expire='%s'/>", format_time(my_prop_get_expire(p, i), TIME_FORMAT_XML));
 }
 
 static int show_title_detail(int record)

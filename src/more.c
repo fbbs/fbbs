@@ -936,7 +936,7 @@ int msg_more(void)
 			case 'M':
 				//% snprintf(title, sizeof(title), "[%s] 所有讯息备份",
 				snprintf(title, sizeof(title), "[%s] \xcb\xf9\xd3\xd0\xd1\xb6\xcf\xa2\xb1\xb8\xb7\xdd",
-						getdatestring(time(NULL), DATE_ZH));
+						format_time(time(NULL), TIME_FORMAT_ZH));
 				mail_file(file, currentuser.userid, title);
 				unlink(file);
 				break;

@@ -72,12 +72,12 @@ int bbsinfo_main(void)
 				"since='%s' host='%s' year='%d' month='%d' "
 				"day='%d' gender='%c' ", currentuser.numposts,
 				currentuser.numlogins, currentuser.stay / 60,
-				getdatestring(currentuser.firstlogin, DATE_XML),
+				format_time(currentuser.firstlogin, TIME_FORMAT_XML),
 				currentuser.lasthost, currentuser.birthyear,
 				currentuser.birthmonth, currentuser.birthday,
 				currentuser.gender);
 		printf(" last='%s'><nick>",
-				getdatestring(currentuser.lastlogin, DATE_XML));
+				format_time(currentuser.lastlogin, TIME_FORMAT_XML));
 		xml_fputs(currentuser.username, stdout);
 		printf("</nick>");
 		print_session();

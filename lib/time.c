@@ -19,46 +19,36 @@ const char *fb_ctime(const fb_time_t *t)
  * @param mode specified format.
  * @return converted string.
  */
-char *getdatestring(time_t time, enum DATE_FORMAT mode)
+char *format_time(time_t time, time_format_e fmt)
 {
-	static char str[32] = {'\0'};
-	struct tm *t;
 	//% "天" "一" "二" "三" "四" "五" "六"
-	char weeknum[7][3] = {"\xcc\xec", "\xd2\xbb", "\xb6\xfe", "\xc8\xfd", "\xcb\xc4", "\xce\xe5", "\xc1\xf9"};
-	char engweek[7][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	const char weeknum[7][3] = {
+		"\xcc\xec", "\xd2\xbb", "\xb6\xfe", "\xc8\xfd",
+		"\xcb\xc4", "\xce\xe5", "\xc1\xf9"
+	};
+	static char str[32] = { '\0' };
 
-	// No multi-thread
-	t = localtime(&time);
-	switch (mode) {
-		case DATE_ZH:
-			snprintf(str, sizeof(str),
-					//% "%4d年%02d月%02d日%02d:%02d:%02d 星期%2s",
-					"%4d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5%02d:%02d:%02d \xd0\xc7\xc6\xda%2s",
-					t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-					t->tm_hour, t->tm_min, t->tm_sec, weeknum[t->tm_wday]);
+	struct tm *t = localtime(&time);
+	switch (fmt) {
+		case TIME_FORMAT_ZH:
+			//% "%4d年%02d月%02d日%02d:%02d:%02d 星期%2s",
+			snprintf(str, sizeof(str), "%4d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5"
+					"%02d:%02d:%02d \xd0\xc7\xc6\xda%2s", t->tm_year + 1900,
+					t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min,
+					t->tm_sec, weeknum[t->tm_wday]);
 			break;
-		case DATE_EN:
-			snprintf(str, sizeof(str), "%02d/%02d/%02d %02d:%02d:%02d",
-					t->tm_mon + 1, t->tm_mday, t->tm_year - 100,
-					t->tm_hour, t->tm_min, t->tm_sec);
+		case TIME_FORMAT_EN:
+			strftime(str, sizeof(str), "%m/%d/%Y %H:%M:%S", t);
 			break;
-		case DATE_SHORT:
-			snprintf(str, sizeof(str), "%02d.%02d %02d:%02d",
-					t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min);
+		case TIME_FORMAT_SHORT:
+			strftime(str, sizeof(str), "%m.%d %H:%M", t);
 			break;
-		case DATE_ENWEEK:
-			snprintf(str, sizeof(str), "%02d/%02d/%02d %02d:%02d:%02d %3s",
-					t->tm_mon + 1, t->tm_mday, t->tm_year - 100,
-					t->tm_hour, t->tm_min, t->tm_sec, engweek[t->tm_wday]);
-			break;
-		case DATE_RSS:
+		case TIME_FORMAT_RSS:
 			strftime(str, sizeof(str), "%a,%d %b %Y %H:%M:%S %z", t);
 			break;
-		case DATE_XML:
+		case TIME_FORMAT_XML:
 		default:
-			snprintf(str, sizeof(str), "%4d-%02d-%02dT%02d:%02d:%02d",
-					t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-					t->tm_hour, t->tm_min, t->tm_sec);
+			strftime(str, sizeof(str), "%Y-%m-%dT%H:%M:%S", t);
 			break;
 	}
 	return str;

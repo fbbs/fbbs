@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 			"%s\033[1;33m     \xca\xf3    \xc5\xa3    \xbb\xa2    \xcd\xc3    \xc1\xfa    \xc9\xdf    \xc2\xed    \xd1\xf2    \xba\xef    \xbc\xa6    \xb9\xb7    \xd6\xed\n\n"
 			//% "%s                          \033[1;36m█ 男生 (%d)    \033[35m█ 女生 (%d)\033[m\n",
 			"%s                          \033[1;36m\xa8\x80 \xc4\xd0\xc9\xfa (%d)    \033[35m\xa8\x80 \xc5\xae\xc9\xfa (%d)\033[m\n",
-			mg, getdatestring(time(NULL), DATE_ZH), mg, mg, mtotal, ftotal);
+			mg, format_time(time(NULL), TIME_FORMAT_ZH), mg, mg, mtotal, ftotal);
 	return 0;
 }
 

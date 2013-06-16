@@ -24,10 +24,10 @@ static int getuinfo(FILE *fn)
 	fprintf(fn, "\xcb\xfb\xb5\xc4\xea\xc7\xb3\xc6     : %s\n", currentuser.username);
 	//% fprintf(fn, "电子邮件信箱 : %s\n", currentuser.email);
 	fprintf(fn, "\xb5\xe7\xd7\xd3\xd3\xca\xbc\xfe\xd0\xc5\xcf\xe4 : %s\n", currentuser.email);
-	//% fprintf(fn, "帐号建立日期 : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
-	fprintf(fn, "\xd5\xca\xba\xc5\xbd\xa8\xc1\xa2\xc8\xd5\xc6\xda : %s\n", getdatestring(currentuser.firstlogin, DATE_ZH));
-	//% fprintf(fn, "最近光临日期 : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
-	fprintf(fn, "\xd7\xee\xbd\xfc\xb9\xe2\xc1\xd9\xc8\xd5\xc6\xda : %s\n", getdatestring(currentuser.lastlogin, DATE_ZH));
+	//% fprintf(fn, "帐号建立日期 : %s\n", format_time(currentuser.firstlogin, TIME_FORMAT_ZH));
+	fprintf(fn, "\xd5\xca\xba\xc5\xbd\xa8\xc1\xa2\xc8\xd5\xc6\xda : %s\n", format_time(currentuser.firstlogin, TIME_FORMAT_ZH));
+	//% fprintf(fn, "最近光临日期 : %s\n", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
+	fprintf(fn, "\xd7\xee\xbd\xfc\xb9\xe2\xc1\xd9\xc8\xd5\xc6\xda : %s\n", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
 	//% fprintf(fn, "最近光临机器 : %s\n", currentuser.lasthost);
 	fprintf(fn, "\xd7\xee\xbd\xfc\xb9\xe2\xc1\xd9\xbb\xfa\xc6\xf7 : %s\n", currentuser.lasthost);
 	//% fprintf(fn, "上站次数     : %d 次\n", currentuser.numlogins);

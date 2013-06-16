@@ -65,7 +65,7 @@ static int addtodir(const char *board, const char *tmpfile)
 
 	char buf[256],log[100];
 	snprintf(buf, sizeof(buf), "UP [%s] %s %dB %s %s FILE:%s\n",
-			getdatestring(time(NULL), DATE_EN), currentuser.userid, x.id, 
+			format_time(time(NULL), TIME_FORMAT_EN), currentuser.userid, x.id, 
 			fromhost, board, x.filename);
 	snprintf(log, sizeof(log), "%s/upload.log", BBSHOME);
 	file_append(log, buf);
