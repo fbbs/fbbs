@@ -27,9 +27,13 @@ struct userec {
 	// TODO: remove noteline
 	int noteline;             ///< will be removed soon.
 	fb_time_t firstlogin;     ///< time of first login.
+	int unused1;
 	fb_time_t lastlogin;      ///< time of last login.
+	int unused2;
 	fb_time_t lastlogout;     ///< time of last logout.
+	int unused3;
 	fb_time_t dateforbet;     ///< loan deadline.
+	int unused4;
 	// TODO: remove notedate
 	int64_t notedate;         ///< will be removed soon.
 	char userid[EXT_IDLEN];   ///< userid.

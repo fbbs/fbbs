@@ -1353,7 +1353,7 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 	post_index_trash_insert_t piti = {
 		.filter = filter, .pir = &pir,
 		.trash = &trash, .ename = currentuser.userid,
-		.estamp = time(NULL), .junk = junk, .decrease = decrease,
+		.estamp = fb_time(), .junk = junk, .decrease = decrease,
 	};
 
 	record_lock_all(&trash, RECORD_WRLCK);

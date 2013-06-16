@@ -99,8 +99,8 @@ static bool check_timeout(const struct _session *s, int count)
 {
 	if (s->active) {
 		fb_time_t refresh = get_idle_time(s->sid);
-		fb_time_t now = time(NULL);
-		if (refresh >= 0 && now - refresh > IDLE_TIMEOUT) {
+		fb_time_t now = fb_time();
+		if (refresh > 0 && now - refresh > IDLE_TIMEOUT) {
 			session_status_e status = get_user_status(s->sid);
 			if (status != ST_BBSNET) {
 				kill_session(s, count > 1);

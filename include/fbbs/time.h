@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#define PRIdFBT PRId64
+#define PRIdFBT PRId32
 
 enum DATE_FORMAT {
 	DATE_ZH = 0,      ///< "2001年02月03日04:05:06 星期六"
@@ -17,9 +17,9 @@ enum DATE_FORMAT {
 	DATE_RSS = 16,    ///< "Sat,03 Feb 2001 04:05:06 +0800"
 };
 
-typedef int64_t fb_time_t;
+typedef uint32_t fb_time_t;
 
-#define fb_time() ((fb_time_t)time(NULL))
+#define fb_time() ((fb_time_t) time(NULL))
 extern struct tm *fb_localtime(const fb_time_t *t);
 extern const char *fb_ctime(const fb_time_t *t);
 

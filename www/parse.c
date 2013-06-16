@@ -38,7 +38,7 @@ static fb_time_t _parse_header_date(const string_t *line)
 {
 	const char *begin = memchr(line->begin, '(', line->end - line->begin);
 	if (!begin || begin + sizeof(DATETIME_STRING) > line->end)
-		return -1;
+		return 0;
 
 	struct tm t;
 	const char *s = begin + 1;
@@ -53,6 +53,8 @@ static fb_time_t _parse_header_date(const string_t *line)
 	t.tm_sec = strtol(s + 6, NULL, 10);
 
 	time_t time = mktime(&t);
+	if (time == -1)
+		return 0;
 	return time;
 }
 
@@ -233,7 +235,7 @@ static const char *_print_header(const char *begin, size_t size)
 	line.begin = line.end;
 	line.end = get_line_end(line.begin, end);
 	fb_time_t date = _parse_header_date(&line);
-	if (date < 0)
+	if (!date)
 		return begin;
 
 	_print_node("owner", &owner);

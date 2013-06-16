@@ -127,7 +127,7 @@ static tui_list_loader_t online_users_load(tui_list_t *p)
 {
 	online_users_t *up = p->data;
 
-	fb_time_t now = time(NULL);
+	fb_time_t now = fb_time();
 	if (now < up->uptime + REFRESH_TIME)
 		return up->num;
 	up->uptime = now;
@@ -219,7 +219,7 @@ static void get_idle_str(char *buf, size_t size, fb_time_t refresh, int status)
 {
 	int idle = 0;
 	if (refresh > 0 && status != ST_BBSNET)
-		idle = (time(NULL) - refresh) / 60;
+		idle = (fb_time() - refresh) / 60;
 
 	if (!idle) {
 		*buf = '\0';

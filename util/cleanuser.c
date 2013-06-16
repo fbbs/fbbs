@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 		log_usies("CLEAN", "dated users.", NULL);
 	}
 
-	fb_time_t now = time(NULL);
+	fb_time_t now = fb_time();
 
 	struct userec user, zero;
 	memset(&zero, 0, sizeof(zero));

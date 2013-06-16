@@ -10,7 +10,7 @@
 #include "fbbs/util.h"
 
 /** Postgresql epoch (Jan 1, 2000) in unix time. */
-#define POSTGRES_EPOCH_TIME INT64_C(946684800)
+#define POSTGRES_EPOCH_TIME UINT32_C(946684800)
 
 /**
  * Default postgresql installation used to use double to represent timestamp.

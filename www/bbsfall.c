@@ -110,7 +110,7 @@ static void show_sessions_of_friends(void)
 	if (!res)
 		return;
 
-	fb_time_t now = time(NULL);
+	fb_time_t now = fb_time();
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		bool visible = db_get_bool(res, i, 3);
 		if (!visible && !HAS_PERM(PERM_SEECLOAK))

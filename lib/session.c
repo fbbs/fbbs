@@ -65,7 +65,7 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	if (!sid)
 		sid = session_new_id();
 
-	fb_time_t now = time(NULL);
+	fb_time_t now = fb_time();
 	fb_time_t expire = now + duration;
 
 	db_res_t *res = db_cmd("INSERT INTO sessions (id, session_key, user_id,"

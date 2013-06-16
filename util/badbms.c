@@ -8,13 +8,12 @@
 int main (int argc, char *argv[])
 {
 	FILE *fp, *fout, *bmfp;
-	time_t now;
+	fb_time_t now = fb_time();
 	char which[20];
 	int n, i, j = 0;
 	struct userec aman;
   	char buf[256];
 
-  	now = time (0);
   	sprintf (buf, "%s/.PASSWDS", BBSHOME);
   	if ((fp = fopen (buf, "rb")) == NULL) {
     	printf ("Can't open record data file.\n");
@@ -47,7 +46,7 @@ int main (int argc, char *argv[])
 		      	fprintf (	fout,
 		    		  //% " ** [1;33m%-16s[m版主 [1;32m%-15.15s[m [ %-20.20s ]%6"PRIdFBT"天\n",
 		    		  " ** [1;33m%-16s[m\xb0\xe6\xd6\xf7 [1;32m%-15.15s[m [ %-20.20s ]%6"PRIdFBT"\xcc\xec\n",
-		       			which, aman.userid, aman.username,(now - aman.lastlogin) / 86400);
+		       			which, aman.userid, aman.username, (now - aman.lastlogin) / 86400);
 	   		}
 	 		fclose (bmfp);
 		  	j++;

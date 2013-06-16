@@ -415,7 +415,7 @@ const char *get_board_online_color(const char *uname, int bid)
 const char *get_post_date(fb_time_t stamp)
 {
 #ifdef FDQUAN
-	if (time(NULL) - stamp < 24 * 60 * 60)
+	if (fb_time() - stamp < 24 * 60 * 60)
 		return fb_ctime(&stamp) + 10;
 #endif
 	return fb_ctime(&stamp) + 4;
