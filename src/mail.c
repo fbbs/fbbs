@@ -983,7 +983,7 @@ static int show_mail_info(int ent, struct fileheader *fileinfo, char *direct)
 	prints("\xb1\xea    \xcc\xe2:     %s\n", fileinfo->title);
 	//% prints("发 信 人:     %s\n", fileinfo->owner);
 	prints("\xb7\xa2 \xd0\xc5 \xc8\xcb:     %s\n", fileinfo->owner);
-	time_t filetime = atoi(fileinfo->filename + 2);
+	fb_time_t filetime = strtoul(fileinfo->filename + 2, NULL, 10);
 	//% prints("时    间:     %s\n", format_time(filetime, TIME_FORMAT_ZH));
 	prints("\xca\xb1    \xbc\xe4:     %s\n", format_time(filetime, TIME_FORMAT_ZH));
 	//% prints("阅读状态:     %s\n", unread ? "未读" : "已读");
@@ -1843,7 +1843,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 				//% fprintf(fp, "\n--\n\033[1;36m※ 修改:·%s 于 %16.16s 修改本文·"
 				fprintf(fp, "\n--\n\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda %16.16s \xd0\xde\xb8\xc4\xb1\xbe\xce\xc4\xa1\xa4"
 						"[FROM: %s]\033[m\n", currentuser.userid,
-						format_time(time(NULL), TIME_FORMAT_ZH) + 6,
+						format_time(fb_time(), TIME_FORMAT_ZH) + 6,
 						mask_host(fromhost));
 				fclose(fp);
 			}

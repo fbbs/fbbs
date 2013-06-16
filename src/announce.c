@@ -1910,7 +1910,6 @@ int AddPCorpus() {
 	char digestpath[80] = "0Announce/groups/GROUP_0/PersonalCorpus";
 	char personalpath[80], Log[200], title[200], ftitle[80];
 	char *title1 = title;
-	time_t now;
 	int id;
 	set_user_status(ST_DIGEST);
 	sprintf(Log, "%s/Log", digestpath);
@@ -1983,9 +1982,8 @@ int AddPCorpus() {
 			fclose(fn);
 		}
 	}
-	now = time(NULL);
 	sprintf(genbuf, "\033[36m%-12.12s\033[m %14.14s \033[32m %.38s\033[m\n",
-			lookupuser.userid, format_time(now, TIME_FORMAT_ZH), title);
+			lookupuser.userid, format_time(fb_time(), TIME_FORMAT_ZH), title);
 	file_append(Log, genbuf);
 	//% presskeyfor("已经创建个人文集, 请按任意键继续...", 12);
 	presskeyfor("\xd2\xd1\xbe\xad\xb4\xb4\xbd\xa8\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf, \xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8...", 12);

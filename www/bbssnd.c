@@ -61,7 +61,7 @@ static int edit_article(const char *file, const char *content, const char *ip)
 		len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda "
 				//% "%22.22s·HTTP [FROM: %s]\033[m\n", currentuser.userid,
 				"%22.22s\xa1\xa4HTTP [FROM: %s]\033[m\n", currentuser.userid,
-				format_time(time(NULL), TIME_FORMAT_ZH), mask_host(ip));
+				format_time(fb_time(), TIME_FORMAT_ZH), mask_host(ip));
 		if (ret == 0)
 			ret = file_write(fd, buf, len);
 		size += (e - ptr) + len;

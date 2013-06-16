@@ -442,9 +442,8 @@ static void getcross(board_t *board, const char *input, const char *output,
 	char owner[STRLEN];
 	int owner_found = 0;
 	char *p = NULL;
-	time_t now;
 
-	now = time(0);
+	fb_time_t now = fb_time();
 	inf = fopen(input, "r");
 	of = fopen(output, "w");
 	if (inf == NULL || of == NULL) {
@@ -1589,7 +1588,6 @@ void notepad() {
 	char tmp[STRLEN];
 	FILE *in;
 	int i, n;
-	time_t thetime = time(0);
 
 	clear();
 	move(0, 0);
@@ -1633,7 +1631,7 @@ void notepad() {
 					in,
 					//% "[1;34m▕[32;44m %-44s[32m在 [36m%23.23s[32m 离开时留下的话  [m\n",
 					"[1;34m\xa8\x8a[32;44m %-44s[32m\xd4\xda [36m%23.23s[32m \xc0\xeb\xbf\xaa\xca\xb1\xc1\xf4\xcf\xc2\xb5\xc4\xbb\xb0  [m\n",
-					tmp, format_time(thetime, TIME_FORMAT_ZH) + 6);
+					tmp, format_time(fb_time(), TIME_FORMAT_ZH) + 6);
 			for (n = 0; n < i; n++) {
 				if (note[n][0] == '\0')
 					break;
@@ -1858,7 +1856,7 @@ int Goodbye(void)
 void do_report(const char *filename, const char *s) {
 	char buf[512];
 	sprintf(buf, "%-12.12s %16.16s %s\n", currentuser.userid,
-			format_time(time(NULL), TIME_FORMAT_ZH) + 6, s);
+			format_time(fb_time(), TIME_FORMAT_ZH) + 6, s);
 	file_append(filename, buf);
 }
 
@@ -1878,7 +1876,7 @@ void board_usage(char *mode, time_t usetime) {
 	char buf[256];
 
 	sprintf(buf, "%.22s USE %-20.20s Stay: %5ld (%s)\n",
-			format_time(time(NULL), TIME_FORMAT_ZH),
+			format_time(fb_time(), TIME_FORMAT_ZH),
 			mode, usetime, currentuser.userid);
 	file_append("use_board", buf);
 }

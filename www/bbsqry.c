@@ -102,7 +102,7 @@ int bbsqry_main(void)
 
 		int num = show_sessions(user.userid);
 		if (!num) {
-			time_t logout = user.lastlogout;
+			fb_time_t logout = user.lastlogout;
 			if (logout < user.lastlogin) {
 				logout = ((time(NULL) - user.lastlogin) / 120) % 47 + 1
 						+ user.lastlogin;

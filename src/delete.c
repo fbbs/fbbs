@@ -119,10 +119,9 @@ int offline() {
 
 void mail_info(char *lastword) {
 	FILE *fn;
-	time_t now;
 	char filename[STRLEN];
 
-	now = time(0);
+	fb_time_t now = time(0);
 	//% sprintf(filename, "%s 于 %s 登记自杀", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
 	sprintf(filename, "%s \xd3\xda %s \xb5\xc7\xbc\xc7\xd7\xd4\xc9\xb1", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
 	securityreport(filename, 1, 3);
@@ -331,7 +330,7 @@ int giveUpBBS() {
 		fprintf(fn, "%d %d\n", ans[0] - 48, j);
 		fclose(fn);
 
-		char *str = format_time(time(NULL), TIME_FORMAT_ZH);
+		char *str = format_time(fb_time(), TIME_FORMAT_ZH);
 		switch (ans[0]) {
 			case '1':
 				lookupuser.userlevel &= ~PERM_LOGIN;

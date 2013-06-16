@@ -19,7 +19,7 @@ const char *fb_ctime(const fb_time_t *t)
  * @param mode specified format.
  * @return converted string.
  */
-char *format_time(time_t time, time_format_e fmt)
+char *format_time(fb_time_t time, time_format_e fmt)
 {
 	//% "天" "一" "二" "三" "四" "五" "六"
 	const char weeknum[7][3] = {
@@ -28,7 +28,7 @@ char *format_time(time_t time, time_format_e fmt)
 	};
 	static char str[32] = { '\0' };
 
-	struct tm *t = localtime(&time);
+	struct tm *t = fb_localtime(&time);
 	switch (fmt) {
 		case TIME_FORMAT_ZH:
 			//% "%4d年%02d月%02d日%02d:%02d:%02d 星期%2s",

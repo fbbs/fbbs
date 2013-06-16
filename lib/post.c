@@ -578,7 +578,7 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	//% "发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n"
 	fprintf(fptr, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n\xb1\xea  \xcc\xe2: %s\n\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)\n\n",
 			uname, nick, pr->board->name, pr->title, BBSNAME,
-			format_time(time(NULL), TIME_FORMAT_ZH));
+			format_time(fb_time(), TIME_FORMAT_ZH));
 
 	if (pr->cp)
 		convert_to_file(pr->cp, pr->content, CONVERT_ALL, fptr);

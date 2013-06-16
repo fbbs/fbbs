@@ -169,7 +169,7 @@ int tui_query_result(const char *userid)
 	} else {
 		fb_time_t t = user.lastlogout;
 		if (user.lastlogout < user.lastlogin)
-			t = ((time(NULL) - user.lastlogin) / 120) % 47 + 1 + user.lastlogin;
+			t = ((fb_time() - user.lastlogin) / 120) % 47 + 1 + user.lastlogin;
 		//% prints("离站 [\033[1;32m%s\033[m] ", format_time(t, TIME_FORMAT_ZH));
 		prints("\xc0\xeb\xd5\xbe [\033[1;32m%s\033[m] ", format_time(t, TIME_FORMAT_ZH));
 	}

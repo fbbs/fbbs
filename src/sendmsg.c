@@ -555,7 +555,7 @@ static void msg_backup(const char *user)
 		char title[STRLEN];
 		//% snprintf(title, sizeof(title), "[%s] 强制讯息备份%d条",
 		snprintf(title, sizeof(title), "[%s] \xc7\xbf\xd6\xc6\xd1\xb6\xcf\xa2\xb1\xb8\xb7\xdd%d\xcc\xf5",
-				format_time(time(NULL), TIME_FORMAT_ZH), num);
+				format_time(fb_time(), TIME_FORMAT_ZH), num);
 		mail_file(file, user, title);
 		unlink(file);
 	}

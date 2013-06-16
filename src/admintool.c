@@ -1287,7 +1287,7 @@ int pass_register(int index, reginfo_t* ent, char *direct) {
 		//% fprintf(fout, "校 友 会     : %s\n", ent->assoc);
 		fprintf(fout, "\xd0\xa3 \xd3\xd1 \xbb\xe1     : %s\n", ent->assoc);
 		//% fprintf(fout, "成功日期     : %s\n", format_time(time(NULL), TIME_FORMAT_EN));
-		fprintf(fout, "\xb3\xc9\xb9\xa6\xc8\xd5\xc6\xda     : %s\n", format_time(time(NULL), TIME_FORMAT_EN));
+		fprintf(fout, "\xb3\xc9\xb9\xa6\xc8\xd5\xc6\xda     : %s\n", format_time(fb_time(), TIME_FORMAT_EN));
 		//% fprintf(fout, "批准人       : %s\n", currentuser.userid);
 		fprintf(fout, "\xc5\xfa\xd7\xbc\xc8\xcb       : %s\n", currentuser.userid);
 		fclose(fout);

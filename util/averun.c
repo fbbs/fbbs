@@ -81,6 +81,6 @@ int main(int argc, char **argv)
 			"%s                  \033[1;37m1 \033[32m\xa8\x7e \033[37m= \033[36m%-5d"
 			//% "         \033[37m平均负载人数: \033[36m%d\n",
 			"         \033[37m\xc6\xbd\xbe\xf9\xb8\xba\xd4\xd8\xc8\xcb\xca\xfd: \033[36m%d\n",
-			mg, BBSNAME, format_time(time(NULL), TIME_FORMAT_ZH), mg, mg, item, avg);
+			mg, BBSNAME, format_time(fb_time(), TIME_FORMAT_ZH), mg, mg, item, avg);
 	return 0;
 }

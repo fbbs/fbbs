@@ -10,8 +10,8 @@ int main(int argc, char **argv)
 		printf("can't open trace\n");
 		return 1;
 	}
-	time_t now = time(NULL);
-	char *date = ctime(&now) + 4;
+	fb_time_t now = fb_time();
+	const char *date = fb_ctime(&now) + 4;
 	int hour;
 	char buf[256];
 	while (fgets(buf, sizeof(buf), fp)) {

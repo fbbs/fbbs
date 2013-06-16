@@ -22,7 +22,7 @@ typedef uint32_t fb_time_t;
 extern struct tm *fb_localtime(const fb_time_t *t);
 extern const char *fb_ctime(const fb_time_t *t);
 
-extern char *format_time(time_t time, time_format_e fmt);
+extern char *format_time(fb_time_t time, time_format_e fmt);
 extern char *fb_strftime(char *buf, size_t size, const char *fmt, fb_time_t t);
 
 extern bool valid_date(int year, int month, int day);

@@ -29,7 +29,7 @@ struct binfo *a, *b;
 }
 
 /* Added by deardragon 1999.12.2 */
-void format_time( time_t now)
+void _format_time( time_t now)
 {
         struct tm *tm;
         //% char weeknum[7][3]={"天","一","二","三","四","五","六"};
@@ -158,7 +158,7 @@ time_t now;
   sprintf(buftime,"20%02d\xc4\xea%02d\xd4\xc2%02d\xc8\xd5",tmtime->tm_year%100, tmtime->tm_mon+1,tmtime->tm_mday);
 
   //printf("buftime:%s",buftime);
-  format_time(now);
+  _format_time(now);
   sprintf(date,"%14.14s",datestring);
 
 /* added by roly */

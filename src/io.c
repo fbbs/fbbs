@@ -642,7 +642,6 @@ void update_endline(void)
 	extern char GoodWish[][STRLEN - 3]; //main.c
 
 	char buf[255], fname[STRLEN], *ptr, date[STRLEN];
-	time_t now;
 	FILE *fp;
 	int i, cur_sec, allstay, foo, foo2;
 
@@ -652,7 +651,7 @@ void update_endline(void)
 	if (!DEFINE(DEF_ENDLINE))
 		return;
 
-	now = time(NULL);
+	fb_time_t now = fb_time();
 	strlcpy(date, format_time(now, TIME_FORMAT_ZH), sizeof(date));
 	cur_sec = now % 10;
 	if (cur_sec == 0) {

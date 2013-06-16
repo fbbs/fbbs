@@ -74,7 +74,6 @@ void showstuff(char *buf) {
 	static char moneys[10];
 #endif
 	char buf2[STRLEN], *ptr, *ptr2;
-	time_t now;
 
 	static logout loglst[] = {
 			{ "userid", currentuser.userid },
@@ -115,7 +114,7 @@ void showstuff(char *buf) {
 		//	prints("%.82s", buf);
 		return;
 	}
-	now = time(0);
+	fb_time_t now = fb_time();
 
 	if (currentuser.numlogins> 0) {
 		tmpnum = countexp(&currentuser);

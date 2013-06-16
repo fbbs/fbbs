@@ -89,11 +89,9 @@ static void msgline(void)
 {
 	char buf[256], buf2[STRLEN * 2];
 	int tmpshow;
-	time_t now;
 
 	if (ismsgline <= 0)
 		return;
-	now = time(0);
 	tmpshow = showansi;
 	showansi = 1;
 	strcpy(buf, "[1;33;44m");
@@ -115,7 +113,7 @@ static void msgline(void)
 	strcat(buf, buf2);
 	//% sprintf(buf2, "\033[1;33m【\033[1;32m%.23s\033[33m】\033[m",
 	sprintf(buf2, "\033[1;33m\xa1\xbe\033[1;32m%.23s\033[33m\xa1\xbf\033[m",
-			format_time(now, TIME_FORMAT_ZH) + 6);
+			format_time(fb_time(), TIME_FORMAT_ZH) + 6);
 	strcat(buf, buf2);
 	move(t_lines - 1, 0);
 	clrtoeol();
@@ -879,8 +877,6 @@ void write_header(FILE *fp, const struct postheader *header)
 	char uid[20];
 	char uname[NAMELEN];
 
-	time_t now;
-	now = time(0);
 	strlcpy(uid, currentuser.userid, 20);
 	uid[19] = '\0';
 	if (in_mail)
@@ -903,8 +899,9 @@ void write_header(FILE *fp, const struct postheader *header)
 	}
 	//% fprintf(fp, "标  题: %s\n", header->title);
 	fprintf(fp, "\xb1\xea  \xcc\xe2: %s\n", header->title);
-	//% fprintf(fp, "发信站: %s (%s)", BoardName, format_time(now, TIME_FORMAT_ZH));
-	fprintf(fp, "\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)", BoardName, format_time(now, TIME_FORMAT_ZH));
+	//% 发信站
+	fprintf(fp, "\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)", BoardName,
+			format_time(fb_time(), TIME_FORMAT_ZH));
 	if (in_mail)
 		//% fprintf(fp, "\n来  源: %s\n", mask_host(fromhost));
 		fprintf(fp, "\n\xc0\xb4  \xd4\xb4: %s\n", mask_host(fromhost));
@@ -1055,7 +1052,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 		//% fprintf(fp, "\033[m\033[1;36m※ 修改:·%s 于 %22.22s·[FROM: %s]"
 		fprintf(fp, "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda %22.22s\xa1\xa4[FROM: %s]"
 				"\033[m\n", currentuser.userid,
-				format_time(time(NULL), TIME_FORMAT_ZH), mask_host(fromhost));
+				format_time(fb_time(), TIME_FORMAT_ZH), mask_host(fromhost));
 	}
 	//added end
 	if ((session.status == ST_POSTING || session.status == ST_SMAIL

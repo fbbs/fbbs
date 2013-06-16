@@ -45,12 +45,12 @@ const char *db_errmsg(void)
 
 fb_time_t ts_to_time(db_timestamp ts)
 {
-	return ts / INT64_C(1000000) + POSTGRES_EPOCH_TIME;
+	return ts / UINT32_C(1000000) + POSTGRES_EPOCH_TIME;
 }
 
 db_timestamp time_to_ts(fb_time_t t)
 {
-	return (t - POSTGRES_EPOCH_TIME) * INT64_C(1000000);
+	return (t - POSTGRES_EPOCH_TIME) * UINT32_C(1000000);
 }
 
 void db_clear(db_res_t *res)

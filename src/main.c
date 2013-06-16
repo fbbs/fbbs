@@ -638,7 +638,6 @@ static void notepad_init(void)
 	char tmp[STRLEN * 2];
 	char *fname, *bname, *ntitle;
 	long int maxsec;
-	time_t now;
 
 	maxsec = 86400;
 	lastnote = 0;
@@ -647,7 +646,7 @@ static void notepad_init(void)
 		lastnote = atol(tmp);
 		fclose(check);
 	}
-	now = time(NULL);
+	fb_time_t now = fb_time();
 	if ((now - lastnote) >= maxsec) {
 		move(t_lines - 1, 0);
 		//% prints("对不起，系统自动发信，请稍候.....");
@@ -758,7 +757,7 @@ static void user_login(void)
 		//% prints("\033[1;36m☆ 这是您第 \033[33m1\033[36m 次拜访本站，请记住今天吧。\n");
 		prints("\033[1;36m\xa1\xee \xd5\xe2\xca\xc7\xc4\xfa\xb5\xda \033[33m1\033[36m \xb4\xce\xb0\xdd\xb7\xc3\xb1\xbe\xd5\xbe\xa3\xac\xc7\xeb\xbc\xc7\xd7\xa1\xbd\xf1\xcc\xec\xb0\xc9\xa1\xa3\n");
 		//% prints("☆ 您第一次连入本站的时间为 \033[33m%s\033[m ", format_time(time(NULL), TIME_FORMAT_ZH));
-		prints("\xa1\xee \xc4\xfa\xb5\xda\xd2\xbb\xb4\xce\xc1\xac\xc8\xeb\xb1\xbe\xd5\xbe\xb5\xc4\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", format_time(time(NULL), TIME_FORMAT_ZH));
+		prints("\xa1\xee \xc4\xfa\xb5\xda\xd2\xbb\xb4\xce\xc1\xac\xc8\xeb\xb1\xbe\xd5\xbe\xb5\xc4\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", format_time(fb_time(), TIME_FORMAT_ZH));
 	} else {
 		prints(
 				//% "\033[1;36m☆ 这是您第 \033[33m%d\033[36m 次拜访本站，上次您是从 \033[33m%s\033[36m 连往本站。\n",

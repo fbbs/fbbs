@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 			"%s\033[1;33m   \xc4\xa6\xf4\xc9  \xcb\xae\xc6\xbf  \xcb\xab\xd3\xe3  \xc4\xb5\xd1\xf2  \xbd\xf0\xc5\xa3  \xcb\xab\xd7\xd3  \xbe\xde\xd0\xb7  \xca\xa8\xd7\xd3  \xb4\xa6\xc5\xae  \xcc\xec\xb3\xd3  \xcc\xec\xd0\xab  \xc9\xe4\xca\xd6\n\n"
 			//% "%s                          \033[1;36m█ 男生 (%d)    \033[35m█ 女生 (%d)\033[m\n",
 			"%s                          \033[1;36m\xa8\x80 \xc4\xd0\xc9\xfa (%d)    \033[35m\xa8\x80 \xc5\xae\xc9\xfa (%d)\033[m\n",
-			mg, format_time(time(NULL), TIME_FORMAT_ZH), mg, mg, mtotal, ftotal);
+			mg, format_time(fb_time(), TIME_FORMAT_ZH), mg, mg, mtotal, ftotal);
 	return 0;
 }
 
