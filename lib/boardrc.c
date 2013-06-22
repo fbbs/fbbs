@@ -98,8 +98,8 @@ void brc_update(const char *userid, const char *board)
 
 /**
  * 读入指定用户在指定版面的阅读记录.
- * @param uname 用户名
- * @param bname 版面名
+ * @param[in] uname 用户名
+ * @param[in] bname 版面名
  * @return 如果该版之前没有记录, 返回0; 否则返回当前该版已有的记录条数.
  */
 int brc_init(const char *uname, const char *bname)
@@ -130,6 +130,17 @@ int brc_init(const char *uname, const char *bname)
 	brc.list[0] = 1;
 	brc.num = 1;
 	return 0;
+}
+
+/**
+ * @copydoc brc_init
+ * 先清空当前未读标记缓存, 适用于web.
+ * @see brc_init
+ */
+int brc_initialize(const char *uname, const char *bname)
+{
+	brc.buf[0] = '\0';
+	return brc_init(uname, bname);
 }
 
 void brc_mark_as_read(int64_t id)
@@ -223,12 +234,6 @@ void brc_zapbuf(int *zbuf)
 {
 	if (*zbuf > 0 && brc.num > 0)
 		*zbuf = brc.list[0];
-}
-
-int brc_fcgi_init(const char *user, const char *board)
-{
-	brc.buf[0] = '\0';
-	return brc_init(user, board);
 }
 
 bool brc_board_unread(const char *user, const char *bname, int bid)

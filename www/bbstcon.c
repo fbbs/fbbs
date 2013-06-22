@@ -116,7 +116,7 @@ int bbstcon_main(void)
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session();
 
-	brc_fcgi_init(currentuser.userid, board.name);
+	brc_initialize(currentuser.userid, board.name);
 
 	bool asc = action != 'p';
 	if (c > count)

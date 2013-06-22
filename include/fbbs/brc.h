@@ -5,6 +5,7 @@
 
 extern void brc_update(const char *userid, const char *board);
 extern int brc_init(const char *uname, const char *bname);
+extern int brc_initialize(const char *uname, const char *bname);
 
 extern void brc_addlist_legacy(const char *filename);
 extern bool brc_unread_legacy(const char *filename);
@@ -17,7 +18,6 @@ extern void brc_clear(uint32_t id);
 extern void brc_clear_all(int bid);
 
 extern void brc_zapbuf(int *zbuf);
-extern int brc_fcgi_init(const char *user, const char *board);
 extern bool brc_board_unread(const char *user, const char *bname, int bid);
 
 #endif // FB_BRC_H

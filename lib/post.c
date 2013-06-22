@@ -712,7 +712,7 @@ post_id_t publish_post(const post_request_t *pr)
 		set_last_post_id(pr->board->id, pid);
 
 		if (!pr->autopost) {
-			brc_fcgi_init(uname, pr->board->name);
+			brc_initialize(uname, pr->board->name);
 			brc_mark_as_read(pid);
 			brc_update(uname, pr->board->name);
 		}

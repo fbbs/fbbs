@@ -130,7 +130,7 @@ static int bbsdoc(post_list_type_e type)
 	printf("<bbsdoc>");
 	print_session();
 
-	brc_fcgi_init(currentuser.userid, board.name);
+	brc_initialize(currentuser.userid, board.name);
 
 	post_index_record_t pir;
 	post_index_record_open(&pir);
@@ -425,7 +425,7 @@ int web_forum(void)
 	if (get_doc_mode() != MODE_FORUM)
 		set_doc_mode(MODE_FORUM);
 
-	brc_fcgi_init(currentuser.userid, board.name);
+	brc_initialize(currentuser.userid, board.name);
 
 	int count = TOPICS_PER_PAGE;
 	int end = strtoll(get_param("start"), NULL, 10);

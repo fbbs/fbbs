@@ -122,7 +122,7 @@ int bbscon_main(void)
 
 	printf("</po></bbscon>");
 
-	brc_fcgi_init(currentuser.userid, board.name);
+	brc_initialize(currentuser.userid, board.name);
 	brc_mark_as_read(info.p.id);
 	brc_update(currentuser.userid, board.name);
 
@@ -152,7 +152,7 @@ int bbsgcon_main(void)
 	xml_print_post_wrapper(file, 0);
 
 	printf("</po></bbscon>");
-	brc_fcgi_init(currentuser.userid, board.name);
+	brc_initialize(currentuser.userid, board.name);
 	brc_addlist_legacy(f);
 	brc_update(currentuser.userid, board.name);
 	return 0;

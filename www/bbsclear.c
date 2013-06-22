@@ -15,7 +15,7 @@ int bbsclear_main(void)
 		return BBS_ENOBRD;
 
 	const char *start = get_param("start");
-	brc_fcgi_init(currentuser.userid, board.name);
+	brc_initialize(currentuser.userid, board.name);
 	brc_clear_all(board.id);
 	brc_update(currentuser.userid, board.name);
 	char buf[STRLEN];
