@@ -9,11 +9,11 @@ extern int brc_initial(const char* userid, const char *board);
 extern void brc_addlist_legacy(const char *filename);
 extern bool brc_unread_legacy(const char *filename);
 
-extern void brc_mark_as_read(int64_t id);
-extern bool brc_unread(int64_t id);
+extern void brc_mark_as_read(uint32_t id);
+extern bool brc_unread(uint32_t id);
 extern int brc_first_unread(void);
 extern int brc_last_read(void);
-extern void brc_clear(int64_t id);
+extern void brc_clear(uint32_t id);
 extern void brc_clear_all(int bid);
 
 extern void brc_zapbuf(int *zbuf);
