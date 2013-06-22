@@ -622,7 +622,7 @@ static char *boardmargin(void)
 		//% snprintf(buf, sizeof(buf), "讨论区 [%s]", currboard);
 		snprintf(buf, sizeof(buf), "\xcc\xd6\xc2\xdb\xc7\xf8 [%s]", currboard);
 	else {
-		brc_initial(currentuser.userid, DEFAULTBOARD);
+		brc_init(currentuser.userid, DEFAULTBOARD);
 
 		board_t board;
 		get_board(DEFAULTBOARD, &board);

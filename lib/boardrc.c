@@ -96,29 +96,37 @@ void brc_update(const char *userid, const char *board)
 	brc.changed = false;
 }
 
-int brc_initial(const char *userid, const char *board)
+/**
+ * 读入指定用户在指定版面的阅读记录.
+ * @param uname 用户名
+ * @param bname 版面名
+ * @return 如果该版之前没有记录, 返回0; 否则返回当前该版已有的记录条数.
+ */
+int brc_init(const char *uname, const char *bname)
 {
-	char dirfile[STRLEN], *ptr;
-	int fd;
-	brc_update(userid, board);
+	brc_update(uname, bname);
 	brc.changed = false;
 	if (brc.buf[0] == '\0') {
-		sethomefile(dirfile, userid, ".boardrc");
-		if ((fd = open(dirfile, O_RDONLY)) != -1) {
+		char file[HOMELEN];
+		sethomefile(file, uname, ".boardrc");
+		int fd = open(file, O_RDONLY);
+		if (fd != -1) {
 			brc.size = read(fd, brc.buf, sizeof(brc.buf));
-			close (fd);
+			close(fd);
 		} else {
 			brc.size = 0;
 		}
 	}
-	ptr = brc.buf;
-	while (ptr < &brc.buf[brc.size] && (*ptr >= ' ' && *ptr <= '~')) {
+
+	char *ptr = brc.buf, *end = brc.buf + brc.size;
+	while (ptr < end && (*ptr >= ' ' && *ptr <= '~')) {
 		ptr = brc_get_record(ptr, brc.name, &brc.num, brc.list);
-		if (strncmp (brc.name, board, BRC_STRLEN) == 0) {
+		if (strneq(brc.name, bname, BRC_STRLEN)) {
 			return brc.num;
 		}
 	}
-	strlcpy(brc.name, board, BRC_STRLEN);
+
+	strlcpy(brc.name, bname, sizeof(brc.name));
 	brc.list[0] = 1;
 	brc.num = 1;
 	return 0;
@@ -220,13 +228,13 @@ void brc_zapbuf(int *zbuf)
 int brc_fcgi_init(const char *user, const char *board)
 {
 	brc.buf[0] = '\0';
-	return brc_initial(user, board);
+	return brc_init(user, board);
 }
 
 bool brc_board_unread(const char *user, const char *bname, int bid)
 {
 	brc.buf[0] = '\0';
-	if (!brc_initial(currentuser.userid, bname)) {
+	if (!brc_init(currentuser.userid, bname)) {
 		return true;
 	} else {
 		if (brc_unread(get_last_post_id(bid)))

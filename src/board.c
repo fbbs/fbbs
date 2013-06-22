@@ -294,7 +294,7 @@ static int tui_favorite_rm(tui_list_t *p)
 
 static bool check_newpost(board_t *board)
 {
-	if (!brc_initial(currentuser.userid, board->name)) {
+	if (!brc_init(currentuser.userid, board->name)) {
 		return true;
 	} else {
 		if (brc_unread(get_last_post_id(board->id))) {
@@ -526,7 +526,7 @@ static int unread_position(board_t *bp)
 	int offset = offsetof(struct fileheader, filename);
 	int total = lseek(fd, 0, SEEK_END) / sizeof(fh), num = total - 1;
 
-	if (!brc_initial(currentuser.userid, bp->name))
+	if (!brc_init(currentuser.userid, bp->name))
 		return 0;
 
 	if (brc_unread(get_last_post_id(bp->id))) {
@@ -779,7 +779,7 @@ static int read_board(tui_list_t *p)
 			return PARTUPDATE;
 		}
 	} else {
-		brc_initial(currentuser.userid, bp->name);
+		brc_init(currentuser.userid, bp->name);
 
 		board_t orig_board = *bp;
 		convert_g2u(bp->descr, orig_board.descr);

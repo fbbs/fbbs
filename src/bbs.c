@@ -291,7 +291,7 @@ int tui_select_board(int current_bid)
 	set_user_status(ST_READING);
 	if (board.id != current_bid) {
 		brc_update(currentuser.userid, currboard);
-		brc_initial(currentuser.userid, bname);
+		brc_init(currentuser.userid, bname);
 		change_board(&board);
 		set_current_board(board.id);
 		return board.id;
@@ -1544,7 +1544,7 @@ int board_read(void)
 		return FULLUPDATE;
 	}
 
-	brc_initial(currentuser.userid, currboard);
+	brc_init(currentuser.userid, currboard);
 	set_current_board(board.id);
 
 	setvfile(notename, currboard, "notes");
