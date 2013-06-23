@@ -363,6 +363,7 @@ typedef int (*more_handler_t)(more_file_t *, int);
 /**
  * Open a file as more stream.
  * @param file File to open.
+ * @param size Length of file name buffer.
  * @param width Line width.
  * @param func A function to fill the stream with file content.
  * @return an ::more_file_t pointer on success, NULL on error.

@@ -419,6 +419,7 @@ int do_reply(struct fileheader *fh) {
  * @param orig The file to be quoted.
  * @param file The output file.
  * @param mode Quote mode (R/S/Y/A/N).
+ * @param anony Anonymous post or not.
  */
 // TODO: do not use quote_file in callers.
 void do_quote(const char *orig, const char *file, char mode, bool anony)

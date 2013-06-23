@@ -14,10 +14,10 @@ const char *fb_ctime(const fb_time_t *t)
 }
 
 /**
- * Convert time to string in specified format.
- * @param time time to convert.
- * @param mode specified format.
- * @return converted string.
+ * 格式化时间.
+ * @param time 时间.
+ * @param fmt 格式.
+ * @return 时间字符串.
  */
 char *format_time(fb_time_t time, time_format_e fmt)
 {
