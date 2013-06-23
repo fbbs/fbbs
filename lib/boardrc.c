@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include "bbs.h"
+#include "fbbs/brc.h"
 #include "fbbs/board.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
@@ -17,7 +18,6 @@ enum {
 	BRC_ITEMSIZE = BRC_STRLEN + 1 + BRC_MAXNUM * sizeof(int),
 };
 
-typedef uint32_t brc_item_t;
 typedef uint_t brc_size_t;
 
 /** 所有已读记录的缓存 */
@@ -167,32 +167,33 @@ int brc_initialize(const char *uname, const char *bname)
 	return brc_init(uname, bname);
 }
 
-void brc_mark_as_read(int64_t id)
+/**
+ * 在当前版面已读标记中加入一项.
+ * @param item 要加入的项目
+ */
+void brc_mark_as_read(brc_item_t item)
 {
-	int r = (int)id;
-
 	if (!brc.size) {
-		brc.list[brc.size++] = r;
+		brc.list[brc.size++] = item;
 		brc.changed = true;
 		return;
 	}
 
 	for (int i = 0; i < brc.size; ++i) {
-		if (r == brc.list[i]) {
+		if (item == brc.list[i]) {
 			return;
-		} else if (r > brc.list[i]) {
+		} else if (item > brc.list[i]) {
 			if (brc.size < BRC_MAXNUM)
 				brc.size++;
-			for (int j = brc.size - 1; j > i; --j) {
-				brc.list[j] = brc.list[j - 1];
-			}
-			brc.list[i] = r;
+			memmove(brc.list + i + 1, brc.list + i,
+					(brc.size - i - 1) * sizeof(*brc.list));
+			brc.list[i] = item;
 			brc.changed = true;
 			return;
 		}
 	}
 	if (brc.size < BRC_MAXNUM) {
-		brc.list[brc.size++] = r;
+		brc.list[brc.size++] = item;
 		brc.changed = true;
 	}
 }
@@ -203,20 +204,23 @@ void brc_addlist_legacy(const char *filename)
 		return;
 	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.')
 		return;
-	brc_mark_as_read(strtol(filename + 2, NULL, 10));
+	brc_mark_as_read(strtoul(filename + 2, NULL, 10));
 }
 
-bool brc_unread(int64_t id)
+/**
+ * 测试当前版面某一项目是否已读.
+ * @param item 要测试的项目
+ * @return 已读返回false, 未读返回true.
+ */
+bool brc_unread(brc_item_t item)
 {
-	int r = (int)id;
-
 	if (!brc.size)
 		return true;
 
 	for (int i = 0; i < brc.size; ++i) {
-		if (r > brc.list[i])
+		if (item > brc.list[i])
 			return true;
-		else if (r == brc.list[i])
+		else if (item == brc.list[i])
 			return false;
 	}
 	return false;
@@ -226,29 +230,34 @@ bool brc_unread_legacy(const char *filename)
 {
 	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.')
 		return false;
-	return brc_unread(strtol(filename + 2, NULL, 10));
+	return brc_unread(strtoul(filename + 2, NULL, 10));
 }
 
-int brc_first_unread(void)
-{
-	if (brc.size && brc.size <= BRC_MAXNUM)
-		return brc.list[brc.size - 1] + 1;
-	return 1;
-}
-
-int brc_last_read(void)
+/**
+ * 获得当前版面已读的最新项目编号.
+ * @return 当前版面已读的最新项目编号, 如果没有记录则返回0.
+ */
+brc_item_t brc_last_read(void)
 {
 	if (brc.size)
 		return brc.list[0];
 	return 0;
 }
 
-void brc_clear(int64_t id)
+/**
+ * 将指定项目以前的项目都标记为已读.
+ * @param item 要标记的项目
+ */
+void brc_clear(brc_item_t item)
 {
-	for (int i = id - BRC_MAXNUM + 1; i <= id; ++i)
+	for (int i = item - BRC_MAXNUM + 1; i <= item; ++i)
 		brc_mark_as_read(i);
 }
 
+/**
+ * 将指定版面的所有项目标记为已读.
+ * @param bid 要标记的版面编号
+ */
 void brc_clear_all(int bid)
 {
 	brc_clear(get_last_post_id(bid));
@@ -260,10 +269,17 @@ void brc_zapbuf(int *zbuf)
 		*zbuf = brc.list[0];
 }
 
-bool brc_board_unread(const char *user, const char *bname, int bid)
+/**
+ * 判断一个版面是否有未读项目
+ * @param uname 用户名
+ * @param bname 版面名
+ * @param bid 版面编号
+ * @return 如果该版面有未读项目返回true, 否则返回false.
+ */
+bool brc_board_unread(const char *uname, const char *bname, int bid)
 {
 	brc_buf.ptr[0] = '\0';
-	if (!brc_init(currentuser.userid, bname)) {
+	if (!brc_init(uname, bname)) {
 		return true;
 	} else {
 		if (brc_unread(get_last_post_id(bid)))
