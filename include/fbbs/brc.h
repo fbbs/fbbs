@@ -5,7 +5,7 @@
 
 typedef uint32_t brc_item_t;
 
-extern void brc_update(const char *userid, const char *board);
+extern void brc_update(const char *uname, const char *bname);
 extern int brc_init(const char *uname, const char *bname);
 extern int brc_initialize(const char *uname, const char *bname);
 

@@ -79,44 +79,62 @@ static char *brc_put_record(char *ptr, const brc_t *brcp)
 	return ptr;
 }
 
-void brc_update(const char *userid, const char *board)
+static void brc_load(const char *uname, brc_buf_t *buf)
 {
-	char dirfile[STRLEN], *ptr;
-	char tmp_buf[BRC_MAXSIZE], *tmp;
-	int fd, tmp_size;
+	char file[HOMELEN];
+	sethomefile(file, uname, ".boardrc");
+	int fd = open(file, O_RDONLY);
+	if (fd != -1) {
+		buf->size = file_read(fd, buf->ptr, sizeof(buf->ptr));
+		close(fd);
+	} else {
+		buf->size = 0;
+	}
+}
+
+static void brc_save(const char *uname, const brc_buf_t *buf)
+{
+	char file[HOMELEN];
+	sethomefile(file, uname, ".boardrc");
+	int fd = open(file, O_WRONLY | O_CREAT, 0644);
+	if (fd != -1) {
+		ftruncate(fd, 0);
+		file_write(fd, buf->ptr, buf->size);
+		close(fd);
+	}
+}
+
+/**
+ * 将已读记录写入磁盘.
+ * @param uname 用户名
+ * @param bname 版面名
+ */
+void brc_update(const char *uname, const char *bname)
+{
 	if (!brc.changed) {
 		return;
 	}
-	ptr = brc_buf.ptr;
+
+	char *ptr = brc_buf.ptr;
 	if (brc.size) {
 		ptr = brc_put_record(ptr, &brc);
 	}
-	if (1) {
-		sethomefile(dirfile, userid, ".boardrc");
-		if ((fd = open(dirfile, O_RDONLY)) != -1) {
-			tmp_size = read(fd, tmp_buf, sizeof (tmp_buf));
-			if (tmp_size > sizeof(tmp_buf) - BRC_ITEMSIZE)
-				tmp_size = sizeof(tmp_buf) - BRC_ITEMSIZE*2 + 1;
-			close(fd);
-		} else {
-			tmp_size = 0;
-		}
-	}
-	tmp = tmp_buf;
-	while (tmp < &tmp_buf[tmp_size] && (*tmp >= ' ' && *tmp <= '~')) {
+
+	brc_buf_t buf;
+	brc_load(uname, &buf);
+	if (buf.size > sizeof(buf.ptr) - BRC_ITEMSIZE)
+		buf.size = sizeof(buf.ptr) - BRC_ITEMSIZE * 2 + 1;
+
+	char *tmp = buf.ptr, *end = buf.ptr + buf.size;
+	while (tmp < end && (*tmp >= ' ' && *tmp <= '~')) {
 		brc_t tmp_brc;
-		tmp = brc_get_record(tmp, &tmp_brc);
-		if (!strneq(tmp_brc.name, board, sizeof(tmp_brc.name))) {
+		tmp = brc_get_record(ptr, &tmp_brc);
+		if (!strneq(tmp_brc.name, bname, sizeof(tmp_brc.name))) {
 			ptr = brc_put_record(ptr, &tmp_brc);
 		}
 	}
 	brc_buf.size = (brc_size_t) (ptr - brc_buf.ptr);
-
-	if ((fd = open(dirfile, O_WRONLY | O_CREAT, 0644)) != -1) {
-		ftruncate(fd, 0);
-		write(fd, brc_buf.ptr, brc_buf.size);
-		close(fd);
-	}
+	brc_save(uname, &brc_buf);
 	brc.changed = false;
 }
 
@@ -131,15 +149,7 @@ int brc_init(const char *uname, const char *bname)
 	brc_update(uname, bname);
 	brc.changed = false;
 	if (brc_buf.ptr[0] == '\0') {
-		char file[HOMELEN];
-		sethomefile(file, uname, ".boardrc");
-		int fd = open(file, O_RDONLY);
-		if (fd != -1) {
-			brc_buf.size = read(fd, brc_buf.ptr, sizeof(brc_buf.ptr));
-			close(fd);
-		} else {
-			brc_buf.size = 0;
-		}
+		brc_load(uname, &brc_buf);
 	}
 
 	char *ptr = brc_buf.ptr, *end = brc_buf.ptr + brc_buf.size;
