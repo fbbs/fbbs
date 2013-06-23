@@ -18,11 +18,14 @@ typedef uint32_t brc_item_t;
 
 static struct {
 	int size;
+	char ptr[BRC_MAXSIZE];
+} brc_buf;
+
+static struct {
 	int num;
 	bool changed;
 	char name[BRC_STRLEN];
 	brc_item_t list[BRC_MAXNUM];
-	char buf[BRC_MAXSIZE];
 } brc;
 
 static char *brc_get_record(char *ptr, char *name, int *pnum, brc_item_t *list)
@@ -30,11 +33,11 @@ static char *brc_get_record(char *ptr, char *name, int *pnum, brc_item_t *list)
 	strlcpy(name, ptr, BRC_STRLEN);
 	ptr += BRC_STRLEN;
 	int num = (*ptr++) & 0xff;
-	char *tmp = ptr + num * sizeof (int);
+	char *tmp = ptr + num * sizeof(brc_item_t);
 	if (num > BRC_MAXNUM)
 		num = BRC_MAXNUM;
 	*pnum = num;
-	memcpy (list, ptr, num * sizeof (int));
+	memcpy(list, ptr, num * sizeof(brc_item_t));
 	return tmp;
 }
 
@@ -64,7 +67,7 @@ void brc_update(const char *userid, const char *board)
 	if (!brc.changed) {
 		return;
 	}
-	ptr = brc.buf;
+	ptr = brc_buf.ptr;
 	if (brc.num > 0) {
 		ptr = brc_put_record(ptr, brc.name, brc.num, brc.list);
 	}
@@ -86,11 +89,11 @@ void brc_update(const char *userid, const char *board)
 			ptr = brc_put_record(ptr, tmp_name, tmp_num, tmp_list);
 		}
 	}
-	brc.size = (int) (ptr - brc.buf);
+	brc_buf.size = (int) (ptr - brc_buf.ptr);
 
 	if ((fd = open(dirfile, O_WRONLY | O_CREAT, 0644)) != -1) {
 		ftruncate(fd, 0);
-		write(fd, brc.buf, brc.size);
+		write(fd, brc_buf.ptr, brc_buf.size);
 		close(fd);
 	}
 	brc.changed = false;
@@ -106,19 +109,19 @@ int brc_init(const char *uname, const char *bname)
 {
 	brc_update(uname, bname);
 	brc.changed = false;
-	if (brc.buf[0] == '\0') {
+	if (brc_buf.ptr[0] == '\0') {
 		char file[HOMELEN];
 		sethomefile(file, uname, ".boardrc");
 		int fd = open(file, O_RDONLY);
 		if (fd != -1) {
-			brc.size = read(fd, brc.buf, sizeof(brc.buf));
+			brc_buf.size = read(fd, brc_buf.ptr, sizeof(brc_buf.ptr));
 			close(fd);
 		} else {
-			brc.size = 0;
+			brc_buf.size = 0;
 		}
 	}
 
-	char *ptr = brc.buf, *end = brc.buf + brc.size;
+	char *ptr = brc_buf.ptr, *end = brc_buf.ptr + brc_buf.size;
 	while (ptr < end && (*ptr >= ' ' && *ptr <= '~')) {
 		ptr = brc_get_record(ptr, brc.name, &brc.num, brc.list);
 		if (strneq(brc.name, bname, BRC_STRLEN)) {
@@ -139,7 +142,7 @@ int brc_init(const char *uname, const char *bname)
  */
 int brc_initialize(const char *uname, const char *bname)
 {
-	brc.buf[0] = '\0';
+	brc_buf.ptr[0] = '\0';
 	return brc_init(uname, bname);
 }
 
@@ -238,7 +241,7 @@ void brc_zapbuf(int *zbuf)
 
 bool brc_board_unread(const char *user, const char *bname, int bid)
 {
-	brc.buf[0] = '\0';
+	brc_buf.ptr[0] = '\0';
 	if (!brc_init(currentuser.userid, bname)) {
 		return true;
 	} else {
