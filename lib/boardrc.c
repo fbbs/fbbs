@@ -57,17 +57,24 @@ static char *brc_get_record(char *ptr, brc_t *brcp)
 	return ptr + size * sizeof(brc_item_t);
 }
 
-static char *brc_put_record(char *ptr, const char *name, int num,
-		brc_item_t *list)
+/**
+ * 将一段记录写入已读记录缓存
+ * @param[out] ptr 指向已读记录缓存的指针
+ * @param[in] brcp 版面已读记录指针
+ * @return 写入后的末端指针
+ */
+static char *brc_put_record(char *ptr, const brc_t *brcp)
 {
-	if (num> 0) {
-		if (num > BRC_MAXNUM)
-			num = BRC_MAXNUM;
-		strlcpy(ptr, name, BRC_STRLEN);
+	if (brcp->size) {
+		brc_size_t size = brcp->size;
+		if (size > BRC_MAXNUM)
+			size = BRC_MAXNUM;
+
+		strlcpy(ptr, brcp->name, BRC_STRLEN);
 		ptr += BRC_STRLEN;
-		*ptr++ = num;
-		memcpy(ptr, list, num * sizeof(*list));
-		ptr += num * sizeof(*list);
+		*ptr++ = size;
+		memcpy(ptr, brcp->list, size * sizeof(*brcp->list));
+		ptr += size * sizeof(*brcp->list);
 	}
 	return ptr;
 }
@@ -76,15 +83,13 @@ void brc_update(const char *userid, const char *board)
 {
 	char dirfile[STRLEN], *ptr;
 	char tmp_buf[BRC_MAXSIZE], *tmp;
-	char tmp_name[BRC_STRLEN];
-	brc_item_t tmp_list[BRC_MAXNUM];
 	int fd, tmp_size;
 	if (!brc.changed) {
 		return;
 	}
 	ptr = brc_buf.ptr;
 	if (brc.size) {
-		ptr = brc_put_record(ptr, brc.name, brc.size, brc.list);
+		ptr = brc_put_record(ptr, &brc);
 	}
 	if (1) {
 		sethomefile(dirfile, userid, ".boardrc");
@@ -99,10 +104,10 @@ void brc_update(const char *userid, const char *board)
 	}
 	tmp = tmp_buf;
 	while (tmp < &tmp_buf[tmp_size] && (*tmp >= ' ' && *tmp <= '~')) {
-		brc_size_t tmp_size;
-		tmp = brc_get_record(tmp, tmp_name, &tmp_size, tmp_list);
-		if (strncmp(tmp_name, board, BRC_STRLEN) != 0) {
-			ptr = brc_put_record(ptr, tmp_name, tmp_size, tmp_list);
+		brc_t tmp_brc;
+		tmp = brc_get_record(tmp, &tmp_brc);
+		if (!strneq(tmp_brc.name, board, sizeof(tmp_brc.name))) {
+			ptr = brc_put_record(ptr, &tmp_brc);
 		}
 	}
 	brc_buf.size = (brc_size_t) (ptr - brc_buf.ptr);
