@@ -7,6 +7,9 @@
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 
+/** @defgroup readmark 已读标记 */
+/** @{ */
+
 enum {
 	BRC_MAXSIZE = 50000,
 	BRC_MAXNUM = 60,
@@ -17,30 +20,41 @@ enum {
 typedef uint32_t brc_item_t;
 typedef uint_t brc_size_t;
 
-static struct {
-	brc_size_t size;
-	char ptr[BRC_MAXSIZE];
-} brc_buf;
+/** 所有已读记录的缓存 */
+typedef struct {
+	brc_size_t size; ///< 缓存已用长度
+	char ptr[BRC_MAXSIZE];  ///< 缓存区
+} brc_buf_t;
 
-static struct {
-	brc_size_t size;
-	bool changed;
-	char name[BRC_STRLEN];
-	brc_item_t list[BRC_MAXNUM];
-} brc;
+/** 一个版面的已读记录 */
+typedef struct {
+	brc_size_t size;  ///< 已读记录条数
+	bool changed;  ///< 是否修改过
+	char name[BRC_STRLEN];  ///< 索引名(版面名)
+	brc_item_t list[BRC_MAXNUM];  ///< 存储已读记录的数组
+} brc_t;
 
-static char *brc_get_record(char *ptr, char *name, brc_size_t *psize,
-		brc_item_t *list)
+static brc_buf_t brc_buf; ///< 所有已读记录的缓存
+static brc_t brc; ///< 当前的版面已读记录变量
+
+/**
+ * 读取已读记录缓存中的一段记录.
+ * @param[in] ptr 指向已读记录缓存其中一段的指针
+ * @param[out] brcp 版面已读记录指针
+ * @return 指向下一段记录的指针
+ */
+static char *brc_get_record(char *ptr, brc_t *brcp)
 {
-	strlcpy(name, ptr, BRC_STRLEN);
+	strlcpy(brcp->name, ptr, sizeof(brcp->name));
 	ptr += BRC_STRLEN;
+
 	brc_size_t size = *ptr++;
-	char *tmp = ptr + size * sizeof(brc_item_t);
 	if (size > BRC_MAXNUM)
 		size = BRC_MAXNUM;
-	*psize = size;
-	memcpy(list, ptr, size * sizeof(brc_item_t));
-	return tmp;
+	brcp->size = size;
+
+	memcpy(brcp->list, ptr, size * sizeof(brc_item_t));
+	return ptr + size * sizeof(brc_item_t);
 }
 
 static char *brc_put_record(char *ptr, const char *name, int num,
@@ -102,7 +116,7 @@ void brc_update(const char *userid, const char *board)
 }
 
 /**
- * 读入指定用户在指定版面的阅读记录.
+ * 读入指定用户在指定版面的已读记录.
  * @param[in] uname 用户名
  * @param[in] bname 版面名
  * @return 如果该版之前没有记录, 返回0; 否则返回当前该版已有的记录条数.
@@ -125,8 +139,8 @@ int brc_init(const char *uname, const char *bname)
 
 	char *ptr = brc_buf.ptr, *end = brc_buf.ptr + brc_buf.size;
 	while (ptr < end && (*ptr >= ' ' && *ptr <= '~')) {
-		ptr = brc_get_record(ptr, brc.name, &brc.size, brc.list);
-		if (strneq(brc.name, bname, BRC_STRLEN)) {
+		ptr = brc_get_record(ptr, &brc);
+		if (strneq(brc.name, bname, sizeof(brc.name))) {
 			return brc.size;
 		}
 	}
@@ -139,7 +153,7 @@ int brc_init(const char *uname, const char *bname)
 
 /**
  * @copydoc brc_init
- * 先清空当前未读标记缓存, 适用于web.
+ * 先清空已读记录缓存, 适用于web.
  * @see brc_init
  */
 int brc_initialize(const char *uname, const char *bname)
@@ -252,3 +266,5 @@ bool brc_board_unread(const char *user, const char *bname, int bid)
 		return false;
 	}
 }
+
+/** @} */
