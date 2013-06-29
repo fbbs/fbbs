@@ -31,7 +31,7 @@ typedef struct {
 	brc_size_t size;  ///< 已读记录条数
 	bool changed;  ///< 是否修改过
 	char name[BRC_STRLEN];  ///< 索引名(版面名)
-	brc_item_t list[BRC_MAXNUM];  ///< 存储已读记录的数组
+	brc_item_t items[BRC_MAXNUM];  ///< 存储已读记录的数组
 } brc_t;
 
 static brc_buf_t brc_buf; ///< 所有已读记录的缓存
@@ -53,8 +53,8 @@ static char *brc_get_record(char *ptr, brc_t *brcp)
 		size = BRC_MAXNUM;
 	brcp->size = size;
 
-	memcpy(brcp->list, ptr, size * sizeof(brc_item_t));
-	return ptr + size * sizeof(brc_item_t);
+	memcpy(brcp->items, ptr, size * sizeof(*brcp->items));
+	return ptr + size * sizeof(*brcp->items);
 }
 
 /**
@@ -73,8 +73,8 @@ static char *brc_put_record(char *ptr, const brc_t *brcp)
 		strlcpy(ptr, brcp->name, BRC_STRLEN);
 		ptr += BRC_STRLEN;
 		*ptr++ = size;
-		memcpy(ptr, brcp->list, size * sizeof(*brcp->list));
-		ptr += size * sizeof(*brcp->list);
+		memcpy(ptr, brcp->items, size * sizeof(*brcp->items));
+		ptr += size * sizeof(*brcp->items);
 	}
 	return ptr;
 }
@@ -161,7 +161,7 @@ int brc_init(const char *uname, const char *bname)
 	}
 
 	strlcpy(brc.name, bname, sizeof(brc.name));
-	brc.list[0] = 1;
+	brc.items[0] = 1;
 	brc.size = 1;
 	return 0;
 }
@@ -184,26 +184,26 @@ int brc_initialize(const char *uname, const char *bname)
 void brc_mark_as_read(brc_item_t item)
 {
 	if (!brc.size) {
-		brc.list[brc.size++] = item;
+		brc.items[brc.size++] = item;
 		brc.changed = true;
 		return;
 	}
 
 	for (int i = 0; i < brc.size; ++i) {
-		if (item == brc.list[i]) {
+		if (item == brc.items[i]) {
 			return;
-		} else if (item > brc.list[i]) {
+		} else if (item > brc.items[i]) {
 			if (brc.size < BRC_MAXNUM)
 				brc.size++;
-			memmove(brc.list + i + 1, brc.list + i,
-					(brc.size - i - 1) * sizeof(*brc.list));
-			brc.list[i] = item;
+			memmove(brc.items + i + 1, brc.items + i,
+					(brc.size - i - 1) * sizeof(*brc.items));
+			brc.items[i] = item;
 			brc.changed = true;
 			return;
 		}
 	}
 	if (brc.size < BRC_MAXNUM) {
-		brc.list[brc.size++] = item;
+		brc.items[brc.size++] = item;
 		brc.changed = true;
 	}
 }
@@ -228,9 +228,9 @@ bool brc_unread(brc_item_t item)
 		return true;
 
 	for (int i = 0; i < brc.size; ++i) {
-		if (item > brc.list[i])
+		if (item > brc.items[i])
 			return true;
-		else if (item == brc.list[i])
+		else if (item == brc.items[i])
 			return false;
 	}
 	return false;
@@ -250,7 +250,7 @@ bool brc_unread_legacy(const char *filename)
 brc_item_t brc_last_read(void)
 {
 	if (brc.size)
-		return brc.list[0];
+		return brc.items[0];
 	return 0;
 }
 
@@ -276,7 +276,7 @@ void brc_clear_all(int bid)
 void brc_zapbuf(int *zbuf)
 {
 	if (*zbuf > 0 && brc.size)
-		*zbuf = brc.list[0];
+		*zbuf = brc.items[0];
 }
 
 /**
