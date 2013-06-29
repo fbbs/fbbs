@@ -297,7 +297,7 @@ static bool check_newpost(board_t *board)
 	if (!brc_init(currentuser.userid, board->name)) {
 		return true;
 	} else {
-		if (brc_unread(get_last_post_id(board->id))) {
+		if (brc_unread(get_last_post_time(board->id))) {
 			return true;
 		}
 	}
@@ -529,7 +529,7 @@ static int unread_position(board_t *bp)
 	if (!brc_init(currentuser.userid, bp->name))
 		return 0;
 
-	if (brc_unread(get_last_post_id(bp->id))) {
+	if (brc_unread(get_last_post_time(bp->id))) {
 		char filename[STRLEN];
 		num = total - 1;
 		int step = 4;

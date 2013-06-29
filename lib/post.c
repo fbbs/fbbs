@@ -639,7 +639,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 	if (pi.id) {
 		pi.reid_delta = pr->reid ? pi.id - pr->reid : 0;
 		pi.tid_delta = pr->tid ? pi.id - pr->tid : 0;
-		pi.stamp = time(NULL);
+		pi.stamp = fb_time();
 		pi.uid = get_user_id(uname);
 		pi.flag = (pr->marked ? POST_FLAG_MARKED : 0)
 				| (pr->locked ? POST_FLAG_LOCKED : 0);
@@ -709,7 +709,7 @@ post_id_t publish_post(const post_request_t *pr)
 	free(content);
 
 	if (pid) {
-		set_last_post_id(pr->board->id, pid);
+		set_last_post_time(pr->board->id, fb_time());
 
 		if (!pr->autopost) {
 			brc_initialize(uname, pr->board->name);
@@ -1231,16 +1231,16 @@ int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
 
 #define LAST_POST_KEY  "last_post"
 
-bool set_last_post_id(int bid, post_id_t pid)
+bool set_last_post_time(int bid, fb_time_t stamp)
 {
-	mdb_res_t *res = mdb_cmd("HSET", LAST_POST_KEY " %d %"PRIdPID, bid, pid);
+	mdb_res_t *res = mdb_cmd("HSET", LAST_POST_KEY " %d %"PRIdFBT, bid, stamp);
 	mdb_clear(res);
 	return res;
 }
 
-post_id_t get_last_post_id(int bid)
+fb_time_t get_last_post_time(int bid)
 {
-	return mdb_integer(0, "HGET", LAST_POST_KEY " %d", bid);
+	return (fb_time_t) mdb_integer(0, "HGET", LAST_POST_KEY " %d", bid);
 }
 
 static void adjust_user_post_count(const char *uname, int delta)

@@ -127,9 +127,9 @@ int bbssnd_main(void)
 			return BBS_EINVAL;
 	}
 
-	time_t now = time(NULL);
-	int diff = now - get_last_post_time();
-	set_last_post_time(now);
+	time_t now = fb_time();
+	int diff = now - get_my_last_post_time();
+	set_my_last_post_time(now);
 	if (diff < 6)
 		return BBS_EPFREQ;
 

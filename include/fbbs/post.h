@@ -229,8 +229,8 @@ extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
 		char *file, size_t size);
 extern char *convert_file_to_utf8_content(const char *file);
 
-extern bool set_last_post_id(int bid, post_id_t pid);
-extern post_id_t get_last_post_id(int bid);
+extern bool set_last_post_time(int bid, fb_time_t stamp);
+extern fb_time_t get_last_post_time(int bid);
 
 extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
 extern int undelete_posts(post_filter_t *filter);

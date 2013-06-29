@@ -132,7 +132,7 @@ int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)
 	return stay;	
 }
 
-int set_last_post_time(fb_time_t t)
+int set_my_last_post_time(fb_time_t t)
 {
 	mdb_res_t *res = mdb_cmd("HSET",
 			"last_post_time %"PRIdUID" %"PRIdFBT, session.uid, t);
@@ -140,7 +140,7 @@ int set_last_post_time(fb_time_t t)
 	return !res;
 }
 
-fb_time_t get_last_post_time(void)
+fb_time_t get_my_last_post_time(void)
 {
 	return (fb_time_t) mdb_integer(0, "HGET",
 			"last_post_time %"PRIdUID, session.uid);

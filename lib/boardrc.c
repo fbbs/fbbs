@@ -270,7 +270,7 @@ void brc_clear(brc_item_t item)
  */
 void brc_clear_all(int bid)
 {
-	brc_clear(get_last_post_id(bid));
+	brc_clear(get_last_post_time(bid));
 }
 
 void brc_zapbuf(int *zbuf)
@@ -292,7 +292,7 @@ bool brc_board_unread(const char *uname, const char *bname, int bid)
 	if (!brc_init(uname, bname)) {
 		return true;
 	} else {
-		if (brc_unread(get_last_post_id(bid)))
+		if (brc_unread(get_last_post_time(bid)))
 			return true;
 		return false;
 	}

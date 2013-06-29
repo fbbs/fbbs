@@ -1125,8 +1125,8 @@ extern int noreply;
 
 static int tui_new_post(int bid, post_info_t *pi)
 {
-	time_t now = time(NULL);
-	if (now - get_last_post_time() < 3) {
+	time_t now = fb_time();
+	if (now - get_my_last_post_time() < 3) {
 		move(t_lines - 1, 0);
 		clrtoeol();
 		//% 您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。
@@ -1190,8 +1190,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		return FULLUPDATE;
 	}
 
-	now = time(NULL);
-	set_last_post_time(now);
+	set_my_last_post_time(fb_time());
 
 	in_mail = NA;
 
