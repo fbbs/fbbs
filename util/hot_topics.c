@@ -146,6 +146,8 @@ static bitset_t *board_init(void)
 		int bid = db_get_integer(res, i, 0);
 		int perm = db_get_integer(res, i, 1);
 		int flag = db_get_integer(res, i, 2);
+		const char *name = db_get_value(res, i, 3);
+		strlcpy(bnames[bid - 1], name, sizeof(bnames[0]));
 		if (!(flag & (BOARD_DIR_FLAG | BOARD_POST_FLAG | BOARD_JUNK_FLAG))
 				&& !perm) {
 			bitset_set(board_bitset, bid - 1, true);
@@ -238,6 +240,8 @@ static void print_stat(stat_t *stat)
 
 int main(int argc, char **argv)
 {
+	chdir(BBSHOME);
+
 	config_t configs[] = {
 		{ "day", "\xc8\xd5", 10, 1, true }, // 日
 		{ "week", "\xd6\xdc", 50, 7, false }, // 周
@@ -271,5 +275,4 @@ int main(int argc, char **argv)
 
 	free(bs);
 	free(bnames);
-	db_finish();
 }
