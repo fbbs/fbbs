@@ -81,8 +81,8 @@ static void save_post_list_position(tui_list_t *tl)
 static int last_read_filter(void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
-	post_id_t *id = args;
-	if (pib->id > *id)
+	fb_time_t *stamp = args;
+	if (pib->stamp > *stamp)
 		return -1;
 	return 0;
 }
@@ -122,9 +122,9 @@ static tui_list_loader_t post_list_loader(tui_list_t *tl)
 	if (!pl->plp) {
 		pl->plp = get_post_list_position(pl);
 		if (pl->plp->top < 0) {
-			post_id_t id = brc_last_read();
-			int offset = record_search(pl->record, last_read_filter, &id, -1,
-					true);
+			fb_time_t stamp = brc_last_read();
+			int offset = record_search(pl->record, last_read_filter, &stamp,
+					-1, true);
 			if (offset > 0) {
 				tl->cur = offset + 1;
 				tl->begin = tl->cur - tl->lines / 2;
@@ -880,7 +880,7 @@ static int thread_first_unread_filter(void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
 	post_id_t tid = *(post_id_t *) args;
-	if (pib->id - pib->tid_delta == tid && brc_unread(pib->id))
+	if (pib->id - pib->tid_delta == tid && brc_unread(pib->stamp))
 		return 0;
 	return -1;
 }
@@ -920,7 +920,7 @@ static int jump_to_thread_last(tui_list_t *tl, post_info_t *pi)
 static int skip_post(tui_list_t *tl, post_info_t *pi)
 {
 	if (pi) {
-		brc_mark_as_read(pi->id);
+		brc_mark_as_read(pi->stamp);
 		if (++tl->cur >= tl->begin + tl->lines)
 			tl->valid = false;
 	}
@@ -1250,12 +1250,13 @@ static int tui_new_post(int bid, post_info_t *pi)
 		.marked = false,
 		.anony = header.anonymous,
 		.cp = NULL,
+		.stamp = fb_time(),
 	};
 
 	post_id_t pid = publish_post(&req);
 	unlink(file);
 	if (pid) {
-		brc_mark_as_read(pid);
+		brc_mark_as_read(req.stamp);
 
 		char buf[STRLEN];
 		snprintf(buf, sizeof(buf), "posted '%s' on %s",
@@ -1603,7 +1604,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 			if (thread)
 				tid = pi->tid;
 
-			brc_mark_as_read(pi->id);
+			brc_mark_as_read(pi->stamp);
 			last_id = pi->id;
 			pl->current_tid = pi->tid;
 			end = sticky = pi->flag & POST_FLAG_STICKY;
@@ -2400,7 +2401,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case 'K':
 			return skip_post(tl, pi);
 		case 'c':
-			brc_clear(pi->id);
+			brc_clear(pi->stamp);
 			return PARTUPDATE;
 		case 'f':
 			brc_clear_all(pl->bid);

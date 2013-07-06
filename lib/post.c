@@ -639,7 +639,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 	if (pi.id) {
 		pi.reid_delta = pr->reid ? pi.id - pr->reid : 0;
 		pi.tid_delta = pr->tid ? pi.id - pr->tid : 0;
-		pi.stamp = fb_time();
+		pi.stamp = pr->stamp;
 		pi.uid = get_user_id(uname);
 		pi.flag = (pr->marked ? POST_FLAG_MARKED : 0)
 				| (pr->locked ? POST_FLAG_LOCKED : 0);
@@ -658,7 +658,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 	if (pi.id) {
 		post_index_board_t pib = {
 			.id = pi.id, .reid_delta = pi.reid_delta, .tid_delta = pi.tid_delta,
-			.uid = pi.uid, .flag = pi.flag,
+			.uid = pi.uid, .flag = pi.flag, .stamp = pr->stamp, .cstamp = 0,
 		};
 
 		record_t record;
@@ -1319,6 +1319,8 @@ static record_callback_e post_index_trash_insert(void *rec, void *args,
 			.tid_delta = pib->tid_delta,
 			.uid = pib->uid,
 			.flag = pib->flag,
+			.stamp = pib->stamp,
+			.cstamp = pib->cstamp,
 			.estamp = piti->estamp,
 		};
 		if (piti->decrease && (piti->junk || (pib->flag & POST_FLAG_WATER)))
@@ -1396,6 +1398,8 @@ static record_callback_e post_undeletion_callback(void *ptr, void *args,
 		pib->tid_delta = pit->tid_delta;
 		pib->uid = pit->uid;
 		pib->flag = pit->flag;
+		pib->stamp = pit->stamp;
+		pib->cstamp = pit->cstamp;
 		++puc->count;
 		return RECORD_CALLBACK_MATCH;
 	}

@@ -123,7 +123,7 @@ int bbscon_main(void)
 	printf("</po></bbscon>");
 
 	brc_initialize(currentuser.userid, board.name);
-	brc_mark_as_read(info.p.id);
+	brc_mark_as_read(info.p.stamp);
 	brc_update(currentuser.userid, board.name);
 
 	free_post_info_full(&info);

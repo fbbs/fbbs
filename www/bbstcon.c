@@ -128,7 +128,7 @@ int bbstcon_main(void)
 				!isbm && (ip->p.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
 		xml_print_post_wrapper(ip->content, ip->length);
 		puts("</po>");
-		brc_mark_as_read(ip->p.id);
+		brc_mark_as_read(ip->p.stamp);
 	}
 	puts("</bbstcon>");
 	free_post_info_full(p);

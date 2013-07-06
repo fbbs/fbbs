@@ -108,6 +108,7 @@ typedef struct {
 	bool marked;
 	bool anony;
 	convert_t *cp;
+	fb_time_t stamp;
 } post_request_t;
 
 enum {
@@ -128,13 +129,15 @@ typedef struct {
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;
 
-// 24 bytes
+// 32 bytes
 typedef struct {
 	post_id_t id;
 	uint32_t reid_delta;
 	uint32_t tid_delta;
 	user_id_t uid;
 	int flag;
+	fb_time_t stamp;
+	fb_time_t cstamp;
 } post_index_board_t;
 
 typedef struct {
@@ -143,6 +146,8 @@ typedef struct {
 	uint32_t tid_delta;
 	user_id_t uid;
 	int flag;
+	fb_time_t stamp;
+	fb_time_t cstamp;
 	fb_time_t estamp;
 	char ename[16];
 } post_index_trash_t;
@@ -157,7 +162,7 @@ typedef struct {
 	post_id_t id;
 	uint32_t reid_delta;
 	uint32_t tid_delta;
-	uint32_t stamp;
+	fb_time_t stamp;
 	user_id_t uid;
 	int flag;
 	int bid;
