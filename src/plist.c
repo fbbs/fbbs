@@ -1250,14 +1250,11 @@ static int tui_new_post(int bid, post_info_t *pi)
 		.marked = false,
 		.anony = header.anonymous,
 		.cp = NULL,
-		.stamp = fb_time(),
 	};
 
 	post_id_t pid = publish_post(&req);
 	unlink(file);
 	if (pid) {
-		brc_mark_as_read(req.stamp);
-
 		char buf[STRLEN];
 		snprintf(buf, sizeof(buf), "posted '%s' on %s",
 				gbk_title, board.name);

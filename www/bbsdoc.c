@@ -395,7 +395,7 @@ static void construct_post_thread_info(post_index_record_t *pir,
 static void print_post_thread_info(const post_thread_info_t *pti)
 {
 	printf("<po gid='%"PRIdPID"' m='%c' posts='%d'",
-			pti->tid, get_post_mark_raw(pti->tid, pti->flag), pti->replies);
+			pti->tid, get_post_mark_raw(pti->stamp, pti->flag), pti->replies);
 	printf(" owner='%s' potime='%s'",
 			pti->owner, format_time(pti->stamp, TIME_FORMAT_XML));
 	if (pti->replies > 1)

@@ -633,13 +633,13 @@ const char *post_recent_table(int bid)
 }
 
 static post_id_t insert_post(const post_request_t *pr, const char *uname,
-		const char *content)
+		const char *content, fb_time_t now)
 {
 	post_index_t pi = { .id = next_post_id(), };
 	if (pi.id) {
 		pi.reid_delta = pr->reid ? pi.id - pr->reid : 0;
 		pi.tid_delta = pr->tid ? pi.id - pr->tid : 0;
-		pi.stamp = pr->stamp;
+		pi.stamp = now;
 		pi.uid = get_user_id(uname);
 		pi.flag = (pr->marked ? POST_FLAG_MARKED : 0)
 				| (pr->locked ? POST_FLAG_LOCKED : 0);
@@ -658,7 +658,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 	if (pi.id) {
 		post_index_board_t pib = {
 			.id = pi.id, .reid_delta = pi.reid_delta, .tid_delta = pi.tid_delta,
-			.uid = pi.uid, .flag = pi.flag, .stamp = pr->stamp, .cstamp = 0,
+			.uid = pi.uid, .flag = pi.flag, .stamp = now, .cstamp = 0,
 		};
 
 		record_t record;
@@ -705,15 +705,16 @@ post_id_t publish_post(const post_request_t *pr)
 	else
 		content = generate_content(pr, uname, nick, ip, anony);
 
-	post_id_t pid = insert_post(pr, uname, content);
+	fb_time_t now = fb_time();
+	post_id_t pid = insert_post(pr, uname, content, now);
 	free(content);
 
 	if (pid) {
-		set_last_post_time(pr->board->id, fb_time());
+		set_last_post_time(pr->board->id, now);
 
 		if (!pr->autopost) {
 			brc_initialize(uname, pr->board->name);
-			brc_mark_as_read(pid);
+			brc_mark_as_read(now);
 			brc_update(uname, pr->board->name);
 		}
 	}
@@ -1503,7 +1504,7 @@ bool alter_title(post_index_record_t *pir, const post_info_t *pi)
 	return true;
 }
 
-int get_post_mark_raw(post_id_t id, int flag)
+int get_post_mark_raw(fb_time_t stamp, int flag)
 {
 	int mark = ' ';
 
@@ -1519,7 +1520,7 @@ int get_post_mark_raw(post_id_t id, int flag)
 	if (mark == ' ' && (flag & POST_FLAG_WATER))
 		mark = 'w';
 
-	if (brc_unread(id)) {
+	if (brc_unread(stamp)) {
 		if (mark == ' ')
 			mark = DEFINE(DEF_NOT_N_MASK) ? '+' : 'N';
 		else
@@ -1531,5 +1532,5 @@ int get_post_mark_raw(post_id_t id, int flag)
 
 int get_post_mark(const post_info_t *p)
 {
-	return get_post_mark_raw(p->id, p->flag);
+	return get_post_mark_raw(p->stamp, p->flag);
 }

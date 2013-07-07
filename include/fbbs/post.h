@@ -108,7 +108,6 @@ typedef struct {
 	bool marked;
 	bool anony;
 	convert_t *cp;
-	fb_time_t stamp;
 } post_request_t;
 
 enum {
@@ -243,7 +242,7 @@ extern int undelete_posts(post_filter_t *filter);
 extern db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields);
 extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
 
-extern int get_post_mark_raw(post_id_t id, int flag);
+extern int get_post_mark_raw(fb_time_t stamp, int flag);
 extern int get_post_mark(const post_info_t *p);
 
 extern int get_last_fake_pid(int bid);
