@@ -1769,6 +1769,7 @@ static int tui_operate_posts_in_range(tui_list_t *tl, post_info_t *pi)
 		return MINIUPDATE;
 
 	tl->valid = false;
+	reopen_post_record(pl, pi);
 	return operate_posts_in_range(choice, pl, min, max);
 }
 

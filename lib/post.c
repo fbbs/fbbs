@@ -227,6 +227,9 @@ void post_index_record_get_title(post_index_record_t *pir, post_id_t id,
 static int post_index_record_lock(post_index_record_t *pir, record_lock_e lock,
 		post_id_t id)
 {
+	record_perm_e perm = (lock == RECORD_WRLCK) ? RECORD_WRITE : RECORD_READ;
+	if (post_index_record_check(pir, id, perm) < 0)
+		return -1;
 	return record_lock(&pir->record, lock, id - pir->base, RECORD_SET, 1);
 }
 
@@ -1326,6 +1329,8 @@ static record_callback_e post_index_trash_insert(void *rec, void *args,
 		};
 		if (piti->decrease && (piti->junk || (pib->flag & POST_FLAG_WATER)))
 			pit.flag |= POST_FLAG_JUNK;
+		else
+			pit.flag &= POST_FLAG_JUNK;
 		strlcpy(pit.ename, piti->ename, sizeof(pit.ename));
 		record_append(piti->trash, &pit, 1);
 		return RECORD_CALLBACK_MATCH;
@@ -1371,6 +1376,9 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 	post_deletion_trigger(&trash, &filter2, &pir, true);
 
 	record_lock_all(&trash, RECORD_UNLCK);
+	post_index_record_close(&pir);
+	record_close(&trash);
+	record_close(&record);
 	return deleted;
 }
 
@@ -1398,7 +1406,7 @@ static record_callback_e post_undeletion_callback(void *ptr, void *args,
 		pib->reid_delta = pit->reid_delta;
 		pib->tid_delta = pit->tid_delta;
 		pib->uid = pit->uid;
-		pib->flag = pit->flag;
+		pib->flag = pit->flag & ~POST_FLAG_JUNK;
 		pib->stamp = pit->stamp;
 		pib->cstamp = pit->cstamp;
 		++puc->count;
@@ -1435,6 +1443,9 @@ int post_index_board_undelete(const post_filter_t *filter, void *ptr,
 
 	record_lock_all(&trash, RECORD_UNLCK);
 	free(buf);
+	post_index_record_close(&pir);
+	record_close(&trash);
+	record_close(&record);
 	return undeleted;
 }
 
