@@ -5,7 +5,6 @@
 #include "fbbs/helper.h"
 #include "fbbs/list.h"
 #include "fbbs/mail.h"
-#include "fbbs/pcache.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -354,16 +353,6 @@ static tui_list_title_t post_list_title(tui_list_t *tl)
 	_post_list_title(pl->archive, mode);
 }
 
-char *getshortdate(time_t time) {
-	static char str[10];
-	struct tm *tm;
-
-	tm = localtime(&time);
-	sprintf(str, "%02d.%02d.%02d", tm->tm_year - 100, tm->tm_mon + 1,
-			tm->tm_mday);
-	return str;
-}
-
 #ifdef ENABLE_FDQUAN
 #define ENABLE_COLOR_ONLINE_STATUS
 #endif
@@ -551,7 +540,7 @@ static int toggle_post_stickiness(tui_list_t *tl, post_info_t *pi)
 static int toggle_post_flag(tui_list_t *tl, post_info_t *pi, post_flag_e flag)
 {
 	post_list_t *pl = tl->data;
-	if (pi && am_curr_bm()) {
+	if (pl->type == POST_LIST_NORMAL && pi && am_curr_bm()) {
 		reopen_post_record(pl, pi);
 		record_t *rec = (pi->flag & POST_FLAG_STICKY)
 			? pl->record_sticky : pl->record;
@@ -717,52 +706,6 @@ static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
 	post_list_with_filter(&filter);
 	return FULLUPDATE;
 }
-
-#if 0
-static int relocate_to_filter(slide_list_t *p, post_filter_t *filter,
-		bool upward)
-{
-	post_list_t *l = p->data;
-
-	int found = plist_cache_relocate(&l->cache, p->cur, filter, upward);
-	if (found < 0) {
-		query_t *q = build_post_query(filter, !upward, 1);
-		db_res_t *res = query_exec(q);
-		if (res && db_res_rows(res) == 1) {
-			post_info_t info;
-			res_to_post_info(res, 0, filter->archive, &info);
-			if (upward) {
-				l->filter.min = 0;
-				l->filter.max = info.id;
-			} else {
-				l->filter.min = info.id;
-				l->filter.max = 0;
-			}
-			if (l->filter.type == POST_LIST_THREAD)
-				l->filter.tid = info.tid;
-			p->base = upward ? SLIDE_LIST_PREV : SLIDE_LIST_NEXT;
-			l->relocate = info.id;
-		}
-		db_clear(res);
-	} else {
-		p->cur = found;
-	}
-	return PARTUPDATE;
-}
-
-static void set_filter_base(post_filter_t *filter, const post_info_t *ip,
-		bool upward)
-{
-	if (upward) {
-		filter->min = 0;
-		filter->max = ip->id - 1;
-	} else {
-		filter->max = 0;
-		filter->min = ip->id + 1;
-	}
-	filter->tid = filter->type == POST_LIST_THREAD ? ip->tid : 0;
-}
-#endif
 
 typedef struct {
 	post_index_record_t *pir;
@@ -1482,81 +1425,6 @@ static int tui_count_posts_in_range(slide_list_t *p)
 
 	return MINIUPDATE;
 }
-
-#if 0
-		struct stat filestat;
-		int i, len;
-		char tmp[1024];
-
-		sprintf(genbuf, "upload/%s/%s", currboard, fileinfo->filename);
-		if (stat(genbuf, &filestat) < 0) {
-			clear();
-			move(10, 30);
-			//% prints("对不起，%s 不存在！\n", genbuf);
-			prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac%s \xb2\xbb\xb4\xe6\xd4\xda\xa3\xa1\n", genbuf);
-			pressanykey();
-			clear();
-			return FULLUPDATE;
-		}
-
-		clear();
-		//% prints("文件详细信息\n\n");
-		prints("\xce\xc4\xbc\xfe\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2\n\n");
-		//% prints("版    名:     %s\n", currboard);
-		prints("\xb0\xe6    \xc3\xfb:     %s\n", currboard);
-		//% prints("序    号:     第 %d 篇\n", ent);
-		prints("\xd0\xf2    \xba\xc5:     \xb5\xda %d \xc6\xaa\n", ent);
-		//% prints("文 件 名:     %s\n", fileinfo->filename);
-		prints("\xce\xc4 \xbc\xfe \xc3\xfb:     %s\n", fileinfo->filename);
-		//% prints("上 传 者:     %s\n", fileinfo->owner);
-		prints("\xc9\xcf \xb4\xab \xd5\xdf:     %s\n", fileinfo->owner);
-		//% prints("上传日期:     %s\n", format_time(fileinfo->timeDeleted, TIME_FORMAT_ZH));
-		prints("\xc9\xcf\xb4\xab\xc8\xd5\xc6\xda:     %s\n", format_time(fileinfo->timeDeleted, TIME_FORMAT_ZH));
-		//% prints("文件大小:     %d 字节\n", filestat.st_size);
-		prints("\xce\xc4\xbc\xfe\xb4\xf3\xd0\xa1:     %d \xd7\xd6\xbd\xda\n", filestat.st_size);
-		//% prints("文件说明:     %s\n", fileinfo->title);
-		prints("\xce\xc4\xbc\xfe\xcb\xb5\xc3\xf7:     %s\n", fileinfo->title);
-		//% prints("URL 地址:\n");
-		prints("URL \xb5\xd8\xd6\xb7:\n");
-		sprintf(tmp, "http://%s/upload/%s/%s", BBSHOST, currboard,
-				fileinfo->filename);
-		strtourl(genbuf, tmp);
-		len = strlen(genbuf);
-		clrtoeol();
-		for (i = 0; i < len; i += 78) {
-			strlcpy(tmp, genbuf + i, 78);
-			tmp[78] = '\n';
-			tmp[79] = '\0';
-			outs(tmp);
-		}
-		if (!(ch == KEY_UP || ch == KEY_PGUP))
-			ch = egetch();
-		switch (ch) {
-			case 'N':
-			case 'Q':
-			case 'n':
-			case 'q':
-			case KEY_LEFT:
-				break;
-			case ' ':
-			case 'j':
-			case KEY_RIGHT:
-				if (DEFINE(DEF_THESIS)) {
-					sread(0, 0, fileinfo);
-					break;
-				} else
-					return READ_NEXT;
-			case KEY_DOWN:
-			case KEY_PGDN:
-				return READ_NEXT;
-			case KEY_UP:
-			case KEY_PGUP:
-				return READ_PREV;
-			default:
-				break;
-		}
-		return FULLUPDATE;
-#endif
 #endif
 
 static const char *get_prompt(bool thread, bool user)
@@ -2200,43 +2068,6 @@ static int tui_jump(slide_list_t *p)
 		return FULLUPDATE;
 	}
 	return MINIUPDATE;
-}
-
-static void draw_fake_id(int fake_id)
-{
-	char buf[8];
-	if (fake_id)
-		snprintf(buf, sizeof(buf), "%6d", fake_id);
-	else
-		buf[0] = '\0';
-
-	move(t_lines - 1, 69);
-	clrtoeol();
-	prints("\033[0;1;33;44m[%6s]\033[m", buf);
-}
-
-static int jump_to_fake_id(slide_list_t *p)
-{
-	post_list_t *l = p->data;
-	int fake_id = l->fake_id;
-	l->fake_id = 0;
-	draw_fake_id(0);
-
-	post_info_t *ip = get_post_info(p);
-	if (!ip)
-		return DONOTHING;
-
-	post_filter_t filter = l->filter;
-	filter.min = filter.max = 0;
-	bool upward = fake_id < ip->fake_id;
-	if (upward) {
-		filter.fake_id_min = 0;
-		filter.fake_id_max = fake_id;
-	} else {
-		filter.fake_id_min = fake_id;
-		filter.fake_id_max = 0;
-	}
-	return relocate_to_filter(p, &filter, upward);
 }
 #endif
 
