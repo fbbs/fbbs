@@ -137,6 +137,13 @@ static int bbsdoc(post_list_type_e type)
 	record_t record;
 	post_index_board_open(board.id, RECORD_READ, &record);
 
+	--start;
+	if (start < 0) {
+		start = record_count(&record) - page;
+		if (start < 0)
+			start = 0;
+	}
+
 	int total = print_posts(&record, &pir, &start, page, type, false);
 	record_close(&record);
 	if (type != POST_LIST_DIGEST)
@@ -151,7 +158,7 @@ static int bbsdoc(post_list_type_e type)
 
 	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
 			"bid='%d' page='%d' link='%s'", board.name, board.descr, board.bms,
-			total, start, board.id, page, cgi_name);
+			total, ++start, board.id, page, cgi_name);
 	print_board_logo(board.name);
 	printf("/>\n</bbsdoc>");
 	return 0;

@@ -268,7 +268,7 @@ void brc_clear(brc_item_t item)
  * 将指定版面的所有项目标记为已读.
  * @param bid 要标记的版面编号
  */
-void brc_clear_all(int bid)
+void brc_clear_all(void)
 {
 	brc_clear(fb_time());
 }

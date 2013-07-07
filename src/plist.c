@@ -2235,7 +2235,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			brc_clear(pi->stamp);
 			return PARTUPDATE;
 		case 'f':
-			brc_clear_all(pl->bid);
+			brc_clear_all();
 			return PARTUPDATE;
 		case 'd':
 			return tui_delete_single_post(tl, pi, pl->bid);
