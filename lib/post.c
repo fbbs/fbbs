@@ -1360,7 +1360,7 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 	};
 
 	record_lock_all(&trash, RECORD_WRLCK);
-	int current = record_seek(&trash, 0, RECORD_CUR);
+	int current = record_seek(&trash, 0, RECORD_END);
 
 	record_lock_all(&record, RECORD_WRLCK);
 	int deleted = record_delete(&record, ptr, offset,
@@ -1388,7 +1388,7 @@ static record_callback_e post_undeletion_callback(void *ptr, void *args,
 	const post_index_trash_t *pit = ptr;
 	post_undeletion_callback_t *puc = args;
 
-	if (match_filter((post_index_board_t *)pit, puc->pir,
+	if (match_filter((post_index_board_t *) pit, puc->pir,
 				puc->filter, offset)) {
 		if (puc->count >= puc->max)
 			return RECORD_CALLBACK_CONTINUE;
@@ -1430,7 +1430,7 @@ int post_index_board_undelete(const post_filter_t *filter, void *ptr,
 
 	record_lock_all(&record, RECORD_WRLCK);
 	record_delete(&trash, NULL, 0, post_undeletion_callback, &puc);
-	record_merge(&record, buf, undeleted);
+	record_merge(&record, puc.buf, puc.count);
 	record_lock_all(&record, RECORD_UNLCK);
 
 	record_lock_all(&trash, RECORD_UNLCK);

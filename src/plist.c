@@ -440,7 +440,7 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 	snprintf(color, sizeof(color), "\033[1;%dm", 30 + mytm->tm_wday + 1);
 #endif
 
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	char gbk_title[80];
 	if (strneq(pi->utf8_title, "Re: ", 4)) {
 		if (pl->type == POST_LIST_THREAD) {
 			GBK_BUFFER(title2, POST_TITLE_CCHARS);
@@ -461,8 +461,9 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 
 	const int title_width = 49;
 	if (is_deleted(pl->type)) {
-		char buf[80], date[12];
-		ellipsis(gbk_title, title_width - sizeof(date) - strlen(pi->ename) + 1);
+		char buf[sizeof(gbk_title)], date[12];
+		ellipsis(gbk_title,
+				title_width - sizeof(date) - strlen(pi->ename) - 1);
 		struct tm *t = fb_localtime(&pi->estamp);
 		strftime(date, sizeof(date), "%m-%d %H:%M", t);
 		snprintf(buf, sizeof(buf), "%s\033[1;%dm[%s %s]\033[m", gbk_title,
@@ -568,6 +569,7 @@ static int post_list_deleted(tui_list_t *tl, post_index_trash_e trash)
 	};
 	post_list_with_filter(&filter);
 
+	tl->valid = false;
 	return FULLUPDATE;
 }
 
@@ -898,7 +900,7 @@ static int tui_undelete_single_post(tui_list_t *tl, post_info_t *pi)
 {
 	post_list_t *pl = tl->data;
 	if (pi && is_deleted(pl->type)) {
-		post_filter_t f = { .min = pi->id, .max = pi->id, };
+		post_filter_t f = { .bid = pl->bid, .min = pi->id, .max = pi->id, };
 		if (post_index_board_undelete(&f, NULL, 0,
 					pl->type == POST_LIST_TRASH)) {
 			tl->valid = false;

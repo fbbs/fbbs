@@ -243,24 +243,29 @@ int record_merge(record_t *rec, void *ptr, int count)
 		return 0;
 	qsort(ptr, count, rec->rlen, rec->cmp);
 
-	int rlen = rec->rlen;
 	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
-	if (mmap_open_fd(&m) < 0 || mmap_truncate(&m, m.size + count * rlen) < 0)
+	if (mmap_open_fd(&m) < 0)
 		return -1;
-	char *src = m.ptr, *dst = m.ptr;
-	memmove(src + rlen * count, src, rlen * count);
 
-	char *p2 = ptr, *end = ptr;
-	end = p2 + rlen * count;
-	while (p2 < end) {
-		if (rec->cmp(src, p2) <= 0) {
-			memcpy(dst, src, rlen);
-			src += rlen;
-		} else {
+	int rlen = rec->rlen;
+	size_t size = m.size / rec->rlen;
+
+	if (mmap_truncate(&m, m.size + count * rlen) < 0)
+		return -1;
+
+	char *src = (char *) m.ptr + (size - 1) * rec->rlen;
+	char *dst = (char *) m.ptr + (size + count - 1) * rec->rlen;
+	char *p2 = (char *) ptr + (count - 1) * rec->rlen;
+
+	while (p2 >= (char *) ptr) {
+		if (src < (char *) m.ptr || rec->cmp(src, p2) <= 0) {
 			memcpy(dst, p2, rlen);
-			p2 += rlen;
+			p2 -= rlen;
+		} else {
+			memcpy(dst, src, rlen);
+			src -= rlen;
 		}
-		dst += rlen;
+		dst -= rlen;
 	}
 
 	mmap_close(&m);

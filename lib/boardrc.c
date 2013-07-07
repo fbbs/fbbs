@@ -128,7 +128,7 @@ void brc_update(const char *uname, const char *bname)
 	char *tmp = buf.ptr, *end = buf.ptr + buf.size;
 	while (tmp < end && (*tmp >= ' ' && *tmp <= '~')) {
 		brc_t tmp_brc;
-		tmp = brc_get_record(ptr, &tmp_brc);
+		tmp = brc_get_record(tmp, &tmp_brc);
 		if (!strneq(tmp_brc.name, bname, sizeof(tmp_brc.name))) {
 			ptr = brc_put_record(ptr, &tmp_brc);
 		}
@@ -270,7 +270,7 @@ void brc_clear(brc_item_t item)
  */
 void brc_clear_all(int bid)
 {
-	brc_clear(get_last_post_time(bid));
+	brc_clear(fb_time());
 }
 
 void brc_zapbuf(int *zbuf)
