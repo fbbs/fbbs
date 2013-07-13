@@ -231,7 +231,7 @@ int mailall(void)
 		clear();
 		return -2;
 	}
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	//% prints("[5;1;32;44m正在寄件中，请稍候.....                                                        [m");
 	prints("[5;1;32;44m\xd5\xfd\xd4\xda\xbc\xc4\xbc\xfe\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....                                                        [m");
@@ -239,7 +239,7 @@ int mailall(void)
 
 	mailtoall(ans[0] - '0', fname, &header);
 
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	/****type 2共享文件不需要删除****/
 	if (ans[0] - '0' != 2)
@@ -722,7 +722,7 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 		return -1;
 	delete_it = NA;
 	while (!done) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% prints("(R)回信, (D)删除, (G)继续? [G]: ");
 		prints("(R)\xbb\xd8\xd0\xc5, (D)\xc9\xbe\xb3\xfd, (G)\xbc\xcc\xd0\xf8? [G]: ");
 		switch (egetch()) {
@@ -1022,7 +1022,7 @@ int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 	delete_it = replied = NA;
 	while (!done) {
 		ansimore(notgenbuf, NA);
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% prints("(R)回信, (D)删除, (G)继续? [G]: ");
 		prints("(R)\xbb\xd8\xd0\xc5, (D)\xc9\xbe\xb3\xfd, (G)\xbc\xcc\xd0\xf8? [G]: ");
 		switch (egetch()) {
@@ -1076,7 +1076,7 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 		//% sprintf(genbuf, "删除信件 [%-.55s]", fileinfo->title);
 		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe [%-.55s]", fileinfo->title);
 		if (askyn(genbuf, NA, YEA) == NA) {
-			move(t_lines - 1, 0);
+			move(-1, 0);
 			//% prints("放弃删除信件...");
 			prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe...");
 			clrtoeol();
@@ -1095,7 +1095,7 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 	}
 	if(SR_BMDELFLAG==NA)
 	{
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% prints("删除失败...");
 		prints("\xc9\xbe\xb3\xfd\xca\xa7\xb0\xdc...");
 		clrtoeol();

@@ -128,7 +128,7 @@ int grant_money(void)
 		error = check_for_errors(file);
 	}
 
-	move(t_lines - 2, 0);
+	move(-2, 0);
 	if (submit_changes(file) == 0) {
 		//% Postfile(file, "Bank_In", "光华币发放记录", 2);
 		Postfile(file, "Bank_In", "\xb9\xe2\xbb\xaa\xb1\xd2\xb7\xa2\xb7\xc5\xbc\xc7\xc2\xbc", 2);

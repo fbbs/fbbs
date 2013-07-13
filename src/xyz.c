@@ -54,7 +54,7 @@ unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showf
 		sprintf(buf, "\xd1\xa1\xd4\xf1(ENTER \xbd\xe1\xca\xf8%s): ",
 				//% ((strcmp(prompt, "权限") != 0)) ? "" : "，0 停权");
 				((strcmp(prompt, "\xc8\xa8\xcf\xde") != 0)) ? "" : "\xa3\xac""0 \xcd\xa3\xc8\xa8");
-		getdata(t_lines - 1, 0, buf, choice, 2, DOECHO, YEA);
+		getdata(-1, 0, buf, choice, 2, DOECHO, YEA);
 		*choice = toupper(*choice);
 		/*		if (*choice == '0')
 		 return (0);
@@ -131,7 +131,7 @@ int x_cloak(void)
 
 		report("toggle cloak", currentuser.userid);
 
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		//% prints("隐身术已经 %s 了!", session.visible ? "停止" : "启动");
 		prints("\xd2\xfe\xc9\xed\xca\xf5\xd2\xd1\xbe\xad %s \xc1\xcb!", session.visible ? "\xcd\xa3\xd6\xb9" : "\xc6\xf4\xb6\xaf");

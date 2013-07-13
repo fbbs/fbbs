@@ -252,7 +252,7 @@ static void show_sites(const site_t *sites, int count)
 static void site_highlight(const site_t *sites, int count, int cur)
 {
 	show_line(sites, count, cur / 3, cur);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	prints("\033[1;37;44m%s(%s)\033[K", sites[cur].name, sites[cur].host);
 }

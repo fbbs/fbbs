@@ -157,7 +157,7 @@ static int attachment_search_author(tui_list_t *tl,
 			//% "上" : "下"
 			upward ? "\xc9\xcf" : "\xcf\xc2", fp->owner);
 	char ans[IDLEN + 1];
-	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+	getdata(-1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
 
 	attachment_filter_t filter = { .utf8_keyword = { '\0' } };
 	strlcpy(filter.uname, ans, sizeof(filter.uname));
@@ -175,7 +175,7 @@ static int attachment_search_title(tui_list_t *tl, bool upward)
 			upward ? "\xc9\xcf" : "\xcf\xc2", gbk_title);
 
 	GBK_BUFFER(ans, POST_TITLE_CCHARS);
-	getdata(t_lines - 1, 0, prompt, gbk_ans, sizeof(gbk_ans), DOECHO, YEA);
+	getdata(-1, 0, prompt, gbk_ans, sizeof(gbk_ans), DOECHO, YEA);
 
 	if (*gbk_ans != '\0')
 		strlcpy(gbk_title, gbk_ans, sizeof(gbk_title));
@@ -253,7 +253,7 @@ static int delete_attachment(tui_list_t *tl, struct fileheader *fp)
 {
 	if (fp && ((streq(currentuser.userid, fp->owner)
 			&& currentuser.firstlogin < fp->timeDeleted) || am_curr_bm())) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 			tui_attachment_list_t *tal = tl->data;

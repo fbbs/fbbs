@@ -437,7 +437,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	move(line, col);
 	if (prompt)
 		prints("%s", prompt);
-	y = line;
+	getyx(&y, &x);
 	col += (prompt == NULL) ? 0 : strlen(prompt);
 	x = col;
 	buf[len - 1] = '\0';
@@ -645,7 +645,7 @@ void update_endline(void)
 	FILE *fp;
 	int i, cur_sec, allstay, foo, foo2;
 
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 
 	if (!DEFINE(DEF_ENDLINE))

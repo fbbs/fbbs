@@ -115,7 +115,7 @@ static void msgline(void)
 	sprintf(buf2, "\033[1;33m\xa1\xbe\033[1;32m%.23s\033[33m\xa1\xbf\033[m",
 			format_time(fb_time(), TIME_FORMAT_ZH) + 6);
 	strcat(buf, buf2);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	prints("%s", buf);
 	showansi = tmpshow;
@@ -339,8 +339,8 @@ void search() {
 	char tmp[STRLEN];
 
 	signal(SIGALRM, SIG_IGN);
-	//% getdata(t_lines-1, 0, "搜寻字串: ", tmp, 65, DOECHO, YEA);
-	getdata(t_lines-1, 0, "\xcb\xd1\xd1\xb0\xd7\xd6\xb4\xae: ", tmp, 65, DOECHO, YEA);
+	//% "搜寻字串: 
+	getdata(-1, 0, "\xcb\xd1\xd1\xb0\xd7\xd6\xb4\xae: ", tmp, 65, DOECHO, YEA);
 	msg(0);
 	if (tmp[0] == '\0')
 		return;
@@ -713,7 +713,7 @@ static int process_ESC_action(int action, int arg)
 		case 'L':
 			if (ismsgline >= 1) {
 				ismsgline = 0;
-				move(t_lines - 1, 0);
+				move(-1, 0);
 				clrtoeol();
 				refresh();
 			} else
@@ -799,7 +799,7 @@ static int process_ESC_action(int action, int arg)
 		redraw_everything = YEA;
 	if (msg[0] != '\0') {
 		if (action == 'C') { /* need redraw */
-			move(t_lines - 2, 0);
+			move(-2, 0);
 			clrtoeol();
 			//% prints("[1m%s%s%s[m", msg, ", 请按任意键返回编辑画面...", ANSI_RESET);
 			prints("[1m%s%s%s[m", msg, ", \xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xb7\xb5\xbb\xd8\xb1\xe0\xbc\xad\xbb\xad\xc3\xe6...", ANSI_RESET);

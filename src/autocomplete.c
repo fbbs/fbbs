@@ -134,7 +134,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 		if (count == rows - 1 || !l->next) {
 			if (xbase + width > columns) {
 				acl->seek = *acl->col;
-				move(t_lines - 1, 0);
+				move(-1, 0);
 				//% prints("\033[1m -- 还有 --\033[m");
 				prints("\033[1m -- \xbb\xb9\xd3\xd0 --\033[m");
 				break;
@@ -144,7 +144,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 					move(acl->ybase + i + 2, xbase);
 					outs(acl->col[i]->name);
 				}
-				move(t_lines - 1, 0);
+				move(-1, 0);
 				clrtoeol();
 				xbase += width + 1;
 				width = 0;

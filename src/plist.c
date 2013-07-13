@@ -663,7 +663,7 @@ static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
 
 	char ans[3];
 	//% 切换模式到: 1)文摘 2)同主题 3)被 m 文章 4)原作 5)同作者 6)标题关键字
-	getdata(t_lines - 1, 0, "\xc7\xd0\xbb\xbb\xc4\xa3\xca\xbd\xb5\xbd:"
+	getdata(-1, 0, "\xc7\xd0\xbb\xbb\xc4\xa3\xca\xbd\xb5\xbd:"
 			" 1)\xce\xc4\xd5\xaa 2)\xcd\xac\xd6\xf7\xcc\xe2"
 			" 3)\xb1\xbb m \xce\xc4\xd5\xc2 4)\xd4\xad\xd7\xf7"
 			" 5)\xcd\xac\xd7\xf7\xd5\xdf"
@@ -686,7 +686,7 @@ static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
 		char uname[IDLEN + 1];
 		strlcpy(uname, pi->owner, sizeof(uname));
 		//% 您想查找哪位网友的文章
-		getdata(t_lines - 1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xc4\xc4"
+		getdata(-1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xc4\xc4"
 				"\xce\xbb\xcd\xf8\xd3\xd1\xb5\xc4\xce\xc4\xd5\xc2? ",
 				uname, sizeof(uname), DOECHO, false);
 		user_id_t uid = get_user_id(uname);
@@ -696,7 +696,7 @@ static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
 	} else if (filter.type == POST_LIST_KEYWORD) {
 		GBK_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 		//% 您想查找的文章标题关键字
-		getdata(t_lines - 1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xb5\xc4"
+		getdata(-1, 0, "\xc4\xfa\xcf\xeb\xb2\xe9\xd5\xd2\xb5\xc4"
 				"\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ",
 				gbk_keyword, sizeof(gbk_keyword), DOECHO, YEA);
 		convert_g2u(gbk_keyword, filter.utf8_keyword);
@@ -747,7 +747,7 @@ static int tui_search_author(tui_list_t *tl, const post_info_t *pi,
 			//% "上" : "下"
 			upward ? "\xc9\xcf" : "\xcf\xc2", pi->owner);
 	char ans[IDLEN + 1];
-	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+	getdata(-1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
 
 	user_id_t uid = pi->uid;
 	if (*ans && !streq(ans, pi->owner))
@@ -770,7 +770,7 @@ static int tui_search_title(tui_list_t *tl, bool upward)
 			upward ? "\xc9\xcf" : "\xcf\xc2", gbk_title);
 
 	GBK_BUFFER(ans, POST_TITLE_CCHARS);
-	getdata(t_lines - 1, 0, prompt, gbk_ans, sizeof(gbk_ans), DOECHO, YEA);
+	getdata(-1, 0, prompt, gbk_ans, sizeof(gbk_ans), DOECHO, YEA);
 
 	if (*gbk_ans != '\0')
 		strlcpy(gbk_title, gbk_ans, sizeof(gbk_title));
@@ -879,7 +879,7 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 		return DONOTHING;
 
 	if (pi && (pi->uid == session.uid || am_curr_bm())) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 			post_filter_t filter = {
@@ -1019,7 +1019,7 @@ static int tui_edit_post_title(tui_list_t *tl, post_info_t *pi)
 	convert_u2g(utf8_title, gbk_title);
 
 	//% 新文章标题
-	getdata(t_lines - 1, 0, "\xd0\xc2\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2: ",
+	getdata(-1, 0, "\xd0\xc2\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2: ",
 			gbk_title, sizeof(gbk_title), DOECHO, NA);
 
 	check_title(gbk_title, sizeof(gbk_title));
@@ -1072,7 +1072,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 {
 	time_t now = fb_time();
 	if (now - get_my_last_post_time() < 3) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		//% 您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。
 		prints("\xc4\xfa\xcc\xab\xd0\xc1\xbf\xe0\xc1\xcb\xa3\xac\xcf\xc8\xba\xc8\xb1\xad\xbf\xa7\xb7\xc8\xd0\xaa\xbb\xe1\xb6\xf9\xa3\xac""3 \xc3\xeb\xd6\xd3\xba\xf3\xd4\xd9\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2\xa1\xa3\n");
@@ -1083,7 +1083,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	board_t board;
 	if (!get_board_by_bid(bid, &board) ||
 			!has_post_perm(&currentuser, &board)) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		//% prints("此讨论区是唯读的, 或是您尚无权限在此发表文章。");
 		prints("\xb4\xcb\xcc\xd6\xc2\xdb\xc7\xf8\xca\xc7\xce\xa8\xb6\xc1\xb5\xc4, \xbb\xf2\xca\xc7\xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda\xb4\xcb\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2\xa1\xa3");
@@ -1294,7 +1294,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	if (!max)
 		return ret;
 
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	//% 确定删除
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
@@ -1306,7 +1306,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 		}
 		return PARTUPDATE;
 	}
-	move(t_lines - 1, 50);
+	move(-1, 50);
 	clrtoeol();
 	//% 放弃删除
 	prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd...");
@@ -1397,19 +1397,19 @@ static int tui_count_posts_in_range(slide_list_t *p)
 		return ret;
 
 	char num[8];
-	//% getdata(t_lines - 1, 0, "排序方式 (0)降序 (1)升序 ? : ", num, 2, DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xc5\xc5\xd0\xf2\xb7\xbd\xca\xbd (0)\xbd\xb5\xd0\xf2 (1)\xc9\xfd\xd0\xf2 ? : ", num, 2, DOECHO, YEA);
+	//% getdata(-1, 0, "排序方式 (0)降序 (1)升序 ? : ", num, 2, DOECHO, YEA);
+	getdata(-1, 0, "\xc5\xc5\xd0\xf2\xb7\xbd\xca\xbd (0)\xbd\xb5\xd0\xf2 (1)\xc9\xfd\xd0\xf2 ? : ", num, 2, DOECHO, YEA);
 	bool asc = (num[0] == '1');
 
-	//% getdata(t_lines - 1, 0, "排序选项 (0)总数 (1)被m (2)被g (3)被w (4)无标记 ? : ",
-	getdata(t_lines - 1, 0, "\xc5\xc5\xd0\xf2\xd1\xa1\xcf\xee (0)\xd7\xdc\xca\xfd (1)\xb1\xbbm (2)\xb1\xbbg (3)\xb1\xbbw (4)\xce\xde\xb1\xea\xbc\xc7 ? : ",
+	//% getdata(-1, 0, "排序选项 (0)总数 (1)被m (2)被g (3)被w (4)无标记 ? : ",
+	getdata(-1, 0, "\xc5\xc5\xd0\xf2\xd1\xa1\xcf\xee (0)\xd7\xdc\xca\xfd (1)\xb1\xbbm (2)\xb1\xbbg (3)\xb1\xbbw (4)\xce\xde\xb1\xea\xbc\xc7 ? : ",
 			num, 2, DOECHO, YEA);
 	int sort = strtol(num, NULL, 10);
 	if (sort < 0 || sort > 4)
 		sort = 0;
 
-	//% getdata(t_lines - 1, 0, "文章数下限(默认0): ", num, 6, DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xce\xc4\xd5\xc2\xca\xfd\xcf\xc2\xcf\xde(\xc4\xac\xc8\xcf""0): ", num, 6, DOECHO, YEA);
+	//% getdata(-1, 0, "文章数下限(默认0): ", num, 6, DOECHO, YEA);
+	getdata(-1, 0, "\xce\xc4\xd5\xc2\xca\xfd\xcf\xc2\xcf\xde(\xc4\xac\xc8\xcf""0): ", num, 6, DOECHO, YEA);
 	int least = strtol(num, NULL, 10);
 
 	char file[HOMELEN];
@@ -1479,7 +1479,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 			ch = ansimore(file, false);
 		}
 
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		prints(get_prompt(tid, uid));
 		prints("\033[m");
@@ -1656,7 +1656,7 @@ static int tui_import_posts(post_list_t *pl, post_filter_t *filter)
 		//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
 		presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0"
 				"\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3"
-				" f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", t_lines - 1);
+				" f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", -1);
 		return MINIUPDATE;
 	}
 
@@ -1667,7 +1667,7 @@ static int tui_import_posts(post_list_t *pl, post_filter_t *filter)
 		//% 您设定的丝路已丢失, 请重新用 f 设定.
 		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7"
 				"\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3"
-				" f \xc9\xe8\xb6\xa8.", t_lines - 1);
+				" f \xc9\xe8\xb6\xa8.", -1);
 		return MINIUPDATE;
 	}
 
@@ -1756,7 +1756,7 @@ static int tui_operate_posts_in_range(tui_list_t *tl, post_info_t *pi)
 
 	char prompt[120], ans[8];
 	construct_prompt(prompt, sizeof(prompt), options, ARRAY_SIZE(options));
-	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+	getdata(-1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
 
 	int choice = *ans - '1';
 	if (choice < 0 || choice >= ARRAY_SIZE(options))
@@ -1872,11 +1872,11 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	};
 
 	char ans[16];
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	ans[0] = '\0';
 	//% 执行: 1) 相同主题  2) 相同作者 3) 相关主题 0) 取消
-	getdata(t_lines - 1, 0, "\xd6\xb4\xd0\xd0: "
+	getdata(-1, 0, "\xd6\xb4\xd0\xd0: "
 			"1) \xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2  "
 			"2) \xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf "
 			"3) \xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2 "
@@ -1887,13 +1887,13 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 
 	char prompt[120];
 	construct_prompt(prompt, sizeof(prompt), options, ARRAY_SIZE(options));
-	getdata(t_lines - 1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+	getdata(-1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
 	int choice = strtol(ans, NULL, 10) - 1;
 	if (choice < 0 || choice >= ARRAY_SIZE(options))
 		return MINIUPDATE;
 
 	char buf[STRLEN];
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//% 确定要执行%s[%s]吗
 	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0"
 			"%s[%s]\xc2\xf0", batch_modes[mode], options[choice]);
@@ -1903,7 +1903,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	post_id_t pid = 0;
 	bool quote = true;
 	if (choice == 6) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% 制作的合集需要引言吗？
 		quote = askyn("\xd6\xc6\xd7\xf7\xb5\xc4\xba\xcf\xbc\xaf"
 				"\xd0\xe8\xd2\xaa\xd2\xfd\xd1\xd4\xc2\xf0\xa3\xbf", YEA, YEA);
@@ -1911,7 +1911,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 #if 0
 		if (!deleted) {
 			//% 本主题加至版面第几篇后？
-			getdata(t_lines - 1, 0, "\xb1\xbe\xd6\xf7\xcc\xe2\xbc\xd3\xd6\xc1"
+			getdata(-1, 0, "\xb1\xbe\xd6\xf7\xcc\xe2\xbc\xd3\xd6\xc1"
 					"\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf",
 					ans, sizeof(ans), DOECHO, YEA);
 			pid = strtol(ans);
@@ -1922,7 +1922,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	GBK_UTF8_BUFFER(keyword, POST_TITLE_CCHARS);
 	if (mode == 2) {
 		//% 请输入主题关键字
-		getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2"
+		getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2"
 				"\xb9\xd8\xbc\xfc\xd7\xd6: ", gbk_keyword,
 				sizeof(gbk_keyword), DOECHO, YEA);
 		if (gbk_keyword[0] == '\0')
@@ -1937,7 +1937,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	}
 
 	bool first = false;
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//% 是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇
 	snprintf(buf, sizeof(buf), "\xca\xc7\xb7\xf1\xb4\xd3%s"
 			"\xb5\xda\xd2\xbb\xc6\xaa\xbf\xaa\xca\xbc%s "
@@ -1962,7 +1962,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 			presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0"
 					"\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. "
 					"\xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8"
-					"\xcb\xbf\xc2\xb7.", t_lines - 1);
+					"\xcb\xbf\xc2\xb7.", -1);
 			return MINIUPDATE;
 		}
 		fscanf(fp, "%s", annpath);
@@ -1971,7 +1971,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 			//% 您设定的丝路已丢失, 请重新用 f 设定.
 			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7"
 					"\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2"
-					"\xd3\xc3 f \xc9\xe8\xb6\xa8.",t_lines - 1);
+					"\xd3\xc3 f \xc9\xe8\xb6\xa8.", -1);
 			return MINIUPDATE;
 		}
 	}
@@ -2032,7 +2032,7 @@ static int tui_jump_to_id(slide_list_t *p)
 		return DONOTHING;
 
 	char buf[16];
-	getdata(t_lines - 1, 0, "Post ID", buf, sizeof(buf), true, true);
+	getdata(-1, 0, "Post ID", buf, sizeof(buf), true, true);
 
 	post_id_t pid = strtoll(buf, NULL, 10);
 	if (!pid || pid == ip->id)
@@ -2058,8 +2058,8 @@ static int tui_jump(slide_list_t *p)
 		return DONOTHING;
 
 	char buf[2];
-	//% getdata(t_lines - 1, 0, "跳转到 (P)文章 (A)存档 (C)取消？[C]",
-	getdata(t_lines - 1, 0, "\xcc\xf8\xd7\xaa\xb5\xbd (P)\xce\xc4\xd5\xc2 (A)\xb4\xe6\xb5\xb5 (C)\xc8\xa1\xcf\xfb\xa3\xbf[C]",
+	//% getdata(-1, 0, "跳转到 (P)文章 (A)存档 (C)取消？[C]",
+	getdata(-1, 0, "\xcc\xf8\xd7\xaa\xb5\xbd (P)\xce\xc4\xd5\xc2 (A)\xb4\xe6\xb5\xb5 (C)\xc8\xa1\xcf\xfb\xa3\xbf[C]",
 			buf, sizeof(buf), true, true);
 	char c = tolower(buf[0]);
 	if (c == 'p')

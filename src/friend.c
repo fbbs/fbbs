@@ -53,20 +53,20 @@ static tui_list_display_t following_list_display(tui_list_t *p, int i)
 static int tui_follow(void)
 {
 	char buf[IDLEN + 1];
-	//% getdata(t_lines - 1, 0, "请输入要关注的人: ", buf, IDLEN, DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb9\xd8\xd7\xa2\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
+	//% getdata(-1, 0, "请输入要关注的人: ", buf, IDLEN, DOECHO, YEA);
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb9\xd8\xd7\xa2\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
 	if (!*buf)
 		return 0;
 	char note[FOLLOW_NOTE_CCHARS * 2 + 1], utf8_note[FOLLOW_NOTE_CCHARS * 4 + 1];
-	//% getdata(t_lines - 1, 0, "请输入备注: ", note, sizeof(note), DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ", note, sizeof(note), DOECHO, YEA);
+	//% getdata(-1, 0, "请输入备注: ", note, sizeof(note), DOECHO, YEA);
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ", note, sizeof(note), DOECHO, YEA);
 	convert_g2u(note, utf8_note);
 	return follow(session.uid, buf, utf8_note);
 }
 
 static int tui_unfollow(user_id_t uid)
 {
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//% return askyn("确定取消关注?", false, true) ? unfollow(session.uid, uid) : 0;
 	return askyn("\xc8\xb7\xb6\xa8\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2?", false, true) ? unfollow(session.uid, uid) : 0;
 }
@@ -74,8 +74,8 @@ static int tui_unfollow(user_id_t uid)
 static int tui_edit_followed_note(user_id_t followed, const char *orig)
 {
 	char note[FOLLOW_NOTE_CCHARS * 2 + 1], utf8_note[FOLLOW_NOTE_CCHARS * 4 + 1];
-	//% getdata(t_lines - 1, 0, "请输入备注: ", note, sizeof(note), DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ", note, sizeof(note), DOECHO, YEA);
+	//% getdata(-1, 0, "请输入备注: ", note, sizeof(note), DOECHO, YEA);
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ", note, sizeof(note), DOECHO, YEA);
 	convert_g2u(note, utf8_note);
 
 	if (!*utf8_note || streq(orig, utf8_note))
@@ -90,7 +90,7 @@ static tui_list_query_t following_list_query(tui_list_t *p)
 	p->in_query = true;
 	if (t_query(following_list_get_name(p->data, p->cur)) == -1)
 		return FULLUPDATE;
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	//% prints("\033[0;1;44;31m\033[33m 寄信 m │ 结束 Q,← │上一位 ↑│"
 	prints("\033[0;1;44;31m\033[33m \xbc\xc4\xd0\xc5 m \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6"
@@ -203,13 +203,13 @@ static tui_list_display_t black_list_display(tui_list_t *p, int i)
 static int tui_black_list_add(void)
 {
 	char buf[IDLEN + 1];
-	//% getdata(t_lines - 1, 0, "请输入要拉黑的人: ", buf, IDLEN, DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xc0\xad\xba\xda\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
+	//% getdata(-1, 0, "请输入要拉黑的人: ", buf, IDLEN, DOECHO, YEA);
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xc0\xad\xba\xda\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
 	if (!*buf)
 		return 0;
 	GBK_UTF8_BUFFER(note, BLACK_LIST_NOTE_CCHARS);
-	//% getdata(t_lines - 1, 0, "请输入备注: ",
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
+	//% getdata(-1, 0, "请输入备注: ",
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
 			gbk_note, sizeof(gbk_note), DOECHO, YEA);
 	convert_g2u(gbk_note, utf8_note);
 	return black_list_add(session.uid, buf, utf8_note);
@@ -218,8 +218,8 @@ static int tui_black_list_add(void)
 static int tui_black_list_edit(user_id_t blocked, const char *orig)
 {
 	GBK_UTF8_BUFFER(note, BLACK_LIST_NOTE_CCHARS);
-	//% getdata(t_lines - 1, 0, "请输入备注: ",
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
+	//% getdata(-1, 0, "请输入备注: ",
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
 			gbk_note, sizeof(gbk_note), DOECHO, YEA);
 	convert_g2u(gbk_note, utf8_note);
 
@@ -235,7 +235,7 @@ static tui_list_query_t black_list_query(tui_list_t *p)
 	p->in_query = true;
 	if (t_query(black_list_get_name(p->data, p->cur)) == -1)
 		return FULLUPDATE;
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	//% prints("\033[0;1;33;44m 结束 Q,← │上一位 ↑│下一位 <Space>,↓ "
 	prints("\033[0;1;33;44m \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6\xcf\xc2\xd2\xbb\xce\xbb <Space>,\xa1\xfd "

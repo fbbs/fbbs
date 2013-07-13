@@ -1105,27 +1105,27 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 	if (digestmode > 1 && digestmode != ATTACH_MODE)
 		return DONOTHING;
-	//% getdata(t_lines - 1, 0, "首篇文章编号: ", num, 6, DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xca\xd7\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
+	//% getdata(-1, 0, "首篇文章编号: ", num, 6, DOECHO, YEA);
+	getdata(-1, 0, "\xca\xd7\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
 	inum1 = atoi(num);
 	if (inum1 <= 0) {
-		move(t_lines - 1, 50);
+		move(-1, 50);
 		//% prints("错误编号...");
 		prints("\xb4\xed\xce\xf3\xb1\xe0\xba\xc5...");
 		egetch();
 		return PARTUPDATE;
 	}
-	//% getdata(t_lines - 1, 25, "末篇文章编号: ", num, 6, DOECHO, YEA);
-	getdata(t_lines - 1, 25, "\xc4\xa9\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
+	//% getdata(-1, 25, "末篇文章编号: ", num, 6, DOECHO, YEA);
+	getdata(-1, 25, "\xc4\xa9\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
 	inum2 = atoi(num);
 	if (inum2 < inum1) {
-		move(t_lines - 1, 50);
+		move(-1, 50);
 		//% prints("错误区间...");
 		prints("\xb4\xed\xce\xf3\xc7\xf8\xbc\xe4...");
 		egetch();
 		return PARTUPDATE;
 	}
-	move(t_lines - 1, 50);
+	move(-1, 50);
 	//% if (askyn("确定删除", NA, NA) == YEA) {
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA) == YEA) {
 		delete_range(direct, inum1, inum2);
@@ -1142,7 +1142,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 		}
 		return DIRCHANGED;
 	}
-	move(t_lines - 1, 50);
+	move(-1, 50);
 	clrtoeol();
 	//% prints("放弃删除...");
 	prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd...");
@@ -1258,7 +1258,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		//% sprintf(genbuf, "删除文章 [%-.55s]", fileinfo->title);
 		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2 [%-.55s]", fileinfo->title);
 		if (askyn(genbuf, NA, YEA) == NA) {
-			move(t_lines - 1, 0);
+			move(-1, 0);
 			//% prints("放弃删除文章...");
 			prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2...");
 			clrtoeol();
@@ -1314,7 +1314,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 	} else if (SR_BMDELFLAG) {
 		return -1;
 	}
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//% prints("删除失败...");
 	prints("\xc9\xbe\xb3\xfd\xca\xa7\xb0\xdc...");
 	clrtoeol();
@@ -1476,8 +1476,8 @@ int read_attach(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!dashf(currdirect)) {
 		digestmode = NA;
 		setbdir(currdirect, currboard);
-		//% presskeyfor("版面附件区无内容，按任意键继续...", t_lines-1);
-		presskeyfor("\xb0\xe6\xc3\xe6\xb8\xbd\xbc\xfe\xc7\xf8\xce\xde\xc4\xda\xc8\xdd\xa3\xac\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8...", t_lines-1);
+		//% 版面附件区无内容，按任意键继续...
+		presskeyfor("\xb0\xe6\xc3\xe6\xb8\xbd\xbc\xfe\xc7\xf8\xce\xde\xc4\xda\xc8\xdd\xa3\xac\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8...", -1);
 		update_endline();
 		return DONOTHING;
 	}

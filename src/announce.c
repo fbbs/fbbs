@@ -138,7 +138,7 @@ void a_showmenu(MENU *pm) {
 		prints("  %4d %s\n", n + 1, title);
 	}
 	clrtobot();
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//Modified by IAMFAT 2002-05-26
 	//Roll Back by IAMFAT 2002-05-29
 	sprintf(
@@ -290,9 +290,9 @@ void a_savenames(MENU *pm) {
 
 void a_prompt(int bot, char* pmt, char* buf, int len) {
 	saveline(t_lines + bot, 0);
-	move(t_lines + bot, 0);
+	move(bot, 0);
 	clrtoeol();
-	getdata(t_lines + bot, 0, pmt, buf, len, DOECHO, YEA);
+	getdata(bot, 0, pmt, buf, len, DOECHO, YEA);
 	saveline(t_lines + bot, 1);
 }
 
@@ -335,8 +335,8 @@ int a_Save(const char *gbk_title, const char *file, int nomsg, int full)
 	}
 
 	if (!nomsg)
-		//% presskeyfor("已将该文章存入暂存档, 请按<Enter>继续...", t_lines - 1);
-		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2\xb4\xe6\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", t_lines - 1);
+		//% 已将该文章存入暂存档, 请按<Enter>继续...
+		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2\xb4\xe6\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", -1);
 	return FULLUPDATE;
 }
 
@@ -374,8 +374,8 @@ int a_Save2(char *path, char* key, struct fileheader* fileinfo, int nomsg) {
 	fprintf(fp, "\r\n");
 	fclose(fp);
 	if (!nomsg)
-		//% presskeyfor("已将该文章存入暂存档, 请按<Enter>继续...", t_lines-1);
-		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2\xb4\xe6\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", t_lines-1);
+		//% 已将该文章存入暂存档, 请按<Enter>继续...
+		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2\xb4\xe6\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", -1);
 	return FULLUPDATE;
 }
 
@@ -446,24 +446,24 @@ int a_Import(const char *title, const char *file, int nomsg)
 
 	FILE *fp = fopen(buf, "r");
 	if (!fp) {
-		//% presskeyfor("对不起, 您没有设定丝路. 请先设定丝路.", t_lines - 1);
-		presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", t_lines - 1);
+		//% 对不起, 您没有设定丝路. 请先设定丝路.
+		presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", -1);
 		return DONOTHING;
 	}
 	fscanf(fp, "%s", buf);
 	fclose(fp);
 
 	if (!dashd(buf)) {
-		//% presskeyfor("您设定的丝路已丢失, 请重新设定.", t_lines - 1);
-		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xc9\xe8\xb6\xa8.", t_lines - 1);
+		//% 您设定的丝路已丢失, 请重新设定.
+		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xc9\xe8\xb6\xa8.", -1);
 		return DONOTHING;
 	}
 
 	import_file(title, file, buf);
 
 	if (!nomsg && !DEFINE(DEF_MULTANNPATH)) {
-		//% presskeyfor("已将该文章放进精华区, 请按<Enter>继续...", t_lines-1);
-		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2\xb7\xc5\xbd\xf8\xbe\xab\xbb\xaa\xc7\xf8, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", t_lines-1);
+		//% 已将该文章放进精华区, 请按<Enter>继续...
+		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2\xb7\xc5\xbd\xf8\xbe\xab\xbb\xaa\xc7\xf8, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", -1);
 	}
 	return FULLUPDATE;
 }
@@ -504,8 +504,8 @@ int a_menusearch(const char *key, char *found) {
 		}
 		fclose(fn);
 		if (flag == '0') {
-			//% presskeyfor("找不到您所输入的讨论区, 按<Enter>继续...", t_lines-1);
-			presskeyfor("\xd5\xd2\xb2\xbb\xb5\xbd\xc4\xfa\xcb\xf9\xca\xe4\xc8\xeb\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8, \xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", t_lines-1);
+			//% 找不到您所输入的讨论区, 按<Enter>继续...
+			presskeyfor("\xd5\xd2\xb2\xbb\xb5\xbd\xc4\xfa\xcb\xf9\xca\xe4\xc8\xeb\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8, \xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", -1);
 			return 0;
 		}
 		return 1;
@@ -556,7 +556,7 @@ void a_forward(char *path,ITEM* pitem,int mode) {
 		}
 		outs(mesg);
 	} else {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% prints("无法转寄此项目.\n");
 		prints("\xce\xde\xb7\xa8\xd7\xaa\xbc\xc4\xb4\xcb\xcf\xee\xc4\xbf.\n");
 	}
@@ -586,8 +586,8 @@ void a_newitem(MENU *pm, int mode) {
 		case ADDMAIL:
 			sprintf(board, "bm/%s", currentuser.userid);
 			if (!dashf(board)) {
-				//% presskeyfor("请先至该讨论区将文章存入暂存档, 按<Enter>继续...", t_lines-1);
-				presskeyfor("\xc7\xeb\xcf\xc8\xd6\xc1\xb8\xc3\xcc\xd6\xc2\xdb\xc7\xf8\xbd\xab\xce\xc4\xd5\xc2\xb4\xe6\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5, \xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", t_lines-1);
+				//% "请先至该讨论区将文章存入暂存档, 按<Enter>继续...
+				presskeyfor("\xc7\xeb\xcf\xc8\xd6\xc1\xb8\xc3\xcc\xd6\xc2\xdb\xc7\xf8\xbd\xab\xce\xc4\xd5\xc2\xb4\xe6\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5, \xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", -1);
 				return;
 			}
 			//% mesg = "请输入档案之英文名称(可含数字)：";
@@ -610,8 +610,8 @@ void a_newitem(MENU *pm, int mode) {
 			break;
 		case ADDGROUP:
 			if (strlen(fpath)>=230) {
-				//% presskeyfor("对不起, 目录层次太深, 取消操做!", t_lines-1);
-				presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xbf\xc2\xbc\xb2\xe3\xb4\xce\xcc\xab\xc9\xee, \xc8\xa1\xcf\xfb\xb2\xd9\xd7\xf6!", t_lines-1);
+				//% 对不起, 目录层次太深, 取消操做!
+				presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xbf\xc2\xbc\xb2\xe3\xb4\xce\xcc\xab\xc9\xee, \xc8\xa1\xcf\xfb\xb2\xd9\xd7\xf6!", -1);
 				return;
 			}
 			mkdir(fpath, 0755);
@@ -686,7 +686,7 @@ void a_copypaste(MENU *pm, int paste) {
 	static char title[sizeof(item->title)], filename[STRLEN], fpath[PATHLEN];
 	char newpath[PATHLEN]/*,ans[5]*/;
 	FILE *fn;
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	sethomefile(fpath, currentuser.userid, ".copypaste");
 
 	if (!paste) {
@@ -699,12 +699,12 @@ void a_copypaste(MENU *pm, int paste) {
 		fpath[PATHLEN - 1] = '\0';
 		fwrite(fpath, sizeof(fpath), 1, fn);
 		fclose(fn);
-		//% presskeyfor("档案标识完成. (注意! 粘贴文章後才能将文章 delete!)", t_lines-1);
-		presskeyfor("\xb5\xb5\xb0\xb8\xb1\xea\xca\xb6\xcd\xea\xb3\xc9. (\xd7\xa2\xd2\xe2! \xd5\xb3\xcc\xf9\xce\xc4\xd5\xc2\xe1\xe1\xb2\xc5\xc4\xdc\xbd\xab\xce\xc4\xd5\xc2 delete!)", t_lines-1);
+		//% 档案标识完成. (注意! 粘贴文章後才能将文章 delete!)
+		presskeyfor("\xb5\xb5\xb0\xb8\xb1\xea\xca\xb6\xcd\xea\xb3\xc9. (\xd7\xa2\xd2\xe2! \xd5\xb3\xcc\xf9\xce\xc4\xd5\xc2\xe1\xe1\xb2\xc5\xc4\xdc\xbd\xab\xce\xc4\xd5\xc2 delete!)", -1);
 	} else {
 		if ((fn = fopen(fpath /*genbuf*/, "r")) == NULL) {
-			//% presskeyfor("请先使用 copy 命令再使用 paste 命令.", t_lines-1);
-			presskeyfor("\xc7\xeb\xcf\xc8\xca\xb9\xd3\xc3 copy \xc3\xfc\xc1\xee\xd4\xd9\xca\xb9\xd3\xc3 paste \xc3\xfc\xc1\xee.", t_lines-1);
+			//% 请先使用 copy 命令再使用 paste 命令.
+			presskeyfor("\xc7\xeb\xcf\xc8\xca\xb9\xd3\xc3 copy \xc3\xfc\xc1\xee\xd4\xd9\xca\xb9\xd3\xc3 paste \xc3\xfc\xc1\xee.", -1);
 			return;
 		}
 		fread(title, sizeof(item->title), 1, fn);
@@ -713,21 +713,19 @@ void a_copypaste(MENU *pm, int paste) {
 		fclose(fn);
 		sprintf(newpath, "%s/%s", pm->path, filename);
 		if (*title == '\0' || *filename == '\0') {
-			//% presskeyfor("请先使用 copy 命令再使用 paste 命令.", t_lines-1);
-			presskeyfor("\xc7\xeb\xcf\xc8\xca\xb9\xd3\xc3 copy \xc3\xfc\xc1\xee\xd4\xd9\xca\xb9\xd3\xc3 paste \xc3\xfc\xc1\xee.", t_lines-1);
+			//% 请先使用 copy 命令再使用 paste 命令.
+			presskeyfor("\xc7\xeb\xcf\xc8\xca\xb9\xd3\xc3 copy \xc3\xfc\xc1\xee\xd4\xd9\xca\xb9\xd3\xc3 paste \xc3\xfc\xc1\xee.", -1);
 		} else if (!(dashf(fpath) || dashd(fpath))) {
 			//% sprintf(genbuf, "您拷贝的%s档案/目录不存在,可能被删除,取消粘贴.", filename);
 			sprintf(genbuf, "\xc4\xfa\xbf\xbd\xb1\xb4\xb5\xc4%s\xb5\xb5\xb0\xb8/\xc4\xbf\xc2\xbc\xb2\xbb\xb4\xe6\xd4\xda,\xbf\xc9\xc4\xdc\xb1\xbb\xc9\xbe\xb3\xfd,\xc8\xa1\xcf\xfb\xd5\xb3\xcc\xf9.", filename);
-			//a_prompt(-1,genbuf,ans,2);
-			presskeyfor(genbuf, t_lines-1);
+			presskeyfor(genbuf, -1);
 		} else if (dashf(newpath) || dashd(newpath)) {
 			//% sprintf(genbuf, "%s 档案/目录已经存在. ", filename);
 			sprintf(genbuf, "%s \xb5\xb5\xb0\xb8/\xc4\xbf\xc2\xbc\xd2\xd1\xbe\xad\xb4\xe6\xd4\xda. ", filename);
-			//a_prompt(-1,genbuf,ans,2);
-			presskeyfor(genbuf, t_lines-1);
+			presskeyfor(genbuf, -1);
 		} else if (strstr(newpath, fpath) != NULL) {
-			//% presskeyfor("无法将目录搬进自己的子目录中, 会造成死回圈.", t_lines-1);
-			presskeyfor("\xce\xde\xb7\xa8\xbd\xab\xc4\xbf\xc2\xbc\xb0\xe1\xbd\xf8\xd7\xd4\xbc\xba\xb5\xc4\xd7\xd3\xc4\xbf\xc2\xbc\xd6\xd0, \xbb\xe1\xd4\xec\xb3\xc9\xcb\xc0\xbb\xd8\xc8\xa6.", t_lines-1);
+			//% 无法将目录搬进自己的子目录中, 会造成死回圈.
+			presskeyfor("\xce\xde\xb7\xa8\xbd\xab\xc4\xbf\xc2\xbc\xb0\xe1\xbd\xf8\xd7\xd4\xbc\xba\xb5\xc4\xd7\xd3\xc4\xbf\xc2\xbc\xd6\xd0, \xbb\xe1\xd4\xec\xb3\xc9\xcb\xc0\xbb\xd8\xc8\xa6.", -1);
 		} else {
 			if (dashd(fpath)) { /* 是目录 */
 				sprintf(genbuf, "/bin/cp -rp %s %s", fpath, newpath);
@@ -761,7 +759,7 @@ void a_delete(MENU *pm) {
 	int n;
 	FILE *fn;
 	item = pm->item[pm->now];
-	move(t_lines - 2, 0);
+	move(-2, 0);
 	prints("%5d  %-50s\n", pm->now + 1, item->title);
 	sethomefile(fpath, currentuser.userid, ".copypaste");
 	if ((fn = fopen(fpath /*genbuf*/, "r")) != NULL) {
@@ -859,27 +857,27 @@ int a_Rangefunc(MENU *pm) {
 		strcat(info, buf);
 	}
 	strcat(info, " [0]: ");
-	getdata(t_lines-1, 0, info, ans, 2, DOECHO, YEA);
+	getdata(-1, 0, info, ans, 2, DOECHO, YEA);
 	type = atoi(ans);
 	if (type <= 0 || type > max) {
 		saveline(t_lines - 1, 1);
 		return DONOTHING;
 	}
 
-	move(t_lines-1, 0);
+	move(-1, 0);
 	clrtoeol();
 	//% prints("区段操作: %s", items[type-1]);
 	prints("\xc7\xf8\xb6\xce\xb2\xd9\xd7\xf7: %s", items[type-1]);
-	//% getdata(t_lines-1, 20, "首篇文章编号: ", ans, 6, DOECHO, YEA);
-	getdata(t_lines-1, 20, "\xca\xd7\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", ans, 6, DOECHO, YEA);
+	//% 首篇文章编号: 
+	getdata(-1, 20, "\xca\xd7\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", ans, 6, DOECHO, YEA);
 	num1=atoi(ans);
 	if (num1>0) {
-		//% getdata(t_lines-1, 40, "末片文章编号: ", ans, 6, DOECHO, YEA);
-		getdata(t_lines-1, 40, "\xc4\xa9\xc6\xac\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", ans, 6, DOECHO, YEA);
+		//% "末片文章编号: "
+		getdata(-1, 40, "\xc4\xa9\xc6\xac\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", ans, 6, DOECHO, YEA);
 		num2=atoi(ans);
 	}
 	if (num1<=0||num2<=0||num2<=num1 ||num2>pm->num) {
-		move(t_lines-1, 60);
+		move(-1, 60);
 		//% prints("操作错误...");
 		prints("\xb2\xd9\xd7\xf7\xb4\xed\xce\xf3...");
 		egetch();
@@ -904,22 +902,22 @@ int a_Rangefunc(MENU *pm) {
 
 		sethomefile(annpath, currentuser.userid, ".announcepath");
 		if ((fn = fopen(annpath, "r")) == NULL) {
-			//% presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.", t_lines-1);
-			presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", t_lines-1);
+			//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
+			presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", -1);
 			saveline(t_lines - 1, 1);
 			return DONOTHING;
 		}
 		fscanf(fn, "%s", annpath);
 		fclose(fn);
 		if (!dashd(annpath)) {
-			//% presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.", t_lines-1);
-			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", t_lines-1);
+			//% 您设定的丝路已丢失, 请重新用 f 设定.
+			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", -1);
 			saveline(t_lines - 1, 1);
 			return DONOTHING;
 		}
 		if (!strcmp(annpath, pm->path)) {
-			//% presskeyfor("您设定的丝路与当前目录相同，本次操作取消.", t_lines-1);
-			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd3\xeb\xb5\xb1\xc7\xb0\xc4\xbf\xc2\xbc\xcf\xe0\xcd\xac\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", t_lines-1);
+			//% 您设定的丝路与当前目录相同，本次操作取消.
+			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd3\xeb\xb5\xb1\xc7\xb0\xc4\xbf\xc2\xbc\xcf\xe0\xcd\xac\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", -1);
 			return DONOTHING;
 		}
 
@@ -928,9 +926,8 @@ int a_Rangefunc(MENU *pm) {
 			sprintf(genbuf, "%s/%s", pm->path, item->fname);
 			if (dashd(genbuf))
 				if (strstr(annpath, genbuf)!=NULL) {
-					//% presskeyfor("您设定的丝路位于所选某个目录中，会导致嵌套目录，本次操作取消.", t_lines
-					presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xce\xbb\xd3\xda\xcb\xf9\xd1\xa1\xc4\xb3\xb8\xf6\xc4\xbf\xc2\xbc\xd6\xd0\xa3\xac\xbb\xe1\xb5\xbc\xd6\xc2\xc7\xb6\xcc\xd7\xc4\xbf\xc2\xbc\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", t_lines
-							-1);
+					//% 您设定的丝路位于所选某个目录中，会导致嵌套目录，本次操作取消.
+					presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xce\xbb\xd3\xda\xcb\xf9\xd1\xa1\xc4\xb3\xb8\xf6\xc4\xbf\xc2\xbc\xd6\xd0\xa3\xac\xbb\xe1\xb5\xbc\xd6\xc2\xc7\xb6\xcc\xd7\xc4\xbf\xc2\xbc\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", -1);
 					return DONOTHING;
 				}
 		}
@@ -979,21 +976,21 @@ int a_a_Import(MENU *pm, int msg, int menuitem) {
 
 	sethomefile(annpath, currentuser.userid, ".announcepath");
 	if ((fn = fopen(annpath, "r")) == NULL) {
-		//% presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.", t_lines-1);
-		presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", t_lines-1);
+		//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
+		presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", -1);
 		return 1;
 	}
 	fscanf(fn, "%s", annpath);
 	fclose(fn);
 	if (!dashd(annpath)) {
-		//% presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.", t_lines-1);
-		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", t_lines-1);
+		//% 您设定的丝路已丢失, 请重新用 f 设定.
+		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", -1);
 		return 1;
 	}
 
 	if (!strcmp(annpath, pm->path)) {
-		//% presskeyfor("您设定的丝路与当前目录相同，本次操作取消.", t_lines-1);
-		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd3\xeb\xb5\xb1\xc7\xb0\xc4\xbf\xc2\xbc\xcf\xe0\xcd\xac\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", t_lines-1);
+		//% 您设定的丝路与当前目录相同，本次操作取消.
+		presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd3\xeb\xb5\xb1\xc7\xb0\xc4\xbf\xc2\xbc\xcf\xe0\xcd\xac\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", -1);
 		return 1;
 	}
 
@@ -1001,8 +998,8 @@ int a_a_Import(MENU *pm, int msg, int menuitem) {
 
 	if (dashd(genbuf))
 		if (strstr(annpath, genbuf)!=NULL) {
-			//% presskeyfor("您设定的丝路位于所选目录中，会导致嵌套目录，本次操作取消.", t_lines-1);
-			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xce\xbb\xd3\xda\xcb\xf9\xd1\xa1\xc4\xbf\xc2\xbc\xd6\xd0\xa3\xac\xbb\xe1\xb5\xbc\xd6\xc2\xc7\xb6\xcc\xd7\xc4\xbf\xc2\xbc\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", t_lines-1);
+			//% 您设定的丝路位于所选目录中，会导致嵌套目录，本次操作取消.
+			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xce\xbb\xd3\xda\xcb\xf9\xd1\xa1\xc4\xbf\xc2\xbc\xd6\xd0\xa3\xac\xbb\xe1\xb5\xbc\xd6\xc2\xc7\xb6\xcc\xd7\xc4\xbf\xc2\xbc\xa3\xac\xb1\xbe\xb4\xce\xb2\xd9\xd7\xf7\xc8\xa1\xcf\xfb.", -1);
 			return 1;
 		}
 
@@ -1036,8 +1033,8 @@ int a_a_Import(MENU *pm, int msg, int menuitem) {
 	system(genbuf);
 
 	if (msg)
-		//% presskeyfor("已将该文章/目录放进丝路, 请按<Enter>继续...", t_lines-1);
-		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2/\xc4\xbf\xc2\xbc\xb7\xc5\xbd\xf8\xcb\xbf\xc2\xb7, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", t_lines-1);
+		//% 已将该文章/目录放进丝路, 请按<Enter>继续...
+		presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xce\xc4\xd5\xc2/\xc4\xbf\xc2\xbc\xb7\xc5\xbd\xf8\xcb\xbf\xc2\xb7, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", -1);
 
 	for (ch = 0; ch < newpm.num; ch++)
 		free(newpm.item[ch]);
@@ -1243,7 +1240,7 @@ void a_manager(MENU *pm, int ch) {
 			} else
 				//% strcpy(genbuf, "您还没有用 f 设置丝路.");
 				strcpy(genbuf, "\xc4\xfa\xbb\xb9\xc3\xbb\xd3\xd0\xd3\xc3 f \xc9\xe8\xd6\xc3\xcb\xbf\xc2\xb7.");
-			presskeyfor(genbuf, t_lines-1);
+			presskeyfor(genbuf, -1);
 			break;
 		}
 			/* add end */
@@ -1271,8 +1268,8 @@ void a_manager(MENU *pm, int ch) {
 				if ((fn = fopen(genbuf, "w+")) != NULL) {
 					fprintf(fn, "%s", pm->path);
 					fclose(fn);
-					//% presskeyfor("已将该路径设为丝路, 请按<Enter>继续...", t_lines-1);
-					presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xc2\xb7\xbe\xb6\xc9\xe8\xce\xaa\xcb\xbf\xc2\xb7, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", t_lines-1);
+					//% 已将该路径设为丝路, 请按<Enter>继续...
+					presskeyfor("\xd2\xd1\xbd\xab\xb8\xc3\xc2\xb7\xbe\xb6\xc9\xe8\xce\xaa\xcb\xbf\xc2\xb7, \xc7\xeb\xb0\xb4<Enter>\xbc\xcc\xd0\xf8...", -1);
 				}
 			}
 			break;
@@ -1290,7 +1287,7 @@ void a_manager(MENU *pm, int ch) {
 					sprintf(genbuf, "\xce\xb4\xb7\xa2\xcf\xd6\xb6\xaa\xca\xa7\xcc\xf5\xc4\xbf,\xc7\xeb\xb0\xb4""Enter\xbc\xcc\xd0\xf8...");
 				}
 				//  a_prompt(-1,genbuf,ans,39);
-				presskeyfor(genbuf, t_lines-1);
+				presskeyfor(genbuf, -1);
 				pm->page = 9999;
 			}
 			break;
@@ -1345,11 +1342,11 @@ void a_manager(MENU *pm, int ch) {
 				changed_T[38]='\0';
 				rtrim(changed_T);
 				saveline(t_lines-2, 0);
-				move(t_lines-2, 0);
+				move(-2, 0);
 				clrtoeol();
 				//Modified by IAMFAT 2002-05-30
-				//% getdata(t_lines-2, 0, "新标题: ", changed_T, 39, DOECHO, NA);
-				getdata(t_lines-2, 0, "\xd0\xc2\xb1\xea\xcc\xe2: ", changed_T, 39, DOECHO, NA);
+				//% "新标题: 
+				getdata(-2, 0, "\xd0\xc2\xb1\xea\xcc\xe2: ", changed_T, 39, DOECHO, NA);
 				saveline(t_lines-2, 1);
 				//Modify End.
 				/*
@@ -2326,7 +2323,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 				} else
 					//% strcpy(genbuf, "您还没有用 f 设置丝路.");
 					strcpy(genbuf, "\xc4\xfa\xbb\xb9\xc3\xbb\xd3\xd0\xd3\xc3 f \xc9\xe8\xd6\xc3\xcb\xbf\xc2\xb7.");
-				presskeyfor(genbuf, t_lines-1);
+				presskeyfor(genbuf, -1);
 				redrawflag=1;
 				break;
 			case 't'://重名名
@@ -2359,8 +2356,8 @@ int set_ann_path(const char *title, const char *path, int mode)
 								PERM_BOARDS, 0);
 						return 0;
 					} else
-						//% presskeyfor("该丝路已丢失, 请重新设定", t_lines-1);
-						presskeyfor("\xb8\xc3\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xc9\xe8\xb6\xa8", t_lines-1);
+						//% 该丝路已丢失, 请重新设定
+						presskeyfor("\xb8\xc3\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xc9\xe8\xb6\xa8", -1);
 
 				}
 				break;

@@ -604,8 +604,8 @@ static int login_query(void)
 		}
 	}
 #else // ENABLE_SSH
-	//% presskeyfor("\033[1;33m欢迎使用ssh方式访问本站，请按任意键继续", t_lines - 1);
-	presskeyfor("\033[1;33m\xbb\xb6\xd3\xad\xca\xb9\xd3\xc3ssh\xb7\xbd\xca\xbd\xb7\xc3\xce\xca\xb1\xbe\xd5\xbe\xa3\xac\xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8", t_lines - 1);
+	//% 欢迎使用ssh方式访问本站，请按任意键继续
+	presskeyfor("\033[1;33m\xbb\xb6\xd3\xad\xca\xb9\xd3\xc3ssh\xb7\xbd\xca\xbd\xb7\xc3\xce\xca\xb1\xbe\xd5\xbe\xa3\xac\xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8", -1);
 #endif // ENABLE_SSH
 
 	if (multi_user_check() == -1)
@@ -648,7 +648,7 @@ static void notepad_init(void)
 	}
 	fb_time_t now = fb_time();
 	if ((now - lastnote) >= maxsec) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		//% prints("对不起，系统自动发信，请稍候.....");
 		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xcf\xb5\xcd\xb3\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....");
 		refresh();
@@ -750,7 +750,7 @@ static void user_login(void)
 	}
 	show_statshm("0Announce/bbslist/day", 1);
 	refresh();
-	move(t_lines - 2, 0);
+	move(-2, 0);
 	clrtoeol();
 	if (currentuser.numlogins < 1) {
 		currentuser.numlogins = 0;

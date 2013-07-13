@@ -273,7 +273,7 @@ int namecomplete(char *prompt, char *data) {
 				len = MaxLen(morelist, NUMLINES);
 			} //while
 			if (morelist) {
-				move(t_lines - 1, 0);
+				move(-1, 0);
 				//% prints("[1;44m-- 还有 --                                                                     [m");
 				prints("[1;44m-- \xbb\xb9\xd3\xd0 --                                                                     [m");
 			}
@@ -479,7 +479,7 @@ int usercomplete(char *prompt, char *data) {
 				len = UserMaxLen((void *)cwlist, cwnum, morenum, NUMLINES);
 			}
 			if (morenum < cwnum) {
-				move(t_lines - 1, 0);
+				move(-1, 0);
 				//% prints("[1;44m-- 还有使用者 --                                                               [m");
 				prints("[1;44m-- \xbb\xb9\xd3\xd0\xca\xb9\xd3\xc3\xd5\xdf --                                                               [m");
 			} else {

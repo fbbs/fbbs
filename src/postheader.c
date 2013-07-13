@@ -136,16 +136,16 @@ int post_header(struct postheader *header)
 		if (header->reply) {
 			//% sprintf(r_prompt, "引言模式 [[1m%c[m]", header->include_mode);
 			sprintf(r_prompt, "\xd2\xfd\xd1\xd4\xc4\xa3\xca\xbd [[1m%c[m]", header->include_mode);
-			move(t_lines - 4, 0);
+			move(-4, 0);
 		} else if (numofprefix == 0)
-		move(t_lines - 4, 0);
+		move(-4, 0);
 		else
-		move(t_lines - 5, 0);
+		move(-5, 0);
 #else
 		if (header->reply)
 			//% sprintf(r_prompt, "引言模式 [[1m%c[m]", header->include_mode);
 			sprintf(r_prompt, "\xd2\xfd\xd1\xd4\xc4\xa3\xca\xbd [[1m%c[m]", header->include_mode);
-		move(t_lines - 4, 0);
+		move(-4, 0);
 #endif
 		//清除该行内容
 		clrtobot();
@@ -176,7 +176,7 @@ int post_header(struct postheader *header)
 				index = 0;
 				print_prefixbuf(pbuf, index);
 				while (1) {
-					getdata(t_lines - 4, 0, pbuf, ans, 2, DOECHO, YEA);
+					getdata(-4, 0, pbuf, ans, 2, DOECHO, YEA);
 					if (!ans[0])
 					return NA;
 					index = ans[0] - '0';
@@ -188,12 +188,12 @@ int post_header(struct postheader *header)
 			} else {
 				print_prefixbuf(pbuf, index);
 			}
-			move(t_lines - 4, 0);
+			move(-4, 0);
 			outs(pbuf);
 		}
 
 		//对于回复和发信，title初始不为空.所以只有在发表文章时，才会出现"[正在设定主题]"
-		move(t_lines-3, 0 );
+		move(-3, 0);
 #endif
 		//% prints("使用标题: [1m%-50s[m\n",
 		prints("\xca\xb9\xd3\xc3\xb1\xea\xcc\xe2: [1m%-50s[m\n",
@@ -213,14 +213,14 @@ int post_header(struct postheader *header)
 		//对于发表文章或者投条情况
 		if (titlebuf[0] == '\0') {
 			//move到相应的行，为输入做准备
-			move(t_lines - 1, 0);
+			move(-1, 0);
 			//% if (header->postboard == YEA || strcmp(header->title, "没主题"))
 			if (header->postboard == YEA || strcmp(header->title, "\xc3\xbb\xd6\xf7\xcc\xe2"))
 				ansi_filter(titlebuf, header->title);
 
 			//从当前行获得用户输入放到titlebuf中，最多存入50-1个字节(此处会阻塞在用户输入上，只到响应enter)
-			//% getdata(t_lines - 1, 0, "标题: ", titlebuf, 50, DOECHO, NA);
-			getdata(t_lines - 1, 0, "\xb1\xea\xcc\xe2: ", titlebuf, 50, DOECHO, NA);
+			//% getdata(-1, 0, "标题: ", titlebuf, 50, DOECHO, NA);
+			getdata(-1, 0, "\xb1\xea\xcc\xe2: ", titlebuf, 50, DOECHO, NA);
 			check_title(titlebuf, sizeof(titlebuf));
 
 			//在用户输入为空的情况下，如果是发表文章则直接取消，如果是投条用户还可以继续，信头为没主题
@@ -238,7 +238,7 @@ int post_header(struct postheader *header)
 		}
 
 		trim(header->title); //add by money 2003.10.29.
-		move(t_lines - 1, 0);
+		move(-1, 0);
 
 #ifdef ENABLE_PREFIX	
 		sprintf(mybuf,
@@ -265,7 +265,7 @@ int post_header(struct postheader *header)
 						: "");
 #endif
 		//打印出提示信息，并阻塞在用户输入动作上,用户最多输入2个字节
-		getdata(t_lines - 1, 0, mybuf, ans, 3, DOECHO, YEA);
+		getdata(-1, 0, mybuf, ans, 3, DOECHO, YEA);
 		ans[0] = toupper(ans[0]);
 
 		//用户对签名档设置，包括取消当前操作
@@ -321,7 +321,7 @@ int post_header(struct postheader *header)
 		//修改前缀
 		else if (!header->reply && numofprefix && ans[0] == 'F') {
 			int i;
-			getdata(t_lines - 1, 0, pbuf, ans, 3, DOECHO, YEA);
+			getdata(-1, 0, pbuf, ans, 3, DOECHO, YEA);
 			i = ans[0] - '0';
 			if (i >= 0 && i <= numofprefix &&
 					!(i == 0 && (board.flag & BOARD_PREFIX_FLAG)))

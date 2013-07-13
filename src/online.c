@@ -265,8 +265,8 @@ static int alter_nick(online_users_t *up)
 	if (streq(currentuser.userid, "guest"))
 		return DONOTHING;
 	buf[0] = '\0';
-	//% getdata(t_lines - 1, 0, "变换昵称(不是临时变换)为: ", buf, NAMELEN,
-	getdata(t_lines - 1, 0, "\xb1\xe4\xbb\xbb\xea\xc7\xb3\xc6(\xb2\xbb\xca\xc7\xc1\xd9\xca\xb1\xb1\xe4\xbb\xbb)\xce\xaa: ", buf, NAMELEN,
+	//% getdata(-1, 0, "变换昵称(不是临时变换)为: ", buf, NAMELEN,
+	getdata(-1, 0, "\xb1\xe4\xbb\xbb\xea\xc7\xb3\xc6(\xb2\xbb\xca\xc7\xc1\xd9\xca\xb1\xb1\xe4\xbb\xbb)\xce\xaa: ", buf, NAMELEN,
 			DOECHO, NA);
 	if (buf[0] != '\0') {
 		set_safe_record();
@@ -318,7 +318,7 @@ int tui_follow_uname(const char *uname)
 	if (follow(session.uid, uname, NULL)) {
 		//% snprintf(buf, sizeof(buf), "成功关注 %s", uname);
 		snprintf(buf, sizeof(buf), "\xb3\xc9\xb9\xa6\xb9\xd8\xd7\xa2 %s", uname);
-		presskeyfor(buf, t_lines - 1);
+		presskeyfor(buf, -1);
 	}
 	return MINIUPDATE;
 }
@@ -333,7 +333,7 @@ static tui_list_query_t online_users_query(tui_list_t *p)
 		return DONOTHING;
 
 	t_query(ip->name);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//% prints("\033[0;1;37;44m聊天[\033[1;32mt\033[37m] 寄信[\033[1;32mm\033[37m] "
 	prints("\033[0;1;37;44m\xc1\xc4\xcc\xec[\033[1;32mt\033[37m] \xbc\xc4\xd0\xc5[\033[1;32mm\033[37m] "
 			//% "送讯息[\033[1;32ms\033[37m] 加,减朋友[\033[1;32mo\033[37m,\033[1;32md\033[37m] "
@@ -389,7 +389,7 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 				if (uid > 0 && unfollow(session.uid, uid)) {
 					//% snprintf(buf, sizeof(buf), "已取消关注 %s", ip->name);
 					snprintf(buf, sizeof(buf), "\xd2\xd1\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2 %s", ip->name);
-					presskeyfor(buf, t_lines - 1);
+					presskeyfor(buf, -1);
 					return PARTUPDATE;
 				}
 			}		

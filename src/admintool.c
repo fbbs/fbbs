@@ -887,8 +887,8 @@ static void show_edit_board_menu(board_t *bp, board_t *pp)
 static bool alter_board_name(board_t *bp)
 {
 	char bname[BOARD_NAME_LEN + 1];
-	//% getdata(t_lines - 2, 0, "新讨论区名称: ", bname, sizeof(bname),
-	getdata(t_lines - 2, 0, "\xd0\xc2\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6: ", bname, sizeof(bname),
+	//% 新讨论区名称: 
+	getdata(-2, 0, "\xd0\xc2\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6: ", bname, sizeof(bname),
 			DOECHO, YEA);
 	if (!*bname || streq(bp->name, bname) || !valid_board_name(bname))
 		return 0;
@@ -906,9 +906,9 @@ static bool alter_board_name(board_t *bp)
 static bool alter_board_descr(board_t *bp)
 {
 	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
-	//% getdata(t_lines - 2, 0, "新讨论区说明: ", gbk_descr, sizeof(gbk_descr),
-	getdata(t_lines - 2, 0, "\xd0\xc2\xcc\xd6\xc2\xdb\xc7\xf8\xcb\xb5\xc3\xf7: ", gbk_descr, sizeof(gbk_descr),
-			DOECHO, YEA);
+	//% 新讨论区说明:
+	getdata(-2, 0, "\xd0\xc2\xcc\xd6\xc2\xdb\xc7\xf8\xcb\xb5\xc3\xf7: ",
+			gbk_descr, sizeof(gbk_descr), DOECHO, YEA);
 	if (!*gbk_descr)
 		return 0;
 

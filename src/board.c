@@ -128,8 +128,8 @@ static int tui_favorite_add(tui_list_t *p)
 
 	if (l->favorite) {
 		if (l->count >= FAV_BOARD_LIMIT) {
-			//% presskeyfor("收藏夹已满", t_lines - 1);
-			presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", t_lines - 1);
+			//% 收藏夹已满
+			presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", -1);
 			return MINIUPDATE;
 		}
 
@@ -175,8 +175,8 @@ static int tui_favorite_copy(tui_list_t *p)
 		return DONOTHING;
 
 	l->copy_bid = bp->id;
-	//% presskeyfor("版面已剪切 请按P粘贴", t_lines - 1);
-	presskeyfor("\xb0\xe6\xc3\xe6\xd2\xd1\xbc\xf4\xc7\xd0 \xc7\xeb\xb0\xb4P\xd5\xb3\xcc\xf9", t_lines - 1);
+	//% 版面已剪切 请按P粘贴
+	presskeyfor("\xb0\xe6\xc3\xe6\xd2\xd1\xbc\xf4\xc7\xd0 \xc7\xeb\xb0\xb4P\xd5\xb3\xcc\xf9", -1);
 	return MINIUPDATE;
 }
 
@@ -203,22 +203,22 @@ static int tui_favorite_mkdir(tui_list_t *p)
 		return DONOTHING;
 
 	if (l->count >= FAV_BOARD_LIMIT) {
-		//% presskeyfor("收藏夹已满", t_lines - 1);
-		presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", t_lines - 1);
+		//% 收藏夹已满
+		presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", -1);
 		return MINIUPDATE;
 	}
 
 	GBK_UTF8_BUFFER(name, BOARD_NAME_LEN);
 	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
 
-	//% getdata(t_lines - 1, 0, "创建自定义目录: ", gbk_name, BOARD_NAME_LEN + 1,
-	getdata(t_lines - 1, 0, "\xb4\xb4\xbd\xa8\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc: ", gbk_name, BOARD_NAME_LEN + 1,
+	//% getdata(-1, 0, "创建自定义目录: ", gbk_name, BOARD_NAME_LEN + 1,
+	getdata(-1, 0, "\xb4\xb4\xbd\xa8\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc: ", gbk_name, BOARD_NAME_LEN + 1,
 			DOECHO, YEA);
 	if (gbk_name[0] != '\0') {
 		//% strlcpy(gbk_descr, "自定义目录", sizeof(gbk_descr));
 		strlcpy(gbk_descr, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc", sizeof(gbk_descr));
-		//% getdata(t_lines - 1, 0, "自定义目录描述: ", gbk_descr,
-		getdata(t_lines - 1, 0, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xe8\xca\xf6: ", gbk_descr,
+		//% getdata(-1, 0, "自定义目录描述: ", gbk_descr,
+		getdata(-1, 0, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xe8\xca\xf6: ", gbk_descr,
 				sizeof(gbk_descr), DOECHO, NA);
 
 		convert_g2u(gbk_name, utf8_name);
@@ -246,13 +246,13 @@ static int tui_favorite_rename(tui_list_t *p)
 	GBK_UTF8_BUFFER(descr, BOARD_DESCR_CCHARS);
 
 	strlcpy(gbk_name, bp->name, sizeof(gbk_name));
-	//% getdata(t_lines - 1, 0, "修改自定义目录名: ", gbk_name, BOARD_NAME_LEN,
-	getdata(t_lines - 1, 0, "\xd0\xde\xb8\xc4\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xfb: ", gbk_name, BOARD_NAME_LEN,
+	//% getdata(-1, 0, "修改自定义目录名: ", gbk_name, BOARD_NAME_LEN,
+	getdata(-1, 0, "\xd0\xde\xb8\xc4\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xfb: ", gbk_name, BOARD_NAME_LEN,
 			DOECHO, NA);
 	if (gbk_name[0] != '\0' && !streq(gbk_name, bp->name)) {
 		strlcpy(gbk_descr, bp->descr, sizeof(gbk_descr));
-		//% getdata(t_lines - 1, 0, "自定义目录描述: ", gbk_descr,
-		getdata(t_lines - 1, 0, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xe8\xca\xf6: ", gbk_descr,
+		//% getdata(-1, 0, "自定义目录描述: ", gbk_descr,
+		getdata(-1, 0, "\xd7\xd4\xb6\xa8\xd2\xe5\xc4\xbf\xc2\xbc\xc3\xe8\xca\xf6: ", gbk_descr,
 				BOARD_DESCR_CCHARS, DOECHO, NA);
 
 		convert_g2u(gbk_name, utf8_name);
@@ -459,7 +459,7 @@ static int search_board(const choose_board_t *cbrd, int *num)
 	}
 
 	while (1) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		//% prints("请输入要查找的版面名称：%s", bname);
 		prints("\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb2\xe9\xd5\xd2\xb5\xc4\xb0\xe6\xc3\xe6\xc3\xfb\xb3\xc6\xa3\xba%s", bname);
@@ -503,7 +503,7 @@ static int search_board(const choose_board_t *cbrd, int *num)
 		bell(1);
 	}
 	if (find) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		//% return 2 /* 结束了 */;
 		return 2 /* \xbd\xe1\xca\xf8\xc1\xcb */;
@@ -734,8 +734,8 @@ static int show_board_info(board_t *board)
 int show_hotspot(void)
 {
 	char ans[2];
-	//% getdata(t_lines - 1, 0, "您选择? (1) 本日十大  (2) 系统热点 [1]",
-	getdata(t_lines - 1, 0, "\xc4\xfa\xd1\xa1\xd4\xf1? (1) \xb1\xbe\xc8\xd5\xca\xae\xb4\xf3  (2) \xcf\xb5\xcd\xb3\xc8\xc8\xb5\xe3 [1]",
+	//% getdata(-1, 0, "您选择? (1) 本日十大  (2) 系统热点 [1]",
+	getdata(-1, 0, "\xc4\xfa\xd1\xa1\xd4\xf1? (1) \xb1\xbe\xc8\xd5\xca\xae\xb4\xf3  (2) \xcf\xb5\xcd\xb3\xc8\xc8\xb5\xe3 [1]",
 			ans, 2, DOECHO, YEA);
 	if (ans[0] == '2')
 		show_help("etc/hotspot");

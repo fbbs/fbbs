@@ -28,9 +28,9 @@ void presskeyfor(const char *msg, int x)
  */
 void pressanykey(void)
 {
-	presskeyfor("\033[m                                "
-			//% "\033[5;1;33m按任何键继续...[m", t_lines - 1);
-			"\033[5;1;33m\xb0\xb4\xc8\xce\xba\xce\xbc\xfc\xbc\xcc\xd0\xf8...[m", t_lines - 1);
+	//% 按任何键继续...
+	presskeyfor("\033[m                                \033[5;1;33m"
+			"\xb0\xb4\xc8\xce\xba\xce\xbc\xfc\xbc\xcc\xd0\xf8...\033[m", -1);
 }
 
 int pressreturn(void)
@@ -38,7 +38,7 @@ int pressreturn(void)
 	extern int showansi;
 	char buf[3];
 	showansi = 1;
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	getdata(
 			t_lines - 1,
@@ -46,7 +46,7 @@ int pressreturn(void)
 			//% "                              [1;33m请按 ◆[5;36mEnter[m[1;33m◆ 继续\033[m",
 			"                              [1;33m\xc7\xeb\xb0\xb4 \xa1\xf4[5;36mEnter[m[1;33m\xa1\xf4 \xbc\xcc\xd0\xf8\033[m",
 			buf, 2, NOECHO, YEA);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	refresh();
 	return 0;
@@ -67,7 +67,7 @@ bool askyn(const char *str, bool defa, bool gobottom)
 	snprintf(buf, sizeof(buf), "%s %s", str, (defa) ? "(YES/no)? [Y]"
 			: "(yes/NO)? [N]");
 	if (gobottom)
-		move(t_lines - 1, 0);
+		move(-1, 0);
 	getyx(&x, &y);
 	clrtoeol();
 	getdata(x, y, buf, ans, 2, DOECHO, YEA);

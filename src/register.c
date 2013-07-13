@@ -440,7 +440,7 @@ int fill_reg_form(void)
 				reg.assoc, sizeof(reg.assoc));
 
 		char ans[3];
-		getdata(t_lines - 1, 0,
+		getdata(-1, 0,
 				//% "以上资料是否正确, 按 Q 放弃注册 (Y/N/Quit)? [Y]: ",
 				"\xd2\xd4\xc9\xcf\xd7\xca\xc1\xcf\xca\xc7\xb7\xf1\xd5\xfd\xc8\xb7, \xb0\xb4 Q \xb7\xc5\xc6\xfa\xd7\xa2\xb2\xe1 (Y/N/Quit)? [Y]: ",
 				ans, sizeof(ans), DOECHO, YEA);

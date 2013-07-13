@@ -1085,7 +1085,7 @@ int user_vote(int num) {
 	int votevalue;
 	int aborted = NA, pos;
 
-	move(t_lines - 2, 0);
+	move(-2, 0);
 	get_record(controlfile, &currvote, sizeof(struct votebal), num);
 	if (currentuser.firstlogin > currvote.opendate) { //注册日在投票开启日前不能投票
 		//% prints("对不起, 投票名册上找不到您的大名\n");

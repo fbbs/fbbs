@@ -62,8 +62,8 @@ static int club_add(void)
 	if (*user == '\0' || !getuserec(user, &urec))
 		return -1;
 	if (!strcasecmp(user, "guest")) {
-		//% presskeyfor("不能邀请guest加入俱乐部", t_lines - 1);
-		presskeyfor("\xb2\xbb\xc4\xdc\xd1\xfb\xc7\xebguest\xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf", t_lines - 1);
+		//% 不能邀请guest加入俱乐部
+		presskeyfor("\xb2\xbb\xc4\xdc\xd1\xfb\xc7\xebguest\xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf", -1);
 		return -1;
 	}
 	//% getdata(1, 0, "输入补充说明:", ps, sizeof(ps), DOECHO, YEA);

@@ -720,12 +720,12 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 		}
 
 		// If screen is filled, wait for user command.
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		(*prompt)(more);
 
 		ch = morekey();
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		refresh();
 		switch (ch) {
@@ -771,8 +771,8 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				more_seek(more, more->total - (t_lines - 1) + i);
 				break;
 			case 'G':
-				//% getdata(t_lines - 1, 0, "跳转到的行号:", linebuf,
-				getdata(t_lines - 1, 0, "\xcc\xf8\xd7\xaa\xb5\xbd\xb5\xc4\xd0\xd0\xba\xc5:", linebuf,
+				//% getdata(-1, 0, "跳转到的行号:", linebuf,
+				getdata(-1, 0, "\xcc\xf8\xd7\xaa\xb5\xbd\xb5\xc4\xd0\xd0\xba\xc5:", linebuf,
 						sizeof(linebuf), true, true);
 				new_row = strtol(linebuf, NULL, 10) - 1;
 				if (new_row < 0)
@@ -915,14 +915,14 @@ int msg_more(void)
 	int ch;
 	more_file_t *more = more_open(file, 0, DEFAULT_TERM_WIDTH, more_open_msg);
 	if (more == NULL) {
-		//% presskeyfor("没有任何的讯息存在...", t_lines - 1);
-		presskeyfor("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xb5\xc4\xd1\xb6\xcf\xa2\xb4\xe6\xd4\xda...", t_lines - 1);
+		//% 没有任何的讯息存在...
+		presskeyfor("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xb5\xc4\xd1\xb6\xcf\xa2\xb4\xe6\xd4\xda...", -1);
 	} else {
 		clear();
 		ch = more_main(more, false, 0, 0, false, more_prompt_msg,
 				more_handle_msg);
 		if (!ch) {
-			move(t_lines - 1, 0);
+			move(-1, 0);
 			clrtoeol();
 			//% prints("\033[0;1;44;31m[讯息浏览器]  \033[33mc 清除 | "
 			prints("\033[0;1;44;31m[\xd1\xb6\xcf\xa2\xe4\xaf\xc0\xc0\xc6\xf7]  \033[33mc \xc7\xe5\xb3\xfd | "
@@ -966,7 +966,7 @@ int ansimore_buffer(const char *buf, size_t size, int promptend)
 	int ch = more_main(more, promptend, 0, 0, NA, more_prompt_file, NULL);
 	more_close(more);
 
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	prints("\033[m");
 	refresh();
 	return ch;
@@ -977,7 +977,7 @@ int ansimore(const char *filename, int promptend)
 	int ch;
 	clear();
 	ch = rawmore2(filename, promptend, 0, 0, NA);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	prints("\033[0m\033[m");
 	refresh();
 	return ch;

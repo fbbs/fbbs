@@ -152,7 +152,7 @@ int num, ssize;
 			showstuff(str);
 		prints("\n");
 	}
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	update_endline();
 }
@@ -160,7 +160,7 @@ int num, ssize;
 void draw_bottom(char *buf) {
 	char buf1[100];
 	if (buf) {
-		move(t_lines-1, 71);
+		move(-1, 71);
 		clrtoeol();
 		sprintf(buf1, "\033[0;1;44;33m[%6.6s]\033[m", buf);
 		outs(buf1);
@@ -238,8 +238,8 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'H':
-		//% getdata(t_lines - 1, 0, "您选择?(1) 本日十大  (2) 系统热点 [1]",ans, 2, DOECHO, YEA);
-		getdata(t_lines - 1, 0, "\xc4\xfa\xd1\xa1\xd4\xf1?(1) \xb1\xbe\xc8\xd5\xca\xae\xb4\xf3  (2) \xcf\xb5\xcd\xb3\xc8\xc8\xb5\xe3 [1]",ans, 2, DOECHO, YEA);
+		//% getdata(-1, 0, "您选择?(1) 本日十大  (2) 系统热点 [1]",ans, 2, DOECHO, YEA);
+		getdata(-1, 0, "\xc4\xfa\xd1\xa1\xd4\xf1?(1) \xb1\xbe\xc8\xd5\xca\xae\xb4\xf3  (2) \xcf\xb5\xcd\xb3\xc8\xc8\xb5\xe3 [1]",ans, 2, DOECHO, YEA);
 		if (ans[0] == '2')
 		show_help("etc/hotspot");
 		else
@@ -253,7 +253,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 			((struct fileheader*)&pnt[(locmem->crs_line - locmem->top_line) * ssize])->owner;
 			if(!strcmp(userid, currentuser.userid))
 			break;
-			move(t_lines-1, 0);
+			move(-1, 0);
 			//% sprintf(genbuf, "确定要把 %s 加入好友名单吗",userid);
 			sprintf(genbuf, "\xc8\xb7\xb6\xa8\xd2\xaa\xb0\xd1 %s \xbc\xd3\xc8\xeb\xba\xc3\xd3\xd1\xc3\xfb\xb5\xa5\xc2\xf0",userid);
 			if (askyn(genbuf, NA, NA) == NA)
@@ -428,7 +428,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 				clear();
 				break;
 			default:
-//				getdata(t_lines - 1, 0, "本版新成立 (P)发表文章 (Q)离开？[Q] ",
+//				getdata(-1, 0, "本版新成立 (P)发表文章 (Q)离开？[Q] ",
 //						genbuf, 4, DOECHO, YEA);
 				break;
 		}
@@ -630,11 +630,11 @@ static int search_author(struct keeploc *locmem, int offset, char *powner)
 
 	//% sprintf(pmt, "%s的文章搜寻作者 [%s]: ", offset> 0 ? "往後来" : "往先前", currauth);
 	sprintf(pmt, "%s\xb5\xc4\xce\xc4\xd5\xc2\xcb\xd1\xd1\xb0\xd7\xf7\xd5\xdf [%s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1\xc0\xb4" : "\xcd\xf9\xcf\xc8\xc7\xb0", currauth);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	//Modified by IAMFAT 2002-05-27
 	//IDLEN->IDLEN+1
-	getdata(t_lines - 1, 0, pmt, ans, IDLEN+1, DOECHO, YEA);
+	getdata(-1, 0, pmt, ans, IDLEN+1, DOECHO, YEA);
 	if (ans[0] != '\0')
 	strcpy(author, ans);
 	else
@@ -680,9 +680,9 @@ static int search_post(struct keeploc *locmem, int offset)
 	strcpy(ans, query);
 	//% sprintf(pmt, "搜寻%s的文章 [%s]: ", offset> 0 ? "往後来" : "往先前", ans);
 	sprintf(pmt, "\xcb\xd1\xd1\xb0%s\xb5\xc4\xce\xc4\xd5\xc2 [%s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1\xc0\xb4" : "\xcd\xf9\xcf\xc8\xc7\xb0", ans);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
-	getdata(t_lines - 1, 0, pmt, ans, 50, DOECHO, YEA);
+	getdata(-1, 0, pmt, ans, 50, DOECHO, YEA);
 	if (ans[0] != '\0')
 	strcpy(query, ans);
 
@@ -755,11 +755,11 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			return DONOTHING;
 	}
 	saveline(t_lines - 1, 0);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	ch[0] = '\0';
-	//% getdata(t_lines - 1, 0, "执行: 1) 相同主题  2) 相同作者 3) 相关主题 0) 取消 [0]: ",
-	getdata(t_lines - 1, 0, "\xd6\xb4\xd0\xd0: 1) \xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2  2) \xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf 3) \xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2 0) \xc8\xa1\xcf\xfb [0]: ",
+	//% getdata(-1, 0, "执行: 1) 相同主题  2) 相同作者 3) 相关主题 0) 取消 [0]: ",
+	getdata(-1, 0, "\xd6\xb4\xd0\xd0: 1) \xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2  2) \xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf 3) \xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2 0) \xc8\xa1\xcf\xfb [0]: ",
 			ch, 3, DOECHO, YEA);
 	dotype = atoi(ch);
 	if (dotype < 1 || dotype > 3) { 
@@ -784,14 +784,14 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			buf1 += sprintf(buf1, "(%d)%s ", i + 1, SR_BMitems[i]);
 	}
 	strcat(buf, "? [0]: ");
-	getdata(t_lines - 1, 0, buf, ch, 3, DOECHO, YEA);
+	getdata(-1, 0, buf, ch, 3, DOECHO, YEA);
 	BMch = atoi(ch);
 	if(BMch<=0||BMch>8||(digestmode != 0 && BMch==3)
 			||(digestmode>2 && BMch<3)) {
 		saveline(t_lines - 1, 1);
 		return DONOTHING;
 	}
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//% sprintf(buf,"确定要执行%s[%s]吗",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
 	sprintf(buf,"\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0%s[%s]\xc2\xf0",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
 	if (askyn(buf, NA, NA) == 0) {
@@ -800,8 +800,8 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 
 	if (digestmode != TRASH_MODE && digestmode !=JUNK_MODE && BMch == 8) {
-		//% getdata(t_lines - 1, 0, "本主题加至版面第几篇后？", ch, 8, DOECHO, YEA);
-		getdata(t_lines - 1, 0, "\xb1\xbe\xd6\xf7\xcc\xe2\xbc\xd3\xd6\xc1\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf", ch, 8, DOECHO, YEA);
+		//% getdata(-1, 0, "本主题加至版面第几篇后？", ch, 8, DOECHO, YEA);
+		getdata(-1, 0, "\xb1\xbe\xd6\xf7\xcc\xe2\xbc\xd3\xd6\xc1\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf", ch, 8, DOECHO, YEA);
 		if (ch[0] < '0' || ch[0]> '9' )
 			return PARTUPDATE;
 		result = atoi(ch);
@@ -814,7 +814,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 
 	/* Add by everlove 制作合集 */
 	if(BMch == 7) {
-		move(t_lines-1,0);
+		move(-1,0);
 		//% if (askyn("制作的合集需要引言吗？", YEA, YEA) == YEA)
 		if (askyn("\xd6\xc6\xd7\xf7\xb5\xc4\xba\xcf\xbc\xaf\xd0\xe8\xd2\xaa\xd2\xfd\xd1\xd4\xc2\xf0\xa3\xbf", YEA, YEA) == YEA)
 			has_yinyan=YEA;
@@ -825,8 +825,8 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 
 	if (dotype == 3) {
 		strcpy(keyword, "");
-		//% getdata(t_lines - 1, 0, "请输入主题关键字: ", keyword, 50, DOECHO, YEA);
-		getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ", keyword, 50, DOECHO, YEA);
+		//% getdata(-1, 0, "请输入主题关键字: ", keyword, 50, DOECHO, YEA);
+		getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ", keyword, 50, DOECHO, YEA);
 		if (keyword[0] == '\0') {
 			saveline(t_lines - 1, 1);
 			return DONOTHING;
@@ -851,7 +851,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		subflag=askyn("\xca\xc7\xb7\xf1\xd0\xa1""d", YEA, YEA);
 	}
 
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	//% sprintf(buf, "是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇",
 	sprintf(buf, "\xca\xc7\xb7\xf1\xb4\xd3%s\xb5\xda\xd2\xbb\xc6\xaa\xbf\xaa\xca\xbc%s (Y)\xb5\xda\xd2\xbb\xc6\xaa (N)\xc4\xbf\xc7\xb0\xd5\xe2\xd2\xbb\xc6\xaa",
 			//% (dotype == 2) ? "该作者" : "此主题", SR_BMitems[BMch - 1]);
@@ -874,16 +874,16 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			FILE *fn;
 			sethomefile(annpath, currentuser.userid,".announcepath");
 			if((fn = fopen(annpath, "r")) == NULL ) {
-				//% presskeyfor("对不起, 您没有设定丝路. 请先用 f 设定丝路.",t_lines-1);
-				presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.",t_lines-1);
+				//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
+				presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", -1);
 				saveline(t_lines - 1, 1);
 				return DONOTHING;
 			}
 			fscanf(fn,"%s",annpath);
 			fclose(fn);
 			if (!dashd(annpath)) {
-				//% presskeyfor("您设定的丝路已丢失, 请重新用 f 设定.",t_lines-1);
-				presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.",t_lines-1);
+				//% 您设定的丝路已丢失, 请重新用 f 设定.
+				presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", -1);
 				saveline(t_lines - 1, 1);
 				return DONOTHING;
 			}
@@ -1037,8 +1037,8 @@ int combine_thread(int ent, struct fileheader *fileinfo, char *direct)
 	char buf[16];
 	int num;
 	struct fileheader fh;
-	//% getdata(t_lines - 1, 0, "合并到版面第几篇后？",buf, 6, DOECHO, YEA);
-	getdata(t_lines - 1, 0, "\xba\xcf\xb2\xa2\xb5\xbd\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf",buf, 6, DOECHO, YEA);
+	//% getdata(-1, 0, "合并到版面第几篇后？",buf, 6, DOECHO, YEA);
+	getdata(-1, 0, "\xba\xcf\xb2\xa2\xb5\xbd\xb0\xe6\xc3\xe6\xb5\xda\xbc\xb8\xc6\xaa\xba\xf3\xa3\xbf",buf, 6, DOECHO, YEA);
 	if (buf[0] < '0'|| buf[0]> '9' )
 	return PARTUPDATE;
 	num = atoi(buf);
@@ -1185,7 +1185,7 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 		ent = 0;
 
 	if (aflag == SEARCH_CONTENT) {
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		//% prints("\033[1;44;33m搜寻中，请稍候....                      "
 		prints("\033[1;44;33m\xcb\xd1\xd1\xb0\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2....                      "
@@ -1280,7 +1280,7 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 			}
 		}
 	}
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
 	fclose(fp);
 	if (lastent == 0)
@@ -1327,9 +1327,9 @@ int search_title(struct keeploc *locmem, int offset)
 	strcpy(ans, title);
 	//% sprintf(pmt, "%s搜寻标题 [%.16s]: ", offset> 0 ? "往後" : "往前", ans);
 	sprintf(pmt, "%s\xcb\xd1\xd1\xb0\xb1\xea\xcc\xe2 [%.16s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1" : "\xcd\xf9\xc7\xb0", ans);
-	move(t_lines - 1, 0);
+	move(-1, 0);
 	clrtoeol();
-	getdata(t_lines - 1, 0, pmt, ans, 46, DOECHO, YEA);
+	getdata(-1, 0, pmt, ans, 46, DOECHO, YEA);
 	if (*ans != '\0')
 		strcpy(title, ans);
 	return search_articles(locmem, title, 0, offset, 2, 0);
@@ -1418,7 +1418,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 		isstart = 1;
 	} else {
 		isstart = 0;
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		prints(
 				//% "[1;44;31m[%8s] [33m下一封 <Space>,<Enter>,↓│上一封 ↑,U                              [m",
@@ -1477,7 +1477,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 			isnext = -1;
 			continue;
 		}
-		move(t_lines - 1, 0);
+		move(-1, 0);
 		clrtoeol();
 		prints(
 				//% "\033[1;44;31m[%8s] \033[33m回信 R │ 结束 Q,← │下一封 ↓,Enter│上一封 ↑,U │ ^R 回给作者   \033[m",

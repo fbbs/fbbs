@@ -348,7 +348,7 @@ void refresh(void)
 void move(int y, int x)
 {
 	cur_col = x;
-	cur_ln = y;
+	cur_ln = y < 0 ? y + t_lines : y;
 }
 
 /**

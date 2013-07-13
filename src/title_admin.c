@@ -106,8 +106,8 @@ static int grant_title(user_id_t uid, const char *title)
 static int tui_grant_title(tui_list_t *p)
 {
 	char name[IDLEN + 1];
-	//% getdata(t_lines - 1, 0, "请输入用户名: ", name, sizeof(name), YEA, YEA);
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd3\xc3\xbb\xa7\xc3\xfb: ", name, sizeof(name), YEA, YEA);
+	//% getdata(-1, 0, "请输入用户名: ", name, sizeof(name), YEA, YEA);
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd3\xc3\xbb\xa7\xc3\xfb: ", name, sizeof(name), YEA, YEA);
 	if (!*name)
 		return MINIUPDATE;
 
@@ -116,8 +116,8 @@ static int tui_grant_title(tui_list_t *p)
 		return MINIUPDATE;
 
 	GBK_UTF8_BUFFER(title, TITLE_CCHARS);
-	//% getdata(t_lines - 1, 0, "请输入身份: ", gbk_title, sizeof(gbk_title),
-	getdata(t_lines - 1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc9\xed\xb7\xdd: ", gbk_title, sizeof(gbk_title),
+	//% getdata(-1, 0, "请输入身份: ", gbk_title, sizeof(gbk_title),
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc9\xed\xb7\xdd: ", gbk_title, sizeof(gbk_title),
 			YEA, YEA);
 	if (!*gbk_title)
 		return MINIUPDATE;
