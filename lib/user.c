@@ -13,8 +13,7 @@ static void set_user_id_cache(const char *uname, user_id_t uid)
 	strlcpy(name, uname, sizeof(name));
 	strtolower(name, name);
 
-	mdb_res_t *r = mdb_cmd("HSET", USER_ID_HASH_KEY" %s %"PRIdUID, name, uid);
-	mdb_clear(r);
+	mdb_cmd("HSET", USER_ID_HASH_KEY" %s %"PRIdUID, name, uid);
 }
 
 static user_id_t get_user_id_cache(const char *uname)
@@ -32,8 +31,7 @@ void remove_user_id_cache(const char *uname)
 	strlcpy(name, uname, sizeof(name));
 	strtolower(name, name);
 
-	mdb_res_t *r = mdb_cmd("HDEL", USER_ID_HASH_KEY" %s", name);
-	mdb_clear(r);
+	mdb_cmd("HDEL", USER_ID_HASH_KEY" %s", name);
 }
 
 /**
@@ -80,12 +78,8 @@ int get_user_count(void)
 		count = db_get_bigint(res, 0, 0);
 	db_clear(res);
 
-	mdb_res_t *r = mdb_cmd("SET", USER_COUNT_CACHE_KEY" %d", count);
-	mdb_clear(r);
-	r = mdb_cmd("EXPIRE", USER_COUNT_CACHE_KEY" %d",
-			USER_COUNT_REFRESH_INTERVAL);
-	mdb_clear(r);
-	
+	mdb_cmd("SET", USER_COUNT_CACHE_KEY" %d", count);
+	mdb_cmd("EXPIRE", USER_COUNT_CACHE_KEY" %d", USER_COUNT_REFRESH_INTERVAL);
 	return count;
 }
 
@@ -134,10 +128,8 @@ int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)
 
 int set_my_last_post_time(fb_time_t t)
 {
-	mdb_res_t *res = mdb_cmd("HSET",
-			"last_post_time %"PRIdUID" %"PRIdFBT, session.uid, t);
-	mdb_clear(res);
-	return !res;
+	return !mdb_cmd("HSET", "last_post_time %"PRIdUID" %"PRIdFBT, session.uid,
+			t);
 }
 
 fb_time_t get_my_last_post_time(void)
@@ -148,10 +140,7 @@ fb_time_t get_my_last_post_time(void)
 
 int set_doc_mode(int mode)
 {
-	mdb_res_t *res = mdb_cmd("HSET",
-			"doc_mode %"PRIdUID" %d", session.uid, mode);
-	mdb_clear(res);
-	return !res;
+	return !mdb_cmd("HSET", "doc_mode %"PRIdUID" %d", session.uid, mode);
 }
 
 int get_doc_mode(void)

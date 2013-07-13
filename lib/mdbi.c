@@ -1,11 +1,22 @@
 #include <stdarg.h>
 #include <stdlib.h>
-
+#include <hiredis/hiredis.h>
 #include "fbbs/mdbi.h"
+
+enum {
+	MDB_RES_STATUS = REDIS_REPLY_STATUS,
+	MDB_RES_ERROR = REDIS_REPLY_ERROR,
+	MDB_RES_INTEGER = REDIS_REPLY_INTEGER,
+	MDB_RES_NIL = REDIS_REPLY_NIL,
+	MDB_RES_STRING = REDIS_REPLY_STRING,
+	MDB_RES_ARRAY = REDIS_REPLY_ARRAY,
+};
 
 enum {
 	MDB_CMD_BUF_LEN = 128,
 };
+
+typedef redisReply mdb_res_t;
 
 struct mdb_conn_t {
 	redisContext *c;
@@ -24,7 +35,7 @@ int mdb_connect_unix(const char *path)
 
 void mdb_disconnect(void)
 {
-	mdb_finish(_mdb.c);
+	redisFree(_mdb.c);
 }
 
 static char *smart_vsnprintf(char *buf, size_t size,
@@ -43,6 +54,8 @@ static char *smart_vsnprintf(char *buf, size_t size,
 	va_end(aq);
 	return s;
 }
+
+#define mdb_clear(res)  freeReplyObject(res)
 
 static mdb_res_t *mdb_vcmd(const char *cmd, const char *fmt, va_list ap)
 {
@@ -66,16 +79,17 @@ static mdb_res_t *mdb_vcmd(const char *cmd, const char *fmt, va_list ap)
 	return res;
 }
 
-mdb_res_t *mdb_cmd(const char *cmd, const char *fmt, ...)
+bool mdb_cmd(const char *cmd, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 	mdb_res_t *res = mdb_vcmd(cmd, fmt, ap);
 	va_end(ap);
+	mdb_clear(res);
 	return res;
 }
 
-long long mdb_integer(long long invalid, const char *cmd, const char *fmt, ...)
+mdb_int_t mdb_integer(mdb_int_t invalid, const char *cmd, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);

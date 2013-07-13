@@ -12,9 +12,8 @@ static session_id_t get_web_session_cache(user_id_t uid, const char *key)
 
 void set_web_session_cache(user_id_t uid, const char *key, session_id_t sid)
 {
-	mdb_res_t *r = mdb_cmd("HSET",
-			WEB_SESSION_HASH_KEY" %"PRIdUID":%s %"PRIdSID, uid, key, sid);
-	mdb_clear(r);
+	mdb_cmd("HSET", WEB_SESSION_HASH_KEY" %"PRIdUID":%s %"PRIdSID, uid, key,
+			sid);
 }
 
 extern int do_web_login(const char *uname, const char *pw);

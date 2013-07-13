@@ -26,19 +26,15 @@ int count_online(void)
 		online = db_get_bigint(res, 0, 0);
 	db_clear(res);
 
-	mdb_res_t *r = mdb_cmd("SET", ONLINE_COUNT_CACHE_KEY" %d", online);
-	mdb_clear(r);
-	r = mdb_cmd("EXPIRE", ONLINE_COUNT_CACHE_KEY" %d",
+	mdb_cmd("SET", ONLINE_COUNT_CACHE_KEY" %d", online);
+	mdb_cmd("EXPIRE", ONLINE_COUNT_CACHE_KEY" %d",
 			ONLINE_COUNT_REFRESH_INTERVAL);
-	mdb_clear(r);
-
 	return online;
 }
 
 void update_peak_online(int online)
 {
-	mdb_res_t *r = mdb_cmd("SET", "c:max_online %d", online);
-	mdb_clear(r);
+	mdb_cmd("SET", "c:max_online %d", online);
 }
 
 int get_peak_online(void)
@@ -84,11 +80,8 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 
 static void purge_session_cache(session_id_t sid)
 {
-	mdb_res_t *r = mdb_cmd("ZREM", "current_board %"PRIdSID, sid);
-	mdb_clear(r);
-
-	r = mdb_cmd("ZREM", "idle %"PRIdSID, sid);
-	mdb_clear(r);
+	mdb_cmd("ZREM", "current_board %"PRIdSID, sid);
+	mdb_cmd("ZREM", "idle %"PRIdSID, sid);
 }
 
 int session_destroy(session_id_t sid)
@@ -114,9 +107,7 @@ int session_inactivate(session_id_t sid)
 
 int set_idle_time(session_id_t sid, fb_time_t t)
 {
-	mdb_res_t *res = mdb_cmd("ZADD", "idle %"PRIdFBT" %"PRIdSID, t, sid);
-	mdb_clear(res);
-	return !res;
+	return !mdb_cmd("ZADD", "idle %"PRIdFBT" %"PRIdSID, t, sid);
 }
 
 void cached_set_idle_time(void)
@@ -134,9 +125,7 @@ fb_time_t get_idle_time(session_id_t sid)
 
 int set_current_board(int bid)
 {
-	mdb_res_t *res = mdb_cmd("ZADD", "current_board %d %"PRIdSID, bid, session.id);
-	mdb_clear(res);
-	return !res;
+	return !mdb_cmd("ZADD", "current_board %d %"PRIdSID, bid, session.id);
 }
 
 int get_current_board(session_id_t sid)
@@ -147,10 +136,7 @@ int get_current_board(session_id_t sid)
 int set_user_status(int status)
 {
 	session.status = status;
-	mdb_res_t *res = mdb_cmd("HSET", "user_status %"PRIdSID" %d",
-			session.id, status);
-	mdb_clear(res);
-	return !res;
+	return !mdb_cmd("HSET", "user_status %"PRIdSID" %d", session.id, status);
 }
 
 int get_user_status(session_id_t sid)
@@ -227,9 +213,7 @@ int online_follows_count(bool visible_only)
 
 void remove_web_session_cache(user_id_t uid, const char *key)
 {
-	mdb_res_t *r = mdb_cmd("HDEL", WEB_SESSION_HASH_KEY" %"PRIdUID":%s",
-			uid, key);
-	mdb_clear(r);
+	mdb_cmd("HDEL", WEB_SESSION_HASH_KEY" %"PRIdUID":%s", uid, key);
 }
 
 /**

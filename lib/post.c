@@ -1237,9 +1237,7 @@ int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
 
 bool set_last_post_time(int bid, fb_time_t stamp)
 {
-	mdb_res_t *res = mdb_cmd("HSET", LAST_POST_KEY " %d %"PRIdFBT, bid, stamp);
-	mdb_clear(res);
-	return res;
+	return mdb_cmd("HSET", LAST_POST_KEY " %d %"PRIdFBT, bid, stamp);
 }
 
 fb_time_t get_last_post_time(int bid)
