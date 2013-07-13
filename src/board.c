@@ -852,8 +852,6 @@ static int board_list_init(board_list_t *p)
 
 static tui_list_title_t board_list_title(tui_list_t *p)
 {
-	board_list_t *l = p->data;
-
 	//% const char *sort = "分类";
 	const char *sort = "\xb7\xd6\xc0\xe0";
 	char flag = currentuser.flags[0];

@@ -912,9 +912,9 @@ int msg_more(void)
 #endif
 	set_user_status(ST_LOOKMSGS);
 
-	int ch;
+	int ch = 0;
 	more_file_t *more = more_open(file, 0, DEFAULT_TERM_WIDTH, more_open_msg);
-	if (more == NULL) {
+	if (!more) {
 		//% 没有任何的讯息存在...
 		presskeyfor("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xb5\xc4\xd1\xb6\xcf\xa2\xb4\xe6\xd4\xda...", -1);
 	} else {
