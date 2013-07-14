@@ -568,3 +568,98 @@ int api_board_toc(void)
 
 	return HTTP_OK;
 }
+
+#define BASEURL BBSHOST"/bbs"
+
+enum {
+	MAXRSS = 10, ///< max. number of posts output
+};
+
+int bbsrss_main(void)
+{
+	board_t board;
+	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
+			|| !has_read_perm(&currentuser, &board))
+		return BBS_ENOBRD;
+	if (board.flag & BOARD_DIR_FLAG)
+		return BBS_EINVAL;
+	board_to_gbk(&board);
+
+	mmap_t m;
+	m.oflag = O_RDONLY;
+	char file[HOMELEN];
+	setbfile(file, board.name, DOT_DIR);
+	if (mmap_open(file, &m) < 0)
+		return BBS_EINTNL;
+
+	struct fileheader index[MAXRSS];
+	struct fileheader *fp = m.ptr, *begin = m.ptr;
+	int count = m.size / sizeof(*fp);
+	fp += count - 1;
+	int sum;
+	for (sum = 0; sum < MAXRSS; ) {
+		if (fp >= begin) {
+			if (fp->id == fp->gid)
+				index[sum++] = *fp;
+		} else {
+			break;
+		}
+		--fp;
+	}
+	mmap_close(&m);
+
+	xml_header("bbsrss");
+	printf("<rss version='2.0'><channel><title>%s</title><description>%s"
+			"</description><link>"BASEURL "/doc?bid=%d</link><generator>"
+			BASEURL "</generator>", board.name, board.descr, board.id);
+
+	while (--sum >= 0) {
+		fp = index + sum;
+		setbfile(file, board.name, fp->filename);
+		printf("<item><title>");
+		xml_fputs(fp->title, stdout);
+		printf("</title><link>http://"BASEURL"/con?bid=%d&amp;f=%u</link>"
+				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
+				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
+				"<description><![CDATA[<pre>", board.id, fp->id, fp->owner,
+				format_time(getfiletime(fp), TIME_FORMAT_RSS), fp->owner, board.id,
+				fp->id);
+		xml_printfile(file);
+		printf("<pre>]]></description></item>");
+	}
+	printf("</channel></rss>");
+	return 0;
+}
+
+int bbstop10_main(void)
+{
+	xml_header(NULL);
+	printf("<bbstop10>");
+	print_session();
+
+	query_t *q = query_new(0);
+	query_select(q, "tid, score, uname, bname, title");
+	query_from(q, "posts.hot");
+	query_orderby(q, "score", false);
+	query_limit(q, 10);
+
+	db_res_t *res = query_exec(q);
+	int rows = db_res_rows(res);
+	for (int i = 0; i < rows; ++i) {
+		post_id_t tid = db_get_post_id(res, i, 0);
+		int score = db_get_integer(res, i, 1);
+		const char *uname = db_get_value(res, i, 2);
+		const char *bname = db_get_value(res, i, 3);
+		const char *title = db_get_value(res, i, 4);
+
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(title, gbk_title);
+
+		printf("<top board='%s' owner='%s' count='%d' gid='%"PRIdPID"'>",
+				bname, uname, score, tid);
+		xml_fputs2(gbk_title, check_gbk(gbk_title) - gbk_title, stdout);
+		printf("</top>\n");
+	}
+	printf("</bbstop10>");
+	return 0;
+}
