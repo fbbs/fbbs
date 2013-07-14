@@ -469,16 +469,16 @@ int web_forum(void)
 	return 0;
 }
 
-static int get_board_by_param(board_t *bp)
+bool get_board_by_param(board_t *bp)
 {
 	int bid = strtol(get_param("bid"), NULL, 10);
 	if (bid > 0 && get_board_by_bid(bid, bp) > 0)
-		return bp->id;
+		return has_read_perm(&currentuser, bp);
 
 	const char *bname = get_param("board");
 	if (bname && *bname)
-		return get_board(bname, bp);
-	return 0;
+		return get_board(bname, bp) && has_read_perm(&currentuser, bp);
+	return false;
 }
 
 static xml_node_t *create_post_node(const post_info_t *p)
@@ -530,7 +530,7 @@ extern void board_to_node(const board_t *bp, xml_node_t *node);
 int api_board_toc(void)
 {
 	board_t board;
-	if (get_board_by_param(&board) <= 0)
+	if (!get_board_by_param(&board))
 		return error_msg(ERROR_BOARD_NOT_FOUND);
 	brc_initialize(currentuser.userid, board.name);
 

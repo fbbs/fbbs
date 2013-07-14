@@ -159,11 +159,12 @@ static bool search_sticky(int bid, post_id_t pid, post_info_t *pi)
 	return found;
 }
 
+extern bool get_board_by_param(board_t *bp);
+
 int bbscon_main(void)
 {
 	board_t board;
-	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			|| !has_read_perm(&currentuser, &board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -228,8 +229,7 @@ int bbscon_main(void)
 int bbsgcon_main(void)
 {
 	board_t board;
-	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			|| !has_read_perm(&currentuser, &board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -275,14 +275,13 @@ int bbsdel_main(void)
 {
 	if (!session.id)
 		return BBS_ELGNREQ;
-	int bid = strtol(get_param("bid"), NULL, 10);
+
 	unsigned int fid = strtoul(get_param("f"), NULL, 10);
 	if (fid == 0)
 		return BBS_EINVAL;
 
 	board_t board;
-	if (!get_board_by_bid(bid, &board)
-			|| !has_read_perm(&currentuser, &board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -332,7 +331,7 @@ int bbsdel_main(void)
 	append_record(file, &fh, sizeof(fh));
 	updatelastpost(&board);
 
-	printf("Location: doc?bid=%d\n\n", bid);
+	printf("Location: doc?bid=%d\n\n", board.id);
 	return 0;
 }
 
@@ -403,13 +402,7 @@ static post_info_full_t *bbstcon_search(int bid, post_id_t pid, post_id_t *tid,
 int bbstcon_main(void)
 {
 	board_t board;
-	int bid = strtol(get_param("bid"), NULL, 10);
-	if (bid <= 0) {
-		get_board(get_param("board"), &board);
-	} else {
-		get_board_by_bid(bid, &board);
-	}
-	if (!board.id || !has_read_perm(&currentuser, &board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -434,7 +427,7 @@ int bbstcon_main(void)
 	xml_header(NULL);
 	printf("<bbstcon bid='%d' gid='%"PRIdPID"' anony='%d' page='%d'"
 			" attach='%d'%s%s%s%s%s>",
-			bid, tid, anony, count, maxlen(board.name),
+			board.id, tid, anony, count, maxlen(board.name),
 			flag & THREAD_LAST_POST ? " last='1'" : "",
 			flag & THREAD_LAST ? " tlast='1'" : "",
 			flag & THREAD_FIRST ? " tfirst='1'" : "",
@@ -578,8 +571,6 @@ static char *_check_character(char *text)
 	return text;
 }
 
-extern int search_pid(int bid, post_id_t pid, post_info_t *pi);
-
 int bbssnd_main(void)
 {
 	if (!session.id)
@@ -588,9 +579,10 @@ int bbssnd_main(void)
 		return BBS_EINVAL;
 
 	board_t board;
-	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			|| !has_post_perm(&currentuser, &board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
+	if (!has_post_perm(&currentuser, &board))
+		return BBS_EPST;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
@@ -719,16 +711,15 @@ static void get_post_body(const char **begin, const char **end)
 	}
 }
 
-extern int search_pid(int bid, post_id_t pid, post_info_t *pi);
-
 static int do_bbspst(bool isedit)
 {
 	if (!session.id)
 		return BBS_ELGNREQ;
 
 	board_t board;
-	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			|| !has_post_perm(&currentuser, &board))
+	if (!get_board_by_param(&board))
+		return BBS_ENOBRD;
+	if (!has_post_perm(&currentuser, &board))
 		return BBS_EPST;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -820,8 +811,7 @@ int bbsccc_main(void)
 	parse_post_data();
 
 	board_t board;
-	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			|| !has_read_perm(&currentuser, &board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -911,8 +901,7 @@ int bbsfwd_main(void)
 			return BBS_EACCES;
 
 		board_t board;
-		if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-				|| !has_read_perm(&currentuser, &board))
+		if (!get_board_by_param(&board))
 			return BBS_ENOBRD;
 		if (board.flag & BOARD_DIR_FLAG)
 			return BBS_EINVAL;
