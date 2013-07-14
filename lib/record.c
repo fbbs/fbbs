@@ -153,7 +153,7 @@ int record_foreach(record_t *rec, void *ptr, int offset,
 			return matched;
 		if (!checked) {
 			checked = true;
-			if (!count || rec->cmp(buf, ptr) >= 0) {
+			if (!count || rec->cmp(buf, ptr) > 0) {
 				record_seek(rec, 0, RECORD_SET);
 				offset = 0;
 				continue;
