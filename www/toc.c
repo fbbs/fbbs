@@ -104,15 +104,22 @@ static void print_sticky_posts(int bid, post_list_type_e type,
 	record_close(&record);
 }
 
+bool get_board_by_param(board_t *bp)
+{
+	int bid = strtol(get_param("bid"), NULL, 10);
+	if (bid > 0 && get_board_by_bid(bid, bp) > 0)
+		return has_read_perm(bp);
+
+	const char *bname = get_param("board");
+	if (bname && *bname)
+		return get_board(bname, bp) && has_read_perm(bp);
+	return false;
+}
+
 static int bbsdoc(post_list_type_e type)
 {
 	board_t board;
-	const char *bidstr = get_param("bid");
-	if (*bidstr == '\0')
-		get_board(get_param("board"), &board);
-	else
-		get_board_by_bid(strtol(bidstr, NULL, 10), &board);
-	if (!board.id || !has_read_perm(&board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
@@ -231,14 +238,12 @@ int bbsbfind_main(void)
 	if (!session.id)
 		return BBS_ELGNREQ;
 
-	int bid = strtol(get_param("bid"), NULL, 10);
 	board_t board;
-	if (!get_board_by_bid(bid, &board)
-			|| !has_read_perm(&board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 
 	record_t record;
-	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
+	if (post_index_board_open(board.id, RECORD_READ, &record) < 0)
 		return BBS_EINTNL;
 
 	post_index_record_t pir;
@@ -275,7 +280,7 @@ int bbsbfind_main(void)
 
 	xml_header(NULL);
 	printf("<bbsbfind ");
-	printf(" bid='%d'", bid);
+	printf(" bid='%d'", board.id);
 
 	if (count || uid) {
 		printf(" result='1'>");
@@ -420,10 +425,7 @@ static void print_post_thread_info(const post_thread_info_t *pti)
 int web_forum(void)
 {
 	board_t board;
-	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			&& !get_board(get_param("board"), &board))
-		return BBS_ENOBRD;
-	if (!has_read_perm(&board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
@@ -467,18 +469,6 @@ int web_forum(void)
 	}
 	printf("</forum>");
 	return 0;
-}
-
-bool get_board_by_param(board_t *bp)
-{
-	int bid = strtol(get_param("bid"), NULL, 10);
-	if (bid > 0 && get_board_by_bid(bid, bp) > 0)
-		return has_read_perm(bp);
-
-	const char *bname = get_param("board");
-	if (bname && *bname)
-		return get_board(bname, bp) && has_read_perm(bp);
-	return false;
 }
 
 static xml_node_t *create_post_node(const post_info_t *p)
@@ -578,8 +568,7 @@ enum {
 int bbsrss_main(void)
 {
 	board_t board;
-	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			|| !has_read_perm(&board))
+	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
