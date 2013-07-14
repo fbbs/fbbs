@@ -581,7 +581,7 @@ int bbssnd_main(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (!has_post_perm(&currentuser, &board))
+	if (!has_post_perm(&board))
 		return BBS_EPST;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -719,7 +719,7 @@ static int do_bbspst(bool isedit)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (!has_post_perm(&currentuser, &board))
+	if (!has_post_perm(&board))
 		return BBS_EPST;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
@@ -829,7 +829,7 @@ int bbsccc_main(void)
 			return BBS_ENOBRD;
 		if ((to.flag & BOARD_DIR_FLAG) || to.id == board.id)
 			return BBS_EINVAL;
-		if (!has_post_perm(&currentuser, &to))
+		if (!has_post_perm(&to))
 			return BBS_EPST;
 
 		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);

@@ -81,13 +81,11 @@ int bbs0an_main(void)
 			return BBS_EINVAL;
 		char *bname = getbfroma(path);
 		if (*bname != '\0') {
-			if (!get_board(bname, &board)
-					|| !has_read_perm(&currentuser, &board))
+			if (!get_board(bname, &board) || !has_read_perm(&board))
 				return BBS_ENODIR;
 		}
 	} else {
-		if (!get_board_by_bid(bid, &board)
-				|| !has_read_perm(&currentuser, &board))
+		if (!get_board_by_bid(bid, &board) || !has_read_perm(&board))
 			return BBS_ENOBRD;
 		if (board.flag & BOARD_DIR_FLAG)
 			return BBS_EINVAL;
@@ -193,7 +191,7 @@ int bbsanc_main(void)
 	char *bname = getbfroma(path);	
 	board_t board;
 	if (*bname) {
-		if (!get_board(bname, &board) || !has_read_perm(&currentuser, &board))
+		if (!get_board(bname, &board) || !has_read_perm(&board))
 			return BBS_ENOFILE;
 	}
 

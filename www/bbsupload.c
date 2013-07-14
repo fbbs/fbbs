@@ -142,7 +142,7 @@ int bbspreupload_main(void)
 
 	board_t board;
 	if (!get_board(get_param("board"), &board)
-			|| !has_post_perm(&currentuser, &board))
+			|| !has_post_perm(&board))
 		return BBS_EPST;
 
 	int max = maxlen(board.name);
@@ -167,7 +167,7 @@ int bbsupload_main(void)
 	else
 		get_board_by_bid(strtol(bid, NULL, 10), &board);
 
-	if (!board.id || !has_post_perm(&currentuser, &board))
+	if (!board.id || !has_post_perm(&board))
 		return BBS_ENOBRD;
 
 	size_t size = strtoul(getsenv("CONTENT_LENGTH"), NULL, 10);

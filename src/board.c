@@ -91,7 +91,7 @@ static ac_list *build_board_ac_list(int mode)
 					continue;
 			}
 
-			if (has_read_perm(&currentuser, &board)) {
+			if (has_read_perm(&board)) {
 				if (board.name[0] & 0x80) {
 					GBK_BUFFER(name, BOARD_NAME_LEN);
 					convert_u2g(board.name, gbk_name);
@@ -321,7 +321,7 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 		e->folder = l->favorite ? db_get_integer(r1, i, 8) : 0;
 		e->sector = l->favorite ? db_get_integer(r1, i, 9) : 0;
 
-		if (has_read_perm(&currentuser, board))
+		if (has_read_perm(board))
 			++l->bcount;
 	}
 

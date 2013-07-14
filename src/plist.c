@@ -1081,8 +1081,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	}
 
 	board_t board;
-	if (!get_board_by_bid(bid, &board) ||
-			!has_post_perm(&currentuser, &board)) {
+	if (!get_board_by_bid(bid, &board) || !has_post_perm(&board)) {
 		move(-1, 0);
 		clrtoeol();
 		//% prints("此讨论区是唯读的, 或是您尚无权限在此发表文章。");

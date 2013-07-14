@@ -122,7 +122,7 @@ bool is_bm(const struct userec *up, const board_t *bp)
 	return false;
 }
 
-bool has_read_perm(const struct userec *up, const board_t *bp)
+bool user_has_read_perm(const struct userec *up, const board_t *bp)
 {
 	// Read restricted club
 	if ((bp->flag & BOARD_CLUB_FLAG) && (bp->flag & BOARD_READ_FLAG)
@@ -139,7 +139,12 @@ bool has_read_perm(const struct userec *up, const board_t *bp)
 	return false;
 }
 
-bool has_post_perm(const struct userec *up, const board_t *bp)
+bool has_read_perm(const board_t *bp)
+{
+	return user_has_read_perm(&currentuser, bp);
+}
+
+static bool user_has_post_perm(const struct userec *up, const board_t *bp)
 {
 	if (!HAS_PERM2(PERM_POST, up) || !HAS_PERM2(bp->perm, up))
 		return false;
@@ -151,6 +156,11 @@ bool has_post_perm(const struct userec *up, const board_t *bp)
 	char buf[STRLEN];
 	setbfile(buf, bp->name, "deny_users");
 	return !seek_in_file(buf, up->userid);
+}
+
+bool has_post_perm(const board_t *bp)
+{
+	return user_has_post_perm(&currentuser, bp);
 }
 
 bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder, const struct userec *up)
@@ -166,7 +176,7 @@ bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder, const 
 	}
 	bid = b.id;
 	
-	if (!has_read_perm(up, &b))
+	if (!user_has_read_perm(up, &b))
 		return false;
 
 	if (folder <= FAV_BOARD_ROOT_FOLDER)

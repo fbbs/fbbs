@@ -60,8 +60,9 @@ extern void board_to_gbk(board_t *bp);
 extern bool is_bm(const struct userec *up, const board_t *bp);
 #define am_bm(bp)  is_bm(&currentuser, bp)
 #define am_curr_bm()  is_bm(&currentuser, currbp)
-extern bool has_read_perm(const struct userec *up, const board_t *bp);
-extern bool has_post_perm(const struct userec *up, const board_t *bp);
+extern bool has_read_perm(const board_t *bp);
+extern bool user_has_read_perm(const struct userec *up, const board_t *bp);
+extern bool has_post_perm(const board_t *bp);
 
 extern bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder, const struct userec *up);
 extern bool fav_board_mkdir(user_id_t uid, const char *name, const char *descr);

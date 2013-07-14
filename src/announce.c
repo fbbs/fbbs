@@ -495,8 +495,7 @@ int a_menusearch(const char *key, char *found) {
 			}
 			if (strcaseeq(buf, key)) {
 				board_t board;
-				if (get_board(key, &board)
-						&& has_read_perm(&currentuser, &board)) {
+				if (get_board(key, &board) && has_read_perm(&board)) {
 					sprintf(found, "0Announce/%s", ptr);
 					flag = '1';
 				}
@@ -1610,7 +1609,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 						
 						board_t board;
 						if (!get_board(bname, &board)
-								|| !has_post_perm(&currentuser, &board)) {
+								|| !has_post_perm(&board)) {
 							//% prints("\n\n您尚无权限在 %s 发表文章.", bname);
 							prints("\n\n\xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda %s \xb7\xa2\xb1\xed\xce\xc4\xd5\xc2.", bname);
 							pressreturn();

@@ -112,7 +112,7 @@ static int bbsdoc(post_list_type_e type)
 		get_board(get_param("board"), &board);
 	else
 		get_board_by_bid(strtol(bidstr, NULL, 10), &board);
-	if (!board.id || !has_read_perm(&currentuser, &board))
+	if (!board.id || !has_read_perm(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
@@ -234,7 +234,7 @@ int bbsbfind_main(void)
 	int bid = strtol(get_param("bid"), NULL, 10);
 	board_t board;
 	if (!get_board_by_bid(bid, &board)
-			|| !has_read_perm(&currentuser, &board))
+			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
 
 	record_t record;
@@ -423,7 +423,7 @@ int web_forum(void)
 	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
 			&& !get_board(get_param("board"), &board))
 		return BBS_ENOBRD;
-	if (!has_read_perm(&currentuser, &board))
+	if (!has_read_perm(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
@@ -473,11 +473,11 @@ bool get_board_by_param(board_t *bp)
 {
 	int bid = strtol(get_param("bid"), NULL, 10);
 	if (bid > 0 && get_board_by_bid(bid, bp) > 0)
-		return has_read_perm(&currentuser, bp);
+		return has_read_perm(bp);
 
 	const char *bname = get_param("board");
 	if (bname && *bname)
-		return get_board(bname, bp) && has_read_perm(&currentuser, bp);
+		return get_board(bname, bp) && has_read_perm(bp);
 	return false;
 }
 
@@ -579,7 +579,7 @@ int bbsrss_main(void)
 {
 	board_t board;
 	if (!get_board_by_bid(strtol(get_param("bid"), NULL, 10), &board)
-			|| !has_read_perm(&currentuser, &board))
+			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;

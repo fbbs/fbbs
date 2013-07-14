@@ -78,7 +78,7 @@ int web_sel(void)
 			board_t board;
 			for (int i = 0; i < db_res_rows(res); ++i) {
 				res_to_board(res, i, &board);
-				if (has_read_perm(&currentuser, &board)) {
+				if (has_read_perm(&board)) {
 					board_to_gbk(&board);
 					printf("<brd dir='%d' title='%s' desc='%s' />",
 							is_board_dir(&board), board.name, board.descr);
@@ -126,7 +126,7 @@ int api_board_all(void)
 	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 		board_t board;
 		res_to_board(res, i, &board);
-		if (!has_read_perm(&currentuser, &board))
+		if (!has_read_perm(&board))
 			continue;
 
 		xml_node_t *node = xml_new_node("board", XML_NODE_ANONYMOUS_JSON);
@@ -273,7 +273,7 @@ int web_all_boards(void)
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		board_t board;
 		res_to_board(res, i, &board);
-		if (!has_read_perm(&currentuser, &board))
+		if (!has_read_perm(&board))
 			continue;
 		board_to_gbk(&board);
 		printf("<brd dir='%d' title='%s' cate='%s' desc='%s' bm='%s' />",
@@ -333,7 +333,7 @@ int web_sector(void)
 		else
 			get_board_by_bid(strtol(get_param("bid"), NULL, 10), &parent);
 		if (!parent.id || !(parent.flag & BOARD_DIR_FLAG)
-				|| !has_read_perm(&currentuser, &parent))
+				|| !has_read_perm(&parent))
 			return BBS_ENOBRD;
 	}
 
@@ -380,7 +380,7 @@ int bbsclear_main(void)
 
 	board_t board;
 	if (!get_board(get_param("board"), &board)
-			|| !has_read_perm(&currentuser, &board))
+			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
 
 	const char *start = get_param("start");
@@ -399,7 +399,7 @@ int bbsnot_main(void)
 {
 	board_t board;
 	if (!get_board(get_param("board"), &board)
-			|| !has_read_perm(&currentuser, &board))
+			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
 
 	if (board.flag & BOARD_DIR_FLAG)

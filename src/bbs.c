@@ -274,7 +274,7 @@ int tui_select_board(int current_bid)
 	if (!get_board(bname, &board))
 		return 0;
 
-	if (!has_read_perm(&currentuser, &board)) {
+	if (!has_read_perm(&board)) {
 		clear();
 		move(5, 10);
 		//% prints("您不是俱乐部版 %s 的成员，无权进入该版", bname);
@@ -604,7 +604,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		const char *title, int mode)
 {
 	if ((mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
-			&& !has_post_perm(&currentuser, board)) {
+			&& !has_post_perm(board)) {
 		//% prints("\n\n 您尚无权限在 %s 版发表文章.\n", currboard);
 		prints("\n\n \xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda %s \xb0\xe6\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2.\n", currboard);
 		return -1;
@@ -1536,7 +1536,7 @@ int board_read(void)
 	if (board.flag & BOARD_DIR_FLAG)
 		return FULLUPDATE;
 
-	if (!has_read_perm(&currentuser, &board)) {
+	if (!has_read_perm(&board)) {
 		clear();
 		move(5, 10);
 		//% prints("您不是俱乐部版 %s 的成员，无权进入该版", currboard);
