@@ -7,6 +7,12 @@
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
+enum {
+	THREAD_LAST_POST = 1 << 4,
+	THREAD_LAST = 1 << 5,
+	THREAD_FIRST = 1 << 6,
+};
+
 extern const struct fileheader *dir_bsearch(const struct fileheader *begin, 
 		const struct fileheader *end, unsigned int fid);
 

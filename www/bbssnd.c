@@ -96,7 +96,7 @@ static char *_check_character(char *text)
 	return text;
 }
 
-extern int bbscon_search_pid(int board, post_id_t pid, post_info_full_t *p);
+extern int search_pid(int bid, post_id_t pid, post_info_t *pi);
 
 int bbssnd_main(void)
 {
@@ -134,25 +134,21 @@ int bbssnd_main(void)
 		return BBS_EPFREQ;
 
 	post_id_t pid = 0;
-	post_info_full_t info;
+	post_info_t pi;
 
 	const char *f = get_param("f");
 	bool reply = !(*f == '\0');
 
 	if (isedit || reply) {
 		pid = strtol(f, NULL, 10);
-		if (!pid || !bbscon_search_pid(board.id, pid, &info))
+		if (!pid || !search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;
 
-		if (!am_bm(&board) && session.uid != info.p.uid) {
-			if (!isedit && (info.p.flag & POST_FLAG_LOCKED)) {
-				free_post_info_full(&info);
+		if (!am_bm(&board) && session.uid != pi.uid) {
+			if (!isedit && (pi.flag & POST_FLAG_LOCKED))
 				return BBS_EPST;
-			}
-			if (isedit) {
-				free_post_info_full(&info);
+			if (isedit)
 				return BBS_EACCES;
-			}
 		}
 	}
 
@@ -160,13 +156,18 @@ int bbssnd_main(void)
 	_check_character(text);
 
 	if (isedit) {
-		char file[HOMELEN];
-		dump_content_to_gbk_file(info.content, info.length,
-				file, sizeof(file));
-		int ret = edit_article(file, text, mask_host(fromhost));
+		char buffer[4096];
+		char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
 
+		char file[HOMELEN];
+		dump_content_to_gbk_file(utf8_content, CONVERT_ALL, file,
+				sizeof(file));
+
+		if (utf8_content != buffer)
+			free(utf8_content);
+
+		int ret = edit_article(file, text, mask_host(fromhost));
 		unlink(file);
-		free_post_info_full(&info);
 
 		if (ret < 0)
 			return BBS_EINTNL;
@@ -175,15 +176,13 @@ int bbssnd_main(void)
 			.autopost = false, .crosspost = false, .uname = NULL, .nick = NULL,
 			.user = &currentuser, .board = &board, .title = gbk_title,
 			.content = text, .sig = strtol(get_param("sig"), NULL, 0),
-			.ip = mask_host(fromhost), .reid = reply ? info.p.id : 0,
-			.tid = reply ? info.p.tid : 0, .marked = false,
-			.locked = reply && (info.p.flag & POST_FLAG_LOCKED),
+			.ip = mask_host(fromhost), .reid = reply ? pi.id : 0,
+			.tid = reply ? pi.tid : 0, .marked = false,
+			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
 			.anony = strtol(get_param("anony"), NULL, 0),
 			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL,
 		};
 		pid = publish_post(&pr);
-		if (reply)
-			free_post_info_full(&info);
 		if (!pid)
 			return BBS_EINTNL;
 	}

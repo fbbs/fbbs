@@ -45,15 +45,6 @@ enum {
 	PARAM_NAMELEN = 80,  /**< Max length of a parameter name */
 };
 
-enum {
-	POST_FIRST = 0x2,
-	POST_LAST = 0x4,
-	THREAD_FIRST_POST = 0x8,
-	THREAD_LAST_POST = 0x10,
-	THREAD_LAST = 0x20,
-	THREAD_FIRST = 0x40,
-};
-
 const char *getsenv(const char *s);
 const char *get_referer(void);
 
@@ -82,7 +73,6 @@ int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);
 struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file);
 bool valid_mailname(const char *file);
-int fcgi_init_loop(int mode);
 int get_user_flag(void);
 void set_user_flag(int flag);
 const char *get_doc_mode_str(void);

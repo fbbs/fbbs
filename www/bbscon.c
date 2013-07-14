@@ -6,75 +6,136 @@
 #include "fbbs/string.h"
 #include "fbbs/web.h"
 
-// Find post whose id = 'fid'.
-// If 'fid' > any post's id, return 'end',
-// otherwise, return the minimum one among all post whose id > 'fid'.
-const struct fileheader *dir_bsearch(const struct fileheader *begin, 
-		const struct fileheader *end, unsigned int fid)
+enum {
+	POST_FIRST = 1 << 1,
+	POST_LAST = 1 << 2,
+	THREAD_FIRST_POST = 1 << 3,
+	THREAD_LAST_POST = 1 << 4,
+	THREAD_LAST = 1 << 5,
+	THREAD_FIRST = 1 << 6,
+	NOT_THREAD_LAST_POST = 1 << 7,
+};
+
+typedef struct {
+	char flags;
+	char action;
+	bool found;
+	int offset;
+	post_id_t pid;
+	post_id_t tid;
+	post_info_t *pi;
+	post_index_record_t *pir;
+	post_index_board_t pib;
+} bbscon_search_callback_t;
+
+static int save_result(const post_index_board_t *pib,
+		bbscon_search_callback_t *bsc, int off)
 {
-	const struct fileheader *mid;
-	while (begin < end) {
-		mid = begin + (end - begin) / 2;
-		if (mid->id == fid) {
-			return mid;
-		}
-		if (mid->id < fid) {
-			begin = mid + 1;
-		} else {
-			end = mid;
-		}
-	}
-	return begin;
+	bsc->found = true;
+	bsc->offset = off;
+	bsc->tid = pib->id - pib->tid_delta;
+	memcpy(&bsc->pib, pib, sizeof(bsc->pib));
+	return post_index_board_to_info(bsc->pir, pib, bsc->pi, 1);
 }
 
-int bbscon_search(int bid, bool archive, post_id_t pid, post_id_t tid,
-		int action, bool extra, post_info_full_t *p)
+static record_callback_e search_pid_callback(void *ptr, void *args, int off)
 {
-	bool asc = true;
-	post_filter_t filter = {
-		.type = POST_LIST_NORMAL, .bid = bid, .archive = archive,
-	};
-	if (action == 'a' || action == 'b')
-		filter.tid = tid;
-	if (action == 'p' || action == 'b') {
-		filter.max = pid - 1;
-		asc = false;
-	} else if (action == 'n' || action == 'a') {
-		filter.min = pid + 1;
+	const post_index_board_t *pib = ptr;
+	bbscon_search_callback_t *bsc = args;
+
+	if (!bsc->action) {
+		if (pib->id <= bsc->pid) {
+			if (pib->id == bsc->pid)
+				save_result(pib, bsc, off);
+			return RECORD_CALLBACK_BREAK;
+		}
+	} else if (bsc->action == 'p') {
+		if (bsc->offset >= 0) {
+			save_result(pib, bsc, off);
+			return RECORD_CALLBACK_BREAK;
+		}
+		if (pib->id == bsc->pid)
+			bsc->offset = off;
+	} else if (bsc->action == 'b') {
+		if (pib->id <= bsc->tid) {
+			if (pib->id == bsc->tid)
+				save_result(pib, bsc, off);
+			return RECORD_CALLBACK_BREAK;
+		}
+		if (pib->id == bsc->pid)
+			bsc->tid = pib->id - pib->tid_delta;
+	}
+	return RECORD_CALLBACK_CONTINUE;
+}
+
+static record_callback_e search_next(void *ptr, void *args, int offset)
+{
+	const post_index_board_t *pib = ptr;
+	bbscon_search_callback_t *bsc = args;
+
+	if (bsc->action == 'n') {
+		if (offset > bsc->offset) {
+			save_result(pib, bsc, offset);
+			return RECORD_CALLBACK_BREAK;
+		}
+	} else if (bsc->action == 'a') {
+		if (pib->id > bsc->pid && pib->id - pib->tid_delta == bsc->tid) {
+			save_result(pib, bsc, offset);
+			return RECORD_CALLBACK_BREAK;
+		}
 	} else {
-		filter.min = filter.max = pid;
+		if (pib->id > bsc->pid && pib->id - pib->tid_delta == bsc->tid) {
+			bsc->flags |= NOT_THREAD_LAST_POST;
+			return RECORD_CALLBACK_BREAK;
+		}
 	}
-
-	query_t *q = query_new(0);
-	query_select(q, POST_LIST_FIELDS_FULL);
-	query_from(q, post_table_name(&filter));
-	build_post_filter(q, &filter, &asc);
-	query_limit(q, 1);
-
-	db_res_t *res = query_exec(q);
-	int ret = res && db_res_rows(res) > 0;
-	if (ret)
-		res_to_post_info_full(res, 0, 0, p);
-	else
-		db_clear(res);
-
-	if (ret && extra) {
-//		if (f == begin)
-//			ret |= POST_FIRST;
-//		if (f == end - 1)
-//			ret |= POST_LAST;
-		if (p->p.id == p->p.tid)
-			ret |= THREAD_FIRST_POST;
-//		if (f >= end)
-//			ret |= THREAD_LAST_POST;
-	}
-
-	return ret;
+	return RECORD_CALLBACK_CONTINUE;
 }
 
-int bbscon_search_pid(int bid, post_id_t pid, post_info_full_t *p)
+static int search(int bid, post_id_t pid, int action, bool extra,
+		post_info_t *pi)
 {
-	return bbscon_search(bid, 0, pid, 0, 0, false, p);
+	record_t record;
+	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
+		return -1;
+
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+
+	bbscon_search_callback_t bsc = {
+		.flags = 0, .action = action, .offset = -1, .pi = pi, .pid = pid,
+		.pir = &pir, .tid = 0, .found = false,
+	};
+	record_reverse_foreach(&record, search_pid_callback, &bsc);
+
+	if (bsc.found) {
+		if (action == 'n' || action == 'a' || extra) {
+			bsc.found = false;
+			record_foreach(&record, &bsc.pib, bsc.offset, search_next, &bsc);
+		}
+	} else {
+		memset(pi, 0, sizeof(*pi));
+	}
+
+	bsc.flags |= bsc.found;
+	if (bsc.found && extra) {
+		if (!bsc.offset)
+			bsc.flags |= POST_FIRST;
+		if (bsc.offset == record_count(&record) - 1)
+			bsc.flags |= POST_LAST;
+		if (pi->id == pi->tid)
+			bsc.flags |= THREAD_FIRST_POST;
+		if (bsc.flags & NOT_THREAD_LAST_POST)
+			bsc.flags |= THREAD_LAST_POST;
+	}
+	post_index_record_close(&pir);
+	record_close(&record);
+	return bsc.flags;
+}
+
+int search_pid(int bid, post_id_t pid, post_info_t *pi)
+{
+	return search(bid, pid, 0, false, pi);
 }
 
 int bbscon_main(void)
@@ -87,14 +148,23 @@ int bbscon_main(void)
 		return BBS_EINVAL;
 
 	post_id_t pid = strtol(get_param("f"), NULL, 10);
-	post_id_t tid = strtol(get_param("t"), NULL, 10);
 	char action = *get_param("a");
-	int archive = strtol(get_param("archive"), NULL, 10);
+//	int archive = strtol(get_param("archive"), NULL, 10);
+	bool sticky = *get_param("s");
 
-	post_info_full_t info;
-	int ret = bbscon_search(board.id, archive, pid, tid, action, true, &info);
-	if (!ret)
-		return BBS_ENOFILE;
+	int ret = 0;
+	post_info_t pi;
+	if (sticky) {
+		record_t record;
+		if (post_index_board_open_sticky(board.id, RECORD_READ, &record) < 0)
+			return BBS_ENOFILE;
+		// TODO
+		record_close(&record);
+	} else {
+		ret = search(board.id, pid, action, true, &pi);
+		if (ret <= 0)
+			return BBS_ENOFILE;
+	}
 
 	xml_header(NULL);
 
@@ -108,25 +178,35 @@ int bbscon_main(void)
 	print_session();
 
 	bool isbm = am_bm(&board);
-	bool self = (session.uid == info.p.uid);
-	printf("<po fid='%"PRIdPID"'%s%s%s%s%s%s", info.p.id,
-			(info.p.flag & POST_FLAG_STICKY) ? " sticky='1'" : "",
+	bool self = (session.uid == pi.uid);
+	printf("<po fid='%"PRIdPID"'%s%s%s%s%s%s", pi.id,
+			(pi.flag & POST_FLAG_STICKY) ? " sticky='1'" : "",
 			ret & POST_FIRST ? " first='1'" : "",
 			ret & POST_LAST ? " last='1'" : "",
 			ret & THREAD_LAST_POST ? " tlast='1'" : "",
-			(info.p.flag & POST_FLAG_LOCKED) ? " nore='1'" : "",
+			(pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "",
 			self || isbm ? " edit='1'" : "");
-	printf(" reid='%"PRIdPID"' gid='%"PRIdPID"'>", info.p.reid, info.p.tid);
+	printf(" reid='%"PRIdPID"' gid='%"PRIdPID"'>", pi.reid, pi.tid);
 
-	xml_print_post_wrapper(info.content, info.length);
+	char buffer[4096];
+	char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
+	size_t len = strlen(utf8_content);
+
+	char *gbk_content = malloc(len + 1);
+	convert(env_u2g, utf8_content, len, gbk_content, len, NULL, NULL);
+
+	xml_print_post_wrapper(gbk_content, strlen(gbk_content));
+
+	free(gbk_content);
+	if (utf8_content != buffer)
+		free(utf8_content);
 
 	printf("</po></bbscon>");
 
 	brc_initialize(currentuser.userid, board.name);
-	brc_mark_as_read(info.p.stamp);
+	brc_mark_as_read(pi.stamp);
 	brc_update(currentuser.userid, board.name);
 
-	free_post_info_full(&info);
 	return 0;
 }
 

@@ -35,7 +35,7 @@ static void get_post_body(const char **begin, const char **end)
 	}
 }
 
-extern int bbscon_search_pid(int bid, post_id_t pid, post_info_full_t *p);
+extern int search_pid(int bid, post_id_t pid, post_info_t *pi);
 
 static int do_bbspst(bool isedit)
 {
@@ -50,7 +50,7 @@ static int do_bbspst(bool isedit)
 		return BBS_EINVAL;
 
 	post_id_t pid = 0;
-	post_info_full_t info;
+	post_info_t pi;
 
 	const char *f = get_param("f");
 	bool reply = !(*f == '\0');
@@ -60,17 +60,12 @@ static int do_bbspst(bool isedit)
 
 	if (reply) {
 		pid = strtol(f, NULL, 10);
-		if (!pid || !bbscon_search_pid(board.id, pid, &info))
+		if (!pid || !search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;
-
-		if (!isedit && (info.p.flag & POST_FLAG_LOCKED)) {
-			free_post_info_full(&info);
+		if (!isedit && (pi.flag & POST_FLAG_LOCKED))
 			return BBS_EPST;
-		}
-		if (isedit && !am_bm(&board) && session.uid != info.p.uid) {
-			free_post_info_full(&info);
+		if (isedit && !am_bm(&board) && session.uid != pi.uid)
 			return BBS_EACCES;
-		}
 	}
 	
 	xml_header(NULL);
@@ -85,28 +80,36 @@ static int do_bbspst(bool isedit)
 		printf("<t>");
 
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
-		convert_u2g(info.p.utf8_title, gbk_title);
+		convert_u2g(pi.utf8_title, gbk_title);
 
 		ansi_filter(gbk_title, gbk_title);
 		xml_fputs2(gbk_title, 0, stdout);
 
 		printf("</t><po f='%lu'>", pid);
+
+		char buffer[4096];
+		char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
+		size_t len = strlen(utf8_content);
+
+		char *gbk_content = malloc(len + 1);
+		convert(env_u2g, utf8_content, len, gbk_content, len, NULL, NULL);
+
 		if (isedit) {
-			const char *begin = info.content;
-			const char *end = info.content + info.length;
+			const char *begin = gbk_content;
+			const char *end = begin + strlen(gbk_content);
 			get_post_body(&begin, &end);
 			if (end > begin)
 				xml_fputs2(begin, end - begin, stdout);
 		} else {
-			char *gbk_content = malloc(info.length + 1);
-			convert(env_u2g, info.content, info.length, gbk_content,
-					info.length, NULL, NULL);
 			quote_string(gbk_content, strlen(gbk_content), NULL, QUOTE_AUTO,
 					false, xml_fputs3);
-			free(gbk_content);
 		}
+
+		free(gbk_content);
+		if (utf8_content != buffer)
+			free(utf8_content);
+
 		fputs("</po>", stdout);
-		free_post_info_full(&info);
 	}
 	printf("</bbspst>");
 	return 0;
@@ -141,8 +144,8 @@ int bbsccc_main(void)
 
 	post_id_t pid = strtol(get_param("f"), NULL, 10);
 
-	post_info_full_t info;
-	if (!bbscon_search_pid(board.id, pid, &info))
+	post_info_t pi;
+	if (!search_pid(board.id, pid, &pi))
 		return BBS_ENOFILE;
 
 	const char *target = get_param("t");
@@ -156,25 +159,29 @@ int bbsccc_main(void)
 			return BBS_EPST;
 
 		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
-		if (strneq(info.p.utf8_title, CP_MARK_STRING,
+		if (strneq(pi.utf8_title, CP_MARK_STRING,
 					sizeof(CP_MARK_STRING) - 1)) {
-			strlcpy(utf8_title, info.p.utf8_title, sizeof(utf8_title));
+			strlcpy(utf8_title, pi.utf8_title, sizeof(utf8_title));
 		} else {
 			snprintf(utf8_title, sizeof(utf8_title), CP_MARK_STRING"%s",
-					info.p.utf8_title);
+					pi.utf8_title);
 		}
 		convert_u2g(utf8_title, gbk_title);
+
+		char buffer[4096];
+		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
 
 		post_request_t pr = {
 			.autopost = false, .crosspost = true, .uname = NULL, .nick = NULL,
 			.user = &currentuser, .board = &to, .title = gbk_title,
-			.content = info.content, .sig = 0, .ip = mask_host(fromhost),
+			.content = content, .sig = 0, .ip = mask_host(fromhost),
 			.reid = 0, .tid = 0, .locked = false, .marked = false,
 			.anony = false,
 		};
 		int ret = publish_post(&pr);
 
-		free_post_info_full(&info);
+		if (content != buffer)
+			free(content);
 		if (!ret)
 			return BBS_EINTNL;
 
@@ -186,16 +193,14 @@ int bbsccc_main(void)
 	} else {
 		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",
-				info.p.owner, board.name, board.id, pid);
+				pi.owner, board.name, board.id, pid);
 
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
-		convert_u2g(info.p.utf8_title, gbk_title);
+		convert_u2g(pi.utf8_title, gbk_title);
 		xml_fputs(gbk_title, stdout);
 
 		print_session();
 		printf("</bbsccc>");
-
-		free_post_info_full(&info);
 	}
 	return 0;
 }
@@ -229,22 +234,29 @@ int bbsfwd_main(void)
 			return BBS_EINVAL;
 
 		post_id_t pid = strtoul(get_param("f"), NULL, 10);
-		post_info_full_t info;
-		if (!bbscon_search_pid(board.id, pid, &info))
+		post_info_t pi;
+		if (!search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;
 
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		GBK_BUFFER(title2, POST_TITLE_CCHARS);
-		convert_u2g(info.p.utf8_title, gbk_title);
+		convert_u2g(pi.utf8_title, gbk_title);
 		//% snprintf(gbk_title2, sizeof(gbk_title2), "[转寄]%s", gbk_title);
 		snprintf(gbk_title2, sizeof(gbk_title2), "[\xd7\xaa\xbc\xc4]%s", gbk_title);
 
+		char buffer[4096];
+		char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
+
 		char file[HOMELEN];
-		if (dump_content_to_gbk_file(info.content, info.length,
-					file, sizeof(file)) == 0) {
-			int ret = mail_file(file, reci, gbk_title2);
+		int ret = dump_content_to_gbk_file(utf8_content, CONVERT_ALL, file,
+				sizeof(file));
+
+		if (utf8_content != buffer)
+			free(utf8_content);
+
+		if (ret == 0) {
+			ret = mail_file(file, reci, gbk_title2);
 			unlink(file);
-			free_post_info_full(&info);
 
 			if (ret)
 				return ret;
