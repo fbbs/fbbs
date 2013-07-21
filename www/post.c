@@ -15,6 +15,18 @@ enum {
 	THREAD_LAST = 1 << 5,
 	THREAD_FIRST = 1 << 6,
 	NOT_THREAD_LAST_POST = 1 << 7,
+	NOT_THREAD_LAST = 1 << 8,
+};
+
+enum {
+	POST_OLDER = 'p', ///< 上一篇
+	POST_NEWER = 'n', ///< 下一篇
+	THREAD_PREV_POST = 'b', ///< 同主题上一篇
+	THREAD_NEXT_POST = 'a', ///< 同主题下一篇
+	THREAD_PREV_PAGE = 'p', ///< 同主题上一页
+	THREAD_NEXT_PAGE = 'n', ///< 同主题下一页
+	THREAD_OLDER = 'b', ///< 上一主题
+	THREAD_NEWER = 'a', ///< 下一主题
 };
 
 typedef struct {
@@ -29,12 +41,17 @@ typedef struct {
 	post_index_board_t pib;
 } bbscon_search_callback_t;
 
+static inline post_id_t get_tid(const post_index_board_t *pib)
+{
+	return pib->id - pib->tid_delta;
+}
+
 static int save_result(const post_index_board_t *pib,
 		bbscon_search_callback_t *bsc, int off)
 {
 	bsc->found = true;
 	bsc->offset = off;
-	bsc->tid = pib->id - pib->tid_delta;
+	bsc->tid = get_tid(pib);
 	memcpy(&bsc->pib, pib, sizeof(bsc->pib));
 	return post_index_board_to_info(bsc->pir, pib, bsc->pi, 1);
 }
@@ -44,21 +61,21 @@ static record_callback_e search_pid_callback(void *ptr, void *args, int off)
 	const post_index_board_t *pib = ptr;
 	bbscon_search_callback_t *bsc = args;
 
-	if (bsc->action == 'p') {
+	if (bsc->action == POST_OLDER) {
 		if (bsc->offset >= 0) {
 			save_result(pib, bsc, off);
 			return RECORD_CALLBACK_BREAK;
 		}
 		if (pib->id == bsc->pid)
 			bsc->offset = off;
-	} else if (bsc->action == 'b') {
+	} else if (bsc->action == THREAD_PREV_POST) {
 		if (pib->id <= bsc->tid) {
 			if (pib->id == bsc->tid)
 				save_result(pib, bsc, off);
 			return RECORD_CALLBACK_BREAK;
 		}
 		if (pib->id == bsc->pid)
-			bsc->tid = pib->id - pib->tid_delta;
+			bsc->tid = get_tid(pib);
 	} else {
 		if (pib->id <= bsc->pid) {
 			if (pib->id == bsc->pid)
@@ -74,11 +91,11 @@ static record_callback_e search_next(void *ptr, void *args, int offset)
 	const post_index_board_t *pib = ptr;
 	bbscon_search_callback_t *bsc = args;
 
-	if (bsc->action == 'n' && offset > bsc->offset)
+	if (bsc->action == POST_NEWER && offset > bsc->offset)
 		save_result(pib, bsc, offset);
 
-	if (pib->id > bsc->pid && pib->id - pib->tid_delta == bsc->tid) {
-		if (bsc->action == 'a')
+	if (pib->id > bsc->pid && get_tid(pib) == bsc->tid) {
+		if (bsc->action == THREAD_NEXT_POST)
 			save_result(pib, bsc, offset);
 		bsc->flags |= NOT_THREAD_LAST_POST;
 		return RECORD_CALLBACK_BREAK;
@@ -103,8 +120,8 @@ static int search(int bid, post_id_t pid, int action, bool extra,
 	record_reverse_foreach(&record, search_pid_callback, &bsc);
 
 	if (bsc.found) {
-		if (action == 'n' || action == 'a' || extra) {
-			bsc.found = !(action == 'n' || action == 'a');
+		if (action == POST_NEWER || action == THREAD_NEXT_POST || extra) {
+			bsc.found = !(action == POST_NEWER || action == THREAD_NEXT_POST);
 			record_foreach(&record, &bsc.pib, bsc.offset, search_next, &bsc);
 		}
 	} else {
@@ -160,6 +177,24 @@ static bool search_sticky(int bid, post_id_t pid, post_info_t *pi)
 }
 
 extern bool get_board_by_param(board_t *bp);
+
+static int xml_print_post_wrapper(const char *str, size_t size)
+{
+	if (request_type(REQUEST_PARSED)) {
+		int opt = PARSE_NOQUOTEIMG;
+		int flag = get_user_flag();
+		if (flag & PREF_NOSIG)
+			opt |= PARSE_NOSIG;
+		if (flag & PREF_NOSIGIMG)
+			opt |= PARSE_NOSIGIMG;
+		return xml_print_post(str, size, opt);
+	}
+	if (!request_type(REQUEST_MOBILE)) {
+		xml_fputs2(str, size, stdout);
+		return 0;
+	}
+	return xml_print_post(str, size, PARSE_NOSIG);
+}
 
 int bbscon_main(void)
 {
@@ -253,24 +288,6 @@ int bbsgcon_main(void)
 	return 0;
 }
 
-int xml_print_post_wrapper(const char *str, size_t size)
-{
-	if (request_type(REQUEST_PARSED)) {
-		int opt = PARSE_NOQUOTEIMG;
-		int flag = get_user_flag();
-		if (flag & PREF_NOSIG)
-			opt |= PARSE_NOSIG;
-		if (flag & PREF_NOSIGIMG)
-			opt |= PARSE_NOSIGIMG;
-		return xml_print_post(str, size, opt);
-	}
-	if (!request_type(REQUEST_MOBILE)) {
-		xml_fputs2(str, size, stdout);
-		return 0;
-	}
-	return xml_print_post(str, size, PARSE_NOSIG);
-}
-
 int bbsdel_main(void)
 {
 	if (!session.id)
@@ -335,69 +352,119 @@ int bbsdel_main(void)
 	return 0;
 }
 
-static post_id_t find_next_tid(int bid, post_id_t tid, char action)
+typedef struct {
+	const char action;
+	int flags;
+	post_id_t pid;
+	post_id_t tid;
+	int offset;
+	post_index_board_t *pib;
+	int size;
+	int capacity;
+} search_topic_callback_t;
+
+static void save_offset(const post_index_board_t *pib,
+		search_topic_callback_t *stc, int offset)
 {
-	post_filter_t filter = { .bid = bid, .type = POST_LIST_TOPIC };
-	if (action == 'a')
-		filter.min = tid + 1;
-	else
-		filter.max = tid - 1;
-
-	query_t *q = build_post_query(&filter, action == 'a', 1);
-	db_res_t *res = query_exec(q);
-
-	if (res && db_res_rows(res) >= 1) {
-		post_info_t info;
-		res_to_post_info(res, 0, 0, &info);
-		tid = info.tid;
-	}
-	db_clear(res);
-	return tid;
+	stc->offset = offset;
+	memcpy(stc->pib, pib, sizeof(*stc->pib));
 }
 
-// action 'a' next thread
-// 'b' previous thread
-// 'n' next page
-// 'p' previous page
-// (none): first page
-// TODO: THREAD_FIRST, THREAD_LAST
-static post_info_full_t *bbstcon_search(int bid, post_id_t pid, post_id_t *tid,
-		char action, int *count, int *flag)
+static record_callback_e search_topic_callback(void *ptr, void *args, int off)
 {
-	if (action == 'a' || action == 'b') {
-		*tid = find_next_tid(bid, *tid, action);
+	const post_index_board_t *pib = ptr;
+	search_topic_callback_t *stc = args;
+
+	if (stc->action == THREAD_PREV_PAGE) {
+		if (stc->size >= stc->capacity || pib->id < stc->tid) {
+			return RECORD_CALLBACK_BREAK;
+		} else if (pib->id < stc->pid && get_tid(pib) == stc->tid) {
+			memcpy(stc->pib + stc->size++, pib, sizeof(*stc->pib));
+		}
+	} else if (stc->action == THREAD_OLDER) {
+		if (pib->id < stc->tid && !pib->tid_delta) {
+			save_offset(pib, stc, off);
+			stc->tid = stc->pid = pib->id;
+			return RECORD_CALLBACK_BREAK;
+		}
+	} else if (stc->action == THREAD_NEWER) {
+		if (pib->id <= stc->tid) {
+			return RECORD_CALLBACK_BREAK;
+		} else {
+			if (!pib->tid_delta) {
+				save_offset(pib, stc, off);
+				stc->tid = stc->pid = pib->id;
+			}
+		}
+	} else if (stc->action == THREAD_NEXT_PAGE) {
+		if (pib->id <= stc->pid)
+			return RECORD_CALLBACK_BREAK;
+		else if (get_tid(pib) == stc->tid)
+			save_offset(pib, stc, off);
+	} else {
+		if (pib->id <= stc->pid) {
+			if (pib->id == stc->pid)
+				save_offset(pib, stc, off);
+			return RECORD_CALLBACK_BREAK;
+		}
 	}
+	return RECORD_CALLBACK_CONTINUE;
+}
 
-	post_filter_t filter = { .bid = bid, .tid = *tid };
-	if (action == 'p')
-		filter.max = pid - 1;
-	else if (action == 'n')
-		filter.min = pid + 1;
-	bool asc = !(action == 'b' || action == 'p');
+static record_callback_e search_topic_posts(void *ptr, void *args, int off)
+{
+	const post_index_board_t *pib = ptr;
+	search_topic_callback_t *stc = args;
 
-	query_t *q = query_new(0);
-	query_select(q, POST_LIST_FIELDS_FULL);
-	query_from(q, post_table_name(&filter));
-	build_post_filter(q, &filter, &asc);
-	query_limit(q, *count + 1);
+	if (get_tid(pib) == stc->tid && pib->id >= stc->pid) {
+		if (stc->size < stc->capacity)
+			memcpy(stc->pib + stc->size++, pib, sizeof(*stc->pib));
+		else
+			stc->flags |= NOT_THREAD_LAST_POST;
+	}
+	if (!pib->tid_delta && pib->id >= stc->tid)
+		stc->flags |= NOT_THREAD_LAST;
+	return RECORD_CALLBACK_CONTINUE;
+}
 
-	db_res_t *res = query_exec(q);
-	int rows = db_res_rows(res);
-	if (!rows)
+static post_index_board_t *search_topic(int bid, post_id_t pid, post_id_t *tid,
+		int action, int *count, int *flags)
+{
+	record_t record;
+	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
 		return NULL;
 
-	if (rows <= *count) {
-		if (asc)
-			*flag |= THREAD_LAST_POST;
-		*count = rows;
+	post_index_board_t *pib = malloc(sizeof(*pib) * *count);
+	if (!pib) {
+		record_close(&record);
+		return NULL;
 	}
 
-	post_info_full_t *p = malloc(sizeof(*p) * rows);
-	for (int i = 0; i < rows; ++i) {
-		res_to_post_info_full(res, i, 0, p + i);
+	search_topic_callback_t stc = {
+		.action = action, .flags = 0, .pid = pid, .tid = *tid,
+		.offset = -1, .pib = pib, .size = 0, .capacity = *count,
+	};
+	record_reverse_foreach(&record, search_topic_callback, &stc);
+
+	if (action != THREAD_PREV_PAGE && stc.offset >= 0) {
+		record_foreach(&record, stc.pib, stc.offset,
+				search_topic_posts, &stc);
 	}
-	return p;
+
+	record_close(&record);
+	if (!stc.size) {
+		free(pib);
+		return NULL;
+	}
+	*tid = stc.tid;
+	*count = stc.size;
+	*flags = stc.flags;
+	return pib;
 }
+
+enum {
+	POSTS_PER_PAGE = 20,
+};
 
 int bbstcon_main(void)
 {
@@ -414,10 +481,10 @@ int bbstcon_main(void)
 		tid = pid;
 
 	int count = POSTS_PER_PAGE;
-	int c = count, flag = 0;
-	post_info_full_t *p = bbstcon_search(board.id, pid, &tid, action, &c,
-			&flag);
-	if (!p)
+	int c = count, flags = 0;
+	post_index_board_t *pib =
+			search_topic(board.id, pid, &tid, action, &c, &flags);
+	if (!pib)
 		return BBS_ENOFILE;
 
 	bool anony = board.flag & BOARD_ANONY_FLAG;
@@ -428,29 +495,41 @@ int bbstcon_main(void)
 	printf("<bbstcon bid='%d' gid='%"PRIdPID"' anony='%d' page='%d'"
 			" attach='%d'%s%s%s%s%s>",
 			board.id, tid, anony, count, maxlen(board.name),
-			flag & THREAD_LAST_POST ? " last='1'" : "",
-			flag & THREAD_LAST ? " tlast='1'" : "",
-			flag & THREAD_FIRST ? " tfirst='1'" : "",
+			flags & NOT_THREAD_LAST_POST ? "" : " last='1'",
+			flags & NOT_THREAD_LAST ? "" : " tlast='1'",
+			flags & THREAD_FIRST ? " tfirst='1'" : "",
 			opt & PREF_NOSIG ? " nosig='1'" : "",
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session();
 
 	brc_initialize(currentuser.userid, board.name);
 
-	bool asc = action != 'p';
+	bool asc = action != THREAD_PREV_PAGE;
 	if (c > count)
 		c = count;
-	for (post_info_full_t *ip = asc ? p : p + c - 1;
-			asc ? ip < p + c : ip >= p;
-			ip += asc ? 1 : -1) {
-		printf("<po fid='%"PRIdPID"' owner='%s'%s>", ip->p.id, ip->p.owner,
-				!isbm && (ip->p.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
-		xml_print_post_wrapper(ip->content, ip->length);
+
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+
+	for (post_index_board_t *ptr = asc ? pib : pib + c - 1;
+			asc ? ptr < pib + c : ptr >= pib;
+			ptr += asc ? 1 : -1) {
+		post_info_t pi;
+		post_index_board_to_info(&pir, ptr, &pi, 1);
+		printf("<po fid='%"PRIdPID"' owner='%s'%s>", pi.id, pi.owner,
+				!isbm && (pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
+
+		char buffer[4096];
+		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
+		xml_print_post_wrapper(content, strlen(content));
+		if (content != buffer)
+			free(content);
+
 		puts("</po>");
-		brc_mark_as_read(ip->p.stamp);
+		brc_mark_as_read(pi.stamp);
 	}
 	puts("</bbstcon>");
-	free_post_info_full(p);
+	post_index_record_close(&pir);
 
 	brc_update(currentuser.userid, board.name);
 	return 0;

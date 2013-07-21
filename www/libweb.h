@@ -27,7 +27,6 @@ enum {
 
 enum {
 	TLINES = 20,
-	POSTS_PER_PAGE = 20,
 	NEWMAIL_EXPIRE = 30,
 };
 
