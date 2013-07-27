@@ -1336,6 +1336,16 @@ static record_callback_e post_index_trash_insert(void *rec, void *args,
 	return RECORD_CALLBACK_CONTINUE;
 }
 
+/**
+ * 删除版面上符合条件的文章
+ * @param filter 文章过滤条件，其中必须指定版面 ID
+ * @param ptr 该篇文章的版面记录(PIB)，供参考，可为 NULL
+ * @param offset 文章在版面上的位置，供参考，可为 0
+ * @param junk 是否减少作者文章数
+ * @param bm_visible 是则进入版面垃圾箱，否则进入站务垃圾箱
+ * @param force 是否删除带保留标记的文章
+ * @return 被删除的文章数
+ */
 int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 		bool junk, bool bm_visible, bool force)
 {
@@ -1344,15 +1354,17 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 
 	bool decrease = true;
 	board_t board;
-	if (filter->bid && get_board_by_bid(filter->bid, &board)
-			&& is_junk_board(&board)) {
+	if (get_board_by_bid(filter->bid, &board) && is_junk_board(&board)) {
 		decrease = false;
 	}
+	int deleted = 0;
 
 	record_t record, trash;
-	post_index_board_open(filter->bid, RECORD_WRITE, &record);
-	post_index_trash_open(filter->bid,
-			bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash);
+	if (post_index_board_open(filter->bid, RECORD_WRITE, &record) < 0)
+		goto e1;
+	if (post_index_trash_open(filter->bid,
+			bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash) < 0)
+		goto e2;
 	post_index_record_t pir;
 	post_index_record_open(&pir);
 
@@ -1362,21 +1374,25 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 		.estamp = fb_time(), .junk = junk, .decrease = decrease,
 	};
 
-	record_lock_all(&trash, RECORD_WRLCK);
+	if (record_lock_all(&trash, RECORD_WRLCK) < 0)
+		goto e3;
 	int current = record_seek(&trash, 0, RECORD_END);
 
-	record_lock_all(&record, RECORD_WRLCK);
-	int deleted = record_delete(&record, ptr, offset,
+	if (record_lock_all(&record, RECORD_WRLCK) < 0)
+		goto e4;
+	deleted = record_delete(&record, ptr, offset,
 			post_index_trash_insert, &piti);
 	record_lock_all(&record, RECORD_UNLCK);
 
-	post_filter_t filter2 = { .fake_id_min = current + 1 };
-	post_deletion_trigger(&trash, &filter2, &pir, true);
+	if (deleted) {
+		post_filter_t filter2 = { .fake_id_min = current + 1 };
+		post_deletion_trigger(&trash, &filter2, &pir, true);
+	}
 
-	record_lock_all(&trash, RECORD_UNLCK);
-	post_index_record_close(&pir);
-	record_close(&trash);
-	record_close(&record);
+e4: record_lock_all(&trash, RECORD_UNLCK);
+e3: post_index_record_close(&pir);
+e2: record_close(&trash);
+e1: record_close(&record);
 	return deleted;
 }
 
