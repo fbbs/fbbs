@@ -293,8 +293,8 @@ int bbsdel_main(void)
 	if (!session.id)
 		return BBS_ELGNREQ;
 
-	unsigned int fid = strtoul(get_param("f"), NULL, 10);
-	if (fid == 0)
+	post_id_t pid = strtoll(get_param("f"), NULL, 10);
+	if (pid <= 0)
 		return BBS_EINVAL;
 
 	board_t board;
@@ -303,49 +303,23 @@ int bbsdel_main(void)
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	char file[HOMELEN];
-	setwbdir(file, board.name);
-	struct fileheader fh;
-//	bool self = !strcmp(ptr->owner, currentuser.userid);
-	bool self = false;
-#if 0
-	record_t r;
-	record_open(file, O_RDWR, &r);
-	fh.id = fid;
-	struct fileheader *ptr =
-			record_search(&r, &fh, sizeof(fh), bsearch, cmp_fid);
-	if (ptr == NULL) {
-		record_close(&r);
-		return BBS_ENOFILE;
-	}
-	if (!self && !am_bm(&board)) {
-		record_close(&r);
-		return BBS_EACCES;
-	}
-	memcpy(&fh, ptr, sizeof(fh));
-	record_delete(&r, ptr, sizeof(*ptr));
-	record_close(&r);
-#endif
-	if (!(board.flag & BOARD_JUNK_FLAG)) {
-		struct userec user;
-		getuserec(fh.owner, &user);
-		if (user.numposts > 0)
-			user.numposts--;
-		save_user_data(&user);
-	}
+	record_t record;
+	if (post_index_board_open(board.id, RECORD_WRITE, &record) <= 0)
+		return BBS_EINTNL;
 
-	char buf[STRLEN];
-	sprintf(buf, "deleted[www] '%u' on %s\n", fid, board.name);
-	report(buf, currentuser.userid);
-	strlcpy(fh.szEraser, currentuser.userid, sizeof(fh.szEraser));
-	fh.timeDeleted = time(NULL);
-	const char *trash = JUNK_DIR;
-	if (!self && !HAS_PERM(PERM_OBOARDS)) {
-		trash = TRASH_DIR;
+	post_filter_t filter = {
+		.bid = board.id, .min = pid, .max = pid,
+		.uid = am_bm(&board) ? 0 : session.uid,
+	};
+	int deleted = post_index_board_delete(&filter, NULL, 0, true, false, true);
+	record_close(&record);
+
+	if (deleted) {
+		char buf[STRLEN];
+		snprintf(buf, sizeof(buf), "deleted[www] '%"PRIdPID"' on %s\n",
+				pid, board.name);
+		report(buf, currentuser.userid);
 	}
-	fh.accessed[1] |= FILE_SUBDEL;
-	setbfile(file, board.name, trash);
-	append_record(file, &fh, sizeof(fh));
 	updatelastpost(&board);
 
 	printf("Location: doc?bid=%d\n\n", board.id);
