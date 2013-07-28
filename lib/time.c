@@ -22,9 +22,12 @@ const char *fb_ctime(const fb_time_t *t)
 char *format_time(fb_time_t time, time_format_e fmt)
 {
 	//% "天" "一" "二" "三" "四" "五" "六"
-	const char weeknum[7][3] = {
+	const char *weeknum[] = {
 		"\xcc\xec", "\xd2\xbb", "\xb6\xfe", "\xc8\xfd",
 		"\xcb\xc4", "\xce\xe5", "\xc1\xf9"
+	};
+	const char *utf8_weeknum[] = {
+		"天", "一", "二", "三", "四", "五", "六"
 	};
 	static char str[32] = { '\0' };
 
@@ -36,6 +39,12 @@ char *format_time(fb_time_t time, time_format_e fmt)
 					"%02d:%02d:%02d \xd0\xc7\xc6\xda%2s", t->tm_year + 1900,
 					t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min,
 					t->tm_sec, weeknum[t->tm_wday]);
+			break;
+		case TIME_FORMAT_UTF8_ZH:
+			snprintf(str, sizeof(str), "%4d年%02d月%02d日"
+					"%02d:%02d:%02d 星期%s", t->tm_year + 1900,
+					t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min,
+					t->tm_sec, utf8_weeknum[t->tm_wday]);
 			break;
 		case TIME_FORMAT_EN:
 			strftime(str, sizeof(str), "%m/%d/%Y %H:%M:%S", t);

@@ -10,6 +10,7 @@
 
 typedef enum {
 	TIME_FORMAT_ZH,      ///< "2001年02月03日04:05:06 星期六"
+	TIME_FORMAT_UTF8_ZH, ///< "2001年02月03日04:05:06 星期六"
 	TIME_FORMAT_EN,      ///< "02/03/01 04:05:06"
 	TIME_FORMAT_SHORT,   ///< "02.03 04:05"
 	TIME_FORMAT_XML,     ///< "2001-02-03T04:05:06"
