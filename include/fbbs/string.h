@@ -14,6 +14,9 @@
 #define strcaseeq(a, b)      (!strcasecmp(a, b))
 #define strncaseeq(a, b, n)  (!strncasecmp(a, b, n))
 
+#define strneq2(a, s)        (!strncmp(a, s, sizeof(s) - 1))
+#define strncaseeq2(a, s)    (!strncasecmp(a, s, sizeof(s) - 1))
+
 enum {
 	PSTRING_DEFAULT_LEN = 7,
 };

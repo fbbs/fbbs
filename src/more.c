@@ -640,13 +640,12 @@ static int more_prompt_file(more_file_t *more)
 
 static int is_emphasize(const char *str)
 {
-	//% return (!strncmp(str, "【 在", sizeof("【 在") - 1)
-	return (!strncmp(str, "\xa1\xbe \xd4\xda", sizeof("\xa1\xbe \xd4\xda") - 1)
-			|| !strncmp(str, "==>", 3)
-			//% || !strncmp(str, "□ 引用", sizeof("□ 引用") - 1)
-			|| !strncmp(str, "\xa1\xf5 \xd2\xfd\xd3\xc3", sizeof("\xa1\xf5 \xd2\xfd\xd3\xc3") - 1)
-			//% || !strncmp(str, "※ 引述", sizeof("※ 引述") - 1));
-			|| !strncmp(str, "\xa1\xf9 \xd2\xfd\xca\xf6", sizeof("\xa1\xf9 \xd2\xfd\xca\xf6") - 1));
+	//% "【 在")
+	return (strneq2(str, "\xa1\xbe \xd4\xda") || strneq2(str, "==>")
+			//% "□ 引用"
+			|| strneq2(str, "\xa1\xf5 \xd2\xfd\xd3\xc3")
+			//% "※ 引述"
+			|| strneq2(str, "\xa1\xf9 \xd2\xfd\xca\xf6"));
 }
 
 static int is_quotation(const char *str)

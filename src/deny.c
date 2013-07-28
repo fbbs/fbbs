@@ -577,14 +577,10 @@ int deny_user(void)
  */
 static int deny_date_cmp(const char *s1, const char *s2)
 {
-	//% if ((!strncmp(s1, "待定", sizeof("待定") - 1)
-	if ((!strncmp(s1, "\xb4\xfd\xb6\xa8", sizeof("\xb4\xfd\xb6\xa8") - 1)
-			//% || !strncmp(s1, "终身", sizeof("终身") - 1))
-			|| !strncmp(s1, "\xd6\xd5\xc9\xed", sizeof("\xd6\xd5\xc9\xed") - 1))
-		//% && (!strncmp(s2, "待定", sizeof("待定") - 1)
-		&& (!strncmp(s2, "\xb4\xfd\xb6\xa8", sizeof("\xb4\xfd\xb6\xa8") - 1)
-			//% || !strncmp(s2, "终身", sizeof("终身") - 1))) {
-			|| !strncmp(s2, "\xd6\xd5\xc9\xed", sizeof("\xd6\xd5\xc9\xed") - 1))) {
+	//% "待定" "终身"
+	if ((strneq2(s1, "\xb4\xfd\xb6\xa8") || strneq2(s1, "\xd6\xd5\xc9\xed"))
+			&& (strneq2(s2, "\xb4\xfd\xb6\xa8")
+				|| strneq2(s2, "\xd6\xd5\xc9\xed"))) {
 		return 0;
 	}
 	return strncmp(s1, s2, 10);
