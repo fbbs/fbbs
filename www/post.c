@@ -535,72 +535,66 @@ int web_sigopt(void)
 	return 0;
 }
 
-static int edit_article(const char *file, const char *content, const char *ip)
+static int edit_article(post_id_t pid, const char *content, const char *text,
+		const char *ip)
 {
-	if (file == NULL || content == NULL || ip == NULL)
+	if (!content || !text || !ip)
 		return BBS_EINTNL;
-	int fd = open(file, O_RDWR);
-	if (fd < 0)
-		return BBS_EINTNL;
-	fb_flock(fd, LOCK_EX);
-	char buf[4096];
-	ssize_t bytes = read(fd, buf, sizeof(buf));
-	if (bytes >= 0) {
-		// skip header.
-		char *ptr = buf, *e = buf + bytes;
+
+	size_t len = strlen(content), header_len = 0;
+	const char *ptr = content, *end = ptr + len;
+	if (len > 0) {
+		// 跳过文章头部
 		int n = 3;
-		while (ptr != e && n >= 0) {
+		while (ptr != end && n >= 0) {
 			if (*ptr == '\n')
 				--n;
 			++ptr;
 		}
-		int begin = ptr - buf;
+		header_len = ptr - content;
 
-		if (bytes == sizeof(buf)) {
-			lseek(fd, -sizeof(buf), SEEK_END);
-			bytes = read(fd, buf, sizeof(buf));
-			if (bytes < sizeof(buf)) {
-				fb_flock(fd, LOCK_UN);
-				file_close(fd);
-				return BBS_EINTNL;
-			}
-			e = buf + bytes;
-		}
-		ptr = e - 2; // skip last '\n'
-		while (ptr >= buf && *ptr != '\n')
+		ptr = end - 2; // 跳过最后的换行符
+		while (ptr >= content && *ptr != '\n')
 			--ptr;
-		if (ptr >= buf) {
-			//% if (!strncmp(ptr + 1, "\033[m\033[1;36m※ 修改", 17)) {
-			if (!strncmp(ptr + 1, "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4", 17)) {
-				e = ptr + 1;
+		if (ptr >= content) {
+			//% ※ 修改
+			if (strneq2(ptr + 1, "\033[m\033[1;36m※ 修改")) {
+				// 如果已经修改过，应该覆盖修改标记
+				end = ptr + 1;
 				--ptr;
-				while (ptr >= buf && *ptr != '\n')
+				while (ptr >= content && *ptr != '\n')
 					--ptr;
 			}
 		}
-
-		lseek(fd, begin, SEEK_SET);
-		size_t len = strlen(content);
-		size_t size = begin + len;
-		int ret = file_write(fd, content, len);
-		if (ret == 0 && ptr != e)
-			ret = file_write(fd, ptr, e - ptr);
-		//% len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m※ 修改:·%s 于 "
-		len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda "
-				//% "%22.22s·HTTP [FROM: %s]\033[m\n", currentuser.userid,
-				"%22.22s\xa1\xa4HTTP [FROM: %s]\033[m\n", currentuser.userid,
-				format_time(fb_time(), TIME_FORMAT_ZH), mask_host(ip));
-		if (ret == 0)
-			ret = file_write(fd, buf, len);
-		size += (e - ptr) + len;
-		ret = ftruncate(fd, size);
-		fb_flock(fd, LOCK_UN);
-		file_close(fd);
-		if (ret == 0)
-			return 0;
-		return BBS_EINTNL;
 	}
-	return BBS_EINTNL;	
+
+	char buf[256];
+	int mark_len = snprintf(buf, sizeof(buf), "\033[m\033[1;36m※ 修改:·%s 于 "
+			"%.25s·HTTP [FROM: %s]\033[m\n", currentuser.userid,
+			format_time(fb_time(), TIME_FORMAT_UTF8_ZH), mask_host(ip));
+	if (mark_len < 0)
+		return BBS_EINTNL;
+
+	size_t size = header_len + strlen(text) * 2 + (end - ptr) + mark_len + 1;
+	char *out = malloc(size), *dst = out;
+	if (!out)
+		return BBS_EINTNL;
+	memcpy(dst, content, header_len);
+	dst += header_len;
+	convert(env_g2u, text, CONVERT_ALL, dst, size - header_len, NULL, NULL);
+	size_t left = size - strlen(out);
+	if (left > (end - ptr) + mark_len) {
+		dst = out + size - left;
+		memcpy(dst, ptr, end - ptr);
+		dst += end - ptr;
+		memcpy(dst, buf, mark_len);
+		dst += mark_len;
+		*dst = '\0';
+	}
+
+	int ret = post_content_write(pid, out, dst - out);
+	free(out);
+	return ret > 0 ? 0 : BBS_EINTNL;
 }
 
 static char *_check_character(char *text)
@@ -679,23 +673,17 @@ int bbssnd_main(void)
 		}
 	}
 
-	char *text = (char *)get_param("text");
+	char *text = (char *) get_param("text");
 	_check_character(text);
 
 	if (isedit) {
 		char buffer[4096];
-		char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
+		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
 
-		char file[HOMELEN];
-		dump_content_to_gbk_file(utf8_content, CONVERT_ALL, file,
-				sizeof(file));
+		int ret = edit_article(pid, content, text, fromhost);
 
-		if (utf8_content != buffer)
-			free(utf8_content);
-
-		int ret = edit_article(file, text, mask_host(fromhost));
-		unlink(file);
-
+		if (content != buffer)
+			free(content);
 		if (ret < 0)
 			return BBS_EINTNL;
 	} else {
@@ -777,17 +765,17 @@ static int do_bbspst(bool isedit)
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	post_id_t pid = 0;
-	post_info_t pi;
-
 	const char *f = get_param("f");
 	bool reply = !(*f == '\0');
 
 	if (isedit && !reply)
 		return BBS_EINVAL;
 
+	post_id_t pid = 0;
+	post_info_t pi;
+
 	if (reply) {
-		pid = strtol(f, NULL, 10);
+		pid = strtoll(f, NULL, 10);
 		if (!pid || !search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;
 		if (!isedit && (pi.flag & POST_FLAG_LOCKED))
