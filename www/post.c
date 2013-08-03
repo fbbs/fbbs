@@ -962,29 +962,27 @@ int bbsfwd_main(void)
 		if (board.flag & BOARD_DIR_FLAG)
 			return BBS_EINVAL;
 
-		post_id_t pid = strtoul(get_param("f"), NULL, 10);
+		post_id_t pid = strtoll(get_param("f"), NULL, 10);
 		post_info_t pi;
 		if (!search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;
 
-		GBK_BUFFER(title, POST_TITLE_CCHARS);
-		GBK_BUFFER(title2, POST_TITLE_CCHARS);
-		convert_u2g(pi.utf8_title, gbk_title);
-		//% snprintf(gbk_title2, sizeof(gbk_title2), "[转寄]%s", gbk_title);
-		snprintf(gbk_title2, sizeof(gbk_title2), "[\xd7\xaa\xbc\xc4]%s", gbk_title);
+		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+		snprintf(utf8_title, sizeof(utf8_title), "[转寄]%s", pi.utf8_title);
+		convert_u2g(utf8_title, gbk_title);
 
 		char buffer[4096];
-		char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
+		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
 
 		char file[HOMELEN];
-		int ret = dump_content_to_gbk_file(utf8_content, CONVERT_ALL, file,
+		int ret = dump_content_to_gbk_file(content, CONVERT_ALL, file,
 				sizeof(file));
 
-		if (utf8_content != buffer)
-			free(utf8_content);
+		if (content != buffer)
+			free(content);
 
 		if (ret == 0) {
-			ret = mail_file(file, reci, gbk_title2);
+			ret = mail_file(file, reci, gbk_title);
 			unlink(file);
 
 			if (ret)
