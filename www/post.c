@@ -597,7 +597,7 @@ static int edit_article(post_id_t pid, const char *content, const char *text,
 	return ret > 0 ? 0 : BBS_EINTNL;
 }
 
-static char *_check_character(char *text)
+static void check_character(char *text)
 {
 	char *dst = text, *src;
 	for (src = text; *src != '\0'; ++src) {
@@ -615,7 +615,6 @@ static char *_check_character(char *text)
 		}
 	}
 	*dst = '\0';
-	return text;
 }
 
 int bbssnd_main(void)
@@ -674,7 +673,7 @@ int bbssnd_main(void)
 	}
 
 	char *text = (char *) get_param("text");
-	_check_character(text);
+	check_character(text);
 
 	if (isedit) {
 		char buffer[4096];
@@ -688,11 +687,19 @@ int bbssnd_main(void)
 			return BBS_EINTNL;
 	} else {
 		post_request_t pr = {
-			.autopost = false, .crosspost = false, .uname = NULL, .nick = NULL,
-			.user = &currentuser, .board = &board, .title = gbk_title,
-			.content = text, .sig = strtol(get_param("sig"), NULL, 0),
-			.ip = mask_host(fromhost), .reid = reply ? pi.id : 0,
-			.tid = reply ? pi.tid : 0, .marked = false,
+			.autopost = false,
+			.crosspost = false,
+			.uname = NULL,
+			.nick = NULL,
+			.user = &currentuser,
+			.board = &board,
+			.title = gbk_title,
+			.content = text,
+			.sig = strtol(get_param("sig"), NULL, 0),
+			.ip = mask_host(fromhost),
+			.reid = reply ? pi.id : 0,
+			.tid = reply ? pi.tid : 0,
+			.marked = false,
 			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
 			.anony = strtol(get_param("anony"), NULL, 0),
 			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL,
@@ -741,8 +748,7 @@ static void get_post_body(const char **begin, const char **end)
 		--ptr;
 	if (ptr < *begin)
 		return;
-	//% if (!strncmp(ptr + 1, "\033[m\033[1;36m※ 修改", 17)) {
-	if (!strncmp(ptr + 1, "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4", 17)) {
+	if (strneq2(ptr + 1, "\033[m\033[1;36m※ 修改")) {
 		--ptr;
 		while (ptr >= *begin && *ptr != '\n')
 			--ptr;
@@ -841,8 +847,7 @@ int bbsedit_main(void)
 	return do_bbspst(true);
 }
 
-/** UTF-8 "[转载]" */
-#define CP_MARK_STRING  "[\xe8\xbd\xac\xe8\xbd\xbd]"
+#define CP_MARK_STRING  "[转载]"
 
 int bbsccc_main(void)
 {
@@ -857,7 +862,7 @@ int bbsccc_main(void)
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
 
-	post_id_t pid = strtol(get_param("f"), NULL, 10);
+	post_id_t pid = strtoll(get_param("f"), NULL, 10);
 
 	post_info_t pi;
 	if (!search_pid(board.id, pid, &pi))
@@ -874,8 +879,7 @@ int bbsccc_main(void)
 			return BBS_EPST;
 
 		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
-		if (strneq(pi.utf8_title, CP_MARK_STRING,
-					sizeof(CP_MARK_STRING) - 1)) {
+		if (strneq2(pi.utf8_title, CP_MARK_STRING)) {
 			strlcpy(utf8_title, pi.utf8_title, sizeof(utf8_title));
 		} else {
 			snprintf(utf8_title, sizeof(utf8_title), CP_MARK_STRING"%s",
@@ -887,11 +891,22 @@ int bbsccc_main(void)
 		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
 
 		post_request_t pr = {
-			.autopost = false, .crosspost = true, .uname = NULL, .nick = NULL,
-			.user = &currentuser, .board = &to, .title = gbk_title,
-			.content = content, .sig = 0, .ip = mask_host(fromhost),
-			.reid = 0, .tid = 0, .locked = false, .marked = false,
+			.autopost = false,
+			.crosspost = true,
+			.uname = NULL,
+			.nick = NULL,
+			.user = &currentuser,
+			.board = &to,
+			.title = gbk_title,
+			.content = content,
+			.sig = 0,
+			.ip = mask_host(fromhost),
+			.reid = 0,
+			.tid = 0,
+			.locked = false,
+			.marked = false,
 			.anony = false,
+			.cp = env_u2g,
 		};
 		int ret = publish_post(&pr);
 
