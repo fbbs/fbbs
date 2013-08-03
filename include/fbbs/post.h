@@ -178,6 +178,16 @@ typedef struct {
 	record_t record;
 } post_index_record_t;
 
+typedef struct {
+	post_id_t tid;
+	uint_t count;
+	fb_time_t last;
+	int bid;
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+	char owner[16];
+	char bname[BOARD_NAME_LEN + 1];
+} topic_stat_t;
+
 extern int post_index_cmp(const void *p1, const void *p2);
 extern int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);

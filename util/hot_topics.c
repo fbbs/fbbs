@@ -56,14 +56,6 @@ typedef struct {
 } topic_stat_short_t;
 
 typedef struct {
-	uint_t count;
-	fb_time_t last;
-	int bid;
-	UTF8_BUFFER(title, POST_TITLE_CCHARS);
-	char owner[OWNER_LEN];
-} topic_stat_t;
-
-typedef struct {
 	pool_t *pool;
 	config_t *config;
 	topic_stat_t *topics;
@@ -72,6 +64,8 @@ typedef struct {
 	hash_t hash;
 	uint_t size;
 } stat_t;
+
+static char (*bnames)[BOARD_NAME_LEN + 1];
 
 static record_callback_e hot_topics_stat(post_index_t *pi, void *args)
 {
@@ -116,15 +110,16 @@ static record_callback_e hot_topics_stat(post_index_t *pi, void *args)
 		}
 
 		topic_stat_t *ts = stat->topics + pos;
+		ts->tid = tid;
 		ts->bid = pi->bid;
 		strlcpy(ts->utf8_title, pi->utf8_title, sizeof(ts->utf8_title));
 		strlcpy(ts->owner, pi->owner, sizeof(ts->owner));
+		strlcpy(ts->bname, bnames[pi->bid - 1], sizeof(ts->bname));
 	}
 	return RECORD_CALLBACK_CONTINUE;
 }
 
 static bitset_t *board_bitset;
-char (*bnames)[BOARD_NAME_LEN + 1];
 
 static bitset_t *board_init(void)
 {
@@ -166,7 +161,8 @@ static int topic_sort(const void *p1, const void *p2)
 	return s1->count - s2->count;
 }
 
-static void print_topic(FILE *fp, const topic_stat_t *topic, int rank)
+static void print_topic(FILE *fp, FILE *fp2, const topic_stat_t *topic,
+		int rank)
 {
 	char time[32];
 	strlcpy(time, fb_ctime(&topic->last) + 4, 16);
@@ -181,8 +177,11 @@ static void print_topic(FILE *fp, const topic_stat_t *topic, int rank)
 			"\033[37m\xa1\xbc \033[32m%s\033[37m \xa1\xbd"
 			"\033[36m%4u \033[37m\xc6\xaa\033[33m%13.13s\n"
 			"     \033[37m\xb1\xea\xcc\xe2 : \033[1;44m%-60.60s\033[40m\n",
-			rank, bnames[topic->bid - 1], time, topic->count, topic->owner,
+			rank, topic->bname, time, topic->count, topic->owner,
 			gbk_title);
+
+	if (fp2)
+		fwrite(topic, sizeof(*topic), 1, fp2);
 }
 
 static void print_header(FILE *fp, const char *descr)
@@ -197,17 +196,23 @@ static void print_stat(stat_t *stat)
 {
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), BASEPATH"/%s", stat->config->file);
-	FILE *fp = fopen(file, "w+");
+	FILE *fp = fopen(file, "w");
+	snprintf(file, sizeof(file), BASEPATH"/%s.data", stat->config->file);
+	FILE *fp2 = fopen(file, "w");
 	print_header(fp, stat->config->descr);
 
 	for (int i = 0; i < stat->config->limit && i < stat->size; ++i) {
-		print_topic(fp, stat->topics + i, i + 1);
+		print_topic(fp, NULL, stat->topics + i, i + 1);
 	}
+	fclose(fp2);
 	fclose(fp);
 
 	if (stat->config->per_board_limit) {
 		snprintf(file, sizeof(file), BASEPATH"/%s_f", stat->config->file);
-		fp = fopen(file, "w+");
+		fp = fopen(file, "w");
+		snprintf(file, sizeof(file), BASEPATH"/%s_f.data", stat->config->file);
+		fp2 = fopen(file, "w");
+
 		print_header(fp, stat->config->descr);
 
 		int rank = 0, duplicated = 0;
@@ -224,9 +229,10 @@ static void print_stat(stat_t *stat)
 			if (dup) {
 				++duplicated;
 			} else {
-				print_topic(fp, stat->topics + i, ++rank);
+				print_topic(fp, fp2, stat->topics + i, ++rank);
 			}
 		}
+		fclose(fp2);
 		if (duplicated) {
 			//% 【有 %d 个主题因超出版面限制而被省略】
 			fprintf(fp, "\033[1;30m  \xa1\xbe\xd3\xd0 %d \xb8\xf6"
