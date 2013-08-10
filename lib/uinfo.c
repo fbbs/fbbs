@@ -350,9 +350,9 @@ void show_position(const struct userec *user, char *buf, size_t size, const char
 	}
 
 	if (title && *title) {
-		GBK_BUFFER(title, TITLE_CCHARS);
+		GBK_BUFFER(title, TITLE_CCHARS * 2);
 		convert_u2g(title, gbk_title);
-		char tbuf[TITLE_CCHARS * 2 + 13];
+		char tbuf[TITLE_CCHARS * 4 + 13];
 		snprintf(tbuf, sizeof(tbuf), "[\033[1;33m%s\033[m]", gbk_title);
 		strappend(&buf, &size, tbuf);
 	}
