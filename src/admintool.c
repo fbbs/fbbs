@@ -1416,6 +1416,14 @@ void show_register() {
 			//% prints("错误的使用者代号...");
 			prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5...");
 		} else {
+			db_res_t *r = db_query("SELECT addr"
+					" FROM alive_users u JOIN emails e ON u.email = e.id"
+					" WHERE lower(name) = lower(%s)", uident);
+			if (r && db_res_rows(r) == 1) {
+				prints("\033[1;32m%s\033[m\n", db_get_value(r, 0, 0));
+			}
+			db_clear(r);
+
 			sprintf(genbuf, "home/%c/%s/register",
 					toupper(lookupuser.userid[0]), lookupuser.userid);
 			if ((fn = fopen(genbuf, "r")) != NULL) {
