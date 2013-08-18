@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 		}
 		if (strncmp(buf, date, 6))
 			continue;
-		if (strstr(buf + 16, "bbsd: ENTER") || strstr(buf + 16, "bbslogin: ")) {
+		if (strstr(buf + 16, "bbsd: ENTER") || strstr(buf + 16, "bbswebd: ENTER: ")) {
 			st.num[hour]++;
 			continue;
 		}
