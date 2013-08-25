@@ -180,38 +180,6 @@ int a_loadnames(MENU *pm) {
 	sprintf(buf, "%s/.Names", pm->path);
 	if ((fn = fopen(buf, "r")) == NULL)
 		return 0;
-	// Add by wujian
-	/*   sprintf(buf, "%s/counter.person",pm->path);
-	 if (!dashf(buf))
-	 {
-	 fp=fopen(buf,"w+");
-	 if(fp){
-	 FLOCK(fileno(fp),LOCK_EX);
-	 fprintf(fp,"%d",counter+1);
-	 FLOCK(fileno(fp),LOCK_UN);
-	 fclose(fp);
-	 }
-	 }
-	 else
-	 {
-	 fp = fopen(buf,"r");
-	 if(fp) { 
-	 fscanf(fp,"%d",&counter);
-	 fclose(fp); 
-	 
-	 if (counter > 0){
-	 fp=fopen(buf,"w+");         //moved here from out of this judge by money
-	 if(fp){			  //if fp is opened in R mod and fp == NULL
-	 FLOCK(fileno(fp),LOCK_EX);//counter is 0, but the file is exited
-	 fprintf(fp,"%d",counter+1); //so the count is changed to 1
-	 FLOCK(fileno(fp),LOCK_UN);
-	 fclose(fp);
-	 }
-	 }				  //moved end 2003.12.31.
-	 }
-	 }
-	 */
-	// Add end.
 	while (fgets(buf, sizeof(buf), fn) != NULL) {
 		//		memset(litem, 0, sizeof(ITEM));
 		if ((ptr = strchr(buf, '\n')) != NULL)

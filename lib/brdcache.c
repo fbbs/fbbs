@@ -99,13 +99,13 @@ static int bcache_lock(void)
 		report(strerror(errno), "");
 		return -1;
 	}
-	fb_flock(lockfd, LOCK_EX);
+	file_lock_all(lockfd, FILE_WRLCK);
 	return lockfd;
 }
 
 static void bcache_unlock(int fd)
 {
-	fb_flock(fd, LOCK_UN);
+	file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 }
 

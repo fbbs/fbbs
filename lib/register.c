@@ -330,7 +330,7 @@ int append_reg_list(const reginfo_t *reg)
 	FILE *fp = fopen(REGISTER_LIST, "r+");
 	if (!fp)
 		return -1;
-	fb_flock(fileno(fp), LOCK_EX);
+	file_lock_all(fileno(fp), FILE_WRLCK);
 
 	int found = 0;
 	reginfo_t tmp;
@@ -344,7 +344,7 @@ int append_reg_list(const reginfo_t *reg)
 		fwrite(reg, sizeof(*reg), 1, fp);
 	}
 
-	fb_flock(fileno(fp), LOCK_UN);
+	file_lock_all(fileno(fp), FILE_UNLCK);
 	fclose(fp);
 	return 0 - found;
 }

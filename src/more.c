@@ -834,7 +834,7 @@ static int more_open_msg(const char *file, size_t size, more_file_t *more)
 	FILE *fp = fopen(file, "r");
 	if (fp == NULL)
 		return -1;
-	fb_flock(fileno(fp), LOCK_EX);
+	file_lock_all(fileno(fp), FILE_WRLCK);
 	fseek(fp, 0, SEEK_END);
 	size = ftell(fp);
 
@@ -855,7 +855,7 @@ static int more_open_msg(const char *file, size_t size, more_file_t *more)
 				break;
 			}
 		}
-		fb_flock(fileno(fp), LOCK_UN);
+		file_lock_all(fileno(fp), FILE_UNLCK);
 		fclose(fp);
 
 		more->size = len;

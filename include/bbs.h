@@ -35,11 +35,6 @@
 #include "permissions.h"
 #include "bbserrno.h"
 
-#ifndef LOCK_EX
-#define LOCK_EX         2       /* exclusive lock */
-#define LOCK_UN         8       /* unlock */
-#endif
-
 #define randomize() srand((unsigned)time(NULL))	//随机函数初始化
 #define YEA (1)        /* Booleans  (Yep, for true and false) */
 #define NA  (0) 
@@ -308,8 +303,6 @@ extern time_t uptime; /* save user last key-in time, up every 1min */
 extern int editansi;
 extern int KEY_ESC_arg;
 /* ============================================ */
-
-#define FLOCK(x,y) flock(x,y)
 
 //add by infotech,supporting for 5 BMS
 #define BMMAXNUM		(5)				//每个版面的最大版主数

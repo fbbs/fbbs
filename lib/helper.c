@@ -131,7 +131,7 @@ int add_to_file(const char *file, const char *str, size_t len, bool overwrite,
 	}
 	bool exist = false;
 	if (fpr) {
-		fb_flock(fileno(fpr), LOCK_EX);
+		file_lock_all(fileno(fpr), FILE_WRLCK);
 		while (fgets(buf, sizeof(buf), fpr)) {
 			if (!exist && equal && (*equal)(buf, sizeof(buf), str, len)) {
 				exist = true;
@@ -148,7 +148,7 @@ int add_to_file(const char *file, const char *str, size_t len, bool overwrite,
 		fputs(str, fpw);
 	fclose(fpw);
 	if (fpr) {
-		fb_flock(fileno(fpr), LOCK_UN);
+		file_lock_all(fileno(fpr), FILE_UNLCK);
 		fclose(fpr);
 	}
 	if (!overwrite && exist) {
@@ -174,10 +174,10 @@ int del_from_file(const char *file, const char *str)
 
 	if ((fpr = fopen(file, "r")) == NULL)
 		return -1;
-	fb_flock(fileno(fpr), LOCK_EX);
+	file_lock_all(fileno(fpr), FILE_WRLCK);
 	snprintf(fnew, sizeof(fnew), "%s.%d", file, getpid());
 	if ((fpw = fopen(fnew, "w")) == NULL) {
-		fb_flock(fileno(fpr), LOCK_UN);
+		file_lock_all(fileno(fpr), FILE_UNLCK);
 		fclose(fpr);
 		return -1;
 	}
@@ -196,7 +196,7 @@ int del_from_file(const char *file, const char *str)
 	}
 	empty = (ftell(fpw) <= 0);
 	fclose(fpw);
-	fb_flock(fileno(fpr), LOCK_UN);
+	file_lock_all(fileno(fpr), FILE_UNLCK);
 	fclose(fpr);
 
 	if (deleted) {

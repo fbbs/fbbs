@@ -186,10 +186,12 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd < 0)
 			return BBS_EINTNL;
-		fb_flock(fd, LOCK_EX);
+
+		file_lock_all(fd, FILE_WRLCK);
 		file_write(fd, text, strlen(text));
-		fb_flock(fd, LOCK_UN);
+		file_lock_all(fd, FILE_UNLCK);
 		close(fd);
+
 		xml_header(NULL);
 		printf("<bbseufile desc='%s'>", desc);
 		print_session();

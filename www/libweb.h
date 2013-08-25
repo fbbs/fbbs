@@ -46,8 +46,6 @@ const char *get_referer(void);
 void setcookie(const char *a, const char *b);
 void refreshto(int second, const char *url);
 
-#define FLOCK(x,y) flock(x,y)
-
 extern struct userec currentuser;
 extern char fromhost[];
 

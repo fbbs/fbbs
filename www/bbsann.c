@@ -28,13 +28,13 @@ static int get_count(const char *path)
 		fp = fopen(buf, "w+");
 	else
 		fp = fopen(buf, "r+");
-	FLOCK(fileno(fp), LOCK_EX);
+	file_lock_all(fileno(fp), FILE_WRLCK);
 	if (fscanf(FCGI_ToFILE(fp), "%d", &counts) > 0) {
 		counts++;
 		fseek(fp, 0, SEEK_SET);
 		fprintf(fp, "%d\n", counts);
 	}
-	FLOCK(fileno(fp), LOCK_UN);
+	file_lock_all(fileno(fp), FILE_UNLCK);
 	fclose(fp);
 	return counts;
 }

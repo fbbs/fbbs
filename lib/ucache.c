@@ -160,7 +160,7 @@ static int shm_lock(const char *lockname)
 	if (lockfd < 0) {
 		return -1;
 	}
-	if (fb_flock(lockfd, LOCK_EX) == -1)
+	if (file_lock_all(lockfd, FILE_WRLCK) == -1)
 		return -1;
 	return lockfd;
 }
@@ -168,7 +168,7 @@ static int shm_lock(const char *lockname)
 // Removes an existing lock held by this process on file descriptor 'fd'.
 static void shm_unlock(int fd)
 {
-	fb_flock(fd, LOCK_UN);
+	file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 }
 

@@ -923,7 +923,7 @@ int vote_flag(const char *bname, char val, int mode) {
 		return -1;
 	}
 
-	FLOCK(fd, LOCK_EX);
+	file_lock_all(fd, FILE_WRLCK);
 	size = (int) lseek(fd, 0, SEEK_END);
 	memset(buf, 0, sizeof(buf));
 	while (size <= num) {
@@ -936,7 +936,7 @@ int vote_flag(const char *bname, char val, int mode) {
 		lseek(fd, (off_t) num, SEEK_SET);
 		write(fd, &val, 1);
 	}
-	FLOCK(fd, LOCK_UN);
+	file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 
 	return flag;

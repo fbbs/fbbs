@@ -22,7 +22,7 @@ enum {
  */
 int mmap_open_fd(mmap_t *m)
 {
-	m->lock = LOCK_EX;
+	m->lock = FILE_WRLCK;
 	if (m->oflag & O_RDWR) {
 		m->prot = PROT_READ | PROT_WRITE;
 	} else if (m->oflag & O_WRONLY) {
@@ -34,7 +34,7 @@ int mmap_open_fd(mmap_t *m)
 
 	if (m->fd < 0)
 		return -1;
-	if (fb_flock(m->fd, m->lock) < 0) {
+	if (file_lock_all(m->fd, m->lock) < 0) {
 		close(m->fd);
 		return -1;
 	}
@@ -43,7 +43,7 @@ int mmap_open_fd(mmap_t *m)
 	// Return error if 'file' is not a regular file or has a wrong size.
 	if (fstat(m->fd, &st) < 0 || !S_ISREG(st.st_mode)
 			|| st.st_size < 0) {
-		fb_flock(m->fd, LOCK_UN);
+		file_lock_all(m->fd, FILE_UNLCK);
 		close(m->fd);
 		return -1;
 	}
@@ -57,7 +57,7 @@ int mmap_open_fd(mmap_t *m)
 	m->ptr = mmap(NULL, m->msize, m->prot, m->mflag, m->fd, 0);
 	if (m->ptr != MAP_FAILED)
 		return 0;
-	fb_flock(m->fd, LOCK_UN);
+	file_lock_all(m->fd, FILE_UNLCK);
 	close(m->fd);
 	return -1;
 }
@@ -79,8 +79,8 @@ void mmap_unmap(mmap_t *m)
 {
 	if (m) {
 		munmap(m->ptr, m->msize);
-		if (m->lock != LOCK_UN)
-			fb_flock(m->fd, LOCK_UN);
+		if (m->lock != FILE_UNLCK)
+			file_lock_all(m->fd, FILE_UNLCK);
 	}
 }
 
@@ -142,12 +142,12 @@ int mmap_shrink(mmap_t *m, size_t size)
 /**
  * Change lock on a memory mapped file.
  * @param[in,out] m pointer to an ::mmap_t struct.
- * @param[in] lock new lock state. (LOCK_EX LOCK_SH LOCK_UN)
+ * @param[in] lock new lock state.
  */
-int mmap_lock(mmap_t *m, int lock)
+int mmap_lock(mmap_t *m, file_lock_e lock)
 {
 	if (lock == m->lock)
 		return 0;
 	m->lock = lock;
-	return fb_flock(m->fd, lock);
+	return file_lock_all(m->fd, lock);
 }

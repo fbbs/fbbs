@@ -24,12 +24,12 @@ int file_append(const char *file, const char *msg)
 		return -1;
 	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd != -1) {
-		if (fb_flock(fd, LOCK_EX) == -1) {
+		if (file_lock_all(fd, FILE_WRLCK) == -1) {
 			close(fd);
 			return -1;
 		}
 		write(fd, msg, strlen(msg));
-		fb_flock(fd, LOCK_UN);
+		file_lock_all(fd, FILE_UNLCK);
 		close(fd);
 	}
 	return 0;
@@ -268,20 +268,12 @@ int file_lock(int fd, file_lock_e type, off_t offset, file_whence_e whence,
 }
 
 /**
- * Put an advisory lock on file descriptor using blocking fcntl().
- * @param fd The file descriptor.
- * @param operation The type of lock (LOCK_EX, LOCK_SH, LOCK_UN).
- * @return 0 on success, -1 on error.
+ * 锁定/解锁整个文件.
+ * @param fd 文件描述符
+ * @param type 文件锁的类型
+ * @return 成功: 0, 失败: -1
  */
-int fb_flock(int fd, int operation)
+int file_lock_all(int fd, file_lock_e type)
 {
-	file_lock_e type;
-	if (operation == LOCK_EX)
-		type = FILE_WRLCK;
-	else if (operation == LOCK_SH)
-		type = FILE_RDLCK;
-	else
-		type = FILE_UNLCK;
-
 	return file_lock(fd, type, 0, FILE_SET, 0);
 }

@@ -356,9 +356,9 @@ int append_record(const char *file, const void *record, int size)
 	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 		return -1;
-	fb_flock(fd, LOCK_EX);
+	file_lock_all(fd, FILE_WRLCK);
 	int ret = file_write(fd, record, size);
-	fb_flock(fd, LOCK_UN);
+	file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 	return ret;
 }
@@ -437,7 +437,7 @@ int apply_record(const char *file, apply_func_t func, int size,
 	if (mmap_open(file, &m) < 0)
 		return -1;
 	if (!lock)
-		mmap_lock(&m, LOCK_UN);
+		mmap_lock(&m, FILE_UNLCK);
 	count = m.size / size;
 	if (reverse)
 		ptr = (char *)m.ptr + (count - 1) * size;

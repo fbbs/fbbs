@@ -147,7 +147,8 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 			return BBS_EINTNL;
 		}
 	}
-	fb_flock(fd, LOCK_EX);
+
+	file_lock_all(fd, FILE_WRLCK);
 	strlcpy(fh.filename, fname, sizeof(fh.filename));
 	sprintf(filepath, "mail/%c/%s/%s", toupper(user[0]), user, fname);
 	if (header != NULL)
@@ -155,8 +156,9 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	write(fd, text, len);
 	if (source != NULL)
 		write(fd, source, strlen(source));
-	fb_flock(fd, LOCK_UN);
+	file_lock_all(fd, FILE_UNLCK);
 	close(fd);
+
 	setmdir(fname, user);
 	if (append_record(fname, &fh, sizeof(fh)) == -1)
 		return BBS_EINTNL;
