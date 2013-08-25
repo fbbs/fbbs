@@ -31,10 +31,6 @@ enum {
 };
 
 enum {
-	MODE_THREAD = 2,
-	MODE_TOPICS = 4,
-	MODE_FORUM = 9,
-
 	PREF_NOSIG = 0x10,
 	PREF_NOSIGIMG = 0x20,
 };
@@ -74,7 +70,6 @@ struct fileheader *bbsmail_search(const void *ptr, size_t size, const char *file
 bool valid_mailname(const char *file);
 int get_user_flag(void);
 void set_user_flag(int flag);
-const char *get_doc_mode_str(void);
 void print_session(void);
 void printable_filter(char *str);
 

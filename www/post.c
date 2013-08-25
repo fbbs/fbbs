@@ -617,6 +617,8 @@ static void check_character(char *text)
 	*dst = '\0';
 }
 
+extern const char *get_post_list_type_string(void);
+
 int bbssnd_main(void)
 {
 	if (!session.id)
@@ -719,7 +721,7 @@ int bbssnd_main(void)
 			gbk_title, board.name);
 	report(buf, currentuser.userid);
 
-	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_doc_mode_str(),
+	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_post_list_type_string(),
 			board.name);
 	http_header();
 	refreshto(1, buf);

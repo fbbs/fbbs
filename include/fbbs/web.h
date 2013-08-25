@@ -80,6 +80,6 @@ extern void set_response_type(int type);
 extern xml_node_t *set_response_root(const char *name, int type, int encoding);
 extern void respond(int code);
 
-http_status_code_e error_msg(int code);
+extern http_status_code_e error_msg(int code);
 
 #endif // FB_WEB_H

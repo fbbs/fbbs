@@ -63,6 +63,7 @@ typedef enum {
 	POST_LIST_KEYWORD,
 	POST_LIST_TRASH,
 	POST_LIST_JUNK,
+	POST_LIST_FORUM,
 } post_list_type_e;
 
 typedef struct {

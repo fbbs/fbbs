@@ -312,6 +312,8 @@ static void show_board(db_res_t *res)
 	}
 }
 
+extern const char *get_post_list_type_string(void);
+
 int web_sector(void)
 {
 	int sid = 0;
@@ -338,7 +340,7 @@ int web_sector(void)
 	}
 
 	xml_header(NULL);
-	printf("<bbsboa link='%sdoc' ", get_doc_mode_str());
+	printf("<bbsboa link='%sdoc' ", get_post_list_type_string());
 
 	if (*sname) {
 		char path[HOMELEN];

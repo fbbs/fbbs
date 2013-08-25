@@ -3,6 +3,7 @@
 #include "fbbs/brc.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/mdbi.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 #include "fbbs/user.h"
@@ -11,6 +12,33 @@
 enum {
 	TOPICS_PER_PAGE = 13,
 };
+
+post_list_type_e get_post_list_type(void)
+{
+	return (post_list_type_e) mdb_integer(0, "HGET", "doc_mode %"PRIdUID,
+			session.uid);
+}
+
+static void set_post_list_type(post_list_type_e type)
+{
+	mdb_cmd("HSET", "doc_mode %"PRIdUID" %d", session.uid, type);
+}
+
+const char *get_post_list_type_string(void)
+{
+	if (!session.id)
+		return "";
+
+	post_list_type_e type = get_post_list_type();
+	switch (type) {
+		case POST_LIST_THREAD:
+			return "t";
+		case POST_LIST_FORUM:
+		default:
+			return "f";
+	}
+	return "";
+}
 
 static void print_post(const post_info_t *pi, bool sticky)
 {
@@ -130,8 +158,8 @@ static int bbsdoc(post_list_type_e type)
 	if (page < TLINES || page > 40)
 		page = TLINES;
 
-	if (get_doc_mode() != type)
-		set_doc_mode(type);
+	if (get_post_list_type() != type)
+		set_post_list_type(type);
 
 	xml_header(NULL);
 	printf("<bbsdoc>");
@@ -184,10 +212,6 @@ int bbsgdoc_main(void)
 int bbstdoc_main(void)
 {
 	return bbsdoc(POST_LIST_TOPIC);
-}
-int bbsodoc_main(void)
-{
-	return bbsdoc(MODE_TOPICS);
 }
 
 enum {
@@ -431,8 +455,8 @@ int web_forum(void)
 		return web_sector();
 	board_to_gbk(&board);
 
-	if (get_doc_mode() != MODE_FORUM)
-		set_doc_mode(MODE_FORUM);
+	if (get_post_list_type() != POST_LIST_FORUM)
+		set_post_list_type(POST_LIST_FORUM);
 
 	brc_initialize(currentuser.userid, board.name);
 

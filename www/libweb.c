@@ -11,6 +11,7 @@
 #include "fbbs/convert.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/post.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/user.h"
@@ -266,21 +267,6 @@ static char *get_permission(void)
 	return c;
 }
 
-const char *get_doc_mode_str(void)
-{
-	if (!session.id)
-		return "";
-
-	int mode = get_doc_mode();
-	switch (mode) {
-		case MODE_THREAD:
-			return "t";
-		case MODE_FORUM:
-			return "f";
-	}
-	return "";
-}
-
 int get_user_flag(void)
 {
 	return currentuser.flags[1];
@@ -296,14 +282,16 @@ void set_user_flag(int flag)
 	}
 }
 
+extern const char *get_post_list_type_string(void);
+
 void print_session(void)
 {
 	if (request_type(REQUEST_API))
 		return;
 	bool mobile = request_type(REQUEST_MOBILE);
 
-	printf("<session m='%s'><p>%s</p><u>%s</u><f>", get_doc_mode_str(),
-			get_permission(), currentuser.userid);
+	printf("<session m='%s'><p>%s</p><u>%s</u><f>",
+			get_post_list_type_string(), get_permission(), currentuser.userid);
 
 	query_t *q = query_new(0);
 	query_select(q, "board, name");

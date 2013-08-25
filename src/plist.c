@@ -2310,8 +2310,10 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 				filtered_record_open(filter, RECORD_READ, file, sizeof(file),
 						record);
 				unlink(file);
+				break;
 			}
-			break;
+			default:
+				break;
 		}
 	};
 }
