@@ -17,12 +17,6 @@
 enum {
 	UPLOAD_MAX = 1 * 1024 * 1024,
 	UPLOAD_OVERHEAD = 1024,
-	BBSMSG_RECORD_LENGTH = 129,
-	BBSMSG_LENGTH = 51,
-	BBSMSG_SPLIT_OFFSET = 111,
-	BBSMSG_SENDER_OFFSET = 12,
-	BBSMSG_PID_OFFSET = 122,
-	BBSMSG_CONTENT_OFFSET = 23
 };
 
 enum {
@@ -43,7 +37,6 @@ enum {
 const char *getsenv(const char *s);
 const char *get_referer(void);
 
-void setcookie(const char *a, const char *b);
 void refreshto(int second, const char *url);
 
 extern struct userec currentuser;
@@ -57,10 +50,7 @@ int xml_printfile(const char *file);
 void xml_header(const char *xslfile);
 void http_header(void);
 
-int iconexp(int exp, int *repeat);
-
 int save_user_data(struct userec *x);
-int user_perm(struct userec *x, int level);
 
 int maxlen(const char *board);
 time_t getfiletime(const struct fileheader *f);

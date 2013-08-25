@@ -1,3 +1,4 @@
+#include <math.h>
 #include "libweb.h"
 #include "record.h"
 #include "fbbs/fileio.h"
@@ -254,6 +255,24 @@ static int show_sessions(const char *uname)
 
 	db_clear(res);
 	return num;
+}
+
+// Convert exp to icons.
+int iconexp(int exp, int *repeat)
+{
+	int i = 0, j;
+
+	if (exp < 0)
+		j = -1;
+	else {
+		exp = sqrt(exp / 5);
+		i = exp / 10;
+		i = i > 5 ? 5 : i;
+		j = exp - i * 10;
+		j = j > 9 ? 9 : j;
+	}
+	*repeat = ++j;
+	return i;
 }
 
 int bbsqry_main(void)

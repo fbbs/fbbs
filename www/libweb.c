@@ -165,24 +165,6 @@ void refreshto(int second, const char *url)
 	printf("<meta http-equiv='Refresh' content='%d; url=%s' />\n", second, url);
 }
 
-// Convert exp to icons.
-int iconexp(int exp, int *repeat)
-{
-	int i = 0, j;
-
-	if (exp < 0)
-		j = -1;
-	else {
-		exp = sqrt(exp / 5);
-		i = exp / 10;
-		i = i > 5 ? 5 : i;
-		j = exp - i * 10;
-		j = j > 9 ? 9 : j;
-	}
-	*repeat = ++j;
-	return i;
-}
-
 int save_user_data(struct userec *x) {
 	int n;
 	n = searchuser(x->userid) - 1;
@@ -190,10 +172,6 @@ int save_user_data(struct userec *x) {
 		return 0;
 	memcpy( &(uidshm->passwd[n]), x, sizeof(struct userec) );
 	return 1;
-}
-
-int user_perm(struct userec *x, int level) {
-	return (level?x->userlevel & level:1);
 }
 
 // TODO: put into memory
