@@ -31,7 +31,7 @@ const char *get_post_list_type_string(void)
 
 	post_list_type_e type = get_post_list_type();
 	switch (type) {
-		case POST_LIST_THREAD:
+		case POST_LIST_TOPIC:
 			return "t";
 		case POST_LIST_FORUM:
 		default:
@@ -71,6 +71,7 @@ static void print_board_logo(const char *board)
 
 typedef struct {
 	post_index_record_t *pir;
+	post_index_board_t *pibs;
 	int start;
 	int total;
 	int count;
@@ -80,6 +81,14 @@ typedef struct {
 	bool sticky;
 } print_post_callback_t;
 
+static void print_pib(post_index_record_t *pir, const post_index_board_t *pib,
+		bool sticky)
+{
+	post_info_t pi;
+	post_index_board_to_info(pir, pib, &pi, 1);
+	print_post(&pi, sticky);
+}
+
 static record_callback_e print_post_callback(void *ptr, void *args, int offset)
 {
 	const post_index_board_t *pib = ptr;
@@ -88,25 +97,31 @@ static record_callback_e print_post_callback(void *ptr, void *args, int offset)
 	if ((ppc->thread && pib->tid_delta)
 			|| (ppc->digest && !(pib->flag & POST_FLAG_DIGEST)))
 		return RECORD_CALLBACK_CONTINUE;
-	++ppc->total;
-	if ((ppc->total < ppc->start) || (++ppc->count > ppc->max))
+	if ((++ppc->total < ppc->start) || (!ppc->pibs && ++ppc->count > ppc->max))
 		return RECORD_CALLBACK_CONTINUE;
 
-	post_info_t pi;
-	post_index_board_to_info(ppc->pir, pib, &pi, 1);
-	print_post(&pi, ppc->sticky);
+	if (ppc->pibs) {
+		memcpy(ppc->pibs + ((ppc->total - 1) % ppc->max), pib,
+				sizeof(*ppc->pibs));
+	} else {
+		print_pib(ppc->pir, pib, ppc->sticky);
+	}
 	return RECORD_CALLBACK_MATCH;
 }
 
 static int print_posts(record_t *record, post_index_record_t *pir,
 		int *start, int max, post_list_type_e type, bool sticky)
 {
-	bool normal = type == POST_LIST_NORMAL;
+	bool normal = (type == POST_LIST_NORMAL);
+	bool save = ((type == POST_LIST_TOPIC || type == POST_LIST_DIGEST)
+			&& *start < 0);
+
 	print_post_callback_t ppc = {
 		.pir = pir, .sticky = sticky,
 		.start = normal ? 0 : *start, .max = max,
 		.thread = type == POST_LIST_TOPIC,
 		.digest = type == POST_LIST_DIGEST,
+		.pibs = save ? malloc(sizeof(post_index_board_t) * max) : NULL,
 	};
 
 	record_foreach(record, NULL, normal ? *start : 0,
@@ -114,10 +129,15 @@ static int print_posts(record_t *record, post_index_record_t *pir,
 	int total = normal ? record_count(record) : ppc.total;
 
 	if (!sticky) {
-		if (*start <= 0 || *start > total - max)
-			*start = total - max + 1;
-		if (*start < 1)
-			*start = 1;
+		if (*start < 0 || *start > total - max)
+			*start = total - max;
+		if (*start < 0)
+			*start = 0;
+	}
+	if (save) {
+		for (int i = *start; i < total; ++i) {
+			print_pib(pir, ppc.pibs + (i % max), false);
+		}
 	}
 	return total;
 }
@@ -173,7 +193,7 @@ static int bbsdoc(post_list_type_e type)
 	post_index_board_open(board.id, RECORD_READ, &record);
 
 	--start;
-	if (start < 0) {
+	if (start < 0 && type == POST_LIST_NORMAL) {
 		start = record_count(&record) - page;
 		if (start < 0)
 			start = 0;
