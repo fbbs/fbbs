@@ -179,9 +179,9 @@ static int initialize(void)
 	if (chdir(BBSHOME) != 0)
 		return -1;
 
-	if (setuid(BBSUID) != 0)
-		return -1;
 	if (setgid(BBSGID) != 0)
+		return -1;
+	if (setuid(BBSUID) != 0)
 		return -1;
 
 	if (resolve_ucache() == -1)
