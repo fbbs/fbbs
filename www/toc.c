@@ -49,7 +49,7 @@ static void print_post(const post_info_t *pi, bool sticky)
 			mark, pi->owner, format_time(pi->stamp, TIME_FORMAT_XML), pi->id);
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(pi->utf8_title, gbk_title);
-	xml_fputs2(gbk_title, 0, stdout);
+	xml_fputs(gbk_title);
 	printf("</po>\n");
 }
 
@@ -462,7 +462,7 @@ static void print_post_thread_info(const post_thread_info_t *pti)
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(pti->utf8_title, gbk_title);
-	xml_fputs2(gbk_title, 0, stdout);
+	xml_fputs(gbk_title);
 	printf("</po>\n");
 }
 
@@ -625,7 +625,7 @@ static record_callback_e print_topics(void *ptr, void *args, int offset)
 		post_index_board_to_info(pt->pir, pib, &pi, 1);
 
 		printf("<item><title>");
-		xml_fputs(pi.utf8_title, stdout);
+		xml_fputs(pi.utf8_title);
 		printf("</title><link>http://"BASEURL"/con?bid=%d&amp;f=%u</link>"
 				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
 				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
@@ -635,7 +635,7 @@ static record_callback_e print_topics(void *ptr, void *args, int offset)
 
 		char buf[4096];
 		char *content = post_content_get(pi.id, buf, sizeof(buf));
-		xml_fputs(content, stdout);
+		xml_fputs(content);
 		if (content != buf)
 			free(content);
 
@@ -689,7 +689,7 @@ int bbstop10_main(void)
 					topic.bname, topic.owner, topic.count, topic.tid);
 			GBK_BUFFER(title, POST_TITLE_CCHARS);
 			convert_u2g(topic.utf8_title, gbk_title);
-			xml_fputs2(gbk_title, 0, stdout);
+			xml_fputs(gbk_title);
 			printf("</top>\n");
 		}
 	}

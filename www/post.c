@@ -190,7 +190,7 @@ static int xml_print_post_wrapper(const char *str, size_t size)
 		return xml_print_post(str, size, opt);
 	}
 	if (!request_type(REQUEST_MOBILE)) {
-		xml_fputs2(str, size, stdout);
+		xml_fputs2(str, size);
 		return 0;
 	}
 	return xml_print_post(str, size, PARSE_NOSIG);
@@ -807,7 +807,7 @@ static int do_bbspst(bool isedit)
 		convert_u2g(pi.utf8_title, gbk_title);
 
 		ansi_filter(gbk_title, gbk_title);
-		xml_fputs2(gbk_title, 0, stdout);
+		xml_fputs(gbk_title);
 
 		printf("</t><po f='%lu'>", pid);
 
@@ -823,7 +823,7 @@ static int do_bbspst(bool isedit)
 			const char *end = begin + strlen(gbk_content);
 			get_post_body(&begin, &end);
 			if (end > begin)
-				xml_fputs2(begin, end - begin, stdout);
+				xml_fputs2(begin, end - begin);
 		} else {
 			quote_string(gbk_content, strlen(gbk_content), NULL, QUOTE_AUTO,
 					false, xml_fputs3);
@@ -929,7 +929,7 @@ int bbsccc_main(void)
 
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(pi.utf8_title, gbk_title);
-		xml_fputs(gbk_title, stdout);
+		xml_fputs(gbk_title);
 
 		print_session();
 		printf("</bbsccc>");

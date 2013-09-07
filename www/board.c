@@ -30,7 +30,7 @@ int web_fav(void)
 			convert_u2g(db_get_value(res, i, 2), gbk_descr);
 
 			printf("<brd bid='%d' brd='%s'>", bid, name);
-			xml_fputs(gbk_descr, stdout);
+			xml_fputs(gbk_descr);
 			printf("</brd>");
 		}
 	}
@@ -415,7 +415,7 @@ int bbsnot_main(void)
 		return BBS_ENOFILE;
 	xml_header(NULL);
 	printf("<bbsnot brd='%s'>", board.name);
-	xml_fputs((char *)m.ptr, stdout);
+	xml_fputs2((char *) m.ptr, m.size);
 	mmap_close(&m);
 	print_session();
 	printf("</bbsnot>");

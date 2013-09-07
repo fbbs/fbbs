@@ -62,13 +62,12 @@ const char *get_referer(void)
 
  * @param s string to print
  * @param size maximum output bytes. If 0, print until NUL is encountered.
- * @param stream output stream
  * @note '<' => "&lt;" '&' => "&amp;" '>' => "&gt;" '\\033' => ">1b"
  *       '\\r' => ""
  *       ESC('\\033') is not allowed in XML 1.0. We have to use a workaround 
  *       for compatibility with ANSI escape sequences.
  */
-void xml_fputs2(const char *s, size_t size, FILE *stream)
+void xml_fputs2(const char *s, size_t size)
 {
 	char *c = (char *)s; // To fit FastCGI prototypes..
 	char *last = c;
@@ -98,31 +97,30 @@ void xml_fputs2(const char *s, size_t size, FILE *stream)
 				break;
 		}
 		if (subst != NULL) {
-			fwrite(last, sizeof(char), c - last, stream);
+			fwrite(last, sizeof(char), c - last, stdout);
 			while (*subst != '\0')
-				fputc(*subst++, stream);
+				fputc(*subst++, stdout);
 			last = ++c;
 		} else {
 			++c;
 		}
 	}
-	fwrite(last, sizeof(char), c - last, stream);
+	fwrite(last, sizeof(char), c - last, stdout);
 }
 
 /**
  * Print XML escaped string.
  * @param s string to print (should be NUL terminated)
- * @param stream output stream
  * @see xml_fputs2
  */
-void xml_fputs(const char *s, FILE *stream)
+void xml_fputs(const char *s)
 {
-	xml_fputs2(s, 0, stream);
+	xml_fputs2(s, 0);
 }
 
 size_t xml_fputs3(const char *s, size_t size, FILE *stream)
 {
-	xml_fputs2(s, size, stdout);
+	xml_fputs2(s, size);
 	return 0;
 }
 
@@ -140,7 +138,7 @@ int xml_printfile(const char *file)
 	if (mmap_open(file, &m) < 0)
 		return -1;
 	if (m.size > 0)
-		xml_fputs2((char *)m.ptr, m.size, stdout);
+		xml_fputs2((char *)m.ptr, m.size);
 	mmap_close(&m);
 	return 0;
 }

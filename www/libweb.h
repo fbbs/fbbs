@@ -42,8 +42,8 @@ void refreshto(int second, const char *url);
 extern struct userec currentuser;
 extern char fromhost[];
 
-void xml_fputs(const char *s, FILE *stream);
-void xml_fputs2(const char *s, size_t size, FILE *stream);
+void xml_fputs(const char *s);
+void xml_fputs2(const char *s, size_t size);
 size_t xml_fputs3(const char *s, size_t size, FILE *stream);
 int xml_printfile(const char *file);
 

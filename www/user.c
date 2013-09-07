@@ -82,7 +82,7 @@ int bbsinfo_main(void)
 				currentuser.gender);
 		printf(" last='%s'><nick>",
 				format_time(currentuser.lastlogin, TIME_FORMAT_XML));
-		xml_fputs(currentuser.username, stdout);
+		xml_fputs(currentuser.username);
 		printf("</nick>");
 		print_session();
 		printf("</bbsinfo>");
@@ -316,13 +316,13 @@ int bbsqry_main(void)
 				printf(" gender='%c'", user.gender);
 		}
 		printf("><ip>");
-		xml_fputs(self ? user.lasthost : mask_host(user.lasthost), stdout);
+		xml_fputs(self ? user.lasthost : mask_host(user.lasthost));
 		printf("</ip><nick>");
-		xml_fputs(user.username, stdout);
+		xml_fputs(user.username);
 		printf("</nick><ident>");
 		char ident[160];
 		show_position(&user, ident, sizeof(ident), u.title);
-		xml_fputs(ident, stdout);
+		xml_fputs(ident);
 
 		uinfo_free(&u);
 

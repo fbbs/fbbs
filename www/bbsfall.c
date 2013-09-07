@@ -17,7 +17,7 @@ static int print_override(void *buf, int count, void *args)
 {
 	override_t *ov = buf;
 	printf("<ov id='%s'>", ov->id);
-	xml_fputs(ov->exp, stdout);
+	xml_fputs(ov->exp);
 	printf("</ov>");
 	return 0;
 }
@@ -138,7 +138,7 @@ static void show_sessions_of_friends(void)
 
 		printf("<ov id='%s' action='%s' idle='%d' ip='%s'>",
 				uname, status_descr(status), idle, ip);
-		xml_fputs(user.username, stdout);
+		xml_fputs(user.username);
 		printf("</ov>");
 	}
 	db_clear(res);

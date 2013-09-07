@@ -68,7 +68,7 @@ int bbsmail_main(void)
 		printf("\n<mail r='%d' m='%c' from='%s' date='%s' name='%s'>",
 				_is_mail_read(fp), _get_mail_mark(fp), fp->owner,
 				format_time(getfiletime(fp), TIME_FORMAT_XML), fp->filename);
-		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title, stdout);
+		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title);
 		printf("</mail>");
 	}
 
@@ -88,7 +88,7 @@ int print_new_mail(void *buf, int count, void *args)
 		printf("<mail m='%c' from='%s' name='%s' n='%d' date='%s'>",
 				_get_mail_mark(fp), fp->owner, fp->filename, count,
 				format_time(date, TIME_FORMAT_XML));
-		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title, stdout);
+		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title);
 		printf("</mail>");
 	}
 	return 0;
@@ -150,7 +150,7 @@ int bbsmailcon_main(void)
 	if (newmail)
 		printf(" new='1'");
 	printf("><t>");
-	xml_fputs2(fh->title, check_gbk(fh->title) - fh->title, stdout);
+	xml_fputs2(fh->title, check_gbk(fh->title) - fh->title);
 	printf("</t>");
 
 	mmap_close(&m);
@@ -165,7 +165,7 @@ int bbsmailcon_main(void)
 
 	m.oflag = O_RDONLY;
 	if (mmap_open(buf, &m) == 0 && m.size != 0)
-		xml_fputs2((char *)m.ptr, m.size, stdout);
+		xml_fputs2((char *) m.ptr, m.size);
 
 	fputs("</mail>\n", stdout);
 	mmap_close(&m);
@@ -245,13 +245,13 @@ int bbspstmail_main(void)
 	const char *ref = get_referer();
 	if (*ref == '\0')
 		ref = "pstmail";
-	xml_fputs(ref, stdout);
+	xml_fputs(ref);
 
 	printf("' recv='%s'>", fh == NULL ? get_param("recv") : fh->owner);
 
 	if (fh != NULL) {
 		printf("<t>");
-		xml_fputs(fh->title, stdout);
+		xml_fputs(fh->title);
 		printf("</t><m>");
 
 		setmfile(file, currentuser.userid, fh->filename);
