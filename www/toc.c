@@ -609,6 +609,43 @@ enum {
 	MAXRSS = 10, ///< max. number of posts output
 };
 
+typedef struct {
+	post_index_record_t *pir;
+	int bid;
+	int remain;
+} print_topics_t;
+
+static record_callback_e print_topics(void *ptr, void *args, int offset)
+{
+	const post_index_board_t *pib = ptr;
+	print_topics_t *pt = args;
+
+	if (!pib->tid_delta) {
+		post_info_t pi;
+		post_index_board_to_info(pt->pir, pib, &pi, 1);
+
+		printf("<item><title>");
+		xml_fputs(pi.utf8_title, stdout);
+		printf("</title><link>http://"BASEURL"/con?bid=%d&amp;f=%u</link>"
+				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
+				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
+				"<description><![CDATA[<pre>", pt->bid, pib->id, pi.owner,
+				format_time(pi.stamp, TIME_FORMAT_RSS), pi.owner, pt->bid,
+				pib->id);
+
+		char buf[4096];
+		char *content = post_content_get(pi.id, buf, sizeof(buf));
+		xml_fputs(content, stdout);
+		if (content != buf)
+			free(content);
+
+		printf("<pre>]]></description></item>");
+		if (--pt->remain <= 0)
+			return RECORD_CALLBACK_BREAK;
+	}
+	return RECORD_CALLBACK_CONTINUE;
+}
+
 int bbsrss_main(void)
 {
 	board_t board;
@@ -616,50 +653,24 @@ int bbsrss_main(void)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	board_to_gbk(&board);
 
-	mmap_t m;
-	m.oflag = O_RDONLY;
-	char file[HOMELEN];
-	setbfile(file, board.name, DOT_DIR);
-	if (mmap_open(file, &m) < 0)
-		return BBS_EINTNL;
-
-	struct fileheader index[MAXRSS];
-	struct fileheader *fp = m.ptr, *begin = m.ptr;
-	int count = m.size / sizeof(*fp);
-	fp += count - 1;
-	int sum;
-	for (sum = 0; sum < MAXRSS; ) {
-		if (fp >= begin) {
-			if (fp->id == fp->gid)
-				index[sum++] = *fp;
-		} else {
-			break;
-		}
-		--fp;
-	}
-	mmap_close(&m);
-
-	xml_header("bbsrss");
-	printf("<rss version='2.0'><channel><title>%s</title><description>%s"
+	printf("Content-type: text/xml; charset=utf-8\n\n"
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+			"<rss version='2.0'><channel><title>%s</title><description>%s"
 			"</description><link>"BASEURL "/doc?bid=%d</link><generator>"
 			BASEURL "</generator>", board.name, board.descr, board.id);
 
-	while (--sum >= 0) {
-		fp = index + sum;
-		setbfile(file, board.name, fp->filename);
-		printf("<item><title>");
-		xml_fputs(fp->title, stdout);
-		printf("</title><link>http://"BASEURL"/con?bid=%d&amp;f=%u</link>"
-				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
-				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
-				"<description><![CDATA[<pre>", board.id, fp->id, fp->owner,
-				format_time(getfiletime(fp), TIME_FORMAT_RSS), fp->owner, board.id,
-				fp->id);
-		xml_printfile(file);
-		printf("<pre>]]></description></item>");
-	}
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+	record_t record;
+	post_index_board_open(board.id, RECORD_READ, &record);
+
+	print_topics_t pt = { .pir = &pir, .bid = board.id, .remain = MAXRSS };
+	record_reverse_foreach(&record, print_topics, &pt);
+
+	record_close(&record);
+	post_index_record_close(&pir);
+
 	printf("</channel></rss>");
 	return 0;
 }
