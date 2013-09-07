@@ -386,21 +386,16 @@ int post_content_write(post_id_t id, const char *str, size_t size)
 	char file[HOMELEN];
 	post_content_file_name(id, file, sizeof(file));
 
+	int ret = -1;
 	int fd = open(file, O_WRONLY | O_CREAT);
 	if (fd < 0)
 		return -1;
 
+	if (file_lock_all(fd, FILE_WRLCK) < 0)
+		goto e1;
 	struct stat st;
-	if (file_lock(fd, FILE_WRLCK, 0, FILE_SET, 0) < 0) {
-		close(fd);
-		return -1;
-	}
-
-	if (fstat(fd, &st) < 0) {
-		file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
-		close(fd);
-		return -1;
-	}
+	if (fstat(fd, &st) < 0)
+		goto e2;
 
 	uint32_t offset = st.st_size;
 	if (offset < sizeof(uint32_t) * POST_CONTENT_PER_FILE)
@@ -410,20 +405,24 @@ int post_content_write(post_id_t id, const char *str, size_t size)
 			* POST_CONTENT_PER_FILE;
 	uint16_t rel = id - base;
 	lseek(fd, rel * sizeof(post_content_header_t), SEEK_SET);
-	post_content_header_t header = { .offset = offset, .length = size };
-	file_write(fd, &header, sizeof(header));
 
 	char buf[3] = { '\n' };
 	memcpy(buf + 1, &rel, sizeof(rel));
+	if (UINT32_MAX - offset < sizeof(buf) + size + 1)
+		goto e2;
+
+	post_content_header_t header = { .offset = offset, .length = size };
+	file_write(fd, &header, sizeof(header));
+
 	struct iovec vec[] = {
 		{ .iov_base = buf, .iov_len = sizeof(buf) },
 		{ .iov_base = (void *) str, .iov_len = size + 1 },
 	};
 	lseek(fd, offset, SEEK_SET);
-	int ret = writev(fd, vec, ARRAY_SIZE(vec));
+	ret = writev(fd, vec, ARRAY_SIZE(vec));
 
-	file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
-	close(fd);
+e2: file_lock_all(fd, FILE_UNLCK);
+e1: close(fd);
 	return ret;
 }
 
