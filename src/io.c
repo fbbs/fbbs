@@ -65,7 +65,7 @@ int write_stdout(const unsigned char *buf, size_t len)
 #ifdef ENABLE_SSH
 	return channel_write(ssh_chan, buf, len);
 #else // ENABLE_SSH
-	return write(STDIN_FILENO, buf, len);
+	return file_write(STDIN_FILENO, buf, len);
 #endif // ENABLE_SSH
 
 }

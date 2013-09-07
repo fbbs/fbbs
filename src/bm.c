@@ -174,7 +174,6 @@ int club_user(void)
 int bm_log(const char *user, const char *name, int type, int value)
 {
 	int fd, data[BMLOGLEN];
-	struct flock ldata;
 	struct stat buf;
 	char direct[STRLEN];
 
@@ -185,11 +184,7 @@ int bm_log(const char *user, const char *name, int type, int value)
 	sprintf(direct, "boards/%s/.bm.%s", name, user);
 	if ((fd = open(direct, O_RDWR | O_CREAT, 0644)) == -1)
 		return 0;
-	ldata.l_type = F_RDLCK;
-	ldata.l_whence = 0;
-	ldata.l_len = 0;
-	ldata.l_start = 0;
-	if (fcntl(fd, F_SETLKW, &ldata) == -1) {
+	if (file_lock_all(fd, FILE_WRLCK) == -1) {
 		close(fd);
 		return 0;
 	}
@@ -202,9 +197,8 @@ int bm_log(const char *user, const char *name, int type, int value)
 	if (type >= 0 && type < BMLOGLEN)
 		data[type] += value;
 	lseek(fd, 0, SEEK_SET);
-	write(fd, data, sizeof(int) * BMLOGLEN);
-	ldata.l_type = F_UNLCK;
-	fcntl(fd, F_SETLKW, &ldata);
+	file_write(fd, data, sizeof(int) * BMLOGLEN);
+	file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 	return 0;
 }

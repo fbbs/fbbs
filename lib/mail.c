@@ -151,11 +151,11 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	file_lock_all(fd, FILE_WRLCK);
 	strlcpy(fh.filename, fname, sizeof(fh.filename));
 	sprintf(filepath, "mail/%c/%s/%s", toupper(user[0]), user, fname);
-	if (header != NULL)
-		write(fd, header, strlen(header));
-	write(fd, text, len);
-	if (source != NULL)
-		write(fd, source, strlen(source));
+	if (header)
+		file_write(fd, header, strlen(header));
+	file_write(fd, text, len);
+	if (source)
+		file_write(fd, source, strlen(source));
 	file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 

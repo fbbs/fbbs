@@ -208,8 +208,8 @@ static int check_nologin(int fd)
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	if (mmap_open(NOLOGIN, &m) == 0) {
-		write(fd, banner, sizeof(banner));
-		write(fd, m.ptr, m.size);
+		file_write(fd, banner, sizeof(banner));
+		file_write(fd, m.ptr, m.size);
 		mmap_close(&m);
 		close(fd);
 		return -1;

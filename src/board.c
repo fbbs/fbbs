@@ -64,7 +64,7 @@ static int save_zapbuf(const board_list_t *l)
 	sethomefile(file, currentuser.userid, ".lastread");
 	int fd = open(file, O_WRONLY | O_CREAT, 0600);
 	if (fd >= 0) {
-		write(fd, l->zapbuf, sizeof(*l->zapbuf) * MAXBOARD);
+		file_write(fd, l->zapbuf, sizeof(*l->zapbuf) * MAXBOARD);
 		file_close(fd);
 		return 0;
 	}

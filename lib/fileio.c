@@ -13,26 +13,25 @@
 static int rm_dir();
 
 /**
- * Append to file.
- * @param file file name.
- * @param msg a NUL terminated string.
- * @return 0 on success, -1 on error.
+ * 向文件尾部追加写入.
+ * @param file 文件名
+ * @param msg 字符串
+ * @return 成功返回0, 否则返回-1
  */
 int file_append(const char *file, const char *msg)
 {
-	if (file == NULL || msg == NULL)
+	if (!file || !msg)
 		return -1;
+	int ret = -1;
 	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd != -1) {
-		if (file_lock_all(fd, FILE_WRLCK) == -1) {
-			close(fd);
-			return -1;
+		if (file_lock_all(fd, FILE_WRLCK) == 0) {
+			ret = file_write(fd, msg, strlen(msg));
+			file_lock_all(fd, FILE_UNLCK);
 		}
-		write(fd, msg, strlen(msg));
-		file_lock_all(fd, FILE_UNLCK);
 		close(fd);
 	}
-	return 0;
+	return ret;
 }
 
 int file_read(int fd, void *buf, size_t size)
@@ -168,7 +167,7 @@ int f_cp(const char *src, const char *dst, int mode)
 			ret = read(fsrc, buf, BUFSIZ);
 			if (ret <= 0)
 				break;
-		} while (write(fdst, buf, ret) > 0);
+		} while (file_write(fdst, buf, ret) > 0);
 		close(fdst);
 	}
 	close(fsrc);

@@ -927,14 +927,14 @@ int vote_flag(const char *bname, char val, int mode) {
 	size = (int) lseek(fd, 0, SEEK_END);
 	memset(buf, 0, sizeof(buf));
 	while (size <= num) {
-		write(fd, buf, sizeof(buf));
+		file_write(fd, buf, sizeof(buf));
 		size += sizeof(buf);
 	}
 	lseek(fd, (off_t) num, SEEK_SET);
 	read(fd, &flag, 1); //读是否已经读过的标志flag
 	if ((flag == 0 && val != 0)) {
 		lseek(fd, (off_t) num, SEEK_SET);
-		write(fd, &val, 1);
+		file_write(fd, &val, 1);
 	}
 	file_lock_all(fd, FILE_UNLCK);
 	close(fd);

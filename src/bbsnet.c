@@ -151,7 +151,7 @@ static void do_bbsnet(const site_t *site)
 			ret = read_stdin(buf, sizeof(buf));
 			if (ret <= 0 || *buf == Ctrl(']'))
 				break;
-			write(fd, buf, ret);
+			file_write(fd, buf, ret);
 		} else {
 			ret = read(fd, buf, sizeof(buf));
 			if (ret <= 0)

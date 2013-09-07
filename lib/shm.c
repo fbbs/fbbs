@@ -1,8 +1,9 @@
-// Funtiions to attach or remove shared memory segements.
+// Functions to attach or remove shared memory segements.
 
-#include "bbs.h"
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include "bbs.h"
+#include "fbbs/fileio.h"
 
 // Key-value pairs of shared memory.
 struct _shmkey {
@@ -29,7 +30,7 @@ static int attach_err(int shmkey, const char *name, int err)
 	char buf[STRLEN];
 	snprintf(buf, sizeof(buf), "Error! %s error #%d! key = %x.\n",
 			name, err, shmkey);
-	write(STDOUT_FILENO, buf, strlen(buf));
+	file_write(STDOUT_FILENO, buf, strlen(buf));
 	return 0;
 }
 
