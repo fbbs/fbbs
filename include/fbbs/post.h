@@ -226,16 +226,7 @@ extern void quote_file_(const char *orig, const char *output, int mode,
 extern int set_post_flag(record_t *rec, post_index_record_t *pir, post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
 extern int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset, post_flag_e flag, bool set, bool toggle);
 
-extern void res_to_post_info(db_res_t *r, int i, bool archive, post_info_t *p);
-extern int load_sticky_posts(int bid, post_info_t **posts);
 extern bool is_deleted(post_list_type_e type);
-extern post_list_type_e post_list_type(const post_info_t *ip);
-extern const char *post_table_name(const post_filter_t *filter);
-extern const char *post_table_index(const post_filter_t *filter);
-extern void build_post_filter(query_t *q, const post_filter_t *f, const bool *asc);
-extern query_t *build_post_query(const post_filter_t *filter, bool asc, int limit);
-extern void res_to_post_info_full(db_res_t *res, int row, bool archive, post_info_full_t *p);
-extern void free_post_info_full(post_info_full_t *p);
 
 extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
 		char *file, size_t size);
@@ -247,7 +238,6 @@ extern fb_time_t get_last_post_time(int bid);
 extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
 extern int undelete_posts(post_filter_t *filter);
 
-extern db_res_t *query_post_by_pid(const post_filter_t *filter, const char *fields);
 extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
 
 extern int get_post_mark_raw(fb_time_t stamp, int flag);

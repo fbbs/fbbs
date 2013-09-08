@@ -514,7 +514,7 @@ int web_forum(void)
 	printf("</forum>");
 	return 0;
 }
-
+#if 0
 static xml_node_t *create_post_node(const post_info_t *p)
 {
 	xml_node_t *post = xml_new_node("post", XML_NODE_ANONYMOUS_JSON);
@@ -599,9 +599,9 @@ int api_board_toc(void)
 
 	xml_node_t *bnode = xml_new_child(root, "board", 0);
 	board_to_node(&board, bnode);
-
 	return HTTP_OK;
 }
+#endif
 
 #define BASEURL BBSHOST"/bbs"
 
