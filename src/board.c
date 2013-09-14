@@ -590,7 +590,7 @@ static tui_list_display_t board_list_display(tui_list_t *p, int n)
 		//% prints("  目录");
 		prints("  \xc4\xbf\xc2\xbc");
 	else
-		prints(" %5d", get_last_fake_pid(board->id));
+		prints(" %5d", get_board_post_count(board->id));
 
 	prints(" ");
 	if (board->flag & BOARD_DIR_FLAG) {

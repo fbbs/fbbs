@@ -243,7 +243,6 @@ extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
 extern int get_post_mark_raw(fb_time_t stamp, int flag);
 extern int get_post_mark(const post_info_t *p);
 
-extern int get_last_fake_pid(int bid);
-extern int incr_last_fake_pid(int bid, int delta);
+extern int get_board_post_count(int bid);
 
 #endif // FB_POST_H

@@ -565,16 +565,16 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	return convert_file_to_utf8_content(fname);
 }
 
-#define LAST_FAKE_ID_KEY "last_fake_id"
+#define BOARD_POST_COUNT_KEY "board_post_count"
 
-int get_last_fake_pid(int bid)
+int get_board_post_count(int bid)
 {
-	return mdb_integer(0, "HGET", LAST_FAKE_ID_KEY " %d", bid);
+	return mdb_integer(0, "HGET", BOARD_POST_COUNT_KEY " %d", bid);
 }
 
-int incr_last_fake_pid(int bid, int delta)
+static void set_board_post_count(int bid, int count)
 {
-	return mdb_integer(0, "HINCRBY", LAST_FAKE_ID_KEY " %d %d", bid, delta);
+	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
 }
 
 static post_id_t insert_post(const post_request_t *pr, const char *uname,
@@ -612,6 +612,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 		if (record_append(&record, &pib, 1) < 0)
 			pi.id = 0;
 		record_lock_all(&record, RECORD_UNLCK);
+		set_board_post_count(pi.bid, record_count(&record));
 		record_close(&record);
 	}
 
@@ -1127,6 +1128,7 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 	record_lock_all(&record, RECORD_UNLCK);
 
 	if (deleted) {
+		set_board_post_count(filter->bid, record_count(&record));
 		post_filter_t filter2 = { .fake_id_min = current + 1 };
 		post_deletion_trigger(&trash, &filter2, &pir, true);
 	}
@@ -1196,6 +1198,7 @@ int post_index_board_undelete(const post_filter_t *filter, void *ptr,
 	record_delete(&trash, NULL, 0, post_undeletion_callback, &puc);
 	record_merge(&record, puc.buf, puc.count);
 	record_lock_all(&record, RECORD_UNLCK);
+	set_board_post_count(filter->bid, record_count(&record));
 
 	record_lock_all(&trash, RECORD_UNLCK);
 	free(buf);
