@@ -12,6 +12,7 @@ enum {
 
 bbs_session_t session;
 
+/** 在线人数 @mdb_string */
 #define ONLINE_COUNT_CACHE_KEY  "c:online"
 
 int count_online(void)
@@ -32,14 +33,17 @@ int count_online(void)
 	return online;
 }
 
+/** 最大在线人数 @mdb_string */
+#define MAX_ONLINE_CACHE_KEY "c:max_online"
+
 void update_peak_online(int online)
 {
-	mdb_cmd("SET", "c:max_online %d", online);
+	mdb_cmd("SET", MAX_ONLINE_CACHE_KEY" %d", online);
 }
 
 int get_peak_online(void)
 {
-	return mdb_integer(0, "GET", "c:max_online");
+	return mdb_integer(0, "GET", MAX_ONLINE_CACHE_KEY);
 }
 
 session_id_t session_new_id(void)
@@ -78,10 +82,15 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	}
 }
 
+/** 会话所在版面 @mdb_sorted_set */
+#define SESSION_BOARD_KEY "current_board"
+/** 会话最后活动时间 @mdb_sorted_set */
+#define SESSION_IDLE_KEY "idle"
+
 static void purge_session_cache(session_id_t sid)
 {
-	mdb_cmd("ZREM", "current_board %"PRIdSID, sid);
-	mdb_cmd("ZREM", "idle %"PRIdSID, sid);
+	mdb_cmd("ZREM", SESSION_BOARD_KEY" %"PRIdSID, sid);
+	mdb_cmd("ZREM", SESSION_IDLE_KEY" %"PRIdSID, sid);
 }
 
 int session_destroy(session_id_t sid)
@@ -107,7 +116,7 @@ int session_inactivate(session_id_t sid)
 
 int set_idle_time(session_id_t sid, fb_time_t t)
 {
-	return !mdb_cmd("ZADD", "idle %"PRIdFBT" %"PRIdSID, t, sid);
+	return !mdb_cmd("ZADD", SESSION_IDLE_KEY" %"PRIdFBT" %"PRIdSID, t, sid);
 }
 
 void cached_set_idle_time(void)
@@ -120,28 +129,39 @@ void cached_set_idle_time(void)
 
 fb_time_t get_idle_time(session_id_t sid)
 {
-	return (fb_time_t) mdb_integer(0, "ZSCORE", "idle %"PRIdSID, sid);
+	return (fb_time_t) mdb_integer(0, "ZSCORE", SESSION_IDLE_KEY" %"PRIdSID,
+			sid);
 }
 
 int set_current_board(int bid)
 {
-	return !mdb_cmd("ZADD", "current_board %d %"PRIdSID, bid, session.id);
+	return !mdb_cmd("ZADD", SESSION_BOARD_KEY" %d %"PRIdSID, bid,
+			session.id);
 }
 
 int get_current_board(session_id_t sid)
 {
-	return (int) mdb_integer(0, "ZSCORE", "current_board %"PRIdSID, sid);
+	return (int) mdb_integer(0, "ZSCORE", SESSION_BOARD_KEY" %"PRIdSID, sid);
 }
+
+int count_onboard(int bid)
+{
+	return (int) mdb_integer(0, "ZCOUNT", SESSION_BOARD_KEY" %d %d", bid, bid);
+}
+
+/** 会话最新状态 @mdb_hash */
+#define SESSION_STATUS_KEY "user_status"
 
 int set_user_status(int status)
 {
 	session.status = status;
-	return !mdb_cmd("HSET", "user_status %"PRIdSID" %d", session.id, status);
+	return !mdb_cmd("HSET", SESSION_STATUS_KEY" %"PRIdSID" %d", session.id,
+			status);
 }
 
 int get_user_status(session_id_t sid)
 {
-	return (int) mdb_integer(0, "HGET", "user_status %"PRIdSID, sid);
+	return (int) mdb_integer(0, "HGET", SESSION_STATUS_KEY" %"PRIdSID, sid);
 }
 
 int set_visibility(bool visible)

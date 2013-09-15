@@ -3,6 +3,7 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 
+/** 以用户名查用户ID @mdb_hash */
 #define USER_ID_HASH_KEY  "user_id"
 
 struct userec currentuser;
@@ -22,7 +23,7 @@ static user_id_t get_user_id_cache(const char *uname)
 	strlcpy(name, uname, sizeof(name));
 	strtolower(name, name);
 
-	return (user_id_t)mdb_integer(-1, "HGET", USER_ID_HASH_KEY" %s", name);
+	return (user_id_t) mdb_integer(-1, "HGET", USER_ID_HASH_KEY" %s", name);
 }
 
 void remove_user_id_cache(const char *uname)
@@ -60,6 +61,7 @@ user_id_t get_user_id(const char *name)
 	return uid;
 }
 
+/** 总用户数统计 @mdb_string */
 #define USER_COUNT_CACHE_KEY  "c:users"
 
 enum {
@@ -126,14 +128,17 @@ int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)
 	return stay;	
 }
 
+/** 用户最近发文时间 @mdb_hash */
+#define LAST_POST_TIME_KEY "last_post_time"
+
 int set_my_last_post_time(fb_time_t t)
 {
-	return !mdb_cmd("HSET", "last_post_time %"PRIdUID" %"PRIdFBT, session.uid,
-			t);
+	return !mdb_cmd("HSET", LAST_POST_TIME_KEY" %"PRIdUID" %"PRIdFBT,
+			session.uid, t);
 }
 
 fb_time_t get_my_last_post_time(void)
 {
 	return (fb_time_t) mdb_integer(0, "HGET",
-			"last_post_time %"PRIdUID, session.uid);
+			LAST_POST_TIME_KEY" %"PRIdUID, session.uid);
 }

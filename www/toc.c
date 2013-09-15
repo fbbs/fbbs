@@ -13,15 +13,18 @@ enum {
 	TOPICS_PER_PAGE = 13,
 };
 
+/** 用户web浏览模式 @mdb_hash */
+#define POST_LIST_TYPE_KEY "doc_mode"
+
 post_list_type_e get_post_list_type(void)
 {
-	return (post_list_type_e) mdb_integer(0, "HGET", "doc_mode %"PRIdUID,
-			session.uid);
+	return (post_list_type_e) mdb_integer(0, "HGET",
+			POST_LIST_TYPE_KEY" %"PRIdUID, session.uid);
 }
 
 static void set_post_list_type(post_list_type_e type)
 {
-	mdb_cmd("HSET", "doc_mode %"PRIdUID" %d", session.uid, type);
+	mdb_cmd("HSET", POST_LIST_TYPE_KEY" %"PRIdUID" %d", session.uid, type);
 }
 
 const char *get_post_list_type_string(void)

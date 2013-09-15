@@ -12,6 +12,7 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 
+/** 文章ID序列 @mdb_string */
 #define POST_ID_KEY  "post_id_seq"
 
 static post_id_t current_post_id(void)
@@ -976,6 +977,7 @@ int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
 	return 0;
 }
 
+/** 版面最新一篇文章的时间 @mdb_hash */
 #define LAST_POST_KEY  "last_post"
 
 bool set_last_post_time(int bid, fb_time_t stamp)

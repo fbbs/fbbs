@@ -238,8 +238,3 @@ bool fav_board_mv(user_id_t uid, int id, int parent)
 	db_clear(res);
 	return res;
 }
-
-int count_onboard(int bid)
-{
-	return (int) mdb_integer(0, "ZCOUNT", "current_board %d %d", bid, bid);
-}

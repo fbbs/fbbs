@@ -123,6 +123,7 @@ extern void cached_set_idle_time(void);
 extern fb_time_t get_idle_time(session_id_t sid);
 extern int set_current_board(int bid);
 extern int get_current_board(session_id_t sid);
+extern int count_onboard(int bid);
 extern int set_user_status(int status);
 extern int get_user_status(session_id_t sid);
 extern int set_visibility(bool visible);
@@ -149,6 +150,7 @@ extern int online_follows_count(bool visible_only);
 
 extern const char *get_status_color(int status, bool visible, bool web);
 
+/** 保存web会话的键值 @mdb_hash */
 #define WEB_SESSION_HASH_KEY  "web_session"
 
 extern void remove_web_session_cache(user_id_t uid, const char *key);
