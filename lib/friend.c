@@ -20,9 +20,12 @@ int follow(user_id_t follower, const char *followed, const char *notes)
 		notes = "";
 	}
 
+	user_id_t uid = get_user_id(followed);
+	if (!uid)
+		return 0;
+
 	db_res_t *res = db_cmd("INSERT INTO follows (user_id, follower, notes)"
-			" SELECT id, %"DBIdUID", %s FROM users"
-			" WHERE lower(name) = lower(%s)", follower, notes, followed);
+			" VALUES (%"DBIdUID", %"DBIdUID", %s)", uid, follower, notes);
 	if (res) {
 		int ret = db_cmd_rows(res);
 		db_clear(res);
