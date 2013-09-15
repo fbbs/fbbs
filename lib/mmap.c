@@ -29,7 +29,7 @@ int mmap_open_fd(mmap_t *m)
 		m->prot = PROT_WRITE;
 	} else {
 		m->prot = PROT_READ;
-		m->lock = LOCK_SH;
+		m->lock = FILE_RDLCK;
 	}
 
 	if (m->fd < 0)
