@@ -33,8 +33,8 @@ static tui_list_title_t following_list_title(tui_list_t *p)
 			" [\033[1;32ma\033[m] \xbc\xd3\xb9\xd8\xd7\xa2"
 			//% " [\033[1;32md\033[m] 取消关注\n"
 			" [\033[1;32md\033[m] \xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2\n"
-			//% "\033[1;44m 编号  关注的人     友 备注\033[K\033[m\n");
-			"\033[1;44m \xb1\xe0\xba\xc5  \xb9\xd8\xd7\xa2\xb5\xc4\xc8\xcb     \xd3\xd1 \xb1\xb8\xd7\xa2\033[K\033[m\n");
+			//% "\033[1;44m 编号  关注的人     备注\033[K\033[m\n");
+			"\033[1;44m \xb1\xe0\xba\xc5  \xb9\xd8\xd7\xa2\xb5\xc4\xc8\xcb     \xb1\xb8\xd7\xa2\033[K\033[m\n");
 }
 
 static tui_list_display_t following_list_display(tui_list_t *p, int i)
@@ -44,9 +44,8 @@ static tui_list_display_t following_list_display(tui_list_t *p, int i)
 	char gbk_note[FOLLOW_NOTE_CCHARS * 2 + 1];
 	convert_u2g(following_list_get_notes(list, i), gbk_note);
 
-	prints(" %4d  %-12s %s %s\n", i + 1, following_list_get_name(list, i),
-			//% following_list_get_is_friend(list, i) ? "√" : "  ", gbk_note);
-			following_list_get_is_friend(list, i) ? "\xa1\xcc" : "  ", gbk_note);
+	prints(" %4d  %-12s %s\n", i + 1, following_list_get_name(list, i),
+			gbk_note);
 	return 0;
 }
 
