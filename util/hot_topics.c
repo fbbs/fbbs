@@ -71,8 +71,10 @@ static record_callback_e hot_topics_stat(post_index_t *pi, void *args)
 {
 	stat_t *stat = args;
 
-	if (pi->stamp <= stat->stamp)
+	if (pi->stamp && pi->stamp <= stat->stamp)
 		return RECORD_CALLBACK_BREAK;
+	if (!pi->stamp)
+		return RECORD_CALLBACK_CONTINUE;
 
 	if (!bitset_test(stat->bs, pi->bid - 1)
 			|| (pi->flag & POST_FLAG_DELETED))
@@ -110,6 +112,8 @@ static record_callback_e hot_topics_stat(post_index_t *pi, void *args)
 		}
 
 		topic_stat_t *ts = stat->topics + pos;
+		ts->count = tss->count;
+		ts->last = tss->last;
 		ts->tid = tid;
 		ts->bid = pi->bid;
 		strlcpy(ts->utf8_title, pi->utf8_title, sizeof(ts->utf8_title));
@@ -157,8 +161,8 @@ static int topic_sort(const void *p1, const void *p2)
 {
 	const topic_stat_t *s1 = p1, *s2 = p2;
 	if (s1->count == s2->count)
-		return s1->last - s2->last;
-	return s1->count - s2->count;
+		return s2->last - s1->last;
+	return s2->count - s1->count;
 }
 
 static void print_topic(FILE *fp, FILE *fp2, const topic_stat_t *topic,
@@ -219,7 +223,7 @@ static void print_stat(stat_t *stat)
 		for (int i = 0; i < stat->config->limit && i < stat->size
 				&& rank <= stat->config->limit; ++i) {
 			bool dup = false;
-			for (int j = i - 1; j >= 0; --i) {
+			for (int j = i - 1; j >= 0; --j) {
 				if (stat->topics[j].bid == stat->topics[i].bid) {
 					dup = true;
 					break;
