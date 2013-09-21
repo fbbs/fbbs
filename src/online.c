@@ -396,7 +396,7 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 			return MINIUPDATE;
 	}
 	if (p->in_query)
-		return DONOTHING;
+		return READ_AGAIN;
 
 	switch (ch) {
 		case 'Y':

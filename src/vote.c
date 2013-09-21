@@ -685,11 +685,11 @@ int b_closepolls(void)
 	if (!config_load(DEFAULT_CFG_FILE))
 		exit(EXIT_FAILURE);
 
-	initialize_db();
 	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		board_t board;
 		res_to_board(res, i, &board);
+		change_board(&board);
 		setcontrolfile(board.name);
 		int end = get_num_records(controlfile, sizeof(currvote));
 		for (vnum = end; vnum >= 1; vnum--) {
@@ -704,7 +704,6 @@ int b_closepolls(void)
 		}
 	}
 	db_clear(res);
-	db_finish();
 
 	brdshm->pollvote = nextpoll;
 	return 0;

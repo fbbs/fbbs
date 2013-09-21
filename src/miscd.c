@@ -12,8 +12,8 @@ void do_exit() {
 
 int main(int argc, char *argv[]) {
 	chdir(BBSHOME); //进入BBS用户主目录
-	setuid(BBSUID); //将进程的 用户ID
 	setgid(BBSGID); //组ID设置成BBS
+	setuid(BBSUID); //将进程的 用户ID
 	setreuid(BBSUID, BBSUID); //设置有效用户ID	
 	setregid(BBSGID, BBSGID); //有效组ID为BBS
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 
-		initialize_environment(INIT_DB);
+		initialize_environment(INIT_DB | INIT_MDB | INIT_CONV);
 
 		if (load_ucache() != 0) { //将用户的数据映射到内存
 			printf("load ucache error\n");
