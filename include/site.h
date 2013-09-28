@@ -156,7 +156,7 @@ so we don't need define this by passing make argument to the complier
 	#define BBSUID   9999
 	#define BBSGID   9999
 	#define BBSHOME "/home/bbs"
-	//% "复旦泉"
+	#define BBSNAME_UTF8 "复旦泉"
 	#define BBSNAME "\xb8\xb4\xb5\xa9\xc8\xaa"
 	//% "泉站"
 	#define SHORT_BBSNAME  "\xc8\xaa\xd5\xbe"
@@ -167,7 +167,7 @@ so we don't need define this by passing make argument to the complier
 	#define BBSUID  9999 
 	#define BBSGID  9999
 	#define BBSHOME "/home/bbs"
-	//% "日月光华"
+	#define BBSNAME_UTF8 "日月光华"
 	#define BBSNAME "\xc8\xd5\xd4\xc2\xb9\xe2\xbb\xaa"
 	//% "光华"
 	#define SHORT_BBSNAME  "\xb9\xe2\xbb\xaa"

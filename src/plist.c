@@ -1097,7 +1097,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	show_board_notes(board.name, 1);
 
 	struct postheader header = { .mail_owner = false, };
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
 	if (pi) {
 		header.reply = true;
 		if (strncaseeq(pi->utf8_title, "Re: ", 4)) {
@@ -1133,6 +1133,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		set_user_status(status);
 		return FULLUPDATE;
 	}
+	convert_g2u(gbk_title, utf8_title);
 
 	set_my_last_post_time(fb_time());
 
@@ -1183,7 +1184,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		.nick = currentuser.username,
 		.user = &currentuser,
 		.board = &board,
-		.title = gbk_title,
+		.title = utf8_title,
 		.content = NULL,
 		.gbk_file = file,
 		.sig = 0,

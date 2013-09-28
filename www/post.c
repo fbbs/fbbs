@@ -636,7 +636,7 @@ int bbssnd_main(void)
 
 	bool isedit = (*(get_param("e")) == '1');
 
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
 	if (!isedit) {
 		if (request_type(REQUEST_UTF8)) {
 			convert_u2g(get_param("title"), gbk_title);
@@ -648,6 +648,7 @@ int bbssnd_main(void)
 		if (*gbk_title == '\0')
 			return BBS_EINVAL;
 	}
+	convert_g2u(gbk_title, utf8_title);
 
 	time_t now = fb_time();
 	int diff = now - get_my_last_post_time();
@@ -695,7 +696,7 @@ int bbssnd_main(void)
 			.nick = NULL,
 			.user = &currentuser,
 			.board = &board,
-			.title = gbk_title,
+			.title = utf8_title,
 			.content = text,
 			.sig = strtol(get_param("sig"), NULL, 0),
 			.ip = mask_host(fromhost),
@@ -704,7 +705,8 @@ int bbssnd_main(void)
 			.marked = false,
 			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
 			.anony = strtol(get_param("anony"), NULL, 0),
-			.cp = request_type(REQUEST_UTF8) ? env_u2g : NULL,
+			.web = true,
+			.cp = request_type(REQUEST_UTF8) ? NULL : env_g2u,
 		};
 		pid = publish_post(&pr);
 		if (!pid)
@@ -880,14 +882,13 @@ int bbsccc_main(void)
 		if (!has_post_perm(&to))
 			return BBS_EPST;
 
-		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+		UTF8_BUFFER(title, POST_TITLE_CCHARS);
 		if (strneq2(pi.utf8_title, CP_MARK_STRING)) {
 			strlcpy(utf8_title, pi.utf8_title, sizeof(utf8_title));
 		} else {
 			snprintf(utf8_title, sizeof(utf8_title), CP_MARK_STRING"%s",
 					pi.utf8_title);
 		}
-		convert_u2g(utf8_title, gbk_title);
 
 		char buffer[4096];
 		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
@@ -899,7 +900,7 @@ int bbsccc_main(void)
 			.nick = NULL,
 			.user = &currentuser,
 			.board = &to,
-			.title = gbk_title,
+			.title = utf8_title,
 			.content = content,
 			.sig = 0,
 			.ip = mask_host(fromhost),
@@ -908,7 +909,8 @@ int bbsccc_main(void)
 			.locked = false,
 			.marked = false,
 			.anony = false,
-			.cp = env_u2g,
+			.web = true,
+			.cp = NULL,
 		};
 		int ret = publish_post(&pr);
 

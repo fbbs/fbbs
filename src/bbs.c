@@ -610,7 +610,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		return -1;
 	}
 
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
+	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
 		//% if (!strneq(title, "[转载]", 6) && !strneq(title, "Re: [转载]", 10))
 		if (!strneq(title, "[\xd7\xaa\xd4\xd8]", 6) && !strneq(title, "Re: [\xd7\xaa\xd4\xd8]", 10))
@@ -628,6 +628,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	}
 
 	valid_title(gbk_title);
+	convert_g2u(gbk_title, utf8_title);
 
 	struct postheader header = {
 		.locked = mode == POST_FILE_DELIVER ||
@@ -661,7 +662,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.nick = currentuser.username,
 		.user = autopost ? NULL : &currentuser,
 		.board = board,
-		.title = gbk_title,
+		.title = utf8_title,
 		.content = NULL,
 		.gbk_file = output,
 		.sig = 0,
@@ -669,8 +670,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.reid = 0,
 		.tid = 0,
 		.locked = mode == POST_FILE_DELIVER ||
-			//% (mode == POST_FILE_AUTO && strneq(gbk_title, "[合集]", 6)),
-			(mode == POST_FILE_AUTO && strneq(gbk_title, "[\xba\xcf\xbc\xaf]", 6)),
+				(mode == POST_FILE_AUTO && strneq2(utf8_title, "[合集]")),
 		.marked = false,
 		.anony = false,
 		.cp = NULL,

@@ -108,6 +108,7 @@ typedef struct {
 	bool locked;
 	bool marked;
 	bool anony;
+	bool web;
 	convert_t *cp;
 } post_request_t;
 

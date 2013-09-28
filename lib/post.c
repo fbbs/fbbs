@@ -471,41 +471,6 @@ int post_add_sticky(int bid, const post_info_t *pi)
 	return r;
 }
 
-/**
- * Creates a new file in specific location.
- * @param[in] dir The directory.
- * @param[in] pfx Prefix of the file.
- * @param[in, out] fname The resulting filename.
- * @param[in] size The size of fname.
- * @return Filename and stream on success, NULL on error.
- * @see ::date_to_fname.
- */
-static FILE *get_fname(const char *dir, const char *pfx,
-		char *fname, size_t size)
-{
-	if (dir == NULL || pfx == NULL)
-		return NULL;
-	const char c[] = "ZYXWVUTSRQPONMLKJIHGFEDCBA";
-	int t = (int)time(NULL);
-	int count = snprintf(fname, size, "%s%s%d. ", dir, pfx, t);
-	if (count < 0 || count >= size)
-		return NULL;
-	int fd;
-	for (int i = sizeof(c) - 2; i >= 0; ++i) {
-		fname[count - 1] = c[i];
-		if ((fd = open(fname, O_CREAT | O_RDWR | O_EXCL, 0644)) > 0) {
-			FILE *fp = fdopen(fd, "w+");
-			if (fp) {
-				return fp;
-			} else {
-				close(fd);
-				return NULL;
-			}
-		}
-	}
-	return NULL;
-}
-
 char *convert_file_to_utf8_content(const char *file)
 {
 	char *utf8_content = NULL;
@@ -519,51 +484,107 @@ char *convert_file_to_utf8_content(const char *file)
 	return utf8_content;
 }
 
+enum {
+	SIGNATURE_LINE_LEN = 256,
+};
+
+static void read_signature_legacy(const char *uname, int offset, char *buffer,
+		size_t size)
+{
+	char *out = buffer;
+	size_t remain = size;
+	strappend(&out, &remain, "\n--\n");
+	if (offset <= 0)
+		return;
+
+	char file[HOMELEN];
+	sethomefile(file, uname, "signatures");
+	FILE *fp = fopen(file, "r");
+	if (!fp)
+		return;
+
+	char buf[256];
+	for (int i = (offset - 1) * MAXSIGLINES; i > 0; --i) {
+		if (!fgets(buf, sizeof(buf), fp)) {
+			fclose(fp);
+			return;
+		}
+	}
+
+	int blank = 0;
+	for (int i = 0; i < MAXSIGLINES; ++i) {
+		if (!fgets(buf, sizeof(buf), fp))
+			break;
+		if (buf[0] == '\n' || streq(buf, "\r\n")) {
+			++blank;
+		} else {
+			while (blank-- > 0)
+				strappend(&out, &remain, "\n");
+			blank = 0;
+			//% ":·" "·[FROM:"
+			if (!strstr(buf, ":\xa1\xa4"BBSNAME" "BBSHOST"\xa1\xa4[FROM:"))
+				strappend(&out, &remain, buf);
+		}
+	}
+	fclose(fp);
+}
+
 static char *generate_content(const post_request_t *pr, const char *uname,
 		const char *nick, const char *ip, bool anony)
 {
-	char dir[HOMELEN];
-	snprintf(dir, sizeof(dir), "boards/%s/", pr->board->name);
-	const char *pfx = "M.";
+	UTF8_BUFFER(nick, NAMELEN);
+	convert_g2u(nick, utf8_nick);
 
-	char fname[HOMELEN];
-	FILE *fptr;
-	if ((fptr = get_fname(dir, pfx, fname, sizeof(fname))) == NULL)
-		return NULL;
+	char header[512];
+	snprintf(header, sizeof(header),
+			"发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n",
+			uname, utf8_nick, pr->board->name, pr->title, BBSNAME_UTF8,
+			format_time(fb_time(), TIME_FORMAT_UTF8_ZH));
+	int header_len = strlen(header);
 
-	//% "发信人: %s (%s), 信区: %s\n标  题: %s\n发信站: %s (%s)\n\n"
-	fprintf(fptr, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n\xb1\xea  \xcc\xe2: %s\n\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)\n\n",
-			uname, nick, pr->board->name, pr->title, BBSNAME,
-			format_time(fb_time(), TIME_FORMAT_ZH));
-
+	int content_len = strlen(pr->content);
 	if (pr->cp)
-		convert_to_file(pr->cp, pr->content, CONVERT_ALL, fptr);
-	else
-		fputs(pr->content, fptr);
+		content_len *= 2;
 
-	if (!anony && pr->sig > 0)
-		add_signature(fptr, uname, pr->sig);
-	else
-		fputs("\n--", fptr);
-
-	if (ip) {
-		char buf[2];
-		fseek(fptr, -1, SEEK_END);
-		fread(buf, 1, 1, fptr);
-		if (buf[0] != '\n')
-			fputs("\n", fptr);
-
-		//% "\033[m\033[1;%2dm※ %s:·"
-		fprintf(fptr, "\033[m\033[1;%2dm\xa1\xf9 %s:\xa1\xa4"BBSNAME" "BBSHOST
-			//% "·HTTP [FROM: %s]\033[m\n"
-			"\xa1\xa4HTTP [FROM: %s]\033[m\n", 31 + rand() % 7,
-			//% "转载" "来源"
-			pr->crosspost ? "\xd7\xaa\xd4\xd8" : "\xc0\xb4\xd4\xb4", ip);
+	char signature[MAXSIGLINES * SIGNATURE_LINE_LEN + 5];
+	char utf8_signature[sizeof(signature) * 2 + 1];
+	if (!anony && pr->sig > 0) {
+		read_signature_legacy(uname, pr->sig, signature, sizeof(signature));
+		convert_g2u(signature, utf8_signature);
+	} else {
+		strlcpy(utf8_signature, "\n--", sizeof(utf8_signature));
 	}
+	int signature_len = strlen(utf8_signature);
 
-	fclose(fptr);
+	char source[256] = { '\0' };
+	if (ip) {
+		char utf8_ip[80];
+		convert_g2u(ip, utf8_ip);
+		snprintf(source, sizeof(source), "\033[m\033[1;%2dm※ %s:·"BBSNAME_UTF8
+				" "BBSHOST"·%s[FROM: %s]\033[m\n", 31 + rand() % 7,
+				pr->crosspost ? "转载" : "来源", pr->web ? "HTTP " : "",
+				utf8_ip);
+	}
+	int source_len = strlen(source);
 
-	return convert_file_to_utf8_content(fname);
+	int total_len = header_len + content_len + signature_len + source_len + 2;
+	char *content = malloc(total_len);
+
+	memcpy(content, header, header_len);
+	convert(pr->cp, pr->content, CONVERT_ALL, content + header_len,
+			total_len - header_len, NULL, NULL);
+
+	int len = strlen(content);
+	if (len < total_len)
+		memcpy(content + len, utf8_signature, total_len - len);
+	len += signature_len;
+	if (content[len - 1] != '\n' && len < total_len) {
+		content[len++] = '\n';
+	}
+	if (len < total_len)
+		memcpy(content + len, source, total_len - len);
+	content[len + source_len] = '\0';
+	return content;
 }
 
 #define BOARD_POST_COUNT_KEY "board_post_count"
@@ -591,7 +612,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 				| (pr->locked ? POST_FLAG_LOCKED : 0);
 		pi.bid = pr->board->id;
 		strlcpy(pi.owner, uname, sizeof(pi.owner));
-		convert_g2u(pr->title, pi.utf8_title);
+		strlcpy(pi.utf8_title, pr->title, sizeof(pi.utf8_title));
 
 		post_content_write(pi.id, content, strlen(content));
 
