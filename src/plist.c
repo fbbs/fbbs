@@ -2177,6 +2177,12 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 	switch (ch) {
 		case '\n': case '\r':
 		case KEY_RIGHT: case 'r': case Ctrl('S'): case 'p':
+			if (tl->jump) {
+				tl->cur = tl->jump - 1;
+				tl->jump = 0;
+				tl->valid = false;
+				return PARTUPDATE;
+			}
 			return read_posts(tl, pi, false, false);
 		case Ctrl('U'):
 			return read_posts(tl, pi, false, true);
@@ -2284,6 +2290,18 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			return PARTUPDATE;
 		case 'O':
 			return pi->uid ? tui_follow_uname(pi->owner) : DONOTHING;
+		case '0': case '1': case '2': case '3': case '4':
+		case '5': case '6': case '7': case '8': case '9':
+			{
+				tl->jump = tl->jump * 10 + (ch - '0');
+				move(-1, 69);
+				clrtoeol();
+				char buf[24];
+				snprintf(buf, sizeof(buf), "\033[1;44;33m[%6d]\033[m",
+						tl->jump);
+				outs(buf);
+			}
+			return DONOTHING;
 		default:
 			return READ_AGAIN;
 	}
