@@ -253,10 +253,10 @@ int main(int argc, char **argv)
 	chdir(BBSHOME);
 
 	config_t configs[] = {
-		{ "day", "\xc8\xd5", 10, 1, true }, // 日
-		{ "week", "\xd6\xdc", 50, 7, false }, // 周
-		{ "month", "\xd4\xc2", 100, 30, false }, // 月
-		{ "year", "\xc4\xea", 200, 365, false }, // 年
+		{ "day", "\xc8\xd5\xca\xae", 10, 1, true }, // 日十
+		{ "week", "\xd6\xdc\xce\xe5\xca\xae", 50, 7, false }, // 周五十
+		{ "month", "\xd4\xc2\xd2\xbb\xb0\xd9", 100, 30, false }, // 月一百
+		{ "year", "\xc4\xea\xb6\xfe\xb0\xd9", 200, 365, false }, // 年二百
 	};
 
 	initialize_environment(INIT_DB | INIT_MDB | INIT_CONV);
