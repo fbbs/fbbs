@@ -729,6 +729,12 @@ char *direct;
 	return FULLUPDATE;
 }
 
+static int _combine_thread(int ent, struct fileheader *fileinfo, char *direct, int gid)
+{
+	fileinfo->gid = gid;
+	return substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
+}
+
 int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	int i, dotype = 0, result = 0, gid = 0;
 	int has_yinyan=0; //Add by everlove 制作合集
@@ -1047,12 +1053,6 @@ int combine_thread(int ent, struct fileheader *fileinfo, char *direct)
 	fileinfo->reid = fh.id;
 	substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
 	return PARTUPDATE;
-}
-
-int _combine_thread(int ent, struct fileheader *fileinfo, char *direct, int gid)
-{
-	fileinfo->gid = gid;
-	return substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
 }
 
 int SR_first_new(ent, fileinfo, direct)

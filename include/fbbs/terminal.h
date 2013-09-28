@@ -185,7 +185,6 @@ int mark_post(int ent, struct fileheader *fileinfo, char *direct);
 int do_post(void);
 int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct);
 int underline_post(int ent, struct fileheader *fileinfo, char *direct);
-int _combine_thread(int ent, struct fileheader *fileinfo, char *direct, int gid);
 int del_post(int ent, struct fileheader *fileinfo, char *direct);
 int check_notespasswd(void);
 
