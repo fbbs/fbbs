@@ -29,7 +29,7 @@ char *format_time(fb_time_t time, time_format_e fmt)
 	const char *utf8_weeknum[] = {
 		"天", "一", "二", "三", "四", "五", "六"
 	};
-	static char str[32] = { '\0' };
+	static char str[36] = { '\0' };
 
 	struct tm *t = fb_localtime(&time);
 	switch (fmt) {
