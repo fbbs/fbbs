@@ -1493,7 +1493,8 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				end = true;
 				break;
 			case 'Y': case 'R': case 'y': case 'r':
-				// TODO
+				end = true;
+				tl->valid = false;
 				tui_new_post(pi->bid, pi);
 				break;
 			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
