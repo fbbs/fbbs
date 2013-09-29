@@ -12,7 +12,6 @@ extern bool inbuf_empty(void);
 extern int igetch(void);
 extern int igetkey(void);
 extern int egetch(void);
-extern int ask(const char *prompt);
 extern int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel);
 extern void update_endline(void);

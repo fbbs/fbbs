@@ -23,7 +23,6 @@ extern int add_to_file(const char *file, const char *str, size_t len, bool overw
 		bool (*equal)(const char *, size_t, const char *, size_t));
 extern int del_from_file(const char *file, const char *str);
 extern const char *mask_host(const char *host);
-extern void add_signature(FILE *fp, const char *user, int sig);
 extern int valid_gbk_file(const char *file, int replace);
 extern char *valid_title(char *title);
 

@@ -17,6 +17,16 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
+/** Telnet option negotiation sequence status. */
+enum {
+	TELST_NOR,  ///< normal byte
+	TELST_IAC,  ///< right after IAC
+	TELST_COM,  ///< right after IAC DO/DONT/WILL/WONT
+	TELST_SUB,  ///< right after IAC SB
+	TELST_SBC,  ///< right after IAC SB [COMMAND]
+	TELST_END,  ///< end of an telnet option
+};
+
 /** ESC process status */
 enum {
 	ESCST_BEG,  ///< begin
@@ -395,29 +405,6 @@ int egetch(void)
 		redoscr();
 	}
 	return rval;
-}
-
-static void top_show(const char *prompt)
-{
-	if (editansi) {
-		outs(ANSI_RESET);
-		refresh();
-	}
-	move(0, 0);
-	clrtoeol();
-	standout();
-	prints("%s", prompt);
-	standend();
-}
-
-int ask(const char *prompt)
-{
-	int ch;
-	top_show(prompt);
-	ch = igetkey();
-	move(0, 0);
-	clrtoeol();
-	return (ch);
 }
 
 extern int enabledbchar;

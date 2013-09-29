@@ -26,10 +26,6 @@
 #include <dirent.h>
 #include <syslog.h>
 
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif
-
 #include "site.h"             	/* User-configurable stuff */
 #include "functions.h"				/* you can enable functions that you want */
 #include "permissions.h"
@@ -110,18 +106,8 @@ extern char ULIST[];
 #define TRASH_DIR   ".TRASH"
 #define JUNK_DIR    ".JUNK"
 
-//digest mode
-#define NORMAL_MODE       0		//一般模式
-#define DIGIST_MODE       1		//文摘模式（G文）
-#define THREAD_MODE       2		//同主题模式
-#define MARK_MODE         3		//m文模式
-#define ORIGIN_MODE       4		//原作模式
-#define AUTHOR1_MODE      5             //同作者模糊搜索模式
-#define AUTHOR2_MODE      6             //同作者精确搜索模式
-#define KEYWORD_MODE      7		//标题搜索模式
 #define TRASH_MODE       10		//版主垃圾箱模式
 #define JUNK_MODE	     11		//站务垃圾箱模式
-#define BOTTOM_MODE	     12		//??
 #define ATTACH_MODE          13         //??
 #define ANNPATH_SETMODE	0
 #define ANNPATH_GETMODE	1
@@ -187,9 +173,7 @@ enum {
 	OBUFSIZE = 4096,   ///< output buffer size.
 };
 
-#ifndef NO_STRUCT_H
 #include "struct.h"
-#endif
 
 enum {
 	DONOTHING   = 0,  /* Read menu command return states */
@@ -236,8 +220,6 @@ enum {
 
 extern int digestmode; /*To control Digestmode*/
 
-#ifndef NO_STRUCT_H				 /* NO_STRUCT_H */
-
 extern struct userec currentuser;/*  user structure is loaded from passwd */
 /*  file at logon, and remains for the   */
 /*  entire session */
@@ -247,8 +229,6 @@ extern int utmpent; /* Index into this users utmp file entry */
 
 extern int t_lines, t_columns; /* Screen size / width */
 extern struct userec lookupuser; /* Used when searching for other user info */
-
-#endif					/* NO_STRUCT_H */
 
 extern const char *currboard; /* name of currently selected board */
 extern char currBM[]; /* BM of currently selected board */
@@ -261,9 +241,6 @@ extern int in_mail;
 extern bool dumb_term;
 extern int showansi;
 extern time_t uptime; /* save user last key-in time, up every 1min */
-
-#define Min(a,b) ((a<b)?a:b)
-#define Max(a,b) ((a>b)?a:b)
 
 /*SREAD Define*/
 #define SR_BMBASE       (10)
@@ -298,9 +275,6 @@ extern time_t uptime; /* save user last key-in time, up every 1min */
 #define Ctrl(c)         ( c & 037 )		//可以考虑将函数宏改写成inline函数
 
 /* =============== ANSI EDIT ================== */
-#define   ANSI_RESET    	"\033[0m"
-#define   ANSI_REVERSE  	"\033[7m\033[4m"
-extern int editansi;
 extern int KEY_ESC_arg;
 /* ============================================ */
 
@@ -311,18 +285,6 @@ extern int KEY_ESC_arg;
 //BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界
 
 #define WRAPMARGIN (255)
-
-/**
- * Telnet option negotiation sequence status.
- */
-enum {
-	TELST_NOR,  ///< normal byte
-	TELST_IAC,  ///< right after IAC
-	TELST_COM,  ///< right after IAC DO/DONT/WILL/WONT
-	TELST_SUB,  ///< right after IAC SB
-	TELST_SBC,  ///< right after IAC SB [COMMAND]
-	TELST_END,  ///< end of an telnet option
-};
 
 enum {
 	LINE_BUFSIZE = 256,  ///< Line buffer size.

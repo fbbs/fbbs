@@ -11,6 +11,9 @@
 #include "fbbs/terminal.h"
 USE_TRY;
 
+#define   ANSI_RESET    	"\033[0m"
+#define   ANSI_REVERSE  	"\033[7m\033[4m"
+
 extern char BoardName[];
 
 #define M_MARK  0x01
@@ -41,7 +44,7 @@ static int insert_character = 1;
 static int linelen = WRAPMARGIN;
 static int mark_on;
 
-int editansi = 0;
+static int editansi = 0;
 int enabledbchar = 1;
 
 void vedit_key();
@@ -697,6 +700,29 @@ void insert_from_fp(FILE *fp)
 	BBS_CATCH {
 	}
 	BBS_END mmap_close(&m);
+}
+
+static void top_show(const char *prompt)
+{
+	if (editansi) {
+		outs(ANSI_RESET);
+		refresh();
+	}
+	move(0, 0);
+	clrtoeol();
+	standout();
+	prints("%s", prompt);
+	standend();
+}
+
+static int ask(const char *prompt)
+{
+	int ch;
+	top_show(prompt);
+	ch = igetkey();
+	move(0, 0);
+	clrtoeol();
+	return (ch);
 }
 
 static int process_ESC_action(int action, int arg)

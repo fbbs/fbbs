@@ -37,6 +37,9 @@
 #define MODIFIED (1)   /* if line has been modifed, output to screen   */
 #define STANDOUT (2)   /* if this line has a standout region */
 
+#define Min(a,b) ((a<b)?a:b)
+#define Max(a,b) ((a>b)?a:b)
+
 struct screenline {
 	unsigned int oldlen; /* previous line length              */
 	unsigned int len; /* current length of line            */
@@ -49,7 +52,6 @@ struct screenline {
 };
 
 extern int iscolor;
-extern int editansi;
 
 bool dumb_term = true;
 bool automargins = true;

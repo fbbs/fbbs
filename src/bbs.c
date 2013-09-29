@@ -415,6 +415,50 @@ int do_reply(struct fileheader *fh) {
 #endif
 
 /**
+ * Attach a signature.
+ * @param fp Output file.
+ * @param user The user.
+ * @param sig number of signature, 1-based.
+ */
+static void add_signature(FILE *fp, const char *user, int sig)
+{
+	fputs("\n--\n", fp);
+	if (sig <= 0)
+		return;
+
+	char file[HOMELEN];
+	sethomefile(file, user, "signatures");
+	FILE *fin = fopen(file, "r");
+	if (!fin)
+		return;
+
+	char buf[256];
+	for (int i = 0; i < (sig - 1) * MAXSIGLINES; ++i) {
+		if (!fgets(buf, sizeof(buf), fin)) {
+			fclose(fin);
+			return;
+		}
+	}
+
+	int blank = 0;
+	for (int i = 0; i < MAXSIGLINES; i++) {
+		if (!fgets(buf, sizeof(buf), fin))
+			break;
+		if (buf[0] == '\n' || streq(buf, "\r\n")) {
+			++blank;
+		} else {
+			while (blank-- > 0)
+				fputs("\n", fp);
+			blank = 0;
+			//% ":·" "·[FROM:"
+			if (!strstr(buf, ":\xa1\xa4"BBSNAME" "BBSHOST"\xa1\xa4[FROM:"))
+				fputs(buf, fp);
+		}
+	}
+	fclose(fin);
+}
+
+/**
  * Quote in given mode.
  * @param orig The file to be quoted.
  * @param file The output file.
