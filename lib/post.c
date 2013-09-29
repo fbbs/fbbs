@@ -571,8 +571,11 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	char *content = malloc(total_len);
 
 	memcpy(content, header, header_len);
-	convert(pr->cp, pr->content, CONVERT_ALL, content + header_len,
-			total_len - header_len, NULL, NULL);
+	if (pr->cp)
+		convert(pr->cp, pr->content, CONVERT_ALL, content + header_len,
+				total_len - header_len, NULL, NULL);
+	else
+		strlcpy(content + header_len, pr->content, total_len - header_len);
 
 	int len = strlen(content);
 	if (len < total_len)
