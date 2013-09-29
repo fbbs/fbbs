@@ -890,7 +890,7 @@ static tui_list_title_t board_list_title(tui_list_t *p)
 static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 {
 	board_list_t *l = p->data;
-	bool st_changed = false;
+	bool st_changed = false, handled = true;
 
 	switch (key) {
 		case 'c':
@@ -938,6 +938,8 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			return tui_favorite_add(p);
 		case 'A':
 			return tui_favorite_mkdir(p);
+		default:
+			handled = false;
 	}
 
 	if (p->cur >= p->all)
@@ -989,7 +991,8 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			st_changed = true;
 			return FULLUPDATE;
 		default:
-			return READ_AGAIN;
+			if (!handled)
+				return READ_AGAIN;
 	}
 
 	if (st_changed)
