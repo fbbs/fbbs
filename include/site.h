@@ -162,6 +162,7 @@ so we don't need define this by passing make argument to the complier
 	#define SHORT_BBSNAME  "\xc8\xaa\xd5\xbe"
 	#define BBSID   "FDQuanBBS"
 	#define BBSHOST "10.8.225.9"
+	#define BBSHOST_PUBLIC "bbs.fudan.edu.cn/q"
 	#define BBSIP	"10.8.225.9"
 #else
 	#define BBSUID  9999 
@@ -173,6 +174,7 @@ so we don't need define this by passing make argument to the complier
 	#define SHORT_BBSNAME  "\xb9\xe2\xbb\xaa"
 	#define BBSID   "Fudan BBS"
 	#define BBSHOST "bbs.fudan.edu.cn"
+	#define BBSHOST_PUBLIC BBSHOST
 	#define BBSIP	"61.129.42.9"
 #endif
 

@@ -102,8 +102,10 @@ tui_list_display_t tui_attachment_display(tui_list_t *tl, int offset)
 static void print_attachment_info(const struct fileheader *fp,
 		const char *bname, int offset)
 {
-	char date[24];
 	char url[STRLEN];
+	snprintf(url, sizeof(url), "http://"BBSHOST_PUBLIC"/upload/%s/%s", bname,
+			fp->filename);
+
 	clear();
 	//% 文件详细信息
 	prints("\xce\xc4\xbc\xfe\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2\n\n"
@@ -121,7 +123,8 @@ static void print_attachment_info(const struct fileheader *fp,
 			"\xb4\xf3\xd0\xa1: %d \xd7\xd6\xbd\xda\n"
 			//% 地址:
 			"\xb5\xd8\xd6\xb7:\n%s\n",
-			bname, offset + 1, fp->filename, fp->owner, date, fp->id, url);
+			bname, offset + 1, fp->filename, fp->owner,
+			format_time(fp->timeDeleted, TIME_FORMAT_ZH), fp->id, url);
 }
 
 static int read_attachment(tui_list_t *tl, const struct fileheader *fp)

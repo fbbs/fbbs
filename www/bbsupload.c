@@ -72,7 +72,7 @@ static int addtodir(const char *board, const char *tmpfile)
 
 	xml_header("bbsupload");
 	printf("<bbsupload><size>%d</size><user>%s</user>"
-			"<url>http://"BBSHOST"/upload/%s/%s</url></bbsupload>",
+			"<url>http://"BBSHOST_PUBLIC"/upload/%s/%s</url></bbsupload>",
 			x.id, x.owner, board, x.filename);
 	return 0;
 }
