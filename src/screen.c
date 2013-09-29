@@ -73,39 +73,6 @@ static bool standing = false;
 
 struct screenline *big_picture = NULL;
 
-#ifdef ALLOWAUTOWRAP
-//返回str中前num个字符中以ansi格式实际显示的字符数
-int seekthestr(const char *str, int num)
-{
-	int len, i, ansi= NA;
-	len = strlen(str);
-	for(i=0;i<len;i++) {
-		if(!(num--))
-		break;
-		if(str[i] == KEY_ESC) {
-			ansi = YEA;
-			continue;
-		}
-		if( ansi ) {
-			if ( !strchr("[0123456789; ", str[i]))
-			ansi = NA;
-			continue;
-			/*                      if (strchr("[0123456789; ", str[i]))
-			 continue;
-			 else if (isalpha(str[i])) {
-			 ansi = NA;
-			 continue;
-			 }
-			 else
-			 break;
-			 */
-		} //if
-		//		if(!(num--)) break;
-	} //for
-	return i;
-}
-#endif	
-
 //返回字符串中属于 ansi的个数?	对后一个continue不太理解 
 int num_ans_chr(const char *str)
 {
@@ -125,21 +92,6 @@ int num_ans_chr(const char *str)
 				ansi = NA;
 			ansinum++;
 			continue;
-			/*
-			 if (strchr("[0123456789; ", str[i]))
-			 {
-			 ansinum++;
-			 continue;
-			 }
-			 else if (isalpha(str[i]))
-			 {
-			 ansinum++;
-			 ansi = NA;
-			 continue;
-			 }
-			 else
-			 break;
-			 */
 		}
 	}
 	return ansinum;

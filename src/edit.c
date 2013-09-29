@@ -445,6 +445,31 @@ void split(register struct textline *line, register int pos) {
 	}
 	redraw_everything = YEA;
 }
+
+#ifdef ALLOWAUTOWRAP
+//返回str中前num个字符中以ansi格式实际显示的字符数
+static int seekthestr(const char *str, int num)
+{
+	int len, i, ansi= NA;
+	len = strlen(str);
+	for(i=0;i<len;i++) {
+		if(!(num--))
+		break;
+		if(str[i] == KEY_ESC) {
+			ansi = YEA;
+			continue;
+		}
+		if( ansi ) {
+			if ( !strchr("[0123456789; ", str[i]))
+			ansi = NA;
+			continue;
+		} //if
+		//		if(!(num--)) break;
+	} //for
+	return i;
+}
+#endif	
+
 /*
  join connects 'line' and the next line.  It returns true if:
 

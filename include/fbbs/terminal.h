@@ -49,7 +49,6 @@ extern void printdash(const char *mesg);
 extern void bell(void);
 
 int num_ans_chr(const char *str);
-int seekthestr(const char *str, int num);
 
 // src/more.c
 
