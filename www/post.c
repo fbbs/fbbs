@@ -805,11 +805,14 @@ static int do_bbspst(bool isedit)
 	if (reply) {
 		printf("<t>");
 
-		GBK_BUFFER(title, POST_TITLE_CCHARS);
-		convert_u2g(pi.utf8_title, gbk_title);
+		bool utf8 = request_type(REQUEST_UTF8);
 
-		ansi_filter(gbk_title, gbk_title);
-		xml_fputs(gbk_title);
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		char *title = utf8 ? pi.utf8_title : gbk_title;
+		if (!utf8)
+			convert_u2g(pi.utf8_title, gbk_title);
+		ansi_filter(title, title);
+		xml_fputs(title);
 
 		printf("</t><po f='%lu'>", pid);
 
@@ -817,21 +820,35 @@ static int do_bbspst(bool isedit)
 		char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
 		size_t len = strlen(utf8_content);
 
-		char *gbk_content = malloc(len + 1);
-		convert(env_u2g, utf8_content, len, gbk_content, len, NULL, NULL);
-
 		if (isedit) {
-			const char *begin = gbk_content;
-			const char *end = begin + strlen(gbk_content);
+			const char *begin = utf8_content;
+			const char *end = begin + len;
 			get_post_body(&begin, &end);
-			if (end > begin)
-				xml_fputs2(begin, end - begin);
+			if (end > begin) {
+				if (utf8) {
+					xml_fputs2(begin, end - begin);
+				} else {
+					char *gbk_content = malloc(len + 1);
+					convert(env_u2g, begin, end - begin, gbk_content, len,
+							NULL, NULL);
+					xml_fputs(gbk_content);
+					free(gbk_content);
+				}
+			}
 		} else {
-			quote_string(gbk_content, strlen(gbk_content), NULL, QUOTE_AUTO,
-					false, xml_fputs3);
+			if (utf8) {
+				quote_string(utf8_content, len, NULL, QUOTE_AUTO, false,
+						true, xml_fputs3);
+			} else {
+				char *gbk_content = malloc(len + 1);
+				convert(env_u2g, utf8_content, len, gbk_content, len,
+						NULL, NULL);
+				quote_string(gbk_content, strlen(gbk_content), NULL,
+						QUOTE_AUTO, false, false, xml_fputs3);
+				free(gbk_content);
+			}
 		}
 
-		free(gbk_content);
 		if (utf8_content != buffer)
 			free(utf8_content);
 

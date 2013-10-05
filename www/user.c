@@ -1,6 +1,7 @@
 #include <math.h>
 #include "libweb.h"
 #include "record.h"
+#include "fbbs/convert.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/money.h"
@@ -275,6 +276,28 @@ int iconexp(int exp, int *repeat)
 	return i;
 }
 
+static const char *perf_string(int perf)
+{
+	static UTF8_BUFFER(str, 4);
+	const char *gbk_perf = cperf(perf);
+	if (request_type(REQUEST_UTF8)) {
+		convert_g2u(gbk_perf, utf8_str);
+		return utf8_str;
+	}
+	return gbk_perf;
+}
+
+static const char *horoscope_string(const struct userec *user)
+{
+	static UTF8_BUFFER(horo, 3);
+	const char *gbk_horo = horoscope(user->birthmonth, user->birthday);
+	if (request_type(REQUEST_UTF8)) {
+		convert_g2u(gbk_horo, utf8_horo);
+		return utf8_horo;
+	}
+	return gbk_horo;
+}
+
 int bbsqry_main(void)
 {
 	char userid[IDLEN + 1];
@@ -295,7 +318,7 @@ int bbsqry_main(void)
 				"perf='%s' post='%d' hp='%d' level='%d' repeat='%d' ",
 				user.userid, user.numlogins,
 				format_time(user.lastlogin, TIME_FORMAT_XML),
-				cperf(countperf(&user)), user.numposts,
+				perf_string(countperf(&user)), user.numposts,
 				compute_user_value(&user), level, repeat);
 
 		uinfo_t u;
@@ -309,18 +332,18 @@ int bbsqry_main(void)
 #endif
 		if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
 			printf("horo='%s'",
-					horoscope(user.birthmonth, user.birthday));
+					horoscope_string(&user));
 			if (HAS_DEFINE(user.userdefine, DEF_COLOREDSEX))
 				printf(" gender='%c'", user.gender);
 		}
 		printf("><ip>");
 		xml_fputs(self ? user.lasthost : mask_host(user.lasthost));
 		printf("</ip><nick>");
-		xml_fputs(user.username);
+		xml_fputs4(user.username, 0);
 		printf("</nick><ident>");
 		char ident[160];
 		show_position(&user, ident, sizeof(ident), u.title);
-		xml_fputs(ident);
+		xml_fputs4(ident, 0);
 
 		uinfo_free(&u);
 

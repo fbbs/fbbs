@@ -1,40 +1,40 @@
-<?xml version='1.0' encoding='gb18030'?>
+<?xml version='1.0' encoding='utf-8'?>
 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns='http://www.w3.org/1999/xhtml'>
 <xsl:import href='showpost.xsl'/>
-<xsl:output method='html' encoding='gb18030' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
+<xsl:output method='html' encoding='utf-8' doctype-public='-//W3C//DTD HTML 4.01//EN' doctype-system='http://www.w3.org/TR/html4/strict.dtd'/>
 
-<xsl:template name='bbsname'>хутб╧Б╩╙</xsl:template>
+<xsl:template name='bbsname'>Ф≈╔Ф°┬Е┘┴Е█▌</xsl:template>
 
 <xsl:template name='timeconvert'>
-	<xsl:param name='time'/>
-	<xsl:value-of select='concat(substring($time, 1, 10), " ", substring($time, 12, 5))'/>
+<xsl:param name='time'/>
+<xsl:value-of select='concat(substring($time, 1, 10), " ", substring($time, 12, 5))'/>
 </xsl:template>
 
 <xsl:template name='time-conv-short'>
-	<xsl:param name='time'/>
-	<xsl:value-of select='concat(substring($time, 6, 5), " ", substring($time, 12, 5))'/>
+<xsl:param name='time'/>
+<xsl:value-of select='concat(substring($time, 6, 5), " ", substring($time, 12, 5))'/>
 </xsl:template>
 
 <xsl:template name='navigation'>
-	<xsl:param name='session'/>
-	<xsl:variable name='user' select='$session/u'/>
-	<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
-	<div id='hd'>
-		<xsl:if test='$user != ""'><a href='qry?u={$user}'><xsl:value-of select='$user'/></a> <a id='fave' href='#' onclick='return expandFav();'>йу╡ь╗▄</a><a href='#' id='favc' onclick='return collapseFav();'>йуфП║В</a>|</xsl:if>
-		<xsl:if test='$user = ""'><a href='login'>╣гб╪</a>|</xsl:if>
-		<a href='sec'>йврЁ</a>|<a href='top10'>й╝╢С</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>пе╪Ч</a>|<a href='logout'>в╒оЗ</a></xsl:if>
-	</div>
-	<div id='fav'><xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
-	<a><xsl:if test='@r'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
-	</xsl:for-each></div>
+<xsl:param name='session'/>
+<xsl:variable name='user' select='$session/u'/>
+<xsl:variable name='bbsname'><xsl:call-template name='bbsname'/></xsl:variable>
+<div id='hd'>
+<xsl:if test='$user != ""'><a href='qry?u={$user}'><xsl:value-of select='$user'/></a> <a id='fave' href='#' onclick='return expandFav();'>Ф■╤Х≈▐Б√╫</a><a href='#' id='favc' onclick='return collapseFav();'>Ф■╤Х╣╥Б√Ё</a>|</xsl:if>
+<xsl:if test='$user = ""'><a href='login'>Г≥╩Е╫∙</a>|</xsl:if>
+<a href='sec'>И╕√И║╣</a>|<a href='top10'>Е█│Е╓╖</a><xsl:if test='contains($session/p, "l")'>|<a href='mail'>Д©║Д╩╤</a>|<a href='logout'>ФЁ╗И■─</a></xsl:if>
+</div>
+<div id='fav'><xsl:for-each select='$session/f/b'><xsl:sort select='translate(., "abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")' order='ascending'/>
+<a><xsl:if test='@r'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if><xsl:attribute name='href'><xsl:value-of select='$session/@m'/>doc?<xsl:choose><xsl:when test='@bid'>bid=<xsl:value-of select='@bid'/></xsl:when><xsl:otherwise>board=<xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:attribute><xsl:value-of select='.'/></a>
+</xsl:for-each></div>
 </xsl:template>
 
 <xsl:template name='foot'>
-	<div id='ft'><xsl:call-template name='bbsname'/> &#169;1996-2012</div>
+<div id='ft'><xsl:call-template name='bbsname'/> &#169;1996-2013</div>
 </xsl:template>
 
 <xsl:template name='include-css'>
-	<link rel='stylesheet' type='text/css' href='../css/mobile.css'/>
+<link rel='stylesheet' type='text/css' href='../css/mobile.css'/>
 </xsl:template>
 
 <xsl:template name='include-js'>
@@ -42,140 +42,140 @@
 </xsl:template>
 
 <xsl:template name='page-title'>
-	<xsl:variable name='cgi' select='local-name(node()[2])'/>
-	<xsl:choose>
-		<xsl:when test='bbssec'>╥жгЬап╠М</xsl:when>
-		<xsl:when test='bbsboa'><xsl:choose><xsl:when test='bbsboa/@dir'>╟ФцФд©б╪</xsl:when><xsl:otherwise>╥жюЮлжбшгЬ</xsl:otherwise></xsl:choose></xsl:when>
-		<xsl:when test='bbsall'>х╚╡©лжбшгЬ</xsl:when>
-		<xsl:when test='bbssel'>я║тЯлжбшгЬ</xsl:when>
-		<xsl:when test='bbsdoc'><xsl:value-of select='bbsdoc/brd/@desc'/></xsl:when>
-		<xsl:when test='bbscon'>ндубтд╤а</xsl:when>
-		<xsl:when test='bbstcon'>м╛жВлБндубтд╤а</xsl:when>
-		<xsl:when test='bbsqry'>╡Ия╞мЬся</xsl:when>
-		<xsl:when test='bbspst'><xsl:choose><xsl:when test='bbspst/@edit="0"'>╥╒╠М</xsl:when><xsl:otherwise>пч╦д</xsl:otherwise></xsl:choose>ндуб</xsl:when>
-		<xsl:when test='bbstop10'>╠╬хуй╝╢С</xsl:when>
-		<xsl:when test='bbsbfind'>╟Фдзндуб╡Ия╞</xsl:when>
-		<xsl:when test='bbsnewmail'>тдююпбпе╪Ч</xsl:when>
-		<xsl:when test='bbsmail'>пе╪Чап╠М</xsl:when>
-		<xsl:when test='bbsmailcon'>пе╪Чтд╤а</xsl:when>
-		<xsl:when test='bbspstmail'>╪дсОпе╦К</xsl:when>
-		<xsl:when test='bbs0an'>╬╚╩╙гЬД╞юю</xsl:when>
-		<xsl:when test='bbsanc'>╬╚╩╙гЬндубтд╤а</xsl:when>
-		<xsl:when test='bbsfwd'>в╙╪дндуб</xsl:when>
-		<xsl:when test='bbsccc'>в╙тьндуб</xsl:when>
-		<xsl:when test='bbsfall'>иХ╤╗╧ьв╒цШ╣╔</xsl:when>
-		<xsl:when test='bbsfadd'>тЖ╪с╧ьв╒мЬся</xsl:when>
-		<xsl:when test='bbsovr'>тзоъ╧ьв╒мЬся</xsl:when>
-		<xsl:when test='bbsfav'>йу╡ь╪п</xsl:when>
-		<xsl:when test='bbsmybrd'>иХ╤╗йу╡ь╪п</xsl:when>
-		<xsl:when test='bbseufile'><xsl:value-of select='bbseufile/@desc'/></xsl:when>
-		<xsl:when test='bbsmybrd'>╦Жхквйао</xsl:when>
-		<xsl:when test='bbspwd'>пч╦дцэбК</xsl:when>
-		<xsl:when test='bbsnot'>╫Ь╟Ф╩╜цФ</xsl:when>
-		<xsl:otherwise></xsl:otherwise>
-	</xsl:choose>
+<xsl:variable name='cgi' select='local-name(node()[2])'/>
+<xsl:choose>
+<xsl:when test='bbssec'>Е┬├Е▄╨Е┬≈Х║╗</xsl:when>
+<xsl:when test='bbsboa'><xsl:choose><xsl:when test='bbsboa/@dir'>Г┴┬И²╒Г⌡╝Е╫∙</xsl:when><xsl:otherwise>Е┬├Г╠╩Х╝╗Х╝╨Е▄╨</xsl:otherwise></xsl:choose></xsl:when>
+<xsl:when test='bbsall'>Е┘╗И┐╗Х╝╗Х╝╨Е▄╨</xsl:when>
+<xsl:when test='bbssel'>И─┴Ф▀╘Х╝╗Х╝╨Е▄╨</xsl:when>
+<xsl:when test='bbsdoc'><xsl:value-of select='bbsdoc/brd/@desc'/></xsl:when>
+<xsl:when test='bbscon'>Ф√┤Г╚═И≤┘Х╞╩</xsl:when>
+<xsl:when test='bbstcon'>Е░▄Д╦╩И╒≤Ф√┤Г╚═И≤┘Х╞╩</xsl:when>
+<xsl:when test='bbsqry'>Ф÷╔Х╞╒Г╫▒Е▐▀</xsl:when>
+<xsl:when test='bbspst'><xsl:choose><xsl:when test='bbspst/@edit="0"'>Е▐▒Х║╗</xsl:when><xsl:otherwise>Д©╝Ф■╧</xsl:otherwise></xsl:choose>Ф√┤Г╚═</xsl:when>
+<xsl:when test='bbstop10'>Ф°╛Ф≈╔Е█│Е╓╖</xsl:when>
+<xsl:when test='bbsbfind'>Г┴┬Е├┘Ф√┤Г╚═Ф÷╔Х╞╒</xsl:when>
+<xsl:when test='bbsnewmail'>И≤┘Х╖┬Ф√╟Д©║Д╩╤</xsl:when>
+<xsl:when test='bbsmail'>Д©║Д╩╤Е┬≈Х║╗</xsl:when>
+<xsl:when test='bbsmailcon'>Д©║Д╩╤И≤┘Х╞╩</xsl:when>
+<xsl:when test='bbspstmail'>Е╞└Х╞╜Д©║И╦╫</xsl:when>
+<xsl:when test='bbs0an'>Г╡╬Е█▌Е▄╨Ф╣▐Х╖┬</xsl:when>
+<xsl:when test='bbsanc'>Г╡╬Е█▌Е▄╨Ф√┤Г╚═И≤┘Х╞╩</xsl:when>
+<xsl:when test='bbsfwd'>Х╫╛Е╞└Ф√┤Г╚═</xsl:when>
+<xsl:when test='bbsccc'>Х╫╛Х╫╫Ф√┤Г╚═</xsl:when>
+<xsl:when test='bbsfall'>Х╝╬Е╝ Е┘ЁФЁ╗Е░█Е█∙</xsl:when>
+<xsl:when test='bbsfadd'>Е╒·Е┼═Е┘ЁФЁ╗Г╫▒Е▐▀</xsl:when>
+<xsl:when test='bbsovr'>Е°╗Г╨©Е┘ЁФЁ╗Г╫▒Е▐▀</xsl:when>
+<xsl:when test='bbsfav'>Ф■╤Х≈▐Е╓╧</xsl:when>
+<xsl:when test='bbsmybrd'>Х╝╬Е╝ Ф■╤Х≈▐Е╓╧</xsl:when>
+<xsl:when test='bbseufile'><xsl:value-of select='bbseufile/@desc'/></xsl:when>
+<xsl:when test='bbsmybrd'>Д╦╙Д╨╨Х╣└Ф√≥</xsl:when>
+<xsl:when test='bbspwd'>Д©╝Ф■╧Е╞├Г═│</xsl:when>
+<xsl:when test='bbsnot'>Х©⌡Г┴┬Г■╩И²╒</xsl:when>
+<xsl:otherwise></xsl:otherwise>
+</xsl:choose>
 </xsl:template>
 
 <xsl:template match='/'>
-	<html>
-		<head>
-			<meta http-equiv="content-type" content="text/html; charset=gb2312"/>
-			<meta name="viewport" content="width=device-width"/>
-			<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/>йж╩З╟Ф</title>
-			<xsl:call-template name='include-css'/>
-			<xsl:call-template name='include-js'/>
-		</head>
-		<body>
-			<a name='top'/>
-			<xsl:call-template name='navigation'><xsl:with-param name='session' select='node()[2]/session'/></xsl:call-template>
-			<div id='main'><xsl:apply-templates/></div>
-			<xsl:call-template name='foot'/>
-		</body>
-	</html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width"/>
+<title><xsl:call-template name='page-title'/> - <xsl:call-template name='bbsname'/>Ф┴▀Ф°╨Г┴┬</title>
+<xsl:call-template name='include-css'/>
+<xsl:call-template name='include-js'/>
+</head>
+<body>
+<a name='top'/>
+<xsl:call-template name='navigation'><xsl:with-param name='session' select='node()[2]/session'/></xsl:call-template>
+<div id='main'><xsl:apply-templates/></div>
+<xsl:call-template name='foot'/>
+</body>
+</html>
 </xsl:template>
 
 <xsl:template match='bbssec'>
-	<ul class='sec'><xsl:for-each select='sec'>
-		<li><a href='boa?s={@id}'><xsl:value-of select='@id'/>&#160;<xsl:value-of select='@desc'/></a></li>
-	</xsl:for-each></ul>
+<ul class='sec'><xsl:for-each select='sec'>
+<li><a href='boa?s={@id}'><xsl:value-of select='@id'/>&#160;<xsl:value-of select='@desc'/></a></li>
+</xsl:for-each></ul>
 </xsl:template>
 
 <xsl:template name='bbsdoc-link'>
-	<xsl:if test='brd/@start > 1'>
-		<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
-		<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$prev}'>[г╟рЁ]</a>
-	</xsl:if>
-	<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
-		<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
-		<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'>[╨СрЁ]</a>
-	</xsl:if>
+<xsl:if test='brd/@start > 1'>
+<xsl:variable name='prev'><xsl:choose><xsl:when test='brd/@start - brd/@page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='brd/@start - brd/@page'/></xsl:otherwise></xsl:choose></xsl:variable>
+<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$prev}'>[Е┴█И║╣]</a>
+</xsl:if>
+<xsl:if test='brd/@total > brd/@start + brd/@page - 1'>
+<xsl:variable name='next'><xsl:value-of select='brd/@start + brd/@page'/></xsl:variable>
+<a href='{brd/@link}doc?bid={brd/@bid}&amp;start={$next}'>[Е░▌И║╣]</a>
+</xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsdoc'>
-	<h2><a href='{brd/@link}doc?bid={brd/@bid}'><xsl:value-of select='brd/@desc'/>[<xsl:value-of select='brd/@title'/>]</a><xsl:if test='brd/@link = "g"'>[нду╙]</xsl:if><xsl:if test='brd/@link = "t"'>[жВлБ]</xsl:if></h2>
-	<div class='nav'>
-		<xsl:choose>
-			<xsl:when test='brd/@link="t"'><a href='doc?bid={brd/@bid}'>[╢╚мЁ]</a></xsl:when>
-			<xsl:otherwise><a href='tdoc?bid={brd/@bid}'>[жВлБ]</a></xsl:otherwise>
-		</xsl:choose>
-		<a href='pst?bid={brd/@bid}'>[╥╒нд]</a>
-		<xsl:call-template name='bbsdoc-link'></xsl:call-template>
-		<a href='0an?bid={brd/@bid}'>[╬╚╩╙]</a>
-	</div>
-	<ul class='po'>
-		<xsl:for-each select='po'><xsl:sort select='@time' order='descending'/><xsl:if test='not(@sticky)'><li>
-			<xsl:if test='contains(" gmbw", @m)'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if>
-			<p><a href='{../brd/@link}con?bid={../brd/@bid}&amp;f={@id}'>
-				<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
-				<xsl:if test='substring(., 1, 4) = "Re: "'>Re: </xsl:if>
-				<xsl:call-template name='ansi-escape'>
-					<xsl:with-param name='content'><xsl:value-of select='$text'/></xsl:with-param>
-					<xsl:with-param name='fgcolor'>37</xsl:with-param>
-					<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
-					<xsl:with-param name='ishl'>0</xsl:with-param>
-				</xsl:call-template>
-			</a></p>
-			<p><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span></p>
-		</li></xsl:if></xsl:for-each>
-	</ul>
-	<div class='nav'>
-		<xsl:call-template name='bbsdoc-link'></xsl:call-template>
-	</div>
+<h2><a href='{brd/@link}doc?bid={brd/@bid}'><xsl:value-of select='brd/@desc'/>[<xsl:value-of select='brd/@title'/>]</a><xsl:if test='brd/@link = "g"'>[Ф√┤Ф▒≤]</xsl:if><xsl:if test='brd/@link = "t"'>[Д╦╩И╒≤]</xsl:if></h2>
+<div class='nav'>
+<xsl:choose>
+<xsl:when test='brd/@link="t"'><a href='doc?bid={brd/@bid}'>[Д╪═Г╩÷]</a></xsl:when>
+<xsl:otherwise><a href='tdoc?bid={brd/@bid}'>[Д╦╩И╒≤]</a></xsl:otherwise>
+</xsl:choose>
+<a href='pst?bid={brd/@bid}'>[Е▐▒Ф√┤]</a>
+<xsl:call-template name='bbsdoc-link'></xsl:call-template>
+<a href='0an?bid={brd/@bid}'>[Г╡╬Е█▌]</a>
+</div>
+<ul class='po'>
+<xsl:for-each select='po'><xsl:sort select='@time' order='descending'/><xsl:if test='not(@sticky)'><li>
+<xsl:if test='contains(" gmbw", @m)'><xsl:attribute name='class'>rd</xsl:attribute></xsl:if>
+<p><a href='{../brd/@link}con?bid={../brd/@bid}&amp;f={@id}'>
+<xsl:variable name='text'><xsl:choose><xsl:when test='substring(., 1, 4) = "Re: "'><xsl:value-of select='substring(., 5)'/></xsl:when><xsl:otherwise><xsl:value-of select='.'/></xsl:otherwise></xsl:choose></xsl:variable>
+<xsl:if test='substring(., 1, 4) = "Re: "'>Re: </xsl:if>
+<xsl:call-template name='ansi-escape'>
+<xsl:with-param name='content'><xsl:value-of select='$text'/></xsl:with-param>
+<xsl:with-param name='fgcolor'>37</xsl:with-param>
+<xsl:with-param name='bgcolor'>ignore</xsl:with-param>
+<xsl:with-param name='ishl'>0</xsl:with-param>
+</xsl:call-template>
+</a></p>
+<p><a class='owner' href='qry?u={@owner}'><xsl:value-of select='@owner'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='time-conv-short'><xsl:with-param name='time' select='@time'/></xsl:call-template></span></p>
+</li></xsl:if></xsl:for-each>
+</ul>
+<div class='nav'>
+<xsl:call-template name='bbsdoc-link'></xsl:call-template>
+</div>
 </xsl:template>
 
 <xsl:template match='bbscon'>
 <div class='post'>
-	<div class='pmain'><xsl:apply-templates select='po'/></div>
-	<div class='plink'>
-		<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
-		<xsl:if test='@link = "con"'><a href='pst?{$param}'>[╩ь╦╢]</a></xsl:if>
-		<a href='edit?{$param}'>[пч╦д]</a>
-	</div>
-	<div class='nav'>
-		<a href='doc?bid={@bid}'>[╟ФцФ]</a>
-		<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
-		<xsl:if test='not(po/@sticky)'><a href='{$baseurl}p'>[иоф╙]</a>
-		<a href='{$baseurl}n'>[обф╙]</a>
-		<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>[иоб╔]</a></xsl:if>
-		<a href='{$baseurl}a'>[обб╔]</a>
-		<xsl:if test='po/@gid'><a href='con?bid={@bid}&amp;f={po/@gid}'>[╤╔б╔]</a></xsl:if>
-		<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
-		<a href='tcon?bid={@bid}&amp;f={$gid}'>[у╧©╙]</a>
-		<a href='tcon?bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>[╨Су╧]</a></xsl:if>
-	</div>
+<div class='pmain'><xsl:apply-templates select='po'/></div>
+<div class='plink'>
+<xsl:variable name='param'>bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/></xsl:variable>
+<xsl:if test='@link = "con"'><a href='pst?{$param}'>[Е⌡·Е╓█]</a></xsl:if>
+<a href='edit?{$param}'>[Д©╝Ф■╧]</a>
+</div>
+<div class='nav'>
+<a href='doc?bid={@bid}'>[Г┴┬И²╒]</a>
+<xsl:variable name='baseurl'>con?bid=<xsl:value-of select='@bid'/>&amp;f=<xsl:value-of select='po/@fid'/>&amp;a=</xsl:variable>
+<xsl:if test='not(po/@sticky)'><a href='{$baseurl}p'>[Д╦┼Г╞┤]</a>
+<a href='{$baseurl}n'>[Д╦▀Г╞┤]</a>
+<xsl:if test='po/@reid != f'><a href='{$baseurl}b'>[Д╦┼Ф╔╪]</a></xsl:if>
+<a href='{$baseurl}a'>[Д╦▀Ф╔╪]</a>
+<xsl:if test='po/@gid'><a href='con?bid={@bid}&amp;f={po/@gid}'>[И║╤Ф╔╪]</a></xsl:if>
+<xsl:variable name='gid'><xsl:choose><xsl:when test='po/@gid'><xsl:value-of select='po/@gid'/></xsl:when><xsl:otherwise><xsl:value-of select='po/@fid'/></xsl:otherwise></xsl:choose></xsl:variable>
+<a href='tcon?bid={@bid}&amp;f={$gid}'>[Е╠∙Е╪─]</a>
+<a href='tcon?bid={@bid}&amp;g={$gid}&amp;f={po/@fid}&amp;a=n'>[Е░▌Е╠∙]</a></xsl:if>
+</div>
 </div>
 </xsl:template>
 
 <xsl:template match='po'>
 <div class='post_h'>
-	<p><xsl:value-of select='title'/></p>
-	<p><a href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>)</p>
-	<p><xsl:value-of select='date'/></p>
+<p><xsl:value-of select='title'/></p>
+<p><a href='qry?u={owner}'><xsl:value-of select='owner'/></a> (<xsl:value-of select='nick'/>)</p>
+<p><xsl:value-of select='date'/></p>
 </div>
 <xsl:for-each select='pa'>
-	<div class='post_{@m}'>
-		<xsl:for-each select='p'><p><xsl:apply-templates select='.'/></p></xsl:for-each>
-	</div>
+<div class='post_{@m}'>
+<xsl:for-each select='p'><p><xsl:apply-templates select='.'/></p></xsl:for-each>
+</div>
 </xsl:for-each>
 </xsl:template>
 
@@ -188,201 +188,201 @@
 </xsl:template>
 
 <xsl:template match='bbstcon'>
-	<a href='tdoc?bid={@bid}'>[╟ФцФ]</a>
-	<a href='gdoc?bid={@bid}'>[нду╙]</a>
-	<xsl:for-each select='po'>
-		<div class='post'>
-			<div class='pmain'><xsl:apply-templates select='.'/></div>
-			<div class='nav'>
-				<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
-				<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>
-				<xsl:if test='count(../po) = ../@page'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$last}&amp;a=n'>[обрЁ]</a></xsl:if>
-				<xsl:if test='$first != ../@gid'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$first}&amp;a=p'>[иорЁ]</a></xsl:if>
-				<a href='pst?bid={../@bid}&amp;f={@fid}'>[╩ь╦╢]</a>
-				<a href='ccc?bid={../@bid}&amp;f={@fid}'>[в╙ть]</a>
-				<a href='con?bid={../@bid}&amp;f={@fid}'>[а╢╫с]</a>
-			</div>
-		</div>
-	</xsl:for-each>
-	<a href='tdoc?bid={@bid}'>[╟ФцФ]</a>
+<a href='tdoc?bid={@bid}'>[Г┴┬И²╒]</a>
+<a href='gdoc?bid={@bid}'>[Ф√┤Ф▒≤]</a>
+<xsl:for-each select='po'>
+<div class='post'>
+<div class='pmain'><xsl:apply-templates select='.'/></div>
+<div class='nav'>
+<xsl:variable name='first'><xsl:value-of select='../po[1]/@fid'/></xsl:variable>
+<xsl:variable name='last'><xsl:value-of select='../po[last()]/@fid'/></xsl:variable>
+<xsl:if test='count(../po) = ../@page'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$last}&amp;a=n'>[Д╦▀И║╣]</a></xsl:if>
+<xsl:if test='$first != ../@gid'><a href='tcon?bid={../@bid}&amp;g={../@gid}&amp;f={$first}&amp;a=p'>[Д╦┼И║╣]</a></xsl:if>
+<a href='pst?bid={../@bid}&amp;f={@fid}'>[Е⌡·Е╓█]</a>
+<a href='ccc?bid={../@bid}&amp;f={@fid}'>[Х╫╛Х╫╫]</a>
+<a href='con?bid={../@bid}&amp;f={@fid}'>[И⌠╬Ф▌╔]</a>
+</div>
+</div>
+</xsl:for-each>
+<a href='tdoc?bid={@bid}'>[Г┴┬И²╒]</a>
 </xsl:template>
 
 <xsl:template match='bbsboa'>
-	<h2><xsl:value-of select='@title'/></h2>
-	<ul><xsl:for-each select='brd'><xsl:sort select='@title'/><li class='brd'>
-		<a><xsl:choose>
-			<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:when>
-			<xsl:otherwise><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:otherwise>
-		</xsl:choose>
-		<xsl:choose><xsl:when test='@read="0"'>║С</xsl:when><xsl:otherwise>║Т</xsl:otherwise></xsl:choose>
-		<xsl:choose><xsl:when test='@dir="1"'>[д©б╪]</xsl:when><xsl:otherwise><xsl:value-of select='@cate'/></xsl:otherwise></xsl:choose>
-		<xsl:value-of select='@desc'/></a><span class='tt'>[<xsl:value-of select='@title'/>]</span>
-	</li></xsl:for-each></ul>
+<h2><xsl:value-of select='@title'/></h2>
+<ul><xsl:for-each select='brd'><xsl:sort select='@title'/><li class='brd'>
+<a><xsl:choose>
+<xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:when>
+<xsl:otherwise><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:otherwise>
+</xsl:choose>
+<xsl:choose><xsl:when test='@read="0"'>Б≈┤</xsl:when><xsl:otherwise>Б≈├</xsl:otherwise></xsl:choose>
+<xsl:choose><xsl:when test='@dir="1"'>[Г⌡╝Е╫∙]</xsl:when><xsl:otherwise><xsl:value-of select='@cate'/></xsl:otherwise></xsl:choose>
+<xsl:value-of select='@desc'/></a><span class='tt'>[<xsl:value-of select='@title'/>]</span>
+</li></xsl:for-each></ul>
 </xsl:template>
 
 <xsl:template match='bbspst'>
-	<p>╟ФцФё╨<xsl:value-of select='@brd'/></p>
-	<form id='postform' name='postform' method='post' action='snd?bid={@bid}&amp;f={po/@f}&amp;e={@edit}'>
-		<input type='hidden' id='brd' value='{@brd}'></input>
-		<p>╠ЙлБё╨<xsl:choose>
-		<xsl:when test='@edit=0'><input class='binput' type='text' name='title' size='27' maxlength='50'>
-			<xsl:variable name='retitle'>
-				<xsl:choose>
-					<xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
-					<xsl:when test='not(t)'></xsl:when>
-					<xsl:otherwise><xsl:value-of select='concat("Re: ", t)'/></xsl:otherwise>
-				</xsl:choose>
-			</xsl:variable>
-			<xsl:attribute name='value'>
-				<xsl:call-template name='remove-ansi'>
-					<xsl:with-param name='str' select='$retitle'/>
-				</xsl:call-template>
-			</xsl:attribute>
-		</input></xsl:when>
-		<xsl:otherwise><xsl:call-template name='remove-ansi'><xsl:with-param name='str' select='t'/></xsl:call-template></xsl:otherwise>
-		</xsl:choose></p>
-		<p>г╘цШ╣╣: <input type='radio' name='sig' value='1' checked='checked'/>1 <input type='radio' name='sig' value='2'/>2 <input type='radio' name='sig' value='3'/>3 <input type='radio' name='sig' value='4'/>4 <input type='radio' name='sig' value='5'/>5 <input type='radio' name='sig' value='6'/>6</p>
-		<p><textarea class='binput' name='text' rows='10' cols='27' wrap='virtual'>
-			<xsl:if test='@edit=0'><xsl:text> &#x0d;&#x0a;</xsl:text></xsl:if>
-			<xsl:call-template name='show-quoted'>
-				<xsl:with-param name='content' select='po'/>
-			</xsl:call-template>
-		</textarea></p>
-		<input type='submit' value='╥╒╠М' id='btnPost' size='10'/>
-		<input type='reset' value='╦╢т╜' size='10'/>
-		<xsl:if test='@edit="0" and @att!=0'><input type='button' name='attach' value='ио╢╚╦╫╪Ч' onclick='return preUpload() '/></xsl:if>
-	</form>
-	<xsl:choose>
-		<xsl:when test='not(t)'><script type='text/javascript' defer='defer'>addLoadEvent(function(){document.postform.title.focus();})</script></xsl:when>
-		<xsl:otherwise><script type='text/javascript' defer='defer'>addLoadEvent(function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();})</script></xsl:otherwise>
-	</xsl:choose>
+<p>Г┴┬И²╒О╪ <xsl:value-of select='@brd'/></p>
+<form id='postform' name='postform' method='post' action='snd?bid={@bid}&amp;f={po/@f}&amp;e={@edit}&amp;utf8=1'>
+<input type='hidden' id='brd' value='{@brd}'></input>
+<p>Ф═┤И╒≤О╪ <xsl:choose>
+<xsl:when test='@edit=0'><input class='binput' type='text' name='title' size='27' maxlength='50'>
+<xsl:variable name='retitle'>
+<xsl:choose>
+<xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
+<xsl:when test='not(t)'></xsl:when>
+<xsl:otherwise><xsl:value-of select='concat("Re: ", t)'/></xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+<xsl:attribute name='value'>
+<xsl:call-template name='remove-ansi'>
+<xsl:with-param name='str' select='$retitle'/>
+</xsl:call-template>
+</xsl:attribute>
+</input></xsl:when>
+<xsl:otherwise><xsl:call-template name='remove-ansi'><xsl:with-param name='str' select='t'/></xsl:call-template></xsl:otherwise>
+</xsl:choose></p>
+<p>Г╜╬Е░█Ф║ё: <input type='radio' name='sig' value='1' checked='checked'/>1 <input type='radio' name='sig' value='2'/>2 <input type='radio' name='sig' value='3'/>3 <input type='radio' name='sig' value='4'/>4 <input type='radio' name='sig' value='5'/>5 <input type='radio' name='sig' value='6'/>6</p>
+<p><textarea class='binput' name='text' rows='10' cols='27' wrap='virtual'>
+<xsl:if test='@edit=0'><xsl:text> &#x0d;&#x0a;</xsl:text></xsl:if>
+<xsl:call-template name='show-quoted'>
+<xsl:with-param name='content' select='po'/>
+</xsl:call-template>
+</textarea></p>
+<input type='submit' value='Е▐▒Х║╗' id='btnPost' size='10'/>
+<input type='reset' value='Е╓█Е▌÷' size='10'/>
+<xsl:if test='@edit="0" and @att!=0'><input type='button' name='attach' value='Д╦┼Д╪═И≥└Д╩╤' onclick='return preUpload() '/></xsl:if>
+</form>
+<xsl:choose>
+<xsl:when test='not(t)'><script type='text/javascript' defer='defer'>addLoadEvent(function(){document.postform.title.focus();})</script></xsl:when>
+<xsl:otherwise><script type='text/javascript' defer='defer'>addLoadEvent(function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();})</script></xsl:otherwise>
+</xsl:choose>
 </xsl:template>
 
 <xsl:template match='bbsqry'>
-	<form action='qry' method='get'><label for='u'>уй╨её╨</label><input type='text' name='u' maxlength='12' size='12'/><input type='submit' value='╡Ия╞'/></form>
-	<xsl:choose><xsl:when test='@login'><div class='uqry'>
-		<div class='nav'><xsl:call-template name='qry-linkbar'/></div>
-		<div class='umain' id='uinfo'>
-		<p><strong><xsl:value-of select='@id'/></strong> ё╗<strong><xsl:value-of select='nick'/></strong>ё╘ <xsl:call-template name='show-horo'/></p>
-		<p>вН╫Эиоу╬:║╬<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@lastlogin'/></xsl:call-template></span>║©</p>
-		<p>╣ьж╥:║╬<span class='a132'><xsl:value-of select='ip'/></span>║©</p>
-		<xsl:if test='logout'><p>юКу╬сз:║╬<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='logout'/></xsl:call-template></span>║©</p></xsl:if>
-		<p>ндубйЩ:║╬<span class='a132'><xsl:value-of select='@post'/></span>║© иЗцЭа╕:║╬<span class='a132'><xsl:value-of select='@hp'/></span>║©</p> 
-		<p>╠Можж╣:║╬<span class='a133'><xsl:value-of select='@perf'/></span>║©</p>
-		<p>╬╜яИж╣:║╬<xsl:value-of select='@level * 10 + @repeat'/>/60║©</p>
-		<p>иМ╥щ: <xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='ident'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></p></div>
-		<xsl:if test='st'><div class='nav'>д©г╟в╢л╛</div>
-		<div class='umain'><xsl:for-each select='st'><p><xsl:value-of select='@desc'/><xsl:if test='@idle!=0'>[╥╒╢Т<xsl:value-of select='@idle'/>╥жжс]</xsl:if><xsl:if test='@web=1'>ё╗webё╘</xsl:if><xsl:if test='@vis=0'>ё╗рЧё╘</xsl:if></p></xsl:for-each></div></xsl:if>
-		<div class='nav'>╦Жхкк╣цВ╣╣хГоб</div>
-		<div class='usmd'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
-	</div></xsl:when><xsl:otherwise><xsl:if test='@id!=""'><p>ц╩спур╣╫сц╩╖║╬<xsl:value-of select='@id'/>║©</p></xsl:if></xsl:otherwise></xsl:choose>
+<form action='qry' method='get'><label for='u'>Е╦░Е▐╥О╪ </label><input type='text' name='u' maxlength='12' size='12'/><input type='submit' value='Ф÷╔Х╞╒'/></form>
+<xsl:choose><xsl:when test='@login'><div class='uqry'>
+<div class='nav'><xsl:call-template name='qry-linkbar'/></div>
+<div class='umain' id='uinfo'>
+<p><strong><xsl:value-of select='@id'/></strong> О╪┬<strong><xsl:value-of select='nick'/></strong>О╪┴ <xsl:call-template name='show-horo'/></p>
+<p>Ф°─Х©▒Д╦┼Г╚≥:Ц─░<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@lastlogin'/></xsl:call-template></span>Ц─▒</p>
+<p>Е°╟Е²─:Ц─░<span class='a132'><xsl:value-of select='ip'/></span>Ц─▒</p>
+<xsl:if test='logout'><p>Г╕╩Г╚≥Д╨▌:Ц─░<span class='a132'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='logout'/></xsl:call-template></span>Ц─▒</p></xsl:if>
+<p>Ф√┤Г╚═Ф∙╟:Ц─░<span class='a132'><xsl:value-of select='@post'/></span>Ц─▒ Г■÷Е▒╫Е┼⌡:Ц─░<span class='a132'><xsl:value-of select='@hp'/></span>Ц─▒</p> 
+<p>Х║╗Г▌╟Е─╪:Ц─░<span class='a133'><xsl:value-of select='@perf'/></span>Ц─▒</p>
+<p>Г╩▐И╙▄Е─╪:Ц─░<xsl:value-of select='@level * 10 + @repeat'/>/60Ц─▒</p>
+<p>Х╨╚Д╩╫: <xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='ident'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></p></div>
+<xsl:if test='st'><div class='nav'>Г⌡╝Е┴█Г┼╤Ф─│</div>
+<div class='umain'><xsl:for-each select='st'><p><xsl:value-of select='@desc'/><xsl:if test='@idle!=0'>[Е▐▒Е▒├<xsl:value-of select='@idle'/>Е┬├И▓÷]</xsl:if><xsl:if test='@web=1'>О╪┬webО╪┴</xsl:if><xsl:if test='@vis=0'>О╪┬И ░О╪┴</xsl:if></p></xsl:for-each></div></xsl:if>
+<div class='nav'>Д╦╙Д╨╨Х╞╢Ф≤▌Ф║ёЕ╕┌Д╦▀</div>
+<div class='usmd'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='smd'/></xsl:call-template></div>
+</div></xsl:when><xsl:otherwise><xsl:if test='@id!=""'><p>Ф╡║Ф°┴Ф┴╬Е┬╟Г■╗Ф┬╥Ц─░<xsl:value-of select='@id'/>Ц─▒</p></xsl:if></xsl:otherwise></xsl:choose>
 </xsl:template>
 
 <xsl:template name='show-horo'>
-	<xsl:if test='@horo'>
-		<xsl:variable name='color'><xsl:choose><xsl:when test='@gender = "M"'>a136</xsl:when><xsl:when test='@gender = "F"'>a135</xsl:when><xsl:otherwise>a132</xsl:otherwise></xsl:choose></xsl:variable>
-		<span>║╬</span><span class='{$color}'><xsl:value-of select='@horo'/></span><span>║©</span>
-	</xsl:if>
+<xsl:if test='@horo'>
+<xsl:variable name='color'><xsl:choose><xsl:when test='@gender = "M"'>a136</xsl:when><xsl:when test='@gender = "F"'>a135</xsl:when><xsl:otherwise>a132</xsl:otherwise></xsl:choose></xsl:variable>
+<span>Ц─░</span><span class='{$color}'><xsl:value-of select='@horo'/></span><span>Ц─▒</span>
+</xsl:if>
 </xsl:template>
 
 <xsl:template name='qry-linkbar'>
-	<a href='pstmail?recv={@id}'>[╥╒пе]</a>
+<a href='pstmail?recv={@id}'>[Е▐▒Д©║]</a>
 </xsl:template>
 
 <xsl:template match='bbstop10'>
-	<h2>24п║й╠й╝╢Сххце╩╟лБ</h2>
-	<ol class='po'><xsl:for-each select='top'><li>
-		<p><a href='tcon?board={@board}&amp;f={@gid}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
-		<p class='ainfo'><a href='{../session/@m}doc?board={@board}'><xsl:value-of select='@board'/>╟Ф</a> - <a href='qry?u={@owner}'><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>ф╙</p>
-	</li></xsl:for-each></ol>
+<h1>Е█│Е╓╖Г┐╜И≈╗Х╞²И╒≤</h1>
+<ol class='po'><xsl:for-each select='top'><li>
+<p><a href='tcon?board={@board}&amp;f={@gid}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content' select='.'/><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
+<p class='ainfo'><a href='{../session/@m}doc?board={@board}'><xsl:value-of select='@board'/>Г┴┬</a> - <a href='qry?u={@owner}'><xsl:value-of select='@owner'/></a> - <xsl:value-of select='@count'/>Г╞┤</p>
+</li></xsl:for-each></ol>
 </xsl:template>
 
 <xsl:template match='bbs0an'>
-	<xsl:call-template name='anc-navbar'/>
-	<ol><xsl:for-each select='ent'><li>
-		<p><xsl:choose>
-			<xsl:when test='@t = "d"'>[д©б╪]<a class='ptitle' href='0an?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
-			<xsl:when test='@t = "f"'><a class='ptitle' href='anc?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
-			<xsl:otherwise>[╢МнС]<xsl:value-of select='@t'/></xsl:otherwise>
-		</xsl:choose></p>
-		<p><span class='time'><xsl:if test='@t != "e"'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></xsl:if></span></p>
-	</li></xsl:for-each></ol>
-	<xsl:if test='not(ent)'><p>&lt;&lt;д©г╟ц╩спндуб&gt;&gt;</p></xsl:if>
-	<xsl:call-template name='anc-navbar'/>
+<xsl:call-template name='anc-navbar'/>
+<ol><xsl:for-each select='ent'><li>
+<p><xsl:choose>
+<xsl:when test='@t = "d"'>[Г⌡╝Е╫∙]<a class='ptitle' href='0an?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
+<xsl:when test='@t = "f"'><a class='ptitle' href='anc?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
+<xsl:otherwise>[И■≥Х╞╞]<xsl:value-of select='@t'/></xsl:otherwise>
+</xsl:choose></p>
+<p><span class='time'><xsl:if test='@t != "e"'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></xsl:if></span></p>
+</li></xsl:for-each></ol>
+<xsl:if test='not(ent)'><p>&lt;&lt;Г⌡╝Е┴█Ф╡║Ф°┴Ф√┤Г╚═&gt;&gt;</p></xsl:if>
+<xsl:call-template name='anc-navbar'/>
 </xsl:template>
 
 <xsl:template match='bbsanc'>
-	<h3><xsl:if test='@brd'><xsl:value-of select='@brd'/>╟Ф - </xsl:if>╬╚╩╙гЬндубтд╤а</h3>
-	<xsl:call-template name='anc-navbar'/>
-	<div class='po'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
-	<xsl:call-template name='anc-navbar'/>
+<h3><xsl:if test='@brd'><xsl:value-of select='@brd'/>Г┴┬ - </xsl:if>Г╡╬Е█▌Е▄╨Ф√┤Г╚═И≤┘Х╞╩</h3>
+<xsl:call-template name='anc-navbar'/>
+<div class='po'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='po'/></xsl:call-template></div>
+<xsl:call-template name='anc-navbar'/>
 </xsl:template>
 
 <xsl:template name='anc-navbar'>
-	<xsl:if test='@brd'><div class='nav'><a href='{session/@m}doc?board={@brd}'>[╟ФцФ]</a></div></xsl:if>
+<xsl:if test='@brd'><div class='nav'><a href='{session/@m}doc?board={@brd}'>[Г┴┬И²╒]</a></div></xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsmail'>
-	<h2>пе╪Чап╠М</h2>
-	<ol class='po'><xsl:for-each select='mail'><xsl:sort select='@date' order='descending'/><li>
-		<p><a href='mailcon?f={@name}&amp;n={../@start+count(../mail)-position()}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
-		<p><a class='owner' href='qry?u={@from}'><xsl:value-of select='@from'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></span></p>
-	</li></xsl:for-each></ol>
-	<div class='nav'>
-		<xsl:if test='@start &gt; 1'>
-			<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page'/></xsl:otherwise></xsl:choose></xsl:variable>
-			<a href='mail?start={$prev}'>[иорЁ]</a>
-		</xsl:if>
-		<xsl:if test='@total &gt; @start + @page - 1'>
-			<xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
-			<a href='mail?start={$next}'>[обрЁ]</a>
-		</xsl:if>
-	</div>
+<h2>Д©║Д╩╤Е┬≈Х║╗</h2>
+<ol class='po'><xsl:for-each select='mail'><xsl:sort select='@date' order='descending'/><li>
+<p><a href='mailcon?f={@name}&amp;n={../@start+count(../mail)-position()}'><xsl:call-template name='ansi-escape'><xsl:with-param name='content'><xsl:value-of select='.'/></xsl:with-param><xsl:with-param name='fgcolor'>37</xsl:with-param><xsl:with-param name='bgcolor'>ignore</xsl:with-param><xsl:with-param name='ishl'>0</xsl:with-param></xsl:call-template></a></p>
+<p><a class='owner' href='qry?u={@from}'><xsl:value-of select='@from'/></a><xsl:text> </xsl:text><span class='time'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@date'/></xsl:call-template></span></p>
+</li></xsl:for-each></ol>
+<div class='nav'>
+<xsl:if test='@start &gt; 1'>
+<xsl:variable name='prev'><xsl:choose><xsl:when test='@start - @page &lt; 1'>1</xsl:when><xsl:otherwise><xsl:value-of select='@start - @page'/></xsl:otherwise></xsl:choose></xsl:variable>
+<a href='mail?start={$prev}'>[Д╦┼И║╣]</a>
+</xsl:if>
+<xsl:if test='@total &gt; @start + @page - 1'>
+<xsl:variable name='next'><xsl:value-of select='@start + @page'/></xsl:variable>
+<a href='mail?start={$next}'>[Д╦▀И║╣]</a>
+</xsl:if>
+</div>
 </xsl:template>
 
 <xsl:template match='bbsmailcon'>
-	<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
-	<div class='po'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='mail'/></xsl:call-template></div>
-	<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
+<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
+<div class='po'><xsl:call-template name='simple-post'><xsl:with-param name='content' select='mail'/></xsl:call-template></div>
+<div class='nav'><xsl:call-template name='mailcon-navbar'/></div>
 </xsl:template>
 
 <xsl:template name='mailcon-navbar'>
-	<a href='pstmail?n={mail/@n}'>[╩ьпе]</a>
-	<a onclick='return confirm("дЗуФ╣др╙и╬ЁЩуБ╥БпебПё©")' href='delmail?f={mail/@f}'>[и╬ЁЩ]</a>
-	<xsl:if test='@prev'><a href='mailcon?f={@prev}&amp;n={mail/@n-1}'>[ио╥Б]</a></xsl:if>
-	<xsl:if test='@next'><a href='mailcon?f={@next}&amp;n={mail/@n+1}'>[об╥Б]</a></xsl:if>
-	<a href='mail'>[ап╠М]</a>
+<a href='pstmail?n={mail/@n}'>[Е⌡·Д©║]</a>
+<a onclick='return confirm("Ф┌╗Г°÷Г └Х╕│Е┬═И≥╓Х©≥Е╟│Д©║Е░≈О╪÷")' href='delmail?f={mail/@f}'>[Е┬═И≥╓]</a>
+<xsl:if test='@prev'><a href='mailcon?f={@prev}&amp;n={mail/@n-1}'>[Д╦┼Е╟│]</a></xsl:if>
+<xsl:if test='@next'><a href='mailcon?f={@next}&amp;n={mail/@n+1}'>[Д╦▀Е╟│]</a></xsl:if>
+<a href='mail'>[Е┬≈Х║╗]</a>
 </xsl:template>
 
 <xsl:template match='bbspstmail'>
-	<form id='postform' name='postform' method='post' action='sndmail'>
-		<input type='hidden' name='ref' value='{@ref}'></input>
-		<p><label for='recv'>йупехк: </label><input class='binput' type='text' name='recv' size='15' maxlength='15' value='{@recv}'></input></p>
-		<p><label for='title'>╠ЙлБ: </label>
-		<input class='binput' type='text' name='title' size='25' maxlength='40'>
-			<xsl:variable name='retitle'>
-				<xsl:choose>
-					<xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
-					<xsl:when test='not(t)'></xsl:when>
-					<xsl:otherwise><xsl:value-of select='concat("Re: ", t)'/></xsl:otherwise>
-				</xsl:choose>
-			</xsl:variable>
-			<xsl:attribute name='value'>
-				<xsl:call-template name='remove-ansi'>
-					<xsl:with-param name='str' select='$retitle'/>
-				</xsl:call-template>
-			</xsl:attribute>
-		</input></p>
-		<p>╠╦╥щ╦Ьвт╪╨ <input type='checkbox' name='backup' value='backup'/></p>
-		<p><textarea class='binput' name='text' rows='10' cols='30' wrap='virtual'>
-			<xsl:text>&#x0d;&#x0a;</xsl:text>
-			<xsl:call-template name='show-quoted'>
-				<xsl:with-param name='content' select='m'/>
-			</xsl:call-template>
-		</textarea></p>
-		<input type='submit' value='╪дЁЖ' id='btnPost' size='10'/>
-		<input type='reset' value='жьжц'/>
-	</form>
+<form id='postform' name='postform' method='post' action='sndmail?utf8=1'>
+<input type='hidden' name='ref' value='{@ref}'></input>
+<p><label for='recv'>Ф■╤Д©║Д╨╨: </label><input class='binput' type='text' name='recv' size='15' maxlength='15' value='{@recv}'></input></p>
+<p><label for='title'>Ф═┤И╒≤: </label>
+<input class='binput' type='text' name='title' size='25' maxlength='40'>
+<xsl:variable name='retitle'>
+<xsl:choose>
+<xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
+<xsl:when test='not(t)'></xsl:when>
+<xsl:otherwise><xsl:value-of select='concat("Re: ", t)'/></xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+<xsl:attribute name='value'>
+<xsl:call-template name='remove-ansi'>
+<xsl:with-param name='str' select='$retitle'/>
+</xsl:call-template>
+</xsl:attribute>
+</input></p>
+<p>Е╓┤Д╩╫Г╩≥Х┤╙Е╥╠ <input type='checkbox' name='backup' value='backup'/></p>
+<p><textarea class='binput' name='text' rows='10' cols='30' wrap='virtual'>
+<xsl:text>&#x0d;&#x0a;</xsl:text>
+<xsl:call-template name='show-quoted'>
+<xsl:with-param name='content' select='m'/>
+</xsl:call-template>
+</textarea></p>
+<input type='submit' value='Е╞└Е┤╨' id='btnPost' size='10'/>
+<input type='reset' value='И┤█Г╫╝'/>
+</form>
 </xsl:template>
 
 </xsl:stylesheet>

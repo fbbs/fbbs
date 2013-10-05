@@ -126,7 +126,10 @@ static int xml_escape_helper(const char *s, size_t len, void *arg)
 
 static void _xml_escape(const char *begin, const char *end)
 {
-	convert(env_u2g, begin, end - begin, NULL, 0, xml_escape_helper, NULL);
+	if (request_type(REQUEST_UTF8))
+		xml_escape_helper(begin, end - begin, NULL);
+	else
+		convert(env_u2g, begin, end - begin, NULL, 0, xml_escape_helper, NULL);
 }
 
 static void _print_node(const char *name, string_t *value)

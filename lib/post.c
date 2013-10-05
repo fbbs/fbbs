@@ -784,7 +784,7 @@ static const char *get_newline(const char *begin, const char *end)
 #define PRINT_CONST_STRING(s)  (*filter)(s, sizeof(s) - 1, fp)
 
 static void quote_author(const char *begin, const char *lend, bool mail,
-		FILE *fp, filter_t filter)
+		bool utf8, FILE *fp, filter_t filter)
 {
 	const char *quser = begin, *ptr = lend;
 	while (quser < lend) {
@@ -797,21 +797,35 @@ static void quote_author(const char *begin, const char *lend, bool mail,
 	}
 	++ptr;
 
-	//% "\n【 在 "
-	PRINT_CONST_STRING("\n\xa1\xbe \xd4\xda ");
+	if (utf8)
+		PRINT_CONST_STRING("\n【 在 ");
+	else
+		PRINT_CONST_STRING("\n\xa1\xbe \xd4\xda ");
 	if (ptr > quser)
 		(*filter)(quser, ptr - quser, fp);
-	//% " 的"
-	PRINT_CONST_STRING(" \xb5\xc4");
-	if (mail)
-		//% "来信"
-		PRINT_CONST_STRING("\xc0\xb4\xd0\xc5");
+	if (utf8)
+		PRINT_CONST_STRING(" 的");
 	else
-		//% "大作"
-		PRINT_CONST_STRING("\xb4\xf3\xd7\xf7");
-	//% "中提到: 】\n"
-	PRINT_CONST_STRING("\xd6\xd0\xcc\xe1\xb5\xbd: \xa1\xbf\n");
+		PRINT_CONST_STRING(" \xb5\xc4");
+	if (mail) {
+		if (utf8)
+			PRINT_CONST_STRING("来信");
+		else
+			PRINT_CONST_STRING("\xc0\xb4\xd0\xc5");
+	} else {
+		if (utf8)
+			PRINT_CONST_STRING("大作");
+		else
+			PRINT_CONST_STRING("\xb4\xf3\xd7\xf7");
+	}
+	if (utf8)
+		PRINT_CONST_STRING("中提到: 】\n");
+	else
+		PRINT_CONST_STRING("\xd6\xd0\xcc\xe1\xb5\xbd: \xa1\xbf\n");
 }
+
+#define GBK_SOURCE  "\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4"
+#define UTF8_SOURCE  "※ 来源:·"
 
 /**
  * Make quotation from a string.
@@ -823,7 +837,7 @@ static void quote_author(const char *begin, const char *lend, bool mail,
  * @param filter Output filter function.
  */
 void quote_string(const char *str, size_t size, const char *output, int mode,
-		bool mail, filter_t filter)
+		bool mail, bool utf8, filter_t filter)
 {
 	FILE *fp = NULL;
 	if (output) {
@@ -836,7 +850,7 @@ void quote_string(const char *str, size_t size, const char *output, int mode,
 
 	const char *begin = str, *end = str + size;
 	const char *lend = get_newline(begin, end);
-	quote_author(begin, lend, mail, fp, filter);
+	quote_author(begin, lend, mail, utf8, fp, filter);
 
 	bool header = true, tail = false;
 	size_t lines = 0;
@@ -866,17 +880,26 @@ void quote_string(const char *str, size_t size, const char *output, int mode,
 				continue;
 			}
 
-			//% "※ 来源:·"
-			if (mode == QUOTE_SOURCE && lend - ptr > 10 + sizeof("\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4")
-					//% "※ 来源:·" "※ 来源:·"
-					&& !memcmp(ptr + 10, "\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4", sizeof("\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4"))) {
+			if (mode == QUOTE_SOURCE && !utf8
+					&& lend - ptr > 10 + sizeof(GBK_SOURCE)
+					&& !memcmp(ptr + 10, GBK_SOURCE, sizeof(GBK_SOURCE))) {
+				break;
+			}
+
+			if (mode == QUOTE_SOURCE && utf8
+					&& lend - ptr > 10 + sizeof(UTF8_SOURCE)
+					&& !memcmp(ptr + 10, UTF8_SOURCE, sizeof(UTF8_SOURCE))) {
 				break;
 			}
 
 			if (mode == QUOTE_AUTO) {
 				if (++lines > MAX_QUOTED_LINES) {
-					//% ": .................（以下省略）"
-					PRINT_CONST_STRING(": .................\xa3\xa8\xd2\xd4\xcf\xc2\xca\xa1\xc2\xd4\xa3\xa9");
+					if (utf8) {
+						PRINT_CONST_STRING(": .................（以下省略）");
+					} else {
+						PRINT_CONST_STRING(": .................\xa3\xa8"
+								"\xd2\xd4\xcf\xc2\xca\xa1\xc2\xd4\xa3\xa9");
+					}
 					break;
 				}
 			}
@@ -893,12 +916,12 @@ void quote_string(const char *str, size_t size, const char *output, int mode,
 }
 
 void quote_file_(const char *orig, const char *output, int mode, bool mail,
-		filter_t filter)
+		bool utf8, filter_t filter)
 {
 	if (mode != QUOTE_NOTHING) {
 		mmap_t m = { .oflag = O_RDONLY };
 		if (mmap_open(orig, &m) == 0) {
-			quote_string(m.ptr, m.size, output, mode, mail, filter);
+			quote_string(m.ptr, m.size, output, mode, mail, utf8, filter);
 			mmap_close(&m);
 		}
 	}

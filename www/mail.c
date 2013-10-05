@@ -68,7 +68,10 @@ int bbsmail_main(void)
 		printf("\n<mail r='%d' m='%c' from='%s' date='%s' name='%s'>",
 				_is_mail_read(fp), _get_mail_mark(fp), fp->owner,
 				format_time(getfiletime(fp), TIME_FORMAT_XML), fp->filename);
-		xml_fputs2(fp->title, check_gbk(fp->title) - fp->title);
+		if (request_type(REQUEST_UTF8))
+			xml_fputs4(fp->title, 0);
+		else
+			xml_fputs2(fp->title, check_gbk(fp->title) - fp->title);
 		printf("</mail>");
 	}
 
@@ -150,7 +153,10 @@ int bbsmailcon_main(void)
 	if (newmail)
 		printf(" new='1'");
 	printf("><t>");
-	xml_fputs2(fh->title, check_gbk(fh->title) - fh->title);
+	if (request_type(REQUEST_UTF8))
+		xml_fputs4(fh->title, 0);
+	else
+		xml_fputs2(fh->title, check_gbk(fh->title) - fh->title);
 	printf("</t>");
 
 	mmap_close(&m);
@@ -162,13 +168,8 @@ int bbsmailcon_main(void)
 		setmfile(buf, currentuser.userid, file);
 
 	printf("<mail f='%s' n='%s'>", file, get_param("n"));
-
-	m.oflag = O_RDONLY;
-	if (mmap_open(buf, &m) == 0 && m.size != 0)
-		xml_fputs2((char *) m.ptr, m.size);
-
+	xml_printfile(buf);
 	fputs("</mail>\n", stdout);
-	mmap_close(&m);
 
 	print_session();
 	printf("</bbsmailcon>");
@@ -251,11 +252,12 @@ int bbspstmail_main(void)
 
 	if (fh != NULL) {
 		printf("<t>");
-		xml_fputs(fh->title);
+		xml_fputs4(fh->title, 0);
 		printf("</t><m>");
 
 		setmfile(file, currentuser.userid, fh->filename);
-		quote_file_(file, NULL, QUOTE_AUTO, true, xml_fputs3);
+		quote_file_(file, NULL, QUOTE_AUTO, true, request_type(REQUEST_UTF8),
+				xml_fputs3);
 		printf("</m>");
 	}
 	mmap_close(&m);
@@ -277,8 +279,12 @@ int bbssndmail_main(void)
 	if (*recv == '\0')
 		return BBS_EINVAL;
 
+	bool utf8 = request_type(REQUEST_UTF8);
 	char title[STRLEN];
-	strlcpy(title, get_param("title"), sizeof(title));
+	if (utf8)
+		convert_u2g(get_param("title"), title);
+	else
+		strlcpy(title, get_param("title"), sizeof(title));
 	printable_filter(title);
 	valid_title(title);
 	if (*title == '\0')
@@ -294,19 +300,35 @@ int bbssndmail_main(void)
 			BBSNAME" (%s)\n\xc0\xb4  \xd4\xb4: %s\n\n", currentuser.userid,
 			currentuser.username, title, format_time(fb_time(), TIME_FORMAT_ZH),
 			mask_host(fromhost));
+
+	char *gbk_text = (char *) text;
+	if (utf8) {
+		gbk_text = malloc(len + 1);
+		convert(env_u2g, text, len, gbk_text, len, NULL, NULL);
+		len = strlen(gbk_text);
+	}
+
 	// TODO: signature, error code
-	if (do_mail_file(recv, title, header, text, len, NULL) < 0)
+	if (do_mail_file(recv, title, header, gbk_text, len, NULL) < 0) {
+		if (utf8)
+			free(gbk_text);
 		return BBS_EINVAL;
+	}
+
 	if (*get_param("backup") != '\0') {
 		char title2[STRLEN];
 		snprintf(title2, sizeof(title2), "{%s} %s", recv, title);
-		do_mail_file(currentuser.userid, title2, header, text, len, NULL);
+		do_mail_file(currentuser.userid, title2, header, gbk_text, len, NULL);
 	}
+	free(gbk_text);
+
 	const char *ref = get_param("ref");
 	http_header();
 	refreshto(1, ref);
-	//% printf("</head>\n<body>发表成功，1秒钟后自动转到<a href='%s'>原页面</a>\n"
-	printf("</head>\n<body>\xb7\xa2\xb1\xed\xb3\xc9\xb9\xa6\xa3\xac""1\xc3\xeb\xd6\xd3\xba\xf3\xd7\xd4\xb6\xaf\xd7\xaa\xb5\xbd<a href='%s'>\xd4\xad\xd2\xb3\xc3\xe6</a>\n"
+	if (utf8)
+		printf("</head>\n<body>发表成功，1秒钟后自动转到<a href='%s'>原页面</a>\n");
+	else
+		printf("</head>\n<body>\xb7\xa2\xb1\xed\xb3\xc9\xb9\xa6\xa3\xac""1\xc3\xeb\xd6\xd3\xba\xf3\xd7\xd4\xb6\xaf\xd7\xaa\xb5\xbd<a href='%s'>\xd4\xad\xd2\xb3\xc3\xe6</a>\n"
 			"</body>\n</html>\n", ref);
 	return 0;
 }
@@ -316,8 +338,6 @@ static int _mail_checked(void *ptr, void *file)
 	struct fileheader *p = ptr;
 	return streq(p->filename, file);
 }
-
-
 
 int web_mailman(void)
 {

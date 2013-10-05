@@ -124,6 +124,20 @@ size_t xml_fputs3(const char *s, size_t size, FILE *stream)
 	return 0;
 }
 
+static int xml_fputs4_helper(const char *s, size_t size, void *args)
+{
+	xml_fputs2(s, size);
+	return 0;
+}
+
+void xml_fputs4(const char *s, size_t size)
+{
+	if (!request_type(REQUEST_UTF8))
+		xml_fputs2(s, size);
+	else
+		convert(env_g2u, s, size, NULL, 0, xml_fputs4_helper, NULL);
+}
+
 /**
  * Print a file with XML escaped.
  * @param file filename to print
@@ -137,8 +151,9 @@ int xml_printfile(const char *file)
 	mmap_t m = { .oflag = O_RDONLY };
 	if (mmap_open(file, &m) < 0)
 		return -1;
-	if (m.size > 0)
-		xml_fputs2((char *)m.ptr, m.size);
+	if (m.size > 0) {
+		xml_fputs4(m.ptr, m.size);
+	}
 	mmap_close(&m);
 	return 0;
 }
@@ -148,7 +163,8 @@ int xml_printfile(const char *file)
  */
 void http_header(void)
 {
-	printf("Content-type: text/html; charset=%s\n\n", CHARSET);
+	const char *charset = request_type(REQUEST_UTF8) ? "utf-8" : CHARSET;
+	printf("Content-type: text/html; charset=%s\n\n", charset);
 	printf("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" "
 			"\"http://www.w3.org/TR/html4/strict.dtd\"><html><head>");
 }

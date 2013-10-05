@@ -50,9 +50,13 @@ static void print_post(const post_info_t *pi, bool sticky)
 			sticky ? "sticky='1' " : "",
 			(pi->flag & POST_FLAG_LOCKED) ? "" : "nore='1' ",
 			mark, pi->owner, format_time(pi->stamp, TIME_FORMAT_XML), pi->id);
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(pi->utf8_title, gbk_title);
-	xml_fputs(gbk_title);
+	if (request_type(REQUEST_UTF8)) {
+		xml_fputs(pi->utf8_title);
+	} else {
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(pi->utf8_title, gbk_title);
+		xml_fputs(gbk_title);
+	}
 	printf("</po>\n");
 }
 
@@ -174,7 +178,6 @@ static int bbsdoc(post_list_type_e type)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
-	board_to_gbk(&board);
 
 	int start = strtoll(get_param("start"), NULL, 10);
 	int page = strtol(get_param("my_t_lines"), NULL, 10);
@@ -214,6 +217,8 @@ static int bbsdoc(post_list_type_e type)
 	else if (type == POST_LIST_TOPIC)
 		cgi_name = "t";
 
+	if (!request_type(REQUEST_UTF8))
+		board_to_gbk(&board);
 	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
 			"bid='%d' page='%d' link='%s'", board.name, board.descr, board.bms,
 			total, ++start, board.id, page, cgi_name);
@@ -690,9 +695,13 @@ int bbstop10_main(void)
 		while (fread(&topic, sizeof(topic), 1, fp) == 1) {
 			printf("<top board='%s' owner='%s' count='%u' gid='%"PRIdPID"'>",
 					topic.bname, topic.owner, topic.count, topic.tid);
-			GBK_BUFFER(title, POST_TITLE_CCHARS);
-			convert_u2g(topic.utf8_title, gbk_title);
-			xml_fputs(gbk_title);
+			if (request_type(REQUEST_UTF8)) {
+				xml_fputs(topic.utf8_title);
+			} else {
+				GBK_BUFFER(title, POST_TITLE_CCHARS);
+				convert_u2g(topic.utf8_title, gbk_title);
+				xml_fputs(gbk_title);
+			}
 			printf("</top>\n");
 		}
 	}

@@ -217,10 +217,14 @@ static int show_sector(int sid, db_res_t *res, int last)
 		if (sector == sid) {
 			last = i;
 
+			const char *utf8_descr = db_get_value(res, i, 1);
 			GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
-			convert_u2g(db_get_value(res, i, 1), gbk_descr);
+			if (!request_type(REQUEST_UTF8)) {
+				convert_u2g(utf8_descr, gbk_descr);
+			}
 			printf("<brd name='%s' desc='%s'/>",
-					db_get_value(res, i, 0), gbk_descr);
+					db_get_value(res, i, 0),
+					request_type(REQUEST_UTF8) ? utf8_descr : gbk_descr);
 		}
 	}
 	return last;
@@ -302,7 +306,8 @@ static void show_board(db_res_t *res)
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		board_t board;
 		res_to_board(res, i, &board);
-		board_to_gbk(&board);
+		if (!request_type(REQUEST_UTF8))
+			board_to_gbk(&board);
 		printf("<brd dir='%d' title='%s' cate='%.6s' desc='%s' bm='%s' "
 				"read='%d' count='%d' />",
 				(board.flag & BOARD_DIR_FLAG) ? 1 : 0, board.name,
@@ -349,16 +354,24 @@ int web_sector(void)
 		if (dashf(path))
 			printf(" icon='%s'", path);
 		
-		GBK_BUFFER(sector, BOARD_SECTOR_NAME_CCHARS);
-		convert_u2g(db_get_value(res, 0, 1), gbk_sector);
-		printf(" title='%s'>", gbk_sector);
-
+		const char *utf8_sector = db_get_value(res, 0, 1);
+		if (request_type(REQUEST_UTF8)) {
+			printf(" title='%s'>", utf8_sector);
+		} else {
+			GBK_BUFFER(sector, BOARD_SECTOR_NAME_CCHARS);
+			convert_u2g(utf8_sector, gbk_sector);
+			printf(" title='%s'>", gbk_sector);
+		}
 		sid = db_get_integer(res, 0, 0);
 		db_clear(res);
 	} else {
-		GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
-		convert_u2g(parent.descr, gbk_descr);
-		printf(" dir= '1' title='%s'>", gbk_descr);
+		if (request_type(REQUEST_UTF8)) {
+			printf(" dir= '1' title='%s'>", parent.descr);
+		} else {
+			GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
+			convert_u2g(parent.descr, gbk_descr);
+			printf(" dir= '1' title='%s'>", gbk_descr);
+		}
 	}
 
 	if (sid)

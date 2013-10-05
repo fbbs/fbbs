@@ -333,11 +333,12 @@ void html_header(void)
  */
 void xml_header(const char *xslfile)
 {
+	const char *charset = request_type(REQUEST_UTF8) ? "utf-8" : CHARSET;
 	const char *xsl = xslfile ? xslfile : "bbs";
-	printf("Content-type: text/xml; charset="CHARSET"\n\n"
-			"<?xml version=\"1.0\" encoding=\""CHARSET"\"?>\n"
+	printf("Content-type: text/xml; charset=%s\n\n"
+			"<?xml version=\"1.0\" encoding=\"%s\"?>\n"
 			"<?xml-stylesheet type=\"text/xsl\" href=\"../xsl/%s.xsl?v1416\"?>\n",
-			xsl);
+			charset, charset, xsl);
 }
 
 void xml_print(const char *s)

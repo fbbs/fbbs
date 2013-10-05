@@ -219,18 +219,15 @@ extern int post_add_sticky(int bid, const post_info_t *pi);
 
 extern post_id_t publish_post(const post_request_t *pr);
 
-extern void quote_string(const char *str, size_t size, const char *output,
-		int mode, bool mail, size_t (*filter)(const char *, size_t, FILE *));
-extern void quote_file_(const char *orig, const char *output, int mode,
-		bool mail, size_t (*filter)(const char *, size_t, FILE *));
+extern void quote_string(const char *str, size_t size, const char *output, int mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
+extern void quote_file_(const char *orig, const char *output, int mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 
 extern int set_post_flag(record_t *rec, post_index_record_t *pir, post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
 extern int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset, post_flag_e flag, bool set, bool toggle);
 
 extern bool is_deleted(post_list_type_e type);
 
-extern int dump_content_to_gbk_file(const char *utf8_str, size_t length,
-		char *file, size_t size);
+extern int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file, size_t size);
 extern char *convert_file_to_utf8_content(const char *file);
 
 extern bool set_last_post_time(int bid, fb_time_t stamp);
