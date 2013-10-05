@@ -250,7 +250,9 @@ static const char *_print_header(const char *begin, size_t size)
 	_print_ansi_text(title.begin, title.end, &ansi);
 	printf("</title>");
 
-	printf("<date>%s</date>", format_time(date, TIME_FORMAT_ZH));
+	printf("<date>%s</date>", format_time(date,
+				request_type(REQUEST_UTF8)
+				? TIME_FORMAT_UTF8_ZH : TIME_FORMAT_ZH));
 
 	return line.end;
 }

@@ -37,10 +37,10 @@ const char *get_post_list_type_string(void)
 		case POST_LIST_TOPIC:
 			return "t";
 		case POST_LIST_FORUM:
+			return request_type(REQUEST_MOBILE) ? "" : "f";
 		default:
-			return "f";
+			return "";
 	}
-	return "";
 }
 
 static void print_post(const post_info_t *pi, bool sticky)
