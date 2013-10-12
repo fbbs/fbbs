@@ -725,13 +725,17 @@ int bbssnd_main(void)
 
 	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_post_list_type_string(),
 			board.name);
-	http_header();
-	refreshto(1, buf);
-	//% printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>发表</a>"
-	printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>\xb7\xa2\xb1\xed</a>"
-			//% "成功，1秒钟后自动转到<a href='%s'>版面</a>\n</body>\n</html>\n",
-			"\xb3\xc9\xb9\xa6\xa3\xac""1\xc3\xeb\xd6\xd3\xba\xf3\xd7\xd4\xb6\xaf\xd7\xaa\xb5\xbd<a href='%s'>\xb0\xe6\xc3\xe6</a>\n</body>\n</html>\n",
-			board.id, pid, buf);
+	if (request_type(REQUEST_MOBILE)) {
+		printf("Status: 302\nLocation: %s\n\n", buf);
+	} else {
+		http_header();
+		refreshto(1, buf);
+		//% printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>发表</a>"
+		printf("</head>\n<body><a id='url' href='con?new=1&bid=%d&f=%u'>\xb7\xa2\xb1\xed</a>"
+		//% "成功，1秒钟后自动转到<a href='%s'>版面</a>\n</body>\n</html>\n",
+		"\xb3\xc9\xb9\xa6\xa3\xac""1\xc3\xeb\xd6\xd3\xba\xf3\xd7\xd4\xb6\xaf\xd7\xaa\xb5\xbd<a href='%s'>\xb0\xe6\xc3\xe6</a>\n</body>\n</html>\n",
+		board.id, pid, buf);
+	}
 	return 0;
 }
 
