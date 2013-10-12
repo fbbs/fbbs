@@ -2,12 +2,14 @@ function expandFav() {
 	document.getElementById('fav').style.display = 'block';
 	document.getElementById('fave').style.display = 'none';
 	document.getElementById('favc').style.display = 'inline-block';
+	return false;
 }
 
 function collapseFav() {
 	document.getElementById('fav').style.display = 'none';
 	document.getElementById('fave').style.display = 'inline-block';
 	document.getElementById('favc').style.display = 'none';
+	return false;
 }
 
 function addLoadEvent(func) {

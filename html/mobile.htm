@@ -1,20 +1,33 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv='Content-Type' content='text/html; charset=gb18030'></meta>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8'></meta>
 <meta name="viewport" content="width=device-width"/>
-<link rel='stylesheet' type='text/css' href='../css/mobile.css'/>
 <title>手机版登录 - 日月光华</title>
+<style type="text/css">
+html, body, form, label, input { margin: 0; padding: 0; }
+body { font-size: 18px; margin: 0 8px; }
+h1 { color: #369; font-weight: bold; font-size: 32px; margin: 0 0 16px; }
+label { color: #808080; }
+input { border: 1px solid #c0c0c0; display: block; line-height: 48px; margin: 0 0 16px; width: 100% }
+#login, #guest { border: none; color: #fff; font-size: 24px; font-weight: bold; height: 48px; text-align: center; width: 100%; }
+#login { background-color: #369; }
+#guest { background-color: #c0c0c0; }
+#persistent { display: inline-block; width: auto; }
+#for_cb { display: inline-block; font-size: 18px; }
+</style>
 </head>
 <body>
+<h1>日月光华</h1>
 <form action='bbs/login' method='post'>
 <label for='id'>帐号</label>
-<input type='text' name='id'/><br/>
+<input type='text' name='id'/>
 <label for='pw'>密码</label>
-<input type='password' name='pw'><br/>
+<input type='password' name='pw'>
 <input type='hidden' name='ref' value=''/>
-<input class='button_login' type='submit' value='登录'/>
+<input id='persistent' type='checkbox' name='persistent' checked='checked'/><label id='for_cb' for='persistent'>下次自动登录</label>
+<input id='login' type='submit' value='登录'/>
 </form>
-<form action='bbs/top10' method='get'><input class='button_login' type='submit' value='随便看看'/></form>
+<form action='bbs/top10' method='get'><input id='guest' type='submit' value='随便看看'/></form>
 </body>
 </html>
