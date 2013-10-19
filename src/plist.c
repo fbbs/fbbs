@@ -2075,6 +2075,19 @@ static int tui_jump(slide_list_t *p)
 }
 #endif
 
+static int tui_reorder_sticky_posts(tui_list_t *tl, post_info_t *pi)
+{
+	post_list_t *pl = tl->data;
+	if (pl->type != POST_LIST_NORMAL || !(pi->flag & POST_FLAG_STICKY)
+			|| !am_curr_bm()) {
+		return DONOTHING;
+	}
+
+	if (reorder_sticky_posts(pl->bid, pi->id))
+		tl->valid = false;
+	return PARTUPDATE;
+}
+
 extern int show_online(void);
 extern int thesis_mode(void);
 extern int deny_user(void);
@@ -2192,6 +2205,8 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			return toggle_post_lock(tl, pi);
 		case '#':
 			return toggle_post_stickiness(tl, pi);
+		case ';':
+			return tui_reorder_sticky_posts(tl, pi);
 		case 'm':
 			return toggle_post_flag(tl, pi, POST_FLAG_MARKED);
 		case 'g':

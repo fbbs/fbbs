@@ -216,6 +216,7 @@ extern int post_content_write(post_id_t id, const char *str, size_t size);
 
 extern int post_remove_sticky(int bid, post_id_t id);
 extern int post_add_sticky(int bid, const post_info_t *pi);
+extern bool reorder_sticky_posts(int bid, post_id_t pid);
 
 extern post_id_t publish_post(const post_request_t *pr);
 

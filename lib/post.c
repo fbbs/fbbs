@@ -471,6 +471,36 @@ int post_add_sticky(int bid, const post_info_t *pi)
 	return r;
 }
 
+bool reorder_sticky_posts(int bid, post_id_t pid)
+{
+	bool success = false;
+	record_t record;
+	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
+		goto e1;
+	if (record_lock_all(&record, RECORD_WRLCK) < 0)
+		goto e2;
+
+	post_index_board_t pibs[MAX_NOTICE];
+	int count = record_read(&record, pibs, ARRAY_SIZE(pibs));
+	if (count > 1) {
+		for (int i = 0; i < count - 1; ++i) {
+			if (pibs[i].id == pid) {
+				post_index_board_t temp = pibs[i];
+				memmove(pibs + i, pibs + i + 1,
+						(count - 1 - i) * sizeof(pibs[0]));
+				pibs[count - 1] = temp;
+				break;
+			}
+		}
+		if (record_write(&record, pibs, count, 0) > 0)
+			success = true;
+	}
+
+	record_lock_all(&record, RECORD_UNLCK);
+e2:	record_close(&record);
+e1: return success;
+}
+
 char *convert_file_to_utf8_content(const char *file)
 {
 	char *utf8_content = NULL;
