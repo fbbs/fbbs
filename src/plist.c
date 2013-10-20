@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "bbs.h"
 #include "fbbs/brc.h"
 #include "fbbs/fileio.h"
@@ -1314,120 +1315,226 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	return MINIUPDATE;
 }
 
-#if 0
-static bool count_posts_in_range(post_id_t min, post_id_t max, bool asc,
-		int sort, int least, char *file, size_t size)
+typedef struct {
+	char uname[16];
+	user_id_t uid;
+	int total;
+	int m;
+	int g;
+	int w;
+	int n;
+} count_posts_stat_t;
+
+typedef struct {
+	post_index_record_t *pir;
+	count_posts_stat_t *stat;
+	int size;
+	int capacity;
+	post_id_t min;
+	post_id_t max;
+	int offset_min;
+	int offset_max;
+	int sort;
+	bool asc;
+} count_posts_callback_t;
+
+static record_callback_e count_posts_callback(void *ptr, void *args, int off)
 {
-	query_t *q = query_new(0);
-	query_select(q, "uname, COUNT(*) AS a, SUM(marked::integer) AS m"
-			", SUM(digest::integer) AS g, SUM(water::integer) AS w, "
-			"SUM((NOT marked AND NOT digest AND NOT water)::integer) AS n");
-	query_from(q, "posts_recent");
-	query_where(q, "id >= %"DBIdPID, min);
-	query_and(q, "id <= %"DBIdPID, max);
-	query_groupby(q, "uname");
+	const post_index_board_t *pib = ptr;
+	count_posts_callback_t *cpc = args;
 
-	const char *field[] = { "a", "m", "g", "w", "n" };
-	query_orderby(q, field[sort], asc);
+	if (pib->id < cpc->min)
+		return RECORD_CALLBACK_CONTINUE;
+	if (pib->id > cpc->max)
+		return RECORD_CALLBACK_BREAK;
 
-	db_res_t *res = query_exec(q);
+	if (!cpc->offset_min)
+		cpc->offset_min = off + 1;
+	cpc->offset_max = off + 1;
 
-	if (res) {
-		snprintf(file, sizeof(file), "tmp/count.%d", getpid());
-		FILE *fp = fopen(file, "w");
-		if (fp) {
-			//% fprintf(fp, "版    面: \033[1;33m%s\033[m\n", currboard);
-			fprintf(fp, "\xb0\xe6    \xc3\xe6: \033[1;33m%s\033[m\n", currboard);
-
-			int count = 0;
-			for (int i = db_res_rows(res) - 1; i >=0; --i) {
-				count += db_get_bigint(res, i, 1);
+	post_info_t pi = { .id = 0 };
+	count_posts_stat_t *cps = NULL;
+	if (pib->uid) {
+		for (int i = 0; i < cpc->size; ++i) {
+			if (pib->uid == cpc->stat[i].uid) {
+				cps = cpc->stat + i;
+				break;
 			}
-			char min_str[PID_BUF_LEN], max_str[PID_BUF_LEN];
-			//% fprintf(fp, "有效篇数: \033[1;33m%d\033[m 篇"
-			fprintf(fp, "\xd3\xd0\xd0\xa7\xc6\xaa\xca\xfd: \033[1;33m%d\033[m \xc6\xaa"
-					" [\033[1;33m%s-%s\033[m]\n", count,
-					pid_to_base32(min, min_str, sizeof(min_str)),
-					pid_to_base32(max, max_str, sizeof(max_str)));
-			
-			const char *descr[] = {
-				//% "总数", "被m的", "被g的", "被w的", "无标记"
-				"\xd7\xdc\xca\xfd", "\xb1\xbbm\xb5\xc4", "\xb1\xbbg\xb5\xc4", "\xb1\xbbw\xb5\xc4", "\xce\xde\xb1\xea\xbc\xc7"
-			};
-			//% fprintf(fp, "排序方式: \033[1;33m按%s%s\033[m\n", descr[sort],
-			fprintf(fp, "\xc5\xc5\xd0\xf2\xb7\xbd\xca\xbd: \033[1;33m\xb0\xb4%s%s\033[m\n", descr[sort],
-					//% asc ? "升序" : "降序");
-					asc ? "\xc9\xfd\xd0\xf2" : "\xbd\xb5\xd0\xf2");
-			//% fprintf(fp, "文章数下限: \033[1;33m%d\033[m\n\n", least);
-			fprintf(fp, "\xce\xc4\xd5\xc2\xca\xfd\xcf\xc2\xcf\xde: \033[1;33m%d\033[m\n\n", least);
-			//% fprintf(fp, "\033[1;44;37m 使用者代号  │总  数│ 被M的│ 被G的"
-			fprintf(fp, "\033[1;44;37m \xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5  \xa9\xa6\xd7\xdc  \xca\xfd\xa9\xa6 \xb1\xbbM\xb5\xc4\xa9\xa6 \xb1\xbbG\xb5\xc4"
-					//% "│ 被w的│无标记 \033[m\n");
-					"\xa9\xa6 \xb1\xbbw\xb5\xc4\xa9\xa6\xce\xde\xb1\xea\xbc\xc7 \033[m\n");
-
-			for (int i = 0; i < db_res_rows(res); ++i) {
-				int all = db_get_bigint(res, i, 1);
-				if (all > least) {
-					int m = db_get_bigint(res, i, 2);
-					int g = db_get_bigint(res, i, 3);
-					int w = db_get_bigint(res, i, 4);
-					int n = db_get_bigint(res, i, 5);
-					fprintf(fp, " %-12.12s  %6d  %6d  %6d  %6d  %6d \n",
-							db_get_value(res, i, 0), all, m, g, w, n);
-				}
-			}
-			fclose(fp);
-			db_clear(res);
-			return true;
 		}
-		db_clear(res);
+	} else {
+		post_index_board_to_info(cpc->pir, pib, &pi, 1);
+		for (int i = 0; i < cpc->size; ++i) {
+			if (streq(pi.owner, cpc->stat[i].uname)) {
+				cps = cpc->stat + i;
+				break;
+			}
+		}
+	}
+
+	if (!cps) {
+		if (cpc->size == cpc->capacity) {
+			cpc->capacity *= 2;
+			cpc->stat = realloc(cpc->stat, sizeof(*cpc->stat) * cpc->capacity);
+		}
+		cps = cpc->stat + cpc->size++;
+		memset(cps, 0, sizeof(*cps));
+		cps->uid = pib->uid;
+		if (!pi.id)
+			post_index_board_to_info(cpc->pir, pib, &pi, 1);
+		strlcpy(cps->uname, pi.owner, sizeof(cps->uname));
+	}
+
+	++cps->total;
+	if ((pib->flag & POST_FLAG_MARKED) || (pib->flag & POST_FLAG_DIGEST)) {
+		if (pib->flag & POST_FLAG_MARKED)
+			++cps->m;
+		if (pib->flag & POST_FLAG_DIGEST)
+			++cps->g;
+	} else if (pib->flag & POST_FLAG_WATER) {
+		++cps->w;
+	} else {
+		++cps->n;
+	}
+	return RECORD_CALLBACK_MATCH;
+}
+
+static int count_posts_sort_func(const void *a, const void *b, void *args)
+{
+	const count_posts_stat_t *p1 = a, *p2 = b;
+	const count_posts_callback_t *cpc = args;
+
+	int diff;
+	switch (cpc->sort) {
+		case 0:
+			diff = p2->total - p1->total;
+			break;
+		case 1:
+			diff = p2->m - p1->m;
+			break;
+		case 2:
+			diff = p2->g - p1->g;
+			break;
+		case 3:
+			diff = p2->w - p1->w;
+			break;
+		default:
+			diff = p2->n - p1->n;
+	}
+	if (cpc->sort && !diff)
+		diff = p2->total - p1->total;
+	return cpc->asc ? -diff : diff;
+}
+
+static bool count_posts_in_range(record_t *record, post_id_t *min,
+		post_id_t *max, bool asc, int sort, int least, char *file, size_t size)
+{
+	const int capacity_init = 64;
+
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+
+	count_posts_callback_t cpc = {
+		.stat = malloc(sizeof(count_posts_stat_t) * capacity_init),
+		.size = 0, .capacity = capacity_init,
+		.min = *min, .max = *max, .offset_min = 0, .offset_max = 0,
+		.pir = &pir, .sort = sort, .asc = asc,
+	};
+	int count = record_foreach(record, NULL, 0, count_posts_callback, &cpc);
+
+	post_index_record_close(&pir);
+
+	*min = cpc.offset_min;
+	*max = cpc.offset_max;
+	qsort_r(cpc.stat, cpc.size, sizeof(*cpc.stat), count_posts_sort_func,
+			&cpc);
+
+	snprintf(file, sizeof(file), "tmp/count.%d", getpid());
+	FILE *fp = fopen(file, "w");
+	if (fp) {
+		//% 版面:
+		fprintf(fp, "\xb0\xe6    \xc3\xe6: \033[1;33m%s\033[m\n", currboard);
+		//% 有效篇数: %d 篇"
+		fprintf(fp, "\xd3\xd0\xd0\xa7\xc6\xaa\xca\xfd: \033[1;33m%d\033[m"
+				" \xc6\xaa [\033[1;33m%d-%d\033[m]\n", count, cpc.offset_min,
+				cpc.offset_max);
+
+		const char *descr[] = {
+			//% "总数", "被m的", "被g的", "被w的", "无标记"
+			"\xd7\xdc\xca\xfd", "\xb1\xbbm\xb5\xc4", "\xb1\xbbg\xb5\xc4",
+			"\xb1\xbbw\xb5\xc4", "\xce\xde\xb1\xea\xbc\xc7"
+		};
+		//% 排序方式: \033[1;33m按%s%s\033[m\n
+		//% "升序" : "降序"
+		fprintf(fp, "\xc5\xc5\xd0\xf2\xb7\xbd\xca\xbd:"
+				" \033[1;33m\xb0\xb4%s%s\033[m\n", descr[sort],
+				asc ? "\xc9\xfd\xd0\xf2" : "\xbd\xb5\xd0\xf2");
+		//% "文章数下限: "
+		fprintf(fp, "\xce\xc4\xd5\xc2\xca\xfd\xcf\xc2\xcf\xde:"
+				" \033[1;33m%d\033[m\n\n", least);
+		//% 使用者代号  │总  数│ 被M的│ 被G的│ 被w的│无标记 \033[m\n");
+		fprintf(fp, "\033[1;44;37m \xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5  "
+				"\xa9\xa6\xd7\xdc  \xca\xfd\xa9\xa6 \xb1\xbbM\xb5\xc4\xa9\xa6"
+				" \xb1\xbbG\xb5\xc4\xa9\xa6 \xb1\xbbw\xb5\xc4\xa9\xa6\xce\xde"
+				"\xb1\xea\xbc\xc7 \033[m\n");
+
+		for (int i = 0; i < cpc.size; ++i) {
+			const count_posts_stat_t *p = cpc.stat + i;
+			if (p->total >= least) {
+				fprintf(fp, " %-12.12s  %6d  %6d  %6d  %6d  %6d \n",
+						p->uname, p->total, p->m, p->g, p->w, p->n);
+			}
+		}
+		fclose(fp);
+		return true;
 	}
 	return false;
 }
 
-static int tui_count_posts_in_range(slide_list_t *p)
+static int tui_count_posts_in_range(tui_list_t *tl, post_info_t *pi)
 {
-	post_list_t *l = p->data;
-	if (l->filter.type != POST_LIST_NORMAL)
+	post_list_t *pl = tl->data;
+	if (pl->type != POST_LIST_NORMAL)
 		return DONOTHING;
 
 	post_id_t min, max;
-	int ret = tui_mark_range(p, &min, &max);
+	int ret = tui_mark_range(tl, pi, &min, &max);
 	if (!max)
 		return ret;
 
 	char num[8];
-	//% getdata(-1, 0, "排序方式 (0)降序 (1)升序 ? : ", num, 2, DOECHO, YEA);
-	getdata(-1, 0, "\xc5\xc5\xd0\xf2\xb7\xbd\xca\xbd (0)\xbd\xb5\xd0\xf2 (1)\xc9\xfd\xd0\xf2 ? : ", num, 2, DOECHO, YEA);
+	//% 排序方式 (0)降序 (1)升序 ? : 
+	getdata(-1, 0, "\xc5\xc5\xd0\xf2\xb7\xbd\xca\xbd (0)\xbd\xb5\xd0\xf2"
+			" (1)\xc9\xfd\xd0\xf2 ? : ", num, 2, DOECHO, YEA);
 	bool asc = (num[0] == '1');
 
-	//% getdata(-1, 0, "排序选项 (0)总数 (1)被m (2)被g (3)被w (4)无标记 ? : ",
-	getdata(-1, 0, "\xc5\xc5\xd0\xf2\xd1\xa1\xcf\xee (0)\xd7\xdc\xca\xfd (1)\xb1\xbbm (2)\xb1\xbbg (3)\xb1\xbbw (4)\xce\xde\xb1\xea\xbc\xc7 ? : ",
-			num, 2, DOECHO, YEA);
+	//% 排序选项 (0)总数 (1)被m (2)被g (3)被w (4)无标记
+	getdata(-1, 0, "\xc5\xc5\xd0\xf2\xd1\xa1\xcf\xee (0)\xd7\xdc\xca\xfd"
+			" (1)\xb1\xbbm (2)\xb1\xbbg (3)\xb1\xbbw"
+			" (4)\xce\xde\xb1\xea\xbc\xc7 ? : ", num, 2, DOECHO, YEA);
 	int sort = strtol(num, NULL, 10);
 	if (sort < 0 || sort > 4)
 		sort = 0;
 
-	//% getdata(-1, 0, "文章数下限(默认0): ", num, 6, DOECHO, YEA);
-	getdata(-1, 0, "\xce\xc4\xd5\xc2\xca\xfd\xcf\xc2\xcf\xde(\xc4\xac\xc8\xcf""0): ", num, 6, DOECHO, YEA);
+	//% 文章数下限(默认0):
+	getdata(-1, 0, "\xce\xc4\xd5\xc2\xca\xfd\xcf\xc2\xcf\xde"
+			"(\xc4\xac\xc8\xcf""0): ", num, 6, DOECHO, YEA);
 	int least = strtol(num, NULL, 10);
 
 	char file[HOMELEN];
-	if (!count_posts_in_range(min, max, asc, sort, least, file, sizeof(file)))
+	if (!count_posts_in_range(pl->record, &min, &max, asc, sort, least, file,
+				sizeof(file)))
 		return MINIUPDATE;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	char min_str[PID_BUF_LEN], max_str[PID_BUF_LEN];
-	//% snprintf(gbk_title, sizeof(gbk_title), "[%s]统计文章数(%s-%s)",
-	snprintf(gbk_title, sizeof(gbk_title), "[%s]\xcd\xb3\xbc\xc6\xce\xc4\xd5\xc2\xca\xfd(%s-%s)",
-			currboard, pid_to_base32(min, min_str, sizeof(min_str)),
-			pid_to_base32(max, max_str, sizeof(max_str)));
-	mail_file(file, currentuser.userid, gbk_title);
+	//% "[%s]统计文章数(%s-%s)",
+	snprintf(gbk_title, sizeof(gbk_title),
+			"[%s]\xcd\xb3\xbc\xc6\xce\xc4\xd5\xc2\xca\xfd(%"PRIdPID
+			"-%"PRIdPID")", currboard, min, max),
+		mail_file(file, currentuser.userid, gbk_title);
 	unlink(file);
 
-	return MINIUPDATE;
+	return FULLUPDATE;
 }
-#endif
 
 static const char *get_prompt(bool thread, bool user)
 {
@@ -2227,10 +2334,8 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			return tui_operate_posts_in_range(tl, pi);
 		case 'b':
 			return tui_operate_posts_in_batch(tl, pi);
-#if 0
 		case 'C':
-			return tui_count_posts_in_range(p);
-#endif
+			return tui_count_posts_in_range(tl, pi);
 		case Ctrl('G'): case Ctrl('T'): case '`':
 			return tui_post_list_selected(tl, pi);
 		case 'a':
