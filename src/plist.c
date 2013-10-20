@@ -1664,6 +1664,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 			}
 		}
 	}
+	tl->valid = false;
 	return FULLUPDATE;
 }
 
