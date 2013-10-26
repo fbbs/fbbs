@@ -220,41 +220,19 @@
 </xsl:template>
 
 <xsl:template match='bbspst'>
-<p>版面：<xsl:value-of select='@brd'/></p>
 <form id='postform' name='postform' method='post' action='snd?bid={@bid}&amp;f={po/@f}&amp;e={@edit}&amp;utf8=1'>
-<input type='hidden' id='brd' value='{@brd}'></input>
-<p>标题：<xsl:choose>
-<xsl:when test='@edit=0'><input class='binput' type='text' name='title' size='27' maxlength='50'>
-<xsl:variable name='retitle'>
-<xsl:choose>
-<xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
-<xsl:when test='not(t)'></xsl:when>
-<xsl:otherwise><xsl:value-of select='concat("Re: ", t)'/></xsl:otherwise>
-</xsl:choose>
-</xsl:variable>
-<xsl:attribute name='value'>
-<xsl:call-template name='remove-ansi'>
-<xsl:with-param name='str' select='$retitle'/>
-</xsl:call-template>
-</xsl:attribute>
-</input></xsl:when>
-<xsl:otherwise><xsl:call-template name='remove-ansi'><xsl:with-param name='str' select='t'/></xsl:call-template></xsl:otherwise>
-</xsl:choose></p>
-<p>签名档: <input type='radio' name='sig' value='1' checked='checked'/>1 <input type='radio' name='sig' value='2'/>2 <input type='radio' name='sig' value='3'/>3 <input type='radio' name='sig' value='4'/>4 <input type='radio' name='sig' value='5'/>5 <input type='radio' name='sig' value='6'/>6</p>
-<p><textarea class='binput' name='text' rows='10' cols='27' wrap='virtual'>
+<label class='blk'>版面<input disabled='disabled' type='text' name='brd' value='{@brd}'></input></label>
+<label class='blk'>标题<input class='binput' type='text' name='title' size='27' maxlength='50' value='{t}'><xsl:if test='@edit=1'><xsl:attribute name='disabled' value='disabled'/></xsl:if></input></label>
+<label class='blk'>签名档<label><input type='radio' name='sig' value='1' checked='checked'/>1</label><label><input type='radio' name='sig' value='2'/>2</label><label><input type='radio' name='sig' value='3'/>3</label><label><input type='radio' name='sig' value='4'/>4</label><label><input type='radio' name='sig' value='5'/>5</label><label><input type='radio' name='sig' value='6'/>6</label></label>
+<textarea class='binput' name='text' rows='10' cols='27' wrap='virtual'>
 <xsl:if test='@edit=0'><xsl:text> &#x0d;&#x0a;</xsl:text></xsl:if>
 <xsl:call-template name='show-quoted'>
 <xsl:with-param name='content' select='po'/>
 </xsl:call-template>
-</textarea></p>
+</textarea>
 <input type='submit' value='发表' id='btnPost' size='10'/>
 <input type='reset' value='复原' size='10'/>
-<xsl:if test='@edit="0" and @att!=0'><input type='button' name='attach' value='上传附件' onclick='return preUpload() '/></xsl:if>
 </form>
-<xsl:choose>
-<xsl:when test='not(t)'><script type='text/javascript' defer='defer'>addLoadEvent(function(){document.postform.title.focus();})</script></xsl:when>
-<xsl:otherwise><script type='text/javascript' defer='defer'>addLoadEvent(function() {var text = document.postform.text; text.selectionStart = 0; text.selectionEnd = 1; text.focus();})</script></xsl:otherwise>
-</xsl:choose>
 </xsl:template>
 
 <xsl:template match='bbsqry'>
@@ -299,12 +277,12 @@
 <xsl:template match='bbs0an'>
 <xsl:call-template name='anc-navbar'/>
 <ol><xsl:for-each select='ent'><li>
-<p><xsl:choose>
-<xsl:when test='@t = "d"'>[目录]<a class='ptitle' href='0an?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
-<xsl:when test='@t = "f"'><a class='ptitle' href='anc?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
+<div class='time'><xsl:if test='@t != "e"'><xsl:value-of select='substring(@time, 1, 10)'/></xsl:if></div>
+<xsl:choose>
+<xsl:when test='@t = "d"'><a class='po-folder' href='0an?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
+<xsl:when test='@t = "f"'><a class='po-entry' href='anc?path={../@path}{@path}'><xsl:value-of select='.'/></a></xsl:when>
 <xsl:otherwise>[错误]<xsl:value-of select='@t'/></xsl:otherwise>
-</xsl:choose></p>
-<p><span class='time'><xsl:if test='@t != "e"'><xsl:call-template name='timeconvert'><xsl:with-param name='time' select='@time'/></xsl:call-template></xsl:if></span></p>
+</xsl:choose>
 </li></xsl:for-each></ol>
 <xsl:if test='not(ent)'><p>&lt;&lt;目前没有文章&gt;&gt;</p></xsl:if>
 <xsl:call-template name='anc-navbar'/>
@@ -318,7 +296,7 @@
 </xsl:template>
 
 <xsl:template name='anc-navbar'>
-<xsl:if test='@brd'><div class='nav'><a href='{session/@m}doc?board={@brd}'>[版面]</a></div></xsl:if>
+<xsl:if test='@brd'><div class='nav'><a href='{session/@m}doc?board={@brd}'>&lt;&lt;版面</a></div></xsl:if>
 </xsl:template>
 
 <xsl:template match='bbsmail'>
@@ -346,19 +324,18 @@
 </xsl:template>
 
 <xsl:template name='mailcon-navbar'>
-<a href='pstmail?n={mail/@n}'>[回信]</a>
-<a onclick='return confirm("您真的要删除这封信吗？")' href='delmail?f={mail/@f}'>[删除]</a>
-<xsl:if test='@prev'><a href='mailcon?f={@prev}&amp;n={mail/@n-1}'>[上封]</a></xsl:if>
-<xsl:if test='@next'><a href='mailcon?f={@next}&amp;n={mail/@n+1}'>[下封]</a></xsl:if>
-<a href='mail'>[列表]</a>
+<a href='mail'>&lt;&lt;列表</a>
+<a href='pstmail?n={mail/@n}'>回信</a>
+<xsl:if test='@prev'><a href='mailcon?f={@prev}&amp;n={mail/@n-1}'>上封</a></xsl:if>
+<xsl:if test='@next'><a href='mailcon?f={@next}&amp;n={mail/@n+1}'>下封</a></xsl:if>
+<a href='delmail?f={mail/@f}'>删除</a>
 </xsl:template>
 
 <xsl:template match='bbspstmail'>
 <form id='postform' name='postform' method='post' action='sndmail?utf8=1'>
 <input type='hidden' name='ref' value='{@ref}'></input>
-<p><label for='recv'>收信人: </label><input class='binput' type='text' name='recv' size='15' maxlength='15' value='{@recv}'></input></p>
-<p><label for='title'>标题: </label>
-<input class='binput' type='text' name='title' size='25' maxlength='40'>
+<label class='blk'>收信人<input class='binput' type='text' name='recv' size='15' maxlength='15' value='{@recv}'></input></label>
+<label class='blk'>标题<input class='binput' type='text' name='title' size='25' maxlength='40'>
 <xsl:variable name='retitle'>
 <xsl:choose>
 <xsl:when test='substring(t, 1, 4) = "Re: "'><xsl:value-of select='t'/></xsl:when>
@@ -371,15 +348,15 @@
 <xsl:with-param name='str' select='$retitle'/>
 </xsl:call-template>
 </xsl:attribute>
-</input></p>
-<p>备份给自己 <input type='checkbox' name='backup' value='backup'/></p>
-<p><textarea class='binput' name='text' rows='10' cols='30' wrap='virtual'>
+</input></label>
+<label class='blk'>备份给自己<input type='checkbox' name='backup' value='backup'/></label>
+<textarea class='binput' name='text' rows='10' cols='30' wrap='virtual'>
 <xsl:text>&#x0d;&#x0a;</xsl:text>
 <xsl:call-template name='show-quoted'>
 <xsl:with-param name='content' select='m'/>
 </xsl:call-template>
-</textarea></p>
-<input type='submit' value='寄出' id='btnPost' size='10'/>
+</textarea>
+<input type='submit' value='寄出' size='10'/>
 <input type='reset' value='重置'/>
 </form>
 </xsl:template>

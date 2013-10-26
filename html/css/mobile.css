@@ -6,7 +6,7 @@ blockquote:before, blockquote:after, q:before, q:after { content: ''; content: n
 table { border-collapse: separate; border-spacing: 0; }
 
 body { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 16px; width: 100%; background-color: #f0f7ff; }
-h1 { font-weight: bold; font-size: 20px; margin: 6px 0 0; }
+h1 { font-weight: bold; font-size: 20px; margin: 6px 0; }
 h2 { font-weight: bold; font-size: 18px; margin: 4px 0; }
 h3 { font-weight: normal; margin-bottom: 4px; }
 a { color: #369; display: inline-block; line-height: 32px; min-width: 24px; padding: 0 16px 0 0; text-decoration: none; }
@@ -25,8 +25,8 @@ div#fav, div#main { padding: 0 3px; }
 div#fav { margin-bottom: 4px; }
 div#fave, div#favc { display: none; }
 
-.po a, a.po-entry { color: #000; display: block; font-size: 18px; line-height: 36px; width: 99%; padding: 0; }
-.ainfo a { color: #369; display: inline; padding: 0; }
+.po a, a.po-entry { color: #000; display: block; font-size: 18px; line-height: 36px; padding: 0; }
+.ainfo a { color: #369; display: inline; font-size: 16px; line-height: 24px; padding: 0; }
 p.ainfo { line-height: 24px; font-size: 16px; color: #808080; }
 
 span.time { font-size: 14px; color: gray; }
@@ -38,6 +38,18 @@ div.post_h { background-color: #cdf; margin-bottom: 10px; }
 .post_h a { line-height: 28px; padding: 0; }
 div.post_q p { color: #606060; background-color: #def; font-size: 14px; line-height: 24px; margin: 0 4px 0 16px; }
 .plink a, .nav a { padding: 0 8px; }
+
+label.blk { display: block; line-height: 32px; }
+input { margin-left: 12px; border: 1px solid #c0c0c0; line-height: 24px; }
+input[type="text"] { display: inline-block; }
+input[type="text"]:disabled { border: none; background-color: transparent; }
+input[type="submit"], input[type="reset"] { border: none; color: #fff; display: block; line-height: 28px; margin: 0 0 8px 0; width: 100%; }
+input[type="submit"] { background-color: #369; font-weight: bold; }
+input[type="reset"] { background-color: #c0c0c0; }
+textarea { border: 1px solid #c0c0c0; width: 100%; }
+
+a.po-folder { color: #369; display: block; font-size: 18px; line-height: 36px; padding: 0; }
+div.time { font-size: 14px; color: gray; float: right; line-height: 36px; }
 
 li { border-bottom: #69c 1px dotted; }
 li.brd span.tt { font-size: 14px; }
