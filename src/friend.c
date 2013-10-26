@@ -52,14 +52,16 @@ static tui_list_display_t following_list_display(tui_list_t *p, int i)
 static int tui_follow(void)
 {
 	char buf[IDLEN + 1];
-	//% getdata(-1, 0, "请输入要关注的人: ", buf, IDLEN, DOECHO, YEA);
-	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb9\xd8\xd7\xa2\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
+	//% "请输入要关注的人: "
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb9\xd8\xd7\xa2"
+			"\xb5\xc4\xc8\xcb: ", buf, IDLEN, DOECHO, YEA);
 	if (!*buf)
 		return 0;
-	char note[FOLLOW_NOTE_CCHARS * 2 + 1], utf8_note[FOLLOW_NOTE_CCHARS * 4 + 1];
-	//% getdata(-1, 0, "请输入备注: ", note, sizeof(note), DOECHO, YEA);
-	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ", note, sizeof(note), DOECHO, YEA);
-	convert_g2u(note, utf8_note);
+	GBK_UTF8_BUFFER(note, FOLLOW_NOTE_CCHARS);
+	//% "请输入备注: "
+	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
+			gbk_note, sizeof(gbk_note), DOECHO, YEA);
+	convert_g2u(gbk_note, utf8_note);
 	return follow(session.uid, buf, utf8_note);
 }
 
