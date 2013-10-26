@@ -218,6 +218,7 @@ int bbspstmail_main(void)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
+
 	// TODO: mail quota check, signature
 	int num = 0;
 	mmap_t m;
@@ -225,7 +226,7 @@ int bbspstmail_main(void)
 	char file[HOMELEN];
 	const char *str = get_param("n"); // 1-based
 	const struct fileheader *fh = NULL;
-	if (*str != '\0') {
+	if (*str) {
 		num = strtol(str, NULL, 10);
 		if (num <= 0)
 			return BBS_EINVAL;
@@ -248,16 +249,28 @@ int bbspstmail_main(void)
 		ref = "pstmail";
 	xml_fputs(ref);
 
-	printf("' recv='%s'>", fh == NULL ? get_param("recv") : fh->owner);
+	printf("' recv='%s'>", fh ? fh->owner : get_param("recv"));
 
-	if (fh != NULL) {
+	if (fh) {
 		printf("<t>");
 		xml_fputs4(fh->title, 0);
 		printf("</t><m>");
 
 		setmfile(file, currentuser.userid, fh->filename);
-		quote_file_(file, NULL, QUOTE_AUTO, true, request_type(REQUEST_UTF8),
-				xml_fputs3);
+		if (request_type(REQUEST_UTF8)) {
+			mmap_t mm = { .oflag = O_RDONLY };
+			if (mmap_open(file, &mm) == 0) {
+				char *utf8_str = malloc(mm.size * 2 + 1);
+				convert(env_g2u, mm.ptr, mm.size, utf8_str, mm.size * 2 + 1,
+						NULL, NULL);
+				quote_string(utf8_str, strlen(utf8_str), NULL, QUOTE_AUTO,
+						true, true, xml_fputs3);
+				free(utf8_str);
+				mmap_close(&mm);
+			}
+		} else {
+			quote_file_(file, NULL, QUOTE_AUTO, true, false, xml_fputs3);
+		}
 		printf("</m>");
 	}
 	mmap_close(&m);

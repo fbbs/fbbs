@@ -832,7 +832,7 @@ static void quote_author(const char *begin, const char *lend, bool mail,
 	else
 		PRINT_CONST_STRING("\n\xa1\xbe \xd4\xda ");
 	if (ptr > quser)
-		(*filter)(quser, ptr - quser, fp);
+		filter(quser, ptr - quser, fp);
 	if (utf8)
 		PRINT_CONST_STRING(" 的");
 	else
