@@ -31,7 +31,5 @@ int delete_record(const char *file, int size, int id,
 		record_func_t check, void *arg);
 int delete_range(char *filename, int id1, int id2);
 int insert_record(const char *file, int size, record_func_t check, void *arg);
-void *lsearch(const void *key, const void *base, size_t nmemb, size_t size,
-		comparator_t compar);
 
 #endif // RECORD_H
