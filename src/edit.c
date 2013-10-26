@@ -920,9 +920,8 @@ int read_file(char *filename) {
 
 int in_mail;
 
-void write_header(FILE *fp, const struct postheader *header)
+void write_header(FILE *fp, const struct postheader *header, bool _in_mail)
 {
-	int noname;
 	extern char BoardName[];
 	extern char fromhost[];
 	char uid[20];
@@ -930,30 +929,37 @@ void write_header(FILE *fp, const struct postheader *header)
 
 	strlcpy(uid, currentuser.userid, 20);
 	uid[19] = '\0';
-	if (in_mail)
+	if (_in_mail)
 		strlcpy(uname, currentuser.username, NAMELEN);
 	else
 		strlcpy(uname, currentuser.username, NAMELEN);
 	uname[NAMELEN-1] = '\0';
 	
-	board_t board;
-	get_board(currboard, &board);
-	noname = board.flag & BOARD_ANONY_FLAG;
-	if (in_mail)
+	if (_in_mail)
 		//% fprintf(fp, "寄信人: %s (%s)\n", uid, uname);
 		fprintf(fp, "\xbc\xc4\xd0\xc5\xc8\xcb: %s (%s)\n", uid, uname);
 	else {
+		board_t board;
+		if (header && header->postboard && !strcaseeq(currboard, header->ds)) {
+			get_board(header->ds, &board);
+		} else {
+			memcpy(&board, currbp, sizeof(board));
+		}
+		bool anonymous = header->anonymous;
+		if (anonymous)
+			anonymous &= (board.flag & BOARD_ANONY_FLAG);
+
 		//% fprintf(fp, "发信人: %s (%s), 信区: %s\n",
 		fprintf(fp, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n",
-				(noname && header->anonymous) ? ANONYMOUS_ACCOUNT : uid,
-				(noname && header->anonymous) ? ANONYMOUS_NICK : uname, currboard);
+				anonymous ? ANONYMOUS_ACCOUNT : uid,
+				anonymous ? ANONYMOUS_NICK : uname, board.name);
 	}
 	//% fprintf(fp, "标  题: %s\n", header->title);
 	fprintf(fp, "\xb1\xea  \xcc\xe2: %s\n", header->title);
 	//% 发信站
 	fprintf(fp, "\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)", BoardName,
 			format_time(fb_time(), TIME_FORMAT_ZH));
-	if (in_mail)
+	if (_in_mail)
 		//% fprintf(fp, "\n来  源: %s\n", mask_host(fromhost));
 		fprintf(fp, "\n\xc0\xb4  \xd4\xb4: %s\n", mask_host(fromhost));
 	else
@@ -1014,7 +1020,7 @@ void valid_article(char *pmt, char *abort, int sure) {
 #endif   
 }
 
-int write_file(char *filename, int write_header_to_file, int addfrom,
+static int write_file(char *filename, int write_header_to_file, int addfrom,
 		int sure, struct postheader *header) {
 	struct textline *p;
 	FILE *fp;
@@ -1066,7 +1072,7 @@ int write_file(char *filename, int write_header_to_file, int addfrom,
 			abort_bbs(0);
 		}
 		if (write_header_to_file)
-			write_header(fp, header);
+			write_header(fp, header, in_mail);
 	}
 	p = can_edit_end;
 	if (p!=NULL)
@@ -1644,7 +1650,7 @@ void vedit_key(int ch) {
 	}
 }
 
-int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
+static int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
 		struct postheader *header)
 {
 	int newch, ch = 0, foo, shift, sure = 0;

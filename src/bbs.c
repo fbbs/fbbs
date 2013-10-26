@@ -496,12 +496,7 @@ static void getcross(board_t *board, const char *input, const char *output,
 		return;
 	}
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
-		if (in_mail) {
-			in_mail = NA;
-			write_header(of, header);
-			in_mail = YEA;
-		} else
-			write_header(of, header);
+		write_header(of, header, false);
 
 		//% if (fgets(buf, 256, inf) && (p = strstr(buf, "信人: "))) {
 		if (fgets(buf, 256, inf) && (p = strstr(buf, "\xd0\xc5\xc8\xcb: "))) {
@@ -521,7 +516,7 @@ static void getcross(board_t *board, const char *input, const char *output,
 		else {
 			//% fprintf(of, "\033[1;37m【 以下文字转载自 \033[32m%s \033[37m%s区 】\033[m\n",
 			fprintf(of, "\033[1;37m\xa1\xbe \xd2\xd4\xcf\xc2\xce\xc4\xd7\xd6\xd7\xaa\xd4\xd8\xd7\xd4 \033[32m%s \033[37m%s\xc7\xf8 \xa1\xbf\033[m\n",
-					((board->flag & BOARD_POST_FLAG) || (board->perm == 0)) ? board->name
+					((currbp->flag & BOARD_POST_FLAG) || (currbp->perm == 0)) ? currbp->name
 							//% : "未知", mode ? "精华" : "讨论");
 							: "\xce\xb4\xd6\xaa", mode ? "\xbe\xab\xbb\xaa" : "\xcc\xd6\xc2\xdb");
 		}
@@ -554,7 +549,7 @@ static void getcross(board_t *board, const char *input, const char *output,
 		fprintf(of, "\xb7\xa2\xd0\xc5\xd5\xbe: %s\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xcf\xb5\xcd\xb3 (%s)\n\n", BoardName,
 				format_time(now, TIME_FORMAT_ZH));
 	} else if (mode == POST_FILE_AUTO) {
-		write_header(of, header);
+		write_header(of, header, false);
 	}
 	while (fgets(buf, 256, inf) != NULL) {
 		fprintf(of, "%s", buf);
@@ -649,35 +644,35 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 {
 	if ((mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
 			&& !has_post_perm(board)) {
-		//% prints("\n\n 您尚无权限在 %s 版发表文章.\n", currboard);
-		prints("\n\n \xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda %s \xb0\xe6\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2.\n", currboard);
+		//% 您尚无权限在 %s 版发表文章.
+		prints("\n\n \xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda %s"
+				" \xb0\xe6\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2.\n", board->name);
 		return -1;
 	}
 
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
-		//% if (!strneq(title, "[转载]", 6) && !strneq(title, "Re: [转载]", 10))
-		if (!strneq(title, "[\xd7\xaa\xd4\xd8]", 6) && !strneq(title, "Re: [\xd7\xaa\xd4\xd8]", 10))
-			//% snprintf(gbk_title, sizeof(gbk_title), "[转载]%.70s", title);
-			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]%.70s", title);
-		//% else if (strneq(title, "Re: [转载]", 10))
-		else if (strneq(title, "Re: [\xd7\xaa\xd4\xd8]", 10))
-			//% snprintf(gbk_title, sizeof(gbk_title), "[转载]Re: %.70s",
-			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]Re: %.70s",
-					title + 10);
-		else
+		//% [转载]
+		if (!strneq2(title, "[\xd7\xaa\xd4\xd8]")
+				&& !strneq2(title, "Re: [\xd7\xaa\xd4\xd8]")) {
+			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]%.70s",
+					title);
+		} else if (strneq2(title, "Re: [\xd7\xaa\xd4\xd8]")) {
+			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]"
+					"Re: %.70s", title + 10);
+		} else {
 			strlcpy(gbk_title, title, sizeof(gbk_title));
+		}
 	} else {
 		strlcpy(gbk_title, title, sizeof(gbk_title));
 	}
-
 	valid_title(gbk_title);
 	convert_g2u(gbk_title, utf8_title);
 
 	struct postheader header = {
 		.locked = mode == POST_FILE_DELIVER ||
-			//% (mode == POST_FILE_AUTO && strneq(gbk_title, "[合集]", 6)),
-			(mode == POST_FILE_AUTO && strneq(gbk_title, "[\xba\xcf\xbc\xaf]", 6)),
+			//% "[合集]"
+			(mode == POST_FILE_AUTO && strneq2(gbk_title, "[\xba\xcf\xbc\xaf]")),
 		.postboard = true,
 	};
 	strlcpy(header.title, gbk_title, sizeof(header.title));
@@ -760,19 +755,24 @@ post_id_t Postfile(const char *file, const char *bname, const char *title,
 int tui_cross_post_legacy(const char *file, const char *title)
 {
 	clear();
-	//% prints("您选择转载的文章是: [\033[1;33m%s\033[m]\n", title);
-	prints("\xc4\xfa\xd1\xa1\xd4\xf1\xd7\xaa\xd4\xd8\xb5\xc4\xce\xc4\xd5\xc2\xca\xc7: [\033[1;33m%s\033[m]\n", title);
+	//% 您选择转载的文章是
+	prints("\xc4\xfa\xd1\xa1\xd4\xf1\xd7\xaa\xd4\xd8\xb5\xc4\xce\xc4\xd5\xc2"
+			"\xca\xc7: [\033[1;33m%s\033[m]\n", title);
 
 	char bname[STRLEN];
-	//% board_complete(1, "请输入要转贴的讨论区名称(取消转载请按回车): ",
-	board_complete(1, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xcc\xf9\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6(\xc8\xa1\xcf\xfb\xd7\xaa\xd4\xd8\xc7\xeb\xb0\xb4\xbb\xd8\xb3\xb5): ",
+	//% "请输入要转贴的讨论区名称(取消转载请按回车): "
+	board_complete(1, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xcc\xf9"
+			"\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6(\xc8\xa1"
+			"\xcf\xfb\xd7\xaa\xd4\xd8\xc7\xeb\xb0\xb4\xbb\xd8\xb3\xb5): ",
 			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (!*bname)
 		return FULLUPDATE;
 
 	if (streq(bname, currboard) && session.status != ST_RMAIL) {
-		//% prints("\n\n             很抱歉，您不能把文章转到同一个版上。");
-		prints("\n\n             \xba\xdc\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xb2\xbb\xc4\xdc\xb0\xd1\xce\xc4\xd5\xc2\xd7\xaa\xb5\xbd\xcd\xac\xd2\xbb\xb8\xf6\xb0\xe6\xc9\xcf\xa1\xa3");
+		//% 很抱歉，您不能把文章转到同一个版上。
+		prints("\n\n             \xba\xdc\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa"
+				"\xb2\xbb\xc4\xdc\xb0\xd1\xce\xc4\xd5\xc2\xd7\xaa\xb5\xbd"
+				"\xcd\xac\xd2\xbb\xb8\xf6\xb0\xe6\xc9\xcf\xa1\xa3");
 		pressreturn();
 		clear();
 		return FULLUPDATE;
@@ -780,12 +780,14 @@ int tui_cross_post_legacy(const char *file, const char *title)
 
 	move(3, 0);
 	clrtobot();
-	//% prints("转载 ' %s ' 到 %s 版 ", title, bname);
+	//% "转载 ' %s ' 到 %s 版 "
 	prints("\xd7\xaa\xd4\xd8 ' %s ' \xb5\xbd %s \xb0\xe6 ", title, bname);
+
 	move(4, 0);
 	char ans[10];
-	//% getdata(4, 0, "(S)转信 (L)本站 (A)取消? [A]: ", ans, 9, DOECHO, YEA);
-	getdata(4, 0, "(S)\xd7\xaa\xd0\xc5 (L)\xb1\xbe\xd5\xbe (A)\xc8\xa1\xcf\xfb? [A]: ", ans, 9, DOECHO, YEA);
+	//% "(S)转信 (L)本站 (A)取消? [A]: "
+	getdata(4, 0, "(S)\xd7\xaa\xd0\xc5 (L)\xb1\xbe\xd5\xbe"
+			" (A)\xc8\xa1\xcf\xfb? [A]: ", ans, 9, DOECHO, YEA);
 	if (ans[0] == 's' || ans[0] == 'S' || ans[0] == 'L' || ans[0] == 'l') {
 		board_t brd;
 		if (!get_board(bname, &brd) ||
@@ -795,7 +797,8 @@ int tui_cross_post_legacy(const char *file, const char *title)
 			return FULLUPDATE;
 		}
 		//% prints("\n已把文章 \'%s\' 转贴到 %s 版\n", title, bname);
-		prints("\n\xd2\xd1\xb0\xd1\xce\xc4\xd5\xc2 \'%s\' \xd7\xaa\xcc\xf9\xb5\xbd %s \xb0\xe6\n", title, bname);
+		prints("\n\xd2\xd1\xb0\xd1\xce\xc4\xd5\xc2 \'%s\' \xd7\xaa\xcc\xf9"
+				"\xb5\xbd %s \xb0\xe6\n", title, bname);
 	} else {
 		//% prints("取消");
 		prints("\xc8\xa1\xcf\xfb");

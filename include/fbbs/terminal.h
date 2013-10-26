@@ -162,7 +162,7 @@ void Add_Combine(const char *board, struct fileheader *fileinfo, int has_cite);
 void add_crossinfo(const char *filepath, bool post);
 int AddNameList(const char *name);
 int post_article(char *postboard, char *mailid);
-void write_header(FILE *fp, const struct postheader *header);
+void write_header(FILE *fp, const struct postheader *header, bool _in_mail);
 int outgo_post(struct fileheader *fh, char *board);
 void get_noticedirect(char *curr, char *notice);
 void fixkeep(char *s, int first, int last);
