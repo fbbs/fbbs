@@ -18,27 +18,6 @@ static bool hasannperm(const char *title, const struct userec *user,
 	return true;		
 }
 
-static int get_count(const char *path)
-{
-	FILE *fp;
-	char buf[512];
-	int counts = 0;
-	snprintf(buf, sizeof(buf), "0Announce%s/.counts", path);
-	if (!dashf(buf))
-		fp = fopen(buf, "w+");
-	else
-		fp = fopen(buf, "r+");
-	file_lock_all(fileno(fp), FILE_WRLCK);
-	if (fscanf(FCGI_ToFILE(fp), "%d", &counts) > 0) {
-		counts++;
-		fseek(fp, 0, SEEK_SET);
-		fprintf(fp, "%d\n", counts);
-	}
-	file_lock_all(fileno(fp), FILE_UNLCK);
-	fclose(fp);
-	return counts;
-}
-
 // TODO: better rewrite
 static char *getbfroma(const char *path)
 {
@@ -132,7 +111,7 @@ int bbs0an_main(void)
 	}
 
 	xml_header(NULL);
-	printf("<bbs0an path='%s' v='%d' ", path, get_count(path));
+	printf("<bbs0an path='%s' v='%d' ", path, 1030);
 	if (board.id)
 		printf(" brd='%s'", board.name);
 	printf(">");
