@@ -512,50 +512,6 @@ static int search_board(const choose_board_t *cbrd, int *num)
 }
 #endif
 
-// TODO: rewrite
-static int unread_position(board_t *bp)
-{
-	struct fileheader fh;
-
-	char file[HOMELEN];
-	setbdir(file, currboard);
-	int fd = open(file, O_RDONLY);
-	if (fd < 0)
-		return 0;
-
-	int offset = offsetof(struct fileheader, filename);
-	int total = lseek(fd, 0, SEEK_END) / sizeof(fh), num = total - 1;
-
-	if (!brc_init(currentuser.userid, bp->name))
-		return 0;
-
-	if (brc_unread(get_last_post_time(bp->id))) {
-		char filename[STRLEN];
-		num = total - 1;
-		int step = 4;
-		while (num > 0) {
-			lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
-			if (read (fd, filename, STRLEN) <= 0 || !brc_unread_legacy(filename))
-				break;
-			num -= step;
-			if (step < 32)
-				step += step / 2;
-		}
-		if (num < 0)
-			num = 0;
-		while (num < total) {
-			lseek (fd, (off_t) (offset + num * sizeof (fh)), SEEK_SET);
-			if (read (fd, filename, STRLEN) <= 0 || brc_unread_legacy(filename))
-				break;
-			num++;
-		}
-		close (fd);
-	}
-	if (num < 0)
-		num = 0;
-	return num;
-}
-
 static bool is_zapped(board_list_t *l, board_t *board)
 {
 	return !l->zapbuf[board->id] && !(board->flag & BOARD_NOZAP_FLAG);
@@ -787,15 +743,6 @@ static int read_board(tui_list_t *p)
 		change_board(&orig_board);
 
 		memcpy(currBM, bp->bms, BM_LEN - 1);
-
-		if (DEFINE(DEF_FIRSTNEW)) {
-			int tmp = unread_position(bp);
-			int page = tmp - t_lines / 2;
-
-			char file[STRLEN];
-			setbdir(file, currboard);
-			getkeep(file, page > 1 ? page : 1, tmp + 1);
-		}
 
 		board_read();
 
