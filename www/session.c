@@ -32,14 +32,14 @@ static bool activate_session(session_id_t sid, const char *uname)
 
 static bool _get_session(const char *uname, const char *key)
 {
-	session.id = session.uid = 0;
+	session_clear();
 
 	user_id_t uid = get_user_id(uname);
 	if (uid > 0) {
 		session_id_t sid = get_web_session_cache(uid, key);
 		if (sid > 0) {
-			session.uid = uid;
-			return (session.id = sid);
+			session_set_uid(uid);
+			return true;
 		}
 
 		db_res_t *res = db_query("SELECT id, active FROM sessions"
@@ -47,15 +47,15 @@ static bool _get_session(const char *uname, const char *key)
 				uid, key);
 		if (res && db_res_rows(res) == 1) {
 			if (db_get_bool(res, 0, 1)
-					|| activate_session(session.id, uname)) {
-				session.id = db_get_session_id(res, 0, 0);
-				session.uid = uid;
-				set_web_session_cache(uid, key, session.id);
+					|| activate_session(session_id(), uname)) {
+				session_set_id(db_get_session_id(res, 0, 0));
+				session_set_uid(uid);
+				set_web_session_cache(uid, key, session_id());
 			}
 		}
 		db_clear(res);
 	}
-	return session.id;
+	return session_id();
 }
 
 bool get_session(void)

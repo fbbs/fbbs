@@ -165,17 +165,15 @@ int x_userdefine() {
 
 int x_cloak(void)
 {
-	if (set_visibility(!session.visible) == 0) {
-		session.visible = !session.visible;
+	bool visible = session_toggle_visibility();
+	report("toggle cloak", currentuser.userid);
 
-		report("toggle cloak", currentuser.userid);
-
-		move(-1, 0);
-		clrtoeol();
-		//% prints("隐身术已经 %s 了!", session.visible ? "停止" : "启动");
-		prints("\xd2\xfe\xc9\xed\xca\xf5\xd2\xd1\xbe\xad %s \xc1\xcb!", session.visible ? "\xcd\xa3\xd6\xb9" : "\xc6\xf4\xb6\xaf");
-		pressreturn();
-	}
+	move(-1, 0);
+	clrtoeol();
+	//% "隐身术已经 %s 了!" "停止" "启动"
+	prints("\xd2\xfe\xc9\xed\xca\xf5\xd2\xd1\xbe\xad %s \xc1\xcb!",
+			visible ? "\xcd\xa3\xd6\xb9" : "\xc6\xf4\xb6\xaf");
+	pressreturn();
 	return 0;
 }
 

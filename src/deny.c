@@ -411,7 +411,7 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 				urec.userid, board);
 	}
 	snprintf(file, sizeof(file), "tmp/AutoPoster.%s.%05d", currentuser.userid,
-			session.pid);
+			session_pid());
 	FILE *fpw = fopen(file, "w");
 	//% fprintf(fpw, "%s因:\n", urec.userid);
 	fprintf(fpw, "%s\xd2\xf2:\n", urec.userid);
@@ -640,7 +640,7 @@ static void denylist_release(const char *line)
 
 	// Mail the released user.
 	char file[HOMELEN];
-	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session.pid);
+	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session_pid());
 	FILE *fp = fopen(file, "w");
 	if (fp) {
 		//% fprintf(fp, "执行人: %s\n", currentuser.userid);
@@ -673,7 +673,7 @@ static int denylist_remove(const char *file, const char *line)
 		return -1;
 
 	char fnew[HOMELEN];
-	snprintf(fnew, sizeof(fnew), "%s.%d", file, session.pid);
+	snprintf(fnew, sizeof(fnew), "%s.%d", file, session_pid());
 	FILE *fpw = fopen(fnew, "w");
 	if (!fpw) {
 		fclose(fpr);
@@ -748,7 +748,7 @@ static int denylist_do_add(const char *userid, int type, int days,
 	unlink(file);
 
 	// Generate notification.
-	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session.pid);
+	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session_pid());
 	FILE *fpw = fopen(file, "w");
 	//% fprintf(fpw, "%s因:\n", urec.userid);
 	fprintf(fpw, "%s\xd2\xf2:\n", urec.userid);
@@ -803,7 +803,7 @@ static int denylist_do_add(const char *userid, int type, int days,
 	// Modify ban list.
 	FILE *fpr = fopen(DENY_LEVEL_LIST, "r");
 	char list[HOMELEN];
-	sprintf(list, DENY_LEVEL_LIST".%d", session.pid);
+	sprintf(list, DENY_LEVEL_LIST".%d", session_pid());
 	fpw = fopen(list, "w");
 	size_t len = strlen(urec.userid);
 	char buf[256];

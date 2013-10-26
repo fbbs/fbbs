@@ -134,11 +134,11 @@ int calc_user_stay(bool is_login, bool is_dup, time_t login, time_t logout)
 int set_my_last_post_time(fb_time_t t)
 {
 	return !mdb_cmd("HSET", LAST_POST_TIME_KEY" %"PRIdUID" %"PRIdFBT,
-			session.uid, t);
+			session_uid(), t);
 }
 
 fb_time_t get_my_last_post_time(void)
 {
 	return (fb_time_t) mdb_integer(0, "HGET",
-			LAST_POST_TIME_KEY" %"PRIdUID, session.uid);
+			LAST_POST_TIME_KEY" %"PRIdUID, session_uid());
 }

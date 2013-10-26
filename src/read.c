@@ -146,7 +146,7 @@ int num, ssize;
 	clrtobot();
 	for (i = 0; i < num; i++) {
 		str = (*doentry) (base + i, &pnt[i * ssize]);
-		if (session.status != ST_RMAIL)
+		if (session_status() != ST_RMAIL)
 			prints("%s", str);
 		else
 			showstuff(str);
@@ -216,7 +216,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		case 'q':
 		case 'e':
 		case KEY_LEFT:
-		if( digestmode && session.status != ST_RMAIL)
+		if( digestmode && session_status() != ST_RMAIL)
 			;
 		else
 		return DOQUIT;
@@ -224,7 +224,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		redoscr();
 		break;
 		case 'M':
-		savemode = session.status;
+		savemode = session_status();
 		in_mail=YEA;
 		m_new();
 		in_mail=NA;
@@ -232,7 +232,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		set_user_status(savemode);
 		return FULLUPDATE;
 		case 'u':
-		savemode = session.status;
+		savemode = session_status();
 		set_user_status(ST_QUERY);
 		t_query(NULL);
 		set_user_status(savemode);
@@ -258,7 +258,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 			sprintf(genbuf, "\xc8\xb7\xb6\xa8\xd2\xaa\xb0\xd1 %s \xbc\xd3\xc8\xeb\xba\xc3\xd3\xd1\xc3\xfb\xb5\xa5\xc2\xf0",userid);
 			if (askyn(genbuf, NA, NA) == NA)
 			return FULLUPDATE;
-			if (follow(session.uid, userid, NULL)) {
+			if (follow(session_uid(), userid, NULL)) {
 				//% sprintf(genbuf, "成功关注 %s", userid);
 				sprintf(genbuf, "\xb3\xc9\xb9\xa6\xb9\xd8\xd7\xa2 %s", userid);
 				show_message(genbuf);
@@ -279,8 +279,8 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 			msg_more();
 			return FULLUPDATE;
 		/*        case 'L':		//chenhao 解决在文章列表时看信的问题
-		 if(session.status == RMAIL) return DONOTHING;
-		 savemode = session.status;
+		 if(session_status() == RMAIL) return DONOTHING;
+		 savemode = session_status();
 		 m_read();
 		 set_user_status(ST_savemode);
 		 return MODECHANGED;
@@ -300,7 +300,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		PUTCURS;
 		break;
 		case '@':
-		savemode = session.status;
+		savemode = session_status();
 		set_user_status(ST_QUERY);
 		show_online();
 		set_user_status(savemode);
@@ -753,7 +753,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	char subBMitems[3][9] = { "\xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2", "\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf", "\xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2" };
 
 	if (!in_mail) {
-		if (session.status != ST_READING)
+		if (session_status() != ST_READING)
 			return DONOTHING;
 		if (fileinfo->owner[0] == '-')
 			return DONOTHING;
@@ -1222,7 +1222,7 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 
 		if (aflag == SEARCH_CONTENT) {
 			char p_name[256];
-			if (session.status != ST_RMAIL) {
+			if (session_status() != ST_RMAIL) {
 				setbfile(p_name, currboard, SR_fptr.filename);
 			} else {
 				sprintf(p_name, "mail/%c/%s/%s",
@@ -1462,7 +1462,7 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 					0)==-1)
 				break;
 		}
-		if (session.status != ST_RMAIL)
+		if (session_status() != ST_RMAIL)
 			setbfile(tempbuf, currboard, SR_fptr.filename);
 		else
 			sprintf(tempbuf, "mail/%c/%s/%s",

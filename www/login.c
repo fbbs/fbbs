@@ -136,7 +136,7 @@ int do_web_login(const char *uname, const char *pw)
 	struct userec user;
 	if (getuserec(uname, &user) == 0)
 		return api ? error_msg(ERROR_INCORRECT_PASSWORD) : BBS_EWPSWD;
-	session.uid = get_user_id(uname);
+	session_set_uid(get_user_id(uname));
 
 	if (pw && !passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
@@ -181,13 +181,13 @@ int web_login(void)
 {
 	bool api = request_type(REQUEST_API);
 	if (api) {
-		if (session.id)
+		if (session_id())
 			return error_msg(ERROR_NONE);
 		else
 			return error_msg(ERROR_INCORRECT_PASSWORD);
 	}
 
-	if (session.id)
+	if (session_id())
 		return login_redirect(NULL, 0);
 
 	if (parse_post_data() < 0)
@@ -206,12 +206,12 @@ int web_login(void)
 		int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
 
 		char key[SESSION_KEY_LEN + 1];
-		session.id = session_new_id();
-		generate_session_key(key, sizeof(key), session.id);
-		session.id = session_new(key, session.id, session.uid, fromhost,
+		session_new_id();
+		generate_session_key(key, sizeof(key), session_id());
+		session_new(key, session_id(), session_uid(), fromhost,
 				SESSION_WEB, SESSION_PLAIN, true, max_age);
-		if (session.id)
-			set_web_session_cache(session.uid, key, session.id);
+		if (session_id())
+			set_web_session_cache(session_uid(), key, session_id());
 
 		return login_redirect(key, max_age);
 	}
@@ -220,7 +220,7 @@ int web_login(void)
 
 int web_logout(void)
 {
-	if (session.id) {
+	if (session_id()) {
 		update_user_stay(&currentuser, false, false);
 		save_user_data(&currentuser);
 

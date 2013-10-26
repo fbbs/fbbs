@@ -100,17 +100,17 @@ typedef enum {
 	ST_WWW = 0x40000000,
 } session_status_e;
 
-typedef struct {
-	session_id_t id;
-	user_id_t uid;
-	int pid;
-	int flag;
-	session_status_e status;
-	fb_time_t idle;
-	bool visible;
-} bbs_session_t;
-
-extern bbs_session_t session;
+extern session_id_t session_id(void);
+extern void session_set_id(session_id_t sid);
+extern user_id_t session_uid(void);
+extern void session_set_uid(user_id_t uid);
+extern int session_pid(void);
+extern void session_set_pid(int pid);
+extern session_status_e session_status(void);
+extern bool session_visible(void);
+extern void session_set_visibility(bool visible);
+extern bool session_toggle_visibility(void);
+extern void session_clear(void);
 
 extern session_id_t session_new_id(void);
 extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
@@ -125,8 +125,7 @@ extern int set_current_board(int bid);
 extern int get_current_board(session_id_t sid);
 extern int count_onboard(int bid);
 extern int set_user_status(int status);
-extern int get_user_status(session_id_t sid);
-extern int set_visibility(bool visible);
+extern session_status_e get_user_status(session_id_t sid);
 
 extern db_res_t *get_sessions_of_followings(void);
 extern db_res_t *get_active_sessions(void);

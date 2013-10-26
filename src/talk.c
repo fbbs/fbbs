@@ -283,8 +283,8 @@ int t_query(const char *uname)
 		return FULLUPDATE;
 	}
 
-	if (session.status != ST_LUSERS && session.status != ST_LAUSERS
-			&& session.status != ST_FRIEND && session.status != ST_GMENU)
+	if (session_status() != ST_LUSERS && session_status() != ST_LAUSERS
+			&& session_status() != ST_FRIEND && session_status() != ST_GMENU)
 	pressanykey();
 	return FULLUPDATE;
 }

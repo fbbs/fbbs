@@ -359,7 +359,7 @@ int do_send(const char *userid, const char *title)
 	/* I hate go to , but I use it again for the noodle code :-) */
 	if (strchr(userid, '@')) {
 		internet_mail = YEA;
-		sprintf(tmp_fname, "tmp/imail.%s.%05d", currentuser.userid, session.pid);
+		sprintf(tmp_fname, "tmp/imail.%s.%05d", currentuser.userid, session_pid());
 		strcpy(filepath, tmp_fname);
 		goto edit_mail_file;
 	}
@@ -545,8 +545,8 @@ int m_send(const char *userid)
 		pressreturn();
 		return 0;
 	}
-	if (session.status != ST_LUSERS && session.status != ST_LAUSERS
-			&& session.status != ST_FRIEND && session.status != ST_GMENU) {
+	if (session_status() != ST_LUSERS && session_status() != ST_LAUSERS
+			&& session_status() != ST_FRIEND && session_status() != ST_GMENU) {
 		move(1, 0);
 		clrtoeol();
 		set_user_status(ST_SMAIL);
@@ -1273,7 +1273,7 @@ static db_res_t *load_names_of_follows(void)
 {
 	return db_query("SELECT u.name"
 			" FROM follows f JOIN alive_users u ON f.user_id = u.id"
-			" WHERE f.follower = %"DBIdUID, session.uid);
+			" WHERE f.follower = %"DBIdUID, session_uid());
 }
 
 static int do_gsend(char **userid, char *title, int num, char current_maillist)
@@ -1295,7 +1295,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	//% strcpy(header.ds, "寄信给一群人");
 	strcpy(header.ds, "\xbc\xc4\xd0\xc5\xb8\xf8\xd2\xbb\xc8\xba\xc8\xcb");
 	header.postboard = NA;
-	sprintf(tmpfile, "tmp/gsend.%s.%05d", currentuser.userid, session.pid);
+	sprintf(tmpfile, "tmp/gsend.%s.%05d", currentuser.userid, session_pid());
 	result = post_header(&header);
 	if( result == -1) {
 		clear();
@@ -1743,9 +1743,9 @@ static int forward_file(const char *receiver, const char *file,
 	char fname[HOMELEN];
 	if (uuencode) {
 		char buf[STRLEN];
-		snprintf(fname, sizeof(fname), "tmp/file.uu%05d", session.pid);
+		snprintf(fname, sizeof(fname), "tmp/file.uu%05d", session_pid());
 		snprintf(buf, sizeof(buf), "uuencode %s fb-bbs.%05d > %s",
-				file, session.pid, fname);
+				file, session_pid(), fname);
 		system(buf);
 	} else {
 		strlcpy(fname, file, sizeof(fname));
@@ -1825,7 +1825,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 
 	char tmpfile[HOMELEN];
 	snprintf(tmpfile, sizeof(tmpfile), "tmp/forward.%s.%05d",
-			currentuser.userid, session.pid);
+			currentuser.userid, session_pid());
 	f_cp(file, tmpfile, O_CREAT);
 
 	//% if (askyn("是否修改文章内容", NA, NA)) {

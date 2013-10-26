@@ -227,7 +227,7 @@ static bool require_login(const web_handler_t *h)
 
 static int execute(const web_handler_t *h)
 {
-	if (!session.id && require_login(h)) {
+	if (!session_id() && require_login(h)) {
 		if (request_type(REQUEST_API))
 			return error_msg(ERROR_LOGIN_REQUIRED);
 		return BBS_ELGNREQ;
@@ -255,9 +255,9 @@ int main(void)
 			get_client_ip();
 			get_session();
 
-			if (session.id) {
+			if (session_id()) {
 				set_user_status(h->status);
-				set_idle_time(session.id, time(NULL));
+				set_idle_time(session_id(), time(NULL));
 			}
 
 			code = execute(h);

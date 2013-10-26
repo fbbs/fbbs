@@ -63,7 +63,7 @@ bool am_followed_by(const char *uname)
 	db_res_t *res = db_query("SELECT f.followed"
 			" FROM follows f JOIN users u ON f.follower = u.id"
 			" WHERE user_id = %"DBIdUID" AND lower(u.name) = lower(%s)",
-			session.uid, uname);
+			session_uid(), uname);
 	int rows = res ? db_res_rows(res) : 0;
 	db_clear(res);
 	return rows;
@@ -121,7 +121,7 @@ bool is_blocked(const char *uname)
 	db_res_t *res = db_query("SELECT b.blocked FROM blacklists b"
 			" JOIN alive_users u ON b.user_id = u.id"
 			" WHERE b.blocked = %"DBIdUID" AND lower(u.name) = lower(%s)",
-			session.uid, uname);
+			session_uid(), uname);
 	int rows = res ? db_res_rows(res) : 0;
 	db_clear(res);
 	return rows;

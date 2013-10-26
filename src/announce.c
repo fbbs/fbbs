@@ -1602,7 +1602,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 				show_message(NULL);
 				break;
 			case 'M':
-				savemode = session.status;
+				savemode = session_status();
 				m_new();
 				set_user_status(savemode);
 				me.page = 9999;

@@ -228,8 +228,9 @@ void Poststring(const char *str, const char *nboard, const char *posttitle,
 	FILE *se;
 	char fname[STRLEN];
 
-	int status = session.status;
-	sprintf(fname, "tmp/AutoPoster.%s.%05d", currentuser.userid, session.pid);
+	int status = session_status();
+	sprintf(fname, "tmp/AutoPoster.%s.%05d", currentuser.userid,
+			session_pid());
 	if ((se = fopen(fname, "w")) != NULL) {
 		fprintf(se, "%s", str);
 		fclose(se);
@@ -563,7 +564,7 @@ int post_reply(const char *owner, const char *title, const char *file)
 {
 	char uid[STRLEN];
 
-	int status = session.status;
+	int status = session_status();
 
 	if (!strcmp(currentuser.userid, "guest"))
 		return DONOTHING;
@@ -634,7 +635,7 @@ static int undelcheck(void *fh1, void *fh2)
 int date_to_fname(char *postboard, time_t now, char *fname) {
 	static unsigned ref = 0;
 	
-	sprintf(fname, "M.%ld.%X%X", now, session.pid, ref);
+	sprintf(fname, "M.%ld.%X%X", now, session_pid(), ref);
 	ref++;
 	return 0;
 }
@@ -768,7 +769,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 	if (!*bname)
 		return FULLUPDATE;
 
-	if (streq(bname, currboard) && session.status != ST_RMAIL) {
+	if (streq(bname, currboard) && session_status() != ST_RMAIL) {
 		//% 很抱歉，您不能把文章转到同一个版上。
 		prints("\n\n             \xba\xdc\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa"
 				"\xb2\xbb\xc4\xdc\xb0\xd1\xce\xc4\xd5\xc2\xd7\xaa\xb5\xbd"
@@ -1145,7 +1146,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	char num[8];
 	int inum1, inum2;
 
-	if (session.status == ST_READING) {
+	if (session_status() == ST_READING) {
 		if (!am_curr_bm()) {
 			return DONOTHING;
 		}
@@ -1177,7 +1178,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA) == YEA) {
 		delete_range(direct, inum1, inum2);
 		fixkeep(direct, inum1, inum2);
-		if (session.status == ST_READING) {
+		if (session_status() == ST_READING) {
 			sprintf(genbuf, "Range delete %d-%d on %s", inum1, inum2,
 					currboard);
 			//securityreport (genbuf, 0, 2);
@@ -1642,7 +1643,7 @@ void notepad() {
 	//% prints("开始您的留言吧！大家正拭目以待....\n");
 	prints("\xbf\xaa\xca\xbc\xc4\xfa\xb5\xc4\xc1\xf4\xd1\xd4\xb0\xc9\xa3\xa1\xb4\xf3\xbc\xd2\xd5\xfd\xca\xc3\xc4\xbf\xd2\xd4\xb4\xfd....\n");
 	set_user_status(ST_WNOTEPAD);
-	sprintf(tmpname, "tmp/notepad.%s.%05d", currentuser.userid, session.pid);
+	sprintf(tmpname, "tmp/notepad.%s.%05d", currentuser.userid, session_pid());
 	if ((in = fopen(tmpname, "w")) != NULL) {
 		for (i = 0; i < 3; i++)
 			memset(note[i], 0, STRLEN - 4);
@@ -1732,7 +1733,7 @@ int Q_Goodbye(void)
 	prints("\n\n\n\n");
 
 	/* added by roly 02.03.21 */
-	if (session.visible) {
+	if (session_visible()) {
 		int byes = 0;
 		if ((sysops = fopen("etc/friendbye", "r")) != NULL) {
 			while (byes < 8 && fgets(buf, STRLEN, sysops) != NULL) {
@@ -1800,7 +1801,7 @@ int Q_Goodbye(void)
 
 	CreateNameList();
 
-	if (session.id) {
+	if (session_id()) {
 		time_t stay;
 
 		stay = time(0) - login_start_time;

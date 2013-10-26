@@ -252,7 +252,7 @@ bool valid_mailname(const char *file)
 static char *get_permission(void)
 {
 	static char c[5];
-	c[0] = session.id ? 'l' : ' ';
+	c[0] = session_id() ? 'l' : ' ';
 	c[1] = HAS_PERM(PERM_TALK) ? 't' : ' ';
 	c[2] = HAS_PERM(PERM_CLOAK) ? '#': ' ';
 	c[3] = HAS_PERM(PERM_OBOARDS) && HAS_PERM(PERM_SPECIAL0) ? 'f' : ' ';
@@ -267,7 +267,7 @@ int get_user_flag(void)
 
 void set_user_flag(int flag)
 {
-	if (session.id) {
+	if (session_id()) {
 		int n = searchuser(currentuser.userid) - 1;
 		if (n < 0 || n >= MAXUSERS)
 			return;
@@ -289,7 +289,7 @@ void print_session(void)
 	query_t *q = query_new(0);
 	query_select(q, "board, name");
 	query_from(q, "fav_boards");
-	query_where(q, "user_id = %"DBIdUID, session.uid);
+	query_where(q, "user_id = %"DBIdUID, session_uid());
 	db_res_t *res = query_exec(q);
 
 	if (res) {

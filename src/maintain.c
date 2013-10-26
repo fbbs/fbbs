@@ -57,9 +57,9 @@ void securityreport(char *str, int save, int mode)
 	FILE*	se;
 	char    fname[STRLEN];
 	int     savemode;
-	savemode = session.status;
+	savemode = session_status();
 	report(str, currentuser.userid);
-	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, session.pid);
+	sprintf(fname, "tmp/security.%s.%05d", currentuser.userid, session_pid());
 	if ((se = fopen(fname, "w")) != NULL) {
 		//% fprintf(se, "系统安全记录\n[1m原因：%s[m\n", str);
 		fprintf(se, "\xcf\xb5\xcd\xb3\xb0\xb2\xc8\xab\xbc\xc7\xc2\xbc\n[1m\xd4\xad\xd2\xf2\xa3\xba%s[m\n", str);

@@ -599,7 +599,7 @@ int mk_result(int num)
 	sprintf(fname, "vote/%s/flag.%d", currboard, currvote.opendate); //投票记录文件路径为 vote/版名/flag.开启投票日
 	/*	count_result(NULL); */
 	sug = NULL;
-	sprintf(sugname, "vote/%s/tmp.%d", currboard, session.pid); //投票临时文件路径为 vote/版名/tmp.用户id
+	sprintf(sugname, "vote/%s/tmp.%d", currboard, session_pid()); //投票临时文件路径为 vote/版名/tmp.用户id
 	if ((sug = fopen(sugname, "w")) == NULL) {
 		report("open vote tmp file error", currentuser.userid);
 		pressanykey();
@@ -779,7 +779,7 @@ int vote_maintain(const char *bname)
 		prints("\xcd\xb6\xc6\xb1\xcf\xe4\xbf\xaa\xc6\xf4\xc1\xcb\xa3\xa1\n");
 		range++;;
 		sprintf(votename, "tmp/votetmp.%s.%05d", currentuser.userid,
-				session.pid);
+				session_pid());
 		if ((sug = fopen(votename, "w")) != NULL) {
 			strcpy(genbuf, ball->title);
 			ellipsis(genbuf, 31 - strlen(bname));

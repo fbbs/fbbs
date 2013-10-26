@@ -386,7 +386,7 @@ static int do_igetkey(void)
 int igetkey(void)
 {
 	int ch = do_igetkey();
-	while ((RMSG || msg_num) && session.status != ST_LOCKSCREEN) {
+	while ((RMSG || msg_num) && session_status() != ST_LOCKSCREEN) {
 		msg_reply(ch);
 		ch = do_igetkey();
 	}

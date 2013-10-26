@@ -2042,7 +2042,7 @@ static void search_all_boards(const post_filter_t *filter, const char *uname,
 {
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "tmp/searchall.%s.%05d",
-			currentuser.userid, session.pid);
+			currentuser.userid, session_pid());
 	FILE *fp = fopen(file, "w");
 	if (!fp)
 		return;

@@ -63,7 +63,7 @@ static char *check_info(void)
 
 int bbsinfo_main(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 	parse_post_data();
 	const char *type = get_param("type");
@@ -107,7 +107,7 @@ static int set_password(const char *orig, const char *new1, const char *new2)
 
 int bbspwd_main(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 	parse_post_data();
 	xml_header(NULL);
@@ -161,7 +161,7 @@ static int count_new_mail(void *buf, int count, void *args)
 
 int bbsidle_main(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 	printf("Content-type: text/xml; charset="CHARSET"\n\n"
 			"<?xml version=\"1.0\" encoding=\""CHARSET"\"?>\n<bbsidle");
@@ -178,7 +178,7 @@ int bbsidle_main(void)
 
 static int edit_user_file(const char *file, const char *desc, const char *submit)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 	char buf[HOMELEN];
 	sethomefile(buf, currentuser.userid, file);
@@ -302,7 +302,7 @@ int bbsqry_main(void)
 {
 	char userid[IDLEN + 1];
 	strlcpy(userid, get_param("u"), sizeof(userid));
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 	struct userec user;
 	int uid;

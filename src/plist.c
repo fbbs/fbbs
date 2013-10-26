@@ -362,7 +362,7 @@ static tui_list_title_t post_list_title(tui_list_t *tl)
 const char *get_board_online_color(const char *uname, int bid)
 {
 	if (streq(uname, currentuser.userid))
-		return session.visible ? "1;37" : "1;36";
+		return session_visible() ? "1;37" : "1;36";
 
 	const char *color = "";
 	bool online = false;
@@ -509,7 +509,7 @@ static int toggle_post_lock(tui_list_t *tl, post_info_t *pi)
 	post_list_t *pl = tl->data;
 	if (pl->type == POST_LIST_NORMAL && pi) {
 		bool locked = pi->flag & POST_FLAG_LOCKED;
-		if (am_curr_bm() || (session.id == pi->uid && !locked)) {
+		if (am_curr_bm() || (session_id() == pi->uid && !locked)) {
 			reopen_post_record(pl, pi);
 			record_t *rec = (pi->flag & POST_FLAG_STICKY)
 					? pl->record_sticky : pl->record;
@@ -879,7 +879,7 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 	if (pl->type != POST_LIST_NORMAL)
 		return DONOTHING;
 
-	if (pi && (pi->uid == session.uid || am_curr_bm())) {
+	if (pi && (pi->uid == session_uid() || am_curr_bm())) {
 		move(-1, 0);
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
@@ -1011,7 +1011,7 @@ static int reply_with_mail(const post_info_t *pi)
 
 static int tui_edit_post_title(tui_list_t *tl, post_info_t *pi)
 {
-	if (!pi || (pi->uid != session.uid && !am_curr_bm()))
+	if (!pi || (pi->uid != session_uid() && !am_curr_bm()))
 		return DONOTHING;
 
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
@@ -1038,14 +1038,14 @@ static int tui_edit_post_title(tui_list_t *tl, post_info_t *pi)
 
 static int tui_edit_post_content(post_info_t *pi)
 {
-	if (!pi || (pi->uid != session.uid && !am_curr_bm()))
+	if (!pi || (pi->uid != session_uid() && !am_curr_bm()))
 		return DONOTHING;
 
 	char file[HOMELEN];
 	if (!dump_content(pi->id, file, sizeof(file)))
 		return DONOTHING;
 
-	int status = session.status;
+	int status = session_status();
 	set_user_status(ST_EDIT);
 
 	clear();
@@ -1091,7 +1091,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		return FULLUPDATE;
 	}
 
-	int status = session.status;
+	int status = session_status();
 	set_user_status(ST_POSTING);
 
 	clear();
@@ -1694,7 +1694,7 @@ static void construct_prompt(char *s, size_t size, const char **options,
 		if (!*bname)
 			return FULLUPDATE;
 
-		if (!strcmp(bname, currboard)&&session.status != ST_RMAIL) {
+		if (!strcmp(bname, currboard)&&session_status() != ST_RMAIL) {
 			//% prints("\n\n对不起，本文就在您要转载的版面上，所以无需转载。\n");
 			prints("\n\n\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb1\xbe\xce\xc4\xbe\xcd\xd4\xda\xc4\xfa\xd2\xaa\xd7\xaa\xd4\xd8\xb5\xc4\xb0\xe6\xc3\xe6\xc9\xcf\xa3\xac\xcb\xf9\xd2\xd4\xce\xde\xd0\xe8\xd7\xaa\xd4\xd8\xa1\xa3\n");
 			pressreturn();
@@ -2493,7 +2493,7 @@ static int post_list_with_filter(const post_filter_t *filter)
 		.handler = post_list_handler,
 	};
 
-	int status = session.status;
+	int status = session_status();
 	set_user_status(ST_READING);
 	tui_list(&tl);
 	set_user_status(status);

@@ -151,9 +151,8 @@ static void u_enter(void)
 {
 	if (!HAS_PERM(PERM_CLOAK))
 		currentuser.flags[0] &= ~CLOAK_FLAG;
-	session.visible = !(HAS_PERM(PERM_LOGINCLOAK)
-			&& (currentuser.flags[0] & CLOAK_FLAG));
-	session.status = ST_LOGIN;
+	session_set_visibility(!(HAS_PERM(PERM_LOGINCLOAK)
+				&& (currentuser.flags[0] & CLOAK_FLAG)));
 
 	chk_giveupbbs();
 
@@ -165,13 +164,13 @@ static void u_enter(void)
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	digestmode = NA;
 
-	session.id = session_new(NULL, 0, session.uid, fromhost, SESSION_TELNET,
+	session_new(NULL, 0, session_uid(), fromhost, SESSION_TELNET,
 #ifdef ENABLE_SSH
 			SESSION_SECURE
 #else
 			SESSION_PLAIN
 #endif
-			, session.visible, 0);
+			, session_visible(), 0);
 
 	int pager = load_pager();
 	set_pager(pager);
@@ -201,15 +200,15 @@ void u_exit(void)
 	signal(SIGUSR2, SIG_IGN);
 
 	if (HAS_PERM(PERM_LOGINCLOAK))
-		setflags(CLOAK_FLAG, !session.visible);
+		setflags(CLOAK_FLAG, !session_visible());
 
 	set_safe_record();
 	update_user_stay(&currentuser, false, false);
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	uidshm->status[usernum - 1]--;
 
-	session_destroy(session.id);
-	session.pid = 0;
+	session_destroy(session_id());
+	session_set_pid(0);
 }
 
 void abort_bbs(int nothing)
@@ -221,12 +220,12 @@ void abort_bbs(int nothing)
 	}
 
 	// Save user's work.
-	if (session.status == ST_POSTING || session.status == ST_SMAIL
-			|| session.status == ST_EDIT || session.status == ST_EDITUFILE
-			|| session.status == ST_EDITSFILE || session.status == ST_EDITANN)
+	if (session_status() == ST_POSTING || session_status() == ST_SMAIL
+			|| session_status() == ST_EDIT || session_status() == ST_EDITUFILE
+			|| session_status() == ST_EDITSFILE || session_status() == ST_EDITANN)
 		keep_fail_post();
 
-	if (session.id) {
+	if (session_id()) {
 		time_t stay;
 		stay = time(0) - login_start_time;
 		snprintf(genbuf, sizeof(genbuf), "Stay: %3ld", stay / 60);
@@ -305,7 +304,7 @@ static void system_init(void)
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 #ifdef DOTIMEOUT
-	session.status = ST_LOGIN;
+	set_user_status(ST_LOGIN);
 	alarm(LOGIN_TIMEOUT);
 #else
 	signal(SIGALRM, SIG_SIG);
@@ -332,7 +331,7 @@ static void system_init(void)
 
 static void system_abort(void)
 {
-	if (session.id) {
+	if (session_id()) {
 		log_usies("ABORT", "", &currentuser);
 		u_exit();
 	}
@@ -475,7 +474,7 @@ int bbs_auth(const char *name, const char *passwd)
 	}
 #endif
 
-	session.uid = get_user_id(name);
+	session_set_uid(get_user_id(name));
 
 	return 0;
 }
@@ -961,7 +960,7 @@ void start_client(void)
 		move(9, 0);
 		clrtobot();
 		if (!DEFINE(DEF_NOLOGINSEND))
-			if (session.visible)
+			if (session_visible())
 				login_msg();
 		clear();
 		set_numofsig();

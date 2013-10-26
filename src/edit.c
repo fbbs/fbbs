@@ -977,7 +977,7 @@ void valid_article(char *pmt, char *abort, int sure) {
 	int w;
 
 	w = NA;
-	if (session.status == ST_POSTING || session.status == ST_EDIT) {
+	if (session_status() == ST_POSTING || session_status() == ST_EDIT) {
 		total = lines = len = 0;
 		while (p && p != can_edit_end) {
 			ch = p->data[0];
@@ -1029,10 +1029,10 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 
 	signal(SIGALRM, SIG_IGN);
 	clear();
-	if (session.status == ST_POSTING) {
+	if (session_status() == ST_POSTING) {
 		//% strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
 		strcpy(p_buf, "L.\xb1\xbe\xd5\xbe\xb7\xa2\xb1\xed, S.\xd7\xaa\xd0\xc5, A.\xc8\xa1\xcf\xfb, T.\xb8\xfc\xb8\xc4\xb1\xea\xcc\xe2 or E.\xd4\xd9\xb1\xe0\xbc\xad? [L]: ");
-	} else if (session.status == ST_SMAIL)
+	} else if (session_status() == ST_SMAIL)
 		//% strcpy(p_buf, "(S)寄出, (A)取消, or (E)再编辑? [S]: ");
 		strcpy(p_buf, "(S)\xbc\xc4\xb3\xf6, (A)\xc8\xa1\xcf\xfb, or (E)\xd4\xd9\xb1\xe0\xbc\xad? [S]: ");
 	else
@@ -1053,7 +1053,7 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 		msg(0);
 		return KEEP_EDITING;
 	} else if ((abort[0] == 't' || abort[0] == 'T')
-			&& session.status == ST_POSTING) {
+			&& session_status() == ST_POSTING) {
 		char buf[STRLEN];
 		move(1, 0);
 		//% prints("旧标题: %s", header->title);
@@ -1105,15 +1105,15 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 	}
 	//added by iamfat 2002.08.17
 	extern char fromhost[];
-	if (aborted != -1 && session.status == ST_EDIT && ADD_EDITMARK) {
+	if (aborted != -1 && session_status() == ST_EDIT && ADD_EDITMARK) {
 		//% fprintf(fp, "\033[m\033[1;36m※ 修改:·%s 于 %22.22s·[FROM: %s]"
 		fprintf(fp, "\033[m\033[1;36m\xa1\xf9 \xd0\xde\xb8\xc4:\xa1\xa4%s \xd3\xda %22.22s\xa1\xa4[FROM: %s]"
 				"\033[m\n", currentuser.userid,
 				format_time(fb_time(), TIME_FORMAT_ZH), mask_host(fromhost));
 	}
 	//added end
-	if ((session.status == ST_POSTING || session.status == ST_SMAIL
-				|| session.status == ST_EDIT)
+	if ((session_status() == ST_POSTING || session_status() == ST_SMAIL
+				|| session_status() == ST_EDIT)
 			&& addfrom != 0 && aborted != -1) {
 		char fname[STRLEN];
 
@@ -1723,9 +1723,9 @@ int vedit(char *filename, int write_header_to_file, int modifyheader,
 	showansi = 0;
 #ifdef ALLOWAUTOWRAP
 	if (DEFINE(DEF_AUTOWRAP)
-			&& (session.status == ST_POSTING
-				|| session.status == ST_SMAIL
-				|| session.status == ST_EDIT)
+			&& (session_status() == ST_POSTING
+				|| session_status() == ST_SMAIL
+				|| session_status() == ST_EDIT)
 			) {
 		linelen = 79;
 	} else

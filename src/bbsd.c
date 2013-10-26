@@ -328,11 +328,6 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session s)
 }
 #endif // ENABLE_SSH
 
-static void clear_bbs_env(void)
-{
-	memset(&session, 0, sizeof(session));
-}
-
 static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 #ifdef ENABLE_SSH
 		, ssh_bind sshbind, ssh_session s
@@ -344,8 +339,8 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 		return -1;
 
 	if (pid == 0) {
-		clear_bbs_env();
-		session.pid = getpid();
+		session_clear();
+		session_set_pid(getpid());
 
 		while (--nfds >= 0)
 			close(nfds);

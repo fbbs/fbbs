@@ -1,3 +1,4 @@
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -10,7 +11,73 @@ enum {
 	ONLINE_COUNT_REFRESH_INTERVAL = 15,
 };
 
-bbs_session_t session;
+typedef struct {
+	session_id_t id;
+	user_id_t uid;
+	int pid;
+	int flag;
+	session_status_e status;
+	fb_time_t idle;
+	bool visible;
+} bbs_session_t;
+
+static bbs_session_t session;
+
+session_id_t session_id(void)
+{
+	return session.id;
+}
+
+void session_set_id(session_id_t sid)
+{
+	session.id = sid;
+}
+
+user_id_t session_uid(void)
+{
+	return session.uid;
+}
+
+void session_set_uid(user_id_t uid)
+{
+	session.uid = uid;
+}
+
+int session_pid(void)
+{
+	return session.pid;
+}
+
+void session_set_pid(int pid)
+{
+	session.pid = pid;
+}
+
+fb_time_t session_idle(void)
+{
+	return session.idle;
+}
+
+session_status_e session_status(void)
+{
+	return session.status;
+}
+
+bool session_visible(void)
+{
+	return session.visible;
+}
+
+void session_set_visibility(bool visible)
+{
+	session.visible = visible;
+}
+
+void session_clear(void)
+{
+	memset(&session, 0, sizeof(session));
+	session.visible = true;
+}
 
 /** 在线人数 @mdb_string */
 #define ONLINE_COUNT_CACHE_KEY  "c:online"
@@ -52,9 +119,9 @@ session_id_t session_new_id(void)
 	if (!res)
 		return 0;
 
-	session_id_t sid = db_get_session_id(res, 0, 0);
+	session.id = db_get_session_id(res, 0, 0);
 	db_clear(res);
-	return sid;
+	return session.id;
 }
 
 session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
@@ -78,6 +145,7 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 		set_idle_time(sid, time(NULL));
 		return sid;
 	} else {
+		session.id = 0;
 		return 0;
 	}
 }
@@ -159,17 +227,19 @@ int set_user_status(int status)
 			status);
 }
 
-int get_user_status(session_id_t sid)
+session_status_e get_user_status(session_id_t sid)
 {
 	return (int) mdb_integer(0, "HGET", SESSION_STATUS_KEY" %"PRIdSID, sid);
 }
 
-int set_visibility(bool visible)
+bool session_toggle_visibility(void)
 {
 	db_res_t *res = db_cmd("UPDATE sessions SET visible = %b"
-			" WHERE id = %"DBIdSID, visible, session.id);
+			" WHERE id = %"DBIdSID, !session.visible, session.id);
 	db_clear(res);
-	return !res;
+	if (res)
+		session.visible = !session.visible;
+	return session.visible;
 }
 
 db_res_t *get_sessions_of_followings(void)

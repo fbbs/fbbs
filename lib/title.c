@@ -26,7 +26,7 @@ void title_approve(int id)
 {
 	db_res_t *res = db_cmd("UPDATE titles"
 			" SET approved = true, granter = %d WHERE id = %d",
-			session.uid, id);
+			session_uid(), id);
 	db_clear(res);
 }
 

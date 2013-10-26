@@ -233,7 +233,7 @@ int bbscon_main(void)
 	print_session();
 
 	bool isbm = am_bm(&board);
-	bool self = (session.uid == pi.uid);
+	bool self = (session_uid() == pi.uid);
 	printf("<po fid='%"PRIdPID"'%s%s%s%s%s%s", pi.id,
 			sticky ? " sticky='1'" : "",
 			ret & POST_FIRST ? " first='1'" : "",
@@ -290,7 +290,7 @@ int bbsgcon_main(void)
 
 int bbsdel_main(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 
 	post_id_t pid = strtoll(get_param("f"), NULL, 10);
@@ -309,7 +309,7 @@ int bbsdel_main(void)
 
 	post_filter_t filter = {
 		.bid = board.id, .min = pid, .max = pid,
-		.uid = am_bm(&board) ? 0 : session.uid,
+		.uid = am_bm(&board) ? 0 : session_uid(),
 	};
 	int deleted = post_index_board_delete(&filter, NULL, 0, true, false, true);
 	record_close(&record);
@@ -511,7 +511,7 @@ int bbstcon_main(void)
 
 int web_sigopt(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 
 	bool hidesig = streq(get_param("hidesig"), "on");
@@ -621,7 +621,7 @@ extern const char *get_post_list_type_string(void);
 
 int bbssnd_main(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;
@@ -667,7 +667,7 @@ int bbssnd_main(void)
 		if (!pid || !search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;
 
-		if (!am_bm(&board) && session.uid != pi.uid) {
+		if (!am_bm(&board) && session_uid() != pi.uid) {
 			if (!isedit && (pi.flag & POST_FLAG_LOCKED))
 				return BBS_EPST;
 			if (isedit)
@@ -768,7 +768,7 @@ static void get_post_body(const char **begin, const char **end)
 
 static int do_bbspst(bool isedit)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 
 	board_t board;
@@ -794,7 +794,7 @@ static int do_bbspst(bool isedit)
 			return BBS_ENOFILE;
 		if (!isedit && (pi.flag & POST_FLAG_LOCKED))
 			return BBS_EPST;
-		if (isedit && !am_bm(&board) && session.uid != pi.uid)
+		if (isedit && !am_bm(&board) && session_uid() != pi.uid)
 			return BBS_EACCES;
 	}
 	
@@ -876,7 +876,7 @@ int bbsedit_main(void)
 
 int bbsccc_main(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 
 	parse_post_data();
@@ -967,7 +967,7 @@ int bbsccc_main(void)
 // fwd?bid=[bid]&f=[fid]&u=[recipient]
 int bbsfwd_main(void)
 {
-	if (!session.id)
+	if (!session_id())
 		return BBS_ELGNREQ;
 	parse_post_data();
 	const char *reci = get_param("u");
