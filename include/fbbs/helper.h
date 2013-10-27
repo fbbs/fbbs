@@ -11,7 +11,6 @@ enum {
 
 extern char *sethomefile(char *buf, const char *userid, const char *filename);
 extern char *setbpath(char *buf, const char *boardname);
-extern char *setwbdir(char *buf, const char *boardname);
 extern char *setbfile(char *buf, const char *boardname, const char *filename);
 extern char *setmfile(char *buf, const char *userid, const char *filename);
 extern char *setmdir(char *buf, const char *userid);

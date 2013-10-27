@@ -627,14 +627,6 @@ int post_reply(const char *owner, const char *title, const char *file)
 	return FULLUPDATE;
 }
 
-int date_to_fname(char *postboard, time_t now, char *fname) {
-	static unsigned ref = 0;
-	
-	sprintf(fname, "M.%ld.%X%X", now, session_pid(), ref);
-	ref++;
-	return 0;
-}
-
 static post_id_t post_cross_legacy(board_t *board, const char *file,
 		const char *title, int mode)
 {

@@ -25,13 +25,6 @@ char *setbpath(char *buf, const char *boardname)
 	return buf;
 }
 
-// Returns the path of DOT_DIR file under the directory of 'boardname'.
-char *setwbdir(char *buf, const char *boardname)
-{
-	sprintf (buf, "boards/%s/" DOT_DIR, boardname);
-	return buf;
-}
-
 // Returns the path of 'filename' under the directory of 'boardname'.
 char *setbfile(char *buf, const char *boardname, const char *filename)
 {
