@@ -993,37 +993,6 @@ int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct) {
 	return PARTUPDATE;
 }
 
-//added by cometcaptor 2006-05-29
-int move_notice(int ent, struct fileheader *fh, char *direct) {
-	char path[256], tmppath[256];
-	int lockfd;
-	if (digestmode!=NA)
-		return DONOTHING;
-	if (!am_curr_bm())
-		return DONOTHING;
-	if (fh->accessed[1]&FILE_NOTICE) {
-		get_noticedirect(direct, path);
-		struct fileheader tmpfh;
-		int pos=search_record(path, &tmpfh, sizeof(struct fileheader),
-				cmpfilename, fh->filename);
-		strcat(tmppath, "tmp/");
-		strcat(tmppath, currboard);
-		strcat(tmppath, ".lock");
-		lockfd = creat(tmppath, 0600);
-		file_lock_all(lockfd, FILE_WRLCK);
-		if (pos > 0) {
-			delete_record(path, sizeof(struct fileheader), pos,
-					cmpfilename, fh->filename);
-			append_record(path, fh, sizeof(struct fileheader));
-		} else
-			return DONOTHING;
-		file_lock_all(lockfd, FILE_UNLCK);
-		close(lockfd);
-	}
-	updatelastpost(currbp);
-	return DIRCHANGED;
-}
-//add end
 int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
 
@@ -1552,9 +1521,6 @@ extern int mainreadhelp();
 extern int b_notes_edit();
 
 struct one_key read_comms[] = {
-#ifdef ENABLE_NOTICE
-		{';', move_notice},
-#endif
 		{',', read_attach},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
