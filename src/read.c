@@ -970,20 +970,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 					break;
 					/* The End */
 				case 8:
-					if (digestmode == TRASH_MODE || digestmode ==JUNK_MODE) {
-						SR_BMDELFLAG = YEA;
-						result= _UndeleteArticle(locmem->crs_line, &SR_fptr, currdirect,NA);
-						SR_BMDELFLAG = NA;
-						if(result == -1)
-							return DIRCHANGED;
-						if (result != DONOTHING) {
-							last_line--;
-							locmem->crs_line--;
-						}
-					} else {
-						_combine_thread(locmem->crs_line, &SR_fptr, currdirect, gid);
-					}
-
+					_combine_thread(locmem->crs_line, &SR_fptr, currdirect, gid);
 					break;
 			}
 			if(locmem->crs_line <= 0) {

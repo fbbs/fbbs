@@ -156,8 +156,6 @@ unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showf
 int chk_currBM(char *BMstr, int isclub);
 bool garbage_line(const char *str);
 int Q_Goodbye(void);
-int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
-		int response);
 void Add_Combine(const char *board, struct fileheader *fileinfo, int has_cite);
 void add_crossinfo(const char *filepath, bool post);
 int AddNameList(const char *name);

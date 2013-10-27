@@ -627,12 +627,6 @@ int post_reply(const char *owner, const char *title, const char *file)
 	return FULLUPDATE;
 }
 
-static int undelcheck(void *fh1, void *fh2)
-{
-	return (atoi(((struct fileheader *)fh1)->filename + 2)
-		> atoi(((struct fileheader *)fh2)->filename + 2));
-}
-
 int date_to_fname(char *postboard, time_t now, char *fname) {
 	static unsigned ref = 0;
 	
@@ -1165,60 +1159,6 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd...");
 	egetch();
 	return PARTUPDATE;
-}
-
-//added by iamfat 2002.07.24
-//extern int insert_record(char *filename, char *rptr, int size, int offset, int size2);
-//modified by iamfat 2002.07.24
-int UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct) /* undelete 一篇文章 Leeward 98.05.18 */
-{
-	return _UndeleteArticle(ent, fileinfo, direct, YEA);
-}
-
-//加了个response变量 方便区域恢复的时候不回显
-int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
-		int response) /* undelete 一篇文章 Leeward 98.05.18 */
-{
-	char buf[1024];
-	struct stat st;
-	int owned;
-	int subflag;
-
-	/* Modified by Amigo 2002.06.27. Add undelete for big D board. */
-	// if (strcmp(currboard, "deleted")&&strcmp(currboard,"junk")) {
-	if (digestmode != TRASH_MODE && digestmode != JUNK_MODE) {
-		return DONOTHING;
-	}
-
-	sprintf(buf, "boards/%s/%s", currboard, fileinfo->filename);
-	stat(buf, &st);
-	if (!S_ISREG(st.st_mode))
-		return DONOTHING;
-
-	//if(digestmode==TRASH_MODE)
-	setwbdir(buf, currboard);
-	subflag = (fileinfo->accessed[1] & FILE_SUBDEL);
-	fileinfo->accessed[1] &= ~FILE_SUBDEL;
-	if (insert_record(buf, sizeof(struct fileheader), undelcheck, fileinfo)
-			!= 0) {
-		return DONOTHING;
-	}
-
-	sprintf(buf, "boards/%s/%s", currboard,
-			digestmode == TRASH_MODE ? ".TRASH" : ".JUNK");
-	delete_record(buf, sizeof(struct fileheader), ent, cmpfilename,
-			fileinfo->filename);
-	owned = getuser(fileinfo->owner);
-	if (!is_junk_board(currbp) && subflag && owned != 0 && atoi(fileinfo->filename
-			+ 2) > lookupuser.firstlogin) {
-		lookupuser.numposts++;
-		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec),
-				owned);
-	}
-	sprintf(genbuf, "UNDEL '%s' on %s", fileinfo->title, currboard);
-	report(genbuf, currentuser.userid);
-	bm_log(currentuser.userid, currboard, BMLOG_UNDELETE, 1);
-	return DIRCHANGED;
 }
 
 int _del_post(int ent, struct fileheader *fileinfo, char *direct,
