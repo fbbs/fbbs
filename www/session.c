@@ -38,6 +38,7 @@ static bool _get_session(const char *uname, const char *key)
 	if (uid > 0) {
 		session_id_t sid = get_web_session_cache(uid, key);
 		if (sid > 0) {
+			session_set_id(sid);
 			session_set_uid(uid);
 			return true;
 		}
