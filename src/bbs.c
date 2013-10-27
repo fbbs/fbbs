@@ -1360,9 +1360,9 @@ int into_announce() {
 	if (a_menusearch(currboard, found)) {
 		sprintf(ANN_LOG_PATH, "logs/%s", currboard);
 		a_menu("", found, (HAS_PERM(PERM_ANNOUNCE) ? PERM_BOARDS : 0), 0);
-		return MODECHANGED;
+		return FULLUPDATE;
 	}
-	return DONOTHING;
+	return MINIUPDATE;
 }
 
 int into_myAnnounce() {

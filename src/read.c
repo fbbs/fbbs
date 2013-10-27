@@ -278,14 +278,6 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		case 'l': /* ppfoong */
 			msg_more();
 			return FULLUPDATE;
-		/*        case 'L':		//chenhao 解决在文章列表时看信的问题
-		 if(session_status() == RMAIL) return DONOTHING;
-		 savemode = session_status();
-		 m_read();
-		 set_user_status(ST_savemode);
-		 return MODECHANGED;
-		 */
-		//wait for new key -> look all mail. 1.12. by money
 		case 'N':
 		case Ctrl('F'):
 		case KEY_PGDN:
@@ -531,12 +523,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 		switch (mode) {
 			case NEWDIRECT:
 			case DIRCHANGED:
-			case MODECHANGED: // chenhao 解决文章列表看信的问题
 				recbase = -1;
-				if (mode == MODECHANGED) { // chenhao
-					setbdir(currdirect, currboard);
-					pnt = ptr;
-				}
 #ifndef ENABLE_NOTICE
 				last_line = get_num_records(currdirect, ssize);
 #else

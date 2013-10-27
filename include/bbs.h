@@ -184,7 +184,6 @@ enum {
 	READ_PREV   = 6,  /* Direct read prev file */
 	GOTO_NEXT   = 7,  /* Move cursor to next */
 	DIRCHANGED  = 8,  /* Index file was changed */
-	MODECHANGED = 9,  /* ... */
 	READ_AGAIN  = 10,
 	MINIUPDATE  = 11,
 };

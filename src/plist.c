@@ -2271,8 +2271,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case Ctrl('K'):
 			return club_user();
 		case 'x':
-			if (into_announce() != DONOTHING)
-				return FULLUPDATE;
+			return into_announce();
 		case 's':
 			return switch_board(tl);
 #if 0
