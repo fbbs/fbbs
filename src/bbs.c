@@ -35,44 +35,18 @@ char ANN_LOG_PATH[256];
 int digestmode;
 int usernum = 0;
 char currBM[BM_LEN - 1];
-char someoneID[31];
 char topic[STRLEN] = "";
 char genbuf[1024];
 char quote_file[120], quote_user[120];
 #ifndef NOREPLY
 char replytitle[STRLEN];
-int o_id = 0;
-int o_gid = 0;
 #endif
 
-int	getlist(char *, char **, int, char **, int, char **, int, char **,
-				int);
-char *filemargin();
 void board_usage();
 void canceltotrash();
-int thesis_mode();
 
-/*For read.c*/
-int auth_search_down();
-int auth_search_up();
 int post_search_down();
 int post_search_up();
-int thread_up();
-int thread_down();
-int deny_user();
-int club_user();
-int show_author();
-int SR_first();
-int SR_read();
-int SR_read();
-int SR_author();
-int SR_BMfunc();
-int Q_Goodbye();
-int show_online_followings(void);
-int b_notes_passwd();
-int post_cross(char islocal, int mod);
-int lock();
-extern int x_lockscreen();
 extern time_t login_start_time;
 extern char BoardName[];
 extern char fromhost[];
@@ -118,7 +92,6 @@ char *sethomepath(char *buf, const char *userid)
 //              如果是回复文章,去掉前面的 "Re: "这4个字符
 void setqtitle(char *stitle, int gid)
 {
-	o_gid = gid;
 	if (strncmp(stitle, "Re: ", 4) != 0)
 		//commented by iamfat 2002.07.26
 		//&& strncmp (stitle, "RE: ", 4) != 0)
@@ -171,51 +144,6 @@ char *setuserfile(char *buf, char *filename) {
 	return buf;
 }
 
-char *setbdir(char *buf, const char *boardname)
-{
-	const char *dir;
-	switch (digestmode) {
-		case YEA:
-			dir = DIGEST_DIR;
-			break;
-		case 2:
-			dir = THREAD_DIR;
-			break;
-		case 3:
-			dir = MARKED_DIR;
-			break;
-		case 4:
-			dir = AUTHOR_DIR;
-			break;
-			//      case 5:                 /* 同作者 */
-			//      case 6:                 /* 同作者 */
-			//      case 7:                 /* 标题关键字 */
-		case TRASH_MODE:
-			dir = TRASH_DIR;
-			break;
-		case JUNK_MODE:
-			dir = JUNK_DIR;
-			break;
-#ifdef ENABLE_NOTICE
-		case NOTICE_MODE:
-			dir = NOTICE_DIR;
-			break;
-#endif
-		default:
-			dir = DOT_DIR;
-			break;
-	}
-
-	if (digestmode == 5 || digestmode == 6)
-		sprintf(buf, "boards/%s/SOMEONE.%s.DIR.%d", boardname, someoneID,
-				digestmode - 5);
-	else if (digestmode == 7)
-		sprintf(buf, "boards/%s/KEY.%s.DIR", boardname, currentuser.userid);
-	else
-		sprintf(buf, "boards/%s/%s", boardname, dir);
-	return buf;
-}
-
 int shownotepad(void)
 {
 	set_user_status(ST_NOTEPAD);
@@ -248,13 +176,6 @@ int cmpfilename(void *fhdr, void *filename)
 		return 1;
 	return 0;
 }
-
-static int cmpdigestfilename(void *digest_name, void *fhdr)
-{
-	if (!strcmp(((struct fileheader *)fhdr)->filename, (char *)digest_name))
-		return 1;
-	return 0;
-} /* comapare file names for dele_digest function. Luzi 99.3.30 */
 
 int tui_select_board(int current_bid)
 {
@@ -307,109 +228,9 @@ int board_select(void)
 	return 0;
 }
 
-void dele_digest(char *dname, char *direc) {
-	char digest_name[STRLEN];
-	char new_dir[STRLEN];
-	char buf[STRLEN];
-	char *ptr;
-	struct fileheader fh;
-	int pos;
-
-	strlcpy(digest_name, dname, STRLEN);
-	strcpy(new_dir, direc);
-	digest_name[0] = 'G';
-	ptr = strrchr(new_dir, '/') + 1;
-	strcpy(ptr, DIGEST_DIR);
-	pos = search_record(new_dir, &fh, sizeof (fh), cmpdigestfilename,
-			digest_name);
-	if (pos <= 0) {
-		return;
-	}
-	delete_record(new_dir, sizeof(struct fileheader), pos, cmpfilename,
-			digest_name);
-	*ptr = '\0';
-	sprintf(buf, "%s%s", new_dir, digest_name);
-	unlink(buf);
-	return;
-}
-
-int digest_post(int ent, struct fileheader *fhdr, char *direct) {
-	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
-
-	if (!am_curr_bm()) {
-		return DONOTHING;
-	}
-	if (digestmode == YEA)
-		return DONOTHING;
-#ifdef ENABLE_NOTICE
-	if (fhdr->accessed[1] & FILE_NOTICE) {
-		return DONOTHING;
-	}
-#endif
-	if (fhdr->accessed[0] & FILE_DIGEST) {
-		fhdr->accessed[0] = (fhdr->accessed[0] & ~FILE_DIGEST);
-		dele_digest(fhdr->filename, direct);
-		bm_log(currentuser.userid, currboard, BMLOG_UNDIGIST, 1);
-	} else {
-		struct fileheader digest;
-		char *ptr, buf[64];
-
-		memcpy(&digest, fhdr, sizeof (digest));
-		digest.filename[0] = 'G';
-		strcpy(buf, direct);
-		ptr = strrchr(buf, '/') + 1;
-		ptr[0] = '\0';
-		sprintf(genbuf, "%s%s", buf, digest.filename);
-		if (dashf(genbuf)) {
-			fhdr->accessed[0] = fhdr->accessed[0] | FILE_DIGEST;
-			if (get_records(direct, &chkfileinfo, sizeof (chkfileinfo),
-					ent, 1) != 1) // add by quickmouse 01-05-30
-			{
-				return DONOTHING;
-			}
-			if (strcmp(fhdr->filename, chkfileinfo.filename)) // add by quickmouse 01-05-30
-			{
-				return DONOTHING;
-			}
-			substitute_record(direct, fhdr, sizeof (*fhdr), ent);
-			return PARTUPDATE;
-		}
-		digest.accessed[0] = 0;
-		sprintf(&genbuf[512], "%s%s", buf, fhdr->filename);
-		link(&genbuf[512], genbuf);
-		strcpy(ptr, DIGEST_DIR);
-		if (get_num_records(buf, sizeof (digest)) >= MAX_DIGEST) {
-			move(3, 0);
-			clrtobot();
-			move(4, 10);
-			//% prints("抱歉，您的文摘文章已经超过 %d 篇，无法再加入...\n", MAX_DIGEST);
-			prints("\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xb5\xc4\xce\xc4\xd5\xaa\xce\xc4\xd5\xc2\xd2\xd1\xbe\xad\xb3\xac\xb9\xfd %d \xc6\xaa\xa3\xac\xce\xde\xb7\xa8\xd4\xd9\xbc\xd3\xc8\xeb...\n", MAX_DIGEST);
-			pressanykey();
-			return PARTUPDATE;
-		}
-		append_record(buf, &digest, sizeof (digest));
-		fhdr->accessed[0] = fhdr->accessed[0] | FILE_DIGEST;
-		fhdr->accessed[0] &= ~FILE_DELETED;
-		bm_log(currentuser.userid, currboard, BMLOG_DIGIST, 1);
-	}
-	if (get_records(direct, &chkfileinfo, sizeof (chkfileinfo), ent, 1)
-			!= 1) // add by quickmouse 01-05-30
-	{
-		return DONOTHING;
-	}
-	if (strcmp(fhdr->filename, chkfileinfo.filename)) // add by quickmouse 01-05-30
-	{
-		return DONOTHING;
-	}
-	substitute_record(direct, fhdr, sizeof (*fhdr), ent);
-	return PARTUPDATE;
-}
-
 #ifndef NOREPLY
 int do_reply(struct fileheader *fh) {
 	strcpy(replytitle, fh->title);
-	o_id = fh->id;
-	o_gid = fh->gid;
 //	post_article(currboard, fh->owner);
 	replytitle[0] = '\0';
 	return FULLUPDATE;
@@ -916,70 +737,6 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 	return FULLUPDATE;
 }
 
-int underline_post(int ent, struct fileheader *fileinfo, char *direct) {
-	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
-	char *path = direct;
-
-	if (!am_curr_bm()) {
-		return DONOTHING;
-	}
-#ifdef ENABLE_NOTICE
-	if (fileinfo->accessed[1] & FILE_NOTICE) {
-		char notice[STRLEN];
-		struct fileheader tmpfh;
-
-		get_noticedirect (direct, notice);
-		ent =
-		search_record (notice, &tmpfh, sizeof (struct fileheader), cmpfilename,
-				fileinfo->filename);
-		if (ent <= 0)
-		return DONOTHING;
-		path = notice;
-	} else {
-#endif
-	if (get_records(direct, &chkfileinfo, sizeof (chkfileinfo), ent, 1)
-			!= 1) // add by quickmouse 01-05-30
-	{
-		return DONOTHING;
-	}
-	if (strcmp(fileinfo->filename, chkfileinfo.filename)) // add by quickmouse 01-05-30
-	{
-		return DONOTHING;
-	}
-#ifdef ENABLE_NOTICE
-}
-#endif
-	if (fileinfo->accessed[0] & FILE_NOREPLY) {
-		fileinfo->accessed[0] &= ~FILE_NOREPLY;
-		bm_log(currentuser.userid, currboard, BMLOG_UNCANNOTRE, 1);
-	} else {
-		fileinfo->accessed[0] |= FILE_NOREPLY;
-		bm_log(currentuser.userid, currboard, BMLOG_CANNOTRE, 1);
-	}
-	substitute_record(path, fileinfo, sizeof (*fileinfo), ent);
-	return PARTUPDATE;
-}
-
-int makeDELETEDflag(int ent, struct fileheader *fileinfo, char *direct) {
-	if (!(am_curr_bm()) || fileinfo->accessed[0] & (FILE_MARKED
-			| FILE_DIGEST)) {
-		return DONOTHING;
-	}
-#ifdef ENABLE_NOTICE
-	if (fileinfo->accessed[1] & FILE_NOTICE)
-	return DONOTHING;
-#endif
-	if (fileinfo->accessed[0] & FILE_DELETED) {
-		fileinfo->accessed[0] &= ~FILE_DELETED;
-		bm_log(currentuser.userid, currboard, BMLOG_UNWATER, 1);
-	} else {
-		fileinfo->accessed[0] |= FILE_DELETED;
-		bm_log(currentuser.userid, currboard, BMLOG_WATER, 1);
-	}
-	substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
-	return PARTUPDATE;
-}
-
 int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 	struct fileheader chkfileinfo; // add by quickmouse 01-05-30 检查一下 避免出现.DIR破坏
 
@@ -1415,22 +1172,6 @@ int Personal(const char *userid)
 	return 1;
 }
 
-int read_attach(int ent, struct fileheader *fileinfo, char *direct) {
-	extern char currdirect[STRLEN];
-
-	digestmode = ATTACH_MODE;
-	sprintf(currdirect, "upload/%s/.DIR", currboard);
-	if (!dashf(currdirect)) {
-		digestmode = NA;
-		setbdir(currdirect, currboard);
-		//% 版面附件区无内容，按任意键继续...
-		presskeyfor("\xb0\xe6\xc3\xe6\xb8\xbd\xbc\xfe\xc7\xf8\xce\xde\xc4\xda\xc8\xdd\xa3\xac\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xbc\xcc\xd0\xf8...", -1);
-		update_endline();
-		return DONOTHING;
-	}
-	return NEWDIRECT;
-}
-
 int show_online(void)
 {
 	if (currbp->flag & BOARD_ANONY_FLAG) {
@@ -1451,7 +1192,6 @@ extern int mainreadhelp();
 extern int b_notes_edit();
 
 struct one_key read_comms[] = {
-		{',', read_attach},
 		{'\'', post_search_down},
 		{'\"', post_search_up},
 		{'\0', NULL}

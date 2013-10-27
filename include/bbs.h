@@ -179,7 +179,6 @@ enum {
     FULLUPDATE  = 1,  /* Entire screen was destroyed in this oper*/
     PARTUPDATE  = 2,  /* Only the top three lines were destroyed */
 	DOQUIT      = 3,  /* Exit read menu was executed */
-	NEWDIRECT   = 4,  /* Directory has changed, re-read files */
 	READ_NEXT   = 5,  /* Direct read next file */
 	READ_PREV   = 6,  /* Direct read prev file */
 	GOTO_NEXT   = 7,  /* Move cursor to next */

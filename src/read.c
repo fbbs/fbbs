@@ -28,16 +28,10 @@ struct keeploc {
 	struct keeploc *next;
 };
 
-/*struct fileheader *files = NULL;*/
-char currdirect[STRLEN];
+static char currdirect[STRLEN];
 char keyword[STRLEN]; /* for 相关主题 */
 int screen_len;
 int last_line;
-
-#ifdef ENABLE_NOTICE
-char noticedirect[256];
-int notice_lastline, dir_lastline;
-#endif
 
 static int search_articles(struct keeploc *locmem, const char *query, int gid,
 		int offset, int aflag, int newflag);
@@ -166,21 +160,6 @@ void draw_bottom(char *buf) {
 		outs(buf1);
 	}
 }
-
-#ifdef ENABLE_NOTICE
-void get_noticedirect(char *curr, char *notice)
-{
-	char *ptr;
-	strcpy(notice, curr);
-	ptr=strrchr(notice,'/');
-	if(!ptr) {
-		ptr=notice;
-	} else {
-		ptr++;
-	}
-	strcpy(ptr, NOTICE_DIR);
-}
-#endif
 
 /* calc cursor pos and show cursor correctly -cuteyu */
 //将光标移到合适的位置,并显示
@@ -318,20 +297,6 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		return PARTUPDATE;
 		case '$':
 		case KEY_END:
-#ifdef ENABLE_NOTICE
-		if(locmem->crs_line>dir_lastline) {
-			if (dir_lastline >= locmem->top_line + screen_len) {
-				locmem->top_line = dir_lastline - screen_len + 1;
-				if (locmem->top_line <= 0)
-				locmem->top_line = 1;
-				locmem->crs_line = dir_lastline;
-				return PARTUPDATE;
-			}
-			RMVCURS;
-			locmem->crs_line = dir_lastline;
-			PUTCURS;
-		} else {
-#endif
 			if (last_line >= locmem->top_line + screen_len) {
 				locmem->top_line = last_line - screen_len + 1;
 				if (locmem->top_line <= 0)
@@ -342,9 +307,6 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 			RMVCURS;
 			locmem->crs_line = last_line;
 			PUTCURS;
-#ifdef ENABLE_NOTICE
-		}
-#endif
 		break;
 		case 'S': /* youzi */
 		if (!HAS_PERM(PERM_TALK))
@@ -392,18 +354,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 	ptr = pnt = calloc(screen_len, ssize);
 	strcpy(currdirect, direct);
 	draw_title(dotitle);
-#ifndef ENABLE_NOTICE
 	last_line = get_num_records(currdirect, ssize);
-#else
-	last_line=dir_lastline=get_num_records(currdirect, ssize);
-	get_noticedirect(currdirect, noticedirect);
-	if(digestmode==0)
-	notice_lastline=get_num_records(noticedirect, ssize);
-	else
-	notice_lastline=0;
-	if(digestmode==0)
-	last_line+=notice_lastline;
-#endif
 
 	if (last_line == 0) {
 		switch (cmdmode) {
@@ -435,18 +386,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 
 	modify_locmem(locmem, last_line);
 	recbase = locmem->top_line;
-#ifdef ENABLE_NOTICE
-	if(recbase>dir_lastline)
-	entries = get_records(noticedirect, pnt, ssize, recbase-dir_lastline, screen_len);
-	else {
-#endif
 	entries = get_records(currdirect, pnt, ssize, recbase, screen_len);
-#ifdef ENABLE_NOTICE
-	if(entries<screen_len && digestmode==0 && notice_lastline) {
-		entries+=get_records(noticedirect, pnt+ssize*entries, ssize, 1, screen_len-entries);
-	}
-}
-#endif
 	draw_entry(doentry, locmem, entries, ssize);
 	PUTCURS
 	;
@@ -491,19 +431,8 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 					break;
 				} else if (reload) {
 					recbase = locmem->top_line;
-#ifdef ENABLE_NOTICE
-					if(recbase>dir_lastline) {
-						entries = get_records(noticedirect, pnt, ssize,recbase-dir_lastline, screen_len);
-					} else {
-#endif
 					entries = get_records(currdirect, pnt, ssize, recbase,
 							screen_len);
-#ifdef ENABLE_NOTICE
-					if(entries<screen_len && digestmode==0 && notice_lastline) {
-						entries+=get_records(noticedirect, pnt+ssize*entries, ssize, 1, screen_len-entries);
-					}
-				}
-#endif
 					if (entries <= 0) {
 						last_line = -1;
 						break;
@@ -521,51 +450,22 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 			mode = PARTUPDATE;
 		}
 		switch (mode) {
-			case NEWDIRECT:
 			case DIRCHANGED:
 				recbase = -1;
-#ifndef ENABLE_NOTICE
 				last_line = get_num_records(currdirect, ssize);
-#else
-				last_line=dir_lastline=get_num_records(currdirect, ssize);
-				get_noticedirect(currdirect, noticedirect);
-				if(digestmode==0)
-				notice_lastline=get_num_records(noticedirect, ssize);
-				else
-				notice_lastline=0;
-				if(digestmode==0)
-				last_line+=notice_lastline;
-#endif
 				if (last_line == 0 && digestmode > 0) {
 					;
-				}
-				if (mode == NEWDIRECT) {
-					num = last_line - screen_len + 1;
-					locmem = getkeep(currdirect, num < 1 ? 1 : num,
-							last_line);
 				}
 			case FULLUPDATE:
 				draw_title(dotitle);
 			case PARTUPDATE:
 				if (last_line < locmem->top_line + screen_len) {
 					num = get_num_records(currdirect, ssize);
-#ifdef ENABLE_NOTICE
-					if (dir_lastline != num) {
-						dir_lastline = num;
-						recbase = -1;
-					}
-#else
 					if (last_line != num) {
 						last_line = num;
 						recbase = -1;
 					}
-#endif
 				}
-#ifdef ENABLE_NOTICE
-				last_line=dir_lastline;
-				if(digestmode==0)
-				last_line+=notice_lastline;
-#endif
 				if (last_line == 0) {
 					prints("No Messages\n");
 					entries = 0;
@@ -577,19 +477,8 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 							recbase = 1;
 						locmem->top_line = recbase;
 					}
-#ifdef ENABLE_NOTICE
-					if(recbase>dir_lastline) {
-						entries = get_records(noticedirect, pnt, ssize, recbase-dir_lastline, screen_len);
-					} else {
-#endif
 					entries = get_records(currdirect, pnt, ssize, recbase,
 							screen_len);
-#ifdef ENABLE_NOTICE
-					if(entries<screen_len && digestmode==0 && notice_lastline) {
-						entries+=get_records(noticedirect, pnt+ssize*entries, ssize, 1, screen_len-entries);
-					}
-				}
-#endif
 				}
 				if (locmem->crs_line > last_line)
 					locmem->crs_line = last_line;
@@ -714,12 +603,6 @@ char *direct;
 {
 	t_query(fileinfo->owner);
 	return FULLUPDATE;
-}
-
-static int _combine_thread(int ent, struct fileheader *fileinfo, char *direct, int gid)
-{
-	fileinfo->gid = gid;
-	return substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
 }
 
 int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
@@ -939,25 +822,11 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 				case 2:
 					mark_post(locmem->crs_line, &SR_fptr, currdirect);
 					break;
-				case 3:
-					digest_post(locmem->crs_line, &SR_fptr, currdirect);
-					break;
 				case 4:
 					a_Import(SR_fptr.title, SR_fptr.filename, YEA);
 					break;
-				case 5:
-					makeDELETEDflag(locmem->crs_line,&SR_fptr,currdirect);
-					break;
-				case 6:
-					underline_post(locmem->crs_line,&SR_fptr,currdirect);
-					break;
-					/* Add by everlove 制作合集 */
 				case 7:
 					Add_Combine(currboard,&SR_fptr,has_yinyan);
-					break;
-					/* The End */
-				case 8:
-					_combine_thread(locmem->crs_line, &SR_fptr, currdirect, gid);
 					break;
 			}
 			if(locmem->crs_line <= 0) {
@@ -1028,6 +897,8 @@ int combine_thread(int ent, struct fileheader *fileinfo, char *direct)
 	substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
 	return PARTUPDATE;
 }
+
+static int sread(int readfirst, int auser, struct fileheader *ptitle);
 
 int SR_first_new(ent, fileinfo, direct)
 int ent;
@@ -1381,7 +1252,7 @@ char *direct;
 	return DONOTHING;
 }
 
-int sread(int readfirst, int auser, struct fileheader *ptitle)
+static int sread(int readfirst, int auser, struct fileheader *ptitle)
 {
 	struct keeploc *locmem;
 	int rem_top, rem_crs, ch;
@@ -1509,9 +1380,6 @@ int sread(int readfirst, int auser, struct fileheader *ptitle)
 				break;
 			case Ctrl('R'):
 //				post_reply(0, &SR_fptr, (char *) NULL);
-				break;
-			case 'g':
-				digest_post(0, &SR_fptr, currdirect);
 				break;
 			default:
 				break;
