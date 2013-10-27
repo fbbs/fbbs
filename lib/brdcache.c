@@ -51,8 +51,6 @@ int resolve_boards(void)
 				&iscreate);
 		if (!brdshm)
 			return -1;
-		if (iscreate)
-			rebuild_brdshm();
 	}
 
 	time_t now = time(NULL);
@@ -64,31 +62,6 @@ int resolve_boards(void)
 		brdshm->uptime = now;
 	}
 	return 0;
-}
-
-void rebuild_brdshm(void)
-{
-	db_res_t *res = db_query("SELECT id, name FROM boards");
-	if (!res || db_res_rows(res) < 1) {
-		db_clear(res);
-		return;
-	}
-	for (int i = 0; i < db_res_rows(res); ++i) {
-		int id = db_get_integer(res, i, 0);
-		const char *name = db_get_value(res, i, 1);
-
-		getlastpost(name, &brdshm->bstatus[id].lastpost,
-				&brdshm->bstatus[id].total);
-
-		char filename[STRLEN - 8];
-		setbfile(filename, name, DOT_DIR);
-		int count = get_num_records(filename, sizeof(struct fileheader));
-		
-		struct fileheader lastfh;
-		get_record(filename, &lastfh, sizeof(struct fileheader), count - 1);
-		brdshm->bstatus[id].nowid = lastfh.id + 1;
-	}
-	db_clear(res);
 }
 
 static int bcache_lock(void)

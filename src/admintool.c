@@ -12,7 +12,6 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-extern void rebuild_brdshm();
 int showperminfo(int, int);
 char cexplain[STRLEN];
 char lookgrp[30];
@@ -817,7 +816,6 @@ int tui_new_board(const char *cmd)
 		}
 	}
 
-	rebuild_brdshm(); //add by cometcaptor 2006-10-13
 	//% prints("\n新讨论区成立\n");
 	prints("\n\xd0\xc2\xcc\xd6\xc2\xdb\xc7\xf8\xb3\xc9\xc1\xa2\n");
 
