@@ -26,8 +26,3 @@ int resolve_boards(void)
 	}
 	return 0;
 }
-
-struct bstat *getbstat(int bid)
-{
-	return &brdshm->bstatus[bid];
-}

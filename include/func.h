@@ -10,7 +10,6 @@
 //brdcache.c (bcache.c)
 extern struct BCACHE *brdshm;
 int resolve_boards(void);
-struct bstat *getbstat(int bid);
 
 //ucache.c (bcache.c)
 extern struct UCACHE *uidshm;

@@ -637,7 +637,6 @@ static int show_board_info(board_t *board)
 			board_to_gbk(&parent);
 	}
 
-	struct bstat *bs = getbstat(board->id);
 	clear();
 	//% prints("版面详细信息:\n\n");
 	prints("\xb0\xe6\xc3\xe6\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2:\n\n");
@@ -656,8 +655,8 @@ static int show_board_info(board_t *board)
 	prints("\xbf\xc9\xd2\xd4 ZAP:     %s\n", (board->flag & BOARD_NOZAP_FLAG) ? "\xb2\xbb\xbf\xc9\xd2\xd4" : "\xbf\xc9\xd2\xd4");
 
 	if (!(board->flag & BOARD_DIR_FLAG)) {
-		//% prints("在线人数:     %d 人\n", bs->inboard);
-		prints("\xd4\xda\xcf\xdf\xc8\xcb\xca\xfd:     %d \xc8\xcb\n", bs->inboard);
+		//% "在线人数:     %d 人\n"
+		prints("\xd4\xda\xcf\xdf\xc8\xcb\xca\xfd:     %d \xc8\xcb\n", count_onboard(board->id));
 		//% prints("文 章 数:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "不计算" : "计算");
 		prints("\xce\xc4 \xd5\xc2 \xca\xfd:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "\xb2\xbb\xbc\xc6\xcb\xe3" : "\xbc\xc6\xcb\xe3");
 		//% prints("可以回复:     %s\n", (board->flag & BOARD_NOREPLY_FLAG) ? "不可以" : "可以");
@@ -674,7 +673,6 @@ static int show_board_info(board_t *board)
 				(board->flag & BOARD_READ_FLAG) ? "\xb6\xc1\xcf\xde\xd6\xc6\xbe\xe3\xc0\xd6\xb2\xbf" : "\xc6\xd5\xcd\xa8\xbe\xe3\xc0\xd6\xb2\xbf"
 				//% : "非俱乐部");
 				: "\xb7\xc7\xbe\xe3\xc0\xd6\xb2\xbf");
-		prints("now id  :     %d\n", bs->nowid);
 		//% prints("读写限制:     %s\n", (board->flag & BOARD_POST_FLAG) ? "限制发文" :
 		prints("\xb6\xc1\xd0\xb4\xcf\xde\xd6\xc6:     %s\n", (board->flag & BOARD_POST_FLAG) ? "\xcf\xde\xd6\xc6\xb7\xa2\xce\xc4" :
 				//% (board->perm == 0) ? "没有限制" : "限制阅读");
