@@ -203,6 +203,8 @@ fb_time_t get_idle_time(session_id_t sid)
 
 int set_current_board(int bid)
 {
+	if (!session.id)
+		return 0;
 	return !mdb_cmd("ZADD", SESSION_BOARD_KEY" %d %"PRIdSID, bid,
 			session.id);
 }

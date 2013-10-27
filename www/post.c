@@ -203,6 +203,7 @@ int bbscon_main(void)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+	set_current_board(board.id);
 
 	post_id_t pid = strtol(get_param("f"), NULL, 10);
 	char action = *get_param("a");
@@ -268,6 +269,7 @@ int bbsgcon_main(void)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+	set_current_board(board.id);
 
 	const char *f = get_param("f");
 	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
@@ -302,6 +304,7 @@ int bbsdel_main(void)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+	set_current_board(board.id);
 
 	record_t record;
 	if (post_index_board_open(board.id, RECORD_WRITE, &record) <= 0)
@@ -447,6 +450,7 @@ int bbstcon_main(void)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
+	set_current_board(board.id);
 
 	post_id_t tid = strtoll(get_param("g"), NULL, 10);
 	post_id_t pid = strtoll(get_param("f"), NULL, 10);

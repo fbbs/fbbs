@@ -70,7 +70,7 @@ extern int api_board_toc(void);
 typedef struct {
 	const char *name;    ///< name of the cgi.
 	int (*func)(void);   ///< handler function.
-	int status;          ///< user status. @see status_descr
+	session_status_e status; ///< user status. @see status_descr
 } web_handler_t;
 
 char fromhost[IP_LEN];
@@ -97,7 +97,7 @@ const static web_handler_t handlers[] = {
 	{ "exist", fcgi_exist, ST_QUERY },
 	{ "fadd", bbsfadd_main, ST_GMENU },
 	{ "fall", bbsfall_main, ST_GMENU },
-	{ "fav", web_fav, ST_READING },
+	{ "fav", web_fav, ST_READBRD },
 	{ "fdel", bbsfdel_main, ST_GMENU },
 	{ "fdoc", web_forum, ST_READING },
 	{ "fwd", bbsfwd_main, ST_SMAIL },
@@ -131,7 +131,7 @@ const static web_handler_t handlers[] = {
 	{ "sndmail", bbssndmail_main, ST_SMAIL },
 	{ "tcon", bbstcon_main, ST_READING },
 	{ "tdoc" ,bbstdoc_main, ST_READING },
-	{ "top10", bbstop10_main, ST_READING },
+	{ "top10", bbstop10_main, ST_READBRD },
 	{ "upload", bbsupload_main, ST_UPLOAD },
 };
 
@@ -257,7 +257,9 @@ int main(void)
 
 			if (session_id()) {
 				set_user_status(h->status);
-				set_idle_time(session_id(), time(NULL));
+				set_idle_time(session_id(), fb_time());
+				if (h->status != ST_READING)
+					set_current_board(0);
 			}
 
 			code = execute(h);

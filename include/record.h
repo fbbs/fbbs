@@ -13,9 +13,6 @@ typedef int (*apply_func_t)(void *, int, void *);
  * greater than the second object.
  */
 typedef int (*comparator_t)(const void *, const void *);
-/** Pointer to functions performing search algorithms. */
-typedef void *(*search_method_t)(const void *, const void *, size_t, size_t,
-		comparator_t);
 
 long get_num_records(const char *file, int size);
 int append_record(const char *file, const void *record, int size);

@@ -17,6 +17,7 @@ typedef struct {
 	board_t board;
 	int folder;
 	int sector;
+	int online;
 } board_extra_t;
 
 typedef struct {
@@ -415,6 +416,17 @@ static void jump_to_first_unread(tui_list_t *tl)
 	}
 }
 
+static void load_online_data(board_list_t *bl)
+{
+	for (int i = 0; i < bl->bcount; ++i) {
+		board_extra_t *b = bl->boards + i;
+		if (b->board.flag & BOARD_DIR_FLAG)
+			b->online = 0;
+		else
+			b->online = count_onboard(b->board.id);
+	}
+}
+
 static tui_list_loader_t board_list_load(tui_list_t *tl)
 {
 	board_list_t *bl = tl->data;
@@ -430,6 +442,8 @@ static tui_list_loader_t board_list_load(tui_list_t *tl)
 	} else {
 		load_boards(bl);
 	}
+
+	load_online_data(bl);
 
 	if (bl->bcount) {
 		if (!skip)
@@ -538,7 +552,8 @@ static char property(board_t *board)
 static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 {
 	board_list_t *bl = tl->data;
-	board_t *board = &(bl->indices[n]->board);
+	board_extra_t *be = bl->indices[n];
+	board_t *board = &be->board;
 
 	if (!bl->newflag)
 		prints(" %5d", n + 1);
@@ -578,7 +593,7 @@ static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 		prints("%-12s %4d\n",
 				//% bms[0] <= ' ' ? "诚征版主中" : strtok(bms, " "),
 				bms[0] <= ' ' ? "\xb3\xcf\xd5\xf7\xb0\xe6\xd6\xf7\xd6\xd0" : strtok(bms, " "),
-				brdshm->bstatus[board->id].inboard);
+				be->online);
 	}
 
 	return 0;
@@ -586,27 +601,27 @@ static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 
 static int board_cmp_flag(const void *p1, const void *p2)
 {
-	board_t *b1 = *(board_t * const *)p1;
-	board_t *b2 = *(board_t * const *)p2;
-	return strcasecmp(b1->name, b2->name);
+	const board_extra_t *b1 = *(const board_extra_t **) p1;
+	const board_extra_t *b2 = *(const board_extra_t **) p2;
+	return strcasecmp(b1->board.name, b2->board.name);
 }
 
 static int board_cmp_online(const void *p1, const void *p2)
 {
-	board_t *b1 = *(board_t * const *)p1;
-	board_t *b2 = *(board_t * const *)p2;
-	return brdshm->bstatus[b2->id].inboard - brdshm->bstatus[b1->id].inboard;
+	const board_extra_t *b1 = *(const board_extra_t **) p1;
+	const board_extra_t *b2 = *(const board_extra_t **) p2;
+	return b1->online - b2->online;
 }
 
 static int board_cmp_default(const void *p1, const void *p2)
 {
-	const board_extra_t *e1 = *(const board_extra_t **)p1;
-	const board_extra_t *e2 = *(const board_extra_t **)p2;
-	int diff = e1->sector - e2->sector;
+	const board_extra_t *b1 = *(const board_extra_t **) p1;
+	const board_extra_t *b2 = *(const board_extra_t **) p2;
+	int diff = b1->sector - b2->sector;
 	if (!diff)
-		diff = strcasecmp(e1->board.categ, e2->board.categ);
+		diff = strcasecmp(b1->board.categ, b2->board.categ);
 	if (!diff)
-		diff = strcasecmp(e1->board.name, e2->board.name);
+		diff = strcasecmp(b1->board.name, b2->board.name);
 	return diff;
 }
 
