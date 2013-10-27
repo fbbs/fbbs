@@ -1152,7 +1152,6 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 					currboard);
 			//securityreport (genbuf, 0, 2);
 			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);
-			updatelastpost(currbp);
 		} else {
 			sprintf(genbuf, "Range delete %d-%d in mailbox", inum1, inum2);
 			report(genbuf, currentuser.userid);
@@ -1203,7 +1202,6 @@ int _UndeleteArticle(int ent, struct fileheader *fileinfo, char *direct,
 			!= 0) {
 		return DONOTHING;
 	}
-	updatelastpost(currbp);
 
 	sprintf(buf, "boards/%s/%s", currboard,
 			digestmode == TRASH_MODE ? ".TRASH" : ".JUNK");
@@ -1292,7 +1290,6 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		sprintf(genbuf, "Del '%s' on %s", fileinfo->title, currboard);
 		report(genbuf, currentuser.userid);
 
-		updatelastpost(currbp);
 		/*if(subflag==NA)
 		 cancelpost (currboard, currentuser.userid, fileinfo, 2);
 		 else cancelpost (currboard, currentuser.userid, fileinfo, owned && IScurrent); */

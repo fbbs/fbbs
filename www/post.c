@@ -323,7 +323,6 @@ int bbsdel_main(void)
 				pid, board.name);
 		report(buf, currentuser.userid);
 	}
-	updatelastpost(&board);
 
 	printf("Location: doc?bid=%d\n\n", board.id);
 	return 0;

@@ -6,43 +6,6 @@
 
 struct BCACHE *brdshm = NULL;
 
-static int getlastpost(const char *board, int *lastpost, int *total)
-{
-	struct fileheader fh;
-	struct stat st;
-	char filename[STRLEN * 2];
-	int fd, atotal, offset;
-
-	sprintf(filename, "boards/%s/" DOT_DIR, board);
-	if ((fd = open(filename, O_RDONLY)) < 0)
-		return 0;
-	fstat(fd, &st);
-	atotal = st.st_size / sizeof(fh);
-	if (atotal <= 0) {
-		*lastpost = 0;
-		*total = 0;
-		close(fd);
-		return 0;
-	}
-	*total = atotal;
-	offset = (int) ((char *) &(fh.filename[0]) - (char *) &(fh));
-	lseek(fd, (off_t) (offset + (atotal - 1) * sizeof(fh)), SEEK_SET);
-	if (read(fd, filename, STRLEN) > 2) {
-		*lastpost = atoi(filename+2);
-	} else {
-		*lastpost = 0;
-	}
-	close(fd);
-	return 0;
-}
-
-// TODO:
-int updatelastpost(const board_t *bp)
-{
-	return getlastpost(bp->name, &brdshm->bstatus[bp->id].lastpost,
-			&brdshm->bstatus[bp->id].total);
-}
-
 int resolve_boards(void)
 {
 	if (!brdshm) {
