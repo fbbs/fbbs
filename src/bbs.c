@@ -7,6 +7,7 @@
 #else
 #include <rpcsvc/rstat.h>
 #endif
+#include <signal.h>
 #include "mmap.h"
 #include "record.h"
 #include "fbbs/board.h"

@@ -43,18 +43,18 @@
 
 #define USE_TRY extern sigjmp_buf bus_jump
 #define BBS_TRY \
-    	if (!sigsetjmp(bus_jump, 1)) { \
-        	signal(SIGBUS, sigbus);
+		if (!sigsetjmp(bus_jump, 1)) { \
+			fb_signal(SIGBUS, sigbus);
 
 #define BBS_CATCH \
 	} \
 	else { \
 
 #define BBS_END } \
-	signal(SIGBUS, SIG_IGN);
+	fb_signal(SIGBUS, SIG_IGN);
 
-#define BBS_RETURN(x) {signal(SIGBUS, SIG_IGN);return (x);}
-#define BBS_RETURN_VOID {signal(SIGBUS, SIG_IGN);return;}
+#define BBS_RETURN(x) { fb_signal(SIGBUS, SIG_IGN); return (x); }
+#define BBS_RETURN_VOID { fb_signal(SIGBUS, SIG_IGN); return; }
 
 #endif 
 /* _FUNCTIONS_H_ */

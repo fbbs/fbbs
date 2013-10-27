@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "func.h"
 #include "site.h"
 #include "fbbs/helper.h"

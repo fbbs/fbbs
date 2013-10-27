@@ -3,6 +3,7 @@
 #include <arpa/telnet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <signal.h>
 #include <sys/socket.h>
 #include "bbs.h"
 #include "fbbs/fileio.h"
@@ -103,7 +104,7 @@ static void do_bbsnet(const site_t *site)
 	int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	if (!sigsetjmp(ret_alarm, 1)) {
-		signal(SIGALRM, exit_bbsnet);
+		fb_signal(SIGALRM, exit_bbsnet);
 		alarm(CONNECT_TIMEOUT);
 		struct hostent *he = gethostbyname(site->ip);
 		if (he) {
@@ -126,7 +127,7 @@ static void do_bbsnet(const site_t *site)
 		set_user_status(ST_MMENU);
 		return;
 	}
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 
 	bbsnet_log(site);
 	//% prints("\033[1;32m已经连接上主机，按'ctrl+]'快速退出。\033[m\n");

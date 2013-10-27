@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <setjmp.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <string.h>
 #include <ctype.h>

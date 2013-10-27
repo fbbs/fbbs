@@ -71,7 +71,7 @@ void start_daemon(void)
 		close(--n);
 
 	for (n = 1; n <= NSIG; n++)
-		signal(n, SIG_IGN);
+		fb_signal(n, SIG_IGN);
 }
 
 sighandler_t fb_signal(int signum, sighandler_t handler)

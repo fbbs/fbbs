@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "bbs.h"
 #include "mmap.h"
 #include "record.h"
@@ -312,7 +313,7 @@ void R_monitor(int unused)
 		return;
 
 	alarm(0);
-	signal(SIGALRM, R_monitor);
+	fb_signal(SIGALRM, R_monitor);
 	netty_more();
 	printacbar();
 	if (!DEFINE(DEF_ACBOARD))

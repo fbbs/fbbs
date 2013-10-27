@@ -1,5 +1,6 @@
 // Handle user login.
 
+#include <signal.h>
 #include "bbs.h"
 #include "sysconf.h"
 
@@ -192,12 +193,12 @@ void u_exit(void)
 {
 	// 这些信号的处理要关掉, 否则在离线时等候回车时出现
 	// 信号会导致重写名单, 这个导致的名单混乱比kick user更多  (ylsdd)
-	signal(SIGHUP, SIG_DFL);
-	signal(SIGALRM, SIG_DFL);
-	signal(SIGPIPE, SIG_DFL);
-	signal(SIGTERM, SIG_DFL);
-	signal(SIGUSR1, SIG_IGN);
-	signal(SIGUSR2, SIG_IGN);
+	fb_signal(SIGHUP, SIG_DFL);
+	fb_signal(SIGALRM, SIG_DFL);
+	fb_signal(SIGPIPE, SIG_DFL);
+	fb_signal(SIGTERM, SIG_DFL);
+	fb_signal(SIGUSR1, SIG_IGN);
+	fb_signal(SIGUSR2, SIG_IGN);
 
 	if (HAS_PERM(PERM_LOGINCLOAK))
 		setflags(CLOAK_FLAG, !session_visible());
@@ -299,20 +300,20 @@ static void system_init(void)
 	struct sigaction act;
 
 #ifndef lint
-	signal(SIGHUP, abort_bbs);
-	signal(SIGINT, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGPIPE, SIG_IGN);
+	fb_signal(SIGHUP, abort_bbs);
+	fb_signal(SIGINT, SIG_IGN);
+	fb_signal(SIGQUIT, SIG_IGN);
+	fb_signal(SIGPIPE, SIG_IGN);
 #ifdef DOTIMEOUT
 	set_user_status(ST_LOGIN);
 	alarm(LOGIN_TIMEOUT);
 #else
-	signal(SIGALRM, SIG_SIG);
+	fb_signal(SIGALRM, SIG_SIG);
 #endif
-	signal(SIGTERM, SIG_IGN);
-	signal(SIGURG, SIG_IGN);
-	signal(SIGTSTP, SIG_IGN);
-	signal(SIGTTIN, SIG_IGN);
+	fb_signal(SIGTERM, SIG_IGN);
+	fb_signal(SIGURG, SIG_IGN);
+	fb_signal(SIGTSTP, SIG_IGN);
+	fb_signal(SIGTTIN, SIG_IGN);
 #endif
 
 	sigemptyset(&act.sa_mask);
@@ -324,7 +325,7 @@ static void system_init(void)
 		memset(&itv,0, sizeof(struct itimerval));
 		itv.it_value.tv_sec = 2 * 60;
 		setitimer(ITIMER_PROF, &itv, NULL);
-		signal(SIGPROF, exit);
+		fb_signal(SIGPROF, exit);
 	}
 }
 

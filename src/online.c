@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "bbs.h"
 #include "fbbs/board.h"
 #include "fbbs/friend.h"

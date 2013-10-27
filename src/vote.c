@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "bbs.h"
 #include "vote.h"
 #include "mmap.h"
@@ -59,7 +60,7 @@ static int choose(int update, int defaultn, void (*title_show)(),
 	int ch, number, deal;
 	readplan = NA;
 	(*title_show) ();
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	page = -1;
 	number = 0;
 	num = defaultn;
@@ -181,7 +182,7 @@ static int choose(int update, int defaultn, void (*title_show)(),
 			number = 0;
 		}
 	}
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	return -1;
 }
 

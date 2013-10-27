@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdio.h>
 #include "bbs.h"
 #include "record.h"

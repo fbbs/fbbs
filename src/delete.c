@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "bbs.h"
 #include "fbbs/helper.h"
 #include "fbbs/session.h"

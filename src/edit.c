@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "bbs.h"
 #include "mmap.h"
 #include "record.h"
@@ -170,7 +171,7 @@ void msg(int unused)
 	showansi = 1;
 	getyx(&x, &y);
 	msgline();
-	signal(SIGALRM, msg);
+	fb_signal(SIGALRM, msg);
 	move(x, y);
 	refresh();
 	alarm(60);
@@ -281,7 +282,7 @@ void set()
 	char tmp[8],theinfo[STRLEN];
 	int templinelen;
 
-	signal(SIGALRM,SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	//% sprintf(theinfo,"自动换行: 每行最多字符数(10 -- %d)[%d]: ",
 	sprintf(theinfo,"\xd7\xd4\xb6\xaf\xbb\xbb\xd0\xd0: \xc3\xbf\xd0\xd0\xd7\xee\xb6\xe0\xd7\xd6\xb7\xfb\xca\xfd(10 -- %d)[%d]: ",
 			WRAPMARGIN-1,linelen-1);
@@ -300,7 +301,7 @@ void go() {
 	char tmp[8];
 	int line;
 
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	//% getdata(23, 0, "请问要跳到第几行: ", tmp, 7, DOECHO, YEA);
 	getdata(23, 0, "\xc7\xeb\xce\xca\xd2\xaa\xcc\xf8\xb5\xbd\xb5\xda\xbc\xb8\xd0\xd0: ", tmp, 7, DOECHO, YEA);
 	msg(0);
@@ -341,7 +342,7 @@ char text[STRLEN];
 void search() {
 	char tmp[STRLEN];
 
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	//% "搜寻字串: 
 	getdata(-1, 0, "\xcb\xd1\xd1\xb0\xd7\xd6\xb4\xae: ", tmp, 65, DOECHO, YEA);
 	msg(0);
@@ -1027,7 +1028,7 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 	char abort[6], p_buf[100];
 	int aborted = 0;
 
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	clear();
 	if (session_status() == ST_POSTING) {
 		//% strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
@@ -1737,6 +1738,6 @@ int vedit(char *filename, int write_header_to_file, int modifyheader,
 	msg(0);
 	ans = raw_vedit(filename, write_header_to_file, modifyheader, header);
 	showansi = t;
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	return ans;
 }

@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/cfg.h"

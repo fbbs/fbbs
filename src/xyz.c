@@ -315,7 +315,7 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	char buf[160];
 	char *my_argv[18], *ptr;
 
-	signal(SIGALRM, SIG_IGN);
+	fb_signal(SIGALRM, SIG_IGN);
 	set_user_status(umode);
 	clear();
 	move(2, 0);
