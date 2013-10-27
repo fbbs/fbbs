@@ -46,26 +46,6 @@ char genbuf[1024]; ///< global buffer for strings.
 ssh_channel ssh_chan;
 #endif // ENABLE_SSH
 
-sighandler_t fb_signal(int signum, sighandler_t handler)
-{
-	struct sigaction act, oact;
-	act.sa_handler = handler;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	if (signum == SIGALRM) {
-#ifdef SA_INTERRUPT
-		act.sa_flags |= SA_INTERRUPT;
-#endif
-	} else {
-#ifdef  SA_RESTART
-		act.sa_flags |= SA_RESTART;
-#endif
-	}
-	if (sigaction(signum, &act, &oact) < 0)
-		return(SIG_ERR);
-	return(oact.sa_handler);
-}
-
 /**
  * Get remote ip address.
  * @param sa The socket struct.

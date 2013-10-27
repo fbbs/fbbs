@@ -235,12 +235,20 @@ static int execute(const web_handler_t *h)
 	return h->func();
 }
 
+static void exit_handler(int sig)
+{
+	exit(EXIT_SUCCESS);
+}
+
 /**
  * The main entrance of bbswebd.
  * @return 0 on success, 1 on initialization error.
  */
 int main(void)
 {
+	fb_signal(SIGTERM, exit_handler);
+	fb_signal(SIGUSR1, exit_handler);
+
 	if (initialize() < 0)
 		return EXIT_FAILURE;
 	initialize_environment(INIT_CONV | INIT_DB | INIT_MDB);

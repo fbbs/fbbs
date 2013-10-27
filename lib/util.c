@@ -73,3 +73,25 @@ void start_daemon(void)
 	for (n = 1; n <= NSIG; n++)
 		signal(n, SIG_IGN);
 }
+
+sighandler_t fb_signal(int signum, sighandler_t handler)
+{
+	struct sigaction act;
+	act.sa_handler = handler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	if (signum == SIGALRM) {
+#ifdef SA_INTERRUPT
+		act.sa_flags |= SA_INTERRUPT;
+#endif
+	} else {
+#ifdef  SA_RESTART
+		act.sa_flags |= SA_RESTART;
+#endif
+	}
+
+	struct sigaction oact;
+	if (sigaction(signum, &act, &oact) < 0)
+		return SIG_ERR;
+	return oact.sa_handler;
+}
