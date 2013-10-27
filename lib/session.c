@@ -189,7 +189,7 @@ int set_idle_time(session_id_t sid, fb_time_t t)
 
 void cached_set_idle_time(void)
 {
-	time_t now = time(NULL);
+	fb_time_t now = fb_time();
 	if (now > session.idle + IDLE_TIME_REFRESH_THRESHOLD)
 		set_idle_time(session.id, now);
 	session.idle = now;
@@ -229,7 +229,7 @@ int set_user_status(int status)
 
 session_status_e get_user_status(session_id_t sid)
 {
-	return (int) mdb_integer(0, "HGET", SESSION_STATUS_KEY" %"PRIdSID, sid);
+	return mdb_integer(0, "HGET", SESSION_STATUS_KEY" %"PRIdSID, sid);
 }
 
 bool session_toggle_visibility(void)

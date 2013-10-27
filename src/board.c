@@ -35,10 +35,10 @@ typedef struct {
 	int copy_bid;         ///< Copy/paste buffer.
 } board_list_t;
 
-static int load_zapbuf(board_list_t *l)
+static int load_zapbuf(board_list_t *bl)
 {
-	if (!l->zapbuf)
-		l->zapbuf = malloc(sizeof(*l->zapbuf) * MAXBOARD);
+	if (!bl->zapbuf)
+		bl->zapbuf = malloc(sizeof(*bl->zapbuf) * MAXBOARD);
 	else
 		return 0;
 
@@ -48,23 +48,23 @@ static int load_zapbuf(board_list_t *l)
 	int n = 0;
 	int fd = open(file, O_RDONLY, 0600);
 	if (fd >= 0) {
-		n = read(fd, l->zapbuf, sizeof(*l->zapbuf) * MAXBOARD);
+		n = read(fd, bl->zapbuf, sizeof(*bl->zapbuf) * MAXBOARD);
 		file_close(fd);
 	}
 
-	for (int i = n / sizeof(*l->zapbuf); i < MAXBOARD; ++i) {
-		l->zapbuf[i] = 1;
+	for (int i = n / sizeof(*bl->zapbuf); i < MAXBOARD; ++i) {
+		bl->zapbuf[i] = 1;
 	}
 	return 0;
 }
 
-static int save_zapbuf(const board_list_t *l)
+static int save_zapbuf(const board_list_t *bl)
 {
 	char file[HOMELEN];
 	sethomefile(file, currentuser.userid, ".lastread");
 	int fd = open(file, O_WRONLY | O_CREAT, 0600);
 	if (fd >= 0) {
-		file_write(fd, l->zapbuf, sizeof(*l->zapbuf) * MAXBOARD);
+		file_write(fd, bl->zapbuf, sizeof(*bl->zapbuf) * MAXBOARD);
 		file_close(fd);
 		return 0;
 	}
@@ -119,15 +119,15 @@ void board_complete(int row, const char *prompt, char *name, size_t size, int mo
 	ac_list_free(acl);
 }
 
-static int tui_favorite_add(tui_list_t *p)
+static int tui_favorite_add(tui_list_t *tl)
 {
 	if (!HAS_PERM(PERM_LOGIN))
 		return DONOTHING;
 
-	board_list_t *l = p->data;
+	board_list_t *bl = tl->data;
 
-	if (l->favorite) {
-		if (l->count >= FAV_BOARD_LIMIT) {
+	if (bl->favorite) {
+		if (bl->count >= FAV_BOARD_LIMIT) {
 			//% 收藏夹已满
 			presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", -1);
 			return MINIUPDATE;
@@ -144,13 +144,13 @@ static int tui_favorite_add(tui_list_t *p)
 			strlcpy(utf8_name, gbk_name, sizeof(utf8_name));
 
 		int parent = FAV_BOARD_ROOT_FOLDER;
-		if (l->favorite)
-			parent = l->parent;
+		if (bl->favorite)
+			parent = bl->parent;
 		if (fav_board_add(session_uid(), utf8_name, 0, parent, &currentuser))
-			p->valid = false;
+			tl->valid = false;
 		return FULLUPDATE;
 	} else {
-		const char *bname = l->indices[p->cur]->board.name;
+		const char *bname = bl->indices[tl->cur]->board.name;
 		char buf[STRLEN];
 		//% snprintf(buf, sizeof(buf), "您确定要添加 %s 到收藏夹吗?", bname);
 		snprintf(buf, sizeof(buf), "\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xcc\xed\xbc\xd3 %s \xb5\xbd\xca\xd5\xb2\xd8\xbc\xd0\xc2\xf0?", bname);
@@ -162,47 +162,47 @@ static int tui_favorite_add(tui_list_t *p)
 	}
 }
 
-static int tui_favorite_copy(tui_list_t *p)
+static int tui_favorite_copy(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
+	board_list_t *bl = tl->data;
 
-	if (!HAS_PERM(PERM_LOGIN) || !l->favorite)
+	if (!HAS_PERM(PERM_LOGIN) || !bl->favorite)
 		return DONOTHING;
 
-	board_t *bp = &(l->indices[p->cur]->board);
+	board_t *bp = &(bl->indices[tl->cur]->board);
 
 	if (bp->flag & BOARD_CUSTOM_FLAG)
 		return DONOTHING;
 
-	l->copy_bid = bp->id;
+	bl->copy_bid = bp->id;
 	//% 版面已剪切 请按P粘贴
 	presskeyfor("\xb0\xe6\xc3\xe6\xd2\xd1\xbc\xf4\xc7\xd0 \xc7\xeb\xb0\xb4P\xd5\xb3\xcc\xf9", -1);
 	return MINIUPDATE;
 }
 
-static int tui_favorite_paste(tui_list_t *p)
+static int tui_favorite_paste(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
+	board_list_t *bl = tl->data;
 
-	if (!HAS_PERM(PERM_LOGIN) || !l->favorite)
+	if (!HAS_PERM(PERM_LOGIN) || !bl->favorite)
 		return DONOTHING;
 
-	if (fav_board_mv(session_uid(), l->copy_bid, l->parent)) {
-		p->valid = false;
+	if (fav_board_mv(session_uid(), bl->copy_bid, bl->parent)) {
+		tl->valid = false;
 		return PARTUPDATE;
 	}
 	return DONOTHING;
 }
 
-static int tui_favorite_mkdir(tui_list_t *p)
+static int tui_favorite_mkdir(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
+	board_list_t *bl = tl->data;
 
-	if (!HAS_PERM(PERM_LOGIN) || !l->favorite
-			|| (l->parent != FAV_BOARD_ROOT_FOLDER))
+	if (!HAS_PERM(PERM_LOGIN) || !bl->favorite
+			|| (bl->parent != FAV_BOARD_ROOT_FOLDER))
 		return DONOTHING;
 
-	if (l->count >= FAV_BOARD_LIMIT) {
+	if (bl->count >= FAV_BOARD_LIMIT) {
 		//% 收藏夹已满
 		presskeyfor("\xca\xd5\xb2\xd8\xbc\xd0\xd2\xd1\xc2\xfa", -1);
 		return MINIUPDATE;
@@ -225,20 +225,20 @@ static int tui_favorite_mkdir(tui_list_t *p)
 		convert_g2u(gbk_descr, utf8_descr);
 
 		if (fav_board_mkdir(session_uid(), utf8_name, utf8_descr)) {
-			p->valid = false;
+			tl->valid = false;
 			return PARTUPDATE;
 		}
 	}
 	return MINIUPDATE;
 }
 
-static int tui_favorite_rename(tui_list_t *p)
+static int tui_favorite_rename(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
+	board_list_t *bl = tl->data;
 
-	board_t *bp = &(l->indices[p->cur]->board);
+	board_t *bp = &(bl->indices[tl->cur]->board);
 
-	if (!HAS_PERM(PERM_LOGIN) || !l->favorite
+	if (!HAS_PERM(PERM_LOGIN) || !bl->favorite
 			|| !(bp->flag & BOARD_CUSTOM_FLAG))
 		return DONOTHING;
 
@@ -267,12 +267,12 @@ static int tui_favorite_rename(tui_list_t *p)
 	return DONOTHING;
 }
 
-static int tui_favorite_rm(tui_list_t *p)
+static int tui_favorite_rm(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
-	board_t *bp = &(l->indices[p->cur]->board);
+	board_list_t *bl = tl->data;
+	board_t *bp = &(bl->indices[tl->cur]->board);
 
-	if (l->favorite) {
+	if (bl->favorite) {
 		char buf[STRLEN];
 		//% snprintf(buf, sizeof(buf), "要把 %s 从收藏夹中去掉？", bp->name);
 		snprintf(buf, sizeof(buf), "\xd2\xaa\xb0\xd1 %s \xb4\xd3\xca\xd5\xb2\xd8\xbc\xd0\xd6\xd0\xc8\xa5\xb5\xf4\xa3\xbf", bp->name);
@@ -284,7 +284,7 @@ static int tui_favorite_rm(tui_list_t *p)
 			else
 				ok = fav_board_rm(session_uid(), bp->id);
 			if (ok)
-				p->valid = false;
+				tl->valid = false;
 			return PARTUPDATE;
 		}
 		return MINIUPDATE;
@@ -304,30 +304,30 @@ static bool check_newpost(board_t *board)
 	return false;
 }
 
-static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
+static void res_to_board_array(board_list_t *bl, db_res_t *r1, db_res_t *r2)
 {
 	int rows = db_res_rows(r1) + db_res_rows(r2);
-	l->boards = malloc(sizeof(*l->boards) * rows);
+	bl->boards = malloc(sizeof(*bl->boards) * rows);
 
-	l->bcount = 0;
+	bl->bcount = 0;
 
 	for (int i = 0; i < db_res_rows(r1); ++i) {
-		board_extra_t *e = l->boards + l->bcount;
+		board_extra_t *e = bl->boards + bl->bcount;
 		board_t *board = &e->board;
 
 		res_to_board(r1, i, board);
 		board_to_gbk(board);
 
-		e->folder = l->favorite ? db_get_integer(r1, i, 8) : 0;
-		e->sector = l->favorite ? db_get_integer(r1, i, 9) : 0;
+		e->folder = bl->favorite ? db_get_integer(r1, i, 8) : 0;
+		e->sector = bl->favorite ? db_get_integer(r1, i, 9) : 0;
 
 		if (has_read_perm(board))
-			++l->bcount;
+			++bl->bcount;
 	}
 
 	if (r2) {
 		for (int i = 0; i < db_res_rows(r2); ++i) {
-			board_extra_t *e = l->boards + l->bcount;
+			board_extra_t *e = bl->boards + bl->bcount;
 			board_t *board = &e->board;
 
 			board->id = db_get_integer(r2, i, 0);
@@ -340,12 +340,12 @@ static void res_to_board_array(board_list_t *l, db_res_t *r1, db_res_t *r2)
 			e->folder = FAV_BOARD_ROOT_FOLDER;
 			e->sector = 0;
 
-			++l->bcount;
+			++bl->bcount;
 		}
 	}
 }
 
-static void load_favorite_boards(board_list_t *l)
+static void load_favorite_boards(board_list_t *bl)
 {
 	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder, b.sector "
 			"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
@@ -353,95 +353,95 @@ static void load_favorite_boards(board_list_t *l)
 	db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
 			"WHERE user_id = %"DBIdUID, session_uid());
 
-	res_to_board_array(l, r1, r2);
+	res_to_board_array(bl, r1, r2);
 
 	db_clear(r1);
 	db_clear(r2);
 }
 
-static void load_boards(board_list_t *l)
+static void load_boards(board_list_t *bl)
 {
 	db_res_t *res;
-	if (l->sector) {
+	if (bl->sector) {
 		res = db_query(BOARD_SELECT_QUERY_BASE
-				"WHERE b.sector = %d", l->sector);
-	} else if (l->parent) {
+				"WHERE b.sector = %d", bl->sector);
+	} else if (bl->parent) {
 		res = db_query(BOARD_SELECT_QUERY_BASE
-				"WHERE b.parent = %d", l->parent);
+				"WHERE b.parent = %d", bl->parent);
 	} else {
 		res = db_query(BOARD_SELECT_QUERY_BASE);
 	}
-	res_to_board_array(l, res, NULL);
+	res_to_board_array(bl, res, NULL);
 	db_clear(res);
 }
 
-static void index_favorite_boards(board_list_t *l)
+static void index_favorite_boards(board_list_t *bl)
 {
-	if (!l->parent)
-		l->parent = FAV_BOARD_ROOT_FOLDER;
+	if (!bl->parent)
+		bl->parent = FAV_BOARD_ROOT_FOLDER;
 
-	l->count = 0;
+	bl->count = 0;
 
-	for (int i = 0; i < l->bcount; ++i) {
-		board_extra_t *p = l->boards + i;
-		if (p->folder == l->parent)
-			l->indices[l->count++] = p;
+	for (int i = 0; i < bl->bcount; ++i) {
+		board_extra_t *p = bl->boards + i;
+		if (p->folder == bl->parent)
+			bl->indices[bl->count++] = p;
 	}
-	qsort(l->indices, l->count, sizeof(*l->indices), l->cmp);
+	qsort(bl->indices, bl->count, sizeof(*bl->indices), bl->cmp);
 }
 
-static void index_boards(board_list_t *l)
+static void index_boards(board_list_t *bl)
 {
-	l->count = 0;
-	for (int i = 0; i < l->bcount; ++i) {
-		if (!l->yank || l->zapbuf[l->boards[i].board.id])
-		l->indices[l->count++] = l->boards + i;
+	bl->count = 0;
+	for (int i = 0; i < bl->bcount; ++i) {
+		if (!bl->yank || bl->zapbuf[bl->boards[i].board.id])
+		bl->indices[bl->count++] = bl->boards + i;
 	}
-	qsort(l->indices, l->count, sizeof(*l->indices), l->cmp);
+	qsort(bl->indices, bl->count, sizeof(*bl->indices), bl->cmp);
 }
 
-static void jump_to_first_unread(tui_list_t *p)
+static void jump_to_first_unread(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
-	if (l->newflag) {
+	board_list_t *bl = tl->data;
+	if (bl->newflag) {
 		int i;
-		for (i = p->cur; i < p->all; ++i) {
-			board_t *bp = &(l->indices[i]->board);
+		for (i = tl->cur; i < tl->all; ++i) {
+			board_t *bp = &(bl->indices[i]->board);
 			if (!(bp->flag & BOARD_DIR_FLAG) && check_newpost(bp))
 				break;
 		}
-		if (i < p->all)
-			p->cur = i;
+		if (i < tl->all)
+			tl->cur = i;
 	}
 }
 
-static tui_list_loader_t board_list_load(tui_list_t *p)
+static tui_list_loader_t board_list_load(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
-	bool skip = l->skip_reload && p->valid;
+	board_list_t *bl = tl->data;
+	bool skip = bl->skip_reload && tl->valid;
 	if (!skip) {
-		free(l->indices);
-		free(l->boards);
+		free(bl->indices);
+		free(bl->boards);
 	}
 
-	if (l->favorite) {
+	if (bl->favorite) {
 		if (!skip)
-			load_favorite_boards(l);
+			load_favorite_boards(bl);
 	} else {
-		load_boards(l);
+		load_boards(bl);
 	}
 
-	if (l->bcount) {
+	if (bl->bcount) {
 		if (!skip)
-			l->indices = malloc(sizeof(*l->indices) * l->bcount);
-		if (l->favorite)
-			index_favorite_boards(l);
+			bl->indices = malloc(sizeof(*bl->indices) * bl->bcount);
+		if (bl->favorite)
+			index_favorite_boards(bl);
 		else
-			index_boards(l);
+			index_boards(bl);
 	}
 
-	p->all = l->count;
-	jump_to_first_unread(p);
+	tl->all = bl->count;
+	jump_to_first_unread(tl);
 	return 0;
 }
 
@@ -512,9 +512,9 @@ static int search_board(const choose_board_t *cbrd, int *num)
 }
 #endif
 
-static bool is_zapped(board_list_t *l, board_t *board)
+static bool is_zapped(board_list_t *bl, board_t *board)
 {
-	return !l->zapbuf[board->id] && !(board->flag & BOARD_NOZAP_FLAG);
+	return !bl->zapbuf[board->id] && !(board->flag & BOARD_NOZAP_FLAG);
 }
 
 static char property(board_t *board)
@@ -535,12 +535,12 @@ static char property(board_t *board)
 	return ' ';
 }
 
-static tui_list_display_t board_list_display(tui_list_t *p, int n)
+static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 {
-	board_list_t *l = p->data;
-	board_t *board = &(l->indices[n]->board);
+	board_list_t *bl = tl->data;
+	board_t *board = &(bl->indices[n]->board);
 
-	if (!l->newflag)
+	if (!bl->newflag)
 		prints(" %5d", n + 1);
 	else if (board->flag & BOARD_DIR_FLAG)
 		//% prints("  目录");
@@ -563,7 +563,7 @@ static tui_list_display_t board_list_display(tui_list_t *p, int n)
 	ellipsis(descr, 20);
 
 	prints("%c%-17s %s%s[%4s] %-20s %c ",
-			(is_zapped(l, board)) ? '*' : ' ', board->name,
+			(is_zapped(bl, board)) ? '*' : ' ', board->name,
 			(board->flag & BOARD_VOTE_FLAG) ? "\033[1;31mV\033[m" : " ",
 			(board->flag & BOARD_CLUB_FLAG) ? (board->flag & BOARD_READ_FLAG)
 				? "\033[1;31mc\033[m" : "\033[1;33mc\033[m" : " ",
@@ -700,36 +700,35 @@ int show_hotspot(void)
 	return FULLUPDATE;
 }
 
-static int board_list_init(board_list_t *p);
-static int tui_board_list(board_list_t *l);
+static int tui_board_list(board_list_t *bl);
 
-static int read_board(tui_list_t *p)
+static int read_board(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
-	board_t *bp = &(l->indices[p->cur]->board);
+	board_list_t *bl = tl->data;
+	board_t *bp = &(bl->indices[tl->cur]->board);
 
 	if (bp->flag & BOARD_DIR_FLAG) {
 		if (bp->flag & BOARD_CUSTOM_FLAG) {
-			l->skip_reload = true;
-			l->parent = bp->id;
-			tui_board_list(l);
+			bl->skip_reload = true;
+			bl->parent = bp->id;
+			tui_board_list(bl);
 
-			l->skip_reload = false;
-			l->parent = FAV_BOARD_ROOT_FOLDER;
-			index_favorite_boards(l);
+			bl->skip_reload = false;
+			bl->parent = FAV_BOARD_ROOT_FOLDER;
+			index_favorite_boards(bl);
 			return PARTUPDATE;
 		} else {
 			board_list_t nl = {
 				.skip_reload = false,
 				.favorite = false,
-				.newflag = l->newflag,
-				.cmp = l->cmp,
+				.newflag = bl->newflag,
+				.cmp = bl->cmp,
 				.parent = bp->id,
 				.sector = 0,
-				.zapbuf = l->zapbuf,
+				.zapbuf = bl->zapbuf,
 				.boards = NULL,
 				.indices = NULL,
-				.yank = l->yank,
+				.yank = bl->yank,
 			};
 			tui_board_list(&nl);
 			return PARTUPDATE;
@@ -746,60 +745,60 @@ static int read_board(tui_list_t *p)
 
 		board_read();
 
-		brc_zapbuf(l->zapbuf + bp->id);
+		brc_zapbuf(bl->zapbuf + bp->id);
 		currBM[0] = '\0';
 	}
 
 	return FULLUPDATE;
 }
 
-static int sort_boards(tui_list_t *p)
+static int sort_boards(tui_list_t *tl)
 {
-	board_list_t *l = p->data;
+	board_list_t *bl = tl->data;
 
 	if (currentuser.flags[0] & BRDSORT_FLAG) {
 		currentuser.flags[0] ^= BRDSORT_FLAG;
 		currentuser.flags[0] |= BRDSORT_ONLINE;
-		l->cmp = board_cmp_online;
+		bl->cmp = board_cmp_online;
 	} else if (currentuser.flags[0] & BRDSORT_ONLINE) {
 		currentuser.flags[0] ^= BRDSORT_ONLINE;
-		l->cmp = board_cmp_default;
+		bl->cmp = board_cmp_default;
 	} else {
 		currentuser.flags[0] |= BRDSORT_FLAG;
-		l->cmp = board_cmp_flag;
+		bl->cmp = board_cmp_flag;
 	}
 	
-	qsort(l->indices, p->all, sizeof(*l->indices), l->cmp);
+	qsort(bl->indices, tl->all, sizeof(*bl->indices), bl->cmp);
 
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	return FULLUPDATE;
 }
 
-static int board_list_init(board_list_t *p)
+static int board_list_init(board_list_t *bl)
 {
-	memset(p, 0, sizeof(*p));
+	memset(bl, 0, sizeof(*bl));
 
 	if (!streq(currentuser.userid, "guest"))
-		p->yank = true;
+		bl->yank = true;
 
 	char flag = currentuser.flags[0];
 	if (flag & BRDSORT_FLAG)
-		p->cmp = board_cmp_flag;
+		bl->cmp = board_cmp_flag;
 	else if (flag & BRDSORT_ONLINE)
-		p->cmp = board_cmp_online;
+		bl->cmp = board_cmp_online;
 	else if (flag & BRDSORT_UDEF)
-		p->cmp = board_cmp_default;
+		bl->cmp = board_cmp_default;
 	else if (flag & BRDSORT_UPDATE)
-		p->cmp = board_cmp_default;
+		bl->cmp = board_cmp_default;
 	else
-		p->cmp = board_cmp_default;
+		bl->cmp = board_cmp_default;
 
 	return 0;
 }
 
-static tui_list_title_t board_list_title(tui_list_t *p)
+static tui_list_title_t board_list_title(tui_list_t *tl)
 {
-	//% const char *sort = "分类";
+	//% "分类";
 	const char *sort = "\xb7\xd6\xc0\xe0";
 	char flag = currentuser.flags[0];
 	if (flag & BRDSORT_FLAG) {
@@ -834,14 +833,14 @@ static tui_list_title_t board_list_title(tui_list_t *p)
 			"\xd4\xda\xcf\xdf \033[m\n", "\xd6\xd0  \xce\xc4  \xd0\xf0  \xca\xf6");
 }
 
-static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
+static tui_list_handler_t board_list_handler(tui_list_t *tl, int key)
 {
-	board_list_t *l = p->data;
+	board_list_t *bl = tl->data;
 	bool st_changed = false, handled = true;
 
 	switch (key) {
 		case 'c':
-			l->newflag = !l->newflag;
+			bl->newflag = !bl->newflag;
 			return PARTUPDATE;
 		case 'L':
 			m_read();
@@ -863,7 +862,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			st_changed = true;
 			break;
 		case '!':
-			save_zapbuf(l);
+			save_zapbuf(bl);
 			Goodbye();
 			return -1;
 		case 'h':
@@ -882,17 +881,17 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			st_changed = true;
 			break;
 		case 'a':
-			return tui_favorite_add(p);
+			return tui_favorite_add(tl);
 		case 'A':
-			return tui_favorite_mkdir(p);
+			return tui_favorite_mkdir(tl);
 		default:
 			handled = false;
 	}
 
-	if (p->cur >= p->all)
+	if (tl->cur >= tl->all)
 		return READ_AGAIN;
 
-	board_t *board = &(l->indices[p->cur]->board);
+	board_t *board = &(bl->indices[tl->cur]->board);
 
 	switch (key) {
 		case '*':
@@ -901,40 +900,40 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 			// TODO: search.
 			break;
 		case 's':
-			return sort_boards(p);
+			return sort_boards(tl);
 		case 'y':
-			if (l->favorite)
+			if (bl->favorite)
 				return DONOTHING;
-			l->yank = !l->yank;
-			index_boards(l);
-			p->all = l->count;
+			bl->yank = !bl->yank;
+			index_boards(bl);
+			tl->all = bl->count;
 			return PARTUPDATE;
 		case 'z':
-			if (l->favorite)
+			if (bl->favorite)
 				return DONOTHING;
 			if (HAS_PERM(PERM_LOGIN)
 					&& !(board->flag & BOARD_NOZAP_FLAG)) {
 				//% if (l->zapbuf[board->id] && !askyn("确实要隐藏吗?", NA, YEA))
-				if (l->zapbuf[board->id] && !askyn("\xc8\xb7\xca\xb5\xd2\xaa\xd2\xfe\xb2\xd8\xc2\xf0?", NA, YEA))
+				if (bl->zapbuf[board->id] && !askyn("\xc8\xb7\xca\xb5\xd2\xaa\xd2\xfe\xb2\xd8\xc2\xf0?", NA, YEA))
 					return MINIUPDATE;
-				l->zapbuf[board->id] = !l->zapbuf[board->id];
+				bl->zapbuf[board->id] = !bl->zapbuf[board->id];
 			}
-			index_boards(l);
-			p->all = l->count;
+			index_boards(bl);
+			tl->all = bl->count;
 			return PARTUPDATE;
 		case 'T':
-			return tui_favorite_rename(p);
+			return tui_favorite_rename(tl);
 		case 'd':
-			return tui_favorite_rm(p);
+			return tui_favorite_rm(tl);
 		case 'C':
-			return tui_favorite_copy(p);
+			return tui_favorite_copy(tl);
 		case 'P':
-			return tui_favorite_paste(p);
+			return tui_favorite_paste(tl);
 		case '\r':
 		case '\n':
 		case KEY_RIGHT:
-			read_board(p);
-			jump_to_first_unread(p);
+			read_board(tl);
+			jump_to_first_unread(tl);
 			st_changed = true;
 			return FULLUPDATE;
 		default:
@@ -943,18 +942,18 @@ static tui_list_handler_t board_list_handler(tui_list_t *p, int key)
 	}
 
 	if (st_changed)
-		set_user_status(l->newflag ? ST_READNEW : ST_READBRD);
+		set_user_status(bl->newflag ? ST_READNEW : ST_READBRD);
 	return FULLUPDATE;
 }
 
-static int tui_board_list(board_list_t *l)
+static int tui_board_list(board_list_t *bl)
 {
-	bool alloc_zapbuf = !l->zapbuf;
+	bool alloc_zapbuf = !bl->zapbuf;
 	if (alloc_zapbuf)
-		load_zapbuf(l);
+		load_zapbuf(bl);
 
-	tui_list_t t = {
-		.data = l,
+	tui_list_t tl = {
+		.data = bl,
 		.loader = board_list_load,
 		.title = board_list_title,
 		.display = board_list_display,
@@ -962,18 +961,18 @@ static int tui_board_list(board_list_t *l)
 		.query = NULL,
 	};
 
-	set_user_status(l->newflag ? ST_READNEW : ST_READBRD);
+	set_user_status(bl->newflag ? ST_READNEW : ST_READBRD);
 
-	tui_list(&t);
+	tui_list(&tl);
 	
-	if (!l->skip_reload) {
-		free(l->boards);
-		free(l->indices);
+	if (!bl->skip_reload) {
+		free(bl->boards);
+		free(bl->indices);
 	}
 
 	if (alloc_zapbuf) {
-		save_zapbuf(l);
-		free(l->zapbuf);
+		save_zapbuf(bl);
+		free(bl->zapbuf);
 	}
 
 	clear();
@@ -982,24 +981,24 @@ static int tui_board_list(board_list_t *l)
 
 int tui_all_boards(const char *cmd)
 {
-	board_list_t l;
-	board_list_init(&l);
-	return tui_board_list(&l);
+	board_list_t bl;
+	board_list_init(&bl);
+	return tui_board_list(&bl);
 }
 
 int tui_unread_boards(const char *cmd)
 {
-	board_list_t l;
-	board_list_init(&l);
-	l.newflag = true;
-	return tui_board_list(&l);
+	board_list_t bl;
+	board_list_init(&bl);
+	bl.newflag = true;
+	return tui_board_list(&bl);
 }
 
 int tui_read_sector(const char *cmd)
 {
-	board_list_t l;
-	board_list_init(&l);
-	l.newflag = true;
+	board_list_t bl;
+	board_list_init(&bl);
+	bl.newflag = true;
 
 #ifdef FDQUAN
 	char s[] = "a";
@@ -1007,25 +1006,25 @@ int tui_read_sector(const char *cmd)
 	db_res_t *res = db_query("SELECT id FROM board_sectors"
 			" WHERE name = %s", s);
 	if (res && db_res_rows(res) > 0)
-		l.sector = db_get_integer(res, 0, 0);
+		bl.sector = db_get_integer(res, 0, 0);
 	db_clear(res);
 #else
 	char c = *cmd;
 	if (c > 'A')
-		l.sector = c - 'A' + 1;
+		bl.sector = c - 'A' + 1;
 	else
-		l.sector = c - '0' + 1;
+		bl.sector = c - '0' + 1;
 #endif
-	return tui_board_list(&l);
+	return tui_board_list(&bl);
 }
 
 int tui_favorite_boards(const char *cmd)
 {
-	board_list_t l;
-	board_list_init(&l);
+	board_list_t bl;
+	board_list_init(&bl);
 
-	l.favorite = true;
-	l.newflag = true;
+	bl.favorite = true;
+	bl.newflag = true;
 
-	return tui_board_list(&l);
+	return tui_board_list(&bl);
 }
