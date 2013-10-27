@@ -27,45 +27,6 @@ int resolve_boards(void)
 	return 0;
 }
 
-static int bcache_lock(void)
-{
-	int lockfd;
-	lockfd = creat("bcache.lock", 0600);
-	if (lockfd < 0) {
-		report(strerror(errno), "");
-		return -1;
-	}
-	file_lock_all(lockfd, FILE_WRLCK);
-	return lockfd;
-}
-
-static void bcache_unlock(int fd)
-{
-	file_lock_all(fd, FILE_UNLCK);
-	close(fd);
-}
-
-unsigned int get_nextid2(int bid)
-{
-	int fd = bcache_lock();
-	int ret = ++(brdshm->bstatus[bid].nowid);
-	bcache_unlock(fd);
-	return ret;
-}
-
-int get_nextid(const char *bname)
-{
-	db_res_t *res = db_query("SELECT id FROM boards WHERE name = %s", bname);
-	if (!res || db_res_rows(res) < 1) {
-		db_clear(res);
-		return 0;
-	}
-	int bid = db_get_integer(res, 0, 0);
-	db_clear(res);
-
-	return get_nextid2(bid);
-}
-
 struct bstat *getbstat(int bid)
 {
 	return &brdshm->bstatus[bid];

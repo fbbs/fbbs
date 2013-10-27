@@ -10,8 +10,6 @@
 //brdcache.c (bcache.c)
 extern struct BCACHE *brdshm;
 int resolve_boards(void);
-int get_nextid(const char* boardname);
-unsigned int get_nextid2(int bid);
 struct bstat *getbstat(int bid);
 
 //ucache.c (bcache.c)
