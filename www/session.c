@@ -52,7 +52,6 @@ static bool _get_session(const char *uname, const char *key)
 			if (active || activate_session(sid, uname)) {
 				session_set_id(sid);
 				session_set_uid(uid);
-				session_set_idle_cached();
 				set_web_session_cache(uid, key, session_id());
 			}
 		}
