@@ -47,9 +47,10 @@ static bool _get_session(const char *uname, const char *key)
 				" WHERE user_id = %"DBIdUID" AND session_key = %s AND web",
 				uid, key);
 		if (res && db_res_rows(res) == 1) {
-			if (db_get_bool(res, 0, 1)
-					|| activate_session(session_id(), uname)) {
-				session_set_id(db_get_session_id(res, 0, 0));
+			sid = db_get_session_id(res, 0, 0);
+			bool active = db_get_bool(res, 0, 1);
+			if (active || activate_session(sid, uname)) {
+				session_set_id(sid);
 				session_set_uid(uid);
 				set_web_session_cache(uid, key, session_id());
 			}
