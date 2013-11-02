@@ -21,7 +21,7 @@ extern int do_web_login(const char *uname, const char *pw);
 static bool activate_session(session_id_t sid, const char *uname)
 {
 	db_res_t *res = db_cmd("UPDATE sessions SET active = TRUE, stamp = %t"
-			" WHERE id = %"DBIdSID, sid, time(NULL));
+			" WHERE id = %"DBIdSID, fb_time(), sid);
 	db_clear(res);
 
 	if (res)
