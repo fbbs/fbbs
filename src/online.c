@@ -45,7 +45,7 @@ static void _fill_session_array(tui_list_t *p, int i)
 		return;
 
 	session_id_t sid = db_get_session_id(res, i, 0);
-	if (up->bid && get_current_board(sid) != up->bid)
+	if (up->bid && session_get_board(sid) != up->bid)
 		return;
 
 	online_user_info_t *ip = up->users + up->num;
@@ -98,7 +98,7 @@ static tui_list_loader_t fill_session_array(tui_list_t *p)
 static tui_list_loader_t online_users_load_followings(tui_list_t *p)
 {
 	online_users_t *up = p->data;
-	up->res = get_sessions_of_followings();
+	up->res = session_get_followed();
 	return fill_session_array(p);
 }
 
@@ -106,14 +106,14 @@ static tui_list_loader_t online_users_load_board(tui_list_t *p)
 {
 	// TODO: load from redis first
 	online_users_t *up = p->data;
-	up->res = get_active_sessions();
+	up->res = session_get_active();
 	return fill_session_array(p);
 }
 
 static tui_list_loader_t online_users_load_all(tui_list_t *p)
 {
 	online_users_t *up = p->data;
-	up->res = get_active_sessions();
+	up->res = session_get_active();
 	return fill_session_array(p);
 }
 
@@ -202,7 +202,7 @@ static const char *get_host(const online_user_info_t *ip)
 	return host;
 }
 
-const char *get_status_color(int status, bool visible, bool web)
+const char *session_status_color(int status, bool visible, bool web)
 {
 	if (!visible)
 		return "\033[1;30m";
@@ -243,11 +243,11 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 	const char *host = get_host(ip);
 
 	int status = get_user_status(ip->sid);
-	const char *color = get_status_color(status,
+	const char *color = session_status_color(status,
 			!(ip->flag & SESSION_FLAG_INVISIBLE),
 			ip->flag & SESSION_FLAG_WEB);
 
-	int idle = get_idle_time(ip->sid);
+	int idle = session_get_idle(ip->sid);
 	char idle_str[8];
 	get_idle_str(idle_str, sizeof(idle_str), idle, status);
 
@@ -255,7 +255,7 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 	snprintf(buf, sizeof(buf), " \033[m%4d%s  %-12.12s\033[m %-20.20s"
 			"\033[m %-19.19s %s%-10.10s\033[37m %4s\033[m\n",
 			i + 1, up->follow ? "\033[32m" : "", ip->name,
-			nick, host, color, status_descr(status), idle_str);
+			nick, host, color, session_status_descr(status), idle_str);
 	prints("%s", buf);
 	return 0;
 }

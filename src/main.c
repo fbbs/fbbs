@@ -246,9 +246,9 @@ static int multi_user_check(void)
 		return 0;
 
 	int logins = INT_MAX;
-	basic_session_info_t *res = get_my_sessions();
+	session_basic_info_t *res = get_my_sessions();
 	if (res) {
-		logins = basic_session_info_count(res);
+		logins = session_basic_info_count(res);
 	}
 
 	if (strcaseeq("guest", currentuser.userid) && logins >= max) {
@@ -256,7 +256,7 @@ static int multi_user_check(void)
 		prints("\033[1;33m\xb1\xa7\xc7\xb8, \xc4\xbf\xc7\xb0\xd2\xd1\xd3\xd0\xcc\xab\xb6\xe0 \033[1;36mguest\033[33m, "
 				//% "请稍后再试。\033[m\n");
 				"\xc7\xeb\xc9\xd4\xba\xf3\xd4\xd9\xca\xd4\xa1\xa3\033[m\n");
-		basic_session_info_clear(res);
+		session_basic_info_clear(res);
 		return -1;
 	}
 
@@ -272,17 +272,17 @@ static int multi_user_check(void)
 		//% bool kick = askyn("您想删除重复的连接吗", false, false);
 		bool kick = askyn("\xc4\xfa\xcf\xeb\xc9\xbe\xb3\xfd\xd6\xd8\xb8\xb4\xb5\xc4\xc1\xac\xbd\xd3\xc2\xf0", false, false);
 		if (kick) {
-			bbs_kill(basic_session_info_sid(res, 0),
-					basic_session_info_pid(res, 0), SIGHUP);
+			bbs_kill(session_basic_info_sid(res, 0),
+					session_basic_info_pid(res, 0), SIGHUP);
 			report("kicked (multi-login)", currentuser.userid);
-			basic_session_info_clear(res);
+			session_basic_info_clear(res);
 
 			sleep(2);
 			res = get_my_sessions();
-			logins = basic_session_info_count(res);
+			logins = session_basic_info_count(res);
 		}
 
-		basic_session_info_clear(res);
+		session_basic_info_clear(res);
 		if (logins >= max) {
 			//% prints("\033[33m很抱歉，您已经用该帐号登录 %d 个，"
 			prints("\033[33m\xba\xdc\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xd2\xd1\xbe\xad\xd3\xc3\xb8\xc3\xd5\xca\xba\xc5\xb5\xc7\xc2\xbc %d \xb8\xf6\xa3\xac"
@@ -448,7 +448,7 @@ int bbs_auth(const char *name, const char *passwd)
 		return BBS_ENOUSR;
 
 	if (currentuser.userid[0] == '\0') {
-		if (count_online() > MAXACTIVE)
+		if (session_count_online() > MAXACTIVE)
 			return BBS_E2MANY;
 		if (!dosearchuser(name, &currentuser, &usernum))
 			return BBS_ENOUSR;
@@ -492,7 +492,7 @@ static int login_query(void)
 #endif // ENABLE_SSH
 
 	// Deny new logins if too many users online.
-	int online = count_online();
+	int online = session_count_online();
 #ifndef ENABLE_SSH
 	if (online >= MAXACTIVE) {
 		ansimore("etc/loginfull", NA);
@@ -508,9 +508,9 @@ static int login_query(void)
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
 			BBSNAME);
 
-	int peak = get_peak_online();
+	int peak = session_get_online_record();
 	if (peak < online) {
-		update_peak_online(online);
+		session_set_online_record(online);
 		peak = online;
 	}
 
@@ -784,9 +784,9 @@ static void user_login(void)
 		currentuser.numlogins++;
 	}
 
-	basic_session_info_t *res = get_my_sessions();
-	update_user_stay(&currentuser, true, basic_session_info_count(res) > 1);
-	basic_session_info_clear(res);
+	session_basic_info_t *res = get_my_sessions();
+	update_user_stay(&currentuser, true, session_basic_info_count(res) > 1);
+	session_basic_info_clear(res);
 
 #ifdef ALLOWGAME
 	if (currentuser.money> 1000000) {
@@ -971,7 +971,7 @@ void start_client(void)
 	fill_date();
 
 	if (DEFINE(DEF_LOGFRIEND)
-			&& online_follows_count(!HAS_PERM(PERM_SEECLOAK)) > 0)
+			&& session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)) > 0)
 		show_online_followings();
 
 	sysconf_load(false);

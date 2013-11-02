@@ -216,7 +216,7 @@ int tui_select_board(int current_bid)
 		brc_update(currentuser.userid, currboard);
 		brc_init(currentuser.userid, bname);
 		change_board(&board);
-		set_current_board(board.id);
+		session_set_board(board.id);
 		return board.id;
 	}
 	return 0;
@@ -1230,7 +1230,7 @@ int board_read(void)
 	}
 
 	brc_init(currentuser.userid, currboard);
-	set_current_board(board.id);
+	session_set_board(board.id);
 
 	setvfile(notename, currboard, "notes");
 	if (stat(notename, &st) != -1) {
@@ -1260,7 +1260,7 @@ int board_read(void)
 			- usetime);
 	bm_log(currentuser.userid, currboard, BMLOG_INBOARD, 1);
 
-	set_current_board(0);
+	session_set_board(0);
 	
 	brc_update(currentuser.userid, currboard);
 	return 0;
@@ -1448,7 +1448,7 @@ int Q_Goodbye(void)
 		u_exit();
 	}
 
-	set_current_board(0);
+	session_set_board(0);
 
 	sleep(1);
 	exit(0);

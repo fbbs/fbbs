@@ -70,7 +70,7 @@ int bbsfdel_main(void)
 
 static void show_sessions_of_friends(void)
 {
-	db_res_t *res = get_sessions_of_followings();
+	db_res_t *res = session_get_followed();
 	if (!res)
 		return;
 
@@ -83,7 +83,7 @@ static void show_sessions_of_friends(void)
 		session_id_t sid = db_get_session_id(res, i, 0);
 		const char *uname = db_get_value(res, i, 2);
 		const char *ip = db_get_value(res, i, 4);
-		fb_time_t refresh = get_idle_time(sid);
+		fb_time_t refresh = session_get_idle(sid);
 		int status = get_user_status(sid);
 
 		struct userec user;
@@ -101,7 +101,7 @@ static void show_sessions_of_friends(void)
 			ip = "......";
 
 		printf("<ov id='%s' action='%s' idle='%d' ip='%s'>",
-				uname, status_descr(status), idle, ip);
+				uname, session_status_descr(status), idle, ip);
 		xml_fputs(user.username);
 		printf("</ov>");
 	}

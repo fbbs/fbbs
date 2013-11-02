@@ -12,13 +12,6 @@ typedef int64_t session_id_t;
 
 #define db_get_session_id(res, row, col)  db_get_bigint(res, row, col)
 
-#define ACTIVE_SESSION_FIELDS \
-	"s.id, s.user_id, u.name, s.visible, s.ip_addr, s.web"
-
-#define ACTIVE_SESSION_QUERY \
-	"SELECT " ACTIVE_SESSION_FIELDS \
-	" FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.active"
-
 enum {
 	SESSION_KEY_LEN = 40,
 
@@ -102,59 +95,63 @@ typedef enum {
 
 extern session_id_t session_id(void);
 extern void session_set_id(session_id_t sid);
+
 extern user_id_t session_uid(void);
 extern void session_set_uid(user_id_t uid);
+
 extern int session_pid(void);
 extern void session_set_pid(int pid);
+
 extern session_status_e session_status(void);
+
 extern bool session_visible(void);
 extern void session_set_visibility(bool visible);
 extern bool session_toggle_visibility(void);
+
 extern void session_clear(void);
 
 extern session_id_t session_new_id(void);
-extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
-		const char *ip_addr, bool is_web, bool is_secure, bool visible, int duration);
+extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid, const char *ip_addr, bool is_web, bool is_secure, bool visible, int duration);
 extern int session_destroy(session_id_t sid);
 extern int session_inactivate(session_id_t sid);
 
-extern int set_idle_time(session_id_t sid, fb_time_t t);
-extern void cached_set_idle_time(void);
-extern fb_time_t get_idle_time(session_id_t sid);
-extern int set_current_board(int bid);
-extern int get_current_board(session_id_t sid);
-extern int count_onboard(int bid);
+extern fb_time_t session_get_idle(session_id_t sid);
+extern int session_set_idle(session_id_t sid, fb_time_t t);
+extern void session_set_idle_cached(void);
+
+extern int session_set_board(int bid);
+extern int session_get_board(session_id_t sid);
+extern int session_count_online_board(int bid);
 extern int set_user_status(int status);
 extern session_status_e get_user_status(session_id_t sid);
 
-extern db_res_t *get_sessions_of_followings(void);
-extern db_res_t *get_active_sessions(void);
+extern db_res_t *session_get_followed(void);
+extern db_res_t *session_get_active(void);
 
-#define BASIC_SESSION_INFO_FIELDS  "s.id, s.pid, s.visible, s.web"
+#define SESSION_BASIC_INFO_FIELDS  "s.id, s.pid, s.visible, s.web"
 
-typedef db_res_t basic_session_info_t;
-extern basic_session_info_t *get_sessions(user_id_t uid);
-extern basic_session_info_t *get_my_sessions(void);
-#define basic_session_info_count(r)  db_res_rows(r)
-#define basic_session_info_sid(r, i)  db_get_session_id(r, i, 0)
-#define basic_session_info_pid(r, i)  db_get_integer(r, i, 1)
-#define basic_session_info_visible(r, i)  db_get_bool(r, i, 2)
-#define basic_session_info_web(r, i)  db_get_bool(r, i, 3)
-#define basic_session_info_clear(r)  db_clear(r)
+typedef db_res_t session_basic_info_t;
+extern session_basic_info_t *get_sessions(user_id_t uid);
+extern session_basic_info_t *get_my_sessions(void);
+#define session_basic_info_count(r)  db_res_rows(r)
+#define session_basic_info_sid(r, i)  db_get_session_id(r, i, 0)
+#define session_basic_info_pid(r, i)  db_get_integer(r, i, 1)
+#define session_basic_info_visible(r, i)  db_get_bool(r, i, 2)
+#define session_basic_info_web(r, i)  db_get_bool(r, i, 3)
+#define session_basic_info_clear(r)  db_clear(r)
 
-extern int count_online(void);
-extern int get_peak_online(void);
-extern void update_peak_online(int online);
-extern int online_follows_count(bool visible_only);
+extern int session_count_online(void);
+extern int session_get_online_record(void);
+extern void session_set_online_record(int online);
+extern int session_count_online_followed(bool visible_only);
 
-extern const char *get_status_color(int status, bool visible, bool web);
+extern const char *session_status_color(int status, bool visible, bool web);
 
 /** 保存web会话的键值 @mdb_hash */
-#define WEB_SESSION_HASH_KEY  "web_session"
+#define SESSION_WEB_HASH_KEY  "web_session"
 
-extern void remove_web_session_cache(user_id_t uid, const char *key);
-extern bool get_session(void);
+extern void session_remove_web_cache(user_id_t uid, const char *key);
 
-extern const char *status_descr(int status);
+extern const char *session_status_descr(int status);
 
 #endif // FB_SESSION_H

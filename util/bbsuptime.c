@@ -6,7 +6,7 @@ int main(void)
 {
 	initialize_environment(INIT_DB | INIT_MDB);
 
-	int online = count_online();
+	int online = session_count_online();
 	time_t t = time(NULL);
 	struct tm *now = localtime(&t);
 	printf("  %d:%d%s ,  %d user, \n",

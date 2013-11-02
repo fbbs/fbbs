@@ -56,7 +56,7 @@ int web_brdadd(void)
 		board_t board;
 		get_board_by_bid(bid, &board);
 		printf("<brd>%s</brd><bid>%d</bid></bbsbrdadd>", board.name, board.id);
-		set_current_board(board.id);
+		session_set_board(board.id);
 		return 0;
 	}
 	return BBS_EBRDQE;
@@ -398,7 +398,7 @@ int bbsclear_main(void)
 	if (!get_board(get_param("board"), &board)
 			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
-	set_current_board(board.id);
+	session_set_board(board.id);
 
 	const char *start = get_param("start");
 	brc_initialize(currentuser.userid, board.name);
@@ -421,7 +421,7 @@ int bbsnot_main(void)
 
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	set_current_board(board.id);
+	session_set_board(board.id);
 
 	char fname[HOMELEN];
 	snprintf(fname, sizeof(fname), "vote/%s/notes", board.name);

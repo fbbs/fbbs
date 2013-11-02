@@ -71,7 +71,7 @@ extern int api_board_toc(void);
 typedef struct {
 	const char *name;    ///< name of the cgi.
 	int (*func)(void);   ///< handler function.
-	session_status_e status; ///< user status. @see status_descr
+	session_status_e status; ///< user status. @see session_status_descr
 } web_handler_t;
 
 char fromhost[IP_LEN];
@@ -241,6 +241,8 @@ static void exit_handler(int sig)
 	exit(EXIT_SUCCESS);
 }
 
+extern bool session_validate(void);
+
 /**
  * The main entrance of bbswebd.
  * @return 0 on success, 1 on initialization error.
@@ -262,13 +264,13 @@ int main(void)
 		int code = BBS_ENOURL;
 		if (h) {
 			get_client_ip();
-			get_session();
+			session_validate();
 
 			if (session_id()) {
 				set_user_status(h->status);
-				set_idle_time(session_id(), fb_time());
+				session_set_idle(session_id(), fb_time());
 				if (h->status != ST_READING)
-					set_current_board(0);
+					session_set_board(0);
 			}
 
 			code = execute(h);

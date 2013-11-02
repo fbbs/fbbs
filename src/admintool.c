@@ -1974,11 +1974,11 @@ int kick_user(void)
 		return 0;
 	}
 
-	basic_session_info_t *res = get_sessions(uid);
-	if (res && basic_session_info_count(res) > 0) {
-		for (int i = 0; i < basic_session_info_count(res); ++i) {
-			bbs_kill(basic_session_info_sid(res, i),
-					basic_session_info_pid(res, i), SIGHUP);
+	session_basic_info_t *res = get_sessions(uid);
+	if (res && session_basic_info_count(res) > 0) {
+		for (int i = 0; i < session_basic_info_count(res); ++i) {
+			bbs_kill(session_basic_info_sid(res, i),
+					session_basic_info_pid(res, i), SIGHUP);
 		}
 		//% presskeyfor("该用户已经被踢下站", 4);
 		presskeyfor("\xb8\xc3\xd3\xc3\xbb\xa7\xd2\xd1\xbe\xad\xb1\xbb\xcc\xdf\xcf\xc2\xd5\xbe", 4);
@@ -1988,7 +1988,7 @@ int kick_user(void)
 		presskeyfor("\xb8\xc3\xd3\xc3\xbb\xa7\xb2\xbb\xd4\xda\xcf\xdf\xc9\xcf\xbb\xf2\xce\xde\xb7\xa8\xcc\xdf\xb3\xf6\xd5\xbe\xcd\xe2..", 3);
 	}
 
-	basic_session_info_clear(res);
+	session_basic_info_clear(res);
 	clear();
 	return 0;
 }

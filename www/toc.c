@@ -178,7 +178,7 @@ static int bbsdoc(post_list_type_e type)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
-	set_current_board(board.id);
+	session_set_board(board.id);
 
 	int start = strtoll(get_param("start"), NULL, 10);
 	int page = strtol(get_param("my_t_lines"), NULL, 10);
@@ -294,7 +294,7 @@ int bbsbfind_main(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	set_current_board(board.id);
+	session_set_board(board.id);
 
 	record_t record;
 	if (post_index_board_open(board.id, RECORD_READ, &record) < 0)
@@ -483,7 +483,7 @@ int web_forum(void)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return web_sector();
-	set_current_board(board.id);
+	session_set_board(board.id);
 	board_to_gbk(&board);
 
 	if (get_post_list_type() != POST_LIST_FORUM)
@@ -577,7 +577,7 @@ int api_board_toc(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return error_msg(ERROR_BOARD_NOT_FOUND);
-	set_current_board(board.id);
+	session_set_board(board.id);
 	brc_initialize(currentuser.userid, board.name);
 
 	bool asc = streq(get_param("page"), "next");
@@ -665,7 +665,7 @@ int bbsrss_main(void)
 		return BBS_ENOBRD;
 	if (board.flag & BOARD_DIR_FLAG)
 		return BBS_EINVAL;
-	set_current_board(board.id);
+	session_set_board(board.id);
 
 	printf("Content-type: text/xml; charset=utf-8\n\n"
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"

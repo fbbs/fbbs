@@ -82,7 +82,7 @@ void session_clear(void)
 /** 在线人数 @mdb_string */
 #define ONLINE_COUNT_CACHE_KEY  "c:online"
 
-int count_online(void)
+int session_count_online(void)
 {
 	int cached = mdb_integer(-1, "GET", ONLINE_COUNT_CACHE_KEY);
 	if (cached >= 0)
@@ -103,12 +103,12 @@ int count_online(void)
 /** 最大在线人数 @mdb_string */
 #define MAX_ONLINE_CACHE_KEY "c:max_online"
 
-void update_peak_online(int online)
+void session_set_online_record(int online)
 {
 	mdb_cmd("SET", MAX_ONLINE_CACHE_KEY" %d", online);
 }
 
-int get_peak_online(void)
+int session_get_online_record(void)
 {
 	return mdb_integer(0, "GET", MAX_ONLINE_CACHE_KEY);
 }
@@ -142,7 +142,7 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	if (res) {
 		db_clear(res);
 		session.id = sid;
-		set_idle_time(sid, time(NULL));
+		session_set_idle(sid, time(NULL));
 		return sid;
 	} else {
 		session.id = 0;
@@ -182,26 +182,26 @@ int session_inactivate(session_id_t sid)
 	return !res;
 }
 
-int set_idle_time(session_id_t sid, fb_time_t t)
+int session_set_idle(session_id_t sid, fb_time_t t)
 {
 	return !mdb_cmd("ZADD", SESSION_IDLE_KEY" %"PRIdFBT" %"PRIdSID, t, sid);
 }
 
-void cached_set_idle_time(void)
+void session_set_idle_cached(void)
 {
 	fb_time_t now = fb_time();
 	if (now > session.idle + IDLE_TIME_REFRESH_THRESHOLD)
-		set_idle_time(session.id, now);
+		session_set_idle(session.id, now);
 	session.idle = now;
 }
 
-fb_time_t get_idle_time(session_id_t sid)
+fb_time_t session_get_idle(session_id_t sid)
 {
 	return (fb_time_t) mdb_integer(0, "ZSCORE", SESSION_IDLE_KEY" %"PRIdSID,
 			sid);
 }
 
-int set_current_board(int bid)
+int session_set_board(int bid)
 {
 	if (!session.id)
 		return 0;
@@ -209,12 +209,12 @@ int set_current_board(int bid)
 			session.id);
 }
 
-int get_current_board(session_id_t sid)
+int session_get_board(session_id_t sid)
 {
 	return (int) mdb_integer(0, "ZSCORE", SESSION_BOARD_KEY" %"PRIdSID, sid);
 }
 
-int count_onboard(int bid)
+int session_count_online_board(int bid)
 {
 	return (int) mdb_integer(0, "ZCOUNT", SESSION_BOARD_KEY" %d %d", bid, bid);
 }
@@ -244,7 +244,14 @@ bool session_toggle_visibility(void)
 	return session.visible;
 }
 
-db_res_t *get_sessions_of_followings(void)
+#define ACTIVE_SESSION_FIELDS \
+	"s.id, s.user_id, u.name, s.visible, s.ip_addr, s.web"
+
+#define ACTIVE_SESSION_QUERY \
+	"SELECT " ACTIVE_SESSION_FIELDS \
+	" FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.active"
+
+db_res_t *session_get_followed(void)
 {
 	return db_query("SELECT " ACTIVE_SESSION_FIELDS ", f.notes"
 			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
@@ -252,30 +259,30 @@ db_res_t *get_sessions_of_followings(void)
 			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
 }
 
-db_res_t *get_active_sessions(void)
+db_res_t *session_get_active(void)
 {
 	return db_query(ACTIVE_SESSION_QUERY);
 }
 
-basic_session_info_t *get_sessions(user_id_t uid)
+session_basic_info_t *get_sessions(user_id_t uid)
 {
-	return db_query("SELECT " BASIC_SESSION_INFO_FIELDS " FROM sessions s"
+	return db_query("SELECT " SESSION_BASIC_INFO_FIELDS " FROM sessions s"
 			" WHERE active AND user_id = %"DBIdUID, uid);
 }
 
-basic_session_info_t *get_my_sessions(void)
+session_basic_info_t *get_my_sessions(void)
 {
 	return get_sessions(session.uid);
 }
 
-static basic_session_info_t *basic_sessions_of_follows(void)
+static session_basic_info_t *basic_sessions_of_follows(void)
 {
-	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
+	return db_query("SELECT "SESSION_BASIC_INFO_FIELDS
 			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
 			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
 }
 
-int online_follows_count(bool visible_only)
+int session_count_online_followed(bool visible_only)
 {
 	static time_t uptime = 0;
 	static int count = 0;
@@ -285,27 +292,27 @@ int online_follows_count(bool visible_only)
 		return count;
 	uptime = now;
 
-	basic_session_info_t *s = basic_sessions_of_follows();
+	session_basic_info_t *s = basic_sessions_of_follows();
 	if (s) {
 		if (!visible_only) {
-			count = basic_session_info_count(s);
+			count = session_basic_info_count(s);
 		} else {
 			count = 0;
-			for (int i = 0; i < basic_session_info_count(s); ++i) {
-				if (basic_session_info_visible(s, i))
+			for (int i = 0; i < session_basic_info_count(s); ++i) {
+				if (session_basic_info_visible(s, i))
 					++count;
 			}
 		}
 	} else {
 		count = 0;
 	}
-	basic_session_info_clear(s);
+	session_basic_info_clear(s);
 	return count;
 }
 
-void remove_web_session_cache(user_id_t uid, const char *key)
+void session_remove_web_cache(user_id_t uid, const char *key)
 {
-	mdb_cmd("HDEL", WEB_SESSION_HASH_KEY" %"PRIdUID":%s", uid, key);
+	mdb_cmd("HDEL", SESSION_WEB_HASH_KEY" %"PRIdUID":%s", uid, key);
 }
 
 /**
@@ -313,7 +320,7 @@ void remove_web_session_cache(user_id_t uid, const char *key)
  * @param status user status.
  * @return a string describing user status.
  */
-const char *status_descr(int status)
+const char *session_status_descr(int status)
 {
 	switch (status) {
 		case ST_IDLE:

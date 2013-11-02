@@ -9,15 +9,15 @@ void mail_info(char *lastword);
 
 static void kill_other_sessions(void)
 {
-	basic_session_info_t *res = get_my_sessions();
+	session_basic_info_t *res = get_my_sessions();
 	if (res) {
-		for (int i = 0; i < basic_session_info_count(res); ++i) {
-			session_id_t sid = basic_session_info_sid(res, i);
+		for (int i = 0; i < session_basic_info_count(res); ++i) {
+			session_id_t sid = session_basic_info_sid(res, i);
 			if (sid != session_id())
-				bbs_kill(sid, basic_session_info_pid(res, i), SIGHUP);
+				bbs_kill(sid, session_basic_info_pid(res, i), SIGHUP);
 		}
 	}
-	basic_session_info_clear(res);
+	session_basic_info_clear(res);
 }
 
 //自杀,详情后叙

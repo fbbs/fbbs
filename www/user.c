@@ -241,7 +241,7 @@ static int show_sessions(const char *uname)
 		session_id_t sid = db_get_session_id(res, i, 0);
 		bool web = db_get_bool(res, i, 2);
 
-		fb_time_t refresh = get_idle_time(sid);
+		fb_time_t refresh = session_get_idle(sid);
 		int status = get_user_status(sid);
 
 		int idle;
@@ -251,7 +251,7 @@ static int show_sessions(const char *uname)
 			idle = (now - refresh) / 60;
 
 		printf("<st vis='%d' web='%d' idle='%d' desc='%s'/>",
-				visible, web, idle, status_descr(status));
+				visible, web, idle, session_status_descr(status));
 	}
 
 	db_clear(res);

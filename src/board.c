@@ -423,7 +423,7 @@ static void load_online_data(board_list_t *bl)
 		if (b->board.flag & BOARD_DIR_FLAG)
 			b->online = 0;
 		else
-			b->online = count_onboard(b->board.id);
+			b->online = session_count_online_board(b->board.id);
 	}
 }
 
@@ -656,7 +656,7 @@ static int show_board_info(board_t *board)
 
 	if (!(board->flag & BOARD_DIR_FLAG)) {
 		//% "在线人数:     %d 人\n"
-		prints("\xd4\xda\xcf\xdf\xc8\xcb\xca\xfd:     %d \xc8\xcb\n", count_onboard(board->id));
+		prints("\xd4\xda\xcf\xdf\xc8\xcb\xca\xfd:     %d \xc8\xcb\n", session_count_online_board(board->id));
 		//% prints("文 章 数:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "不计算" : "计算");
 		prints("\xce\xc4 \xd5\xc2 \xca\xfd:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "\xb2\xbb\xbc\xc6\xcb\xe3" : "\xbc\xc6\xcb\xe3");
 		//% prints("可以回复:     %s\n", (board->flag & BOARD_NOREPLY_FLAG) ? "不可以" : "可以");

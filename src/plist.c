@@ -144,30 +144,30 @@ static tui_list_loader_t post_list_loader(tui_list_t *tl)
 	return 0;
 }
 
-static basic_session_info_t *get_sessions_by_name(const char *uname)
+static session_basic_info_t *get_sessions_by_name(const char *uname)
 {
-	return db_query("SELECT "BASIC_SESSION_INFO_FIELDS
+	return db_query("SELECT "SESSION_BASIC_INFO_FIELDS
 			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
 			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
 }
 
 static int bm_color(const char *uname)
 {
-	basic_session_info_t *s = get_sessions_by_name(uname);
+	session_basic_info_t *s = get_sessions_by_name(uname);
 	int visible = 0, color = 33;
 
 	if (s) {
-		for (int i = 0; i < basic_session_info_count(s); ++i) {
-			if (basic_session_info_visible(s, i))
+		for (int i = 0; i < session_basic_info_count(s); ++i) {
+			if (session_basic_info_visible(s, i))
 				++visible;
 		}
 
 		if (visible)
 			color = 32;
-		else if (HAS_PERM(PERM_SEECLOAK) && basic_session_info_count(s) > 0)
+		else if (HAS_PERM(PERM_SEECLOAK) && session_basic_info_count(s) > 0)
 			color = 36;
 	}
-	basic_session_info_clear(s);
+	session_basic_info_clear(s);
 	return color;
 }
 
@@ -336,7 +336,7 @@ void _post_list_title(int archive_list, const char *mode)
 	prints("\033[1;37;44m  \xb1\xe0\xba\xc5   %-12s %6s %-25s "
 			"\xd4\xda\xcf\xdf:%-4d", "\xbf\xaf \xb5\xc7 \xd5\xdf",
 			"\xc8\xd5  \xc6\xda", " \xb1\xea  \xcc\xe2",
-			count_onboard(currbp->id));
+			session_count_online_board(currbp->id));
 	if (archive_list)
 		//% prints("[存档]");
 		prints("[\xb4\xe6\xb5\xb5]");
@@ -368,10 +368,10 @@ const char *get_board_online_color(const char *uname, int bid)
 	bool online = false;
 	int invisible = 0;
 
-	basic_session_info_t *s = get_sessions_by_name(uname);
+	session_basic_info_t *s = get_sessions_by_name(uname);
 	if (s) {
-		for (int i = 0; i < basic_session_info_count(s); ++i) {
-			if (!basic_session_info_visible(s, i)) {
+		for (int i = 0; i < session_basic_info_count(s); ++i) {
+			if (!session_basic_info_visible(s, i)) {
 				if (HAS_PERM(PERM_SEECLOAK))
 					++invisible;
 				else
@@ -379,12 +379,12 @@ const char *get_board_online_color(const char *uname, int bid)
 			}
 
 			online = true;
-			if (get_current_board(basic_session_info_sid(s, i)) == bid) {
-				if (basic_session_info_visible(s, i))
+			if (session_get_board(session_basic_info_sid(s, i)) == bid) {
+				if (session_basic_info_visible(s, i))
 					color = "1;37";
 				else
 					color = "1;36";
-				basic_session_info_clear(s);
+				session_basic_info_clear(s);
 				return color;
 			}
 		}
@@ -392,10 +392,10 @@ const char *get_board_online_color(const char *uname, int bid)
 
 	if (!online)
 		color = "1;30";
-	else if (invisible > 0 && invisible == basic_session_info_count(s))
+	else if (invisible > 0 && invisible == session_basic_info_count(s))
 		color = "36";
 
-	basic_session_info_clear(s);
+	session_basic_info_clear(s);
 	return color;
 }
 #else

@@ -141,10 +141,10 @@ static int mailto(void *uentpv, int index, void *args) {
 			|| (uentp->userlevel & PERM_SPECIAL0 && mailmode == 4)
 			|| (uentp->userlevel & PERM_SPECIAL9 && mailmode == 5)) {
 		mail_file(filename, uentp->userid, s->header->title);
-		cached_set_idle_time();
+		session_set_idle_cached();
 	} else if (uentp->userlevel & PERM_POST && mailmode == 2) {
 		sharedmail_file(s->file, uentp->userid, s->header->title);
-		cached_set_idle_time();
+		session_set_idle_cached();
 	}
 	return 1;
 }
@@ -1374,7 +1374,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 			}
 		}
 		mail_file(tmpfile, uid, header.title);
-		cached_set_idle_time();
+		session_set_idle_cached();
 	}
 	unlink(tmpfile);
 	clear();

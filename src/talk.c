@@ -84,24 +84,24 @@ enum {
 	IPADDR_OMIT_THRES = 36,
 };
 
-static void show_statuses(basic_session_info_t *res)
+static void show_statuses(session_basic_info_t *res)
 {
-	if (basic_session_info_count(res) > 0)
+	if (session_basic_info_count(res) > 0)
 		//% prints("目前状态如下：\n");
 		prints("\xc4\xbf\xc7\xb0\xd7\xb4\xcc\xac\xc8\xe7\xcf\xc2\xa3\xba\n");
 
-	for (int i = 0; i < basic_session_info_count(res); ++i) {
-		bool visible = basic_session_info_visible(res, i);
+	for (int i = 0; i < session_basic_info_count(res); ++i) {
+		bool visible = session_basic_info_visible(res, i);
 		if (!visible && !HAS_PERM(PERM_SEECLOAK))
 			continue;
 
-		session_id_t sid = basic_session_info_sid(res, i);
-		bool web = basic_session_info_web(res, i);
+		session_id_t sid = session_basic_info_sid(res, i);
+		bool web = session_basic_info_web(res, i);
 		int status = get_user_status(sid);
-		int idle = (time(NULL) - get_idle_time(sid)) / 60;
+		int idle = (time(NULL) - session_get_idle(sid)) / 60;
 
-		const char *color = get_status_color(status, visible, web);
-		prints("\033[1m%s%s\033[m", color, status_descr(status));
+		const char *color = session_status_color(status, visible, web);
+		prints("\033[1m%s%s\033[m", color, session_status_descr(status));
 
 		if (idle >= 1 && status != ST_BBSNET)
 			prints("[%d] ", idle);
@@ -159,9 +159,9 @@ int tui_query_result(const char *userid)
 			strlen(host) > IPADDR_OMIT_THRES ? "" : "\xc0\xb4\xd7\xd4 ", host);
 
 	user_id_t uid = get_user_id(userid);
-	basic_session_info_t *res = get_sessions(uid);
+	session_basic_info_t *res = get_sessions(uid);
 
-	if (res && basic_session_info_count(res) > 0) {
+	if (res && session_basic_info_count(res) > 0) {
 		//% prints("在线 [\033[1;32m讯息器:(\033[36m%s\033[32m)\033[m] ",
 		prints("\xd4\xda\xcf\xdf [\033[1;32m\xd1\xb6\xcf\xa2\xc6\xf7:(\033[36m%s\033[32m)\033[m] ",
 				//% "打开");
@@ -244,7 +244,7 @@ int tui_query_result(const char *userid)
 	uinfo_free(&u);
 
 	show_statuses(res);
-	basic_session_info_clear(res);
+	session_basic_info_clear(res);
 
 	show_user_plan(userid);
 	return 0;

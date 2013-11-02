@@ -188,7 +188,7 @@ static int get_raw_ch(void)
 			nfds = 1;
 		}
 
-		cached_set_idle_time();
+		session_set_idle_cached();
 
 		to.tv_sec = to.tv_usec = 0;
 		ret = select(nfds, &rset, NULL, NULL, &to);
@@ -657,8 +657,8 @@ void update_endline(void)
 			"      "
 			//% "帐号%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
 			"\xd5\xca\xba\xc5%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
-			date, count_online(),
-			online_follows_count(!HAS_PERM(PERM_SEECLOAK)),
+			date, session_count_online(),
+			session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)),
 			buf, (allstay / 60) % 1000, allstay % 60);
 		return;
 	}

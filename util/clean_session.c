@@ -92,14 +92,14 @@ static void kill_session(const struct _session *s, bool is_dup)
 			session_destroy(s->sid);
 
 		if (s->web)
-			remove_web_session_cache(s->uid, s->key);
+			session_remove_web_cache(s->uid, s->key);
 	}
 }
 
 static bool check_timeout(const struct _session *s, int count)
 {
 	if (s->active) {
-		fb_time_t refresh = get_idle_time(s->sid);
+		fb_time_t refresh = session_get_idle(s->sid);
 		fb_time_t now = fb_time();
 		if (refresh > 0 && now - refresh > IDLE_TIMEOUT) {
 			session_status_e status = get_user_status(s->sid);

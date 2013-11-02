@@ -6,13 +6,13 @@
 
 static session_id_t get_web_session_cache(user_id_t uid, const char *key)
 {
-	return mdb_integer(0, "HGET", WEB_SESSION_HASH_KEY" %"PRIdUID":%s",
+	return mdb_integer(0, "HGET", SESSION_WEB_HASH_KEY" %"PRIdUID":%s",
 			uid, key);
 }
 
 void set_web_session_cache(user_id_t uid, const char *key, session_id_t sid)
 {
-	mdb_cmd("HSET", WEB_SESSION_HASH_KEY" %"PRIdUID":%s %"PRIdSID, uid, key,
+	mdb_cmd("HSET", SESSION_WEB_HASH_KEY" %"PRIdUID":%s %"PRIdSID, uid, key,
 			sid);
 }
 
@@ -52,6 +52,7 @@ static bool _get_session(const char *uname, const char *key)
 			if (active || activate_session(sid, uname)) {
 				session_set_id(sid);
 				session_set_uid(uid);
+				session_set_idle_cached();
 				set_web_session_cache(uid, key, session_id());
 			}
 		}
@@ -60,7 +61,7 @@ static bool _get_session(const char *uname, const char *key)
 	return session_id();
 }
 
-bool get_session(void)
+bool session_validate(void)
 {
 	const char *uname = get_param(COOKIE_USER);
 	const char *key = get_param(COOKIE_KEY);
