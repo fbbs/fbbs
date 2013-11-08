@@ -87,7 +87,6 @@ char *setuserfile(char *buf, char *filename);
 void securityreport(char *str, int save, int mode);
 int set_safe_record(void);
 void abort_bbs(int nothing);
-int bm_log(const char *user, const char *name, int type, int value);
 void stand_title(char *title);
 void autoreport(const char *board, const char *title, const char *str, const char *uname, int mode);
 int	check_systempasswd(void);

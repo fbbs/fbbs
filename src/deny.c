@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "fbbs/board.h"
 #include "fbbs/helper.h"
+#include "fbbs/log.h"
 #include "fbbs/mail.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -430,7 +431,7 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 	Postfile(file, "Notice", title, 1);
 	mail_file(file, urec.userid, title);
 	unlink(file);
-	bm_log(currentuser.userid, currboard, BMLOG_DENYPOST, 1);
+	log_bm(LOG_BM_DENYPOST, 1);
 	return 0;
 }
 
@@ -496,7 +497,7 @@ static void deny_release(const char *line)
 	setbfile(list, currboard, "deny_users");
 	if (del_from_file(list, line) != 0)
 		return;
-	bm_log(currentuser.userid, currboard, BMLOG_UNDENY, 1);
+	log_bm(LOG_BM_UNDENY, 1);
 
 	char title[STRLEN], user[IDLEN + 1], buf[256];
 	strlcpy(user, line, sizeof(user));

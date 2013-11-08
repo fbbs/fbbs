@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "fbbs/board.h"
 #include "fbbs/helper.h"
+#include "fbbs/log.h"
 #include "fbbs/mail.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -35,7 +36,7 @@ static int club_do_add(const char *user, const char *board, const char *ps)
 	if (ret < 0)
 		return ret;
 
-	bm_log(currentuser.userid, board, BMLOG_ADDCLUB, 1);
+	log_bm(LOG_BM_ADDCLUB, 1);
 
 	//% snprintf(title, sizeof(title), "%s邀请%s加入俱乐部版%s",
 	snprintf(title, sizeof(title), "%s\xd1\xfb\xc7\xeb%s\xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6%s",
@@ -86,7 +87,7 @@ static int club_del(const char *user, const char *board)
 	if (del_from_file(file, user) < 0)
 		return -1;
 
-	bm_log(currentuser.userid, board, BMLOG_DELCLUB, 1);
+	log_bm(LOG_BM_DELCLUB, 1);
 
 	char title[STRLEN];
 	char *msg = "";
@@ -169,36 +170,4 @@ int club_user(void)
 		return FULLUPDATE;
 	}
 	return DONOTHING;
-}
-
-int bm_log(const char *user, const char *name, int type, int value)
-{
-	int fd, data[BMLOGLEN];
-	struct stat buf;
-	char direct[STRLEN];
-
-	board_t board;
-	if (!get_board(name, &board) || !am_bm(&board))
-		return 0;
-
-	sprintf(direct, "boards/%s/.bm.%s", name, user);
-	if ((fd = open(direct, O_RDWR | O_CREAT, 0644)) == -1)
-		return 0;
-	if (file_lock_all(fd, FILE_WRLCK) == -1) {
-		close(fd);
-		return 0;
-	}
-	fstat(fd, &buf);
-	if (buf.st_size < BMLOGLEN * sizeof(int)) {
-		memset(data, 0, sizeof(int) * BMLOGLEN);
-	} else {
-		read(fd, data, sizeof(int) * BMLOGLEN);
-	}
-	if (type >= 0 && type < BMLOGLEN)
-		data[type] += value;
-	lseek(fd, 0, SEEK_SET);
-	file_write(fd, data, sizeof(int) * BMLOGLEN);
-	file_lock_all(fd, FILE_UNLCK);
-	close(fd);
-	return 0;
 }

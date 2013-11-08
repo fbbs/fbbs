@@ -2,6 +2,7 @@
 #include "fbbs/brc.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/log.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/ucache.h"

@@ -15,6 +15,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
+#include "fbbs/log.h"
 #include "fbbs/mail.h"
 #include "fbbs/msg.h"
 #include "fbbs/post.h"
@@ -752,11 +753,11 @@ int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 	}
 	if (fileinfo->accessed[0] & FILE_MARKED) {
 		fileinfo->accessed[0] &= ~FILE_MARKED;
-		bm_log(currentuser.userid, currboard, BMLOG_UNMARK, 1);
+		log_bm(LOG_BM_UNMARK, 1);
 	} else {
 		fileinfo->accessed[0] |= FILE_MARKED;
 		fileinfo->accessed[0] &= ~FILE_DELETED;
-		bm_log(currentuser.userid, currboard, BMLOG_MARK, 1);
+		log_bm(LOG_BM_MARK, 1);
 	}
 	substitute_record(direct, fileinfo, sizeof (*fileinfo), ent);
 	return PARTUPDATE;
@@ -887,7 +888,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 			sprintf(genbuf, "Range delete %d-%d on %s", inum1, inum2,
 					currboard);
 			//securityreport (genbuf, 0, 2);
-			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);
+			log_bm(LOG_BM_DELETE, 1);
 		} else {
 			sprintf(genbuf, "Range delete %d-%d in mailbox", inum1, inum2);
 			report(genbuf, currentuser.userid);
@@ -1248,9 +1249,9 @@ int board_read(void)
 //			sizeof(struct fileheader));
 	//commented by iamfat 2004.03.14
 	board_usage(currboard, time(0) - usetime);
-	bm_log(currentuser.userid, currboard, BMLOG_STAYTIME, time(0)
+	log_bm(LOG_BM_STAYTIME, time(0)
 			- usetime);
-	bm_log(currentuser.userid, currboard, BMLOG_INBOARD, 1);
+	log_bm(LOG_BM_INBOARD, 1);
 
 	session_set_board(0);
 	

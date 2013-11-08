@@ -5,6 +5,7 @@
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
 #include "fbbs/list.h"
+#include "fbbs/log.h"
 #include "fbbs/mail.h"
 #include "fbbs/post.h"
 #include "fbbs/session.h"
@@ -1206,7 +1207,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
 				usernum);
 	}
-	bm_log(currentuser.userid, currboard, BMLOG_POST, 1);
+	log_bm(LOG_BM_POST, 1);
 	set_user_status(status);
 	return FULLUPDATE;
 }
@@ -1295,7 +1296,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 		post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
 		if (post_index_board_delete(&filter, NULL, 0, false,
 				!HAS_PERM(PERM_OBOARDS), false)) {
-			bm_log(currentuser.userid, currboard, BMLOG_DELETE, 1);
+			log_bm(LOG_BM_DELETE, 1);
 			tl->valid = false;
 		}
 		return PARTUPDATE;
@@ -1825,13 +1826,13 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 
 	switch (choice) {
 		case 3:
-			bm_log(currentuser.userid, currboard, BMLOG_RANGEDEL, 1);
+			log_bm(LOG_BM_RANGEDEL, 1);
 			break;
 		case 4:
-			bm_log(currentuser.userid, currboard, BMLOG_RANGEANN, 1);
+			log_bm(LOG_BM_RANGEANN, 1);
 			break;
 		default:
-			bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
+			log_bm(LOG_BM_RANGEOTHER, 1);
 			break;
 	}
 	return ret;
@@ -2009,16 +2010,16 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 
 	switch (choice) {
 		case 0:
-			bm_log(currentuser.userid, currboard, BMLOG_RANGEDEL, 1);
+			log_bm(LOG_BM_RANGEDEL, 1);
 			break;
 		case 3:
-			bm_log(currentuser.userid, currboard, BMLOG_RANGEANN, 1);
+			log_bm(LOG_BM_RANGEANN, 1);
 			break;
 		case 6:
-			bm_log(currentuser.userid, currboard, BMLOG_COMBINE, 1);
+			log_bm(LOG_BM_COMBINE, 1);
 			break;
 		default:
-			bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
+			log_bm(LOG_BM_RANGEOTHER, 1);
 			break;
 	}
 }

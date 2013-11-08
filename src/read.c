@@ -5,6 +5,7 @@
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"
 #include "fbbs/helper.h"
+#include "fbbs/log.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -866,16 +867,16 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!in_mail)
 		switch(BMch) {
 			case 1:
-				bm_log(currentuser.userid, currboard, BMLOG_RANGEDEL, 1);
+				log_bm(LOG_BM_RANGEDEL, 1);
 				break;
 			case 4:
-				bm_log(currentuser.userid, currboard, BMLOG_RANGEANN, 1);
+				log_bm(LOG_BM_RANGEANN, 1);
 				break;
 			case 7:
-				bm_log(currentuser.userid, currboard, BMLOG_COMBINE, 1);
+				log_bm(LOG_BM_COMBINE, 1);
 				break;
 			default:
-				bm_log(currentuser.userid, currboard, BMLOG_RANGEOTHER, 1);
+				log_bm(LOG_BM_RANGEOTHER, 1);
 				break;
 		}
 	return DIRCHANGED;

@@ -3,6 +3,7 @@
 #include "fbbs/board.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/log.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -396,7 +397,7 @@ int import_file(const char *title, const char *file, const char *path)
 	for (int i = 0; i < pm.num; ++i)
 		free(pm.item[i]);
 
-	bm_log(currentuser.userid, currboard, BMLOG_ANNOUNCE, 1);
+	log_bm(LOG_BM_ANNOUNCE, 1);
 	char buf[STRLEN];
 	//% snprintf(buf, sizeof(buf), "%s %s收录 '%-20.20s..'\n", get_short_date(time(0)),
 	snprintf(buf, sizeof(buf), "%s %s\xca\xd5\xc2\xbc '%-20.20s..'\n", get_short_date(time(0)),
@@ -619,7 +620,7 @@ void a_newitem(MENU *pm, int mode) {
 			//% currentuser.userid, (head=='D') ? "目录" : "文章", title);
 			currentuser.userid, (head=='D') ? "\xc4\xbf\xc2\xbc" : "\xce\xc4\xd5\xc2", title);
 	file_append(ANN_LOG_PATH, genbuf);
-	bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+	log_bm(LOG_BM_DOANN, 1);
 }
 
 void a_moveitem(MENU *pm) {
@@ -645,7 +646,7 @@ void a_moveitem(MENU *pm) {
 	pm->item[num] = tmp;
 	pm->now = num;
 	a_savenames(pm);
-	bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+	log_bm(LOG_BM_DOANN, 1);
 }
 
 void a_copypaste(MENU *pm, int paste) {
@@ -712,7 +713,7 @@ void a_copypaste(MENU *pm, int paste) {
 					get_short_date(time(0)), currentuser.userid, title,
 					pm->mtitle);
 			file_append(ANN_LOG_PATH, genbuf);
-			bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+			log_bm(LOG_BM_DOANN, 1);
 		}
 	}
 
@@ -760,7 +761,7 @@ void a_delete(MENU *pm) {
 			get_short_date(time(0)), currentuser.userid, pm->mtitle,
 			item->title);
 	file_append(ANN_LOG_PATH, genbuf);
-	bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+	log_bm(LOG_BM_DOANN, 1);
 	//	sprintf(genbuf, "ANN DEL '%s'", item->title);
 	//	report(genbuf);
 	free(item);
@@ -799,7 +800,7 @@ void a_RangeDelete(MENU *pm, int num1, int num2) {
 	sprintf(genbuf, "%s %s\xb4\xd3 '%10.10s..' \xc9\xbe\xb3\xfd\xb5\xda%d\xb5\xbd\xb5\xda%d\xc6\xaa\n",
 			get_short_date(time(0)), currentuser.userid, pm->mtitle, num1, num2);
 	file_append(ANN_LOG_PATH, genbuf);
-	bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+	log_bm(LOG_BM_DOANN, 1);
 	//sprintf(genbuf, "ANN RANGE_DEL %s",fpath);
 	//report(genbuf);
 
@@ -918,7 +919,7 @@ int a_Rangefunc(MENU *pm) {
 
 			break;
 	}
-	bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+	log_bm(LOG_BM_DOANN, 1);
 	saveline(t_lines - 1, 1);
 	return DIRCHANGED;
 }
@@ -1012,7 +1013,7 @@ int a_a_Import(MENU *pm, int msg, int menuitem) {
 			get_short_date(time(0)), currentuser.userid, pm->mtitle,
 			item->title);
 	file_append(ANN_LOG_PATH, genbuf);
-	bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+	log_bm(LOG_BM_DOANN, 1);
 	//sprintf(genbuf, "ANN AA_IMP %s ", dfname);//记录 丝路-源文件
 	//report(genbuf);
 	return 1;
@@ -1327,7 +1328,7 @@ void a_manager(MENU *pm, int ch) {
 							get_short_date(time(0)), currentuser.userid,
 							item->title, changed_T);
 					file_append(ANN_LOG_PATH, genbuf);
-					bm_log(currentuser.userid, currboard, BMLOG_DOANN, 1);
+					log_bm(LOG_BM_DOANN, 1);
 					if (dashf(fpath)) {
 						sprintf(genbuf, "%-38.38s %s", changed_T, fowner); //suggest by Humorous
 						//sprintf(genbuf, "%-38.38s %s", changed_T, currentuser.userid);

@@ -190,31 +190,6 @@ enum {
 #define I_TIMEOUT   (-2)         /* Used for the getchar routine select call */
 #define I_OTHERDATA (-333)       /* interface, (-3) will conflict with chinese */
 
-#define BMLOGLEN			32
-#define BMLOG_STAYTIME		0			//停留时间
-#define BMLOG_INBOARD		1			//进版
-#define BMLOG_POST			2			//版内发文
-#define BMLOG_DIGIST		3			//收入文摘
-#define BMLOG_UNDIGIST		4			//去掉文摘
-#define BMLOG_MARK          5           //标记m文
-#define BMLOG_UNMARK        6           //去掉m标记
-#define BMLOG_WATER         7           //标记水文
-#define BMLOG_UNWATER       8           //去掉水文
-#define BMLOG_CANNOTRE		9           //标记不可re
-#define BMLOG_UNCANNOTRE	10          //去掉不可re
-#define BMLOG_DELETE        11          //删除文章(d/B/L/D)
-#define BMLOG_UNDELETE      12          //恢复删除(y/B/L)
-#define BMLOG_DENYPOST      13          //封禁
-#define BMLOG_UNDENY        14          //解封
-#define BMLOG_ADDCLUB       15          //加入俱乐部
-#define BMLOG_DELCLUB       16          //取消俱乐部
-#define BMLOG_ANNOUNCE      17          //收入精华
-#define BMLOG_DOANN         18          //整理精华
-#define BMLOG_COMBINE       19          //合集文章
-#define BMLOG_RANGEANN		20          //L或者B收入精华
-#define BMLOG_RANGEDEL      21          //L或者B删除
-#define BMLOG_RANGEOTHER    23          //L或者B其他操作
-
 extern int digestmode; /*To control Digestmode*/
 
 extern struct userec currentuser;/*  user structure is loaded from passwd */
