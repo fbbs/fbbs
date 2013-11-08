@@ -45,13 +45,15 @@ enum {
 	POST_TITLE_CCHARS = 24,
 };
 
-enum {
+typedef enum {
 	QUOTE_NOTHING = 'N',
 	QUOTE_AUTO = 'R',
 	QUOTE_LONG = 'Y',
 	QUOTE_SOURCE = 'S',
 	QUOTE_ALL = 'A',
-};
+	QUOTE_PACK = 'P',
+	QUOTE_PACK_COMPACT = 'C',
+} post_quote_e;
 
 typedef enum {
 	POST_LIST_NORMAL = 1,
@@ -92,24 +94,25 @@ typedef struct {
 } post_info_full_t;
 
 typedef struct {
-	bool autopost;
-	bool crosspost;
 	const char *uname;
 	const char *nick;
 	const struct userec *user;
 	const board_t *board;
 	const char *title;
 	const char *content;
+	size_t length;
 	const char *gbk_file;
-	int sig;
 	const char *ip;
+	convert_t *cp;
 	post_id_t reid;
 	post_id_t tid;
+	int sig;
 	bool locked;
 	bool marked;
 	bool anony;
 	bool web;
-	convert_t *cp;
+	bool autopost;
+	bool crosspost;
 } post_request_t;
 
 enum {
@@ -198,7 +201,7 @@ extern int post_index_board_to_info(post_index_record_t *pir, const post_index_b
 extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size, post_list_type_e type);
 extern int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset, bool junk, bool bm_visible, bool force);
 extern int post_index_board_undelete(const post_filter_t *filter, void *ptr, int offset, bool bm_visible);
-extern int match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
+extern bool match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
 
 extern int post_index_trash_cmp(const void *p1, const void *p2);
 extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
@@ -220,8 +223,8 @@ extern bool reorder_sticky_posts(int bid, post_id_t pid);
 
 extern post_id_t publish_post(const post_request_t *pr);
 
-extern void quote_string(const char *str, size_t size, const char *output, int mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
-extern void quote_file_(const char *orig, const char *output, int mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
+extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
+extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 
 extern int set_post_flag(record_t *rec, post_index_record_t *pir, post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
 extern int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset, post_flag_e flag, bool set, bool toggle);

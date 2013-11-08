@@ -560,7 +560,7 @@ static void read_signature_legacy(const char *uname, int offset, char *buffer,
 }
 
 static char *generate_content(const post_request_t *pr, const char *uname,
-		const char *nick, const char *ip, bool anony)
+		const char *nick, const char *ip, bool anony, size_t length)
 {
 	UTF8_BUFFER(nick, NAMELEN);
 	convert_g2u(nick, utf8_nick);
@@ -572,7 +572,7 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 			format_time(fb_time(), TIME_FORMAT_UTF8_ZH));
 	int header_len = strlen(header);
 
-	int content_len = strlen(pr->content);
+	int content_len = length ? length : strlen(pr->content);
 	if (pr->cp)
 		content_len *= 2;
 
@@ -704,7 +704,7 @@ post_id_t publish_post(const post_request_t *pr)
 	if (pr->gbk_file)
 		content = convert_file_to_utf8_content(pr->gbk_file);
 	else
-		content = generate_content(pr, uname, nick, ip, anony);
+		content = generate_content(pr, uname, nick, ip, anony, pr->length);
 
 	fb_time_t now = fb_time();
 	post_id_t pid = insert_post(pr, uname, content, now);
@@ -734,7 +734,8 @@ enum {
  * @param end The off-the-end pointer.
  * @return Off-the-end pointer to the first (truncated) line.
  */
-static const char *get_truncated_line(const char *begin, const char *end)
+static const char *get_truncated_line(const char *begin, const char *end,
+		bool utf8)
 {
 	const char *code = "[0123456789;";
 	bool ansi = false;
@@ -854,6 +855,48 @@ static void quote_author(const char *begin, const char *lend, bool mail,
 		PRINT_CONST_STRING("\xd6\xd0\xcc\xe1\xb5\xbd: \xa1\xbf\n");
 }
 
+static const char *find_char(const char *begin, const char *end, int c)
+{
+	for (const char *p = begin; p < end ; ++p) {
+		if (*p == c)
+			return p;
+	}
+	return NULL;
+}
+
+static const char *reverse_find_char(const char *begin, const char *end, int c)
+{
+	for (const char *p = end - 1; p >= begin; --p) {
+		if (*p == c)
+			return p;
+	}
+	return NULL;
+}
+
+static void quote_author_pack(const char *begin, const char *end, FILE *fp,
+		filter_t filter)
+{
+	const char *user_begin = begin + sizeof("发信人: ") - 1;
+	const char *lend = get_newline(begin, end);
+	const char *user_end = reverse_find_char(begin, lend, ',');
+
+	begin = get_newline(lend, end);
+	lend = get_newline(begin, end);
+
+	const char *date_begin = find_char(begin, lend, '(');
+	if (date_begin)
+		++date_begin;
+	const char *date_end = find_char(begin, lend, ')');
+
+	PRINT_CONST_STRING("    \033[0;1;32m");
+	if (user_end && user_end > user_begin)
+		filter(user_begin, user_end - user_begin, fp);
+	PRINT_CONST_STRING(" 于 \033[1;36m");
+	if (date_begin && date_end > date_begin)
+		filter(date_begin, date_end - date_begin, fp);
+	PRINT_CONST_STRING("\033[0;1m 提到：\033[0m\n\n");
+}
+
 #define GBK_SOURCE  "\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4"
 #define UTF8_SOURCE  "※ 来源:·"
 
@@ -861,26 +904,23 @@ static void quote_author(const char *begin, const char *lend, bool mail,
  * Make quotation from a string.
  * @param str String to be quoted.
  * @param size Size of the string.
- * @param output Output file. If NULL, will output to stdout (web).
+ * @param fp Output stream. If NULL, will output to stdout (web).
  * @param mode Quotation mode. See QUOTE_* enums.
  * @param mail Whether the referenced post is a mail.
  * @param filter Output filter function.
  */
-void quote_string(const char *str, size_t size, const char *output, int mode,
-		bool mail, bool utf8, filter_t filter)
+void quote_string(const char *str, size_t size, FILE *fp,
+		post_quote_e mode, bool mail, bool utf8, filter_t filter)
 {
-	FILE *fp = NULL;
-	if (output) {
-		if (!(fp = fopen(output, "w")))
-			return;
-	}
-
 	if (!filter)
 		filter = default_filter;
 
 	const char *begin = str, *end = str + size;
 	const char *lend = get_newline(begin, end);
-	quote_author(begin, lend, mail, utf8, fp, filter);
+	if (mode == QUOTE_PACK || mode == QUOTE_PACK_COMPACT)
+		quote_author_pack(begin, end, fp, filter);
+	else
+		quote_author(begin, lend, mail, utf8, fp, filter);
 
 	bool header = true, tail = false;
 	size_t lines = 0;
@@ -890,7 +930,10 @@ void quote_string(const char *str, size_t size, const char *output, int mode,
 		if (ptr >= end)
 			break;
 
-		lend = get_truncated_line(ptr, end);
+		if (mode == QUOTE_PACK || mode == QUOTE_PACK_COMPACT)
+			lend = get_newline(ptr, end);
+		else
+			lend = get_truncated_line(ptr, end, utf8);
 		if (header && *ptr == '\n') {
 			header = false;
 			continue;
@@ -898,7 +941,8 @@ void quote_string(const char *str, size_t size, const char *output, int mode,
 
 		if (lend - ptr == 3 && !memcmp(ptr, "--\n", 3)) {
 			tail = true;
-			if (mode == QUOTE_LONG || mode == QUOTE_AUTO)
+			if (mode == QUOTE_LONG || mode == QUOTE_AUTO
+					|| mode == QUOTE_PACK || mode == QUOTE_PACK_COMPACT)
 				break;
 		}
 
@@ -934,25 +978,28 @@ void quote_string(const char *str, size_t size, const char *output, int mode,
 				}
 			}
 
-			if (mode != QUOTE_SOURCE)
+			if (mode != QUOTE_SOURCE && mode != QUOTE_PACK
+					&& mode != QUOTE_PACK_COMPACT)
 				PRINT_CONST_STRING(": ");
 			(*filter)(ptr, lend - ptr, fp);
 			if (*(lend - 1) != '\n')
 				PRINT_CONST_STRING("\n");
 		}
 	}
-	if (fp)
-		fclose(fp);
 }
 
-void quote_file_(const char *orig, const char *output, int mode, bool mail,
-		bool utf8, filter_t filter)
+void quote_file_(const char *orig, const char *output, post_quote_e mode,
+		bool mail, bool utf8, filter_t filter)
 {
 	if (mode != QUOTE_NOTHING) {
-		mmap_t m = { .oflag = O_RDONLY };
-		if (mmap_open(orig, &m) == 0) {
-			quote_string(m.ptr, m.size, output, mode, mail, utf8, filter);
-			mmap_close(&m);
+		FILE *fp = fopen(output, "w");
+		if (fp) {
+			mmap_t m = { .oflag = O_RDONLY };
+			if (mmap_open(orig, &m) == 0) {
+				quote_string(m.ptr, m.size, fp, mode, mail, utf8, filter);
+				mmap_close(&m);
+			}
+			fclose(fp);
 		}
 	}
 }
@@ -966,7 +1013,7 @@ typedef struct {
 	post_flag_e flag;
 } post_index_board_update_flag_t;
 
-int match_filter(const post_index_board_t *pib,
+bool match_filter(const post_index_board_t *pib,
 		post_index_record_t *pir, const post_filter_t *filter, int offset)
 {
 	bool match = true;

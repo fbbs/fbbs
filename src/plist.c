@@ -1882,6 +1882,79 @@ static int tui_operate_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	return operate_posts_in_range(choice, pl, min, max);
 }
 
+typedef struct {
+	 post_index_record_t *pir;
+	 const post_filter_t *filter;
+	 FILE *fp;
+	 post_quote_e mode;
+} pack_posts_callback_t;
+
+static record_callback_e pack_posts_callback(void *ptr, void *args, int off)
+{
+	const post_index_board_t *pib = ptr;
+	const pack_posts_callback_t *ppc = args;
+
+	if (match_filter(pib, ppc->pir, ppc->filter, off)) {
+		char buf[4096];
+		char *content = post_content_get(pib->id, buf, sizeof(buf));
+
+		fputs("\033[1;32m☆─────────────────"
+				"─────────────────────☆\033[0;1m\n", ppc->fp);
+		quote_string(content, strlen(content), ppc->fp, ppc->mode, false, true,
+				NULL);
+		fputc('\n', ppc->fp);
+
+		if (content != buf)
+			free(content);
+		return RECORD_CALLBACK_MATCH;
+	}
+	return RECORD_CALLBACK_CONTINUE;
+}
+
+static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
+		const post_filter_t *filter, const char *title, bool quote)
+{
+	post_id_t pid = 0;
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "tmp/%d.pack", session_pid());
+	FILE *fp = fopen(file, "w");
+	if (fp) {
+		post_index_record_t pir;
+		post_index_record_open(&pir);
+
+		pack_posts_callback_t ppc = {
+			.pir = &pir, .filter = filter, .fp = fp,
+			.mode = quote ? QUOTE_PACK : QUOTE_PACK_COMPACT,
+		};
+		record_foreach(record, NULL, 0, pack_posts_callback, &ppc);
+		fclose(fp);
+
+		mmap_t m = { .oflag = O_RDONLY };
+		if (mmap_open(file, &m) == 0) {
+			UTF8_BUFFER(title, POST_TITLE_CCHARS);
+			if (strncaseeq2(title, "Re: "))
+				title += 4;
+			snprintf(utf8_title, sizeof(utf8_title), "[合集]%s", title);
+			// TODO validate title
+
+			post_request_t pr = {
+				.user = &currentuser,
+				.board = currbp,
+				.title = utf8_title,
+				.content = m.ptr,
+				.length = m.size,
+				.locked = true,
+			};
+			pid = publish_post(&pr);
+			mmap_close(&m);
+		}
+
+		post_index_record_close(&pir);
+		unlink(file);
+	}
+	return pid;
+}
+
 static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 		int choice, bool first, post_id_t pid, bool quote, bool junk,
 		const char *annpath, const char *utf8_keyword, const char *gbk_keyword)
@@ -1929,7 +2002,7 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 					true, true);
 			break;
 		case 6:
-			// TODO: pack thread
+			pack_posts(pl->record, pl->pir, &filter, utf8_keyword, quote);
 			break;
 		default:
 			if (is_deleted(pl->type)) {
@@ -2038,6 +2111,12 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 			return MINIUPDATE;
 		convert_g2u(gbk_keyword, utf8_keyword);
 	}
+	if (choice == 6) {
+		if (mode == 0)
+			strlcpy(utf8_keyword, pi->utf8_title, sizeof(utf8_keyword));
+		else if (mode == 1)
+			strlcpy(utf8_keyword, pi->owner, sizeof(utf8_keyword));
+	}
 
 	bool junk = true;
 	if (choice == 0) {
@@ -2087,23 +2166,6 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 
 	operate_posts_in_batch(pl, pi, mode, choice, first,
 			pid, quote, junk, annpath, utf8_keyword, gbk_keyword);
-#if 0
-	if (BMch == 7) {
-		if (strneq(keyword, "Re: ", 4) || strneq(keyword, "RE: ", 4))
-			//% snprintf(buf, sizeof(buf), "[合集]%s", keyword + 4);
-			snprintf(buf, sizeof(buf), "[\xba\xcf\xbc\xaf]%s", keyword + 4);
-		else
-			//% snprintf(buf, sizeof(buf), "[合集]%s", keyword);
-			snprintf(buf, sizeof(buf), "[\xba\xcf\xbc\xaf]%s", keyword);
-
-		ansi_filter(keyword, buf);
-
-		sprintf(buf, "tmp/%s.combine", currentuser.userid);
-
-		Postfile(buf, currboard, keyword, 2);
-		unlink(buf);
-	}
-#endif
 	tl->valid = false;
 	return PARTUPDATE;
 }
