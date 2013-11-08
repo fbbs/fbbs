@@ -693,10 +693,6 @@ int bbssnd_main(void)
 			return BBS_EINTNL;
 	} else {
 		post_request_t pr = {
-			.autopost = false,
-			.crosspost = false,
-			.uname = NULL,
-			.nick = NULL,
 			.user = &currentuser,
 			.board = &board,
 			.title = utf8_title,
@@ -705,7 +701,6 @@ int bbssnd_main(void)
 			.ip = mask_host(fromhost),
 			.reid = reply ? pi.id : 0,
 			.tid = reply ? pi.tid : 0,
-			.marked = false,
 			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
 			.anony = strtol(get_param("anony"), NULL, 0),
 			.web = true,
@@ -918,23 +913,13 @@ int bbsccc_main(void)
 		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
 
 		post_request_t pr = {
-			.autopost = false,
 			.crosspost = true,
-			.uname = NULL,
-			.nick = NULL,
 			.user = &currentuser,
 			.board = &to,
 			.title = utf8_title,
 			.content = content,
-			.sig = 0,
 			.ip = mask_host(fromhost),
-			.reid = 0,
-			.tid = 0,
-			.locked = false,
-			.marked = false,
-			.anony = false,
 			.web = true,
-			.cp = NULL,
 		};
 		int ret = publish_post(&pr);
 

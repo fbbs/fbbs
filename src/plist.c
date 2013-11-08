@@ -1179,23 +1179,16 @@ static int tui_new_post(int bid, post_info_t *pi)
 	}
 
 	post_request_t req = {
-		.autopost = false,
-		.crosspost = false,
 		.uname = currentuser.userid,
 		.nick = currentuser.username,
 		.user = &currentuser,
 		.board = &board,
 		.title = utf8_title,
-		.content = NULL,
 		.gbk_file = file,
-		.sig = 0,
-		.ip = NULL,
 		.reid = pi ? pi->id : 0,
 		.tid = pi ? pi->tid : 0,
 		.locked = header.locked,
-		.marked = false,
 		.anony = header.anonymous,
-		.cp = NULL,
 	};
 
 	post_id_t pid = publish_post(&req);

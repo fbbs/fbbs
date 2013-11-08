@@ -511,17 +511,9 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.user = autopost ? NULL : &currentuser,
 		.board = board,
 		.title = utf8_title,
-		.content = NULL,
 		.gbk_file = output,
-		.sig = 0,
-		.ip = NULL,
-		.reid = 0,
-		.tid = 0,
 		.locked = mode == POST_FILE_DELIVER ||
 				(mode == POST_FILE_AUTO && strneq2(utf8_title, "[合集]")),
-		.marked = false,
-		.anony = false,
-		.cp = NULL,
 	};
 
 	post_id_t pid = publish_post(&req);
