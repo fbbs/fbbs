@@ -30,7 +30,6 @@
 #include "permissions.h"
 #include "bbserrno.h"
 
-#define randomize() srand((unsigned)time(NULL))	//随机函数初始化
 #define YEA (1)        /* Booleans  (Yep, for true and false) */
 #define NA  (0) 
 
@@ -44,8 +43,6 @@
 #define MAX_MSG_LINE 2
 #define LINE_LEN 78
 /*added end*/
-#define MAXFRIENDS (300)
-#define MAXREJECTS (32)
 #define NUMPERMS   (32)
 #ifdef FDQUAN
 #define MAXGUEST	80	   	/* 最多 guest 帐号上站个数 */
@@ -53,13 +50,6 @@
 #define MAXGUEST	500
 #endif
 
-#ifdef FDQUAN
-#define MAX_ANON    300
-#else
-#define MAX_ANON	2500	//最大WWW匿名数
-#endif
-
-#define MAX_DIGEST         1000    /* 最大文摘数 */
 #define MAX_POSTRETRY       100
 #define MAX_PREFIX			  9    /* 最大版面前缀数*/
 
@@ -90,18 +80,11 @@
 #define RNDPASSLEN             10        /* 暗码认证的暗码长度 (适宜范围 4~10)*/
 
 #define PASSFILE     ".PASSWDS"    /* Name of file User records stored in */
-#define ULIST_BASE   ".UTMP"       /* Names of users currently on line */
-extern char ULIST[];
 
 #define BOARDS      ".BOARDS"      /* File containing list of boards */
 #define DOT_DIR     ".DIR"         /* Name of Directory file info */
 #define THREAD_DIR  ".THREAD"      /* Name of Thread file info */
 #define DIGEST_DIR  ".DIGEST"      /* Name of Digest file info */
-#define MARKED_DIR  ".MARKEDDIR"
-#define AUTHOR_DIR  ".AUTHORDIR"
-#define KEY_DIR	    ".KEYDIR"
-#define BOTTOM_DIR  ".BOTTOM"
-#define KEYWORDS    ".KEYWORDS"
 #define TRASH_DIR   ".TRASH"
 #define JUNK_DIR    ".JUNK"
 
