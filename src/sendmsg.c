@@ -207,6 +207,8 @@ static int send_one_msg(int pid, const char *uname, const char *full)
 	char file[HOMELEN];
 	sethomefile(file, uname, "msgfile");
 	file_append(file, full);
+	sethomefile(file, uname, "msgfile.me");
+	file_append(file, full);
 
 	return !bbs_kill(0, pid, SIGUSR2);
 }

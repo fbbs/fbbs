@@ -347,6 +347,21 @@ static tui_list_query_t online_users_query(tui_list_t *p)
 	return DONOTHING;
 }
 
+static bool session_msgable(online_user_info_t *oui)
+{
+	if (streq(oui->name, currentuser.userid))
+		return false;
+	if ((oui->flag & SESSION_FLAG_INVISIBLE) && !HAS_PERM(PERM_SEECLOAK))
+		return false;
+	if ((oui->flag & SESSION_FLAG_WEB))
+		return false;
+	if (oui->status == ST_BBSNET || oui->status == ST_LOCKSCREEN)
+		return false;
+	return true;
+}
+
+extern int tui_send_msg(const char *uname);
+
 static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 {
 	online_users_t *up = p->data;
@@ -363,33 +378,28 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 				return DONOTHING;
 			m_send(ip->name);
 			return FULLUPDATE;
-#if 0
 		case 's': case 'S':
-			if (!strcmp(currentuser.userid, "guest") || !HAS_PERM(PERM_TALK))
+			if (streq(currentuser.userid, "guest") || !HAS_PERM(PERM_TALK)
+					|| !session_msgable(ip))
 				return DONOTHING;
-			if (!canmsg(uin)) {
-				//% snprintf(buf, sizeof(buf), "%s 已关闭讯息呼叫器", uin->userid);
-				snprintf(buf, sizeof(buf), "%s \xd2\xd1\xb9\xd8\xb1\xd5\xd1\xb6\xcf\xa2\xba\xf4\xbd\xd0\xc6\xf7", uin->userid);
-				presskeyfor(buf, t_lines - 1);
-				return MINIUPDATE;
-			}
-			do_sendmsg(uin, NULL, 0, uin->pid);
+			tui_send_msg(ip->name);
 			return FULLUPDATE;
-#endif
 		case 'o': case 'O':
 			return tui_follow_uname(ip->name);
 		case 'd': case 'D':
 			if (streq(currentuser.userid, "guest"))
 				return DONOTHING;
-			//% snprintf(buf, sizeof(buf), "确定不再关注 %s 吗?", ip->name);
-			snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xb2\xbb\xd4\xd9\xb9\xd8\xd7\xa2 %s \xc2\xf0?", ip->name);
+			//% "确定不再关注 %s 吗?"
+			snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xb2\xbb\xd4\xd9"
+					"\xb9\xd8\xd7\xa2 %s \xc2\xf0?", ip->name);
 			if (!askyn(buf, false, true))
 				return MINIUPDATE;
 			{
 				user_id_t uid = get_user_id(ip->name);
 				if (uid > 0 && unfollow(session_uid(), uid)) {
-					//% snprintf(buf, sizeof(buf), "已取消关注 %s", ip->name);
-					snprintf(buf, sizeof(buf), "\xd2\xd1\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2 %s", ip->name);
+					//% "已取消关注 %s"
+					snprintf(buf, sizeof(buf), "\xd2\xd1\xc8\xa1\xcf\xfb"
+							"\xb9\xd8\xd7\xa2 %s", ip->name);
 					presskeyfor(buf, -1);
 					return PARTUPDATE;
 				}
