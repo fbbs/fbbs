@@ -716,10 +716,11 @@ typedef struct {
 	const post_filter_t *filter;
 } post_index_board_filter_t;
 
-static int post_index_board_filter(void *ptr, void *args, int offset)
+static record_callback_e post_index_board_filter(void *ptr, void *args, int off)
 {
 	const post_index_board_filter_t *pibf = args;
-	return match_filter(ptr, pibf->pir, pibf->filter, offset) ? 0 : -1;
+	return match_filter(ptr, pibf->pir, pibf->filter, off)
+			? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
 }
 
 static int post_search(tui_list_t *tl, const post_filter_t *filter,
@@ -785,6 +786,65 @@ static int tui_search_title(tui_list_t *tl, bool upward)
 	return post_search(tl, &filter, tl->cur, upward);
 }
 
+typedef struct {
+	const char *keyword;
+} search_content_callback_t;
+
+static record_callback_e search_content_callback(void *ptr, void *args, int off)
+{
+	const post_index_board_t *pib = ptr;
+	search_content_callback_t *scc = args;
+
+	char buf[4096];
+	char *content = post_content_get(pib->id, buf, sizeof(buf));
+	bool match = strcasestr(content, scc->keyword);
+	if (content != buf)
+		free(content);
+
+	return match ? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
+}
+
+enum {
+	KEYWORD_CCHARS = 20,
+};
+
+static int tui_search_content(tui_list_t *tl, bool upward)
+{
+	static GBK_BUFFER(keyword, KEYWORD_CCHARS) = "";
+	char prompt[80];
+	//% 向%s搜索文章
+	snprintf(prompt, sizeof(prompt),
+			"\xcf\xf2%s\xcb\xd1\xcb\xf7\xce\xc4\xd5\xc2[%s]: ",
+			//% "上" : "下"
+			upward ? "\xc9\xcf" : "\xcf\xc2", gbk_keyword);
+
+	GBK_BUFFER(ans, KEYWORD_CCHARS);
+	getdata(-1, 0, prompt, gbk_ans, sizeof(gbk_ans), DOECHO, YEA);
+
+	if (*gbk_ans != '\0')
+		strlcpy(gbk_keyword, gbk_ans, sizeof(gbk_keyword));
+
+	if (!*gbk_keyword != '\0')
+		return MINIUPDATE;
+
+	//% "搜寻中，请稍候...."
+	prints("\033[1;44;33m\xcb\xd1\xd1\xb0\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4"
+			"\xba\xf2....\033[K\033[m");
+	UTF8_BUFFER(keyword, KEYWORD_CCHARS);
+	convert_g2u(gbk_keyword, utf8_keyword);
+
+	post_list_t *pl = tl->data;
+	search_content_callback_t scc = { .keyword = utf8_keyword };
+	int pos = record_search(pl->record, search_content_callback, &scc,
+			tl->cur, upward);
+	if (pos >= 0) {
+		tl->cur = pos;
+		tl->valid = false;
+		return PARTUPDATE;
+	}
+	return MINIUPDATE;
+}
+
 static int jump_to_thread_first(tui_list_t *tl, post_info_t *pi)
 {
 	if (pi && pi->id != pi->tid) {
@@ -823,13 +883,14 @@ static int jump_to_thread_next(tui_list_t *tl, post_info_t *pi)
 
 static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user);
 
-static int thread_first_unread_filter(void *ptr, void *args, int offset)
+static record_callback_e thread_first_unread_filter(void *ptr, void *args,
+		int offset)
 {
 	const post_index_board_t *pib = ptr;
 	post_id_t tid = *(post_id_t *) args;
 	if (pib->id - pib->tid_delta == tid && brc_unread(pib->stamp))
-		return 0;
-	return -1;
+		return RECORD_CALLBACK_MATCH;
+	return RECORD_CALLBACK_CONTINUE;
 }
 
 static int jump_to_thread_first_unread(tui_list_t *tl, post_info_t *pi)
@@ -2402,6 +2463,10 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			return tui_search_title(tl, false);
 		case '?':
 			return tui_search_title(tl, true);
+		case '\'':
+			return tui_search_content(tl, false);
+		case '\"':
+			return tui_search_content(tl, true);
 		case '=':
 			return jump_to_thread_first(tl, pi);
 		case '[':
