@@ -218,8 +218,21 @@ extern void post_index_record_get_title(post_index_record_t *pir, post_id_t id, 
 enum {
 	POST_CONTENT_BUFLEN = 4096,
 };
+
 extern char *post_content_read(post_id_t id, char *buf, size_t size);
 extern int post_content_write(post_id_t id, const char *str, size_t size);
+
+typedef struct {
+	post_id_t base;
+	char *result;
+	size_t size;
+	int fd;
+	char buf[POST_CONTENT_BUFLEN];
+} post_content_record_t;
+
+extern void post_content_record_open(post_content_record_t *pcr);
+extern char *post_content_record_read(post_content_record_t *pcr, post_id_t id);
+extern void post_content_record_close(post_content_record_t *pcr);
 
 extern int post_remove_sticky(int bid, post_id_t id);
 extern int post_add_sticky(int bid, const post_info_t *pi);

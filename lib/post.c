@@ -314,7 +314,8 @@ enum {
 	POST_CONTENT_READ_ERROR = 2,
 };
 
-static char *post_content_try_get(int fd, post_id_t id, char *buf, size_t size)
+static char *post_content_try_read(int fd, post_id_t id, char *buf,
+		size_t *size)
 {
 	int relative_id = (id - 1) % POST_CONTENT_PER_FILE;
 
@@ -333,8 +334,9 @@ static char *post_content_try_get(int fd, post_id_t id, char *buf, size_t size)
 	}
 
 	char *sbuf = buf;
-	if (header.length >= size) {
-		sbuf = malloc(header.length + 1);
+	if (header.length >= *size) {
+		*size = header.length + 1;
+		sbuf = malloc(*size);
 	}
 
 	char hdr[3];
@@ -362,6 +364,17 @@ static char *post_content_try_get(int fd, post_id_t id, char *buf, size_t size)
 	return sbuf;
 }
 
+char *post_content_read_fd(int fd, post_id_t id, char *buf, size_t *size)
+{
+	char *ptr = post_content_try_read(fd, id, buf, size);
+	if (!ptr && buf[0] == POST_CONTENT_NEED_LOCK) {
+		file_lock(fd, FILE_WRLCK, 0, FILE_SET, 0);
+		ptr = post_content_try_read(fd, id, buf, size);
+		file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
+	}
+	return ptr;
+}
+
 char *post_content_read(post_id_t id, char *buf, size_t size)
 {
 	char file[HOMELEN];
@@ -371,12 +384,7 @@ char *post_content_read(post_id_t id, char *buf, size_t size)
 	if (fd < 0)
 		return NULL;
 
-	char *ptr = post_content_try_get(fd, id, buf, size);
-	if (!ptr && buf[0] == POST_CONTENT_NEED_LOCK) {
-		file_lock(fd, FILE_WRLCK, 0, FILE_SET, 0);
-		ptr = post_content_try_get(fd, id, buf, size);
-		file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
-	}
+	char *ptr = post_content_read_fd(fd, id, buf, &size);
 
 	close(fd);
 	return ptr;
@@ -425,6 +433,56 @@ int post_content_write(post_id_t id, const char *str, size_t size)
 e2: file_lock_all(fd, FILE_UNLCK);
 e1: close(fd);
 	return ret;
+}
+
+void post_content_record_open(post_content_record_t *pcr)
+{
+	pcr->base = 0;
+	pcr->fd = -1;
+	pcr->result = pcr->buf;
+	pcr->size = sizeof(pcr->buf);
+}
+
+static post_id_t post_content_record_base(post_id_t id)
+{
+	return (id - 1) / POST_CONTENT_PER_FILE * POST_CONTENT_PER_FILE + 1;
+}
+
+char *post_content_record_read(post_content_record_t *pcr, post_id_t id)
+{
+	post_id_t base = post_content_record_base(id);
+	if (pcr->base != base) {
+		if (pcr->fd >= 0)
+			file_close(pcr->fd);
+
+		char file[HOMELEN];
+		post_content_file_name(id, file, sizeof(file));
+
+		pcr->fd = open(file, O_RDONLY);
+		pcr->base = base;
+	}
+
+	if (!pcr->result) {
+		pcr->result = pcr->buf;
+		pcr->size = sizeof(pcr->buf);
+	}
+
+	char *ptr = NULL;
+	if (pcr->fd >= 0)
+		ptr = post_content_read_fd(pcr->fd, id, pcr->result, &pcr->size);
+
+	if (ptr != pcr->result && pcr->result != pcr->buf)
+		free(pcr->result);
+	pcr->result = ptr;
+	return ptr;
+}
+
+void post_content_record_close(post_content_record_t *pcr)
+{
+	if (pcr->fd >= 0)
+		file_close(pcr->fd);
+	if (pcr->result != pcr->buf)
+		free(pcr->result);
 }
 
 static record_callback_e post_sticky_filter(void *ptr, void *fargs, int offset)
