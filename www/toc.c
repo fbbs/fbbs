@@ -645,8 +645,8 @@ static record_callback_e print_topics(void *ptr, void *args, int offset)
 				format_time(pi.stamp, TIME_FORMAT_RSS), pi.owner, pt->bid,
 				pib->id);
 
-		char buf[4096];
-		char *content = post_content_get(pi.id, buf, sizeof(buf));
+		char buf[POST_CONTENT_BUFLEN];
+		char *content = post_content_read(pi.id, buf, sizeof(buf));
 		xml_fputs(content);
 		if (content != buf)
 			free(content);

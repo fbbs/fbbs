@@ -362,7 +362,7 @@ static char *post_content_try_get(int fd, post_id_t id, char *buf, size_t size)
 	return sbuf;
 }
 
-char *post_content_get(post_id_t id, char *buf, size_t size)
+char *post_content_read(post_id_t id, char *buf, size_t size)
 {
 	char file[HOMELEN];
 	post_content_file_name(id, file, sizeof(file));
@@ -1375,8 +1375,8 @@ bool alter_title(post_index_record_t *pir, const post_info_t *pi)
 	post_index_record_update(pir, &tmp);
 	post_index_record_lock(pir, RECORD_UNLCK, pi->id);
 
-	char buf[4096];
-	char *content = post_content_get(pi->id, buf, sizeof(buf));
+	char buf[POST_CONTENT_BUFLEN];
+	char *content = post_content_read(pi->id, buf, sizeof(buf));
 	if (!content)
 		return false;
 	char *new_content =

@@ -247,8 +247,8 @@ int bbscon_main(void)
 	else
 		putchar('>');
 
-	char buffer[4096];
-	char *content = post_content_get(pi.id, buffer, sizeof(buffer));
+	char buffer[POST_CONTENT_BUFLEN];
+	char *content = post_content_read(pi.id, buffer, sizeof(buffer));
 	xml_print_post_wrapper(content, strlen(content));
 	if (content != buffer)
 		free(content);
@@ -496,8 +496,8 @@ int bbstcon_main(void)
 		printf("<po fid='%"PRIdPID"' owner='%s'%s>", pi.id, pi.owner,
 				!isbm && (pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
 
-		char buffer[4096];
-		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
+		char buffer[POST_CONTENT_BUFLEN];
+		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
 		xml_print_post_wrapper(content, strlen(content));
 		if (content != buffer)
 			free(content);
@@ -682,8 +682,8 @@ int bbssnd_main(void)
 	check_character(text);
 
 	if (isedit) {
-		char buffer[4096];
-		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
+		char buffer[POST_CONTENT_BUFLEN];
+		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
 
 		int ret = edit_article(pid, content, text, fromhost);
 
@@ -818,8 +818,8 @@ static int do_bbspst(bool isedit)
 
 		printf("</t><po f='%lu'>", pid);
 
-		char buffer[4096];
-		char *utf8_content = post_content_get(pi.id, buffer, sizeof(buffer));
+		char buffer[POST_CONTENT_BUFLEN];
+		char *utf8_content = post_content_read(pi.id, buffer, sizeof(buffer));
 		size_t len = strlen(utf8_content);
 
 		if (isedit) {
@@ -909,8 +909,8 @@ int bbsccc_main(void)
 					pi.utf8_title);
 		}
 
-		char buffer[4096];
-		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
+		char buffer[POST_CONTENT_BUFLEN];
+		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
 
 		post_request_t pr = {
 			.crosspost = true,
@@ -984,8 +984,8 @@ int bbsfwd_main(void)
 		snprintf(utf8_title, sizeof(utf8_title), "[转寄]%s", pi.utf8_title);
 		convert_u2g(utf8_title, gbk_title);
 
-		char buffer[4096];
-		char *content = post_content_get(pi.id, buffer, sizeof(buffer));
+		char buffer[POST_CONTENT_BUFLEN];
+		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
 
 		char file[HOMELEN];
 		int ret = dump_content_to_gbk_file(content, CONVERT_ALL, file,

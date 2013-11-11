@@ -795,8 +795,8 @@ static record_callback_e search_content_callback(void *ptr, void *args, int off)
 	const post_index_board_t *pib = ptr;
 	search_content_callback_t *scc = args;
 
-	char buf[4096];
-	char *content = post_content_get(pib->id, buf, sizeof(buf));
+	char buf[POST_CONTENT_BUFLEN];
+	char *content = post_content_read(pib->id, buf, sizeof(buf));
 	bool match = strcasestr(content, scc->keyword);
 	if (content != buf)
 		free(content);
@@ -1012,8 +1012,8 @@ static int show_post_info(const post_info_t *pi)
 
 static bool dump_content(post_id_t id, char *file, size_t size)
 {
-	char buf[4096];
-	char *str = post_content_get(id, buf, sizeof(buf));
+	char buf[POST_CONTENT_BUFLEN];
+	char *str = post_content_read(id, buf, sizeof(buf));
 	if (!str)
 		return false;
 
@@ -1950,8 +1950,8 @@ static record_callback_e pack_posts_callback(void *ptr, void *args, int off)
 	const pack_posts_callback_t *ppc = args;
 
 	if (match_filter(pib, ppc->pir, ppc->filter, off)) {
-		char buf[4096];
-		char *content = post_content_get(pib->id, buf, sizeof(buf));
+		char buf[POST_CONTENT_BUFLEN];
+		char *content = post_content_read(pib->id, buf, sizeof(buf));
 
 		fputs("\033[1;32m☆─────────────────"
 				"─────────────────────☆\033[0;1m\n", ppc->fp);
