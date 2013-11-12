@@ -511,14 +511,37 @@ int fb_wcwidth(wchar_t ch)
 		  (ch >= 0x30000 && ch <= 0x3fffd)));
 }
 
+void string_remove_non_printable(char *str)
+{
+	if (!str)
+		return;
+
+	char *dst = str;
+	for (; *str; ) {
+		char *src = str;
+		const char **ptr = (const char **) &str;
+		wchar_t wc = next_wchar(ptr, NULL);
+		if (!wc) {
+			*dst = '\0';
+		} else if (wc == WEOF) {
+			++str;
+		} else if (fb_wcwidth(wc) > 0) {
+			if (dst != src)
+				memcpy(dst, src, str - src);
+			dst += str - src;
+		}
+	}
+	*dst = '\0';
+}
+
+
 /**
  * 检查UTF-8字符串的宽度和长度
  * @param[in] str 字符串
  * @param[in] length 最大允许长度
  * @param[in] max_width 最大允许宽度
  * @return 如果字符串符合长度和宽度要求，不含非法UTF-8字符或零宽度字符，
- *         则返回其长度。如果结尾处是不完整的UTF-8字符，长度只计算到最
- *         后完整字符处。其他情况返回-1。
+ *         则返回其长度，否则返回-1。
  */
 int string_validate_width_and_length(const char *str, size_t length,
 		size_t max_width)
