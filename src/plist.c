@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "bbs.h"
+#include "mmap.h"
 #include "fbbs/brc.h"
 #include "fbbs/fileio.h"
 #include "fbbs/friend.h"

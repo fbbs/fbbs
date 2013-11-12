@@ -1,10 +1,8 @@
 #ifndef FB_POST_H
 #define FB_POST_H
 
-#include "mmap.h"
 #include "fbbs/board.h"
 #include "fbbs/convert.h"
-#include "fbbs/dbi.h"
 #include "fbbs/record.h"
 
 #define ANONYMOUS_ACCOUNT "Anonymous"
@@ -15,18 +13,6 @@
 
 typedef int64_t post_id_t;
 #define PRIdPID  PRId64
-#define DBIdPID  "l"
-#define POST_ID_MAX  INT64_MAX
-#define db_get_post_id(res, row, col)  db_get_bigint(res, row, col)
-enum {
-	PID_BUF_LEN = (sizeof(post_id_t) * 8 + 4) / 5 + 1,
-};
-
-#define POST_LIST_FIELDS  \
-	"id,reid,tid,fake_id,board,owner,uname,stamp,digest,marked,water," \
-	"locked,imported,replies,comments,score,title"
-
-#define POST_LIST_FIELDS_FULL  POST_LIST_FIELDS ",content"
 
 typedef enum {
 	POST_FLAG_DIGEST = 0x1,
@@ -43,6 +29,7 @@ typedef enum {
 
 enum {
 	POST_TITLE_CCHARS = 24,
+	POST_CONTENT_CCHARS = 128 * 1024,
 };
 
 typedef enum {
@@ -85,13 +72,6 @@ typedef struct {
 	char ename[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_info_t;
-
-typedef struct {
-	post_info_t p;
-	db_res_t *res;
-	const char *content;
-	size_t length;
-} post_info_full_t;
 
 typedef struct {
 	const char *uname;

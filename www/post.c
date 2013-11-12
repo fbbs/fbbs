@@ -680,6 +680,9 @@ int bbssnd_main(void)
 
 	char *text = (char *) get_param("text");
 	check_character(text);
+	if (request_type(REQUEST_UTF8)
+			&& validate_utf8_input(text, POST_CONTENT_CCHARS) < 0)
+		return BBS_EINVAL;
 
 	if (isedit) {
 		char buffer[POST_CONTENT_BUFLEN];
