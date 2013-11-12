@@ -279,7 +279,7 @@ int ssh_options_set_algo(ssh_session session, int algo,
  *                        Set the user data passed to the logging function
  *                        (generic pointer).
  *
- *                      - SSH_OPTTIONS_ST_CALLBACK:
+ *                      - SSH_OPTTIONS_STATUS_CALLBACK:
  *                        Set a callback to show connection status in realtime
  *                        (function pointer).\n
  *                        \n
@@ -290,7 +290,7 @@ int ssh_options_set_algo(ssh_session session, int algo,
  *                        During ssh_connect(), libssh will call the callback
  *                        with status from 0.0 to 1.0.
  *
- *                      - SSH_OPTTIONS_ST_ARG:
+ *                      - SSH_OPTTIONS_STATUS_ARG:
  *                        Set the status argument which should be passed to the
  *                        status callback (generic pointer).
  *
