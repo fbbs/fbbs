@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/uio.h>
+#include <wchar.h>
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/brc.h"
@@ -818,10 +819,24 @@ static const char *get_truncated_line(const char *begin, const char *end,
 		}
 
 		if (*s & 0x80) {
-			width -= 2;
-			if (width < 0)
-				return s;
-			++s;
+			if (utf8) {
+				const char *ptr = s;
+				size_t size = end - s;
+				wchar_t wc = next_wchar(&ptr, &size);
+				if (wc == WEOF || wc == 0) {
+					++s;
+				} else {
+					width -= fb_wcwidth(wc);
+					if (width < 0)
+						return s;
+					s = ptr - 1;
+				}
+			} else {
+				width -= 2;
+				if (width < 0)
+					return s;
+				++s;
+			}
 			if (width == 0)
 				return (s + 1 > end ? end : s + 1);
 		} else {

@@ -330,7 +330,7 @@ const char *check_gbk(const char *title)
  * NUL-terminated string. On valid input, *leftp will be decremented accordingly.
  * @return The wchar on success, 0 on string end, WEOF on invalid sequence.
  */
-static wchar_t next_wchar(const char **str, size_t *leftp)
+wchar_t next_wchar(const char **str, size_t *leftp)
 {
 	unsigned char *s = (unsigned char *)*str;
 	wchar_t wc;
@@ -422,7 +422,7 @@ static int bisearch(wchar_t ucs, const struct interval *table, int max)
  * This implementation assumes that ucs_char_t characters are encoded
  * in ISO 10646.
  */
-static int fb_wcwidth(wchar_t ch)
+int fb_wcwidth(wchar_t ch)
 {
 	/*
 	 * Sorted list of non-overlapping intervals of non-spacing characters,
