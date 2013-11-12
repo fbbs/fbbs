@@ -332,7 +332,7 @@ const char *check_gbk(const char *title)
  */
 wchar_t next_wchar(const char **str, size_t *leftp)
 {
-	unsigned char *s = (unsigned char *)*str;
+	const uchar_t *s = (const uchar_t *) *str;
 	wchar_t wc;
 	size_t incr = 0, left = leftp ? *leftp : 9;
 	if (left && *s) {
@@ -512,15 +512,16 @@ int fb_wcwidth(wchar_t ch)
 }
 
 /**
- * Validate a UTF-8 string, while checking its width and length.
- * @param[in] str The UTF-8 string to be validated.
- * @param[in] max_chinese_chars maximum column width and string length,
- * assuming each chinese character occupies 2 columns and max 4 bytes.
- * @return If the input a) is valid UTF-8 sequence b) does not exceed any of
- * the limits, and c) only contain characters with positive column width,
- * its total column width is returned, -1 otherwise.
+ * 检查UTF-8字符串的宽度和长度
+ * @param[in] str 字符串
+ * @param[in] length 最大允许长度
+ * @param[in] max_width 最大允许宽度
+ * @return 如果字符串符合长度和宽度要求，不含非法UTF-8字符或零宽度字符，
+ *         则返回其长度。如果结尾处是不完整的UTF-8字符，长度只计算到最
+ *         后完整字符处。其他情况返回-1。
  */
-int validate_utf8_input(const char *str, size_t max_chinese_chars)
+int string_validate_width_and_length(const char *str, size_t length,
+		size_t max_width)
 {
 	const char *s = str;
 	size_t width = 0;
@@ -529,15 +530,27 @@ int validate_utf8_input(const char *str, size_t max_chinese_chars)
 		if (wc == WEOF)
 			return -1;
 		if (!wc) {
-			if (s - str > max_chinese_chars * 4 || width > max_chinese_chars * 2)
+			if (s - str > length || width > max_width)
 				return -1;
-			return width;
+			return s - str;
 		}
 		int w = fb_wcwidth(wc);
 		if (w <= 0)
 			return -1;
 		width += w;
 	}
+}
+
+/**
+ * 检查UTF-8字符串
+ * @param[in] str 要检测的字符串
+ * @param[in] max_chinese_chars 最多的汉字字符数，每个汉字记为长度4，宽度2。
+ * @return @see ::string_validate_width_and_length
+ */
+int validate_utf8_input(const char *str, size_t max_chinese_chars)
+{
+	return string_validate_width_and_length(str, max_chinese_chars * 4,
+			max_chinese_chars * 2);
 }
 
 struct pstring_t {
