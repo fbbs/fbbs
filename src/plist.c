@@ -2128,6 +2128,8 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	int mode = strtol(ans, NULL, 10) - 1;
 	if (mode < 0 || mode >= ARRAY_SIZE(batch_modes))
 		return MINIUPDATE;
+	if (mode == 1 && !pi->uid)
+		return MINIUPDATE;
 
 	char prompt[120];
 	construct_prompt(prompt, sizeof(prompt), options, ARRAY_SIZE(options));
