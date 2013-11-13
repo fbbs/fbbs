@@ -1316,7 +1316,6 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 					SR_fptr.filename);
 		setquotefile(tempbuf);
 		ch = ansimore(tempbuf, NA);
-		brc_addlist_legacy(SR_fptr.filename);
 		isstart = 0;
 		if (ch == KEY_UP || ch == 'u' || ch == 'U') {
 			readfirst = (ch == KEY_UP);

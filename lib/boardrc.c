@@ -208,15 +208,6 @@ void brc_mark_as_read(brc_item_t item)
 	}
 }
 
-void brc_addlist_legacy(const char *filename)
-{
-	if (streq(currentuser.userid, "guest"))
-		return;
-	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.')
-		return;
-	brc_mark_as_read(strtoul(filename + 2, NULL, 10));
-}
-
 /**
  * 测试当前版面某一项目是否已读.
  * @param item 要测试的项目
