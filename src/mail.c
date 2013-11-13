@@ -29,7 +29,6 @@ int into_myAnnounce();
 int show_user_notes();
 int msg_more();
 int show_author();
-int SR_first_new();
 int SR_last();
 int SR_first();
 int SR_read();
@@ -1186,13 +1185,11 @@ struct one_key mail_comms[] = {
 		{ ']', thread_down },
 		{ '[', thread_up },
 		{ Ctrl('A'), show_author },
-		{ Ctrl('N'), SR_first_new },
 		{ '\\', SR_last },
 		{ '=', SR_first },
 		{ 'l', msg_more },
 		{ Ctrl('C'), do_cross },
 		{ Ctrl('S'), SR_read },
-		{ 'n', SR_first_new },
 		{ 'p', SR_read },
 		{ Ctrl('X'), SR_read },
 		{ Ctrl('U'), SR_author },

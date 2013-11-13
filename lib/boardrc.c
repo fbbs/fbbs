@@ -227,13 +227,6 @@ bool brc_unread(brc_item_t item)
 	return false;
 }
 
-bool brc_unread_legacy(const char *filename)
-{
-	if ((filename[0] != 'M' && filename[0] != 'G') || filename[1] != '.')
-		return false;
-	return brc_unread(strtoul(filename + 2, NULL, 10));
-}
-
 /**
  * 获得当前版面已读的最新项目编号.
  * @return 当前版面已读的最新项目编号, 如果没有记录则返回0.

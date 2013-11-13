@@ -35,7 +35,7 @@ int screen_len;
 int last_line;
 
 static int search_articles(struct keeploc *locmem, const char *query, int gid,
-		int offset, int aflag, int newflag);
+		int offset, int aflag);
 
 //在局部表态链表中查找与关键字符串s相匹配的项
 //		找到:	直接返回
@@ -517,7 +517,7 @@ static int search_author(struct keeploc *locmem, int offset, char *powner)
 	else
 	strcpy(author, currauth);
 
-	return search_articles(locmem, author, 0, offset, 1,0);
+	return search_articles(locmem, author, 0, offset, 1);
 }
 
 int
@@ -563,7 +563,7 @@ static int search_post(struct keeploc *locmem, int offset)
 	if (ans[0] != '\0')
 	strcpy(query, ans);
 
-	return search_articles(locmem, query, 0, offset, -1, 0);
+	return search_articles(locmem, query, 0, offset, -1);
 }
 
 int
@@ -605,6 +605,8 @@ char *direct;
 	t_query(fileinfo->owner);
 	return FULLUPDATE;
 }
+
+static int locate_the_post(struct fileheader *fileinfo, char *query, int offset, int aflag);
 
 int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	int i, dotype = 0, result = 0, gid = 0;
@@ -734,9 +736,9 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			//% (dotype == 2) ? "该作者" : "此主题", SR_BMitems[BMch - 1]);
 			(dotype == 2) ? "\xb8\xc3\xd7\xf7\xd5\xdf" : "\xb4\xcb\xd6\xf7\xcc\xe2", SR_BMitems[BMch - 1]);
 	if(askyn(buf, YEA, NA) == YEA) {
-		result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
+		result = locate_the_post(fileinfo, keyword,5,dotype-1);
 	} else if(dotype == 3) {
-		result = locate_the_post(fileinfo, keyword,1,2,0);
+		result = locate_the_post(fileinfo, keyword,1,2);
 	} else {
 		memcpy(&SR_fptr, fileinfo, sizeof(SR_fptr));
 	}
@@ -799,9 +801,9 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 					/* The End */
 			}
 			if(locmem->crs_line <= 0) {
-				result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
+				result = locate_the_post(fileinfo, keyword,5,dotype-1);
 			} else {
-				result = locate_the_post(fileinfo, keyword,1,dotype-1,0);
+				result = locate_the_post(fileinfo, keyword,1,dotype-1);
 			}
 			if(result == -1) break;
 		}
@@ -831,9 +833,9 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 					break;
 			}
 			if(locmem->crs_line <= 0) {
-				result = locate_the_post(fileinfo, keyword,5,dotype-1,0);
+				result = locate_the_post(fileinfo, keyword,5,dotype-1);
 			} else {
-				result = locate_the_post(fileinfo, keyword,1,dotype-1,0);
+				result = locate_the_post(fileinfo, keyword,1,dotype-1);
 			}
 			if(result == -1) break;
 		}
@@ -901,25 +903,13 @@ int combine_thread(int ent, struct fileheader *fileinfo, char *direct)
 
 static int sread(int readfirst, int auser, struct fileheader *ptitle);
 
-int SR_first_new(ent, fileinfo, direct)
-int ent;
-struct fileheader *fileinfo;
-char *direct;
-{
-	if(locate_the_post(fileinfo, fileinfo->title,5,0,1)!=-1) {
-		sread(1, 0, &SR_fptr);
-		return FULLUPDATE;
-	}
-	return PARTUPDATE;
-}
-
 int
 SR_last(ent, fileinfo, direct)
 int ent;
 struct fileheader *fileinfo;
 char *direct;
 {
-	locate_the_post(fileinfo, fileinfo->title,3,0,0);
+	locate_the_post(fileinfo, fileinfo->title,3,0);
 	return PARTUPDATE;
 }
 
@@ -929,7 +919,7 @@ int ent;
 struct fileheader *fileinfo;
 char *direct;
 {
-	locate_the_post(fileinfo, fileinfo->title,5,0,0);
+	locate_the_post(fileinfo, fileinfo->title,5,0);
 	return PARTUPDATE;
 }
 
@@ -1002,7 +992,7 @@ static int strcasecmp2(const char *s1, const char *s2)
 }
 
 static int search_articles(struct keeploc *locmem, const char *query, int gid,
-		int offset, int aflag, int newflag)
+		int offset, int aflag)
 {
 	int complete, ent, oldent, lastent = 0;
 	char *ptr;
@@ -1063,8 +1053,6 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 		if (aflag != SEARCH_CONTENT && offset < 0 && oldent > 0
 				&& ent >= oldent)
 			break;
-		if (newflag && !brc_unread_legacy(SR_fptr.filename))
-			continue;
 
 		if (aflag == SEARCH_CONTENT) {
 			char p_name[256];
@@ -1178,7 +1166,7 @@ int search_title(struct keeploc *locmem, int offset)
 	getdata(-1, 0, pmt, ans, 46, DOECHO, YEA);
 	if (*ans != '\0')
 		strcpy(title, ans);
-	return search_articles(locmem, title, 0, offset, 2, 0);
+	return search_articles(locmem, title, 0, offset, 2);
 }
 
 int
@@ -1218,7 +1206,7 @@ int search_thread(struct keeploc *locmem, int offset, struct fileheader *fh)
 	if (title[0] == 'R' && (title[1] == 'e' || title[1] == 'E') && title[2] == ':')
 	title += 4;
 	setqtitle(title, fh->gid);
-	return search_articles(locmem, title, fh->gid, offset, 0, 0);
+	return search_articles(locmem, title, fh->gid, offset, 0);
 }
 
 int
@@ -1304,8 +1292,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 	memcpy(&SR_fptr, ptitle, sizeof(SR_fptr));
 	while (!isend) {
 		if (!isstart) {
-			if (search_articles(locmem, title, ptitle->gid, isnext, auser,
-					0)==-1)
+			if (search_articles(locmem, title, ptitle->gid, isnext, auser)==-1)
 				break;
 		}
 		if (session_status() != ST_RMAIL)
@@ -1396,15 +1383,13 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 	return 1;
 }
 
-int locate_the_post(struct fileheader *fileinfo, char *query, int offset, //-1 当前向上  1 当前向下  3 最后一篇 5 第一篇
-		int aflag, // 1 owner  0 同主题   2 相关主题
-		int newflag // 1 必须为新文章   0 新旧均可
-) {
+static int locate_the_post(struct fileheader *fileinfo, char *query, int offset, //-1 当前向上  1 当前向下  3 最后一篇 5 第一篇
+		int aflag) // 1 owner  0 同主题   2 相关主题
+{
 	struct keeploc *locmem;
 	locmem = getkeep(currdirect, 1, 1);
 	if (query[0]=='R'&&(query[1]=='e'||query[1]=='E')&&query[2]==':')
 		query += 4;
 	setqtitle(query, fileinfo->gid);
-	return search_articles(locmem, query, fileinfo->gid, offset, aflag,
-			newflag);
+	return search_articles(locmem, query, fileinfo->gid, offset, aflag);
 }

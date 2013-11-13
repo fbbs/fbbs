@@ -120,7 +120,6 @@ int do_reply(struct fileheader *fh);
 int fill_date(void);
 int is_birth(const struct userec *user);
 void keep_fail_post(void);
-int locate_the_post(struct fileheader *fileinfo, char *query, int offset, int aflag, int newflag);
 int mail_del(int ent, struct fileheader *fileinfo, char *direct);
 int m_send(const char *userid);
 void new_register(void);
