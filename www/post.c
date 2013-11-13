@@ -196,7 +196,7 @@ static int xml_print_post_wrapper(const char *str, size_t size)
 	return xml_print_post(str, size, PARSE_NOSIG);
 }
 
-int bbscon_main(void)
+int bbscon(const char *link)
 {
 	board_t board;
 	if (!get_board_by_param(&board))
@@ -226,8 +226,8 @@ int bbscon_main(void)
 
 	bool anony = board.flag & BOARD_ANONY_FLAG;
 	int opt = get_user_flag();
-	printf("<bbscon link='con' bid='%d' anony='%d' attach='%d'%s%s>",
-			board.id, anony, maxlen(board.name),
+	printf("<bbscon link='%s' bid='%d' anony='%d' attach='%d'%s%s>",
+			link, board.id, anony, maxlen(board.name),
 			opt & PREF_NOSIG ? " nosig='1'" : "",
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 
@@ -262,32 +262,14 @@ int bbscon_main(void)
 	return 0;
 }
 
+int bbscon_main(void)
+{
+	return bbscon("con");
+}
+
 int bbsgcon_main(void)
 {
-	board_t board;
-	if (!get_board_by_param(&board))
-		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
-		return BBS_EINVAL;
-	session_set_board(board.id);
-
-	const char *f = get_param("f");
-	if (strstr(f, "..") || strstr(f, "/") || strncmp(f, "G.", 2))
-		return BBS_EINVAL;
-	xml_header(NULL);
-	printf("<bbscon link='gcon' bid='%d'>", board.id);
-	print_session();
-	printf("<po>");
-
-	char file[HOMELEN];
-	setbfile(file, board.name, f);
-	xml_print_post_wrapper(file, 0);
-
-	printf("</po></bbscon>");
-	brc_initialize(currentuser.userid, board.name);
-	brc_addlist_legacy(f);
-	brc_update(currentuser.userid, board.name);
-	return 0;
+	return bbscon("gcon");
 }
 
 int bbsdel_main(void)
