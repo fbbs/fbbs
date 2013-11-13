@@ -33,6 +33,8 @@ extern void strtourl(char *url, const char *str);
 extern void strappend(char **dst, size_t *size, const char *src);
 extern void string_remove_non_printable_gbk(char *str);
 extern void string_remove_non_printable(char *str);
+extern size_t string_check_tail(char *begin, char *end);
+extern size_t string_copy(char *dst, const char *src, size_t siz);
 extern int valid_gbk(unsigned char *str, int len, int replace);
 extern const char *check_gbk(const char *title);
 

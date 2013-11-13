@@ -93,6 +93,7 @@ static void print_pib(post_index_record_t *pir, const post_index_board_t *pib,
 {
 	post_info_t pi;
 	post_index_board_to_info(pir, pib, &pi, 1);
+	string_check_tail(pi.utf8_title, NULL);
 	print_post(&pi, sticky);
 }
 

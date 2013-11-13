@@ -364,6 +364,31 @@ wchar_t next_wchar(const char **str, size_t *leftp)
 	return WEOF;
 }
 
+size_t string_check_tail(char *begin, char *end)
+{
+	if (!end)
+		end = begin + strlen(begin);
+
+	for (const char *p = end - 1; p >= begin; --p) {
+		if (!is_cont(*p)) {
+			if (next_wchar(&p, NULL) == WEOF) {
+				*(char *) p = '\0';
+				return end - p;
+			}
+			return 0;
+		}
+	}
+	return 0;
+}
+
+size_t string_copy(char *dst, const char *src, size_t siz)
+{
+	size_t size = strlcpy(dst, src, siz);
+	if (size >= siz)
+		size -= string_check_tail(dst, dst + siz - 1);
+	return size;
+}
+
 struct interval {
   int first;
   int last;
