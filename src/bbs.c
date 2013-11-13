@@ -461,28 +461,29 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	}
 
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+	UTF8_BUFFER(title0, POST_TITLE_CCHARS);
+	convert_g2u(title, utf8_title0);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
-		//% [转载]
-		if (!strneq2(title, "[\xd7\xaa\xd4\xd8]")
-				&& !strneq2(title, "Re: [\xd7\xaa\xd4\xd8]")) {
-			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]%.70s",
-					title);
-		} else if (strneq2(title, "Re: [\xd7\xaa\xd4\xd8]")) {
-			snprintf(gbk_title, sizeof(gbk_title), "[\xd7\xaa\xd4\xd8]"
-					"Re: %.70s", title + 10);
+		if (!strneq2(utf8_title0, "[转载]")
+				&& !strneq2(utf8_title0, "Re: [转载]")) {
+			snprintf(utf8_title, sizeof(utf8_title), "[转载]%s", utf8_title0);
+		} else if (strneq2(utf8_title0, "Re: [转载]")) {
+			snprintf(utf8_title, sizeof(utf8_title), "[转载]Re: %s",
+					title + sizeof("Re: [转载]") - 1);
 		} else {
-			strlcpy(gbk_title, title, sizeof(gbk_title));
+			strlcpy(utf8_title, utf8_title0, sizeof(utf8_title));
 		}
 	} else {
-		strlcpy(gbk_title, title, sizeof(gbk_title));
+		strlcpy(utf8_title, utf8_title0, sizeof(utf8_title));
 	}
-	valid_title_gbk(gbk_title);
-	convert_g2u(gbk_title, utf8_title);
+	string_remove_ansi_control_code(utf8_title, utf8_title);
+	string_remove_non_printable(utf8_title);
+	convert_u2g(utf8_title, gbk_title);
 
 	struct postheader header = {
 		.locked = mode == POST_FILE_DELIVER ||
 			//% "[合集]"
-			(mode == POST_FILE_AUTO && strneq2(gbk_title, "[\xba\xcf\xbc\xaf]")),
+			(mode == POST_FILE_AUTO && strneq2(utf8_title, "[合集]")),
 		.postboard = true,
 	};
 	strlcpy(header.title, gbk_title, sizeof(header.title));
@@ -524,11 +525,11 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
 			snprintf(buf, sizeof(buf),
 					"cross_posting '%s' on %s: append_record failed!",
-					gbk_title, board->name);
+					utf8_title, board->name);
 		} else {
 			snprintf(buf, sizeof(buf),
 					"Posting '%s' on %s: append_record failed!",
-					gbk_title, board->name);
+					utf8_title, board->name);
 		}
 		report(buf, currentuser.userid);
 		pressreturn();
@@ -536,7 +537,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	} else {
 		if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
 			snprintf(buf, sizeof(buf), "cross_posted '%s' on %s",
-					gbk_title, board->name);
+					utf8_title, board->name);
 			report(buf, currentuser.userid);
 		}
 	}

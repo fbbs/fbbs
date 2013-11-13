@@ -1264,7 +1264,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	if (pid) {
 		char buf[STRLEN];
 		snprintf(buf, sizeof(buf), "posted '%s' on %s",
-				gbk_title, board.name);
+				utf8_title, board.name);
 		report(buf, currentuser.userid);
 	}
 

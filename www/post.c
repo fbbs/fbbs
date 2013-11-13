@@ -639,19 +639,18 @@ int bbssnd_main(void)
 
 	bool isedit = (*(get_param("e")) == '1');
 
-	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 	if (!isedit) {
 		if (request_type(REQUEST_UTF8)) {
-			convert_u2g(get_param("title"), gbk_title);
+			strlcpy(utf8_title, get_param("title"), sizeof(utf8_title));
 		} else {
-			strlcpy(gbk_title, get_param("title"), sizeof(gbk_title));
+			convert_g2u(get_param("title"), utf8_title);
 		}
-		string_remove_non_printable_gbk(gbk_title);
-		valid_title_gbk(gbk_title);
-		if (*gbk_title == '\0')
+		string_remove_ansi_control_code(utf8_title, utf8_title);
+		string_remove_non_printable(utf8_title);
+		if (*utf8_title == '\0')
 			return BBS_EINVAL;
 	}
-	convert_g2u(gbk_title, utf8_title);
 
 	time_t now = fb_time();
 	int diff = now - get_my_last_post_time();
@@ -721,7 +720,7 @@ int bbssnd_main(void)
 
 	char buf[128];
 	snprintf(buf, sizeof(buf), "%sed '%s' on %s", isedit ? "edit" : "post",
-			gbk_title, board.name);
+			utf8_title, board.name);
 	report(buf, currentuser.userid);
 
 	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_post_list_type_string(),
@@ -911,6 +910,7 @@ int bbsccc_main(void)
 			snprintf(utf8_title, sizeof(utf8_title), CP_MARK_STRING"%s",
 					pi.utf8_title);
 		}
+		string_remove_non_printable(utf8_title);
 
 		char buffer[POST_CONTENT_BUFLEN];
 		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
