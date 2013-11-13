@@ -375,7 +375,7 @@ int import_file(const char *title, const char *file, const char *path)
 	}
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	ansi_filter(gbk_title, title);
+	string_remove_ansi_control_code(gbk_title, title);
 	ellipsis(gbk_title, 38);
 
 	char title_buf[STRLEN];
@@ -1298,7 +1298,7 @@ void a_manager(MENU *pm, int ch) {
 				if (readonly==YEA)
 					break;
 				//Modified by IAMFAT 2002-05-25
-				ansi_filter(changed_T, item->title);
+				string_remove_ansi_control_code(changed_T, item->title);
 				//add by Danielfree 06.2.20
 				for (i =0; i<IDLEN; i++) {
 					if (changed_T[39+i]) {

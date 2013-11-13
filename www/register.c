@@ -70,7 +70,7 @@ static const char *_reg(const reg_req_t *r)
 
 	user.gender = r->gender[0];
 	strlcpy(user.username, r->nick, sizeof(user.username));
-	printable_filter(user.username);
+	string_remove_non_printable_gbk(user.username);
 	user.birthyear = r->year > 1900 ? r->year - 1900 : r->year;
 	user.birthmonth = r->month;
 	user.birthday = r->day;

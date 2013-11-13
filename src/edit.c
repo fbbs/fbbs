@@ -1059,7 +1059,7 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 		move(1, 0);
 		//% prints("旧标题: %s", header->title);
 		prints("\xbe\xc9\xb1\xea\xcc\xe2: %s", header->title);
-		ansi_filter(buf, header->title);
+		string_remove_ansi_control_code(buf, header->title);
 		//% getdata(2, 0, "新标题: ", buf, 50, DOECHO, NA);
 		getdata(2, 0, "\xd0\xc2\xb1\xea\xcc\xe2: ", buf, 50, DOECHO, NA);
 		if (strcmp(header->title, buf) && strlen(buf) != 0) {

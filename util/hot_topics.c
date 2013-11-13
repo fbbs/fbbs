@@ -173,7 +173,7 @@ static void print_topic(FILE *fp, FILE *fp2, const topic_stat_t *topic,
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	convert_u2g(topic->utf8_title, gbk_title);
-	ansi_filter(gbk_title, gbk_title);
+	string_remove_ansi_control_code(gbk_title, gbk_title);
 
 	//% 第 %2d 名 信区 : %-18s〖 %s 〗%4d 篇 %s\n 标题 : %s\n"
 	fprintf(fp, "\033[1;37m\xb5\xda \033[31m%2d\033[37m \xc3\xfb "

@@ -47,7 +47,7 @@ char *strtoupper(char *dst, const char *src) {
 // Compare string 's1' against 's2' and differences in case are ignored.
 // No more than 'n' characters are compared.
 // This function supports zh_CN.GBK.
-int strncasecmp_gbk(const char *s1, const char *s2, int n)
+static int strncasecmp_gbk(const char *s1, const char *s2, int n)
 {
 	register int c1, c2, l = 0;
 
@@ -97,7 +97,7 @@ char *strcasestr_gbk(const char *haystack, const char *needle) {
 
 // Eliminate ANSI escape codes from 'src' and store it in 'dst'.
 // 'src' and 'dst' can be the same.
-char *ansi_filter(char *dst, const char *src)
+char *string_remove_ansi_control_code(char *dst, const char *src)
 {
 	char *ret = dst;
 	int flag = 0;
@@ -256,7 +256,7 @@ void strappend(char **dst, size_t *size, const char *src)
  * Remove non-printable characters.
  * @param[in, out] str The string to be filtered.
  */
-void printable_filter(char *str)
+void string_remove_non_printable_gbk(char *str)
 {
 	if (!str)
 		return;

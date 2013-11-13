@@ -19,7 +19,7 @@ void check_title(char *title, size_t size)
 		snprintf(temp, sizeof(temp), "Re\xa3\xba%s", &title[3]);
 		strlcpy(title, temp, sizeof(title));
 	}
-	valid_title(title);
+	valid_title_gbk(title);
 }
 #ifdef ENABLE_PREFIX
 void set_prefix() {
@@ -36,7 +36,7 @@ void set_prefix() {
 			if (i == 0 && (buf[0] == '\n' || buf[0] == ' ') )
 			buf[0] = '\0';
 			strtok(buf, " \r\n\t");
-			ansi_filter(prefixbuf[i], buf);
+			string_remove_ansi_control_code(prefixbuf[i], buf);
 			prefixbuf[i][4] = '\0';
 		}
 		numofprefix = i;
@@ -216,7 +216,7 @@ int post_header(struct postheader *header)
 			move(-1, 0);
 			//% if (header->postboard == YEA || strcmp(header->title, "没主题"))
 			if (header->postboard == YEA || strcmp(header->title, "\xc3\xbb\xd6\xf7\xcc\xe2"))
-				ansi_filter(titlebuf, header->title);
+				string_remove_ansi_control_code(titlebuf, header->title);
 
 			//从当前行获得用户输入放到titlebuf中，最多存入50-1个字节(此处会阻塞在用户输入上，只到响应enter)
 			//% getdata(-1, 0, "标题: ", titlebuf, 50, DOECHO, NA);

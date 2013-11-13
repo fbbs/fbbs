@@ -298,8 +298,8 @@ int bbssndmail_main(void)
 		convert_u2g(get_param("title"), title);
 	else
 		strlcpy(title, get_param("title"), sizeof(title));
-	printable_filter(title);
-	valid_title(title);
+	string_remove_non_printable_gbk(title);
+	valid_title_gbk(title);
 	if (*title == '\0')
 		//% strlcpy(title, "没主题", sizeof(title));
 		strlcpy(title, "\xc3\xbb\xd6\xf7\xcc\xe2", sizeof(title));

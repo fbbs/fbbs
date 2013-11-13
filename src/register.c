@@ -370,7 +370,7 @@ static void getfield(int line, char *info, char *desc, char *buf, int len)
 	char prompt[STRLEN];
 	snprintf(prompt, sizeof(prompt), "  %s: ", desc);
 	getdata(line + 1, 0, prompt, buf, len, DOECHO, YEA);
-	printable_filter(buf);
+	string_remove_non_printable_gbk(buf);
 	move(line, 0);
 	clrtoeol();
 	prints("  %s: %s\n", desc, buf);

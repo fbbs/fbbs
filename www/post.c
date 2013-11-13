@@ -646,8 +646,8 @@ int bbssnd_main(void)
 		} else {
 			strlcpy(gbk_title, get_param("title"), sizeof(gbk_title));
 		}
-		printable_filter(gbk_title);
-		valid_title(gbk_title);
+		string_remove_non_printable_gbk(gbk_title);
+		valid_title_gbk(gbk_title);
 		if (*gbk_title == '\0')
 			return BBS_EINVAL;
 	}
@@ -816,7 +816,7 @@ static int do_bbspst(bool isedit)
 		char *title = utf8 ? pi.utf8_title : gbk_title;
 		if (!utf8)
 			convert_u2g(pi.utf8_title, gbk_title);
-		ansi_filter(title, title);
+		string_remove_ansi_control_code(title, title);
 		xml_fputs(title);
 
 		printf("</t><po f='%lu'>", pid);

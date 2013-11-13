@@ -1084,7 +1084,7 @@ static int tui_edit_post_title(tui_list_t *tl, post_info_t *pi)
 
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
 
-	ansi_filter(utf8_title, pi->utf8_title);
+	string_remove_ansi_control_code(utf8_title, pi->utf8_title);
 	convert_u2g(utf8_title, gbk_title);
 
 	//% 新文章标题
@@ -1196,7 +1196,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 					"[%s]%s", header.prefix, header.title);
 #endif
 		} else {
-			ansi_filter(gbk_title, header.title);
+			string_remove_ansi_control_code(gbk_title, header.title);
 		}
 	} else {
 		set_user_status(status);
@@ -1226,7 +1226,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		return FULLUPDATE;
 	}
 
-	valid_title(header.title);
+	valid_title_gbk(header.title);
 
 	if (header.mail_owner && header.reply) {
 		if (header.anonymous) {

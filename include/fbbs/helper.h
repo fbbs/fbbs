@@ -23,7 +23,7 @@ extern int add_to_file(const char *file, const char *str, size_t len, bool overw
 extern int del_from_file(const char *file, const char *str);
 extern const char *mask_host(const char *host);
 extern int valid_gbk_file(const char *file, int replace);
-extern char *valid_title(char *title);
+extern char *valid_title_gbk(char *title);
 
 extern void initialize_convert_env(void);
 extern void initialize_db(void);

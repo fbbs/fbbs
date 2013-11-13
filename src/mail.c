@@ -326,7 +326,7 @@ static int bbs_sendmail(const char *fname, const char *title, const char *receiv
 
 	while (fgets(genbuf, 255, fin) != NULL) {
 		if(filter)
-			ansi_filter(genbuf, genbuf);
+			string_remove_ansi_control_code(genbuf, genbuf);
 		if (genbuf[0] == '.' && genbuf[1] == '\n')
 		fputs(". \n", fout);
 		else

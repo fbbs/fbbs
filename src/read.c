@@ -847,7 +847,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			//% snprintf(buf, sizeof(buf), "[合集]%s", keyword);
 			snprintf(buf, sizeof(buf), "[\xba\xcf\xbc\xaf]%s", keyword);
 
-		ansi_filter(keyword, buf);
+		string_remove_ansi_control_code(keyword, buf);
 
 		sprintf(buf, "tmp/%s.combine", currentuser.userid);
 

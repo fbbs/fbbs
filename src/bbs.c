@@ -476,7 +476,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	} else {
 		strlcpy(gbk_title, title, sizeof(gbk_title));
 	}
-	valid_title(gbk_title);
+	valid_title_gbk(gbk_title);
 	convert_g2u(gbk_title, utf8_title);
 
 	struct postheader header = {

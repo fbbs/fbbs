@@ -24,14 +24,14 @@ enum {
 extern char *strtolower(char *dst, const char *src);
 extern char *strtoupper(char *dst, const char *src);
 extern char *strcasestr_gbk(const char *haystack, const char *needle);
-extern char *ansi_filter(char *dst, const char *src);
+extern char *string_remove_ansi_control_code(char *dst, const char *src);
 extern int ellipsis(char *str, int len);
 extern char *rtrim(char *str);
 extern char *trim(char *str);
 extern size_t strlcpy(char *dst, const char *src, size_t siz);
 extern void strtourl(char *url, const char *str);
 extern void strappend(char **dst, size_t *size, const char *src);
-extern void printable_filter(char *str);
+extern void string_remove_non_printable_gbk(char *str);
 extern int valid_gbk(unsigned char *str, int len, int replace);
 extern const char *check_gbk(const char *title);
 

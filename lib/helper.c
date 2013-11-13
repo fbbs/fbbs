@@ -245,7 +245,7 @@ int valid_gbk_file(const char *file, int replace)
 	return count;
 }
 
-char *valid_title(char *title)
+char *valid_title_gbk(char *title)
 {
 	char *end = (char *)check_gbk(title);
 	*end = '\0';

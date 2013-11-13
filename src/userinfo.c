@@ -189,7 +189,7 @@ void tui_check_uinfo(struct userec *u)
 				//% getdata(2, 0, "请输入您的昵称 (Enter nickname): ",
 				getdata(2, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc4\xfa\xb5\xc4\xea\xc7\xb3\xc6 (Enter nickname): ",
 						u->username, NAMELEN, DOECHO, YEA);
-				printable_filter(u->username);
+				string_remove_non_printable_gbk(u->username);
 				break;
 			case UINFO_EGENDER:
 				//% getdata(3, 0, "请输入您的性别: M.男 F.女 [M]: ",

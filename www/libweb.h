@@ -60,6 +60,6 @@ bool valid_mailname(const char *file);
 int get_user_flag(void);
 void set_user_flag(int flag);
 void print_session(void);
-void printable_filter(char *str);
+void string_remove_non_printable_gbk(char *str);
 
 #endif  //FB_LIBWEB_H
