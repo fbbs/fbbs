@@ -816,6 +816,8 @@ static int do_bbspst(bool isedit)
 		if (!utf8)
 			convert_u2g(pi.utf8_title, gbk_title);
 		string_remove_ansi_control_code(title, title);
+		if (request_type(REQUEST_MOBILE) && !strneq2(title, "Re: "))
+			puts("Re: ");
 		xml_fputs(title);
 
 		printf("</t><po f='%lu'>", pid);

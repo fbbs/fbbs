@@ -253,6 +253,8 @@ int bbspstmail_main(void)
 
 	if (fh) {
 		printf("<t>");
+		if (request_type(REQUEST_MOBILE) && !strneq2(fh->title, "Re: "))
+			puts("Re: ");
 		xml_fputs4(fh->title, 0);
 		printf("</t><m>");
 
