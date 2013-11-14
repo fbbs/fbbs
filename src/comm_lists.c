@@ -99,7 +99,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "Personal", Personal },
 		{ "SelectBoard", board_select },
 		{ "ReadBoard", board_read },
-		{ "SetAlarm", setcalltime },
 		{ "MailAll", mailall },
 		{ "LockScreen", x_lockscreen },
 		{ "ShowUser", x_showuser },

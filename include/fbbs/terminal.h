@@ -53,11 +53,9 @@ int num_ans_chr(const char *str);
 // src/more.c
 
 void ActiveBoard_Init(void);
-int setcalltime(void);
 int countln(char *fname);
 void netty_more(void);
 void printacbar(void);
-int check_calltime(void);
 void R_monitor(int);
 int msg_more(void);
 int ansimore4(char *filename, int promptend, char *board, char *path, int ent);

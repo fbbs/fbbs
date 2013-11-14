@@ -397,7 +397,6 @@ int egetch(void)
 {
 	int rval;
 
-	check_calltime();
 	while (1) {
 		rval = igetkey();
 		if (rval != Ctrl('L'))

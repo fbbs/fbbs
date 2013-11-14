@@ -8,7 +8,6 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-static time_t calltime = 0;
 void R_monitor();
 
 struct ACSHM {
@@ -120,20 +119,6 @@ void ActiveBoard_Init( void )
 	sprintf(buf, "\xbb\xee\xb6\xaf\xbf\xb4\xb0\xe5\xb8\xfc\xd0\xc2, \xb9\xb2 %d \xd0\xd0, %d \xb2\xbf\xb7\xdd.", j, y);
 	report(buf, currentuser.userid); 
 	return ;
-}
-
-int setcalltime(void)
-{
-	char    ans[6];
-	int     ttt;
-	move(1, 0);
-	clrtoeol();
-	//% getdata(1, 0, "几分钟后要系统提醒您: ", ans, 3, DOECHO, YEA);
-	getdata(1, 0, "\xbc\xb8\xb7\xd6\xd6\xd3\xba\xf3\xd2\xaa\xcf\xb5\xcd\xb3\xcc\xe1\xd0\xd1\xc4\xfa: ", ans, 3, DOECHO, YEA);
-	ttt = atoi(ans);
-	if (ttt > 0)
-		calltime = time(0) + ttt * 60;
-	return 0;
 }
 
 static int morekey(void)
@@ -270,32 +255,6 @@ void printacbar(void)
 	move (y,x);
 #endif
 	refresh();
-}
-
-int check_calltime(void)
-{
-	int     line;
-	if ( calltime != 0 && time(0) >= calltime ) {
-		if (session_status() == ST_TALK)
-			line = t_lines / 2 - 1;
-		else
-			line = 0;
-
-		saveline(line, 0);	/* restore line */
-		bell();
-		bell();
-		bell();
-		move(line, 0);
-		clrtoeol();
-		//% prints("[1;44;32m系统通告: [37m%-65s[m", "系统闹钟 铃～～～～～～");
-		prints("[1;44;32m\xcf\xb5\xcd\xb3\xcd\xa8\xb8\xe6: [37m%-65s[m", "\xcf\xb5\xcd\xb3\xc4\xd6\xd6\xd3 \xc1\xe5\xa1\xab\xa1\xab\xa1\xab\xa1\xab\xa1\xab\xa1\xab");
-		igetkey();
-		move(line, 0);
-		clrtoeol();
-		saveline(line, 1);
-		calltime = 0;
-	}
-	return 0;
 }
 
 void R_monitor(int unused)
