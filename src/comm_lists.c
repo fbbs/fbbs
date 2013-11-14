@@ -24,7 +24,6 @@ int x_results(), ent_bnet(), a_edits(), x_edits();
 int x_userdefine();
 int m_new(), m_read(), m_send(), g_send();
 int ov_send(), s_msg(), mailall(), offline();
-int r_searchall();
 //added by iamfat 2002.09.04
 /*2003.04.23 added by stephen*/
 int giveUpBBS();
@@ -342,9 +341,6 @@ int domenu(const char *menu_name)
 
 	set_user_status(ST_MMENU);
 
-	// TODO: deprecate
-	R_monitor(0);
-
 	while (1) {
 		printacbar();
 
@@ -370,7 +366,6 @@ int domenu(const char *menu_name)
 				}
 				draw_menu(pm);
 				set_user_status(ST_MMENU);
-				R_monitor(0);
 				break;
 			case KEY_RIGHT:
 				for (i = 0; i < size; i++) {
@@ -407,7 +402,6 @@ int domenu(const char *menu_name)
 					}
 					draw_menu(pm);
 					set_user_status(ST_MMENU);
-					R_monitor(0);
 				}
 				break;
 			case KEY_LEFT:

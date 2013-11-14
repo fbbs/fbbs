@@ -8,8 +8,6 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-void R_monitor();
-
 struct ACSHM {
 	char    data[ACBOARD_MAXLINE][ACBOARD_BUFSIZE];
 	int     movielines;
@@ -255,30 +253,6 @@ void printacbar(void)
 	move (y,x);
 #endif
 	refresh();
-}
-
-void R_monitor(int unused)
-{
-	if (session_status() != ST_MMENU)
-		return;
-
-	/* Added by Ashinmarch on 2007.12.01
-	 * used to support multi-line msgs
-	 */
-	if (session_status() == ST_LOOKMSGS || session_status() == ST_MSG || RMSG == YEA)
-		return;
-	/*end*/
-	if (!DEFINE(DEF_ACBOARD) && !DEFINE(DEF_ENDLINE))
-		return;
-
-	alarm(0);
-	fb_signal(SIGALRM, R_monitor);
-	netty_more();
-	printacbar();
-	if (!DEFINE(DEF_ACBOARD))
-		alarm(55);
-	else
-		alarm(10);
 }
 
 enum {

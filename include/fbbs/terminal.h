@@ -56,7 +56,6 @@ void ActiveBoard_Init(void);
 int countln(char *fname);
 void netty_more(void);
 void printacbar(void);
-void R_monitor(int);
 int msg_more(void);
 int ansimore4(char *filename, int promptend, char *board, char *path, int ent);
 int ansimore_buffer(const char *buf, size_t size, int promptend);
