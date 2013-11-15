@@ -250,8 +250,14 @@ static int show_sessions(const char *uname)
 		else
 			idle = (now - refresh) / 60;
 
+		char buf[32];
+		const char *descr = session_status_descr(status);
+		if (request_type(REQUEST_UTF8))
+			convert_g2u(descr, buf);
+		else
+			strlcpy(buf, descr, sizeof(buf));
 		printf("<st vis='%d' web='%d' idle='%d' desc='%s'/>",
-				visible, web, idle, session_status_descr(status));
+				visible, web, idle, buf);
 	}
 
 	db_clear(res);

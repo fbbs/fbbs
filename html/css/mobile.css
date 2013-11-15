@@ -25,6 +25,10 @@ div#fav, div#main { padding: 0 3px; }
 div#fav { margin-bottom: 4px; }
 div#fave, div#favc { display: none; }
 
+span.tt { color: #000; display:inline-block; margin: 0 10px 0 0; }
+li.brd span.tt { font-size: 18px; }
+.sec a, li.brd a { color: #369; display: block; font-size: 16px; line-height: 36px; }
+
 .po a, a.po-entry { color: #000; display: block; font-size: 18px; line-height: 36px; padding: 0; }
 .ainfo a { color: #369; display: inline; font-size: 16px; line-height: 24px; padding: 0; }
 p.ainfo { line-height: 24px; font-size: 16px; color: #808080; }
@@ -52,7 +56,6 @@ a.po-folder { color: #369; display: block; font-size: 18px; line-height: 36px; p
 div.time { font-size: 14px; color: gray; float: right; line-height: 36px; }
 
 li { border-bottom: #69c 1px dotted; }
-li.brd span.tt { font-size: 14px; }
 #fav a.rd, .rd a, .rd span, .rd a.owner { color: #808080; }
 
 div.umain { padding: 4px 0; }

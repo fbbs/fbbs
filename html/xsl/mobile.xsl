@@ -213,10 +213,10 @@
 <xsl:when test='@dir="1"'><xsl:attribute name='href'>boa?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:when>
 <xsl:otherwise><xsl:attribute name='href'><xsl:value-of select='../session/@m'/>doc?board=<xsl:value-of select='@title'/></xsl:attribute></xsl:otherwise>
 </xsl:choose>
-<xsl:choose><xsl:when test='@read="0"'>◇</xsl:when><xsl:otherwise>◆</xsl:otherwise></xsl:choose>
-<xsl:choose><xsl:when test='@dir="1"'>[目录]</xsl:when><xsl:otherwise><xsl:value-of select='@cate'/></xsl:otherwise></xsl:choose>
-<xsl:value-of select='@desc'/></a><span class='tt'>[<xsl:value-of select='@title'/>]</span>
-</li></xsl:for-each></ul>
+<xsl:if test='@read="1"'><xsl:attribute name='class' select='rd'/></xsl:if>
+<span class='tt'><xsl:value-of select='@title'/></span>
+<xsl:choose><xsl:when test='@dir="1"'>[目录]</xsl:when><xsl:otherwise>[<xsl:value-of select='@cate'/>]</xsl:otherwise></xsl:choose>
+<xsl:value-of select='@desc'/></a></li></xsl:for-each></ul>
 </xsl:template>
 
 <xsl:template match='bbspst'>
