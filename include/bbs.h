@@ -53,14 +53,6 @@
 #define MAX_POSTRETRY       100
 #define MAX_PREFIX			  9    /* 最大版面前缀数*/
 
-#ifdef BIGGER_MOVIE
-#define MAXMOVIE		8
-#else
-#define MAXMOVIE		6    /* lines of  activity board  */
-#endif
-
-#define ACBOARD_BUFSIZE      512 /* max. length of each line for activity board*/
-#define ACBOARD_MAXLINE      256 /* max. lines of  activity board  */
 #define STRLEN               80    /* Length of most string data */
 #define BM_LEN               60    /* Length of BM id length*/
 #define NAMELEN              40    /* Length of username/realname */

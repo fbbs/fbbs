@@ -39,7 +39,6 @@
 
 /* 看站长的喜好啦， 想如何就如何吧， 当然你要懂这个啦，呵呵 */
 #define LOG_MY_MESG		/* 讯息纪录中纪录自己所发出的讯息 */
-#define BIGGER_MOVIE 		/* 加大活动看板空间 (七行) */
 
 #define USE_TRY extern sigjmp_buf bus_jump
 #define BBS_TRY \
