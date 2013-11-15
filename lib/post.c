@@ -704,7 +704,7 @@ static post_id_t insert_post(const post_request_t *pr, const char *uname,
 				| (pr->locked ? POST_FLAG_LOCKED : 0);
 		pi.bid = pr->board->id;
 		strlcpy(pi.owner, uname, sizeof(pi.owner));
-		string_copy(pi.utf8_title, pr->title, sizeof(pi.utf8_title));
+		string_cp(pi.utf8_title, pr->title, sizeof(pi.utf8_title));
 
 		post_content_write(pi.id, content, strlen(content));
 

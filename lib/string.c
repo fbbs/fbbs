@@ -381,7 +381,7 @@ size_t string_check_tail(char *begin, char *end)
 	return 0;
 }
 
-size_t string_copy(char *dst, const char *src, size_t siz)
+size_t string_cp(char *dst, const char *src, size_t siz)
 {
 	size_t size = strlcpy(dst, src, siz);
 	if (size >= siz)
