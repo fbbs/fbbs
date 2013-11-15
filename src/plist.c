@@ -541,6 +541,29 @@ static int toggle_post_stickiness(tui_list_t *tl, post_info_t *pi)
 	return DONOTHING;
 }
 
+static void log_toggle_flag(const post_info_t *pi, post_flag_e flag)
+{
+	log_bm_e type;
+	bool on = pi->flag & flag;
+	switch (flag) {
+		case POST_FLAG_DIGEST:
+			type = on ? LOG_BM_UNDIGIST : LOG_BM_DIGIST;
+			break;
+		case POST_FLAG_MARKED:
+			type = on ? LOG_BM_UNMARK : LOG_BM_MARK;
+			break;
+		case POST_FLAG_WATER:
+			type = on ? LOG_BM_UNWATER : LOG_BM_WATER;
+			break;
+		case POST_FLAG_LOCKED:
+			type = on ? LOG_BM_UNCANNOTRE : LOG_BM_CANNOTRE;
+			break;
+		default:
+			return;
+	}
+	log_bm(type, 1);
+}
+
 static int toggle_post_flag(tui_list_t *tl, post_info_t *pi, post_flag_e flag)
 {
 	post_list_t *pl = tl->data;
@@ -551,6 +574,7 @@ static int toggle_post_flag(tui_list_t *tl, post_info_t *pi, post_flag_e flag)
 		post_index_board_t pib = { .id = pi->id };
 		set_post_flag_one(rec, &pib, tl->cur, flag, false, true);
 		tl->valid = false;
+		log_toggle_flag(pi, flag);
 		return PARTUPDATE;
 	}
 	return DONOTHING;
@@ -956,6 +980,7 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 			};
 			if (post_index_board_delete(&filter, NULL, 0, true, false, true)) {
 				tl->valid = false;
+				log_bm(LOG_BM_DELETE, 1);
 				return PARTUPDATE;
 			}
 		} else {
@@ -973,6 +998,7 @@ static int tui_undelete_single_post(tui_list_t *tl, post_info_t *pi)
 		if (post_index_board_undelete(&f, NULL, 0,
 					pl->type == POST_LIST_TRASH)) {
 			tl->valid = false;
+			log_bm(LOG_BM_UNDELETE, 1);
 			return PARTUPDATE;
 		}
 	}
@@ -1274,7 +1300,8 @@ static int tui_new_post(int bid, post_info_t *pi)
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),
 				usernum);
 	}
-	log_bm(LOG_BM_POST, 1);
+	if (am_curr_bm())
+		log_bm(LOG_BM_POST, 1);
 	set_user_status(status);
 	return FULLUPDATE;
 }
@@ -1363,7 +1390,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 		post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
 		if (post_index_board_delete(&filter, NULL, 0, false,
 				!HAS_PERM(PERM_OBOARDS), false)) {
-			log_bm(LOG_BM_DELETE, 1);
+			log_bm(LOG_BM_RANGEDEL, 1);
 			tl->valid = false;
 		}
 		return PARTUPDATE;
