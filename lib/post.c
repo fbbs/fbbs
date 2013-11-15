@@ -365,7 +365,7 @@ static char *post_content_try_read(int fd, post_id_t id, char *buf,
 	return sbuf;
 }
 
-char *post_content_read_fd(int fd, post_id_t id, char *buf, size_t *size)
+static char *post_content_read_fd(int fd, post_id_t id, char *buf, size_t *size)
 {
 	char *ptr = post_content_try_read(fd, id, buf, size);
 	if (!ptr && buf[0] == POST_CONTENT_NEED_LOCK) {

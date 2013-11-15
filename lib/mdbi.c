@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <hiredis/hiredis.h>
 #include "fbbs/mdbi.h"
+#include "fbbs/string.h"
 
 enum {
 	MDB_RES_STATUS = REDIS_REPLY_STATUS,
@@ -18,10 +19,10 @@ enum {
 
 typedef redisReply mdb_res_t;
 
-struct mdb_conn_t {
+typedef struct {
 	redisContext *c;
 	char buf[MDB_CMD_BUF_LEN];
-};
+} mdb_conn_t;
 
 static mdb_conn_t _mdb;
 
@@ -57,20 +58,24 @@ static char *smart_vsnprintf(char *buf, size_t size,
 
 #define mdb_clear(res)  freeReplyObject(res)
 
-static mdb_res_t *mdb_vcmd(const char *cmd, const char *fmt, va_list ap)
+static mdb_res_t *mdb_vcmd(bool safe, const char *cmd, const char *fmt,
+		va_list ap)
 {
 	char real_fmt[32];
 	size_t bytes = snprintf(real_fmt, sizeof(real_fmt), "%s %s", cmd, fmt);
 	if (bytes >= sizeof(real_fmt))
 		return NULL;
 
-	char *buf = _mdb.buf;
-	char *s = smart_vsnprintf(buf, sizeof(_mdb.buf), real_fmt, ap);
-
-	mdb_res_t *res = redisCommand(_mdb.c, s);
-
-	if (s != buf)
-		free(s);
+	mdb_res_t *res;
+	if (safe) {
+		res = redisvCommand(_mdb.c, real_fmt, ap);
+	} else {
+		char *buf = _mdb.buf;
+		char *s = smart_vsnprintf(buf, sizeof(_mdb.buf), real_fmt, ap);
+		res = redisCommand(_mdb.c, s);
+		if (s != buf)
+			free(s);
+	}
 
 	if (!res || res->type == MDB_RES_ERROR) {
 		mdb_clear(res);
@@ -79,23 +84,29 @@ static mdb_res_t *mdb_vcmd(const char *cmd, const char *fmt, va_list ap)
 	return res;
 }
 
+#define MDB_CMD_HELPER(safe)  \
+	va_list ap; \
+	va_start(ap, fmt); \
+	mdb_res_t *res = mdb_vcmd(safe, cmd, fmt, ap); \
+	va_end(ap);
+
 bool mdb_cmd(const char *cmd, const char *fmt, ...)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	mdb_res_t *res = mdb_vcmd(cmd, fmt, ap);
-	va_end(ap);
+	MDB_CMD_HELPER(false);
+	mdb_clear(res);
+	return res;
+}
+
+bool mdb_cmd_safe(const char *cmd, const char *fmt, ...)
+{
+	MDB_CMD_HELPER(true);
 	mdb_clear(res);
 	return res;
 }
 
 mdb_int_t mdb_integer(mdb_int_t invalid, const char *cmd, const char *fmt, ...)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	mdb_res_t *res = mdb_vcmd(cmd, fmt, ap);
-	va_end(ap);
-
+	MDB_CMD_HELPER(false);
 	if (!res)
 		return invalid;
 
@@ -109,4 +120,15 @@ mdb_int_t mdb_integer(mdb_int_t invalid, const char *cmd, const char *fmt, ...)
 
 	mdb_clear(res);
 	return i;
+}
+
+char *mdb_string(char *buf, size_t size, const char *cmd, const char *fmt, ...)
+{
+	MDB_CMD_HELPER(false);
+	if (!res || res->type != MDB_RES_STRING)
+		return NULL;
+
+	strlcpy(buf, res->str, size);
+	mdb_clear(res);
+	return buf;
 }

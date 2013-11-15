@@ -918,6 +918,8 @@ void tlog_recover(void)
 }
 #endif
 
+extern void active_board_init(bool);
+
 void start_client(void)
 {
 	extern char currmaildir[];
@@ -967,7 +969,7 @@ void start_client(void)
 		set_numofsig();
 	}
 
-	ActiveBoard_Init();
+	active_board_init(false);
 	fill_date();
 
 	if (DEFINE(DEF_LOGFRIEND)

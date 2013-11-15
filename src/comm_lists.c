@@ -318,6 +318,9 @@ static int draw_menu(menuitem_t *pm)
 	}
 }
 
+extern void active_board_init(bool);
+extern void active_board_show(void);
+
 int domenu(const char *menu_name)
 {
 	extern int refscreen;
@@ -340,10 +343,9 @@ int domenu(const char *menu_name)
 	}
 
 	set_user_status(ST_MMENU);
+	active_board_show();
 
 	while (1) {
-		printacbar();
-
 		while (pm[now].level < 0 || !HAS_PERM(pm[now].level)) {
 			now++;
 			if (now >= size)
@@ -366,6 +368,7 @@ int domenu(const char *menu_name)
 				}
 				draw_menu(pm);
 				set_user_status(ST_MMENU);
+				active_board_show();
 				break;
 			case KEY_RIGHT:
 				for (i = 0; i < size; i++) {
@@ -402,6 +405,7 @@ int domenu(const char *menu_name)
 					}
 					draw_menu(pm);
 					set_user_status(ST_MMENU);
+					active_board_show();
 				}
 				break;
 			case KEY_LEFT:
@@ -443,7 +447,7 @@ int domenu(const char *menu_name)
 				sysconf_load(true);
 				report("reload sysconf.img", currentuser.userid);
 				pm = sys_conf.item + sysconf_eval(menu_name, &sys_conf);
-				ActiveBoard_Init();
+				active_board_init(true);
 				size = draw_menu(pm);
 				now = 0;
 				break;

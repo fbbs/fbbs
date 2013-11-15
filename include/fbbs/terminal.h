@@ -52,10 +52,7 @@ int num_ans_chr(const char *str);
 
 // src/more.c
 
-void ActiveBoard_Init(void);
 int countln(char *fname);
-void netty_more(void);
-void printacbar(void);
 int msg_more(void);
 int ansimore4(char *filename, int promptend, char *board, char *path, int ent);
 int ansimore_buffer(const char *buf, size_t size, int promptend);
