@@ -172,7 +172,7 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 	buf[0] = '\0';
 	size_t len = 0;
 	int ch;
-	while ((ch = igetkey())) {
+	while ((ch = terminal_getchar())) {
 		switch (ch) {
 			case '\n':
 			case '\r':

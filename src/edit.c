@@ -745,7 +745,7 @@ static int ask(const char *prompt)
 {
 	int ch;
 	top_show(prompt);
-	ch = igetkey();
+	ch = terminal_getchar();
 	move(0, 0);
 	clrtoeol();
 	return (ch);
@@ -855,7 +855,7 @@ static int process_ESC_action(int action, int arg)
 			clrtoeol();
 			//% prints("[1m%s%s%s[m", msg, ", 请按任意键返回编辑画面...", ANSI_RESET);
 			prints("[1m%s%s%s[m", msg, ", \xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xb7\xb5\xbb\xd8\xb1\xe0\xbc\xad\xbb\xad\xc3\xe6...", ANSI_RESET);
-			igetkey();
+			terminal_getchar();
 			newch = '\0';
 			editansi = showansi = 0;
 			clear();
@@ -1712,7 +1712,7 @@ static int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
 		shift = (currpnt + 2 > STRLEN) ? (currpnt / (STRLEN - scrollen))
 				* (STRLEN - scrollen) : 0;
 		move(curr_window_line, currpnt - shift);
-		ch = (newch != '\0') ? newch : igetkey();
+		ch = (newch != '\0') ? newch : terminal_getchar();
 	}
 	return 1;
 }

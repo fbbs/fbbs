@@ -1,16 +1,15 @@
 #ifndef FB_TERMINAL_H
 #define FB_TERMINAL_H
 
-// src/io.c
-extern int read_stdin(unsigned char *buf, size_t size);
-extern int write_stdout(const unsigned char *buf, size_t len);
-extern int oflush(void);
-extern void ochar(int ch);
-extern void output(const unsigned char *str, int size);
-extern void add_io(int fd, int timeout);
-extern bool inbuf_empty(void);
+extern int terminal_read(unsigned char *buf, size_t size);
+extern int terminal_write(const unsigned char *buf, size_t len);
+extern int terminal_flush(void);
+extern void terminal_putchar(int ch);
+extern void terminal_write_cached(const unsigned char *str, int size);
+extern bool terminal_input_buffer_empty(void);
+
 extern int igetch(void);
-extern int igetkey(void);
+extern int terminal_getchar(void);
 extern int egetch(void);
 extern int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel);

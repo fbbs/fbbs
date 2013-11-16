@@ -356,14 +356,14 @@ static void check_tty_lines(void)
 	//                    255 251 31
 	//	  (client sends)  IAC SB  NAWS 0 80 0 24 IAC SE
 	//                    255 250 31   0 80 0 24 255 240
-	static unsigned char buf1[] = { 255, 253, 31 };
-	unsigned char buf2[100];
-	int n;
+	unsigned char buf1[] = { 255, 253, 31 };
+	terminal_write(buf1, 3);
 
 	if (ttyname(STDIN_FILENO))
 		return;
-	write_stdout(buf1, 3);
-	n = read_stdin(buf2, 80);
+
+	unsigned char buf2[100];
+	int n = terminal_read(buf2, 80);
 	if (n == 12) {
 		if (buf2[0] != 255 || buf2[1] != 251 || buf2[2] != 31)
 			return;
@@ -549,7 +549,7 @@ static int login_query(void)
 		if (strcaseeq(uname, "new")) {
 			memset(&currentuser, 0, sizeof(currentuser));
 			new_register();
-			oflush();
+			terminal_flush();
 			exit(1);
 		} else if (*uname == '\0')
 			;
@@ -724,7 +724,7 @@ static void user_login(void)
 			} else if ((noteln - currentuser.noteline)> 0) {
 				move(0, 0);
 				ansimore2("etc/notepad", NA, 0, noteln - currentuser.noteline + 1);
-				igetkey();
+				terminal_getchar();
 				clear();
 			}
 			currentuser.noteline = noteln;
@@ -766,7 +766,7 @@ static void user_login(void)
 		//% prints("☆ 上次连线时间为 \033[33m%s\033[m ", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
 		prints("\xa1\xee \xc9\xcf\xb4\xce\xc1\xac\xcf\xdf\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
 	}
-	igetkey();
+	terminal_getchar();
 	WishNum = 9999;
 	setuserfile(fname, BADLOGINFILE);
 	if (ansimore(fname, NA) != -1) {
@@ -943,7 +943,7 @@ void start_client(void)
 	strlcpy(BoardName, BBSNAME, sizeof(BoardName));
 
 	if (login_query() == -1) {
-		oflush();
+		terminal_flush();
 		sleep(3);
 		exit(1);
 	}

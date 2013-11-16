@@ -118,8 +118,10 @@ static int bbsd_log(const char *str)
 // TODO: rewrite this
 static void telnet_init(void)
 {
-	static unsigned char svr[] = { IAC, WILL, TELOPT_ECHO, IAC, WILL, TELOPT_SGA };
-	write_stdout(svr, sizeof(svr));
+	static unsigned char svr[] = {
+		IAC, WILL, TELOPT_ECHO, IAC, WILL, TELOPT_SGA
+	};
+	terminal_write(svr, sizeof(svr));
 }
 
 /**

@@ -31,7 +31,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	prints("%s", buf);
 
 	if (dumb_term || echo == NA) {
-		while ((ch = igetkey()) != '\n') {
+		while ((ch = terminal_getchar()) != '\n') {
 			if (RMSG == YEA && msg_num == 0) {
 				if (ch == Ctrl('Z') || ch == KEY_UP) {
 					buf[0] = Ctrl('Z');
@@ -51,9 +51,9 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 					continue;
 				}
 				clen--;
-				ochar(Ctrl('H'));
-				ochar(' ');
-				ochar(Ctrl('H'));
+				terminal_putchar(Ctrl('H'));
+				terminal_putchar(' ');
+				terminal_putchar(Ctrl('H'));
 				continue;
 			}
 			if (!isprint2(ch)) {
@@ -64,13 +64,13 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 			}
 			buf[clen++] = ch;
 			if (echo)
-				ochar(ch);
+				terminal_putchar(ch);
 			else
-				ochar('*');
+				terminal_putchar('*');
 		}
 		buf[clen] = '\0';
 		outc('\n');
-		oflush();
+		terminal_flush();
 		return clen;
 	}
 	clrtoeol();
@@ -78,7 +78,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 		if (RMSG) {
 			refresh();
 		}
-		ch = igetkey();
+		ch = terminal_getchar();
 		if ((RMSG == YEA) && msg_num == 0) {
 			if (ch == Ctrl('Z') || ch == KEY_UP) {
 				buf[0] = Ctrl('Z');
@@ -447,7 +447,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 			cursory = y;
 			cursorx = x;
 		}
-		//以下遍历buf的功能是显示出每次igetkey的动作。
+		//以下遍历buf的功能是显示出每次terminal_getchar的动作。
 		size = strlen(buf);
 		for (i = 0; i < size; i++) {
 			if (chk) {
@@ -489,7 +489,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 		}
 		clrtoeol();
 		move(cursory, cursorx);
-		ch = igetkey();
+		ch = terminal_getchar();
 
 		if ((RMSG == YEA) && msg_num == 0) 
 		{
@@ -804,5 +804,5 @@ void printdash(const char *mesg)
 
 void bell(void)
 {
-	ochar(Ctrl('G'));
+	terminal_putchar(Ctrl('G'));
 }

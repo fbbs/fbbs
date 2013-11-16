@@ -46,7 +46,7 @@ int isclubmember(const char *member, const char *board);
 int check_maxmail(void);
 
 //io.c
-int igetkey(void);
+int terminal_getchar(void);
 int egetch(void);
 void update_endline(void);
 

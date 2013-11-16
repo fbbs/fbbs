@@ -695,7 +695,7 @@ int msg_more(void)
 			prints("\033[0;1;44;31m[\xd1\xb6\xcf\xa2\xe4\xaf\xc0\xc0\xc6\xf7]  \033[33mc \xc7\xe5\xb3\xfd | "
 					//% "m 寄回信箱\033[K\033[m");
 					"m \xbc\xc4\xbb\xd8\xd0\xc5\xcf\xe4\033[K\033[m");
-			ch = toupper(igetkey());
+			ch = toupper(terminal_getchar());
 		}
 		switch (ch) {
 			case 'C':

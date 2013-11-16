@@ -1,9 +1,7 @@
 // Terminal I/O handlers.
 
-#ifdef AIX
-#include <sys/select.h>
-#endif
 #include <arpa/telnet.h>
+#include <sys/select.h>
 #ifdef ENABLE_SSH
 #include "libssh/libssh.h"
 #endif // ENABLE_SSH
@@ -16,24 +14,6 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
-
-/** Telnet option negotiation sequence status. */
-enum {
-	TELST_NOR,  ///< normal byte
-	TELST_IAC,  ///< right after IAC
-	TELST_COM,  ///< right after IAC DO/DONT/WILL/WONT
-	TELST_SUB,  ///< right after IAC SB
-	TELST_SBC,  ///< right after IAC SB [COMMAND]
-	TELST_END,  ///< end of an telnet option
-};
-
-/** ESC process status */
-enum {
-	ESCST_BEG,  ///< begin
-	ESCST_CUR,  ///< Cursor keys
-	ESCST_FUN,  ///< Function keys
-	ESCST_ERR,  ///< Parse error
-};
 
 typedef struct {
 	int cur;
@@ -55,22 +35,16 @@ static iobuf_t outbuf;  ///< Output buffer.
 
 int KEY_ESC_arg;
 
-/**
- *
- */
-int read_stdin(unsigned char *buf, size_t size)
+int terminal_read(unsigned char *buf, size_t size)
 {
 #ifdef ENABLE_SSH
 	return channel_read(ssh_chan, buf, size, 0);
 #else // ENABLE_SSH
-	return read(STDIN_FILENO, buf, size);
+	return file_read(STDIN_FILENO, buf, size);
 #endif // ENABLE_SSH
 }
 
-/**
- *
- */
-int write_stdout(const unsigned char *buf, size_t len)
+int terminal_write(const unsigned char *buf, size_t len)
 {
 #ifdef ENABLE_SSH
 	return channel_write(ssh_chan, buf, len);
@@ -84,11 +58,11 @@ int write_stdout(const unsigned char *buf, size_t len)
  * Flush output buffer.
  * @return 0 on success, -1 on error.
  */
-int oflush(void)
+int terminal_flush(void)
 {
 	int ret = 0;
 	if (outbuf.size > 0)
-		ret = write_stdout(outbuf.buf, outbuf.size);
+		ret = terminal_write(outbuf.buf, outbuf.size);
 	outbuf.size = 0;
 	return ret;
 }
@@ -101,14 +75,14 @@ static void put_raw_ch(int ch)
 {
 	outbuf.buf[outbuf.size++] = ch;
 	if (outbuf.size == sizeof(outbuf.buf))
-		oflush();
+		terminal_flush();
 }
 
 /**
  * Put a byte into output buffer. Do translation if needed.
  * @param ch byte to put.
  */
-void ochar(int ch)
+void terminal_putchar(int ch)
 {
 	ch = (unsigned char)ch;
 #ifdef ALLOWSWITCHCODE
@@ -132,7 +106,7 @@ void ochar(int ch)
  * @param size bytes to output.
  * @note IAC is not handled.
  */
-void output(const unsigned char *str, int size)
+void terminal_write_cached(const unsigned char *str, int size)
 {
 	int convert = 0;
 #ifdef ALLOWSWITCHCODE
@@ -140,14 +114,14 @@ void output(const unsigned char *str, int size)
 #endif // ALLOWSWITCHCODE
 	if (convert) {
 		while (size-- > 0)
-			ochar(*str++);
+			terminal_putchar(*str++);
 	} else {
 		while (size > 0) {
 			int len = sizeof(outbuf.buf) - outbuf.size;
 			if (size > len) {
 				memcpy(outbuf.buf + outbuf.size, str, len);
 				outbuf.size += len;
-				oflush();
+				terminal_flush();
 				size -= len;
 				str += len;
 			} else {
@@ -162,7 +136,7 @@ void output(const unsigned char *str, int size)
 static int i_newfd = 0;
 static struct timeval *i_top = NULL;
 
-bool inbuf_empty(void)
+bool terminal_input_buffer_empty(void)
 {
 	return (inbuf.cur >= inbuf.size);
 }
@@ -200,7 +174,7 @@ static int get_raw_ch(void)
 			if (big_picture)
 				refresh();
 			else
-				oflush();
+				terminal_flush();
 
 			FD_ZERO(&rset);
 			FD_SET(0, &rset);
@@ -217,7 +191,7 @@ static int get_raw_ch(void)
 			return I_OTHERDATA;
 
 		while (1) {
-			ret = read_stdin(inbuf.buf, sizeof(inbuf.buf));
+			ret = terminal_read(inbuf.buf, sizeof(inbuf.buf));
 			if (ret > 0)
 				break;
 			if ((ret < 0) && (errno == EINTR))
@@ -230,30 +204,40 @@ static int get_raw_ch(void)
 	return inbuf.buf[inbuf.cur++];
 }
 
+/** Telnet option negotiation sequence status. */
+typedef enum {
+	OPTION_STATUS_NOR,  ///< normal byte
+	OPTION_STATUS_IAC,  ///< right after IAC
+	OPTION_STATUS_COM,  ///< right after IAC DO/DONT/WILL/WONT
+	OPTION_STATUS_SUB,  ///< right after IAC SB
+	OPTION_STATUS_SBC,  ///< right after IAC SB [COMMAND]
+	OPTION_STATUS_END,  ///< end of an telnet option
+} option_status_e;
+
 /**
  * Handle telnet option negotiation.
  * @return the first character after IAC sequence.
  */
-static int iac_handler(void)
+static int handle_iac(void)
 {
-	int status = TELST_IAC;
-	while (status != TELST_END) {
+	option_status_e status = OPTION_STATUS_IAC;
+	while (status != OPTION_STATUS_END) {
 		int ch = get_raw_ch();
 		if (ch < 0)
 			return ch;
 		switch (status) {
-			case TELST_IAC:
+			case OPTION_STATUS_IAC:
 				if (ch == SB)
-					status = TELST_SUB;
+					status = OPTION_STATUS_SUB;
 				else
-					status = TELST_COM;
+					status = OPTION_STATUS_COM;
 				break;
-			case TELST_COM:
-				status = TELST_END;
+			case OPTION_STATUS_COM:
+				status = OPTION_STATUS_END;
 				break;
-			case TELST_SUB:
+			case OPTION_STATUS_SUB:
 				if (ch == SE)
-					status = TELST_END;
+					status = OPTION_STATUS_END;
 				break;
 			default:
 				break;
@@ -262,43 +246,51 @@ static int iac_handler(void)
 	return 0;
 }
 
+/** ESC process status */
+typedef enum {
+	ESC_STATUS_BEG,  ///< begin
+	ESC_STATUS_CUR,  ///< Cursor keys
+	ESC_STATUS_FUN,  ///< Function keys
+	ESC_STATUS_ERR,  ///< Parse error
+} esc_status_e;
+
 /**
  * Handle ANSI ESC sequences.
  * @return converted key on success, next key on error.
  */
-static int esc_handler(void)
+static int handle_esc(void)
 {
-	int status = ESCST_BEG, ch, last = 0;
+	esc_status_e status = ESC_STATUS_BEG, ch, last = 0;
 	while (1) {
 		ch = get_raw_ch();
 		if (ch < 0)
 			return ch;
 		switch (status) {
-			case ESCST_BEG:
+			case ESC_STATUS_BEG:
 				if (ch == '[' || ch == 'O')
-					status = ESCST_CUR;
+					status = ESC_STATUS_CUR;
 				else if (ch == '1' || ch == '4')
-					status = ESCST_FUN;
+					status = ESC_STATUS_FUN;
 				else {
 					KEY_ESC_arg = ch;  // TODO:...
 					return KEY_ESC;
 				}
 				break;
-			case ESCST_CUR:
+			case ESC_STATUS_CUR:
 				if (ch >= 'A' && ch <= 'D')
 					return KEY_UP + ch - 'A';
 				else if (ch >= '1' && ch <= '6')
-					status = ESCST_FUN;
+					status = ESC_STATUS_FUN;
 				else
-					status = ESCST_ERR;
+					status = ESC_STATUS_ERR;
 				break;
-			case ESCST_FUN:
+			case ESC_STATUS_FUN:
 				if (ch == '~' && last >= '1' && last <= '6')
 					return KEY_HOME + last - '1';
 				else
-					status = ESCST_ERR;
+					status = ESC_STATUS_ERR;
 				break;
-			case ESCST_ERR:
+			case ESC_STATUS_ERR:
 				return ch;
 			default:
 				break;
@@ -320,10 +312,10 @@ int igetch(void)
 		ch = get_raw_ch();
 		switch (ch) {
 			case IAC:
-				iac_handler();
+				handle_iac();
 				continue;
 			case KEY_ESC:
-				ch = esc_handler();
+				ch = handle_esc();
 				break;
 			case Ctrl('L'):
 				redoscr();
@@ -357,7 +349,7 @@ int igetch(void)
 	return ch;
 }
 
-static int do_igetkey(void)
+static int do_terminal_getchar(void)
 {
 	int ch;
 #ifdef ALLOWSWITCHCODE
@@ -383,12 +375,12 @@ static int do_igetkey(void)
 /**
  * Get next byte from stdin in gbk encoding (if conversion is needed).
  */
-int igetkey(void)
+int terminal_getchar(void)
 {
-	int ch = do_igetkey();
+	int ch = do_terminal_getchar();
 	while ((RMSG || msg_num) && session_status() != ST_LOCKSCREEN) {
 		msg_reply(ch);
-		ch = do_igetkey();
+		ch = do_terminal_getchar();
 	}
 	return ch;
 }
@@ -398,7 +390,7 @@ int egetch(void)
 	int rval;
 
 	while (1) {
-		rval = igetkey();
+		rval = terminal_getchar();
 		if (rval != Ctrl('L'))
 			break;
 		redoscr();

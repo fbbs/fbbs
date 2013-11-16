@@ -187,7 +187,7 @@ int namecomplete(char *prompt, char *data) {
 	morelist = NULL;
 	getyx(&y, &x);
 	getyx(&origy, &origx);
-	while ((ch = igetkey()) != EOF) {
+	while ((ch = terminal_getchar()) != EOF) {
 		if (ch == '\n' || ch == '\r') {
 			*temp = '\0';
 			prints("\n");
@@ -400,7 +400,7 @@ int usercomplete(char *prompt, char *data) {
 	cwlist = u_namearray((void *)cwbuf, &cwnum, "");
 	getyx(&y, &x);
 	getyx(&origy, &origx);
-	while ((ch = igetkey()) != EOF) {
+	while ((ch = terminal_getchar()) != EOF) {
 		if (ch == '\n' || ch == '\r') {
 			int i;
 			char *ptr;

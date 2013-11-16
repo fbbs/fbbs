@@ -145,7 +145,7 @@ int tui_list(tui_list_t *p)
 			outs(">");
 		}
 
-		int ch = igetkey();
+		int ch = terminal_getchar();
 
 		if (!p->in_query) {
 			move(TUI_LIST_START + p->cur - p->begin, 0);
@@ -255,7 +255,7 @@ int slide_list(slide_list_t *p)
 			outs(">");
 		}
 
-		int ch = igetkey();
+		int ch = terminal_getchar();
 
 		if (!p->in_query && p->cur >= 0) {
 			move(TUI_LIST_START + p->cur, 0);

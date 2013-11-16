@@ -1560,7 +1560,7 @@ int g_send() {
 						//% prints("(A)全部加入 (Y)加入 (N)不加入 (Q)结束? [Y]:");
 						prints("(A)\xc8\xab\xb2\xbf\xbc\xd3\xc8\xeb (Y)\xbc\xd3\xc8\xeb (N)\xb2\xbb\xbc\xd3\xc8\xeb (Q)\xbd\xe1\xca\xf8? [Y]:");
 						if (!fmode)
-							key = igetkey();
+							key = terminal_getchar();
 						else
 							key = 'Y';
 						if (key == 'q' || key == 'Q')

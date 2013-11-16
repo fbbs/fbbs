@@ -815,7 +815,7 @@ int makevote(struct votebal *ball, const char *bname)
 
 	//% prints("请按任何键开始编辑此次 [投票的描述]: \n");
 	prints("\xc7\xeb\xb0\xb4\xc8\xce\xba\xce\xbc\xfc\xbf\xaa\xca\xbc\xb1\xe0\xbc\xad\xb4\xcb\xb4\xce [\xcd\xb6\xc6\xb1\xb5\xc4\xc3\xe8\xca\xf6]: \n");
-	igetkey();
+	terminal_getchar();
 	setvfile(genbuf, bname, "desc");
 	sprintf(buf, "%s.%d", genbuf, ball->opendate);
 	aborted = vedit(buf, NA, YEA, NULL);

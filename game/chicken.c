@@ -713,7 +713,7 @@ pressany(i)
   prints("[33;46;1m                           [34m%s[37m                         [0m",cstate[i]);
   do
   {
-    ch = igetkey();
+    ch = terminal_getchar();
     if (ch == KEY_ESC && KEY_ESC_arg == 'c')
       /* capture_screen()*/ clear();
   } while ((ch != ' ') && (ch != KEY_LEFT) && (ch != '\r') && (ch != '\n'));
@@ -740,7 +740,7 @@ DOECHO,NULL);*/
     move(23,0);
     //% outs("[1]-剪刀 [2]-石头 [3]-布：");
     outs("[1]-\xbc\xf4\xb5\xb6 [2]-\xca\xaf\xcd\xb7 [3]-\xb2\xbc\xa3\xba");
-    ch = igetkey();
+    ch = terminal_getchar();
     }while((ch!='1')&&(ch!='2')&&(ch!='3'));
 
    /* com=qtime->tm_sec%3;*/

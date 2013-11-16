@@ -28,7 +28,8 @@
 #define TERM_CMD_SE "\033[m"
 
 /** Send a terminal command. */
-#define term_cmd(cmd)  output((unsigned char *)cmd, sizeof(cmd) - 1)
+#define term_cmd(cmd)  \
+	terminal_write_cached((unsigned char *) cmd, sizeof(cmd) - 1)
 
 /* Maximum Screen width in chars */
 #define LINELEN (1024)
@@ -139,7 +140,7 @@ static void do_move(int col, int line)
 	snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
 	char *p;
 	for (p = buf; *p != '\0'; p++)
-		ochar(*p);
+		terminal_putchar(*p);
 }
 
 //	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
@@ -150,20 +151,20 @@ static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 	tc_col = new_col;
 	tc_line = new_ln;
 	if ((new_col == 0) && (new_ln == was_ln + 1)) { //换行
-		ochar('\n');
+		terminal_putchar('\n');
 		if (was_col != 0) //到第一列位置,返回
-			ochar('\r');
+			terminal_putchar('\r');
 		return;
 	}
 	if ((new_col == 0) && (new_ln == was_ln)) { //不换行,到第一列位置,并返回
 		if (was_col != 0)
-			ochar('\r');
+			terminal_putchar('\r');
 		return;
 	}
 	if (was_col == new_col && was_ln == new_ln)
 		return;
 	if (new_col == was_col - 1 && new_ln == was_ln) {
-		ochar(Ctrl('H'));
+		terminal_putchar(Ctrl('H'));
 		return;
 	}
 	do_move(new_col, new_ln);
@@ -178,18 +179,18 @@ static void standoutput(unsigned char *buf, int ds, int de, int sso, int eso)
 {
 	int st_start, st_end;
 	if (eso <= ds || sso >= de) {
-		output(buf + ds, de - ds);
+		terminal_write_cached(buf + ds, de - ds);
 		return;
 	}
 	st_start = Max(sso, ds);
 	st_end = Min(eso, de);
 	if (sso > ds)
-		output(buf + ds, sso - ds);
+		terminal_write_cached(buf + ds, sso - ds);
 	term_cmd(TERM_CMD_SO);
-	output(buf + st_start, st_end - st_start);
+	terminal_write_cached(buf + st_start, st_end - st_start);
 	term_cmd(TERM_CMD_SE);
 	if (de > eso)
-		output(buf + eso, de - eso);
+		terminal_write_cached(buf + eso, de - eso);
 }
 
 /**
@@ -212,7 +213,7 @@ void redoscr(void)
 		if (s->mode & STANDOUT)
 			standoutput(s->data, 0, s->len, s->sso, s->eso);
 		else
-			output(s->data, s->len);
+			terminal_write_cached(s->data, s->len);
 		tc_col += s->len;
 		if (tc_col >= t_columns) {
 			if (!automargins) {
@@ -230,7 +231,7 @@ void redoscr(void)
 	rel_move(tc_col, tc_line, cur_col, cur_ln);
 	docls = NA;
 	scrollcnt = 0;
-	oflush();
+	terminal_flush();
 }
 
 //刷新缓冲区,重新显示屏幕?
@@ -238,7 +239,7 @@ void refresh(void)
 {
 	register int i, j;
 	register struct screenline *bp = big_picture;
-	if (!inbuf_empty())
+	if (!terminal_input_buffer_empty())
 		return;
 	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {
 		redoscr();
@@ -254,7 +255,7 @@ void refresh(void)
 	if (scrollcnt > 0) {
 		rel_move(tc_col, tc_line, 0, t_lines - 1);
 		while (scrollcnt > 0) {
-			ochar('\n');
+			terminal_putchar('\n');
 			scrollcnt--;
 		}
 	}
@@ -271,8 +272,8 @@ void refresh(void)
 				standoutput(bp[j].data, bp[j].smod, bp[j].emod + 1,
 						bp[j].sso, bp[j].eso);
 			else
-				output(&bp[j].data[bp[j].smod], bp[j].emod - bp[j].smod
-						+ 1);
+				terminal_write_cached(&bp[j].data[bp[j].smod],
+						bp[j].emod - bp[j].smod + 1);
 			tc_col = bp[j].emod + 1;
 			if (tc_col >= t_columns) {
 				if (automargins) {
@@ -291,7 +292,7 @@ void refresh(void)
 		bp[j].oldlen = bp[j].len;
 	}
 	rel_move(tc_col, tc_line, cur_col, cur_ln);
-	oflush();
+	terminal_flush();
 }
 
 /**
@@ -410,13 +411,13 @@ int outc(int c)
 	if (dumb_term) {
 		if (!isprint2(c)) {
 			if (c == '\n') {
-				ochar('\r');
+				terminal_putchar('\r');
 			} else {
 				if (c != KEY_ESC || !showansi)
 					c = '*';
 			}
 		}
-		ochar(c);
+		terminal_putchar(c);
 		return 1;
 	}
 
