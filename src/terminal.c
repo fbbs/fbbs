@@ -21,13 +21,13 @@ enum {
 };
 
 typedef struct {
-	unsigned char ptr[INPUT_BUFFER_SIZE];
+	uchar_t ptr[INPUT_BUFFER_SIZE];
 	size_t cur;
 	size_t size;
 } input_buffer_t;
 
 typedef struct {
-	unsigned char ptr[OUTPUT_BUFFER_SIZE];
+	uchar_t ptr[OUTPUT_BUFFER_SIZE];
 	size_t size;
 } output_buffer_t;
 
@@ -45,7 +45,7 @@ static output_buffer_t output_buffer;  ///< Output buffer.
 
 int KEY_ESC_arg;
 
-int terminal_read(unsigned char *buf, size_t size)
+int terminal_read(uchar_t *buf, size_t size)
 {
 #ifdef ENABLE_SSH
 	return channel_read(ssh_chan, buf, size, 0);
@@ -54,7 +54,7 @@ int terminal_read(unsigned char *buf, size_t size)
 #endif // ENABLE_SSH
 }
 
-int terminal_write(const unsigned char *buf, size_t len)
+int terminal_write(const uchar_t *buf, size_t len)
 {
 #ifdef ENABLE_SSH
 	return channel_write(ssh_chan, buf, len);
@@ -94,7 +94,7 @@ static void put_raw_ch(int ch)
  */
 void terminal_putchar(int ch)
 {
-	ch = (unsigned char)ch;
+	ch = (uchar_t) ch;
 #ifdef ALLOWSWITCHCODE
 	if (convcode) {
 		ch = convert_g2b(ch);
@@ -116,7 +116,7 @@ void terminal_putchar(int ch)
  * @param size bytes to output.
  * @note IAC is not handled.
  */
-void terminal_write_cached(const unsigned char *str, int size)
+void terminal_write_cached(const uchar_t *str, int size)
 {
 	int convert = 0;
 #ifdef ALLOWSWITCHCODE
@@ -270,7 +270,8 @@ typedef enum {
  */
 static int handle_esc(void)
 {
-	esc_status_e status = ESC_STATUS_BEG, ch, last = 0;
+	esc_status_e status = ESC_STATUS_BEG;
+	int ch, last = 0;
 	while (1) {
 		ch = get_raw_ch();
 		if (ch < 0)
