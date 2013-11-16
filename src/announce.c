@@ -2424,3 +2424,19 @@ int set_ann_path(const char *title, const char *path, int mode)
 	return 0;
 }
 
+//若dst为目录,且并非.,..,最后一个字符不为/,
+//			将其删除,成功返回	1
+//					 否则返回	0
+int deltree(const char *dst)
+{
+	if (strstr(dst, "//") || strstr(dst, "..") || strchr(dst, ' '))
+		return 0; /* precaution */
+	if (dst[strlen(dst) - 1] == '/')
+		return 0;
+	if (dashd(dst)) {
+		sprintf(genbuf, "/bin/rm -rf %s", dst);
+		system(genbuf);
+		return 1;
+	} else
+		return 0;
+}
