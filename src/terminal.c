@@ -15,11 +15,21 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
+enum {
+	INPUT_BUFFER_SIZE = 48,
+	OUTPUT_BUFFER_SIZE = 4088,
+};
+
 typedef struct {
-	int cur;
+	unsigned char ptr[INPUT_BUFFER_SIZE];
+	size_t cur;
 	size_t size;
-	unsigned char buf[IOBUFSIZE];
-} iobuf_t;
+} input_buffer_t;
+
+typedef struct {
+	unsigned char ptr[OUTPUT_BUFFER_SIZE];
+	size_t size;
+} output_buffer_t;
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
@@ -30,8 +40,8 @@ extern ssh_channel ssh_chan;
 #endif // ENABLE_SSH
 extern int msg_num, RMSG;
 
-static iobuf_t inbuf;   ///< Input buffer.
-static iobuf_t outbuf;  ///< Output buffer.
+static input_buffer_t input_buffer;   ///< Input buffer.
+static output_buffer_t output_buffer;  ///< Output buffer.
 
 int KEY_ESC_arg;
 
@@ -61,9 +71,9 @@ int terminal_write(const unsigned char *buf, size_t len)
 int terminal_flush(void)
 {
 	int ret = 0;
-	if (outbuf.size > 0)
-		ret = terminal_write(outbuf.buf, outbuf.size);
-	outbuf.size = 0;
+	if (output_buffer.size > 0)
+		ret = terminal_write(output_buffer.ptr, output_buffer.size);
+	output_buffer.size = 0;
 	return ret;
 }
 
@@ -73,8 +83,8 @@ int terminal_flush(void)
  */
 static void put_raw_ch(int ch)
 {
-	outbuf.buf[outbuf.size++] = ch;
-	if (outbuf.size == sizeof(outbuf.buf))
+	output_buffer.ptr[output_buffer.size++] = ch;
+	if (output_buffer.size == sizeof(output_buffer.ptr))
 		terminal_flush();
 }
 
@@ -117,16 +127,16 @@ void terminal_write_cached(const unsigned char *str, int size)
 			terminal_putchar(*str++);
 	} else {
 		while (size > 0) {
-			int len = sizeof(outbuf.buf) - outbuf.size;
+			int len = sizeof(output_buffer.ptr) - output_buffer.size;
 			if (size > len) {
-				memcpy(outbuf.buf + outbuf.size, str, len);
-				outbuf.size += len;
+				memcpy(output_buffer.ptr + output_buffer.size, str, len);
+				output_buffer.size += len;
 				terminal_flush();
 				size -= len;
 				str += len;
 			} else {
-				memcpy(outbuf.buf + outbuf.size, str, size);
-				outbuf.size += size;
+				memcpy(output_buffer.ptr + output_buffer.size, str, size);
+				output_buffer.size += size;
 				return;
 			}
 		}
@@ -138,7 +148,7 @@ static struct timeval *i_top = NULL;
 
 bool terminal_input_buffer_empty(void)
 {
-	return (inbuf.cur >= inbuf.size);
+	return (input_buffer.cur >= input_buffer.size);
 }
 
 /**
@@ -147,7 +157,7 @@ bool terminal_input_buffer_empty(void)
  */
 static int get_raw_ch(void)
 {
-	if (inbuf.cur >= inbuf.size) {
+	if (input_buffer.cur >= input_buffer.size) {
 		fd_set rset;
 		struct timeval to;
 		int fd = i_newfd;
@@ -191,17 +201,17 @@ static int get_raw_ch(void)
 			return I_OTHERDATA;
 
 		while (1) {
-			ret = terminal_read(inbuf.buf, sizeof(inbuf.buf));
+			ret = terminal_read(input_buffer.ptr, sizeof(input_buffer.ptr));
 			if (ret > 0)
 				break;
 			if ((ret < 0) && (errno == EINTR))
 				continue;
 			abort_bbs(0);
 		}
-		inbuf.cur = 0;
-		inbuf.size = ret;
+		input_buffer.cur = 0;
+		input_buffer.size = ret;
 	}
-	return inbuf.buf[inbuf.cur++];
+	return input_buffer.ptr[input_buffer.cur++];
 }
 
 /** Telnet option negotiation sequence status. */
