@@ -10,10 +10,13 @@ use Helper qw(get_options db_connect convert convert_time convert_file read_user
 
 $| = 1;
 
+my %file_handles;
+my $POST_INDEX_PER_FILE = 100000;
+my $POST_INDEX_SIZE = 128;
+
 get_options();
 db_connect();
 
-my $SCHEMA = 'posts';
 my $post_digests = {};
 my $boards = load_boards();
 my $posts = read_posts($boards);
@@ -106,6 +109,7 @@ sub read_index
 sub insert_posts
 {
 	my ($posts, $alive_users, $past_users) = @_;
+	my ($DIGEST, $MARKED, $LOCKED, $IMPORTED, $WATER, $STICKY, $JUNK) = (0x1, 0x2, 0x4, 0x8, 0x20, 0x10, 0x80);
 
 	my $pid_hash = {};
 	my $base = 200_000_000;
@@ -118,22 +122,10 @@ sub insert_posts
 		@$array = sort { $a->[10] <=> $b->[10] } @$array;
 		print "finished\n";
 
-		my $sth = $dbh->prepare(qq{
-				INSERT INTO $SCHEMA.recent (id, reid, tid, owner, uname, stamp, board,
-					sticky, digest, marked, locked, imported, water, title, content)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-				}) or die $!;
-		my $sth_deleted = $dbh->prepare(qq{
-				INSERT INTO $SCHEMA.deleted (id, reid, tid, owner, uname, stamp, board,
-					digest, marked, locked, imported, water, title, content,
-					eraser, deleted, junk, bm_visible, ename)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-				}) or die $!;
-
 		for (@$array) {
 			my ($file, $id, $gid, $owner, $title, $eraser,
 					$level, $access, $reid, $deleted, $date, $bid, $type) = @$_;
-			my $uid = get_uid($owner, $date, $alive_users, $past_users);
+			my $uid = get_uid($owner, $date, $alive_users, $past_users) || 0;
 
 			$owner = convert($owner);
 			$title = convert($title);
@@ -154,30 +146,40 @@ sub insert_posts
 			}
 			$pid_hash->{$bid}{$id} = ++$pid;
 			$id = $pid + $base;
-			$gid = $pid_hash->{$bid}{$gid} + $base;
-			$reid = $pid_hash->{$bid}{$reid} + $base;
+			$gid = $pid_hash->{$bid}{$gid} + $base - $id;
+			$reid = $pid_hash->{$bid}{$reid} + $base - $id;
 
-			my $digest = (($access & 0x10) or $type eq '.DIGEST') ? 1 : 0;
-			my $marked = ($access & 0x8) ? 1 : 0;
-			my $locked = ($access & 0x40) ? 1 : 0;
-			my $imported = ($access & 0x0800) ? 1 : 0;
-			my $water = ($access & 0x80) ? 1 : 0;
-			my $stamp = convert_time($date);
+			my $flag = 0;
+			$flag |= $DIGEST if (($access & 0x10) or $type eq '.DIGEST');
+			$flag |= $MARKED if ($access & 0x8);
+			$flag |= $LOCKED if ($access & 0x40);
+			$flag |= $IMPORTED if ($access & 0x0800);
+			$flag |= $WATER if ($access & 0x80);
+			my $stamp = $date;
 
 			if ($type eq '.TRASH' or $type eq '.JUNK') {
-				my $eid = get_uid($eraser, $deleted, $alive_users, $past_users);
-				$deleted = convert_time($deleted);
-				my $junk = ($access & 0x200) ? 1 : 0;
-				my $bm_visible = ($type eq '.TRASH') ? 1 : 0;
-				$sth_deleted->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
-						$digest, $marked, $locked, $imported, $water, $title, $content,
-						$eid, $deleted, $junk, $bm_visible, $eraser);
+				$flag |= $JUNK if ($access & 0x200);
+
+				my $buf = pack 'qLLllLLLZ16', $id, $reid, $gid, $uid, $flag, $stamp, 0, $deleted, $eraser;
+
+				my $filename = lc $type;
+				my $fh = get_record("$dir/brdidx/$bid$filename");
+				print $fh $buf;
 			} else {
-				my $sticky = ($type eq '.NOTICE') ? 1 : 0;
-				$sth->execute($id, $reid, $gid, $uid, $owner, $stamp, $bid,
-						$sticky, $digest, $marked, $locked, $imported, $water, $title,
-						$content);
+				my $buf = pack 'qLLllLL', $id, $reid, $gid, $uid, $flag, $stamp, 0;
+				my $fh = get_record("$dir/brdidx/$bid");
+				print $fh $buf;
+				if ($type eq '.NOTICE') {
+					$flag |= $STICKY;
+					my $buf = pack 'qLLllLL', $id, $reid, $gid, $uid, $flag, $stamp, 0;
+					my $fh = get_record("$dir/brdidx/$bid.sticky");
+					print $fh $buf;
+				}
 			}
+
+			my $buf = pack 'qLLLlllSSSZ13Z77', $id, $reid, $gid, $stamp, $uid, $flag, $bid, 0, 0, 0, $owner, $title;
+			write_global_index($id, $buf);
+			write_content($id, $content);
 
 			if ($pid % 1000 == 0) {
 				print "$pid...";
@@ -185,8 +187,6 @@ sub insert_posts
 			}
 		}
 	}
-	$dbh->do("SELECT setval('posts.base_id_seq', ?)", undef, $pid + $base + 1);
-	$dbh->commit;
 }
 
 sub get_uid
@@ -196,4 +196,50 @@ sub get_uid
 		return $alive_users->{$uname}[0];
 	}
 	$past_users->{$uname};
+}
+
+sub get_record {
+	my ($file, $callback) = @_;
+	if (not exists $file_handles{$file}) {
+		open my $fh, '>', $file or die $!;
+		$file_handles{$file} = $fh;
+		$callback->($fh) if defined $callback;
+	}
+	$file_handles{$file};
+}
+
+sub write_content {
+	my ($id, $content) = @_;
+	my $POST_CONTENT_PER_FILE = 10000;
+	my $HEADER_SIZE = 8;
+
+	my $file = int(($id - 1) / $POST_CONTENT_PER_FILE);
+	my $base = $file * $POST_CONTENT_PER_FILE + 1;
+
+	my $fh = get_record("$dir/post/$file");
+
+	my $offset = (stat($fh))[7];
+	$offset = $HEADER_SIZE * $POST_CONTENT_PER_FILE if ($offset < 4 * $POST_CONTENT_PER_FILE);
+	my $length = length($content);
+
+	seek $fh, ($id - $base) * $HEADER_SIZE, 0;
+	my $buf = pack "LL", $offset, $length;
+	print $fh $buf;
+
+	seek $fh, $offset, 0;
+	$buf = pack "S", $id - $base;
+	print $fh "\n", $buf, $content, "\0";
+}
+
+sub write_global_index {
+	my ($id, $buf) = @_;
+	my $base = int(($id - 1) / $POST_INDEX_PER_FILE) * $POST_INDEX_PER_FILE + 1;
+	my $file = "$dir/index/" . int(($id - 1) / $POST_INDEX_PER_FILE);
+	my $fh = get_record($file, sub {
+		my $fh = shift;
+		seek $fh, $POST_INDEX_SIZE * $POST_INDEX_PER_FILE - 1, 0;
+		print $fh "\0";
+	});
+	seek $fh, ($id - $base) * $POST_INDEX_SIZE, 0;
+	print $fh $buf;
 }
