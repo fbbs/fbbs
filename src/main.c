@@ -668,7 +668,7 @@ static void user_login(void)
 	u_enter();
 	report("Enter", currentuser.userid);
 
-	initscr();
+	screen_init();
 #ifdef USE_NOTEPAD
 	notepad_init();
 	if (strcmp(currentuser.userid, "guest") != 0) {

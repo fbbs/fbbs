@@ -13,7 +13,6 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	int ch, clen = 0, curr = 0, x, y;
 	int currDEC=0, i, patch=0;
 	char tmp[STRLEN];
-	extern unsigned char scr_cols;
 	extern int RMSG;
 	extern int msg_num;
 
@@ -171,7 +170,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 		if (!isprint2(ch)) {
 			continue;
 		}
-		if (x + clen >= scr_cols || clen >= len - 1) {
+		if (clen >= len - 1) {
 			continue;
 		}
 		if (!buf[curr]) {

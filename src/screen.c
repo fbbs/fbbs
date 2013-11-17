@@ -26,8 +26,6 @@ extern int iscolor;
 
 bool dumb_term = true;
 
-static int scr_lns;     ///< Lines of the screen.
-unsigned int scr_cols;  ///< Columns of the screen.
 static int cur_ln = 0;  ///< Current line.
 static int cur_col = 0; ///< Current column.
 static int roll; //roll 表示首行在screen.buf的偏移量
@@ -111,34 +109,23 @@ int num_ans_chr(const char *str)
 	return ansinum;
 }
 
-/**
- * Initialize screen.
- * @param slns Lines of the screen, ::SCREEN_LINE_LEN max.
- * @param scols Columns of the screen.
- */
-static void init_screen(int slns, int scols)
-{
-	screen_line_t *slp;
-	scr_lns = slns;
-	scr_cols = scols;
-	if (scr_cols > SCREEN_LINE_LEN)
-		scr_cols = SCREEN_LINE_LEN;
-	screen.buf = calloc(scr_lns, sizeof(*screen.buf));
-	for (slns = 0; slns < scr_lns; slns++) {
-		slp = screen.buf + slns;
-		slp->modified = false;
-		slp->len = 0;
-		slp->oldlen = 0;
-	}
-	docls = YEA;
-	roll = 0;
-}
-
-void initscr(void)
+void screen_init(void)
 {
 	if (!dumb_term && !screen.buf)
 		screen.columns = WRAPMARGIN;
-	init_screen(screen.lines, WRAPMARGIN);
+
+	if (screen.columns > SCREEN_LINE_LEN)
+		screen.columns = SCREEN_LINE_LEN;
+
+	screen.buf = malloc(screen.lines * sizeof(*screen.buf));
+	for (int i = screen.lines - 1; i >= 0; --i) {
+		screen_line_t *sl = screen.buf + i;
+		sl->modified = false;
+		sl->len = 0;
+		sl->oldlen = 0;
+	}
+	docls = YEA;
+	roll = 0;
 }
 
 /**
@@ -194,8 +181,8 @@ void redoscr(void)
 	tc_line = 0;
 	int i;
 	screen_line_t *s;
-	for (i = 0; i < scr_lns; i++) {
-		s = screen.buf + (i + roll) % scr_lns;
+	for (i = 0; i < screen.lines; i++) {
+		s = screen.buf + (i + roll) % screen.lines;
 		if (s->len == 0)
 			continue;
 		rel_move(tc_col, tc_line, 0, i);
@@ -220,7 +207,7 @@ void refresh(void)
 	register screen_line_t *bp = screen.buf;
 	if (!terminal_input_buffer_empty())
 		return;
-	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {
+	if ((docls) || (abs(scrollcnt) >= (screen.lines - 3))) {
 		redoscr();
 		return;
 	}
@@ -238,10 +225,10 @@ void refresh(void)
 			scrollcnt--;
 		}
 	}
-	for (i = 0; i < scr_lns; i++) {
+	for (i = 0; i < screen.lines; i++) {
 		j = i + roll;
-		while (j >= scr_lns)
-			j -= scr_lns;
+		while (j >= screen.lines)
+			j -= screen.lines;
 		if (bp[j].modified && bp[j].smod < bp[j].len) {
 			bp[j].modified = false;
 			if (bp[j].emod >= bp[j].len)
@@ -300,7 +287,7 @@ void clear(void)
 	docls = YEA;
 	screen_line_t *slp;
 	int i;
-	for (i = 0; i < scr_lns; i++) {
+	for (i = 0; i < screen.lines; i++) {
 		slp = screen.buf + i;
 		slp->modified = false;
 		slp->len = 0;
@@ -325,7 +312,7 @@ void clrtoeol(void)
 {
 	if (dumb_term)
 		return;
-	screen_line_t *slp = screen.buf + (cur_ln + roll) % scr_lns;
+	screen_line_t *slp = screen.buf + (cur_ln + roll) % screen.lines;
 	if (cur_col > slp->len)
 		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
 	slp->len = cur_col;
@@ -338,11 +325,11 @@ void clrtobot(void)
 	register int i, j;
 	if (dumb_term)
 		return;
-	for (i = cur_ln; i < scr_lns; i++) {
+	for (i = cur_ln; i < screen.lines; i++) {
 		j = i + roll;
-		while (j >= scr_lns)
-			//求j%scr_lns ? 因为减法比取余时间少?
-			j -= scr_lns;
+		while (j >= screen.lines)
+			//求j%screen.lines ? 因为减法比取余时间少?
+			j -= screen.lines;
 		slp = &screen.buf[j];
 		slp->modified = false;
 		slp->len = 0;
@@ -390,7 +377,7 @@ int outc(int c)
 		return 1;
 	}
 
-	screen_line_t *slp = screen.buf + (cur_ln + roll) % scr_lns;
+	screen_line_t *slp = screen.buf + (cur_ln + roll) % screen.lines;
 	unsigned int col = cur_col;
 
 	if (!isprint2(c)) {
@@ -399,7 +386,7 @@ int outc(int c)
 				memset(slp->data + slp->len, ' ', col - slp->len + 1);
 			slp->len = col;
 			cur_col = 0;
-			if (cur_ln < scr_lns)
+			if (cur_ln < screen.lines)
 				cur_ln++;
 			return 1;
 		} else {
@@ -424,9 +411,9 @@ int outc(int c)
 	if (col > slp->len)
 		slp->len = col;
 
-	if (col >= scr_cols) {
+	if (col >= screen.columns) {
 		col = 0;
-		if (cur_ln < scr_lns)
+		if (cur_ln < screen.lines)
 			cur_ln++;
 	}
 	cur_col = col; /* store cur_col back */
@@ -613,9 +600,9 @@ void scroll(void)
 	}
 	scrollcnt++;
 	roll++;
-	if (roll >= scr_lns)
-		roll -= scr_lns;
-	move(scr_lns - 1, 0);
+	if (roll >= screen.lines)
+		roll -= screen.lines;
+	move(screen.lines - 1, 0);
 	clrtoeol();
 }
 
