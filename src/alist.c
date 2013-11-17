@@ -354,7 +354,7 @@ int tui_attachment_list(const board_t *board)
 	if (attachment_open_record(board->name, RECORD_READ, &record) < 0)
 		return DONOTHING;
 
-	int lines = t_lines - 4;
+	int lines = screen_lines() - 4;
 	struct fileheader *buf = malloc(lines * sizeof(*buf));
 
 	tui_attachment_list_t tal = {

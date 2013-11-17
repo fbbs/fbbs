@@ -1251,7 +1251,7 @@ static int listfilecontent(char *fname, int y)
 			line[78 - x] = '\0';
 		prints("%s", line);
 		cnt++;
-		if ((++y) >= t_lines - 1) {
+		if ((++y) >= screen_lines() - 1) {
 			y = 3;
 			x += max + 2;
 			max = 0;

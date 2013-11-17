@@ -30,7 +30,7 @@
 //      宏定义toupper(c),但有负作用,用时注意
 #define chartoupper(c)  ((c >= 'a' && c <= 'z') ? c+'A'-'a' : c)
 
-#define NUMLINES (t_lines - 4)
+#define NUMLINES (screen_lines() - 4)
 
 struct word {
 	char *name;

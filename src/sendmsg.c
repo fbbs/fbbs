@@ -585,7 +585,7 @@ static int msg_show(msg_status_t *st, char *head, size_t hsize,
 	if (st->rpid) {
 		strlcpy(st->receiver, head + 12, sizeof(st->receiver));
 		strtok(st->receiver, " ");
-		int line = (session_status() == ST_TALK ? t_lines / 2 - 1 : 0);
+		int line = (session_status() == ST_TALK ? screen_lines() / 2 - 1 : 0);
 		st->cury = show_msg(currentuser.userid, head, buf, line,
 				st->status == MSG_REPLYING);
 	}

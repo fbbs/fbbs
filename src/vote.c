@@ -31,7 +31,7 @@ int makevote(struct votebal *ball, const char *bname); //设置投票箱
 #ifdef FDQUAN
 #define ALLOWGAME
 #endif
-#define BBS_PAGESIZE    (t_lines - 4)
+#define BBS_PAGESIZE    (screen_lines() - 4)
 
 static int range, page, readplan;
 

@@ -2618,7 +2618,7 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 
 static int post_list_with_filter(const post_filter_t *filter)
 {
-	int lines = t_lines - 4;
+	int lines = screen_lines() - 4;
 
 	post_info_t *buf = malloc(lines * sizeof(*buf));
 

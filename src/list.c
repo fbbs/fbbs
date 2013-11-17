@@ -10,7 +10,7 @@ enum {
 
 static void tui_list_init(tui_list_t *p)
 {
-	p->lines = t_lines - 4;
+	p->lines = screen_lines() - 4;
 	p->all = p->cur = p->begin = 0;
 	p->update = FULLUPDATE;
 	p->valid = false;
@@ -299,7 +299,7 @@ int slide_list(slide_list_t *p)
 			case KEY_UP:
 				if (--p->cur < 0) {
 					p->base = SLIDE_LIST_PREV;
-					p->cur = t_lines - 5;
+					p->cur = screen_lines() - 5;
 				}
 				break;
 			case 'j':
@@ -312,7 +312,7 @@ int slide_list(slide_list_t *p)
 			case '$':
 			case KEY_END:
 				p->base = SLIDE_LIST_BOTTOMUP;
-				p->cur = t_lines - 5;
+				p->cur = screen_lines() - 5;
 				break;
 			case KEY_HOME:
 				p->base = SLIDE_LIST_TOPDOWN;

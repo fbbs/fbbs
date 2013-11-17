@@ -7,7 +7,7 @@
 #include "fbbs/terminal.h"
 
 //定义页面大小
-#define BBS_PAGESIZE (t_lines-4)
+#define BBS_PAGESIZE (screen_lines()-4)
 
 /**
  *

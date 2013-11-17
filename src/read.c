@@ -75,7 +75,7 @@ void fixkeep(char *s, int first, int last)
 void modify_locmem(struct keeploc *locmem, int total) {
 	if (locmem->top_line > total) {
 		locmem->crs_line = total;
-		locmem->top_line = total - t_lines / 2;
+		locmem->top_line = total - screen_lines() / 2;
 		if (locmem->top_line < 1)
 			locmem->top_line = 1;
 	} else if (locmem->crs_line > total) {
@@ -350,7 +350,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 	int lbc, recbase, mode, ch;
 	int num, entries;
 
-	screen_len = t_lines - 4;
+	screen_len = screen_lines() - 4;
 	set_user_status(cmdmode);
 	ptr = pnt = calloc(screen_len, ssize);
 	strcpy(currdirect, direct);

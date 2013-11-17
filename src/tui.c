@@ -740,7 +740,7 @@ int pressreturn(void)
 	move(-1, 0);
 	clrtoeol();
 	getdata(
-			t_lines - 1,
+			screen_lines() - 1,
 			0,
 			//% "                              [1;33m请按 ◆[5;36mEnter[m[1;33m◆ 继续\033[m",
 			"                              [1;33m\xc7\xeb\xb0\xb4 \xa1\xf4[5;36mEnter[m[1;33m\xa1\xf4 \xbc\xcc\xd0\xf8\033[m",

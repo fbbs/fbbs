@@ -343,47 +343,6 @@ static void system_abort(void)
 	exit(0);
 }
 
-#ifndef ENABLE_SSH
-// Get height of client window.
-// See RFC 1073 "Telnet Window Size Option"
-static void check_tty_lines(void)
-{
-	// An example: Server suggest and client agrees to use NAWS.
-	//             (Negotiate About Window Size)
-	//    (server sends)  IAC DO  NAWS
-	//                    255 253 31
-	//    (client sends)  IAC WILL NAWS
-	//                    255 251 31
-	//	  (client sends)  IAC SB  NAWS 0 80 0 24 IAC SE
-	//                    255 250 31   0 80 0 24 255 240
-	unsigned char buf1[] = { 255, 253, 31 };
-	terminal_write(buf1, 3);
-
-	if (ttyname(STDIN_FILENO))
-		return;
-
-	unsigned char buf2[100];
-	int n = terminal_read(buf2, 80);
-	if (n == 12) {
-		if (buf2[0] != 255 || buf2[1] != 251 || buf2[2] != 31)
-			return;
-		if (buf2[3] != 255 || buf2[4] != 250 || buf2[5] != 31 || buf2[10]
-				!= 255 || buf2[11] != 240)
-			return;
-		t_lines = buf2[9];
-	}
-	if (n == 9) {
-		if (buf2[0] != 255 || buf2[1] != 250 || buf2[2] != 31 || buf2[7]
-				!= 255 || buf2[8] != 240)
-			return;
-		t_lines = buf2[6];
-	}
-	if (t_lines < 24 || t_lines > 100)
-		t_lines = 24;
-	return;
-}
-#endif // ENABLE_SSH
-
 struct max_log_record {
 	int year;
 	int month;
@@ -613,7 +572,7 @@ static int login_query(void)
 
 	dumb_term = false;
 #ifndef ENABLE_SSH
-	check_tty_lines();
+	screen_negotiate_size();
 #endif // ENABLE_SSH
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);

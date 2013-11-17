@@ -78,7 +78,7 @@ static const char *best_match(ac_name_list *l, const char *prefix)
 
 static int _autocomplete(ac_list *acl, char *buf, size_t size)
 {
-	int rows = t_lines - acl->ybase - 2, extra = 0;
+	int rows = screen_lines() - acl->ybase - 2, extra = 0;
 	const char *base = NULL;
 
 	if (!acl->seek || acl->seek == acl->head) {

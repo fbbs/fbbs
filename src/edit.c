@@ -133,7 +133,7 @@ static void display_buffer(void)
 	int temp_showansi;
 	temp_showansi = showansi;
 
-	for (p = top_of_win, i = 0; i < t_lines - 1; i++) {
+	for (p = top_of_win, i = 0; i < screen_lines() - 1; i++) {
 		move(i, 0);
 		if (p != can_edit_end) {
 			shift = (currpnt + 2 > STRLEN) ? (currpnt
@@ -1470,8 +1470,8 @@ void vedit_key(int ch) {
 				break;
 			case Ctrl('B'):
 			case KEY_PGUP: /* previous page */
-				top_of_win = back_line(top_of_win, t_lines - 2);
-				currline = back_line(currline, t_lines - 2);
+				top_of_win = back_line(top_of_win, screen_lines() - 2);
+				currline = back_line(currline, screen_lines() - 2);
 				currln -= moveln;
 				curr_window_line = getlineno();
 				if (currpnt > currline->len)
@@ -1616,8 +1616,8 @@ void vedit_key(int ch) {
 			redraw_everything = YEA;
 		}
 	}
-	if (curr_window_line >= t_lines - 1) {
-		for (i = curr_window_line - t_lines + 1; i >= 0; i--) {
+	if (curr_window_line >= screen_lines() - 1) {
+		for (i = curr_window_line - screen_lines() + 1; i >= 0; i--) {
 			curr_window_line--;
 			if (top_of_win->next != can_edit_end) {
 				top_of_win = top_of_win->next;

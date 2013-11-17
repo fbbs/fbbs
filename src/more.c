@@ -402,7 +402,7 @@ static int more_prompt_file(more_file_t *more)
 			//% " l 上篇 | b e 开头末尾 | g 跳转 | h 帮助\033[K\033[m",
 			" l \xc9\xcf\xc6\xaa | b e \xbf\xaa\xcd\xb7\xc4\xa9\xce\xb2 | g \xcc\xf8\xd7\xaa | h \xb0\xef\xd6\xfa\033[K\033[m",
 			(more->end - more->buf) * 100 / more->size,
-			more->line - t_lines + 2, more->line);
+			more->line - screen_lines() + 2, more->line);
 	return 0;
 }
 
@@ -434,7 +434,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 	// TODO: stuffmode
 	while (true) {
 		is_quote = more->prop & IS_QUOTE;
-		while (i++ < t_lines - 1) {
+		while (i++ < screen_lines() - 1) {
 			// Get a line
 			if (more_getline(more) <= 0) {
 				if (promptend)
@@ -467,7 +467,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 						is_quote = false;
 				}
 				// Scrolling
-				if (++pos == t_lines) {
+				if (++pos == screen_lines()) {
 					scroll();
 					--pos;
 				}
@@ -503,12 +503,12 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				i = 1;
 				break;
 			case KEY_DOWN:
-				i = t_lines - 2;
+				i = screen_lines() - 2;
 				break;
 			case KEY_PGUP:
 				clear();
 				i = pos = 0;
-				new_row = more->line - (2 * t_lines - 3);
+				new_row = more->line - (2 * screen_lines() - 3);
 				if (new_row < 0)
 					return ch;
 				more_seek(more, new_row);
@@ -516,7 +516,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 			case KEY_UP:
 				clear();
 				i = pos = 0;
-				new_row = more->line - t_lines;
+				new_row = more->line - screen_lines();
 				if (new_row < 0) {
 					return ch;
 				}
@@ -530,12 +530,12 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 			case 'R':
 			case KEY_END:
 				more_countline(more);
-				i = t_lines - 1 - (more->total - more->line);
+				i = screen_lines() - 1 - (more->total - more->line);
 				if (i < 0)
 					i = 0;
-				if (i == t_lines - 1)
+				if (i == screen_lines() - 1)
 					break;
-				more_seek(more, more->total - (t_lines - 1) + i);
+				more_seek(more, more->total - (screen_lines() - 1) + i);
 				break;
 			case 'G':
 				//% getdata(-1, 0, "跳转到的行号:", linebuf,
@@ -553,7 +553,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 			case 'H':
 				show_help("help/morehelp");
 				i = pos = 0;
-				new_row = more->line - t_lines + 1;
+				new_row = more->line - screen_lines() + 1;
 				if (new_row < 0)
 					new_row = 0;
 				more_seek(more, new_row);
@@ -646,7 +646,7 @@ static int more_prompt_msg(more_file_t *more)
 			//% "c 清除 | m 寄回信箱 | b e 开头末尾 | g 跳转\033[K\033[m",
 			"c \xc7\xe5\xb3\xfd | m \xbc\xc4\xbb\xd8\xd0\xc5\xcf\xe4 | b e \xbf\xaa\xcd\xb7\xc4\xa9\xce\xb2 | g \xcc\xf8\xd7\xaa\033[K\033[m",
 			(more->end - more->buf) * 100 / more->size,
-			more->line - t_lines + 2, more->line);
+			more->line - screen_lines() + 2, more->line);
 	return 0;
 }
 

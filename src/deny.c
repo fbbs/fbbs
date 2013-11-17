@@ -10,7 +10,7 @@
 #define DENY_LEVEL_FILE "etc/denylevel"
 #define DENY_BOARD_FILE "etc/denyboard"
 #define DEFAULT_REASON "-------------------------------"
-#define BBS_PAGESIZE (t_lines - 4)
+#define BBS_PAGESIZE (screen_lines() - 4)
 
 enum {
 	OFFSET_PERM = 48,    ///< Offset of the permission in a ban list.
@@ -113,7 +113,7 @@ void list_text(const char *file,
 					}
 					to++;
 					y++;
-					if (y > t_lines - 2)
+					if (y > screen_lines() - 2)
 						break;
 				}
 				if (from == to) {

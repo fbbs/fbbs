@@ -169,7 +169,6 @@ extern struct userec currentuser;/*  user structure is loaded from passwd */
 extern int usernum; /* Index into passwds file user record */
 extern int utmpent; /* Index into this users utmp file entry */
 
-extern int t_lines, t_columns; /* Screen size / width */
 extern struct userec lookupuser; /* Used when searching for other user info */
 
 extern const char *currboard; /* name of currently selected board */

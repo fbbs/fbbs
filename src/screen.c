@@ -1,3 +1,4 @@
+#include <arpa/telnet.h>
 #include "bbs.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -8,6 +9,8 @@
 
 enum {
 	SCREEN_LINE_LEN = 1024,
+	MIN_SCREEN_LINES = 24,
+	MAX_SCREEN_LINES = 100,
 };
 
 typedef struct {
@@ -22,8 +25,6 @@ typedef struct {
 extern int iscolor;
 
 bool dumb_term = true;
-int t_lines = 24;          ///< Terminal height.
-int t_columns = 255;       ///< Terminal width.
 
 static int scr_lns;     ///< Lines of the screen.
 unsigned int scr_cols;  ///< Columns of the screen.
@@ -38,13 +39,55 @@ unsigned char docls;
 
 typedef struct {
 	screen_line_t *buf;
+	int columns;
+	int lines;
 } screen_t;
 
 static screen_t screen = {
-	.buf = NULL,
+	.lines = 24,
+	.columns = 255,
 };
 
-//返回字符串中属于 ansi的个数?	对后一个continue不太理解 
+int screen_lines(void)
+{
+	return screen.lines;
+}
+
+// Get height of client window.
+// See RFC 1073 "Telnet Window Size Option"
+void screen_negotiate_size(void)
+{
+	// An example: Server suggest and client agrees to use NAWS.
+	//             (Negotiate About Window Size)
+	//    (server sends)  IAC DO  NAWS
+	//    (client sends)  IAC WILL NAWS
+	//	  (client sends)  IAC SB  NAWS 0 80 0 24 IAC SE
+	uchar_t naws[] = { IAC, DO, TELOPT_NAWS };
+	terminal_write(naws, sizeof(naws));
+
+	uchar_t buf[80];
+	int len = terminal_read(buf, sizeof(buf));
+	if (len == 12) {
+		if (buf[0] != IAC || buf[1] != WILL || buf[2] != TELOPT_NAWS)
+			return;
+		if (buf[3] != IAC || buf[4] != SB || buf[5] != TELOPT_NAWS
+				|| buf[10] != IAC || buf[11] != SE)
+			return;
+		screen.lines = buf[9];
+	}
+	if (len == 9) {
+		if (buf[0] != IAC || buf[1] != SB || buf[2] != TELOPT_NAWS
+				|| buf[7] != IAC || buf[8] != SE)
+			return;
+		screen.lines = buf[6];
+	}
+
+	if (screen.lines < MIN_SCREEN_LINES)
+		screen.lines = MIN_SCREEN_LINES;
+	if (screen.lines > MAX_SCREEN_LINES)
+		screen.lines = MAX_SCREEN_LINES;
+}
+
 int num_ans_chr(const char *str)
 {
 	int len, i, ansinum, ansi;
@@ -91,13 +134,11 @@ static void init_screen(int slns, int scols)
 	roll = 0;
 }
 
-//对于哑终端或是screen.buf中尚无内存映射,将t_columns设置成WRAPMARGIN
-//	调用init_screen初始化终端
 void initscr(void)
 {
 	if (!dumb_term && !screen.buf)
-		t_columns = WRAPMARGIN;
-	init_screen(t_lines, WRAPMARGIN);
+		screen.columns = WRAPMARGIN;
+	init_screen(screen.lines, WRAPMARGIN);
 }
 
 /**
@@ -117,7 +158,7 @@ static void do_move(int col, int line)
 //	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
 static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 {
-	if (new_ln >= t_lines || new_col >= t_columns) //越界,返回
+	if (new_ln >= screen.lines || new_col >= screen.columns) //越界,返回
 		return;
 	tc_col = new_col;
 	tc_line = new_ln;
@@ -160,8 +201,8 @@ void redoscr(void)
 		rel_move(tc_col, tc_line, 0, i);
 		terminal_write_cached(s->data, s->len);
 		tc_col += s->len;
-		if (tc_col >= t_columns) {
-			tc_col = t_columns - 1;
+		if (tc_col >= screen.columns) {
+			tc_col = screen.columns - 1;
 		}
 		s->modified = false;
 		s->oldlen = s->len;
@@ -191,7 +232,7 @@ void refresh(void)
 		}
 	}
 	if (scrollcnt > 0) {
-		rel_move(tc_col, tc_line, 0, t_lines - 1);
+		rel_move(tc_col, tc_line, 0, screen.lines - 1);
 		while (scrollcnt > 0) {
 			terminal_putchar('\n');
 			scrollcnt--;
@@ -209,11 +250,11 @@ void refresh(void)
 			terminal_write_cached(&bp[j].data[bp[j].smod],
 					bp[j].emod - bp[j].smod + 1);
 			tc_col = bp[j].emod + 1;
-			if (tc_col >= t_columns) {
-				tc_col -= t_columns;
+			if (tc_col >= screen.columns) {
+				tc_col -= screen.columns;
 				tc_line++;
-				if (tc_line >= t_lines)
-					tc_line = t_lines - 1;
+				if (tc_line >= screen.lines)
+					tc_line = screen.lines - 1;
 			}
 		}
 		if (bp[j].oldlen > bp[j].len) {
@@ -234,7 +275,7 @@ void refresh(void)
 void move(int y, int x)
 {
 	cur_col = x;
-	cur_ln = y < 0 ? y + t_lines : y;
+	cur_ln = y < 0 ? y + screen.lines : y;
 }
 
 /**
@@ -583,7 +624,7 @@ void screen_save_line(int line, bool save)
 	static char saved[SCREEN_LINE_LEN];
 
 	screen_line_t *bp = screen.buf;
-	line = line < 0 ? line + t_lines : line;
+	line = line < 0 ? line + screen.lines : line;
 
 	if (save) {
 		strlcpy(saved, (const char *) bp[line].data, sizeof(saved));

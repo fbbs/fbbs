@@ -11,7 +11,7 @@
 
 #define MAXITEMS        1024
 #define PATHLEN         256
-#define A_PAGESIZE      (t_lines - 4)
+#define A_PAGESIZE      (screen_lines() - 4)
 #define MAXANNPATHS	40
 
 #define ADDITEM         0
@@ -2138,7 +2138,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 			to=from;
 			y=3;
 			move(y, 0);
-			while (y < t_lines-1 && to < MAXANNPATHS) {
+			while (y < screen_lines()-1 && to < MAXANNPATHS) {
 				if (show_mode == 0)
 					sprintf(genbuf, "%4d  %-72.72s", to+1,
 							//% import_path[to].num == -1 ? "[32m<尚未设定>[m"
