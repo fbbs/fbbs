@@ -35,7 +35,6 @@ typedef struct {
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
 #endif
-extern struct screenline *big_picture;
 #ifdef ENABLE_SSH
 extern ssh_channel ssh_chan;
 #endif // ENABLE_SSH
@@ -182,10 +181,7 @@ static int get_raw_ch(void)
 				return -1;
 
 			if (ret <= 0) {
-				if (big_picture)
-					refresh();
-				else
-					terminal_flush();
+				refresh();
 			} else {
 				if (fd >= 0 && FD_ISSET(fd, &rset)) {
 					// TODO: handle notification

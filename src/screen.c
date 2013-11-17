@@ -29,15 +29,20 @@ static int scr_lns;     ///< Lines of the screen.
 unsigned int scr_cols;  ///< Columns of the screen.
 static int cur_ln = 0;  ///< Current line.
 static int cur_col = 0; ///< Current column.
-static int roll; //roll 表示首行在big_picture的偏移量
-//因为随着光标滚动,big_picture[0]可能不再保存第一行的数据
+static int roll; //roll 表示首行在screen.buf的偏移量
+//因为随着光标滚动,screen.buf[0]可能不再保存第一行的数据
 static int scrollcnt;
 static int tc_col;      ///< Terminal's current column.
 static int tc_line;     ///< Terminal's current line.
 unsigned char docls;
-unsigned char downfrom;
 
-screen_line_t *big_picture = NULL;
+typedef struct {
+	screen_line_t *buf;
+} screen_t;
+
+static screen_t screen = {
+	.buf = NULL,
+};
 
 //返回字符串中属于 ansi的个数?	对后一个continue不太理解 
 int num_ans_chr(const char *str)
@@ -75,23 +80,22 @@ static void init_screen(int slns, int scols)
 	scr_cols = scols;
 	if (scr_cols > SCREEN_LINE_LEN)
 		scr_cols = SCREEN_LINE_LEN;
-	big_picture = calloc(scr_lns, sizeof(*big_picture));
+	screen.buf = calloc(scr_lns, sizeof(*screen.buf));
 	for (slns = 0; slns < scr_lns; slns++) {
-		slp = big_picture + slns;
+		slp = screen.buf + slns;
 		slp->modified = false;
 		slp->len = 0;
 		slp->oldlen = 0;
 	}
 	docls = YEA;
-	downfrom = 0;
 	roll = 0;
 }
 
-//对于哑终端或是big_picture中尚无内存映射,将t_columns设置成WRAPMARGIN
+//对于哑终端或是screen.buf中尚无内存映射,将t_columns设置成WRAPMARGIN
 //	调用init_screen初始化终端
 void initscr(void)
 {
-	if (!dumb_term && !big_picture)
+	if (!dumb_term && !screen.buf)
 		t_columns = WRAPMARGIN;
 	init_screen(t_lines, WRAPMARGIN);
 }
@@ -150,7 +154,7 @@ void redoscr(void)
 	int i;
 	screen_line_t *s;
 	for (i = 0; i < scr_lns; i++) {
-		s = big_picture + (i + roll) % scr_lns;
+		s = screen.buf + (i + roll) % scr_lns;
 		if (s->len == 0)
 			continue;
 		rel_move(tc_col, tc_line, 0, i);
@@ -172,7 +176,7 @@ void redoscr(void)
 void refresh(void)
 {
 	register int i, j;
-	register screen_line_t *bp = big_picture;
+	register screen_line_t *bp = screen.buf;
 	if (!terminal_input_buffer_empty())
 		return;
 	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {
@@ -253,11 +257,10 @@ void clear(void)
 		return;
 	roll = 0;
 	docls = YEA;
-	downfrom = 0;
 	screen_line_t *slp;
 	int i;
 	for (i = 0; i < scr_lns; i++) {
-		slp = big_picture + i;
+		slp = screen.buf + i;
 		slp->modified = false;
 		slp->len = 0;
 		slp->oldlen = 0;
@@ -265,10 +268,10 @@ void clear(void)
 	move(0, 0);
 }
 
-//清除big_picture中的第i行,将mode与len置0
+//清除screen.buf中的第i行,将mode与len置0
 void clear_whole_line(int i)
 {
-	register screen_line_t *slp = &big_picture[i];
+	register screen_line_t *slp = &screen.buf[i];
 	slp->modified = false;
 	slp->len = 0;
 	slp->oldlen = 79;
@@ -281,7 +284,7 @@ void clrtoeol(void)
 {
 	if (dumb_term)
 		return;
-	screen_line_t *slp = big_picture + (cur_ln + roll) % scr_lns;
+	screen_line_t *slp = screen.buf + (cur_ln + roll) % scr_lns;
 	if (cur_col > slp->len)
 		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
 	slp->len = cur_col;
@@ -299,7 +302,7 @@ void clrtobot(void)
 		while (j >= scr_lns)
 			//求j%scr_lns ? 因为减法比取余时间少?
 			j -= scr_lns;
-		slp = &big_picture[j];
+		slp = &screen.buf[j];
 		slp->modified = false;
 		slp->len = 0;
 		if (slp->oldlen > 0)
@@ -346,7 +349,7 @@ int outc(int c)
 		return 1;
 	}
 
-	screen_line_t *slp = big_picture + (cur_ln + roll) % scr_lns;
+	screen_line_t *slp = screen.buf + (cur_ln + roll) % scr_lns;
 	unsigned int col = cur_col;
 
 	if (!isprint2(c)) {
@@ -579,7 +582,7 @@ void screen_save_line(int line, bool save)
 {
 	static char saved[SCREEN_LINE_LEN];
 
-	screen_line_t *bp = big_picture;
+	screen_line_t *bp = screen.buf;
 	line = line < 0 ? line + t_lines : line;
 
 	if (save) {
@@ -602,7 +605,7 @@ void screen_save_line(int line, bool save)
 void saveline_buf(int line, int mode)//0:save 1:restore
 {
     static char temp[MAX_MSG_LINE * 2 + 2][SCREEN_LINE_LEN];
-    screen_line_t *bp = big_picture;
+    screen_line_t *bp = screen.buf;
     int x, y;
     
     switch (mode) {
