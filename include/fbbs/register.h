@@ -31,8 +31,8 @@ typedef struct reginfo {
 } reginfo_t;
 
 extern bool register_closed(void);
-extern const char *invalid_userid(const char *userid);
-extern const char *invalid_password(const char *password, const char *userid);
+extern const char *register_invalid_user_name(const char *uname);
+extern const char *register_invalid_password(const char *password, const char *uname);
 extern int send_regmail(const struct userec *user, const char *mail);
 extern bool activate_email(const char *userid, const char *attempt);
 extern bool is_reg_pending(const char *userid);

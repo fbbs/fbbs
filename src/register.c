@@ -16,7 +16,6 @@ enum {
 
 //modified by money 2002.11.15
 extern char fromhost[60];
-extern time_t login_start_time;
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
@@ -95,7 +94,7 @@ void new_register(void)
 				userid, sizeof(userid), DOECHO, YEA);
 		if (userid[0] == '0')
 			return;
-		errmsg = invalid_userid(userid);
+		errmsg = register_invalid_user_name(userid);
 		if (errmsg != NULL) {
 			outs(errmsg);
 			continue;
@@ -139,7 +138,7 @@ void new_register(void)
 		//% getdata(0, 0, "请设定您的密码 (Setup Password): ", passbuf,
 		getdata(0, 0, "\xc7\xeb\xc9\xe8\xb6\xa8\xc4\xfa\xb5\xc4\xc3\xdc\xc2\xeb (Setup Password): ", passbuf,
 				sizeof(passbuf), NOECHO, YEA);
-		errmsg = invalid_password(passbuf, userid);
+		errmsg = register_invalid_password(passbuf, userid);
 		if (errmsg) {
 			outs(errmsg);
 			continue;

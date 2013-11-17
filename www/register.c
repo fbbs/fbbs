@@ -42,7 +42,7 @@ static const char *_reg(const reg_req_t *r)
 		//% return "您必须同意站规";
 		return "\xc4\xfa\xb1\xd8\xd0\xeb\xcd\xac\xd2\xe2\xd5\xbe\xb9\xe6";
 
-	const char *error = invalid_userid(r->id);
+	const char *error = register_invalid_user_name(r->id);
 	if (error)
 		return error;
 
@@ -50,7 +50,7 @@ static const char *_reg(const reg_req_t *r)
 		//% return "两次密码不匹配";
 		return "\xc1\xbd\xb4\xce\xc3\xdc\xc2\xeb\xb2\xbb\xc6\xa5\xc5\xe4";
 
-	error = invalid_password(r->pw, r->id);
+	error = register_invalid_password(r->pw, r->id);
 	if (error)
 		return error;
 

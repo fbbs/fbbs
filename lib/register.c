@@ -1,3 +1,4 @@
+#include <fnmatch.h>
 #include "bbs.h"
 #include "fbbs/dbi.h"
 #include "fbbs/fileio.h"
@@ -10,7 +11,7 @@
 #define REGISTER_LIST "unregistered"
 
 enum {
-	MIN_ID_LEN = 2,
+	MIN_USER_NAME_LEN = 2,
 	MIN_PASSWORD_LEN = 4,
 };
 
@@ -19,122 +20,33 @@ bool register_closed(void)
 	return dashf("NOREGISTER");
 }
 
-/* Add by Amigo. 2001.02.13. Called by ex_strcmp. */
-/* Compares at most n characters of s2 to s1 from the tail. */
-static int ci_strnbcmp(register char *s1, register char *s2, int n)
+static bool banned_user_name(const char *uname)
 {
-	char *s1_tail, *s2_tail;
-	char c1, c2;
-
-	s1_tail = s1 + strlen(s1) - 1;
-	s2_tail = s2 + strlen(s2) - 1;
-
-	while ( (s1_tail >= s1 ) && (s2_tail >= s2 ) && n --) {
-		c1 = *s1_tail --;
-		c2 = *s2_tail --;
-		if (c1 >= 'a' && c1 <= 'z')
-			c1 += 'A' - 'a';
-		if (c2 >= 'a' && c2 <= 'z')
-			c2 += 'A' - 'a';
-		if (c1 != c2)
-			return (c1 - c2);
-	}
-	if ( ++n)
-		if ( (s1_tail < s1 ) && (s2_tail < s2 ))
-			return 0;
-		else if (s1_tail < s1)
-			return -1;
-		else
-			return 1;
-	else
-		return 0;
-}
-
-/* Add by Amigo. 2001.02.13. Called by bad_user_id. */
-/* Compares userid to restrictid. */
-/* Restrictid support * match in three style: prefix*, *suffix, prefix*suffix. */
-/* Prefix and suffix can't contain *. */
-/* Modified by Amigo 2001.03.13. Add buffer strUID for userid. Replace all userid with strUID. */
-static int ex_strcmp(const char *restrictid, const char *userid)
-{
-	/* Modified by Amigo 2001.03.13. Add definition for strUID. */
-	char strBuf[STRLEN ], strUID[STRLEN ], *ptr;
-	int intLength;
-
-	/* Added by Amigo 2001.03.13. Add copy lower case userid to strUID. */
-	intLength = 0;
-	while ( *userid)
-		if ( *userid >= 'A' && *userid <= 'Z')
-			strUID[ intLength ++ ] = (*userid ++) - 'A' + 'a';
-		else
-			strUID[ intLength ++ ] = *userid ++;
-	strUID[ intLength ] = '\0';
-
-	intLength = 0;
-	/* Modified by Amigo 2001.03.13. Copy lower case restrictid to strBuf. */
-	while ( *restrictid)
-		if ( *restrictid >= 'A' && *restrictid <= 'Z')
-			strBuf[ intLength ++ ] = (*restrictid ++) - 'A' + 'a';
-		else
-			strBuf[ intLength ++ ] = *restrictid ++;
-	strBuf[ intLength ] = '\0';
-
-	if (strBuf[ 0 ] == '*' && strBuf[ intLength - 1 ] == '*') {
-		strBuf[ intLength - 1 ] = '\0';
-		if (strstr(strUID, strBuf + 1) != NULL)
-			return 0;
-		else
-			return 1;
-	} else if (strBuf[ intLength - 1 ] == '*') {
-		strBuf[ intLength - 1 ] = '\0';
-		return strncasecmp(strBuf, strUID, intLength - 1);
-	} else if (strBuf[ 0 ] == '*') {
-		return ci_strnbcmp(strBuf + 1, strUID, intLength - 1);
-	} else if ( (ptr = strstr(strBuf, "*") ) != NULL) {
-		return (strncasecmp(strBuf, strUID, ptr - strBuf) || ci_strnbcmp(
-				strBuf, strUID, intLength - 1 - (ptr - strBuf )) );
-	}
-	return 1;
-}
-/*
- Commented by Erebus 2004-11-08 called by getnewuserid(),new_register()
- configure ".badname" to restrict user id
- */
-static int bad_user_id(const char *userid)
-{
-	FILE *fp;
-	char buf[STRLEN];
-	const char *ptr = userid;
-	char ch;
-
-	while ( (ch = *ptr++) != '\0') {
-		if ( !isalnum(ch) && ch != '_')
-			return 1;
-	}
-	if ( (fp = fopen(".badname", "r")) != NULL) {
-		while (fgets(buf, STRLEN, fp) != NULL) {
-			ptr = strtok(buf, " \n\t\r");
-			/* Modified by Amigo. 2001.02.13.8. * match support added. */
-			/* Original: if( ptr != NULL && *ptr != '#' && strcasecmp( ptr, userid ) == 0 ) {*/
-			if (ptr != NULL && *ptr != '#' && (strcasecmp(ptr, userid) == 0
-					|| ex_strcmp(ptr, userid) == 0 )) {
+	FILE *fp = fopen(".badname", "r");
+	if (fp) {
+		char buf[STRLEN];
+		while (fgets(buf, sizeof(buf), fp)) {
+			char *ptr = strtok(buf, " \n\t\r");
+			if (ptr && *ptr != '#' && fnmatch(ptr, uname, FNM_CASEFOLD) == 0) {
 				fclose(fp);
-				return 1;
+				return true;
 			}
 		}
 		fclose(fp);
 	}
-	return 0;
+	return false;
 }
 
 /*2003.06.02 stephen modify end*/
 
 /**
- *
+ * 测试字符串是否全为英文字符
+ * @param str 字符串
+ * @return 全为字符串返回true，否则返回false
  */
-static bool strisalpha(const char *str)
+static bool string_is_alpha(const char *str)
 {
-	for (const char *s = str; *s != '\0'; s++)
+	for (const char *s = str; *s; ++s)
 		if (!isalpha(*s))
 			return false;
 	return true;
@@ -143,23 +55,23 @@ static bool strisalpha(const char *str)
 /**
  *
  */
-const char *invalid_userid(const char *userid)
+const char *register_invalid_user_name(const char *uname)
 {
-	if (!strisalpha(userid))
+	if (!string_is_alpha(uname))
 		//% "帐号必须全为英文字母\n"
 		return "\xd5\xca\xba\xc5\xb1\xd8\xd0\xeb\xc8\xab\xce\xaa\xd3\xa2\xce\xc4\xd7\xd6\xc4\xb8\n";
-	if (strlen(userid) < MIN_ID_LEN || strlen(userid) > IDLEN)
+	if (strlen(uname) > IDLEN || strlen(uname) < MIN_USER_NAME_LEN)
 		//% "帐号长度应为2~12个字符\n"
 		return "\xd5\xca\xba\xc5\xb3\xa4\xb6\xc8\xd3\xa6\xce\xaa""2~12""\xb8\xf6\xd7\xd6\xb7\xfb\n";
-	if (bad_user_id(userid))
+	if (banned_user_name(uname))
 		//% "抱歉, 您不能使用这个字作为帐号\n"
 		return "\xb1\xa7\xc7\xb8, \xc4\xfa\xb2\xbb\xc4\xdc\xca\xb9\xd3\xc3\xd5\xe2\xb8\xf6\xd7\xd6\xd7\xf7\xce\xaa\xd5\xca\xba\xc5\n";
 	return NULL;
 }
 
-const char *invalid_password(const char *password, const char *userid)
+const char *register_invalid_password(const char *password, const char *uname)
 {
-	if (strlen(password) < MIN_PASSWORD_LEN || !strcmp(password, userid))
+	if (strlen(password) < MIN_PASSWORD_LEN || streq(password, uname))
 		//% "密码太短或与使用者代号相同, 请重新输入\n"
 		return "\xc3\xdc\xc2\xeb\xcc\xab\xb6\xcc\xbb\xf2\xd3\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xcf\xe0\xcd\xac, \xc7\xeb\xd6\xd8\xd0\xc2\xca\xe4\xc8\xeb\n";
 	return NULL;
