@@ -14,7 +14,7 @@ enum {
 	MIN_PASSWORD_LEN = 4,
 };
 
-bool is_no_register(void)
+bool register_closed(void)
 {
 	return dashf("NOREGISTER");
 }

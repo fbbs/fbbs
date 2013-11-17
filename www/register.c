@@ -33,7 +33,8 @@ static const char *_reg(const reg_req_t *r)
 {
 	time_t now = time(NULL);
 	struct tm *t = localtime(&now);
-	if (t->tm_hour >= WEB_NOREG_START && t->tm_hour < WEB_NOREG_END)
+	if (register_closed() ||
+			(t->tm_hour >= WEB_NOREG_START && t->tm_hour < WEB_NOREG_END))
 		//% return "当前时段恕不开放web注册，请稍后再试";
 		return "\xb5\xb1\xc7\xb0\xca\xb1\xb6\xce\xcb\xa1\xb2\xbb\xbf\xaa\xb7\xc5web\xd7\xa2\xb2\xe1\xa3\xac\xc7\xeb\xc9\xd4\xba\xf3\xd4\xd9\xca\xd4";
 

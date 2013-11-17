@@ -30,7 +30,7 @@ typedef struct reginfo {
 	time_t regdate;
 } reginfo_t;
 
-extern bool is_no_register(void);
+extern bool register_closed(void);
 extern const char *invalid_userid(const char *userid);
 extern const char *invalid_password(const char *password, const char *userid);
 extern int send_regmail(const struct userec *user, const char *mail);

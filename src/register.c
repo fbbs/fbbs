@@ -67,7 +67,7 @@ void new_register(void)
 	char userid[IDLEN + 1], passwd[PASSLEN], passbuf[PASSLEN], log[STRLEN];
 	const char *errmsg;
 
-	if (is_no_register()) {
+	if (register_closed()) {
 		ansimore("NOREGISTER", NA);
 		pressreturn();
 		return;
