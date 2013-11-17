@@ -200,11 +200,14 @@ void redoscr(void)
 	terminal_flush();
 }
 
-//刷新缓冲区,重新显示屏幕?
 void refresh(void)
 {
-	register int i, j;
-	register screen_line_t *bp = screen.buf;
+	screen_line_t *bp = screen.buf;
+	if (!bp) {
+		terminal_flush();
+		return;
+	}
+
 	if (!terminal_input_buffer_empty())
 		return;
 	if ((docls) || (abs(scrollcnt) >= (screen.lines - 3))) {
@@ -225,10 +228,8 @@ void refresh(void)
 			scrollcnt--;
 		}
 	}
-	for (i = 0; i < screen.lines; i++) {
-		j = i + roll;
-		while (j >= screen.lines)
-			j -= screen.lines;
+	for (int i = 0; i < screen.lines; i++) {
+		int j = (i + roll) % screen.lines;
 		if (bp[j].modified && bp[j].smod < bp[j].len) {
 			bp[j].modified = false;
 			if (bp[j].emod >= bp[j].len)
