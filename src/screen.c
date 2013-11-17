@@ -1,34 +1,24 @@
 #include "bbs.h"
-#include <sys/param.h>
-#include <stdarg.h>
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-/**
- * String of commands to clear the entire screen and position the cursor at the
- * upper left corner. 
- */
-#define TERM_CMD_CL "\033[H\033[J"
+/** ANSI指令，清屏 */
+#define ANSI_CMD_CL "\033[H\033[J"
 
-/**
- * String of commands to clear from the cursor to the end of the current line.
- */
-#define TERM_CMD_CE "\033[K"
+/** ANSI指令，从光标处删除到行尾 */
+#define ANSI_CMD_CE "\033[K"
 
-/**
- * String of commands to scroll the screen one line down, assuming it is output
- * with the cursor at the beginning of the top line. 
- */
-#define TERM_CMD_SR "\033M"
+/** ANSI指令，向上滚动一行 */
+#define ANSI_CMD_SR "\033M"
 
-/** String of commands to enter standout mode. */
-#define TERM_CMD_SO "\033[7m"
+/** ANSI指令，进入反色模式 */
+#define ANSI_CMD_SO "\033[7m"
 
-/** String of commands to leave standout mode. */
-#define TERM_CMD_SE "\033[m"
+/** ANSI指令，退出反色模式 */
+#define ANSI_CMD_SE "\033[m"
 
-/** Send a terminal command. */
-#define term_cmd(cmd)  \
+/** 输出一条ANSI指令 */
+#define ansi_cmd(cmd)  \
 	terminal_write_cached((unsigned char *) cmd, sizeof(cmd) - 1)
 
 /* Maximum Screen width in chars */
@@ -186,9 +176,9 @@ static void standoutput(unsigned char *buf, int ds, int de, int sso, int eso)
 	st_end = Min(eso, de);
 	if (sso > ds)
 		terminal_write_cached(buf + ds, sso - ds);
-	term_cmd(TERM_CMD_SO);
+	ansi_cmd(ANSI_CMD_SO);
 	terminal_write_cached(buf + st_start, st_end - st_start);
-	term_cmd(TERM_CMD_SE);
+	ansi_cmd(ANSI_CMD_SE);
 	if (de > eso)
 		terminal_write_cached(buf + eso, de - eso);
 }
@@ -200,7 +190,7 @@ void redoscr(void)
 {
 	if (dumb_term)
 		return;
-	term_cmd(TERM_CMD_CL);
+	ansi_cmd(ANSI_CMD_CL);
 	tc_col = 0;
 	tc_line = 0;
 	int i;
@@ -248,7 +238,7 @@ void refresh(void)
 	if (scrollcnt < 0) {
 		rel_move(tc_col, tc_line, 0, 0);
 		while (scrollcnt < 0) {
-			term_cmd(TERM_CMD_SR);
+			ansi_cmd(ANSI_CMD_SR);
 			scrollcnt++;
 		}
 	}
@@ -287,7 +277,7 @@ void refresh(void)
 		}
 		if (bp[j].oldlen > bp[j].len) {
 			rel_move(tc_col, tc_line, bp[j].len, i);
-			term_cmd(TERM_CMD_CE);
+			ansi_cmd(ANSI_CMD_CE);
 		}
 		bp[j].oldlen = bp[j].len;
 	}
