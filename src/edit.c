@@ -736,9 +736,7 @@ static void top_show(const char *prompt)
 	}
 	move(0, 0);
 	clrtoeol();
-	standout();
-	prints("%s", prompt);
-	standend();
+	prints(ANSI_CMD_SO"%s"ANSI_CMD_SE, prompt);
 }
 
 static int ask(const char *prompt)

@@ -128,15 +128,6 @@ void autoreport(const char *board, const char *title, const char *str,
 		Poststring(str, board, title, mode);
 }
 
-// 清屏,并在第一行显示title
-void	stand_title(char   *title)
-{
-	clear();
-	standout();
-	prints("%s",title);
-	standend();
-}
-
 char    curruser[IDLEN + 2];
 extern int delmsgs[];
 extern int delcnt;

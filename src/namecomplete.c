@@ -252,10 +252,10 @@ int namecomplete(char *prompt, char *data) {
 			len = MaxLen(morelist, NUMLINES);
 			move(origy + 1, 0);
 			clrtobot();
-			standout();
+			prints(ANSI_CMD_SO);
 			//% printdash(" 列表 ");
 			printdash(" \xc1\xd0\xb1\xed ");
-			standend();
+			prints(ANSI_CMD_SE);
 			while (len + col < 80) {
 				int i;
 				for (i = NUMLINES; (morelist) && (i > origy - 1); i--) {

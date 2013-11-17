@@ -1,6 +1,21 @@
 #ifndef FB_TERMINAL_H
 #define FB_TERMINAL_H
 
+/** ANSI指令，清屏 */
+#define ANSI_CMD_CL "\033[H\033[J"
+
+/** ANSI指令，从光标处删除到行尾 */
+#define ANSI_CMD_CE "\033[K"
+
+/** ANSI指令，向上滚动一行 */
+#define ANSI_CMD_SR "\033M"
+
+/** ANSI指令，进入反色模式 */
+#define ANSI_CMD_SO "\033[7m"
+
+/** ANSI指令，退出反色模式 */
+#define ANSI_CMD_SE "\033[m"
+
 extern int terminal_read(unsigned char *buf, size_t size);
 extern int terminal_write(const unsigned char *buf, size_t len);
 extern int terminal_flush(void);
@@ -35,8 +50,6 @@ extern int outc(int c);
 extern void outs(const char *str);
 extern void prints(const char *fmt, ...);
 extern void scroll(void);
-extern void standout(void);
-extern void standend(void);
 extern void saveline(int line, int mode);
 extern void saveline_buf(int line, int mode);
 
@@ -80,7 +93,7 @@ char *setuserfile(char *buf, char *filename);
 void securityreport(char *str, int save, int mode);
 int set_safe_record(void);
 void abort_bbs(int nothing);
-void stand_title(char *title);
+void stand_title(const char *title);
 void autoreport(const char *board, const char *title, const char *str, const char *uname, int mode);
 int	check_systempasswd(void);
 int deltree(const char *dst);

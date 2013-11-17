@@ -2,21 +2,6 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-/** ANSI指令，清屏 */
-#define ANSI_CMD_CL "\033[H\033[J"
-
-/** ANSI指令，从光标处删除到行尾 */
-#define ANSI_CMD_CE "\033[K"
-
-/** ANSI指令，向上滚动一行 */
-#define ANSI_CMD_SR "\033M"
-
-/** ANSI指令，进入反色模式 */
-#define ANSI_CMD_SO "\033[7m"
-
-/** ANSI指令，退出反色模式 */
-#define ANSI_CMD_SE "\033[m"
-
 /** 输出一条ANSI指令 */
 #define ansi_cmd(cmd)  \
 	terminal_write_cached((unsigned char *) cmd, sizeof(cmd) - 1)
@@ -26,10 +11,8 @@
 
 /* Line buffer modes             */
 #define MODIFIED (1)   /* if line has been modifed, output to screen   */
-#define STANDOUT (2)   /* if this line has a standout region */
 
 #define Min(a,b) ((a<b)?a:b)
-#define Max(a,b) ((a>b)?a:b)
 
 struct screenline {
 	unsigned int oldlen; /* previous line length              */
@@ -37,8 +20,6 @@ struct screenline {
 	unsigned char mode; /* status of line, as far as update  */
 	unsigned char smod; /* start of modified data            */
 	unsigned char emod; /* end of modified data              */
-	unsigned char sso; /* start stand out */
-	unsigned char eso; /* end stand out */
 	unsigned char data[LINELEN];
 };
 
@@ -60,7 +41,6 @@ static int tc_col;      ///< Terminal's current column.
 static int tc_line;     ///< Terminal's current line.
 unsigned char docls;
 unsigned char downfrom;
-static bool standing = false;
 
 struct screenline *big_picture = NULL;
 
@@ -97,7 +77,9 @@ static void init_screen(int slns, int scols)
 {
 	struct screenline *slp;
 	scr_lns = slns;
-	scr_cols = Min(scols, LINELEN);
+	scr_cols = scols;
+	if (scr_cols > LINELEN)
+		scr_cols = LINELEN;
 	big_picture = calloc(scr_lns, sizeof(*big_picture));
 	for (slns = 0; slns < scr_lns; slns++) {
 		slp = big_picture + slns;
@@ -160,29 +142,6 @@ static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 	do_move(new_col, new_ln);
 }
 
-// 标准输出buf中的数据,	ds,de表示数据的区间,sso,eso也是
-//		但当它们没有交集时,以ds,de为准
-//		有交集时,取合集
-//			但下限以ds为准,上限以de为准				跟直接取ds,de有什么区别?
-///		对o_standup,o_standdown作用不太清楚
-static void standoutput(unsigned char *buf, int ds, int de, int sso, int eso)
-{
-	int st_start, st_end;
-	if (eso <= ds || sso >= de) {
-		terminal_write_cached(buf + ds, de - ds);
-		return;
-	}
-	st_start = Max(sso, ds);
-	st_end = Min(eso, de);
-	if (sso > ds)
-		terminal_write_cached(buf + ds, sso - ds);
-	ansi_cmd(ANSI_CMD_SO);
-	terminal_write_cached(buf + st_start, st_end - st_start);
-	ansi_cmd(ANSI_CMD_SE);
-	if (de > eso)
-		terminal_write_cached(buf + eso, de - eso);
-}
-
 /**
  * Redraw the screen.
  */
@@ -200,10 +159,7 @@ void redoscr(void)
 		if (s->len == 0)
 			continue;
 		rel_move(tc_col, tc_line, 0, i);
-		if (s->mode & STANDOUT)
-			standoutput(s->data, 0, s->len, s->sso, s->eso);
-		else
-			terminal_write_cached(s->data, s->len);
+		terminal_write_cached(s->data, s->len);
 		tc_col += s->len;
 		if (tc_col >= t_columns) {
 			if (!automargins) {
@@ -258,12 +214,8 @@ void refresh(void)
 			if (bp[j].emod >= bp[j].len)
 				bp[j].emod = bp[j].len - 1;
 			rel_move(tc_col, tc_line, bp[j].smod, i);
-			if (bp[j].mode & STANDOUT)
-				standoutput(bp[j].data, bp[j].smod, bp[j].emod + 1,
-						bp[j].sso, bp[j].eso);
-			else
-				terminal_write_cached(&bp[j].data[bp[j].smod],
-						bp[j].emod - bp[j].smod + 1);
+			terminal_write_cached(&bp[j].data[bp[j].smod],
+					bp[j].emod - bp[j].smod + 1);
 			tc_col = bp[j].emod + 1;
 			if (tc_col >= t_columns) {
 				if (automargins) {
@@ -343,10 +295,7 @@ void clrtoeol(void)
 {
 	if (dumb_term)
 		return;
-	standing = false;
 	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
-	if (cur_col <= slp->sso)
-		slp->mode &= ~STANDOUT;
 	if (cur_col > slp->len)
 		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
 	slp->len = cur_col;
@@ -416,10 +365,6 @@ int outc(int c)
 
 	if (!isprint2(c)) {
 		if (c == '\n' || c == '\r') {
-			if (standing) {
-				slp->eso = Max(slp->eso, col);
-				standing = false;
-			}
 			if (col > slp->len)
 				memset(slp->data + slp->len, ' ', col - slp->len + 1);
 			slp->len = col;
@@ -450,10 +395,6 @@ int outc(int c)
 		slp->len = col;
 
 	if (col >= scr_cols) {
-		if (standing && slp->mode & STANDOUT) {
-			standing = false;
-			slp->eso = Max(slp->eso, col);
-		}
 		col = 0;
 		if (cur_ln < scr_lns)
 			cur_ln++;
@@ -648,41 +589,6 @@ void scroll(void)
 	clrtoeol();
 }
 
-//将big_picture输出位置1,标准输出区间为(cur_col,cur_col)
-void standout(void)
-{
-	register struct screenline *slp;
-	register int ln;
-	if (dumb_term)
-		return;
-	if (!standing) {
-		ln = cur_ln + roll;
-		while (ln >= scr_lns)
-			ln -= scr_lns;
-		slp = &big_picture[ln];
-		standing = YEA;
-		slp->sso = cur_col;
-		slp->eso = cur_col;
-		slp->mode |= STANDOUT;
-	}
-}
-//	如果standing为真,将当前行在big_picture中的映射设成真
-//		并将eso设成eso,cur_col的最大值
-void standend(void)
-{
-	register struct screenline *slp;
-	register int ln;
-	if (dumb_term)
-		return;
-	if (standing) {
-		ln = cur_ln + roll;
-		while (ln >= scr_lns)
-			ln -= scr_lns;
-		slp = &big_picture[ln];
-		standing = NA;
-		slp->eso = Max(slp->eso, cur_col);
-	}
-}
 //	根据mode来决定 保存或恢复行line的内容
 //		最多只能保存一行,否则会被抹去
 void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */

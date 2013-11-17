@@ -806,3 +806,11 @@ void bell(void)
 {
 	terminal_putchar(Ctrl('G'));
 }
+
+void stand_title(const char *title)
+{
+	clear();
+	prints(ANSI_CMD_SO"%s"ANSI_CMD_SE, title);
+}
+
+
