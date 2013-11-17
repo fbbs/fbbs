@@ -22,7 +22,6 @@ typedef struct {
 extern int iscolor;
 
 bool dumb_term = true;
-bool automargins = true;
 int t_lines = 24;          ///< Terminal height.
 int t_columns = 255;       ///< Terminal width.
 
@@ -158,14 +157,7 @@ void redoscr(void)
 		terminal_write_cached(s->data, s->len);
 		tc_col += s->len;
 		if (tc_col >= t_columns) {
-			if (!automargins) {
-				tc_col -= t_columns;
-				tc_line++;
-				if (tc_line >= t_lines)
-					tc_line = t_lines - 1;
-			} else {
-				tc_col = t_columns - 1;
-			}
+			tc_col = t_columns - 1;
 		}
 		s->modified = false;
 		s->oldlen = s->len;
@@ -214,13 +206,10 @@ void refresh(void)
 					bp[j].emod - bp[j].smod + 1);
 			tc_col = bp[j].emod + 1;
 			if (tc_col >= t_columns) {
-				if (automargins) {
-					tc_col -= t_columns;
-					tc_line++;
-					if (tc_line >= t_lines)
-						tc_line = t_lines - 1;
-				} else
-					tc_col = t_columns - 1;
+				tc_col -= t_columns;
+				tc_line++;
+				if (tc_line >= t_lines)
+					tc_line = t_lines - 1;
 			}
 		}
 		if (bp[j].oldlen > bp[j].len) {
