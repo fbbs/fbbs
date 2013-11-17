@@ -8,18 +8,17 @@
 	terminal_write_cached((unsigned char *) cmd, sizeof(cmd) - 1)
 
 enum {
-	SCREEN_LINE_LEN = 1024,
+	SCREEN_LINE_LEN = 1019,
 	MIN_SCREEN_LINES = 24,
 	MAX_SCREEN_LINES = 100,
 };
 
+/** 屏幕上的一行 */
 typedef struct {
-	bool modified;
-	unsigned int oldlen; /* previous line length              */
-	unsigned int len; /* current length of line            */
-	unsigned char smod; /* start of modified data            */
-	unsigned char emod; /* end of modified data              */
-	unsigned char data[SCREEN_LINE_LEN];
+	uint16_t old_len; ///< 上次输出时的字符串长度
+	uint16_t len; ///< 当前字符串长度
+	bool modified; ///< 自从上次输出以来是否修改过
+	uchar_t data[SCREEN_LINE_LEN]; ///< 缓冲区
 } screen_line_t;
 
 extern int iscolor;
@@ -122,7 +121,7 @@ void screen_init(void)
 		screen_line_t *sl = screen.buf + i;
 		sl->modified = false;
 		sl->len = 0;
-		sl->oldlen = 0;
+		sl->old_len = 0;
 	}
 	docls = YEA;
 	roll = 0;
@@ -190,7 +189,7 @@ void screen_redraw(void)
 			tc_col = screen.columns - 1;
 		}
 		sl->modified = false;
-		sl->oldlen = sl->len;
+		sl->old_len = sl->len;
 	}
 	rel_move(tc_col, tc_line, cur_col, cur_ln);
 	docls = NA;
@@ -228,14 +227,11 @@ void refresh(void)
 	}
 	for (int i = 0; i < screen.lines; i++) {
 		int j = (i + roll) % screen.lines;
-		if (bp[j].modified && bp[j].smod < bp[j].len) {
+		if (bp[j].modified) {
 			bp[j].modified = false;
-			if (bp[j].emod >= bp[j].len)
-				bp[j].emod = bp[j].len - 1;
-			rel_move(tc_col, tc_line, bp[j].smod, i);
-			terminal_write_cached(&bp[j].data[bp[j].smod],
-					bp[j].emod - bp[j].smod + 1);
-			tc_col = bp[j].emod + 1;
+			rel_move(tc_col, tc_line, 0, i);
+			terminal_write_cached(bp[j].data, bp[j].len);
+			tc_col = bp[j].len;
 			if (tc_col >= screen.columns) {
 				tc_col -= screen.columns;
 				tc_line++;
@@ -243,11 +239,11 @@ void refresh(void)
 					tc_line = screen.lines - 1;
 			}
 		}
-		if (bp[j].oldlen > bp[j].len) {
+		if (bp[j].old_len > bp[j].len) {
 			rel_move(tc_col, tc_line, bp[j].len, i);
 			ansi_cmd(ANSI_CMD_CE);
 		}
-		bp[j].oldlen = bp[j].len;
+		bp[j].old_len = bp[j].len;
 	}
 	rel_move(tc_col, tc_line, cur_col, cur_ln);
 	terminal_flush();
@@ -290,7 +286,7 @@ void clear(void)
 		slp = screen.buf + i;
 		slp->modified = false;
 		slp->len = 0;
-		slp->oldlen = 0;
+		slp->old_len = 0;
 	}
 	move(0, 0);
 }
@@ -301,7 +297,7 @@ void clear_whole_line(int i)
 	register screen_line_t *slp = &screen.buf[i];
 	slp->modified = false;
 	slp->len = 0;
-	slp->oldlen = 79;
+	slp->old_len = 79;
 }
 
 /**
@@ -332,8 +328,8 @@ void clrtobot(void)
 		slp = &screen.buf[j];
 		slp->modified = false;
 		slp->len = 0;
-		if (slp->oldlen > 0)
-			slp->oldlen = 255;
+		if (slp->old_len > 0)
+			slp->old_len = 255;
 	}
 }
 
@@ -396,14 +392,6 @@ int outc(int c)
 
 	if (col > slp->len)
 		memset(slp->data + slp->len, ' ', col - slp->len);
-	if (!slp->modified) {
-		slp->smod = (slp->emod = col);
-	} else {
-		if (col > slp->emod)
-			slp->emod = col;
-		if (col < slp->smod)
-			slp->smod = col;
-	}
 	slp->modified = true;
 	slp->data[col] = c;
 	col++;
