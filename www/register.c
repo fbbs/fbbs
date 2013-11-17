@@ -107,7 +107,7 @@ static const char *_reg(const reg_req_t *r)
 		return "\xcc\xe1\xbd\xbb\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf\xca\xa7\xb0\xdc";
 
 #ifndef FDQUAN
-	if (send_regmail(&user, email) != 0)
+	if (register_send_email(&user, email) != 0)
 		//% return "发送注册信失败";
 		return "\xb7\xa2\xcb\xcd\xd7\xa2\xb2\xe1\xd0\xc5\xca\xa7\xb0\xdc";
 #endif // FDQUAN
@@ -150,7 +150,7 @@ int fcgi_activate(void)
 	const char *code = get_param("code");
 	const char *user = get_param("user");
 	xml_header(NULL);
-	printf("<bbsactivate success='%d'>", activate_email(user, code));
+	printf("<bbsactivate success='%d'>", register_activate_email(user, code));
 	print_session();
 	printf("</bbsactivate>");
 	return 0;

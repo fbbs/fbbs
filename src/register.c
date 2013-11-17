@@ -220,7 +220,7 @@ void tui_check_reg_mail(void)
 				break;
 		} while (1);
 
-		send_regmail(&currentuser, email);
+		register_send_email(&currentuser, email);
 	}
 
 	move(4, 0);
@@ -248,7 +248,7 @@ void tui_check_reg_mail(void)
 			prints("\xc4\xfa\xbb\xb9\xd3\xd0 %d \xb4\xce\xbb\xfa\xbb\xe1\n", 3 - i);
 			//% getdata(16, 0, "请输入认证码: ", buf, sizeof(buf), DOECHO, YEA);
 			getdata(16, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc8\xcf\xd6\xa4\xc2\xeb: ", buf, sizeof(buf), DOECHO, YEA);
-			if (activate_email(currentuser.userid, buf))
+			if (register_activate_email(currentuser.userid, buf))
 				break;
 		}
 	}
@@ -353,7 +353,7 @@ void check_reg_extra() {
 		sethomefile(bufe, currentuser.userid, ".regextra");
 		file_append(bufe, buf);
 		do_report(".SCHOOLMATE", buf);
-		send_regmail(urec, schmate.email);
+		register_send_email(urec, schmate.email);
 	}
 	clear();
 	tui_check_reg_mail();
@@ -528,7 +528,6 @@ void check_register_info(void)
 		}
 		tui_check_reg_mail();
 	}
-
 #endif
 
 	clear();

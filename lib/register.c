@@ -15,11 +15,20 @@ enum {
 	MIN_PASSWORD_LEN = 4,
 };
 
+/**
+ * 检查目前是否关闭注册
+ * @return 目前关闭注册返回true, 否则false
+ */
 bool register_closed(void)
 {
 	return dashf("NOREGISTER");
 }
 
+/**
+ * 检查用户名是否在禁止注册列表中
+ * @param uname 用户名
+ * @return 用户名被禁止返回true, 否则false
+ */
 static bool banned_user_name(const char *uname)
 {
 	FILE *fp = fopen(".badname", "r");
@@ -37,12 +46,10 @@ static bool banned_user_name(const char *uname)
 	return false;
 }
 
-/*2003.06.02 stephen modify end*/
-
 /**
  * 测试字符串是否全为英文字符
  * @param str 字符串
- * @return 全为字符串返回true，否则返回false
+ * @return 全为英文字符返回true，否则false
  */
 static bool string_is_alpha(const char *str)
 {
@@ -53,27 +60,40 @@ static bool string_is_alpha(const char *str)
 }
 
 /**
- *
+ * 检查用户名是否合法
+ * @param uname 用户名
+ * @return 若用户名合法返回NULL, 否则返回错误信息
  */
 const char *register_invalid_user_name(const char *uname)
 {
 	if (!string_is_alpha(uname))
 		//% "帐号必须全为英文字母\n"
-		return "\xd5\xca\xba\xc5\xb1\xd8\xd0\xeb\xc8\xab\xce\xaa\xd3\xa2\xce\xc4\xd7\xd6\xc4\xb8\n";
+		return "\xd5\xca\xba\xc5\xb1\xd8\xd0\xeb\xc8\xab\xce\xaa"
+				"\xd3\xa2\xce\xc4\xd7\xd6\xc4\xb8\n";
 	if (strlen(uname) > IDLEN || strlen(uname) < MIN_USER_NAME_LEN)
 		//% "帐号长度应为2~12个字符\n"
-		return "\xd5\xca\xba\xc5\xb3\xa4\xb6\xc8\xd3\xa6\xce\xaa""2~12""\xb8\xf6\xd7\xd6\xb7\xfb\n";
+		return "\xd5\xca\xba\xc5\xb3\xa4\xb6\xc8\xd3\xa6\xce\xaa""2~12"
+				"\xb8\xf6\xd7\xd6\xb7\xfb\n";
 	if (banned_user_name(uname))
 		//% "抱歉, 您不能使用这个字作为帐号\n"
-		return "\xb1\xa7\xc7\xb8, \xc4\xfa\xb2\xbb\xc4\xdc\xca\xb9\xd3\xc3\xd5\xe2\xb8\xf6\xd7\xd6\xd7\xf7\xce\xaa\xd5\xca\xba\xc5\n";
+		return "\xb1\xa7\xc7\xb8, \xc4\xfa\xb2\xbb\xc4\xdc\xca\xb9\xd3\xc3"
+				"\xd5\xe2\xb8\xf6\xd7\xd6\xd7\xf7\xce\xaa\xd5\xca\xba\xc5\n";
 	return NULL;
 }
 
+/**
+ * 检查密码是否合法
+ * @param password 密码
+ * @param uname 用户名
+ * @return 若密码合法返回NULL, 否则返回错误信息
+ */
 const char *register_invalid_password(const char *password, const char *uname)
 {
 	if (strlen(password) < MIN_PASSWORD_LEN || streq(password, uname))
 		//% "密码太短或与使用者代号相同, 请重新输入\n"
-		return "\xc3\xdc\xc2\xeb\xcc\xab\xb6\xcc\xbb\xf2\xd3\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xcf\xe0\xcd\xac, \xc7\xeb\xd6\xd8\xd0\xc2\xca\xe4\xc8\xeb\n";
+		return "\xc3\xdc\xc2\xeb\xcc\xab\xb6\xcc\xbb\xf2\xd3\xeb"
+				"\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\xcf\xe0\xcd\xac,"
+				" \xc7\xeb\xd6\xd8\xd0\xc2\xca\xe4\xc8\xeb\n";
 	return NULL;
 }
 
@@ -97,12 +117,12 @@ static void generate_random_password(char *buf, size_t size)
 }
 
 /**
- * Send registration activation mail.
- * @param user The user.
- * @param mail The email address.
+ * 发送注册验证信
+ * @param user 用户
+ * @param email 电子邮件地址
  * @return 0 if OK, -1 on error.
  */
-int send_regmail(const struct userec *user, const char *mail)
+int register_send_email(const struct userec *user, const char *email)
 {
 	char password[RNDPASSLEN + 1];
 	generate_random_password(password, sizeof(password));
@@ -112,11 +132,11 @@ int send_regmail(const struct userec *user, const char *mail)
 	FILE *fp = fopen(file, "w");
 	if (!fp)
 		return -1;
-	fprintf(fp, "%s\n%s\n", password, mail);
+	fprintf(fp, "%s\n%s\n", password, email);
 	fclose(fp);
 
 	char buf[256];
-	snprintf(buf, sizeof(buf), "%s %s", MTA, mail);
+	snprintf(buf, sizeof(buf), "%s %s", MTA, email);
 	FILE *fout = popen(buf, "w");
 	if (!fout)
 		return -1;
@@ -124,7 +144,7 @@ int send_regmail(const struct userec *user, const char *mail)
 			//% "Subject: [%s]邮件验证(Registration Email)\n"
 			"Subject: [%s]\xd3\xca\xbc\xfe\xd1\xe9\xd6\xa4(Registration Email)\n"
 			"X-Purpose: %s registration mail.\n\n",
-			mail, BBSNAME, BBSNAME);
+			email, BBSNAME, BBSNAME);
 	//% fprintf(fout, "感谢您注册 %s BBS站\n"
 	fprintf(fout, "\xb8\xd0\xd0\xbb\xc4\xfa\xd7\xa2\xb2\xe1 %s BBS\xd5\xbe\n"
 			"Thank you for your registration.\n\n"
@@ -170,14 +190,14 @@ static int insert_email(const char *email)
 	return id;
 }
 
-static bool _activate_email(const char *name, const char *email)
+static bool activate_email(const char *uname, const char *email)
 {
 	int id = insert_email(email);
 	if (!id)
 		return false;
 
 	db_res_t *res = db_cmd("UPDATE users SET email = %d"
-			" WHERE alive AND lower(name) = lower(%s)", id, name);
+			" WHERE alive AND lower(name) = lower(%s)", id, uname);
 	if (!res)
 		return false;
 
@@ -185,10 +205,16 @@ static bool _activate_email(const char *name, const char *email)
 	return true;
 }
 
-bool activate_email(const char *userid, const char *attempt)
+/**
+ * 激活注册邮箱
+ * @param uname 用户名
+ * @param attempt 激活码
+ * @return 激活成功与否
+ */
+bool register_activate_email(const char *uname, const char *attempt)
 {
 	char file[HOMELEN];
-	sethomefile(file, userid, REG_CODE_FILE);
+	sethomefile(file, uname, REG_CODE_FILE);
 	FILE *fp = fopen(file, "r");
 	if (!fp)
 		return false;
@@ -198,13 +224,13 @@ bool activate_email(const char *userid, const char *attempt)
 	fscanf(fp, "%s", email);
 	fclose(fp);
 
-	if (strcmp(code, attempt) != 0)
+	if (!streq(code, attempt))
 		return false;
 
-	if (!_activate_email(userid, email))
+	if (!activate_email(uname, email))
 		return false;
 
-	int num = getuserec(userid, &currentuser);
+	int num = getuserec(uname, &currentuser);
 	if (!num)
 		return false;
 	currentuser.userlevel |= (PERM_DEFAULT | PERM_BINDMAIL);
