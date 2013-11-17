@@ -39,6 +39,11 @@ void mdb_disconnect(void)
 	redisFree(_mdb.c);
 }
 
+int mdb_fd(void)
+{
+	return _mdb.c ? _mdb.c->fd : -1;
+}
+
 static char *smart_vsnprintf(char *buf, size_t size,
 		const char *fmt, va_list ap)
 {

@@ -10,6 +10,7 @@
 #include "fbbs/brc.h"
 #include "fbbs/fileio.h"
 #include "fbbs/mail.h"
+#include "fbbs/mdbi.h"
 #include "fbbs/msg.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -143,9 +144,6 @@ void terminal_write_cached(const uchar_t *str, int size)
 	}
 }
 
-static int i_newfd = 0;
-static struct timeval *i_top = NULL;
-
 bool terminal_input_buffer_empty(void)
 {
 	return (input_buffer.cur >= input_buffer.size);
@@ -158,53 +156,53 @@ bool terminal_input_buffer_empty(void)
 static int get_raw_ch(void)
 {
 	if (input_buffer.cur >= input_buffer.size) {
-		fd_set rset;
-		struct timeval to;
-		int fd = i_newfd;
-		int nfds, ret;
+		int fd = mdb_fd(), ret;
+		struct timeval to = { .tv_sec = 0, .tv_usec = 0 };
+		struct timeval *timeout = &to;
 
-		FD_ZERO(&rset);
-		FD_SET(STDIN_FILENO, &rset);
-		if (fd) {
-			FD_SET(fd, &rset);
-			nfds = fd + 1;
-		} else {
-			nfds = 1;
-		}
-
-		session_set_idle_cached();
-
-		to.tv_sec = to.tv_usec = 0;
-		ret = select(nfds, &rset, NULL, NULL, &to);
-#ifdef ENABLE_SSH
-		if (FD_ISSET(STDIN_FILENO, &rset))
-			ret = channel_poll(ssh_chan, 0);
-#endif
-		if (ret <= 0) {
-			if (big_picture)
-				refresh();
-			else
-				terminal_flush();
-
+		while (1) {
+			fd_set rset;
 			FD_ZERO(&rset);
-			FD_SET(0, &rset);
-			if (fd)
+			FD_SET(STDIN_FILENO, &rset);
+
+			int nfds = 1;
+			if (fd >= 0) {
 				FD_SET(fd, &rset);
-			while ((ret = select(nfds, &rset, NULL, NULL, i_top)) < 0) {
-				if (errno != EINTR)
-					return -1;
+				nfds = fd + 1;
 			}
-			if (ret == 0)
-				return I_TIMEOUT;
+
+			ret = select(nfds, &rset, NULL, NULL, timeout);
+			if (FD_ISSET(STDIN_FILENO, &rset)) {
+#ifdef ENABLE_SSH
+				ret = channel_poll(ssh_chan, 0);
+#endif
+			}
+
+			if (ret < 0 && errno != EINTR)
+				return -1;
+
+			if (ret <= 0) {
+				if (big_picture)
+					refresh();
+				else
+					terminal_flush();
+			} else {
+				if (fd >= 0 && FD_ISSET(fd, &rset)) {
+					// TODO: handle notification
+				}
+				if (FD_ISSET(STDIN_FILENO, &rset)) {
+					session_set_idle_cached();
+					break;
+				}
+			}
+			timeout = NULL;
 		}
-		if (fd && FD_ISSET(fd, &rset))
-			return I_OTHERDATA;
 
 		while (1) {
 			ret = terminal_read(input_buffer.ptr, sizeof(input_buffer.ptr));
 			if (ret > 0)
 				break;
-			if ((ret < 0) && (errno == EINTR))
+			if (ret < 0 && (errno == EINTR))
 				continue;
 			abort_bbs(0);
 		}

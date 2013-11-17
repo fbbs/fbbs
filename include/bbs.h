@@ -160,9 +160,6 @@ enum {
 	MINIUPDATE  = 11,
 };
 
-#define I_TIMEOUT   (-2)         /* Used for the getchar routine select call */
-#define I_OTHERDATA (-333)       /* interface, (-3) will conflict with chinese */
-
 extern int digestmode; /*To control Digestmode*/
 
 extern struct userec currentuser;/*  user structure is loaded from passwd */

@@ -281,10 +281,10 @@ void initialize_environment(int flags)
 {
 	config_load(DEFAULT_CFG_FILE);
 
+	if (flags & INIT_MDB)
+		initialize_mdb();
 	if (flags & INIT_CONV)
 		initialize_convert_env();
 	if (flags & INIT_DB)
 		initialize_db();
-	if (flags & INIT_MDB)
-		initialize_mdb();
 }
