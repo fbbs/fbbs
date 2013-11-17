@@ -61,7 +61,7 @@ static const char *_reg(const reg_req_t *r)
 #ifndef FDQUAN
 	char email[sizeof(user.email)];
 	snprintf(email, sizeof(email), "%s@%s", r->mail, r->domain);
-	if (!valid_addr(email) || !domain_allowed(email)
+	if (!valid_addr(email) || !register_domain_allowed(email)
 			|| !register_email_allowed(email)) {
 		//% return "电子邮件地址无效，或不在允许范围";
 		return "\xb5\xe7\xd7\xd3\xd3\xca\xbc\xfe\xb5\xd8\xd6\xb7\xce\xde\xd0\xa7\xa3\xac\xbb\xf2\xb2\xbb\xd4\xda\xd4\xca\xd0\xed\xb7\xb6\xce\xa7";

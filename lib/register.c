@@ -13,6 +13,7 @@
 enum {
 	MIN_USER_NAME_LEN = 2,
 	MIN_PASSWORD_LEN = 4,
+	FILE_MATCH_CONTINUE = -1,
 };
 
 /**
@@ -24,26 +25,45 @@ bool register_closed(void)
 	return dashf("NOREGISTER");
 }
 
+typedef int (*file_match_callback_t)(const char *pattern, const char *string);
+
+static bool file_match(const char *file, const char *string, char *buf,
+		size_t size, file_match_callback_t callback, bool _default)
+{
+	FILE *fp = fopen(file, "r");
+	if (fp) {
+		while (fgets(buf, size, fp)) {
+			char *ptr = strtok(buf, "# \t\n\r");
+			if (ptr) {
+				int ret = callback(ptr, string);
+				if (ret != FILE_MATCH_CONTINUE) {
+					fclose(fp);
+					return ret;
+				}
+			}
+		}
+		fclose(fp);
+	}
+	return _default;
+}
+
+static int user_name_allowed_callback(const char *pattern, const char *uname)
+{
+	if (fnmatch(pattern, uname, FNM_CASEFOLD) == 0)
+		return false;
+	return FILE_MATCH_CONTINUE;
+}
+
 /**
  * 检查用户名是否在禁止注册列表中
  * @param uname 用户名
  * @return 用户名被禁止返回true, 否则false
  */
-static bool banned_user_name(const char *uname)
+static bool user_name_allowed(const char *uname)
 {
-	FILE *fp = fopen(".badname", "r");
-	if (fp) {
-		char buf[STRLEN];
-		while (fgets(buf, sizeof(buf), fp)) {
-			char *ptr = strtok(buf, " \n\t\r");
-			if (ptr && *ptr != '#' && fnmatch(ptr, uname, FNM_CASEFOLD) == 0) {
-				fclose(fp);
-				return true;
-			}
-		}
-		fclose(fp);
-	}
-	return false;
+	char buf[STRLEN];
+	return file_match(".badname", uname, buf, sizeof(buf),
+			user_name_allowed_callback, true);
 }
 
 /**
@@ -74,7 +94,7 @@ const char *register_invalid_user_name(const char *uname)
 		//% "帐号长度应为2~12个字符\n"
 		return "\xd5\xca\xba\xc5\xb3\xa4\xb6\xc8\xd3\xa6\xce\xaa""2~12"
 				"\xb8\xf6\xd7\xd6\xb7\xfb\n";
-	if (banned_user_name(uname))
+	if (!user_name_allowed(uname))
 		//% "抱歉, 您不能使用这个字作为帐号\n"
 		return "\xb1\xa7\xc7\xb8, \xc4\xfa\xb2\xbb\xc4\xdc\xca\xb9\xd3\xc3"
 				"\xd5\xe2\xb8\xf6\xd7\xd6\xd7\xf7\xce\xaa\xd5\xca\xba\xc5\n";
@@ -287,26 +307,45 @@ int append_reg_list(const reginfo_t *reg)
 	return 0 - found;
 }
 
-bool register_email_allowed(const char *email)
+static int email_allowed_callback(const char *pattern, const char *email)
 {
-	char tmp[128];
-	FILE *fp = fopen(".bad_email", "r");
-	if (fp) {
-		while (fgets(tmp, sizeof(tmp), fp)) {
-			strtok(tmp, "# \t\r\n");
-			if (strcaseeq(tmp, email)) {
-				fclose(fp);
-				return false;
-			}
-		}
-		fclose(fp);
-	}
-	return true;
+	if (strcaseeq(pattern, email))
+		return false;
+	return FILE_MATCH_CONTINUE;
 }
 
-bool domain_allowed(const char *mail)
+bool register_email_allowed(const char *email)
 {
-	return strstr(mail, "@fudan.edu.cn") || strstr(mail, "@alu.fudan.edu.cn");
+	char buf[128];
+	return file_match(".bad_email", email, buf, sizeof(buf),
+			email_allowed_callback, true);
+}
+
+static int domain_allowed_callback(const char *pattern, const char *domain)
+{
+	bool allowed = true;
+	if (*pattern == '-') {
+		allowed = false;
+		++pattern;
+	}
+	if (fnmatch(pattern, domain, 0) == 0)
+		return allowed;
+	return FILE_MATCH_CONTINUE;
+}
+
+bool register_domain_allowed(const char *email)
+{
+	const char *domain = strchr(email, '@');
+	if (!domain)
+		return false;
+
+	++domain;
+	if (streq(domain, "fudan.edu.cn") || streq(domain, "alu.fudan.edu.cn"))
+		return true;
+
+	char buf[80];
+	return file_match(".domain", domain, buf, sizeof(buf),
+			domain_allowed_callback, false);
 }
 
 /**
