@@ -6,22 +6,18 @@
 #define ansi_cmd(cmd)  \
 	terminal_write_cached((unsigned char *) cmd, sizeof(cmd) - 1)
 
-/* Maximum Screen width in chars */
-#define LINELEN (1024)
+enum {
+	SCREEN_LINE_LEN = 1024,
+};
 
-/* Line buffer modes             */
-#define MODIFIED (1)   /* if line has been modifed, output to screen   */
-
-#define Min(a,b) ((a<b)?a:b)
-
-struct screenline {
+typedef struct {
+	bool modified;
 	unsigned int oldlen; /* previous line length              */
 	unsigned int len; /* current length of line            */
-	unsigned char mode; /* status of line, as far as update  */
 	unsigned char smod; /* start of modified data            */
 	unsigned char emod; /* end of modified data              */
-	unsigned char data[LINELEN];
-};
+	unsigned char data[SCREEN_LINE_LEN];
+} screen_line_t;
 
 extern int iscolor;
 
@@ -42,7 +38,7 @@ static int tc_line;     ///< Terminal's current line.
 unsigned char docls;
 unsigned char downfrom;
 
-struct screenline *big_picture = NULL;
+screen_line_t *big_picture = NULL;
 
 //返回字符串中属于 ansi的个数?	对后一个continue不太理解 
 int num_ans_chr(const char *str)
@@ -70,20 +66,20 @@ int num_ans_chr(const char *str)
 
 /**
  * Initialize screen.
- * @param slns Lines of the screen, ::LINELEN max.
+ * @param slns Lines of the screen, ::SCREEN_LINE_LEN max.
  * @param scols Columns of the screen.
  */
 static void init_screen(int slns, int scols)
 {
-	struct screenline *slp;
+	screen_line_t *slp;
 	scr_lns = slns;
 	scr_cols = scols;
-	if (scr_cols > LINELEN)
-		scr_cols = LINELEN;
+	if (scr_cols > SCREEN_LINE_LEN)
+		scr_cols = SCREEN_LINE_LEN;
 	big_picture = calloc(scr_lns, sizeof(*big_picture));
 	for (slns = 0; slns < scr_lns; slns++) {
 		slp = big_picture + slns;
-		slp->mode = 0;
+		slp->modified = false;
 		slp->len = 0;
 		slp->oldlen = 0;
 	}
@@ -153,7 +149,7 @@ void redoscr(void)
 	tc_col = 0;
 	tc_line = 0;
 	int i;
-	struct screenline *s;
+	screen_line_t *s;
 	for (i = 0; i < scr_lns; i++) {
 		s = big_picture + (i + roll) % scr_lns;
 		if (s->len == 0)
@@ -171,7 +167,7 @@ void redoscr(void)
 				tc_col = t_columns - 1;
 			}
 		}
-		s->mode &= ~(MODIFIED);
+		s->modified = false;
 		s->oldlen = s->len;
 	}
 	rel_move(tc_col, tc_line, cur_col, cur_ln);
@@ -184,7 +180,7 @@ void redoscr(void)
 void refresh(void)
 {
 	register int i, j;
-	register struct screenline *bp = big_picture;
+	register screen_line_t *bp = big_picture;
 	if (!terminal_input_buffer_empty())
 		return;
 	if ((docls) || (abs(scrollcnt) >= (scr_lns - 3))) {
@@ -209,8 +205,8 @@ void refresh(void)
 		j = i + roll;
 		while (j >= scr_lns)
 			j -= scr_lns;
-		if (bp[j].mode & MODIFIED && bp[j].smod < bp[j].len) {
-			bp[j].mode &= ~(MODIFIED); //若被修改,则输出
+		if (bp[j].modified && bp[j].smod < bp[j].len) {
+			bp[j].modified = false;
 			if (bp[j].emod >= bp[j].len)
 				bp[j].emod = bp[j].len - 1;
 			rel_move(tc_col, tc_line, bp[j].smod, i);
@@ -269,11 +265,11 @@ void clear(void)
 	roll = 0;
 	docls = YEA;
 	downfrom = 0;
-	struct screenline *slp;
+	screen_line_t *slp;
 	int i;
 	for (i = 0; i < scr_lns; i++) {
 		slp = big_picture + i;
-		slp->mode = 0;
+		slp->modified = false;
 		slp->len = 0;
 		slp->oldlen = 0;
 	}
@@ -283,8 +279,9 @@ void clear(void)
 //清除big_picture中的第i行,将mode与len置0
 void clear_whole_line(int i)
 {
-	register struct screenline *slp = &big_picture[i];
-	slp->mode = slp->len = 0;
+	register screen_line_t *slp = &big_picture[i];
+	slp->modified = false;
+	slp->len = 0;
 	slp->oldlen = 79;
 }
 
@@ -295,7 +292,7 @@ void clrtoeol(void)
 {
 	if (dumb_term)
 		return;
-	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
+	screen_line_t *slp = big_picture + (cur_ln + roll) % scr_lns;
 	if (cur_col > slp->len)
 		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
 	slp->len = cur_col;
@@ -304,7 +301,7 @@ void clrtoeol(void)
 //从当前行清除到最后一行
 void clrtobot(void)
 {
-	register struct screenline *slp;
+	register screen_line_t *slp;
 	register int i, j;
 	if (dumb_term)
 		return;
@@ -314,7 +311,7 @@ void clrtobot(void)
 			//求j%scr_lns ? 因为减法比取余时间少?
 			j -= scr_lns;
 		slp = &big_picture[j];
-		slp->mode = 0;
+		slp->modified = false;
 		slp->len = 0;
 		if (slp->oldlen > 0)
 			slp->oldlen = 255;
@@ -360,7 +357,7 @@ int outc(int c)
 		return 1;
 	}
 
-	struct screenline *slp = big_picture + (cur_ln + roll) % scr_lns;
+	screen_line_t *slp = big_picture + (cur_ln + roll) % scr_lns;
 	unsigned int col = cur_col;
 
 	if (!isprint2(c)) {
@@ -380,7 +377,7 @@ int outc(int c)
 
 	if (col > slp->len)
 		memset(slp->data + slp->len, ' ', col - slp->len);
-	if ((slp->mode & MODIFIED) != MODIFIED) {
+	if (!slp->modified) {
 		slp->smod = (slp->emod = col);
 	} else {
 		if (col > slp->emod)
@@ -388,7 +385,7 @@ int outc(int c)
 		if (col < slp->smod)
 			slp->smod = col;
 	}
-	slp->mode |= MODIFIED;
+	slp->modified = true;
 	slp->data[col] = c;
 	col++;
 	if (col > slp->len)
@@ -593,14 +590,14 @@ void scroll(void)
 //		最多只能保存一行,否则会被抹去
 void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
 {
-	register struct screenline *bp = big_picture;
+	register screen_line_t *bp = big_picture;
 	static char tmp[2][256];
 	int x, y;
 
 	switch (mode) {
 		case 0:
 		case 2:
-			strlcpy(tmp[mode/2], (const char *)bp[line].data, LINELEN);
+			strlcpy(tmp[mode/2], (const char *)bp[line].data, SCREEN_LINE_LEN);
 			tmp[mode/2][bp[line].len]='\0';
 			break;
 		case 1:
@@ -621,13 +618,13 @@ void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
  */
 void saveline_buf(int line, int mode)//0:save 1:restore
 {
-    static char temp[MAX_MSG_LINE * 2 + 2][LINELEN];
-    struct screenline *bp = big_picture;
+    static char temp[MAX_MSG_LINE * 2 + 2][SCREEN_LINE_LEN];
+    screen_line_t *bp = big_picture;
     int x, y;
     
     switch (mode) {
         case 0:
-            strncpy(temp[line], (const char *)bp[line].data, LINELEN);
+            strncpy(temp[line], (const char *)bp[line].data, SCREEN_LINE_LEN);
             temp[line][bp[line].len] = '\0';
             break;
         case 1:
