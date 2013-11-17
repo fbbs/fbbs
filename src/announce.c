@@ -258,11 +258,11 @@ void a_savenames(MENU *pm) {
 }
 
 void a_prompt(int bot, char* pmt, char* buf, int len) {
-	saveline(t_lines + bot, 0);
+	screen_save_line(bot, true);
 	move(bot, 0);
 	clrtoeol();
 	getdata(bot, 0, pmt, buf, len, DOECHO, YEA);
-	saveline(t_lines + bot, 1);
+	screen_save_line(bot, false);
 }
 
 int a_Save(const char *gbk_title, const char *file, int nomsg, int full)
@@ -817,7 +817,7 @@ int a_Rangefunc(MENU *pm) {
 	char items[2][20] = { "\xc9\xbe\xb3\xfd", "\xbf\xbd\xb1\xb4\xd6\xc1\xcb\xbf\xc2\xb7" };
 	int type, num1, num2, i, max=2;
 
-	saveline(t_lines - 1, 0);
+	screen_save_line(-1, true);
 	//% strcpy(info, "区段:");
 	strcpy(info, "\xc7\xf8\xb6\xce:");
 	for (i=0; i<max; i++) {
@@ -828,7 +828,7 @@ int a_Rangefunc(MENU *pm) {
 	getdata(-1, 0, info, ans, 2, DOECHO, YEA);
 	type = atoi(ans);
 	if (type <= 0 || type > max) {
-		saveline(t_lines - 1, 1);
+		screen_save_line(-1, false);
 		return DONOTHING;
 	}
 
@@ -849,7 +849,7 @@ int a_Rangefunc(MENU *pm) {
 		//% prints("操作错误...");
 		prints("\xb2\xd9\xd7\xf7\xb4\xed\xce\xf3...");
 		egetch();
-		saveline(t_lines - 1, 1);
+		screen_save_line(-1, false);
 		return DONOTHING;
 	}
 
@@ -857,7 +857,7 @@ int a_Rangefunc(MENU *pm) {
 	sprintf(info, "\xc7\xf8\xb6\xce [%s] \xb2\xd9\xd7\xf7\xb7\xb6\xce\xa7 [ %d -- %d ]\xa3\xac\xc8\xb7\xb6\xa8\xc2\xf0", items[type-1], num1,
 			num2);
 	if (askyn(info, NA, YEA)==NA) {
-		saveline(t_lines - 1, 1);
+		screen_save_line(-1, false);
 		return DONOTHING;
 	}
 
@@ -872,7 +872,7 @@ int a_Rangefunc(MENU *pm) {
 		if ((fn = fopen(annpath, "r")) == NULL) {
 			//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
 			presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", -1);
-			saveline(t_lines - 1, 1);
+			screen_save_line(-1, false);
 			return DONOTHING;
 		}
 		fscanf(fn, "%s", annpath);
@@ -880,7 +880,7 @@ int a_Rangefunc(MENU *pm) {
 		if (!dashd(annpath)) {
 			//% 您设定的丝路已丢失, 请重新用 f 设定.
 			presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", -1);
-			saveline(t_lines - 1, 1);
+			screen_save_line(-1, false);
 			return DONOTHING;
 		}
 		if (!strcmp(annpath, pm->path)) {
@@ -906,7 +906,7 @@ int a_Rangefunc(MENU *pm) {
 			//% sprintf(info, "您真的要删除这些文件和目录\?\?!!，确定吗??");
 			sprintf(info, "\xc4\xfa\xd5\xe6\xb5\xc4\xd2\xaa\xc9\xbe\xb3\xfd\xd5\xe2\xd0\xa9\xce\xc4\xbc\xfe\xba\xcd\xc4\xbf\xc2\xbc\?\?!!\xa3\xac\xc8\xb7\xb6\xa8\xc2\xf0??");
 			if (askyn(info, NA, YEA)==NA) {
-				saveline(t_lines - 1, 1);
+				screen_save_line(-1, false);
 				return DONOTHING;
 			}
 			a_RangeDelete(pm, num1-1, num2-1);
@@ -920,7 +920,7 @@ int a_Rangefunc(MENU *pm) {
 			break;
 	}
 	log_bm(LOG_BM_DOANN, 1);
-	saveline(t_lines - 1, 1);
+	screen_save_line(-1, false);
 	return DIRCHANGED;
 }
 
@@ -1309,13 +1309,13 @@ void a_manager(MENU *pm, int ch) {
 				//add end
 				changed_T[38]='\0';
 				rtrim(changed_T);
-				saveline(t_lines-2, 0);
+				screen_save_line(-2, true);
 				move(-2, 0);
 				clrtoeol();
 				//Modified by IAMFAT 2002-05-30
 				//% "新标题: 
 				getdata(-2, 0, "\xd0\xc2\xb1\xea\xcc\xe2: ", changed_T, 39, DOECHO, NA);
-				saveline(t_lines-2, 1);
+				screen_save_line(-2, false);
 				//Modify End.
 				/*
 				 * modified by netty to properly handle title

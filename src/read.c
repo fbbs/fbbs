@@ -633,7 +633,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		if (!am_curr_bm())
 			return DONOTHING;
 	}
-	saveline(t_lines - 1, 0);
+	screen_save_line(-1, true);
 	move(-1, 0);
 	clrtoeol();
 	ch[0] = '\0';
@@ -642,7 +642,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			ch, 3, DOECHO, YEA);
 	dotype = atoi(ch);
 	if (dotype < 1 || dotype > 3) { 
-		saveline(t_lines - 1, 1);
+		screen_save_line(-1, false);
 		return DONOTHING;
 	}
 	buf1 += sprintf(buf, "%s ", subBMitems[dotype - 1]);
@@ -667,14 +667,14 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 	BMch = atoi(ch);
 	if(BMch<=0||BMch>8||(digestmode != 0 && BMch==3)
 			||(digestmode>2 && BMch<3)) {
-		saveline(t_lines - 1, 1);
+		screen_save_line(-1, false);
 		return DONOTHING;
 	}
 	move(-1, 0);
 	//% sprintf(buf,"确定要执行%s[%s]吗",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
 	sprintf(buf,"\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0%s[%s]\xc2\xf0",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
 	if (askyn(buf, NA, NA) == 0) {
-		saveline(t_lines - 1, 1);
+		screen_save_line(-1, false);
 		return PARTUPDATE;
 	}
 
@@ -707,7 +707,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		//% getdata(-1, 0, "请输入主题关键字: ", keyword, 50, DOECHO, YEA);
 		getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd6\xf7\xcc\xe2\xb9\xd8\xbc\xfc\xd7\xd6: ", keyword, 50, DOECHO, YEA);
 		if (keyword[0] == '\0') {
-			saveline(t_lines - 1, 1);
+			screen_save_line(-1, false);
 			return DONOTHING;
 		}
 	} else if (dotype == 1) {
@@ -743,7 +743,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		memcpy(&SR_fptr, fileinfo, sizeof(SR_fptr));
 	}
 	if( result == -1 ) {
-		saveline(t_lines - 1, 1);
+		screen_save_line(-1, false);
 		return DONOTHING;
 	}
 	if(BMch == 4) {
@@ -755,7 +755,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			if((fn = fopen(annpath, "r")) == NULL ) {
 				//% 对不起, 您没有设定丝路. 请先用 f 设定丝路.
 				presskeyfor("\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7. \xc7\xeb\xcf\xc8\xd3\xc3 f \xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7.", -1);
-				saveline(t_lines - 1, 1);
+				screen_save_line(-1, false);
 				return DONOTHING;
 			}
 			fscanf(fn,"%s",annpath);
@@ -763,7 +763,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			if (!dashd(annpath)) {
 				//% 您设定的丝路已丢失, 请重新用 f 设定.
 				presskeyfor("\xc4\xfa\xc9\xe8\xb6\xa8\xb5\xc4\xcb\xbf\xc2\xb7\xd2\xd1\xb6\xaa\xca\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xd3\xc3 f \xc9\xe8\xb6\xa8.", -1);
-				saveline(t_lines - 1, 1);
+				screen_save_line(-1, false);
 				return DONOTHING;
 			}
 		}

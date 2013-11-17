@@ -50,7 +50,7 @@ extern int outc(int c);
 extern void outs(const char *str);
 extern void prints(const char *fmt, ...);
 extern void scroll(void);
-extern void saveline(int line, int mode);
+extern void screen_save_line(int line, bool save);
 extern void saveline_buf(int line, int mode);
 
 extern void presskeyfor(const char *msg, int line);

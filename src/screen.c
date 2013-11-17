@@ -575,29 +575,23 @@ void scroll(void)
 	clrtoeol();
 }
 
-//	根据mode来决定 保存或恢复行line的内容
-//		最多只能保存一行,否则会被抹去
-void saveline(int line, int mode) /* 0,2 : save, 1,3 : restore */
+void screen_save_line(int line, bool save)
 {
-	register screen_line_t *bp = big_picture;
-	static char tmp[2][256];
-	int x, y;
+	static char saved[SCREEN_LINE_LEN];
 
-	switch (mode) {
-		case 0:
-		case 2:
-			strlcpy(tmp[mode/2], (const char *)bp[line].data, SCREEN_LINE_LEN);
-			tmp[mode/2][bp[line].len]='\0';
-			break;
-		case 1:
-		case 3:
-			getyx(&x, &y);
-			move(line, 0);
-			clrtoeol();
-			refresh();
-			prints("%s", tmp[(mode-1)/2]);
-			move(x, y);
-			refresh();
+	screen_line_t *bp = big_picture;
+	line = line < 0 ? line + t_lines : line;
+
+	if (save) {
+		strlcpy(saved, (const char *) bp[line].data, sizeof(saved));
+	} else {
+		int x, y;
+		getyx(&x, &y);
+		move(line, 0);
+		clrtoeol();
+		prints("%s", saved);
+		move(x, y);
+		refresh();
 	}
 }
 
