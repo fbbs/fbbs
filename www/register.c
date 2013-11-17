@@ -62,7 +62,7 @@ static const char *_reg(const reg_req_t *r)
 	char email[sizeof(user.email)];
 	snprintf(email, sizeof(email), "%s@%s", r->mail, r->domain);
 	if (!valid_addr(email) || !domain_allowed(email)
-			|| is_banned_email(email)) {
+			|| !register_email_allowed(email)) {
 		//% return "电子邮件地址无效，或不在允许范围";
 		return "\xb5\xe7\xd7\xd3\xd3\xca\xbc\xfe\xb5\xd8\xd6\xb7\xce\xde\xd0\xa7\xa3\xac\xbb\xf2\xb2\xbb\xd4\xda\xd4\xca\xd0\xed\xb7\xb6\xce\xa7";
 	}
@@ -102,7 +102,7 @@ static const char *_reg(const reg_req_t *r)
 		return "\xc4\xda\xb2\xbf\xb4\xed\xce\xf3";
 
 	//TODO: should be put in fcgi_activate
-	if (save_register_file(&reg) != 0)
+	if (register_save(&reg) != 0)
 		//% return "提交注册资料失败";
 		return "\xcc\xe1\xbd\xbb\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf\xca\xa7\xb0\xdc";
 

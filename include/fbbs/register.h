@@ -37,9 +37,8 @@ extern int register_send_email(const struct userec *user, const char *email);
 extern bool register_activate_email(const char *uname, const char *attempt);
 extern bool is_reg_pending(const char *userid);
 extern int append_reg_list(const reginfo_t *reg);
-extern bool is_banned_email(const char *mail);
+extern bool register_email_allowed(const char *mail);
 extern bool domain_allowed(const char *mail);
-extern void init_userec(struct userec *user, const char *userid,
-		        const char *passwd, bool usegbk);
-extern int save_register_file(const reginfo_t *reg);
+extern void init_userec(struct userec *user, const char *userid, const char *passwd, bool usegbk);
+extern int register_save(const reginfo_t *reg);
 #endif // FB_REGISTER_H

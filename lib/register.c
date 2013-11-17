@@ -287,21 +287,21 @@ int append_reg_list(const reginfo_t *reg)
 	return 0 - found;
 }
 
-bool is_banned_email(const char *mail)
+bool register_email_allowed(const char *email)
 {
 	char tmp[128];
 	FILE *fp = fopen(".bad_email", "r");
 	if (fp) {
 		while (fgets(tmp, sizeof(tmp), fp)) {
 			strtok(tmp, "# \t\r\n");
-			if (strcasecmp(tmp, mail) == 0) {
+			if (strcaseeq(tmp, email)) {
 				fclose(fp);
-				return true;
+				return false;
 			}
 		}
 		fclose(fp);
 	}
-	return false;
+	return true;
 }
 
 bool domain_allowed(const char *mail)
@@ -340,7 +340,7 @@ void init_userec(struct userec *user, const char *userid,
 	user->firstlogin = user->lastlogin = time(NULL);
 }
 
-int save_register_file(const reginfo_t *reg)
+int register_save(const reginfo_t *reg)
 {
 	char file[HOMELEN];
 	sethomefile(file, reg->userid, "register");

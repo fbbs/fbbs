@@ -212,7 +212,7 @@ void tui_check_reg_mail(void)
 		do {
 			getdata(3, 0, "    E-Mail:> ", email, sizeof(email), DOECHO, YEA);
 			if (!valid_addr(email) || !domain_allowed(email) ||
-					is_banned_email(email)) {
+					!register_email_allowed(email)) {
 				//% prints("    对不起, 该email地址无效, 请重新输入 \n");
 				prints("    \xb6\xd4\xb2\xbb\xc6\xf0, \xb8\xc3""email\xb5\xd8\xd6\xb7\xce\xde\xd0\xa7, \xc7\xeb\xd6\xd8\xd0\xc2\xca\xe4\xc8\xeb \n");
 				continue;
