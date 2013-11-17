@@ -40,7 +40,7 @@ extern int multi_getdata(int line, int col, int maxcol, const char *prompt,
 extern int screen_lines(void);
 extern void screen_negotiate_size(void);
 extern void screen_init(void);
-extern void redoscr(void);
+extern void screen_redraw(void);
 extern void refresh(void);
 extern void move(int line, int col);
 extern void getyx(int *line, int *col);

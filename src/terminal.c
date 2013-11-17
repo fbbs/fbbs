@@ -323,7 +323,7 @@ int igetch(void)
 				ch = handle_esc();
 				break;
 			case Ctrl('L'):
-				redoscr();
+				screen_redraw();
 				continue;
 			case '\r':
 				ch = '\n';
@@ -398,7 +398,7 @@ int egetch(void)
 		rval = terminal_getchar();
 		if (rval != Ctrl('L'))
 			break;
-		redoscr();
+		screen_redraw();
 	}
 	return rval;
 }

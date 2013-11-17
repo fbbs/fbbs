@@ -2435,7 +2435,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case 'q': case 'e': case KEY_LEFT: case EOF:
 			return READ_AGAIN;
 		case Ctrl('L'):
-			redoscr();
+			screen_redraw();
 			return DONOTHING;
 		case 'M':
 			m_new();

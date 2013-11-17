@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/terminal.h"
 
 #ifdef ALLOWSWITCHCODE
 
@@ -10,8 +11,6 @@ enum {
 	G2B_COUNT = 7614,  ///< Count of characters in g2b table.
 	B2G_COUNT = 13973, ///< Count of characters in b2g table.
 };
-
-extern void redoscr();
 
 int convcode = 0;  ///< Whether to convert between BIG5 and GB2312.
 static unsigned char *g2b;  ///< the starting address of mapped g2b table.
@@ -24,7 +23,7 @@ static unsigned char *b2g;  ///< the starting address of mapped b2g table.
 int switch_code(void)
 {
 	convcode = !convcode;
-	redoscr();
+	screen_redraw();
 	return convcode;
 }
 

@@ -840,7 +840,7 @@ static int process_ESC_action(int action, int arg)
 			redraw_everything = YEA;
 			clear();
 			display_buffer();
-			redoscr();
+			screen_redraw();
 			//% strcpy(msg, "已显示彩色编辑成果，即将切回单色模式");
 			strcpy(msg, "\xd2\xd1\xcf\xd4\xca\xbe\xb2\xca\xc9\xab\xb1\xe0\xbc\xad\xb3\xc9\xb9\xfb\xa3\xac\xbc\xb4\xbd\xab\xc7\xd0\xbb\xd8\xb5\xa5\xc9\xab\xc4\xa3\xca\xbd");
 			break;

@@ -172,27 +172,25 @@ static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 /**
  * Redraw the screen.
  */
-void redoscr(void)
+void screen_redraw(void)
 {
 	if (dumb_term)
 		return;
 	ansi_cmd(ANSI_CMD_CL);
 	tc_col = 0;
 	tc_line = 0;
-	int i;
-	screen_line_t *s;
-	for (i = 0; i < screen.lines; i++) {
-		s = screen.buf + (i + roll) % screen.lines;
-		if (s->len == 0)
+	for (int i = 0; i < screen.lines; ++i) {
+		screen_line_t *sl = screen.buf + (i + roll) % screen.lines;
+		if (!sl->len)
 			continue;
 		rel_move(tc_col, tc_line, 0, i);
-		terminal_write_cached(s->data, s->len);
-		tc_col += s->len;
+		terminal_write_cached(sl->data, sl->len);
+		tc_col += sl->len;
 		if (tc_col >= screen.columns) {
 			tc_col = screen.columns - 1;
 		}
-		s->modified = false;
-		s->oldlen = s->len;
+		sl->modified = false;
+		sl->oldlen = sl->len;
 	}
 	rel_move(tc_col, tc_line, cur_col, cur_ln);
 	docls = NA;
@@ -211,7 +209,7 @@ void refresh(void)
 	if (!terminal_input_buffer_empty())
 		return;
 	if ((docls) || (abs(scrollcnt) >= (screen.lines - 3))) {
-		redoscr();
+		screen_redraw();
 		return;
 	}
 	if (scrollcnt < 0) {

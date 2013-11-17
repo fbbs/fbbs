@@ -1196,7 +1196,7 @@ pip_magic_menu()   /*战斗中法术的应用*/
 
      memcpy(big_picture, screen0, t_lines * sizeof(screenline));
      free(screen0);
-     redoscr();
+     screen_redraw();
      }
      break;
 #endif  // END MAPLE

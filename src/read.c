@@ -201,7 +201,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 		else
 		return DOQUIT;
 		case Ctrl('L'):
-		redoscr();
+		screen_redraw();
 		break;
 		case 'M':
 		savemode = session_status();
