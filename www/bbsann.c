@@ -66,7 +66,7 @@ int bbs0an_main(void)
 	} else {
 		if (!get_board_by_bid(bid, &board) || !has_read_perm(&board))
 			return BBS_ENOBRD;
-		if (board.flag & BOARD_DIR_FLAG)
+		if (board.flag & BOARD_FLAG_DIR)
 			return BBS_EINVAL;
 
 		path[0] = '\0';

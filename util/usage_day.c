@@ -69,7 +69,7 @@ struct boardheader *fptr ;
 
     if( numboards >= MAXBOARD )
         return 0;
-    if(((fptr->flag != 0)&&!(fptr->flag&BOARD_NOZAP_FLAG ||fptr->flag&BOARD_POST_FLAG))||strlen(fptr->filename)==0)
+    if(((fptr->flag != 0)&&!(fptr->flag&BOARD_FLAG_NOZAP ||fptr->flag&BOARD_FLAG_POST))||strlen(fptr->filename)==0)
         return;
     strcpy(st[numboards].boardname,fptr->filename);
     strcpy(st[numboards].expname,fptr->title+8);

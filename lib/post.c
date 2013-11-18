@@ -743,7 +743,7 @@ post_id_t publish_post(const post_request_t *pr)
 	if (!pr || !pr->title || (!pr->content && !pr->gbk_file) || !pr->board)
 		return 0;
 
-	bool anony = pr->anony && (pr->board->flag & BOARD_ANONY_FLAG);
+	bool anony = pr->anony && (pr->board->flag & BOARD_FLAG_ANONY);
 	const char *uname = NULL, *nick = NULL, *ip = pr->ip;
 	if (anony) {
 		uname = ANONYMOUS_ACCOUNT;

@@ -340,7 +340,7 @@ static void getcross(board_t *board, const char *input, const char *output,
 		else {
 			//% fprintf(of, "\033[1;37m【 以下文字转载自 \033[32m%s \033[37m%s区 】\033[m\n",
 			fprintf(of, "\033[1;37m\xa1\xbe \xd2\xd4\xcf\xc2\xce\xc4\xd7\xd6\xd7\xaa\xd4\xd8\xd7\xd4 \033[32m%s \033[37m%s\xc7\xf8 \xa1\xbf\033[m\n",
-					((currbp->flag & BOARD_POST_FLAG) || (currbp->perm == 0)) ? currbp->name
+					((currbp->flag & BOARD_FLAG_POST) || (currbp->perm == 0)) ? currbp->name
 							//% : "未知", mode ? "精华" : "讨论");
 							: "\xce\xb4\xd6\xaa", mode ? "\xbe\xab\xbb\xaa" : "\xcc\xd6\xc2\xdb");
 		}
@@ -697,7 +697,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 				return DONOTHING;
 			board_t board;
 			get_board(currboard, &board);
-			if ((board.flag & BOARD_ANONY_FLAG)
+			if ((board.flag & BOARD_FLAG_ANONY)
 					&& streq(fileinfo->owner, currboard))
 				return DONOTHING;
 		}
@@ -950,7 +950,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 			return DONOTHING;
 		board_t board;
 		get_board(currboard, &board);
-		if ((board.flag & BOARD_ANONY_FLAG) && streq(usrid, currboard))
+		if ((board.flag & BOARD_FLAG_ANONY) && streq(usrid, currboard))
 			return DONOTHING;
 	}
 	if (!SR_BMDELFLAG) {
@@ -1168,12 +1168,12 @@ int Personal(const char *userid)
 
 int show_online(void)
 {
-	if (currbp->flag & BOARD_ANONY_FLAG) {
+	if (currbp->flag & BOARD_FLAG_ANONY) {
 		// TODO: prompt at bottom.
 		return DONOTHING;
 	}
 #ifndef FDQUAN
-	if (!(currbp->flag & BOARD_CLUB_FLAG) || !(am_curr_bm()
+	if (!(currbp->flag & BOARD_FLAG_CLUB) || !(am_curr_bm()
 			|| isclubmember(currentuser.userid, currboard))) {
 		return DONOTHING;
 	}
@@ -1211,7 +1211,7 @@ int board_read(void)
 
 	board_t board;
 	get_board(currboard, &board);
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return FULLUPDATE;
 
 	if (!has_read_perm(&board)) {

@@ -313,7 +313,7 @@ void _post_list_title(int archive_list, const char *mode)
 	if (chkmail())
 		//% prompt = "[您有信件，按 M 看新信]";
 		prompt = "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe\xa3\xac\xb0\xb4 M \xbf\xb4\xd0\xc2\xd0\xc5]";
-	else if ((currbp->flag & BOARD_VOTE_FLAG))
+	else if ((currbp->flag & BOARD_FLAG_VOTE))
 		//% prompt = "※投票中,按 v 进入投票※";
 		prompt = "\xa1\xf9\xcd\xb6\xc6\xb1\xd6\xd0,\xb0\xb4 v \xbd\xf8\xc8\xeb\xcd\xb6\xc6\xb1\xa1\xf9";
 	show_prompt(currbp, prompt, 80 - width);
@@ -1210,7 +1210,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	if (post_header(&header) == YEA) {
 		if (!header.reply && header.prefix[0]) {
 #ifdef FDQUAN
-			if (board.flag & BOARD_PREFIX_FLAG) {
+			if (board.flag & BOARD_FLAG_PREFIX) {
 				snprintf(gbk_title, sizeof(gbk_title),
 						"\033[1;33m[%s]\033[m%s", header.prefix, header.title);
 			} else {

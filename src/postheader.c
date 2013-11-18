@@ -114,7 +114,7 @@ int post_header(struct postheader *header)
 
 	//如果是发表文章，则首先检查所在版面是否匿名（发信时不存在这个问题）
 	if (header->postboard) {
-		anonyboard = board.flag & BOARD_ANONY_FLAG;
+		anonyboard = board.flag & BOARD_FLAG_ANONY;
 	}
 
 #ifdef IP_2_NAME
@@ -172,7 +172,7 @@ int post_header(struct postheader *header)
 						: (header->postboard) ? "]" : "");
 #ifdef ENABLE_PREFIX
 		if (!header->reply && numofprefix) {
-			if ((board.flag & BOARD_PREFIX_FLAG) && !header->title[0]) {
+			if ((board.flag & BOARD_FLAG_PREFIX) && !header->title[0]) {
 				index = 0;
 				print_prefixbuf(pbuf, index);
 				while (1) {
@@ -324,7 +324,7 @@ int post_header(struct postheader *header)
 			getdata(-1, 0, pbuf, ans, 3, DOECHO, YEA);
 			i = ans[0] - '0';
 			if (i >= 0 && i <= numofprefix &&
-					!(i == 0 && (board.flag & BOARD_PREFIX_FLAG)))
+					!(i == 0 && (board.flag & BOARD_FLAG_PREFIX)))
 			index = i;
 		}
 #endif

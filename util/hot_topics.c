@@ -147,7 +147,7 @@ static bitset_t *board_init(void)
 		int flag = db_get_integer(res, i, 2);
 		const char *name = db_get_value(res, i, 3);
 		strlcpy(bnames[bid - 1], name, sizeof(bnames[0]));
-		if (!(flag & (BOARD_DIR_FLAG | BOARD_POST_FLAG | BOARD_JUNK_FLAG))
+		if (!(flag & (BOARD_FLAG_DIR | BOARD_FLAG_POST | BOARD_FLAG_JUNK))
 				&& !perm) {
 			bitset_set(board_bitset, bid - 1, true);
 		}

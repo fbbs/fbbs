@@ -946,7 +946,7 @@ void write_header(FILE *fp, const struct postheader *header, bool _in_mail)
 		}
 		bool anonymous = header->anonymous;
 		if (anonymous)
-			anonymous &= (board.flag & BOARD_ANONY_FLAG);
+			anonymous &= (board.flag & BOARD_FLAG_ANONY);
 
 		//% fprintf(fp, "发信人: %s (%s), 信区: %s\n",
 		fprintf(fp, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n",
@@ -1116,7 +1116,7 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 			&& addfrom != 0 && aborted != -1) {
 		char fname[STRLEN];
 
-		bool anony = (currbp->flag & BOARD_ANONY_FLAG) && (header->anonymous);
+		bool anony = (currbp->flag & BOARD_FLAG_ANONY) && (header->anonymous);
 		int color = (currentuser.numlogins % 7) + 31;
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || anony)

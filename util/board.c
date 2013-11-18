@@ -7,21 +7,21 @@
 #define NOREPLY_FLAG 	0x10 		/* No reply board */
 #define BOARDJUNK_FLAG	0x20		//
 
-//% #define BOARD_VOTE_FLAG         0x1             //投票模式
-#define BOARD_VOTE_FLAG         0x1             //\xcd\xb6\xc6\xb1\xc4\xa3\xca\xbd
-#define BOARD_NOZAP_FLAG        0x2             //no zap
-//% #define BOARD_OUT_FLAG          0x4             //转信
-#define BOARD_OUT_FLAG          0x4             //\xd7\xaa\xd0\xc5
-//% #define BOARD_ANONY_FLAG        0x8             //匿名模式
-#define BOARD_ANONY_FLAG        0x8             //\xc4\xe4\xc3\xfb\xc4\xa3\xca\xbd
-#define BOARD_NOREPLY_FLAG      0x10            //No reply board
-//% #define BOARD_JUNK_FLAG         0x20            //不记文章数
-#define BOARD_JUNK_FLAG         0x20            //\xb2\xbb\xbc\xc7\xce\xc4\xd5\xc2\xca\xfd
-//% #define BOARD_CLUB_FLAG         0x40            //俱乐部版面
-#define BOARD_CLUB_FLAG         0x40            //\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6\xc3\xe6
-//% #define BOARD_READ_FLAG         0x80            //隐藏版面
-#define BOARD_READ_FLAG         0x80            //\xd2\xfe\xb2\xd8\xb0\xe6\xc3\xe6
-#define BOARD_POST_FLAG         0x100           //postmask
+//% #define BOARD_FLAG_VOTE         0x1             //投票模式
+#define BOARD_FLAG_VOTE         0x1             //\xcd\xb6\xc6\xb1\xc4\xa3\xca\xbd
+#define BOARD_FLAG_NOZAP        0x2             //no zap
+//% #define BOARD_FLAG_OUT          0x4             //转信
+#define BOARD_FLAG_OUT          0x4             //\xd7\xaa\xd0\xc5
+//% #define BOARD_FLAG_ANONY        0x8             //匿名模式
+#define BOARD_FLAG_ANONY        0x8             //\xc4\xe4\xc3\xfb\xc4\xa3\xca\xbd
+#define BOARD_FLAG_NOREPLY      0x10            //No reply board
+//% #define BOARD_FLAG_JUNK         0x20            //不记文章数
+#define BOARD_FLAG_JUNK         0x20            //\xb2\xbb\xbc\xc7\xce\xc4\xd5\xc2\xca\xfd
+//% #define BOARD_FLAG_CLUB         0x40            //俱乐部版面
+#define BOARD_FLAG_CLUB         0x40            //\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6\xc3\xe6
+//% #define BOARD_FLAG_READ         0x80            //隐藏版面
+#define BOARD_FLAG_READ         0x80            //\xd2\xfe\xb2\xd8\xb0\xe6\xc3\xe6
+#define BOARD_FLAG_POST         0x100           //postmask
 
 #define PERM_POSTMASK  0100000     
 #define PERM_NOZAP     02000000
@@ -99,21 +99,21 @@ main(argc, argv)
 		printf("level:%0x\t%0x\n",  boardnew.level, boardnew.level);
 		
 		if (boardold.flag & VOTE_FLAG)
-			boardnew.flag |= BOARD_VOTE_FLAG;
+			boardnew.flag |= BOARD_FLAG_VOTE;
 		if (boardold.flag & NOZAP_FLAG)
-			boardnew.flag |= BOARD_NOZAP_FLAG;
+			boardnew.flag |= BOARD_FLAG_NOZAP;
 		if (boardold.flag & OUT_FLAG)
-			boardnew.flag |= BOARD_OUT_FLAG;
+			boardnew.flag |= BOARD_FLAG_OUT;
 		if (boardold.flag & ANONY_FLAG)
-			boardnew.flag |= BOARD_ANONY_FLAG;
+			boardnew.flag |= BOARD_FLAG_ANONY;
 		if (boardold.flag & NOREPLY_FLAG)
-			boardnew.flag |= BOARD_NOREPLY_FLAG;
+			boardnew.flag |= BOARD_FLAG_NOREPLY;
 		if (boardold.flag & BOARDJUNK_FLAG)
-			boardnew.flag |= BOARD_JUNK_FLAG;
+			boardnew.flag |= BOARD_FLAG_JUNK;
 		if (boardold.level & PERM_POSTMASK)
-			boardnew.flag |= BOARD_POST_FLAG;
+			boardnew.flag |= BOARD_FLAG_POST;
 		if (boardold.level & PERM_NOZAP)
-			boardnew.flag |= BOARD_NOZAP_FLAG;
+			boardnew.flag |= BOARD_FLAG_NOZAP;
 		printf("flag:%x\t%x\n\n\n",  boardnew.flag, boardnew.flag);
   		fwrite(&boardnew,sizeof(boardnew),1,fout);
   

@@ -96,7 +96,7 @@ int web_sel(void)
 
 void board_to_node(const board_t *bp, xml_node_t *node)
 {
-	xml_attr_boolean(node, "dir", bp->flag & BOARD_DIR_FLAG);
+	xml_attr_boolean(node, "dir", bp->flag & BOARD_FLAG_DIR);
 	xml_attr_string(node, "name", bp->name, false);
 	xml_attr_string(node, "categ", bp->categ, false);
 	xml_attr_string(node, "descr", bp->descr, false);
@@ -240,7 +240,7 @@ int bbssec_main(void)
 
 	db_res_t *res = db_query("SELECT b.name, b.descr, b.sector"
 			" FROM boards b JOIN board_sectors s ON b.sector = s.id"
-			" WHERE b.flag & %d <> 0", BOARD_RECOMMEND_FLAG);
+			" WHERE b.flag & %d <> 0", BOARD_FLAG_RECOMMEND);
 	if (!res) {
 		db_clear(r1);
 		return BBS_EINVAL;
@@ -282,7 +282,7 @@ int web_all_boards(void)
 			continue;
 		board_to_gbk(&board);
 		printf("<brd dir='%d' title='%s' cate='%s' desc='%s' bm='%s' />",
-				(board.flag & BOARD_DIR_FLAG) ? 1 : 0, board.name, board.categ,
+				(board.flag & BOARD_FLAG_DIR) ? 1 : 0, board.name, board.categ,
 				board.descr, board.bms);
 	}
 	db_clear(res);
@@ -311,7 +311,7 @@ static void show_board(db_res_t *res)
 			board_to_gbk(&board);
 		printf("<brd dir='%d' title='%s' cate='%.6s' desc='%s' bm='%s' "
 				"read='%d' count='%d' />",
-				(board.flag & BOARD_DIR_FLAG) ? 1 : 0, board.name,
+				(board.flag & BOARD_FLAG_DIR) ? 1 : 0, board.name,
 				board.categ, board.descr, board.bms,
 				brc_board_unread(currentuser.userid, board.name, board.id),
 				filenum(board.name));
@@ -340,7 +340,7 @@ int web_sector(void)
 			get_board(pname, &parent);
 		else
 			get_board_by_bid(strtol(get_param("bid"), NULL, 10), &parent);
-		if (!parent.id || !(parent.flag & BOARD_DIR_FLAG)
+		if (!parent.id || !(parent.flag & BOARD_FLAG_DIR)
 				|| !has_read_perm(&parent))
 			return BBS_ENOBRD;
 	}
@@ -419,7 +419,7 @@ int bbsnot_main(void)
 			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
 
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 

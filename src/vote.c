@@ -207,9 +207,9 @@ static int setvoteflag(const char *bname, int flag)
 	get_board(bname, &board);
 
 	if (flag == 0)
-		board.flag = board.flag & ~BOARD_VOTE_FLAG;
+		board.flag = board.flag & ~BOARD_FLAG_VOTE;
 	else
-		board.flag = board.flag | BOARD_VOTE_FLAG;
+		board.flag = board.flag | BOARD_FLAG_VOTE;
 
 	db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
 			board.flag, board.id);
@@ -295,10 +295,10 @@ int b_notes_edit()
 		int flag = currbp->flag;
 		//% if (askyn("是否强制使用前缀？",
 		if (askyn("\xca\xc7\xb7\xf1\xc7\xbf\xd6\xc6\xca\xb9\xd3\xc3\xc7\xb0\xd7\xba\xa3\xbf",
-					(currbp->flag & BOARD_PREFIX_FLAG) ? YEA : NA, NA)) {
-			flag |= BOARD_PREFIX_FLAG;
+					(currbp->flag & BOARD_FLAG_PREFIX) ? YEA : NA, NA)) {
+			flag |= BOARD_FLAG_PREFIX;
 		} else {
-			flag &= ~BOARD_PREFIX_FLAG;
+			flag &= ~BOARD_FLAG_PREFIX;
 		}
 		db_res_t *res = db_cmd("UPDATE boards SET flag = %d WHERE id = %d",
 				flag, currbp->id);

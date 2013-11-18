@@ -1335,7 +1335,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 						rem_crs, 1))
 					return DONOTHING;
 				bool noreply = (ptitle->accessed[0] & FILE_NOREPLY)
-						|| (board.flag & BOARD_NOREPLY_FLAG);
+						|| (board.flag & BOARD_FLAG_NOREPLY);
 				if (!noreply || am_curr_bm()) {
 					do_reply(ptitle);
 				} else {

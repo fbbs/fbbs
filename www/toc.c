@@ -177,7 +177,7 @@ static int bbsdoc(post_list_type_e type)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return web_sector();
 	session_set_board(board.id);
 
@@ -482,7 +482,7 @@ int web_forum(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return web_sector();
 	session_set_board(board.id);
 	board_to_gbk(&board);
@@ -664,7 +664,7 @@ int bbsrss_main(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 

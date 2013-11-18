@@ -284,7 +284,7 @@ int main (int argc, char **argv)
 		
 		if (board.perm)
 			continue;               /* limit Read/Post */
-		if ((board.flag & BOARD_ANONY_FLAG))
+		if ((board.flag & BOARD_FLAG_ANONY))
 			continue;               /* Anonymous boards */
 		sprintf (pathname, "%s/boards/%s/.DIR", BBSHOME,
 				board.name);

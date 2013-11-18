@@ -40,14 +40,14 @@ int isclubmember(const char *member, const char *board)
 
 bool is_junk_board(const board_t *bp)
 {
-	if (bp && (bp->flag & BOARD_JUNK_FLAG))
+	if (bp && (bp->flag & BOARD_FLAG_JUNK))
 		return true;
 	return false;
 }
 
 bool is_board_dir(const board_t *bp)
 {
-	return (bp->flag & BOARD_DIR_FLAG);
+	return (bp->flag & BOARD_FLAG_DIR);
 }
 
 void res_to_board(db_res_t *res, int row, board_t *bp)
@@ -94,7 +94,7 @@ void board_to_gbk(board_t *bp)
 	convert_u2g(bp->categ, gbk_categ);
 	strlcpy(bp->categ, gbk_categ, sizeof(bp->categ));
 
-	if ((bp->flag & BOARD_DIR_FLAG) && (bp->name[0] & 0x80)) {
+	if ((bp->flag & BOARD_FLAG_DIR) && (bp->name[0] & 0x80)) {
 		GBK_BUFFER(name, BOARD_NAME_LEN / 2);
 		convert_u2g(bp->name, gbk_name);
 		strlcpy(bp->name, gbk_name, sizeof(bp->name));
@@ -103,7 +103,7 @@ void board_to_gbk(board_t *bp)
 
 bool is_bm(const struct userec *up, const board_t *bp)
 {
-	if ((bp->flag & BOARD_CLUB_FLAG) && (up->userlevel & PERM_OCLUB))
+	if ((bp->flag & BOARD_FLAG_CLUB) && (up->userlevel & PERM_OCLUB))
 		return true;
 	if (up->userlevel & PERM_BLEVELS)
 		return true;
@@ -125,13 +125,13 @@ bool is_bm(const struct userec *up, const board_t *bp)
 bool user_has_read_perm(const struct userec *up, const board_t *bp)
 {
 	// Read restricted club
-	if ((bp->flag & BOARD_CLUB_FLAG) && (bp->flag & BOARD_READ_FLAG)
+	if ((bp->flag & BOARD_FLAG_CLUB) && (bp->flag & BOARD_FLAG_READ)
 			&& !is_bm(up, bp) && !isclubmember(up->userid, bp->name))
 		return false;
 
 	if (bp->perm == 0)
 		return true;
-	if (bp->flag & (BOARD_POST_FLAG | BOARD_NOZAP_FLAG))
+	if (bp->flag & (BOARD_FLAG_POST | BOARD_FLAG_NOZAP))
 		return true;
 	if (up->userlevel & bp->perm)
 		return true;
@@ -149,7 +149,7 @@ static bool user_has_post_perm(const struct userec *up, const board_t *bp)
 	if (!HAS_PERM2(PERM_POST, up) || !HAS_PERM2(bp->perm, up))
 		return false;
 
-	if ((bp->flag & BOARD_CLUB_FLAG) && !is_bm(up, bp)
+	if ((bp->flag & BOARD_FLAG_CLUB) && !is_bm(up, bp)
 			&& !isclubmember(up->userid, bp->name))
 		return false;
 

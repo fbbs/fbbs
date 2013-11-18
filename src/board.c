@@ -84,7 +84,7 @@ static ac_list *build_board_ac_list(int mode)
 			board_t board;
 			res_to_board(res, i, &board);
 
-			if (board.flag & BOARD_DIR_FLAG) {
+			if (board.flag & BOARD_FLAG_DIR) {
 				if (mode == AC_LIST_BOARDS_ONLY)
 					continue;
 			} else {
@@ -337,7 +337,7 @@ static void res_to_board_array(board_list_t *bl, db_res_t *r1, db_res_t *r2)
 			//% strlcpy(board->categ, "收藏", sizeof(board->categ));
 			strlcpy(board->categ, "\xca\xd5\xb2\xd8", sizeof(board->categ));
 
-			board->flag = BOARD_CUSTOM_FLAG | BOARD_DIR_FLAG;
+			board->flag = BOARD_CUSTOM_FLAG | BOARD_FLAG_DIR;
 			e->folder = FAV_BOARD_ROOT_FOLDER;
 			e->sector = 0;
 
@@ -408,7 +408,7 @@ static void jump_to_first_unread(tui_list_t *tl)
 		int i;
 		for (i = tl->cur; i < tl->all; ++i) {
 			board_t *bp = &(bl->indices[i]->board);
-			if (!(bp->flag & BOARD_DIR_FLAG) && check_newpost(bp))
+			if (!(bp->flag & BOARD_FLAG_DIR) && check_newpost(bp))
 				break;
 		}
 		if (i < tl->all)
@@ -420,7 +420,7 @@ static void load_online_data(board_list_t *bl)
 {
 	for (int i = 0; i < bl->bcount; ++i) {
 		board_extra_t *b = bl->boards + i;
-		if (b->board.flag & BOARD_DIR_FLAG)
+		if (b->board.flag & BOARD_FLAG_DIR)
 			b->online = 0;
 		else
 			b->online = session_count_online_board(b->board.id);
@@ -528,20 +528,20 @@ static int search_board(const choose_board_t *cbrd, int *num)
 
 static bool is_zapped(board_list_t *bl, board_t *board)
 {
-	return !bl->zapbuf[board->id] && !(board->flag & BOARD_NOZAP_FLAG);
+	return !bl->zapbuf[board->id] && !(board->flag & BOARD_FLAG_NOZAP);
 }
 
 static char property(board_t *board)
 {
-	if (board->flag & BOARD_DIR_FLAG) {
+	if (board->flag & BOARD_FLAG_DIR) {
 		if (board->perm)
 			return 'r';
 	} else {
-		if (board->flag & BOARD_NOZAP_FLAG)
+		if (board->flag & BOARD_FLAG_NOZAP)
 			return 'z';
-		else if (board->flag & BOARD_POST_FLAG)
+		else if (board->flag & BOARD_FLAG_POST)
 			return 'p';
-		else if (board->flag & BOARD_NOREPLY_FLAG)
+		else if (board->flag & BOARD_FLAG_NOREPLY)
 			return 'x';
 		else if (board->perm)
 			return 'r';
@@ -557,14 +557,14 @@ static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 
 	if (!bl->newflag)
 		prints(" %5d", n + 1);
-	else if (board->flag & BOARD_DIR_FLAG)
+	else if (board->flag & BOARD_FLAG_DIR)
 		//% prints("  目录");
 		prints("  \xc4\xbf\xc2\xbc");
 	else
 		prints(" %5d", get_board_post_count(board->id));
 
 	prints(" ");
-	if (board->flag & BOARD_DIR_FLAG) {
+	if (board->flag & BOARD_FLAG_DIR) {
 		//% prints("＋");
 		prints("\xa3\xab");
 	} else {
@@ -579,12 +579,12 @@ static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 
 	prints("%c%-17s %s%s[%4s] %-20s %c ",
 			(is_zapped(bl, board)) ? '*' : ' ', board->name,
-			(board->flag & BOARD_VOTE_FLAG) ? "\033[1;31mV\033[m" : " ",
-			(board->flag & BOARD_CLUB_FLAG) ? (board->flag & BOARD_READ_FLAG)
+			(board->flag & BOARD_FLAG_VOTE) ? "\033[1;31mV\033[m" : " ",
+			(board->flag & BOARD_FLAG_CLUB) ? (board->flag & BOARD_FLAG_READ)
 				? "\033[1;31mc\033[m" : "\033[1;33mc\033[m" : " ",
 			board->categ, descr, HAS_PERM(PERM_POST) ? property(board) : ' ');
 
-	if (board->flag & BOARD_DIR_FLAG) {
+	if (board->flag & BOARD_FLAG_DIR) {
 		//% prints("[目录]\n");
 		prints("[\xc4\xbf\xc2\xbc]\n");
 	} else {
@@ -649,32 +649,32 @@ static int show_board_info(board_t *board)
 	prints("\xb0\xe6    \xd6\xf7:     %s\n", board->bms);
 	//% prints("所属讨论区:   %s\n", board->parent ? parent.name : "无");
 	prints("\xcb\xf9\xca\xf4\xcc\xd6\xc2\xdb\xc7\xf8:   %s\n", board->parent ? parent.name : "\xce\xde");
-	//% prints("是否目录:     %s\n", (board->flag & BOARD_DIR_FLAG) ? "目录" : "版面");
-	prints("\xca\xc7\xb7\xf1\xc4\xbf\xc2\xbc:     %s\n", (board->flag & BOARD_DIR_FLAG) ? "\xc4\xbf\xc2\xbc" : "\xb0\xe6\xc3\xe6");
-	//% prints("可以 ZAP:     %s\n", (board->flag & BOARD_NOZAP_FLAG) ? "不可以" : "可以");
-	prints("\xbf\xc9\xd2\xd4 ZAP:     %s\n", (board->flag & BOARD_NOZAP_FLAG) ? "\xb2\xbb\xbf\xc9\xd2\xd4" : "\xbf\xc9\xd2\xd4");
+	//% prints("是否目录:     %s\n", (board->flag & BOARD_FLAG_DIR) ? "目录" : "版面");
+	prints("\xca\xc7\xb7\xf1\xc4\xbf\xc2\xbc:     %s\n", (board->flag & BOARD_FLAG_DIR) ? "\xc4\xbf\xc2\xbc" : "\xb0\xe6\xc3\xe6");
+	//% prints("可以 ZAP:     %s\n", (board->flag & BOARD_FLAG_NOZAP) ? "不可以" : "可以");
+	prints("\xbf\xc9\xd2\xd4 ZAP:     %s\n", (board->flag & BOARD_FLAG_NOZAP) ? "\xb2\xbb\xbf\xc9\xd2\xd4" : "\xbf\xc9\xd2\xd4");
 
-	if (!(board->flag & BOARD_DIR_FLAG)) {
+	if (!(board->flag & BOARD_FLAG_DIR)) {
 		//% "在线人数:     %d 人\n"
 		prints("\xd4\xda\xcf\xdf\xc8\xcb\xca\xfd:     %d \xc8\xcb\n", session_count_online_board(board->id));
-		//% prints("文 章 数:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "不计算" : "计算");
-		prints("\xce\xc4 \xd5\xc2 \xca\xfd:     %s\n", (board->flag & BOARD_JUNK_FLAG) ? "\xb2\xbb\xbc\xc6\xcb\xe3" : "\xbc\xc6\xcb\xe3");
-		//% prints("可以回复:     %s\n", (board->flag & BOARD_NOREPLY_FLAG) ? "不可以" : "可以");
-		prints("\xbf\xc9\xd2\xd4\xbb\xd8\xb8\xb4:     %s\n", (board->flag & BOARD_NOREPLY_FLAG) ? "\xb2\xbb\xbf\xc9\xd2\xd4" : "\xbf\xc9\xd2\xd4");
-		//% prints("匿 名 版:     %s\n", (board->flag & BOARD_ANONY_FLAG) ? "是" : "否");
-		prints("\xc4\xe4 \xc3\xfb \xb0\xe6:     %s\n", (board->flag & BOARD_ANONY_FLAG) ? "\xca\xc7" : "\xb7\xf1");
+		//% prints("文 章 数:     %s\n", (board->flag & BOARD_FLAG_JUNK) ? "不计算" : "计算");
+		prints("\xce\xc4 \xd5\xc2 \xca\xfd:     %s\n", (board->flag & BOARD_FLAG_JUNK) ? "\xb2\xbb\xbc\xc6\xcb\xe3" : "\xbc\xc6\xcb\xe3");
+		//% prints("可以回复:     %s\n", (board->flag & BOARD_FLAG_NOREPLY) ? "不可以" : "可以");
+		prints("\xbf\xc9\xd2\xd4\xbb\xd8\xb8\xb4:     %s\n", (board->flag & BOARD_FLAG_NOREPLY) ? "\xb2\xbb\xbf\xc9\xd2\xd4" : "\xbf\xc9\xd2\xd4");
+		//% prints("匿 名 版:     %s\n", (board->flag & BOARD_FLAG_ANONY) ? "是" : "否");
+		prints("\xc4\xe4 \xc3\xfb \xb0\xe6:     %s\n", (board->flag & BOARD_FLAG_ANONY) ? "\xca\xc7" : "\xb7\xf1");
 #ifdef ENABLE_PREFIX
-		//% prints ("强制前缀:     %s\n", (board->flag & BOARD_PREFIX_FLAG) ? "必须" : "不必");
-		prints ("\xc7\xbf\xd6\xc6\xc7\xb0\xd7\xba:     %s\n", (board->flag & BOARD_PREFIX_FLAG) ? "\xb1\xd8\xd0\xeb" : "\xb2\xbb\xb1\xd8");
+		//% prints ("强制前缀:     %s\n", (board->flag & BOARD_FLAG_PREFIX) ? "必须" : "不必");
+		prints ("\xc7\xbf\xd6\xc6\xc7\xb0\xd7\xba:     %s\n", (board->flag & BOARD_FLAG_PREFIX) ? "\xb1\xd8\xd0\xeb" : "\xb2\xbb\xb1\xd8");
 #endif
-		//% prints("俱 乐 部:     %s\n", (board->flag & BOARD_CLUB_FLAG) ?
-		prints("\xbe\xe3 \xc0\xd6 \xb2\xbf:     %s\n", (board->flag & BOARD_CLUB_FLAG) ?
-				//% (board->flag & BOARD_READ_FLAG) ? "读限制俱乐部" : "普通俱乐部"
-				(board->flag & BOARD_READ_FLAG) ? "\xb6\xc1\xcf\xde\xd6\xc6\xbe\xe3\xc0\xd6\xb2\xbf" : "\xc6\xd5\xcd\xa8\xbe\xe3\xc0\xd6\xb2\xbf"
+		//% prints("俱 乐 部:     %s\n", (board->flag & BOARD_FLAG_CLUB) ?
+		prints("\xbe\xe3 \xc0\xd6 \xb2\xbf:     %s\n", (board->flag & BOARD_FLAG_CLUB) ?
+				//% (board->flag & BOARD_FLAG_READ) ? "读限制俱乐部" : "普通俱乐部"
+				(board->flag & BOARD_FLAG_READ) ? "\xb6\xc1\xcf\xde\xd6\xc6\xbe\xe3\xc0\xd6\xb2\xbf" : "\xc6\xd5\xcd\xa8\xbe\xe3\xc0\xd6\xb2\xbf"
 				//% : "非俱乐部");
 				: "\xb7\xc7\xbe\xe3\xc0\xd6\xb2\xbf");
-		//% prints("读写限制:     %s\n", (board->flag & BOARD_POST_FLAG) ? "限制发文" :
-		prints("\xb6\xc1\xd0\xb4\xcf\xde\xd6\xc6:     %s\n", (board->flag & BOARD_POST_FLAG) ? "\xcf\xde\xd6\xc6\xb7\xa2\xce\xc4" :
+		//% prints("读写限制:     %s\n", (board->flag & BOARD_FLAG_POST) ? "限制发文" :
+		prints("\xb6\xc1\xd0\xb4\xcf\xde\xd6\xc6:     %s\n", (board->flag & BOARD_FLAG_POST) ? "\xcf\xde\xd6\xc6\xb7\xa2\xce\xc4" :
 				//% (board->perm == 0) ? "没有限制" : "限制阅读");
 				(board->perm == 0) ? "\xc3\xbb\xd3\xd0\xcf\xde\xd6\xc6" : "\xcf\xde\xd6\xc6\xd4\xc4\xb6\xc1");
 	}
@@ -720,7 +720,7 @@ static int read_board(tui_list_t *tl)
 	board_list_t *bl = tl->data;
 	board_t *bp = &(bl->indices[tl->cur]->board);
 
-	if (bp->flag & BOARD_DIR_FLAG) {
+	if (bp->flag & BOARD_FLAG_DIR) {
 		if (bp->flag & BOARD_CUSTOM_FLAG) {
 			bl->skip_reload = true;
 			bl->parent = bp->id;
@@ -925,7 +925,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *tl, int key)
 			if (bl->favorite)
 				return DONOTHING;
 			if (HAS_PERM(PERM_LOGIN)
-					&& !(board->flag & BOARD_NOZAP_FLAG)) {
+					&& !(board->flag & BOARD_FLAG_NOZAP)) {
 				//% if (l->zapbuf[board->id] && !askyn("确实要隐藏吗?", NA, YEA))
 				if (bl->zapbuf[board->id] && !askyn("\xc8\xb7\xca\xb5\xd2\xaa\xd2\xfe\xb2\xd8\xc2\xf0?", NA, YEA))
 					return MINIUPDATE;

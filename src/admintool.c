@@ -702,8 +702,8 @@ int tui_new_board(const char *cmd)
 	clrtobot();
 	//% if (askyn("本版是目录吗?", NA, NA)) {
 	if (askyn("\xb1\xbe\xb0\xe6\xca\xc7\xc4\xbf\xc2\xbc\xc2\xf0?", NA, NA)) {
-		flag |= (BOARD_DIR_FLAG | BOARD_JUNK_FLAG
-				| BOARD_NOREPLY_FLAG | BOARD_POST_FLAG);
+		flag |= (BOARD_FLAG_DIR | BOARD_FLAG_JUNK
+				| BOARD_FLAG_NOREPLY | BOARD_FLAG_POST);
 		//% if (askyn("是否限制存取权利?", NA, NA)) {
 		if (askyn("\xca\xc7\xb7\xf1\xcf\xde\xd6\xc6\xb4\xe6\xc8\xa1\xc8\xa8\xc0\xfb?", NA, NA)) {
 			char ans[2];
@@ -721,24 +721,24 @@ int tui_new_board(const char *cmd)
 	} else {
 		//% if (askyn("该版的全部文章均不可以回复", NA, NA))
 		if (askyn("\xb8\xc3\xb0\xe6\xb5\xc4\xc8\xab\xb2\xbf\xce\xc4\xd5\xc2\xbe\xf9\xb2\xbb\xbf\xc9\xd2\xd4\xbb\xd8\xb8\xb4", NA, NA))
-			flag |= BOARD_NOREPLY_FLAG;
+			flag |= BOARD_FLAG_NOREPLY;
 		//% if (askyn("是否是俱乐部版面", NA, NA)) {
 		if (askyn("\xca\xc7\xb7\xf1\xca\xc7\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6\xc3\xe6", NA, NA)) {
-			flag |= BOARD_CLUB_FLAG;
+			flag |= BOARD_FLAG_CLUB;
 			//% if (askyn("是否读限制俱乐部版面", NA, NA))
 			if (askyn("\xca\xc7\xb7\xf1\xb6\xc1\xcf\xde\xd6\xc6\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6\xc3\xe6", NA, NA))
-				flag |= BOARD_READ_FLAG;
+				flag |= BOARD_FLAG_READ;
 		}
 		//% if (askyn("是否不计算文章数", NA, NA))
 		if (askyn("\xca\xc7\xb7\xf1\xb2\xbb\xbc\xc6\xcb\xe3\xce\xc4\xd5\xc2\xca\xfd", NA, NA))
-			flag |= BOARD_JUNK_FLAG;
+			flag |= BOARD_FLAG_JUNK;
 		//% if (askyn("是否为匿名版", NA, NA))
 		if (askyn("\xca\xc7\xb7\xf1\xce\xaa\xc4\xe4\xc3\xfb\xb0\xe6", NA, NA))
-			flag |= BOARD_ANONY_FLAG;
+			flag |= BOARD_FLAG_ANONY;
 #ifdef ENABLE_PREFIX
 		//% if (askyn ("是否强制使用前缀", NA, NA))
 		if (askyn ("\xca\xc7\xb7\xf1\xc7\xbf\xd6\xc6\xca\xb9\xd3\xc3\xc7\xb0\xd7\xba", NA, NA))
-			flag |= BOARD_PREFIX_FLAG;
+			flag |= BOARD_FLAG_PREFIX;
 #endif
 		//% if (askyn("是否限制读写", NA, NA)) {
 		if (askyn("\xca\xc7\xb7\xf1\xcf\xde\xd6\xc6\xb6\xc1\xd0\xb4", NA, NA)) {
@@ -747,14 +747,14 @@ int tui_new_board(const char *cmd)
 			getdata(15, 0, "\xcf\xde\xd6\xc6\xb6\xc1(R)/\xd0\xb4(P)? [R]: ", ans, sizeof(ans),
 					DOECHO, YEA);
 			if (*ans == 'P' || *ans == 'p')
-				flag |= BOARD_POST_FLAG;
+				flag |= BOARD_FLAG_POST;
 			move(1, 0);
 			clrtobot();
 			move(2, 0);
 			//% prints("设定 %s 限制. 讨论区: '%s'\n",
 			prints("\xc9\xe8\xb6\xa8 %s \xcf\xde\xd6\xc6. \xcc\xd6\xc2\xdb\xc7\xf8: '%s'\n",
-					//% (flag & BOARD_POST_FLAG ? "写" : "读"), bname);
-					(flag & BOARD_POST_FLAG ? "\xd0\xb4" : "\xb6\xc1"), bname);
+					//% (flag & BOARD_FLAG_POST ? "写" : "读"), bname);
+					(flag & BOARD_FLAG_POST ? "\xd0\xb4" : "\xb6\xc1"), bname);
 			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			perm = setperms(perm, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
 			screen_clear();
@@ -776,7 +776,7 @@ int tui_new_board(const char *cmd)
 	db_clear(res);
 
 	char *bms = NULL;
-	if (!(flag & BOARD_DIR_FLAG)
+	if (!(flag & BOARD_FLAG_DIR)
 			//% && !askyn("本版诚征版主吗(否则由SYSOPs管理)?", YEA, NA)) {
 			&& !askyn("\xb1\xbe\xb0\xe6\xb3\xcf\xd5\xf7\xb0\xe6\xd6\xf7\xc2\xf0(\xb7\xf1\xd4\xf2\xd3\xc9SYSOPs\xb9\xdc\xc0\xed)?", YEA, NA)) {
 		bms = "SYSOPs";
@@ -795,7 +795,7 @@ int tui_new_board(const char *cmd)
 		return -1;
 	}
 
-	if (!(flag & BOARD_DIR_FLAG)) {
+	if (!(flag & BOARD_FLAG_DIR)) {
 		const char *group = chgrp();
 		if (group) {
 			char buf[STRLEN];
@@ -837,7 +837,7 @@ static void show_edit_board_menu(board_t *bp, board_t *pp)
 	prints("2)\xd0\xde\xb8\xc4\xcb\xb5\xc3\xf7:        %s\n", bp->descr);
 	//% prints("4)修改所属目录:    %s(%d)\n", pp->name, pp->id);
 	prints("4)\xd0\xde\xb8\xc4\xcb\xf9\xca\xf4\xc4\xbf\xc2\xbc:    %s(%d)\n", pp->name, pp->id);
-	if (bp->flag & BOARD_DIR_FLAG) {
+	if (bp->flag & BOARD_FLAG_DIR) {
 		//% prints("5)修改读写属性:    %s\n",
 		prints("5)\xd0\xde\xb8\xc4\xb6\xc1\xd0\xb4\xca\xf4\xd0\xd4:    %s\n",
 				//% (bp->perm == 0) ? "没有限制" : "r(限制阅读)");
@@ -845,29 +845,29 @@ static void show_edit_board_menu(board_t *bp, board_t *pp)
 	} else {
 		//% prints("5)修改读写属性:    %s\n",
 		prints("5)\xd0\xde\xb8\xc4\xb6\xc1\xd0\xb4\xca\xf4\xd0\xd4:    %s\n",
-				//% (bp->flag & BOARD_POST_FLAG) ? "p(限制发文)"
-				(bp->flag & BOARD_POST_FLAG) ? "p(\xcf\xde\xd6\xc6\xb7\xa2\xce\xc4)"
+				//% (bp->flag & BOARD_FLAG_POST) ? "p(限制发文)"
+				(bp->flag & BOARD_FLAG_POST) ? "p(\xcf\xde\xd6\xc6\xb7\xa2\xce\xc4)"
 				//% : (bp->perm == 0) ? "没有限制" : "r(限制阅读)");
 				: (bp->perm == 0) ? "\xc3\xbb\xd3\xd0\xcf\xde\xd6\xc6" : "r(\xcf\xde\xd6\xc6\xd4\xc4\xb6\xc1)");
 	}
 
-	if (!(bp->flag & BOARD_DIR_FLAG)) {
+	if (!(bp->flag & BOARD_FLAG_DIR)) {
 		//% prints("8)匿名版面:            %s\n",
 		prints("8)\xc4\xe4\xc3\xfb\xb0\xe6\xc3\xe6:            %s\n",
-				//% (bp->flag & BOARD_ANONY_FLAG) ? "是" : "否");
-				(bp->flag & BOARD_ANONY_FLAG) ? "\xca\xc7" : "\xb7\xf1");
+				//% (bp->flag & BOARD_FLAG_ANONY) ? "是" : "否");
+				(bp->flag & BOARD_FLAG_ANONY) ? "\xca\xc7" : "\xb7\xf1");
 		//% prints("9)可以回复:            %s\n",
 		prints("9)\xbf\xc9\xd2\xd4\xbb\xd8\xb8\xb4:            %s\n",
-				//% (bp->flag & BOARD_NOREPLY_FLAG) ? "否" : "是");
-				(bp->flag & BOARD_NOREPLY_FLAG) ? "\xb7\xf1" : "\xca\xc7");
+				//% (bp->flag & BOARD_FLAG_NOREPLY) ? "否" : "是");
+				(bp->flag & BOARD_FLAG_NOREPLY) ? "\xb7\xf1" : "\xca\xc7");
 		//% prints("A)是否计算文章数:      %s\n",
 		prints("A)\xca\xc7\xb7\xf1\xbc\xc6\xcb\xe3\xce\xc4\xd5\xc2\xca\xfd:      %s\n",
-				//% (bp->flag & BOARD_JUNK_FLAG) ? "否" : "是");
-				(bp->flag & BOARD_JUNK_FLAG) ? "\xb7\xf1" : "\xca\xc7");
+				//% (bp->flag & BOARD_FLAG_JUNK) ? "否" : "是");
+				(bp->flag & BOARD_FLAG_JUNK) ? "\xb7\xf1" : "\xca\xc7");
 		//% prints("B)俱乐部属性:          %s\n",
 		prints("B)\xbe\xe3\xc0\xd6\xb2\xbf\xca\xf4\xd0\xd4:          %s\n",
-				(bp->flag & BOARD_CLUB_FLAG) ?
-				(bp->flag & BOARD_READ_FLAG) ?
+				(bp->flag & BOARD_FLAG_CLUB) ?
+				(bp->flag & BOARD_FLAG_READ) ?
 				//% "\033[1;31mc\033[0m(读限制)"
 				"\033[1;31mc\033[0m(\xb6\xc1\xcf\xde\xd6\xc6)"
 				//% : "\033[1;33mc\033[0m(写限制)"
@@ -877,8 +877,8 @@ static void show_edit_board_menu(board_t *bp, board_t *pp)
 #ifdef ENABLE_PREFIX
 		//% prints ("C)是否强制使用前缀:    %s\n",
 		prints ("C)\xca\xc7\xb7\xf1\xc7\xbf\xd6\xc6\xca\xb9\xd3\xc3\xc7\xb0\xd7\xba:    %s\n",
-				//% (bp->flag & BOARD_PREFIX_FLAG) ? "是" : "否");
-				(bp->flag & BOARD_PREFIX_FLAG) ? "\xca\xc7" : "\xb7\xf1");
+				//% (bp->flag & BOARD_FLAG_PREFIX) ? "是" : "否");
+				(bp->flag & BOARD_FLAG_PREFIX) ? "\xca\xc7" : "\xb7\xf1");
 #endif
 	}
 }
@@ -939,17 +939,17 @@ static bool alter_board_perm(board_t *bp)
 {
 	char buf[STRLEN], ans[2];
 	int flag = bp->flag, perm = bp->perm;
-	if (bp->flag & BOARD_DIR_FLAG) {
+	if (bp->flag & BOARD_FLAG_DIR) {
 		//% snprintf(buf, sizeof(buf), "(N)不限制 (R)限制阅读 [%c]: ",
 		snprintf(buf, sizeof(buf), "(N)\xb2\xbb\xcf\xde\xd6\xc6 (R)\xcf\xde\xd6\xc6\xd4\xc4\xb6\xc1 [%c]: ",
 				(bp->perm) ? 'R' : 'N');
 		getdata(15, 0, buf, ans, sizeof(ans), DOECHO, YEA);
 		if (ans[0] == 'N' || ans[0] == 'n') {
-			flag &= ~BOARD_POST_FLAG;
+			flag &= ~BOARD_FLAG_POST;
 			perm = 0;
 		} else {
 			if (ans[0] == 'R' || ans[0] == 'r')
-				flag &= ~BOARD_POST_FLAG;
+				flag &= ~BOARD_FLAG_POST;
 			screen_clear();
 			move(2, 0);
 			//% prints("设定 %s '%s' 讨论区的权限\n", "阅读", bp->name);
@@ -961,22 +961,22 @@ static bool alter_board_perm(board_t *bp)
 	} else {
 		//% snprintf(buf, sizeof(buf), "(N)不限制 (R)限制阅读 (P)限制张贴 文章 [%c]: ",
 		snprintf(buf, sizeof(buf), "(N)\xb2\xbb\xcf\xde\xd6\xc6 (R)\xcf\xde\xd6\xc6\xd4\xc4\xb6\xc1 (P)\xcf\xde\xd6\xc6\xd5\xc5\xcc\xf9 \xce\xc4\xd5\xc2 [%c]: ",
-				(flag & BOARD_POST_FLAG) ? 'P' : (perm) ? 'R' : 'N');
+				(flag & BOARD_FLAG_POST) ? 'P' : (perm) ? 'R' : 'N');
 		getdata(15, 0, buf, ans, sizeof(ans), DOECHO, YEA);
 		if (ans[0] == 'N' || ans[0] == 'n') {
-			flag &= ~BOARD_POST_FLAG;
+			flag &= ~BOARD_FLAG_POST;
 			perm = 0;
 		} else {
 			if (ans[0] == 'R' || ans[0] == 'r')
-				flag &= ~BOARD_POST_FLAG;
+				flag &= ~BOARD_FLAG_POST;
 			else if (ans[0] == 'P' || ans[0] == 'p')
-				flag |= BOARD_POST_FLAG;
+				flag |= BOARD_FLAG_POST;
 			screen_clear();
 			move(2, 0);
 			//% prints("设定 %s '%s' 讨论区的权限\n",
 			prints("\xc9\xe8\xb6\xa8 %s '%s' \xcc\xd6\xc2\xdb\xc7\xf8\xb5\xc4\xc8\xa8\xcf\xde\n",
-					//% (flag & BOARD_POST_FLAG) ? "张贴" : "阅读", bp->name);
-					(flag & BOARD_POST_FLAG) ? "\xd5\xc5\xcc\xf9" : "\xd4\xc4\xb6\xc1", bp->name);
+					//% (flag & BOARD_FLAG_POST) ? "张贴" : "阅读", bp->name);
+					(flag & BOARD_FLAG_POST) ? "\xd5\xc5\xcc\xf9" : "\xd4\xc4\xb6\xc1", bp->name);
 			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			perm = setperms(perm, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
 			screen_clear();
@@ -998,13 +998,13 @@ static bool alter_board_flag(board_t *bp, const char *prompt, int flag)
 		f &= ~flag;
 	}
 
-	if (flag == BOARD_CLUB_FLAG && (f & BOARD_CLUB_FLAG)) {
+	if (flag == BOARD_FLAG_CLUB && (f & BOARD_FLAG_CLUB)) {
 		//% if (askyn("是否读限制俱乐部?",
 		if (askyn("\xca\xc7\xb7\xf1\xb6\xc1\xcf\xde\xd6\xc6\xbe\xe3\xc0\xd6\xb2\xbf?",
-					(bp->flag & BOARD_READ_FLAG) ? YEA : NA, NA)) {
-			f |= BOARD_READ_FLAG;
+					(bp->flag & BOARD_FLAG_READ) ? YEA : NA, NA)) {
+			f |= BOARD_FLAG_READ;
 		} else {
-			f &= ~BOARD_READ_FLAG;
+			f &= ~BOARD_FLAG_READ;
 		}
 	}
 
@@ -1074,35 +1074,35 @@ int tui_edit_board(const char *cmd)
 			break;
 	}
 
-	if (!(board.flag & BOARD_DIR_FLAG)) {
+	if (!(board.flag & BOARD_FLAG_DIR)) {
 		switch (ans[0]) {
 			case '7':
 				//% res = askyn("移动精华区", NA, YEA);
 				res = askyn("\xd2\xc6\xb6\xaf\xbe\xab\xbb\xaa\xc7\xf8", NA, YEA);
 				break;
 			case '8':
-				//% res = alter_board_flag(&board, "是否匿名?", BOARD_ANONY_FLAG);
-				res = alter_board_flag(&board, "\xca\xc7\xb7\xf1\xc4\xe4\xc3\xfb?", BOARD_ANONY_FLAG);
+				//% res = alter_board_flag(&board, "是否匿名?", BOARD_FLAG_ANONY);
+				res = alter_board_flag(&board, "\xca\xc7\xb7\xf1\xc4\xe4\xc3\xfb?", BOARD_FLAG_ANONY);
 				break;
 			case '9':
-				//% res = alter_board_flag(&board, "禁止回复?", BOARD_NOREPLY_FLAG);
-				res = alter_board_flag(&board, "\xbd\xfb\xd6\xb9\xbb\xd8\xb8\xb4?", BOARD_NOREPLY_FLAG);
+				//% res = alter_board_flag(&board, "禁止回复?", BOARD_FLAG_NOREPLY);
+				res = alter_board_flag(&board, "\xbd\xfb\xd6\xb9\xbb\xd8\xb8\xb4?", BOARD_FLAG_NOREPLY);
 				break;
 			case 'a':
 			case 'A':
-				//% res = alter_board_flag(&board, "不计文章数?", BOARD_JUNK_FLAG);
-				res = alter_board_flag(&board, "\xb2\xbb\xbc\xc6\xce\xc4\xd5\xc2\xca\xfd?", BOARD_JUNK_FLAG);
+				//% res = alter_board_flag(&board, "不计文章数?", BOARD_FLAG_JUNK);
+				res = alter_board_flag(&board, "\xb2\xbb\xbc\xc6\xce\xc4\xd5\xc2\xca\xfd?", BOARD_FLAG_JUNK);
 				break;
 			case 'b':
 			case 'B':
-				//% res = alter_board_flag(&board, "是否俱乐部?", BOARD_CLUB_FLAG);
-				res = alter_board_flag(&board, "\xca\xc7\xb7\xf1\xbe\xe3\xc0\xd6\xb2\xbf?", BOARD_CLUB_FLAG);
+				//% res = alter_board_flag(&board, "是否俱乐部?", BOARD_FLAG_CLUB);
+				res = alter_board_flag(&board, "\xca\xc7\xb7\xf1\xbe\xe3\xc0\xd6\xb2\xbf?", BOARD_FLAG_CLUB);
 				break;
 #ifdef ENABLE_PREFIX
 			case 'c':
 			case 'C':
-				//% res = alter_board_flag(&board, "强制前缀?", BOARD_PREFIX_FLAG);
-				res = alter_board_flag(&board, "\xc7\xbf\xd6\xc6\xc7\xb0\xd7\xba?", BOARD_PREFIX_FLAG);
+				//% res = alter_board_flag(&board, "强制前缀?", BOARD_FLAG_PREFIX);
+				res = alter_board_flag(&board, "\xc7\xbf\xd6\xc6\xc7\xb0\xd7\xba?", BOARD_FLAG_PREFIX);
 				break;
 #endif
 		}

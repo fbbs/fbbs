@@ -201,7 +201,7 @@ int bbscon(const char *link)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 
@@ -224,7 +224,7 @@ int bbscon(const char *link)
 
 	xml_header(NULL);
 
-	bool anony = board.flag & BOARD_ANONY_FLAG;
+	bool anony = board.flag & BOARD_FLAG_ANONY;
 	int opt = get_user_flag();
 	printf("<bbscon link='%s' bid='%d' anony='%d' attach='%d'%s%s>",
 			link, board.id, anony, maxlen(board.name),
@@ -284,7 +284,7 @@ int bbsdel_main(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 
@@ -429,7 +429,7 @@ int bbstcon_main(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 
@@ -446,7 +446,7 @@ int bbstcon_main(void)
 	if (!pib)
 		return BBS_ENOFILE;
 
-	bool anony = board.flag & BOARD_ANONY_FLAG;
+	bool anony = board.flag & BOARD_FLAG_ANONY;
 	int opt = get_user_flag();
 	bool isbm = am_bm(&board);
 
@@ -616,7 +616,7 @@ int bbssnd_main(void)
 		return BBS_ENOBRD;
 	if (!has_post_perm(&board))
 		return BBS_EPST;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 
 	bool isedit = (*(get_param("e")) == '1');
@@ -695,7 +695,7 @@ int bbssnd_main(void)
 			return BBS_EINTNL;
 	}
 
-	if (!isedit && !(board.flag & BOARD_JUNK_FLAG)) {
+	if (!isedit && !(board.flag & BOARD_FLAG_JUNK)) {
 		currentuser.numposts++;
 		save_user_data(&currentuser);
 	}
@@ -758,7 +758,7 @@ static int do_bbspst(bool isedit)
 		return BBS_ENOBRD;
 	if (!has_post_perm(&board))
 		return BBS_EPST;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 
 	const char *f = get_param("f");
@@ -783,7 +783,7 @@ static int do_bbspst(bool isedit)
 	xml_header(NULL);
 	char path[HOMELEN];
 	snprintf(path, sizeof(path), BBSHOME"/upload/%s", board.name);
-	bool anony = board.flag & BOARD_ANONY_FLAG;
+	bool anony = board.flag & BOARD_FLAG_ANONY;
 	printf("<bbspst brd='%s' bid='%d' edit='%d' att='%d' anony='%d'>",
 			board.name, board.id, isedit, dashd(path), anony);
 	print_session();
@@ -868,7 +868,7 @@ int bbsccc_main(void)
 	board_t board;
 	if (!get_board_by_param(&board))
 		return BBS_ENOBRD;
-	if (board.flag & BOARD_DIR_FLAG)
+	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 
 	post_id_t pid = strtoll(get_param("f"), NULL, 10);
@@ -882,7 +882,7 @@ int bbsccc_main(void)
 		board_t to;
 		if (!get_board(target, &to))
 			return BBS_ENOBRD;
-		if ((to.flag & BOARD_DIR_FLAG) || to.id == board.id)
+		if ((to.flag & BOARD_FLAG_DIR) || to.id == board.id)
 			return BBS_EINVAL;
 		if (!has_post_perm(&to))
 			return BBS_EPST;
@@ -959,7 +959,7 @@ int bbsfwd_main(void)
 		board_t board;
 		if (!get_board_by_param(&board))
 			return BBS_ENOBRD;
-		if (board.flag & BOARD_DIR_FLAG)
+		if (board.flag & BOARD_FLAG_DIR)
 			return BBS_EINVAL;
 
 		post_id_t pid = strtoll(get_param("f"), NULL, 10);
