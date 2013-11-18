@@ -584,7 +584,7 @@ check_money(unsigned int money)
   if(currentuser.money < money)
     {
         move(22, 0);
-        clrtobot();
+        screen_clrtobot();
         //% prints("抱歉！您不可以下注 %d 元, 因为您现在身上只有 %d 元！",
         prints("\xb1\xa7\xc7\xb8\xa3\xa1\xc4\xfa\xb2\xbb\xbf\xc9\xd2\xd4\xcf\xc2\xd7\xa2 %d \xd4\xaa, \xd2\xf2\xce\xaa\xc4\xfa\xcf\xd6\xd4\xda\xc9\xed\xc9\xcf\xd6\xbb\xd3\xd0 %d \xd4\xaa\xa3\xa1",
 		money,currentuser.money);
@@ -601,7 +601,7 @@ show_money(int m, char *welcome,int Clear)
                 ansimore(welcome, NA);
         }
         move(22, 0);
-        clrtobot();
+        screen_clrtobot();
         set_safe_record();
         //% prints("[0;1;37;44m                  你现有现金: [36m%-18d[37m押注金额: [36m%-20d[m  ", currentuser.money, m);
         prints("[0;1;37;44m                  \xc4\xe3\xcf\xd6\xd3\xd0\xcf\xd6\xbd\xf0: [36m%-18d[37m\xd1\xba\xd7\xa2\xbd\xf0\xb6\xee: [36m%-20d[m  ", currentuser.money, m);

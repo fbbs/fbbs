@@ -133,7 +133,7 @@ int tui_list(tui_list_t *p)
 			}
 			if (p->update == PARTUPDATE) {
 				move(TUI_LIST_START, 0);
-				clrtobot();
+				screen_clrtobot();
 				tui_list_display_loop(p);
 			}
 			update_endline();
@@ -241,7 +241,7 @@ int slide_list(slide_list_t *p)
 			}
 			if (p->update == PARTUPDATE) {
 				move(TUI_LIST_START, 0);
-				clrtobot();
+				screen_clrtobot();
 				p->display(p);
 			}
 			update_endline();

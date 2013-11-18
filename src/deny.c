@@ -869,7 +869,7 @@ static int denylist_add(const char *line)
 		prints("\xb7\xe2\xbd\xfb\xd3\xc3\xbb\xa7[%s]\n\n(1)\xb7\xa2\xce\xc4 (2)\xb5\xc7\xc2\xbc (3)\xc1\xc4\xcc\xec (4)\xb7\xa2\xd0\xc5\n", user);
 		while (!type) {
 			move(12, 0);
-			clrtobot();
+			screen_clrtobot();
 			//% getdata(10, 0, "请输入你的处理: ", ans, 3, DOECHO, YEA);
 			getdata(10, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc4\xe3\xb5\xc4\xb4\xa6\xc0\xed: ", ans, 3, DOECHO, YEA);
 			if (ans[0] >= '1' && ans[1] <= '4')

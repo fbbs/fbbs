@@ -404,7 +404,7 @@ gagb()
 	}
 	gamelog(buf);
 	move(22, 0);
-        clrtobot();
+        screen_clrtobot();
 	prints(buf);
 	pressanykey();
 	return 0;

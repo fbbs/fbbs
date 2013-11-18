@@ -646,7 +646,7 @@ char *genbuf;
   fclose(fs);
 
   move(1,0);
-  clrtobot();
+  screen_clrtobot();
 #ifdef MAPLE
   //% prints("这是%s养的小鸡：\n",xuser.userid);
   prints("\xd5\xe2\xca\xc7%s\xd1\xf8\xb5\xc4\xd0\xa1\xbc\xa6\xa3\xba\n",xuser.userid);
@@ -815,7 +815,7 @@ char *genbuf;
  else
  {
    move(1,0);
-   clrtobot();
+   screen_clrtobot();
    //% pressanykey("这一家的人没有养小鸡......");
    pressanykey("\xd5\xe2\xd2\xbb\xbc\xd2\xb5\xc4\xc8\xcb\xc3\xbb\xd3\xd0\xd1\xf8\xd0\xa1\xbc\xa6......");
  }

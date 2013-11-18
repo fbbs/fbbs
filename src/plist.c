@@ -345,7 +345,7 @@ void _post_list_title(int archive_list, const char *mode)
 	else
 		prints("    [%s]", mode);
 	prints("\033[K\033[m\n");
-	clrtobot();
+	screen_clrtobot();
 
 }
 

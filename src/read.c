@@ -138,7 +138,7 @@ int num, ssize;
 	int base, i;
 	base = locmem->top_line;
 	move(3, 0);
-	clrtobot();
+	screen_clrtobot();
 	for (i = 0; i < num; i++) {
 		str = (*doentry) (base + i, &pnt[i * ssize]);
 		if (session_status() != ST_RMAIL)

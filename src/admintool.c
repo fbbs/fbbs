@@ -95,7 +95,7 @@ int m_info() {
 	report(reportbuf, currentuser.userid);
 
 	move(1, 0);
-	clrtobot();
+	screen_clrtobot();
 	disply_userinfo(&user);
 	uinfo_query(&user, 1, id);
 	return 0;
@@ -172,7 +172,7 @@ int tui_ordain_bm(const char *cmd)
 	board_to_gbk(&board);
 
 	move(4, 0);
-	clrtobot();
+	screen_clrtobot();
 
 	const char *error = ordain_bm_check(&board, lookupuser.userid);
 	if (error) {
@@ -699,7 +699,7 @@ int tui_new_board(const char *cmd)
 
 	int flag = 0, perm = 0;
 	move(7, 0);
-	clrtobot();
+	screen_clrtobot();
 	//% if (askyn("本版是目录吗?", NA, NA)) {
 	if (askyn("\xb1\xbe\xb0\xe6\xca\xc7\xc4\xbf\xc2\xbc\xc2\xf0?", NA, NA)) {
 		flag |= (BOARD_FLAG_DIR | BOARD_FLAG_JUNK
@@ -710,7 +710,7 @@ int tui_new_board(const char *cmd)
 			//% getdata(8, 0, "限制读? [R]: ", ans, sizeof(ans), DOECHO, YEA);
 			getdata(8, 0, "\xcf\xde\xd6\xc6\xb6\xc1? [R]: ", ans, sizeof(ans), DOECHO, YEA);
 			move(1, 0);
-			clrtobot();
+			screen_clrtobot();
 			move(2, 0);
 			//% prints("设定 %s 权利. 讨论区: '%s'\n", "READ", bname);
 			prints("\xc9\xe8\xb6\xa8 %s \xc8\xa8\xc0\xfb. \xcc\xd6\xc2\xdb\xc7\xf8: '%s'\n", "READ", bname);
@@ -749,7 +749,7 @@ int tui_new_board(const char *cmd)
 			if (*ans == 'P' || *ans == 'p')
 				flag |= BOARD_FLAG_POST;
 			move(1, 0);
-			clrtobot();
+			screen_clrtobot();
 			move(2, 0);
 			//% prints("设定 %s 限制. 讨论区: '%s'\n",
 			prints("\xc9\xe8\xb6\xa8 %s \xcf\xde\xd6\xc6. \xcc\xd6\xc2\xdb\xc7\xf8: '%s'\n",
@@ -1660,7 +1660,7 @@ int x_level() {
 		return 0;
 	}
 	move(1, 0);
-	clrtobot();
+	screen_clrtobot();
 	move(2, 0);
 	//% prints("设定使用者 '%s' 的权限 \n", genbuf);
 	prints("\xc9\xe8\xb6\xa8\xca\xb9\xd3\xc3\xd5\xdf '%s' \xb5\xc4\xc8\xa8\xcf\xde \n", genbuf);
@@ -1755,7 +1755,7 @@ void a_edits() {
 	ch -= 1;
 	sprintf(buf2, "etc/%s", e_file[ch]);
 	move(3, 0);
-	clrtobot();
+	screen_clrtobot();
 	//% sprintf(buf, "(E)编辑 (D)删除 %s? [E]: ", explain_file[ch]);
 	sprintf(buf, "(E)\xb1\xe0\xbc\xad (D)\xc9\xbe\xb3\xfd %s? [E]: ", explain_file[ch]);
 	getdata(3, 0, buf, ans, 2, DOECHO, YEA);
@@ -1834,7 +1834,7 @@ int wall() {
 
 	set_user_status(ST_MSG);
 	move(2, 0);
-	clrtobot();
+	screen_clrtobot();
 
 	char msg[MAX_MSG_SIZE + 2];
 	//% if (!get_msg("所有使用者", msg, 1)) {

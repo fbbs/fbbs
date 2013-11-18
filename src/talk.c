@@ -125,7 +125,7 @@ int tui_query_result(const char *userid)
 		return -1;
 
 	move(0, 0);
-	clrtobot();
+	screen_clrtobot();
 
 	int color = 2;
 	if (HAS_DEFINE(user.userdefine, DEF_COLOREDSEX))
@@ -265,7 +265,7 @@ int t_query(const char *uname)
 		set_user_status(ST_QUERY);
 		refresh();
 		move(1, 0);
-		clrtobot();
+		screen_clrtobot();
 		//% prints("查询谁:\n<输入使用者代号, 按空白键可列出符合字串>\n");
 		prints("\xb2\xe9\xd1\xaf\xcb\xad:\n<\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5, \xb0\xb4\xbf\xd5\xb0\xd7\xbc\xfc\xbf\xc9\xc1\xd0\xb3\xf6\xb7\xfb\xba\xcf\xd7\xd6\xb4\xae>\n");
 		move(1, 8);

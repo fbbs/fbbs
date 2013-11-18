@@ -84,7 +84,7 @@ unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showf
 	//% prints("请按下您要的代码来设定%s，按 Enter 结束.\n", prompt);
 	prints("\xc7\xeb\xb0\xb4\xcf\xc2\xc4\xfa\xd2\xaa\xb5\xc4\xb4\xfa\xc2\xeb\xc0\xb4\xc9\xe8\xb6\xa8%s\xa3\xac\xb0\xb4 Enter \xbd\xe1\xca\xf8.\n", prompt);
 	move(6, 0);
-	clrtobot();
+	screen_clrtobot();
 	for (i = 0; i <= lastperm; i++) {
 		(*showfunc)(pbits, i, NA);
 	}
@@ -130,7 +130,7 @@ int x_userdefine() {
 		return 0;
 	}
 	move(1, 0);
-	clrtobot();
+	screen_clrtobot();
 	move(2, 0);
 	use_define = 1;
 	//% newlevel = setperms(lookupuser.userdefine, "参数", NUMDEFINES,
@@ -209,7 +209,7 @@ void x_edits() {
 	ch = ans[0] - '0' - 1;
 	setuserfile(genbuf, e_file[ch]);
 	move(3, 0);
-	clrtobot();
+	screen_clrtobot();
 	//% sprintf(buf, "(E)编辑 (D)删除 %s? [E]: ", explain_file[ch]);
 	sprintf(buf, "(E)\xb1\xe0\xbc\xad (D)\xc9\xbe\xb3\xfd %s? [E]: ", explain_file[ch]);
 	getdata(3, 0, buf, ans, 2, DOECHO, YEA);
@@ -285,7 +285,7 @@ int x_lockscreen(void)
 	set_user_status(ST_LOCKSCREEN);
 
 	move(9, 0);
-	clrtobot();
+	screen_clrtobot();
 	move(9, 0);
 	prints("\033[1;37m"
 			"\n       _       _____   ___     _   _   ___     ___       __"
@@ -302,7 +302,7 @@ int x_lockscreen(void)
 	buf[0] = '\0';
 	while (*buf == '\0' || !passwd_check(currentuser.userid, buf)) {
 		move(18, 0);
-		clrtobot();
+		screen_clrtobot();
 		//% getdata(19, 0, "请输入您的密码以解锁: ", buf, PASSLEN, NOECHO, YEA);
 		getdata(19, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc4\xfa\xb5\xc4\xc3\xdc\xc2\xeb\xd2\xd4\xbd\xe2\xcb\xf8: ", buf, PASSLEN, NOECHO, YEA);
 	}

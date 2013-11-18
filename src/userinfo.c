@@ -33,7 +33,7 @@ void disply_userinfo(const struct userec *u)
 	time_t now;
 
 	move(2, 0);
-	clrtobot();
+	screen_clrtobot();
 	now = time(0);
 	set_safe_record();
 	//% prints("您的代号     : %-14s", u->userid);

@@ -148,7 +148,7 @@ int post_header(struct postheader *header)
 		move(-4, 0);
 #endif
 		//清除该行内容
-		clrtobot();
+		screen_clrtobot();
 
 		//根据相应操作打印出当前信息
 		prints(

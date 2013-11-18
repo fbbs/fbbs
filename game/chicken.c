@@ -81,7 +81,7 @@ int creat_a_egg()
    time(&now);
    ptime = localtime(&now);
    move(2,0);
-   clrtobot();
+   screen_clrtobot();
    while(strlen(Name)<1){
       //% strcpy(Name,"宝宝");
       strcpy(Name,"\xb1\xa6\xb1\xa6");
@@ -128,7 +128,7 @@ int show_chicken()
     agetmp=0;}
 */
   move(1,0);
-  clrtobot();
+  screen_clrtobot();
   prints(
      "[33mName:%s[m"
      //% "  [45mAge :%d岁[m"
@@ -673,7 +673,7 @@ int death()
           ptime = localtime(&now);
   screen_clear();
   move(5,0);
-  clrtobot();
+  screen_clrtobot();
   if((fp = fopen("game/chicken", "a"))!=NULL) 
    prints("Error!\n");
      /*fp=fopen("game/chicken,"ab");*/
@@ -1138,7 +1138,7 @@ int mary_m()
      fscanf(fp,"%ld",&bank);
      fclose(fp);
    screen_clear();
-   clrtobot();
+   screen_clrtobot();
    p_mon=0;
    q_mon=currentuser.money;
    show_m();

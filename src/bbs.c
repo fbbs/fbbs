@@ -582,7 +582,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 	}
 
 	move(3, 0);
-	clrtobot();
+	screen_clrtobot();
 	//% "转载 ' %s ' 到 %s 版 "
 	prints("\xd7\xaa\xd4\xd8 ' %s ' \xb5\xbd %s \xb0\xe6 ", title, bname);
 

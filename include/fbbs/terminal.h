@@ -47,7 +47,7 @@ extern void getyx(int *line, int *col);
 extern void screen_clear(void);
 extern void screen_clear_line(int line);
 extern void clrtoeol(void);
-extern void clrtobot(void);
+extern void screen_clrtobot(void);
 extern int outc(int c);
 extern void outs(const char *str);
 extern void prints(const char *fmt, ...);

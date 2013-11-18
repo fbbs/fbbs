@@ -430,7 +430,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 	char *buf_end = more->buf + more->size;
 	char linebuf[7];
 
-	clrtobot();
+	screen_clrtobot();
 	// TODO: stuffmode
 	while (true) {
 		is_quote = more->prop & IS_QUOTE;

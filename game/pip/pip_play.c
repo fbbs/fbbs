@@ -398,7 +398,7 @@ int pip_play_guess()   /* 猜拳程式 */
 
     com=rand()%3;
     move(18,0);
-    clrtobot();
+    screen_clrtobot();
     switch(com){
         case 0:
           //% outs("小鸡：剪刀\n");

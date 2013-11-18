@@ -138,7 +138,7 @@ void a_showmenu(MENU *pm) {
 		//Modified by IAMFAT 2002-05-30 3->4
 		prints("  %4d %s\n", n + 1, title);
 	}
-	clrtobot();
+	screen_clrtobot();
 	move(-1, 0);
 	//Modified by IAMFAT 2002-05-26
 	//Roll Back by IAMFAT 2002-05-29

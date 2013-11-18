@@ -127,16 +127,15 @@ void screen_init(void)
 }
 
 /**
- * Generate and send terminal move cmd.
- * @param col Column to move to.
- * @param line Line to move to.
+ * 生成并发送ANSI光标移动指令
+ * @param col 要移动到的列
+ * @param line 要移动到的行
  */
 static void do_move(int col, int line)
 {
 	char buf[16];
 	snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
-	char *p;
-	for (p = buf; *p != '\0'; p++)
+	for (char *p = buf; *p; ++p)
 		terminal_putchar(*p);
 }
 
@@ -311,21 +310,19 @@ void clrtoeol(void)
 	sl->len = screen.cur_col;
 }
 
-//从当前行清除到最后一行
-void clrtobot(void)
+/** 从当前行清除到最后一行 */
+void screen_clrtobot(void)
 {
-	if (dumb_term)
-		return;
-	for (int i = screen.cur_ln; i < screen.lines; i++) {
-		screen_line_t *sl = get_screen_line(i);
-		sl->modified = false;
-		sl->len = 0;
-		if (sl->old_len > 0)
-			sl->old_len = 255;
+	if (!dumb_term) {
+		for (int i = screen.cur_ln; i < screen.lines; ++i) {
+			screen_line_t *sl = get_screen_line(i);
+			sl->modified = false;
+			sl->len = 0;
+		}
 	}
 }
 
-static char nullstr[] = "(null)";
+static const char *nullstr = "(null)";
 
 /**
  * Output a character.
@@ -438,7 +435,7 @@ int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
 void prints(const char *fmt, ...)
 {
 	va_list ap;
-	char *bp;
+	const char *bp;
 	int count, hd, indx;
 	va_start(ap, fmt);
 	while (*fmt != '\0') {
@@ -472,7 +469,7 @@ void prints(const char *fmt, ...)
 			}
 			switch (*fmt) {
 				case 's':
-					bp = va_arg(ap, char *);
+					bp = va_arg(ap, const char *);
 					if (bp == NULL)
 						bp = nullstr;
 					if (val) {

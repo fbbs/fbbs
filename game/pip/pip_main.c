@@ -42,7 +42,7 @@ int mod_default()
  set_user_status(ST_ CHICKEN );
  refresh();
  move(1,0);
- clrtobot();
+ screen_clrtobot();
  //rawmore("game/pipgame/pip.welcome",YEA,0,0,MM_FILE); 
 //ansimore("game/pipgame/pip.welcome", NA);
 //egetch();

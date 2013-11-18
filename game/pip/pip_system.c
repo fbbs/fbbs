@@ -149,7 +149,7 @@ pip_system_service()
      {
      case '1':
        move(b_lines-1,0);
-       clrtobot();
+       screen_clrtobot();
 #ifdef MAPLE
        //% getdata(b_lines-1, 1, "帮小鸡重新取个好名字：", buf, 11, DOECHO,NULL);
        getdata(b_lines-1, 1, "\xb0\xef\xd0\xa1\xbc\xa6\xd6\xd8\xd0\xc2\xc8\xa1\xb8\xf6\xba\xc3\xc3\xfb\xd7\xd6\xa3\xba", buf, 11, DOECHO,NULL);
@@ -179,7 +179,7 @@ pip_system_service()
        
      case '2':  /*变性*/
        move(b_lines-1,0);
-       clrtobot();
+       screen_clrtobot();
        /*1:公 2:母 */
        if(d.sex==1)
        { 
@@ -218,7 +218,7 @@ pip_system_service()
        
      case '3':
        move(b_lines-1,0);
-       clrtobot();
+       screen_clrtobot();
        /*1:不要且未婚 4:要且未婚 */
        oldchoice=d.wantend;
        if(d.wantend==1 || d.wantend==2 || d.wantend==3)

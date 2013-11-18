@@ -920,7 +920,7 @@ void start_client(void)
 		if (check_maxmail())
 			pressanykey();
 		move(9, 0);
-		clrtobot();
+		screen_clrtobot();
 		if (!DEFINE(DEF_NOLOGINSEND))
 			if (session_visible())
 				login_msg();

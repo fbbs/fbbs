@@ -436,7 +436,7 @@ int mode;
   if(tm>=21 && (d.wantend==4 || d.wantend==5 || d.wantend==6))
      pip_ending_screen(); 
   
-  clrtobot();
+  screen_clrtobot();
   refresh();
  }
  color=37;

@@ -102,7 +102,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 	}
 
 	move(acl->ybase + 1, 0);
-	clrtobot();
+	screen_clrtobot();
 	//% printdash(" 列表 ");
 	printdash(" \xc1\xd0\xb1\xed ");
 

@@ -72,7 +72,7 @@ static int choose(int update, int defaultn, void (*title_show)(),
 		if (page < 0) {
 			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
 			move(3, 0);
-			clrtobot();
+			screen_clrtobot();
 			if ((*list_show) () == -1)
 			return -1;
 			update_endline();
@@ -99,7 +99,7 @@ static int choose(int update, int defaultn, void (*title_show)(),
 			if (readplan == YEA) {
 				readplan = NA;
 				move(1, 0);
-				clrtobot();
+				screen_clrtobot();
 				if ((*list_show) () == -1)
 				return -1;
 				(*title_show) ();
@@ -1008,7 +1008,7 @@ int getsug(struct ballot *uv) {
 	int i, line;
 
 	move(0, 0);
-	clrtobot();
+	screen_clrtobot();
 	if (currvote.type == VOTE_ASKING) {
 		show_voteing_title();
 		line = 3;
@@ -1106,7 +1106,7 @@ int user_vote(int num) {
 	setvfile(buf, currboard, bname);
 	ansimore(buf, YEA);
 	move(0, 0);
-	clrtobot();
+	screen_clrtobot();
 	switch (currvote.type) {
 		case VOTE_SINGLE:
 		case VOTE_MULTI:
@@ -1216,7 +1216,7 @@ int vote_results(const char *bname)
 		move(3, 0);
 		//% prints("目前没有任何投票的结果。\n");
 		prints("\xc4\xbf\xc7\xb0\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xcd\xb6\xc6\xb1\xb5\xc4\xbd\xe1\xb9\xfb\xa1\xa3\n");
-		clrtobot();
+		screen_clrtobot();
 		pressreturn();
 	} else
 		screen_clear();
@@ -1238,7 +1238,7 @@ void vote_title() {
 int Show_Votes(void)
 {
 	move(3, 0);
-	clrtobot();
+	screen_clrtobot();
 	printvote(NULL, 0, NULL);
 	setcontrolfile(currboard);
 	if (apply_record(controlfile, printvote, sizeof(struct votebal), NULL, 0,
@@ -1248,7 +1248,7 @@ int Show_Votes(void)
 		pressreturn();
 		return 0;
 	}
-	clrtobot();
+	screen_clrtobot();
 	return 0;
 }
 
@@ -1397,7 +1397,7 @@ int b_vote(const char *bname)
 	num_of_vote = get_num_records(controlfile, sizeof(struct votebal));
 	if (num_of_vote == 0) {
 		move(2, 0);
-		clrtobot();
+		screen_clrtobot();
 		//% prints("\n抱歉, 目前并没有任何投票举行。\n");
 		prints("\n\xb1\xa7\xc7\xb8, \xc4\xbf\xc7\xb0\xb2\xa2\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xcd\xb6\xc6\xb1\xbe\xd9\xd0\xd0\xa1\xa3\n");
 		pressreturn();

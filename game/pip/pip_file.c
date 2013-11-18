@@ -174,7 +174,7 @@ pip_write_backup()
  }
  
  move(b_lines-1,0);
- clrtobot();
+ screen_clrtobot();
  //% sprintf(buf1,"储存 [%s] 档案完成了",files[num]);
  sprintf(buf1,"\xb4\xa2\xb4\xe6 [%s] \xb5\xb5\xb0\xb8\xcd\xea\xb3\xc9\xc1\xcb",files[num]);
  pressanykey(buf1);
@@ -260,7 +260,7 @@ pip_read_backup()
  }
  
  move(b_lines-1,0);
- clrtobot();
+ screen_clrtobot();
  //% sprintf(buf,"读取 [%s] 档案完成了",files[num]);
  sprintf(buf,"\xb6\xc1\xc8\xa1 [%s] \xb5\xb5\xb0\xb8\xcd\xea\xb3\xc9\xc1\xcb",files[num]);
  pressanykey(buf);

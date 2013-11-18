@@ -788,7 +788,7 @@ int mailtitle(void)
 			//% "\033[1;44m 编号   发信者        日期   标题    (\033[33m您的信箱容量为[%5dK]，当前已用[%4dK]\033[37m) \033[m\n",
 			"\033[1;44m \xb1\xe0\xba\xc5   \xb7\xa2\xd0\xc5\xd5\xdf        \xc8\xd5\xc6\xda   \xb1\xea\xcc\xe2    (\033[33m\xc4\xfa\xb5\xc4\xd0\xc5\xcf\xe4\xc8\xdd\xc1\xbf\xce\xaa[%5dK]\xa3\xac\xb5\xb1\xc7\xb0\xd2\xd1\xd3\xc3[%4dK]\033[37m) \033[m\n",
 			total, used);
-	clrtobot();
+	screen_clrtobot();
 	return 0;
 }
 
@@ -1605,11 +1605,11 @@ int g_send() {
 		if (strchr("EeQq", tmp[0]))
 			break;
 		move(5, 0);
-		clrtobot();
+		screen_clrtobot();
 		if (cnt > maxrecp)
 			cnt = maxrecp;
 		move(3, 0);
-		clrtobot();
+		screen_clrtobot();
 	}
 	if (cnt > 0) {
 		G_SENDMODE = 2;
@@ -1674,7 +1674,7 @@ int ov_send() {
 		return 0;
 	}
 	move(1, 0);
-	clrtobot();
+	screen_clrtobot();
 	move(2, 0);
 	//% prints("寄信给好友名单中的人，目前本站限制仅可以寄给 [1m%d[m 位。\n", maxrecp);
 	prints("\xbc\xc4\xd0\xc5\xb8\xf8\xba\xc3\xd3\xd1\xc3\xfb\xb5\xa5\xd6\xd0\xb5\xc4\xc8\xcb\xa3\xac\xc4\xbf\xc7\xb0\xb1\xbe\xd5\xbe\xcf\xde\xd6\xc6\xbd\xf6\xbf\xc9\xd2\xd4\xbc\xc4\xb8\xf8 [1m%d[m \xce\xbb\xa1\xa3\n", maxrecp);

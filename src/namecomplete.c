@@ -251,7 +251,7 @@ int namecomplete(char *prompt, char *data) {
 				morelist = cwlist;
 			len = MaxLen(morelist, NUMLINES);
 			move(origy + 1, 0);
-			clrtobot();
+			screen_clrtobot();
 			prints(ANSI_CMD_SO);
 			//% printdash(" 列表 ");
 			printdash(" \xc1\xd0\xb1\xed ");
@@ -321,7 +321,7 @@ int namecomplete(char *prompt, char *data) {
 	refresh();
 	if (clearbot) {
 		move(origy, 0);
-		clrtobot();
+		screen_clrtobot();
 	}
 	if (*data) {
 		move(origy, origx);
@@ -460,7 +460,7 @@ int usercomplete(char *prompt, char *data) {
 			col = 0;
 			len = UserMaxLen((void *)cwlist, cwnum, morenum, NUMLINES);
 			move(origy + 1, 0);
-			clrtobot();
+			screen_clrtobot();
 			//% printdash(" 所有使用者列表 ");
 			printdash(" \xcb\xf9\xd3\xd0\xca\xb9\xd3\xc3\xd5\xdf\xc1\xd0\xb1\xed ");
 			while (len + col < 79) {
@@ -529,7 +529,7 @@ int usercomplete(char *prompt, char *data) {
 	refresh();
 	if (clearbot) {
 		move(origy, 0);
-		clrtobot();
+		screen_clrtobot();
 	}
 	if (*data) {
 		move(origy, origx);
