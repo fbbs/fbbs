@@ -737,10 +737,6 @@ int mark_post(int ent, struct fileheader *fileinfo, char *direct) {
 	if (!am_curr_bm()) {
 		return DONOTHING;
 	}
-#ifdef ENABLE_NOTICE
-	if (fileinfo->accessed[1] & FILE_NOTICE)
-	return DONOTHING;
-#endif
 
 	if (get_records(direct, &chkfileinfo, sizeof (chkfileinfo), ent, 1)
 			!= 1) {

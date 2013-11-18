@@ -4,7 +4,6 @@
 #ifdef FDQUAN
 #define ENABLE_SHOWONLINE
 #endif
-#define ENABLE_NOTICE	//置底功能
 #define IP_2_NAME //穿梭IP显示域名，同时限制其使用匿名发文功能
 // 下面是一些功能的控制，如果屏蔽该控制，则表示不使用这个功能
 // 如果该行前面有 "//" 则表示被屏蔽，要屏蔽该功能，则加入 "//"

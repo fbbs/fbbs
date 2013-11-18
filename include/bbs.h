@@ -86,14 +86,10 @@
 #define ANNPATH_SETMODE	0
 #define ANNPATH_GETMODE	1
 
-#ifdef ENABLE_NOTICE
-#define NOTICE_MODE 13
-#define NOTICE_DIR ".NOTICE"
 #ifdef FDQUAN
 #define MAX_NOTICE 6
 #else
 #define MAX_NOTICE 5
-#endif
 #endif
 
 #define QUIT 			0x666    	/* Return value to abort recursive functions */
