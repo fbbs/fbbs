@@ -1649,7 +1649,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 {
 	post_list_t *pl = tl->data;
 	bool end = false, upward = false, sticky = false, entering = false;
-	post_id_t thread_entry = 0, last_id = 0, tid = 0;
+	post_id_t tid = 0;
 	user_id_t uid = 0;
 	char file[HOMELEN];
 	post_info_t pi_buf;
@@ -1663,7 +1663,6 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				tid = pi->tid;
 
 			brc_mark_as_read(pi->stamp);
-			last_id = pi->id;
 			pl->current_tid = pi->tid;
 			end = sticky = pi->flag & POST_FLAG_STICKY;
 
@@ -1689,12 +1688,10 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				break;
 			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
 				upward = false;
-				thread_entry = 0;
 				break;
 			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
 				upward = false;
 				if (!uid && !tid) {
-					thread_entry = pi->id;
 					tid = pi->tid;
 					entering = true;
 				}

@@ -345,13 +345,12 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize) {
 	struct keeploc * locmem;
 	char lbuf[11];
-	char * ptr;
 	int lbc, recbase, mode, ch;
 	int num, entries;
 
 	screen_len = screen_lines() - 4;
 	set_user_status(cmdmode);
-	ptr = pnt = calloc(screen_len, ssize);
+	pnt = calloc(screen_len, ssize);
 	strcpy(currdirect, direct);
 	draw_title(dotitle);
 	last_line = get_num_records(currdirect, ssize);
@@ -606,7 +605,7 @@ char *direct;
 static int locate_the_post(struct fileheader *fileinfo, char *query, int offset, int aflag);
 
 int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
-	int i, dotype = 0, result = 0, gid = 0;
+	int i, dotype = 0, result = 0;
 	int has_yinyan=0; //Add by everlove 制作合集
 	char buf[80], ch[32], BMch, annpath[512];
 	char *buf1 = buf;
@@ -682,7 +681,6 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		result = atoi(ch);
 		struct fileheader fh;
 		get_record (direct, &fh, sizeof (fh), result);
-		gid = fh.gid;
 		fileinfo->reid = fh.id;
 		substitute_record (direct, fileinfo, sizeof (*fileinfo), ent);
 	}

@@ -898,7 +898,7 @@ void quote_string(const char *str, size_t size, FILE *fp,
 	else
 		quote_author(begin, lend, mail, utf8, fp, filter);
 
-	bool header = true, tail = false;
+	bool header = true;
 	size_t lines = 0;
 	const char *ptr;
 	while (1) {
@@ -916,7 +916,6 @@ void quote_string(const char *str, size_t size, FILE *fp,
 		}
 
 		if (lend - ptr == 3 && !memcmp(ptr, "--\n", 3)) {
-			tail = true;
 			if (mode == QUOTE_LONG || mode == QUOTE_AUTO
 					|| mode == QUOTE_PACK || mode == QUOTE_PACK_COMPACT)
 				break;

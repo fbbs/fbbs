@@ -314,10 +314,9 @@ void go() {
 void searchline(text)
 char text[STRLEN];
 {
-	int tmpline, addr, count = 0, tt;
+	int addr, count = 0, tt;
 	register struct textline *p = currline;
 
-	tmpline = currln;
 	for (;p && p != can_edit_end; p = p->next) {
 		count++;
 		if (count == 1) tt = currpnt;

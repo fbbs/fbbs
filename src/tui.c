@@ -420,7 +420,6 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 	int ch, x, y, startx, starty, curr, i, k, chk, cursorx, cursory, size;
 	bool init = true;
 	char tmp[MAX_MSG_SIZE+1];
-	int ingetdata = true;
 
 	if (clearlabel == YEA)
 		memset(buf, 0, len);
@@ -696,7 +695,6 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 		}
 	}
 
-	ingetdata = false;
 	return y-starty+1;
 }
 

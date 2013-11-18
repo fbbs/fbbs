@@ -272,7 +272,6 @@ int main (int argc, char **argv)
 		res_to_board(res, i, &board);
 		board_to_gbk(&board);
 
-		int count;                /* counter of local board */
 		char pathname[256];
 		char filename[80];        /* pathname = pathname + filename */
 		char boardtitles[STRLEN]; /* source of board's chinese name */
@@ -292,8 +291,6 @@ int main (int argc, char **argv)
 		if (fd == -1)
 			continue;
 		(void) fstat (fd, &st);
-		/* count the num on the board */
-		count = st.st_size / sizeof (struct fileheader);
 		(void) close (fd);
 
 		/* chinese board's name */

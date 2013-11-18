@@ -227,8 +227,6 @@ void uinfo_query(struct userec *u, int real, int unum)
 	char src[STRLEN], dst[STRLEN];
 	int i, fail = 0;
 	int r = 0; //add by money 2003.10.14 for test 闰年
-	time_t now;
-	struct tm *tmnow;
 	memcpy(&newinfo, u, sizeof(currentuser));
 	//% getdata(-1, 0, real ? "请选择 (0)结束 (1)修改资料 (2)设定密码 ==> [0]"
 	getdata(-1, 0, real ? "\xc7\xeb\xd1\xa1\xd4\xf1 (0)\xbd\xe1\xca\xf8 (1)\xd0\xde\xb8\xc4\xd7\xca\xc1\xcf (2)\xc9\xe8\xb6\xa8\xc3\xdc\xc2\xeb ==> [0]"
@@ -243,8 +241,6 @@ void uinfo_query(struct userec *u, int real, int unum)
 	//add end
 
 	refresh();
-	now = time(0);
-	tmnow = localtime(&now);
 
 	i = 3;
 	move(i++, 0);

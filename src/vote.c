@@ -1385,7 +1385,6 @@ int vote_key(int ch, int allnum, int pagenum) {
 int b_vote(const char *bname)
 {
 	int num_of_vote;
-	int voting;
 
 	if (!HAS_PERM(PERM_VOTE) || (currentuser.stay < 1800)) {
 		return 0;
@@ -1403,7 +1402,7 @@ int b_vote(const char *bname)
 	}
 	setlistrange(num_of_vote);
 	screen_clear();
-	voting = choose(NA, 0, vote_title, vote_key, Show_Votes, user_vote); //?
+	choose(NA, 0, vote_title, vote_key, Show_Votes, user_vote); //?
 	screen_clear();
 	return FULLUPDATE;
 }

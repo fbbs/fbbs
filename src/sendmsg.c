@@ -60,13 +60,12 @@ int get_msg(const char *uid, char *msg, int line)
 {
 	char buf[3];
 	int gdata;
-	int msg_line;
 	screen_move_clear(line);
 	//% prints("送音信给：%s  按Ctrl+Q重写当前消息.     音信:", uid);
 	prints("\xcb\xcd\xd2\xf4\xd0\xc5\xb8\xf8\xa3\xba%s  \xb0\xb4""Ctrl+Q\xd6\xd8\xd0\xb4\xb5\xb1\xc7\xb0\xcf\xfb\xcf\xa2.     \xd2\xf4\xd0\xc5:", uid);
 	msg[0] = 0;
 	while (true) {
-		msg_line = multi_getdata(line + 1, 0, LINE_LEN - 1, NULL, msg, MAX_MSG_SIZE + 1, MAX_MSG_LINE, 0, 0);
+		multi_getdata(line + 1, 0, LINE_LEN - 1, NULL, msg, MAX_MSG_SIZE + 1, MAX_MSG_LINE, 0, 0);
 		if (msg[0] == '\0')
 			return NA;
 		//% gdata = getdata(line + 4, 0, "确定要送出吗(Y)是的 (N)不要 (E)再编辑? [Y]: ",
