@@ -131,7 +131,7 @@ void screen_init(void)
  * @param col 要移动到的列
  * @param line 要移动到的行
  */
-static void do_move(int col, int line)
+static void move_terminal_cursor_to(int col, int line)
 {
 	char buf[16];
 	snprintf(buf, sizeof(buf), "\033[%d;%dH", line + 1, col + 1);
@@ -139,31 +139,31 @@ static void do_move(int col, int line)
 		terminal_putchar(*p);
 }
 
-//	从老位置(was_col,was_ln)移动到新位置(new_col,new_ln)
-static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
+/**
+ * 移动终端光标到指定位置
+ * @param col 要移动到的列
+ * @param line 要移动到的行
+ */
+static void move_terminal_cursor(int col, int line)
 {
-	if (new_ln >= screen.lines || new_col >= screen.columns) //越界,返回
+	if (line >= screen.lines || col >= screen.columns)
 		return;
-	screen.tc_col = new_col;
-	screen.tc_line = new_ln;
-	if ((new_col == 0) && (new_ln == was_ln + 1)) { //换行
+
+	if (!col && line == screen.tc_line + 1) {
 		terminal_putchar('\n');
-		if (was_col != 0) //到第一列位置,返回
+		if (screen.tc_col)
 			terminal_putchar('\r');
-		return;
-	}
-	if ((new_col == 0) && (new_ln == was_ln)) { //不换行,到第一列位置,并返回
-		if (was_col != 0)
+	} else if (!col && line == screen.tc_line) {
+		if (screen.tc_col)
 			terminal_putchar('\r');
-		return;
-	}
-	if (was_col == new_col && was_ln == new_ln)
-		return;
-	if (new_col == was_col - 1 && new_ln == was_ln) {
+	} else if (col == screen.tc_col - 1 && line == screen.tc_line) {
 		terminal_putchar(Ctrl('H'));
-		return;
+	} else if (col != screen.tc_col || line != screen.tc_line) {
+		move_terminal_cursor_to(col, line);
 	}
-	do_move(new_col, new_ln);
+
+	screen.tc_col = col;
+	screen.tc_line = line;
 }
 
 static inline screen_line_t *get_screen_line(int line)
@@ -185,7 +185,7 @@ void screen_redraw(void)
 		screen_line_t *sl = get_screen_line(i);
 		if (!sl->len)
 			continue;
-		rel_move(screen.tc_col, screen.tc_line, 0, i);
+		move_terminal_cursor(0, i);
 		terminal_write_cached(sl->data, sl->len);
 		screen.tc_col += sl->len;
 		if (screen.tc_col >= screen.columns) {
@@ -194,7 +194,7 @@ void screen_redraw(void)
 		sl->modified = false;
 		sl->old_len = sl->len;
 	}
-	rel_move(screen.tc_col, screen.tc_line, screen.cur_col, screen.cur_ln);
+	move_terminal_cursor(screen.cur_col, screen.cur_ln);
 	screen.redraw = false;
 	screen.scrollcnt = 0;
 	terminal_flush();
@@ -215,14 +215,14 @@ void refresh(void)
 		return;
 	}
 	if (screen.scrollcnt < 0) {
-		rel_move(screen.tc_col, screen.tc_line, 0, 0);
+		move_terminal_cursor(0, 0);
 		while (screen.scrollcnt < 0) {
 			ansi_cmd(ANSI_CMD_SR);
 			screen.scrollcnt++;
 		}
 	}
 	if (screen.scrollcnt > 0) {
-		rel_move(screen.tc_col, screen.tc_line, 0, screen.lines - 1);
+		move_terminal_cursor(0, screen.lines - 1);
 		while (screen.scrollcnt > 0) {
 			terminal_putchar('\n');
 			screen.scrollcnt--;
@@ -232,7 +232,7 @@ void refresh(void)
 		screen_line_t *sl = get_screen_line(i);
 		if (sl->modified) {
 			sl->modified = false;
-			rel_move(screen.tc_col, screen.tc_line, 0, i);
+			move_terminal_cursor(0, i);
 			terminal_write_cached(sl->data, sl->len);
 			screen.tc_col = sl->len;
 			if (screen.tc_col >= screen.columns) {
@@ -243,12 +243,12 @@ void refresh(void)
 			}
 		}
 		if (sl->old_len > sl->len) {
-			rel_move(screen.tc_col, screen.tc_line, sl->len, i);
+			move_terminal_cursor(sl->len, i);
 			ansi_cmd(ANSI_CMD_CE);
 		}
 		sl->old_len = sl->len;
 	}
-	rel_move(screen.tc_col, screen.tc_line, screen.cur_col, screen.cur_ln);
+	move_terminal_cursor(screen.cur_col, screen.cur_ln);
 	terminal_flush();
 }
 
