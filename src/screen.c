@@ -1,4 +1,5 @@
 #include <arpa/telnet.h>
+#include <stdarg.h>
 #include "bbs.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
