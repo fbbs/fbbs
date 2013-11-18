@@ -169,8 +169,7 @@ static tui_list_title_t online_users_title(tui_list_t *p)
 			"         \xc9\xcf\xd5\xbe\xce\xbb\xd6\xc3            \xc4\xbf\xc7\xb0\xb6\xaf\xcc\xac   \xb7\xa2\xb4\xf4   \033[m\n",
 			field);
 
-	move(2, 0);
-	clrtoeol();
+	screen_move_clear(2);
 	prints("%s", title);
 }
 

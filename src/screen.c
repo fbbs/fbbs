@@ -254,24 +254,24 @@ void refresh(void)
 
 /**
  * Move to given position.
- * @param y Line number.
- * @param x Column number.
+ * @param line Line number.
+ * @param col Column number.
  */
-void move(int y, int x)
+void move(int line, int col)
 {
-	screen.cur_col = x;
-	screen.cur_ln = y < 0 ? y + screen.lines : y;
+	screen.cur_col = col;
+	screen.cur_ln = line < 0 ? line + screen.lines : line;
 }
 
 /**
- * Get current position.
- * @param[out] y Line number.
- * @param[out] x Column number.
+ * 获得当前屏幕坐标
+ * @param[out] line 行坐标
+ * @param[out] col 列坐标
  */
-void getyx(int *y, int *x)
+void screen_coordinates(int *line, int *col)
 {
-	*y = screen.cur_ln;
-	*x = screen.cur_col;
+	*line = screen.cur_ln;
+	*col = screen.cur_col;
 }
 
 /**
@@ -295,6 +295,12 @@ void screen_clear_line(int line)
 	screen_line_t *sl = screen.buf + line;
 	sl->modified = false;
 	sl->len = 0;
+}
+
+void screen_move_clear(int line)
+{
+	move(line, 0);
+	clrtoeol();
 }
 
 /**
@@ -577,8 +583,7 @@ void screen_scroll(void)
 	++screen.scrollcnt;
 	if (++screen.roll >= screen.lines)
 		screen.roll -= screen.lines;
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 }
 
 void screen_save_line(int line, bool save)
@@ -592,9 +597,8 @@ void screen_save_line(int line, bool save)
 		strlcpy(saved, (const char *) bp[line].data, sizeof(saved));
 	} else {
 		int x, y;
-		getyx(&x, &y);
-		move(line, 0);
-		clrtoeol();
+		screen_coordinates(&x, &y);
+		screen_move_clear(line);
 		prints("%s", saved);
 		move(x, y);
 		refresh();
@@ -617,7 +621,7 @@ void saveline_buf(int line, int mode)//0:save 1:restore
             temp[line][bp[line].len] = '\0';
             break;
         case 1:
-            getyx(&x, &y);
+            screen_coordinates(&x, &y);
             move(line, 0);
             screen_clear_line(line);
             prints("%s", temp[line]);

@@ -487,13 +487,11 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 		}
 
 		// If screen is filled, wait for user command.
-		move(-1, 0);
-		clrtoeol();
-		(*prompt)(more);
+		screen_move_clear(-1);
+		prompt(more);
 
 		ch = morekey();
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		refresh();
 		switch (ch) {
 			case KEY_LEFT:
@@ -689,8 +687,7 @@ int msg_more(void)
 		ch = more_main(more, false, 0, 0, false, more_prompt_msg,
 				more_handle_msg);
 		if (!ch) {
-			move(-1, 0);
-			clrtoeol();
+			screen_move_clear(-1);
 			//% prints("\033[0;1;44;31m[讯息浏览器]  \033[33mc 清除 | "
 			prints("\033[0;1;44;31m[\xd1\xb6\xcf\xa2\xe4\xaf\xc0\xc0\xc6\xf7]  \033[33mc \xc7\xe5\xb3\xfd | "
 					//% "m 寄回信箱\033[K\033[m");

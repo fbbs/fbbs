@@ -151,8 +151,7 @@ static int tui_my_title(int record)
 	if (res && db_res_rows(res) > 0) {
 		GBK_BUFFER(title, TITLE_CCHARS);
 		convert_u2g(db_get_value(res, 0, 1), gbk_title);
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		//% prints("自定义身份%s: %s", db_get_bool(res, 0, 2) ? "" : "[尚在审核]",
 		prints("\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd%s: %s", db_get_bool(res, 0, 2) ? "" : "[\xc9\xd0\xd4\xda\xc9\xf3\xba\xcb]",
 				gbk_title);

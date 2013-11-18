@@ -182,8 +182,7 @@ int tui_select_board(int current_bid)
 {
 	set_user_status(ST_SELECT);
 
-	move(0, 0);
-	clrtoeol();
+	screen_move_clear(0);
 	//% prints("选择一个讨论区 (英文字母大小写皆可)\n");
 	prints("\xd1\xa1\xd4\xf1\xd2\xbb\xb8\xf6\xcc\xd6\xc2\xdb\xc7\xf8 (\xd3\xa2\xce\xc4\xd7\xd6\xc4\xb8\xb4\xf3\xd0\xa1\xd0\xb4\xbd\xd4\xbf\xc9)\n");
 
@@ -207,10 +206,8 @@ int tui_select_board(int current_bid)
 		return 0;
 	}
 
-	move(0, 0);
-	clrtoeol();
-	move(1, 0);
-	clrtoeol();
+	screen_move_clear(0);
+	screen_move_clear(1);
 
 	set_user_status(ST_READING);
 	if (board.id != current_bid) {
@@ -953,10 +950,9 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		//% sprintf(genbuf, "删除文章 [%-.55s]", fileinfo->title);
 		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2 [%-.55s]", fileinfo->title);
 		if (askyn(genbuf, NA, YEA) == NA) {
-			move(-1, 0);
+			screen_move_clear(-1);
 			//% prints("放弃删除文章...");
 			prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2...");
-			clrtoeol();
 			egetch();
 			return PARTUPDATE;
 		}
@@ -1008,10 +1004,9 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 	} else if (SR_BMDELFLAG) {
 		return -1;
 	}
-	move(-1, 0);
+	screen_move_clear(-1);
 	//% prints("删除失败...");
 	prints("\xc9\xbe\xb3\xfd\xca\xa7\xb0\xdc...");
-	clrtoeol();
 	egetch();
 	return PARTUPDATE;
 }
@@ -1198,8 +1193,7 @@ int board_read(void)
 		//% prints("请先选择讨论区\n");
 		prints("\xc7\xeb\xcf\xc8\xd1\xa1\xd4\xf1\xcc\xd6\xc2\xdb\xc7\xf8\n");
 		pressreturn();
-		move(2, 0);
-		clrtoeol();
+		screen_move_clear(2);
 		return -1;
 	}
 

@@ -709,8 +709,7 @@ static void user_login(void)
 	}
 	show_statshm("0Announce/bbslist/day", 1);
 	refresh();
-	move(-2, 0);
-	clrtoeol();
+	screen_move_clear(-2);
 	if (currentuser.numlogins < 1) {
 		currentuser.numlogins = 0;
 		//% prints("\033[1;36m☆ 这是您第 \033[33m1\033[36m 次拜访本站，请记住今天吧。\n");

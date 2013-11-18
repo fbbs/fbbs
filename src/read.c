@@ -147,8 +147,7 @@ int num, ssize;
 			showstuff(str);
 		prints("\n");
 	}
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	update_endline();
 }
 
@@ -507,8 +506,7 @@ static int search_author(struct keeploc *locmem, int offset, char *powner)
 
 	//% sprintf(pmt, "%s的文章搜寻作者 [%s]: ", offset> 0 ? "往後来" : "往先前", currauth);
 	sprintf(pmt, "%s\xb5\xc4\xce\xc4\xd5\xc2\xcb\xd1\xd1\xb0\xd7\xf7\xd5\xdf [%s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1\xc0\xb4" : "\xcd\xf9\xcf\xc8\xc7\xb0", currauth);
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//Modified by IAMFAT 2002-05-27
 	//IDLEN->IDLEN+1
 	getdata(-1, 0, pmt, ans, IDLEN+1, DOECHO, YEA);
@@ -557,8 +555,7 @@ static int search_post(struct keeploc *locmem, int offset)
 	strcpy(ans, query);
 	//% sprintf(pmt, "搜寻%s的文章 [%s]: ", offset> 0 ? "往後来" : "往先前", ans);
 	sprintf(pmt, "\xcb\xd1\xd1\xb0%s\xb5\xc4\xce\xc4\xd5\xc2 [%s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1\xc0\xb4" : "\xcd\xf9\xcf\xc8\xc7\xb0", ans);
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	getdata(-1, 0, pmt, ans, 50, DOECHO, YEA);
 	if (ans[0] != '\0')
 	strcpy(query, ans);
@@ -634,8 +631,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 			return DONOTHING;
 	}
 	screen_save_line(-1, true);
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	ch[0] = '\0';
 	//% getdata(-1, 0, "执行: 1) 相同主题  2) 相同作者 3) 相关主题 0) 取消 [0]: ",
 	getdata(-1, 0, "\xd6\xb4\xd0\xd0: 1) \xcf\xe0\xcd\xac\xd6\xf7\xcc\xe2  2) \xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf 3) \xcf\xe0\xb9\xd8\xd6\xf7\xcc\xe2 0) \xc8\xa1\xcf\xfb [0]: ",
@@ -1021,8 +1017,7 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 		ent = 0;
 
 	if (aflag == SEARCH_CONTENT) {
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		//% prints("\033[1;44;33m搜寻中，请稍候....                      "
 		prints("\033[1;44;33m\xcb\xd1\xd1\xb0\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2....                      "
 				"                                       \033[m");
@@ -1114,8 +1109,7 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 			}
 		}
 	}
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	fclose(fp);
 	if (lastent == 0)
 		return -1;
@@ -1161,8 +1155,7 @@ int search_title(struct keeploc *locmem, int offset)
 	strcpy(ans, title);
 	//% sprintf(pmt, "%s搜寻标题 [%.16s]: ", offset> 0 ? "往後" : "往前", ans);
 	sprintf(pmt, "%s\xcb\xd1\xd1\xb0\xb1\xea\xcc\xe2 [%.16s]: ", offset> 0 ? "\xcd\xf9\xe1\xe1" : "\xcd\xf9\xc7\xb0", ans);
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	getdata(-1, 0, pmt, ans, 46, DOECHO, YEA);
 	if (*ans != '\0')
 		strcpy(title, ans);
@@ -1252,8 +1245,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 		isstart = 1;
 	} else {
 		isstart = 0;
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		prints(
 				//% "[1;44;31m[%8s] [33m下一封 <Space>,<Enter>,↓│上一封 ↑,U                              [m",
 				"[1;44;31m[%8s] [33m\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,<Enter>,\xa1\xfd\xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc,U                              [m",
@@ -1309,8 +1301,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 			isnext = -1;
 			continue;
 		}
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		prints(
 				//% "\033[1;44;31m[%8s] \033[33m回信 R │ 结束 Q,← │下一封 ↓,Enter│上一封 ↑,U │ ^R 回给作者   \033[m",
 				"\033[1;44;31m[%8s] \033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 \xa1\xfd,Enter\xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc,U \xa9\xa6 ^R \xbb\xd8\xb8\xf8\xd7\xf7\xd5\xdf   \033[m",

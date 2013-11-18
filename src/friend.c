@@ -91,8 +91,7 @@ static tui_list_query_t following_list_query(tui_list_t *p)
 	p->in_query = true;
 	if (t_query(following_list_get_name(p->data, p->cur)) == -1)
 		return FULLUPDATE;
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//% prints("\033[0;1;44;31m\033[33m 寄信 m │ 结束 Q,← │上一位 ↑│"
 	prints("\033[0;1;44;31m\033[33m \xbc\xc4\xd0\xc5 m \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6"
 			//% "下一位 <Space>,↓                            \033[m");
@@ -236,8 +235,7 @@ static tui_list_query_t black_list_query(tui_list_t *p)
 	p->in_query = true;
 	if (t_query(black_list_get_name(p->data, p->cur)) == -1)
 		return FULLUPDATE;
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//% prints("\033[0;1;33;44m 结束 Q,← │上一位 ↑│下一位 <Space>,↓ "
 	prints("\033[0;1;33;44m \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6\xcf\xc2\xd2\xbb\xce\xbb <Space>,\xa1\xfd "
 			"                           \033[m");

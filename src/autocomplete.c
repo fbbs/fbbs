@@ -134,7 +134,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 		if (count == rows - 1 || !l->next) {
 			if (xbase + width > columns) {
 				acl->seek = *acl->col;
-				move(-1, 0);
+				screen_move_clear(-1);
 				//% prints("\033[1m -- 还有 --\033[m");
 				prints("\033[1m -- \xbb\xb9\xd3\xd0 --\033[m");
 				break;
@@ -144,8 +144,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 					move(acl->ybase + i + 2, xbase);
 					outs(acl->col[i]->name);
 				}
-				move(-1, 0);
-				clrtoeol();
+				screen_move_clear(-1);
 				xbase += width + 1;
 				width = 0;
 				count = 0;
@@ -167,7 +166,7 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 		clrtoeol();
 	}
 
-	getyx(&acl->ybase, &acl->xbase);
+	screen_coordinates(&acl->ybase, &acl->xbase);
 
 	buf[0] = '\0';
 	size_t len = 0;

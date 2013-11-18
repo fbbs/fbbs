@@ -185,8 +185,8 @@ int namecomplete(char *prompt, char *data) {
 		AddNameList("");
 	cwlist = GetSubList("", toplev);
 	morelist = NULL;
-	getyx(&y, &x);
-	getyx(&origy, &origx);
+	screen_coordinates(&y, &x);
+	screen_coordinates(&origy, &origx);
 	while ((ch = terminal_getchar()) != EOF) {
 		if (ch == '\n' || ch == '\r') {
 			*temp = '\0';
@@ -213,7 +213,7 @@ int namecomplete(char *prompt, char *data) {
 				prints("%s", data + count);
 				count = strlen(data);
 				temp = data + count;
-				getyx(&y, &x);
+				screen_coordinates(&y, &x);
 				continue;
 			}
 			for (i = strlen(data); i && i < STRLEN; i++) {
@@ -398,8 +398,8 @@ int usercomplete(char *prompt, char *data) {
 	}
 	temp = data;
 	cwlist = u_namearray((void *)cwbuf, &cwnum, "");
-	getyx(&y, &x);
-	getyx(&origy, &origx);
+	screen_coordinates(&y, &x);
+	screen_coordinates(&origy, &origx);
 	while ((ch = terminal_getchar()) != EOF) {
 		if (ch == '\n' || ch == '\r') {
 			int i;
@@ -426,7 +426,7 @@ int usercomplete(char *prompt, char *data) {
 				prints("%s", data + count);
 				count = strlen(data);
 				temp = data + count;
-				getyx(&y, &x);
+				screen_coordinates(&y, &x);
 				continue;
 			}
 			for (i = strlen(data); i && i < IDLEN; i++) {

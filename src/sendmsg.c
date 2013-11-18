@@ -61,8 +61,7 @@ int get_msg(const char *uid, char *msg, int line)
 	char buf[3];
 	int gdata;
 	int msg_line;
-	move(line, 0);
-	clrtoeol();
+	screen_move_clear(line);
 	//% prints("送音信给：%s  按Ctrl+Q重写当前消息.     音信:", uid);
 	prints("\xcb\xcd\xd2\xf4\xd0\xc5\xb8\xf8\xa3\xba%s  \xb0\xb4""Ctrl+Q\xd6\xd8\xd0\xb4\xb5\xb1\xc7\xb0\xcf\xfb\xcf\xa2.     \xd2\xf4\xd0\xc5:", uid);
 	msg[0] = 0;
@@ -238,8 +237,7 @@ int tui_send_msg(const char *uname)
 	if (!uname || !*uname) {
 		//% prints("<输入使用者代号>\n");
 		prints("<\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5>\n");
-		move(1, 0);
-		clrtoeol();
+		screen_move_clear(1);
 		//% prints("送讯息给: ");
 		prints("\xcb\xcd\xd1\xb6\xcf\xa2\xb8\xf8: ");
 
@@ -262,16 +260,14 @@ int tui_send_msg(const char *uname)
 		//% prints("对方目前不在线或无法接受讯息...\n");
 		prints("\xb6\xd4\xb7\xbd\xc4\xbf\xc7\xb0\xb2\xbb\xd4\xda\xcf\xdf\xbb\xf2\xce\xde\xb7\xa8\xbd\xd3\xca\xdc\xd1\xb6\xcf\xa2...\n");
 		pressreturn();
-		move(2, 0);
-		clrtoeol();
+		screen_move_clear(2);
 		return 0;
 	}
 
 	char msg[MAX_MSG_SIZE + 2];
 	if (!get_msg(uname, msg, 1)) {
 		for (int i = 1; i <= MAX_MSG_LINE+ 1; i++) {
-			move(i, 0);
-			clrtoeol();
+			screen_move_clear(i);
 		}
 		msg_session_info_clear(s);
 		return 0;
@@ -378,8 +374,7 @@ static int show_msg(const char *user, const char *head, const char *buf,
 {
 	if (!RMSG && !reply && DEFINE(DEF_SOUNDMSG))
 		bell();
-	move(line, 0);
-	clrtoeol();
+	screen_move_clear(line);
 
 	// This is a temporary solution to Fterm & Cterm message recognition.
 	char sender[IDLEN + 1], date[25];
@@ -390,19 +385,16 @@ static int show_msg(const char *user, const char *head, const char *buf,
 	move(line, 93);
 	//% outs("\033[31m(^Z回) \033[37m");
 	outs("\033[31m(^Z\xbb\xd8) \033[37m");
-	move(++line, 0);
-	clrtoeol();
+	screen_move_clear(++line);
 	line = show_data(buf, LINE_LEN - 1, line, 0);
-	move(line, 0);
-	clrtoeol();
+	screen_move_clear(line);
 	if (!reply) {
 		//% outs("\033[m按^Z回复");
 		outs("\033[m\xb0\xb4^Z\xbb\xd8\xb8\xb4");
 	} else {
 		//% prints("\033[m立即回讯息给 %s", sender);
 		prints("\033[m\xc1\xa2\xbc\xb4\xbb\xd8\xd1\xb6\xcf\xa2\xb8\xf8 %s", sender);
-		move(++line, 0);
-		clrtoeol();
+		screen_move_clear(++line);
 	}
 	refresh();
 	return line;
@@ -459,7 +451,7 @@ static void getdata_r(char *buf, size_t size, size_t *len,
 		int ch, int base, int *ht)
 {
 	int pos, ret, redraw = false, x, y;
-	getyx(&y, &x);
+	screen_coordinates(&y, &x);
 	pos = (y - base) * LINE_LEN + x;
 	switch (ch) {
 		case KEY_LEFT:
@@ -530,8 +522,7 @@ static void _msg_reply(const char *receiver, int pid, const char *msg, int line)
 		strlcpy(buf, "\033[1;33m\xbf\xd5\xd1\xb6\xcf\xa2, \xcb\xf9\xd2\xd4\xb2\xbb\xcb\xcd\xb3\xf6.\033[m", sizeof(buf));
 	}
 
-	move(line, 0);
-	clrtoeol();
+	screen_move_clear(line);
 	if (!success) {
 		outs(buf);
 		refresh();
@@ -627,7 +618,7 @@ void msg_reply(int ch)
 		
 	switch (st.status) {
 		case MSG_INIT:
-			getyx(&st.y, &st.x);
+			screen_coordinates(&st.y, &st.x);
 			st.sa = showansi;
 			showansi = true;
 			if (DEFINE(DEF_MSGGETKEY)) {

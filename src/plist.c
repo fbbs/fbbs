@@ -850,8 +850,7 @@ static int tui_search_content(tui_list_t *tl, bool upward)
 	if (!*gbk_keyword != '\0')
 		return MINIUPDATE;
 
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//% "搜寻中，请稍候...."
 	prints("\033[1;44;33m\xcb\xd1\xd1\xb0\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4"
 			"\xba\xf2....\033[K\033[m");
@@ -1167,8 +1166,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 {
 	time_t now = fb_time();
 	if (now - get_my_last_post_time() < 3) {
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		//% 您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。
 		prints("\xc4\xfa\xcc\xab\xd0\xc1\xbf\xe0\xc1\xcb\xa3\xac\xcf\xc8\xba\xc8\xb1\xad\xbf\xa7\xb7\xc8\xd0\xaa\xbb\xe1\xb6\xf9\xa3\xac""3 \xc3\xeb\xd6\xd3\xba\xf3\xd4\xd9\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2\xa1\xa3\n");
 		pressreturn();
@@ -1177,8 +1175,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 
 	board_t board;
 	if (!get_board_by_bid(bid, &board) || !has_post_perm(&board)) {
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		//% prints("此讨论区是唯读的, 或是您尚无权限在此发表文章。");
 		prints("\xb4\xcb\xcc\xd6\xc2\xdb\xc7\xf8\xca\xc7\xce\xa8\xb6\xc1\xb5\xc4, \xbb\xf2\xca\xc7\xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda\xb4\xcb\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2\xa1\xa3");
 		pressreturn();
@@ -1383,8 +1380,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	if (!max)
 		return ret;
 
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//% 确定删除
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 		post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
@@ -1674,8 +1670,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 			ch = ansimore(file, false);
 		}
 
-		move(-1, 0);
-		clrtoeol();
+		screen_move_clear(-1);
 		prints(get_prompt(tid, uid));
 		prints("\033[m");
 		refresh();
@@ -2144,8 +2139,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	};
 
 	char ans[16];
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	ans[0] = '\0';
 	//% 执行: 1) 相同主题  2) 相同作者 3) 相关主题 0) 取消
 	getdata(-1, 0, "\xd6\xb4\xd0\xd0: "

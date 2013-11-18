@@ -121,10 +121,9 @@ int x_userdefine() {
 	unsigned int newlevel;
 	set_user_status(ST_USERDEF);
 	if (!(id = getuser(currentuser.userid))) {
-		move(3, 0);
+		screen_move_clear(3);
 		//% prints("错误的使用者 ID...");
 		prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf ID...");
-		clrtoeol();
 		pressreturn();
 		screen_clear();
 		return 0;
@@ -168,8 +167,7 @@ int x_cloak(void)
 	bool visible = session_toggle_visibility();
 	report("toggle cloak", currentuser.userid);
 
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//% "隐身术已经 %s 了!" "停止" "启动"
 	prints("\xd2\xfe\xc9\xed\xca\xf5\xd2\xd1\xbe\xad %s \xc1\xcb!",
 			visible ? "\xcd\xa3\xd6\xb9" : "\xc6\xf4\xb6\xaf");
@@ -269,10 +267,9 @@ int gettheuserid(int x, char *title, int *id) {
 		return 0;
 	}
 	if (!(*id = getuser(genbuf))) {
-		move(x + 3, 0);
+		screen_move_clear(x + 3);		
 		//% prints("错误的使用者代号");
 		prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5");
-		clrtoeol();
 		pressreturn();
 		screen_clear();
 		return 0;
@@ -501,8 +498,7 @@ int sendGoodWish(char *userid) {
 		screen_clear();
 		return -1;
 	}
-	move(5, 0);
-	clrtoeol();
+	screen_move_clear(5);
 	//% prints("[m【给 [1m%s[m 留言】", uid);
 	prints("[m\xa1\xbe\xb8\xf8 [1m%s[m \xc1\xf4\xd1\xd4\xa1\xbf", uid);
 	move(6, 0);

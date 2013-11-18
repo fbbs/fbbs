@@ -119,8 +119,7 @@ static void msgline(void)
 	sprintf(buf2, "\033[1;33m\xa1\xbe\033[1;32m%.23s\033[33m\xa1\xbf\033[m",
 			format_time(fb_time(), TIME_FORMAT_ZH) + 6);
 	strcat(buf, buf2);
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	prints("%s", buf);
 	showansi = tmpshow;
 }
@@ -169,7 +168,7 @@ void msg(int unused)
 
 	tmpansi = showansi;
 	showansi = 1;
-	getyx(&x, &y);
+	screen_coordinates(&x, &y);
 	msgline();
 	fb_signal(SIGALRM, msg);
 	move(x, y);
@@ -734,8 +733,7 @@ static void top_show(const char *prompt)
 		outs(ANSI_RESET);
 		refresh();
 	}
-	move(0, 0);
-	clrtoeol();
+	screen_move_clear(0);
 	prints(ANSI_CMD_SO"%s"ANSI_CMD_SE, prompt);
 }
 
@@ -744,8 +742,7 @@ static int ask(const char *prompt)
 	int ch;
 	top_show(prompt);
 	ch = terminal_getchar();
-	move(0, 0);
-	clrtoeol();
+	screen_move_clear(0);
 	return (ch);
 }
 
@@ -763,8 +760,7 @@ static int process_ESC_action(int action, int arg)
 		case 'L':
 			if (ismsgline >= 1) {
 				ismsgline = 0;
-				move(-1, 0);
-				clrtoeol();
+				screen_move_clear(-1);
 				refresh();
 			} else
 				ismsgline = 1;
@@ -849,8 +845,7 @@ static int process_ESC_action(int action, int arg)
 		redraw_everything = YEA;
 	if (msg[0] != '\0') {
 		if (action == 'C') { /* need redraw */
-			move(-2, 0);
-			clrtoeol();
+			screen_move_clear(-2);
 			//% prints("[1m%s%s%s[m", msg, ", 请按任意键返回编辑画面...", ANSI_RESET);
 			prints("[1m%s%s%s[m", msg, ", \xc7\xeb\xb0\xb4\xc8\xce\xd2\xe2\xbc\xfc\xb7\xb5\xbb\xd8\xb1\xe0\xbc\xad\xbb\xad\xc3\xe6...", ANSI_RESET);
 			terminal_getchar();

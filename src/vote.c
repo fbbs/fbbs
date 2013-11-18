@@ -41,8 +41,7 @@ enum sort_type {stUserID, stUserName, stIP, stState} st = stUserID;
 
 void show_message(const char *msg)
 {
-	move(BBS_PAGESIZE + 2, 0);
-	clrtoeol();
+	screen_move_clear(BBS_PAGESIZE + 2);
 	if (msg)
 		prints("\033[1m%s\033[m", msg);
 	refresh();
@@ -966,10 +965,9 @@ int showvoteitems(unsigned int pbits, int i, int flag) {
 		count = vote_check(pbits);
 		if (count > currvote.maxtkt)
 			return NA;
-		move(2, 0);
-		clrtoeol();
-		//% prints("您已经投了 [1m%d[m 票", count);
-		prints("\xc4\xfa\xd2\xd1\xbe\xad\xcd\xb6\xc1\xcb [1m%d[m \xc6\xb1", count);
+		screen_move_clear(2);
+		//% prints("您已经投了 %d 票", count);
+		prints("\xc4\xfa\xd2\xd1\xbe\xad\xcd\xb6\xc1\xcb \033[1m%d\033[m \xc6\xb1", count);
 	}
 	//% sprintf(buf, "%c.%2.2s%-36.36s", 'A' + i, ((pbits >> i) & 1 ? "√"
 	sprintf(buf, "%c.%2.2s%-36.36s", 'A' + i, ((pbits >> i) & 1 ? "\xa1\xcc"
@@ -1137,8 +1135,7 @@ int user_vote(int num) {
 		if (pos) {
 			substitute_record(fname, &uservote, sizeof(uservote), pos);
 		} else if (append_record(fname, &uservote, sizeof(uservote)) == -1) {
-			move(2, 0);
-			clrtoeol();
+			screen_move_clear(2);
 			//% prints("投票失败! 请通知站长参加那一个选项投票\n");
 			prints("\xcd\xb6\xc6\xb1\xca\xa7\xb0\xdc! \xc7\xeb\xcd\xa8\xd6\xaa\xd5\xbe\xb3\xa4\xb2\xce\xbc\xd3\xc4\xc7\xd2\xbb\xb8\xf6\xd1\xa1\xcf\xee\xcd\xb6\xc6\xb1\n");
 			pressreturn();

@@ -275,8 +275,7 @@ int t_query(const char *uname)
 	}
 
 	if (tui_query_result(userid) != 0) {
-		move(2, 0);
-		clrtoeol();
+		screen_move_clear(2);
 		//% prints("\033[1m不正确的使用者代号\033[m\n");
 		prints("\033[1m\xb2\xbb\xd5\xfd\xc8\xb7\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\033[m\n");
 		pressanykey();

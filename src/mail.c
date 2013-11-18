@@ -230,16 +230,14 @@ int mailall(void)
 		screen_clear();
 		return -2;
 	}
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//% prints("[5;1;32;44m正在寄件中，请稍候.....                                                        [m");
 	prints("[5;1;32;44m\xd5\xfd\xd4\xda\xbc\xc4\xbc\xfe\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....                                                        [m");
 	refresh();
 
 	mailtoall(ans[0] - '0', fname, &header);
 
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	/****type 2共享文件不需要删除****/
 	if (ans[0] - '0' != 2)
 		unlink(fname);
@@ -546,8 +544,7 @@ int m_send(const char *userid)
 	}
 	if (session_status() != ST_LUSERS && session_status() != ST_LAUSERS
 			&& session_status() != ST_FRIEND && session_status() != ST_GMENU) {
-		move(1, 0);
-		clrtoeol();
+		screen_move_clear(1);
 		set_user_status(ST_SMAIL);
 		//% usercomplete("收信人： ", uident);
 		usercomplete("\xca\xd5\xd0\xc5\xc8\xcb\xa3\xba ", uident);
@@ -1075,10 +1072,9 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 		//% sprintf(genbuf, "删除信件 [%-.55s]", fileinfo->title);
 		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe [%-.55s]", fileinfo->title);
 		if (askyn(genbuf, NA, YEA) == NA) {
-			move(-1, 0);
+			screen_move_clear(-1);
 			//% prints("放弃删除信件...");
 			prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe...");
-			clrtoeol();
 			egetch();
 			return FULLUPDATE;
 		}
@@ -1092,12 +1088,10 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 		check_maxmail();
 		return DIRCHANGED;
 	}
-	if(SR_BMDELFLAG==NA)
-	{
-		move(-1, 0);
+	if (!SR_BMDELFLAG) {
+		screen_move_clear(-1);
 		//% prints("删除失败...");
 		prints("\xc9\xbe\xb3\xfd\xca\xa7\xb0\xdc...");
-		clrtoeol();
 		egetch();
 	}
 	return PARTUPDATE;
@@ -1460,8 +1454,7 @@ int g_send() {
 					move(1, 0);
 					//% usercomplete("请依次输入使用者代号(只按 ENTER 结束输入): ", uident);
 					usercomplete("\xc7\xeb\xd2\xc0\xb4\xce\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5(\xd6\xbb\xb0\xb4 ENTER \xbd\xe1\xca\xf8\xca\xe4\xc8\xeb): ", uident);
-					move(1, 0);
-					clrtoeol();
+					screen_move_clear(1);
 					if (uident[0] == '\0')
 						break;
 					if (!getuser(uident)) {
@@ -1488,8 +1481,7 @@ int g_send() {
 			else
 				//% namecomplete("请依次输入使用者代号(只按 ENTER 结束输入): ", uident);
 				namecomplete("\xc7\xeb\xd2\xc0\xb4\xce\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5(\xd6\xbb\xb0\xb4 ENTER \xbd\xe1\xca\xf8\xca\xe4\xc8\xeb): ", uident);
-			move(1, 0);
-			clrtoeol();
+			screen_move_clear(1);
 			if (uident[0] == '\0')
 				continue;
 			if (!getuser(uident)) {

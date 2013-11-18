@@ -222,8 +222,7 @@ static void show_line(const site_t *sites, int count, int line, int cur)
 {
 	const int col[] = { 3, 28, 53 };
 	int offset = 0;
-	move(line + 3, 0);
-	clrtoeol();
+	screen_move_clear(line + 3);
 	offset += show_site(sites, count, line * 3, cur, col[0]);
 	offset += show_site(sites, count, line * 3 + 1, cur, col[1] + offset);
 	show_site(sites, count, line * 3 + 2, cur, col[2] + offset);
@@ -253,8 +252,7 @@ static void show_sites(const site_t *sites, int count)
 static void site_highlight(const site_t *sites, int count, int cur)
 {
 	show_line(sites, count, cur / 3, cur);
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	prints("\033[1;37;44m%s(%s)\033[K", sites[cur].name, sites[cur].host);
 }
 

@@ -139,9 +139,7 @@ void a_showmenu(MENU *pm) {
 		prints("  %4d %s\n", n + 1, title);
 	}
 	screen_clrtobot();
-	move(-1, 0);
-	//Modified by IAMFAT 2002-05-26
-	//Roll Back by IAMFAT 2002-05-29
+	screen_move_clear(-1);
 	sprintf(
 			genbuf,
 			//% "[1;44;31m[版  主]  [33m说明 h│离开 q,←│新增文章 a│新增目录 g│编辑档案 E   [%s丝路模式] [m",
@@ -259,8 +257,7 @@ void a_savenames(MENU *pm) {
 
 void a_prompt(int bot, char* pmt, char* buf, int len) {
 	screen_save_line(bot, true);
-	move(bot, 0);
-	clrtoeol();
+	screen_move_clear(bot);
 	getdata(bot, 0, pmt, buf, len, DOECHO, YEA);
 	screen_save_line(bot, false);
 }
@@ -524,7 +521,7 @@ void a_forward(char *path,ITEM* pitem,int mode) {
 		}
 		outs(mesg);
 	} else {
-		move(-1, 0);
+		screen_move_clear(-1);
 		//% prints("无法转寄此项目.\n");
 		prints("\xce\xde\xb7\xa8\xd7\xaa\xbc\xc4\xb4\xcb\xcf\xee\xc4\xbf.\n");
 	}
@@ -593,8 +590,7 @@ void a_newitem(MENU *pm, int mode) {
 		sprintf(genbuf, "%-38.38s %s", title, currentuser.userid);
 	else {
 		/*Add by SmallPig*/
-		move(1, 0);
-		clrtoeol();
+		screen_move_clear(1);
 		//% getdata(1, 0, "版主: ", uident, 35, DOECHO, YEA);
 		getdata(1, 0, "\xb0\xe6\xd6\xf7: ", uident, 35, DOECHO, YEA);
 		if (uident[0] != '\0')
@@ -727,7 +723,7 @@ void a_delete(MENU *pm) {
 	int n;
 	FILE *fn;
 	item = pm->item[pm->now];
-	move(-2, 0);
+	screen_move_clear(-2);
 	prints("%5d  %-50s\n", pm->now + 1, item->title);
 	sethomefile(fpath, currentuser.userid, ".copypaste");
 	if ((fn = fopen(fpath /*genbuf*/, "r")) != NULL) {
@@ -832,8 +828,7 @@ int a_Rangefunc(MENU *pm) {
 		return DONOTHING;
 	}
 
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	//% prints("区段操作: %s", items[type-1]);
 	prints("\xc7\xf8\xb6\xce\xb2\xd9\xd7\xf7: %s", items[type-1]);
 	//% 首篇文章编号: 
@@ -1310,8 +1305,7 @@ void a_manager(MENU *pm, int ch) {
 				changed_T[38]='\0';
 				rtrim(changed_T);
 				screen_save_line(-2, true);
-				move(-2, 0);
-				clrtoeol();
+				screen_move_clear(-2);
 				//Modified by IAMFAT 2002-05-30
 				//% "新标题: 
 				getdata(-2, 0, "\xd0\xc2\xb1\xea\xcc\xe2: ", changed_T, 39, DOECHO, NA);
@@ -1335,9 +1329,7 @@ void a_manager(MENU *pm, int ch) {
 						strlcpy(item->title, genbuf, 72);
 						item->title[71] = '\0';
 					} else if (dashd(fpath)) {
-						/*Modified by IAMFAT 2002-05-25*/
-						move(1, 0);
-						clrtoeol();
+						screen_move_clear(1);
 						/*
 						 //% * usercomplete("版主:
 						 * usercomplete("\xb0\xe6\xd6\xf7:
@@ -1410,7 +1402,6 @@ void a_file_info(MENU *pm)
 	stat(fname, &st);
 
 	screen_clear();
-	move(0, 0);
 
 	//% prints("精华区%s详细信息:\n\n", type);
 	prints("\xbe\xab\xbb\xaa\xc7\xf8%s\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2:\n\n", type);
@@ -1590,7 +1581,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 						if (askyn(tmp, NA, NA) == 1) {
 							Postfile(fname, bname, me.item[me.now]->title,
 									4);
-							move(3, 0);
+							screen_move_clear(3);
 							//% sprintf(tmp, "[1m已经帮您转贴至 %s 版了[m", bname);
 							sprintf(tmp, "[1m\xd2\xd1\xbe\xad\xb0\xef\xc4\xfa\xd7\xaa\xcc\xf9\xd6\xc1 %s \xb0\xe6\xc1\xcb[m", bname);
 							outs(tmp);
@@ -1898,7 +1889,7 @@ int AddPCorpus() {
 		return 1;
 	}
 
-	move(4, 0);
+	screen_move_clear(4);
 	//% if (askyn("确定要为该用户创建一个个人文集吗?", YEA, NA)==NA) {
 	if (askyn("\xc8\xb7\xb6\xa8\xd2\xaa\xce\xaa\xb8\xc3\xd3\xc3\xbb\xa7\xb4\xb4\xbd\xa8\xd2\xbb\xb8\xf6\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf\xc2\xf0?", YEA, NA)==NA) {
 		//% presskeyfor("您选择取消创建. 按任意键取消...", 6);
@@ -1908,7 +1899,7 @@ int AddPCorpus() {
 	mkdir(personalpath, 0755);
 	chmod(personalpath, 0755);
 
-	move(7, 0);
+	screen_move_clear(7);
 	//% prints("[直接按 ENTER 键, 则标题缺省为: [32m%s 的个人文集[m]", lookupuser.userid);
 	prints("[\xd6\xb1\xbd\xd3\xb0\xb4 ENTER \xbc\xfc, \xd4\xf2\xb1\xea\xcc\xe2\xc8\xb1\xca\xa1\xce\xaa: [32m%s \xb5\xc4\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf[m]", lookupuser.userid);
 	//% getdata(6, 0, "请输入个人文集之标题: ", title, 39, DOECHO, YEA);
@@ -1938,7 +1929,7 @@ int AddPCorpus() {
 		//% sprintf(secu, "建立个人文集, 给予 %s 版主权限", lookupuser.userid);
 		sprintf(secu, "\xbd\xa8\xc1\xa2\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf, \xb8\xf8\xd3\xe8 %s \xb0\xe6\xd6\xf7\xc8\xa8\xcf\xde", lookupuser.userid);
 		securityreport(secu, 0, 0);
-		move( 9, 0);
+		move(9, 0);
 		outs(secu);
 		sethomefile(genbuf, lookupuser.userid, ".announcepath");
 		report(genbuf, currentuser.userid);

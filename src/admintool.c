@@ -155,7 +155,6 @@ int tui_ordain_bm(const char *cmd)
 	screen_clear();
 	//% "任命版主\n"
 	stand_title("\xc8\xce\xc3\xfc\xb0\xe6\xd6\xf7\n");
-	clrtoeol();
 
 	int id;
 	//% "输入欲任命的使用者帐号: "
@@ -348,7 +347,6 @@ int tui_retire_bm(const char *cmd)
 	screen_clear();
 	//% stand_title("版主离职\n");
 	stand_title("\xb0\xe6\xd6\xf7\xc0\xeb\xd6\xb0\n");
-	clrtoeol();
 	//% if (!gettheuserid(2, "输入欲离职的版主帐号: ", &id))
 	if (!gettheuserid(2, "\xca\xe4\xc8\xeb\xd3\xfb\xc0\xeb\xd6\xb0\xb5\xc4\xb0\xe6\xd6\xf7\xd5\xca\xba\xc5: ", &id))
 		return -1;
@@ -1640,10 +1638,8 @@ int x_level() {
 		return 0;
 	}
 	screen_clear();
-	move(0, 0);
 	//% prints("更改使用者权限\n");
 	prints("\xb8\xfc\xb8\xc4\xca\xb9\xd3\xc3\xd5\xdf\xc8\xa8\xcf\xde\n");
-	clrtoeol();
 	move(1, 0);
 	//% usercomplete("输入欲更改的使用者帐号: ", genbuf);
 	usercomplete("\xca\xe4\xc8\xeb\xd3\xfb\xb8\xfc\xb8\xc4\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xd5\xca\xba\xc5: ", genbuf);
@@ -1652,9 +1648,8 @@ int x_level() {
 		return 0;
 	}
 	if (!(id = getuser(genbuf))) {
-		move(3, 0);
+		screen_move_clear(3);
 		prints("Invalid User Id");
-		clrtoeol();
 		pressreturn();
 		screen_clear();
 		return 0;
@@ -1961,8 +1956,7 @@ int kick_user(void)
 		return 0;
 	}
 
-	move(1, 0);
-	clrtoeol();
+	screen_move_clear(1);
 	char buf[STRLEN];
 	//% snprintf(buf, sizeof(buf), "踢掉使用者 : [%s].", uname);
 	snprintf(buf, sizeof(buf), "\xcc\xdf\xb5\xf4\xca\xb9\xd3\xc3\xd5\xdf : [%s].", uname);

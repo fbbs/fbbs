@@ -21,7 +21,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	move(line, col);
 	if (prompt)
 		prints("%s", prompt);
-	getyx(&y, &x);
+	screen_coordinates(&y, &x);
 	col += (prompt == NULL) ? 0 : strlen(prompt);
 	x = col;
 	buf[len - 1] = '\0';
@@ -229,8 +229,7 @@ void update_endline(void)
 	FILE *fp;
 	int i, cur_sec, allstay, foo, foo2;
 
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 
 	if (!DEFINE(DEF_ENDLINE))
 		return;
@@ -333,8 +332,7 @@ void showtitle(const char *title, const char *mid)
 	spc1 = (spc1 > 2) ? spc1 : 2; //防止过小
 	spc2 = spc1 / 2;
 	spc1 -= spc2;
-	move(0, 0);
-	clrtoeol();
+	screen_move_clear(0);
 	sprintf(buf, "%*s", spc1, "");
 	if (!strcmp(mid, BoardName))
 		prints("[1;44;33m%s%s[37m%s[1;44m", title, buf, mid);
@@ -372,10 +370,8 @@ void firsttitle(const char *title)
 void docmdtitle(const char *title, const char *prompt)
 {
 	firsttitle(title);
-	move(1, 0);
-	clrtoeol();
+	screen_move_clear(1);
 	prints("%s", prompt);
-	clrtoeol();
 }
 
 /* Added by Ashinmarch on 2007.12.01
@@ -386,7 +382,7 @@ int show_data(const char *buf, int maxcol, int line, int col)
 	bool chk = false;
 	size_t len = strlen(buf);
 	int i, x, y;
-	getyx(&y, &x);
+	screen_coordinates(&y, &x);
 	move(line, col);
 	clrtoeol();
 	for (i = 0; i < len; i++) {
@@ -431,7 +427,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 	move(line, col);
 	if (prompt)
 		prints("%s", prompt);
-	getyx(&starty, &startx);
+	screen_coordinates(&starty, &startx);
 	curr = strlen(buf);
 	strncpy(tmp, buf, MAX_MSG_SIZE);
 	tmp[MAX_MSG_SIZE] = 0;
@@ -713,12 +709,10 @@ void presskeyfor(const char *msg, int x)
 {
 	extern int showansi;
 	showansi = 1;
-	move(x, 0);
-	clrtoeol();
+	screen_move_clear(x);
 	outs(msg);
 	egetch();
-	move(x, 0);
-	clrtoeol();
+	screen_move_clear(x);
 }
 
 /**
@@ -736,16 +730,12 @@ int pressreturn(void)
 	extern int showansi;
 	char buf[3];
 	showansi = 1;
-	move(-1, 0);
-	clrtoeol();
-	getdata(
-			screen_lines() - 1,
-			0,
+	screen_move_clear(-1);
+	getdata(-1, 0,
 			//% "                              [1;33m请按 ◆[5;36mEnter[m[1;33m◆ 继续\033[m",
 			"                              [1;33m\xc7\xeb\xb0\xb4 \xa1\xf4[5;36mEnter[m[1;33m\xa1\xf4 \xbc\xcc\xd0\xf8\033[m",
 			buf, 2, NOECHO, YEA);
-	move(-1, 0);
-	clrtoeol();
+	screen_move_clear(-1);
 	refresh();
 	return 0;
 }
@@ -766,7 +756,7 @@ bool askyn(const char *str, bool defa, bool gobottom)
 			: "(yes/NO)? [N]");
 	if (gobottom)
 		move(-1, 0);
-	getyx(&x, &y);
+	screen_coordinates(&x, &y);
 	clrtoeol();
 	getdata(x, y, buf, ans, 2, DOECHO, YEA);
 	switch (ans[0]) {

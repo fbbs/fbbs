@@ -223,8 +223,7 @@ void tui_check_reg_mail(void)
 		register_send_email(&currentuser, email);
 	}
 
-	move(4, 0);
-	clrtoeol();
+	screen_move_clear(4);
 	move(5, 0);
 	//% prints(" \033[1;33m   认证码已发送到 %s ，请查收\033[m\n", email);
 	prints(" \033[1;33m   \xc8\xcf\xd6\xa4\xc2\xeb\xd2\xd1\xb7\xa2\xcb\xcd\xb5\xbd %s \xa3\xac\xc7\xeb\xb2\xe9\xca\xd5\033[m\n", email);
@@ -370,8 +369,7 @@ static void getfield(int line, char *info, char *desc, char *buf, int len)
 	snprintf(prompt, sizeof(prompt), "  %s: ", desc);
 	getdata(line + 1, 0, prompt, buf, len, DOECHO, YEA);
 	string_remove_non_printable_gbk(buf);
-	move(line, 0);
-	clrtoeol();
+	screen_move_clear(line);
 	prints("  %s: %s\n", desc, buf);
 	clrtoeol();
 }
