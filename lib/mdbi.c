@@ -17,8 +17,6 @@ enum {
 	MDB_CMD_BUF_LEN = 128,
 };
 
-typedef redisReply mdb_res_t;
-
 typedef struct {
 	redisContext *c;
 	char buf[MDB_CMD_BUF_LEN];
@@ -61,7 +59,10 @@ static char *smart_vsnprintf(char *buf, size_t size,
 	return s;
 }
 
-#define mdb_clear(res)  freeReplyObject(res)
+void mdb_clear(mdb_res_t *res)
+{
+	freeReplyObject(res);
+}
 
 static mdb_res_t *mdb_vcmd(bool safe, const char *cmd, const char *fmt,
 		va_list ap)
@@ -71,7 +72,7 @@ static mdb_res_t *mdb_vcmd(bool safe, const char *cmd, const char *fmt,
 	if (bytes >= sizeof(real_fmt))
 		return NULL;
 
-	mdb_res_t *res;
+	redisReply *res;
 	if (safe) {
 		res = redisvCommand(_mdb.c, real_fmt, ap);
 	} else {
@@ -92,7 +93,7 @@ static mdb_res_t *mdb_vcmd(bool safe, const char *cmd, const char *fmt,
 #define MDB_CMD_HELPER(safe)  \
 	va_list ap; \
 	va_start(ap, fmt); \
-	mdb_res_t *res = mdb_vcmd(safe, cmd, fmt, ap); \
+	redisReply *res = mdb_vcmd(safe, cmd, fmt, ap); \
 	va_end(ap);
 
 bool mdb_cmd(const char *cmd, const char *fmt, ...)
@@ -106,6 +107,18 @@ bool mdb_cmd_safe(const char *cmd, const char *fmt, ...)
 {
 	MDB_CMD_HELPER(true);
 	mdb_clear(res);
+	return res;
+}
+
+mdb_res_t *mdb_res(const char *cmd, const char *fmt, ...)
+{
+	MDB_CMD_HELPER(false);
+	return res;
+}
+
+mdb_res_t *mdb_res_safe(const char *cmd, const char *fmt, ...)
+{
+	MDB_CMD_HELPER(true);
 	return res;
 }
 
@@ -127,13 +140,18 @@ mdb_int_t mdb_integer(mdb_int_t invalid, const char *cmd, const char *fmt, ...)
 	return i;
 }
 
-char *mdb_string(char *buf, size_t size, const char *cmd, const char *fmt, ...)
+char *mdb_string_and_size(mdb_res_t *res, size_t *size)
 {
-	MDB_CMD_HELPER(false);
-	if (!res || res->type != MDB_RES_STRING)
+	redisReply *r = res;
+	if (!r || r->type != MDB_RES_STRING)
 		return NULL;
 
-	strlcpy(buf, res->str, size);
-	mdb_clear(res);
-	return buf;
+	*size = r->len;
+	return r->str;
+}
+
+char *mdb_string(mdb_res_t *res)
+{
+	size_t size;
+	return mdb_string_and_size(res, &size);
 }

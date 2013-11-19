@@ -97,12 +97,12 @@ void active_board_show(void)
 	if (!DEFINE(DEF_ACBOARD))
 		return;
 
-	char buf[ACTIVE_BOARD_BUFSIZE * ACTIVE_BOARD_LINES];
-	const char *str = mdb_string(buf, sizeof(buf), "SRANDMEMBER",
-			ACTIVE_BOARD_KEY);
+	mdb_res_t *res = mdb_res("SRANDMEMBER", ACTIVE_BOARD_KEY);
+	size_t size;
+	const char *str = mdb_string_and_size(res, &size);
 
 	if (str) {
-		const char *end = str + strlen(str);
+		const char *end = str + size;
 		for (int i = 0; i < ACTIVE_BOARD_LINES && str < end; ++i) {
 			char line[ACTIVE_BOARD_BUFSIZE];
 			const char *lend = get_line_end(str, end);
@@ -115,4 +115,5 @@ void active_board_show(void)
 			str = lend;
 		}
 	}
+	mdb_clear(res);
 }
