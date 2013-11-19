@@ -1,0 +1,184 @@
+#include <stdlib.h>
+#include <string.h>
+#include "fbbs/parcel.h"
+#include "fbbs/util.h"
+
+enum {
+	PARCEL_DEFAULT_CAPACITY = 4096,
+};
+
+void parcel_new(parcel_t *parcel)
+{
+	parcel->size = 0;
+	parcel->capacity = PARCEL_DEFAULT_CAPACITY;
+	parcel->error = false;
+	parcel->ptr = malloc(parcel->capacity);
+}
+
+static void parcel_write(parcel_t *parcel, const void *ptr, size_t size)
+{
+	if (parcel->error)
+		return;
+
+	size_t new_size = parcel->size + size;
+	if (parcel->capacity < new_size) {
+		while (parcel->capacity < new_size)
+			parcel->capacity *= 2;
+		parcel->ptr = realloc(parcel->ptr, parcel->capacity);
+	}
+	if (parcel->capacity < new_size || !parcel->ptr) {
+		parcel->error = true;
+		return;
+	}
+
+	memcpy(parcel->ptr + parcel->size, ptr, size);
+	parcel->size += size;
+}
+
+void parcel_write_varuint64(parcel_t *parcel, uint64_t val)
+{
+	uchar_t buf[10] = { 0 };
+	int cur = 0;
+
+	while (1) {
+		buf[cur] = val & 0x7f;
+		val >>= 7;
+		if (val) {
+			buf[cur] |= 0x80;
+			++cur;
+		} else {
+			break;
+		}
+	}
+	parcel_write(parcel, buf, ++cur);
+}
+
+void parcel_write_varint(parcel_t *parcel, int32_t val)
+{
+	uint32_t v = (val << 1) ^ (val >> 31);
+	parcel_write_varuint64(parcel, v);
+}
+
+void parcel_write_varint64(parcel_t *parcel, int64_t val)
+{
+	parcel_write_varuint64(parcel, (val << 1) ^ (val >> 63));
+}
+
+void parcel_write_string(parcel_t *parcel, const char *str, size_t size)
+{
+	if (!size)
+		size = strlen(str);
+	parcel_write_varuint64(parcel, size);
+	parcel_write(parcel, str, size);
+	parcel_write(parcel, "", 1);
+}
+
+void parcel_write_bool(parcel_t *parcel, bool val)
+{
+	uchar_t v = val;
+	parcel_write(parcel, &v, 1);
+}
+
+void parcel_write_int(parcel_t *parcel, int32_t val)
+{
+	parcel_write(parcel, &val, sizeof(val));
+}
+
+void parcel_write_int64(parcel_t *parcel, int64_t val)
+{
+	parcel_write(parcel, &val, sizeof(val));
+}
+
+void parcel_read_new(const char *ptr, size_t size, parcel_t *parcel)
+{
+	parcel->size = 0;
+	parcel->capacity = size;
+	parcel->ptr = (uchar_t *) ptr;
+	parcel->error = false;
+}
+
+static uchar_t parcel_read_uchar(parcel_t *parcel)
+{
+	if (parcel->size <= parcel->capacity)
+		return parcel->ptr[parcel->size++];
+	parcel->error = true;
+	return 0;
+}
+
+uint64_t parcel_read_varuint64(parcel_t *parcel)
+{
+	uint64_t val = 0;
+	int offset = 0;
+	while (1) {
+		uchar_t v = parcel_read_uchar(parcel);
+		if (v & 0x80) {
+			val |= (v & 0x7f) << offset;
+			offset += 7;
+		} else {
+			val |= v << offset;
+			break;
+		}
+	}
+	return val;
+}
+
+int32_t parcel_read_varint(parcel_t *parcel)
+{
+	return parcel_read_varint64(parcel);
+}
+
+int64_t parcel_read_varint64(parcel_t *parcel)
+{
+	uint64_t val = parcel_read_varuint64(parcel);
+	return (val >> 1) ^ (-(val & 1));
+}
+
+const char *parcel_read_string_and_size(parcel_t *parcel, size_t *size)
+{
+	*size = parcel_read_varuint64(parcel);
+	const char *str = (const char *) (parcel->ptr + parcel->size);
+	parcel->size += *size + 1;
+	if (parcel->size > parcel->capacity)
+		parcel->error = true;
+	return str;
+}
+
+const char *parcel_read_string(parcel_t *parcel)
+{
+	size_t size;
+	return parcel_read_string_and_size(parcel, &size);
+}
+
+bool parcel_read_bool(parcel_t *parcel)
+{
+	return parcel_read_uchar(parcel);
+}
+
+static void parcel_read(parcel_t *parcel, void *buf, size_t size)
+{
+	if (parcel->size + size <= parcel->capacity) {
+		memcpy(buf, parcel->ptr + parcel->size, size);
+		parcel->size += size;
+	} else {
+		parcel->error = true;
+	}
+}
+
+int32_t parcel_read_int(parcel_t *parcel)
+{
+	int32_t val;
+	parcel_read(parcel, &val, sizeof(val));
+	return val;
+}
+
+int64_t parcel_read_int64(parcel_t *parcel)
+{
+	int64_t val;
+	parcel_read(parcel, &val, sizeof(val));
+	return val;
+}
+
+bool parcel_error(const parcel_t *parcel)
+{
+	return parcel->error;
+}
