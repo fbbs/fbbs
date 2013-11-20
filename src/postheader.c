@@ -299,7 +299,7 @@ int post_header(struct postheader *header)
 			if (askyn("\xd4\xa4\xc9\xe8\xcf\xd4\xca\xbe\xc7\xb0\xc8\xfd\xb8\xf6\xc7\xa9\xc3\xfb\xb5\xb5, \xd2\xaa\xcf\xd4\xca\xbe\xc8\xab\xb2\xbf\xc2\xf0", NA, YEA) == YEA)
 				ansimore(mybuf, YEA);
 			else {
-				clear();
+				screen_clear();
 				ansimore2(mybuf, NA, 0, 18);
 			}
 #ifdef RNDSIGN

@@ -494,7 +494,7 @@ int mode;
        d.death=1;
      }
    }        
-   clear(); 
+   screen_clear(); 
    /*showtitle("电子养小鸡", BoardName);*/
    move(0,0);
    if(d.sex==1)
@@ -740,7 +740,7 @@ int mode;
       	d.hskill=0;
       if(d.brave<0)
         d.brave=0;
-      clear(); 
+      screen_clear(); 
       //% showtitle("电子养小鸡", BoardName); 
       showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName); 
       move(10,0);
@@ -781,7 +781,7 @@ int mode;
 #endif  // END MAPLE
     }   
    }
-   clear(); 
+   screen_clear(); 
    move(0,0);
    if(d.sex==1)
      //% sprintf(buf,"[1;41m  星空战斗鸡 ～ [32m♂ [37m%-10s                                                  [0m",d.name); 	 
@@ -1021,7 +1021,7 @@ int mode;
    
    if(m.death==1)
    {
-     clear();
+     screen_clear();
      //% showtitle("电子养小鸡", BoardName);
      showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName);
      if(mode==1)
@@ -1071,7 +1071,7 @@ int mode;
    }
    if(d.death==1 && mode==1)
    {   
-       clear();
+       screen_clear();
        //% showtitle("电子养小鸡", BoardName);       
        showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName);       
        move(10,0);
@@ -1096,7 +1096,7 @@ int mode;
    }
    else if(d.death==1 && mode==2)
    {
-       clear();
+       screen_clear();
        //% showtitle("电子养小鸡", BoardName);       
        showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName);       
        move(10,0);

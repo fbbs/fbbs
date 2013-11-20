@@ -106,7 +106,7 @@ static void print_attachment_info(const struct fileheader *fp,
 	snprintf(url, sizeof(url), "http://"BBSHOST_PUBLIC"/upload/%s/%s", bname,
 			fp->filename);
 
-	clear();
+	screen_clear();
 	//% 文件详细信息
 	prints("\xce\xc4\xbc\xfe\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2\n\n"
 			//% 版名:

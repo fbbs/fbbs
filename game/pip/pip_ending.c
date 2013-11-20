@@ -230,7 +230,7 @@ pip_ending_screen()
   char endbuf3[50];
   int endgrade=0;
   int endmode=0;
-  clear();
+  screen_clear();
   pip_ending_decide(endbuf1,endbuf2,endbuf3,&endmode,&endgrade);
   move(1,9); 
   //% prints("[1;33m┏━━━┓┏━━  ┓┏━━━  ┏━━━┓┏━━  ┓  ━━━  [0m");

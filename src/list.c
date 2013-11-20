@@ -127,7 +127,7 @@ int tui_list(tui_list_t *p)
 
 		if (p->update != DONOTHING) {
 			if (p->update == FULLUPDATE) {
-				clear();
+				screen_clear();
 				p->title(p);
 				p->update = PARTUPDATE;
 			}
@@ -235,7 +235,7 @@ int slide_list(slide_list_t *p)
 
 		if (p->update != DONOTHING) {
 			if (p->update == FULLUPDATE) {
-				clear();
+				screen_clear();
 				p->title(p);
 				p->update = PARTUPDATE;
 			}

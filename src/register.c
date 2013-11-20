@@ -355,7 +355,7 @@ void check_reg_extra() {
 		do_report(".SCHOOLMATE", buf);
 		register_send_email(urec, schmate.email);
 	}
-	clear();
+	screen_clear();
 	tui_check_reg_mail();
 }
 
@@ -385,7 +385,7 @@ int fill_reg_form(void)
 
 	set_user_status(ST_NEW);
 
-	clear();
+	screen_clear();
 	move(2, 0);
 	clrtobot();
 	if (currentuser.userlevel & PERM_REGISTER) {
@@ -465,7 +465,7 @@ void check_register_info(void)
 	}
 #ifdef NEWCOMERREPORT
 	if (urec->numlogins == 1) {
-		clear();
+		screen_clear();
 		sprintf(buf, "tmp/newcomer.%s", currentuser.userid);
 		if ((fout = fopen(buf, "w")) != NULL) {
 			//% fprintf(fout, "大家好,\n\n");
@@ -510,7 +510,7 @@ void check_register_info(void)
 #ifndef FDQUAN
 	//检查邮箱
 	while (!HAS_PERM(PERM_BINDMAIL)) {
-		clear();
+		screen_clear();
 		if (HAS_PERM(PERM_REGISTER)) {
 			//% while (askyn("是否绑定复旦邮箱", NA, NA)== NA)
 			while (askyn("\xca\xc7\xb7\xf1\xb0\xf3\xb6\xa8\xb8\xb4\xb5\xa9\xd3\xca\xcf\xe4", NA, NA)== NA)
@@ -518,7 +518,7 @@ void check_register_info(void)
 			{
 				//% if (askyn("是否填写校友信息", NA, NA) == NA) {
 				if (askyn("\xca\xc7\xb7\xf1\xcc\xee\xd0\xb4\xd0\xa3\xd3\xd1\xd0\xc5\xcf\xa2", NA, NA) == NA) {
-					clear();
+					screen_clear();
 					continue;
 				}
 				check_reg_extra();
@@ -530,7 +530,7 @@ void check_register_info(void)
 	}
 #endif
 
-	clear();
+	screen_clear();
 	if (HAS_PERM(PERM_REGISTER))
 		return;
 #ifndef AUTOGETPERM

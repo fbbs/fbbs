@@ -289,7 +289,7 @@ pip_live_again()
    
    tm=(d.bbtime)/60/30;
 
-   clear();
+   screen_clear();
    //% showtitle("小鸡复活手术中", BoardName);
    showtitle("\xd0\xa1\xbc\xa6\xb8\xb4\xbb\xee\xca\xd6\xca\xf5\xd6\xd0", BoardName);
 

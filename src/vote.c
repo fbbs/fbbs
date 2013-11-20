@@ -267,7 +267,7 @@ int b_notes_edit()
 
 	if (!am_curr_bm())
 		return 0;
-	clear();
+	screen_clear();
 	move(0, 0);
 	//% prints("设定：\n\n  (1)一般备忘录\n  (2)秘密备忘录\n");
 	prints("\xc9\xe8\xb6\xa8\xa3\xba\n\n  (1)\xd2\xbb\xb0\xe3\xb1\xb8\xcd\xfc\xc2\xbc\n  (2)\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\n");
@@ -345,7 +345,7 @@ int b_notes_edit() {
 	int notetype;
 	if (!am_curr_bm())
 		return 0;
-	clear();
+	screen_clear();
 	move(1, 0);
 	//% prints("编辑/删除备忘录");
 	prints("\xb1\xe0\xbc\xad/\xc9\xbe\xb3\xfd\xb1\xb8\xcd\xfc\xc2\xbc");
@@ -410,7 +410,7 @@ int b_notes_passwd(void)
 
 	if (!am_curr_bm())
 		return 0;
-	clear();
+	screen_clear();
 	move(1, 0);
 	//% prints("设定/更改/取消「秘密备忘录」密码...");
 	prints("\xc9\xe8\xb6\xa8/\xb8\xfc\xb8\xc4/\xc8\xa1\xcf\xfb\xa1\xb8\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xb9\xc3\xdc\xc2\xeb...");
@@ -765,7 +765,7 @@ int vote_maintain(const char *bname)
 	if (makevote(ball, bname))
 		return FULLUPDATE; //设置投票箱
 	setvoteflag(bname, 1);
-	clear();
+	screen_clear();
 	strcpy(ball->userid, currentuser.userid);
 	if (append_record(controlfile, ball, sizeof(*ball)) == -1) {
 		//% prints("发生严重的错误，无法开启投票，请通告站长");
@@ -820,13 +820,13 @@ int makevote(struct votebal *ball, const char *bname)
 	sprintf(buf, "%s.%d", genbuf, ball->opendate);
 	aborted = vedit(buf, NA, YEA, NULL);
 	if (aborted) {
-		clear();
+		screen_clear();
 		//% prints("取消此次投票设定\n");
 		prints("\xc8\xa1\xcf\xfb\xb4\xcb\xb4\xce\xcd\xb6\xc6\xb1\xc9\xe8\xb6\xa8\n");
 		pressreturn();
 		return 1;
 	}
-	clear();
+	screen_clear();
 	//% getdata(0, 0, "此次投票所须天数 (不可０天): ", buf, 3, DOECHO, YEA);
 	getdata(0, 0, "\xb4\xcb\xb4\xce\xcd\xb6\xc6\xb1\xcb\xf9\xd0\xeb\xcc\xec\xca\xfd (\xb2\xbb\xbf\xc9\xa3\xb0\xcc\xec): ", buf, 3, DOECHO, YEA);
 
@@ -1125,7 +1125,7 @@ int user_vote(int num) {
 			aborted = !getsug(&uservote);
 			break;
 	}
-	clear();
+	screen_clear();
 	if (aborted == YEA) {
 		//% prints("保留 【[1m%s[m】原来的的投票。\n", currvote.title);
 		prints("\xb1\xa3\xc1\xf4 \xa1\xbe[1m%s[m\xa1\xbf\xd4\xad\xc0\xb4\xb5\xc4\xb5\xc4\xcd\xb6\xc6\xb1\xa1\xa3\n", currvote.title);
@@ -1219,7 +1219,7 @@ int vote_results(const char *bname)
 		clrtobot();
 		pressreturn();
 	} else
-		clear();
+		screen_clear();
 	return FULLUPDATE;
 }
 
@@ -1291,7 +1291,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 		case 'o':
 			if (!am_curr_bm())
 				return YEA;
-			clear();
+			screen_clear();
 			deal = 1;
 			get_record(controlfile, &currvote, sizeof(struct votebal),
 					allnum + 1);
@@ -1307,7 +1307,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 				//% prints("取消删除行动\n");
 				prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
 				pressreturn();
-				clear();
+				screen_clear();
 				break;
 			}
 			mk_result(allnum + 1);
@@ -1319,7 +1319,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 		case 'm':
 			if (!am_curr_bm())
 				return YEA;
-			clear();
+			screen_clear();
 			deal = 1;
 			get_record(controlfile, &currvote, sizeof(struct votebal),
 					allnum + 1);
@@ -1335,7 +1335,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 				//% prints("取消修改行动\n");
 				prints("\xc8\xa1\xcf\xfb\xd0\xde\xb8\xc4\xd0\xd0\xb6\xaf\n");
 				pressreturn();
-				clear();
+				screen_clear();
 				break;
 			}
 			makevote(&currvote, currboard);
@@ -1352,7 +1352,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			deal = 1;
 			get_record(controlfile, &currvote, sizeof(struct votebal),
 					allnum + 1);
-			clear();
+			screen_clear();
 			//% prints("[5;1;31m警告!![m\n");
 			prints("[5;1;31m\xbe\xaf\xb8\xe6!![m\n");
 			//% prints("投票箱标题：[1m%s[m\n", currvote.title);
@@ -1365,7 +1365,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 				//% prints("取消删除行动\n");
 				prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
 				pressreturn();
-				clear();
+				screen_clear();
 				break;
 			}
 			//% sprintf(buf, "[关闭] 强制关闭投票 %s", currvote.title);
@@ -1405,9 +1405,9 @@ int b_vote(const char *bname)
 		return FULLUPDATE;
 	}
 	setlistrange(num_of_vote);
-	clear();
+	screen_clear();
 	voting = choose(NA, 0, vote_title, vote_key, Show_Votes, user_vote); //?
-	clear();
+	screen_clear();
 	return FULLUPDATE;
 }
 

@@ -1010,7 +1010,7 @@ static int show_post_info(const post_info_t *pi)
 	if (!pi)
 		return DONOTHING;
 
-	clear();
+	screen_clear();
 	move(0, 0);
 	//% 版面文章的详细信息
 	prints("\xb0\xe6\xc3\xe6\xce\xc4\xd5\xc2\xb5\xc4\xcf\xea\xcf\xb8"
@@ -1142,7 +1142,7 @@ static int tui_edit_post_content(post_info_t *pi)
 	int status = session_status();
 	set_user_status(ST_EDIT);
 
-	clear();
+	screen_clear();
 	if (vedit(file, NA, NA, NULL) != -1) {
 		char *content = convert_file_to_utf8_content(file);
 		if (content) {
@@ -1188,7 +1188,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	int status = session_status();
 	set_user_status(ST_POSTING);
 
-	clear();
+	screen_clear();
 	show_board_notes(board.name, 1);
 
 	struct postheader header = { .mail_owner = false, };
@@ -1247,7 +1247,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 
 	if (vedit(file, true, true, &header) == -1) {
 		unlink(file);
-		clear();
+		screen_clear();
 		set_user_status(status);
 		return FULLUPDATE;
 	}
@@ -1771,7 +1771,7 @@ static void construct_prompt(char *s, size_t size, const char **options,
 }
 
 #if 0
-		clear();
+		screen_clear();
 		//% prints("\n\n您将进行区段转载。转载范围是：[%d -- %d]\n", num1, num2);
 		prints("\n\n\xc4\xfa\xbd\xab\xbd\xf8\xd0\xd0\xc7\xf8\xb6\xce\xd7\xaa\xd4\xd8\xa1\xa3\xd7\xaa\xd4\xd8\xb7\xb6\xce\xa7\xca\xc7\xa3\xba[%d -- %d]\n", num1, num2);
 		//% prints("当前版面是：[ %s ] \n", currboard);
@@ -1786,7 +1786,7 @@ static void construct_prompt(char *s, size_t size, const char **options,
 			//% prints("\n\n对不起，本文就在您要转载的版面上，所以无需转载。\n");
 			prints("\n\n\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb1\xbe\xce\xc4\xbe\xcd\xd4\xda\xc4\xfa\xd2\xaa\xd7\xaa\xd4\xd8\xb5\xc4\xb0\xe6\xc3\xe6\xc9\xcf\xa3\xac\xcb\xf9\xd2\xd4\xce\xde\xd0\xe8\xd7\xaa\xd4\xd8\xa1\xa3\n");
 			pressreturn();
-			clear();
+			screen_clear();
 			return FULLUPDATE;
 		}
 		//% if (askyn("确定要转载吗", NA, NA)==NA)
@@ -2537,7 +2537,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case Ctrl('R'):
 			return reply_with_mail(pi);
 		case 'Z':
-			clear();
+			screen_clear();
 			tui_send_msg(pi->owner);
 			return FULLUPDATE;
 		case Ctrl('A'):

@@ -514,7 +514,7 @@ struct weapon *p;
   int choice;
   
   do{
-   clear();
+   screen_clear();
    showtitle(menutitle[type], BoardName);
    show_weapon_pic(0);
 /*   move(10,2); 

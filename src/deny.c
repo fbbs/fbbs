@@ -93,7 +93,7 @@ void list_text(const char *file,
 			empty = true;
 
 		if (redraw) {
-			clear();
+			screen_clear();
 			title_show();
 			if (empty) {
 				//% prints("(无内容)\n");
@@ -863,7 +863,7 @@ static int denylist_add(const char *line)
 			return 0;
 		reason_copy(DEFAULT_REASON);
 		reason_select(DENY_LEVEL_FILE);
-		clear();
+		screen_clear();
 		move(2, 0);
 		//% prints("封禁用户[%s]\n\n(1)发文 (2)登录 (3)聊天 (4)发信\n", user);
 		prints("\xb7\xe2\xbd\xfb\xd3\xc3\xbb\xa7[%s]\n\n(1)\xb7\xa2\xce\xc4 (2)\xb5\xc7\xc2\xbc (3)\xc1\xc4\xcc\xec (4)\xb7\xa2\xd0\xc5\n", user);
@@ -908,7 +908,7 @@ int denylist_key_deal(const char *file, int ch, const char *line)
 		case 'c':
 			if (!line)
 				break;
-			clear();
+			screen_clear();
 			denylist_add(line);
 			break;
 		case 'd':

@@ -451,7 +451,7 @@ int select_menu()
         getdata(22, 0, "\xd2\xaa\xd7\xf6\xd0\xa9\xca\xb2\xf7\xe1\xc4\xd8?\xa3\xba[0]", inbuf, 4, DOECHO,YEA);
         if(tiredstrong>20)
           {
-           clear();
+           screen_clear();
            move(15,30);
            //% outs("呜~~~小鸡会累坏的...要先去休息一下..");
            outs("\xce\xd8~~~\xd0\xa1\xbc\xa6\xbb\xe1\xc0\xdb\xbb\xb5\xb5\xc4...\xd2\xaa\xcf\xc8\xc8\xa5\xd0\xdd\xcf\xa2\xd2\xbb\xcf\xc2..");
@@ -671,7 +671,7 @@ int death()
 
         time(&now);
           ptime = localtime(&now);
-  clear();
+  screen_clear();
   move(5,0);
   clrtobot();
   if((fp = fopen("game/chicken", "a"))!=NULL) 
@@ -696,7 +696,7 @@ fprintf(fp,"[32m%s[m \xd4\xda [34;43m[%d/%d  %d:%02d][m  \xb5\xc4\xd0\xa1\xb
   //abort_bbs();
 }
 
-/*int comeclear()
+/*int comescreen_clear()
 {
    extern struct commands cmdlist[];
 
@@ -715,7 +715,7 @@ pressany(i)
   {
     ch = terminal_getchar();
     if (ch == KEY_ESC && KEY_ESC_arg == 'c')
-      /* capture_screen()*/ clear();
+      /* capture_screen()*/ screen_clear();
   } while ((ch != ' ') && (ch != KEY_LEFT) && (ch != '\r') && (ch != '\n'));
   move(23, 0);
   clrtoeol();
@@ -861,7 +861,7 @@ p_bf()
   FILE *fp;
   char fname[50];
   set_user_status(ST_CHICK);
-  clear();
+  screen_clear();
   move(21,0);
   if(currentuser.money<100){
     //% outs("糖果不足!!");
@@ -949,7 +949,7 @@ fprintf(fp,"[32m%s[m \xd4\xda [34;43m[%d/%d  %d:%02d][m  \xb0\xd1\xd0\xa1\xb
                  currentuser.userid,ptime->tm_mon + 1, ptime->tm_mday,
                            ptime->tm_hour, ptime->tm_min,Name,sel);
                              fclose(fp);
-  clear();
+  screen_clear();
 
   inmoney(sel);
   strcpy(Name,"");
@@ -966,7 +966,7 @@ int gagb_c()
   int l=1,money=0;
 
   //setutmpmode(NANB);
-    clear();
+    screen_clear();
   do{
    /* while(strlen(buf1)<1)*/
   //% getdata(0, 0, "要押多少糖果啊(最大2000)：", buf1, 5, DOECHO,YEA);
@@ -1137,7 +1137,7 @@ int mary_m()
      fp = fopen("game/bank", "r");
      fscanf(fp,"%ld",&bank);
      fclose(fp);
-   clear();
+   screen_clear();
    clrtobot();
    p_mon=0;
    q_mon=currentuser.money;
@@ -1154,7 +1154,7 @@ int show_m()
    int i,j,k,m;
 
    move(0,0);
-   clear();
+   screen_clear();
    //% outs("              □□    □□\n"
    outs("              \xa1\xf5\xa1\xf5    \xa1\xf5\xa1\xf5\n"
 //% "            ／    ＼／    ＼\n"
@@ -1240,7 +1240,7 @@ prints("\n[36m\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\
    case 't':
         m=10000000;
         for(i=1;i<=5;i++){
-         clear();
+         screen_clear();
          move(20,i);
          outs("x");
          if(i%3==0)
@@ -1272,7 +1272,7 @@ prints("\n[36m\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\xa1\xaa\
         {outs("\xcc\xc7\xb9\xfb\xb2\xbb\xd7\xe3");
          pressanykey();
          x[i-1]=k;
-         clear();
+         screen_clear();
          j=0;}
       q_mon-=j;
       p_mon+=j;
@@ -1286,7 +1286,7 @@ int doit()
    int i,j,k,m,seed,flag=0,flag1=0;
    int g[10]={5,40,30,25,50,20,15,10,2,0};
 
-   clear();
+   screen_clear();
    move(0,0);
 /*   outs("
                        //% □□□□□□□□□□□
@@ -1322,7 +1322,7 @@ int doit()
 */
         m=1000000;
         for(i=1;i<=30;i++){
-         clear();
+         screen_clear();
          move(10,i);
          //% outs("●");
          outs("\xa1\xf1");
@@ -1337,7 +1337,7 @@ int doit()
    demoney(p_mon);
    refresh();
    sleep(1);
-   clear();
+   screen_clear();
    move(10,31);
    gold=0;
    seed=time(0)%10000;

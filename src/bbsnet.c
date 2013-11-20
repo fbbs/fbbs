@@ -90,7 +90,7 @@ static int bbsnet_log(const site_t *site)
 static void do_bbsnet(const site_t *site)
 {
 	set_user_status(ST_BBSNET);
-	clear();
+	screen_clear();
 	//% prints("\033[1;32m连往: %s (%s)\n连不上时请稍候，%d 秒后将自动退出\n",
 	prints("\033[1;32m\xc1\xac\xcd\xf9: %s (%s)\n\xc1\xac\xb2\xbb\xc9\xcf\xca\xb1\xc7\xeb\xc9\xd4\xba\xf2\xa3\xac%d \xc3\xeb\xba\xf3\xbd\xab\xd7\xd4\xb6\xaf\xcd\xcb\xb3\xf6\n",
 			site->name, site->ip, CONNECT_TIMEOUT);
@@ -235,7 +235,7 @@ static void show_line(const site_t *sites, int count, int line, int cur)
 static void show_sites(const site_t *sites, int count)
 {
 	int i;
-	clear();
+	screen_clear();
 	//% outs("\033[1;44m穿梭银河\033[K\n\033[m离开[\033[1;32mCtrl-C Ctrl-D\033[m] "
 	outs("\033[1;44m\xb4\xa9\xcb\xf3\xd2\xf8\xba\xd3\033[K\n\033[m\xc0\xeb\xbf\xaa[\033[1;32mCtrl-C Ctrl-D\033[m] "
 			//% "选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m,\033[1;32m←\033[m,"
@@ -337,7 +337,7 @@ int ent_bnet(void)
 	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip", fromhost)) {
 		bbsnet("etc/bbsnet.ini", currentuser.userid);
 	} else {
-		clear();
+		screen_clear();
 		//% prints("抱歉，由于您是校内用户，您无法使用本穿梭功能...\n");
 		prints("\xb1\xa7\xc7\xb8\xa3\xac\xd3\xc9\xd3\xda\xc4\xfa\xca\xc7\xd0\xa3\xc4\xda\xd3\xc3\xbb\xa7\xa3\xac\xc4\xfa\xce\xde\xb7\xa8\xca\xb9\xd3\xc3\xb1\xbe\xb4\xa9\xcb\xf3\xb9\xa6\xc4\xdc...\n");
 		//% prints("请直接连往复旦泉站：telnet 10.8.225.9");
@@ -355,7 +355,7 @@ int ent_bnet2(void)
 	if (HAS_PERM(PERM_BLEVELS) || can_bbsnet("etc/bbsnetip2", fromhost)) {
 		bbsnet("etc/bbsnet2.ini", currentuser.userid);
 	} else {
-		clear();
+		screen_clear();
 		//% prints("抱歉，您所处的位置无法使用本穿梭功能...");
 		prints("\xb1\xa7\xc7\xb8\xa3\xac\xc4\xfa\xcb\xf9\xb4\xa6\xb5\xc4\xce\xbb\xd6\xc3\xce\xde\xb7\xa8\xca\xb9\xd3\xc3\xb1\xbe\xb4\xa9\xcb\xf3\xb9\xa6\xc4\xdc...");
 		pressanykey();

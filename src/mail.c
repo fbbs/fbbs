@@ -170,7 +170,7 @@ int mailall(void)
 	//% strcpy(title, "没主题");
 	strcpy(title, "\xc3\xbb\xd6\xf7\xcc\xe2");
 	set_user_status(ST_SMAIL);
-	clear();
+	screen_clear();
 	move(0, 0);
 	sprintf(fname, "tmp/mailall.%s", currentuser.userid);
 	//% prints("你要寄给所有的：\n");
@@ -227,7 +227,7 @@ int mailall(void)
 	if (vedit(fname, YEA, YEA, &header) == -1) {
 		in_mail = NA;
 		unlink(fname);
-		clear();
+		screen_clear();
 		return -2;
 	}
 	move(-1, 0);
@@ -256,7 +256,7 @@ m_internet()
 	set_user_status(ST_SMAIL);
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
-		clear();
+		screen_clear();
 		move(4,0);
 		//% prints("\n\n        您尚未完成注册，或者发送信件的权限被封禁。");
 		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
@@ -280,7 +280,7 @@ m_internet()
 		pressreturn();
 	} else if (valid_addr(receiver)) {
 		*quote_file = '\0';
-		clear();
+		screen_clear();
 		do_send(receiver, NULL);
 	} else {
 		move(3, 0);
@@ -288,7 +288,7 @@ m_internet()
 		prints("\xca\xd5\xd0\xc5\xc8\xcb\xb2\xbb\xd5\xfd\xc8\xb7, \xc7\xeb\xd6\xd8\xd0\xc2\xd1\xa1\xc8\xa1\xd6\xb8\xc1\xee\n");
 		pressreturn();
 	}
-	clear();
+	screen_clear();
 	refresh();
 }
 #endif
@@ -427,7 +427,7 @@ int do_send(const char *userid, const char *title)
 	strcpy(header.ds, userid);
 	result = post_header(&header);
 	if( result == -1 ) {
-		clear();
+		screen_clear();
 		return -2;
 	}
 	if( result == YEA) {
@@ -445,10 +445,10 @@ int do_send(const char *userid, const char *title)
 		int res;
 		if (vedit(filepath, YEA, YEA, &header) == -1) {
 			unlink(filepath);
-			clear();
+			screen_clear();
 			return -2;
 		}
-		clear();
+		screen_clear();
 		//% prints("信件即将寄给 %s \n", userid);
 		prints("\xd0\xc5\xbc\xfe\xbc\xb4\xbd\xab\xbc\xc4\xb8\xf8 %s \n", userid);
 		//% prints("标题为： %s \n", header.title);
@@ -496,12 +496,12 @@ int do_send(const char *userid, const char *title)
 	} else {
 		if (vedit(filepath, YEA, YEA, &header) == -1) {
 			unlink(filepath);
-			clear();
+			screen_clear();
 			return -2;
 		}
 
 		//backup
-		clear();
+		screen_clear();
 		//% if (askyn("是否备份给自己", NA, NA) == YEA)
 		if (askyn("\xca\xc7\xb7\xf1\xb1\xb8\xb7\xdd\xb8\xf8\xd7\xd4\xbc\xba", NA, NA) == YEA)
 		mail_file(filepath, currentuser.userid, save_title2);
@@ -532,7 +532,7 @@ int m_send(const char *userid)
 	char uident[STRLEN];
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
-		clear();
+		screen_clear();
 		move(4,0);
 		//% prints("\n\n        您尚未完成注册，或者发送信件的权限被封禁。");
 		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
@@ -557,7 +557,7 @@ int m_send(const char *userid)
 	} else
 	strcpy(uident, userid);
 	set_user_status(ST_SMAIL);
-	clear();
+	screen_clear();
 	*quote_file = '\0';
 	switch (do_send(uident, NULL)) {
 		case -1:
@@ -618,7 +618,7 @@ static int mail_reply(int ent, struct fileheader *fileinfo, char *direct)
 	}
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
-		clear();
+		screen_clear();
 		move(4,0);
 		//% prints("\n\n        您尚未完成注册，或者发送信件的权限被封禁。");
 		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
@@ -630,7 +630,7 @@ static int mail_reply(int ent, struct fileheader *fileinfo, char *direct)
 		pressreturn();
 		return 0;
 	}
-	clear();
+	screen_clear();
 	strlcpy(uid, fileinfo->owner, STRLEN);
 	if ((uid[strlen(uid) - 1] == '>') && strchr(uid, '<')) {
 		t = strtok(uid, "<>");
@@ -706,11 +706,11 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 	//% getdata(1, 0, "(Y)读取 (N)不读 (Q)离开 [Y]: ", genbuf, 3, DOECHO, YEA);
 	getdata(1, 0, "(Y)\xb6\xc1\xc8\xa1 (N)\xb2\xbb\xb6\xc1 (Q)\xc0\xeb\xbf\xaa [Y]: ", genbuf, 3, DOECHO, YEA);
 	if (genbuf[0] == 'q' || genbuf[0] == 'Q') {
-		clear();
+		screen_clear();
 		return QUIT;
 	}
 	if (genbuf[0] != 'y' && genbuf[0] != 'Y' && genbuf[0] != '\0') {
-		clear();
+		screen_clear();
 		return 0;
 	}
 	read_mail(fptr);
@@ -739,7 +739,7 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 			ansimore(fname, NA); /* re-read */
 	}
 	if (delete_it) {
-		clear();
+		screen_clear();
 		//% sprintf(genbuf, "删除信件 [%-.55s]", fptr->title);
 		sprintf(genbuf, "\xc9\xbe\xb3\xfd\xd0\xc5\xbc\xfe [%-.55s]", fptr->title);
 		if (askyn(genbuf, NA, NA) == YEA) {
@@ -750,13 +750,13 @@ static int read_new_mail(void *fptrv, int index, void *arg)
 			delmsgs[delcnt++] = index;
 		}
 	}
-	clear();
+	screen_clear();
 	return 0;
 }
 
 int m_new(void)
 {
-	clear();
+	screen_clear();
 	mrd = 0;
 	set_user_status(ST_RMAIL);
 	read_new_mail(NULL, 0, NULL);
@@ -766,7 +766,7 @@ int m_new(void)
 		delete_record(currmaildir, sizeof(struct fileheader),
 				delmsgs[delcnt], NULL, NULL);
 	if (!mrd) {
-		clear();
+		screen_clear();
 		move(10, 30);
 		//% prints("您现在没有新信件!");
 		prints("\xc4\xfa\xcf\xd6\xd4\xda\xc3\xbb\xd3\xd0\xd0\xc2\xd0\xc5\xbc\xfe!");
@@ -808,7 +808,7 @@ int check_maxmail(void)
 	mailsize = getmailsize(currentuser.userid);
 	if (currentuser.nummails > maxmail || mailsize > maxsize) {
 		mailXX = 1;
-		clear();
+		screen_clear();
 		move(4, 0);
 		if (currentuser.nummails > maxmail)
 			//% prints("您的私人信件高达 %d 封, 您的信件上限: %d 封\n",
@@ -947,12 +947,12 @@ static int show_mail_info(int ent, struct fileheader *fileinfo, char *direct)
 
 	struct stat filestat;
 	if (stat(filepath, &filestat) < 0) {
-		clear();
+		screen_clear();
 		move(10, 30);
 		//% prints("对不起，当前文章不存在！\n", filepath);
 		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb5\xb1\xc7\xb0\xce\xc4\xd5\xc2\xb2\xbb\xb4\xe6\xd4\xda\xa3\xa1\n", filepath);
 		pressanykey();
-		clear();
+		screen_clear();
 		return FULLUPDATE;
 	}
 
@@ -972,7 +972,7 @@ static int show_mail_info(int ent, struct fileheader *fileinfo, char *direct)
 		//% type = "普通";
 		type = "\xc6\xd5\xcd\xa8";
 
-	clear();
+	screen_clear();
 	move(0, 0);
 	//% prints("%s的详细信息:\n\n", "邮箱信件");
 	prints("%s\xb5\xc4\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2:\n\n", "\xd3\xca\xcf\xe4\xd0\xc5\xbc\xfe");
@@ -1007,7 +1007,7 @@ int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 	char *t;
 	int readpn;
 	char done = NA, delete_it, replied;
-	clear();
+	screen_clear();
 	readpn = FULLUPDATE;
 	setqtitle(fileinfo->title, 0);
 	strcpy(buf, direct);
@@ -1116,7 +1116,7 @@ int _mail_forward(const char *path, const struct fileheader *fp, bool uuencode)
 
 	doforward(path, fp, uuencode);
 	pressreturn();
-	clear();
+	screen_clear();
 	return FULLUPDATE;
 }
 
@@ -1295,7 +1295,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	sprintf(tmpfile, "tmp/gsend.%s.%05d", currentuser.userid, session_pid());
 	result = post_header(&header);
 	if( result == -1) {
-		clear();
+		screen_clear();
 		return -2;
 	}
 	if (result == YEA) {
@@ -1307,10 +1307,10 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	do_quote(quote_file, tmpfile, header.include_mode, header.anonymous);
 	if (vedit(tmpfile, YEA, YEA, &header) == -1) {
 		unlink(tmpfile);
-		clear();
+		screen_clear();
 		return -2;
 	}
-	clear();
+	screen_clear();
 	//% prints("[5;1;32m正在寄件中，请稍候...[m");
 	prints("[5;1;32m\xd5\xfd\xd4\xda\xbc\xc4\xbc\xfe\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2...[m");
 
@@ -1374,7 +1374,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 		session_set_idle_cached();
 	}
 	unlink(tmpfile);
-	clear();
+	screen_clear();
 	if (G_SENDMODE == 2) {
 		fclose(mp);
 		db_clear(res);
@@ -1392,7 +1392,7 @@ int g_send() {
 	set_user_status(ST_SMAIL);
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
-		clear();
+		screen_clear();
 		move(4, 0);
 		//% prints("\n\n        您尚未完成注册，或者发送信件的权限被封禁。");
 		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
@@ -1407,7 +1407,7 @@ int g_send() {
 	*quote_file = '\0';
 	sethomefile(maillists, currentuser.userid, "maillist");
 	while (1) {
-		clear();
+		screen_clear();
 		cnt = listfilecontent(maillists, 3);
 		if (cnt > maxrecp - 10) {
 			move(1, 0);
@@ -1444,7 +1444,7 @@ int g_send() {
 				 *         屏幕，并且完成一次添加操作。希望以后会有更好的办法。-_-||
 				 */
 				while (1) {
-					clear();
+					screen_clear();
 					cnt = listfilecontent(maillists, 3);
 					if (cnt > maxrecp - 10) {
 						move(1, 0);
@@ -1547,7 +1547,7 @@ int g_send() {
 			case 'I':
 			case 'i': {
 					n = 0;
-					clear();
+					screen_clear();
 
 					db_res_t *res = load_names_of_follows();
 					for (i = cnt; i < maxrecp && n < db_res_rows(res); i++) {
@@ -1593,7 +1593,7 @@ int g_send() {
 					}
 					db_clear(res);
 					fmode = NA;
-					clear();
+					screen_clear();
 				}
 				break;
 			case 'C':
@@ -1661,7 +1661,7 @@ int ov_send() {
 	set_user_status(ST_SMAIL);
 	/* Added by Amigo 2002.06.10. To add mail right check. */
 	if (!HAS_PERM(PERM_MAIL)) {
-		clear();
+		screen_clear();
 		move(4, 0);
 		//% prints("\n\n        您尚未完成注册，或者发送信件的权限被封禁。");
 		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
@@ -1684,7 +1684,7 @@ int ov_send() {
 		//% prints("您并没有设定好友。\n");
 		prints("\xc4\xfa\xb2\xa2\xc3\xbb\xd3\xd0\xc9\xe8\xb6\xa8\xba\xc3\xd3\xd1\xa1\xa3\n");
 		pressanykey();
-		clear();
+		screen_clear();
 		db_clear(res);
 		return 0;
 	} else {
@@ -1777,7 +1777,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 		strlcpy(address, currentuser.userid, sizeof(address));
 
 	char receiver[STRLEN];
-	clear();
+	screen_clear();
 	if (HAS_PERM(PERM_SETADDR)) {
 		//% prints("本站目前只提供站内转信，请输入要转寄的帐号名。\n"
 		prints("\xb1\xbe\xd5\xbe\xc4\xbf\xc7\xb0\xd6\xbb\xcc\xe1\xb9\xa9\xd5\xbe\xc4\xda\xd7\xaa\xd0\xc5\xa3\xac\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xbc\xc4\xb5\xc4\xd5\xca\xba\xc5\xc3\xfb\xa1\xa3\n"
@@ -1831,7 +1831,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 			//% if (askyn("是否寄出未修改的文章", YEA, NA) == 0) {
 			if (askyn("\xca\xc7\xb7\xf1\xbc\xc4\xb3\xf6\xce\xb4\xd0\xde\xb8\xc4\xb5\xc4\xce\xc4\xd5\xc2", YEA, NA) == 0) {
 				unlink(tmpfile);
-				clear();
+				screen_clear();
 				return 1;
 			}
 		} else {
@@ -1845,7 +1845,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 				fclose(fp);
 			}
 		}
-		clear();
+		screen_clear();
 	}
 
 	//% prints("转寄信件给 %s, 请稍候....\n", address);

@@ -120,7 +120,7 @@ pip_new_game()
   
   if(d.death==1 && !(!d.name[0]))
   {
-     clear();
+     screen_clear();
      //% showtitle("外星战斗鸡", BoardName); 
      showtitle("\xcd\xe2\xd0\xc7\xd5\xbd\xb6\xb7\xbc\xa6", BoardName); 
      move(4,6);
@@ -159,7 +159,7 @@ pip_new_game()
   }
   if(d.death!=0 || !d.name[0])
   {
-    clear();
+    screen_clear();
     //% showtitle("外星战斗鸡", BoardName);   
     showtitle("\xcd\xe2\xd0\xc7\xd5\xbd\xb6\xb7\xbc\xa6", BoardName);   
     /*小鸡命名*/
@@ -312,7 +312,7 @@ int mode;
  char buf[100];
  char genbuf[200];
  time_t now;
- clear();
+ screen_clear();
  //% showtitle("电子养小鸡", BoardName); 
  showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName); 
  if(mode==1)
@@ -320,7 +320,7 @@ int mode;
    show_die_pic(1);
    //% pressanykey("死神来带走小鸡了");
    pressanykey("\xcb\xc0\xc9\xf1\xc0\xb4\xb4\xf8\xd7\xdf\xd0\xa1\xbc\xa6\xc1\xcb");
-   clear();
+   screen_clear();
    //% showtitle("电子养小鸡", BoardName); 
    showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName); 
    show_die_pic(2);

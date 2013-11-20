@@ -250,7 +250,7 @@ int tui_send_msg(const char *uname)
 
 	if (!*uname || strcaseeq(uname, "guest")
 			|| strcaseeq(uname, currentuser.userid)) {
-		clear();
+		screen_clear();
 		return 0;
 	}
 
@@ -287,7 +287,7 @@ int tui_send_msg(const char *uname)
 		//% prints("\033[1m对方已经离线...\033[m\n");
 		prints("\033[1m\xb6\xd4\xb7\xbd\xd2\xd1\xbe\xad\xc0\xeb\xcf\xdf...\033[m\n");
 	pressreturn();
-	clear();
+	screen_clear();
 	return r;
 }
 

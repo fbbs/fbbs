@@ -26,7 +26,7 @@ int offline() {
 	char buf[STRLEN], lastword[640];
 
 	set_user_status(ST_OFFLINE);
-	clear();
+	screen_clear();
 	/*2003.04.22 modified by stephen to deny the user who is under punishing to suicide*/
 	if (!HAS_PERM(PERM_POST)|| !HAS_PERM(PERM_MAIL)
 			|| !HAS_PERM(PERM_TALK)) {
@@ -34,7 +34,7 @@ int offline() {
 		//% prints("您被封禁权限, 不能随便自杀!!!\n");
 		prints("\xc4\xfa\xb1\xbb\xb7\xe2\xbd\xfb\xc8\xa8\xcf\xde, \xb2\xbb\xc4\xdc\xcb\xe6\xb1\xe3\xd7\xd4\xc9\xb1!!!\n");
 		pressreturn();
-		clear();
+		screen_clear();
 		return 0;
 
 	}
@@ -44,7 +44,7 @@ int offline() {
 		//% prints("您有重任在身, 不能随便自杀啦!!\n");
 		prints("\xc4\xfa\xd3\xd0\xd6\xd8\xc8\xce\xd4\xda\xc9\xed, \xb2\xbb\xc4\xdc\xcb\xe6\xb1\xe3\xd7\xd4\xc9\xb1\xc0\xb2!!\n");
 		pressreturn();
-		clear();
+		screen_clear();
 		return 0;
 	}
 	/*2003.04.22 stephen modify end*/
@@ -55,7 +55,7 @@ int offline() {
 		//% prints("请 mail 给 SYSOP 说明自杀原因, 谢谢。\n");
 		prints("\xc7\xeb mail \xb8\xf8 SYSOP \xcb\xb5\xc3\xf7\xd7\xd4\xc9\xb1\xd4\xad\xd2\xf2, \xd0\xbb\xd0\xbb\xa1\xa3\n");
 		pressreturn();
-		clear();
+		screen_clear();
 		return 0;
 	}
 	//% getdata(1, 0, "请输入您的密码: ", buf, PASSLEN, NOECHO, YEA);
@@ -64,10 +64,10 @@ int offline() {
 		//% prints("\n\n很抱歉, 您输入的密码不正确。\n");
 		prints("\n\n\xba\xdc\xb1\xa7\xc7\xb8, \xc4\xfa\xca\xe4\xc8\xeb\xb5\xc4\xc3\xdc\xc2\xeb\xb2\xbb\xd5\xfd\xc8\xb7\xa1\xa3\n");
 		pressreturn();
-		clear();
+		screen_clear();
 		return 0;
 	}
-	clear();
+	screen_clear();
 	//   move(1, 0);
 	//   prints("[1;5;31m警告[0;1;31m： 自杀後, 您将无法再用此帐号进入本站！！");
 	move(3, 0);
@@ -105,7 +105,7 @@ int offline() {
 	move(i + 10, 0);
 	//% if (askyn("你确定要离开这个大家庭", NA, NA) == 1) {
 	if (askyn("\xc4\xe3\xc8\xb7\xb6\xa8\xd2\xaa\xc0\xeb\xbf\xaa\xd5\xe2\xb8\xf6\xb4\xf3\xbc\xd2\xcd\xa5", NA, NA) == 1) {
-		clear();
+		screen_clear();
 		kill_other_sessions();
 		currentuser.userlevel = 0;
 		substitut_record(PASSFILE, &currentuser, sizeof(struct userec),
@@ -175,7 +175,7 @@ int giveUpBBS() {
 
 	set_user_status(ST_GIVEUPBBS);
 	if (!HAS_PERM(PERM_REGISTER)) {
-		clear();
+		screen_clear();
 		move(11, 28);
 		//% prints("[1m[33m你有还没有注册通过，不能戒网！[m");
 		prints("[1m[33m\xc4\xe3\xd3\xd0\xbb\xb9\xc3\xbb\xd3\xd0\xd7\xa2\xb2\xe1\xcd\xa8\xb9\xfd\xa3\xac\xb2\xbb\xc4\xdc\xbd\xe4\xcd\xf8\xa3\xa1[m");
@@ -185,7 +185,7 @@ int giveUpBBS() {
 
 	if (HAS_PERM(PERM_SYSOPS) || HAS_PERM(PERM_BOARDS)
 			|| HAS_PERM(PERM_OBOARDS) || HAS_PERM(PERM_ANNOUNCE)) {
-		clear();
+		screen_clear();
 		move(11, 28);
 		//% prints("[1m[33m你有重任在身，不能戒网！[m");
 		prints("[1m[33m\xc4\xe3\xd3\xd0\xd6\xd8\xc8\xce\xd4\xda\xc9\xed\xa3\xac\xb2\xbb\xc4\xdc\xbd\xe4\xcd\xf8\xa3\xa1[m");
@@ -203,7 +203,7 @@ int giveUpBBS() {
 	sethomefile(genbuf, lookupuser.userid, "giveupBBS");
 	fn = fopen(genbuf, "rt");
 	if (fn) {
-		clear();
+		screen_clear();
 		move(1, 0);
 		//% prints("你现在的戒网情况：\n\n");
 		prints("\xc4\xe3\xcf\xd6\xd4\xda\xb5\xc4\xbd\xe4\xcd\xf8\xc7\xe9\xbf\xf6\xa3\xba\n\n");
@@ -238,7 +238,7 @@ int giveUpBBS() {
 		pressanykey();
 	}
 
-	clear();
+	screen_clear();
 	move(1, 0);
 	//% prints("请选择戒网种类:");
 	prints("\xc7\xeb\xd1\xa1\xd4\xf1\xbd\xe4\xcd\xf8\xd6\xd6\xc0\xe0:");

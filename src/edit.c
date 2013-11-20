@@ -143,7 +143,7 @@ static void display_buffer(void)
 				prints("%s", p->data);
 			} else if ((p->attr & M_MARK)) {
 				showansi = 1;
-				clear_whole_line(i);
+				screen_clear_line(i);
 				cstrnput(p->data + shift);
 			} else {
 				if (p->len >= shift) {
@@ -838,7 +838,7 @@ static int process_ESC_action(int action, int arg)
 		case 'C':
 			editansi = showansi = 1;
 			redraw_everything = YEA;
-			clear();
+			screen_clear();
 			display_buffer();
 			screen_redraw();
 			//% strcpy(msg, "已显示彩色编辑成果，即将切回单色模式");
@@ -856,7 +856,7 @@ static int process_ESC_action(int action, int arg)
 			terminal_getchar();
 			newch = '\0';
 			editansi = showansi = 0;
-			clear();
+			screen_clear();
 			display_buffer();
 		} else
 			//% newch = ask(strcat(msg, "，请继续编辑。"));
@@ -1027,7 +1027,7 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 	int aborted = 0;
 
 	fb_signal(SIGALRM, SIG_IGN);
-	clear();
+	screen_clear();
 	if (session_status() == ST_POSTING) {
 		//% strcpy(p_buf, "L.本站发表, S.转信, A.取消, T.更改标题 or E.再编辑? [L]: ");
 		strcpy(p_buf, "L.\xb1\xbe\xd5\xbe\xb7\xa2\xb1\xed, S.\xd7\xaa\xd0\xc5, A.\xc8\xa1\xcf\xfb, T.\xb8\xfc\xb8\xc4\xb1\xea\xcc\xe2 or E.\xd4\xd9\xb1\xe0\xbc\xad? [L]: ");
@@ -1040,7 +1040,7 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 	valid_article(p_buf, abort, sure);
 	if (abort[0] == 'a' || abort[0] == 'A') {
 		struct stat stbuf;
-		clear();
+		screen_clear();
 		//% prints("取消...\n");
 		prints("\xc8\xa1\xcf\xfb...\n");
 		refresh();
@@ -1412,7 +1412,7 @@ void vedit_key(int ch) {
 				enabledbchar = !enabledbchar;
 				break;
 			case Ctrl('G'):/* redraw screen */
-				clear();
+				screen_clear();
 				redraw_everything = YEA;
 				break;
 			case Ctrl('Q'):/* call help screen */
@@ -1434,7 +1434,7 @@ void vedit_key(int ch) {
 				break;
 			case Ctrl('U'):
 				process_ESC_action('M', '1');
-				clear();
+				screen_clear();
 				break;
 			case Ctrl('V'):
 			case KEY_RIGHT:/* forward character */
@@ -1623,7 +1623,6 @@ void vedit_key(int ch) {
 				top_of_win = top_of_win->next;
 				//Modified by IAMFAT 2002-05-26
 				redraw_everything = YEA;
-				//scroll();
 			}
 		}
 	}
@@ -1677,7 +1676,7 @@ static int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
 	curr_window_line = 0;
 	currln = 0;
 	currpnt = 0;
-	clear();
+	screen_clear();
 	display_buffer();
 	msgline();
 	while (ch != EOF) {
@@ -1697,7 +1696,7 @@ static int raw_vedit(char *filename, int write_header_to_file, int modifyheader,
 					insert_char(KEY_ESC);
 				else {
 					newch = vedit_process_ESC(KEY_ESC_arg);
-					clear();
+					screen_clear();
 				}
 				redraw_everything = YEA;
 				break;

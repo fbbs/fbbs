@@ -808,7 +808,7 @@ void bell(void)
 
 void stand_title(const char *title)
 {
-	clear();
+	screen_clear();
 	prints(ANSI_CMD_SO"%s"ANSI_CMD_SE, title);
 }
 

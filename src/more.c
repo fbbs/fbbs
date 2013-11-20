@@ -468,10 +468,10 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				}
 				// Scrolling
 				if (++pos == screen_lines()) {
-					scroll();
+					screen_scroll();
 					--pos;
 				}
-			} 			else {
+			} else {
 				if (promptend)
 					pressanykey();
 				refresh();
@@ -506,7 +506,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				i = screen_lines() - 2;
 				break;
 			case KEY_PGUP:
-				clear();
+				screen_clear();
 				i = pos = 0;
 				new_row = more->line - (2 * screen_lines() - 3);
 				if (new_row < 0)
@@ -514,7 +514,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				more_seek(more, new_row);
 				break;
 			case KEY_UP:
-				clear();
+				screen_clear();
 				i = pos = 0;
 				new_row = more->line - screen_lines();
 				if (new_row < 0) {
@@ -523,7 +523,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				more_seek(more, new_row);
 				break;
 			case KEY_HOME:
-				clear();
+				screen_clear();
 				i = pos = 0;
 				more_seek(more, 0);
 				break;
@@ -547,7 +547,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 				more_seek(more, new_row);
 				if (more->total >= 0 && new_row >= more->total)
 					more_seek(more, more->total - 1);
-				clear();
+				screen_clear();
 				i = pos = 0;
 				break;
 			case 'H':
@@ -685,7 +685,7 @@ int msg_more(void)
 		//% 没有任何的讯息存在...
 		presskeyfor("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xb5\xc4\xd1\xb6\xcf\xa2\xb4\xe6\xd4\xda...", -1);
 	} else {
-		clear();
+		screen_clear();
 		ch = more_main(more, false, 0, 0, false, more_prompt_msg,
 				more_handle_msg);
 		if (!ch) {
@@ -712,19 +712,19 @@ int msg_more(void)
 				break;
 		}
 	}
-	clear();
+	screen_clear();
 	return ch;
 }
 
 int ansimore4(char *filename, int promptend, char *board, char *path, int ent)
 {
-	clear();
+	screen_clear();
 	return rawmore2(filename, promptend, 0, 0, NA);
 }
 
 int ansimore_buffer(const char *buf, size_t size, int promptend)
 {
-	clear();
+	screen_clear();
 
 	more_file_t *more = more_open(buf, size, DEFAULT_TERM_WIDTH,
 			more_open_buffer);
@@ -742,7 +742,7 @@ int ansimore_buffer(const char *buf, size_t size, int promptend)
 int ansimore(const char *filename, int promptend)
 {
 	int ch;
-	clear();
+	screen_clear();
 	ch = rawmore2(filename, promptend, 0, 0, NA);
 	move(-1, 0);
 	prints("\033[0m\033[m");
@@ -761,7 +761,7 @@ int ansimore2(char *filename, int promptend, int row, int numlines)
 void show_help(const char *fname)
 {
 	ansimore(fname, YEA);
-	clear();
+	screen_clear();
 }
 
 int mainreadhelp(void)

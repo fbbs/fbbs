@@ -124,7 +124,7 @@ void
 draw_title(dotitle)
 int (*dotitle) ();
 {
-	clear();
+	screen_clear();
 	(*dotitle) ();
 }
 
@@ -363,13 +363,13 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 				//% prints("没有任何新信件...");
 				prints("\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xd0\xc2\xd0\xc5\xbc\xfe...");
 				pressreturn();
-				clear();
+				screen_clear();
 				break;
 			case ST_ADMIN:
 				//% prints("目前无注册单...");
 				prints("\xc4\xbf\xc7\xb0\xce\xde\xd7\xa2\xb2\xe1\xb5\xa5...");
 				pressreturn();
-				clear();
+				screen_clear();
 				break;
 			default:
 //				getdata(-1, 0, "本版新成立 (P)发表文章 (Q)离开？[Q] ",
@@ -494,7 +494,7 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 		if (entries == 0)
 			break;
 	}
-	clear();
+	screen_clear();
 	free(pnt);
 }
 
@@ -1339,7 +1339,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 				if (!noreply || am_curr_bm()) {
 					do_reply(ptitle);
 				} else {
-					clear();
+					screen_clear();
 					move(5, 6);
 					//% prints("对不起, 该文章有不可 RE 属性, 您不能回复(RE) 这篇文章.");
 					prints("\xb6\xd4\xb2\xbb\xc6\xf0, \xb8\xc3\xce\xc4\xd5\xc2\xd3\xd0\xb2\xbb\xbf\xc9 RE \xca\xf4\xd0\xd4, \xc4\xfa\xb2\xbb\xc4\xdc\xbb\xd8\xb8\xb4(RE) \xd5\xe2\xc6\xaa\xce\xc4\xd5\xc2.");
@@ -1355,7 +1355,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 				isnext = 1;
 				break;
 			case Ctrl('A'):
-				clear();
+				screen_clear();
 				show_author(0, &SR_fptr, currdirect);
 				isnext = 1;
 				break;

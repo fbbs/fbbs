@@ -235,7 +235,7 @@ int pip_play_outing()	/*郊游*/
       if((rand()%301+rand()%200)%100==12)
       {
         lucky=0;
-        clear();
+        screen_clear();
         //% sprintf(buf,"[1;41m  星空战斗鸡 ～ %-10s                                                    [0m",d.name); 	 
         sprintf(buf,"[1;41m  \xd0\xc7\xbf\xd5\xd5\xbd\xb6\xb7\xbc\xa6 \xa1\xab %-10s                                                    [0m",d.name); 	 
         show_play_pic(0);

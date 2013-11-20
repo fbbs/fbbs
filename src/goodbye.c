@@ -38,7 +38,7 @@ void user_display(char *filename, int number, int mode)
 	FILE *fp;
 	char buf[256];
 	int count = 1;
-	clear();
+	screen_clear();
 	move(1, 0);
 	if ((fp = fopen(filename, "r")) == NULL)
 		return;

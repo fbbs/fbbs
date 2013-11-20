@@ -66,7 +66,7 @@ void a_showmenu(MENU *pm) {
 	time_t mtime;
 	int n, len;
 
-	clear();
+	screen_clear();
 	if (chkmail()) {
 		prints("\033[5m");
 		//% sprintf(genbuf, "[您有信件，按 M 看新信]");
@@ -1409,7 +1409,7 @@ void a_file_info(MENU *pm)
 	len = strlen(weblink);
 	stat(fname, &st);
 
-	clear();
+	screen_clear();
 	move(0, 0);
 
 	//% prints("精华区%s详细信息:\n\n", type);
@@ -1569,7 +1569,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 					break;
 				if (me.now < me.num) {
 					char bname[30];
-					clear();
+					screen_clear();
 					//% board_complete(0, "请输入要转贴的讨论区名称: ",
 					board_complete(0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xcc\xf9\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6: ",
 							bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
@@ -1881,7 +1881,7 @@ int AddPCorpus() {
 	if (!check_systempasswd()) {
 		return 1;
 	}
-	clear();
+	screen_clear();
 	//% stand_title("创建个人文集");
 	stand_title("\xb4\xb4\xbd\xa8\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf");
 
@@ -1960,7 +1960,7 @@ void Announce() {
 	sprintf(genbuf, "%s \xbe\xab\xbb\xaa\xc7\xf8\xb9\xab\xb2\xbc\xc0\xb8", BoardName);
 	a_menu(genbuf, "0Announce", HAS_PERM(PERM_ANNOUNCE) ? PERM_BOARDS : 0,
 			0);
-	clear();
+	screen_clear();
 }
 
 /* coded by stiger, immigrate to fudan by jacobson 2005.5.21 */
@@ -2126,7 +2126,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 
 	while (1) {
 		if (redrawflag) {
-			clear();
+			screen_clear();
 
 			if (ann_mode == ANNPATH_SETMODE) {
 				strcpy(buf, path);

@@ -199,7 +199,7 @@ int tui_select_board(int current_bid)
 		return 0;
 
 	if (!has_read_perm(&board)) {
-		clear();
+		screen_clear();
 		move(5, 10);
 		//% prints("您不是俱乐部版 %s 的成员，无权进入该版", bname);
 		prints("\xc4\xfa\xb2\xbb\xca\xc7\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6 %s \xb5\xc4\xb3\xc9\xd4\xb1\xa3\xac\xce\xde\xc8\xa8\xbd\xf8\xc8\xeb\xb8\xc3\xb0\xe6", bname);
@@ -391,7 +391,7 @@ int post_reply(const char *owner, const char *title, const char *file)
 
 	if (!strcmp(currentuser.userid, "guest"))
 		return DONOTHING;
-	clear();
+	screen_clear();
 	// Added by Amigo 2002.06.10. To add mail right check.
 	if (!HAS_PERM(PERM_MAIL)) {
 		move(4, 0);
@@ -533,7 +533,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		}
 		report(buf, currentuser.userid);
 		pressreturn();
-		clear();
+		screen_clear();
 	} else {
 		if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
 			snprintf(buf, sizeof(buf), "cross_posted '%s' on %s",
@@ -557,7 +557,7 @@ post_id_t Postfile(const char *file, const char *bname, const char *title,
 
 int tui_cross_post_legacy(const char *file, const char *title)
 {
-	clear();
+	screen_clear();
 	//% 您选择转载的文章是
 	prints("\xc4\xfa\xd1\xa1\xd4\xf1\xd7\xaa\xd4\xd8\xb5\xc4\xce\xc4\xd5\xc2"
 			"\xca\xc7: [\033[1;33m%s\033[m]\n", title);
@@ -577,7 +577,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 				"\xb2\xbb\xc4\xdc\xb0\xd1\xce\xc4\xd5\xc2\xd7\xaa\xb5\xbd"
 				"\xcd\xac\xd2\xbb\xb8\xf6\xb0\xe6\xc9\xcf\xa1\xa3");
 		pressreturn();
-		clear();
+		screen_clear();
 		return FULLUPDATE;
 	}
 
@@ -659,7 +659,7 @@ int show_user_notes() {
 		ansimore(buf, YEA);
 		return FULLUPDATE;
 	}
-	clear();
+	screen_clear();
 	move(10, 15);
 	//% prints("您尚未在 InfoEdit->WriteFile 编辑个人备忘录。\n");
 	prints("\xc4\xfa\xc9\xd0\xce\xb4\xd4\xda InfoEdit->WriteFile \xb1\xe0\xbc\xad\xb8\xf6\xc8\xcb\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xa3\n");
@@ -703,7 +703,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 		}
 	}
 	set_user_status(ST_EDIT);
-	clear();
+	screen_clear();
 	if (in_mail)
 		strcpy(buf, currmaildir);
 	else
@@ -1078,12 +1078,12 @@ int check_notespasswd(void)
 int show_b_secnote() {
 	char buf[256];
 
-	clear();
+	screen_clear();
 	setvfile(buf, currboard, "secnotes");
 	if (dashf(buf)) {
 		if (!check_notespasswd())
 			return FULLUPDATE;
-		clear();
+		screen_clear();
 		ansimore(buf, NA);
 	} else {
 		move(3, 25);
@@ -1095,7 +1095,7 @@ int show_b_secnote() {
 }
 
 int show_b_note() {
-	clear();
+	screen_clear();
 	if (show_board_notes(currboard, 2) == -1) {
 		move(3, 30);
 		//% prints("此讨论区尚无「备忘录」。");
@@ -1132,12 +1132,12 @@ int Personal(const char *userid)
 	int id;
 
 	if (!userid) {
-		clear();
+		screen_clear();
 		move(2, 0);
 		//% usercomplete("您想看谁的个人文集: ", lookid);
 		usercomplete("\xc4\xfa\xcf\xeb\xbf\xb4\xcb\xad\xb5\xc4\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf: ", lookid);
 		if (lookid[0] == '\0') {
-			clear();
+			screen_clear();
 			return 1;
 		}
 	} else
@@ -1215,7 +1215,7 @@ int board_read(void)
 		return FULLUPDATE;
 
 	if (!has_read_perm(&board)) {
-		clear();
+		screen_clear();
 		move(5, 10);
 		//% prints("您不是俱乐部版 %s 的成员，无权进入该版", currboard);
 		prints("\xc4\xfa\xb2\xbb\xca\xc7\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6 %s \xb5\xc4\xb3\xc9\xd4\xb1\xa3\xac\xce\xde\xc8\xa8\xbd\xf8\xc8\xeb\xb8\xc3\xb0\xe6", currboard);
@@ -1268,7 +1268,7 @@ void notepad() {
 	FILE *in;
 	int i, n;
 
-	clear();
+	screen_clear();
 	move(0, 0);
 	//% prints("开始您的留言吧！大家正拭目以待....\n");
 	prints("\xbf\xaa\xca\xbc\xc4\xfa\xb5\xc4\xc1\xf4\xd1\xd4\xb0\xc9\xa3\xa1\xb4\xf3\xbc\xd2\xd5\xfd\xca\xc3\xc4\xbf\xd2\xd4\xb4\xfd....\n");
@@ -1330,7 +1330,7 @@ void notepad() {
 			unlink(tmpname);
 		}
 	}
-	clear();
+	screen_clear();
 	return;
 }
 
@@ -1356,10 +1356,10 @@ int Q_Goodbye(void)
 
 	/* edwardc.990423 讯息浏览器 */
 	if (dashf(fname)) {
-		clear();
+		screen_clear();
 		msg_more();
 	}
-	clear();
+	screen_clear();
 	prints("\n\n\n\n");
 
 	/* added by roly 02.03.21 */
@@ -1375,7 +1375,7 @@ int Q_Goodbye(void)
 			}
 			fclose(sysops);
 		}
-		clear();
+		screen_clear();
 		move(0, 0);
 		//% prints("您就要离开 %s 向好友们告个别?\n", BoardName);
 		prints("\xc4\xfa\xbe\xcd\xd2\xaa\xc0\xeb\xbf\xaa %s \xcf\xf2\xba\xc3\xd3\xd1\xc3\xc7\xb8\xe6\xb8\xf6\xb1\xf0?\n", BoardName);
@@ -1405,7 +1405,7 @@ int Q_Goodbye(void)
 			sprintf(msg, "%s", buftemp); //added by roly 02.03.24
 			logout_msg(msg);
 		}
-		clear();
+		screen_clear();
 		prints("\n\n\n\n\n\n\n");
 	}
 
@@ -1480,7 +1480,7 @@ int Goodbye(void)
 	num_sysop = i;
 	move(1, 0);
 	alarm(0);
-	clear();
+	screen_clear();
 	move(0, 0);
 	//% prints("您就要离开 %s ，可有什麽建议吗？\n", BoardName);
 	prints("\xc4\xfa\xbe\xcd\xd2\xaa\xc0\xeb\xbf\xaa %s \xa3\xac\xbf\xc9\xd3\xd0\xca\xb2\xf7\xe1\xbd\xa8\xd2\xe9\xc2\xf0\xa3\xbf\n", BoardName);
@@ -1499,7 +1499,7 @@ int Goodbye(void)
 	//% sprintf(buf, "您的选择是 [[1;32m4[m]：");
 	sprintf(buf, "\xc4\xfa\xb5\xc4\xd1\xa1\xd4\xf1\xca\xc7 [[1;32m4[m]\xa3\xba");
 	getdata(7, 0, buf, genbuf, 4, DOECHO, YEA);
-	clear();
+	screen_clear();
 	choose = genbuf[0] - '0';
 	if (choose == 1) {
 		//% prints("     站长的 ID    负 责 的 职 务\n");
@@ -1564,14 +1564,14 @@ void board_usage(char *mode, time_t usetime) {
 int Info() {
 	set_user_status(ST_XMENU);
 	ansimore("Version.Info", YEA);
-	clear();
+	screen_clear();
 	return 0;
 }
 
 int Conditions() {
 	set_user_status(ST_XMENU);
 	ansimore("COPYING", YEA);
-	clear();
+	screen_clear();
 	return 0;
 }
 
@@ -1582,7 +1582,7 @@ int Welcome() {
 	if (!dashf("Welcome2"))
 		ansimore("Welcome", YEA);
 	else {
-		clear();
+		screen_clear();
 		//% stand_title("观看进站画面");
 		stand_title("\xb9\xdb\xbf\xb4\xbd\xf8\xd5\xbe\xbb\xad\xc3\xe6");
 		for (;;) {
@@ -1592,7 +1592,7 @@ int Welcome() {
 
 			/* skyo.990427 modify  按 Enter 跳出  */
 			if (ans[0] == '\0') {
-				clear();
+				screen_clear();
 				return 0;
 			}
 			if (ans[0] == '1' || ans[0] == '2')
@@ -1603,7 +1603,7 @@ int Welcome() {
 		else
 			ansimore("Welcome2", YEA);
 	}
-	clear();
+	screen_clear();
 	return 0;
 }
 

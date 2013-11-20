@@ -274,7 +274,7 @@ static int draw_menu(menuitem_t *pm)
 {
 	const char *str;
 
-	clear();
+	screen_clear();
 	int line = 3;
 	int col = 0;
 	int num = 0;

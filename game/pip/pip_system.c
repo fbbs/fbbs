@@ -265,7 +265,7 @@ pip_data_list()  /*看小鸡个人详细资料*/
   
   tm=(time(0)-start_time+d.bbtime)/60/30;
 
-  clear();  
+  screen_clear();  
   move(1,0);
   //% prints("       [1;33m┏━━━    ━━━  ┏━━━┓  ━━━  [m\n");
   prints("       [1;33m\xa9\xb3\xa9\xa5\xa9\xa5\xa9\xa5    \xa9\xa5\xa9\xa5\xa9\xa5  \xa9\xb3\xa9\xa5\xa9\xa5\xa9\xa5\xa9\xb7  \xa9\xa5\xa9\xa5\xa9\xa5  [m\n");

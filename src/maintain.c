@@ -90,7 +90,7 @@ int	check_systempasswd(void)
 {
 	FILE*	pass;
 	char    passbuf[20], prepass[STRLEN];
-	clear();
+	screen_clear();
 	if ((pass = fopen("etc/.syspasswd", "r")) != NULL) {
 		fgets(prepass, STRLEN, pass);
 		fclose(pass);

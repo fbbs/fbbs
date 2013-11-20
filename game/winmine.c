@@ -62,10 +62,10 @@ init_tty()
 int winmine() {
     int x,y;
     win_showrec();
-    clear();
+    screen_clear();
     refresh();
     while(1) {
-        clear();
+        screen_clear();
         for (x=0;x<=31;x++)
         for (y=0;y<=17;y++) {
              a[x][y]= 0;
@@ -271,7 +271,7 @@ int dig(int x, int y) {
 
 int winrefresh() {
     int x, y;
-    clear();
+    screen_clear();
     move(0, 22);
     //% prints("[1;32m☆键盘扫雷☆[0;1m [[35m帮助: H[37m] [[36m退出: Q[37m] [[35m打开: F[37m] [[36m标雷: S][m\n\r");
     prints("[1;32m\xa1\xee\xbc\xfc\xc5\xcc\xc9\xa8\xc0\xd7\xa1\xee[0;1m [[35m\xb0\xef\xd6\xfa: H[37m] [[36m\xcd\xcb\xb3\xf6: Q[37m] [[35m\xb4\xf2\xbf\xaa: F[37m] [[36m\xb1\xea\xc0\xd7: S][m\n\r");
@@ -285,7 +285,7 @@ int winrefresh() {
 }
 
 int winhelp() {
-    clear();
+    screen_clear();
     //% prints("==欢迎来玩键盘扫雷游戏==  (程序由 nju BBS 站长 zhch 设计)\r\n---------------------------------\\r\n\r\n");
     prints("==\xbb\xb6\xd3\xad\xc0\xb4\xcd\xe6\xbc\xfc\xc5\xcc\xc9\xa8\xc0\xd7\xd3\xce\xcf\xb7==  (\xb3\xcc\xd0\xf2\xd3\xc9 nju BBS \xd5\xbe\xb3\xa4 zhch \xc9\xe8\xbc\xc6)\r\n---------------------------------\\r\n\r\n");
     //% prints("玩法很简单，和[1;34mwindows[m下的鼠标扫雷差不多.\r\n");
@@ -344,7 +344,7 @@ int win_showrec() {
     char buf[200];
     int n;
     win_loadrec();
-    clear();
+    screen_clear();
     //% prints("[44;37m                         --== 扫雷排行榜 ==--                             \r\n[m");
     prints("[44;37m                         --== \xc9\xa8\xc0\xd7\xc5\xc5\xd0\xd0\xb0\xf1 ==--                             \r\n[m");
     prints("[41m No.          ID        TIME                         FROM                      [m\r\n");
@@ -385,7 +385,7 @@ int win_checkrec(int dt) {
 int win_sort() {
     int n, n2, tmp;
     char tmpID[20];
-    clear();
+    screen_clear();
     //% prints("祝贺! 您刷新了自己的纪录!\r\n");
     prints("\xd7\xa3\xba\xd8! \xc4\xfa\xcb\xa2\xd0\xc2\xc1\xcb\xd7\xd4\xbc\xba\xb5\xc4\xbc\xcd\xc2\xbc!\r\n");
     pressanykey();
@@ -404,7 +404,7 @@ int win_sort() {
     }
 }
 
-int clear() {
+int screen_clear() {
     prints("[H[J");
 }
 
@@ -449,7 +449,7 @@ int getch0() {
 
 int quit() {
     tcsetattr(0, TCSANOW, &oldtty);
-    clear();
+    screen_clear();
     refresh();
     syslog("QUIT");
     exit(0); 

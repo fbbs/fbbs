@@ -424,7 +424,7 @@ int mode;
   sprintf(genbuf, "[1;37m%s %-11s\xb5\xc4\xd0\xa1\xbc\xa6 [%s] \xc2\xfa %d \xcb\xea\xc1\xcb [0m\n", Cdate(&now), cuser.userid,d.name,m+1);
   pip_log_record(genbuf);
   /*记录终止*/
-  clear();
+  screen_clear();
   //% showtitle("电子养小鸡", BoardName);  
   showtitle("\xb5\xe7\xd7\xd3\xd1\xf8\xd0\xa1\xbc\xa6", BoardName);  
   show_basic_pic(20); /*生日快乐*/
@@ -478,7 +478,7 @@ int mode;
      age=10;
  else if( m>100 ) /*神仙*/
      age=11;
- clear(); 
+ screen_clear(); 
  /*showtitle("电子养小鸡", BoardName);*/
  move(0,0);
  if(d.sex==1)

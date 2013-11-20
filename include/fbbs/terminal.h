@@ -44,14 +44,14 @@ extern void screen_redraw(void);
 extern void refresh(void);
 extern void move(int line, int col);
 extern void getyx(int *line, int *col);
-extern void clear(void);
-extern void clear_whole_line(int line);
+extern void screen_clear(void);
+extern void screen_clear_line(int line);
 extern void clrtoeol(void);
 extern void clrtobot(void);
 extern int outc(int c);
 extern void outs(const char *str);
 extern void prints(const char *fmt, ...);
-extern void scroll(void);
+extern void screen_scroll(void);
 extern void screen_save_line(int line, bool save);
 extern void saveline_buf(int line, int mode);
 

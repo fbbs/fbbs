@@ -637,7 +637,7 @@ static int show_board_info(board_t *board)
 			board_to_gbk(&parent);
 	}
 
-	clear();
+	screen_clear();
 	//% prints("版面详细信息:\n\n");
 	prints("\xb0\xe6\xc3\xe6\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2:\n\n");
 	prints("ID      :     %d\n", board->id);
@@ -988,7 +988,7 @@ static int tui_board_list(board_list_t *bl)
 		free(bl->zapbuf);
 	}
 
-	clear();
+	screen_clear();
 	return 0;
 }
 

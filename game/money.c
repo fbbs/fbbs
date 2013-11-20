@@ -13,7 +13,7 @@ int gotomarket(char *title)
 {
         if (!strcmp("guest", currentuser.userid)) return 1;
         set_user_status(ST_MARKET);
-        clear();
+        screen_clear();
         set_safe_record();
         move(2,0);
         //% prints("欢迎进入 [[32m%s[37m]....\n\n",title);
@@ -596,7 +596,7 @@ check_money(unsigned int money)
 void
 show_money(int m, char *welcome,int Clear)
 {
-	if(Clear) clear();
+	if(Clear) screen_clear();
 	if(welcome) {
                 ansimore(welcome, NA);
         }

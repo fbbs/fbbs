@@ -110,7 +110,7 @@ static int submit_changes(const char *file)
 
 int grant_money(void)
 {
-	clear();
+	screen_clear();
 
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "tmp/grant.%s.%d",

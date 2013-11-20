@@ -126,7 +126,7 @@ int x_userdefine() {
 		prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf ID...");
 		clrtoeol();
 		pressreturn();
-		clear();
+		screen_clear();
 		return 0;
 	}
 	move(1, 0);
@@ -158,7 +158,7 @@ int x_userdefine() {
 	}
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	pressreturn();
-	clear();
+	screen_clear();
 	use_define = 0;
 	return 0;
 }
@@ -190,7 +190,7 @@ void x_edits() {
 			//% "底部流动信息", NULL };
 			"\xb5\xd7\xb2\xbf\xc1\xf7\xb6\xaf\xd0\xc5\xcf\xa2", NULL };
 	set_user_status(ST_GMENU);
-	clear();
+	screen_clear();
 	move(1, 0);
 	//% prints("编修个人档案\n\n");
 	prints("\xb1\xe0\xd0\xde\xb8\xf6\xc8\xcb\xb5\xb5\xb0\xb8\n\n");
@@ -221,7 +221,7 @@ void x_edits() {
 			//% prints("取消删除行动\n");
 			prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
 			pressreturn();
-			clear();
+			screen_clear();
 			return;
 		}
 		unlink(genbuf);
@@ -234,12 +234,12 @@ void x_edits() {
 		if (ch == 4) {
 			WishNum = 9999;
 		}
-		clear();
+		screen_clear();
 		return;
 	}
 	set_user_status(ST_EDITUFILE);
 	aborted = vedit(genbuf, NA, YEA, NULL);
-	clear();
+	screen_clear();
 	if (!aborted) {
 		//% prints("%s 更新过\n", explain_file[ch]);
 		prints("%s \xb8\xfc\xd0\xc2\xb9\xfd\n", explain_file[ch]);
@@ -265,7 +265,7 @@ int gettheuserid(int x, char *title, int *id) {
 	move(x, 0);
 	usercomplete(title, genbuf);
 	if (*genbuf == '\0') {
-		clear();
+		screen_clear();
 		return 0;
 	}
 	if (!(*id = getuser(genbuf))) {
@@ -274,7 +274,7 @@ int gettheuserid(int x, char *title, int *id) {
 		prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5");
 		clrtoeol();
 		pressreturn();
-		clear();
+		screen_clear();
 		return 0;
 	}
 	return 1;
@@ -317,7 +317,7 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 
 	fb_signal(SIGALRM, SIG_IGN);
 	set_user_status(umode);
-	clear();
+	screen_clear();
 	move(2, 0);
 	if (!dashf(cmdfile)) {
 		//% prints("文件 [%s] 不存在！\n", cmdfile);
@@ -367,14 +367,14 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	}
 #endif
 	child_pid = 0;
-	clear();
+	screen_clear();
 }
 
 //查询使用者资料
 void x_showuser() {
 	char buf[STRLEN];
 	set_user_status(ST_SYSINFO);
-	clear();
+	screen_clear();
 	//% stand_title("本站使用者资料查询");
 	stand_title("\xb1\xbe\xd5\xbe\xca\xb9\xd3\xc3\xd5\xdf\xd7\xca\xc1\xcf\xb2\xe9\xd1\xaf");
 	ansimore("etc/showuser.msg", NA);
@@ -476,7 +476,7 @@ int sendGoodWish(char *userid) {
 	char uid[IDLEN + 1], *ptr, *timestr;
 
 	set_user_status(ST_GOODWISH);
-	clear();
+	screen_clear();
 	move(1, 0);
 	//% prints("[0;1;32m留言本[m\n您可以在这里给您的朋友送去您的祝福，");
 	prints("[0;1;32m\xc1\xf4\xd1\xd4\xb1\xbe[m\n\xc4\xfa\xbf\xc9\xd2\xd4\xd4\xda\xd5\xe2\xc0\xef\xb8\xf8\xc4\xfa\xb5\xc4\xc5\xf3\xd3\xd1\xcb\xcd\xc8\xa5\xc4\xfa\xb5\xc4\xd7\xa3\xb8\xa3\xa3\xac");
@@ -487,7 +487,7 @@ int sendGoodWish(char *userid) {
 		//% usercomplete("请输入他的 ID: ", uid);
 		usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xcb\xfb\xb5\xc4 ID: ", uid);
 		if (uid[0] == '\0') {
-			clear();
+			screen_clear();
 			return 0;
 		}
 	} else {
@@ -498,7 +498,7 @@ int sendGoodWish(char *userid) {
 		//% prints("[1m您输入的使用者代号( ID )不存在！[m\n");
 		prints("[1m\xc4\xfa\xca\xe4\xc8\xeb\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5( ID )\xb2\xbb\xb4\xe6\xd4\xda\xa3\xa1[m\n");
 		pressanykey();
-		clear();
+		screen_clear();
 		return -1;
 	}
 	move(5, 0);
@@ -534,7 +534,7 @@ int sendGoodWish(char *userid) {
 	sprintf(genbuf, "\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xb7\xa2\xcb\xcd\xd5\xe2\xcc\xf5\xc1\xf4\xd1\xd4\xb8\xf8 [1m%s[m \xc2\xf0", uid);
 	move(9 + count, 0);
 	if (askyn(genbuf, YEA, NA) == NA) {
-		clear();
+		screen_clear();
 		return 0;
 	}
 	sethomefile(genbuf, uid, "GoodWish");
@@ -564,7 +564,7 @@ int sendGoodWish(char *userid) {
 	sprintf(genbuf, "SendGoodWish to %s", uid);
 	report(genbuf, currentuser.userid);
 	pressanykey();
-	clear();
+	screen_clear();
 	return 0;
 }
 

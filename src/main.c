@@ -336,7 +336,7 @@ static void system_abort(void)
 		log_usies("ABORT", "", &currentuser);
 		u_exit();
 	}
-	clear();
+	screen_clear();
 	refresh();
 	//% prints("谢谢光临, 记得常来喔 !\n");
 	prints("\xd0\xbb\xd0\xbb\xb9\xe2\xc1\xd9, \xbc\xc7\xb5\xc3\xb3\xa3\xc0\xb4\xe0\xb8 !\n");
@@ -684,7 +684,7 @@ static void user_login(void)
 				move(0, 0);
 				ansimore2("etc/notepad", NA, 0, noteln - currentuser.noteline + 1);
 				terminal_getchar();
-				clear();
+				screen_clear();
 			}
 			currentuser.noteline = noteln;
 			write_defnotepad();
@@ -790,7 +790,7 @@ static void c_recover(void)
 			currentuser.userid, currentuser.userid);
 	if (!dashf(fname) || strcmp(currentuser.userid, "guest") == 0)
 		return;
-	clear();
+	screen_clear();
 	genbuf[0] = '\0';
 	//% getdata(0, 0, "\033[1;32m您有一个编辑作业不正常中断，"
 	getdata(0, 0, "\033[1;32m\xc4\xfa\xd3\xd0\xd2\xbb\xb8\xf6\xb1\xe0\xbc\xad\xd7\xf7\xd2\xb5\xb2\xbb\xd5\xfd\xb3\xa3\xd6\xd0\xb6\xcf\xa3\xac"
@@ -860,7 +860,7 @@ void tlog_recover(void)
 	if (strcasecmp(currentuser.userid, "guest") == 0 || !dashf(buf))
 		return;
 
-	clear();
+	screen_clear();
 	genbuf[0] = '\0';
 	//% getdata(0, 0, "\033[1;32m您有一个不正常断线所留下来的聊天记录, "
 	getdata(0, 0, "\033[1;32m\xc4\xfa\xd3\xd0\xd2\xbb\xb8\xf6\xb2\xbb\xd5\xfd\xb3\xa3\xb6\xcf\xcf\xdf\xcb\xf9\xc1\xf4\xcf\xc2\xc0\xb4\xb5\xc4\xc1\xc4\xcc\xec\xbc\xc7\xc2\xbc, "
@@ -910,7 +910,7 @@ void start_client(void)
 
 	setmdir(currmaildir, currentuser.userid);
 	RMSG = NA;
-	clear();
+	screen_clear();
 	c_recover();
 #ifdef TALK_LOG
 	tlog_recover();
@@ -924,7 +924,7 @@ void start_client(void)
 		if (!DEFINE(DEF_NOLOGINSEND))
 			if (session_visible())
 				login_msg();
-		clear();
+		screen_clear();
 		set_numofsig();
 	}
 

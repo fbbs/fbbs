@@ -25,19 +25,17 @@ extern int iscolor;
 
 bool dumb_term = true;
 
-static int cur_ln = 0;  ///< Current line.
-static int cur_col = 0; ///< Current column.
-static int roll; //roll 表示首行在screen.buf的偏移量
-//因为随着光标滚动,screen.buf[0]可能不再保存第一行的数据
-static int scrollcnt;
-static int tc_col;      ///< Terminal's current column.
-static int tc_line;     ///< Terminal's current line.
-unsigned char docls;
-
 typedef struct {
-	screen_line_t *buf;
-	int columns;
-	int lines;
+	screen_line_t *buf; ///< 行缓冲区数组
+	int columns; ///< 列数
+	int lines; ///< 行数
+	int cur_ln; ///< 当前操作所在行
+	int cur_col; ///< 当前操作所在列
+	int tc_line; ///< 终端当前所在行
+	int tc_col; ///< 终端当前所在列
+	int roll; ///< 首行在buf中的偏移量
+	int scrollcnt;
+	bool redraw; ///< 重绘屏幕
 } screen_t;
 
 static screen_t screen = {
@@ -123,8 +121,8 @@ void screen_init(void)
 		sl->len = 0;
 		sl->old_len = 0;
 	}
-	docls = YEA;
-	roll = 0;
+	screen.redraw = true;
+	screen.roll = 0;
 }
 
 /**
@@ -146,8 +144,8 @@ static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 {
 	if (new_ln >= screen.lines || new_col >= screen.columns) //越界,返回
 		return;
-	tc_col = new_col;
-	tc_line = new_ln;
+	screen.tc_col = new_col;
+	screen.tc_line = new_ln;
 	if ((new_col == 0) && (new_ln == was_ln + 1)) { //换行
 		terminal_putchar('\n');
 		if (was_col != 0) //到第一列位置,返回
@@ -168,32 +166,37 @@ static void rel_move(int was_col, int was_ln, int new_col, int new_ln)
 	do_move(new_col, new_ln);
 }
 
+static inline screen_line_t *get_screen_line(int line)
+{
+	return screen.buf + (line + screen.roll) % screen.lines;
+}
+
 /**
- * Redraw the screen.
+ * 重绘屏幕
  */
 void screen_redraw(void)
 {
 	if (dumb_term)
 		return;
 	ansi_cmd(ANSI_CMD_CL);
-	tc_col = 0;
-	tc_line = 0;
+	screen.tc_col = 0;
+	screen.tc_line = 0;
 	for (int i = 0; i < screen.lines; ++i) {
-		screen_line_t *sl = screen.buf + (i + roll) % screen.lines;
+		screen_line_t *sl = get_screen_line(i);
 		if (!sl->len)
 			continue;
-		rel_move(tc_col, tc_line, 0, i);
+		rel_move(screen.tc_col, screen.tc_line, 0, i);
 		terminal_write_cached(sl->data, sl->len);
-		tc_col += sl->len;
-		if (tc_col >= screen.columns) {
-			tc_col = screen.columns - 1;
+		screen.tc_col += sl->len;
+		if (screen.tc_col >= screen.columns) {
+			screen.tc_col = screen.columns - 1;
 		}
 		sl->modified = false;
 		sl->old_len = sl->len;
 	}
-	rel_move(tc_col, tc_line, cur_col, cur_ln);
-	docls = NA;
-	scrollcnt = 0;
+	rel_move(screen.tc_col, screen.tc_line, screen.cur_col, screen.cur_ln);
+	screen.redraw = false;
+	screen.scrollcnt = 0;
 	terminal_flush();
 }
 
@@ -207,45 +210,45 @@ void refresh(void)
 
 	if (!terminal_input_buffer_empty())
 		return;
-	if ((docls) || (abs(scrollcnt) >= (screen.lines - 3))) {
+	if (screen.redraw || (abs(screen.scrollcnt) >= (screen.lines - 3))) {
 		screen_redraw();
 		return;
 	}
-	if (scrollcnt < 0) {
-		rel_move(tc_col, tc_line, 0, 0);
-		while (scrollcnt < 0) {
+	if (screen.scrollcnt < 0) {
+		rel_move(screen.tc_col, screen.tc_line, 0, 0);
+		while (screen.scrollcnt < 0) {
 			ansi_cmd(ANSI_CMD_SR);
-			scrollcnt++;
+			screen.scrollcnt++;
 		}
 	}
-	if (scrollcnt > 0) {
-		rel_move(tc_col, tc_line, 0, screen.lines - 1);
-		while (scrollcnt > 0) {
+	if (screen.scrollcnt > 0) {
+		rel_move(screen.tc_col, screen.tc_line, 0, screen.lines - 1);
+		while (screen.scrollcnt > 0) {
 			terminal_putchar('\n');
-			scrollcnt--;
+			screen.scrollcnt--;
 		}
 	}
 	for (int i = 0; i < screen.lines; i++) {
-		int j = (i + roll) % screen.lines;
-		if (bp[j].modified) {
-			bp[j].modified = false;
-			rel_move(tc_col, tc_line, 0, i);
-			terminal_write_cached(bp[j].data, bp[j].len);
-			tc_col = bp[j].len;
-			if (tc_col >= screen.columns) {
-				tc_col -= screen.columns;
-				tc_line++;
-				if (tc_line >= screen.lines)
-					tc_line = screen.lines - 1;
+		screen_line_t *sl = get_screen_line(i);
+		if (sl->modified) {
+			sl->modified = false;
+			rel_move(screen.tc_col, screen.tc_line, 0, i);
+			terminal_write_cached(sl->data, sl->len);
+			screen.tc_col = sl->len;
+			if (screen.tc_col >= screen.columns) {
+				screen.tc_col -= screen.columns;
+				screen.tc_line++;
+				if (screen.tc_line >= screen.lines)
+					screen.tc_line = screen.lines - 1;
 			}
 		}
-		if (bp[j].old_len > bp[j].len) {
-			rel_move(tc_col, tc_line, bp[j].len, i);
+		if (sl->old_len > sl->len) {
+			rel_move(screen.tc_col, screen.tc_line, sl->len, i);
 			ansi_cmd(ANSI_CMD_CE);
 		}
-		bp[j].old_len = bp[j].len;
+		sl->old_len = sl->len;
 	}
-	rel_move(tc_col, tc_line, cur_col, cur_ln);
+	rel_move(screen.tc_col, screen.tc_line, screen.cur_col, screen.cur_ln);
 	terminal_flush();
 }
 
@@ -256,8 +259,8 @@ void refresh(void)
  */
 void move(int y, int x)
 {
-	cur_col = x;
-	cur_ln = y < 0 ? y + screen.lines : y;
+	screen.cur_col = x;
+	screen.cur_ln = y < 0 ? y + screen.lines : y;
 }
 
 /**
@@ -267,37 +270,31 @@ void move(int y, int x)
  */
 void getyx(int *y, int *x)
 {
-	*y = cur_ln;
-	*x = cur_col;
+	*y = screen.cur_ln;
+	*x = screen.cur_col;
 }
 
 /**
  * Reset screen and move to (0, 0).
  */
-void clear(void)
+void screen_clear(void)
 {
 	if (dumb_term)
 		return;
-	roll = 0;
-	docls = YEA;
-	screen_line_t *slp;
-	int i;
-	for (i = 0; i < screen.lines; i++) {
-		slp = screen.buf + i;
-		slp->modified = false;
-		slp->len = 0;
-		slp->old_len = 0;
+
+	screen.roll = 0;
+	screen.redraw = true;
+	for (int i = 0; i < screen.lines; ++i) {
+		screen_clear_line(i);
 	}
 	move(0, 0);
 }
 
-//清除screen.buf中的第i行,将mode与len置0
-void clear_whole_line(int i)
+void screen_clear_line(int line)
 {
-	register screen_line_t *slp = &screen.buf[i];
-	slp->modified = false;
-	slp->len = 0;
-	slp->old_len = 79;
+	screen_line_t *sl = screen.buf + line;
+	sl->modified = false;
+	sl->len = 0;
 }
 
 /**
@@ -307,29 +304,23 @@ void clrtoeol(void)
 {
 	if (dumb_term)
 		return;
-	screen_line_t *slp = screen.buf + (cur_ln + roll) % screen.lines;
-	if (cur_col > slp->len)
-		memset(slp->data + slp->len, ' ', cur_col - slp->len + 1);
-	slp->len = cur_col;
+	screen_line_t *sl = get_screen_line(screen.cur_ln);
+	if (screen.cur_col > sl->len)
+		memset(sl->data + sl->len, ' ', screen.cur_col - sl->len + 1);
+	sl->len = screen.cur_col;
 }
 
 //从当前行清除到最后一行
 void clrtobot(void)
 {
-	register screen_line_t *slp;
-	register int i, j;
 	if (dumb_term)
 		return;
-	for (i = cur_ln; i < screen.lines; i++) {
-		j = i + roll;
-		while (j >= screen.lines)
-			//求j%screen.lines ? 因为减法比取余时间少?
-			j -= screen.lines;
-		slp = &screen.buf[j];
-		slp->modified = false;
-		slp->len = 0;
-		if (slp->old_len > 0)
-			slp->old_len = 255;
+	for (int i = screen.cur_ln; i < screen.lines; i++) {
+		screen_line_t *sl = get_screen_line(i);
+		sl->modified = false;
+		sl->len = 0;
+		if (sl->old_len > 0)
+			sl->old_len = 255;
 	}
 }
 
@@ -372,17 +363,17 @@ int outc(int c)
 		return 1;
 	}
 
-	screen_line_t *slp = screen.buf + (cur_ln + roll) % screen.lines;
-	unsigned int col = cur_col;
+	screen_line_t *slp = get_screen_line(screen.cur_ln);
+	unsigned int col = screen.cur_col;
 
 	if (!isprint2(c)) {
 		if (c == '\n' || c == '\r') {
 			if (col > slp->len)
 				memset(slp->data + slp->len, ' ', col - slp->len + 1);
 			slp->len = col;
-			cur_col = 0;
-			if (cur_ln < screen.lines)
-				cur_ln++;
+			screen.cur_col = 0;
+			if (screen.cur_ln < screen.lines)
+				screen.cur_ln++;
 			return 1;
 		} else {
 			if (c != KEY_ESC || !showansi)
@@ -400,10 +391,10 @@ int outc(int c)
 
 	if (col >= screen.columns) {
 		col = 0;
-		if (cur_ln < screen.lines)
-			cur_ln++;
+		if (screen.cur_ln < screen.lines)
+			screen.cur_ln++;
 	}
-	cur_col = col; /* store cur_col back */
+	screen.cur_col = col; /* store screen.cur_col back */
 	return 1;
 }
 
@@ -579,17 +570,16 @@ void prints(const char *fmt, ...)
 /**
  * Scroll down one line.
  */
-void scroll(void)
+void screen_scroll(void)
 {
 	if (dumb_term) {
 		prints("\n");
 		return;
 	}
-	scrollcnt++;
-	roll++;
-	if (roll >= screen.lines)
-		roll -= screen.lines;
-	move(screen.lines - 1, 0);
+	++screen.scrollcnt;
+	if (++screen.roll >= screen.lines)
+		screen.roll -= screen.lines;
+	move(-1, 0);
 	clrtoeol();
 }
 
@@ -631,7 +621,7 @@ void saveline_buf(int line, int mode)//0:save 1:restore
         case 1:
             getyx(&x, &y);
             move(line, 0);
-            clear_whole_line(line);
+            screen_clear_line(line);
             prints("%s", temp[line]);
             move(x,y);
             break;

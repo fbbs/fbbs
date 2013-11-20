@@ -119,13 +119,13 @@ int pip_results_show()  /*收获季*/
 	int winorlost=0;
 	int a,b[3][2],c[3];
 
-	clear();
+	screen_clear();
 	move(10,14);
 	//% prints("[1;33m叮咚叮咚～ 辛苦的邮差帮我们送信来了喔...[0m");
 	prints("[1;33m\xb6\xa3\xdf\xcb\xb6\xa3\xdf\xcb\xa1\xab \xd0\xc1\xbf\xe0\xb5\xc4\xd3\xca\xb2\xee\xb0\xef\xce\xd2\xc3\xc7\xcb\xcd\xd0\xc5\xc0\xb4\xc1\xcb\xe0\xb8...[0m");
 	//% pressanykey("嗯  把信打开看看吧...");
 	pressanykey("\xe0\xc5  \xb0\xd1\xd0\xc5\xb4\xf2\xbf\xaa\xbf\xb4\xbf\xb4\xb0\xc9...");
-	clear();
+	screen_clear();
 	show_resultshow_pic(0);
 	//% sprintf(buf,"[A]%s [B]%s [C]%s [D]%s [Q]放弃:",showname[1],showname[2],showname[3],showname[4]);
 	sprintf(buf,"[A]%s [B]%s [C]%s [D]%s [Q]\xb7\xc5\xc6\xfa:",showname[1],showname[2],showname[3],showname[4]);
@@ -351,7 +351,7 @@ int winorlost,mode,a,b,c;
 		strcpy(name3,resultmanlist[c].name);
 		strcpy(name4,d.name);
 	}	
-	clear();
+	screen_clear();
 	move(6,13);
 	//% prints("[1;37m～～～ [32m本届 %s 结果揭晓 [37m～～～[0m",gamename[mode]);	
 	prints("[1;37m\xa1\xab\xa1\xab\xa1\xab [32m\xb1\xbe\xbd\xec %s \xbd\xe1\xb9\xfb\xbd\xd2\xcf\xfe [37m\xa1\xab\xa1\xab\xa1\xab[0m",gamename[mode]);	

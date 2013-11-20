@@ -152,7 +152,7 @@ int show_statshm(char* fh, int mode)
 	if (fill_statshmfile(fh, mode)) {
 		if ((mode == 0 && DEFINE(DEF_GRAPH)) || (mode == 1
 				&& DEFINE(DEF_TOP10))) {
-			clear();
+			screen_clear();
 
 			for (i = 0; i <= 24; i++) {
 				if (statshm[mode].line[i] == NULL)
@@ -172,7 +172,7 @@ void show_goodbyeshm(void)
 {
 	int logouts;
 	logouts = goodbyeshm[0].max;
-	clear();
+	screen_clear();
 	show_shmfile(&goodbyeshm[(currentuser.numlogins % ((logouts <= 1) ? 1 : logouts))]);
 	shmdt(goodbyeshm);
 }
@@ -180,7 +180,7 @@ void show_goodbyeshm(void)
 void show_welcomeshm() {
 	int welcomes;
 	welcomes = welcomeshm[0].max;
-	clear();
+	screen_clear();
 	show_shmfile(&welcomeshm[(currentuser.numlogins % ((welcomes <= 1) ? 1 : welcomes))]);
 	if (DEFINE(DEF_TOP10))
 		pressanykey();

@@ -640,7 +640,7 @@ p_gp()
 	set_user_status(ST_M_GP);
 	bet = 0;
 	while (1) {
-		clear();
+		screen_clear();
 		ans[0] = 0;
 		if (cont == 0) 
 			if(!(bet = get_money(bet,"game/gp.welcome"))) return 0;
@@ -1674,7 +1674,7 @@ bingo()
 		if (!money)
 			return 0;
 		while (account >= 0) {
-			clear();
+			screen_clear();
 			prints("\n\n");
 			j = 0;
 			for (i = 0; i <= 10; i++) {
