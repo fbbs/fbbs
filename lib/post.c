@@ -5,6 +5,7 @@
 #include <wchar.h>
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/backend.h"
 #include "fbbs/brc.h"
 #include "fbbs/convert.h"
 #include "fbbs/helper.h"
@@ -13,17 +14,9 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 
-/** 文章ID序列 @mdb_string */
-#define POST_ID_KEY  "post_id_seq"
-
 static post_id_t current_post_id(void)
 {
 	return mdb_integer(0, "GET", POST_ID_KEY);
-}
-
-static post_id_t next_post_id(void)
-{
-	return mdb_integer(0, "INCR", POST_ID_KEY);
 }
 
 int post_index_cmp(const void *p1, const void *p2)
@@ -686,99 +679,9 @@ int get_board_post_count(int bid)
 	return mdb_integer(0, "HGET", BOARD_POST_COUNT_KEY " %d", bid);
 }
 
-static void set_board_post_count(int bid, int count)
+void set_board_post_count(int bid, int count)
 {
 	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
-}
-
-static post_id_t insert_post(const post_request_t *pr, const char *uname,
-		const char *content, fb_time_t now)
-{
-	post_index_t pi = { .id = next_post_id(), };
-	if (pi.id) {
-		pi.reid_delta = pr->reid ? pi.id - pr->reid : 0;
-		pi.tid_delta = pr->tid ? pi.id - pr->tid : 0;
-		pi.stamp = now;
-		pi.uid = get_user_id(uname);
-		pi.flag = (pr->marked ? POST_FLAG_MARKED : 0)
-				| (pr->locked ? POST_FLAG_LOCKED : 0);
-		pi.bid = pr->board->id;
-		strlcpy(pi.owner, uname, sizeof(pi.owner));
-		string_cp(pi.utf8_title, pr->title, sizeof(pi.utf8_title));
-
-		post_content_write(pi.id, content, strlen(content));
-
-		post_index_record_t pir;
-		post_index_record_open(&pir);
-		if (!post_index_record_update(&pir, &pi))
-			pi.id = 0;
-		post_index_record_close(&pir);
-	}
-	if (pi.id) {
-		post_index_board_t pib = {
-			.id = pi.id, .reid_delta = pi.reid_delta, .tid_delta = pi.tid_delta,
-			.uid = pi.uid, .flag = pi.flag, .stamp = now, .cstamp = 0,
-		};
-
-		record_t record;
-		post_index_board_open(pi.bid, RECORD_WRITE, &record);
-		record_lock_all(&record, RECORD_WRLCK);
-		if (record_append(&record, &pib, 1) < 0)
-			pi.id = 0;
-		record_lock_all(&record, RECORD_UNLCK);
-		set_board_post_count(pi.bid, record_count(&record));
-		record_close(&record);
-	}
-
-	return pi.id;
-}
-
-/**
- * Publish a post.
- * @param pr The post request.
- * @return file id on success, -1 on error.
- */
-post_id_t publish_post(const post_request_t *pr)
-{
-	if (!pr || !pr->title || (!pr->content && !pr->gbk_file) || !pr->board)
-		return 0;
-
-	bool anony = pr->anony && (pr->board->flag & BOARD_FLAG_ANONY);
-	const char *uname = NULL, *nick = NULL, *ip = pr->ip;
-	if (anony) {
-		uname = ANONYMOUS_ACCOUNT;
-		nick = ANONYMOUS_NICK;
-		ip = ANONYMOUS_SOURCE;
-	} else if (pr->user) {
-		uname = pr->user->userid;
-		nick = pr->user->username;
-	} else if (pr->autopost) {
-		uname = pr->uname;
-		nick = pr->nick;
-	}
-	if (!uname || !nick)
-		return 0;
-
-	char *content;
-	if (pr->gbk_file)
-		content = convert_file_to_utf8_content(pr->gbk_file);
-	else
-		content = generate_content(pr, uname, nick, ip, anony, pr->length);
-
-	fb_time_t now = fb_time();
-	post_id_t pid = insert_post(pr, uname, content, now);
-	free(content);
-
-	if (pid) {
-		set_last_post_time(pr->board->id, now);
-
-		if (!pr->autopost) {
-			brc_initialize(uname, pr->board->name);
-			brc_mark_as_read(now);
-			brc_update(uname, pr->board->name);
-		}
-	}
-	return pid;
 }
 
 enum {
@@ -1490,4 +1393,83 @@ int get_post_mark_raw(fb_time_t stamp, int flag)
 int get_post_mark(const post_info_t *p)
 {
 	return get_post_mark_raw(p->stamp, p->flag);
+}
+
+static bool backend_serialize_post_new(const void *r, parcel_t *parcel)
+{
+	const backend_request_post_new_t *req = r;
+	parcel_write_post_id(parcel, req->reid);
+	parcel_write_post_id(parcel, req->tid);
+	parcel_write_string(parcel, req->title, 0);
+	parcel_write_string(parcel, req->uname, 0);
+	parcel_write_string(parcel, req->content, 0);
+	parcel_write_int(parcel, req->bid);
+	parcel_write_bool(parcel, req->marked);
+	parcel_write_bool(parcel, req->locked);
+	return parcel_ok(parcel);
+}
+
+static bool backend_deserialize_post_new(parcel_t *parcel, void *r)
+{
+	backend_response_post_new_t *res = r;
+	res->id = parcel_read_post_id(parcel);
+	res->stamp = parcel_read_fb_time(parcel);
+	return parcel_ok(parcel);
+}
+
+/**
+ * Publish a post.
+ * @param pr The post request.
+ * @return file id on success, -1 on error.
+ */
+post_id_t publish_post(const post_request_t *pr)
+{
+	if (!pr || !pr->title || (!pr->content && !pr->gbk_file) || !pr->board)
+		return 0;
+
+	bool anony = pr->anony && (pr->board->flag & BOARD_FLAG_ANONY);
+	const char *uname = NULL, *nick = NULL, *ip = pr->ip;
+	if (anony) {
+		uname = ANONYMOUS_ACCOUNT;
+		nick = ANONYMOUS_NICK;
+		ip = ANONYMOUS_SOURCE;
+	} else if (pr->user) {
+		uname = pr->user->userid;
+		nick = pr->user->username;
+	} else if (pr->autopost) {
+		uname = pr->uname;
+		nick = pr->nick;
+	}
+	if (!uname || !nick)
+		return 0;
+
+	char *content;
+	if (pr->gbk_file)
+		content = convert_file_to_utf8_content(pr->gbk_file);
+	else
+		content = generate_content(pr, uname, nick, ip, anony, pr->length);
+
+	backend_request_post_new_t req = {
+		.reid = pr->reid, .tid = pr->tid, .title = pr->title,
+		.uname = pr->uname, .content = content, .bid = pr->board->id,
+		.marked = pr->marked, .locked = pr->locked,
+	};
+	backend_response_post_new_t res;
+	mdb_res_t *mres = backend_cmd(&req, &res, post_new);
+	mdb_clear(mres);
+
+	free(content);
+
+	if (!mres)
+		return 0;
+	if (res.id) {
+		set_last_post_time(pr->board->id, res.stamp);
+
+		if (!pr->autopost) {
+			brc_initialize(uname, pr->board->name);
+			brc_mark_as_read(res.stamp);
+			brc_update(uname, pr->board->name);
+		}
+	}
+	return res.id;
 }

@@ -6,7 +6,11 @@
 #include <stdint.h>
 #include <time.h>
 
+
+typedef uint32_t fb_time_t;
 #define PRIdFBT PRId32
+#define parcel_write_fb_time(parcel, val)  parcel_write_varuint64(parcel, val)
+#define parcel_read_fb_time(parcel)  parcel_read_varuint64(parcel)
 
 typedef enum {
 	TIME_FORMAT_ZH,      ///< "2001年02月03日04:05:06 星期六"
@@ -16,8 +20,6 @@ typedef enum {
 	TIME_FORMAT_XML,     ///< "2001-02-03T04:05:06"
 	TIME_FORMAT_RSS,     ///< "Sat,03 Feb 2001 04:05:06 +0800"
 } time_format_e;
-
-typedef uint32_t fb_time_t;
 
 #define fb_time() ((fb_time_t) time(NULL))
 extern struct tm *fb_localtime(const fb_time_t *t);

@@ -13,6 +13,11 @@
 
 typedef int64_t post_id_t;
 #define PRIdPID  PRId64
+#define parcel_write_post_id(parcel, id)  parcel_write_varint64(parcel, id)
+#define parcel_read_post_id(parcel)  parcel_read_varint64(parcel)
+
+/** 文章ID序列 @mdb_string */
+#define POST_ID_KEY  "post_id_seq"
 
 typedef enum {
 	POST_FLAG_DIGEST = 0x1,
@@ -243,5 +248,21 @@ extern int get_post_mark_raw(fb_time_t stamp, int flag);
 extern int get_post_mark(const post_info_t *p);
 
 extern int get_board_post_count(int bid);
+
+typedef struct {
+	post_id_t reid;
+	post_id_t tid;
+	const char *title;
+	const char *uname;
+	const char *content;
+	int bid;
+	bool marked;
+	bool locked;
+} backend_request_post_new_t;
+
+typedef struct {
+	post_id_t id;
+	fb_time_t stamp;
+} backend_response_post_new_t;
 
 #endif // FB_POST_H

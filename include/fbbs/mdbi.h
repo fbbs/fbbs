@@ -2,6 +2,7 @@
 #define FB_MDBI_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef long long mdb_int_t;
 typedef void mdb_res_t;

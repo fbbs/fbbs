@@ -15,6 +15,11 @@ void parcel_new(parcel_t *parcel)
 	parcel->ptr = malloc(parcel->capacity);
 }
 
+void parcel_free(parcel_t *parcel)
+{
+	free(parcel->ptr);
+}
+
 static void parcel_write(parcel_t *parcel, const void *ptr, size_t size)
 {
 	if (parcel->error)
@@ -178,7 +183,7 @@ int64_t parcel_read_int64(parcel_t *parcel)
 	return val;
 }
 
-bool parcel_error(const parcel_t *parcel)
+bool parcel_ok(const parcel_t *parcel)
 {
-	return parcel->error;
+	return !parcel->error;
 }

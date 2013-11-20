@@ -1,0 +1,20 @@
+#ifndef FB_BACKEND_H
+#define FB_BACKEND_H
+
+#include "fbbs/mdbi.h"
+#include "fbbs/parcel.h"
+
+#define BACKEND_REQUEST_KEY  "request"
+#define BACKEND_RESPONSE_KEY  "response"
+
+typedef enum {
+	BACKEND_REQUEST_post_new = 1,
+} backend_request_e;
+
+typedef bool (*backend_serializer_t)(const void *request, parcel_t *parcel);
+typedef bool (*backend_deserializer_t)(parcel_t *parcel, void *response);
+
+mdb_res_t *backend_request(const void *req, void *res, backend_serializer_t serializer, backend_deserializer_t deserializer, backend_request_e type);
+#define backend_cmd(req, res, cmd)  backend_request(req, res, backend_serialize_##cmd, backend_deserialize_##cmd, BACKEND_REQUEST_##cmd)
+
+#endif // FB_BACKEND_H

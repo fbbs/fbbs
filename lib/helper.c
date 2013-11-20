@@ -1,6 +1,7 @@
 #include <signal.h>
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/backend.h"
 #include "fbbs/cfg.h"
 #include "fbbs/convert.h"
 #include "fbbs/fileio.h"
@@ -287,4 +288,46 @@ void initialize_environment(int flags)
 		initialize_convert_env();
 	if (flags & INIT_DB)
 		initialize_db();
+}
+
+mdb_res_t *backend_request(const void *req, void *res,
+		backend_serializer_t serializer, backend_deserializer_t deserializer,
+		backend_request_e type)
+{
+	int pid = getpid();
+
+	parcel_t parcel;
+	parcel_new(&parcel);
+	parcel_write_varint(&parcel, type);
+	parcel_write_varint(&parcel, pid);
+	serializer(req, &parcel);
+
+	if (!parcel_ok(&parcel)) {
+		parcel_free(&parcel);
+		return NULL;
+	}
+
+	// TODO should be binary safe
+	bool send_success = mdb_cmd_safe("LPUSH", "%s %s", BACKEND_REQUEST_KEY,
+			&parcel);
+	parcel_free(&parcel);
+	if (!send_success)
+		return NULL;
+
+	mdb_res_t *mres = mdb_res("BLPOP", "%s_%d", BACKEND_RESPONSE_KEY, pid);
+	if (mres) {
+		size_t size;
+		const char *ptr = mdb_string_and_size(mres, &size);
+		if (ptr) {
+			parcel_t rparcel;
+			parcel_read_new(ptr, size, &rparcel);
+			if (parcel_ok(&rparcel)) {
+				deserializer(&rparcel, res);
+				if (parcel_ok(&rparcel))
+					return mres;
+			}
+		}
+	}
+	mdb_clear(mres);
+	return NULL;
 }
