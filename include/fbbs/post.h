@@ -65,7 +65,6 @@ typedef struct {
 	int comments;
 	int score;
 	int flag;
-	int fake_id;
 	user_id_t uid;
 	post_id_t id;
 	post_id_t reid;
@@ -112,8 +111,8 @@ typedef struct {
 	post_id_t min;
 	post_id_t max;
 	post_id_t tid;
-	int fake_id_min;
-	int fake_id_max;
+	int offset_min;
+	int offset_max;
 	bool archive;
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;

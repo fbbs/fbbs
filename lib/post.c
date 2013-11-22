@@ -1002,10 +1002,10 @@ bool match_filter(const post_index_board_t *pib,
 		match &= pib->id - pib->tid_delta == filter->tid;
 	if (filter->flag)
 		match &= (pib->flag & filter->flag) == filter->flag;
-	if (filter->fake_id_min)
-		match &= offset >= filter->fake_id_min - 1;
-	if (filter->fake_id_max)
-		match &= offset < filter->fake_id_max;
+	if (filter->offset_min)
+		match &= offset >= filter->offset_min - 1;
+	if (filter->offset_max)
+		match &= offset < filter->offset_max;
 	if (filter->type == POST_LIST_TOPIC)
 		match &= !pib->tid_delta;
 	if (*filter->utf8_keyword) {
@@ -1230,7 +1230,7 @@ int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset,
 
 	if (deleted) {
 		set_board_post_count(filter->bid, record_count(&record));
-		post_filter_t filter2 = { .fake_id_min = current + 1 };
+		post_filter_t filter2 = { .offset_min = current + 1 };
 		post_deletion_trigger(&trash, &filter2, &pir, true);
 	}
 
