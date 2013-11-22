@@ -14,6 +14,8 @@ typedef struct {
 
 extern void parcel_new(parcel_t *parcel);
 extern void parcel_free(parcel_t *parcel);
+extern size_t parcel_size(parcel_t *parcel);
+extern void parcel_clear(parcel_t *parcel);
 extern void parcel_write_varuint64(parcel_t *parcel, uint64_t val);
 extern void parcel_write_varint(parcel_t *parcel, int32_t val);
 extern void parcel_write_varint64(parcel_t *parcel, int64_t val);

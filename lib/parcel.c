@@ -20,6 +20,16 @@ void parcel_free(parcel_t *parcel)
 	free(parcel->ptr);
 }
 
+size_t parcel_size(parcel_t *parcel)
+{
+	return parcel->size;
+}
+
+void parcel_clear(parcel_t *parcel)
+{
+	parcel->size = 0;
+}
+
 static void parcel_write(parcel_t *parcel, const void *ptr, size_t size)
 {
 	if (parcel->error)

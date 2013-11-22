@@ -21,18 +21,27 @@ static bool deserialize_post_new(parcel_t *parcel,
 	return parcel_ok(parcel);
 }
 
+static bool serialize_post_new(backend_response_post_new_t *resp,
+		parcel_t *parcel)
+{
+	parcel_put(post_id, resp->id);
+	parcel_put(fb_time, resp->stamp);
+	return parcel_ok(parcel);
+}
+
 static post_id_t next_post_id(void)
 {
 	return mdb_integer(0, "INCR", POST_ID_KEY);
 }
 
-static post_id_t post_insert(backend_request_post_new_t *req)
+static post_id_t insert_post(const backend_request_post_new_t *req,
+		fb_time_t now)
 {
 	post_index_t pi = { .id = next_post_id(), };
 	if (pi.id) {
 		pi.reid_delta = req->reid ? pi.id - req->reid : 0;
 		pi.tid_delta = req->tid ? pi.id - req->tid : 0;
-		pi.stamp = fb_time();
+		pi.stamp = now;
 		pi.uid = get_user_id(req->uname);
 		pi.flag = (req->marked ? POST_FLAG_MARKED : 0)
 				| (req->locked ? POST_FLAG_LOCKED : 0);
@@ -67,11 +76,20 @@ static post_id_t post_insert(backend_request_post_new_t *req)
 	return pi.id;
 }
 
-void post_new(parcel_t *parcel)
+bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 {
 	backend_request_post_new_t req;
-	if (!deserialize_post_new(parcel, &req))
-		return;
+	if (!deserialize_post_new(parcel_in, &req))
+		return false;
 
-	post_insert(&req);
+	fb_time_t now = fb_time();
+	post_id_t id = insert_post(&req, now);
+
+	if (id) {
+		backend_response_post_new_t resp = { .id = id, .stamp = now };
+		serialize_post_new(&resp, parcel_out);
+		backend_respond(parcel_out, channel);
+		return true;
+	}
+	return false;
 }

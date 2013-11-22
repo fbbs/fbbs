@@ -1410,9 +1410,9 @@ static bool backend_serialize_post_new(const void *r, parcel_t *parcel)
 
 static bool backend_deserialize_post_new(parcel_t *parcel, void *r)
 {
-	backend_response_post_new_t *res = r;
-	res->id = parcel_get(post_id);
-	res->stamp = parcel_get(fb_time);
+	backend_response_post_new_t *resp = r;
+	resp->id = parcel_get(post_id);
+	resp->stamp = parcel_get(fb_time);
 	return parcel_ok(parcel);
 }
 

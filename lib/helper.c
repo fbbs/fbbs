@@ -290,44 +290,47 @@ void initialize_environment(int flags)
 		initialize_db();
 }
 
-mdb_res_t *backend_request(const void *req, void *res,
+mdb_res_t *backend_request(const void *req, void *resp,
 		backend_serializer_t serializer, backend_deserializer_t deserializer,
 		backend_request_e type)
 {
 	int pid = getpid();
 
-	parcel_t parcel;
-	parcel_new(&parcel);
-	parcel_write_varint(&parcel, type);
-	parcel_write_varint(&parcel, pid);
-	serializer(req, &parcel);
+	parcel_t parcel_out;
+	parcel_new(&parcel_out);
+	parcel_write_varint(&parcel_out, type);
+	parcel_write_varint(&parcel_out, pid);
+	serializer(req, &parcel_out);
 
-	if (!parcel_ok(&parcel)) {
-		parcel_free(&parcel);
+	if (!parcel_ok(&parcel_out)) {
+		parcel_free(&parcel_out);
 		return NULL;
 	}
 
 	// TODO should be binary safe
-	bool send_success = mdb_cmd_safe("LPUSH", "%s %s", BACKEND_REQUEST_KEY,
-			&parcel);
-	parcel_free(&parcel);
+	bool send_success = mdb_cmd_safe("LPUSH", "%s %b", BACKEND_REQUEST_KEY,
+			&parcel_out, parcel_size(&parcel_out));
+	parcel_free(&parcel_out);
 	if (!send_success)
 		return NULL;
 
-	mdb_res_t *mres = mdb_res("BLPOP", "%s_%d", BACKEND_RESPONSE_KEY, pid);
-	if (mres) {
+	mdb_res_t *res = mdb_res("BLPOP", "%s_%d", BACKEND_RESPONSE_KEY, pid);
+	if (res) {
 		size_t size;
-		const char *ptr = mdb_string_and_size(mres, &size);
+		const char *ptr = mdb_string_and_size(res, &size);
 		if (ptr) {
-			parcel_t rparcel;
-			parcel_read_new(ptr, size, &rparcel);
-			if (parcel_ok(&rparcel)) {
-				deserializer(&rparcel, res);
-				if (parcel_ok(&rparcel))
-					return mres;
+			parcel_t parcel_in;
+			parcel_read_new(ptr, size, &parcel_in);
+			bool ok = parcel_read_varint(&parcel_in);
+			backend_request_e response_type = parcel_read_varint(&parcel_in);
+
+			if (parcel_ok(&parcel_in) && ok && response_type == type) {
+				deserializer(&parcel_in, resp);
+				if (parcel_ok(&parcel_in))
+					return res;
 			}
 		}
 	}
-	mdb_clear(mres);
+	mdb_clear(res);
 	return NULL;
 }
