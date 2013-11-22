@@ -10,14 +10,14 @@ extern void set_board_post_count(int bid, int count);
 static bool deserialize_post_new(parcel_t *parcel,
 		backend_request_post_new_t *req)
 {
-	req->reid = parcel_read_post_id(parcel);
-	req->tid = parcel_read_post_id(parcel);
-	req->title = parcel_read_string(parcel);
-	req->uname = parcel_read_string(parcel);
-	req->content = parcel_read_string(parcel);
-	req->bid = parcel_read_int(parcel);
-	req->marked = parcel_read_bool(parcel);
-	req->locked = parcel_read_bool(parcel);
+	req->reid = parcel_get(post_id);
+	req->tid = parcel_get(post_id);
+	req->title = parcel_get(string);
+	req->uname = parcel_get(string);
+	req->content = parcel_get(string);
+	req->bid = parcel_get(int);
+	req->marked = parcel_get(bool);
+	req->locked = parcel_get(bool);
 	return parcel_ok(parcel);
 }
 

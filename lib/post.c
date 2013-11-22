@@ -1397,22 +1397,22 @@ int get_post_mark(const post_info_t *p)
 static bool backend_serialize_post_new(const void *r, parcel_t *parcel)
 {
 	const backend_request_post_new_t *req = r;
-	parcel_write_post_id(parcel, req->reid);
-	parcel_write_post_id(parcel, req->tid);
-	parcel_write_string(parcel, req->title, 0);
-	parcel_write_string(parcel, req->uname, 0);
-	parcel_write_string(parcel, req->content, 0);
-	parcel_write_int(parcel, req->bid);
-	parcel_write_bool(parcel, req->marked);
-	parcel_write_bool(parcel, req->locked);
+	parcel_put(post_id, req->reid);
+	parcel_put(post_id, req->tid);
+	parcel_put_string(req->title);
+	parcel_put_string(req->uname);
+	parcel_put_string(req->content);
+	parcel_put(int, req->bid);
+	parcel_put(bool, req->marked);
+	parcel_put(bool, req->locked);
 	return parcel_ok(parcel);
 }
 
 static bool backend_deserialize_post_new(parcel_t *parcel, void *r)
 {
 	backend_response_post_new_t *res = r;
-	res->id = parcel_read_post_id(parcel);
-	res->stamp = parcel_read_fb_time(parcel);
+	res->id = parcel_get(post_id);
+	res->stamp = parcel_get(fb_time);
 	return parcel_ok(parcel);
 }
 

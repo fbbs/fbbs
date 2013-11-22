@@ -21,7 +21,8 @@ extern void parcel_write_string(parcel_t *parcel, const char *str, size_t size);
 extern void parcel_write_bool(parcel_t *parcel, bool val);
 extern void parcel_write_int(parcel_t *parcel, int32_t val);
 extern void parcel_write_int64(parcel_t *parcel, int64_t val);
-#define parcel_write_type(parcel, type, ...)  parcel_write_##type(parcel, __VA_ARGS__)
+#define parcel_put(type, val)  parcel_write_##type(parcel, val)
+#define parcel_put_string(str)  parcel_write_string(parcel, str, 0)
 
 extern void parcel_read_new(const char *ptr, size_t size, parcel_t *parcel);
 extern uint64_t parcel_read_varuint64(parcel_t *parcel);
@@ -32,7 +33,7 @@ extern const char *parcel_read_string(parcel_t *parcel);
 extern bool parcel_read_bool(parcel_t *parcel);
 extern int32_t parcel_read_int(parcel_t *parcel);
 extern int64_t parcel_read_int64(parcel_t *parcel);
-#define parcel_read_type(parcel, type)  parcel_read_##type(parcel)
+#define parcel_get(type)  parcel_read_##type(parcel)
 
 bool parcel_ok(const parcel_t *parcel);
 
