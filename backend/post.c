@@ -6,8 +6,10 @@
 
 #include "s11n/backend_post.h"
 
-// TODO: move here
-extern void set_board_post_count(int bid, int count);
+static void set_board_post_count(int bid, int count)
+{
+	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
+}
 
 static post_id_t next_post_id(void)
 {
@@ -72,6 +74,57 @@ bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 		return true;
 	}
 	return false;
+}
+
+static void adjust_user_post_count(const char *uname, int delta)
+{
+	struct userec urec;
+	int unum = searchuser(uname);
+	getuserbyuid(&urec, unum);
+	urec.numposts += delta;
+	substitut_record(NULL, &urec, sizeof(urec), unum);
+}
+
+typedef struct {
+	post_index_record_t *pir;
+	const post_filter_t *filter;
+	bool delete_;
+} post_deletion_callback_t;
+
+static record_callback_e post_deletion_callback(void *ptr, void *args,
+		int offset)
+{
+	post_index_trash_t *pit = ptr;
+	post_deletion_callback_t *pdc = args;
+	post_index_t pi;
+
+	if (match_filter((post_index_board_t *) pit, pdc->pir,
+				pdc->filter, offset)) {
+		if (post_index_record_lock(pdc->pir, RECORD_WRLCK, pit->id) == 0) {
+			post_index_record_read(pdc->pir, pit->id, &pi);
+			if (pdc->delete_)
+				pi.flag |= POST_FLAG_DELETED;
+			else
+				pi.flag &= ~POST_FLAG_DELETED;
+			post_index_record_update(pdc->pir, &pi);
+			post_index_record_lock(pdc->pir, RECORD_UNLCK, pit->id);
+
+			if (pit->flag & POST_FLAG_JUNK)
+				adjust_user_post_count(pi.owner, pdc->delete_ ? -1 : 1);
+		}
+		return RECORD_CALLBACK_MATCH;
+	}
+	return RECORD_CALLBACK_CONTINUE;
+}
+
+static int post_deletion_trigger(record_t *trash, const post_filter_t *filter,
+		post_index_record_t *pir, bool deletion)
+{
+	post_deletion_callback_t pdc = {
+		.pir = pir, .filter = filter, .delete_ = deletion,
+	};
+	int rows = record_update(trash, NULL, 0, post_deletion_callback, &pdc);
+	return rows;
 }
 
 typedef struct {
@@ -149,8 +202,8 @@ static int delete_posts(const backend_request_post_delete_t *req)
 
 	if (deleted) {
 		set_board_post_count(req->filter->bid, record_count(&record));
-//		post_filter_t filter2 = { .offset_min = current + 1 };
-//		post_deletion_trigger(&trash, &filter2, &pir, true);
+		post_filter_t filter2 = { .offset_min = current + 1 };
+		post_deletion_trigger(&trash, &filter2, &pir, true);
 	}
 
 e4: record_lock_all(&trash, RECORD_UNLCK);
@@ -170,6 +223,84 @@ bool post_delete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 	backend_response_post_delete_t resp;
 	resp.deleted = delete_posts(&req);
 	serialize_post_delete(&resp, parcel_out);
+	backend_respond(parcel_out, channel);
+	return true;
+}
+
+typedef struct {
+	post_index_record_t *pir;
+	const post_filter_t *filter;
+	post_index_board_t *buf;
+	int count;
+	int max;
+} post_undeletion_callback_t;
+
+static record_callback_e post_undeletion_callback(void *ptr, void *args,
+		int offset)
+{
+	const post_index_trash_t *pit = ptr;
+	post_undeletion_callback_t *puc = args;
+
+	if (match_filter((post_index_board_t *) pit, puc->pir,
+				puc->filter, offset)) {
+		if (puc->count >= puc->max)
+			return RECORD_CALLBACK_CONTINUE;
+
+		post_index_board_t *pib = puc->buf + puc->count;
+		pib->id = pit->id;
+		pib->reid_delta = pit->reid_delta;
+		pib->tid_delta = pit->tid_delta;
+		pib->uid = pit->uid;
+		pib->flag = pit->flag & ~POST_FLAG_JUNK;
+		pib->stamp = pit->stamp;
+		pib->cstamp = pit->cstamp;
+		++puc->count;
+		return RECORD_CALLBACK_MATCH;
+	}
+	return RECORD_CALLBACK_CONTINUE;
+}
+
+int undelete_posts(const backend_request_post_undelete_t *req)
+{
+	record_t record, trash;
+	post_index_board_open(req->filter->bid, RECORD_WRITE, &record);
+	post_index_trash_open(req->filter->bid,
+			req->bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash);
+	post_index_record_t pir;
+	post_index_record_open(&pir);
+
+	record_lock_all(&trash, RECORD_WRLCK);
+	int undeleted = post_deletion_trigger(&trash, req->filter, &pir, false);
+	post_index_board_t *buf = malloc(undeleted * sizeof(post_index_board_t));
+	post_undeletion_callback_t puc = {
+		.pir = &pir, .filter = req->filter,
+		.buf = buf, .count = 0, .max = undeleted,
+	};
+
+	record_lock_all(&record, RECORD_WRLCK);
+	record_delete(&trash, NULL, 0, post_undeletion_callback, &puc);
+	record_merge(&record, puc.buf, puc.count);
+	record_lock_all(&record, RECORD_UNLCK);
+	set_board_post_count(req->filter->bid, record_count(&record));
+
+	record_lock_all(&trash, RECORD_UNLCK);
+	free(buf);
+	post_index_record_close(&pir);
+	record_close(&trash);
+	record_close(&record);
+	return undeleted;
+}
+
+bool post_undelete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+{
+	post_filter_t filter;
+	backend_request_post_undelete_t req = { .filter = &filter };
+	if (!deserialize_post_undelete(parcel_in, &req))
+		return false;
+
+	backend_response_post_undelete_t resp;
+	resp.undeleted = undelete_posts(&req);
+	serialize_post_undelete(&resp, parcel_out);
 	backend_respond(parcel_out, channel);
 	return true;
 }

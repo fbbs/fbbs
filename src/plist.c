@@ -994,8 +994,7 @@ static int tui_undelete_single_post(tui_list_t *tl, post_info_t *pi)
 	post_list_t *pl = tl->data;
 	if (pi && is_deleted(pl->type)) {
 		post_filter_t f = { .bid = pl->bid, .min = pi->id, .max = pi->id, };
-		if (post_index_board_undelete(&f, NULL, 0,
-					pl->type == POST_LIST_TRASH)) {
+		if (post_index_board_undelete(&f, pl->type == POST_LIST_TRASH)) {
 			tl->valid = false;
 			log_bm(LOG_BM_UNDELETE, 1);
 			return PARTUPDATE;
@@ -1900,7 +1899,7 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 			break;
 		default:
 			if (is_deleted(pl->type)) {
-				post_index_board_undelete(&filter, NULL, 0,
+				post_index_board_undelete(&filter,
 						pl->type == POST_LIST_TRASH);
 			} else {
 				filter.flag |= POST_FLAG_WATER;
@@ -2088,7 +2087,7 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 			break;
 		default:
 			if (is_deleted(pl->type)) {
-				post_index_board_undelete(&filter, NULL, 0,
+				post_index_board_undelete(&filter,
 						pl->type == POST_LIST_TRASH);
 			} else {
 				// TODO: merge thread

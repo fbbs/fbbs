@@ -18,6 +18,7 @@ typedef int64_t post_id_t;
 
 /** 文章ID序列 @mdb_string */
 #define POST_ID_KEY  "post_id_seq"
+#define BOARD_POST_COUNT_KEY "board_post_count"
 
 typedef enum {
 	POST_FLAG_DIGEST = 0x1,
@@ -184,7 +185,7 @@ extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t 
 extern int post_index_board_to_info(post_index_record_t *pir, const post_index_board_t *pib, post_info_t *pi, int count);
 extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size, post_list_type_e type);
 extern int post_index_board_delete(const post_filter_t *filter, bool junk, bool bm_visible, bool force);
-extern int post_index_board_undelete(const post_filter_t *filter, void *ptr, int offset, bool bm_visible);
+extern int post_index_board_undelete(const post_filter_t *filter, bool bm_visible);
 extern bool match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
 
 extern int post_index_trash_cmp(const void *p1, const void *p2);
@@ -198,6 +199,7 @@ extern int post_index_record_update(post_index_record_t *pir, const post_index_t
 extern int post_index_record_for_recent(post_index_record_callback_t cb, void *args);
 extern void post_index_record_close(post_index_record_t *pir);
 extern void post_index_record_get_title(post_index_record_t *pir, post_id_t id, char *buf, size_t size);
+extern int post_index_record_lock(post_index_record_t *pir, record_lock_e lock, post_id_t id);
 
 enum {
 	POST_CONTENT_BUFLEN = 4096,
@@ -272,5 +274,14 @@ typedef struct { // @frontend
 typedef struct { // @backend
 	int deleted;
 } backend_response_post_delete_t;
+
+typedef struct { // @frontend
+	post_filter_t *filter;
+	bool bm_visible;
+} backend_request_post_undelete_t;
+
+typedef struct { // @backend
+	int undeleted;
+} backend_response_post_undelete_t;
 
 #endif // FB_POST_H
