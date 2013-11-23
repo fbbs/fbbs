@@ -61,7 +61,8 @@ static char *smart_vsnprintf(char *buf, size_t size,
 
 void mdb_clear(mdb_res_t *res)
 {
-	freeReplyObject(res);
+	if (res)
+		freeReplyObject(res);
 }
 
 static mdb_res_t *mdb_vcmd(bool safe, const char *cmd, const char *fmt,
@@ -120,6 +121,15 @@ mdb_res_t *mdb_res_safe(const char *cmd, const char *fmt, ...)
 {
 	MDB_CMD_HELPER(true);
 	return res;
+}
+
+mdb_res_t *mdb_res_at(const mdb_res_t *res, int index)
+{
+	const redisReply *r = res;
+	if (r && r->type == MDB_RES_ARRAY && index >= 0 && index < r->elements) {
+		return r->element[index];
+	}
+	return NULL;
 }
 
 mdb_int_t mdb_integer(mdb_int_t invalid, const char *cmd, const char *fmt, ...)

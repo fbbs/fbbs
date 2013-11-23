@@ -1247,22 +1247,22 @@ post_id_t publish_post(const post_request_t *pr)
 		.uname = pr->uname, .content = content, .bid = pr->board->id,
 		.marked = pr->marked, .locked = pr->locked,
 	};
-	backend_response_post_new_t res;
-	mdb_res_t *mres = backend_cmd(&req, &res, post_new);
-	mdb_clear(mres);
+	backend_response_post_new_t resp;
+	mdb_res_t *res = backend_cmd(&req, &resp, post_new);
+	mdb_clear(res);
 
 	free(content);
 
-	if (!mres)
+	if (!res)
 		return 0;
-	if (res.id) {
-		set_last_post_time(pr->board->id, res.stamp);
+	if (resp.id) {
+		set_last_post_time(pr->board->id, resp.stamp);
 
 		if (!pr->autopost) {
 			brc_initialize(uname, pr->board->name);
-			brc_mark_as_read(res.stamp);
+			brc_mark_as_read(resp.stamp);
 			brc_update(uname, pr->board->name);
 		}
 	}
-	return res.id;
+	return resp.id;
 }

@@ -307,17 +307,18 @@ mdb_res_t *backend_request(const void *req, void *resp,
 		return NULL;
 	}
 
-	// TODO should be binary safe
 	bool send_success = mdb_cmd_safe("LPUSH", "%s %b", BACKEND_REQUEST_KEY,
-			&parcel_out, parcel_size(&parcel_out));
+			parcel_out.ptr, parcel_size(&parcel_out));
 	parcel_free(&parcel_out);
 	if (!send_success)
 		return NULL;
 
-	mdb_res_t *res = mdb_res("BLPOP", "%s_%d", BACKEND_RESPONSE_KEY, pid);
+	mdb_res_t *res = mdb_res("BLPOP", "%s_%d %d",
+			BACKEND_RESPONSE_KEY, pid, 0);
 	if (res) {
+		mdb_res_t *real_res = mdb_res_at(res, 1);
 		size_t size;
-		const char *ptr = mdb_string_and_size(res, &size);
+		const char *ptr = mdb_string_and_size(real_res, &size);
 		if (ptr) {
 			parcel_t parcel_in;
 			parcel_read_new(ptr, size, &parcel_in);
