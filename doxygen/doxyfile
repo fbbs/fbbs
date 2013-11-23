@@ -1,0 +1,35 @@
+# Doxygen 1.8.2
+PROJECT_NAME           = fbbs
+OUTPUT_DIRECTORY       = /home/dox
+ALIASES                = "mdbkey=\xrefitem mdb_keys \"缓存类型\" \"缓存键值列表\""
+ALIASES               += "mdb_string=\mdbkey 字符串"
+ALIASES               += "mdb_hash=\mdbkey 散列"
+ALIASES               += "mdb_list=\mdbkey 列表"
+ALIASES               += "mdb_set=\mdbkey 集合"
+ALIASES               += "mdb_sorted_set=\mdbkey 有序集"
+OPTIMIZE_OUTPUT_FOR_C  = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+MAX_INITIALIZER_LINES  = 0
+QUIET                  = YES
+INPUT = ../include \
+		../include/fbbs \
+		../lib \
+		../src \
+		../www \
+		../pg \
+		../build/include/s11n
+FILE_PATTERNS          = *.c \
+                         *.h
+SOURCE_BROWSER         = YES
+REFERENCED_BY_RELATION = YES
+HTML_FOOTER            = footer.html
+HTML_EXTRA_STYLESHEET  = custom.css
+ENUM_VALUES_PER_LINE   = 0
+GENERATE_LATEX         = NO
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+INCLUDE_PATH           = ../include
+EXPAND_AS_DEFINED      = UTF8_BUFFER GBK_BUFFER GBK_UTF8_BUFFER \
+		SLIST_HEAD SLIST_FIELD STAILQ_HEAD STAILQ_FIELD
