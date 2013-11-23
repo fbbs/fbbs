@@ -1,0 +1,126 @@
+#!/usr/bin/perl
+
+my $methods = {};
+
+main();
+
+sub main {
+	my $dir = shift @ARGV;
+	mkdir $dir if (not -d $dir);
+
+	process_header($_, $dir) for @ARGV;
+}
+
+sub process_header {
+	my ($header, $dir) = @_;
+	my ($basename) = ($header =~ /([a-z]+)\.h$/);
+
+	open my $fh_fe, '>', "$dir/frontend_$basename.h" or die;
+	open my $fh_be, '>', "$dir/backend_$basename.h" or die;
+
+	open my $fh, '<', $header or die;
+	my $in_struct;
+	my $frontend;
+	my $struct;
+	while (<$fh>) {
+		if (/@(front|back)end/) {
+			$frontend = ($1 eq 'front');
+			$in_struct = 1;
+			$struct = [];
+		} elsif (/{/) {
+		} elsif (/^}/) {
+			if ($in_struct) {
+				my ($type) = /^} (\w+);$/;
+				write_methods($frontend, $type, $struct, $fh_fe, $fh_be);
+				$in_struct = 0;
+			}
+		} elsif ($in_struct) {
+			my ($type, $var);
+			if (/^\t([\w ]+?\*?) ?(\w+);$/) {
+				($type, $var) = ($1, $2);
+			} elsif (/^\tchar (\w+)\[\w+\]$/) {
+				$var = $1;
+				$type = 'char []';
+			} elsif (/^\tUTF8_BUFFER/) {
+				($var) = /(\w+),/;
+				$var = 'utf8_' . $var;
+				$type = 'char []';
+			}
+			my $type = normalize_type($type);
+			push @$struct, [$type, $var];
+		}
+	}
+	close $fh;
+	close $fh_be;
+	close $fh_fe;
+}
+
+sub normalize_type {
+	my $type = shift;
+	if ($type =~ /_e$/) {
+		'int';
+	} elsif ($type =~ /_t$/) {
+		$type =~ s/_t$//;
+		$type;
+	} elsif ($type =~ /char \*$/) {
+		'string';
+	} elsif ($type =~ /\[\]$/) {
+		'char_array';
+	} else {
+		$type;
+	}
+}
+
+sub write_methods {
+	my ($frontend, $type, $struct, $fh_fe, $fh_be) = @_;
+
+	my $core_type = $type;
+	$core_type =~ s/_t$//;
+	$core_type =~ s/^backend_(request|response)_//;
+
+	write_method($frontend, $type, $core_type, $struct, $fh_fe, $fh_be, 1);
+	write_method($frontend, $type, $core_type, $struct, $fh_fe, $fh_be, 0);
+}
+
+sub write_method {
+	my ($frontend, $type, $core_type, $struct, $fh_fe, $fh_be, $serialize) = @_;
+
+	my $fh = ($frontend xor $serialize) ? $fh_be : $fh_fe;
+	my $func = "serialize_$core_type";
+	$func = 'de' . $func if (not $serialize);
+	$methods->{$type . ' *'}{$serialize} = $func;
+
+	print $fh "\nstatic bool $func(";
+	if ($serialize) {
+		print $fh $frontend ? 'const void *req' : "const $type *r", ', parcel_t *parcel';
+	} else {
+		print $fh 'parcel_t *parcel, ', $frontend ? "$type *r" : 'void *resp';
+	}
+	print $fh ")\n{\n";
+
+	if (not ($frontend xor $serialize)) {
+		print $fh "\t", $serialize ? "const $type *r = req" : "$type *r = resp", ";\n";
+	}
+
+	for (@$struct) {
+		my ($ftype, $var) = @$_;
+		my $method = $methods->{$ftype}{$serialize};
+		if ($serialize) {
+			if ($method) {
+				print $fh "\t$method(r->$var, parcel);\n";
+			} else {
+				print $fh "\tparcel_put($ftype, r->$var);\n";
+			}
+		} else {
+			if ($ftype eq 'char_array') {
+				print $fh "\tparcel_get_char_array(r->$var);\n";
+			} elsif ($method) {
+				print $fh "\t$method(parcel, r->$var);\n";
+			} else {
+				print $fh "\tr->$var = parcel_get($ftype);\n";
+			}
+		}
+	}
+
+	print $fh "\treturn parcel_ok(parcel);\n}\n";
+}

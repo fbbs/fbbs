@@ -248,7 +248,7 @@ extern int get_post_mark(const post_info_t *p);
 
 extern int get_board_post_count(int bid);
 
-typedef struct {
+typedef struct { // @frontend
 	post_id_t reid;
 	post_id_t tid;
 	const char *title;
@@ -259,7 +259,7 @@ typedef struct {
 	bool locked;
 } backend_request_post_new_t;
 
-typedef struct {
+typedef struct { // @backend
 	post_id_t id;
 	fb_time_t stamp;
 } backend_response_post_new_t;

@@ -79,13 +79,19 @@ void parcel_write_varint64(parcel_t *parcel, int64_t val)
 	parcel_write_varuint64(parcel, (val << 1) ^ (val >> 63));
 }
 
-void parcel_write_string(parcel_t *parcel, const char *str, size_t size)
+void parcel_write_string_with_size(parcel_t *parcel, const char *str,
+		size_t size)
 {
 	if (!size)
 		size = strlen(str);
 	parcel_write_varuint64(parcel, size);
 	parcel_write(parcel, str, size);
 	parcel_write(parcel, "", 1);
+}
+
+void parcel_write_string(parcel_t *parcel, const char *str)
+{
+	parcel_write_string_with_size(parcel, str, 0);
 }
 
 void parcel_write_bool(parcel_t *parcel, bool val)

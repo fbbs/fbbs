@@ -4,30 +4,10 @@
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 
+#include "s11n/backend_post.h"
+
 // TODO: move here
 extern void set_board_post_count(int bid, int count);
-
-static bool deserialize_post_new(parcel_t *parcel,
-		backend_request_post_new_t *req)
-{
-	req->reid = parcel_get(post_id);
-	req->tid = parcel_get(post_id);
-	req->title = parcel_get(string);
-	req->uname = parcel_get(string);
-	req->content = parcel_get(string);
-	req->bid = parcel_get(int);
-	req->marked = parcel_get(bool);
-	req->locked = parcel_get(bool);
-	return parcel_ok(parcel);
-}
-
-static bool serialize_post_new(backend_response_post_new_t *resp,
-		parcel_t *parcel)
-{
-	parcel_put(post_id, resp->id);
-	parcel_put(fb_time, resp->stamp);
-	return parcel_ok(parcel);
-}
 
 static post_id_t next_post_id(void)
 {

@@ -8,6 +8,8 @@
 #define DBIdUID  "d"
 typedef int32_t user_id_t;
 #define db_get_user_id(res, row, col)  db_get_integer(res, row, col)
+#define parcel_write_user_id(parcel, id)  parcel_write_varint(parcel, id)
+#define parcel_read_user_id(parcel)  parcel_read_varint(parcel)
 
 #define has_permission(p, x)  ((x) ? p & (x) : 1)
 

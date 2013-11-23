@@ -62,6 +62,7 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 find_package(HiRedis REQUIRED)
 
+add_subdirectory(include)
 add_subdirectory(lib)
 add_subdirectory(backend)
 add_subdirectory(src)

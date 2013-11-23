@@ -14,6 +14,8 @@
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 
+#include "s11n/frontend_post.h"
+
 static post_id_t current_post_id(void)
 {
 	return mdb_integer(0, "GET", POST_ID_KEY);
@@ -1392,28 +1394,6 @@ int get_post_mark_raw(fb_time_t stamp, int flag)
 int get_post_mark(const post_info_t *p)
 {
 	return get_post_mark_raw(p->stamp, p->flag);
-}
-
-static bool backend_serialize_post_new(const void *r, parcel_t *parcel)
-{
-	const backend_request_post_new_t *req = r;
-	parcel_put(post_id, req->reid);
-	parcel_put(post_id, req->tid);
-	parcel_put_string(req->title);
-	parcel_put_string(req->uname);
-	parcel_put_string(req->content);
-	parcel_put(int, req->bid);
-	parcel_put(bool, req->marked);
-	parcel_put(bool, req->locked);
-	return parcel_ok(parcel);
-}
-
-static bool backend_deserialize_post_new(parcel_t *parcel, void *r)
-{
-	backend_response_post_new_t *resp = r;
-	resp->id = parcel_get(post_id);
-	resp->stamp = parcel_get(fb_time);
-	return parcel_ok(parcel);
 }
 
 /**
