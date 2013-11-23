@@ -977,7 +977,7 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 			post_filter_t filter = {
 				.bid = bid, .min = pi->id, .max = pi->id,
 			};
-			if (post_index_board_delete(&filter, NULL, 0, true, false, true)) {
+			if (post_index_board_delete(&filter, true, false, true)) {
 				tl->valid = false;
 				log_bm(LOG_BM_DELETE, 1);
 				return PARTUPDATE;
@@ -1384,8 +1384,8 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	//% 确定删除
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 		post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
-		if (post_index_board_delete(&filter, NULL, 0, false,
-				!HAS_PERM(PERM_OBOARDS), false)) {
+		if (post_index_board_delete(&filter, false,
+					!HAS_PERM(PERM_OBOARDS), false)) {
 			log_bm(LOG_BM_RANGEDEL, 1);
 			tl->valid = false;
 		}
@@ -1884,7 +1884,7 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 			break;
 		case 3:
 			if (pl->type == POST_LIST_NORMAL) {
-				post_index_board_delete(&filter, NULL, 0, true,
+				post_index_board_delete(&filter, true,
 						!HAS_PERM(PERM_OBOARDS), false);
 			}
 			break;
@@ -1904,7 +1904,7 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 						pl->type == POST_LIST_TRASH);
 			} else {
 				filter.flag |= POST_FLAG_WATER;
-				post_index_board_delete(&filter, NULL, 0, true,
+				post_index_board_delete(&filter, true,
 						!HAS_PERM(PERM_OBOARDS), false);
 			}
 			break;
@@ -2060,7 +2060,7 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 	switch (choice) {
 		case 0:
 			if (pl->type == POST_LIST_NORMAL) {
-				post_index_board_delete(&filter, NULL, 0, junk,
+				post_index_board_delete(&filter, junk,
 						!HAS_PERM(PERM_OBOARDS), false);
 			}
 			break;

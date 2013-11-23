@@ -9,6 +9,7 @@
 
 typedef enum {
 	BACKEND_REQUEST_post_new = 1,
+	BACKEND_REQUEST_post_delete = 2,
 } backend_request_e;
 
 typedef bool (*backend_serializer_t)(const void *request, parcel_t *parcel);

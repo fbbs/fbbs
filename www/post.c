@@ -296,7 +296,7 @@ int bbsdel_main(void)
 		.bid = board.id, .min = pid, .max = pid,
 		.uid = am_bm(&board) ? 0 : session_uid(),
 	};
-	int deleted = post_index_board_delete(&filter, NULL, 0, true, false, true);
+	int deleted = post_index_board_delete(&filter, true, false, true);
 	record_close(&record);
 
 	if (deleted) {

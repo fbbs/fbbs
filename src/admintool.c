@@ -2025,7 +2025,7 @@ static record_callback_e search_all_boards_callback(post_index_t *pi,
 		post_filter_t f = {
 			.bid = pi->bid, .min = pi->id, .max = pi->id,
 		};
-		post_index_board_delete(&f, NULL, 0, true, false, true);
+		post_index_board_delete(&f, true, false, true);
 	}
 	return RECORD_CALLBACK_MATCH;
 }

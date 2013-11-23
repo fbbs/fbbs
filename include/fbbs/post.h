@@ -103,7 +103,7 @@ enum {
 	POST_LIST_KEYWORD_LEN = 19,
 };
 
-typedef struct {
+typedef struct { // @frontend
 	post_list_type_e type;
 	int bid;
 	int flag;
@@ -183,7 +183,7 @@ extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_to_info(post_index_record_t *pir, const post_index_board_t *pib, post_info_t *pi, int count);
 extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size, post_list_type_e type);
-extern int post_index_board_delete(const post_filter_t *filter, void *ptr, int offset, bool junk, bool bm_visible, bool force);
+extern int post_index_board_delete(const post_filter_t *filter, bool junk, bool bm_visible, bool force);
 extern int post_index_board_undelete(const post_filter_t *filter, void *ptr, int offset, bool bm_visible);
 extern bool match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
 
@@ -238,9 +238,6 @@ extern char *convert_file_to_utf8_content(const char *file);
 extern bool set_last_post_time(int bid, fb_time_t stamp);
 extern fb_time_t get_last_post_time(int bid);
 
-extern int delete_posts(post_filter_t *filter, bool junk, bool bm_visible, bool force);
-extern int undelete_posts(post_filter_t *filter);
-
 extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
 
 extern int get_post_mark_raw(fb_time_t stamp, int flag);
@@ -263,5 +260,17 @@ typedef struct { // @backend
 	post_id_t id;
 	fb_time_t stamp;
 } backend_response_post_new_t;
+
+typedef struct { // @frontend
+	post_filter_t *filter;
+	bool junk;
+	bool bm_visible;
+	bool force;
+	const char *ename;
+} backend_request_post_delete_t;
+
+typedef struct { // @backend
+	int deleted;
+} backend_response_post_delete_t;
 
 #endif // FB_POST_H
