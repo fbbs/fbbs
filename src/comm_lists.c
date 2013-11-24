@@ -18,7 +18,7 @@
 int domenu(const char *menu_name);
 int Announce(), Personal(), Info(), Goodbye();
 int board_read(), board_select(), Welcome();
-int msg_more(), x_lockscreen(), x_showuser();
+int msg_more(), x_lockscreen();
 int Conditions(), x_cloak(), show_online_users(), x_info(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();
 int x_userdefine();
@@ -100,7 +100,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ReadBoard", board_read },
 		{ "MailAll", mailall },
 		{ "LockScreen", x_lockscreen },
-		{ "ShowUser", x_showuser },
 		{ "OffLine", offline },
 		{ "GiveUpBBS", giveUpBBS },
 		{ "ReadNewMail", m_new },

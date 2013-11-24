@@ -308,7 +308,7 @@ int x_lockscreen(void)
 
 //#define MY_DEBUG
 //  执行命令cmdfile,参数为param1
-void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
+static void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	char buf[160];
 	char *my_argv[18], *ptr;
 
@@ -365,28 +365,6 @@ void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 #endif
 	child_pid = 0;
 	screen_clear();
-}
-
-//查询使用者资料
-void x_showuser() {
-	char buf[STRLEN];
-	set_user_status(ST_SYSINFO);
-	screen_clear();
-	//% stand_title("本站使用者资料查询");
-	stand_title("\xb1\xbe\xd5\xbe\xca\xb9\xd3\xc3\xd5\xdf\xd7\xca\xc1\xcf\xb2\xe9\xd1\xaf");
-	ansimore("etc/showuser.msg", NA);
-	getdata(20, 0, "Parameter: ", buf, 30, DOECHO, YEA);
-	if ((buf[0] == '\0') || dashf("tmp/showuser.result"))
-		return;
-	//% securityreport("查询使用者资料", 0, 0);
-	securityreport("\xb2\xe9\xd1\xaf\xca\xb9\xd3\xc3\xd5\xdf\xd7\xca\xc1\xcf", 0, 0);
-	exec_cmd(ST_SYSINFO, YEA, "bin/showuser", buf);
-	sprintf(buf, "tmp/showuser.result");
-	if (dashf(buf)) {
-		//% mail_file(buf, currentuser.userid, "使用者资料查询结果");
-		mail_file(buf, currentuser.userid, "\xca\xb9\xd3\xc3\xd5\xdf\xd7\xca\xc1\xcf\xb2\xe9\xd1\xaf\xbd\xe1\xb9\xfb");
-		unlink(buf);
-	}
 }
 
 //  排雷游戏
