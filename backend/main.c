@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "bbs.h"
 #include "fbbs/backend.h"
 #include "fbbs/helper.h"
@@ -19,6 +20,9 @@ static const handler_t handlers[] = {
 	ENTRY(post_undelete),
 };
 
+static sig_atomic_t backend_shutdown = false;
+static sig_atomic_t backend_accepting = false;
+
 void backend_respond(parcel_t *parcel, int channel)
 {
 	if (channel <= 0)
@@ -32,6 +36,13 @@ static void backend_respond_error(parcel_t *parcel, int channel)
 	parcel_clear(parcel);
 	parcel_put(bool, false);
 	backend_respond(parcel, channel);
+}
+
+static void shutdown_handler(int sig)
+{
+	if (backend_accepting)
+		exit(EXIT_SUCCESS);
+	backend_shutdown = true;
 }
 
 extern int resolve_ucache(void);
@@ -51,8 +62,12 @@ int main(int argc, char **argv)
 	if (resolve_ucache() < 0)
 		return EXIT_FAILURE;
 
-	while (1) {
+	fb_signal(SIGTERM, shutdown_handler);
+
+	while (!backend_shutdown) {
+		backend_accepting = true;
 		mdb_res_t *res = mdb_res("BLPOP", "%s %d", BACKEND_REQUEST_KEY, 0);
+		backend_accepting = false;
 		if (!res)
 			return 0;
 
