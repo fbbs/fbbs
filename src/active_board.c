@@ -53,7 +53,7 @@ static record_callback_e active_board_init_callback(void *ptr, void *args,
 		char buf[POST_CONTENT_BUFLEN];
 		char *content = post_content_read(pib->id, buf, sizeof(buf));
 
-		bool success = active_board_add(content);
+		bool success = content ? active_board_add(content) : false;
 
 		if (content != buf)
 			free(content);
