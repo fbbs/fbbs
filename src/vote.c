@@ -777,9 +777,8 @@ int vote_maintain(const char *bname)
 		b_report("OPEN");
 		//% prints("投票箱开启了！\n");
 		prints("\xcd\xb6\xc6\xb1\xcf\xe4\xbf\xaa\xc6\xf4\xc1\xcb\xa3\xa1\n");
-		range++;;
-		sprintf(votename, "tmp/votetmp.%s.%05d", currentuser.userid,
-				session_pid());
+		range++;
+		file_temp_name(votename, sizeof(votename));
 		if ((sug = fopen(votename, "w")) != NULL) {
 			strcpy(genbuf, ball->title);
 			ellipsis(genbuf, 31 - strlen(bname));

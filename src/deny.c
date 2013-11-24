@@ -411,8 +411,7 @@ static int deny_do_add(const char *board, const char *user, const char *ps,
 		snprintf(title, sizeof(title), "\xb7\xe2\xbd\xfb%s\xd4\xda%s\xb0\xe6\xb5\xc4\xb7\xa2\xce\xc4\xc8\xa8\xcf\xde",
 				urec.userid, board);
 	}
-	snprintf(file, sizeof(file), "tmp/AutoPoster.%s.%05d", currentuser.userid,
-			session_pid());
+	file_temp_name(file, sizeof(file));
 	FILE *fpw = fopen(file, "w");
 	//% fprintf(fpw, "%s因:\n", urec.userid);
 	fprintf(fpw, "%s\xd2\xf2:\n", urec.userid);
@@ -641,7 +640,7 @@ static void denylist_release(const char *line)
 
 	// Mail the released user.
 	char file[HOMELEN];
-	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session_pid());
+	file_temp_name(file, sizeof(file));
 	FILE *fp = fopen(file, "w");
 	if (fp) {
 		//% fprintf(fp, "执行人: %s\n", currentuser.userid);
@@ -749,7 +748,7 @@ static int denylist_do_add(const char *userid, int type, int days,
 	unlink(file);
 
 	// Generate notification.
-	sprintf(file, "tmp/AutoPoster.%s.%05d", currentuser.userid, session_pid());
+	file_temp_name(file, sizeof(file));
 	FILE *fpw = fopen(file, "w");
 	//% fprintf(fpw, "%s因:\n", urec.userid);
 	fprintf(fpw, "%s\xd2\xf2:\n", urec.userid);

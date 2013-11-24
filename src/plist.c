@@ -1231,7 +1231,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	in_mail = NA;
 
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "tmp/editbuf.%d", getpid());
+	file_temp_name(file, sizeof(file));
 	if (pi) {
 		char orig[HOMELEN];
 		dump_content(pi->id, orig, sizeof(orig));
@@ -1315,7 +1315,7 @@ static int tui_save_post(const post_info_t *pi)
 	convert_u2g(pi->utf8_title, gbk_title);
 
 	a_Save(gbk_title, file, false, true);
-
+	unlink(file);
 	return MINIUPDATE;
 }
 
@@ -1334,6 +1334,7 @@ static int tui_import_post(const post_info_t *pi)
 		convert_u2g(pi->utf8_title, gbk_title);
 
 		a_Import(gbk_title, file, NA);
+		unlink(file);
 	}
 
 	if (DEFINE(DEF_MULTANNPATH))
@@ -1531,7 +1532,7 @@ static bool count_posts_in_range(record_t *record, post_id_t *min,
 	qsort_r(cpc.stat, cpc.size, sizeof(*cpc.stat), count_posts_sort_func,
 			&cpc);
 
-	snprintf(file, sizeof(file), "tmp/count.%d", getpid());
+	file_temp_name(file, sizeof(file));
 	FILE *fp = fopen(file, "w");
 	if (fp) {
 		//% 版面:
@@ -1817,6 +1818,7 @@ static record_callback_e import_posts_callback(void *r, void *args, int offset)
 		char file[HOMELEN];
 		dump_content(pib->id, file, sizeof(file));
 		import_file(gbk_title, file, ipc->path);
+		unlink(file);
 		return RECORD_CALLBACK_MATCH;
 	}
 	return RECORD_CALLBACK_CONTINUE;
@@ -1993,7 +1995,7 @@ static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
 {
 	post_id_t pid = 0;
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "tmp/%d.pack", session_pid());
+	file_temp_name(file, sizeof(file));
 	FILE *fp = fopen(file, "w");
 	if (fp) {
 		post_index_record_t pir;

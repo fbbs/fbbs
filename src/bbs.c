@@ -159,8 +159,7 @@ void Poststring(const char *str, const char *nboard, const char *posttitle,
 	char fname[STRLEN];
 
 	int status = session_status();
-	sprintf(fname, "tmp/AutoPoster.%s.%05d", currentuser.userid,
-			session_pid());
+	file_temp_name(fname, sizeof(fname));
 	if ((se = fopen(fname, "w")) != NULL) {
 		fprintf(se, "%s", str);
 		fclose(se);
@@ -487,7 +486,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	strlcpy(header.ds, board->name, sizeof(header.ds));
 
 	char output[HOMELEN];
-	snprintf(output, sizeof(output), "tmp/cp_buffer.%d", getpid());
+	file_temp_name(output, sizeof(output));
 	getcross(board, file, output, mode, &header);
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN)
 		add_crossinfo(file, 1);
@@ -1263,7 +1262,7 @@ void notepad() {
 	//% prints("开始您的留言吧！大家正拭目以待....\n");
 	prints("\xbf\xaa\xca\xbc\xc4\xfa\xb5\xc4\xc1\xf4\xd1\xd4\xb0\xc9\xa3\xa1\xb4\xf3\xbc\xd2\xd5\xfd\xca\xc3\xc4\xbf\xd2\xd4\xb4\xfd....\n");
 	set_user_status(ST_WNOTEPAD);
-	sprintf(tmpname, "tmp/notepad.%s.%05d", currentuser.userid, session_pid());
+	file_temp_name(tmpname, sizeof(tmpname));
 	if ((in = fopen(tmpname, "w")) != NULL) {
 		for (i = 0; i < 3; i++)
 			memset(note[i], 0, STRLEN - 4);
@@ -1646,7 +1645,7 @@ void Add_Combine(const char *board, struct fileheader * fileinfo, int has_cite) 
 	char buf[STRLEN];
 	char temp2[1024];
 
-	sprintf(buf, "tmp/%s.combine", currentuser.userid);
+	file_temp_name(buf, sizeof(buf));
 	fp = fopen(buf, "at");
 	//% fprintf(fp, "[1;32m☆──────────────────────────────────────☆[0;1m\n");
 	fprintf(fp, "[1;32m\xa1\xee\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa9\xa4\xa1\xee[0;1m\n");

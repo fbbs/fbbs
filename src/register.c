@@ -464,7 +464,7 @@ void check_register_info(void)
 #ifdef NEWCOMERREPORT
 	if (urec->numlogins == 1) {
 		screen_clear();
-		sprintf(buf, "tmp/newcomer.%s", currentuser.userid);
+		file_temp_name(buf, sizeof(buf));
 		if ((fout = fopen(buf, "w")) != NULL) {
 			//% fprintf(fout, "大家好,\n\n");
 			fprintf(fout, "\xb4\xf3\xbc\xd2\xba\xc3,\n\n");

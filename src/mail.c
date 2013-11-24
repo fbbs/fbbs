@@ -130,7 +130,7 @@ struct mail_all_struct {
 
 static int mailto(void *uentpv, int index, void *args) {
 	char filename[STRLEN];
-	sprintf(filename, "tmp/mailall.%s", currentuser.userid);
+	file_temp_name(filename, sizeof(filename));
 
 	struct mail_all_struct *s = args;
 
@@ -172,7 +172,7 @@ int mailall(void)
 	set_user_status(ST_SMAIL);
 	screen_clear();
 	move(0, 0);
-	sprintf(fname, "tmp/mailall.%s", currentuser.userid);
+	file_temp_name(fname, sizeof(fname));
 	//% prints("你要寄给所有的：\n");
 	prints("\xc4\xe3\xd2\xaa\xbc\xc4\xb8\xf8\xcb\xf9\xd3\xd0\xb5\xc4\xa3\xba\n");
 	//% prints("(0) 放弃\n");
@@ -356,7 +356,7 @@ int do_send(const char *userid, const char *title)
 	/* I hate go to , but I use it again for the noodle code :-) */
 	if (strchr(userid, '@')) {
 		internet_mail = YEA;
-		sprintf(tmp_fname, "tmp/imail.%s.%05d", currentuser.userid, session_pid());
+		file_temp_name(tmp_fname, sizeof(tmp_fname));
 		strcpy(filepath, tmp_fname);
 		goto edit_mail_file;
 	}
@@ -1286,7 +1286,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	//% strcpy(header.ds, "寄信给一群人");
 	strcpy(header.ds, "\xbc\xc4\xd0\xc5\xb8\xf8\xd2\xbb\xc8\xba\xc8\xcb");
 	header.postboard = NA;
-	sprintf(tmpfile, "tmp/gsend.%s.%05d", currentuser.userid, session_pid());
+	file_temp_name(tmpfile, sizeof(tmpfile));
 	result = post_header(&header);
 	if( result == -1) {
 		screen_clear();
@@ -1732,7 +1732,7 @@ static int forward_file(const char *receiver, const char *file,
 	char fname[HOMELEN];
 	if (uuencode) {
 		char buf[STRLEN];
-		snprintf(fname, sizeof(fname), "tmp/file.uu%05d", session_pid());
+		file_temp_name(fname, sizeof(fname));
 		snprintf(buf, sizeof(buf), "uuencode %s fb-bbs.%05d > %s",
 				file, session_pid(), fname);
 		system(buf);
@@ -1813,8 +1813,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 	}
 
 	char tmpfile[HOMELEN];
-	snprintf(tmpfile, sizeof(tmpfile), "tmp/forward.%s.%05d",
-			currentuser.userid, session_pid());
+	file_temp_name(tmpfile, sizeof(tmpfile));
 	f_cp(file, tmpfile, O_CREAT);
 
 	//% if (askyn("是否修改文章内容", NA, NA)) {

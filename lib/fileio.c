@@ -276,3 +276,8 @@ int file_lock_all(int fd, file_lock_e type)
 {
 	return file_lock(fd, type, 0, FILE_SET, 0);
 }
+
+int file_temporary_name(char *file, size_t size, const char *prefix, int num)
+{
+	return snprintf(file, size, "temp/%d-%s-%d", getpid(), prefix, num);
+}

@@ -113,8 +113,7 @@ int grant_money(void)
 	screen_clear();
 
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "tmp/grant.%s.%d",
-			currentuser.userid, getpid());
+	file_temp_name(file, sizeof(file));
 	f_cp("etc/grant_tmpl", file, O_CREAT);
 
 	bool error = true;

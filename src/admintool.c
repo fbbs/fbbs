@@ -2034,8 +2034,7 @@ static void search_all_boards(const post_filter_t *filter, const char *uname,
 		int days, bool remove)
 {
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "tmp/searchall.%s.%05d",
-			currentuser.userid, session_pid());
+	file_temp_name(file, sizeof(file));
 	FILE *fp = fopen(file, "w");
 	if (!fp)
 		return;

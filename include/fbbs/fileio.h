@@ -27,5 +27,7 @@ extern int valid_fname(char *str);
 extern int f_rm(char *fpath);
 extern int file_lock(int fd, file_lock_e type, off_t offset, file_whence_e whence, off_t len);
 extern int file_lock_all(int fd, file_lock_e type);
+extern int file_temporary_name(char *file, size_t size, const char *prefix, int num);
+#define file_temp_name(file, size)  file_temporary_name(file, size, __func__, __LINE__)
 
 #endif // FB_FILEIO_H

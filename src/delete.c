@@ -126,7 +126,7 @@ void mail_info(char *lastword) {
 	//% sprintf(filename, "%s 于 %s 登记自杀", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
 	sprintf(filename, "%s \xd3\xda %s \xb5\xc7\xbc\xc7\xd7\xd4\xc9\xb1", currentuser.userid, format_time(now, TIME_FORMAT_ZH));
 	securityreport(filename, 1, 3);
-	sprintf(filename, "tmp/suicide.%s", currentuser.userid);
+	file_temp_name(filename, sizeof(filename));
 	if ((fn = fopen(filename, "w")) != NULL) {
 		//% fprintf(fn, "大家好,\n\n");
 		fprintf(fn, "\xb4\xf3\xbc\xd2\xba\xc3,\n\n");
