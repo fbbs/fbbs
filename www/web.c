@@ -231,6 +231,10 @@ static void get_global_options(void)
 		if (ends_with(name, ".json"))
 			ctx.req.flag |= REQUEST_JSON | REQUEST_API | REQUEST_UTF8;
 	}
+
+	const char *xhr_header = getenv("HTTP_X_REQUESTED_WITH");
+	if (xhr_header && streq(xhr_header, "XMLHttpRequest"))
+		ctx.req.flag |= REQUEST_XHR;
 }
 
 /**

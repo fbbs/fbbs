@@ -15,14 +15,17 @@ enum {
 	PARSE_NOSIG = 0x1,
 	PARSE_NOQUOTEIMG = 0x2,
 	PARSE_NOSIGIMG = 0x4,
-
-	REQUEST_API = 0x1,
-	REQUEST_PARSED = 0x2,
-	REQUEST_MOBILE = 0x4,
-	REQUEST_UTF8 = 0x8,
-	REQUEST_XML = 0x10,
-	REQUEST_JSON = 0x20,
 };
+
+typedef enum {
+	REQUEST_API = 1,
+	REQUEST_PARSED = 1 << 1,
+	REQUEST_MOBILE = 1 << 2,
+	REQUEST_UTF8 = 1 << 3,
+	REQUEST_XML = 1 << 4,
+	REQUEST_JSON = 1 << 5,
+	REQUEST_XHR = 1 << 6,
+} request_type_e;
 
 typedef enum {
 	HTTP_OK = 200,
