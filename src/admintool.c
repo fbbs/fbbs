@@ -611,8 +611,8 @@ const char *chgrp(void)
 static int set_board_name(char *bname, size_t size)
 {
 	while (1) {
-		//% getdata(2, 0, "讨论区名称:   ", bname, sizeof(bname), DOECHO, YEA);
-		getdata(2, 0, "\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6:   ", bname, sizeof(bname), DOECHO, YEA);
+		//% "讨论区名称:   "
+		getdata(2, 0, "\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6:   ", bname, size, DOECHO, YEA);
 		if (*bname) {
 			board_t board;
 			if (get_board(bname, &board)) {
