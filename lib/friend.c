@@ -14,7 +14,7 @@
 int follow(user_id_t follower, const char *followed, const char *notes)
 {
 	if (notes) {
-		if (validate_utf8_input(notes, FOLLOW_NOTE_CCHARS) < 0)
+		if (validate_utf8_input(notes, FOLLOW_NOTE_CCHARS, false) < 0)
 			return 0;
 	} else {
 		notes = "";
@@ -49,7 +49,7 @@ int unfollow(user_id_t follower, user_id_t followed)
 
 void edit_followed_note(user_id_t follower, user_id_t followed, const char *notes)
 {
-	if (validate_utf8_input(notes, FOLLOW_NOTE_CCHARS) < 0)
+	if (validate_utf8_input(notes, FOLLOW_NOTE_CCHARS, false) < 0)
 		return;
 
 	db_res_t *res = db_cmd("UPDATE follows SET notes = %s"
@@ -81,7 +81,7 @@ black_list_t *black_list_load(user_id_t uid)
 
 bool black_list_add(user_id_t uid, const char *blocked, const char *notes)
 {
-	if (validate_utf8_input(notes, BLACK_LIST_NOTE_CCHARS) < 0)
+	if (validate_utf8_input(notes, BLACK_LIST_NOTE_CCHARS, false) < 0)
 		return false;
 
 	user_id_t block_id = get_user_id(blocked);
@@ -106,7 +106,7 @@ bool black_list_rm(user_id_t uid, user_id_t blocked)
 
 bool black_list_edit(user_id_t uid, user_id_t blocked, const char *notes)
 {
-	if (validate_utf8_input(notes, BLACK_LIST_NOTE_CCHARS) < 0)
+	if (validate_utf8_input(notes, BLACK_LIST_NOTE_CCHARS, false) < 0)
 		return false;
 
 	db_res_t *res = db_cmd("UPDATE blacklists SET notes = %s"

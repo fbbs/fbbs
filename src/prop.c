@@ -60,7 +60,7 @@ static int tui_title_buy(int type, int price)
 	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd: ", gbk_title,
 			sizeof(gbk_title), YEA, YEA);
 	convert_g2u(gbk_title, utf8_title);
-	if (validate_utf8_input(utf8_title, TITLE_CCHARS) <= 0)
+	if (validate_utf8_input(utf8_title, TITLE_CCHARS, false) <= 0)
 		return MINIUPDATE;
 
 	if (title_submit_request(type, session_uid(), utf8_title, 0)) {

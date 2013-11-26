@@ -662,7 +662,7 @@ int bbssnd_main(void)
 	char *text = (char *) get_param("text");
 	check_character(text);
 	if (request_type(REQUEST_UTF8)
-			&& validate_utf8_input(text, POST_CONTENT_CCHARS) < 0)
+			&& validate_utf8_input(text, POST_CONTENT_CCHARS, true) < 0)
 		return BBS_EINVAL;
 
 	if (isedit) {
@@ -799,7 +799,7 @@ static int do_bbspst(bool isedit)
 			convert_u2g(pi.utf8_title, gbk_title);
 		string_remove_ansi_control_code(title, title);
 		if (request_type(REQUEST_MOBILE) && !strneq2(title, "Re: "))
-			puts("Re: ");
+			fputs("Re: ", stdout);
 		xml_fputs(title);
 
 		printf("</t><po f='%lu'>", pid);

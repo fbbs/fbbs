@@ -565,11 +565,12 @@ void string_remove_non_printable(char *str)
  * @param[in] str 字符串
  * @param[in] length 最大允许长度
  * @param[in] max_width 最大允许宽度
+ * @param[in] allow_zero_width 允许零宽度字符，允许换行符
  * @return 如果字符串符合长度和宽度要求，不含非法UTF-8字符或零宽度字符，
  *         则返回其长度，否则返回-1。
  */
 int string_validate_width_and_length(const char *str, size_t length,
-		size_t max_width)
+		size_t max_width, bool allow_zero_width)
 {
 	const char *s = str;
 	size_t width = 0;
@@ -583,7 +584,8 @@ int string_validate_width_and_length(const char *str, size_t length,
 			return s - str;
 		}
 		int w = fb_wcwidth(wc);
-		if (w <= 0)
+		if ((allow_zero_width && w < 0 && wc != L'\n')
+				|| (!allow_zero_width && w <= 0))
 			return -1;
 		width += w;
 	}
@@ -595,10 +597,11 @@ int string_validate_width_and_length(const char *str, size_t length,
  * @param[in] max_chinese_chars 最多的汉字字符数，每个汉字记为长度4，宽度2。
  * @return @see ::string_validate_width_and_length
  */
-int validate_utf8_input(const char *str, size_t max_chinese_chars)
+int validate_utf8_input(const char *str, size_t max_chinese_chars,
+		bool allow_zero_width)
 {
 	return string_validate_width_and_length(str, max_chinese_chars * 4,
-			max_chinese_chars * 2);
+			max_chinese_chars * 2, allow_zero_width);
 }
 
 struct pstring_t {

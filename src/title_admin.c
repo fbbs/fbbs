@@ -97,7 +97,7 @@ static tui_list_display_t title_list_display(tui_list_t *p, int n)
 
 static int grant_title(user_id_t uid, const char *title)
 {
-	if (validate_utf8_input(title, TITLE_CCHARS) < 0)
+	if (validate_utf8_input(title, TITLE_CCHARS, false) < 0)
 		return -1;
 
 	return title_submit_request(PROP_TITLE_FREE, uid, title, session_uid());
