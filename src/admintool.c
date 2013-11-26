@@ -115,7 +115,7 @@ static const char *ordain_bm_check(const board_t *board, const char *uname)
 
 	int find;
 	int bms = getbnames(lookupuser.userid, board->name, &find);
-	if (find || bms >= 3)
+	if (find || bms >= 4)
 		//% "已经是该/三个版的版主了"
 		return "\xd2\xd1\xbe\xad\xca\xc7\xb8\xc3/\xc8\xfd\xb8\xf6\xb0\xe6\xb5\xc4\xb0\xe6\xd6\xf7\xc1\xcb";
 
@@ -241,7 +241,7 @@ int tui_ordain_bm(const char *cmd)
 	sethomefile(file, lookupuser.userid, ".bmfile");
 	FILE *fp = fopen(file, "a");
 	if (fp) {
-		fprintf(fp, "%s\n", lookupuser.userid);
+		fprintf(fp, "%s\n", board.name);
 		fclose(fp);
 	}
 
@@ -608,27 +608,6 @@ const char *chgrp(void)
 	return groups[ch];
 }
 
-static int insert_categ(const char *categ)
-{
-	int id;
-	db_res_t *res = db_query("SELECT id FROM board_categs "
-			"WHERE name = %s", categ);
-	if (res && db_res_rows(res) == 1) {
-		id = db_get_integer(res, 0, 0);
-		db_clear(res);
-		return id;
-	}
-
-	res = db_query("INSERT INTO board_categs (name) "
-			"VALUES (%s) RETURNING id", categ);
-	if (res && db_res_rows(res) == 1) {
-		id = db_get_integer(res, 0, 0);
-		db_clear(res);
-		return id;
-	}
-	return 0;
-}
-
 static int set_board_name(char *bname, size_t size)
 {
 	while (1) {
@@ -684,7 +663,6 @@ int tui_new_board(const char *cmd)
 	//% getdata(4, 0, "讨论区类别: ", gbk_categ, sizeof(gbk_categ), DOECHO, YEA);
 	getdata(4, 0, "\xcc\xd6\xc2\xdb\xc7\xf8\xc0\xe0\xb1\xf0: ", gbk_categ, sizeof(gbk_categ), DOECHO, YEA);
 	convert_g2u(gbk_categ, utf8_categ);
-	int categ = insert_categ(utf8_categ);
 	
 	int sector = select_section();
 
@@ -761,8 +739,8 @@ int tui_new_board(const char *cmd)
 
 	db_res_t *res = db_query("INSERT INTO boards "
 			"(name, descr, parent, flag, perm, categ, sector) "
-			"VALUES (%s, %s, %d, %d, %d, %d, %d) RETURNING id",
-			bname, utf8_descr, parent.id, flag, perm, categ, sector);
+			"VALUES (%s, %s, %d, %d, %d, %s, %d) RETURNING id",
+			bname, utf8_descr, parent.id, flag, perm, utf8_categ, sector);
 	if (!res) {
 		//% prints("\n建立新版出错\n");
 		prints("\n\xbd\xa8\xc1\xa2\xd0\xc2\xb0\xe6\xb3\xf6\xb4\xed\n");
