@@ -103,10 +103,13 @@ void board_to_gbk(board_t *bp)
 
 bool is_bm(const struct userec *up, const board_t *bp)
 {
-	if ((bp->flag & BOARD_FLAG_CLUB) && (up->userlevel & PERM_OCLUB))
-		return true;
-	if (up->userlevel & PERM_BLEVELS)
-		return true;
+	if ((bp->flag & BOARD_FLAG_CLUB)) {
+		if (up->userlevel & PERM_OCLUB)
+			return true;
+	} else {
+		if (up->userlevel & PERM_BLEVELS)
+			return true;
+	}
 	if (!(up->userlevel & PERM_BOARDS))
 		return false;
 
