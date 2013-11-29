@@ -1,0 +1,46 @@
+#!/bin/sh
+
+HOME=/home/bbs
+BINPATH=$HOME/bin
+MISCD=miscd
+BBSD=bbsd
+BBSBED=bbsbed
+BBSWEBD=bbswebd
+BBSD_PORT=23
+DESC=fbbs
+
+for i in $MISCD $BBSD $BBSBED $BBSWEBD; do
+	test -x "$BINPATH/$i" || exit 0
+done
+
+set -e
+
+case "$1" in
+	start)
+		echo "starting $DESC ..."
+		$BINPATH/$MISCD daemon
+		$BINPATH/$BBSBED
+		$BINPATH/$BBSD $BBSD_PORT
+		;;
+	stop)
+		echo "stopping $DESC ..."
+		killall -q $BBSD
+		killall -q -HUP $BBSD
+		echo "wait for all bbsd to stop"
+		sleep 3
+		killall -q $BBSBED
+		sleep 3
+		$BINPATH/$MISCD flushed
+		killall -q $MISCD
+		;;
+	restart|force-reload)
+		${0} stop
+		${0} start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
