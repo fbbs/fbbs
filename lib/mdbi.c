@@ -24,6 +24,12 @@ typedef struct {
 
 static mdb_conn_t _mdb;
 
+int mdb_connect(const char *host, int port)
+{
+	_mdb.c = redisConnect(host, port);
+	return (!_mdb.c || _mdb.c->err) ? -1 : 0;
+}
+
 int mdb_connect_unix(const char *path)
 {
 	_mdb.c = redisConnectUnix(path);

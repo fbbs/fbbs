@@ -274,8 +274,17 @@ void initialize_db(void)
 void initialize_mdb(void)
 {
 	atexit(mdb_disconnect);
-	if (mdb_connect_unix(config_get("mdb")) < 0)
-		exit(EXIT_FAILURE);
+
+	const char *socket = config_get("mdb");
+	if (socket && mdb_connect_unix(socket) == 0)
+		return;
+
+	const char *host = config_get("mdb_host");
+	const char *port = config_get("mdb_port");
+	if (host && port && mdb_connect(host, strtol(port, NULL, 10)) == 0)
+		return;
+
+	exit(EXIT_FAILURE);
 }
 
 void initialize_environment(int flags)

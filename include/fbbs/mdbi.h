@@ -7,6 +7,7 @@
 typedef long long mdb_int_t;
 typedef void mdb_res_t;
 
+extern int mdb_connect(const char *host, int port);
 extern int mdb_connect_unix(const char *path);
 extern void mdb_disconnect(void);
 extern int mdb_fd(void);
