@@ -1,14 +1,28 @@
+#!/bin/bash --norc
+
 BBS_HOME=/home/bbs
+BBS_CONFDIR=/etc/fbbs
+BBS_DB=bbs
 BBS_USR=bbs
 BBS_GRP=bbs
 BBS_UID=9999
 BBS_GID=9999
+PG_USR=postgres
+PG_PORT=5432
+REDIS_SOCKET=/var/run/redis/redis.sock
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
 
 curdir=$(dirname "$0")
 
 if [[ $UID -ne 0 ]]; then
 	echo "error: need root privilege to continue"
-	exit
+	exit 1
+fi
+
+if ! grep -q "^$PG_USR:" /etc/passwd; then
+	echo "error: postgresql user [$PG_USR] not found"
+	exit 1
 fi
 
 if ! grep -q "^$BBS_GRP:" /etc/group; then
@@ -61,3 +75,27 @@ done
 
 chown -R "$BBS_USR" "$BBS_HOME"
 chgrp -R "$BBS_GRP" "$BBS_HOME"
+
+if [[ -f /usr/bin/pg_ctlcluster ]]; then
+	# Looks like debian
+	PG_HOST='/var/run/postgresql'
+fi
+
+su -c "createuser -D -R -S $BBS_USR" $PG_USR
+su -c "createdb -E UTF8 -O $BBS_USR $BBS_DB" $PG_USR
+
+PG_SCHEMAS='schema board favboard friend payment session procedures'
+for x in $PG_SCHEMAS; do
+	su -c "psql -q -f $curdir/../pg/$x.sql" $BBS_USR
+done
+
+mkdir "$BBS_CONFDIR"
+BBS_CONF="$BBS_CONFDIR/fbbs.conf"
+echo "host = $PG_HOST" > "$BBS_CONF"
+echo "port = $PG_PORT" >> "$BBS_CONF"
+echo "dbname = $BBS_DB" >> "$BBS_CONF"
+echo "user = $BBS_USR" >> "$BBS_CONF"
+echo "password = 123456789" >> "$BBS_CONF"
+echo "mdb = $REDIS_SOCKET" >> "$BBS_CONF"
+echo "mdb_host = $REDIS_HOST" >> "$BBS_CONF"
+echo "mdb_port = $REDIS_PORT" >> "$BBS_CONF"
