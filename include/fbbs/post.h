@@ -11,6 +11,8 @@
 //% #define ANONYMOUS_SOURCE  "匿名天使的家"
 #define ANONYMOUS_SOURCE  "\xc4\xe4\xc3\xfb\xcc\xec\xca\xb9\xb5\xc4\xbc\xd2"
 
+#define POST_REPLIES_FILE  "replies"
+
 typedef int64_t post_id_t;
 #define PRIdPID  PRId64
 #define parcel_write_post_id(parcel, id)  parcel_write_varint64(parcel, id)
@@ -59,6 +61,7 @@ typedef enum {
 	POST_LIST_TRASH,
 	POST_LIST_JUNK,
 	POST_LIST_FORUM,
+	POST_LIST_REPLIES,
 } post_list_type_e;
 
 typedef struct {
@@ -91,6 +94,8 @@ typedef struct {
 	convert_t *cp;
 	post_id_t reid;
 	post_id_t tid;
+	const char *uname_replied;
+	user_id_t uid_replied;
 	int sig;
 	bool locked;
 	bool marked;
@@ -253,6 +258,8 @@ typedef struct { // @frontend
 	const char *title;
 	const char *uname;
 	const char *content;
+	const char *uname_replied;
+	user_id_t uid_replied;
 	int bid;
 	bool marked;
 	bool locked;

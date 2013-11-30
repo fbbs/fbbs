@@ -45,6 +45,7 @@ extern int record_read(record_t *rec, void *ptr, int count);
 extern int record_read_after(record_t *rec, void *ptr, int count, int offset);
 extern int record_write(record_t *rec, const void *ptr, int count, int offset);
 extern int record_append(record_t *rec, const void *ptr, int count);
+extern int record_append_locked(record_t *rec, const void *ptr, int count);
 extern int record_apply(record_t *rec, void *ptr, int offset, record_callback_t callback, void *args, bool delete_);
 #define record_delete(r, p, o, c, a)  record_apply(r, p, o, c, a, true)
 #define record_update(r, p, o, c, a)  record_apply(r, p, o, c, a, false)

@@ -82,11 +82,16 @@ void parcel_write_varint64(parcel_t *parcel, int64_t val)
 void parcel_write_string_with_size(parcel_t *parcel, const char *str,
 		size_t size)
 {
-	if (!size)
-		size = strlen(str);
-	parcel_write_varuint64(parcel, size);
-	parcel_write(parcel, str, size);
-	parcel_write(parcel, "", 1);
+	if (str) {
+		if (!size)
+			size = strlen(str);
+		parcel_write_bool(parcel, false);
+		parcel_write_varuint64(parcel, size);
+		parcel_write(parcel, str, size);
+		parcel_write(parcel, "", 1);
+	} else {
+		parcel_write_bool(parcel, true);
+	}
 }
 
 void parcel_write_string(parcel_t *parcel, const char *str)
@@ -156,6 +161,10 @@ int64_t parcel_read_varint64(parcel_t *parcel)
 
 const char *parcel_read_string_and_size(parcel_t *parcel, size_t *size)
 {
+	bool is_null = parcel_read_bool(parcel);
+	if (is_null)
+		return NULL;
+
 	*size = parcel_read_varuint64(parcel);
 	const char *str = (const char *) (parcel->ptr + parcel->size);
 	parcel->size += *size + 1;

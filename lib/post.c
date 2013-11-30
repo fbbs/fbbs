@@ -1243,9 +1243,16 @@ post_id_t publish_post(const post_request_t *pr)
 		content = generate_content(pr, uname, nick, ip, anony, pr->length);
 
 	backend_request_post_new_t req = {
-		.reid = pr->reid, .tid = pr->tid, .title = pr->title,
-		.uname = pr->uname, .content = content, .bid = pr->board->id,
-		.marked = pr->marked, .locked = pr->locked,
+		.reid = pr->reid,
+		.tid = pr->tid,
+		.title = pr->title,
+		.uname = pr->uname,
+		.content = content,
+		.bid = pr->board->id,
+		.uname_replied = pr->uname_replied,
+		.uid_replied = pr->uid_replied,
+		.marked = pr->marked,
+		.locked = pr->locked,
 	};
 	backend_response_post_new_t resp;
 	mdb_res_t *res = backend_cmd(&req, &resp, post_new);

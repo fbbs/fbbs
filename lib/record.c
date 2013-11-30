@@ -97,6 +97,15 @@ int record_append(record_t *rec, const void *ptr, int count)
 	return file_write(rec->fd, ptr, count * rec->rlen);
 }
 
+int record_append_locked(record_t *rec, const void *ptr, int count)
+{
+	if (record_lock_all(rec, RECORD_WRLCK) < 0)
+		return -1;
+	int ret = record_append(rec, ptr, count);
+	record_lock_all(rec, RECORD_UNLCK);
+	return ret;
+}
+
 static int check_offset(const record_t *rec, const mmap_t *m, void *ptr,
 		int offset)
 {
