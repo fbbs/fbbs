@@ -9,15 +9,25 @@
 #include "fbbs/helper.h"
 #include "fbbs/record.h"
 
-#define BUFSIZE (MAXUSERS + 244)
-
 enum {
 	RECORD_BUFFER_SIZE = 8192,
 };
 
+/**
+ * 打开记录文件
+ * @param[in] file 文件名
+ * @param[in] cmp 记录比较函数
+ * @param[in] rlen 单条记录长度
+ * @param[in] rdonly 是否以只读模式打开
+ * @param[out] rec 记录文件数据结构
+ * @return 成功返回文件描述符, 否则-1
+ */
 int record_open(const char *file, record_cmp_t cmp, int rlen,
 		record_perm_e rdonly, record_t *rec)
 {
+	if (!file || !rec)
+		return -1;
+
 	rec->rlen = rlen;
 	rec->cmp = cmp;
 
@@ -37,66 +47,141 @@ int record_open(const char *file, record_cmp_t cmp, int rlen,
 	}
 }
 
+/**
+ * 关闭记录文件
+ * @param[in] rec 记录文件数据结构
+ * @return 成功返回0, 否则-1
+ */
 int record_close(record_t *rec)
 {
-	return file_close(rec->fd);
+	return rec ? file_close(rec->fd) : -1;
 }
 
+/**
+ * 获取记录条数
+ * @param[in] rec 记录文件数据结构
+ * @return 记录条数
+ */
 int record_count(record_t *rec)
 {
 	struct stat st;
-	if (fstat(rec->fd, &st) < 0)
+	if (!rec || fstat(rec->fd, &st) < 0)
 		return 0;
 	return st.st_size / rec->rlen;
 }
 
+/**
+ * 锁定/解锁记录文件
+ * @param[in] rec 记录文件数据结构
+ * @param[in] type 锁的类型
+ * @param[in] offset 锁的起始偏移量, 以记录为单位
+ * @param[in] whence 偏移量的基准
+ * @param[in] count 锁的长度, 以记录为单位
+ * @return 成功返回0, 否则-1
+ */
 int record_lock(record_t *rec, record_lock_e type, int offset,
 		record_whence_e whence, int count)
 {
+	if (!rec)
+		return -1;
 	return file_lock(rec->fd, (file_lock_e) type, offset * rec->rlen,
 			(file_whence_e) whence, count * rec->rlen);
 }
 
+/**
+ * 锁定/解锁整个记录文件
+ * @param[in] rec 记录文件数据结构
+ * @param[in] type 锁的类型
+ * @return 成功返回0, 否则-1
+ */
 int record_lock_all(record_t *rec, record_lock_e type)
 {
 	return file_lock(rec->fd, (file_lock_e) type, 0, FILE_SET, 0);
 }
 
+/**
+ * 设置记录文件读写位置
+ * @param[in] rec 记录文件数据结构
+ * @param[in] offset 锁的起始偏移量, 以记录为单位
+ * @param[in] whence 偏移量的基准
+ * @return 成功时返回设置后的偏移量, 以记录为单位, 文件头为基准. 否则-1
+ */
 int record_seek(record_t *rec, int offset, record_whence_e whence)
 {
+	if (!rec)
+		return -1;
 	off_t off = lseek(rec->fd, offset * rec->rlen, whence);
 	return off < 0 ? -1 : off / rec->rlen;
 }
 
+/**
+ * 从当前位置读取记录文件
+ * @param[in] rec 记录文件数据结构
+ * @param[out] ptr 缓冲区
+ * @param[in] count 要读取的记录条数
+ * @return 成功时返回读取记录条数, 否则-1
+ */
 int record_read(record_t *rec, void *ptr, int count)
 {
+	if (!rec || !ptr || count < 0)
+		return -1;
 	int bytes = file_read(rec->fd, ptr, count * rec->rlen);
 	return bytes < 0 ? -1 : bytes / rec->rlen;
 }
-
+/**
+ * 从指定位置读取记录文件
+ * @param[in] rec 记录文件数据结构
+ * @param[out] ptr 缓冲区
+ * @param[in] count 要读取的记录条数
+ * @param[in] offset 锁的起始偏移量, 以记录为单位, 文件头为基准
+ * @return 返回成功读取记录条数
+ */
 int record_read_after(record_t *rec, void *ptr, int count, int offset)
 {
-	if (record_seek(rec, offset, RECORD_SET) < 0)
+	if (!ptr || count < 0 || record_seek(rec, offset, RECORD_SET) < 0)
 		return 0;
 	count = record_read(rec, ptr, count);
 	return count < 0 ? 0 : count;
 }
 
+/**
+ * 在当前位置写入记录文件
+ * @param[in] rec 记录文件数据结构
+ * @param[in] ptr 缓冲区
+ * @param[in] count 要写入的记录条数
+ * @param[in] offset 锁的起始偏移量, 以记录为单位, 文件头为基准
+ * @return 返回成功写入的记录条数
+ */
 int record_write(record_t *rec, const void *ptr, int count, int offset)
 {
-	if (record_seek(rec, offset, RECORD_SET) < 0)
+	if (!ptr || count < 0 || record_seek(rec, offset, RECORD_SET) < 0)
 		return 0;
 	int bytes = file_write(rec->fd, ptr, count * rec->rlen);
 	return bytes < 0 ? 0 : bytes / rec->rlen;
 }
 
+/**
+ * 向记录文件追加记录
+ * @param[in] rec 记录文件数据结构
+ * @param[in] ptr 缓冲区
+ * @param[in] count 要追加的记录条数
+ * @return 成功返回写入的记录条数, 否则-1
+ * @note 本方法未加锁, 调用者应自行处理
+ */
 int record_append(record_t *rec, const void *ptr, int count)
 {
-	if (lseek(rec->fd, 0, SEEK_END) < 0)
+	if (!rec || !ptr || count < 0 || lseek(rec->fd, 0, SEEK_END) < 0)
 		return -1;
 	return file_write(rec->fd, ptr, count * rec->rlen);
 }
 
+/**
+ * 向记录文件追加记录(有锁版本)
+ * @param[in] rec 记录文件数据结构
+ * @param[in] ptr 缓冲区
+ * @param[in] count 要追加的记录条数
+ * @return 成功返回写入的记录条数, 否则-1
+ */
 int record_append_locked(record_t *rec, const void *ptr, int count)
 {
 	if (record_lock_all(rec, RECORD_WRLCK) < 0)
@@ -118,9 +203,22 @@ static int check_offset(const record_t *rec, const mmap_t *m, void *ptr,
 	return 0;
 }
 
+/**
+ * 对记录文件逐条用指定函数进行修改/删除
+ * @param[in] rec 记录文件数据结构
+ * @param[in] ptr 当前记录, 可为NULL
+ * @param[in] offset 当前偏移量, 以记录为单位, 文件头为基准
+ * @param[in] callback 回调函数
+ * @param[in] args 给回调函数的参数
+ * @param[in] _delete 是否删除匹配的记录
+ * @return 匹配的记录数
+ */
 int record_apply(record_t *rec, void *ptr, int offset,
-		record_callback_t callback, void *args, bool delete_)
+		record_callback_t callback, void *args, bool _delete)
 {
+	if (!rec || !callback)
+		return 0;
+
 	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
 	if (mmap_open_fd(&m) < 0)
 		return -1;
@@ -136,21 +234,32 @@ int record_apply(record_t *rec, void *ptr, int offset,
 		int r = callback(p, args, offset);
 		if (r == RECORD_CALLBACK_MATCH) {
 			++affected;
-		} else if (delete_)
+		} else if (_delete)
 			memcpy(p - affected * len, p, len);
 		else if (r == RECORD_CALLBACK_BREAK)
 			break;
 	}
 
-	if (affected && delete_)
+	if (affected && _delete)
 		file_truncate(rec->fd, m.size - affected * len);
 	mmap_unmap(&m);
 	return affected;
 }
 
+/**
+ * 对记录文件逐条执行回调函数
+ * @param[in] rec 记录文件数据结构
+ * @param[in] ptr 当前记录, 可为NULL
+ * @param[in] offset 当前偏移量, 以记录为单位, 文件头为基准
+ * @param[in] callback 回调函数
+ * @param[in] args 给回调函数的参数
+ * @return 匹配的记录数
+ */
 int record_foreach(record_t *rec, void *ptr, int offset,
 		record_callback_t callback, void *args)
 {
+	if (!rec || !callback)
+		return 0;
 	char buf[RECORD_BUFFER_SIZE];
 	int block = sizeof(buf) / rec->rlen, matched = 0;
 	bool checked = !ptr;
@@ -183,9 +292,18 @@ int record_foreach(record_t *rec, void *ptr, int offset,
 	return matched;
 }
 
+/**
+ * 对记录文件从末尾开始逐条执行回调函数
+ * @param[in] rec 记录文件数据结构
+ * @param[in] callback 回调函数
+ * @param[in] args 给回调函数的参数
+ * @return 匹配的记录数
+ */
 int record_reverse_foreach(record_t *rec, record_callback_t callback,
 		void *args)
 {
+	if (!rec || !callback)
+		return 0;
 	char buf[RECORD_BUFFER_SIZE];
 	int block = sizeof(buf) / rec->rlen, matched = 0;
 
@@ -212,44 +330,16 @@ int record_reverse_foreach(record_t *rec, record_callback_t callback,
 	return matched;
 }
 
-int record_insert(record_t *rec, void *ptr, int count)
-{
-	if (count <= 0)
-		return -1;
-
-	int len = rec->rlen;
-	qsort(ptr, count, len, rec->cmp);
-
-	mmap_t m = { .oflag = O_RDWR, .fd = rec->fd };
-	if (mmap_open_fd(&m) < 0)
-		return -1;
-
-	char *wp = m.ptr, *rp = m.ptr, *begin = m.ptr, *ip = ptr;
-	wp += m.size + (count - 1) * len;
-	rp += m.size - len;
-	ip += (count - 1) * len;
-
-	if (mmap_truncate(&m, m.size + count * len) < 0)
-		return -1;
-
-	while (count > 0) {
-		if (rp >= begin && rec->cmp(ip + (count - 1) * len, rp) <= 0) {
-			memcpy(wp, rp, len);
-			rp -= len;
-		} else {
-			memcpy(wp, ip, len);
-			ip -= len;
-			--count;
-		}
-		wp -= len;
-	}
-	mmap_unmap(&m);
-	return 0;
-}
-
+/**
+ * 向记录文件中插入若干条记录, 并保持记录文件原有排序
+ * @param[in] rec 记录文件数据结构
+ * @param[in] ptr 缓冲区
+ * @param[in] count 要写入的记录条数
+ * @return 成功0, 否则-1
+ */
 int record_merge(record_t *rec, void *ptr, int count)
 {
-	if (count <= 0)
+	if (!rec || !ptr || count <= 0)
 		return 0;
 	qsort(ptr, count, rec->rlen, rec->cmp);
 
@@ -282,9 +372,21 @@ int record_merge(record_t *rec, void *ptr, int count)
 	return 0;
 }
 
+/**
+ * 在记录文件中查找一条记录, 并返回该条记录
+ * @param[in] rec 记录文件数据结构
+ * @param[in] filter 回调函数
+ * @param[in] fargs 给回调函数的参数
+ * @param[in] offset 查找的起始偏移量(不包含本条)
+ * @param[in] reverse 是否反向查找
+ * @param[out] out 保存找到的一条记录
+ * @return 所找到记录的偏移量, 以记录为单位, 文件头为基准. 未找到或出错返回-1
+ */
 int record_search_copy(record_t *rec, record_callback_t filter, void *fargs,
 		int offset, bool reverse, void *out)
 {
+	if (!rec || !filter)
+		return -1;
 	char buf[RECORD_BUFFER_SIZE];
 	int capacity = sizeof(buf) / rec->rlen, all;
 	if (offset >= 0)

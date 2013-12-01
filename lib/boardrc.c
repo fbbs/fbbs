@@ -4,6 +4,7 @@
 #include "bbs.h"
 #include "fbbs/brc.h"
 #include "fbbs/board.h"
+#include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"

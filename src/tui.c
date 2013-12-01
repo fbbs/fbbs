@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/brc.h"
+#include "fbbs/fileio.h"
 #include "fbbs/mail.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"

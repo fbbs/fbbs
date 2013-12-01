@@ -10,13 +10,11 @@
 #include "func.h"
 #include "fbbs/fileio.h"
 
-static int rm_dir();
-
 /**
- * 向文件尾部追加写入.
- * @param file 文件名
- * @param msg 字符串
- * @return 成功返回0, 否则返回-1
+ * 向文件尾部追加写入
+ * @param[in] file 文件名
+ * @param[in] msg 字符串
+ * @return 成功返回写入字节数, 否则-1
  */
 int file_append(const char *file, const char *msg)
 {
@@ -34,8 +32,17 @@ int file_append(const char *file, const char *msg)
 	return ret;
 }
 
+/**
+ * 从文件读取
+ * @param[in] fd 文件描述符
+ * @param[out] buf 缓冲区
+ * @param[in] size 缓冲区大小
+ * @return 成功返回读取字节数，否则返回-1
+ */
 int file_read(int fd, void *buf, size_t size)
 {
+	if (!buf)
+		return -1;
 	int res;
 	do {
 		res = read(fd, buf, size);
@@ -45,14 +52,16 @@ int file_read(int fd, void *buf, size_t size)
 }
 
 /**
- * Write given bytes to file.
- * @param fd file handle.
- * @param buf starting address of the buffer.
- * @param size bytes to write.
- * @return 0 on success, -1 on error.
+ * 向文件写入
+ * @param[in] fd 文件描述符
+ * @param[in] buf 缓冲区
+ * @param[in] size 要写入的字节数
+ * @return 成功返回写入字节数, 否则-1
  */
 int file_write(int fd, const void *buf, size_t size)
 {
+	if (!buf)
+		return -1;
 	int res;
 	do {
 		res = write(fd, buf, size);
@@ -62,9 +71,9 @@ int file_write(int fd, const void *buf, size_t size)
 }
 
 /**
- * Close a file descriptor.
- * @param[in] fd file descriptor to close.
- * @return 0 on success, -1 on error.
+ * 关闭文件
+ * @param[in] fd 文件描述符
+ * @return 成功返回0, 否则-1.
  */
 int file_close(int fd)
 {
@@ -75,10 +84,10 @@ int file_close(int fd)
 }
 
 /**
- * Truncate a file.
- * @param[in] fd file descriptor to operate.
- * @param[in] size new size of the file.
- * @return 0 on success, -1 on error.
+ * 改变文件大小
+ * @param[in] fd 文件描述符
+ * @param[in] size 文件的新长度
+ * @return 成功返回0, 否则-1
  */
 int file_truncate(int fd, off_t size)
 {
@@ -90,27 +99,27 @@ int file_truncate(int fd, off_t size)
 }
 
 /**
- * Check whether given file is a regular file.
- * @param file file name.
- * @return 1 if file exists and is a regular file, 0 otherwise.
+ * 检测文件是否存在且为普通文件
+ * @param[in] file 文件名
+ * @return 文件存在且为普通文件返回true, 否则false
  */
-int dashf(const char *file)
+bool dashf(const char *file)
 {
-	if (file == NULL)
-		return 0;
+	if (!file)
+		return false;
 	struct stat st;
 	return (stat(file, &st) == 0 && S_ISREG(st.st_mode));
 }
 
 /**
- * Check whether given file is a directory.
- * @param file file name (directory path).
- * @return 1 if file exists and is a directory, 0 otherwise.
+ * 检测目录是否存在
+ * @param[in] file 目录名
+ * @return 文件存在且为目录返回true, 否则false
  */
-int dashd(const char *file)
+bool dashd(const char *file)
 {
-	if (file == NULL)
-		return 0;
+	if (!file)
+		return false;
 	struct stat st;
 	return (stat(file, &st) == 0 && S_ISDIR(st.st_mode));
 }
@@ -200,21 +209,6 @@ int valid_fname(char *str) {
 }
 
 /*
- Commented by Erebus 2004-11-08 
- rm file and folder
- */
-int f_rm(char *fpath) {
-	struct stat st;
-	if (stat(fpath, &st)) //stat未能成功
-		return -1;
-
-	if (!S_ISDIR(st.st_mode)) //不是目录,则删除此文件
-		return unlink(fpath);
-
-	return rm_dir(fpath); //删除目录
-}
-
-/*
  Commented by Erebus 2004-11-08
  rm folder
  */
@@ -253,6 +247,30 @@ static int rm_dir(char *fpath) {
 	return rmdir(buf);
 }
 
+/*
+ Commented by Erebus 2004-11-08 
+ rm file and folder
+ */
+int f_rm(char *fpath) {
+	struct stat st;
+	if (stat(fpath, &st)) //stat未能成功
+		return -1;
+
+	if (!S_ISDIR(st.st_mode)) //不是目录,则删除此文件
+		return unlink(fpath);
+
+	return rm_dir(fpath); //删除目录
+}
+
+/**
+ * 锁定/解锁文件
+ * @param[in] fd 文件描述符
+ * @param[in] type 锁的类型
+ * @param[in] offset 锁的起始偏移量
+ * @param[in] whence 偏移量的基准
+ * @param[in] len 锁的长度
+ * @return 成功返回0, 否则-1 
+ */
 int file_lock(int fd, file_lock_e type, off_t offset, file_whence_e whence,
 		off_t len)
 {
@@ -262,22 +280,33 @@ int file_lock(int fd, file_lock_e type, off_t offset, file_whence_e whence,
 		.l_whence = whence,
 		.l_len = len,
 	};
-
 	return fcntl(fd, F_SETLKW, &lock);
 }
 
 /**
- * 锁定/解锁整个文件.
- * @param fd 文件描述符
- * @param type 文件锁的类型
- * @return 成功: 0, 失败: -1
+ * 锁定/解锁整个文件
+ * @param[in] fd 文件描述符
+ * @param[in] type 锁的类型
+ * @return 成功返回0, 否则-1
  */
 int file_lock_all(int fd, file_lock_e type)
 {
 	return file_lock(fd, type, 0, FILE_SET, 0);
 }
 
+/**
+ * 生成一个临时文件的文件名
+ * @param[out] file 文件名
+ * @param[in] size 文件名最大长度
+ * @param[in] prefix 前缀，将会出现在文件名中
+ * @param[in] num 一个数字，将会出现在文件名中
+ * @return 文件名的长度
+ * @note 这个函数不应直接调用
+ * @see file_temp_name
+ */
 int file_temporary_name(char *file, size_t size, const char *prefix, int num)
 {
+	if (!file || !prefix)
+		return 0;
 	return snprintf(file, size, "temp/%d-%s-%d", getpid(), prefix, num);
 }

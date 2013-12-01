@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "fbbs/board.h"
 #include "fbbs/brc.h"
+#include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/post.h"
