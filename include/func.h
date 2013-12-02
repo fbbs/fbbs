@@ -45,11 +45,6 @@ int isclubmember(const char *member, const char *board);
 //mail.c
 int check_maxmail(void);
 
-//io.c
-int terminal_getchar(void);
-int egetch(void);
-void update_endline(void);
-
 //convert.c
 #ifdef ALLOWSWITCHCODE
 int switch_code(void);

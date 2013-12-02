@@ -394,10 +394,6 @@ void uinfo_query(struct userec *u, int real, int unum)
 			unlink(src);
 			setuserid(unum, newinfo.userid);
 		}
-		if (!strcmp(u->userid, currentuser.userid)) {
-			extern int WishNum;
-			WishNum = 9999;
-		}
 		if (ans[0] != '2') {
 			memcpy(u, &newinfo, (size_t)sizeof(currentuser));
 			substitut_record(PASSFILE, &newinfo, sizeof(newinfo), unum);

@@ -180,13 +180,22 @@ void x_edits() {
 	int aborted;
 	char ans[7], buf[STRLEN];
 	int ch, num, confirm;
-	extern int WishNum;
-	static char *e_file[] = { "plans", "signatures", "notes", "logout",
-			"GoodWish", NULL };
-	//% static char *explain_file[] = { "个人说明档", "签名档", "自己的备忘录", "离站的画面",
-	static char *explain_file[] = { "\xb8\xf6\xc8\xcb\xcb\xb5\xc3\xf7\xb5\xb5", "\xc7\xa9\xc3\xfb\xb5\xb5", "\xd7\xd4\xbc\xba\xb5\xc4\xb1\xb8\xcd\xfc\xc2\xbc", "\xc0\xeb\xd5\xbe\xb5\xc4\xbb\xad\xc3\xe6",
-			//% "底部流动信息", NULL };
-			"\xb5\xd7\xb2\xbf\xc1\xf7\xb6\xaf\xd0\xc5\xcf\xa2", NULL };
+
+	const char *e_file[] = {
+		"plans", "signatures", "notes", "logout", NULL
+	};
+
+	//% "个人说明档", "签名档", "自己的备忘录", "离站的画面",
+	//% "底部流动信息"
+	const char *explain_file[] = {
+		"\xb8\xf6\xc8\xcb\xcb\xb5\xc3\xf7\xb5\xb5",
+		"\xc7\xa9\xc3\xfb\xb5\xb5",
+		"\xd7\xd4\xbc\xba\xb5\xc4\xb1\xb8\xcd\xfc\xc2\xbc",
+		"\xc0\xeb\xd5\xbe\xb5\xc4\xbb\xad\xc3\xe6",
+		"\xb5\xd7\xb2\xbf\xc1\xf7\xb6\xaf\xd0\xc5\xcf\xa2",
+		NULL
+	};
+
 	set_user_status(ST_GMENU);
 	screen_clear();
 	move(1, 0);
@@ -229,9 +238,6 @@ void x_edits() {
 		sprintf(buf, "delete %s", explain_file[ch]);
 		report(buf, currentuser.userid);
 		pressreturn();
-		if (ch == 4) {
-			WishNum = 9999;
-		}
 		screen_clear();
 		return;
 	}
@@ -253,9 +259,6 @@ void x_edits() {
 		prints("%s \xc8\xa1\xcf\xfb\xd0\xde\xb8\xc4\n", explain_file[ch]);
 	}
 	pressreturn();
-	if (ch == 4) {
-		WishNum = 9999;
-	}
 }
 
 //取得genbuf中保存的用户所在的记录位置到*id中,为零表示不存在
@@ -441,108 +444,4 @@ int is_birth(const struct userec *user)
 		return YEA;
 	else
 		return NA;
-}
-
-int sendGoodWish(char *userid) {
-	FILE *fp;
-	int tuid, i, count;
-	time_t now;
-	char buf[5][STRLEN], tmpbuf[STRLEN];
-	char uid[IDLEN + 1], *ptr, *timestr;
-
-	set_user_status(ST_GOODWISH);
-	screen_clear();
-	move(1, 0);
-	//% prints("[0;1;32m留言本[m\n您可以在这里给您的朋友送去您的祝福，");
-	prints("[0;1;32m\xc1\xf4\xd1\xd4\xb1\xbe[m\n\xc4\xfa\xbf\xc9\xd2\xd4\xd4\xda\xd5\xe2\xc0\xef\xb8\xf8\xc4\xfa\xb5\xc4\xc5\xf3\xd3\xd1\xcb\xcd\xc8\xa5\xc4\xfa\xb5\xc4\xd7\xa3\xb8\xa3\xa3\xac");
-	//% prints("\n也可以为您给他/她捎上一句悄悄话。");
-	prints("\n\xd2\xb2\xbf\xc9\xd2\xd4\xce\xaa\xc4\xfa\xb8\xf8\xcb\xfb/\xcb\xfd\xc9\xd3\xc9\xcf\xd2\xbb\xbe\xe4\xc7\xc4\xc7\xc4\xbb\xb0\xa1\xa3");
-	move(5, 0);
-	if (userid == NULL) {
-		//% usercomplete("请输入他的 ID: ", uid);
-		usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xcb\xfb\xb5\xc4 ID: ", uid);
-		if (uid[0] == '\0') {
-			screen_clear();
-			return 0;
-		}
-	} else {
-		strcpy(uid, userid);
-	}
-	if (!(tuid = getuser(uid))) {
-		move(7, 0);
-		//% prints("[1m您输入的使用者代号( ID )不存在！[m\n");
-		prints("[1m\xc4\xfa\xca\xe4\xc8\xeb\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5( ID )\xb2\xbb\xb4\xe6\xd4\xda\xa3\xa1[m\n");
-		pressanykey();
-		screen_clear();
-		return -1;
-	}
-	screen_move_clear(5);
-	//% prints("[m【给 [1m%s[m 留言】", uid);
-	prints("[m\xa1\xbe\xb8\xf8 [1m%s[m \xc1\xf4\xd1\xd4\xa1\xbf", uid);
-	move(6, 0);
-	//% prints("您的留言[直接按 ENTER 结束留言，最多 5 句，每句最长 50 字符]:");
-	prints("\xc4\xfa\xb5\xc4\xc1\xf4\xd1\xd4[\xd6\xb1\xbd\xd3\xb0\xb4 ENTER \xbd\xe1\xca\xf8\xc1\xf4\xd1\xd4\xa3\xac\xd7\xee\xb6\xe0 5 \xbe\xe4\xa3\xac\xc3\xbf\xbe\xe4\xd7\xee\xb3\xa4 50 \xd7\xd6\xb7\xfb]:");
-	for (count = 0; count < 5; count++) {
-		getdata(7 + count, 0, ": ", tmpbuf, 51, DOECHO, YEA);
-		if (tmpbuf[0] == '\0')
-			break;;
-		for (ptr = tmpbuf; *ptr == ' ' && *ptr != 0; ptr++)
-			;
-		if (*ptr == 0) {
-			count--;
-			continue;
-		}
-		for (i = strlen(ptr) - 1; i < 0; i--)
-			if (ptr[i] != ' ')
-				break;
-		if (i < 0) {
-			count--;
-			continue;
-		}
-		ptr[i + 1] = 0;
-		strcpy(buf[count], ptr);
-	}
-	if (count == 0)
-		return 0;
-	//% sprintf(genbuf, "您确定要发送这条留言给 [1m%s[m 吗", uid);
-	sprintf(genbuf, "\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xb7\xa2\xcb\xcd\xd5\xe2\xcc\xf5\xc1\xf4\xd1\xd4\xb8\xf8 [1m%s[m \xc2\xf0", uid);
-	move(9 + count, 0);
-	if (askyn(genbuf, YEA, NA) == NA) {
-		screen_clear();
-		return 0;
-	}
-	sethomefile(genbuf, uid, "GoodWish");
-	if ((fp = fopen(genbuf, "a")) == NULL) {
-		//% prints("无法开启该用户的底部流动信息文件，请通知站长...\n");
-		prints("\xce\xde\xb7\xa8\xbf\xaa\xc6\xf4\xb8\xc3\xd3\xc3\xbb\xa7\xb5\xc4\xb5\xd7\xb2\xbf\xc1\xf7\xb6\xaf\xd0\xc5\xcf\xa2\xce\xc4\xbc\xfe\xa3\xac\xc7\xeb\xcd\xa8\xd6\xaa\xd5\xbe\xb3\xa4...\n");
-		pressanykey();
-		return NA;
-	}
-	now = time(0);
-	timestr = ctime(&now) + 11;
-	*(timestr + 5) = '\0';
-	for (i = 0; i < count; i++) {
-		//% fprintf(fp, "%s(%s)[%d/%d]：%s\n", currentuser.userid, timestr, i
-		fprintf(fp, "%s(%s)[%d/%d]\xa3\xba%s\n", currentuser.userid, timestr, i
-				+ 1, count, buf[i]);
-	}
-	fclose(fp);
-	sethomefile(genbuf, uid, "HaveNewWish");
-	if ((fp = fopen(genbuf, "w+")) != NULL) {
-		fputs("Have New Wish", fp);
-		fclose(fp);
-	}
-	move(11 + count, 0);
-	//% prints("已经帮您送出您的留言了。");
-	prints("\xd2\xd1\xbe\xad\xb0\xef\xc4\xfa\xcb\xcd\xb3\xf6\xc4\xfa\xb5\xc4\xc1\xf4\xd1\xd4\xc1\xcb\xa1\xa3");
-	sprintf(genbuf, "SendGoodWish to %s", uid);
-	report(genbuf, currentuser.userid);
-	pressanykey();
-	screen_clear();
-	return 0;
-}
-
-//      发送留言
-int sendgoodwish(char *uid) {
-	return sendGoodWish(NULL);
 }

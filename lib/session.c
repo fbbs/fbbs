@@ -493,9 +493,6 @@ const char *session_status_descr(int status)
 		case ST_CHICKEN:
 			//% "星空战斗鸡"
 			return "\xd0\xc7\xbf\xd5\xd5\xbd\xb6\xb7\xbc\xa6";
-		case ST_GOODWISH:
-			//% "给朋友祝福"
-			return "\xb8\xf8\xc5\xf3\xd3\xd1\xd7\xa3\xb8\xa3";
 		case ST_GIVEUPBBS:
 			//% "戒网中"
 			return "\xbd\xe4\xcd\xf8\xd6\xd0";

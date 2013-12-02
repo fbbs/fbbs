@@ -43,9 +43,6 @@ int utmpent = -1;
 time_t login_start_time;
 int showansi = 1;
 
-char GoodWish[20][STRLEN - 3];
-int WishNum = 0;
-int orderWish = 0;
 extern int enabledbchar;
 int refscreen = NA;
 void msg_handler(int signum);
@@ -725,7 +722,6 @@ static void user_login(void)
 		prints("\xa1\xee \xc9\xcf\xb4\xce\xc1\xac\xcf\xdf\xca\xb1\xbc\xe4\xce\xaa \033[33m%s\033[m ", format_time(currentuser.lastlogin, TIME_FORMAT_ZH));
 	}
 	terminal_getchar();
-	WishNum = 9999;
 	setuserfile(fname, BADLOGINFILE);
 	if (ansimore(fname, NA) != -1) {
 		//% if (askyn("您要删除以上密码输入错误的记录吗", NA, NA) == YEA)

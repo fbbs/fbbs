@@ -222,13 +222,9 @@ static char *boardmargin(void)
 void update_endline(void)
 {
 	extern time_t login_start_time; //main.c
-	extern int WishNum; //main.c
-	extern int orderWish; //main.c
-	extern char GoodWish[][STRLEN - 3]; //main.c
 
-	char buf[255], fname[STRLEN], *ptr, date[STRLEN];
-	FILE *fp;
-	int i, cur_sec, allstay, foo, foo2;
+	char buf[255], date[STRLEN];
+	int cur_sec, allstay;
 
 	screen_move_clear(-1);
 
@@ -239,7 +235,6 @@ void update_endline(void)
 	strlcpy(date, format_time(now, TIME_FORMAT_ZH), sizeof(date));
 	cur_sec = now % 10;
 	if (cur_sec == 0) {
-		nowishfile:
 		if (resolve_boards() < 0)
 			exit(1);
 		strlcpy(date, brdshm->date, 30);
@@ -260,62 +255,12 @@ void update_endline(void)
 		return;
 	}
 
-	// To be removed..
-	setuserfile(fname, "HaveNewWish");
-	if (WishNum == 9999 || dashf(fname)) {
-		if (WishNum != 9999)
-			unlink(fname);
-		WishNum = 0;
-		orderWish = 0;
-
-		if (is_birth(&currentuser)) {
-			strcpy(GoodWish[WishNum],
-					//% "                     啦啦～～，生日快乐!"
-					"                     \xc0\xb2\xc0\xb2\xa1\xab\xa1\xab\xa3\xac\xc9\xfa\xc8\xd5\xbf\xec\xc0\xd6!"
-					//% "   记得要请客哟 :P                   ");
-					"   \xbc\xc7\xb5\xc3\xd2\xaa\xc7\xeb\xbf\xcd\xd3\xb4 :P                   ");
-			WishNum++;
-		}
-
-		setuserfile(fname, "GoodWish");
-		if ((fp = fopen(fname, "r")) != NULL) {
-			for (; WishNum < 20;) {
-				if (fgets(buf, 255, fp) == NULL)
-					break;
-				buf[STRLEN - 4] = '\0';
-				ptr = strtok(buf, "\n\r");
-				if (ptr == NULL || ptr[0] == '#')
-					continue;
-				strcpy(buf, ptr);
-				for (ptr = buf; *ptr == ' ' && *ptr != 0; ptr++)
-					;
-				if (*ptr == 0 || ptr[0] == '#')
-					continue;
-				for (i = strlen(ptr) - 1; i < 0; i--)
-					if (ptr[i] != ' ')
-						break;
-				if (i < 0)
-					continue;
-				foo = strlen(ptr);
-				foo2 = (STRLEN - 3 - foo) / 2;
-				strcpy(GoodWish[WishNum], "");
-				for (i = 0; i < foo2; i++)
-					strcat(GoodWish[WishNum], " ");
-				strcat(GoodWish[WishNum], ptr);
-				for (i = 0; i < STRLEN - 3 - (foo + foo2); i++)
-					strcat(GoodWish[WishNum], " ");
-				GoodWish[WishNum][STRLEN - 4] = '\0';
-				WishNum++;
-			}
-			fclose(fp);
-		}
+	if (is_birth(&currentuser)) {
+		//% "                     啦啦～～，生日快乐!"
+		//% "   记得要请客哟 :P                   ");
+		prints("\033[0;1;44;33m[\033[36m                     \xc0\xb2\xc0\xb2\xa1\xab\xa1\xab\xa3\xac\xc9\xfa\xc8\xd5\xbf\xec\xc0\xd6!"
+				"   \xbc\xc7\xb5\xc3\xd2\xaa\xc7\xeb\xbf\xcd\xd3\xb4 :P                   \033[33m]\033[m");
 	}
-	if (WishNum == 0)
-		goto nowishfile;
-	if (orderWish >= WishNum * 2)
-		orderWish = 0;
-	prints("\033[0;1;44;33m[\033[36m%77s\033[33m]\033[m", GoodWish[orderWish / 2]);
-	orderWish++;
 }
 
 void showtitle(const char *title, const char *mid)

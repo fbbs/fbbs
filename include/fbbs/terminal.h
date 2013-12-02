@@ -92,7 +92,7 @@ typedef enum {
 } post_file_e;
 // Following function declarations are put here solely to eliminate warnings
 post_id_t Postfile(const char *file, const char *bname, const char *title, post_file_e mode);
-char *setuserfile(char *buf, char *filename);
+char *setuserfile(char *buf, const char *filename);
 void securityreport(char *str, int save, int mode);
 int set_safe_record(void);
 void abort_bbs(int nothing);

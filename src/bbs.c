@@ -139,7 +139,8 @@ void setquotefile(const char *filepath)
 }
 
 //返回用户主目录下所在的文件filename路径
-char *setuserfile(char *buf, char *filename) {
+char *setuserfile(char *buf, const char *filename)
+{
 	sprintf(buf, "home/%c/%s/%s", toupper(currentuser.userid[0]),
 			currentuser.userid, filename);
 	return buf;

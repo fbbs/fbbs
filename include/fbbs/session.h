@@ -85,7 +85,6 @@ typedef enum {
 	ST_CHICK = 66,
 	ST_MARY = 67,
 	ST_CHICKEN = 68,
-	ST_GOODWISH = 69,
 	ST_GIVEUPBBS = 70,
 	ST_UPLOAD = 71,
 	ST_PROP,

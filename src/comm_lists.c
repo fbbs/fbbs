@@ -44,7 +44,6 @@ int show_online_followings(), t_list(), t_monitor();
 int x_cloak();
 //% int AddPCorpus(); // deardragon 个人文集 
 int AddPCorpus(); // deardragon \xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf 
-int sendgoodwish();
 extern int tui_following_list(void);
 extern int tui_black_list(void);
 extern int tui_query(void);
@@ -131,7 +130,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "ExecBBSNet2", ent_bnet2 },
 		{ "ShowWelcome", Welcome },
 		{ "AddPCorpus", AddPCorpus },
-		{ "GoodWish", sendgoodwish },
 		{ "Props", tui_props },
 		{ "MyProps", tui_my_props },
 #ifdef ALLOWSWITCHCODE
