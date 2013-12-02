@@ -2604,6 +2604,13 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 				unlink(file);
 				break;
 			}
+			case POST_LIST_REPLIES: {
+				char file[HOMELEN];
+				sethomefile(file, currentuser.userid, POST_REPLIES_FILE);
+				record_open(file, post_index_cmp, sizeof(post_index_board_t),
+						RECORD_READ, record);
+				break;
+			}
 			default:
 				break;
 		}
