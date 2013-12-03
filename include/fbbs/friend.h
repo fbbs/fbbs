@@ -48,4 +48,13 @@ extern bool black_list_rm(user_id_t uid, user_id_t blocked);
 extern bool black_list_edit(user_id_t uid, user_id_t blocked, const char *notes);
 extern bool is_blocked(const char *uname);
 
+typedef db_res_t friend_uid_list_t;
+extern void friend_load_followers_and_blacklisters(user_id_t uid, friend_uid_list_t **followers, friend_uid_list_t **blacklisters);
+extern bool friend_uid_list_contains(const friend_uid_list_t *list, user_id_t uid);
+/**
+ * 释放用户ID列表
+ * @param[in] list 用户ID列表
+ */
+#define friend_uid_list_free(list)  db_clear(list)
+
 #endif // FB_FRIEND_H

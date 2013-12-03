@@ -126,3 +126,45 @@ bool is_blocked(const char *uname)
 	db_clear(res);
 	return rows;
 }
+
+/**
+ * 获取关注和拉黑某人的用户列表
+ * @param[in] uid 要查询的用户ID
+ * @param[out] followers 关注该用户的用户列表
+ * @param[out] blacklisters 拉黑该用户的用户列表
+ */
+void friend_load_followers_and_blacklisters(user_id_t uid,
+		friend_uid_list_t **followers, friend_uid_list_t **blacklisters)
+{
+	if (!followers || !blacklisters)
+		return;
+
+	query_t *q = query_new(0);
+	query_select(q, "follower");
+	query_from(q, "follows");
+	query_where(q, "user_id = %"DBIdUID, uid);
+	*followers = query_exec(q);
+
+	q = query_new(0);
+	query_select(q, "user_id");
+	query_from(q, "blacklists");
+	query_where(q, "blocked = %"DBIdUID, uid);
+	*blacklisters = query_exec(q);
+}
+
+/**
+ * 检查指定的用户ID是否在列表中
+ * @param[in] list 用户ID列表
+ * @param[in] uid 用户ID
+ * @return 在列表中返回true, 否则false
+ */
+bool friend_uid_list_contains(const friend_uid_list_t *list, user_id_t uid)
+{
+	if (!list)
+		return false;
+	for (int i = db_res_rows(list) - 1; i >= 0; --i) {
+		if (db_get_user_id(list, i, 0) == uid)
+			return true;
+	}
+	return false;
+}
