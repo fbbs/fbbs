@@ -20,7 +20,6 @@ struct STATSHM {
 	time_t update;
 };
 
-struct FILESHM * welcomeshm;
 struct FILESHM * goodbyeshm;
 struct FILESHM * issueshm;
 struct STATSHM * statshm;
@@ -41,9 +40,6 @@ int fill_shmfile(int mode, char* fname, char * shmkey) {
 		case 2:
 			maxnum = MAX_GOODBYE;
 			break;
-		case 3:
-			maxnum = MAX_WELCOME;
-			break;
 		default:
 			break;
 	}
@@ -62,9 +58,6 @@ int fill_shmfile(int mode, char* fname, char * shmkey) {
 			break;
 		case 2:
 			goodbyeshm = tmp;
-			break;
-		case 3:
-			welcomeshm = tmp;
 			break;
 		default:
 			break;
@@ -175,16 +168,6 @@ void show_goodbyeshm(void)
 	screen_clear();
 	show_shmfile(&goodbyeshm[(currentuser.numlogins % ((logouts <= 1) ? 1 : logouts))]);
 	shmdt(goodbyeshm);
-}
-// 显示进版画面
-void show_welcomeshm() {
-	int welcomes;
-	welcomes = welcomeshm[0].max;
-	screen_clear();
-	show_shmfile(&welcomeshm[(currentuser.numlogins % ((welcomes <= 1) ? 1 : welcomes))]);
-	if (DEFINE(DEF_TOP10))
-		pressanykey();
-	shmdt(welcomeshm);
 }
 
 void show_issue(void)
