@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <stdint.h>
+#include "fbbs/time.h"
 
 #define PRIdUID  PRId32
 #define DBIdUID  "d"
