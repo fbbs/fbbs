@@ -72,6 +72,7 @@ dirs="0Announce/bbslist bm brdidx index logs post reclog so tmp temp"
 for x in $dirs; do
 	mkdir -p "$BBS_HOME/$x"
 done
+ln -s $BBS_HOME/lib/libadmintool.so $BBS_HOME/so/admintool.so
 
 chown -R "$BBS_USR" "$BBS_HOME"
 chgrp -R "$BBS_GRP" "$BBS_HOME"
