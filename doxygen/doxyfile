@@ -15,9 +15,9 @@ MAX_INITIALIZER_LINES  = 0
 QUIET                  = YES
 INPUT = ../include \
 		../include/fbbs \
+		../fcgi \
 		../lib \
 		../src \
-		../www \
 		../pg \
 		../build/include/s11n
 FILE_PATTERNS          = *.c \
