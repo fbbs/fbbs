@@ -2,6 +2,7 @@
 #include "fbbs/backend.h"
 #include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
+#include "fbbs/notification.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 
@@ -79,8 +80,9 @@ static post_id_t insert_post(const backend_request_post_new_t *req,
 	return insert_post_index_board(&pi, pib);
 }
 
-static bool append_notification_file(const char *uname, const board_t *board,
-		const post_index_board_t *pib, const char *basename)
+static bool append_notification_file(const char *uname, user_id_t uid,
+		const board_t *board, const post_index_board_t *pib,
+		const char *basename)
 {
 	struct userec user;
 	if (!getuserec(uname, &user) || !user_has_read_perm(&user, board))
@@ -95,6 +97,8 @@ static bool append_notification_file(const char *uname, const board_t *board,
 		return false;
 	bool ok = record_append_locked(&record, pib, 1) >= 0;
 	record_close(&record);
+
+	notification_send(uid, NOTIFICATION_REPLIES);
 	return ok;
 }
 
@@ -102,7 +106,7 @@ static void send_reply_notification(const post_index_board_t *pib,
 		const char *uname, user_id_t uid, const board_t *board)
 {
 	if (uid && uid != pib->uid) {
-		append_notification_file(uname, board, pib, POST_REPLIES_FILE);
+		append_notification_file(uname, uid, board, pib, POST_REPLIES_FILE);
 	}
 }
 

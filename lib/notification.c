@@ -2,17 +2,6 @@
 #include "fbbs/notification.h"
 #include "fbbs/session.h"
 
-typedef struct {
-	int replies;
-} notification_count_t;
-
-static notification_count_t notification_count;
-
-void notification_clear(void)
-{
-	notification_count.replies = -1;
-}
-
 /** 回复提醒计数 @mdb_hash **/
 #define NOTIFICATION_KEY_REPLIES "new_replies"
 
@@ -22,14 +11,6 @@ static const char *get_notification_key(notification_item_e item)
 		[NOTIFICATION_REPLIES] = NOTIFICATION_KEY_REPLIES,
 	};
 	return keys[item];
-}
-
-static int *get_notification_cache(notification_item_e item)
-{
-	int *caches[] = {
-		[NOTIFICATION_REPLIES] = &notification_count.replies,
-	};
-	return caches[item];
 }
 
 int notification_incr(user_id_t uid, notification_item_e item)
@@ -48,29 +29,42 @@ int notification_set(user_id_t uid, notification_item_e item, int val)
 	return mdb_integer(-1, "HSET", "%s %"PRIdUID" %d", key, uid, val);
 }
 
-void notification_invalidate(notification_item_e item)
-{
-	int *cache = get_notification_cache(item);
-	if (cache)
-		*cache = -1;
-}
-
 int notification_get(notification_item_e item)
 {
 	user_id_t uid = session_uid();
 	if (!uid)
 		return -1;
 
-	int *cache = get_notification_cache(item);
-	if (cache && *cache >= 0)
-		return *cache;
-
 	const char *key = get_notification_key(item);
 	if (!key)
 		return -1;
-	int val = mdb_integer(-1, "HGET", "%s %"PRIdUID, key, uid);
-	if (cache)
-		*cache = val;
+	return mdb_integer(-1, "HGET", "%s %"PRIdUID, key, uid);
+}
 
-	return val;
+bool notification_send_parcel(user_id_t uid, const parcel_t *parcel)
+{
+	return mdb_cmd("PUBLISH", "n:%"PRIdUID" %b", uid, parcel->ptr,
+			parcel_size(parcel));
+}
+
+bool notification_send(user_id_t uid, notification_item_e item)
+{
+	parcel_t parcel;
+	parcel_new(&parcel);
+	parcel_write_varint(&parcel, item);
+
+	bool ok = false;
+	if (parcel_ok(&parcel))
+		ok = notification_send_parcel(uid, &parcel);
+
+	parcel_free(&parcel);
+
+	if (ok)
+		notification_incr(uid, item);
+	return ok;
+}
+
+bool notification_subscribe(void)
+{
+	return mdb_cmd("SUBSCRIBE", "n:%"PRIdUID, session_uid());
 }

@@ -20,7 +20,7 @@ void parcel_free(parcel_t *parcel)
 	free(parcel->ptr);
 }
 
-size_t parcel_size(parcel_t *parcel)
+size_t parcel_size(const parcel_t *parcel)
 {
 	return parcel->size;
 }

@@ -17,6 +17,7 @@ extern bool mdb_cmd_safe(const char *cmd, const char *fmt, ...);
 extern mdb_res_t *mdb_res(const char *cmd, const char *fmt, ...);
 extern mdb_res_t *mdb_res_safe(const char *cmd, const char *fmt, ...);
 extern mdb_res_t *mdb_res_at(const mdb_res_t *res, int index);
+extern mdb_res_t *mdb_recv(void);
 extern void mdb_clear(mdb_res_t *res);
 
 extern mdb_int_t mdb_integer(mdb_int_t invalid, const char *cmd, const char *fmt, ...);

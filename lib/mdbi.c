@@ -138,6 +138,13 @@ mdb_res_t *mdb_res_at(const mdb_res_t *res, int index)
 	return NULL;
 }
 
+mdb_res_t *mdb_recv(void)
+{
+	void *res;
+	redisGetReply(_mdb.c, &res);
+	return res;
+}
+
 mdb_int_t mdb_integer(mdb_int_t invalid, const char *cmd, const char *fmt, ...)
 {
 	MDB_CMD_HELPER(false);
