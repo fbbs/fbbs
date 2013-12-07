@@ -426,22 +426,3 @@ int fill_date(void)
 	brdshm->fresh_date = next;
 	return 0;
 }
-
-//  今天是生日?
-int is_birth(const struct userec *user)
-{
-	struct tm *tm;
-	time_t now;
-
-	now = time(0);
-	tm = localtime(&now);
-
-	if (strcasecmp(user->userid, "guest") == 0)
-		return NA;
-
-	if (user->birthmonth == (tm->tm_mon + 1)
-			&& user->birthday == tm->tm_mday)
-		return YEA;
-	else
-		return NA;
-}

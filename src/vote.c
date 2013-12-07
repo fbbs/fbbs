@@ -74,13 +74,13 @@ static int choose(int update, int defaultn, void (*title_show)(),
 			screen_clrtobot();
 			if ((*list_show) () == -1)
 			return -1;
-			update_endline();
+			tui_update_status_line();
 		}
 		if (num < page || num >= page + BBS_PAGESIZE) {
 			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
 			if ((*list_show) () == -1)
 			return -1;
-			update_endline();
+			tui_update_status_line();
 			continue;
 		}
 		if (readplan == YEA) {
@@ -1227,7 +1227,7 @@ void vote_title() {
 			"[\xcd\xb6\xc6\xb1\xcf\xe4\xc1\xd0\xb1\xed]",
 			//% "[[1;32m←[m,[1;32me[m] 离开 [[1;32mh[m] 求助 [[1;32m→[m,[1;32mr <cr>[m] 进行投票 [[1;32m↑[m,[1;32m↓[m] 上,下选择 [1m高亮度[m表示尚未投票");
 			"[[1;32m\xa1\xfb[m,[1;32me[m] \xc0\xeb\xbf\xaa [[1;32mh[m] \xc7\xf3\xd6\xfa [[1;32m\xa1\xfa[m,[1;32mr <cr>[m] \xbd\xf8\xd0\xd0\xcd\xb6\xc6\xb1 [[1;32m\xa1\xfc[m,[1;32m\xa1\xfd[m] \xc9\xcf,\xcf\xc2\xd1\xa1\xd4\xf1 [1m\xb8\xdf\xc1\xc1\xb6\xc8[m\xb1\xed\xca\xbe\xc9\xd0\xce\xb4\xcd\xb6\xc6\xb1");
-	update_endline();
+	tui_update_status_line();
 }
 
 //显示投票箱信息

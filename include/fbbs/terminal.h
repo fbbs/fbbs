@@ -28,7 +28,7 @@ extern int terminal_getchar(void);
 extern int egetch(void);
 extern int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel);
-extern void update_endline(void);
+extern void tui_update_status_line(void);
 extern void showtitle(const char *title, const char *mid);
 extern void firsttitle(const char *title);
 extern void docmdtitle(const char *title, const char *prompt);
@@ -127,7 +127,6 @@ void CreateNameList(void);
 int digest_post(int ent, struct fileheader *fhdr, char *direct);
 int do_reply(struct fileheader *fh);
 int fill_date(void);
-int is_birth(const struct userec *user);
 void keep_fail_post(void);
 int mail_del(int ent, struct fileheader *fileinfo, char *direct);
 int m_send(const char *userid);

@@ -131,7 +131,7 @@ void list_text(const char *file,
 				if (line > to - 1)
 					line = to - 1;
 			}
-			update_endline();
+			tui_update_status_line();
 		}
 
 		if (!empty) {
@@ -916,7 +916,7 @@ int denylist_key_deal(const char *file, int ch, const char *line)
 				break;
 			//% if (askyn("您确定吗?", NA, YEA) == NA) {
 			if (askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xc2\xf0?", NA, YEA) == NA) {
-				update_endline();
+				tui_update_status_line();
 				return 0;
 			}
 			denylist_remove(file, line);
@@ -924,7 +924,7 @@ int denylist_key_deal(const char *file, int ch, const char *line)
 		case 'x':
 			//% if (askyn("您确定吗?", NA, YEA) == NA) {
 			if (askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xc2\xf0?", NA, YEA) == NA) {
-				update_endline();
+				tui_update_status_line();
 				return 0;
 			}
 			denylist_remove(file, NULL);

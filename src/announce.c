@@ -2163,7 +2163,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 			}
 			if (curr_annpath>to-1)
 				curr_annpath= to -1;
-			update_endline();
+			tui_update_status_line();
 		}//if 
 		move(3+curr_annpath-from, 0);
 		prints(">");

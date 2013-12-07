@@ -148,7 +148,7 @@ int num, ssize;
 		prints("\n");
 	}
 	screen_move_clear(-1);
-	update_endline();
+	tui_update_status_line();
 }
 
 void draw_bottom(char *buf) {
@@ -407,14 +407,14 @@ void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry)
 				mode = PARTUPDATE;
 			lbc = 0;
 			lbuf[0]='\0';
-			update_endline();
+			tui_update_status_line();
 		} else if (lbc >0 && ch == '\x08') {
 			lbc--;
 			lbuf[lbc]='\0';
 			draw_bottom(lbuf);
 		} else {
 			if (lbc!=0)
-				update_endline();
+				tui_update_status_line();
 			lbc = 0;
 			mode = i_read_key(rcmdlist, locmem, ch, ssize);
 
@@ -528,7 +528,7 @@ char *direct;
 	if (search_author(locmem, 1, fileinfo->owner))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -543,7 +543,7 @@ char *direct;
 	if (search_author(locmem, -1, fileinfo->owner))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -573,7 +573,7 @@ char *direct;
 	if (search_post(locmem, 1))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -588,7 +588,7 @@ char *direct;
 	if (search_post(locmem, -1))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -1127,7 +1127,7 @@ char *direct;
 	if (search_author(locmem, 1, fileinfo->owner))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -1142,7 +1142,7 @@ char *direct;
 	if (search_author(locmem, -1, fileinfo->owner))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -1171,7 +1171,7 @@ char *direct;
 	if (search_title(locmem, 1))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -1186,7 +1186,7 @@ char *direct;
 	if (search_title(locmem, -1))
 	return PARTUPDATE;
 	else
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -1209,10 +1209,10 @@ char *direct;
 	struct keeploc *locmem;
 	locmem = getkeep(direct, 1, 1);
 	if (search_thread(locmem, -1, fileinfo)) {
-		update_endline();
+		tui_update_status_line();
 		return PARTUPDATE;
 	}
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 
@@ -1225,10 +1225,10 @@ char *direct;
 	struct keeploc *locmem;
 	locmem = getkeep(direct, 1, 1);
 	if (search_thread(locmem, 1, fileinfo)) {
-		update_endline();
+		tui_update_status_line();
 		return PARTUPDATE;
 	}
-	update_endline();
+	tui_update_status_line();
 	return DONOTHING;
 }
 

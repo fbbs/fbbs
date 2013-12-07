@@ -136,7 +136,7 @@ int tui_list(tui_list_t *p)
 				screen_clrtobot();
 				tui_list_display_loop(p);
 			}
-			update_endline();
+			tui_update_status_line();
 			p->update = DONOTHING;
 		}
 
@@ -244,7 +244,7 @@ int slide_list(slide_list_t *p)
 				screen_clrtobot();
 				p->display(p);
 			}
-			update_endline();
+			tui_update_status_line();
 			p->update = DONOTHING;
 		}
 
