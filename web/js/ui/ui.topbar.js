@@ -41,8 +41,14 @@
         _bindEvents: function () {
             this._on({
                 'click .nav': $.proxy(this, '_onNavClick'),
-                'click .name': $.proxy(this, '_onNavClick')
+                'click .name': $.proxy(this, '_onNavClick'),
+                'click .toggle-topbar': $.proxy(this, '_toggle')
             });
+        },
+        _toggle: function (event) {
+            this.element
+                .find('.top-bar')
+                .toggleClass('expanded');
         },
         /**
          * nav click event handler

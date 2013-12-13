@@ -8,8 +8,14 @@ var userInfo = f.config.userInfo;
                 <h1><a href="#{menuList.title.url}">#{menuList.title.label}</a></h1>
             }
         </li>
+        <li class="toggle-topbar menu-icon"><a href="javascript:void(0);"><span></span></a></li>
     </ul>
     <section class="top-bar-section">
+        <ul class="left">
+            f.each(menuList.menus, function (menu) {
+                <li class="nav" data-menu-nav-id="#{menu.id}"><a href="#{menu.url}">#{menu.label}</a></li>
+            });
+        </ul>
         <ul class="right">
             <li class="divider"></li>
             if (userInfo && userInfo.username) {
@@ -25,11 +31,6 @@ var userInfo = f.config.userInfo;
                     <a href="javascript:void(0);" class="button login">登陆</a>
                 </li>
             }
-        </ul>
-        <ul class="left">
-            f.each(menuList.menus, function (menu) {
-                <li class="nav" data-menu-nav-id="#{menu.id}"><a href="#{menu.url}">#{menu.label}</a></li>
-            });
         </ul>
     </section>
 </nav>
