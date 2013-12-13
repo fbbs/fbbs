@@ -19,7 +19,9 @@
         <file type="js" src="js/f/dataAdapter.js" />
         <file type="js" src="js/f/init.js" />
         <dir type="js" src="js/ui/" />
-        <dir type="css" src="css/base/" />
+        <file type="css" src="css/base/normalize.css" />
+        <file type="css" src="css/base/foundation.css" />
+        <file type="css" src="css/base/f.css" />
         <dir type="css" src="css/ui/" />
         <dir type="css" src="css/" />
     </group>

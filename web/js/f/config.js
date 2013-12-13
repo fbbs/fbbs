@@ -8,13 +8,7 @@
  */
 f.namespace('f.config');
 
-f.config.systemConfig = {
-    version: '201312130001',
-    webRoot: '/web',
-    baseUri: '/web/html',
-    defaultPage: '?home',
-    ajaxUri: '/web/ajax'
-};
+f.config.bbsConfig = 'bbs/config';
 
 /**
  * @namespace f.zIndex 全局z-index管理

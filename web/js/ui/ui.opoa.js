@@ -36,9 +36,12 @@
             $(document).on('click', 'a', $.proxy(this, '_onAnchorClick'));
         },
         _onAnchorClick: function (event) {
-            event.preventDefault();
             var $target = $(event.target);
             var url = $target.attr('href');
+            if (!url || url.indexOf('?') !== 0) {
+                return;
+            }
+            event.preventDefault();
             var title = window.document.title;
             History.pushState({
                 url: url,

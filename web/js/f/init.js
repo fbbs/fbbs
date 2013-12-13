@@ -12,13 +12,13 @@
          */
 
         function initBBS() {
-            /*
-            $('.menu-nav').menuNav({
+            $('.menu-nav').topbar({
                 onchange: function (event, data) {
-                    f.mediator.trigger('app:menuNav:onchange', data);
+                    f.mediator.trigger('app:topbar:onchange', data);
                 }
             });
 
+            /*
             $('.side-nav').sideNav({
                 zIndex: f.zIndex.ui--
             });
@@ -38,6 +38,20 @@
                 return false;
             });
 
+        }
+
+        /**
+         * Load config from server
+         */
+
+        function loadConfig() {
+            $.ajax({
+                type: 'GET',
+                url: f.config.bbsConfig,
+                async: false
+            }).done(function (data, textStatus, jqXHR) {
+                f.extend(f.config, JSON.parse(data));
+            }).fail(function () {});
         }
 
         /**
@@ -86,6 +100,7 @@
          */
 
         function init() {
+            loadConfig();
             loadTemplate();
             initBBS();
             $('#body').opoa({
@@ -105,10 +120,10 @@
                 afterClose: function (event, data) {
                     var url = data.url;
                     var pageInfo = f.config.pageInfo;
-                    /*
                     var sideNav = $(':data(ui-sideNav)');
                     var menuNav = $(':data(ui-menuNav)');
 
+                    /*
                     $(document.body).loading('hide');
 
                     if (pageInfo.isShowSideNav) {
@@ -126,11 +141,9 @@
                     }
                     */
 
-                    /*
                     if (pageInfo.menuNavId) {
-                        menuNav.menuNav('setActivate', pageInfo.menuNavId);
+                        menuNav.topbar('setActivate', pageInfo.menuNavId);
                     }
-                    */
 
                     // ie6,7提示
                     if ($.browser.msie && ~~$.browser.version < 8) {
