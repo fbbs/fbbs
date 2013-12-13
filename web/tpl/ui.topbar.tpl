@@ -11,6 +11,7 @@ var userInfo = f.config.userInfo;
     </ul>
     <section class="top-bar-section">
         <ul class="right">
+            <li class="divider"></li>
             if (userInfo && userInfo.username) {
                 <li class="has-dropdown">
                     <a href="#">Right Button with Dropdown</a>
