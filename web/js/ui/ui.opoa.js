@@ -30,34 +30,36 @@
          * @private
          */
         _create: function () {
-            /*
             this.window
-                .on('hashchange', $.proxy(this, '_onhashchange'))
-                .trigger('hashchange');
-            */
+                .on('statechange', $.proxy(this, '_onstatechange'))
+                .trigger('statechange');
+            $(document).on('click', 'a', $.proxy(this, '_onAnchorClick'));
         },
-        /**
-         * Hashchange event callback：load update and then update it
-         *
-         * @private
-         * @event
-         * @param  {Object} event Event object
-         *
-         * @return {boolean} we need to stop event, so we return false
-         */
-        _onhashchange: function (event) {
-            // get the current hash, such as /home/advertiser
-            var url = $.param.fragment();
+        _onAnchorClick: function (event) {
+            event.preventDefault();
+            var $target = $(event.target);
+            var url = $target.attr('href');
+            var title = window.document.title;
+            History.pushState({
+                url: url,
+                data: $target.attr('data-state')
+            }, title, url);
+        },
+        _onstatechange: function (event) {
+            var state = History.getState();
+            var url = state.data.url;
+            var title = window.document.title;
 
-            // if it doesn't exist or not started with `/`, and then render the default page
-            if (!url || url.indexOf('/') !== 0) {
+            if (!url || url.indexOf('?') !== 0) {
                 url = this.options.defaultPage;
-                $.bbq.pushState(url);
+                History.pushState({
+                    url: url
+                }, title, url);
 
                 return;
             }
 
-            url = this.options.baseUri + url;
+            url = this.options.baseUri + url.replace(/^\?/, '/') + '.html';
 
             var isUpdatePage = this._trigger("beforeClose", null, {
                 url: url
@@ -72,8 +74,6 @@
                     this._loadPage(url);
                 }
             }
-
-            return false;
         },
         /**
          * Callback handler after loading page successfully

@@ -10,6 +10,7 @@
         <file type="js" src="js/base/base.js" />
         <file type="js" src="js/base/mediator.js" />
         <file type="js" src="js/base/tpl.js" />
+        <file type="js" src="js/base/json3.js" />
         <file type="js" src="js/f/f.js" />
         <file type="js" src="js/f/config.js" />
         <file type="js" src="js/f/class.js" />

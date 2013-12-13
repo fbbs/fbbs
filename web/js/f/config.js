@@ -11,8 +11,8 @@ f.namespace('f.config');
 f.config.systemConfig = {
     version: '201312130001',
     webRoot: '/web',
-    baseUri: '/web',
-    defaultPage: 'index.html',
+    baseUri: '/web/html',
+    defaultPage: '?home',
     ajaxUri: '/web/ajax'
 };
 

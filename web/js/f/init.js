@@ -92,7 +92,7 @@
                 baseUri: f.config.systemConfig.baseUri,
                 defaultPage: f.config.systemConfig.defaultPage,
                 beforeClose: function () {
-                    $(document.body).loading('show');
+                    //$(document.body).loading('show');
                 },
                 onclose: function () {
                     if (f.bbsPage) {
