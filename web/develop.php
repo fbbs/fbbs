@@ -32,7 +32,7 @@ $options = array(
 $options['group'] = $_POST['group'];
 $options['method'] = $_POST['method'];
 $url = parse_url ($_SERVER["REQUEST_URI"]);
-$path = substr($url["path"], 1);
+$path = str_replace('web/', '', substr($url["path"], 1));
 
 $baseName = str_replace('/web', '', $url["path"]);
 
@@ -70,7 +70,14 @@ else if(preg_match("/\.css$/i", $path)) {
     header("Content-Type: text/css");
     echo file_get_contents($path);
 }
-else if($path == "web/")
+else if(preg_match("/\.html$/i", $path)) {
+    if (!file_exists($path)) {
+        throw new Exception("File: ".$path." doesn't exists!");
+    }
+    header("Content-Type: text/html");
+    echo file_get_contents($path);
+}
+else if($path == "")
 {
     if (!file_exists("index.html")) {
         throw new Exception("File: index.html doesn't exists!");
