@@ -29,7 +29,7 @@ do
 	if echo $LINE | grep "<group " > /dev/null
 	then
 		GROUP=${LINE#* id=\"}
-		GROUP=${GROUP%'">'}
+		GROUP=${GROUP%%\"*}
 		JS_FILES=
 		CSS_FILES=
 		TPL_FILES=
