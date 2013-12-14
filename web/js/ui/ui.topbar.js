@@ -40,8 +40,7 @@
          */
         _bindEvents: function () {
             this._on({
-                'click .nav': $.proxy(this, '_onNavClick'),
-                'click .name': $.proxy(this, '_onNavClick'),
+                'click .menu-nav': $.proxy(this, '_onNavClick'),
                 'click .toggle-topbar': $.proxy(this, '_toggle')
             });
         },
@@ -58,16 +57,19 @@
          * @param {Object} event Event object
          */
         _onNavClick: function (event) {
-            //如果是打开新页面的链接则不切换样式
-            if ($(event.currentTarget).attr('target') !== '_blank') {
+            var $target = $(event.currentTarget);
+            if ($target.attr('target') !== '_blank' && !$target.hasClass('menu-nav-new')) {
                 this.element
                     .find('.nav')
                     .removeClass('active');
 
-                $(event.currentTarget)
-                    .closest('.nav')
+                $target.closest('.nav')
                     .addClass('active');
             }
+
+            this.element
+                .find('.top-bar')
+                .removeClass('expanded');
 
             this._trigger('onchange', null, {
                 currentTarget: event.currentTarget

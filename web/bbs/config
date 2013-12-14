@@ -3,30 +3,30 @@
         "version": "201312130001",
         "webRoot": "/web",
         "baseUri": "/web/html",
-        "defaultPage": "?home",
+        "defaultPage": "#/home",
         "ajaxUri": "/web/bbs"
     },
     "userInfo": {},
     "menuList": {
         "title": {
             "label": "日月光华",
-            "url": "?home"
+            "url": "#/home"
         },
         "menus": [
             {
                 "id": "sec",
                 "label": "分类讨论",
-                "url": "?sec"
+                "url": "#/sec"
             },
             {
                 "id": "0an",
                 "label": "本站精华",
-                "url": "?0an"
+                "url": "#/0an"
             },
             {
                 "id": "top10",
                 "label": "本日十大",
-                "url": "?top10"
+                "url": "#/top10"
             }
         ]
     },

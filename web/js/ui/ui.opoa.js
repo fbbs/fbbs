@@ -31,38 +31,31 @@
          */
         _create: function () {
             this.window
-                .on('statechange', $.proxy(this, '_onstatechange'))
-                .trigger('statechange');
-            $(document).on('click', 'a', $.proxy(this, '_onAnchorClick'));
+                .on('hashchange', $.proxy(this, '_onhashchange'))
+                .trigger('hashchange');
         },
-        _onAnchorClick: function (event) {
-            var $target = $(event.target);
-            var url = $target.attr('href');
-            if (!url || url.indexOf('?') !== 0) {
-                return;
-            }
-            event.preventDefault();
-            var title = window.document.title;
-            History.pushState({
-                url: url,
-                data: $target.attr('data-state')
-            }, title, url);
-        },
-        _onstatechange: function (event) {
-            var state = History.getState();
-            var url = state.data.url;
-            var title = window.document.title;
+        /**
+         * Hashchange event callback：load update and then update it
+         *
+         * @private
+         * @event
+         * @param  {Object} event Event object
+         *
+         * @return {boolean} we need to stop event, so we return false
+         */
+        _onhashchange: function (event) {
+            // get the current hash, such as /home/advertiser
+            var url = $.param.fragment();
 
-            if (!url || url.indexOf('?') !== 0) {
+            // if it doesn't exist or not started with `/`, and then render the default page
+            if (!url || url.indexOf('/') !== 0) {
                 url = this.options.defaultPage;
-                History.pushState({
-                    url: url
-                }, title, url);
+                $.bbq.pushState(url);
 
                 return;
             }
 
-            url = this.options.baseUri + url.replace(/^\?/, '/') + '.html';
+            url = this.options.baseUri + url;
 
             var isUpdatePage = this._trigger("beforeClose", null, {
                 url: url
@@ -77,6 +70,8 @@
                     this._loadPage(url);
                 }
             }
+
+            return false;
         },
         /**
          * Callback handler after loading page successfully

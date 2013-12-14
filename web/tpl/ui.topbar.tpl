@@ -5,7 +5,7 @@ var userInfo = f.config.userInfo;
     <ul class="title-area">
         <li class="name">
             if (menuList.title) {
-                <h1><a href="#{menuList.title.url}">#{menuList.title.label}</a></h1>
+                <h1><a class="menu-nav" href="#{menuList.title.url}">#{menuList.title.label}</a></h1>
             }
         </li>
         <li class="toggle-topbar menu-icon"><a href="javascript:void(0);"><span></span></a></li>
@@ -13,7 +13,7 @@ var userInfo = f.config.userInfo;
     <section class="top-bar-section">
         <ul class="left">
             f.each(menuList.menus, function (menu) {
-                <li class="nav" data-menu-nav-id="#{menu.id}"><a href="#{menu.url}">#{menu.label}</a></li>
+                <li class="nav" data-menu-nav-id="#{menu.id}"><a class="menu-nav" href="#{menu.url}">#{menu.label}</a></li>
             });
         </ul>
         <ul class="right">
@@ -28,7 +28,7 @@ var userInfo = f.config.userInfo;
             }
             else {
                 <li class="has-form">
-                    <a href="javascript:void(0);" class="button login">登陆</a>
+                    <a href="javascript:void(0);" class="button login menu-nav menu-nav-new">登陆</a>
                 </li>
             }
         </ul>

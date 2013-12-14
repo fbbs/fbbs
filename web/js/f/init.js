@@ -28,7 +28,7 @@
 
             //history back click event handler
             $('.body').on('click', '.history-back', function () {
-                History.back();
+                window.history.back();
             });
 
             // hide layer click event handler

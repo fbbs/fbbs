@@ -200,7 +200,7 @@
          * @private
          */
         _back: function () {
-            History.back();
+            window.history.back();
         }
     });
 }(f));
