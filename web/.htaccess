@@ -1,0 +1,18 @@
+
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /web
+RewriteRule ^develop\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule /$ index.html [L]
+RewriteRule .html$ develop.php [L]
+RewriteRule .css$ develop.php [L]
+RewriteRule .js$ develop.php [L]
+RewriteRule .tpl$ develop.php [L]
+</IfModule>
+
+php_flag magic_quotes_gpc Off
+
+# END WordPress

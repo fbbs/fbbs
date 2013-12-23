@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<smasher>
+    <root_dir></root_dir>
+
+    <group id="common">
+        <file type="js" src="js/base/jquery.js" />
+        <dir type="js" src="js/plugins/" />
+        <file type="js" src="js/base/underscore.js" />
+        <file type="js" src="js/base/underscore.string.js" />
+        <file type="js" src="js/base/base.js" />
+        <file type="js" src="js/base/mediator.js" />
+        <file type="js" src="js/base/tpl.js" />
+        <file type="js" src="js/f/f.js" />
+        <file type="js" src="js/f/config.js" />
+        <file type="js" src="js/f/class.js" />
+        <file type="js" src="js/f/page.js" />
+        <file type="js" src="js/f/components.js" />
+        <file type="js" src="js/f/dataAdapter.js" />
+        <file type="js" src="js/f/init.js" />
+        <dir type="js" src="js/ui/" />
+        <dir type="css" src="css/base/" />
+        <dir type="css" src="css/ui/" />
+        <dir type="css" src="css/" />
+    </group>
+
+    <group id="tpl">
+        <dir type="tpl" src="tpl/" />
+    </group>
+
+    <group id="ie">
+        <dir type="js" src="js/ie/" />
+    </group>
+
+</smasher>
