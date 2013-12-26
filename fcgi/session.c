@@ -1,6 +1,7 @@
 #include "libweb.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/session.h"
+#include "fbbs/string.h"
 #include "fbbs/user.h"
 #include "fbbs/web.h"
 
@@ -32,8 +33,6 @@ static bool activate_session(session_id_t sid, const char *uname)
 
 static bool _get_session(const char *uname, const char *key)
 {
-	session_clear();
-
 	user_id_t uid = get_user_id(uname);
 	if (uid > 0) {
 		session_id_t sid = get_web_session_cache(uid, key);
@@ -62,10 +61,16 @@ static bool _get_session(const char *uname, const char *key)
 
 bool session_validate(void)
 {
+	memset(&currentuser, 0, sizeof(currentuser));
+	session_clear();
+
 	const char *uname = web_get_param(COOKIE_USER);
 	const char *key = web_get_param(COOKIE_KEY);
-
-	memset(&currentuser, 0, sizeof(currentuser));
+	if (web_request_type(API)) {
+		const char *token = web_get_param("token");
+		if (!streq(token, key))
+			return false;
+	}
 
 	bool ok = _get_session(uname, key);
 	if (ok)
