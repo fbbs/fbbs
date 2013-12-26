@@ -53,9 +53,9 @@ int bbs0an_main(void)
 {
 	char path[512];
 	board_t board;
-	int bid = strtol(get_param("bid"), NULL, 10);
+	int bid = strtol(web_get_param("bid"), NULL, 10);
 	if (bid <= 0) {
-		strlcpy(path, get_param("path"), sizeof(path));
+		strlcpy(path, web_get_param("path"), sizeof(path));
 		if (strstr(path, "..") || strstr(path, "SYSHome"))
 			return BBS_EINVAL;
 		char *bname = getbfroma(path);
@@ -161,7 +161,7 @@ int bbs0an_main(void)
 
 int bbsanc_main(void)
 {
-	const char *path = get_param("path");
+	const char *path = web_get_param("path");
 	if (strstr(path, "bbslist") || strstr(path, ".Search")
 			|| strstr(path, ".Names") || strstr(path, "..")
 			|| strstr(path, "SYSHome"))

@@ -37,8 +37,8 @@ int bbsmail_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	int start = strtol(get_param("start"), NULL, 10);
-	int page = strtol(get_param("page"), NULL, 10);
+	int start = strtol(web_get_param("start"), NULL, 10);
+	int page = strtol(web_get_param("page"), NULL, 10);
 	if (page <= 0 || page > TLINES)
 		page = TLINES;
 	
@@ -68,7 +68,7 @@ int bbsmail_main(void)
 		printf("\n<mail r='%d' m='%c' from='%s' date='%s' name='%s'>",
 				_is_mail_read(fp), _get_mail_mark(fp), fp->owner,
 				format_time(getfiletime(fp), TIME_FORMAT_XML), fp->filename);
-		if (request_type(REQUEST_UTF8))
+		if (web_request_type(UTF8))
 			xml_fputs4(fp->title, 0);
 		else
 			xml_fputs2(fp->title, check_gbk(fp->title) - fp->title);
@@ -118,7 +118,7 @@ int bbsmailcon_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	const char *file = get_param("f");
+	const char *file = web_get_param("f");
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 
@@ -153,7 +153,7 @@ int bbsmailcon_main(void)
 	if (newmail)
 		printf(" new='1'");
 	printf("><t>");
-	if (request_type(REQUEST_UTF8))
+	if (web_request_type(UTF8))
 		xml_fputs4(fh->title, 0);
 	else
 		xml_fputs2(fh->title, check_gbk(fh->title) - fh->title);
@@ -167,7 +167,7 @@ int bbsmailcon_main(void)
 	else
 		setmfile(buf, currentuser.userid, file);
 
-	printf("<mail f='%s' n='%s'>", file, get_param("n"));
+	printf("<mail f='%s' n='%s'>", file, web_get_param("n"));
 	xml_printfile(buf);
 	fputs("</mail>\n", stdout);
 
@@ -181,7 +181,7 @@ int bbsdelmail_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	const char *file = get_param("f");
+	const char *file = web_get_param("f");
 	if (!valid_mailname(file))
 		return BBS_EINVAL;
 
@@ -224,7 +224,7 @@ int bbspstmail_main(void)
 	mmap_t m;
 	m.oflag = O_RDONLY;
 	char file[HOMELEN];
-	const char *str = get_param("n"); // 1-based
+	const char *str = web_get_param("n"); // 1-based
 	const struct fileheader *fh = NULL;
 	if (*str) {
 		num = strtol(str, NULL, 10);
@@ -249,17 +249,17 @@ int bbspstmail_main(void)
 		ref = "pstmail";
 	xml_fputs(ref);
 
-	printf("' recv='%s'>", fh ? fh->owner : get_param("recv"));
+	printf("' recv='%s'>", fh ? fh->owner : web_get_param("recv"));
 
 	if (fh) {
 		printf("<t>");
-		if (request_type(REQUEST_MOBILE) && !strneq2(fh->title, "Re: "))
+		if (web_request_type(MOBILE) && !strneq2(fh->title, "Re: "))
 			puts("Re: ");
 		xml_fputs4(fh->title, 0);
 		printf("</t><m>");
 
 		setmfile(file, currentuser.userid, fh->filename);
-		if (request_type(REQUEST_UTF8)) {
+		if (web_request_type(UTF8)) {
 			mmap_t mm = { .oflag = O_RDONLY };
 			if (mmap_open(file, &mm) == 0) {
 				char *utf8_str = malloc(mm.size * 2 + 1);
@@ -290,23 +290,23 @@ int bbssndmail_main(void)
 	if (parse_post_data() < 0)
 		return BBS_EINVAL;
 
-	const char *recv = get_param("recv");
+	const char *recv = web_get_param("recv");
 	if (*recv == '\0')
 		return BBS_EINVAL;
 
-	bool utf8 = request_type(REQUEST_UTF8);
+	bool utf8 = web_request_type(UTF8);
 	char title[STRLEN];
 	if (utf8)
-		convert_u2g(get_param("title"), title);
+		convert_u2g(web_get_param("title"), title);
 	else
-		strlcpy(title, get_param("title"), sizeof(title));
+		strlcpy(title, web_get_param("title"), sizeof(title));
 	string_remove_non_printable_gbk(title);
 	valid_title_gbk(title);
 	if (*title == '\0')
 		//% strlcpy(title, "没主题", sizeof(title));
 		strlcpy(title, "\xc3\xbb\xd6\xf7\xcc\xe2", sizeof(title));
 
-	const char *text = get_param("text");
+	const char *text = web_get_param("text");
 	int len = strlen(text);
 	char header[320];
 	//% snprintf(header, sizeof(header), "寄信人: %s (%s)\n标  题: %s\n发信站: "
@@ -330,14 +330,14 @@ int bbssndmail_main(void)
 		return BBS_EINVAL;
 	}
 
-	if (*get_param("backup") != '\0') {
+	if (*web_get_param("backup") != '\0') {
 		char title2[STRLEN];
 		snprintf(title2, sizeof(title2), "{%s} %s", recv, title);
 		do_mail_file(currentuser.userid, title2, header, gbk_text, len, NULL);
 	}
 	free(gbk_text);
 
-	const char *ref = get_param("ref");
+	const char *ref = web_get_param("ref");
 	http_header();
 	refreshto(1, ref);
 	if (utf8)
@@ -369,7 +369,7 @@ int web_mailman(void)
 	print_session();
 
 	const pair_t *p = NULL;
-	for (int i = 0; (p = get_param_pair(i)); ++i) {
+	for (int i = 0; (p = web_get_param_pair(i)); ++i) {
 		if (streq(p->val, "on") && strncmp(p->key, "box", 3) == 0) {
 			const char *file = p->key + sizeof("box") - 1;
 			if (delete_record(index, sizeof(struct fileheader), 1,

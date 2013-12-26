@@ -62,8 +62,8 @@ static bool _get_session(const char *uname, const char *key)
 
 bool session_validate(void)
 {
-	const char *uname = get_param(COOKIE_USER);
-	const char *key = get_param(COOKIE_KEY);
+	const char *uname = web_get_param(COOKIE_USER);
+	const char *key = web_get_param(COOKIE_KEY);
 
 	memset(&currentuser, 0, sizeof(currentuser));
 

@@ -132,7 +132,7 @@ static int xml_fputs4_helper(const char *s, size_t size, void *args)
 
 void xml_fputs4(const char *s, size_t size)
 {
-	if (!request_type(REQUEST_UTF8))
+	if (!web_request_type(UTF8))
 		xml_fputs2(s, size);
 	else
 		convert(env_g2u, s, size ? size : CONVERT_ALL, NULL, 0,
@@ -164,7 +164,7 @@ int xml_printfile(const char *file)
  */
 void http_header(void)
 {
-	const char *charset = request_type(REQUEST_UTF8) ? "utf-8" : CHARSET;
+	const char *charset = web_request_type(UTF8) ? "utf-8" : CHARSET;
 	printf("Content-type: text/html; charset=%s\n\n", charset);
 	printf("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" "
 			"\"http://www.w3.org/TR/html4/strict.dtd\"><html><head>");
@@ -279,9 +279,9 @@ extern const char *get_post_list_type_string(void);
 
 void print_session(void)
 {
-	if (request_type(REQUEST_API))
+	if (web_request_type(API))
 		return;
-	bool mobile = request_type(REQUEST_MOBILE);
+	bool mobile = web_request_type(MOBILE);
 
 	printf("<session m='%s'><p>%s</p><u>%s</u><f>",
 			get_post_list_type_string(), get_permission(), currentuser.userid);

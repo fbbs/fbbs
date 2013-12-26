@@ -181,7 +181,7 @@ extern bool get_board_by_param(board_t *bp);
 
 static int xml_print_post_wrapper(const char *str, size_t size)
 {
-	if (request_type(REQUEST_PARSED)) {
+	if (web_request_type(PARSED)) {
 		int opt = PARSE_NOQUOTEIMG;
 		int flag = get_user_flag();
 		if (flag & PREF_NOSIG)
@@ -190,7 +190,7 @@ static int xml_print_post_wrapper(const char *str, size_t size)
 			opt |= PARSE_NOSIGIMG;
 		return xml_print_post(str, size, opt);
 	}
-	if (!request_type(REQUEST_MOBILE)) {
+	if (!web_request_type(MOBILE)) {
 		xml_fputs2(str, size);
 		return 0;
 	}
@@ -206,10 +206,10 @@ int bbscon(const char *link)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 
-	post_id_t pid = strtol(get_param("f"), NULL, 10);
-	char action = *get_param("a");
-//	int archive = strtol(get_param("archive"), NULL, 10);
-	bool sticky = *get_param("s");
+	post_id_t pid = strtol(web_get_param("f"), NULL, 10);
+	char action = *web_get_param("a");
+//	int archive = strtol(web_get_param("archive"), NULL, 10);
+	bool sticky = *web_get_param("s");
 
 	int ret = 0;
 	post_info_t pi;
@@ -278,7 +278,7 @@ int bbsdel_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	post_id_t pid = strtoll(get_param("f"), NULL, 10);
+	post_id_t pid = strtoll(web_get_param("f"), NULL, 10);
 	if (pid <= 0)
 		return BBS_EINVAL;
 
@@ -434,9 +434,9 @@ int bbstcon_main(void)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 
-	post_id_t tid = strtoll(get_param("g"), NULL, 10);
-	post_id_t pid = strtoll(get_param("f"), NULL, 10);
-	char action = *(get_param("a"));
+	post_id_t tid = strtoll(web_get_param("g"), NULL, 10);
+	post_id_t pid = strtoll(web_get_param("f"), NULL, 10);
+	char action = *(web_get_param("a"));
 	if (!tid)
 		tid = pid;
 
@@ -500,8 +500,8 @@ int web_sigopt(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	bool hidesig = streq(get_param("hidesig"), "on");
-	bool hideimg = streq(get_param("hideimg"), "on");
+	bool hidesig = streq(web_get_param("hidesig"), "on");
+	bool hideimg = streq(web_get_param("hideimg"), "on");
 
 	int flag = get_user_flag();
 
@@ -620,14 +620,14 @@ int bbssnd_main(void)
 	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 
-	bool isedit = (*(get_param("e")) == '1');
+	bool isedit = (*(web_get_param("e")) == '1');
 
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 	if (!isedit) {
-		if (request_type(REQUEST_UTF8)) {
-			strlcpy(utf8_title, get_param("title"), sizeof(utf8_title));
+		if (web_request_type(UTF8)) {
+			strlcpy(utf8_title, web_get_param("title"), sizeof(utf8_title));
 		} else {
-			convert_g2u(get_param("title"), utf8_title);
+			convert_g2u(web_get_param("title"), utf8_title);
 		}
 		string_remove_ansi_control_code(utf8_title, utf8_title);
 		string_remove_non_printable(utf8_title);
@@ -644,7 +644,7 @@ int bbssnd_main(void)
 	post_id_t pid = 0;
 	post_info_t pi;
 
-	const char *f = get_param("f");
+	const char *f = web_get_param("f");
 	bool reply = !(*f == '\0');
 
 	if (isedit || reply) {
@@ -660,9 +660,9 @@ int bbssnd_main(void)
 		}
 	}
 
-	char *text = (char *) get_param("text");
+	char *text = (char *) web_get_param("text");
 	check_character(text);
-	if (request_type(REQUEST_UTF8)
+	if (web_request_type(UTF8)
 			&& validate_utf8_input(text, POST_CONTENT_CCHARS, true) < 0)
 		return BBS_EINVAL;
 
@@ -682,16 +682,16 @@ int bbssnd_main(void)
 			.board = &board,
 			.title = utf8_title,
 			.content = text,
-			.sig = strtol(get_param("sig"), NULL, 0),
+			.sig = strtol(web_get_param("sig"), NULL, 0),
 			.ip = mask_host(fromhost),
 			.reid = reply ? pi.id : 0,
 			.tid = reply ? pi.tid : 0,
 			.uname_replied = reply ? pi.owner : NULL,
 			.uid_replied = reply ? pi.uid : 0,
 			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
-			.anony = strtol(get_param("anony"), NULL, 0),
+			.anony = strtol(web_get_param("anony"), NULL, 0),
 			.web = true,
-			.cp = request_type(REQUEST_UTF8) ? NULL : env_g2u,
+			.cp = web_request_type(UTF8) ? NULL : env_g2u,
 		};
 		pid = publish_post(&pr);
 		if (!pid)
@@ -710,7 +710,7 @@ int bbssnd_main(void)
 
 	snprintf(buf, sizeof(buf), "%sdoc?board=%s", get_post_list_type_string(),
 			board.name);
-	if (request_type(REQUEST_MOBILE)) {
+	if (web_request_type(MOBILE)) {
 		printf("Status: 302\nLocation: %s\n\n", buf);
 	} else {
 		http_header();
@@ -764,7 +764,7 @@ static int do_bbspst(bool isedit)
 	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 
-	const char *f = get_param("f");
+	const char *f = web_get_param("f");
 	bool reply = !(*f == '\0');
 
 	if (isedit && !reply)
@@ -794,14 +794,14 @@ static int do_bbspst(bool isedit)
 	if (reply) {
 		printf("<t>");
 
-		bool utf8 = request_type(REQUEST_UTF8);
+		bool utf8 = web_request_type(UTF8);
 
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		char *title = utf8 ? pi.utf8_title : gbk_title;
 		if (!utf8)
 			convert_u2g(pi.utf8_title, gbk_title);
 		string_remove_ansi_control_code(title, title);
-		if (request_type(REQUEST_MOBILE) && !strneq2(title, "Re: "))
+		if (web_request_type(MOBILE) && !strneq2(title, "Re: "))
 			fputs("Re: ", stdout);
 		xml_fputs(title);
 
@@ -874,13 +874,13 @@ int bbsccc_main(void)
 	if (board.flag & BOARD_FLAG_DIR)
 		return BBS_EINVAL;
 
-	post_id_t pid = strtoll(get_param("f"), NULL, 10);
+	post_id_t pid = strtoll(web_get_param("f"), NULL, 10);
 
 	post_info_t pi;
 	if (!search_pid(board.id, pid, &pi))
 		return BBS_ENOFILE;
 
-	const char *target = get_param("t");
+	const char *target = web_get_param("t");
 	if (*target != '\0') {
 		board_t to;
 		if (!get_board(target, &to))
@@ -948,11 +948,11 @@ int bbsfwd_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 	parse_post_data();
-	const char *reci = get_param("u");
+	const char *reci = web_get_param("u");
 	if (*reci == '\0') {
 		xml_header(NULL);
 		printf("<bbsfwd bid='%s' f='%s'>",
-				get_param("bid"), get_param("f"));
+				web_get_param("bid"), web_get_param("f"));
 		print_session();
 		printf("</bbsfwd>");
 	} else {
@@ -965,7 +965,7 @@ int bbsfwd_main(void)
 		if (board.flag & BOARD_FLAG_DIR)
 			return BBS_EINVAL;
 
-		post_id_t pid = strtoll(get_param("f"), NULL, 10);
+		post_id_t pid = strtoll(web_get_param("f"), NULL, 10);
 		post_info_t pi;
 		if (!search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;

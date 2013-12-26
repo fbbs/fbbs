@@ -229,7 +229,7 @@ static bool require_login(const web_handler_t *h)
 static int execute(const web_handler_t *h)
 {
 	if (!session_id() && require_login(h)) {
-		if (request_type(REQUEST_API))
+		if (web_request_type(API))
 			return error_msg(ERROR_LOGIN_REQUIRED);
 		return BBS_ELGNREQ;
 	}

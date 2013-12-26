@@ -45,7 +45,7 @@ int web_brdadd(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	int bid = strtol(get_param("bid"), NULL, 10);
+	int bid = strtol(web_get_param("bid"), NULL, 10);
 	int ok = fav_board_add(session_uid(), NULL, bid,
 			FAV_BOARD_ROOT_FOLDER, &currentuser);
 	if (ok) {
@@ -68,7 +68,7 @@ int web_sel(void)
 	printf("<bbssel>");
 	print_session();
 
-	const char *brd = get_param("brd");
+	const char *brd = web_get_param("brd");
 	if (*brd != '\0') {
 		char name[BOARD_NAME_LEN + 3];
 		snprintf(name, sizeof(name), "%%%s%%", brd);
@@ -220,12 +220,12 @@ static int show_sector(int sid, db_res_t *res, int last)
 
 			const char *utf8_descr = db_get_value(res, i, 1);
 			GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
-			if (!request_type(REQUEST_UTF8)) {
+			if (!web_request_type(UTF8)) {
 				convert_u2g(utf8_descr, gbk_descr);
 			}
 			printf("<brd name='%s' desc='%s'/>",
 					db_get_value(res, i, 0),
-					request_type(REQUEST_UTF8) ? utf8_descr : gbk_descr);
+					web_request_type(UTF8) ? utf8_descr : gbk_descr);
 		}
 	}
 	return last;
@@ -307,7 +307,7 @@ static void show_board(db_res_t *res)
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		board_t board;
 		res_to_board(res, i, &board);
-		if (!request_type(REQUEST_UTF8))
+		if (!web_request_type(UTF8))
 			board_to_gbk(&board);
 		printf("<brd dir='%d' title='%s' cate='%.6s' desc='%s' bm='%s' "
 				"read='%d' count='%d' />",
@@ -326,7 +326,7 @@ int web_sector(void)
 	board_t parent;
 	db_res_t *res = NULL;
 
-	const char *sname = get_param("s");
+	const char *sname = web_get_param("s");
 	if (*sname) {
 		res = db_query("SELECT id, descr"
 				" FROM board_sectors WHERE name = %s", sname);
@@ -335,11 +335,11 @@ int web_sector(void)
 			return BBS_EINVAL;
 		}
 	} else {
-		const char *pname = get_param("board");
+		const char *pname = web_get_param("board");
 		if (*pname)
 			get_board(pname, &parent);
 		else
-			get_board_by_bid(strtol(get_param("bid"), NULL, 10), &parent);
+			get_board_by_bid(strtol(web_get_param("bid"), NULL, 10), &parent);
 		if (!parent.id || !(parent.flag & BOARD_FLAG_DIR)
 				|| !has_read_perm(&parent))
 			return BBS_ENOBRD;
@@ -356,7 +356,7 @@ int web_sector(void)
 			printf(" icon='%s'", path);
 		
 		const char *utf8_sector = db_get_value(res, 0, 1);
-		if (request_type(REQUEST_UTF8)) {
+		if (web_request_type(UTF8)) {
 			printf(" title='%s'>", utf8_sector);
 		} else {
 			GBK_BUFFER(sector, BOARD_SECTOR_NAME_CCHARS);
@@ -366,7 +366,7 @@ int web_sector(void)
 		sid = db_get_integer(res, 0, 0);
 		db_clear(res);
 	} else {
-		if (request_type(REQUEST_UTF8)) {
+		if (web_request_type(UTF8)) {
 			printf(" dir= '1' title='%s'>", parent.descr);
 		} else {
 			GBK_BUFFER(descr, BOARD_DESCR_CCHARS);
@@ -395,12 +395,12 @@ int bbsclear_main(void)
 		return BBS_ELGNREQ;
 
 	board_t board;
-	if (!get_board(get_param("board"), &board)
+	if (!get_board(web_get_param("board"), &board)
 			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
 	session_set_board(board.id);
 
-	const char *start = get_param("start");
+	const char *start = web_get_param("start");
 	brc_initialize(currentuser.userid, board.name);
 	brc_clear_all();
 	brc_update(currentuser.userid, board.name);
@@ -415,7 +415,7 @@ int bbsclear_main(void)
 int bbsnot_main(void)
 {
 	board_t board;
-	if (!get_board(get_param("board"), &board)
+	if (!get_board(web_get_param("board"), &board)
 			|| !has_read_perm(&board))
 		return BBS_ENOBRD;
 

@@ -84,8 +84,8 @@ int web_my_props(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	int record = strtol(get_param("record"), NULL, 10);
-	int item = strtol(get_param("item"), NULL, 10);
+	int record = strtol(web_get_param("record"), NULL, 10);
+	int item = strtol(web_get_param("item"), NULL, 10);
 
 	if (record <= 0 || item <= 0) {
 		my_props_t *p = my_props_load(session_uid());
@@ -141,7 +141,7 @@ static int buy_title(int item, const char *title)
 
 int web_buy_prop(void)
 {
-	int item = strtol(get_param("item"), NULL, 10);
+	int item = strtol(web_get_param("item"), NULL, 10);
 	if (item <= 0)
 		return BBS_EINVAL;
 
@@ -152,7 +152,7 @@ int web_buy_prop(void)
 		case PROP_TITLE_90DAYS:
 		case PROP_TITLE_180DAYS:
 		case PROP_TITLE_1YEAR:
-			return buy_title(item, get_param("title"));
+			return buy_title(item, web_get_param("title"));
 		default:
 			return BBS_EINVAL;
 	}

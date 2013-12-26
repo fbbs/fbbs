@@ -25,32 +25,26 @@ struct web_ctx_t {
 	http_req_t req;
 	gcry_md_hd_t sha1;
 	bool inited;
-	http_response_t r;
+	http_response_t resp;
 };
 
 static struct web_ctx_t ctx = { .inited = false };
 
 /**
- * Get an environment variable.
- * The function searches environment list where FastCGI stores parameters
- * for a string that matches the string pointed by 'key'. The strings are
- * of the form key=value.
- * @param key The key.
- * @return a pointer to the value in the environment, or empty string if
- * there is no match
+ * 获取HTTP请求的环境变量.
+ * @param[in] key 键值
+ * @return 如果找到相应键值, 返回其内容, 否则返回空字符串.
  */
 static const char *_get_server_env(const char *key)
 {
-	char *s = getenv(key);
-	if (s)
-		return s;
-	return "";
+	const char *s = getenv(key);
+	return s ? s : "";
 }
 
 /**
- * Get decimal value of a hex char 'c'
- * @param c The hexadecimal character.
- * @return Converted decimal value, 0 on error.
+ * 将十六进制字符转换成十进制.
+ * @param[in] c 十六进制字符
+ * @return 相应的十进制数字, 出错返回0.
  */
 static int _hex2dec(int c)
 {
@@ -77,53 +71,53 @@ static int _hex2dec(int c)
 }
 
 /**
- * Decode an url string.
- * @param s The string to be decoded.
- * @return The converted string.
+ * 解码URL字符串.
+ * "+"转成空格, "%xx"转成相应字符
+ * @param[in,out] s 要解析的字符串
+ * @return 转换后的字符串
  */
 static char *_url_decode(char *s)
 {
-	int m, n;
-	for (m = 0, n = 0; s[m]; ++m, ++n) {
-		if (s[m] == '+') {
-			s[n] = ' ';
-		} else if (s[m] == '%') {
-			if (s[m + 1] && s[m + 2]) {
-				s[n] = _hex2dec(s[m + 1]) * 16 + _hex2dec(s[m + 2]);
-				m += 2;
+	char *f = s, *t = s;
+	for (; *f; ++f, ++t) {
+		if (*f == '+') {
+			*t = ' ';
+		} else if (*f == '%') {
+			if (f[1] && f[2]) {
+				*t = _hex2dec(f[1]) * 16 + _hex2dec(f[2]);
+				f += 2;
 				continue;
 			} else {
-				s[n] = '\0';
+				*t = '\0';
 				return s;
 			}
 		} else {
-			s[n] = s[m];
+			*t = *f;
 		}
 	}
-	s[n] = '\0';
+	*t = '\0';
 	return s;
 }
 
 /**
- * Parse a 'key=value' pair and put it into request struct.
- * @param r The http request.
- * @param begin The string.
- * @param len Length of the string.
- * @return 0 on success, -1 on error.
+ * 解析形如"key=value"的字符串
+ * @param[out] req HTTP请求结构
+ * @param[in] str 字符串
+ * @param[in] len 字符串长度
+ * @return 成功返回0, 否则-1
  */
-static int _parse_param(http_req_t *r, const char *begin, size_t len)
+static int _parse_param(http_req_t *req, const char *str, size_t len)
 {
-	if (len == 0)
+	if (!len)
 		return 0;
 
-	char *s = pool_alloc(ctx.p, len + 1);
-	if (!s)
+	char *ptr = pool_alloc(ctx.p, len + 1);
+	if (!ptr)
 		return -1;
 
-	strlcpy(s, begin, len + 1);
-	s[len] = '\0';
+	strlcpy(ptr, str, len + 1);
 
-	char *key = s, *val = strchr(s, '=');
+	char *key = ptr, *val = strchr(ptr, '=');
 	if (val) {
 		*val++ = '\0';
 		_url_decode(val);
@@ -131,53 +125,53 @@ static int _parse_param(http_req_t *r, const char *begin, size_t len)
 		val = "";
 	}
 
-	r->params[r->count].key = trim(key);
-	r->params[r->count].val = val;
-	++r->count;
+	req->params[req->count].key = trim(key);
+	req->params[req->count].val = val;
+	++req->count;
 	return 0;
 }
 
 /**
- * Parse 'key=value' pairs and put them into request struct.
- * @param r The http request.
- * @param buf Value buffer.
- * @param delim Delimiter.
- * @return 0 on success, -1 on error.
+ * 解析形如"k1=v1&k2=v2"(或其他分隔符)的字符串
+ * @param[out] req HTTP请求结构
+ * @param[in] str 字符串
+ * @param delim 键值对之间的分隔符
+ * @return 成功返回0, 否则-1
  */
-static int _parse_params(http_req_t *r, const char *buf, int delim)
+static int _parse_params(http_req_t *req, const char *str, int delim)
 {
-	const char *ptr = strchr(buf, delim), *last = buf;
+	const char *ptr = strchr(str, delim), *last = str;
 	while (ptr) {
-		if (_parse_param(r, last, ptr - last) != 0)
+		if (_parse_param(req, last, ptr - last) != 0)
 			return -1;
 		last = ptr + 1;
 		ptr = strchr(last, delim);
 	}
-	if (_parse_param(r, last, strlen(last)) < 0)
+	if (_parse_param(req, last, strlen(last)) < 0)
 		return -1;
 	return 0;
 }
 
 /**
- * Parse GET parameters and cookies.
- * @param r The http request.
- * @return 0 on success, -1 on error.
+ * 解析HTTP请求中的GET参数和cookie
+ * @param[out] req HTTP请求结构
+ * @return 成功返回0, 否则-1
  */
-static int _parse_http_req(http_req_t *r)
+static int _parse_http_req(http_req_t *req)
 {
-	if (_parse_params(r, _get_server_env("QUERY_STRING"), '&') < 0)
+	if (_parse_params(req, _get_server_env("QUERY_STRING"), '&') < 0)
 		return -1;
-	if (_parse_params(r, _get_server_env("HTTP_COOKIE"), ';') < 0)
+	if (_parse_params(req, _get_server_env("HTTP_COOKIE"), ';') < 0)
 		return -1;
 	return 0;
 }
 
 /**
- * Get a parameter value.
- * @param key The name of the parameter.
- * @return the value corresponding to 'key', an empty string if not found.
+ * 获取请求参数
+ * @param[in] key 参数名
+ * @return 对应的值, 找不到则返回空字符串
  */
-const char *get_param(const char *key)
+const char *web_get_param(const char *key)
 {
 	http_req_t *r = &ctx.req;
 	for (int i = 0; i < r->count; ++i) {
@@ -187,17 +181,17 @@ const char *get_param(const char *key)
 	return "";
 }
 
-const pair_t *get_param_pair(int idx)
+const pair_t *web_get_param_pair(int idx)
 {
 	if (idx >= 0 && idx < ctx.req.count)
 		return ctx.req.params + idx;
 	return NULL;
 }
 
-struct _option_pairs {
+typedef struct {
 	const char *param;
 	int flag;
-};
+} option_pairs_t;
 
 static bool ends_with(const char *s, const char *pattern)
 {
@@ -211,38 +205,45 @@ static bool ends_with(const char *s, const char *pattern)
 
 static void get_global_options(void)
 {
-	struct _option_pairs pairs[] = {
-		{ "api", REQUEST_API },
-		{ "new", REQUEST_PARSED },
-		{ "mob", REQUEST_MOBILE },
-		{ "utf8", REQUEST_UTF8 }
+	option_pairs_t pairs[] = {
+		{ "api", WEB_REQUEST_API },
+		{ "new", WEB_REQUEST_PARSED },
+		{ "mob", WEB_REQUEST_MOBILE },
+		{ "utf8", WEB_REQUEST_UTF8 },
 	};
 
 	ctx.req.flag = 0;
-	for (int i = 0; i < sizeof(pairs) / sizeof(pairs[0]); ++i) {
-		if (*get_param(pairs[i].param) == '1')
+	for (int i = 0; i < ARRAY_SIZE(pairs); ++i) {
+		if (*web_get_param(pairs[i].param) == '1')
 			ctx.req.flag |= pairs[i].flag;
 	}
 
 	const char *name = getenv("SCRIPT_NAME");
 	if (name) {
 		if (ends_with(name, ".xml"))
-			ctx.req.flag |= REQUEST_XML | REQUEST_API | REQUEST_UTF8;
+			ctx.req.flag |= WEB_REQUEST_XML | WEB_REQUEST_API;
 		if (ends_with(name, ".json"))
-			ctx.req.flag |= REQUEST_JSON | REQUEST_API | REQUEST_UTF8;
+			ctx.req.flag |= WEB_REQUEST_JSON | WEB_REQUEST_API;
 	}
+	if (ctx.req.flag & WEB_REQUEST_API)
+		ctx.req.flag |= WEB_REQUEST_UTF8;
 
 	const char *xhr_header = getenv("HTTP_X_REQUESTED_WITH");
 	if (xhr_header && streq(xhr_header, "XMLHttpRequest"))
-		ctx.req.flag |= REQUEST_XHR;
+		ctx.req.flag |= WEB_REQUEST_XHR;
+}
+
+bool _web_request_type(web_request_type_e type)
+{
+	return ctx.req.flag & type;
 }
 
 /**
- * Get an http request.
- * The GET request and cookies are parsed into key=value pairs.
- * @return True on success, false on error.
+ * 解析HTTP请求
+ * 解析GET参数和cookie.
+ * @return 成功true, 否则false
  */
-static bool get_web_request(void)
+static bool parse_web_request(void)
 {
 	ctx.req.count = 0;
 	if (_parse_http_req(&ctx.req) != 0)
@@ -253,11 +254,6 @@ static bool get_web_request(void)
 	get_global_options();
 
 	return true;
-}
-
-bool request_type(int type)
-{
-	return ctx.req.flag & type;
 }
 
 /**
@@ -300,6 +296,10 @@ static int initialize_gcrypt(void)
 	return 0;
 }
 
+/**
+ * 初始化web环境
+ * @return 成功true, 否则false
+ */
 bool web_ctx_init(void)
 {
 	if (!ctx.inited) {
@@ -310,10 +310,10 @@ bool web_ctx_init(void)
 	}
 
 	ctx.p = pool_create(0);
-	ctx.r.doc = xml_new_doc();
-	ctx.r.type = RESPONSE_DEFAULT;
+	ctx.resp.doc = xml_new_doc();
+	ctx.resp.type = RESPONSE_DEFAULT;
 
-	return get_web_request();
+	return parse_web_request();
 }
 
 void web_ctx_destroy(void)
@@ -337,7 +337,7 @@ void html_header(void)
  */
 void xml_header(const char *xslfile)
 {
-	const char *charset = request_type(REQUEST_UTF8) ? "utf-8" : CHARSET;
+	const char *charset = web_request_type(UTF8) ? "utf-8" : CHARSET;
 	const char *xsl = xslfile ? xslfile : "bbs";
 	printf("Content-type: text/xml; charset=%s\n\n"
 			"<?xml version=\"1.0\" encoding=\"%s\"?>\n"
@@ -400,22 +400,22 @@ char *pstrdup(const char *s)
 
 void set_response_type(int type)
 {
-	ctx.r.type = type;
+	ctx.resp.type = type;
 }
 
 xml_node_t *set_response_root(const char *name, int type, int encoding)
 {
 	xml_node_t *node = xml_new_node(name, type);
-	xml_set_doc_root(ctx.r.doc, node);
-	xml_set_encoding(ctx.r.doc, encoding);
+	xml_set_doc_root(ctx.resp.doc, node);
+	xml_set_encoding(ctx.resp.doc, encoding);
 	return node;
 }
 
 static int response_type(void)
 {
-	int type = ctx.r.type;
+	int type = ctx.resp.type;
 	if (type == RESPONSE_DEFAULT) {
-		if (request_type(REQUEST_JSON))
+		if (web_request_type(JSON))
 			return RESPONSE_JSON;
 		return RESPONSE_XML;
 	}
@@ -441,7 +441,7 @@ void respond(int code)
 	printf("Content-type: %s;  charset=utf-8\n"
 			"Status: %d\n\n", content_type(type), code);
 
-	xml_dump(ctx.r.doc, type == RESPONSE_JSON ? XML_AS_JSON : XML_AS_XML);
+	xml_dump(ctx.resp.doc, type == RESPONSE_JSON ? XML_AS_JSON : XML_AS_XML);
 	FCGI_Finish();
 }
 

@@ -18,14 +18,14 @@ enum {
 };
 
 typedef enum {
-	REQUEST_API = 1,
-	REQUEST_PARSED = 1 << 1,
-	REQUEST_MOBILE = 1 << 2,
-	REQUEST_UTF8 = 1 << 3,
-	REQUEST_XML = 1 << 4,
-	REQUEST_JSON = 1 << 5,
-	REQUEST_XHR = 1 << 6,
-} request_type_e;
+	WEB_REQUEST_API = 1,
+	WEB_REQUEST_PARSED = 1 << 1,
+	WEB_REQUEST_MOBILE = 1 << 2,
+	WEB_REQUEST_UTF8 = 1 << 3,
+	WEB_REQUEST_XML = 1 << 4,
+	WEB_REQUEST_JSON = 1 << 5,
+	WEB_REQUEST_XHR = 1 << 6,
+} web_request_type_e;
 
 typedef enum {
 	HTTP_OK = 200,
@@ -63,10 +63,12 @@ typedef struct pair_t {
 extern bool web_ctx_init(void);
 extern void web_ctx_destroy(void);
 
-extern const char *get_param(const char *name);
-extern const pair_t *get_param_pair(int idx);
+extern const char *web_get_param(const char *name);
+extern const pair_t *web_get_param_pair(int idx);
 extern int parse_post_data(void);
-extern bool request_type(int type);
+
+extern bool _web_request_type(web_request_type_e type);
+#define web_request_type(type)  _web_request_type(WEB_REQUEST_##type)
 
 extern void html_header(void);
 extern void xml_header(const char *xslfile);

@@ -141,7 +141,7 @@ int bbspreupload_main(void)
 		return BBS_ELGNREQ;
 
 	board_t board;
-	if (!get_board(get_param("board"), &board)
+	if (!get_board(web_get_param("board"), &board)
 			|| !has_post_perm(&board))
 		return BBS_EPST;
 
@@ -161,9 +161,9 @@ int bbsupload_main(void)
 		return BBS_ELGNREQ;
 
 	board_t board;
-	const char *bid = get_param("bid");
+	const char *bid = web_get_param("bid");
 	if (*bid == '\0')
-		get_board(get_param("b"), &board);
+		get_board(web_get_param("b"), &board);
 	else
 		get_board_by_bid(strtol(bid, NULL, 10), &board);
 

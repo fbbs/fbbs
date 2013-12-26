@@ -16,7 +16,7 @@
 static char *check_info(void)
 {
 	unsigned char *nick;
-	nick = (unsigned char *)get_param("nick");
+	nick = (unsigned char *)web_get_param("nick");
 	unsigned char *t2 = nick;
 	while (*t2 != '\0') {
 		if (*t2 < 0x20 || *t2 == 0xFF)
@@ -27,7 +27,7 @@ static char *check_info(void)
 	strlcpy(currentuser.username, (char *)nick, sizeof(currentuser.username));
 
 	// TODO: more accurate birthday check.
-	const char *tmp = get_param("year");
+	const char *tmp = web_get_param("year");
 	long num = strtol(tmp, NULL, 10);
 	if (num < 1910 || num > 1998)
 		//% return "错误的出生年份";
@@ -35,7 +35,7 @@ static char *check_info(void)
 	else
 		currentuser.birthyear = num - 1900;
 
-	tmp = get_param("month");
+	tmp = web_get_param("month");
 	num = strtol(tmp, NULL, 10);
 	if (num <= 0 || num > 12)
 		//% return "错误的出生月份";
@@ -43,7 +43,7 @@ static char *check_info(void)
 	else
 		currentuser.birthmonth = num;
 
-	tmp = get_param("day");
+	tmp = web_get_param("day");
 	num = strtol(tmp, NULL, 10);
 	if (num <= 0 || num > 31)
 		//% return "错误的出生日期";
@@ -51,7 +51,7 @@ static char *check_info(void)
 	else
 		currentuser.birthday = num;
 
-	tmp = get_param("gender");
+	tmp = web_get_param("gender");
 	if (*tmp == 'M')
 		currentuser.gender = 'M';
 	else
@@ -66,7 +66,7 @@ int bbsinfo_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 	parse_post_data();
-	const char *type = get_param("type");
+	const char *type = web_get_param("type");
 	xml_header(NULL);
 	if (*type != '\0') {
 		printf("<bbsinfo>");
@@ -112,7 +112,7 @@ int bbspwd_main(void)
 	parse_post_data();
 	xml_header(NULL);
 	printf("<bbspwd ");
-	const char *pw1 = get_param("pw1");
+	const char *pw1 = web_get_param("pw1");
 	if (*pw1 == '\0') {
 		printf(" i='i'>");
 		print_session();
@@ -120,8 +120,8 @@ int bbspwd_main(void)
 		return 0;
 	}
 	printf(">");
-	const char *pw2 = get_param("pw2");
-	const char *pw3 = get_param("pw3");
+	const char *pw2 = web_get_param("pw2");
+	const char *pw3 = web_get_param("pw3");
 	switch (set_password(pw1, pw2, pw3)) {
 		case BBS_EWPSWD:
 			//% printf("密码错误");
@@ -183,7 +183,7 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 	char buf[HOMELEN];
 	sethomefile(buf, currentuser.userid, file);
 	parse_post_data();
-	const char *text = get_param("text");
+	const char *text = web_get_param("text");
 	if (*text != '\0') {
 		int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd < 0)
@@ -252,7 +252,7 @@ static int show_sessions(const char *uname)
 
 		char buf[32];
 		const char *descr = session_status_descr(status);
-		if (request_type(REQUEST_UTF8))
+		if (web_request_type(UTF8))
 			convert_g2u(descr, buf);
 		else
 			strlcpy(buf, descr, sizeof(buf));
@@ -286,7 +286,7 @@ static const char *perf_string(int perf)
 {
 	static UTF8_BUFFER(str, 4);
 	const char *gbk_perf = cperf(perf);
-	if (request_type(REQUEST_UTF8)) {
+	if (web_request_type(UTF8)) {
 		convert_g2u(gbk_perf, utf8_str);
 		return utf8_str;
 	}
@@ -297,7 +297,7 @@ static const char *horoscope_string(const struct userec *user)
 {
 	static UTF8_BUFFER(horo, 3);
 	const char *gbk_horo = horoscope(user->birthmonth, user->birthday);
-	if (request_type(REQUEST_UTF8)) {
+	if (web_request_type(UTF8)) {
 		convert_g2u(gbk_horo, utf8_horo);
 		return utf8_horo;
 	}
@@ -307,7 +307,7 @@ static const char *horoscope_string(const struct userec *user)
 int bbsqry_main(void)
 {
 	char userid[IDLEN + 1];
-	strlcpy(userid, get_param("u"), sizeof(userid));
+	strlcpy(userid, web_get_param("u"), sizeof(userid));
 	if (!session_id())
 		return BBS_ELGNREQ;
 	struct userec user;

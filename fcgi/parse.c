@@ -126,7 +126,7 @@ static int xml_escape_helper(const char *s, size_t len, void *arg)
 
 static void _xml_escape(const char *begin, const char *end)
 {
-	if (request_type(REQUEST_UTF8))
+	if (web_request_type(UTF8))
 		xml_escape_helper(begin, end - begin, NULL);
 	else
 		convert(env_u2g, begin, end - begin, NULL, 0, xml_escape_helper, NULL);
@@ -251,7 +251,7 @@ static const char *_print_header(const char *begin, size_t size)
 	printf("</title>");
 
 	printf("<date>%s</date>", format_time(date,
-				request_type(REQUEST_UTF8)
+				web_request_type(UTF8)
 				? TIME_FORMAT_UTF8_ZH : TIME_FORMAT_ZH));
 
 	return line.end;

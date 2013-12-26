@@ -119,19 +119,19 @@ int fcgi_reg(void)
 {
 	parse_post_data();
 	reg_req_t request = {
-		.id = get_param("id"),
-		.pw = get_param("pw"),
-		.pw2 = get_param("pw2"),
-		.mail = get_param("mail"),
-		.domain = get_param("domain"),
-		.nick = get_param("nick"),
-		.gender = get_param("gender"),
-		.name = get_param("name"),
-		.tel = get_param("tel"),
-		.agree = get_param("agree"),
-		.year = strtol(get_param("byear"), NULL, 10),
-		.month = strtol(get_param("bmon"), NULL, 10),
-		.day = strtol(get_param("bday"), NULL, 10)
+		.id = web_get_param("id"),
+		.pw = web_get_param("pw"),
+		.pw2 = web_get_param("pw2"),
+		.mail = web_get_param("mail"),
+		.domain = web_get_param("domain"),
+		.nick = web_get_param("nick"),
+		.gender = web_get_param("gender"),
+		.name = web_get_param("name"),
+		.tel = web_get_param("tel"),
+		.agree = web_get_param("agree"),
+		.year = strtol(web_get_param("byear"), NULL, 10),
+		.month = strtol(web_get_param("bmon"), NULL, 10),
+		.day = strtol(web_get_param("bday"), NULL, 10)
 	};
 
 	const char *error = _reg(&request);
@@ -147,8 +147,8 @@ int fcgi_reg(void)
 
 int fcgi_activate(void)
 {
-	const char *code = get_param("code");
-	const char *user = get_param("user");
+	const char *code = web_get_param("code");
+	const char *user = web_get_param("user");
 	xml_header(NULL);
 	printf("<bbsactivate success='%d'>", register_activate_email(user, code));
 	print_session();
@@ -158,7 +158,7 @@ int fcgi_activate(void)
 
 int fcgi_exist(void)
 {
-	const char *user = get_param("user");
+	const char *user = web_get_param("user");
 	xml_header(NULL);
 	printf("<bbsexist>%d</bbsexist>", searchuser(user) != 0);
 	return 0;

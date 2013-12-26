@@ -80,7 +80,7 @@ static void grant_permission(struct userec *user)
 
 static const char *get_login_referer(void)
 {
-	const char *next = get_param("next");
+	const char *next = web_get_param("next");
 	if (*next != '\0' && !strchr(next, '.'))
 		return next;
 	const char *referer = get_referer();
@@ -117,7 +117,7 @@ static void expire_cookie(const char *name)
 
 static int login_redirect(const char *key, int max_age)
 {
-	const char *referer = get_param("ref");
+	const char *referer = web_get_param("ref");
 	if (*referer == '\0')
 		referer = LOGIN_HOMEPAGE;
 
@@ -132,7 +132,7 @@ static int login_redirect(const char *key, int max_age)
 
 int do_web_login(const char *uname, const char *pw)
 {
-	bool api = request_type(REQUEST_API);
+	bool api = web_request_type(API);
 
 	struct userec user;
 	if (getuserec(uname, &user) == 0)
@@ -180,7 +180,7 @@ extern void set_web_session_cache(user_id_t uid, const char *key,
 
 int web_login(void)
 {
-	bool api = request_type(REQUEST_API);
+	bool api = web_request_type(API);
 	if (api) {
 		if (session_id())
 			return error_msg(ERROR_NONE);
@@ -194,16 +194,16 @@ int web_login(void)
 	if (parse_post_data() < 0)
 		return api ? error_msg(ERROR_BAD_REQUEST) : BBS_EINVAL;
 
-	const char *uname = get_param("id");
+	const char *uname = web_get_param("id");
 	if (*uname == '\0' || strcaseeq(uname, "guest"))
 		return redirect_homepage();
 
 	char pw[PASSLEN];
-	strlcpy(pw, get_param("pw"), sizeof(pw));
+	strlcpy(pw, web_get_param("pw"), sizeof(pw));
 
 	int ret = do_web_login(uname, pw);
 	if (ret == 0) {
-		bool persistent = *get_param("persistent");
+		bool persistent = *web_get_param("persistent");
 		int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
 
 		char key[SESSION_KEY_LEN + 1];

@@ -34,8 +34,8 @@ int bbsfadd_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	const char *uname = get_param("id");
-	const char *note = get_param("desc");
+	const char *uname = web_get_param("id");
+	const char *note = web_get_param("desc");
 
 	if (*uname) {
 		UTF8_BUFFER(note, FOLLOW_NOTE_CCHARS);
@@ -58,7 +58,7 @@ int bbsfdel_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	const char *uname = get_param("u");
+	const char *uname = web_get_param("u");
 	if (*uname) {
 		user_id_t uid = get_user_id(uname);
 		if (uid > 0)

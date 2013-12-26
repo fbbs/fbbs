@@ -37,7 +37,7 @@ const char *get_post_list_type_string(void)
 		case POST_LIST_TOPIC:
 			return "t";
 		case POST_LIST_FORUM:
-			return request_type(REQUEST_MOBILE) ? "" : "f";
+			return web_request_type(MOBILE) ? "" : "f";
 		default:
 			return "";
 	}
@@ -50,7 +50,7 @@ static void print_post(const post_info_t *pi, bool sticky)
 			sticky ? "sticky='1' " : "",
 			(pi->flag & POST_FLAG_LOCKED) ? "" : "nore='1' ",
 			mark, pi->owner, format_time(pi->stamp, TIME_FORMAT_XML), pi->id);
-	if (request_type(REQUEST_UTF8)) {
+	if (web_request_type(UTF8)) {
 		xml_fputs(pi->utf8_title);
 	} else {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -162,11 +162,11 @@ static void print_sticky_posts(int bid, post_list_type_e type,
 
 bool get_board_by_param(board_t *bp)
 {
-	int bid = strtol(get_param("bid"), NULL, 10);
+	int bid = strtol(web_get_param("bid"), NULL, 10);
 	if (bid > 0 && get_board_by_bid(bid, bp) > 0)
 		return has_read_perm(bp);
 
-	const char *bname = get_param("board");
+	const char *bname = web_get_param("board");
 	if (bname && *bname)
 		return get_board(bname, bp) && has_read_perm(bp);
 	return false;
@@ -181,8 +181,8 @@ static int bbsdoc(post_list_type_e type)
 		return web_sector();
 	session_set_board(board.id);
 
-	int start = strtoll(get_param("start"), NULL, 10);
-	int page = strtol(get_param("my_t_lines"), NULL, 10);
+	int start = strtoll(web_get_param("start"), NULL, 10);
+	int page = strtol(web_get_param("my_t_lines"), NULL, 10);
 	if (page < TLINES || page > 40)
 		page = TLINES;
 
@@ -219,7 +219,7 @@ static int bbsdoc(post_list_type_e type)
 	else if (type == POST_LIST_TOPIC)
 		cgi_name = "t";
 
-	if (!request_type(REQUEST_UTF8))
+	if (!web_request_type(UTF8))
 		board_to_gbk(&board);
 	printf("<brd title='%s' desc='%s' bm='%s' total='%d' start='%d' "
 			"bid='%d' page='%d' link='%s'", board.name, board.descr, board.bms,
@@ -305,16 +305,16 @@ int bbsbfind_main(void)
 	post_index_record_open(&pir);
 
 	web_post_filter_t wpf = {
-		.marked = strcaseeq(get_param("mark"), "on"),
-		.digest = strcaseeq(get_param("nore"), "on"),
+		.marked = strcaseeq(web_get_param("mark"), "on"),
+		.digest = strcaseeq(web_get_param("nore"), "on"),
 	};
 
-	const char *uname = get_param("user");
+	const char *uname = web_get_param("user");
 	user_id_t uid = get_user_id(uname);
 	if (uid)
 		wpf.uid = uid;
 
-	long day = strtol(get_param("limit"), NULL, 10);
+	long day = strtol(web_get_param("limit"), NULL, 10);
 	if (day < 0)
 		day = 0;
 	wpf.begin = time(NULL) - 24 * 60 * 60 * day;
@@ -323,7 +323,7 @@ int bbsbfind_main(void)
 	char *fields[] = { wpf.utf8_t1, wpf.utf8_t2, wpf.utf8_t3 };
 	int count = 0;
 	for (int i = 0; i < ARRAY_SIZE(names); ++i) {
-		const char *s = get_param(names[i]);
+		const char *s = web_get_param(names[i]);
 		if (s && *s) {
 			++count;
 			GBK_BUFFER(buf, POST_TITLE_CCHARS);
@@ -493,7 +493,7 @@ int web_forum(void)
 	brc_initialize(currentuser.userid, board.name);
 
 	int count = TOPICS_PER_PAGE;
-	int end = strtoll(get_param("start"), NULL, 10);
+	int end = strtoll(web_get_param("start"), NULL, 10);
 
 	post_thread_stat_t *pts = NULL;
 	int threads = prepare_threads(board.id, &pts);
@@ -581,10 +581,10 @@ int api_board_toc(void)
 	session_set_board(board.id);
 	brc_initialize(currentuser.userid, board.name);
 
-	bool asc = streq(get_param("page"), "next");
-	post_id_t start = strtoll(get_param("start"), NULL, 10);
+	bool asc = streq(web_get_param("page"), "next");
+	post_id_t start = strtoll(web_get_param("start"), NULL, 10);
 
-	int limit = strtol(get_param("limit"), NULL, 10);
+	int limit = strtol(web_get_param("limit"), NULL, 10);
 	if (limit > API_BOARD_TOC_LIMIT_MAX)
 		limit = API_BOARD_TOC_LIMIT_MAX;
 	if (limit < 0)
@@ -592,7 +592,7 @@ int api_board_toc(void)
 	if (!limit)
 		limit = API_BOARD_TOC_LIMIT_DEFAULT;
 
-	int flag = *get_param("flag");
+	int flag = *web_get_param("flag");
 
 	xml_node_t *root = set_response_root("bbs-board-toc",
 			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
@@ -701,7 +701,7 @@ int bbstop10_main(void)
 		while (fread(&topic, sizeof(topic), 1, fp) == 1) {
 			printf("<top board='%s' owner='%s' count='%u' gid='%"PRIdPID"'>",
 					topic.bname, topic.owner, topic.count, topic.tid);
-			if (request_type(REQUEST_UTF8)) {
+			if (web_request_type(UTF8)) {
 				xml_fputs(topic.utf8_title);
 			} else {
 				GBK_BUFFER(title, POST_TITLE_CCHARS);
