@@ -12,8 +12,8 @@ fi
 JS_ROOT=js
 CSS_ROOT=css
 TPL_ROOT=tpl
-JS_COMP=./build/closure-compiler/compiler.jar
-CSS_COMP=./build/yuicompressor/yuicompressor.jar
+JS_COMP=/home/build/closure-compiler/compiler.jar
+CSS_COMP=/home/build/yuicompressor/yuicompressor.jar
 TPL_COMP=
 SMASHER_FILE=./smasher/smasher.xml
 TMP_DIRS="$TMP_DIR $TMP_DIR/$JS_ROOT $TMP_DIR/$CSS_ROOT $TMP_DIR/$TPL_ROOT"
