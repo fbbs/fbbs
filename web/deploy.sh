@@ -51,7 +51,7 @@ do
 		JS_FILES=
 		CSS_FILES=
 		TPL_FILES=
-		echo "INFO: Group $GROUP start!"
+		echo "INFO: Group $GROUP start"
 	fi
 	NAME=
 	TYPE=
@@ -61,7 +61,7 @@ do
 		TYPE=${TYPE%%\"*}
 		NAME=${LINE#* src=\"}
 		NAME=${NAME%%\"*}
-		echo "INFO: File type $TYPE name $NAME!"
+		echo "INFO: File type $TYPE name $NAME"
 		case "$TYPE" in
 			"js" )
 				JS_FILES=${JS_FILES}" "${NAME}
@@ -80,7 +80,7 @@ do
 		TYPE=${TYPE%%\"*}
 		NAME=${LINE#* src=\"}
 		NAME=${NAME%%\"*}
-		echo "INFO: Dir type $TYPE name $NAME!"
+		echo "INFO: Dir type $TYPE name $NAME start"
 		case "$TYPE" in
 			"js" )
 				if [ -d $NAME ]
@@ -90,7 +90,7 @@ do
 						if [ -f ${NAME}${FILE} ]
 						then
 							JS_FILES=${JS_FILES}" "${NAME}${FILE}
-							echo "INFO: File $FILE!"
+							echo "INFO: File $FILE"
 						fi
 					done
 				fi
@@ -103,7 +103,7 @@ do
 						if [ -f ${NAME}${FILE} ]
 						then
 							CSS_FILES=${CSS_FILES}" "${NAME}${FILE}
-							echo "INFO: File $FILE!"
+							echo "INFO: File $FILE"
 						fi
 					done
 				fi
@@ -116,33 +116,37 @@ do
 						if [ -f ${NAME}${FILE} ]
 						then
 							TPL_FILES=${TPL_FILES}" "${NAME}${FILE}
-							echo "INFO: File $FILE!"
+							echo "INFO: File $FILE"
 						fi
 					done
 				fi
 			;;
 		esac
+		echo "INFO: Dir type $TYPE name $NAME end"
 	fi
 	if echo $LINE | grep "</group>" > /dev/null
 	then
-		echo "INFO: Group $GROUP end!"
-		echo "INFO: Compile group $GROUP start!"
+		echo "INFO: Group $GROUP end"
+		echo "INFO: Compile group $GROUP start"
 		if [ "$JS_FILES" ]
 		then
+			echo "INFO: Compiler params js $JS_FILES"
 			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8
 		fi
 		if [ "$CSS_FILES" ]
 		then
 			for CSS in $CSS_FILES
 			do
+				echo "INFO: Compiler params css $CSS_FILES"
 				java -jar $CSS_COMP --type css --charset utf-8 -v $CSS >> $TMP_DIR/$CSS_ROOT/$GROUP.css
 			done
 		fi
 		if [ "$TPL_FILES" ]
 		then
+			echo "INFO: Compiler params tpl $TPL_FILES"
 			cat $TPL_FILES | sed 's/^\s\s*//g' | sed 's/\s\s*$//g' > $TMP_DIR/$TPL_ROOT/$GROUP.html
 		fi
-		echo "INFO: Compile group $GROUP end!"
+		echo "INFO: Compile group $GROUP end"
 	fi
 done
 
@@ -151,7 +155,7 @@ do
 	if [ -f $JS_ROOT/$JS ]
 	then
 		java -jar $JS_COMP --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8
-		echo "INFO: Compile js $JS!"
+		echo "INFO: Compile js $JS"
 	fi
 done
 
@@ -160,7 +164,7 @@ do
 	if [ -f $CSS_ROOT/$CSS ]
 	then
 		java -jar $CSS_COMP --type css --charset utf-8 -v $CSS_ROOT/$CSS > $TMP_DIR/$CSS_ROOT/$CSS
-		echo "INFO: Compile css $CSS!"
+		echo "INFO: Compile css $CSS"
 	fi
 done
 
