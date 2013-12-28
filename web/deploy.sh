@@ -137,7 +137,7 @@ do
 		then
 			for CSS in $CSS_FILES
 			do
-				echo "INFO: Compiler params css $CSS_FILES"
+				echo "INFO: Compiler params css $CSS"
 				java -jar $CSS_COMP --type css --charset utf-8 -v $CSS >> $TMP_DIR/$CSS_ROOT/$GROUP.css
 			done
 		fi
