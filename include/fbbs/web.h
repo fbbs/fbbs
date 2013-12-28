@@ -76,6 +76,7 @@ extern int parse_post_data(void);
 
 extern bool _web_request_type(web_request_type_e type);
 #define web_request_type(type)  _web_request_type(WEB_REQUEST_##type)
+extern web_request_method_e web_request_method(void);
 
 extern void html_header(void);
 extern void xml_header(const char *xslfile);

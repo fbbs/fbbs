@@ -66,7 +66,8 @@ bool session_validate(void)
 
 	const char *uname = web_get_param(COOKIE_USER);
 	const char *key = web_get_param(COOKIE_KEY);
-	if (web_request_type(API)) {
+	if (web_request_type(API)
+			&& web_request_method() != WEB_REQUEST_METHOD_GET) {
 		const char *token = web_get_param("token");
 		if (!streq(token, key))
 			return false;

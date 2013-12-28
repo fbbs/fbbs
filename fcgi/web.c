@@ -272,6 +272,11 @@ static bool parse_web_request(void)
 	return true;
 }
 
+web_request_method_e web_request_method(void)
+{
+	return ctx.req.method;
+}
+
 /**
  * Parse parameters submitted by POST method.
  * @return 0 on success, -1 on error.
