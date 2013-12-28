@@ -4,13 +4,13 @@
 
     <group id="common">
         <file type="js" src="js/base/jquery.js" />
+        <file type="js" src="js/base/jquery-migrate-1.2.1.js" />
         <dir type="js" src="js/plugins/" />
         <file type="js" src="js/base/underscore.js" />
         <file type="js" src="js/base/underscore.string.js" />
         <file type="js" src="js/base/base.js" />
         <file type="js" src="js/base/mediator.js" />
         <file type="js" src="js/base/tpl.js" />
-        <file type="js" src="js/base/json3.js" />
         <file type="js" src="js/f/f.js" />
         <file type="js" src="js/f/config.js" />
         <file type="js" src="js/f/class.js" />
@@ -23,7 +23,6 @@
         <file type="css" src="css/base/foundation.css" />
         <file type="css" src="css/base/f.css" />
         <dir type="css" src="css/ui/" />
-        <dir type="css" src="css/" />
     </group>
 
     <group id="tpl">
