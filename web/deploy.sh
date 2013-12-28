@@ -130,8 +130,11 @@ do
 		echo "INFO: Compile group $GROUP start"
 		if [ "$JS_FILES" ]
 		then
-			echo "INFO: Compiler params js $JS_FILES"
-			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8
+			for JS in $JS_FILES
+			do
+				echo "INFO: Compiler params js $JS"
+				java -jar $JS_COMP --js $JS --charset=utf-8 >> $TMP_DIR/$JS_ROOT/$GROUP.js
+			done
 		fi
 		if [ "$CSS_FILES" ]
 		then
