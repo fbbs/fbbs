@@ -272,9 +272,9 @@ static bool parse_web_request(void)
 	return true;
 }
 
-web_request_method_e web_request_method(void)
+bool _web_request_method(web_request_method_e method)
 {
-	return ctx.req.method;
+	return ctx.req.method == method;
 }
 
 /**
