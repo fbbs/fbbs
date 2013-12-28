@@ -17,7 +17,6 @@ CSS_COMP=/home/build/yuicompressor/yuicompressor.jar
 TPL_COMP=
 SMASHER_FILE=./smasher/smasher.xml
 TMP_DIRS="$TMP_DIR $TMP_DIR/$JS_ROOT $TMP_DIR/$CSS_ROOT $TMP_DIR/$TPL_ROOT"
-BUILD_DIRS="build build/js build/css"
 CLEAN_FILE="$DEPLOY_PATH/$TMP_DIR $DEPLOY_PATH/$JS_ROOT $DEPLOY_PATH/$CSS_ROOT $DEPLOY_PATH/$TPL_ROOT $DEPLOY_PATH/smasher $DEPLOY_PATH/build $DEPLOY_PATH/develop.php $DEPLOY_PATH/.htaccess $DEPLOY_PATH/deploy.sh"
 JS_FILES=
 CSS_FILES=
@@ -42,10 +41,6 @@ do
 done
 
 mkdir $TMP_DIRS
-mkdir $BUILD_DIRS
-
-cp $JS_COMP build/js/js.jar
-cp $CSS_COMP build/css/css.jar
 
 cat $SMASHER_FILE | while read LINE
 do
@@ -136,14 +131,14 @@ do
 		if [ "$JS_FILES" ]
 		then
 			echo "INFO: Compiler params js $JS_FILES"
-			java -jar build/js/js.jar --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8
+			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8
 		fi
 		if [ "$CSS_FILES" ]
 		then
 			for CSS in $CSS_FILES
 			do
 				echo "INFO: Compiler params css $CSS"
-				java -jar build/css/css.jar --type css --charset utf-8 -v $CSS >> $TMP_DIR/$CSS_ROOT/$GROUP.css
+				java -jar $CSS_COMP --type css --charset utf-8 -v $CSS >> $TMP_DIR/$CSS_ROOT/$GROUP.css
 			done
 		fi
 		if [ "$TPL_FILES" ]
@@ -159,7 +154,7 @@ for JS in `ls $JS_ROOT`
 do
 	if [ -f $JS_ROOT/$JS ]
 	then
-		java -jar build/js/js.jar --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8
+		java -jar $JS_COMP --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8
 		echo "INFO: Compile js $JS"
 	fi
 done
@@ -168,7 +163,7 @@ for CSS in `ls $CSS_ROOT`
 do
 	if [ -f $CSS_ROOT/$CSS ]
 	then
-		java -jar build/css/css.jar --type css --charset utf-8 -v $CSS_ROOT/$CSS > $TMP_DIR/$CSS_ROOT/$CSS
+		java -jar $CSS_COMP --type css --charset utf-8 -v $CSS_ROOT/$CSS > $TMP_DIR/$CSS_ROOT/$CSS
 		echo "INFO: Compile css $CSS"
 	fi
 done
@@ -180,7 +175,6 @@ cp -r css/decorator $DEPLOY_PATH/css
 find $DEPLOY_PATH -type d -name ".svn"|xargs rm -rf
 find $DEPLOY_PATH -type d -name ".git"|xargs rm -rf
 rm -rf $TMP_DIR
-rm -rf $BUILD_DIRS
 
 echo "BUILD SUCCESSFULLY!"
 
