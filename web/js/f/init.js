@@ -22,9 +22,9 @@
             $('.side-nav').sideNav({
                 zIndex: f.zIndex.ui--
             });
+            */
 
             $(document.body).loading();
-            */
 
             //history back click event handler
             $('.body').on('click', '.history-back', function () {
@@ -112,7 +112,7 @@
                 baseUri: f.config.systemConfig.baseUri,
                 defaultPage: f.config.systemConfig.defaultPage,
                 beforeClose: function () {
-                    //$(document.body).loading('show');
+                    $(document.body).loading('show');
                 },
                 onclose: function () {
                     if (f.bbsPage) {
@@ -128,9 +128,9 @@
                     var sideNav = $(':data(ui-sideNav)');
                     var menuNav = $(':data(ui-menuNav)');
 
-                    /*
                     $(document.body).loading('hide');
 
+                    /*
                     if (pageInfo.isShowSideNav) {
                         sideNav.sideNav({
                             isShow: 1

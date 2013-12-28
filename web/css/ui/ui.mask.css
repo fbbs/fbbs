@@ -1,0 +1,9 @@
+.body-masked select {
+    visibility: hidden;
+}
+
+.mask-layer {
+    background: #000;
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+}
