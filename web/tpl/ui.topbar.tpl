@@ -1,6 +1,7 @@
 <tpl id="ui.topbar.tpl">
 var menuList = f.config.menuList;
 var userInfo = f.config.userInfo;
+var pageInfo = f.config.pageInfo;
 <nav class="top-bar" data-topbar>
     <ul class="title-area">
         <li class="name">
@@ -13,7 +14,12 @@ var userInfo = f.config.userInfo;
     <section class="top-bar-section">
         <ul class="left">
             f.each(menuList.menus, function (menu) {
-                <li class="nav" data-menu-nav-id="#{menu.id}"><a class="menu-nav" href="#{menu.url}">#{menu.label}</a></li>
+                if (menu.id === pageInfo.pageName) {
+                    <li class="nav active" data-menu-nav-id="#{menu.id}"><a class="menu-nav" href="#{menu.url}">#{menu.label}</a></li>
+                }
+                else {
+                    <li class="nav" data-menu-nav-id="#{menu.id}"><a class="menu-nav" href="#{menu.url}">#{menu.label}</a></li>
+                }
             });
         </ul>
         <ul class="right">
