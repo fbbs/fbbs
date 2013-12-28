@@ -13,6 +13,7 @@ typedef struct http_req_t {
 	pair_t params[MAX_PARAMETERS];
 	int count;
 	int flag;
+	web_request_method_e method;
 } http_req_t;
 
 typedef struct http_response_t {
@@ -238,6 +239,20 @@ bool _web_request_type(web_request_type_e type)
 	return ctx.req.flag & type;
 }
 
+static web_request_method_e parse_request_method(void)
+{
+	const char *method = _get_server_env("REQUEST_METHOD");
+	if (streq(method, "GET"))
+		return WEB_REQUEST_METHOD_GET;
+	else if (streq(method, "POST"))
+		return WEB_REQUEST_METHOD_POST;
+	else if (streq(method, "PUT"))
+		return WEB_REQUEST_METHOD_PUT;
+	else if (streq(method, "DELETE"))
+		return WEB_REQUEST_METHOD_DELETE;
+	return WEB_REQUEST_METHOD_GET;
+}
+
 /**
  * 解析HTTP请求
  * 解析GET参数和cookie.
@@ -250,6 +265,7 @@ static bool parse_web_request(void)
 		return false;
 
 	ctx.req.from = _get_server_env("REMOTE_ADDR");
+	ctx.req.method = parse_request_method();
 
 	get_global_options();
 

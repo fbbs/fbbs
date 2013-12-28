@@ -28,6 +28,13 @@ typedef enum {
 } web_request_type_e;
 
 typedef enum {
+	WEB_REQUEST_METHOD_GET,
+	WEB_REQUEST_METHOD_POST,
+	WEB_REQUEST_METHOD_PUT,
+	WEB_REQUEST_METHOD_DELETE,
+} web_request_method_e;
+
+typedef enum {
 	HTTP_OK = 200,
 	HTTP_FOUND = 302,
 	HTTP_BAD_REQUEST = 400,
