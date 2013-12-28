@@ -8,7 +8,8 @@
  */
 f.namespace('f.config');
 
-f.config.bbsConfig = 'bbs/config';
+// 全局设置
+f.config.bbsConfig = 'bbs/config.json';
 
 /**
  * @namespace f.zIndex 全局z-index管理
