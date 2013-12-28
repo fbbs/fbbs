@@ -26,7 +26,7 @@ static int http_fatal2(int status, const char *prompt)
  */
 static int http_fatal(const char *prompt)
 {
-	return http_fatal2(HTTP_OK, prompt);
+	return http_fatal2(WEB_STATUS_OK, prompt);
 }
 
 /**
@@ -40,8 +40,8 @@ int check_bbserr(int err)
 		return 0;
 	switch (err) {
 		case BBS_EINVAL:
-			//% return http_fatal2(HTTP_BAD_REQUEST, "参数错误");
-			return http_fatal2(HTTP_BAD_REQUEST, "\xb2\xce\xca\xfd\xb4\xed\xce\xf3");
+			//% "参数错误"
+			return http_fatal2(WEB_STATUS_BAD_REQUEST, "\xb2\xce\xca\xfd\xb4\xed\xce\xf3");
 		case BBS_ELGNREQ:
 			//% return http_fatal("请先<a href='login'>登录</a>");
 			return http_fatal("\xc7\xeb\xcf\xc8<a href='login'>\xb5\xc7\xc2\xbc</a>");
@@ -103,8 +103,8 @@ int check_bbserr(int err)
 			//% return http_fatal("在线用户数已达上限");
 			return http_fatal("\xd4\xda\xcf\xdf\xd3\xc3\xbb\xa7\xca\xfd\xd2\xd1\xb4\xef\xc9\xcf\xcf\xde");
 		case BBS_EINTNL:
-			//% return http_fatal2(HTTP_INTERNAL_SERVER_ERROR, "内部错误");
-			return http_fatal2(HTTP_INTERNAL_SERVER_ERROR, "\xc4\xda\xb2\xbf\xb4\xed\xce\xf3");
+			//% "内部错误"
+			return http_fatal2(WEB_STATUS_INTERNAL_SERVER_ERROR, "\xc4\xda\xb2\xbf\xb4\xed\xce\xf3");
 		case BBS_ERMQE:
 			//% return http_fatal("对方信箱已满");
 			return http_fatal("\xb6\xd4\xb7\xbd\xd0\xc5\xcf\xe4\xd2\xd1\xc2\xfa");

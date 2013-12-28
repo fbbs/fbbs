@@ -35,25 +35,27 @@ typedef enum {
 } web_request_method_e;
 
 typedef enum {
-	HTTP_OK = 200,
-	HTTP_FOUND = 302,
-	HTTP_BAD_REQUEST = 400,
-	HTTP_UNAUTHORIZED = 401,
-	HTTP_FORBIDDEN = 403,
-	HTTP_NOT_FOUND = 404,
-	HTTP_INTERNAL_SERVER_ERROR = 500,
-	HTTP_SERVICE_UNAVAILABLE = 503,
-} http_status_code_e;
+	WEB_STATUS_OK = 200,
+	WEB_STATUS_FOUND = 302,
+	WEB_STATUS_BAD_REQUEST = 400,
+	WEB_STATUS_UNAUTHORIZED = 401,
+	WEB_STATUS_FORBIDDEN = 403,
+	WEB_STATUS_NOT_FOUND = 404,
+	WEB_STATUS_METHOD_NOT_ALLOWED = 405,
+	WEB_STATUS_INTERNAL_SERVER_ERROR = 500,
+	WEB_STATUS_SERVICE_UNAVAILABLE = 503,
+} web_status_code_e;
 
 typedef enum {
-	ERROR_NONE = 1,
-	ERROR_INCORRECT_PASSWORD,
-	ERROR_USER_SUSPENDED,
-	ERROR_BAD_REQUEST,
-	ERROR_INTERNAL,
-	ERROR_LOGIN_REQUIRED,
-	ERROR_BOARD_NOT_FOUND,
-} error_code_e;
+	WEB_OK = 1,  ///< 没有错误, 自行构建输出
+	WEB_ERROR_NONE, ///< 没有错误, 采用默认输出
+	WEB_ERROR_INCORRECT_PASSWORD,
+	WEB_ERROR_USER_SUSPENDED,
+	WEB_ERROR_BAD_REQUEST,
+	WEB_ERROR_INTERNAL,
+	WEB_ERROR_LOGIN_REQUIRED,
+	WEB_ERROR_BOARD_NOT_FOUND,
+} web_error_code_e;
 
 enum {
 	RESPONSE_DEFAULT = 0,
@@ -92,8 +94,6 @@ extern char *pstrdup(const char *s);
 
 extern void set_response_type(int type);
 extern xml_node_t *set_response_root(const char *name, int type, int encoding);
-extern void respond(int code);
-
-extern http_status_code_e error_msg(int code);
+extern void web_respond(web_error_code_e code);
 
 #endif // FB_WEB_H

@@ -455,34 +455,51 @@ static const char *content_type(int type)
 	}
 }
 
-void respond(int code)
-{
-	int type = response_type();
-
-	printf("Content-type: %s;  charset=utf-8\n"
-			"Status: %d\n\n", content_type(type), code);
-
-	xml_dump(ctx.resp.doc, type == RESPONSE_JSON ? XML_AS_JSON : XML_AS_XML);
-	FCGI_Finish();
-}
-
 struct error_msg_t {
-	error_code_e code;
-	http_status_code_e status;
+	web_error_code_e code;
+	web_status_code_e status;
 	const char *msg;
 };
 
 static const struct error_msg_t error_msgs[] = {
-	{ ERROR_NONE, HTTP_OK, "success" },
-	{ ERROR_INCORRECT_PASSWORD, HTTP_FORBIDDEN, "incorrect username or password" },
-	{ ERROR_USER_SUSPENDED, HTTP_FORBIDDEN, "permission denied" },
-	{ ERROR_BAD_REQUEST, HTTP_BAD_REQUEST, "bad request" },
-	{ ERROR_INTERNAL, HTTP_INTERNAL_SERVER_ERROR, "internal error" },
-	{ ERROR_LOGIN_REQUIRED, HTTP_FORBIDDEN, "login required" },
-	{ ERROR_BOARD_NOT_FOUND, HTTP_NOT_FOUND, "board not found" },
+	{
+		.code = WEB_ERROR_NONE,
+		.status = WEB_STATUS_OK,
+		.msg = "success",
+	},
+	{
+		.code = WEB_ERROR_INCORRECT_PASSWORD,
+		.status = WEB_STATUS_FORBIDDEN,
+		.msg = "incorrect username or password",
+	},
+	{
+		.code = WEB_ERROR_USER_SUSPENDED,
+		.status = WEB_STATUS_FORBIDDEN,
+		.msg = "permission denied",
+	},
+	{
+		.code = WEB_ERROR_BAD_REQUEST,
+		.status = WEB_STATUS_BAD_REQUEST,
+		.msg = "bad request",
+	},
+	{
+		.code = WEB_ERROR_INTERNAL,
+		.status = WEB_STATUS_INTERNAL_SERVER_ERROR,
+		.msg = "internal error",
+	},
+	{
+		.code = WEB_ERROR_LOGIN_REQUIRED,
+		.status = WEB_STATUS_FORBIDDEN,
+		.msg = "login required"
+	},
+	{
+		.code = WEB_ERROR_BOARD_NOT_FOUND,
+		.status = WEB_STATUS_NOT_FOUND,
+		.msg = "board not found"
+	},
 };
 
-http_status_code_e error_msg(int code)
+static web_status_code_e error_msg(web_error_code_e code)
 {
 	xml_node_t *node = set_response_root("bbs_error",
 			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
@@ -495,4 +512,20 @@ http_status_code_e error_msg(int code)
 	xml_attr_integer(node, "code", e->code + 10000);
 
 	return e->status;
+}
+
+void web_respond(web_error_code_e code)
+{
+	int type = response_type();
+
+	printf("Content-type: %s;  charset=utf-8\n"
+			"Status: %d\n\n", content_type(type), code);
+
+	if (code == WEB_OK) {
+		xml_dump(ctx.resp.doc,
+				type == RESPONSE_JSON ? XML_AS_JSON : XML_AS_XML);
+	} else {
+		error_msg(code);
+	}
+	FCGI_Finish();
 }

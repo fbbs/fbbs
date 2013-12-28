@@ -117,7 +117,7 @@ int api_board_all(void)
 {
 	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
 	if (!res)
-		return error_msg(ERROR_INTERNAL);
+		return WEB_ERROR_INTERNAL;
 
 	xml_node_t *root = set_response_root("bbs-board-all",
 			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
@@ -135,7 +135,7 @@ int api_board_all(void)
 		xml_add_child(boards, node);
 	}
 	db_clear(res);
-	return HTTP_OK;
+	return WEB_OK;
 }
 
 static xml_node_t *attach_group(xml_node_t *groups, db_res_t *res, int id)
@@ -177,7 +177,7 @@ static xml_node_t *attach_group(xml_node_t *groups, db_res_t *res, int id)
 int api_board_fav(void)
 {
 	if (!session_id())
-		return error_msg(ERROR_LOGIN_REQUIRED);
+		return WEB_ERROR_LOGIN_REQUIRED;
 
 	xml_node_t *root = set_response_root("bbs-board-fav",
 			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
@@ -208,7 +208,7 @@ int api_board_fav(void)
 
 	db_clear(folders);
 	db_clear(boards);
-	return HTTP_OK;
+	return WEB_OK;
 }
 
 static int show_sector(int sid, db_res_t *res, int last)

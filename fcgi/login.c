@@ -136,12 +136,12 @@ int do_web_login(const char *uname, const char *pw)
 
 	struct userec user;
 	if (getuserec(uname, &user) == 0)
-		return api ? error_msg(ERROR_INCORRECT_PASSWORD) : BBS_EWPSWD;
+		return api ? WEB_ERROR_INCORRECT_PASSWORD : BBS_EWPSWD;
 	session_set_uid(get_user_id(uname));
 
 	if (pw && !passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
-		return api ? error_msg(ERROR_INCORRECT_PASSWORD) : BBS_EWPSWD;
+		return api ? WEB_ERROR_INCORRECT_PASSWORD : BBS_EWPSWD;
 	}
 
 	int sessions = check_web_login_quota(uname, false);
@@ -149,7 +149,7 @@ int do_web_login(const char *uname, const char *pw)
 		return BBS_ELGNQE;
 
 	if (!HAS_PERM2(PERM_LOGIN, &user))
-		return api ? error_msg(ERROR_USER_SUSPENDED) : BBS_EACCES;
+		return api ? WEB_ERROR_USER_SUSPENDED : BBS_EACCES;
 
 	time_t now = time(NULL);
 	if (now - user.lastlogin >= 20 * 60 || user.numlogins < 100)
@@ -183,16 +183,16 @@ int web_login(void)
 	bool api = web_request_type(API);
 	if (api) {
 		if (session_id())
-			return error_msg(ERROR_NONE);
+			return WEB_ERROR_NONE;
 		else
-			return error_msg(ERROR_INCORRECT_PASSWORD);
+			return WEB_ERROR_INCORRECT_PASSWORD;
 	}
 
 	if (session_id())
 		return login_redirect(NULL, 0);
 
 	if (parse_post_data() < 0)
-		return api ? error_msg(ERROR_BAD_REQUEST) : BBS_EINVAL;
+		return api ? WEB_ERROR_BAD_REQUEST : BBS_EINVAL;
 
 	const char *uname = web_get_param("id");
 	if (*uname == '\0' || strcaseeq(uname, "guest"))

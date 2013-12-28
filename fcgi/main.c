@@ -230,7 +230,7 @@ static int execute(const web_handler_t *h)
 {
 	if (!session_id() && require_login(h)) {
 		if (web_request_type(API))
-			return error_msg(ERROR_LOGIN_REQUIRED);
+			return WEB_ERROR_LOGIN_REQUIRED;
 		return BBS_ELGNREQ;
 	}
 	return h->func();
@@ -277,7 +277,7 @@ int main(void)
 		}
 
 		if (code > 0)
-			respond(code);
+			web_respond(code);
 		else
 			check_bbserr(code);
 
