@@ -29,6 +29,10 @@
         <dir type="tpl" src="tpl/" />
     </group>
 
+    <group id="modern">
+        <dir type="css" src="css/modern/" />
+    </group>
+
     <group id="ie">
         <dir type="js" src="js/ie/" />
         <dir type="css" src="css/ie/" />
