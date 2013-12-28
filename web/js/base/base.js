@@ -369,16 +369,16 @@
          * 对目标字符串进行格式化，同时添加对encode的支持，!{0}保持原有；#{0}html encode； #{0, 10} truncat length
          *
          * @public
-         * @name h.format
+         * @name f.format
          * @function
-         * @grammar h.format(source, opts)
+         * @grammar f.format(source, opts)
          * @param {string} source 目标字符串
          * @param {Object|string...} opts 提供相应数据的对象或多个字符串
          * @remark
          *
             opts参数为"Object"时，替换目标字符串中的#{property name}部分。<br>
             opts为“string...”时，替换目标字符串中的#{0}、#{1}...部分。
-         * @shortcut h.format
+         * @shortcut f.format
          * @meta standard
          *
          * @returns {string} 格式化后的字符串
@@ -397,13 +397,13 @@
                         replacer = replacer(key);
                     }
                     if (length) {
-                        replacer = h.truncate(replacer, length);
+                        replacer = f.truncate(replacer, length);
                     }
                     //html encode
                     if (type == "#") {
-                        replacer = h.escape(replacer);
+                        replacer = f.escape(replacer);
                     } else if (type === '@') {
-                        replacer = h.encodeAttr(replacer);
+                        replacer = f.encodeAttr(replacer);
                     }
 
                     return ('undefined' == typeof replacer ? '' : replacer);
@@ -425,7 +425,7 @@
                 return source.toString();
             }
 
-            if (!h.isDate(source)) {
+            if (!f.isDate(source)) {
                 source = new Date(source);
             }
 
@@ -528,7 +528,7 @@
          * @return {string} dasherized string text
          */
         dasherize: function (str, isRemoveFirstDash) {
-            var result = h.trim(str).replace(/([A-Z])/g, '-$1').replace(/[-_\s]+/g, '-').toLowerCase();
+            var result = f.trim(str).replace(/([A-Z])/g, '-$1').replace(/[-_\s]+/g, '-').toLowerCase();
 
             if (isRemoveFirstDash) {
                 return result.replace(/^-/, '');

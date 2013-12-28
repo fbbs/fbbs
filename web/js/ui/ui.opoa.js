@@ -3,7 +3,7 @@
  * @author pzh
  */
 
-(function ($) {
+(function ($, f) {
     'use strict';
 
     /**
@@ -19,6 +19,8 @@
         options: {
             defaultPage: null,
             baseUri: '',
+            dataUri: '',
+            version: '',
             isCache: false,
             contentSelector: '#main',
             styleSelector: 'link[rel="stylesheet"]:not([data-persist="true"])',
@@ -55,6 +57,8 @@
                 return;
             }
 
+            this._url = url;
+
             url = this.options.baseUri + url;
 
             var isUpdatePage = this._trigger("beforeClose", null, {
@@ -82,7 +86,25 @@
          */
         _onloadPageSuccess: function (url, html) {
             this._jqXHR = null;
-            pageCache[url] = $.trim(html);
+
+            if (this._dataXHR) {
+                this._dataXHR.abort();
+            }
+
+            var dataUrl = this.options.dataUri + this._url.replace(/\?.*$/, '');
+
+            this._dataXHR = $.get(dataUrl + '.json?__v=' + this.options.version)
+                .done($.proxy(this, '_onloadDataSuccess', url, html))
+                .fail($.proxy(this, '_onloadPageFail'));
+
+        },
+        _onloadDataSuccess: function (url, html, data) {
+            this._dataXHR = null;
+            if ('object' !== typeof data) {
+                data = JSON.parse(String(data));
+            }
+            this._trigger('ongetDataSuccess', null, data);
+            pageCache[url] = $.trim(f.tpl.format(html, f.config));
 
             this._updatePage(url);
         },
@@ -106,7 +128,7 @@
                 this._jqXHR.abort();
             }
 
-            this._jqXHR = $.get(url + '.html')
+            this._jqXHR = $.get(url)
                 .done($.proxy(this, '_onloadPageSuccess', url))
                 .fail($.proxy(this, '_onloadPageFail'));
         },
@@ -145,4 +167,4 @@
             });
         }
     });
-}(jQuery));
+}(jQuery, f));

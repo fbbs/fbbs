@@ -172,6 +172,7 @@ cp -r * $DEPLOY_PATH
 rm -rf $CLEAN_FILE
 cp -r $TMP_DIR/* $DEPLOY_PATH
 cp -r css/decorator $DEPLOY_PATH/css
+cp -r css/font $DEPLOY_PATH/css
 find $DEPLOY_PATH -type d -name ".svn"|xargs rm -rf
 find $DEPLOY_PATH -type d -name ".git"|xargs rm -rf
 rm -rf $TMP_DIR

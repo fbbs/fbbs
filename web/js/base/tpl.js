@@ -172,9 +172,12 @@
         var output = [];
         reader.call(/^u/.test(typeof data) ? "" : data, output, lib.encodeHTML, helper, lib.encodeAttr);
         // 去掉标签之间的空白字符，如"</td>   <td>"、"</p>  \n我是张新\n  <div>"、"</div>\r\n\r\n我是\r\n张新\r\n\r\n<b></b>"
+        /*
         return String(output.join("")).replace(/(>)([\s\S]*?)(<)/g, function(match, lg, content, rg){
             return lg + content.replace(/\s*([\S]*)/g, '$1') + rg;
         });
+        */
+        return String(output.join(""));
     };
 
     /**

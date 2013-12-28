@@ -14,12 +14,7 @@ var pageInfo = f.config.pageInfo;
     <section class="top-bar-section">
         <ul class="left">
             f.each(menuList.menus, function (menu) {
-                if (menu.id === pageInfo.pageName) {
-                    <li class="nav active" data-menu-nav-id="#{menu.id}"><a class="menu-nav" href="#{menu.url}">#{menu.label}</a></li>
-                }
-                else {
-                    <li class="nav" data-menu-nav-id="#{menu.id}"><a class="menu-nav" href="#{menu.url}">#{menu.label}</a></li>
-                }
+                <li class="nav" data-menu-nav-id="#{menu.id}"><a class="menu-nav" href="#{menu.url}">#{menu.label}</a></li>
             });
         </ul>
         <ul class="right">

@@ -110,7 +110,9 @@
             initBBS();
             $('#body').opoa({
                 baseUri: f.config.systemConfig.baseUri,
+                dataUri: f.config.systemConfig.dataUri,
                 defaultPage: f.config.systemConfig.defaultPage,
+                version: f.config.systemConfig.version,
                 beforeClose: function () {
                     $(document.body).loading('show');
                 },
@@ -119,14 +121,18 @@
                         f.bbsPage.close();
                     }
                 },
+                ongetDataSuccess: function (event, data) {
+                    $.extend(f.config, data);
+                },
                 onfail: function () {
-                    //$(document.body).loading('hide');
+                    $(document.body).loading('hide');
+                    $('#main').html('<p class="loading-error">载入失败，请刷新重试。</p>');
                 },
                 afterClose: function (event, data) {
                     var url = data.url;
                     var pageInfo = f.config.pageInfo;
-                    var sideNav = $(':data(ui-sideNav)');
-                    var menuNav = $(':data(ui-menuNav)');
+                    var sideNav = $('.side-nav');
+                    var menuNav = $('.menu-nav');
 
                     $(document.body).loading('hide');
 
@@ -156,7 +162,7 @@
                         $('#global-tip')
                             .show()
                             .find('.text')
-                            .html(h.format('提示：本系统不支持IE6、IE7浏览器！为了避免网页显示不兼容，建议您升级浏览器。<a target="_target" href="!{firefox}">Firefox浏览器下载</a>&#12288;|&#12288;<a target="_target" href="!{chrome}">Chrome浏览器下载</a>', {
+                            .html(f.format('提示：本系统不支持IE6、IE7浏览器！为了避免网页显示不兼容，建议您升级浏览器。<a target="_target" href="!{firefox}">Firefox浏览器下载</a>&#12288;|&#12288;<a target="_target" href="!{chrome}">Chrome浏览器下载</a>', {
                             chrome: 'http://www.google.cn/intl/zh-CN/chrome/browser/',
                             firefox: 'http://firefox.com.cn/download/'
                         }));
