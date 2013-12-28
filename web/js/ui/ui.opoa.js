@@ -106,7 +106,7 @@
                 this._jqXHR.abort();
             }
 
-            this._jqXHR = $.get(url)
+            this._jqXHR = $.get(url + '.html')
                 .done($.proxy(this, '_onloadPageSuccess', url))
                 .fail($.proxy(this, '_onloadPageFail'));
         },
