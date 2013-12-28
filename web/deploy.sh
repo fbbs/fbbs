@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPLOY_PATH=/home/wwwroot/fbbs
+DEPLOY_PATH=/home/wwwroot/fbbs/web
 TMP_DIR=tmp
 
 rm -rf $DEPLOY_PATH/*
@@ -21,6 +21,24 @@ CLEAN_FILE="$DEPLOY_PATH/$TMP_DIR $DEPLOY_PATH/$JS_ROOT $DEPLOY_PATH/$CSS_ROOT $
 JS_FILES=
 CSS_FILES=
 TPL_FILES=
+
+while getopts "d:j:c:t:" arg
+do
+	case $arg in
+		d)
+			DEPLOY_PATH=$OPTARG
+			;;
+		j)
+			JS_COMP=$OPTARG
+			;;
+		c)
+			CSS_COMP=$OPTARG
+			;;
+		t)
+			TPL_COMP=$OPTARG
+			;;
+	esac
+done
 
 mkdir $TMP_DIRS
 
@@ -140,6 +158,7 @@ rm -rf $CLEAN_FILE
 cp -r $TMP_DIR/* $DEPLOY_PATH
 cp -r css/decorator $DEPLOY_PATH/css
 find $DEPLOY_PATH -type d -name ".svn"|xargs rm -rf
+find $DEPLOY_PATH -type d -name ".git"|xargs rm -rf
 rm -rf $TMP_DIR
 
 echo "BUILD SUCCESSFULLY!"
