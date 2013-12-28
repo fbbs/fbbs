@@ -50,7 +50,12 @@
                 url: f.config.bbsConfig,
                 async: false
             }).done(function (data, textStatus, jqXHR) {
-                f.extend(f.config, JSON.parse(data));
+                if ('string' === typeof data) {
+                    f.extend(f.config, JSON.parse(data));
+                }
+                else if ('object' === typeof data) {
+                    f.extend(f.config, data);
+                }
             }).fail(function () {});
         }
 
