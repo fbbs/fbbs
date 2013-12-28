@@ -33,7 +33,7 @@ var pageInfo = f.config.pageInfo;
                 </li>
             }
             else {
-                <li class="has-form">
+                <li class="has-form has-button">
                     <a href="javascript:void(0);" class="button login menu-nav menu-nav-new">登陆</a>
                 </li>
             }
