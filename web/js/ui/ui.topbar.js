@@ -41,8 +41,7 @@
         _bindEvents: function () {
             this._on({
                 'click .menu-nav': $.proxy(this, '_onNavClick'),
-                'click .toggle-topbar': $.proxy(this, '_toggle'),
-                'touchstart .main': $.proxy(this, '_close')
+                'click .toggle-topbar': $.proxy(this, '_toggle')
             });
         },
         _toggle: function (event) {
@@ -50,7 +49,7 @@
                 .find('.top-bar')
                 .toggleClass('expanded');
         },
-        _close: function (event) {
+        close: function (event) {
             this.element
                 .find('.top-bar')
                 .removeClass('expanded');
@@ -73,7 +72,7 @@
                     .addClass('active');
             }
 
-            this._close();
+            this.close();
 
             this._trigger('onchange', null, {
                 currentTarget: event.currentTarget

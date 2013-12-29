@@ -12,7 +12,7 @@
          */
 
         function initBBS() {
-            $('.menu-nav').topbar({
+            var menuNav = $('.menu-nav').topbar({
                 onchange: function (event, data) {
                     f.mediator.trigger('app:topbar:onchange', data);
                 }
@@ -36,6 +36,14 @@
                 $(document).trigger('click');
 
                 return false;
+            });
+
+            // In mobile devices, if not touch the menu, then close the menu
+            $('html').on('click', function (event) {
+                var $target = $(event.target);
+                if (!$target.parents('.menu-nav').length) {
+                    menuNav.topbar('close');
+                }
             });
 
         }
