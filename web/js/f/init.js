@@ -131,8 +131,8 @@
                 afterClose: function (event, data) {
                     var url = data.url;
                     var pageInfo = f.config.pageInfo;
-                    var sideNav = $('.side-nav');
-                    var menuNav = $('.menu-nav');
+                    var sideNav = $(':data(ui-sidenav)');
+                    var menuNav = $(':data(ui-topbar)');
 
                     $(document.body).loading('hide');
 

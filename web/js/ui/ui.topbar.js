@@ -76,7 +76,6 @@
             });
         },
         setActivate: function (menNavId) {
-            console.log(menNavId);
             this.element
                 .find('.nav')
                 .removeClass('active');
