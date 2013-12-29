@@ -17,7 +17,7 @@ void set_web_session_cache(user_id_t uid, const char *key, session_id_t sid)
 			sid);
 }
 
-extern int do_web_login(const char *uname, const char *pw);
+extern int do_web_login(const char *uname, const char *pw, bool api);
 
 static bool activate_session(session_id_t sid, const char *uname)
 {
@@ -26,7 +26,7 @@ static bool activate_session(session_id_t sid, const char *uname)
 	db_clear(res);
 
 	if (res)
-		return !do_web_login(uname, NULL);
+		return !do_web_login(uname, NULL, false);
 
 	return false;
 }

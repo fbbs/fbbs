@@ -497,6 +497,11 @@ static const struct error_msg_t error_msgs[] = {
 		.status = WEB_STATUS_NOT_FOUND,
 		.msg = "board not found"
 	},
+	{
+		.code = WEB_ERROR_METHOD_NOT_ALLOWED,
+		.status = WEB_STATUS_METHOD_NOT_ALLOWED,
+		.msg = "method not allowed",
+	},
 };
 
 static web_status_code_e error_msg(web_error_code_e code)

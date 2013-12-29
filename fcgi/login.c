@@ -78,6 +78,7 @@ static void grant_permission(struct userec *user)
 	}
 }
 
+#if 0
 static const char *get_login_referer(void)
 {
 	const char *next = web_get_param("next");
@@ -92,6 +93,7 @@ static const char *get_login_referer(void)
 		ref = referer;
 	return ref;
 }
+#endif
 
 static int redirect_homepage(void)
 {
@@ -130,12 +132,10 @@ static int login_redirect(const char *key, int max_age)
 	return 0;
 }
 
-int do_web_login(const char *uname, const char *pw)
+int do_web_login(const char *uname, const char *pw, bool api)
 {
-	bool api = web_request_type(API);
-
 	struct userec user;
-	if (getuserec(uname, &user) == 0)
+	if (!getuserec(uname, &user))
 		return api ? WEB_ERROR_INCORRECT_PASSWORD : BBS_EWPSWD;
 	session_set_uid(get_user_id(uname));
 
@@ -151,17 +151,9 @@ int do_web_login(const char *uname, const char *pw)
 	if (!HAS_PERM2(PERM_LOGIN, &user))
 		return api ? WEB_ERROR_USER_SUSPENDED : BBS_EACCES;
 
-	time_t now = time(NULL);
+	fb_time_t now = fb_time();
 	if (now - user.lastlogin >= 20 * 60 || user.numlogins < 100)
 		user.numlogins++;
-
-#ifdef CHECK_FREQUENTLOGIN
-	time_t last = user.lastlogin;
-	if (!HAS_PERM(PERM_SYSOPS) && abs(last - now) < 10) {
-		report("Too Frequent", user.userid);
-		return BBS_ELFREQ;
-	}
-#endif
 
 	update_user_stay(&user, true, sessions >= 1);
 
@@ -178,21 +170,53 @@ int do_web_login(const char *uname, const char *pw)
 extern void set_web_session_cache(user_id_t uid, const char *key,
 		session_id_t sid);
 
-int web_login(void)
+static int _web_login(bool persistent, bool redirect)
 {
-	bool api = web_request_type(API);
-	if (api) {
+	int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
+	char key[SESSION_KEY_LEN + 1];
+	session_new_id();
+	generate_session_key(key, sizeof(key), session_id());
+	session_new(key, session_id(), session_uid(), fromhost,
+			SESSION_WEB, SESSION_PLAIN, true, max_age);
+	if (session_id())
+		set_web_session_cache(session_uid(), key, session_id());
+	return redirect ? login_redirect(key, max_age) : 0;
+}
+
+static int api_login(void)
+{
+	if (web_request_method(GET)) {
 		if (session_id())
 			return WEB_ERROR_NONE;
 		else
-			return WEB_ERROR_INCORRECT_PASSWORD;
+			return WEB_ERROR_LOGIN_REQUIRED;
+	} else if (web_request_method(POST)) {
+		if (parse_post_data() < 0)
+			return WEB_ERROR_BAD_REQUEST;
+
+		const char *uname = web_get_param("id");
+		char pw[PASSLEN];
+		strlcpy(pw, web_get_param("pw"), sizeof(pw));
+
+		int ret = do_web_login(uname, pw, true);
+		if (ret == 0)
+			_web_login(true, false);
+		return ret;
+	} else {
+		return WEB_ERROR_METHOD_NOT_ALLOWED;
 	}
+}
+
+int web_login(void)
+{
+	if (web_request_type(API))
+		return api_login();
 
 	if (session_id())
 		return login_redirect(NULL, 0);
 
 	if (parse_post_data() < 0)
-		return api ? WEB_ERROR_BAD_REQUEST : BBS_EINVAL;
+		return BBS_EINVAL;
 
 	const char *uname = web_get_param("id");
 	if (*uname == '\0' || strcaseeq(uname, "guest"))
@@ -201,20 +225,10 @@ int web_login(void)
 	char pw[PASSLEN];
 	strlcpy(pw, web_get_param("pw"), sizeof(pw));
 
-	int ret = do_web_login(uname, pw);
+	int ret = do_web_login(uname, pw, false);
 	if (ret == 0) {
 		bool persistent = *web_get_param("persistent");
-		int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
-
-		char key[SESSION_KEY_LEN + 1];
-		session_new_id();
-		generate_session_key(key, sizeof(key), session_id());
-		session_new(key, session_id(), session_uid(), fromhost,
-				SESSION_WEB, SESSION_PLAIN, true, max_age);
-		if (session_id())
-			set_web_session_cache(session_uid(), key, session_id());
-
-		return login_redirect(key, max_age);
+		_web_login(persistent, true);
 	}
 	return ret;
 }

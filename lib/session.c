@@ -142,7 +142,7 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	if (res) {
 		db_clear(res);
 		session.id = sid;
-		session_set_idle(sid, time(NULL));
+		session_set_idle(sid, now);
 		return sid;
 	} else {
 		session.id = 0;
