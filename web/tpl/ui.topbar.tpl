@@ -19,7 +19,7 @@ var pageInfo = f.config.pageInfo;
         </ul>
         <ul class="right">
             <li class="divider"></li>
-            if (userInfo && userInfo.username) {
+            if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
                 <li class="has-dropdown">
                     <a href="#">Right Button with Dropdown</a>
                     <ul class="dropdown">
