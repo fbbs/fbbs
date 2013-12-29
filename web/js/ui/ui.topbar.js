@@ -42,7 +42,7 @@
             this._on({
                 'click .menu-nav': $.proxy(this, '_onNavClick'),
                 'click .toggle-topbar': $.proxy(this, '_toggle'),
-                'click .main': $.proxy(this, '_close')
+                'touchstart .main': $.proxy(this, '_close')
             });
         },
         _toggle: function (event) {
