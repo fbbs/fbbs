@@ -8,6 +8,8 @@
         <dir type="js" src="js/base/plugins/" />
         <file type="js" src="js/base/underscore.js" />
         <file type="js" src="js/base/underscore.string.js" />
+        <file type="js" src="js/base/fastclick.js" />
+        <file type="js" src="js/base/foundation.js" />
         <file type="js" src="js/base/base.js" />
         <file type="js" src="js/base/mediator.js" />
         <file type="js" src="js/base/tpl.js" />

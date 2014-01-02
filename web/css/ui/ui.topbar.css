@@ -1,0 +1,13 @@
+.top-bar .top-bar-section ul li:hover > a.button {
+    background: #008cba;
+}
+.top-bar .top-bar-section ul li > a.button:hover {
+    background: #006687;
+}
+.top-bar .top-bar-section ul li > a.button:active {
+    background: #008cba;
+}
+
+.top-bar .top-bar-section ul li.active:hover > a {
+    background: #008cba;
+}
