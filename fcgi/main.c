@@ -50,7 +50,6 @@ extern int bbsedit_main(void);
 extern int web_sel(void);
 extern int bbsrss_main(void);
 extern int bbsovr_main(void);
-extern int bbstop10_main(void);
 extern int bbsnewmail_main(void);
 extern int bbsbfind_main(void);
 extern int bbsidle_main(void);
@@ -63,6 +62,8 @@ extern int web_mailman(void);
 extern int web_props(void);
 extern int web_my_props(void);
 extern int web_buy_prop(void);
+
+extern int api_top10(void);
 
 extern int api_board_all(void);
 extern int api_board_fav(void);
@@ -132,7 +133,7 @@ const static web_handler_t handlers[] = {
 	{ "sndmail", bbssndmail_main, ST_SMAIL },
 	{ "tcon", bbstcon_main, ST_READING },
 	{ "tdoc" ,bbstdoc_main, ST_READING },
-	{ "top10", bbstop10_main, ST_READBRD },
+	{ "top10", api_top10, ST_READBRD },
 	{ "upload", bbsupload_main, ST_UPLOAD },
 };
 

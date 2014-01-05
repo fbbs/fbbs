@@ -689,28 +689,56 @@ int bbsrss_main(void)
 	return 0;
 }
 
-int bbstop10_main(void)
+int api_top10(void)
 {
-	xml_header(NULL);
-	printf("<bbstop10>");
-	print_session();
+	bool api = web_request_type(API);
+	if (api && !web_request_method(GET))
+		return WEB_ERROR_METHOD_NOT_ALLOWED;
+
+	xml_node_t *node;
+	if (!api) {
+		xml_header(NULL);
+		printf("<bbstop10>");
+		print_session();
+	} else {
+		node = set_response_root("bbs_top10",
+				XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
+		node = xml_new_child(node, "topics", XML_NODE_CHILD_ARRAY);
+	}
 
 	FILE *fp = fopen("etc/posts/day_f.data", "r");
 	if (fp) {
+		int rank = 0;
 		topic_stat_t topic;
 		while (fread(&topic, sizeof(topic), 1, fp) == 1) {
-			printf("<top board='%s' owner='%s' count='%u' gid='%"PRIdPID"'>",
-					topic.bname, topic.owner, topic.count, topic.tid);
-			if (web_request_type(UTF8)) {
-				xml_fputs(topic.utf8_title);
+			if (api) {
+				xml_node_t *n = xml_new_child(node, "topic",
+						XML_NODE_ANONYMOUS_JSON);
+				xml_attr_integer(n, "rank", ++rank);
+				xml_attr_string(n, "owner", topic.owner, false);
+				xml_attr_string(n, "board", topic.bname, false);
+				xml_attr_integer(n, "bid", topic.bid);
+				xml_attr_integer(n, "count", topic.count);
+				xml_attr_bigint(n, "tid", topic.tid);
+				xml_attr_string(n, "title", topic.utf8_title, false);
 			} else {
-				GBK_BUFFER(title, POST_TITLE_CCHARS);
-				convert_u2g(topic.utf8_title, gbk_title);
-				xml_fputs(gbk_title);
+				printf("<top board='%s' owner='%s' count='%u' gid='%"PRIdPID"'>",
+						topic.bname, topic.owner, topic.count, topic.tid);
+				if (web_request_type(UTF8)) {
+					xml_fputs(topic.utf8_title);
+				} else {
+					GBK_BUFFER(title, POST_TITLE_CCHARS);
+					convert_u2g(topic.utf8_title, gbk_title);
+					xml_fputs(gbk_title);
+				}
+				printf("</top>\n");
 			}
-			printf("</top>\n");
 		}
 	}
-	printf("</bbstop10>");
-	return 0;
+	if (api) {
+		return WEB_OK;
+	} else {
+		printf("</bbstop10>");
+		return 0;
+	}
 }
