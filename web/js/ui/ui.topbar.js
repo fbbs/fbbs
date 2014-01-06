@@ -46,10 +46,10 @@
             });
         },
         _onShowCanvas: function (event) {
-            $('.body').addClass('move-right');
+            this.element.addClass('move-right');
         },
         _onHideCanvas: function (event) {
-            $('.body').removeClass('move-right');
+            this.element.removeClass('move-right');
         },
         /**
          * nav click event handler

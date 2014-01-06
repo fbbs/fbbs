@@ -1,18 +1,16 @@
 html, body {
     font-size: 100%;
-    overflow: hidden;
     width: 100%;
 }
 body {
     color: #222222;
-    font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif !important;
+    font-family: Arial, 'Microsoft YaHei', '\5b8b\4f53'!important;
     font-weight: normal;
     font-style: normal;
     line-height: 1;
     cursor: default;
 }
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Open Sans", "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif !important;
     font-weight: 300;
     font-style: normal;
     color: #222222;
