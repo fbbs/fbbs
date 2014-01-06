@@ -40,19 +40,8 @@
          */
         _bindEvents: function () {
             this._on({
-                'click .menu-nav': $.proxy(this, '_onNavClick'),
-                'click .toggle-topbar': $.proxy(this, '_toggle')
+                'click .menu-nav': $.proxy(this, '_onNavClick')
             });
-        },
-        _toggle: function (event) {
-            this.element
-                .find('.top-bar')
-                .toggleClass('expanded');
-        },
-        close: function (event) {
-            this.element
-                .find('.top-bar')
-                .removeClass('expanded');
         },
         /**
          * nav click event handler
@@ -71,8 +60,6 @@
                 $target.closest('.nav')
                     .addClass('active');
             }
-
-            this.close();
 
             this._trigger('onchange', null, {
                 currentTarget: event.currentTarget

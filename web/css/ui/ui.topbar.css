@@ -1,13 +1,78 @@
-.top-bar .top-bar-section ul li:hover > a.button {
-    background: #008cba;
-}
-.top-bar .top-bar-section ul li > a.button:hover {
-    background: #006687;
-}
-.top-bar .top-bar-section ul li > a.button:active {
-    background: #008cba;
+.ui-top-bar {
+    height: 45px;
+    line-height: 45px;
+    background: #333333;
 }
 
-.top-bar .top-bar-section ul li.active:hover > a {
+.ui-top-bar ul {
+    list-style: none;
+    padding: 0;
+    height: auto;
+    display: block;
+    background: #333333;
+    font-size: 18;
+    margin: 0;
+}
+
+.ui-top-bar .title-area {
+    float: left;
+}
+.ui-top-bar .title-area .name {
+    height: 45px;
+}
+.ui-top-bar .title-area .name h1 {
+    line-height: 45px;
+    font-size: 15px;
+    margin: 0;
+}
+.ui-top-bar .title-area .name h1 a {
+    font-weight: normal;
+    color: #FFF;
+    display: block;
+    padding: 0 15px;
+}
+
+.ui-top-bar .top-bar-section ul li {
+    float: left;
+}
+.ui-top-bar .top-bar-section ul li.divider {
+    border-bottom: none;
+    border-top: none;
+    border-right: solid 1px #4e4e4e;
+    clear: none;
+    height: 45px;
+    width: 0;
+}
+.ui-top-bar .top-bar-section ul li a {
+    font-weight: normal;
+    display: block;
+    color: #FFF;
+    font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    padding: 0 15px;
+    line-height: 45px;
+    background: #333333;
+}
+.ui-top-bar .top-bar-section ul li a:hover {
+    background: #272727;
+}
+.ui-top-bar .top-bar-section ul li.active a {
     background: #008cba;
+}
+.ui-top-bar .top-bar-section ul li.has-form {
+    background: #333333;
+    padding: 0 15px;
+    height: 45px;
+}
+.ui-top-bar .top-bar-section ul li a.button {
+    background: #008cba;
+    padding: 7px 15px;
+    margin-top: 7px;
+    margin-bottom: 0;
+    height: 17px;
+    line-height: 17px;
+    width: auto;
+}
+.ui-top-bar .top-bar-section ul li a.button:hover {
+    background: #006888;
 }

@@ -38,19 +38,6 @@
                 return false;
             });
 
-            var closeMenuNav = function (event) {
-                var $target = $(event.target);
-                if (!$target.parents('.menu-nav').length) {
-                    menuNav.topbar('close');
-                }
-            };
-
-            // In mobile devices, if not touch the menu, then close the menu
-            $('html').on({
-                mousedown: closeMenuNav,
-                touchstart: closeMenuNav
-            });
-
         }
 
         /**

@@ -1,3 +1,39 @@
+html, body {
+    font-size: 100%;
+}
+body {
+    color: #222222;
+    font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif !important;
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    cursor: default;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Open Sans", "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif !important;
+    font-weight: 300;
+    font-style: normal;
+    color: #222222;
+    text-rendering: optimizeLegibility;
+    margin-top: 0.2rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+a {
+    color: #008cba;
+    text-decoration: none;
+    line-height: inherit;
+}
+ul, ol, dl {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+.left {
+    float: left;
+}
+.right {
+    float: right;
+}
 .loading-error {
     text-align: center;
     margin-top: 50px;

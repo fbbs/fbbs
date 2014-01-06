@@ -2,14 +2,13 @@
 var menuList = f.config.menuList;
 var userInfo = f.config.userInfo;
 var pageInfo = f.config.pageInfo;
-<nav class="top-bar" data-topbar>
+<nav class="ui-top-bar">
     <ul class="title-area">
         <li class="name">
             if (menuList.title) {
                 <h1><a class="menu-nav" href="#{menuList.title.url}">#{menuList.title.label}</a></h1>
             }
         </li>
-        <li class="toggle-topbar menu-icon"><a href="javascript:void(0);"><span></span></a></li>
     </ul>
     <section class="top-bar-section">
         <ul class="left">
@@ -28,7 +27,7 @@ var pageInfo = f.config.pageInfo;
                 </li>
             }
             else {
-                <li class="has-form has-button">
+                <li class="has-form">
                     <a href="javascript:void(0);" class="button login menu-nav menu-nav-new">登陆</a>
                 </li>
             }
