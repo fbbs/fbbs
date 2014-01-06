@@ -38,3 +38,15 @@ ul, ol, dl {
     text-align: center;
     margin-top: 50px;
 }
+
+@media only screen and (min-width: 641px) {
+    .hide-for-desktop {
+        display: none!important;
+    }
+}
+
+@media only screen and (max-width: 640px) {
+    .hide-for-mobile {
+        display: none!important;
+    }
+}

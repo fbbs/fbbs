@@ -40,8 +40,16 @@
          */
         _bindEvents: function () {
             this._on({
-                'click .menu-nav': $.proxy(this, '_onNavClick')
+                'click .menu-toggle': $.proxy(this, '_onNavClick'),
+                'click .canvas-toggle': $.proxy(this, '_onShowCanvas'),
+                'click .exit-canvas-menu': $.proxy(this, '_onHideCanvas')
             });
+        },
+        _onShowCanvas: function (event) {
+            $('.body').addClass('move-right');
+        },
+        _onHideCanvas: function (event) {
+            $('.body').removeClass('move-right');
         },
         /**
          * nav click event handler
@@ -52,7 +60,7 @@
          */
         _onNavClick: function (event) {
             var $target = $(event.currentTarget);
-            if ($target.attr('target') !== '_blank' && !$target.hasClass('menu-nav-new')) {
+            if ($target.attr('target') !== '_blank' && !$target.hasClass('menu-toggle-new')) {
                 this.element
                     .find('.nav')
                     .removeClass('active');
@@ -60,6 +68,8 @@
                 $target.closest('.nav')
                     .addClass('active');
             }
+
+            this._onHideCanvas();
 
             this._trigger('onchange', null, {
                 currentTarget: event.currentTarget
