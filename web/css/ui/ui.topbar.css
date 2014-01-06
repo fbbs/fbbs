@@ -85,6 +85,10 @@
         width: 100%;
         overflow: hidden;
     }
+    .ui-top-bar:before, .ui-top-bar:after {
+        content: " ";
+        display: table;
+    }
     .ui-top-bar .title-area .name {
         height: 40px;
     }
