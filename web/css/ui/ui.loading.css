@@ -1,11 +1,6 @@
 .ui-loading {
     position: fixed;
-    top: 40%;
-    top: -webkit-calc(50% - 25px);
-    top: -moz-calc(50% - 25px);
-    top: -ms-calc(50% - 25px);
-    top: -o-calc(50% - 25px);
-    top: calc(50% - 25px);
+    top: 20%;
     left: 0;
     z-index: 100000;
     margin-left: 50%;
