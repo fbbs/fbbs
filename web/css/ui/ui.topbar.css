@@ -82,6 +82,8 @@
     .ui-top-bar {
         height: 40px;
         line-height: 40px;
+        width: 100%;
+        overflow: hidden;
     }
     .ui-top-bar .title-area .name {
         height: 40px;
