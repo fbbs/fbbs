@@ -79,11 +79,16 @@
 }
 
 @media only screen and (max-width: 640px) {
+    .main {
+        margin-top: 40px;
+    }
     .ui-top-bar {
         height: 40px;
         line-height: 40px;
         width: 100%;
-        overflow: hidden;
+        overflow: visible;
+        position: fixed;
+        top: 0;
     }
     .ui-top-bar .title-area .name {
         height: 40px;
@@ -105,6 +110,7 @@
         box-shadow: 1px 0 0 #4e4e4e;
         float: left;
         margin-right: 1px;
+        cursor: pointer;
     }
 
     .ui-top-bar a.menu-icon {
@@ -137,7 +143,7 @@
         top: 0;
         bottom: 0;
         height: 100%;
-        position: absolute;
+        position: fixed;
         overflow-y: auto;
         background: #333;
         z-index: 1001;
@@ -156,10 +162,9 @@
     }
     .ui-top-bar .exit-canvas-menu {
         display: none;
-        position: absolute;
         width: 100%;
         height: 100%;
-        position: absolute;
+        position: fixed;
         background: rgba(255, 255, 255, 0.2);
         top: 0;
         bottom: 0;

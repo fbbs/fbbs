@@ -12,6 +12,8 @@
          */
 
         function initBBS() {
+            FastClick.attach(document.body);
+
             var menuNav = $('.menu-nav').topbar({
                 onchange: function (event, data) {
                     f.mediator.trigger('app:topbar:onchange', data);
