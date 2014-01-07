@@ -28,6 +28,40 @@ ul, ol, dl {
     font-size: 1rem;
     line-height: 1.6;
 }
+button {
+    -webkit-appearance: none;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    border: none;
+}
+input[type=text],
+input[type=password] {
+    background-color: #FFF;
+    border: 1px solid #ccc;
+    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.75);
+    height: 28px;
+    padding: 0 5px;
+    -webkit-transition: all 300ms ease;
+    -moz-transition: all 300ms ease;
+    -ms-transition: all 300ms ease;
+    -o-transition: all 300ms ease;
+    transition: all 300ms ease;
+}
+input[type=text]:hover,
+input[type=password]:hover {
+    border-color: #aaa;
+}
+input[type=text]:focus,
+input[type=password]:focus {
+    background: #fafafa;
+    border-color: #999;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px #999;
+    -moz-box-shadow: 0 0 5px #999;
+    box-shadow: 0 0 5px #999;
+}
 .left {
     float: left;
 }

@@ -40,6 +40,11 @@
                 return false;
             });
 
+            $(document).on('touchmove', '.ui-widget-overlay', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            });
+
         }
 
         /**

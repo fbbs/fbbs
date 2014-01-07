@@ -4,9 +4,12 @@
     $.widget('ui.login', {
         options: {
             loginUrl: '',
-            registUrl: '',
-            forgetUrl: '',
+            registUrl: 'javascript:void(0);',
+            forgetUrl: 'javascript:void(0);',
+            loginText: '登&emsp;&emsp;陆',
+            dialogTitle: '登陆',
             trigger: '',
+            overlayClass: 'ui-login-overlay',
             tpl: 'ui.login.tpl'
         },
         /**
@@ -21,27 +24,31 @@
         },
         _bindEvents: function () {
             $(this.options.trigger).on('click', $.proxy(this, 'open'));
+            $(document).on('touchstart', '.' + this.options.overlayClass, $.proxy(this, 'close'));
+            this._on({
+                //'touchmove .ui-login-overlay': '_ontouchmoveMask'
+            });
         },
         _renderDialog: function (options) {
-            var options = $.extend({}, this.options, options);
-            var me = this;
-
             this.dialog = this.element;
 
             this.dialog.dialog({
                 autoOpen: false,
                 closeText: '关闭',
                 dialogClass: 'ui-login-dialog',
-                title: '登陆日月光华',
+                title: this.options.dialogTitle,
                 modal: true,
-                overlayClass: 'ui-login-overlay',
+                overlayClass: this.options.overlayClass,
                 resizable: false,
-                width: '50%',
-                minHeight: 50
+                width: 270,
+                maxHeight: 270
             });
         },
         open: function () {
             this.dialog.dialog('open');
+        },
+        close: function () {
+            this.dialog.dialog('close');
         }
     });
 }(jQuery, f));

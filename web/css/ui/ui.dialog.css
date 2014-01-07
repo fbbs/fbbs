@@ -1,0 +1,48 @@
+.ui-widget-overlay {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    background: black;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 98;
+    top: 0;
+    left: 0;
+}
+.ui-dialog {
+    z-index: 99;
+    background-color: #FFF;
+    border: solid 1px #666666;
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    padding: 10px;
+}
+.ui-dialog:focus {
+    outline: none;
+}
+.ui-dialog-titlebar {
+    margin-bottom: 20px;
+    cursor: move;
+}
+.ui-dialog-title {
+    font-weight: bold;
+    font-size: 16px;
+}
+.ui-dialog-titlebar-close {
+    display: block;
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    right: -16px;
+    top: -16px;
+    background-color: transparent;
+    background-image: url(decorator/close_dialog.png);
+    background-size: 32px 32px;
+    text-indent: -9999px;
+    border: none;
+}
+
+@media only screen and (max-width: 640px) {
+    .ui-dialog-titlebar-close {
+        display: none;
+    }
+}
