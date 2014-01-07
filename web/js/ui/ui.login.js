@@ -24,7 +24,6 @@
         },
         _bindEvents: function () {
             $(this.options.trigger).on('click', $.proxy(this, 'open'));
-            $(document).on('touchstart', '.' + this.options.overlayClass, $.proxy(this, 'close'));
             this._on({
                 //'touchmove .ui-login-overlay': '_ontouchmoveMask'
             });
