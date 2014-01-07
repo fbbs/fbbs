@@ -104,7 +104,9 @@
                 data = JSON.parse(String(data));
             }
             this._trigger('ongetDataSuccess', null, data);
-            pageCache[url] = $.trim(f.tpl.format(html, f.config));
+            pageCache[url] = $.trim(f.tpl.format(f.format(html, {
+                webRoot: f.config.systemConfig.webRoot
+            }), f.config));
 
             this._updatePage(url);
         },

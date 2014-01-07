@@ -34,6 +34,9 @@ ul, ol, dl {
 .right {
     float: right;
 }
+.channels {
+    display: none;
+}
 .loading-error {
     text-align: center;
     padding: 50px 0;

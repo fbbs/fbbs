@@ -45,7 +45,7 @@
         init: function () {
             f.extend(this, f.config);
 
-            //默认添加ajax、dataAdaper组件
+            //默认添加ajax、dataAdaper、login组件
             f.components['Ajax'](this);
             f.components['DataAdapter'](this);
             this._mediator = Mediator();

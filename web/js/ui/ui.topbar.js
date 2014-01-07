@@ -42,7 +42,8 @@
             this._on({
                 'click .menu-toggle': $.proxy(this, '_onNavClick'),
                 'click .canvas-toggle': $.proxy(this, '_onShowCanvas'),
-                'click .exit-canvas-menu': $.proxy(this, '_onHideCanvas')
+                'mousedown .exit-canvas-menu': $.proxy(this, '_onHideCanvas'),
+                'touchstart .exit-canvas-menu': $.proxy(this, '_onHideCanvas')
             });
         },
         _onShowCanvas: function (event) {

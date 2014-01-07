@@ -67,9 +67,7 @@ f.namespace('f.components');
                 }
             });
         },
-        Button: function (thisValue) {
-            $('.button').button();
-        },
+        /*
         Breadcrumb: function (thisValue) {
             f.extend(thisValue, {
                 _initBreadcrumb: function (params) {
@@ -90,15 +88,25 @@ f.namespace('f.components');
         ScrollTarget: function (thisValue) {
             $('.scroll').scrollTarget();
         },
+        */
         DataAdapter: function (thisValue) {
             thisValue['DataAdapter'] = new f.dataAdapter();
-            f.extend(thisValue, {
-
-            });
         }
+
     });
 
     f.extend(f.components, {
-
+        Login: function (thisValue) {
+            f.extend(thisValue, {
+                _initLogin: function (params) {
+                    this[params.id] = $('#login-channel').login(f.extend({
+                        trigger: '.login',
+                        loginUrl: '',
+                        registUrl: '',
+                        forgetUrl: ''
+                    }, params.options));
+                }
+            });
+        }
     });
 }(jQuery, f));
