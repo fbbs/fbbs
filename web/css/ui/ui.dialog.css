@@ -45,7 +45,7 @@
     .ui-dialog-titlebar-close {
         display: block;
         height: 20px;
-        width: 40px;
+        width: auto;
         text-indent: 0;
         background-image: none;
         color: #999;
