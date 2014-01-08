@@ -21,6 +21,7 @@
         </div>
         <div class="ui-login-content">
             <button class="ui-login-button ui-login-submit">!#{this.loginText}</button>
+            <span class="ui-login-loading"></span>
         </div>
     </form>
 </div>

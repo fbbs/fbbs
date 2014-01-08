@@ -62,6 +62,11 @@ input[type=password]:focus {
     -moz-box-shadow: 0 0 5px #999;
     box-shadow: 0 0 5px #999;
 }
+input[type=text].disabled,
+input[type=password].disabled {
+    border-color: #ddd!important;
+    color: #aaa!important;
+}
 .left {
     float: left;
 }

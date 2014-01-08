@@ -117,16 +117,17 @@
 
     $.extend({
         /**
-         * 发送一个ajax post请求
+         * 发送一个ajax请求
          *
+         * @param {string} type 发送请求的方式
          * @param {string} url 发送请求的url
          * @param {Object} jsonData 需要发送的数据
          * @param {Function} successFn 请求成功时触发，function(data, status)
          * @param {Function} failedFn 请求失败时触发，function(msg)
          */
-        jsonPost: function (url, jsonData, successFn, failedFn) {
+        jsonAjax: function (type, url, jsonData, successFn, failedFn) {
             $.ajax({
-                type: 'POST',
+                type: type,
                 url: url,
                 data: jsonData,
                 dataType: 'json',

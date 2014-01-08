@@ -63,3 +63,24 @@
 .ui-login .ui-login-button:hover {
     background: #006888;
 }
+.ui-login .ui-login-button.disabled {
+    opacity: 0.7;
+    filter: alpha(opacity=70);
+    cursor: default;
+}
+.ui-login .ui-login-button.disabled:hover {
+    background: #008cba;
+}
+.ui-login .ui-login-loading {
+    display: none;
+    width: 16px;
+    height: 16px;
+    background-image: url(decorator/loader-mini.gif);
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 9px;
+    right: 20px;
+}
+.loading .ui-login .ui-login-loading {
+    display: block;
+}

@@ -31,10 +31,9 @@ f.namespace('f.components');
                  * @config {*}      extData  根据业务需求，发送请求时自行添加的额外数据
                  */
                 ajax: function (method, postData, extData) {
+                    var type = method.type || 'GET';
+                    var url = this.systemConfig.ajaxUri + '/' + method.url;
                     postData = postData || {};
-                    f.extend(postData, {
-                        method: method.url
-                    });
 
                     //触发正在请求中事件……
                     this.trigger(_getChannel(method.name, 'on'), {
@@ -42,7 +41,7 @@ f.namespace('f.components');
                         extData: extData
                     });
 
-                    $.jsonPost(this.systemConfig.ajaxUri, postData, function (data, status, msg) {
+                    $.jsonAjax(type, url, postData, function (data, status, msg) {
                         // whether the data adpter exist?
                         if (f.isString(method.adapter) && f.isFunction(thisValue.DataAdapter[method.adapter])) {
                             data.status = status;
@@ -99,12 +98,51 @@ f.namespace('f.components');
         Login: function (thisValue) {
             f.extend(thisValue, {
                 _initLogin: function (params) {
+                    var me = this;
                     this[params.id] = $('#login-channel').login(f.extend({
                         trigger: '.login',
-                        loginUrl: '',
                         registUrl: '',
-                        forgetUrl: ''
+                        forgetUrl: '',
+                        onsubmit: function (event, data) {
+                            thisValue.ajax({
+                                name: 'login',
+                                url: 'login.json',
+                                type: 'POST'
+                            }, data);
+                        }
                     }, params.options));
+                },
+                _saveCookie: function (cookies, options) {
+                    f.each(cookies, function (value, key) {
+                        $.cookie(key, value, options);
+                    });
+                },
+                onlogin: function () {
+                    this.Login.login('loading');
+                },
+                onloginSuccess: function (data, ext) {
+                    this.Login.login('reset');
+                    this.Login.login('close');
+                    f.config.userInfo = f.clone(data);
+                    var options = {
+                        path: '/',
+                        expires: ext.postData.rm ? 90 : 0
+                    };
+                    if (data && data.expires) {
+                        options.expires = new Date(parseInt(data.expires));
+                    }
+                    if (!options.expires) {
+                        delete options.expires;
+                    }
+                    this._saveCookie({
+                        'utmpuserid': data.user,
+                        'utmpkey': data.token,
+                        'utmpnum': ''
+                    }, options);
+                },
+                onloginFailed: function (msg) {
+                    this.Login.login('reset');
+                    this.Login.login('error', msg);
                 }
             });
         }

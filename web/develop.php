@@ -44,7 +44,7 @@ if(preg_match("/(common|ie)\.js$/i", $path)) {
 
     echo $smasher->build($group, 'js');
 }
-else if(preg_match("/(common|ie|modern)\.css$/i", $path)) {
+else if(preg_match("/common\.css$/i", $path)) {
     header("Content-Type:text/css");
     $group = preg_replace("/\//", '.', str_replace(array('/css/', '.css'), '', $baseName));
 
