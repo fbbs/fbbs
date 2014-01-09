@@ -68,6 +68,17 @@ input[type=password].disabled {
     border-color: #ddd!important;
     color: #aaa!important;
 }
+.clearfix {
+    *zoom: 1;
+}
+.clearfix:after {
+    display: block;
+    content: " ";
+    height: 0;
+    clear: both;
+    overflow: hidden;
+    visibility: hidden;
+}
 .left {
     float: left;
 }
