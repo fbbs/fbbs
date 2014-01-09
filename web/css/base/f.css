@@ -80,6 +80,9 @@ input[type=password].disabled {
     text-align: center;
     padding: 50px 0;
 }
+.hide-for-desktop {
+    display: none;
+}
 
 @media only screen and (min-width: 641px) {
     .hide-for-desktop {
@@ -90,5 +93,8 @@ input[type=password].disabled {
 @media only screen and (max-width: 640px) {
     .hide-for-mobile {
         display: none!important;
+    }
+    .hide-for-desktop {
+        display: block;
     }
 }

@@ -136,8 +136,7 @@ f.namespace('f.components');
                     }
                     this._saveCookie({
                         'utmpuserid': data.user,
-                        'utmpkey': data.token,
-                        'utmpnum': ''
+                        'utmpkey': data.token
                     }, options);
                 },
                 onloginFailed: function (msg) {
