@@ -3,7 +3,8 @@
     height: 100%;
     width: 100%;
     background: black;
-    background: rgba(0, 0, 0, 0.45);
+    opacity: .45;
+    filter: alpha(opacity=45);
     z-index: 98;
     top: 0;
     left: 0;
@@ -36,7 +37,6 @@
     top: -16px;
     background-color: transparent;
     background-image: url(decorator/close_dialog.png);
-    background-size: 32px 32px;
     text-indent: -9999px;
     border: none;
 }
