@@ -106,7 +106,7 @@ f.namespace('f.components');
                         onsubmit: function (event, data) {
                             thisValue.ajax({
                                 name: 'login',
-                                url: 'login.json',
+                                url: 'user/login.json',
                                 type: 'POST'
                             }, data);
                         }
