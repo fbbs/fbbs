@@ -129,7 +129,7 @@ f.namespace('f.components');
                         expires: ext.postData.rm ? 90 : 0
                     };
                     if (data && data.expires) {
-                        options.expires = new Date(parseInt(data.expires));
+                        options.expires = new Date(parseInt(data.expires) * 1000);
                     }
                     if (!options.expires) {
                         delete options.expires;
