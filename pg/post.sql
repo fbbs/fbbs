@@ -3,15 +3,27 @@ BEGIN;
 DROP SCHEMA IF EXISTS posts CASCADE;
 CREATE SCHEMA posts;
 
+CREATE SEQUENCE posts.post_id_seq;
+
+CREATE OR REPLACE FUNCTION posts.next_id(OUT result BIGINT) AS $$
+DECLARE
+	seq_id BIGINT;
+	now_millis BIGINT;
+BEGIN
+	SELECT nextval('posts.post_id_seq') % 2048 INTO seq_id;
+	SELECT FLOOR(EXTRACT(EPOCH FROM clock_timestamp()) * 1000) INTO now_millis;
+	result := (now_millis << 21) + seq_id;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TABLE posts.base (
-	id BIGSERIAL,
-	reid BIGINT,
-	tid BIGINT,
-	fake_id INTEGER,
-	owner INTEGER,
-	board INTEGER,
-	stamp TIMESTAMPTZ,
-	last_timestamp TIMESTAMPTZ,
+	id BIGINT NOT NULL DEFAULT posts.next_id(),
+	reply_id BIGINT,
+	thread_id BIGINT,
+
+	user_id INTEGER,
+	user_name TEXT,
+	board_id INTEGER,
 
 	digest BOOLEAN DEFAULT FALSE,
 	marked BOOLEAN DEFAULT FALSE,
@@ -20,99 +32,33 @@ CREATE TABLE posts.base (
 	water BOOLEAN DEFAULT FALSE,
 	attachment BOOLEAN DEFAULT FALSE,
 
-	replies INTEGER DEFAULT 0,
-	comments INTEGER DEFAULT 0,
-	score INTEGER DEFAULT 0,
+	title TEXT
+);
 
-	uname TEXT,
-	title TEXT,
+CREATE TABLE posts.recent (
+) INHERITS (posts.base);
+CREATE INDEX ON posts.recent (id);
+
+CREATE TABLE posts.archive (
+) INHERITS (posts.base);
+CREATE INDEX ON posts.archive (id);
+
+CREATE TABLE posts.content_base (
+	post_id BIGINT,
 	content TEXT
 );
 
-CREATE TABLE posts.archives (
-) INHERITS (posts.base);
-
-CREATE TABLE posts.recent (
-	junk BOOLEAN,
-	sticky BOOLEAN DEFAULT FALSE
-) INHERITS (posts.base);
+CREATE TABLE posts.content (
+) INHERITS (posts.content_base);
+CREATE INDEX ON posts.content (post_id);
 
 CREATE TABLE posts.deleted (
-	did BIGSERIAL,
-	eraser INTEGER,
-	deleted TIMESTAMPTZ,
+	delete_id BIGSERIAL,
+	delete_stamp TIMESTAMPTZ,
+	eraser_id INTEGER,
+	eraser_name TEXT,
 	junk BOOLEAN DEFAULT FALSE,
-	bm_visible BOOLEAN,
-	ename TEXT
+	bm_visible BOOLEAN
 ) INHERITS (posts.base);
-CREATE INDEX ON posts.deleted(did);
-
-CREATE TABLE posts.threads (
-	tid BIGINT,
-	board INTEGER,
-	stamp TIMESTAMPTZ,
-	last_id BIGINT DEFAULT 0,
-	last_stamp TIMESTAMPTZ,
-	replies INTEGER DEFAULT 0,
-	comments INTEGER DEFAULT 0,
-	owner INTEGER,
-	uname TEXT,
-	title TEXT
-);
-
-CREATE TABLE posts.board_archive (
-	board INTEGER,
-	archive INTEGER,
-	min BIGINT,
-	max BIGINT
-);
-CREATE INDEX ON posts.board_archive(board);
-
-CREATE TABLE posts.hot (
-	tid BIGINT,
-	score INTEGER,
-	board INTEGER,
-	last_stamp TIMESTAMPTZ,
-	owner INTEGER,
-	uname TEXT,
-	bname TEXT,
-	title TEXT
-);
-
-CREATE OR REPLACE FUNCTION posts_archives_before_insert_trigger() RETURNS trigger AS $$
-BEGIN
-	EXECUTE 'INSERT INTO posts.archive_' || NEW.board || ' VALUES ($1.*)' USING NEW;
-	RETURN NULL;
-END; $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER posts_archives_before_insert_trigger
-	BEFORE INSERT ON posts.archives
-	FOR EACH ROW EXECUTE PROCEDURE posts_archives_before_insert_trigger();
-
-CREATE OR REPLACE FUNCTION posts_recent_before_insert_trigger() RETURNS trigger AS $$
-BEGIN
-	EXECUTE 'INSERT INTO posts.recent_' || NEW.board || ' VALUES ($1.*)' USING NEW;
-	RETURN NULL;
-END; $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER posts_recent_before_insert_trigger
-	BEFORE INSERT ON posts.recent
-	FOR EACH ROW EXECUTE PROCEDURE posts_recent_before_insert_trigger();
-
-CREATE OR REPLACE FUNCTION create_posts_recent_partition(_board INTEGER) RETURNS VOID AS $$
-BEGIN
-	EXECUTE 'CREATE TABLE posts.recent_' || _board || ' (CHECK (board = ' || _board || ')) INHERITS (posts.recent)';
-	EXECUTE 'CREATE INDEX ON posts.recent_' || _board || ' (id)';
-	EXECUTE 'CREATE INDEX ON posts.recent_' || _board || ' (board)';
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION create_posts_archive_partition(_board INTEGER) RETURNS VOID AS $$
-BEGIN
-	EXECUTE 'CREATE TABLE posts.archive_' || _board || ' (CHECK (board = ' || _board || ')) INHERITS (posts.archives)';
-	EXECUTE 'CREATE INDEX ON posts.archive_' || _board || ' (id)';
-	EXECUTE 'CREATE INDEX ON posts.archive_' || _board || ' (board)';
-END;
-$$ LANGUAGE plpgsql;
 
 COMMIT;
