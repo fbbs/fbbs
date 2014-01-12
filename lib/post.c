@@ -1268,10 +1268,8 @@ post_id_t publish_post(const post_request_t *pr)
 	if (!res)
 		return 0;
 	if (resp.id) {
-		fb_time_t stamp = post_stamp_from_id(resp.id);
-		set_last_post_time(pr->board->id, stamp);
-
 		if (!pr->autopost) {
+			fb_time_t stamp = post_stamp_from_id(resp.id);
 			brc_initialize(uname, pr->board->name);
 			brc_mark_as_read(stamp);
 			brc_update(uname, pr->board->name);

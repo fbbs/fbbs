@@ -38,7 +38,7 @@ typedef enum {
 } post_flag_e;
 
 enum {
-	POST_TITLE_CCHARS = 24,
+	POST_TITLE_CCHARS = 23,
 	POST_CONTENT_CCHARS = 128 * 1024,
 };
 
@@ -176,6 +176,16 @@ typedef struct {
 } post_index_record_t;
 
 typedef struct {
+	post_id_t id;
+	post_id_t reply_id;
+	post_id_t thread_id;
+	user_id_t uid;
+	int flag;
+	char owner[IDLEN + 1];
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+} post_metadata_t;
+
+typedef struct {
 	post_id_t tid;
 	uint_t count;
 	fb_time_t last;
@@ -251,6 +261,8 @@ extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
 
 extern int get_post_mark_raw(fb_time_t stamp, int flag);
 extern int get_post_mark(const post_info_t *p);
+
+extern fb_time_t post_stamp_from_id(post_id_t id);
 
 extern int get_board_post_count(int bid);
 

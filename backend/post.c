@@ -82,9 +82,12 @@ bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 
 	post_id_t id = insert_post(&req);
 	if (id) {
-		backend_response_post_new_t resp = { .id = id, };
+		backend_response_post_new_t resp = { .id = id };
 		serialize_post_new(&resp, parcel_out);
 		backend_respond(parcel_out, channel);
+
+		fb_time_t stamp = post_stamp_from_id(id);
+		set_last_post_time(req.bid, stamp);
 
 		// 不总是要加文章数的..
 		adjust_user_post_count(req.uname, 1);
