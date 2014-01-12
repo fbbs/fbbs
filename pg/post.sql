@@ -22,6 +22,7 @@ CREATE TABLE posts.base (
 	thread_id BIGINT,
 
 	user_id INTEGER,
+	real_user_id INTEGER,
 	user_name TEXT,
 	board_id INTEGER,
 
@@ -60,5 +61,18 @@ CREATE TABLE posts.deleted (
 	junk BOOLEAN DEFAULT FALSE,
 	bm_visible BOOLEAN
 ) INHERITS (posts.base);
+
+CREATE OR REPLACE FUNCTION posts_recent_before_insert_trigger() RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.reply_id = 0 THEN
+		NEW.reply_id := NEW.id;
+		NEW.thread_id := NEW.id;
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS posts_recent_before_insert_trigger ON posts.recent;
+CREATE TRIGGER posts_recent_before_insert_trigger BEFORE INSERT ON posts.recent
+	FOR EACH ROW EXECUTE PROCEDURE posts_recent_before_insert_trigger();
 
 COMMIT;

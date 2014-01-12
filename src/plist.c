@@ -1277,7 +1277,6 @@ static int tui_new_post(int bid, post_info_t *pi)
 		.gbk_file = file,
 		.reid = pi ? pi->id : 0,
 		.tid = pi ? pi->tid : 0,
-		.uname_replied = pi ? pi->owner : NULL,
 		.uid_replied = pi ? pi->uid : 0,
 		.locked = header.locked,
 		.anony = header.anonymous,

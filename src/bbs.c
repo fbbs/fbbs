@@ -501,7 +501,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		uname = currentuser.userid;
 
 	bool autopost = mode == POST_FILE_DELIVER || mode == POST_FILE_AUTO
-	            || mode == POST_FILE_BMS;
+			|| mode == POST_FILE_BMS;
 	post_request_t req = {
 		.autopost = autopost,
 		.crosspost = mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN,
@@ -513,6 +513,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.gbk_file = output,
 		.locked = mode == POST_FILE_DELIVER ||
 				(mode == POST_FILE_AUTO && strneq2(utf8_title, "[合集]")),
+		.hide_uid = mode == POST_FILE_DELIVER || mode == POST_FILE_BMS,
 	};
 
 	post_id_t pid = publish_post(&req);

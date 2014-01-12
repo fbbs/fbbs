@@ -15,6 +15,8 @@
 
 typedef int64_t post_id_t;
 #define PRIdPID  PRId64
+#define DBIdPID  "l"
+#define db_get_post_id(res, line, col)  db_get_bigint(res, line, col)
 #define parcel_write_post_id(parcel, id)  parcel_write_varint64(parcel, id)
 #define parcel_read_post_id(parcel)  parcel_read_varint64(parcel)
 
@@ -94,7 +96,6 @@ typedef struct {
 	convert_t *cp;
 	post_id_t reid;
 	post_id_t tid;
-	const char *uname_replied;
 	user_id_t uid_replied;
 	int sig;
 	bool locked;
@@ -103,6 +104,7 @@ typedef struct {
 	bool web;
 	bool autopost;
 	bool crosspost;
+	bool hide_uid;
 } post_request_t;
 
 enum {
@@ -258,16 +260,16 @@ typedef struct { // @frontend
 	const char *title;
 	const char *uname;
 	const char *content;
-	const char *uname_replied;
+	user_id_t uid;
 	user_id_t uid_replied;
 	int bid;
 	bool marked;
 	bool locked;
+	bool hide_uid;
 } backend_request_post_new_t;
 
 typedef struct { // @backend
 	post_id_t id;
-	fb_time_t stamp;
 } backend_response_post_new_t;
 
 typedef struct { // @frontend

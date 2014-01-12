@@ -1210,6 +1210,11 @@ int get_post_mark(const post_info_t *p)
 	return get_post_mark_raw(p->stamp, p->flag);
 }
 
+fb_time_t post_stamp_from_id(post_id_t id)
+{
+	return (fb_time_t) (id >> 21);
+}
+
 /**
  * Publish a post.
  * @param pr The post request.
@@ -1249,7 +1254,7 @@ post_id_t publish_post(const post_request_t *pr)
 		.uname = pr->uname,
 		.content = content,
 		.bid = pr->board->id,
-		.uname_replied = pr->uname_replied,
+		.uid = session_uid(),
 		.uid_replied = pr->uid_replied,
 		.marked = pr->marked,
 		.locked = pr->locked,
@@ -1263,11 +1268,12 @@ post_id_t publish_post(const post_request_t *pr)
 	if (!res)
 		return 0;
 	if (resp.id) {
-		set_last_post_time(pr->board->id, resp.stamp);
+		fb_time_t stamp = post_stamp_from_id(resp.id);
+		set_last_post_time(pr->board->id, stamp);
 
 		if (!pr->autopost) {
 			brc_initialize(uname, pr->board->name);
-			brc_mark_as_read(resp.stamp);
+			brc_mark_as_read(stamp);
 			brc_update(uname, pr->board->name);
 		}
 	}

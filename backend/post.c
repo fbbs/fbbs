@@ -5,7 +5,6 @@
 #include "fbbs/notification.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
-
 #include "s11n/backend_post.h"
 
 static void set_board_post_count(int bid, int count)
@@ -13,73 +12,28 @@ static void set_board_post_count(int bid, int count)
 	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
 }
 
-static post_id_t next_post_id(void)
+static post_id_t insert_post(const backend_request_post_new_t *req)
 {
-	return mdb_integer(0, "INCR", POST_ID_KEY);
-}
-
-static post_id_t insert_post_index(const backend_request_post_new_t *req,
-		fb_time_t now, post_index_t *pi)
-{
-	pi->id = next_post_id();
-	if (!pi->id)
-		return 0;
-
-	pi->reid_delta = req->reid ? pi->id - req->reid : 0;
-	pi->tid_delta = req->tid ? pi->id - req->tid : 0;
-	pi->stamp = now;
-	pi->uid = get_user_id(req->uname);
-	pi->flag = (req->marked ? POST_FLAG_MARKED : 0)
-			| (req->locked ? POST_FLAG_LOCKED : 0);
-	pi->bid = req->bid;
-	strlcpy(pi->owner, req->uname, sizeof(pi->owner));
-	string_cp(pi->utf8_title, req->title, sizeof(pi->utf8_title));
-
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-	if (!post_index_record_update(&pir, pi))
-		pi->id = 0;
-	post_index_record_close(&pir);
-	return pi->id;
-}
-
-static post_id_t insert_post_index_board(const post_index_t *pi,
-		post_index_board_t *pib)
-{
-	pib->id = pi->id;
-	pib->reid_delta = pi->reid_delta;
-	pib->tid_delta = pi->tid_delta;
-	pib->uid = pi->uid;
-	pib->flag = pi->flag;
-	pib->stamp = pi->stamp;
-	pib->cstamp = 0;
-
 	post_id_t id = 0;
-	record_t record;
-	if (post_index_board_open(pi->bid, RECORD_WRITE, &record) < 0)
-		return 0;
-
-	if (record_append_locked(&record, &pib, 1) >= 0) {
-		id = pi->id;
-		set_board_post_count(pi->bid, record_count(&record));
+	db_res_t *r1 = db_query("INSERT INTO posts.recent (reply_id, thread_id,"
+			" user_id, user_name, board_id, marked, locked, attachment, title)"
+			" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdUID", %s, %d, %b, %b, %b,"
+			" %s) RETURNING id", req->reid, req->tid,
+			req->hide_uid ? 0 : req->uid, req->uname, req->bid, req->marked,
+			req->locked, false, req->title);
+	if (r1 && db_res_rows(r1) == 1) {
+		id = db_get_post_id(r1, 0, 0);
+		if (id) {
+			db_res_t *r2 = db_cmd("INSERT INTO posts.content"
+					" (post_id, content) VALUES (%"DBIdPID", %s)",
+					id, req->content);
+			db_clear(r2);
+		}
 	}
-	record_close(&record);
+	db_clear(r1);
 	return id;
 }
-
-static post_id_t insert_post(const backend_request_post_new_t *req,
-		fb_time_t now, post_index_board_t *pib)
-{
-	post_index_t pi;
-	if (!insert_post_index(req, now, &pi))
-		return 0;
-
-	if (post_content_write(pi.id, req->content, strlen(req->content)) <= 0)
-		return 0;
-
-	return insert_post_index_board(&pi, pib);
-}
-
+#if 0
 static bool append_notification_file(const char *uname, user_id_t uid,
 		const board_t *board, const post_index_board_t *pib,
 		const char *basename)
@@ -109,31 +63,7 @@ static void send_reply_notification(const post_index_board_t *pib,
 		append_notification_file(uname, uid, board, pib, POST_REPLIES_FILE);
 	}
 }
-
-bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
-{
-	backend_request_post_new_t req;
-	if (!deserialize_post_new(parcel_in, &req))
-		return false;
-
-	fb_time_t now = fb_time();
-	post_index_board_t pib;
-	post_id_t id = insert_post(&req, now, &pib);
-
-	if (id) {
-		backend_response_post_new_t resp = { .id = id, .stamp = now };
-		serialize_post_new(&resp, parcel_out);
-		backend_respond(parcel_out, channel);
-
-		board_t board;
-		if (get_board_by_bid(req.bid, &board)) {
-			send_reply_notification(&pib, req.uname_replied, req.uid_replied,
-					&board);
-		}
-		return true;
-	}
-	return false;
-}
+#endif
 
 static void adjust_user_post_count(const char *uname, int delta)
 {
@@ -142,6 +72,33 @@ static void adjust_user_post_count(const char *uname, int delta)
 	getuserbyuid(&urec, unum);
 	urec.numposts += delta;
 	substitut_record(NULL, &urec, sizeof(urec), unum);
+}
+
+bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+{
+	backend_request_post_new_t req;
+	if (!deserialize_post_new(parcel_in, &req))
+		return false;
+
+	post_id_t id = insert_post(&req);
+	if (id) {
+		backend_response_post_new_t resp = { .id = id, };
+		serialize_post_new(&resp, parcel_out);
+		backend_respond(parcel_out, channel);
+
+		// 不总是要加文章数的..
+		adjust_user_post_count(req.uname, 1);
+
+#if 0
+		board_t board;
+		if (get_board_by_bid(req.bid, &board)) {
+			send_reply_notification(&pib, req.uname_replied, req.uid_replied,
+					&board);
+		}
+		return true;
+#endif
+	}
+	return id;
 }
 
 typedef struct {

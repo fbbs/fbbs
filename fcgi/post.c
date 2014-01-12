@@ -686,7 +686,6 @@ int bbssnd_main(void)
 			.ip = mask_host(fromhost),
 			.reid = reply ? pi.id : 0,
 			.tid = reply ? pi.tid : 0,
-			.uname_replied = reply ? pi.owner : NULL,
 			.uid_replied = reply ? pi.uid : 0,
 			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
 			.anony = strtol(web_get_param("anony"), NULL, 0),
