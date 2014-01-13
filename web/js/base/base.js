@@ -115,6 +115,21 @@
 (function ($) {
     'use strict';
 
+    var _isMobile = {
+            Android: function () {
+                return /Android/i.test(navigator.userAgent);
+            },
+            BlackBerry: function () {
+                return /BlackBerry/i.test(navigator.userAgent);
+            },
+            iOS: function () {
+                return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            },
+            Windows: function () {
+                return /IEMobile/i.test(navigator.userAgent);
+            }
+        };
+
     $.extend({
         /**
          * 发送一个ajax请求
@@ -134,20 +149,20 @@
                 success: function (data, textStatus, jqXHR) {
                     var ret = data;
 
-                    //状态为0或者大于2，表示成功
-                    if (ret.status === 0 || ret.status > 2) {
+                    //状态为0，表示成功
+                    if (ret.status === 0) {
                         //调用成功函数，传递数据，同时传递状态码
                         successFn(ret.data, ret.status, ret.msg);
                     }
-                    //状态为1，表示失败
+                    //状态为1，表示重定向至某个地址
                     else if (ret.status === 1) {
+                        window.location = ret.data;
+                    }
+                    //状态为其他，表示失败
+                    else {
                         if (failedFn) {
                             failedFn(ret.msg, ret.data);
                         }
-                    }
-                    //状态为2，表示重定向至某个地址
-                    else if (ret.status === 2) {
-                        window.location = ret.data;
                     }
 
                 }
@@ -157,24 +172,14 @@
                 }
             });
         },
-
         isMobile: {
-            Android: function () {
-                return /Android/i.test(navigator.userAgent);
-            },
-            BlackBerry: function () {
-                return /BlackBerry/i.test(navigator.userAgent);
-            },
-            iOS: function () {
-                return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-            },
-            Windows: function () {
-                return /IEMobile/i.test(navigator.userAgent);
-            },
-            any: function () {
-                return (this.Android() || this.BlackBerry() || this.iOS() || this.Windows());
-            }
+            Android: _isMobile.Android(),
+            iOS: _isMobile.iOS(),
+            BlackBerry: _isMobile.BlackBerry(),
+            Windows: _isMobile.Windows(),
+            any: _isMobile.Android() || _isMobile.iOS() || _isMobile.BlackBerry() || _isMobile.Windows()
         }
+
     });
 
     //extend ui.widget

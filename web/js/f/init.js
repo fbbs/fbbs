@@ -127,7 +127,7 @@
                     $.extend(f.config, data);
                 },
                 onfail: function () {
-                    document.title = $.isMobile.any() ? f.config.systemConfig.defaultShortTitle : f.config.systemConfig.defaultTitle;
+                    document.title = $.isMobile.any ? f.config.systemConfig.defaultShortTitle : f.config.systemConfig.defaultTitle;
                     $(document.body).loading('hide');
                     $('#main').html('<p class="loading-error">载入失败，请刷新重试。</p>');
                 },
@@ -139,7 +139,7 @@
                     var title = pageInfo.title || f.config.systemConfig.defaultTitle;
                     var shortTitle = pageInfo.shortTitle || f.config.systemConfig.defaultShortTitle;
 
-                    document.title = $.isMobile.any() ? shortTitle : title;
+                    document.title = $.isMobile.any ? shortTitle : title;
 
                     $(document.body).loading('hide');
 
