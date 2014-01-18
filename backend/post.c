@@ -88,6 +88,7 @@ bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 
 		fb_time_t stamp = post_stamp_from_id(id);
 		set_last_post_time(req.bid, stamp);
+		post_cache_invalidity_change(req.bid, 1);
 
 		// 不总是要加文章数的..
 		adjust_user_post_count(req.uname, 1);

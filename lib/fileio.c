@@ -294,6 +294,17 @@ int file_lock_all(int fd, file_lock_e type)
 	return file_lock(fd, type, 0, FILE_SET, 0);
 }
 
+int file_try_lock_all(int fd, file_lock_e type)
+{
+	struct flock lock = {
+		.l_type = type,
+		.l_start = 0,
+		.l_whence = FILE_SET,
+		.l_len = 0,
+	};
+	return fcntl(fd, F_SETLK, &lock);
+}
+
 /**
  * 生成一个临时文件的文件名
  * @param[out] file 文件名

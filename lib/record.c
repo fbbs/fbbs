@@ -2,6 +2,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utime.h>
 #include "bbs.h"
 #include "mmap.h"
 #include "record.h"
@@ -99,10 +100,15 @@ int record_lock_all(record_t *rec, record_lock_e type)
 	return file_lock(rec->fd, (file_lock_e) type, 0, FILE_SET, 0);
 }
 
+int record_try_lock_all(record_t *rec, record_lock_e type)
+{
+	return file_try_lock_all(rec->fd, (file_lock_e) type);
+}
+
 /**
  * 设置记录文件读写位置
  * @param[in] rec 记录文件数据结构
- * @param[in] offset 锁的起始偏移量, 以记录为单位
+ * @param[in] offset 偏移量, 以记录为单位
  * @param[in] whence 偏移量的基准
  * @return 成功时返回设置后的偏移量, 以记录为单位, 文件头为基准. 否则-1
  */
@@ -133,7 +139,7 @@ int record_read(record_t *rec, void *ptr, int count)
  * @param[in] rec 记录文件数据结构
  * @param[out] ptr 缓冲区
  * @param[in] count 要读取的记录条数
- * @param[in] offset 锁的起始偏移量, 以记录为单位, 文件头为基准
+ * @param[in] offset 偏移量, 以记录为单位, 文件头为基准
  * @return 返回成功读取记录条数
  */
 int record_read_after(record_t *rec, void *ptr, int count, int offset)
@@ -145,11 +151,11 @@ int record_read_after(record_t *rec, void *ptr, int count, int offset)
 }
 
 /**
- * 在当前位置写入记录文件
+ * 在指定位置写入记录文件
  * @param[in] rec 记录文件数据结构
  * @param[in] ptr 缓冲区
  * @param[in] count 要写入的记录条数
- * @param[in] offset 锁的起始偏移量, 以记录为单位, 文件头为基准
+ * @param[in] offset 偏移量, 以记录为单位, 文件头为基准
  * @return 返回成功写入的记录条数
  */
 int record_write(record_t *rec, const void *ptr, int count, int offset)
@@ -438,6 +444,17 @@ int record_search_copy(record_t *rec, record_callback_t filter, void *fargs,
 		}
 	}
 	return -1;
+}
+
+/**
+ * 设置记录文件长度
+ * @param[in] rec 记录文件数据结构
+ * @param[in] count 文件长度, 以记录为单位
+ * @return 成功0, 否则-1
+ */
+int record_truncate(record_t *rec, int count)
+{
+	return rec ? ftruncate(rec->fd, count * rec->rlen) : -1;
 }
 
 USE_TRY;

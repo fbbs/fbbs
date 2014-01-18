@@ -1277,3 +1277,93 @@ post_id_t publish_post(const post_request_t *pr)
 	}
 	return resp.id;
 }
+
+/** 版面文章记录缓存是否失效 @mdb_hash */
+#define POST_CACHE_INVALIDITY_KEY  "post_cache_invalidity"
+
+int post_cache_invalidity_change(int bid, int delta)
+{
+	return mdb_cmd("HINCRBY", POST_CACHE_INVALIDITY_KEY" %d %d", bid, delta);
+}
+
+int post_cache_invalidity_get(int bid)
+{
+	return mdb_integer(0, "HGET", POST_CACHE_INVALIDITY_KEY" %d", bid);
+}
+
+static void convert_post_metadata(db_res_t *res, int row,
+		post_metadata_t *post)
+{
+	post->id = db_get_post_id(res, row, 0);
+	post->reply_id = db_get_post_id(res, row, 1);
+	post->thread_id = db_get_post_id(res, row, 2);
+	post->user_id = db_get_user_id(res, row, 3);
+	post->flag = (db_get_bool(res, row, 4) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(res, row, 5) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(res, row, 6) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(res, row, 7) ? POST_FLAG_IMPORT : 0)
+			| (db_get_bool(res, row, 8) ? POST_FLAG_WATER : 0);
+
+	const char *user_name = db_get_value(res, row, 10);
+	if (user_name)
+		strlcpy(post->user_name, user_name, sizeof(post->user_name));
+	else
+		post->user_name[0] = '\0';
+
+	const char *title = db_get_value(res, row, 11);
+	if (title)
+		strlcpy(post->utf8_title, title, sizeof(post->utf8_title));
+	else
+		post->utf8_title[0] = '\0';
+}
+
+int post_metadata_compare(const void *ptr1, const void *ptr2)
+{
+	const post_metadata_t *p1 = ptr1, *p2 = ptr2;
+	if (p1->id > p2->id)
+		return 1;
+	return p1->id == p2->id ? 0 : -1;
+}
+
+static bool update_cache(record_t *rec, int bid)
+{
+	query_t *q = query_new(0);
+	query_select(q, "id, reply_id, thread_id, user_id, digest, marked,"
+			" locked, imported, water, attachment, user_name, title");
+	query_from(q, "posts.recent");
+	query_where(q, "bid = %d", bid);
+	db_res_t *res = query_exec(q);
+	if (!res)
+		return false;
+
+	int rows = db_res_rows(res);
+	post_metadata_t *posts = malloc(sizeof(*posts) * rows);
+	if (posts) {
+		for (int i = 0; i < rows; ++i) {
+			convert_post_metadata(res, i, posts + i);
+		}
+		qsort(posts, rows, sizeof(*posts), post_metadata_compare);
+		record_write(rec, posts, rows, 0);
+	}
+
+	db_clear(res);
+	return true;
+}
+
+/**
+ * 更新版面文章记录缓存
+ * @param[in] rec 版面文章记录文件
+ * @param[in] bid 版面ID
+ * @return 成功更新返回true, 无须更新或者出错返回false
+ */
+bool post_update_cache(record_t *rec, int bid)
+{
+	bool updated = false;
+	int invalid = post_cache_invalidity_get(bid);
+	if (invalid > 0 && record_try_lock_all(rec, RECORD_WRLCK) == 0) {
+		updated = update_cache(rec, bid);
+		post_cache_invalidity_change(bid, -invalid);
+		record_lock_all(rec, RECORD_UNLCK);
+	}
+	return updated;
+}

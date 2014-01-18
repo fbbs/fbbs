@@ -179,9 +179,9 @@ typedef struct {
 	post_id_t id;
 	post_id_t reply_id;
 	post_id_t thread_id;
-	user_id_t uid;
+	user_id_t user_id;
 	int flag;
-	char owner[IDLEN + 1];
+	char user_name[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_metadata_t;
 
@@ -304,5 +304,7 @@ typedef struct { // @frontend
 typedef struct { // @backend
 	int undeleted;
 } backend_response_post_undelete_t;
+
+extern int post_cache_invalidity_change(int bid, int delta);
 
 #endif // FB_POST_H

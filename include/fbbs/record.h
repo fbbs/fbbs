@@ -52,6 +52,7 @@ extern int record_close(record_t *rec);
 extern int record_count(record_t *rec);
 extern int record_lock(record_t *rec, record_lock_e type, int offset, record_whence_e whence, int count);
 extern int record_lock_all(record_t *rec, record_lock_e type);
+extern int record_try_lock_all(record_t *rec, record_lock_e type);
 extern int record_seek(record_t *rec, int offset, record_whence_e whence);
 extern int record_read(record_t *rec, void *ptr, int count);
 extern int record_read_after(record_t *rec, void *ptr, int count, int offset);
@@ -84,6 +85,7 @@ extern int record_reverse_foreach(record_t *rec, record_callback_t callback, voi
 extern int record_merge(record_t *rec, void *ptr, int count);
 extern int record_search_copy(record_t *rec, record_callback_t filter, void *args, int offset, bool reverse, void *out);
 #define record_search(r, f, a, o, e)  record_search_copy(r, f, a, o, e, NULL)
+extern int record_truncate(record_t *rec, int count);
 
 #define COMPARE_RETURN(a, b)  \
 	do { \
