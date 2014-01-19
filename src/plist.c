@@ -516,8 +516,8 @@ static int toggle_post_lock(tui_list_t *tl, post_info_t *pi)
 			record_t *rec = (pi->flag & POST_FLAG_STICKY)
 					? pl->record_sticky : pl->record;
 			post_index_board_t pib = { .id = pi->id };
-			set_post_flag_one(rec, &pib, tl->cur, POST_FLAG_LOCKED,
-					false, true);
+//			set_post_flag_one(rec, &pib, tl->cur, POST_FLAG_LOCKED,
+//					false, true);
 			tl->valid = false;
 			return PARTUPDATE;
 		}
@@ -572,7 +572,7 @@ static int toggle_post_flag(tui_list_t *tl, post_info_t *pi, post_flag_e flag)
 		record_t *rec = (pi->flag & POST_FLAG_STICKY)
 			? pl->record_sticky : pl->record;
 		post_index_board_t pib = { .id = pi->id };
-		set_post_flag_one(rec, &pib, tl->cur, flag, false, true);
+//		set_post_flag_one(rec, &pib, tl->cur, flag, false, true);
 		tl->valid = false;
 		log_toggle_flag(pi, flag);
 		return PARTUPDATE;
@@ -1873,16 +1873,16 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 	int ret = PARTUPDATE;
 	switch (choice) {
 		case 0:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
+//					true, true);
 			break;
 		case 1:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
+//					true, true);
 			break;
 		case 2:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
+//					true, true);
 			break;
 		case 3:
 			if (pl->type == POST_LIST_NORMAL) {
@@ -1894,8 +1894,8 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 			ret = tui_import_posts(pl, &filter);
 			break;
 		case 5:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
+//					true, true);
 			break;
 		case 6:
 			// TODO
@@ -2067,23 +2067,23 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 			}
 			break;
 		case 1:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
+//					true, true);
 			break;
 		case 2:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
+//					true, true);
 			break;
 		case 3:
 			import_posts(pl, &filter, annpath);
 			break;
 		case 4:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
+//					true, true);
 			break;
 		case 5:
-			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
-					true, true);
+//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
+//					true, true);
 			break;
 		case 6:
 			pack_posts(pl->record, pl->pir, &filter, utf8_keyword, quote);

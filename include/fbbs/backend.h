@@ -7,10 +7,13 @@
 #define BACKEND_REQUEST_KEY  "request"
 #define BACKEND_RESPONSE_KEY  "response"
 
+#define BACKEND_DECLARE(function)  bool backend_##function(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+
 typedef enum {
 	BACKEND_REQUEST_post_new = 1,
 	BACKEND_REQUEST_post_delete = 2,
 	BACKEND_REQUEST_post_undelete = 3,
+	BACKEND_REQUEST_post_set_flag = 4,
 } backend_request_e;
 
 typedef bool (*backend_serializer_t)(const void *request, parcel_t *parcel);

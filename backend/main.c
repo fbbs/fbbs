@@ -5,11 +5,12 @@
 #include "fbbs/mdbi.h"
 #include "fbbs/parcel.h"
 
-extern bool post_new(parcel_t *, parcel_t *, int);
-extern bool post_delete(parcel_t *, parcel_t *, int);
-extern bool post_undelete(parcel_t *, parcel_t *, int);
+BACKEND_DECLARE(post_new);
+BACKEND_DECLARE(post_delete);
+BACKEND_DECLARE(post_undelete);
+BACKEND_DECLARE(post_set_flag);
 
-#define ENTRY(handler)  [BACKEND_REQUEST_##handler] = handler
+#define ENTRY(function)  [BACKEND_REQUEST_##function] = backend_##function
 
 typedef bool (*handler_t)(parcel_t *parcel_in, parcel_t *parcel_out,
 		int channel);
@@ -18,6 +19,7 @@ static const handler_t handlers[] = {
 	ENTRY(post_new),
 	ENTRY(post_delete),
 	ENTRY(post_undelete),
+	ENTRY(post_set_flag),
 };
 
 static sig_atomic_t backend_shutdown = false;

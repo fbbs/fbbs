@@ -74,7 +74,7 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
-bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+BACKEND_DECLARE(post_new)
 {
 	backend_request_post_new_t req;
 	if (!deserialize_post_new(parcel_in, &req))
@@ -233,7 +233,7 @@ e1: record_close(&record);
 	return deleted;
 }
 
-bool post_delete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+BACKEND_DECLARE(post_delete)
 {
 	post_filter_t filter;
 	backend_request_post_delete_t req = { .filter = &filter };
@@ -311,7 +311,7 @@ int undelete_posts(const backend_request_post_undelete_t *req)
 	return undeleted;
 }
 
-bool post_undelete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+BACKEND_DECLARE(post_undelete)
 {
 	post_filter_t filter;
 	backend_request_post_undelete_t req = { .filter = &filter };
@@ -321,6 +321,25 @@ bool post_undelete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 	backend_response_post_undelete_t resp;
 	resp.undeleted = undelete_posts(&req);
 	serialize_post_undelete(&resp, parcel_out);
+	backend_respond(parcel_out, channel);
+	return true;
+}
+
+static int _backend_post_set_flag(const backend_request_post_set_flag_t *req)
+{
+	return 0;
+}
+
+BACKEND_DECLARE(post_set_flag)
+{
+	post_filter_t filter;
+	backend_request_post_set_flag_t req = { .filter = &filter };
+	if (!deserialize_post_set_flag(parcel_in, &req))
+		return false;
+
+	backend_response_post_set_flag_t resp;
+	resp.affected = _backend_post_set_flag(&req);
+	serialize_post_set_flag(&resp, parcel_out);
 	backend_respond(parcel_out, channel);
 	return true;
 }

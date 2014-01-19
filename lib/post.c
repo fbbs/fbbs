@@ -1012,48 +1012,6 @@ bool match_filter(const post_index_board_t *pib,
 	return match;
 }
 
-static record_callback_e post_index_board_update_flag(void *ptr, void *args,
-		int offset)
-{
-	post_index_board_t *pib = ptr;
-	post_index_board_update_flag_t *pibuf = args;
-
-	if (pibuf->id == pib->id || (pibuf->pir && pibuf->filter
-				&& match_filter(pib, pibuf->pir, pibuf->filter, offset))) {
-		if (pibuf->toggle)
-			pibuf->set = !(pib->flag & pibuf->flag);
-		if (pibuf->set)
-			pib->flag |= pibuf->flag;
-		else
-			pib->flag &= ~pibuf->flag;
-		return RECORD_CALLBACK_MATCH;
-	}
-	if (!pibuf->id)
-		return RECORD_CALLBACK_CONTINUE;
-	COMPARE_RETURN(pib->id, pibuf->id);
-}
-
-int set_post_flag(record_t *rec, post_index_record_t *pir,
-		post_filter_t *filter, post_flag_e flag, bool set, bool toggle)
-{
-	post_index_board_update_flag_t pibuf = {
-		.pir = pir, .filter = filter, .id = 0,
-		.set = set, .toggle = toggle, .flag = flag,
-	};
-	return record_update(rec, NULL, 0, post_index_board_update_flag, &pibuf);
-}
-
-int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset,
-		post_flag_e flag, bool set, bool toggle)
-{
-	post_index_board_update_flag_t pibuf = {
-		.pir = NULL, .filter = NULL, .id = pib->id,
-		.set = set, .toggle = toggle, .flag = flag,
-	};
-	return record_update(rec, pib, offset,
-			post_index_board_update_flag, &pibuf);
-}
-
 bool is_deleted(post_list_type_e type)
 {
 	return type == POST_LIST_TRASH || type == POST_LIST_JUNK;
@@ -1366,4 +1324,21 @@ bool post_update_cache(record_t *rec, int bid)
 		record_lock_all(rec, RECORD_UNLCK);
 	}
 	return updated;
+}
+
+int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set,
+		bool toggle)
+{
+	backend_request_post_set_flag_t req = {
+		.filter = (post_filter_t *) filter,
+		.flag = flag,
+		.set = set,
+		.toggle = toggle,
+	};
+
+	backend_response_post_set_flag_t resp;
+	mdb_res_t *res = backend_cmd(&req, &resp, post_set_flag);
+	mdb_clear(res);
+
+	return res ? resp.affected : 0;
 }
