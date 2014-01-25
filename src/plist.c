@@ -506,25 +506,6 @@ static void reopen_post_record(post_list_t *pl, post_info_t *pi)
 	}
 }
 
-static int toggle_post_lock(tui_list_t *tl, post_info_t *pi)
-{
-	post_list_t *pl = tl->data;
-	if (pl->type == POST_LIST_NORMAL && pi) {
-		bool locked = pi->flag & POST_FLAG_LOCKED;
-		if (am_curr_bm() || (session_id() == pi->uid && !locked)) {
-			reopen_post_record(pl, pi);
-			record_t *rec = (pi->flag & POST_FLAG_STICKY)
-					? pl->record_sticky : pl->record;
-			post_index_board_t pib = { .id = pi->id };
-//			set_post_flag_one(rec, &pib, tl->cur, POST_FLAG_LOCKED,
-//					false, true);
-			tl->valid = false;
-			return PARTUPDATE;
-		}
-	}
-	return DONOTHING;
-}
-
 static int toggle_post_stickiness(tui_list_t *tl, post_info_t *pi)
 {
 	post_list_t *pl = tl->data;
@@ -564,22 +545,39 @@ static void log_toggle_flag(const post_info_t *pi, post_flag_e flag)
 	log_bm(type, 1);
 }
 
+static int toggle_post_flag_no_check(post_info_t *pi, post_flag_e flag)
+{
+	post_filter_t filter;
+	filter.min = filter.max = pi->id;
+
+	int affected = post_set_flag(&filter, flag, false, true);
+	if (affected) {
+		if (pi->flag & flag)
+			pi->flag &= ~flag;
+		else
+			pi->flag |= flag;
+		// TODO: 自己锁定文章不要记录
+		log_toggle_flag(pi, flag);
+		return PARTUPDATE;
+	}
+	return DONOTHING;
+}
+
 static int toggle_post_flag(post_info_t *pi, post_flag_e flag)
 {
-	if (pi && am_curr_bm()) {
-		post_filter_t filter;
-		filter.min = filter.max = pi->id;
+	if (pi && am_curr_bm())
+		return toggle_post_flag_no_check(pi, flag);
+	return DONOTHING;
+}
 
-		int affected = post_set_flag(&filter, flag, false, true);
-		if (affected) {
-			if (pi->flag & flag)
-				pi->flag &= ~flag;
-			else
-				pi->flag |= flag;
-			log_toggle_flag(pi, flag);
-			return PARTUPDATE;
-		}
-	}
+static int toggle_post_lock(post_info_t *pi)
+{
+	if (!pi)
+		return DONOTHING;
+
+	bool locked = pi->flag & POST_FLAG_LOCKED;
+	if (am_curr_bm() || (!locked && session_uid() == pi->uid))
+		return toggle_post_flag_no_check(pi, POST_FLAG_LOCKED);
 	return DONOTHING;
 }
 
@@ -2459,7 +2457,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case Ctrl('U'):
 			return read_posts(tl, pi, false, true);
 		case '_':
-			return toggle_post_lock(tl, pi);
+			return toggle_post_lock(pi);
 		case '#':
 			return toggle_post_stickiness(tl, pi);
 		case ';':
