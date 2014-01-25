@@ -564,18 +564,21 @@ static void log_toggle_flag(const post_info_t *pi, post_flag_e flag)
 	log_bm(type, 1);
 }
 
-static int toggle_post_flag(tui_list_t *tl, post_info_t *pi, post_flag_e flag)
+static int toggle_post_flag(post_info_t *pi, post_flag_e flag)
 {
-	post_list_t *pl = tl->data;
-	if (pl->type == POST_LIST_NORMAL && pi && am_curr_bm()) {
-		reopen_post_record(pl, pi);
-		record_t *rec = (pi->flag & POST_FLAG_STICKY)
-			? pl->record_sticky : pl->record;
-		post_index_board_t pib = { .id = pi->id };
-//		set_post_flag_one(rec, &pib, tl->cur, flag, false, true);
-		tl->valid = false;
-		log_toggle_flag(pi, flag);
-		return PARTUPDATE;
+	if (pi && am_curr_bm()) {
+		post_filter_t filter;
+		filter.min = filter.max = pi->id;
+
+		int affected = post_set_flag(&filter, flag, false, true);
+		if (affected) {
+			if (pi->flag & flag)
+				pi->flag &= ~flag;
+			else
+				pi->flag |= flag;
+			log_toggle_flag(pi, flag);
+			return PARTUPDATE;
+		}
 	}
 	return DONOTHING;
 }
@@ -1707,7 +1710,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				reply_with_mail(pi);
 				break;
 			case 'g':
-				toggle_post_flag(tl, pi, POST_FLAG_DIGEST);
+				toggle_post_flag(pi, POST_FLAG_DIGEST);
 				break;
 			case '*':
 				show_post_info(pi);
@@ -2462,11 +2465,11 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case ';':
 			return tui_reorder_sticky_posts(tl, pi);
 		case 'm':
-			return toggle_post_flag(tl, pi, POST_FLAG_MARKED);
+			return toggle_post_flag(pi, POST_FLAG_MARKED);
 		case 'g':
-			return toggle_post_flag(tl, pi, POST_FLAG_DIGEST);
+			return toggle_post_flag(pi, POST_FLAG_DIGEST);
 		case 'w':
-			return toggle_post_flag(tl, pi, POST_FLAG_WATER);
+			return toggle_post_flag(pi, POST_FLAG_WATER);
 		case 'T':
 			return tui_edit_post_title(tl, pi);
 		case 'E':
@@ -2621,6 +2624,8 @@ static int post_list_with_filter(const post_filter_t *filter)
 	int lines = screen_lines() - 4;
 
 	post_info_t *buf = malloc(lines * sizeof(*buf));
+	if (!buf)
+		return 0;
 
 	record_t record, record_sticky;
 	open_post_record(filter, &record);
@@ -2665,6 +2670,9 @@ static int post_list_with_filter(const post_filter_t *filter)
 
 int post_list_board(int bid)
 {
-	post_filter_t filter = { .type = POST_LIST_NORMAL, .bid = bid };
+	post_filter_t filter = {
+		.type = POST_LIST_NORMAL,
+		.bid = bid,
+	};
 	return post_list_with_filter(&filter);
 }

@@ -1061,10 +1061,8 @@ int post_index_board_delete(const post_filter_t *filter, bool junk,
 		.bm_visible = bm_visible, .force = force, .ename = currentuser.userid,
 	};
 	backend_response_post_delete_t resp;
-	mdb_res_t *res = backend_cmd(&req, &resp, post_delete);
-	mdb_clear(res);
-
-	return res ? resp.deleted : 0;
+	bool ok = backend_cmd(&req, &resp, post_delete);
+	return ok ? resp.deleted : 0;
 }
 
 int post_index_board_undelete(const post_filter_t *filter, bool bm_visible)
@@ -1077,10 +1075,8 @@ int post_index_board_undelete(const post_filter_t *filter, bool bm_visible)
 	};
 	backend_response_post_undelete_t resp;
 
-	mdb_res_t *res = backend_cmd(&req, &resp, post_undelete);
-	mdb_clear(res);
-
-	return res ? resp.undeleted : 0;
+	bool ok = backend_cmd(&req, &resp, post_undelete);
+	return ok ? resp.undeleted : 0;
 }
 
 static char *replace_content_title(const char *content, size_t len,
@@ -1218,12 +1214,11 @@ post_id_t publish_post(const post_request_t *pr)
 		.locked = pr->locked,
 	};
 	backend_response_post_new_t resp;
-	mdb_res_t *res = backend_cmd(&req, &resp, post_new);
-	mdb_clear(res);
+	bool ok = backend_cmd(&req, &resp, post_new);
 
 	free(content);
 
-	if (!res)
+	if (!ok)
 		return 0;
 	if (resp.id) {
 		if (!pr->autopost) {
@@ -1239,9 +1234,10 @@ post_id_t publish_post(const post_request_t *pr)
 /** 版面文章记录缓存是否失效 @mdb_hash */
 #define POST_CACHE_INVALIDITY_KEY  "post_cache_invalidity"
 
-int post_cache_invalidity_change(int bid, int delta)
+void post_cache_invalidity_change(int bid, int delta)
 {
-	return mdb_cmd("HINCRBY", POST_CACHE_INVALIDITY_KEY" %d %d", bid, delta);
+	if (bid)
+		mdb_cmd("HINCRBY", POST_CACHE_INVALIDITY_KEY" %d %d", bid, delta);
 }
 
 int post_cache_invalidity_get(int bid)
@@ -1337,8 +1333,6 @@ int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set,
 	};
 
 	backend_response_post_set_flag_t resp;
-	mdb_res_t *res = backend_cmd(&req, &resp, post_set_flag);
-	mdb_clear(res);
-
-	return res ? resp.affected : 0;
+	bool ok = backend_cmd(&req, &resp, post_set_flag);
+	return ok ? resp.affected : 0;
 }

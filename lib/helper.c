@@ -299,7 +299,7 @@ void initialize_environment(int flags)
 		initialize_db();
 }
 
-mdb_res_t *backend_request(const void *req, void *resp,
+bool backend_request(const void *req, void *resp,
 		backend_serializer_t serializer, backend_deserializer_t deserializer,
 		backend_request_e type)
 {
@@ -313,14 +313,14 @@ mdb_res_t *backend_request(const void *req, void *resp,
 
 	if (!parcel_ok(&parcel_out)) {
 		parcel_free(&parcel_out);
-		return NULL;
+		return false;
 	}
 
 	bool send_success = mdb_cmd_safe("LPUSH", "%s %b", BACKEND_REQUEST_KEY,
 			parcel_out.ptr, parcel_size(&parcel_out));
 	parcel_free(&parcel_out);
 	if (!send_success)
-		return NULL;
+		return false;
 
 	mdb_res_t *res = mdb_res("BLPOP", "%s_%d %d",
 			BACKEND_RESPONSE_KEY, pid, 0);
@@ -336,11 +336,13 @@ mdb_res_t *backend_request(const void *req, void *resp,
 
 			if (parcel_ok(&parcel_in) && ok && response_type == type) {
 				deserializer(&parcel_in, resp);
-				if (parcel_ok(&parcel_in))
-					return res;
+				if (parcel_ok(&parcel_in)) {
+					mdb_clear(res);
+					return true;
+				}
 			}
 		}
 	}
 	mdb_clear(res);
-	return NULL;
+	return false;
 }

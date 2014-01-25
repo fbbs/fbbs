@@ -424,6 +424,10 @@ BACKEND_DECLARE(post_set_flag)
 
 	backend_response_post_set_flag_t resp;
 	resp.affected = _backend_post_set_flag(&req);
+
+	if (resp.affected)
+		post_cache_invalidity_change(filter.bid, 1);
+
 	serialize_post_set_flag(&resp, parcel_out);
 	backend_respond(parcel_out, channel);
 	return true;
