@@ -1057,8 +1057,12 @@ int post_index_board_delete(const post_filter_t *filter, bool junk,
 		return 0;
 
 	backend_request_post_delete_t req = {
-		.filter = (post_filter_t *) filter, .junk = junk,
-		.bm_visible = bm_visible, .force = force, .ename = currentuser.userid,
+		.filter = (post_filter_t *) filter,
+		.junk = junk,
+		.bm_visible = bm_visible,
+		.force = force,
+		.user_id = session_uid(),
+		.user_name = currentuser.userid,
 	};
 	backend_response_post_delete_t resp;
 	bool ok = backend_cmd(&req, &resp, post_delete);

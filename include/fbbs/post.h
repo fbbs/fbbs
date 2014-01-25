@@ -286,7 +286,8 @@ typedef struct { // @frontend
 	bool junk;
 	bool bm_visible;
 	bool force;
-	const char *ename;
+	user_id_t user_id;
+	const char *user_name;
 } backend_request_post_delete_t;
 
 typedef struct { // @backend

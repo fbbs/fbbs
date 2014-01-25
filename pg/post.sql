@@ -54,7 +54,6 @@ CREATE TABLE posts.content (
 CREATE INDEX ON posts.content (post_id);
 
 CREATE TABLE posts.deleted (
-	delete_id BIGSERIAL,
 	delete_stamp TIMESTAMPTZ,
 	eraser_id INTEGER,
 	eraser_name TEXT,
