@@ -105,6 +105,52 @@ BACKEND_DECLARE(post_new)
 	return id;
 }
 
+static void build_post_filter(query_t *q, const post_filter_t *f)
+{
+	query_where(q, "TRUE");
+	if (f->bid && is_deleted(f->type))
+		query_and(q, "board_id = %d", f->bid);
+	if (f->flag & POST_FLAG_DIGEST)
+		query_and(q, "digest");
+	if (f->flag & POST_FLAG_MARKED)
+		query_and(q, "marked");
+	if (f->flag & POST_FLAG_WATER)
+		query_and(q, "water");
+	if (f->uid)
+		query_and(q, "user_id = %"DBIdUID, f->uid);
+	if (*f->utf8_keyword)
+		query_and(q, "title ILIKE '%%' || %s || '%%'", f->utf8_keyword);
+	if (f->type == POST_LIST_TOPIC)
+		query_and(q, "id = thread_id");
+
+	if (f->type == POST_LIST_THREAD) {
+		if (f->min && f->tid) {
+			query_and(q, "(thread_id = %"DBIdPID" AND id >= %"DBIdPID
+					" OR thread_id > %"DBIdPID")", f->tid, f->min, f->tid);
+		}
+		if (f->max && f->tid) {
+			query_and(q, "(thread_id = %"DBIdPID" AND id <= %"DBIdPID
+					" OR thread_id < %"DBIdPID")", f->tid, f->max, f->tid);
+		}
+	} else {
+		if (f->tid)
+			query_and(q, "thread_id = %"DBIdPID, f->tid);
+	}
+
+	if (f->type == POST_LIST_TRASH)
+		query_and(q, "bm_visible");
+	if (f->type == POST_LIST_JUNK)
+		query_and(q, "NOT bm_visible");
+}
+
+static const char *table_name(const post_filter_t *filter)
+{
+	if (is_deleted(filter->type))
+		return "posts.deleted";
+	else
+		return "posts.recent";
+}
+
 typedef struct {
 	post_index_record_t *pir;
 	const post_filter_t *filter;
@@ -325,9 +371,48 @@ BACKEND_DECLARE(post_undelete)
 	return true;
 }
 
+static const char *flag_field(post_flag_e flag)
+{
+	switch (flag) {
+		case POST_FLAG_DIGEST:
+			return "digest";
+		case POST_FLAG_MARKED:
+			return "marked";
+		case POST_FLAG_LOCKED:
+			return "locked";
+		case POST_FLAG_IMPORT:
+			return "imported";
+		case POST_FLAG_WATER:
+			return "water";
+		default:
+			return "attachment";
+	}
+}
+
 static int _backend_post_set_flag(const backend_request_post_set_flag_t *req)
 {
-	return 0;
+	if (!req)
+		return 0;
+
+	query_t *q = query_new(0);
+	if (!q)
+		return 0;
+
+	query_update(q, table_name(req->filter));
+
+	const char *field = flag_field(req->flag);
+	query_set(q, field);
+	if (req->toggle) {
+		query_sappend(q, "= NOT", field);
+	} else {
+		query_append(q, "= %b", req->set);
+	}
+	build_post_filter(q, req->filter);
+
+	db_res_t *res = query_cmd(q);
+	int rows = res ? db_cmd_rows(res) : 0;
+	db_clear(res);
+	return rows;
 }
 
 BACKEND_DECLARE(post_set_flag)
