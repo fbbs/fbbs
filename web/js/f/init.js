@@ -14,11 +14,13 @@
         function initBBS() {
             FastClick.attach(document.body);
 
-            var menuNav = $('.menu-nav').topbar({
+            $('.menu-nav').topbar({
                 onchange: function (event, data) {
                     f.mediator.trigger('app:topbar:onchange', data);
                 }
             });
+
+            $('#global-tip').tip();
 
             /*
             $('.side-nav').sideNav({
@@ -132,12 +134,15 @@
                     var pageInfo = f.config.pageInfo;
                     var sideNav = $(':data(ui-sidenav)');
                     var menuNav = $(':data(ui-topbar)');
+                    var globalTip = $('#global-tip');
                     var title = pageInfo.title || f.config.systemConfig.defaultTitle;
                     var shortTitle = pageInfo.shortTitle || f.config.systemConfig.defaultShortTitle;
 
                     document.title = $.isMobile.any ? shortTitle : title;
 
                     $(document.body).loading('hide');
+
+                    globalTip.tip('close');
 
                     /*
                     if (pageInfo.isShowSideNav) {
@@ -161,15 +166,14 @@
 
                     // ie6,7提示
                     if ($.browser.msie && ~~$.browser.version < 8) {
-                        /*
-                        $('#global-tip')
-                            .show()
-                            .find('.text')
-                            .html(f.format('提示：本系统不支持IE6、IE7浏览器！为了避免网页显示不兼容，建议您升级浏览器。<a target="_target" href="!{firefox}">Firefox浏览器下载</a>&#12288;|&#12288;<a target="_target" href="!{chrome}">Chrome浏览器下载</a>', {
-                            chrome: 'http://www.google.cn/intl/zh-CN/chrome/browser/',
-                            firefox: 'http://firefox.com.cn/download/'
-                        }));
-                        */
+                        globalTip.tip('append', {
+                            id: 'browser-alert',
+                            boxClass: 'warning',
+                            content: f.format('提示：本系统不支持IE6、IE7浏览器！请升级浏览器。<a target="_target" href="!{firefox}">Firefox浏览器下载</a>&#12288;|&#12288;<a target="_target" href="!{chrome}">Chrome浏览器下载</a>', {
+                                chrome: 'http://www.google.cn/intl/zh-CN/chrome/browser/',
+                                firefox: 'http://firefox.com.cn/download/'
+                            })
+                        });
                     }
                 }
             });

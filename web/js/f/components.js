@@ -90,6 +90,9 @@ f.namespace('f.components');
         */
         DataAdapter: function (thisValue) {
             thisValue['DataAdapter'] = new f.dataAdapter();
+        },
+        Tip: function (thisValue) {
+            thisValue['Tip'] = $('#global-tip');
         }
 
     });

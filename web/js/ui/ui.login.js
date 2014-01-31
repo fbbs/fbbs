@@ -2,6 +2,7 @@
     'use strict';
 
     $.widget('ui.login', {
+        version: '1.0.0',
         options: {
             registUrl: 'javascript:void(0);',
             forgetUrl: 'javascript:void(0);',
