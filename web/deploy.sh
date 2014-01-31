@@ -21,8 +21,9 @@ CLEAN_FILE="$DEPLOY_PATH/$TMP_DIR $DEPLOY_PATH/$JS_ROOT $DEPLOY_PATH/$CSS_ROOT $
 JS_FILES=
 CSS_FILES=
 TPL_FILES=
+DEBUG=F
 
-while getopts "d:j:c:t:" arg
+while getopts "d:j:c:t:i:" arg
 do
 	case $arg in
 		d)
@@ -37,8 +38,20 @@ do
 		t)
 			TPL_COMP=$OPTARG
 			;;
+		i)
+			DEBUG=T
+			;;
 	esac
 done
+
+if [ ! -f "$JS_COMP" ]; then
+	echo "FATAL: JS Compiler $JS_COMP does not exist!"
+	exit 1
+fi
+if [ ! -f "$CSS_COMP" ]; then
+	echo "FATAL: CSS Compiler $CSS_COMP does not exist!"
+	exit 1
+fi
 
 mkdir $TMP_DIRS
 
@@ -51,7 +64,9 @@ do
 		JS_FILES=
 		CSS_FILES=
 		TPL_FILES=
-		echo "INFO: Group $GROUP start"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: Group $GROUP start"
+		fi
 	fi
 	NAME=
 	TYPE=
@@ -61,7 +76,9 @@ do
 		TYPE=${TYPE%%\"*}
 		NAME=${LINE#* src=\"}
 		NAME=${NAME%%\"*}
-		echo "INFO: File type $TYPE name $NAME"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: File type $TYPE name $NAME"
+		fi
 		case "$TYPE" in
 			"js" )
 				JS_FILES=${JS_FILES}" "${NAME}
@@ -80,7 +97,9 @@ do
 		TYPE=${TYPE%%\"*}
 		NAME=${LINE#* src=\"}
 		NAME=${NAME%%\"*}
-		echo "INFO: Dir type $TYPE name $NAME start"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: Dir type $TYPE name $NAME start"
+		fi
 		case "$TYPE" in
 			"js" )
 				if [ -d $NAME ]
@@ -90,7 +109,9 @@ do
 						if [ -f ${NAME}${FILE} ]
 						then
 							JS_FILES=${JS_FILES}" "${NAME}${FILE}
-							echo "INFO: File $FILE"
+							if [ "$DEBUG"z = "T"z ]; then
+								echo "INFO: File $FILE"
+							fi
 						fi
 					done
 				fi
@@ -103,7 +124,9 @@ do
 						if [ -f ${NAME}${FILE} ]
 						then
 							CSS_FILES=${CSS_FILES}" "${NAME}${FILE}
-							echo "INFO: File $FILE"
+							if [ "$DEBUG"z = "T"z ]; then
+								echo "INFO: File $FILE"
+							fi
 						fi
 					done
 				fi
@@ -116,37 +139,49 @@ do
 						if [ -f ${NAME}${FILE} ]
 						then
 							TPL_FILES=${TPL_FILES}" "${NAME}${FILE}
-							echo "INFO: File $FILE"
+							if [ "$DEBUG"z = "T"z ]; then
+								echo "INFO: File $FILE"
+							fi
 						fi
 					done
 				fi
 			;;
 		esac
-		echo "INFO: Dir type $TYPE name $NAME end"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: Dir type $TYPE name $NAME end"
+		fi
 	fi
 	if echo $LINE | grep "</group>" > /dev/null
 	then
-		echo "INFO: Group $GROUP end"
-		echo "INFO: Compile group $GROUP start"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: Group $GROUP end"
+			echo "INFO: Compile group $GROUP start"
+		fi
 		if [ "$JS_FILES" ]
 		then
-			echo "INFO: Compiler params js $JS_FILES"
+			if [ "$DEBUG"z = "T"z ]; then
+				echo "INFO: Compiler params js $JS_FILES"
+			fi
 			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8
 		fi
 		if [ "$CSS_FILES" ]
 		then
 			for CSS in $CSS_FILES
 			do
-				echo "INFO: Compiler params css $CSS"
+				if [ "$DEBUG"z = "T"z ]; then
+					echo "INFO: Compiler params css $CSS"
+				fi
 				java -jar $CSS_COMP --type css --charset utf-8 -v $CSS >> $TMP_DIR/$CSS_ROOT/$GROUP.css
 			done
 		fi
 		if [ "$TPL_FILES" ]
 		then
-			echo "INFO: Compiler params tpl $TPL_FILES"
+			if [ "$DEBUG"z = "T"z ]; then echo "INFO: Compiler params tpl $TPL_FILES"
 			cat $TPL_FILES | sed 's/^\s\s*//g' | sed 's/\s\s*$//g' > $TMP_DIR/$TPL_ROOT/$GROUP.html
 		fi
-		echo "INFO: Compile group $GROUP end"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: Compile group $GROUP end"
+		fi
 	fi
 done
 
@@ -155,7 +190,9 @@ do
 	if [ -f $JS_ROOT/$JS ]
 	then
 		java -jar $JS_COMP --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8
-		echo "INFO: Compile js $JS"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: Compile js $JS"
+		fi
 	fi
 done
 
@@ -164,7 +201,9 @@ do
 	if [ -f $CSS_ROOT/$CSS ]
 	then
 		java -jar $CSS_COMP --type css --charset utf-8 -v $CSS_ROOT/$CSS > $TMP_DIR/$CSS_ROOT/$CSS
-		echo "INFO: Compile css $CSS"
+		if [ "$DEBUG"z = "T"z ]; then
+			echo "INFO: Compile css $CSS"
+		fi
 	fi
 done
 
