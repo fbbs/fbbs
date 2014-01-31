@@ -176,7 +176,9 @@ do
 		fi
 		if [ "$TPL_FILES" ]
 		then
-			if [ "$DEBUG"z = "T"z ]; then echo "INFO: Compiler params tpl $TPL_FILES"
+			if [ "$DEBUG"z = "T"z ]; then
+				echo "INFO: Compiler params tpl $TPL_FILES"
+			fi
 			cat $TPL_FILES | sed 's/^\s\s*//g' | sed 's/\s\s*$//g' > $TMP_DIR/$TPL_ROOT/$GROUP.html
 		fi
 		if [ "$DEBUG"z = "T"z ]; then
