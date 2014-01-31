@@ -81,28 +81,76 @@
 .ui-top-bar .top-bar-section ul li a.button:hover {
     background: #006888;
 }
-.ui-top-bar .top-bar-section .notification-icon {
+.ui-top-bar .notification .notification-icon {
+    width: 20px;
+    height: 20px;
     background-position: center center;
     background-repeat: no-repeat;
+    display: inline-block;
+    vertical-align: middle;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-timing-function: ease;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-duration: 1s;
+    -moz-animation-timing-function: ease;
+    -moz-animation-fill-mode: both;
+    -ms-animation-duration: 1s;
+    -ms-animation-timing-function: ease;
+    -ms-animation-fill-mode: both;
+    animation-duration: 1s;
+    animation-timing-function: ease;
+    animation-fill-mode: both;
 }
-.ui-top-bar .top-bar-section .notification-icon.notified {
-    background-position: 15px center;
-}
-.ui-top-bar .top-bar-section .notification-icon.mail {
+.ui-top-bar .notification.mail .notification-icon {
     background-image: url(decorator/mail.png);
 }
-.ui-top-bar .top-bar-section .notification-icon .notification-label {
+.ui-top-bar .notification .notification-label {
     display: none;
 }
-.ui-top-bar .top-bar-section .notification-icon.notified .notification-label {
+.ui-top-bar .notification.notified .notification-label {
     background-color: #f04124;
     color: white;
     -webkit-border-radius: 3px;
     border-radius: 3px;
     display: inline-block;
+    vertical-align: middle;
     line-height: 1;
     padding: 2px 5px;
-    margin-left: 25px;
+    margin-left: 10px;
+}
+@-webkit-keyframes tada {
+  0% { -webkit-transform: scale(1); }
+  10%,20% { -webkit-transform: scale(0.9) rotate(-3deg); }
+  30%,50%,70%,90% { -webkit-transform: scale(1.1) rotate(3deg); }
+  40%,60%,80% { -webkit-transform: scale(1.1) rotate(-3deg); }
+  100% { -webkit-transform: scale(1) rotate(0deg); }
+}
+@-moz-keyframes tada {
+  0% { -moz-transform: scale(1); }
+  10%,20% { -moz-transform: scale(0.9) rotate(-3deg); }
+  30%,50%,70%,90% { -moz-transform: scale(1.1) rotate(3deg); }
+  40%,60%,80% { -moz-transform: scale(1.1) rotate(-3deg); }
+  100% { -moz-transform: scale(1) rotate(0deg); }
+}
+@-o-keyframes tada {
+  0% { -o-transform: scale(1); }
+  10%,20% { -o-transform: scale(0.9) rotate(-3deg); }
+  30%,50%,70%,90% { -o-transform: scale(1.1) rotate(3deg); }
+  40%,60%,80% { -o-transform: scale(1.1) rotate(-3deg); }
+  100% { -o-transform: scale(1) rotate(0deg); }
+}
+@keyframes tada {
+  0% { transform: scale(1); }
+  10%,20% { transform: scale(0.9) rotate(-3deg); }
+  30%,50%,70%,90% { transform: scale(1.1) rotate(3deg); }
+  40%,60%,80% { transform: scale(1.1) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.tada {
+    -webkit-animation-name:tada;
+    -moz-animation-name:tada;
+    -o-animation-name:tada;
+    animation-name:tada;
 }
 
 @media only screen and (max-width: 640px) {
@@ -234,5 +282,13 @@
         display: block;
         z-index: 1000;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+    .ui-top-bar .off-canvas-notification {
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    .ui-top-bar .off-canvas-notification a {
+        border-bottom: none!important;
     }
 }

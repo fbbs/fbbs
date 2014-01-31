@@ -37,35 +37,71 @@
             // Initialize notification
             $(document.body).notifications({
                 notificationUrl: [f.config.systemConfig.ajaxUri, '/user/notifications.json'].join(""),
-                getInterval: 5000,
+                getInterval: 60000,
                 ongetNotification: function () {
                     return !!(f.config.userInfo.user && f.config.userInfo.token);
                 },
                 ongetNotificationSuccess: function (event, data) {
-                    var notified = false;
+                    var notified = [];
+                    var list = {
+                        mail: '您有#{0}封未读信件。'
+                    };
                     f.each(data, function (value, key) {
+                        var noti = $('.notifications').find(['.', key].join("")),
+                            icon = noti.find('.notification-icon'),
+                            label = noti.find('.notification-label'),
+                            text = label.text();
                         if (value) {
-                            if (~~$('.notifications').find(['.', key].join("")).find('span').text() < value) {
-                                notified = true;
+                            noti.addClass('notified')
+                                .attr('href', '#/new_mail.html');
+                            label.text(value);
+                            if (~~text < value) {
+                                notified.push(f.format(list[key], value));
+                                notified.push('\n');
+                                icon.addClass('tada');
+                                setTimeout(function () {
+                                    icon.removeClass('tada');
+                                }, 1000);
                             }
-                            $('.notifications').find(['.', key].join(""))
-                                .addClass('notified')
-                                .find('span')
-                                .text(value);
                         }
                         else {
-                            $('.notifications').find(['.', key].join(""))
-                                .removeClass('notified')
-                                .find('span')
-                                .text(value);
+                            noti.removeClass('notified')
+                                .attr('href', '#/mail.html');
+                            label.text(value);
                         }
                     });
-                    if (notified) {
+                    var getHiddenProp = function () {
+                        var prefixes = ['webkit','moz','ms','o'];
+
+                        // if 'hidden' is natively supported just return it
+                        if ('hidden' in document) {
+                            return 'hidden';
+                        }
+
+                        // otherwise loop over all the known prefixes until we find one
+                        for (var i = 0; i < prefixes.length; i++) {
+                            if ((prefixes[i] + 'Hidden') in document) {
+                                return prefixes[i] + 'Hidden';
+                            }
+                        }
+
+                        // otherwise it's not supported
+                        return null;
+                    };
+                    var isHidden = function () {
+                        var prop = getHiddenProp();
+                        if (!prop) {
+                            return false;
+                        }
+
+                        return document[prop];
+                    };
+                    if (isHidden() && notified.length) {
                         if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) {
                             var notification = webkitNotifications.createNotification(
-                                [f.config.systemConfig.webRoot, '/images/apple-touch-icon-the-new-ipad.png'].join(""),
-                                f.config.pageInfo.title || f.config.systemConfig.defaultTitle,
-                                '您有新的通知，请点击查看。'
+                                [f.config.systemConfig.webRoot, '/images/apple-touch-icon-iphone.png'].join(""),
+                                f.config.systemConfig.defaultTitle,
+                                notified.join("")
                             );
                             notification.onclick = function() {
                                 this.cancel();
@@ -98,9 +134,11 @@
             });
 
             // Enable notifications
-            if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) {
-                window.webkitNotifications.requestPermission();
-            }
+            $('.notification').on('click', function () {
+                if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) {
+                    window.webkitNotifications.requestPermission();
+                }
+            });
 
         }
 

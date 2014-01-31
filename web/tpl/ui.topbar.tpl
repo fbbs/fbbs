@@ -27,10 +27,11 @@ var systemConfig = f.config.systemConfig;
             <ul class="right notifications">
                 if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
                     <li>
-                        <a href="#" title="查看信件" class="notification-icon mail">&nbsp;<span class="notification-label">0</span></a>
+                        <a href="#/mail.html" title="查看信件" class="notification mail"><span class="notification-icon">&nbsp;</span><span class="notification-label">0</span></a>
                     </li>
                     <li class="has-dropdown">
-                        <a href="#" title="#{userInfo.user}">#{f.prune(userInfo.user, 10)}</a>
+                        <a href="#/user_info.html" title="#{userInfo.user}">#{f.prune(userInfo.user, 10)}</a>
+                        <!--li></li-->
                     </li>
                 }
                 else {
@@ -43,6 +44,17 @@ var systemConfig = f.config.systemConfig;
     </div>
     <aside class="left-off-canvas-menu hide-for-desktop">
         <ul class="off-canvas-list">
+            if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
+                <li>
+                    <a href="#/user_info.html" title="#{userInfo.user}">#{f.prune(userInfo.user, 10)}</a>
+                    <div class="off-canvas-notification notifications">
+                        <a href="#/mail.html" title="查看信件" class="notification mail"><span class="notification-icon">&nbsp;</span><span class="notification-label">0</span></a>
+                    </div>
+                </li>
+            }
+            else {
+                <li><a class="menu-toggle menu-toggle-new" href="#{systemConfig.loginUrl}">登陆</a></li>
+            }
             <li><label>导航</label></li>
             if (menuList.title) {
                 <li><a class="menu-toggle" href="#{menuList.title.url}">#{menuList.title.label}</a></li>
@@ -50,12 +62,9 @@ var systemConfig = f.config.systemConfig;
             f.each(menuList.menus, function (menu) {
                 <li><a class="menu-toggle" href="#{menu.url}">#{menu.label}</a></li>
             });
-            <li><label>用户</label></li>
             if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
-
-            }
-            else {
-                <li><a class="menu-toggle menu-toggle-new" href="#{systemConfig.loginUrl}">登陆</a></li>
+                <li><label>用户</label></li>
+                <!--li></li-->
             }
         </ul>
     </aside>
