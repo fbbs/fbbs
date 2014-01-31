@@ -19,7 +19,6 @@
         options: {
             defaultPage: null,
             baseUri: '',
-            dataUri: '',
             version: '',
             isCache: false,
             contentSelector: '#main',
@@ -87,26 +86,11 @@
         _onloadPageSuccess: function (url, html) {
             this._jqXHR = null;
 
-            if (this._dataXHR) {
-                this._dataXHR.abort();
-            }
-
-            var dataUrl = this.options.dataUri + this._url.replace(/\?.*$/, '');
-
-            this._dataXHR = $.get(dataUrl + '.json?__v=' + this.options.version)
-                .done($.proxy(this, '_onloadDataSuccess', url, html))
-                .fail($.proxy(this, '_onloadPageFail'));
-
-        },
-        _onloadDataSuccess: function (url, html, data) {
-            this._dataXHR = null;
-            if ('object' !== typeof data) {
-                data = JSON.parse(String(data));
-            }
-            this._trigger('ongetDataSuccess', null, data);
+            this._trigger('ongetPageSuccess', null, url);
             pageCache[url] = $.trim(f.tpl.format(html, f.config));
 
             this._updatePage(url);
+
         },
         /**
          * Callback handler after loading page fail: hide loading tip and load default page

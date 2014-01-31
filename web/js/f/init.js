@@ -112,7 +112,6 @@
             initBBS();
             $('#body').opoa({
                 baseUri: f.config.systemConfig.baseUri,
-                dataUri: f.config.systemConfig.dataUri,
                 defaultPage: f.config.systemConfig.defaultPage,
                 version: f.config.systemConfig.version,
                 beforeClose: function () {
@@ -122,9 +121,6 @@
                     if (f.bbsPage) {
                         f.bbsPage.close();
                     }
-                },
-                ongetDataSuccess: function (event, data) {
-                    $.extend(f.config, data);
                 },
                 onfail: function () {
                     document.title = $.isMobile.any ? f.config.systemConfig.defaultShortTitle : f.config.systemConfig.defaultTitle;
