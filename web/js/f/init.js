@@ -12,15 +12,70 @@
          */
 
         function initBBS() {
+            // Apply fastclick
             FastClick.attach(document.body);
 
+            // Get user's cookies
+            var user = {
+                user: $.cookie('utmpuserid'),
+                token: $.cookie('utmpkey')
+            };
+            if (user.user && user.token) {
+                $.extend(f.config.userInfo, user);
+            }
+
+            // Render topbar
             $('.menu-nav').topbar({
                 onchange: function (event, data) {
                     f.mediator.trigger('app:topbar:onchange', data);
                 }
             });
 
+            // Render global tip
             $('#global-tip').tip();
+
+            // Initialize notification
+            $(document.body).notifications({
+                notificationUrl: [f.config.systemConfig.ajaxUri, '/user/notifications.json'].join(""),
+                getInterval: 5000,
+                ongetNotification: function () {
+                    return !!(f.config.userInfo.user && f.config.userInfo.token);
+                },
+                ongetNotificationSuccess: function (event, data) {
+                    var notified = false;
+                    f.each(data, function (value, key) {
+                        if (value) {
+                            if (~~$('.notifications').find(['.', key].join("")).find('span').text() < value) {
+                                notified = true;
+                            }
+                            $('.notifications').find(['.', key].join(""))
+                                .addClass('notified')
+                                .find('span')
+                                .text(value);
+                        }
+                        else {
+                            $('.notifications').find(['.', key].join(""))
+                                .removeClass('notified')
+                                .find('span')
+                                .text(value);
+                        }
+                    });
+                    if (notified) {
+                        if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) {
+                            var notification = webkitNotifications.createNotification(
+                                [f.config.systemConfig.webRoot, '/images/apple-touch-icon-the-new-ipad.png'].join(""),
+                                f.config.pageInfo.title || f.config.systemConfig.defaultTitle,
+                                '您有新的通知，请点击查看。'
+                            );
+                            notification.onclick = function() {
+                                this.cancel();
+                            };
+                            notification.replaceId = 'bbsNotification';
+                            notification.show();
+                        }
+                    }
+                }
+            });
 
             /*
             $('.side-nav').sideNav({
@@ -42,25 +97,11 @@
                 return false;
             });
 
-        }
+            // Enable notifications
+            if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) {
+                window.webkitNotifications.requestPermission();
+            }
 
-        /**
-         * Load config from server
-         */
-
-        function loadConfig() {
-            $.ajax({
-                type: 'GET',
-                url: f.config.bbsConfig,
-                async: false
-            }).done(function (data, textStatus, jqXHR) {
-                if ('string' === typeof data) {
-                    f.extend(f.config, JSON.parse(data));
-                }
-                else if ('object' === typeof data) {
-                    f.extend(f.config, data);
-                }
-            }).fail(function () {});
         }
 
         /**
@@ -109,7 +150,6 @@
          */
 
         function init() {
-            loadConfig();
             loadTemplate();
             initBBS();
             $('#body').opoa({

@@ -51,13 +51,13 @@
     font-size: 13px;
     padding: 0 15px;
     line-height: 45px;
-    background: #333333;
+    background-color: #333333;
 }
 .ui-top-bar .top-bar-section ul li a:hover {
-    background: #272727;
+    background-color: #272727;
 }
 .ui-top-bar .top-bar-section ul li.active a {
-    background: #008cba;
+    background-color: #008cba;
 }
 .ui-top-bar .top-bar-section ul li.has-form {
     background: #333333;
@@ -80,6 +80,29 @@
 }
 .ui-top-bar .top-bar-section ul li a.button:hover {
     background: #006888;
+}
+.ui-top-bar .top-bar-section .notification-icon {
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+.ui-top-bar .top-bar-section .notification-icon.notified {
+    background-position: 15px center;
+}
+.ui-top-bar .top-bar-section .notification-icon.mail {
+    background-image: url(decorator/mail.png);
+}
+.ui-top-bar .top-bar-section .notification-icon .notification-label {
+    display: none;
+}
+.ui-top-bar .top-bar-section .notification-icon.notified .notification-label {
+    background-color: #f04124;
+    color: white;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    display: inline-block;
+    line-height: 1;
+    padding: 2px 5px;
+    margin-left: 25px;
 }
 
 @media only screen and (max-width: 640px) {

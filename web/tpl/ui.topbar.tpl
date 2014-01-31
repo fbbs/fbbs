@@ -18,19 +18,19 @@ var systemConfig = f.config.systemConfig;
                 }
             </li>
         </ul>
-        <section class="top-bar-section hide-for-mobile">
+        <section class="top-bar-section clearfix hide-for-mobile">
             <ul class="left">
                 f.each(menuList.menus, function (menu) {
                     <li class="nav" data-menu-nav-id="#{menu.id}"><a class="menu-toggle" href="#{menu.url}">#{menu.label}</a></li>
                 });
             </ul>
-            <ul class="right">
+            <ul class="right notifications">
                 if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
+                    <li>
+                        <a href="#" title="查看信件" class="notification-icon mail">&nbsp;<span class="notification-label">0</span></a>
+                    </li>
                     <li class="has-dropdown">
-                        <a href="#">Right Button with Dropdown</a>
-                        <ul class="dropdown">
-                            <li><a href="#">First link in dropdown</a></li>
-                        </ul>
+                        <a href="#" title="#{userInfo.user}">#{f.prune(userInfo.user, 10)}</a>
                     </li>
                 }
                 else {

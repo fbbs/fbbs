@@ -127,6 +127,7 @@ f.namespace('f.components');
                     this.Login.login('reset');
                     this.Login.login('close');
                     f.config.userInfo = f.clone(data);
+                    $('.menu-nav').topbar('render');
                     var options = {
                         path: '/',
                         expires: ext.postData.rm ? 90 : 0
@@ -141,6 +142,7 @@ f.namespace('f.components');
                         'utmpuserid': data.user,
                         'utmpkey': data.token
                     }, options);
+                    $(document.body).notifications('reset');
                 },
                 onloginFailed: function (msg) {
                     this.Login.login('reset');
