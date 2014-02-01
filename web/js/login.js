@@ -11,7 +11,6 @@
         beforeInitComponents: function () {
             var me = this;
             var login = {
-                id: 'InnerLogin',
                 type: 'Login',
                 selector: '.login-container',
                 options: {

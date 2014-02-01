@@ -101,7 +101,6 @@ f.namespace('f.components');
         Login: function (thisValue) {
             f.extend(thisValue, {
                 _initLogin: function (params) {
-                    console.log(params);
                     var me = this;
                     var selector = params.selector || '#login-channel';
                     this[params.id] = $(selector).login(f.extend({
@@ -138,6 +137,11 @@ f.namespace('f.components');
 
                     // Check notifications
                     $(document.body).notifications('reset');
+
+                    // Jump to last page
+                    if (f.config.pageInfo.params.r) {
+                        window.location.href = f.config.pageInfo.params.r;
+                    }
                 },
                 onloginFailed: function (msg) {
                     this.Login.login('reset');

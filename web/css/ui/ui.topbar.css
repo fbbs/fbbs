@@ -209,6 +209,10 @@
     .main {
         margin-top: 40px;
     }
+    .menu-nav {
+        position: relative;
+        z-index: 1002;
+    }
     .ui-top-bar {
         height: 40px;
         line-height: 40px;

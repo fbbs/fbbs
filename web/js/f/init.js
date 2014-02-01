@@ -222,19 +222,28 @@
                     var title = pageInfo.title || f.config.systemConfig.defaultTitle;
                     var shortTitle = pageInfo.shortTitle || f.config.systemConfig.defaultShortTitle;
 
+                    // Set title
                     document.title = $.isMobile.any ? shortTitle : title;
 
+                    // Parse fragment
+                    f.config.pageInfo.params = $.deparam.fragment($.param.fragment().replace(/.*?\?+/, ''), true);
+
+                    // Hide loading
                     $(document.body).loading('hide');
 
+                    // Close all tips
                     globalTip.tip('close');
 
+                    // Reset notifications
                     $(document.body).notifications('reset');
 
+                    // Change login url
                     menuNav.topbar('setUrl', {
                         selector: '.menu-toggle-login',
-                        url: [f.config.urlConfig.login, '?r=', encodeURIComponent($.param.fragment())].join("")
+                        url: [f.config.urlConfig.login, '?r=', encodeURIComponent(['#', $.param.fragment()].join(""))].join("")
                     });
 
+                    // Set active menu nav
                     if (pageInfo.menuNavId) {
                         menuNav.topbar('setActivate', pageInfo.menuNavId);
                     }

@@ -34,9 +34,7 @@
             this._bindEvents();
         },
         _bindEvents: function () {
-            if (!this.options.content) {
-                this.rebind();
-            }
+            this.rebind();
             this._on({
                 'click .ui-login-submit': '_onclickSubmit',
                 'keydown .ui-login-input': '_onkeydownInput',
@@ -112,10 +110,14 @@
             }, options);
         },
         open: function () {
-            this.dialog.dialog('open');
+            if (!this.options.content) {
+                this.dialog.dialog('open');
+            }
         },
         close: function () {
-            this.dialog.dialog('close');
+            if (!this.options.content) {
+                this.dialog.dialog('close');
+            }
         },
         error: function (err) {
             this._$tip.text(err);
