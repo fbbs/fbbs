@@ -246,7 +246,7 @@
                     }
 
                     // ie6,7提示
-                    if ($.browser.msie && ~~$.browser.version < 8) {
+                    if (($.browser.msie && parseInt($.browser.version) < 8) || ($.browser.webkit && parseInt($.browser.version) < 5) || ($.browser.opera && parseInt($.browser.version) < 11) || ($.browser.mozilla && parseInt($.browser.version) < 4)) {
                         globalTip.tip('append', {
                             id: 'browser-alert',
                             boxClass: 'warning',

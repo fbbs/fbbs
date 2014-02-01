@@ -31,6 +31,7 @@ ul, ol, dl {
 button {
     -webkit-appearance: none;
     -webkit-border-radius: 0;
+    -moz-border-radius: 0;
     border-radius: 0;
     border: none;
 }
@@ -39,6 +40,7 @@ input[type=password] {
     background-color: #FFF;
     border: 1px solid #ccc;
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     color: rgba(0, 0, 0, 0.75);
     height: 28px;
@@ -46,7 +48,6 @@ input[type=password] {
     padding: 0 5px;
     -webkit-transition: border-color 300ms ease;
     -moz-transition: border-color 300ms ease;
-    -ms-transition: border-color 300ms ease;
     -o-transition: border-color 300ms ease;
     transition: border-color 300ms ease;
 }

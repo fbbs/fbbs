@@ -22,7 +22,6 @@
     border-bottom: 1px dotted #999;
     -webkit-transition: all 300ms ease;
     -moz-transition: all 300ms ease;
-    -ms-transition: all 300ms ease;
     -o-transition: all 300ms ease;
     transition: all 300ms ease;
 }
@@ -56,7 +55,6 @@
     margin: auto;
     -webkit-transition: background 300ms ease;
     -moz-transition: background 300ms ease;
-    -ms-transition: background 300ms ease;
     -o-transition: background 300ms ease;
     transition: background 300ms ease;
 }
