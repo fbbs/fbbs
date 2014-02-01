@@ -42,6 +42,23 @@ f.config = {
                 label: "本日十大",
                 url: "#/top10.html"
             }
+        ],
+        userMenus: [
+            {
+                id: "user-info",
+                label: "个人资料",
+                url: "#/user_info.html"
+            },
+            {
+                id: "collections-edit",
+                label: "收藏管理",
+                url: "#/collections_edit.html"
+            },
+            {
+                id: "friends-edit",
+                label: "好友管理",
+                url: "#/friends_edit.html"
+            }
         ]
     },
     pageInfo: {}

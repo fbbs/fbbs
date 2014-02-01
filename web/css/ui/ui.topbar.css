@@ -10,7 +10,6 @@
     padding: 0;
     height: auto;
     display: block;
-    background: #333333;
     font-size: 18;
     margin: 0;
 }
@@ -52,6 +51,7 @@
     padding: 0 15px;
     line-height: 45px;
     background-color: #333333;
+    white-space: nowrap;
 }
 .ui-top-bar .top-bar-section ul li a:hover {
     background-color: #272727;
@@ -81,6 +81,56 @@
 .ui-top-bar .top-bar-section ul li a.button:hover {
     background: #006888;
 }
+.ui-top-bar .top-bar-section .has-dropdown {
+    position: relative;
+}
+.ui-top-bar .top-bar-section .has-dropdown .dropdown-a {
+    padding-right: 35px;
+}
+.ui-top-bar .top-bar-section .has-dropdown .dropdown-a .dropdown-arrow {
+    display: block;
+    width: 0;
+    height: 0;
+    border: inset 5px;
+    border-color: transparent;
+    border-top-color: #FFF;
+    opacity: .4;
+    filter: alpha(opacity=40);
+    border-top-style: solid;
+    margin-top: -2.5px;
+    top: 22.5px;
+    position: absolute;
+    right: 15px;
+}
+:root .ui-top-bar .top-bar-section .has-dropdown .dropdown-a .dropdown-arrow {
+    border-color: rgba(255, 255, 255, 0.4) transparent transparent transparent;
+    opacity: 1;
+    filter: alpha(opacity=100);
+}
+.ui-top-bar .top-bar-section .has-dropdown ul.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    left: auto;
+    width: auto;
+    min-width: 100%;
+}
+.ui-top-bar .top-bar-section .has-dropdown:hover ul.dropdown,
+.ui-top-bar .top-bar-section .has-dropdown ul.dropdown:hover {
+    display: block;
+}
+.ui-top-bar .top-bar-section .has-dropdown ul.dropdown li.dropdown-list {
+    width: 100%;
+}
+.ui-top-bar .top-bar-section .has-dropdown ul.dropdown li.dropdown-list {
+    width: 100%;
+}
+.ui-top-bar .top-bar-section .has-dropdown ul.dropdown li.divider {
+    border-right: none;
+    border-bottom: solid 1px #4e4e4e;
+    height: 0;
+    width: 100%;
+}
 .ui-top-bar .notification .notification-icon {
     width: 20px;
     height: 20px;
@@ -88,6 +138,7 @@
     background-repeat: no-repeat;
     display: inline-block;
     vertical-align: middle;
+    *margin-top: 12px;
     -webkit-animation-duration: 1s;
     -webkit-animation-timing-function: ease;
     -webkit-animation-fill-mode: both;
@@ -117,6 +168,7 @@
     line-height: 1;
     padding: 2px 5px;
     margin-left: 10px;
+    *margin-top: 12px;
 }
 @-webkit-keyframes tada {
   0% { -webkit-transform: scale(1); }

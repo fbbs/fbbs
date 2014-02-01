@@ -58,11 +58,11 @@
                             if (~~text < value) {
                                 notified.push(f.format(list[key], value));
                                 notified.push('\n');
-                                icon.addClass('tada');
-                                setTimeout(function () {
-                                    icon.removeClass('tada');
-                                }, 1000);
                             }
+                            icon.addClass('tada');
+                            setTimeout(function () {
+                                icon.removeClass('tada');
+                            }, 1000);
                         }
                         else {
                             noti.removeClass('notified')
@@ -221,6 +221,8 @@
                     $(document.body).loading('hide');
 
                     globalTip.tip('close');
+
+                    $(document.body).notifications('reset');
 
                     /*
                     if (pageInfo.isShowSideNav) {

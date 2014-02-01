@@ -26,12 +26,26 @@ var systemConfig = f.config.systemConfig;
             </ul>
             <ul class="right notifications">
                 if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
+                    <li class="divider"></li>
+                    <li class="has-dropdown">
+                        <a href="#/user_info.html" title="#{userInfo.user}" class="dropdown-a">#{f.prune(userInfo.user, 10)}<span class="dropdown-arrow">&nbsp;</span></a>
+                        <ul class="dropdown">
+                            f.each(menuList.userMenus, function (subMenu) {
+                                <li class="dropdown-list" data-dropdown-menu-id="#{subMenu.id}">
+                                    <a href="#{subMenu.url}" class="dropdown-menu">#{subMenu.label}</a>
+                                </li>
+                            });
+                            if (menuList.userMenus.length) {
+                                <li class="divider"></li>
+                            }
+                            <li class="dropdown-list">
+                                <a href="javascript:void(0);" class="dropdown-menu logout">退出</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="divider"></li>
                     <li>
                         <a href="#/mail.html" title="查看信件" class="notification mail"><span class="notification-icon">&nbsp;</span><span class="notification-label">0</span></a>
-                    </li>
-                    <li class="has-dropdown">
-                        <a href="#/user_info.html" title="#{userInfo.user}">#{f.prune(userInfo.user, 10)}</a>
-                        <!--li></li-->
                     </li>
                 }
                 else {
@@ -64,7 +78,10 @@ var systemConfig = f.config.systemConfig;
             });
             if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
                 <li><label>用户</label></li>
-                <!--li></li-->
+                f.each(menuList.userMenus, function (subMenu) {
+                    <li><a href="#{subMenu.url}" class="menu-toggle">#{subMenu.label}</a></li>
+                });
+                <li><a href="javascript:void(0);" class="menu-toggle logout">退出</a></li>
             }
         </ul>
     </aside>
