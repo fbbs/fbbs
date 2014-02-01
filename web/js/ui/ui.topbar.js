@@ -13,6 +13,8 @@
             // tpls
             tpl: 'ui.topbar.tpl',
 
+            urls: {},
+
             // callbacks
             onchange: null
         },
@@ -31,7 +33,7 @@
          * @private
          */
         render: function () {
-            this.element.html(f.tpl.format(this.options.tpl));
+            this.element.html(f.tpl.format(this.options.tpl, this.options.urls));
         },
         /**
          * bind events
@@ -84,6 +86,9 @@
             this.element
                 .find(f.format('[data-menu-nav-id=#{0}]', menNavId))
                 .addClass('active');
+        },
+        setUrl: function (options) {
+            this.element.find(options.selector).attr('href', options.url);
         }
     });
 }(jQuery, f));

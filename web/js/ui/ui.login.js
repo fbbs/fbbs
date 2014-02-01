@@ -11,7 +11,8 @@
             loadingText: '登陆中...',
             trigger: '',
             overlayClass: 'ui-login-overlay',
-            tpl: 'ui.login.tpl'
+            tpl: 'ui.login.tpl',
+            cookiePath: '/'
         },
         /**
          * widget 构造器
@@ -30,7 +31,7 @@
             this._bindEvents();
         },
         _bindEvents: function () {
-            $(this.options.trigger).on('click', $.proxy(this, 'open'));
+            this.rebind();
             this._on({
                 'click .ui-login-submit': '_onclickSubmit',
                 'keydown .ui-login-input': '_onkeydownInput',
@@ -83,6 +84,28 @@
         _onclickTip: function () {
             this.close();
         },
+        _saveCookie: function (cookies, options) {
+            f.each(cookies, function (value, key) {
+                $.cookie(key, value, options);
+            });
+        },
+        save: function (data) {
+            var me = this;
+            var options = {
+                path: me.options.cookiePath,
+                expires: data.rm ? 90 : 0
+            };
+            if (data && data.expires) {
+                options.expires = new Date(parseInt(data.expires) * 1000);
+            }
+            if (!options.expires) {
+                delete options.expires;
+            }
+            this._saveCookie({
+                'utmpuserid': data.user,
+                'utmpkey': data.token
+            }, options);
+        },
         open: function () {
             this.dialog.dialog('open');
         },
@@ -132,6 +155,10 @@
                 .prop('disabled', false)
                 .removeClass('disabled');
             this.element.removeClass('loading');
+        },
+        rebind: function () {
+            $(this.options.trigger).off('click');
+            $(this.options.trigger).on('click', $.proxy(this, 'open'));
         }
     });
 }(jQuery, f));

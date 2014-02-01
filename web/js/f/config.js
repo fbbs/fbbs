@@ -16,9 +16,16 @@ f.config = {
         baseUri: "/web/html",
         defaultPage: "#/home.html",
         ajaxUri: "/web/bbs",
-        loginUrl: "#/login.html",
+        cookiePath: "/",
         defaultTitle: "日月光华 | 复旦大学BBS",
         defaultShortTitle: "日月光华"
+    },
+    urlConfig: {
+        login: "#/login.html",
+        logout: "#/logout.html",
+        newMail: "#/new_mail.html",
+        mail: "#/mail.html",
+        userInfo: "#/user_info.html"
     },
     userInfo: {},
     menuList: {

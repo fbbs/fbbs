@@ -28,7 +28,7 @@ var systemConfig = f.config.systemConfig;
                 if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
                     <li class="divider"></li>
                     <li class="has-dropdown">
-                        <a href="#/user_info.html" title="#{userInfo.user}" class="dropdown-a">#{f.prune(userInfo.user, 10)}<span class="dropdown-arrow">&nbsp;</span></a>
+                        <a href="#{this.userInfoUrl}" title="#{userInfo.user}" class="dropdown-a">#{f.prune(userInfo.user, 10)}<span class="dropdown-arrow">&nbsp;</span></a>
                         <ul class="dropdown">
                             f.each(menuList.userMenus, function (subMenu) {
                                 <li class="dropdown-list" data-dropdown-menu-id="#{subMenu.id}">
@@ -39,13 +39,13 @@ var systemConfig = f.config.systemConfig;
                                 <li class="divider"></li>
                             }
                             <li class="dropdown-list">
-                                <a href="javascript:void(0);" class="dropdown-menu logout">退出</a>
+                                <a href="#{this.logoutUrl}" class="dropdown-menu logout">退出</a>
                             </li>
                         </ul>
                     </li>
                     <li class="divider"></li>
                     <li>
-                        <a href="#/mail.html" title="查看信件" class="notification mail"><span class="notification-icon">&nbsp;</span><span class="notification-label">0</span></a>
+                        <a href="#{this.mailUrl}" title="查看信件" class="notification mail"><span class="notification-icon">&nbsp;</span><span class="notification-label">0</span></a>
                     </li>
                 }
                 else {
@@ -60,14 +60,14 @@ var systemConfig = f.config.systemConfig;
         <ul class="off-canvas-list">
             if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
                 <li>
-                    <a href="#/user_info.html" title="#{userInfo.user}">#{f.prune(userInfo.user, 10)}</a>
+                    <a href="#{this.userInfoUrl}" title="#{userInfo.user}">#{f.prune(userInfo.user, 10)}</a>
                     <div class="off-canvas-notification notifications">
-                        <a href="#/mail.html" title="查看信件" class="notification mail"><span class="notification-icon">&nbsp;</span><span class="notification-label">0</span></a>
+                        <a href="#{this.mailUrl}" title="查看信件" class="notification mail"><span class="notification-icon">&nbsp;</span><span class="notification-label">0</span></a>
                     </div>
                 </li>
             }
             else {
-                <li><a class="menu-toggle menu-toggle-new" href="#{systemConfig.loginUrl}">登陆</a></li>
+                <li><a class="menu-toggle menu-toggle-new menu-toggle-login" href="#{this.loginUrl}">登陆</a></li>
             }
             <li><label>导航</label></li>
             if (menuList.title) {
@@ -81,7 +81,7 @@ var systemConfig = f.config.systemConfig;
                 f.each(menuList.userMenus, function (subMenu) {
                     <li><a href="#{subMenu.url}" class="menu-toggle">#{subMenu.label}</a></li>
                 });
-                <li><a href="javascript:void(0);" class="menu-toggle logout">退出</a></li>
+                <li><a href="#{this.logoutUrl}" class="menu-toggle logout">退出</a></li>
             }
         </ul>
     </aside>

@@ -28,6 +28,12 @@
             $('.menu-nav').topbar({
                 onchange: function (event, data) {
                     f.mediator.trigger('app:topbar:onchange', data);
+                },
+                urls: {
+                    userInfoUrl: f.config.urlConfig.userInfo,
+                    logoutUrl: f.config.urlConfig.logout,
+                    loginUrl: f.config.urlConfig.login,
+                    mailUrl: f.config.urlConfig.mail
                 }
             });
 
@@ -53,7 +59,7 @@
                             text = label.text();
                         if (value) {
                             noti.addClass('notified')
-                                .attr('href', '#/new_mail.html');
+                                .attr('href', f.config.urlConfig.newMail);
                             label.text(value);
                             if (~~text < value) {
                                 notified.push(f.format(list[key], value));
@@ -66,7 +72,7 @@
                         }
                         else {
                             noti.removeClass('notified')
-                                .attr('href', '#/mail.html');
+                                .attr('href', f.config.urlConfig.mail);
                             label.text(value);
                         }
                     });
@@ -224,21 +230,10 @@
 
                     $(document.body).notifications('reset');
 
-                    /*
-                    if (pageInfo.isShowSideNav) {
-                        sideNav.sideNav({
-                            isShow: 1
-                        });
-
-                        if (pageInfo.isRenderSideNav) {
-                            sideNav.sideNav('render');
-                        }
-                    } else {
-                        sideNav.sideNav({
-                            isShow: 0
-                        });
-                    }
-                    */
+                    menuNav.topbar('setUrl', {
+                        selector: '.menu-toggle-login',
+                        url: [f.config.urlConfig.login, '?r=', encodeURIComponent($.param.fragment())].join("")
+                    });
 
                     if (pageInfo.menuNavId) {
                         menuNav.topbar('setActivate', pageInfo.menuNavId);

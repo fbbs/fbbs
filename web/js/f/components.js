@@ -106,6 +106,7 @@ f.namespace('f.components');
                         trigger: '.login',
                         registUrl: '',
                         forgetUrl: '',
+                        cookiePath: f.config.systemConfig.cookiePath,
                         onsubmit: function (event, data) {
                             thisValue.ajax({
                                 name: 'login',
@@ -115,33 +116,25 @@ f.namespace('f.components');
                         }
                     }, params.options));
                 },
-                _saveCookie: function (cookies, options) {
-                    f.each(cookies, function (value, key) {
-                        $.cookie(key, value, options);
-                    });
-                },
                 onlogin: function () {
                     this.Login.login('loading');
                 },
                 onloginSuccess: function (data, ext) {
+                    // Empty and close the dialog
                     this.Login.login('reset');
                     this.Login.login('close');
+
+                    // Copy userInfo
                     f.config.userInfo = f.clone(data);
+
+                    // Rerender the topbar
                     $('.menu-nav').topbar('render');
-                    var options = {
-                        path: '/',
-                        expires: ext.postData.rm ? 90 : 0
-                    };
-                    if (data && data.expires) {
-                        options.expires = new Date(parseInt(data.expires) * 1000);
-                    }
-                    if (!options.expires) {
-                        delete options.expires;
-                    }
-                    this._saveCookie({
-                        'utmpuserid': data.user,
-                        'utmpkey': data.token
-                    }, options);
+
+                    // Save cookies
+                    data.rm = ext.postData.rm;
+                    this.Login.login('save', data);
+
+                    // Check notifications
                     $(document.body).notifications('reset');
                 },
                 onloginFailed: function (msg) {
