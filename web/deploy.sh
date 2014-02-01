@@ -162,7 +162,7 @@ do
 			if [ "$DEBUG"z = "T"z ]; then
 				echo "INFO: Compiler params js $JS_FILES"
 			fi
-			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8 --output_info errors
+			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8 --warning_level QUIET
 		fi
 		if [ "$CSS_FILES" ]
 		then
@@ -191,7 +191,7 @@ for JS in `ls $JS_ROOT`
 do
 	if [ -f $JS_ROOT/$JS ]
 	then
-		java -jar $JS_COMP --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8 --output_info errors
+		java -jar $JS_COMP --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8 --warning_level QUIET
 		if [ "$DEBUG"z = "T"z ]; then
 			echo "INFO: Compile js $JS"
 		fi
