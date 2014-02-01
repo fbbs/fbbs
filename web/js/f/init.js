@@ -225,9 +225,6 @@
                     // Set title
                     document.title = $.isMobile.any ? shortTitle : title;
 
-                    // Parse fragment
-                    f.config.pageInfo.params = $.deparam.fragment($.param.fragment().replace(/.*?\?+/, ''), true);
-
                     // Hide loading
                     $(document.body).loading('hide');
 

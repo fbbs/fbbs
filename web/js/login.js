@@ -3,11 +3,6 @@
 
     var page = {
         components: [],
-        config: {
-            logoutErrorTip: '退出失败，请刷新重试。(#{0})',
-            logoutSuccessTip: '您已成功退出。',
-            logoutDefaultErrorTip: '网络链接失败'
-        },
         beforeInitComponents: function () {
             var me = this;
             var login = {
@@ -20,6 +15,10 @@
             this.components.push(login);
         },
         oninit: function () {
+            if (this.userInfo.user && this.userInfo.token) {
+                window.location.href = this.pageInfo.params.r || this.systemConfig.defaultPage;
+                return;
+            }
             $('#id').focus();
         }
     };

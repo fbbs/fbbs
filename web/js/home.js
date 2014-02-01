@@ -2,7 +2,7 @@
     'use strict';
 
     var page = {
-        components: ['Login'],
+        components: [],
         context: {},
         methods: {
 

@@ -56,6 +56,9 @@
             this._initComponents();
             this.trigger("afterInitComponents");
 
+            // Parse fragment
+            f.config.pageInfo.params = $.deparam.fragment($.param.fragment().replace(/.*?\?+/, ''), true);
+
             this.trigger("oninit");
         },
         /**
@@ -115,7 +118,7 @@
          */
         oninitComponents: function (components) {
             if (f.isArray(components)) {
-                components.push('Button', 'ToggleTarget', 'ScrollTarget');
+                components.push('Login');
             }
         },
         /**

@@ -142,6 +142,9 @@ f.namespace('f.components');
                     if (f.config.pageInfo.params.r) {
                         window.location.href = f.config.pageInfo.params.r;
                     }
+                    else if (f.config.pageInfo.pageName === 'login') {
+                        window.location.href = f.config.systemConfig.defaultPage;
+                    }
                 },
                 onloginFailed: function (msg) {
                     this.Login.login('reset');

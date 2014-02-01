@@ -2,7 +2,7 @@
     'use strict';
 
     var page = {
-        components: ['Login'],
+        components: [],
         config: {
             logoutErrorTip: '退出失败，请刷新重试。(#{0})',
             logoutSuccessTip: '您已成功退出。',
