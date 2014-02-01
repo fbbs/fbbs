@@ -101,11 +101,13 @@ f.namespace('f.components');
         Login: function (thisValue) {
             f.extend(thisValue, {
                 _initLogin: function (params) {
+                    console.log(params);
                     var me = this;
-                    this[params.id] = $('#login-channel').login(f.extend({
+                    var selector = params.selector || '#login-channel';
+                    this[params.id] = $(selector).login(f.extend({
                         trigger: '.login',
-                        registUrl: '',
-                        forgetUrl: '',
+                        registUrl: f.config.urlConfig.regist,
+                        forgetUrl: f.config.urlConfig.forget,
                         cookiePath: f.config.systemConfig.cookiePath,
                         onsubmit: function (event, data) {
                             thisValue.ajax({

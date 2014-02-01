@@ -25,7 +25,9 @@ f.config = {
         logout: "#/logout.html",
         newMail: "#/new_mail.html",
         mail: "#/mail.html",
-        userInfo: "#/user_info.html"
+        userInfo: "#/user_info.html",
+        regist: "#/regist.html",
+        forget: "#/forget.html"
     },
     userInfo: {},
     menuList: {

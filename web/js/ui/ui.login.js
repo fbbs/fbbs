@@ -12,7 +12,8 @@
             trigger: '',
             overlayClass: 'ui-login-overlay',
             tpl: 'ui.login.tpl',
-            cookiePath: '/'
+            cookiePath: '/',
+            content: false
         },
         /**
          * widget 构造器
@@ -20,8 +21,10 @@
          * @private
          */
         _create: function () {
-            this.element.append(f.tpl.format(this.options.tpl, this.options));
-            this._renderDialog();
+            this.element.html(f.tpl.format(this.options.tpl, this.options));
+            if (!this.options.content) {
+                this._renderDialog();
+            }
             this._$id = this.element.find('.ui-login-input-id');
             this._$pw = this.element.find('.ui-login-input-pw');
             this._$rm = this.element.find('.ui-login-input-rm');
@@ -31,7 +34,9 @@
             this._bindEvents();
         },
         _bindEvents: function () {
-            this.rebind();
+            if (!this.options.content) {
+                this.rebind();
+            }
             this._on({
                 'click .ui-login-submit': '_onclickSubmit',
                 'keydown .ui-login-input': '_onkeydownInput',

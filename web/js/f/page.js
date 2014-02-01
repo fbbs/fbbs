@@ -166,6 +166,7 @@
                 var id = null;
                 var type = null;
                 var options = null;
+                var selector = null;
 
                 if (f.isString(component)) {
                     type = component;
@@ -174,6 +175,7 @@
                 } else if (f.isObject(component)) {
                     type = component.type;
                     options = component.options;
+                    selector = component.selector;
                     id = component.id ? component.id : type;
                 }
 
@@ -181,6 +183,7 @@
                 var params = {
                     id: id,
                     type: type,
+                    selector: selector,
                     options: options
                 };
 

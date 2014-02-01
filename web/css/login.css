@@ -1,0 +1,19 @@
+.login-container {
+    padding: 10px;
+}
+.login-container .ui-login .ui-login-input[type=text],
+.login-container .ui-login .ui-login-input[type=password] {
+    width: 100%;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.login-container .ui-login .ui-login-loading {
+    right: auto;
+    left: 75%;
+    left: -moz-calc(50% + 100px);
+    left: -ms-calc(50% + 100px);
+    left: -o-calc(50% + 100px);
+    left: -webkit-calc(50% + 100px);
+    left: calc(50% + 100px);
+}
