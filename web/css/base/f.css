@@ -34,8 +34,11 @@
     position: relative;
     z-index: 1002;
 }
+.global-tip {
+    padding: 0 10px;
+}
 .main {
-    margin-top: 20px;
+    margin: 20px auto;
 }
 .footer {
     margin-top: 20px;
@@ -48,10 +51,11 @@
 }
 
 @media only screen and (max-width: 640px) {
-    .main {
+    .global-tip {
         margin-top: 50px;
     }
     .footer {
+        display: none;
         margin-top: 10px;
     }
     .hide-for-mobile {
@@ -94,4 +98,31 @@
     -moz-animation-name:tada;
     -o-animation-name:tada;
     animation-name:tada;
+}
+
+@-webkit-keyframes pulse {
+    0% { -webkit-transform: scale(1); }
+    50% { -webkit-transform: scale(1.1); }
+    100% { -webkit-transform: scale(1); }
+}
+@-moz-keyframes pulse {
+    0% { -moz-transform: scale(1); }
+    50% { -moz-transform: scale(1.1); }
+    100% { -moz-transform: scale(1); }
+}
+@-o-keyframes pulse {
+    0% { -o-transform: scale(1); }
+    50% { -o-transform: scale(1.1); }
+    100% { -o-transform: scale(1); }
+}
+@keyframes pulse {
+    0% { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); -o-transform: scale(1); transform: scale(1); }
+    50% { -webkit-transform: scale(1.1); -moz-transform: scale(1.1); -ms-transform: scale(1.1); -o-transform: scale(1.1); transform: scale(1.1); }
+    100% { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); -o-transform: scale(1); transform: scale(1); }
+}
+.pulse {
+    -webkit-animation-name:pulse;
+    -moz-animation-name:pulse;
+    -o-animation-name:pulse;
+    animation-name:pulse;
 }

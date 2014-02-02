@@ -240,6 +240,49 @@
         -moz-box-shadow: 0 10px 0 1px #b3b3b3, 0 16px 0 1px #b3b3b3, 0 22px 0 1px #b3b3b3;
         box-shadow: 0 10px 0 1px #b3b3b3, 0 16px 0 1px #b3b3b3, 0 22px 0 1px #b3b3b3;
     }
+    .ui-top-bar a.menu-icon i {
+        display: block;
+        position: absolute;
+        width: 0;
+        height: 0;
+        top: 12.5px;
+        right: 9.5px;
+        background-color: #f04124;
+        -webkit-border-radius: 1000px;
+        -moz-border-radius: 1000px;
+        border-radius: 1000px;
+        -webkit-transition: all 1s ease;
+        -moz-transition: all 1s ease;
+        -o-transition: all 1s ease;
+        transition: all 1s ease;
+    }
+    .ui-top-bar a.menu-icon i.notified {
+        width: 7px;
+        height: 7px;
+        top: 9px;
+        right: 6px;
+        -webkit-animation-duration: 1s;
+        -webkit-animation-timing-function: ease;
+        -webkit-animation-fill-mode: both;
+        -moz-animation-duration: 1s;
+        -moz-animation-timing-function: ease;
+        -moz-animation-fill-mode: both;
+        -ms-animation-duration: 1s;
+        -ms-animation-timing-function: ease;
+        -ms-animation-fill-mode: both;
+        -webkit-animation-duration: 1s;
+        -moz-animation-duration: 1s;
+        -o-animation-duration: 1s;
+        animation-duration: 1s;
+        -webkit-animation-timing-function: ease;
+        -moz-animation-timing-function: ease;
+        -o-animation-timing-function: ease;
+        animation-timing-function: ease;
+        -webkit-animation-fill-mode: both;
+        -moz-animation-fill-mode: both;
+        -o-animation-fill-mode: both;
+        animation-fill-mode: both;
+    }
     .ui-top-bar .left-off-canvas-menu {
         -webkit-backface-visibility: hidden;
         width: 250px;
@@ -280,11 +323,14 @@
         -o-transition: all 300ms ease;
         transition: all 300ms ease;
     }
+    .ui-top-bar .left-off-canvas-menu .off-canvas-list {
+        margin-bottom: 24px;
+    }
     .ui-top-bar .left-off-canvas-menu .off-canvas-list li label {
         padding: 6px 13px;
-        color: #999999;
+        color: #999;
         font-weight: bold;
-        background: #444444;
+        background: #444;
         border-top: 1px solid #5e5e5e;
         border-bottom: none;
         margin: 0;
@@ -307,6 +353,22 @@
         -ms-transform: translate3d(0, 0, 0);
         -o-transform: translate3d(0, 0, 0);
         transform: translate3d(0, 0, 0);
+    }
+    .ui-top-bar .left-off-canvas-menu .off-canvas-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        height: 25px;
+        width: 100%;
+        border-top: 1px solid #262626;
+        line-height: 25px;
+        color: #999;
+        background: #333;
+        font-size: 12px;
+        text-align: center;
+    }
+    .ui-top-bar .left-off-canvas-menu .off-canvas-footer a {
+        color: #999;
     }
     .move-right .exit-canvas-menu {
         display: block;

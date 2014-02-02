@@ -50,28 +50,38 @@
             // Initialize notification
             $(document.body).notifications({
                 notificationUrl: [f.config.systemConfig.ajaxUri, '/user/notifications.json'].join(""),
-                getInterval: 60000,
+                getInterval: f.config.systemConfig.notificationInterval,
+                // Check if logged in
                 ongetNotification: function () {
                     return !!(f.config.userInfo.user && f.config.userInfo.token);
                 },
+                // Get notifications
                 ongetNotificationSuccess: function (event, data) {
-                    var notified = [];
-                    var list = {
-                        mail: '您有#{0}封未读信件。'
-                    };
+                    var notified = [],
+                        newMsg = false,
+                        list = {
+                            mail: '您有#{0}封未读信件。'
+                        };
                     f.each(data, function (value, key) {
                         var noti = $('.notifications').find(['.', key].join("")),
                             icon = noti.find('.notification-icon'),
                             label = noti.find('.notification-label'),
                             text = label.text();
+                        // If there are new notifications
                         if (value) {
+                            newMsg = true;
+                            // Set url when get new messages
                             noti.addClass('notified')
-                                .attr('href', f.config.urlConfig.newMail);
+                                .attr('href', f.config.urlConfig[['new', f.capitalize(key)].join("")]);
+                            // Show number of messages
                             label.text(value);
+                            // If more new messages
                             if (~~text < value) {
+                                // Save notification text
                                 notified.push(f.format(list[key], value));
                                 notified.push('\n');
                             }
+                            // Show animation
                             icon.addClass('tada');
                             setTimeout(function () {
                                 icon.removeClass('tada');
@@ -79,10 +89,27 @@
                         }
                         else {
                             noti.removeClass('notified')
-                                .attr('href', f.config.urlConfig.mail);
+                                .attr('href', f.config.urlConfig[key]);
                             label.text(value);
                         }
                     });
+
+                    // Set small notification dot
+                    var smallIcon = $('.left-off-canvas-toggle i');
+                    if (newMsg) {
+                        if (smallIcon.hasClass('notified')) {
+                            smallIcon.addClass('pulse');
+                            setTimeout(function () {
+                                smallIcon.removeClass('pulse');
+                            }, 1000);
+                        }
+                        smallIcon.addClass('notified');
+                    }
+                    else {
+                        smallIcon.removeClass('notified');
+                    }
+
+                    // Check hidden prop of window
                     var getHiddenProp = function () {
                         var prefixes = ['webkit','moz','ms','o'];
 
@@ -101,6 +128,8 @@
                         // otherwise it's not supported
                         return null;
                     };
+
+                    // Return if the window is hidden
                     var isHidden = function () {
                         var prop = getHiddenProp();
                         if (!prop) {
@@ -109,6 +138,8 @@
 
                         return document[prop];
                     };
+
+                    // If the window is hidden and there are new notifications, display them
                     if (isHidden() && notified.length) {
                         if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) {
                             var notification = webkitNotifications.createNotification(
@@ -126,15 +157,10 @@
                 }
             });
 
-            /*
-            $('.side-nav').sideNav({
-                zIndex: f.zIndex.ui--
-            });
-            */
-
+            // Show loading
             $(document.body).loading();
 
-            //history back click event handler
+            // history back click event handler
             $('.body').on('click', '.history-back', function () {
                 window.history.back();
             });
@@ -147,7 +173,7 @@
             });
 
             // Enable notifications
-            $('.notification').on('click', function () {
+            $('.notifications').on('click', function () {
                 if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 1) {
                     window.webkitNotifications.requestPermission();
                 }
@@ -203,14 +229,14 @@
         function init() {
             loadTemplate();
             initBBS();
+
+            // Load saved page
             var defaultPage = f.config.systemConfig.defaultPage;
-            if ($.isMobile.any) {
-                if (window.localStorage) {
-                    var idleTime = parseInt(window.localStorage.getItem('idleTime'));
-                    var time = (new Date()).getTime();
-                    if (time - idleTime <= f.config.systemConfig.idleTime * 1000) {
-                        defaultPage = window.localStorage.getItem('idlePage') || defaultPage;
-                    }
+            if (window.localStorage) {
+                var idleTime = parseInt(window.localStorage.getItem('idleTime'));
+                var time = (new Date()).getTime();
+                if (time - idleTime <= f.config.systemConfig.idleTime) {
+                    defaultPage = window.localStorage.getItem('idlePage') || defaultPage;
                 }
             }
             $('#body').opoa({
@@ -274,6 +300,20 @@
                                 chrome: 'http://www.google.cn/intl/zh-CN/chrome/browser/',
                                 firefox: 'http://firefox.com.cn/download/'
                             })
+                        });
+                    }
+                    if ($.isMobile.iOS && $.browser.safari && parseInt($.browser.version) < 534) {
+                        globalTip.tip('append', {
+                            id: 'ios-alert',
+                            boxClass: 'warning',
+                            content: '您的iOS系统版本过低，无法使用本系统。'
+                        });
+                    }
+                    if ($.isMobile.Android && $.browser.webkit && parseInt($.browser.version) < 534) {
+                        globalTip.tip('append', {
+                            id: 'ios-alert',
+                            boxClass: 'warning',
+                            content: '您的浏览器版本过低，无法使用本系统。'
                         });
                     }
 

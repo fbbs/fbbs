@@ -6,7 +6,7 @@ var systemConfig = f.config.systemConfig;
 <nav class="ui-top-bar">
     <div class="wrapper">
         <section class="left-small hide-for-desktop">
-            <a class="left-off-canvas-toggle canvas-toggle menu-icon"><span></span></a>
+            <a class="left-off-canvas-toggle canvas-toggle menu-icon"><span></span><i></i></a>
         </section>
         <ul class="title-area">
             <li class="name">
@@ -83,7 +83,12 @@ var systemConfig = f.config.systemConfig;
                 });
                 <li><a href="#{this.logoutUrl}" class="menu-toggle logout">退出</a></li>
             }
+            <li><label>其它</label></li>
+            f.each(menuList.footerMenus, function (menu) {
+                <li><a class="menu-toggle" href="#{menu.url}" target="#{menu.target ? '_blank' : '_self'}">#{menu.label}</a></li>
+            });
         </ul>
+        <div class="off-canvas-footer">!#{systemConfig.copyright}&emsp;<a href="#{systemConfig.icp.url}" target="_blank">#{systemConfig.icp.label}</a></div>
     </aside>
     <a class="exit-canvas-menu" href="javascript:void(0);"></a>
 </nav>

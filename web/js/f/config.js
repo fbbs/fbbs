@@ -24,7 +24,8 @@ f.config = {
             label: "沪ICP备042465号",
             url: "http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407"
         },
-        idleTime: 300
+        idleTime: 300000,
+        notificationInterval: 60000
     },
     urlConfig: {
         login: "#/login.html",
