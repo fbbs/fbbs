@@ -66,14 +66,36 @@ f.config = {
                 url: "#/user_info.html"
             },
             {
-                id: "collections-edit",
-                label: "收藏管理",
-                url: "#/collections_edit.html"
+                id: "friends",
+                label: "我的好友",
+                url: "#/friends.html"
             },
             {
-                id: "friends-edit",
-                label: "好友管理",
-                url: "#/friends_edit.html"
+                id: "market",
+                label: "道具市场",
+                url: "#/market.html"
+            }
+        ],
+        offCanvasMenus: [
+            {
+                id: "friends",
+                label: "我的好友",
+                url: "#/friends.html"
+            },
+            {
+                id: "query",
+                label: "查找用户",
+                url: "#/user_query.html"
+            },
+            {
+                id: "send-mail",
+                label: "发送信件",
+                url: "#/send_mail.html"
+            },
+            {
+                id: "market",
+                label: "道具市场",
+                url: "#/market.html"
             }
         ],
         footerMenus: [
@@ -94,6 +116,11 @@ f.config = {
             {
                 label: "手机泉站",
                 url: "http://bbs.fudan.edu.cn/qm/",
+                target: true
+            },
+            {
+                label: "Term登陆",
+                url: "http://bbs.fudan.edu.cn/",
                 target: true
             }
         ]

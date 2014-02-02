@@ -3,10 +3,10 @@
 }
 .login-container .ui-login .ui-login-input[type=text],
 .login-container .ui-login .ui-login-input[type=password] {
-    width: 100%;
-    -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
     box-sizing: border-box;
+    width: 100%;
 }
 .login-container .ui-login .ui-login-loading {
     right: auto;

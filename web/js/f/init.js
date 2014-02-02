@@ -53,6 +53,7 @@
                 getInterval: f.config.systemConfig.notificationInterval,
                 // Check if logged in
                 ongetNotification: function () {
+                    $('.left-off-canvas-toggle i').removeClass('notified');
                     return !!(f.config.userInfo.user && f.config.userInfo.token);
                 },
                 // Get notifications

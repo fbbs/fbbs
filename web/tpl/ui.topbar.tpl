@@ -18,6 +18,11 @@ var systemConfig = f.config.systemConfig;
                 }
             </li>
         </ul>
+        if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
+            <section class="right-small hide-for-desktop">
+                <a class="right-off-canvas-toggle canvas-toggle menu-icon">收藏</a>
+            </section>
+        }
         <section class="top-bar-section clearfix hide-for-mobile">
             <ul class="left">
                 f.each(menuList.menus, function (menu) {
@@ -39,7 +44,7 @@ var systemConfig = f.config.systemConfig;
                                 <li class="divider"></li>
                             }
                             <li class="dropdown-list">
-                                <a href="#{this.logoutUrl}" class="dropdown-menu logout">退出</a>
+                                <a href="#{this.logoutUrl}" class="dropdown-menu logout">退出登陆</a>
                             </li>
                         </ul>
                     </li>
@@ -56,6 +61,7 @@ var systemConfig = f.config.systemConfig;
             </ul>
         </section>
     </div>
+    <aside class="right-off-canvas-menu hide-for-desktop collections-container"></aside>
     <aside class="left-off-canvas-menu hide-for-desktop">
         <ul class="off-canvas-list">
             if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
@@ -77,19 +83,19 @@ var systemConfig = f.config.systemConfig;
                 <li><a class="menu-toggle" href="#{menu.url}">#{menu.label}</a></li>
             });
             if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
-                <li><label>用户</label></li>
-                f.each(menuList.userMenus, function (subMenu) {
+                <li><label>功能</label></li>
+                f.each(menuList.offCanvasMenus, function (subMenu) {
                     <li><a href="#{subMenu.url}" class="menu-toggle">#{subMenu.label}</a></li>
                 });
-                <li><a href="#{this.logoutUrl}" class="menu-toggle logout">退出</a></li>
+                <li><a href="#{this.logoutUrl}" class="menu-toggle logout">退出登陆</a></li>
             }
-            <li><label>其它</label></li>
+            <li><label>更多</label></li>
             f.each(menuList.footerMenus, function (menu) {
                 <li><a class="menu-toggle" href="#{menu.url}" target="#{menu.target ? '_blank' : '_self'}">#{menu.label}</a></li>
             });
         </ul>
-        <div class="off-canvas-footer">!#{systemConfig.copyright}&emsp;<a href="#{systemConfig.icp.url}" target="_blank">#{systemConfig.icp.label}</a></div>
     </aside>
+    <div class="left-off-canvas-menu off-canvas-footer hide-for-desktop">!#{systemConfig.copyright}</div>
     <a class="exit-canvas-menu" href="javascript:void(0);"></a>
 </nav>
 </tpl>
