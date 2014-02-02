@@ -213,9 +213,6 @@
                     }
                 }
             }
-            alert($.isMobile.any);
-            alert(time - idleTime);
-            alert(defaultPage);
             $('#body').opoa({
                 baseUri: f.config.systemConfig.baseUri,
                 defaultPage: defaultPage,
