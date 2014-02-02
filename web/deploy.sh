@@ -22,8 +22,10 @@ JS_FILES=
 CSS_FILES=
 TPL_FILES=
 DEBUG=F
+JS_PARAM_WARNING_LEVEL_QUIET="--warning_level QUIET"
+JS_PARAM=
 
-while getopts "d:j:c:t:i:" arg
+while getopts "d:j:c:t:iw" arg
 do
 	case $arg in
 		d)
@@ -41,8 +43,13 @@ do
 		i)
 			DEBUG=T
 			;;
+		w)
+			JS_PARAM_WARNING_LEVEL_QUIET="--warning_level DEFAULT"
+			;;
 	esac
 done
+
+JS_PARAM=${JS_PARAM_WARNING_LEVEL_QUIET}
 
 if [ ! -f "$JS_COMP" ]; then
 	echo "FATAL: JS Compiler $JS_COMP does not exist!"
@@ -162,7 +169,7 @@ do
 			if [ "$DEBUG"z = "T"z ]; then
 				echo "INFO: Compiler params js $JS_FILES"
 			fi
-			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8 --warning_level QUIET
+			java -jar $JS_COMP --js $JS_FILES --js_output_file $TMP_DIR/$JS_ROOT/$GROUP.js --charset=utf-8 $JS_PARAM
 		fi
 		if [ "$CSS_FILES" ]
 		then
@@ -191,7 +198,7 @@ for JS in `ls $JS_ROOT`
 do
 	if [ -f $JS_ROOT/$JS ]
 	then
-		java -jar $JS_COMP --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8 --warning_level QUIET
+		java -jar $JS_COMP --js $JS_ROOT/$JS --js_output_file $TMP_DIR/$JS_ROOT/$JS --charset=utf-8 $JS_PARAM
 		if [ "$DEBUG"z = "T"z ]; then
 			echo "INFO: Compile js $JS"
 		fi
