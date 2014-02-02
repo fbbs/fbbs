@@ -235,10 +235,12 @@
                     $(document.body).notifications('reset');
 
                     // Change login url
-                    menuNav.topbar('setUrl', {
-                        selector: '.menu-toggle-login',
-                        url: [f.config.urlConfig.login, '?r=', encodeURIComponent(['#', $.param.fragment()].join(""))].join("")
-                    });
+                    if (f.config.pageInfo.pageName !== 'login') {
+                        menuNav.topbar('setUrl', {
+                            selector: '.menu-toggle-login',
+                            url: [f.config.urlConfig.login, '?r=', encodeURIComponent(['#', $.param.fragment()].join(""))].join("")
+                        });
+                    }
 
                     // Set active menu nav
                     if (pageInfo.menuNavId) {

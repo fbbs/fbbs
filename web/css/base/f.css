@@ -95,6 +95,7 @@ input[type=password].disabled {
 }
 .hide-for-desktop {
     display: none;
+    *display: none!important;
 }
 .wrapper {
     max-width: 980px;

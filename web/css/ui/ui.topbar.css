@@ -29,7 +29,7 @@
     font-size: 15px;
     margin: 0;
 }
-.ui-top-bar .title-area .name h1 a.menu-toggle {
+.ui-top-bar .title-area .name h1 a {
     font-weight: normal;
     color: #FFF;
     display: block;
