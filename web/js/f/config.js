@@ -18,7 +18,12 @@ f.config = {
         ajaxUri: "/web/bbs",
         cookiePath: "/",
         defaultTitle: "日月光华 | 复旦大学BBS",
-        defaultShortTitle: "日月光华"
+        defaultShortTitle: "日月光华",
+        copyright: '&copy;&nbsp;1996-2014&nbsp;日月光华',
+        icp: {
+            label: "沪ICP备042465号",
+            url: "http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407"
+        }
     },
     urlConfig: {
         login: "#/login.html",
@@ -67,6 +72,27 @@ f.config = {
                 id: "friends-edit",
                 label: "好友管理",
                 url: "#/friends_edit.html"
+            }
+        ],
+        footerMenus: [
+            {
+                label: "返回旧版",
+                url: "http://bbs.fudan.edu.cn/"
+            },
+            {
+                label: "手机简版",
+                url: "http://bbs.fudan.edu.cn/m/",
+                target: true
+            },
+            {
+                label: "复旦泉",
+                url: "http://bbs.fudan.edu.cn/q/",
+                target: true
+            },
+            {
+                label: "手机泉站",
+                url: "http://bbs.fudan.edu.cn/qm/",
+                target: true
             }
         ]
     },

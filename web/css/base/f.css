@@ -1,74 +1,3 @@
-html, body {
-    font-size: 100%;
-    width: 100%;
-}
-body {
-    color: #222222;
-    font-family: Arial, 'Microsoft YaHei', '\5b8b\4f53'!important;
-    font-weight: normal;
-    font-style: normal;
-    line-height: 1;
-    cursor: default;
-}
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 300;
-    font-style: normal;
-    color: #222222;
-    text-rendering: optimizeLegibility;
-    margin-top: 0.2rem;
-    margin-bottom: 0.5rem;
-    line-height: 1.4;
-}
-a {
-    color: #008cba;
-    text-decoration: none;
-    line-height: inherit;
-}
-ul, ol, dl {
-    font-size: 1rem;
-    line-height: 1.6;
-}
-button {
-    -webkit-appearance: none;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border-radius: 0;
-    border: none;
-}
-input[type=text],
-input[type=password] {
-    background-color: #FFF;
-    border: 1px solid #ccc;
-    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    color: rgba(0, 0, 0, 0.75);
-    height: 28px;
-    line-height: 28px\9;
-    padding: 0 5px;
-    -webkit-transition: border-color 300ms ease;
-    -moz-transition: border-color 300ms ease;
-    -o-transition: border-color 300ms ease;
-    transition: border-color 300ms ease;
-}
-input[type=text]:hover,
-input[type=password]:hover {
-    border-color: #aaa;
-}
-input[type=text]:focus,
-input[type=password]:focus {
-    background: #fafafa;
-    border-color: #999;
-    outline: none;
-    -webkit-box-shadow: 0 0 5px #999;
-    -moz-box-shadow: 0 0 5px #999;
-    box-shadow: 0 0 5px #999;
-}
-input[type=text].disabled,
-input[type=password].disabled {
-    border-color: #ddd!important;
-    color: #aaa!important;
-}
 .clearfix {
     *zoom: 1;
 }
@@ -101,6 +30,16 @@ input[type=password].disabled {
     max-width: 980px;
     margin: 0 auto;
 }
+.menu-nav {
+    position: relative;
+    z-index: 1002;
+}
+.main {
+    margin-top: 20px;
+}
+.footer {
+    margin-top: 20px;
+}
 
 @media only screen and (min-width: 641px) {
     .hide-for-desktop {
@@ -109,10 +48,50 @@ input[type=password].disabled {
 }
 
 @media only screen and (max-width: 640px) {
+    .main {
+        margin-top: 50px;
+    }
+    .footer {
+        margin-top: 10px;
+    }
     .hide-for-mobile {
         display: none!important;
     }
     .hide-for-desktop {
         display: block;
     }
+}
+@-webkit-keyframes tada {
+    0% { -webkit-transform: scale(1); }
+    10%,20% { -webkit-transform: scale(0.9) rotate(-3deg); }
+    30%,50%,70%,90% { -webkit-transform: scale(1.1) rotate(3deg); }
+    40%,60%,80% { -webkit-transform: scale(1.1) rotate(-3deg); }
+    100% { -webkit-transform: scale(1) rotate(0deg); }
+}
+@-moz-keyframes tada {
+    0% { -moz-transform: scale(1); }
+    10%,20% { -moz-transform: scale(0.9) rotate(-3deg); }
+    30%,50%,70%,90% { -moz-transform: scale(1.1) rotate(3deg); }
+    40%,60%,80% { -moz-transform: scale(1.1) rotate(-3deg); }
+    100% { -moz-transform: scale(1) rotate(0deg); }
+}
+@-o-keyframes tada {
+    0% { -o-transform: scale(1); }
+    10%,20% { -o-transform: scale(0.9) rotate(-3deg); }
+    30%,50%,70%,90% { -o-transform: scale(1.1) rotate(3deg); }
+    40%,60%,80% { -o-transform: scale(1.1) rotate(-3deg); }
+    100% { -o-transform: scale(1) rotate(0deg); }
+}
+@keyframes tada {
+    0% { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); -o-transform: scale(1); transform: scale(1); }
+    10%,20% { -webkit-transform: scale(0.9) rotate(-3deg); -moz-transform: scale(0.9) rotate(-3deg); -ms-transform: scale(0.9) rotate(-3deg); -o-transform: scale(0.9) rotate(-3deg); transform: scale(0.9) rotate(-3deg); }
+    30%,50%,70%,90% { -webkit-transform: scale(1.1) rotate(3deg); -moz-transform: scale(1.1) rotate(3deg); -ms-transform: scale(1.1) rotate(3deg); -o-transform: scale(1.1) rotate(3deg); transform: scale(1.1) rotate(3deg); }
+    40%,60%,80% { -webkit-transform: scale(1.1) rotate(-3deg); -moz-transform: scale(1.1) rotate(-3deg); -ms-transform: scale(1.1) rotate(-3deg); -o-transform: scale(1.1) rotate(-3deg); transform: scale(1.1) rotate(-3deg); }
+    100% { -webkit-transform: scale(1) rotate(0deg); -moz-transform: scale(1) rotate(0deg); -ms-transform: scale(1) rotate(0deg); -o-transform: scale(1) rotate(0deg); transform: scale(1) rotate(0deg); }
+}
+.tada {
+    -webkit-animation-name:tada;
+    -moz-animation-name:tada;
+    -o-animation-name:tada;
+    animation-name:tada;
 }

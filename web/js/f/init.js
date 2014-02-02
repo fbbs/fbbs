@@ -37,6 +37,13 @@
                 }
             });
 
+            // Render footer
+            $('#footer').html(f.tpl.format('ui.footer.tpl', {
+                copyright: f.config.systemConfig.copyright,
+                menu: f.config.menuList.footerMenus,
+                icp: f.config.systemConfig.icp
+            }));
+
             // Render global tip
             $('#global-tip').tip();
 

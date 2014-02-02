@@ -21,6 +21,7 @@
         <file type="js" src="js/f/init.js" />
         <dir type="js" src="js/ui/" />
         <file type="css" src="css/base/normalize.css" />
+        <file type="css" src="css/base/base.css" />
         <file type="css" src="css/base/f.css" />
         <dir type="css" src="css/ui/" />
     </group>
