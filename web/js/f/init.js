@@ -203,9 +203,19 @@
         function init() {
             loadTemplate();
             initBBS();
+            var defaultPage = f.config.systemConfig.defaultPage;
+            if ($.isMobile.any) {
+                if (window.localStorage) {
+                    var idleTime = parseInt(window.localStorage.getItem('idleTime'));
+                    var time = (new Date()).getTime();
+                    if (time - idleTime <= f.config.systemConfig.idleTime * 1000) {
+                        defaultPage = window.localStorage.getItem('idlePage') || defaultPage;
+                    }
+                }
+            }
             $('#body').opoa({
                 baseUri: f.config.systemConfig.baseUri,
-                defaultPage: f.config.systemConfig.defaultPage,
+                defaultPage: defaultPage,
                 version: f.config.systemConfig.version,
                 beforeClose: function () {
                     $(document.body).loading('show');
@@ -222,6 +232,7 @@
                 },
                 afterClose: function (event, data) {
                     var url = data.url;
+                    var hash = ['#', $.param.fragment()].join("");
                     var pageInfo = f.config.pageInfo;
                     var sideNav = $(':data(ui-sidenav)');
                     var menuNav = $(':data(ui-topbar)');
@@ -245,7 +256,7 @@
                     if (f.config.pageInfo.pageName !== 'login') {
                         menuNav.topbar('setUrl', {
                             selector: '.menu-toggle-login',
-                            url: [f.config.urlConfig.login, '?r=', encodeURIComponent(['#', $.param.fragment()].join(""))].join("")
+                            url: [f.config.urlConfig.login, '?r=', encodeURIComponent(hash)].join("")
                         });
                     }
 
@@ -264,6 +275,12 @@
                                 firefox: 'http://firefox.com.cn/download/'
                             })
                         });
+                    }
+
+                    // Save idle status
+                    if (window.localStorage) {
+                        window.localStorage.setItem('idlePage', hash);
+                        window.localStorage.setItem('idleTime', (new Date()).getTime());
                     }
                 }
             });
