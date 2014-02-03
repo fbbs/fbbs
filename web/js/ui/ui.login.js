@@ -152,6 +152,7 @@
                 .prop('disabled', true)
                 .addClass('disabled');
             this.element.addClass('loading');
+            console.log(this.element);
         },
         reset: function () {
             this._$submit

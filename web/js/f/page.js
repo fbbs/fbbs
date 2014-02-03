@@ -118,7 +118,7 @@
          */
         oninitComponents: function (components) {
             if (f.isArray(components)) {
-                components.push('Login', 'BoardSearch');
+                components.push('BoardSearch');
             }
         },
         /**

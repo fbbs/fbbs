@@ -2,7 +2,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 998;
+    z-index: 1098;
     width: 100%;
     height: 100%;
     background: black;
@@ -10,7 +10,7 @@
     filter: alpha(opacity=45);
 }
 .ui-dialog {
-    z-index: 999;
+    z-index: 1099;
     padding: 10px;
     border: solid 1px #666666;
     background-color: #FFF;
