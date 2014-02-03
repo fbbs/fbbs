@@ -216,6 +216,8 @@
         width: 40px;
         height: 40px;
         border-left: solid 1px #4e4e4e;
+        -webkit-box-shadow: -1px 0 0 #1a1a1a;
+        -moz-box-shadow: -1px 0 0 #1a1a1a;
         box-shadow: -1px 0 0 #1a1a1a;
         cursor: pointer;
     }
@@ -335,8 +337,8 @@
         -webkit-box-sizing: content-box;
         -moz-box-sizing: content-box;
         box-sizing: content-box;
-        width: 70%;
         max-width: 250px;
+        width: 70%;
         height: 100%;
         background: #333;
         -webkit-transition: -webkit-transform 300ms ease;

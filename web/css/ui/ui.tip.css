@@ -1,40 +1,40 @@
 .ui-alert-box {
-    border-style: solid;
-    border-width: 1px;
-    display: block;
-    font-weight: normal;
-    margin: 10px 0;
     position: relative;
+    display: block;
+    margin: 10px 0;
     padding: 12px 21px 12px 12px;
-    font-size: 12px;
-    background-color: #008cba;
+    border-width: 1px;
+    border-style: solid;
     border-color: #007ba0;
+    background-color: #008cba;
     color: white;
+    font-weight: normal;
+    font-size: 12px;
 }
 .ui-alert-box.success {
-    background-color: #43ac6a;
     border-color: #3a945b;
+    background-color: #43ac6a;
     color: white;
 }
 .ui-alert-box.warning {
-    background-color: #f08a24;
     border-color: #de770f;
+    background-color: #f08a24;
     color: white;
 }
 .ui-alert-box.info {
-    background-color: #a0d3e8;
     border-color: #74bfdd;
+    background-color: #a0d3e8;
     color: #4f4f4f;
 }
 .ui-alert-box .ui-alert-close {
-    font-size: 21px;
-    padding: 9px 6px 4px;
-    line-height: 0;
     position: absolute;
     top: 50%;
-    margin-top: -10px;
     right: 4px;
+    margin-top: -10px;
+    padding: 9px 6px 4px;
     color: #333333;
+    font-size: 21px;
+    line-height: 0;
     opacity: 0.3;
     filter: alpha(opacity=50);
 }

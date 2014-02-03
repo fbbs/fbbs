@@ -3,7 +3,7 @@ html, body {
     font-size: 100%;
 }
 body {
-    color: #222222;
+    color: #222;
     font-weight: normal;
     font-style: normal;
     font-family: Arial, 'Microsoft YaHei', '\5b8b\4f53'!important;
@@ -13,7 +13,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
     margin-top: 0.2rem;
     margin-bottom: 0.5rem;
-    color: #222222;
+    color: #222;
     font-weight: 300;
     font-style: normal;
     line-height: 1.4;
@@ -69,4 +69,12 @@ input[type=text].disabled,
 input[type=password].disabled {
     border-color: #ddd!important;
     color: #aaa!important;
+}
+::-moz-selection {
+    background-color: #CCE2FF;
+    color: #555;
+}
+::selection {
+    background-color: #CCE2FF;
+    color: #555;
 }

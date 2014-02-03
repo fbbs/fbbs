@@ -5,24 +5,24 @@
     font-size: 13px;
 }
 .footer-menu {
-    list-style: none;
-    padding: 0;
-    height: auto;
     display: block;
     margin: 0;
+    padding: 0;
+    height: auto;
+    list-style: none;
 }
 .footer-list {
-    list-style: none;
     float: left;
-    line-height: 1;
+    list-style: none;
     font-size: 13px;
+    line-height: 1;
 }
 .footer-nav+.footer-nav:before {
+    display: inline-block;
     margin-left: 3px;
-    content: '•';
     padding: 0 3px;
     color: #BBB;
-    display: inline-block;
+    content: '?';
     font-family: Arial;
 }
 .footer-icp {
@@ -49,7 +49,7 @@
         float: none;
     }
     .footer-icp.hide-for-desktop {
-        margin-left: 10px;
         display: inline;
+        margin-left: 10px;
     }
 }

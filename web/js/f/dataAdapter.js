@@ -10,7 +10,7 @@ f.dataAdapter = f.Class({
         f.each(data, function (item) {
             targetList.push({
                 url: f.format(f.config.urlFormatter.board, {
-                        bid: item.bid
+                        bid: encodeURIComponent(item.bid)
                     }),
                 fullName: item.label,
                 name: item.board

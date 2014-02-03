@@ -261,9 +261,9 @@
                     var url = data.url;
                     var fullHash = data.fullHash;
                     var pageInfo = f.config.pageInfo;
-                    var sideNav = $(':data(ui-sidenav)');
                     var menuNav = $(':data(ui-topbar)');
                     var globalTip = $('#global-tip');
+                    var body = $('#body');
                     var title = pageInfo.title || f.config.systemConfig.defaultTitle;
                     var shortTitle = pageInfo.shortTitle || f.config.systemConfig.defaultShortTitle;
 
@@ -291,6 +291,9 @@
                     if (pageInfo.menuNavId) {
                         menuNav.topbar('setActivate', pageInfo.menuNavId);
                     }
+
+                    // Toggle side nav
+                    body.toggleClass('hide-side-nav', pageInfo.showSideNav === false);
 
                     // ie6,7提示
                     if (($.browser.msie && parseInt($.browser.version) < 8) || ($.browser.webkit && parseInt($.browser.version) < 5) || ($.browser.opera && parseInt($.browser.version) < 11) || ($.browser.mozilla && parseInt($.browser.version) < 4)) {

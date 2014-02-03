@@ -18,11 +18,9 @@ var systemConfig = f.config.systemConfig;
                 }
             </li>
         </ul>
-        if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
-            <section class="right-small hide-for-desktop">
-                <a class="right-off-canvas-toggle canvas-toggle menu-icon">收藏</a>
-            </section>
-        }
+        <section class="right-small hide-for-desktop">
+            <a class="right-off-canvas-toggle canvas-toggle menu-icon">收藏</a>
+        </section>
         <section class="top-bar-section clearfix hide-for-mobile">
             <ul class="left">
                 f.each(menuList.menus, function (menu) {

@@ -20,9 +20,9 @@
 .ui-loading .loading-inner {
     width: 194px;
     height: 48px;
-    line-height: 48px;
     border: 2px solid #d6e7f2;
     background:#fcfcfc;
+    line-height: 48px;
 }
 
 .ui-loading .loading-left-shadow {
@@ -34,14 +34,14 @@
 }
 
 .ui-loading .loading-img {
+    display: inline-block;
     float: left;
     margin: 6px 0 0 15px;
-    display: inline-block;
     width: 32px;
     height: 32px;
+    background-image: url(decorator/loading.gif);
     background-position: 0 0;
     background-repeat: no-repeat;
-    background-image: url(decorator/loading.gif);
 }
 
 .ui-loading .loading-text {

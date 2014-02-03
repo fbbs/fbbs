@@ -31,7 +31,8 @@
                 'input .ui-board-search-input': $.proxy(this, '_oninput'),
                 'propertychange .ui-board-search-input': $.proxy(this, '_oninput'),
                 'keydown .ui-board-search-input': $.proxy(this, '_onkeydown'),
-                'click .ui-board-search-list-reset': $.proxy(this, '_reset')
+                'click .ui-board-search-list-reset': $.proxy(this, '_reset'),
+                'click .ui-board-search-target': $.proxy(this, '_onclickTarget')
             });
         },
         _onkeydown: function (event) {
@@ -61,15 +62,19 @@
             if (now - this._debounce < this.options.searchDelay) {
                 this._timeout && clearTimeout(this._timeout);
             }
-            this._timeout = setTimeout($.proxy(this, '_onsearch'), this.options.searchDelay);
+            this._timeout = setTimeout($.proxy(this, '_onsearch', $(event.target).val()), this.options.searchDelay);
             this._debounce = now;
         },
-        _onsearch: function () {
-            var val = f.trim(this._$input.val());
+        _onsearch: function (value) {
+            var val = f.trim(value);
+            this._$input.val(val);
             if (val) {
                 this._trigger('onsearch', null, {
                     value: val
                 });
+            }
+            else {
+                this.removeList();
             }
         },
         _focus: function (index) {
@@ -101,13 +106,12 @@
             this.removeList();
             this._$input.val('');
         },
+        _onclickTarget: function () {
+            this._reset();
+            $('.menu-toggle').click();
+        },
         loading: function (toggle) {
-            if (toggle === false) {
-                this._$container.removeClass('loading');
-            }
-            else {
-                this._$container.addClass('loading');
-            }
+            this._$container.toggleClass('loading', toggle !== false);
         },
         renderList: function (list) {
             this._$list.html(f.tpl.format(this.options.listTpl, {

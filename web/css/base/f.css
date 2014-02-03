@@ -37,11 +37,33 @@
     width: 100%;
 }
 .global-tip {
-    padding: 0 10px;
     margin-top: 55px;
     margin-bottom: 10px;
+    padding: 0 10px;
+}
+.side-nav {
+    position: fixed;
+    top: 55px;
+    right: 0;
+    left: 0;
+    z-index: 799;
+    height: 100%;
+}
+.hide-side-nav .side-nav {
+    display: none;
+}
+.main {
+    position: relative;
+    z-index: 900;
+    margin-right: 250px;
+    min-height: 500px;
+}
+.hide-side-nav .main {
+    margin-right: 0;
 }
 .footer {
+    position: relative;
+    z-index: 899;
     margin-top: 20px;
 }
 
@@ -56,8 +78,13 @@
         margin-top: 45px;
         margin-bottom: 5px;
     }
+    .side-nav {
+        display: none;
+    }
     .main {
-        margin-bottom: 20px;
+        margin-right: 0;
+        margin-bottom: 10px;
+        min-height: 400px;
     }
     .hide-for-mobile {
         display: none!important;
