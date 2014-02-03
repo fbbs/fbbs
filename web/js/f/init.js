@@ -259,7 +259,7 @@
                 },
                 afterClose: function (event, data) {
                     var url = data.url;
-                    var hash = ['#', $.param.fragment()].join("");
+                    var fullHash = data.fullHash;
                     var pageInfo = f.config.pageInfo;
                     var sideNav = $(':data(ui-sidenav)');
                     var menuNav = $(':data(ui-topbar)');
@@ -283,7 +283,7 @@
                     if (f.config.pageInfo.pageName !== 'login') {
                         menuNav.topbar('setUrl', {
                             selector: '.menu-toggle-login',
-                            url: [f.config.urlConfig.login, '?r=', encodeURIComponent(hash)].join("")
+                            url: [f.config.urlConfig.login, '?r=', encodeURIComponent(fullHash)].join("")
                         });
                     }
 
@@ -320,7 +320,7 @@
 
                     // Save idle status
                     if (window.localStorage) {
-                        window.localStorage.setItem('idlePage', hash);
+                        window.localStorage.setItem('idlePage', fullHash);
                         window.localStorage.setItem('idleTime', (new Date()).getTime());
                     }
                 }

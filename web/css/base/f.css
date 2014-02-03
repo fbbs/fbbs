@@ -38,9 +38,8 @@
 }
 .global-tip {
     padding: 0 10px;
-}
-.main {
-    margin: 20px auto;
+    margin-top: 55px;
+    margin-bottom: 10px;
 }
 .footer {
     margin-top: 20px;
@@ -54,11 +53,8 @@
 
 @media only screen and (max-width: 640px) {
     .global-tip {
-        margin-top: 50px;
-    }
-    .footer {
-        display: none;
-        margin-top: 10px;
+        margin-top: 45px;
+        margin-bottom: 5px;
     }
     .hide-for-mobile {
         display: none!important;

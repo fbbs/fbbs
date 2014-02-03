@@ -125,9 +125,13 @@
         _updatePage: function (url) {
             var $doc = $('<div>');
             var main = this.options.contentSelector;
+            var hash = $.param.fragment();
+            var fullHash = ['#', hash].join("");
 
             this._trigger('onclose', null, {
-                url: url
+                url: url,
+                hash: hash,
+                fullHash: fullHash
             });
 
             //$doc.html(pageCache[url]);
@@ -147,7 +151,9 @@
             $doc.find(this.options.scriptSelector).appendTo('body');
 
             this._trigger("afterClose", null, {
-                url: url
+                url: url,
+                hash: hash,
+                fullHash: fullHash
             });
         }
     });
