@@ -56,6 +56,9 @@
         margin-top: 45px;
         margin-bottom: 5px;
     }
+    .main {
+        margin-bottom: 20px;
+    }
     .hide-for-mobile {
         display: none!important;
     }

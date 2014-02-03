@@ -61,7 +61,10 @@ var systemConfig = f.config.systemConfig;
             </ul>
         </section>
     </div>
-    <aside class="right-off-canvas-menu hide-for-desktop collections-container"></aside>
+    <aside class="right-off-canvas-menu hide-for-desktop">
+        <div class="board-search-container"></div>
+        <div class="collections-container"></div>
+    </aside>
     <aside class="left-off-canvas-menu hide-for-desktop">
         <ul class="off-canvas-list">
             if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
@@ -73,7 +76,7 @@ var systemConfig = f.config.systemConfig;
                 </li>
             }
             else {
-                <li><a class="menu-toggle menu-toggle-login" href="#{this.loginUrl}">登陆</a></li>
+                <li><a class="button menu-toggle menu-toggle-login" href="#{this.loginUrl}">登&emsp;陆</a></li>
             }
             <li><label>导航</label></li>
             if (menuList.title) {

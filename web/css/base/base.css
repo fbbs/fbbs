@@ -36,7 +36,8 @@ button {
     -webkit-appearance: none;
 }
 input[type=text],
-input[type=password] {
+input[type=password],
+input[type=search] {
     padding: 0 5px;
     height: 28px;
     border: 1px solid #ccc;

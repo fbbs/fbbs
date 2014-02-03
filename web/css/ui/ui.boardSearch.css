@@ -1,0 +1,76 @@
+.ui-board-search {
+    margin-top: 10px;
+}
+.ui-board-search .ui-board-search-input-container {
+    margin: 10px;
+}
+.ui-board-search .ui-board-search-input {
+    display: block;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    font-size: 14px;
+    padding-left: 25px;
+    background-image: url(decorator/search.png);
+    background-image: -webkit-image-set(url(decorator/search.png) 1x, url(decorator/search@2x.png) 2x);
+    background-repeat: no-repeat;
+    background-position: 4px center;
+}
+.ui-board-search.loading .ui-board-search-input {
+    background-image: url(decorator/loader-mini.gif);
+}
+@media only screen and (max-width: 640px) {
+    .ui-board-search .ui-board-search-list-label {
+        position: relative;
+    }
+    .ui-board-search .ui-board-search-list-label label {
+        display: block;
+        margin: 0;
+        padding: 6px 13px;
+        border-top: 1px solid #5e5e5e;
+        border-bottom: none;
+        background: #444;
+        color: #999;
+        font-weight: bold;
+        font-size: 12px;
+    }
+    .ui-board-search .ui-board-search-list-label span {
+        display: block;
+        position: absolute;
+        right: 10px;
+        top: 8px;
+        -webkit-border-radius: 1000px;
+        -moz-border-radius: 1000px;
+        border-radius: 1000px;
+        border: 1px solid #5e5e5e;
+        background-color: #5e5e5e;
+        font-size: 12px;
+        height: 14px;
+        line-height: 14px;
+        color: #222;
+        padding: 0 4px;
+        cursor: pointer;
+    }
+    .ui-board-search .ui-board-search-target {
+        display: block;
+        padding: 5px 11px;
+        border-bottom: 1px solid #262626;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+    }
+    .ui-board-search .ui-board-search-item.focus .ui-board-search-target {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .ui-board-search .ui-board-search-empty-tip .ui-board-search-target {
+        padding: 11px;
+        text-align: center;
+        font-size: 14px;
+    }
+    .ui-board-search .ui-board-search-zh {
+        font-size: 14px;
+    }
+    .ui-board-search .ui-board-search-en {
+        margin-top: -4px;
+    }
+}

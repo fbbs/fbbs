@@ -151,6 +151,35 @@ f.namespace('f.components');
                     this.Login.login('error', msg);
                 }
             });
+        },
+        BoardSearch: function (thisValue) {
+            f.extend(thisValue, {
+                _initBoardSearch: function (params) {
+                    this[params.id] = $('.board-search-container').boardSearch(f.extend({
+                        searchDelay: 700,
+                        onsearch: function (event, data) {
+                            thisValue.ajax({
+                                name: 'getBoardList',
+                                url: 'boards/query.json',
+                                adapter: 'convertBoardData'
+                            }, {
+                                board: data.value
+                            });
+                        }
+                    }, params.options));
+                },
+                ongetBoardList: function () {
+                    this.BoardSearch.boardSearch('loading', true);
+                },
+                ongetBoardListSuccess: function (data) {
+                    this.BoardSearch.boardSearch('renderList', data);
+                    this.BoardSearch.boardSearch('loading', false);
+                },
+                ongetBoardListFailed: function () {
+                    this.BoardSearch.boardSearch('removeList');
+                    this.BoardSearch.boardSearch('loading', false);
+                }
+            });
         }
     });
 }(jQuery, f));

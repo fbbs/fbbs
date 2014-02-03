@@ -1,0 +1,17 @@
+{
+    "status": 0,
+    "msg": "",
+    "data": [
+        {
+            "bid": 191,
+            "board": "BBS_Dev",
+            "label": "BBS建设/Bug报告",
+            "dir": false
+        }, {
+            "bid": 220,
+            "board": "Undergraduate",
+            "label": "本科生之家",
+            "dir": false
+        }
+    ]
+}

@@ -36,6 +36,9 @@ f.config = {
         regist: "#/regist.html",
         forget: "#/forget.html"
     },
+    urlFormatter: {
+        board: "#/board.html?bid=!{bid}"
+    },
     userInfo: {},
     menuList: {
         title: {

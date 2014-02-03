@@ -335,7 +335,8 @@
         -webkit-box-sizing: content-box;
         -moz-box-sizing: content-box;
         box-sizing: content-box;
-        width: 150px;
+        width: 70%;
+        max-width: 250px;
         height: 100%;
         background: #333;
         -webkit-transition: -webkit-transform 300ms ease;
@@ -390,6 +391,22 @@
         border-bottom: 1px solid #262626;
         color: rgba(255, 255, 255, 0.7);
         font-size: 12px;
+    }
+    .ui-top-bar .left-off-canvas-menu .off-canvas-list li a.button {
+        margin: 7px auto;
+        padding: 4px 20px;
+        width: 50px;
+        height: 18px;
+        background: #008cba;
+        text-align: center;
+        line-height: 18px;
+        -webkit-transition: background 300ms ease;
+        -moz-transition: background 300ms ease;
+        -o-transition: background 300ms ease;
+        transition: background 300ms ease;
+    }
+    .ui-top-bar .left-off-canvas-menu .off-canvas-list li a.button:hover {
+        background: #006888;
     }
     .move-right .left-off-canvas-menu {
         -webkit-box-shadow: -4px 0 4px rgba(0, 0, 0, 0.5), 4px 0 4px rgba(0, 0, 0, 0.5);
