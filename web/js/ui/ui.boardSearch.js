@@ -36,11 +36,12 @@
         _bindEvents: function () {
             this._on({
                 'input .ui-board-search-input': $.proxy(this, '_oninput'),
-                'propertychange .ui-board-search-input': $.proxy(this, '_oninput'),
+                //'propertychange .ui-board-search-input': $.proxy(this, '_oninput'),
                 'keydown .ui-board-search-input': $.proxy(this, '_onkeydown'),
                 'click .ui-board-search-list-reset': $.proxy(this, '_reset'),
                 'click .ui-board-search-target': $.proxy(this, '_onclickTarget')
             });
+            this.element.find('.ui-board-search-input').on('propertychange', $.proxy(this, '_oninput'));
         },
         _onkeydown: function (event) {
             switch (event.which) {
@@ -68,7 +69,7 @@
             }
         },
         _oninput: function (event) {
-            console.log(event.propertyName);
+            console.log(event);
             if (event.propertyName && event.propertyName.toLowerCase() !== 'value') {
                 return;
             }
