@@ -12,6 +12,11 @@
             tpl: 'ui.boardSearch.tpl',
             listTpl: 'ui.boardSearchList.tpl',
             searchDelay: 700,
+            keydownKeyCode: [
+                48, 49, 50, 51, 52, 53, 54, 55, 56, 57, // 0-9
+                65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+                81, 82, 83, 84, 85, 86, 87, 88, 89, 90  // a-z
+            ],
             onsearch: null,
             onenter: null,
             oncreate: null
@@ -72,14 +77,14 @@
             }
         },
         _onkeyup: function (event) {
-            if (f.contains([38, 40], event.which)) {
+            if (!f.contains(this.options.keydownKeyCode, event.which)) {
                 event.preventDefault();
                 event.stopPropagation();
                 return;
             }
             // For IE 8: bind keyup event
             // For IE 9: fix backspace and delete key can not fire oninput event
-            if ((!this._hasInputEvent && event.which !== 13)
+            if ((!this._hasInputEvent)
                 || (this._needPlaceholder && this._hasInputEvent && f.contains([8, 46], event.which))) {
                 this._oninput(event);
             }
