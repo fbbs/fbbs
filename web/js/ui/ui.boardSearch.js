@@ -18,7 +18,8 @@
         },
         _debounce: 0,
         _timeout: null,
-        _needPlaceholder: !("placeholder" in document.createElement("input")),
+        _needPlaceholder: !('placeholder' in document.createElement('input')),
+        _hasInputEvent: 'oninput' in document.createElement('input'),
         _create: function () {
             this.element.html(f.tpl.format(this.options.tpl));
             this._getElements();
@@ -36,16 +37,16 @@
         _bindEvents: function () {
             this._on({
                 'input .ui-board-search-input': $.proxy(this, '_oninput'),
-                //'propertychange .ui-board-search-input': $.proxy(this, '_oninput'),
                 'keydown .ui-board-search-input': $.proxy(this, '_onkeydown'),
+                'keyup .ui-board-search-input': $.proxy(this, '_onkeyup'),
                 'click .ui-board-search-list-reset': $.proxy(this, '_reset'),
                 'click .ui-board-search-target': $.proxy(this, '_onclickTarget')
             });
-            this.element.find('.ui-board-search-input').on('propertychange', $.proxy(this, '_oninput'));
         },
         _onkeydown: function (event) {
             switch (event.which) {
                 case 13:
+                    // Press enter
                     event.preventDefault();
                     event.stopPropagation();
                     var a = this._$list.find('.ui-board-search-item.focus a');
@@ -57,22 +58,28 @@
                     }
                     break;
                 case 38:
+                    // Press up key
                     this._prev();
                     event.preventDefault();
                     event.stopPropagation();
                     break;
                 case 40:
+                    // Press down key
                     this._next();
                     event.preventDefault();
                     event.stopPropagation();
                     break;
             }
         },
-        _oninput: function (event) {
-            console.log(event);
-            if (event.propertyName && event.propertyName.toLowerCase() !== 'value') {
-                return;
+        _onkeyup: function (event) {
+            // For IE 8: bind keyup event
+            // For IE 9: fix backspace and delete key can not fire oninput event
+            if ((!this._hasInputEvent && event.which !== 13)
+                || (this._needPlaceholder && this._hasInputEvent && f.contains([8, 46], event.which))) {
+                this._oninput(event);
             }
+        },
+        _oninput: function (event) {
             this._checkPlaceholder($(event.target).val());
             var now = (new Date()).getTime();
             if (now - this._debounce < this.options.searchDelay) {
