@@ -1,7 +1,8 @@
 .ui-board-search .ui-board-search-input-container {
     margin: 5px 10px 10px 10px;
 }
-.ui-board-search .ui-board-search-input {
+.ui-board-search .ui-board-search-input,
+.ui-board-search .ui-board-search-input:focus {
     display: block;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -14,7 +15,12 @@
     background-repeat: no-repeat;
     font-size: 14px;
 }
-.ui-board-search.loading .ui-board-search-input {
+.ui-board-search .ui-board-search-input.with-placeholder,
+.ui-board-search .ui-board-search-input.with-placeholder:focus {
+    background-image: url(decorator/search_with_placeholder.png);
+}
+.ui-board-search.loading .ui-board-search-input,
+.ui-board-search.loading .ui-board-search-input:focus {
     background-image: url(decorator/loader-mini.gif);
 }
 .ui-board-search .ui-board-search-list-container {
@@ -61,12 +67,11 @@
     display: block;
     padding: 0;
     border: none;
-    color: #555;
+    color: #666;
     font-size: 12px;
 }
 .ui-board-search .ui-board-search-item.focus .ui-board-search-target {
     color: #000;
-    font-weight: 700;
 }
 .ui-board-search .ui-board-search-item:hover .ui-board-search-target {
     color: #000;

@@ -48,6 +48,7 @@
     left: 0;
     z-index: 799;
     height: 100%;
+    width: 100%;
 }
 .hide-side-nav .side-nav {
     display: none;

@@ -165,6 +165,10 @@ f.namespace('f.components');
                             }, {
                                 board: data.value
                             });
+                        },
+                        onenter: function (event, data) {
+                            $('.exit-canvas-menu').trigger('mousedown');
+                            window.location.href = data.url;
                         }
                     }, params.options));
                 },

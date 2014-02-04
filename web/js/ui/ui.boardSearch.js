@@ -12,19 +12,26 @@
             tpl: 'ui.boardSearch.tpl',
             listTpl: 'ui.boardSearchList.tpl',
             searchDelay: 700,
-            onsearch: null
+            onsearch: null,
+            onenter: null,
+            oncreate: null
         },
         _debounce: 0,
         _timeout: null,
+        _needPlaceholder: !("placeholder" in document.createElement("input")),
         _create: function () {
             this.element.html(f.tpl.format(this.options.tpl));
             this._getElements();
+            this._$input.toggleClass('with-placeholder', this._needPlaceholder);
             this._bindEvents();
         },
         _getElements: function () {
             this._$input = this.element.find('.ui-board-search-input');
             this._$container = this.element.find('.ui-board-search');
             this._$list = this.element.find('.ui-board-search-list-container');
+        },
+        _checkPlaceholder: function (input) {
+            this._$input.toggleClass('with-placeholder', this._needPlaceholder && !input);
         },
         _bindEvents: function () {
             this._on({
@@ -42,32 +49,43 @@
                     event.stopPropagation();
                     var a = this._$list.find('.ui-board-search-item.focus a');
                     if (a.length) {
-                        a.click();
-                        window.location.href = a.attr('href');
+                        this._trigger('onenter', null, {
+                            url: a.attr('href')
+                        });
+                        this._reset();
                     }
                     break;
                 case 38:
                     this._prev();
+                    event.preventDefault();
+                    event.stopPropagation();
                     break;
                 case 40:
                     this._next();
+                    event.preventDefault();
+                    event.stopPropagation();
                     break;
             }
         },
         _oninput: function (event) {
+            console.log(event.propertyName);
             if (event.propertyName && event.propertyName.toLowerCase() !== 'value') {
                 return;
             }
+            this._checkPlaceholder($(event.target).val());
             var now = (new Date()).getTime();
             if (now - this._debounce < this.options.searchDelay) {
                 this._timeout && clearTimeout(this._timeout);
             }
-            this._timeout = setTimeout($.proxy(this, '_onsearch', $(event.target).val()), this.options.searchDelay);
+            this._timeout = setTimeout($.proxy(this, '_onsearch', {
+                    val: $(event.target).val(),
+                    isProperyChange: !!event.propertyName
+                }), this.options.searchDelay);
             this._debounce = now;
         },
-        _onsearch: function (value) {
-            var val = f.trim(value);
-            this._$input.val(val);
+        _onsearch: function (data) {
+            var val = f.trim(data.val);
+            !data.isProperyChange && this._$input.val(val);
             if (val) {
                 this._trigger('onsearch', null, {
                     value: val

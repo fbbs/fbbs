@@ -51,6 +51,7 @@ input[type=search] {
     -moz-transition: border-color 300ms ease;
     -o-transition: border-color 300ms ease;
     transition: border-color 300ms ease;
+    -webkit-appearance: none;
 }
 input[type=text]:hover,
 input[type=password]:hover {
@@ -77,4 +78,20 @@ input[type=password].disabled {
 ::selection {
     background-color: #CCE2FF;
     color: #555;
+}
+:-ms-input-placeholder {
+    color: #A9A9A9!important;
+}
+::-webkit-input-placeholder {
+    color: #A9A9A9;
+}
+::-moz-placeholder {
+    color: #A9A9A9;
+    opacity: 1!important;
+}
+::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+::-webkit-search-results-button {
+    -webkit-appearance: none;
 }

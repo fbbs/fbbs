@@ -31,6 +31,9 @@
     color: #FFF;
     font-weight: normal;
 }
+.ui-top-bar .title-area .name h1 a.canvas-toggle {
+    display: none;
+}
 
 .ui-top-bar .top-bar-section ul li {
     float: left;
@@ -193,6 +196,9 @@
     .ui-top-bar .title-area .name h1 {
         line-height: 40px;
     }
+    .ui-top-bar .title-area .name h1 a.canvas-toggle {
+        display: block;
+    }
     .ui-top-bar .top-bar-section ul li.divider {
         height: 40px;
     }
@@ -337,7 +343,7 @@
         -webkit-box-sizing: content-box;
         -moz-box-sizing: content-box;
         box-sizing: content-box;
-        max-width: 250px;
+        max-width: 220px;
         width: 70%;
         height: 100%;
         background: #333;
