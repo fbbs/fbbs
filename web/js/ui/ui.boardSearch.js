@@ -72,6 +72,11 @@
             }
         },
         _onkeyup: function (event) {
+            if (f.contains([38, 40], event.which)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
             // For IE 8: bind keyup event
             // For IE 9: fix backspace and delete key can not fire oninput event
             if ((!this._hasInputEvent && event.which !== 13)
