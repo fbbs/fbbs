@@ -86,21 +86,20 @@
                 this._timeout && clearTimeout(this._timeout);
             }
             this._timeout = setTimeout($.proxy(this, '_onsearch', {
-                    val: $(event.target).val(),
-                    isProperyChange: !!event.propertyName
+                    value: $(event.target).val()
                 }), this.options.searchDelay);
             this._debounce = now;
         },
         _onsearch: function (data) {
-            var val = f.trim(data.val);
-            !data.isProperyChange && this._$input.val(val);
+            var val = f.trim(data.value);
+            this._$input.val(val);
             if (val) {
                 this._trigger('onsearch', null, {
                     value: val
                 });
             }
             else {
-                this.removeList();
+                this._reset();
             }
         },
         _focus: function (index) {
@@ -131,6 +130,7 @@
         _reset: function () {
             this.removeList();
             this._$input.val('');
+            this._checkPlaceholder();
         },
         _onclickTarget: function () {
             this._reset();
