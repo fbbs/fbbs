@@ -122,9 +122,8 @@ f.config = {
                 target: true
             },
             {
-                label: "Term登陆",
-                url: "http://bbs.fudan.edu.cn/",
-                target: true
+                label: "报告问题",
+                url: "http://bbs.fudan.edu.cn/"
             }
         ]
     },

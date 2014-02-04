@@ -42,7 +42,7 @@
     text-indent: -9999px;
 }
 
-@media only screen and (max-width: 640px) {
+@media only screen and (max-width: 767px) {
     .ui-dialog-titlebar-close {
         position: absolute;
         top: 3px;

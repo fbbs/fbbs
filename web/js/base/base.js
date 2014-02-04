@@ -146,6 +146,7 @@
                 url: url,
                 data: jsonData,
                 dataType: 'json',
+                cache: false,
                 success: function (data, textStatus, jqXHR) {
                     var ret = data;
 

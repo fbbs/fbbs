@@ -22,7 +22,7 @@
     margin-left: 3px;
     padding: 0 3px;
     color: #BBB;
-    content: '?';
+    content: '\2022'; /* Dot, same as &bull; */
     font-family: Arial;
 }
 .footer-icp {
@@ -37,7 +37,7 @@
     text-decoration: underline;
 }
 
-@media only screen and (max-width: 640px) {
+@media only screen and (max-width: 767px) {
     .footer-content {
         padding: 10px;
     }

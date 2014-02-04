@@ -31,7 +31,7 @@ var systemConfig = f.config.systemConfig;
                 if ('object' === typeof userInfo && !f.isEmpty(userInfo)) {
                     <li class="divider"></li>
                     <li class="has-dropdown">
-                        <a href="#{this.userInfoUrl}" title="#{userInfo.user}" class="dropdown-a">#{f.prune(userInfo.user, 10)}<span class="dropdown-arrow">&nbsp;</span></a>
+                        <a href="javascript:void(0);" title="#{userInfo.user}" class="dropdown-a">#{f.prune(userInfo.user, 10)}<span class="dropdown-arrow">&nbsp;</span></a>
                         <ul class="dropdown">
                             f.each(menuList.userMenus, function (subMenu) {
                                 <li class="dropdown-list" data-dropdown-menu-id="#{subMenu.id}">
