@@ -19,7 +19,7 @@ f.config = {
         cookiePath: "/",
         defaultTitle: "日月光华 | 复旦大学BBS",
         defaultShortTitle: "日月光华",
-        copyright: '&copy;&nbsp;1996-2014&nbsp;日月光华',
+        copyright: ['&copy;&nbsp;1996-', (new Date()).getFullYear(), '&nbsp;日月光华'].join(""),
         icp: {
             label: "沪ICP备042465号",
             url: "http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407"
