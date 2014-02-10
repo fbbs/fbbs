@@ -18,4 +18,5 @@ DEPLOY_DIR=/home/wwwroot/$WORK_DIR
 ant $ANT_ACTION
 
 # deploy new
+rm -rf $DEPLOY_DIR/*
 cp -r webroot/* $DEPLOY_DIR

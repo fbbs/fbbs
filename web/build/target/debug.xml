@@ -127,7 +127,7 @@
 
         <!-- 拷贝页面js,images,html -->
         <copy todir="${webroot}">
-            <fileset dir="${base}" includes="images/,js/,html/,bbs/,index.html"  excludes="js/base/,js/f/,js/ui/,js/ie/" />
+            <fileset dir="${base}" includes="images/,js/,html/,bbs/,index.html,favicon.ico"  excludes="js/base/,js/f/,js/ui/,js/ie/" />
         </copy>
 
         <replace encoding="utf-8" dir="${webroot}/" token="@version@" value="${version}" />

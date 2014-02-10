@@ -17,6 +17,7 @@ mkdir $BUILD_PATH
 ant release
 
 DEPLOY_DIR=/home/wwwroot/$WORK_DIR
+rm -rf $DEPLOY_DIR/*
 cp -r webroot/* $DEPLOY_DIR
 find $DEPLOY_DIR -name .git -exec rm -rf {} \;
 
