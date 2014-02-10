@@ -189,7 +189,7 @@
         function loadTemplate() {
             $.ajax({
                 type: 'GET',
-                url: f.config.systemConfig.webRoot + '/tpl/tpl.html?__v=' + f.config.systemConfig.version,
+                url: f.config.systemConfig.webRoot + '/tpl/tpl.html??__v=@version@',
                 async: false
             }).done(function (data, textStatus, jqXHR) {
                 parseTemplate(String(data));
@@ -243,7 +243,6 @@
             $('#body').opoa({
                 baseUri: f.config.systemConfig.baseUri,
                 defaultPage: defaultPage,
-                version: f.config.systemConfig.version,
                 beforeClose: function () {
                     $(document.body).loading('show');
                 },

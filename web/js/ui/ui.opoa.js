@@ -19,7 +19,6 @@
         options: {
             defaultPage: null,
             baseUri: '',
-            version: '',
             isCache: false,
             contentSelector: '#main',
             styleSelector: 'link[rel="stylesheet"]:not([data-persist="true"])',

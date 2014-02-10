@@ -11,7 +11,6 @@ f.namespace('f.config');
 // 全局设置
 f.config = {
     systemConfig: {
-        version: "201312130001",
         webRoot: "/web",
         baseUri: "/web/html",
         defaultPage: "#/home.html",
