@@ -96,8 +96,8 @@
     width: 16px;
     height: 16px;
 
-    background-image: url(decorator/loader-mini.gif);
     background-repeat: no-repeat;
+    background-image: url(decorator/loader-mini.gif);
 }
 .loading .ui-login .ui-login-loading {
     display: block;

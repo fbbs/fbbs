@@ -49,9 +49,9 @@
     height: 32px;
     margin: 6px 0 0 15px;
 
-    background-image: url(decorator/loading.gif);
     background-repeat: no-repeat;
     background-position: 0 0;
+    background-image: url(decorator/loading.gif);
 }
 
 .ui-loading .loading-text {

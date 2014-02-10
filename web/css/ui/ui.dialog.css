@@ -50,9 +50,9 @@
     text-indent: -9999px;
 
     border: none;
-    background-color: transparent;
-    background-image: url(decorator/close_dialog.png); /** sprite-ref: common; */
     background-repeat: no-repeat;
+    background-image: url(decorator/close_dialog.png); /** sprite-ref: common; */
+    background-color: transparent;
 }
 
 @media only screen and (max-width: 767px) {

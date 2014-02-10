@@ -200,8 +200,8 @@
             animation-fill-mode: both;
 }
 .ui-top-bar .notification.mail .notification-icon {
-    background-image: url(decorator/mail.png); /** sprite-ref: common; */
     background-repeat: no-repeat;
+    background-image: url(decorator/mail.png); /** sprite-ref: common; */
 }
 .ui-top-bar .notification .notification-label {
     display: none;
@@ -277,9 +277,9 @@
     }
 
     .ui-top-bar .right-off-canvas-toggle {
-        background-image: url(decorator/star.png); /** sprite-ref: common; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
         background-repeat: no-repeat;
         background-position: 10px 10px;
+        background-image: url(decorator/star.png); /** sprite-ref: common; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
     }
 
     .ui-top-bar a.menu-icon {
@@ -569,18 +569,18 @@
     only screen and (min-resolution: 240dpi),
     only screen and (min-resolution: 2dppx) {
     .ui-top-bar .right-off-canvas-toggle {
-        background-image: url(decorator/star@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
         background-repeat: no-repeat;
         background-position: 10px 10px;
         -moz-background-size: 50% 50%;
           -o-background-size: 50% 50%;
              background-size: 50% 50%;
+        background-image: url(decorator/star@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
     }
     .ui-top-bar .notification.mail .notification-icon {
-        background-image: url(decorator/mail@2x.png); /** sprite-ref: common@2x; */
         background-repeat: no-repeat;
         -moz-background-size: 50% 50%;
           -o-background-size: 50% 50%;
              background-size: 50% 50%;
+        background-image: url(decorator/mail@2x.png); /** sprite-ref: common@2x; */
     }
 }
