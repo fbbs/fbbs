@@ -24,8 +24,9 @@ TPL_FILES=
 DEBUG=F
 JS_PARAM_WARNING_LEVEL_QUIET="--warning_level QUIET"
 JS_PARAM=
+BUILD=F
 
-while getopts "d:j:c:t:iw" arg
+while getopts "d:j:c:t:iwb:" arg
 do
 	case $arg in
 		d)
@@ -45,6 +46,10 @@ do
 			;;
 		w)
 			JS_PARAM_WARNING_LEVEL_QUIET="--warning_level DEFAULT"
+			;;
+		b)
+			BUILD=T
+			BUILD_FILE=$OPTARG
 			;;
 	esac
 done
@@ -222,6 +227,21 @@ cp -r $TMP_DIR/* $DEPLOY_PATH
 cp -r css/decorator $DEPLOY_PATH/css
 find $DEPLOY_PATH -type d -name ".svn"|xargs rm -rf
 find $DEPLOY_PATH -type d -name ".git"|xargs rm -rf
+if [ "$BUILD"z = "T"z ]; then
+	mkdir $TMP_DIR/build_tmp
+	cp -r $DEPLOY_PATH/* $TMP_DIR/build_tmp
+	rm -rf $TMP_DIR/build_tmp/bbs
+	if [ -f $BUILD_FILE ]
+	then
+		rm $BUILD_FILE
+	fi
+	if [ "$DEBUG"z = "T"z ]; then
+		tar zcvf $BUILD_FILE $TMP_DIR/build_tmp/*
+	else
+		tar zcvf $BUILD_FILE $TMP_DIR/build_tmp/* > /dev/null
+	fi
+	echo "Built file $BUILD_FILE"
+fi
 rm -rf $TMP_DIR
 
 echo "BUILD SUCCESSFULLY!"
