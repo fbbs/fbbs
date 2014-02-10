@@ -1,4 +1,5 @@
 /** sprite: common; sprite-image: url('decorator/common-${md5}.png'); */
+/** sprite: common@2x; sprite-image: url('decorator/common@2x-${md5}.png'); sprite-scale: 2; */
 
 .ui-board-search .ui-board-search-input-container {
     margin: 5px 10px 10px 10px;
@@ -16,15 +17,14 @@
     padding-left: 25px;
 
     background-image: url(decorator/search.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
-    background-image: -webkit-image-set(url(decorator/search.png) 1x, url(decorator/search@2x.png) 2x);
     background-repeat: no-repeat;
-    background-position: center 4px;
+    background-position: 4px 6px;
 }
 .ui-board-search .ui-board-search-input.with-placeholder,
 .ui-board-search .ui-board-search-input.with-placeholder:focus {
     background-image: url(decorator/search_with_placeholder.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
     background-repeat: no-repeat;
-    background-position: center 4px;
+    background-position: 4px center;
 }
 .ui-board-search.loading .ui-board-search-input,
 .ui-board-search.loading .ui-board-search-input:focus {
@@ -40,5 +40,21 @@
     }
     .ui-board-search .ui-board-search-list-container {
         margin: 0;
+    }
+}
+
+@media only screen and (-o-min-device-pixel-ratio: 2/1),
+    only screen and (min--moz-device-pixel-ratio: 2),
+    only screen and (-webkit-min-device-pixel-ratio: 2),
+    only screen and (min-resolution: 240dpi),
+    only screen and (min-resolution: 2dppx) {
+    .ui-board-search .ui-board-search-input,
+    .ui-board-search .ui-board-search-input:focus {
+        background-image: url(decorator/search@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
+        background-repeat: no-repeat;
+        background-position: 4px 6px;
+        -moz-background-size: 50% 50%;
+          -o-background-size: 50% 50%;
+             background-size: 50% 50%;
     }
 }

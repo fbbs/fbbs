@@ -1,4 +1,5 @@
 /** sprite: common; sprite-image: url('decorator/common-${md5}.png'); */
+/** sprite: common@2x; sprite-image: url('decorator/common@2x-${md5}.png'); sprite-scale: 2; */
 
 .ui-top-bar {
     line-height: 45px;
@@ -165,6 +166,7 @@
 }
 .ui-top-bar .notification .notification-icon {
     display: inline-block;
+    overflow: hidden;
 
     width: 20px;
     height: 20px;
@@ -199,7 +201,6 @@
 }
 .ui-top-bar .notification.mail .notification-icon {
     background-image: url(decorator/mail.png); /** sprite-ref: common; */
-    background-image: -webkit-image-set(url(decorator/mail.png) 1x, url(decorator/mail@2x.png) 2x);
     background-repeat: no-repeat;
 }
 .ui-top-bar .notification .notification-label {
@@ -277,9 +278,8 @@
 
     .ui-top-bar .right-off-canvas-toggle {
         background-image: url(decorator/star.png); /** sprite-ref: common; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
-        background-image: -webkit-image-set(url(decorator/star.png) 1x, url(decorator/star@2x.png) 2x);
         background-repeat: no-repeat;
-        background-position: center center;
+        background-position: 10px 10px;
     }
 
     .ui-top-bar a.menu-icon {
@@ -561,5 +561,26 @@
     }
     .ui-top-bar .off-canvas-notification a {
         border-bottom: none!important;
+    }
+}
+@media only screen and (-o-min-device-pixel-ratio: 2/1),
+    only screen and (min--moz-device-pixel-ratio: 2),
+    only screen and (-webkit-min-device-pixel-ratio: 2),
+    only screen and (min-resolution: 240dpi),
+    only screen and (min-resolution: 2dppx) {
+    .ui-top-bar .right-off-canvas-toggle {
+        background-image: url(decorator/star@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
+        background-repeat: no-repeat;
+        background-position: 10px 10px;
+        -moz-background-size: 50% 50%;
+          -o-background-size: 50% 50%;
+             background-size: 50% 50%;
+    }
+    .ui-top-bar .notification.mail .notification-icon {
+        background-image: url(decorator/mail@2x.png); /** sprite-ref: common@2x; */
+        background-repeat: no-repeat;
+        -moz-background-size: 50% 50%;
+          -o-background-size: 50% 50%;
+             background-size: 50% 50%;
     }
 }
