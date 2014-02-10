@@ -21,5 +21,7 @@ rm -rf $DEPLOY_DIR/*
 cp -r webroot/* $DEPLOY_DIR
 find $DEPLOY_DIR -name .git -exec rm -rf {} \;
 
+rm -rf $DEPLOY_DIR/bbs
 tar cvzf fbbs_src.tar.gz $DEPLOY_DIR/*
+cp -r webroot/bbs $DEPLOY_DIR
 mv fbbs_src.tar.gz $BUILD_PATH
