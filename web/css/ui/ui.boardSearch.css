@@ -18,13 +18,13 @@
 
     background-repeat: no-repeat;
     background-position: 4px 6px;
-    background-image: url(decorator/search.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
+    background-image: url(decorator/search.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; sprite-margin-left: 4px; */
 }
 .ui-board-search .ui-board-search-input.with-placeholder,
 .ui-board-search .ui-board-search-input.with-placeholder:focus {
     background-repeat: no-repeat;
-    background-position: 4px center;
-    background-image: url(decorator/search_with_placeholder.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
+    background-position: 4px 6px;
+    background-image: url(decorator/search_with_placeholder.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; sprite-margin-left: 4px; */
 }
 .ui-board-search.loading .ui-board-search-input,
 .ui-board-search.loading .ui-board-search-input:focus {
@@ -55,6 +55,6 @@
         -moz-background-size: 50% 50%;
           -o-background-size: 50% 50%;
              background-size: 50% 50%;
-        background-image: url(decorator/search@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
+        background-image: url(decorator/search@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 12px; sprite-margin-top: 12px; sprite-margin-left: 8px; */
     }
 }

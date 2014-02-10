@@ -279,7 +279,7 @@
     .ui-top-bar .right-off-canvas-toggle {
         background-repeat: no-repeat;
         background-position: 10px 10px;
-        background-image: url(decorator/star.png); /** sprite-ref: common; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
+        background-image: url(decorator/star.png); /** sprite-ref: common; sprite-margin-bottom: 10px; sprite-margin-top: 10px; sprite-margin-left: 10px; sprite-margin-right: 10px; */
     }
 
     .ui-top-bar a.menu-icon {
@@ -574,7 +574,7 @@
         -moz-background-size: 50% 50%;
           -o-background-size: 50% 50%;
              background-size: 50% 50%;
-        background-image: url(decorator/star@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 10px; sprite-margin-top: 10px; */
+        background-image: url(decorator/star@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 20px; sprite-margin-top: 20px; sprite-margin-left: 20px; sprite-margin-right: 20px; */
     }
     .ui-top-bar .notification.mail .notification-icon {
         background-repeat: no-repeat;
