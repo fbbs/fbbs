@@ -14,7 +14,6 @@ fi
 
 mkdir $BUILD_PATH
 
-git pull
 ant release
 
 DEPLOY_DIR=/home/wwwroot/$WORK_DIR

@@ -15,7 +15,6 @@ fi
 # config
 DEPLOY_DIR=/home/wwwroot/$WORK_DIR
 
-git pull
 ant $ANT_ACTION
 
 # deploy new
