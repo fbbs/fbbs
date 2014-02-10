@@ -1,0 +1,135 @@
+<?xml version="1.0" ?>
+<project name="debug" default="debug">
+    <!-- read the configuration -->
+    <property file="${basedir}/build/property.properties" />
+
+    <!-- get a timestamp -->
+    <tstamp>
+      <format property="RIGHT_NOW"
+              pattern="d-MMMM-yyyy hh:mm:ss"
+              locale="cn,CHINA"/>
+    </tstamp>
+
+    <!-- get a version timestamp -->
+    <tstamp>
+        <format property="version" pattern="yyyyMMddHHmmss" />
+    </tstamp>
+
+    <!-- define smartsprites task -->
+    <taskdef resource="smartsprites.xml">
+        <classpath>
+            <fileset dir="${csssprites}">
+                <include name="*.jar" />
+            </fileset>
+        </classpath>
+    </taskdef>
+
+    <target name="debug">
+        <!-- 准备需要csssprites的文件和图片 -->
+        <copy todir="${webroot}/css_build_temp">
+            <fileset dir="${base}/css" includes="*.css, decorator/" />
+        </copy>
+
+        <!-- 重新命名组件名，以zz__ui__开头，避免与页面css重名 -->
+        <copy todir="${webroot}/css_build_temp">
+            <fileset dir="${base}/css/ui" includes="*.css" />
+            <globmapper from="*" to="zz__ui__*"/>
+        </copy>
+
+        <!-- 创建csssprites临时输出文件夹 -->
+        <mkdir dir="${webroot}/css_build_smartsprites"/>
+
+        <!-- csssprites -->
+        <smartsprites rootdir="${webroot}/css_build_temp/"
+                      documentrootdir=""
+                      outputdir="${webroot}/css_build_smartsprites/"
+                      cssfileencoding="UTF-8"
+                      cssfilesuffix=""
+                      loglevel="WARN"
+                      spritepngdepth="AUTO"
+                      spritepngie6="true" />
+
+        <!-- 将没有进行csssprites的css和图片拷贝入临时目标文件夹 -->
+        <copy todir="${webroot}/css_build_smartsprites">
+            <fileset dir="${webroot}/css_build_temp" includes="*.css, decorator/" />
+        </copy>
+
+        <!-- 合并base.css和组件css为common.css -->
+        <concat destfile="${webroot}/css/common.css" encoding="utf-8" fixlastline="on">
+            <header trimleading="yes">
+            /* Build time: ${RIGHT_NOW} */
+            </header>
+
+            <filelist id="common-css-file"
+                      dir="${base}/css/base"
+                      files="normalize.css
+                             base.css
+                             f.css" />
+
+            <fileset dir="${webroot}/css_build_smartsprites" includes="zz__ui__*.css"/>
+        </concat>
+
+        <!-- 将页面css拷贝入webroot/css -->
+        <copy todir="${webroot}/css">
+            <fileset dir="${webroot}/css_build_smartsprites" excludes="zz__ui__*.css"/>
+        </copy>
+
+        <!-- 删除临时文件夹 -->
+        <delete includeEmptyDirs="true">
+            <fileset dir="${webroot}/css_build_temp" />
+            <fileset dir="${webroot}/css_build_smartsprites" />
+        </delete>
+
+        <!-- 合并base/*.js, f/*.js, plugin/*.js, ui/*.js为common.js -->
+        <concat destfile="${webroot}/js/common.js" encoding="utf-8" fixlastline="on">
+            <header trimleading="yes">
+            /* Build time: ${RIGHT_NOW} */
+            </header>
+
+            <filelist dir="${base}/js/base"
+                      files="jquery.js
+                             jquery-migrate-1.2.1.js" />
+
+            <fileset dir="${base}/js/base" includes="plugin/*js" />
+
+            <filelist dir="${base}/js/base"
+                      files="underscore.js
+                             underscore.string.js
+                             fastclick.js
+                             base.js
+                             mediator.js
+                             tpl.js" />
+
+            <filelist dir="${base}/js/f"
+                      files="f.js
+                             config.js
+                             class.js
+                             page.js
+                             components.js
+                             dataAdapter.js
+                             init.js" />
+
+            <fileset dir="${base}/js" includes="ui/*js" />
+        </concat>
+
+        <!-- 合并ie/*.js为ie.js -->
+        <concat destfile="${webroot}/js/ie.js" encoding="utf-8" fixlastline="on">
+            <header trimleading="yes">
+            /* Build time: ${RIGHT_NOW} */
+            </header>
+
+            <fileset dir="${base}/js" includes="ie/*js" />
+        </concat>
+
+        <concat destfile="${webroot}/tpl/tpl.html" encoding="utf-8" fixlastline="on">
+            <fileset dir="${base}" includes="tpl/*.tpl" />
+        </concat>
+
+        <!-- 拷贝页面js,images,html -->
+        <copy todir="${webroot}">
+            <fileset dir="${base}" includes="images/,js/,html/,bbs/,index.html"  excludes="js/base/,js/f/,js/ui/,js/ie/" />
+        </copy>
+
+        <replace encoding="utf-8" dir="${webroot}/" token="@version@" value="${version}" />
+    </target>
+</project>

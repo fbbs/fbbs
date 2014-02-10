@@ -1,0 +1,189 @@
+<?xml version="1.0" ?>
+<project name="release" default="release">
+    <property file="${basedir}/build/property.properties" />
+    <!-- get a timestamp -->
+    <tstamp>
+      <format property="RIGHT_NOW"
+              pattern="d-MMMM-yyyy hh:mm:ss"
+              locale="cn,CHINA"/>
+    </tstamp>
+
+    <!-- get a version timestamp -->
+    <tstamp>
+        <format property="version" pattern="yyyyMMddHHmmss" />
+    </tstamp>
+
+    <taskdef resource="smartsprites.xml">
+        <classpath>
+            <fileset dir="${csssprites}">
+                <include name="*.jar" />
+            </fileset>
+        </classpath>
+    </taskdef>
+
+    <target name="release">
+        <!-- 准备需要csssprites的文件和图片 -->
+        <copy todir="${webroot}/css_build_temp">
+            <fileset dir="${base}/css" includes="*.css, decorator/" />
+        </copy>
+
+        <!-- 重新命名组件名，以zz__ui__开头，避免与页面css重名 -->
+        <copy todir="${webroot}/css_build_temp">
+            <fileset dir="${base}/css/ui" includes="*.css" />
+            <globmapper from="*" to="zz__ui__*"/>
+        </copy>
+
+        <!-- 创建csssprites临时输出文件夹 -->
+        <mkdir dir="${webroot}/css_build_smartsprites"/>
+
+        <!-- csssprites -->
+        <smartsprites rootdir="${webroot}/css_build_temp/"
+                      documentrootdir=""
+                      outputdir="${webroot}/css_build_smartsprites/"
+                      cssfileencoding="UTF-8"
+                      cssfilesuffix=""
+                      loglevel="WARN"
+                      spritepngdepth="AUTO"
+                      spritepngie6="true" />
+
+        <!-- 将没有进行csssprites的css和图片拷贝入csssprites的输出文件夹 -->
+        <copy todir="${webroot}/css_build_smartsprites">
+            <fileset dir="${webroot}/css_build_temp" includes="*.css, decorator/" />
+        </copy>
+
+        <!-- 合并base.css和组件css为common.css -->
+        <concat destfile="${webroot}/css/common_tmp.css" encoding="utf-8" fixlastline="on">
+            <header trimleading="yes">
+            /* Build time: ${RIGHT_NOW} */
+            </header>
+
+            <filelist id="common-css-file"
+                      dir="${base}/css/base"
+                      files="normalize.css
+                             base.css
+                             f.css" />
+
+            <fileset dir="${webroot}/css_build_smartsprites" includes="zz__ui__*.css"/>
+        </concat>
+        <apply executable="java" parallel="false" failonerror="true" dest="${webroot}/css">
+            <fileset dir="${webroot}/css" includes="common_tmp.css" />
+            <arg line="-jar" />
+            <arg path="${yuicompressor}" />
+            <arg line="--type css" />
+            <arg line="--charset utf-8" />
+            <arg line="-o" />
+            <targetfile />
+            <mapper type="glob" from="common_tmp.css" to="common.css" />
+        </apply>
+        <delete includeEmptyDirs="true">
+            <fileset dir="${webroot}/css" includes="common_tmp.css" />
+        </delete>
+        <apply executable="java" parallel="false" failonerror="true" dest="${webroot}/css">
+            <fileset dir="${webroot}/css_build_smartsprites" includes="*.css" excludes="zz__ui__*.css" />
+            <arg line="-jar" />
+            <arg path="${yuicompressor}" />
+            <arg line="--type css" />
+            <arg line="--charset utf-8" />
+            <arg line="-o" />
+            <targetfile />
+            <mapper type="glob" from="*.css" to="*.css" />
+        </apply>
+
+        <!-- 将页面css拷贝入webroot/css -->
+        <copy todir="${webroot}/css">
+            <fileset dir="${webroot}/css_build_smartsprites" excludes="zz__ui__*.css"/>
+        </copy>
+        <delete includeEmptyDirs="true">
+            <fileset dir="${webroot}/css_build_temp" />
+            <fileset dir="${webroot}/css_build_smartsprites" />
+        </delete>
+
+        <!-- 合并base/*.js, f/*.js, plugin/*.js, ui/*.js为common.js -->
+        <concat destfile="${webroot}/js/common_tmp.js" encoding="utf-8" fixlastline="on">
+            <header trimleading="yes">
+            /* Build time: ${RIGHT_NOW} */
+            </header>
+
+            <filelist dir="${base}/js/base"
+                      files="jquery.js
+                             jquery-migrate-1.2.1.js" />
+
+            <fileset dir="${base}/js/base" includes="plugin/*js" />
+
+            <filelist dir="${base}/js/base"
+                      files="underscore.js
+                             underscore.string.js
+                             fastclick.js
+                             base.js
+                             mediator.js
+                             tpl.js" />
+
+            <filelist dir="${base}/js/f"
+                      files="f.js
+                             config.js
+                             class.js
+                             page.js
+                             components.js
+                             dataAdapter.js
+                             init.js" />
+
+            <fileset dir="${base}/js" includes="ui/*js" />
+        </concat>
+        <apply executable="java" parallel="false" failonerror="true" dest="${webroot}/js">
+            <fileset dir="${webroot}/js" includes="common_tmp.js" />
+            <arg line="-jar" />
+            <arg path="${closurecompiler}" />
+            <arg line="--charset utf-8" />
+            <arg line="--js_output_file" />
+            <targetfile />
+            <arg value="--js" />
+            <mapper type="glob" from="common_tmp.js" to="common.js" />
+        </apply>
+        <delete includeEmptyDirs="true">
+            <fileset dir="${webroot}/js" includes="common_tmp.js" />
+        </delete>
+
+        <concat destfile="${webroot}/js/ie_tmp.js" encoding="utf-8" fixlastline="on">
+            <header trimleading="yes">
+            /* Build time: ${RIGHT_NOW} */
+            </header>
+
+            <fileset dir="${base}/js" includes="ie/*js" />
+        </concat>
+        <apply executable="java" parallel="false" failonerror="true" dest="${webroot}/js">
+            <fileset dir="${webroot}/js" includes="ie_tmp.js" />
+            <arg line="-jar" />
+            <arg path="${closurecompiler}" />
+            <arg line="--charset utf-8" />
+            <arg line="--js_output_file" />
+            <targetfile />
+            <arg value="--js" />
+            <mapper type="glob" from="ie_tmp.js" to="ie.js" />
+        </apply>
+        <delete includeEmptyDirs="true">
+            <fileset dir="${webroot}/js" includes="ie_tmp.js" />
+        </delete>
+
+        <apply executable="java" parallel="false" failonerror="true" dest="${webroot}/js">
+            <fileset dir="${base}/js" includes="*.js" excludes="base/,f/,plugin/,ui/,ie/" />
+            <arg line="-jar" />
+            <arg path="${closurecompiler}" />
+            <arg line="--charset utf-8" />
+            <arg line="--js_output_file" />
+            <targetfile />
+            <arg value="--js" />
+            <mapper type="glob" from="*.js" to="*.js" />
+        </apply>
+
+        <concat destfile="${webroot}/tpl/tpl.html" encoding="utf-8" fixlastline="on">
+            <fileset dir="${base}" includes="tpl/*.tpl" />
+        </concat>
+
+        <!-- 拷贝页面js,image,html -->
+        <copy todir="${webroot}">
+            <fileset dir="${base}" includes="images/,js/,html/,index.html"  excludes="js/base/,js/f/,js/ui/,js/ie/" />
+        </copy>
+
+        <replace encoding="utf-8" dir="${webroot}/" token="@version@" value="${version}"/>
+    </target>
+</project>

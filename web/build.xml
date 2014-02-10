@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<project name="fbbs" default="release">
+    <property file="${basedir}/build/property.properties" />
+
+    <!--Clean-->
+    <target name="clean">
+        <echo message="call the clean target " />
+        <ant antfile="${target}/clean.xml" />
+    </target>
+
+    <!--生成Debug版webroot-->
+    <target name="debug" depends="clean">
+        <echo message="call the debug target" />
+        <ant antfile="${target}/debug.xml" />
+    </target>
+
+    <!--生成Release版webroot-->
+    <target name="release" depends="clean">
+        <echo message="call the release target" />
+        <ant antfile="${target}/release.xml" />
+    </target>
+
+</project>

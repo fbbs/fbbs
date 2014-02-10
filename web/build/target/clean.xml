@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<project name="clean" default="clean">
+    <property file="${basedir}/build/property.properties" />
+
+    <target name="clean">
+        <echo message="Deleting ${delete.dir} directory." />
+        <delete includeemptydirs="true">
+            <fileset dir="${delete.dir}" includes="**/*" />
+        </delete>
+    </target>
+</project>

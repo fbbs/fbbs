@@ -5,7 +5,7 @@
     <group id="common">
         <file type="js" src="js/base/jquery.js" />
         <file type="js" src="js/base/jquery-migrate-1.2.1.js" />
-        <dir type="js" src="js/base/plugins/" />
+        <dir type="js" src="js/base/plugin/" />
         <file type="js" src="js/base/underscore.js" />
         <file type="js" src="js/base/underscore.string.js" />
         <file type="js" src="js/base/fastclick.js" />
