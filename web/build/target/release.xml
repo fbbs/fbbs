@@ -22,6 +22,7 @@
     </taskdef>
 
     <target name="release">
+
         <!-- 准备需要csssprites的文件和图片 -->
         <copy todir="${webroot}/css_build_temp">
             <fileset dir="${base}/css" includes="*.css, decorator/" />
