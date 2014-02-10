@@ -26,65 +26,6 @@
 .ui-board-search .ui-board-search-list-container {
     margin: 10px;
 }
-.ui-board-search .ui-board-search-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.ui-board-search .ui-board-search-list li {
-    padding: 6px 13px;
-    list-style: none;
-}
-.ui-board-search .ui-board-search-list-label {
-    position: relative;
-    background-color: #f5f5f5;
-}
-.ui-board-search .ui-board-search-list-label label {
-    display: block;
-    margin: 0;
-    padding: 0;
-    color: #333;
-    font-weight: 700;
-    font-size: 15px;
-}
-.ui-board-search .ui-board-search-list-label span {
-    position: absolute;
-    top: 10px;
-    right: 13px;
-    display: block;
-    height: 14px;
-    border-bottom: 1px dotted #999;
-    color: #999;
-    font-size: 12px;
-    line-height: 14px;
-    cursor: pointer;
-}
-.ui-board-search .ui-board-search-item {
-    position: relative;
-    border-bottom: 1px solid #ddd;
-}
-.ui-board-search .ui-board-search-target {
-    display: block;
-    padding: 0;
-    border: none;
-    color: #666;
-    font-size: 12px;
-}
-.ui-board-search .ui-board-search-item.focus .ui-board-search-target {
-    color: #000;
-}
-.ui-board-search .ui-board-search-item:hover .ui-board-search-target {
-    color: #000;
-}
-.ui-board-search .ui-board-search-empty-tip .ui-board-search-target {
-    cursor: default;
-}
-.ui-board-search .ui-board-search-zh {
-    font-size: 14px;
-}
-.ui-board-search .ui-board-search-en {
-    margin-top: -4px;
-}
 
 @media only screen and (max-width: 767px) {
     .ui-board-search .ui-board-search-input-container {
@@ -92,53 +33,5 @@
     }
     .ui-board-search .ui-board-search-list-container {
         margin: 0;
-    }
-    .ui-board-search .ui-board-search-list li {
-        padding: 0;
-    }
-    .ui-board-search .ui-board-search-list-label {
-        background-color: transparent;
-    }
-    .ui-board-search .ui-board-search-list-label label {
-        padding: 6px 13px;
-        border-top: 1px solid #5e5e5e;
-        border-bottom: none;
-        background: #444;
-        color: #999;
-        font-weight: bold;
-        font-size: 12px;
-    }
-    .ui-board-search .ui-board-search-list-label span {
-        top: 8px;
-        right: 10px;
-        display: block;
-        padding: 0 4px;
-        border: 1px solid #5e5e5e;
-        -webkit-border-radius: 1000px;
-        -moz-border-radius: 1000px;
-        border-radius: 1000px;
-        background-color: #5e5e5e;
-        color: #222;
-    }
-    .ui-board-search .ui-board-search-item {
-        border: none;
-    }
-    .ui-board-search .ui-board-search-target {
-        padding: 5px 11px;
-        border-bottom: 1px solid #262626;
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 12px;
-    }
-    .ui-board-search .ui-board-search-item.focus .ui-board-search-target {
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: normal;
-    }
-    .ui-board-search .ui-board-search-item:hover .ui-board-search-target {
-        color: #FFF;
-    }
-    .ui-board-search .ui-board-search-empty-tip .ui-board-search-target {
-        padding: 11px;
-        text-align: center;
-        font-size: 14px;
     }
 }

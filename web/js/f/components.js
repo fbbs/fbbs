@@ -166,9 +166,9 @@ f.namespace('f.components');
                                 board: data.value
                             });
                         },
-                        onenter: function (event, data) {
+                        onclickTarget: function (event, data) {
                             $('.exit-canvas-menu').trigger('mousedown');
-                            window.location.href = data.url;
+                            data.target && (window.location.href = data.url);
                         }
                     }, params.options));
                 },

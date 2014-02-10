@@ -10,7 +10,7 @@
         version: '1.0.0',
         options: {
             tpl: 'ui.boardSearch.tpl',
-            listTpl: 'ui.boardSearchList.tpl',
+            listTpl: 'ui.sideBarList.tpl',
             searchDelay: 700,
             keydownKeyCode: [
                 8, 46, // backspace, delete
@@ -19,8 +19,8 @@
                 81, 82, 83, 84, 85, 86, 87, 88, 89, 90  // a-z
             ],
             onsearch: null,
-            onenter: null,
-            oncreate: null
+            oncreate: null,
+            onclickTarget: null
         },
         _debounce: 0,
         _timeout: null,
@@ -45,8 +45,8 @@
                 'input .ui-board-search-input': $.proxy(this, '_oninput'),
                 'keydown .ui-board-search-input': $.proxy(this, '_onkeydown'),
                 'keyup .ui-board-search-input': $.proxy(this, '_onkeyup'),
-                'click .ui-board-search-list-reset': $.proxy(this, '_reset'),
-                'click .ui-board-search-target': $.proxy(this, '_onclickTarget')
+                'click .ui-board-search-list .ui-side-bar-list-reset': $.proxy(this, '_reset'),
+                'click .ui-board-search-list .ui-side-bar-list-target': $.proxy(this, '_onclickTarget')
             });
         },
         _onkeydown: function (event) {
@@ -55,12 +55,9 @@
                     // Press enter
                     event.preventDefault();
                     event.stopPropagation();
-                    var a = this._$list.find('.ui-board-search-item.focus a');
+                    var a = this._$list.find('.ui-side-bar-list-item.focus a');
                     if (a.length) {
-                        this._trigger('onenter', null, {
-                            url: a.attr('href')
-                        });
-                        this._reset();
+                        this._onclickTarget(event, a);
                     }
                     break;
                 case 38:
@@ -115,13 +112,13 @@
         },
         _focus: function (index) {
             this._$list
-                .find('.ui-board-search-item')
+                .find('.ui-side-bar-list-item')
                 .removeClass('focus')
                 .eq(index)
                 .addClass('focus');
         },
         _next: function () {
-            var items = this._$list.find('.ui-board-search-item');
+            var items = this._$list.find('.ui-side-bar-list-item');
             var focused = items.filter('.focus');
             var index = items.index(focused) + 1;
             if (index < items.length) {
@@ -130,7 +127,7 @@
             }
         },
         _prev: function () {
-            var items = this._$list.find('.ui-board-search-item');
+            var items = this._$list.find('.ui-side-bar-list-item');
             var focused = items.filter('.focus');
             var index = items.index(focused) - 1;
             if (index >= 0) {
@@ -143,15 +140,23 @@
             this._$input.val('');
             this._checkPlaceholder();
         },
-        _onclickTarget: function () {
+        _onclickTarget: function (event, target) {
+            var $target = target || $(event.currentTarget);
+            this._trigger('onclickTarget', null, {
+                url: $target.attr('href'),
+                target: !!target
+            });
             this._reset();
-            $('.menu-toggle').click();
         },
         loading: function (toggle) {
             this._$container.toggleClass('loading', toggle !== false);
         },
         renderList: function (list) {
             this._$list.html(f.tpl.format(this.options.listTpl, {
+                className: 'ui-board-search-list',
+                label: '搜索结果',
+                rightLabel: '清空',
+                emptyTip: '无结果',
                 list: list
             }));
             this._focus(0);
