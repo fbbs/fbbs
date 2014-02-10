@@ -1,3 +1,5 @@
+/** sprite: common; sprite-image: url('decorator/common-${md5}.png'); */
+
 .clearfix {
     *zoom: 1;
 }
@@ -6,7 +8,9 @@
     visibility: hidden;
     clear: both;
     overflow: hidden;
+
     height: 0;
+
     content: " ";
 }
 .left {
@@ -20,20 +24,23 @@
 }
 .loading-error {
     padding: 50px 0;
+
     text-align: center;
 }
 .hide-for-desktop {
     display: none;
+
     *display: none!important;
 }
 .wrapper {
-    margin: 0 auto;
     max-width: 980px;
+    margin: 0 auto;
 }
 .menu-nav {
     position: fixed;
-    top: 0;
     z-index: 1002;
+    top: 0;
+
     width: 100%;
 }
 .global-tip {
@@ -43,12 +50,13 @@
 }
 .side-nav {
     position: fixed;
+    z-index: 799;
     top: 55px;
     right: 0;
     left: 0;
-    z-index: 799;
-    height: 100%;
+
     width: 100%;
+    height: 100%;
 }
 .hide-side-nav .side-nav {
     display: none;
@@ -56,8 +64,9 @@
 .main {
     position: relative;
     z-index: 900;
-    margin-right: 220px;
+
     min-height: 500px;
+    margin-right: 220px;
 }
 .hide-side-nav .main {
     margin-right: 0;
@@ -65,6 +74,7 @@
 .footer {
     position: relative;
     z-index: 899;
+
     margin-top: 20px;
 }
 
@@ -83,9 +93,9 @@
         display: none;
     }
     .main {
+        min-height: 400px;
         margin-right: 0;
         margin-bottom: 10px;
-        min-height: 400px;
     }
     .hide-for-mobile {
         display: none!important;
@@ -95,63 +105,159 @@
     }
 }
 @-webkit-keyframes tada {
-    0% { -webkit-transform: scale(1); }
-    10%,20% { -webkit-transform: scale(0.9) rotate(-3deg); }
-    30%,50%,70%,90% { -webkit-transform: scale(1.1) rotate(3deg); }
-    40%,60%,80% { -webkit-transform: scale(1.1) rotate(-3deg); }
-    100% { -webkit-transform: scale(1) rotate(0deg); }
+    0% {
+        -webkit-transform: scale(1);
+    }
+    10%,20% {
+        -webkit-transform: scale(.9) rotate(-3deg);
+    }
+    30%,50%,70%,90% {
+        -webkit-transform: scale(1.1) rotate(3deg);
+    }
+    40%,60%,80% {
+        -webkit-transform: scale(1.1) rotate(-3deg);
+    }
+    100% {
+        -webkit-transform: scale(1) rotate(0deg);
+    }
 }
 @-moz-keyframes tada {
-    0% { -moz-transform: scale(1); }
-    10%,20% { -moz-transform: scale(0.9) rotate(-3deg); }
-    30%,50%,70%,90% { -moz-transform: scale(1.1) rotate(3deg); }
-    40%,60%,80% { -moz-transform: scale(1.1) rotate(-3deg); }
-    100% { -moz-transform: scale(1) rotate(0deg); }
+    0% {
+        -moz-transform: scale(1);
+    }
+    10%,20% {
+        -moz-transform: scale(.9) rotate(-3deg);
+    }
+    30%,50%,70%,90% {
+        -moz-transform: scale(1.1) rotate(3deg);
+    }
+    40%,60%,80% {
+        -moz-transform: scale(1.1) rotate(-3deg);
+    }
+    100% {
+        -moz-transform: scale(1) rotate(0deg);
+    }
 }
 @-o-keyframes tada {
-    0% { -o-transform: scale(1); }
-    10%,20% { -o-transform: scale(0.9) rotate(-3deg); }
-    30%,50%,70%,90% { -o-transform: scale(1.1) rotate(3deg); }
-    40%,60%,80% { -o-transform: scale(1.1) rotate(-3deg); }
-    100% { -o-transform: scale(1) rotate(0deg); }
+    0% {
+        -o-transform: scale(1);
+    }
+    10%,20% {
+        -o-transform: scale(.9) rotate(-3deg);
+    }
+    30%,50%,70%,90% {
+        -o-transform: scale(1.1) rotate(3deg);
+    }
+    40%,60%,80% {
+        -o-transform: scale(1.1) rotate(-3deg);
+    }
+    100% {
+        -o-transform: scale(1) rotate(0deg);
+    }
 }
 @keyframes tada {
-    0% { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); -o-transform: scale(1); transform: scale(1); }
-    10%,20% { -webkit-transform: scale(0.9) rotate(-3deg); -moz-transform: scale(0.9) rotate(-3deg); -ms-transform: scale(0.9) rotate(-3deg); -o-transform: scale(0.9) rotate(-3deg); transform: scale(0.9) rotate(-3deg); }
-    30%,50%,70%,90% { -webkit-transform: scale(1.1) rotate(3deg); -moz-transform: scale(1.1) rotate(3deg); -ms-transform: scale(1.1) rotate(3deg); -o-transform: scale(1.1) rotate(3deg); transform: scale(1.1) rotate(3deg); }
-    40%,60%,80% { -webkit-transform: scale(1.1) rotate(-3deg); -moz-transform: scale(1.1) rotate(-3deg); -ms-transform: scale(1.1) rotate(-3deg); -o-transform: scale(1.1) rotate(-3deg); transform: scale(1.1) rotate(-3deg); }
-    100% { -webkit-transform: scale(1) rotate(0deg); -moz-transform: scale(1) rotate(0deg); -ms-transform: scale(1) rotate(0deg); -o-transform: scale(1) rotate(0deg); transform: scale(1) rotate(0deg); }
+    0% {
+        -webkit-transform: scale(1);
+           -moz-transform: scale(1);
+            -ms-transform: scale(1);
+             -o-transform: scale(1);
+                transform: scale(1);
+    }
+    10%,20% {
+        -webkit-transform: scale(.9) rotate(-3deg);
+           -moz-transform: scale(.9) rotate(-3deg);
+            -ms-transform: scale(.9) rotate(-3deg);
+             -o-transform: scale(.9) rotate(-3deg);
+                transform: scale(.9) rotate(-3deg);
+    }
+    30%,50%,70%,90% {
+        -webkit-transform: scale(1.1) rotate(3deg);
+           -moz-transform: scale(1.1) rotate(3deg);
+            -ms-transform: scale(1.1) rotate(3deg);
+             -o-transform: scale(1.1) rotate(3deg);
+                transform: scale(1.1) rotate(3deg);
+    }
+    40%,60%,80% {
+        -webkit-transform: scale(1.1) rotate(-3deg);
+           -moz-transform: scale(1.1) rotate(-3deg);
+            -ms-transform: scale(1.1) rotate(-3deg);
+             -o-transform: scale(1.1) rotate(-3deg);
+                transform: scale(1.1) rotate(-3deg);
+    }
+    100% {
+        -webkit-transform: scale(1) rotate(0deg);
+           -moz-transform: scale(1) rotate(0deg);
+            -ms-transform: scale(1) rotate(0deg);
+             -o-transform: scale(1) rotate(0deg);
+                transform: scale(1) rotate(0deg);
+    }
 }
 .tada {
-    -webkit-animation-name:tada;
-    -moz-animation-name:tada;
-    -o-animation-name:tada;
-    animation-name:tada;
+    -webkit-animation-name: tada;
+       -moz-animation-name: tada;
+         -o-animation-name: tada;
+            animation-name: tada;
 }
 
 @-webkit-keyframes pulse {
-    0% { -webkit-transform: scale(1); }
-    50% { -webkit-transform: scale(1.1); }
-    100% { -webkit-transform: scale(1); }
+    0% {
+        -webkit-transform: scale(1);
+    }
+    50% {
+        -webkit-transform: scale(1.1);
+    }
+    100% {
+        -webkit-transform: scale(1);
+    }
 }
 @-moz-keyframes pulse {
-    0% { -moz-transform: scale(1); }
-    50% { -moz-transform: scale(1.1); }
-    100% { -moz-transform: scale(1); }
+    0% {
+        -moz-transform: scale(1);
+    }
+    50% {
+        -moz-transform: scale(1.1);
+    }
+    100% {
+        -moz-transform: scale(1);
+    }
 }
 @-o-keyframes pulse {
-    0% { -o-transform: scale(1); }
-    50% { -o-transform: scale(1.1); }
-    100% { -o-transform: scale(1); }
+    0% {
+        -o-transform: scale(1);
+    }
+    50% {
+        -o-transform: scale(1.1);
+    }
+    100% {
+        -o-transform: scale(1);
+    }
 }
 @keyframes pulse {
-    0% { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); -o-transform: scale(1); transform: scale(1); }
-    50% { -webkit-transform: scale(1.1); -moz-transform: scale(1.1); -ms-transform: scale(1.1); -o-transform: scale(1.1); transform: scale(1.1); }
-    100% { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); -o-transform: scale(1); transform: scale(1); }
+    0% {
+        -webkit-transform: scale(1);
+           -moz-transform: scale(1);
+            -ms-transform: scale(1);
+             -o-transform: scale(1);
+                transform: scale(1);
+    }
+    50% {
+        -webkit-transform: scale(1.1);
+           -moz-transform: scale(1.1);
+            -ms-transform: scale(1.1);
+             -o-transform: scale(1.1);
+                transform: scale(1.1);
+    }
+    100% {
+        -webkit-transform: scale(1);
+           -moz-transform: scale(1);
+            -ms-transform: scale(1);
+             -o-transform: scale(1);
+                transform: scale(1);
+    }
 }
 .pulse {
-    -webkit-animation-name:pulse;
-    -moz-animation-name:pulse;
-    -o-animation-name:pulse;
-    animation-name:pulse;
+    -webkit-animation-name: pulse;
+       -moz-animation-name: pulse;
+         -o-animation-name: pulse;
+            animation-name: pulse;
 }

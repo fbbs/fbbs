@@ -1,7 +1,8 @@
 .side-nav-container {
     position: absolute;
+    z-index: 801;
     top: 0;
     right: 0;
-    z-index: 801;
+
     width: 220px;
 }

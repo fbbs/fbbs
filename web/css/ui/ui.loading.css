@@ -1,53 +1,66 @@
 .ui-loading {
     position: fixed;
+    z-index: 100000;
     top: 20%;
     left: 0;
-    z-index: 100000;
-    margin-left: 50%;
+
     width: 200px;
     height: 50px;
+    margin-left: 50%;
+
     _position: absolute;
 }
 
 .ui-loading .loading-content {
     position: relative;
-    margin-left: -100px;
+
     width: 198px;
     height: 48px;
-    border: 1px solid #8cbeda;
+    margin-left: -100px;
+
+    border: 1px solid #8CBEDA;
 }
 
 .ui-loading .loading-inner {
+    line-height: 48px;
+
     width: 194px;
     height: 48px;
-    border: 2px solid #d6e7f2;
-    background:#fcfcfc;
-    line-height: 48px;
+
+    border: 2px solid #D6E7F2;
+    background: #FCFCFC;
 }
 
 .ui-loading .loading-left-shadow {
     float: left;
+
     width: 10px;
     height: 44px;
-    border-right: 1px solid #d6e7f2;
+
+    border-right: 1px solid #D6E7F2;
     background-color: #EEF4F8;
 }
 
 .ui-loading .loading-img {
     display: inline-block;
     float: left;
-    margin: 6px 0 0 15px;
+
     width: 32px;
     height: 32px;
+    margin: 6px 0 0 15px;
+
     background-image: url(decorator/loading.gif);
-    background-position: 0 0;
     background-repeat: no-repeat;
+    background-position: 0 0;
 }
 
 .ui-loading .loading-text {
-    float: left;
-    padding-left: 20px;
-    color: #37A;
-    font-weight: bold;
     font-size: 12px;
+    font-weight: bold;
+
+    float: left;
+
+    padding-left: 20px;
+
+    color: #37A;
 }

@@ -3,21 +3,26 @@
 }
 .ui-board-search .ui-board-search-input,
 .ui-board-search .ui-board-search-input:focus {
-    display: block;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    padding-left: 25px;
-    width: 100%;
-    background-image: url(decorator/search.png);
-    background-image: -webkit-image-set(url(decorator/search.png) 1x, url(decorator/search@2x.png) 2x);
-    background-position: 4px center;
-    background-repeat: no-repeat;
     font-size: 14px;
+
+    display: block;
+
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+    width: 100%;
+    padding-left: 25px;
+
+    background-image: url(decorator/search.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
+    background-image: -webkit-image-set(url(decorator/search.png) 1x, url(decorator/search@2x.png) 2x);
+    background-repeat: no-repeat;
+    background-position: center 4px;
 }
 .ui-board-search .ui-board-search-input.with-placeholder,
 .ui-board-search .ui-board-search-input.with-placeholder:focus {
-    background-image: url(decorator/search_with_placeholder.png);
+    background-image: url(decorator/search_with_placeholder.png); /** sprite-ref: common; sprite-margin-bottom: 6px; sprite-margin-top: 6px; */
+    background-repeat: no-repeat;
+    background-position: center 4px;
 }
 .ui-board-search.loading .ui-board-search-input,
 .ui-board-search.loading .ui-board-search-input:focus {

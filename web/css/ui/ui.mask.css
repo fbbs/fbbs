@@ -3,7 +3,8 @@
 }
 
 .mask-layer {
+    opacity: .3;
     background: #000;
-    opacity: 0.3;
+
     filter: alpha(opacity=30);
 }

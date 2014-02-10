@@ -1,46 +1,61 @@
 .ui-side-bar-list {
     margin: 0;
     padding: 0;
+
     list-style: none;
 }
 .ui-side-bar-list li {
     padding: 6px 13px;
+
     list-style: none;
 }
 .ui-side-bar-list-label {
     position: relative;
-    background-color: #f5f5f5;
+
+    background-color: #F5F5F5;
 }
 .ui-side-bar-list-label label {
+    font-size: 15px;
+    font-weight: 700;
+
     display: block;
+
     margin: 0;
     padding: 0;
+
     color: #333;
-    font-weight: 700;
-    font-size: 15px;
 }
 .ui-side-bar-list-label span {
+    font-size: 12px;
+    line-height: 14px;
+
     position: absolute;
     top: 10px;
     right: 13px;
+
     display: block;
+
     height: 14px;
-    border-bottom: 1px dotted #999;
-    color: #999;
-    font-size: 12px;
-    line-height: 14px;
+
     cursor: pointer;
+
+    color: #999;
+    border-bottom: 1px dotted #999;
 }
 .ui-side-bar-list-item {
     position: relative;
-    border-bottom: 1px solid #ddd;
+
+    border-bottom: 1px solid #DDD;
 }
 .ui-side-bar-list-target {
-    display: block;
-    padding: 0;
-    border: none;
-    color: #666;
     font-size: 12px;
+
+    display: block;
+
+    padding: 0;
+
+    color: #666;
+    border: none;
 }
 .ui-side-bar-list-item.focus .ui-side-bar-list-target {
     color: #000;
@@ -65,45 +80,55 @@
         background-color: transparent;
     }
     .ui-side-bar-list-label label {
+        font-size: 12px;
+        font-weight: bold;
+
         padding: 6px 13px;
-        border-top: 1px solid #5e5e5e;
+
+        color: #999;
+        border-top: 1px solid #5E5E5E;
         border-bottom: none;
         background: #444;
-        color: #999;
-        font-weight: bold;
-        font-size: 12px;
     }
     .ui-side-bar-list-label span {
         top: 8px;
         right: 10px;
+
         display: block;
+
         padding: 0 4px;
-        border: 1px solid #5e5e5e;
-        -webkit-border-radius: 1000px;
-        -moz-border-radius: 1000px;
-        border-radius: 1000px;
-        background-color: #5e5e5e;
+
         color: #222;
+        border: 1px solid #5E5E5E;
+        -webkit-border-radius: 1000px;
+           -moz-border-radius: 1000px;
+                border-radius: 1000px;
+        background-color: #5E5E5E;
     }
     .ui-side-bar-list-item {
         border: none;
     }
     .ui-side-bar-list-target {
-        padding: 5px 11px;
-        border-bottom: 1px solid #262626;
-        color: rgba(255, 255, 255, 0.7);
         font-size: 12px;
+
+        padding: 5px 11px;
+
+        color: rgba(255, 255, 255, .7);
+        border-bottom: 1px solid #262626;
     }
     .ui-side-bar-list-item.focus .ui-side-bar-list-target {
-        color: rgba(255, 255, 255, 0.9);
         font-weight: normal;
+
+        color: rgba(255, 255, 255, .9);
     }
     .ui-side-bar-list-item:hover .ui-side-bar-list-target {
         color: #FFF;
     }
     .ui-side-bar-list-empty-tip .ui-side-bar-list-target {
-        padding: 11px;
-        text-align: center;
         font-size: 14px;
+
+        padding: 11px;
+
+        text-align: center;
     }
 }
