@@ -33,7 +33,8 @@ f.config = {
         mail: "#/mail.html",
         userInfo: "#/user_info.html",
         regist: "#/regist.html",
-        forget: "#/forget.html"
+        forget: "#/forget.html",
+        collectionEdit: "#/collection_edit.html"
     },
     urlFormatter: {
         board: "#/board.html?bid=!{bid}"

@@ -138,6 +138,9 @@ f.namespace('f.components');
                     // Check notifications
                     $(document.body).notifications('reset');
 
+                    // Render collections
+                    this.Collections.collections('refresh');
+
                     // Jump to last page
                     if (f.config.pageInfo.params.r) {
                         window.location.href = f.config.pageInfo.params.r;
@@ -182,6 +185,32 @@ f.namespace('f.components');
                 ongetBoardListFailed: function () {
                     this.BoardSearch.boardSearch('removeList');
                     this.BoardSearch.boardSearch('loading', false);
+                }
+            });
+        },
+        Collections: function (thisValue) {
+            f.extend(thisValue, {
+                _initCollections: function (params) {
+                    this[params.id] = $('.collections-container').collections(f.extend({
+                        collectionEditUrl: f.config.urlConfig.collectionEdit,
+                        onrefresh: function () {
+                            thisValue.ajax({
+                                name: 'getCollections',
+                                url: 'collections/list.json',
+                                adapter: 'convertCollections'
+                            });
+                        }
+                    }, params.options)).collections('refresh');
+                },
+                ongetCollections: function () {
+                    console.log(this);
+                    this.Collections.collections('loading');
+                },
+                ongetCollectionsSuccess: function (data) {
+                    this.Collections.collections('render', data);
+                },
+                ongetCollectionsFailed: function (msg) {
+                    this.Collections.collections('error', msg);
                 }
             });
         }

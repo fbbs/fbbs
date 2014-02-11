@@ -63,7 +63,8 @@
 .ui-side-bar-list-item:hover .ui-side-bar-list-target {
     color: #000;
 }
-.ui-side-bar-list-empty-tip .ui-side-bar-list-target {
+.ui-side-bar-list-empty-tip .ui-side-bar-list-target,
+.ui-side-bar-list-loading-tip .ui-side-bar-list-target {
     cursor: default;
 }
 .ui-side-bar-list-zh {
@@ -124,7 +125,8 @@
     .ui-side-bar-list-item:hover .ui-side-bar-list-target {
         color: #FFF;
     }
-    .ui-side-bar-list-empty-tip .ui-side-bar-list-target {
+    .ui-side-bar-list-empty-tip .ui-side-bar-list-target,
+    .ui-side-bar-list-loading-tip .ui-side-bar-list-target {
         font-size: 14px;
 
         padding: 11px;

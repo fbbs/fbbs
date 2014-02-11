@@ -3,10 +3,20 @@
         <li class="ui-side-bar-list-label">
             <label>#{this.label}</label>
             if (this.rightLabel) {
-                <span class="ui-side-bar-list-reset">清空</span>
+                if (this.rightUrl) {
+                    <a href="#{this.rightUrl}" class="ui-side-bar-list-reset">#{this.rightLabel}</a>
+                }
+                else {
+                    <span class="ui-side-bar-list-reset">#{this.rightLabel}</span>
+                }
             }
         </li>
-        if (this.list && this.list.length) {
+        if (this.loadingTip) {
+            <li class="ui-side-bar-list-loading-tip">
+                <a href="javascript:void(0);" class="ui-side-bar-list-target">#{this.loadingTip}</a>
+            </li>
+        }
+        else if (this.list && this.list.length) {
             f.each(this.list, function (item) {
                 <li class="ui-side-bar-list-item">
                     <a href="#{item.url}" class="menu-toggle ui-side-bar-list-target">
