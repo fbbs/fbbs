@@ -53,17 +53,17 @@
     .ui-board-search .ui-board-search-input:focus {
         background-repeat: no-repeat;
         background-position: 4px 6px;
-        -moz-background-size: 50% 50%;
-          -o-background-size: 50% 50%;
-             background-size: 50% 50%;
+        -moz-background-size: 16px 16px;
+          -o-background-size: 16px 16px;
+             background-size: 16px 16px;
         background-image: url(decorator/search@2x.png); /** sprite-ref: common@2x; sprite-margin-bottom: 12px; sprite-margin-top: 12px; sprite-margin-left: 8px; */
     }
     .ui-board-search.loading .ui-board-search-input,
     .ui-board-search.loading .ui-board-search-input:focus {
         background-position: 4px center;
-        -moz-background-size: 100% 100%;
-          -o-background-size: 100% 100%;
-             background-size: 100% 100%;
+        -moz-background-size: 16px 16px;
+          -o-background-size: 16px 16px;
+             background-size: 16px 16px;
         background-image: url(decorator/loader-mini.gif);
     }
 }
