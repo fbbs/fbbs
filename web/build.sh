@@ -23,3 +23,5 @@ find $DEPLOY_DIR -name .git -exec rm -rf {} \;
 
 tar -zcvf fbbs_src.tar.gz webroot/* --exclude=webroot/bbs
 mv fbbs_src.tar.gz $BUILD_PATH
+echo "Released package download:"
+echo "wget -nH http://work:work@output.littlepan.com/fbbs_src.tar.gz"
