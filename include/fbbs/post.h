@@ -316,6 +316,9 @@ typedef struct { // @backend
 
 extern void post_record_invalidity_change(int bid, int delta);
 
+extern bool post_update_sticky_record(int board_id);
+
 extern int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
+extern int post_sticky_count(int board_id);
 
 #endif // FB_POST_H

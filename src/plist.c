@@ -506,22 +506,6 @@ static void reopen_post_record(post_list_t *pl, post_info_t *pi)
 	}
 }
 
-static int toggle_post_stickiness(tui_list_t *tl, post_info_t *pi)
-{
-	post_list_t *pl = tl->data;
-	if (pl->type == POST_LIST_NORMAL && pi) {
-		bool sticky = pi->flag & POST_FLAG_STICKY;
-		if (sticky) {
-			post_remove_sticky(pl->bid, pi->id);
-		} else {
-			post_add_sticky(pl->bid, pi);
-		}
-		tl->valid = false;
-		return PARTUPDATE;
-	}
-	return DONOTHING;
-}
-
 static void log_toggle_flag(const post_info_t *pi, post_flag_e flag)
 {
 	log_bm_e type;
@@ -558,6 +542,8 @@ static int toggle_post_flag_no_check(post_info_t *pi, post_flag_e flag)
 			pi->flag |= flag;
 		// TODO: 自己锁定文章不要记录
 		log_toggle_flag(pi, flag);
+		if (flag == POST_FLAG_STICKY)
+			post_update_sticky_record(pi->bid);
 		return PARTUPDATE;
 	}
 	return DONOTHING;
@@ -579,6 +565,17 @@ static int toggle_post_lock(post_info_t *pi)
 	if (am_curr_bm() || (!locked && session_uid() == pi->uid))
 		return toggle_post_flag_no_check(pi, POST_FLAG_LOCKED);
 	return DONOTHING;
+}
+
+static int toggle_post_stickiness(post_info_t *pi)
+{
+	if (!pi || !am_curr_bm())
+		return DONOTHING;
+	if (!(pi->flag & POST_FLAG_STICKY)
+			&& post_sticky_count(pi->bid) >= MAX_NOTICE) {
+		return DONOTHING;
+	}
+	return toggle_post_flag_no_check(pi, POST_FLAG_STICKY);
 }
 
 static int post_list_with_filter(const post_filter_t *filter);
@@ -2459,7 +2456,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case '_':
 			return toggle_post_lock(pi);
 		case '#':
-			return toggle_post_stickiness(tl, pi);
+			return toggle_post_stickiness(pi);
 		case ';':
 			return tui_reorder_sticky_posts(tl, pi);
 		case 'm':

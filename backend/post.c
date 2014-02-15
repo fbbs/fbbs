@@ -273,6 +273,8 @@ static const char *flag_field(post_flag_e flag)
 			return "imported";
 		case POST_FLAG_WATER:
 			return "water";
+		case POST_FLAG_STICKY:
+			return "sticky";
 		default:
 			return "attachment";
 	}

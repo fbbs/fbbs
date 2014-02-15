@@ -1283,7 +1283,12 @@ int post_metadata_compare(const void *ptr1, const void *ptr2)
 	return p1->id == p2->id ? 0 : -1;
 }
 
-static bool update_cache(record_t *rec, int bid)
+static int post_sticky_compare(const void *ptr1, const void *ptr2)
+{
+	return -post_metadata_compare(ptr1, ptr2);
+}
+
+static bool update_record(record_t *rec, int bid, bool sticky)
 {
 	query_t *q = query_new(0);
 	query_select(q, "id, reply_id, thread_id, user_id, digest, marked,"
@@ -1300,7 +1305,8 @@ static bool update_cache(record_t *rec, int bid)
 		for (int i = 0; i < rows; ++i) {
 			convert_post_metadata(res, i, posts + i);
 		}
-		qsort(posts, rows, sizeof(*posts), post_metadata_compare);
+		qsort(posts, rows, sizeof(*posts),
+				sticky ? post_metadata_compare : post_sticky_compare);
 		record_write(rec, posts, rows, 0);
 	}
 
@@ -1314,14 +1320,26 @@ static bool update_cache(record_t *rec, int bid)
  * @param[in] bid 版面ID
  * @return 成功更新返回true, 无须更新或者出错返回false
  */
-bool post_update_cache(record_t *rec, int bid)
+bool post_update_record(record_t *rec, int bid)
 {
 	bool updated = false;
 	int invalid = post_record_invalidity_get(bid);
 	if (invalid > 0 && record_try_lock_all(rec, RECORD_WRLCK) == 0) {
-		updated = update_cache(rec, bid);
+		updated = update_record(rec, bid, false);
 		post_record_invalidity_change(bid, -invalid);
 		record_lock_all(rec, RECORD_UNLCK);
+	}
+	return updated;
+}
+
+bool post_update_sticky_record(int board_id)
+{
+	bool updated = false;
+	record_t record;
+	post_index_board_open_sticky(board_id, RECORD_WRITE, &record);
+	if (record_try_lock_all(&record, RECORD_WRLCK)) {
+		updated = update_record(&record, board_id, true);
+		record_lock_all(&record, RECORD_UNLCK);
 	}
 	return updated;
 }
@@ -1339,4 +1357,16 @@ int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set,
 	backend_response_post_set_flag_t resp;
 	bool ok = backend_cmd(&req, &resp, post_set_flag);
 	return ok ? resp.affected : 0;
+}
+
+int post_sticky_count(int board_id)
+{
+	db_res_t *res = db_query("SELECT COUNT(*) FROM posts.recent"
+			" WHERE sticky AND board_id = %d", board_id);
+	int count = 0;
+	if (res && db_res_rows(res) >= 1) {
+		count = db_get_bigint(res, 0, 0);
+	}
+	db_clear(res);
+	return 0;
 }
