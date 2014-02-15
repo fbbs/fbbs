@@ -7,6 +7,13 @@
 #include "fbbs/string.h"
 #include "s11n/backend_post.h"
 
+#define POST_TABLE_FIELDS \
+	"id, reply_id, thread_id, user_id, real_user_id, user_name, board_id," \
+	" digest, marked, locked, imported, water, attachment, title"
+
+#define POST_TABLE_DELETED_FIELDS \
+	"delete_stamp, eraser_id, eraser_name, junk, bm_visible"
+
 static void set_board_post_count(int bid, int count)
 {
 	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
@@ -167,10 +174,6 @@ static int _backend_post_delete(const backend_request_post_delete_t *req)
 		query_and(q, "NOT marked");
 	query_and(q, "NOT sticky");
 
-#define POST_TABLE_FIELDS  "id, reply_id, thread_id, user_id, real_user_id, user_name, board_id, digest, marked, locked, imported, water, attachment, title"
-
-#define POST_TABLE_DELETED_FIELDS  "delete_stamp, eraser_id, eraser_name, junk, bm_visible"
-
 	query_append(q, "RETURNING " POST_TABLE_FIELDS ")");
 	query_append(q, "INSERT INTO posts.deleted ("
 			POST_TABLE_FIELDS "," POST_TABLE_DELETED_FIELDS ")");
@@ -210,69 +213,37 @@ BACKEND_DECLARE(post_delete)
 	return true;
 }
 
-typedef struct {
-	post_index_record_t *pir;
-	const post_filter_t *filter;
-	post_index_board_t *buf;
-	int count;
-	int max;
-} post_undeletion_callback_t;
-
-static record_callback_e post_undeletion_callback(void *ptr, void *args,
-		int offset)
+static int _backend_post_undelete(const backend_request_post_undelete_t *req)
 {
-	const post_index_trash_t *pit = ptr;
-	post_undeletion_callback_t *puc = args;
+	query_t *q = query_new(0);
+	query_select(q, "user_id, user_name, junk FROM posts.deleted");
+	build_post_filter(q, req->filter);
 
-	if (match_filter((post_index_board_t *) pit, puc->pir,
-				puc->filter, offset)) {
-		if (puc->count >= puc->max)
-			return RECORD_CALLBACK_CONTINUE;
-
-		post_index_board_t *pib = puc->buf + puc->count;
-		pib->id = pit->id;
-		pib->reid_delta = pit->reid_delta;
-		pib->tid_delta = pit->tid_delta;
-		pib->uid = pit->uid;
-		pib->flag = pit->flag & ~POST_FLAG_JUNK;
-		pib->stamp = pit->stamp;
-		pib->cstamp = pit->cstamp;
-		++puc->count;
-		return RECORD_CALLBACK_MATCH;
+	db_res_t *res = query_exec(q);
+	if (res) {
+		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+			user_id_t user_id = db_get_user_id(res, i, 0);
+			if (user_id && db_get_bool(res, i, 2)) {
+				const char *user_name = db_get_value(res, i, 1);
+				adjust_user_post_count(user_name, 1);
+			}
+		}
 	}
-	return RECORD_CALLBACK_CONTINUE;
-}
+	db_clear(res);
 
-int undelete_posts(const backend_request_post_undelete_t *req)
-{
-	record_t record, trash;
-	post_index_board_open(req->filter->bid, RECORD_WRITE, &record);
-	post_index_trash_open(req->filter->bid,
-			req->bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash);
-	post_index_record_t pir;
-	post_index_record_open(&pir);
+	q = query_new(0);
+	query_append(q, "WITH rows AS (DELETE FROM posts.deleted");
+	build_post_filter(q, req->filter);
+	// TODO 站务垃圾箱和版主垃圾箱?
+	query_append(q, "RETURNING " POST_TABLE_FIELDS ")");
+	query_append(q, "INSERT INTO posts.recent (" POST_TABLE_FIELDS ")");
+	query_select(q, POST_TABLE_FIELDS);
+	query_from(q, "rows");
 
-	record_lock_all(&trash, RECORD_WRLCK);
-	int undeleted = 0;
-//	int undeleted = post_deletion_trigger(&trash, req->filter, &pir, false);
-	post_index_board_t *buf = malloc(undeleted * sizeof(post_index_board_t));
-	post_undeletion_callback_t puc = {
-		.pir = &pir, .filter = req->filter,
-		.buf = buf, .count = 0, .max = undeleted,
-	};
-
-	record_lock_all(&record, RECORD_WRLCK);
-	record_delete(&trash, NULL, 0, post_undeletion_callback, &puc);
-	record_merge(&record, puc.buf, puc.count);
-	record_lock_all(&record, RECORD_UNLCK);
-	set_board_post_count(req->filter->bid, record_count(&record));
-
-	record_lock_all(&trash, RECORD_UNLCK);
-	free(buf);
-	post_index_record_close(&pir);
-	record_close(&trash);
-	record_close(&record);
-	return undeleted;
+	res = query_cmd(q);
+	int rows = res ? db_cmd_rows(res) : 0;
+	db_clear(res);
+	return rows;
 }
 
 BACKEND_DECLARE(post_undelete)
@@ -283,7 +254,7 @@ BACKEND_DECLARE(post_undelete)
 		return false;
 
 	backend_response_post_undelete_t resp;
-	resp.undeleted = undelete_posts(&req);
+	resp.undeleted = _backend_post_undelete(&req);
 	serialize_post_undelete(&resp, parcel_out);
 	backend_respond(parcel_out, channel);
 	return true;
