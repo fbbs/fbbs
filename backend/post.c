@@ -95,7 +95,7 @@ BACKEND_DECLARE(post_new)
 
 		fb_time_t stamp = post_stamp_from_id(id);
 		set_last_post_time(req.bid, stamp);
-		post_cache_invalidity_change(req.bid, 1);
+		post_record_invalidity_change(req.bid, 1);
 
 		// TODO: 不总是要加文章数的..
 		adjust_user_post_count(req.uname, 1);
@@ -315,7 +315,7 @@ BACKEND_DECLARE(post_set_flag)
 	resp.affected = _backend_post_set_flag(&req);
 
 	if (resp.affected)
-		post_cache_invalidity_change(filter.bid, 1);
+		post_record_invalidity_change(filter.bid, 1);
 
 	serialize_post_set_flag(&resp, parcel_out);
 	backend_respond(parcel_out, channel);

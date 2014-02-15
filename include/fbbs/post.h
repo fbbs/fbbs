@@ -314,7 +314,7 @@ typedef struct { // @backend
 	int affected;
 } backend_response_post_set_flag_t;
 
-extern void post_cache_invalidity_change(int bid, int delta);
+extern void post_record_invalidity_change(int bid, int delta);
 
 extern int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
 

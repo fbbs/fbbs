@@ -1236,17 +1236,17 @@ post_id_t publish_post(const post_request_t *pr)
 }
 
 /** 版面文章记录缓存是否失效 @mdb_hash */
-#define POST_CACHE_INVALIDITY_KEY  "post_cache_invalidity"
+#define POST_RECORD_INVALIDITY_KEY  "post_record_invalidity"
 
-void post_cache_invalidity_change(int bid, int delta)
+void post_record_invalidity_change(int bid, int delta)
 {
 	if (bid)
-		mdb_cmd("HINCRBY", POST_CACHE_INVALIDITY_KEY" %d %d", bid, delta);
+		mdb_cmd("HINCRBY", POST_RECORD_INVALIDITY_KEY" %d %d", bid, delta);
 }
 
-int post_cache_invalidity_get(int bid)
+int post_record_invalidity_get(int bid)
 {
-	return mdb_integer(0, "HGET", POST_CACHE_INVALIDITY_KEY" %d", bid);
+	return mdb_integer(0, "HGET", POST_RECORD_INVALIDITY_KEY" %d", bid);
 }
 
 static void convert_post_metadata(db_res_t *res, int row,
@@ -1317,10 +1317,10 @@ static bool update_cache(record_t *rec, int bid)
 bool post_update_cache(record_t *rec, int bid)
 {
 	bool updated = false;
-	int invalid = post_cache_invalidity_get(bid);
+	int invalid = post_record_invalidity_get(bid);
 	if (invalid > 0 && record_try_lock_all(rec, RECORD_WRLCK) == 0) {
 		updated = update_cache(rec, bid);
-		post_cache_invalidity_change(bid, -invalid);
+		post_record_invalidity_change(bid, -invalid);
 		record_lock_all(rec, RECORD_UNLCK);
 	}
 	return updated;
