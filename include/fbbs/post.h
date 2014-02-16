@@ -202,10 +202,9 @@ typedef struct {
 	char bname[BOARD_NAME_LEN + 1];
 } topic_stat_t;
 
-extern int post_index_cmp(const void *p1, const void *p2);
-extern int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec);
-extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
-extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
+extern int post_record_cmp(const void *p1, const void *p2);
+extern int post_record_open(int bid, record_perm_e rdonly, record_t *rec);
+extern int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
 
 extern int post_index_trash_cmp(const void *p1, const void *p2);
 extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
@@ -219,10 +218,6 @@ extern int post_index_record_for_recent(post_index_record_callback_t cb, void *a
 extern void post_index_record_close(post_index_record_t *pir);
 extern void post_index_record_get_title(post_index_record_t *pir, post_id_t id, char *buf, size_t size);
 extern int post_index_record_lock(post_index_record_t *pir, record_lock_e lock, post_id_t id);
-
-extern int post_remove_sticky(int bid, post_id_t id);
-extern int post_add_sticky(int bid, const post_info_t *pi);
-extern bool reorder_sticky_posts(int bid, post_id_t pid);
 
 extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));

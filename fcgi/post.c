@@ -102,7 +102,7 @@ static int search(int bid, post_id_t pid, int action, bool extra,
 		post_info_t *pi)
 {
 	record_t record;
-	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
+	if (post_record_open(bid, RECORD_READ, &record) < 0)
 		return -1;
 
 	bbscon_search_callback_t bsc = {
@@ -152,7 +152,7 @@ static record_callback_e search_sticky_callback(void *ptr, void *args, int off)
 static bool search_sticky(int bid, post_id_t pid, post_info_t *pi)
 {
 	record_t record;
-	if (post_index_board_open_sticky(bid, RECORD_READ, &record) < 0)
+	if (post_record_open_sticky(bid, RECORD_READ, &record) < 0)
 		return false;
 
 	post_record_t pr;
@@ -280,7 +280,7 @@ int bbsdel_main(void)
 	session_set_board(board.id);
 
 	record_t record;
-	if (post_index_board_open(board.id, RECORD_WRITE, &record) <= 0)
+	if (post_record_open(board.id, RECORD_WRITE, &record) <= 0)
 		return BBS_EINTNL;
 
 	post_filter_t filter = {
@@ -380,7 +380,7 @@ static post_record_t *search_topic(int bid, post_id_t pid, post_id_t *tid,
 		int action, int *count, int *flags)
 {
 	record_t record;
-	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
+	if (post_record_open(bid, RECORD_READ, &record) < 0)
 		return NULL;
 
 	post_record_t *prs = malloc(sizeof(*prs) * *count);

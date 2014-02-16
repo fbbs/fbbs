@@ -21,30 +21,33 @@ static post_id_t current_post_id(void)
 	return mdb_integer(0, "GET", POST_ID_KEY);
 }
 
-int post_index_cmp(const void *p1, const void *p2)
+int post_record_cmp(const void *p1, const void *p2)
 {
-	const post_index_board_t *r1 = p1, *r2 = p2;
-	return r1->id - r2->id;
+	const post_record_t *r1 = p1, *r2 = p2;
+	if (r1->id > r2->id)
+		return 1;
+	return r1->id == r2->id ? 0 : -1;
 }
 
-int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec)
+static int post_record_open_file(const char *file, record_perm_e rdonly,
+		record_t *rec)
 {
-	return record_open(file, post_index_cmp, sizeof(post_index_board_t),
-			rdonly, rec);
+	return record_open(file, post_record_cmp, sizeof(post_record_t), rdonly,
+			rec);
 }
 
-int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec)
+int post_record_open(int bid, record_perm_e rdonly, record_t *rec)
 {
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "brdidx/%d", bid);
-	return post_index_board_open_file(file, rdonly, rec);
+	return post_record_open_file(file, rdonly, rec);
 }
 
-int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
+int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
 {
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "brdidx/%d.sticky", bid);
-	return post_index_board_open_file(file, rdonly, rec);
+	return post_record_open_file(file, rdonly, rec);
 }
 
 enum {
@@ -277,80 +280,6 @@ void post_index_record_close(post_index_record_t *pir)
 		record_close(&pir->record);
 	pir->base = 0;
 	pir->rdonly = RECORD_READ;
-}
-
-static record_callback_e post_sticky_filter(void *ptr, void *fargs, int offset)
-{
-	const post_index_board_t *pib = ptr;
-	post_id_t *id = fargs;
-	return pib->id == *id ? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
-}
-
-int post_remove_sticky(int bid, post_id_t id)
-{
-	record_t record;
-	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
-		return 0;
-	int r = record_delete(&record, NULL, 0, post_sticky_filter, &id);
-	record_close(&record);
-	return r;
-}
-
-int post_add_sticky(int bid, const post_info_t *pi)
-{
-	record_t record;
-	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
-		return 0;
-
-	post_index_board_t pib = {
-		.id = pi->id,
-		.reid_delta = pi->id - pi->reply_id,
-		.tid_delta = pi->id - pi->thread_id,
-		.uid = pi->user_id,
-		.flag = pi->flag | POST_FLAG_STICKY,
-	};
-
-	record_lock_all(&record, RECORD_WRLCK);
-	int r = 0;
-	int count = record_count(&record);
-	if (count < MAX_NOTICE) {
-		if (record_search(&record, post_sticky_filter, &pib.id, -1, false) < 0)
-			r = record_append(&record, &pib, 1);
-	}
-	record_lock_all(&record, RECORD_UNLCK);
-
-	record_close(&record);
-	return r;
-}
-
-bool reorder_sticky_posts(int bid, post_id_t pid)
-{
-	bool success = false;
-	record_t record;
-	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
-		goto e1;
-	if (record_lock_all(&record, RECORD_WRLCK) < 0)
-		goto e2;
-
-	post_index_board_t pibs[MAX_NOTICE];
-	int count = record_read(&record, pibs, ARRAY_SIZE(pibs));
-	if (count > 1) {
-		for (int i = 0; i < count - 1; ++i) {
-			if (pibs[i].id == pid) {
-				post_index_board_t temp = pibs[i];
-				memmove(pibs + i, pibs + i + 1,
-						(count - 1 - i) * sizeof(pibs[0]));
-				pibs[count - 1] = temp;
-				break;
-			}
-		}
-		if (record_write(&record, pibs, count, 0) > 0)
-			success = true;
-	}
-
-	record_lock_all(&record, RECORD_UNLCK);
-e2:	record_close(&record);
-e1: return success;
 }
 
 char *convert_file_to_utf8_content(const char *file)
@@ -1082,7 +1011,7 @@ bool post_update_sticky_record(int board_id)
 {
 	bool updated = false;
 	record_t record;
-	post_index_board_open_sticky(board_id, RECORD_WRITE, &record);
+	post_record_open_sticky(board_id, RECORD_WRITE, &record);
 	if (record_try_lock_all(&record, RECORD_WRLCK)) {
 		updated = update_record(&record, board_id, true);
 		record_lock_all(&record, RECORD_UNLCK);

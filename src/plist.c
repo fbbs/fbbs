@@ -499,10 +499,10 @@ static void reopen_post_record(post_list_t *pl, post_info_t *pi)
 {
 	if (pi->flag & POST_FLAG_STICKY) {
 		record_close(pl->record_sticky);
-		post_index_board_open_sticky(pl->bid, RECORD_WRITE, pl->record_sticky);
+		post_record_open_sticky(pl->bid, RECORD_WRITE, pl->record_sticky);
 	} else if (pl->type == POST_LIST_NORMAL) {
 		record_close(pl->record);
-		post_index_board_open(pl->bid, RECORD_WRITE, pl->record);
+		post_record_open(pl->bid, RECORD_WRITE, pl->record);
 	}
 }
 
@@ -643,7 +643,7 @@ static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
 	if (f->type == POST_LIST_THREAD)
 		cmp = post_record_thread_cmp;
 	else
-		cmp = post_index_cmp;
+		cmp = post_record_cmp;
 	return record_open(file, cmp, sizeof(post_index_board_t), rdonly, record);
 }
 
@@ -2228,9 +2228,9 @@ static int switch_board(tui_list_t *tl)
 		pl->bid = bid;
 		pl->plp = NULL;
 		record_close(pl->record);
-		post_index_board_open(bid, RECORD_READ, pl->record);
+		post_record_open(bid, RECORD_READ, pl->record);
 		record_close(pl->record_sticky);
-		post_index_board_open_sticky(bid, RECORD_READ, pl->record_sticky);
+		post_record_open_sticky(bid, RECORD_READ, pl->record_sticky);
 	}
 	return FULLUPDATE;
 }
@@ -2288,19 +2288,6 @@ static int tui_jump(slide_list_t *p)
 	return MINIUPDATE;
 }
 #endif
-
-static int tui_reorder_sticky_posts(tui_list_t *tl, post_info_t *pi)
-{
-	post_list_t *pl = tl->data;
-	if (pl->type != POST_LIST_NORMAL || !(pi->flag & POST_FLAG_STICKY)
-			|| !am_curr_bm()) {
-		return DONOTHING;
-	}
-
-	if (reorder_sticky_posts(pl->bid, pi->id))
-		tl->valid = false;
-	return PARTUPDATE;
-}
 
 extern int show_online(void);
 extern int thesis_mode(void);
@@ -2418,8 +2405,6 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			return toggle_post_lock(pi);
 		case '#':
 			return toggle_post_stickiness(pi);
-		case ';':
-			return tui_reorder_sticky_posts(tl, pi);
 		case 'm':
 			return toggle_post_flag(pi, POST_FLAG_MARKED);
 		case 'g':
@@ -2544,7 +2529,7 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 	if (filter->bid) {
 		switch (filter->type) {
 			case POST_LIST_NORMAL:
-				post_index_board_open(filter->bid, RECORD_READ, record);
+				post_record_open(filter->bid, RECORD_READ, record);
 				break;
 			case POST_LIST_TRASH:
 				post_index_trash_open(filter->bid, POST_INDEX_TRASH, record);
@@ -2565,7 +2550,7 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 			case POST_LIST_REPLIES: {
 				char file[HOMELEN];
 				sethomefile(file, currentuser.userid, POST_REPLIES_FILE);
-				record_open(file, post_index_cmp, sizeof(post_index_board_t),
+				record_open(file, post_record_cmp, sizeof(post_index_board_t),
 						RECORD_READ, record);
 				break;
 			}
@@ -2588,7 +2573,7 @@ static int post_list_with_filter(const post_filter_t *filter)
 
 	bool sticky = filter->type == POST_LIST_NORMAL;
 	if (sticky)
-		post_index_board_open_sticky(filter->bid, RECORD_READ, &record_sticky);
+		post_record_open_sticky(filter->bid, RECORD_READ, &record_sticky);
 
 	post_index_record_t pir;
 	post_index_record_open(&pir);
