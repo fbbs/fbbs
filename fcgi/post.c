@@ -135,7 +135,7 @@ static int search(int bid, post_id_t pid, int action, bool extra,
 			bsc.flags |= POST_FIRST;
 		if (bsc.offset == record_count(&record) - 1)
 			bsc.flags |= POST_LAST;
-		if (pi->id == pi->tid)
+		if (pi->id == pi->thread_id)
 			bsc.flags |= THREAD_FIRST_POST;
 		if (!(bsc.flags & NOT_THREAD_LAST_POST))
 			bsc.flags |= THREAD_LAST_POST;
@@ -235,7 +235,7 @@ int bbscon(const char *link)
 	print_session();
 
 	bool isbm = am_bm(&board);
-	bool self = (session_uid() == pi.uid);
+	bool self = (session_uid() == pi.user_id);
 	printf("<po fid='%"PRIdPID"'%s%s%s%s%s%s", pi.id,
 			sticky ? " sticky='1'" : "",
 			ret & POST_FIRST ? " first='1'" : "",
@@ -243,10 +243,12 @@ int bbscon(const char *link)
 			ret & THREAD_LAST_POST ? " tlast='1'" : "",
 			(pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "",
 			self || isbm ? " edit='1'" : "");
-	if (pi.reid != pi.id)
-		printf(" reid='%"PRIdPID"' gid='%"PRIdPID"'>", pi.reid, pi.tid);
-	else
+	if (pi.reply_id != pi.id) {
+		printf(" reid='%"PRIdPID"' gid='%"PRIdPID"'>", pi.reply_id,
+				pi.thread_id);
+	} else {
 		putchar('>');
+	}
 
 	char *content = post_content_get(pi.id);
 	if (content)
@@ -475,7 +477,7 @@ int bbstcon_main(void)
 			ptr += asc ? 1 : -1) {
 		post_info_t pi;
 		post_index_board_to_info(&pir, ptr, &pi, 1);
-		printf("<po fid='%"PRIdPID"' owner='%s'%s>", pi.id, pi.owner,
+		printf("<po fid='%"PRIdPID"' owner='%s'%s>", pi.id, pi.user_name,
 				!isbm && (pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
 
 		char *content = post_content_get(pi.id);
@@ -650,7 +652,7 @@ int bbssnd_main(void)
 		if (!pid || !search_pid(board.id, pid, &pi))
 			return BBS_ENOFILE;
 
-		if (!am_bm(&board) && session_uid() != pi.uid) {
+		if (!am_bm(&board) && session_uid() != pi.user_id) {
 			if (!isedit && (pi.flag & POST_FLAG_LOCKED))
 				return BBS_EPST;
 			if (isedit)
@@ -682,8 +684,8 @@ int bbssnd_main(void)
 			.sig = strtol(web_get_param("sig"), NULL, 0),
 			.ip = mask_host(fromhost),
 			.reid = reply ? pi.id : 0,
-			.tid = reply ? pi.tid : 0,
-			.uid_replied = reply ? pi.uid : 0,
+			.tid = reply ? pi.thread_id : 0,
+			.uid_replied = reply ? pi.user_id : 0,
 			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
 			.anony = strtol(web_get_param("anony"), NULL, 0),
 			.web = true,
@@ -775,7 +777,7 @@ static int do_bbspst(bool isedit)
 			return BBS_ENOFILE;
 		if (!isedit && (pi.flag & POST_FLAG_LOCKED))
 			return BBS_EPST;
-		if (isedit && !am_bm(&board) && session_uid() != pi.uid)
+		if (isedit && !am_bm(&board) && session_uid() != pi.user_id)
 			return BBS_EACCES;
 	}
 	
@@ -918,7 +920,7 @@ int bbsccc_main(void)
 	} else {
 		xml_header(NULL);
 		printf("<bbsccc owner='%s' brd='%s' bid='%ld' fid='%u'>",
-				pi.owner, board.name, board.id, pid);
+				pi.user_name, board.name, board.id, pid);
 
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(pi.utf8_title, gbk_title);

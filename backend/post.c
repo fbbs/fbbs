@@ -14,10 +14,12 @@
 #define POST_TABLE_DELETED_FIELDS \
 	"delete_stamp, eraser_id, eraser_name, junk, bm_visible"
 
+#if 0
 static void set_board_post_count(int bid, int count)
 {
 	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
 }
+#endif
 
 static post_id_t insert_post(const backend_request_post_new_t *req)
 {

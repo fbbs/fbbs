@@ -49,7 +49,7 @@ static void print_post(const post_info_t *pi, bool sticky)
 	printf("<po %s%sm='%c' owner='%s' time= '%s' id='%"PRIdPID"'>",
 			sticky ? "sticky='1' " : "",
 			(pi->flag & POST_FLAG_LOCKED) ? "" : "nore='1' ",
-			mark, pi->owner, format_time(pi->stamp, TIME_FORMAT_XML), pi->id);
+			mark, pi->user_name, format_time(pi->stamp, TIME_FORMAT_XML), pi->id);
 	if (web_request_type(UTF8)) {
 		xml_fputs(pi->utf8_title);
 	} else {
@@ -642,8 +642,8 @@ static record_callback_e print_topics(void *ptr, void *args, int offset)
 		printf("</title><link>http://"BASEURL"/con?bid=%d&amp;f=%u</link>"
 				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
 				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
-				"<description><![CDATA[<pre>", pt->bid, pib->id, pi.owner,
-				format_time(pi.stamp, TIME_FORMAT_RSS), pi.owner, pt->bid,
+				"<description><![CDATA[<pre>", pt->bid, pib->id, pi.user_name,
+				format_time(pi.stamp, TIME_FORMAT_RSS), pi.user_name, pt->bid,
 				pib->id);
 
 		char *content = post_content_get(pi.id);

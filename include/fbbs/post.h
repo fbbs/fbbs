@@ -67,19 +67,16 @@ typedef enum {
 } post_list_type_e;
 
 typedef struct {
-	int replies;
-	int comments;
-	int score;
 	int flag;
-	user_id_t uid;
+	user_id_t user_id;
 	post_id_t id;
-	post_id_t reid;
-	post_id_t tid;
+	post_id_t reply_id;
+	post_id_t thread_id;
 	fb_time_t stamp;
-	fb_time_t estamp;
-	int bid;
-	char owner[IDLEN + 1];
-	char ename[IDLEN + 1];
+	fb_time_t delete_stamp;
+	int board_id;
+	char user_name[IDLEN + 1];
+	char eraser_name[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_info_t;
 

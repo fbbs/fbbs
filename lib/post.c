@@ -60,19 +60,16 @@ int post_index_board_to_info(post_index_record_t *pir,
 		post_index_record_read(pir, pib->id, &buf);
 
 		pi->id = pib->id;
-		pi->reid = pib->id - pib->reid_delta;
-		pi->tid = pib->id - pib->tid_delta;
+		pi->reply_id = pib->id - pib->reid_delta;
+		pi->thread_id = pib->id - pib->tid_delta;
 		pi->flag = pib->flag;
-		pi->uid = pib->uid;
+		pi->user_id = pib->uid;
 		pi->stamp = buf.stamp;
-		pi->bid = buf.bid;
-		pi->replies = buf.replies;
-		pi->comments = buf.comments;
-		pi->score = buf.score;
-		strlcpy(pi->owner, buf.owner, sizeof(pi->owner));
+		pi->board_id = buf.bid;
+		strlcpy(pi->user_name, buf.owner, sizeof(pi->user_name));
 		strlcpy(pi->utf8_title, buf.utf8_title, sizeof(pi->utf8_title));
-		pi->estamp = 0;
-		pi->ename[0] = '\0';
+		pi->delete_stamp = 0;
+		pi->eraser_name[0] = '\0';
 
 		++pib;
 		++pi;
@@ -87,8 +84,8 @@ int post_index_trash_to_info(post_index_record_t *pir,
 		post_info_t *pii = pi + i;
 		post_index_board_to_info(pir, (post_index_board_t *) (pit + i),
 				pii, 1);
-		pii->estamp = (pit + i)->estamp;
-		strlcpy(pii->ename, pit->ename, sizeof(pii->ename));
+		pii->delete_stamp = (pit + i)->estamp;
+		strlcpy(pii->eraser_name, pit->ename, sizeof(pii->eraser_name));
 	}
 	return count;
 }
@@ -314,9 +311,9 @@ int post_add_sticky(int bid, const post_info_t *pi)
 
 	post_index_board_t pib = {
 		.id = pi->id,
-		.reid_delta = pi->id - pi->reid,
-		.tid_delta = pi->id - pi->tid,
-		.uid = pi->uid,
+		.reid_delta = pi->id - pi->reply_id,
+		.tid_delta = pi->id - pi->thread_id,
+		.uid = pi->user_id,
 		.flag = pi->flag | POST_FLAG_STICKY,
 	};
 
