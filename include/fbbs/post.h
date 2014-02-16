@@ -177,6 +177,7 @@ typedef struct {
 	post_id_t reply_id;
 	post_id_t thread_id;
 	user_id_t user_id;
+	int board_id;
 	int flag;
 	char user_name[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
@@ -205,9 +206,6 @@ extern int post_index_cmp(const void *p1, const void *p2);
 extern int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
-extern int post_index_board_to_info(post_index_record_t *pir, const post_index_board_t *pib, post_info_t *pi, int count);
-extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size, post_list_type_e type);
-extern bool match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
 
 extern int post_index_trash_cmp(const void *p1, const void *p2);
 extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
@@ -317,6 +315,9 @@ typedef struct { // @backend
 extern bool post_alter_title(post_id_t post_id, const char *title);
 
 extern void post_record_invalidity_change(int bid, int delta);
+extern int post_record_read(record_t *rec, int base, post_info_t *buf, int size, post_list_type_e type);
+extern void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count);
+extern bool post_match_filter(const post_record_t *pr, const post_filter_t *filter, int offset);
 
 extern bool post_update_sticky_record(int board_id);
 
@@ -324,6 +325,5 @@ extern int post_sticky_count(int board_id);
 
 extern char *post_content_get(post_id_t post_id);
 extern bool post_content_set(post_id_t post_id, const char *str);
-
 
 #endif // FB_POST_H

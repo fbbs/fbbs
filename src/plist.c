@@ -82,9 +82,10 @@ static void save_post_list_position(tui_list_t *tl)
 
 static int last_read_filter(void *ptr, void *args, int offset)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	fb_time_t *stamp = args;
-	if (pib->stamp > *stamp)
+
+	if (post_stamp_from_id(pr->id) > *stamp)
 		return -1;
 	return 0;
 }
@@ -102,18 +103,17 @@ static void load_posts(tui_list_t *tl)
 		tl->begin = 0;
 
 	if (tl->begin < pl->record_count) {
-		int loaded = post_index_board_read(pl->record, tl->begin, pl->pir,
-				pl->buf, tl->lines, pl->type);
+		int loaded = post_record_read(pl->record, tl->begin, pl->buf,
+				tl->lines, pl->type);
 		if (loaded < tl->lines && tl->all > pl->record_count
 				&& pl->record_sticky) {
-			post_index_board_read(pl->record_sticky, 0, pl->pir,
-					pl->buf + loaded, tl->lines - loaded, POST_LIST_NORMAL);
+			post_record_read(pl->record_sticky, 0, pl->buf + loaded,
+					tl->lines - loaded, POST_LIST_NORMAL);
 		}
 	} else {
 		if (pl->record_sticky) {
-			post_index_board_read(pl->record_sticky,
-					tl->begin - pl->record_count, pl->pir, pl->buf, tl->lines,
-					POST_LIST_NORMAL);
+			post_record_read(pl->record_sticky, tl->begin - pl->record_count,
+					pl->buf, tl->lines, POST_LIST_NORMAL);
 		}
 	}
 }
@@ -599,36 +599,38 @@ static int post_list_deleted(tui_list_t *tl, post_index_trash_e trash)
 }
 
 typedef struct {
-	post_index_record_t *pir;
-	post_index_board_t *pib;
+	post_record_t *prs;
 	const post_filter_t *filter;
 	int size;
 	int capacity;
-} post_index_board_append_t;
+} post_record_append_t;
 
 static void filtered_record_name(char *file, size_t size)
 {
 	snprintf(file, size, "tmp/record_%d", getpid());
 }
 
-static int post_index_thread_cmp(const void *r1, const void *r2)
+static int post_record_thread_cmp(const void *r1, const void *r2)
 {
-	const post_index_board_t *p1 = r1, *p2 = r2;
-	int diff = (p1->id - p1->tid_delta) - (p2->id - p2->tid_delta);
-	if (diff)
-		return diff;
-	return p1->id - p2->id;
+	const post_record_t *p1 = r1, *p2 = r2;
+	if (p1->thread_id > p2->thread_id)
+		return 1;
+	if (p1->thread_id == p2->thread_id) {
+		if (p1->id > p2->id)
+			return 1;
+		return p1->id == p2->id ? 0 : -1;
+	}
+	return -1;
 }
 
-static record_callback_e post_index_board_append(void *p, void *args,
-		int offset)
+static record_callback_e post_record_append(void *p, void *args, int offset)
 {
-	post_index_board_t *pib = p;
-	post_index_board_append_t *piba = args;
+	post_record_t *pr = p;
+	post_record_append_t *pra = args;
 
-	if (match_filter(pib, piba->pir, piba->filter, offset)) {
-		if (piba->size < piba->capacity)
-			piba->pib[piba->size++] = *pib;
+	if (post_match_filter(pr, pra->filter, offset)) {
+		if (pra->size < pra->capacity)
+			pra->prs[pra->size++] = *pr;
 		return RECORD_CALLBACK_MATCH;
 	}
 	return RECORD_CALLBACK_CONTINUE;
@@ -639,7 +641,7 @@ static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
 {
 	record_cmp_t cmp;
 	if (f->type == POST_LIST_THREAD)
-		cmp = post_index_thread_cmp;
+		cmp = post_record_thread_cmp;
 	else
 		cmp = post_index_cmp;
 	return record_open(file, cmp, sizeof(post_index_board_t), rdonly, record);
@@ -664,19 +666,20 @@ static int filtered_record_generate(record_t *r, post_filter_t *f,
 		unlink(file);
 	}
 
-	post_index_board_append_t piba = {
-		.pib = malloc(sizeof(post_index_board_t) * count),
-		.size = 0, .capacity = count, .pir = pir, .filter = f,
+	post_record_append_t pra = {
+		.prs = malloc(sizeof(post_record_t) * count),
+		.capacity = count,
+		.filter = f,
 	};
 	if (f->type == POST_LIST_THREAD) {
-		piba.size = record_read_after(r, piba.pib, piba.capacity, 0);
-		qsort(piba.pib, piba.size, sizeof(*piba.pib), post_index_thread_cmp);
+		pra.size = record_read_after(r, pra.prs, pra.capacity, 0);
+		qsort(pra.prs, pra.size, sizeof(*pra.prs), post_record_thread_cmp);
 	} else {
-		record_foreach(r, NULL, 0, post_index_board_append, &piba);
+		record_foreach(r, NULL, 0, post_record_append, &pra);
 	}
-	record_append(&record, piba.pib, piba.size);
+	record_append(&record, pra.prs, pra.size);
 	record_close(&record);
-	free(piba.pib);
+	free(pra.prs);
 	return 0;
 }
 
@@ -734,15 +737,9 @@ static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
 	return FULLUPDATE;
 }
 
-typedef struct {
-	post_index_record_t *pir;
-	const post_filter_t *filter;
-} post_index_board_filter_t;
-
-static record_callback_e post_index_board_filter(void *ptr, void *args, int off)
+static record_callback_e post_record_filter(void *ptr, void *args, int off)
 {
-	const post_index_board_filter_t *pibf = args;
-	return match_filter(ptr, pibf->pir, pibf->filter, off)
+	return post_match_filter(ptr, args, off)
 			? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
 }
 
@@ -750,11 +747,8 @@ static int post_search(tui_list_t *tl, const post_filter_t *filter,
 		int offset, bool upward)
 {
 	post_list_t *pl = tl->data;
-	post_index_board_filter_t pibf = {
-		.pir = pl->pir, .filter = filter,
-	};
-	int pos = record_search(pl->record, post_index_board_filter, &pibf,
-			offset, upward);
+	int pos = record_search(pl->record, post_record_filter,
+			(post_filter_t *) filter, offset, upward);
 	if (pos >= 0) {
 		tl->cur = pos;
 		tl->valid = false;
@@ -904,9 +898,9 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user);
 static record_callback_e thread_first_unread_filter(void *ptr, void *args,
 		int offset)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	post_id_t tid = *(post_id_t *) args;
-	if (pib->id - pib->tid_delta == tid && brc_unread(pib->stamp))
+	if (pr->id == tid && brc_unread(post_stamp_from_id(pr->id)))
 		return RECORD_CALLBACK_MATCH;
 	return RECORD_CALLBACK_CONTINUE;
 }
@@ -918,13 +912,14 @@ static int jump_to_thread_first_unread(tui_list_t *tl, post_info_t *pi)
 		return DONOTHING;
 
 	pl->current_tid = pi->thread_id;
-	post_index_board_t pib;
+
+	post_record_t pr;
 	int pos = record_search_copy(pl->record, thread_first_unread_filter,
-			&pi->thread_id, 0, false, &pib);
+			&pi->thread_id, 0, false, &pr);
 	if (pos >= 0) {
 		tl->cur = pos;
 		post_info_t pi_buf;
-		post_index_board_to_info(pl->pir, &pib, &pi_buf, 1);
+		post_record_to_info(&pr, &pi_buf, 1);
 		read_posts(tl, &pi_buf, true, false);
 		return FULLUPDATE;
 	}
@@ -1410,12 +1405,12 @@ typedef struct {
 
 static record_callback_e count_posts_callback(void *ptr, void *args, int off)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	count_posts_callback_t *cpc = args;
 
-	if (pib->id < cpc->min)
+	if (pr->id < cpc->min)
 		return RECORD_CALLBACK_CONTINUE;
-	if (pib->id > cpc->max)
+	if (pr->id > cpc->max)
 		return RECORD_CALLBACK_BREAK;
 
 	if (!cpc->offset_min)
@@ -1424,15 +1419,15 @@ static record_callback_e count_posts_callback(void *ptr, void *args, int off)
 
 	post_info_t pi = { .id = 0 };
 	count_posts_stat_t *cps = NULL;
-	if (pib->uid) {
+	if (pr->user_id) {
 		for (int i = 0; i < cpc->size; ++i) {
-			if (pib->uid == cpc->stat[i].uid) {
+			if (pr->user_id == cpc->stat[i].uid) {
 				cps = cpc->stat + i;
 				break;
 			}
 		}
 	} else {
-		post_index_board_to_info(cpc->pir, pib, &pi, 1);
+		post_record_to_info(pr, &pi, 1);
 		for (int i = 0; i < cpc->size; ++i) {
 			if (streq(pi.user_name, cpc->stat[i].uname)) {
 				cps = cpc->stat + i;
@@ -1448,19 +1443,19 @@ static record_callback_e count_posts_callback(void *ptr, void *args, int off)
 		}
 		cps = cpc->stat + cpc->size++;
 		memset(cps, 0, sizeof(*cps));
-		cps->uid = pib->uid;
+		cps->uid = pr->user_id;
 		if (!pi.id)
-			post_index_board_to_info(cpc->pir, pib, &pi, 1);
+			post_record_to_info(pr, &pi, 1);
 		strlcpy(cps->uname, pi.user_name, sizeof(cps->uname));
 	}
 
 	++cps->total;
-	if ((pib->flag & POST_FLAG_MARKED) || (pib->flag & POST_FLAG_DIGEST)) {
-		if (pib->flag & POST_FLAG_MARKED)
+	if ((pr->flag & POST_FLAG_MARKED) || (pr->flag & POST_FLAG_DIGEST)) {
+		if (pr->flag & POST_FLAG_MARKED)
 			++cps->m;
-		if (pib->flag & POST_FLAG_DIGEST)
+		if (pr->flag & POST_FLAG_DIGEST)
 			++cps->g;
-	} else if (pib->flag & POST_FLAG_WATER) {
+	} else if (pr->flag & POST_FLAG_WATER) {
 		++cps->w;
 	} else {
 		++cps->n;
@@ -1500,18 +1495,18 @@ static bool count_posts_in_range(record_t *record, post_id_t *min,
 {
 	const int capacity_init = 64;
 
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-
 	count_posts_callback_t cpc = {
 		.stat = malloc(sizeof(count_posts_stat_t) * capacity_init),
-		.size = 0, .capacity = capacity_init,
-		.min = *min, .max = *max, .offset_min = 0, .offset_max = 0,
-		.pir = &pir, .sort = sort, .asc = asc,
+		.size = 0,
+		.capacity = capacity_init,
+		.min = *min,
+		.max = *max,
+		.offset_min = 0,
+		.offset_max = 0,
+		.sort = sort,
+		.asc = asc,
 	};
 	int count = record_foreach(record, NULL, 0, count_posts_callback, &cpc);
-
-	post_index_record_close(&pir);
 
 	*min = cpc.offset_min;
 	*max = cpc.offset_max;
@@ -1715,16 +1710,13 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				.tid = tid,
 				.uid = user ? pi->user_id : 0,
 			};
-			post_index_board_filter_t pibf = {
-				.pir = pl->pir, .filter = &filter,
-			};
-			post_index_board_t pib;
-			int pos = record_search_copy(pl->record, post_index_board_filter,
-					&pibf, tl->cur, upward, &pib);
+			post_record_t pr;
+			int pos = record_search_copy(pl->record, post_record_filter,
+					&filter, tl->cur, upward, &pr);
 			if (pos < 0) {
 				end = true;
 			} else {
-				post_index_board_to_info(pl->pir, &pib, &pi_buf, 1);
+				post_record_to_info(&pr, &pi_buf, 1);
 				pi = &pi_buf;
 				tl->cur = pos;
 			}
@@ -1785,24 +1777,21 @@ static void construct_prompt(char *s, size_t size, const char **options,
 extern int import_file(const char *title, const char *file, const char *path);
 
 typedef struct {
-	post_index_record_t *pir;
 	const post_filter_t *filter;
 	const char *path;
 } import_posts_callback_t;
 
 static record_callback_e import_posts_callback(void *r, void *args, int offset)
 {
-	const post_index_board_t *pib = r;
+	const post_record_t *pr = r;
 	import_posts_callback_t *ipc = args;
 
-	if (match_filter(pib, ipc->pir, ipc->filter, offset)) {
-		GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
-		post_index_record_get_title(ipc->pir, pib->id,
-				utf8_title, sizeof(utf8_title));
-		convert_u2g(utf8_title, gbk_title);
+	if (post_match_filter(pr, ipc->filter, offset)) {
+		GBK_BUFFER(title, POST_TITLE_CCHARS);
+		convert_u2g(pr->utf8_title, gbk_title);
 
 		char file[HOMELEN];
-		dump_content(pib->id, file, sizeof(file));
+		dump_content(pr->id, file, sizeof(file));
 		import_file(gbk_title, file, ipc->path);
 		unlink(file);
 		return RECORD_CALLBACK_MATCH;
@@ -1814,7 +1803,8 @@ static void import_posts(post_list_t *pl, post_filter_t *filter,
 		const char *path)
 {
 	import_posts_callback_t ipc = {
-		.pir = pl->pir, .filter = filter, .path = path,
+		.filter = filter,
+		.path = path,
 	};
 	record_foreach(pl->record, NULL, 0, import_posts_callback, &ipc);
 }
@@ -1948,7 +1938,6 @@ static int tui_operate_posts_in_range(tui_list_t *tl, post_info_t *pi)
 }
 
 typedef struct {
-	 post_index_record_t *pir;
 	 const post_filter_t *filter;
 	 FILE *fp;
 	 post_quote_e mode;
@@ -1956,11 +1945,11 @@ typedef struct {
 
 static record_callback_e pack_posts_callback(void *ptr, void *args, int off)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	const pack_posts_callback_t *ppc = args;
 
-	if (match_filter(pib, ppc->pir, ppc->filter, off)) {
-		char *content = post_content_get(pib->id);
+	if (post_match_filter(pr, ppc->filter, off)) {
+		char *content = post_content_get(pr->id);
 		if (content) {
 			fputs("\033[1;32m☆─────────────────"
 					"─────────────────────☆\033[0;1m\n", ppc->fp);
@@ -1982,11 +1971,9 @@ static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
 	file_temp_name(file, sizeof(file));
 	FILE *fp = fopen(file, "w");
 	if (fp) {
-		post_index_record_t pir;
-		post_index_record_open(&pir);
-
 		pack_posts_callback_t ppc = {
-			.pir = &pir, .filter = filter, .fp = fp,
+			.filter = filter,
+			.fp = fp,
 			.mode = quote ? QUOTE_PACK : QUOTE_PACK_COMPACT,
 		};
 		record_foreach(record, NULL, 0, pack_posts_callback, &ppc);
@@ -2011,8 +1998,6 @@ static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
 			pid = post_new(&pr);
 			mmap_close(&m);
 		}
-
-		post_index_record_close(&pir);
 		unlink(file);
 	}
 	return pid;

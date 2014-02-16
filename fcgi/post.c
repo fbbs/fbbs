@@ -38,49 +38,43 @@ typedef struct {
 	post_id_t pid;
 	post_id_t tid;
 	post_info_t *pi;
-	post_index_record_t *pir;
-	post_index_board_t pib;
+	post_record_t pr;
 } bbscon_search_callback_t;
 
-static inline post_id_t get_tid(const post_index_board_t *pib)
-{
-	return pib->id - pib->tid_delta;
-}
-
-static int save_result(const post_index_board_t *pib,
-		bbscon_search_callback_t *bsc, int off)
+static void save_result(const post_record_t *pr, bbscon_search_callback_t *bsc,
+		int off)
 {
 	bsc->found = true;
 	bsc->offset = off;
-	bsc->tid = get_tid(pib);
-	memcpy(&bsc->pib, pib, sizeof(bsc->pib));
-	return post_index_board_to_info(bsc->pir, pib, bsc->pi, 1);
+	bsc->tid = pr->thread_id;
+	memcpy(&bsc->pr, pr, sizeof(bsc->pr));
+	post_record_to_info(pr, bsc->pi, 1);
 }
 
 static record_callback_e search_pid_callback(void *ptr, void *args, int off)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	bbscon_search_callback_t *bsc = args;
 
 	if (bsc->action == POST_OLDER) {
 		if (bsc->offset >= 0) {
-			save_result(pib, bsc, off);
+			save_result(pr, bsc, off);
 			return RECORD_CALLBACK_BREAK;
 		}
-		if (pib->id == bsc->pid)
+		if (pr->id == bsc->pid)
 			bsc->offset = off;
 	} else if (bsc->action == THREAD_PREV_POST) {
-		if (pib->id <= bsc->tid) {
-			if (pib->id == bsc->tid)
-				save_result(pib, bsc, off);
+		if (pr->id <= bsc->tid) {
+			if (pr->id == bsc->tid)
+				save_result(pr, bsc, off);
 			return RECORD_CALLBACK_BREAK;
 		}
-		if (pib->id == bsc->pid)
-			bsc->tid = get_tid(pib);
+		if (pr->id == bsc->pid)
+			bsc->tid = pr->thread_id;
 	} else {
-		if (pib->id <= bsc->pid) {
-			if (pib->id == bsc->pid)
-				save_result(pib, bsc, off);
+		if (pr->id <= bsc->pid) {
+			if (pr->id == bsc->pid)
+				save_result(pr, bsc, off);
 			return RECORD_CALLBACK_BREAK;
 		}
 	}
@@ -89,15 +83,15 @@ static record_callback_e search_pid_callback(void *ptr, void *args, int off)
 
 static record_callback_e search_next(void *ptr, void *args, int offset)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	bbscon_search_callback_t *bsc = args;
 
 	if (bsc->action == POST_NEWER && offset > bsc->offset)
-		save_result(pib, bsc, offset);
+		save_result(pr, bsc, offset);
 
-	if (pib->id > bsc->pid && get_tid(pib) == bsc->tid) {
+	if (pr->id > bsc->pid && pr->thread_id == bsc->tid) {
 		if (bsc->action == THREAD_NEXT_POST)
-			save_result(pib, bsc, offset);
+			save_result(pr, bsc, offset);
 		bsc->flags |= NOT_THREAD_LAST_POST;
 		return RECORD_CALLBACK_BREAK;
 	}
@@ -111,19 +105,18 @@ static int search(int bid, post_id_t pid, int action, bool extra,
 	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
 		return -1;
 
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-
 	bbscon_search_callback_t bsc = {
-		.flags = 0, .action = action, .offset = -1, .pi = pi, .pid = pid,
-		.pir = &pir, .tid = 0, .found = false,
+		.action = action,
+		.offset = -1,
+		.pi = pi,
+		.pid = pid,
 	};
 	record_reverse_foreach(&record, search_pid_callback, &bsc);
 
 	if (bsc.found) {
 		if (action == POST_NEWER || action == THREAD_NEXT_POST || extra) {
 			bsc.found = !(action == POST_NEWER || action == THREAD_NEXT_POST);
-			record_foreach(&record, &bsc.pib, bsc.offset, search_next, &bsc);
+			record_foreach(&record, &bsc.pr, bsc.offset, search_next, &bsc);
 		}
 	} else {
 		memset(pi, 0, sizeof(*pi));
@@ -140,7 +133,6 @@ static int search(int bid, post_id_t pid, int action, bool extra,
 		if (!(bsc.flags & NOT_THREAD_LAST_POST))
 			bsc.flags |= THREAD_LAST_POST;
 	}
-	post_index_record_close(&pir);
 	record_close(&record);
 	return bsc.flags;
 }
@@ -152,9 +144,9 @@ static int search_pid(int bid, post_id_t pid, post_info_t *pi)
 
 static record_callback_e search_sticky_callback(void *ptr, void *args, int off)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	post_id_t *pid = args;
-	return pib->id == *pid ? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
+	return pr->id == *pid ? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
 }
 
 static bool search_sticky(int bid, post_id_t pid, post_info_t *pi)
@@ -163,16 +155,13 @@ static bool search_sticky(int bid, post_id_t pid, post_info_t *pi)
 	if (post_index_board_open_sticky(bid, RECORD_READ, &record) < 0)
 		return false;
 
-	post_index_board_t pib;
+	post_record_t pr;
 	bool found = (record_search_copy(&record, search_sticky_callback, &pid,
-			-1, false, &pib) >= 0);
+			-1, false, &pr) >= 0);
 	record_close(&record);
 
 	if (found) {
-		post_index_record_t pir;
-		post_index_record_open(&pir);
-		post_index_board_to_info(&pir, &pib, pi, 1);
-		post_index_record_close(&pir);
+		post_record_to_info(&pr, pi, 1);
 	}
 	return found;
 }
@@ -318,53 +307,53 @@ typedef struct {
 	post_id_t pid;
 	post_id_t tid;
 	int offset;
-	post_index_board_t *pib;
+	post_record_t *prs;
 	int size;
 	int capacity;
 } search_topic_callback_t;
 
-static void save_offset(const post_index_board_t *pib,
-		search_topic_callback_t *stc, int offset)
+static void save_offset(const post_record_t *pr, search_topic_callback_t *stc,
+		int offset)
 {
 	stc->offset = offset;
-	memcpy(stc->pib, pib, sizeof(*stc->pib));
+	memcpy(stc->prs, pr, sizeof(*stc->prs));
 }
 
 static record_callback_e search_topic_callback(void *ptr, void *args, int off)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	search_topic_callback_t *stc = args;
 
 	if (stc->action == THREAD_PREV_PAGE) {
-		if (stc->size >= stc->capacity || pib->id < stc->tid) {
+		if (stc->size >= stc->capacity || pr->id < stc->tid) {
 			return RECORD_CALLBACK_BREAK;
-		} else if (pib->id < stc->pid && get_tid(pib) == stc->tid) {
-			memcpy(stc->pib + stc->size++, pib, sizeof(*stc->pib));
+		} else if (pr->id < stc->pid && pr->thread_id == stc->tid) {
+			memcpy(stc->prs + stc->size++, pr, sizeof(*stc->prs));
 		}
 	} else if (stc->action == THREAD_OLDER) {
-		if (pib->id < stc->tid && !pib->tid_delta) {
-			save_offset(pib, stc, off);
-			stc->tid = stc->pid = pib->id;
+		if (pr->id < stc->tid && !pr->id == pr->thread_id) {
+			save_offset(pr, stc, off);
+			stc->tid = stc->pid = pr->id;
 			return RECORD_CALLBACK_BREAK;
 		}
 	} else if (stc->action == THREAD_NEWER) {
-		if (pib->id <= stc->tid) {
+		if (pr->id <= stc->tid) {
 			return RECORD_CALLBACK_BREAK;
 		} else {
-			if (!pib->tid_delta) {
-				save_offset(pib, stc, off);
-				stc->tid = stc->pid = pib->id;
+			if (pr->id == pr->thread_id) {
+				save_offset(pr, stc, off);
+				stc->tid = stc->pid = pr->id;
 			}
 		}
 	} else if (stc->action == THREAD_NEXT_PAGE) {
-		if (pib->id <= stc->pid)
+		if (pr->id <= stc->pid)
 			return RECORD_CALLBACK_BREAK;
-		else if (get_tid(pib) == stc->tid)
-			save_offset(pib, stc, off);
+		else if (pr->thread_id == stc->tid)
+			save_offset(pr, stc, off);
 	} else {
-		if (pib->id <= stc->pid) {
-			if (pib->id == stc->pid)
-				save_offset(pib, stc, off);
+		if (pr->id <= stc->pid) {
+			if (pr->id == stc->pid)
+				save_offset(pr, stc, off);
 			return RECORD_CALLBACK_BREAK;
 		}
 	}
@@ -373,53 +362,56 @@ static record_callback_e search_topic_callback(void *ptr, void *args, int off)
 
 static record_callback_e search_topic_posts(void *ptr, void *args, int off)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	search_topic_callback_t *stc = args;
 
-	if (get_tid(pib) == stc->tid && pib->id >= stc->pid) {
+	if (pr->thread_id == stc->tid && pr->id >= stc->pid) {
 		if (stc->size < stc->capacity)
-			memcpy(stc->pib + stc->size++, pib, sizeof(*stc->pib));
+			memcpy(stc->prs + stc->size++, pr, sizeof(*stc->prs));
 		else
 			stc->flags |= NOT_THREAD_LAST_POST;
 	}
-	if (!pib->tid_delta && pib->id >= stc->tid)
+	if (pr->id == pr->thread_id && pr->id >= stc->tid)
 		stc->flags |= NOT_THREAD_LAST;
 	return RECORD_CALLBACK_CONTINUE;
 }
 
-static post_index_board_t *search_topic(int bid, post_id_t pid, post_id_t *tid,
+static post_record_t *search_topic(int bid, post_id_t pid, post_id_t *tid,
 		int action, int *count, int *flags)
 {
 	record_t record;
 	if (post_index_board_open(bid, RECORD_READ, &record) < 0)
 		return NULL;
 
-	post_index_board_t *pib = malloc(sizeof(*pib) * *count);
-	if (!pib) {
+	post_record_t *prs = malloc(sizeof(*prs) * *count);
+	if (!prs) {
 		record_close(&record);
 		return NULL;
 	}
 
 	search_topic_callback_t stc = {
-		.action = action, .flags = 0, .pid = pid, .tid = *tid,
-		.offset = -1, .pib = pib, .size = 0, .capacity = *count,
+		.action = action,
+		.pid = pid,
+		.tid = *tid,
+		.offset = -1,
+		.prs = prs,
+		.capacity = *count,
 	};
 	record_reverse_foreach(&record, search_topic_callback, &stc);
 
 	if (action != THREAD_PREV_PAGE && stc.offset >= 0) {
-		record_foreach(&record, stc.pib, stc.offset,
-				search_topic_posts, &stc);
+		record_foreach(&record, stc.prs, stc.offset, search_topic_posts, &stc);
 	}
 
 	record_close(&record);
 	if (!stc.size) {
-		free(pib);
+		free(prs);
 		return NULL;
 	}
 	*tid = stc.tid;
 	*count = stc.size;
 	*flags = stc.flags;
-	return pib;
+	return prs;
 }
 
 enum {
@@ -443,9 +435,8 @@ int bbstcon_main(void)
 
 	int count = POSTS_PER_PAGE;
 	int c = count, flags = 0;
-	post_index_board_t *pib =
-			search_topic(board.id, pid, &tid, action, &c, &flags);
-	if (!pib)
+	post_record_t *pr = search_topic(board.id, pid, &tid, action, &c, &flags);
+	if (!pr)
 		return BBS_ENOFILE;
 
 	bool anony = board.flag & BOARD_FLAG_ANONY;
@@ -469,14 +460,11 @@ int bbstcon_main(void)
 	if (c > count)
 		c = count;
 
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-
-	for (post_index_board_t *ptr = asc ? pib : pib + c - 1;
-			asc ? ptr < pib + c : ptr >= pib;
+	for (post_record_t *ptr = asc ? pr : pr + c - 1;
+			asc ? ptr < pr + c : ptr >= pr;
 			ptr += asc ? 1 : -1) {
 		post_info_t pi;
-		post_index_board_to_info(&pir, ptr, &pi, 1);
+		post_record_to_info(ptr, &pi, 1);
 		printf("<po fid='%"PRIdPID"' owner='%s'%s>", pi.id, pi.user_name,
 				!isbm && (pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
 
@@ -489,7 +477,6 @@ int bbstcon_main(void)
 		brc_mark_as_read(pi.stamp);
 	}
 	puts("</bbstcon>");
-	post_index_record_close(&pir);
 
 	brc_update(currentuser.userid, board.name);
 	return 0;

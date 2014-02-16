@@ -52,42 +52,35 @@ enum {
 	POST_INDEX_TRASH_BUF_SIZE = 50,
 };
 
-int post_index_board_to_info(post_index_record_t *pir,
-		const post_index_board_t *pib, post_info_t *pi, int count)
+void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count)
 {
-	post_index_t buf;
 	for (int i = 0; i < count; ++i) {
-		post_index_record_read(pir, pib->id, &buf);
-
-		pi->id = pib->id;
-		pi->reply_id = pib->id - pib->reid_delta;
-		pi->thread_id = pib->id - pib->tid_delta;
-		pi->flag = pib->flag;
-		pi->user_id = pib->uid;
-		pi->stamp = buf.stamp;
-		pi->board_id = buf.bid;
-		strlcpy(pi->user_name, buf.owner, sizeof(pi->user_name));
-		strlcpy(pi->utf8_title, buf.utf8_title, sizeof(pi->utf8_title));
+		pi->flag = pr->flag;
+		pi->user_id = pr->user_id;
+		pi->id = pr->id;
+		pi->reply_id = pr->reply_id;
+		pi->thread_id = pr->thread_id;
+		pi->stamp = post_stamp_from_id(pr->id);
 		pi->delete_stamp = 0;
+		pi->board_id = pr->board_id;
+		strlcpy(pi->user_name, pr->user_name, sizeof(pi->user_name));
 		pi->eraser_name[0] = '\0';
+		strlcpy(pi->utf8_title, pr->utf8_title, sizeof(pi->utf8_title));
 
-		++pib;
+		++pr;
 		++pi;
 	}
-	return count;
 }
 
-int post_index_trash_to_info(post_index_record_t *pir,
-		const post_index_trash_t *pit, post_info_t *pi, int count)
+void post_record_extended_to_info(const post_record_extended_t *pre,
+		post_info_t *pi, int count)
 {
 	for (int i = 0; i < count; ++i) {
 		post_info_t *pii = pi + i;
-		post_index_board_to_info(pir, (post_index_board_t *) (pit + i),
-				pii, 1);
-		pii->delete_stamp = (pit + i)->estamp;
-		strlcpy(pii->eraser_name, pit->ename, sizeof(pii->eraser_name));
+		post_record_to_info((const post_record_t *) (pre + i), pii, 1);
+		pii->delete_stamp = (pre + i)->stamp;
+		strlcpy(pii->eraser_name, pre->eraser_name, sizeof(pii->eraser_name));
 	}
-	return count;
 }
 
 #define POST_INDEX_READ_HELPER(type, bufsize, converter)  \
@@ -100,24 +93,24 @@ int post_index_trash_to_info(post_index_record_t *pir,
 		if (count <= 0) \
 			break; \
 \
-		converter(pir, read_buf, buf, count); \
+		converter(read_buf, buf, count); \
 		records += count; \
 		size -= max; \
 	}
 
-int post_index_board_read(record_t *rec, int base, post_index_record_t *pir,
-		post_info_t *buf, int size, post_list_type_e type)
+int post_record_read(record_t *rec, int base, post_info_t *buf, int size,
+		post_list_type_e type)
 {
 	if (record_seek(rec, base, RECORD_SET) < 0)
 		return 0;
 
 	int records = 0;
 	if (is_deleted(type)) {
-		POST_INDEX_READ_HELPER(post_index_trash_t, POST_INDEX_TRASH_BUF_SIZE,
-				post_index_trash_to_info);
+		POST_INDEX_READ_HELPER(post_record_extended_t,
+				POST_INDEX_TRASH_BUF_SIZE, post_record_extended_to_info);
 	} else {
-		POST_INDEX_READ_HELPER(post_index_board_t, POST_INDEX_BOARD_BUF_SIZE,
-				post_index_board_to_info);
+		POST_INDEX_READ_HELPER(post_record_t,
+				POST_INDEX_BOARD_BUF_SIZE, post_record_to_info);
 	}
 	return records;
 }
@@ -788,31 +781,28 @@ typedef struct {
 	post_flag_e flag;
 } post_index_board_update_flag_t;
 
-bool match_filter(const post_index_board_t *pib,
-		post_index_record_t *pir, const post_filter_t *filter, int offset)
+bool post_match_filter(const post_record_t *pr, const post_filter_t *filter,
+		int offset)
 {
 	bool match = true;
 	if (filter->uid)
-		match &= pib->uid == filter->uid;
+		match &= pr->user_id == filter->uid;
 	if (filter->min)
-		match &= pib->id >= filter->min;
+		match &= pr->id >= filter->min;
 	if (filter->max)
-		match &= pib->id <= filter->max;
+		match &= pr->id <= filter->max;
 	if (filter->tid)
-		match &= pib->id - pib->tid_delta == filter->tid;
+		match &= pr->thread_id == filter->tid;
 	if (filter->flag)
-		match &= (pib->flag & filter->flag) == filter->flag;
+		match &= (pr->flag & filter->flag) == filter->flag;
 	if (filter->offset_min)
 		match &= offset >= filter->offset_min - 1;
 	if (filter->offset_max)
 		match &= offset < filter->offset_max;
 	if (filter->type == POST_LIST_TOPIC)
-		match &= !pib->tid_delta;
+		match &= pr->id == pr->thread_id;
 	if (*filter->utf8_keyword) {
-		UTF8_BUFFER(title, POST_TITLE_CCHARS);
-		post_index_record_get_title(pir, pib->id, utf8_title,
-				sizeof(utf8_title));
-		match &= (bool) strcasestr(utf8_title, filter->utf8_keyword);
+		match &= (bool) strcasestr(pr->utf8_title, filter->utf8_keyword);
 	}
 	return match;
 }
@@ -1004,26 +994,27 @@ int post_record_invalidity_get(int bid)
 	return mdb_integer(0, "HGET", POST_RECORD_INVALIDITY_KEY" %d", bid);
 }
 
-static void convert_post_metadata(db_res_t *res, int row,
+static void convert_post_record(db_res_t *res, int row,
 		post_record_t *post)
 {
 	post->id = db_get_post_id(res, row, 0);
 	post->reply_id = db_get_post_id(res, row, 1);
 	post->thread_id = db_get_post_id(res, row, 2);
 	post->user_id = db_get_user_id(res, row, 3);
-	post->flag = (db_get_bool(res, row, 4) ? POST_FLAG_DIGEST : 0)
-			| (db_get_bool(res, row, 5) ? POST_FLAG_MARKED : 0)
-			| (db_get_bool(res, row, 6) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(res, row, 7) ? POST_FLAG_IMPORT : 0)
-			| (db_get_bool(res, row, 8) ? POST_FLAG_WATER : 0);
+	post->board_id = db_get_integer(res, row, 4);
+	post->flag = (db_get_bool(res, row, 5) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(res, row, 6) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(res, row, 7) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(res, row, 8) ? POST_FLAG_IMPORT : 0)
+			| (db_get_bool(res, row, 9) ? POST_FLAG_WATER : 0);
 
-	const char *user_name = db_get_value(res, row, 10);
+	const char *user_name = db_get_value(res, row, 11);
 	if (user_name)
 		strlcpy(post->user_name, user_name, sizeof(post->user_name));
 	else
 		post->user_name[0] = '\0';
 
-	const char *title = db_get_value(res, row, 11);
+	const char *title = db_get_value(res, row, 12);
 	if (title)
 		strlcpy(post->utf8_title, title, sizeof(post->utf8_title));
 	else
@@ -1046,8 +1037,8 @@ static int post_sticky_compare(const void *ptr1, const void *ptr2)
 static bool update_record(record_t *rec, int bid, bool sticky)
 {
 	query_t *q = query_new(0);
-	query_select(q, "id, reply_id, thread_id, user_id, digest, marked,"
-			" locked, imported, water, attachment, user_name, title");
+	query_select(q, "id, reply_id, thread_id, user_id, board_id, digest,"
+			" marked, locked, imported, water, attachment, user_name, title");
 	query_from(q, "posts.recent");
 	query_where(q, "bid = %d", bid);
 	db_res_t *res = query_exec(q);
@@ -1058,7 +1049,7 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 	post_record_t *posts = malloc(sizeof(*posts) * rows);
 	if (posts) {
 		for (int i = 0; i < rows; ++i) {
-			convert_post_metadata(res, i, posts + i);
+			convert_post_record(res, i, posts + i);
 		}
 		qsort(posts, rows, sizeof(*posts),
 				sticky ? post_record_compare : post_sticky_compare);

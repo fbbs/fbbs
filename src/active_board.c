@@ -47,10 +47,10 @@ static bool active_board_add(const char *content)
 static record_callback_e active_board_init_callback(void *ptr, void *args,
 		int offset)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 
-	if (pib->flag & POST_FLAG_DIGEST) {
-		char *content = post_content_get(pib->id);
+	if (pr->flag & POST_FLAG_DIGEST) {
+		char *content = post_content_get(pr->id);
 		bool success = content ? active_board_add(content) : false;
 		free(content);
 		if (success)

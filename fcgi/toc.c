@@ -77,8 +77,7 @@ static void print_board_logo(const char *board)
 }
 
 typedef struct {
-	post_index_record_t *pir;
-	post_index_board_t *pibs;
+	post_record_t *prs;
 	int start;
 	int total;
 	int count;
@@ -88,48 +87,48 @@ typedef struct {
 	bool sticky;
 } print_post_callback_t;
 
-static void print_pib(post_index_record_t *pir, const post_index_board_t *pib,
-		bool sticky)
+static void print_post_record(const post_record_t *pr, bool sticky)
 {
 	post_info_t pi;
-	post_index_board_to_info(pir, pib, &pi, 1);
+	post_record_to_info(pr, &pi, 1);
 	string_check_tail(pi.utf8_title, NULL);
 	print_post(&pi, sticky);
 }
 
 static record_callback_e print_post_callback(void *ptr, void *args, int offset)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	print_post_callback_t *ppc = args;
 
-	if ((ppc->thread && pib->tid_delta)
-			|| (ppc->digest && !(pib->flag & POST_FLAG_DIGEST)))
+	if ((ppc->thread && pr->id != pr->thread_id)
+			|| (ppc->digest && !(pr->flag & POST_FLAG_DIGEST)))
 		return RECORD_CALLBACK_CONTINUE;
-	if ((++ppc->total < ppc->start) || (!ppc->pibs && ++ppc->count > ppc->max))
+	if ((++ppc->total < ppc->start) || (!ppc->prs && ++ppc->count > ppc->max))
 		return RECORD_CALLBACK_CONTINUE;
 
-	if (ppc->pibs) {
-		memcpy(ppc->pibs + ((ppc->total - 1) % ppc->max), pib,
-				sizeof(*ppc->pibs));
+	if (ppc->prs) {
+		memcpy(ppc->prs + ((ppc->total - 1) % ppc->max), pr,
+				sizeof(*ppc->prs));
 	} else {
-		print_pib(ppc->pir, pib, ppc->sticky);
+		print_post_record(pr, ppc->sticky);
 	}
 	return RECORD_CALLBACK_MATCH;
 }
 
-static int print_posts(record_t *record, post_index_record_t *pir,
-		int *start, int max, post_list_type_e type, bool sticky)
+static int print_posts(record_t *record, int *start, int max,
+		post_list_type_e type, bool sticky)
 {
 	bool normal = (type == POST_LIST_NORMAL);
 	bool save = ((type == POST_LIST_TOPIC || type == POST_LIST_DIGEST)
 			&& *start < 0);
 
 	print_post_callback_t ppc = {
-		.pir = pir, .sticky = sticky,
-		.start = normal ? 0 : *start, .max = max,
+		.sticky = sticky,
+		.start = normal ? 0 : *start,
+		.max = max,
 		.thread = type == POST_LIST_TOPIC,
 		.digest = type == POST_LIST_DIGEST,
-		.pibs = save ? malloc(sizeof(post_index_board_t) * max) : NULL,
+		.prs = save ? malloc(sizeof(post_index_board_t) * max) : NULL,
 	};
 
 	record_foreach(record, NULL, normal ? *start : 0,
@@ -144,19 +143,19 @@ static int print_posts(record_t *record, post_index_record_t *pir,
 	}
 	if (save) {
 		for (int i = *start; i < total; ++i) {
-			print_pib(pir, ppc.pibs + (i % max), false);
+			print_post_record(ppc.prs + (i % max), false);
 		}
 	}
+	free(ppc.prs);
 	return total;
 }
 
-static void print_sticky_posts(int bid, post_list_type_e type,
-		post_index_record_t *pir)
+static void print_sticky_posts(int bid, post_list_type_e type)
 {
 	record_t record;
 	post_index_board_open_sticky(bid, RECORD_READ, &record);
 	int start = 0;
-	print_posts(&record, pir, &start, MAX_NOTICE, type, true);
+	print_posts(&record, &start, MAX_NOTICE, type, true);
 	record_close(&record);
 }
 
@@ -195,8 +194,6 @@ static int bbsdoc(post_list_type_e type)
 
 	brc_initialize(currentuser.userid, board.name);
 
-	post_index_record_t pir;
-	post_index_record_open(&pir);
 	record_t record;
 	post_index_board_open(board.id, RECORD_READ, &record);
 
@@ -207,11 +204,10 @@ static int bbsdoc(post_list_type_e type)
 			start = 0;
 	}
 
-	int total = print_posts(&record, &pir, &start, page, type, false);
+	int total = print_posts(&record, &start, page, type, false);
 	record_close(&record);
 	if (type != POST_LIST_DIGEST)
-		print_sticky_posts(board.id, type, &pir);
-	post_index_record_close(&pir);
+		print_sticky_posts(board.id, type);
 
 	char *cgi_name = "";
 	if (type == POST_LIST_DIGEST)
@@ -254,7 +250,6 @@ typedef struct {
 	int count;
 	user_id_t uid;
 	fb_time_t begin;
-	post_index_record_t *pir;
 	UTF8_BUFFER(t1, POST_TITLE_CCHARS);
 	UTF8_BUFFER(t2, POST_TITLE_CCHARS);
 	UTF8_BUFFER(t3, POST_TITLE_CCHARS);
@@ -262,18 +257,18 @@ typedef struct {
 
 static record_callback_e web_post_filter(void *r, void *args, int offset)
 {
-	const post_index_board_t *pib = r;
+	const post_record_t *pr = r;
 	web_post_filter_t *wpf = args;
 
 	if (wpf->count > BFIND_MAX)
 		return RECORD_CALLBACK_BREAK;
-	if ((wpf->marked && !(pib->flag & POST_FLAG_MARKED))
-			|| (wpf->digest && !(pib->flag & POST_FLAG_DIGEST))
-			|| (wpf->uid && pib->uid != wpf->uid))
+	if ((wpf->marked && !(pr->flag & POST_FLAG_MARKED))
+			|| (wpf->digest && !(pr->flag & POST_FLAG_DIGEST))
+			|| (wpf->uid && pr->user_id != wpf->uid))
 		return RECORD_CALLBACK_CONTINUE;
 
 	post_info_t pi;
-	post_index_board_to_info(wpf->pir, pib, &pi, 1);
+	post_record_to_info(pr, &pi, 1);
 
 	if (pi.stamp < wpf->begin)
 		return RECORD_CALLBACK_BREAK;
@@ -300,9 +295,6 @@ int bbsbfind_main(void)
 	record_t record;
 	if (post_index_board_open(board.id, RECORD_READ, &record) < 0)
 		return BBS_EINTNL;
-
-	post_index_record_t pir;
-	post_index_record_open(&pir);
 
 	web_post_filter_t wpf = {
 		.marked = strcaseeq(web_get_param("mark"), "on"),
@@ -344,7 +336,6 @@ int bbsbfind_main(void)
 		printf(">");
 	}
 
-	post_index_record_close(&pir);
 	record_close(&record);
 
 	print_session();
@@ -623,28 +614,27 @@ enum {
 };
 
 typedef struct {
-	post_index_record_t *pir;
 	int bid;
 	int remain;
 } print_topics_t;
 
 static record_callback_e print_topics(void *ptr, void *args, int offset)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	print_topics_t *pt = args;
 
-	if (!pib->tid_delta) {
+	if (pr->id == pr->thread_id) {
 		post_info_t pi;
-		post_index_board_to_info(pt->pir, pib, &pi, 1);
+		post_record_to_info(pr, &pi, 1);
 
 		printf("<item><title>");
 		xml_fputs(pi.utf8_title);
 		printf("</title><link>http://"BASEURL"/con?bid=%d&amp;f=%u</link>"
 				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
 				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
-				"<description><![CDATA[<pre>", pt->bid, pib->id, pi.user_name,
+				"<description><![CDATA[<pre>", pt->bid, pr->id, pi.user_name,
 				format_time(pi.stamp, TIME_FORMAT_RSS), pi.user_name, pt->bid,
-				pib->id);
+				pr->id);
 
 		char *content = post_content_get(pi.id);
 		if (content)
@@ -673,16 +663,16 @@ int bbsrss_main(void)
 			"</description><link>"BASEURL "/doc?bid=%d</link><generator>"
 			BASEURL "</generator>", board.name, board.descr, board.id);
 
-	post_index_record_t pir;
-	post_index_record_open(&pir);
 	record_t record;
 	post_index_board_open(board.id, RECORD_READ, &record);
 
-	print_topics_t pt = { .pir = &pir, .bid = board.id, .remain = MAXRSS };
+	print_topics_t pt = {
+		.bid = board.id,
+		.remain = MAXRSS
+	};
 	record_reverse_foreach(&record, print_topics, &pt);
 
 	record_close(&record);
-	post_index_record_close(&pir);
 
 	printf("</channel></rss>");
 	return 0;
