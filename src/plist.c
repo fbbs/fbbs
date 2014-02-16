@@ -1854,20 +1854,21 @@ static int tui_import_posts(post_list_t *pl, post_filter_t *filter)
 static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 		post_id_t max)
 {
-	post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
+	post_filter_t filter = {
+		.bid = pl->bid,
+		.min = min,
+		.max = max,
+	};
 	int ret = PARTUPDATE;
 	switch (choice) {
 		case 0:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_MARKED, true, true);
 			break;
 		case 1:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_DIGEST, true, true);
 			break;
 		case 2:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_LOCKED, true, true);
 			break;
 		case 3:
 			if (pl->type == POST_LIST_NORMAL) {
@@ -1878,14 +1879,14 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 			ret = tui_import_posts(pl, &filter);
 			break;
 		case 5:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_WATER, true, true);
 			break;
 		case 6:
 			// TODO
 			break;
 		default:
 			if (is_deleted(pl->type)) {
+				// TODO
 				post_undelete(&filter, pl->type == POST_LIST_TRASH);
 			} else {
 				filter.flag |= POST_FLAG_WATER;
@@ -2044,29 +2045,26 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 			}
 			break;
 		case 1:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_MARKED,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_MARKED, true, true);
 			break;
 		case 2:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_DIGEST,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_DIGEST, true, true);
 			break;
 		case 3:
 			import_posts(pl, &filter, annpath);
 			break;
 		case 4:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_WATER,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_WATER, true, true);
 			break;
 		case 5:
-//			set_post_flag(pl->record, pl->pir, &filter, POST_FLAG_LOCKED,
-//					true, true);
+			post_set_flag(&filter, POST_FLAG_LOCKED, true, true);
 			break;
 		case 6:
 			pack_posts(pl->record, pl->pir, &filter, utf8_keyword, quote);
 			break;
 		default:
 			if (is_deleted(pl->type)) {
+				// TODO
 				post_undelete(&filter, pl->type == POST_LIST_TRASH);
 			} else {
 				// TODO: merge thread
