@@ -1008,7 +1008,7 @@ int post_record_invalidity_get(int bid)
 }
 
 static void convert_post_metadata(db_res_t *res, int row,
-		post_metadata_t *post)
+		post_record_t *post)
 {
 	post->id = db_get_post_id(res, row, 0);
 	post->reply_id = db_get_post_id(res, row, 1);
@@ -1033,9 +1033,9 @@ static void convert_post_metadata(db_res_t *res, int row,
 		post->utf8_title[0] = '\0';
 }
 
-int post_metadata_compare(const void *ptr1, const void *ptr2)
+int post_record_compare(const void *ptr1, const void *ptr2)
 {
-	const post_metadata_t *p1 = ptr1, *p2 = ptr2;
+	const post_record_t *p1 = ptr1, *p2 = ptr2;
 	if (p1->id > p2->id)
 		return 1;
 	return p1->id == p2->id ? 0 : -1;
@@ -1043,7 +1043,7 @@ int post_metadata_compare(const void *ptr1, const void *ptr2)
 
 static int post_sticky_compare(const void *ptr1, const void *ptr2)
 {
-	return -post_metadata_compare(ptr1, ptr2);
+	return -post_record_compare(ptr1, ptr2);
 }
 
 static bool update_record(record_t *rec, int bid, bool sticky)
@@ -1058,13 +1058,13 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 		return false;
 
 	int rows = db_res_rows(res);
-	post_metadata_t *posts = malloc(sizeof(*posts) * rows);
+	post_record_t *posts = malloc(sizeof(*posts) * rows);
 	if (posts) {
 		for (int i = 0; i < rows; ++i) {
 			convert_post_metadata(res, i, posts + i);
 		}
 		qsort(posts, rows, sizeof(*posts),
-				sticky ? post_metadata_compare : post_sticky_compare);
+				sticky ? post_record_compare : post_sticky_compare);
 		record_write(rec, posts, rows, 0);
 	}
 

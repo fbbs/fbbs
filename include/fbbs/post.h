@@ -183,7 +183,16 @@ typedef struct {
 	int flag;
 	char user_name[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
-} post_metadata_t;
+} post_record_t;
+
+typedef struct {
+	post_record_t basic;
+	bool junk;
+	bool bm_visible;
+	user_id_t eraser_id;
+	fb_time_t stamp;
+	char eraser_name[IDLEN + 1];
+} post_record_extended_t;
 
 typedef struct {
 	post_id_t tid;
