@@ -1140,7 +1140,7 @@ static int tui_edit_post_content(post_info_t *pi)
 	if (vedit(file, NA, NA, NULL) != -1) {
 		char *content = convert_file_to_utf8_content(file);
 		if (content) {
-			if (post_content_write(pi->id, content, strlen(content))) {
+			if (post_content_set(pi->id, content)) {
 				char buf[STRLEN];
 				snprintf(buf, sizeof(buf), "edited post #%"PRIdPID, pi->id);
 				report(buf, currentuser.userid);

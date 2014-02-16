@@ -322,4 +322,6 @@ extern int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set
 extern int post_sticky_count(int board_id);
 
 extern char *post_content_get(post_id_t post_id);
+extern bool post_content_set(post_id_t post_id, const char *str);
+
 #endif // FB_POST_H

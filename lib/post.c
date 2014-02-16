@@ -1433,3 +1433,21 @@ char *post_content_get(post_id_t post_id)
 		post_content_update_cache(file, str, false);
 	return str;
 }
+
+bool post_content_set(post_id_t post_id, const char *str)
+{
+	if (!str)
+		return false;
+
+	query_t *q = query_new(0);
+	query_update(q, "posts.content");
+	query_set(q, "content = %s", str);
+	query_where(q, "post_id = %"DBIdPID, post_id);
+
+	bool ok = false;
+	db_res_t *res = query_cmd(q);
+	if (res && db_cmd_rows(res) == 1)
+		ok = true;
+	db_clear(res);
+	return ok;
+}

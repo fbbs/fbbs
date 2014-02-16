@@ -576,9 +576,9 @@ static int edit_article(post_id_t pid, const char *content, const char *text,
 		*dst = '\0';
 	}
 
-	int ret = post_content_write(pid, out, dst - out);
+	bool ok = post_content_set(pid, out);
 	free(out);
-	return ret > 0 ? 0 : BBS_EINTNL;
+	return ok ? 0 : BBS_EINTNL;
 }
 
 static void check_character(char *text)
