@@ -14,6 +14,7 @@ typedef enum {
 	BACKEND_REQUEST_post_delete = 2,
 	BACKEND_REQUEST_post_undelete = 3,
 	BACKEND_REQUEST_post_set_flag = 4,
+	BACKEND_REQUEST_post_alter_title = 5,
 } backend_request_e;
 
 typedef bool (*backend_serializer_t)(const void *request, parcel_t *parcel);

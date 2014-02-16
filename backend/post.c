@@ -323,3 +323,66 @@ BACKEND_DECLARE(post_set_flag)
 	backend_respond(parcel_out, channel);
 	return true;
 }
+
+static char *replace_content_title(const char *content, size_t len,
+		const char *title)
+{
+	const char *end = content + len;
+	const char *l1_end = get_line_end(content, end);
+	const char *l2_end = get_line_end(l1_end, end);
+
+	// sizeof("标  题: ") in UTF-8 is 10
+	const char *begin = l1_end + 10;
+	int orig_title_len = l2_end - begin - 1; // exclude '\n'
+	if (orig_title_len < 0)
+		return NULL;
+
+	int new_title_len = strlen(title);
+	len += new_title_len - orig_title_len;
+	char *s = malloc(len + 1);
+	char *p = s;
+	size_t l = begin - content;
+	memcpy(p, content, l);
+	p += l;
+	memcpy(p, title, new_title_len);
+	p += new_title_len;
+	*p++ = '\n';
+	l = end - l2_end;
+	memcpy(p, l2_end, end - l2_end);
+	s[len] = '\0';
+	return s;
+}
+
+static bool _backend_post_alter_title(
+		const backend_request_post_alter_title_t *req)
+{
+	if (!req)
+		return false;
+
+	char *content = post_content_get(req->post_id);
+	if (!content)
+		return false;
+
+	char *new_content = replace_content_title(content, strlen(content),
+			req->title);
+	bool ok = false;
+	if (new_content)
+		post_content_set(req->post_id, new_content);
+	free(new_content);
+	free(content);
+	return ok;
+}
+
+BACKEND_DECLARE(post_alter_title)
+{
+	backend_request_post_alter_title_t req;
+	if (!deserialize_post_alter_title(parcel_in, &req))
+		return false;
+
+	backend_response_post_alter_title_t resp;
+	resp.ok = _backend_post_alter_title(&req);
+
+	serialize_post_alter_title(&resp, parcel_out);
+	backend_respond(parcel_out, channel);
+	return true;
+}

@@ -1097,7 +1097,7 @@ static int reply_with_mail(const post_info_t *pi)
 	return FULLUPDATE;
 }
 
-static int tui_edit_post_title(tui_list_t *tl, post_info_t *pi)
+static int tui_edit_post_title(post_info_t *pi)
 {
 	if (!pi || (pi->uid != session_uid() && !am_curr_bm()))
 		return DONOTHING;
@@ -1117,9 +1117,7 @@ static int tui_edit_post_title(tui_list_t *tl, post_info_t *pi)
 	if (!*utf8_title || streq(utf8_title, pi->utf8_title))
 		return MINIUPDATE;
 
-	post_list_t *pl = tl->data;
-	strlcpy(pi->utf8_title, utf8_title, sizeof(pi->utf8_title));
-	if (alter_title(pl->pir, pi))
+	if (post_alter_title(pi->id, utf8_title))
 		return PARTUPDATE;
 	return MINIUPDATE;
 }
@@ -2464,7 +2462,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case 'w':
 			return toggle_post_flag(pi, POST_FLAG_WATER);
 		case 'T':
-			return tui_edit_post_title(tl, pi);
+			return tui_edit_post_title(pi);
 		case 'E':
 			return tui_edit_post_content(pi);
 		case 'i':

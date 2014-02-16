@@ -9,6 +9,7 @@ BACKEND_DECLARE(post_new);
 BACKEND_DECLARE(post_delete);
 BACKEND_DECLARE(post_undelete);
 BACKEND_DECLARE(post_set_flag);
+BACKEND_DECLARE(post_alter_title);
 
 #define ENTRY(function)  [BACKEND_REQUEST_##function] = backend_##function
 
@@ -20,6 +21,7 @@ static const handler_t handlers[] = {
 	ENTRY(post_delete),
 	ENTRY(post_undelete),
 	ENTRY(post_set_flag),
+	ENTRY(post_alter_title),
 };
 
 static sig_atomic_t backend_shutdown = false;

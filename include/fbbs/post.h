@@ -314,6 +314,15 @@ typedef struct { // @backend
 	int affected;
 } backend_response_post_set_flag_t;
 
+typedef struct { // @frontend
+	post_id_t post_id;
+	const char *title;
+} backend_request_post_alter_title_t;
+
+typedef struct { // @backend
+	bool ok;
+} backend_response_post_alter_title_t;
+
 extern void post_record_invalidity_change(int bid, int delta);
 
 extern bool post_update_sticky_record(int board_id);
@@ -323,5 +332,7 @@ extern int post_sticky_count(int board_id);
 
 extern char *post_content_get(post_id_t post_id);
 extern bool post_content_set(post_id_t post_id, const char *str);
+
+extern bool post_alter_title(post_id_t post_id, const char *title);
 
 #endif // FB_POST_H

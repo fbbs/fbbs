@@ -1078,66 +1078,13 @@ int post_index_board_undelete(const post_filter_t *filter, bool bm_visible)
 		return 0;
 
 	backend_request_post_undelete_t req = {
-		.filter = (post_filter_t *) filter, .bm_visible = bm_visible,
+		.filter = (post_filter_t *) filter,
+		.bm_visible = bm_visible,
 	};
 	backend_response_post_undelete_t resp;
 
 	bool ok = backend_cmd(&req, &resp, post_undelete);
 	return ok ? resp.undeleted : 0;
-}
-
-static char *replace_content_title(const char *content, size_t len,
-		const char *title)
-{
-	const char *end = content + len;
-	const char *l1_end = get_line_end(content, end);
-	const char *l2_end = get_line_end(l1_end, end);
-
-	// sizeof("标  题: ") in UTF-8 is 10
-	const char *begin = l1_end + 10;
-	int orig_title_len = l2_end - begin - 1; // exclude '\n'
-	if (orig_title_len < 0)
-		return NULL;
-
-	int new_title_len = strlen(title);
-	len += new_title_len - orig_title_len;
-	char *s = malloc(len + 1);
-	char *p = s;
-	size_t l = begin - content;
-	memcpy(p, content, l);
-	p += l;
-	memcpy(p, title, new_title_len);
-	p += new_title_len;
-	*p++ = '\n';
-	l = end - l2_end;
-	memcpy(p, l2_end, end - l2_end);
-	s[len] = '\0';
-	return s;
-}
-
-bool alter_title(post_index_record_t *pir, const post_info_t *pi)
-{
-	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
-		return false;
-
-	post_index_t tmp;
-	post_index_record_lock(pir, RECORD_WRLCK, pi->id);
-	post_index_record_read(pir, pi->id, &tmp);
-	strlcpy(tmp.utf8_title, pi->utf8_title, sizeof(tmp.utf8_title));
-	post_index_record_update(pir, &tmp);
-	post_index_record_lock(pir, RECORD_UNLCK, pi->id);
-
-	char buf[POST_CONTENT_BUFLEN];
-	char *content = post_content_read(pi->id, buf, sizeof(buf));
-	if (!content)
-		return false;
-	char *new_content =
-		replace_content_title(content, strlen(content), pi->utf8_title);
-	post_content_write(pi->id, new_content, strlen(new_content));
-	free(new_content);
-	if (content != buf)
-		free(content);
-	return true;
 }
 
 int get_post_mark_raw(fb_time_t stamp, int flag)
@@ -1450,4 +1397,19 @@ bool post_content_set(post_id_t post_id, const char *str)
 		ok = true;
 	db_clear(res);
 	return ok;
+}
+
+bool post_alter_title(post_id_t post_id, const char *title)
+{
+	if (!title)
+		return false;
+
+	backend_request_post_alter_title_t req = {
+		.post_id = post_id,
+		.title = title,
+	};
+	backend_response_post_alter_title_t resp;
+
+	bool ok = backend_cmd(&req, &resp, post_alter_title);
+	return ok && resp.ok;
 }
