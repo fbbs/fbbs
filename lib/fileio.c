@@ -51,6 +51,30 @@ int file_read(int fd, void *buf, size_t size)
 	} while (1);
 }
 
+char *file_read_all(const char *file)
+{
+	if (!file)
+		return NULL;
+
+	int fd = open(file, O_RDONLY);
+	if (fd < 0)
+		return NULL;
+
+	char *str = NULL;
+
+	struct stat st;
+	if (fstat(fd, &st) == 0 && st.st_size >= 0) {
+		str = malloc(st.st_size + 1);
+		if (str) {
+			file_read(fd, str, st.st_size);
+			str[st.st_size] = '\0';
+		}
+	}
+
+	close(fd);
+	return str;
+}
+
 /**
  * 向文件写入
  * @param[in] fd 文件描述符

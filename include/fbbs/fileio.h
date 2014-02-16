@@ -17,6 +17,7 @@ typedef enum {
 
 extern int file_append(const char *file, const char *msg);
 extern int file_read(int fd, void *buf, size_t size);
+extern char *file_read_all(const char *file);
 extern int file_write(int fd, const void *buf, size_t size);
 extern int file_close(int fd);
 extern int file_truncate(int fd, off_t size);
