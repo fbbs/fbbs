@@ -861,8 +861,8 @@ fb_time_t get_last_post_time(int bid)
  * @param force 是否删除带保留标记的文章
  * @return 被删除的文章数
  */
-int post_index_board_delete(const post_filter_t *filter, bool junk,
-		bool bm_visible, bool force)
+int post_delete(const post_filter_t *filter, bool junk, bool bm_visible,
+		bool force)
 {
 	if (!filter->bid)
 		return 0;
@@ -880,7 +880,7 @@ int post_index_board_delete(const post_filter_t *filter, bool junk,
 	return ok ? resp.deleted : 0;
 }
 
-int post_index_board_undelete(const post_filter_t *filter, bool bm_visible)
+int post_undelete(const post_filter_t *filter, bool bm_visible)
 {
 	if (!filter->bid)
 		return 0;
@@ -936,7 +936,7 @@ fb_time_t post_stamp_from_id(post_id_t id)
  * @param pr The post request.
  * @return file id on success, -1 on error.
  */
-post_id_t publish_post(const post_request_t *pr)
+post_id_t post_new(const post_request_t *pr)
 {
 	if (!pr || !pr->title || (!pr->content && !pr->gbk_file) || !pr->board)
 		return 0;

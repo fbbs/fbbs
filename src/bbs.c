@@ -516,7 +516,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.hide_uid = mode == POST_FILE_DELIVER || mode == POST_FILE_BMS,
 	};
 
-	post_id_t pid = publish_post(&req);
+	post_id_t pid = post_new(&req);
 	
 	char buf[STRLEN];
 	if (!pid) {

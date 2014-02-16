@@ -201,8 +201,6 @@ extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_index_board_to_info(post_index_record_t *pir, const post_index_board_t *pib, post_info_t *pi, int count);
 extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size, post_list_type_e type);
-extern int post_index_board_delete(const post_filter_t *filter, bool junk, bool bm_visible, bool force);
-extern int post_index_board_undelete(const post_filter_t *filter, bool bm_visible);
 extern bool match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
 
 extern int post_index_trash_cmp(const void *p1, const void *p2);
@@ -221,8 +219,6 @@ extern int post_index_record_lock(post_index_record_t *pir, record_lock_e lock, 
 extern int post_remove_sticky(int bid, post_id_t id);
 extern int post_add_sticky(int bid, const post_info_t *pi);
 extern bool reorder_sticky_posts(int bid, post_id_t pid);
-
-extern post_id_t publish_post(const post_request_t *pr);
 
 extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
@@ -262,6 +258,8 @@ typedef struct { // @backend
 	post_id_t id;
 } backend_response_post_new_t;
 
+extern post_id_t post_new(const post_request_t *pr);
+
 typedef struct { // @frontend
 	post_filter_t *filter;
 	bool junk;
@@ -275,6 +273,8 @@ typedef struct { // @backend
 	int deleted;
 } backend_response_post_delete_t;
 
+extern int post_delete(const post_filter_t *filter, bool junk, bool bm_visible, bool force);
+
 typedef struct { // @frontend
 	post_filter_t *filter;
 	bool bm_visible;
@@ -283,6 +283,8 @@ typedef struct { // @frontend
 typedef struct { // @backend
 	int undeleted;
 } backend_response_post_undelete_t;
+
+extern int post_undelete(const post_filter_t *filter, bool bm_visible);
 
 typedef struct { // @frontend
 	post_filter_t *filter;
@@ -295,6 +297,8 @@ typedef struct { // @backend
 	int affected;
 } backend_response_post_set_flag_t;
 
+extern int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
+
 typedef struct { // @frontend
 	post_id_t post_id;
 	const char *title;
@@ -304,16 +308,16 @@ typedef struct { // @backend
 	bool ok;
 } backend_response_post_alter_title_t;
 
+extern bool post_alter_title(post_id_t post_id, const char *title);
+
 extern void post_record_invalidity_change(int bid, int delta);
 
 extern bool post_update_sticky_record(int board_id);
 
-extern int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
 extern int post_sticky_count(int board_id);
 
 extern char *post_content_get(post_id_t post_id);
 extern bool post_content_set(post_id_t post_id, const char *str);
 
-extern bool post_alter_title(post_id_t post_id, const char *title);
 
 #endif // FB_POST_H

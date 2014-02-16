@@ -296,7 +296,7 @@ int bbsdel_main(void)
 		.bid = board.id, .min = pid, .max = pid,
 		.uid = am_bm(&board) ? 0 : session_uid(),
 	};
-	int deleted = post_index_board_delete(&filter, true, false, true);
+	int deleted = post_delete(&filter, true, false, true);
 	record_close(&record);
 
 	if (deleted) {
@@ -689,7 +689,7 @@ int bbssnd_main(void)
 			.web = true,
 			.cp = web_request_type(UTF8) ? NULL : env_g2u,
 		};
-		pid = publish_post(&pr);
+		pid = post_new(&pr);
 		if (!pid)
 			return BBS_EINTNL;
 	}
@@ -904,7 +904,7 @@ int bbsccc_main(void)
 			.ip = mask_host(fromhost),
 			.web = true,
 		};
-		int ret = publish_post(&pr);
+		int ret = post_new(&pr);
 
 		free(content);
 		if (!ret)

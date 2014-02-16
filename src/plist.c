@@ -966,7 +966,7 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 			post_filter_t filter = {
 				.bid = bid, .min = pi->id, .max = pi->id,
 			};
-			if (post_index_board_delete(&filter, true, false, true)) {
+			if (post_delete(&filter, true, false, true)) {
 				tl->valid = false;
 				log_bm(LOG_BM_DELETE, 1);
 				return PARTUPDATE;
@@ -983,7 +983,7 @@ static int tui_undelete_single_post(tui_list_t *tl, post_info_t *pi)
 	post_list_t *pl = tl->data;
 	if (pi && is_deleted(pl->type)) {
 		post_filter_t f = { .bid = pl->bid, .min = pi->id, .max = pi->id, };
-		if (post_index_board_undelete(&f, pl->type == POST_LIST_TRASH)) {
+		if (post_undelete(&f, pl->type == POST_LIST_TRASH)) {
 			tl->valid = false;
 			log_bm(LOG_BM_UNDELETE, 1);
 			return PARTUPDATE;
@@ -1267,7 +1267,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		.anony = header.anonymous,
 	};
 
-	post_id_t pid = publish_post(&req);
+	post_id_t pid = post_new(&req);
 	unlink(file);
 	if (pid) {
 		char buf[STRLEN];
@@ -1370,7 +1370,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	//% 确定删除
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 		post_filter_t filter = { .bid = pl->bid, .min = min, .max = max };
-		if (post_index_board_delete(&filter, false,
+		if (post_delete(&filter, false,
 					!HAS_PERM(PERM_OBOARDS), false)) {
 			log_bm(LOG_BM_RANGEDEL, 1);
 			tl->valid = false;
@@ -1871,8 +1871,7 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 			break;
 		case 3:
 			if (pl->type == POST_LIST_NORMAL) {
-				post_index_board_delete(&filter, true,
-						!HAS_PERM(PERM_OBOARDS), false);
+				post_delete(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
 			}
 			break;
 		case 4:
@@ -1887,12 +1886,10 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 			break;
 		default:
 			if (is_deleted(pl->type)) {
-				post_index_board_undelete(&filter,
-						pl->type == POST_LIST_TRASH);
+				post_undelete(&filter, pl->type == POST_LIST_TRASH);
 			} else {
 				filter.flag |= POST_FLAG_WATER;
-				post_index_board_delete(&filter, true,
-						!HAS_PERM(PERM_OBOARDS), false);
+				post_delete(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
 			}
 			break;
 	}
@@ -2010,7 +2007,7 @@ static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
 				.length = m.size,
 				.locked = true,
 			};
-			pid = publish_post(&pr);
+			pid = post_new(&pr);
 			mmap_close(&m);
 		}
 
@@ -2043,8 +2040,7 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 	switch (choice) {
 		case 0:
 			if (pl->type == POST_LIST_NORMAL) {
-				post_index_board_delete(&filter, junk,
-						!HAS_PERM(PERM_OBOARDS), false);
+				post_delete(&filter, junk, !HAS_PERM(PERM_OBOARDS), false);
 			}
 			break;
 		case 1:
@@ -2071,8 +2067,7 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 			break;
 		default:
 			if (is_deleted(pl->type)) {
-				post_index_board_undelete(&filter,
-						pl->type == POST_LIST_TRASH);
+				post_undelete(&filter, pl->type == POST_LIST_TRASH);
 			} else {
 				// TODO: merge thread
 			}
