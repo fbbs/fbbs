@@ -15,11 +15,12 @@ MAX_INITIALIZER_LINES  = 0
 QUIET                  = YES
 INPUT = ../include \
 		../include/fbbs \
+		../backend \
+		../build/include/s11n \
 		../fcgi \
 		../lib \
 		../src \
-		../pg \
-		../build/include/s11n
+		../pg
 FILE_PATTERNS          = *.c \
                          *.h
 SOURCE_BROWSER         = YES
@@ -32,5 +33,5 @@ MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 INCLUDE_PATH           = ../include
 EXPAND_AS_DEFINED      = UTF8_BUFFER GBK_BUFFER GBK_UTF8_BUFFER \
-		SLIST_HEAD SLIST_FIELD STAILQ_HEAD STAILQ_FIELD
+		SLIST_HEAD SLIST_FIELD STAILQ_HEAD STAILQ_FIELD BACKEND_DECLARE
 OUTPUT_LANGUAGE = Chinese
