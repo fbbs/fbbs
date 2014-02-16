@@ -809,18 +809,14 @@ static int tui_search_title(tui_list_t *tl, bool upward)
 	return post_search(tl, &filter, tl->cur, upward);
 }
 
-typedef struct {
-	post_content_record_t *pcr;
-	const char *keyword;
-} search_content_callback_t;
-
 static record_callback_e search_content_callback(void *ptr, void *args, int off)
 {
 	const post_index_board_t *pib = ptr;
-	search_content_callback_t *scc = args;
+	const char *utf8_keyword = args;
 
-	char *content = post_content_record_read(scc->pcr, pib->id);
-	bool match = strcasestr(content, scc->keyword);
+	char *content = post_content_get(pib->id);
+	bool match = content ? strcasestr(content, utf8_keyword) : false;
+	free(content);
 
 	return match ? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
 }
@@ -855,14 +851,9 @@ static int tui_search_content(tui_list_t *tl, bool upward)
 	UTF8_BUFFER(keyword, KEYWORD_CCHARS);
 	convert_g2u(gbk_keyword, utf8_keyword);
 
-	post_content_record_t pcr;
-	post_content_record_open(&pcr);
-
 	post_list_t *pl = tl->data;
-	search_content_callback_t scc = { .pcr = &pcr, .keyword = utf8_keyword };
-	int pos = record_search(pl->record, search_content_callback, &scc,
+	int pos = record_search(pl->record, search_content_callback, utf8_keyword,
 			tl->cur, upward);
-	post_content_record_close(&pcr);
 
 	if (pos >= 0) {
 		tl->cur = pos;
@@ -1960,7 +1951,6 @@ static int tui_operate_posts_in_range(tui_list_t *tl, post_info_t *pi)
 
 typedef struct {
 	 post_index_record_t *pir;
-	 post_content_record_t *pcr;
 	 const post_filter_t *filter;
 	 FILE *fp;
 	 post_quote_e mode;
@@ -1972,14 +1962,15 @@ static record_callback_e pack_posts_callback(void *ptr, void *args, int off)
 	const pack_posts_callback_t *ppc = args;
 
 	if (match_filter(pib, ppc->pir, ppc->filter, off)) {
-		char *content = post_content_record_read(ppc->pcr, pib->id);
-
-		fputs("\033[1;32m☆─────────────────"
-				"─────────────────────☆\033[0;1m\n", ppc->fp);
-		quote_string(content, strlen(content), ppc->fp, ppc->mode, false, true,
-				NULL);
-		fputc('\n', ppc->fp);
-
+		char *content = post_content_get(pib->id);
+		if (content) {
+			fputs("\033[1;32m☆─────────────────"
+					"─────────────────────☆\033[0;1m\n", ppc->fp);
+			quote_string(content, strlen(content), ppc->fp, ppc->mode, false,
+					true, NULL);
+			fputc('\n', ppc->fp);
+		}
+		free(content);
 		return RECORD_CALLBACK_MATCH;
 	}
 	return RECORD_CALLBACK_CONTINUE;
@@ -1996,11 +1987,8 @@ static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
 		post_index_record_t pir;
 		post_index_record_open(&pir);
 
-		post_content_record_t pcr;
-		post_content_record_open(&pcr);
-
 		pack_posts_callback_t ppc = {
-			.pir = &pir, .pcr = &pcr, .filter = filter, .fp = fp,
+			.pir = &pir, .filter = filter, .fp = fp,
 			.mode = quote ? QUOTE_PACK : QUOTE_PACK_COMPACT,
 		};
 		record_foreach(record, NULL, 0, pack_posts_callback, &ppc);
@@ -2026,7 +2014,6 @@ static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
 			mmap_close(&m);
 		}
 
-		post_content_record_close(&pcr);
 		post_index_record_close(&pir);
 		unlink(file);
 	}
