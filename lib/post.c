@@ -1370,3 +1370,63 @@ int post_sticky_count(int board_id)
 	db_clear(res);
 	return 0;
 }
+
+enum {
+	POST_CONTENT_CACHE_DIRECTORIES = 1024,
+};
+
+static void post_content_cache_filename(post_id_t post_id, char *file,
+		size_t size)
+{
+	snprintf(file, size, "post/%"PRIdPID"/%"PRIdPID,
+			post_id % POST_CONTENT_CACHE_DIRECTORIES,
+			post_id / POST_CONTENT_CACHE_DIRECTORIES);
+}
+
+static bool post_content_update_cache(const char *file, const char *str,
+		bool force)
+{
+	int mode = O_WRONLY | O_CREAT;
+	if (!force)
+		mode |= O_EXCL;
+
+	int fd = open(file, mode);
+	if (fd < 0)
+		return false;
+
+	bool ok = false;
+	if (file_lock_all(fd, FILE_WRLCK) == 0) {
+		size_t size = strlen(str);
+		if (file_write(fd, str, size) == size)
+			ok = true;
+		file_lock_all(fd, FILE_UNLCK);
+	}
+	close(fd);
+	return ok;
+}
+
+char *post_content_get(post_id_t post_id)
+{
+	char file[HOMELEN];
+	post_content_cache_filename(post_id, file, sizeof(file));
+
+	char *str = file_read_all(file);
+	if (str)
+		return str;
+
+	query_t *q = query_new(0);
+	query_select(q, "content");
+	query_from(q, "posts.content");
+	query_where(q, "post_id = %"DBIdPID, post_id);
+
+	db_res_t *res = query_exec(q);
+	if (res && db_res_rows(res) == 1) {
+		const char *s = db_get_value(res, 0, 0);
+		str = strdup(s);
+	}
+	db_clear(res);
+
+	if (str)
+		post_content_update_cache(file, str, false);
+	return str;
+}
