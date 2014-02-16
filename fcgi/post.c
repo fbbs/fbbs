@@ -248,11 +248,10 @@ int bbscon(const char *link)
 	else
 		putchar('>');
 
-	char buffer[POST_CONTENT_BUFLEN];
-	char *content = post_content_read(pi.id, buffer, sizeof(buffer));
-	xml_print_post_wrapper(content, strlen(content));
-	if (content != buffer)
-		free(content);
+	char *content = post_content_get(pi.id);
+	if (content)
+		xml_print_post_wrapper(content, strlen(content));
+	free(content);
 
 	printf("</po></bbscon>");
 
@@ -479,11 +478,10 @@ int bbstcon_main(void)
 		printf("<po fid='%"PRIdPID"' owner='%s'%s>", pi.id, pi.owner,
 				!isbm && (pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
 
-		char buffer[POST_CONTENT_BUFLEN];
-		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
-		xml_print_post_wrapper(content, strlen(content));
-		if (content != buffer)
-			free(content);
+		char *content = post_content_get(pi.id);
+		if (content)
+			xml_print_post_wrapper(content, strlen(content));
+		free(content);
 
 		puts("</po>");
 		brc_mark_as_read(pi.stamp);
@@ -667,13 +665,12 @@ int bbssnd_main(void)
 		return BBS_EINVAL;
 
 	if (isedit) {
-		char buffer[POST_CONTENT_BUFLEN];
-		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
+		int ret = -1;
+		char *content = post_content_get(pi.id);
+		if (content)
+			ret = edit_article(pid, content, text, fromhost);
+		free(content);
 
-		int ret = edit_article(pid, content, text, fromhost);
-
-		if (content != buffer)
-			free(content);
 		if (ret < 0)
 			return BBS_EINTNL;
 	} else {
@@ -806,8 +803,7 @@ static int do_bbspst(bool isedit)
 
 		printf("</t><po f='%lu'>", pid);
 
-		char buffer[POST_CONTENT_BUFLEN];
-		char *utf8_content = post_content_read(pi.id, buffer, sizeof(buffer));
+		char *utf8_content = post_content_get(pi.id);
 		size_t len = strlen(utf8_content);
 
 		if (isedit) {
@@ -839,8 +835,7 @@ static int do_bbspst(bool isedit)
 			}
 		}
 
-		if (utf8_content != buffer)
-			free(utf8_content);
+		free(utf8_content);
 
 		fputs("</po>", stdout);
 	}
@@ -898,8 +893,7 @@ int bbsccc_main(void)
 		}
 		string_remove_non_printable(utf8_title);
 
-		char buffer[POST_CONTENT_BUFLEN];
-		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
+		char *content = post_content_get(pi.id);
 
 		post_request_t pr = {
 			.crosspost = true,
@@ -912,8 +906,7 @@ int bbsccc_main(void)
 		};
 		int ret = publish_post(&pr);
 
-		if (content != buffer)
-			free(content);
+		free(content);
 		if (!ret)
 			return BBS_EINTNL;
 
@@ -973,15 +966,13 @@ int bbsfwd_main(void)
 		snprintf(utf8_title, sizeof(utf8_title), "[转寄]%s", pi.utf8_title);
 		convert_u2g(utf8_title, gbk_title);
 
-		char buffer[POST_CONTENT_BUFLEN];
-		char *content = post_content_read(pi.id, buffer, sizeof(buffer));
+		char *content = post_content_get(pi.id);
 
 		char file[HOMELEN];
 		int ret = dump_content_to_gbk_file(content, CONVERT_ALL, file,
 				sizeof(file));
 
-		if (content != buffer)
-			free(content);
+		free(content);
 
 		if (ret == 0) {
 			ret = mail_file(file, reci, gbk_title);

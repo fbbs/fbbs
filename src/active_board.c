@@ -50,13 +50,9 @@ static record_callback_e active_board_init_callback(void *ptr, void *args,
 	const post_index_board_t *pib = ptr;
 
 	if (pib->flag & POST_FLAG_DIGEST) {
-		char buf[POST_CONTENT_BUFLEN];
-		char *content = post_content_read(pib->id, buf, sizeof(buf));
-
+		char *content = post_content_get(pib->id);
 		bool success = content ? active_board_add(content) : false;
-
-		if (content != buf)
-			free(content);
+		free(content);
 		if (success)
 			return RECORD_CALLBACK_MATCH;
 	}

@@ -646,11 +646,10 @@ static record_callback_e print_topics(void *ptr, void *args, int offset)
 				format_time(pi.stamp, TIME_FORMAT_RSS), pi.owner, pt->bid,
 				pib->id);
 
-		char buf[POST_CONTENT_BUFLEN];
-		char *content = post_content_read(pi.id, buf, sizeof(buf));
-		xml_fputs(content);
-		if (content != buf)
-			free(content);
+		char *content = post_content_get(pi.id);
+		if (content)
+			xml_fputs(content);
+		free(content);
 
 		printf("<pre>]]></description></item>");
 		if (--pt->remain <= 0)

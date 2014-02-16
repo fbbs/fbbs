@@ -1040,15 +1040,13 @@ static int show_post_info(const post_info_t *pi)
 
 static bool dump_content(post_id_t id, char *file, size_t size)
 {
-	char buf[POST_CONTENT_BUFLEN];
-	char *str = post_content_read(id, buf, sizeof(buf));
+	char *str = post_content_get(id);
 	if (!str)
 		return false;
 
 	int ret = dump_content_to_gbk_file(str, strlen(str), file, size);
 
-	if (str != buf)
-		free(str);
+	free(str);
 	return ret == 0;
 }
 

@@ -1020,6 +1020,9 @@ bool is_deleted(post_list_type_e type)
 int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
 		size_t size)
 {
+	if (!utf8_str || !file)
+		return -1;
+
 	file_temp_name(file, size);
 	FILE *fp = fopen(file, "w");
 	if (!fp)
