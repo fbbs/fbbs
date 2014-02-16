@@ -344,36 +344,29 @@ int bbsbfind_main(void)
 }
 
 typedef struct {
-	post_id_t tid;
-	post_id_t last_id;
+	post_id_t thread_id;
+	post_id_t last_post_id;
+	int flag;
 	int replies;
-} post_thread_stat_t;
+	user_id_t user_id;
+	char user_name[IDLEN + 1];
+	char last_user_name[IDLEN + 1];
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+} post_thread_info_t;
 
 typedef struct {
-	post_thread_stat_t *pts;
+	post_thread_info_t *pti;
 	int capacity;
 	int size;
 } update_thread_stat_t;
 
-typedef struct {
-	post_id_t tid;
-	post_id_t last_id;
-	fb_time_t stamp;
-	fb_time_t last_stamp;
-	int flag;
-	int replies;
-	int comments;
-	user_id_t uid;
-	char owner[IDLEN + 1];
-	char last_replier[IDLEN + 1];
-	UTF8_BUFFER(title, POST_TITLE_CCHARS);
-} post_thread_info_t;
-
 static int cmp(const void *t, const void *p)
 {
 	const post_id_t *tid = t;
-	const post_thread_stat_t *pts = p;
-	return *tid - pts->tid;
+	const post_thread_info_t *pti = p;
+	if (*tid > pti->thread_id)
+		return 1;
+	return *tid == pti->thread_id ? 0 : -1;
 }
 
 static record_callback_e update_thread_stat(void *r, void *args, int offset)
@@ -381,31 +374,41 @@ static record_callback_e update_thread_stat(void *r, void *args, int offset)
 	const post_record_t *pr = r;
 	update_thread_stat_t *uts = args;
 
-	post_thread_stat_t *pts = bsearch(&pr->thread_id, uts->pts, uts->size,
-			sizeof(*pts), cmp);
+	post_thread_info_t *pti = bsearch(&pr->thread_id, uts->pti, uts->size,
+			sizeof(*pti), cmp);
 
-	if (!pts && (!uts->size || pr->thread_id > uts->pts[uts->size - 1].tid)
+	if (!pti && (!uts->size
+				|| pr->thread_id > uts->pti[uts->size - 1].thread_id)
 			&& uts->size < uts->capacity && pr->id == pr->thread_id) {
-		pts = uts->pts + uts->size++;
-		pts->tid = pr->thread_id;
-		pts->replies = 0;
+		pti = uts->pti + uts->size++;
+		pti->thread_id = pr->thread_id;
+		pti->flag = pr->flag;
+		pti->replies = 0;
+		pti->user_id = pr->user_id;
+		strlcpy(pti->user_name, pr->user_name, sizeof(pti->user_name));
+		pti->last_user_name[0] = '\0';
+		strlcpy(pti->utf8_title, pr->utf8_title, sizeof(pti->utf8_title));
 	}
-	if (pts) {
-		pts->last_id = pr->id;
-		++pts->replies;
+	if (pti) {
+		pti->last_post_id = pr->id;
+		++pti->replies;
+		strlcpy(pti->last_user_name, pr->user_name,
+				sizeof(pti->last_user_name));
 	}
 	return RECORD_CALLBACK_MATCH;
 }
 
 static int thread_compare(const void *r1, const void *r2)
 {
-	const post_thread_stat_t *pts1 = r1, *pts2 = r2;
-	return pts1->last_id - pts2->last_id;
+	const post_thread_info_t *pti1 = r1, *pti2 = r2;
+	if (pti1->last_post_id > pti2->last_post_id)
+		return 1;
+	return pti1->last_post_id == pti2->last_post_id ? 0 : -1;
 }
 
-static int prepare_threads(int bid, post_thread_stat_t **pts)
+static int prepare_threads(int bid, post_thread_info_t **pti)
 {
-	if (!pts)
+	if (!pti)
 		return -1;
 
 	record_t record;
@@ -414,11 +417,14 @@ static int prepare_threads(int bid, post_thread_stat_t **pts)
 
 	int posts = record_count(&record), threads = -1;
 	if (posts > 0) {
-		*pts = malloc(sizeof(**pts) * posts);
-		if (*pts) {
-			update_thread_stat_t uts = { .pts = *pts, .capacity = posts };
+		*pti = malloc(sizeof(**pti) * posts);
+		if (*pti) {
+			update_thread_stat_t uts = {
+				.pti = *pti,
+				.capacity = posts,
+			};
 			record_foreach(&record, NULL, 0, update_thread_stat, &uts);
-			qsort(uts.pts, uts.size, sizeof(*uts.pts), thread_compare);
+			qsort(uts.pti, uts.size, sizeof(*uts.pti), thread_compare);
 			threads = uts.size;
 		}
 	}
@@ -427,38 +433,21 @@ static int prepare_threads(int bid, post_thread_stat_t **pts)
 	return threads;
 }
 
-static void construct_post_thread_info(post_index_record_t *pir,
-		const post_thread_stat_t *pts, post_thread_info_t *pti)
-{
-	memset(pti, 0, sizeof(*pti));
-	pti->tid = pts->tid;
-	pti->last_id = pts->last_id;
-	pti->replies = pts->replies;
-
-	post_index_t pi;
-	if (post_index_record_read(pir, pts->tid, &pi)) {
-		pti->flag = pi.flag;
-		pti->stamp = pi.stamp;
-		pti->uid = pi.uid;
-		strlcpy(pti->owner, pi.owner, sizeof(pti->owner));
-		strlcpy(pti->utf8_title, pi.utf8_title, sizeof(pti->utf8_title));
-	}
-	if (pti->replies > 1 && post_index_record_read(pir, pts->last_id, &pi)) {
-		pti->last_stamp = pi.stamp;
-		strlcpy(pti->last_replier, pi.owner, sizeof(pti->last_replier));
-	}
-}
-
 static void print_post_thread_info(const post_thread_info_t *pti)
 {
+	fb_time_t stamp = post_stamp_from_id(pti->thread_id);
 	printf("<po gid='%"PRIdPID"' m='%c' posts='%d'",
-			pti->tid, get_post_mark_raw(pti->stamp, pti->flag), pti->replies);
-	printf(" owner='%s' potime='%s'",
-			pti->owner, format_time(pti->stamp, TIME_FORMAT_XML));
-	if (pti->replies > 1)
-		printf(" upuser='%s' uptime='%s'", pti->last_replier,
-				format_time(pti->last_stamp, TIME_FORMAT_XML));
-	printf(" lastpage='%u'", pti->last_id);
+			pti->thread_id,
+			get_post_mark_raw(stamp, pti->flag),
+			pti->replies);
+	printf(" owner='%s' potime='%s'", pti->user_name,
+			format_time(stamp, TIME_FORMAT_XML));
+	if (pti->replies > 1) {
+		printf(" upuser='%s' uptime='%s'", pti->last_user_name,
+				format_time(post_stamp_from_id(pti->last_post_id),
+					TIME_FORMAT_XML));
+	}
+	printf(" lastpage='%u'", pti->last_post_id);
 	printf(">");
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -485,8 +474,8 @@ int web_forum(void)
 	int count = TOPICS_PER_PAGE;
 	int end = strtoll(web_get_param("start"), NULL, 10);
 
-	post_thread_stat_t *pts = NULL;
-	int threads = prepare_threads(board.id, &pts);
+	post_thread_info_t *pti = NULL;
+	int threads = prepare_threads(board.id, &pti);
 
 	if (end <= 0 || end > threads)
 		end = threads;
@@ -500,18 +489,12 @@ int web_forum(void)
 	print_board_logo(board.name);
 	print_session();
 
-	if (pts) {
-		post_index_record_t pir;
-		post_index_record_open(&pir);
-
+	if (pti) {
 		for (int i = end - 1; i >= begin; --i) {
-			post_thread_info_t pti;
-			construct_post_thread_info(&pir, pts + i, &pti);
-			print_post_thread_info(&pti);
+			print_post_thread_info(pti + i);
 		}
 
-		post_index_record_close(&pir);
-		free(pts);
+		free(pti);
 	}
 	printf("</forum>");
 	return 0;

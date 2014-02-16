@@ -30,7 +30,6 @@ SLIST_HEAD(post_list_position_list_t, post_list_position_t);
 typedef struct {
 	record_t *record;
 	record_t *record_sticky;
-	post_index_record_t *pir;
 	post_info_t *buf;
 	post_list_position_t *plp;
 	post_id_t current_tid;
@@ -647,8 +646,7 @@ static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
 	return record_open(file, cmp, sizeof(post_record_t), rdonly, record);
 }
 
-static int filtered_record_generate(record_t *r, post_filter_t *f,
-		post_index_record_t *pir)
+static int filtered_record_generate(record_t *r, post_filter_t *f)
 {
 	if (f->type == POST_LIST_MARKED)
 		f->flag |= POST_FLAG_MARKED;
@@ -732,7 +730,7 @@ static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
 			return MINIUPDATE;
 	}
 
-	filtered_record_generate(pl->record, &filter, pl->pir);
+	filtered_record_generate(pl->record, &filter);
 	post_list_with_filter(&filter);
 	return FULLUPDATE;
 }
@@ -1391,7 +1389,6 @@ typedef struct {
 } count_posts_stat_t;
 
 typedef struct {
-	post_index_record_t *pir;
 	count_posts_stat_t *stat;
 	int size;
 	int capacity;
@@ -1963,8 +1960,8 @@ static record_callback_e pack_posts_callback(void *ptr, void *args, int off)
 	return RECORD_CALLBACK_CONTINUE;
 }
 
-static post_id_t pack_posts(record_t *record, post_index_record_t *pir,
-		const post_filter_t *filter, const char *title, bool quote)
+static post_id_t pack_posts(record_t *record, const post_filter_t *filter,
+		const char *title, bool quote)
 {
 	post_id_t pid = 0;
 	char file[HOMELEN];
@@ -2045,7 +2042,7 @@ static void operate_posts_in_batch(post_list_t *pl, post_info_t *pi, int mode,
 			post_set_flag(&filter, POST_FLAG_LOCKED, true, true);
 			break;
 		case 6:
-			pack_posts(pl->record, pl->pir, &filter, utf8_keyword, quote);
+			pack_posts(pl->record, &filter, utf8_keyword, quote);
 			break;
 		default:
 			if (is_deleted(pl->type)) {
@@ -2575,13 +2572,9 @@ static int post_list_with_filter(const post_filter_t *filter)
 	if (sticky)
 		post_record_open_sticky(filter->bid, RECORD_READ, &record_sticky);
 
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-
 	post_list_t pl = {
 		.record = &record,
 		.record_sticky = sticky ? &record_sticky : NULL,
-		.pir = &pir,
 		.buf = buf,
 		.type = filter->type,
 		.bid = filter->bid,
@@ -2604,7 +2597,6 @@ static int post_list_with_filter(const post_filter_t *filter)
 	record_close(&record);
 	if (sticky)
 		record_close(&record_sticky);
-	post_index_record_close(&pir);
 	free(buf);
 	return 0;
 }
