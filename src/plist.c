@@ -644,7 +644,7 @@ static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
 		cmp = post_record_thread_cmp;
 	else
 		cmp = post_record_cmp;
-	return record_open(file, cmp, sizeof(post_index_board_t), rdonly, record);
+	return record_open(file, cmp, sizeof(post_record_t), rdonly, record);
 }
 
 static int filtered_record_generate(record_t *r, post_filter_t *f,
@@ -805,10 +805,10 @@ static int tui_search_title(tui_list_t *tl, bool upward)
 
 static record_callback_e search_content_callback(void *ptr, void *args, int off)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 	const char *utf8_keyword = args;
 
-	char *content = post_content_get(pib->id);
+	char *content = post_content_get(pr->id);
 	bool match = content ? strcasestr(content, utf8_keyword) : false;
 	free(content);
 
@@ -2550,7 +2550,7 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 			case POST_LIST_REPLIES: {
 				char file[HOMELEN];
 				sethomefile(file, currentuser.userid, POST_REPLIES_FILE);
-				record_open(file, post_record_cmp, sizeof(post_index_board_t),
+				record_open(file, post_record_cmp, sizeof(post_record_t),
 						RECORD_READ, record);
 				break;
 			}

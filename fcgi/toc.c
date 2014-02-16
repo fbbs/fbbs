@@ -378,21 +378,20 @@ static int cmp(const void *t, const void *p)
 
 static record_callback_e update_thread_stat(void *r, void *args, int offset)
 {
-	const post_index_board_t *pib = r;
+	const post_record_t *pr = r;
 	update_thread_stat_t *uts = args;
 
-	post_id_t tid = pib->id - pib->tid_delta;
-	post_thread_stat_t *pts = bsearch(&tid, uts->pts, uts->size,
+	post_thread_stat_t *pts = bsearch(&pr->thread_id, uts->pts, uts->size,
 			sizeof(*pts), cmp);
 
-	if (!pts && (!uts->size || tid > uts->pts[uts->size - 1].tid)
-			&& uts->size < uts->capacity && !pib->tid_delta) {
+	if (!pts && (!uts->size || pr->thread_id > uts->pts[uts->size - 1].tid)
+			&& uts->size < uts->capacity && pr->id == pr->thread_id) {
 		pts = uts->pts + uts->size++;
-		pts->tid = tid;
+		pts->tid = pr->thread_id;
 		pts->replies = 0;
 	}
 	if (pts) {
-		pts->last_id = pib->id;
+		pts->last_id = pr->id;
 		++pts->replies;
 	}
 	return RECORD_CALLBACK_MATCH;

@@ -701,15 +701,6 @@ void quote_file_(const char *orig, const char *output, post_quote_e mode,
 	}
 }
 
-typedef struct {
-	post_index_record_t *pir;
-	post_filter_t *filter;
-	post_id_t id;
-	bool set;
-	bool toggle;
-	post_flag_e flag;
-} post_index_board_update_flag_t;
-
 bool post_match_filter(const post_record_t *pr, const post_filter_t *filter,
 		int offset)
 {

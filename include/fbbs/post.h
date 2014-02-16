@@ -122,17 +122,6 @@ typedef struct { // @frontend
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;
 
-// 32 bytes
-typedef struct {
-	post_id_t id;
-	uint32_t reid_delta;
-	uint32_t tid_delta;
-	user_id_t uid;
-	int flag;
-	fb_time_t stamp;
-	fb_time_t cstamp;
-} post_index_board_t;
-
 typedef struct {
 	post_id_t id;
 	uint32_t reid_delta;
