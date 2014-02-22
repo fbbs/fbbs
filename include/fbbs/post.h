@@ -156,12 +156,6 @@ typedef struct {
 } post_index_t;
 
 typedef struct {
-	post_id_t base;
-	record_perm_e rdonly;
-	record_t record;
-} post_index_record_t;
-
-typedef struct {
 	post_id_t id;
 	post_id_t reply_id;
 	post_id_t thread_id;
@@ -198,16 +192,6 @@ extern int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
 extern int post_index_trash_cmp(const void *p1, const void *p2);
 extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
 
-typedef int (*post_index_record_callback_t)(post_index_t *pi, void *args);
-
-extern void post_index_record_open(post_index_record_t *pir);
-extern int post_index_record_read(post_index_record_t *pir, post_id_t id, post_index_t *pi);
-extern int post_index_record_update(post_index_record_t *pir, const post_index_t *pi);
-extern int post_index_record_for_recent(post_index_record_callback_t cb, void *args);
-extern void post_index_record_close(post_index_record_t *pir);
-extern void post_index_record_get_title(post_index_record_t *pir, post_id_t id, char *buf, size_t size);
-extern int post_index_record_lock(post_index_record_t *pir, record_lock_e lock, post_id_t id);
-
 extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 
@@ -219,12 +203,11 @@ extern char *convert_file_to_utf8_content(const char *file);
 extern bool set_last_post_time(int bid, fb_time_t stamp);
 extern fb_time_t get_last_post_time(int bid);
 
-extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
-
 extern int get_post_mark_raw(fb_time_t stamp, int flag);
 extern int get_post_mark(const post_info_t *p);
 
 extern fb_time_t post_stamp_from_id(post_id_t id);
+extern post_id_t post_id_from_stamp(fb_time_t stamp);
 
 extern int get_board_post_count(int bid);
 

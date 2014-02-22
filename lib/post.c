@@ -16,11 +16,6 @@
 
 #include "s11n/frontend_post.h"
 
-static post_id_t current_post_id(void)
-{
-	return mdb_integer(0, "GET", POST_ID_KEY);
-}
-
 int post_record_cmp(const void *p1, const void *p2)
 {
 	const post_record_t *r1 = p1, *r2 = p2;
@@ -136,150 +131,6 @@ int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec)
 		snprintf(file, sizeof(file), "brdidx/%d.junk", bid);
 	return record_open(file, post_index_trash_cmp, sizeof(post_index_trash_t),
 			RECORD_WRITE, rec);
-}
-
-enum {
-	POST_INDEX_PER_FILE = 100000,
-};
-
-void post_index_record_open(post_index_record_t *pir)
-{
-	pir->base = 0;
-	pir->rdonly = RECORD_READ;
-}
-
-static post_id_t post_index_record_base(post_id_t id)
-{
-	return (id - 1) / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE + 1;
-}
-
-static int post_index_record_cmp(const void *p1, const void *p2)
-{
-	const post_index_t *pi1 = p1, *pi2 = p2;
-	return pi1->id - pi2->id;
-}
-
-static int post_index_record_open_file(post_id_t id, record_perm_e rdonly,
-		record_t *record)
-{
-	char file[HOMELEN];
-	snprintf(file, sizeof(file), "index/%"PRIdPID,
-			(id - 1) / POST_INDEX_PER_FILE);
-	return record_open(file, post_index_record_cmp, sizeof(post_index_t),
-			rdonly, record);
-}
-
-static int post_index_record_check(post_index_record_t *pir, post_id_t id,
-		record_perm_e rdonly)
-{
-	post_id_t base = post_index_record_base(id);
-	if (pir->base > 0 && pir->base == base && (rdonly || !pir->rdonly))
-		return 0;
-
-	if (pir->base > 0)
-		record_close(&pir->record);
-
-	pir->base = base;
-	pir->rdonly = rdonly;
-
-	return post_index_record_open_file(id, rdonly, &pir->record);
-}
-
-int post_index_record_read(post_index_record_t *pir, post_id_t id,
-		post_index_t *pi)
-{
-	if (post_index_record_check(pir, id, RECORD_READ) >= 0) {
-		return record_read_after(&pir->record, pi, 1, id - pir->base);
-	}
-	memset(pi, 0, sizeof(*pi));
-	return 0;
-}
-
-int post_index_record_update(post_index_record_t *pir, const post_index_t *pi)
-{
-	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
-		return 0;
-	return record_write(&pir->record, pi, 1, pi->id - pir->base);
-}
-
-void post_index_record_get_title(post_index_record_t *pir, post_id_t id,
-		char *buf, size_t size)
-{
-	if (post_index_record_check(pir, id, RECORD_READ) < 0) {
-		buf[0] = '\0';
-	} else {
-		post_index_t pi;
-		post_index_record_read(pir, id, &pi);
-		strlcpy(buf, pi.utf8_title, size);
-	}
-}
-
-int post_index_record_lock(post_index_record_t *pir, record_lock_e lock,
-		post_id_t id)
-{
-	record_perm_e perm = (lock == RECORD_WRLCK) ? RECORD_WRITE : RECORD_READ;
-	if (post_index_record_check(pir, id, perm) < 0)
-		return -1;
-	return record_lock(&pir->record, lock, id - pir->base, RECORD_SET, 1);
-}
-
-static record_callback_e post_index_record_for_file(post_id_t base,
-		post_id_t end, post_index_record_callback_t callback, void *args)
-{
-	record_t record;
-	if (post_index_record_open_file(base, RECORD_READ, &record) < 0)
-		return RECORD_CALLBACK_BREAK;
-
-	if (!end)
-		end = base + POST_INDEX_PER_FILE;
-	int offset = end - base;
-
-	record_callback_e ret = RECORD_CALLBACK_CONTINUE;
-	do {
-		post_index_t buf[64];
-		offset -= ARRAY_SIZE(buf);
-		if (offset < 0)
-			offset = 0;
-
-		int count = record_read_after(&record, buf, ARRAY_SIZE(buf), offset);
-		if (count <= 0) {
-			ret = RECORD_CALLBACK_BREAK;
-			break;
-		}
-
-		for (int i = count - 1; i >= 0; --i) {
-			if (callback(buf + i, args) == RECORD_CALLBACK_BREAK) {
-				ret = RECORD_CALLBACK_BREAK;
-				break;
-			}
-		}
-	} while (ret != RECORD_CALLBACK_BREAK && offset > 0);
-
-	record_close(&record);
-	return ret;
-}
-
-int post_index_record_for_recent(post_index_record_callback_t cb, void *args)
-{
-	post_id_t id = current_post_id();
-	if (id) {
-		post_id_t base = post_index_record_base(id);
-		post_id_t end = id + 1;
-		while (base >= 0 && post_index_record_for_file(base, end, cb, args)
-				!= RECORD_CALLBACK_BREAK) {
-			end = 0;
-			base -= POST_INDEX_PER_FILE;
-		}
-	}
-	return 0;
-}
-
-void post_index_record_close(post_index_record_t *pir)
-{
-	if (pir->base >= 0)
-		record_close(&pir->record);
-	pir->base = 0;
-	pir->rdonly = RECORD_READ;
 }
 
 char *convert_file_to_utf8_content(const char *file)
@@ -836,6 +687,11 @@ int get_post_mark(const post_info_t *p)
 fb_time_t post_stamp_from_id(post_id_t id)
 {
 	return (fb_time_t) (id >> 21);
+}
+
+post_id_t post_id_from_stamp(fb_time_t stamp)
+{
+	return ((post_id_t) stamp) << 21;
 }
 
 /**
