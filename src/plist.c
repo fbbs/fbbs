@@ -345,7 +345,6 @@ void _post_list_title(int archive_list, const char *mode)
 		prints("    [%s]", mode);
 	prints("\033[K\033[m\n");
 	screen_clrtobot();
-
 }
 
 static tui_list_title_t post_list_title(tui_list_t *tl)
@@ -494,17 +493,6 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 	return 0;
 }
 
-static void reopen_post_record(post_list_t *pl, post_info_t *pi)
-{
-	if (pi->flag & POST_FLAG_STICKY) {
-		record_close(pl->record_sticky);
-		post_record_open_sticky(pl->bid, RECORD_WRITE, pl->record_sticky);
-	} else if (pl->type == POST_LIST_NORMAL) {
-		record_close(pl->record);
-		post_record_open(pl->bid, RECORD_WRITE, pl->record);
-	}
-}
-
 static void log_toggle_flag(const post_info_t *pi, post_flag_e flag)
 {
 	log_bm_e type;
@@ -530,8 +518,10 @@ static void log_toggle_flag(const post_info_t *pi, post_flag_e flag)
 
 static int toggle_post_flag_no_check(post_info_t *pi, post_flag_e flag)
 {
-	post_filter_t filter;
-	filter.min = filter.max = pi->id;
+	post_filter_t filter = {
+		.min = pi->id,
+		.max = pi->id,
+	};
 
 	int affected = post_set_flag(&filter, flag, false, true);
 	if (affected) {
@@ -579,16 +569,16 @@ static int toggle_post_stickiness(post_info_t *pi)
 
 static int post_list_with_filter(const post_filter_t *filter);
 
-static int post_list_deleted(tui_list_t *tl, post_index_trash_e trash)
+static int post_list_deleted(tui_list_t *tl, post_list_type_e type)
 {
 	post_list_t *pl = tl->data;
 	if (pl->type != POST_LIST_NORMAL
-			|| (trash == POST_INDEX_TRASH && !am_curr_bm())
-			|| (trash == POST_INDEX_JUNK && !HAS_PERM(PERM_OBOARDS)))
+			|| (type == POST_LIST_TRASH && !am_curr_bm())
+			|| (type == POST_LIST_JUNK && !HAS_PERM(PERM_OBOARDS)))
 		return DONOTHING;
 
 	post_filter_t filter = {
-		.type = trash == POST_INDEX_TRASH ? POST_LIST_TRASH : POST_LIST_JUNK,
+		.type = type,
 		.bid = pl->bid,
 	};
 	post_list_with_filter(&filter);
@@ -1137,11 +1127,10 @@ static int tui_edit_post_content(post_info_t *pi)
 }
 
 extern int show_board_notes(const char *bname, int command);
-extern int noreply;
 
 static int tui_new_post(int bid, post_info_t *pi)
 {
-	time_t now = fb_time();
+	fb_time_t now = fb_time();
 	if (now - get_my_last_post_time() < 3) {
 		screen_move_clear(-1);
 		//% 您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。
@@ -1930,7 +1919,6 @@ static int tui_operate_posts_in_range(tui_list_t *tl, post_info_t *pi)
 		return MINIUPDATE;
 
 	tl->valid = false;
-	reopen_post_record(pl, pi);
 	return operate_posts_in_range(choice, pl, min, max);
 }
 
@@ -2320,9 +2308,9 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			set_user_status(ST_READING);
 			return FULLUPDATE;
 		case '.':
-			return post_list_deleted(tl, POST_INDEX_TRASH);
+			return post_list_deleted(tl, POST_LIST_TRASH);
 		case 'J':
-			return post_list_deleted(tl, POST_INDEX_JUNK);
+			return post_list_deleted(tl, POST_LIST_JUNK);
 		case ',':
 			return tui_attachment_list(currbp);
 		case 't':
