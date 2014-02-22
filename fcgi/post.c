@@ -958,8 +958,7 @@ int bbsfwd_main(void)
 		char *content = post_content_get(pi.id);
 
 		char file[HOMELEN];
-		int ret = dump_content_to_gbk_file(content, CONVERT_ALL, file,
-				sizeof(file));
+		int ret = post_dump_gbk_file(content, CONVERT_ALL, file, sizeof(file));
 
 		free(content);
 

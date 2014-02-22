@@ -20,21 +20,19 @@ typedef int64_t post_id_t;
 #define parcel_write_post_id(parcel, id)  parcel_write_varint64(parcel, id)
 #define parcel_read_post_id(parcel)  parcel_read_varint64(parcel)
 
-/** 文章ID序列 @mdb_string */
-#define POST_ID_KEY  "post_id_seq"
 #define BOARD_POST_COUNT_KEY "board_post_count"
 
 typedef enum {
-	POST_FLAG_DIGEST = 0x1,
-	POST_FLAG_MARKED = 0x2,
-	POST_FLAG_LOCKED = 0x4,
-	POST_FLAG_IMPORT = 0x8,
-	POST_FLAG_STICKY = 0x10,
-	POST_FLAG_WATER = 0x20,
-	POST_FLAG_DELETED = 0x40,
-	POST_FLAG_JUNK = 0x80,
-	POST_FLAG_ATTACHMENT = 0x100,
-	POST_FLAG_ARCHIVE = 0x200,
+	POST_FLAG_DIGEST = 1,
+	POST_FLAG_MARKED = 1 << 1,
+	POST_FLAG_LOCKED = 1 << 2,
+	POST_FLAG_IMPORT = 1 << 3,
+	POST_FLAG_STICKY = 1 << 4,
+	POST_FLAG_WATER = 1 << 5,
+	POST_FLAG_DELETED = 1 << 6,
+	POST_FLAG_JUNK = 1 << 7,
+	POST_FLAG_ATTACHMENT = 1 << 8,
+	POST_FLAG_ARCHIVE = 1 << 9,
 } post_flag_e;
 
 enum {
@@ -167,14 +165,14 @@ extern void quote_file_(const char *orig, const char *output, post_quote_e mode,
 
 extern bool is_deleted(post_list_type_e type);
 
-extern int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file, size_t size);
-extern char *convert_file_to_utf8_content(const char *file);
+extern int post_dump_gbk_file(const char *utf8_str, size_t length, char *file, size_t size);
+extern char *post_convert_to_utf8(const char *file);
 
 extern bool set_last_post_time(int bid, fb_time_t stamp);
 extern fb_time_t get_last_post_time(int bid);
 
-extern int get_post_mark_raw(fb_time_t stamp, int flag);
-extern int get_post_mark(const post_info_t *p);
+extern int post_mark_raw(fb_time_t stamp, int flag);
+extern int post_mark(const post_info_t *p);
 
 extern fb_time_t post_stamp_from_id(post_id_t id);
 extern post_id_t post_id_from_stamp(fb_time_t stamp);

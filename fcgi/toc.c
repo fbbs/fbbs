@@ -45,7 +45,7 @@ const char *get_post_list_type_string(void)
 
 static void print_post(const post_info_t *pi, bool sticky)
 {
-	int mark = get_post_mark(pi);
+	int mark = post_mark(pi);
 	printf("<po %s%sm='%c' owner='%s' time= '%s' id='%"PRIdPID"'>",
 			sticky ? "sticky='1' " : "",
 			(pi->flag & POST_FLAG_LOCKED) ? "" : "nore='1' ",
@@ -438,7 +438,7 @@ static void print_post_thread_info(const post_thread_info_t *pti)
 	fb_time_t stamp = post_stamp_from_id(pti->thread_id);
 	printf("<po gid='%"PRIdPID"' m='%c' posts='%d'",
 			pti->thread_id,
-			get_post_mark_raw(stamp, pti->flag),
+			post_mark_raw(stamp, pti->flag),
 			pti->replies);
 	printf(" owner='%s' potime='%s'", pti->user_name,
 			format_time(stamp, TIME_FORMAT_XML));
@@ -510,7 +510,7 @@ static xml_node_t *create_post_node(const post_info_t *p)
 	xml_attr_string(post, "stamp", format_time(p->stamp, TIME_FORMAT_XML), false);
 	xml_attr_string(post, "title", p->utf8_title, true);
 	char mark[2] = "\0";
-	mark[0] = get_post_mark(p);
+	mark[0] = post_mark(p);
 	xml_attr_string(post, "mark", mark, false);
 	return post;
 }

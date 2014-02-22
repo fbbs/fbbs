@@ -124,7 +124,7 @@ int post_record_open_trash(int bid, post_trash_e trash, record_t *rec)
 			RECORD_WRITE, rec);
 }
 
-char *convert_file_to_utf8_content(const char *file)
+char *post_convert_to_utf8(const char *file)
 {
 	char *utf8_content = NULL;
 	mmap_t m = { .oflag = O_RDONLY };
@@ -574,7 +574,7 @@ bool is_deleted(post_list_type_e type)
 	return type == POST_LIST_TRASH || type == POST_LIST_JUNK;
 }
 
-int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
+int post_dump_gbk_file(const char *utf8_str, size_t length, char *file,
 		size_t size)
 {
 	if (!utf8_str || !file)
@@ -644,7 +644,7 @@ int post_undelete(const post_filter_t *filter, bool bm_visible)
 	return ok ? resp.undeleted : 0;
 }
 
-int get_post_mark_raw(fb_time_t stamp, int flag)
+int post_mark_raw(fb_time_t stamp, int flag)
 {
 	int mark = ' ';
 
@@ -670,9 +670,9 @@ int get_post_mark_raw(fb_time_t stamp, int flag)
 	return mark;
 }
 
-int get_post_mark(const post_info_t *p)
+int post_mark(const post_info_t *p)
 {
-	return get_post_mark_raw(p->stamp, p->flag);
+	return post_mark_raw(p->stamp, p->flag);
 }
 
 fb_time_t post_stamp_from_id(post_id_t id)
@@ -713,7 +713,7 @@ post_id_t post_new(const post_request_t *pr)
 
 	char *content;
 	if (pr->gbk_file)
-		content = convert_file_to_utf8_content(pr->gbk_file);
+		content = post_convert_to_utf8(pr->gbk_file);
 	else
 		content = generate_content(pr, uname, nick, ip, anony, pr->length);
 

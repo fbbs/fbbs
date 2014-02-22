@@ -423,7 +423,7 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 	else
 		snprintf(num, sizeof(num), "%5d", offset + 1);
 
-	char mark = (pi->id == pl->mark_pid) ? '@' : get_post_mark(pi);
+	char mark = (pi->id == pl->mark_pid) ? '@' : post_mark(pi);
 
 	const char *mark_prefix = "", *mark_suffix = "";
 	if ((pi->flag & POST_FLAG_IMPORT) && am_curr_bm()) {
@@ -1018,7 +1018,7 @@ static bool dump_content(post_id_t id, char *file, size_t size)
 	if (!str)
 		return false;
 
-	int ret = dump_content_to_gbk_file(str, strlen(str), file, size);
+	int ret = post_dump_gbk_file(str, strlen(str), file, size);
 
 	free(str);
 	return ret == 0;
@@ -1110,7 +1110,7 @@ static int tui_edit_post_content(post_info_t *pi)
 
 	screen_clear();
 	if (vedit(file, NA, NA, NULL) != -1) {
-		char *content = convert_file_to_utf8_content(file);
+		char *content = post_convert_to_utf8(file);
 		if (content) {
 			if (post_content_set(pi->id, content)) {
 				char buf[STRLEN];
