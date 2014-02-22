@@ -722,6 +722,7 @@ post_id_t post_new(const post_request_t *pr)
 		.thread_id = pr->tid,
 		.title = pr->title,
 		.user_name = pr->uname,
+		.board_name = pr->board->name,
 		.content = content,
 		.board_id = pr->board->id,
 		.user_id = session_uid(),

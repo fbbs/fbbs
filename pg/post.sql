@@ -25,6 +25,7 @@ CREATE TABLE posts.base (
 	real_user_id INTEGER,
 	user_name TEXT,
 	board_id INTEGER,
+	board_name TEXT,
 
 	digest BOOLEAN DEFAULT FALSE,
 	marked BOOLEAN DEFAULT FALSE,

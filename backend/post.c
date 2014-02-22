@@ -25,11 +25,13 @@ static post_id_t insert_post(const backend_request_post_new_t *req)
 {
 	post_id_t id = 0;
 	db_res_t *r1 = db_query("INSERT INTO posts.recent (reply_id, thread_id,"
-			" user_id, user_name, board_id, marked, locked, attachment, title)"
-			" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdUID", %s, %d, %b, %b, %b,"
-			" %s) RETURNING id", req->reply_id, req->thread_id,
-			req->hide_user_id ? 0 : req->user_id, req->user_name,
-			req->board_id, req->marked, req->locked, false, req->title);
+			" user_id, real_user_id, user_name, board_id, board_name, marked,"
+			" locked, attachment, title) VALUES (%"DBIdPID", %"DBIdPID","
+			" %"DBIdUID", %"DBIdUID", %s, %d, %s, %b, %b, %b, %s)"
+			" RETURNING id", req->reply_id, req->thread_id,
+			req->hide_user_id ? 0 : req->user_id, req->user_id, req->user_name,
+			req->board_id, req->board_name, req->marked, req->locked, false,
+			req->title);
 	if (r1 && db_res_rows(r1) == 1) {
 		id = db_get_post_id(r1, 0, 0);
 		if (id) {

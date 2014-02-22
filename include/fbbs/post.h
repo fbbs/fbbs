@@ -184,6 +184,7 @@ typedef struct { // @frontend
 	post_id_t thread_id;
 	const char *title;
 	const char *user_name;
+	const char *board_name;
 	const char *content;
 	user_id_t user_id;
 	user_id_t user_id_replied;
