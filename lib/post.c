@@ -718,14 +718,14 @@ post_id_t post_new(const post_request_t *pr)
 		content = generate_content(pr, uname, nick, ip, anony, pr->length);
 
 	backend_request_post_new_t req = {
-		.reid = pr->reid,
-		.tid = pr->tid,
+		.reply_id = pr->reid,
+		.thread_id = pr->tid,
 		.title = pr->title,
-		.uname = pr->uname,
+		.user_name = pr->uname,
 		.content = content,
-		.bid = pr->board->id,
-		.uid = session_uid(),
-		.uid_replied = pr->uid_replied,
+		.board_id = pr->board->id,
+		.user_id = session_uid(),
+		.user_id_replied = pr->uid_replied,
 		.marked = pr->marked,
 		.locked = pr->locked,
 	};

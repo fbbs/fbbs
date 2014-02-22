@@ -27,9 +27,9 @@ static post_id_t insert_post(const backend_request_post_new_t *req)
 	db_res_t *r1 = db_query("INSERT INTO posts.recent (reply_id, thread_id,"
 			" user_id, user_name, board_id, marked, locked, attachment, title)"
 			" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdUID", %s, %d, %b, %b, %b,"
-			" %s) RETURNING id", req->reid, req->tid,
-			req->hide_uid ? 0 : req->uid, req->uname, req->bid, req->marked,
-			req->locked, false, req->title);
+			" %s) RETURNING id", req->reply_id, req->thread_id,
+			req->hide_user_id ? 0 : req->user_id, req->user_name,
+			req->board_id, req->marked, req->locked, false, req->title);
 	if (r1 && db_res_rows(r1) == 1) {
 		id = db_get_post_id(r1, 0, 0);
 		if (id) {
@@ -96,11 +96,11 @@ BACKEND_DECLARE(post_new)
 		backend_respond(parcel_out, channel);
 
 		fb_time_t stamp = post_stamp_from_id(id);
-		set_last_post_time(req.bid, stamp);
-		post_record_invalidity_change(req.bid, 1);
+		set_last_post_time(req.board_id, stamp);
+		post_record_invalidity_change(req.board_id, 1);
 
 		// TODO: 不总是要加文章数的..
-		adjust_user_post_count(req.uname, 1);
+		adjust_user_post_count(req.user_name, 1);
 
 #if 0
 		board_t board;

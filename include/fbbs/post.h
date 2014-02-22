@@ -180,17 +180,17 @@ extern post_id_t post_id_from_stamp(fb_time_t stamp);
 extern int get_board_post_count(int bid);
 
 typedef struct { // @frontend
-	post_id_t reid;
-	post_id_t tid;
+	post_id_t reply_id;
+	post_id_t thread_id;
 	const char *title;
-	const char *uname;
+	const char *user_name;
 	const char *content;
-	user_id_t uid;
-	user_id_t uid_replied;
-	int bid;
+	user_id_t user_id;
+	user_id_t user_id_replied;
+	int board_id;
 	bool marked;
 	bool locked;
-	bool hide_uid;
+	bool hide_user_id;
 } backend_request_post_new_t;
 
 typedef struct { // @backend
