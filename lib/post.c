@@ -34,14 +34,14 @@ static int post_record_open_file(const char *file, record_perm_e rdonly,
 int post_record_open(int bid, record_perm_e rdonly, record_t *rec)
 {
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "brdidx/%d", bid);
+	snprintf(file, sizeof(file), "board/%d", bid);
 	return post_record_open_file(file, rdonly, rec);
 }
 
 int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
 {
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "brdidx/%d.sticky", bid);
+	snprintf(file, sizeof(file), "board/%d.sticky", bid);
 	return post_record_open_file(file, rdonly, rec);
 }
 
@@ -117,9 +117,9 @@ int post_record_open_trash(int bid, post_trash_e trash, record_t *rec)
 {
 	char file[HOMELEN];
 	if (trash)
-		snprintf(file, sizeof(file), "brdidx/%d.trash", bid);
+		snprintf(file, sizeof(file), "board/%d.trash", bid);
 	else
-		snprintf(file, sizeof(file), "brdidx/%d.junk", bid);
+		snprintf(file, sizeof(file), "board/%d.junk", bid);
 	return record_open(file, post_record_cmp, sizeof(post_record_extended_t),
 			RECORD_WRITE, rec);
 }
@@ -885,13 +885,13 @@ int post_sticky_count(int board_id)
 }
 
 enum {
-	POST_CONTENT_CACHE_DIRECTORIES = 1024,
+	POST_CONTENT_CACHE_DIRECTORIES = 1000,
 };
 
 static void post_content_cache_filename(post_id_t post_id, char *file,
 		size_t size)
 {
-	snprintf(file, size, "post/%"PRIdPID"/%"PRIdPID,
+	snprintf(file, size, "post/%03"PRIdPID"/%"PRIdPID,
 			post_id % POST_CONTENT_CACHE_DIRECTORIES,
 			post_id / POST_CONTENT_CACHE_DIRECTORIES);
 }
