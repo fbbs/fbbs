@@ -142,6 +142,10 @@ static void build_post_filter(query_t *q, const post_filter_t *f)
 					" OR thread_id < %"DBIdPID")", f->tid, f->max, f->tid);
 		}
 	} else {
+		if (f->min)
+			query_append(q, ">= %"DBIdPID, f->min);
+		if (f->max)
+			query_append(q, "<= %"DBIdPID, f->max);
 		if (f->tid)
 			query_and(q, "thread_id = %"DBIdPID, f->tid);
 	}
