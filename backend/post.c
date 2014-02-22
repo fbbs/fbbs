@@ -7,13 +7,6 @@
 #include "fbbs/string.h"
 #include "s11n/backend_post.h"
 
-#define POST_TABLE_FIELDS \
-	"id, reply_id, thread_id, user_id, real_user_id, user_name, board_id," \
-	" digest, marked, locked, imported, water, attachment, title"
-
-#define POST_TABLE_DELETED_FIELDS \
-	"delete_stamp, eraser_id, eraser_name, junk, bm_visible"
-
 #if 0
 static void set_board_post_count(int bid, int count)
 {

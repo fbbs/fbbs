@@ -92,6 +92,9 @@ static int last_read_filter(void *ptr, void *args, int offset)
 static void load_posts(tui_list_t *tl)
 {
 	post_list_t *pl = tl->data;
+	if (pl->bid && pl->type == POST_LIST_NORMAL)
+		post_update_record(pl->record, pl->bid);
+
 	tl->all = pl->record_count = record_count(pl->record);
 	if (pl->record_sticky)
 		tl->all += record_count(pl->record_sticky);

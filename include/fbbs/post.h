@@ -13,6 +13,13 @@
 
 #define POST_REPLIES_FILE  "replies"
 
+#define POST_TABLE_FIELDS \
+	"id, reply_id, thread_id, user_id, real_user_id, user_name, board_id," \
+	" board_name, digest, marked, locked, imported, water, attachment, title"
+
+#define POST_TABLE_DELETED_FIELDS \
+	"delete_stamp, eraser_id, eraser_name, junk, bm_visible"
+
 typedef int64_t post_id_t;
 #define PRIdPID  PRId64
 #define DBIdPID  "l"
@@ -158,7 +165,7 @@ typedef struct {
 extern int post_record_cmp(const void *p1, const void *p2);
 extern int post_record_open(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
-extern int post_record_open_trash(int bid, post_trash_e trash, record_t *rec);
+extern int post_record_open_trash(int board_id, post_trash_e trash, record_t *record);
 
 extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
@@ -255,7 +262,9 @@ extern int post_record_read(record_t *rec, int base, post_info_t *buf, int size,
 extern void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count);
 extern bool post_match_filter(const post_record_t *pr, const post_filter_t *filter, int offset);
 
+extern bool post_update_record(record_t *record, int board_id);
 extern bool post_update_sticky_record(int board_id);
+extern bool post_update_trash_record(record_t *record, post_trash_e trash, int board_id);
 
 extern int post_sticky_count(int board_id);
 

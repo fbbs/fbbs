@@ -113,17 +113,6 @@ int post_record_read(record_t *rec, int base, post_info_t *buf, int size,
 	return records;
 }
 
-int post_record_open_trash(int bid, post_trash_e trash, record_t *rec)
-{
-	char file[HOMELEN];
-	if (trash)
-		snprintf(file, sizeof(file), "board/%d.trash", bid);
-	else
-		snprintf(file, sizeof(file), "board/%d.junk", bid);
-	return record_open(file, post_record_cmp, sizeof(post_record_extended_t),
-			RECORD_WRITE, rec);
-}
-
 char *post_convert_to_utf8(const char *file)
 {
 	char *utf8_content = NULL;
@@ -769,24 +758,38 @@ static void convert_post_record(db_res_t *res, int row,
 	post->reply_id = db_get_post_id(res, row, 1);
 	post->thread_id = db_get_post_id(res, row, 2);
 	post->user_id = db_get_user_id(res, row, 3);
-	post->board_id = db_get_integer(res, row, 4);
-	post->flag = (db_get_bool(res, row, 5) ? POST_FLAG_DIGEST : 0)
-			| (db_get_bool(res, row, 6) ? POST_FLAG_MARKED : 0)
-			| (db_get_bool(res, row, 7) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(res, row, 8) ? POST_FLAG_IMPORT : 0)
-			| (db_get_bool(res, row, 9) ? POST_FLAG_WATER : 0);
+	post->board_id = db_get_integer(res, row, 6);
+	post->flag = (db_get_bool(res, row, 8) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(res, row, 9) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(res, row, 10) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(res, row, 11) ? POST_FLAG_IMPORT : 0)
+			| (db_get_bool(res, row, 12) ? POST_FLAG_WATER : 0);
 
-	const char *user_name = db_get_value(res, row, 11);
+	const char *user_name = db_get_value(res, row, 5);
 	if (user_name)
 		strlcpy(post->user_name, user_name, sizeof(post->user_name));
 	else
 		post->user_name[0] = '\0';
 
-	const char *title = db_get_value(res, row, 12);
+	const char *title = db_get_value(res, row, 14);
 	if (title)
 		strlcpy(post->utf8_title, title, sizeof(post->utf8_title));
 	else
 		post->utf8_title[0] = '\0';
+}
+
+static void convert_post_record_extended(db_res_t *res, int row,
+		post_record_extended_t *post)
+{
+	post->basic.flag |= db_get_bool(res, row, 18) ? POST_FLAG_JUNK : 0;
+	post->bm_visible |= db_get_bool(res, row, 19);
+	post->eraser_id = db_get_user_id(res, row, 16);
+	post->stamp = db_get_time(res, row, 15);
+	const char *eraser_name = db_get_value(res, row, 17);
+	if (eraser_name)
+		strlcpy(post->eraser_name, eraser_name, sizeof(post->eraser_name));
+	else
+		post->eraser_name[0] = '\0';
 }
 
 int post_record_compare(const void *ptr1, const void *ptr2)
@@ -805,10 +808,9 @@ static int post_sticky_compare(const void *ptr1, const void *ptr2)
 static bool update_record(record_t *rec, int bid, bool sticky)
 {
 	query_t *q = query_new(0);
-	query_select(q, "id, reply_id, thread_id, user_id, board_id, digest,"
-			" marked, locked, imported, water, attachment, user_name, title");
+	query_select(q, POST_TABLE_FIELDS);
 	query_from(q, "posts.recent");
-	query_where(q, "bid = %d", bid);
+	query_where(q, "board_id = %d", bid);
 	db_res_t *res = query_exec(q);
 	if (!res)
 		return false;
@@ -822,6 +824,7 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 		qsort(posts, rows, sizeof(*posts),
 				sticky ? post_record_compare : post_sticky_compare);
 		record_write(rec, posts, rows, 0);
+		free(posts);
 	}
 
 	db_clear(res);
@@ -834,14 +837,14 @@ static bool update_record(record_t *rec, int bid, bool sticky)
  * @param[in] bid 版面ID
  * @return 成功更新返回true, 无须更新或者出错返回false
  */
-bool post_update_record(record_t *rec, int bid)
+bool post_update_record(record_t *record, int board_id)
 {
 	bool updated = false;
-	int invalid = post_record_invalidity_get(bid);
-	if (invalid > 0 && record_try_lock_all(rec, RECORD_WRLCK) == 0) {
-		updated = update_record(rec, bid, false);
-		post_record_invalidity_change(bid, -invalid);
-		record_lock_all(rec, RECORD_UNLCK);
+	int invalid = post_record_invalidity_get(board_id);
+	if (invalid > 0 && record_try_lock_all(record, RECORD_WRLCK) == 0) {
+		updated = update_record(record, board_id, false);
+		post_record_invalidity_change(board_id, -invalid);
+		record_lock_all(record, RECORD_UNLCK);
 	}
 	return updated;
 }
@@ -856,6 +859,51 @@ bool post_update_sticky_record(int board_id)
 		record_lock_all(&record, RECORD_UNLCK);
 	}
 	return updated;
+}
+
+bool post_update_trash_record(record_t *record, post_trash_e trash,
+		int board_id)
+{
+	query_t *q = query_new(0);
+	query_select(q, POST_TABLE_FIELDS "," POST_TABLE_DELETED_FIELDS);
+	query_from(q, "posts.deleted");
+	query_where(q, "board_id = %d", board_id);
+	if (trash == POST_TRASH)
+		query_and(q, "bm_visible");
+	else
+		query_and(q, "NOT bm_visible");
+
+	db_res_t *res = query_exec(q);
+	if (!res)
+		return false;
+
+	int rows = db_res_rows(res);
+	post_record_extended_t *posts = malloc(sizeof(*posts) * rows);
+	if (posts) {
+		for (int i = 0; i < rows; ++i) {
+			convert_post_record(res, i, (post_record_t *) (posts + i));
+			convert_post_record_extended(res, i, posts + i);
+		}
+		qsort(posts, rows, sizeof(*posts), post_record_compare);
+		record_write(record, posts, rows, 0);
+		free(posts);
+	}
+
+	db_clear(res);
+	return true;
+}
+
+int post_record_open_trash(int board_id, post_trash_e trash, record_t *record)
+{
+	char file[HOMELEN];
+	file_temp_name(file, sizeof(file));
+	int ret = record_open(file, post_record_cmp,
+			sizeof(post_record_extended_t), RECORD_WRITE, record);
+	unlink(file);
+
+	if (ret >= 0)
+		post_update_trash_record(record, trash, board_id);
+	return ret;
 }
 
 int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set,
