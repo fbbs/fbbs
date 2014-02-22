@@ -2517,10 +2517,10 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 				post_record_open(filter->bid, RECORD_READ, record);
 				break;
 			case POST_LIST_TRASH:
-				post_index_trash_open(filter->bid, POST_INDEX_TRASH, record);
+				post_record_open_trash(filter->bid, POST_TRASH, record);
 				break;
 			case POST_LIST_JUNK:
-				post_index_trash_open(filter->bid, POST_INDEX_JUNK, record);
+				post_record_open_trash(filter->bid, POST_JUNK, record);
 				break;
 			case POST_LIST_DIGEST: case POST_LIST_THREAD:
 			case POST_LIST_MARKED: case POST_LIST_TOPIC:

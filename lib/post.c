@@ -46,8 +46,8 @@ int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
 }
 
 enum {
-	POST_INDEX_BOARD_BUF_SIZE = 50,
-	POST_INDEX_TRASH_BUF_SIZE = 50,
+	POST_BOARD_BUF_SIZE = 50,
+	POST_TRASH_BUF_SIZE = 50,
 };
 
 void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count)
@@ -81,7 +81,7 @@ void post_record_extended_to_info(const post_record_extended_t *pre,
 	}
 }
 
-#define POST_INDEX_READ_HELPER(type, bufsize, converter)  \
+#define POST_RECORD_READ_HELPER(type, bufsize, converter)  \
 	type read_buf[bufsize]; \
 	while (size > 0) { \
 		int max = bufsize; \
@@ -104,32 +104,23 @@ int post_record_read(record_t *rec, int base, post_info_t *buf, int size,
 
 	int records = 0;
 	if (is_deleted(type)) {
-		POST_INDEX_READ_HELPER(post_record_extended_t,
-				POST_INDEX_TRASH_BUF_SIZE, post_record_extended_to_info);
+		POST_RECORD_READ_HELPER(post_record_extended_t, POST_TRASH_BUF_SIZE,
+				post_record_extended_to_info);
 	} else {
-		POST_INDEX_READ_HELPER(post_record_t,
-				POST_INDEX_BOARD_BUF_SIZE, post_record_to_info);
+		POST_RECORD_READ_HELPER(post_record_t, POST_BOARD_BUF_SIZE,
+				post_record_to_info);
 	}
 	return records;
 }
 
-int post_index_trash_cmp(const void *p1, const void *p2)
-{
-	const post_index_trash_t *r1 = p1, *r2 = p2;
-	int diff = r1->estamp - r2->estamp;
-	if (diff)
-		return diff;
-	return r1->id - r2->id;
-}
-
-int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec)
+int post_record_open_trash(int bid, post_trash_e trash, record_t *rec)
 {
 	char file[HOMELEN];
 	if (trash)
 		snprintf(file, sizeof(file), "brdidx/%d.trash", bid);
 	else
 		snprintf(file, sizeof(file), "brdidx/%d.junk", bid);
-	return record_open(file, post_index_trash_cmp, sizeof(post_index_trash_t),
+	return record_open(file, post_record_cmp, sizeof(post_record_extended_t),
 			RECORD_WRITE, rec);
 }
 

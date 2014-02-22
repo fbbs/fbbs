@@ -122,38 +122,10 @@ typedef struct { // @frontend
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;
 
-typedef struct {
-	post_id_t id;
-	uint32_t reid_delta;
-	uint32_t tid_delta;
-	user_id_t uid;
-	int flag;
-	fb_time_t stamp;
-	fb_time_t cstamp;
-	fb_time_t estamp;
-	char ename[16];
-} post_index_trash_t;
-
 typedef enum {
-	POST_INDEX_TRASH = 1,
-	POST_INDEX_JUNK = 0,
-} post_index_trash_e;
-
-// 128 bytes
-typedef struct {
-	post_id_t id;
-	uint32_t reid_delta;
-	uint32_t tid_delta;
-	fb_time_t stamp;
-	user_id_t uid;
-	int flag;
-	int bid;
-	uint16_t replies;
-	uint16_t comments;
-	uint16_t score;
-	char owner[IDLEN + 1];
-	char utf8_title[77];
-} post_index_t;
+	POST_TRASH = 1,
+	POST_JUNK = 0,
+} post_trash_e;
 
 typedef struct {
 	post_id_t id;
@@ -188,9 +160,7 @@ typedef struct {
 extern int post_record_cmp(const void *p1, const void *p2);
 extern int post_record_open(int bid, record_perm_e rdonly, record_t *rec);
 extern int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
-
-extern int post_index_trash_cmp(const void *p1, const void *p2);
-extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
+extern int post_record_open_trash(int bid, post_trash_e trash, record_t *rec);
 
 extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
