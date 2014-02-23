@@ -11,11 +11,11 @@ void do_exit() {
 }
 
 int main(int argc, char *argv[]) {
-	chdir(BBSHOME); //进入BBS用户主目录
-	setgid(BBSGID); //组ID设置成BBS
-	setuid(BBSUID); //将进程的 用户ID
-	setreuid(BBSUID, BBSUID); //设置有效用户ID	
-	setregid(BBSGID, BBSGID); //有效组ID为BBS
+	if (setgid(BBSGID) < 0 || setuid(BBSUID) < 0 || chdir(BBSHOME) < 0)
+		return EXIT_FAILURE;
+
+	setreuid(BBSUID, BBSUID);
+	setregid(BBSGID, BBSGID);
 
 	if (argc <= 1) {
 		printf("usage: daemon | flushed | reload\n");

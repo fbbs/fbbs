@@ -348,7 +348,6 @@ static char *replace_content_title(const char *content, size_t len,
 	memcpy(p, title, new_title_len);
 	p += new_title_len;
 	*p++ = '\n';
-	l = end - l2_end;
 	memcpy(p, l2_end, end - l2_end);
 	s[len] = '\0';
 	return s;

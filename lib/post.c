@@ -782,7 +782,7 @@ static void convert_post_record_extended(db_res_t *res, int row,
 		post_record_extended_t *post)
 {
 	post->basic.flag |= db_get_bool(res, row, 18) ? POST_FLAG_JUNK : 0;
-	post->bm_visible |= db_get_bool(res, row, 19);
+	post->bm_visible = db_get_bool(res, row, 19);
 	post->eraser_id = db_get_user_id(res, row, 16);
 	post->stamp = db_get_time(res, row, 15);
 	const char *eraser_name = db_get_value(res, row, 17);
@@ -930,7 +930,7 @@ int post_sticky_count(int board_id)
 		count = db_get_bigint(res, 0, 0);
 	}
 	db_clear(res);
-	return 0;
+	return count;
 }
 
 enum {

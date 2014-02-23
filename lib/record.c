@@ -561,8 +561,10 @@ int apply_record(const char *file, apply_func_t func, int size,
 		return -1;
 
 	m.oflag = O_RDONLY;
-	if (mmap_open(file, &m) < 0)
+	if (mmap_open(file, &m) < 0) {
+		free(buf);
 		return -1;
+	}
 	if (!lock)
 		mmap_lock(&m, FILE_UNLCK);
 	count = m.size / size;

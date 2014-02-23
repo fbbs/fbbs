@@ -196,14 +196,14 @@ static void parcel_read(parcel_t *parcel, void *buf, size_t size)
 
 int32_t parcel_read_int(parcel_t *parcel)
 {
-	int32_t val;
+	int32_t val = 0;
 	parcel_read(parcel, &val, sizeof(val));
 	return val;
 }
 
 int64_t parcel_read_int64(parcel_t *parcel)
 {
-	int64_t val;
+	int64_t val = 0;
 	parcel_read(parcel, &val, sizeof(val));
 	return val;
 }
