@@ -822,8 +822,9 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 			convert_post_record(res, i, posts + i);
 		}
 		qsort(posts, rows, sizeof(*posts),
-				sticky ? post_record_compare : post_sticky_compare);
+				sticky ? post_sticky_compare : post_record_compare);
 		record_write(rec, posts, rows, 0);
+		record_truncate(rec, rows);
 		free(posts);
 	}
 
@@ -837,14 +838,20 @@ static bool update_record(record_t *rec, int bid, bool sticky)
  * @param[in] bid 版面ID
  * @return 成功更新返回true, 无须更新或者出错返回false
  */
-bool post_update_record(record_t *record, int board_id)
+bool post_update_record(int board_id)
 {
 	bool updated = false;
 	int invalid = post_record_invalidity_get(board_id);
-	if (invalid > 0 && record_try_lock_all(record, RECORD_WRLCK) == 0) {
-		updated = update_record(record, board_id, false);
-		post_record_invalidity_change(board_id, -invalid);
-		record_lock_all(record, RECORD_UNLCK);
+	if (invalid > 0) {
+		record_t record;
+		if (post_record_open(board_id, RECORD_WRITE, &record) >= 0) {
+			if (record_try_lock_all(&record, RECORD_WRLCK) == 0) {
+				updated = update_record(&record, board_id, false);
+				post_record_invalidity_change(board_id, -invalid);
+				record_lock_all(&record, RECORD_UNLCK);
+			}
+			record_close(&record);
+		}
 	}
 	return updated;
 }

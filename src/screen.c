@@ -434,15 +434,34 @@ static void outns(const char *str, int n, bool ansi)
 	}
 }
 
-int dec[] = { 1000000000, 100000000, 10000000, 1000000, 100000, 10000,
-		1000, 100, 10, 1 };
+static const int64_t dec[] = {
+	INT64_C(1000000000000000000),
+	INT64_C(100000000000000000),
+	INT64_C(10000000000000000),
+	INT64_C(1000000000000000),
+	INT64_C(100000000000000),
+	INT64_C(10000000000000),
+	INT64_C(1000000000000),
+	INT64_C(100000000000),
+	INT64_C(10000000000),
+	INT64_C(1000000000),
+	INT64_C(100000000),
+	INT64_C(10000000),
+	INT64_C(1000000),
+	INT64_C(100000),
+	INT64_C(10000),
+	INT64_C(1000),
+	INT64_C(100),
+	INT64_C(10),
+	INT64_C(1),
+};
 
 /*以ANSI格式输出可变参数的字符串序列*/
 void prints(const char *fmt, ...)
 {
 	va_list ap;
 	const char *bp;
-	int count, hd, indx;
+	int count, hd;
 	va_start(ap, fmt);
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
@@ -512,31 +531,33 @@ void prints(const char *fmt, ...)
 							negi = YEA;
 							n *= -1;
 						}
-						for (indx = 0; indx < 10; indx++)
+
+						int indx = 0;
+						for (indx = 0; indx < ARRAY_SIZE(dec); ++indx) {
 							if (n >= dec[indx])
 								break;
+						}
 						if (n == 0)
 							len = 1;
 						else
-							len = 10 - indx;
+							len = ARRAY_SIZE(dec) - indx;
 						if (negi)
 							len++;
 						if (val >= len && sgn > 0) {
-							register int slen;
-							for (slen = val - len; slen > 0; slen--)
+							for (int slen = val - len; slen > 0; slen--)
 								outc(' ');
 						}
 						if (negi)
 							outc('-');
 						hd = 1, indx = 0;
-						while (indx < 10) {
+						while (indx < ARRAY_SIZE(dec)) {
 							count = 0;
 							while (n >= dec[indx]) {
 								count++;
 								n -= dec[indx];
 							}
 							indx++;
-							if (indx == 10)
+							if (indx == ARRAY_SIZE(dec))
 								hd = 0;
 							if (hd && !count)
 								continue;
@@ -544,8 +565,7 @@ void prints(const char *fmt, ...)
 							outc('0' + count);
 						}
 						if (val >= len && sgn < 0) {
-							register int slen;
-							for (slen = val - len; slen > 0; slen--)
+							for (int slen = val - len; slen > 0; slen--)
 								outc(' ');
 						}
 					}
