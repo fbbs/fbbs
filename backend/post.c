@@ -364,15 +364,35 @@ static bool _backend_post_alter_title(
 	if (!req)
 		return false;
 
+	post_filter_t filter = {
+		.bid = req->board_id,
+		.min = req->post_id,
+		.max = req->post_id,
+	};
+
+	query_t *q = query_new(0);
+	query_update(q, "posts.recent");
+	query_set(q, "title = %s", req->title);
+	build_post_filter(q, &filter);
+
+	db_res_t *res = query_cmd(q);
+	bool ok = res && db_cmd_rows(res) > 0;
+	db_clear(res);
+	if (!ok)
+		return ok;
+
+	post_record_invalidity_change(req->board_id, 1);
+
 	char *content = post_content_get(req->post_id);
 	if (!content)
 		return false;
 
 	char *new_content = replace_content_title(content, strlen(content),
 			req->title);
-	bool ok = false;
+
 	if (new_content)
-		post_content_set(req->post_id, new_content);
+		ok = post_content_set(req->post_id, new_content);
+
 	free(new_content);
 	free(content);
 	return ok;

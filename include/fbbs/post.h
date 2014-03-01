@@ -247,6 +247,7 @@ typedef struct { // @backend
 extern int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
 
 typedef struct { // @frontend
+	int board_id;
 	post_id_t post_id;
 	const char *title;
 } backend_request_post_alter_title_t;
@@ -255,7 +256,7 @@ typedef struct { // @backend
 	bool ok;
 } backend_response_post_alter_title_t;
 
-extern bool post_alter_title(post_id_t post_id, const char *title);
+extern bool post_alter_title(int board_id, post_id_t post_id, const char *title);
 
 extern void post_record_invalidity_change(int bid, int delta);
 extern int post_record_read(record_t *rec, int base, post_info_t *buf, int size, post_list_type_e type);

@@ -1095,8 +1095,10 @@ static int tui_edit_post_title(post_info_t *pi)
 	if (!*utf8_title || streq(utf8_title, pi->utf8_title))
 		return MINIUPDATE;
 
-	if (post_alter_title(pi->id, utf8_title))
+	if (post_alter_title(pi->board_id, pi->id, utf8_title)) {
+		strlcpy(pi->utf8_title, utf8_title, sizeof(pi->utf8_title));
 		return PARTUPDATE;
+	}
 	return MINIUPDATE;
 }
 

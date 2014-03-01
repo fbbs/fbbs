@@ -1017,12 +1017,13 @@ bool post_content_set(post_id_t post_id, const char *str)
 	return ok;
 }
 
-bool post_alter_title(post_id_t post_id, const char *title)
+bool post_alter_title(int board_id, post_id_t post_id, const char *title)
 {
 	if (!title)
 		return false;
 
 	backend_request_post_alter_title_t req = {
+		.board_id = board_id,
 		.post_id = post_id,
 		.title = title,
 	};
