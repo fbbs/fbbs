@@ -740,15 +740,17 @@ post_id_t post_new(const post_request_t *pr)
 /** 版面文章记录缓存是否失效 @mdb_hash */
 #define POST_RECORD_INVALIDITY_KEY  "post_record_invalidity"
 
-void post_record_invalidity_change(int bid, int delta)
+void post_record_invalidity_change(int board_id, int delta)
 {
-	if (bid)
-		mdb_cmd("HINCRBY", POST_RECORD_INVALIDITY_KEY" %d %d", bid, delta);
+	if (board_id > 0) {
+		mdb_cmd("HINCRBY", POST_RECORD_INVALIDITY_KEY" %d %d",
+				board_id, delta);
+	}
 }
 
-int post_record_invalidity_get(int bid)
+int post_record_invalidity_get(int board_id)
 {
-	return mdb_integer(0, "HGET", POST_RECORD_INVALIDITY_KEY" %d", bid);
+	return mdb_integer(0, "HGET", POST_RECORD_INVALIDITY_KEY" %d", board_id);
 }
 
 static void convert_post_record(db_res_t *res, int row,

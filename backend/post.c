@@ -195,7 +195,7 @@ static int _backend_post_delete(const backend_request_post_delete_t *req)
 				adjust_user_post_count(user_name, -1);
 			}
 		}
-		if (rows > 0 && req->filter->bid)
+		if (rows > 0)
 			post_record_invalidity_change(req->filter->bid, 1);
 	}
 	db_clear(res);
@@ -247,7 +247,7 @@ static int _backend_post_undelete(const backend_request_post_undelete_t *req)
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
 
-	if (rows && req->filter->bid)
+	if (rows)
 		post_record_invalidity_change(req->filter->bid, 1);
 	return rows;
 }
@@ -310,7 +310,7 @@ static int _backend_post_set_flag(const backend_request_post_set_flag_t *req)
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
 
-	if (rows > 0 && req->filter->bid)
+	if (rows > 0)
 		post_record_invalidity_change(req->filter->bid, 1);
 	return rows;
 }

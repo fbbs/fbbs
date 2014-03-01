@@ -258,7 +258,7 @@ typedef struct { // @backend
 
 extern bool post_alter_title(int board_id, post_id_t post_id, const char *title);
 
-extern void post_record_invalidity_change(int bid, int delta);
+extern void post_record_invalidity_change(int board_id, int delta);
 extern int post_record_read(record_t *rec, int base, post_info_t *buf, int size, post_list_type_e type);
 extern void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count);
 extern bool post_match_filter(const post_record_t *pr, const post_filter_t *filter, int offset);
