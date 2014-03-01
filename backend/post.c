@@ -138,9 +138,9 @@ static void build_post_filter(query_t *q, const post_filter_t *f)
 		}
 	} else {
 		if (f->min)
-			query_append(q, ">= %"DBIdPID, f->min);
+			query_and(q, "id >= %"DBIdPID, f->min);
 		if (f->max)
-			query_append(q, "<= %"DBIdPID, f->max);
+			query_and(q, "id <= %"DBIdPID, f->max);
 		if (f->tid)
 			query_and(q, "thread_id = %"DBIdPID, f->tid);
 	}
@@ -195,6 +195,8 @@ static int _backend_post_delete(const backend_request_post_delete_t *req)
 				adjust_user_post_count(user_name, -1);
 			}
 		}
+		if (rows > 0 && req->filter->bid)
+			post_record_invalidity_change(req->filter->bid, 1);
 	}
 	db_clear(res);
 	return rows;
@@ -304,6 +306,9 @@ static int _backend_post_set_flag(const backend_request_post_set_flag_t *req)
 	db_res_t *res = query_cmd(q);
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
+
+	if (rows > 0 && req->filter->bid)
+		post_record_invalidity_change(req->filter->bid, 1);
 	return rows;
 }
 

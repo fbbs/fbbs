@@ -522,6 +522,7 @@ static void log_toggle_flag(const post_info_t *pi, post_flag_e flag)
 static int toggle_post_flag_no_check(post_info_t *pi, post_flag_e flag)
 {
 	post_filter_t filter = {
+		.bid = pi->board_id,
 		.min = pi->id,
 		.max = pi->id,
 	};

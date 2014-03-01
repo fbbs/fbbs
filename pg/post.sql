@@ -33,6 +33,7 @@ CREATE TABLE posts.base (
 	imported BOOLEAN DEFAULT FALSE,
 	water BOOLEAN DEFAULT FALSE,
 	attachment BOOLEAN DEFAULT FALSE,
+	sticky BOOLEAN DEFAULT FALSE,
 
 	title TEXT
 );

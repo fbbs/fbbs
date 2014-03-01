@@ -834,8 +834,7 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 
 /**
  * 更新版面文章记录缓存
- * @param[in] rec 版面文章记录文件
- * @param[in] bid 版面ID
+ * @param[in] board_id 版面ID
  * @return 成功更新返回true, 无须更新或者出错返回false
  */
 bool post_update_record(int board_id)
