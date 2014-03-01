@@ -246,6 +246,9 @@ static int _backend_post_undelete(const backend_request_post_undelete_t *req)
 	res = query_cmd(q);
 	int rows = res ? db_cmd_rows(res) : 0;
 	db_clear(res);
+
+	if (rows && req->filter->bid)
+		post_record_invalidity_change(req->filter->bid, 1);
 	return rows;
 }
 

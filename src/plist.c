@@ -937,7 +937,7 @@ static int skip_post(tui_list_t *tl, post_info_t *pi)
 		if (++tl->cur >= tl->begin + tl->lines)
 			tl->valid = false;
 	}
-	return DONOTHING;
+	return PARTUPDATE;
 }
 
 static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)

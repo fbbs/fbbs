@@ -666,12 +666,12 @@ int post_mark(const post_info_t *p)
 
 fb_time_t post_stamp_from_id(post_id_t id)
 {
-	return (fb_time_t) (id >> 21);
+	return (fb_time_t) ((id >> 21) / 1000);
 }
 
 post_id_t post_id_from_stamp(fb_time_t stamp)
 {
-	return ((post_id_t) stamp) << 21;
+	return ((post_id_t) (stamp * 1000)) << 21;
 }
 
 /**
@@ -958,7 +958,7 @@ static bool post_content_update_cache(const char *file, const char *str,
 	if (!force)
 		mode |= O_EXCL;
 
-	int fd = open(file, mode);
+	int fd = open(file, mode, 0644);
 	if (fd < 0)
 		return false;
 
