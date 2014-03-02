@@ -38,6 +38,7 @@ typedef struct {
 	int bid;
 	int archive;
 	int record_count;
+	bool trash_valid;
 } post_list_t;
 
 static void post_list_position_key(const post_list_t *pl, char *buf)
@@ -92,8 +93,16 @@ static int last_read_filter(void *ptr, void *args, int offset)
 static void load_posts(tui_list_t *tl)
 {
 	post_list_t *pl = tl->data;
-	if (pl->bid && pl->type == POST_LIST_NORMAL)
-		post_update_record(pl->bid);
+	if (pl->bid) {
+		if (pl->type == POST_LIST_NORMAL) {
+			post_update_record(pl->bid);
+		} else if (is_deleted(pl->type) && !pl->trash_valid) {
+			post_update_trash_record(pl->record,
+					pl->type == POST_LIST_TRASH ? POST_TRASH : POST_JUNK,
+					pl->bid);
+			pl->trash_valid = true;
+		}
+	}
 
 	tl->all = pl->record_count = record_count(pl->record);
 	if (pl->record_sticky)
@@ -972,6 +981,7 @@ static int tui_undelete_single_post(tui_list_t *tl, post_info_t *pi)
 		post_filter_t f = { .bid = pl->bid, .min = pi->id, .max = pi->id, };
 		if (post_undelete(&f, pl->type == POST_LIST_TRASH)) {
 			tl->valid = false;
+			pl->trash_valid = false;
 			log_bm(LOG_BM_UNDELETE, 1);
 			return PARTUPDATE;
 		}
@@ -1869,7 +1879,8 @@ static int operate_posts_in_range(int choice, post_list_t *pl, post_id_t min,
 		default:
 			if (is_deleted(pl->type)) {
 				// TODO
-				post_undelete(&filter, pl->type == POST_LIST_TRASH);
+				if (post_undelete(&filter, pl->type == POST_LIST_TRASH))
+					pl->trash_valid = false;
 			} else {
 				filter.flag |= POST_FLAG_WATER;
 				post_delete(&filter, true, !HAS_PERM(PERM_OBOARDS), false);
@@ -2572,6 +2583,7 @@ static int post_list_with_filter(const post_filter_t *filter)
 		.buf = buf,
 		.type = filter->type,
 		.bid = filter->bid,
+		.trash_valid = true,
 	};
 
 	tui_list_t tl = {

@@ -894,6 +894,7 @@ bool post_update_trash_record(record_t *record, post_trash_e trash,
 		}
 		qsort(posts, rows, sizeof(*posts), post_record_compare);
 		record_write(record, posts, rows, 0);
+		record_truncate(record, rows);
 		free(posts);
 	}
 
