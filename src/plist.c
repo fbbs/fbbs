@@ -2368,12 +2368,14 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case 'x':
 			return into_announce();
 		case 's':
+			save_post_list_position(tl);
 			return switch_board(tl);
 #if 0
 		case '%':
 			return tui_jump(p);
 #endif
 		case 'q': case 'e': case KEY_LEFT: case EOF:
+			save_post_list_position(tl);
 			return READ_AGAIN;
 		case Ctrl('L'):
 			screen_redraw();
