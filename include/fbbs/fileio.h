@@ -17,6 +17,7 @@ typedef enum {
 
 extern int file_append(const char *file, const char *msg);
 extern int file_read(int fd, void *buf, size_t size);
+extern char *file_read_all(const char *file);
 extern int file_write(int fd, const void *buf, size_t size);
 extern int file_close(int fd);
 extern int file_truncate(int fd, off_t size);
@@ -29,6 +30,7 @@ extern int valid_fname(char *str);
 extern int f_rm(char *fpath);
 extern int file_lock(int fd, file_lock_e type, off_t offset, file_whence_e whence, off_t len);
 extern int file_lock_all(int fd, file_lock_e type);
+extern int file_try_lock_all(int fd, file_lock_e type);
 extern int file_temporary_name(char *file, size_t size, const char *prefix, int num);
 
 /**

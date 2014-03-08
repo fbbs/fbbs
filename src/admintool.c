@@ -1965,50 +1965,18 @@ int kick_user(void)
 	return 0;
 }
 
-typedef struct {
-	FILE *fp;
-	const post_filter_t *filter;
-	fb_time_t stamp;
-	int matched;
-	bool remove;
-} search_all_boards_callback_t;
-
-static record_callback_e search_all_boards_callback(post_index_t *pi,
-		void *args)
+static void filter_post(query_t *q, const post_filter_t *filter)
 {
-	search_all_boards_callback_t *sabc = args;
-
-	if (!pi->id)
-		return RECORD_CALLBACK_CONTINUE;
-	if (pi->stamp < sabc->stamp)
-		return RECORD_CALLBACK_BREAK;
-	if (sabc->filter->uid && pi->uid != sabc->filter->uid)
-		return RECORD_CALLBACK_CONTINUE;
-	if (sabc->filter->utf8_keyword[0] != '\0'
-			&& !strcaseeq(pi->utf8_title, sabc->filter->utf8_keyword))
-		return RECORD_CALLBACK_CONTINUE;
-
-	++sabc->matched;
-
-	GBK_BUFFER(title, POST_TITLE_CCHARS);
-	convert_u2g(pi->utf8_title, gbk_title);
-
-	char date[26];
-	time_t stamp = pi->stamp;
-	ctime_r(&stamp, date);
-	date[24] = '\0';
-	fprintf(sabc->fp, " %s [%d] %s\n", date, pi->bid, gbk_title);
-
-	if (sabc->remove && !(pi->flag & POST_FLAG_DELETED)) {
-		post_filter_t f = {
-			.bid = pi->bid, .min = pi->id, .max = pi->id,
-		};
-		post_index_board_delete(&f, true, false, true);
-	}
-	return RECORD_CALLBACK_MATCH;
+	query_where(q, "TRUE");
+	if (filter->uid)
+		query_and(q, "user_id = %"DBIdUID, filter->uid);
+	if (*filter->utf8_keyword)
+		query_and(q, "title ILIKE '%%' || %s || '%%'", filter->utf8_keyword);
+	if (filter->min)
+		query_and(q, "id >= %"DBIdPID, filter->min);
 }
 
-static void search_all_boards(const post_filter_t *filter, const char *uname,
+static void search_all_boards(post_filter_t *filter, const char *user_name,
 		int days, bool remove)
 {
 	char file[HOMELEN];
@@ -2023,17 +1991,40 @@ static void search_all_boards(const post_filter_t *filter, const char *uname,
 	fprintf(fp, "\xd4\xda\xcb\xf9\xd3\xd0\xb0\xe5\xb2\xe9\xd1\xaf%s"
 			"\xcd\xf8\xd3\xd1%d\xcc\xec\xd2\xd4\xc4\xda\xb5\xc4"
 			"\xb4\xf3\xd7\xf7, \xb9\xd8\xbc\xfc\xd7\xd6'%s'.\n\n",
-			uname, days, gbk_keyword);
+			user_name, days, gbk_keyword);
 
-	fb_time_t stamp = fb_time() - days * 24 * 60 * 60;
+	filter->min = post_id_from_stamp(fb_time() - days * 24 * 60 * 60);
 
-	search_all_boards_callback_t sabc = {
-		.fp = fp, .filter = filter, .stamp = stamp, .matched = 0,
-		.remove = remove
-	};
-	post_index_record_for_recent(search_all_boards_callback, &sabc);
+	query_t *q = query_new(0);
+	query_select(q, "id, board_id, title");
+	query_from(q, "posts.recent");
+	filter_post(q, filter);
+	query_orderby(q, "id", true);
 
-	fprintf(fp, "%d matched found.\n", sabc.matched);
+	db_res_t *res = query_exec(q);
+
+	if (remove)
+		post_delete(filter, true, false, false);
+
+	int matched = 0;
+	if (res && db_res_rows(res) > 0) {
+		matched = db_res_rows(res);
+		for (int i = matched - 1; i >= 0; --i) {
+			GBK_BUFFER(title, POST_TITLE_CCHARS);
+			const char *utf8_title = db_get_value(res, i, 2);
+			convert_u2g(utf8_title, gbk_title);
+
+			char date[26];
+			time_t stamp = post_stamp_from_id(db_get_post_id(res, i, 0));
+			ctime_r(&stamp, date);
+			date[24] = '\0';
+			fprintf(fp, " %s [%d] %s\n", date, db_get_integer(res, i, 1),
+					gbk_title);
+		}
+	}
+	db_clear(res);
+
+	fprintf(fp, "%d matched found.\n", matched);
 	fclose(fp);
 
 	char buf[80];
@@ -2042,7 +2033,7 @@ static void search_all_boards(const post_filter_t *filter, const char *uname,
 			"\xc4\xda\xb9\xd8\xbc\xfc\xd7\xd6'%.10s'",
 			//% 版面
 			is_deleted(filter->type) ? "Deleted" : "\xb0\xe6\xc3\xe6",
-			uname, days, gbk_keyword);
+			user_name, days, gbk_keyword);
 	mail_file(file, currentuser.userid, buf);
 	unlink(file);
 }
@@ -2053,20 +2044,20 @@ int tui_search_all_boards(void)
 
 	set_user_status(ST_QUERY);
 
-	char uname[IDLEN + 1];
+	char user_name[IDLEN + 1];
 	screen_clear();
 	//% 请输入您想查询的作者帐号
 	usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xc4\xfa\xcf\xeb\xb2\xe9\xd1\xaf"
-			"\xb5\xc4\xd7\xf7\xd5\xdf\xd5\xca\xba\xc5: ", uname);
+			"\xb5\xc4\xd7\xf7\xd5\xdf\xd5\xca\xba\xc5: ", user_name);
 
-	if (!*uname) {
+	if (!*user_name) {
 		move(1, 0);
 		//% 查询所有的作者吗
 		if (!askyn("\xb2\xe9\xd1\xaf\xcb\xf9\xd3\xd0\xb5\xc4\xd7\xf7\xd5\xdf"
 					"\xc2\xf0?", true, false))
 			return 0;
 	} else {
-		filter.uid = get_user_id(uname);
+		filter.uid = get_user_id(user_name);
 		if (!filter.uid) {
 			//% 不正确的使用者代号
 			prints("\xb2\xbb\xd5\xfd\xc8\xb7\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf"
@@ -2100,7 +2091,7 @@ int tui_search_all_boards(void)
 	remove = askyn("\xca\xc7\xb7\xf1\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2?",
 			false, false);
 
-	search_all_boards(&filter, uname, days, remove);
+	search_all_boards(&filter, user_name, days, remove);
 	//% 网友大作查询
 	report("\xcd\xf8\xd3\xd1\xb4\xf3\xd7\xf7\xb2\xe9\xd1\xaf",
 			currentuser.userid);

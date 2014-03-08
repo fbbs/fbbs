@@ -47,16 +47,12 @@ static bool active_board_add(const char *content)
 static record_callback_e active_board_init_callback(void *ptr, void *args,
 		int offset)
 {
-	const post_index_board_t *pib = ptr;
+	const post_record_t *pr = ptr;
 
-	if (pib->flag & POST_FLAG_DIGEST) {
-		char buf[POST_CONTENT_BUFLEN];
-		char *content = post_content_read(pib->id, buf, sizeof(buf));
-
+	if (pr->flag & POST_FLAG_DIGEST) {
+		char *content = post_content_get(pr->id);
 		bool success = content ? active_board_add(content) : false;
-
-		if (content != buf)
-			free(content);
+		free(content);
 		if (success)
 			return RECORD_CALLBACK_MATCH;
 	}
@@ -83,7 +79,7 @@ void active_board_init(bool force)
 		return;
 
 	record_t record;
-	if (post_index_board_open(board.id, RECORD_READ, &record) < 0)
+	if (post_record_open(board.id, RECORD_READ, &record) < 0)
 		return;
 
 	active_board_clear();

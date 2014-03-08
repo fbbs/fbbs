@@ -20,8 +20,6 @@ struct fileheader SR_fptr;
 int SR_BMDELFLAG = NA;
 char *pnt;
 
-extern int noreply;
-
 struct keeploc {
 	char *key;
 	int top_line;

@@ -136,7 +136,7 @@ uint64_t parcel_read_varuint64(parcel_t *parcel)
 	uint64_t val = 0;
 	int offset = 0;
 	while (1) {
-		uchar_t v = parcel_read_uchar(parcel);
+		uint64_t v = parcel_read_uchar(parcel);
 		if (v & 0x80) {
 			val |= (v & 0x7f) << offset;
 			offset += 7;
@@ -196,14 +196,14 @@ static void parcel_read(parcel_t *parcel, void *buf, size_t size)
 
 int32_t parcel_read_int(parcel_t *parcel)
 {
-	int32_t val;
+	int32_t val = 0;
 	parcel_read(parcel, &val, sizeof(val));
 	return val;
 }
 
 int64_t parcel_read_int64(parcel_t *parcel)
 {
-	int64_t val;
+	int64_t val = 0;
 	parcel_read(parcel, &val, sizeof(val));
 	return val;
 }

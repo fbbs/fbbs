@@ -13,30 +13,37 @@
 
 #define POST_REPLIES_FILE  "replies"
 
+#define POST_TABLE_FIELDS \
+	"id, reply_id, thread_id, user_id, real_user_id, user_name, board_id," \
+	" board_name, digest, marked, locked, imported, water, attachment, title"
+
+#define POST_TABLE_DELETED_FIELDS \
+	"delete_stamp, eraser_id, eraser_name, junk, bm_visible"
+
 typedef int64_t post_id_t;
 #define PRIdPID  PRId64
+#define DBIdPID  "l"
+#define db_get_post_id(res, line, col)  db_get_bigint(res, line, col)
 #define parcel_write_post_id(parcel, id)  parcel_write_varint64(parcel, id)
 #define parcel_read_post_id(parcel)  parcel_read_varint64(parcel)
 
-/** 文章ID序列 @mdb_string */
-#define POST_ID_KEY  "post_id_seq"
 #define BOARD_POST_COUNT_KEY "board_post_count"
 
 typedef enum {
-	POST_FLAG_DIGEST = 0x1,
-	POST_FLAG_MARKED = 0x2,
-	POST_FLAG_LOCKED = 0x4,
-	POST_FLAG_IMPORT = 0x8,
-	POST_FLAG_STICKY = 0x10,
-	POST_FLAG_WATER = 0x20,
-	POST_FLAG_DELETED = 0x40,
-	POST_FLAG_JUNK = 0x80,
-	POST_FLAG_ATTACHMENT = 0x100,
-	POST_FLAG_ARCHIVE = 0x200,
+	POST_FLAG_DIGEST = 1,
+	POST_FLAG_MARKED = 1 << 1,
+	POST_FLAG_LOCKED = 1 << 2,
+	POST_FLAG_IMPORT = 1 << 3,
+	POST_FLAG_STICKY = 1 << 4,
+	POST_FLAG_WATER = 1 << 5,
+	POST_FLAG_DELETED = 1 << 6,
+	POST_FLAG_JUNK = 1 << 7,
+	POST_FLAG_ATTACHMENT = 1 << 8,
+	POST_FLAG_ARCHIVE = 1 << 9,
 } post_flag_e;
 
 enum {
-	POST_TITLE_CCHARS = 24,
+	POST_TITLE_CCHARS = 23,
 	POST_CONTENT_CCHARS = 128 * 1024,
 };
 
@@ -65,19 +72,16 @@ typedef enum {
 } post_list_type_e;
 
 typedef struct {
-	int replies;
-	int comments;
-	int score;
 	int flag;
-	user_id_t uid;
+	user_id_t user_id;
 	post_id_t id;
-	post_id_t reid;
-	post_id_t tid;
+	post_id_t reply_id;
+	post_id_t thread_id;
 	fb_time_t stamp;
-	fb_time_t estamp;
-	int bid;
-	char owner[IDLEN + 1];
-	char ename[IDLEN + 1];
+	fb_time_t delete_stamp;
+	int board_id;
+	char user_name[IDLEN + 1];
+	char eraser_name[IDLEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_info_t;
 
@@ -94,7 +98,6 @@ typedef struct {
 	convert_t *cp;
 	post_id_t reid;
 	post_id_t tid;
-	const char *uname_replied;
 	user_id_t uid_replied;
 	int sig;
 	bool locked;
@@ -103,6 +106,7 @@ typedef struct {
 	bool web;
 	bool autopost;
 	bool crosspost;
+	bool hide_uid;
 } post_request_t;
 
 enum {
@@ -123,55 +127,30 @@ typedef struct { // @frontend
 	UTF8_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
 } post_filter_t;
 
-// 32 bytes
-typedef struct {
-	post_id_t id;
-	uint32_t reid_delta;
-	uint32_t tid_delta;
-	user_id_t uid;
-	int flag;
-	fb_time_t stamp;
-	fb_time_t cstamp;
-} post_index_board_t;
-
-typedef struct {
-	post_id_t id;
-	uint32_t reid_delta;
-	uint32_t tid_delta;
-	user_id_t uid;
-	int flag;
-	fb_time_t stamp;
-	fb_time_t cstamp;
-	fb_time_t estamp;
-	char ename[16];
-} post_index_trash_t;
-
 typedef enum {
-	POST_INDEX_TRASH = 1,
-	POST_INDEX_JUNK = 0,
-} post_index_trash_e;
+	POST_TRASH = 1,
+	POST_JUNK = 0,
+} post_trash_e;
 
-// 128 bytes
 typedef struct {
 	post_id_t id;
-	uint32_t reid_delta;
-	uint32_t tid_delta;
-	fb_time_t stamp;
-	user_id_t uid;
+	post_id_t reply_id;
+	post_id_t thread_id;
+	user_id_t user_id;
+	int board_id;
 	int flag;
-	int bid;
-	uint16_t replies;
-	uint16_t comments;
-	uint16_t score;
-	char owner[IDLEN + 1];
-	char utf8_title[77];
-} post_index_t;
+	char user_name[IDLEN + 1];
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+} post_record_t;
 
 typedef struct {
-	post_id_t base;
-	record_perm_e rdonly;
-	record_t record;
-} post_index_record_t;
+	post_record_t basic;
+	bool junk;
+	bool bm_visible;
+	user_id_t eraser_id;
+	fb_time_t stamp;
+	char eraser_name[IDLEN + 1];
+} post_record_extended_t;
 
 typedef struct {
 	post_id_t tid;
@@ -183,104 +162,65 @@ typedef struct {
 	char bname[BOARD_NAME_LEN + 1];
 } topic_stat_t;
 
-extern int post_index_cmp(const void *p1, const void *p2);
-extern int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec);
-extern int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec);
-extern int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
-extern int post_index_board_to_info(post_index_record_t *pir, const post_index_board_t *pib, post_info_t *pi, int count);
-extern int post_index_board_read(record_t *rec, int base, post_index_record_t *pir, post_info_t *buf, int size, post_list_type_e type);
-extern int post_index_board_delete(const post_filter_t *filter, bool junk, bool bm_visible, bool force);
-extern int post_index_board_undelete(const post_filter_t *filter, bool bm_visible);
-extern bool match_filter(const post_index_board_t *pib, post_index_record_t *pir, const post_filter_t *filter, int offset);
-
-extern int post_index_trash_cmp(const void *p1, const void *p2);
-extern int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec);
-
-typedef int (*post_index_record_callback_t)(post_index_t *pi, void *args);
-
-extern void post_index_record_open(post_index_record_t *pir);
-extern int post_index_record_read(post_index_record_t *pir, post_id_t id, post_index_t *pi);
-extern int post_index_record_update(post_index_record_t *pir, const post_index_t *pi);
-extern int post_index_record_for_recent(post_index_record_callback_t cb, void *args);
-extern void post_index_record_close(post_index_record_t *pir);
-extern void post_index_record_get_title(post_index_record_t *pir, post_id_t id, char *buf, size_t size);
-extern int post_index_record_lock(post_index_record_t *pir, record_lock_e lock, post_id_t id);
-
-enum {
-	POST_CONTENT_BUFLEN = 4096,
-};
-
-extern char *post_content_read(post_id_t id, char *buf, size_t size);
-extern int post_content_write(post_id_t id, const char *str, size_t size);
-
-typedef struct {
-	post_id_t base;
-	char *result;
-	size_t size;
-	int fd;
-	char buf[POST_CONTENT_BUFLEN];
-} post_content_record_t;
-
-extern void post_content_record_open(post_content_record_t *pcr);
-extern char *post_content_record_read(post_content_record_t *pcr, post_id_t id);
-extern void post_content_record_close(post_content_record_t *pcr);
-
-extern int post_remove_sticky(int bid, post_id_t id);
-extern int post_add_sticky(int bid, const post_info_t *pi);
-extern bool reorder_sticky_posts(int bid, post_id_t pid);
-
-extern post_id_t publish_post(const post_request_t *pr);
+extern int post_record_cmp(const void *p1, const void *p2);
+extern int post_record_open(int bid, record_perm_e rdonly, record_t *rec);
+extern int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
+extern int post_record_open_trash(int board_id, post_trash_e trash, record_t *record);
 
 extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 
-extern int set_post_flag(record_t *rec, post_index_record_t *pir, post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
-extern int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset, post_flag_e flag, bool set, bool toggle);
-
 extern bool is_deleted(post_list_type_e type);
 
-extern int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file, size_t size);
-extern char *convert_file_to_utf8_content(const char *file);
+extern int post_dump_gbk_file(const char *utf8_str, size_t length, char *file, size_t size);
+extern char *post_convert_to_utf8(const char *file);
 
 extern bool set_last_post_time(int bid, fb_time_t stamp);
 extern fb_time_t get_last_post_time(int bid);
 
-extern bool alter_title(post_index_record_t *pir, const post_info_t *pi);
+extern int post_mark_raw(fb_time_t stamp, int flag);
+extern int post_mark(const post_info_t *p);
 
-extern int get_post_mark_raw(fb_time_t stamp, int flag);
-extern int get_post_mark(const post_info_t *p);
+extern fb_time_t post_stamp_from_id(post_id_t id);
+extern post_id_t post_id_from_stamp(fb_time_t stamp);
 
 extern int get_board_post_count(int bid);
 
 typedef struct { // @frontend
-	post_id_t reid;
-	post_id_t tid;
+	post_id_t reply_id;
+	post_id_t thread_id;
 	const char *title;
-	const char *uname;
+	const char *user_name;
+	const char *board_name;
 	const char *content;
-	const char *uname_replied;
-	user_id_t uid_replied;
-	int bid;
+	user_id_t user_id;
+	user_id_t user_id_replied;
+	int board_id;
 	bool marked;
 	bool locked;
+	bool hide_user_id;
 } backend_request_post_new_t;
 
 typedef struct { // @backend
 	post_id_t id;
-	fb_time_t stamp;
 } backend_response_post_new_t;
+
+extern post_id_t post_new(const post_request_t *pr);
 
 typedef struct { // @frontend
 	post_filter_t *filter;
 	bool junk;
 	bool bm_visible;
 	bool force;
-	const char *ename;
+	user_id_t user_id;
+	const char *user_name;
 } backend_request_post_delete_t;
 
 typedef struct { // @backend
 	int deleted;
 } backend_response_post_delete_t;
+
+extern int post_delete(const post_filter_t *filter, bool junk, bool bm_visible, bool force);
 
 typedef struct { // @frontend
 	post_filter_t *filter;
@@ -290,5 +230,46 @@ typedef struct { // @frontend
 typedef struct { // @backend
 	int undeleted;
 } backend_response_post_undelete_t;
+
+extern int post_undelete(const post_filter_t *filter, bool bm_visible);
+
+typedef struct { // @frontend
+	post_filter_t *filter;
+	post_flag_e flag;
+	bool set;
+	bool toggle;
+} backend_request_post_set_flag_t;
+
+typedef struct { // @backend
+	int affected;
+} backend_response_post_set_flag_t;
+
+extern int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set, bool toggle);
+
+typedef struct { // @frontend
+	int board_id;
+	post_id_t post_id;
+	const char *title;
+} backend_request_post_alter_title_t;
+
+typedef struct { // @backend
+	bool ok;
+} backend_response_post_alter_title_t;
+
+extern bool post_alter_title(int board_id, post_id_t post_id, const char *title);
+
+extern void post_record_invalidity_change(int board_id, int delta);
+extern int post_record_read(record_t *rec, int base, post_info_t *buf, int size, post_list_type_e type);
+extern void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count);
+extern bool post_match_filter(const post_record_t *pr, const post_filter_t *filter, int offset);
+
+extern bool post_update_record(int board_id);
+extern bool post_update_sticky_record(int board_id);
+extern bool post_update_trash_record(record_t *record, post_trash_e trash, int board_id);
+
+extern int post_sticky_count(int board_id);
+
+extern char *post_content_get(post_id_t post_id);
+extern bool post_content_set(post_id_t post_id, const char *str);
 
 #endif // FB_POST_H

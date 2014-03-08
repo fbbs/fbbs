@@ -16,84 +16,72 @@
 
 #include "s11n/frontend_post.h"
 
-static post_id_t current_post_id(void)
+int post_record_cmp(const void *p1, const void *p2)
 {
-	return mdb_integer(0, "GET", POST_ID_KEY);
+	const post_record_t *r1 = p1, *r2 = p2;
+	if (r1->id > r2->id)
+		return 1;
+	return r1->id == r2->id ? 0 : -1;
 }
 
-int post_index_cmp(const void *p1, const void *p2)
+static int post_record_open_file(const char *file, record_perm_e rdonly,
+		record_t *rec)
 {
-	const post_index_board_t *r1 = p1, *r2 = p2;
-	return r1->id - r2->id;
+	return record_open(file, post_record_cmp, sizeof(post_record_t), rdonly,
+			rec);
 }
 
-int post_index_board_open_file(const char *file, record_perm_e rdonly, record_t *rec)
-{
-	return record_open(file, post_index_cmp, sizeof(post_index_board_t),
-			rdonly, rec);
-}
-
-int post_index_board_open(int bid, record_perm_e rdonly, record_t *rec)
+int post_record_open(int bid, record_perm_e rdonly, record_t *rec)
 {
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "brdidx/%d", bid);
-	return post_index_board_open_file(file, rdonly, rec);
+	snprintf(file, sizeof(file), "board/%d", bid);
+	return post_record_open_file(file, rdonly, rec);
 }
 
-int post_index_board_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
+int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
 {
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "brdidx/%d.sticky", bid);
-	return post_index_board_open_file(file, rdonly, rec);
+	snprintf(file, sizeof(file), "board/%d.sticky", bid);
+	return post_record_open_file(file, rdonly, rec);
 }
 
 enum {
-	POST_INDEX_BOARD_BUF_SIZE = 50,
-	POST_INDEX_TRASH_BUF_SIZE = 50,
+	POST_BOARD_BUF_SIZE = 50,
+	POST_TRASH_BUF_SIZE = 50,
 };
 
-int post_index_board_to_info(post_index_record_t *pir,
-		const post_index_board_t *pib, post_info_t *pi, int count)
+void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count)
 {
-	post_index_t buf;
 	for (int i = 0; i < count; ++i) {
-		post_index_record_read(pir, pib->id, &buf);
+		pi->flag = pr->flag;
+		pi->user_id = pr->user_id;
+		pi->id = pr->id;
+		pi->reply_id = pr->reply_id;
+		pi->thread_id = pr->thread_id;
+		pi->stamp = post_stamp_from_id(pr->id);
+		pi->delete_stamp = 0;
+		pi->board_id = pr->board_id;
+		strlcpy(pi->user_name, pr->user_name, sizeof(pi->user_name));
+		pi->eraser_name[0] = '\0';
+		strlcpy(pi->utf8_title, pr->utf8_title, sizeof(pi->utf8_title));
 
-		pi->id = pib->id;
-		pi->reid = pib->id - pib->reid_delta;
-		pi->tid = pib->id - pib->tid_delta;
-		pi->flag = pib->flag;
-		pi->uid = pib->uid;
-		pi->stamp = buf.stamp;
-		pi->bid = buf.bid;
-		pi->replies = buf.replies;
-		pi->comments = buf.comments;
-		pi->score = buf.score;
-		strlcpy(pi->owner, buf.owner, sizeof(pi->owner));
-		strlcpy(pi->utf8_title, buf.utf8_title, sizeof(pi->utf8_title));
-		pi->estamp = 0;
-		pi->ename[0] = '\0';
-
-		++pib;
+		++pr;
 		++pi;
 	}
-	return count;
 }
 
-int post_index_trash_to_info(post_index_record_t *pir,
-		const post_index_trash_t *pit, post_info_t *pi, int count)
+void post_record_extended_to_info(const post_record_extended_t *pre,
+		post_info_t *pi, int count)
 {
 	for (int i = 0; i < count; ++i) {
 		post_info_t *pii = pi + i;
-		post_index_board_to_info(pir, (post_index_board_t *) (pit + i),
-				pii, 1);
-		pii->estamp = (pit + i)->estamp;
-		strlcpy(pii->ename, pit->ename, sizeof(pii->ename));
+		post_record_to_info((const post_record_t *) (pre + i), pii, 1);
+		pii->delete_stamp = (pre + i)->stamp;
+		strlcpy(pii->eraser_name, pre->eraser_name, sizeof(pii->eraser_name));
 	}
-	return count;
 }
 
-#define POST_INDEX_READ_HELPER(type, bufsize, converter)  \
+#define POST_RECORD_READ_HELPER(type, bufsize, converter)  \
 	type read_buf[bufsize]; \
 	while (size > 0) { \
 		int max = bufsize; \
@@ -103,459 +91,29 @@ int post_index_trash_to_info(post_index_record_t *pir,
 		if (count <= 0) \
 			break; \
 \
-		converter(pir, read_buf, buf, count); \
+		converter(read_buf, buf, count); \
 		records += count; \
 		size -= max; \
 	}
 
-int post_index_board_read(record_t *rec, int base, post_index_record_t *pir,
-		post_info_t *buf, int size, post_list_type_e type)
+int post_record_read(record_t *rec, int base, post_info_t *buf, int size,
+		post_list_type_e type)
 {
 	if (record_seek(rec, base, RECORD_SET) < 0)
 		return 0;
 
 	int records = 0;
 	if (is_deleted(type)) {
-		POST_INDEX_READ_HELPER(post_index_trash_t, POST_INDEX_TRASH_BUF_SIZE,
-				post_index_trash_to_info);
+		POST_RECORD_READ_HELPER(post_record_extended_t, POST_TRASH_BUF_SIZE,
+				post_record_extended_to_info);
 	} else {
-		POST_INDEX_READ_HELPER(post_index_board_t, POST_INDEX_BOARD_BUF_SIZE,
-				post_index_board_to_info);
+		POST_RECORD_READ_HELPER(post_record_t, POST_BOARD_BUF_SIZE,
+				post_record_to_info);
 	}
 	return records;
 }
 
-int post_index_trash_cmp(const void *p1, const void *p2)
-{
-	const post_index_trash_t *r1 = p1, *r2 = p2;
-	int diff = r1->estamp - r2->estamp;
-	if (diff)
-		return diff;
-	return r1->id - r2->id;
-}
-
-int post_index_trash_open(int bid, post_index_trash_e trash, record_t *rec)
-{
-	char file[HOMELEN];
-	if (trash)
-		snprintf(file, sizeof(file), "brdidx/%d.trash", bid);
-	else
-		snprintf(file, sizeof(file), "brdidx/%d.junk", bid);
-	return record_open(file, post_index_trash_cmp, sizeof(post_index_trash_t),
-			RECORD_WRITE, rec);
-}
-
-enum {
-	POST_INDEX_PER_FILE = 100000,
-};
-
-void post_index_record_open(post_index_record_t *pir)
-{
-	pir->base = 0;
-	pir->rdonly = RECORD_READ;
-}
-
-static post_id_t post_index_record_base(post_id_t id)
-{
-	return (id - 1) / POST_INDEX_PER_FILE * POST_INDEX_PER_FILE + 1;
-}
-
-static int post_index_record_cmp(const void *p1, const void *p2)
-{
-	const post_index_t *pi1 = p1, *pi2 = p2;
-	return pi1->id - pi2->id;
-}
-
-static int post_index_record_open_file(post_id_t id, record_perm_e rdonly,
-		record_t *record)
-{
-	char file[HOMELEN];
-	snprintf(file, sizeof(file), "index/%"PRIdPID,
-			(id - 1) / POST_INDEX_PER_FILE);
-	return record_open(file, post_index_record_cmp, sizeof(post_index_t),
-			rdonly, record);
-}
-
-static int post_index_record_check(post_index_record_t *pir, post_id_t id,
-		record_perm_e rdonly)
-{
-	post_id_t base = post_index_record_base(id);
-	if (pir->base > 0 && pir->base == base && (rdonly || !pir->rdonly))
-		return 0;
-
-	if (pir->base > 0)
-		record_close(&pir->record);
-
-	pir->base = base;
-	pir->rdonly = rdonly;
-
-	return post_index_record_open_file(id, rdonly, &pir->record);
-}
-
-int post_index_record_read(post_index_record_t *pir, post_id_t id,
-		post_index_t *pi)
-{
-	if (post_index_record_check(pir, id, RECORD_READ) >= 0) {
-		return record_read_after(&pir->record, pi, 1, id - pir->base);
-	}
-	memset(pi, 0, sizeof(*pi));
-	return 0;
-}
-
-int post_index_record_update(post_index_record_t *pir, const post_index_t *pi)
-{
-	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
-		return 0;
-	return record_write(&pir->record, pi, 1, pi->id - pir->base);
-}
-
-void post_index_record_get_title(post_index_record_t *pir, post_id_t id,
-		char *buf, size_t size)
-{
-	if (post_index_record_check(pir, id, RECORD_READ) < 0) {
-		buf[0] = '\0';
-	} else {
-		post_index_t pi;
-		post_index_record_read(pir, id, &pi);
-		strlcpy(buf, pi.utf8_title, size);
-	}
-}
-
-int post_index_record_lock(post_index_record_t *pir, record_lock_e lock,
-		post_id_t id)
-{
-	record_perm_e perm = (lock == RECORD_WRLCK) ? RECORD_WRITE : RECORD_READ;
-	if (post_index_record_check(pir, id, perm) < 0)
-		return -1;
-	return record_lock(&pir->record, lock, id - pir->base, RECORD_SET, 1);
-}
-
-static record_callback_e post_index_record_for_file(post_id_t base,
-		post_id_t end, post_index_record_callback_t callback, void *args)
-{
-	record_t record;
-	if (post_index_record_open_file(base, RECORD_READ, &record) < 0)
-		return RECORD_CALLBACK_BREAK;
-
-	if (!end)
-		end = base + POST_INDEX_PER_FILE;
-	int offset = end - base;
-
-	record_callback_e ret = RECORD_CALLBACK_CONTINUE;
-	do {
-		post_index_t buf[64];
-		offset -= ARRAY_SIZE(buf);
-		if (offset < 0)
-			offset = 0;
-
-		int count = record_read_after(&record, buf, ARRAY_SIZE(buf), offset);
-		if (count <= 0) {
-			ret = RECORD_CALLBACK_BREAK;
-			break;
-		}
-
-		for (int i = count - 1; i >= 0; --i) {
-			if (callback(buf + i, args) == RECORD_CALLBACK_BREAK) {
-				ret = RECORD_CALLBACK_BREAK;
-				break;
-			}
-		}
-	} while (ret != RECORD_CALLBACK_BREAK && offset > 0);
-
-	record_close(&record);
-	return ret;
-}
-
-int post_index_record_for_recent(post_index_record_callback_t cb, void *args)
-{
-	post_id_t id = current_post_id();
-	if (id) {
-		post_id_t base = post_index_record_base(id);
-		post_id_t end = id + 1;
-		while (base >= 0 && post_index_record_for_file(base, end, cb, args)
-				!= RECORD_CALLBACK_BREAK) {
-			end = 0;
-			base -= POST_INDEX_PER_FILE;
-		}
-	}
-	return 0;
-}
-
-void post_index_record_close(post_index_record_t *pir)
-{
-	if (pir->base >= 0)
-		record_close(&pir->record);
-	pir->base = 0;
-	pir->rdonly = RECORD_READ;
-}
-
-enum {
-	POST_CONTENT_PER_FILE = 10000,
-};
-
-typedef struct {
-	uint32_t offset;
-	uint32_t length;
-} post_content_header_t;
-
-static char *post_content_file_name(post_id_t id, char *file, size_t size)
-{
-	snprintf(file, size, "post/%"PRIdPID, (id - 1) / POST_CONTENT_PER_FILE);
-	return file;
-}
-
-enum {
-	POST_CONTENT_NOT_EXIST = 0,
-	POST_CONTENT_NEED_LOCK = 1,
-	POST_CONTENT_READ_ERROR = 2,
-};
-
-static char *post_content_try_read(int fd, post_id_t id, char *buf,
-		size_t *size)
-{
-	int relative_id = (id - 1) % POST_CONTENT_PER_FILE;
-
-	post_content_header_t header;
-	lseek(fd, relative_id * sizeof(header), SEEK_SET);
-	file_read(fd, &header, sizeof(header));
-
-	if (!header.offset) {
-		buf[0] = POST_CONTENT_NOT_EXIST;
-		return NULL;
-	}
-
-	if (!header.length) {
-		buf[0] = '\0';
-		return buf;
-	}
-
-	char *sbuf = buf;
-	if (header.length >= *size) {
-		*size = header.length + 1;
-		sbuf = malloc(*size);
-	}
-
-	char hdr[3];
-	struct iovec vec[] = {
-		{ .iov_base = hdr, .iov_len = sizeof(hdr) },
-		{ .iov_base = sbuf, .iov_len = header.length + 1 },
-	};
-	lseek(fd, header.offset, SEEK_SET);
-	int ret = readv(fd, vec, ARRAY_SIZE(vec));
-
-	if (ret != sizeof(hdr) + header.length + 1) {
-		if (sbuf != buf)
-			free(sbuf);
-		buf[0] = POST_CONTENT_READ_ERROR;
-		return NULL;
-	}
-
-	uint16_t rel = *(uint16_t *) (hdr + 1);
-	if (hdr[0] != '\n' || rel != relative_id || sbuf[header.length] != '\0') {
-		if (sbuf != buf)
-			free(sbuf);
-		buf[0] = POST_CONTENT_NEED_LOCK;
-		return NULL;
-	}
-	return sbuf;
-}
-
-static char *post_content_read_fd(int fd, post_id_t id, char *buf, size_t *size)
-{
-	char *ptr = post_content_try_read(fd, id, buf, size);
-	if (!ptr && buf[0] == POST_CONTENT_NEED_LOCK) {
-		file_lock(fd, FILE_WRLCK, 0, FILE_SET, 0);
-		ptr = post_content_try_read(fd, id, buf, size);
-		file_lock(fd, FILE_UNLCK, 0, FILE_SET, 0);
-	}
-	return ptr;
-}
-
-char *post_content_read(post_id_t id, char *buf, size_t size)
-{
-	char file[HOMELEN];
-	post_content_file_name(id, file, sizeof(file));
-
-	int fd = open(file, O_RDONLY);
-	if (fd < 0)
-		return NULL;
-
-	char *ptr = post_content_read_fd(fd, id, buf, &size);
-
-	close(fd);
-	return ptr;
-}
-
-int post_content_write(post_id_t id, const char *str, size_t size)
-{
-	char file[HOMELEN];
-	post_content_file_name(id, file, sizeof(file));
-
-	int ret = -1;
-	int fd = open(file, O_WRONLY | O_CREAT);
-	if (fd < 0)
-		return -1;
-
-	if (file_lock_all(fd, FILE_WRLCK) < 0)
-		goto e1;
-	struct stat st;
-	if (fstat(fd, &st) < 0)
-		goto e2;
-
-	uint32_t offset = st.st_size;
-	if (offset < sizeof(uint32_t) * POST_CONTENT_PER_FILE)
-		offset = sizeof(uint32_t) * POST_CONTENT_PER_FILE;
-
-	post_id_t base = 1 + (id - 1) / POST_CONTENT_PER_FILE
-			* POST_CONTENT_PER_FILE;
-	uint16_t rel = id - base;
-	lseek(fd, rel * sizeof(post_content_header_t), SEEK_SET);
-
-	char buf[3] = { '\n' };
-	memcpy(buf + 1, &rel, sizeof(rel));
-	if (UINT32_MAX - offset < sizeof(buf) + size + 1)
-		goto e2;
-
-	post_content_header_t header = { .offset = offset, .length = size };
-	file_write(fd, &header, sizeof(header));
-
-	struct iovec vec[] = {
-		{ .iov_base = buf, .iov_len = sizeof(buf) },
-		{ .iov_base = (void *) str, .iov_len = size + 1 },
-	};
-	lseek(fd, offset, SEEK_SET);
-	ret = writev(fd, vec, ARRAY_SIZE(vec));
-
-e2: file_lock_all(fd, FILE_UNLCK);
-e1: close(fd);
-	return ret;
-}
-
-void post_content_record_open(post_content_record_t *pcr)
-{
-	pcr->base = 0;
-	pcr->fd = -1;
-	pcr->result = pcr->buf;
-	pcr->size = sizeof(pcr->buf);
-}
-
-static post_id_t post_content_record_base(post_id_t id)
-{
-	return (id - 1) / POST_CONTENT_PER_FILE * POST_CONTENT_PER_FILE + 1;
-}
-
-char *post_content_record_read(post_content_record_t *pcr, post_id_t id)
-{
-	post_id_t base = post_content_record_base(id);
-	if (pcr->base != base) {
-		if (pcr->fd >= 0)
-			file_close(pcr->fd);
-
-		char file[HOMELEN];
-		post_content_file_name(id, file, sizeof(file));
-
-		pcr->fd = open(file, O_RDONLY);
-		pcr->base = base;
-	}
-
-	if (!pcr->result) {
-		pcr->result = pcr->buf;
-		pcr->size = sizeof(pcr->buf);
-	}
-
-	char *ptr = NULL;
-	if (pcr->fd >= 0)
-		ptr = post_content_read_fd(pcr->fd, id, pcr->result, &pcr->size);
-
-	if (ptr != pcr->result && pcr->result != pcr->buf)
-		free(pcr->result);
-	pcr->result = ptr;
-	return ptr;
-}
-
-void post_content_record_close(post_content_record_t *pcr)
-{
-	if (pcr->fd >= 0)
-		file_close(pcr->fd);
-	if (pcr->result != pcr->buf)
-		free(pcr->result);
-}
-
-static record_callback_e post_sticky_filter(void *ptr, void *fargs, int offset)
-{
-	const post_index_board_t *pib = ptr;
-	post_id_t *id = fargs;
-	return pib->id == *id ? RECORD_CALLBACK_MATCH : RECORD_CALLBACK_CONTINUE;
-}
-
-int post_remove_sticky(int bid, post_id_t id)
-{
-	record_t record;
-	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
-		return 0;
-	int r = record_delete(&record, NULL, 0, post_sticky_filter, &id);
-	record_close(&record);
-	return r;
-}
-
-int post_add_sticky(int bid, const post_info_t *pi)
-{
-	record_t record;
-	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
-		return 0;
-
-	post_index_board_t pib = {
-		.id = pi->id,
-		.reid_delta = pi->id - pi->reid,
-		.tid_delta = pi->id - pi->tid,
-		.uid = pi->uid,
-		.flag = pi->flag | POST_FLAG_STICKY,
-	};
-
-	record_lock_all(&record, RECORD_WRLCK);
-	int r = 0;
-	int count = record_count(&record);
-	if (count < MAX_NOTICE) {
-		if (record_search(&record, post_sticky_filter, &pib.id, -1, false) < 0)
-			r = record_append(&record, &pib, 1);
-	}
-	record_lock_all(&record, RECORD_UNLCK);
-
-	record_close(&record);
-	return r;
-}
-
-bool reorder_sticky_posts(int bid, post_id_t pid)
-{
-	bool success = false;
-	record_t record;
-	if (post_index_board_open_sticky(bid, RECORD_WRITE, &record) < 0)
-		goto e1;
-	if (record_lock_all(&record, RECORD_WRLCK) < 0)
-		goto e2;
-
-	post_index_board_t pibs[MAX_NOTICE];
-	int count = record_read(&record, pibs, ARRAY_SIZE(pibs));
-	if (count > 1) {
-		for (int i = 0; i < count - 1; ++i) {
-			if (pibs[i].id == pid) {
-				post_index_board_t temp = pibs[i];
-				memmove(pibs + i, pibs + i + 1,
-						(count - 1 - i) * sizeof(pibs[0]));
-				pibs[count - 1] = temp;
-				break;
-			}
-		}
-		if (record_write(&record, pibs, count, 0) > 0)
-			success = true;
-	}
-
-	record_lock_all(&record, RECORD_UNLCK);
-e2:	record_close(&record);
-e1: return success;
-}
-
-char *convert_file_to_utf8_content(const char *file)
+char *post_convert_to_utf8(const char *file)
 {
 	char *utf8_content = NULL;
 	mmap_t m = { .oflag = O_RDONLY };
@@ -974,84 +532,30 @@ void quote_file_(const char *orig, const char *output, post_quote_e mode,
 	}
 }
 
-typedef struct {
-	post_index_record_t *pir;
-	post_filter_t *filter;
-	post_id_t id;
-	bool set;
-	bool toggle;
-	post_flag_e flag;
-} post_index_board_update_flag_t;
-
-bool match_filter(const post_index_board_t *pib,
-		post_index_record_t *pir, const post_filter_t *filter, int offset)
+bool post_match_filter(const post_record_t *pr, const post_filter_t *filter,
+		int offset)
 {
 	bool match = true;
 	if (filter->uid)
-		match &= pib->uid == filter->uid;
+		match &= pr->user_id == filter->uid;
 	if (filter->min)
-		match &= pib->id >= filter->min;
+		match &= pr->id >= filter->min;
 	if (filter->max)
-		match &= pib->id <= filter->max;
+		match &= pr->id <= filter->max;
 	if (filter->tid)
-		match &= pib->id - pib->tid_delta == filter->tid;
+		match &= pr->thread_id == filter->tid;
 	if (filter->flag)
-		match &= (pib->flag & filter->flag) == filter->flag;
+		match &= (pr->flag & filter->flag) == filter->flag;
 	if (filter->offset_min)
 		match &= offset >= filter->offset_min - 1;
 	if (filter->offset_max)
 		match &= offset < filter->offset_max;
 	if (filter->type == POST_LIST_TOPIC)
-		match &= !pib->tid_delta;
+		match &= pr->id == pr->thread_id;
 	if (*filter->utf8_keyword) {
-		UTF8_BUFFER(title, POST_TITLE_CCHARS);
-		post_index_record_get_title(pir, pib->id, utf8_title,
-				sizeof(utf8_title));
-		match &= (bool) strcasestr(utf8_title, filter->utf8_keyword);
+		match &= (bool) strcasestr(pr->utf8_title, filter->utf8_keyword);
 	}
 	return match;
-}
-
-static record_callback_e post_index_board_update_flag(void *ptr, void *args,
-		int offset)
-{
-	post_index_board_t *pib = ptr;
-	post_index_board_update_flag_t *pibuf = args;
-
-	if (pibuf->id == pib->id || (pibuf->pir && pibuf->filter
-				&& match_filter(pib, pibuf->pir, pibuf->filter, offset))) {
-		if (pibuf->toggle)
-			pibuf->set = !(pib->flag & pibuf->flag);
-		if (pibuf->set)
-			pib->flag |= pibuf->flag;
-		else
-			pib->flag &= ~pibuf->flag;
-		return RECORD_CALLBACK_MATCH;
-	}
-	if (!pibuf->id)
-		return RECORD_CALLBACK_CONTINUE;
-	COMPARE_RETURN(pib->id, pibuf->id);
-}
-
-int set_post_flag(record_t *rec, post_index_record_t *pir,
-		post_filter_t *filter, post_flag_e flag, bool set, bool toggle)
-{
-	post_index_board_update_flag_t pibuf = {
-		.pir = pir, .filter = filter, .id = 0,
-		.set = set, .toggle = toggle, .flag = flag,
-	};
-	return record_update(rec, NULL, 0, post_index_board_update_flag, &pibuf);
-}
-
-int set_post_flag_one(record_t *rec, post_index_board_t *pib, int offset,
-		post_flag_e flag, bool set, bool toggle)
-{
-	post_index_board_update_flag_t pibuf = {
-		.pir = NULL, .filter = NULL, .id = pib->id,
-		.set = set, .toggle = toggle, .flag = flag,
-	};
-	return record_update(rec, pib, offset,
-			post_index_board_update_flag, &pibuf);
 }
 
 bool is_deleted(post_list_type_e type)
@@ -1059,9 +563,12 @@ bool is_deleted(post_list_type_e type)
 	return type == POST_LIST_TRASH || type == POST_LIST_JUNK;
 }
 
-int dump_content_to_gbk_file(const char *utf8_str, size_t length, char *file,
+int post_dump_gbk_file(const char *utf8_str, size_t length, char *file,
 		size_t size)
 {
+	if (!utf8_str || !file)
+		return -1;
+
 	file_temp_name(file, size);
 	FILE *fp = fopen(file, "w");
 	if (!fp)
@@ -1092,94 +599,41 @@ fb_time_t get_last_post_time(int bid)
  * @param force 是否删除带保留标记的文章
  * @return 被删除的文章数
  */
-int post_index_board_delete(const post_filter_t *filter, bool junk,
-		bool bm_visible, bool force)
+int post_delete(const post_filter_t *filter, bool junk, bool bm_visible,
+		bool force)
 {
 	if (!filter->bid)
 		return 0;
 
 	backend_request_post_delete_t req = {
-		.filter = (post_filter_t *) filter, .junk = junk,
-		.bm_visible = bm_visible, .force = force, .ename = currentuser.userid,
+		.filter = (post_filter_t *) filter,
+		.junk = junk,
+		.bm_visible = bm_visible,
+		.force = force,
+		.user_id = session_uid(),
+		.user_name = currentuser.userid,
 	};
 	backend_response_post_delete_t resp;
-	mdb_res_t *res = backend_cmd(&req, &resp, post_delete);
-	mdb_clear(res);
-
-	return res ? resp.deleted : 0;
+	bool ok = backend_cmd(&req, &resp, post_delete);
+	return ok ? resp.deleted : 0;
 }
 
-int post_index_board_undelete(const post_filter_t *filter, bool bm_visible)
+int post_undelete(const post_filter_t *filter, bool bm_visible)
 {
 	if (!filter->bid)
 		return 0;
 
 	backend_request_post_undelete_t req = {
-		.filter = (post_filter_t *) filter, .bm_visible = bm_visible,
+		.filter = (post_filter_t *) filter,
+		.bm_visible = bm_visible,
 	};
 	backend_response_post_undelete_t resp;
 
-	mdb_res_t *res = backend_cmd(&req, &resp, post_undelete);
-	mdb_clear(res);
-
-	return res ? resp.undeleted : 0;
+	bool ok = backend_cmd(&req, &resp, post_undelete);
+	return ok ? resp.undeleted : 0;
 }
 
-static char *replace_content_title(const char *content, size_t len,
-		const char *title)
-{
-	const char *end = content + len;
-	const char *l1_end = get_line_end(content, end);
-	const char *l2_end = get_line_end(l1_end, end);
-
-	// sizeof("标  题: ") in UTF-8 is 10
-	const char *begin = l1_end + 10;
-	int orig_title_len = l2_end - begin - 1; // exclude '\n'
-	if (orig_title_len < 0)
-		return NULL;
-
-	int new_title_len = strlen(title);
-	len += new_title_len - orig_title_len;
-	char *s = malloc(len + 1);
-	char *p = s;
-	size_t l = begin - content;
-	memcpy(p, content, l);
-	p += l;
-	memcpy(p, title, new_title_len);
-	p += new_title_len;
-	*p++ = '\n';
-	l = end - l2_end;
-	memcpy(p, l2_end, end - l2_end);
-	s[len] = '\0';
-	return s;
-}
-
-bool alter_title(post_index_record_t *pir, const post_info_t *pi)
-{
-	if (post_index_record_check(pir, pi->id, RECORD_WRITE) < 0)
-		return false;
-
-	post_index_t tmp;
-	post_index_record_lock(pir, RECORD_WRLCK, pi->id);
-	post_index_record_read(pir, pi->id, &tmp);
-	strlcpy(tmp.utf8_title, pi->utf8_title, sizeof(tmp.utf8_title));
-	post_index_record_update(pir, &tmp);
-	post_index_record_lock(pir, RECORD_UNLCK, pi->id);
-
-	char buf[POST_CONTENT_BUFLEN];
-	char *content = post_content_read(pi->id, buf, sizeof(buf));
-	if (!content)
-		return false;
-	char *new_content =
-		replace_content_title(content, strlen(content), pi->utf8_title);
-	post_content_write(pi->id, new_content, strlen(new_content));
-	free(new_content);
-	if (content != buf)
-		free(content);
-	return true;
-}
-
-int get_post_mark_raw(fb_time_t stamp, int flag)
+int post_mark_raw(fb_time_t stamp, int flag)
 {
 	int mark = ' ';
 
@@ -1205,9 +659,19 @@ int get_post_mark_raw(fb_time_t stamp, int flag)
 	return mark;
 }
 
-int get_post_mark(const post_info_t *p)
+int post_mark(const post_info_t *p)
 {
-	return get_post_mark_raw(p->stamp, p->flag);
+	return post_mark_raw(p->stamp, p->flag);
+}
+
+fb_time_t post_stamp_from_id(post_id_t id)
+{
+	return (fb_time_t) ((id >> 21) / 1000);
+}
+
+post_id_t post_id_from_stamp(fb_time_t stamp)
+{
+	return ((post_id_t) (stamp * 1000)) << 21;
 }
 
 /**
@@ -1215,7 +679,7 @@ int get_post_mark(const post_info_t *p)
  * @param pr The post request.
  * @return file id on success, -1 on error.
  */
-post_id_t publish_post(const post_request_t *pr)
+post_id_t post_new(const post_request_t *pr)
 {
 	if (!pr || !pr->title || (!pr->content && !pr->gbk_file) || !pr->board)
 		return 0;
@@ -1238,38 +702,336 @@ post_id_t publish_post(const post_request_t *pr)
 
 	char *content;
 	if (pr->gbk_file)
-		content = convert_file_to_utf8_content(pr->gbk_file);
+		content = post_convert_to_utf8(pr->gbk_file);
 	else
 		content = generate_content(pr, uname, nick, ip, anony, pr->length);
 
 	backend_request_post_new_t req = {
-		.reid = pr->reid,
-		.tid = pr->tid,
+		.reply_id = pr->reid,
+		.thread_id = pr->tid,
 		.title = pr->title,
-		.uname = pr->uname,
+		.user_name = pr->uname,
+		.board_name = pr->board->name,
 		.content = content,
-		.bid = pr->board->id,
-		.uname_replied = pr->uname_replied,
-		.uid_replied = pr->uid_replied,
+		.board_id = pr->board->id,
+		.user_id = session_uid(),
+		.user_id_replied = pr->uid_replied,
 		.marked = pr->marked,
 		.locked = pr->locked,
 	};
 	backend_response_post_new_t resp;
-	mdb_res_t *res = backend_cmd(&req, &resp, post_new);
-	mdb_clear(res);
+	bool ok = backend_cmd(&req, &resp, post_new);
 
 	free(content);
 
-	if (!res)
+	if (!ok)
 		return 0;
 	if (resp.id) {
-		set_last_post_time(pr->board->id, resp.stamp);
-
 		if (!pr->autopost) {
+			fb_time_t stamp = post_stamp_from_id(resp.id);
 			brc_initialize(uname, pr->board->name);
-			brc_mark_as_read(resp.stamp);
+			brc_mark_as_read(stamp);
 			brc_update(uname, pr->board->name);
 		}
 	}
 	return resp.id;
+}
+
+/** 版面文章记录缓存是否失效 @mdb_hash */
+#define POST_RECORD_INVALIDITY_KEY  "post_record_invalidity"
+
+void post_record_invalidity_change(int board_id, int delta)
+{
+	if (board_id > 0) {
+		mdb_cmd("HINCRBY", POST_RECORD_INVALIDITY_KEY" %d %d",
+				board_id, delta);
+	}
+}
+
+int post_record_invalidity_get(int board_id)
+{
+	return mdb_integer(0, "HGET", POST_RECORD_INVALIDITY_KEY" %d", board_id);
+}
+
+static void convert_post_record(db_res_t *res, int row,
+		post_record_t *post)
+{
+	post->id = db_get_post_id(res, row, 0);
+	post->reply_id = db_get_post_id(res, row, 1);
+	post->thread_id = db_get_post_id(res, row, 2);
+	post->user_id = db_get_user_id(res, row, 3);
+	post->board_id = db_get_integer(res, row, 6);
+	post->flag = (db_get_bool(res, row, 8) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(res, row, 9) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(res, row, 10) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(res, row, 11) ? POST_FLAG_IMPORT : 0)
+			| (db_get_bool(res, row, 12) ? POST_FLAG_WATER : 0);
+
+	const char *user_name = db_get_value(res, row, 5);
+	if (user_name)
+		strlcpy(post->user_name, user_name, sizeof(post->user_name));
+	else
+		post->user_name[0] = '\0';
+
+	const char *title = db_get_value(res, row, 14);
+	if (title)
+		strlcpy(post->utf8_title, title, sizeof(post->utf8_title));
+	else
+		post->utf8_title[0] = '\0';
+}
+
+static void convert_post_record_extended(db_res_t *res, int row,
+		post_record_extended_t *post)
+{
+	post->basic.flag |= db_get_bool(res, row, 18) ? POST_FLAG_JUNK : 0;
+	post->bm_visible = db_get_bool(res, row, 19);
+	post->eraser_id = db_get_user_id(res, row, 16);
+	post->stamp = db_get_time(res, row, 15);
+	const char *eraser_name = db_get_value(res, row, 17);
+	if (eraser_name)
+		strlcpy(post->eraser_name, eraser_name, sizeof(post->eraser_name));
+	else
+		post->eraser_name[0] = '\0';
+}
+
+int post_record_compare(const void *ptr1, const void *ptr2)
+{
+	const post_record_t *p1 = ptr1, *p2 = ptr2;
+	if (p1->id > p2->id)
+		return 1;
+	return p1->id == p2->id ? 0 : -1;
+}
+
+static int post_sticky_compare(const void *ptr1, const void *ptr2)
+{
+	return -post_record_compare(ptr1, ptr2);
+}
+
+static bool update_record(record_t *rec, int bid, bool sticky)
+{
+	query_t *q = query_new(0);
+	query_select(q, POST_TABLE_FIELDS);
+	query_from(q, "posts.recent");
+	query_where(q, "board_id = %d", bid);
+	db_res_t *res = query_exec(q);
+	if (!res)
+		return false;
+
+	int rows = db_res_rows(res);
+	post_record_t *posts = malloc(sizeof(*posts) * rows);
+	if (posts) {
+		for (int i = 0; i < rows; ++i) {
+			convert_post_record(res, i, posts + i);
+		}
+		qsort(posts, rows, sizeof(*posts),
+				sticky ? post_sticky_compare : post_record_compare);
+		record_write(rec, posts, rows, 0);
+		record_truncate(rec, rows);
+		free(posts);
+	}
+
+	db_clear(res);
+	return true;
+}
+
+/**
+ * 更新版面文章记录缓存
+ * @param[in] board_id 版面ID
+ * @return 成功更新返回true, 无须更新或者出错返回false
+ */
+bool post_update_record(int board_id)
+{
+	bool updated = false;
+	int invalid = post_record_invalidity_get(board_id);
+	if (invalid > 0) {
+		record_t record;
+		if (post_record_open(board_id, RECORD_WRITE, &record) >= 0) {
+			if (record_try_lock_all(&record, RECORD_WRLCK) == 0) {
+				updated = update_record(&record, board_id, false);
+				post_record_invalidity_change(board_id, -invalid);
+				record_lock_all(&record, RECORD_UNLCK);
+			}
+			record_close(&record);
+		}
+	}
+	return updated;
+}
+
+bool post_update_sticky_record(int board_id)
+{
+	bool updated = false;
+	record_t record;
+	post_record_open_sticky(board_id, RECORD_WRITE, &record);
+	if (record_try_lock_all(&record, RECORD_WRLCK)) {
+		updated = update_record(&record, board_id, true);
+		record_lock_all(&record, RECORD_UNLCK);
+	}
+	return updated;
+}
+
+bool post_update_trash_record(record_t *record, post_trash_e trash,
+		int board_id)
+{
+	query_t *q = query_new(0);
+	query_select(q, POST_TABLE_FIELDS "," POST_TABLE_DELETED_FIELDS);
+	query_from(q, "posts.deleted");
+	query_where(q, "board_id = %d", board_id);
+	if (trash == POST_TRASH)
+		query_and(q, "bm_visible");
+	else
+		query_and(q, "NOT bm_visible");
+
+	db_res_t *res = query_exec(q);
+	if (!res)
+		return false;
+
+	int rows = db_res_rows(res);
+	post_record_extended_t *posts = malloc(sizeof(*posts) * rows);
+	if (posts) {
+		for (int i = 0; i < rows; ++i) {
+			convert_post_record(res, i, (post_record_t *) (posts + i));
+			convert_post_record_extended(res, i, posts + i);
+		}
+		qsort(posts, rows, sizeof(*posts), post_record_compare);
+		record_write(record, posts, rows, 0);
+		record_truncate(record, rows);
+		free(posts);
+	}
+
+	db_clear(res);
+	return true;
+}
+
+int post_record_open_trash(int board_id, post_trash_e trash, record_t *record)
+{
+	char file[HOMELEN];
+	file_temp_name(file, sizeof(file));
+	int ret = record_open(file, post_record_cmp,
+			sizeof(post_record_extended_t), RECORD_WRITE, record);
+	unlink(file);
+
+	if (ret >= 0)
+		post_update_trash_record(record, trash, board_id);
+	return ret;
+}
+
+int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set,
+		bool toggle)
+{
+	backend_request_post_set_flag_t req = {
+		.filter = (post_filter_t *) filter,
+		.flag = flag,
+		.set = set,
+		.toggle = toggle,
+	};
+
+	backend_response_post_set_flag_t resp;
+	bool ok = backend_cmd(&req, &resp, post_set_flag);
+	return ok ? resp.affected : 0;
+}
+
+int post_sticky_count(int board_id)
+{
+	db_res_t *res = db_query("SELECT COUNT(*) FROM posts.recent"
+			" WHERE sticky AND board_id = %d", board_id);
+	int count = 0;
+	if (res && db_res_rows(res) >= 1) {
+		count = db_get_bigint(res, 0, 0);
+	}
+	db_clear(res);
+	return count;
+}
+
+enum {
+	POST_CONTENT_CACHE_DIRECTORIES = 1000,
+};
+
+static void post_content_cache_filename(post_id_t post_id, char *file,
+		size_t size)
+{
+	snprintf(file, size, "post/%03"PRIdPID"/%"PRIdPID,
+			post_id % POST_CONTENT_CACHE_DIRECTORIES,
+			post_id / POST_CONTENT_CACHE_DIRECTORIES);
+}
+
+static bool post_content_update_cache(const char *file, const char *str,
+		bool force)
+{
+	int mode = O_WRONLY | O_CREAT;
+	if (!force)
+		mode |= O_EXCL;
+
+	int fd = open(file, mode, 0644);
+	if (fd < 0)
+		return false;
+
+	bool ok = false;
+	if (file_lock_all(fd, FILE_WRLCK) == 0) {
+		size_t size = strlen(str);
+		if (file_write(fd, str, size) == size)
+			ok = true;
+		file_lock_all(fd, FILE_UNLCK);
+	}
+	close(fd);
+	return ok;
+}
+
+char *post_content_get(post_id_t post_id)
+{
+	char file[HOMELEN];
+	post_content_cache_filename(post_id, file, sizeof(file));
+
+	char *str = file_read_all(file);
+	if (str)
+		return str;
+
+	query_t *q = query_new(0);
+	query_select(q, "content");
+	query_from(q, "posts.content");
+	query_where(q, "post_id = %"DBIdPID, post_id);
+
+	db_res_t *res = query_exec(q);
+	if (res && db_res_rows(res) == 1) {
+		const char *s = db_get_value(res, 0, 0);
+		str = strdup(s);
+	}
+	db_clear(res);
+
+	if (str)
+		post_content_update_cache(file, str, false);
+	return str;
+}
+
+bool post_content_set(post_id_t post_id, const char *str)
+{
+	if (!str)
+		return false;
+
+	query_t *q = query_new(0);
+	query_update(q, "posts.content");
+	query_set(q, "content = %s", str);
+	query_where(q, "post_id = %"DBIdPID, post_id);
+
+	bool ok = false;
+	db_res_t *res = query_cmd(q);
+	if (res && db_cmd_rows(res) == 1)
+		ok = true;
+	db_clear(res);
+	return ok;
+}
+
+bool post_alter_title(int board_id, post_id_t post_id, const char *title)
+{
+	if (!title)
+		return false;
+
+	backend_request_post_alter_title_t req = {
+		.board_id = board_id,
+		.post_id = post_id,
+		.title = title,
+	};
+	backend_response_post_alter_title_t resp;
+
+	bool ok = backend_cmd(&req, &resp, post_alter_title);
+	return ok && resp.ok;
 }

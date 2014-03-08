@@ -926,7 +926,7 @@ void start_client(void)
 	fill_date();
 
 	notification_clear();
-	notification_subscribe();
+//	notification_subscribe();
 
 	if (DEFINE(DEF_LOGFRIEND)
 			&& session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)) > 0)

@@ -5,7 +5,6 @@
 #include "fbbs/terminal.h"
 
 extern int numofsig;
-extern int noreply;
 #ifdef ENABLE_PREFIX
 char prefixbuf[MAX_PREFIX][6];
 int numofprefix;

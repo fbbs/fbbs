@@ -341,7 +341,6 @@ static int sysconf_load_image(const char *imgfile)
 		sys_conf.var = (void *) ptr;
 		ptr += shead.key * sizeof(struct sdefine);
 		sys_conf.buf = (void *) ptr;
-		ptr += shead.len;
 		sys_conf.items = shead.menu;
 		sys_conf.keys = shead.key;
 		sys_conf.len = shead.len;

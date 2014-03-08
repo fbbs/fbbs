@@ -248,16 +248,24 @@ void tui_update_status_line(void)
 		return;
 
 	fb_time_t now = fb_time();
-	strlcpy(date, format_time(now, TIME_FORMAT_ZH), sizeof(date));
-
 	int cur_sec = now % 10;
-	if (cur_sec == 0) {
-		if (resolve_boards() < 0)
-			exit(1);
-		strlcpy(date, brdshm->date, 30);
-		cur_sec = 1;
-	}
+
 	if (cur_sec < 5) {
+		strlcpy(date, format_time(now, TIME_FORMAT_ZH), sizeof(date));
+	} else {
+		if (resolve_boards() >= 0)
+			strlcpy(date, brdshm->date, 30);
+		else
+			date[0] = '\0';
+	}
+
+	if (cur_sec >= 5 && is_birth(&currentuser)) {
+		//% "啦啦～～，生日快乐!   记得要请客哟 :P"
+		prints("\033[0;1;44;33m[\033[36m                     "
+				"\xc0\xb2\xc0\xb2\xa1\xab\xa1\xab\xa3\xac\xc9\xfa\xc8\xd5"
+				"\xbf\xec\xc0\xd6!   \xbc\xc7\xb5\xc3\xd2\xaa\xc7\xeb"
+				"\xbf\xcd\xd3\xb4 :P                   \033[33m]\033[m");
+	} else {
 		int stay = (now - login_start_time) / 60;
 		sprintf(buf, "[\033[36m%.12s\033[33m]", currentuser.userid);
 		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
@@ -269,15 +277,6 @@ void tui_update_status_line(void)
 			date, session_count_online(),
 			session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)),
 			buf, (stay / 60) % 1000, stay % 60);
-		return;
-	}
-
-	if (is_birth(&currentuser)) {
-		//% "啦啦～～，生日快乐!   记得要请客哟 :P"
-		prints("\033[0;1;44;33m[\033[36m                     "
-				"\xc0\xb2\xc0\xb2\xa1\xab\xa1\xab\xa3\xac\xc9\xfa\xc8\xd5"
-				"\xbf\xec\xc0\xd6!   \xbc\xc7\xb5\xc3\xd2\xaa\xc7\xeb"
-				"\xbf\xcd\xd3\xb4 :P                   \033[33m]\033[m");
 	}
 }
 

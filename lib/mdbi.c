@@ -74,7 +74,7 @@ void mdb_clear(mdb_res_t *res)
 static mdb_res_t *mdb_vcmd(bool safe, const char *cmd, const char *fmt,
 		va_list ap)
 {
-	char real_fmt[32];
+	char real_fmt[64];
 	size_t bytes = snprintf(real_fmt, sizeof(real_fmt), "%s %s", cmd, fmt);
 	if (bytes >= sizeof(real_fmt))
 		return NULL;

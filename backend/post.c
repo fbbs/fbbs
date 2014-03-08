@@ -5,81 +5,39 @@
 #include "fbbs/notification.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
-
 #include "s11n/backend_post.h"
 
+#if 0
 static void set_board_post_count(int bid, int count)
 {
 	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
 }
+#endif
 
-static post_id_t next_post_id(void)
+static post_id_t insert_post(const backend_request_post_new_t *req)
 {
-	return mdb_integer(0, "INCR", POST_ID_KEY);
-}
-
-static post_id_t insert_post_index(const backend_request_post_new_t *req,
-		fb_time_t now, post_index_t *pi)
-{
-	pi->id = next_post_id();
-	if (!pi->id)
-		return 0;
-
-	pi->reid_delta = req->reid ? pi->id - req->reid : 0;
-	pi->tid_delta = req->tid ? pi->id - req->tid : 0;
-	pi->stamp = now;
-	pi->uid = get_user_id(req->uname);
-	pi->flag = (req->marked ? POST_FLAG_MARKED : 0)
-			| (req->locked ? POST_FLAG_LOCKED : 0);
-	pi->bid = req->bid;
-	strlcpy(pi->owner, req->uname, sizeof(pi->owner));
-	string_cp(pi->utf8_title, req->title, sizeof(pi->utf8_title));
-
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-	if (!post_index_record_update(&pir, pi))
-		pi->id = 0;
-	post_index_record_close(&pir);
-	return pi->id;
-}
-
-static post_id_t insert_post_index_board(const post_index_t *pi,
-		post_index_board_t *pib)
-{
-	pib->id = pi->id;
-	pib->reid_delta = pi->reid_delta;
-	pib->tid_delta = pi->tid_delta;
-	pib->uid = pi->uid;
-	pib->flag = pi->flag;
-	pib->stamp = pi->stamp;
-	pib->cstamp = 0;
-
 	post_id_t id = 0;
-	record_t record;
-	if (post_index_board_open(pi->bid, RECORD_WRITE, &record) < 0)
-		return 0;
-
-	if (record_append_locked(&record, &pib, 1) >= 0) {
-		id = pi->id;
-		set_board_post_count(pi->bid, record_count(&record));
+	db_res_t *r1 = db_query("INSERT INTO posts.recent (reply_id, thread_id,"
+			" user_id, real_user_id, user_name, board_id, board_name, marked,"
+			" locked, attachment, title) VALUES (%"DBIdPID", %"DBIdPID","
+			" %"DBIdUID", %"DBIdUID", %s, %d, %s, %b, %b, %b, %s)"
+			" RETURNING id", req->reply_id, req->thread_id,
+			req->hide_user_id ? 0 : req->user_id, req->user_id, req->user_name,
+			req->board_id, req->board_name, req->marked, req->locked, false,
+			req->title);
+	if (r1 && db_res_rows(r1) == 1) {
+		id = db_get_post_id(r1, 0, 0);
+		if (id) {
+			db_res_t *r2 = db_cmd("INSERT INTO posts.content"
+					" (post_id, content) VALUES (%"DBIdPID", %s)",
+					id, req->content);
+			db_clear(r2);
+		}
 	}
-	record_close(&record);
+	db_clear(r1);
 	return id;
 }
-
-static post_id_t insert_post(const backend_request_post_new_t *req,
-		fb_time_t now, post_index_board_t *pib)
-{
-	post_index_t pi;
-	if (!insert_post_index(req, now, &pi))
-		return 0;
-
-	if (post_content_write(pi.id, req->content, strlen(req->content)) <= 0)
-		return 0;
-
-	return insert_post_index_board(&pi, pib);
-}
-
+#if 0
 static bool append_notification_file(const char *uname, user_id_t uid,
 		const board_t *board, const post_index_board_t *pib,
 		const char *basename)
@@ -109,31 +67,7 @@ static void send_reply_notification(const post_index_board_t *pib,
 		append_notification_file(uname, uid, board, pib, POST_REPLIES_FILE);
 	}
 }
-
-bool post_new(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
-{
-	backend_request_post_new_t req;
-	if (!deserialize_post_new(parcel_in, &req))
-		return false;
-
-	fb_time_t now = fb_time();
-	post_index_board_t pib;
-	post_id_t id = insert_post(&req, now, &pib);
-
-	if (id) {
-		backend_response_post_new_t resp = { .id = id, .stamp = now };
-		serialize_post_new(&resp, parcel_out);
-		backend_respond(parcel_out, channel);
-
-		board_t board;
-		if (get_board_by_bid(req.bid, &board)) {
-			send_reply_notification(&pib, req.uname_replied, req.uid_replied,
-					&board);
-		}
-		return true;
-	}
-	return false;
-}
+#endif
 
 static void adjust_user_post_count(const char *uname, int delta)
 {
@@ -144,135 +78,131 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
-typedef struct {
-	post_index_record_t *pir;
-	const post_filter_t *filter;
-	bool delete_;
-} post_deletion_callback_t;
-
-static record_callback_e post_deletion_callback(void *ptr, void *args,
-		int offset)
+BACKEND_DECLARE(post_new)
 {
-	post_index_trash_t *pit = ptr;
-	post_deletion_callback_t *pdc = args;
-	post_index_t pi;
+	backend_request_post_new_t req;
+	if (!deserialize_post_new(parcel_in, &req))
+		return false;
 
-	if (match_filter((post_index_board_t *) pit, pdc->pir,
-				pdc->filter, offset)) {
-		if (post_index_record_lock(pdc->pir, RECORD_WRLCK, pit->id) == 0) {
-			post_index_record_read(pdc->pir, pit->id, &pi);
-			if (pdc->delete_)
-				pi.flag |= POST_FLAG_DELETED;
-			else
-				pi.flag &= ~POST_FLAG_DELETED;
-			post_index_record_update(pdc->pir, &pi);
-			post_index_record_lock(pdc->pir, RECORD_UNLCK, pit->id);
+	post_id_t id = insert_post(&req);
+	if (id) {
+		backend_response_post_new_t resp = { .id = id };
+		serialize_post_new(&resp, parcel_out);
+		backend_respond(parcel_out, channel);
 
-			if (pit->flag & POST_FLAG_JUNK)
-				adjust_user_post_count(pi.owner, pdc->delete_ ? -1 : 1);
+		fb_time_t stamp = post_stamp_from_id(id);
+		set_last_post_time(req.board_id, stamp);
+		post_record_invalidity_change(req.board_id, 1);
+
+		// TODO: 不总是要加文章数的..
+		adjust_user_post_count(req.user_name, 1);
+
+#if 0
+		board_t board;
+		if (get_board_by_bid(req.bid, &board)) {
+			send_reply_notification(&pib, req.uname_replied, req.uid_replied,
+					&board);
 		}
-		return RECORD_CALLBACK_MATCH;
+		return true;
+#endif
 	}
-	return RECORD_CALLBACK_CONTINUE;
+	return id;
 }
 
-static int post_deletion_trigger(record_t *trash, const post_filter_t *filter,
-		post_index_record_t *pir, bool deletion)
+static void build_post_filter(query_t *q, const post_filter_t *f)
 {
-	post_deletion_callback_t pdc = {
-		.pir = pir, .filter = filter, .delete_ = deletion,
-	};
-	int rows = record_update(trash, NULL, 0, post_deletion_callback, &pdc);
+	query_where(q, "TRUE");
+	if (f->bid && is_deleted(f->type))
+		query_and(q, "board_id = %d", f->bid);
+	if (f->flag & POST_FLAG_DIGEST)
+		query_and(q, "digest");
+	if (f->flag & POST_FLAG_MARKED)
+		query_and(q, "marked");
+	if (f->flag & POST_FLAG_WATER)
+		query_and(q, "water");
+	if (f->uid)
+		query_and(q, "user_id = %"DBIdUID, f->uid);
+	if (*f->utf8_keyword)
+		query_and(q, "title ILIKE '%%' || %s || '%%'", f->utf8_keyword);
+	if (f->type == POST_LIST_TOPIC)
+		query_and(q, "id = thread_id");
+
+	if (f->type == POST_LIST_THREAD) {
+		if (f->min && f->tid) {
+			query_and(q, "(thread_id = %"DBIdPID" AND id >= %"DBIdPID
+					" OR thread_id > %"DBIdPID")", f->tid, f->min, f->tid);
+		}
+		if (f->max && f->tid) {
+			query_and(q, "(thread_id = %"DBIdPID" AND id <= %"DBIdPID
+					" OR thread_id < %"DBIdPID")", f->tid, f->max, f->tid);
+		}
+	} else {
+		if (f->min)
+			query_and(q, "id >= %"DBIdPID, f->min);
+		if (f->max)
+			query_and(q, "id <= %"DBIdPID, f->max);
+		if (f->tid)
+			query_and(q, "thread_id = %"DBIdPID, f->tid);
+	}
+
+	if (f->type == POST_LIST_TRASH)
+		query_and(q, "bm_visible");
+	if (f->type == POST_LIST_JUNK)
+		query_and(q, "NOT bm_visible");
+}
+
+static const char *table_name(const post_filter_t *filter)
+{
+	if (is_deleted(filter->type))
+		return "posts.deleted";
+	else
+		return "posts.recent";
+}
+
+static int _backend_post_delete(const backend_request_post_delete_t *req)
+{
+	board_t board;
+	if (req->filter->bid && !get_board_by_bid(req->filter->bid, &board))
+		return 0;
+
+	bool decrease = !(req->filter->bid && is_junk_board(&board));
+
+	query_t *q = query_new(0);
+	query_append(q, "WITH rows AS (DELETE FROM posts.recent");
+	build_post_filter(q, req->filter);
+
+	if (!req->force)
+		query_and(q, "NOT marked");
+	query_and(q, "NOT sticky");
+
+	query_append(q, "RETURNING " POST_TABLE_FIELDS ")");
+	query_append(q, "INSERT INTO posts.deleted ("
+			POST_TABLE_FIELDS "," POST_TABLE_DELETED_FIELDS ")");
+	query_append(q, "SELECT " POST_TABLE_FIELDS ","
+			" current_timestamp, %"DBIdUID", %s, %b AND (water OR %b), %b"
+			" FROM rows", req->user_id, req->user_name, decrease, req->junk,
+			req->bm_visible);
+	query_append(q, "RETURNING user_id, user_name, junk");
+
+	db_res_t *res = query_exec(q);
+	int rows = 0;
+	if (res) {
+		rows = db_res_rows(res);
+		for (int i = 0; i < rows; ++i) {
+			user_id_t uid = db_get_user_id(res, i, 0);
+			if (uid && db_get_bool(res, i, 2)) {
+				const char *user_name = db_get_value(res, i, 1);
+				adjust_user_post_count(user_name, -1);
+			}
+		}
+		if (rows > 0)
+			post_record_invalidity_change(req->filter->bid, 1);
+	}
+	db_clear(res);
 	return rows;
 }
 
-typedef struct {
-	post_index_record_t *pir;
-	const post_filter_t *filter;
-	record_t *trash;
-	const char *ename;
-	fb_time_t estamp;
-	bool junk;
-	bool decrease;
-	bool force;
-} post_index_trash_insert_t;
-
-static record_callback_e post_index_trash_insert(void *rec, void *args,
-		int offset)
-{
-	const post_index_board_t *pib = rec;
-	post_index_trash_insert_t *piti = args;
-
-	if (match_filter(pib, piti->pir, piti->filter, offset)
-			&& (piti->force || !(pib->flag & POST_FLAG_MARKED))) {
-		post_index_trash_t pit = {
-			.id = pib->id,
-			.reid_delta = pib->reid_delta,
-			.tid_delta = pib->tid_delta,
-			.uid = pib->uid,
-			.flag = pib->flag,
-			.stamp = pib->stamp,
-			.cstamp = pib->cstamp,
-			.estamp = piti->estamp,
-		};
-		if (piti->decrease && (piti->junk || (pib->flag & POST_FLAG_WATER)))
-			pit.flag |= POST_FLAG_JUNK;
-		else
-			pit.flag &= POST_FLAG_JUNK;
-		strlcpy(pit.ename, piti->ename, sizeof(pit.ename));
-		record_append(piti->trash, &pit, 1);
-		return RECORD_CALLBACK_MATCH;
-	}
-	return RECORD_CALLBACK_CONTINUE;
-}
-
-static int delete_posts(const backend_request_post_delete_t *req)
-{
-	bool decrease = true;
-	board_t board;
-	if (get_board_by_bid(req->filter->bid, &board) && is_junk_board(&board))
-		decrease = false;
-
-	int deleted = 0;
-
-	record_t record, trash;
-	if (post_index_board_open(req->filter->bid, RECORD_WRITE, &record) < 0)
-		goto e1;
-	if (post_index_trash_open(req->filter->bid,
-			req->bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash) < 0)
-		goto e2;
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-
-	post_index_trash_insert_t piti = {
-		.filter = req->filter, .pir = &pir,
-		.trash = &trash, .ename = req->ename,
-		.estamp = fb_time(), .junk = req->junk, .decrease = decrease,
-	};
-
-	if (record_lock_all(&trash, RECORD_WRLCK) < 0)
-		goto e3;
-	int current = record_seek(&trash, 0, RECORD_END);
-
-	if (record_lock_all(&record, RECORD_WRLCK) < 0)
-		goto e4;
-	deleted = record_delete(&record, NULL, 0, post_index_trash_insert, &piti);
-	record_lock_all(&record, RECORD_UNLCK);
-
-	if (deleted) {
-		set_board_post_count(req->filter->bid, record_count(&record));
-		post_filter_t filter2 = { .offset_min = current + 1 };
-		post_deletion_trigger(&trash, &filter2, &pir, true);
-	}
-
-e4: record_lock_all(&trash, RECORD_UNLCK);
-e3: post_index_record_close(&pir);
-e2: record_close(&trash);
-e1: record_close(&record);
-	return deleted;
-}
-
-bool post_delete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+BACKEND_DECLARE(post_delete)
 {
 	post_filter_t filter;
 	backend_request_post_delete_t req = { .filter = &filter };
@@ -280,77 +210,49 @@ bool post_delete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 		return false;
 
 	backend_response_post_delete_t resp;
-	resp.deleted = delete_posts(&req);
+	resp.deleted = _backend_post_delete(&req);
 	serialize_post_delete(&resp, parcel_out);
 	backend_respond(parcel_out, channel);
 	return true;
 }
 
-typedef struct {
-	post_index_record_t *pir;
-	const post_filter_t *filter;
-	post_index_board_t *buf;
-	int count;
-	int max;
-} post_undeletion_callback_t;
-
-static record_callback_e post_undeletion_callback(void *ptr, void *args,
-		int offset)
+static int _backend_post_undelete(const backend_request_post_undelete_t *req)
 {
-	const post_index_trash_t *pit = ptr;
-	post_undeletion_callback_t *puc = args;
+	query_t *q = query_new(0);
+	query_select(q, "user_id, user_name, junk FROM posts.deleted");
+	build_post_filter(q, req->filter);
 
-	if (match_filter((post_index_board_t *) pit, puc->pir,
-				puc->filter, offset)) {
-		if (puc->count >= puc->max)
-			return RECORD_CALLBACK_CONTINUE;
-
-		post_index_board_t *pib = puc->buf + puc->count;
-		pib->id = pit->id;
-		pib->reid_delta = pit->reid_delta;
-		pib->tid_delta = pit->tid_delta;
-		pib->uid = pit->uid;
-		pib->flag = pit->flag & ~POST_FLAG_JUNK;
-		pib->stamp = pit->stamp;
-		pib->cstamp = pit->cstamp;
-		++puc->count;
-		return RECORD_CALLBACK_MATCH;
+	db_res_t *res = query_exec(q);
+	if (res) {
+		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+			user_id_t user_id = db_get_user_id(res, i, 0);
+			if (user_id && db_get_bool(res, i, 2)) {
+				const char *user_name = db_get_value(res, i, 1);
+				adjust_user_post_count(user_name, 1);
+			}
+		}
 	}
-	return RECORD_CALLBACK_CONTINUE;
+	db_clear(res);
+
+	q = query_new(0);
+	query_append(q, "WITH rows AS (DELETE FROM posts.deleted");
+	build_post_filter(q, req->filter);
+	// TODO 站务垃圾箱和版主垃圾箱?
+	query_append(q, "RETURNING " POST_TABLE_FIELDS ")");
+	query_append(q, "INSERT INTO posts.recent (" POST_TABLE_FIELDS ")");
+	query_select(q, POST_TABLE_FIELDS);
+	query_from(q, "rows");
+
+	res = query_cmd(q);
+	int rows = res ? db_cmd_rows(res) : 0;
+	db_clear(res);
+
+	if (rows)
+		post_record_invalidity_change(req->filter->bid, 1);
+	return rows;
 }
 
-int undelete_posts(const backend_request_post_undelete_t *req)
-{
-	record_t record, trash;
-	post_index_board_open(req->filter->bid, RECORD_WRITE, &record);
-	post_index_trash_open(req->filter->bid,
-			req->bm_visible ? POST_INDEX_TRASH : POST_INDEX_JUNK, &trash);
-	post_index_record_t pir;
-	post_index_record_open(&pir);
-
-	record_lock_all(&trash, RECORD_WRLCK);
-	int undeleted = post_deletion_trigger(&trash, req->filter, &pir, false);
-	post_index_board_t *buf = malloc(undeleted * sizeof(post_index_board_t));
-	post_undeletion_callback_t puc = {
-		.pir = &pir, .filter = req->filter,
-		.buf = buf, .count = 0, .max = undeleted,
-	};
-
-	record_lock_all(&record, RECORD_WRLCK);
-	record_delete(&trash, NULL, 0, post_undeletion_callback, &puc);
-	record_merge(&record, puc.buf, puc.count);
-	record_lock_all(&record, RECORD_UNLCK);
-	set_board_post_count(req->filter->bid, record_count(&record));
-
-	record_lock_all(&trash, RECORD_UNLCK);
-	free(buf);
-	post_index_record_close(&pir);
-	record_close(&trash);
-	record_close(&record);
-	return undeleted;
-}
-
-bool post_undelete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
+BACKEND_DECLARE(post_undelete)
 {
 	post_filter_t filter;
 	backend_request_post_undelete_t req = { .filter = &filter };
@@ -358,8 +260,157 @@ bool post_undelete(parcel_t *parcel_in, parcel_t *parcel_out, int channel)
 		return false;
 
 	backend_response_post_undelete_t resp;
-	resp.undeleted = undelete_posts(&req);
+	resp.undeleted = _backend_post_undelete(&req);
 	serialize_post_undelete(&resp, parcel_out);
+	backend_respond(parcel_out, channel);
+	return true;
+}
+
+static const char *flag_field(post_flag_e flag)
+{
+	switch (flag) {
+		case POST_FLAG_DIGEST:
+			return "digest";
+		case POST_FLAG_MARKED:
+			return "marked";
+		case POST_FLAG_LOCKED:
+			return "locked";
+		case POST_FLAG_IMPORT:
+			return "imported";
+		case POST_FLAG_WATER:
+			return "water";
+		case POST_FLAG_STICKY:
+			return "sticky";
+		default:
+			return "attachment";
+	}
+}
+
+static int _backend_post_set_flag(const backend_request_post_set_flag_t *req)
+{
+	if (!req)
+		return 0;
+
+	query_t *q = query_new(0);
+	if (!q)
+		return 0;
+
+	query_update(q, table_name(req->filter));
+
+	const char *field = flag_field(req->flag);
+	query_set(q, field);
+	if (req->toggle) {
+		query_sappend(q, "= NOT", field);
+	} else {
+		query_append(q, "= %b", req->set);
+	}
+	build_post_filter(q, req->filter);
+
+	db_res_t *res = query_cmd(q);
+	int rows = res ? db_cmd_rows(res) : 0;
+	db_clear(res);
+
+	if (rows > 0)
+		post_record_invalidity_change(req->filter->bid, 1);
+	return rows;
+}
+
+BACKEND_DECLARE(post_set_flag)
+{
+	post_filter_t filter;
+	backend_request_post_set_flag_t req = { .filter = &filter };
+	if (!deserialize_post_set_flag(parcel_in, &req))
+		return false;
+
+	backend_response_post_set_flag_t resp;
+	resp.affected = _backend_post_set_flag(&req);
+
+	if (resp.affected)
+		post_record_invalidity_change(filter.bid, 1);
+
+	serialize_post_set_flag(&resp, parcel_out);
+	backend_respond(parcel_out, channel);
+	return true;
+}
+
+static char *replace_content_title(const char *content, size_t len,
+		const char *title)
+{
+	const char *end = content + len;
+	const char *l1_end = get_line_end(content, end);
+	const char *l2_end = get_line_end(l1_end, end);
+
+	// sizeof("标  题: ") in UTF-8 is 10
+	const char *begin = l1_end + 10;
+	int orig_title_len = l2_end - begin - 1; // exclude '\n'
+	if (orig_title_len < 0)
+		return NULL;
+
+	int new_title_len = strlen(title);
+	len += new_title_len - orig_title_len;
+	char *s = malloc(len + 1);
+	char *p = s;
+	size_t l = begin - content;
+	memcpy(p, content, l);
+	p += l;
+	memcpy(p, title, new_title_len);
+	p += new_title_len;
+	*p++ = '\n';
+	memcpy(p, l2_end, end - l2_end);
+	s[len] = '\0';
+	return s;
+}
+
+static bool _backend_post_alter_title(
+		const backend_request_post_alter_title_t *req)
+{
+	if (!req)
+		return false;
+
+	post_filter_t filter = {
+		.bid = req->board_id,
+		.min = req->post_id,
+		.max = req->post_id,
+	};
+
+	query_t *q = query_new(0);
+	query_update(q, "posts.recent");
+	query_set(q, "title = %s", req->title);
+	build_post_filter(q, &filter);
+
+	db_res_t *res = query_cmd(q);
+	bool ok = res && db_cmd_rows(res) > 0;
+	db_clear(res);
+	if (!ok)
+		return ok;
+
+	post_record_invalidity_change(req->board_id, 1);
+
+	char *content = post_content_get(req->post_id);
+	if (!content)
+		return false;
+
+	char *new_content = replace_content_title(content, strlen(content),
+			req->title);
+
+	if (new_content)
+		ok = post_content_set(req->post_id, new_content);
+
+	free(new_content);
+	free(content);
+	return ok;
+}
+
+BACKEND_DECLARE(post_alter_title)
+{
+	backend_request_post_alter_title_t req;
+	if (!deserialize_post_alter_title(parcel_in, &req))
+		return false;
+
+	backend_response_post_alter_title_t resp;
+	resp.ok = _backend_post_alter_title(&req);
+
+	serialize_post_alter_title(&resp, parcel_out);
 	backend_respond(parcel_out, channel);
 	return true;
 }

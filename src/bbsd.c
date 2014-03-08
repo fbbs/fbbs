@@ -395,10 +395,10 @@ int main(int argc, char *argv[])
 	if (nfds < 0)
 		return EXIT_FAILURE;
 
-	// Give up root privileges.
-	setgid((gid_t)BBSGID);
-	setuid((uid_t)BBSUID);
-	chdir(BBSHOME);
+	if (setgid((gid_t) BBSGID) < 0 || setuid((uid_t) BBSUID) < 0
+			|| chdir(BBSHOME) < 0)
+		return EXIT_FAILURE;
+
 	umask(S_IWGRP | S_IWOTH);
 
 	// Log pid.
