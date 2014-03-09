@@ -1,0 +1,152 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use 5.012;
+
+use DBI;
+use Encode;
+use FindBin qw($Bin);
+use Getopt::Long;
+
+use lib "$Bin";
+use Helper qw($dbh get_options db_connect timestamp_to_unix convert_time);
+
+my %opt;
+GetOptions(\%opt, 'dump=s', 'posts:i', 'quota:i', 'limit:i');
+$opt{dump} //= '/home/bbs/etc/posts/day';
+$opt{quota} //= 1;
+$opt{limit} //= 10;
+
+get_options();
+db_connect();
+
+main();
+
+$dbh->disconnect();
+
+sub main
+{
+	my $posts = load_recent_posts();
+	my $boards = load_boards();
+	my $threads = post_stat($boards, $posts);
+
+	my $hot_topics = generate_results($boards, $threads);
+	dump_results($boards, $hot_topics);
+}
+
+sub dump_results
+{
+	my ($boards, $hot_topics) = @_;
+	open my $fh, '>', $opt{dump} or die;
+
+	print $fh to_gbk("                \033[1;34m-----\033[37m=====\033[41m"
+		. " 本日十大热门话题 \033[40m=====\033[34m-----\033[m\n\n");
+	my $index = 0;
+	for (@$hot_topics) {
+		my ($thread_id, $score, $board_id, $last_post_id, $user_id,
+				$user_name, $title) = @$_;
+		my $last_stamp = substr(convert_time(($last_post_id >> 21) / 1000), 0, 15);
+		$title =~ s/\033\[.*?m//g;
+
+		my $str = sprintf "\033[1;37m第\033[31m%3u\033[37m 名 \033[37m信区 : \033[33m"
+			. "%-18s\033[37m〖 \033[32m%s\033[37m 〗\033[36m%4d \033[37m篇"
+			. "\033[33m%13.13s\n     \033[37m标题 : \033[1;44m%-60.60s\033[40m\n",
+			++$index, $boards->{$board_id}{name}, $last_stamp, $score,
+			$user_name, $title;
+		print $fh to_gbk($str);
+	}
+
+	close $fh;
+}
+
+sub to_gbk {
+	encode('gbk', decode('utf8', $_[0]));
+}
+
+sub generate_results
+{
+	my ($boards, $threads) = @_;
+
+	my @thread_ids = sort { $threads->{$b}{score} <=> $threads->{$a}{score} }
+			keys %$threads;
+
+	my @hot_topics;
+	my %board;
+	my $count = 0;
+	for my $thread_id (@thread_ids) {
+		my ($board_id, $last_post_id, $score)
+				= @{$threads->{$thread_id}}{qw(board last score)};
+		next if excluded($boards, $board_id);
+		if (not exists $board{$board_id} or $board{$board_id} < $opt{quota}) {
+			my ($user_id, $user_name, $title) = load_post_info($thread_id);
+			if (defined $user_id) {
+				my @info = ($thread_id, $score, $board_id, $last_post_id,
+						$user_id, $user_name, $title);
+				$board{$board_id}++;
+				push @hot_topics, \@info;
+				last if (++$count >= $opt{limit});
+			}
+		}
+	}
+	return \@hot_topics;
+}
+
+sub excluded
+{
+	my $BOARD_DIR_FLAG = 0x200;
+	my $BOARD_POST_FLAG = 0x100;
+	my $BOARD_JUNK_FLAG = 0x20;
+	my $flags = ($BOARD_DIR_FLAG | $BOARD_POST_FLAG | $BOARD_JUNK_FLAG);
+
+	my ($boards, $board_id) = @_;
+	my $board = $boards->{$board_id};
+	return ($board->{perm} or ($board->{flag} & $flags));
+}
+
+sub load_post_info
+{
+	my $thread_id = shift;
+	$dbh->selectrow_array(
+		'SELECT user_id, user_name, title FROM posts.recent WHERE id = ?', {},
+		$thread_id);
+}
+
+sub post_stat
+{
+	my ($boards, $posts) = @_;
+	my $threads = {};
+	for (@$posts) {
+		my ($id, $thread_id, $board_id) = @$_;
+		if (exists $threads->{$thread_id}) {
+			$threads->{$thread_id}{score}++;
+		} else {
+			$threads->{$thread_id} = {
+				score => 1,
+				last => $id,
+				board => $board_id,
+			}
+		}
+	}
+	$threads;
+}
+
+sub load_boards
+{
+	my $array = $dbh->selectall_arrayref(
+			'SELECT id, name, flag, perm FROM boards');
+	my %hash = map { $_->[0] => {
+		name => $_->[1], flag => $_->[2], perm => $_->[3]
+		} } @$array;
+	\%hash;
+}
+
+sub load_recent_posts
+{
+	my $post_id_min = ((time - 86400) * 1000) << 21;
+
+	my $sql = "SELECT id, thread_id, board_id FROM posts.recent WHERE id >= ?";
+
+	my $posts = $dbh->selectall_arrayref($sql, {}, $post_id_min);
+	my @posts = sort { $b->[0] <=> $a->[0] } @$posts;
+	\@posts;
+}
