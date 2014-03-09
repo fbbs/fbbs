@@ -544,8 +544,6 @@ static int toggle_post_flag_no_check(post_info_t *pi, post_flag_e flag)
 			pi->flag |= flag;
 		// TODO: 自己锁定文章不要记录
 		log_toggle_flag(pi, flag);
-		if (flag == POST_FLAG_STICKY)
-			post_update_sticky_record(pi->board_id);
 		return PARTUPDATE;
 	}
 	return DONOTHING;
@@ -569,7 +567,7 @@ static int toggle_post_lock(post_info_t *pi)
 	return DONOTHING;
 }
 
-static int toggle_post_stickiness(post_info_t *pi)
+static int toggle_post_stickiness(tui_list_t *tl, post_info_t *pi)
 {
 	if (!pi || !am_curr_bm())
 		return DONOTHING;
@@ -577,7 +575,13 @@ static int toggle_post_stickiness(post_info_t *pi)
 			&& post_sticky_count(pi->board_id) >= MAX_NOTICE) {
 		return DONOTHING;
 	}
-	return toggle_post_flag_no_check(pi, POST_FLAG_STICKY);
+	int ret = toggle_post_flag_no_check(pi, POST_FLAG_STICKY);
+	if (ret != DONOTHING) {
+		pi->flag &= ~POST_FLAG_STICKY;
+		post_update_sticky_record(pi->board_id);
+		tl->valid = false;
+	}
+	return ret;
 }
 
 static int post_list_with_filter(const post_filter_t *filter);
@@ -2408,7 +2412,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case '_':
 			return toggle_post_lock(pi);
 		case '#':
-			return toggle_post_stickiness(pi);
+			return toggle_post_stickiness(tl, pi);
 		case 'm':
 			return toggle_post_flag(pi, POST_FLAG_MARKED);
 		case 'g':

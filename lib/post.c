@@ -753,8 +753,8 @@ int post_record_invalidity_get(int board_id)
 	return mdb_integer(0, "HGET", POST_RECORD_INVALIDITY_KEY" %d", board_id);
 }
 
-static void convert_post_record(db_res_t *res, int row,
-		post_record_t *post)
+static void convert_post_record(db_res_t *res, int row, post_record_t *post,
+		bool sticky)
 {
 	post->id = db_get_post_id(res, row, 0);
 	post->reply_id = db_get_post_id(res, row, 1);
@@ -765,7 +765,8 @@ static void convert_post_record(db_res_t *res, int row,
 			| (db_get_bool(res, row, 9) ? POST_FLAG_MARKED : 0)
 			| (db_get_bool(res, row, 10) ? POST_FLAG_LOCKED : 0)
 			| (db_get_bool(res, row, 11) ? POST_FLAG_IMPORT : 0)
-			| (db_get_bool(res, row, 12) ? POST_FLAG_WATER : 0);
+			| (db_get_bool(res, row, 12) ? POST_FLAG_WATER : 0)
+			| (sticky ? POST_FLAG_STICKY : 0);
 
 	const char *user_name = db_get_value(res, row, 5);
 	if (user_name)
@@ -813,6 +814,8 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 	query_select(q, POST_TABLE_FIELDS);
 	query_from(q, "posts.recent");
 	query_where(q, "board_id = %d", bid);
+	if (sticky)
+		query_and(q, "sticky");
 	db_res_t *res = query_exec(q);
 	if (!res)
 		return false;
@@ -821,7 +824,7 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 	post_record_t *posts = malloc(sizeof(*posts) * rows);
 	if (posts) {
 		for (int i = 0; i < rows; ++i) {
-			convert_post_record(res, i, posts + i);
+			convert_post_record(res, i, posts + i, sticky);
 		}
 		qsort(posts, rows, sizeof(*posts),
 				sticky ? post_sticky_compare : post_record_compare);
@@ -861,10 +864,12 @@ bool post_update_sticky_record(int board_id)
 {
 	bool updated = false;
 	record_t record;
-	post_record_open_sticky(board_id, RECORD_WRITE, &record);
-	if (record_try_lock_all(&record, RECORD_WRLCK)) {
-		updated = update_record(&record, board_id, true);
-		record_lock_all(&record, RECORD_UNLCK);
+	if (post_record_open_sticky(board_id, RECORD_WRITE, &record) >= 0) {
+		if (record_try_lock_all(&record, RECORD_WRLCK) == 0) {
+			updated = update_record(&record, board_id, true);
+			record_lock_all(&record, RECORD_UNLCK);
+		}
+		record_close(&record);
 	}
 	return updated;
 }
@@ -889,7 +894,7 @@ bool post_update_trash_record(record_t *record, post_trash_e trash,
 	post_record_extended_t *posts = malloc(sizeof(*posts) * rows);
 	if (posts) {
 		for (int i = 0; i < rows; ++i) {
-			convert_post_record(res, i, (post_record_t *) (posts + i));
+			convert_post_record(res, i, (post_record_t *) (posts + i), false);
 			convert_post_record_extended(res, i, posts + i);
 		}
 		qsort(posts, rows, sizeof(*posts), post_record_compare);
