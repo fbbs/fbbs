@@ -263,7 +263,7 @@ extern int post_record_read(record_t *rec, int base, post_info_t *buf, int size,
 extern void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count);
 extern bool post_match_filter(const post_record_t *pr, const post_filter_t *filter, int offset);
 
-extern bool post_update_record(int board_id);
+extern bool post_update_record(int board_id, bool force);
 extern bool post_update_sticky_record(int board_id);
 extern bool post_update_trash_record(record_t *record, post_trash_e trash, int board_id);
 

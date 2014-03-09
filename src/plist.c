@@ -95,7 +95,7 @@ static void load_posts(tui_list_t *tl)
 	post_list_t *pl = tl->data;
 	if (pl->bid) {
 		if (pl->type == POST_LIST_NORMAL) {
-			post_update_record(pl->bid);
+			post_update_record(pl->bid, false);
 		} else if (is_deleted(pl->type) && !pl->trash_valid) {
 			post_update_trash_record(pl->record,
 					pl->type == POST_LIST_TRASH ? POST_TRASH : POST_JUNK,
@@ -2537,7 +2537,10 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 	if (filter->bid) {
 		switch (filter->type) {
 			case POST_LIST_NORMAL:
-				post_record_open(filter->bid, RECORD_READ, record);
+				if (post_record_open(filter->bid, RECORD_READ, record) < 0) {
+					post_update_record(filter->bid, true);
+					post_record_open(filter->bid, RECORD_READ, record);
+				}
 				break;
 			case POST_LIST_TRASH:
 				post_record_open_trash(filter->bid, POST_TRASH, record);

@@ -840,18 +840,20 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 /**
  * 更新版面文章记录缓存
  * @param[in] board_id 版面ID
+ * @param[in] force 强制更新
  * @return 成功更新返回true, 无须更新或者出错返回false
  */
-bool post_update_record(int board_id)
+bool post_update_record(int board_id, bool force)
 {
 	bool updated = false;
-	int invalid = post_record_invalidity_get(board_id);
-	if (invalid > 0) {
+	int invalid = 0;
+	if (force || (invalid = post_record_invalidity_get(board_id))) {
 		record_t record;
 		if (post_record_open(board_id, RECORD_WRITE, &record) >= 0) {
 			if (record_try_lock_all(&record, RECORD_WRLCK) == 0) {
 				updated = update_record(&record, board_id, false);
-				post_record_invalidity_change(board_id, -invalid);
+				if (invalid)
+					post_record_invalidity_change(board_id, -invalid);
 				record_lock_all(&record, RECORD_UNLCK);
 			}
 			record_close(&record);
