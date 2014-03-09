@@ -102,6 +102,7 @@ static int search(int bid, post_id_t pid, int action, bool extra,
 		post_info_t *pi)
 {
 	record_t record;
+	post_update_record(bid, false);
 	if (post_record_open(bid, RECORD_READ, &record) < 0)
 		return -1;
 
@@ -279,16 +280,11 @@ int bbsdel_main(void)
 		return BBS_EINVAL;
 	session_set_board(board.id);
 
-	record_t record;
-	if (post_record_open(board.id, RECORD_WRITE, &record) <= 0)
-		return BBS_EINTNL;
-
 	post_filter_t filter = {
 		.bid = board.id, .min = pid, .max = pid,
 		.uid = am_bm(&board) ? 0 : session_uid(),
 	};
 	int deleted = post_delete(&filter, true, false, true);
-	record_close(&record);
 
 	if (deleted) {
 		char buf[STRLEN];
@@ -380,6 +376,7 @@ static post_record_t *search_topic(int bid, post_id_t pid, post_id_t *tid,
 		int action, int *count, int *flags)
 {
 	record_t record;
+	post_update_record(bid, false);
 	if (post_record_open(bid, RECORD_READ, &record) < 0)
 		return NULL;
 

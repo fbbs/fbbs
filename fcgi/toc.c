@@ -195,6 +195,7 @@ static int bbsdoc(post_list_type_e type)
 	brc_initialize(currentuser.userid, board.name);
 
 	record_t record;
+	post_update_record(board.id, false);
 	post_record_open(board.id, RECORD_READ, &record);
 
 	--start;
@@ -293,6 +294,7 @@ int bbsbfind_main(void)
 	session_set_board(board.id);
 
 	record_t record;
+	post_update_record(board.id, false);
 	if (post_record_open(board.id, RECORD_READ, &record) < 0)
 		return BBS_EINTNL;
 
@@ -412,6 +414,7 @@ static int prepare_threads(int bid, post_thread_info_t **pti)
 		return -1;
 
 	record_t record;
+	post_update_record(bid, false);
 	if (post_record_open(bid, RECORD_READ, &record) < 0)
 		return -1;
 
@@ -646,6 +649,7 @@ int bbsrss_main(void)
 			BASEURL "</generator>", board.name, board.descr, board.id);
 
 	record_t record;
+	post_update_record(board.id, false);
 	post_record_open(board.id, RECORD_READ, &record);
 
 	print_topics_t pt = {
