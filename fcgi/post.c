@@ -647,7 +647,7 @@ int bbssnd_main(void)
 	char *text = (char *) web_get_param("text");
 	check_character(text);
 	if (web_request_type(UTF8)
-			&& validate_utf8_input(text, POST_CONTENT_CCHARS, true) < 0)
+			&& string_validate_utf8(text, POST_CONTENT_CCHARS, true) < 0)
 		return BBS_EINVAL;
 
 	if (isedit) {

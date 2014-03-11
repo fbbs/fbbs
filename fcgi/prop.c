@@ -124,7 +124,7 @@ static int buy_title(int item, const char *title)
 	if (title && *title) {
 		UTF8_BUFFER(title, TITLE_CCHARS);
 		convert_g2u(title, utf8_title);
-		if (validate_utf8_input(utf8_title, TITLE_CCHARS, false) > 0
+		if (string_validate_utf8(utf8_title, TITLE_CCHARS, false) > 0
 				&& title_submit_request(item, session_uid(), utf8_title, 0)) {
 			printf("<success/>");
 		}

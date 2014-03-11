@@ -193,8 +193,8 @@ bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder, const 
 
 bool fav_board_mkdir(user_id_t uid, const char *name, const char *descr)
 {
-	if (validate_utf8_input(name, BOARD_NAME_LEN, false) <= 0
-			|| validate_utf8_input(descr, BOARD_DESCR_CCHARS, false) <= 0)
+	if (string_validate_utf8(name, BOARD_NAME_LEN, false) <= 0
+			|| string_validate_utf8(descr, BOARD_DESCR_CCHARS, false) <= 0)
 		return false;
 
 	db_res_t *res = db_cmd("INSERT INTO fav_board_folders (user_id, name, descr)"
@@ -205,8 +205,8 @@ bool fav_board_mkdir(user_id_t uid, const char *name, const char *descr)
 
 bool fav_board_rename(user_id_t uid, int id, const char *name, const char *descr)
 {
-	if (validate_utf8_input(name, BOARD_NAME_LEN, false) <= 0
-			|| validate_utf8_input(descr, BOARD_DESCR_CCHARS, false) <= 0)
+	if (string_validate_utf8(name, BOARD_NAME_LEN, false) <= 0
+			|| string_validate_utf8(descr, BOARD_DESCR_CCHARS, false) <= 0)
 		return false;
 
 	db_res_t *res = db_cmd("UPDATE fav_board_folders (name, descr)"
