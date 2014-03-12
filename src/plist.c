@@ -2234,9 +2234,9 @@ static int switch_board(tui_list_t *tl)
 		pl->bid = bid;
 		pl->plp = NULL;
 		record_close(pl->record);
-		post_record_open(bid, RECORD_READ, pl->record);
+		post_record_open(bid, pl->record);
 		record_close(pl->record_sticky);
-		post_record_open_sticky(bid, RECORD_READ, pl->record_sticky);
+		post_record_open_sticky(bid, pl->record_sticky);
 	}
 	return FULLUPDATE;
 }
@@ -2537,10 +2537,7 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 	if (filter->bid) {
 		switch (filter->type) {
 			case POST_LIST_NORMAL:
-				if (post_record_open(filter->bid, RECORD_READ, record) < 0) {
-					post_update_record(filter->bid, true);
-					post_record_open(filter->bid, RECORD_READ, record);
-				}
+				post_record_open(filter->bid, record);
 				break;
 			case POST_LIST_TRASH:
 				post_record_open_trash(filter->bid, POST_TRASH, record);
@@ -2584,7 +2581,7 @@ static int post_list_with_filter(const post_filter_t *filter)
 
 	bool sticky = filter->type == POST_LIST_NORMAL;
 	if (sticky)
-		post_record_open_sticky(filter->bid, RECORD_READ, &record_sticky);
+		post_record_open_sticky(filter->bid, &record_sticky);
 
 	post_list_t pl = {
 		.record = &record,

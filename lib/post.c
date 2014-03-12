@@ -31,17 +31,18 @@ static int post_record_open_file(const char *file, record_perm_e rdonly,
 			rec);
 }
 
-int post_record_open(int bid, record_perm_e rdonly, record_t *rec)
+static int _post_record_open(int board_id, record_perm_e rdonly, record_t *rec)
 {
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "board/%d", bid);
+	snprintf(file, sizeof(file), "board/%d", board_id);
 	return post_record_open_file(file, rdonly, rec);
 }
 
-int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec)
+static int _post_record_open_sticky(int board_id, record_perm_e rdonly,
+		record_t *rec)
 {
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "board/%d.sticky", bid);
+	snprintf(file, sizeof(file), "board/%d.sticky", board_id);
 	return post_record_open_file(file, rdonly, rec);
 }
 
@@ -849,7 +850,7 @@ bool post_update_record(int board_id, bool force)
 	int invalid = 0;
 	if (force || (invalid = post_record_invalidity_get(board_id))) {
 		record_t record;
-		if (post_record_open(board_id, RECORD_WRITE, &record) >= 0) {
+		if (_post_record_open(board_id, RECORD_WRITE, &record) >= 0) {
 			if (record_try_lock_all(&record, RECORD_WRLCK) == 0) {
 				updated = update_record(&record, board_id, false);
 				if (invalid)
@@ -862,11 +863,20 @@ bool post_update_record(int board_id, bool force)
 	return updated;
 }
 
+int post_record_open(int board_id, record_t *record)
+{
+	int fd = _post_record_open(board_id, RECORD_READ, record);
+	post_update_record(board_id, fd < 0);
+	if (fd < 0)
+		return _post_record_open(board_id, RECORD_READ, record);
+	return fd;
+}
+
 bool post_update_sticky_record(int board_id)
 {
 	bool updated = false;
 	record_t record;
-	if (post_record_open_sticky(board_id, RECORD_WRITE, &record) >= 0) {
+	if (_post_record_open_sticky(board_id, RECORD_WRITE, &record) >= 0) {
 		if (record_try_lock_all(&record, RECORD_WRLCK) == 0) {
 			updated = update_record(&record, board_id, true);
 			record_lock_all(&record, RECORD_UNLCK);
@@ -874,6 +884,15 @@ bool post_update_sticky_record(int board_id)
 		record_close(&record);
 	}
 	return updated;
+}
+
+int post_record_open_sticky(int board_id, record_t *record)
+{
+	int fd = _post_record_open_sticky(board_id, RECORD_READ, record);
+	if (fd >= 0)
+		return fd;
+	post_update_sticky_record(board_id);
+	return _post_record_open_sticky(board_id, RECORD_READ, record);
 }
 
 bool post_update_trash_record(record_t *record, post_trash_e trash,

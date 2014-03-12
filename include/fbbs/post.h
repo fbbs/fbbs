@@ -163,8 +163,8 @@ typedef struct {
 } topic_stat_t;
 
 extern int post_record_cmp(const void *p1, const void *p2);
-extern int post_record_open(int bid, record_perm_e rdonly, record_t *rec);
-extern int post_record_open_sticky(int bid, record_perm_e rdonly, record_t *rec);
+extern int post_record_open(int board_id, record_t *record);
+extern int post_record_open_sticky(int board_id, record_t *record);
 extern int post_record_open_trash(int board_id, post_trash_e trash, record_t *record);
 
 extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));

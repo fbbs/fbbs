@@ -79,7 +79,7 @@ void active_board_init(bool force)
 		return;
 
 	record_t record;
-	if (post_record_open(board.id, RECORD_READ, &record) < 0)
+	if (post_record_open(board.id, &record) < 0)
 		return;
 
 	active_board_clear();
