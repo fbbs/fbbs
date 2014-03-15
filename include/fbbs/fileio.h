@@ -27,7 +27,7 @@ extern int part_cp(char *src, char *dst, char *mode);
 extern int f_cp(const char *src, const char *dst, int mode);
 extern int f_ln(const char *src, const char *dst);
 extern int valid_fname(char *str);
-extern int f_rm(char *fpath);
+extern int file_rm(const char *fpath);
 extern int file_lock(int fd, file_lock_e type, off_t offset, file_whence_e whence, off_t len);
 extern int file_lock_all(int fd, file_lock_e type);
 extern int file_try_lock_all(int fd, file_lock_e type);

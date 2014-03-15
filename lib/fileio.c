@@ -1,9 +1,9 @@
+#include <errno.h>
+#include <fcntl.h>
+#include <ftw.h>
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
-#include <dirent.h>
 #include <unistd.h>
-#include <errno.h>
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -232,58 +232,35 @@ int valid_fname(char *str) {
 	return 1;
 }
 
-/*
- Commented by Erebus 2004-11-08
- rm folder
- */
-
-static int rm_dir(char *fpath) {
-	struct stat st;
-	DIR * dirp;
-	struct dirent *de;
-	char buf[256], *fname;
-	if (!(dirp = opendir(fpath)))
+int rm_dir_callback(const char *fpath, const struct stat *sb, int type,
+		        struct FTW *ftwbuf)
+{
+	if (type == FTW_F || type == FTW_SL || type == FTW_SLN) {
+		return unlink(fpath);
+	} else if (type == FTW_D || type == FTW_DP) {
+		return rmdir(fpath);
+	} else {
 		return -1;
-
-	for (fname = buf; (*fname = *fpath) != '\0'; fname++, fpath++)
-		;
-
-	*fname++ = '/';
-
-	readdir(dirp);
-	readdir(dirp);
-
-	while ((de = readdir(dirp)) != NULL) {
-		fpath = de->d_name;
-		if (*fpath) {
-			strcpy(fname, fpath);
-			if (!stat(buf, &st)) {
-				if (S_ISDIR(st.st_mode))
-					rm_dir(buf);
-				else
-					unlink(buf);
-			}
-		}
 	}
-	closedir(dirp);
-
-	*--fname = '\0';
-	return rmdir(buf);
 }
 
-/*
- Commented by Erebus 2004-11-08 
- rm file and folder
- */
-int f_rm(char *fpath) {
+static int rm_dir(const char *fpath)
+{
+	if (!fpath)
+		return -1;
+	return nftw(fpath, rm_dir_callback, 20, FTW_DEPTH | FTW_PHYS);
+}
+
+int file_rm(const char *fpath)
+{
 	struct stat st;
-	if (stat(fpath, &st)) //stat未能成功
+	if (stat(fpath, &st))
 		return -1;
 
-	if (!S_ISDIR(st.st_mode)) //不是目录,则删除此文件
+	if (!S_ISDIR(st.st_mode))
 		return unlink(fpath);
 
-	return rm_dir(fpath); //删除目录
+	return rm_dir(fpath);
 }
 
 /**
