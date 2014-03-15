@@ -53,7 +53,7 @@ int m_vote();
 #ifndef DLM
 int x_new_denylevel();
 int x_level(), m_info();
-int d_user(), m_register();
+int m_register();
 int d_board(), m_editbrd(), m_newbrd();
 int setsystempasswd();
 #endif
@@ -149,7 +149,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "OrdainBM", tui_ordain_bm },
 		{ "RetireBM", tui_retire_bm },
 		{ "NewChangeLevel", x_new_denylevel },
-		{ "DelUser", d_user },
 		{ "NewBoard", tui_new_board },
 		{ "ChangeBrd", tui_edit_board },
 		{ "BoardDel", d_board },
@@ -198,7 +197,6 @@ static const char *sysconf_funcstr(const char *name)
 		{ "RetireBM", "@mod:so/admintool.so#tui_retire_bm" },
 		{ "ChangeLevel", "@mod:so/admintool.so#x_denylevel" },
 		{ "NewChangeLevel", "@mod:so/admintool.so#x_new_denylevel" },
-		{ "DelUser", "@mod:so/admintool.so#d_user" },
 		{ "NewBoard", "@mod:so/admintool.so#tui_new_board" },
 		{ "ChangeBrd", "@mod:so/admintool.so#tui_edit_board" },
 		{ "BoardDel", "@mod:so/admintool.so#d_board" },
