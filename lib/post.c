@@ -239,6 +239,11 @@ int get_board_post_count(int bid)
 	return mdb_integer(0, "HGET", BOARD_POST_COUNT_KEY " %d", bid);
 }
 
+static void set_board_post_count(int bid, int count)
+{
+	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
+}
+
 enum {
 	MAX_QUOTED_LINES = 5,     ///< Maximum quoted lines (for QUOTE_AUTO).
 	/** A line will be truncated at this width (78 for quoted line) */
@@ -838,6 +843,8 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 	}
 
 	db_clear(res);
+	if (!sticky)
+		set_board_post_count(bid, rows);
 	return true;
 }
 
