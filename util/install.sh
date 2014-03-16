@@ -87,7 +87,7 @@ fi
 su -c "createuser -D -R -S $BBS_USR" $PG_USR
 su -c "createdb -E UTF8 -O $BBS_USR $BBS_DB" $PG_USR
 
-PG_SCHEMAS='schema board favboard friend payment session procedures'
+PG_SCHEMAS='schema board favboard friend payment session procedures post'
 for x in $PG_SCHEMAS; do
 	su -c "psql -q -f $curdir/../pg/$x.sql" $BBS_USR
 done

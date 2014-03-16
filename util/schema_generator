@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+
+use 5.010;
+use strict;
+use warnings;
+
+main();
+
+sub main {
+	if (@ARGV < 1) {
+		die "Usage: $0 <number-of-post-reply-partitions>\n";
+	}
+
+	for (1 .. $ARGV[0] - 1) {
+		say "CREATE TABLE posts.reply_$_ () INHERITS (posts.reply_base);";
+		say "CREATE INDEX ON posts.reply_$_ (post_id);";
+		say "CREATE INDEX ON posts.reply_$_ (user_id_replied);";
+	}
+}

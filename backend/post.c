@@ -37,37 +37,6 @@ static post_id_t insert_post(const backend_request_post_new_t *req)
 	db_clear(r1);
 	return id;
 }
-#if 0
-static bool append_notification_file(const char *uname, user_id_t uid,
-		const board_t *board, const post_index_board_t *pib,
-		const char *basename)
-{
-	struct userec user;
-	if (!getuserec(uname, &user) || !user_has_read_perm(&user, board))
-		return false;
-
-	char file[HOMELEN];
-	sethomefile(file, uname, basename);
-
-	record_t record;
-	if (record_open(file, post_index_cmp, sizeof(*pib), RECORD_WRITE, &record)
-			< 0)
-		return false;
-	bool ok = record_append_locked(&record, pib, 1) >= 0;
-	record_close(&record);
-
-	notification_send(uid, NOTIFICATION_REPLIES);
-	return ok;
-}
-
-static void send_reply_notification(const post_index_board_t *pib,
-		const char *uname, user_id_t uid, const board_t *board)
-{
-	if (uid && uid != pib->uid) {
-		append_notification_file(uname, uid, board, pib, POST_REPLIES_FILE);
-	}
-}
-#endif
 
 static void adjust_user_post_count(const char *uname, int delta)
 {
@@ -78,35 +47,75 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
+#define REPLY_PARTITION_KEY "post:partitions"
+
+static int get_reply_partitions(void)
+{
+	return mdb_integer(1, "GET", REPLY_PARTITION_KEY);
+}
+
+static void insert_reply_record(const backend_request_post_new_t *req,
+		post_id_t post_id, int partition)
+{
+	char table_name[64];
+	snprintf(table_name, sizeof(table_name), "posts.reply_%d", partition);
+
+	query_t *q = query_new(0);
+	query_sappend(q, "INSERT INTO", table_name);
+	query_append(q, "(post_id, reply_id, thread_id, user_id_replied, user_id,"
+			"user_name, board_id, board_name, title)"
+			" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID", %d, %d,"
+			" %s, %d, %s, %s)",
+			post_id, req->reply_id ? req->reply_id : post_id,
+			req->thread_id ? req->thread_id : post_id, req->user_id_replied,
+			req->user_id, req->user_name, req->board_id, req->board_name,
+			req->title);
+
+	db_res_t *res = query_cmd(q);
+	db_clear(res);
+}
+
+static void notify_new_reply(const backend_request_post_new_t *req,
+		const board_t *board, post_id_t post_id)
+{
+	struct userec urec;
+	if (getuserec(req->user_name, &urec)
+			&& user_has_read_perm(&urec, board)) {
+		int partitions = get_reply_partitions();
+		if (partitions <= 0)
+			partitions = 1;
+
+		int partition = req->user_id_replied % partitions;
+		insert_reply_record(req, post_id, partition);
+	}
+}
+
 BACKEND_DECLARE(post_new)
 {
 	backend_request_post_new_t req;
 	if (!deserialize_post_new(parcel_in, &req))
 		return false;
 
-	post_id_t id = insert_post(&req);
-	if (id) {
-		backend_response_post_new_t resp = { .id = id };
+	post_id_t post_id = insert_post(&req);
+	if (post_id) {
+		backend_response_post_new_t resp = { .id = post_id };
 		serialize_post_new(&resp, parcel_out);
 		backend_respond(parcel_out, channel);
 
-		fb_time_t stamp = post_stamp_from_id(id);
+		fb_time_t stamp = post_stamp_from_id(post_id);
 		set_last_post_time(req.board_id, stamp);
 		post_record_invalidity_change(req.board_id, 1);
 
 		// TODO: 不总是要加文章数的..
 		adjust_user_post_count(req.user_name, 1);
 
-#if 0
 		board_t board;
-		if (get_board_by_bid(req.bid, &board)) {
-			send_reply_notification(&pib, req.uname_replied, req.uid_replied,
-					&board);
+		if (get_board_by_bid(req.board_id, &board)) {
+			notify_new_reply(&req, &board, post_id);
 		}
 		return true;
-#endif
 	}
-	return id;
+	return false;
 }
 
 static void build_post_filter(query_t *q, const post_filter_t *f)

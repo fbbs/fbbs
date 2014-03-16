@@ -63,6 +63,25 @@ CREATE TABLE posts.deleted (
 	bm_visible BOOLEAN
 ) INHERITS (posts.base);
 
+CREATE TABLE posts.reply_base (
+	post_id BIGINT,
+	reply_id BIGINT,
+	thread_id BIGINT,
+
+	user_id_replied INTEGER,
+	user_id INTEGER,
+	user_name TEXT,
+	board_id INTEGER,
+	board_name TEXT,
+
+	title TEXT
+);
+
+CREATE TABLE posts.reply_0 (
+) INHERITS (posts.reply_base);
+CREATE INDEX ON posts.reply_0 (post_id);
+CREATE INDEX ON posts.reply_0 (user_id_replied);
+
 CREATE OR REPLACE FUNCTION posts_recent_before_insert_trigger() RETURNS TRIGGER AS $$
 BEGIN
 	IF NEW.reply_id = 0 THEN
