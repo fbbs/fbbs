@@ -99,11 +99,11 @@ BACKEND_DECLARE(post_new)
 		set_last_post_time(req.board_id, stamp);
 		post_record_invalidity_change(req.board_id, 1);
 
-		// TODO: 不总是要加文章数的..
-		adjust_user_post_count(req.user_name, 1);
-
 		board_t board;
 		if (get_board_by_bid(req.board_id, &board)) {
+			if (!board_is_junk(&board))
+				adjust_user_post_count(req.user_name, 1);
+
 			notify_new_reply(&req, &board, post_id);
 		}
 		return true;
@@ -167,7 +167,7 @@ static int _backend_post_delete(const backend_request_post_delete_t *req)
 	if (req->filter->bid && !get_board_by_bid(req->filter->bid, &board))
 		return 0;
 
-	bool decrease = !(req->filter->bid && is_junk_board(&board));
+	bool decrease = !(req->filter->bid && board_is_junk(&board));
 
 	query_t *q = query_new(0);
 	query_append(q, "WITH rows AS (DELETE FROM posts.recent");

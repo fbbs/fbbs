@@ -797,7 +797,7 @@ int delete_range(char *filename, int id1, int id2)
 						subflag = rptr->accessed[0] & FILE_DELETED ? YEA : NA;
 						canceltotrash(filename, currentuser.userid, rptr,
 								subflag, !HAS_PERM(PERM_OBOARDS));
-						if (subflag == YEA && !is_junk_board(currbp)) {
+						if (subflag == YEA && !board_is_junk(currbp)) {
 							lookupuid = getuser(rptr->owner);
 							if (lookupuid> 0 && lookupuser.numposts > 0) {
 								lookupuser.numposts--;
@@ -987,7 +987,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 		sprintf(genbuf, "%s/%s", buf, fileinfo->filename);
 		if (digestmode > 0)
 			unlink(genbuf);
-		if (!is_junk_board(currbp) && !digestmode) {
+		if (!board_is_junk(currbp) && !digestmode) {
 			if (owned && IScurrent) {
 				set_safe_record();
 				if (currentuser.numposts > 0 && subflag == YEA)

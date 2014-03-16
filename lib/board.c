@@ -38,11 +38,9 @@ int isclubmember(const char *member, const char *board)
 	return 0;
 }
 
-bool is_junk_board(const board_t *bp)
+bool board_is_junk(const board_t *bp)
 {
-	if (bp && (bp->flag & BOARD_FLAG_JUNK))
-		return true;
-	return false;
+	return (bp && (bp->flag & BOARD_FLAG_JUNK));
 }
 
 bool is_board_dir(const board_t *bp)

@@ -1278,7 +1278,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		report(buf, currentuser.userid);
 	}
 
-	if (!is_junk_board(&board) && !header.anonymous) {
+	if (!board_is_junk(&board) && !header.anonymous) {
 		set_safe_record();
 		currentuser.numposts++;
 		substitut_record(PASSFILE, &currentuser, sizeof (currentuser),

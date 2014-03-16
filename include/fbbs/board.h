@@ -76,7 +76,7 @@ extern bool fav_board_mv(user_id_t uid, int id, int parent);
 extern const char *currboard;
 extern board_t *currbp;
 extern void change_board(board_t *bp);
-extern bool is_junk_board(const board_t *bp);
+extern bool board_is_junk(const board_t *bp);
 extern bool is_board_dir(const board_t *bp);
 
 extern void board_complete(int row, const char *prompt, char *name, size_t size, int mode);
