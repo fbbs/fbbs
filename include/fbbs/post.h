@@ -82,6 +82,7 @@ typedef struct {
 	int board_id;
 	char user_name[IDLEN + 1];
 	char eraser_name[IDLEN + 1];
+	char board_name[BOARD_NAME_LEN];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_info_t;
 
@@ -140,6 +141,7 @@ typedef struct {
 	int board_id;
 	int flag;
 	char user_name[IDLEN + 1];
+	char board_name[BOARD_NAME_LEN + 1];
 	UTF8_BUFFER(title, POST_TITLE_CCHARS);
 } post_record_t;
 

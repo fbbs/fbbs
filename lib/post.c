@@ -64,6 +64,7 @@ void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count)
 		pi->board_id = pr->board_id;
 		strlcpy(pi->user_name, pr->user_name, sizeof(pi->user_name));
 		pi->eraser_name[0] = '\0';
+		strlcpy(pi->board_name, pr->board_name, sizeof(pi->board_name));
 		strlcpy(pi->utf8_title, pr->utf8_title, sizeof(pi->utf8_title));
 
 		++pr;
@@ -780,6 +781,8 @@ static void convert_post_record(db_res_t *res, int row, post_record_t *post,
 		strlcpy(post->utf8_title, title, sizeof(post->utf8_title));
 	else
 		post->utf8_title[0] = '\0';
+
+	post->board_name[0] = '\0';
 }
 
 static void convert_post_record_extended(db_res_t *res, int row,
