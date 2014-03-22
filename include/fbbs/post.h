@@ -27,7 +27,7 @@ typedef int64_t post_id_t;
 #define parcel_write_post_id(parcel, id)  parcel_write_varint64(parcel, id)
 #define parcel_read_post_id(parcel)  parcel_read_varint64(parcel)
 
-#define BOARD_POST_COUNT_KEY "board_post_count"
+#define POST_BOARD_COUNT_KEY "post:board_count"
 
 typedef enum {
 	POST_FLAG_DIGEST = 1,
@@ -186,7 +186,7 @@ extern int post_mark(const post_info_t *p);
 extern fb_time_t post_stamp_from_id(post_id_t id);
 extern post_id_t post_id_from_stamp(fb_time_t stamp);
 
-extern int get_board_post_count(int bid);
+extern int post_get_board_count(int board_id);
 
 typedef struct { // @frontend
 	post_id_t reply_id;

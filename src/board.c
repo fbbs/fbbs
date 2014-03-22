@@ -561,7 +561,7 @@ static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 		//% prints("  目录");
 		prints("  \xc4\xbf\xc2\xbc");
 	else
-		prints(" %5d", get_board_post_count(board->id));
+		prints(" %5d", post_get_board_count(board->id));
 
 	prints(" ");
 	if (board->flag & BOARD_FLAG_DIR) {

@@ -234,14 +234,14 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	return content;
 }
 
-int get_board_post_count(int bid)
+int post_get_board_count(int board_id)
 {
-	return mdb_integer(0, "HGET", BOARD_POST_COUNT_KEY " %d", bid);
+	return mdb_integer(0, "HGET", POST_BOARD_COUNT_KEY " %d", board_id);
 }
 
-static void set_board_post_count(int bid, int count)
+static void post_set_board_count(int board_id, int count)
 {
-	mdb_integer(0, "HSET", BOARD_POST_COUNT_KEY " %d %d", bid, count);
+	mdb_integer(0, "HSET", POST_BOARD_COUNT_KEY " %d %d", board_id, count);
 }
 
 enum {
@@ -844,7 +844,7 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 
 	db_clear(res);
 	if (!sticky)
-		set_board_post_count(bid, rows);
+		post_set_board_count(bid, rows);
 	return true;
 }
 
