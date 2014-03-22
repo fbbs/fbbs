@@ -821,7 +821,7 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 {
 	query_t *q = query_new(0);
 	query_select(q, POST_TABLE_FIELDS);
-	query_from(q, "posts.recent");
+	query_from(q, "post.recent");
 	query_where(q, "board_id = %d", bid);
 	if (sticky)
 		query_and(q, "sticky");
@@ -910,7 +910,7 @@ bool post_update_trash_record(record_t *record, post_trash_e trash,
 {
 	query_t *q = query_new(0);
 	query_select(q, POST_TABLE_FIELDS "," POST_TABLE_DELETED_FIELDS);
-	query_from(q, "posts.deleted");
+	query_from(q, "post.deleted");
 	query_where(q, "board_id = %d", board_id);
 	if (trash == POST_TRASH)
 		query_and(q, "bm_visible");
@@ -968,7 +968,7 @@ int post_set_flag(const post_filter_t *filter, post_flag_e flag, bool set,
 
 int post_sticky_count(int board_id)
 {
-	db_res_t *res = db_query("SELECT COUNT(*) FROM posts.recent"
+	db_res_t *res = db_query("SELECT COUNT(*) FROM post.recent"
 			" WHERE sticky AND board_id = %d", board_id);
 	int count = 0;
 	if (res && db_res_rows(res) >= 1) {
@@ -1023,7 +1023,7 @@ char *post_content_get(post_id_t post_id)
 
 	query_t *q = query_new(0);
 	query_select(q, "content");
-	query_from(q, "posts.content");
+	query_from(q, "post.content");
 	query_where(q, "post_id = %"DBIdPID, post_id);
 
 	db_res_t *res = query_exec(q);
@@ -1044,7 +1044,7 @@ bool post_content_set(post_id_t post_id, const char *str)
 		return false;
 
 	query_t *q = query_new(0);
-	query_update(q, "posts.content");
+	query_update(q, "post.content");
 	query_set(q, "content = %s", str);
 	query_where(q, "post_id = %"DBIdPID, post_id);
 

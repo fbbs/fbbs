@@ -1883,7 +1883,7 @@ static void search_all_boards(post_filter_t *filter, const char *user_name,
 
 	query_t *q = query_new(0);
 	query_select(q, "id, board_id, title");
-	query_from(q, "posts.recent");
+	query_from(q, "post.recent");
 	filter_post(q, filter);
 	query_orderby(q, "id", true);
 

@@ -10,7 +10,7 @@
 static post_id_t insert_post(const backend_request_post_new_t *req)
 {
 	post_id_t id = 0;
-	db_res_t *r1 = db_query("INSERT INTO posts.recent (reply_id, thread_id,"
+	db_res_t *r1 = db_query("INSERT INTO post.recent (reply_id, thread_id,"
 			" user_id, real_user_id, user_name, board_id, board_name, marked,"
 			" locked, attachment, title) VALUES (%"DBIdPID", %"DBIdPID","
 			" %"DBIdUID", %"DBIdUID", %s, %d, %s, %b, %b, %b, %s)"
@@ -21,7 +21,7 @@ static post_id_t insert_post(const backend_request_post_new_t *req)
 	if (r1 && db_res_rows(r1) == 1) {
 		id = db_get_post_id(r1, 0, 0);
 		if (id) {
-			db_res_t *r2 = db_cmd("INSERT INTO posts.content"
+			db_res_t *r2 = db_cmd("INSERT INTO post.content"
 					" (post_id, content) VALUES (%"DBIdPID", %s)",
 					id, req->content);
 			db_clear(r2);
@@ -51,7 +51,7 @@ static void insert_reply_record(const backend_request_post_new_t *req,
 		post_id_t post_id, int partition)
 {
 	char table_name[64];
-	snprintf(table_name, sizeof(table_name), "posts.reply_%d", partition);
+	snprintf(table_name, sizeof(table_name), "post.reply_%d", partition);
 
 	query_t *q = query_new(0);
 	query_sappend(q, "INSERT INTO", table_name);
@@ -156,9 +156,9 @@ static void build_post_filter(query_t *q, const post_filter_t *f)
 static const char *table_name(const post_filter_t *filter)
 {
 	if (is_deleted(filter->type))
-		return "posts.deleted";
+		return "post.deleted";
 	else
-		return "posts.recent";
+		return "post.recent";
 }
 
 static int _backend_post_delete(const backend_request_post_delete_t *req)
@@ -170,7 +170,7 @@ static int _backend_post_delete(const backend_request_post_delete_t *req)
 	bool decrease = !(req->filter->bid && board_is_junk(&board));
 
 	query_t *q = query_new(0);
-	query_append(q, "WITH rows AS (DELETE FROM posts.recent");
+	query_append(q, "WITH rows AS (DELETE FROM post.recent");
 	build_post_filter(q, req->filter);
 
 	if (!req->force)
@@ -178,7 +178,7 @@ static int _backend_post_delete(const backend_request_post_delete_t *req)
 	query_and(q, "NOT sticky");
 
 	query_append(q, "RETURNING " POST_TABLE_FIELDS ")");
-	query_append(q, "INSERT INTO posts.deleted ("
+	query_append(q, "INSERT INTO post.deleted ("
 			POST_TABLE_FIELDS "," POST_TABLE_DELETED_FIELDS ")");
 	query_append(q, "SELECT " POST_TABLE_FIELDS ","
 			" current_timestamp, %"DBIdUID", %s, %b AND (water OR %b), %b"
@@ -221,7 +221,7 @@ BACKEND_DECLARE(post_delete)
 static int _backend_post_undelete(const backend_request_post_undelete_t *req)
 {
 	query_t *q = query_new(0);
-	query_select(q, "user_id, user_name, junk FROM posts.deleted");
+	query_select(q, "user_id, user_name, junk FROM post.deleted");
 	build_post_filter(q, req->filter);
 
 	db_res_t *res = query_exec(q);
@@ -237,11 +237,11 @@ static int _backend_post_undelete(const backend_request_post_undelete_t *req)
 	db_clear(res);
 
 	q = query_new(0);
-	query_append(q, "WITH rows AS (DELETE FROM posts.deleted");
+	query_append(q, "WITH rows AS (DELETE FROM post.deleted");
 	build_post_filter(q, req->filter);
 	// TODO 站务垃圾箱和版主垃圾箱?
 	query_append(q, "RETURNING " POST_TABLE_FIELDS ")");
-	query_append(q, "INSERT INTO posts.recent (" POST_TABLE_FIELDS ")");
+	query_append(q, "INSERT INTO post.recent (" POST_TABLE_FIELDS ")");
 	query_select(q, POST_TABLE_FIELDS);
 	query_from(q, "rows");
 
@@ -376,7 +376,7 @@ static bool _backend_post_alter_title(
 	};
 
 	query_t *q = query_new(0);
-	query_update(q, "posts.recent");
+	query_update(q, "post.recent");
 	query_set(q, "title = %s", req->title);
 	build_post_filter(q, &filter);
 

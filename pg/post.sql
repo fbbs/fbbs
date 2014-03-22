@@ -1,23 +1,23 @@
 BEGIN;
 
-DROP SCHEMA IF EXISTS posts CASCADE;
-CREATE SCHEMA posts;
+DROP SCHEMA IF EXISTS post CASCADE;
+CREATE SCHEMA post;
 
-CREATE SEQUENCE posts.post_id_seq;
+CREATE SEQUENCE post.post_id_seq;
 
-CREATE OR REPLACE FUNCTION posts.next_id(OUT result BIGINT) AS $$
+CREATE OR REPLACE FUNCTION post.next_id(OUT result BIGINT) AS $$
 DECLARE
 	seq_id BIGINT;
 	now_millis BIGINT;
 BEGIN
-	SELECT nextval('posts.post_id_seq') % 2048 INTO seq_id;
+	SELECT nextval('post.post_id_seq') % 2048 INTO seq_id;
 	SELECT FLOOR(EXTRACT(EPOCH FROM clock_timestamp()) * 1000) INTO now_millis;
 	result := (now_millis << 21) + seq_id;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TABLE posts.base (
-	id BIGINT NOT NULL DEFAULT posts.next_id(),
+CREATE TABLE post.base (
+	id BIGINT NOT NULL DEFAULT post.next_id(),
 	reply_id BIGINT,
 	thread_id BIGINT,
 
@@ -38,32 +38,32 @@ CREATE TABLE posts.base (
 	title TEXT
 );
 
-CREATE TABLE posts.recent (
-) INHERITS (posts.base);
-CREATE INDEX ON posts.recent (id);
+CREATE TABLE post.recent (
+) INHERITS (post.base);
+CREATE INDEX ON post.recent (id);
 
-CREATE TABLE posts.archive (
-) INHERITS (posts.base);
-CREATE INDEX ON posts.archive (id);
+CREATE TABLE post.archive (
+) INHERITS (post.base);
+CREATE INDEX ON post.archive (id);
 
-CREATE TABLE posts.content_base (
+CREATE TABLE post.content_base (
 	post_id BIGINT,
 	content TEXT
 );
 
-CREATE TABLE posts.content (
-) INHERITS (posts.content_base);
-CREATE INDEX ON posts.content (post_id);
+CREATE TABLE post.content (
+) INHERITS (post.content_base);
+CREATE INDEX ON post.content (post_id);
 
-CREATE TABLE posts.deleted (
+CREATE TABLE post.deleted (
 	delete_stamp TIMESTAMPTZ,
 	eraser_id INTEGER,
 	eraser_name TEXT,
 	junk BOOLEAN DEFAULT FALSE,
 	bm_visible BOOLEAN
-) INHERITS (posts.base);
+) INHERITS (post.base);
 
-CREATE TABLE posts.reply_base (
+CREATE TABLE post.reply_base (
 	post_id BIGINT,
 	reply_id BIGINT,
 	thread_id BIGINT,
@@ -77,12 +77,12 @@ CREATE TABLE posts.reply_base (
 	title TEXT
 );
 
-CREATE TABLE posts.reply_0 (
-) INHERITS (posts.reply_base);
-CREATE INDEX ON posts.reply_0 (post_id);
-CREATE INDEX ON posts.reply_0 (user_id_replied);
+CREATE TABLE post.reply_0 (
+) INHERITS (post.reply_base);
+CREATE INDEX ON post.reply_0 (post_id);
+CREATE INDEX ON post.reply_0 (user_id_replied);
 
-CREATE OR REPLACE FUNCTION posts_recent_before_insert_trigger() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION post_recent_before_insert_trigger() RETURNS TRIGGER AS $$
 BEGIN
 	IF NEW.reply_id = 0 THEN
 		NEW.reply_id := NEW.id;
@@ -91,8 +91,8 @@ BEGIN
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS posts_recent_before_insert_trigger ON posts.recent;
-CREATE TRIGGER posts_recent_before_insert_trigger BEFORE INSERT ON posts.recent
-	FOR EACH ROW EXECUTE PROCEDURE posts_recent_before_insert_trigger();
+DROP TRIGGER IF EXISTS post_recent_before_insert_trigger ON post.recent;
+CREATE TRIGGER post_recent_before_insert_trigger BEFORE INSERT ON post.recent
+	FOR EACH ROW EXECUTE PROCEDURE post_recent_before_insert_trigger();
 
 COMMIT;

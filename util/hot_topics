@@ -107,7 +107,7 @@ sub load_post_info
 {
 	my $thread_id = shift;
 	$dbh->selectrow_array(
-		'SELECT user_id, user_name, title FROM posts.recent WHERE id = ?', {},
+		'SELECT user_id, user_name, title FROM post.recent WHERE id = ?', {},
 		$thread_id);
 }
 
@@ -144,7 +144,7 @@ sub load_recent_posts
 {
 	my $post_id_min = ((time - 86400) * 1000) << 21;
 
-	my $sql = "SELECT id, thread_id, board_id FROM posts.recent WHERE id >= ?";
+	my $sql = "SELECT id, thread_id, board_id FROM post.recent WHERE id >= ?";
 
 	my $posts = $dbh->selectall_arrayref($sql, {}, $post_id_min);
 	my @posts = sort { $b->[0] <=> $a->[0] } @$posts;

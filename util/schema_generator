@@ -12,8 +12,8 @@ sub main {
 	}
 
 	for (1 .. $ARGV[0] - 1) {
-		say "CREATE TABLE posts.reply_$_ () INHERITS (posts.reply_base);";
-		say "CREATE INDEX ON posts.reply_$_ (post_id);";
-		say "CREATE INDEX ON posts.reply_$_ (user_id_replied);";
+		say "CREATE TABLE post.reply_$_ () INHERITS (post.reply_base);";
+		say "CREATE INDEX ON post.reply_$_ (post_id);";
+		say "CREATE INDEX ON post.reply_$_ (user_id_replied);";
 	}
 }
