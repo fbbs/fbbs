@@ -233,7 +233,7 @@ int valid_fname(char *str) {
 }
 
 int rm_dir_callback(const char *fpath, const struct stat *sb, int type,
-		        struct FTW *ftwbuf)
+		struct FTW *ftwbuf)
 {
 	if (type == FTW_F || type == FTW_SL || type == FTW_SLN) {
 		return unlink(fpath);

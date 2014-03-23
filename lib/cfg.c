@@ -80,3 +80,11 @@ const char *config_get(const char *key)
 	}
 	return NULL;
 }
+
+int config_get_integer(const char *key, int invalid)
+{
+	const char *s = config_get(key);
+	if (key)
+		return strtol(s, NULL, 10);
+	return invalid;
+}

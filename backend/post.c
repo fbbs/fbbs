@@ -1,5 +1,6 @@
 #include "bbs.h"
 #include "fbbs/backend.h"
+#include "fbbs/cfg.h"
 #include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/notification.h"
@@ -40,13 +41,6 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
-#define REPLY_PARTITION_KEY "post:partitions"
-
-static int get_reply_partitions(void)
-{
-	return mdb_integer(1, "GET", REPLY_PARTITION_KEY);
-}
-
 static void insert_reply_record(const backend_request_post_new_t *req,
 		post_id_t post_id, int partition)
 {
@@ -74,7 +68,7 @@ static void notify_new_reply(const backend_request_post_new_t *req,
 	struct userec urec;
 	if (getuserec(req->user_name, &urec)
 			&& user_has_read_perm(&urec, board)) {
-		int partitions = get_reply_partitions();
+		int partitions = config_get_integer("post_reply_partitions", 1);
 		if (partitions <= 0)
 			partitions = 1;
 
