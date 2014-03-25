@@ -15,6 +15,8 @@ typedef struct {
 extern bool vector_init(vector_t *v, vector_size_t len, vector_size_t capacity);
 extern bool vector_reserve(vector_t *v, vector_size_t capacity);
 extern void *vector_grow(vector_t *v);
+extern bool vector_erase(vector_t *v, vector_size_t position);
+extern bool vector_erase_range(vector_t *v, vector_size_t first, vector_size_t last);
 extern void vector_free(vector_t *v);
 
 #endif // FB_VECTOR_H
