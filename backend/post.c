@@ -42,10 +42,10 @@ static void adjust_user_post_count(const char *uname, int delta)
 }
 
 static void insert_reply_record(const backend_request_post_new_t *req,
-		post_id_t post_id, int partition)
+		post_id_t post_id, user_id_t user_id)
 {
 	char table_name[64];
-	snprintf(table_name, sizeof(table_name), "post.reply_%d", partition);
+	post_reply_table_name(user_id, table_name, sizeof(table_name));
 
 	query_t *q = query_new(0);
 	query_sappend(q, "INSERT INTO", table_name);
@@ -68,12 +68,7 @@ static void notify_new_reply(const backend_request_post_new_t *req,
 	struct userec urec;
 	if (getuserec(req->user_name, &urec)
 			&& user_has_read_perm(&urec, board)) {
-		int partitions = config_get_integer("post_reply_partitions", 1);
-		if (partitions <= 0)
-			partitions = 1;
-
-		int partition = req->user_id_replied % partitions;
-		insert_reply_record(req, post_id, partition);
+		insert_reply_record(req, post_id, req->user_id_replied);
 	}
 }
 

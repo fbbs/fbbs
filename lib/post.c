@@ -7,6 +7,7 @@
 #include "mmap.h"
 #include "fbbs/backend.h"
 #include "fbbs/brc.h"
+#include "fbbs/cfg.h"
 #include "fbbs/convert.h"
 #include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
@@ -1070,4 +1071,15 @@ bool post_alter_title(int board_id, post_id_t post_id, const char *title)
 
 	bool ok = backend_cmd(&req, &resp, post_alter_title);
 	return ok && resp.ok;
+}
+
+char *post_reply_table_name(user_id_t user_id, char *name, size_t size)
+{
+	int partitions = config_get_integer("post_reply_partitions", 1);
+	if (partitions < 1)
+		partitions = 1;
+
+	int partition = user_id % partitions;
+	snprintf(name, size, "post.reply_%d", partition);
+	return name;
 }
