@@ -30,45 +30,4 @@ typedef struct tui_list_t {
 extern int tui_list_seek(tui_list_t *tl, int operation, bool invalidate, bool loop);
 extern int tui_list(tui_list_t *p);
 
-typedef enum {
-	SLIDE_LIST_CURRENT = 0,
-	SLIDE_LIST_TOPDOWN,
-	SLIDE_LIST_PREV,
-	SLIDE_LIST_NEXT,
-	SLIDE_LIST_BOTTOMUP,
-} slide_list_base_e;
-
-typedef int slide_list_loader_t;
-typedef void slide_list_title_t;
-typedef int slide_list_display_t;
-typedef int slide_list_handler_t;
-
-typedef struct slide_list_t {
-	int cur;
-	int max;
-	int update;
-	slide_list_base_e base;
-	bool in_query;
-	void *data;
-	int (*loader)(struct slide_list_t *);
-	void (*title)(struct slide_list_t *);
-	int (*display)(struct slide_list_t *);
-	int (*handler)(struct slide_list_t *, int);
-} slide_list_t;
-
-extern int slide_list(slide_list_t *p);
-
-enum {
-	TUI_LIST_POS_KEY_LEN = 16,
-};
-
-typedef struct tui_list_pos_t {
-	char key[TUI_LIST_POS_KEY_LEN];
-	int top;
-	int cursor;
-	SLIST_FIELD(tui_list_pos_t) next;
-} tui_list_pos_t;
-
-SLIST_HEAD(tui_list_pos_list_t, tui_list_pos_t);
-
 #endif // FB_TUI_LIST_H
