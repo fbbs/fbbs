@@ -39,19 +39,26 @@ bool vector_reserve(vector_t *v, vector_size_t capacity)
 	return false;
 }
 
-static bool vector_grow_by_one(vector_t *v)
+void *vector_at(const vector_t *v, vector_size_t position)
+{
+	if (v && v->data && position < v->size)
+		return (char *) v->data + v->len * position;
+	return NULL;
+}
+
+static bool _vector_grow(vector_t *v, vector_size_t size)
 {
 	if (v) {
-		++v->size;
+		v->size += size;
 		return vector_reserve(v, v->size);
 	}
 	return false;
 }
 
-void *vector_grow(vector_t *v)
+void *vector_grow(vector_t *v, vector_size_t size)
 {
-	if (v && vector_grow_by_one(v) && v->size)
-		return ((char *) v->data) + v->len * (v->size - 1);
+	if (v && _vector_grow(v, size) && v->size >= size)
+		return ((char *) v->data) + v->len * (v->size - size);
 	return NULL;
 }
 
