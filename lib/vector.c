@@ -39,6 +39,11 @@ bool vector_reserve(vector_t *v, vector_size_t capacity)
 	return false;
 }
 
+vector_size_t vector_size(const vector_t *v)
+{
+	return v->size;
+}
+
 void *vector_at(const vector_t *v, vector_size_t position)
 {
 	if (v && v->data && position < v->size)
