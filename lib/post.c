@@ -1083,3 +1083,41 @@ char *post_reply_table_name(user_id_t user_id, char *name, size_t size)
 	snprintf(name, size, "post.reply_%d", partition);
 	return name;
 }
+
+int post_reply_load(user_id_t user_id, post_id_t id, post_info_t *buf,
+		size_t size)
+{
+	char table_name[64];
+	post_reply_table_name(user_id, table_name, sizeof(table_name));
+
+	query_t *q = query_new(0);
+	query_select(q, "post_id, reply_id, thread_id, user_id,"
+			" user_name, board_id, board_name, title");
+	query_from(q, table_name);
+	query_where(q, "user_id_replied = %"DBIdUID, user_id);
+	query_orderby(q, "post_id", false);
+	query_limit(q, size);
+
+	db_res_t *res = query_exec(q);
+	if (!res)
+		return -1;
+
+	int rows = db_res_rows(res);
+	for (int i = 0; i < rows && i < size; ++i) {
+		post_info_t *pi = buf + i;
+		pi->id = db_get_post_id(res, i, 0);
+		pi->reply_id = db_get_post_id(res, i, 1);
+		pi->thread_id = db_get_post_id(res, i, 2);
+		pi->flag = 0;
+		pi->user_id = db_get_user_id(res, i, 3);
+		pi->board_id = db_get_integer(res, i, 5);
+		string_copy_allow_null(pi->user_name, db_get_value(res, i, 4),
+				sizeof(pi->user_name));
+		string_copy_allow_null(pi->board_name, db_get_value(res, i, 6),
+				sizeof(pi->board_name));
+		string_copy_allow_null(pi->utf8_title, db_get_value(res, i, 7),
+				sizeof(pi->utf8_title));
+	}
+	db_clear(res);
+	return rows;
+}

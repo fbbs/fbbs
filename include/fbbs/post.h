@@ -68,17 +68,17 @@ typedef enum {
 	POST_LIST_TRASH,
 	POST_LIST_JUNK,
 	POST_LIST_FORUM,
-	POST_LIST_REPLIES,
+	POST_LIST_REPLY,
 } post_list_type_e;
 
 typedef struct {
-	int flag;
-	user_id_t user_id;
 	post_id_t id;
 	post_id_t reply_id;
 	post_id_t thread_id;
 	fb_time_t stamp;
 	fb_time_t delete_stamp;
+	int flag;
+	user_id_t user_id;
 	int board_id;
 	char user_name[IDLEN + 1];
 	char eraser_name[IDLEN + 1];
@@ -275,5 +275,6 @@ extern char *post_content_get(post_id_t post_id);
 extern bool post_content_set(post_id_t post_id, const char *str);
 
 extern char *post_reply_table_name(user_id_t user_id, char *name, size_t size);
+extern int post_reply_load(user_id_t user_id, post_id_t id, post_info_t *buf, size_t size);
 
 #endif // FB_POST_H
