@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 #include "fbbs/list.h"
+#include "fbbs/user.h"
+#include "fbbs/vector.h"
 
 typedef int tui_list_loader_t;
 typedef void tui_list_title_t;
@@ -29,5 +31,20 @@ typedef struct tui_list_t {
 
 extern int tui_list_seek(tui_list_t *tl, int operation, bool invalidate, bool loop);
 extern int tui_list(tui_list_t *p);
+
+typedef int (*tui_list_recent_loader_t)(user_id_t user_id, int64_t id, void *buf, size_t size);
+
+typedef struct {
+	user_id_t user_id;
+	tui_list_recent_loader_t loader;
+	vector_size_t len;
+	void (*title)(struct tui_list_t *);
+	int (*display)(struct tui_list_t *, int);
+	int (*handler)(struct tui_list_t *, int);
+	int (*query)(struct tui_list_t *);
+} tui_list_recent_t;
+
+extern int tui_list_recent(tui_list_recent_t *tlr);
+extern void *tui_list_recent_get_current_data(tui_list_t *tl);
 
 #endif // FB_TUI_LIST_H

@@ -222,3 +222,100 @@ int tui_list(tui_list_t *p)
 	}
 	return 0;
 }
+
+typedef struct {
+	bool all_loaded;
+	user_id_t user_id;
+	tui_list_recent_loader_t loader;
+	int (*handler)(tui_list_t *, int);
+	vector_t vector;
+} tui_list_recent_helper_t;
+
+static tui_list_loader_t tui_list_recent_loader(tui_list_t *tl)
+{
+	tui_list_recent_helper_t *helper = tl->data;
+	if (helper->all_loaded)
+		return 0;
+
+	vector_t *v = &helper->vector;
+
+	int64_t id = INT64_MAX;
+	if (vector_size(v))
+		id = *((int64_t *) vector_at(v, vector_size(v) - 1));
+
+	void *buf = vector_grow(&helper->vector, tl->lines);
+	if (!buf)
+		return -1;
+
+	int rows = helper->loader(helper->user_id, id, buf, tl->lines);
+	if (rows < tl->lines) {
+		vector_size_t diff = tl->lines - rows, size = vector_size(v);
+		vector_erase_range(v, size - diff, size);
+		helper->all_loaded = true;
+	}
+	tl->all = vector_size(v);
+	tl->valid = true;
+	return rows;
+}
+
+static void load_more(tui_list_t *tl)
+{
+	int all = tl->all;
+	tui_list_recent_loader(tl);
+	int diff = tl->all > all;
+	if (diff > 0) {
+		tl->begin += diff;
+		tl->cur += diff;
+	}
+}
+
+static tui_list_handler_t tui_list_recent_handler(tui_list_t *tl, int key)
+{
+	tui_list_recent_helper_t *helper = tl->data;
+	if (helper->handler(tl, key) == READ_AGAIN) {
+		switch (key) {
+			case 'k': case KEY_UP:
+				if (tl->cur == 0)
+					load_more(tl);
+				return READ_AGAIN;
+			case 'b': case Ctrl('B'): case KEY_PGUP:
+				if (tl->cur < tl->lines - 1)
+					load_more(tl);
+				return READ_AGAIN;
+		}
+	}
+	return READ_AGAIN;
+}
+
+int tui_list_recent(tui_list_recent_t *tlr)
+{
+	int lines = screen_lines() - 4;
+
+	tui_list_recent_helper_t helper = {
+		.user_id = tlr->user_id,
+		.loader = tlr->loader,
+	};
+	if (!vector_init(&helper.vector, tlr->len, lines))
+		return 0;
+
+	tui_list_t tl = {
+		.lines = lines,
+		.data = &helper,
+		.loader = tui_list_recent_loader,
+		.title = tlr->title,
+		.display = tlr->display,
+		.handler = tui_list_recent_handler,
+		.query = tlr->query,
+	};
+	tui_list(&tl);
+
+	vector_free(&helper.vector);
+	return 0;
+}
+
+void *tui_list_recent_get_current_data(tui_list_t *tl)
+{
+	tui_list_recent_helper_t *helper = tl->data;
+	vector_t *v = &helper->vector;
+	return vector_at(v, tl->all - tl->cur);
+}
