@@ -35,6 +35,7 @@ extern void string_remove_non_printable_gbk(char *str);
 extern void string_remove_non_printable(char *str);
 extern size_t string_check_tail(char *begin, char *end);
 extern size_t string_cp(char *dst, const char *src, size_t siz);
+extern size_t string_copy_allow_null(char *dst, const char *src, size_t size);
 extern int valid_gbk(unsigned char *str, int len, int replace);
 extern const char *check_gbk(const char *title);
 

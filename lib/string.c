@@ -389,6 +389,15 @@ size_t string_cp(char *dst, const char *src, size_t siz)
 	return size;
 }
 
+size_t string_copy_allow_null(char *dst, const char *src, size_t size)
+{
+	if (!src) {
+		*dst = '\0';
+		return 0;
+	}
+	return strlcpy(dst, src, size);
+}
+
 struct interval {
   int first;
   int last;
