@@ -3,7 +3,6 @@
 #include "fbbs/cfg.h"
 #include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
-#include "fbbs/notification.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
 #include "s11n/backend_post.h"

@@ -9,7 +9,6 @@
 #include "fbbs/helper.h"
 #include "fbbs/mail.h"
 #include "fbbs/msg.h"
-#include "fbbs/notification.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
@@ -924,9 +923,6 @@ void start_client(void)
 
 	active_board_init(false);
 	fill_date();
-
-	notification_clear();
-//	notification_subscribe();
 
 	if (DEFINE(DEF_LOGFRIEND)
 			&& session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)) > 0)
