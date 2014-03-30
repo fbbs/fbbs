@@ -92,7 +92,8 @@ BACKEND_DECLARE(post_new)
 			if (!board_is_junk(&board))
 				adjust_user_post_count(req.user_name, 1);
 
-			notify_new_reply(&req, &board, post_id);
+			if (req.user_id != req.user_id_replied)
+				notify_new_reply(&req, &board, post_id);
 		}
 		return true;
 	}
