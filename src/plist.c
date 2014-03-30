@@ -2555,13 +2555,6 @@ static void open_post_record(const post_filter_t *filter, record_t *record)
 				unlink(file);
 				break;
 			}
-			case POST_LIST_REPLIES: {
-				char file[HOMELEN];
-				sethomefile(file, currentuser.userid, POST_REPLIES_FILE);
-				record_open(file, post_record_cmp, sizeof(post_record_t),
-						RECORD_READ, record);
-				break;
-			}
 			default:
 				break;
 		}
@@ -2620,4 +2613,85 @@ int post_list_board(int bid)
 		.bid = bid,
 	};
 	return post_list_with_filter(&filter);
+}
+
+static int post_list_reply_loader(user_id_t user_id, int64_t id, void *buf,
+		size_t size)
+{
+	return post_reply_load(user_id, id, buf, size);
+}
+
+static tui_list_title_t post_list_reply_title(tui_list_t *tl)
+{
+	//% 回复我的文章
+	prints("\033[1;33;44m[\xbb\xd8\xb8\xb4\xce\xd2\xb5\xc4\xce\xc4\xd5\xc2]"
+			"\033[K\n"
+			//% 离开[←,e] 选择[↑,↓] 阅读[→,Rtn] 砍信[d] 求助[h]
+			"\033[m " TUI_LIST_HELP2("\xc0\xeb\xbf\xaa", "\xa1\xfb", "e")
+			" " TUI_LIST_HELP2("\xd1\xa1\xd4\xf1", "\xa1\xfc", "\xa1\xfd")
+			" " TUI_LIST_HELP2("\xd4\xc4\xb6\xc1", "\xa1\xfa", "Rtn")
+			" " TUI_LIST_HELP("\xbf\xb3\xd0\xc5", "d")
+			" " TUI_LIST_HELP("\xc7\xf3\xd6\xfa", "h") "\n"
+			//% 作者         日期   版面          标题
+			"\033[1;37;44m  \xd7\xf7\xd5\xdf         \xc8\xd5\xc6\xda"
+			"   \xb0\xe6\xc3\xe6          \xb1\xea\xcc\xe2\033[K\033[m\n");
+}
+
+static tui_list_display_t post_list_reply_display(tui_list_t *tl, int n)
+{
+	post_info_t *pi = tui_list_recent_get_data(tl, n);
+	if (pi) {
+		const char *date = get_post_date(post_stamp_from_id(pi->id));
+
+		char board_name[BOARD_NAME_LEN + 1];
+		strlcpy(board_name, pi->board_name, sizeof(board_name));
+		ellipsis(board_name, 13);
+
+		GBK_UTF8_BUFFER(title, 21);
+		string_cp(utf8_title, pi->utf8_title, sizeof(utf8_title));
+		convert_u2g(utf8_title, gbk_title);
+
+		prints("  %-12s %6s %-13s %s\n", pi->user_name, date, pi->board_name,
+				gbk_title);
+	}
+	return 0;
+}
+
+static int read_reply(tui_list_t *tl, post_info_t *pi)
+{
+	char file[HOMELEN];
+	int ch;
+	if (pi && dump_content(pi->id, file, sizeof(file))) {
+		ch = ansimore(file, false);
+		ch = egetch();
+		unlink(file);
+	}
+	return FULLUPDATE;
+}
+
+static tui_list_handler_t post_list_reply_handler(tui_list_t *tl, int key)
+{
+	post_info_t *pi = tui_list_recent_get_data(tl, tl->cur);
+	switch (key) {
+		case '\n': case KEY_RIGHT:
+			if (pi)
+				return read_reply(tl, pi);
+			return READ_AGAIN;
+		default:
+			return READ_AGAIN;
+	}
+}
+
+int post_list_reply(void)
+{
+	tui_list_recent_t tlr = {
+		.user_id = session_uid(),
+		.loader = post_list_reply_loader,
+		.len = sizeof(post_info_t),
+		.title = post_list_reply_title,
+		.display = post_list_reply_display,
+		.handler = post_list_reply_handler,
+	};
+	tui_list_recent(&tlr);
+	return 0;
 }

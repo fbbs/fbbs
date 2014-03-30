@@ -272,7 +272,8 @@ static void load_more(tui_list_t *tl)
 static tui_list_handler_t tui_list_recent_handler(tui_list_t *tl, int key)
 {
 	tui_list_recent_helper_t *helper = tl->data;
-	if (helper->handler(tl, key) == READ_AGAIN) {
+	int ret = helper->handler(tl, key);
+	if (ret == READ_AGAIN) {
 		switch (key) {
 			case 'k': case KEY_UP:
 				if (tl->cur == 0)
@@ -282,9 +283,11 @@ static tui_list_handler_t tui_list_recent_handler(tui_list_t *tl, int key)
 				if (tl->cur < tl->lines - 1)
 					load_more(tl);
 				return READ_AGAIN;
+			default:
+				return READ_AGAIN;
 		}
 	}
-	return READ_AGAIN;
+	return ret;
 }
 
 int tui_list_recent(tui_list_recent_t *tlr)

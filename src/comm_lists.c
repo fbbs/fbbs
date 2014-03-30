@@ -70,6 +70,8 @@ extern int tui_retire_bm(const char *);
 extern int tui_new_board(const char *);
 extern int tui_edit_board(const char *);
 
+extern int post_list_reply(void);
+
 typedef int (*telnet_handler_t)();
 
 typedef struct {
@@ -97,6 +99,7 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "Personal", Personal },
 		{ "SelectBoard", board_select },
 		{ "ReadBoard", board_read },
+		{ "ReadReply", post_list_reply },
 		{ "MailAll", mailall },
 		{ "LockScreen", x_lockscreen },
 		{ "OffLine", offline },
