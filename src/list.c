@@ -262,7 +262,7 @@ static void load_more(tui_list_t *tl)
 {
 	int all = tl->all;
 	tui_list_recent_loader(tl);
-	int diff = tl->all > all;
+	int diff = tl->all - all;
 	if (diff > 0) {
 		tl->begin += diff;
 		tl->cur += diff;
