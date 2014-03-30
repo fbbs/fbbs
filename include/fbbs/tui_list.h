@@ -6,6 +6,9 @@
 #include "fbbs/user.h"
 #include "fbbs/vector.h"
 
+#define TUI_LIST_HELP(func, key)  func "[\033[1;32m" key "\033[m]"
+#define TUI_LIST_HELP2(func, k1, k2)  func "[\033[1;32m" k1 "\033[m,\033[1;32m" k2 "\033[m]"
+
 typedef int tui_list_loader_t;
 typedef void tui_list_title_t;
 typedef int tui_list_display_t;
