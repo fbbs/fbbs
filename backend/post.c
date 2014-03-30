@@ -71,6 +71,47 @@ static void notify_new_reply(const backend_request_post_new_t *req,
 	}
 }
 
+static int notify_new_mention(const char *user_name,
+		const backend_request_post_new_t *req, const board_t *board)
+{
+	return 0;
+}
+
+static int scan_for_mentions(const backend_request_post_new_t *req,
+		const board_t *board)
+{
+	const char *end = strstr(req->content, "\n--\n");
+	if (!end)
+		end = req->content + strlen(req->content);
+
+	int count = 0;
+	bool mention = false;
+	const char *begin = NULL;
+	for (const char *ptr = req->content; ptr < end; ++ptr) {
+		if (mention) {
+			if (!isalpha(*ptr)) {
+				if (ptr - begin <= IDLEN) {
+					char user_name[IDLEN + 1];
+					strlcpy(user_name, begin, ptr - begin + 1);
+					notify_new_mention(user_name, req, board);
+					++count;
+					if (count >= POST_MENTION_LIMIT)
+						break;
+				}
+				mention = false;
+				begin = NULL;
+			}
+		}
+		if (!mention) {
+			if (*ptr == '@') {
+				mention = true;
+				begin = ptr;
+			}
+		}
+	}
+	return count;
+}
+
 BACKEND_DECLARE(post_new)
 {
 	backend_request_post_new_t req;
@@ -94,6 +135,8 @@ BACKEND_DECLARE(post_new)
 
 			if (req.user_id != req.user_id_replied)
 				notify_new_reply(&req, &board, post_id);
+
+			scan_for_mentions(&req, &board);
 		}
 		return true;
 	}

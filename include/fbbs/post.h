@@ -45,6 +45,7 @@ typedef enum {
 enum {
 	POST_TITLE_CCHARS = 23,
 	POST_CONTENT_CCHARS = 128 * 1024,
+	POST_MENTION_LIMIT = 10,
 };
 
 typedef enum {
