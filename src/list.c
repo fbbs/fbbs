@@ -294,6 +294,7 @@ int tui_list_recent(tui_list_recent_t *tlr)
 	tui_list_recent_helper_t helper = {
 		.user_id = tlr->user_id,
 		.loader = tlr->loader,
+		.handler = tlr->handler,
 	};
 	if (!vector_init(&helper.vector, tlr->len, lines))
 		return 0;
@@ -313,9 +314,9 @@ int tui_list_recent(tui_list_recent_t *tlr)
 	return 0;
 }
 
-void *tui_list_recent_get_current_data(tui_list_t *tl)
+void *tui_list_recent_get_data(tui_list_t *tl, int n)
 {
 	tui_list_recent_helper_t *helper = tl->data;
 	vector_t *v = &helper->vector;
-	return vector_at(v, tl->all - tl->cur);
+	return vector_at(v, tl->all - n - 1);
 }

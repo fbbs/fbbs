@@ -1095,6 +1095,7 @@ int post_reply_load(user_id_t user_id, post_id_t id, post_info_t *buf,
 			" user_name, board_id, board_name, title");
 	query_from(q, table_name);
 	query_where(q, "user_id_replied = %"DBIdUID, user_id);
+	query_and(q, "post_id < %"DBIdPID, id);
 	query_orderby(q, "post_id", false);
 	query_limit(q, size);
 

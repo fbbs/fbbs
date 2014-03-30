@@ -45,6 +45,6 @@ typedef struct {
 } tui_list_recent_t;
 
 extern int tui_list_recent(tui_list_recent_t *tlr);
-extern void *tui_list_recent_get_current_data(tui_list_t *tl);
+extern void *tui_list_recent_get_data(tui_list_t *tl, int n);
 
 #endif // FB_TUI_LIST_H
