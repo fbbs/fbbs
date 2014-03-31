@@ -415,13 +415,34 @@ const char *get_board_online_color(const char *uname, int bid)
 #define get_board_online_color(n, i)  ""
 #endif
 
-const char *get_post_date(fb_time_t stamp)
+void format_post_date(fb_time_t stamp, char *buf, size_t size)
 {
-#ifdef FDQUAN
-	if (fb_time() - stamp < 24 * 60 * 60)
-		return fb_ctime(&stamp) + 10;
+	struct tm *tm = NULL;
+#ifdef COLOR_POST_DATE
+	if (size < 14) {
+		*buf = '\0';
+		return;
+	}
+	tm = fb_localtime(&stamp);
+	snprintf(buf, size, "\033[1;%dm", 30 + tm->tm_wday + 1);
+
+	buf += 7;
+	size -= 7;
 #endif
-	return fb_ctime(&stamp) + 4;
+
+	fb_time_t now = fb_time();
+	if (now - stamp < 24 * 60 * 60) {
+		strlcpy(buf, fb_ctime(&stamp) + 10, 7);
+	} else if (now - stamp < 366 * 24 * 60 * 60) {
+		strlcpy(buf, fb_ctime(&stamp) + 4, 7);
+	} else {
+		if (tm) {
+			snprintf(buf, size, "%02d%02d%02d", tm->tm_year % 100,
+					tm->tm_mon + 1, tm->tm_mday);
+		} else {
+			fb_strftime(buf, size, "%y%m%d", stamp);
+		}
+	}
 }
 
 static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
@@ -444,15 +465,10 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 		mark_suffix = "\033[m";
 	}
 
-	const char *date = get_post_date(pi->stamp);
+	char date[14];
+	format_post_date(post_stamp_from_id(pi->id), date, sizeof(date));
 
 	const char *idcolor = get_board_online_color(pi->user_name, currbp->id);
-
-	char color[10] = "";
-#ifdef COLOR_POST_DATE
-	struct tm *mytm = fb_localtime(&pi->stamp);
-	snprintf(color, sizeof(color), "\033[1;%dm", 30 + mytm->tm_wday + 1);
-#endif
 
 	char gbk_title[80];
 	if (strneq(pi->utf8_title, "Re: ", 4)) {
@@ -497,9 +513,9 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 
 	char buf[128];
 	snprintf(buf, sizeof(buf),
-			" %s %s%c%s \033[%sm%-12.12s %s%6.6s %s\033[%sm%s\033[m\n",
+			" %s %s%c%s \033[%sm%-12.12s %s %s\033[%sm%s\033[m\n",
 			num, mark_prefix, mark, mark_suffix,
-			idcolor, pi->user_name, color, date,
+			idcolor, pi->user_name, date,
 			(pi->flag & POST_FLAG_LOCKED) ? "\033[1;33mx" : " ",
 			thread_color, gbk_title);
 	outs(buf);
@@ -2647,7 +2663,8 @@ static tui_list_display_t post_list_reply_display(tui_list_t *tl, int n)
 {
 	post_info_t *pi = tui_list_recent_get_data(tl, n);
 	if (pi) {
-		const char *date = get_post_date(post_stamp_from_id(pi->id));
+		char date[14];
+		format_post_date(post_stamp_from_id(pi->id), date, sizeof(date));
 
 		char board_name[BOARD_NAME_LEN + 1];
 		strlcpy(board_name, pi->board_name, sizeof(board_name));
@@ -2657,8 +2674,8 @@ static tui_list_display_t post_list_reply_display(tui_list_t *tl, int n)
 		string_cp(utf8_title, pi->utf8_title, sizeof(utf8_title));
 		convert_u2g(utf8_title, gbk_title);
 
-		prints("  %-12s %6s %-13s %s\n", pi->user_name, date, pi->board_name,
-				gbk_title);
+		prints("  %-12s %s\033[m %-13s %s\n", pi->user_name, date,
+				pi->board_name, gbk_title);
 	}
 	return 0;
 }

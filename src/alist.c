@@ -73,7 +73,7 @@ tui_list_title_t tui_attachment_title(tui_list_t *tl)
 	_post_list_title(false, "\xb8\xbd\xbc\xfe\xc7\xf8");
 }
 
-extern const char *get_post_date(fb_time_t stamp);
+extern void format_post_date(fb_time_t stamp, char *buf, size_t size);
 
 tui_list_display_t tui_attachment_display(tui_list_t *tl, int offset)
 {
@@ -82,17 +82,14 @@ tui_list_display_t tui_attachment_display(tui_list_t *tl, int offset)
 	if (offset < tal->size) {
 		const struct fileheader *fp = tal->buf + offset;
 
-		fb_time_t stamp = fp->timeDeleted;
-		const char *date = get_post_date(stamp);
-		char color[10] = "";
-		struct tm *mytm = fb_localtime(&stamp);
-		snprintf(color, sizeof(color), "\033[1;%dm", 30 + mytm->tm_wday + 1);
+		char date[14];
+		format_post_date(fp->timeDeleted, date, sizeof(date));
 
 		char type = ' ';
 
 		char buf[STRLEN];
-		snprintf(buf, sizeof(buf), " %5d %c %-12.12s %s%6.6s\033[m %s\n",
-				tl->begin + offset + 1, type, fp->owner, color, date,
+		snprintf(buf, sizeof(buf), " %5d %c %-12.12s %s\033[m %s\n",
+				tl->begin + offset + 1, type, fp->owner, date,
 				fp->filename);
 		outs(buf);
 	}
