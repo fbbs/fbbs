@@ -236,11 +236,76 @@ static bool is_birth(const struct userec *user)
 	else
 		return NA;
 }
+
+static void describe_stay(int stay, char *buf, size_t size)
+{
+	char str[5];
+	if (stay < 10 * 60)
+		snprintf(str, sizeof(str), "%d:%2d", stay / 60, stay % 60);
+	else if (stay < 1000 * 60)
+		snprintf(str, sizeof(str), "%3dh", stay / 60);
+	else if (stay < 1000 * 24 * 60)
+		snprintf(str, sizeof(str), "%3dd", stay / 60 / 24);
+	else
+		strlcpy(str, "999+", sizeof(str));
+
+	snprintf(buf, size, "[\033[1;36m%s\033[33m]", str);
+}
+
+static void notice_count(int *replies, int *mentions)
+{
+	static fb_time_t last;
+
+	fb_time_t now = fb_time();
+	if (now - last > 10) {
+		user_id_t user_id = session_uid();
+		*replies = post_reply_get_count(user_id);
+		*mentions = post_mention_get_count(user_id);
+		last = now;
+	} else {
+		*replies = post_reply_get_count_cached();
+		*mentions = post_mention_get_count_cached();
+	}
+}
+
+static void notice_string(char *buf, size_t size)
+{
+	*buf = '\0';
+
+	int replies, mentions;
+	notice_count(&replies, &mentions);
+
+	bool empty = !(replies || mentions);
+	if (!empty) {
+		char **dst = &buf;
+		if (replies) {
+			char str[24];
+			//% 回复
+			snprintf(str, sizeof(str), "%d\xbb\xd8\xb8\xb4", replies);
+			strappend(dst, &size, str);
+		}
+		if (mentions) {
+			char str[24];
+			//% 提及
+			snprintf(str, sizeof(str), "%d\xcc\xe1\xbc\xb0", mentions);
+			strappend(dst, &size, str);
+		}
+		//% 按^M查看
+		strappend(dst, &size, " \xb0\xb4^M\xb2\xe9\xbf\xb4");
+	}
+}
+
+void tui_repeat_char(int c, int repeat)
+{
+	for (int i = 0; i < repeat; ++i)
+		outc(c);
+}
+
 void tui_update_status_line(void)
 {
 	extern time_t login_start_time; //main.c
 
-	char buf[255], date[STRLEN];
+	char date[STRLEN];
 
 	screen_move_clear(-1);
 
@@ -267,16 +332,33 @@ void tui_update_status_line(void)
 				"\xbf\xcd\xd3\xb4 :P                   \033[33m]\033[m");
 	} else {
 		int stay = (now - login_start_time) / 60;
-		sprintf(buf, "[\033[36m%.12s\033[33m]", currentuser.userid);
+		char stay_str[20];
+		describe_stay(stay, stay_str, sizeof(stay_str));
+
+		char notice[128];
+		notice_string(notice, sizeof(notice));
+		int notice_len = strlen(notice);
+
 		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
-			//% "[\033[36m%4d\033[33m人/\033[36m%3d\033[33m友]"
-			"[\033[36m%4d\033[33m\xc8\xcb/\033[36m%3d\033[33m\xd3\xd1]"
-			"      "
-			//% "帐号%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
-			"\xd5\xca\xba\xc5%-24s[\033[36m%3d\033[33m:\033[36m%2d\033[33m]\033[m",
+			//% "人 友"
+			"[\033[36m%5d\033[33m\xc8\xcb\033[36m%3d\033[33m\xd3\xd1]",
 			date, session_count_online(),
-			session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)),
-			buf, (stay / 60) % 1000, stay % 60);
+			session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)));
+		if (notice_len) {
+			int space = 25 - notice_len;
+			if (space > 0) {
+				tui_repeat_char(' ', space);
+				prints("[\033[5;36m%s\033[m\033[1;33;44m]%s\033[m",
+						notice, stay_str);
+			} else {
+				prints("[\033[5;36m%s\033[m\033[1;33;44m]\033[m", notice);
+			}
+		} else {
+			int space = 25 - strlen(currentuser.userid);
+			tui_repeat_char(' ', space);
+			prints("[\033[36m%s\033[33m]%s\033[m", currentuser.userid,
+					stay_str);
+		}
 	}
 }
 

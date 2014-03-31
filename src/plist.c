@@ -223,12 +223,6 @@ static int show_board_managers(const board_t *bp)
 	return width;
 }
 
-static void repeat(int c, int repeat)
-{
-	for (int i = 0; i < repeat; ++i)
-		outc(c);
-}
-
 static void align_center(const char *s, int remain)
 {
 	int len = strlen(s);
@@ -236,10 +230,10 @@ static void align_center(const char *s, int remain)
 		prints("%s", s);
 	} else {
 		int spaces = (remain - len) / 2;
-		repeat(' ', spaces);
+		tui_repeat_char(' ', spaces);
 		prints("%s", s);
 		spaces = remain - len - spaces;
-		repeat(' ', spaces);
+		tui_repeat_char(' ', spaces);
 	}
 }
 
@@ -254,7 +248,7 @@ static void show_prompt(const board_t *bp, const char *prompt, int remain)
 		if (prompt) {
 			align_center(prompt, remain);
 		} else {
-			repeat(' ', remain - blen);
+			tui_repeat_char(' ', remain - blen);
 			prints("[%s]", bp->name);
 		}
 		return;
