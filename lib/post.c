@@ -1128,6 +1128,24 @@ int post_reply_load(user_id_t user_id, post_id_t post_id, post_info_t *buf,
 	return _post_reply_load(table_name, user_id, post_id, buf, size);
 }
 
+#define POST_REPLY_COUNT_KEY  "post:reply_count"
+
+int post_reply_incr_count(user_id_t user_id, int delta)
+{
+	return mdb_cmd("HINCRBY", POST_REPLY_COUNT_KEY " %"PRIdUID" %d", user_id,
+			delta);
+}
+
+int post_reply_get_count(user_id_t user_id)
+{
+	return mdb_integer(0, "HGET", POST_REPLY_COUNT_KEY " %"PRIdUID, user_id);
+}
+
+int post_reply_clear_count(user_id_t user_id)
+{
+	return mdb_cmd("HDEL", POST_REPLY_COUNT_KEY " %"PRIdUID, user_id);
+}
+
 char *post_mention_table_name(user_id_t user_id, char *name, size_t size)
 {
 	int partitions = config_get_integer("post_mention_partitions", 1);
@@ -1145,4 +1163,22 @@ int post_mention_load(user_id_t user_id, post_id_t post_id, post_info_t *buf,
 	char table_name[64];
 	post_mention_table_name(user_id, table_name, sizeof(table_name));
 	return _post_reply_load(table_name, user_id, post_id, buf, size);
+}
+
+#define POST_MENTION_COUNT_KEY  "post:mention_count"
+
+int post_mention_incr_count(user_id_t user_id, int delta)
+{
+	return mdb_cmd("HINCRBY", POST_MENTION_COUNT_KEY " %"PRIdUID" %d", user_id,
+			delta);
+}
+
+int post_mention_get_count(user_id_t user_id)
+{
+	return mdb_integer(0, "HGET", POST_MENTION_COUNT_KEY " %"PRIdUID, user_id);
+}
+
+int post_mention_clear_count(user_id_t user_id)
+{
+	return mdb_cmd("HDEL", POST_MENTION_COUNT_KEY " %"PRIdUID, user_id);
 }

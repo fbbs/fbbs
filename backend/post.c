@@ -66,7 +66,8 @@ static void insert_reply_record(const backend_request_post_new_t *req,
 {
 	char table_name[64];
 	post_reply_table_name(user_id, table_name, sizeof(table_name));
-	_insert_reply_record(table_name, req, post_id, user_id);
+	if (_insert_reply_record(table_name, req, post_id, user_id) > 0)
+		post_reply_incr_count(user_id, 1);
 }
 
 static void notify_new_reply(const backend_request_post_new_t *req,
@@ -107,7 +108,8 @@ static int process_mention(const char *user_name,
 				&& user_has_read_perm(&urec, board)
 				&& ((user_id = get_user_id(user_name) > 0))
 				&& user_id != req->user_id) {
-			insert_mention_record(req, post_id, user_id);
+			if (insert_mention_record(req, post_id, user_id) > 0)
+				post_mention_incr_count(user_id, 1);
 		}
 	}
 	return 1;

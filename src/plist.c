@@ -2707,8 +2707,11 @@ static tui_list_handler_t post_list_reply_handler(tui_list_t *tl, int key)
 
 int post_list_reply(void)
 {
+	user_id_t user_id = session_uid();
+	post_reply_clear_count(user_id);
+
 	tui_list_recent_t tlr = {
-		.user_id = session_uid(),
+		.user_id = user_id,
 		.loader = post_list_reply_loader,
 		.len = sizeof(post_info_t),
 		.title = post_list_reply_title,
@@ -2735,8 +2738,11 @@ static tui_list_title_t post_list_mention_title(tui_list_t *tl)
 
 int post_list_mention(void)
 {
+	user_id_t user_id = session_uid();
+	post_mention_clear_count(user_id);
+
 	tui_list_recent_t tlr = {
-		.user_id = session_uid(),
+		.user_id = user_id,
 		.loader = post_list_mention_loader,
 		.len = sizeof(post_info_t),
 		.title = post_list_mention_title,
