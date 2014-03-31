@@ -276,6 +276,9 @@ extern char *post_content_get(post_id_t post_id);
 extern bool post_content_set(post_id_t post_id, const char *str);
 
 extern char *post_reply_table_name(user_id_t user_id, char *name, size_t size);
-extern int post_reply_load(user_id_t user_id, post_id_t id, post_info_t *buf, size_t size);
+extern int post_reply_load(user_id_t user_id, post_id_t post_id, post_info_t *buf, size_t size);
+
+extern char *post_mention_table_name(user_id_t user_id, char *name, size_t size);
+extern int post_mention_load(user_id_t user_id, post_id_t post_id, post_info_t *buf, size_t size);
 
 #endif // FB_POST_H

@@ -1084,18 +1084,15 @@ char *post_reply_table_name(user_id_t user_id, char *name, size_t size)
 	return name;
 }
 
-int post_reply_load(user_id_t user_id, post_id_t id, post_info_t *buf,
-		size_t size)
+int _post_reply_load(const char *table_name, user_id_t user_id,
+		post_id_t post_id, post_info_t *buf, size_t size)
 {
-	char table_name[64];
-	post_reply_table_name(user_id, table_name, sizeof(table_name));
-
 	query_t *q = query_new(0);
 	query_select(q, "post_id, reply_id, thread_id, user_id,"
 			" user_name, board_id, board_name, title");
 	query_from(q, table_name);
 	query_where(q, "user_id_replied = %"DBIdUID, user_id);
-	query_and(q, "post_id < %"DBIdPID, id);
+	query_and(q, "post_id < %"DBIdPID, post_id);
 	query_orderby(q, "post_id", false);
 	query_limit(q, size);
 
@@ -1121,4 +1118,31 @@ int post_reply_load(user_id_t user_id, post_id_t id, post_info_t *buf,
 	}
 	db_clear(res);
 	return rows;
+}
+
+int post_reply_load(user_id_t user_id, post_id_t post_id, post_info_t *buf,
+		size_t size)
+{
+	char table_name[64];
+	post_reply_table_name(user_id, table_name, sizeof(table_name));
+	return _post_reply_load(table_name, user_id, post_id, buf, size);
+}
+
+char *post_mention_table_name(user_id_t user_id, char *name, size_t size)
+{
+	int partitions = config_get_integer("post_mention_partitions", 1);
+	if (partitions < 1)
+		partitions = 1;
+
+	int partition = user_id % partitions;
+	snprintf(name, size, "post.mention_%d", partition);
+	return name;
+}
+
+int post_mention_load(user_id_t user_id, post_id_t post_id, post_info_t *buf,
+		size_t size)
+{
+	char table_name[64];
+	post_mention_table_name(user_id, table_name, sizeof(table_name));
+	return _post_reply_load(table_name, user_id, post_id, buf, size);
 }

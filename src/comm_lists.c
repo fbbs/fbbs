@@ -71,6 +71,7 @@ extern int tui_new_board(const char *);
 extern int tui_edit_board(const char *);
 
 extern int post_list_reply(void);
+extern int post_list_mention(void);
 
 typedef int (*telnet_handler_t)();
 
@@ -100,6 +101,7 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "SelectBoard", board_select },
 		{ "ReadBoard", board_read },
 		{ "ReadReply", post_list_reply },
+		{ "ReadMention", post_list_mention },
 		{ "MailAll", mailall },
 		{ "LockScreen", x_lockscreen },
 		{ "OffLine", offline },

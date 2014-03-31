@@ -40,12 +40,10 @@ static void adjust_user_post_count(const char *uname, int delta)
 	substitut_record(NULL, &urec, sizeof(urec), unum);
 }
 
-static void insert_reply_record(const backend_request_post_new_t *req,
-		post_id_t post_id, user_id_t user_id)
+static int _insert_reply_record(const char *table_name,
+		const backend_request_post_new_t *req, post_id_t post_id,
+		user_id_t user_id)
 {
-	char table_name[64];
-	post_reply_table_name(user_id, table_name, sizeof(table_name));
-
 	query_t *q = query_new(0);
 	query_sappend(q, "INSERT INTO", table_name);
 	query_append(q, "(post_id, reply_id, thread_id, user_id_replied, user_id,"
@@ -53,12 +51,22 @@ static void insert_reply_record(const backend_request_post_new_t *req,
 			" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID", %d, %d,"
 			" %s, %d, %s, %s)",
 			post_id, req->reply_id ? req->reply_id : post_id,
-			req->thread_id ? req->thread_id : post_id, req->user_id_replied,
-			req->user_id, req->user_name, req->board_id, req->board_name,
-			req->title);
+			req->thread_id ? req->thread_id : post_id, user_id,
+			req->hide_user_id ? 0 : req->user_id, req->user_name,
+			req->board_id, req->board_name, req->title);
 
 	db_res_t *res = query_cmd(q);
+	int rows = db_cmd_rows(res);
 	db_clear(res);
+	return rows;
+}
+
+static void insert_reply_record(const backend_request_post_new_t *req,
+		post_id_t post_id, user_id_t user_id)
+{
+	char table_name[64];
+	post_reply_table_name(user_id, table_name, sizeof(table_name));
+	_insert_reply_record(table_name, req, post_id, user_id);
 }
 
 static void notify_new_reply(const backend_request_post_new_t *req,
@@ -71,43 +79,98 @@ static void notify_new_reply(const backend_request_post_new_t *req,
 	}
 }
 
-static int notify_new_mention(const char *user_name,
-		const backend_request_post_new_t *req, const board_t *board)
+static int insert_mention_record(const backend_request_post_new_t *req,
+		post_id_t post_id, user_id_t user_id)
 {
-	return 0;
+	char table_name[64];
+	post_mention_table_name(user_id, table_name, sizeof(table_name));
+	return _insert_reply_record(table_name, req, post_id, user_id);
 }
 
-static int scan_for_mentions(const backend_request_post_new_t *req,
-		const board_t *board)
+static int process_mention(const char *user_name,
+		char (*user_names)[IDLEN + 1], size_t size, int count,
+		const backend_request_post_new_t *req, const board_t *board,
+		post_id_t post_id)
 {
-	const char *end = strstr(req->content, "\n--\n");
-	if (!end)
-		end = req->content + strlen(req->content);
+	for (size_t i = 0; i < count; ++i) {
+		if (strcaseeq(user_name, user_names[i]))
+			return 0;
+	}
 
-	int count = 0;
+	if (count < size) {
+		strlcpy(user_names[count], user_name, sizeof(user_names[count]));
+		++count;
+
+		struct userec urec;
+		user_id_t user_id;
+		if (getuserec(user_name, &urec)
+				&& user_has_read_perm(&urec, board)
+				&& (user_id = get_user_id(user_name))
+				&& user_id != req->user_id) {
+			insert_mention_record(req, post_id, user_id);
+		}
+	}
+	return 1;
+}
+
+static const char *next_mention(const char *begin, const char *end,
+		char *user_name, size_t size)
+{
+	*user_name = '\0';
 	bool mention = false;
-	const char *begin = NULL;
-	for (const char *ptr = req->content; ptr < end; ++ptr) {
+	const char *at = NULL, *ptr;
+	for (ptr = begin; ptr < end; ++ptr) {
 		if (mention) {
 			if (!isalpha(*ptr)) {
-				if (ptr - begin <= IDLEN) {
-					char user_name[IDLEN + 1];
-					strlcpy(user_name, begin, ptr - begin + 1);
-					notify_new_mention(user_name, req, board);
-					++count;
-					if (count >= POST_MENTION_LIMIT)
-						break;
+				if (ptr - at >= 2 && ptr - at < size) {
+					strlcpy(user_name, at, ptr - at + 1);
+					return ptr;
 				}
 				mention = false;
-				begin = NULL;
+				at = NULL;
 			}
 		}
 		if (!mention) {
 			if (*ptr == '@') {
 				mention = true;
-				begin = ptr;
+				at = ptr + 1;
 			}
 		}
+	}
+	return ptr;
+}
+
+static int scan_for_mentions(const backend_request_post_new_t *req,
+		const board_t *board, post_id_t post_id)
+{
+	// 跳过签名档
+	const char *end = strstr(req->content, "\n--\n");
+	if (end)
+		++end;
+	else
+		end = req->content + strlen(req->content);
+
+	int count = 0;
+	char user_names[POST_MENTION_LIMIT][IDLEN + 1] = { { '\0' } };
+
+	const char *begin = req->content, *line_end;
+	while (begin < end && (line_end = get_line_end(begin, end)) <= end) {
+		// 跳过引用行
+		if (line_end - begin >= 2 && *begin == ':' && begin[1] == ' ') {
+			begin = line_end;
+			continue;
+		}
+
+		const char *ptr = begin;
+		while (ptr < line_end) {
+			char user_name[IDLEN + 1];
+			ptr = next_mention(ptr, line_end, user_name, sizeof(user_name));
+			if (*user_name) {
+				count += process_mention(user_name, user_names,
+						ARRAY_SIZE(user_names), count, req, board, post_id);
+			}
+		}
+		begin = line_end;
 	}
 	return count;
 }
@@ -136,7 +199,7 @@ BACKEND_DECLARE(post_new)
 			if (req.user_id != req.user_id_replied)
 				notify_new_reply(&req, &board, post_id);
 
-			scan_for_mentions(&req, &board);
+			scan_for_mentions(&req, &board, post_id);
 		}
 		return true;
 	}

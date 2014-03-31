@@ -82,6 +82,11 @@ CREATE TABLE post.reply_0 (
 CREATE INDEX ON post.reply_0 (post_id);
 CREATE INDEX ON post.reply_0 (user_id_replied);
 
+CREATE TABLE post.mention_0 (
+) INHERITS (post.reply_base);
+CREATE INDEX ON post.mention_0 (post_id);
+CREATE INDEX ON post.mention_0 (user_id_replied);
+
 CREATE OR REPLACE FUNCTION post_recent_before_insert_trigger() RETURNS TRIGGER AS $$
 BEGIN
 	IF NEW.reply_id = 0 THEN
