@@ -330,20 +330,21 @@ void _post_list_title(int archive_list, const char *mode)
 	show_prompt(currbp, prompt, 80 - width);
 
 	move(1, 0);
-	//% prints("\033[m 离开[\033[1;32m←\033[m,\033[1;32me\033[m] "
-	prints("\033[m \xc0\xeb\xbf\xaa[\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] "
-		//% "选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m] "
-		"\xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd\033[m] "
-		//% "阅读[\033[1;32m→\033[m,\033[1;32mRtn\033[m]");
-		"\xd4\xc4\xb6\xc1[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m]");
+	//% "离开[←,e] "
+	prints("\033[m " TUI_LIST_HELP2("\xc0\xeb\xbf\xaa", "\xa1\xfb", "e")
+		//% "选择[↑,↓] "
+		" " TUI_LIST_HELP2("\xd1\xa1\xd4\xf1", "\xa1\xfc", "\xa1\xfd")
+		//% "阅读[→,Rtn]"
+		" " TUI_LIST_HELP2("\xd4\xc4\xb6\xc1", "\xa1\xfa", "Rtn"));
 	if (!archive_list) {
-		//% prints(" 发文章[\033[1;32mCtrl-P\033[m] 砍信[\033[1;32md\033[m] "
-		prints(" \xb7\xa2\xce\xc4\xd5\xc2[\033[1;32mCtrl-P\033[m] \xbf\xb3\xd0\xc5[\033[1;32md\033[m] "
-				//% "备忘录[\033[1;32mTAB\033[m]");
-				"\xb1\xb8\xcd\xfc\xc2\xbc[\033[1;32mTAB\033[m]");
+		//% " 发文章[Ctrl-P] 砍信[d]"
+		prints(" " TUI_LIST_HELP("\xb7\xa2\xce\xc4\xd5\xc2", "Ctrl-P")
+				" " TUI_LIST_HELP("\xbf\xb3\xd0\xc5", "d")
+				//% " 备忘录[\033[1;32mTAB\033[m]"
+				" " TUI_LIST_HELP("\xb1\xb8\xcd\xfc\xc2\xbc", "TAB"));
 	}
-	//% prints(" 求助[\033[1;32mh\033[m]\n");
-	prints(" \xc7\xf3\xd6\xfa[\033[1;32mh\033[m]\n");
+	//% " 求助[h]\n");
+	prints(" " TUI_LIST_HELP("\xc7\xf3\xd6\xfa", "h"), "\n");
 
 	//% 编号 在线 刊登者 日期 标题
 	prints("\033[1;37;44m  \xb1\xe0\xba\xc5   %-12s %6s %-25s "
