@@ -105,7 +105,7 @@ static int process_mention(const char *user_name,
 		user_id_t user_id;
 		if (getuserec(user_name, &urec)
 				&& user_has_read_perm(&urec, board)
-				&& (user_id = get_user_id(user_name))
+				&& ((user_id = get_user_id(user_name) > 0))
 				&& user_id != req->user_id) {
 			insert_mention_record(req, post_id, user_id);
 		}
