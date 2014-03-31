@@ -1136,14 +1136,23 @@ int post_reply_incr_count(user_id_t user_id, int delta)
 			delta);
 }
 
+static int _post_reply_count;
+
 int post_reply_get_count(user_id_t user_id)
 {
-	return mdb_integer(0, "HGET", POST_REPLY_COUNT_KEY " %"PRIdUID, user_id);
+	return _post_reply_count = mdb_integer(0, "HGET",
+			POST_REPLY_COUNT_KEY " %"PRIdUID, user_id);
 }
 
-int post_reply_clear_count(user_id_t user_id)
+void post_reply_clear_count(user_id_t user_id)
 {
-	return mdb_cmd("HDEL", POST_REPLY_COUNT_KEY " %"PRIdUID, user_id);
+	if (mdb_cmd("HDEL", POST_REPLY_COUNT_KEY " %"PRIdUID, user_id))
+		_post_reply_count = 0;
+}
+
+int post_reply_get_count_cached(void)
+{
+	return _post_reply_count;
 }
 
 char *post_mention_table_name(user_id_t user_id, char *name, size_t size)
@@ -1173,12 +1182,21 @@ int post_mention_incr_count(user_id_t user_id, int delta)
 			delta);
 }
 
+static int _post_mention_count;
+
 int post_mention_get_count(user_id_t user_id)
 {
-	return mdb_integer(0, "HGET", POST_MENTION_COUNT_KEY " %"PRIdUID, user_id);
+	return _post_mention_count =  mdb_integer(0, "HGET",
+			POST_MENTION_COUNT_KEY " %"PRIdUID, user_id);
 }
 
-int post_mention_clear_count(user_id_t user_id)
+void post_mention_clear_count(user_id_t user_id)
 {
-	return mdb_cmd("HDEL", POST_MENTION_COUNT_KEY " %"PRIdUID, user_id);
+	if (mdb_cmd("HDEL", POST_MENTION_COUNT_KEY " %"PRIdUID, user_id))
+		_post_mention_count = 0;
+}
+
+int post_mention_get_count_cached(void)
+{
+	return _post_mention_count;
 }
