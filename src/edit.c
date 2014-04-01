@@ -48,8 +48,7 @@ static int mark_on;
 static int editansi = 0;
 int enabledbchar = 1;
 
-void vedit_key();
-void process_MARK_action(int arg, char *msg);
+static void process_MARK_action(int arg, char *msg);
 
 /* for copy/paste */
 #define CLEAR_MARK()  mark_on = 0; mark_begin = mark_end = NULL;
@@ -161,7 +160,7 @@ static void display_buffer(void)
 	return;
 }
 
-void msg(int unused)
+static void msg(int unused)
 {
 	int x, y;
 	int tmpansi;
@@ -177,13 +176,13 @@ void msg(int unused)
 	showansi = tmpansi;
 }
 
-void indigestion(int i) {
+static void indigestion(int i) {
 	char badmsg[STRLEN];
 	sprintf(badmsg, "SERIOUS INTERNAL INDIGESTION CLASS %d\n", i);
 	report(badmsg, currentuser.userid);
 }
 
-struct textline *back_line(struct textline *pos, int num) {
+static struct textline *back_line(struct textline *pos, int num) {
 	moveln = 0;
 	while (num-- > 0)
 		if (pos && pos != can_edit_begin) {
@@ -194,7 +193,7 @@ struct textline *back_line(struct textline *pos, int num) {
 	return pos;
 }
 
-struct textline * forward_line(struct textline *pos, int num) {
+static struct textline * forward_line(struct textline *pos, int num) {
 	moveln = 0;
 	while (num-- > 0)
 		if (pos->next && pos->next != can_edit_end) {
@@ -205,20 +204,22 @@ struct textline * forward_line(struct textline *pos, int num) {
 	return pos;
 }
 
-void countline() {
-	struct textline *pos;
-
-	pos = can_edit_begin;
+static void countline(void)
+{
+	struct textline *pos = can_edit_begin;
 	moveln = 0;
-	while (pos != can_edit_end)
+	while (pos != can_edit_end) {
 		if (pos->next) {
 			pos = pos->next;
 			moveln++;
-		} else
+		} else {
 			break;
+		}
+	}
 }
 
-int getlineno() {
+static int getlineno(void)
+{
 	int cnt = 0;
 	struct textline *p = currline;
 	while (p != top_of_win) {
@@ -229,13 +230,16 @@ int getlineno() {
 	}
 	return cnt;
 }
-char * killsp(char *s) {
+
+static char *killsp(char *s)
+{
 	while (*s == ' ')
 		s++;
 	return s;
 }
 
-struct textline * alloc_line() {
+static struct textline * alloc_line(void)
+{
 	register struct textline *p;
 	p = (struct textline *) malloc(sizeof(*p));
 	if (p == NULL) {
@@ -249,11 +253,9 @@ struct textline * alloc_line() {
 	p->attr = 0; /* for copy/paste */
 	return p;
 }
-/*
- Appends p after line in list.  keeps up with last line as well.
- */
 
-void goline(int n) {
+static void goline(int n)
+{
 	register struct textline *p = can_edit_begin;
 	int count;
 	if (n < 0)
@@ -276,7 +278,7 @@ void goline(int n) {
 }
 
 #ifdef ALLOWAUTOWRAP
-void set()
+static void set(void)
 {
 	char tmp[8],theinfo[STRLEN];
 	int templinelen;
@@ -296,7 +298,8 @@ void set()
 }
 #endif
 
-void go() {
+static void go(void)
+{
 	char tmp[8];
 	int line;
 
@@ -311,8 +314,7 @@ void go() {
 	return;
 }
 
-void searchline(text)
-char text[STRLEN];
+static void searchline(const char *text)
 {
 	int addr, count = 0, tt;
 	register struct textline *p = currline;
@@ -337,7 +339,8 @@ char text[STRLEN];
 	}
 }
 
-void search() {
+static void search(void)
+{
 	char tmp[STRLEN];
 
 	fb_signal(SIGALRM, SIG_IGN);
@@ -352,8 +355,11 @@ void search() {
 	return;
 }
 
-void append(p, line)
-register struct textline *p, *line;
+
+/*
+ Appends p after line in list.  keeps up with last line as well.
+ */
+static void append(struct textline *p, struct textline *line)
 {
 	if( p == NULL ) return;
 	p->next = line->next;
@@ -369,8 +375,7 @@ register struct textline *p, *line;
  delete_line deletes 'line' from the list and maintains the can_edit_end, and
  firstline pointers.
  */
-void delete_line(line)
-register struct textline *line;
+static void delete_line(struct textline *line)
 {
 	if ( line == NULL ) return;
 	if (line == can_edit_begin && line->next == can_edit_end) {
@@ -402,12 +407,14 @@ register struct textline *line;
 
 	if (line) free(line);
 }
+
 /*
  split splits 'line' right before the character pos
  */
-void split(register struct textline *line, register int pos) {
-	register struct textline *p;
-	register int i, patch;
+static void split(struct textline *line, int pos)
+{
+	struct textline *p;
+	int i, patch;
 
 	if (pos > line->len)
 		return;
@@ -481,8 +488,9 @@ static int seekthestr(const char *str, int num)
  1) Some of the joined line wrapped
  */
 
-int join(register struct textline *line) {
-	register int ovfl;
+static int join(struct textline *line)
+{
+	int ovfl;
 
 	if (!line->next || line->next == can_edit_end)
 		return YEA;
@@ -550,14 +558,15 @@ int join(register struct textline *line) {
 	}
 }
 
-void insert_char(register int ch) {
-	register char *s;
-	register int i;
+static void insert_char(int ch)
+{
+	char *s;
+	int i;
 #ifdef	ALLOWAUTOWRAP
-	register int ansinum;
-	register struct textline *p = currline, *savep;
+	int ansinum;
+	struct textline *p = currline, *savep;
 #else
-	register struct textline *p = currline;
+	struct textline *p = currline;
 #endif
 	int wordwrap = YEA;
 	if (currpnt > p->len) {
@@ -634,12 +643,14 @@ void insert_char(register int ch) {
 	}
 }
 
-void ve_insert_str(char *str) {
+static void ve_insert_str(char *str)
+{
 	while (*str)
 		insert_char(*(str++));
 }
 
-void delete_char() {
+static void delete_char(void)
+{
 	register int i;
 	register int patch=0, currDEC=0;
 
@@ -686,7 +697,7 @@ static void insert_to_fp(FILE *fp)
 		fprintf(fp, "%s\n", ANSI_RESET);
 }
 
-void insertch_from_fp(int ch)
+static void insertch_from_fp(int ch)
 {
 	int backup_linelen = linelen;
 	linelen = WRAPMARGIN;
@@ -706,7 +717,7 @@ void insertch_from_fp(int ch)
 	linelen = backup_linelen;
 }
 
-void insert_from_fp(FILE *fp)
+static void insert_from_fp(FILE *fp)
 {
 	// TODO: should change to mmap_open.
 	mmap_t m = {fileno(fp), O_RDONLY, FILE_RDLCK, PROT_READ, MAP_SHARED};
@@ -860,7 +871,7 @@ static int process_ESC_action(int action, int arg)
 	return newch;
 }
 
-void vedit_init(void)
+static void vedit_init(void)
 {
 	register struct textline *p = alloc_line();
 	firstline = p;
@@ -880,7 +891,8 @@ void vedit_init(void)
 	;
 }
 
-int read_file(char *filename) {
+static int read_file(const char *filename)
+{
 	FILE *fp;
 	struct textline *p;
 	char tmp[STRLEN];
@@ -963,7 +975,8 @@ void write_header(FILE *fp, const struct postheader *header, bool _in_mail)
 
 #define KEEP_EDITING -2
 
-void valid_article(char *pmt, char *abort, int sure) {
+static void valid_article(char *pmt, char *abort, int sure)
+{
 	struct textline *p = can_edit_begin;
 	char ch;
 	int total, lines, len, y;
@@ -1157,8 +1170,7 @@ void keep_fail_post(void)
  1	mark_begin != NULL; mark_end == NULL;
  2	mark_begin != NULL; mark_end != NULL;
  */
-
-int mark_block(void)
+static int mark_block(void)
 {
 	struct textline *p;
 	int pass_mark = 0;
@@ -1194,7 +1206,7 @@ int mark_block(void)
 	return 2;
 }
 
-int vedit_process_ESC(int arg) /* ESC + x */
+static int vedit_process_ESC(int arg) /* ESC + x */
 {
 	int ch2, action;
 //% "(M)区块处理 (I/E)读取/写入剪贴簿 (C)使用彩色 (F/B/R)前景/背景/还原色彩"
@@ -1305,7 +1317,8 @@ int vedit_process_ESC(int arg) /* ESC + x */
 	}
 }
 
-void process_MARK_action(int arg, char *msg) {
+static void process_MARK_action(int arg, char *msg)
+{
 	struct textline *p;
 
 	switch (arg) {
@@ -1363,7 +1376,8 @@ void process_MARK_action(int arg, char *msg) {
 	}
 }
 
-void vedit_key(int ch) {
+static void vedit_key(int ch)
+{
 	int i, patch;
 #define NO_ANSI_MODIFY  if(no_touch) { warn++; break; }
 
