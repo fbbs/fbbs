@@ -1200,10 +1200,13 @@ int m_read(void)
 {
 	if (!strcmp(currentuser.userid, "guest"))
 		return DONOTHING;
+
+	tui_suppress_notice(true);
 	in_mail = YEA;
 	i_read(ST_RMAIL, currmaildir, mailtitle, maildoent, &mail_comms[0],
 			sizeof(struct fileheader));
 	in_mail = NA;
+	tui_suppress_notice(false);
 	return 0;
 }
 

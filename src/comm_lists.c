@@ -456,6 +456,14 @@ int domenu(const char *menu_name)
 					break;
 				else
 					return 0;
+			case Ctrl('T'):
+				if (tui_check_notice() == FULLUPDATE) {
+					draw_menu(pm);
+					active_board_show();
+				} else {
+					tui_update_status_line();
+				}
+				break;
 			default:
 				if (ch >= 'a' && ch <= 'z')
 					ch = ch - 'a' + 'A';

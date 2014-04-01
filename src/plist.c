@@ -338,7 +338,7 @@ void _post_list_title(int archive_list, const char *mode)
 				" " TUI_LIST_HELP("\xb1\xb8\xcd\xfc\xc2\xbc", "TAB"));
 	}
 	//% " 求助[h]\n");
-	prints(" " TUI_LIST_HELP("\xc7\xf3\xd6\xfa", "h"), "\n");
+	prints(" " TUI_LIST_HELP("\xc7\xf3\xd6\xfa", "h") "\n");
 
 	//% 编号 在线 刊登者 日期 标题
 	prints("\033[1;37;44m  \xb1\xe0\xba\xc5   %-12s %6s %-25s "
@@ -2403,6 +2403,8 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case 'l':
 			msg_more();
 			return FULLUPDATE;
+		case Ctrl('T'):
+			return tui_check_notice();
 		default:
 			if (!pi)
 				return READ_AGAIN;
@@ -2446,7 +2448,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			return tui_operate_posts_in_batch(tl, pi);
 		case 'C':
 			return tui_count_posts_in_range(tl, pi);
-		case Ctrl('G'): case Ctrl('T'): case '`':
+		case Ctrl('G'): case '`':
 			return tui_post_list_selected(tl, pi);
 		case 'a':
 			return tui_search_author(tl, pi, false);
@@ -2701,6 +2703,8 @@ static tui_list_handler_t post_list_reply_handler(tui_list_t *tl, int key)
 
 int post_list_reply(void)
 {
+	tui_suppress_notice(true);
+
 	user_id_t user_id = session_uid();
 	post_reply_clear_count(user_id);
 
@@ -2713,6 +2717,8 @@ int post_list_reply(void)
 		.handler = post_list_reply_handler,
 	};
 	tui_list_recent(&tlr);
+
+	tui_suppress_notice(false);
 	return 0;
 }
 
@@ -2732,6 +2738,8 @@ static tui_list_title_t post_list_mention_title(tui_list_t *tl)
 
 int post_list_mention(void)
 {
+	tui_suppress_notice(true);
+
 	user_id_t user_id = session_uid();
 	post_mention_clear_count(user_id);
 
@@ -2744,5 +2752,7 @@ int post_list_mention(void)
 		.handler = post_list_reply_handler,
 	};
 	tui_list_recent(&tlr);
+
+	tui_suppress_notice(false);
 	return 0;
 }

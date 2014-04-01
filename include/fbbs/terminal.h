@@ -30,6 +30,8 @@ extern int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel);
 extern void tui_repeat_char(int c, int repeat);
 extern void tui_update_status_line(void);
+extern void tui_suppress_notice(bool suppress_notice);
+extern int tui_check_notice(void);
 extern void showtitle(const char *title, const char *mid);
 extern void firsttitle(const char *title);
 extern void docmdtitle(const char *title, const char *prompt);

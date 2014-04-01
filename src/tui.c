@@ -268,6 +268,13 @@ static void notice_count(int *replies, int *mentions)
 	}
 }
 
+static bool _suppress_notice;
+
+void tui_suppress_notice(bool suppress_notice)
+{
+	_suppress_notice = suppress_notice;
+}
+
 static void notice_string(char *buf, size_t size)
 {
 	*buf = '\0';
@@ -277,21 +284,24 @@ static void notice_string(char *buf, size_t size)
 
 	bool empty = !(replies || mentions);
 	if (!empty) {
+		size_t orig_size = size;
 		char **dst = &buf;
 		if (replies) {
 			char str[24];
-			//% 回复
-			snprintf(str, sizeof(str), "%d\xbb\xd8\xb8\xb4", replies);
+			//% %d篇回复
+			snprintf(str, sizeof(str), "%d\xc6\xaa\xbb\xd8\xb8\xb4", replies);
 			strappend(dst, &size, str);
 		}
 		if (mentions) {
 			char str[24];
-			//% 提及
-			snprintf(str, sizeof(str), "%d\xcc\xe1\xbc\xb0", mentions);
+			//% %d篇提及
+			snprintf(str, sizeof(str), "%d\xc6\xaa\xcc\xe1\xbc\xb0",
+					mentions);
 			strappend(dst, &size, str);
 		}
-		//% 按^M查看
-		strappend(dst, &size, " \xb0\xb4^M\xb2\xe9\xbf\xb4");
+		//% 按^T查看
+		if (!_suppress_notice && orig_size - size <= 22)
+			strappend(dst, &size, " \xb0\xb4^T\xb2\xe9\xbf\xb4");
 	}
 }
 
@@ -348,10 +358,14 @@ void tui_update_status_line(void)
 			int space = 25 - notice_len;
 			if (space > 0) {
 				tui_repeat_char(' ', space);
-				prints("[\033[5;36m%s\033[m\033[1;33;44m]%s\033[m",
-						notice, stay_str);
+				prints("[\033[%d;36m%s\033[m\033[1;33;44m]%s\033[m",
+						_suppress_notice ? 1 : 5, notice, stay_str);
 			} else {
-				prints("[\033[5;36m%s\033[m\033[1;33;44m]\033[m", notice);
+				space += 6;
+				if (space > 0)
+					tui_repeat_char(' ', space);
+				prints("[\033[%d;36m%s\033[m\033[1;33;44m]\033[m",
+						_suppress_notice ? 1 : 5, notice);
 			}
 		} else {
 			int space = 25 - strlen(currentuser.userid);
@@ -360,6 +374,53 @@ void tui_update_status_line(void)
 					stay_str);
 		}
 	}
+}
+
+static void print_option(const char *opt, char *quantifier, int count,
+		int order)
+{
+	prints(" %d) ", order);
+	if (count > 0 && quantifier)
+		prints("%d%s", count, quantifier);
+	prints("%s", opt);
+}
+
+extern int post_list_reply(void);
+extern int post_list_mention(void);
+
+int tui_check_notice(void)
+{
+	screen_move_clear(-1);
+	prints("\033[m\xb2\xe9\xbf\xb4:");
+
+	int replies, mentions;
+	notice_count(&replies, &mentions);
+
+	print_option("\xc8\xa1\xcf\xfb", NULL, 0, 0);
+	print_option("\xbb\xd8\xb8\xb4", "\xc6\xaa", replies, 1);
+	print_option("\xcc\xe1\xbc\xb0", "\xc6\xaa", mentions, 2);
+
+	int choice = 0;
+	if (replies)
+		choice = 1;
+	else if (mentions)
+		choice = 2;
+	prints(" [%d]: ", choice);
+
+	char ans[2];
+	int x, y;
+	screen_coordinates(&x, &y);
+	getdata(x, y, "", ans, sizeof(ans), true, true);
+
+	if (*ans == '1') {
+		post_list_reply();
+		return FULLUPDATE;
+	}
+	if (*ans == '2') {
+		post_list_mention();
+		return FULLUPDATE;
+	}
+	return MINIUPDATE;
 }
 
 void showtitle(const char *title, const char *mid)
@@ -844,5 +905,3 @@ void stand_title(const char *title)
 	screen_clear();
 	prints(ANSI_CMD_SO"%s"ANSI_CMD_SE, title);
 }
-
-
