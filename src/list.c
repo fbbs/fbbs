@@ -279,10 +279,19 @@ static tui_list_handler_t tui_list_recent_handler(tui_list_t *tl, int key)
 				if (tl->cur == 0)
 					load_more(tl);
 				return READ_AGAIN;
+			case 'j': case KEY_DOWN:
+				if (++tl->cur >= tl->all)
+					tl->cur = tl->all > 0 ? tl->all - 1 : 0;
+				return DONOTHING;
 			case 'b': case Ctrl('B'): case KEY_PGUP:
 				if (tl->cur < tl->lines - 1)
 					load_more(tl);
 				return READ_AGAIN;
+			case 'N': case Ctrl('F'): case KEY_PGDN: case ' ':
+				tl->cur += tl->lines;
+				if (tl->cur >= tl->all)
+					tl->cur = tl->all > 0 ? tl->all - 1 : 0;
+				return DONOTHING;
 			default:
 				return READ_AGAIN;
 		}
