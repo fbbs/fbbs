@@ -335,8 +335,11 @@ int domenu(const char *menu_name)
 
 	int now = 0;
 
+	user_id_t user_id = session_uid();
 	// Jump to mail menu if user have unread mail.
-	if (strcmp(menu_name, "TOPMENU") == 0 && chkmail()) {
+	if (streq(menu_name, "TOPMENU") && (chkmail()
+				|| post_reply_get_count(user_id)
+				|| post_mention_get_count(user_id))) {
 		for (i = 0; i < size; i++)
 		if (pm[i].line> 0 && pm[i].name[0] == 'M')
 		now = i;
