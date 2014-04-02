@@ -49,7 +49,8 @@ static void print_post(const post_info_t *pi, bool sticky)
 	printf("<po %s%sm='%c' owner='%s' time= '%s' id='%"PRIdPID"'>",
 			sticky ? "sticky='1' " : "",
 			(pi->flag & POST_FLAG_LOCKED) ? "" : "nore='1' ",
-			mark, pi->user_name, format_time(pi->stamp, TIME_FORMAT_XML), pi->id);
+			mark, pi->user_name,
+			format_time(post_stamp(pi->id), TIME_FORMAT_XML), pi->id);
 	if (web_request_type(UTF8)) {
 		xml_fputs(pi->utf8_title);
 	} else {
@@ -270,7 +271,7 @@ static record_callback_e web_post_filter(void *r, void *args, int offset)
 	post_info_t pi;
 	post_record_to_info(pr, &pi, 1);
 
-	if (pi.stamp < wpf->begin)
+	if (post_stamp(pi.id) < wpf->begin)
 		return RECORD_CALLBACK_BREAK;
 	if ((*wpf->utf8_t1 && !strcaseeq(wpf->utf8_t1, pi.utf8_title))
 			|| (*wpf->utf8_t2 && !strcaseeq(wpf->utf8_t2, pi.utf8_title))
@@ -435,7 +436,7 @@ static int prepare_threads(int bid, post_thread_info_t **pti)
 
 static void print_post_thread_info(const post_thread_info_t *pti)
 {
-	fb_time_t stamp = post_stamp_from_id(pti->thread_id);
+	fb_time_t stamp = post_stamp(pti->thread_id);
 	printf("<po gid='%"PRIdPID"' m='%c' posts='%d'",
 			pti->thread_id,
 			post_mark_raw(stamp, pti->flag),
@@ -444,7 +445,7 @@ static void print_post_thread_info(const post_thread_info_t *pti)
 			format_time(stamp, TIME_FORMAT_XML));
 	if (pti->replies > 1) {
 		printf(" upuser='%s' uptime='%s'", pti->last_user_name,
-				format_time(post_stamp_from_id(pti->last_post_id),
+				format_time(post_stamp(pti->last_post_id),
 					TIME_FORMAT_XML));
 	}
 	printf(" lastpage='%u'", pti->last_post_id);
@@ -615,8 +616,8 @@ static record_callback_e print_topics(void *ptr, void *args, int offset)
 				"<author>%s</author><pubDate>%s</pubDate><source>%s</source>"
 				"<guid>http://"BASEURL"/con?bid=%d&amp;f=%u</guid>"
 				"<description><![CDATA[<pre>", pt->bid, pr->id, pi.user_name,
-				format_time(pi.stamp, TIME_FORMAT_RSS), pi.user_name, pt->bid,
-				pr->id);
+				format_time(post_stamp(pi.id), TIME_FORMAT_RSS), pi.user_name,
+				pt->bid, pr->id);
 
 		char *content = post_content_get(pi.id);
 		if (content)

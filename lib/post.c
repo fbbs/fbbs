@@ -60,7 +60,6 @@ void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count)
 		pi->id = pr->id;
 		pi->reply_id = pr->reply_id;
 		pi->thread_id = pr->thread_id;
-		pi->stamp = post_stamp_from_id(pr->id);
 		pi->delete_stamp = 0;
 		pi->board_id = pr->board_id;
 		strlcpy(pi->user_name, pr->user_name, sizeof(pi->user_name));
@@ -669,10 +668,10 @@ int post_mark_raw(fb_time_t stamp, int flag)
 
 int post_mark(const post_info_t *p)
 {
-	return post_mark_raw(p->stamp, p->flag);
+	return post_mark_raw(post_stamp(p->id), p->flag);
 }
 
-fb_time_t post_stamp_from_id(post_id_t id)
+fb_time_t post_stamp(post_id_t id)
 {
 	return (fb_time_t) ((id >> 21) / 1000);
 }
@@ -736,7 +735,7 @@ post_id_t post_new(const post_request_t *pr)
 		return 0;
 	if (resp.id) {
 		if (!pr->autopost) {
-			fb_time_t stamp = post_stamp_from_id(resp.id);
+			fb_time_t stamp = post_stamp(resp.id);
 			brc_initialize(uname, pr->board->name);
 			brc_mark_as_read(stamp);
 			brc_update(uname, pr->board->name);

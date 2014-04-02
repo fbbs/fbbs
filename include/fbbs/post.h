@@ -76,7 +76,6 @@ typedef struct {
 	post_id_t id;
 	post_id_t reply_id;
 	post_id_t thread_id;
-	fb_time_t stamp;
 	fb_time_t delete_stamp;
 	int flag;
 	user_id_t user_id;
@@ -184,7 +183,7 @@ extern fb_time_t get_last_post_time(int bid);
 extern int post_mark_raw(fb_time_t stamp, int flag);
 extern int post_mark(const post_info_t *p);
 
-extern fb_time_t post_stamp_from_id(post_id_t id);
+extern fb_time_t post_stamp(post_id_t id);
 extern post_id_t post_id_from_stamp(fb_time_t stamp);
 
 extern int post_get_board_count(int board_id);

@@ -189,7 +189,7 @@ BACKEND_DECLARE(post_new)
 		serialize_post_new(&resp, parcel_out);
 		backend_respond(parcel_out, channel);
 
-		fb_time_t stamp = post_stamp_from_id(post_id);
+		fb_time_t stamp = post_stamp(post_id);
 		set_last_post_time(req.board_id, stamp);
 		post_record_invalidity_change(req.board_id, 1);
 

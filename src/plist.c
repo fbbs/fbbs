@@ -85,7 +85,7 @@ static int last_read_filter(void *ptr, void *args, int offset)
 	const post_record_t *pr = ptr;
 	fb_time_t *stamp = args;
 
-	if (post_stamp_from_id(pr->id) > *stamp)
+	if (post_stamp(pr->id) > *stamp)
 		return -1;
 	return 0;
 }
@@ -460,7 +460,7 @@ static tui_list_display_t post_list_display(tui_list_t *tl, int offset)
 	}
 
 	char date[14];
-	format_post_date(post_stamp_from_id(pi->id), date, sizeof(date));
+	format_post_date(post_stamp(pi->id), date, sizeof(date));
 
 	const char *idcolor = get_board_online_color(pi->user_name, currbp->id);
 
@@ -916,7 +916,7 @@ static record_callback_e thread_first_unread_filter(void *ptr, void *args,
 {
 	const post_record_t *pr = ptr;
 	post_id_t tid = *(post_id_t *) args;
-	if (pr->id == tid && brc_unread(post_stamp_from_id(pr->id)))
+	if (pr->id == tid && brc_unread(post_stamp(pr->id)))
 		return RECORD_CALLBACK_MATCH;
 	return RECORD_CALLBACK_CONTINUE;
 }
@@ -957,7 +957,7 @@ static int jump_to_thread_last(tui_list_t *tl, post_info_t *pi)
 static int skip_post(tui_list_t *tl, post_info_t *pi)
 {
 	if (pi) {
-		brc_mark_as_read(pi->stamp);
+		brc_mark_as_read(post_stamp(pi->id));
 		if (++tl->cur >= tl->begin + tl->lines)
 			tl->valid = false;
 	}
@@ -1022,7 +1022,8 @@ static int show_post_info(const post_info_t *pi)
 	//% 作者
 	prints("\xd7\xf7\xd5\xdf: %s\n", pi->user_name);
 	//% 时间
-	prints("\xca\xb1\xbc\xe4: %s\n", format_time(pi->stamp, TIME_FORMAT_ZH));
+	prints("\xca\xb1\xbc\xe4: %s\n", format_time(post_stamp(pi->id),
+				TIME_FORMAT_ZH));
 
 	prints("id:   %"PRIdPID"\ntid:  %"PRIdPID"\nreid: %"PRIdPID,
 			pi->id, pi->thread_id, pi->reply_id);
@@ -1660,7 +1661,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 			if (thread)
 				tid = pi->thread_id;
 
-			brc_mark_as_read(pi->stamp);
+			brc_mark_as_read(post_stamp(pi->id));
 			pl->current_tid = pi->thread_id;
 			end = sticky = pi->flag & POST_FLAG_STICKY;
 
@@ -2475,7 +2476,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case 'K':
 			return skip_post(tl, pi);
 		case 'c':
-			brc_clear(pi->stamp);
+			brc_clear(post_stamp(pi->id));
 			return PARTUPDATE;
 		case 'f':
 			brc_clear_all();
@@ -2660,7 +2661,7 @@ static tui_list_display_t post_list_reply_display(tui_list_t *tl, int n)
 	post_info_t *pi = tui_list_recent_get_data(tl, n);
 	if (pi) {
 		char date[14];
-		format_post_date(post_stamp_from_id(pi->id), date, sizeof(date));
+		format_post_date(post_stamp(pi->id), date, sizeof(date));
 
 		char board_name[BOARD_NAME_LEN + 1];
 		strlcpy(board_name, pi->board_name, sizeof(board_name));

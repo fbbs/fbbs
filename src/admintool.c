@@ -1901,7 +1901,7 @@ static void search_all_boards(post_filter_t *filter, const char *user_name,
 			convert_u2g(utf8_title, gbk_title);
 
 			char date[26];
-			time_t stamp = post_stamp_from_id(db_get_post_id(res, i, 0));
+			time_t stamp = post_stamp(db_get_post_id(res, i, 0));
 			ctime_r(&stamp, date);
 			date[24] = '\0';
 			fprintf(fp, " %s [%d] %s\n", date, db_get_integer(res, i, 1),
