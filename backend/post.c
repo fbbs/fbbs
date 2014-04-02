@@ -145,8 +145,14 @@ static const char *next_mention(const char *begin, const char *end,
 static int scan_for_mentions(const backend_request_post_new_t *req,
 		const board_t *board, post_id_t post_id)
 {
+	const char *begin = req->content;
+	if (strneq(req->title, "Re: ", 4))
+		begin = strstr(begin, "\n\n");
+	if (!begin)
+		return 0;
+
 	// 跳过签名档
-	const char *end = strstr(req->content, "\n--\n");
+	const char *end = strstr(begin, "\n--\n");
 	if (end)
 		++end;
 	else
@@ -155,7 +161,7 @@ static int scan_for_mentions(const backend_request_post_new_t *req,
 	int count = 0;
 	char user_names[POST_MENTION_LIMIT][IDLEN + 1] = { { '\0' } };
 
-	const char *begin = req->content, *line_end;
+	const char *line_end;
 	while (begin < end && (line_end = get_line_end(begin, end)) <= end) {
 		// 跳过引用行
 		if (line_end - begin >= 2 && *begin == ':' && begin[1] == ' ') {
