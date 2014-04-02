@@ -239,9 +239,12 @@ static tui_list_loader_t tui_list_recent_loader(tui_list_t *tl)
 
 	vector_t *v = &helper->vector;
 
+	bool first = true;
 	int64_t id = INT64_MAX;
-	if (vector_size(v))
+	if (vector_size(v)) {
 		id = *((int64_t *) vector_at(v, vector_size(v) - 1));
+		first = false;
+	}
 
 	void *buf = vector_grow(&helper->vector, tl->lines);
 	if (!buf)
@@ -255,6 +258,8 @@ static tui_list_loader_t tui_list_recent_loader(tui_list_t *tl)
 	}
 	tl->all = vector_size(v);
 	tl->valid = true;
+	if (first)
+		tl->cur = tl->all > 0 ? tl->all - 1 : 0;
 	return rows;
 }
 
