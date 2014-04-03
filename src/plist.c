@@ -1619,29 +1619,35 @@ static int tui_count_posts_in_range(tui_list_t *tl, post_info_t *pi)
 	return FULLUPDATE;
 }
 
-static const char *get_prompt(bool thread, bool user)
+static void print_prompt(bool thread, bool user, bool allow_thread)
 {
-	if (thread)
+	if (thread) {
 		//% [主题阅读] 下一封 <Space>,<Enter>,↓│上一封 ↑,U
-		return "\033[0;1;31;44m[\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1]"
+		prints("\033[0;1;31;44m[\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1]"
 			" \033[33m\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,<Enter>,"
-			"\xa1\xfd\xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc,U"
-			"                              ";
+			"\xa1\xfd\xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc,U");
+		tui_repeat_char(' ', 31);
+	}
+
 	if (user)
 		//% [相同作者] 回信 R │ 结束 Q,← │下一封 ↓,Enter
 		//% │上一封 ↑,U │ ^R 回给作者
-		return "\033[0;1;31;44m[\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf]"
+		prints("\033[0;1;31;44m[\xcf\xe0\xcd\xac\xd7\xf7\xd5\xdf]"
 			" \033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb"
 			" \xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 \xa1\xfd,Enter\xa9\xa6\xc9\xcf"
 			"\xd2\xbb\xb7\xe2 \xa1\xfc,U \xa9\xa6 ^R \xbb\xd8\xb8\xf8\xd7\xf7"
-			"\xd5\xdf";
+			"\xd5\xdf");
+
 	//% [阅读文章]  回信 R │ 结束 Q,← │上一封 ↑
 	//% "│下一封 <Space>,↓│主题阅读 ^s或p");
-	return "\033[0;1;31;44m[\xd4\xc4\xb6\xc1\xce\xc4\xd5\xc2]  "
+	prints("\033[0;1;31;44m[\xd4\xc4\xb6\xc1\xce\xc4\xd5\xc2]  "
 		"\033[33m\xbb\xd8\xd0\xc5 R \xa9\xa6 \xbd\xe1\xca\xf8 "
 		"Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xb7\xe2 \xa1\xfc"
-		"\xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,\xa1\xfd\xa9\xa6"
-		"\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1 ^s\xbb\xf2p";
+		"\xa9\xa6\xcf\xc2\xd2\xbb\xb7\xe2 <Space>,\xa1\xfd\xa9\xa6");
+	if (allow_thread)
+		prints("\xd6\xf7\xcc\xe2\xd4\xc4\xb6\xc1 ^s\xbb\xf2p");
+	else
+		tui_repeat_char(' ', 14);
 }
 
 static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
@@ -1669,7 +1675,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 		}
 
 		screen_move_clear(-1);
-		prints(get_prompt(tid, uid));
+		print_prompt(tid, uid, true);
 		prints("\033[m");
 		refresh();
 
@@ -2679,12 +2685,79 @@ static tui_list_display_t post_list_reply_display(tui_list_t *tl, int n)
 
 static int read_reply(tui_list_t *tl, post_info_t *pi)
 {
-	char file[HOMELEN];
-	int ch;
-	if (pi && dump_content(pi->id, file, sizeof(file))) {
-		ch = ansimore(file, false);
-		ch = egetch();
-		unlink(file);
+	char file[HOMELEN] = { '\0' };
+	int ch, direction = 0;
+	bool end = false;
+
+	while (!end) {
+		if (pi && dump_content(pi->id, file, sizeof(file))) {
+			ch = ansimore(file, false);
+		} else {
+			end = true;
+		}
+
+		screen_move_clear(-1);
+		print_prompt(0, 0, false);
+		prints("\033[m");
+		refresh();
+
+		if (!(ch == KEY_UP || ch == KEY_PGUP))
+			ch = egetch();
+		switch (ch) {
+			case 'N': case 'Q': case 'n': case 'q': case KEY_LEFT:
+				end = true;
+				break;
+			case 'Y': case 'R': case 'y': case 'r':
+				end = true;
+				tui_new_post(pi->board_id, pi);
+				break;
+			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
+			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
+				direction = 1;
+				break;
+			case KEY_UP: case KEY_PGUP: case 'U': case 'u':
+				direction = -1;
+				break;
+			case Ctrl('A'):
+				direction = 0;
+				t_query(pi->user_name);
+				break;
+			case Ctrl('R'):
+				direction = 0;
+				reply_with_mail(pi);
+				break;
+			case '*':
+				direction = 0;
+				show_post_info(pi);
+				break;
+			default:
+				direction = 0;
+				break;
+		}
+
+		if (!end) {
+			if (direction > 0) {
+				if (++tl->cur >= tl->all) {
+					tl->cur = tl->all > 0 ? tl->all - 1 : 0;
+					end = true;
+				} else {
+					pi = tui_list_recent_get_data(tl, tl->cur);
+				}
+			} else if (direction < 0) {
+				if (--tl->cur < 0) {
+					int rows = tl->loader(tl);
+					if (rows > 0)
+						tl->cur += rows;
+					else
+						end = true;
+				}
+				if (!end)
+					pi = tui_list_recent_get_data(tl, tl->cur);
+			}
+		}
+
+		if (end || direction)
+			unlink(file);
 	}
 	return FULLUPDATE;
 }
