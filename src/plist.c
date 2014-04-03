@@ -1653,9 +1653,10 @@ static void print_prompt(bool thread, bool user, bool allow_thread)
 static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 {
 	post_list_t *pl = tl->data;
-	bool end = false, upward = false, sticky = false, entering = false;
+	bool end = false, sticky = false, entering = false;
 	post_id_t tid = 0;
 	user_id_t uid = 0;
+	int direction = 0;
 	char file[HOMELEN];
 	post_info_t pi_buf;
 
@@ -1692,28 +1693,32 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				tui_new_post(pi->board_id, pi);
 				break;
 			case '\n': case 'j': case KEY_DOWN: case KEY_PGDN:
-				upward = false;
+				direction = 1;
 				break;
 			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
-				upward = false;
+				direction = 1;
 				if (!uid && !tid) {
 					tid = pi->thread_id;
 					entering = true;
 				}
 				break;
 			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
-				upward = true;
+				direction = -1;
 				break;
 			case Ctrl('A'):
+				direction = 0;
 				t_query(pi->user_name);
 				break;
 			case Ctrl('R'):
+				direction = 0;
 				reply_with_mail(pi);
 				break;
 			case 'g':
+				direction = 0;
 				toggle_post_flag(pi, POST_FLAG_DIGEST);
 				break;
 			case '*':
+				direction = 0;
 				show_post_info(pi);
 				break;
 			case Ctrl('U'):
@@ -1726,17 +1731,17 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				break;
 		}
 
-		if (end || !entering)
+		if (end || !entering || !direction)
 			unlink(file);
 
-		if (!end && !entering) {
+		if (!end && !entering && direction) {
 			post_filter_t filter = {
 				.tid = tid,
 				.uid = user ? pi->user_id : 0,
 			};
 			post_record_t pr;
 			int pos = record_search_copy(pl->record, post_record_filter,
-					&filter, tl->cur, upward, &pr);
+					&filter, tl->cur, direction < 0, &pr);
 			if (pos < 0) {
 				end = true;
 			} else {
