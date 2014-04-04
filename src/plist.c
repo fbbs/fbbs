@@ -2773,6 +2773,8 @@ static tui_list_handler_t post_list_reply_handler(tui_list_t *tl, int key)
 {
 	post_info_t *pi = tui_list_recent_get_data(tl, tl->cur);
 	switch (key) {
+		case 'd':
+			return tui_list_recent_delete(tl);
 		case '\n': case KEY_RIGHT:
 			if (pi)
 				return read_reply(tl, pi);
@@ -2780,6 +2782,12 @@ static tui_list_handler_t post_list_reply_handler(tui_list_t *tl, int key)
 		default:
 			return READ_AGAIN;
 	}
+}
+
+static int post_list_reply_deleter(user_id_t user_id, void *ptr)
+{
+	post_info_t *pi = ptr;
+	return post_reply_delete(user_id, pi->id);
 }
 
 int post_list_reply(void)
@@ -2796,6 +2804,7 @@ int post_list_reply(void)
 		.title = post_list_reply_title,
 		.display = post_list_reply_display,
 		.handler = post_list_reply_handler,
+		.deleter = post_list_reply_deleter,
 	};
 	tui_list_recent(&tlr);
 
@@ -2817,6 +2826,12 @@ static tui_list_title_t post_list_mention_title(tui_list_t *tl)
 	_post_list_reply_title();
 }
 
+static int post_list_mention_deleter(user_id_t user_id, void *ptr)
+{
+	post_info_t *pi = ptr;
+	return post_mention_delete(user_id, pi->id);
+}
+
 int post_list_mention(void)
 {
 	tui_suppress_notice(true);
@@ -2831,6 +2846,7 @@ int post_list_mention(void)
 		.title = post_list_mention_title,
 		.display = post_list_reply_display,
 		.handler = post_list_reply_handler,
+		.deleter = post_list_mention_deleter,
 	};
 	tui_list_recent(&tlr);
 

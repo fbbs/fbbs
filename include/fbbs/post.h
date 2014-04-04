@@ -276,6 +276,7 @@ extern bool post_content_set(post_id_t post_id, const char *str);
 
 extern char *post_reply_table_name(user_id_t user_id, char *name, size_t size);
 extern int post_reply_load(user_id_t user_id, post_id_t post_id, post_info_t *buf, size_t size);
+extern int post_reply_delete(user_id_t user_id, post_id_t post_id);
 extern int post_reply_incr_count(user_id_t user_id, int delta);
 extern int post_reply_get_count(user_id_t user_id);
 extern void post_reply_clear_count(user_id_t user_id);
@@ -283,6 +284,7 @@ extern int post_reply_get_count_cached(void);
 
 extern char *post_mention_table_name(user_id_t user_id, char *name, size_t size);
 extern int post_mention_load(user_id_t user_id, post_id_t post_id, post_info_t *buf, size_t size);
+extern int post_mention_delete(user_id_t user_id, post_id_t post_id);
 extern int post_mention_incr_count(user_id_t user_id, int delta);
 extern int post_mention_get_count(user_id_t user_id);
 extern void post_mention_clear_count(user_id_t user_id);

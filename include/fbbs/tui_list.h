@@ -45,9 +45,11 @@ typedef struct {
 	int (*display)(struct tui_list_t *, int);
 	int (*handler)(struct tui_list_t *, int);
 	int (*query)(struct tui_list_t *);
+	int (*deleter)(user_id_t, void *);
 } tui_list_recent_t;
 
 extern int tui_list_recent(tui_list_recent_t *tlr);
 extern void *tui_list_recent_get_data(tui_list_t *tl, int n);
+extern int tui_list_recent_delete(tui_list_t *tl);
 
 #endif // FB_TUI_LIST_H

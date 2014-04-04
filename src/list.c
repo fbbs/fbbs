@@ -228,6 +228,7 @@ typedef struct {
 	user_id_t user_id;
 	tui_list_recent_loader_t loader;
 	int (*handler)(tui_list_t *, int);
+	int (*deleter)(user_id_t, void *);
 	vector_t vector;
 } tui_list_recent_helper_t;
 
@@ -312,6 +313,7 @@ int tui_list_recent(tui_list_recent_t *tlr)
 		.user_id = tlr->user_id,
 		.loader = tlr->loader,
 		.handler = tlr->handler,
+		.deleter = tlr->deleter,
 	};
 	if (!vector_init(&helper.vector, tlr->len, lines))
 		return 0;
@@ -336,4 +338,24 @@ void *tui_list_recent_get_data(tui_list_t *tl, int n)
 	tui_list_recent_helper_t *helper = tl->data;
 	vector_t *v = &helper->vector;
 	return vector_at(v, tl->all - n - 1);
+}
+
+int tui_list_recent_delete(tui_list_t *tl)
+{
+	void *ptr = tui_list_recent_get_data(tl, tl->cur);
+	if (!ptr)
+		return DONOTHING;
+
+	screen_move_clear(-1);
+	//% 确定删除
+	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
+		tui_list_recent_helper_t *helper = tl->data;
+		int (*deleter)(user_id_t, void *) = helper->deleter;
+		if (deleter(helper->user_id, ptr) > 0) {
+			vector_erase(&helper->vector, tl->all - tl->cur - 1);
+			--tl->all;
+			return PARTUPDATE;
+		}
+	}
+	return MINIUPDATE;
 }

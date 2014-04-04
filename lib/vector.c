@@ -78,7 +78,7 @@ bool vector_erase_range(vector_t *v, vector_size_t first, vector_size_t last)
 		if (last <= v->size) {
 			memmove((char *) v->data + first * v->len,
 					(char *) v->data + last * v->len,
-					v->len * (last - first));
+					v->len * (v->size - last + 1));
 			v->size -= last - first;
 		} else {
 			v->size = first;

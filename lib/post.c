@@ -1127,6 +1127,26 @@ int post_reply_load(user_id_t user_id, post_id_t post_id, post_info_t *buf,
 	return _post_reply_load(table_name, user_id, post_id, buf, size);
 }
 
+static int _post_reply_delete(const char *table_name, user_id_t user_id,
+		post_id_t post_id)
+{
+	query_t *q = query_new(0);
+	query_sappend(q, "DELETE FROM", table_name);
+	query_where(q, "user_id_replied = %"DBIdUID" AND post_id = %"DBIdPID,
+			user_id, post_id);
+	db_res_t *res = query_cmd(q);
+	int rows = db_cmd_rows(res);
+	db_clear(res);
+	return rows;
+}
+
+int post_reply_delete(user_id_t user_id, post_id_t post_id)
+{
+	char table_name[64];
+	post_reply_table_name(user_id, table_name, sizeof(table_name));
+	return _post_reply_delete(table_name, user_id, post_id);
+}
+
 #define POST_REPLY_COUNT_KEY  "post:reply_count"
 
 int post_reply_incr_count(user_id_t user_id, int delta)
@@ -1171,6 +1191,13 @@ int post_mention_load(user_id_t user_id, post_id_t post_id, post_info_t *buf,
 	char table_name[64];
 	post_mention_table_name(user_id, table_name, sizeof(table_name));
 	return _post_reply_load(table_name, user_id, post_id, buf, size);
+}
+
+int post_mention_delete(user_id_t user_id, post_id_t post_id)
+{
+	char table_name[64];
+	post_mention_table_name(user_id, table_name, sizeof(table_name));
+	return _post_reply_delete(table_name, user_id, post_id);
 }
 
 #define POST_MENTION_COUNT_KEY  "post:mention_count"
