@@ -124,9 +124,9 @@ session_id_t session_new_id(void)
 	return session.id;
 }
 
-session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
-		const char *ip_addr, bool is_web, bool is_secure, bool visible,
-		int duration)
+session_id_t session_new(const char *key, session_id_t sid, user_id_t user_id,
+		const char *user_name, const char *ip_addr, bool is_web,
+		bool is_secure, bool visible, int duration)
 {
 	int pid = is_web ? 0 : getpid();
 	if (!sid)
@@ -136,9 +136,10 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t uid,
 	fb_time_t expire = now + duration;
 
 	db_res_t *res = db_cmd("INSERT INTO sessions (id, session_key, user_id,"
-			" pid, ip_addr, web, secure, stamp, expire, visible) VALUES"
-			" (%"DBIdSID", %s, %"DBIdUID", %d, %s, %b, %b, %t, %t, %b)", sid,
-			key, uid, pid, ip_addr, is_web, is_secure, now, expire, visible);
+			" user_name, pid, ip_addr, web, secure, stamp, expire, visible)"
+			" VALUES (%"DBIdSID", %s, %"DBIdUID", %s, %d, %s, %b, %b, %t, %t,"
+			" %b)", sid, key, user_id, user_name, pid, ip_addr, is_web,
+			is_secure, now, expire, visible);
 	if (res) {
 		db_clear(res);
 		session.id = sid;
@@ -245,17 +246,15 @@ bool session_toggle_visibility(void)
 }
 
 #define ACTIVE_SESSION_FIELDS \
-	"s.id, s.user_id, u.name, s.visible, s.ip_addr, s.web"
+	"s.id, s.user_id, s.user_name, s.visible, s.ip_addr, s.web"
 
 #define ACTIVE_SESSION_QUERY \
-	"SELECT " ACTIVE_SESSION_FIELDS \
-	" FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.active"
+	"SELECT " ACTIVE_SESSION_FIELDS " FROM sessions s WHERE s.active"
 
 db_res_t *session_get_followed(void)
 {
 	return db_query("SELECT " ACTIVE_SESSION_FIELDS ", f.notes"
 			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
-			" JOIN users u ON s.user_id = u.id"
 			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
 }
 

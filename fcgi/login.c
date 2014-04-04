@@ -176,7 +176,7 @@ static int _web_login(bool persistent, bool redirect)
 	char key[SESSION_KEY_LEN + 1];
 	session_new_id();
 	generate_session_key(key, sizeof(key), session_id());
-	session_new(key, session_id(), session_uid(), fromhost,
+	session_new(key, session_id(), session_uid(), currentuser.userid, fromhost,
 			SESSION_WEB, SESSION_PLAIN, true, max_age);
 	if (session_id())
 		set_web_session_cache(session_uid(), key, session_id());
