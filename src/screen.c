@@ -324,6 +324,7 @@ void screen_clrtobot(void)
 			screen_line_t *sl = get_screen_line(i);
 			sl->modified = false;
 			sl->len = 0;
+			sl->old_len = SCREEN_LINE_LEN;
 		}
 	}
 }
