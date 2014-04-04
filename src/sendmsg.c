@@ -20,9 +20,9 @@ enum {
 
 typedef db_res_t msg_session_info_t;
 
-#define MSG_SESSION_INFO_FIELDS  "s.id, s.pid, s.web, s.visible, u.name"
-#define MSG_SESSION_INFO_QUERY  "SELECT "MSG_SESSION_INFO_FIELDS \
-	" FROM sessions s JOIN users u ON s.user_id = u.id"
+#define MSG_SESSION_INFO_FIELDS  "s.id, s.pid, s.web, s.visible, s.user_name"
+#define MSG_SESSION_INFO_QUERY  \
+	"SELECT "MSG_SESSION_INFO_FIELDS " FROM sessions s"
 
 #define msg_session_info_sid(s, i)  db_get_session_id(s, i, 0)
 #define msg_session_info_pid(s, i)  db_get_integer(s, i, 1)
@@ -82,10 +82,13 @@ int get_msg(const char *uid, char *msg, int line)
 	} //while
 }
 
-static msg_session_info_t *get_msg_sessions(const char *uname)
+static msg_session_info_t *get_msg_sessions(const char *user_name)
 {
-	return db_query(MSG_SESSION_INFO_QUERY
-			" WHERE lower(u.name) = lower(%s)", uname);
+	user_id_t user_id = get_user_id(user_name);
+	if (user_id <= 0)
+		return NULL;
+	return db_query(MSG_SESSION_INFO_QUERY " WHERE s.user_id = %"DBIdUID,
+			user_id);
 }
 
 static void generate_full_msg(const char *msg, int type,

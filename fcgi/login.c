@@ -17,11 +17,10 @@ enum {
 	COOKIE_PERSISTENT_PERIOD = 2 * 7 * 24 * 60 * 60,
 };
 
-static int check_web_login_quota(const char *uname, bool force)
+static int check_web_login_quota(user_id_t user_id, bool force)
 {
-	db_res_t *res = db_query("SELECT s.id"
-			" FROM sessions s JOIN users u ON s.user_id = u.id"
-			" WHERE s.active AND s.web AND lower(u.name) = lower(%s)", uname);
+	db_res_t *res = db_query("SELECT id FROM sessions"
+			" WHERE active AND web AND user_id = %"DBIdUID, user_id);
 	if (!res)
 		return INT_MAX;
 
@@ -137,14 +136,15 @@ int do_web_login(const char *uname, const char *pw, bool api)
 	struct userec user;
 	if (!getuserec(uname, &user))
 		return api ? WEB_ERROR_INCORRECT_PASSWORD : BBS_EWPSWD;
-	session_set_uid(get_user_id(uname));
+	user_id_t user_id = get_user_id(uname);
+	session_set_uid(user_id);
 
 	if (pw && !passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
 		return api ? WEB_ERROR_INCORRECT_PASSWORD : BBS_EWPSWD;
 	}
 
-	int sessions = check_web_login_quota(uname, false);
+	int sessions = check_web_login_quota(user_id, false);
 	if (!HAS_PERM2(PERM_SYSOPS, &user) && sessions >= WEB_ACTIVE_LOGIN_QUOTA)
 		return BBS_ELGNQE;
 

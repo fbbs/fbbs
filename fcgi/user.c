@@ -221,15 +221,16 @@ int bbssig_main(void)
 	return edit_user_file("signatures", "\xb1\xe0\xbc\xad\xc7\xa9\xc3\xfb\xb5\xb5", "sig");
 }
 
-static int show_sessions(const char *uname)
+static int show_sessions(user_id_t user_id)
 {
-	int num = 0;
-	db_res_t *res = db_query("SELECT s.id, s.visible, s.web"
-			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
-			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
+	if (user_id <= 0)
+		return 0;
+	db_res_t *res = db_query("SELECT id, visible, web FROM sessions s"
+			" WHERE active AND user_id = %"DBIdUID, user_id);
 	if (!res)
 		return 0;
 
+	int num = 0;
 	fb_time_t now = fb_time();
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		bool visible = db_get_bool(res, i, 1);
@@ -306,14 +307,14 @@ static const char *horoscope_string(const struct userec *user)
 
 int bbsqry_main(void)
 {
-	char userid[IDLEN + 1];
-	strlcpy(userid, web_get_param("u"), sizeof(userid));
+	char user_name[IDLEN + 1];
+	strlcpy(user_name, web_get_param("u"), sizeof(user_name));
 	if (!session_id())
 		return BBS_ELGNREQ;
 	struct userec user;
 	int uid;
 	xml_header(NULL);
-	uid = getuserec(userid, &user);
+	uid = getuserec(user_name, &user);
 
 	bool self = streq(currentuser.userid, user.userid);
 
@@ -359,7 +360,8 @@ int bbsqry_main(void)
 		xml_printfile(file);
 		printf("</smd>");
 
-		int num = show_sessions(user.userid);
+		user_id_t user_id = get_user_id(user.userid);
+		int num = show_sessions(user_id);
 		if (!num) {
 			fb_time_t logout = user.lastlogout;
 			if (logout < user.lastlogin) {
@@ -371,7 +373,7 @@ int bbsqry_main(void)
 		}
 		// TODO: mail
 	} else {
-		printf("<bbsqry id='%s'>", userid);
+		printf("<bbsqry id='%s'>", user_name);
 	}
 	print_session();
 	printf("</bbsqry>");

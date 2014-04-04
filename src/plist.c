@@ -157,11 +157,13 @@ static tui_list_loader_t post_list_loader(tui_list_t *tl)
 	return 0;
 }
 
-static session_basic_info_t *get_sessions_by_name(const char *uname)
+static session_basic_info_t *get_sessions_by_name(const char *user_name)
 {
-	return db_query("SELECT "SESSION_BASIC_INFO_FIELDS
-			" FROM sessions s JOIN alive_users u ON s.user_id = u.id"
-			" WHERE s.active AND lower(u.name) = lower(%s)", uname);
+	user_id_t user_id = get_user_id(user_name);
+	if (user_id <= 0)
+		return NULL;
+	return db_query("SELECT "SESSION_BASIC_INFO_FIELDS" FROM sessions s"
+			" WHERE s.active AND s.user_id = %"DBIdUID, user_id);
 }
 
 static int bm_color(const char *uname)
