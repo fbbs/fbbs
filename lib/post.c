@@ -1022,7 +1022,7 @@ static bool post_content_update_cache(const char *file, const char *str,
 	return ok;
 }
 
-char *post_content_get(post_id_t post_id)
+char *post_content_get(post_id_t post_id, bool read_deleted)
 {
 	char file[HOMELEN];
 	post_content_cache_filename(post_id, file, sizeof(file));
@@ -1030,6 +1030,13 @@ char *post_content_get(post_id_t post_id)
 	char *str = file_read_all(file);
 	if (str)
 		return str;
+
+	char file2[HOMELEN];
+	post_content_deleted_filename(post_id, file2, sizeof(file2));
+	bool deleted = dashf(file2);
+
+	if (!read_deleted && deleted)
+		return NULL;
 
 	query_t *q = query_new(0);
 	query_select(q, "content");
@@ -1043,7 +1050,7 @@ char *post_content_get(post_id_t post_id)
 	}
 	db_clear(res);
 
-	if (str)
+	if (str && !deleted)
 		post_content_update_cache(file, str, false);
 	return str;
 }

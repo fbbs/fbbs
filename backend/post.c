@@ -515,7 +515,7 @@ static bool _backend_post_alter_title(
 
 	post_record_invalidity_change(req->board_id, 1);
 
-	char *content = post_content_get(req->post_id);
+	char *content = post_content_get(req->post_id, true);
 	if (!content)
 		return false;
 

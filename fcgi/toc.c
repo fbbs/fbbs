@@ -619,7 +619,7 @@ static record_callback_e print_topics(void *ptr, void *args, int offset)
 				format_time(post_stamp(pi.id), TIME_FORMAT_RSS), pi.user_name,
 				pt->bid, pr->id);
 
-		char *content = post_content_get(pi.id);
+		char *content = post_content_get(pi.id, false);
 		if (content)
 			xml_fputs(content);
 		free(content);

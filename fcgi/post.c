@@ -239,7 +239,7 @@ int bbscon(const char *link)
 		putchar('>');
 	}
 
-	char *content = post_content_get(pi.id);
+	char *content = post_content_get(pi.id, false);
 	if (content)
 		xml_print_post_wrapper(content, strlen(content));
 	free(content);
@@ -463,7 +463,7 @@ int bbstcon_main(void)
 		printf("<po fid='%"PRIdPID"' owner='%s'%s>", pi.id, pi.user_name,
 				!isbm && (pi.flag & POST_FLAG_LOCKED) ? " nore='1'" : "");
 
-		char *content = post_content_get(pi.id);
+		char *content = post_content_get(pi.id, false);
 		if (content)
 			xml_print_post_wrapper(content, strlen(content));
 		free(content);
@@ -650,7 +650,7 @@ int bbssnd_main(void)
 
 	if (isedit) {
 		int ret = -1;
-		char *content = post_content_get(pi.id);
+		char *content = post_content_get(pi.id, false);
 		if (content)
 			ret = edit_article(pid, content, text, fromhost);
 		free(content);
@@ -787,7 +787,7 @@ static int do_bbspst(bool isedit)
 
 		printf("</t><po f='%lu'>", pid);
 
-		char *utf8_content = post_content_get(pi.id);
+		char *utf8_content = post_content_get(pi.id, false);
 		size_t len = strlen(utf8_content);
 
 		if (isedit) {
@@ -877,7 +877,7 @@ int bbsccc_main(void)
 		}
 		string_remove_non_printable(utf8_title);
 
-		char *content = post_content_get(pi.id);
+		char *content = post_content_get(pi.id, false);
 
 		post_request_t pr = {
 			.crosspost = true,
@@ -950,7 +950,7 @@ int bbsfwd_main(void)
 		snprintf(utf8_title, sizeof(utf8_title), "[转寄]%s", pi.utf8_title);
 		convert_u2g(utf8_title, gbk_title);
 
-		char *content = post_content_get(pi.id);
+		char *content = post_content_get(pi.id, false);
 
 		char file[HOMELEN];
 		int ret = post_dump_gbk_file(content, CONVERT_ALL, file, sizeof(file));

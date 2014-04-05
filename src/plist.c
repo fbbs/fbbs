@@ -826,7 +826,7 @@ static record_callback_e search_content_callback(void *ptr, void *args, int off)
 	const post_record_t *pr = ptr;
 	const char *utf8_keyword = args;
 
-	char *content = post_content_get(pr->id);
+	char *content = post_content_get(pr->id, true);
 	bool match = content ? strcasestr(content, utf8_keyword) : false;
 	free(content);
 
@@ -1044,9 +1044,10 @@ static int show_post_info(const post_info_t *pi)
 	return FULLUPDATE;
 }
 
-static bool dump_content(post_id_t id, char *file, size_t size)
+static bool dump_content(post_id_t id, char *file, size_t size,
+		bool read_deleted)
 {
-	char *str = post_content_get(id);
+	char *str = post_content_get(id, read_deleted);
 	if (!str)
 		return false;
 
@@ -1061,7 +1062,7 @@ extern int tui_cross_post_legacy(const char *file, const char *title);
 static int tui_cross_post(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi->id, file, sizeof(file)))
+	if (!pi || !dump_content(pi->id, file, sizeof(file), true))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1076,7 +1077,7 @@ static int tui_cross_post(const post_info_t *pi)
 static int forward_post(const post_info_t *pi, bool uuencode)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi->id, file, sizeof(file)))
+	if (!pi || !dump_content(pi->id, file, sizeof(file), true))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1091,7 +1092,7 @@ static int forward_post(const post_info_t *pi, bool uuencode)
 static int reply_with_mail(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi->id, file, sizeof(file)))
+	if (!pi || !dump_content(pi->id, file, sizeof(file), true))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1136,7 +1137,7 @@ static int tui_edit_post_content(post_info_t *pi)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(pi->id, file, sizeof(file)))
+	if (!dump_content(pi->id, file, sizeof(file), true))
 		return DONOTHING;
 
 	int status = session_status();
@@ -1235,7 +1236,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	file_temp_name(file, sizeof(file));
 	if (pi) {
 		char orig[HOMELEN];
-		dump_content(pi->id, orig, sizeof(orig));
+		dump_content(pi->id, orig, sizeof(orig), true);
 		do_quote(orig, file, header.include_mode, header.anonymous);
 		unlink(orig);
 	} else {
@@ -1310,7 +1311,7 @@ static int tui_save_post(const post_info_t *pi)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(pi->id, file, sizeof(file)))
+	if (!dump_content(pi->id, file, sizeof(file), true))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1331,7 +1332,7 @@ static int tui_import_post(const post_info_t *pi)
 		return FULLUPDATE;
 
 	char file[HOMELEN];
-	if (dump_content(pi->id, file, sizeof(file))) {
+	if (dump_content(pi->id, file, sizeof(file), true)) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(pi->utf8_title, gbk_title);
 
@@ -1665,7 +1666,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 	while (!end) {
 		int ch = 0;
 		if (!entering) {
-			if (!pi || !dump_content(pi->id, file, sizeof(file)))
+			if (!pi || !dump_content(pi->id, file, sizeof(file), true))
 				return DONOTHING;
 			if (thread)
 				tid = pi->thread_id;
@@ -1822,7 +1823,7 @@ static record_callback_e import_posts_callback(void *r, void *args, int offset)
 		convert_u2g(pr->utf8_title, gbk_title);
 
 		char file[HOMELEN];
-		dump_content(pr->id, file, sizeof(file));
+		dump_content(pr->id, file, sizeof(file), true);
 		import_file(gbk_title, file, ipc->path);
 		unlink(file);
 		return RECORD_CALLBACK_MATCH;
@@ -1980,7 +1981,7 @@ static record_callback_e pack_posts_callback(void *ptr, void *args, int off)
 	const pack_posts_callback_t *ppc = args;
 
 	if (post_match_filter(pr, ppc->filter, off)) {
-		char *content = post_content_get(pr->id);
+		char *content = post_content_get(pr->id, true);
 		if (content) {
 			fputs("\033[1;32m☆─────────────────"
 					"─────────────────────☆\033[0;1m\n", ppc->fp);
@@ -2697,10 +2698,10 @@ static int read_reply(tui_list_t *tl, post_info_t *pi)
 	bool end = false;
 
 	while (!end) {
-		if (pi && dump_content(pi->id, file, sizeof(file))) {
+		if (pi && dump_content(pi->id, file, sizeof(file), false)) {
 			ch = ansimore(file, false);
 		} else {
-			end = true;
+			break;
 		}
 
 		screen_move_clear(-1);
