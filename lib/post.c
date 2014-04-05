@@ -982,12 +982,22 @@ enum {
 	POST_CONTENT_CACHE_DIRECTORIES = 1000,
 };
 
-static void post_content_cache_filename(post_id_t post_id, char *file,
+char *post_content_cache_filename(post_id_t post_id, char *file,
 		size_t size)
 {
 	snprintf(file, size, "post/%03"PRIdPID"/%"PRIdPID,
 			post_id % POST_CONTENT_CACHE_DIRECTORIES,
 			post_id / POST_CONTENT_CACHE_DIRECTORIES);
+	return file;
+}
+
+char *post_content_deleted_filename(post_id_t post_id, char *file,
+		size_t size)
+{
+	snprintf(file, size, "post/%03"PRIdPID"/%"PRIdPID"~",
+			post_id % POST_CONTENT_CACHE_DIRECTORIES,
+			post_id / POST_CONTENT_CACHE_DIRECTORIES);
+	return file;
 }
 
 static bool post_content_update_cache(const char *file, const char *str,

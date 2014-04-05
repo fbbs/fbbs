@@ -1,6 +1,7 @@
 #include "bbs.h"
 #include "fbbs/backend.h"
 #include "fbbs/cfg.h"
+#include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/post.h"
@@ -264,6 +265,20 @@ static const char *table_name(const post_filter_t *filter)
 		return "post.recent";
 }
 
+static bool remove_cached_content(post_id_t post_id)
+{
+	if (post_id <= 0)
+		return false;
+	char old[HOMELEN], new_[HOMELEN];
+	post_content_cache_filename(post_id, old, sizeof(old));
+	post_content_deleted_filename(post_id, new_, sizeof(new_));
+	if (rename(old, new_) == 0)
+		return true;
+	if (errno == ENOENT)
+		return file_append(new_, "") > 0;
+	return false;
+}
+
 static int _backend_post_delete(const backend_request_post_delete_t *req)
 {
 	board_t board;
@@ -287,18 +302,20 @@ static int _backend_post_delete(const backend_request_post_delete_t *req)
 			" current_timestamp, %"DBIdUID", %s, %b AND (water OR %b), %b"
 			" FROM rows", req->user_id, req->user_name, decrease, req->junk,
 			req->bm_visible);
-	query_append(q, "RETURNING user_id, user_name, junk");
+	query_append(q, "RETURNING id, user_id, user_name, junk");
 
 	db_res_t *res = query_exec(q);
 	int rows = 0;
 	if (res) {
 		rows = db_res_rows(res);
 		for (int i = 0; i < rows; ++i) {
-			user_id_t uid = db_get_user_id(res, i, 0);
-			if (uid && db_get_bool(res, i, 2)) {
-				const char *user_name = db_get_value(res, i, 1);
+			user_id_t user_id = db_get_user_id(res, i, 1);
+			if (user_id && db_get_bool(res, i, 3)) {
+				const char *user_name = db_get_value(res, i, 2);
 				adjust_user_post_count(user_name, -1);
 			}
+
+			remove_cached_content(db_get_post_id(res, i, 0));
 		}
 		if (rows > 0)
 			post_record_invalidity_change(req->filter->bid, 1);
@@ -324,16 +341,23 @@ BACKEND_DECLARE(post_delete)
 static int _backend_post_undelete(const backend_request_post_undelete_t *req)
 {
 	query_t *q = query_new(0);
-	query_select(q, "user_id, user_name, junk FROM post.deleted");
+	query_select(q, "id, user_id, user_name, junk FROM post.deleted");
 	build_post_filter(q, req->filter);
 
 	db_res_t *res = query_exec(q);
 	if (res) {
 		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
-			user_id_t user_id = db_get_user_id(res, i, 0);
-			if (user_id && db_get_bool(res, i, 2)) {
-				const char *user_name = db_get_value(res, i, 1);
+			user_id_t user_id = db_get_user_id(res, i, 1);
+			if (user_id && db_get_bool(res, i, 3)) {
+				const char *user_name = db_get_value(res, i, 2);
 				adjust_user_post_count(user_name, 1);
+			}
+
+			post_id_t post_id = db_get_post_id(res, i, 0);
+			if (post_id > 0) {
+				char file[HOMELEN];
+				post_content_deleted_filename(post_id, file, sizeof(file));
+				unlink(file);
 			}
 		}
 	}

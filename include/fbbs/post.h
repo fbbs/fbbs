@@ -271,6 +271,8 @@ extern bool post_update_trash_record(record_t *record, post_trash_e trash, int b
 
 extern int post_sticky_count(int board_id);
 
+extern char *post_content_cache_filename(post_id_t post_id, char *file, size_t size);
+extern char *post_content_deleted_filename(post_id_t post_id, char *file, size_t size);
 extern char *post_content_get(post_id_t post_id);
 extern bool post_content_set(post_id_t post_id, const char *str);
 
