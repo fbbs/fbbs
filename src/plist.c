@@ -2691,6 +2691,10 @@ static tui_list_display_t post_list_reply_display(tui_list_t *tl, int n)
 	return 0;
 }
 
+enum {
+	POST_CHECK_THRESHOLD = 7 * 24 * 60 * 60,
+};
+
 static int read_reply(tui_list_t *tl, post_info_t *pi)
 {
 	char file[HOMELEN] = { '\0' };
@@ -2698,7 +2702,16 @@ static int read_reply(tui_list_t *tl, post_info_t *pi)
 	bool end = false;
 
 	while (!end) {
-		if (pi && dump_content(pi->id, file, sizeof(file), false)) {
+		if (pi) {
+			if (fb_time() - post_stamp(pi->id) > POST_CHECK_THRESHOLD) {
+				board_t board;
+				if (get_board_by_bid(pi->board_id, &board) <= 0
+						|| !user_has_read_perm(&currentuser, &board))
+					break;
+			}
+			if (dump_content(pi->id, file, sizeof(file), false))
+				break;
+
 			ch = ansimore(file, false);
 		} else {
 			break;
