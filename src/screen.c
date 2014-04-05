@@ -24,6 +24,7 @@ typedef struct {
 
 extern int iscolor;
 
+/** @global */
 bool dumb_term = true;
 
 typedef struct {
@@ -39,6 +40,7 @@ typedef struct {
 	bool redraw; ///< 重绘屏幕
 } screen_t;
 
+/** @global */
 static screen_t screen = {
 	.lines = 24,
 	.columns = 255,

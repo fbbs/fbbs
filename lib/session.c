@@ -21,6 +21,7 @@ typedef struct {
 	bool visible;
 } bbs_session_t;
 
+/** @global 当前用户会话数据 */
 static bbs_session_t session;
 
 session_id_t session_id(void)

@@ -1155,6 +1155,7 @@ int post_reply_incr_count(user_id_t user_id, int delta)
 			delta);
 }
 
+/** @global 缓存的新回复计数 */
 static int _post_reply_count;
 
 int post_reply_get_count(user_id_t user_id)
@@ -1208,6 +1209,7 @@ int post_mention_incr_count(user_id_t user_id, int delta)
 			delta);
 }
 
+/** @global 缓存的新提及计数 */
 static int _post_mention_count;
 
 int post_mention_get_count(user_id_t user_id)
