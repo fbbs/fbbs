@@ -2709,7 +2709,7 @@ static int read_reply(tui_list_t *tl, post_info_t *pi)
 						|| !user_has_read_perm(&currentuser, &board))
 					break;
 			}
-			if (dump_content(pi->id, file, sizeof(file), false))
+			if (!dump_content(pi->id, file, sizeof(file), false))
 				break;
 
 			ch = ansimore(file, false);
