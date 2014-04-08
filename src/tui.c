@@ -412,6 +412,8 @@ int tui_check_notice(void)
 	screen_coordinates(&x, &y);
 	getdata(x, y, "", ans, sizeof(ans), true, true);
 
+	if (*ans == '\0')
+		*ans = '0' + choice;
 	if (*ans == '1') {
 		post_list_reply();
 		return FULLUPDATE;
