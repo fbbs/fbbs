@@ -57,6 +57,7 @@ void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count)
 	for (int i = 0; i < count; ++i) {
 		pi->flag = pr->flag;
 		pi->user_id = pr->user_id;
+		pi->user_id_replied = pr->user_id_replied;
 		pi->id = pr->id;
 		pi->reply_id = pr->reply_id;
 		pi->thread_id = pr->thread_id;
@@ -767,25 +768,18 @@ static void convert_post_record(db_res_t *res, int row, post_record_t *post,
 	post->reply_id = db_get_post_id(res, row, 1);
 	post->thread_id = db_get_post_id(res, row, 2);
 	post->user_id = db_get_user_id(res, row, 3);
-	post->board_id = db_get_integer(res, row, 6);
-	post->flag = (db_get_bool(res, row, 8) ? POST_FLAG_DIGEST : 0)
-			| (db_get_bool(res, row, 9) ? POST_FLAG_MARKED : 0)
-			| (db_get_bool(res, row, 10) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(res, row, 11) ? POST_FLAG_IMPORT : 0)
-			| (db_get_bool(res, row, 12) ? POST_FLAG_WATER : 0)
+	post->user_id_replied = db_get_user_id(res, row, 4);
+	post->board_id = db_get_integer(res, row, 7);
+	post->flag = (db_get_bool(res, row, 9) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(res, row, 10) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(res, row, 11) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(res, row, 12) ? POST_FLAG_IMPORT : 0)
+			| (db_get_bool(res, row, 13) ? POST_FLAG_WATER : 0)
 			| (sticky ? POST_FLAG_STICKY : 0);
-
-	const char *user_name = db_get_value(res, row, 5);
-	if (user_name)
-		strlcpy(post->user_name, user_name, sizeof(post->user_name));
-	else
-		post->user_name[0] = '\0';
-
-	const char *title = db_get_value(res, row, 14);
-	if (title)
-		strlcpy(post->utf8_title, title, sizeof(post->utf8_title));
-	else
-		post->utf8_title[0] = '\0';
+	string_copy_allow_null(post->user_name, db_get_value(res, row, 6),
+			sizeof(post->user_name));
+	string_copy_allow_null(post->utf8_title, db_get_value(res, row, 15),
+			sizeof(post->utf8_title));
 
 	post->board_name[0] = '\0';
 }
@@ -793,15 +787,12 @@ static void convert_post_record(db_res_t *res, int row, post_record_t *post,
 static void convert_post_record_extended(db_res_t *res, int row,
 		post_record_extended_t *post)
 {
-	post->basic.flag |= db_get_bool(res, row, 18) ? POST_FLAG_JUNK : 0;
-	post->bm_visible = db_get_bool(res, row, 19);
-	post->eraser_id = db_get_user_id(res, row, 16);
-	post->stamp = db_get_time(res, row, 15);
-	const char *eraser_name = db_get_value(res, row, 17);
-	if (eraser_name)
-		strlcpy(post->eraser_name, eraser_name, sizeof(post->eraser_name));
-	else
-		post->eraser_name[0] = '\0';
+	post->basic.flag |= db_get_bool(res, row, 19) ? POST_FLAG_JUNK : 0;
+	post->bm_visible = db_get_bool(res, row, 20);
+	post->eraser_id = db_get_user_id(res, row, 17);
+	post->stamp = db_get_time(res, row, 16);
+	string_copy_allow_null(post->eraser_name, db_get_value(res, row, 18),
+			sizeof(post->eraser_name));
 }
 
 int post_record_compare(const void *ptr1, const void *ptr2)

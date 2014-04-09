@@ -14,8 +14,7 @@
 #define POST_REPLIES_FILE  "replies"
 
 #define POST_TABLE_FIELDS \
-	"id, reply_id, thread_id, user_id, real_user_id, user_name, board_id," \
-	" board_name, digest, marked, locked, imported, water, attachment, title"
+	"id, reply_id, thread_id, user_id, user_id_replied, real_user_id, user_name, board_id, board_name, digest, marked, locked, imported, water, attachment, title"
 
 #define POST_TABLE_DELETED_FIELDS \
 	"delete_stamp, eraser_id, eraser_name, junk, bm_visible"
@@ -79,6 +78,7 @@ typedef struct {
 	fb_time_t delete_stamp;
 	int flag;
 	user_id_t user_id;
+	user_id_t user_id_replied;
 	int board_id;
 	char user_name[IDLEN + 1];
 	char eraser_name[IDLEN + 1];
@@ -138,6 +138,7 @@ typedef struct {
 	post_id_t reply_id;
 	post_id_t thread_id;
 	user_id_t user_id;
+	user_id_t user_id_replied;
 	int board_id;
 	int flag;
 	char user_name[IDLEN + 1];
