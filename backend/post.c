@@ -89,99 +89,24 @@ static int insert_mention_record(const backend_request_post_new_t *req,
 	return _insert_reply_record(table_name, req, post_id, user_id);
 }
 
-static int process_mention(const char *user_name,
-		char (*user_names)[IDLEN + 1], size_t size, int count,
-		const backend_request_post_new_t *req, const board_t *board,
-		post_id_t post_id)
+typedef struct {
+	const board_t *board;
+	const backend_request_post_new_t *req;
+} post_mention_handler_args_t;
+
+static int handle_mention(const char *user_name, post_id_t post_id, void *args)
 {
-	for (size_t i = 0; i < count; ++i) {
-		if (strcaseeq(user_name, user_names[i]))
-			return 0;
+	const post_mention_handler_args_t *arg = args;
+	struct userec urec;
+	user_id_t user_id;
+	if (getuserec(user_name, &urec)
+			&& user_has_read_perm(&urec, arg->board)
+			&& (user_id = get_user_id(user_name)) > 0
+			&& user_id != arg->req->user_id) {
+		if (insert_mention_record(arg->req, post_id, user_id) > 0)
+			post_mention_incr_count(user_id, 1);
 	}
-
-	if (count < size) {
-		strlcpy(user_names[count], user_name, sizeof(user_names[count]));
-		++count;
-
-		struct userec urec;
-		user_id_t user_id;
-		if (getuserec(user_name, &urec)
-				&& user_has_read_perm(&urec, board)
-				&& (user_id = get_user_id(user_name)) > 0
-				&& user_id != req->user_id) {
-			if (insert_mention_record(req, post_id, user_id) > 0)
-				post_mention_incr_count(user_id, 1);
-		}
-	}
-	return 1;
-}
-
-static const char *next_mention(const char *begin, const char *end,
-		char *user_name, size_t size)
-{
-	*user_name = '\0';
-	bool mention = false;
-	const char *at = NULL, *ptr;
-	for (ptr = begin; ptr < end; ++ptr) {
-		if (mention) {
-			if (!isalpha(*ptr)) {
-				if (ptr - at >= 2 && ptr - at < size) {
-					strlcpy(user_name, at, ptr - at + 1);
-					return ptr;
-				}
-				mention = false;
-				at = NULL;
-			}
-		}
-		if (!mention) {
-			if (*ptr == '@') {
-				mention = true;
-				at = ptr + 1;
-			}
-		}
-	}
-	return ptr;
-}
-
-static int scan_for_mentions(const backend_request_post_new_t *req,
-		const board_t *board, post_id_t post_id)
-{
-	const char *begin = req->content;
-	if (strneq(req->title, "Re: ", 4))
-		begin = strstr(begin, "\n\n");
-	if (!begin)
-		return 0;
-
-	// 跳过签名档
-	const char *end = strstr(begin, "\n--\n");
-	if (end)
-		++end;
-	else
-		end = req->content + strlen(req->content);
-
-	int count = 0;
-	char user_names[POST_MENTION_LIMIT][IDLEN + 1] = { { '\0' } };
-
-	const char *line_end;
-	while (begin < end && (line_end = get_line_end(begin, end)) <= end) {
-		// 跳过引用行
-		if (line_end - begin >= 2 && *begin == ':' && begin[1] == ' ') {
-			begin = line_end;
-			continue;
-		}
-
-		const char *ptr = begin;
-		while (ptr < line_end) {
-			char user_name[IDLEN + 1];
-			ptr = next_mention(ptr, line_end, user_name, sizeof(user_name));
-			if (*user_name) {
-				count += process_mention(user_name, user_names,
-						ARRAY_SIZE(user_names), count, req, board, post_id);
-			}
-		}
-		begin = line_end;
-	}
-	return count;
+	return 0;
 }
 
 BACKEND_DECLARE(post_new)
@@ -208,7 +133,12 @@ BACKEND_DECLARE(post_new)
 			if (req.user_id != req.user_id_replied)
 				notify_new_reply(&req, &board, post_id);
 
-			scan_for_mentions(&req, &board, post_id);
+			post_mention_handler_args_t args = {
+				.board = &board,
+				.req = &req,
+			};
+			post_scan_for_mentions(req.title, req.content, post_id,
+					handle_mention, &args);
 		}
 		return true;
 	}

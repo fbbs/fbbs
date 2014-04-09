@@ -1270,6 +1270,90 @@ int post_mention_get_count_cached(void)
 	return _post_mention_count;
 }
 
+static const char *next_mention(const char *begin, const char *end,
+		char *user_name, size_t size)
+{
+	*user_name = '\0';
+	bool mention = false;
+	const char *at = NULL, *ptr;
+	for (ptr = begin; ptr < end; ++ptr) {
+		if (mention) {
+			if (!isalpha(*ptr)) {
+				if (ptr - at >= 2 && ptr - at < size) {
+					strlcpy(user_name, at, ptr - at + 1);
+					return ptr;
+				}
+				mention = false;
+				at = NULL;
+			}
+		}
+		if (!mention) {
+			if (*ptr == '@') {
+				mention = true;
+				at = ptr + 1;
+			}
+		}
+	}
+	return ptr;
+}
+
+static int process_mention(const char *user_name,
+		char (*user_names)[IDLEN + 1], size_t size, int count,
+		post_id_t post_id, post_mention_handler_t handler, void *args)
+{
+	for (size_t i = 0; i < count; ++i) {
+		if (strcaseeq(user_name, user_names[i]))
+			return 0;
+	}
+
+	if (count < size) {
+		strlcpy(user_names[count], user_name, sizeof(user_names[count]));
+		handler(user_name, post_id, args);
+	}
+	return 1;
+}
+
+int post_scan_for_mentions(const char *title, const char *content,
+		post_id_t post_id, post_mention_handler_t handler, void *args)
+{
+	const char *begin = content;
+	if (strneq(title, "Re: ", 4))
+		begin = strstr(begin, "\n\n");
+	if (!begin)
+		return 0;
+
+	// 跳过签名档
+	const char *end = strstr(begin, "\n--\n");
+	if (end)
+		++end;
+	else
+		end = content + strlen(content);
+
+	int count = 0;
+	char user_names[POST_MENTION_LIMIT][IDLEN + 1] = { { '\0' } };
+
+	const char *line_end;
+	while (begin < end && (line_end = get_line_end(begin, end)) <= end) {
+		// 跳过引用行
+		if (line_end - begin >= 2 && *begin == ':' && begin[1] == ' ') {
+			begin = line_end;
+			continue;
+		}
+
+		const char *ptr = begin;
+		while (ptr < line_end) {
+			char user_name[IDLEN + 1];
+			ptr = next_mention(ptr, line_end, user_name, sizeof(user_name));
+			if (*user_name) {
+				count += process_mention(user_name, user_names,
+						ARRAY_SIZE(user_names), count, post_id, handler, args);
+			}
+		}
+		begin = line_end;
+	}
+	return count;
+}
+
 void post_mark_as_read(post_info_t *pi)
 {
 	if (pi) {
