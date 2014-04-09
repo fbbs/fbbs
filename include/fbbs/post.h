@@ -39,6 +39,7 @@ typedef enum {
 	POST_FLAG_JUNK = 1 << 7,
 	POST_FLAG_ATTACHMENT = 1 << 8,
 	POST_FLAG_ARCHIVE = 1 << 9,
+	POST_FLAG_READ = 1 << 10,
 } post_flag_e;
 
 enum {

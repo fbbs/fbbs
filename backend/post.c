@@ -48,9 +48,9 @@ static int _insert_reply_record(const char *table_name,
 	query_t *q = query_new(0);
 	query_sappend(q, "INSERT INTO", table_name);
 	query_append(q, "(post_id, reply_id, thread_id, user_id_replied, user_id,"
-			"user_name, board_id, board_name, title)"
+			"user_name, board_id, board_name, title, is_read)"
 			" VALUES (%"DBIdPID", %"DBIdPID", %"DBIdPID", %d, %d,"
-			" %s, %d, %s, %s)",
+			" %s, %d, %s, %s, FALSE)",
 			post_id, req->reply_id ? req->reply_id : post_id,
 			req->thread_id ? req->thread_id : post_id, user_id,
 			req->hide_user_id ? 0 : req->user_id, req->user_name,

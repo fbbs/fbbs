@@ -75,7 +75,8 @@ CREATE TABLE post.reply_base (
 	board_id INTEGER,
 	board_name TEXT,
 
-	title TEXT
+	title TEXT,
+	is_read BOOLEAN
 );
 
 CREATE TABLE post.reply_0 (

@@ -1096,7 +1096,7 @@ int _post_reply_load(const char *table_name, user_id_t user_id,
 {
 	query_t *q = query_new(0);
 	query_select(q, "post_id, reply_id, thread_id, user_id,"
-			" user_name, board_id, board_name, title");
+			" user_name, board_id, board_name, title, is_read");
 	query_from(q, table_name);
 	query_where(q, "user_id_replied = %"DBIdUID, user_id);
 	query_and(q, "post_id < %"DBIdPID, post_id);
@@ -1113,7 +1113,7 @@ int _post_reply_load(const char *table_name, user_id_t user_id,
 		pi->id = db_get_post_id(res, i, 0);
 		pi->reply_id = db_get_post_id(res, i, 1);
 		pi->thread_id = db_get_post_id(res, i, 2);
-		pi->flag = 0;
+		pi->flag = db_get_bool(res, i, 8) ? POST_FLAG_READ : 0;
 		pi->user_id = db_get_user_id(res, i, 3);
 		pi->board_id = db_get_integer(res, i, 5);
 		string_copy_allow_null(pi->user_name, db_get_value(res, i, 4),
