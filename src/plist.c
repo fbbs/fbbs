@@ -959,7 +959,7 @@ static int jump_to_thread_last(tui_list_t *tl, post_info_t *pi)
 static int skip_post(tui_list_t *tl, post_info_t *pi)
 {
 	if (pi) {
-		brc_mark_as_read(post_stamp(pi->id));
+		post_mark_as_read(pi);
 		if (++tl->cur >= tl->begin + tl->lines)
 			tl->valid = false;
 	}
@@ -1671,7 +1671,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 			if (thread)
 				tid = pi->thread_id;
 
-			brc_mark_as_read(post_stamp(pi->id));
+			post_mark_as_read(pi);
 			pl->current_tid = pi->thread_id;
 			end = sticky = pi->flag & POST_FLAG_STICKY;
 

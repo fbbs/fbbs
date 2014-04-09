@@ -247,7 +247,7 @@ int bbscon(const char *link)
 	printf("</po></bbscon>");
 
 	brc_initialize(currentuser.userid, board.name);
-	brc_mark_as_read(post_stamp(pi.id));
+	post_mark_as_read(&pi);
 	brc_update(currentuser.userid, board.name);
 
 	return 0;
@@ -469,7 +469,7 @@ int bbstcon_main(void)
 		free(content);
 
 		puts("</po>");
-		brc_mark_as_read(post_stamp(pi.id));
+		post_mark_as_read(&pi);
 	}
 	puts("</bbstcon>");
 

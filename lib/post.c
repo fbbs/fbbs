@@ -1157,14 +1157,17 @@ int post_reply_delete(user_id_t user_id, post_id_t post_id)
 
 #define POST_REPLY_COUNT_KEY  "post:reply_count"
 
-int post_reply_incr_count(user_id_t user_id, int delta)
-{
-	return mdb_cmd("HINCRBY", POST_REPLY_COUNT_KEY " %"PRIdUID" %d", user_id,
-			delta);
-}
-
 /** @global 缓存的新回复计数 */
 static int _post_reply_count;
+
+bool post_reply_incr_count(user_id_t user_id, int delta)
+{
+	bool ok = mdb_cmd("HINCRBY", POST_REPLY_COUNT_KEY " %"PRIdUID" %d",
+			user_id, delta);
+	if (ok)
+		_post_reply_count += delta;
+	return ok;
+}
 
 int post_reply_get_count(user_id_t user_id)
 {
@@ -1181,6 +1184,33 @@ void post_reply_clear_count(user_id_t user_id)
 int post_reply_get_count_cached(void)
 {
 	return _post_reply_count;
+}
+
+static int post_reply_mark_as_read(post_id_t post_id, user_id_t user_id,
+		bool is_reply)
+{
+	char table_name[64];
+	if (is_reply)
+		post_reply_table_name(user_id, table_name, sizeof(table_name));
+	else
+		post_mention_table_name(user_id, table_name, sizeof(table_name));
+
+	query_t *q = query_new(0);
+	query_update(q, table_name);
+	query_set(q, "is_read = TRUE");
+	query_where(q, "user_id_replied = %"DBIdUID, user_id);
+	if (post_id)
+		query_and(q, "post_id = %"DBIdPID, post_id);
+
+	db_res_t *res = query_cmd(q);
+	int rows = db_cmd_rows(res);
+	if (rows > 0) {
+		if (is_reply)
+			post_reply_incr_count(user_id, -rows);
+		else
+			post_mention_incr_count(user_id, -rows);
+	}
+	return rows;
 }
 
 char *post_mention_table_name(user_id_t user_id, char *name, size_t size)
@@ -1211,14 +1241,17 @@ int post_mention_delete(user_id_t user_id, post_id_t post_id)
 
 #define POST_MENTION_COUNT_KEY  "post:mention_count"
 
-int post_mention_incr_count(user_id_t user_id, int delta)
-{
-	return mdb_cmd("HINCRBY", POST_MENTION_COUNT_KEY " %"PRIdUID" %d", user_id,
-			delta);
-}
-
 /** @global 缓存的新提及计数 */
 static int _post_mention_count;
+
+bool post_mention_incr_count(user_id_t user_id, int delta)
+{
+	bool ok = mdb_cmd("HINCRBY", POST_MENTION_COUNT_KEY " %"PRIdUID" %d",
+			user_id, delta);
+	if (ok)
+		_post_mention_count += delta;
+	return ok;
+}
 
 int post_mention_get_count(user_id_t user_id)
 {
@@ -1235,4 +1268,14 @@ void post_mention_clear_count(user_id_t user_id)
 int post_mention_get_count_cached(void)
 {
 	return _post_mention_count;
+}
+
+void post_mark_as_read(post_info_t *pi)
+{
+	if (pi) {
+		bool unread = brc_mark_as_read(post_stamp(pi->id));
+		if (unread && pi->user_id_replied == session_uid()) {
+			post_reply_mark_as_read(pi->id, pi->user_id_replied, true);
+		}
+	}
 }
