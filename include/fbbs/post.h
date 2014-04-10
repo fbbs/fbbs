@@ -108,7 +108,7 @@ typedef struct {
 	bool web;
 	bool autopost;
 	bool crosspost;
-	bool hide_uid;
+	bool hide_user_id;
 } post_request_t;
 
 enum {
@@ -203,6 +203,7 @@ typedef struct { // @frontend
 	bool marked;
 	bool locked;
 	bool hide_user_id;
+	bool anonymous;
 } backend_request_post_new_t;
 
 typedef struct { // @backend

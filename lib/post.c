@@ -726,6 +726,8 @@ post_id_t post_new(const post_request_t *pr)
 		.user_id_replied = pr->uid_replied,
 		.marked = pr->marked,
 		.locked = pr->locked,
+		.hide_user_id = pr->hide_user_id,
+		.anonymous = anony,
 	};
 	backend_response_post_new_t resp;
 	bool ok = backend_cmd(&req, &resp, post_new);

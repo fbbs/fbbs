@@ -15,8 +15,9 @@ static post_id_t insert_post(const backend_request_post_new_t *req)
 			" user_id, user_id_replied, real_user_id, user_name, board_id,"
 			" board_name, marked, locked, attachment, title) VALUES"
 			" (%"DBIdPID", %"DBIdPID", %"DBIdUID", %"DBIdUID", %"DBIdUID","
-			" %s, %d, %s, %b, %b, %b, %s) RETURNING id", req->reply_id,
-			req->thread_id, req->hide_user_id ? 0 : req->user_id,
+			" %s, %d, %s, %b, %b, %b, %s) RETURNING id",
+			req->reply_id, req->thread_id,
+			(req->hide_user_id || req->anonymous) ? 0 : req->user_id,
 			req->user_id_replied, req->user_id, req->user_name, req->board_id,
 			req->board_name, req->marked, req->locked, false, req->title);
 	if (r1 && db_res_rows(r1) == 1) {
@@ -53,8 +54,8 @@ static int _insert_reply_record(const char *table_name,
 			" %s, %d, %s, %s, FALSE)",
 			post_id, req->reply_id ? req->reply_id : post_id,
 			req->thread_id ? req->thread_id : post_id, user_id,
-			req->hide_user_id ? 0 : req->user_id, req->user_name,
-			req->board_id, req->board_name, req->title);
+			(req->hide_user_id || req->anonymous) ? 0 : req->user_id,
+			req->user_name, req->board_id, req->board_name, req->title);
 
 	db_res_t *res = query_cmd(q);
 	int rows = db_cmd_rows(res);
@@ -130,15 +131,17 @@ BACKEND_DECLARE(post_new)
 			if (!board_is_junk(&board))
 				adjust_user_post_count(req.user_name, 1);
 
-			if (req.user_id != req.user_id_replied)
+			if (req.user_id_replied > 0 && req.user_id != req.user_id_replied)
 				notify_new_reply(&req, &board, post_id);
 
-			post_mention_handler_args_t args = {
-				.board = &board,
-				.req = &req,
-			};
-			post_scan_for_mentions(req.title, req.content, post_id,
-					handle_mention, &args);
+			if (!req.anonymous) {
+				post_mention_handler_args_t args = {
+					.board = &board,
+					.req = &req,
+				};
+				post_scan_for_mentions(req.title, req.content, post_id,
+						handle_mention, &args);
+			}
 		}
 		return true;
 	}

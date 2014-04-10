@@ -513,7 +513,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 		.gbk_file = output,
 		.locked = mode == POST_FILE_DELIVER ||
 				(mode == POST_FILE_AUTO && strneq2(utf8_title, "[合集]")),
-		.hide_uid = mode == POST_FILE_DELIVER || mode == POST_FILE_BMS,
+		.hide_user_id = mode == POST_FILE_DELIVER || mode == POST_FILE_BMS,
 	};
 
 	post_id_t pid = post_new(&req);
