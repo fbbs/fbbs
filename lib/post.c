@@ -57,6 +57,7 @@ void post_record_to_info(const post_record_t *pr, post_info_t *pi, int count)
 	for (int i = 0; i < count; ++i) {
 		pi->flag = pr->flag;
 		pi->user_id = pr->user_id;
+		pi->user_id_replied = pr->user_id_replied;
 		pi->id = pr->id;
 		pi->reply_id = pr->reply_id;
 		pi->thread_id = pr->thread_id;
@@ -767,25 +768,18 @@ static void convert_post_record(db_res_t *res, int row, post_record_t *post,
 	post->reply_id = db_get_post_id(res, row, 1);
 	post->thread_id = db_get_post_id(res, row, 2);
 	post->user_id = db_get_user_id(res, row, 3);
-	post->board_id = db_get_integer(res, row, 6);
-	post->flag = (db_get_bool(res, row, 8) ? POST_FLAG_DIGEST : 0)
-			| (db_get_bool(res, row, 9) ? POST_FLAG_MARKED : 0)
-			| (db_get_bool(res, row, 10) ? POST_FLAG_LOCKED : 0)
-			| (db_get_bool(res, row, 11) ? POST_FLAG_IMPORT : 0)
-			| (db_get_bool(res, row, 12) ? POST_FLAG_WATER : 0)
+	post->user_id_replied = db_get_user_id(res, row, 4);
+	post->board_id = db_get_integer(res, row, 7);
+	post->flag = (db_get_bool(res, row, 9) ? POST_FLAG_DIGEST : 0)
+			| (db_get_bool(res, row, 10) ? POST_FLAG_MARKED : 0)
+			| (db_get_bool(res, row, 11) ? POST_FLAG_LOCKED : 0)
+			| (db_get_bool(res, row, 12) ? POST_FLAG_IMPORT : 0)
+			| (db_get_bool(res, row, 13) ? POST_FLAG_WATER : 0)
 			| (sticky ? POST_FLAG_STICKY : 0);
-
-	const char *user_name = db_get_value(res, row, 5);
-	if (user_name)
-		strlcpy(post->user_name, user_name, sizeof(post->user_name));
-	else
-		post->user_name[0] = '\0';
-
-	const char *title = db_get_value(res, row, 14);
-	if (title)
-		strlcpy(post->utf8_title, title, sizeof(post->utf8_title));
-	else
-		post->utf8_title[0] = '\0';
+	string_copy_allow_null(post->user_name, db_get_value(res, row, 6),
+			sizeof(post->user_name));
+	string_copy_allow_null(post->utf8_title, db_get_value(res, row, 15),
+			sizeof(post->utf8_title));
 
 	post->board_name[0] = '\0';
 }
@@ -793,15 +787,12 @@ static void convert_post_record(db_res_t *res, int row, post_record_t *post,
 static void convert_post_record_extended(db_res_t *res, int row,
 		post_record_extended_t *post)
 {
-	post->basic.flag |= db_get_bool(res, row, 18) ? POST_FLAG_JUNK : 0;
-	post->bm_visible = db_get_bool(res, row, 19);
-	post->eraser_id = db_get_user_id(res, row, 16);
-	post->stamp = db_get_time(res, row, 15);
-	const char *eraser_name = db_get_value(res, row, 17);
-	if (eraser_name)
-		strlcpy(post->eraser_name, eraser_name, sizeof(post->eraser_name));
-	else
-		post->eraser_name[0] = '\0';
+	post->basic.flag |= db_get_bool(res, row, 19) ? POST_FLAG_JUNK : 0;
+	post->bm_visible = db_get_bool(res, row, 20);
+	post->eraser_id = db_get_user_id(res, row, 17);
+	post->stamp = db_get_time(res, row, 16);
+	string_copy_allow_null(post->eraser_name, db_get_value(res, row, 18),
+			sizeof(post->eraser_name));
 }
 
 int post_record_compare(const void *ptr1, const void *ptr2)
@@ -1105,7 +1096,7 @@ int _post_reply_load(const char *table_name, user_id_t user_id,
 {
 	query_t *q = query_new(0);
 	query_select(q, "post_id, reply_id, thread_id, user_id,"
-			" user_name, board_id, board_name, title");
+			" user_name, board_id, board_name, title, is_read");
 	query_from(q, table_name);
 	query_where(q, "user_id_replied = %"DBIdUID, user_id);
 	query_and(q, "post_id < %"DBIdPID, post_id);
@@ -1122,7 +1113,7 @@ int _post_reply_load(const char *table_name, user_id_t user_id,
 		pi->id = db_get_post_id(res, i, 0);
 		pi->reply_id = db_get_post_id(res, i, 1);
 		pi->thread_id = db_get_post_id(res, i, 2);
-		pi->flag = 0;
+		pi->flag = db_get_bool(res, i, 8) ? POST_FLAG_READ : 0;
 		pi->user_id = db_get_user_id(res, i, 3);
 		pi->board_id = db_get_integer(res, i, 5);
 		string_copy_allow_null(pi->user_name, db_get_value(res, i, 4),
@@ -1166,14 +1157,17 @@ int post_reply_delete(user_id_t user_id, post_id_t post_id)
 
 #define POST_REPLY_COUNT_KEY  "post:reply_count"
 
-int post_reply_incr_count(user_id_t user_id, int delta)
-{
-	return mdb_cmd("HINCRBY", POST_REPLY_COUNT_KEY " %"PRIdUID" %d", user_id,
-			delta);
-}
-
 /** @global 缓存的新回复计数 */
 static int _post_reply_count;
+
+bool post_reply_incr_count(user_id_t user_id, int delta)
+{
+	bool ok = mdb_cmd("HINCRBY", POST_REPLY_COUNT_KEY " %"PRIdUID" %d",
+			user_id, delta);
+	if (ok)
+		_post_reply_count += delta;
+	return ok;
+}
 
 int post_reply_get_count(user_id_t user_id)
 {
@@ -1190,6 +1184,33 @@ void post_reply_clear_count(user_id_t user_id)
 int post_reply_get_count_cached(void)
 {
 	return _post_reply_count;
+}
+
+static int post_reply_mark_as_read(post_id_t post_id, user_id_t user_id,
+		bool is_reply)
+{
+	char table_name[64];
+	if (is_reply)
+		post_reply_table_name(user_id, table_name, sizeof(table_name));
+	else
+		post_mention_table_name(user_id, table_name, sizeof(table_name));
+
+	query_t *q = query_new(0);
+	query_update(q, table_name);
+	query_set(q, "is_read = TRUE");
+	query_where(q, "user_id_replied = %"DBIdUID, user_id);
+	if (post_id)
+		query_and(q, "post_id = %"DBIdPID, post_id);
+
+	db_res_t *res = query_cmd(q);
+	int rows = db_cmd_rows(res);
+	if (rows > 0) {
+		if (is_reply)
+			post_reply_incr_count(user_id, -rows);
+		else
+			post_mention_incr_count(user_id, -rows);
+	}
+	return rows;
 }
 
 char *post_mention_table_name(user_id_t user_id, char *name, size_t size)
@@ -1220,14 +1241,17 @@ int post_mention_delete(user_id_t user_id, post_id_t post_id)
 
 #define POST_MENTION_COUNT_KEY  "post:mention_count"
 
-int post_mention_incr_count(user_id_t user_id, int delta)
-{
-	return mdb_cmd("HINCRBY", POST_MENTION_COUNT_KEY " %"PRIdUID" %d", user_id,
-			delta);
-}
-
 /** @global 缓存的新提及计数 */
 static int _post_mention_count;
+
+bool post_mention_incr_count(user_id_t user_id, int delta)
+{
+	bool ok = mdb_cmd("HINCRBY", POST_MENTION_COUNT_KEY " %"PRIdUID" %d",
+			user_id, delta);
+	if (ok)
+		_post_mention_count += delta;
+	return ok;
+}
 
 int post_mention_get_count(user_id_t user_id)
 {
@@ -1244,4 +1268,112 @@ void post_mention_clear_count(user_id_t user_id)
 int post_mention_get_count_cached(void)
 {
 	return _post_mention_count;
+}
+
+static const char *next_mention(const char *begin, const char *end,
+		char *user_name, size_t size)
+{
+	*user_name = '\0';
+	bool mention = false;
+	const char *at = NULL, *ptr;
+	for (ptr = begin; ptr < end; ++ptr) {
+		if (mention) {
+			if (!isalpha(*ptr)) {
+				if (ptr - at >= 2 && ptr - at < size) {
+					strlcpy(user_name, at, ptr - at + 1);
+					return ptr;
+				}
+				mention = false;
+				at = NULL;
+			}
+		}
+		if (!mention) {
+			if (*ptr == '@') {
+				mention = true;
+				at = ptr + 1;
+			}
+		}
+	}
+	return ptr;
+}
+
+static int process_mention(const char *user_name,
+		char (*user_names)[IDLEN + 1], size_t size, int count,
+		post_id_t post_id, post_mention_handler_t handler, void *args)
+{
+	for (size_t i = 0; i < count; ++i) {
+		if (strcaseeq(user_name, user_names[i]))
+			return 0;
+	}
+
+	if (count < size) {
+		strlcpy(user_names[count], user_name, sizeof(user_names[count]));
+		handler(user_name, post_id, args);
+	}
+	return 1;
+}
+
+int post_scan_for_mentions(const char *title, const char *content,
+		post_id_t post_id, post_mention_handler_t handler, void *args)
+{
+	const char *begin = content;
+	if (strneq(title, "Re: ", 4))
+		begin = strstr(begin, "\n\n");
+	if (!begin)
+		return 0;
+
+	// 跳过签名档
+	const char *end = strstr(begin, "\n--\n");
+	if (end)
+		++end;
+	else
+		end = content + strlen(content);
+
+	int count = 0;
+	char user_names[POST_MENTION_LIMIT][IDLEN + 1] = { { '\0' } };
+
+	const char *line_end;
+	while (begin < end && (line_end = get_line_end(begin, end)) <= end) {
+		// 跳过引用行
+		if (line_end - begin >= 2 && *begin == ':' && begin[1] == ' ') {
+			begin = line_end;
+			continue;
+		}
+
+		const char *ptr = begin;
+		while (ptr < line_end) {
+			char user_name[IDLEN + 1];
+			ptr = next_mention(ptr, line_end, user_name, sizeof(user_name));
+			if (*user_name) {
+				count += process_mention(user_name, user_names,
+						ARRAY_SIZE(user_names), count, post_id, handler, args);
+			}
+		}
+		begin = line_end;
+	}
+	return count;
+}
+
+static int clear_mention(const char *user_name, post_id_t post_id, void *args)
+{
+	if (streq(user_name, currentuser.userid)) {
+		post_reply_mark_as_read(post_id, session_uid(), false);
+	}
+	return 0;
+}
+
+void post_mark_as_read(const post_info_t *pi, const char *content)
+{
+	if (pi) {
+		bool unread = brc_mark_as_read(post_stamp(pi->id));
+		if (unread) {
+			if (pi->user_id_replied == session_uid()) {
+				post_reply_mark_as_read(pi->id, pi->user_id_replied, true);
+			}
+			if (content) {
+				post_scan_for_mentions(pi->utf8_title, content, pi->id,
+						clear_mention, NULL);
+			}
+		}
+	}
 }

@@ -22,6 +22,7 @@ CREATE TABLE post.base (
 	thread_id BIGINT,
 
 	user_id INTEGER,
+	user_id_replied INTEGER,
 	real_user_id INTEGER,
 	user_name TEXT,
 	board_id INTEGER,
@@ -74,7 +75,8 @@ CREATE TABLE post.reply_base (
 	board_id INTEGER,
 	board_name TEXT,
 
-	title TEXT
+	title TEXT,
+	is_read BOOLEAN
 );
 
 CREATE TABLE post.reply_0 (

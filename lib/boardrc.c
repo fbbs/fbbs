@@ -181,18 +181,19 @@ int brc_initialize(const char *uname, const char *bname)
 /**
  * 在当前版面已读标记中加入一项.
  * @param item 要加入的项目
+ * @return 该项目已读返回false, 未读返回true
  */
-void brc_mark_as_read(brc_item_t item)
+bool brc_mark_as_read(brc_item_t item)
 {
 	if (!brc.size) {
 		brc.items[brc.size++] = item;
 		brc.changed = true;
-		return;
+		return true;
 	}
 
 	for (int i = 0; i < brc.size; ++i) {
 		if (item == brc.items[i]) {
-			return;
+			return false;
 		} else if (item > brc.items[i]) {
 			if (brc.size < BRC_MAXNUM)
 				brc.size++;
@@ -200,13 +201,14 @@ void brc_mark_as_read(brc_item_t item)
 					(brc.size - i - 1) * sizeof(*brc.items));
 			brc.items[i] = item;
 			brc.changed = true;
-			return;
+			return true;
 		}
 	}
 	if (brc.size < BRC_MAXNUM) {
 		brc.items[brc.size++] = item;
 		brc.changed = true;
 	}
+	return false;
 }
 
 /**

@@ -14,8 +14,7 @@
 #define POST_REPLIES_FILE  "replies"
 
 #define POST_TABLE_FIELDS \
-	"id, reply_id, thread_id, user_id, real_user_id, user_name, board_id," \
-	" board_name, digest, marked, locked, imported, water, attachment, title"
+	"id, reply_id, thread_id, user_id, user_id_replied, real_user_id, user_name, board_id, board_name, digest, marked, locked, imported, water, attachment, title"
 
 #define POST_TABLE_DELETED_FIELDS \
 	"delete_stamp, eraser_id, eraser_name, junk, bm_visible"
@@ -40,6 +39,7 @@ typedef enum {
 	POST_FLAG_JUNK = 1 << 7,
 	POST_FLAG_ATTACHMENT = 1 << 8,
 	POST_FLAG_ARCHIVE = 1 << 9,
+	POST_FLAG_READ = 1 << 10,
 } post_flag_e;
 
 enum {
@@ -79,6 +79,7 @@ typedef struct {
 	fb_time_t delete_stamp;
 	int flag;
 	user_id_t user_id;
+	user_id_t user_id_replied;
 	int board_id;
 	char user_name[IDLEN + 1];
 	char eraser_name[IDLEN + 1];
@@ -138,6 +139,7 @@ typedef struct {
 	post_id_t reply_id;
 	post_id_t thread_id;
 	user_id_t user_id;
+	user_id_t user_id_replied;
 	int board_id;
 	int flag;
 	char user_name[IDLEN + 1];
@@ -279,7 +281,7 @@ extern bool post_content_set(post_id_t post_id, const char *str);
 extern char *post_reply_table_name(user_id_t user_id, char *name, size_t size);
 extern int post_reply_load(user_id_t user_id, post_id_t post_id, post_info_t *buf, size_t size);
 extern int post_reply_delete(user_id_t user_id, post_id_t post_id);
-extern int post_reply_incr_count(user_id_t user_id, int delta);
+extern bool post_reply_incr_count(user_id_t user_id, int delta);
 extern int post_reply_get_count(user_id_t user_id);
 extern void post_reply_clear_count(user_id_t user_id);
 extern int post_reply_get_count_cached(void);
@@ -287,9 +289,14 @@ extern int post_reply_get_count_cached(void);
 extern char *post_mention_table_name(user_id_t user_id, char *name, size_t size);
 extern int post_mention_load(user_id_t user_id, post_id_t post_id, post_info_t *buf, size_t size);
 extern int post_mention_delete(user_id_t user_id, post_id_t post_id);
-extern int post_mention_incr_count(user_id_t user_id, int delta);
+extern bool post_mention_incr_count(user_id_t user_id, int delta);
 extern int post_mention_get_count(user_id_t user_id);
 extern void post_mention_clear_count(user_id_t user_id);
 extern int post_mention_get_count_cached(void);
+
+typedef int (*post_mention_handler_t)(const char *user_name, post_id_t post_id, void *args);
+extern int post_scan_for_mentions(const char *title, const char *content, post_id_t post_id, post_mention_handler_t handler, void *args);
+
+extern void post_mark_as_read(const post_info_t *pi, const char *content);
 
 #endif // FB_POST_H
