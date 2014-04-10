@@ -959,7 +959,7 @@ static int jump_to_thread_last(tui_list_t *tl, post_info_t *pi)
 static int skip_post(tui_list_t *tl, post_info_t *pi)
 {
 	if (pi) {
-		post_mark_as_read(pi);
+		brc_mark_as_read(post_stamp(pi->id));
 		if (++tl->cur >= tl->begin + tl->lines)
 			tl->valid = false;
 	}
@@ -1044,16 +1044,19 @@ static int show_post_info(const post_info_t *pi)
 	return FULLUPDATE;
 }
 
-static bool dump_content(post_id_t id, char *file, size_t size,
-		bool read_deleted)
+static bool dump_content(const post_info_t *pi, char *file, size_t size,
+		bool read_deleted, bool mark_as_read)
 {
-	char *str = post_content_get(id, read_deleted);
-	if (!str)
+	char *content = post_content_get(pi->id, read_deleted);
+	if (!content)
 		return false;
 
-	int ret = post_dump_gbk_file(str, strlen(str), file, size);
+	int ret = post_dump_gbk_file(content, strlen(content), file, size);
 
-	free(str);
+	if (mark_as_read)
+		post_mark_as_read(pi, content);
+
+	free(content);
 	return ret == 0;
 }
 
@@ -1062,7 +1065,7 @@ extern int tui_cross_post_legacy(const char *file, const char *title);
 static int tui_cross_post(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi->id, file, sizeof(file), true))
+	if (!pi || !dump_content(pi, file, sizeof(file), true, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1077,7 +1080,7 @@ static int tui_cross_post(const post_info_t *pi)
 static int forward_post(const post_info_t *pi, bool uuencode)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi->id, file, sizeof(file), true))
+	if (!pi || !dump_content(pi, file, sizeof(file), true, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1092,7 +1095,7 @@ static int forward_post(const post_info_t *pi, bool uuencode)
 static int reply_with_mail(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi->id, file, sizeof(file), true))
+	if (!pi || !dump_content(pi, file, sizeof(file), true, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1137,7 +1140,7 @@ static int tui_edit_post_content(post_info_t *pi)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(pi->id, file, sizeof(file), true))
+	if (!dump_content(pi, file, sizeof(file), true, false))
 		return DONOTHING;
 
 	int status = session_status();
@@ -1236,7 +1239,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	file_temp_name(file, sizeof(file));
 	if (pi) {
 		char orig[HOMELEN];
-		dump_content(pi->id, orig, sizeof(orig), true);
+		dump_content(pi, orig, sizeof(orig), true, false);
 		do_quote(orig, file, header.include_mode, header.anonymous);
 		unlink(orig);
 	} else {
@@ -1311,7 +1314,7 @@ static int tui_save_post(const post_info_t *pi)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(pi->id, file, sizeof(file), true))
+	if (!dump_content(pi, file, sizeof(file), true, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1332,7 +1335,7 @@ static int tui_import_post(const post_info_t *pi)
 		return FULLUPDATE;
 
 	char file[HOMELEN];
-	if (dump_content(pi->id, file, sizeof(file), true)) {
+	if (dump_content(pi, file, sizeof(file), true, false)) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(pi->utf8_title, gbk_title);
 
@@ -1666,12 +1669,11 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 	while (!end) {
 		int ch = 0;
 		if (!entering) {
-			if (!pi || !dump_content(pi->id, file, sizeof(file), true))
+			if (!pi || !dump_content(pi, file, sizeof(file), true, true))
 				return DONOTHING;
 			if (thread)
 				tid = pi->thread_id;
 
-			post_mark_as_read(pi);
 			pl->current_tid = pi->thread_id;
 			end = sticky = pi->flag & POST_FLAG_STICKY;
 
@@ -1822,8 +1824,11 @@ static record_callback_e import_posts_callback(void *r, void *args, int offset)
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(pr->utf8_title, gbk_title);
 
+		post_info_t pi;
+		post_record_to_info(pr, &pi, 1);
+
 		char file[HOMELEN];
-		dump_content(pr->id, file, sizeof(file), true);
+		dump_content(&pi, file, sizeof(file), true, false);
 		import_file(gbk_title, file, ipc->path);
 		unlink(file);
 		return RECORD_CALLBACK_MATCH;
@@ -2709,7 +2714,7 @@ static int read_reply(tui_list_t *tl, post_info_t *pi)
 						|| !user_has_read_perm(&currentuser, &board))
 					break;
 			}
-			if (!dump_content(pi->id, file, sizeof(file), false))
+			if (!dump_content(pi, file, sizeof(file), false, false))
 				break;
 
 			ch = ansimore(file, false);

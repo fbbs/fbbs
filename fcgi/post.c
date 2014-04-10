@@ -242,14 +242,14 @@ int bbscon(const char *link)
 	char *content = post_content_get(pi.id, false);
 	if (content)
 		xml_print_post_wrapper(content, strlen(content));
+
+	brc_initialize(currentuser.userid, board.name);
+	post_mark_as_read(&pi, content);
+	brc_update(currentuser.userid, board.name);
+
 	free(content);
 
 	printf("</po></bbscon>");
-
-	brc_initialize(currentuser.userid, board.name);
-	post_mark_as_read(&pi);
-	brc_update(currentuser.userid, board.name);
-
 	return 0;
 }
 
@@ -466,10 +466,10 @@ int bbstcon_main(void)
 		char *content = post_content_get(pi.id, false);
 		if (content)
 			xml_print_post_wrapper(content, strlen(content));
+		post_mark_as_read(&pi, content);
 		free(content);
 
 		puts("</po>");
-		post_mark_as_read(&pi);
 	}
 	puts("</bbstcon>");
 

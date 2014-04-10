@@ -1354,12 +1354,26 @@ int post_scan_for_mentions(const char *title, const char *content,
 	return count;
 }
 
-void post_mark_as_read(post_info_t *pi)
+static int clear_mention(const char *user_name, post_id_t post_id, void *args)
+{
+	if (streq(user_name, currentuser.userid)) {
+		post_reply_mark_as_read(post_id, session_uid(), false);
+	}
+	return 0;
+}
+
+void post_mark_as_read(const post_info_t *pi, const char *content)
 {
 	if (pi) {
 		bool unread = brc_mark_as_read(post_stamp(pi->id));
-		if (unread && pi->user_id_replied == session_uid()) {
-			post_reply_mark_as_read(pi->id, pi->user_id_replied, true);
+		if (unread) {
+			if (pi->user_id_replied == session_uid()) {
+				post_reply_mark_as_read(pi->id, pi->user_id_replied, true);
+			}
+			if (content) {
+				post_scan_for_mentions(pi->utf8_title, content, pi->id,
+						clear_mention, NULL);
+			}
 		}
 	}
 }
