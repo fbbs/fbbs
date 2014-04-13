@@ -709,6 +709,7 @@ int msg_more(void)
 				break;
 		}
 	}
+	more_close(more);
 	screen_clear();
 	return ch;
 }

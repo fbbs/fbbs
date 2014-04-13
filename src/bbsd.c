@@ -172,6 +172,7 @@ static int bind_port(const char *port, struct pollfd *fds, int nfds)
 		}
 	}
 
+	freeaddrinfo(ai);
 	return n;
 }
 

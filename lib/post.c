@@ -1215,6 +1215,7 @@ int post_reply_mark_as_read(post_id_t post_id, user_id_t user_id,
 		else
 			post_mention_incr_count(user_id, -rows);
 	}
+	db_clear(res);
 	return rows;
 }
 
