@@ -139,7 +139,7 @@ int ellipsis(char *str, int len)
 		--i;
 	}
 	i = 3;
-	while(*ptr++ != '\0' && --i)
+	while(*++ptr != '\0' && --i)
 		;
 	if(*ptr != '\0' && !i){
 		str[len] = '\0';

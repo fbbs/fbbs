@@ -354,7 +354,7 @@ static void visitlog(int peak)
 {
 	time_t now;
 	struct tm *tm;
-	struct max_log_record max_log;
+	struct max_log_record max_log = { 0 };
 
 	FILE *fp;
 	fp = fopen(VISITLOG, "r+b");
