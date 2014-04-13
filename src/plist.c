@@ -2809,6 +2809,13 @@ static int post_list_reply_deleter(user_id_t user_id, void *ptr)
 	return post_reply_delete(user_id, pi->id);
 }
 
+static void post_list_reply_finalizer(user_id_t user_id, void *ptr)
+{
+	post_info_t *pi = ptr;
+	if (pi)
+		post_reply_mark_as_read(pi->id, user_id, true, true);
+}
+
 int post_list_reply(void)
 {
 	tui_suppress_notice(true);
@@ -2824,9 +2831,11 @@ int post_list_reply(void)
 		.display = post_list_reply_display,
 		.handler = post_list_reply_handler,
 		.deleter = post_list_reply_deleter,
+		.finalizer = post_list_reply_finalizer,
 	};
 	tui_list_recent(&tlr);
 
+	post_reply_mark_as_read(0, user_id, true, true);
 	tui_suppress_notice(false);
 	return 0;
 }
@@ -2851,6 +2860,13 @@ static int post_list_mention_deleter(user_id_t user_id, void *ptr)
 	return post_mention_delete(user_id, pi->id);
 }
 
+static void post_list_mention_finalizer(user_id_t user_id, void *ptr)
+{
+	post_info_t *pi = ptr;
+	if (pi)
+		post_reply_mark_as_read(pi->id, user_id, false, true);
+}
+
 int post_list_mention(void)
 {
 	tui_suppress_notice(true);
@@ -2866,6 +2882,7 @@ int post_list_mention(void)
 		.display = post_list_reply_display,
 		.handler = post_list_reply_handler,
 		.deleter = post_list_mention_deleter,
+		.finalizer = post_list_mention_finalizer,
 	};
 	tui_list_recent(&tlr);
 

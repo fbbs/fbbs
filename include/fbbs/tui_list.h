@@ -46,6 +46,7 @@ typedef struct {
 	int (*handler)(struct tui_list_t *, int);
 	int (*query)(struct tui_list_t *);
 	int (*deleter)(user_id_t, void *);
+	void (*finalizer)(user_id_t, void *);
 } tui_list_recent_t;
 
 extern int tui_list_recent(tui_list_recent_t *tlr);

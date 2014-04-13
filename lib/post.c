@@ -1188,8 +1188,8 @@ int post_reply_get_count_cached(void)
 	return _post_reply_count;
 }
 
-static int post_reply_mark_as_read(post_id_t post_id, user_id_t user_id,
-		bool is_reply)
+int post_reply_mark_as_read(post_id_t post_id, user_id_t user_id,
+		bool is_reply, bool before)
 {
 	char table_name[64];
 	if (is_reply)
@@ -1201,12 +1201,15 @@ static int post_reply_mark_as_read(post_id_t post_id, user_id_t user_id,
 	query_update(q, table_name);
 	query_set(q, "is_read = TRUE");
 	query_where(q, "user_id_replied = %"DBIdUID, user_id);
-	if (post_id)
+	query_and(q, "NOT is_read");
+	if (before)
+		query_and(q, "post_id <= %"DBIdPID, post_id);
+	else
 		query_and(q, "post_id = %"DBIdPID, post_id);
 
 	db_res_t *res = query_cmd(q);
 	int rows = db_cmd_rows(res);
-	if (rows > 0) {
+	if (!before && rows > 0) {
 		if (is_reply)
 			post_reply_incr_count(user_id, -rows);
 		else
@@ -1359,7 +1362,7 @@ int post_scan_for_mentions(const char *title, const char *content,
 static int clear_mention(const char *user_name, post_id_t post_id, void *args)
 {
 	if (streq(user_name, currentuser.userid)) {
-		post_reply_mark_as_read(post_id, session_uid(), false);
+		post_reply_mark_as_read(post_id, session_uid(), false, false);
 	}
 	return 0;
 }
@@ -1370,7 +1373,8 @@ void post_mark_as_read(const post_info_t *pi, const char *content)
 		bool unread = brc_mark_as_read(post_stamp(pi->id));
 		if (unread) {
 			if (pi->user_id_replied == session_uid()) {
-				post_reply_mark_as_read(pi->id, pi->user_id_replied, true);
+				post_reply_mark_as_read(pi->id, pi->user_id_replied, true,
+						false);
 			}
 			if (content) {
 				post_scan_for_mentions(pi->utf8_title, content, pi->id,

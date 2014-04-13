@@ -329,6 +329,8 @@ int tui_list_recent(tui_list_recent_t *tlr)
 	};
 	tui_list(&tl);
 
+	if (tlr->finalizer)
+		tlr->finalizer(tlr->user_id, vector_at(&helper.vector, 0));
 	vector_free(&helper.vector);
 	return 0;
 }

@@ -298,6 +298,7 @@ extern int post_mention_get_count_cached(void);
 typedef int (*post_mention_handler_t)(const char *user_name, post_id_t post_id, void *args);
 extern int post_scan_for_mentions(const char *title, const char *content, post_id_t post_id, post_mention_handler_t handler, void *args);
 
+extern int post_reply_mark_as_read(post_id_t post_id, user_id_t user_id, bool is_reply, bool before);
 extern void post_mark_as_read(const post_info_t *pi, const char *content);
 
 #endif // FB_POST_H
