@@ -386,7 +386,7 @@ int b_notes_edit() {
 		} else
 			aborted = -1;
 	} else
-		aborted = vedit(buf, NA, YEA); //编辑备忘录
+		aborted = vedit(buf, NA, YEA, NULL); //编辑备忘录
 	if (aborted == -1) {
 		pressreturn();
 	} else {
