@@ -1274,7 +1274,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 		strcpy(title, ptitle->owner);
 		setqtitle(ptitle->title, ptitle->gid);
 	}
-	if (!strncmp(title, "Re: ", 4) | !strncmp(title, "RE: ", 4)) {
+	if (!strncmp(title, "Re: ", 4) || !strncmp(title, "RE: ", 4)) {
 		strcpy(title, title + 4);
 	}
 	memcpy(&SR_fptr, ptitle, sizeof(SR_fptr));

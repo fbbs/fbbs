@@ -15,7 +15,7 @@ enum {
 };
 
 //modified by money 2002.11.15
-extern char fromhost[60];
+extern char fromhost[];
 
 #ifdef ALLOWSWITCHCODE
 extern int convcode;
