@@ -35,13 +35,14 @@ typedef struct tui_list_t {
 extern int tui_list_seek(tui_list_t *tl, int operation, bool invalidate, bool loop);
 extern int tui_list(tui_list_t *p);
 
-typedef int (*tui_list_recent_loader_t)(user_id_t user_id, int64_t id, void *buf, size_t size);
+typedef int (*tui_list_recent_loader_t)(bool unread_only, user_id_t user_id, int64_t id, void *buf, size_t size);
 
 typedef struct {
+	bool unread_only;
 	user_id_t user_id;
 	tui_list_recent_loader_t loader;
 	vector_size_t len;
-	void (*title)(struct tui_list_t *);
+	void (*title)(bool);
 	int (*display)(struct tui_list_t *, int);
 	int (*handler)(struct tui_list_t *, int);
 	int (*query)(struct tui_list_t *);

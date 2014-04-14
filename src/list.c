@@ -224,11 +224,14 @@ int tui_list(tui_list_t *p)
 }
 
 typedef struct {
+	bool unread_only;
 	bool all_loaded;
 	user_id_t user_id;
 	tui_list_recent_loader_t loader;
 	int (*handler)(tui_list_t *, int);
+	void (*title)(bool);
 	int (*deleter)(user_id_t, void *);
+	void (*finalizer)(user_id_t, void *);
 	vector_t vector;
 } tui_list_recent_helper_t;
 
@@ -251,7 +254,8 @@ static tui_list_loader_t tui_list_recent_loader(tui_list_t *tl)
 	if (!buf)
 		return -1;
 
-	int rows = helper->loader(helper->user_id, id, buf, tl->lines);
+	int rows = helper->loader(helper->unread_only, helper->user_id, id, buf,
+			tl->lines);
 	if (rows < tl->lines) {
 		vector_size_t diff = tl->lines - rows, size = vector_size(v);
 		vector_erase_range(v, size - diff, size);
@@ -275,12 +279,29 @@ static void load_more(tui_list_t *tl)
 	}
 }
 
+static tui_list_title_t tui_list_recent_title(tui_list_t *tl)
+{
+	tui_list_recent_helper_t *helper = tl->data;
+	helper->title(helper->unread_only);
+}
+
 static tui_list_handler_t tui_list_recent_handler(tui_list_t *tl, int key)
 {
 	tui_list_recent_helper_t *helper = tl->data;
 	int ret = helper->handler(tl, key);
 	if (ret == READ_AGAIN) {
 		switch (key) {
+			case 's':
+				if (helper->unread_only && helper->finalizer) {
+					helper->finalizer(helper->user_id,
+							vector_at(&helper->vector, 0));
+				}
+				vector_erase_range(&helper->vector, 0,
+						vector_size(&helper->vector));
+				helper->unread_only = !helper->unread_only;
+				helper->all_loaded = false;
+				tl->valid = false;
+				return FULLUPDATE;
 			case 'k': case KEY_UP:
 				if (tl->cur == 0)
 					load_more(tl);
@@ -310,10 +331,13 @@ int tui_list_recent(tui_list_recent_t *tlr)
 	int lines = screen_lines() - 4;
 
 	tui_list_recent_helper_t helper = {
+		.unread_only = tlr->unread_only,
 		.user_id = tlr->user_id,
 		.loader = tlr->loader,
+		.title = tlr->title,
 		.handler = tlr->handler,
 		.deleter = tlr->deleter,
+		.finalizer = tlr->finalizer,
 	};
 	if (!vector_init(&helper.vector, tlr->len, lines))
 		return 0;
@@ -322,7 +346,7 @@ int tui_list_recent(tui_list_recent_t *tlr)
 		.lines = lines,
 		.data = &helper,
 		.loader = tui_list_recent_loader,
-		.title = tlr->title,
+		.title = tui_list_recent_title,
 		.display = tlr->display,
 		.handler = tui_list_recent_handler,
 		.query = tlr->query,

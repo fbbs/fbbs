@@ -2648,31 +2648,34 @@ int post_list_board(int bid)
 	return post_list_with_filter(&filter);
 }
 
-static int post_list_reply_loader(user_id_t user_id, int64_t id, void *buf,
-		size_t size)
+static int post_list_reply_loader(bool unread_only, user_id_t user_id,
+		int64_t id, void *buf, size_t size)
 {
-	return post_reply_load(user_id, id, buf, size);
+	return post_reply_load(unread_only, user_id, id, buf, size);
 }
 
-static void _post_list_reply_title(void)
+static void _post_list_reply_title(bool unread_only)
 {
-	//% 离开[←,e] 选择[↑,↓] 阅读[→,Rtn] 砍信[d] 求助[h]
+	//% 全部 未读
+	prints("[%s]\033[K\n",
+			unread_only ? "\xce\xb4\xb6\xc1" : "\xc8\xab\xb2\xbf");
+	//% 离开[←,e] 选择[↑,↓] 阅读[→,Rtn] 砍信[d] 切换模式[s] 求助[h]
 	prints("\033[m " TUI_LIST_HELP2("\xc0\xeb\xbf\xaa", "\xa1\xfb", "e")
 			" " TUI_LIST_HELP2("\xd1\xa1\xd4\xf1", "\xa1\xfc", "\xa1\xfd")
 			" " TUI_LIST_HELP2("\xd4\xc4\xb6\xc1", "\xa1\xfa", "Rtn")
 			" " TUI_LIST_HELP("\xbf\xb3\xd0\xc5", "d")
+			" " TUI_LIST_HELP("\xc7\xd0\xbb\xbb\xc4\xa3\xca\xbd", "s")
 			" " TUI_LIST_HELP("\xc7\xf3\xd6\xfa", "h") "\n"
 			//% 作者         日期   版面          标题
 			"\033[1;37;44m  \xd7\xf7\xd5\xdf         \xc8\xd5\xc6\xda"
 			"   \xb0\xe6\xc3\xe6          \xb1\xea\xcc\xe2\033[K\033[m\n");
 }
 
-static tui_list_title_t post_list_reply_title(tui_list_t *tl)
+static tui_list_title_t post_list_reply_title(bool unread_only)
 {
 	//% 回复我的文章
-	prints("\033[1;33;44m[\xbb\xd8\xb8\xb4\xce\xd2\xb5\xc4\xce\xc4\xd5\xc2]"
-			"\033[K\n");
-	_post_list_reply_title();
+	prints("\033[1;33;44m[\xbb\xd8\xb8\xb4\xce\xd2\xb5\xc4\xce\xc4\xd5\xc2]");
+	_post_list_reply_title(unread_only);
 }
 
 static tui_list_display_t post_list_reply_display(tui_list_t *tl, int n)
@@ -2824,6 +2827,7 @@ int post_list_reply(void)
 	post_reply_clear_count(user_id);
 
 	tui_list_recent_t tlr = {
+		.unread_only = true,
 		.user_id = user_id,
 		.loader = post_list_reply_loader,
 		.len = sizeof(post_info_t),
@@ -2840,18 +2844,17 @@ int post_list_reply(void)
 	return 0;
 }
 
-static int post_list_mention_loader(user_id_t user_id, int64_t id, void *buf,
-		size_t size)
+static int post_list_mention_loader(bool unread_only, user_id_t user_id,
+		int64_t id, void *buf, size_t size)
 {
-    return post_mention_load(user_id, id, buf, size);
+    return post_mention_load(unread_only, user_id, id, buf, size);
 }
 
-static tui_list_title_t post_list_mention_title(tui_list_t *tl)
+static tui_list_title_t post_list_mention_title(bool unread_only)
 {
 	//% 提到我的文章
-	prints("\033[1;33;44m[\xcc\xe1\xb5\xbd\xce\xd2\xb5\xc4\xce\xc4\xd5\xc2]"
-			"\033[K\033[m\n");
-	_post_list_reply_title();
+	prints("\033[1;33;44m[\xcc\xe1\xb5\xbd\xce\xd2\xb5\xc4\xce\xc4\xd5\xc2]");
+	_post_list_reply_title(unread_only);
 }
 
 static int post_list_mention_deleter(user_id_t user_id, void *ptr)
@@ -2875,6 +2878,7 @@ int post_list_mention(void)
 	post_mention_clear_count(user_id);
 
 	tui_list_recent_t tlr = {
+		.unread_only = true,
 		.user_id = user_id,
 		.loader = post_list_mention_loader,
 		.len = sizeof(post_info_t),
