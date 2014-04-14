@@ -1289,7 +1289,7 @@ static const char *next_mention(const char *begin, const char *end,
 	for (ptr = begin; ptr < end; ++ptr) {
 		if (mention) {
 			if (!isalpha(*ptr)) {
-				if (ptr - at >= 2 && ptr - at < size) {
+				if (*ptr != '.' && ptr - at >= 2 && ptr - at < size) {
 					strlcpy(user_name, at, ptr - at + 1);
 					return ptr;
 				}
