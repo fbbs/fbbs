@@ -891,7 +891,7 @@ static tui_list_handler_t board_list_handler(tui_list_t *tl, int key)
 		case 'A':
 			return tui_favorite_mkdir(tl);
 		case Ctrl('T'):
-			return tui_check_notice();
+			return tui_check_notice(NULL);
 		default:
 			handled = false;
 	}

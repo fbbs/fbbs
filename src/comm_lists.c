@@ -460,7 +460,7 @@ int domenu(const char *menu_name)
 				else
 					return 0;
 			case Ctrl('T'):
-				if (tui_check_notice() == FULLUPDATE) {
+				if (tui_check_notice(NULL) == FULLUPDATE) {
 					draw_menu(pm);
 					active_board_show();
 				} else {

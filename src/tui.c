@@ -388,7 +388,7 @@ static void print_option(const char *opt, char *quantifier, int count,
 extern int post_list_reply(void);
 extern int post_list_mention(void);
 
-int tui_check_notice(void)
+int tui_check_notice(const char *board_name)
 {
 	screen_move_clear(-1);
 	prints("\033[m\xb2\xe9\xbf\xb4:");
@@ -416,10 +416,12 @@ int tui_check_notice(void)
 		*ans = '0' + choice;
 	if (*ans == '1') {
 		post_list_reply();
+		brc_init(currentuser.userid, board_name);
 		return FULLUPDATE;
 	}
 	if (*ans == '2') {
 		post_list_mention();
+		brc_init(currentuser.userid, board_name);
 		return FULLUPDATE;
 	}
 	return MINIUPDATE;

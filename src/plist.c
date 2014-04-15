@@ -2424,7 +2424,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 			msg_more();
 			return FULLUPDATE;
 		case Ctrl('T'):
-			return tui_check_notice();
+			return tui_check_notice(currboard);
 		default:
 			if (!pi)
 				return READ_AGAIN;
@@ -2721,6 +2721,9 @@ static int read_reply(tui_list_t *tl, post_info_t *pi)
 				break;
 
 			ch = ansimore(file, false);
+
+			brc_init(currentuser.userid, pi->board_name);
+			brc_mark_as_read(post_stamp(pi->id));
 		} else {
 			break;
 		}
@@ -2840,6 +2843,7 @@ int post_list_reply(void)
 	tui_list_recent(&tlr);
 
 	post_reply_mark_as_read(0, user_id, true, true);
+	brc_sync(currentuser.userid);
 	tui_suppress_notice(false);
 	return 0;
 }
@@ -2890,6 +2894,7 @@ int post_list_mention(void)
 	};
 	tui_list_recent(&tlr);
 
+	brc_sync(currentuser.userid);
 	tui_suppress_notice(false);
 	return 0;
 }
