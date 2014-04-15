@@ -211,8 +211,7 @@ int tui_select_board(int current_bid)
 
 	set_user_status(ST_READING);
 	if (board.id != current_bid) {
-		brc_update(currentuser.userid, currboard);
-		brc_init(currentuser.userid, bname);
+		brc_init(currentuser.userid, board.name);
 		change_board(&board);
 		session_set_board(board.id);
 		return board.id;
@@ -1247,7 +1246,7 @@ int board_read(void)
 
 	session_set_board(0);
 	
-	brc_update(currentuser.userid, currboard);
+	brc_sync(currentuser.userid);
 	return 0;
 }
 

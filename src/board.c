@@ -295,14 +295,7 @@ static int tui_favorite_rm(tui_list_t *tl)
 
 static bool check_newpost(board_t *board)
 {
-	if (!brc_init(currentuser.userid, board->name)) {
-		return true;
-	} else {
-		if (brc_unread(get_last_post_time(board->id))) {
-			return true;
-		}
-	}
-	return false;
+	return brc_board_unread(currentuser.userid, board->name, board->id);
 }
 
 static void res_to_board_array(board_list_t *bl, db_res_t *r1, db_res_t *r2)

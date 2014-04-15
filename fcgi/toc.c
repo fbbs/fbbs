@@ -193,7 +193,7 @@ static int bbsdoc(post_list_type_e type)
 	printf("<bbsdoc>");
 	print_session();
 
-	brc_initialize(currentuser.userid, board.name);
+	brc_init(currentuser.userid, board.name);
 
 	record_t record;
 	post_record_open(board.id, &record);
@@ -470,7 +470,7 @@ int web_forum(void)
 	if (get_post_list_type() != POST_LIST_FORUM)
 		set_post_list_type(POST_LIST_FORUM);
 
-	brc_initialize(currentuser.userid, board.name);
+	brc_init(currentuser.userid, board.name);
 
 	int count = TOPICS_PER_PAGE;
 	int end = strtoll(web_get_param("start"), NULL, 10);
@@ -553,7 +553,7 @@ int api_board_toc(void)
 	if (!get_board_by_param(&board))
 		return error_msg(ERROR_BOARD_NOT_FOUND);
 	session_set_board(board.id);
-	brc_initialize(currentuser.userid, board.name);
+	brc_init(currentuser.userid, board.name);
 
 	bool asc = streq(web_get_param("page"), "next");
 	post_id_t start = strtoll(web_get_param("start"), NULL, 10);

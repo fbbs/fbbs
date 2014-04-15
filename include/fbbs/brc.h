@@ -6,9 +6,9 @@
 
 typedef uint32_t brc_item_t;
 
-extern void brc_update(const char *uname, const char *bname);
-extern int brc_init(const char *uname, const char *bname);
-extern int brc_initialize(const char *uname, const char *bname);
+extern void brc_sync(const char *user_name);
+extern int brc_init(const char *user_name, const char *board_name);
+extern void brc_reset(void);
 
 extern bool brc_mark_as_read(brc_item_t item);
 extern bool brc_unread(brc_item_t item);
@@ -17,6 +17,6 @@ extern void brc_clear(brc_item_t item);
 extern void brc_clear_all();
 
 extern void brc_zapbuf(int *zbuf);
-extern bool brc_board_unread(const char *user, const char *bname, int bid);
+extern bool brc_board_unread(const char *user_name, const char *board_name, int board_id);
 
 #endif // FB_BRC_H

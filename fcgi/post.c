@@ -243,9 +243,9 @@ int bbscon(const char *link)
 	if (content)
 		xml_print_post_wrapper(content, strlen(content));
 
-	brc_initialize(currentuser.userid, board.name);
+	brc_init(currentuser.userid, board.name);
 	post_mark_as_read(&pi, content);
-	brc_update(currentuser.userid, board.name);
+	brc_sync(currentuser.userid);
 
 	free(content);
 
@@ -449,7 +449,7 @@ int bbstcon_main(void)
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session();
 
-	brc_initialize(currentuser.userid, board.name);
+	brc_init(currentuser.userid, board.name);
 
 	bool asc = action != THREAD_PREV_PAGE;
 	if (c > count)
@@ -473,7 +473,7 @@ int bbstcon_main(void)
 	}
 	puts("</bbstcon>");
 
-	brc_update(currentuser.userid, board.name);
+	brc_sync(currentuser.userid);
 	return 0;
 }
 

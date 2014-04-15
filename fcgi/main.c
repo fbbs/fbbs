@@ -266,6 +266,7 @@ int main(void)
 		if (h) {
 			get_client_ip();
 			session_validate();
+			brc_reset();
 
 			if (session_id()) {
 				set_user_status(h->status);

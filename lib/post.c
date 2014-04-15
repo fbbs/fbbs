@@ -739,9 +739,9 @@ post_id_t post_new(const post_request_t *pr)
 	if (resp.id) {
 		if (!pr->autopost) {
 			fb_time_t stamp = post_stamp(resp.id);
-			brc_initialize(uname, pr->board->name);
+			brc_init(uname, pr->board->name);
 			brc_mark_as_read(stamp);
-			brc_update(uname, pr->board->name);
+			brc_sync(uname);
 		}
 	}
 	return resp.id;

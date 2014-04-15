@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include "bbs.h"
 #include "fbbs/brc.h"
-#include "fbbs/board.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/post.h"
@@ -13,10 +12,11 @@
 /** @{ */
 
 enum {
-	BRC_MAXSIZE = 50000,
-	BRC_MAXNUM = 60,
-	BRC_STRLEN = 20,
-	BRC_ITEMSIZE = BRC_STRLEN + 1 + BRC_MAXNUM * sizeof(int),
+	BRC_BUFSIZE = 50000,  ///< 所有已读记录的缓存区长度
+	BRC_MAXNUM = 60,  ///< 单个版面的最大已读记录条数
+	BRC_STRLEN = 20,  ///< 已读记录索引名长度
+	/** 单个版面已读记录的最大长度 */
+	BRC_ITEMSIZE = BRC_STRLEN + 1 + BRC_MAXNUM * sizeof(brc_item_t),
 };
 
 typedef uint_t brc_size_t;
@@ -24,19 +24,24 @@ typedef uint_t brc_size_t;
 /** 所有已读记录的缓存 */
 typedef struct {
 	brc_size_t size; ///< 缓存已用长度
-	char ptr[BRC_MAXSIZE];  ///< 缓存区
+	bool dirty;  ///< 是否修改过
+	bool initialized;  ///< 是否已经初始化
+	char ptr[BRC_BUFSIZE];  ///< 缓存区
 } brc_buf_t;
 
 /** 一个版面的已读记录 */
 typedef struct {
 	brc_size_t size;  ///< 已读记录条数
-	bool changed;  ///< 是否修改过
+	bool dirty;  ///< 是否修改过
 	char name[BRC_STRLEN];  ///< 索引名(版面名)
 	brc_item_t items[BRC_MAXNUM];  ///< 存储已读记录的数组
 } brc_t;
 
-static brc_buf_t brc_buf; ///< 所有已读记录的缓存
-static brc_t brc; ///< 当前的版面已读记录变量
+/** 所有已读记录的缓存 */
+static brc_buf_t brc_buf;
+
+/** 当前的版面已读记录变量 */
+static brc_t brc;
 
 /**
  * 读取已读记录缓存中的一段记录.
@@ -91,6 +96,8 @@ static void brc_load(const char *uname, brc_buf_t *buf)
 	} else {
 		buf->size = 0;
 	}
+	buf->initialized = true;
+	buf->dirty = false;
 }
 
 static void brc_save(const char *uname, const brc_buf_t *buf)
@@ -106,76 +113,92 @@ static void brc_save(const char *uname, const brc_buf_t *buf)
 }
 
 /**
- * 将已读记录写入磁盘.
- * @param uname 用户名
- * @param bname 版面名
+ * 将当前版面的已读记录与指定的所有已读记录合并
+ * @param buf 所有版面的已读记录
  */
-void brc_update(const char *uname, const char *bname)
+static void brc_merge(brc_buf_t *buf)
 {
-	if (!brc.changed) {
-		return;
-	}
-
 	char *ptr = brc_buf.ptr;
 	if (brc.size) {
 		ptr = brc_put_record(ptr, &brc);
 	}
 
-	brc_buf_t buf;
-	brc_load(uname, &buf);
-	if (buf.size > sizeof(buf.ptr) - BRC_ITEMSIZE)
-		buf.size = sizeof(buf.ptr) - BRC_ITEMSIZE * 2 + 1;
+	if (buf->size > sizeof(buf->ptr) - BRC_ITEMSIZE)
+		buf->size = sizeof(buf->ptr) - BRC_ITEMSIZE * 2 + 1;
 
-	char *tmp = buf.ptr, *end = buf.ptr + buf.size;
+	char *tmp = buf->ptr, *end = buf->ptr + buf->size;
 	while (tmp < end && (*tmp >= ' ' && *tmp <= '~')) {
 		brc_t tmp_brc;
 		tmp = brc_get_record(tmp, &tmp_brc);
-		if (!strneq(tmp_brc.name, bname, sizeof(tmp_brc.name))) {
+		if (!strneq(tmp_brc.name, brc.name, sizeof(tmp_brc.name))) {
 			ptr = brc_put_record(ptr, &tmp_brc);
 		}
 	}
 	brc_buf.size = (brc_size_t) (ptr - brc_buf.ptr);
-	brc_save(uname, &brc_buf);
-	brc.changed = false;
+	brc.dirty = false;
+	brc_buf.dirty = true;
+}
+
+/**
+ * 将已读记录缓存同步到磁盘
+ * @param user_name 用户名
+ */
+void brc_sync(const char *user_name)
+{
+	if (!brc.dirty && !brc_buf.dirty)
+		return;
+
+	brc_buf_t buf;
+	brc_load(user_name, &buf);
+	brc_merge(&buf);
+	brc_save(user_name, &brc_buf);
 }
 
 /**
  * 读入指定用户在指定版面的已读记录.
- * @param[in] uname 用户名
- * @param[in] bname 版面名
+ * @param[in] user_name 用户名
+ * @param[in] board_name 版面名
  * @return 如果该版之前没有记录, 返回0; 否则返回当前该版已有的记录条数.
  */
-int brc_init(const char *uname, const char *bname)
+int brc_init(const char *user_name, const char *board_name)
 {
-	brc_update(uname, bname);
-	brc.changed = false;
-	if (brc_buf.ptr[0] == '\0') {
-		brc_load(uname, &brc_buf);
+	if (!user_name || !board_name)
+		return 0;
+
+	if (strneq(brc.name, board_name, sizeof(brc.name)))
+		return brc.size;
+
+	if (brc.dirty) {
+		brc_buf_t buf;
+		memcpy(&buf, &brc_buf, sizeof(buf));
+		brc_merge(&buf);
 	}
+
+	if (!brc_buf.initialized)
+		brc_load(user_name, &brc_buf);
 
 	char *ptr = brc_buf.ptr, *end = brc_buf.ptr + brc_buf.size;
 	while (ptr < end && (*ptr >= ' ' && *ptr <= '~')) {
 		ptr = brc_get_record(ptr, &brc);
-		if (strneq(brc.name, bname, sizeof(brc.name))) {
+		if (strneq(brc.name, board_name, sizeof(brc.name))) {
 			return brc.size;
 		}
 	}
 
-	strlcpy(brc.name, bname, sizeof(brc.name));
+	strlcpy(brc.name, board_name, sizeof(brc.name));
 	brc.items[0] = 1;
 	brc.size = 1;
+	brc.dirty = true;
 	return 0;
 }
 
 /**
- * @copydoc brc_init
- * 先清空已读记录缓存, 适用于web.
- * @see brc_init
+ * 重置已读记录缓存
  */
-int brc_initialize(const char *uname, const char *bname)
+void brc_reset(void)
 {
-	brc_buf.ptr[0] = '\0';
-	return brc_init(uname, bname);
+	memset(&brc_buf, 0, sizeof(brc_buf));
+	memset(&brc, 0, sizeof(brc));
 }
 
 /**
@@ -187,7 +210,7 @@ bool brc_mark_as_read(brc_item_t item)
 {
 	if (!brc.size) {
 		brc.items[brc.size++] = item;
-		brc.changed = true;
+		brc.dirty = true;
 		return true;
 	}
 
@@ -200,13 +223,13 @@ bool brc_mark_as_read(brc_item_t item)
 			memmove(brc.items + i + 1, brc.items + i,
 					(brc.size - i - 1) * sizeof(*brc.items));
 			brc.items[i] = item;
-			brc.changed = true;
+			brc.dirty = true;
 			return true;
 		}
 	}
 	if (brc.size < BRC_MAXNUM) {
 		brc.items[brc.size++] = item;
-		brc.changed = true;
+		brc.dirty = true;
 	}
 	return false;
 }
@@ -267,21 +290,16 @@ void brc_zapbuf(int *zbuf)
 
 /**
  * 判断一个版面是否有未读项目
- * @param uname 用户名
- * @param bname 版面名
- * @param bid 版面编号
+ * @param user_name 用户名
+ * @param board_name 版面名
+ * @param board_id 版面编号
  * @return 如果该版面有未读项目返回true, 否则返回false.
  */
-bool brc_board_unread(const char *uname, const char *bname, int bid)
+bool brc_board_unread(const char *user_name, const char *board_name,
+		int board_id)
 {
-	brc_buf.ptr[0] = '\0';
-	if (!brc_init(uname, bname)) {
-		return true;
-	} else {
-		if (brc_unread(get_last_post_time(bid)))
-			return true;
-		return false;
-	}
+	return !brc_init(user_name, board_name)
+			|| brc_unread(get_last_post_time(board_id));
 }
 
 /** @} */

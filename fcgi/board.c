@@ -401,9 +401,9 @@ int bbsclear_main(void)
 	session_set_board(board.id);
 
 	const char *start = web_get_param("start");
-	brc_initialize(currentuser.userid, board.name);
+	brc_init(currentuser.userid, board.name);
 	brc_clear_all();
-	brc_update(currentuser.userid, board.name);
+	brc_sync(currentuser.userid);
 	char buf[STRLEN];
 	snprintf(buf, sizeof(buf), "doc?board=%s&start=%s", board.name, start);
 	http_header();
