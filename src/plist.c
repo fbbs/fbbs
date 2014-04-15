@@ -2842,7 +2842,6 @@ int post_list_reply(void)
 	};
 	tui_list_recent(&tlr);
 
-	post_reply_mark_as_read(0, user_id, true, true);
 	brc_sync(currentuser.userid);
 	tui_suppress_notice(false);
 	return 0;
