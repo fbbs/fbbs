@@ -474,6 +474,7 @@ static post_id_t post_cross_legacy(board_t *board, const char *file,
 	}
 	string_remove_ansi_control_code(utf8_title, utf8_title);
 	string_remove_non_printable(utf8_title);
+	string_check_tail(utf8_title, NULL);
 	convert_u2g(utf8_title, gbk_title);
 
 	struct postheader header = {

@@ -613,6 +613,7 @@ int bbssnd_main(void)
 		}
 		string_remove_ansi_control_code(utf8_title, utf8_title);
 		string_remove_non_printable(utf8_title);
+		string_check_tail(utf8_title, NULL);
 		if (*utf8_title == '\0')
 			return BBS_EINVAL;
 	}
