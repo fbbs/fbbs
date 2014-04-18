@@ -511,7 +511,7 @@ static web_status_code_e error_msg(web_error_code_e code)
 
 	const struct error_msg_t *e = error_msgs;
 	if (code > 0 && code <= ARRAY_SIZE(error_msgs))
-		e = error_msgs + code - 1;
+		e = error_msgs + code - 2;
 
 	xml_attr_string(node, "msg", e->msg, false);
 	xml_attr_integer(node, "code", e->code + 10000);
@@ -521,12 +521,13 @@ static web_status_code_e error_msg(web_error_code_e code)
 
 void web_respond(web_error_code_e code)
 {
+	web_status_code_e status = WEB_STATUS_OK;
+	if (code != WEB_OK)
+		status = error_msg(code);
+
 	int type = response_type();
 	printf("Content-type: %s;  charset=utf-8\n"
-			"Status: %d\n\n", content_type(type), code);
-
-	if (code != WEB_OK)
-		error_msg(code);
+			"Status: %d\n\n", content_type(type), (int) status);
 
 	xml_dump(ctx.resp.doc, type == RESPONSE_JSON ? XML_AS_JSON : XML_AS_XML);
 	FCGI_Finish();
