@@ -162,7 +162,7 @@ static void u_enter(void)
 	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	digestmode = NA;
 
-	session_new(NULL, 0, session_uid(), currentuser.userid, fromhost,
+	session_new(NULL, NULL, 0, session_uid(), currentuser.userid, fromhost,
 			SESSION_TELNET,
 #ifdef ENABLE_SSH
 			SESSION_SECURE

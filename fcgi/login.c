@@ -33,7 +33,7 @@ static int check_web_login_quota(user_id_t user_id, bool force)
 	return count;
 }
 
-static char *digest_to_hex(const uchar_t *digest, char *buf, size_t size)
+static void digest_to_hex(const uchar_t *digest, char *buf, size_t size)
 {
 	const char *str = "0123456789abcdef";
 	for (int i = 0; i < size / 2; ++i) {
@@ -41,10 +41,10 @@ static char *digest_to_hex(const uchar_t *digest, char *buf, size_t size)
 		buf[i * 2 + 1] = str[digest[i] & 0x0f];
 	}
 	buf[size - 1] = '\0';
-	return buf;
 }
 
-static char *generate_session_key(char *buf, size_t size, session_id_t sid)
+static void generate_session_key(char *key, size_t ksize,
+		char *token, size_t tsize, session_id_t sid)
 {
 	struct {
 		time_t sec;
@@ -63,7 +63,11 @@ static char *generate_session_key(char *buf, size_t size, session_id_t sid)
 	s.sid = sid;
 
 	const uchar_t *digest = calc_digest(&s, sizeof(s));
-	return digest_to_hex(digest, buf, size);
+	char buf[SESSION_KEY_LEN + SESSION_TOKEN_LEN + 1];
+	digest_to_hex(digest, buf, sizeof(buf));
+
+	strlcpy(key, buf, ksize);
+	strlcpy(token, buf + SESSION_KEY_LEN, tsize);
 }
 
 static void grant_permission(struct userec *user)
@@ -173,11 +177,11 @@ extern void set_web_session_cache(user_id_t uid, const char *key,
 static int _web_login(bool persistent, bool redirect)
 {
 	int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
-	char key[SESSION_KEY_LEN + 1];
+	char key[SESSION_KEY_LEN + 1], token[SESSION_TOKEN_LEN + 1];
 	session_new_id();
-	generate_session_key(key, sizeof(key), session_id());
-	session_new(key, session_id(), session_uid(), currentuser.userid, fromhost,
-			SESSION_WEB, SESSION_PLAIN, true, max_age);
+	generate_session_key(key, sizeof(key), token, sizeof(token), session_id());
+	session_new(key, token, session_id(), session_uid(), currentuser.userid,
+			fromhost, SESSION_WEB, SESSION_PLAIN, true, max_age);
 	if (session_id())
 		set_web_session_cache(session_uid(), key, session_id());
 	return redirect ? login_redirect(key, max_age) : 0;

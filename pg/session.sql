@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS sessions;
 CREATE TABLE sessions (
 	id BIGSERIAL,
 	session_key TEXT,
+	token TEXT,
 	active BOOLEAN DEFAULT TRUE,
 	user_id INTEGER,
 	user_name TEXT,

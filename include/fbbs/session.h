@@ -13,7 +13,8 @@ typedef int64_t session_id_t;
 #define db_get_session_id(res, row, col)  db_get_bigint(res, row, col)
 
 enum {
-	SESSION_KEY_LEN = 40,
+	SESSION_KEY_LEN = 30,
+	SESSION_TOKEN_LEN = 10,
 
 	SESSION_TELNET = 0,
 	SESSION_WEB = 1,
@@ -110,7 +111,7 @@ extern bool session_toggle_visibility(void);
 extern void session_clear(void);
 
 extern session_id_t session_new_id(void);
-extern session_id_t session_new(const char *key, session_id_t sid, user_id_t uid, const char *user_name, const char *ip_addr, bool is_web, bool is_secure, bool visible, int duration);
+extern session_id_t session_new(const char *key, const char *token, session_id_t sid, user_id_t uid, const char *user_name, const char *ip_addr, bool is_web, bool is_secure, bool visible, int duration);
 extern int session_destroy(session_id_t sid);
 extern int session_inactivate(session_id_t sid);
 

@@ -116,18 +116,19 @@ int session_get_online_record(void)
 
 session_id_t session_new_id(void)
 {
-	db_res_t *res = db_query("SELECT nextval('sessions_id_seq')");
-	if (!res)
-		return 0;
+	session_id_t session_id = 0;
 
-	session.id = db_get_session_id(res, 0, 0);
+	db_res_t *res = db_query("SELECT nextval('sessions_id_seq')");
+	if (res && db_res_rows(res) == 1)
+		session_id = db_get_session_id(res, 0, 0);
 	db_clear(res);
-	return session.id;
+
+	return session.id = session_id;
 }
 
-session_id_t session_new(const char *key, session_id_t sid, user_id_t user_id,
-		const char *user_name, const char *ip_addr, bool is_web,
-		bool is_secure, bool visible, int duration)
+session_id_t session_new(const char *key, const char *token, session_id_t sid,
+		user_id_t user_id, const char *user_name, const char *ip_addr,
+		bool is_web, bool is_secure, bool visible, int duration)
 {
 	int pid = is_web ? 0 : getpid();
 	if (!sid)
@@ -136,19 +137,18 @@ session_id_t session_new(const char *key, session_id_t sid, user_id_t user_id,
 	fb_time_t now = fb_time();
 	fb_time_t expire = now + duration;
 
-	db_res_t *res = db_cmd("INSERT INTO sessions (id, session_key, user_id,"
-			" user_name, pid, ip_addr, web, secure, stamp, expire, visible)"
-			" VALUES (%"DBIdSID", %s, %"DBIdUID", %s, %d, %s, %b, %b, %t, %t,"
-			" %b)", sid, key, user_id, user_name, pid, ip_addr, is_web,
-			is_secure, now, expire, visible);
+	db_res_t *res = db_cmd("INSERT INTO sessions (id, session_key, token,"
+			" user_id, user_name, pid, ip_addr, web, secure, stamp, expire,"
+			" visible) VALUES (%"DBIdSID", %s, %s, %"DBIdUID", %s, %d, %s,"
+			" %b, %b, %t, %t, %b)", sid, key, token, user_id, user_name, pid,
+			ip_addr, is_web, is_secure, now, expire, visible);
 	if (res) {
 		db_clear(res);
 		session.id = sid;
 		session_set_idle(sid, now);
 		return sid;
 	} else {
-		session.id = 0;
-		return 0;
+		return session.id = 0;
 	}
 }
 
