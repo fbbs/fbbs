@@ -356,6 +356,54 @@ void screen_clrtobot(void)
 
 static const char *nullstr = "(null)";
 
+void screen_puts(const char *s, size_t size)
+{
+	if (!size)
+		size = strlen(s);
+	const char *end = s + size;
+
+	screen_line_t *sl = get_screen_line(screen.cur_ln);
+
+	for (const char *p = s; p < end; ++p) {
+		if (*p == '\n' || *p == '\r') {
+			if (screen.cur_col > sl->len)
+				memset(sl->data + sl->len, ' ', screen.cur_col- sl->len + 1);
+			sl->len = screen.cur_col;
+			screen.cur_col = 0;
+			if (screen.cur_ln < screen.lines)
+				++screen.cur_ln;
+		} else {
+			if (screen.cur_col > sl->len)
+				memset(sl->data + sl->len, ' ', screen.cur_col - sl->len);
+			sl->modified = true;
+			sl->data[screen.cur_col++] = *p;
+			if (screen.cur_col > sl->len)
+				sl->len = screen.cur_col;
+		}
+	}
+}
+
+static int screen_put_gbk_helper(const char *buf, size_t len, void *arg)
+{
+	screen_puts(buf, len);
+	return 0;
+}
+
+static void screen_put_gbk(int c)
+{
+	static int left = 0;
+	if (left) {
+		char buf[3] = { left, c };
+		convert(env_g2u, buf, 3, NULL, 0, screen_put_gbk_helper, NULL);
+		left = 0;
+	} else if (c & 0x80) {
+		left = c;
+	} else {
+		char buf = c;
+		screen_puts(&buf, 1);
+	}
+}
+
 /**
  * Output a character.
  * @param c The character.
@@ -377,13 +425,14 @@ int outc(int c)
 	}
 
 	screen_line_t *slp = get_screen_line(screen.cur_ln);
-	unsigned int col = screen.cur_col;
 
 	if (!isprint2(c)) {
 		if (c == '\n' || c == '\r') {
-			if (col > slp->len)
-				memset(slp->data + slp->len, ' ', col - slp->len + 1);
-			slp->len = col;
+			if (screen.cur_col> slp->len) {
+				memset(slp->data + slp->len, ' ',
+						screen.cur_col - slp->len + 1);
+			}
+			slp->len = screen.cur_col;
 			screen.cur_col = 0;
 			if (screen.cur_ln < screen.lines)
 				screen.cur_ln++;
@@ -394,20 +443,13 @@ int outc(int c)
 		}
 	}
 
-	if (col > slp->len)
-		memset(slp->data + slp->len, ' ', col - slp->len);
-	slp->modified = true;
-	slp->data[col] = c;
-	col++;
-	if (col > slp->len)
-		slp->len = col;
+	screen_put_gbk(c);
 
-	if (col >= screen.columns) {
-		col = 0;
+	if (screen.cur_col >= screen.columns) {
+		screen.cur_col = 0;
 		if (screen.cur_ln < screen.lines)
 			screen.cur_ln++;
 	}
-	screen.cur_col = col; /* store screen.cur_col back */
 	return 1;
 }
 
