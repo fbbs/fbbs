@@ -136,9 +136,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "AddPCorpus", AddPCorpus },
 		{ "Props", tui_props },
 		{ "MyProps", tui_my_props },
-#ifdef ALLOWSWITCHCODE
-		{ "SwitchCode", switch_code },
-#endif
 #ifdef ALLOWGAME
 		{ "WinMine", ent_winmine },
 #endif

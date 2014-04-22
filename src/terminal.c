@@ -32,9 +32,6 @@ typedef struct {
 	size_t size;
 } output_buffer_t;
 
-#ifdef ALLOWSWITCHCODE
-extern int convcode;
-#endif
 #ifdef ENABLE_SSH
 extern ssh_channel ssh_chan;
 #endif // ENABLE_SSH
@@ -95,19 +92,7 @@ static void put_raw_ch(int ch)
 void terminal_putchar(int ch)
 {
 	ch = (uchar_t) ch;
-#ifdef ALLOWSWITCHCODE
-	if (convcode) {
-		ch = convert_g2b(ch);
-		while (ch > 0) {
-			put_raw_ch(ch);
-			ch = convert_g2b(-1);
-		}
-	} else {
-		put_raw_ch(ch);
-	}
-#else
 	put_raw_ch(ch);
-#endif // ALLOWSWITCHCODE
 }
 
 /**
@@ -118,27 +103,18 @@ void terminal_putchar(int ch)
  */
 void terminal_write_cached(const uchar_t *str, int size)
 {
-	int convert = 0;
-#ifdef ALLOWSWITCHCODE
-	convert = convcode;
-#endif // ALLOWSWITCHCODE
-	if (convert) {
-		while (size-- > 0)
-			terminal_putchar(*str++);
-	} else {
-		while (size > 0) {
-			int len = sizeof(output_buffer.ptr) - output_buffer.size;
-			if (size > len) {
-				memcpy(output_buffer.ptr + output_buffer.size, str, len);
-				output_buffer.size += len;
-				terminal_flush();
-				size -= len;
-				str += len;
-			} else {
-				memcpy(output_buffer.ptr + output_buffer.size, str, size);
-				output_buffer.size += size;
-				return;
-			}
+	while (size > 0) {
+		int len = sizeof(output_buffer.ptr) - output_buffer.size;
+		if (size > len) {
+			memcpy(output_buffer.ptr + output_buffer.size, str, len);
+			output_buffer.size += len;
+			terminal_flush();
+			size -= len;
+			str += len;
+		} else {
+			memcpy(output_buffer.ptr + output_buffer.size, str, size);
+			output_buffer.size += size;
+			return;
 		}
 	}
 }
@@ -349,13 +325,6 @@ int igetch(void)
 				continue;
 			default:
 				cr = false;
-#ifdef ALLOWSWITCHCODE
-				if (convcode) {
-					ch = convert_b2g(ch);
-					if (ch >= 0)
-						return ch;
-				}
-#endif // ALLOWSWITCHCODE
 				break;
 		}
 		break;
@@ -365,18 +334,7 @@ int igetch(void)
 
 static int do_terminal_getchar(void)
 {
-	int ch;
-#ifdef ALLOWSWITCHCODE
-	if (convcode) {
-		ch = convert_b2g(-1); // If there is a byte left.
-		while (ch < 0)
-			ch = igetch();
-	} else {
-		ch = igetch();
-	}
-#else
-	ch = igetch();
-#endif // ALLOWSWITCHCODE
+	int ch = igetch();
 
 	// Handle messages.
 	if (ch == Ctrl('Z')) {

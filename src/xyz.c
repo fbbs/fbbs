@@ -51,10 +51,6 @@ int child_pid = 0;
 extern int iscolor;
 extern int enabledbchar;
 
-#ifdef ALLOWSWITCHCODE
-extern int convcode;
-#endif
-
 extern struct UCACHE *uidshm;
 #define TH_LOW	10
 #define TH_HIGH	15
@@ -140,11 +136,6 @@ int x_userdefine() {
 		//% prints("参数没有修改...\n");
 		prints("\xb2\xce\xca\xfd\xc3\xbb\xd3\xd0\xd0\xde\xb8\xc4...\n");
 	else {
-#ifdef ALLOWSWITCHCODE
-		if ((!convcode && !(newlevel & DEF_USEGB))
-				|| (convcode && (newlevel & DEF_USEGB)))
-		switch_code ();
-#endif
 		lookupuser.userdefine = newlevel;
 		currentuser.userdefine = newlevel;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);

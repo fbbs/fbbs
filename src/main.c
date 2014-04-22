@@ -26,9 +26,6 @@
 
 #define VISITLOG    BBSHOME"/.visitlog"
 
-#ifdef ALLOWSWITCHCODE
-extern int convcode;
-#endif
 int RMSG = false;
 int msg_num = 0;
 int iscolor = 1;
@@ -441,7 +438,6 @@ static int login_query(void)
 	char uname[IDLEN + 2];
 	char passbuf[PASSLEN];
 	int attempts;
-	char *ptr;
 	int recover; // For giveupBBS
 	bool auth = false;
 #endif // ENABLE_SSH
@@ -490,13 +486,6 @@ static int login_query(void)
 				//% "注册请输入'\033[1;31mnew\033[m'): ",
 				"\xd7\xa2\xb2\xe1\xc7\xeb\xca\xe4\xc8\xeb'\033[1;31mnew\033[m'): ",
 				uname, IDLEN + 1, DOECHO, YEA);
-#ifdef ALLOWSWITCHCODE
-		ptr = strchr(uname, '.');
-		if (ptr) {
-			convcode = 1;
-			*ptr = '\0';
-		}
-#endif
 		if (strcaseeq(uname, "guest") && (online > MAXACTIVE - 10)) {
 			ansimore("etc/loginfull", NA);
 			return -1;
@@ -515,10 +504,6 @@ static int login_query(void)
 			currentuser.userlevel = 0;
 			break;
 		} else {
-#ifdef ALLOWSWITCHCODE
-			if (!convcode)
-				convcode = !(currentuser.userdefine & DEF_USEGB);
-#endif
 			//% getdata(0, 0, "\033[1;37m请输入密码: \033[m", passbuf, PASSLEN,
 			getdata(0, 0, "\033[1;37m\xc7\xeb\xca\xe4\xc8\xeb\xc3\xdc\xc2\xeb: \033[m", passbuf, PASSLEN,
 					NOECHO, YEA);
@@ -881,10 +866,6 @@ void start_client(void)
 #endif
 
 	initialize_convert_env();
-#ifdef ALLOWSWITCHCODE
-	if (resolve_gbkbig5_table() < 0)
-		exit(1);
-#endif
 	system_init();
 
 	if (setjmp(byebye)) {

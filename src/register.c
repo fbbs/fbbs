@@ -17,10 +17,6 @@ enum {
 //modified by money 2002.11.15
 extern char fromhost[];
 
-#ifdef ALLOWSWITCHCODE
-extern int convcode;
-#endif
-
 #ifdef REG_CAPTCHA
 /**
  *
@@ -159,11 +155,7 @@ void new_register(void)
 		return;
 
 	struct userec user;
-#ifdef ALLOWSWITCHCODE
-	init_userec(&user, userid, passwd, !convcode);
-#else
 	init_userec(&user, userid, passwd, true);
-#endif
 	strlcpy(user.lasthost, fromhost, sizeof(user.lasthost));
 
 	if (create_user(&user) < 0) {

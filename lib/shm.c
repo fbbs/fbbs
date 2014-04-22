@@ -18,9 +18,6 @@ const static struct _shmkey shmkeys[] = {
 	{ "UTMP_SHMKEY", 30020 }, { "ACBOARD_SHMKEY", 30030 },
 	{ "ISSUE_SHMKEY", 30040 }, { "GOODBYE_SHMKEY", 30050 },
 	{ "WELCOME_SHMKEY", 30060 }, { "STAT_SHMKEY", 30070 },
-#ifdef ALLOWSWITCHCODE
-	{ "CONV_SHMKEY", 30080 },
-#endif
 	{ "ACACHE_SHMKEY", 30005 }, { "", 0 }
 };
 
