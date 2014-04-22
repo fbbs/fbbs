@@ -258,7 +258,9 @@ void screen_flush(void)
 		if (sl->modified) {
 			sl->modified = false;
 			move_terminal_cursor(0, i);
-			terminal_write_cached(sl->data, sl->len);
+
+			screen_write_cached(sl->data, sl->len, screen.utf8);
+
 			screen.tc_col = sl->len;
 			if (screen.tc_col >= screen.columns) {
 				screen.tc_col -= screen.columns;
@@ -364,9 +366,6 @@ static const char *nullstr = "(null)";
 int outc(int c)
 {
 	static bool inansi;
-#ifndef BIT8
-	c &= 0x7f;
-#endif
 
 	if (inansi) {
 		if (c == 'm') {
