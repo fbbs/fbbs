@@ -222,6 +222,7 @@ int tui_select_board(int current_bid)
 int board_select(void)
 {
 	tui_select_board(0);
+	board_read();
 	return 0;
 }
 

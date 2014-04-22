@@ -17,7 +17,7 @@
 
 int domenu(const char *menu_name);
 int Announce(), Personal(), Info(), Goodbye();
-int board_read(), board_select(), Welcome();
+int board_select(), Welcome();
 int msg_more(), x_lockscreen();
 int Conditions(), x_cloak(), show_online_users(), x_info(), x_vote();
 int x_results(), ent_bnet(), a_edits(), x_edits();
@@ -99,7 +99,6 @@ static telnet_handler_t sysconf_funcptr(const char *name)
 		{ "Announce", Announce },
 		{ "Personal", Personal },
 		{ "SelectBoard", board_select },
-		{ "ReadBoard", board_read },
 		{ "ReadReply", post_list_reply },
 		{ "ReadMention", post_list_mention },
 		{ "MailAll", mailall },
@@ -393,8 +392,6 @@ int domenu(const char *menu_name)
 					telnet_handler_t func = sysconf_funcptr(pm[now].func);
 					if (func) {
 						(*func)(pm[now].arg);
-						if (func == board_select)
-							now++;
 					} else {
 #ifdef DLM
 						const char *ptr = sysconf_funcstr(pm[now].func);
