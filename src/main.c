@@ -28,7 +28,6 @@
 
 int RMSG = false;
 int msg_num = 0;
-int iscolor = 1;
 int mailXX = 0; // If mail quota is exceeded.
 int numofsig = 0;
 jmp_buf byebye;
@@ -156,7 +155,6 @@ static void u_enter(void)
 	else
 		enabledbchar = 0;
 
-	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	digestmode = NA;
 
 	session_new(NULL, NULL, 0, session_uid(), currentuser.userid, fromhost,

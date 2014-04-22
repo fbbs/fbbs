@@ -27,7 +27,6 @@
 #define P_INT 20		/* interval to check for page req. in
 				 * talk/chat */
 extern char BoardName[];
-extern int iscolor;
 extern int numf, friendmode;
 extern int t_columns;
 int cmpfnames();

@@ -23,8 +23,6 @@ typedef struct {
 	uchar_t data[SCREEN_LINE_LEN]; ///< 缓冲区
 } screen_line_t;
 
-extern int iscolor;
-
 /** @global */
 bool dumb_term = true;
 
@@ -365,20 +363,6 @@ static const char *nullstr = "(null)";
  */
 int outc(int c)
 {
-	static bool inansi;
-
-	if (inansi) {
-		if (c == 'm') {
-			inansi = false;
-			return 0;
-		}
-		return 0;
-	}
-	if (c == KEY_ESC && !iscolor) {
-		inansi = true;
-		return 0;
-	}
-
 	if (dumb_term) {
 		if (!isprint2(c)) {
 			if (c == '\n') {
