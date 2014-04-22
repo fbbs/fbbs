@@ -73,27 +73,36 @@ static bool get_user_name(user_id_t uid, char *name, size_t size)
 	return name[0];
 }
 
-static void kill_session(const struct _session *s, bool is_dup)
+static bool _kill(int pid)
 {
-	if (s->web || bbs_kill(s->sid, s->pid, SIGHUP) != 0) {
-		char uname[IDLEN + 1];
-		struct userec user;
-		int legacy_uid;
+	return (pid > 0 && kill(pid, SIGHUP) == 0);
+}
 
-		if (get_user_name(s->uid, uname, sizeof(uname))
-				&& (legacy_uid = getuserec(uname, &user))) {
-			update_user_stay(&user, false, is_dup);
-			substitut_record(NULL, &user, sizeof(user), legacy_uid);
-		}
+static bool kill_session(const struct _session *s, bool is_dup,
+		bool ignore_kill_error)
+{
+	if (!s->web && !_kill(s->pid) && !ignore_kill_error)
+		return false;
 
-		if (s->web && s->expire > time(NULL))
-			session_inactivate(s->sid);
-		else
-			session_destroy(s->sid);
+	char uname[IDLEN + 1];
+	struct userec user;
+	int legacy_uid;
 
-		if (s->web)
-			session_remove_web_cache(s->uid, s->key);
+	if (get_user_name(s->uid, uname, sizeof(uname))
+			&& (legacy_uid = getuserec(uname, &user))) {
+		update_user_stay(&user, false, is_dup);
+		substitut_record(NULL, &user, sizeof(user), legacy_uid);
 	}
+
+	if (s->web && s->expire > time(NULL))
+		session_inactivate(s->sid);
+	else
+		session_destroy(s->sid);
+
+	if (s->web)
+		session_remove_web_cache(s->uid, s->key);
+
+	return true;
 }
 
 static bool check_timeout(const struct _session *s, int count)
@@ -104,8 +113,8 @@ static bool check_timeout(const struct _session *s, int count)
 		if (refresh > 0 && now - refresh > IDLE_TIMEOUT) {
 			session_status_e status = get_user_status(s->sid);
 			if (status != ST_BBSNET) {
-				kill_session(s, count > 1);
-				return true;
+				return kill_session(s, count > 1,
+						now - refresh > 10 * IDLE_TIMEOUT);
 			}
 		}
 	}
@@ -128,7 +137,7 @@ static void check_sessions(const struct _session *begin,
 		} else {
 			if (!s->active && s->web) {
 				if (++web > MAX_WEB_SESSIONS)
-					kill_session(s, active--);
+					kill_session(s, active--, false);
 			}
 		}
 	}
