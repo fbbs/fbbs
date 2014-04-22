@@ -1,6 +1,7 @@
 #include <arpa/telnet.h>
 #include <stdarg.h>
 #include "bbs.h"
+#include "fbbs/convert.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
@@ -38,12 +39,14 @@ typedef struct {
 	int roll; ///< 首行在buf中的偏移量
 	int scrollcnt;
 	bool redraw; ///< 重绘屏幕
+	bool utf8; ///< 为true时以UTF8编码输出, 否则GBK编码
 } screen_t;
 
 /** @global */
 static screen_t screen = {
 	.lines = 24,
 	.columns = 255,
+	.utf8 = false,
 };
 
 int screen_lines(void)
@@ -173,6 +176,22 @@ static inline screen_line_t *get_screen_line(int line)
 	return screen.buf + (line + screen.roll) % screen.lines;
 }
 
+static int _write_helper(const char *buf, size_t len, void *arg)
+{
+	terminal_write_cached((const uchar_t *) buf, len);
+	return 0;
+}
+
+static void screen_write_cached(const uchar_t *data, uint16_t len, bool utf8)
+{
+	if (utf8) {
+		terminal_write_cached(data, len);
+	} else {
+		convert(env_u2g, (const char *) data, len, NULL, 0,
+				_write_helper, NULL);
+	}
+}
+
 /**
  * 重绘屏幕
  */
@@ -180,15 +199,19 @@ void screen_redraw(void)
 {
 	if (dumb_term)
 		return;
+
 	ansi_cmd(ANSI_CMD_CL);
 	screen.tc_col = 0;
 	screen.tc_line = 0;
+
 	for (int i = 0; i < screen.lines; ++i) {
 		screen_line_t *sl = get_screen_line(i);
 		if (!sl->len)
 			continue;
+
 		move_terminal_cursor(0, i);
-		terminal_write_cached(sl->data, sl->len);
+		screen_write_cached(sl->data, sl->len, screen.utf8);
+
 		screen.tc_col += sl->len;
 		if (screen.tc_col >= screen.columns) {
 			screen.tc_col = screen.columns - 1;
