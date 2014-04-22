@@ -15,7 +15,6 @@ enum {
 	MAX_BBSNET_SITES = 54,  ///<
 	MAX_SITE_LENGTH = 40,   ///<
 	CONNECT_TIMEOUT = 15,   ///<
-	DATA_TIMEOUT    = 2400  ///<
 };
 
 extern char fromhost[];
@@ -139,7 +138,7 @@ static void do_bbsnet(const site_t *site)
 	int ret;
 	uchar_t buf[2048];
 	while (1) {
-		tv.tv_sec = DATA_TIMEOUT;
+		tv.tv_sec = IDLE_TIMEOUT;
 		tv.tv_usec = 0;
 		FD_ZERO(&fds);
 		FD_SET(fd, &fds);

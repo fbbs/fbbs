@@ -148,6 +148,14 @@ bool terminal_input_buffer_empty(void)
 	return (input_buffer.cur >= input_buffer.size);
 }
 
+/** @global 准备退出当前会话 */
+static bool _schedule_exit = false;
+
+void terminal_schedule_exit(int not_used)
+{
+	_schedule_exit = true;
+}
+
 /**
  * Get raw byte from stdin.
  * @return next byte from stdin
@@ -155,9 +163,8 @@ bool terminal_input_buffer_empty(void)
 static int get_raw_ch(void)
 {
 	if (input_buffer.cur >= input_buffer.size) {
-		int fd = mdb_fd(), ret;
-		struct timeval to = { .tv_sec = 0, .tv_usec = 0 };
-		struct timeval *timeout = &to;
+		int fd = 0, ret;
+		struct timeval tv;
 
 		while (1) {
 			fd_set rset;
@@ -165,25 +172,28 @@ static int get_raw_ch(void)
 			FD_SET(STDIN_FILENO, &rset);
 
 			int nfds = 1;
-			if (fd >= 0) {
+			if (fd > 0) {
 				FD_SET(fd, &rset);
 				nfds = fd + 1;
 			}
 
-			ret = select(nfds, &rset, NULL, NULL, timeout);
+			tv.tv_sec = IDLE_TIMEOUT;
+			tv.tv_usec = 0;
+			ret = select(nfds, &rset, NULL, NULL, &tv);
+
 			if (FD_ISSET(STDIN_FILENO, &rset)) {
 #ifdef ENABLE_SSH
 				ret = channel_poll(ssh_chan, 0);
 #endif
 			}
 
-			if (ret < 0 && errno != EINTR)
-				return -1;
+			if (_schedule_exit || !ret || (ret < 0 && errno != EINTR))
+				abort_bbs(0);
 
-			if (ret <= 0) {
+			if (ret < 0) {
 				refresh();
 			} else {
-				if (fd >= 0 && FD_ISSET(fd, &rset)) {
+				if (fd > 0 && FD_ISSET(fd, &rset)) {
 					// TODO: handle notification
 				}
 				if (FD_ISSET(STDIN_FILENO, &rset)) {
@@ -191,7 +201,6 @@ static int get_raw_ch(void)
 					break;
 				}
 			}
-			timeout = NULL;
 		}
 
 		while (1) {

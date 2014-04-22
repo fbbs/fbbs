@@ -22,6 +22,7 @@ extern int terminal_flush(void);
 extern void terminal_putchar(int ch);
 extern void terminal_write_cached(const unsigned char *str, int size);
 extern bool terminal_input_buffer_empty(void);
+extern void terminal_schedule_exit(int);
 
 extern int igetch(void);
 extern int terminal_getchar(void);

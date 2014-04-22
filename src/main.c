@@ -191,7 +191,6 @@ void u_exit(void)
 {
 	// 这些信号的处理要关掉, 否则在离线时等候回车时出现
 	// 信号会导致重写名单, 这个导致的名单混乱比kick user更多  (ylsdd)
-	fb_signal(SIGHUP, SIG_DFL);
 	fb_signal(SIGALRM, SIG_DFL);
 	fb_signal(SIGPIPE, SIG_DFL);
 	fb_signal(SIGTERM, SIG_DFL);
@@ -218,10 +217,9 @@ void abort_bbs(int nothing)
 		kill(child_pid, SIGKILL);
 	}
 
-	// Save user's work.
-	if (session_status() == ST_POSTING || session_status() == ST_SMAIL
-			|| session_status() == ST_EDIT || session_status() == ST_EDITUFILE
-			|| session_status() == ST_EDITSFILE || session_status() == ST_EDITANN)
+	session_status_e s = session_status();
+	if (s == ST_POSTING || s == ST_SMAIL || s == ST_EDIT || s == ST_EDITUFILE
+			|| s == ST_EDITSFILE || s == ST_EDITANN)
 		keep_fail_post();
 
 	if (session_id()) {
@@ -297,8 +295,8 @@ static void system_init(void)
 {
 	struct sigaction act;
 
+	fb_signal(SIGHUP, terminal_schedule_exit);
 #ifndef lint
-	fb_signal(SIGHUP, abort_bbs);
 	fb_signal(SIGINT, SIG_IGN);
 	fb_signal(SIGQUIT, SIG_IGN);
 	fb_signal(SIGPIPE, SIG_IGN);
