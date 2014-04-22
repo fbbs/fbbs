@@ -1585,7 +1585,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 							//% sprintf(tmp, "[1m已经帮您转贴至 %s 版了[m", bname);
 							sprintf(tmp, "[1m\xd2\xd1\xbe\xad\xb0\xef\xc4\xfa\xd7\xaa\xcc\xf9\xd6\xc1 %s \xb0\xe6\xc1\xcb[m", bname);
 							outs(tmp);
-							refresh();
+							screen_flush();
 							sleep(1);
 						}
 					}

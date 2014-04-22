@@ -330,7 +330,7 @@ static void system_abort(void)
 		u_exit();
 	}
 	screen_clear();
-	refresh();
+	screen_flush();
 	//% prints("谢谢光临, 记得常来喔 !\n");
 	prints("\xd0\xbb\xd0\xbb\xb9\xe2\xc1\xd9, \xbc\xc7\xb5\xc3\xb3\xa3\xc0\xb4\xe0\xb8 !\n");
 	exit(0);
@@ -591,7 +591,7 @@ static void notepad_init(void)
 		move(-1, 0);
 		//% prints("对不起，系统自动发信，请稍候.....");
 		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xcf\xb5\xcd\xb3\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....");
-		refresh();
+		screen_flush();
 		check = fopen("etc/checknotepad", "w");
 		lastnote = now - (now % maxsec);
 		fprintf(check, "%ld", lastnote);
@@ -674,7 +674,7 @@ static void user_login(void)
 #endif
 
 	if (show_statshm("etc/hotspot", 0)) {
-		refresh();
+		screen_flush();
 		pressanykey();
 	}
 
@@ -687,7 +687,7 @@ static void user_login(void)
 		ansimore("Welcome2", YEA);
 	}
 	show_statshm("0Announce/bbslist/day", 1);
-	refresh();
+	screen_flush();
 	screen_move_clear(-2);
 	if (currentuser.numlogins < 1) {
 		currentuser.numlogins = 0;

@@ -76,7 +76,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	clrtoeol();
 	while (1) {
 		if (RMSG) {
-			refresh();
+			screen_flush();
 		}
 		ch = terminal_getchar();
 		if ((RMSG == YEA) && msg_num == 0) {
@@ -195,7 +195,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 		prints("%s", buf);
 	}
 	outc('\n');
-	refresh();
+	screen_flush();
 	return clen;
 }
 
@@ -844,7 +844,7 @@ int pressreturn(void)
 			"                              [1;33m\xc7\xeb\xb0\xb4 \xa1\xf4[5;36mEnter[m[1;33m\xa1\xf4 \xbc\xcc\xd0\xf8\033[m",
 			buf, 2, NOECHO, YEA);
 	screen_move_clear(-1);
-	refresh();
+	screen_flush();
 	return 0;
 }
 

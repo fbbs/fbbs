@@ -1683,7 +1683,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 		screen_move_clear(-1);
 		print_prompt(tid, uid, true);
 		prints("\033[m");
-		refresh();
+		screen_flush();
 
 		if (!(ch == KEY_UP || ch == KEY_PGUP))
 			ch = egetch();
@@ -2731,7 +2731,7 @@ static int read_reply(tui_list_t *tl, post_info_t *pi)
 		screen_move_clear(-1);
 		print_prompt(0, 0, false);
 		prints("\033[m");
-		refresh();
+		screen_flush();
 
 		if (!(ch == KEY_UP || ch == KEY_PGUP))
 			ch = egetch();

@@ -171,7 +171,7 @@ static void msg(int unused)
 	msgline();
 	fb_signal(SIGALRM, msg);
 	move(x, y);
-	refresh();
+	screen_flush();
 	alarm(60);
 	showansi = tmpansi;
 }
@@ -741,7 +741,7 @@ static void top_show(const char *prompt)
 {
 	if (editansi) {
 		outs(ANSI_RESET);
-		refresh();
+		screen_flush();
 	}
 	screen_move_clear(0);
 	prints(ANSI_CMD_SO"%s"ANSI_CMD_SE, prompt);
@@ -771,7 +771,7 @@ static int process_ESC_action(int action, int arg)
 			if (ismsgline >= 1) {
 				ismsgline = 0;
 				screen_move_clear(-1);
-				refresh();
+				screen_flush();
 			} else
 				ismsgline = 1;
 			break;
@@ -1050,7 +1050,7 @@ static int write_file(char *filename, int write_header_to_file, int addfrom,
 		screen_clear();
 		//% prints("取消...\n");
 		prints("\xc8\xa1\xcf\xfb...\n");
-		refresh();
+		screen_flush();
 		sleep(1);
 		if (stat(filename, &stbuf) || stbuf.st_size == 0)
 			unlink(filename);

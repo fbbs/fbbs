@@ -165,7 +165,7 @@ static int get_raw_ch(void)
 				abort_bbs(0);
 
 			if (ret <= 0) {
-				refresh();
+				screen_flush();
 			} else {
 				if (fd > 0 && FD_ISSET(fd, &rset)) {
 					// TODO: handle notification

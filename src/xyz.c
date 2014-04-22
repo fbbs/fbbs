@@ -66,7 +66,7 @@ int showperminfo(int pbits, int i) {
 					>> i) & 1 ? "\xca\xc7" : "\xa1\xc1"));
 	move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
 	outs(buf);
-	refresh();
+	screen_flush();
 	return YEA;
 }
 

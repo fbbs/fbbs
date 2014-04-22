@@ -225,7 +225,7 @@ void screen_redraw(void)
 	terminal_flush();
 }
 
-void refresh(void)
+void screen_flush(void)
 {
 	screen_line_t *bp = screen.buf;
 	if (!bp) {
@@ -647,7 +647,7 @@ void screen_save_line(int line, bool save)
 		screen_move_clear(line);
 		prints("%s", saved);
 		move(x, y);
-		refresh();
+		screen_flush();
 	}
 }
 

@@ -318,7 +318,7 @@ int namecomplete(char *prompt, char *data) {
 	if (ch == EOF)
 		longjmp(byebye, -1);
 	prints("\n");
-	refresh();
+	screen_flush();
 	if (clearbot) {
 		move(origy, 0);
 		screen_clrtobot();
@@ -526,7 +526,7 @@ int usercomplete(char *prompt, char *data) {
 	if (ch == EOF)
 		longjmp(byebye, -1);
 	prints("\n");
-	refresh();
+	screen_flush();
 	if (clearbot) {
 		move(origy, 0);
 		screen_clrtobot();

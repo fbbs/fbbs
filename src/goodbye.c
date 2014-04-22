@@ -59,7 +59,7 @@ void user_display(char *filename, int number, int mode)
 		else
 			continue;
 	}
-	refresh();
+	screen_flush();
 	fclose(fp);
 	return;
 }

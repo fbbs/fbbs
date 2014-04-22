@@ -474,7 +474,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 			} else {
 				if (promptend)
 					pressanykey();
-				refresh();
+				screen_flush();
 				return ch;
 			}
 		}
@@ -492,7 +492,7 @@ static int more_main(more_file_t *more, bool promptend, int line, int lines,
 
 		ch = morekey();
 		screen_move_clear(-1);
-		refresh();
+		screen_flush();
 		switch (ch) {
 			case KEY_LEFT:
 				return ch;
@@ -733,7 +733,7 @@ int ansimore_buffer(const char *buf, size_t size, int promptend)
 
 	move(-1, 0);
 	prints("\033[m");
-	refresh();
+	screen_flush();
 	return ch;
 }
 
@@ -744,7 +744,7 @@ int ansimore(const char *filename, int promptend)
 	ch = rawmore2(filename, promptend, 0, 0, NA);
 	move(-1, 0);
 	prints("\033[0m\033[m");
-	refresh();
+	screen_flush();
 	return ch;
 }
 
@@ -752,7 +752,7 @@ int ansimore2(char *filename, int promptend, int row, int numlines)
 {
 	int     ch;
 	ch = rawmore2(filename, promptend, row, numlines, NA);
-	refresh();
+	screen_flush();
 	return ch;
 }
 
