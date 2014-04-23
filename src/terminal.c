@@ -140,7 +140,7 @@ static int get_raw_ch(void)
 {
 	if (input_buffer.cur >= input_buffer.size) {
 		int fd = 0, ret;
-		struct timeval tv;
+		struct timeval tv = { .tv_sec = 0, .tv_usec = 0 };
 
 		while (1) {
 			fd_set rset;
@@ -153,8 +153,6 @@ static int get_raw_ch(void)
 				nfds = fd + 1;
 			}
 
-			tv.tv_sec = IDLE_TIMEOUT;
-			tv.tv_usec = 0;
 			ret = select(nfds, &rset, NULL, NULL, &tv);
 
 			if (FD_ISSET(STDIN_FILENO, &rset)) {
@@ -163,10 +161,10 @@ static int get_raw_ch(void)
 #endif
 			}
 
-			if (_schedule_exit || !ret || (ret < 0 && errno != EINTR))
+			if (_schedule_exit || (ret < 0 && errno != EINTR))
 				abort_bbs(0);
 
-			if (ret < 0) {
+			if (ret <= 0) {
 				refresh();
 			} else {
 				if (fd > 0 && FD_ISSET(fd, &rset)) {
@@ -177,6 +175,8 @@ static int get_raw_ch(void)
 					break;
 				}
 			}
+			tv.tv_sec = IDLE_TIMEOUT;
+			tv.tv_usec = 0;
 		}
 
 		while (1) {
