@@ -1,5 +1,6 @@
 #include <arpa/telnet.h>
 #include <stdarg.h>
+#include <wchar.h>
 #include "bbs.h"
 #include "fbbs/convert.h"
 #include "fbbs/string.h"
@@ -383,6 +384,12 @@ void screen_puts(const char *s, size_t size)
 	}
 }
 
+void screen_putc(int c)
+{
+	char ch = c;
+	screen_puts(&ch, 1);
+}
+
 static int screen_put_gbk_helper(const char *buf, size_t len, void *arg)
 {
 	screen_puts(buf, len);
@@ -399,8 +406,7 @@ static void screen_put_gbk(int c)
 	} else if (c & 0x80) {
 		left = c;
 	} else {
-		char buf = c;
-		screen_puts(&buf, 1);
+		screen_putc(c);
 	}
 }
 
@@ -464,182 +470,162 @@ void outs(const char *str)
 	}
 }
 
-/**
- * Print first n bytes of a string.
- * @param str The string.
- * @param n Maximum output bytes.
- * @param ansi Whether ansi control codes should be excluded in length or not.
- */
-static void outns(const char *str, int n, bool ansi)
+static size_t display_width(const char *ptr, bool utf8)
 {
-	if (!ansi) {
-		while (*str != '\0' && n > 0) {
-			outc(*str++);
-			n--;
+	size_t width = 0;
+	bool ansi = false;
+	while (*ptr) {
+		if (ansi) {
+			if (isalpha(*ptr))
+				ansi = false;
+		} else {
+			if (*ptr == '\033') {
+				ansi = true;
+			} else {
+				if (utf8) {
+					wchar_t wc = next_wchar(&ptr, NULL);
+					if (wc == WEOF)
+						break;
+					width += fb_wcwidth(wc);
+				} else {
+					++width;
+				}
+			}
 		}
-	} else {
-		while (*str != '\0' && n > 0) {
-			n -= outc(*str++);
-		}
-		outs("\033[m");
 	}
+	return width;
 }
 
-static const int64_t dec[] = {
-	INT64_C(1000000000000000000),
-	INT64_C(100000000000000000),
-	INT64_C(10000000000000000),
-	INT64_C(1000000000000000),
-	INT64_C(100000000000000),
-	INT64_C(10000000000000),
-	INT64_C(1000000000000),
-	INT64_C(100000000000),
-	INT64_C(10000000000),
-	INT64_C(1000000000),
-	INT64_C(100000000),
-	INT64_C(10000000),
-	INT64_C(1000000),
-	INT64_C(100000),
-	INT64_C(10000),
-	INT64_C(1000),
-	INT64_C(100),
-	INT64_C(10),
-	INT64_C(1),
-};
-
-/*以ANSI格式输出可变参数的字符串序列*/
-void prints(const char *fmt, ...)
+static void _print_string(const char *ptr, size_t width, bool utf8,
+		bool left_adjust)
 {
-	va_list ap;
-	const char *bp;
-	int count, hd;
-	va_start(ap, fmt);
+	if (!ptr)
+		ptr = nullstr;
+
+	size_t padding = 0;
+	if (width) {
+		size_t w = display_width(ptr, utf8);
+		if (w < width)
+			padding = width - w;
+	}
+
+	if (padding && !left_adjust)
+		tui_repeat_char(' ', padding);
+
+	if (utf8) {
+			screen_puts(ptr, 0);
+	} else {
+		convert(env_g2u, ptr, CONVERT_ALL, NULL, 0,
+				screen_put_gbk_helper, NULL);
+	}
+
+	if (padding && left_adjust)
+		tui_repeat_char(' ', padding);
+}
+
+/*
+ * 格式化输出到屏幕
+ * 支持形如%d %ld %c %s %-7s %7s的格式
+ * @param[in] fmt 格式字符串
+ * @param[in] utf8 输入是否为UTF-8编码
+ * @param[in] ap 参数列表
+ */
+static void screen_vprintf(const char *fmt, bool utf8, va_list ap)
+{
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
-			int sgn = 1;
-			int sgn2 = 1;
-			int val = 0;
-			int len, negi;
-			bool long_ = false;
-			fmt++;
+			bool left_adjust = false, long_ = false;
+			size_t width = 0;
+
+			++fmt;
 			switch (*fmt) {
 				case '-':
-					while (*fmt == '-') {
-						sgn *= -1;
-						fmt++;
-					}
+					left_adjust = true;
+					++fmt;
 					break;
 				case 'l':
 					long_ = true;
 					++fmt;
 					break;
-				case '.':
-					sgn2 = 0;
-					fmt++;
-					break;
 			}
+
 			while (isdigit(*fmt)) {
-				val *= 10;
-				val += *fmt - '0';
-				fmt++;
+				width *= 10;
+				width += *fmt - '0';
+				++fmt;
 			}
+
 			switch (*fmt) {
-				case 's':
-					bp = va_arg(ap, const char *);
-					if (bp == NULL)
-						bp = nullstr;
-					if (val) {
-						register int slen = strlen(bp);
-						if (!sgn2) {
-							if (val <= slen)
-								outns(bp, val, true);
-							else
-								outns(bp, slen, true);
-						} else if (val <= slen)
-							outns(bp, val, false);
-						else if (sgn > 0) {
-							for (slen = val - slen; slen > 0; slen--)
-								outc(' ');
-							outs(bp);
-						} else {
-							outs(bp);
-							for (slen = val - slen; slen > 0; slen--)
-								outc(' ');
-						}
-					} else
-						outs(bp);
+				case 's': {
+					const char *ptr = va_arg(ap, const char *);
+					_print_string(ptr, width, utf8, left_adjust);
 					break;
-				case 'd':
-					{
-						int64_t n;
-						if (long_)
-							n = va_arg(ap, int64_t);
-						else
-							n = va_arg(ap, int);
-
-						negi = NA;
-						if (n < 0) {
-							negi = YEA;
-							n *= -1;
-						}
-
-						int indx = 0;
-						for (indx = 0; indx < ARRAY_SIZE(dec); ++indx) {
-							if (n >= dec[indx])
-								break;
-						}
-						if (n == 0)
-							len = 1;
-						else
-							len = ARRAY_SIZE(dec) - indx;
-						if (negi)
-							len++;
-						if (val >= len && sgn > 0) {
-							for (int slen = val - len; slen > 0; slen--)
-								outc(' ');
-						}
-						if (negi)
-							outc('-');
-						hd = 1, indx = 0;
-						while (indx < ARRAY_SIZE(dec)) {
-							count = 0;
-							while (n >= dec[indx]) {
-								count++;
-								n -= dec[indx];
-							}
-							indx++;
-							if (indx == ARRAY_SIZE(dec))
-								hd = 0;
-							if (hd && !count)
-								continue;
-							hd = 0;
-							outc('0' + count);
-						}
-						if (val >= len && sgn < 0) {
-							for (int slen = val - len; slen > 0; slen--)
-								outc(' ');
-						}
+				}
+				case 'd': {
+					int64_t n;
+					if (long_) {
+						n = va_arg(ap, int64_t);
+					} else {
+						n = va_arg(ap, int);
 					}
+
+					char buf[24];
+					snprintf(buf, sizeof(buf), "%ld", n);
+					screen_puts(buf, 0);
 					break;
+				}
 				case 'c': {
-						int i = va_arg(ap, int);
-						outc(i);
-					}
+					int i = va_arg(ap, int);
+					screen_putc(i);
 					break;
+				}
 				case '\0':
-					goto endprint;
+					return;
 				default:
-					outc(*fmt);
+					if (utf8)
+						screen_putc(*fmt);
+					else
+						screen_put_gbk(*fmt);
 					break;
 			}
-			fmt++;
-			continue;
+			++fmt;
+		} else {
+			if (utf8)
+				screen_putc(*fmt);
+			else
+				screen_put_gbk(*fmt);
+			++fmt;
 		}
-		outc(*fmt);
-		fmt++;
 	}
+}
+
+/*
+ * 格式化输出到屏幕
+ * 输入必须为UTF-8编码
+ * @param[in] fmt 格式字符串
+ * @see screen_vprintf
+ */
+void screen_printf(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	screen_vprintf(fmt, true, ap);
 	va_end(ap);
-	endprint: return;
+}
+
+/*
+ * 格式化输出到屏幕
+ * 输入必须为GBK编码
+ * @param[in] fmt 格式字符串
+ * @see screen_vprintf
+ * @deprecated
+ */
+void prints(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	screen_vprintf(fmt, false, ap);
+	va_end(ap);
 }
 
 /**
