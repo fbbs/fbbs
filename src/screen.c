@@ -64,28 +64,6 @@ void screen_negotiate_size(void)
 	//	  (client sends)  IAC SB  NAWS 0 80 0 24 IAC SE
 	uchar_t naws[] = { IAC, DO, TELOPT_NAWS };
 	terminal_write(naws, sizeof(naws));
-
-	uchar_t buf[80];
-	int len = terminal_read(buf, sizeof(buf));
-	if (len == 12) {
-		if (buf[0] != IAC || buf[1] != WILL || buf[2] != TELOPT_NAWS)
-			return;
-		if (buf[3] != IAC || buf[4] != SB || buf[5] != TELOPT_NAWS
-				|| buf[10] != IAC || buf[11] != SE)
-			return;
-		screen.lines = buf[9];
-	}
-	if (len == 9) {
-		if (buf[0] != IAC || buf[1] != SB || buf[2] != TELOPT_NAWS
-				|| buf[7] != IAC || buf[8] != SE)
-			return;
-		screen.lines = buf[6];
-	}
-
-	if (screen.lines < MIN_SCREEN_LINES)
-		screen.lines = MIN_SCREEN_LINES;
-	if (screen.lines > MAX_SCREEN_LINES)
-		screen.lines = MAX_SCREEN_LINES;
 }
 
 int num_ans_chr(const char *str)

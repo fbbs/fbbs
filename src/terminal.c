@@ -212,6 +212,11 @@ typedef enum {
  */
 static int handle_iac(void)
 {
+	// IAC SB  NAWS 0 80 0 24 IAC SE
+	char buf[8];
+	size_t size = 0;
+	bool naws = false;
+
 	option_status_e status = OPTION_STATUS_IAC;
 	while (status != OPTION_STATUS_END) {
 		int ch = get_raw_ch();
@@ -228,8 +233,18 @@ static int handle_iac(void)
 				status = OPTION_STATUS_END;
 				break;
 			case OPTION_STATUS_SUB:
-				if (ch == SE)
+				if (ch == TELOPT_NAWS) {
+					naws = true;
+					size = 0;
+				} else if (ch == SE) {
+					if (naws && size == 5) {
+						screen_init(buf[3]);
+					}
 					status = OPTION_STATUS_END;
+				} else if (naws) {
+					if (size < sizeof(buf))
+						buf[size++] = ch;
+				}
 				break;
 			default:
 				break;
