@@ -449,13 +449,10 @@ static int login_query(void)
 	}
 #endif // ENABLE_SSH
 
-	if (fill_shmfile(1, "etc/issue", "ISSUE_SHMKEY")) {
-		show_issue();
-	}
-	//% prints("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
-	prints("\033[1;35m\xbb\xb6\xd3\xad\xb9\xe2\xc1\xd9\033[1;40;33m\xa1\xbe %s \xa1\xbf \033[m"
+	ansimore("etc/issue", false);
+	screen_printf("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
-			BBSNAME);
+			BBSNAME_UTF8);
 
 	int peak = session_get_online_record();
 	if (peak < online) {
@@ -463,10 +460,8 @@ static int login_query(void)
 		peak = online;
 	}
 
-	//% prints("\033[1;32m目前已有帐号数: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
-	prints("\033[1;32m\xc4\xbf\xc7\xb0\xd2\xd1\xd3\xd0\xd5\xca\xba\xc5\xca\xfd: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
-			//% "\033[32m目前上站人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
-			"\033[32m\xc4\xbf\xc7\xb0\xc9\xcf\xd5\xbe\xc8\xcb\xca\xfd: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
+	screen_printf("\033[1;32m目前已有帐号: [\033[1;36m%d\033[32m/\033[36m%d\033[32m] "
+			"\033[32m目前站上人数: [\033[36m%d\033[32m/\033[36m%d\033[1;32m]\n",
 			get_user_count(), MAXUSERS, online, MAXACTIVE);
 	visitlog(peak);
 
@@ -496,8 +491,7 @@ static int login_query(void)
 		} else if (*uname == '\0')
 			;
 		else if (!dosearchuser(uname, &currentuser, &usernum)) {
-			//% prints("\033[1;31m经查证，无此 ID。\033[m\n");
-			prints("\033[1;31m\xbe\xad\xb2\xe9\xd6\xa4\xa3\xac\xce\xde\xb4\xcb ID\xa1\xa3\033[m\n");
+			screen_printf("\033[1;31m经查证，无此 ID。\033[m\n");
 		} else if (strcaseeq(uname, "guest")) {
 			currentuser.userlevel = 0;
 			break;
@@ -508,28 +502,22 @@ static int login_query(void)
 			passbuf[8] = '\0';
 			switch (bbs_auth(uname, passbuf)) {
 				case BBS_EWPSWD:
-					//% prints("\033[1;31m密码输入错误...\033[m\n");
-					prints("\033[1;31m\xc3\xdc\xc2\xeb\xca\xe4\xc8\xeb\xb4\xed\xce\xf3...\033[m\n");
+					screen_printf("\033[1;31m密码输入错误...\033[m\n");
 					break;
 				case BBS_EGIVEUP:
 					recover = chk_giveupbbs();
-					//% prints("\033[33m您正在戒网，离戒网结束还有%d天\033[m\n",
-					prints("\033[33m\xc4\xfa\xd5\xfd\xd4\xda\xbd\xe4\xcd\xf8\xa3\xac\xc0\xeb\xbd\xe4\xcd\xf8\xbd\xe1\xca\xf8\xbb\xb9\xd3\xd0%d\xcc\xec\033[m\n",
-							recover - time(NULL) / 3600 / 24);
+					screen_printf("\033[33m您正在戒网，离戒网结束还有%d天\033[m\n",
+							recover - fb_time() / 3600 / 24);
 					return -1;
 				case BBS_ESUICIDE:
-					//% prints("\033[32m您已经自杀\033[m\n");
-					prints("\033[32m\xc4\xfa\xd2\xd1\xbe\xad\xd7\xd4\xc9\xb1\033[m\n");
+					screen_printf("\033[32m您已经自杀\033[m\n");
 					return -1;
 				case BBS_EBANNED:
-					//% prints("\033[32m本帐号已停机。请到 "
-					prints("\033[32m\xb1\xbe\xd5\xca\xba\xc5\xd2\xd1\xcd\xa3\xbb\xfa\xa1\xa3\xc7\xeb\xb5\xbd "
-							//% "\033[36mNotice\033[32m版 查询原因\033[m\n");
-							"\033[36mNotice\033[32m\xb0\xe6 \xb2\xe9\xd1\xaf\xd4\xad\xd2\xf2\033[m\n");
+					screen_printf("\033[32m本帐号已停机。请到 "
+							"\033[36mNotice\033[32m版 查询原因\033[m\n");
 					return -1;
 				case BBS_ELFREQ:
-					//% prints("登录过于频繁，请稍候再来\n");
-					prints("\xb5\xc7\xc2\xbc\xb9\xfd\xd3\xda\xc6\xb5\xb7\xb1\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2\xd4\xd9\xc0\xb4\n");
+					screen_printf("登录过于频繁，请稍候再来\n");
 					return -1;
 				case 0:
 					auth = true;
@@ -550,9 +538,6 @@ static int login_query(void)
 		return -1;
 
 	dumb_term = false;
-#ifndef ENABLE_SSH
-	screen_negotiate_size();
-#endif // ENABLE_SSH
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);
@@ -647,7 +632,6 @@ static void user_login(void)
 	u_enter();
 	report("Enter", currentuser.userid);
 
-	screen_init(0);
 #ifdef USE_NOTEPAD
 	notepad_init();
 	if (strcmp(currentuser.userid, "guest") != 0) {
@@ -872,11 +856,17 @@ void start_client(void)
 
 	strlcpy(BoardName, BBSNAME, sizeof(BoardName));
 
+	dumb_term = false;
+	screen_init(0);
 	if (login_query() == -1) {
 		terminal_flush();
 		sleep(3);
 		exit(1);
 	}
+#ifndef ENABLE_SSH
+	screen_negotiate_size();
+#endif // ENABLE_SSH
+
 	user_login();
 
 	setmdir(currmaildir, currentuser.userid);
