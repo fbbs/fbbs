@@ -561,7 +561,7 @@ static void screen_vprintf(const char *fmt, bool utf8, va_list ap)
 
 					char buf[24];
 					snprintf(buf, sizeof(buf), "%ld", n);
-					screen_puts(buf, 0);
+					_print_string(buf, width, true, left_adjust);
 					break;
 				}
 				case 'c': {
