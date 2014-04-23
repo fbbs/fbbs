@@ -487,11 +487,13 @@ static size_t display_width(const char *ptr, bool utf8)
 					if (wc == WEOF)
 						break;
 					width += fb_wcwidth(wc);
+					--ptr;
 				} else {
 					++width;
 				}
 			}
 		}
+		++ptr;
 	}
 	return width;
 }

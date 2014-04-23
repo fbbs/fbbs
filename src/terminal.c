@@ -121,7 +121,10 @@ void terminal_write_cached(const uchar_t *str, int size)
 
 bool terminal_input_buffer_empty(void)
 {
-	return (input_buffer.cur >= input_buffer.size);
+	const input_buffer_t *buf = &input_buffer;
+	// 当终端按下回车时, 传送的可能是 \r\0
+	return (buf->cur >= buf->size
+			|| (buf->ptr[buf->cur] == '\0' && buf->cur == buf->size - 1));
 }
 
 /** @global 准备退出当前会话 */
