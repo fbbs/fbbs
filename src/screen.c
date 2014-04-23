@@ -111,7 +111,7 @@ int num_ans_chr(const char *str)
 	return ansinum;
 }
 
-void screen_init(void)
+void screen_init(int lines)
 {
 	if (!dumb_term && !screen.buf)
 		screen.columns = WRAPMARGIN;
@@ -119,15 +119,25 @@ void screen_init(void)
 	if (screen.columns > SCREEN_LINE_LEN)
 		screen.columns = SCREEN_LINE_LEN;
 
-	screen.buf = malloc(screen.lines * sizeof(*screen.buf));
-	for (int i = screen.lines - 1; i >= 0; --i) {
-		screen_line_t *sl = screen.buf + i;
-		sl->modified = false;
-		sl->len = 0;
-		sl->old_len = 0;
+	if (lines < MIN_SCREEN_LINES)
+		lines = MIN_SCREEN_LINES;
+	if (lines > MAX_SCREEN_LINES)
+		lines = MAX_SCREEN_LINES;
+
+	if (!screen.buf) {
+		screen.buf = malloc(screen.lines * sizeof(*screen.buf));
+		for (int i = screen.lines - 1; i >= 0; --i) {
+			screen_line_t *sl = screen.buf + i;
+			sl->modified = false;
+			sl->len = 0;
+			sl->old_len = 0;
+		}
+		screen.redraw = true;
+		screen.roll = 0;
+	} else if (lines > screen.lines) {
+		screen.buf = realloc(screen.buf, lines * sizeof(*screen.buf));
+		screen.lines = lines;
 	}
-	screen.redraw = true;
-	screen.roll = 0;
 }
 
 /**
