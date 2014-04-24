@@ -55,6 +55,7 @@ extern void clrtoeol(void);
 extern void screen_clrtobot(void);
 extern int outc(int c);
 extern void outs(const char *str);
+extern size_t screen_display_width(const char *ptr, bool utf8);
 extern void screen_puts(const char *s, size_t size);
 extern void screen_putc(int c);
 extern void screen_printf(const char *fmt, ...);

@@ -458,7 +458,7 @@ void outs(const char *str)
 	}
 }
 
-static size_t display_width(const char *ptr, bool utf8)
+size_t screen_display_width(const char *ptr, bool utf8)
 {
 	size_t width = 0;
 	bool ansi = false;
@@ -494,7 +494,7 @@ static void _print_string(const char *ptr, size_t width, bool utf8,
 
 	size_t padding = 0;
 	if (width) {
-		size_t w = display_width(ptr, utf8);
+		size_t w = screen_display_width(ptr, utf8);
 		if (w < width)
 			padding = width - w;
 	}

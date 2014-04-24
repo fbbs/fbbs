@@ -6,80 +6,67 @@
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
-extern int enabledbchar;
+static int remove_character(char *buf, int *cur, int clen, bool backspace)
+{
+	if (*cur <= 0 || clen <= 0)
+		return 0;
+
+	int pos = 0, dec = 0;
+	for (int i = 0; i < clen; ) {
+		pos = i;
+		dec = (buf[i] & 0x80) ? 2 : 1;
+		i += dec;
+		if ((!backspace && (pos >= *cur || i > *cur))
+				|| (backspace && i >= *cur))
+			break;
+	}
+
+	int remaining = clen - pos - dec;
+	if (remaining > 0)
+		memmove(buf + pos, buf + pos + dec, remaining);
+	*cur = pos;
+
+	clen -= dec;
+	if (clen < 0) {
+		dec += clen;
+		clen = 0;
+	}
+	buf[clen] = '\0';
+	return dec;
+}
 
 int getdata(int line, int col, const char *prompt, char *buf, int len,
-		int echo, int clearlabel)
+		int echo, int clear)
 {
-	int ch, clen = 0, curr = 0, x, y;
-	int currDEC=0, i, patch=0;
-	char tmp[STRLEN];
 	extern int RMSG;
 	extern int msg_num;
 
-	if (clearlabel == YEA)
+	if (clear)
 		buf[0] = '\0';
-	move(line, col);
-	if (prompt)
-		prints("%s", prompt);
-	screen_coordinates(&y, &x);
-	col += (prompt == NULL) ? 0 : strlen(prompt);
-	x = col;
 	buf[len - 1] = '\0';
-	curr = clen = strlen(buf);
-	buf[curr] = '\0';
-	prints("%s", buf);
 
-	if (dumb_term || echo == NA) {
-		while ((ch = terminal_getchar()) != '\n') {
-			if (RMSG == YEA && msg_num == 0) {
-				if (ch == Ctrl('Z') || ch == KEY_UP) {
-					buf[0] = Ctrl('Z');
-					clen = 1;
-					break;
-				}
-				if (ch == Ctrl('A') || ch == KEY_DOWN) {
-					buf[0] = Ctrl('A');
-					clen = 1;
-					break;
-				}
-			}
-			if (ch == '\n')
-				break;
-			if (ch == '\177' || ch == Ctrl('H')) {
-				if (clen == 0) {
-					continue;
-				}
-				clen--;
-				terminal_putchar(Ctrl('H'));
-				terminal_putchar(' ');
-				terminal_putchar(Ctrl('H'));
-				continue;
-			}
-			if (!isprint2(ch)) {
-				continue;
-			}
-			if (clen >= len - 1) {
-				continue;
-			}
-			buf[clen++] = ch;
-			if (echo)
-				terminal_putchar(ch);
-			else
-				terminal_putchar('*');
-		}
-		buf[clen] = '\0';
-		outc('\n');
-		terminal_flush();
-		return clen;
-	}
-	clrtoeol();
+	int real_x = prompt ? strlen(prompt) : 0;
+
+	int cur, clen;
+	cur = clen = strlen(buf);
+
 	while (1) {
-		if (RMSG) {
+		move(line, col);
+		clrtoeol();
+		if (prompt)
+			prints("%s", prompt);
+		if (echo)
+			prints("%s", buf);
+		else
+			tui_repeat_char('*', clen);
+		move(line, real_x + cur);
+
+		if (RMSG)
 			screen_flush();
-		}
-		ch = terminal_getchar();
-		if ((RMSG == YEA) && msg_num == 0) {
+
+		int ch = terminal_getchar();
+
+		if (RMSG && msg_num == 0) {
 			if (ch == Ctrl('Z') || ch == KEY_UP) {
 				buf[0] = Ctrl('Z');
 				clen = 1;
@@ -91,110 +78,34 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 				break;
 			}
 		}
+
 		if (ch == '\n' || ch == '\r')
 			break;
-		if (ch == Ctrl('R')) {
-			enabledbchar=~enabledbchar&1;
-			continue;
+
+		if (ch == '\x7f' || ch == Ctrl('H')) {
+			clen -= remove_character(buf, &cur, clen, true);
+		} else if (ch == KEY_DEL) {
+			clen -= remove_character(buf, &cur, clen, false);
+		} else if (ch == KEY_LEFT) {
+			if (cur > 0)
+				--cur;
+		} else if (ch == KEY_RIGHT) {
+			if (cur < clen)
+				++cur;
+		} else if (ch == Ctrl('E') || ch == KEY_END) {
+			cur = clen;
+		} else if (ch == Ctrl('A') || ch == KEY_HOME) {
+			cur = 0;
+		} else if (isprint2(ch) && clen < len - 1) {
+			if (buf[cur] != '\0')
+				memmove(buf + cur + 1, buf + cur, clen - cur);
+			buf[cur] = ch;
+			buf[++cur] = '\0';
+			++clen;
 		}
-		if (ch == '\177' || ch == Ctrl('H')) {
-			if (curr == 0) {
-				continue;
-			}
-			currDEC = patch = 0;
-			if (enabledbchar&&buf[curr-1]&0x80) {
-				for (i=curr-2; i>=0&&buf[i]&0x80; i--)
-					patch ++;
-				if (patch%2==0 && buf[curr]&0x80)
-					patch = 1;
-				else if (patch%2)
-					patch = currDEC = 1;
-				else
-					patch = 0;
-			}
-			if (currDEC)
-				curr --;
-			strcpy(tmp, &buf[curr+patch]);
-			buf[--curr] = '\0';
-			(void) strcat(buf, tmp);
-			clen--;
-			if (patch)
-				clen --;
-			move(y, x);
-			prints("%s", buf);
-			clrtoeol();
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == KEY_DEL) {
-			if (curr >= clen) {
-				curr = clen;
-				continue;
-			}
-			strcpy(tmp, &buf[curr + 1]);
-			buf[curr] = '\0';
-			(void) strcat(buf, tmp);
-			clen--;
-			move(y, x);
-			prints("%s", buf);
-			clrtoeol();
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == KEY_LEFT) {
-			if (curr == 0) {
-				continue;
-			}
-			curr--;
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == Ctrl('E') || ch == KEY_END) {
-			curr = clen;
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == Ctrl('A') || ch == KEY_HOME) {
-			curr = 0;
-			move(y, x + curr);
-			continue;
-		}
-		if (ch == KEY_RIGHT) {
-			if (curr >= clen) {
-				curr = clen;
-				continue;
-			}
-			curr++;
-			move(y, x + curr);
-			continue;
-		}
-		if (!isprint2(ch)) {
-			continue;
-		}
-		if (clen >= len - 1) {
-			continue;
-		}
-		if (!buf[curr]) {
-			buf[curr + 1] = '\0';
-			buf[curr] = ch;
-		} else {
-			strlcpy(tmp, &buf[curr], len);
-			buf[curr] = ch;
-			buf[curr + 1] = '\0';
-			strncat(buf, tmp, len - curr);
-		}
-		curr++;
-		clen++;
-		move(y, x);
-		prints("%s", buf);
-		move(y, x + curr);
 	}
-	buf[clen] = '\0';
-	if (echo) {
-		move(y, x);
-		prints("%s", buf);
-	}
-	outc('\n');
+
+	screen_putc('\n');
 	screen_flush();
 	return clen;
 }
