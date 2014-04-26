@@ -45,7 +45,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 		buf[0] = '\0';
 	buf[len - 1] = '\0';
 
-	int real_x = prompt ? strlen(prompt) : 0;
+	int real_x = prompt ? screen_display_width(prompt, false) : 0;
 
 	int cur, clen;
 	cur = clen = strlen(buf);

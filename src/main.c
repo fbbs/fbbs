@@ -449,7 +449,7 @@ static int login_query(void)
 	}
 #endif // ENABLE_SSH
 
-	ansimore("etc/issue", false);
+	ansimore2("etc/issue", false, 0, 0);
 	screen_printf("\033[1;35m欢迎光临\033[1;40;33m【 %s 】 \033[m"
 			"[\033[1;33;41m Add '.' after YourID to login for BIG5 \033[m]\n",
 			BBSNAME_UTF8);
@@ -856,8 +856,6 @@ void start_client(void)
 
 	strlcpy(BoardName, BBSNAME, sizeof(BoardName));
 
-	dumb_term = false;
-	screen_init(0);
 	if (login_query() == -1) {
 		terminal_flush();
 		sleep(3);
@@ -866,6 +864,7 @@ void start_client(void)
 #ifndef ENABLE_SSH
 	screen_negotiate_size();
 #endif // ENABLE_SSH
+	screen_init(0);
 
 	user_login();
 

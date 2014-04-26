@@ -165,14 +165,23 @@ static inline screen_line_t *get_screen_line(int line)
 
 static int _write_helper(const char *buf, size_t len, void *arg)
 {
-	terminal_write_cached((const uchar_t *) buf, len);
+	if (dumb_term) {
+		const char *end = buf + len;
+		for (const char *ptr = buf; ptr < end; ++ptr) {
+			if (*ptr == '\n')
+				terminal_putchar('\r');
+			terminal_putchar(*ptr);
+		}
+	} else {
+		terminal_write_cached((const uchar_t *) buf, len);
+	}
 	return 0;
 }
 
 static void screen_write_cached(const uchar_t *data, uint16_t len, bool utf8)
 {
 	if (utf8) {
-		terminal_write_cached(data, len);
+		_write_helper((const char *) data, len, NULL);
 	} else {
 		convert(env_u2g, (const char *) data, len, NULL, 0,
 				_write_helper, NULL);
@@ -214,8 +223,7 @@ void screen_redraw(void)
 
 void screen_flush(void)
 {
-	screen_line_t *bp = screen.buf;
-	if (!bp) {
+	if (!screen.buf) {
 		terminal_flush();
 		return;
 	}
@@ -322,12 +330,16 @@ void screen_move_clear(int line)
  */
 void clrtoeol(void)
 {
-	if (dumb_term)
-		return;
-	screen_line_t *sl = get_screen_line(screen.cur_ln);
-	if (screen.cur_col > sl->len)
-		memset(sl->data + sl->len, ' ', screen.cur_col - sl->len + 1);
-	sl->len = screen.cur_col;
+	if (dumb_term) {
+		if (screen.cur_col == 0)
+			terminal_putchar('\r');
+		ansi_cmd(ANSI_CMD_CE);
+	} else {
+		screen_line_t *sl = get_screen_line(screen.cur_ln);
+		if (screen.cur_col > sl->len)
+			memset(sl->data + sl->len, ' ', screen.cur_col - sl->len + 1);
+		sl->len = screen.cur_col;
+	}
 }
 
 /** 从当前行清除到最后一行 */
@@ -349,10 +361,15 @@ void screen_puts(const char *s, size_t size)
 {
 	if (!size)
 		size = strlen(s);
-	const char *end = s + size;
+
+	if (dumb_term) {
+		screen_write_cached((const uchar_t *) s, size, screen.utf8);
+		return;
+	}
 
 	screen_line_t *sl = get_screen_line(screen.cur_ln);
 
+	const char *end = s + size;
 	for (const char *p = s; p < end; ++p) {
 		if (*p == '\n' || *p == '\r') {
 			if (screen.cur_col > sl->len)
@@ -503,7 +520,7 @@ static void _print_string(const char *ptr, size_t width, bool utf8,
 		tui_repeat_char(' ', padding);
 
 	if (utf8) {
-			screen_puts(ptr, 0);
+		screen_puts(ptr, 0);
 	} else {
 		convert(env_g2u, ptr, CONVERT_ALL, NULL, 0,
 				screen_put_gbk_helper, NULL);
@@ -511,6 +528,18 @@ static void _print_string(const char *ptr, size_t width, bool utf8,
 
 	if (padding && left_adjust)
 		tui_repeat_char(' ', padding);
+}
+
+static void _put_string(const char *ptr, const char *end, bool utf8)
+{
+	if (ptr && end && end > ptr) {
+		size_t size = end - ptr;
+		if (utf8) {
+			screen_puts(ptr, size);
+		} else {
+			convert(env_g2u, ptr, size, NULL, 0, screen_put_gbk_helper, NULL);
+		}
+	}
 }
 
 /*
@@ -522,8 +551,11 @@ static void _print_string(const char *ptr, size_t width, bool utf8,
  */
 static void screen_vprintf(const char *fmt, bool utf8, va_list ap)
 {
+	const char *ptr = fmt;
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
+			_put_string(ptr, fmt, utf8);
+
 			bool left_adjust = false, long_ = false;
 			size_t width = 0;
 
@@ -578,15 +610,12 @@ static void screen_vprintf(const char *fmt, bool utf8, va_list ap)
 						screen_put_gbk(*fmt);
 					break;
 			}
-			++fmt;
+			ptr = ++fmt;
 		} else {
-			if (utf8)
-				screen_putc(*fmt);
-			else
-				screen_put_gbk(*fmt);
 			++fmt;
 		}
 	}
+	_put_string(ptr, fmt, utf8);
 }
 
 /*
