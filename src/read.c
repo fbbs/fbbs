@@ -1017,7 +1017,7 @@ static int search_articles(struct keeploc *locmem, const char *query, int gid,
 		//% prints("\033[1;44;33m搜寻中，请稍候....                      "
 		prints("\033[1;44;33m\xcb\xd1\xd1\xb0\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2....                      "
 				"                                       \033[m");
-		refresh();
+		screen_flush();
 	}
 
 	FILE *fp = fopen(currdirect, "rb");

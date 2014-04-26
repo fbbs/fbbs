@@ -43,9 +43,9 @@ extern int multi_getdata(int line, int col, int maxcol, const char *prompt,
 // src/screen.c
 extern int screen_lines(void);
 extern void screen_negotiate_size(void);
-extern void screen_init(void);
+extern void screen_init(int lines);
 extern void screen_redraw(void);
-extern void refresh(void);
+extern void screen_flush(void);
 extern void move(int line, int col);
 extern void screen_coordinates(int *line, int *col);
 extern void screen_clear(void);
@@ -55,6 +55,10 @@ extern void clrtoeol(void);
 extern void screen_clrtobot(void);
 extern int outc(int c);
 extern void outs(const char *str);
+extern size_t screen_display_width(const char *ptr, bool utf8);
+extern void screen_puts(const char *s, size_t size);
+extern void screen_putc(int c);
+extern void screen_printf(const char *fmt, ...);
 extern void prints(const char *fmt, ...);
 extern void screen_scroll(void);
 extern void screen_save_line(int line, bool save);

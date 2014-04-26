@@ -81,7 +81,7 @@ void new_register(void)
 		if (++tried >= MAX_NEW_TRIES) {
 			//% outs("\n拜拜，按太多下  <Enter> 了...\n");
 			outs("\n\xb0\xdd\xb0\xdd\xa3\xac\xb0\xb4\xcc\xab\xb6\xe0\xcf\xc2  <Enter> \xc1\xcb...\n");
-			refresh();
+			screen_flush();
 			return;
 		}
 

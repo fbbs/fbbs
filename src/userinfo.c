@@ -240,7 +240,7 @@ void uinfo_query(struct userec *u, int real, int unum)
 		return;
 	//add end
 
-	refresh();
+	screen_flush();
 
 	i = 3;
 	move(i++, 0);

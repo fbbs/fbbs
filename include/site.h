@@ -20,13 +20,6 @@
 	#define MAX_USESHELL    250
 #endif
 
-/**
- * Define this to enable wide character support for Chinese or other 
- * languages not using the ANSI character set. Comment out if this isn't
- * needed. 
- */
-#define BIT8 
-
 #ifdef FDQUAN
 /**
  * You may define a default board here, already selected when a user logs in.

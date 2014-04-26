@@ -121,7 +121,10 @@ void terminal_write_cached(const uchar_t *str, int size)
 
 bool terminal_input_buffer_empty(void)
 {
-	return (input_buffer.cur >= input_buffer.size);
+	const input_buffer_t *buf = &input_buffer;
+	// 当终端按下回车时, 传送的可能是 \r\0
+	return (buf->cur >= buf->size
+			|| (buf->ptr[buf->cur] == '\0' && buf->cur == buf->size - 1));
 }
 
 /** @global 准备退出当前会话 */
@@ -165,7 +168,7 @@ static int get_raw_ch(void)
 				abort_bbs(0);
 
 			if (ret <= 0) {
-				refresh();
+				screen_flush();
 			} else {
 				if (fd > 0 && FD_ISSET(fd, &rset)) {
 					// TODO: handle notification
@@ -209,6 +212,11 @@ typedef enum {
  */
 static int handle_iac(void)
 {
+	// IAC SB  NAWS 0 80 0 24 IAC SE
+	char buf[8];
+	size_t size = 0;
+	bool naws = false;
+
 	option_status_e status = OPTION_STATUS_IAC;
 	while (status != OPTION_STATUS_END) {
 		int ch = get_raw_ch();
@@ -225,8 +233,18 @@ static int handle_iac(void)
 				status = OPTION_STATUS_END;
 				break;
 			case OPTION_STATUS_SUB:
-				if (ch == SE)
+				if (ch == TELOPT_NAWS) {
+					naws = true;
+					size = 0;
+				} else if (ch == SE) {
+					if (naws && size == 5) {
+						screen_init(buf[3]);
+					}
 					status = OPTION_STATUS_END;
+				} else if (naws) {
+					if (size < sizeof(buf))
+						buf[size++] = ch;
+				}
 				break;
 			default:
 				break;

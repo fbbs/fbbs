@@ -233,7 +233,7 @@ int mailall(void)
 	screen_move_clear(-1);
 	//% prints("[5;1;32;44m正在寄件中，请稍候.....                                                        [m");
 	prints("[5;1;32;44m\xd5\xfd\xd4\xda\xbc\xc4\xbc\xfe\xd6\xd0\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....                                                        [m");
-	refresh();
+	screen_flush();
 
 	mailtoall(ans[0] - '0', fname, &header);
 
@@ -287,7 +287,7 @@ m_internet()
 		pressreturn();
 	}
 	screen_clear();
-	refresh();
+	screen_flush();
 }
 #endif
 
@@ -470,7 +470,7 @@ int do_send(const char *userid, const char *title)
 			mail_file(tmp_fname, currentuser.userid, save_title2);
 			//% prints("请稍候, 信件传递中...\n");
 			prints("\xc7\xeb\xc9\xd4\xba\xf2, \xd0\xc5\xbc\xfe\xb4\xab\xb5\xdd\xd6\xd0...\n");
-			refresh();
+			screen_flush();
 			res = bbs_sendmail(tmp_fname, header.title, userid, filter,ans);
 #else
 
@@ -482,7 +482,7 @@ int do_send(const char *userid, const char *title)
 			mail_file(tmp_fname, currentuser.userid, save_title2);
 			//% prints("请稍候, 信件传递中...\n");
 			prints("\xc7\xeb\xc9\xd4\xba\xf2, \xd0\xc5\xbc\xfe\xb4\xab\xb5\xdd\xd6\xd0...\n");
-			refresh();
+			screen_flush();
 			res = bbs_sendmail(tmp_fname, header.title, userid, filter);
 #endif
 		}
@@ -1844,7 +1844,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 
 	//% prints("转寄信件给 %s, 请稍候....\n", address);
 	prints("\xd7\xaa\xbc\xc4\xd0\xc5\xbc\xfe\xb8\xf8 %s, \xc7\xeb\xc9\xd4\xba\xf2....\n", address);
-	refresh();
+	screen_flush();
 
 	int ret = forward_file(user.userid, tmpfile, gbk_title, uuencode);
 	unlink(tmpfile);

@@ -398,7 +398,7 @@ static int show_msg(const char *user, const char *head, const char *buf,
 		prints("\033[m\xc1\xa2\xbc\xb4\xbb\xd8\xd1\xb6\xcf\xa2\xb8\xf8 %s", sender);
 		screen_move_clear(++line);
 	}
-	refresh();
+	screen_flush();
 	return line;
 }
 
@@ -527,7 +527,7 @@ static void _msg_reply(const char *receiver, int pid, const char *msg, int line)
 	screen_move_clear(line);
 	if (!success) {
 		outs(buf);
-		refresh();
+		screen_flush();
 		sleep(1);
 	}
 
@@ -535,7 +535,7 @@ static void _msg_reply(const char *receiver, int pid, const char *msg, int line)
 	for (i = 0; i < MAX_MSG_LINE * 2 + 2; i++) {
 		saveline_buf(i, 1);
 	}
-	refresh();
+	screen_flush();
 }
 
 /**

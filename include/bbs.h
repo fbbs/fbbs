@@ -175,7 +175,6 @@ extern char genbuf[1024]; /* generally used global buffer */
 extern jmp_buf byebye; /* Used for exception condition like I/O error*/
 
 extern int in_mail;
-extern bool dumb_term;
 extern int showansi;
 extern time_t uptime; /* save user last key-in time, up every 1min */
 

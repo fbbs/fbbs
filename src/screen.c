@@ -1,6 +1,8 @@
 #include <arpa/telnet.h>
 #include <stdarg.h>
+#include <wchar.h>
 #include "bbs.h"
+#include "fbbs/convert.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 
@@ -22,11 +24,6 @@ typedef struct {
 	uchar_t data[SCREEN_LINE_LEN]; ///< 缓冲区
 } screen_line_t;
 
-extern int iscolor;
-
-/** @global */
-bool dumb_term = true;
-
 typedef struct {
 	screen_line_t *buf; ///< 行缓冲区数组
 	int columns; ///< 列数
@@ -38,12 +35,14 @@ typedef struct {
 	int roll; ///< 首行在buf中的偏移量
 	int scrollcnt;
 	bool redraw; ///< 重绘屏幕
+	bool utf8; ///< 为true时以UTF8编码输出, 否则GBK编码
 } screen_t;
 
 /** @global */
 static screen_t screen = {
 	.lines = 24,
 	.columns = 255,
+	.utf8 = false,
 };
 
 int screen_lines(void)
@@ -62,28 +61,6 @@ void screen_negotiate_size(void)
 	//	  (client sends)  IAC SB  NAWS 0 80 0 24 IAC SE
 	uchar_t naws[] = { IAC, DO, TELOPT_NAWS };
 	terminal_write(naws, sizeof(naws));
-
-	uchar_t buf[80];
-	int len = terminal_read(buf, sizeof(buf));
-	if (len == 12) {
-		if (buf[0] != IAC || buf[1] != WILL || buf[2] != TELOPT_NAWS)
-			return;
-		if (buf[3] != IAC || buf[4] != SB || buf[5] != TELOPT_NAWS
-				|| buf[10] != IAC || buf[11] != SE)
-			return;
-		screen.lines = buf[9];
-	}
-	if (len == 9) {
-		if (buf[0] != IAC || buf[1] != SB || buf[2] != TELOPT_NAWS
-				|| buf[7] != IAC || buf[8] != SE)
-			return;
-		screen.lines = buf[6];
-	}
-
-	if (screen.lines < MIN_SCREEN_LINES)
-		screen.lines = MIN_SCREEN_LINES;
-	if (screen.lines > MAX_SCREEN_LINES)
-		screen.lines = MAX_SCREEN_LINES;
 }
 
 int num_ans_chr(const char *str)
@@ -109,23 +86,33 @@ int num_ans_chr(const char *str)
 	return ansinum;
 }
 
-void screen_init(void)
+void screen_init(int lines)
 {
-	if (!dumb_term && !screen.buf)
+	if (!screen.buf)
 		screen.columns = WRAPMARGIN;
 
 	if (screen.columns > SCREEN_LINE_LEN)
 		screen.columns = SCREEN_LINE_LEN;
 
-	screen.buf = malloc(screen.lines * sizeof(*screen.buf));
-	for (int i = screen.lines - 1; i >= 0; --i) {
-		screen_line_t *sl = screen.buf + i;
-		sl->modified = false;
-		sl->len = 0;
-		sl->old_len = 0;
+	if (lines < MIN_SCREEN_LINES)
+		lines = MIN_SCREEN_LINES;
+	if (lines > MAX_SCREEN_LINES)
+		lines = MAX_SCREEN_LINES;
+
+	if (!screen.buf) {
+		screen.buf = malloc(screen.lines * sizeof(*screen.buf));
+		for (int i = screen.lines - 1; i >= 0; --i) {
+			screen_line_t *sl = screen.buf + i;
+			sl->modified = false;
+			sl->len = 0;
+			sl->old_len = 0;
+		}
+		screen.redraw = true;
+		screen.roll = 0;
+	} else if (lines > screen.lines) {
+		screen.buf = realloc(screen.buf, lines * sizeof(*screen.buf));
+		screen.lines = lines;
 	}
-	screen.redraw = true;
-	screen.roll = 0;
 }
 
 /**
@@ -173,22 +160,51 @@ static inline screen_line_t *get_screen_line(int line)
 	return screen.buf + (line + screen.roll) % screen.lines;
 }
 
+static int _write_helper(const char *buf, size_t len, void *arg)
+{
+	if (!screen.buf) {
+		const char *end = buf + len;
+		for (const char *ptr = buf; ptr < end; ++ptr) {
+			if (*ptr == '\n')
+				terminal_putchar('\r');
+			terminal_putchar(*ptr);
+		}
+	} else {
+		terminal_write_cached((const uchar_t *) buf, len);
+	}
+	return 0;
+}
+
+static void screen_write_cached(const uchar_t *data, uint16_t len, bool utf8)
+{
+	if (utf8) {
+		_write_helper((const char *) data, len, NULL);
+	} else {
+		convert(env_u2g, (const char *) data, len, NULL, 0,
+				_write_helper, NULL);
+	}
+}
+
 /**
  * 重绘屏幕
  */
 void screen_redraw(void)
 {
-	if (dumb_term)
+	if (!screen.buf)
 		return;
+
 	ansi_cmd(ANSI_CMD_CL);
 	screen.tc_col = 0;
 	screen.tc_line = 0;
+
 	for (int i = 0; i < screen.lines; ++i) {
 		screen_line_t *sl = get_screen_line(i);
 		if (!sl->len)
 			continue;
+
 		move_terminal_cursor(0, i);
-		terminal_write_cached(sl->data, sl->len);
+		screen_write_cached(sl->data, sl->len, screen.utf8);
+
 		screen.tc_col += sl->len;
 		if (screen.tc_col >= screen.columns) {
 			screen.tc_col = screen.columns - 1;
@@ -202,10 +218,9 @@ void screen_redraw(void)
 	terminal_flush();
 }
 
-void refresh(void)
+void screen_flush(void)
 {
-	screen_line_t *bp = screen.buf;
-	if (!bp) {
+	if (!screen.buf) {
 		terminal_flush();
 		return;
 	}
@@ -235,7 +250,9 @@ void refresh(void)
 		if (sl->modified) {
 			sl->modified = false;
 			move_terminal_cursor(0, i);
-			terminal_write_cached(sl->data, sl->len);
+
+			screen_write_cached(sl->data, sl->len, screen.utf8);
+
 			screen.tc_col = sl->len;
 			if (screen.tc_col >= screen.columns) {
 				screen.tc_col -= screen.columns;
@@ -281,15 +298,14 @@ void screen_coordinates(int *line, int *col)
  */
 void screen_clear(void)
 {
-	if (dumb_term)
-		return;
-
-	screen.roll = 0;
-	screen.redraw = true;
-	for (int i = 0; i < screen.lines; ++i) {
-		screen_clear_line(i);
+	if (screen.buf) {
+		screen.roll = 0;
+		screen.redraw = true;
+		for (int i = 0; i < screen.lines; ++i) {
+			screen_clear_line(i);
+		}
+		move(0, 0);
 	}
-	move(0, 0);
 }
 
 void screen_clear_line(int line)
@@ -310,18 +326,22 @@ void screen_move_clear(int line)
  */
 void clrtoeol(void)
 {
-	if (dumb_term)
-		return;
-	screen_line_t *sl = get_screen_line(screen.cur_ln);
-	if (screen.cur_col > sl->len)
-		memset(sl->data + sl->len, ' ', screen.cur_col - sl->len + 1);
-	sl->len = screen.cur_col;
+	if (!screen.buf) {
+		if (screen.cur_col == 0)
+			terminal_putchar('\r');
+		ansi_cmd(ANSI_CMD_CE);
+	} else {
+		screen_line_t *sl = get_screen_line(screen.cur_ln);
+		if (screen.cur_col > sl->len)
+			memset(sl->data + sl->len, ' ', screen.cur_col - sl->len + 1);
+		sl->len = screen.cur_col;
+	}
 }
 
 /** 从当前行清除到最后一行 */
 void screen_clrtobot(void)
 {
-	if (!dumb_term) {
+	if (screen.buf) {
 		for (int i = screen.cur_ln; i < screen.lines; ++i) {
 			screen_line_t *sl = get_screen_line(i);
 			sl->modified = false;
@@ -333,6 +353,64 @@ void screen_clrtobot(void)
 
 static const char *nullstr = "(null)";
 
+void screen_puts(const char *s, size_t size)
+{
+	if (!size)
+		size = strlen(s);
+
+	if (!screen.buf) {
+		screen_write_cached((const uchar_t *) s, size, screen.utf8);
+		return;
+	}
+
+	screen_line_t *sl = get_screen_line(screen.cur_ln);
+
+	const char *end = s + size;
+	for (const char *p = s; p < end; ++p) {
+		if (*p == '\n' || *p == '\r') {
+			if (screen.cur_col > sl->len)
+				memset(sl->data + sl->len, ' ', screen.cur_col- sl->len + 1);
+			sl->len = screen.cur_col;
+			screen.cur_col = 0;
+			if (screen.cur_ln < screen.lines)
+				++screen.cur_ln;
+		} else {
+			if (screen.cur_col > sl->len)
+				memset(sl->data + sl->len, ' ', screen.cur_col - sl->len);
+			sl->modified = true;
+			sl->data[screen.cur_col++] = *p;
+			if (screen.cur_col > sl->len)
+				sl->len = screen.cur_col;
+		}
+	}
+}
+
+void screen_putc(int c)
+{
+	char ch = c;
+	screen_puts(&ch, 1);
+}
+
+static int screen_put_gbk_helper(const char *buf, size_t len, void *arg)
+{
+	screen_puts(buf, len);
+	return 0;
+}
+
+static void screen_put_gbk(int c)
+{
+	static int left = 0;
+	if (left) {
+		char buf[3] = { left, c };
+		convert(env_g2u, buf, 3, NULL, 0, screen_put_gbk_helper, NULL);
+		left = 0;
+	} else if (c & 0x80) {
+		left = c;
+	} else {
+		screen_putc(c);
+	}
+}
+
 /**
  * Output a character.
  * @param c The character.
@@ -340,24 +418,7 @@ static const char *nullstr = "(null)";
  */
 int outc(int c)
 {
-	static bool inansi;
-#ifndef BIT8
-	c &= 0x7f;
-#endif
-
-	if (inansi) {
-		if (c == 'm') {
-			inansi = false;
-			return 0;
-		}
-		return 0;
-	}
-	if (c == KEY_ESC && !iscolor) {
-		inansi = true;
-		return 0;
-	}
-
-	if (dumb_term) {
+	if (!screen.buf) {
 		if (!isprint2(c)) {
 			if (c == '\n') {
 				terminal_putchar('\r');
@@ -371,13 +432,14 @@ int outc(int c)
 	}
 
 	screen_line_t *slp = get_screen_line(screen.cur_ln);
-	unsigned int col = screen.cur_col;
 
 	if (!isprint2(c)) {
 		if (c == '\n' || c == '\r') {
-			if (col > slp->len)
-				memset(slp->data + slp->len, ' ', col - slp->len + 1);
-			slp->len = col;
+			if (screen.cur_col> slp->len) {
+				memset(slp->data + slp->len, ' ',
+						screen.cur_col - slp->len + 1);
+			}
+			slp->len = screen.cur_col;
 			screen.cur_col = 0;
 			if (screen.cur_ln < screen.lines)
 				screen.cur_ln++;
@@ -388,20 +450,13 @@ int outc(int c)
 		}
 	}
 
-	if (col > slp->len)
-		memset(slp->data + slp->len, ' ', col - slp->len);
-	slp->modified = true;
-	slp->data[col] = c;
-	col++;
-	if (col > slp->len)
-		slp->len = col;
+	screen_put_gbk(c);
 
-	if (col >= screen.columns) {
-		col = 0;
+	if (screen.cur_col >= screen.columns) {
+		screen.cur_col = 0;
 		if (screen.cur_ln < screen.lines)
 			screen.cur_ln++;
 	}
-	screen.cur_col = col; /* store screen.cur_col back */
 	return 1;
 }
 
@@ -416,182 +471,176 @@ void outs(const char *str)
 	}
 }
 
-/**
- * Print first n bytes of a string.
- * @param str The string.
- * @param n Maximum output bytes.
- * @param ansi Whether ansi control codes should be excluded in length or not.
- */
-static void outns(const char *str, int n, bool ansi)
+size_t screen_display_width(const char *ptr, bool utf8)
 {
-	if (!ansi) {
-		while (*str != '\0' && n > 0) {
-			outc(*str++);
-			n--;
+	size_t width = 0;
+	bool ansi = false;
+	while (*ptr) {
+		if (ansi) {
+			if (isalpha(*ptr))
+				ansi = false;
+		} else {
+			if (*ptr == '\033') {
+				ansi = true;
+			} else {
+				if (utf8) {
+					wchar_t wc = next_wchar(&ptr, NULL);
+					if (wc == WEOF)
+						break;
+					width += fb_wcwidth(wc);
+					--ptr;
+				} else {
+					++width;
+				}
+			}
 		}
+		++ptr;
+	}
+	return width;
+}
+
+static void _print_string(const char *ptr, size_t width, bool utf8,
+		bool left_adjust)
+{
+	if (!ptr)
+		ptr = nullstr;
+
+	size_t padding = 0;
+	if (width) {
+		size_t w = screen_display_width(ptr, utf8);
+		if (w < width)
+			padding = width - w;
+	}
+
+	if (padding && !left_adjust)
+		tui_repeat_char(' ', padding);
+
+	if (utf8) {
+		screen_puts(ptr, 0);
 	} else {
-		while (*str != '\0' && n > 0) {
-			n -= outc(*str++);
+		convert(env_g2u, ptr, CONVERT_ALL, NULL, 0,
+				screen_put_gbk_helper, NULL);
+	}
+
+	if (padding && left_adjust)
+		tui_repeat_char(' ', padding);
+}
+
+static void _put_string(const char *ptr, const char *end, bool utf8)
+{
+	if (ptr && end && end > ptr) {
+		size_t size = end - ptr;
+		if (utf8) {
+			screen_puts(ptr, size);
+		} else {
+			convert(env_g2u, ptr, size, NULL, 0, screen_put_gbk_helper, NULL);
 		}
-		outs("\033[m");
 	}
 }
 
-static const int64_t dec[] = {
-	INT64_C(1000000000000000000),
-	INT64_C(100000000000000000),
-	INT64_C(10000000000000000),
-	INT64_C(1000000000000000),
-	INT64_C(100000000000000),
-	INT64_C(10000000000000),
-	INT64_C(1000000000000),
-	INT64_C(100000000000),
-	INT64_C(10000000000),
-	INT64_C(1000000000),
-	INT64_C(100000000),
-	INT64_C(10000000),
-	INT64_C(1000000),
-	INT64_C(100000),
-	INT64_C(10000),
-	INT64_C(1000),
-	INT64_C(100),
-	INT64_C(10),
-	INT64_C(1),
-};
-
-/*以ANSI格式输出可变参数的字符串序列*/
-void prints(const char *fmt, ...)
+/*
+ * 格式化输出到屏幕
+ * 支持形如%d %ld %c %s %-7s %7s的格式
+ * @param[in] fmt 格式字符串
+ * @param[in] utf8 输入是否为UTF-8编码
+ * @param[in] ap 参数列表
+ */
+static void screen_vprintf(const char *fmt, bool utf8, va_list ap)
 {
-	va_list ap;
-	const char *bp;
-	int count, hd;
-	va_start(ap, fmt);
+	const char *ptr = fmt;
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
-			int sgn = 1;
-			int sgn2 = 1;
-			int val = 0;
-			int len, negi;
-			bool long_ = false;
-			fmt++;
+			_put_string(ptr, fmt, utf8);
+
+			bool left_adjust = false, long_ = false;
+			size_t width = 0;
+
+			++fmt;
 			switch (*fmt) {
 				case '-':
-					while (*fmt == '-') {
-						sgn *= -1;
-						fmt++;
-					}
+					left_adjust = true;
+					++fmt;
 					break;
 				case 'l':
 					long_ = true;
 					++fmt;
 					break;
-				case '.':
-					sgn2 = 0;
-					fmt++;
-					break;
 			}
+
 			while (isdigit(*fmt)) {
-				val *= 10;
-				val += *fmt - '0';
-				fmt++;
+				width *= 10;
+				width += *fmt - '0';
+				++fmt;
 			}
+
 			switch (*fmt) {
-				case 's':
-					bp = va_arg(ap, const char *);
-					if (bp == NULL)
-						bp = nullstr;
-					if (val) {
-						register int slen = strlen(bp);
-						if (!sgn2) {
-							if (val <= slen)
-								outns(bp, val, true);
-							else
-								outns(bp, slen, true);
-						} else if (val <= slen)
-							outns(bp, val, false);
-						else if (sgn > 0) {
-							for (slen = val - slen; slen > 0; slen--)
-								outc(' ');
-							outs(bp);
-						} else {
-							outs(bp);
-							for (slen = val - slen; slen > 0; slen--)
-								outc(' ');
-						}
-					} else
-						outs(bp);
+				case 's': {
+					const char *ptr = va_arg(ap, const char *);
+					_print_string(ptr, width, utf8, left_adjust);
 					break;
-				case 'd':
-					{
-						int64_t n;
-						if (long_)
-							n = va_arg(ap, int64_t);
-						else
-							n = va_arg(ap, int);
-
-						negi = NA;
-						if (n < 0) {
-							negi = YEA;
-							n *= -1;
-						}
-
-						int indx = 0;
-						for (indx = 0; indx < ARRAY_SIZE(dec); ++indx) {
-							if (n >= dec[indx])
-								break;
-						}
-						if (n == 0)
-							len = 1;
-						else
-							len = ARRAY_SIZE(dec) - indx;
-						if (negi)
-							len++;
-						if (val >= len && sgn > 0) {
-							for (int slen = val - len; slen > 0; slen--)
-								outc(' ');
-						}
-						if (negi)
-							outc('-');
-						hd = 1, indx = 0;
-						while (indx < ARRAY_SIZE(dec)) {
-							count = 0;
-							while (n >= dec[indx]) {
-								count++;
-								n -= dec[indx];
-							}
-							indx++;
-							if (indx == ARRAY_SIZE(dec))
-								hd = 0;
-							if (hd && !count)
-								continue;
-							hd = 0;
-							outc('0' + count);
-						}
-						if (val >= len && sgn < 0) {
-							for (int slen = val - len; slen > 0; slen--)
-								outc(' ');
-						}
+				}
+				case 'd': {
+					int64_t n;
+					if (long_) {
+						n = va_arg(ap, int64_t);
+					} else {
+						n = va_arg(ap, int);
 					}
+
+					char buf[24];
+					snprintf(buf, sizeof(buf), "%ld", n);
+					_print_string(buf, width, true, left_adjust);
 					break;
+				}
 				case 'c': {
-						int i = va_arg(ap, int);
-						outc(i);
-					}
+					int i = va_arg(ap, int);
+					screen_putc(i);
 					break;
+				}
 				case '\0':
-					goto endprint;
+					return;
 				default:
-					outc(*fmt);
+					if (utf8)
+						screen_putc(*fmt);
+					else
+						screen_put_gbk(*fmt);
 					break;
 			}
-			fmt++;
-			continue;
+			ptr = ++fmt;
+		} else {
+			++fmt;
 		}
-		outc(*fmt);
-		fmt++;
 	}
+	_put_string(ptr, fmt, utf8);
+}
+
+/*
+ * 格式化输出到屏幕
+ * 输入必须为UTF-8编码
+ * @param[in] fmt 格式字符串
+ * @see screen_vprintf
+ */
+void screen_printf(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	screen_vprintf(fmt, true, ap);
 	va_end(ap);
-	endprint: return;
+}
+
+/*
+ * 格式化输出到屏幕
+ * 输入必须为GBK编码
+ * @param[in] fmt 格式字符串
+ * @see screen_vprintf
+ * @deprecated
+ */
+void prints(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	screen_vprintf(fmt, false, ap);
+	va_end(ap);
 }
 
 /**
@@ -599,10 +648,6 @@ void prints(const char *fmt, ...)
  */
 void screen_scroll(void)
 {
-	if (dumb_term) {
-		prints("\n");
-		return;
-	}
 	++screen.scrollcnt;
 	if (++screen.roll >= screen.lines)
 		screen.roll -= screen.lines;
@@ -624,7 +669,7 @@ void screen_save_line(int line, bool save)
 		screen_move_clear(line);
 		prints("%s", saved);
 		move(x, y);
-		refresh();
+		screen_flush();
 	}
 }
 

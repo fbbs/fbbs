@@ -44,7 +44,7 @@ void show_message(const char *msg)
 	screen_move_clear(BBS_PAGESIZE + 2);
 	if (msg)
 		prints("\033[1m%s\033[m", msg);
-	refresh();
+	screen_flush();
 }
 
 static void setlistrange(int i)
@@ -973,7 +973,7 @@ int showvoteitems(unsigned int pbits, int i, int flag) {
 			: "  "), currvote.items[i]);
 	move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
 	outs(buf);
-	refresh();
+	screen_flush();
 	return YEA;
 }
 

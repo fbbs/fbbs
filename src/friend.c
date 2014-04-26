@@ -96,7 +96,7 @@ static tui_list_query_t following_list_query(tui_list_t *p)
 	prints("\033[0;1;44;31m\033[33m \xbc\xc4\xd0\xc5 m \xa9\xa6 \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6"
 			//% "下一位 <Space>,↓                            \033[m");
 			"\xcf\xc2\xd2\xbb\xce\xbb <Space>,\xa1\xfd                            \033[m");
-	refresh();
+	screen_flush();
 	return DONOTHING;
 }
 
@@ -239,7 +239,7 @@ static tui_list_query_t black_list_query(tui_list_t *p)
 	//% prints("\033[0;1;33;44m 结束 Q,← │上一位 ↑│下一位 <Space>,↓ "
 	prints("\033[0;1;33;44m \xbd\xe1\xca\xf8 Q,\xa1\xfb \xa9\xa6\xc9\xcf\xd2\xbb\xce\xbb \xa1\xfc\xa9\xa6\xcf\xc2\xd2\xbb\xce\xbb <Space>,\xa1\xfd "
 			"                           \033[m");
-	refresh();
+	screen_flush();
 	return DONOTHING;
 }
 

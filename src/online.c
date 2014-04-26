@@ -342,7 +342,7 @@ static tui_list_query_t online_users_query(tui_list_t *p)
 			"\xd1\xa1\xd4\xf1\xca\xb9\xd3\xc3\xd5\xdf[\033[1;32m\xa1\xfc\033[37m,\033[1;32m\xa1\xfd\033[37m] "
 			//% "求救[\033[1;32mh\033[37m]");
 			"\xc7\xf3\xbe\xc8[\033[1;32mh\033[37m]");
-	refresh();
+	screen_flush();
 	return DONOTHING;
 }
 

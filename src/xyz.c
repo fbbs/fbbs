@@ -48,7 +48,6 @@ static const char *user_definestr[] = {
 
 int use_define = 0;
 int child_pid = 0;
-extern int iscolor;
 extern int enabledbchar;
 
 extern struct UCACHE *uidshm;
@@ -66,7 +65,7 @@ int showperminfo(int pbits, int i) {
 					>> i) & 1 ? "\xca\xc7" : "\xa1\xc1"));
 	move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
 	outs(buf);
-	refresh();
+	screen_flush();
 	return YEA;
 }
 
@@ -146,7 +145,6 @@ int x_userdefine() {
 		//% prints("新的参数设定完成...\n\n");
 		prints("\xd0\xc2\xb5\xc4\xb2\xce\xca\xfd\xc9\xe8\xb6\xa8\xcd\xea\xb3\xc9...\n\n");
 	}
-	iscolor = (DEFINE(DEF_COLOR)) ? 1 : 0;
 	pressreturn();
 	screen_clear();
 	use_define = 0;

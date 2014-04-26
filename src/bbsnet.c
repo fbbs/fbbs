@@ -93,7 +93,7 @@ static void do_bbsnet(const site_t *site)
 	//% prints("\033[1;32m连往: %s (%s)\n连不上时请稍候，%d 秒后将自动退出\n",
 	prints("\033[1;32m\xc1\xac\xcd\xf9: %s (%s)\n\xc1\xac\xb2\xbb\xc9\xcf\xca\xb1\xc7\xeb\xc9\xd4\xba\xf2\xa3\xac%d \xc3\xeb\xba\xf3\xbd\xab\xd7\xd4\xb6\xaf\xcd\xcb\xb3\xf6\n",
 			site->name, site->ip, CONNECT_TIMEOUT);
-	refresh();
+	screen_flush();
 
 	struct sockaddr_in sock;
 	memset(&sock, 0, sizeof(sock));
@@ -131,7 +131,7 @@ static void do_bbsnet(const site_t *site)
 	bbsnet_log(site);
 	//% prints("\033[1;32m已经连接上主机，按'ctrl+]'快速退出。\033[m\n");
 	prints("\033[1;32m\xd2\xd1\xbe\xad\xc1\xac\xbd\xd3\xc9\xcf\xd6\xf7\xbb\xfa\xa3\xac\xb0\xb4'ctrl+]'\xbf\xec\xcb\xd9\xcd\xcb\xb3\xf6\xa1\xa3\033[m\n");
-	refresh();
+	screen_flush();
 
 	struct timeval tv;
 	fd_set fds;

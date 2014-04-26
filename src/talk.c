@@ -27,7 +27,6 @@
 #define P_INT 20		/* interval to check for page req. in
 				 * talk/chat */
 extern char BoardName[];
-extern int iscolor;
 extern int numf, friendmode;
 extern int t_columns;
 int cmpfnames();
@@ -263,7 +262,7 @@ int t_query(const char *uname)
 		strtok(userid, " ");
 	} else {
 		set_user_status(ST_QUERY);
-		refresh();
+		screen_flush();
 		move(1, 0);
 		screen_clrtobot();
 		//% prints("查询谁:\n<输入使用者代号, 按空白键可列出符合字串>\n");
