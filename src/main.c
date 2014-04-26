@@ -537,7 +537,6 @@ static int login_query(void)
 	if (multi_user_check() == -1)
 		return -1;
 
-	dumb_term = false;
 	sethomepath(genbuf, currentuser.userid);
 	mkdir(genbuf, 0755);
 	login_start_time = time(NULL);

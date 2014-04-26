@@ -24,9 +24,6 @@ typedef struct {
 	uchar_t data[SCREEN_LINE_LEN]; ///< 缓冲区
 } screen_line_t;
 
-/** @global */
-bool dumb_term = true;
-
 typedef struct {
 	screen_line_t *buf; ///< 行缓冲区数组
 	int columns; ///< 列数
@@ -91,7 +88,7 @@ int num_ans_chr(const char *str)
 
 void screen_init(int lines)
 {
-	if (!dumb_term && !screen.buf)
+	if (!screen.buf)
 		screen.columns = WRAPMARGIN;
 
 	if (screen.columns > SCREEN_LINE_LEN)
@@ -165,7 +162,7 @@ static inline screen_line_t *get_screen_line(int line)
 
 static int _write_helper(const char *buf, size_t len, void *arg)
 {
-	if (dumb_term) {
+	if (!screen.buf) {
 		const char *end = buf + len;
 		for (const char *ptr = buf; ptr < end; ++ptr) {
 			if (*ptr == '\n')
@@ -193,7 +190,7 @@ static void screen_write_cached(const uchar_t *data, uint16_t len, bool utf8)
  */
 void screen_redraw(void)
 {
-	if (dumb_term)
+	if (!screen.buf)
 		return;
 
 	ansi_cmd(ANSI_CMD_CL);
@@ -301,15 +298,14 @@ void screen_coordinates(int *line, int *col)
  */
 void screen_clear(void)
 {
-	if (dumb_term)
-		return;
-
-	screen.roll = 0;
-	screen.redraw = true;
-	for (int i = 0; i < screen.lines; ++i) {
-		screen_clear_line(i);
+	if (screen.buf) {
+		screen.roll = 0;
+		screen.redraw = true;
+		for (int i = 0; i < screen.lines; ++i) {
+			screen_clear_line(i);
+		}
+		move(0, 0);
 	}
-	move(0, 0);
 }
 
 void screen_clear_line(int line)
@@ -330,7 +326,7 @@ void screen_move_clear(int line)
  */
 void clrtoeol(void)
 {
-	if (dumb_term) {
+	if (!screen.buf) {
 		if (screen.cur_col == 0)
 			terminal_putchar('\r');
 		ansi_cmd(ANSI_CMD_CE);
@@ -345,7 +341,7 @@ void clrtoeol(void)
 /** 从当前行清除到最后一行 */
 void screen_clrtobot(void)
 {
-	if (!dumb_term) {
+	if (screen.buf) {
 		for (int i = screen.cur_ln; i < screen.lines; ++i) {
 			screen_line_t *sl = get_screen_line(i);
 			sl->modified = false;
@@ -362,7 +358,7 @@ void screen_puts(const char *s, size_t size)
 	if (!size)
 		size = strlen(s);
 
-	if (dumb_term) {
+	if (!screen.buf) {
 		screen_write_cached((const uchar_t *) s, size, screen.utf8);
 		return;
 	}
@@ -422,7 +418,7 @@ static void screen_put_gbk(int c)
  */
 int outc(int c)
 {
-	if (dumb_term) {
+	if (!screen.buf) {
 		if (!isprint2(c)) {
 			if (c == '\n') {
 				terminal_putchar('\r');
@@ -652,10 +648,6 @@ void prints(const char *fmt, ...)
  */
 void screen_scroll(void)
 {
-	if (dumb_term) {
-		prints("\n");
-		return;
-	}
 	++screen.scrollcnt;
 	if (++screen.roll >= screen.lines)
 		screen.roll -= screen.lines;
