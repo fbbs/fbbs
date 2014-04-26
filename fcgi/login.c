@@ -171,8 +171,8 @@ int do_web_login(const char *uname, const char *pw, bool api)
 	return 0;
 }
 
-extern void set_web_session_cache(user_id_t uid, const char *key,
-		session_id_t sid);
+void session_set_web_cache(user_id_t user_id, const char *session_key,
+		session_id_t session_id, const char *ip_addr);
 
 static int _web_login(bool persistent, bool redirect)
 {
@@ -183,7 +183,7 @@ static int _web_login(bool persistent, bool redirect)
 	session_new(key, token, session_id(), session_uid(), currentuser.userid,
 			fromhost, SESSION_WEB, SESSION_PLAIN, true, max_age);
 	if (session_id())
-		set_web_session_cache(session_uid(), key, session_id());
+		session_set_web_cache(session_uid(), key, session_id(), fromhost);
 	return redirect ? login_redirect(key, max_age) : 0;
 }
 

@@ -5,16 +5,23 @@
 #include "fbbs/user.h"
 #include "fbbs/web.h"
 
-static session_id_t get_web_session_cache(user_id_t uid, const char *key)
+#define make_entry(user_id, session_key, ip_addr) \
+	char entry[IPLEN + SESSION_KEY_LEN + 32]; \
+	snprintf(entry, sizeof(entry), "%"PRIdUID"-%s-%s", \
+			user_id, session_key, ip_addr)
+
+static session_id_t session_get_web_cache(user_id_t user_id,
+		const char *session_key, const char *ip_addr)
 {
-	return mdb_integer(0, "HGET", SESSION_WEB_HASH_KEY" %"PRIdUID":%s",
-			uid, key);
+	make_entry(user_id, session_key, ip_addr);
+	return mdb_integer(0, "HGET", SESSION_WEB_HASH_KEY" %s", entry);
 }
 
-void set_web_session_cache(user_id_t uid, const char *key, session_id_t sid)
+void session_set_web_cache(user_id_t user_id, const char *session_key,
+		session_id_t session_id, const char *ip_addr)
 {
-	mdb_cmd("HSET", SESSION_WEB_HASH_KEY" %"PRIdUID":%s %"PRIdSID, uid, key,
-			sid);
+	make_entry(user_id, session_key, ip_addr);
+	mdb_cmd("HSET", SESSION_WEB_HASH_KEY" %s %"PRIdSID, entry, session_id);
 }
 
 extern int do_web_login(const char *uname, const char *pw, bool api);
@@ -35,7 +42,7 @@ static bool _get_session(const char *uname, const char *key)
 {
 	user_id_t uid = get_user_id(uname);
 	if (uid > 0) {
-		session_id_t sid = get_web_session_cache(uid, key);
+		session_id_t sid = session_get_web_cache(uid, key, fromhost);
 		if (sid > 0) {
 			session_set_id(sid);
 			session_set_uid(uid);
@@ -51,7 +58,7 @@ static bool _get_session(const char *uname, const char *key)
 			if (active || activate_session(sid, uname)) {
 				session_set_id(sid);
 				session_set_uid(uid);
-				set_web_session_cache(uid, key, session_id());
+				session_set_web_cache(uid, key, session_id(), fromhost);
 			}
 		}
 		db_clear(res);
