@@ -256,9 +256,9 @@ char *valid_title_gbk(char *title)
 
 void initialize_convert_env(void)
 {
-	if (convert_open(env_u2g, "GBK", "UTF-8") < 0
-			|| convert_open(env_g2u, "UTF-8", "GBK") < 0)
+	if (!convert_open(CONVERT_U2G) || !convert_open(CONVERT_G2U))
 		exit(EXIT_FAILURE);
+	atexit(convert_close);
 }
 
 void initialize_db(void)

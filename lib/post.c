@@ -122,7 +122,7 @@ char *post_convert_to_utf8(const char *file)
 	mmap_t m = { .oflag = O_RDONLY };
 	if (mmap_open(file, &m) == 0) {
 		utf8_content = malloc(m.size * 2);
-		convert(env_g2u, m.ptr, CONVERT_ALL, utf8_content, m.size * 2,
+		convert(CONVERT_G2U, m.ptr, CONVERT_ALL, utf8_content, m.size * 2,
 				NULL, NULL);
 		mmap_close(&m);
 	}
@@ -188,7 +188,7 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	int header_len = strlen(header);
 
 	int content_len = length ? length : strlen(pr->content);
-	if (pr->cp)
+	if (pr->convert_type != CONVERT_NONE)
 		content_len *= 2;
 
 	char signature[MAXSIGLINES * SIGNATURE_LINE_LEN + 5];
@@ -216,9 +216,9 @@ static char *generate_content(const post_request_t *pr, const char *uname,
 	char *content = malloc(total_len);
 
 	memcpy(content, header, header_len);
-	if (pr->cp)
-		convert(pr->cp, pr->content, CONVERT_ALL, content + header_len,
-				total_len - header_len, NULL, NULL);
+	if (pr->convert_type != CONVERT_NONE)
+		convert(pr->convert_type, pr->content, CONVERT_ALL,
+				content + header_len, total_len - header_len, NULL, NULL);
 	else
 		strlcpy(content + header_len, pr->content, total_len - header_len);
 
@@ -581,7 +581,7 @@ int post_dump_gbk_file(const char *utf8_str, size_t length, char *file,
 	FILE *fp = fopen(file, "w");
 	if (!fp)
 		return -1;
-	convert_to_file(env_u2g, utf8_str, length, fp);
+	convert_to_file(CONVERT_U2G, utf8_str, length, fp);
 	fclose(fp);
 	return 0;
 }

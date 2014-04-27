@@ -149,7 +149,7 @@ static void _xml_attr_print(const xml_attr_t *attr, int encoding)
 			if (encoding == XML_ENCODING_UTF8) {
 				print_xml_string(attr->value.str);
 			} else {
-				convert(env_u2g, attr->value.str, CONVERT_ALL, NULL, 0,
+				convert(CONVERT_U2G, attr->value.str, CONVERT_ALL, NULL, 0,
 						xml_string_helper, NULL);
 			}
 			break;
@@ -248,10 +248,12 @@ static void json_string(const char *s, int encoding)
 	if (s) {
 		putchar('\"');
 
-		if (encoding == XML_ENCODING_UTF8)
+		if (encoding == XML_ENCODING_UTF8) {
 			_json_string(s);
-		else
-			convert(env_u2g, s, CONVERT_ALL, NULL, 0, json_string_helper, NULL);
+		} else {
+			convert(CONVERT_U2G, s, CONVERT_ALL, NULL, 0,
+					json_string_helper, NULL);
+		}
 
 		putchar('\"');
 	} else {

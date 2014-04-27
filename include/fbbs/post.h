@@ -97,7 +97,7 @@ typedef struct {
 	size_t length;
 	const char *gbk_file;
 	const char *ip;
-	convert_t *cp;
+	convert_type_e convert_type;
 	post_id_t reid;
 	post_id_t tid;
 	user_id_t uid_replied;

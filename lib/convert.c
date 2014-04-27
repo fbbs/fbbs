@@ -9,64 +9,62 @@
 # define fb_iconv(cd, i, ib, o, ob) iconv(cd, i, ib, o, ob)
 #endif
 
-enum {
-	CONVERT_BUFSIZE = 1024,
-};
-
-struct convert_t {
-	iconv_t cd;
-	char buf[CONVERT_BUFSIZE];
-};
-
-static convert_t _env_u2g;
-static convert_t _env_g2u;
-
-convert_t *env_u2g = &_env_u2g;
-convert_t *env_g2u = &_env_g2u;
+static iconv_t _u2g = (iconv_t) -1;
+static iconv_t _g2u = (iconv_t) -1;
 
 /**
- * Open a conversion descriptor.
- * @param cp The conversion descriptor.
- * @param to Output codeset.
- * @param from Input codeset.
- * @return 0 on success, -1 on error.
+ * 打开编码转换描述符
+ * @param type 编码转换类型
+ * @return 成功返回true, 否则false
  */
-int convert_open(convert_t *cp, const char *to, const char *from)
+bool convert_open(convert_type_e type)
 {
-	cp->cd = iconv_open(to, from);
-	if (cp->cd == (iconv_t)-1)
-		return -1;
-	return 0;
+	if (type == CONVERT_U2G) {
+		_u2g = iconv_open("GBK", "UTF-8");
+		return _u2g != (iconv_t) -1;
+	} else {
+		_g2u = iconv_open("UTF-8", "GBK");
+		return _g2u != (iconv_t) -1;
+	}
 }
 
 /**
- * Set conversion state to initial state.
- * @param cp The conversion descriptor.
+ * 重置编码转换状态
+ * @param cd 编码转换描述符
  */
-void convert_reset(convert_t *cp)
+static void convert_reset(iconv_t cd)
 {
-	iconv(cp->cd, NULL, NULL, NULL, NULL);
+	iconv(cd, NULL, NULL, NULL, NULL);
+}
+
+static iconv_t convert_descriptor(convert_type_e type)
+{
+	if (type == CONVERT_U2G)
+		return _u2g;
+	if (type == CONVERT_G2U)
+		return _g2u;
+	return (iconv_t) -1;
 }
 
 /**
- * Convert string.
- * @param cp The conversion descriptor.
- * @param from Input string. NULL will be treated as an empty string.
- * @param len Length of the input string. If CONVERT_ALL, the length will be
- *            counted automatically.
- * @param buf If not NULL, it will be used instead of internal buffer.
- * @param size Size of buf.
- * @param handler Function to handle the converted bits. If it returns a
- *                negative number, the conversion will stop.
- *                If handler is NULL, output buffer will not be reused.
- * @param arg Argument for handler.
- * @return 0 on success, negative on handler failure, input bytes converted
- *         if the input string ends with an imcomplete multibyte sequence.
+ * 转换字符串编码
+ * @param type 编码转换类型
+ * @param from 要转换的字符串. NULL会被看成空字符串
+ * @param len 输入字符串的长度. CONVERT_ALL表示自动计算长度
+ * @param buf 输出缓冲区. 如果是NULL, 将使用内部缓冲区
+ * @param size 输出缓冲区大小
+ * @param handler 处理转换结果的回调函数. 如果其返回负数, 转换即停止.
+ *                如果是NULL, 则输出缓冲区必须足够长.
+ * @param arg 传给回调函数的参数
+ * @return 成功转换全部输入字符串返回0, 否则返回已转换的字节数
  */
-int convert(convert_t *cp, const char *from, size_t len,
+int convert(convert_type_e type, const char *from, size_t len,
 		char *buf, size_t size, convert_handler_t handler, void *arg)
 {
-	convert_reset(cp);
+	iconv_t cd = convert_descriptor(type);
+	convert_reset(cd);
+
+	char internal_buffer[1024];
 
 	if (len == (size_t) -1)
 		len = from ? strlen(from) : 0;
@@ -74,8 +72,8 @@ int convert(convert_t *cp, const char *from, size_t len,
 	const char *f = from;
 	size_t l = len;
 
-	char *buffer = buf ? buf : cp->buf;
-	size = buf ? size - 1: sizeof(cp->buf) - 1;
+	char *buffer = buf ? buf : internal_buffer;
+	size = buf ? size - 1: sizeof(internal_buffer) - 1;
 
 	if (!l) {
 		buffer[0] = '\0';
@@ -91,7 +89,7 @@ int convert(convert_t *cp, const char *from, size_t len,
 			oleft = size;
 		}
 
-		size_t s = fb_iconv(cp->cd, &f, &l, &b, &oleft);
+		size_t s = fb_iconv(cd, &f, &l, &b, &oleft);
 		buffer[size - oleft] = '\0';
 
 		if (s == (size_t) -1) {
@@ -126,12 +124,12 @@ int convert(convert_t *cp, const char *from, size_t len,
 }
 
 /**
- * Close a conversion descriptor.
- * @param cp The conversion descriptor.
+ * 关闭编码转换描述符
  */
-int convert_close(convert_t *cp)
+void convert_close(void)
 {
-	return iconv_close(cp->cd);
+	iconv_close(_u2g);
+	iconv_close(_g2u);
 }
 
 static int write_to_file(const char *buf, size_t len, void *arg)
@@ -139,7 +137,7 @@ static int write_to_file(const char *buf, size_t len, void *arg)
 	return fwrite(buf, 1, len, arg) < len ? -1 : 0;
 }
 
-int convert_to_file(convert_t *cp, const char *from, size_t len, FILE *fp)
+int convert_to_file(convert_type_e type, const char *from, size_t len, FILE *fp)
 {
-	return convert(cp, from, len, NULL, 0, write_to_file, fp);
+	return convert(type, from, len, NULL, 0, write_to_file, fp);
 }

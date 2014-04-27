@@ -135,7 +135,7 @@ void xml_fputs4(const char *s, size_t size)
 	if (!web_request_type(UTF8))
 		xml_fputs2(s, size);
 	else
-		convert(env_g2u, s, size ? size : CONVERT_ALL, NULL, 0,
+		convert(CONVERT_G2U, s, size ? size : CONVERT_ALL, NULL, 0,
 				xml_fputs4_helper, NULL);
 }
 

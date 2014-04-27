@@ -321,7 +321,7 @@ int bbsbfind_main(void)
 			++count;
 			GBK_BUFFER(buf, POST_TITLE_CCHARS);
 			strlcpy(gbk_buf, s, sizeof(gbk_buf));
-			convert(env_g2u, gbk_buf, CONVERT_ALL, fields[i],
+			convert(CONVERT_G2U, gbk_buf, CONVERT_ALL, fields[i],
 					sizeof(wpf.utf8_t1), NULL, NULL);
 		}
 	}

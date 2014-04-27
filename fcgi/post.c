@@ -549,7 +549,8 @@ static int edit_article(post_id_t pid, const char *content, const char *text,
 		return BBS_EINTNL;
 	memcpy(dst, content, header_len);
 	dst += header_len;
-	convert(env_g2u, text, CONVERT_ALL, dst, size - header_len, NULL, NULL);
+	convert(CONVERT_G2U, text, CONVERT_ALL, dst, size - header_len,
+			NULL, NULL);
 	size_t left = size - strlen(out);
 	if (left > (end - ptr) + mark_len) {
 		dst = out + size - left;
@@ -672,7 +673,8 @@ int bbssnd_main(void)
 			.locked = reply && (pi.flag & POST_FLAG_LOCKED),
 			.anony = strtol(web_get_param("anony"), NULL, 0),
 			.web = true,
-			.cp = web_request_type(UTF8) ? NULL : env_g2u,
+			.convert_type = web_request_type(UTF8)
+					? CONVERT_NONE : CONVERT_G2U,
 		};
 		pid = post_new(&pr);
 		if (!pid)
@@ -800,7 +802,7 @@ static int do_bbspst(bool isedit)
 					xml_fputs2(begin, end - begin);
 				} else {
 					char *gbk_content = malloc(len + 1);
-					convert(env_u2g, begin, end - begin, gbk_content, len,
+					convert(CONVERT_U2G, begin, end - begin, gbk_content, len,
 							NULL, NULL);
 					xml_fputs(gbk_content);
 					free(gbk_content);
@@ -812,7 +814,7 @@ static int do_bbspst(bool isedit)
 						true, xml_fputs3);
 			} else {
 				char *gbk_content = malloc(len + 1);
-				convert(env_u2g, utf8_content, len, gbk_content, len,
+				convert(CONVERT_U2G, utf8_content, len, gbk_content, len,
 						NULL, NULL);
 				quote_string(gbk_content, strlen(gbk_content), NULL,
 						QUOTE_AUTO, false, false, xml_fputs3);

@@ -32,7 +32,8 @@ static bool active_board_add(const char *content)
 			finished = true;
 		if (!finished) {
 			char line[ACTIVE_BOARD_BUFSIZE];
-			convert(env_u2g, ptr, lend - ptr, line, sizeof(line), NULL, NULL);
+			convert(CONVERT_U2G, ptr, lend - ptr, line, sizeof(line),
+					NULL, NULL);
 			strappend(&buf, &size, line);
 		} else {
 			strappend(&buf, &size, "\n");

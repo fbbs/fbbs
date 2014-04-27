@@ -263,7 +263,7 @@ int bbspstmail_main(void)
 			mmap_t mm = { .oflag = O_RDONLY };
 			if (mmap_open(file, &mm) == 0) {
 				char *utf8_str = malloc(mm.size * 2 + 1);
-				convert(env_g2u, mm.ptr, mm.size, utf8_str, mm.size * 2 + 1,
+				convert(CONVERT_G2U, mm.ptr, mm.size, utf8_str, mm.size * 2 + 1,
 						NULL, NULL);
 				quote_string(utf8_str, strlen(utf8_str), NULL, QUOTE_AUTO,
 						true, true, xml_fputs3);
@@ -319,7 +319,7 @@ int bbssndmail_main(void)
 	char *gbk_text = (char *) text;
 	if (utf8) {
 		gbk_text = malloc(len + 1);
-		convert(env_u2g, text, len, gbk_text, len, NULL, NULL);
+		convert(CONVERT_U2G, text, len, gbk_text, len, NULL, NULL);
 		len = strlen(gbk_text);
 	}
 

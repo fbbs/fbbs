@@ -180,7 +180,7 @@ static void screen_write_cached(const uchar_t *data, uint16_t len, bool utf8)
 	if (utf8) {
 		_write_helper((const char *) data, len, NULL);
 	} else {
-		convert(env_u2g, (const char *) data, len, NULL, 0,
+		convert(CONVERT_U2G, (const char *) data, len, NULL, 0,
 				_write_helper, NULL);
 	}
 }
@@ -402,7 +402,7 @@ static void screen_put_gbk(int c)
 	static int left = 0;
 	if (left) {
 		char buf[3] = { left, c };
-		convert(env_g2u, buf, 3, NULL, 0, screen_put_gbk_helper, NULL);
+		convert(CONVERT_G2U, buf, 3, NULL, 0, screen_put_gbk_helper, NULL);
 		left = 0;
 	} else if (c & 0x80) {
 		left = c;
@@ -518,7 +518,7 @@ static void _print_string(const char *ptr, size_t width, bool utf8,
 	if (utf8) {
 		screen_puts(ptr, 0);
 	} else {
-		convert(env_g2u, ptr, CONVERT_ALL, NULL, 0,
+		convert(CONVERT_G2U, ptr, CONVERT_ALL, NULL, 0,
 				screen_put_gbk_helper, NULL);
 	}
 
@@ -533,7 +533,8 @@ static void _put_string(const char *ptr, const char *end, bool utf8)
 		if (utf8) {
 			screen_puts(ptr, size);
 		} else {
-			convert(env_g2u, ptr, size, NULL, 0, screen_put_gbk_helper, NULL);
+			convert(CONVERT_G2U, ptr, size, NULL, 0, screen_put_gbk_helper,
+					NULL);
 		}
 	}
 }
