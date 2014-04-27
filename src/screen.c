@@ -38,7 +38,6 @@ typedef struct {
 	bool utf8; ///< 为true时以UTF8编码输出, 否则GBK编码
 } screen_t;
 
-/** @global */
 static screen_t screen = {
 	.lines = 24,
 	.columns = 255,

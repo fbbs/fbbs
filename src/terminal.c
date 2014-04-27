@@ -127,7 +127,7 @@ bool terminal_input_buffer_empty(void)
 			|| (buf->ptr[buf->cur] == '\0' && buf->cur == buf->size - 1));
 }
 
-/** @global 准备退出当前会话 */
+/** 准备退出当前会话 */
 static bool _schedule_exit = false;
 
 void terminal_schedule_exit(int not_used)

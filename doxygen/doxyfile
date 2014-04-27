@@ -7,7 +7,6 @@ ALIASES               += "mdb_hash=\mdbkey 散列"
 ALIASES               += "mdb_list=\mdbkey 列表"
 ALIASES               += "mdb_set=\mdbkey 集合"
 ALIASES               += "mdb_sorted_set=\mdbkey 有序集"
-ALIASES               += "global=\xrefitem global_vars \"全局变量\" \"全局变量列表\""
 OPTIMIZE_OUTPUT_FOR_C  = YES
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
@@ -36,3 +35,6 @@ INCLUDE_PATH           = ../include
 EXPAND_AS_DEFINED      = UTF8_BUFFER GBK_BUFFER GBK_UTF8_BUFFER \
 		SLIST_HEAD SLIST_FIELD STAILQ_HEAD STAILQ_FIELD BACKEND_DECLARE
 OUTPUT_LANGUAGE = Chinese
+
+FULL_PATH_NAMES = YES
+STRIP_FROM_PATH = ../

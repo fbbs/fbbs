@@ -1162,7 +1162,7 @@ int post_reply_delete(user_id_t user_id, post_id_t post_id)
 
 #define POST_REPLY_COUNT_KEY  "post:reply_count"
 
-/** @global 缓存的新回复计数 */
+/** 缓存的新回复计数 */
 static int _post_reply_count;
 
 bool post_reply_incr_count(user_id_t user_id, int delta)
@@ -1251,7 +1251,7 @@ int post_mention_delete(user_id_t user_id, post_id_t post_id)
 
 #define POST_MENTION_COUNT_KEY  "post:mention_count"
 
-/** @global 缓存的新提及计数 */
+/** 缓存的新提及计数 */
 static int _post_mention_count;
 
 bool post_mention_incr_count(user_id_t user_id, int delta)
