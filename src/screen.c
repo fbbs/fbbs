@@ -415,6 +415,7 @@ static void screen_put_gbk(int c)
  * Output a character.
  * @param c The character.
  * @return 1, 0 on ansi control codes.
+ * @deprecated
  */
 int outc(int c)
 {
@@ -463,6 +464,7 @@ int outc(int c)
 /**
  * Output a string.
  * @param str The string.
+ * @deprecated
  */
 void outs(const char *str)
 {
@@ -539,7 +541,7 @@ static void _put_string(const char *ptr, const char *end, bool utf8)
 	}
 }
 
-/*
+/**
  * 格式化输出到屏幕
  * 支持形如%d %ld %c %s %-7s %7s的格式
  * @param[in] fmt 格式字符串
@@ -615,7 +617,7 @@ static void screen_vprintf(const char *fmt, bool utf8, va_list ap)
 	_put_string(ptr, fmt, utf8);
 }
 
-/*
+/**
  * 格式化输出到屏幕
  * 输入必须为UTF-8编码
  * @param[in] fmt 格式字符串
@@ -629,7 +631,7 @@ void screen_printf(const char *fmt, ...)
 	va_end(ap);
 }
 
-/*
+/**
  * 格式化输出到屏幕
  * 输入必须为GBK编码
  * @param[in] fmt 格式字符串
