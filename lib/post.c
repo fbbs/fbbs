@@ -1063,6 +1063,12 @@ bool post_content_set(post_id_t post_id, const char *str)
 	if (res && db_cmd_rows(res) == 1)
 		ok = true;
 	db_clear(res);
+
+	if (ok) {
+		char file[HOMELEN];
+		post_content_cache_filename(post_id, file, sizeof(file));
+		unlink(file);
+	}
 	return ok;
 }
 
