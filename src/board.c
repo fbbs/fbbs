@@ -678,10 +678,6 @@ static int show_board_info(board_t *board)
 		for (int i = 0; i < 32; i++) {
 			if (!(board->perm & (1 << i)))
 				secu[i] = '-';
-			else {
-				prints("%s\n              ", permstrings[i]);
-			}
-
 		}
 		//% prints("\n权 限 位:     %s\n", secu);
 		prints("\n\xc8\xa8 \xcf\xde \xce\xbb:     %s\n", secu);

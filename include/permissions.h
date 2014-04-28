@@ -94,50 +94,6 @@
 #define HAS_DEFINE(x,y)	((y)?x&(y):1)
 /* HAS_DEFINE(userdefine, flag) */
 
-#ifndef EXTERN
-extern char *permstrings[];
-#else
-
-/* You might want to put more descriptive strings for SPECIAL1 and SPECIAL2
- depending on how/if you use them. */
-/* skyo.0507 modify 加入後面的 PERM 方便跟 menu.ini 对照） */
-char *permstrings[] = {
-	"上站权力       (PERM_LOGIN)", /* PERM_LOGIN */
-	"与他人聊天     (TALK)", /* PERM_TALK */
-	"发送信件       (MAIL)", /* PERM_MAIL */
-	"发表文章       (POST)", /* PERM_POST */
-	"使用者资料正确 (REGISTER)", /* PERM_REGISTER*/
-	"绑定邮箱       (BINDMAIL)", /* PERM_BINDMAIL */
-	"版主           (BOARDS)", /* PERM_BOARDS */
-	"讨论区总管     (OBOARDS)", /* PERM_OBOARDS */
-	"俱乐部总管     (OCLUB)", /* PERM_OCLUB */
-	"精华区总管     (ANNOUNCE)", /* PERM_ANNOUNCE*/
-	"活动看版总管   (OCBOARD)", /* PERM_OCBOARD */
-	"帐号管理员     (USER)", /* PERM_USER*/
-	"聊天室管理员   (OCHAT)", /* PERM_OCHAT*/
-	"系统维护管理员 (SYSOPS)", /* PERM_SYSOPS*/
-	"隐身术         (CLOAK)", /* PERM_CLOAK */
-	"看穿隐身术     (SEECLOAK)", /* PERM_SEECLOAK */
-	"帐号永久保留   (XEMPT)", /* PERM_XEMPT */
-	"生命值增强权限 (LONGLIFE)", /* PERM_LONGLIFE */
-	"大信箱         (LARGEMAIL)", /* PERM_LARGEMAIL*/
-	"仲裁组         (ARBI)", /* PERM_ARBI*/
-	"服务组         (SERV)", /* PERM_SERV*/
-	"技术组         (TECH)", /* PERM_TECH*/
-	"特殊权限 0     (SPECIAL0)", /* PERM_SPECIAL0*/
-	"特殊权限 1     (SPECIAL1)", /* PERM_SPECIAL1*/
-	"特殊权限 2     (SPECIAL2)", /* PERM_SPECIAL2*/
-	"特殊权限 3     (SPECIAL3)", /* PERM_SPECIAL3*/
-	"特殊权限 4     (SPECIAL4)", /* PERM_SPECIAL4*/
-	"特殊权限 5     (SPECIAL5)", /* PERM_SPECIAL5*/
-	"特殊权限 6     (SPECIAL6)", /* PERM_SPECIAL6*/
-	"特殊权限 7     (SPECIAL7)", /* PERM_SPECIAL7*/
-	"特殊权限 8     (SPECIAL8)", /* PERM_SPECIAL8*/
-	"特殊权限 9     (SPECIAL9)", /* PERM_SPECIAL9*/
-	NULL
-};
-#endif
-
 #define DEF_FRIENDCALL   0x00000001
 #define DEF_ALLMSG       0x00000002
 #define DEF_FRIENDMSG    0x00000004

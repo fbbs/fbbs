@@ -46,6 +46,45 @@ static const char *user_definestr[] = {
 	NULL
 };
 
+/* You might want to put more descriptive strings for SPECIAL1 and SPECIAL2
+ depending on how/if you use them. */
+/* skyo.0507 modify 加入後面的 PERM 方便跟 menu.ini 对照） */
+static const char *permstrings[] = {
+	"上站权力       (PERM_LOGIN)", /* PERM_LOGIN */
+	"与他人聊天     (TALK)", /* PERM_TALK */
+	"发送信件       (MAIL)", /* PERM_MAIL */
+	"发表文章       (POST)", /* PERM_POST */
+	"使用者资料正确 (REGISTER)", /* PERM_REGISTER*/
+	"绑定邮箱       (BINDMAIL)", /* PERM_BINDMAIL */
+	"版主           (BOARDS)", /* PERM_BOARDS */
+	"讨论区总管     (OBOARDS)", /* PERM_OBOARDS */
+	"俱乐部总管     (OCLUB)", /* PERM_OCLUB */
+	"精华区总管     (ANNOUNCE)", /* PERM_ANNOUNCE*/
+	"活动看版总管   (OCBOARD)", /* PERM_OCBOARD */
+	"帐号管理员     (USER)", /* PERM_USER*/
+	"聊天室管理员   (OCHAT)", /* PERM_OCHAT*/
+	"系统维护管理员 (SYSOPS)", /* PERM_SYSOPS*/
+	"隐身术         (CLOAK)", /* PERM_CLOAK */
+	"看穿隐身术     (SEECLOAK)", /* PERM_SEECLOAK */
+	"帐号永久保留   (XEMPT)", /* PERM_XEMPT */
+	"生命值增强权限 (LONGLIFE)", /* PERM_LONGLIFE */
+	"大信箱         (LARGEMAIL)", /* PERM_LARGEMAIL*/
+	"仲裁组         (ARBI)", /* PERM_ARBI*/
+	"服务组         (SERV)", /* PERM_SERV*/
+	"技术组         (TECH)", /* PERM_TECH*/
+	"特殊权限 0     (SPECIAL0)", /* PERM_SPECIAL0*/
+	"特殊权限 1     (SPECIAL1)", /* PERM_SPECIAL1*/
+	"特殊权限 2     (SPECIAL2)", /* PERM_SPECIAL2*/
+	"特殊权限 3     (SPECIAL3)", /* PERM_SPECIAL3*/
+	"特殊权限 4     (SPECIAL4)", /* PERM_SPECIAL4*/
+	"特殊权限 5     (SPECIAL5)", /* PERM_SPECIAL5*/
+	"特殊权限 6     (SPECIAL6)", /* PERM_SPECIAL6*/
+	"特殊权限 7     (SPECIAL7)", /* PERM_SPECIAL7*/
+	"特殊权限 8     (SPECIAL8)", /* PERM_SPECIAL8*/
+	"特殊权限 9     (SPECIAL9)", /* PERM_SPECIAL9*/
+	NULL
+};
+
 int use_define = 0;
 int child_pid = 0;
 extern int enabledbchar;
@@ -57,16 +96,14 @@ extern struct UCACHE *uidshm;
 //      对于权限定义值,判断其第i位是否为真,并根据use_define的值来
 //      调整其对应位的权限显示字符串
 //      最后在由i指示的位置处显示,更新
-int showperminfo(int pbits, int i) {
-	char buf[STRLEN];
-	sprintf(buf, "%c. %-30s %2s", 'A' + i,
-			(use_define) ? user_definestr[i] : permstrings[i], ((pbits
-					//% >> i) & 1 ? "是" : "×"));
-					>> i) & 1 ? "\xca\xc7" : "\xa1\xc1"));
-	move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
-	outs(buf);
-	screen_flush();
-	return YEA;
+int showperminfo(int pbits, int i)
+{
+	if (i < 16)
+		move(i + 6, 0);
+	screen_printf("%c. %-30s %2s", 'A' + i,
+			(use_define) ? user_definestr[i] : permstrings[i],
+			((pbits >> i) & 1 ? "是" : "否"));
+	return true;
 }
 
 //      更改用户的权限设定
@@ -76,12 +113,16 @@ unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showf
 	int i, done = NA;
 	char choice[3], buf[80];
 	move(4, 0);
-	//% prints("请按下您要的代码来设定%s，按 Enter 结束.\n", prompt);
-	prints("\xc7\xeb\xb0\xb4\xcf\xc2\xc4\xfa\xd2\xaa\xb5\xc4\xb4\xfa\xc2\xeb\xc0\xb4\xc9\xe8\xb6\xa8%s\xa3\xac\xb0\xb4 Enter \xbd\xe1\xca\xf8.\n", prompt);
+	screen_printf("\033[m请按下您要的代码来设定%s，按 Enter 结束.\n", prompt);
 	move(6, 0);
 	screen_clrtobot();
-	for (i = 0; i <= lastperm; i++) {
-		(*showfunc)(pbits, i, NA);
+
+	for (int j = 0; j < 16 && j < numbers; ++j) {
+		showfunc(pbits, j, false);
+		if (j + 16 < numbers) {
+			tui_repeat_char(' ', 4);
+			showfunc(pbits, j + 16, false);
+		}
 	}
 	while (!done) {
 		//% sprintf(buf, "选择(ENTER 结束%s): ",
