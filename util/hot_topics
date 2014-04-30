@@ -38,6 +38,7 @@ sub dump_results
 {
 	my ($boards, $hot_topics) = @_;
 	open my $fh, '>', $opt{dump} or die;
+	open my $fh_binary, '>', $opt{dump} . '_f.data' or die;
 
 	print $fh to_gbk("                \033[1;34m-----\033[37m=====\033[41m"
 		. " 本日十大热门话题 \033[40m=====\033[34m-----\033[m\n\n");
@@ -54,8 +55,13 @@ sub dump_results
 			++$index, $boards->{$board_id}{name}, $last_stamp, $score,
 			$user_name, $title;
 		print $fh to_gbk($str);
+
+		my $str2 = pack 'qLLlZ93Z16Z18Z5', $thread_id, $score, ($last_post_id >> 21) / 1000,
+				$board_id, $title, $user_name, $boards->{$board_id}{name}, '';
+		print $fh_binary $str2;
 	}
 
+	close $fh_binary;
 	close $fh;
 }
 
