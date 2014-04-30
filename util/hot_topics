@@ -49,12 +49,12 @@ sub dump_results
 		my $last_stamp = substr(convert_time(($last_post_id >> 21) / 1000), 0, 15);
 		$title =~ s/\033\[.*?m//g;
 
-		my $str = sprintf "\033[1;37m第\033[31m%3u\033[37m 名 \033[37m信区 : \033[33m"
+		my $fmt = to_gbk("\033[1;37m第\033[31m%3u\033[37m 名 \033[37m信区 : \033[33m"
 			. "%-18s\033[37m〖 \033[32m%s\033[37m 〗\033[36m%4d \033[37m篇"
-			. "\033[33m%13.13s\n     \033[37m标题 : \033[1;44m%-60.60s\033[40m\n",
-			++$index, $boards->{$board_id}{name}, $last_stamp, $score,
-			$user_name, $title;
-		print $fh to_gbk($str);
+			. "\033[33m%13.13s\n     \033[37m标题 : \033[1;44m%-60.60s\033[40m\n");
+		my $str = sprintf $fmt, ++$index, $boards->{$board_id}{name}, $last_stamp,
+				$score, $user_name, to_gbk($title);
+		print $fh $str;
 
 		my $str2 = pack 'qLLlZ93Z16Z18Z5', $thread_id, $score, ($last_post_id >> 21) / 1000,
 				$board_id, $title, $user_name, $boards->{$board_id}{name}, '';
@@ -73,8 +73,10 @@ sub generate_results
 {
 	my ($boards, $threads) = @_;
 
-	my @thread_ids = sort { $threads->{$b}{score} <=> $threads->{$a}{score} }
-			keys %$threads;
+	my @thread_ids = sort {
+			$threads->{$b}{score} <=> $threads->{$a}{score}
+			or $threads->{$b}{last} <=> $threads->{$a}{last}
+		} keys %$threads;
 
 	my @hot_topics;
 	my %board;
