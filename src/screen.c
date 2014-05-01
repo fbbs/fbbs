@@ -35,13 +35,11 @@ typedef struct {
 	int roll; ///< 首行在buf中的偏移量
 	int scrollcnt;
 	bool redraw; ///< 重绘屏幕
-	bool utf8; ///< 为true时以UTF8编码输出, 否则GBK编码
 } screen_t;
 
 static screen_t screen = {
 	.lines = 24,
 	.columns = 255,
-	.utf8 = false,
 };
 
 int screen_lines(void)
@@ -174,9 +172,9 @@ static int _write_helper(const char *buf, size_t len, void *arg)
 	return 0;
 }
 
-static void screen_write_cached(const uchar_t *data, uint16_t len, bool utf8)
+static void screen_write_cached(const uchar_t *data, uint16_t len)
 {
-	if (utf8) {
+	if (terminal_is_utf8()) {
 		_write_helper((const char *) data, len, NULL);
 	} else {
 		convert(CONVERT_U2G, (const char *) data, len, NULL, 0,
@@ -202,7 +200,7 @@ void screen_redraw(void)
 			continue;
 
 		move_terminal_cursor(0, i);
-		screen_write_cached(sl->data, sl->len, screen.utf8);
+		screen_write_cached(sl->data, sl->len);
 
 		screen.tc_col += sl->len;
 		if (screen.tc_col >= screen.columns) {
@@ -250,7 +248,7 @@ void screen_flush(void)
 			sl->modified = false;
 			move_terminal_cursor(0, i);
 
-			screen_write_cached(sl->data, sl->len, screen.utf8);
+			screen_write_cached(sl->data, sl->len);
 
 			screen.tc_col = sl->len;
 			if (screen.tc_col >= screen.columns) {
@@ -358,7 +356,7 @@ void screen_puts(const char *s, size_t size)
 		size = strlen(s);
 
 	if (!screen.buf) {
-		screen_write_cached((const uchar_t *) s, size, screen.utf8);
+		screen_write_cached((const uchar_t *) s, size);
 		return;
 	}
 

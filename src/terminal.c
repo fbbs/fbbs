@@ -32,6 +32,18 @@ typedef struct {
 	size_t size;
 } output_buffer_t;
 
+static bool _terminal_utf8 = false;
+
+bool terminal_is_utf8(void)
+{
+	return _terminal_utf8;
+}
+
+void terminal_set_to_utf8(void)
+{
+	_terminal_utf8 = true;
+}
+
 #ifdef ENABLE_SSH
 extern ssh_channel ssh_chan;
 #endif // ENABLE_SSH

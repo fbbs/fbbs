@@ -16,6 +16,8 @@
 /** ANSI指令，退出反色模式 */
 #define ANSI_CMD_SE "\033[m"
 
+extern bool terminal_is_utf8(void);
+extern void terminal_set_to_utf8(void);
 extern int terminal_read(unsigned char *buf, size_t size);
 extern int terminal_write(const unsigned char *buf, size_t len);
 extern int terminal_flush(void);
