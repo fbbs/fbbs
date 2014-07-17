@@ -41,6 +41,9 @@ extern const char *check_gbk(const char *title);
 
 extern wchar_t next_wchar(const char **str, size_t *leftp);
 extern int fb_wcwidth(wchar_t ch);
+extern size_t fb_wcstombs(char *dest, const wchar_t *src, size_t n);
+extern const char *string_previous_utf8_start(const char *begin, const char *ptr);
+extern const char *string_next_utf8_start(const char *ptr, const char *end);
 extern int string_validate_utf8(const char *str, size_t max_chinese_chars, bool allow_zero_width_or_esc);
 extern const char *get_line_end(const char *begin, const char *end);
 

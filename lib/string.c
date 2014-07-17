@@ -545,6 +545,86 @@ int fb_wcwidth(wchar_t ch)
 		  (ch >= 0x30000 && ch <= 0x3fffd)));
 }
 
+/**
+ * 将宽字符串转换成UTF-8编码的字符串
+ * @param dest 存放结果的缓冲区
+ * @param src 要转换的宽字符串
+ * @param n 目标缓冲区的长度
+ * @return 已被转换的UTF-8字符串长度
+ */
+size_t fb_wcstombs(char *dest, const wchar_t *src, size_t n)
+{
+	uchar_t *p = (uchar_t *) dest, *end = p + n;
+	wchar_t wc;
+	while ((wc = *src++)) {
+		if (wc < 0x80) {
+			if (p + 1 >= end)
+				goto r;
+			p[0] = wc;
+			p += 1;
+		} else if (wc < 0x800) {
+			if (p + 2 >= end)
+				goto r;
+			p[0] = 0xc0 | (wc >> 6);
+			p[1] = wc & 0x3f;
+			p += 2;
+		} else if (wc < 0x10000) {
+			if (p + 3 >= end)
+				goto r;
+			p[0] = 0xe0 | (wc >> 12);
+			p[1] = 0x80 | ((wc >> 6) & 0x3f);
+			p[2] = wc & 0x3f;
+			p += 3;
+		} else if (wc < 0x200000) {
+			if (p + 4 >= end)
+				goto r;
+			p[0] = 0xf0 | (wc >> 18);
+			p[1] = 0x80 | ((wc >> 12) & 0x3f);
+			p[2] = 0x80 | ((wc >> 6) & 0x3f);
+			p[3] = wc & 0x3f;
+			p += 4;
+		} else {
+			return (size_t) -1;
+		}
+	}
+r:	*p = '\0';
+	return p - (uchar_t *) dest;
+}
+
+/**
+ * 在UTF-8字符串中寻找上一个字符的起始位置
+ * @param begin 字符串头指针
+ * @param ptr 字符串当前位置的指针
+ * @return 上一个字符的起始位置
+ */
+const char *string_previous_utf8_start(const char *begin, const char *ptr)
+{
+	while (--ptr >= begin) {
+		uchar_t c = *(const uchar_t *) ptr;
+		if (c < 0x80 || c >= 0xc0) {
+			return ptr;
+		}
+	}
+	return ptr;
+}
+
+/**
+ * 在UTF-8字符串中寻找下一个字符的起始位置
+ * @param ptr 字符串当前位置的指针
+ * @param end 字符串的尾端指针
+ * @return 下一个字符的起始位置
+ */
+const char *string_next_utf8_start(const char *ptr, const char *end)
+{
+	while (++ptr < end) {
+		uchar_t c = *(const uchar_t *) ptr;
+		if (c < 0x80 || c >= 0xc0) {
+			return ptr;
+		}
+	}
+	return ptr;
+}
+
 void string_remove_non_printable(char *str)
 {
 	if (!str)
