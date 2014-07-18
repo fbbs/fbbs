@@ -19,6 +19,7 @@ extern void *vector_at(const vector_t *v, vector_size_t position);
 extern void *vector_grow(vector_t *v, vector_size_t size);
 extern bool vector_erase(vector_t *v, vector_size_t position);
 extern bool vector_erase_range(vector_t *v, vector_size_t first, vector_size_t last);
+extern bool vector_insert(vector_t *v, vector_size_t position, void *val);
 extern void vector_free(vector_t *v);
 
 #endif // FB_VECTOR_H
