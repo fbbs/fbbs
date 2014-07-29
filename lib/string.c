@@ -566,14 +566,14 @@ size_t fb_wcstombs(char *dest, const wchar_t *src, size_t n)
 			if (p + 2 >= end)
 				goto r;
 			p[0] = 0xc0 | (wc >> 6);
-			p[1] = wc & 0x3f;
+			p[1] = 0x80 | (wc & 0x3f);
 			p += 2;
 		} else if (wc < 0x10000) {
 			if (p + 3 >= end)
 				goto r;
 			p[0] = 0xe0 | (wc >> 12);
 			p[1] = 0x80 | ((wc >> 6) & 0x3f);
-			p[2] = wc & 0x3f;
+			p[2] = 0x80 | (wc & 0x3f);
 			p += 3;
 		} else if (wc < 0x200000) {
 			if (p + 4 >= end)
@@ -581,7 +581,7 @@ size_t fb_wcstombs(char *dest, const wchar_t *src, size_t n)
 			p[0] = 0xf0 | (wc >> 18);
 			p[1] = 0x80 | ((wc >> 12) & 0x3f);
 			p[2] = 0x80 | ((wc >> 6) & 0x3f);
-			p[3] = wc & 0x3f;
+			p[3] = 0x80 | (wc & 0x3f);
 			p += 4;
 		} else {
 			return (size_t) -1;
