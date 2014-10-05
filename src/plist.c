@@ -1246,8 +1246,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		do_quote("", file, header.include_mode, header.anonymous);
 	}
 
-	if (vedit(file, true, true, &header) == -1) {
-		unlink(file);
+	if (tui_edit(file, false, true, true, &header) != TUI_EDIT_SAVED) {
 		screen_clear();
 		set_user_status(status);
 		return FULLUPDATE;
