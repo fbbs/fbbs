@@ -35,8 +35,8 @@ static int remove_character(char *buf, int *cur, int clen, bool backspace)
 	return dec;
 }
 
-int getdata(int line, int col, const char *prompt, char *buf, int len,
-		int echo, int clear)
+static int _tui_input(int line, int col, const char *prompt, char *buf,
+		int len, int echo, int clear, bool utf8)
 {
 	extern int RMSG;
 	extern int msg_num;
@@ -45,7 +45,7 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 		buf[0] = '\0';
 	buf[len - 1] = '\0';
 
-	int real_x = prompt ? screen_display_width(prompt, false) : 0;
+	int real_x = prompt ? screen_display_width(prompt, utf8) : 0;
 
 	int cur, clen;
 	cur = clen = strlen(buf);
@@ -53,8 +53,12 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	while (1) {
 		move(line, col);
 		clrtoeol();
-		if (prompt)
-			prints("%s", prompt);
+		if (prompt) {
+			if (utf8)
+				screen_printf("%s", prompt);
+			else
+				prints("%s", prompt);
+		}
 		if (echo)
 			prints("%s", buf);
 		else
@@ -108,6 +112,26 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
 	screen_putc('\n');
 	screen_flush();
 	return clen;
+}
+
+int getdata(int line, int col, const char *prompt, char *buf, int len,
+		int echo, int clear)
+{
+	return _tui_input(line, col, prompt, buf, len, echo, clear, false);
+}
+
+/**
+ * 从终端获取(GBK)输入
+ * @param line 输入输出所在行
+ * @param prompt 提示字符串, 必须为UTF-8编码
+ * @param buf 存放输入字符串的缓冲区
+ * @param len 缓冲区长度
+ * @param echo 回显输入字符串, 或以*号代替
+ * @return 输入字符串的长度
+ */
+int tui_input(int line, const char *prompt, char *buf, int len, int echo)
+{
+	return _tui_input(line, 0, prompt, buf, len, echo, false, true);
 }
 
 static char *boardmargin(void)

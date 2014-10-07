@@ -31,6 +31,7 @@ extern int terminal_getchar(void);
 extern int egetch(void);
 extern int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel);
+extern int tui_input(int line, const char *prompt, char *buf, int len, int echo);
 extern void tui_repeat_char(int c, int repeat);
 extern void tui_update_status_line(void);
 extern void tui_suppress_notice(bool suppress_notice);

@@ -986,8 +986,8 @@ static tui_edit_e confirm_save_file(const char *file,
 		*ans = 'S';
 	} else {
 		screen_move_clear(-1);
-		screen_printf("S) 发表 A) 取消 T) 更改标题 E) 再编辑 [S]: ");
-		getdata(-1, 55, NULL, ans, sizeof(ans), true, false);
+		tui_input(-1, "S) 发表 A) 取消 T) 更改标题 E) 再编辑 [S]: ",
+				ans, sizeof(ans), true);
 		*ans = toupper(*ans);
 	}
 
