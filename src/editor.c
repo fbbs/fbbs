@@ -981,24 +981,24 @@ static int write_file(editor_t *editor, const char *file,
 static tui_edit_e confirm_save_file(const char *file,
 		struct postheader *post_header, bool confirmed)
 {
-	char ans;
+	char ans[2];
 	if (confirmed) {
-		ans = 'S';
+		*ans = 'S';
 	} else {
 		screen_move_clear(-1);
 		screen_printf("S) 发表 A) 取消 T) 更改标题 E) 再编辑 [S]: ");
-		getdata(-1, 44, NULL, &ans, 1, true, false);
-		ans = toupper(ans);
+		getdata(-1, 55, NULL, ans, sizeof(ans), true, false);
+		*ans = toupper(*ans);
 	}
 
-	if (ans == 'S') {
+	if (*ans == 'S') {
 		return TUI_EDIT_SAVED;
-	} else if (ans == 'A') {
+	} else if (*ans == 'A') {
 		struct stat st;
 		if (stat(file, &st) || st.st_size == 0)
 			unlink(file);
 		return TUI_EDIT_ABORTED;
-	} else if (ans == 'T') {
+	} else if (*ans == 'T') {
 		// TODO
 	}
 	return TUI_EDIT_CONTINUE;
