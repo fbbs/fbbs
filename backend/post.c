@@ -128,7 +128,7 @@ BACKEND_DECLARE(post_new)
 
 		board_t board;
 		if (get_board_by_bid(req.board_id, &board)) {
-			if (!board_is_junk(&board))
+			if (!(board_is_junk(&board) || req.hide_user_id || req.anonymous))
 				adjust_user_post_count(req.user_name, 1);
 
 			if (req.user_id_replied > 0 && req.user_id != req.user_id_replied)
