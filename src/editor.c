@@ -470,7 +470,7 @@ static bool raw_insert(editor_t *editor, const char *str,
  */
 static bool contains_newline(const text_line_t *tl)
 {
-	return tl->size && tl->buf[(int) (tl->size - 1)] == '\n';
+	return tl->size && tl->buf[tl->size - 1] == '\n';
 }
 
 /**
@@ -499,7 +499,8 @@ static void wrap_long_lines(editor_t *editor)
 
 		++line;
 		text_line_t *next_tl = editor_line(editor, line);
-		if (!next_tl || line >= editor->allow_edit_end) {
+		if (contains_newline(tl) || !next_tl
+				|| line >= editor->allow_edit_end) {
 			text_line_t new_tl = { .buf = NULL };
 			vector_insert(&editor->lines, line, &new_tl);
 			++editor->allow_edit_end;
@@ -507,11 +508,16 @@ static void wrap_long_lines(editor_t *editor)
 
 		++editor->current_line;
 		editor->buffer_pos = 0;
-		if (!raw_insert(editor, p, tl->size - (p - tl->buf)))
+		if (raw_insert(editor, p, tl->size - (p - tl->buf)))
+			tl->size = p - tl->buf;
+		else
 			break;
 	}
 	editor->current_line = saved_line;
 	editor->buffer_pos = saved_pos;
+
+	text_line_t *tl = editor_current_line(editor);
+	editor->screen_pos = display_width(tl->buf, saved_pos);
 }
 
 static void wrap_short_lines(editor_t *editor)
@@ -621,23 +627,24 @@ static void request_redraw(editor_t *editor)
 static void move_left(editor_t *editor)
 {
 	text_line_t *tl = editor_current_line(editor);
-	if (editor->screen_pos) {
-		const char *ptr = string_previous_utf8_start(tl->buf,
-				tl->buf + editor->buffer_pos);
-		editor->screen_pos -= display_width(ptr,
-				tl->buf + editor->buffer_pos - ptr);
-		editor->buffer_pos = ptr - tl->buf;
-	} else {
+	if (!editor->screen_pos) {
 		if (editor->current_line > editor->allow_edit_begin) {
 			--editor->current_line;
-			text_line_t *tl = editor_current_line(editor);
-			editor->buffer_pos = tl->size ? tl->size - 1 : 0;
+			tl = editor_current_line(editor);
+			editor->buffer_pos = tl->size;
 			editor->screen_pos = display_width(tl->buf, tl->size);
 			if (editor->current_line < editor->window_top) {
 				editor->window_top = editor->current_line;
 				editor->redraw = true;
 			}
 		}
+	}
+	if (editor->screen_pos) {
+		const char *ptr = string_previous_utf8_start(tl->buf,
+				tl->buf + editor->buffer_pos);
+		editor->screen_pos -= display_width(ptr,
+				tl->buf + editor->buffer_pos - ptr);
+		editor->buffer_pos = ptr - tl->buf;
 	}
 	editor->request_pos = editor->screen_pos;
 }
@@ -673,6 +680,8 @@ static void try_request_pos(editor_t *editor)
 	const char *ptr = seek_to_display_width(tl->buf, tl->size,
 			editor->request_pos);
 	editor->buffer_pos = ptr - tl->buf;
+	if (contains_newline(tl) && editor->buffer_pos == tl->size)
+		--editor->buffer_pos;
 	editor->screen_pos = display_width(tl->buf, editor->buffer_pos);
 }
 
@@ -754,6 +763,9 @@ static void delete_char_forward(editor_t *editor)
 
 	char *begin = tl->buf + editor->buffer_pos, *end = tl->buf + tl->size;
 	char *ptr = (char *) string_next_utf8_start(begin, end);
+	if (ptr > end || (ptr == end && contains_newline(tl)))
+		return;
+
 	memmove(begin, ptr, end - ptr);
 	tl->size -= ptr - begin;
 	tl->redraw = true;
