@@ -503,6 +503,7 @@ static void wrap_long_lines(editor_t *editor)
 				|| line >= editor->allow_edit_end) {
 			text_line_t new_tl = { .buf = NULL };
 			vector_insert(&editor->lines, line, &new_tl);
+			tl = editor_line(editor, line - 1);
 			++editor->allow_edit_end;
 		}
 
