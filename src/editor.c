@@ -2,6 +2,7 @@
 #include "bbs.h"
 #include "mmap.h"
 #include "fbbs/helper.h"
+#include "fbbs/mail.h"
 #include "fbbs/string.h"
 #include "fbbs/terminal.h"
 #include "fbbs/util.h"
@@ -304,6 +305,91 @@ static bool editor_init(editor_t *editor, const char *file, bool utf8,
 	return true;
 }
 
+/**
+ * 检查指定行是否含有换行符
+ * @param tl 行数据结构
+ * @return 指定行是否含有换行符
+ */
+static bool contains_newline(const text_line_t *tl)
+{
+	return tl->size && tl->buf[tl->size - 1] == '\n';
+}
+
+/**
+ * 计算一个宽字符的显示宽度
+ * @param wc 一个宽字符
+ * @return 该宽字符在编辑器终端上的显示宽度
+ */
+static size_t display_width_wchar(wchar_t wc)
+{
+	if (wc == L'\n')
+		return 0;
+	if (wc == L'\033')
+		return 1;
+	int width = fb_wcwidth(wc);
+	return width < 1 ? 1 : width;
+}
+
+/**
+ * 计算字符串的显示宽度
+ * @param str UTF-8编码字符串
+ * @param size 字符串的长度
+ * @return 字符串在编辑器终端上的显示宽度
+ */
+static size_t display_width(const char *str, size_t size)
+{
+	size_t width = 0;
+	for (wchar_t wc = next_wchar(&str, &size); wc && wc != WEOF; ) {
+		width += display_width_wchar(wc);
+		wc = next_wchar(&str, &size);
+	}
+	return width;
+}
+
+static void real_pos(const editor_t *editor, vector_size_t *x,
+		text_line_size_t *y)
+{
+	*x = 1;
+	for (vector_size_t i = editor->allow_edit_begin;
+			i < editor->current_line; ++i) {
+		if (contains_newline(editor_line(editor, i)))
+			++*x;
+	}
+
+	*y = editor->screen_pos + 1;
+	if (editor->current_line) {
+		for (vector_size_t i = editor->current_line - 1;
+				i >= editor->allow_edit_begin;) {
+			const text_line_t *tl = editor_line(editor, i);
+			if (contains_newline(tl))
+				break;
+			else
+				*y += display_width(tl->buf, tl->size);
+			if (i)
+				--i;
+			else
+				break;
+		}
+	}
+}
+
+static void show_status_line(const editor_t *editor)
+{
+	bool mail = chkmail();
+
+	vector_size_t x;
+	text_line_size_t y;
+	real_pos(editor, &x, &y);
+
+	screen_move_clear(-1);
+	screen_printf("\033[1;33;44m[%s] [\033[32m%s\033[33m]"
+			" [\033[32m按\033[31mCtrl-Q\033[32m求救\033[33m]"
+			" [\033[32m%d\033[33m,\033[32m%d\033[33m]\033[K\033[m",
+			mail ? "\033[5;32m信\033[m\033[1;33;44m" : "  ",
+			format_time(fb_time(), TIME_FORMAT_UTF8_ZH) + 7,
+			x, y);
+}
+
 static void display(editor_t *editor, bool ansi)
 {
 	int line = 0, lines = screen_lines() - 1;
@@ -338,6 +424,8 @@ static void display(editor_t *editor, bool ansi)
 			screen_puts("\033[33m~\033[m", 0);
 		}
 	}
+
+	show_status_line(editor);
 
 	move(editor->current_line - editor->window_top, editor->screen_pos);
 	editor->redraw = false;
@@ -380,37 +468,6 @@ static wchar_t get_next_wchar(editor_t *editor)
 		}
 	}
 	return 0;
-}
-
-/**
- * 计算一个宽字符的显示宽度
- * @param wc 一个宽字符
- * @return 该宽字符在编辑器终端上的显示宽度
- */
-static size_t display_width_wchar(wchar_t wc)
-{
-	if (wc == L'\n')
-		return 0;
-	if (wc == L'\033')
-		return 1;
-	int width = fb_wcwidth(wc);
-	return width < 1 ? 1 : width;
-}
-
-/**
- * 计算字符串的显示宽度
- * @param str UTF-8编码字符串
- * @param size 字符串的长度
- * @return 字符串在编辑器终端上的显示宽度
- */
-static size_t display_width(const char *str, size_t size)
-{
-	size_t width = 0;
-	for (wchar_t wc = next_wchar(&str, &size); wc && wc != WEOF; ) {
-		width += display_width_wchar(wc);
-		wc = next_wchar(&str, &size);
-	}
-	return width;
 }
 
 static const char *seek_to_display_width(const char *str, size_t size,
@@ -461,16 +518,6 @@ static bool raw_insert(editor_t *editor, const char *str,
 	tl->size += len;
 	editor->buffer_pos += len;
 	return true;
-}
-
-/**
- * 检查指定行是否含有换行符
- * @param tl 行数据结构
- * @return 指定行是否含有换行符
- */
-static bool contains_newline(const text_line_t *tl)
-{
-	return tl->size && tl->buf[tl->size - 1] == '\n';
 }
 
 /**
