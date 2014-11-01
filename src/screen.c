@@ -18,7 +18,7 @@ enum {
 
 /** 屏幕上的一行 */
 typedef struct {
-	uint16_t old_len; ///< 上次输出时的字符串长度
+	uint16_t old_width; ///< 上次输出时的字符串宽度
 	uint16_t len; ///< 当前字符串长度
 	bool modified; ///< 自从上次输出以来是否修改过
 	uchar_t data[SCREEN_LINE_LEN]; ///< 缓冲区
@@ -102,7 +102,7 @@ void screen_init(int lines)
 			screen_line_t *sl = screen.buf + i;
 			sl->modified = false;
 			sl->len = 0;
-			sl->old_len = 0;
+			sl->old_width = 0;
 		}
 		screen.redraw = true;
 		screen.roll = 0;
@@ -207,7 +207,8 @@ void screen_redraw(void)
 			screen.tc_col = screen.columns - 1;
 		}
 		sl->modified = false;
-		sl->old_len = sl->len;
+		sl->data[sl->len] = '\0';
+		sl->old_width = screen_display_width((char *) sl->data, true);
 	}
 	move_terminal_cursor(screen.cur_col, screen.cur_ln);
 	screen.redraw = false;
@@ -258,11 +259,14 @@ void screen_flush(void)
 					screen.tc_line = screen.lines - 1;
 			}
 		}
-		if (sl->old_len > sl->len) {
-			move_terminal_cursor(sl->len, i);
+
+		sl->data[sl->len] = '\0';
+		int width = screen_display_width((char *) sl->data, true);
+		if (sl->old_width > width) {
+			move_terminal_cursor(width, i);
 			ansi_cmd(ANSI_CMD_CE);
 		}
-		sl->old_len = sl->len;
+		sl->old_width = width;
 	}
 	move_terminal_cursor(screen.cur_col, screen.cur_ln);
 	terminal_flush();
@@ -343,7 +347,7 @@ void screen_clrtobot(void)
 			screen_line_t *sl = get_screen_line(i);
 			sl->modified = false;
 			sl->len = 0;
-			sl->old_len = SCREEN_LINE_LEN;
+			sl->old_width = SCREEN_LINE_LEN;
 		}
 	}
 }
