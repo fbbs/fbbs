@@ -787,7 +787,8 @@ static void move_line_end(editor_t *editor)
 {
 	text_line_t *tl = editor_current_line(editor);
 	if (tl) {
-		editor->request_pos = editor->buffer_pos = tl->size - 1;
+		editor->request_pos = editor->buffer_pos
+				= tl->size - contains_newline(tl);
 		editor->screen_pos = display_width(tl->buf, tl->size);
 	}
 }
@@ -812,9 +813,22 @@ static void delete_char_forward(editor_t *editor)
 	if (!tl)
 		return;
 
+	if (editor->buffer_pos >= tl->size) {
+		vector_size_t saved_line = editor->current_line;
+		text_line_size_t saved_pos = editor->buffer_pos;
+
+		++editor->current_line;
+		editor->buffer_pos = 0;
+		delete_char_forward(editor);
+
+		editor->current_line = saved_line;
+		editor->buffer_pos = saved_pos;
+		return;
+	}
+
 	char *begin = tl->buf + editor->buffer_pos, *end = tl->buf + tl->size;
 	char *ptr = (char *) string_next_utf8_start(begin, end);
-	if (ptr > end || (ptr == end && contains_newline(tl)))
+	if (ptr > end)
 		return;
 
 	memmove(begin, ptr, end - ptr);
