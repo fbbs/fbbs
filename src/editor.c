@@ -564,6 +564,9 @@ static void wrap_long_lines(editor_t *editor)
 	editor->current_line = saved_line;
 	editor->buffer_pos = saved_pos;
 
+	if (editor->current_line >= editor->window_top + screen_lines() - 1)
+		editor->window_top = editor->current_line - screen_lines() + 2;
+
 	text_line_t *tl = editor_current_line(editor);
 	editor->screen_pos = display_width(tl->buf, saved_pos);
 }
