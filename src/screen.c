@@ -245,13 +245,17 @@ void screen_flush(void)
 	}
 	for (int i = 0; i < screen.lines; i++) {
 		screen_line_t *sl = get_screen_line(i);
+
+		sl->data[sl->len] = '\0';
+		int width = screen_display_width((char *) sl->data, true);
+
 		if (sl->modified) {
 			sl->modified = false;
 			move_terminal_cursor(0, i);
 
 			screen_write_cached(sl->data, sl->len);
 
-			screen.tc_col = sl->len;
+			screen.tc_col = width;
 			if (screen.tc_col >= screen.columns) {
 				screen.tc_col -= screen.columns;
 				screen.tc_line++;
@@ -260,8 +264,6 @@ void screen_flush(void)
 			}
 		}
 
-		sl->data[sl->len] = '\0';
-		int width = screen_display_width((char *) sl->data, true);
 		if (sl->old_width > width) {
 			move_terminal_cursor(width, i);
 			ansi_cmd(ANSI_CMD_CE);
