@@ -33,6 +33,8 @@ typedef struct {
 	vector_size_t allow_edit_end; ///< 允许编辑的末尾行(不含此行)
 	vector_size_t window_top; ///< 当前窗口起始行
 	vector_size_t current_line; ///< 当前光标所在行
+	vector_size_t mark_begin; ///< 标记头部
+	vector_size_t mark_end; ///< 标记尾部
 	text_line_size_t buffer_pos; ///< 当前光标所在行的缓冲区位置
 	text_line_size_t screen_pos; ///< 当前光标所在屏幕列
 	text_line_size_t request_pos; ///< 上下移动时记录光标所在屏幕列
@@ -300,6 +302,7 @@ static bool editor_init(editor_t *editor, const char *file, bool utf8,
 	}
 	editor->current_line = editor->window_top = editor->allow_edit_begin;
 	editor->buffer_pos = editor->screen_pos = editor->request_pos = 0;
+	editor->mark_begin = editor->mark_end = 0;
 	editor->pending_bytes = 0;
 	editor->redraw = true;
 	return true;
@@ -402,17 +405,25 @@ static void display(editor_t *editor, bool ansi)
 			if (ansi) {
 				screen_puts(tl->buf, tl->size);
 			} else {
+				bool marked = i >= editor->mark_begin && i < editor->mark_end;
+				if (marked)
+					screen_puts("\033[7m", 4);
 				const char *last = tl->buf, *end = tl->buf + tl->size;
 				for (const char *ptr = tl->buf; ptr < end; ++ptr) {
 					if (*ptr == '\033') {
-						screen_puts(last, ptr - last);
+						if (ptr > last)
+							screen_puts(last, ptr - last);
 						screen_puts("\033[33m*\033[m", 0);
 						last = ptr + 1;
 					}
 				}
 				if (end > last) {
-					screen_puts(last, end - last);
+					size_t size = end - last - contains_newline(tl);
+					if (size)
+						screen_puts(last, size);
 				}
+				if (marked)
+					screen_puts("\033[m", 3);
 			}
 			tl->redraw = false;
 		}
@@ -609,6 +620,13 @@ static void wrap_short_lines(editor_t *editor)
 	editor->buffer_pos = saved_pos;
 }
 
+static void mark_clear(editor_t *editor)
+{
+	if (editor->mark_begin || editor->mark_end)
+		editor->redraw = true;
+	editor->mark_begin = editor->mark_end = 0;
+}
+
 /**
  * 在当前位置插入一个宽字符
  * @param editor 编辑器
@@ -630,6 +648,7 @@ static void insert_char(editor_t *editor, wchar_t wc)
 		editor->request_pos = editor->screen_pos;
 		wrap_long_lines(editor);
 	}
+	mark_clear(editor);
 }
 
 /**
@@ -813,6 +832,8 @@ static void delete_char_forward(editor_t *editor)
 	if (!tl)
 		return;
 
+	mark_clear(editor);
+
 	if (editor->buffer_pos >= tl->size) {
 		vector_size_t saved_line = editor->current_line;
 		text_line_size_t saved_pos = editor->buffer_pos;
@@ -854,6 +875,25 @@ static void delete_to_end_of_line(editor_t *editor)
 		tl->size = editor->buffer_pos;
 		wrap_short_lines(editor);
 	}
+	mark_clear(editor);
+}
+
+static void mark_selection(editor_t *editor)
+{
+	if (editor->mark_begin >= editor->mark_end) {
+		editor->mark_begin = editor->current_line;
+		editor->mark_end = editor->mark_begin + 1;
+	} else {
+		if (editor->current_line < editor->mark_begin) {
+			editor->mark_begin = editor->current_line;
+		} else if (editor->current_line >= editor->mark_end) {
+			editor->mark_end = editor->current_line + 1;
+		} else {
+			editor->mark_begin = editor->current_line;
+			editor->mark_end = editor->mark_begin + 1;
+		}
+	}
+	editor->redraw = true;
 }
 
 static void handle_edit(editor_t *editor, wchar_t wc)
@@ -882,7 +922,7 @@ static void handle_edit(editor_t *editor, wchar_t wc)
 			// TODO
 			break;
 		case Ctrl('U'):
-			// TODO
+			mark_selection(editor);
 			break;
 		case Ctrl('V'):
 			// TODO
@@ -1081,6 +1121,20 @@ static tui_edit_e confirm_save_file(const char *file,
 	return TUI_EDIT_CONTINUE;
 }
 
+static void handle_esc(editor_t *editor)
+{
+	switch (KEY_ESC_arg) {
+		case 'Q': case 'q':
+			mark_clear(editor);
+			break;
+		case KEY_ESC:
+			insert_char(editor, '\033');
+			break;
+		default:
+			break;
+	}
+}
+
 /**
  * 编辑文件
  * @param file 要编辑的文件
@@ -1122,7 +1176,7 @@ tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file,
 				break;
 			}
 			case KEY_ESC:
-				// TODO
+				handle_esc(&editor);
 				break;
 			case 0:
 				break;
