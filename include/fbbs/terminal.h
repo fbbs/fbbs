@@ -64,6 +64,7 @@ extern void screen_putc(int c);
 extern void screen_printf(const char *fmt, ...);
 extern void prints(const char *fmt, ...);
 extern void screen_scroll(void);
+extern void screen_replace(int line, int col, const char *str);
 extern void screen_save_line(int line, bool save);
 extern void saveline_buf(int line, int mode);
 
