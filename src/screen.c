@@ -717,7 +717,8 @@ void screen_replace(int line, int col, const char *str)
 	const char *ptr = seek_to_width(buf, end - buf, &w);
 
 	screen_move_clear(line);
-	screen_puts(buf, ptr - buf);
+	if (ptr > buf)
+		screen_puts(buf, ptr - buf);
 	if (w) {
 		tui_repeat_char(' ', w);
 	}

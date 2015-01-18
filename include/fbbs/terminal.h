@@ -26,6 +26,9 @@ extern void terminal_write_cached(const unsigned char *str, int size);
 extern bool terminal_input_buffer_empty(void);
 extern void terminal_schedule_exit(int);
 
+extern int menu_loop(const char *group_name);
+extern bool menu_load(const char *file);
+
 extern int igetch(void);
 extern int terminal_getchar(void);
 extern int egetch(void);
@@ -155,7 +158,6 @@ void new_register(void);
 int post_header(struct postheader *header);
 int post_reply(const char *owner, const char *title, const char *file);
 void Poststring(const char *str, const char *nboard, const char *posttitle, int mode);
-int domenu(const char *menu_name);
 void setqtitle(char *stitle, int gid);
 void setquotefile(const char *filepath);
 void setvfile(char *buf, const char *bname, const char *filename);

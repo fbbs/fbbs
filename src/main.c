@@ -894,12 +894,12 @@ void start_client(void)
 			&& session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)) > 0)
 		show_online_followings();
 
-	sysconf_load(false);
+	menu_load("menu.img");
 	while (1) {
 		if (DEFINE(DEF_NORMALSCR))
-			domenu("TOPMENU");
+			menu_loop("TOPMENU");
 		else
-			domenu("TOPMENU2");
+			menu_loop("TOPMENU2");
 		Goodbye();
 	}
 }

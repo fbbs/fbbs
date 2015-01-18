@@ -1,0 +1,192 @@
+#!/usr/bin/env perl
+
+use v5.10;
+use strict;
+
+main();
+
+sub main {
+	if (@ARGV != 2) {
+		die "Usage: $0 <menu-config> <output>"
+	}
+	my $config = {
+		str => {},
+		group => {},
+		bg => {},
+		const => { "0" => 0 },
+	};
+
+	read_menu_config($config, $ARGV[0]);
+	serialize_config($config, $ARGV[1]);
+}
+
+sub read_menu_config {
+	my ($config, $file) = @_;
+
+	open my $fh, '<', $file or die $!;
+
+	while (<$fh>) {
+		chomp;
+		s/^\s+//;
+
+		if (/^#include\s+(\w+)/) {
+			read_menu_config($config, $1);
+		} elsif (/^#/ or /^$/) {
+			next;
+		} elsif (/^%menu\s+(\w+)/) {
+			parse_group($config, $1, $fh);
+		} elsif (/^%(\w+)/) {
+			parse_bg($config, $1, $fh);
+		} elsif (/(\w+)\s*=\s*(.+)/) {
+			parse_const($config, $1, $2);
+		} else {
+			warn "illegal token: [$_]";
+		}
+	}
+
+	close $fh;
+	$config;
+}
+
+sub parse_group {
+	my ($config, $menu_name, $fh) = @_;
+	add_string($config, $menu_name);
+
+	my @group;
+	while (<$fh>) {
+		chomp;
+		last if /^%/;
+		next if /^#/;
+
+		my ($cmd, $line, $col, $perm, $descr) = split /, */;
+		$descr =~ s/"//g if defined $descr;
+		add_string($config, $cmd, $descr);
+		push @group, [$cmd, $line, $col, $perm, $descr];
+	}
+
+	$config->{group}{$menu_name} = \@group;
+}
+
+sub parse_bg {
+	my ($config, $name, $fh) = @_;
+	add_string($config, $name);
+
+	my @bg;
+	while (<$fh>) {
+		chomp;
+		last if /^%/;
+		push @bg, $_;
+	}
+	my $str = encode_bg(join "\n", @bg);
+	add_string($config, $str);
+	$config->{bg}{$name} = $str;
+}
+
+sub encode_bg {
+	my ($str) = shift;
+	$str =~ s/((.)\2{2,})/@{[chr(1)]}$2@{[chr(length($1))]}/g;
+	$str;
+}
+
+sub add_string {
+	my $config = shift;
+	for (@_) {
+		if (not exists $config->{str}{'@' . $_}
+				and not exists $config->{str}{'!' . $_}) {
+			$config->{str}{$_} = -1;
+		}
+	}
+}
+
+sub get_string {
+	my ($config, $str) = @_;
+	$config->{str}{$str} || ($config->{str}{'!' . $str} + 1) || ($config->{str}{'@' . $str} + 1);
+}
+
+sub parse_const {
+	my ($config, $key, $value) = @_;
+	if ($value =~ /,/) {
+		my @values = split /,\s*/, $value;
+		$value = 0;
+		for (@values) {
+			if (defined $config->{const}{$_}) {
+				$value = $config->{const}{$_};
+			} else {
+				warn "constant used before definition: [$_]";
+			}
+		}
+	} else {
+		if ($value =~ /0x[0-9a-f]+$/) {
+			$value = hex($value);
+		} else {
+			warn "malformed value string: [$value]";
+		}
+	}
+	$config->{const}{$key} = $value;
+}
+
+sub const_table {
+	my ($config) = @_;
+	my @values = values %{$config->{const}};
+	my $i = 0;
+	my %values = map { $_ => $i++ } @values;
+	(\%values, \@values);
+}
+
+sub str_table {
+	my ($config) = shift;
+	my @strings;
+	my $offset = 0;
+	for (keys $config->{str}) {
+		$config->{str}{$_} = $offset;
+		$offset += length($_) + 1;
+		push @strings, $_;
+	}
+	\@strings;
+}
+
+sub serialize_config {
+	my ($config, $file) = @_;
+
+	open my $fh, '>', $file or die $!;
+
+	my ($const_table, $const_values) = const_table($config);
+	my $strings = str_table($config);
+
+	my $buf = pack 'SS', scalar(@$const_values), scalar(keys $config->{group});
+	print $fh $buf;
+
+	for (@$const_values) {
+		$buf = pack 'l', $_;
+		print $fh $buf;
+	}
+
+	my $offset = 0;
+	my @groups = keys %{$config->{group}};
+	for (@groups) {
+		my $items = @{$config->{group}{$_}};
+		$buf = pack 'SSC', get_string($config, $_), $offset, $items;
+		$offset += $items;
+		print $fh $buf;
+	}
+
+	for my $group (@groups) {
+		for (@{$config->{group}{$group}}) {
+			my ($cmd, $line, $col, $perm, $descr) = @$_;
+			my $perm_val = $descr
+					? $const_table->{$config->{const}{$perm}}
+					: $const_table->{$config->{const}{'0'}};
+			warn "constant not defined: [$perm]" if (not defined $perm_val);
+			$buf = pack 'CCSSS', $line, $col, get_string($config, $cmd),
+					$descr ? get_string($config, $descr) : get_string($config, $config->{bg}{$perm}),
+					$perm_val;
+			print $fh $buf;
+		}
+	}
+
+	for (@$strings) {
+		print $fh $_, chr(0);
+	}
+
+	close $fh;
+}
