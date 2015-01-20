@@ -2,7 +2,6 @@
 
 #include <signal.h>
 #include "bbs.h"
-#include "sysconf.h"
 
 #include "fbbs/dbi.h"
 #include "fbbs/fileio.h"
