@@ -952,7 +952,7 @@ void write_header(FILE *fp, const struct postheader *header, bool _in_mail)
 		}
 		bool anonymous = header->anonymous;
 		if (anonymous)
-			anonymous &= (board.flag & BOARD_FLAG_ANONY);
+			anonymous &= (bool) (board.flag & BOARD_FLAG_ANONY);
 
 		//% fprintf(fp, "发信人: %s (%s), 信区: %s\n",
 		fprintf(fp, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n",
