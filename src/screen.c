@@ -660,6 +660,78 @@ void screen_scroll(void)
 	screen_move_clear(-1);
 }
 
+/**
+ * 寻找字符串中指定宽度的位置
+ * @param[in] ptr 字符串
+ * @param[in] size 字符串长度
+ * @param[in,out] width 宽度。如果字符串宽度不够或位于字符中间，则返回剩余宽度
+ * @return 指定宽度所在位置
+ */
+static const char *seek_to_width(const char *ptr, size_t size, size_t *width)
+{
+	bool ansi = false;
+	const char *end = ptr + size;
+	while (ptr < end) {
+		if (ansi) {
+			if (isalpha(*ptr))
+				ansi = false;
+			++ptr;
+		} else {
+			if (*ptr == '\033') {
+				ansi = true;
+				++ptr;
+			} else {
+				const char *p = ptr;
+				size_t left = end - ptr;
+				wchar_t wc = next_wchar(&p, &left);
+				if (wc == WEOF)
+					break;
+
+				size_t w = fb_wcwidth(wc);
+				if (*width > w) {
+					*width -= w;
+					ptr = p;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+	return ptr;
+}
+
+/**
+ * 在屏幕上指定位置替换字符串
+ * @param line 行
+ * @param col 列
+ * @param str 要替换的字符串
+ */
+void screen_replace(int line, int col, const char *str)
+{
+	screen_line_t *sl = get_screen_line(line);
+	char buf[sizeof(sl->data)];
+	memcpy(buf, sl->data, sl->len);
+	const char *end = buf + sl->len;
+
+	size_t w = col;
+	const char *ptr = seek_to_width(buf, end - buf, &w);
+
+	screen_move_clear(line);
+	if (ptr > buf)
+		screen_puts(buf, ptr - buf);
+	if (w) {
+		tui_repeat_char(' ', w);
+	}
+	screen_puts(str, 0);
+
+	size_t width = screen_display_width(str, true);
+	if (ptr < end) {
+		const char *ptr2 = seek_to_width(ptr, end - ptr, &width);
+		if (ptr2 < end)
+			screen_puts(ptr2, end - ptr2);
+	}
+}
+
 void screen_save_line(int line, bool save)
 {
 	static char saved[SCREEN_LINE_LEN];
