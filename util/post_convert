@@ -1,0 +1,168 @@
+#!/usr/bin/env perl
+
+use v5.12;
+use warnings;
+
+use Digest::MD5 qw(md5);
+
+use lib '.';
+use Helper qw(get_options db_connect convert convert_time convert_file
+		read_users $dir $dbh);
+
+main();
+
+sub main {
+	if (@ARGV < 1) {
+		die "Usage: $0 [board_name]";
+	}
+
+	$| = 1;
+	get_options();
+	db_connect();
+
+	my $board_name = $ARGV[0];
+	my $board_id = get_board_id($board_name);
+	die "$ARGV[0] does not exist!" if (not $board_id);
+
+	my ($active_users, $past_users) = load_users();
+	my $posts = read_board($board_name);
+	insert_posts($posts, $board_name, $board_id, $active_users, $past_users);
+
+	$dbh->disconnect();
+}
+
+sub get_board_id {
+	my ($id) = $dbh->selectrow_array(
+			"SELECT id FROM boards WHERE lower(name) = ?", undef, lc $_[0]);
+	$id;
+}
+
+sub load_users {
+	my $passwd_users = read_users();
+	my %firstlogin = map { $_->[24] => $_->[19] } @$passwd_users;
+
+	my $arr = $dbh->selectall_arrayref("SELECT id, name FROM alive_users");
+	my %active_users = map { $_->[1] => [$_->[0], $firstlogin{$_->[1]}] } @$arr;
+
+	$arr = $dbh->selectall_arrayref(
+			"SELECT id, name FROM users WHERE NOT alive");
+	my %past_users;
+	for (@$arr) {
+		if (not exists $past_users{$_->[1]} or $past_users{$_->[1]} < $_->[0]) {
+			$past_users{$_->[1]} = $_->[0];
+		}
+	}
+	(\%active_users, \%past_users);
+}
+
+sub read_board {
+	my ($board_name) = @_;
+
+	my @posts;
+	for (qw/.NOTICE .DIGEST .DIR .TRASH .JUNK/) {
+		read_index($board_name, $_, \@posts);
+	}
+	\@posts;
+}
+
+sub read_index {
+	# 0 filename 1 id 2 gid 3 owner 4 title
+	# 5 eraser 6 level 7 accessed 8 reid 9 timedeleted
+	# 10 (index) 11 (date)
+	my ($board_name, $index, $posts) = @_;
+	my $fh;
+	open $fh, '<', "$dir/boards/$board_name/$index" and do {
+		while (1) {
+			my $buf;
+			last if (read($fh, $buf, 256) != 256);
+			my @t = unpack "Z72I2Z80Z67Z13i4", $buf;
+			push @t, $index;
+
+			my $date;
+			if ($t[0] =~ /^.\.(\d+)\./) {
+				$date = $1;
+				push @t, $date;
+			}
+
+			push @$posts, \@t;
+		}
+	}
+}
+
+sub insert_posts {
+	my ($posts, $board_name, $board_id, $active_users, $past_users) = @_;
+	my ($DIGEST, $MARKED, $LOCKED, $IMPORTED, $WATER, $STICKY, $JUNK) =
+			(0x1, 0x2, 0x4, 0x8, 0x20, 0x10, 0x80);
+	my %post_digests;
+	my %post_ids;
+
+	my @fields1 = qw(id reply_id thread_id user_id real_user_id user_name
+			board_id board_name digest marked locked imported water sticky
+			title);
+	my @fields2 = qw(delete_stamp eraser_id eraser_name junk bm_visible);
+	my $sth1 = prepare(@fields1);
+	my $sth2 = prepare(@fields1, @fields2);
+	my $sth3 = $dbh->prepare("INSERT INTO post.content (post_id, content)
+			VALUES (?, ?)");
+
+	@$posts = sort { $a->[11] <=> $b->[11] } @$posts;
+	for (@$posts) {
+		my ($file, $id, $gid, $owner, $title, $eraser, $level, $access, $reid,
+				$deleted, $index, $date) = @$_;
+		my $user_id = get_user_id($owner, $date, $active_users, $past_users)
+				|| 0;
+		$owner = convert($owner);
+		$title = convert($title);
+		my $content = convert_file("$dir/boards/$board_name/$file");
+
+		my $md5 = md5($content);
+		next if (exists $post_digests{$md5} and $index ne '.NOTICE'
+				and $index ne '.DIGEST');
+		$post_digests{$md5} = undef;
+
+		my $post_id = post_id($date);
+		$post_ids{$id} = $post_id;
+
+		my $reply_id = exists $post_ids{$reid} ? $post_ids{$reid}
+				: post_id($date);
+		my $thread_id = exists $post_ids{$gid} ? $post_ids{$gid}
+				: post_id($date);
+
+		my $digest = $index eq '.DIGEST' ? 1 : 0;
+		my $marked = ($access & $MARKED) ? 1 : 0;
+		my $locked = ($access & $LOCKED) ? 1 : 0;
+		my $imported = ($access & $IMPORTED) ? 1 : 0;
+		my $water = ($access & $WATER) ? 1 : 0;
+		my $sticky = $index eq '.NOTICE' ? 1 : 0;
+
+		my @values = ($post_id, $reply_id, $thread_id, $user_id, $user_id,
+				$owner, $board_id, $board_name, $digest, $marked, $locked,
+				$imported, $water, $sticky, $title);
+		if ($index eq '.JUNK' or $index eq '.TRASH') {
+			my $eraser_id = get_user_id($eraser, $deleted, $active_users,
+					$past_users) || 0;
+			push @values, convert_time($deleted), $eraser_id, $eraser,
+					($access & $JUNK) ? 1 : 0, $index eq '.TRASH';
+			$sth2->execute(@values);
+		} else {
+			$sth1->execute(@values);
+		}
+		$sth3->execute($post_id, $content);
+	}
+	$dbh->commit;
+}
+
+sub prepare {
+	$dbh->prepare('INSERT INTO post.recent (' . (join ',', @_) . ') VALUES ('
+			. (join ',', ('?') x @_) . ')');
+}
+
+sub post_id {
+	my $date = shift;
+	(($date * 1000 + int rand 1000) << 21) + int rand 2048;
+}
+
+sub get_user_id {
+	my ($user_name, $date, $active_users, $past_users) = @_;
+	exists $active_users->{$user_name} and $active_users->{$user_name}[1] <= $date ? $active_users->{$user_name}[0] : $past_users->{$user_name};
+}
