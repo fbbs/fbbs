@@ -1,25 +1,29 @@
 #!/usr/bin/env perl
 
-use strict;
+use v5.12;
 use warnings;
 
 use lib '.';
-use Helper qw(get_options db_connect convert read_boards $dir $dbh);
+use Helper qw(get_options db_connect convert read_boards read_index convert_time
+		$dir $dbh);
 
-$| = 1;
+main();
 
-get_options();
-db_connect();
+sub main {
+	get_options();
+	db_connect();
 
-my ($sectors, $codes) = read_sectors();
-insert_sectors($sectors);
+	my ($sectors, $codes) = read_sectors();
+	insert_sectors($sectors);
 
-my $users = load_users();
+	my $users = load_users();
+	my $records = load_records();
 
-my $boards = read_boards();
-insert_boards($boards, $codes, $users);
+	my $boards = read_boards();
+	insert_boards($boards, $codes, $users, $records);
 
-$dbh->disconnect;
+	$dbh->disconnect;
+}
 
 sub load_users
 {
@@ -62,10 +66,12 @@ sub insert_sectors
 
 sub insert_boards
 {
-	my ($boards, $codes, $users) = @_;
+	my ($boards, $codes, $users, $records) = @_;
 
-	my $bqry = $dbh->prepare("INSERT INTO boards (name, descr, parent, flag, perm, categ, sector, bms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-	my $bmqry = $dbh->prepare("INSERT INTO bms (user_id, board_id) VALUES (?, ?)") or die $dbh->errstr;
+	my $bqry = $dbh->prepare("INSERT INTO boards (name, descr, parent, flag,
+			perm, categ, sector, bms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+	my $bmqry = $dbh->prepare("INSERT INTO bms (user_id, board_id, stamp)
+			VALUES (?, ?, ?)") or die $dbh->errstr;
 	my $cid = 1;
 	my $bid = 1;
 
@@ -82,11 +88,26 @@ sub insert_boards
 		my %inserted = ();
 		for my $bm (split /\s+/, $bms) {
 			if (exists $users->{$bm} and not exists $inserted{$bm}) {
-				$bmqry->execute($users->{$bm}, $bid) or die $dbh->errstr;
+				my $stamp = $records->{$bm}{$name};
+				$stamp = convert_time($stamp) if defined $stamp;
+				$bmqry->execute($users->{$bm}, $bid, $stamp) or die;
 				$inserted{$bm} = 1;
 			}
 		}
 		++$bid;
 	}
 	$dbh->commit;
+}
+
+sub load_records {
+	my @posts;
+	read_index('boardsecurity', '.DIR', \@posts);
+	my $hash = {};
+	for (@posts) {
+		my $title = convert($_->[4]);
+		if ($title =~ /任命 (\w+) 为 (~?\w+) 版/) {
+			$hash->{$1}{$2} = $_->[11];
+		}
+	}
+	$hash;
 }

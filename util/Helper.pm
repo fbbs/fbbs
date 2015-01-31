@@ -2,7 +2,7 @@ package Helper;
 
 use Exporter 'import';
 @EXPORT_OK = qw(get_options db_connect convert convert_file convert_time
-		read_boards read_users timestamp_to_unix $dir $dbh);
+		read_boards read_users read_index timestamp_to_unix $dir $dbh);
 
 use Config;
 use DBI;
@@ -126,6 +126,30 @@ sub read_users
 	@temp = sort { $a->[19] <=> $b->[19] } @temp;
 
 	return \@temp;
+}
+
+sub read_index {
+	# 0 filename 1 id 2 gid 3 owner 4 title
+	# 5 eraser 6 level 7 accessed 8 reid 9 timedeleted
+	# 10 (index) 11 (date)
+	my ($board_name, $index, $posts) = @_;
+	my $fh;
+	open $fh, '<', "$dir/boards/$board_name/$index" and do {
+		while (1) {
+			my $buf;
+			last if (read($fh, $buf, 256) != 256);
+			my @t = unpack "Z72I2Z80Z67Z13i4", $buf;
+			push @t, $index;
+
+			my $date;
+			if ($t[0] =~ /^.\.(\d+)\./) {
+				$date = $1;
+				push @t, $date;
+			}
+
+			push @$posts, \@t;
+		}
+	}
 }
 
 1;

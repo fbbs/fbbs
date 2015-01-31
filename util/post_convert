@@ -7,7 +7,7 @@ use Digest::MD5 qw(md5);
 
 use lib '.';
 use Helper qw(get_options db_connect convert convert_time convert_file
-		read_users $dir $dbh);
+		read_users read_index $dir $dbh);
 
 main();
 
@@ -63,30 +63,6 @@ sub read_board {
 		read_index($board_name, $_, \@posts);
 	}
 	\@posts;
-}
-
-sub read_index {
-	# 0 filename 1 id 2 gid 3 owner 4 title
-	# 5 eraser 6 level 7 accessed 8 reid 9 timedeleted
-	# 10 (index) 11 (date)
-	my ($board_name, $index, $posts) = @_;
-	my $fh;
-	open $fh, '<', "$dir/boards/$board_name/$index" and do {
-		while (1) {
-			my $buf;
-			last if (read($fh, $buf, 256) != 256);
-			my @t = unpack "Z72I2Z80Z67Z13i4", $buf;
-			push @t, $index;
-
-			my $date;
-			if ($t[0] =~ /^.\.(\d+)\./) {
-				$date = $1;
-				push @t, $date;
-			}
-
-			push @$posts, \@t;
-		}
-	}
 }
 
 sub insert_posts {
@@ -164,5 +140,7 @@ sub post_id {
 
 sub get_user_id {
 	my ($user_name, $date, $active_users, $past_users) = @_;
-	exists $active_users->{$user_name} and $active_users->{$user_name}[1] <= $date ? $active_users->{$user_name}[0] : $past_users->{$user_name};
+	exists $active_users->{$user_name}
+			and $active_users->{$user_name}[1] <= $date
+			? $active_users->{$user_name}[0] : $past_users->{$user_name};
 }
