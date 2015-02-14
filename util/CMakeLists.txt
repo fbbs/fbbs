@@ -19,6 +19,6 @@ endforeach(name)
 install(TARGETS ${UTILS1} ${UTILS2} RUNTIME DESTINATION tools)
 
 install(FILES Helper.pm DESTINATION tools)
-set(SCRIPTS convert_board.pl convert_favboard.pl convert_posts.pl
+set(SCRIPTS board_convert convert_favboard.pl post_convert
 	convert_user.pl archiver hot_topics)
 install(PROGRAMS ${SCRIPTS} DESTINATION tools)
