@@ -147,10 +147,11 @@ void brc_sync(const char *user_name)
 {
 	if (!brc.dirty && !brc_buf.dirty)
 		return;
-
-	brc_buf_t buf;
-	brc_load(user_name, &buf);
-	brc_merge(&buf);
+	if (brc.dirty) {
+		brc_buf_t buf;
+		memcpy(&buf, &brc_buf, sizeof(buf));
+		brc_merge(&buf);
+	}
 	brc_save(user_name, &brc_buf);
 }
 
