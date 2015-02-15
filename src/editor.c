@@ -896,6 +896,38 @@ static void mark_selection(editor_t *editor)
 	editor->redraw = true;
 }
 
+static void delete_selection(editor_t *editor)
+{
+	if (editor->mark_begin < editor->allow_edit_begin)
+		editor->mark_begin = editor->allow_edit_begin;
+	if (editor->mark_end > editor->allow_edit_end)
+		editor->mark_end = editor->allow_edit_end;
+
+	if (editor->mark_end <= editor->mark_begin) {
+		editor->mark_begin = editor->mark_end = 0;
+	}
+
+	for (vector_size_t i = editor->mark_begin; i < editor->mark_end; ++i) {
+		text_line_t *tl = editor_line(editor, i);
+		editor_free(editor, tl);
+	}
+	vector_erase_range(&editor->lines, editor->mark_begin, editor->mark_end);
+
+	vector_size_t diff = editor->mark_end - editor->mark_begin;
+	if (editor->current_line >= editor->mark_end) {
+		editor->current_line -= diff;
+	} else if (editor->current_line >= editor->mark_begin) {
+		editor->current_line = editor->mark_begin > 0 ?
+				editor->mark_begin - 1 : 0;
+	}
+	editor->allow_edit_end -= diff;
+	if (editor->current_line < editor->window_top)
+		editor->window_top = editor->current_line;
+	editor->buffer_pos = editor->screen_pos = editor->request_pos = 0;
+	editor->mark_begin = editor->mark_end = 0;
+	editor->redraw = true;
+}
+
 static void handle_edit(editor_t *editor, wchar_t wc)
 {
 	switch (wc) {
@@ -1129,6 +1161,9 @@ static void handle_esc(editor_t *editor)
 			break;
 		case KEY_ESC:
 			insert_char(editor, '\033');
+			break;
+		case 'd':
+			delete_selection(editor);
 			break;
 		default:
 			break;
