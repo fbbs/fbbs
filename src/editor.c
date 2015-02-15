@@ -928,6 +928,35 @@ static void delete_selection(editor_t *editor)
 	editor->redraw = true;
 }
 
+static void jump_to_line(editor_t *editor)
+{
+	char buf[7] = { '\0' };
+	tui_input(-1, "请问要跳到第几行: ", buf, sizeof(buf), true);
+	vector_size_t line = strtol(buf, NULL, 10);
+	if (!line)
+		return;
+
+	vector_size_t real_line = editor->allow_edit_begin;
+	--line;
+	while (line && real_line < editor->allow_edit_end) {
+		if (contains_newline(editor_line(editor, real_line)))
+			--line;
+		++real_line;
+	}
+
+	if (real_line >= editor->allow_edit_end) {
+		show_status_line(editor);
+	} else {
+		editor->current_line = real_line;
+		if (real_line < editor->window_top
+				&& real_line >= editor->window_top + screen_lines()) {
+			editor->window_top = real_line;
+			editor->redraw = true;
+		}
+		editor->buffer_pos = editor->screen_pos = editor->request_pos = 0;
+	}
+}
+
 static void handle_edit(editor_t *editor, wchar_t wc)
 {
 	switch (wc) {
@@ -1165,6 +1194,8 @@ static void handle_esc(editor_t *editor)
 		case 'd':
 			delete_selection(editor);
 			break;
+		case 'g':
+			jump_to_line(editor);
 		default:
 			break;
 	}
