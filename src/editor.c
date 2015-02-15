@@ -41,6 +41,7 @@ typedef struct {
 	char input_buffer[6]; ///< 输入缓冲区, 等待宽字符
 	char pending_bytes; ///< 输入缓冲区已用字节数
 	bool redraw; ///< 是否重绘整个屏幕
+	bool hide_status_line; ///< 是否隐藏状态栏
 } editor_t;
 
 /**
@@ -378,13 +379,16 @@ static void real_pos(const editor_t *editor, vector_size_t *x,
 
 static void show_status_line(const editor_t *editor)
 {
+	screen_move_clear(-1);
+	if (editor->hide_status_line)
+		return;
+
 	bool mail = chkmail();
 
 	vector_size_t x;
 	text_line_size_t y;
 	real_pos(editor, &x, &y);
 
-	screen_move_clear(-1);
 	screen_printf("\033[1;33;44m[%s] [\033[32m%s\033[33m]"
 			" [\033[32m按\033[31mCtrl-Q\033[32m求救\033[33m]"
 			" [\033[32m%d\033[33m,\033[32m%d\033[33m]\033[K\033[m",
@@ -1196,6 +1200,10 @@ static void handle_esc(editor_t *editor)
 			break;
 		case 'g':
 			jump_to_line(editor);
+		case 'l':
+			editor->hide_status_line = !editor->hide_status_line;
+			show_status_line(editor);
+			break;
 		default:
 			break;
 	}
