@@ -17,6 +17,7 @@ enum {
 	TAB_STOP = 4, ///< 制表符对其位置
 	/** 编辑器最大允许使用的内存字节数, 包括行缓冲区, 但不考虑内存碎片）*/
 	MEMORY_MAX = 2 * 1024 * 1024,
+	SEARCH_TEXT_CCHARS = 10,
 };
 
 typedef struct {
@@ -38,6 +39,7 @@ typedef struct {
 	text_line_size_t buffer_pos; ///< 当前光标所在行的缓冲区位置
 	text_line_size_t screen_pos; ///< 当前光标所在屏幕列
 	text_line_size_t request_pos; ///< 上下移动时记录光标所在屏幕列
+	UTF8_BUFFER(search_text, SEARCH_TEXT_CCHARS) ; ///< 最后一次搜索的字符串
 	char input_buffer[6]; ///< 输入缓冲区, 等待宽字符
 	char pending_bytes; ///< 输入缓冲区已用字节数
 	bool redraw; ///< 是否重绘整个屏幕
@@ -953,11 +955,71 @@ static void jump_to_line(editor_t *editor)
 	} else {
 		editor->current_line = real_line;
 		if (real_line < editor->window_top
-				&& real_line >= editor->window_top + screen_lines()) {
+				&& real_line >= editor->window_top + screen_lines() - 1) {
 			editor->window_top = real_line;
 			editor->redraw = true;
 		}
 		editor->buffer_pos = editor->screen_pos = editor->request_pos = 0;
+	}
+}
+
+static bool _search_text(editor_t *editor, vector_size_t *x, vector_size_t *y)
+{
+	const char *text = editor->utf8_search_text;
+	size_t len = strlen(text);
+	for (vector_size_t i = editor->current_line, j = editor->buffer_pos;
+			i >= editor->allow_edit_begin && i < editor->allow_edit_end;
+			++i, j = 0) {
+		const text_line_t *tl = editor_line(editor, i);
+		const char *ptr = tl->buf + j, *end = tl->buf + tl->size;
+		while (ptr < end && (ptr = memchr(ptr, text[0], end - ptr))) {
+			if (end - ptr >= len) {
+				if (memcmp(ptr, text, len) == 0) {
+					*x = i;
+					*y = ptr - tl->buf + len;
+					return true;
+				}
+			} else if (!contains_newline(tl)
+					&& memcmp(ptr, text, end - ptr) == 0
+					&& i + 1 < editor->allow_edit_end) {
+				text_line_t *tl2 = editor_line(editor, i + 1);
+				size_t compared = end - ptr, remain = len - compared;
+				if (tl2->size >= remain
+						&& memcmp(tl2->buf, text + compared, remain) == 0) {
+					*x = i + 1;
+					*y = remain;
+					return true;
+				}
+			}
+			++ptr;
+		}
+	}
+	return false;
+}
+
+static void search_text(editor_t *editor, bool repeat_last_search)
+{
+	if (!repeat_last_search) {
+		GBK_BUFFER(text, SEARCH_TEXT_CCHARS);
+		gbk_text[0] = '\0';
+		tui_input(-1, "搜寻字串: ", gbk_text, sizeof(gbk_text), true);
+		convert_g2u(gbk_text, editor->utf8_search_text);
+	}
+	if (editor->utf8_search_text[0] == '\0')
+		return;
+
+	vector_size_t x, y;
+	if (!_search_text(editor, &x, &y))
+		return;
+
+	editor->current_line = x;
+	editor->request_pos = editor->buffer_pos = y;
+	const text_line_t *tl = editor_current_line(editor);
+	editor->screen_pos = display_width(tl->buf, y);
+	if (editor->current_line >= editor->window_top + screen_lines() - 1
+			|| editor->current_line < editor->window_top) {
+		editor->window_top = editor->current_line;
+		editor->redraw = true;
 	}
 }
 
@@ -1203,6 +1265,12 @@ static void handle_esc(editor_t *editor)
 		case 'l':
 			editor->hide_status_line = !editor->hide_status_line;
 			show_status_line(editor);
+			break;
+		case 's':
+			search_text(editor, false);
+			break;
+		case 'n':
+			search_text(editor, true);
 			break;
 		default:
 			break;
