@@ -1023,6 +1023,91 @@ static void search_text(editor_t *editor, bool repeat_last_search)
 	}
 }
 
+static void print(editor_t *editor, vector_size_t *old_line,
+		text_line_size_t *old_pos, vector_size_t new_line,
+		vector_size_t new_pos)
+{
+	for (vector_size_t i = *old_line; i <= new_line; ++i) {
+		text_line_t *tl = editor_line(editor, i);
+		if (i < new_line) {
+			if (tl->size > *old_pos)
+				screen_puts(tl->buf + *old_pos, tl->size - *old_pos);
+		} else {
+			if (new_pos >= tl->size)
+				new_pos = tl->size;
+			if (i == *old_line) {
+				if (new_pos > *old_pos)
+					screen_puts(tl->buf + *old_pos, new_pos - *old_pos);
+			} else {
+				screen_puts(tl->buf, new_pos);
+			}
+		}
+	}
+	*old_line = new_line;
+	*old_pos = new_pos;
+}
+
+static void preview(editor_t *editor)
+{
+	vector_size_t current = editor->current_line;
+	while (current > editor->allow_edit_begin) {
+		text_line_t *tl = editor_line(editor, current - 1);
+		if (!contains_newline(tl))
+			--current;
+	}
+
+	screen_clear();
+	int y = screen_lines() - 1, x = 0;
+	const int line_width = 80;
+	bool in_esc = false;
+	vector_size_t line = current;
+	text_line_size_t pos = 0;
+	const char *code = "[0123456789;";
+	for (vector_size_t i = current; i < editor->allow_edit_end; ++i) {
+		text_line_t *tl = editor_line(editor, i);
+		const char *ptr = tl->buf, *old_ptr = tl->buf;
+		size_t size = tl->size;
+		wchar_t wc;
+		while ((wc = next_wchar(&ptr, &size)) && wc != WEOF) {
+			if (in_esc) {
+				if (wc >= 0x80 || !memchr(code, wc, sizeof(code) - 1)) {
+					in_esc = false;
+				}
+			} else {
+				if (wc == '\033') {
+					in_esc = true;
+				} else if (wc == '\n') {
+					print(editor, &line, &pos, i, ptr - tl->buf);
+					--y;
+					x = 0;
+				} else {
+					int w = fb_wcwidth(wc);
+					if (x + w == line_width) {
+						print(editor, &line, &pos, i, ptr - tl->buf);
+						screen_puts("\n", 1);
+						x = 0;
+						--y;
+					} else if (x + w > line_width) {
+						print(editor, &line, &pos, i, old_ptr - tl->buf);
+						screen_puts("\n", 1);
+						x = w;
+						--y;
+					} else {
+						x += w;
+					}
+				}
+				if (y <= 0)
+					break;
+			}
+			old_ptr = ptr;
+		}
+	}
+	screen_move_clear(-1);
+	screen_printf("\033[m\033[1m已显示彩色编辑成果，请按任意键继续...\033[m");
+	terminal_getchar();
+	editor->redraw = true;
+}
+
 static void handle_edit(editor_t *editor, wchar_t wc)
 {
 	switch (wc) {
@@ -1272,6 +1357,8 @@ static void handle_esc(editor_t *editor)
 		case 'n':
 			search_text(editor, true);
 			break;
+		case 'c':
+			preview(editor);
 		default:
 			break;
 	}
