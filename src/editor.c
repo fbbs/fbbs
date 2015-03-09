@@ -1147,9 +1147,13 @@ static void handle_edit(editor_t *editor, wchar_t wc)
 			break;
 		case Ctrl('B'): case KEY_PGUP:
 			move_up(editor, screen_lines() - 2);
+			editor->window_top = editor->current_line;
+			editor->redraw = true;
 			break;
 		case Ctrl('F'): case KEY_PGDN:
 			move_down(editor, screen_lines() - 2);
+			editor->window_top = editor->current_line;
+			editor->redraw = true;
 			break;
 		case Ctrl('A'): case KEY_HOME:
 			move_line_begin(editor);
