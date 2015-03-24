@@ -348,7 +348,11 @@ static void display(editor_t *editor, bool ansi)
 					if (*ptr == '\033') {
 						if (ptr > last)
 							screen_puts(last, ptr - last);
-						screen_puts("\033[33m*\033[m", 0);
+						screen_puts("\033[33m*", 0);
+						if (marked)
+							screen_puts("\033[37m", 0);
+						else
+							screen_puts("\033[m", 0);
 						last = ptr + 1;
 					}
 				}
