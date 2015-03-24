@@ -194,20 +194,6 @@ static bool text_line_make(editor_t *editor, text_line_t *tl,
 }
 
 /**
- * 将字符串加入编辑器行缓冲区末尾
- * @param editor 编辑器
- * @param begin 字符串起始指针
- * @param end 字符串尾端指针
- * @return 操作成功与否
- */
-static bool text_line_append(editor_t *editor, const char *begin,
-		const char *end)
-{
-	text_line_t *tl = vector_grow(&editor->lines, 1);
-	return tl ? text_line_make(editor, tl, begin, end) : false;
-}
-
-/**
  * 检查行缓冲区是否含有指定字符串
  * @param tl 行缓冲区
  * @param str 字符串起始指针
@@ -236,79 +222,22 @@ static const char *get_newline(const char *begin, const char *end)
 	return begin;
 }
 
-static bool read_file(editor_t *editor, const char *file, bool utf8)
+static vector_size_t editor_end(const editor_t *editor)
 {
-	mmap_t m = { .oflag = O_RDWR | O_CREAT };
-	if (mmap_open(file, &m) < 0)
-		return false;
-
-	const char *begin = m.ptr, *end = begin + m.size;
-	if (!utf8) {
-		size_t len = m.size * 3 / 2 + 1;
-		begin = malloc(len);
-		if (!begin) {
-			mmap_close(&m);
-			return false;
-		}
-		convert(CONVERT_G2U, m.ptr, m.size, (char *) begin, len, NULL, NULL);
-		end = begin + strlen(begin);
-	}
-
-	for (const char *ptr = begin; ptr < end; ) {
-		const char *line_end = get_newline(ptr, end);
-		text_line_append(editor, ptr, line_end);
-		ptr = line_end;
-	}
-
-	if (!utf8)
-		free((void *) begin);
-	mmap_close(&m);
-
 	char buf[80];
 	snprintf(buf, sizeof(buf), ":·%s %s·", BBSNAME_UTF8, BBSHOST);
 	size_t size = strlen(buf);
 
-	editor->allow_edit_end = vector_size(&editor->lines);
-	if (editor->allow_edit_end)
-		--editor->allow_edit_end;
-	for (vector_size_t i = editor->allow_edit_end; i; --i) {
+	vector_size_t end = vector_size(&editor->lines);
+	if (end)
+		--end;
+	for (vector_size_t i = end; i; --i) {
 		text_line_t *tl = editor_line(editor, i);
 		if (tl && match_string(tl, buf, size)) {
-			editor->allow_edit_end = i;
-			break;
+			return i;
 		}
 	}
-	return true;
-}
-
-static bool editor_init(editor_t *editor, const char *file, bool utf8,
-		bool allow_modify_header)
-{
-	editor->memory = 0;
-
-	if (!vector_init(&editor->lines, sizeof(text_line_t), 0)
-			|| !read_file(editor, file, utf8))
-		return false;
-
-	editor->allow_edit_begin = 0;
-	if (!allow_modify_header) {
-		for (vector_size_t i = 0; i < editor->allow_edit_end; ++i) {
-			text_line_t *tl = editor_line(editor, i);
-			// 找到一个"\n"
-			if (tl->size == 1 && tl->buf[0] == '\n') {
-				if (i + 1 < editor->allow_edit_end)
-					++i;
-				editor->allow_edit_begin = i;
-				break;
-			}
-		}
-	}
-	editor->current_line = editor->window_top = editor->allow_edit_begin;
-	editor->buffer_pos = editor->screen_pos = editor->request_pos = 0;
-	editor->mark_begin = editor->mark_end = 0;
-	editor->pending_bytes = 0;
-	editor->redraw = true;
-	return true;
+	return end;
 }
 
 /**
@@ -1108,6 +1037,98 @@ static void preview(editor_t *editor)
 	editor->redraw = true;
 }
 
+static bool read_file(editor_t *editor, const char *file, bool utf8)
+{
+	mmap_t m = { .oflag = O_RDWR | O_CREAT };
+	if (mmap_open(file, &m) < 0)
+		return false;
+
+	const char *begin = m.ptr, *end = begin + m.size;
+	if (!utf8) {
+		size_t len = m.size * 3 / 2 + 1;
+		begin = malloc(len);
+		if (!begin) {
+			mmap_close(&m);
+			return false;
+		}
+		convert(CONVERT_G2U, m.ptr, m.size, (char *) begin, len, NULL, NULL);
+		end = begin + strlen(begin);
+	}
+
+	bool empty = !vector_size(&editor->lines);
+	for (const char *ptr = begin; ptr < end; ) {
+		const char *line_end = get_newline(ptr, end);
+		bool newline = line_end > ptr && line_end[-1] == '\n';
+		if (empty || (!editor->buffer_pos && newline)) {
+			text_line_t tl;
+			text_line_make(editor, &tl, ptr, line_end);
+			vector_insert(&editor->lines, editor->current_line++, &tl);
+			++editor->allow_edit_end;
+		} else {
+			raw_insert(editor, ptr, line_end - ptr - newline);
+			wrap_long_lines(editor);
+			if (newline)
+				split_line(editor);
+		}
+		ptr = line_end;
+	}
+
+	if (!utf8)
+		free((void *) begin);
+	mmap_close(&m);
+
+	return true;
+}
+
+static void handle_clip(editor_t *editor, bool import)
+{
+	char ans[2] = { '\0' };
+	char prompt[80];
+	snprintf(prompt, sizeof(prompt), "%s剪贴簿第几页? (1-8): ",
+			import ? "读取" : "写入");
+	tui_input(-1, prompt, ans, sizeof(ans), true);
+	if (ans[0] < '1' || ans[0] > '8')
+		return;
+
+	int idx = ans[0] - '0';
+	char file[HOMELEN];
+	snprintf(file, sizeof(file), "home/%c/%s/clip_new_%d",
+			toupper(currentuser.userid[0]), currentuser.userid, idx);
+	bool success = false;
+	if (import) {
+		if (dashf(file)) {
+			read_file(editor, file, true);
+			success = true;
+		} else {
+			screen_printf("无法取出剪贴簿第 %d 页", idx);
+		}
+	} else {
+		FILE *fp = fopen(file, "w");
+		if (fp) {
+			int begin = editor->allow_edit_begin;
+			int end = editor->allow_edit_end;
+			if (editor->mark_end > editor->mark_begin) {
+				begin = editor->mark_begin;
+				end = editor->mark_end;
+			}
+
+			for (int i = begin; i < end; ++i) {
+				const text_line_t *tl = editor_line(editor, i);
+				if (tl)
+					fwrite(tl->buf, 1, tl->size, fp);
+			}
+			fclose(fp);
+			mark_clear(editor);
+			success = true;
+		}
+	}
+	screen_move_clear(-1);
+	screen_printf("%s%s剪贴簿第 %d 页", success ? "已" : "无法",
+			import ? "取出" : "写入", idx);
+	terminal_getchar();
+	editor->redraw = true;
+}
+
 static void handle_edit(editor_t *editor, wchar_t wc)
 {
 	switch (wc) {
@@ -1363,9 +1384,48 @@ static void handle_esc(editor_t *editor)
 			break;
 		case 'c':
 			preview(editor);
+			break;
+		case 'i':
+			handle_clip(editor, true);
+			break;
+		case 'e':
+			handle_clip(editor, false);
+			break;
 		default:
 			break;
 	}
+}
+
+static bool editor_init(editor_t *editor, const char *file, bool utf8,
+		bool allow_modify_header)
+{
+	editor->memory = 0;
+	editor->current_line = 0;
+	editor->buffer_pos = editor->screen_pos = editor->request_pos = 0;
+	editor->mark_begin = editor->mark_end = 0;
+	editor->pending_bytes = 0;
+
+	if (!vector_init(&editor->lines, sizeof(text_line_t), 0)
+			|| !read_file(editor, file, utf8))
+		return false;
+
+	editor->allow_edit_end = editor_end(editor);
+	editor->allow_edit_begin = 0;
+	if (!allow_modify_header) {
+		for (vector_size_t i = 0; i < editor->allow_edit_end; ++i) {
+			text_line_t *tl = editor_line(editor, i);
+			// 找到一个"\n"
+			if (tl->size == 1 && tl->buf[0] == '\n') {
+				if (i + 1 < editor->allow_edit_end)
+					++i;
+				editor->allow_edit_begin = i;
+				break;
+			}
+		}
+	}
+	editor->current_line = editor->window_top = editor->allow_edit_begin;
+	editor->redraw = true;
+	return true;
 }
 
 /**
