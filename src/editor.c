@@ -566,6 +566,19 @@ static void mark_clear(editor_t *editor)
 	editor->mark_begin = editor->mark_end = 0;
 }
 
+static void insert_string(editor_t *editor, const char *str,
+		text_line_size_t len)
+{
+	text_line_t *tl = editor_current_line(editor);
+	bool ok = raw_insert(editor, str, len);
+	if (ok) {
+		tl->redraw = true;
+		wrap_long_lines(editor);
+		editor->request_pos = editor->screen_pos;
+	}
+	mark_clear(editor);
+}
+
 /**
  * 在当前位置插入一个宽字符
  * @param editor 编辑器
@@ -578,16 +591,7 @@ static void insert_char(editor_t *editor, wchar_t wc)
 	size_t s = fb_wcstombs(buf, ws, 4);
 	if (s == (size_t) -1)
 		return;
-
-	text_line_t *tl = editor_current_line(editor);
-	bool ok = raw_insert(editor, buf, s);
-	if (ok) {
-		tl->redraw = true;
-		editor->screen_pos += display_width_wchar(wc);
-		editor->request_pos = editor->screen_pos;
-		wrap_long_lines(editor);
-	}
-	mark_clear(editor);
+	insert_string(editor, buf, s);
 }
 
 /**
@@ -1133,6 +1137,25 @@ static void handle_clip(editor_t *editor, bool import)
 	editor->redraw = true;
 }
 
+static void choose_color(editor_t *editor, bool foreground)
+{
+	char prompt[80];
+	snprintf(prompt, sizeof(prompt), "选择%s景颜色"
+			" 0)黑 1)红 2)绿 3)黄 4)蓝 5)紫 6)靛 7)白: \033[K",
+			foreground ? "前" : "背");
+	char ans[2] = { '\0' };
+	tui_input(-1, prompt, ans, sizeof(ans), true);
+	if (ans[0] < '0' || ans[0] > '7')
+		return;
+
+	char buf[6];
+	snprintf(buf, sizeof(buf), "\033[%d%cm",
+			foreground ? 3 : 4, ans[0]);
+	text_line_t *tl = editor_current_line(editor);
+	tl->redraw = true;
+	insert_string(editor, buf, sizeof(buf) - 1);
+}
+
 static void handle_edit(editor_t *editor, wchar_t wc)
 {
 	switch (wc) {
@@ -1394,6 +1417,15 @@ static void handle_esc(editor_t *editor)
 			break;
 		case 'e':
 			handle_clip(editor, false);
+			break;
+		case 'b':
+			choose_color(editor, false);
+			break;
+		case 'f':
+			choose_color(editor, true);
+			break;
+		case 'r':
+			insert_string(editor, "\033[m", 3);
 			break;
 		default:
 			break;
