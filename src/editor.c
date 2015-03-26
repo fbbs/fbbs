@@ -639,7 +639,7 @@ static void move_left(editor_t *editor)
 		if (editor->current_line > editor->allow_edit_begin) {
 			--editor->current_line;
 			tl = editor_current_line(editor);
-			editor->buffer_pos = tl->size - contains_newline(tl);
+			editor->buffer_pos = tl->size;
 			editor->screen_pos = display_width(tl->buf, tl->size);
 			if (editor->current_line < editor->window_top) {
 				editor->window_top = editor->current_line;
@@ -647,7 +647,7 @@ static void move_left(editor_t *editor)
 			}
 		}
 	}
-	if (editor->screen_pos) {
+	if (editor->buffer_pos) {
 		const char *ptr = string_previous_utf8_start(tl->buf,
 				tl->buf + editor->buffer_pos);
 		editor->screen_pos -= display_width(ptr,
