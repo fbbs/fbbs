@@ -632,11 +632,6 @@ static void split_line(editor_t *editor)
 	}
 }
 
-static void request_redraw(editor_t *editor)
-{
-	editor->redraw = true;
-}
-
 static void move_left(editor_t *editor)
 {
 	text_line_t *tl = editor_current_line(editor);
@@ -1166,11 +1161,11 @@ static void handle_edit(editor_t *editor, wchar_t wc)
 			split_line(editor);
 			break;
 		case Ctrl('G'):
-			request_redraw(editor);
+			editor->redraw = true;
 			break;
 		case Ctrl('Q'):
 			show_help("help/edithelp");
-			request_redraw(editor);
+			editor->redraw = true;
 			break;
 		case KEY_LEFT:
 			move_left(editor);
