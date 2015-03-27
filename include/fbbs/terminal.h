@@ -104,7 +104,6 @@ int mailreadhelp(void);
 int usercomplete(char *prompt, char *data);
 int namecomplete(char *prompt, char *data);
 int t_query(const char *user);
-int vedit(char *filename, int write_header_to_file, int modifyheader, struct postheader *header);
 
 #include "fbbs/post.h"
 typedef enum {

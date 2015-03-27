@@ -207,7 +207,6 @@ int x_cloak(void)
 
 //修改用户的档案
 void x_edits() {
-	int aborted;
 	char ans[7], buf[STRLEN];
 	int ch, num, confirm;
 
@@ -272,9 +271,9 @@ void x_edits() {
 		return;
 	}
 	set_user_status(ST_EDITUFILE);
-	aborted = vedit(genbuf, NA, YEA, NULL);
+	tui_edit_e status = tui_edit(genbuf, false, false, true, NULL);
 	screen_clear();
-	if (!aborted) {
+	if (status == TUI_EDIT_SAVED) {
 		//% prints("%s 更新过\n", explain_file[ch]);
 		prints("%s \xb8\xfc\xd0\xc2\xb9\xfd\n", explain_file[ch]);
 		sprintf(buf, "edit %s", explain_file[ch]);

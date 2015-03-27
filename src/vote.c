@@ -323,8 +323,7 @@ int b_notes_edit()
 		} else
 		aborted = -1;
 	} else
-	aborted = vedit(buf, NA, YEA, NULL); //编辑备忘录
-	if (aborted == -1) {
+	if (tui_edit(buf, false, false, true, NULL) != TUI_EDIT_SAVED) {
 		pressreturn();
 	} else {
 		if (notetype == 1)
@@ -340,7 +339,6 @@ int b_notes_edit()
 int b_notes_edit() {
 	char buf[STRLEN], buf2[STRLEN];
 	char ans[4];
-	int aborted;
 	int notetype;
 	if (!am_curr_bm())
 		return 0;
@@ -372,6 +370,7 @@ int b_notes_edit() {
 			//% : "秘密");
 			: "\xc3\xd8\xc3\xdc");
 	getdata(5, 0, buf2, ans, 2, DOECHO, YEA); //询问编辑或者删除
+	tui_edit_e status;
 	if (ans[0] == 'D' || ans[0] == 'd') { //删除备忘录
 		move(6, 0);
 		//% sprintf(buf2, "真的要删除%4s备忘录", (notetype == 1) ? "一般" : "秘密");
@@ -382,12 +381,12 @@ int b_notes_edit() {
 			prints("\xb1\xb8\xcd\xfc\xc2\xbc\xd2\xd1\xbe\xad\xc9\xbe\xb3\xfd...\n");
 			pressanykey();
 			unlink(buf);
-			aborted = 1;
+			status = TUI_EDIT_SAVED;
 		} else
-			aborted = -1;
+			status = TUI_EDIT_ABORTED;
 	} else
-		aborted = vedit(buf, NA, YEA, NULL); //编辑备忘录
-	if (aborted == -1) {
+		status = tui_edit(buf, false, false, true, NULL); //编辑备忘录
+	if (status != TUI_EDIT_SAVED) {
 		pressreturn();
 	} else {
 		if (notetype == 1)
@@ -809,15 +808,13 @@ int vote_maintain(const char *bname)
 int makevote(struct votebal *ball, const char *bname)
 {
 	char buf[STRLEN];
-	int aborted;
 
 	//% prints("请按任何键开始编辑此次 [投票的描述]: \n");
 	prints("\xc7\xeb\xb0\xb4\xc8\xce\xba\xce\xbc\xfc\xbf\xaa\xca\xbc\xb1\xe0\xbc\xad\xb4\xcb\xb4\xce [\xcd\xb6\xc6\xb1\xb5\xc4\xc3\xe8\xca\xf6]: \n");
 	terminal_getchar();
 	setvfile(genbuf, bname, "desc");
 	sprintf(buf, "%s.%d", genbuf, ball->opendate);
-	aborted = vedit(buf, NA, YEA, NULL);
-	if (aborted) {
+	if (tui_edit(buf, false, false, true, NULL) != TUI_EDIT_SAVED) {
 		screen_clear();
 		//% prints("取消此次投票设定\n");
 		prints("\xc8\xa1\xcf\xfb\xb4\xcb\xb4\xce\xcd\xb6\xc6\xb1\xc9\xe8\xb6\xa8\n");

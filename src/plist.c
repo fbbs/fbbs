@@ -1147,7 +1147,7 @@ static int tui_edit_post_content(post_info_t *pi)
 	set_user_status(ST_EDIT);
 
 	screen_clear();
-	if (vedit(file, NA, NA, NULL) != -1) {
+	if (tui_edit(file, false, false, false, NULL) == TUI_EDIT_SAVED) {
 		char *content = post_convert_to_utf8(file);
 		if (content) {
 			if (post_content_set(pi->id, content)) {
