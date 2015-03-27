@@ -1,7 +1,9 @@
 #include <errno.h>
 #include <iconv.h>
 #include <string.h>
+#include "mmap.h"
 #include "fbbs/convert.h"
+#include "fbbs/string.h"
 
 #ifdef LINUX
 # define fb_iconv(cd, i, ib, o, ob)  iconv(cd, (char **)i, ib, o, ob)
@@ -140,4 +142,39 @@ static int write_to_file(const char *buf, size_t len, void *arg)
 int convert_to_file(convert_type_e type, const char *from, size_t len, FILE *fp)
 {
 	return convert(type, from, len, NULL, 0, write_to_file, fp);
+}
+
+bool convert_file(const char *from, const char *to, convert_type_e type)
+{
+	if (!from || !to)
+		return false;
+
+	char temp[80];
+	bool ok = false;
+
+	bool inplace = streq(from, to);
+	if (inplace) {
+		file_temp_name(temp, sizeof(temp));
+		to = temp;
+	}
+
+	FILE *fp = fopen(to, "w");
+	if (!fp)
+		return false;
+
+	mmap_t m = { .oflag = O_RDONLY };
+	if (mmap_open(from, &m) != 0) {
+		convert_to_file(type, m.ptr, m.size, fp);
+		mmap_close(&m);
+		ok = true;
+	}
+	fclose(fp);
+
+	if (inplace) {
+		if (ok)
+			rename(temp, from);
+		else
+			unlink(temp);
+	}
+	return ok;
 }

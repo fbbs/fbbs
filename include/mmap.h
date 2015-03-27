@@ -1,6 +1,7 @@
 #ifndef FB_MMAP_H
 #define FB_MMAP_H
 
+#include <fcntl.h>
 #include "fbbs/fileio.h"
 
 /** Memory mapped file information. */
