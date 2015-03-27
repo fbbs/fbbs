@@ -88,6 +88,8 @@ typedef enum {
 } tui_edit_e;
 
 extern tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file, bool allow_modify_header, struct postheader *post_header);
+extern void editor_dump(void);
+extern void editor_restore(void);
 
 // src/more.c
 
@@ -150,7 +152,6 @@ void CreateNameList(void);
 int digest_post(int ent, struct fileheader *fhdr, char *direct);
 int do_reply(struct fileheader *fh);
 int fill_date(void);
-void keep_fail_post(void);
 int mail_del(int ent, struct fileheader *fileinfo, char *direct);
 int m_send(const char *userid);
 void new_register(void);

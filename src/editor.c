@@ -46,6 +46,8 @@ typedef struct {
 	bool hide_status_line; ///< 是否隐藏状态栏
 } editor_t;
 
+static editor_t *current_editor = NULL;
+
 /**
  * 获取编辑器中指定行
  * @param[in] editor 编辑器
@@ -1083,6 +1085,12 @@ static bool read_file(editor_t *editor, const char *file, bool utf8)
 	return true;
 }
 
+static void clip_path(char *buf, size_t size, int index)
+{
+	snprintf(buf, size, "home/%c/%s/clip_new_%d",
+			toupper(currentuser.userid[0]), currentuser.userid, index);
+}
+
 static void handle_clip(editor_t *editor, bool import)
 {
 	char ans[2] = { '\0' };
@@ -1095,8 +1103,7 @@ static void handle_clip(editor_t *editor, bool import)
 
 	int idx = ans[0] - '0';
 	char file[HOMELEN];
-	snprintf(file, sizeof(file), "home/%c/%s/clip_new_%d",
-			toupper(currentuser.userid[0]), currentuser.userid, idx);
+	clip_path(file, sizeof(file), idx);
 	bool success = false;
 	if (import) {
 		if (dashf(file)) {
@@ -1258,8 +1265,8 @@ static bool write_header_utf8(FILE *fp, const struct postheader *post_header,
 	return true;
 }
 
-static bool write_body(const editor_t *editor, FILE *fp, const board_t *board,
-		const char *host, bool anonymous)
+static bool write_body(const editor_t *editor, FILE *fp, const char *host,
+		bool anonymous)
 {
 	vector_size_t lines = vector_size(&editor->lines);
 	for (vector_size_t i = editor->allow_edit_begin; i < lines; ++i) {
@@ -1323,7 +1330,7 @@ static int write_file(editor_t *editor, const char *file,
 		memcpy(&board, currbp, sizeof(board));
 	}
 
-	bool anonymous = post_header->anonymous
+	bool anonymous = post_header && post_header->anonymous
 			&& (board.flag & BOARD_FLAG_ANONY);
 
 	UTF8_BUFFER(host, IP_LEN / 2);
@@ -1335,22 +1342,11 @@ static int write_file(editor_t *editor, const char *file,
 				in_mail);
 	}
 	if (ok)
-		write_body(editor, fp, &board, utf8_host, anonymous);
+		write_body(editor, fp, utf8_host, anonymous);
 
 	fclose(fp);
-	if (!utf8) {
-		ok = false;
-		fp = fopen(file, "w");
-		if (fp) {
-			mmap_t m = { .oflag = O_RDONLY };
-			if (mmap_open(temp, &m) == 0) {
-				convert_to_file(CONVERT_U2G, m.ptr, m.size, fp);
-				mmap_close(&m);
-				ok = true;
-			}
-			fclose(fp);
-		}
-	}
+	if (!utf8)
+		ok = convert_file(temp, file, CONVERT_U2G);
 	return ok;
 }
 
@@ -1478,6 +1474,7 @@ tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file,
 		ans = TUI_EDIT_ABORTED;
 		goto e;
 	}
+	current_editor = &editor;
 
 	screen_clear();
 	display(&editor, false);
@@ -1513,10 +1510,89 @@ tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file,
 		}
 	}
 
+	current_editor = NULL;
+
 	for (int i = vector_size(&editor.lines); i > 0; ) {
 		text_line_t *tl = editor_line(&editor, --i);
 		editor_free(&editor, tl);
 	}
 e:	vector_free(&editor.lines);
 	return ans;
+}
+
+void editor_dump_path(char *buf, size_t size)
+{
+	snprintf(buf, size, "home/%c/%s/editor_dump",
+			toupper(currentuser.userid[0]), currentuser.userid);
+}
+
+void editor_dump(void)
+{
+	if (current_editor) {
+		char file[HOMELEN];
+		editor_dump_path(file, sizeof(file));
+		write_file(current_editor, file, NULL, true, false);
+	}
+}
+
+void editor_restore(void)
+{
+	char file[HOMELEN];
+	editor_dump_path(file, sizeof(file));
+
+	if (streq(currentuser.userid, "guest") || !dashf(file))
+		return;
+
+	char ans[2] = { '\0' };
+	tui_input(-1, "您有一个编辑作业不正常中断 (S) 写入暂存档 (M) 寄回信箱"
+			" (Q) 算了 [M]: ", ans, sizeof(ans), true);
+	switch (toupper(ans[0])) {
+		case 'Q':
+			unlink(file);
+			break;
+		case 'S':
+			while (1) {
+				char ans2[2] = { '\0' };
+				tui_input(-1, "请选择暂存档 (1-8) [1]: ", ans2, sizeof(ans2),
+						true);
+				if (ans2[0] == '\0')
+					ans2[0] = '1';
+				if (ans2[0] >= '1' && ans2[0] <= '8') {
+					int index = ans2[0] - '0';
+					char buf[HOMELEN];
+					clip_path(buf, sizeof(buf), index);
+					if (dashf(buf)) {
+						tui_input(-1, "暂存档已存在 (O)覆盖 (A)附加 [O]: ",
+								ans2, sizeof(ans2), true);
+						switch (toupper(ans2[0])) {
+							case 'A':
+								f_cp(file, buf, O_APPEND);
+								unlink(file);
+								break;
+							default:
+								unlink(buf);
+								rename(file, buf);
+								break;
+						}
+					} else {
+						rename(file, buf);
+					}
+					break;
+				}
+			}
+			break;
+		default: {
+			char temp[HOMELEN];
+			file_temp_name(temp, sizeof(temp));
+			if (convert_file(file, temp, CONVERT_G2U)) {
+				mail_file(temp, currentuser.userid,
+						//% 不正常断线所保留的部份...
+						"\xb2\xbb\xd5\xfd\xb3\xa3\xb6\xcf\xcf\xdf\xcb\xf9"
+						"\xb1\xa3\xc1\xf4\xb5\xc4\xb2\xbf\xb7\xdd...");
+				unlink(temp);
+			}
+			unlink(file);
+			break;
+		}
+	}
 }

@@ -205,10 +205,7 @@ void abort_bbs(int nothing)
 		kill(child_pid, SIGKILL);
 	}
 
-	session_status_e s = session_status();
-	if (s == ST_POSTING || s == ST_SMAIL || s == ST_EDIT || s == ST_EDITUFILE
-			|| s == ST_EDITSFILE || s == ST_EDITANN)
-		keep_fail_post();
+	editor_dump();
 
 	if (session_id()) {
 		time_t stay;
@@ -731,76 +728,6 @@ void set_numofsig(void)
 	return;
 }
 
-// Recover user's work from abnormal exit.
-static void c_recover(void)
-{
-	char fname[STRLEN], buf[STRLEN];
-	int a;
-
-	sprintf(fname, "home/%c/%s/%s.deadve", toupper(currentuser.userid[0]),
-			currentuser.userid, currentuser.userid);
-	if (!dashf(fname) || strcmp(currentuser.userid, "guest") == 0)
-		return;
-	screen_clear();
-	genbuf[0] = '\0';
-	//% getdata(0, 0, "\033[1;32m您有一个编辑作业不正常中断，"
-	getdata(0, 0, "\033[1;32m\xc4\xfa\xd3\xd0\xd2\xbb\xb8\xf6\xb1\xe0\xbc\xad\xd7\xf7\xd2\xb5\xb2\xbb\xd5\xfd\xb3\xa3\xd6\xd0\xb6\xcf\xa3\xac"
-			//% "(S) 写入暂存档 (M) 寄回信箱 (Q) 算了？[M]：\033[m",
-			"(S) \xd0\xb4\xc8\xeb\xd4\xdd\xb4\xe6\xb5\xb5 (M) \xbc\xc4\xbb\xd8\xd0\xc5\xcf\xe4 (Q) \xcb\xe3\xc1\xcb\xa3\xbf[M]\xa3\xba\033[m",
-			genbuf, 2, DOECHO, YEA);
-	switch (genbuf[0]) {
-		case 'Q':
-		case 'q':
-			unlink(fname);
-			break;
-		case 'S':
-		case 's':
-			while (1) {
-				genbuf[0] = '\0';
-				//% getdata(2, 0, "\033[1;33m请选择暂存档 [0-7] [0]：\033[m",
-				getdata(2, 0, "\033[1;33m\xc7\xeb\xd1\xa1\xd4\xf1\xd4\xdd\xb4\xe6\xb5\xb5 [0-7] [0]\xa3\xba\033[m",
-					genbuf, 2, DOECHO, YEA);
-				if (genbuf[0] == '\0')
-					a = 0;
-				else
-					a = atoi(genbuf);
-				if (a >= 0 && a <= 7) {
-					sprintf(buf, "home/%c/%s/clip_%d",
-						toupper(currentuser.userid[0]),
-						currentuser.userid, a);
-					if (dashf(buf)) {
-						getdata(
-							//% 3, 0, "\033[1;31m暂存档已存在，覆盖或附加? "
-							3, 0, "\033[1;31m\xd4\xdd\xb4\xe6\xb5\xb5\xd2\xd1\xb4\xe6\xd4\xda\xa3\xac\xb8\xb2\xb8\xc7\xbb\xf2\xb8\xbd\xbc\xd3? "
-							//% "(O)覆盖 (A)附加 [O]：\033[m",
-							"(O)\xb8\xb2\xb8\xc7 (A)\xb8\xbd\xbc\xd3 [O]\xa3\xba\033[m",
-							genbuf, 2, DOECHO, YEA);
-						switch (genbuf[0]) {
-							case 'A':
-							case 'a':
-								f_cp(fname, buf, O_APPEND);
-								unlink(fname);
-								break;
-							default:
-								unlink(buf);
-								rename(fname, buf);
-								break;
-						}
-					} else
-						rename(fname, buf);
-					break;
-				}
-			}
-			break;
-		default:
-			mail_file(fname, currentuser.userid,
-				//% "不正常断线所保留的部份...");
-				"\xb2\xbb\xd5\xfd\xb3\xa3\xb6\xcf\xcf\xdf\xcb\xf9\xb1\xa3\xc1\xf4\xb5\xc4\xb2\xbf\xb7\xdd...");
-			unlink(fname);
-			break;
-	}
-}
-
 #ifdef TALK_LOG
 // Recover user's talk log from abnormal exit.
 void tlog_recover(void)
@@ -863,7 +790,7 @@ void start_client(void)
 	setmdir(currmaildir, currentuser.userid);
 	RMSG = NA;
 	screen_clear();
-	c_recover();
+	editor_restore();
 #ifdef TALK_LOG
 	tlog_recover();
 #endif
