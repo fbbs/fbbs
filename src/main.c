@@ -38,7 +38,6 @@ int utmpent = -1;
 time_t login_start_time;
 int showansi = 1;
 
-extern int enabledbchar;
 int refscreen = NA;
 void msg_handler(int signum);
 
@@ -148,11 +147,6 @@ static void u_enter(void)
 				&& (currentuser.flags[0] & CLOAK_FLAG)));
 
 	chk_giveupbbs();
-
-	if (DEFINE(DEF_DELDBLCHAR))
-		enabledbchar = 1;
-	else
-		enabledbchar = 0;
 
 	digestmode = NA;
 

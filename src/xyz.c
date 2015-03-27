@@ -87,7 +87,6 @@ static const char *permstrings[] = {
 
 int use_define = 0;
 int child_pid = 0;
-extern int enabledbchar;
 
 extern struct UCACHE *uidshm;
 #define TH_LOW	10
@@ -179,10 +178,6 @@ int x_userdefine() {
 		lookupuser.userdefine = newlevel;
 		currentuser.userdefine = newlevel;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);
-		if (DEFINE(DEF_DELDBLCHAR))
-			enabledbchar = 1;
-		else
-			enabledbchar = 0;
 		//% prints("新的参数设定完成...\n\n");
 		prints("\xd0\xc2\xb5\xc4\xb2\xce\xca\xfd\xc9\xe8\xb6\xa8\xcd\xea\xb3\xc9...\n\n");
 	}
