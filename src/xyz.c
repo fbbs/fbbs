@@ -266,9 +266,9 @@ void x_edits() {
 		return;
 	}
 	set_user_status(ST_EDITUFILE);
-	tui_edit_e status = tui_edit(genbuf, false, false, true, NULL);
+	editor_e status = editor(genbuf, false, false, true, NULL);
 	screen_clear();
-	if (status == TUI_EDIT_SAVED) {
+	if (status == EDITOR_SAVE) {
 		//% prints("%s 更新过\n", explain_file[ch]);
 		prints("%s \xb8\xfc\xd0\xc2\xb9\xfd\n", explain_file[ch]);
 		sprintf(buf, "edit %s", explain_file[ch]);

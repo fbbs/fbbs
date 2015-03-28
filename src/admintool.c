@@ -1644,9 +1644,9 @@ void a_edits() {
 		return;
 	}
 	set_user_status(ST_EDITSFILE);
-	tui_edit_e status = tui_edit(buf2, false, false, true, NULL);
+	editor_e status = editor(buf2, false, false, true, NULL);
 	screen_clear();
-	if (status == TUI_EDIT_SAVED) {
+	if (status == EDITOR_SAVE) {
 		//% prints("%s 更新过", explain_file[ch]);
 		prints("%s \xb8\xfc\xd0\xc2\xb9\xfd", explain_file[ch]);
 		{

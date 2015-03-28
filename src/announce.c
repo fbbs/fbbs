@@ -569,7 +569,7 @@ void a_newitem(MENU *pm, int mode) {
 		return;
 	switch (mode) {
 		case ADDITEM:
-			if (tui_edit(fpath, false, false, true, NULL) != TUI_EDIT_SAVED)
+			if (editor(fpath, false, false, true, NULL) != EDITOR_SAVE)
 				return;
 			chmod(fpath, 0644);
 			break;
@@ -1283,7 +1283,7 @@ void a_manager(MENU *pm, int ch) {
 
 					if (dashf(fpath)) {
 						set_user_status(ST_EDITANN);
-						tui_edit(fpath, false ,false, true, NULL);
+						editor(fpath, false ,false, true, NULL);
 						set_user_status(ST_DIGEST);
 					}
 					pm->page = 9999;
@@ -1359,7 +1359,7 @@ void a_manager(MENU *pm, int ch) {
 					break;
 				if (dashf(fpath)) {
 					set_user_status(ST_EDITANN);
-					tui_edit(fpath, false, false, true, NULL);
+					editor(fpath, false, false, true, NULL);
 					set_user_status(ST_DIGEST);
 				}
 				pm->page = 9999;

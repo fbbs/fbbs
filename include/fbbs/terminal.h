@@ -82,12 +82,12 @@ int num_ans_chr(const char *str);
 
 // src/editor.c
 typedef enum {
-	TUI_EDIT_SAVED,
-	TUI_EDIT_ABORTED,
-	TUI_EDIT_CONTINUE,
-} tui_edit_e;
+	EDITOR_SAVE,
+	EDITOR_ABORT,
+	EDITOR_CONTINUE,
+} editor_e;
 
-extern tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file, bool allow_modify_header, struct postheader *post_header);
+extern editor_e editor(const char *file, bool utf8, bool write_header_to_file, bool allow_modify_header, struct postheader *post_header);
 extern void editor_dump(void);
 extern void editor_restore(void);
 

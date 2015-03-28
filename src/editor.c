@@ -1350,7 +1350,7 @@ static int write_file(editor_t *editor, const char *file,
 	return ok;
 }
 
-static tui_edit_e confirm_save_file(const char *file,
+static editor_e confirm_save_file(const char *file,
 		struct postheader *post_header, bool confirmed)
 {
 	char ans[2];
@@ -1364,16 +1364,16 @@ static tui_edit_e confirm_save_file(const char *file,
 	}
 
 	if (*ans == 'S') {
-		return TUI_EDIT_SAVED;
+		return EDITOR_SAVE;
 	} else if (*ans == 'A') {
 		struct stat st;
 		if (stat(file, &st) || st.st_size == 0)
 			unlink(file);
-		return TUI_EDIT_ABORTED;
+		return EDITOR_ABORT;
 	} else if (*ans == 'T') {
 		// TODO
 	}
-	return TUI_EDIT_CONTINUE;
+	return EDITOR_CONTINUE;
 }
 
 static void handle_esc(editor_t *editor)
@@ -1462,16 +1462,16 @@ static bool editor_init(editor_t *editor, const char *file, bool utf8,
  * @param write_header_to_file 是否加上信头
  * @param allow_modify_header 是否允许修改信头部分
  * @param post_header 信头数据结构
- * @return 用户确认保存返回TUI_EDIT_SAVED, 否则TUI_EDIT_ABORTED
+ * @return 用户确认保存返回EDITOR_SAVE, 否则EDITOR_ABORT
  */
-tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file,
+editor_e editor(const char *file, bool utf8, bool write_header_to_file,
 		bool allow_modify_header, struct postheader *post_header)
 {
-	tui_edit_e ans = TUI_EDIT_CONTINUE;
+	editor_e ans = EDITOR_CONTINUE;
 
 	editor_t editor;
 	if (!editor_init(&editor, file, utf8, allow_modify_header)) {
-		ans = TUI_EDIT_ABORTED;
+		ans = EDITOR_ABORT;
 		goto e;
 	}
 	current_editor = &editor;
@@ -1482,7 +1482,7 @@ tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file,
 
 	wchar_t wc;
 	bool confirmed = false;
-	while (ans == TUI_EDIT_CONTINUE
+	while (ans == EDITOR_CONTINUE
 			&& (wc = get_next_wchar(&editor)) != WEOF) {
 		switch (wc) {
 			case Ctrl('X'):
@@ -1490,7 +1490,7 @@ tui_edit_e tui_edit(const char *file, bool utf8, bool write_header_to_file,
 				// fall through
 			case Ctrl('W'): {
 				ans = confirm_save_file(file, post_header, confirmed);
-				if (ans == TUI_EDIT_SAVED) {
+				if (ans == EDITOR_SAVE) {
 					write_file(&editor, file, post_header, utf8,
 							write_header_to_file);
 				}
@@ -1520,7 +1520,7 @@ e:	vector_free(&editor.lines);
 	return ans;
 }
 
-void editor_dump_path(char *buf, size_t size)
+static void editor_dump_path(char *buf, size_t size)
 {
 	snprintf(buf, size, "home/%c/%s/editor_dump",
 			toupper(currentuser.userid[0]), currentuser.userid);

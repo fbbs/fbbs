@@ -766,7 +766,7 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 
 	char file[HOMELEN];
 	sprintf(file, "%s/%s", buf, fileinfo->filename);
-	if (tui_edit(file, false, false, false, NULL) != TUI_EDIT_SAVED)
+	if (editor(file, false, false, false, NULL) != EDITOR_SAVE)
 		return FULLUPDATE;
 	valid_gbk_file(file, '?');
 

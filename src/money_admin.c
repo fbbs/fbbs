@@ -118,7 +118,7 @@ int grant_money(void)
 
 	bool error = true;
 	while (error) {
-		if (tui_edit(file, false, false, true, NULL) != TUI_EDIT_SAVED) {
+		if (editor(file, false, false, true, NULL) != EDITOR_SAVE) {
 			unlink(file);
 			return 0;
 		}
