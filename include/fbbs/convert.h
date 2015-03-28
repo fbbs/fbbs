@@ -20,6 +20,7 @@ extern bool convert_open(convert_type_e type);
 extern int convert(convert_type_e type, const char *from, size_t len, char *buf, size_t size, convert_handler_t handler, void *arg);
 extern void convert_close(void);
 extern int convert_to_file(convert_type_e type, const char *from, size_t len, FILE *fp);
+extern bool convert_file(const char *from, const char *to, convert_type_e type);
 
 #define CONVERT_ALL  ((size_t) -1)
 #define convert_u2g(orig, buf) \

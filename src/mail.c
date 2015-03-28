@@ -39,6 +39,8 @@ extern char quote_file[], quote_user[];
 char currmaildir[STRLEN];
 #define maxrecp 300
 
+int in_mail;
+
 int chkmail(void)
 {
 	static long lasttime = 0;
@@ -224,7 +226,7 @@ int mailall(void)
 				time(0));
 	/**********Modified end**********/
 	do_quote(quote_file, fname, header.include_mode, header.anonymous);
-	if (vedit(fname, YEA, YEA, &header) == -1) {
+	if (editor(fname, false, true, true, &header) != EDITOR_SAVE) {
 		in_mail = NA;
 		unlink(fname);
 		screen_clear();
@@ -441,7 +443,7 @@ int do_send(const char *userid, const char *title)
 		pressanykey();
 #else
 		int res;
-		if (vedit(filepath, YEA, YEA, &header) == -1) {
+		if (editor(filepath, false, true, true, &header) != EDITOR_SAVE) {
 			unlink(filepath);
 			screen_clear();
 			return -2;
@@ -492,7 +494,7 @@ int do_send(const char *userid, const char *title)
 		return res;
 #endif
 	} else {
-		if (vedit(filepath, YEA, YEA, &header) == -1) {
+		if (editor(filepath, false, true, true, &header) != EDITOR_SAVE) {
 			unlink(filepath);
 			screen_clear();
 			return -2;
@@ -1302,7 +1304,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 		strlcpy(header.title, title, sizeof(header.title));
 	}
 	do_quote(quote_file, tmpfile, header.include_mode, header.anonymous);
-	if (vedit(tmpfile, YEA, YEA, &header) == -1) {
+	if (editor(tmpfile, false, true, true, &header) != EDITOR_SAVE) {
 		unlink(tmpfile);
 		screen_clear();
 		return -2;
@@ -1821,7 +1823,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 
 	//% if (askyn("是否修改文章内容", NA, NA)) {
 	if (askyn("\xca\xc7\xb7\xf1\xd0\xde\xb8\xc4\xce\xc4\xd5\xc2\xc4\xda\xc8\xdd", NA, NA)) {
-		if (vedit(tmpfile, NA, NA, NULL) == -1) {
+		if (editor(tmpfile, false, false, false, NULL) != EDITOR_SAVE) {
 			//% if (askyn("是否寄出未修改的文章", YEA, NA) == 0) {
 			if (askyn("\xca\xc7\xb7\xf1\xbc\xc4\xb3\xf6\xce\xb4\xd0\xde\xb8\xc4\xb5\xc4\xce\xc4\xd5\xc2", YEA, NA) == 0) {
 				unlink(tmpfile);

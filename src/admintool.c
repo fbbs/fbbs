@@ -1561,7 +1561,6 @@ int x_level() {
 }
 
 void a_edits() {
-	int aborted;
 	char ans[7], buf[STRLEN], buf2[STRLEN];
 	int ch, num, confirm;
 	static char *e_file[] = { "../Welcome", "../Welcome2", "issue",
@@ -1645,9 +1644,9 @@ void a_edits() {
 		return;
 	}
 	set_user_status(ST_EDITSFILE);
-	aborted = vedit(buf2, NA, YEA, NULL);
+	editor_e status = editor(buf2, false, false, true, NULL);
 	screen_clear();
-	if (aborted != -1) {
+	if (status == EDITOR_SAVE) {
 		//% prints("%s 更新过", explain_file[ch]);
 		prints("%s \xb8\xfc\xd0\xc2\xb9\xfd", explain_file[ch]);
 		{

@@ -16,6 +16,8 @@
 /** ANSI指令，退出反色模式 */
 #define ANSI_CMD_SE "\033[m"
 
+extern bool terminal_is_utf8(void);
+extern void terminal_set_to_utf8(void);
 extern int terminal_read(unsigned char *buf, size_t size);
 extern int terminal_write(const unsigned char *buf, size_t len);
 extern int terminal_flush(void);
@@ -24,11 +26,15 @@ extern void terminal_write_cached(const unsigned char *str, int size);
 extern bool terminal_input_buffer_empty(void);
 extern void terminal_schedule_exit(int);
 
+extern int menu_loop(const char *group_name);
+extern bool menu_load(const char *file);
+
 extern int igetch(void);
 extern int terminal_getchar(void);
 extern int egetch(void);
 extern int getdata(int line, int col, const char *prompt, char *buf, int len,
 		int echo, int clearlabel);
+extern int tui_input(int line, const char *prompt, char *buf, int len, int echo);
 extern void tui_repeat_char(int c, int repeat);
 extern void tui_update_status_line(void);
 extern void tui_suppress_notice(bool suppress_notice);
@@ -61,6 +67,7 @@ extern void screen_putc(int c);
 extern void screen_printf(const char *fmt, ...);
 extern void prints(const char *fmt, ...);
 extern void screen_scroll(void);
+extern void screen_replace(int line, int col, const char *str);
 extern void screen_save_line(int line, bool save);
 extern void saveline_buf(int line, int mode);
 
@@ -72,6 +79,17 @@ extern void printdash(const char *mesg);
 extern void bell(void);
 
 int num_ans_chr(const char *str);
+
+// src/editor.c
+typedef enum {
+	EDITOR_SAVE,
+	EDITOR_ABORT,
+	EDITOR_CONTINUE,
+} editor_e;
+
+extern editor_e editor(const char *file, bool utf8, bool write_header_to_file, bool allow_modify_header, struct postheader *post_header);
+extern void editor_dump(void);
+extern void editor_restore(void);
 
 // src/more.c
 
@@ -88,7 +106,6 @@ int mailreadhelp(void);
 int usercomplete(char *prompt, char *data);
 int namecomplete(char *prompt, char *data);
 int t_query(const char *user);
-int vedit(char *filename, int write_header_to_file, int modifyheader, struct postheader *header);
 
 #include "fbbs/post.h"
 typedef enum {
@@ -135,14 +152,12 @@ void CreateNameList(void);
 int digest_post(int ent, struct fileheader *fhdr, char *direct);
 int do_reply(struct fileheader *fh);
 int fill_date(void);
-void keep_fail_post(void);
 int mail_del(int ent, struct fileheader *fileinfo, char *direct);
 int m_send(const char *userid);
 void new_register(void);
 int post_header(struct postheader *header);
 int post_reply(const char *owner, const char *title, const char *file);
 void Poststring(const char *str, const char *nboard, const char *posttitle, int mode);
-int domenu(const char *menu_name);
 void setqtitle(char *stitle, int gid);
 void setquotefile(const char *filepath);
 void setvfile(char *buf, const char *bname, const char *filename);
@@ -172,7 +187,6 @@ void Add_Combine(const char *board, struct fileheader *fileinfo, int has_cite);
 void add_crossinfo(const char *filepath, bool post);
 int AddNameList(const char *name);
 int post_article(char *postboard, char *mailid);
-void write_header(FILE *fp, const struct postheader *header, bool _in_mail);
 int outgo_post(struct fileheader *fh, char *board);
 void fixkeep(char *s, int first, int last);
 int Personal(const char *userid);

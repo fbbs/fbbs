@@ -18,7 +18,7 @@ enum {
 
 /** 屏幕上的一行 */
 typedef struct {
-	uint16_t old_len; ///< 上次输出时的字符串长度
+	uint16_t old_width; ///< 上次输出时的字符串宽度
 	uint16_t len; ///< 当前字符串长度
 	bool modified; ///< 自从上次输出以来是否修改过
 	uchar_t data[SCREEN_LINE_LEN]; ///< 缓冲区
@@ -35,13 +35,11 @@ typedef struct {
 	int roll; ///< 首行在buf中的偏移量
 	int scrollcnt;
 	bool redraw; ///< 重绘屏幕
-	bool utf8; ///< 为true时以UTF8编码输出, 否则GBK编码
 } screen_t;
 
 static screen_t screen = {
 	.lines = 24,
 	.columns = 255,
-	.utf8 = false,
 };
 
 int screen_lines(void)
@@ -104,7 +102,7 @@ void screen_init(int lines)
 			screen_line_t *sl = screen.buf + i;
 			sl->modified = false;
 			sl->len = 0;
-			sl->old_len = 0;
+			sl->old_width = 0;
 		}
 		screen.redraw = true;
 		screen.roll = 0;
@@ -174,9 +172,9 @@ static int _write_helper(const char *buf, size_t len, void *arg)
 	return 0;
 }
 
-static void screen_write_cached(const uchar_t *data, uint16_t len, bool utf8)
+static void screen_write_cached(const uchar_t *data, uint16_t len)
 {
-	if (utf8) {
+	if (terminal_is_utf8()) {
 		_write_helper((const char *) data, len, NULL);
 	} else {
 		convert(CONVERT_U2G, (const char *) data, len, NULL, 0,
@@ -202,14 +200,15 @@ void screen_redraw(void)
 			continue;
 
 		move_terminal_cursor(0, i);
-		screen_write_cached(sl->data, sl->len, screen.utf8);
+		screen_write_cached(sl->data, sl->len);
 
 		screen.tc_col += sl->len;
 		if (screen.tc_col >= screen.columns) {
 			screen.tc_col = screen.columns - 1;
 		}
 		sl->modified = false;
-		sl->old_len = sl->len;
+		sl->data[sl->len] = '\0';
+		sl->old_width = screen_display_width((char *) sl->data, true);
 	}
 	move_terminal_cursor(screen.cur_col, screen.cur_ln);
 	screen.redraw = false;
@@ -246,13 +245,17 @@ void screen_flush(void)
 	}
 	for (int i = 0; i < screen.lines; i++) {
 		screen_line_t *sl = get_screen_line(i);
+
+		sl->data[sl->len] = '\0';
+		int width = screen_display_width((char *) sl->data, true);
+
 		if (sl->modified) {
 			sl->modified = false;
 			move_terminal_cursor(0, i);
 
-			screen_write_cached(sl->data, sl->len, screen.utf8);
+			screen_write_cached(sl->data, sl->len);
 
-			screen.tc_col = sl->len;
+			screen.tc_col = width;
 			if (screen.tc_col >= screen.columns) {
 				screen.tc_col -= screen.columns;
 				screen.tc_line++;
@@ -260,11 +263,12 @@ void screen_flush(void)
 					screen.tc_line = screen.lines - 1;
 			}
 		}
-		if (sl->old_len > sl->len) {
-			move_terminal_cursor(sl->len, i);
+
+		if (sl->old_width > width) {
+			move_terminal_cursor(width, i);
 			ansi_cmd(ANSI_CMD_CE);
 		}
-		sl->old_len = sl->len;
+		sl->old_width = width;
 	}
 	move_terminal_cursor(screen.cur_col, screen.cur_ln);
 	terminal_flush();
@@ -345,7 +349,7 @@ void screen_clrtobot(void)
 			screen_line_t *sl = get_screen_line(i);
 			sl->modified = false;
 			sl->len = 0;
-			sl->old_len = SCREEN_LINE_LEN;
+			sl->old_width = SCREEN_LINE_LEN;
 		}
 	}
 }
@@ -358,7 +362,7 @@ void screen_puts(const char *s, size_t size)
 		size = strlen(s);
 
 	if (!screen.buf) {
-		screen_write_cached((const uchar_t *) s, size, screen.utf8);
+		screen_write_cached((const uchar_t *) s, size);
 		return;
 	}
 
@@ -654,6 +658,78 @@ void screen_scroll(void)
 	if (++screen.roll >= screen.lines)
 		screen.roll -= screen.lines;
 	screen_move_clear(-1);
+}
+
+/**
+ * 寻找字符串中指定宽度的位置
+ * @param[in] ptr 字符串
+ * @param[in] size 字符串长度
+ * @param[in,out] width 宽度。如果字符串宽度不够或位于字符中间，则返回剩余宽度
+ * @return 指定宽度所在位置
+ */
+static const char *seek_to_width(const char *ptr, size_t size, size_t *width)
+{
+	bool ansi = false;
+	const char *end = ptr + size;
+	while (ptr < end) {
+		if (ansi) {
+			if (isalpha(*ptr))
+				ansi = false;
+			++ptr;
+		} else {
+			if (*ptr == '\033') {
+				ansi = true;
+				++ptr;
+			} else {
+				const char *p = ptr;
+				size_t left = end - ptr;
+				wchar_t wc = next_wchar(&p, &left);
+				if (wc == WEOF)
+					break;
+
+				size_t w = fb_wcwidth(wc);
+				if (*width > w) {
+					*width -= w;
+					ptr = p;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+	return ptr;
+}
+
+/**
+ * 在屏幕上指定位置替换字符串
+ * @param line 行
+ * @param col 列
+ * @param str 要替换的字符串
+ */
+void screen_replace(int line, int col, const char *str)
+{
+	screen_line_t *sl = get_screen_line(line);
+	char buf[sizeof(sl->data)];
+	memcpy(buf, sl->data, sl->len);
+	const char *end = buf + sl->len;
+
+	size_t w = col;
+	const char *ptr = seek_to_width(buf, end - buf, &w);
+
+	screen_move_clear(line);
+	if (ptr > buf)
+		screen_puts(buf, ptr - buf);
+	if (w) {
+		tui_repeat_char(' ', w);
+	}
+	screen_puts(str, 0);
+
+	size_t width = screen_display_width(str, true);
+	if (ptr < end) {
+		const char *ptr2 = seek_to_width(ptr, end - ptr, &width);
+		if (ptr2 < end)
+			screen_puts(ptr2, end - ptr2);
+	}
 }
 
 void screen_save_line(int line, bool save)

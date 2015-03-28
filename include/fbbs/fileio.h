@@ -2,6 +2,7 @@
 #define FB_FILEIO_H
 
 #include <stdbool.h>
+#include <unistd.h>
 
 typedef enum {
 	FILE_RDLCK = 0, ///< 读锁(F_RDLCK)

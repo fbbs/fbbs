@@ -118,8 +118,7 @@ int grant_money(void)
 
 	bool error = true;
 	while (error) {
-		int aborted = vedit(file, NA, YEA, NULL);
-		if (aborted == -1) {
+		if (editor(file, false, false, true, NULL) != EDITOR_SAVE) {
 			unlink(file);
 			return 0;
 		}

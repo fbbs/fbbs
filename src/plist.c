@@ -1147,7 +1147,7 @@ static int tui_edit_post_content(post_info_t *pi)
 	set_user_status(ST_EDIT);
 
 	screen_clear();
-	if (vedit(file, NA, NA, NULL) != -1) {
+	if (editor(file, false, false, false, NULL) == EDITOR_SAVE) {
 		char *content = post_convert_to_utf8(file);
 		if (content) {
 			if (post_content_set(pi->id, content)) {
@@ -1246,8 +1246,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		do_quote("", file, header.include_mode, header.anonymous);
 	}
 
-	if (vedit(file, true, true, &header) == -1) {
-		unlink(file);
+	if (editor(file, false, true, true, &header) != EDITOR_SAVE) {
 		screen_clear();
 		set_user_status(status);
 		return FULLUPDATE;

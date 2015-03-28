@@ -6,9 +6,9 @@
 #include "fbbs/record.h"
 
 #define ANONYMOUS_ACCOUNT "Anonymous"
-//% #define ANONYMOUS_NICK    "我是匿名天使"
+#define ANONYMOUS_NICK_UTF8  "我是匿名天使"
 #define ANONYMOUS_NICK    "\xce\xd2\xca\xc7\xc4\xe4\xc3\xfb\xcc\xec\xca\xb9"
-//% #define ANONYMOUS_SOURCE  "匿名天使的家"
+#define ANONYMOUS_SOURCE_UTF8  "匿名天使的家"
 #define ANONYMOUS_SOURCE  "\xc4\xe4\xc3\xfb\xcc\xec\xca\xb9\xb5\xc4\xbc\xd2"
 
 #define POST_REPLIES_FILE  "replies"
