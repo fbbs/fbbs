@@ -39,6 +39,8 @@ extern char quote_file[], quote_user[];
 char currmaildir[STRLEN];
 #define maxrecp 300
 
+int in_mail;
+
 int chkmail(void)
 {
 	static long lasttime = 0;

@@ -300,6 +300,54 @@ void do_quote(const char *orig, const char *file, char mode, bool anony)
 	fclose(fp);
 }
 
+static void write_header(FILE *fp, const struct postheader *header, bool _in_mail)
+{
+	extern char BoardName[];
+	extern char fromhost[];
+	char uid[20];
+	char uname[NAMELEN];
+
+	strlcpy(uid, currentuser.userid, 20);
+	uid[19] = '\0';
+	if (_in_mail)
+		strlcpy(uname, currentuser.username, NAMELEN);
+	else
+		strlcpy(uname, currentuser.username, NAMELEN);
+	uname[NAMELEN-1] = '\0';
+
+	if (_in_mail)
+		//% fprintf(fp, "寄信人: %s (%s)\n", uid, uname);
+		fprintf(fp, "\xbc\xc4\xd0\xc5\xc8\xcb: %s (%s)\n", uid, uname);
+	else {
+		board_t board;
+		if (header && header->postboard && !strcaseeq(currboard, header->ds)) {
+			get_board(header->ds, &board);
+		} else {
+			memcpy(&board, currbp, sizeof(board));
+		}
+		bool anonymous = header->anonymous;
+		if (anonymous)
+			anonymous &= (board.flag & BOARD_FLAG_ANONY);
+
+		//% fprintf(fp, "发信人: %s (%s), 信区: %s\n",
+		fprintf(fp, "\xb7\xa2\xd0\xc5\xc8\xcb: %s (%s), \xd0\xc5\xc7\xf8: %s\n",
+				anonymous ? ANONYMOUS_ACCOUNT : uid,
+				anonymous ? ANONYMOUS_NICK : uname, board.name);
+	}
+	//% fprintf(fp, "标  题: %s\n", header->title);
+	fprintf(fp, "\xb1\xea  \xcc\xe2: %s\n", header->title);
+	//% 发信站
+	fprintf(fp, "\xb7\xa2\xd0\xc5\xd5\xbe: %s (%s)", BoardName,
+			format_time(fb_time(), TIME_FORMAT_ZH));
+	if (_in_mail)
+		//% fprintf(fp, "\n来  源: %s\n", mask_host(fromhost));
+		fprintf(fp, "\n\xc0\xb4  \xd4\xb4: %s\n", mask_host(fromhost));
+	else
+		//% fprintf(fp, ", 站内信件\n");
+		fprintf(fp, ", \xd5\xbe\xc4\xda\xd0\xc5\xbc\xfe\n");
+	fprintf(fp, "\n");
+}
+
 static void getcross(board_t *board, const char *input, const char *output,
 		int mode, struct postheader *header)
 {
