@@ -232,8 +232,6 @@ static int handle_iac(void)
 	option_status_e status = OPTION_STATUS_IAC;
 	while (status != OPTION_STATUS_END) {
 		int ch = get_raw_ch();
-		if (ch < 0)
-			return ch;
 		switch (status) {
 			case OPTION_STATUS_IAC:
 				if (ch == SB)
@@ -283,8 +281,6 @@ static int handle_esc(void)
 	int ch, last = 0;
 	while (1) {
 		ch = get_raw_ch();
-		if (ch < 0)
-			return ch;
 		switch (status) {
 			case ESC_STATUS_BEG:
 				if (ch == '[' || ch == 'O')

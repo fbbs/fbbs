@@ -419,13 +419,15 @@ static void menu_execute(const char *cmd, const char *descr)
 			strlcpy(buf, cmd, sizeof(buf));
 
 			char *ptr = strchr(buf, ':');
+			if (!ptr)
+				return;
 			*ptr = '\0';
 			++ptr;
 
 			void *hdll = dlopen(buf + 1, RTLD_LAZY);
 			if (hdll) {
 				menu_function_t func;
-				*(void **) &func = dlsym(hdll, ptr ? ptr : "mod_main");
+				*(void **) &func = dlsym(hdll, ptr);
 				if (func)
 					func();
 				dlclose(hdll);

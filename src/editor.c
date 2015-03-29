@@ -529,7 +529,7 @@ static void wrap_short_lines(editor_t *editor)
 	text_line_size_t saved_pos = editor->buffer_pos;
 
 	text_line_t *tl = editor_current_line(editor);
-	while (!contains_newline(tl)) {
+	while (tl && !contains_newline(tl)) {
 		vector_size_t line = editor->current_line;
 		size_t width = display_width(tl->buf, tl->size);
 		if (width < WRAP_MARGIN && line + 1 < editor->allow_edit_end) {
@@ -1390,6 +1390,7 @@ static void handle_esc(editor_t *editor)
 			break;
 		case 'g':
 			jump_to_line(editor);
+			break;
 		case 'l':
 			editor->hide_status_line = !editor->hide_status_line;
 			show_status_line(editor);
