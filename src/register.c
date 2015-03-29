@@ -8,6 +8,21 @@
 #include "fbbs/terminal.h"
 #include "fbbs/ucache.h"
 
+/*add by Ashinmarch*/
+#define SCHOOLNUMLEN    9
+#define IDCARDLEN       18
+#define DIPLOMANUMLEN   10
+#define MOBILENUMLEN    12
+struct schoolmate_info {
+	char userid[IDLEN+2];
+	char school_num[SCHOOLNUMLEN + 1];
+	char email[STRLEN];
+	char identity_card_num[IDCARDLEN + 1];
+	char diploma_num[DIPLOMANUMLEN + 1];
+	char mobile_num[MOBILENUMLEN + 1];
+};
+/*add end*/
+
 enum {
 	MAX_NEW_TRIES = 9,
 	MAX_SET_PASSWD_TRIES = 7,
@@ -300,7 +315,7 @@ void check_reg_extra() {
 	if (!dashf(buf)) {
 		do {
 			memset(&schmate, 0, sizeof(schmate));
-			strcpy(schmate.userid, currentuser.userid);
+			strlcpy(schmate.userid, currentuser.userid, sizeof(schmate.userid));
 			screen_move(1, 0);
 			//% prints("请输入个人信息. 如果输入错误,可以重新输入.\n");
 			prints("\xc7\xeb\xca\xe4\xc8\xeb\xb8\xf6\xc8\xcb\xd0\xc5\xcf\xa2. \xc8\xe7\xb9\xfb\xca\xe4\xc8\xeb\xb4\xed\xce\xf3,\xbf\xc9\xd2\xd4\xd6\xd8\xd0\xc2\xca\xe4\xc8\xeb.\n");
@@ -308,30 +323,30 @@ void check_reg_extra() {
 			do {
 				//% getdata(2, 0, "输入以前的学号: ", schmate.school_num,
 				getdata(2, 0, "\xca\xe4\xc8\xeb\xd2\xd4\xc7\xb0\xb5\xc4\xd1\xa7\xba\xc5: ", schmate.school_num,
-						SCHOOLNUMLEN+1, DOECHO, YEA);
+						sizeof(schmate.school_num), DOECHO, YEA);
 			} while (!isNumStr(schmate.school_num)); //如果有输入非数字,重新输入!下同
 			do {
 				//% getdata(4, 0, "输入邮箱(外部邮箱亦可): ", schmate.email, STRLEN,
-				getdata(4, 0, "\xca\xe4\xc8\xeb\xd3\xca\xcf\xe4(\xcd\xe2\xb2\xbf\xd3\xca\xcf\xe4\xd2\xe0\xbf\xc9): ", schmate.email, STRLEN,
-						DOECHO, YEA);
+				getdata(4, 0, "\xca\xe4\xc8\xeb\xd3\xca\xcf\xe4(\xcd\xe2\xb2\xbf\xd3\xca\xcf\xe4\xd2\xe0\xbf\xc9): ", schmate.email,
+						sizeof(schmate.email), DOECHO, YEA);
 			} while (!valid_addr(schmate.email));
 			do {
 				//% getdata(6, 0, "输入身份证号码: ", schmate.identity_card_num,
 				getdata(6, 0, "\xca\xe4\xc8\xeb\xc9\xed\xb7\xdd\xd6\xa4\xba\xc5\xc2\xeb: ", schmate.identity_card_num,
-						IDCARDLEN+1, DOECHO, YEA);
+						sizeof(schmate.identity_card_num), DOECHO, YEA);
 			} while (!isNumStrPlusX(schmate.identity_card_num)
 					|| strlen(schmate.identity_card_num) !=IDCARDLEN);
 
 			do {
 				//% getdata(8, 0, "输入毕业证书编号: ", schmate.diploma_num,
 				getdata(8, 0, "\xca\xe4\xc8\xeb\xb1\xcf\xd2\xb5\xd6\xa4\xca\xe9\xb1\xe0\xba\xc5: ", schmate.diploma_num,
-						DIPLOMANUMLEN+1, DOECHO, YEA);
+						sizeof(schmate.diploma_num), DOECHO, YEA);
 			} while (!isNumStr(schmate.diploma_num));
 
 			do {
 				//% getdata(10, 0, "输入手机或固定电话号码: ", schmate.mobile_num,
 				getdata(10, 0, "\xca\xe4\xc8\xeb\xca\xd6\xbb\xfa\xbb\xf2\xb9\xcc\xb6\xa8\xb5\xe7\xbb\xb0\xba\xc5\xc2\xeb: ", schmate.mobile_num,
-						MOBILENUMLEN+1, DOECHO, YEA);
+						sizeof(schmate.mobile_num), DOECHO, YEA);
 			} while (!isNumStr(schmate.mobile_num));
 
 			strcpy(buf, "");

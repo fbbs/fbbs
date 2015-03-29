@@ -875,13 +875,16 @@ int delete_range(char *filename, int id1, int id2)
 		}
 		if (ret == 0) {
 			memmove(wptr, rptr, m.size - sizeof(struct fileheader) * id2);
-			mmap_truncate(&m, m.size - sizeof(struct fileheader) * deleted);
+			ret = mmap_truncate(&m, m.size - sizeof(struct fileheader) * deleted);
 		}
 	}
 	BBS_CATCH {
 		ret = -3;
 	}
-	BBS_END mmap_close(&m);
+	BBS_END {
+		if (ret != -1)
+			mmap_close(&m);
+	}
 	//add by danielfree to recount the attach files size.06-10-31
 	if (digestmode==ATTACH_MODE) {
 		char apath[256], cmd[256];

@@ -43,21 +43,6 @@ struct userec {
 	char reserved[8];         ///< reserved for future use.
 };
 
-/*add by Ashinmarch*/
-#define SCHOOLNUMLEN    9
-#define IDCARDLEN       18
-#define DIPLOMANUMLEN   10
-#define MOBILENUMLEN    12
-struct schoolmate_info {
-	char userid[IDLEN+2];
-	char school_num[SCHOOLNUMLEN];
-	char email[STRLEN];
-	char identity_card_num[IDCARDLEN];
-	char diploma_num[DIPLOMANUMLEN];
-	char mobile_num[MOBILENUMLEN];
-};
-/*add end*/
-
 struct override {
 	char id[13];
 	char exp[40];

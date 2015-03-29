@@ -25,6 +25,8 @@ int parse_avg(const char *name)
 		avg += atoi(index(buf, ',') + 1);
 		++i;		
 	}
+	fclose(fp);
+
 	if (i == 0)
 		avg = 0;
 	else
