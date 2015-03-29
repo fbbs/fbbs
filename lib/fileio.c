@@ -25,7 +25,7 @@ int file_append(const char *file, const char *msg)
 	if (fd != -1) {
 		if (file_lock_all(fd, FILE_WRLCK) == 0) {
 			ret = file_write(fd, msg, strlen(msg));
-			file_lock_all(fd, FILE_UNLCK);
+			(void) file_lock_all(fd, FILE_UNLCK);
 		}
 		close(fd);
 	}

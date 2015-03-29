@@ -240,11 +240,13 @@ bool register_activate_email(const char *uname, const char *attempt)
 	if (!fp)
 		return false;
 
-	char code[RNDPASSLEN + 1], email[EMAIL_LEN];
-	fscanf(fp, "%s", code);
-	fscanf(fp, "%s", email);
+	char code[RNDPASSLEN + 1], email[EMAIL_LEN + 1];
+	bool s1 = fscanf(fp, "%10s", code) == 1;
+	bool s2 = fscanf(fp, "%40s", email) == 1;
 	fclose(fp);
 
+	if (!s1 || !s2)
+		return false;
 	if (!streq(code, attempt))
 		return false;
 
@@ -268,7 +270,7 @@ bool is_reg_pending(const char *userid)
 		return false;
 
 	reginfo_t reg;
-	while (fread(&reg, sizeof(reg), 1, fp)) {
+	while (fread(&reg, sizeof(reg), 1, fp) == 1) {
 		if (strcasecmp(reg.userid, userid) == 0) {
 			fclose(fp);
 			return true;
@@ -289,11 +291,14 @@ int append_reg_list(const reginfo_t *reg)
 	FILE *fp = fopen(REGISTER_LIST, "r+");
 	if (!fp)
 		return -1;
-	file_lock_all(fileno(fp), FILE_WRLCK);
+	if (file_lock_all(fileno(fp), FILE_WRLCK) != 0) {
+		fclose(fp);
+		return -1;
+	}
 
 	int found = 0;
 	reginfo_t tmp;
-	while (fread(&tmp, sizeof(tmp), 1, fp)) {
+	while (fread(&tmp, sizeof(tmp), 1, fp) == 1) {
 		if (strcasecmp(reg->userid, tmp.userid) == 0) {
 			found = 1;
 			break;
@@ -303,7 +308,7 @@ int append_reg_list(const reginfo_t *reg)
 		fwrite(reg, sizeof(*reg), 1, fp);
 	}
 
-	file_lock_all(fileno(fp), FILE_UNLCK);
+	(void) file_lock_all(fileno(fp), FILE_UNLCK);
 	fclose(fp);
 	return 0 - found;
 }

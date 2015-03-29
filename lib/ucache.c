@@ -168,7 +168,7 @@ static int shm_lock(const char *lockname)
 // Removes an existing lock held by this process on file descriptor 'fd'.
 static void shm_unlock(int fd)
 {
-	file_lock_all(fd, FILE_UNLCK);
+	(void) file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 }
 

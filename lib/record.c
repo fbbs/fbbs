@@ -193,7 +193,7 @@ int record_append_locked(record_t *rec, const void *ptr, int count)
 	if (record_lock_all(rec, RECORD_WRLCK) < 0)
 		return -1;
 	int ret = record_append(rec, ptr, count);
-	record_lock_all(rec, RECORD_UNLCK);
+	(void) record_lock_all(rec, RECORD_UNLCK);
 	return ret;
 }
 
@@ -485,9 +485,11 @@ int append_record(const char *file, const void *record, int size)
 	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 		return -1;
-	file_lock_all(fd, FILE_WRLCK);
-	int ret = file_write(fd, record, size);
-	file_lock_all(fd, FILE_UNLCK);
+	int ret = file_lock_all(fd, FILE_WRLCK);
+	if (ret == 0) {
+		ret = file_write(fd, record, size);
+		(void) file_lock_all(fd, FILE_UNLCK);
+	}
 	close(fd);
 	return ret;
 }
@@ -566,7 +568,7 @@ int apply_record(const char *file, apply_func_t func, int size,
 		return -1;
 	}
 	if (!lock)
-		mmap_lock(&m, FILE_UNLCK);
+		(void) mmap_lock(&m, FILE_UNLCK);
 	count = m.size / size;
 	if (reverse)
 		ptr = (char *)m.ptr + (count - 1) * size;
@@ -651,7 +653,7 @@ int substitute_record(char *filename, void *rptr, int size, int id)
 
 	file_write(fd, rptr, size);
 	ldata.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &ldata);
+	(void) fcntl(fd, F_SETLK, &ldata);
 	close(fd);
 
 	return 0;

@@ -225,7 +225,7 @@ static void get_idle_str(char *buf, size_t size, fb_time_t refresh, int status)
 		*buf = '\0';
 	} else {
 		if (idle > 999)
-			strlcpy(buf, "999+", sizeof(buf));
+			strlcpy(buf, "999+", size);
 		else
 			snprintf(buf, size, "%d", idle);
 	}

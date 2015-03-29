@@ -666,7 +666,7 @@ static int filtered_record_open(const post_filter_t *f, record_perm_e rdonly,
 	return record_open(file, cmp, sizeof(post_record_t), rdonly, record);
 }
 
-static int filtered_record_generate(record_t *r, post_filter_t *f)
+static void filtered_record_generate(record_t *r, post_filter_t *f)
 {
 	if (f->type == POST_LIST_MARKED)
 		f->flag |= POST_FLAG_MARKED;
@@ -676,12 +676,14 @@ static int filtered_record_generate(record_t *r, post_filter_t *f)
 	char file[HOMELEN];
 	filtered_record_name(file, sizeof(file));
 	record_t record;
-	filtered_record_open(f, RECORD_WRITE, file, sizeof(file), &record);
+	if (filtered_record_open(f, RECORD_WRITE, file, sizeof(file), &record) < 0)
+		return;
 
 	int count = record_count(r);
 	if (count <= 0) {
 		record_close(&record);
 		unlink(file);
+		return;
 	}
 
 	post_record_append_t pra = {
@@ -698,7 +700,6 @@ static int filtered_record_generate(record_t *r, post_filter_t *f)
 	record_append(&record, pra.prs, pra.size);
 	record_close(&record);
 	free(pra.prs);
-	return 0;
 }
 
 static int tui_post_list_selected(tui_list_t *tl, post_info_t *pi)
@@ -1530,7 +1531,7 @@ static bool count_posts_in_range(record_t *record, post_id_t *min,
 	qsort_r(cpc.stat, cpc.size, sizeof(*cpc.stat), count_posts_sort_func,
 			&cpc);
 
-	file_temp_name(file, sizeof(file));
+	file_temp_name(file, size);
 	FILE *fp = fopen(file, "w");
 	if (fp) {
 		//% 版面:

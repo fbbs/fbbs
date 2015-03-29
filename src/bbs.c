@@ -96,9 +96,9 @@ void setqtitle(char *stitle, int gid)
 	if (strncmp(stitle, "Re: ", 4) != 0)
 		//commented by iamfat 2002.07.26
 		//&& strncmp (stitle, "RE: ", 4) != 0)
-		strcpy(topic, stitle);
+		strlcpy(topic, stitle, sizeof(topic));
 	else
-		strcpy(topic, stitle + 4);
+		strlcpy(topic, stitle + 4, sizeof(topic));
 }
 
 /*
@@ -309,10 +309,7 @@ static void write_header(FILE *fp, const struct postheader *header, bool _in_mai
 
 	strlcpy(uid, currentuser.userid, 20);
 	uid[19] = '\0';
-	if (_in_mail)
-		strlcpy(uname, currentuser.username, NAMELEN);
-	else
-		strlcpy(uname, currentuser.username, NAMELEN);
+	strlcpy(uname, currentuser.username, sizeof(uname));
 	uname[NAMELEN-1] = '\0';
 
 	if (_in_mail)
@@ -724,7 +721,7 @@ int IsTheFileOwner(struct fileheader *fileinfo) {
 		return 0;
 	if (strcmp(currentuser.userid, fileinfo->owner))
 		return 0;
-	strcpy(buf, &(fileinfo->filename[2]));
+	strlcpy(buf, &(fileinfo->filename[2]), sizeof(buf));
 	buf[strlen (buf) - 2] = '\0';
 	posttime = atoi(buf);
 	if (posttime < currentuser.firstlogin)
@@ -754,9 +751,9 @@ int edit_post(int ent, struct fileheader *fileinfo, char *direct) {
 	set_user_status(ST_EDIT);
 	screen_clear();
 	if (in_mail)
-		strcpy(buf, currmaildir);
+		strlcpy(buf, currmaildir, sizeof(buf));
 	else
-		strcpy(buf, direct);
+		strlcpy(buf, direct, sizeof(buf));
 	if ((t = strrchr(buf, '/')) != NULL)
 		*t = '\0';
 	//Added by Ashinmarch to support sharedmail
@@ -820,7 +817,7 @@ int delete_range(char *filename, int id1, int id2)
 	int lookupuid;
 	mmap_t m;
 
-	strcpy(dirpath, filename);
+	strlcpy(dirpath, filename, sizeof(dirpath));
 	p=strrchr(dirpath, '/');
 	if (!p) {
 		return -1;
@@ -1015,7 +1012,7 @@ int _del_post(int ent, struct fileheader *fileinfo, char *direct,
 	fail = delete_record(direct, sizeof(struct fileheader), ent,
 			cmpfilename, fileinfo->filename);
 	if (!fail) {
-		strcpy(buf, direct);
+		strlcpy(buf, direct, sizeof(buf));
 		if ((t = strrchr(buf, '/')) != NULL)
 			*t = '\0';
 		sprintf(genbuf, "Del '%s' on %s", fileinfo->title, currboard);

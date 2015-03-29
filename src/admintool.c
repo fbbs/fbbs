@@ -34,8 +34,7 @@ static int getbnames(const char *userid, const char *bname, int *find)
 		return 0;
 	}
 	for (oldbm = 0; oldbm < 3;) {
-		fscanf(bmfp, "%s\n", tmp);
-		if (!strcmp(bname, tmp)) {
+		if (fscanf(bmfp, "%19s\n", tmp) == 1 && streq(bname, tmp)) {
 			*find = oldbm + 1;
 		}
 		strcpy(bnames[oldbm++], tmp);
@@ -1125,14 +1124,14 @@ int tui_edit_board(const char *cmd)
 
 		if (ans[1] == '1' || ans[1] == '7') {
 			const char *group = chgrp();
-			get_grp(board.name);
-			char tmp_grp[STRLEN];
-			strcpy(tmp_grp, lookgrp);
-			if (strcmp(tmp_grp, group)) {
-				char tmpbuf[160];
-				sprintf(tmpbuf, "%s:", board.name);
-				del_from_file("0Announce/.Search", tmpbuf);
-				if (group != NULL) {
+			if (group) {
+				get_grp(board.name);
+				char tmp_grp[STRLEN];
+				strcpy(tmp_grp, lookgrp);
+				if (strcmp(tmp_grp, group)) {
+					char tmpbuf[160];
+					sprintf(tmpbuf, "%s:", board.name);
+					del_from_file("0Announce/.Search", tmpbuf);
 					if (add_grp(group, cexplain, nb.name, vbuf) == -1)
 						//% prints("\n成立精华区失败....\n");
 						prints("\n\xb3\xc9\xc1\xa2\xbe\xab\xbb\xaa\xc7\xf8\xca\xa7\xb0\xdc....\n");
@@ -1439,17 +1438,9 @@ int m_register() {
 
 	//% stand_title("设定使用者注册资料");
 	stand_title("\xc9\xe8\xb6\xa8\xca\xb9\xd3\xc3\xd5\xdf\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf");
-	for (;;) {
-		//% getdata(1, 0, "(0)离开  (1)审查新注册 (2)查询使用者注册资料 ? : ", ans, 2, DOECHO,
-		getdata(1, 0, "(0)\xc0\xeb\xbf\xaa  (1)\xc9\xf3\xb2\xe9\xd0\xc2\xd7\xa2\xb2\xe1 (2)\xb2\xe9\xd1\xaf\xca\xb9\xd3\xc3\xd5\xdf\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf ? : ", ans, 2, DOECHO,
+	//% getdata(1, 0, "(0)离开  (1)审查新注册 (2)查询使用者注册资料 ? : ", ans, 2, DOECHO,
+	getdata(1, 0, "(0)\xc0\xeb\xbf\xaa  (1)\xc9\xf3\xb2\xe9\xd0\xc2\xd7\xa2\xb2\xe1 (2)\xb2\xe9\xd1\xaf\xca\xb9\xd3\xc3\xd5\xdf\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf ? : ", ans, 2, DOECHO,
 				YEA);
-		//% if (ans[0] == '1' || ans[0] == '2') { // || ans[0]=='3') 现在只有0,1,2
-		if (ans[0] == '1' || ans[0] == '2') { // || ans[0]=='3') \xcf\xd6\xd4\xda\xd6\xbb\xd3\xd00,1,2
-			break;
-		} else {
-			return 0;
-		}
-	}
 	switch (ans[0]) {
 		case '2':
 			screen_move(1, 0);
@@ -1488,6 +1479,8 @@ int m_register() {
 			i_read(ST_ADMIN, "unregistered", regtitle, regdoent,
 					&reg_comms[0], sizeof(reginfo_t));
 			break;
+		default:
+			return 0;
 	}
 	screen_clear();
 	return 0;
@@ -1555,7 +1548,7 @@ int x_level() {
 				unlink(dst);
 			sethomefile(src, lookupuser.userid, "register");
 			if (dashf(src))
-				rename(src, dst);
+				(void) rename(src, dst);
 		}
 		//% prints("使用者 '%s' 权限已经更改完毕.\n", lookupuser.userid);
 		prints("\xca\xb9\xd3\xc3\xd5\xdf '%s' \xc8\xa8\xcf\xde\xd2\xd1\xbe\xad\xb8\xfc\xb8\xc4\xcd\xea\xb1\xcf.\n", lookupuser.userid);

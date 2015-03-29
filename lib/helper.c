@@ -169,10 +169,13 @@ int del_from_file(const char *file, const char *str)
 
 	if ((fpr = fopen(file, "r")) == NULL)
 		return -1;
-	file_lock_all(fileno(fpr), FILE_WRLCK);
+	if (file_lock_all(fileno(fpr), FILE_WRLCK) != 0) {
+		fclose(fpr);
+		return -1;
+	}
 	snprintf(fnew, sizeof(fnew), "%s.%d", file, getpid());
 	if ((fpw = fopen(fnew, "w")) == NULL) {
-		file_lock_all(fileno(fpr), FILE_UNLCK);
+		(void) file_lock_all(fileno(fpr), FILE_UNLCK);
 		fclose(fpr);
 		return -1;
 	}
@@ -191,7 +194,7 @@ int del_from_file(const char *file, const char *str)
 	}
 	empty = (ftell(fpw) <= 0);
 	fclose(fpw);
-	file_lock_all(fileno(fpr), FILE_UNLCK);
+	(void) file_lock_all(fileno(fpr), FILE_UNLCK);
 	fclose(fpr);
 
 	if (deleted) {

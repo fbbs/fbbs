@@ -148,7 +148,10 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 		}
 	}
 
-	file_lock_all(fd, FILE_WRLCK);
+	if (file_lock_all(fd, FILE_WRLCK) != 0) {
+		close(fd);
+		return BBS_EINTNL;
+	}
 	strlcpy(fh.filename, fname, sizeof(fh.filename));
 	sprintf(filepath, "mail/%c/%s/%s", toupper(user[0]), user, fname);
 	if (header)
@@ -156,7 +159,7 @@ int do_mail_file(const char *recv, const char *title, const char *header,
 	file_write(fd, text, len);
 	if (source)
 		file_write(fd, source, strlen(source));
-	file_lock_all(fd, FILE_UNLCK);
+	(void) file_lock_all(fd, FILE_UNLCK);
 	close(fd);
 
 	setmdir(fname, user);

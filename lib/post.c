@@ -1009,7 +1009,7 @@ static bool post_content_update_cache(const char *file, const char *str,
 		size_t size = strlen(str);
 		if (file_write(fd, str, size) == size)
 			ok = true;
-		file_lock_all(fd, FILE_UNLCK);
+		(void) file_lock_all(fd, FILE_UNLCK);
 	}
 	close(fd);
 	return ok;

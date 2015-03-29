@@ -57,7 +57,7 @@ int mmap_open_fd(mmap_t *m)
 	m->ptr = mmap(NULL, m->msize, m->prot, m->mflag, m->fd, 0);
 	if (m->ptr != MAP_FAILED)
 		return 0;
-	file_lock_all(m->fd, FILE_UNLCK);
+	(void) file_lock_all(m->fd, FILE_UNLCK);
 	close(m->fd);
 	return -1;
 }
@@ -80,7 +80,7 @@ void mmap_unmap(mmap_t *m)
 	if (m) {
 		munmap(m->ptr, m->msize);
 		if (m->lock != FILE_UNLCK)
-			file_lock_all(m->fd, FILE_UNLCK);
+			(void) file_lock_all(m->fd, FILE_UNLCK);
 	}
 }
 
@@ -111,7 +111,7 @@ int mmap_truncate(mmap_t *m, size_t size)
 	if (file_truncate(m->fd, size) < 0) {
 		if (remap) {
 			if (m->lock != FILE_UNLCK)
-				file_lock_all(m->fd, FILE_UNLCK);
+				(void) file_lock_all(m->fd, FILE_UNLCK);
 			file_close(m->fd);
 		} else {
 			mmap_close(m);

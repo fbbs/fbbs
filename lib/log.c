@@ -56,7 +56,7 @@ int log_bm(log_bm_e type, int value)
 	lseek(fd, 0, SEEK_SET);
 	file_write(fd, data, sizeof(data));
 
-	file_lock_all(fd, FILE_UNLCK);
+	(void) file_lock_all(fd, FILE_UNLCK);
 	file_close(fd);
 	return 0;
 }

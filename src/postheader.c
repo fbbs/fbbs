@@ -16,7 +16,7 @@ void check_title(char *title, size_t size)
 	if (!strncasecmp(title, "Re:", 3) && !HAS_PERM(PERM_SYSOPS)) {
 		//% snprintf(temp, sizeof(temp), "Re：%s", &title[3]);
 		snprintf(temp, sizeof(temp), "Re\xa3\xba%s", &title[3]);
-		strlcpy(title, temp, sizeof(title));
+		strlcpy(title, temp, size);
 	}
 	valid_title_gbk(title);
 }

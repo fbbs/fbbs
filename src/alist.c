@@ -293,13 +293,13 @@ tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 		case KEY_RIGHT: case 'r': case Ctrl('S'): case 'p':
 			return read_attachment(tl, fp);
 		case 'm':
-			toggle_attachment_flag(tl, fp, POST_FLAG_MARKED);
+			return toggle_attachment_flag(tl, fp, POST_FLAG_MARKED);
 		case 'g':
-			toggle_attachment_flag(tl, fp, POST_FLAG_DIGEST);
+			return toggle_attachment_flag(tl, fp, POST_FLAG_DIGEST);
 		case 'w':
-			toggle_attachment_flag(tl, fp, POST_FLAG_WATER);
+			return toggle_attachment_flag(tl, fp, POST_FLAG_WATER);
 		case 'd':
-			delete_attachment(tl, fp);
+			return delete_attachment(tl, fp);
 		case 'a':
 			return attachment_search_author(tl, fp, false);
 		case 'A':
@@ -309,7 +309,7 @@ tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 		case '?':
 			return attachment_search_title(tl, true);
 		case Ctrl('A'):
-			return fp ? t_query(fp->owner) : DONOTHING;
+			return t_query(fp->owner);
 		case 'P': case Ctrl('B'): case KEY_PGUP:
 			return tui_list_seek(tl, KEY_PGUP, true, true);
 		case 'k': case KEY_UP:
