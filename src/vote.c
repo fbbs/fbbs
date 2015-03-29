@@ -764,7 +764,7 @@ int vote_maintain(const char *bname)
 		return FULLUPDATE; //设置投票箱
 	setvoteflag(bname, 1);
 	screen_clear();
-	strcpy(ball->userid, currentuser.userid);
+	strlcpy(ball->userid, currentuser.userid, sizeof(ball->userid));
 	if (append_record(controlfile, ball, sizeof(*ball)) == -1) {
 		//% prints("发生严重的错误，无法开启投票，请通告站长");
 		prints("\xb7\xa2\xc9\xfa\xd1\xcf\xd6\xd8\xb5\xc4\xb4\xed\xce\xf3\xa3\xac\xce\xde\xb7\xa8\xbf\xaa\xc6\xf4\xcd\xb6\xc6\xb1\xa3\xac\xc7\xeb\xcd\xa8\xb8\xe6\xd5\xbe\xb3\xa4");
@@ -1095,7 +1095,7 @@ int user_vote(int num) {
 	} else {
 		voted_flag = YEA;
 	}
-	strcpy(uservote.uid, currentuser.userid);
+	strlcpy(uservote.uid, currentuser.userid, sizeof(uservote.uid));
 	sprintf(bname, "desc.%d", currvote.opendate);
 	setvfile(buf, currboard, bname);
 	ansimore(buf, YEA);

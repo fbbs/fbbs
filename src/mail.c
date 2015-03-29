@@ -205,7 +205,7 @@ int mailall(void)
 	header.reply = false;
 	//% strcpy(header.title, "没主题");
 	strcpy(header.title, "\xc3\xbb\xd6\xf7\xcc\xe2");
-	strcpy(header.ds, doc[ans[0] - '0' - 1]);
+	strlcpy(header.ds, doc[ans[0] - '0' - 1], sizeof(header.ds));
 	header.postboard = NA;
 	i = post_header(&header);
 	if (i == -1)
@@ -421,7 +421,7 @@ int do_send(const char *userid, const char *title)
 		strcpy(header.title, "\xc3\xbb\xd6\xf7\xcc\xe2");
 	} else {
 		header.reply = true;
-		strcpy(header.title, title);
+		strlcpy(header.title, title, sizeof(header.title));
 	}
 	header.postboard = NA;
 	in_mail = YEA;
@@ -1329,7 +1329,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 	}
 
 	for (cnt = 0; cnt < num; cnt++) {
-		char uid[13];
+		char uid[IDLEN + 1];
 		char buf[STRLEN];
 		switch (G_SENDMODE) {
 			case 1:
@@ -1349,7 +1349,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 				}
 				break;
 			default:
-				strcpy(uid, userid[cnt]);
+				strlcpy(uid, userid[cnt], sizeof(uid));
 				break;
 		}
 		if (is_blocked(uid))

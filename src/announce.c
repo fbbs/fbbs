@@ -57,13 +57,10 @@ char nowpath[STRLEN]="\0"; //add by Danielfree 06.12.6
 //			中间显示的是精华区列表
 //			最后一行是功能键,版主与非版主不一样
 void a_showmenu(MENU *pm) {
-	struct stat st;
 	struct tm *pt;
 	char title[STRLEN * 2], kind[20];
 	char fname[STRLEN];
-	char ch;
 	char buf[STRLEN], genbuf[STRLEN * 2];
-	time_t mtime;
 	int n, len;
 
 	screen_clear();
@@ -94,6 +91,7 @@ void a_showmenu(MENU *pm) {
 		//% prints("      << 目前没有文章 >>\n");
 		prints("      << \xc4\xbf\xc7\xb0\xc3\xbb\xd3\xd0\xce\xc4\xd5\xc2 >>\n");
 	}
+	char ch = ' ';
 	for (n = pm->page; n < pm->page + A_PAGESIZE && n < pm->num; n++) {
 		strcpy(title, pm->item[n]->title);
 		sprintf(fname, "%s", pm->item[n]->fname);
@@ -102,12 +100,11 @@ void a_showmenu(MENU *pm) {
 			ch = (dashd(genbuf) ? '/' : ' ');
 			fname[10] = '\0';
 		} else {
-			//if (dashf(genbuf) || ch == '/') { //modified by roly 02.03.18
+			time_t mtime = time(NULL);
 			if (dashf(genbuf) || dashd(genbuf) || ch == '/') {
-				stat(genbuf, &st);
-				mtime = st.st_mtime;
-			} else {
-				mtime = time(0);
+				struct stat st;
+				if (stat(genbuf, &st) == 0)
+					mtime = st.st_mtime;
 			}
 			pt = localtime(&mtime);
 			sprintf(fname, "[%02d.%02d.%02d]",
@@ -453,8 +450,10 @@ int a_menusearch(const char *key, char *found) {
 			if (searchmode && !strstr(buf, "groups/"))
 				continue;
 			ptr = strchr(buf, ':');
-			if (!ptr)
+			if (!ptr) {
+				fclose(fn);
 				return 0;
+			}
 			else {
 				*ptr = '\0';
 				ptr = strtok(ptr + 1, " \t\n");
@@ -672,8 +671,11 @@ void a_copypaste(MENU *pm, int paste) {
 			return;
 		}
 		fread(title, sizeof(item->title), 1, fn);
+		title[sizeof(title) - 1] = '\0';
 		fread(filename, sizeof(item->fname), 1, fn);
+		filename[sizeof(filename) - 1] = '\0';
 		fread(fpath, sizeof(fpath), 1, fn);
+		fpath[sizeof(fpath) - 1] = '\0';
 		fclose(fn);
 		sprintf(newpath, "%s/%s", pm->path, filename);
 		if (*title == '\0' || *filename == '\0') {
@@ -1344,7 +1346,7 @@ void a_manager(MENU *pm, int ch) {
 							sprintf(genbuf, "%-38.38s", changed_T);
 						xpm.path=fpath;
 						a_loadnames(&xpm);
-						strcpy(xpm.mtitle, genbuf);
+						strlcpy(xpm.mtitle, genbuf, sizeof(xpm.mtitle));
 						a_savenames(&xpm);
 
 						strlcpy(item->title, genbuf, 72);

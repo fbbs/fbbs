@@ -182,6 +182,7 @@ bmfilecount (char *pathname, char *bm)
 	{
 		free (buffer);
 		fprintf (stderr, "Can not read .DIR file!\n");
+		close(fd);
 		return 1;
 	}
 	(void) close (fd);
