@@ -100,7 +100,7 @@ int	check_systempasswd(void)
 		if (passbuf[0] == '\0' || passbuf[0] == '\n')
 			return NA;
 		if (!passwd_match(prepass, passbuf)) {
-			move(2, 0);
+			screen_move(2, 0);
 			//% prints("错误的系统密码...");
 			prints("\xb4\xed\xce\xf3\xb5\xc4\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb...");
 			//% securityreport("系统密码输入错误...", 0, 0);

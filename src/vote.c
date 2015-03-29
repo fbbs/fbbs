@@ -70,7 +70,7 @@ static int choose(int update, int defaultn, void (*title_show)(),
 		num = range - 1;
 		if (page < 0) {
 			page = (num / BBS_PAGESIZE) * BBS_PAGESIZE;
-			move(3, 0);
+			screen_move(3, 0);
 			screen_clrtobot();
 			if ((*list_show) () == -1)
 			return -1;
@@ -87,17 +87,17 @@ static int choose(int update, int defaultn, void (*title_show)(),
 			if ((*read) (page, num) == -1)
 			return num;
 		} else {
-			move(3 + num - page, 0);
+			screen_move(3 + num - page, 0);
 			prints(">", number);
 		}
 		ch = egetch();
 		if (readplan == NA)
-		move(3 + num - page, 0);
+		screen_move(3 + num - page, 0);
 		prints(" ");
 		if (ch == 'q' || ch == 'e' || ch == KEY_LEFT || ch == EOF) {
 			if (readplan == YEA) {
 				readplan = NA;
-				move(1, 0);
+				screen_move(1, 0);
 				screen_clrtobot();
 				if ((*list_show) () == -1)
 				return -1;
@@ -267,7 +267,7 @@ int b_notes_edit()
 	if (!am_curr_bm())
 		return 0;
 	screen_clear();
-	move(0, 0);
+	screen_move(0, 0);
 	//% prints("设定：\n\n  (1)一般备忘录\n  (2)秘密备忘录\n");
 	prints("\xc9\xe8\xb6\xa8\xa3\xba\n\n  (1)\xd2\xbb\xb0\xe3\xb1\xb8\xcd\xfc\xc2\xbc\n  (2)\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\n");
 	//% prints("  (3)版面前缀表\n  (4)是否强制使用前缀\n");
@@ -310,11 +310,11 @@ int b_notes_edit()
 			(notetype == 3)?"\xb0\xe6\xc3\xe6\xc7\xb0\xd7\xba\xb1\xed":(notetype == 1) ? "\xd2\xbb\xb0\xe3\xb1\xb8\xcd\xfc\xc2\xbc" : "\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc");
 	getdata(8, 0, buf2, ans, 2, DOECHO, YEA); //询问编辑或者删除
 	if (ans[0] == 'D' || ans[0] == 'd') { //删除备忘录
-		move(9, 0);
+		screen_move(9, 0);
 		//% sprintf(buf2, "真的要删除么？");
 		sprintf(buf2, "\xd5\xe6\xb5\xc4\xd2\xaa\xc9\xbe\xb3\xfd\xc3\xb4\xa3\xbf");
 		if (askyn(buf2, NA, NA)) {
-			move(10, 0);
+			screen_move(10, 0);
 			//% prints("已经删除...\n");
 			prints("\xd2\xd1\xbe\xad\xc9\xbe\xb3\xfd...\n");
 			pressanykey();
@@ -343,7 +343,7 @@ int b_notes_edit() {
 	if (!am_curr_bm())
 		return 0;
 	screen_clear();
-	move(1, 0);
+	screen_move(1, 0);
 	//% prints("编辑/删除备忘录");
 	prints("\xb1\xe0\xbc\xad/\xc9\xbe\xb3\xfd\xb1\xb8\xcd\xfc\xc2\xbc");
 	while (1) {
@@ -372,11 +372,11 @@ int b_notes_edit() {
 	getdata(5, 0, buf2, ans, 2, DOECHO, YEA); //询问编辑或者删除
 	editor_e status;
 	if (ans[0] == 'D' || ans[0] == 'd') { //删除备忘录
-		move(6, 0);
+		screen_move(6, 0);
 		//% sprintf(buf2, "真的要删除%4s备忘录", (notetype == 1) ? "一般" : "秘密");
 		sprintf(buf2, "\xd5\xe6\xb5\xc4\xd2\xaa\xc9\xbe\xb3\xfd%4s\xb1\xb8\xcd\xfc\xc2\xbc", (notetype == 1) ? "\xd2\xbb\xb0\xe3" : "\xc3\xd8\xc3\xdc");
 		if (askyn(buf2, NA, NA)) {
-			move(7, 0);
+			screen_move(7, 0);
 			//% prints("备忘录已经删除...\n");
 			prints("\xb1\xb8\xcd\xfc\xc2\xbc\xd2\xd1\xbe\xad\xc9\xbe\xb3\xfd...\n");
 			pressanykey();
@@ -409,12 +409,12 @@ int b_notes_passwd(void)
 	if (!am_curr_bm())
 		return 0;
 	screen_clear();
-	move(1, 0);
+	screen_move(1, 0);
 	//% prints("设定/更改/取消「秘密备忘录」密码...");
 	prints("\xc9\xe8\xb6\xa8/\xb8\xfc\xb8\xc4/\xc8\xa1\xcf\xfb\xa1\xb8\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xb9\xc3\xdc\xc2\xeb...");
 	setvfile(buf, currboard, "secnotes");
 	if (!dashf(buf)) {
-		move(3, 0);
+		screen_move(3, 0);
 		//% prints("本讨论区尚无「秘密备忘录」。\n\n");
 		prints("\xb1\xbe\xcc\xd6\xc2\xdb\xc7\xf8\xc9\xd0\xce\xde\xa1\xb8\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xb9\xa1\xa3\n\n");
 		//% prints("请先用 W 编好「秘密备忘录」再来设定密码...");
@@ -444,7 +444,7 @@ int b_notes_passwd(void)
 	}
 	setvfile(buf, currboard, "notespasswd");
 	if ((pass = fopen(buf, "w")) == NULL) {
-		move(5, 0);
+		screen_move(5, 0);
 		//% prints("备忘录密码无法设定....");
 		prints("\xb1\xb8\xcd\xfc\xc2\xbc\xc3\xdc\xc2\xeb\xce\xde\xb7\xa8\xc9\xe8\xb6\xa8....");
 		pressanykey();
@@ -452,7 +452,7 @@ int b_notes_passwd(void)
 	}
 	fprintf(pass, "%s\n", genpasswd(passbuf));
 	fclose(pass);
-	move(5, 0);
+	screen_move(5, 0);
 	//% prints("秘密备忘录密码设定完成...");
 	prints("\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xc3\xdc\xc2\xeb\xc9\xe8\xb6\xa8\xcd\xea\xb3\xc9...");
 	pressanykey();
@@ -714,7 +714,7 @@ int get_vitems(struct votebal *bal) {
 	int num;
 	char buf[STRLEN];
 
-	move(3, 0);
+	screen_move(3, 0);
 	//% prints("请依序输入可选择项, 按 ENTER 完成设定.\n");
 	prints("\xc7\xeb\xd2\xc0\xd0\xf2\xca\xe4\xc8\xeb\xbf\xc9\xd1\xa1\xd4\xf1\xcf\xee, \xb0\xb4 ENTER \xcd\xea\xb3\xc9\xc9\xe8\xb6\xa8.\n");
 	num = 0;
@@ -968,7 +968,7 @@ int showvoteitems(unsigned int pbits, int i, int flag) {
 	//% sprintf(buf, "%c.%2.2s%-36.36s", 'A' + i, ((pbits >> i) & 1 ? "√"
 	sprintf(buf, "%c.%2.2s%-36.36s", 'A' + i, ((pbits >> i) & 1 ? "\xa1\xcc"
 			: "  "), currvote.items[i]);
-	move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
+	screen_move(i + 6 - ((i > 15) ? 16 : 0), 0 + ((i > 15) ? 40 : 0));
 	outs(buf);
 	screen_flush();
 	return YEA;
@@ -1001,7 +1001,7 @@ void show_voteing_title() {
 int getsug(struct ballot *uv) {
 	int i, line;
 
-	move(0, 0);
+	screen_move(0, 0);
 	screen_clrtobot();
 	if (currvote.type == VOTE_ASKING) {
 		show_voteing_title();
@@ -1013,7 +1013,7 @@ int getsug(struct ballot *uv) {
 		//% prints("请填入您宝贵的意见(三行):\n");
 		prints("\xc7\xeb\xcc\xee\xc8\xeb\xc4\xfa\xb1\xa6\xb9\xf3\xb5\xc4\xd2\xe2\xbc\xfb(\xc8\xfd\xd0\xd0):\n");
 	}
-	move(line, 0);
+	screen_move(line, 0);
 	for (i = 0; i < 3; i++) {
 		prints(": %s\n", uv->msg[i]);
 	}
@@ -1032,7 +1032,7 @@ int multivote(struct ballot *uv) {
 	unsigned int i;
 
 	i = uv->voted;
-	move(0, 0);
+	screen_move(0, 0);
 	show_voteing_title();
 	//% uv->voted = setperms(uv->voted, "选票", currvote.totalitems,
 	uv->voted = setperms(uv->voted, "\xd1\xa1\xc6\xb1", currvote.totalitems,
@@ -1050,7 +1050,7 @@ int valuevote(struct ballot *uv) {
 	char buf[10];
 
 	chs = uv->voted;
-	move(0, 0);
+	screen_move(0, 0);
 	show_voteing_title();
 	//% prints("此次作答的值不能超过 [1m%d[m", currvote.maxtkt);
 	prints("\xb4\xcb\xb4\xce\xd7\xf7\xb4\xf0\xb5\xc4\xd6\xb5\xb2\xbb\xc4\xdc\xb3\xac\xb9\xfd [1m%d[m", currvote.maxtkt);
@@ -1079,7 +1079,7 @@ int user_vote(int num) {
 	int votevalue;
 	int aborted = NA, pos;
 
-	move(-2, 0);
+	screen_move(-2, 0);
 	get_record(controlfile, &currvote, sizeof(struct votebal), num);
 	if (currentuser.firstlogin > currvote.opendate) { //注册日在投票开启日前不能投票
 		//% prints("对不起, 投票名册上找不到您的大名\n");
@@ -1099,7 +1099,7 @@ int user_vote(int num) {
 	sprintf(bname, "desc.%d", currvote.opendate);
 	setvfile(buf, currboard, bname);
 	ansimore(buf, YEA);
-	move(0, 0);
+	screen_move(0, 0);
 	screen_clrtobot();
 	switch (currvote.type) {
 		case VOTE_SINGLE:
@@ -1167,7 +1167,7 @@ static int printvote(void *entv, int notused1, void *notused2)
 	//Added End
 
 	if (entv == NULL) {
-		move(2, 0);
+		screen_move(2, 0);
 		voteexp();
 		i = 0;
 		return 0;
@@ -1206,7 +1206,7 @@ int vote_results(const char *bname)
 
 	setvfile(buf, bname, "results");
 	if (ansimore(buf, YEA) == -1) {
-		move(3, 0);
+		screen_move(3, 0);
 		//% prints("目前没有任何投票的结果。\n");
 		prints("\xc4\xbf\xc7\xb0\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xcd\xb6\xc6\xb1\xb5\xc4\xbd\xe1\xb9\xfb\xa1\xa3\n");
 		screen_clrtobot();
@@ -1230,7 +1230,7 @@ void vote_title() {
 //显示投票箱信息
 int Show_Votes(void)
 {
-	move(3, 0);
+	screen_move(3, 0);
 	screen_clrtobot();
 	printvote(NULL, 0, NULL);
 	setcontrolfile(currboard);
@@ -1296,7 +1296,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			ans = askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xcc\xe1\xd4\xe7\xbd\xe1\xca\xf8\xd5\xe2\xb8\xf6\xcd\xb6\xc6\xb1\xc2\xf0", NA, NA);
 
 			if (ans != 1) {
-				move(2, 0);
+				screen_move(2, 0);
 				//% prints("取消删除行动\n");
 				prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
 				pressreturn();
@@ -1324,7 +1324,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			ans = askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xd0\xde\xb8\xc4\xd5\xe2\xb8\xf6\xcd\xb6\xc6\xb1\xb5\xc4\xc9\xe8\xb6\xa8\xc2\xf0", NA, NA);
 
 			if (ans != 1) {
-				move(2, 0);
+				screen_move(2, 0);
 				//% prints("取消修改行动\n");
 				prints("\xc8\xa1\xcf\xfb\xd0\xde\xb8\xc4\xd0\xd0\xb6\xaf\n");
 				pressreturn();
@@ -1354,7 +1354,7 @@ int vote_key(int ch, int allnum, int pagenum) {
 			ans = askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xc7\xbf\xd6\xc6\xb9\xd8\xb1\xd5\xd5\xe2\xb8\xf6\xcd\xb6\xc6\xb1\xc2\xf0", NA, NA);
 
 			if (ans != 1) {
-				move(2, 0);
+				screen_move(2, 0);
 				//% prints("取消删除行动\n");
 				prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
 				pressreturn();
@@ -1388,7 +1388,7 @@ int b_vote(const char *bname)
 	setcontrolfile(bname);
 	num_of_vote = get_num_records(controlfile, sizeof(struct votebal));
 	if (num_of_vote == 0) {
-		move(2, 0);
+		screen_move(2, 0);
 		screen_clrtobot();
 		//% prints("\n抱歉, 目前并没有任何投票举行。\n");
 		prints("\n\xb1\xa7\xc7\xb8, \xc4\xbf\xc7\xb0\xb2\xa2\xc3\xbb\xd3\xd0\xc8\xce\xba\xce\xcd\xb6\xc6\xb1\xbe\xd9\xd0\xd0\xa1\xa3\n");

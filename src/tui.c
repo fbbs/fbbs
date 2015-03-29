@@ -51,7 +51,7 @@ static int _tui_input(int line, int col, const char *prompt, char *buf,
 	cur = clen = strlen(buf);
 
 	while (1) {
-		move(line, col);
+		screen_move(line, col);
 		clrtoeol();
 		if (prompt) {
 			if (utf8)
@@ -63,7 +63,7 @@ static int _tui_input(int line, int col, const char *prompt, char *buf,
 			prints("%s", buf);
 		else
 			tui_repeat_char('*', clen);
-		move(line, real_x + cur);
+		screen_move(line, real_x + cur);
 
 		if (RMSG)
 			screen_flush();
@@ -388,7 +388,7 @@ void showtitle(const char *title, const char *mid)
 	sprintf(buf, "%*s", spc2, "");
 	prints("%s[33m%s[m\n", buf, note);
 	tui_update_status_line();
-	move(1, 0);
+	screen_move(1, 0);
 }
 
 void firsttitle(const char *title)
@@ -428,7 +428,7 @@ int show_data(const char *buf, int maxcol, int line, int col)
 	size_t len = strlen(buf);
 	int i, x, y;
 	screen_coordinates(&y, &x);
-	move(line, col);
+	screen_move(line, col);
 	clrtoeol();
 	for (i = 0; i < len; i++) {
 		if (chk) {
@@ -442,18 +442,18 @@ int show_data(const char *buf, int maxcol, int line, int col)
 		if (buf[i] != '\r' && buf[i] != '\n') {
 			if (col > maxcol) {
 				col = 0;
-				move(++line, col);
+				screen_move(++line, col);
 				clrtoeol();
 			}
 			outc(buf[i]);
 			col++;
 		} else {
 			col = 0;
-			move(++line, col);
+			screen_move(++line, col);
 			clrtoeol();
 		}
 	}
-	move(y, x);
+	screen_move(y, x);
     return line;
 }
 
@@ -468,7 +468,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 
 	if (clearlabel == YEA)
 		memset(buf, 0, len);
-	move(line, col);
+	screen_move(line, col);
 	if (prompt)
 		prints("%s", prompt);
 	screen_coordinates(&starty, &startx);
@@ -480,7 +480,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 	while (true) {
 		y = starty;
 		x = startx;
-		move(y, x);
+		screen_move(y, x);
 		chk = 0;
 		if (curr == 0) {
 			cursory = y;
@@ -502,13 +502,13 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 					clrtoeol();
 					x = 0;
 					y++;
-					move(y, x);
+					screen_move(y, x);
 				}
 				//Ctrl('H')中退行bug
 				if (x == maxcol && y - starty + 1 < MAX_MSG_LINE) {
-					move(y + 1, 0);
+					screen_move(y + 1, 0);
 					clrtoeol();
-					move(y, x);
+					screen_move(y, x);
 				}
 				if (init)
 					prints("\033[4m");
@@ -519,7 +519,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 				clrtoeol();
 				x = 0;
 				y++;
-				move(y, x);
+				screen_move(y, x);
 			}
 			if(i == curr - 1) { //打印到buf最后一个字符时的x和y是下一步初始xy
 				cursory = y;
@@ -527,7 +527,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 			}
 		}
 		clrtoeol();
-		move(cursory, cursorx);
+		screen_move(cursory, cursorx);
 		ch = terminal_getchar();
 
 		if ((RMSG == YEA) && msg_num == 0) 
@@ -552,7 +552,7 @@ int multi_getdata(int line, int col, int maxcol, const char *prompt,
 			buf[0]=0; curr=0;
 			for(k=0; k < MAX_MSG_LINE;k++)
 			{
-				move(starty+k,0);
+				screen_move(starty+k,0);
 				clrtoeol();
 			}
 			continue;
@@ -798,7 +798,7 @@ bool askyn(const char *str, bool defa, bool gobottom)
 	snprintf(buf, sizeof(buf), "%s %s", str, (defa) ? "(YES/no)? [Y]"
 			: "(yes/NO)? [N]");
 	if (gobottom)
-		move(-1, 0);
+		screen_move(-1, 0);
 	screen_coordinates(&x, &y);
 	clrtoeol();
 	getdata(x, y, buf, ans, 2, DOECHO, YEA);

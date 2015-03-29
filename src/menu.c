@@ -217,7 +217,7 @@ static int find_group(const char *group_name)
 
 static void print_background(const char *ptr, int line, int col)
 {
-	move(line, col);
+	screen_move(line, col);
 	screen_clrtobot();
 
 	int ch;
@@ -553,12 +553,12 @@ int menu_loop(const char *group_name)
 		int line, col;
 		get_coordination(first_item, now, &line, &col);
 
-		move(line, col);
+		screen_move(line, col);
 		screen_printf(">");
 
 		int ch = egetch();
 
-		move(line, col);
+		screen_move(line, col);
 		screen_printf(" ");
 
 		menu_item_t item;

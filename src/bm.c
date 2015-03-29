@@ -57,7 +57,7 @@ static int club_add(void)
 {
 	struct userec urec;
 	char user[IDLEN + 1], ps[40], buf[STRLEN];
-	move(1, 0);
+	screen_move(1, 0);
 	//% usercomplete("增加俱乐部成员: ", user);
 	usercomplete("\xd4\xf6\xbc\xd3\xbe\xe3\xc0\xd6\xb2\xbf\xb3\xc9\xd4\xb1: ", user);
 	if (*user == '\0' || !getuserec(user, &urec))
@@ -69,7 +69,7 @@ static int club_add(void)
 	}
 	//% getdata(1, 0, "输入补充说明:", ps, sizeof(ps), DOECHO, YEA);
 	getdata(1, 0, "\xca\xe4\xc8\xeb\xb2\xb9\xb3\xe4\xcb\xb5\xc3\xf7:", ps, sizeof(ps), DOECHO, YEA);
-	move(1, 0);
+	screen_move(1, 0);
 	//% snprintf(buf, sizeof(buf), "邀请 %s 加入俱乐部吗?", urec.userid);
 	snprintf(buf, sizeof(buf), "\xd1\xfb\xc7\xeb %s \xbc\xd3\xc8\xeb\xbe\xe3\xc0\xd6\xb2\xbf\xc2\xf0?", urec.userid);
 	if (!askyn(buf, YEA, NA))
@@ -104,7 +104,7 @@ static int club_del(const char *user, const char *board)
  */
 static void club_title_show(void)
 {
-	move(0, 0);
+	screen_move(0, 0);
 	//% outs("\033[1;44;36m 设定俱乐部名单\033[K\033[m\n"
 	outs("\033[1;44;36m \xc9\xe8\xb6\xa8\xbe\xe3\xc0\xd6\xb2\xbf\xc3\xfb\xb5\xa5\033[K\033[m\n"
 			//% "离开[\033[1;32m←\033[m] 选择[\033[1;32m↑\033[m,\033[1;32m↓"
@@ -135,7 +135,7 @@ static int club_key_deal(const char *fname, int ch, const char *line)
 		case 'd':
 			if (!line)
 				return 0;
-			move(1, 0);
+			screen_move(1, 0);
 			//% snprintf(buf, sizeof(buf), "删除俱乐部成员%s吗?", user);
 			snprintf(buf, sizeof(buf), "\xc9\xbe\xb3\xfd\xbe\xe3\xc0\xd6\xb2\xbf\xb3\xc9\xd4\xb1%s\xc2\xf0?", user);
 			if (!askyn(buf, NA, NA))

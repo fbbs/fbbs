@@ -258,7 +258,7 @@ int tui_send_msg(const char *uname)
 
 	if (!user_msgable(s)) {
 		msg_session_info_clear(s);
-		move(2, 0);
+		screen_move(2, 0);
 		//% prints("对方目前不在线或无法接受讯息...\n");
 		prints("\xb6\xd4\xb7\xbd\xc4\xbf\xc7\xb0\xb2\xbb\xd4\xda\xcf\xdf\xbb\xf2\xce\xde\xb7\xa8\xbd\xd3\xca\xdc\xd1\xb6\xcf\xa2...\n");
 		pressreturn();
@@ -384,7 +384,7 @@ static int show_msg(const char *user, const char *head, const char *buf,
 	strlcpy(date, head + 35, sizeof(date));
 
 	prints("\033[1;36;44m%s  \033[33m(%s)\033[37m", sender, date);
-	move(line, 93);
+	screen_move(line, 93);
 	//% outs("\033[31m(^Z回) \033[37m");
 	outs("\033[31m(^Z\xbb\xd8) \033[37m");
 	screen_move_clear(++line);
@@ -496,7 +496,7 @@ static void getdata_r(char *buf, size_t size, size_t *len,
 			}
 			break;
 	}
-	move(y, x);
+	screen_move(y, x);
 	if (redraw) {
 		show_data(buf, LINE_LEN - 1, base, 0);
 	}
@@ -602,7 +602,7 @@ static int msg_next(msg_status_t *st, char *head, size_t hsize,
 		st->status = MSG_INIT;
 		for (int k = 0; k < MAX_MSG_LINE + 2; k++)
 			saveline_buf(k, 1);
-		move(st->y, st->x);
+		screen_move(st->y, st->x);
 		showansi = st->sa;
 	} else {
 		msg_show(st, head, hsize, buf, size);

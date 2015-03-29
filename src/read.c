@@ -12,9 +12,9 @@
 #include "fbbs/terminal.h"
 
 //将光标移到当前的位置,并显示成>
-#define PUTCURS   move(3+locmem->crs_line-locmem->top_line,0);prints(">");
+#define PUTCURS   screen_move(3+locmem->crs_line-locmem->top_line,0);prints(">");
 //清除以前的光标标记,即把>改成空格
-#define RMVCURS   move(3+locmem->crs_line-locmem->top_line,0);prints(" ");
+#define RMVCURS   screen_move(3+locmem->crs_line-locmem->top_line,0);prints(" ");
 
 struct fileheader SR_fptr;
 int SR_BMDELFLAG = NA;
@@ -135,7 +135,7 @@ int num, ssize;
 	char *str;
 	int base, i;
 	base = locmem->top_line;
-	move(3, 0);
+	screen_move(3, 0);
 	screen_clrtobot();
 	for (i = 0; i < num; i++) {
 		str = (*doentry) (base + i, &pnt[i * ssize]);
@@ -152,7 +152,7 @@ int num, ssize;
 void draw_bottom(char *buf) {
 	char buf1[100];
 	if (buf) {
-		move(-1, 71);
+		screen_move(-1, 71);
 		clrtoeol();
 		sprintf(buf1, "\033[0;1;44;33m[%6.6s]\033[m", buf);
 		outs(buf1);
@@ -230,7 +230,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 			((struct fileheader*)&pnt[(locmem->crs_line - locmem->top_line) * ssize])->owner;
 			if(!strcmp(userid, currentuser.userid))
 			break;
-			move(-1, 0);
+			screen_move(-1, 0);
 			//% sprintf(genbuf, "确定要把 %s 加入好友名单吗",userid);
 			sprintf(genbuf, "\xc8\xb7\xb6\xa8\xd2\xaa\xb0\xd1 %s \xbc\xd3\xc8\xeb\xba\xc3\xd3\xd1\xc3\xfb\xb5\xa5\xc2\xf0",userid);
 			if (askyn(genbuf, NA, NA) == NA)
@@ -663,7 +663,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		screen_save_line(-1, false);
 		return DONOTHING;
 	}
-	move(-1, 0);
+	screen_move(-1, 0);
 	//% sprintf(buf,"确定要执行%s[%s]吗",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
 	sprintf(buf,"\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0%s[%s]\xc2\xf0",subBMitems[dotype-1],(BMch!=8)?SR_BMitems[BMch-1]:SR_BMitems[8]);
 	if (askyn(buf, NA, NA) == 0) {
@@ -685,7 +685,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 
 	/* Add by everlove 制作合集 */
 	if(BMch == 7) {
-		move(-1,0);
+		screen_move(-1,0);
 		//% if (askyn("制作的合集需要引言吗？", YEA, YEA) == YEA)
 		if (askyn("\xd6\xc6\xd7\xf7\xb5\xc4\xba\xcf\xbc\xaf\xd0\xe8\xd2\xaa\xd2\xfd\xd1\xd4\xc2\xf0\xa3\xbf", YEA, YEA) == YEA)
 			has_yinyan=YEA;
@@ -722,7 +722,7 @@ int SR_BMfunc(int ent, struct fileheader *fileinfo, char *direct) {
 		subflag=askyn("\xca\xc7\xb7\xf1\xd0\xa1""d", YEA, YEA);
 	}
 
-	move(-1, 0);
+	screen_move(-1, 0);
 	//% sprintf(buf, "是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇",
 	sprintf(buf, "\xca\xc7\xb7\xf1\xb4\xd3%s\xb5\xda\xd2\xbb\xc6\xaa\xbf\xaa\xca\xbc%s (Y)\xb5\xda\xd2\xbb\xc6\xaa (N)\xc4\xbf\xc7\xb0\xd5\xe2\xd2\xbb\xc6\xaa",
 			//% (dotype == 2) ? "该作者" : "此主题", SR_BMitems[BMch - 1]);
@@ -1327,7 +1327,7 @@ static int sread(int readfirst, int auser, struct fileheader *ptitle)
 					do_reply(ptitle);
 				} else {
 					screen_clear();
-					move(5, 6);
+					screen_move(5, 6);
 					//% prints("对不起, 该文章有不可 RE 属性, 您不能回复(RE) 这篇文章.");
 					prints("\xb6\xd4\xb2\xbb\xc6\xf0, \xb8\xc3\xce\xc4\xd5\xc2\xd3\xd0\xb2\xbb\xbf\xc9 RE \xca\xf4\xd0\xd4, \xc4\xfa\xb2\xbb\xc4\xdc\xbb\xd8\xb8\xb4(RE) \xd5\xe2\xc6\xaa\xce\xc4\xd5\xc2.");
 					pressreturn();

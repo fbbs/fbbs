@@ -31,7 +31,7 @@ int offline() {
 	/*2003.04.22 modified by stephen to deny the user who is under punishing to suicide*/
 	if (!HAS_PERM(PERM_POST)|| !HAS_PERM(PERM_MAIL)
 			|| !HAS_PERM(PERM_TALK)) {
-		move(3, 0);
+		screen_move(3, 0);
 		//% prints("您被封禁权限, 不能随便自杀!!!\n");
 		prints("\xc4\xfa\xb1\xbb\xb7\xe2\xbd\xfb\xc8\xa8\xcf\xde, \xb2\xbb\xc4\xdc\xcb\xe6\xb1\xe3\xd7\xd4\xc9\xb1!!!\n");
 		pressreturn();
@@ -41,7 +41,7 @@ int offline() {
 	}
 	if (HAS_PERM(PERM_SYSOPS) || HAS_PERM(PERM_BOARDS)
 			|| HAS_PERM(PERM_ADMINMENU) || HAS_PERM(PERM_SEEULEVELS)) {
-		move(3, 0);
+		screen_move(3, 0);
 		//% prints("您有重任在身, 不能随便自杀啦!!\n");
 		prints("\xc4\xfa\xd3\xd0\xd6\xd8\xc8\xce\xd4\xda\xc9\xed, \xb2\xbb\xc4\xdc\xcb\xe6\xb1\xe3\xd7\xd4\xc9\xb1\xc0\xb2!!\n");
 		pressreturn();
@@ -50,7 +50,7 @@ int offline() {
 	}
 	/*2003.04.22 stephen modify end*/
 	if (currentuser.stay < 86400) {
-		move(1, 0);
+		screen_move(1, 0);
 		//% prints("\n\n对不起, 您还未够资格执行此命令!!\n");
 		prints("\n\n\xb6\xd4\xb2\xbb\xc6\xf0, \xc4\xfa\xbb\xb9\xce\xb4\xb9\xbb\xd7\xca\xb8\xf1\xd6\xb4\xd0\xd0\xb4\xcb\xc3\xfc\xc1\xee!!\n");
 		//% prints("请 mail 给 SYSOP 说明自杀原因, 谢谢。\n");
@@ -69,11 +69,11 @@ int offline() {
 		return 0;
 	}
 	screen_clear();
-	//   move(1, 0);
+	//   screen_move(1, 0);
 	//   prints("[1;5;31m警告[0;1;31m： 自杀後, 您将无法再用此帐号进入本站！！");
-	move(3, 0);
+	screen_move(3, 0);
 	//   prints("[1;32m本站站务没有义务为您恢复帐号。好难过喔 :( .....[m");
-	//   move(5,0);
+	//   screen_move(5,0);
 	i = 0;
 	//% if (askyn("真是舍不得你，你走之前有什么话想说么", NA, NA)==YEA) {
 	if (askyn("\xd5\xe6\xca\xc7\xc9\xe1\xb2\xbb\xb5\xc3\xc4\xe3\xa3\xac\xc4\xe3\xd7\xdf\xd6\xae\xc7\xb0\xd3\xd0\xca\xb2\xc3\xb4\xbb\xb0\xcf\xeb\xcb\xb5\xc3\xb4", NA, NA)==YEA) {
@@ -90,7 +90,7 @@ int offline() {
 			lastword[0] = '\0';
 		else
 			strcat(lastword, "\n\n");
-		move(i + 8, 0);
+		screen_move(i + 8, 0);
 		if (i == 0)
 			//% prints("哎，你还是什么都不愿意说，是不是还有心思未了？");
 			prints("\xb0\xa5\xa3\xac\xc4\xe3\xbb\xb9\xca\xc7\xca\xb2\xc3\xb4\xb6\xbc\xb2\xbb\xd4\xb8\xd2\xe2\xcb\xb5\xa3\xac\xca\xc7\xb2\xbb\xca\xc7\xbb\xb9\xd3\xd0\xd0\xc4\xcb\xbc\xce\xb4\xc1\xcb\xa3\xbf");
@@ -103,7 +103,7 @@ int offline() {
 	} else {
 		strcpy(lastword, "> ......\n\n");
 	}
-	move(i + 10, 0);
+	screen_move(i + 10, 0);
 	//% if (askyn("你确定要离开这个大家庭", NA, NA) == 1) {
 	if (askyn("\xc4\xe3\xc8\xb7\xb6\xa8\xd2\xaa\xc0\xeb\xbf\xaa\xd5\xe2\xb8\xf6\xb4\xf3\xbc\xd2\xcd\xa5", NA, NA) == 1) {
 		screen_clear();
@@ -177,7 +177,7 @@ int giveUpBBS() {
 	set_user_status(ST_GIVEUPBBS);
 	if (!HAS_PERM(PERM_REGISTER)) {
 		screen_clear();
-		move(11, 28);
+		screen_move(11, 28);
 		//% prints("[1m[33m你有还没有注册通过，不能戒网！[m");
 		prints("[1m[33m\xc4\xe3\xd3\xd0\xbb\xb9\xc3\xbb\xd3\xd0\xd7\xa2\xb2\xe1\xcd\xa8\xb9\xfd\xa3\xac\xb2\xbb\xc4\xdc\xbd\xe4\xcd\xf8\xa3\xa1[m");
 		pressanykey();
@@ -187,7 +187,7 @@ int giveUpBBS() {
 	if (HAS_PERM(PERM_SYSOPS) || HAS_PERM(PERM_BOARDS)
 			|| HAS_PERM(PERM_OBOARDS) || HAS_PERM(PERM_ANNOUNCE)) {
 		screen_clear();
-		move(11, 28);
+		screen_move(11, 28);
 		//% prints("[1m[33m你有重任在身，不能戒网！[m");
 		prints("[1m[33m\xc4\xe3\xd3\xd0\xd6\xd8\xc8\xce\xd4\xda\xc9\xed\xa3\xac\xb2\xbb\xc4\xdc\xbd\xe4\xcd\xf8\xa3\xa1[m");
 		pressanykey();
@@ -205,7 +205,7 @@ int giveUpBBS() {
 	fn = fopen(genbuf, "rt");
 	if (fn) {
 		screen_clear();
-		move(1, 0);
+		screen_move(1, 0);
 		//% prints("你现在的戒网情况：\n\n");
 		prints("\xc4\xe3\xcf\xd6\xd4\xda\xb5\xc4\xbd\xe4\xcd\xf8\xc7\xe9\xbf\xf6\xa3\xba\n\n");
 		while (!feof(fn)) {
@@ -240,22 +240,22 @@ int giveUpBBS() {
 	}
 
 	screen_clear();
-	move(1, 0);
+	screen_move(1, 0);
 	//% prints("请选择戒网种类:");
 	prints("\xc7\xeb\xd1\xa1\xd4\xf1\xbd\xe4\xcd\xf8\xd6\xd6\xc0\xe0:");
-	move(3, 0);
+	screen_move(3, 0);
 	//% prints("(0) - 结束");
 	prints("(0) - \xbd\xe1\xca\xf8");
-	move(4, 0);
+	screen_move(4, 0);
 	//% prints("(1) - 上站权限");
 	prints("(1) - \xc9\xcf\xd5\xbe\xc8\xa8\xcf\xde");
-	move(5, 0);
+	screen_move(5, 0);
 	//% prints("(2) - 发表权限");
 	prints("(2) - \xb7\xa2\xb1\xed\xc8\xa8\xcf\xde");
-	move(6, 0);
+	screen_move(6, 0);
 	//% prints("(3) - 聊天权限");
 	prints("(3) - \xc1\xc4\xcc\xec\xc8\xa8\xcf\xde");
-	move(7, 0);
+	screen_move(7, 0);
 	//% prints("(4) - 发信权限");
 	prints("(4) - \xb7\xa2\xd0\xc5\xc8\xa8\xcf\xde");
 
@@ -308,7 +308,7 @@ int giveUpBBS() {
 
 	j = time(0) / 3600 / 24 + j;
 
-	move(13, 0);
+	screen_move(13, 0);
 
 	//% if (askyn("你确定要戒网吗？", NA, NA) == 1) {
 	if (askyn("\xc4\xe3\xc8\xb7\xb6\xa8\xd2\xaa\xbd\xe4\xcd\xf8\xc2\xf0\xa3\xbf", NA, NA) == 1) {

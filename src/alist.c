@@ -253,7 +253,7 @@ static int delete_attachment(tui_list_t *tl, struct fileheader *fp)
 {
 	if (fp && ((streq(currentuser.userid, fp->owner)
 			&& currentuser.firstlogin < fp->timeDeleted) || am_curr_bm())) {
-		move(-1, 0);
+		screen_move(-1, 0);
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 			tui_attachment_list_t *tal = tl->data;

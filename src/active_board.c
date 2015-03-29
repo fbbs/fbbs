@@ -106,7 +106,7 @@ void active_board_show(void)
 			if (lend && lend - str < sizeof(line) - 1) {
 				memcpy(line, str, lend - str);
 				line[lend - str] = '\0';
-				move(i + 2, 0);
+				screen_move(i + 2, 0);
 				showstuff(line);
 			}
 			str = lend;

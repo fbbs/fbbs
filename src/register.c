@@ -177,7 +177,7 @@ int check_register_ok(void) {
 
 	sethomefile(fname, currentuser.userid, "register");
 	if (dashf(fname)) {
-		move(21, 0);
+		screen_move(21, 0);
 		//% prints("恭贺您!! 您已顺利完成本站的使用者注册手续,\n");
 		prints("\xb9\xa7\xba\xd8\xc4\xfa!! \xc4\xfa\xd2\xd1\xcb\xb3\xc0\xfb\xcd\xea\xb3\xc9\xb1\xbe\xd5\xbe\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xd7\xa2\xb2\xe1\xca\xd6\xd0\xf8,\n");
 		//% prints("从现在起您将拥有一般使用者的权利与义务...\n");
@@ -196,7 +196,7 @@ void tui_check_reg_mail(void)
 
 	sethomefile(file, currentuser.userid, REG_CODE_FILE);
 	if (!dashf(file)) {
-		move(1, 0);
+		screen_move(1, 0);
 		//% outs("    请输入您的复旦邮箱(username@fudan.edu.cn/alu.fudan.edu.cn)\n"
 		outs("    \xc7\xeb\xca\xe4\xc8\xeb\xc4\xfa\xb5\xc4\xb8\xb4\xb5\xa9\xd3\xca\xcf\xe4(username@fudan.edu.cn/alu.fudan.edu.cn)\n"
 				//% "    \033[1;32m本站采用复旦邮箱绑定认证，将发送认证码至您的复旦邮箱\033[m");
@@ -216,14 +216,14 @@ void tui_check_reg_mail(void)
 	}
 
 	screen_move_clear(4);
-	move(5, 0);
+	screen_move(5, 0);
 	//% prints(" \033[1;33m   认证码已发送到 %s ，请查收\033[m\n", email);
 	prints(" \033[1;33m   \xc8\xcf\xd6\xa4\xc2\xeb\xd2\xd1\xb7\xa2\xcb\xcd\xb5\xbd %s \xa3\xac\xc7\xeb\xb2\xe9\xca\xd5\033[m\n", email);
 
-	move(7, 0);
+	screen_move(7, 0);
 	//% if (askyn("    现在输入认证码么？", true, false)) {
 	if (askyn("    \xcf\xd6\xd4\xda\xca\xe4\xc8\xeb\xc8\xcf\xd6\xa4\xc2\xeb\xc3\xb4\xa3\xbf", true, false)) {
-		move(9, 0);
+		screen_move(9, 0);
 		//% outs("请输入注册确认信里, \"认证码\"来做为身份确认\n");
 		outs("\xc7\xeb\xca\xe4\xc8\xeb\xd7\xa2\xb2\xe1\xc8\xb7\xc8\xcf\xd0\xc5\xc0\xef, \"\xc8\xcf\xd6\xa4\xc2\xeb\"\xc0\xb4\xd7\xf6\xce\xaa\xc9\xed\xb7\xdd\xc8\xb7\xc8\xcf\n");
 		//% prints("一共是 %d 个字符, 大小写是有差别的, 请注意.\n", RNDPASSLEN);
@@ -234,7 +234,7 @@ void tui_check_reg_mail(void)
 				"\033[1;31m\xcc\xe1\xca\xbe\xa3\xba\xd7\xa2\xb2\xe1\xc2\xeb\xca\xe4\xb4\xed 3\xb4\xce\xba\xf3\xcf\xb5\xcd\xb3\xbd\xab\xd2\xaa\xc7\xf3\xc4\xfa\xd6\xd8\xcc\xee\xd0\xe8\xb0\xf3\xb6\xa8\xb5\xc4\xd3\xca\xcf\xe4\xa1\xa3\033[m\n");
 
 		for (i = 0; i < 3; i++) {
-			move(15, 0);
+			screen_move(15, 0);
 			//% prints("您还有 %d 次机会\n", 3 - i);
 			prints("\xc4\xfa\xbb\xb9\xd3\xd0 %d \xb4\xce\xbb\xfa\xbb\xe1\n", 3 - i);
 			//% getdata(16, 0, "请输入认证码: ", buf, sizeof(buf), DOECHO, YEA);
@@ -301,7 +301,7 @@ void check_reg_extra() {
 		do {
 			memset(&schmate, 0, sizeof(schmate));
 			strcpy(schmate.userid, currentuser.userid);
-			move(1, 0);
+			screen_move(1, 0);
 			//% prints("请输入个人信息. 如果输入错误,可以重新输入.\n");
 			prints("\xc7\xeb\xca\xe4\xc8\xeb\xb8\xf6\xc8\xcb\xd0\xc5\xcf\xa2. \xc8\xe7\xb9\xfb\xca\xe4\xc8\xeb\xb4\xed\xce\xf3,\xbf\xc9\xd2\xd4\xd6\xd8\xd0\xc2\xca\xe4\xc8\xeb.\n");
 			/*default value is 0*/
@@ -352,7 +352,7 @@ void check_reg_extra() {
 
 static void getfield(int line, char *info, char *desc, char *buf, int len)
 {
-	move(line, 0);
+	screen_move(line, 0);
 	//% prints("  原先设定: %s \033[1;32m(%s)\033[m",
 	prints("  \xd4\xad\xcf\xc8\xc9\xe8\xb6\xa8: %s \033[1;32m(%s)\033[m",
 			//% (buf[0] == '\0') ? "(未设定)" : buf, info);
@@ -376,7 +376,7 @@ int fill_reg_form(void)
 	set_user_status(ST_NEW);
 
 	screen_clear();
-	move(2, 0);
+	screen_move(2, 0);
 	screen_clrtobot();
 	if (currentuser.userlevel & PERM_REGISTER) {
 		//% prints("您已经完成本站的使用者注册手续, 欢迎加入本站的行列.");
@@ -396,7 +396,7 @@ int fill_reg_form(void)
 	strlcpy(reg.userid, currentuser.userid, sizeof(reg.userid));
 	strlcpy(reg.email, currentuser.email, sizeof(reg.email));
 	while (1) {
-		move(3, 0);
+		screen_move(3, 0);
 		clrtoeol();
 		//% prints("%s 您好, 请据实填写以下的资料:\n", currentuser.userid);
 		prints("%s \xc4\xfa\xba\xc3, \xc7\xeb\xbe\xdd\xca\xb5\xcc\xee\xd0\xb4\xd2\xd4\xcf\xc2\xb5\xc4\xd7\xca\xc1\xcf:\n", currentuser.userid);
@@ -467,7 +467,7 @@ void check_register_info(void)
 			fprintf(fout, "\xbd\xf1\xcc\xec%s\xb3\xf5\xc0\xb4\xb4\xcb\xd5\xbe\xb1\xa8\xb5\xbd, \xc7\xeb\xb4\xf3\xbc\xd2\xb6\xe0\xb6\xe0\xd6\xb8\xbd\xcc\xa1\xa3\n",
 					//% (urec->gender == 'M') ? "小弟" : "小女子");
 					(urec->gender == 'M') ? "\xd0\xa1\xb5\xdc" : "\xd0\xa1\xc5\xae\xd7\xd3");
-			move(2, 0);
+			screen_move(2, 0);
 			//% prints("非常欢迎 %s 光临本站，希望您能在本站找到属于自己的一片天空！\n\n", currentuser.userid);
 			prints("\xb7\xc7\xb3\xa3\xbb\xb6\xd3\xad %s \xb9\xe2\xc1\xd9\xb1\xbe\xd5\xbe\xa3\xac\xcf\xa3\xcd\xfb\xc4\xfa\xc4\xdc\xd4\xda\xb1\xbe\xd5\xbe\xd5\xd2\xb5\xbd\xca\xf4\xd3\xda\xd7\xd4\xbc\xba\xb5\xc4\xd2\xbb\xc6\xac\xcc\xec\xbf\xd5\xa3\xa1\n\n", currentuser.userid);
 			//% prints("请您作个简短的个人简介, 向本站其他使用者打个招呼\n");

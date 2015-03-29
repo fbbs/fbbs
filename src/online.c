@@ -333,7 +333,7 @@ static tui_list_query_t online_users_query(tui_list_t *p)
 		return DONOTHING;
 
 	t_query(ip->name);
-	move(-1, 0);
+	screen_move(-1, 0);
 	//% prints("\033[0;1;37;44m聊天[\033[1;32mt\033[37m] 寄信[\033[1;32mm\033[37m] "
 	prints("\033[0;1;37;44m\xc1\xc4\xcc\xec[\033[1;32mt\033[37m] \xbc\xc4\xd0\xc5[\033[1;32mm\033[37m] "
 			//% "送讯息[\033[1;32ms\033[37m] 加,减朋友[\033[1;32mo\033[37m,\033[1;32md\033[37m] "

@@ -207,7 +207,7 @@ static int show_site(const site_t *sites, int count, int pos, int cur, int off)
 {
 	if (pos >= count)
 		return 0;
-	move(pos / 3 + 3, off);
+	screen_move(pos / 3 + 3, off);
 	if (pos == cur) {
 		prints("\033[1;33;40m[%c]\033[42m%s\033[m", str[pos], sites[pos].name);
 		return 18;

@@ -32,7 +32,7 @@ void disply_userinfo(const struct userec *u)
 	int num, exp;
 	time_t now;
 
-	move(2, 0);
+	screen_move(2, 0);
 	screen_clrtobot();
 	now = time(0);
 	set_safe_record();
@@ -243,13 +243,13 @@ void uinfo_query(struct userec *u, int real, int unum)
 	screen_flush();
 
 	i = 3;
-	move(i++, 0);
+	screen_move(i++, 0);
 	if (ans[0] != '3' || real)
 		//% prints("使用者代号: %s\n", u->userid);
 		prints("\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5: %s\n", u->userid);
 	switch (ans[0]) {
 		case '1':
-			move(1, 0);
+			screen_move(1, 0);
 			//% prints("请逐项修改,直接按 <ENTER> 代表使用 [] 内的资料。\n");
 			prints("\xc7\xeb\xd6\xf0\xcf\xee\xd0\xde\xb8\xc4,\xd6\xb1\xbd\xd3\xb0\xb4 <ENTER> \xb4\xfa\xb1\xed\xca\xb9\xd3\xc3 [] \xc4\xda\xb5\xc4\xd7\xca\xc1\xcf\xa1\xa3\n");
 			//% sprintf(genbuf, "昵称 [%s]: ", u->username);

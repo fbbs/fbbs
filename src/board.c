@@ -114,7 +114,7 @@ void board_complete(int row, const char *prompt, char *name, size_t size, int mo
 	if (!acl)
 		return;
 
-	move(row, 0);
+	screen_move(row, 0);
 	autocomplete(acl, prompt, name, size);
 
 	ac_list_free(acl);
@@ -466,7 +466,7 @@ static int search_board(const choose_board_t *cbrd, int *num)
 	}
 
 	while (1) {
-		move(-1, 0);
+		screen_move(-1, 0);
 		clrtoeol();
 		//% prints("请输入要查找的版面名称：%s", bname);
 		prints("\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb2\xe9\xd5\xd2\xb5\xc4\xb0\xe6\xc3\xe6\xc3\xfb\xb3\xc6\xa3\xba%s", bname);
@@ -510,7 +510,7 @@ static int search_board(const choose_board_t *cbrd, int *num)
 		bell(1);
 	}
 	if (find) {
-		move(-1, 0);
+		screen_move(-1, 0);
 		clrtoeol();
 		//% return 2 /* 结束了 */;
 		return 2 /* \xbd\xe1\xca\xf8\xc1\xcb */;

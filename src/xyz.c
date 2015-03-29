@@ -98,7 +98,7 @@ extern struct UCACHE *uidshm;
 int showperminfo(int pbits, int i)
 {
 	if (i < 16)
-		move(i + 6, 0);
+		screen_move(i + 6, 0);
 	screen_printf("%c. %-30s %2s", 'A' + i,
 			(use_define) ? user_definestr[i] : permstrings[i],
 			((pbits >> i) & 1 ? "是" : "否"));
@@ -111,9 +111,9 @@ unsigned int setperms(unsigned int pbits, char *prompt, int numbers, int (*showf
 	int lastperm = numbers - 1;
 	int i, done = NA;
 	char choice[3], buf[80];
-	move(4, 0);
+	screen_move(4, 0);
 	screen_printf("\033[m请按下您要的代码来设定%s，按 Enter 结束.\n", prompt);
-	move(6, 0);
+	screen_move(6, 0);
 	screen_clrtobot();
 
 	for (int j = 0; j < 16 && j < numbers; ++j) {
@@ -163,14 +163,14 @@ int x_userdefine() {
 		screen_clear();
 		return 0;
 	}
-	move(1, 0);
+	screen_move(1, 0);
 	screen_clrtobot();
-	move(2, 0);
+	screen_move(2, 0);
 	use_define = 1;
 	//% newlevel = setperms(lookupuser.userdefine, "参数", NUMDEFINES,
 	newlevel = setperms(lookupuser.userdefine, "\xb2\xce\xca\xfd", NUMDEFINES,
 			showperminfo);
-	move(2, 0);
+	screen_move(2, 0);
 	if (newlevel == lookupuser.userdefine)
 		//% prints("参数没有修改...\n");
 		prints("\xb2\xce\xca\xfd\xc3\xbb\xd3\xd0\xd0\xde\xb8\xc4...\n");
@@ -222,7 +222,7 @@ void x_edits() {
 
 	set_user_status(ST_GMENU);
 	screen_clear();
-	move(1, 0);
+	screen_move(1, 0);
 	//% prints("编修个人档案\n\n");
 	prints("\xb1\xe0\xd0\xde\xb8\xf6\xc8\xcb\xb5\xb5\xb0\xb8\n\n");
 	for (num = 0; e_file[num] != NULL && explain_file[num] != NULL; num++) {
@@ -239,7 +239,7 @@ void x_edits() {
 
 	ch = ans[0] - '0' - 1;
 	setuserfile(genbuf, e_file[ch]);
-	move(3, 0);
+	screen_move(3, 0);
 	screen_clrtobot();
 	//% sprintf(buf, "(E)编辑 (D)删除 %s? [E]: ", explain_file[ch]);
 	sprintf(buf, "(E)\xb1\xe0\xbc\xad (D)\xc9\xbe\xb3\xfd %s? [E]: ", explain_file[ch]);
@@ -248,7 +248,7 @@ void x_edits() {
 		//% confirm = askyn("您确定要删除这个档案", NA, NA);
 		confirm = askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xc9\xbe\xb3\xfd\xd5\xe2\xb8\xf6\xb5\xb5\xb0\xb8", NA, NA);
 		if (confirm != 1) {
-			move(5, 0);
+			screen_move(5, 0);
 			//% prints("取消删除行动\n");
 			prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
 			pressreturn();
@@ -256,7 +256,7 @@ void x_edits() {
 			return;
 		}
 		unlink(genbuf);
-		move(5, 0);
+		screen_move(5, 0);
 		//% prints("%s 已删除\n", explain_file[ch]);
 		prints("%s \xd2\xd1\xc9\xbe\xb3\xfd\n", explain_file[ch]);
 		sprintf(buf, "delete %s", explain_file[ch]);
@@ -287,7 +287,7 @@ void x_edits() {
 
 //取得genbuf中保存的用户所在的记录位置到*id中,为零表示不存在
 int gettheuserid(int x, char *title, int *id) {
-	move(x, 0);
+	screen_move(x, 0);
 	usercomplete(title, genbuf);
 	if (*genbuf == '\0') {
 		screen_clear();
@@ -308,9 +308,9 @@ int x_lockscreen(void)
 {
 	set_user_status(ST_LOCKSCREEN);
 
-	move(9, 0);
+	screen_move(9, 0);
 	screen_clrtobot();
-	move(9, 0);
+	screen_move(9, 0);
 	prints("\033[1;37m"
 			"\n       _       _____   ___     _   _   ___     ___       __"
 			"\n      ( )     (  _  ) (  _`\\  ( ) ( ) (  _`\\  (  _`\\    |  |"
@@ -325,7 +325,7 @@ int x_lockscreen(void)
 	char buf[PASSLEN + 1];
 	buf[0] = '\0';
 	while (*buf == '\0' || !passwd_check(currentuser.userid, buf)) {
-		move(18, 0);
+		screen_move(18, 0);
 		screen_clrtobot();
 		//% getdata(19, 0, "请输入您的密码以解锁: ", buf, PASSLEN, NOECHO, YEA);
 		getdata(19, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc4\xfa\xb5\xc4\xc3\xdc\xc2\xeb\xd2\xd4\xbd\xe2\xcb\xf8: ", buf, PASSLEN, NOECHO, YEA);
@@ -342,7 +342,7 @@ static void exec_cmd(int umode, int pager, char *cmdfile, char *param1) {
 	fb_signal(SIGALRM, SIG_IGN);
 	set_user_status(umode);
 	screen_clear();
-	move(2, 0);
+	screen_move(2, 0);
 	if (!dashf(cmdfile)) {
 		//% prints("文件 [%s] 不存在！\n", cmdfile);
 		prints("\xce\xc4\xbc\xfe [%s] \xb2\xbb\xb4\xe6\xd4\xda\xa3\xa1\n", cmdfile);

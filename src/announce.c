@@ -650,7 +650,7 @@ void a_copypaste(MENU *pm, int paste) {
 	static char title[sizeof(item->title)], filename[STRLEN], fpath[PATHLEN];
 	char newpath[PATHLEN]/*,ans[5]*/;
 	FILE *fn;
-	move(-1, 0);
+	screen_move(-1, 0);
 	sethomefile(fpath, currentuser.userid, ".copypaste");
 
 	if (!paste) {
@@ -840,7 +840,7 @@ int a_Rangefunc(MENU *pm) {
 		num2=atoi(ans);
 	}
 	if (num1<=0||num2<=0||num2<=num1 ||num2>pm->num) {
-		move(-1, 60);
+		screen_move(-1, 60);
 		//% prints("操作错误...");
 		prints("\xb2\xd9\xd7\xf7\xb4\xed\xce\xf3...");
 		egetch();
@@ -1489,10 +1489,10 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 			me.page = me.now - (me.now % A_PAGESIZE);
 			a_showmenu(&me);
 		}
-		move(3 + me.now - me.page, 0);
+		screen_move(3 + me.now - me.page, 0);
 		prints("->");
 		ch = egetch();
-		move(3 + me.now - me.page, 0);
+		screen_move(3 + me.now - me.page, 0);
 		prints("  ");
 		if (ch == 'Q' || ch == 'q' || ch == KEY_LEFT || ch == EOF)
 			break;
@@ -1564,7 +1564,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 					board_complete(0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xcc\xf9\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6: ",
 							bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 					if (*bname) {
-						move(1, 0);
+						screen_move(1, 0);
 						
 						board_t board;
 						if (!get_board(bname, &board)
@@ -1875,7 +1875,7 @@ int AddPCorpus() {
 	//% stand_title("创建个人文集");
 	stand_title("\xb4\xb4\xbd\xa8\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf");
 
-	move(4, 0);
+	screen_move(4, 0);
 	//% if (!gettheuserid(1, "请输入使用者代号: ", &id))
 	if (!gettheuserid(1, "\xc7\xeb\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5: ", &id))
 		return 1;
@@ -1928,7 +1928,7 @@ int AddPCorpus() {
 		//% sprintf(secu, "建立个人文集, 给予 %s 版主权限", lookupuser.userid);
 		sprintf(secu, "\xbd\xa8\xc1\xa2\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf, \xb8\xf8\xd3\xe8 %s \xb0\xe6\xd6\xf7\xc8\xa8\xcf\xde", lookupuser.userid);
 		securityreport(secu, 0, 0);
-		move(9, 0);
+		screen_move(9, 0);
 		outs(secu);
 		sethomefile(genbuf, lookupuser.userid, ".announcepath");
 		report(genbuf, currentuser.userid);
@@ -2008,7 +2008,7 @@ char show_items[3][8] = { "[\xc3\xfb\xb3\xc6]", "[\xc4\xbf\xc2\xbc]", "[\xc2\xb7
 
 void ann_set_title_show(char* title) {
 	char buf[256], path[256];
-	move(0, 0);
+	screen_move(0, 0);
 	rtrim(title);
 	sprintf(path, "[%-1.56s] %s", title, show_items[show_mode]);
 	//% sprintf(buf, "[1;44;33m 设定丝路 %69.69s[m\n", path);
@@ -2022,7 +2022,7 @@ void ann_set_title_show(char* title) {
 
 void ann_get_title_show() {
 	char buf[256];
-	move(0, 0);
+	screen_move(0, 0);
 	//% sprintf(buf, "[1;44;33m 使用丝路 %69.69s[m\n", show_items[show_mode]);
 	sprintf(buf, "[1;44;33m \xca\xb9\xd3\xc3\xcb\xbf\xc2\xb7 %69.69s[m\n", show_items[show_mode]);
 	outs(buf);
@@ -2061,7 +2061,7 @@ static int change_ann_path(int index, const char *title, const char *path, int m
 	char anntitle[STRLEN];
 	strlcpy(anntitle, title, STRLEN);
 	if (index != -1) {
-		move(1, 0);
+		screen_move(1, 0);
 		rtrim(anntitle);
 		//% getdata(1, 0, "设定丝路名:", anntitle, STRLEN, DOECHO, NA);
 		getdata(1, 0, "\xc9\xe8\xb6\xa8\xcb\xbf\xc2\xb7\xc3\xfb:", anntitle, STRLEN, DOECHO, NA);
@@ -2127,7 +2127,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 
 			to=from;
 			y=3;
-			move(y, 0);
+			screen_move(y, 0);
 			while (y < screen_lines()-1 && to < MAXANNPATHS) {
 				if (show_mode == 0)
 					sprintf(genbuf, "%4d  %-72.72s", to+1,
@@ -2164,11 +2164,11 @@ int set_ann_path(const char *title, const char *path, int mode)
 				curr_annpath= to -1;
 			tui_update_status_line();
 		}//if 
-		move(3+curr_annpath-from, 0);
+		screen_move(3+curr_annpath-from, 0);
 		prints(">");
 		ch = egetch();
 		redrawflag=0;
-		move(3+curr_annpath-from, 0);
+		screen_move(3+curr_annpath-from, 0);
 		prints(" ");
 
 		switch (ch) {
@@ -2253,7 +2253,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 				return 0;
 			case 'd': //删除
 			case 'D': //删除
-				move(1, 0);
+				screen_move(1, 0);
 				redrawflag=1;
 				//% if (askyn("删除丝路吗？", NA, NA)==NA)
 				if (askyn("\xc9\xbe\xb3\xfd\xcb\xbf\xc2\xb7\xc2\xf0\xa3\xbf", NA, NA)==NA)
@@ -2262,7 +2262,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 				break;
 			case 'c': //清除
 			case 'C': //清除
-				move(1, 0);
+				screen_move(1, 0);
 				redrawflag=1;
 				//% if (askyn("清除所有丝路吗?", NA, NA)==NA)
 				if (askyn("\xc7\xe5\xb3\xfd\xcb\xf9\xd3\xd0\xcb\xbf\xc2\xb7\xc2\xf0?", NA, NA)==NA)
@@ -2289,7 +2289,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 				if (import_path[curr_annpath].num == -1)
 					break;
 				if (ann_mode == ANNPATH_SETMODE) {
-					move(1, 0);
+					screen_move(1, 0);
 					change_ann_path(curr_annpath,
 							import_path[curr_annpath].title, NULL, 1);
 				}
@@ -2373,7 +2373,7 @@ int set_ann_path(const char *title, const char *path, int mode)
 					number = 0;
 
 				} else {
-					move(1, 0);
+					screen_move(1, 0);
 					if (ann_mode == ANNPATH_SETMODE) {
 						if (import_path[curr_annpath].num == -1) {
 							change_ann_path(curr_annpath, title, path, 0);

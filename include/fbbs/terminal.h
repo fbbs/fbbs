@@ -52,7 +52,7 @@ extern void screen_negotiate_size(void);
 extern void screen_init(int lines);
 extern void screen_redraw(void);
 extern void screen_flush(void);
-extern void move(int line, int col);
+extern void screen_move(int line, int col);
 extern void screen_coordinates(int *line, int *col);
 extern void screen_clear(void);
 extern void screen_clear_line(int line);

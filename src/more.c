@@ -731,7 +731,7 @@ int ansimore_buffer(const char *buf, size_t size, int promptend)
 	int ch = more_main(more, promptend, 0, 0, NA, more_prompt_file, NULL);
 	more_close(more);
 
-	move(-1, 0);
+	screen_move(-1, 0);
 	prints("\033[m");
 	screen_flush();
 	return ch;
@@ -742,7 +742,7 @@ int ansimore(const char *filename, int promptend)
 	int ch;
 	screen_clear();
 	ch = rawmore2(filename, promptend, 0, 0, NA);
-	move(-1, 0);
+	screen_move(-1, 0);
 	prints("\033[0m\033[m");
 	screen_flush();
 	return ch;

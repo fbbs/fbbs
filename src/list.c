@@ -130,7 +130,7 @@ int tui_list(tui_list_t *p)
 				p->update = PARTUPDATE;
 			}
 			if (p->update == PARTUPDATE) {
-				move(TUI_LIST_START, 0);
+				screen_move(TUI_LIST_START, 0);
 				screen_clrtobot();
 				tui_list_display_loop(p);
 			}
@@ -139,14 +139,14 @@ int tui_list(tui_list_t *p)
 		}
 
 		if (!p->in_query) {
-			move(TUI_LIST_START + p->cur - p->begin, 0);
+			screen_move(TUI_LIST_START + p->cur - p->begin, 0);
 			outs(">");
 		}
 
 		int ch = terminal_getchar();
 
 		if (!p->in_query) {
-			move(TUI_LIST_START + p->cur - p->begin, 0);
+			screen_move(TUI_LIST_START + p->cur - p->begin, 0);
 			outs(" ");
 		}
 

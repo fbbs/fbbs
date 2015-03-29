@@ -199,7 +199,7 @@ int tui_select_board(int current_bid)
 
 	if (!has_read_perm(&board)) {
 		screen_clear();
-		move(5, 10);
+		screen_move(5, 10);
 		//% prints("您不是俱乐部版 %s 的成员，无权进入该版", bname);
 		prints("\xc4\xfa\xb2\xbb\xca\xc7\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6 %s \xb5\xc4\xb3\xc9\xd4\xb1\xa3\xac\xce\xde\xc8\xa8\xbd\xf8\xc8\xeb\xb8\xc3\xb0\xe6", bname);
 		pressanykey();
@@ -439,7 +439,7 @@ int post_reply(const char *owner, const char *title, const char *file)
 	screen_clear();
 	// Added by Amigo 2002.06.10. To add mail right check.
 	if (!HAS_PERM(PERM_MAIL)) {
-		move(4, 0);
+		screen_move(4, 0);
 		//% prints("\n\n        您尚未完成注册，或者发送信件的权限被封禁。");
 		prints("\n\n        \xc4\xfa\xc9\xd0\xce\xb4\xcd\xea\xb3\xc9\xd7\xa2\xb2\xe1\xa3\xac\xbb\xf2\xd5\xdf\xb7\xa2\xcb\xcd\xd0\xc5\xbc\xfe\xb5\xc4\xc8\xa8\xcf\xde\xb1\xbb\xb7\xe2\xbd\xfb\xa1\xa3");
 		pressreturn();
@@ -628,12 +628,12 @@ int tui_cross_post_legacy(const char *file, const char *title)
 		return FULLUPDATE;
 	}
 
-	move(3, 0);
+	screen_move(3, 0);
 	screen_clrtobot();
 	//% "转载 ' %s ' 到 %s 版 "
 	prints("\xd7\xaa\xd4\xd8 ' %s ' \xb5\xbd %s \xb0\xe6 ", title, bname);
 
-	move(4, 0);
+	screen_move(4, 0);
 	char ans[10];
 	//% "(S)转信 (L)本站 (A)取消? [A]: "
 	getdata(4, 0, "(S)\xd7\xaa\xd0\xc5 (L)\xb1\xbe\xd5\xbe"
@@ -643,7 +643,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 		if (!get_board(bname, &brd) ||
 				!post_cross_legacy(&brd, file, title, POST_FILE_NORMAL)) {
 			pressreturn();
-			move(2, 0);
+			screen_move(2, 0);
 			return FULLUPDATE;
 		}
 		//% prints("\n已把文章 \'%s\' 转贴到 %s 版\n", title, bname);
@@ -653,7 +653,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 		//% prints("取消");
 		prints("\xc8\xa1\xcf\xfb");
 	}
-	move(2, 0);
+	screen_move(2, 0);
 	pressreturn();
 	return FULLUPDATE;
 }
@@ -707,7 +707,7 @@ int show_user_notes() {
 		return FULLUPDATE;
 	}
 	screen_clear();
-	move(10, 15);
+	screen_move(10, 15);
 	//% prints("您尚未在 InfoEdit->WriteFile 编辑个人备忘录。\n");
 	prints("\xc4\xfa\xc9\xd0\xce\xb4\xd4\xda InfoEdit->WriteFile \xb1\xe0\xbc\xad\xb8\xf6\xc8\xcb\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xa3\n");
 	pressanykey();
@@ -907,7 +907,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	getdata(-1, 0, "\xca\xd7\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
 	inum1 = atoi(num);
 	if (inum1 <= 0) {
-		move(-1, 50);
+		screen_move(-1, 50);
 		//% prints("错误编号...");
 		prints("\xb4\xed\xce\xf3\xb1\xe0\xba\xc5...");
 		egetch();
@@ -917,13 +917,13 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 	getdata(-1, 25, "\xc4\xa9\xc6\xaa\xce\xc4\xd5\xc2\xb1\xe0\xba\xc5: ", num, 6, DOECHO, YEA);
 	inum2 = atoi(num);
 	if (inum2 < inum1) {
-		move(-1, 50);
+		screen_move(-1, 50);
 		//% prints("错误区间...");
 		prints("\xb4\xed\xce\xf3\xc7\xf8\xbc\xe4...");
 		egetch();
 		return PARTUPDATE;
 	}
-	move(-1, 50);
+	screen_move(-1, 50);
 	//% if (askyn("确定删除", NA, NA) == YEA) {
 	if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA) == YEA) {
 		delete_range(direct, inum1, inum2);
@@ -939,7 +939,7 @@ int del_range(int ent, struct fileheader *fileinfo, char *direct) {
 		}
 		return DIRCHANGED;
 	}
-	move(-1, 50);
+	screen_move(-1, 50);
 	clrtoeol();
 	//% prints("放弃删除...");
 	prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd...");
@@ -1106,7 +1106,7 @@ int check_notespasswd(void)
 		if (passbuf[0] == '\0' || passbuf[0] == '\n')
 			return NA;
 		if (!passwd_match(prepass, passbuf)) {
-			move(3, 0);
+			screen_move(3, 0);
 			//% prints("错误的秘密备忘录密码...");
 			prints("\xb4\xed\xce\xf3\xb5\xc4\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xc3\xdc\xc2\xeb...");
 			pressanykey();
@@ -1127,7 +1127,7 @@ int show_b_secnote() {
 		screen_clear();
 		ansimore(buf, NA);
 	} else {
-		move(3, 25);
+		screen_move(3, 25);
 		//% prints("此讨论区尚无「秘密备忘录」。");
 		prints("\xb4\xcb\xcc\xd6\xc2\xdb\xc7\xf8\xc9\xd0\xce\xde\xa1\xb8\xc3\xd8\xc3\xdc\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xb9\xa1\xa3");
 	}
@@ -1138,7 +1138,7 @@ int show_b_secnote() {
 int show_b_note() {
 	screen_clear();
 	if (show_board_notes(currboard, 2) == -1) {
-		move(3, 30);
+		screen_move(3, 30);
 		//% prints("此讨论区尚无「备忘录」。");
 		prints("\xb4\xcb\xcc\xd6\xc2\xdb\xc7\xf8\xc9\xd0\xce\xde\xa1\xb8\xb1\xb8\xcd\xfc\xc2\xbc\xa1\xb9\xa1\xa3");
 		pressanykey();
@@ -1174,7 +1174,7 @@ int Personal(const char *userid)
 
 	if (!userid) {
 		screen_clear();
-		move(2, 0);
+		screen_move(2, 0);
 		//% usercomplete("您想看谁的个人文集: ", lookid);
 		usercomplete("\xc4\xfa\xcf\xeb\xbf\xb4\xcb\xad\xb5\xc4\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf: ", lookid);
 		if (lookid[0] == '\0') {
@@ -1239,7 +1239,7 @@ int board_read(void)
 	struct stat st;
 
 	if (!currbp->id) {
-		move(2, 0);
+		screen_move(2, 0);
 		//% prints("请先选择讨论区\n");
 		prints("\xc7\xeb\xcf\xc8\xd1\xa1\xd4\xf1\xcc\xd6\xc2\xdb\xc7\xf8\n");
 		pressreturn();
@@ -1256,7 +1256,7 @@ int board_read(void)
 
 	if (!has_read_perm(&board)) {
 		screen_clear();
-		move(5, 10);
+		screen_move(5, 10);
 		//% prints("您不是俱乐部版 %s 的成员，无权进入该版", currboard);
 		prints("\xc4\xfa\xb2\xbb\xca\xc7\xbe\xe3\xc0\xd6\xb2\xbf\xb0\xe6 %s \xb5\xc4\xb3\xc9\xd4\xb1\xa3\xac\xce\xde\xc8\xa8\xbd\xf8\xc8\xeb\xb8\xc3\xb0\xe6", currboard);
 		pressanykey();
@@ -1309,7 +1309,7 @@ void notepad() {
 	int i, n;
 
 	screen_clear();
-	move(0, 0);
+	screen_move(0, 0);
 	//% prints("开始您的留言吧！大家正拭目以待....\n");
 	prints("\xbf\xaa\xca\xbc\xc4\xfa\xb5\xc4\xc1\xf4\xd1\xd4\xb0\xc9\xa3\xa1\xb4\xf3\xbc\xd2\xd5\xfd\xca\xc3\xc4\xbf\xd2\xd4\xb4\xfd....\n");
 	set_user_status(ST_WNOTEPAD);
@@ -1416,7 +1416,7 @@ int Q_Goodbye(void)
 			fclose(sysops);
 		}
 		screen_clear();
-		move(0, 0);
+		screen_move(0, 0);
 		//% prints("您就要离开 %s 向好友们告个别?\n", BoardName);
 		prints("\xc4\xfa\xbe\xcd\xd2\xaa\xc0\xeb\xbf\xaa %s \xcf\xf2\xba\xc3\xd3\xd1\xc3\xc7\xb8\xe6\xb8\xf6\xb1\xf0?\n", BoardName);
 		for (i = 0; i < byes; i++)
@@ -1518,10 +1518,10 @@ int Goodbye(void)
 	}
 
 	num_sysop = i;
-	move(1, 0);
+	screen_move(1, 0);
 	alarm(0);
 	screen_clear();
-	move(0, 0);
+	screen_move(0, 0);
 	//% prints("您就要离开 %s ，可有什麽建议吗？\n", BoardName);
 	prints("\xc4\xfa\xbe\xcd\xd2\xaa\xc0\xeb\xbf\xaa %s \xa3\xac\xbf\xc9\xd3\xd0\xca\xb2\xf7\xe1\xbd\xa8\xd2\xe9\xc2\xf0\xa3\xbf\n", BoardName);
 	//% prints("[[1;33m1[m] 寄信给站长/服务组寻求帮助\n");

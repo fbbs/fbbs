@@ -325,7 +325,7 @@ void _post_list_title(int archive_list, const char *mode)
 		prompt = "\xa1\xf9\xcd\xb6\xc6\xb1\xd6\xd0,\xb0\xb4 v \xbd\xf8\xc8\xeb\xcd\xb6\xc6\xb1\xa1\xf9";
 	show_prompt(currbp, prompt, 80 - width);
 
-	move(1, 0);
+	screen_move(1, 0);
 	//% "离开[←,e] "
 	prints("\033[m " TUI_LIST_HELP2("\xc0\xeb\xbf\xaa", "\xa1\xfb", "e")
 		//% "选择[↑,↓] "
@@ -973,7 +973,7 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 		return DONOTHING;
 
 	if (pi && (pi->user_id == session_uid() || am_curr_bm())) {
-		move(-1, 0);
+		screen_move(-1, 0);
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 			post_filter_t filter = {
@@ -1012,7 +1012,7 @@ static int show_post_info(const post_info_t *pi)
 		return DONOTHING;
 
 	screen_clear();
-	move(0, 0);
+	screen_move(0, 0);
 	//% 版面文章的详细信息
 	prints("\xb0\xe6\xc3\xe6\xce\xc4\xd5\xc2\xb5\xc4\xcf\xea\xcf\xb8"
 			"\xd0\xc5\xcf\xa2:\n\n");
@@ -1390,7 +1390,7 @@ static int tui_delete_posts_in_range(tui_list_t *tl, post_info_t *pi)
 		}
 		return PARTUPDATE;
 	}
-	move(-1, 50);
+	screen_move(-1, 50);
 	clrtoeol();
 	//% 放弃删除
 	prints("\xb7\xc5\xc6\xfa\xc9\xbe\xb3\xfd...");
@@ -2149,7 +2149,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 		return MINIUPDATE;
 
 	char buf[STRLEN];
-	move(-1, 0);
+	screen_move(-1, 0);
 	//% 确定要执行%s[%s]吗
 	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xd2\xaa\xd6\xb4\xd0\xd0"
 			"%s[%s]\xc2\xf0", batch_modes[mode], options[choice]);
@@ -2159,7 +2159,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	post_id_t pid = 0;
 	bool quote = true;
 	if (choice == 6) {
-		move(-1, 0);
+		screen_move(-1, 0);
 		//% 制作的合集需要引言吗？
 		quote = askyn("\xd6\xc6\xd7\xf7\xb5\xc4\xba\xcf\xbc\xaf"
 				"\xd0\xe8\xd2\xaa\xd2\xfd\xd1\xd4\xc2\xf0\xa3\xbf", YEA, YEA);
@@ -2199,7 +2199,7 @@ static int tui_operate_posts_in_batch(tui_list_t *tl, post_info_t *pi)
 	}
 
 	bool first = false;
-	move(-1, 0);
+	screen_move(-1, 0);
 	//% 是否从%s第一篇开始%s (Y)第一篇 (N)目前这一篇
 	snprintf(buf, sizeof(buf), "\xca\xc7\xb7\xf1\xb4\xd3%s"
 			"\xb5\xda\xd2\xbb\xc6\xaa\xbf\xaa\xca\xbc%s "
@@ -2545,7 +2545,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case '5': case '6': case '7': case '8': case '9':
 			{
 				tl->jump = tl->jump * 10 + (ch - '0');
-				move(-1, 69);
+				screen_move(-1, 69);
 				clrtoeol();
 				char buf[24];
 				snprintf(buf, sizeof(buf), "\033[1;44;33m[%6d]\033[m",

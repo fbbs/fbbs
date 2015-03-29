@@ -279,7 +279,7 @@ void screen_flush(void)
  * @param line Line number.
  * @param col Column number.
  */
-void move(int line, int col)
+void screen_move(int line, int col)
 {
 	screen.cur_col = col;
 	screen.cur_ln = line < 0 ? line + screen.lines : line;
@@ -307,7 +307,7 @@ void screen_clear(void)
 		for (int i = 0; i < screen.lines; ++i) {
 			screen_clear_line(i);
 		}
-		move(0, 0);
+		screen_move(0, 0);
 	}
 }
 
@@ -320,7 +320,7 @@ void screen_clear_line(int line)
 
 void screen_move_clear(int line)
 {
-	move(line, 0);
+	screen_move(line, 0);
 	clrtoeol();
 }
 
@@ -746,7 +746,7 @@ void screen_save_line(int line, bool save)
 		screen_coordinates(&x, &y);
 		screen_move_clear(line);
 		prints("%s", saved);
-		move(x, y);
+		screen_move(x, y);
 		screen_flush();
 	}
 }
@@ -768,10 +768,10 @@ void saveline_buf(int line, int mode)//0:save 1:restore
             break;
         case 1:
             screen_coordinates(&x, &y);
-            move(line, 0);
+            screen_move(line, 0);
             screen_clear_line(line);
             prints("%s", temp[line]);
-            move(x,y);
+            screen_move(x,y);
             break;
     }
 }

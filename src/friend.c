@@ -67,7 +67,7 @@ static int tui_follow(void)
 
 static int tui_unfollow(user_id_t uid)
 {
-	move(-1, 0);
+	screen_move(-1, 0);
 	//% return askyn("确定取消关注?", false, true) ? unfollow(session_uid(), uid) : 0;
 	return askyn("\xc8\xb7\xb6\xa8\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2?", false, true) ? unfollow(session_uid(), uid) : 0;
 }

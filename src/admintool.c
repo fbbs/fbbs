@@ -94,7 +94,7 @@ int m_info() {
 	sprintf(reportbuf, "check info: %s", user.userid);
 	report(reportbuf, currentuser.userid);
 
-	move(1, 0);
+	screen_move(1, 0);
 	screen_clrtobot();
 	disply_userinfo(&user);
 	uinfo_query(&user, 1, id);
@@ -170,12 +170,12 @@ int tui_ordain_bm(const char *cmd)
 		return -1;
 	board_to_gbk(&board);
 
-	move(4, 0);
+	screen_move(4, 0);
 	screen_clrtobot();
 
 	const char *error = ordain_bm_check(&board, lookupuser.userid);
 	if (error) {
-		move(5, 0);
+		screen_move(5, 0);
 		outs(error);
 		pressanykey();
 		screen_clear();
@@ -212,7 +212,7 @@ int tui_ordain_bm(const char *cmd)
 		snprintf(buf, sizeof(buf), "\xb0\xe6\xd6\xf7\xc8\xce\xc3\xfc, \xb8\xf8\xd3\xe8 %s \xb0\xe6\xd6\xf7\xc8\xa8\xcf\xde",
 				lookupuser.userid);
 		securityreport(buf, 0, 1);
-		move(15, 0);
+		screen_move(15, 0);
 		outs(buf);
 		pressanykey();
 		screen_clear();
@@ -287,7 +287,7 @@ int tui_ordain_bm(const char *cmd)
 	//add end
 
 	char ps[5][STRLEN];
-	move(8, 0);
+	screen_move(8, 0);
 	//% prints("请输入任命附言(最多五行，按 Enter 结束)");
 	prints("\xc7\xeb\xca\xe4\xc8\xeb\xc8\xce\xc3\xfc\xb8\xbd\xd1\xd4(\xd7\xee\xb6\xe0\xce\xe5\xd0\xd0\xa3\xac\xb0\xb4 Enter \xbd\xe1\xca\xf8)");
 	for (int i = 0; i < 5; i++) {
@@ -315,7 +315,7 @@ int tui_ordain_bm(const char *cmd)
 			POST_FILE_BMS);
 #endif
 	securityreport(buf, 0, 1);
-	move(16, 0);
+	screen_move(16, 0);
 	outs(buf);
 	pressanykey();
 	return 0;
@@ -362,7 +362,7 @@ int tui_retire_bm(const char *cmd)
 
 	int oldbm = getbnames(lookupuser.userid, bname, &find);
 	if (!oldbm || !find) {
-		move(5, 0);
+		screen_move(5, 0);
 		//% prints(" %s %s版版主，如有错误，请通知程序站长。", lookupuser.userid,
 		prints(" %s %s\xb0\xe6\xb0\xe6\xd6\xf7\xa3\xac\xc8\xe7\xd3\xd0\xb4\xed\xce\xf3\xa3\xac\xc7\xeb\xcd\xa8\xd6\xaa\xb3\xcc\xd0\xf2\xd5\xbe\xb3\xa4\xa1\xa3", lookupuser.userid,
 				//% (oldbm) ? "不是该" : "没有担任任何");
@@ -396,7 +396,7 @@ int tui_retire_bm(const char *cmd)
 			strcpy(usernames[i], usernames[i + 1]);
 	}
 	if (!right) {
-		move(5, 0);
+		screen_move(5, 0);
 		//% prints("对不起， %s 版版主名单中没有 %s ，如有错误，请通知技术站长。", bname,
 		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac %s \xb0\xe6\xb0\xe6\xd6\xf7\xc3\xfb\xb5\xa5\xd6\xd0\xc3\xbb\xd3\xd0 %s \xa3\xac\xc8\xe7\xd3\xd0\xb4\xed\xce\xf3\xa3\xac\xc7\xeb\xcd\xa8\xd6\xaa\xbc\xbc\xca\xf5\xd5\xbe\xb3\xa4\xa1\xa3", bname,
 				lookupuser.userid);
@@ -443,7 +443,7 @@ int tui_retire_bm(const char *cmd)
 	//% sprintf(genbuf, "取消 %s 的 %s 版版主职务", lookupuser.userid, board.name);
 	sprintf(genbuf, "\xc8\xa1\xcf\xfb %s \xb5\xc4 %s \xb0\xe6\xb0\xe6\xd6\xf7\xd6\xb0\xce\xf1", lookupuser.userid, board.name);
 	securityreport(genbuf, 0, 1);
-	move(8, 0);
+	screen_move(8, 0);
 	outs(genbuf);
 	sethomefile(bmfilename, lookupuser.userid, ".bmfile");
 	if (oldbm - 1) {
@@ -464,7 +464,7 @@ int tui_retire_bm(const char *cmd)
 			//% sprintf(secu, "版主卸职, 取消 %s 的版主权限", lookupuser.userid);
 			sprintf(secu, "\xb0\xe6\xd6\xf7\xd0\xb6\xd6\xb0, \xc8\xa1\xcf\xfb %s \xb5\xc4\xb0\xe6\xd6\xf7\xc8\xa8\xcf\xde", lookupuser.userid);
 			securityreport(secu, 0, 1);
-			move(9, 0);
+			screen_move(9, 0);
 			outs(secu);
 		}
 	}
@@ -515,7 +515,7 @@ int tui_retire_bm(const char *cmd)
 	char buf[5][STRLEN];
 	for (int i = 0; i < 5; i++)
 		buf[i][0] = '\0';
-	move(14, 0);
+	screen_move(14, 0);
 	//% prints("请输入%s附言(最多五行，按 Enter 结束)", right ? "版主离任" : "版主撤职");
 	prints("\xc7\xeb\xca\xe4\xc8\xeb%s\xb8\xbd\xd1\xd4(\xd7\xee\xb6\xe0\xce\xe5\xd0\xd0\xa3\xac\xb0\xb4 Enter \xbd\xe1\xca\xf8)", right ? "\xb0\xe6\xd6\xf7\xc0\xeb\xc8\xce" : "\xb0\xe6\xd6\xf7\xb3\xb7\xd6\xb0");
 	for (int i = 0; i < 5; i++) {
@@ -579,7 +579,7 @@ const char *chgrp(void)
 	};
 
 	screen_clear();
-	move(2, 0);
+	screen_move(2, 0);
 	//% prints("选择精华区的目录\n\n");
 	prints("\xd1\xa1\xd4\xf1\xbe\xab\xbb\xaa\xc7\xf8\xb5\xc4\xc4\xbf\xc2\xbc\n\n");
 
@@ -674,7 +674,7 @@ int tui_new_board(const char *cmd)
 	get_board(pname, &parent);
 
 	int flag = 0, perm = 0;
-	move(7, 0);
+	screen_move(7, 0);
 	screen_clrtobot();
 	//% if (askyn("本版是目录吗?", NA, NA)) {
 	if (askyn("\xb1\xbe\xb0\xe6\xca\xc7\xc4\xbf\xc2\xbc\xc2\xf0?", NA, NA)) {
@@ -685,9 +685,9 @@ int tui_new_board(const char *cmd)
 			char ans[2];
 			//% getdata(8, 0, "限制读? [R]: ", ans, sizeof(ans), DOECHO, YEA);
 			getdata(8, 0, "\xcf\xde\xd6\xc6\xb6\xc1? [R]: ", ans, sizeof(ans), DOECHO, YEA);
-			move(1, 0);
+			screen_move(1, 0);
 			screen_clrtobot();
-			move(2, 0);
+			screen_move(2, 0);
 			//% prints("设定 %s 权利. 讨论区: '%s'\n", "READ", bname);
 			prints("\xc9\xe8\xb6\xa8 %s \xc8\xa8\xc0\xfb. \xcc\xd6\xc2\xdb\xc7\xf8: '%s'\n", "READ", bname);
 			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
@@ -724,9 +724,9 @@ int tui_new_board(const char *cmd)
 					DOECHO, YEA);
 			if (*ans == 'P' || *ans == 'p')
 				flag |= BOARD_FLAG_POST;
-			move(1, 0);
+			screen_move(1, 0);
 			screen_clrtobot();
-			move(2, 0);
+			screen_move(2, 0);
 			//% prints("设定 %s 限制. 讨论区: '%s'\n",
 			prints("\xc9\xe8\xb6\xa8 %s \xcf\xde\xd6\xc6. \xcc\xd6\xc2\xdb\xc7\xf8: '%s'\n",
 					//% (flag & BOARD_FLAG_POST ? "写" : "读"), bname);
@@ -927,7 +927,7 @@ static bool alter_board_perm(board_t *bp)
 			if (ans[0] == 'R' || ans[0] == 'r')
 				flag &= ~BOARD_FLAG_POST;
 			screen_clear();
-			move(2, 0);
+			screen_move(2, 0);
 			//% prints("设定 %s '%s' 讨论区的权限\n", "阅读", bp->name);
 			prints("\xc9\xe8\xb6\xa8 %s '%s' \xcc\xd6\xc2\xdb\xc7\xf8\xb5\xc4\xc8\xa8\xcf\xde\n", "\xd4\xc4\xb6\xc1", bp->name);
 			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
@@ -948,7 +948,7 @@ static bool alter_board_perm(board_t *bp)
 			else if (ans[0] == 'P' || ans[0] == 'p')
 				flag |= BOARD_FLAG_POST;
 			screen_clear();
-			move(2, 0);
+			screen_move(2, 0);
 			//% prints("设定 %s '%s' 讨论区的权限\n",
 			prints("\xc9\xe8\xb6\xa8 %s '%s' \xcc\xd6\xc2\xdb\xc7\xf8\xb5\xc4\xc8\xa8\xcf\xde\n",
 					//% (flag & BOARD_FLAG_POST) ? "张贴" : "阅读", bp->name);
@@ -1021,7 +1021,7 @@ int tui_edit_board(const char *cmd)
 	screen_clear();
 	//% stand_title("修改讨论区设置");
 	stand_title("\xd0\xde\xb8\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc9\xe8\xd6\xc3");
-	move(2, 0);
+	screen_move(2, 0);
 
 	show_edit_board_menu(&board, &parent);
 
@@ -1032,7 +1032,7 @@ int tui_edit_board(const char *cmd)
 		return 0;
 
 	int res = 0;
-	move(15, 0);
+	screen_move(15, 0);
 	switch (ans[0]) {
 		case '1':
 			res = alter_board_name(&board);
@@ -1304,7 +1304,6 @@ int do_register(int index, reginfo_t* ent, char *direct) {
 
 	memcpy(&user, &lookupuser, sizeof (user));
 	screen_clear();
-	move(0, 0);
 	//% prints("[1;33;44m 详细资料                                                                      [m\n");
 	prints("[1;33;44m \xcf\xea\xcf\xb8\xd7\xca\xc1\xcf                                                                      [m\n");
 	//% prints("[1;37;42m [.]接受 [+]拒绝 [d]删除 [0-6]不符合原因                                       [m");
@@ -1312,7 +1311,7 @@ int do_register(int index, reginfo_t* ent, char *direct) {
 
 	for (;;) {
 		disply_userinfo(&user);
-		move(14, 0);
+		screen_move(14, 0);
 		printdash(NULL);
 		//% prints("   注册时间   : %s\n", format_time(ent->regdate, TIME_FORMAT_EN));
 		prints("   \xd7\xa2\xb2\xe1\xca\xb1\xbc\xe4   : %s\n", format_time(ent->regdate, TIME_FORMAT_EN));
@@ -1382,12 +1381,12 @@ void show_register() {
 	screen_clear();
 	//% stand_title("查询使用者注册资料");
 	stand_title("\xb2\xe9\xd1\xaf\xca\xb9\xd3\xc3\xd5\xdf\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf");
-	move(1, 0);
+	screen_move(1, 0);
 	//% usercomplete("请输入要查询的代号: ", uident);
 	usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb2\xe9\xd1\xaf\xb5\xc4\xb4\xfa\xba\xc5: ", uident);
 	if (uident[0] != '\0') {
 		if (!getuser(uident)) {
-			move(2, 0);
+			screen_move(2, 0);
 			//% prints("错误的使用者代号...");
 			prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5...");
 		} else {
@@ -1450,12 +1449,12 @@ int m_register() {
 	}
 	switch (ans[0]) {
 		case '2':
-			move(1, 0);
+			screen_move(1, 0);
 			//% usercomplete("请输入要查询的代号: ", uident);
 			usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb2\xe9\xd1\xaf\xb5\xc4\xb4\xfa\xba\xc5: ", uident);
 			if (uident[0] != '\0') {
 				if (!getuser(uident)) {
-					move(2, 0);
+					screen_move(2, 0);
 					//% prints("错误的使用者代号...");
 					prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5...");
 				} else {
@@ -1504,7 +1503,7 @@ int x_level() {
 	screen_clear();
 	//% prints("更改使用者权限\n");
 	prints("\xb8\xfc\xb8\xc4\xca\xb9\xd3\xc3\xd5\xdf\xc8\xa8\xcf\xde\n");
-	move(1, 0);
+	screen_move(1, 0);
 	//% usercomplete("输入欲更改的使用者帐号: ", genbuf);
 	usercomplete("\xca\xe4\xc8\xeb\xd3\xfb\xb8\xfc\xb8\xc4\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xd5\xca\xba\xc5: ", genbuf);
 	if (genbuf[0] == '\0') {
@@ -1518,15 +1517,15 @@ int x_level() {
 		screen_clear();
 		return 0;
 	}
-	move(1, 0);
+	screen_move(1, 0);
 	screen_clrtobot();
-	move(2, 0);
+	screen_move(2, 0);
 	//% prints("设定使用者 '%s' 的权限 \n", genbuf);
 	prints("\xc9\xe8\xb6\xa8\xca\xb9\xd3\xc3\xd5\xdf '%s' \xb5\xc4\xc8\xa8\xcf\xde \n", genbuf);
 	newlevel
 			//% = setperms(lookupuser.userlevel, "权限", NUMPERMS, showperminfo);
 			= setperms(lookupuser.userlevel, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
-	move(2, 0);
+	screen_move(2, 0);
 	if (newlevel == lookupuser.userlevel)
 		//% prints("使用者 '%s' 权限没有变更\n", lookupuser.userid);
 		prints("\xca\xb9\xd3\xc3\xd5\xdf '%s' \xc8\xa8\xcf\xde\xc3\xbb\xd3\xd0\xb1\xe4\xb8\xfc\n", lookupuser.userid);
@@ -1590,16 +1589,16 @@ void a_edits() {
 		return;
 	}
 	screen_clear();
-	move(1, 0);
+	screen_move(1, 0);
 	//% prints("编修系统档案\n\n");
 	prints("\xb1\xe0\xd0\xde\xcf\xb5\xcd\xb3\xb5\xb5\xb0\xb8\n\n");
 	for (num = 0; (HAS_PERM(PERM_ESYSFILE)) ? e_file[num] != NULL
 			&& explain_file[num] != NULL : strcmp(explain_file[num], "menu.ini"); num++) {
 		prints("[\033[1;32m%2d\033[m] %s", num + 1, explain_file[num]);
 		if (num < 17)
-			move(4 + num, 0);
+			screen_move(4 + num, 0);
 		else
-			move(num - 14, 50);
+			screen_move(num - 14, 50);
 	}
 	//% prints("[\033[1;32m%2d\033[m] 都不想改\n", num + 1);
 	prints("[\033[1;32m%2d\033[m] \xb6\xbc\xb2\xbb\xcf\xeb\xb8\xc4\n", num + 1);
@@ -1612,7 +1611,7 @@ void a_edits() {
 		return;
 	ch -= 1;
 	sprintf(buf2, "etc/%s", e_file[ch]);
-	move(3, 0);
+	screen_move(3, 0);
 	screen_clrtobot();
 	//% sprintf(buf, "(E)编辑 (D)删除 %s? [E]: ", explain_file[ch]);
 	sprintf(buf, "(E)\xb1\xe0\xbc\xad (D)\xc9\xbe\xb3\xfd %s? [E]: ", explain_file[ch]);
@@ -1622,7 +1621,7 @@ void a_edits() {
 		sprintf(buf, "\xc4\xe3\xc8\xb7\xb6\xa8\xd2\xaa\xc9\xbe\xb3\xfd %s \xd5\xe2\xb8\xf6\xcf\xb5\xcd\xb3\xb5\xb5", explain_file[ch]);
 		confirm = askyn(buf, NA, NA);
 		if (confirm != 1) {
-			move(5, 0);
+			screen_move(5, 0);
 			//% prints("取消删除行动\n");
 			prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
 			pressreturn();
@@ -1636,7 +1635,7 @@ void a_edits() {
 			securityreport(secu, 0, 0);
 		}
 		unlink(buf2);
-		move(5, 0);
+		screen_move(5, 0);
 		//% prints("%s 已删除\n", explain_file[ch]);
 		prints("%s \xd2\xd1\xc9\xbe\xb3\xfd\n", explain_file[ch]);
 		pressreturn();
@@ -1691,7 +1690,7 @@ int wall() {
 	// Add end.
 
 	set_user_status(ST_MSG);
-	move(2, 0);
+	screen_move(2, 0);
 	screen_clrtobot();
 
 	char msg[MAX_MSG_SIZE + 2];
@@ -1701,7 +1700,7 @@ int wall() {
 	}
 
 	if (!broadcast_msg(msg)) {
-		move(2, 0);
+		screen_move(2, 0);
 		//% prints("线上空无一人\n");
 		prints("\xcf\xdf\xc9\xcf\xbf\xd5\xce\xde\xd2\xbb\xc8\xcb\n");
 		pressanykey();
@@ -1721,7 +1720,7 @@ int setsystempasswd() {
 		return 0;
 	if (strcmp(currentuser.userid, "SYSOP")) {
 		screen_clear();
-		move(10, 20);
+		screen_move(10, 20);
 		//% prints("对不起，系统密码只能由 SYSOP 修改！");
 		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb\xd6\xbb\xc4\xdc\xd3\xc9 SYSOP \xd0\xde\xb8\xc4\xa3\xa1");
 		pressanykey();
@@ -1741,14 +1740,14 @@ int setsystempasswd() {
 	//% getdata(3, 0, "确认新的系统密码: ", prepass, 19, NOECHO, YEA);
 	getdata(3, 0, "\xc8\xb7\xc8\xcf\xd0\xc2\xb5\xc4\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb: ", prepass, 19, NOECHO, YEA);
 	if (strcmp(passbuf, prepass)) {
-		move(4, 0);
+		screen_move(4, 0);
 		//% prints("两次密码不相同, 取消此次设定.");
 		prints("\xc1\xbd\xb4\xce\xc3\xdc\xc2\xeb\xb2\xbb\xcf\xe0\xcd\xac, \xc8\xa1\xcf\xfb\xb4\xcb\xb4\xce\xc9\xe8\xb6\xa8.");
 		pressanykey();
 		return 0;
 	}
 	if ((pass = fopen("etc/.syspasswd", "w")) == NULL) {
-		move(4, 0);
+		screen_move(4, 0);
 		//% prints("系统密码无法设定....");
 		prints("\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb\xce\xde\xb7\xa8\xc9\xe8\xb6\xa8....");
 		pressanykey();
@@ -1756,7 +1755,7 @@ int setsystempasswd() {
 	}
 	fprintf(pass, "%s\n", genpasswd(passbuf));
 	fclose(pass);
-	move(4, 0);
+	screen_move(4, 0);
 	//% prints("系统密码设定完成....");
 	prints("\xcf\xb5\xcd\xb3\xc3\xdc\xc2\xeb\xc9\xe8\xb6\xa8\xcd\xea\xb3\xc9....");
 	pressanykey();
@@ -1771,7 +1770,7 @@ extern int denylist_key_deal(const char *file, int ch, const char *line);
  */
 static void denylist_title_show(void)
 {
-	move(0, 0);
+	screen_move(0, 0);
 	//% prints("\033[1;44;36m 处罚到期的ID列表\033[K\033[m\n"
 	prints("\033[1;44;36m \xb4\xa6\xb7\xa3\xb5\xbd\xc6\xda\xb5\xc4ID\xc1\xd0\xb1\xed\033[K\033[m\n"
 			//% " 离开[\033[1;32m←\033[m] 选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m] 添加[\033[1;32ma\033[m]  修改[\033[1;32mc\033[m] 恢复[\033[1;32md\033[m] 到期[\033[1;32mx\033[m] 查找[\033[1;32m/\033[m]\n"
@@ -1801,7 +1800,7 @@ int kick_user(void)
 
 	//% stand_title("踢使用者下站");
 	stand_title("\xcc\xdf\xca\xb9\xd3\xc3\xd5\xdf\xcf\xc2\xd5\xbe");
-	move(1, 0);
+	screen_move(1, 0);
 
 	char uname[IDLEN + 1];
 	//% usercomplete("输入使用者帐号: ", uname);
@@ -1823,7 +1822,7 @@ int kick_user(void)
 	char buf[STRLEN];
 	//% snprintf(buf, sizeof(buf), "踢掉使用者 : [%s].", uname);
 	snprintf(buf, sizeof(buf), "\xcc\xdf\xb5\xf4\xca\xb9\xd3\xc3\xd5\xdf : [%s].", uname);
-	move(2, 0);
+	screen_move(2, 0);
 	if (!askyn(buf, NA, NA)) {
 		//% presskeyfor("取消踢使用者..", 2);
 		presskeyfor("\xc8\xa1\xcf\xfb\xcc\xdf\xca\xb9\xd3\xc3\xd5\xdf..", 2);
@@ -1840,7 +1839,7 @@ int kick_user(void)
 		//% presskeyfor("该用户已经被踢下站", 4);
 		presskeyfor("\xb8\xc3\xd3\xc3\xbb\xa7\xd2\xd1\xbe\xad\xb1\xbb\xcc\xdf\xcf\xc2\xd5\xbe", 4);
 	} else {
-		move(3, 0);
+		screen_move(3, 0);
 		//% presskeyfor("该用户不在线上或无法踢出站外..", 3);
 		presskeyfor("\xb8\xc3\xd3\xc3\xbb\xa7\xb2\xbb\xd4\xda\xcf\xdf\xc9\xcf\xbb\xf2\xce\xde\xb7\xa8\xcc\xdf\xb3\xf6\xd5\xbe\xcd\xe2..", 3);
 	}
@@ -1936,7 +1935,7 @@ int tui_search_all_boards(void)
 			"\xb5\xc4\xd7\xf7\xd5\xdf\xd5\xca\xba\xc5: ", user_name);
 
 	if (!*user_name) {
-		move(1, 0);
+		screen_move(1, 0);
 		//% 查询所有的作者吗
 		if (!askyn("\xb2\xe9\xd1\xaf\xcb\xf9\xd3\xd0\xb5\xc4\xd7\xf7\xd5\xdf"
 					"\xc2\xf0?", true, false))
@@ -1971,7 +1970,7 @@ int tui_search_all_boards(void)
 		return 0;
 
 	bool remove = false;
-	move(5, 0);
+	screen_move(5, 0);
 	//% 是否删除文章
 	remove = askyn("\xca\xc7\xb7\xf1\xc9\xbe\xb3\xfd\xce\xc4\xd5\xc2?",
 			false, false);

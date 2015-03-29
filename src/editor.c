@@ -379,7 +379,7 @@ static void display(editor_t *editor, bool ansi)
 
 	show_status_line(editor);
 
-	move(editor->current_line - editor->window_top, editor->screen_pos);
+	screen_move(editor->current_line - editor->window_top, editor->screen_pos);
 	editor->redraw = false;
 	return;
 }

@@ -209,7 +209,7 @@ int namecomplete(char *prompt, char *data) {
 			int col, len, i;
 			if (NumInList(cwlist) == 1) {
 				strcpy(data, cwlist->name);
-				move(y, x);
+				screen_move(y, x);
 				prints("%s", data + count);
 				count = strlen(data);
 				temp = data + count;
@@ -241,7 +241,7 @@ int namecomplete(char *prompt, char *data) {
 				ClearSubList(cwlist);
 				cwlist = node;
 				morelist = NULL;
-				move(y, x);
+				screen_move(y, x);
 				outc(ch);
 				x++;
 			} //for
@@ -250,7 +250,7 @@ int namecomplete(char *prompt, char *data) {
 			if (!morelist)
 				morelist = cwlist;
 			len = MaxLen(morelist, NUMLINES);
-			move(origy + 1, 0);
+			screen_move(origy + 1, 0);
 			screen_clrtobot();
 			prints(ANSI_CMD_SO);
 			//% printdash(" 列表 ");
@@ -260,7 +260,7 @@ int namecomplete(char *prompt, char *data) {
 				int i;
 				for (i = NUMLINES; (morelist) && (i > origy - 1); i--) {
 					if (morelist->name[0] != '\0') {
-						move(origy + 2 + (NUMLINES - i), col);
+						screen_move(origy + 2 + (NUMLINES - i), col);
 						prints("%s", morelist->name);
 					} else {
 						i++;
@@ -273,11 +273,11 @@ int namecomplete(char *prompt, char *data) {
 				len = MaxLen(morelist, NUMLINES);
 			} //while
 			if (morelist) {
-				move(-1, 0);
+				screen_move(-1, 0);
 				//% prints("[1;44m-- 还有 --                                                                     [m");
 				prints("[1;44m-- \xbb\xb9\xd3\xd0 --                                                                     [m");
 			}
-			move(y, x);
+			screen_move(y, x);
 			continue;
 		}
 		if (ch == '\177' || ch == '\010') {
@@ -290,9 +290,9 @@ int namecomplete(char *prompt, char *data) {
 			cwlist = GetSubList(data, toplev);
 			morelist = NULL;
 			x--;
-			move(y, x);
+			screen_move(y, x);
 			outc(' ');
-			move(y, x);
+			screen_move(y, x);
 			continue;
 		} //if
 		if (count < STRLEN) {
@@ -310,7 +310,7 @@ int namecomplete(char *prompt, char *data) {
 			ClearSubList(cwlist);
 			cwlist = node;
 			morelist = NULL;
-			move(y, x);
+			screen_move(y, x);
 			outc(ch);
 			x++;
 		}
@@ -320,11 +320,11 @@ int namecomplete(char *prompt, char *data) {
 	prints("\n");
 	screen_flush();
 	if (clearbot) {
-		move(origy, 0);
+		screen_move(origy, 0);
 		screen_clrtobot();
 	}
 	if (*data) {
-		move(origy, origx);
+		screen_move(origy, origx);
 		prints("%s\n", data);
 		/* for (x=1; x<500; x++);  delay */
 	}
@@ -422,7 +422,7 @@ int usercomplete(char *prompt, char *data) {
 
 			if (cwnum == 1) {
 				strcpy(data, cwlist);
-				move(y, x);
+				screen_move(y, x);
 				prints("%s", data + count);
 				count = strlen(data);
 				temp = data + count;
@@ -452,14 +452,14 @@ int usercomplete(char *prompt, char *data) {
 				count++;
 				cwnum = n;
 				morenum = 0;
-				move(y, x);
+				screen_move(y, x);
 				outc(ch);
 				x++;
 			}
 			clearbot = YEA;
 			col = 0;
 			len = UserMaxLen((void *)cwlist, cwnum, morenum, NUMLINES);
-			move(origy + 1, 0);
+			screen_move(origy + 1, 0);
 			screen_clrtobot();
 			//% printdash(" 所有使用者列表 ");
 			printdash(" \xcb\xf9\xd3\xd0\xca\xb9\xd3\xc3\xd5\xdf\xc1\xd0\xb1\xed ");
@@ -468,7 +468,7 @@ int usercomplete(char *prompt, char *data) {
 				for (i = 0; morenum < cwnum && i < NUMLINES - origy + 1; i++) {
 					char *tmpptr = cwlist + (IDLEN + 1) * morenum++;
 					if (*tmpptr != '\0') { //by Eric
-						move(origy + 2 + i, col);
+						screen_move(origy + 2 + i, col);
 						prints("%s ", tmpptr);
 					} else
 						i--;
@@ -479,13 +479,13 @@ int usercomplete(char *prompt, char *data) {
 				len = UserMaxLen((void *)cwlist, cwnum, morenum, NUMLINES);
 			}
 			if (morenum < cwnum) {
-				move(-1, 0);
+				screen_move(-1, 0);
 				//% prints("[1;44m-- 还有使用者 --                                                               [m");
 				prints("[1;44m-- \xbb\xb9\xd3\xd0\xca\xb9\xd3\xc3\xd5\xdf --                                                               [m");
 			} else {
 				morenum = 0;
 			}
-			move(y, x);
+			screen_move(y, x);
 			continue;
 		}
 		if (ch == '\177' || ch == '\010') {
@@ -497,9 +497,9 @@ int usercomplete(char *prompt, char *data) {
 			cwlist = u_namearray((void *)cwbuf, &cwnum, data);
 			morenum = 0;
 			x--;
-			move(y, x);
+			screen_move(y, x);
 			outc(' ');
-			move(y, x);
+			screen_move(y, x);
 			continue;
 		}
 		if (count < STRLEN) {
@@ -517,7 +517,7 @@ int usercomplete(char *prompt, char *data) {
 			count++;
 			cwnum = n;
 			morenum = 0;
-			move(y, x);
+			screen_move(y, x);
 			outc(ch);
 			x++;
 		}
@@ -528,11 +528,11 @@ int usercomplete(char *prompt, char *data) {
 	prints("\n");
 	screen_flush();
 	if (clearbot) {
-		move(origy, 0);
+		screen_move(origy, 0);
 		screen_clrtobot();
 	}
 	if (*data) {
-		move(origy, origx);
+		screen_move(origy, origx);
 		prints("%s\n", data);
 	}
 	return 0;

@@ -39,7 +39,7 @@ void user_display(char *filename, int number, int mode)
 	char buf[256];
 	int count = 1;
 	screen_clear();
-	move(1, 0);
+	screen_move(1, 0);
 	if ((fp = fopen(filename, "r")) == NULL)
 		return;
 	while (fgets(buf, 255, fp) != NULL) {

@@ -560,7 +560,7 @@ static void notepad_init(void)
 	}
 	fb_time_t now = fb_time();
 	if ((now - lastnote) >= maxsec) {
-		move(-1, 0);
+		screen_move(-1, 0);
 		//% prints("对不起，系统自动发信，请稍候.....");
 		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xcf\xb5\xcd\xb3\xd7\xd4\xb6\xaf\xb7\xa2\xd0\xc5\xa3\xac\xc7\xeb\xc9\xd4\xba\xf2.....");
 		screen_flush();
@@ -633,7 +633,7 @@ static void user_login(void)
 			if (currentuser.noteline == 0) {
 				shownotepad();
 			} else if ((noteln - currentuser.noteline)> 0) {
-				move(0, 0);
+				screen_move(0, 0);
 				ansimore2("etc/notepad", NA, 0, noteln - currentuser.noteline + 1);
 				terminal_getchar();
 				screen_clear();
@@ -798,7 +798,7 @@ void start_client(void)
 	if (strcmp(currentuser.userid, "guest")) {
 		if (check_maxmail())
 			pressanykey();
-		move(9, 0);
+		screen_move(9, 0);
 		screen_clrtobot();
 		if (!DEFINE(DEF_NOLOGINSEND))
 			if (session_visible())

@@ -101,7 +101,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 		}
 	}
 
-	move(acl->ybase + 1, 0);
+	screen_move(acl->ybase + 1, 0);
 	screen_clrtobot();
 	//% printdash(" 列表 ");
 	printdash(" \xc1\xd0\xb1\xed ");
@@ -141,7 +141,7 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 			} else {
 				acl->seek = NULL;
 				for (int i = 0; i < count; ++i) {
-					move(acl->ybase + i + 2, xbase);
+					screen_move(acl->ybase + i + 2, xbase);
 					outs(acl->col[i]->name);
 				}
 				screen_move_clear(-1);
@@ -186,16 +186,16 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 			case ' ':
 			case KEY_TAB:
 				len += _autocomplete(acl, buf, size);
-				move(acl->ybase, acl->xbase);
+				screen_move(acl->ybase, acl->xbase);
 				outs(buf);
 				break;
 			case Ctrl('H'):
 			case KEY_BACKSPACE:
 				if (len) {
 					buf[--len] = '\0';
-					move(acl->ybase, acl->xbase + len);
+					screen_move(acl->ybase, acl->xbase + len);
 					outc(' ');
-					move(acl->ybase, acl->xbase + len);
+					screen_move(acl->ybase, acl->xbase + len);
 					acl->seek = NULL;
 				}
 				break;
@@ -207,9 +207,9 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 						outc(ch);
 					} else {
 						buf[--len] = '\0';
-						move(acl->ybase, acl->xbase + len);
+						screen_move(acl->ybase, acl->xbase + len);
 						outc(' ');
-						move(acl->ybase, acl->xbase + len);
+						screen_move(acl->ybase, acl->xbase + len);
 					}
 				}
 				acl->seek = NULL;

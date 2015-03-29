@@ -135,12 +135,12 @@ void list_text(const char *file,
 		}
 
 		if (!empty) {
-			move(line - from + 3, 0);
+			screen_move(line - from + 3, 0);
 			prints(">");
 		}
 		ch = egetch();
 		if (!empty) {
-			move(line - from + 3, 0);
+			screen_move(line - from + 3, 0);
 			prints(" ");
 		}
 
@@ -248,7 +248,7 @@ static void reason_copy(const char *r)
  */
 static void reason_title_show(void)
 {
-	move(0, 0);
+	screen_move(0, 0);
 	//% prints("\033[1;44;36m封禁原因列表\033[K\033[m\n 封禁原因:%s\n\033[1;44m "
 	prints("\033[1;44;36m\xb7\xe2\xbd\xfb\xd4\xad\xd2\xf2\xc1\xd0\xb1\xed\033[K\033[m\n \xb7\xe2\xbd\xfb\xd4\xad\xd2\xf2:%s\n\033[1;44m "
 			//% "封禁的原因及处罚建议\033[K\033[m\n", reason);
@@ -311,7 +311,7 @@ static void reason_select(const char *file)
  */
 static void deny_title_show(void)
 {
-	move(0, 0);
+	screen_move(0, 0);
 	//% prints("\033[1;44;36m 设定无法发文的名单\033[K\033[m\n"
 	prints("\033[1;44;36m \xc9\xe8\xb6\xa8\xce\xde\xb7\xa8\xb7\xa2\xce\xc4\xb5\xc4\xc3\xfb\xb5\xa5\033[K\033[m\n"
 			//% " 离开[\033[1;32m←\033[m] 选择[\033[1;32m↑\033[m,\033[1;32m↓"
@@ -447,7 +447,7 @@ static void deny_add(const char *line)
 		strtok(id, " \n\r\t");
 		reason_copy(line + IDLEN + 1);
 	} else {
-		move(1, 0);
+		screen_move(1, 0);
 		//% usercomplete("封禁使用者: ", id);
 		usercomplete("\xb7\xe2\xbd\xfb\xca\xb9\xd3\xc3\xd5\xdf: ", id);
 		if (*id == '\0')
@@ -460,7 +460,7 @@ static void deny_add(const char *line)
 	//% getdata(1, 0, "输入天数(默认1天):", ans, sizeof(ans), DOECHO, YEA);
 	getdata(1, 0, "\xca\xe4\xc8\xeb\xcc\xec\xca\xfd(\xc4\xac\xc8\xcf""1\xcc\xec):", ans, sizeof(ans), DOECHO, YEA);
 	int yes;
-	move(1, 0);
+	screen_move(1, 0);
 	if (line)
 		//% yes = askyn("要修改对该用户的封禁吗?", NA, NA);
 		yes = askyn("\xd2\xaa\xd0\xde\xb8\xc4\xb6\xd4\xb8\xc3\xd3\xc3\xbb\xa7\xb5\xc4\xb7\xe2\xbd\xfb\xc2\xf0?", NA, NA);
@@ -534,7 +534,7 @@ static int deny_key_deal(const char *file, int ch, const char *line)
 		case 'd':
 			if (!line)
 				return 0;
-			move(1, 0);
+			screen_move(1, 0);
 			//% if (askyn("释放该用户吗?", NA, NA) == NA)
 			if (askyn("\xca\xcd\xb7\xc5\xb8\xc3\xd3\xc3\xbb\xa7\xc2\xf0?", NA, NA) == NA)
 				return 1;
@@ -849,7 +849,7 @@ static int denylist_add(const char *line)
 	char user[IDLEN + 1], ans[7];
 	int type = 0;
 
-	move(1, 0);
+	screen_move(1, 0);
 	if (line != NULL) {
 		strlcpy(user, line, sizeof(user));
 		strtok(user, " \n\r\t");
@@ -864,11 +864,11 @@ static int denylist_add(const char *line)
 		reason_copy(DEFAULT_REASON);
 		reason_select(DENY_LEVEL_FILE);
 		screen_clear();
-		move(2, 0);
+		screen_move(2, 0);
 		//% prints("封禁用户[%s]\n\n(1)发文 (2)登录 (3)聊天 (4)发信\n", user);
 		prints("\xb7\xe2\xbd\xfb\xd3\xc3\xbb\xa7[%s]\n\n(1)\xb7\xa2\xce\xc4 (2)\xb5\xc7\xc2\xbc (3)\xc1\xc4\xcc\xec (4)\xb7\xa2\xd0\xc5\n", user);
 		while (!type) {
-			move(12, 0);
+			screen_move(12, 0);
 			screen_clrtobot();
 			//% getdata(10, 0, "请输入你的处理: ", ans, 3, DOECHO, YEA);
 			getdata(10, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xc4\xe3\xb5\xc4\xb4\xa6\xc0\xed: ", ans, 3, DOECHO, YEA);
@@ -882,7 +882,7 @@ static int denylist_add(const char *line)
 	char ps[40];
 	//% getdata(12, 0, "输入说明: ", ps, sizeof(ps), DOECHO, YEA);
 	getdata(12, 0, "\xca\xe4\xc8\xeb\xcb\xb5\xc3\xf7: ", ps, sizeof(ps), DOECHO, YEA);
-	move(13, 0);
+	screen_move(13, 0);
 	//% if (askyn("您确定吗?", NA, NA) == NA)
 	if (askyn("\xc4\xfa\xc8\xb7\xb6\xa8\xc2\xf0?", NA, NA) == NA)
 		return 1;
