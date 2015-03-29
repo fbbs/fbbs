@@ -101,6 +101,8 @@ static void do_bbsnet(const site_t *site)
 	sock.sin_addr.s_addr = inet_addr(site->ip);
 	sock.sin_port = htons(site->port);
 	int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (fd < 0)
+		return;
 
 	if (!sigsetjmp(ret_alarm, 1)) {
 		fb_signal(SIGALRM, exit_bbsnet);

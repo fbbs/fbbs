@@ -323,7 +323,7 @@ extern const char *get_post_list_type_string(void);
 int web_sector(void)
 {
 	int sid = 0;
-	board_t parent;
+	board_t parent = { .id = 0 };
 	db_res_t *res = NULL;
 
 	const char *sname = web_get_param("s");

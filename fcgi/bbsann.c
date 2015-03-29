@@ -167,11 +167,11 @@ int bbsanc_main(void)
 			|| strstr(path, "SYSHome"))
 		return BBS_EINVAL;
 
-	char *bname = getbfroma(path);	
+	char *bname = getbfroma(path);
 	board_t board;
-	if (*bname) {
-		if (!get_board(bname, &board) || !has_read_perm(&board))
-			return BBS_ENOFILE;
+	if (!bname || *bname != '\0' || !get_board(bname, &board)
+			|| !has_read_perm(&board)) {
+		return BBS_ENOFILE;
 	}
 
 	char fname[512];

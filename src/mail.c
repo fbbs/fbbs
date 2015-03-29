@@ -434,8 +434,8 @@ int do_send(const char *userid, const char *title)
 		screen_clear();
 		return -2;
 	}
-	if( result == YEA) {
-		memcpy(newmessage.title, header.title, sizeof(header.title));
+	if (result == YEA) {
+		strlcpy(newmessage.title, header.title, sizeof(newmessage.title));
 		sprintf(save_title2, "{%.16s} %.60s", userid, newmessage.title);
 	}
 	do_quote(quote_file, filepath, header.include_mode, header.anonymous);
