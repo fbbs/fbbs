@@ -221,11 +221,12 @@ int bbspstmail_main(void)
 
 	// TODO: mail quota check, signature
 	int num = 0;
-	mmap_t m;
-	m.oflag = O_RDONLY;
+	mmap_t m = { .oflag = O_RDONLY };
 	char file[HOMELEN];
 	const char *str = web_get_param("n"); // 1-based
-	const struct fileheader *fh = NULL;
+
+	bool found = false;
+	struct fileheader fh;
 	if (*str) {
 		num = strtol(str, NULL, 10);
 		if (num <= 0)
@@ -233,13 +234,16 @@ int bbspstmail_main(void)
 		setmdir(file, currentuser.userid);
 		if (mmap_open(file, &m) < 0)
 			return BBS_EINTNL;
-		int size = m.size / sizeof(*fh);
+		int size = m.size / sizeof(fh);
 		if (num > size) {
 			mmap_close(&m);
 			return BBS_ENOFILE;
 		}
-		fh = (struct fileheader *)m.ptr + num - 1;
+		memcpy(&fh, (struct fileheader *) m.ptr + num - 1, sizeof(fh));
+		found = true;
+		mmap_close(&m);
 	}
+
 	xml_header(NULL);
 	printf("<bbspstmail ");
 
@@ -249,16 +253,16 @@ int bbspstmail_main(void)
 		ref = "pstmail";
 	xml_fputs(ref);
 
-	printf("' recv='%s'>", fh ? fh->owner : web_get_param("recv"));
+	printf("' recv='%s'>", found ? fh.owner : web_get_param("recv"));
 
-	if (fh) {
+	if (found) {
 		printf("<t>");
-		if (web_request_type(MOBILE) && !strneq2(fh->title, "Re: "))
+		if (web_request_type(MOBILE) && !strneq2(fh.title, "Re: "))
 			puts("Re: ");
-		xml_fputs4(fh->title, 0);
+		xml_fputs4(fh.title, 0);
 		printf("</t><m>");
 
-		setmfile(file, currentuser.userid, fh->filename);
+		setmfile(file, currentuser.userid, fh.filename);
 		if (web_request_type(UTF8)) {
 			mmap_t mm = { .oflag = O_RDONLY };
 			if (mmap_open(file, &mm) == 0) {
@@ -275,7 +279,6 @@ int bbspstmail_main(void)
 		}
 		printf("</m>");
 	}
-	mmap_close(&m);
 	print_session();
 	printf("</bbspstmail>");
 	return 0;

@@ -35,7 +35,7 @@ int SR_read();
 int SR_author();
 int Q_Goodbye();
 int G_SENDMODE = NA;
-extern char quote_file[], quote_user[];
+extern char quote_file[];
 char currmaildir[STRLEN];
 #define maxrecp 300
 
@@ -658,7 +658,6 @@ static int mail_reply(int ent, struct fileheader *fileinfo, char *direct)
 	strncat(title, fileinfo->title, STRLEN - 5);
 
 	sprintf(quote_file, "mail/%c/%s/%s", toupper(currentuser.userid[0]), currentuser.userid, fileinfo->filename);
-	strcpy(quote_user, fileinfo->owner);
 	switch (do_send(uid, title)) {
 		case -1:
 		//% prints("无法投递\n");

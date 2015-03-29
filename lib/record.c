@@ -688,13 +688,16 @@ int delete_record(const char *file, int size, int id,
 		if (ret == 0) {
 			memmove((char *)m.ptr + (id - 1) * size,
 					(char *)m.ptr + id * size, m.size - size * id);
-			mmap_truncate(&m, m.size - size);
+			ret = mmap_truncate(&m, m.size - size);
 		}
 	}
 	BBS_CATCH {
 		ret = -3;
 	}
-	BBS_END mmap_close(&m);
+	BBS_END {
+		if (ret != -1)
+			mmap_close(&m);
+	}
 
 	return ret;
 }

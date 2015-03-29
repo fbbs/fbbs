@@ -178,6 +178,7 @@ int register_send_email(const struct userec *user, const char *email)
 			//% "验证码(Validation code)    : %s (请注意大小写/Case sensitive)\n\n",
 			"\xd1\xe9\xd6\xa4\xc2\xeb(Validation code)    : %s (\xc7\xeb\xd7\xa2\xd2\xe2\xb4\xf3\xd0\xa1\xd0\xb4/Case sensitive)\n\n",
 			BBSNAME, BBSHOST, user->userid, password, password);
+	time_t firstlogin = user->firstlogin;
 	//% "附加信息(Additional Info)\n"
 	fprintf(fout, "\xb8\xbd\xbc\xd3\xd0\xc5\xcf\xa2(Additional Info)\n"
 			//% "本站地址(Site address)     : %s (%s)\n"
@@ -186,7 +187,7 @@ int register_send_email(const struct userec *user, const char *email)
 			"\xc4\xfa\xd7\xa2\xb2\xe1\xb5\xc4\xd5\xcb\xba\xc5(Your account) : %s\n"
 			//% "申请日期(Application date) : %s\n\n",
 			"\xc9\xea\xc7\xeb\xc8\xd5\xc6\xda(Application date) : %s\n\n",
-			BBSHOST, BBSIP, user->userid, ctime((time_t *)&user->firstlogin));
+			BBSHOST, BBSIP, user->userid, ctime(&firstlogin));
 	//% "本信件由系统自动发送，请不要回复。\n"
 	fprintf(fout, "\xb1\xbe\xd0\xc5\xbc\xfe\xd3\xc9\xcf\xb5\xcd\xb3\xd7\xd4\xb6\xaf\xb7\xa2\xcb\xcd\xa3\xac\xc7\xeb\xb2\xbb\xd2\xaa\xbb\xd8\xb8\xb4\xa1\xa3\n"
 			"Note: this is an automated email. Please don't reply.\n"

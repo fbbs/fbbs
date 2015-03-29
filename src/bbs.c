@@ -38,7 +38,7 @@ int usernum = 0;
 char currBM[BM_LEN - 1];
 char topic[STRLEN] = "";
 char genbuf[1024];
-char quote_file[120], quote_user[120];
+char quote_file[120];
 #ifndef NOREPLY
 char replytitle[STRLEN];
 #endif
@@ -457,14 +457,13 @@ int post_reply(const char *owner, const char *title, const char *file)
 
 	// indicate the quote file/user
 	strlcpy(quote_file, file, sizeof(quote_file));
-	strcpy(quote_user, owner);
 
-	if (!getuser(quote_user)) {
+	if (!getuser(owner)) {
 		//% prints("对不起，该帐号已经不存在!\n");
 		prints("\xb6\xd4\xb2\xbb\xc6\xf0\xa3\xac\xb8\xc3\xd5\xca\xba\xc5\xd2\xd1\xbe\xad\xb2\xbb\xb4\xe6\xd4\xda!\n");
 		pressreturn();
 	} else
-		strcpy(uid, quote_user);
+		strlcpy(uid, owner, sizeof(uid));
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
 	snprintf(gbk_title, sizeof(gbk_title), "%s%s",

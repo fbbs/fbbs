@@ -105,14 +105,21 @@ int mmap_close(mmap_t *m)
  */
 int mmap_truncate(mmap_t *m, size_t size)
 {
-	if (size > m->msize)
+	bool remap = size > m->msize;
+	if (remap)
 		munmap(m->ptr, m->size);
 	if (file_truncate(m->fd, size) < 0) {
-		mmap_close(m);
+		if (remap) {
+			if (m->lock != FILE_UNLCK)
+				file_lock_all(m->fd, FILE_UNLCK);
+			file_close(m->fd);
+		} else {
+			mmap_close(m);
+		}
 		return -1;
 	}
 	m->size = size;
-	if (size > m->msize) {
+	if (remap) {
 		m->ptr = mmap(NULL, size, m->prot, m->mflag, m->fd, 0);
 		if (m->ptr == MAP_FAILED) {
 			mmap_close(m);
