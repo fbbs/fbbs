@@ -326,7 +326,7 @@ static record_callback_e search_topic_callback(void *ptr, void *args, int off)
 			memcpy(stc->prs + stc->size++, pr, sizeof(*stc->prs));
 		}
 	} else if (stc->action == THREAD_OLDER) {
-		if (pr->id < stc->tid && !pr->id == pr->thread_id) {
+		if (pr->id < stc->tid && pr->id == pr->thread_id) {
 			save_offset(pr, stc, off);
 			stc->tid = stc->pid = pr->id;
 			return RECORD_CALLBACK_BREAK;

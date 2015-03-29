@@ -632,6 +632,7 @@ static int more_open_msg(const char *file, size_t size, more_file_t *more)
 		more->ln = (linenum_t *)(more->buf + len);
 		memset(more->ln, 0, more->ln_size * sizeof(linenum_t));
 	} else {
+		fclose(fp);
 		return -1;
 	}
 	return 0;

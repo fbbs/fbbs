@@ -1368,7 +1368,6 @@ struct one_key reg_comms[] = {
 };
 
 void show_register() {
-	FILE *fn;
 	int x; //, y, wid, len;
 	char uident[STRLEN];
 	if (!(HAS_PERM(PERM_USER)))
@@ -1398,17 +1397,22 @@ void show_register() {
 			}
 			db_clear(r);
 
-			sprintf(genbuf, "home/%c/%s/register",
+			char file[HOMELEN];
+			snprintf(file, sizeof(file), "home/%c/%s/register",
 					toupper(lookupuser.userid[0]), lookupuser.userid);
-			if ((fn = fopen(genbuf, "r")) != NULL) {
+
+			FILE *fp;
+			if ((fp = fopen(file, "r"))) {
 				//% prints("\n注册资料如下:\n\n");
 				prints("\n\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf\xc8\xe7\xcf\xc2:\n\n");
+				char buf[128];
 				for (x = 1; x <= 15; x++) {
-					if (fgets(genbuf, STRLEN, fn))
-						prints("%s", genbuf);
+					if (fgets(buf, sizeof(buf), fp))
+						prints("%s", buf);
 					else
 						break;
 				}
+				fclose(fp);
 			} else {
 				//% prints("\n\n找不到他/她的注册资料!!\n");
 				prints("\n\n\xd5\xd2\xb2\xbb\xb5\xbd\xcb\xfb/\xcb\xfd\xb5\xc4\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf!!\n");
@@ -1420,9 +1424,8 @@ void show_register() {
 
 //  进入 注册单察看栏,看使用者的注册资料或进注册单管理程序
 int m_register() {
-	FILE *fn;
-	char ans[3]; //, *fname;
-	int x; //, y, wid, len;
+	char ans[3];
+	int x;
 	char uident[STRLEN];
 
 	if (!(HAS_PERM(PERM_USER)))
@@ -1458,18 +1461,21 @@ int m_register() {
 					//% prints("错误的使用者代号...");
 					prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5...");
 				} else {
-					sprintf(genbuf, "home/%c/%s/register",
-							toupper(lookupuser.userid[0]),
-							lookupuser.userid);
-					if ((fn = fopen(genbuf, "r")) != NULL) {
+					char file[HOMELEN];
+					snprintf(file, sizeof(file), "home/%c/%s/register",
+							toupper(lookupuser.userid[0]), lookupuser.userid);
+					FILE *fp;
+					if ((fp = fopen(file, "r"))) {
 						//% prints("\n注册资料如下:\n\n");
 						prints("\n\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf\xc8\xe7\xcf\xc2:\n\n");
 						for (x = 1; x <= 15; x++) {
-							if (fgets(genbuf, STRLEN, fn))
-								prints("%s", genbuf);
+							char buf[128];
+							if (fgets(buf, sizeof(buf), fp))
+								prints("%s", buf);
 							else
 								break;
 						}
+						fclose(fp);
 					} else {
 						//% prints("\n\n找不到他/她的注册资料!!\n");
 						prints("\n\n\xd5\xd2\xb2\xbb\xb5\xbd\xcb\xfb/\xcb\xfd\xb5\xc4\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf!!\n");

@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "fbbs/fileio.h"
 #include "fbbs/util.h"
 
 /**
@@ -17,10 +18,9 @@ int read_urandom(void *buf, size_t size)
 	int fd = open("/dev/urandom", O_RDONLY);
 	if (fd < 0)
 		return -1;
-	if (read(fd, buf, size) < size)
-		return -1;
-	close(fd);
-	return 0;
+	int ret = read(fd, buf, size) < size ? -1 : 0;
+	file_close(fd);
+	return ret;
 }
 
 /**

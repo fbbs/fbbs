@@ -16,18 +16,19 @@ typedef struct {
 	char *replace;
 } logout;
 
-int countlogouts(char *filename)
+int countlogouts(char *file)
 {
-	FILE *fp;
+	FILE *fp = fopen(file, "r");
+	if (!fp)
+		return 0;
+
 	char buf[256];
 	int count = 0;
-	if ((fp = fopen(filename, "r")) == NULL)
-	return 0;
-
-	while (fgets(buf, 255, fp) != NULL) {
+	while (fgets(buf, 255, fp)) {
 		if (strstr(buf, "@logout@") || strstr(buf, "@login@"))
-		count++;
+			++count;
 	}
+	fclose(fp);
 	return count + 1;
 }
 

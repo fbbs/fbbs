@@ -296,13 +296,17 @@ m_internet()
 #ifdef INTERNET_EMAIL
 static int bbs_sendmail(const char *fname, const char *title, const char *receiver, int filter, int mime)
 {
-	FILE *fin, *fout;
 	sprintf(genbuf, "%s -f %s.bbs@%s %s", MTA,
 			currentuser.userid, BBSHOST, receiver);
-	fout = popen(genbuf, "w");
-	fin = fopen(fname, "r");
-	if (fin == NULL || fout == NULL)
-	return -1;
+
+	FILE *fout = popen(genbuf, "w");
+	if (!fout)
+		return -1;
+	FILE *fin = fopen(fname, "r");
+	if (!fin) {
+		pclose(fout);
+		return -1;
+	}
 
 	fprintf(fout, "Return-Path: %s.bbs@%s\n", currentuser.userid, BBSHOST);
 	fprintf(fout, "Reply-To: %s.bbs@%s\n", currentuser.userid, BBSHOST);

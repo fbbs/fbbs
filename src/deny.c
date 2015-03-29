@@ -827,9 +827,9 @@ static int denylist_do_add(const char *userid, int type, int days,
 		if (!added)
 			fputs(str, fpw);
 		fclose(fpw);
-		if (fpr)
-			fclose(fpr);
 	}
+	if (fpr)
+		fclose(fpr);
 	rename(list, DENY_LEVEL_LIST);
 
 	Postfile(file, "Notice", title, 1);

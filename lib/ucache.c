@@ -154,15 +154,15 @@ int del_uidshm(int num, char *userid)
 // Returns file descriptor if OK, -1 on error.
 static int shm_lock(const char *lockname)
 {
-	int lockfd;
-
-	lockfd = open(lockname, O_RDWR | O_CREAT, 0600);
-	if (lockfd < 0) {
+	int fd = open(lockname, O_RDWR | O_CREAT, 0600);
+	if (fd < 0) {
 		return -1;
 	}
-	if (file_lock_all(lockfd, FILE_WRLCK) == -1)
+	if (file_lock_all(fd, FILE_WRLCK) == -1) {
+		close(fd);
 		return -1;
-	return lockfd;
+	}
+	return fd;
 }
 
 // Removes an existing lock held by this process on file descriptor 'fd'.

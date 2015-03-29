@@ -351,19 +351,22 @@ static void write_header(FILE *fp, const struct postheader *header, bool _in_mai
 static void getcross(board_t *board, const char *input, const char *output,
 		int mode, struct postheader *header)
 {
-	FILE *inf, *of;
 	char buf[256];
 	char owner[STRLEN];
 	int owner_found = 0;
 	char *p = NULL;
 
 	fb_time_t now = fb_time();
-	inf = fopen(input, "r");
-	of = fopen(output, "w");
-	if (inf == NULL || of == NULL) {
-		report("Cross Post error", currentuser.userid);
+
+	FILE *inf = fopen(input, "r");
+	if (!inf)
+		return;
+	FILE *of = fopen(output, "w");
+	if (!of) {
+		fclose(inf);
 		return;
 	}
+
 	if (mode == POST_FILE_NORMAL || mode == POST_FILE_CP_ANN) {
 		write_header(of, header, false);
 

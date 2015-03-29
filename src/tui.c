@@ -406,7 +406,7 @@ void firsttitle(const char *title)
 		//% strcpy(middoc, "[信件过量，请整理信件!]");
 		strcpy(middoc, "[\xd0\xc5\xbc\xfe\xb9\xfd\xc1\xbf\xa3\xac\xc7\xeb\xd5\xfb\xc0\xed\xd0\xc5\xbc\xfe!]");
 	else
-		strcpy(middoc, BoardName);
+		strlcpy(middoc, BoardName, sizeof(middoc));
 
 	showtitle(title, middoc);
 }

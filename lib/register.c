@@ -193,7 +193,7 @@ int register_send_email(const struct userec *user, const char *email)
 			//% "如果您从未注册以上账号，请忽略此信。\n"
 			"\xc8\xe7\xb9\xfb\xc4\xfa\xb4\xd3\xce\xb4\xd7\xa2\xb2\xe1\xd2\xd4\xc9\xcf\xd5\xcb\xba\xc5\xa3\xac\xc7\xeb\xba\xf6\xc2\xd4\xb4\xcb\xd0\xc5\xa1\xa3\n"
 			"If you have never registered this account, please ignore the mail.\n");
-	fclose(fout);
+	pclose(fout);
 	return 0;
 }
 

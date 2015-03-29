@@ -31,18 +31,8 @@ int fill_shmfile(int mode, char* fname, char * shmkey) {
 	char buf[FILE_BUFSIZE];
 	struct stat st;
 	time_t ftime, now;
-	int lines = 0, nowfn = 0, maxnum;
+	int lines = 0, nowfn = 0, maxnum = MAX_GOODBYE;
 	struct FILESHM * tmp;
-	switch (mode) {
-		case 1:
-			maxnum = MAX_ISSUE;
-			break;
-		case 2:
-			maxnum = MAX_GOODBYE;
-			break;
-		default:
-			break;
-	}
 	now = time(0);
 	if (stat(fname, &st) < 0) {
 		return 0;

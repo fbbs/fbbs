@@ -133,8 +133,6 @@ static void telnet_init(void)
  */
 static int bind_port(const char *port, struct pollfd *fds, int nfds)
 {
-	char buf[80];
-
 	struct addrinfo hints, *ai;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
@@ -157,17 +155,18 @@ static int bind_port(const char *port, struct pollfd *fds, int nfds)
 		if (p->ai_family == AF_INET6)
 			setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on));
 
+		char buf[80];
 		if (bind(fd, p->ai_addr, p->ai_addrlen) != 0
 				|| listen(fd, SOMAXCONN) != 0) {
-			sprintf(buf, "%s() can't bind/listen to %s errno %d\n",
-					__func__, port, errno);
+			snprintf(buf, sizeof(buf), "%s() can't bind/listen to %s errno %d"
+					"\n", __func__, port, errno);
 			bbsd_log(buf);
 			close(fd);
 		} else {
 			fds[n].fd = fd;
 			fds[n].events = POLLIN;
 			++n;
-			sprintf(buf, "started on port %s\n", port);
+			snprintf(buf, sizeof(buf), "started on port %s\n", port);
 			bbsd_log(buf);
 		}
 	}
