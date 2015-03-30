@@ -122,7 +122,7 @@ int chk_currBM(char BMstr[BM_LEN-1], int isclub)
 	if (!HAS_PERM(PERM_BOARDS))
 		return NA;
 
-	strcpy(BMstrbuf, BMstr);
+	strlcpy(BMstrbuf, BMstr, sizeof(BMstrbuf));
 	ptr = strtok(BMstrbuf, ",: ;|&()\0\n");
 	while (ptr) {
 		if (!strcmp(ptr, currentuser.userid))
@@ -135,7 +135,7 @@ int chk_currBM(char BMstr[BM_LEN-1], int isclub)
 // set quotefile as filepath
 void setquotefile(const char *filepath)
 {
-	strcpy(quote_file, filepath);
+	strlcpy(quote_file, filepath, sizeof(quote_file));
 }
 
 //返回用户主目录下所在的文件filename路径
@@ -371,7 +371,7 @@ static void getcross(board_t *board, const char *input, const char *output,
 		if (fgets(buf, 256, inf) && (p = strstr(buf, "\xd0\xc5\xc8\xcb: "))) {
 			p += 6;
 			strtok(p, " \n\r");
-			strcpy(owner, p);
+			strlcpy(owner, p, sizeof(owner));
 			owner_found = 1;
 		} else {
 			owner_found = 0;
@@ -1184,7 +1184,7 @@ int Personal(const char *userid)
 			return 1;
 		}
 	} else
-		strcpy(lookid, userid);
+		strlcpy(lookid, userid, sizeof(lookid));
 	if (lookid[0] == '*') {
 		sprintf(lookid, "/%c/%s", toupper(currentuser.userid[0]),
 				currentuser.userid);
@@ -1654,7 +1654,7 @@ void canceltotrash(char *path, char *userid, struct fileheader *fh,
 	char tpath[80];
 	char *ptr;
 
-	strcpy(tpath, path);
+	strlcpy(tpath, path, sizeof(tpath));
 	ptr = strrchr(tpath, '/');
 	if (!ptr)
 		return;

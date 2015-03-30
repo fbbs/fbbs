@@ -99,10 +99,12 @@ int chk_giveupbbs(void)
 			unlink(buf);
 		else {
 			fn = fopen(buf, "w");
-			for (i = 0; i < lcount; i++)
-				if (sflag[i][1] > 0)
-					fprintf(fn, "%d %d\n", sflag[i][0], sflag[i][1]);
-			fclose(fn);
+			if (fn) {
+				for (i = 0; i < lcount; i++)
+					if (sflag[i][1] > 0)
+						fprintf(fn, "%d %d\n", sflag[i][0], sflag[i][1]);
+				fclose(fn);
+			}
 		}
 	}
 	return recover;
@@ -566,8 +568,10 @@ static void notepad_init(void)
 		screen_flush();
 		check = fopen("etc/checknotepad", "w");
 		lastnote = now - (now % maxsec);
-		fprintf(check, "%ld", lastnote);
-		fclose(check);
+		if (check) {
+			fprintf(check, "%ld", lastnote);
+			fclose(check);
+		}
 		if ((check = fopen("etc/autopost", "r")) != NULL) {
 			while (fgets(tmp, STRLEN, check) != NULL) {
 				fname = strtok(tmp, " \n\t:@");

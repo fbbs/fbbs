@@ -122,7 +122,7 @@ void showstuff(char *buf) {
 		sprintf(exp, "%d", tmpnum);
 		strcpy(ccexp, cexpstr(tmpnum));
 		tmpnum = countperf(&currentuser);
-		sprintf(perf, "%d", tmpnum);
+		snprintf(perf, sizeof(perf), "%d", tmpnum);
 		strcpy(ccperf, cperf(tmpnum));
 		//% sprintf(alltime, "%d小时%d分钟", currentuser.stay / 3600,
 		sprintf(alltime, "%d\xd0\xa1\xca\xb1%d\xb7\xd6\xd6\xd3", currentuser.stay / 3600,

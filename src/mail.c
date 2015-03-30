@@ -558,7 +558,7 @@ int m_send(const char *userid)
 			return FULLUPDATE;
 		}
 	} else
-	strcpy(uident, userid);
+	strlcpy(uident, userid, sizeof(uident));
 	set_user_status(ST_SMAIL);
 	screen_clear();
 	*quote_file = '\0';
@@ -640,7 +640,7 @@ static int mail_reply(int ent, struct fileheader *fileinfo, char *direct)
 		if (!valid_addr(t))
 			t = strtok(NULL, "<>");
 		if (t != NULL)
-			strcpy(uid, t);
+			strlcpy(uid, t, sizeof(uid));
 		else {
 			//% prints("无法投递\n");
 			prints("\xce\xde\xb7\xa8\xcd\xb6\xb5\xdd\n");
@@ -896,7 +896,7 @@ char * maildoent(int num, struct fileheader *ent) {
 		if (!valid_addr(t))
 			t = strtok(NULL, "<>");
 		if (t != NULL)
-			strcpy(b2, t);
+			strlcpy(b2, t, sizeof(b2));
 	}
 	if ((t = strchr(b2, ' ')) != NULL)
 		*t = '\0';
@@ -1012,7 +1012,7 @@ int mail_read(int ent, struct fileheader *fileinfo, char *direct)
 	screen_clear();
 	readpn = FULLUPDATE;
 	setqtitle(fileinfo->title, 0);
-	strcpy(buf, direct);
+	strlcpy(buf, direct, sizeof(buf));
 	if ((t = strrchr(buf, '/')) != NULL)
 	*t = '\0';
 	/****判断Type2公告的共享文件****/
@@ -1084,7 +1084,7 @@ int mail_del(int ent, struct fileheader *fileinfo, char *direct)
 			return FULLUPDATE;
 		}
 	}
-	strcpy(buf, direct);
+	strlcpy(buf, direct, sizeof(buf));
 	if ((t = strrchr(buf, '/')) != NULL)
 	*t = '\0';
 	if (!delete_record(direct, sizeof(*fileinfo), ent, cmpfilename, fileinfo->filename)) {
@@ -1215,7 +1215,7 @@ int m_read(void)
 	return 0;
 }
 
-static int listfilecontent(char *fname, int y)
+static int listfilecontent(const char *fname, int y)
 {
 	FILE *fp;
 	int x = 0, cnt = 0, max = 0, len;
@@ -1224,8 +1224,7 @@ static int listfilecontent(char *fname, int y)
 	//modified by roly 02.03.22 缓存区溢出
 	screen_move(y, x);
 	CreateNameList();
-	strcpy(genbuf, fname);
-	if ((fp = fopen(genbuf, "r")) == NULL) {
+	if ((fp = fopen(fname, "r")) == NULL) {
 		prints("(none)\n");
 		return 0;
 	}

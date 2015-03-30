@@ -193,8 +193,8 @@ static int load_config(const char *file, site_t *sites, int size)
 			site->port = t4 ? strtol(t4, NULL, 10) : 23;
 			count++;
 		}
+		fclose(fp);
 	}
-	fclose(fp);
 	return count;
 }
 

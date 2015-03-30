@@ -2,6 +2,7 @@
 
 #include "bbs.h"
 #include "chart.h"
+#include "fbbs/util.h"
 
 #define AVEFILE BBSHOME"/reclog/ave.src"
 #define AVEPIC  BBSHOME"/0Announce/bbslist/today"
@@ -61,7 +62,8 @@ int main(int argc, char **argv)
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		hour = atoi(buf);
 		count = atoi(index(buf, ':') + 1);
-		bst.value[hour] = count;
+		if (hour >= 0 && hour < ARRAY_SIZE(bst.value))
+			bst.value[hour] = count;
 		avg += count;
 		i++;
 	}

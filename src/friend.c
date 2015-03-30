@@ -247,10 +247,12 @@ static tui_list_handler_t black_list_handler(tui_list_t *p, int key)
 {
 	switch (key) {
 		case 'a':
-			if (tui_black_list_add() > 0)
+			if (tui_black_list_add() > 0) {
 				p->valid = false;
-			else
+				return PARTUPDATE;
+			} else {
 				return MINIUPDATE;
+			}
 		case 'h':
 			show_help("help/rejectshelp");
 			return FULLUPDATE;

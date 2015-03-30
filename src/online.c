@@ -329,9 +329,6 @@ static tui_list_query_t online_users_query(tui_list_t *p)
 	online_user_info_t *ip = up->users + p->cur;
 	p->in_query = true;
 
-	if (!ip)
-		return DONOTHING;
-
 	t_query(ip->name);
 	screen_move(-1, 0);
 	//% prints("\033[0;1;37;44m聊天[\033[1;32mt\033[37m] 寄信[\033[1;32mm\033[37m] "

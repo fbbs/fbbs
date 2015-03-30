@@ -150,12 +150,20 @@ static int bind_port(const char *port, struct pollfd *fds, int nfds)
 			return 0;
 		}
 
+		char buf[80];
 		int on = 1;
 		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-		if (p->ai_family == AF_INET6)
-			setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on));
+		if (p->ai_family == AF_INET6) {
+			int r = setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on));
+			if (r != 0) {
+				snprintf(buf, sizeof(buf), "can't set ipv6 socket errno %d",
+						errno);
+				bbsd_log(buf);
+				close(fd);
+				continue;
+			}
+		}
 
-		char buf[80];
 		if (bind(fd, p->ai_addr, p->ai_addrlen) != 0
 				|| listen(fd, SOMAXCONN) != 0) {
 			snprintf(buf, sizeof(buf), "%s() can't bind/listen to %s errno %d"
