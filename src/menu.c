@@ -449,9 +449,16 @@ static int sibling_item_callback(const menu_item_t *item, void *a,
 		int offset)
 {
 	sibling_item_arg_t *arg = a;
-	if (arg->sign * (item->col - arg->col) < 0) {
+	if ((arg->line == item->line && arg->sign * (item->col - arg->col) < 0)) {
 		arg->found = offset;
 		return -1;
+	}
+	if (arg->sign > 0) {
+		const char *cmd = menu_get_string(item->cmd);
+		if (cmd && streq(cmd, "@Goodbye")) {
+			arg->found = offset;
+			return -1;
+		}
 	}
 	return 0;
 }
@@ -588,7 +595,7 @@ int menu_loop(const char *group_name)
 				break;
 			}
 			case KEY_LEFT: {
-				int found = sibling_item(first_item, items, line, col, false);
+				int found = sibling_item(first_item, items, line, col, true);
 				if (found >= begin && found < end) {
 					now = found;
 					break;
