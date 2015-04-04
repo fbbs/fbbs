@@ -1046,13 +1046,19 @@ static int show_post_info(const post_info_t *pi)
 }
 
 static bool dump_content(const post_info_t *pi, char *file, size_t size,
-		bool read_deleted, bool mark_as_read)
+		bool read_deleted, bool mark_as_read, bool utf8)
 {
 	char *content = post_content_get(pi->id, read_deleted);
 	if (!content)
 		return false;
 
-	int ret = post_dump_gbk_file(content, strlen(content), file, size);
+	int ret = -1;
+	if (utf8) {
+		file_temp_name(file, size);
+		ret = file_append(file, content) == -1 ? -1 : 0;
+	} else {
+		ret = post_dump_gbk_file(content, strlen(content), file, size);
+	}
 
 	if (mark_as_read)
 		post_mark_as_read(pi, content);
@@ -1066,7 +1072,7 @@ extern int tui_cross_post_legacy(const char *file, const char *title);
 static int tui_cross_post(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi, file, sizeof(file), true, false))
+	if (!pi || !dump_content(pi, file, sizeof(file), true, false, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1081,7 +1087,7 @@ static int tui_cross_post(const post_info_t *pi)
 static int forward_post(const post_info_t *pi, bool uuencode)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi, file, sizeof(file), true, false))
+	if (!pi || !dump_content(pi, file, sizeof(file), true, false, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1096,7 +1102,7 @@ static int forward_post(const post_info_t *pi, bool uuencode)
 static int reply_with_mail(const post_info_t *pi)
 {
 	char file[HOMELEN];
-	if (!pi || !dump_content(pi, file, sizeof(file), true, false))
+	if (!pi || !dump_content(pi, file, sizeof(file), true, false, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1141,7 +1147,7 @@ static int tui_edit_post_content(post_info_t *pi)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(pi, file, sizeof(file), true, false))
+	if (!dump_content(pi, file, sizeof(file), true, false, false))
 		return DONOTHING;
 
 	int status = session_status();
@@ -1172,8 +1178,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	fb_time_t now = fb_time();
 	if (now - get_my_last_post_time() < 3) {
 		screen_move_clear(-1);
-		//% 您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。
-		prints("\xc4\xfa\xcc\xab\xd0\xc1\xbf\xe0\xc1\xcb\xa3\xac\xcf\xc8\xba\xc8\xb1\xad\xbf\xa7\xb7\xc8\xd0\xaa\xbb\xe1\xb6\xf9\xa3\xac""3 \xc3\xeb\xd6\xd3\xba\xf3\xd4\xd9\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2\xa1\xa3\n");
+		screen_printf("您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。");
 		pressreturn();
 		return MINIUPDATE;
 	}
@@ -1181,8 +1186,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	board_t board;
 	if (!get_board_by_bid(bid, &board) || !has_post_perm(&board)) {
 		screen_move_clear(-1);
-		//% prints("此讨论区是唯读的, 或是您尚无权限在此发表文章。");
-		prints("\xb4\xcb\xcc\xd6\xc2\xdb\xc7\xf8\xca\xc7\xce\xa8\xb6\xc1\xb5\xc4, \xbb\xf2\xca\xc7\xc4\xfa\xc9\xd0\xce\xde\xc8\xa8\xcf\xde\xd4\xda\xb4\xcb\xb7\xa2\xb1\xed\xce\xc4\xd5\xc2\xa1\xa3");
+		screen_printf("此讨论区是只读的, 或是您尚无权限在此发表文章。");
 		pressreturn();
 		return FULLUPDATE;
 	}
@@ -1240,7 +1244,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	file_temp_name(file, sizeof(file));
 	if (pi) {
 		char orig[HOMELEN];
-		dump_content(pi, orig, sizeof(orig), true, false);
+		dump_content(pi, orig, sizeof(orig), true, false, false);
 		do_quote(orig, file, header.include_mode, header.anonymous);
 		unlink(orig);
 	} else {
@@ -1308,7 +1312,7 @@ static int tui_save_post(const post_info_t *pi)
 		return DONOTHING;
 
 	char file[HOMELEN];
-	if (!dump_content(pi, file, sizeof(file), true, false))
+	if (!dump_content(pi, file, sizeof(file), true, false, false))
 		return DONOTHING;
 
 	GBK_BUFFER(title, POST_TITLE_CCHARS);
@@ -1329,7 +1333,7 @@ static int tui_import_post(const post_info_t *pi)
 		return FULLUPDATE;
 
 	char file[HOMELEN];
-	if (dump_content(pi, file, sizeof(file), true, false)) {
+	if (dump_content(pi, file, sizeof(file), true, false, false)) {
 		GBK_BUFFER(title, POST_TITLE_CCHARS);
 		convert_u2g(pi->utf8_title, gbk_title);
 
@@ -1663,7 +1667,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 	while (!end) {
 		int ch = 0;
 		if (!entering) {
-			if (!pi || !dump_content(pi, file, sizeof(file), true, true))
+			if (!pi || !dump_content(pi, file, sizeof(file), true, true, false))
 				return DONOTHING;
 			if (thread)
 				tid = pi->thread_id;
@@ -1822,7 +1826,7 @@ static record_callback_e import_posts_callback(void *r, void *args, int offset)
 		post_record_to_info(pr, &pi, 1);
 
 		char file[HOMELEN];
-		dump_content(&pi, file, sizeof(file), true, false);
+		dump_content(&pi, file, sizeof(file), true, false, false);
 		import_file(gbk_title, file, ipc->path);
 		unlink(file);
 		return RECORD_CALLBACK_MATCH;
@@ -2711,7 +2715,7 @@ static int read_reply(tui_list_t *tl, post_info_t *pi)
 						|| !user_has_read_perm(&currentuser, &board))
 					break;
 			}
-			if (!dump_content(pi, file, sizeof(file), false, false))
+			if (!dump_content(pi, file, sizeof(file), false, false, false))
 				break;
 
 			ch = ansimore(file, false);
