@@ -49,13 +49,13 @@ enum {
 };
 
 typedef enum {
-	QUOTE_NOTHING = 'N',
-	QUOTE_AUTO = 'R',
-	QUOTE_LONG = 'Y',
-	QUOTE_SOURCE = 'S',
-	QUOTE_ALL = 'A',
-	QUOTE_PACK = 'P',
-	QUOTE_PACK_COMPACT = 'C',
+	POST_QUOTE_NOTHING = 'N',
+	POST_QUOTE_AUTO = 'R',
+	POST_QUOTE_LONG = 'Y',
+	POST_QUOTE_SOURCE = 'S',
+	POST_QUOTE_ALL = 'A',
+	POST_QUOTE_PACK = 'P',
+	POST_QUOTE_PACK_COMPACT = 'C',
 } post_quote_e;
 
 typedef enum {
@@ -171,8 +171,8 @@ extern int post_record_open(int board_id, record_t *record);
 extern int post_record_open_sticky(int board_id, record_t *record);
 extern int post_record_open_trash(int board_id, post_trash_e trash, record_t *record);
 
-extern void quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
-extern void quote_file_(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
+extern void post_quote_string(const char *str, size_t size, FILE *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
+extern void post_quote_file(const char *orig, const char *output, post_quote_e mode, bool mail, bool utf8, size_t (*filter)(const char *, size_t, FILE *));
 
 extern bool is_deleted(post_list_type_e type);
 

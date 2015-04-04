@@ -1988,8 +1988,8 @@ static record_callback_e pack_posts_callback(void *ptr, void *args, int off)
 		if (content) {
 			fputs("\033[1;32m☆─────────────────"
 					"─────────────────────☆\033[0;1m\n", ppc->fp);
-			quote_string(content, strlen(content), ppc->fp, ppc->mode, false,
-					true, NULL);
+			post_quote_string(content, strlen(content), ppc->fp, ppc->mode,
+					false, true, NULL);
 			fputc('\n', ppc->fp);
 		}
 		free(content);
@@ -2009,7 +2009,7 @@ static post_id_t pack_posts(record_t *record, const post_filter_t *filter,
 		pack_posts_callback_t ppc = {
 			.filter = filter,
 			.fp = fp,
-			.mode = quote ? QUOTE_PACK : QUOTE_PACK_COMPACT,
+			.mode = quote ? POST_QUOTE_PACK : POST_QUOTE_PACK_COMPACT,
 		};
 		record_foreach(record, NULL, 0, pack_posts_callback, &ppc);
 		fclose(fp);

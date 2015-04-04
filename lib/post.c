@@ -246,7 +246,7 @@ static void post_set_board_count(int board_id, int count)
 }
 
 enum {
-	MAX_QUOTED_LINES = 5,     ///< Maximum quoted lines (for QUOTE_AUTO).
+	MAX_QUOTED_LINES = 5,     ///< Maximum quoted lines (for POST_QUOTE_AUTO).
 	/** A line will be truncated at this width (78 for quoted line) */
 	TRUNCATE_WIDTH = 76,
 };
@@ -349,7 +349,7 @@ static const char *get_newline(const char *begin, const char *end)
 	return begin;
 }
 
-#define PRINT_CONST_STRING(s)  (*filter)(s, sizeof(s) - 1, fp)
+#define PRINT_CONST_STRING(s)  filter(s, sizeof(s) - 1, fp)
 
 static void quote_author(const char *begin, const char *lend, bool mail,
 		bool utf8, FILE *fp, filter_t filter)
@@ -438,15 +438,15 @@ static void quote_author_pack(const char *begin, const char *end, FILE *fp,
 #define UTF8_SOURCE  "※ 来源:·"
 
 /**
- * Make quotation from a string.
- * @param str String to be quoted.
- * @param size Size of the string.
- * @param fp Output stream. If NULL, will output to stdout (web).
- * @param mode Quotation mode. See QUOTE_* enums.
- * @param mail Whether the referenced post is a mail.
- * @param filter Output filter function.
+ * 以指定模式处理文本生成引文
+ * @param str 要处理的原文字符串
+ * @param size 字符串长度
+ * @param fp 输出流, 如为空则使用标准输出
+ * @param mode 引文模式
+ * @param mail 原文是否是信件
+ * @param filter 输出转换函数, 如为空则使用默认输出函数
  */
-void quote_string(const char *str, size_t size, FILE *fp,
+void post_quote_string(const char *str, size_t size, FILE *fp,
 		post_quote_e mode, bool mail, bool utf8, filter_t filter)
 {
 	if (!filter)
@@ -454,7 +454,7 @@ void quote_string(const char *str, size_t size, FILE *fp,
 
 	const char *begin = str, *end = str + size;
 	const char *lend = get_newline(begin, end);
-	if (mode == QUOTE_PACK || mode == QUOTE_PACK_COMPACT)
+	if (mode == POST_QUOTE_PACK || mode == POST_QUOTE_PACK_COMPACT)
 		quote_author_pack(begin, end, fp, filter);
 	else
 		quote_author(begin, lend, mail, utf8, fp, filter);
@@ -467,7 +467,7 @@ void quote_string(const char *str, size_t size, FILE *fp,
 		if (ptr >= end)
 			break;
 
-		if (mode == QUOTE_PACK || mode == QUOTE_PACK_COMPACT)
+		if (mode == POST_QUOTE_PACK || mode == POST_QUOTE_PACK_COMPACT)
 			lend = get_newline(ptr, end);
 		else
 			lend = get_truncated_line(ptr, end, utf8);
@@ -477,32 +477,33 @@ void quote_string(const char *str, size_t size, FILE *fp,
 		}
 
 		if (lend - ptr == 3 && !memcmp(ptr, "--\n", 3)) {
-			if (mode == QUOTE_LONG || mode == QUOTE_AUTO
-					|| mode == QUOTE_PACK || mode == QUOTE_PACK_COMPACT)
+			if (mode == POST_QUOTE_LONG || mode == POST_QUOTE_AUTO
+					|| mode == POST_QUOTE_PACK
+					|| mode == POST_QUOTE_PACK_COMPACT)
 				break;
 		}
 
-		if (!header || mode == QUOTE_ALL) {
-			if ((mode == QUOTE_LONG || mode == QUOTE_AUTO)
+		if (!header || mode == POST_QUOTE_ALL) {
+			if ((mode == POST_QUOTE_LONG || mode == POST_QUOTE_AUTO)
 					&& !qualify_quotation(ptr, lend)) {
 				if (*(lend - 1) != '\n')
 					lend = get_newline(lend, end);
 				continue;
 			}
 
-			if (mode == QUOTE_SOURCE && !utf8
+			if (mode == POST_QUOTE_SOURCE && !utf8
 					&& lend - ptr > 10 + sizeof(GBK_SOURCE)
 					&& !memcmp(ptr + 10, GBK_SOURCE, sizeof(GBK_SOURCE))) {
 				break;
 			}
 
-			if (mode == QUOTE_SOURCE && utf8
+			if (mode == POST_QUOTE_SOURCE && utf8
 					&& lend - ptr > 10 + sizeof(UTF8_SOURCE)
 					&& !memcmp(ptr + 10, UTF8_SOURCE, sizeof(UTF8_SOURCE))) {
 				break;
 			}
 
-			if (mode == QUOTE_AUTO) {
+			if (mode == POST_QUOTE_AUTO) {
 				if (++lines > MAX_QUOTED_LINES) {
 					if (utf8) {
 						PRINT_CONST_STRING(": .................（以下省略）");
@@ -514,8 +515,8 @@ void quote_string(const char *str, size_t size, FILE *fp,
 				}
 			}
 
-			if (mode != QUOTE_SOURCE && mode != QUOTE_PACK
-					&& mode != QUOTE_PACK_COMPACT)
+			if (mode != POST_QUOTE_SOURCE && mode != POST_QUOTE_PACK
+					&& mode != POST_QUOTE_PACK_COMPACT)
 				PRINT_CONST_STRING(": ");
 			(*filter)(ptr, lend - ptr, fp);
 			if (*(lend - 1) != '\n')
@@ -524,15 +525,15 @@ void quote_string(const char *str, size_t size, FILE *fp,
 	}
 }
 
-void quote_file_(const char *orig, const char *output, post_quote_e mode,
+void post_quote_file(const char *orig, const char *output, post_quote_e mode,
 		bool mail, bool utf8, filter_t filter)
 {
-	if (mode != QUOTE_NOTHING) {
+	if (mode != POST_QUOTE_NOTHING) {
 		FILE *fp = fopen(output, "w");
 		if (fp) {
 			mmap_t m = { .oflag = O_RDONLY };
 			if (mmap_open(orig, &m) == 0) {
-				quote_string(m.ptr, m.size, fp, mode, mail, utf8, filter);
+				post_quote_string(m.ptr, m.size, fp, mode, mail, utf8, filter);
 				mmap_close(&m);
 			}
 			fclose(fp);

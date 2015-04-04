@@ -810,14 +810,14 @@ static int do_bbspst(bool isedit)
 			}
 		} else {
 			if (utf8) {
-				quote_string(utf8_content, len, NULL, QUOTE_AUTO, false,
-						true, xml_fputs3);
+				post_quote_string(utf8_content, len, NULL, POST_QUOTE_AUTO,
+						false, true, xml_fputs3);
 			} else {
 				char *gbk_content = malloc(len + 1);
 				convert(CONVERT_U2G, utf8_content, len, gbk_content, len,
 						NULL, NULL);
-				quote_string(gbk_content, strlen(gbk_content), NULL,
-						QUOTE_AUTO, false, false, xml_fputs3);
+				post_quote_string(gbk_content, strlen(gbk_content), NULL,
+						POST_QUOTE_AUTO, false, false, xml_fputs3);
 				free(gbk_content);
 			}
 		}

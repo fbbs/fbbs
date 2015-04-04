@@ -269,13 +269,14 @@ int bbspstmail_main(void)
 				char *utf8_str = malloc(mm.size * 2 + 1);
 				convert(CONVERT_G2U, mm.ptr, mm.size, utf8_str, mm.size * 2 + 1,
 						NULL, NULL);
-				quote_string(utf8_str, strlen(utf8_str), NULL, QUOTE_AUTO,
-						true, true, xml_fputs3);
+				post_quote_string(utf8_str, strlen(utf8_str), NULL,
+						POST_QUOTE_AUTO, true, true, xml_fputs3);
 				free(utf8_str);
 				mmap_close(&mm);
 			}
 		} else {
-			quote_file_(file, NULL, QUOTE_AUTO, true, false, xml_fputs3);
+			post_quote_file(file, NULL, POST_QUOTE_AUTO, true, false,
+					xml_fputs3);
 		}
 		printf("</m>");
 	}

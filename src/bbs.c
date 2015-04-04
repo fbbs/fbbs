@@ -290,7 +290,7 @@ static void add_signature(FILE *fp, const char *user, int sig)
 void do_quote(const char *orig, const char *file, char mode, bool anony)
 {
 	bool mail = strneq(orig, "mail", 4);
-	quote_file_(orig, file, mode, mail, false, NULL);
+	post_quote_file(orig, file, mode, mail, false, NULL);
 
 	FILE *fp = fopen(file, "a");
 	if (!fp)
