@@ -248,7 +248,8 @@ static void post_set_board_count(int board_id, int count)
 }
 
 enum {
-	MAX_QUOTED_LINES = 5,     ///< Maximum quoted lines (for POST_QUOTE_AUTO).
+	POST_QUOTE_LINE_MAX = 5,
+	POST_QUOTE_WIDTH_MAX = 140,
 	/** A line will be truncated at this width (78 for quoted line) */
 	TRUNCATE_WIDTH = 76,
 };
@@ -439,6 +440,49 @@ static void quote_author_pack(const char *begin, const char *end, FILE *fp,
 #define GBK_SOURCE  "\xa1\xf9 \xc0\xb4\xd4\xb4:\xa1\xa4"
 #define UTF8_SOURCE  "※ 来源:·"
 
+static void print_omit_string(bool utf8, filter_t filter, FILE *fp)
+{
+	if (utf8) {
+		PRINT_CONST_STRING(": .................（以下省略）");
+	} else {
+		PRINT_CONST_STRING(": .................\xa3\xa8"
+				"\xd2\xd4\xcf\xc2\xca\xa1\xc2\xd4\xa3\xa9");
+	}
+}
+
+static const char *update_quote_width(const char *begin, const char *end,
+		bool utf8, size_t *width)
+{
+	const char *ptr = begin;
+	while (ptr < end && *width) {
+		if (utf8) {
+			size_t left = end - ptr;
+			const char *next = ptr;
+			wchar_t wc = next_wchar(&next, &left);
+			if (!wc || wc == WEOF)
+				return ptr;
+			int w = fb_wcwidth(wc);
+			if (w <= 0)
+				w = next - ptr > 0 ? next - ptr : 1;
+			if (*width < w)
+				return ptr;
+			*width -= w;
+			ptr = next;
+		} else {
+			if (*ptr & 0x80) {
+				if (*width < 2)
+					return ptr;
+				*width -= 2;
+				ptr += 2;
+			} else {
+				*width -= 1;
+				++ptr;
+			}
+		}
+	}
+	return ptr > end ? end : ptr;
+}
+
 /**
  * 以指定模式处理文本生成引文
  * @param str 要处理的原文字符串
@@ -462,7 +506,7 @@ void post_quote_string(const char *str, size_t size, FILE *fp,
 		quote_author(begin, lend, mail, utf8, fp, filter);
 
 	bool header = true;
-	size_t lines = 0;
+	size_t lines = 0, width = POST_QUOTE_WIDTH_MAX;
 	const char *ptr;
 	while (1) {
 		ptr = lend;
@@ -506,13 +550,16 @@ void post_quote_string(const char *str, size_t size, FILE *fp,
 			}
 
 			if (mode == POST_QUOTE_AUTO) {
-				if (++lines > MAX_QUOTED_LINES) {
-					if (utf8) {
-						PRINT_CONST_STRING(": .................（以下省略）");
-					} else {
-						PRINT_CONST_STRING(": .................\xa3\xa8"
-								"\xd2\xd4\xcf\xc2\xca\xa1\xc2\xd4\xa3\xa9");
-					}
+				if (++lines > POST_QUOTE_LINE_MAX) {
+					print_omit_string(utf8, filter, fp);
+					break;
+				}
+				const char *truncated_end = update_quote_width(ptr, lend,
+						utf8, &width);
+				if (truncated_end < lend) {
+					filter(ptr, truncated_end - ptr, fp);
+					PRINT_CONST_STRING("\n");
+					print_omit_string(utf8, filter, fp);
 					break;
 				}
 			}
@@ -520,7 +567,7 @@ void post_quote_string(const char *str, size_t size, FILE *fp,
 			if (mode != POST_QUOTE_SOURCE && mode != POST_QUOTE_PACK
 					&& mode != POST_QUOTE_PACK_COMPACT)
 				PRINT_CONST_STRING(": ");
-			(*filter)(ptr, lend - ptr, fp);
+			filter(ptr, lend - ptr, fp);
 			if (*(lend - 1) != '\n')
 				PRINT_CONST_STRING("\n");
 		}
