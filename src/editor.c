@@ -1286,11 +1286,12 @@ static bool write_body(const editor_t *editor, FILE *fp, const char *host,
 		setuserfile(fname, "signatures");
 		if (!dashf(fname) || currentuser.signature == 0 || anonymous)
 			fputs("--\n", fp);
-
-		int color = (currentuser.numlogins % 7) + 31;
-		fprintf(fp, "\033[m\033[1;%2dm※ 来源:·%s %s·[FROM: %s]\033[m\n",
-				color, BBSNAME_UTF8, BBSHOST,
-				anonymous ? ANONYMOUS_SOURCE_UTF8 : host);
+		if (editor->allow_edit_end == vector_size(&editor->lines)) {
+			int color = (currentuser.numlogins % 7) + 31;
+			fprintf(fp, "\033[m\033[1;%2dm※ 来源:·%s %s·[FROM: %s]\033[m\n",
+					color, BBSNAME_UTF8, BBSHOST,
+					anonymous ? ANONYMOUS_SOURCE_UTF8 : host);
+		}
 	}
 	return true;
 }
