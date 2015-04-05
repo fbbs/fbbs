@@ -163,7 +163,7 @@ bool convert_file(const char *from, const char *to, convert_type_e type)
 		return false;
 
 	mmap_t m = { .oflag = O_RDONLY };
-	if (mmap_open(from, &m) != 0) {
+	if (mmap_open(from, &m) == 0) {
 		convert_to_file(type, m.ptr, m.size, fp);
 		mmap_close(&m);
 		ok = true;

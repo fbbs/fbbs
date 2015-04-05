@@ -1492,8 +1492,9 @@ editor_e editor(const char *file, bool utf8, bool write_header_to_file,
 			case Ctrl('W'): {
 				ans = confirm_save_file(file, post_header, confirmed);
 				if (ans == EDITOR_SAVE) {
-					write_file(&editor, file, post_header, utf8,
-							write_header_to_file);
+					if (!write_file(&editor, file, post_header, utf8,
+							write_header_to_file))
+						ans = EDITOR_ABORT;
 				}
 				break;
 			}

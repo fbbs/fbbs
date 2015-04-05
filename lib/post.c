@@ -121,10 +121,12 @@ char *post_convert_to_utf8(const char *file)
 	char *utf8_content = NULL;
 	mmap_t m = { .oflag = O_RDONLY };
 	if (mmap_open(file, &m) == 0) {
-		utf8_content = malloc(m.size * 2);
-		convert(CONVERT_G2U, m.ptr, CONVERT_ALL, utf8_content, m.size * 2,
-				NULL, NULL);
-		mmap_close(&m);
+		if (m.size) {
+			utf8_content = malloc(m.size * 2);
+			convert(CONVERT_G2U, m.ptr, CONVERT_ALL, utf8_content, m.size * 2,
+					NULL, NULL);
+			mmap_close(&m);
+		}
 	}
 	return utf8_content;
 }
@@ -714,6 +716,8 @@ post_id_t post_new(const post_request_t *pr)
 		content = post_convert_to_utf8(pr->gbk_file);
 	else
 		content = generate_content(pr, uname, nick, ip, anony, pr->length);
+	if (!content)
+		return 0;
 
 	backend_request_post_new_t req = {
 		.reply_id = pr->reid,
