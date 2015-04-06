@@ -21,16 +21,20 @@ CREATE TABLE boards (
 	flag INTEGER,
 	perm INTEGER,
 	categ TEXT,
-	sector INTEGER REFERENCES board_sectors,
+	sector INTEGER,
 	bms TEXT
 );
 CREATE UNIQUE INDEX ON boards (lower(name));
+CREATE INDEX ON boards (sector);
+
 CREATE TABLE bms (
-	user_id INTEGER REFERENCES users,
-	board_id INTEGER REFERENCES boards,
+	user_id INTEGER,
+	board_id INTEGER,
 	stamp TIMESTAMPTZ,
 	UNIQUE (user_id, board_id)
 );
+CREATE INDEX ON bms (board_id);
+CREATE INDEX ON bms (user_id);
 
 CREATE OR REPLACE FUNCTION bms_trigger() RETURNS TRIGGER AS $$
 DECLARE

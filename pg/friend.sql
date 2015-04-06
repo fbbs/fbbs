@@ -4,21 +4,25 @@ DROP TABLE IF EXISTS blacklists;
 DROP TABLE IF EXISTS follows;
 
 CREATE TABLE follows (
-	user_id INTEGER NOT NULL REFERENCES users,
-	follower INTEGER NOT NULL REFERENCES users,
+	user_id INTEGER NOT NULL,
+	follower INTEGER NOT NULL,
 	stamp TIMESTAMPTZ,
 	notes TEXT,
 	is_friend BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (user_id, follower)
 );
+CREATE INDEX ON follows (user_id);
+CREATE INDEX ON follows (follower);
 
 CREATE TABLE blacklists (
-	user_id INTEGER NOT NULL REFERENCES users,
-	blocked INTEGER NOT NULL REFERENCES users,
+	user_id INTEGER NOT NULL,
+	blocked INTEGER NOT NULL,
 	notes TEXT,
 	stamp TIMESTAMPTZ,
 	PRIMARY KEY (user_id, blocked)
 );
+CREATE INDEX ON blacklists (user_id);
+CREATE INDEX ON blacklists (blocked);
 
 CREATE OR REPLACE FUNCTION follow_before_trigger() RETURNS TRIGGER AS $$
 DECLARE
