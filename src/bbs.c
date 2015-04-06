@@ -243,7 +243,6 @@ int do_reply(struct fileheader *fh) {
  */
 static void add_signature(FILE *fp, const char *user, int sig)
 {
-	fputs("\n--\n", fp);
 	if (sig <= 0)
 		return;
 
@@ -289,12 +288,15 @@ static void add_signature(FILE *fp, const char *user, int sig)
 // TODO: do not use quote_file in callers.
 void do_quote(const char *orig, const char *file, char mode, bool anony)
 {
-	bool mail = strneq(orig, "mail", 4);
-	post_quote_file(orig, file, mode, mail, false, NULL);
+	if (orig) {
+		bool mail = strneq(orig, "mail", 4);
+		post_quote_file(orig, file, mode, mail, false, NULL);
+	}
 
 	FILE *fp = fopen(file, "a");
 	if (!fp)
 		return;
+	fputs("\n--\n", fp);
 	if (currentuser.signature && !anony)
 		add_signature(fp, currentuser.userid, currentuser.signature);
 	fclose(fp);

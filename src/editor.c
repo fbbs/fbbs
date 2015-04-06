@@ -231,9 +231,7 @@ static vector_size_t editor_end(const editor_t *editor)
 	size_t size = strlen(buf);
 
 	vector_size_t end = vector_size(&editor->lines);
-	if (end)
-		--end;
-	for (vector_size_t i = end; i; --i) {
+	for (vector_size_t i = end ? end - 1 : 0; i; --i) {
 		text_line_t *tl = editor_line(editor, i);
 		if (tl && match_string(tl, buf, size)) {
 			return i;
@@ -1282,10 +1280,6 @@ static bool write_body(const editor_t *editor, FILE *fp, const char *host,
 				currentuser.userid,
 				format_time(fb_time(), TIME_FORMAT_UTF8_ZH), host);
 	} else {
-		char fname[HOMELEN];
-		setuserfile(fname, "signatures");
-		if (!dashf(fname) || currentuser.signature == 0 || anonymous)
-			fputs("--\n", fp);
 		if (editor->allow_edit_end == vector_size(&editor->lines)) {
 			int color = (currentuser.numlogins % 7) + 31;
 			fprintf(fp, "\033[m\033[1;%2dm※ 来源:·%s %s·[FROM: %s]\033[m\n",

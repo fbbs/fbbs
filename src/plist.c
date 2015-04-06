@@ -1179,7 +1179,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	if (now - get_my_last_post_time() < 3) {
 		screen_move_clear(-1);
 		screen_printf("您太辛苦了，先喝杯咖啡歇会儿，3 秒钟后再发表文章。");
-		pressreturn();
+		terminal_getchar();
 		return MINIUPDATE;
 	}
 
@@ -1187,7 +1187,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 	if (!get_board_by_bid(bid, &board) || !has_post_perm(&board)) {
 		screen_move_clear(-1);
 		screen_printf("此讨论区是只读的, 或是您尚无权限在此发表文章。");
-		pressreturn();
+		terminal_getchar();
 		return FULLUPDATE;
 	}
 
@@ -1242,13 +1242,14 @@ static int tui_new_post(int bid, post_info_t *pi)
 
 	char file[HOMELEN];
 	file_temp_name(file, sizeof(file));
+	(void) unlink(file);
 	if (pi) {
 		char orig[HOMELEN];
 		dump_content(pi, orig, sizeof(orig), true, false, false);
 		do_quote(orig, file, header.include_mode, header.anonymous);
 		unlink(orig);
 	} else {
-		do_quote("", file, header.include_mode, header.anonymous);
+		do_quote(NULL, file, header.include_mode, header.anonymous);
 	}
 
 	if (editor(file, false, true, true, &header) != EDITOR_SAVE) {
