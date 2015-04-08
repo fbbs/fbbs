@@ -406,12 +406,12 @@ const unsigned char *web_calc_digest(const void *s, size_t size)
 	return gcry_md_read(ctx.sha1, 0);
 }
 
-void *palloc(size_t size)
+void *web_palloc(size_t size)
 {
 	return pool_alloc(ctx.p, size);
 }
 
-char *pstrdup(const char *s)
+char *web_pstrdup(const char *s)
 {
 	return pool_strdup(ctx.p, s, 0);
 }

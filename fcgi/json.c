@@ -24,7 +24,7 @@ struct json_object_t {
 
 json_object_t *json_object_new(void)
 {
-	json_object_t *object = palloc(sizeof(*object));
+	json_object_t *object = web_palloc(sizeof(*object));
 	if (object) {
 		STAILQ_INIT_HEAD(&object->values);
 	}
@@ -45,7 +45,7 @@ static json_value_t *json_object_add(json_object_t *object,
 
 #define JSON_OBJECT_HELPER(_type, _field, _key, _value)  \
 	do { \
-		json_value_t *val = palloc(sizeof(*val)); \
+		json_value_t *val = web_palloc(sizeof(*val)); \
 		if (val) { \
 			val->key = _key; \
 			val->type = _type; \
@@ -56,7 +56,7 @@ static json_value_t *json_object_add(json_object_t *object,
 
 json_value_t *json_object_null(json_object_t *object, const char *key)
 {
-	json_value_t *value = palloc(sizeof(*value));
+	json_value_t *value = web_palloc(sizeof(*value));
 	if (value)
 		value->type = JSON_NULL;
 	return json_object_add(object, value);
@@ -66,7 +66,7 @@ json_value_t *json_object_string(json_object_t *object, const char *key,
 		const char *value)
 {
 	if (value)
-		JSON_OBJECT_HELPER(JSON_STRING, str, key, pstrdup(value));
+		JSON_OBJECT_HELPER(JSON_STRING, str, key, web_pstrdup(value));
 	else
 		return json_object_null(object, key);
 }

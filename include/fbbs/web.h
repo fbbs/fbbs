@@ -83,8 +83,8 @@ extern int xml_print_post(const char *str, size_t size, int option);
 
 extern const unsigned char *web_calc_digest(const void *s, size_t size);
 
-extern void *palloc(size_t size);
-extern char *pstrdup(const char *s);
+extern void *web_palloc(size_t size);
+extern char *web_pstrdup(const char *s);
 
 extern void web_set_response(json_object_t *object, json_value_e type);
 extern void web_respond(web_error_code_e code);
