@@ -117,7 +117,7 @@ static const char *_reg(const reg_req_t *r)
 
 int fcgi_reg(void)
 {
-	parse_post_data();
+	web_parse_post_data();
 	reg_req_t request = {
 		.id = web_get_param("id"),
 		.pw = web_get_param("pw"),

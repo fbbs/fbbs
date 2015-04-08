@@ -65,7 +65,7 @@ int bbsinfo_main(void)
 {
 	if (!session_id())
 		return BBS_ELGNREQ;
-	parse_post_data();
+	web_parse_post_data();
 	const char *type = web_get_param("type");
 	xml_header(NULL);
 	if (*type != '\0') {
@@ -109,7 +109,7 @@ int bbspwd_main(void)
 {
 	if (!session_id())
 		return BBS_ELGNREQ;
-	parse_post_data();
+	web_parse_post_data();
 	xml_header(NULL);
 	printf("<bbspwd ");
 	const char *pw1 = web_get_param("pw1");
@@ -182,7 +182,7 @@ static int edit_user_file(const char *file, const char *desc, const char *submit
 		return BBS_ELGNREQ;
 	char buf[HOMELEN];
 	sethomefile(buf, currentuser.userid, file);
-	parse_post_data();
+	web_parse_post_data();
 	const char *text = web_get_param("text");
 	if (*text != '\0') {
 		int fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);

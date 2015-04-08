@@ -6,27 +6,27 @@
 #include "fbbs/pool.h"
 #include "fbbs/string.h"
 #include "fbbs/web.h"
-#include "fbbs/xml.h"
+#include "fbbs/json.h"
 
-typedef struct http_req_t {
+typedef struct {
 	const char *from;
-	pair_t params[MAX_PARAMETERS];
+	web_param_pair_t params[WEB_PARAM_MAX];
 	int count;
 	int flag;
 	web_request_method_e method;
-} http_req_t;
+} web_request_t;
 
-typedef struct http_response_t {
-	int type;
-	xml_document_t *doc;
-} http_response_t;
+typedef struct web_response_t {
+	json_value_e type;
+	json_object_t *object;
+} web_response_t;
 
 struct web_ctx_t {
 	pool_t *p;
-	http_req_t req;
+	web_request_t req;
 	gcry_md_hd_t sha1;
 	bool inited;
-	http_response_t resp;
+	web_response_t resp;
 };
 
 static struct web_ctx_t ctx = { .inited = false };
@@ -107,7 +107,7 @@ static char *_url_decode(char *s)
  * @param[in] len 字符串长度
  * @return 成功返回0, 否则-1
  */
-static int _parse_param(http_req_t *req, const char *str, size_t len)
+static int _parse_param(web_request_t *req, const char *str, size_t len)
 {
 	if (!len)
 		return 0;
@@ -139,7 +139,7 @@ static int _parse_param(http_req_t *req, const char *str, size_t len)
  * @param delim 键值对之间的分隔符
  * @return 成功返回0, 否则-1
  */
-static int _parse_params(http_req_t *req, const char *str, int delim)
+static int _parse_params(web_request_t *req, const char *str, int delim)
 {
 	const char *ptr = strchr(str, delim), *last = str;
 	while (ptr) {
@@ -158,7 +158,7 @@ static int _parse_params(http_req_t *req, const char *str, int delim)
  * @param[out] req HTTP请求结构
  * @return 成功返回0, 否则-1
  */
-static int _parse_http_req(http_req_t *req)
+static int _parse_http_req(web_request_t *req)
 {
 	if (_parse_params(req, _get_server_env("QUERY_STRING"), '&') < 0)
 		return -1;
@@ -174,7 +174,7 @@ static int _parse_http_req(http_req_t *req)
  */
 const char *web_get_param(const char *key)
 {
-	http_req_t *r = &ctx.req;
+	web_request_t *r = &ctx.req;
 	for (int i = 0; i < r->count; ++i) {
 		if (streq(r->params[i].key, key))
 			return r->params[i].val;
@@ -182,7 +182,7 @@ const char *web_get_param(const char *key)
 	return "";
 }
 
-const pair_t *web_get_param_pair(int idx)
+const web_param_pair_t *web_get_param_pair(int idx)
 {
 	if (idx >= 0 && idx < ctx.req.count)
 		return ctx.req.params + idx;
@@ -281,7 +281,7 @@ bool _web_request_method(web_request_method_e method)
  * Parse parameters submitted by POST method.
  * @return 0 on success, -1 on error.
  */
-int parse_post_data(void)
+int web_parse_post_data(void)
 {
 	unsigned long size = strtoul(_get_server_env("CONTENT_LENGTH"), NULL, 10);
 	if (size == 0)
@@ -331,9 +331,6 @@ bool web_ctx_init(void)
 	}
 
 	ctx.p = pool_create(0);
-	ctx.resp.doc = xml_new_doc();
-	ctx.resp.type = RESPONSE_DEFAULT;
-
 	return parse_web_request();
 }
 
@@ -401,7 +398,7 @@ void xml_print(const char *s)
 	fwrite(last, 1, c - last, stdout);
 }
 
-const unsigned char *calc_digest(const void *s, size_t size)
+const unsigned char *web_calc_digest(const void *s, size_t size)
 {
 	gcry_md_reset(ctx.sha1);
 	gcry_md_write(ctx.sha1, s, size);
@@ -419,40 +416,10 @@ char *pstrdup(const char *s)
 	return pool_strdup(ctx.p, s, 0);
 }
 
-void set_response_type(int type)
+void web_set_response(json_object_t *object, json_value_e type)
 {
+	ctx.resp.object = object;
 	ctx.resp.type = type;
-}
-
-xml_node_t *set_response_root(const char *name, int type, int encoding)
-{
-	xml_node_t *node = xml_new_node(name, type);
-	xml_set_doc_root(ctx.resp.doc, node);
-	xml_set_encoding(ctx.resp.doc, encoding);
-	return node;
-}
-
-static int response_type(void)
-{
-	int type = ctx.resp.type;
-	if (type == RESPONSE_DEFAULT) {
-		if (web_request_type(JSON))
-			return RESPONSE_JSON;
-		return RESPONSE_XML;
-	}
-	return type;
-}
-
-static const char *content_type(int type)
-{
-	switch (type) {
-		case RESPONSE_HTML:
-			return "text/html";
-		case RESPONSE_JSON:
-			return "application/json";
-		default:
-			return "text/xml";
-	}
 }
 
 struct error_msg_t {
@@ -506,15 +473,15 @@ static const struct error_msg_t error_msgs[] = {
 
 static web_status_code_e error_msg(web_error_code_e code)
 {
-	xml_node_t *node = set_response_root("bbs_error",
-			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
+	json_object_t *object = json_object_new();
+	web_set_response(object, JSON_OBJECT);
 
 	const struct error_msg_t *e = error_msgs;
 	if (code > 0 && code <= ARRAY_SIZE(error_msgs))
 		e = error_msgs + code - 2;
 
-	xml_attr_string(node, "msg", e->msg, false);
-	xml_attr_integer(node, "code", e->code + 10000);
+	json_object_string(object, "msg", e->msg);
+	json_object_integer(object, "code", e->code + 10000);
 
 	return e->status;
 }
@@ -525,10 +492,9 @@ void web_respond(web_error_code_e code)
 	if (code != WEB_OK)
 		status = error_msg(code);
 
-	int type = response_type();
-	printf("Content-type: %s;  charset=utf-8\n"
-			"Status: %d\n\n", content_type(type), (int) status);
+	printf("Content-type: application/json;  charset=utf-8\n"
+			"Status: %d\n\n", (int) status);
 
-	xml_dump(ctx.resp.doc, type == RESPONSE_JSON ? XML_AS_JSON : XML_AS_XML);
+	json_dump(ctx.resp.object, ctx.resp.type);
 	FCGI_Finish();
 }

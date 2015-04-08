@@ -62,7 +62,7 @@ static void generate_session_key(char *key, size_t ksize,
 
 	s.sid = sid;
 
-	const uchar_t *digest = calc_digest(&s, sizeof(s));
+	const uchar_t *digest = web_calc_digest(&s, sizeof(s));
 	char buf[SESSION_KEY_LEN + SESSION_TOKEN_LEN + 1];
 	digest_to_hex(digest, buf, sizeof(buf));
 
@@ -195,7 +195,7 @@ static int api_login(void)
 		else
 			return WEB_ERROR_LOGIN_REQUIRED;
 	} else if (web_request_method(POST)) {
-		if (parse_post_data() < 0)
+		if (web_parse_post_data() < 0)
 			return WEB_ERROR_BAD_REQUEST;
 
 		const char *uname = web_get_param("id");
@@ -219,7 +219,7 @@ int web_login(void)
 	if (session_id())
 		return login_redirect(NULL, 0);
 
-	if (parse_post_data() < 0)
+	if (web_parse_post_data() < 0)
 		return BBS_EINVAL;
 
 	const char *uname = web_get_param("id");

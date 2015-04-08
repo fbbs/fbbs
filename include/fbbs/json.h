@@ -27,14 +27,14 @@ extern json_value_t *json_object_string(json_object_t *object, const char *key, 
 extern json_value_t *json_object_integer(json_object_t *object, const char *key, int value);
 extern json_value_t *json_object_bigint(json_object_t *object, const char *key, int64_t value);
 extern json_value_t *json_object_bool(json_object_t *object, const char *key, bool value);
-extern json_value_t *json_object_append(json_object_t *object, const char *key, json_object_t *value);
+extern json_value_t *json_object_append(json_object_t *object, const char *key, json_object_t *value, json_value_e type);
 
 extern json_value_t *json_array_null(json_array_t *array);
 extern json_value_t *json_array_string(json_array_t *array, const char *value);
 extern json_value_t *json_array_integer(json_array_t *array, int value);
 extern json_value_t *json_array_bigint(json_array_t *array, int64_t value);
 extern json_value_t *json_array_bool(json_array_t *array, bool value);
-extern json_value_t *json_array_append(json_array_t *array, json_object_t *value);
+extern json_value_t *json_array_append(json_array_t *array, json_object_t *value, json_value_e type);
 
 extern void json_dump(const json_object_t *object, json_value_e type);
 #endif // FB_JSON_H

@@ -3,13 +3,13 @@
 
 #include <fcgi_stdio.h>
 
-#include "fbbs/xml.h"
+#include "fbbs/json.h"
 
 #define COOKIE_KEY  "utmpkey"
 #define COOKIE_USER  "utmpuser"
 
 enum {
-	MAX_PARAMETERS = 32,
+	WEB_PARAM_MAX = 32,
 	MAX_CONTENT_LENGTH = 1 * 1024 * 1024,
 
 	PARSE_NOSIG = 0x1,
@@ -58,24 +58,17 @@ typedef enum {
 	WEB_ERROR_METHOD_NOT_ALLOWED,
 } web_error_code_e;
 
-enum {
-	RESPONSE_DEFAULT = 0,
-	RESPONSE_HTML = 1,
-	RESPONSE_XML = 2,
-	RESPONSE_JSON = 3,
-};
-
-typedef struct pair_t {
+typedef struct {
 	char *key;
 	char *val;
-} pair_t;
+} web_param_pair_t;
 
 extern bool web_ctx_init(void);
 extern void web_ctx_destroy(void);
 
 extern const char *web_get_param(const char *name);
-extern const pair_t *web_get_param_pair(int idx);
-extern int parse_post_data(void);
+extern const web_param_pair_t *web_get_param_pair(int idx);
+extern int web_parse_post_data(void);
 
 extern bool _web_request_type(web_request_type_e type);
 #define web_request_type(type)  _web_request_type(WEB_REQUEST_##type)
@@ -88,13 +81,12 @@ extern void xml_header(const char *xslfile);
 extern void xml_print(const char *s);
 extern int xml_print_post(const char *str, size_t size, int option);
 
-extern const unsigned char *calc_digest(const void *s, size_t size);
+extern const unsigned char *web_calc_digest(const void *s, size_t size);
 
 extern void *palloc(size_t size);
 extern char *pstrdup(const char *s);
 
-extern void set_response_type(int type);
-extern xml_node_t *set_response_root(const char *name, int type, int encoding);
+extern void web_set_response(json_object_t *object, json_value_e type);
 extern void web_respond(web_error_code_e code);
 
 #endif // FB_WEB_H

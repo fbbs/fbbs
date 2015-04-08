@@ -592,7 +592,7 @@ int bbssnd_main(void)
 {
 	if (!session_id())
 		return BBS_ELGNREQ;
-	if (parse_post_data() < 0)
+	if (web_parse_post_data() < 0)
 		return BBS_EINVAL;
 
 	board_t board;
@@ -847,7 +847,7 @@ int bbsccc_main(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	parse_post_data();
+	web_parse_post_data();
 
 	board_t board;
 	if (!get_board_by_param(&board))
@@ -926,7 +926,7 @@ int bbsfwd_main(void)
 {
 	if (!session_id())
 		return BBS_ELGNREQ;
-	parse_post_data();
+	web_parse_post_data();
 	const char *reci = web_get_param("u");
 	if (*reci == '\0') {
 		xml_header(NULL);

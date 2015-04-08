@@ -90,9 +90,9 @@ json_value_t *json_object_bool(json_object_t *object, const char *key,
 }
 
 json_value_t *json_object_append(json_object_t *object, const char *key,
-		json_object_t *value)
+		json_object_t *value, json_value_e type)
 {
-	JSON_OBJECT_HELPER(JSON_OBJECT, object, key, value);
+	JSON_OBJECT_HELPER(type, object, key, value);
 }
 
 json_value_t *json_array_null(json_array_t *array)
@@ -120,9 +120,10 @@ json_value_t *json_array_bool(json_array_t *array, bool value)
 	return json_object_bool(array, NULL, value);
 }
 
-json_value_t *json_array_append(json_array_t *array, json_object_t *value)
+json_value_t *json_array_append(json_array_t *array, json_object_t *value,
+		json_value_e type)
 {
-	return json_object_append(array, NULL, value);
+	return json_object_append(array, NULL, value, type);
 }
 
 static void json_print_string(const char *s)
@@ -191,5 +192,5 @@ void json_dump(const json_object_t *object, json_value_e type)
 		if (STAILQ_NEXT(value, next))
 			putchar(',');
 	}
-	putchar(type == JSON_OBJECT ? ']' : '}');
+	putchar(type == JSON_OBJECT ? '}' : ']');
 }

@@ -3,6 +3,7 @@
 #include "fbbs/brc.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
+#include "fbbs/json.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/post.h"
 #include "fbbs/string.h"
@@ -667,15 +668,14 @@ int api_top10(void)
 	if (api && !web_request_method(GET))
 		return WEB_ERROR_METHOD_NOT_ALLOWED;
 
-	xml_node_t *node;
+	json_array_t *array;
 	if (!api) {
 		xml_header(NULL);
 		printf("<bbstop10>");
 		print_session();
 	} else {
-		node = set_response_root("bbs_top10",
-				XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
-		node = xml_new_child(node, "topics", XML_NODE_CHILD_ARRAY);
+		array = json_array_new();
+		web_set_response(array, JSON_ARRAY);
 	}
 
 	FILE *fp = fopen("etc/posts/day_f.data", "r");
@@ -684,15 +684,15 @@ int api_top10(void)
 		topic_stat_t topic;
 		while (fread(&topic, sizeof(topic), 1, fp) == 1) {
 			if (api) {
-				xml_node_t *n = xml_new_child(node, "topic",
-						XML_NODE_ANONYMOUS_JSON);
-				xml_attr_integer(n, "rank", ++rank);
-				xml_attr_string(n, "owner", topic.owner, false);
-				xml_attr_string(n, "board", topic.bname, false);
-				xml_attr_integer(n, "bid", topic.bid);
-				xml_attr_integer(n, "count", topic.count);
-				xml_attr_bigint(n, "tid", topic.tid);
-				xml_attr_string(n, "title", topic.utf8_title, false);
+				json_object_t *o = json_object_new();
+				json_object_integer(o, "rank", ++rank);
+				json_object_string(o, "user_name", topic.owner);
+				json_object_string(o, "board_name", topic.bname);
+				json_object_integer(o, "board_id", topic.bid);
+				json_object_integer(o, "count", topic.count);
+				json_object_integer(o, "thread_id", topic.tid);
+				json_object_string(o, "title", topic.utf8_title);
+				json_array_append(array, o, JSON_OBJECT);
 			} else {
 				printf("<top board='%s' owner='%s' count='%u' gid='%"PRIdPID"'>",
 						topic.bname, topic.owner, topic.count, topic.tid);

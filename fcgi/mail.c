@@ -291,7 +291,7 @@ int bbssndmail_main(void)
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
-	if (parse_post_data() < 0)
+	if (web_parse_post_data() < 0)
 		return BBS_EINVAL;
 
 	const char *recv = web_get_param("recv");
@@ -363,7 +363,7 @@ int web_mailman(void)
 	if (!session_id())
 		return BBS_ELGNREQ;
 
-	parse_post_data();
+	web_parse_post_data();
 
 	char index[HOMELEN];
 	setmdir(index, currentuser.userid);
@@ -372,7 +372,7 @@ int web_mailman(void)
 	printf("<mailman>");
 	print_session();
 
-	const pair_t *p = NULL;
+	const web_param_pair_t *p = NULL;
 	for (int i = 0; (p = web_get_param_pair(i)); ++i) {
 		if (streq(p->val, "on") && strncmp(p->key, "box", 3) == 0) {
 			const char *file = p->key + sizeof("box") - 1;

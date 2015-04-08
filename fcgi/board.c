@@ -94,35 +94,44 @@ int web_sel(void)
 	return 0;
 }
 
-void board_to_node(const board_t *bp, xml_node_t *node)
+void board_to_object(const board_t *bp, json_object_t *o)
 {
-	xml_attr_boolean(node, "dir", bp->flag & BOARD_FLAG_DIR);
-	xml_attr_string(node, "name", bp->name, false);
-	xml_attr_string(node, "categ", bp->categ, false);
-	xml_attr_string(node, "descr", bp->descr, false);
+	json_object_bool(o, "dir", bp->flag & BOARD_FLAG_DIR);
+	json_object_string(o, "name", bp->name);
+	json_object_string(o, "categ", bp->categ);
+	json_object_string(o, "descr", bp->descr);
 
-	xml_node_t *b = xml_new_child(node, "bms", XML_NODE_CHILD_ARRAY);
+	json_array_t *array = json_array_new();
 	if (*bp->bms) {
 		char bms[sizeof(bp->bms)];
 		strlcpy(bms, bp->bms, sizeof(bms));
 		for (const char *s = strtok(bms, " "); s; s = strtok(NULL, " ")) {
-			xml_node_t *t = xml_new_child(b, "name",
-					XML_NODE_ANONYMOUS_JSON | XML_NODE_PLAIN_JSON);
-			xml_attr_string(t, NULL, s, true);
+			json_array_string(array, s);
 		}
 	}
+	json_object_append(o, "bms", array, JSON_ARRAY);
 }
 
+/*
+[
+	{
+		dir: BOOL,
+		name: TEXT,
+		categ: TEXT,
+		descr: TEXT,
+		bms: [ TEXT, ... ]
+	},
+	...
+]
+ */
 int api_board_all(void)
 {
 	db_res_t *res = db_query(BOARD_SELECT_QUERY_BASE);
 	if (!res)
 		return WEB_ERROR_INTERNAL;
 
-	xml_node_t *root = set_response_root("bbs-board-all",
-			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
-	xml_node_t *boards = xml_new_node("boards", XML_NODE_CHILD_ARRAY);
-	xml_add_child(root, boards);
+	json_array_t *array = json_array_new();
+	web_set_response(array, JSON_ARRAY);
 
 	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 		board_t board;
@@ -130,59 +139,59 @@ int api_board_all(void)
 		if (!has_read_perm(&board))
 			continue;
 
-		xml_node_t *node = xml_new_node("board", XML_NODE_ANONYMOUS_JSON);
-		board_to_node(&board, node);
-		xml_add_child(boards, node);
+		json_object_t *object = json_object_new();
+		board_to_object(&board, object);
+		json_array_append(array, object, JSON_OBJECT);
 	}
 	db_clear(res);
 	return WEB_OK;
 }
 
-static xml_node_t *attach_group(xml_node_t *groups, db_res_t *res, int id)
+static json_object_t *attach_group(json_array_t *a, db_res_t *res, int id)
 {
-	xml_node_t *group = xml_new_child(groups, "group",
-			XML_NODE_ANONYMOUS_JSON);
-	xml_node_t *boards = xml_new_child(group, "boards", XML_NODE_CHILD_ARRAY);
+	json_object_t *object = json_object_new();
+	json_array_append(object, a, JSON_ARRAY);
+
+	json_array_t *array = json_array_new();
+	json_object_append(object, "boards", array, JSON_ARRAY);
+
 	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 		int folder = db_get_integer(res, i, 2);
 		if (folder == id) {
-			xml_node_t *board = xml_new_child(boards, "board",
-					XML_NODE_ANONYMOUS_JSON);
-			int bid = db_get_integer(res, i, 0);
-			xml_attr_integer(board, "id", bid);
+			json_object_t *o = json_object_new();
+			json_array_append(array, o, JSON_OBJECT);
+
+			int board_id = db_get_integer(res, i, 0);
+			json_object_integer(o, "id", board_id);
 			const char *name = db_get_value(res, i, 1);
-			xml_attr_string(board, "name", name, false);
-			xml_attr_boolean(board, "unread",
-					brc_board_unread(currentuser.userid, name, bid));
+			json_object_string(o, "name", name);
+			json_object_bool(o, "unread",
+					brc_board_unread(currentuser.userid, name, board_id));
 		}
 	}
-	return group;
+	return object;
 }
 
 /*
-{
-	groups: [
-		{
-			name: OPTIONAL TEXT,
-			descr: OPTIONAL TEXT,
-			boards: [
-				{ id: INTEGER, name: TEXT, unread: OPTIONAL BOOLEAN },
-				...
-			]
-		},
-		...
-	]
-}
+[
+	{
+		name: OPTIONAL TEXT,
+		descr: OPTIONAL TEXT,
+		boards: [
+			{ id: INTEGER, name: TEXT, unread: OPTIONAL BOOL },
+			...
+		]
+	},
+	...
+]
 */
 int api_board_fav(void)
 {
 	if (!session_id())
 		return WEB_ERROR_LOGIN_REQUIRED;
 
-	xml_node_t *root = set_response_root("bbs-board-fav",
-			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
-	xml_node_t *groups = xml_new_node("groups", XML_NODE_CHILD_ARRAY);
-	xml_add_child(root, groups);
+	json_array_t *array = json_array_new();
+	web_set_response(array, JSON_ARRAY);
 
 	query_t *q = query_new(0);
 	query_select(q, "board, name, folder");
@@ -197,12 +206,12 @@ int api_board_fav(void)
 	db_res_t *folders = query_exec(q);
 
 	if (folders && boards) {
-		attach_group(groups, boards, FAV_BOARD_ROOT_FOLDER);
+		attach_group(array, boards, FAV_BOARD_ROOT_FOLDER);
 		for (int i = db_res_rows(folders) - 1; i >= 0; --i) {
 			int id = db_get_integer(folders, i, 0);
-			xml_node_t *group = attach_group(groups, boards, id);
-			xml_attr_string(group, "name", db_get_value(folders, i, 1), true);
-			xml_attr_string(group, "descr", db_get_value(folders, i, 2), true);
+			json_object_t *o = attach_group(array, boards, id);
+			json_object_string(o, "name", db_get_value(folders, i, 1));
+			json_object_string(o, "descr", db_get_value(folders, i, 2));
 		}
 	}
 
