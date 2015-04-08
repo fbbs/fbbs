@@ -492,7 +492,7 @@ void web_respond(web_error_code_e code)
 	if (code != WEB_OK)
 		status = error_msg(code);
 
-	printf("Content-type: application/json;  charset=utf-8\n"
+	printf("Content-type: application/json; charset=utf-8\n"
 			"Status: %d\n\n", (int) status);
 
 	json_dump(ctx.resp.object, ctx.resp.type);

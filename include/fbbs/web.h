@@ -5,8 +5,8 @@
 
 #include "fbbs/json.h"
 
-#define COOKIE_KEY  "utmpkey"
-#define COOKIE_USER  "utmpuser"
+#define WEB_COOKIE_KEY  "utmpkey"
+#define WEB_COOKIE_USER  "utmpuser"
 
 enum {
 	WEB_PARAM_MAX = 32,

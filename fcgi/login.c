@@ -128,8 +128,8 @@ static int login_redirect(const char *key, int max_age)
 
 	printf("Content-type: text/html; charset=%s\n", CHARSET);
 	if (key) {
-		set_cookie(COOKIE_KEY, key, max_age);
-		set_cookie(COOKIE_USER, currentuser.userid, max_age);
+		set_cookie(WEB_COOKIE_KEY, key, max_age);
+		set_cookie(WEB_COOKIE_USER, currentuser.userid, max_age);
 	}
 	printf("Location: %s\n\n", referer);
 	return 0;
@@ -171,9 +171,6 @@ int do_web_login(const char *uname, const char *pw, bool api)
 	return 0;
 }
 
-extern void session_set_web_cache(user_id_t user_id, const char *session_key,
-		const char *token, session_id_t session_id, const char *ip_addr);
-
 static int _web_login(bool persistent, bool redirect)
 {
 	int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
@@ -182,8 +179,10 @@ static int _web_login(bool persistent, bool redirect)
 	generate_session_key(key, sizeof(key), token, sizeof(token), session_id());
 	session_new(key, token, session_id(), session_uid(), currentuser.userid,
 			fromhost, SESSION_WEB, SESSION_PLAIN, true, max_age);
-	if (session_id())
-		session_set_web_cache(session_uid(), key, NULL, session_id(), fromhost);
+	if (session_id()) {
+		session_web_cache_set(session_uid(), key, token, session_id(),
+				fromhost, true);
+	}
 	return redirect ? login_redirect(key, max_age) : 0;
 }
 
@@ -243,8 +242,8 @@ int web_logout(void)
 		update_user_stay(&currentuser, false, false);
 		save_user_data(&currentuser);
 
-		expire_cookie(COOKIE_KEY);
-		expire_cookie(COOKIE_USER);
+		expire_cookie(WEB_COOKIE_KEY);
+		expire_cookie(WEB_COOKIE_USER);
 	}
 	redirect_homepage();
 	return 0;

@@ -25,6 +25,9 @@ enum {
 	SESSION_FLAG_WEB = 0x1,
 	SESSION_FLAG_SECURE = 0x2,
 	SESSION_FLAG_INVISIBLE = 0x4,
+
+	SESSION_WEB_CACHE_ENTRY_LEN = SESSION_KEY_LEN + 32,
+	SESSION_WEB_CACHE_VALUE_LEN = SESSION_TOKEN_LEN + 80,
 };
 
 typedef enum {
@@ -113,7 +116,7 @@ extern void session_clear(void);
 extern session_id_t session_new_id(void);
 extern session_id_t session_new(const char *key, const char *token, session_id_t sid, user_id_t uid, const char *user_name, const char *ip_addr, bool is_web, bool is_secure, bool visible, int duration);
 extern int session_destroy(session_id_t sid);
-extern int session_inactivate(session_id_t sid);
+extern int session_inactivate(session_id_t session_id, user_id_t user_id, const char *session_key, const char *token);
 
 extern fb_time_t session_get_idle(session_id_t sid);
 extern int session_set_idle(session_id_t sid, fb_time_t t);
@@ -150,7 +153,9 @@ extern const char *session_status_color(int status, bool visible, bool web);
 /** 保存web会话的键值 @mdb_hash */
 #define SESSION_WEB_HASH_KEY  "web_session"
 
-extern void session_remove_web_cache(user_id_t uid, const char *key);
+extern void session_web_cache_set(user_id_t user_id, const char *session_key, const char *token, session_id_t session_id, const char *ip_addr, bool active);
+extern bool session_web_cache_get(user_id_t user_id, const char *session_key, char *value, size_t size);
+extern void session_web_cache_remove(user_id_t user_id, const char *session_key);
 
 extern const char *session_status_descr(int status);
 

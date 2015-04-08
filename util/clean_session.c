@@ -20,6 +20,7 @@ struct _session {
 	fb_time_t stamp;
 	fb_time_t expire;
 	char key[SESSION_KEY_LEN + 1];
+	char token[SESSION_TOKEN_LEN + 1];
 };
 
 static int comparator(const void *v1, const void *v2)
@@ -42,8 +43,10 @@ static void res_to_session(db_res_t *res, struct _session *sessions, int count)
 		s->web = db_get_bool(res, i, 4);
 		s->stamp = db_get_time(res, i, 5);
 		s->expire = db_get_time(res, i, 6);
-		if (s->web)
+		if (s->web) {
 			strlcpy(s->key, db_get_value(res, i, 7), sizeof(s->key));
+			strlcpy(s->token, db_get_value(res, i, 8), sizeof(s->token));
+		}
 		++s;
 	}
 	qsort(sessions, count, sizeof(*sessions), comparator);
@@ -94,13 +97,13 @@ static bool kill_session(const struct _session *s, bool is_dup,
 		substitut_record(NULL, &user, sizeof(user), legacy_uid);
 	}
 
-	if (s->web && s->expire > time(NULL))
-		session_inactivate(s->sid);
-	else
+	if (s->web && s->expire > fb_time()) {
+		session_inactivate(s->sid, s->uid, s->key, s->token);
+	} else {
 		session_destroy(s->sid);
-
-	if (s->web)
-		session_remove_web_cache(s->uid, s->key);
+		if (s->web)
+			session_web_cache_remove(s->uid, s->key);
+	}
 
 	return true;
 }
@@ -151,7 +154,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 
 	db_res_t *res = db_query("SELECT id, active, user_id, pid, web, stamp,"
-			" expire, session_key FROM sessions");
+			" expire, session_key, token FROM sessions");
 
 	int count = db_res_rows(res);
 	struct _session *sessions = malloc(sizeof(*sessions) * count);
