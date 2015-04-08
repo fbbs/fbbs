@@ -9,7 +9,7 @@ link_directories(/usr/local/lib)
 
 add_executable(bbswebd libweb.c main.c login.c toc.c post.c bbsupload.c
 	bbsann.c mail.c bbserr.c friend.c session.c register.c parse.c web.c
-	board.c prop.c xml.c user.c json.c)
+	board.c prop.c user.c json.c)
 target_link_libraries(bbswebd crypt gcrypt fcgi fbbs)
 install(TARGETS bbswebd RUNTIME DESTINATION bin
 		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
