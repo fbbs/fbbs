@@ -690,7 +690,7 @@ int api_top10(void)
 				json_object_string(o, "board_name", topic.bname);
 				json_object_integer(o, "board_id", topic.bid);
 				json_object_integer(o, "count", topic.count);
-				json_object_integer(o, "thread_id", topic.tid);
+				json_object_bigint(o, "thread_id", topic.tid);
 				json_object_string(o, "title", topic.utf8_title);
 				json_array_append(array, o, JSON_OBJECT);
 			} else {

@@ -162,7 +162,7 @@ static void json_print_value(const json_value_t *value)
 			printf("%d", value->value.integer);
 			break;
 		case JSON_BIGINT:
-			printf("%"PRId64, value->value.bigint);
+			printf("\"%"PRId64"\"", value->value.bigint);
 			break;
 		case JSON_BOOL:
 			if (value->value.boolean)
