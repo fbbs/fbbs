@@ -112,6 +112,11 @@ static void brc_save(const char *uname, const brc_buf_t *buf)
 	}
 }
 
+static bool brc_valid_board_name(const char *s)
+{
+	return s && *s >= ' ' && *s <= '~';
+}
+
 /**
  * 将当前版面的已读记录与指定的所有已读记录合并
  * @param buf 所有版面的已读记录
@@ -127,7 +132,7 @@ static void brc_merge(brc_buf_t *buf)
 		buf->size = sizeof(buf->ptr) - BRC_ITEMSIZE * 2 + 1;
 
 	char *tmp = buf->ptr, *end = buf->ptr + buf->size;
-	while (tmp < end && (*tmp >= ' ' && *tmp <= '~')) {
+	while (tmp < end && brc_valid_board_name(tmp)) {
 		brc_t tmp_brc;
 		tmp = brc_get_record(tmp, &tmp_brc);
 		if (!strneq(tmp_brc.name, brc.name, sizeof(tmp_brc.name))) {
@@ -163,7 +168,7 @@ void brc_sync(const char *user_name)
  */
 int brc_init(const char *user_name, const char *board_name)
 {
-	if (!user_name || !board_name)
+	if (!user_name || !brc_valid_board_name(board_name))
 		return 0;
 
 	if (strneq(brc.name, board_name, sizeof(brc.name)))
@@ -179,7 +184,7 @@ int brc_init(const char *user_name, const char *board_name)
 		brc_load(user_name, &brc_buf);
 
 	char *ptr = brc_buf.ptr, *end = brc_buf.ptr + brc_buf.size;
-	while (ptr < end && (*ptr >= ' ' && *ptr <= '~')) {
+	while (ptr < end && brc_valid_board_name(ptr)) {
 		ptr = brc_get_record(ptr, &brc);
 		if (strneq(brc.name, board_name, sizeof(brc.name))) {
 			return brc.size;
