@@ -129,15 +129,13 @@ session_id_t session_new_id(void)
 
 session_id_t session_new(const char *key, const char *token, session_id_t sid,
 		user_id_t user_id, const char *user_name, const char *ip_addr,
-		bool is_web, bool is_secure, bool visible, int duration)
+		bool is_web, bool is_secure, bool visible, fb_time_t expire)
 {
 	int pid = is_web ? 0 : getpid();
 	if (!sid)
 		sid = session_new_id();
 
 	fb_time_t now = fb_time();
-	fb_time_t expire = now + duration;
-
 	db_res_t *res = db_cmd("INSERT INTO sessions (id, session_key, token,"
 			" user_id, user_name, pid, ip_addr, web, secure, stamp, expire,"
 			" visible) VALUES (%"DBIdSID", %s, %s, %"DBIdUID", %s, %d, %s,"

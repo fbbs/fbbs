@@ -168,22 +168,35 @@ int do_web_login(const char *uname, const char *pw, bool api)
 	currentuser = user;
 
 	log_usies("ENTER", fromhost, &user);
-	return 0;
+	return api ? WEB_OK : 0;
 }
 
-static int _web_login(bool persistent, bool redirect)
+typedef struct {
+	char key[SESSION_KEY_LEN + 1];
+	char token[SESSION_TOKEN_LEN + 1];
+	fb_time_t expire_time;
+} session_data_t;
+
+static int _web_login(bool persistent, bool redirect, session_data_t *s)
 {
-	int max_age = persistent ? COOKIE_PERSISTENT_PERIOD : 0;
-	char key[SESSION_KEY_LEN + 1], token[SESSION_TOKEN_LEN + 1];
-	session_new_id();
-	generate_session_key(key, sizeof(key), token, sizeof(token), session_id());
-	session_new(key, token, session_id(), session_uid(), currentuser.userid,
-			fromhost, SESSION_WEB, SESSION_PLAIN, true, max_age);
+	if (!session_new_id())
+		return WEB_ERROR_INTERNAL;
+
+	s->expire_time = persistent ? fb_time() + COOKIE_PERSISTENT_PERIOD : 0;
+	generate_session_key(s->key, sizeof(s->key), s->token, sizeof(s->token),
+			session_id());
+	session_new(s->key, s->token, session_id(), session_uid(),
+			currentuser.userid, fromhost, SESSION_WEB, SESSION_PLAIN, true,
+			s->expire_time);
 	if (session_id()) {
-		session_web_cache_set(session_uid(), key, token, session_id(),
+		session_web_cache_set(session_uid(), s->key, s->token, session_id(),
 				fromhost, true);
 	}
-	return redirect ? login_redirect(key, max_age) : 0;
+	if (redirect) {
+		return login_redirect(s->key,
+				persistent ? COOKIE_PERSISTENT_PERIOD : 0);
+	}
+	return WEB_OK;
 }
 
 static int api_login(void)
@@ -197,13 +210,25 @@ static int api_login(void)
 		if (web_parse_post_data() < 0)
 			return WEB_ERROR_BAD_REQUEST;
 
-		const char *uname = web_get_param("id");
+		const char *user_name = web_get_param("user_name");
 		char pw[PASSLEN];
-		strlcpy(pw, web_get_param("pw"), sizeof(pw));
+		strlcpy(pw, web_get_param("password"), sizeof(pw));
 
-		int ret = do_web_login(uname, pw, true);
-		if (ret == 0)
-			_web_login(true, false);
+		int ret = do_web_login(user_name, pw, true);
+		session_data_t s;
+		if (ret == WEB_OK)
+			ret = _web_login(true, false, &s);
+		memset(pw, 0, sizeof(pw));
+
+		if (ret == WEB_OK) {
+			json_object_t *object = json_object_new();
+			web_set_response(object, JSON_OBJECT);
+
+			json_object_string(object, "user_name", currentuser.userid);
+			json_object_string(object, "session_key", s.key);
+			json_object_string(object, "token", s.token);
+			json_object_bigint(object, "expire_time", s.expire_time);
+		}
 		return ret;
 	} else {
 		return WEB_ERROR_METHOD_NOT_ALLOWED;
@@ -231,7 +256,8 @@ int web_login(void)
 	int ret = do_web_login(uname, pw, false);
 	if (ret == 0) {
 		bool persistent = *web_get_param("persistent");
-		_web_login(persistent, true);
+		session_data_t s;
+		_web_login(persistent, true, &s);
 	}
 	return ret;
 }
