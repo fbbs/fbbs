@@ -41,9 +41,9 @@ static bool session_check_web_cache(const char *user_name,
 		char *p = strchr(ptr + 3, '-');
 		if (p) {
 			*p = '\0';
-			if (!token || streq(token, p + 1)) {
+			if (!token || streq(token, ptr + 3)) {
 				if (active) {
-					ok = streq(ptr + 3, ip_addr);
+					ok = streq(p + 1, ip_addr);
 				} else {
 					ok = activate_session(session_id, user_name, ip_addr,
 							session_key, user_id);
