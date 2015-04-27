@@ -815,7 +815,7 @@ int post_record_invalidity_get(int board_id)
 	return mdb_integer(0, "HGET", POST_RECORD_INVALIDITY_KEY" %d", board_id);
 }
 
-static void convert_post_record(db_res_t *res, int row, post_record_t *post,
+void post_record_from_query(db_res_t *res, int row, post_record_t *post,
 		bool sticky)
 {
 	post->id = db_get_post_id(res, row, 0);
@@ -878,7 +878,7 @@ static bool update_record(record_t *rec, int bid, bool sticky)
 	post_record_t *posts = malloc(sizeof(*posts) * rows);
 	if (posts) {
 		for (int i = 0; i < rows; ++i) {
-			convert_post_record(res, i, posts + i, sticky);
+			post_record_from_query(res, i, posts + i, sticky);
 		}
 		qsort(posts, rows, sizeof(*posts),
 				sticky ? post_sticky_compare : post_record_compare);
@@ -970,7 +970,8 @@ bool post_update_trash_record(record_t *record, post_trash_e trash,
 	post_record_extended_t *posts = malloc(sizeof(*posts) * rows);
 	if (posts) {
 		for (int i = 0; i < rows; ++i) {
-			convert_post_record(res, i, (post_record_t *) (posts + i), false);
+			post_record_from_query(res, i, (post_record_t *) (posts + i),
+					false);
 			convert_post_record_extended(res, i, posts + i);
 		}
 		qsort(posts, rows, sizeof(*posts), post_record_compare);

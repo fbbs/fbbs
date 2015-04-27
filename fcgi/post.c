@@ -976,3 +976,68 @@ int bbsfwd_main(void)
 	}
 	return 0;
 }
+
+enum {
+	API_POST_DEFAULT_COUNT = 20,
+};
+
+int api_post_content(void)
+{
+	post_id_t thread_id = strtoll(web_get_param("thread_id"), NULL, 10);
+	if (thread_id <= 0)
+		return WEB_ERROR_BAD_REQUEST;
+	post_id_t since_id = strtoll(web_get_param("since_id"), NULL, 10);
+
+	board_t board;
+	int board_id = strtol(web_get_param("board_id"), NULL, 10);
+	if (board_id <= 0 || get_board_by_bid(board_id, &board) <= 0
+			|| !has_read_perm(&board)) {
+		return WEB_ERROR_BOARD_NOT_FOUND;
+	}
+
+	int count = strtol(web_get_param("count"), NULL, 10);
+	if (count > API_POST_DEFAULT_COUNT || count <= 0)
+		count = API_POST_DEFAULT_COUNT;
+
+	json_object_t *object = json_object_new();
+	web_set_response(object, JSON_OBJECT);
+
+	json_object_integer(object, "board_id", board.id);
+	json_object_string(object, "board_name", board.name);
+
+	json_array_t *posts = json_array_new();
+	json_object_append(object, "posts", posts, JSON_ARRAY);
+
+	query_t *q = query_new(0);
+	query_select(q, POST_TABLE_FIELDS);
+	query_from(q, "post.recent");
+	query_where(q, "board_id = %d", board_id);
+	query_and(q, "thread_id = %"DBIdPID, thread_id);
+	if (since_id)
+		query_and(q, "id > %"DBIdPID, since_id);
+	query_orderby(q, "id", true);
+	query_limit(q, count);
+
+	db_res_t *res = query_exec(q);
+	count = res ? db_res_rows(res) : 0;
+	for (int i = 0; i < count; ++i) {
+		post_record_t pr;
+		post_record_from_query(res, i, &pr, false);
+		char *content = post_content_get(pr.id, false);
+		if (content) {
+			json_object_t *post = json_object_new();
+			json_object_string(post, "content", content);
+			free(content);
+			json_object_bigint(post, "id", pr.id);
+			json_object_bigint(post, "reply_id", pr.reply_id);
+			json_object_bigint(post, "thread_id", pr.thread_id);
+			json_object_integer(post, "user_id", pr.user_id);
+			json_object_string(post, "user_name", pr.user_name);
+			json_object_integer(post, "flags", pr.flag);
+			json_object_string(post, "title", pr.utf8_title);
+			json_array_append(posts, post, JSON_OBJECT);
+		}
+	}
+	db_clear(res);
+	return WEB_OK;
+}

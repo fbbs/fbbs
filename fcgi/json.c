@@ -137,6 +137,8 @@ static void json_print_string(const char *s)
 				printf("\\\"");
 			} else if (c == '\\') {
 				printf("\\\\");
+			} else if (c == '\n') {
+				printf("\\n");
 			} else if (c <= 0x1f) {
 				printf("\\u00%02x", c);
 			} else {

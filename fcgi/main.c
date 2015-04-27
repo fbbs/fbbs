@@ -70,6 +70,8 @@ extern int api_board_all(void);
 extern int api_board_fav(void);
 extern int api_board_toc(void);
 
+extern int api_post_content(void);
+
 typedef struct {
 	const char *name;    ///< name of the cgi.
 	int (*func)(void);   ///< handler function.
@@ -118,6 +120,7 @@ const static web_handler_t handlers[] = {
 	{ "not", bbsnot_main, ST_READING },
 	{ "ovr", bbsovr_main, ST_FRIEND },
 	{ "plan", bbsplan_main, ST_EDITUFILE },
+	{ "post-content", api_post_content, ST_READING },
 	{ "preupload", bbspreupload_main, ST_UPLOAD },
 	{ "prop", web_props, ST_PROP },
 	{ "pst", bbspst_main, ST_POSTING },
