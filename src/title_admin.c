@@ -100,7 +100,7 @@ static int grant_title(user_id_t uid, const char *title)
 	if (string_validate_utf8(title, TITLE_CCHARS, false) < 0)
 		return -1;
 
-	return title_submit_request(PROP_TITLE_FREE, uid, title, session_uid());
+	return title_submit_request(PROP_TITLE_FREE, uid, title, session_get_user_id());
 }
 
 static int tui_grant_title(tui_list_t *p)

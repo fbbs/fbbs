@@ -20,17 +20,18 @@ enum {
 post_list_type_e get_post_list_type(void)
 {
 	return (post_list_type_e) mdb_integer(0, "HGET",
-			POST_LIST_TYPE_KEY" %"PRIdUID, session_uid());
+			POST_LIST_TYPE_KEY" %"PRIdUID, session_get_user_id());
 }
 
 static void set_post_list_type(post_list_type_e type)
 {
-	mdb_cmd("HSET", POST_LIST_TYPE_KEY" %"PRIdUID" %d", session_uid(), type);
+	mdb_cmd("HSET", POST_LIST_TYPE_KEY" %"PRIdUID" %d", session_get_user_id(),
+			type);
 }
 
 const char *get_post_list_type_string(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return "";
 
 	post_list_type_e type = get_post_list_type();
@@ -286,7 +287,7 @@ static record_callback_e web_post_filter(void *r, void *args, int offset)
 
 int bbsbfind_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	board_t board;

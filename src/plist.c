@@ -575,7 +575,7 @@ static int toggle_post_lock(post_info_t *pi)
 		return DONOTHING;
 
 	bool locked = pi->flag & POST_FLAG_LOCKED;
-	if (am_curr_bm() || (!locked && session_uid() == pi->user_id))
+	if (am_curr_bm() || (!locked && session_get_user_id() == pi->user_id))
 		return toggle_post_flag_no_check(pi, POST_FLAG_LOCKED);
 	return DONOTHING;
 }
@@ -973,7 +973,7 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 	if (pl->type != POST_LIST_NORMAL)
 		return DONOTHING;
 
-	if (pi && (pi->user_id == session_uid() || am_curr_bm())) {
+	if (pi && (pi->user_id == session_get_user_id() || am_curr_bm())) {
 		screen_move(-1, 0);
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
@@ -1116,7 +1116,7 @@ static int reply_with_mail(const post_info_t *pi)
 
 static int tui_edit_post_title(post_info_t *pi)
 {
-	if (!pi || (pi->user_id != session_uid() && !am_curr_bm()))
+	if (!pi || (pi->user_id != session_get_user_id() && !am_curr_bm()))
 		return DONOTHING;
 
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
@@ -1143,7 +1143,7 @@ static int tui_edit_post_title(post_info_t *pi)
 
 static int tui_edit_post_content(post_info_t *pi)
 {
-	if (!pi || (pi->user_id != session_uid() && !am_curr_bm()))
+	if (!pi || (pi->user_id != session_get_user_id() && !am_curr_bm()))
 		return DONOTHING;
 
 	char file[HOMELEN];
@@ -2825,7 +2825,7 @@ int post_list_reply(void)
 {
 	tui_suppress_notice(true);
 
-	user_id_t user_id = session_uid();
+	user_id_t user_id = session_get_user_id();
 	post_reply_clear_count(user_id);
 
 	tui_list_recent_t tlr = {
@@ -2876,7 +2876,7 @@ int post_list_mention(void)
 {
 	tui_suppress_notice(true);
 
-	user_id_t user_id = session_uid();
+	user_id_t user_id = session_get_user_id();
 	post_mention_clear_count(user_id);
 
 	tui_list_recent_t tlr = {

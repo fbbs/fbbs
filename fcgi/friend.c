@@ -10,13 +10,13 @@
 
 int bbsfall_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsfall>");
 	print_session();
 
-	following_list_t *fl = following_list_load(session_uid());
+	following_list_t *fl = following_list_load(session_get_user_id());
 	if (fl) {
 		for (int i = following_list_rows(fl) - 1; i >= 0; --i) {
 			printf("<ov id='%s'>", following_list_get_name(fl, i));
@@ -31,7 +31,7 @@ int bbsfall_main(void)
 
 int bbsfadd_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	const char *uname = web_get_param("id");
@@ -41,7 +41,7 @@ int bbsfadd_main(void)
 		UTF8_BUFFER(note, FOLLOW_NOTE_CCHARS);
 		convert_g2u(note, utf8_note);
 
-		follow(session_uid(), uname, utf8_note);
+		follow(session_get_user_id(), uname, utf8_note);
 
 		printf("Location: fall\n\n");
 		return 0;
@@ -55,14 +55,14 @@ int bbsfadd_main(void)
 
 int bbsfdel_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	const char *uname = web_get_param("u");
 	if (*uname) {
 		user_id_t uid = get_user_id(uname);
 		if (uid > 0)
-			unfollow(session_uid(), uid);
+			unfollow(session_get_user_id(), uid);
 	}
 	printf("Location: fall\n\n");
 	return 0;
@@ -110,7 +110,7 @@ static void show_sessions_of_friends(void)
 
 int bbsovr_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsovr>");

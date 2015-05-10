@@ -285,7 +285,7 @@ static int kick_out(online_users_t *up, online_user_info_t *ip)
 		return DONOTHING;
 	if (streq(currentuser.userid, "guest"))
 		return DONOTHING;
-	if (ip->sid == session_id())
+	if (ip->sid == session_get_id())
 		//% strlcpy(buf, "您要把【自己】踢出去吗", sizeof(buf));
 		strlcpy(buf, "\xc4\xfa\xd2\xaa\xb0\xd1\xa1\xbe\xd7\xd4\xbc\xba\xa1\xbf\xcc\xdf\xb3\xf6\xc8\xa5\xc2\xf0", sizeof(buf));
 	else
@@ -315,7 +315,7 @@ int tui_follow_uname(const char *uname)
 	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xb9\xd8\xd7\xa2 %s \xc2\xf0?", uname);
 	if (!askyn(buf, false, true))
 		return MINIUPDATE;
-	if (follow(session_uid(), uname, NULL)) {
+	if (follow(session_get_user_id(), uname, NULL)) {
 		//% snprintf(buf, sizeof(buf), "成功关注 %s", uname);
 		snprintf(buf, sizeof(buf), "\xb3\xc9\xb9\xa6\xb9\xd8\xd7\xa2 %s", uname);
 		presskeyfor(buf, -1);
@@ -392,7 +392,7 @@ static tui_list_handler_t online_users_handler(tui_list_t *p, int ch)
 				return MINIUPDATE;
 			{
 				user_id_t uid = get_user_id(ip->name);
-				if (uid > 0 && unfollow(session_uid(), uid)) {
+				if (uid > 0 && unfollow(session_get_user_id(), uid)) {
 					//% "已取消关注 %s"
 					snprintf(buf, sizeof(buf), "\xd2\xd1\xc8\xa1\xcf\xfb"
 							"\xb9\xd8\xd7\xa2 %s", ip->name);

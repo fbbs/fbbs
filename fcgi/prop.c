@@ -20,7 +20,7 @@ static void show_prop(prop_list_t *p, int i)
 
 int web_props(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	prop_list_t *p = prop_list_load();
@@ -58,7 +58,7 @@ static int show_title_detail(int record)
 {
 	db_res_t *res = db_query("SELECT title, approved FROM titles"
 			" WHERE record_id = %d AND user_id = %"DBIdUID,
-			record, session_uid());
+			record, session_get_user_id());
 	if (!res || db_res_rows(res) <= 0) {
 		db_clear(res);
 		return BBS_EINVAL;
@@ -81,14 +81,14 @@ static int show_title_detail(int record)
 
 int web_my_props(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	int record = strtol(web_get_param("record"), NULL, 10);
 	int item = strtol(web_get_param("item"), NULL, 10);
 
 	if (record <= 0 || item <= 0) {
-		my_props_t *p = my_props_load(session_uid());
+		my_props_t *p = my_props_load(session_get_user_id());
 		if (!p)
 			return BBS_EINTNL;
 
@@ -125,7 +125,8 @@ static int buy_title(int item, const char *title)
 		UTF8_BUFFER(title, TITLE_CCHARS);
 		convert_g2u(title, utf8_title);
 		if (string_validate_utf8(utf8_title, TITLE_CCHARS, false) > 0
-				&& title_submit_request(item, session_uid(), utf8_title, 0)) {
+				&& title_submit_request(item, session_get_user_id(),
+					utf8_title, 0)) {
 			printf("<success/>");
 		}
 	} else {

@@ -106,7 +106,8 @@ static void generate_full_msg(const char *msg, int type,
 			snprintf(head, sizeof(head), "\033[0;1;44;36m%-12.12s\033[33m"
 					"(\033[36m%-24.24s\033[33m):\033[37m%-34.34s"
 					"\033[31m(%s)\033[m\033[%05dm\n",
-					currentuser.userid, timestr , " ", ret_str, session_pid());
+					currentuser.userid, timestr , " ", ret_str,
+					session_get_pid());
 			break;
 		case LOGOUT_MSG:
 			snprintf(head, sizeof(head), "\033[0;1;45;36m%-12.12s\033[36m"
@@ -120,7 +121,7 @@ static void generate_full_msg(const char *msg, int type,
 			snprintf(head, sizeof(head), "\033[1;5;44;33m\xd5\xbe\xb3\xa4 \xd3\xda\033[36m "
 					//% "%24.24s \033[33m广播：\033[m\033[1;37;44m%-39.39s\033[m"
 					"%24.24s \033[33m\xb9\xe3\xb2\xa5\xa3\xba\033[m\033[1;37;44m%-39.39s\033[m"
-					"\033[%05dm\n", timestr," ",  session_pid());
+					"\033[%05dm\n", timestr," ",  session_get_pid());
 			break;
 	}
 	snprintf(full, fsize, "%s%s\n", head, msg);
@@ -314,7 +315,7 @@ static msg_session_info_t *get_sessions_of_followers(void)
 {
 	return db_query(MSG_SESSION_INFO_QUERY
 			" JOIN follows f ON s.user_id = f.follower"
-			" WHERE f.user_id = %"DBIdUID, session_uid());
+			" WHERE f.user_id = %"DBIdUID, session_get_user_id());
 }
 
 int logout_msg(const char *msg)

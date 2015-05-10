@@ -141,7 +141,7 @@ int do_web_login(const char *uname, const char *pw, bool api)
 	if (!getuserec(uname, &user))
 		return api ? WEB_ERROR_INCORRECT_PASSWORD : BBS_EWPSWD;
 	user_id_t user_id = get_user_id(uname);
-	session_set_uid(user_id);
+	session_set_user_id(user_id);
 
 	if (pw && !passwd_check(uname, pw)) {
 		log_attempt(user.userid, fromhost, "web");
@@ -184,13 +184,13 @@ static int _web_login(bool persistent, bool redirect, session_data_t *s)
 
 	s->expire_time = persistent ? fb_time() + COOKIE_PERSISTENT_PERIOD : 0;
 	generate_session_key(s->key, sizeof(s->key), s->token, sizeof(s->token),
-			session_id());
-	session_new(s->key, s->token, session_id(), session_uid(),
+			session_get_id());
+	session_new(s->key, s->token, session_get_id(), session_get_user_id(),
 			currentuser.userid, fromhost, SESSION_WEB, SESSION_PLAIN, true,
 			s->expire_time);
-	if (session_id()) {
-		session_web_cache_set(session_uid(), s->key, s->token, session_id(),
-				fromhost, true);
+	if (session_get_id()) {
+		session_web_cache_set(session_get_user_id(), s->key, s->token,
+				session_get_id(), fromhost, true);
 	}
 	if (redirect) {
 		return login_redirect(s->key,
@@ -202,7 +202,7 @@ static int _web_login(bool persistent, bool redirect, session_data_t *s)
 static int api_login(void)
 {
 	if (web_request_method(GET)) {
-		if (session_id())
+		if (session_get_id())
 			return WEB_ERROR_NONE;
 		else
 			return WEB_ERROR_LOGIN_REQUIRED;
@@ -240,7 +240,7 @@ int web_login(void)
 	if (web_request_type(API))
 		return api_login();
 
-	if (session_id())
+	if (session_get_id())
 		return login_redirect(NULL, 0);
 
 	if (web_parse_post_data() < 0)
@@ -264,7 +264,7 @@ int web_login(void)
 
 int web_logout(void)
 {
-	session_id_t id = session_id();
+	session_id_t id = session_get_id();
 	if (id) {
 		update_user_stay(&currentuser, false, false);
 		save_user_data(&currentuser);

@@ -49,7 +49,7 @@ static tui_list_display_t tui_prop_display(tui_list_t *p, int n)
 
 static int tui_title_buy(int type, int price)
 {
-	if (title_check_existence(session_uid())) {
+	if (title_check_existence(session_get_user_id())) {
 		//% 您已购买了自定义身份，请至[藏经阁]中查看
 		presskeyfor("\xc4\xfa\xd2\xd1\xb9\xba\xc2\xf2\xc1\xcb\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd\xa3\xac\xc7\xeb\xd6\xc1[\xb2\xd8\xbe\xad\xb8\xf3]\xd6\xd0\xb2\xe9\xbf\xb4", -1);
 		return MINIUPDATE;
@@ -63,7 +63,7 @@ static int tui_title_buy(int type, int price)
 	if (string_validate_utf8(utf8_title, TITLE_CCHARS, false) <= 0)
 		return MINIUPDATE;
 
-	if (title_submit_request(type, session_uid(), utf8_title, 0)) {
+	if (title_submit_request(type, session_get_user_id(), utf8_title, 0)) {
 		//% 购买成功。请您耐心等待审核。
 		presskeyfor("\xb9\xba\xc2\xf2\xb3\xc9\xb9\xa6\xa1\xa3\xc7\xeb\xc4\xfa\xc4\xcd\xd0\xc4\xb5\xc8\xb4\xfd\xc9\xf3\xba\xcb\xa1\xa3", -1);
 	} else {
@@ -110,7 +110,7 @@ static tui_list_loader_t tui_my_props_loader(tui_list_t *p)
 {
 	if (p->data)
 		my_props_free(p->data);
-	p->data = my_props_load(session_uid());
+	p->data = my_props_load(session_get_user_id());
 	return (p->all = my_props_count(p->data));
 }
 

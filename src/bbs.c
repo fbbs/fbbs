@@ -1475,7 +1475,7 @@ int Q_Goodbye(void)
 
 	CreateNameList();
 
-	if (session_id()) {
+	if (session_get_id()) {
 		time_t stay;
 
 		stay = time(0) - login_start_time;

@@ -34,7 +34,7 @@ static int _get_mail_mark(const struct fileheader *fp)
 
 int bbsmail_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	int start = strtol(web_get_param("start"), NULL, 10);
@@ -99,7 +99,7 @@ int print_new_mail(void *buf, int count, void *args)
 
 int bbsnewmail_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 	xml_header(NULL);
 	printf("<bbsmail new='1'>");
@@ -115,7 +115,7 @@ int bbsnewmail_main(void)
 
 int bbsmailcon_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	const char *file = web_get_param("f");
@@ -178,7 +178,7 @@ int bbsmailcon_main(void)
 
 int bbsdelmail_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	const char *file = web_get_param("f");
@@ -214,7 +214,7 @@ int bbsdelmail_main(void)
 
 int bbspstmail_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
@@ -287,7 +287,7 @@ int bbspstmail_main(void)
 
 int bbssndmail_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 	if (!HAS_PERM2(PERM_MAIL, &currentuser))
 		return BBS_EACCES;
@@ -360,7 +360,7 @@ static int _mail_checked(void *ptr, void *file)
 
 int web_mailman(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	web_parse_post_data();

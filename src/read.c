@@ -235,7 +235,7 @@ static int i_read_key(struct one_key *rcmdlist, struct keeploc *locmem, int ch, 
 			sprintf(genbuf, "\xc8\xb7\xb6\xa8\xd2\xaa\xb0\xd1 %s \xbc\xd3\xc8\xeb\xba\xc3\xd3\xd1\xc3\xfb\xb5\xa5\xc2\xf0",userid);
 			if (askyn(genbuf, NA, NA) == NA)
 			return FULLUPDATE;
-			if (follow(session_uid(), userid, NULL)) {
+			if (follow(session_get_user_id(), userid, NULL)) {
 				//% sprintf(genbuf, "成功关注 %s", userid);
 				sprintf(genbuf, "\xb3\xc9\xb9\xa6\xb9\xd8\xd7\xa2 %s", userid);
 				show_message(genbuf);

@@ -1271,7 +1271,7 @@ static db_res_t *load_names_of_follows(void)
 {
 	return db_query("SELECT u.name"
 			" FROM follows f JOIN alive_users u ON f.user_id = u.id"
-			" WHERE f.follower = %"DBIdUID, session_uid());
+			" WHERE f.follower = %"DBIdUID, session_get_user_id());
 }
 
 static int do_gsend(char **userid, char *title, int num, char current_maillist)
@@ -1741,7 +1741,7 @@ static int forward_file(const char *receiver, const char *file,
 		char buf[STRLEN];
 		file_temp_name(fname, sizeof(fname));
 		snprintf(buf, sizeof(buf), "uuencode %s fb-bbs.%05d > %s",
-				file, session_pid(), fname);
+				file, session_get_pid(), fname);
 		system(buf);
 	} else {
 		strlcpy(fname, file, sizeof(fname));

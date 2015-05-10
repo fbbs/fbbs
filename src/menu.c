@@ -314,7 +314,7 @@ static int draw_group(int first_item, int items, bool top)
 		.jump_to_mail_menu = false,
 	};
 	if (top) {
-		user_id_t user_id = session_uid();
+		user_id_t user_id = session_get_user_id();
 		arg.jump_to_mail_menu = chkmail()
 				|| post_reply_get_count(user_id)
 				|| post_mention_get_count(user_id);

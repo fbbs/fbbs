@@ -14,7 +14,7 @@ static void kill_other_sessions(void)
 	if (res) {
 		for (int i = 0; i < session_basic_info_count(res); ++i) {
 			session_id_t sid = session_basic_info_sid(res, i);
-			if (sid != session_id())
+			if (sid != session_get_id())
 				bbs_kill(sid, session_basic_info_pid(res, i), SIGHUP);
 		}
 	}
@@ -113,7 +113,7 @@ int offline() {
 				usernum);
 		mail_info(lastword);
 		set_user_status(ST_OFFLINE);
-		bbs_kill(session_id(), session_pid(), SIGHUP);
+		bbs_kill(session_get_id(), session_get_pid(), SIGHUP);
 		exit(0);
 	}
 	return 0;

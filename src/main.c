@@ -152,7 +152,7 @@ static void u_enter(void)
 
 	digestmode = NA;
 
-	session_new(NULL, NULL, 0, session_uid(), currentuser.userid, fromhost,
+	session_new(NULL, NULL, 0, session_get_user_id(), currentuser.userid, fromhost,
 			SESSION_TELNET,
 #ifdef ENABLE_SSH
 			SESSION_SECURE
@@ -195,7 +195,7 @@ void u_exit(void)
 	substitut_record(PASSFILE, &currentuser, sizeof(currentuser), usernum);
 	uidshm->status[usernum - 1]--;
 
-	session_destroy(session_id());
+	session_destroy(session_get_id());
 	session_set_pid(0);
 }
 
@@ -209,7 +209,7 @@ void abort_bbs(int nothing)
 
 	editor_dump();
 
-	if (session_id()) {
+	if (session_get_id()) {
 		time_t stay;
 		stay = time(0) - login_start_time;
 		snprintf(genbuf, sizeof(genbuf), "Stay: %3ld", stay / 60);
@@ -315,7 +315,7 @@ static void system_init(void)
 
 static void system_abort(void)
 {
-	if (session_id()) {
+	if (session_get_id()) {
 		log_usies("ABORT", "", &currentuser);
 		u_exit();
 	}
@@ -417,7 +417,7 @@ int bbs_auth(const char *name, const char *passwd)
 	}
 #endif
 
-	session_set_uid(get_user_id(name));
+	session_set_user_id(get_user_id(name));
 
 	return 0;
 }

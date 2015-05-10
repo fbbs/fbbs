@@ -674,7 +674,7 @@ static int denylist_remove(const char *file, const char *line)
 		return -1;
 
 	char fnew[HOMELEN];
-	snprintf(fnew, sizeof(fnew), "%s.%d", file, session_pid());
+	snprintf(fnew, sizeof(fnew), "%s.%d", file, session_get_pid());
 	FILE *fpw = fopen(fnew, "w");
 	if (!fpw) {
 		fclose(fpr);
@@ -804,7 +804,7 @@ static int denylist_do_add(const char *userid, int type, int days,
 	// Modify ban list.
 	FILE *fpr = fopen(DENY_LEVEL_LIST, "r");
 	char list[HOMELEN];
-	sprintf(list, DENY_LEVEL_LIST".%d", session_pid());
+	sprintf(list, DENY_LEVEL_LIST".%d", session_get_pid());
 	fpw = fopen(list, "w");
 	size_t len = strlen(urec.userid);
 	char buf[256];

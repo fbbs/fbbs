@@ -11,7 +11,7 @@
 
 int web_fav(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	xml_header(NULL);
@@ -20,7 +20,7 @@ int web_fav(void)
 
 	db_res_t *res = db_query("SELECT b.id, b.name, b.descr FROM boards b"
 			" JOIN fav_boards f ON b.id = f.board WHERE f.user_id = %d",
-			session_uid());
+			session_get_user_id());
 	if (res) {
 		for (int i = 0; i < db_res_rows(res); ++i) {
 			int bid = db_get_integer(res, i, 0);
@@ -42,11 +42,11 @@ int web_fav(void)
 
 int web_brdadd(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	int bid = strtol(web_get_param("bid"), NULL, 10);
-	int ok = fav_board_add(session_uid(), NULL, bid,
+	int ok = fav_board_add(session_get_user_id(), NULL, bid,
 			FAV_BOARD_ROOT_FOLDER, &currentuser);
 	if (ok) {
 		xml_header(NULL);
@@ -187,7 +187,7 @@ static json_object_t *attach_group(json_array_t *a, db_res_t *res, int id)
 */
 int api_board_fav(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return WEB_ERROR_LOGIN_REQUIRED;
 
 	json_array_t *array = json_array_new();
@@ -196,13 +196,13 @@ int api_board_fav(void)
 	query_t *q = query_new(0);
 	query_select(q, "board, name, folder");
 	query_from(q, "fav_boards");
-	query_where(q, "user_id = %"DBIdUID, session_uid());
+	query_where(q, "user_id = %"DBIdUID, session_get_user_id());
 	db_res_t *boards = query_exec(q);
 
 	q = query_new(0);
 	query_select(q, "id, name, descr");
 	query_from(q, "fav_board_folders");
-	query_where(q, "user_id = %"DBIdUID, session_uid());
+	query_where(q, "user_id = %"DBIdUID, session_get_user_id());
 	db_res_t *folders = query_exec(q);
 
 	if (folders && boards) {
@@ -400,7 +400,7 @@ int web_sector(void)
 
 int bbsclear_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	board_t board;

@@ -668,7 +668,7 @@ int post_delete(const post_filter_t *filter, bool junk, bool bm_visible,
 		.junk = junk,
 		.bm_visible = bm_visible,
 		.force = force,
-		.user_id = session_uid(),
+		.user_id = session_get_user_id(),
 		.user_name = currentuser.userid,
 	};
 	backend_response_post_delete_t resp;
@@ -774,7 +774,7 @@ post_id_t post_new(const post_request_t *pr)
 		.board_name = pr->board->name,
 		.content = content,
 		.board_id = pr->board->id,
-		.user_id = session_uid(),
+		.user_id = session_get_user_id(),
 		.user_id_replied = pr->uid_replied,
 		.marked = pr->marked,
 		.locked = pr->locked,
@@ -1426,7 +1426,7 @@ int post_scan_for_mentions(const char *title, const char *content,
 static int clear_mention(const char *user_name, post_id_t post_id, void *args)
 {
 	if (streq(user_name, currentuser.userid)) {
-		post_reply_mark_as_read(post_id, session_uid(), false, false);
+		post_reply_mark_as_read(post_id, session_get_user_id(), false, false);
 	}
 	return 0;
 }
@@ -1436,7 +1436,7 @@ void post_mark_as_read(const post_info_t *pi, const char *content)
 	if (pi) {
 		bool unread = brc_mark_as_read(post_stamp(pi->id));
 		if (unread) {
-			if (pi->user_id_replied == session_uid()) {
+			if (pi->user_id_replied == session_get_user_id()) {
 				post_reply_mark_as_read(pi->id, pi->user_id_replied, true,
 						false);
 			}

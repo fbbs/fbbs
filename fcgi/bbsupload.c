@@ -137,7 +137,7 @@ static bool check_upload(char *buf, size_t size, char **begin, char **end, char 
 
 int bbspreupload_main(void)
 {
-	if (!session_id())
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	board_t board;
@@ -157,7 +157,7 @@ int bbspreupload_main(void)
 
 int bbsupload_main(void)
 {
-	if (!session_id()) 
+	if (!session_get_id())
 		return BBS_ELGNREQ;
 
 	board_t board;

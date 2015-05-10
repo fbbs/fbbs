@@ -56,7 +56,7 @@ static bool session_check_web_cache(const char *user_name,
 
 	if (ok) {
 		session_set_id(session_id);
-		session_set_uid(user_id);
+		session_set_user_id(user_id);
 		session_set_idle_cached();
 	}
 	return ok;

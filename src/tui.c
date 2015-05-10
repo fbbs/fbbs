@@ -193,7 +193,7 @@ static void notice_count(int *replies, int *mentions)
 
 	fb_time_t now = fb_time();
 	if (now - last > 10) {
-		user_id_t user_id = session_uid();
+		user_id_t user_id = session_get_user_id();
 		*replies = post_reply_get_count(user_id);
 		*mentions = post_mention_get_count(user_id);
 		last = now;

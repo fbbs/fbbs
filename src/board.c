@@ -147,7 +147,8 @@ static int tui_favorite_add(tui_list_t *tl)
 		int parent = FAV_BOARD_ROOT_FOLDER;
 		if (bl->favorite)
 			parent = bl->parent;
-		if (fav_board_add(session_uid(), utf8_name, 0, parent, &currentuser))
+		if (fav_board_add(session_get_user_id(), utf8_name, 0, parent,
+					&currentuser))
 			tl->valid = false;
 		return FULLUPDATE;
 	} else {
@@ -156,7 +157,7 @@ static int tui_favorite_add(tui_list_t *tl)
 		//% snprintf(buf, sizeof(buf), "您确定要添加 %s 到收藏夹吗?", bname);
 		snprintf(buf, sizeof(buf), "\xc4\xfa\xc8\xb7\xb6\xa8\xd2\xaa\xcc\xed\xbc\xd3 %s \xb5\xbd\xca\xd5\xb2\xd8\xbc\xd0\xc2\xf0?", bname);
 		if (askyn(buf, false, true)) {
-			fav_board_add(session_uid(), bname, 0,
+			fav_board_add(session_get_user_id(), bname, 0,
 					FAV_BOARD_ROOT_FOLDER, &currentuser);
 		}
 		return MINIUPDATE;
@@ -188,7 +189,7 @@ static int tui_favorite_paste(tui_list_t *tl)
 	if (!HAS_PERM(PERM_LOGIN) || !bl->favorite)
 		return DONOTHING;
 
-	if (fav_board_mv(session_uid(), bl->copy_bid, bl->parent)) {
+	if (fav_board_mv(session_get_user_id(), bl->copy_bid, bl->parent)) {
 		tl->valid = false;
 		return PARTUPDATE;
 	}
@@ -225,7 +226,7 @@ static int tui_favorite_mkdir(tui_list_t *tl)
 		convert_g2u(gbk_name, utf8_name);
 		convert_g2u(gbk_descr, utf8_descr);
 
-		if (fav_board_mkdir(session_uid(), utf8_name, utf8_descr)) {
+		if (fav_board_mkdir(session_get_user_id(), utf8_name, utf8_descr)) {
 			tl->valid = false;
 			return PARTUPDATE;
 		}
@@ -259,7 +260,8 @@ static int tui_favorite_rename(tui_list_t *tl)
 		convert_g2u(gbk_name, utf8_name);
 		convert_g2u(gbk_descr, utf8_descr);
 
-		if (fav_board_rename(session_uid(), bp->id, utf8_name, utf8_descr)) {
+		if (fav_board_rename(session_get_user_id(), bp->id, utf8_name,
+					utf8_descr)) {
 			strlcpy(bp->name, gbk_name, sizeof(bp->name));
 			strlcpy(bp->descr, gbk_descr, sizeof(bp->descr));
 			return PARTUPDATE;
@@ -281,9 +283,9 @@ static int tui_favorite_rm(tui_list_t *tl)
 		if (askyn(buf, false, true)) {
 			int ok;
 			if (bp->flag & BOARD_CUSTOM_FLAG)
-				ok = fav_board_rmdir(session_uid(), bp->id);
+				ok = fav_board_rmdir(session_get_user_id(), bp->id);
 			else
-				ok = fav_board_rm(session_uid(), bp->id);
+				ok = fav_board_rm(session_get_user_id(), bp->id);
 			if (ok)
 				tl->valid = false;
 			return PARTUPDATE;
@@ -343,9 +345,9 @@ static void load_favorite_boards(board_list_t *bl)
 {
 	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder, b.sector "
 			"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
-			"WHERE f.user_id = %"DBIdUID, session_uid());
+			"WHERE f.user_id = %"DBIdUID, session_get_user_id());
 	db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
-			"WHERE user_id = %"DBIdUID, session_uid());
+			"WHERE user_id = %"DBIdUID, session_get_user_id());
 
 	res_to_board_array(bl, r1, r2);
 

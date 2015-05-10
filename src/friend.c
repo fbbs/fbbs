@@ -11,7 +11,7 @@ static tui_list_loader_t following_list_loader(tui_list_t *p)
 {
 	if (p->data)
 		following_list_free(p->data);
-	p->data = following_list_load(session_uid());
+	p->data = following_list_load(session_get_user_id());
 	return (p->all = following_list_rows(p->data));
 }
 
@@ -62,14 +62,14 @@ static int tui_follow(void)
 	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
 			gbk_note, sizeof(gbk_note), DOECHO, YEA);
 	convert_g2u(gbk_note, utf8_note);
-	return follow(session_uid(), buf, utf8_note);
+	return follow(session_get_user_id(), buf, utf8_note);
 }
 
 static int tui_unfollow(user_id_t uid)
 {
 	screen_move(-1, 0);
-	//% return askyn("确定取消关注?", false, true) ? unfollow(session_uid(), uid) : 0;
-	return askyn("\xc8\xb7\xb6\xa8\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2?", false, true) ? unfollow(session_uid(), uid) : 0;
+	//% return askyn("确定取消关注?", false, true) ? unfollow(session_get_user_id(), uid) : 0;
+	return askyn("\xc8\xb7\xb6\xa8\xc8\xa1\xcf\xfb\xb9\xd8\xd7\xa2?", false, true) ? unfollow(session_get_user_id(), uid) : 0;
 }
 
 static int tui_edit_followed_note(user_id_t followed, const char *orig)
@@ -82,7 +82,7 @@ static int tui_edit_followed_note(user_id_t followed, const char *orig)
 	if (!*utf8_note || streq(orig, utf8_note))
 		return DONOTHING;
 
-	edit_followed_note(session_uid(), followed, utf8_note);
+	edit_followed_note(session_get_user_id(), followed, utf8_note);
 	return FULLUPDATE;
 }
 
@@ -162,7 +162,7 @@ static tui_list_loader_t black_list_loader(tui_list_t *p)
 {
 	if (p->data)
 		black_list_free(p->data);
-	p->data = black_list_load(session_uid());
+	p->data = black_list_load(session_get_user_id());
 	return (p->all = black_list_rows(p->data));
 }
 
@@ -212,7 +212,7 @@ static int tui_black_list_add(void)
 	getdata(-1, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xb1\xb8\xd7\xa2: ",
 			gbk_note, sizeof(gbk_note), DOECHO, YEA);
 	convert_g2u(gbk_note, utf8_note);
-	return black_list_add(session_uid(), buf, utf8_note);
+	return black_list_add(session_get_user_id(), buf, utf8_note);
 }
 
 static int tui_black_list_edit(user_id_t blocked, const char *orig)
@@ -224,7 +224,7 @@ static int tui_black_list_edit(user_id_t blocked, const char *orig)
 	convert_g2u(gbk_note, utf8_note);
 
 	if (*utf8_note && !streq(orig, utf8_note)
-			&& black_list_edit(session_uid(), blocked, utf8_note) > 0)
+			&& black_list_edit(session_get_user_id(), blocked, utf8_note) > 0)
 		return FULLUPDATE;
 
 	return MINIUPDATE;
@@ -263,7 +263,7 @@ static tui_list_handler_t black_list_handler(tui_list_t *p, int key)
 
 	switch (key) {
 		case 'd':
-			if (black_list_rm(session_uid(),
+			if (black_list_rm(session_get_user_id(),
 						black_list_get_id(p->data, p->cur)) > 0)
 				p->valid = false;
 			break;

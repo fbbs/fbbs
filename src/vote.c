@@ -598,7 +598,7 @@ int mk_result(int num)
 	sprintf(fname, "vote/%s/flag.%d", currboard, currvote.opendate); //投票记录文件路径为 vote/版名/flag.开启投票日
 	/*	count_result(NULL); */
 	sug = NULL;
-	sprintf(sugname, "vote/%s/tmp.%d", currboard, session_pid()); //投票临时文件路径为 vote/版名/tmp.用户id
+	sprintf(sugname, "vote/%s/tmp.%d", currboard, session_get_pid()); //投票临时文件路径为 vote/版名/tmp.用户id
 	if ((sug = fopen(sugname, "w")) == NULL) {
 		report("open vote tmp file error", currentuser.userid);
 		pressanykey();

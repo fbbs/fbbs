@@ -14,7 +14,7 @@ enum {
 
 typedef struct {
 	session_id_t id;
-	user_id_t uid;
+	user_id_t user_id;
 	int pid;
 	int flag;
 	session_status_e status;
@@ -25,7 +25,7 @@ typedef struct {
 /** 当前用户会话数据 */
 static bbs_session_t session;
 
-session_id_t session_id(void)
+session_id_t session_get_id(void)
 {
 	return session.id;
 }
@@ -35,17 +35,17 @@ void session_set_id(session_id_t sid)
 	session.id = sid;
 }
 
-user_id_t session_uid(void)
+user_id_t session_get_user_id(void)
 {
-	return session.uid;
+	return session.user_id;
 }
 
-void session_set_uid(user_id_t uid)
+void session_set_user_id(user_id_t user_id)
 {
-	session.uid = uid;
+	session.user_id = user_id;
 }
 
-int session_pid(void)
+int session_get_pid(void)
 {
 	return session.pid;
 }
@@ -53,11 +53,6 @@ int session_pid(void)
 void session_set_pid(int pid)
 {
 	session.pid = pid;
-}
-
-fb_time_t session_idle(void)
-{
-	return session.idle;
 }
 
 session_status_e session_status(void)
@@ -257,7 +252,7 @@ db_res_t *session_get_followed(void)
 {
 	return db_query("SELECT " ACTIVE_SESSION_FIELDS ", f.notes"
 			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
-			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
+			" WHERE s.active AND f.follower = %"DBIdUID, session.user_id);
 }
 
 db_res_t *session_get_active(void)
@@ -265,22 +260,22 @@ db_res_t *session_get_active(void)
 	return db_query(ACTIVE_SESSION_QUERY);
 }
 
-session_basic_info_t *get_sessions(user_id_t uid)
+session_basic_info_t *get_sessions(user_id_t user_id)
 {
 	return db_query("SELECT " SESSION_BASIC_INFO_FIELDS " FROM sessions s"
-			" WHERE active AND user_id = %"DBIdUID, uid);
+			" WHERE active AND user_id = %"DBIdUID, user_id);
 }
 
 session_basic_info_t *get_my_sessions(void)
 {
-	return get_sessions(session.uid);
+	return get_sessions(session.user_id);
 }
 
 static session_basic_info_t *basic_sessions_of_follows(void)
 {
 	return db_query("SELECT "SESSION_BASIC_INFO_FIELDS
 			" FROM sessions s JOIN follows f ON s.user_id = f.user_id"
-			" WHERE s.active AND f.follower = %"DBIdUID, session.uid);
+			" WHERE s.active AND f.follower = %"DBIdUID, session.user_id);
 }
 
 int session_count_online_followed(bool visible_only)

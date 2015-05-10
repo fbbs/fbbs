@@ -96,13 +96,13 @@ typedef enum {
 	ST_WWW = 0x40000000,
 } session_status_e;
 
-extern session_id_t session_id(void);
-extern void session_set_id(session_id_t sid);
+extern session_id_t session_get_id(void);
+extern void session_set_id(session_id_t session_id);
 
-extern user_id_t session_uid(void);
-extern void session_set_uid(user_id_t uid);
+extern user_id_t session_get_user_id(void);
+extern void session_set_user_id(user_id_t user_id);
 
-extern int session_pid(void);
+extern int session_get_pid(void);
 extern void session_set_pid(int pid);
 
 extern session_status_e session_status(void);
