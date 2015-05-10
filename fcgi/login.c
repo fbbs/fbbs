@@ -264,12 +264,15 @@ int web_login(void)
 
 int web_logout(void)
 {
-	if (session_id()) {
+	session_id_t id = session_id();
+	if (id) {
 		update_user_stay(&currentuser, false, false);
 		save_user_data(&currentuser);
 
 		expire_cookie(WEB_COOKIE_KEY);
 		expire_cookie(WEB_COOKIE_USER);
+
+		session_destroy(id);
 	}
 	redirect_homepage();
 	return 0;

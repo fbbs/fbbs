@@ -37,7 +37,7 @@ static void res_to_session(db_res_t *res, struct _session *sessions, int count)
 	struct _session *s = sessions;
 	for (int i = 0; i < count; ++i) {
 		s->sid = db_get_session_id(res, i, 0);
-		s->active = db_get_value(res, i, 1);
+		s->active = db_get_bool(res, i, 1);
 		s->uid = db_get_user_id(res, i, 2);
 		s->pid = db_get_integer(res, i, 3);
 		s->web = db_get_bool(res, i, 4);
@@ -135,12 +135,17 @@ static void check_sessions(const struct _session *begin,
 
 	int web = 0;
 	for (const struct _session *s = begin; s < end; ++s) {
-		if (check_timeout(s, active)) {
-			--active;
+		if (s->expire < fb_time()) {
+			kill_session(s, active, false);
+			active -= s->active;
 		} else {
-			if (!s->active && s->web) {
-				if (++web > MAX_WEB_SESSIONS)
-					kill_session(s, active--, false);
+			if (check_timeout(s, active)) {
+				--active;
+			} else {
+				if (!s->active && s->web) {
+					if (++web > MAX_WEB_SESSIONS)
+						kill_session(s, active--, false);
+				}
 			}
 		}
 	}

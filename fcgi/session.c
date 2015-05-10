@@ -10,6 +10,7 @@ extern int do_web_login(const char *uname, const char *pw, bool api);
 static bool activate_session(session_id_t session_id, const char *user_name,
 		const char *ip_addr, const char *session_key, user_id_t user_id)
 {
+	bool ok = false;
 	db_res_t *res = db_query("UPDATE sessions SET active = TRUE, stamp = %t"
 			" WHERE id = %"DBIdSID" RETURNING token", fb_time(), session_id);
 	if (res && db_res_rows(res) == 1) {
@@ -17,10 +18,11 @@ static bool activate_session(session_id_t session_id, const char *user_name,
 			const char *token = db_get_value(res, 0, 0);
 			session_web_cache_set(user_id, session_key, token, session_id,
 					ip_addr, true);
+			ok = true;
 		}
 	}
 	db_clear(res);
-	return false;
+	return ok;
 }
 
 static bool session_check_web_cache(const char *user_name,
@@ -55,6 +57,7 @@ static bool session_check_web_cache(const char *user_name,
 	if (ok) {
 		session_set_id(session_id);
 		session_set_uid(user_id);
+		session_set_idle_cached();
 	}
 	return ok;
 }
