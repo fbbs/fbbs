@@ -411,8 +411,8 @@ int bbs_auth(const char *name, const char *passwd)
 	}
 #ifdef CHECK_FREQUENTLOGIN
 	if (!HAS_PERM(PERM_SYSOPS)
-			&& strcasecmp(currentuser.userid, "guest") != 0
-			&& abs(time(NULL) - currentuser.lastlogin) < 10) {
+			&& !strcaseeq(currentuser.userid, "guest")
+			&& fb_time() - currentuser.lastlogin < 10) {
 		return BBS_ELFREQ;
 	}
 #endif
