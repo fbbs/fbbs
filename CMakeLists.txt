@@ -31,10 +31,13 @@ check_function_exists(gethostbyname HAVE_GETHOSTBYNAME)
 check_function_exists(regcomp HAVE_REGCOMP)
 check_function_exists(strlcpy HAVE_STRLCPY)
 
-set(CMAKE_C_FLAGS "-O2 -pipe -Wall -std=c99")
+set(CMAKE_C_FLAGS "-O2 -pipe -Wall -std=c99 -fPIC -fstack-protector-all")
 if(ENABLE_DEBUG)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 endif(ENABLE_DEBUG)
+
+add_definitions("-D_FORTIFY_SOURCE=2")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -fPIE")
 
 set(CMAKE_INSTALL_PREFIX "/home/bbs")
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
