@@ -150,7 +150,7 @@ int api_board_all(void)
 static json_object_t *attach_group(json_array_t *a, db_res_t *res, int id)
 {
 	json_object_t *object = json_object_new();
-	json_array_append(object, a, JSON_ARRAY);
+	json_array_append(a, object, JSON_OBJECT);
 
 	json_array_t *array = json_array_new();
 	json_object_append(object, "boards", array, JSON_ARRAY);
