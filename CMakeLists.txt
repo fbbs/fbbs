@@ -36,7 +36,6 @@ if(ENABLE_DEBUG)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 endif(ENABLE_DEBUG)
 
-add_definitions("-D_FORTIFY_SOURCE=2")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -fPIE")
 
 set(CMAKE_INSTALL_PREFIX "/home/bbs")
