@@ -671,7 +671,7 @@ static const char *seek_to_width(const char *ptr, size_t size, size_t *width)
 {
 	bool ansi = false;
 	const char *end = ptr + size;
-	while (ptr < end) {
+	while (ptr < end && *width) {
 		if (ansi) {
 			if (isalpha(*ptr))
 				ansi = false;
@@ -688,7 +688,7 @@ static const char *seek_to_width(const char *ptr, size_t size, size_t *width)
 					break;
 
 				size_t w = fb_wcwidth(wc);
-				if (*width > w) {
+				if (*width >= w) {
 					*width -= w;
 					ptr = p;
 				} else {
