@@ -232,6 +232,7 @@ static void print_background(const char *ptr, int line, int col)
 			screen_putc(ch);
 		}
 	}
+	screen_printf("\033[m");
 }
 
 static bool read_item(int offset, menu_item_t *item)
@@ -560,13 +561,10 @@ int menu_loop(const char *group_name)
 		int line, col;
 		get_coordination(first_item, now, &line, &col);
 
-		screen_move(line, col);
-		screen_printf(">");
-
+		screen_replace(line, col, ">");
+		screen_move(line, col + 1);
 		int ch = egetch();
-
-		screen_move(line, col);
-		screen_printf(" ");
+		screen_replace(line, col, " ");
 
 		menu_item_t item;
 		if (!read_item(now, &item))
