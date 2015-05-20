@@ -293,7 +293,8 @@ static int print_item(const menu_item_t *item, void *a, int offset)
 			print_background(descr, item->line, item->col);
 	} else {
 		if (descr) {
-			screen_replace(item->line, item->col + 2, descr);
+			if (*descr != '&')
+				screen_replace(item->line, item->col + 2, descr);
 			if (!arg->now)
 				arg->now = offset;
 		}
@@ -508,7 +509,8 @@ static int search_item_callback(const menu_item_t *item, void *a, int offset)
 {
 	search_item_arg_t *arg = a;
 	const char *descr = menu_get_string(item->descr);
-	if (descr && toupper(*descr) == arg->ch) {
+	if (descr && (toupper(*descr) == arg->ch
+				|| (*descr == '&' && toupper(descr[1]) == arg->ch))) {
 		if (offset > arg->now) {
 			arg->found = offset;
 			return -1;
