@@ -53,6 +53,10 @@ extern int resolve_ucache(void);
 
 int main(int argc, char **argv)
 {
+	const char *socket_path = getenv("FBBS_SOCKET_PATH");
+	if (!socket_path)
+		return EXIT_FAILURE;
+
 	start_daemon();
 
 	if (setgid(BBSGID) != 0)
@@ -66,23 +70,29 @@ int main(int argc, char **argv)
 	if (resolve_ucache() < 0)
 		return EXIT_FAILURE;
 
+	int fd = backend_proxy_connect(socket_path, false);
+	if (fd < 0)
+		return EXIT_FAILURE;
+
 	fb_signal(SIGTERM, shutdown_handler);
 
 	while (!backend_shutdown) {
 		backend_accepting = true;
-		mdb_res_t *res = mdb_res("BLPOP", "%s %d", BACKEND_REQUEST_KEY, 0);
+
+		char buf[4096];
+		size_t size = sizeof(buf);
+		char *ptr = backend_proxy_read(fd, buf, &size);
+
 		backend_accepting = false;
-		if (!res)
-			return 0;
+		if (!ptr)
+			return EXIT_FAILURE;
 
 		bool ok = false;
 		int type = 0, channel = 0;
 		parcel_t parcel_out;
 		parcel_new(&parcel_out);
+		parcel_write_bool(&parcel_out, false);
 
-		mdb_res_t *real_res = mdb_res_at(res, 1);
-		size_t size;
-		const char *ptr = mdb_string_and_size(real_res, &size);
 		if (ptr) {
 			parcel_t parcel_in;
 			parcel_read_new(ptr, size, &parcel_in);
@@ -99,9 +109,9 @@ int main(int argc, char **argv)
 					ok = handler(&parcel_in, &parcel_out, channel);
 				}
 			}
-
 		}
-		mdb_clear(res);
+		if (ptr != buf)
+			free(ptr);
 
 		if (!ok)
 			backend_respond_error(&parcel_out, channel);

@@ -1,7 +1,6 @@
 #include <signal.h>
 #include "bbs.h"
 #include "mmap.h"
-#include "fbbs/backend.h"
 #include "fbbs/cfg.h"
 #include "fbbs/convert.h"
 #include "fbbs/fileio.h"
@@ -300,52 +299,4 @@ void initialize_environment(int flags)
 		initialize_convert_env();
 	if (flags & INIT_DB)
 		initialize_db();
-}
-
-bool backend_request(const void *req, void *resp,
-		backend_serializer_t serializer, backend_deserializer_t deserializer,
-		backend_request_e type)
-{
-	int pid = getpid();
-
-	parcel_t parcel_out;
-	parcel_new(&parcel_out);
-	parcel_write_varint(&parcel_out, type);
-	parcel_write_varint(&parcel_out, pid);
-	serializer(req, &parcel_out);
-
-	if (!parcel_ok(&parcel_out)) {
-		parcel_free(&parcel_out);
-		return false;
-	}
-
-	bool send_success = mdb_cmd_safe("LPUSH", "%s %b", BACKEND_REQUEST_KEY,
-			parcel_out.ptr, parcel_size(&parcel_out));
-	parcel_free(&parcel_out);
-	if (!send_success)
-		return false;
-
-	mdb_res_t *res = mdb_res("BLPOP", "%s_%d %d",
-			BACKEND_RESPONSE_KEY, pid, 0);
-	if (res) {
-		mdb_res_t *real_res = mdb_res_at(res, 1);
-		size_t size;
-		const char *ptr = mdb_string_and_size(real_res, &size);
-		if (ptr) {
-			parcel_t parcel_in;
-			parcel_read_new(ptr, size, &parcel_in);
-			bool ok = parcel_read_varint(&parcel_in);
-			backend_request_e response_type = parcel_read_varint(&parcel_in);
-
-			if (parcel_ok(&parcel_in) && ok && response_type == type) {
-				deserializer(&parcel_in, resp);
-				if (parcel_ok(&parcel_in)) {
-					mdb_clear(res);
-					return true;
-				}
-			}
-		}
-	}
-	mdb_clear(res);
-	return false;
 }

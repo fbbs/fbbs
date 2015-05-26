@@ -5,7 +5,7 @@ add_library(fbbs_base SHARED cfg.c convert.c fileio.c mmap.c
 		parcel.c pool.c string.c time.c util.c)
 
 add_library(fbbs SHARED board.c boardrc.c brdcache.c log.c mail.c
-		pass.c post.c record.c shm.c helper.c ucache.c
+		pass.c post.c record.c shm.c helper.c ucache.c backend.c
 		uinfo.c register.c user.c session.c title.c friend.c mdbi.c
 		vector.c)
 add_dependencies(fbbs s11n)
