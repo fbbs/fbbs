@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "fbbs/fileio.h"
 #include "fbbs/parcel.h"
 #include "fbbs/util.h"
 
@@ -9,7 +10,7 @@ enum {
 
 void parcel_new(parcel_t *parcel)
 {
-	parcel->size = 0;
+	parcel->size = PARCEL_SIZE_LENGTH;
 	parcel->capacity = PARCEL_DEFAULT_CAPACITY;
 	parcel->error = false;
 	parcel->ptr = malloc(parcel->capacity);
@@ -20,7 +21,7 @@ void parcel_free(parcel_t *parcel)
 	free(parcel->ptr);
 }
 
-size_t parcel_size(const parcel_t *parcel)
+parcel_size_t parcel_size(const parcel_t *parcel)
 {
 	return parcel->size;
 }
@@ -30,12 +31,12 @@ void parcel_clear(parcel_t *parcel)
 	parcel->size = 0;
 }
 
-static void parcel_write(parcel_t *parcel, const void *ptr, size_t size)
+static void parcel_write(parcel_t *parcel, const void *ptr, parcel_size_t size)
 {
 	if (parcel->error)
 		return;
 
-	size_t new_size = parcel->size + size;
+	parcel_size_t new_size = parcel->size + size;
 	if (parcel->capacity < new_size) {
 		while (parcel->capacity < new_size)
 			parcel->capacity *= 2;
@@ -80,7 +81,7 @@ void parcel_write_varint64(parcel_t *parcel, int64_t val)
 }
 
 void parcel_write_string_with_size(parcel_t *parcel, const char *str,
-		size_t size)
+		parcel_size_t size)
 {
 	if (str) {
 		if (!size)
@@ -115,7 +116,7 @@ void parcel_write_int64(parcel_t *parcel, int64_t val)
 	parcel_write(parcel, &val, sizeof(val));
 }
 
-void parcel_read_new(const char *ptr, size_t size, parcel_t *parcel)
+void parcel_read_new(const char *ptr, parcel_size_t size, parcel_t *parcel)
 {
 	parcel->size = 0;
 	parcel->capacity = size;
@@ -159,7 +160,7 @@ int64_t parcel_read_varint64(parcel_t *parcel)
 	return (val >> 1) ^ (-(val & 1));
 }
 
-const char *parcel_read_string_and_size(parcel_t *parcel, size_t *size)
+const char *parcel_read_string_and_size(parcel_t *parcel, parcel_size_t *size)
 {
 	bool is_null = parcel_read_bool(parcel);
 	if (is_null)
@@ -175,7 +176,7 @@ const char *parcel_read_string_and_size(parcel_t *parcel, size_t *size)
 
 const char *parcel_read_string(parcel_t *parcel)
 {
-	size_t size;
+	parcel_size_t size;
 	return parcel_read_string_and_size(parcel, &size);
 }
 
@@ -184,7 +185,7 @@ bool parcel_read_bool(parcel_t *parcel)
 	return parcel_read_uchar(parcel);
 }
 
-static void parcel_read(parcel_t *parcel, void *buf, size_t size)
+static void parcel_read(parcel_t *parcel, void *buf, parcel_size_t size)
 {
 	if (parcel->size + size <= parcel->capacity) {
 		memcpy(buf, parcel->ptr + parcel->size, size);
@@ -211,4 +212,14 @@ int64_t parcel_read_int64(parcel_t *parcel)
 bool parcel_ok(const parcel_t *parcel)
 {
 	return !parcel->error;
+}
+
+bool parcel_flush(parcel_t *parcel, int fd)
+{
+	if (parcel->error || fd < 0)
+		return false;
+	for (int i = 0; i < PARCEL_SIZE_LENGTH; ++i) {
+		parcel->ptr[i] = 0x7f & (parcel->size >> (i * 8));
+	}
+	return file_write(fd, parcel->ptr, parcel->size) == parcel->size;
 }
