@@ -22,6 +22,7 @@ typedef bool (*backend_deserializer_t)(parcel_t *parcel, void *response);
 
 extern int backend_proxy_connect(const char *socket_path, bool client);
 extern char *backend_proxy_read(int fd, char *buf, size_t *size);
+extern void backend_proxy_error_on_sighup(void);
 
 extern bool backend_request(const void *req, void *res, backend_serializer_t serializer, backend_deserializer_t deserializer, backend_request_e type);
 #define backend_cmd(req, resp, cmd)  backend_request(req, resp, serialize_##cmd, deserialize_##cmd, BACKEND_REQUEST_##cmd)

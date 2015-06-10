@@ -27,19 +27,16 @@ static const handler_t handlers[] = {
 static sig_atomic_t backend_shutdown = false;
 static sig_atomic_t backend_accepting = false;
 
-void backend_respond(parcel_t *parcel, int channel)
+void backend_respond(parcel_t *parcel, int fd)
 {
-	if (channel <= 0)
-		return;
-	mdb_cmd_safe("LPUSH", "%s_%d %b", BACKEND_RESPONSE_KEY, channel,
-			parcel->ptr, parcel_size(parcel));
+	parcel_flush(parcel, fd);
 }
 
-static void backend_respond_error(parcel_t *parcel, int channel)
+static void backend_respond_error(parcel_t *parcel, int fd)
 {
 	parcel_clear(parcel);
 	parcel_put(bool, false);
-	backend_respond(parcel, channel);
+	backend_respond(parcel, fd);
 }
 
 static void shutdown_handler(int sig)
@@ -57,8 +54,6 @@ int main(int argc, char **argv)
 	if (!socket_path)
 		return EXIT_FAILURE;
 
-	start_daemon();
-
 	if (setgid(BBSGID) != 0)
 		return EXIT_FAILURE;
 	if (setuid(BBSUID) != 0)
@@ -74,6 +69,7 @@ int main(int argc, char **argv)
 	if (fd < 0)
 		return EXIT_FAILURE;
 
+	backend_proxy_error_on_sighup();
 	fb_signal(SIGTERM, shutdown_handler);
 
 	while (!backend_shutdown) {
@@ -88,7 +84,7 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 
 		bool ok = false;
-		int type = 0, channel = 0;
+		int type = 0;
 		parcel_t parcel_out;
 		parcel_new(&parcel_out);
 		parcel_write_bool(&parcel_out, false);
@@ -97,7 +93,6 @@ int main(int argc, char **argv)
 			parcel_t parcel_in;
 			parcel_read_new(ptr, size, &parcel_in);
 			type = parcel_read_varint(&parcel_in);
-			channel = parcel_read_varint(&parcel_in);
 
 			if (parcel_ok(&parcel_in) && type > 0
 					&& type < ARRAY_SIZE(handlers)) {
@@ -106,7 +101,7 @@ int main(int argc, char **argv)
 					parcel_write_bool(&parcel_out, true);
 					parcel_write_varint(&parcel_out, type);
 
-					ok = handler(&parcel_in, &parcel_out, channel);
+					ok = handler(&parcel_in, &parcel_out, fd);
 				}
 			}
 		}
@@ -114,7 +109,7 @@ int main(int argc, char **argv)
 			free(ptr);
 
 		if (!ok)
-			backend_respond_error(&parcel_out, channel);
+			backend_respond_error(&parcel_out, fd);
 		parcel_free(&parcel_out);
 	}
 	return EXIT_SUCCESS;

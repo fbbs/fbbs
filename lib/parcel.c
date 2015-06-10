@@ -118,7 +118,7 @@ void parcel_write_int64(parcel_t *parcel, int64_t val)
 
 void parcel_read_new(const char *ptr, parcel_size_t size, parcel_t *parcel)
 {
-	parcel->size = 0;
+	parcel->size = PARCEL_SIZE_LENGTH;
 	parcel->capacity = size;
 	parcel->ptr = (uchar_t *) ptr;
 	parcel->error = false;
@@ -219,7 +219,7 @@ bool parcel_flush(parcel_t *parcel, int fd)
 	if (parcel->error || fd < 0)
 		return false;
 	for (int i = 0; i < PARCEL_SIZE_LENGTH; ++i) {
-		parcel->ptr[i] = 0x7f & (parcel->size >> (i * 8));
+		parcel->ptr[i] = 0xff & (parcel->size >> (i * 8));
 	}
 	return file_write(fd, parcel->ptr, parcel->size) == parcel->size;
 }
