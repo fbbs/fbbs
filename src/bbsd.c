@@ -12,6 +12,7 @@
 #endif // ENABLE_SSH
 #include "bbs.h"
 #include "mmap.h"
+#include "fbbs/backend.h"
 #include "fbbs/cfg.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
@@ -347,6 +348,11 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 		dup2(STDIN_FILENO, STDOUT_FILENO);
 		telnet_init();
 #endif // ENABLE_SSH
+
+		const char *socket_path = getenv("FBBS_SOCKET_PATH");
+		if (!socket_path || backend_proxy_connect(socket_path, true) < 0)
+			exit(EXIT_FAILURE);
+
 		start_client();
 	} else {
 		close(fd);

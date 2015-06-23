@@ -27,19 +27,16 @@ static const handler_t handlers[] = {
 static sig_atomic_t backend_shutdown = false;
 static sig_atomic_t backend_accepting = false;
 
-void backend_respond(parcel_t *parcel, int channel)
+void backend_respond(parcel_t *parcel, int fd)
 {
-	if (channel <= 0)
-		return;
-	mdb_cmd_safe("LPUSH", "%s_%d %b", BACKEND_RESPONSE_KEY, channel,
-			parcel->ptr, parcel_size(parcel));
+	parcel_flush(parcel, fd);
 }
 
-static void backend_respond_error(parcel_t *parcel, int channel)
+static void backend_respond_error(parcel_t *parcel, int fd)
 {
 	parcel_clear(parcel);
 	parcel_put(bool, false);
-	backend_respond(parcel, channel);
+	backend_respond(parcel, fd);
 }
 
 static void shutdown_handler(int sig)
@@ -53,7 +50,9 @@ extern int resolve_ucache(void);
 
 int main(int argc, char **argv)
 {
-	start_daemon();
+	const char *socket_path = getenv("FBBS_SOCKET_PATH");
+	if (!socket_path)
+		return EXIT_FAILURE;
 
 	if (setgid(BBSGID) != 0)
 		return EXIT_FAILURE;
@@ -66,28 +65,34 @@ int main(int argc, char **argv)
 	if (resolve_ucache() < 0)
 		return EXIT_FAILURE;
 
+	int fd = backend_proxy_connect(socket_path, false);
+	if (fd < 0)
+		return EXIT_FAILURE;
+
+	backend_proxy_error_on_sighup();
 	fb_signal(SIGTERM, shutdown_handler);
 
 	while (!backend_shutdown) {
 		backend_accepting = true;
-		mdb_res_t *res = mdb_res("BLPOP", "%s %d", BACKEND_REQUEST_KEY, 0);
+
+		char buf[4096];
+		size_t size = sizeof(buf);
+		char *ptr = backend_proxy_read(fd, buf, &size);
+
 		backend_accepting = false;
-		if (!res)
-			return 0;
+		if (!ptr)
+			return EXIT_FAILURE;
 
 		bool ok = false;
-		int type = 0, channel = 0;
+		int type = 0;
 		parcel_t parcel_out;
 		parcel_new(&parcel_out);
+		parcel_write_bool(&parcel_out, false);
 
-		mdb_res_t *real_res = mdb_res_at(res, 1);
-		size_t size;
-		const char *ptr = mdb_string_and_size(real_res, &size);
 		if (ptr) {
 			parcel_t parcel_in;
 			parcel_read_new(ptr, size, &parcel_in);
 			type = parcel_read_varint(&parcel_in);
-			channel = parcel_read_varint(&parcel_in);
 
 			if (parcel_ok(&parcel_in) && type > 0
 					&& type < ARRAY_SIZE(handlers)) {
@@ -96,15 +101,15 @@ int main(int argc, char **argv)
 					parcel_write_bool(&parcel_out, true);
 					parcel_write_varint(&parcel_out, type);
 
-					ok = handler(&parcel_in, &parcel_out, channel);
+					ok = handler(&parcel_in, &parcel_out, fd);
 				}
 			}
-
 		}
-		mdb_clear(res);
+		if (ptr != buf)
+			free(ptr);
 
 		if (!ok)
-			backend_respond_error(&parcel_out, channel);
+			backend_respond_error(&parcel_out, fd);
 		parcel_free(&parcel_out);
 	}
 	return EXIT_SUCCESS;
