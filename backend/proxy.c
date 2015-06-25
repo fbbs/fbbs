@@ -69,12 +69,11 @@ static int check_max_clients(int max_clients)
 		return -1;
 
 	max_connections = max_clients + max_servers + 10;
-	if (max_connections < rlim.rlim_cur)
-		return max_clients;
-
-	rlim.rlim_max = rlim.rlim_cur = max_connections;
-	if (setrlimit(RLIMIT_NOFILE, &rlim) < 0)
-		return -1;
+	if (max_connections >= rlim.rlim_cur) {
+		rlim.rlim_max = rlim.rlim_cur = max_connections;
+		if (setrlimit(RLIMIT_NOFILE, &rlim) < 0)
+			return -1;
+	}
 
 	connections = malloc(sizeof(*connections) * max_connections);
 	if (!connections)
