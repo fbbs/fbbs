@@ -323,6 +323,7 @@ static int draw_group(int first_item, int items, bool top)
 	}
 
 	foreach_item(first_item, first_item + items, print_item, &arg);
+	tui_update_status_line();
 	return arg.now ? arg.now : first_item;
 }
 
