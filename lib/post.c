@@ -79,8 +79,9 @@ void post_record_extended_to_info(const post_record_extended_t *pre,
 	for (int i = 0; i < count; ++i) {
 		post_info_t *pii = pi + i;
 		post_record_to_info((const post_record_t *) (pre + i), pii, 1);
-		pii->delete_stamp = (pre + i)->stamp;
-		strlcpy(pii->eraser_name, pre->eraser_name, sizeof(pii->eraser_name));
+		pii->delete_stamp = pre[i].stamp;
+		strlcpy(pii->eraser_name, pre[i].eraser_name,
+				sizeof(pii->eraser_name));
 	}
 }
 
