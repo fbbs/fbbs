@@ -198,6 +198,10 @@ static int initialize(void)
 	if (!brdshm)
 		return -1;
 
+	const char *socket_path = getenv("FBBS_SOCKET_PATH");
+	if (!socket_path || backend_proxy_connect(socket_path, true) < 0)
+		return -1;
+
 	return 0;
 }
 
