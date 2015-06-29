@@ -553,6 +553,8 @@ static void wrap_short_lines(editor_t *editor)
 			} else {
 				break;
 			}
+		} else {
+			break;
 		}
 	}
 	editor->current_line = saved_line;
