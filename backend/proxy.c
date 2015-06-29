@@ -165,7 +165,7 @@ static int assign_server(int client_fd)
 	return REMOTE_BUSY;
 }
 
-static void data_received_callback(int fd, int bytes)
+static bool data_received_callback(int fd, int bytes)
 {
 	connection_t *conn = connections + fd;
 	while (bytes > 0) {
@@ -173,8 +173,7 @@ static void data_received_callback(int fd, int bytes)
 		int rc = file_read(fd, buf,
 				bytes >= sizeof(buf) ? sizeof(buf) : bytes);
 		if (rc <= 0) {
-			connection_error_callback(fd);
-			return;
+			return false;
 		} else {
 			int received = conn->received;
 			conn->received += rc;
@@ -187,8 +186,7 @@ static void data_received_callback(int fd, int bytes)
 
 			if (conn->received >= PARCEL_SIZE_LENGTH
 					&& conn->received > conn->length) {
-				connection_error_callback(fd);
-				return;
+				return false;
 			}
 
 			if (conn->client && conn->remote_fd == REMOTE_NULL) {
@@ -202,19 +200,20 @@ static void data_received_callback(int fd, int bytes)
 						remain > 0 && remain < rc ? remain : rc);
 			}
 
-			if ((!conn->client || conn->remote_fd == REMOTE_BUSY)
-					&& conn->received >= PARCEL_SIZE_LENGTH
+			if (conn->received >= PARCEL_SIZE_LENGTH
 					&& conn->received == conn->length) {
 				conn->received = 0;
 				conn->length = 0;
-				conn->remote_fd = REMOTE_NULL;
-				break;
+				if (!conn->client && valid_remote_fd(fd)) {
+					connections[conn->remote_fd].remote_fd = REMOTE_NULL;
+					conn->remote_fd = REMOTE_NULL;
+				}
+				return true;
 			}
 		}
 		bytes -= rc;
 	}
-	if (bytes > 0)
-		connection_error_callback(fd);
+	return bytes == 0;
 }
 
 static void fd_callback(EV_P_ ev_io *w, int revents)
@@ -222,10 +221,8 @@ static void fd_callback(EV_P_ ev_io *w, int revents)
 	if (revents & EV_READ) {
 		int bytes;
 		ioctl(w->fd, FIONREAD, &bytes);
-		if (bytes > 0) {
-			data_received_callback(w->fd, bytes);
+		if (bytes > 0 && data_received_callback(w->fd, bytes))
 			return;
-		}
 	}
 	connection_error_callback(w->fd);
 }
