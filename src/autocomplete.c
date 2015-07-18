@@ -162,11 +162,12 @@ static int _autocomplete(ac_list *acl, char *buf, size_t size)
 void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 {
 	if (prompt) {
-		prints("%s", prompt);
+		screen_printf("%s", prompt);
 		clrtoeol();
 	}
 
 	screen_coordinates(&acl->ybase, &acl->xbase);
+	int real_xbase = prompt ? screen_display_width(prompt, true) : 0;
 
 	buf[0] = '\0';
 	size_t len = 0;
@@ -188,14 +189,15 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 				len += _autocomplete(acl, buf, size);
 				screen_move(acl->ybase, acl->xbase);
 				outs(buf);
+				screen_move(acl->ybase, real_xbase + len);
 				break;
 			case Ctrl('H'):
 			case KEY_BACKSPACE:
 				if (len) {
 					buf[--len] = '\0';
 					screen_move(acl->ybase, acl->xbase + len);
-					outc(' ');
-					screen_move(acl->ybase, acl->xbase + len);
+					screen_putc(' ');
+					screen_move(acl->ybase, real_xbase + len);
 					acl->seek = NULL;
 				}
 				break;
@@ -204,12 +206,14 @@ void autocomplete(ac_list *acl, const char *prompt, char *buf, size_t size)
 					buf[len++] = ch;
 					buf[len] = '\0';
 					if (next_match(acl->head, buf)) {
+						screen_move(acl->ybase, acl->xbase + len - 1);
 						outc(ch);
+						screen_move(acl->ybase, real_xbase + len);
 					} else {
 						buf[--len] = '\0';
 						screen_move(acl->ybase, acl->xbase + len);
-						outc(' ');
-						screen_move(acl->ybase, acl->xbase + len);
+						screen_putc(' ');
+						screen_move(acl->ybase, real_xbase + len);
 					}
 				}
 				acl->seek = NULL;

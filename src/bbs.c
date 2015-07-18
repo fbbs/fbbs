@@ -187,8 +187,7 @@ int tui_select_board(int current_bid)
 	prints("\xd1\xa1\xd4\xf1\xd2\xbb\xb8\xf6\xcc\xd6\xc2\xdb\xc7\xf8 (\xd3\xa2\xce\xc4\xd7\xd6\xc4\xb8\xb4\xf3\xd0\xa1\xd0\xb4\xbd\xd4\xbf\xc9)\n");
 
 	char bname[BOARD_NAME_LEN];
-	//% board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
-	board_complete(1, "\xca\xe4\xc8\xeb\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb (\xb0\xb4\xbf\xd5\xb0\xd7\xbc\xfc\xd7\xd4\xb6\xaf\xcb\xd1\xd1\xb0): ",
+	board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
 			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (*bname == '\0')
 		return 0;
@@ -611,10 +610,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 			"\xca\xc7: [\033[1;33m%s\033[m]\n", title);
 
 	char bname[STRLEN];
-	//% "请输入要转贴的讨论区名称(取消转载请按回车): "
-	board_complete(1, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xcc\xf9"
-			"\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6(\xc8\xa1"
-			"\xcf\xfb\xd7\xaa\xd4\xd8\xc7\xeb\xb0\xb4\xbb\xd8\xb3\xb5): ",
+	board_complete(1, "请输入要转贴的讨论区名称(取消转载请按回车): ",
 			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (!*bname)
 		return FULLUPDATE;

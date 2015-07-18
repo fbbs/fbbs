@@ -135,8 +135,7 @@ static int tui_favorite_add(tui_list_t *tl)
 		}
 
 		GBK_UTF8_BUFFER(name, BOARD_NAME_LEN / 2);
-		//% board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
-		board_complete(1, "\xca\xe4\xc8\xeb\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb (\xb0\xb4\xbf\xd5\xb0\xd7\xbc\xfc\xd7\xd4\xb6\xaf\xcb\xd1\xd1\xb0): ",
+		board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
 				gbk_name, sizeof(gbk_name), AC_LIST_BOARDS_AND_DIR);
 
 		if (gbk_name[0] & 0x80)

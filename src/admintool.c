@@ -162,9 +162,8 @@ int tui_ordain_bm(const char *cmd)
 
 	char bname[BOARD_NAME_LEN];
 	board_t board;
-	//% "输入该使用者将管理的讨论区名称: "
-	board_complete(3, "\xca\xe4\xc8\xeb\xb8\xc3\xca\xb9\xd3\xc3\xd5\xdf\xbd\xab\xb9\xdc\xc0\xed\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6: ", bname, sizeof(bname),
-			AC_LIST_BOARDS_ONLY);
+	board_complete(3, "输入该使用者将管理的讨论区名称: ",
+			bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 	if (!*bname || !get_board(bname, &board))
 		return -1;
 	board_to_gbk(&board);
@@ -352,8 +351,7 @@ int tui_retire_bm(const char *cmd)
 
 	char bname[BOARD_NAME_LEN];
 	board_t board;
-	//% board_complete(3, "请输入该版主要辞去的版名: ", bname, sizeof(bname),
-	board_complete(3, "\xc7\xeb\xca\xe4\xc8\xeb\xb8\xc3\xb0\xe6\xd6\xf7\xd2\xaa\xb4\xc7\xc8\xa5\xb5\xc4\xb0\xe6\xc3\xfb: ", bname, sizeof(bname),
+	board_complete(3, "请输入该版主要辞去的版名: ", bname, sizeof(bname),
 			AC_LIST_BOARDS_ONLY);
 	if (!*bname || !get_board(bname, &board))
 		return -1;
@@ -666,8 +664,7 @@ int tui_new_board(const char *cmd)
 	int sector = select_section();
 
 	char pname[BOARD_NAME_LEN];
-	//% board_complete(6, "输入所属目录: ", pname, sizeof(pname),
-	board_complete(6, "\xca\xe4\xc8\xeb\xcb\xf9\xca\xf4\xc4\xbf\xc2\xbc: ", pname, sizeof(pname),
+	board_complete(6, "输入所属目录: ", pname, sizeof(pname),
 			AC_LIST_DIR_ONLY);
 	board_t parent;
 	get_board(pname, &parent);
@@ -896,8 +893,7 @@ static bool alter_board_descr(board_t *bp)
 static bool alter_board_parent(board_t *bp)
 {
 	GBK_UTF8_BUFFER(bname, BOARD_NAME_LEN / 2);
-	//% board_complete(15, "输入所属讨论区名: ", gbk_bname, sizeof(gbk_bname),
-	board_complete(15, "\xca\xe4\xc8\xeb\xcb\xf9\xca\xf4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb: ", gbk_bname, sizeof(gbk_bname),
+	board_complete(15, "输入所属讨论区名: ", gbk_bname, sizeof(gbk_bname),
 			AC_LIST_DIR_ONLY);
 	convert_g2u(gbk_bname, utf8_bname);
 
@@ -1003,8 +999,7 @@ int tui_edit_board(const char *cmd)
 	stand_title("\xd0\xde\xb8\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc9\xe8\xd6\xc3");
 
 	char bname[BOARD_NAME_LEN + 1];
-	//% board_complete(2, "输入讨论区名称: ", bname, sizeof(bname),
-	board_complete(2, "\xca\xe4\xc8\xeb\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6: ", bname, sizeof(bname),
+	board_complete(2, "输入讨论区名称: ", bname, sizeof(bname),
 			AC_LIST_BOARDS_AND_DIR);
 	board_t board;
 	if (!*bname || !get_board(bname, &board))

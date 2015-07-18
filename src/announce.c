@@ -1562,8 +1562,7 @@ void a_menu(char *maintitle, char* path, int lastlevel, int lastbmonly)
 				if (me.now < me.num) {
 					char bname[30];
 					screen_clear();
-					//% board_complete(0, "请输入要转贴的讨论区名称: ",
-					board_complete(0, "\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xcc\xf9\xb5\xc4\xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6: ",
+					board_complete(0, "请输入要转贴的讨论区名称: ",
 							bname, sizeof(bname), AC_LIST_BOARDS_ONLY);
 					if (*bname) {
 						screen_move(1, 0);
