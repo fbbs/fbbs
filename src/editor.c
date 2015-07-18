@@ -1269,7 +1269,7 @@ static bool write_body(const editor_t *editor, FILE *fp, const char *host,
 		bool anonymous)
 {
 	vector_size_t lines = vector_size(&editor->lines);
-	for (vector_size_t i = editor->allow_edit_begin; i < lines; ++i) {
+	for (vector_size_t i = 0; i < lines; ++i) {
 		text_line_t *tl = editor_line(editor, i);
 		if (tl && tl->buf) {
 			if (!strneq2(tl->buf, "\033[m\033[1;36m※ 修改:·"))
