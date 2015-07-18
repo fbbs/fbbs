@@ -870,8 +870,8 @@ static void delete_selection(editor_t *editor)
 
 static void jump_to_line(editor_t *editor)
 {
-	char buf[7] = { '\0' };
-	tui_input(-1, "请问要跳到第几行: ", buf, sizeof(buf), true);
+	char buf[7];
+	tui_input(-1, "请问要跳到第几行: ", buf, sizeof(buf));
 	vector_size_t line = strtol(buf, NULL, 10);
 	if (!line)
 		return;
@@ -935,8 +935,7 @@ static void search_text(editor_t *editor, bool repeat_last_search)
 {
 	if (!repeat_last_search) {
 		GBK_BUFFER(text, SEARCH_TEXT_CCHARS);
-		gbk_text[0] = '\0';
-		tui_input(-1, "搜寻字串: ", gbk_text, sizeof(gbk_text), true);
+		tui_input(-1, "搜寻字串: ", gbk_text, sizeof(gbk_text));
 		convert_g2u(gbk_text, editor->utf8_search_text);
 	}
 	if (editor->utf8_search_text[0] == '\0')
@@ -1093,11 +1092,11 @@ static void clip_path(char *buf, size_t size, int index)
 
 static void handle_clip(editor_t *editor, bool import)
 {
-	char ans[2] = { '\0' };
+	char ans[2];
 	char prompt[80];
 	snprintf(prompt, sizeof(prompt), "%s剪贴簿第几页? (1-8): ",
 			import ? "读取" : "写入");
-	tui_input(-1, prompt, ans, sizeof(ans), true);
+	tui_input(-1, prompt, ans, sizeof(ans));
 	if (ans[0] < '1' || ans[0] > '8')
 		return;
 
@@ -1145,8 +1144,8 @@ static void choose_color(editor_t *editor, bool foreground)
 	snprintf(prompt, sizeof(prompt), "选择%s景颜色"
 			" 0)黑 1)红 2)绿 3)黄 4)蓝 5)紫 6)靛 7)白: \033[K",
 			foreground ? "前" : "背");
-	char ans[2] = { '\0' };
-	tui_input(-1, prompt, ans, sizeof(ans), true);
+	char ans[2];
+	tui_input(-1, prompt, ans, sizeof(ans));
 	if (ans[0] < '0' || ans[0] > '7')
 		return;
 
@@ -1350,13 +1349,13 @@ static int write_file(editor_t *editor, const char *file,
 static editor_e confirm_save_file(const char *file,
 		struct postheader *post_header, bool confirmed)
 {
-	char ans[2];
+	char ans[2] = { '\n' };
 	if (confirmed) {
 		*ans = 'S';
 	} else {
 		screen_move_clear(-1);
-		tui_input(-1, "S) 发表 A) 取消 T) 更改标题 E) 再编辑 [S]: ",
-				ans, sizeof(ans), true);
+		tui_input_no_clear(-1, "S) 发表 A) 取消 T) 更改标题 E) 再编辑 [S]: ",
+				ans, sizeof(ans));
 		*ans = toupper(*ans);
 	}
 
@@ -1542,18 +1541,17 @@ void editor_restore(void)
 	if (streq(currentuser.userid, "guest") || !dashf(file))
 		return;
 
-	char ans[2] = { '\0' };
+	char ans[2];
 	tui_input(-1, "您有一个编辑作业不正常中断 (S) 写入暂存档 (M) 寄回信箱"
-			" (Q) 算了 [M]: ", ans, sizeof(ans), true);
+			" (Q) 算了 [M]: ", ans, sizeof(ans));
 	switch (toupper(ans[0])) {
 		case 'Q':
 			unlink(file);
 			break;
 		case 'S':
 			while (1) {
-				char ans2[2] = { '\0' };
-				tui_input(-1, "请选择暂存档 (1-8) [1]: ", ans2, sizeof(ans2),
-						true);
+				char ans2[2];
+				tui_input(-1, "请选择暂存档 (1-8) [1]: ", ans2, sizeof(ans2));
 				if (ans2[0] == '\0')
 					ans2[0] = '1';
 				if (ans2[0] >= '1' && ans2[0] <= '8') {
@@ -1562,7 +1560,7 @@ void editor_restore(void)
 					clip_path(buf, sizeof(buf), index);
 					if (dashf(buf)) {
 						tui_input(-1, "暂存档已存在 (O)覆盖 (A)附加 [O]: ",
-								ans2, sizeof(ans2), true);
+								ans2, sizeof(ans2));
 						switch (toupper(ans2[0])) {
 							case 'A':
 								f_cp(file, buf, O_APPEND);

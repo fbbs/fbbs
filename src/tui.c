@@ -126,12 +126,16 @@ int getdata(int line, int col, const char *prompt, char *buf, int len,
  * @param prompt 提示字符串, 必须为UTF-8编码
  * @param buf 存放输入字符串的缓冲区
  * @param len 缓冲区长度
- * @param echo 回显输入字符串, 或以*号代替
  * @return 输入字符串的长度
  */
-int tui_input(int line, const char *prompt, char *buf, int len, int echo)
+int tui_input(int line, const char *prompt, char *buf, int len)
 {
-	return _tui_input(line, 0, prompt, buf, len, echo, false, true);
+	return _tui_input(line, 0, prompt, buf, len, true, true, true);
+}
+
+int tui_input_no_clear(int line, const char *prompt, char *buf, int len)
+{
+	return _tui_input(line, 0, prompt, buf, len, true, false, true);
 }
 
 static char *boardmargin(void)
