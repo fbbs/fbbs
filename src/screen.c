@@ -268,7 +268,9 @@ void screen_flush(void)
 		sl->old_width = width;
 	}
 
-	move_terminal_cursor(screen.cur_col, screen.cur_ln);
+	screen_line_t *sl = get_screen_line(screen.cur_ln);
+	move_terminal_cursor(screen.cur_col == sl->len && screen.cur_col ?
+			sl->old_width : screen.cur_col, screen.cur_ln);
 	terminal_flush();
 }
 
