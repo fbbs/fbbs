@@ -245,31 +245,29 @@ void screen_flush(void)
 	}
 	for (int i = 0; i < screen.lines; i++) {
 		screen_line_t *sl = get_screen_line(i);
+		if (!sl->modified)
+			continue;
+		sl->modified = false;
 
 		sl->data[sl->len] = '\0';
 		int width = screen_display_width((char *) sl->data, true);
 
-		if (sl->modified) {
-			sl->modified = false;
-			move_terminal_cursor(0, i);
+		move_terminal_cursor(0, i);
+		screen_write_cached(sl->data, sl->len);
 
-			screen_write_cached(sl->data, sl->len);
-
-			screen.tc_col = width;
-			if (screen.tc_col >= screen.columns) {
-				screen.tc_col -= screen.columns;
-				screen.tc_line++;
-				if (screen.tc_line >= screen.lines)
-					screen.tc_line = screen.lines - 1;
-			}
+		screen.tc_col = width;
+		if (screen.tc_col >= screen.columns) {
+			screen.tc_col -= screen.columns;
+			screen.tc_line++;
+			if (screen.tc_line >= screen.lines)
+				screen.tc_line = screen.lines - 1;
 		}
 
-		if (sl->old_width > width) {
-			move_terminal_cursor(width, i);
+		if (sl->old_width > width)
 			ansi_cmd(ANSI_CMD_CE);
-		}
 		sl->old_width = width;
 	}
+
 	move_terminal_cursor(screen.cur_col, screen.cur_ln);
 	terminal_flush();
 }
@@ -314,7 +312,7 @@ void screen_clear(void)
 void screen_clear_line(int line)
 {
 	screen_line_t *sl = screen.buf + line;
-	sl->modified = false;
+	sl->modified = true;
 	sl->len = 0;
 }
 
@@ -347,7 +345,7 @@ void screen_clrtobot(void)
 	if (screen.buf) {
 		for (int i = screen.cur_ln; i < screen.lines; ++i) {
 			screen_line_t *sl = get_screen_line(i);
-			sl->modified = false;
+			sl->modified = true;
 			sl->len = 0;
 			sl->old_width = SCREEN_LINE_LEN;
 		}
