@@ -1553,110 +1553,118 @@ int x_level() {
 	return 0;
 }
 
+typedef struct {
+	const char *file;
+	const char *descr;
+	bool utf8;
+} config_file_t;
+
 void a_edits() {
-	char ans[7], buf[STRLEN], buf2[STRLEN];
-	int ch, num, confirm;
-	static char *e_file[] = { "../Welcome", "../Welcome2", "issue",
-			"logout", "../vote/notes", "hotspot", "menu.ini",
-			"../.badname", "../.bad_email", "../.bad_host", "autopost",
-			"junkboards", "sysops", "whatdate", "../NOLOGIN",
-			"../NOREGISTER", "special.ini", "hosts", "restrictip",
-			"freeip", "s_fill", "f_fill", "register", "firstlogin",
-			"chatstation", "notbackupboards", "bbsnet.ini", "bbsnetip",
-			"bbsnet2.ini", "bbsnetip2", NULL };
-	//% static char *explain_file[] = { "特殊进站公布栏", "进站画面", "进站欢迎档", "离站画面",
-	static char *explain_file[] = { "\xcc\xd8\xca\xe2\xbd\xf8\xd5\xbe\xb9\xab\xb2\xbc\xc0\xb8", "\xbd\xf8\xd5\xbe\xbb\xad\xc3\xe6", "\xbd\xf8\xd5\xbe\xbb\xb6\xd3\xad\xb5\xb5", "\xc0\xeb\xd5\xbe\xbb\xad\xc3\xe6",
-			//% "公用备忘录", "系统热点", "menu.ini", "不可注册的 ID", "不可确认之E-Mail",
-			"\xb9\xab\xd3\xc3\xb1\xb8\xcd\xfc\xc2\xbc", "\xcf\xb5\xcd\xb3\xc8\xc8\xb5\xe3", "menu.ini", "\xb2\xbb\xbf\xc9\xd7\xa2\xb2\xe1\xb5\xc4 ID", "\xb2\xbb\xbf\xc9\xc8\xb7\xc8\xcf\xd6\xae""E-Mail",
-			//% "不可上站之位址", "每日自动送信档", "不算POST数的版", "管理者名单", "纪念日清单",
-			"\xb2\xbb\xbf\xc9\xc9\xcf\xd5\xbe\xd6\xae\xce\xbb\xd6\xb7", "\xc3\xbf\xc8\xd5\xd7\xd4\xb6\xaf\xcb\xcd\xd0\xc5\xb5\xb5", "\xb2\xbb\xcb\xe3POST\xca\xfd\xb5\xc4\xb0\xe6", "\xb9\xdc\xc0\xed\xd5\xdf\xc3\xfb\xb5\xa5", "\xbc\xcd\xc4\xee\xc8\xd5\xc7\xe5\xb5\xa5",
-			//% "暂停登陆(NOLOGIN)", "暂停注册(NOREGISTER)", "个人ip来源设定档", "穿梭ip来源设定档",
-			"\xd4\xdd\xcd\xa3\xb5\xc7\xc2\xbd(NOLOGIN)", "\xd4\xdd\xcd\xa3\xd7\xa2\xb2\xe1(NOREGISTER)", "\xb8\xf6\xc8\xcbip\xc0\xb4\xd4\xb4\xc9\xe8\xb6\xa8\xb5\xb5", "\xb4\xa9\xcb\xf3ip\xc0\xb4\xd4\xb4\xc9\xe8\xb6\xa8\xb5\xb5",
-			//% "只能登陆5id的ip设定档", "不受5 id限制的ip设定档", "注册成功信件", "注册失败信件",
-			"\xd6\xbb\xc4\xdc\xb5\xc7\xc2\xbd""5id\xb5\xc4""ip\xc9\xe8\xb6\xa8\xb5\xb5", "\xb2\xbb\xca\xdc""5 id\xcf\xde\xd6\xc6\xb5\xc4""ip\xc9\xe8\xb6\xa8\xb5\xb5", "\xd7\xa2\xb2\xe1\xb3\xc9\xb9\xa6\xd0\xc5\xbc\xfe", "\xd7\xa2\xb2\xe1\xca\xa7\xb0\xdc\xd0\xc5\xbc\xfe",
-			//% "新用户注册范例", "用户第一次登陆公告", "国际会议厅清单", "区段删除不需备份之清单",
-			"\xd0\xc2\xd3\xc3\xbb\xa7\xd7\xa2\xb2\xe1\xb7\xb6\xc0\xfd", "\xd3\xc3\xbb\xa7\xb5\xda\xd2\xbb\xb4\xce\xb5\xc7\xc2\xbd\xb9\xab\xb8\xe6", "\xb9\xfa\xbc\xca\xbb\xe1\xd2\xe9\xcc\xfc\xc7\xe5\xb5\xa5", "\xc7\xf8\xb6\xce\xc9\xbe\xb3\xfd\xb2\xbb\xd0\xe8\xb1\xb8\xb7\xdd\xd6\xae\xc7\xe5\xb5\xa5",
-			//% "BBSNET 转站清单", "穿梭限制ip", "BBSNET2 转站清单", "穿梭2限制IP", NULL };
-			"BBSNET \xd7\xaa\xd5\xbe\xc7\xe5\xb5\xa5", "\xb4\xa9\xcb\xf3\xcf\xde\xd6\xc6""ip", "BBSNET2 \xd7\xaa\xd5\xbe\xc7\xe5\xb5\xa5", "\xb4\xa9\xcb\xf3""2\xcf\xde\xd6\xc6""IP", NULL };
+	static const config_file_t files[] = {
+		{ "../Welcome", "特殊进站公布栏", false },
+		{ "../Welcome2", "进站画面", false },
+		{ "issue", "进站欢迎档", false },
+		{ "logout", "离站画面", false },
+		{ "../vote/notes", "公用备忘录", false },
+		{ "hotspot", "系统热点", false },
+		{ "menu.ini", "menu.ini", false },
+		{ "../.badname", "不可注册的 ID", false },
+		{ "../.bad_email", "不可确认之E-Mail", false },
+		{ "../.bad_host", "不可上站之位址", false },
+		{ "autopost", "每日自动送信档", false },
+		{ "junkboards", "不算POST数的版", false },
+		{ "sysops", "管理者名单", false },
+		{ "whatdate", "纪念日清单", false },
+		{ "../NOLOGIN", "暂停登陆(NOLOGIN)", false },
+		{ "../NOREGISTER", "暂停注册(NOREGISTER)", false },
+		{ "special.ini", "个人ip来源设定档", false },
+		{ "hosts", "穿梭ip来源设定档", false },
+		{ "restrictip", "只能登陆5id的ip设定档", false },
+		{ "freeip", "不受5 id限制的ip设定档", false },
+		{ "s_fill", "注册成功信件", false },
+		{ "f_fill", "注册失败信件", false },
+		{ "register", "新用户注册范例", false },
+		{ "firstlogin", "用户第一次登陆公告", false },
+		{ "chatstation", "国际会议厅清单", false },
+		{ "notbackupboards", "区段删除不需备份之清单", false },
+		{ "bbsnet.ini", "BBSNET 转站清单", true },
+		{ "bbsnetip", "穿梭限制ip", false },
+		{ "bbsnet2.ini", "BBSNET2 转站清单", true },
+		{ "bbsnetip2", "穿梭2限制IP", false },
+		{ NULL, "都不想改", true },
+	};
+
 	set_user_status(ST_ADMIN);
-	if (!check_systempasswd()) {
+	if (!check_systempasswd())
 		return;
-	}
+
 	screen_clear();
 	screen_move(1, 0);
-	//% prints("编修系统档案\n\n");
-	prints("\xb1\xe0\xd0\xde\xcf\xb5\xcd\xb3\xb5\xb5\xb0\xb8\n\n");
-	for (num = 0; (HAS_PERM(PERM_ESYSFILE)) ? e_file[num] != NULL
-			&& explain_file[num] != NULL : strcmp(explain_file[num], "menu.ini"); num++) {
-		prints("[\033[1;32m%2d\033[m] %s", num + 1, explain_file[num]);
-		if (num < 17)
-			screen_move(4 + num, 0);
-		else
-			screen_move(num - 14, 50);
-	}
-	//% prints("[\033[1;32m%2d\033[m] 都不想改\n", num + 1);
-	prints("[\033[1;32m%2d\033[m] \xb6\xbc\xb2\xbb\xcf\xeb\xb8\xc4\n", num + 1);
+	screen_puts("编修系统档案\n\n", 0);
 
-	//% getdata(23, 0, "你要编修哪一项系统档案: ", ans, 3, DOECHO, YEA);
-	getdata(23, 0, "\xc4\xe3\xd2\xaa\xb1\xe0\xd0\xde\xc4\xc4\xd2\xbb\xcf\xee\xcf\xb5\xcd\xb3\xb5\xb5\xb0\xb8: ", ans, 3, DOECHO, YEA);
-	ch = atoi(ans);
-	if (!isdigit(ans[0]) || ch <= 0 || ch > num || ans[0] == '\n'
-			|| ans[0] == '\0')
+	for (int i = 0; i < ARRAY_SIZE(files); ++i) {
+		char buf[80];
+		snprintf(buf, sizeof(buf), "[\033[1;32m%2d\033[m] %s", i + 1,
+				files[i].descr);
+		screen_replace(i < 17 ? i + 3 : i - 14, i < 17 ? 0 : 40, buf);
+	}
+
+	char ans[3];
+	tui_input(-1, "你要编修哪一项系统档案: ", ans, sizeof(ans));
+	int ch = strtol(ans, NULL, 10);
+	if (!isdigit(ans[0]) || ch <= 0 || ch >= ARRAY_SIZE(files)
+			|| !files[ch].file) {
 		return;
+	}
 	ch -= 1;
-	sprintf(buf2, "etc/%s", e_file[ch]);
+
+	char file[HOMELEN];
+	sprintf(file, "etc/%s", files[ch].file);
 	screen_move(3, 0);
 	screen_clrtobot();
-	//% sprintf(buf, "(E)编辑 (D)删除 %s? [E]: ", explain_file[ch]);
-	sprintf(buf, "(E)\xb1\xe0\xbc\xad (D)\xc9\xbe\xb3\xfd %s? [E]: ", explain_file[ch]);
-	getdata(3, 0, buf, ans, 2, DOECHO, YEA);
+
+	char buf[80];
+	sprintf(buf, "(E)编辑 (D)删除 %s? [E]: ", files[ch].descr);
+	tui_input(3, buf, ans, 2);
 	if (ans[0] == 'D' || ans[0] == 'd') {
-		//% sprintf(buf, "你确定要删除 %s 这个系统档", explain_file[ch]);
-		sprintf(buf, "\xc4\xe3\xc8\xb7\xb6\xa8\xd2\xaa\xc9\xbe\xb3\xfd %s \xd5\xe2\xb8\xf6\xcf\xb5\xcd\xb3\xb5\xb5", explain_file[ch]);
-		confirm = askyn(buf, NA, NA);
-		if (confirm != 1) {
+		sprintf(buf, "你确定要删除 %s 这个系统档", files[ch].descr);
+		if (!askyn(buf, false, false)) {
 			screen_move(5, 0);
-			//% prints("取消删除行动\n");
-			prints("\xc8\xa1\xcf\xfb\xc9\xbe\xb3\xfd\xd0\xd0\xb6\xaf\n");
+			screen_puts("取消删除行动\n", 0);
 			pressreturn();
 			screen_clear();
 			return;
 		}
 		{
 			char secu[STRLEN];
-			//% sprintf(secu, "删除系统档案：%s", explain_file[ch]);
-			sprintf(secu, "\xc9\xbe\xb3\xfd\xcf\xb5\xcd\xb3\xb5\xb5\xb0\xb8\xa3\xba%s", explain_file[ch]);
+			snprintf(secu, sizeof(secu), "删除系统档案：%s", files[ch].descr);
 			securityreport(secu, 0, 0);
 		}
-		unlink(buf2);
+		unlink(file);
 		screen_move(5, 0);
-		//% prints("%s 已删除\n", explain_file[ch]);
-		prints("%s \xd2\xd1\xc9\xbe\xb3\xfd\n", explain_file[ch]);
+		screen_printf("%s 已删除\n", files[ch].descr);
 		pressreturn();
 		screen_clear();
 		return;
 	}
+
 	set_user_status(ST_EDITSFILE);
-	editor_e status = editor(buf2, false, false, true, NULL);
+	editor_e status = editor(file, files[ch].utf8, false, true, NULL);
 	screen_clear();
 	if (status == EDITOR_SAVE) {
-		//% prints("%s 更新过", explain_file[ch]);
-		prints("%s \xb8\xfc\xd0\xc2\xb9\xfd", explain_file[ch]);
+		screen_printf("%s 更新过", files[ch].descr);
 		{
 			char secu[STRLEN];
-			//% sprintf(secu, "修改系统档案：%s", explain_file[ch]);
-			sprintf(secu, "\xd0\xde\xb8\xc4\xcf\xb5\xcd\xb3\xb5\xb5\xb0\xb8\xa3\xba%s", explain_file[ch]);
+			snprintf(secu, sizeof(secu), "修改系统档案：%s", files[ch].descr);
 			securityreport(secu, 0, 0);
 		}
 
-		if (!strcmp(e_file[ch], "../Welcome")) {
+		if (streq(files[ch].file, "../Welcome")) {
 			unlink("Welcome.rec");
-			//% prints("\nWelcome 记录档更新");
-			prints("\nWelcome \xbc\xc7\xc2\xbc\xb5\xb5\xb8\xfc\xd0\xc2");
-		} else if (!strcmp(e_file[ch], "whatdate")) {
-			brdshm->fresh_date = time(0);
-			//% prints("\n纪念日清单 更新");
-			prints("\n\xbc\xcd\xc4\xee\xc8\xd5\xc7\xe5\xb5\xa5 \xb8\xfc\xd0\xc2");
+			screen_puts("\nWelcome 记录档更新", 0);
+		} else if (streq(files[ch].file, "whatdate")) {
+			brdshm->fresh_date = fb_time();
+			screen_puts("\n纪念日清单 更新", 0);
 		}
 	}
 	pressreturn();
