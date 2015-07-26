@@ -1349,7 +1349,7 @@ static int write_file(editor_t *editor, const char *file,
 static editor_e confirm_save_file(const char *file,
 		struct postheader *post_header, bool confirmed)
 {
-	char ans[2] = { '\n' };
+	char ans[2] = { '\0' };
 	if (confirmed) {
 		*ans = 'S';
 	} else {
