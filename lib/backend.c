@@ -98,8 +98,11 @@ char *backend_proxy_read(int fd, char *buf, size_t *size)
 			if (length > *size) {
 				char *old_buf = buf;
 				buf = malloc(length);
-				if (!buf)
+				if (!buf) {
+					if (old_buf != orig_buf)
+						free(old_buf);
 					return NULL;
+				}
 				memcpy(buf, old_buf, received);
 			}
 			*size = length;
@@ -138,25 +141,22 @@ static int _backend_request(const void *req, void *resp,
 	char *res = backend_proxy_read(backend_proxy_fd, buf, &size);
 
 	int rc = BACKEND_ERROR;
-	if (buf) {
-		parcel_t parcel_in;
-		parcel_read_new(res, size, &parcel_in);
-		bool busy = parcel_read_varint(&parcel_in);
-		if (busy) {
-			rc = BACKEND_SERVER_BUSY;
+	parcel_t parcel_in;
+	parcel_read_new(res, size, &parcel_in);
+	bool busy = parcel_read_varint(&parcel_in);
+	if (busy) {
+		rc = BACKEND_SERVER_BUSY;
+		goto r;
+	}
+
+	bool ok = parcel_read_varint(&parcel_in);
+	backend_request_e response_type = parcel_read_varint(&parcel_in);
+	if (parcel_ok(&parcel_in) && ok && response_type == type) {
+		deserializer(&parcel_in, resp);
+		if (parcel_ok(&parcel_in)) {
+			rc = BACKEND_OK;
 			goto r;
 		}
-
-		bool ok = parcel_read_varint(&parcel_in);
-		backend_request_e response_type = parcel_read_varint(&parcel_in);
-		if (parcel_ok(&parcel_in) && ok && response_type == type) {
-			deserializer(&parcel_in, resp);
-			if (parcel_ok(&parcel_in)) {
-				rc = BACKEND_OK;
-				goto r;
-			}
-		}
-
 	}
 r:	if (res != buf)
 		free(res);

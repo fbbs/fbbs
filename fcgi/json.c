@@ -39,6 +39,8 @@ json_array_t *json_array_new(void)
 static json_value_t *json_object_add(json_object_t *object,
 		json_value_t *value)
 {
+	if (!object || !value)
+		return NULL;
 	STAILQ_INSERT_TAIL(&object->values, value, next);
 	return value;
 }
