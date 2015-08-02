@@ -261,7 +261,6 @@ int b_notes_edit()
 {
 	char buf[STRLEN], buf2[STRLEN];
 	char ans[4];
-	int aborted;
 	int notetype;
 
 	if (!am_curr_bm())
@@ -319,9 +318,7 @@ int b_notes_edit()
 			prints("\xd2\xd1\xbe\xad\xc9\xbe\xb3\xfd...\n");
 			pressanykey();
 			unlink(buf);
-			aborted = 1;
-		} else
-		aborted = -1;
+		}
 	} else
 	if (editor(buf, false, false, true, NULL) != EDITOR_SAVE) {
 		pressreturn();

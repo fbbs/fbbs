@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "libweb.h"
+#include "fbbs/backend.h"
 #include "fbbs/brc.h"
 #include "fbbs/helper.h"
 #include "fbbs/session.h"
