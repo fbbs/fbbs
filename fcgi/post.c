@@ -662,7 +662,7 @@ int bbssnd_main(void)
 				}
 			}
 			if (utf8_text) {
-				ret = edit_article(pid, content, text, fromhost);
+				ret = edit_article(pid, content, utf8_text, fromhost);
 				if (!utf8)
 					free(utf8_text);
 			}
