@@ -543,23 +543,20 @@ static int edit_article(post_id_t pid, const char *content, const char *text,
 	if (mark_len < 0)
 		return BBS_EINTNL;
 
-	size_t size = header_len + strlen(text) * 2 + (end - ptr) + mark_len + 1;
+	size_t text_len = strlen(text);
+	size_t size = header_len + text_len + (end - ptr) + mark_len + 1;
 	char *out = malloc(size), *dst = out;
 	if (!out)
 		return BBS_EINTNL;
+
 	memcpy(dst, content, header_len);
 	dst += header_len;
-	convert(CONVERT_G2U, text, CONVERT_ALL, dst, size - header_len,
-			NULL, NULL);
-	size_t left = size - strlen(out);
-	if (left > (end - ptr) + mark_len) {
-		dst = out + size - left;
-		memcpy(dst, ptr, end - ptr);
-		dst += end - ptr;
-		memcpy(dst, buf, mark_len);
-		dst += mark_len;
-		*dst = '\0';
-	}
+	memcpy(dst, text, text_len);
+	dst += text_len;
+	memcpy(dst, ptr, end - ptr);
+	dst += end - ptr;
+	memcpy(dst, buf, mark_len);
+	dst[mark_len] = '\0';
 
 	bool ok = post_content_set(pid, out);
 	free(out);
@@ -646,15 +643,30 @@ int bbssnd_main(void)
 
 	char *text = (char *) web_get_param("text");
 	check_character(text);
-	if (web_request_type(UTF8)
-			&& string_validate_utf8(text, POST_CONTENT_CCHARS, true) < 0)
+
+	bool utf8 = web_request_type(UTF8);
+	if (utf8 && string_validate_utf8(text, POST_CONTENT_CCHARS, true) < 0)
 		return BBS_EINVAL;
 
 	if (isedit) {
 		int ret = -1;
 		char *content = post_content_get(pi.id, false);
-		if (content)
-			ret = edit_article(pid, content, text, fromhost);
+		if (content) {
+			char *utf8_text = text;
+			if (!utf8) {
+				size_t len = strlen(text);
+				utf8_text = malloc(len * 2 + 1);
+				if (utf8_text) {
+					convert(CONVERT_G2U, text, len, utf8_text, len * 2 + 1,
+							NULL, NULL);
+				}
+			}
+			if (utf8_text) {
+				ret = edit_article(pid, content, text, fromhost);
+				if (!utf8)
+					free(utf8_text);
+			}
+		}
 		free(content);
 
 		if (ret < 0)
