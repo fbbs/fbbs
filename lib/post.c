@@ -560,6 +560,7 @@ void post_quote_string(const char *str, size_t size, FILE *fp,
 				const char *truncated_end = update_quote_width(ptr, lend,
 						utf8, &width);
 				if (truncated_end < lend) {
+					PRINT_CONST_STRING(": ");
 					filter(ptr, truncated_end - ptr, fp);
 					PRINT_CONST_STRING("\n");
 					print_omit_string(utf8, filter, fp);
