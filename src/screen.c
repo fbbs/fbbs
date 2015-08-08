@@ -376,7 +376,7 @@ void screen_puts(const char *s, size_t size)
 			sl->len = screen.cur_col;
 			screen.cur_col = 0;
 			if (screen.cur_ln < screen.lines)
-				++screen.cur_ln;
+				sl = get_screen_line(++screen.cur_ln);
 		} else {
 			if (screen.cur_col > sl->len)
 				memset(sl->data + sl->len, ' ', screen.cur_col - sl->len);

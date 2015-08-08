@@ -265,8 +265,7 @@ int t_query(const char *uname)
 		screen_flush();
 		screen_move(1, 0);
 		screen_clrtobot();
-		//% prints("查询谁:\n<输入使用者代号, 按空白键可列出符合字串>\n");
-		prints("\xb2\xe9\xd1\xaf\xcb\xad:\n<\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5, \xb0\xb4\xbf\xd5\xb0\xd7\xbc\xfc\xbf\xc9\xc1\xd0\xb3\xf6\xb7\xfb\xba\xcf\xd7\xd6\xb4\xae>\n");
+		screen_printf("查询谁:\n<输入使用者代号, 按空白键可列出符合字串>\n");
 		screen_move(1, 8);
 		usercomplete(NULL, userid);
 		if (*userid == '\0')
@@ -275,8 +274,7 @@ int t_query(const char *uname)
 
 	if (tui_query_result(userid) != 0) {
 		screen_move_clear(2);
-		//% prints("\033[1m不正确的使用者代号\033[m\n");
-		prints("\033[1m\xb2\xbb\xd5\xfd\xc8\xb7\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5\033[m\n");
+		screen_printf("\033[1m不正确的使用者代号\033[m\n");
 		pressanykey();
 		return FULLUPDATE;
 	}
