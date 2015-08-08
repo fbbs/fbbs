@@ -263,11 +263,10 @@ int t_query(const char *uname)
 	} else {
 		set_user_status(ST_QUERY);
 		screen_flush();
-		screen_move(1, 0);
+		screen_move(2, 0);
 		screen_clrtobot();
-		screen_printf("查询谁:\n<输入使用者代号, 按空白键可列出符合字串>\n");
-		screen_move(1, 8);
-		usercomplete(NULL, userid);
+		screen_printf("<输入使用者代号, 按空白键可列出符合字串>");
+		user_complete(1, "查询谁: ", userid, sizeof(userid));
 		if (*userid == '\0')
 			return FULLUPDATE;
 	}

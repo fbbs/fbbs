@@ -104,6 +104,7 @@ void show_help(const char *fname);
 int mainreadhelp(void);
 int mailreadhelp(void);
 
+extern void user_complete(int row, const char *prompt, char *name, size_t size);
 int usercomplete(char *prompt, char *data);
 int namecomplete(char *prompt, char *data);
 int t_query(const char *user);
