@@ -1332,11 +1332,6 @@ void a_manager(MENU *pm, int ch) {
 						item->title[71] = '\0';
 					} else if (dashd(fpath)) {
 						screen_move_clear(1);
-						/*
-						 //% * usercomplete("版主:
-						 * usercomplete("\xb0\xe6\xd6\xf7:
-						 * ",uident) ;
-						 */
 						//% getdata(1, 0, "版主: ", uident, 35, DOECHO, YEA);
 						getdata(1, 0, "\xb0\xe6\xd6\xf7: ", uident, 35, DOECHO, YEA);
 						if (uident[0] != '\0')

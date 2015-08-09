@@ -57,9 +57,7 @@ static int club_add(void)
 {
 	struct userec urec;
 	char user[IDLEN + 1], ps[40], buf[STRLEN];
-	screen_move(1, 0);
-	//% usercomplete("增加俱乐部成员: ", user);
-	usercomplete("\xd4\xf6\xbc\xd3\xbe\xe3\xc0\xd6\xb2\xbf\xb3\xc9\xd4\xb1: ", user);
+	user_complete(1, "增加俱乐部成员: ", user, sizeof(user));
 	if (*user == '\0' || !getuserec(user, &urec))
 		return -1;
 	if (!strcasecmp(user, "guest")) {

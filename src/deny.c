@@ -447,9 +447,7 @@ static void deny_add(const char *line)
 		strtok(id, " \n\r\t");
 		reason_copy(line + IDLEN + 1);
 	} else {
-		screen_move(1, 0);
-		//% usercomplete("封禁使用者: ", id);
-		usercomplete("\xb7\xe2\xbd\xfb\xca\xb9\xd3\xc3\xd5\xdf: ", id);
+		user_complete(1, "封禁使用者: ", id, sizeof(id));
 		if (*id == '\0')
 			return;
 		reason_copy(DEFAULT_REASON);
@@ -857,8 +855,7 @@ static int denylist_add(const char *line)
 		//% prints("修改[%s]的封禁时间\n", user);
 		prints("\xd0\xde\xb8\xc4[%s]\xb5\xc4\xb7\xe2\xbd\xfb\xca\xb1\xbc\xe4\n", user);
 	} else {
-		//% usercomplete("封禁使用者: ", user);
-		usercomplete("\xb7\xe2\xbd\xfb\xca\xb9\xd3\xc3\xd5\xdf: ", user);
+		user_complete(1, "封禁使用者: ", user, sizeof(user));
 		if (*user == '\0')
 			return 0;
 		reason_copy(DEFAULT_REASON);

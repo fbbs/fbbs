@@ -550,10 +550,8 @@ int m_send(const char *userid)
 	}
 	if (session_status() != ST_LUSERS && session_status() != ST_LAUSERS
 			&& session_status() != ST_FRIEND && session_status() != ST_GMENU) {
-		screen_move_clear(1);
 		set_user_status(ST_SMAIL);
-		//% usercomplete("收信人： ", uident);
-		usercomplete("\xca\xd5\xd0\xc5\xc8\xcb\xa3\xba ", uident);
+		user_complete(1, "收信人： ", uident, sizeof(uident));
 		if (uident[0] == '\0') {
 			return FULLUPDATE;
 		}
@@ -1223,7 +1221,6 @@ static int listfilecontent(const char *fname, int y)
 	char u_buf[20], line[512], *nick;
 	//modified by roly 02.03.22 缓存区溢出
 	screen_move(y, x);
-	CreateNameList();
 	if ((fp = fopen(fname, "r")) == NULL) {
 		prints("(none)\n");
 		return 0;
@@ -1232,8 +1229,6 @@ static int listfilecontent(const char *fname, int y)
 		strtok(genbuf, " \n\r\t");
 		strlcpy(u_buf, genbuf, 20);
 		u_buf[19] = '\0';
-		if (!AddNameList(u_buf))
-			continue;
 		nick = (char *) strtok(NULL, "\n\r\t");
 		if (nick != NULL) {
 			while (*nick == ' ')
@@ -1384,7 +1379,7 @@ static int do_gsend(char **userid, char *title, int num, char current_maillist)
 }
 
 int g_send() {
-	char uident[13], tmp[3];
+	char uident[IDLEN + 1], tmp[3];
 	int cnt, i, n, fmode = NA;
 	char maillists[STRLEN], buf[STRLEN];
 	char current_maillist = '0';
@@ -1458,9 +1453,8 @@ int g_send() {
 					screen_move(0, 0);
 					//% prints("(A)增加 (D)删除 (I)引入好友 (C)清除目前名单 (E)放弃 (S)寄出? [S]： ");
 					prints("(A)\xd4\xf6\xbc\xd3 (D)\xc9\xbe\xb3\xfd (I)\xd2\xfd\xc8\xeb\xba\xc3\xd3\xd1 (C)\xc7\xe5\xb3\xfd\xc4\xbf\xc7\xb0\xc3\xfb\xb5\xa5 (E)\xb7\xc5\xc6\xfa (S)\xbc\xc4\xb3\xf6? [S]\xa3\xba ");
-					screen_move(1, 0);
-					//% usercomplete("请依次输入使用者代号(只按 ENTER 结束输入): ", uident);
-					usercomplete("\xc7\xeb\xd2\xc0\xb4\xce\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5(\xd6\xbb\xb0\xb4 ENTER \xbd\xe1\xca\xf8\xca\xe4\xc8\xeb): ", uident);
+					user_complete(1, "请依次输入使用者代号"
+							"(只按 ENTER 结束输入): ", uident, sizeof(uident));
 					screen_move_clear(1);
 					if (uident[0] == '\0')
 						break;
@@ -1485,9 +1479,10 @@ int g_send() {
 					file_append(maillists, buf);
 					cnt++;
 				}
-			else
-				//% namecomplete("请依次输入使用者代号(只按 ENTER 结束输入): ", uident);
-				namecomplete("\xc7\xeb\xd2\xc0\xb4\xce\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5(\xd6\xbb\xb0\xb4 ENTER \xbd\xe1\xca\xf8\xca\xe4\xc8\xeb): ", uident);
+			else {
+				user_complete(1, "请依次输入使用者代号(只按 ENTER 结束输入): ",
+						uident, sizeof(uident));
+			}
 			screen_move_clear(1);
 			if (uident[0] == '\0')
 				continue;
@@ -1784,8 +1779,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 				"\xc7\xeb\xd6\xb1\xbd\xd3\xb0\xb4 Enter \xbd\xd3\xca\xdc\xc0\xa8\xba\xc5\xc4\xda\xcc\xe1\xca\xbe\xb5\xc4\xb5\xd8\xd6\xb7, \xbb\xf2\xd5\xdf\xca\xe4\xc8\xeb\xc6\xe4\xcb\xfb\xb5\xd8\xd6\xb7\n"
 				//% "把信件转寄给 [%s]\n", address);
 				"\xb0\xd1\xd0\xc5\xbc\xfe\xd7\xaa\xbc\xc4\xb8\xf8 [%s]\n", address);
-		prints("==>");
-		usercomplete(NULL, receiver);
+		user_complete(3, "==>", receiver, sizeof(receiver));
 	} else {
 		strlcpy(receiver, currentuser.userid, sizeof(receiver));
 	}

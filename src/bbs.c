@@ -1174,9 +1174,7 @@ int Personal(const char *userid)
 
 	if (!userid) {
 		screen_clear();
-		screen_move(2, 0);
-		//% usercomplete("您想看谁的个人文集: ", lookid);
-		usercomplete("\xc4\xfa\xcf\xeb\xbf\xb4\xcb\xad\xb5\xc4\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf: ", lookid);
+		user_complete(2, "您想看谁的个人文集: ", lookid, sizeof(lookid));
 		if (lookid[0] == '\0') {
 			screen_clear();
 			return 1;
@@ -1468,8 +1466,6 @@ int Q_Goodbye(void)
 	}
 	pressreturn();
 	report("exit", currentuser.userid);
-
-	CreateNameList();
 
 	if (session_get_id()) {
 		time_t stay;

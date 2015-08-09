@@ -238,14 +238,9 @@ int tui_send_msg(const char *uname)
 {
 	char name[IDLEN + 1];
 	if (!uname || !*uname) {
-		//% prints("<输入使用者代号>\n");
-		prints("<\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5>\n");
-		screen_move_clear(1);
-		//% prints("送讯息给: ");
-		prints("\xcb\xcd\xd1\xb6\xcf\xa2\xb8\xf8: ");
-
+		screen_printf("<输入使用者代号>");
 		*name = '\0';
-		usercomplete(NULL, name);
+		user_complete(1, "送讯息给: ", name, sizeof(name));
 		uname = name;
 	}
 

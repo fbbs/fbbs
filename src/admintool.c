@@ -1374,9 +1374,7 @@ void show_register() {
 	screen_clear();
 	//% stand_title("查询使用者注册资料");
 	stand_title("\xb2\xe9\xd1\xaf\xca\xb9\xd3\xc3\xd5\xdf\xd7\xa2\xb2\xe1\xd7\xca\xc1\xcf");
-	screen_move(1, 0);
-	//% usercomplete("请输入要查询的代号: ", uident);
-	usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb2\xe9\xd1\xaf\xb5\xc4\xb4\xfa\xba\xc5: ", uident);
+	user_complete(1, "请输入要查询的代号: ", uident, sizeof(uident));
 	if (uident[0] != '\0') {
 		if (!getuser(uident)) {
 			screen_move(2, 0);
@@ -1438,9 +1436,7 @@ int m_register() {
 				YEA);
 	switch (ans[0]) {
 		case '2':
-			screen_move(1, 0);
-			//% usercomplete("请输入要查询的代号: ", uident);
-			usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xb2\xe9\xd1\xaf\xb5\xc4\xb4\xfa\xba\xc5: ", uident);
+			user_complete(1, "请输入要查询的代号: ", uident, sizeof(uident));
 			if (uident[0] != '\0') {
 				if (!getuser(uident)) {
 					screen_move(2, 0);
@@ -1494,19 +1490,18 @@ int x_level() {
 	if (!check_systempasswd()) {
 		return 0;
 	}
+
+	char user_name[IDLEN + 1];
 	screen_clear();
-	//% prints("更改使用者权限\n");
-	prints("\xb8\xfc\xb8\xc4\xca\xb9\xd3\xc3\xd5\xdf\xc8\xa8\xcf\xde\n");
-	screen_move(1, 0);
-	//% usercomplete("输入欲更改的使用者帐号: ", genbuf);
-	usercomplete("\xca\xe4\xc8\xeb\xd3\xfb\xb8\xfc\xb8\xc4\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xd5\xca\xba\xc5: ", genbuf);
-	if (genbuf[0] == '\0') {
+	screen_printf("更改使用者权限");
+	user_complete(1, "输入欲更改的使用者帐号: ", user_name, sizeof(user_name));
+	if (user_name[0] == '\0') {
 		screen_clear();
 		return 0;
 	}
-	if (!(id = getuser(genbuf))) {
+	if (!(id = getuser(user_name))) {
 		screen_move_clear(3);
-		prints("Invalid User Id");
+		screen_printf("Invalid User Id");
 		pressreturn();
 		screen_clear();
 		return 0;
@@ -1514,15 +1509,13 @@ int x_level() {
 	screen_move(1, 0);
 	screen_clrtobot();
 	screen_move(2, 0);
-	//% prints("设定使用者 '%s' 的权限 \n", genbuf);
-	prints("\xc9\xe8\xb6\xa8\xca\xb9\xd3\xc3\xd5\xdf '%s' \xb5\xc4\xc8\xa8\xcf\xde \n", genbuf);
+	screen_printf("设定使用者 '%s' 的权限 \n", user_name);
 	newlevel
 			//% = setperms(lookupuser.userlevel, "权限", NUMPERMS, showperminfo);
 			= setperms(lookupuser.userlevel, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
 	screen_move(2, 0);
 	if (newlevel == lookupuser.userlevel)
-		//% prints("使用者 '%s' 权限没有变更\n", lookupuser.userid);
-		prints("\xca\xb9\xd3\xc3\xd5\xdf '%s' \xc8\xa8\xcf\xde\xc3\xbb\xd3\xd0\xb1\xe4\xb8\xfc\n", lookupuser.userid);
+		screen_printf("使用者 '%s' 权限没有变更\n", lookupuser.userid);
 	else {
 		sprintf(reportbuf, "change level: %s %.8x -> %.8x",
 				lookupuser.userid, lookupuser.userlevel, newlevel);
@@ -1530,8 +1523,7 @@ int x_level() {
 		lookupuser.userlevel = newlevel;
 		{
 			char secu[STRLEN];
-			//% sprintf(secu, "修改 %s 的权限", lookupuser.userid);
-			sprintf(secu, "\xd0\xde\xb8\xc4 %s \xb5\xc4\xc8\xa8\xcf\xde", lookupuser.userid);
+			snprintf(secu, sizeof(secu), "修改 %s 的权限", lookupuser.userid);
 			securityreport(secu, 0, 0);
 		}
 
@@ -1545,8 +1537,7 @@ int x_level() {
 			if (dashf(src))
 				(void) rename(src, dst);
 		}
-		//% prints("使用者 '%s' 权限已经更改完毕.\n", lookupuser.userid);
-		prints("\xca\xb9\xd3\xc3\xd5\xdf '%s' \xc8\xa8\xcf\xde\xd2\xd1\xbe\xad\xb8\xfc\xb8\xc4\xcd\xea\xb1\xcf.\n", lookupuser.userid);
+		screen_printf("使用者 '%s' 权限已经更改完毕.\n", lookupuser.userid);
 	}
 	pressreturn();
 	screen_clear();
@@ -1802,11 +1793,9 @@ int kick_user(void)
 
 	//% stand_title("踢使用者下站");
 	stand_title("\xcc\xdf\xca\xb9\xd3\xc3\xd5\xdf\xcf\xc2\xd5\xbe");
-	screen_move(1, 0);
 
 	char uname[IDLEN + 1];
-	//% usercomplete("输入使用者帐号: ", uname);
-	usercomplete("\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xd5\xca\xba\xc5: ", uname);
+	user_complete(1, "输入使用者帐号: ", uname, sizeof(uname));
 	if (*uname == '\0') {
 		screen_clear();
 		return -1;
@@ -1932,9 +1921,7 @@ int tui_search_all_boards(void)
 
 	char user_name[IDLEN + 1];
 	screen_clear();
-	//% 请输入您想查询的作者帐号
-	usercomplete("\xc7\xeb\xca\xe4\xc8\xeb\xc4\xfa\xcf\xeb\xb2\xe9\xd1\xaf"
-			"\xb5\xc4\xd7\xf7\xd5\xdf\xd5\xca\xba\xc5: ", user_name);
+	user_complete(0, "请输入您想查询的作者帐号", user_name, sizeof(user_name));
 
 	if (!*user_name) {
 		screen_move(1, 0);
