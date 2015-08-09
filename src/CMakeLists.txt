@@ -6,7 +6,7 @@ link_directories(/usr/local/lib ../lib)
 
 add_library(fbcmn STATIC announce.c bbs.c bm.c board.c
 	delete.c deny.c fileshm.c goodbye.c list.c
-	mail.c maintain.c more.c namecomplete.c postheader.c read.c register.c
+	mail.c maintain.c more.c postheader.c read.c register.c
 	screen.c sendmsg.c talk.c userinfo.c vote.c xyz.c 
 	bbsnet.c online.c prop.c autocomplete.c friend.c plist.c
 	alist.c active_board.c tui.c editor.c menu.c user.c)
