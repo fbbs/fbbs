@@ -1861,7 +1861,6 @@ int AddPCorpus() {
 	char digestpath[80] = "0Announce/groups/GROUP_0/PersonalCorpus";
 	char personalpath[80], Log[200], title[200], ftitle[80];
 	char *title1 = title;
-	int id;
 	set_user_status(ST_DIGEST);
 	sprintf(Log, "%s/Log", digestpath);
 	if (!check_systempasswd()) {
@@ -1872,8 +1871,8 @@ int AddPCorpus() {
 	stand_title("\xb4\xb4\xbd\xa8\xb8\xf6\xc8\xcb\xce\xc4\xbc\xaf");
 
 	screen_move(4, 0);
-	//% if (!gettheuserid(1, "请输入使用者代号: ", &id))
-	if (!gettheuserid(1, "\xc7\xeb\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5: ", &id))
+	user_id_t id = user_complete_id(1, "请输入使用者代号: ");
+	if (!id)
 		return 1;
 
 	sprintf(personalpath, "%s/%c/%s", digestpath,

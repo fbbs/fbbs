@@ -285,25 +285,6 @@ void x_edits() {
 	pressreturn();
 }
 
-//取得genbuf中保存的用户所在的记录位置到*id中,为零表示不存在
-int gettheuserid(int x, char *title, int *id) {
-	screen_move(x, 0);
-	usercomplete(title, genbuf);
-	if (*genbuf == '\0') {
-		screen_clear();
-		return 0;
-	}
-	if (!(*id = getuser(genbuf))) {
-		screen_move_clear(x + 3);		
-		//% prints("错误的使用者代号");
-		prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5");
-		pressreturn();
-		screen_clear();
-		return 0;
-	}
-	return 1;
-}
-
 int x_lockscreen(void)
 {
 	set_user_status(ST_LOCKSCREEN);

@@ -74,7 +74,6 @@ static int get_grp(char *seekstr)
 int m_info() {
 	struct userec user;
 	char reportbuf[30];
-	int id;
 
 	if (!(HAS_PERM(PERM_USER)))
 		return 0;
@@ -86,8 +85,8 @@ int m_info() {
 	screen_clear();
 	//% "修改使用者资料"
 	stand_title("\xd0\xde\xb8\xc4\xca\xb9\xd3\xc3\xd5\xdf\xd7\xca\xc1\xcf");
-	//% "请输入使用者代号: "
-	if (!gettheuserid(1, "\xc7\xeb\xca\xe4\xc8\xeb\xca\xb9\xd3\xc3\xd5\xdf\xb4\xfa\xba\xc5: ", &id))
+	user_id_t id = user_complete_id(1, "请输入使用者代号: ");
+	if (!id)
 		return -1;
 	memcpy(&user, &lookupuser, sizeof(user));
 	sprintf(reportbuf, "check info: %s", user.userid);
@@ -155,9 +154,8 @@ int tui_ordain_bm(const char *cmd)
 	//% "任命版主\n"
 	stand_title("\xc8\xce\xc3\xfc\xb0\xe6\xd6\xf7\n");
 
-	int id;
-	//% "输入欲任命的使用者帐号: "
-	if (!gettheuserid(2, "\xca\xe4\xc8\xeb\xd3\xfb\xc8\xce\xc3\xfc\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf\xd5\xca\xba\xc5: ", &id))
+	user_id_t id = user_complete_id(2, "输入欲任命的使用者帐号: ");
+	if (!id)
 		return 0;
 
 	char bname[BOARD_NAME_LEN];
@@ -330,7 +328,7 @@ static bool retire_bm(int bid, const char *uname)
 
 int tui_retire_bm(const char *cmd)
 {
-	int id, right = 0, j = 0, bmnum;
+	int right = 0, j = 0, bmnum;
 	int find, bm = 1;
 	FILE *bmfp;
 	char bmfilename[STRLEN], usernames[BMMAXNUM][STRLEN];
@@ -345,8 +343,8 @@ int tui_retire_bm(const char *cmd)
 	screen_clear();
 	//% stand_title("版主离职\n");
 	stand_title("\xb0\xe6\xd6\xf7\xc0\xeb\xd6\xb0\n");
-	//% if (!gettheuserid(2, "输入欲离职的版主帐号: ", &id))
-	if (!gettheuserid(2, "\xca\xe4\xc8\xeb\xd3\xfb\xc0\xeb\xd6\xb0\xb5\xc4\xb0\xe6\xd6\xf7\xd5\xca\xba\xc5: ", &id))
+	user_id_t id = user_complete_id(2, "输入欲离职的版主帐号: ");
+	if (!id)
 		return -1;
 
 	char bname[BOARD_NAME_LEN];

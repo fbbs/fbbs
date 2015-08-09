@@ -104,7 +104,10 @@ void show_help(const char *fname);
 int mainreadhelp(void);
 int mailreadhelp(void);
 
+#include "fbbs/user.h"
+
 extern void user_complete(int row, const char *prompt, char *name, size_t size);
+extern user_id_t user_complete_id(int row, const char *prompt);
 int usercomplete(char *prompt, char *data);
 int namecomplete(char *prompt, char *data);
 int t_query(const char *user);
@@ -127,7 +130,6 @@ void stand_title(const char *title);
 void autoreport(const char *board, const char *title, const char *str, const char *uname, int mode);
 int	check_systempasswd(void);
 int deltree(const char *dst);
-int gettheuserid(int x, char *title, int *id);
 void i_read(int cmdmode, const char *direct, int (*dotitle) (), char *(*doentry) (), struct one_key *rcmdlist, int ssize);
 void list_text(const char *file,
 		void (*title_show)(void),
