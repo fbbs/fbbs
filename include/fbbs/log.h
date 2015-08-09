@@ -1,8 +1,17 @@
 #ifndef FB_LOG_H
 #define FB_LOG_H
 
-#define fb_log(domain, format, ...) \
-	syslog(LOG_LOCAL6 | LOG_INFO, "%s "format, domain, __VA_ARGS__)
+extern void log_internal_err(const char *format, ...);
+extern void log_internal_warn(const char *format, ...);
+extern void log_internal_info(const char *format, ...);
+extern void log_internal_dbg(const char *format, ...);
+extern void log_internal_verbose(const char *format, ...);
+
+#define log_err(format, ...) log_internal_err("E/" format, ##__VA_ARGS__)
+#define log_warn(format, ...) log_internal_warn("W/" format, ##__VA_ARGS__)
+#define log_info(format, ...) log_internal_info("I/" format, ##__VA_ARGS__)
+#define log_dbg(format, ...) log_internal_dbg("D/" format, ##__VA_ARGS__)
+#define log_verbose(format, ...) log_internal_verbose("V/" format, ##__VA_ARGS__)
 
 typedef enum {
 	LOG_BM_STAYTIME = 0, ///< 停留时间

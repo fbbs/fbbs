@@ -1,3 +1,4 @@
+#include <syslog.h>
 #include "bbs.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
@@ -60,3 +61,18 @@ int log_bm(log_bm_e type, int value)
 	file_close(fd);
 	return 0;
 }
+
+#define LOG_DEFINE(name, level) \
+void log_internal_##name(const char *format, ...) \
+{ \
+	va_list ap; \
+	va_start(ap, format); \
+	vsyslog(level, format, ap); \
+	va_end(ap); \
+}
+
+LOG_DEFINE(err, LOG_LOCAL7 | LOG_ERR)
+LOG_DEFINE(warn, LOG_LOCAL7 | LOG_WARNING)
+LOG_DEFINE(info, LOG_LOCAL7 | LOG_NOTICE)
+LOG_DEFINE(dbg, LOG_LOCAL7 | LOG_INFO)
+LOG_DEFINE(verbose, LOG_LOCAL7 | LOG_DEBUG)
