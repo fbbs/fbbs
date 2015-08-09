@@ -23,7 +23,6 @@
 #include <sys/file.h>
 #include <sys/mman.h>
 #include <dirent.h>
-#include <syslog.h>
 
 #include "site.h"             	/* User-configurable stuff */
 #include "functions.h"				/* you can enable functions that you want */

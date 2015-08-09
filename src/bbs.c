@@ -43,7 +43,6 @@ char quote_file[120];
 char replytitle[STRLEN];
 #endif
 
-void board_usage();
 void canceltotrash();
 
 int post_search_down();
@@ -1230,6 +1229,12 @@ struct one_key read_comms[] = {
 		{'\0', NULL}
 };
 
+static void board_usage(const char *mode, time_t usetime)
+{
+	log_internal_info_legacy("USE %-20.20s Stay: %5ld (%s)",
+			mode, usetime, currentuser.userid);
+}
+
 int board_read(void)
 {
 	char notename[STRLEN];
@@ -1578,24 +1583,6 @@ void do_report(const char *filename, const char *s) {
 void gamelog(char *s) {
 	do_report("game/trace", s);
 }
-
-/* added by money to provide a method of logging by metalog daemon 2004.01.07 */
-#ifdef USE_METALOG
-void board_usage (char *mode, time_t usetime)
-{
-	syslog (LOG_LOCAL5 | LOG_INFO, "USE %-20.20s Stay: %5ld (%s)", mode,
-			usetime, currentuser.userid);
-}
-#else
-void board_usage(char *mode, time_t usetime) {
-	char buf[256];
-
-	sprintf(buf, "%.22s USE %-20.20s Stay: %5ld (%s)\n",
-			format_time(fb_time(), TIME_FORMAT_ZH),
-			mode, usetime, currentuser.userid);
-	file_append("use_board", buf);
-}
-#endif
 
 int Info() {
 	set_user_status(ST_XMENU);

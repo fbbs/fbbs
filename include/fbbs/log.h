@@ -6,6 +6,7 @@ extern void log_internal_warn(const char *format, ...);
 extern void log_internal_info(const char *format, ...);
 extern void log_internal_dbg(const char *format, ...);
 extern void log_internal_verbose(const char *format, ...);
+extern void log_internal_info_legacy(const char *format, ...);
 
 #define log_err(format, ...) log_internal_err("E/" format, ##__VA_ARGS__)
 #define log_warn(format, ...) log_internal_warn("W/" format, ##__VA_ARGS__)

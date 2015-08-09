@@ -6,7 +6,6 @@
 #ifdef ENABLE_FDQUAN
 # define FDQUAN	//定义复旦泉用
 #endif // ENABLE_FDQUAN
-#define USE_METALOG //定义系统日志使用Metalog Daemon
 
 // 板主任命时， 如果希望任命文章不仅仅发送到被任命版面，而且同时发送到
 // sysop 板，或其他版面，你可以打开下面的定义。其中的 sysop 可以改成你
