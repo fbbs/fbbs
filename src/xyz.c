@@ -1,4 +1,3 @@
-#define EXTERN
 #include <sys/wait.h>
 #include "bbs.h"
 #include "fbbs/fileio.h"
@@ -87,10 +86,6 @@ static const char *permstrings[] = {
 
 int use_define = 0;
 int child_pid = 0;
-
-extern struct UCACHE *uidshm;
-#define TH_LOW	10
-#define TH_HIGH	15
 
 //      对于权限定义值,判断其第i位是否为真,并根据use_define的值来
 //      调整其对应位的权限显示字符串

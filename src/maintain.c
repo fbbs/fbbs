@@ -9,10 +9,6 @@
 #undef  ALLOWGAME
 #endif
 
-char    cexplain[STRLEN];
-char    lookgrp[30];
-FILE   *cleanlog;
-
 //保存用户近期信息
 static int getuinfo(FILE *fn)
 {
@@ -126,39 +122,4 @@ void autoreport(const char *board, const char *title, const char *str,
 
 	if (board)
 		Poststring(str, board, title, mode);
-}
-
-char    curruser[IDLEN + 2];
-extern int delmsgs[];
-extern int delcnt;
-
-void
-domailclean(fhdrp)
-struct fileheader *fhdrp;
-{
-	static int newcnt, savecnt, deleted, idc;
-	char    buf[STRLEN];
-	if (fhdrp == NULL) {
-		fprintf(cleanlog, "new = %d, saved = %d, deleted = %d\n",
-			newcnt, savecnt, deleted);
-		newcnt = savecnt = deleted = idc = 0;
-		if (delcnt) {
-			sprintf(buf, "mail/%c/%s/%s", toupper(curruser[0]), curruser, DOT_DIR);
-			while (delcnt--)
-				delete_record(buf, sizeof(struct fileheader), delmsgs[delcnt],NULL,NULL);
-		}
-		delcnt = 0;
-		return;
-	}
-	idc++;
-	if (!(fhdrp->accessed[0] & FILE_READ))
-		newcnt++;
-	else if (fhdrp->accessed[0] & FILE_MARKED)
-		savecnt++;
-	else {
-		deleted++;
-		sprintf(buf, "mail/%c/%s/%s", toupper(curruser[0]), curruser, fhdrp->filename);
-		unlink(buf);
-		delmsgs[delcnt++] = idc;
-	}
 }

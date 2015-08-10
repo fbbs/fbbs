@@ -17,7 +17,6 @@ int showperminfo(int, int);
 char cexplain[STRLEN];
 char lookgrp[30];
 char bnames[3][STRLEN]; //存放用户担任版主的版名,最多为三
-FILE *cleanlog;
 
 //在userid的主目录下 打开.bmfile文件,并将里面的内容与bname相比较
 //              find存放从1开始返回所任版面的序号,为0表示没找到
