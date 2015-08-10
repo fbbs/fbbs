@@ -598,7 +598,7 @@ static void insert_char(editor_t *editor, wchar_t wc)
 
 /**
  * 在当前位置插入一个制表符
- * @param 编辑器
+ * @param editor 编辑器
  */
 static void insert_tab(editor_t *editor)
 {

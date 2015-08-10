@@ -259,6 +259,7 @@ enum {
  * Find newline in [begin, end), truncate at TRUNCATE_WIDTH.
  * @param begin The head pointer.
  * @param end The off-the-end pointer.
+ * @param utf8 是否以UTF-8编码
  * @return Off-the-end pointer to the first (truncated) line.
  */
 static const char *get_truncated_line(const char *begin, const char *end,
@@ -491,6 +492,7 @@ static const char *update_quote_width(const char *begin, const char *end,
  * @param fp 输出流, 如为空则使用标准输出
  * @param mode 引文模式
  * @param mail 原文是否是信件
+ * @param utf8 是否以UTF-8编码
  * @param filter 输出转换函数, 如为空则使用默认输出函数
  */
 void post_quote_string(const char *str, size_t size, FILE *fp,
