@@ -20,7 +20,7 @@
 #include "fbbs/terminal.h"
 
 #ifdef ENABLE_SSH
-#define KEYS_FOLDER BBSHOME"/etc/ssh"
+#define KEYS_FOLDER "/etc/fbbs/keys"
 #define PID_FILE	BBSHOME"/reclog/sshbbsd.pid"
 #else // ENABLE_SSH
 #define PID_FILE	BBSHOME"/reclog/bbsd.pid"
@@ -379,9 +379,9 @@ int main(int argc, char *argv[])
 	ssh_bind sshbind = ssh_bind_new();
 	ssh_session my_ssh_session;
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_DSAKEY,
-			KEYS_FOLDER"/ssh_host_dsa_key");
+			KEYS_FOLDER"/dsa");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,
-			KEYS_FOLDER"/ssh_host_rsa_key");
+			KEYS_FOLDER"/rsa");
 	const int ssh_log_verbosity = SSH_LOG_NOLOG;
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_LOG_VERBOSITY,
 			&ssh_log_verbosity);
