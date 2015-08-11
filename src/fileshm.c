@@ -53,7 +53,7 @@ int fill_shmfile(int mode, char* fname, char * shmkey) {
 			break;
 	}
 
-	if (abs(now - tmp[0].update) < 86400 && ftime < tmp[0].update) {
+	if (labs(now - tmp[0].update) < 86400 && ftime < tmp[0].update) {
 		return 1;
 	}
 	if ((fffd = fopen(fname, "r")) == NULL) {
@@ -100,7 +100,7 @@ int fill_statshmfile(char* fname, int mode) {
 		if (statshm == NULL)
 			exit(1);
 	}
-	if (abs(now - statshm[mode].update) < 86400 && ftime
+	if (labs(now - statshm[mode].update) < 86400 && ftime
 			< statshm[mode].update) {
 		return 1;
 	}
