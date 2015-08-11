@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <syslog.h>
 #include "bbs.h"
 #include "fbbs/fileio.h"
