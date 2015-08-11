@@ -244,7 +244,7 @@ static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session s)
 	bool auth = false;
 	int ret;
 	int attempt = 0;
-	if (ssh_accept(s) == 0) {
+	if (ssh_bind_accept(sshbind, s) == 0) {
 		do {
 			msg = ssh_message_get(s);
 			if (!msg)
@@ -382,8 +382,9 @@ int main(int argc, char *argv[])
 			KEYS_FOLDER"/ssh_host_dsa_key");
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY,
 			KEYS_FOLDER"/ssh_host_rsa_key");
+	const int ssh_log_verbosity = SSH_LOG_NOLOG;
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_LOG_VERBOSITY,
-			SSH_LOG_NOLOG);
+			&ssh_log_verbosity);
 #endif // ENABLE_SSH
 
 	char buf[80];

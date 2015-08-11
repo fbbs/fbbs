@@ -57,7 +57,7 @@ int KEY_ESC_arg;
 int terminal_read(uchar_t *buf, size_t size)
 {
 #ifdef ENABLE_SSH
-	return channel_read(ssh_chan, buf, size, 0);
+	return ssh_channel_read(ssh_chan, buf, size, 0);
 #else // ENABLE_SSH
 	return file_read(STDIN_FILENO, buf, size);
 #endif // ENABLE_SSH
@@ -66,7 +66,7 @@ int terminal_read(uchar_t *buf, size_t size)
 int terminal_write(const uchar_t *buf, size_t len)
 {
 #ifdef ENABLE_SSH
-	return channel_write(ssh_chan, buf, len);
+	return ssh_channel_write(ssh_chan, buf, len);
 #else // ENABLE_SSH
 	return file_write(STDIN_FILENO, buf, len);
 #endif // ENABLE_SSH
@@ -172,7 +172,7 @@ static int get_raw_ch(void)
 
 			if (FD_ISSET(STDIN_FILENO, &rset)) {
 #ifdef ENABLE_SSH
-				ret = channel_poll(ssh_chan, 0);
+				ret = ssh_channel_poll(ssh_chan, 0);
 #endif
 			}
 
