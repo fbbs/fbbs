@@ -169,7 +169,7 @@ int bbsanc_main(void)
 
 	char *bname = getbfroma(path);
 	board_t board;
-	if (!bname || *bname != '\0' || !get_board(bname, &board)
+	if (!bname || *bname == '\0' || !get_board(bname, &board)
 			|| !has_read_perm(&board)) {
 		return BBS_ENOFILE;
 	}
