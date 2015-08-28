@@ -338,6 +338,7 @@ void clrtoeol(void)
 		if (screen.cur_col > sl->len)
 			memset(sl->data + sl->len, ' ', screen.cur_col - sl->len + 1);
 		sl->len = screen.cur_col;
+		sl->modified = true;
 	}
 }
 
