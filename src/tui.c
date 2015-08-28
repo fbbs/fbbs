@@ -315,41 +315,30 @@ void tui_update_status_line(void)
 	}
 }
 
-static void print_option(const char *opt, char *quantifier, int count,
-		int order)
-{
-	prints(" %d) ", order);
-	if (count > 0 && quantifier)
-		prints("%d%s", count, quantifier);
-	prints("%s", opt);
-}
-
 extern int post_list_reply(void);
 extern int post_list_mention(void);
 
 int tui_check_notice(const char *board_name)
 {
-	screen_move_clear(-1);
-	prints("\033[m\xb2\xe9\xbf\xb4:");
-
 	int replies, mentions;
 	notice_count(&replies, &mentions);
 
-	print_option("\xc8\xa1\xcf\xfb", NULL, 0, 0);
-	print_option("\xbb\xd8\xb8\xb4", "\xc6\xaa", replies, 1);
-	print_option("\xcc\xe1\xbc\xb0", "\xc6\xaa", mentions, 2);
-
 	int choice = 0;
-	if (replies)
-		choice = 1;
-	else if (mentions)
+	char buf[64], reply_string[16], mention_string[16];
+	reply_string[0] = mention_string[0] = '\0';
+	if (mentions > 0) {
+		snprintf(mention_string, sizeof(mention_string), "%d篇", mentions);
 		choice = 2;
-	prints(" [%d]: ", choice);
+	}
+	if (replies) {
+		snprintf(reply_string, sizeof(reply_string), "%d篇", replies);
+		choice = 1;
+	}
+	snprintf(buf, sizeof(buf), "查看: 0) 取消 1) %s回复 2) %s提及 [%d]: ",
+			reply_string, mention_string, choice);
 
 	char ans[2];
-	int x, y;
-	screen_coordinates(&x, &y);
-	getdata(x, y, "", ans, sizeof(ans), true, true);
+	tui_input(-1, buf, ans, sizeof(ans));
 
 	if (*ans == '\0')
 		*ans = '0' + choice;
