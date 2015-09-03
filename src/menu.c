@@ -370,7 +370,9 @@ static void function_eval(const char *cmd, const char *descr)
 		DECLARE_INTERNAL(board_select),
 		DECLARE_INTERNAL(ent_bnet),
 		DECLARE_INTERNAL(ent_bnet2),
+#ifdef FDQUAN
 		DECLARE_INTERNAL(ent_winmine),
+#endif
 		DECLARE_INTERNAL(fill_reg_form),
 		DECLARE_INTERNAL(g_send),
 		DECLARE_INTERNAL(giveUpBBS),
