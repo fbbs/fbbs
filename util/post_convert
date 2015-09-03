@@ -21,8 +21,12 @@ sub main {
 	db_connect();
 
 	my $board_name = $ARGV[0];
+	say $board_name;
 	my $board_id = get_board_id($board_name);
-	die "$ARGV[0] does not exist!" if (not $board_id);
+	if (not $board_id) {
+		say "$ARGV[0] does not exist!";
+		exit 0;
+	}
 
 	my ($active_users, $past_users) = load_users();
 	my $posts = read_board($board_name);
@@ -76,11 +80,12 @@ sub insert_posts {
 			board_id board_name digest marked locked imported water sticky
 			title);
 	my @fields2 = qw(delete_stamp eraser_id eraser_name junk bm_visible);
-	my $sth1 = prepare(@fields1);
-	my $sth2 = prepare(@fields1, @fields2);
+	my $sth1 = prepare('post.recent', @fields1);
+	my $sth2 = prepare('post.deleted', @fields1, @fields2);
 	my $sth3 = $dbh->prepare("INSERT INTO post.content (post_id, content)
 			VALUES (?, ?)");
 
+	@$posts = grep { defined $_->[11] } @$posts;
 	@$posts = sort { $a->[11] <=> $b->[11] } @$posts;
 	for (@$posts) {
 		my ($file, $id, $gid, $owner, $title, $eraser, $level, $access, $reid,
@@ -104,12 +109,12 @@ sub insert_posts {
 		my $thread_id = exists $post_ids{$gid} ? $post_ids{$gid}
 				: post_id($date);
 
-		my $digest = $index eq '.DIGEST' ? 1 : 0;
+		my $digest = int($index eq '.DIGEST');
 		my $marked = ($access & $MARKED) ? 1 : 0;
 		my $locked = ($access & $LOCKED) ? 1 : 0;
 		my $imported = ($access & $IMPORTED) ? 1 : 0;
 		my $water = ($access & $WATER) ? 1 : 0;
-		my $sticky = $index eq '.NOTICE' ? 1 : 0;
+		my $sticky = int($index eq '.NOTICE');
 
 		my @values = ($post_id, $reply_id, $thread_id, $user_id, $user_id,
 				$owner, $board_id, $board_name, $digest, $marked, $locked,
@@ -118,7 +123,7 @@ sub insert_posts {
 			my $eraser_id = get_user_id($eraser, $deleted, $active_users,
 					$past_users) || 0;
 			push @values, convert_time($deleted), $eraser_id, $eraser,
-					($access & $JUNK) ? 1 : 0, $index eq '.TRASH';
+					$access & $JUNK ? 1 : 0, int($index eq '.TRASH');
 			$sth2->execute(@values);
 		} else {
 			$sth1->execute(@values);
@@ -129,7 +134,8 @@ sub insert_posts {
 }
 
 sub prepare {
-	$dbh->prepare('INSERT INTO post.recent (' . (join ',', @_) . ') VALUES ('
+	my $table = shift;
+	$dbh->prepare('INSERT INTO ' . $table . '(' . (join ',', @_) . ') VALUES ('
 			. (join ',', ('?') x @_) . ')');
 }
 
@@ -140,7 +146,12 @@ sub post_id {
 
 sub get_user_id {
 	my ($user_name, $date, $active_users, $past_users) = @_;
-	exists $active_users->{$user_name}
-			and $active_users->{$user_name}[1] <= $date
-			? $active_users->{$user_name}[0] : $past_users->{$user_name};
+	if (exists $active_users->{$user_name}) {
+		my $register_date = $active_users->{$user_name}[1];
+		if (defined $register_date and $register_date > 631123200
+				and $register_date <= $date) {
+			return $active_users->{$user_name}[0];
+		}
+	}
+	return $past_users->{$user_name};
 }
