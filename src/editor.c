@@ -703,7 +703,7 @@ static vector_size_t _move_up(editor_t *editor, vector_size_t base,
 	else
 		base = 0;
 
-	if (base < lines)
+	if (base < editor->allow_edit_begin)
 		base = editor->allow_edit_begin;
 
 	return base;
