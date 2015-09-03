@@ -1014,11 +1014,7 @@ int tui_read_sector(const char *cmd)
 		bl.sector = db_get_integer(res, 0, 0);
 	db_clear(res);
 #else
-	char c = *cmd;
-	if (c > 'A')
-		bl.sector = c - 'A' + 1;
-	else
-		bl.sector = c - '0' + 1;
+	bl.sector = *cmd;
 #endif
 	return tui_board_list(&bl);
 }
