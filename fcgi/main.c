@@ -278,7 +278,8 @@ int main(void)
 			brc_reset();
 
 			if (session_get_id()) {
-				set_user_status(h->status);
+				if (h->status != ST_IDLE)
+					set_user_status(h->status);
 				session_set_idle(session_get_id(), fb_time());
 				if (h->status != ST_READING)
 					session_set_board(0);
