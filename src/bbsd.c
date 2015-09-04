@@ -339,6 +339,7 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 		get_ip_addr(p);
 #ifdef ENABLE_SSH
 		initialize_db();
+		initialize_mdb();
 
 		ssh_chan = sshbbs_accept(s);
 		if (!ssh_chan)
