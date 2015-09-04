@@ -52,7 +52,7 @@ static char *getbfroma(const char *path)
 int bbs0an_main(void)
 {
 	char path[512];
-	board_t board;
+	board_t board = { .id = 0 };
 	int bid = strtol(web_get_param("bid"), NULL, 10);
 	if (bid <= 0) {
 		strlcpy(path, web_get_param("path"), sizeof(path));
