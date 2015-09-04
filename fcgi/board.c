@@ -326,6 +326,8 @@ static void show_board(db_res_t *res)
 	for (int i = 0; i < db_res_rows(res); ++i) {
 		board_t board;
 		res_to_board(res, i, &board);
+		if (!has_read_perm(&board))
+			continue;
 		if (!web_request_type(UTF8))
 			board_to_gbk(&board);
 		printf("<brd dir='%d' title='%s' cate='%.6s' desc='%s' bm='%s' "
