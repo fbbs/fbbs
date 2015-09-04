@@ -987,6 +987,8 @@ static void preview(editor_t *editor)
 		text_line_t *tl = editor_line(editor, current - 1);
 		if (!contains_newline(tl))
 			--current;
+		else
+			break;
 	}
 
 	screen_clear();
