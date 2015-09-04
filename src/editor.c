@@ -1361,6 +1361,8 @@ static editor_e confirm_save_file(const char *file,
 		tui_input_no_clear(-1, "S) 发表 A) 取消 T) 更改标题 E) 再编辑 [S]: ",
 				ans, sizeof(ans));
 		*ans = toupper(*ans);
+		if (*ans == '\0')
+			*ans = 'S';
 	}
 
 	if (*ans == 'S') {
