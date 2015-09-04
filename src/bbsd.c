@@ -237,14 +237,14 @@ extern int bbs_auth(const char *name, const char *passwd);
 /**
  *
  */
-static ssh_channel sshbbs_accept(ssh_bind sshbind, ssh_session s)
+static ssh_channel sshbbs_accept(ssh_session s)
 {
 	ssh_message msg;
 	ssh_channel chan = NULL;
 	bool auth = false;
 	int ret;
 	int attempt = 0;
-	if (ssh_bind_accept(sshbind, s) == 0) {
+	if (ssh_handle_key_exchange(s) != SSH_ERROR) {
 		do {
 			msg = ssh_message_get(s);
 			if (!msg)
@@ -340,7 +340,7 @@ static int accept_connection(int fd, int nfds, const struct sockaddr_storage *p
 #ifdef ENABLE_SSH
 		initialize_db();
 
-		ssh_chan = sshbbs_accept(sshbind, s);
+		ssh_chan = sshbbs_accept(s);
 		if (!ssh_chan)
 			exit(1);
 #else // ENABLE_SSH
