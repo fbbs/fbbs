@@ -310,17 +310,6 @@ int web_all_boards(void)
 	return 0;
 }
 
-// TODO: unify with telnet
-static int filenum(char *board)
-{
-	char file[HOMELEN];
-	struct stat st;
-	sprintf(file, "boards/%s/.DIR", board);
-	if (stat(file, &st) < 0)
-		return 0;
-	return st.st_size / sizeof(struct fileheader);
-}
-
 static void show_board(db_res_t *res)
 {
 	for (int i = 0; i < db_res_rows(res); ++i) {
@@ -335,7 +324,7 @@ static void show_board(db_res_t *res)
 				(board.flag & BOARD_FLAG_DIR) ? 1 : 0, board.name,
 				board.categ, board.descr, board.bms,
 				brc_board_unread(currentuser.userid, board.name, board.id),
-				filenum(board.name));
+				post_get_board_count(board.id));
 	}
 }
 
