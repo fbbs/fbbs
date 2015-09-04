@@ -243,7 +243,7 @@ static int show_sector(int sid, db_res_t *res, int last)
 int bbssec_main(void)
 {
 	db_res_t *r1 = db_query("SELECT id, name, descr, short_descr"
-			" FROM board_sectors ORDER BY name ASC");
+			" FROM board_sectors WHERE public ORDER BY name ASC");
 	if (!r1)
 		return BBS_EINVAL;
 
@@ -261,8 +261,18 @@ int bbssec_main(void)
 
 	int last = -1;
 	for (int i = 0; i < db_res_rows(r1); ++i) {
+		GBK_BUFFER(short_descr, 4);
+		GBK_BUFFER(descr, 10);
+		const char *short_descr = db_get_value(r1, i, 2),
+			  *descr = db_get_value(r1, i, 3);
+		if (!web_request_type(UTF8)) {
+			convert_u2g(short_descr, gbk_short_descr);
+			short_descr = gbk_short_descr;
+			convert_u2g(descr, gbk_descr);
+			descr = gbk_descr;
+		}
 		printf("<sec id='%s' desc='%s [%s]'>", db_get_value(r1, i, 1),
-				db_get_value(r1, i, 2), db_get_value(r1, i, 3));
+				short_descr, descr);
 		int sid = db_get_integer(r1, i, 0);
 		last = show_sector(sid, res, last);
 		printf("</sec>");

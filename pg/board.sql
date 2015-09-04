@@ -9,7 +9,8 @@ CREATE TABLE board_sectors (
 	id SERIAL PRIMARY KEY,
 	name CHAR,
 	descr TEXT,
-	short_descr TEXT
+	short_descr TEXT,
+	public BOOLEAN
 );
 INSERT INTO board_sectors (id, name) VALUES (0, ' ');
 
