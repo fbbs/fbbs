@@ -135,7 +135,7 @@ static void check_sessions(const struct _session *begin,
 
 	int web = 0;
 	for (const struct _session *s = begin; s < end; ++s) {
-		if (s->web && s->expire < fb_time()) {
+		if (s->web && s->expire && s->expire < fb_time()) {
 			kill_session(s, active, false);
 			active -= s->active;
 		} else {
