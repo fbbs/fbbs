@@ -151,7 +151,7 @@ BACKEND_DECLARE(post_new)
 static void build_post_filter(query_t *q, const post_filter_t *f)
 {
 	query_where(q, "TRUE");
-	if (f->bid && is_deleted(f->type))
+	if (f->bid)
 		query_and(q, "board_id = %d", f->bid);
 	if (f->flag & POST_FLAG_DIGEST)
 		query_and(q, "digest");
