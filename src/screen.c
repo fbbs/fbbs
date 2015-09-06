@@ -42,6 +42,11 @@ static screen_t screen = {
 	.columns = 255,
 };
 
+bool screen_inited(void)
+{
+	return screen.buf;
+}
+
 int screen_lines(void)
 {
 	return screen.lines;

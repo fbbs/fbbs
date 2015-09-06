@@ -48,6 +48,7 @@ extern int multi_getdata(int line, int col, int maxcol, const char *prompt,
 		char *buf, int len, int maxline, int clearlabel, int textmode);
 
 // src/screen.c
+extern bool screen_inited(void);
 extern int screen_lines(void);
 extern void screen_negotiate_size(void);
 extern void screen_init(int lines);

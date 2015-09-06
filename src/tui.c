@@ -50,20 +50,26 @@ static int _tui_input(int line, int col, const char *prompt, char *buf,
 	int cur, clen;
 	cur = clen = strlen(buf);
 
+	bool inited = screen_inited(), prompted = false;
 	while (1) {
-		screen_move(line, col);
-		clrtoeol();
-		if (prompt) {
-			if (utf8)
-				screen_printf("%s", prompt);
-			else
-				prints("%s", prompt);
+		if (inited || !prompted) {
+			screen_move(line, col);
+			clrtoeol();
+			if (prompt) {
+				if (utf8)
+					screen_printf("%s", prompt);
+				else
+					prints("%s", prompt);
+			}
+			prompted = true;
 		}
-		if (echo)
-			prints("%s", buf);
-		else
-			tui_repeat_char('*', clen);
-		screen_move(line, real_x + cur);
+		if (inited) {
+			if (echo)
+				prints("%s", buf);
+			else
+				tui_repeat_char('*', clen);
+			screen_move(line, real_x + cur);
+		}
 
 		if (RMSG)
 			screen_flush();
@@ -85,6 +91,22 @@ static int _tui_input(int line, int col, const char *prompt, char *buf,
 
 		if (ch == '\n' || ch == '\r')
 			break;
+
+		if (!inited) {
+			if (ch == '\x7f' || ch == Ctrl('H')) {
+				int dec = remove_character(buf, &cur, clen, true);
+				if (dec) {
+					clen -= dec;
+					screen_puts("\x8 \x8", 3);
+				}
+			} else if (isprint2(ch) && clen < len - 1) {
+				buf[cur] = ch;
+				buf[++cur] = '\0';
+				++clen;
+				screen_putc(echo ? ch : '*');
+			}
+			continue;
+		}
 
 		if (ch == '\x7f' || ch == Ctrl('H')) {
 			clen -= remove_character(buf, &cur, clen, true);
