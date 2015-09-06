@@ -604,7 +604,7 @@ static int board_cmp_online(const void *p1, const void *p2)
 {
 	const board_extra_t *b1 = *(const board_extra_t **) p1;
 	const board_extra_t *b2 = *(const board_extra_t **) p2;
-	return b1->online - b2->online;
+	return b2->online - b1->online;
 }
 
 static int board_cmp_default(const void *p1, const void *p2)
