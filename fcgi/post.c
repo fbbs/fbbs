@@ -168,6 +168,12 @@ static bool search_sticky(int bid, post_id_t pid, post_info_t *pi)
 
 extern bool get_board_by_param(board_t *bp);
 
+static int xml_fputs2_wrapper(const char *buf, size_t len, void *arg)
+{
+	xml_fputs2(buf, len);
+	return 0;
+}
+
 static int xml_print_post_wrapper(const char *str, size_t size)
 {
 	if (web_request_type(PARSED)) {
@@ -180,7 +186,7 @@ static int xml_print_post_wrapper(const char *str, size_t size)
 		return xml_print_post(str, size, opt);
 	}
 	if (!web_request_type(MOBILE)) {
-		xml_fputs2(str, size);
+		convert(CONVERT_U2G, str, size, NULL, 0, xml_fputs2_wrapper, NULL);
 		return 0;
 	}
 	return xml_print_post(str, size, PARSE_NOSIG);
