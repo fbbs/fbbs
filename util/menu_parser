@@ -59,6 +59,10 @@ sub parse_group {
 		next if /^#/;
 
 		my ($cmd, $line, $col, $perm, $descr) = split / *, */;
+		if ($cmd eq 'title') {
+			$descr = $perm;
+			$perm = '0';
+		}
 		$descr =~ s/"//g if defined $descr;
 		add_string($config, $cmd, $descr);
 		push @group, [$cmd, $line, $col, $perm, $descr];
