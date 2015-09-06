@@ -19,31 +19,21 @@ static tui_list_loader_t tui_prop_loader(tui_list_t *p)
 
 static tui_list_title_t tui_prop_title(tui_list_t *p)
 {
-	//% prints("\033[1;33;44m[聚宝盆]\033[K\033[m\n"
-	prints("\033[1;33;44m[\xbe\xdb\xb1\xa6\xc5\xe8]\033[K\033[m\n"
-			//% " 购买[\033[1;32m→\033[m,\033[1;32mRtn\033[m]"
-			" \xb9\xba\xc2\xf2[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m]"
-			//% " 选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m]"
-			" \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,\033[1;32m\xa1\xfd\033[m]"
-			//% " 离开[\033[1;32m←\033[m,\033[1;32me\033[m]"
-			" \xc0\xeb\xbf\xaa[\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m]"
-			//% " 求助[\033[1;32mh\033[m]\n"
-			" \xc7\xf3\xd6\xfa[\033[1;32mh\033[m]\n"
-			//% "\033[1;44m 编号    价格  类别 / 项目\033[K\033[m\n");
-			"\033[1;44m \xb1\xe0\xba\xc5    \xbc\xdb\xb8\xf1  \xc0\xe0\xb1\xf0 / \xcf\xee\xc4\xbf\033[K\033[m\n");
+	screen_printf("\033[1;33;44m[聚宝盆]\033[K\033[m\n"
+			" 购买[\033[1;32m→\033[m,\033[1;32mRtn\033[m]"
+			" 选择[\033[1;32m↑\033[m,\033[1;32m↓\033[m]"
+			" 离开[\033[1;32m←\033[m,\033[1;32me\033[m]"
+			" 求助[\033[1;32mh\033[m]\n"
+			"\033[1;44m 编号    价格  类别 / 项目\033[K\033[m\n");
 }
 
 static tui_list_display_t tui_prop_display(tui_list_t *p, int n)
 {
 	prop_list_t *l = p->data;
-
-	GBK_BUFFER(item, PROP_ITEM_CCHARS);
-	GBK_BUFFER(categ, PROP_CATEG_CCHARS);
-	convert_u2g(prop_list_get_name(l, n), gbk_item);
-	convert_u2g(prop_list_get_categ_name(l, n), gbk_categ);
-
-	prints(" %4d %7d  %s / %s\n", n + 1,
-			TO_YUAN_INT(prop_list_get_price(l, n)), gbk_categ, gbk_item);
+	screen_printf(" %4d %7d  %s / %s\n", n + 1,
+			TO_YUAN_INT(prop_list_get_price(l, n)),
+			prop_list_get_categ_name(l, n),
+			prop_list_get_name(l, n));
 	return 0;
 }
 
@@ -75,6 +65,9 @@ static int tui_title_buy(int type, int price)
 
 static tui_list_handler_t tui_prop_handler(tui_list_t *p, int key)
 {
+	if (key != KEY_RIGHT && key != '\n')
+		return READ_AGAIN;
+
 	int type = prop_list_get_id(p->data, p->cur);
 	int price = prop_list_get_price(p->data, p->cur);
 	switch (type) {
@@ -116,14 +109,10 @@ static tui_list_loader_t tui_my_props_loader(tui_list_t *p)
 
 static tui_list_title_t tui_my_props_title(tui_list_t *p)
 {
-	//% prints("\033[1;33;44m[藏经阁]\033[K\033[m\n"
-	prints("\033[1;33;44m[\xb2\xd8\xbe\xad\xb8\xf3]\033[K\033[m\n"
-			//% " 查看详情 [\033[1;32mEnter\033[m,\033[1;32m→\033[m] "
-			" \xb2\xe9\xbf\xb4\xcf\xea\xc7\xe9 [\033[1;32mEnter\033[m,\033[1;32m\xa1\xfa\033[m] "
-			//% "返回 [\033[1;32m←\033[m,\033[1;32me\033[m]\n"
-			"\xb7\xb5\xbb\xd8 [\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m]\n"
-			//% "\033[1;44m  编号   价格  购买时间   过期时间   类别 / 项目\033[K\033[m\n");
-			"\033[1;44m  \xb1\xe0\xba\xc5   \xbc\xdb\xb8\xf1  \xb9\xba\xc2\xf2\xca\xb1\xbc\xe4   \xb9\xfd\xc6\xda\xca\xb1\xbc\xe4   \xc0\xe0\xb1\xf0 / \xcf\xee\xc4\xbf\033[K\033[m\n");
+	screen_printf("\033[1;33;44m[藏经阁]\033[K\033[m\n"
+			" 查看详情 [\033[1;32mEnter\033[m,\033[1;32m→\033[m] "
+			"返回 [\033[1;32m←\033[m,\033[1;32me\033[m]\n"
+			"\033[1;44m  编号   价格  购买时间   过期时间   类别 / 项目\033[K\033[m\n");
 }
 
 static tui_list_display_t tui_my_props_display(tui_list_t *p, int n)
@@ -134,13 +123,10 @@ static tui_list_display_t tui_my_props_display(tui_list_t *p, int n)
 	fb_strftime(o, sizeof(o), "%Y-%m-%d", my_prop_get_order_time(r, n));
 	fb_strftime(e, sizeof(e), "%Y-%m-%d", my_prop_get_expire(r, n));
 
-	GBK_BUFFER(item, PROP_ITEM_CCHARS);
-	GBK_BUFFER(categ, PROP_CATEG_CCHARS);
-	convert_u2g(my_prop_get_item_name(r, n), gbk_item);
-	convert_u2g(my_prop_get_categ_name(r, n), gbk_categ);
-
-	prints(" %4d %7d %s %s %s / %s\n", n + 1,
-			TO_YUAN_INT(my_prop_get_price(r, n)), o, e, gbk_categ, gbk_item);
+	screen_printf(" %4d %7d %s %s %s / %s\n", n + 1,
+			TO_YUAN_INT(my_prop_get_price(r, n)), o, e,
+			my_prop_get_categ_name(r, n),
+			my_prop_get_item_name(r, n));
 	return 0;
 }
 
@@ -149,12 +135,9 @@ static int tui_my_title(int record)
 	db_res_t *res = db_query("SELECT id, title, approved"
 			" FROM titles WHERE record_id = %d", record);
 	if (res && db_res_rows(res) > 0) {
-		GBK_BUFFER(title, TITLE_CCHARS);
-		convert_u2g(db_get_value(res, 0, 1), gbk_title);
 		screen_move_clear(-1);
-		//% prints("自定义身份%s: %s", db_get_bool(res, 0, 2) ? "" : "[尚在审核]",
-		prints("\xd7\xd4\xb6\xa8\xd2\xe5\xc9\xed\xb7\xdd%s: %s", db_get_bool(res, 0, 2) ? "" : "[\xc9\xd0\xd4\xda\xc9\xf3\xba\xcb]",
-				gbk_title);
+		screen_printf("自定义身份%s: %s", db_get_bool(res, 0, 2) ? "" : "[尚在审核]",
+				db_get_value(res, 0, 1));
 		egetch();
 	}
 	db_clear(res);
