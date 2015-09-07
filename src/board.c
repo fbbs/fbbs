@@ -550,21 +550,24 @@ static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 	board_t *board = &be->board;
 
 	if (!bl->newflag)
-		prints(" %5d", n + 1);
+		screen_printf(" %5d", n + 1);
 	else if (board->flag & BOARD_FLAG_DIR)
-		//% prints("  目录");
-		prints("  \xc4\xbf\xc2\xbc");
-	else
-		prints(" %5d", post_get_board_count(board->id));
+		screen_printf("  目录");
+	else {
+		int count = post_get_board_count(board->id);
+		if (count < 100000) {
+			screen_printf(" %5d", count);
+		} else {
+			screen_printf(" %4dk", count / 1000);
+		}
+	}
 
 	prints(" ");
 	if (board->flag & BOARD_FLAG_DIR) {
-		//% prints("＋");
-		prints("\xa3\xab");
+		screen_printf("＋");
 	} else {
 		bool unread = check_newpost(board);
-		//% prints(unread ? "◆" : "◇");
-		prints(unread ? "\xa1\xf4" : "\xa1\xf3");
+		screen_printf(unread ? "◆" : "◇");
 	}
 
 	char descr[24];
@@ -579,12 +582,11 @@ static tui_list_display_t board_list_display(tui_list_t *tl, int n)
 			board->categ, descr, HAS_PERM(PERM_POST) ? property(board) : ' ');
 
 	if (board->flag & BOARD_FLAG_DIR) {
-		//% prints("[目录]\n");
-		prints("[\xc4\xbf\xc2\xbc]\n");
+		screen_printf("[目录]\n");
 	} else {
 		char bms[IDLEN + 1];
 		strlcpy(bms, board->bms, sizeof(bms));
-		prints("%-12s %4d\n",
+		prints("%-12s  %4d\n",
 				//% bms[0] <= ' ' ? "诚征版主中" : strtok(bms, " "),
 				bms[0] <= ' ' ? "\xb3\xcf\xd5\xf7\xb0\xe6\xd6\xf7\xd6\xd0" : strtok(bms, " "),
 				be->online);
@@ -830,10 +832,8 @@ static tui_list_title_t board_list_title(tui_list_t *tl)
 			//% "\033[m] 搜寻[\033[1;32m/\033[m] 切换[\033[1;32mc\033[m] 求助"
 			"\033[m] \xcb\xd1\xd1\xb0[\033[1;32m/\033[m] \xc7\xd0\xbb\xbb[\033[1;32mc\033[m] \xc7\xf3\xd6\xfa"
 			"[\033[1;32mh\033[m]\n");
-	//% prints("\033[1;44;37m 编号 未 讨论区名称        V  类别  %-20s S 版  主        "
-	prints("\033[1;44;37m \xb1\xe0\xba\xc5 \xce\xb4 \xcc\xd6\xc2\xdb\xc7\xf8\xc3\xfb\xb3\xc6        V  \xc0\xe0\xb1\xf0  %-20s S \xb0\xe6  \xd6\xf7        "
-			//% "在线 \033[m\n", "中  文  叙  述");
-			"\xd4\xda\xcf\xdf \033[m\n", "\xd6\xd0  \xce\xc4  \xd0\xf0  \xca\xf6");
+	screen_printf("\033[1;44;37m  编号 未 讨论区名称        V  类别  %-20s S 版  主        "
+			"在线 \033[m\n", "中  文  叙  述");
 }
 
 static tui_list_handler_t board_list_handler(tui_list_t *tl, int key)
