@@ -410,8 +410,8 @@ static void screen_put_gbk(int c)
 {
 	static int left = 0;
 	if (left) {
-		char buf[3] = { left, c };
-		convert(CONVERT_G2U, buf, 3, NULL, 0, screen_put_gbk_helper, NULL);
+		char buf[3] = { left, c, '\0' };
+		convert(CONVERT_G2U, buf, 2, NULL, 0, screen_put_gbk_helper, NULL);
 		left = 0;
 	} else if (c & 0x80) {
 		left = c;
