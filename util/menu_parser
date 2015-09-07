@@ -104,7 +104,10 @@ sub add_string {
 
 sub get_string {
 	my ($config, $str) = @_;
-	$config->{str}{$str} || ($config->{str}{'!' . $str} + 1) || ($config->{str}{'@' . $str} + 1);
+	return $config->{str}{$str} if exists $config->{str}{$str};
+	return $config->{str}{'!' . $str} + 1 if exists $config->{str}{'!' . $str};
+	return $config->{str}{'@' . $str} + 1 if exists $config->{str}{'@' . $str};
+	warn "string not found: [$str]\n";
 }
 
 sub parse_const {
