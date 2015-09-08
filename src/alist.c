@@ -54,7 +54,7 @@ static int attachment_open_record(const char *bname, record_perm_e rdonly,
 	char file[HOMELEN];
 	snprintf(file, sizeof(file), "upload/%s/.DIR", bname);
 	return record_open(file, attachment_record_cmp, sizeof(struct fileheader),
-				RECORD_READ, record);
+				rdonly, record);
 }
 
 tui_list_loader_t tui_attachment_loader(tui_list_t *tl)
@@ -257,6 +257,8 @@ static int delete_attachment(tui_list_t *tl, struct fileheader *fp)
 		//% 确定删除
 		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
 			tui_attachment_list_t *tal = tl->data;
+			if (attachment_reopen_record(tal) < 0)
+				return DONOTHING;
 			delete_attachment_callback_t dac = { .tal = tal, .fp = fp };
 			record_delete(tal->record, fp, tl->cur,
 					delete_attachment_callback, &dac);
