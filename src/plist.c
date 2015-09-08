@@ -918,8 +918,8 @@ static record_callback_e thread_first_unread_filter(void *ptr, void *args,
 		int offset)
 {
 	const post_record_t *pr = ptr;
-	post_id_t tid = *(post_id_t *) args;
-	if (pr->id == tid && brc_unread(post_stamp(pr->id)))
+	post_id_t thread_id = *(post_id_t *) args;
+	if (pr->thread_id == thread_id && brc_unread(post_stamp(pr->id)))
 		return RECORD_CALLBACK_MATCH;
 	return RECORD_CALLBACK_CONTINUE;
 }
