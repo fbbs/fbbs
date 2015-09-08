@@ -1273,14 +1273,19 @@ static bool write_header_utf8(FILE *fp, const struct postheader *post_header,
 static bool write_body(const editor_t *editor, FILE *fp, const char *host,
 		bool anonymous)
 {
+	bool ends_with_newline = false;
 	vector_size_t lines = vector_size(&editor->lines);
 	for (vector_size_t i = 0; i < lines; ++i) {
 		text_line_t *tl = editor_line(editor, i);
 		if (tl && tl->buf) {
-			if (!strneq2(tl->buf, "\033[m\033[1;36m※ 修改:·"))
+			if (!strneq2(tl->buf, "\033[m\033[1;36m※ 修改:·")) {
 				fwrite(tl->buf, 1, tl->size, fp);
+				ends_with_newline = contains_newline(tl);
+			}
 		}
 	}
+	if (!ends_with_newline)
+		fputc('\n', fp);
 
 	if (session_status() == ST_EDIT) {
 		fprintf(fp, "\033[m\033[1;36m※ 修改:·%s 于 %s·[FROM: %s]\033[m\n",
