@@ -339,7 +339,8 @@ int bbssndmail_main(void)
 		snprintf(title2, sizeof(title2), "{%s} %s", recv, title);
 		do_mail_file(currentuser.userid, title2, header, gbk_text, len, NULL);
 	}
-	free(gbk_text);
+	if (utf8)
+		free(gbk_text);
 
 	const char *ref = web_get_param("ref");
 	http_header();
