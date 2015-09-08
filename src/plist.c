@@ -980,7 +980,8 @@ static int tui_delete_single_post(tui_list_t *tl, post_info_t *pi, int bid)
 			post_filter_t filter = {
 				.bid = bid, .min = pi->id, .max = pi->id,
 			};
-			if (post_delete(&filter, true, false, true)) {
+			if (post_delete(&filter, true,
+						pi->user_id != session_get_user_id(), true)) {
 				tl->valid = false;
 				log_bm(LOG_BM_DELETE, 1);
 				return PARTUPDATE;
