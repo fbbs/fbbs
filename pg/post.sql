@@ -42,6 +42,8 @@ CREATE TABLE post.base (
 CREATE TABLE post.recent (
 ) INHERITS (post.base);
 CREATE INDEX ON post.recent (id);
+CREATE INDEX ON post.recent (board_id);
+CREATE INDEX ON post.recent (board_id) WHERE sticky;
 
 CREATE TABLE post.archive (
 ) INHERITS (post.base);
