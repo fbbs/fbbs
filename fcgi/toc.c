@@ -707,6 +707,7 @@ int api_top10(void)
 				printf("</top>\n");
 			}
 		}
+		fclose(fp);
 	}
 	if (api) {
 		return WEB_OK;
