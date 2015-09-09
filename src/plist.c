@@ -1663,6 +1663,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 	post_id_t tid = 0;
 	user_id_t uid = 0;
 	int direction = 0;
+	int exit_pos = -1;
 	char file[HOMELEN];
 	post_info_t pi_buf;
 
@@ -1704,6 +1705,7 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				direction = 1;
 				if (!uid && !tid) {
 					tid = pi->thread_id;
+					exit_pos = tl->cur;
 					entering = true;
 				}
 				break;
@@ -1756,6 +1758,8 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 			}
 		}
 	}
+	if (exit_pos > 0)
+		tl->cur = exit_pos;
 	tl->valid = false;
 	return FULLUPDATE;
 }
