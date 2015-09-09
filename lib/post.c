@@ -711,7 +711,7 @@ int post_mark_raw(fb_time_t stamp, int flag)
 	if (mark == ' ' && (flag & POST_FLAG_WATER))
 		mark = 'w';
 
-	if (brc_unread(stamp)) {
+	if (stamp && brc_unread(stamp)) {
 		if (mark == ' ')
 			mark = DEFINE(DEF_NOT_N_MASK) ? '+' : 'N';
 		else

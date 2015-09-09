@@ -85,7 +85,7 @@ tui_list_display_t tui_attachment_display(tui_list_t *tl, int offset)
 		char date[14];
 		format_post_date(fp->timeDeleted, date, sizeof(date));
 
-		char type = ' ';
+		char type = post_mark_raw(0, fp->accessed[0]);
 
 		char buf[STRLEN];
 		snprintf(buf, sizeof(buf), " %5d %c %-12.12s %s\033[m %s\n",
