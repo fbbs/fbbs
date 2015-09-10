@@ -473,8 +473,9 @@ static bool raw_insert(editor_t *editor, const char *str,
 /**
  * 从编辑器当前光标所在行开始自动折行
  * @param editor 编辑器
+ * @return 折行次数
  */
-static void wrap_long_lines(editor_t *editor)
+static int wrap_long_lines(editor_t *editor)
 {
 	vector_size_t saved_line, line;
 	saved_line = line = editor->current_line;
@@ -511,6 +512,7 @@ static void wrap_long_lines(editor_t *editor)
 		else
 			break;
 	}
+	int diff = editor->current_line - saved_line;
 	editor->current_line = saved_line;
 	editor->buffer_pos = saved_pos;
 
@@ -519,6 +521,7 @@ static void wrap_long_lines(editor_t *editor)
 
 	text_line_t *tl = editor_current_line(editor);
 	editor->screen_pos = display_width(tl->buf, saved_pos);
+	return diff;
 }
 
 static void wrap_short_lines(editor_t *editor)
@@ -1066,7 +1069,10 @@ static bool read_file(editor_t *editor, const char *file, bool utf8)
 		if (empty || (!editor->buffer_pos && newline)) {
 			text_line_t tl;
 			text_line_make(editor, &tl, ptr, line_end);
-			vector_insert(&editor->lines, editor->current_line++, &tl);
+			vector_insert(&editor->lines, editor->current_line, &tl);
+			if (line_end - ptr > WRAP_MARGIN)
+				editor->current_line += wrap_long_lines(editor);
+			++editor->current_line;
 			++editor->allow_edit_end;
 		} else {
 			raw_insert(editor, ptr, line_end - ptr - newline);
