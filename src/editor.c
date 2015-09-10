@@ -998,6 +998,7 @@ static void preview(editor_t *editor)
 	vector_size_t line = current;
 	text_line_size_t pos = 0;
 	const char *code = "[0123456789;";
+	const int len = strlen(code);
 	for (vector_size_t i = current; i < editor->allow_edit_end; ++i) {
 		text_line_t *tl = editor_line(editor, i);
 		const char *ptr = tl->buf, *old_ptr = tl->buf;
@@ -1005,7 +1006,7 @@ static void preview(editor_t *editor)
 		wchar_t wc;
 		while ((wc = next_wchar(&ptr, &size)) && wc != WEOF) {
 			if (in_esc) {
-				if (wc >= 0x80 || !memchr(code, wc, sizeof(code) - 1)) {
+				if (wc >= 0x80 || !memchr(code, wc, len)) {
 					in_esc = false;
 				}
 			} else {
@@ -1019,9 +1020,6 @@ static void preview(editor_t *editor)
 					int w = fb_wcwidth(wc);
 					if (x + w == line_width) {
 						print(editor, &line, &pos, i, ptr - tl->buf);
-						screen_puts("\n", 1);
-						x = 0;
-						--y;
 					} else if (x + w > line_width) {
 						print(editor, &line, &pos, i, old_ptr - tl->buf);
 						screen_puts("\n", 1);
