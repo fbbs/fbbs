@@ -50,7 +50,6 @@ int urandom_pos_int(void)
 void start_daemon(void)
 {
 	umask(0);
-	int n = sysconf(_SC_OPEN_MAX);
 
 	int pid = fork();
 	if (pid < 0) {
@@ -67,10 +66,9 @@ void start_daemon(void)
 		exit(0);
 	}
 
-	while (n)
-		close(--n);
+	file_close_all();
 
-	for (n = 1; n <= NSIG; n++)
+	for (int n = 1; n <= NSIG; n++)
 		fb_signal(n, SIG_IGN);
 }
 

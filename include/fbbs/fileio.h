@@ -21,6 +21,7 @@ extern int file_read(int fd, void *buf, size_t size);
 extern char *file_read_all(const char *file);
 extern int file_write(int fd, const void *buf, size_t size);
 extern int file_close(int fd);
+extern void file_close_all(void);
 extern int file_truncate(int fd, off_t size);
 extern bool dashf(const char *file);
 extern bool dashd(const char *file);

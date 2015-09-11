@@ -61,6 +61,8 @@ int main(int argc, char **argv)
 	chdir(BBSHOME);
 	umask(S_IWGRP | S_IWOTH);
 
+	file_close_all();
+
 	initialize_environment(INIT_MDB | INIT_DB | INIT_CONV);
 	if (resolve_ucache() < 0)
 		return EXIT_FAILURE;

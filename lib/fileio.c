@@ -107,6 +107,13 @@ int file_close(int fd)
 	return ret;
 }
 
+void file_close_all(void)
+{
+	int n = sysconf(_SC_OPEN_MAX);
+	while (n)
+		file_close(--n);
+}
+
 /**
  * 改变文件大小
  * @param[in] fd 文件描述符
