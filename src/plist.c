@@ -1198,7 +1198,10 @@ static int tui_new_post(int bid, post_info_t *pi)
 	screen_clear();
 	show_board_notes(board.name, 1);
 
-	struct postheader header = { .mail_owner = false, };
+	struct postheader header = {
+		.mail_owner = false,
+		.locked = pi ? pi->flag & POST_FLAG_LOCKED : false,
+	};
 	GBK_UTF8_BUFFER(title, POST_TITLE_CCHARS);
 	if (pi) {
 		header.reply = true;
