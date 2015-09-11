@@ -1868,7 +1868,7 @@ static void search_all_boards(post_filter_t *filter, const char *user_name,
 	filter->min = post_id_from_stamp(fb_time() - days * 24 * 60 * 60);
 
 	query_t *q = query_new(0);
-	query_select(q, "id, board_id, title");
+	query_select(q, "id, board_name, title");
 	query_from(q, "post.recent");
 	filter_post(q, filter);
 	query_orderby(q, "id", true);
@@ -1886,11 +1886,11 @@ static void search_all_boards(post_filter_t *filter, const char *user_name,
 			const char *utf8_title = db_get_value(res, i, 2);
 			convert_u2g(utf8_title, gbk_title);
 
-			char date[26];
-			time_t stamp = post_stamp(db_get_post_id(res, i, 0));
-			ctime_r(&stamp, date);
-			date[24] = '\0';
-			fprintf(fp, " %s [%d] %s\n", date, db_get_integer(res, i, 1),
+			char date[17];
+			fb_time_t stamp = post_stamp(db_get_post_id(res, i, 0));
+			struct tm *t = fb_localtime(&stamp);
+			strftime(date, sizeof(date), "%Y-%m-%d %H:%M", t);
+			fprintf(fp, " %s [%s] %s\n", date, db_get_value(res, i, 1),
 					gbk_title);
 		}
 	}
@@ -1918,7 +1918,7 @@ int tui_search_all_boards(void)
 
 	char user_name[IDLEN + 1];
 	screen_clear();
-	user_complete(0, "请输入您想查询的作者帐号", user_name, sizeof(user_name));
+	user_complete(0, "请输入您想查询的作者帐号: ", user_name, sizeof(user_name));
 
 	if (!*user_name) {
 		screen_move(1, 0);
@@ -1929,28 +1929,20 @@ int tui_search_all_boards(void)
 	} else {
 		filter.uid = get_user_id(user_name);
 		if (!filter.uid) {
-			//% 不正确的使用者代号
-			prints("\xb2\xbb\xd5\xfd\xc8\xb7\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf"
-					"\xb4\xfa\xba\xc5\n");
+			screen_printf("不正确的使用者代号");
 			pressreturn();
 			return 0;
 		}
 	}
 
 	GBK_BUFFER(keyword, POST_LIST_KEYWORD_LEN);
-	//% 请输入文章标题关键字
-	getdata(2, 0, "\xc7\xeb\xca\xe4\xc8\xeb\xce\xc4\xd5\xc2\xb1\xea\xcc\xe2"
-			"\xb9\xd8\xbc\xfc\xd7\xd6: ", gbk_keyword, sizeof(gbk_keyword),
-			DOECHO, YEA);
+	tui_input(2, "请输入文章标题关键字: ", gbk_keyword, sizeof(gbk_keyword));
 	if (*gbk_keyword) {
 		convert_g2u(gbk_keyword, filter.utf8_keyword);
 	}
 
 	char buf[4];
-	//% 查询距今多少天以内的文章
-	getdata(3, 0, "\xb2\xe9\xd1\xaf\xbe\xe0\xbd\xf1\xb6\xe0\xc9\xd9\xcc\xec"
-			"\xd2\xd4\xc4\xda\xb5\xc4\xce\xc4\xd5\xc2?: ", buf, sizeof(buf),
-			DOECHO, YEA);
+	tui_input(3, "查询距今多少天以内的文章? ", buf, sizeof(buf));
 	int days = strtol(buf, NULL, 10);
 	if (days <= 0)
 		return 0;

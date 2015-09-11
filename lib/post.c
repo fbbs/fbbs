@@ -733,7 +733,7 @@ fb_time_t post_stamp(post_id_t id)
 
 post_id_t post_id_from_stamp(fb_time_t stamp)
 {
-	return ((post_id_t) (stamp * 1000)) << 21;
+	return (((post_id_t) stamp) * 1000) << 21;
 }
 
 /**
