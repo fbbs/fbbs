@@ -161,7 +161,7 @@ static int tui_remove_title(tui_list_t *p)
 static tui_list_handler_t tui_my_props_handler(tui_list_t *p, int key)
 {
 	if (p->cur >= p->all)
-		return DONOTHING;
+		return READ_AGAIN;
 
 	my_props_t *r = p->data;
 	int id = my_prop_get_item_id(r, p->cur);
