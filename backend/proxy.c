@@ -208,6 +208,13 @@ static bool data_received_callback(int fd, int bytes)
 					connections[conn->remote_fd].remote_fd = REMOTE_NULL;
 					conn->remote_fd = REMOTE_NULL;
 				}
+				if (conn->client && conn->remote_fd == REMOTE_BUSY) {
+					parcel_t parcel;
+					parcel_new(&parcel);
+					parcel_write_bool(&parcel, true);
+					parcel_flush(&parcel, fd);
+					parcel_free(&parcel);
+				}
 				return true;
 			}
 		}

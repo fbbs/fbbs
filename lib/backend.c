@@ -11,6 +11,10 @@
 #include "fbbs/fileio.h"
 #include "fbbs/util.h"
 
+enum {
+	BACKEND_BUSY_RETRIES = 3,
+};
+
 static int backend_proxy_fd = -1;
 
 static bool backend_sighup = false;
@@ -167,7 +171,7 @@ bool backend_request(const void *req, void *resp,
 		backend_serializer_t serializer, backend_deserializer_t deserializer,
 		backend_request_e type)
 {
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < BACKEND_BUSY_RETRIES; ++i) {
 		int rc = _backend_request(req, resp, serializer, deserializer, type);
 		switch (rc) {
 			case BACKEND_OK:
