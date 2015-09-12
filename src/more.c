@@ -709,8 +709,8 @@ int msg_more(void)
 			default:
 				break;
 		}
+		more_close(more);
 	}
-	more_close(more);
 	screen_clear();
 	return ch;
 }
