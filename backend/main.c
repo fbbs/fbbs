@@ -1,6 +1,7 @@
 #include <signal.h>
 #include "bbs.h"
 #include "fbbs/backend.h"
+#include "fbbs/fileio.h"
 #include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/parcel.h"
