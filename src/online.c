@@ -174,14 +174,13 @@ static tui_list_title_t online_users_title(tui_list_t *p)
 }
 
 static void get_nick(char *nick, size_t size, const online_users_t *up,
-		const online_user_info_t *ip)
+		const online_user_info_t *ip, const struct userec *user)
 {
 	if (up->follow && up->show_note) {
 		strlcpy(nick, ip->note, size);
 	} else {
 		if (!ip->nick) {
-			getuser(ip->name);
-			strlcpy(nick, lookupuser.username, size);
+			strlcpy(nick, user->username, size);
 			// don't save nick here
 		} else {
 			strlcpy(nick, ip->nick, size);
@@ -190,13 +189,17 @@ static void get_nick(char *nick, size_t size, const online_users_t *up,
 	ellipsis(nick, 20);
 }
 
-static const char *get_host(const online_user_info_t *ip)
+static const char *get_host(const online_user_info_t *ip,
+		const struct userec *user)
 {
 	const char *host;
 	if (HAS_PERM(PERM_OCHAT)) {
 		host = ip->host;
 	} else {
-		host = mask_host(ip->host);
+		if (HAS_DEFINE(user->userdefine, DEF_NOTHIDEIP))
+			host = mask_host(ip->host);
+		else
+			host = "......";
 	}
 	return host;
 }
@@ -236,10 +239,13 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 	online_users_t *up = p->data;
 	online_user_info_t *ip = up->users + i;
 
-	char nick[24];
-	get_nick(nick, sizeof(nick), up, ip);
+	struct userec user;
+	getuserec(ip->name, &user);
 
-	const char *host = get_host(ip);
+	char nick[24];
+	get_nick(nick, sizeof(nick), up, ip, &user);
+
+	const char *host = get_host(ip, &user);
 
 	int status = get_user_status(ip->sid);
 	const char *color = session_status_color(status,
