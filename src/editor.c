@@ -963,7 +963,7 @@ static void print(editor_t *editor, vector_size_t *old_line,
 		text_line_size_t *old_pos, vector_size_t new_line,
 		vector_size_t new_pos)
 {
-	for (vector_size_t i = *old_line; i <= new_line; ++i) {
+	for (vector_size_t i = *old_line; i <= new_line; ++i, *old_pos = 0) {
 		text_line_t *tl = editor_line(editor, i);
 		if (i < new_line) {
 			if (tl->size > *old_pos)
@@ -997,12 +997,12 @@ static void preview(editor_t *editor)
 	screen_clear();
 	int y = screen_lines() - 1, x = 0;
 	const int line_width = 80;
-	bool in_esc = false;
+	bool in_esc = false, end = false;
 	vector_size_t line = current;
 	text_line_size_t pos = 0;
 	const char *code = "[0123456789;";
 	const int len = strlen(code);
-	for (vector_size_t i = current; i < editor->allow_edit_end; ++i) {
+	for (vector_size_t i = current; !end && i < editor->allow_edit_end; ++i) {
 		text_line_t *tl = editor_line(editor, i);
 		const char *ptr = tl->buf, *old_ptr = tl->buf;
 		size_t size = tl->size;
@@ -1032,8 +1032,10 @@ static void preview(editor_t *editor)
 						x += w;
 					}
 				}
-				if (y <= 0)
+				if (y <= 0) {
+					end = true;
 					break;
+				}
 			}
 			old_ptr = ptr;
 		}
