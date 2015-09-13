@@ -2559,12 +2559,13 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case '5': case '6': case '7': case '8': case '9':
 			{
 				tl->jump = tl->jump * 10 + (ch - '0');
-				screen_move(-1, 69);
-				clrtoeol();
-				char buf[24];
-				snprintf(buf, sizeof(buf), "\033[1;44;33m[%6d]\033[m",
-						tl->jump);
-				outs(buf);
+				if (tl->jump) {
+					char buf[24];
+					snprintf(buf, sizeof(buf), "\033[1;44;33m[%6d]\033[m",
+							tl->jump);
+					screen_replace(-1, 45, "                         ");
+					screen_replace(-1, 70, buf);
+				}
 			}
 			return DONOTHING;
 		default:

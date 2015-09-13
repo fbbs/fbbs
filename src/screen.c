@@ -159,6 +159,8 @@ static void move_terminal_cursor(int col, int line)
 
 static inline screen_line_t *get_screen_line(int line)
 {
+	if (line < 0)
+		line += screen.lines;
 	return screen.buf + (line + screen.roll) % screen.lines;
 }
 
