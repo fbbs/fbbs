@@ -92,11 +92,13 @@ int child_pid = 0;
 //      最后在由i指示的位置处显示,更新
 int showperminfo(int pbits, int i)
 {
-	if (i < 16)
-		screen_move(i + 6, 0);
-	screen_printf("%c. %-30s %2s", 'A' + i,
-			(use_define) ? user_definestr[i] : permstrings[i],
-			((pbits >> i) & 1 ? "是" : "否"));
+	int line = i < 16 ? i + 6 : i - 10;
+	int col = i < 16 ? 0 : 40;
+	char buf[STRLEN];
+	snprintf(buf, sizeof(buf), "%c. %s", 'A' + i,
+			(use_define) ? user_definestr[i] : permstrings[i]);
+	screen_replace(line, col, buf);
+	screen_replace(line, col + 34, (pbits >> i) & 1 ? "是" : "否");
 	return true;
 }
 
@@ -152,8 +154,7 @@ int x_userdefine() {
 	set_user_status(ST_USERDEF);
 	if (!(id = getuser(currentuser.userid))) {
 		screen_move_clear(3);
-		//% prints("错误的使用者 ID...");
-		prints("\xb4\xed\xce\xf3\xb5\xc4\xca\xb9\xd3\xc3\xd5\xdf ID...");
+		screen_printf("错误的使用者 ID...");
 		pressreturn();
 		screen_clear();
 		return 0;
@@ -162,19 +163,16 @@ int x_userdefine() {
 	screen_clrtobot();
 	screen_move(2, 0);
 	use_define = 1;
-	//% newlevel = setperms(lookupuser.userdefine, "参数", NUMDEFINES,
-	newlevel = setperms(lookupuser.userdefine, "\xb2\xce\xca\xfd", NUMDEFINES,
+	newlevel = setperms(lookupuser.userdefine, "参数", NUMDEFINES,
 			showperminfo);
 	screen_move(2, 0);
 	if (newlevel == lookupuser.userdefine)
-		//% prints("参数没有修改...\n");
-		prints("\xb2\xce\xca\xfd\xc3\xbb\xd3\xd0\xd0\xde\xb8\xc4...\n");
+		screen_printf("参数没有修改...\n");
 	else {
 		lookupuser.userdefine = newlevel;
 		currentuser.userdefine = newlevel;
 		substitut_record(PASSFILE, &lookupuser, sizeof(struct userec), id);
-		//% prints("新的参数设定完成...\n\n");
-		prints("\xd0\xc2\xb5\xc4\xb2\xce\xca\xfd\xc9\xe8\xb6\xa8\xcd\xea\xb3\xc9...\n\n");
+		screen_printf("新的参数设定完成...\n\n");
 	}
 	pressreturn();
 	screen_clear();

@@ -1031,8 +1031,7 @@ int multivote(struct ballot *uv) {
 	i = uv->voted;
 	screen_move(0, 0);
 	show_voteing_title();
-	//% uv->voted = setperms(uv->voted, "选票", currvote.totalitems,
-	uv->voted = setperms(uv->voted, "\xd1\xa1\xc6\xb1", currvote.totalitems,
+	uv->voted = setperms(uv->voted, "选票", currvote.totalitems,
 			showvoteitems);
 	if (uv->voted == i)
 		return -1;

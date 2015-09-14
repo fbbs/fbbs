@@ -683,8 +683,7 @@ int tui_new_board(const char *cmd)
 			screen_move(2, 0);
 			//% prints("设定 %s 权利. 讨论区: '%s'\n", "READ", bname);
 			prints("\xc9\xe8\xb6\xa8 %s \xc8\xa8\xc0\xfb. \xcc\xd6\xc2\xdb\xc7\xf8: '%s'\n", "READ", bname);
-			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
-			perm = setperms(perm, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			screen_clear();
 		}
 	} else {
@@ -724,8 +723,7 @@ int tui_new_board(const char *cmd)
 			prints("\xc9\xe8\xb6\xa8 %s \xcf\xde\xd6\xc6. \xcc\xd6\xc2\xdb\xc7\xf8: '%s'\n",
 					//% (flag & BOARD_FLAG_POST ? "写" : "读"), bname);
 					(flag & BOARD_FLAG_POST ? "\xd0\xb4" : "\xb6\xc1"), bname);
-			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
-			perm = setperms(perm, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			screen_clear();
 		}
 	}
@@ -922,8 +920,7 @@ static bool alter_board_perm(board_t *bp)
 			screen_move(2, 0);
 			//% prints("设定 %s '%s' 讨论区的权限\n", "阅读", bp->name);
 			prints("\xc9\xe8\xb6\xa8 %s '%s' \xcc\xd6\xc2\xdb\xc7\xf8\xb5\xc4\xc8\xa8\xcf\xde\n", "\xd4\xc4\xb6\xc1", bp->name);
-			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
-			perm = setperms(perm, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			screen_clear();
 		}
 	} else {
@@ -945,8 +942,7 @@ static bool alter_board_perm(board_t *bp)
 			prints("\xc9\xe8\xb6\xa8 %s '%s' \xcc\xd6\xc2\xdb\xc7\xf8\xb5\xc4\xc8\xa8\xcf\xde\n",
 					//% (flag & BOARD_FLAG_POST) ? "张贴" : "阅读", bp->name);
 					(flag & BOARD_FLAG_POST) ? "\xd5\xc5\xcc\xf9" : "\xd4\xc4\xb6\xc1", bp->name);
-			//% perm = setperms(perm, "权限", NUMPERMS, showperminfo);
-			perm = setperms(perm, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
+			perm = setperms(perm, "权限", NUMPERMS, showperminfo);
 			screen_clear();
 		}
 	}
@@ -1508,8 +1504,7 @@ int x_level() {
 	screen_move(2, 0);
 	screen_printf("设定使用者 '%s' 的权限 \n", user_name);
 	newlevel
-			//% = setperms(lookupuser.userlevel, "权限", NUMPERMS, showperminfo);
-			= setperms(lookupuser.userlevel, "\xc8\xa8\xcf\xde", NUMPERMS, showperminfo);
+			= setperms(lookupuser.userlevel, "权限", NUMPERMS, showperminfo);
 	screen_move(2, 0);
 	if (newlevel == lookupuser.userlevel)
 		screen_printf("使用者 '%s' 权限没有变更\n", lookupuser.userid);
