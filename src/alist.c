@@ -100,51 +100,23 @@ static void print_attachment_info(const struct fileheader *fp,
 		const char *bname, int offset)
 {
 	char url[STRLEN];
-	snprintf(url, sizeof(url), "http://"BBSHOST_PUBLIC"/upload/%s/%s", bname,
+	snprintf(url, sizeof(url), "://"BBSHOST_PUBLIC"/upload/%s/%s", bname,
 			fp->filename);
 
 	screen_clear();
-	//% 文件详细信息
-	prints("\xce\xc4\xbc\xfe\xcf\xea\xcf\xb8\xd0\xc5\xcf\xa2\n\n"
-			//% 版名:
-			"\xb0\xe6\xc3\xfb: %s\n"
-			//% 序号: 第 %d 篇
-			"\xd0\xf2\xba\xc5: \xb5\xda %d \xc6\xaa\n"
-			//% 文件
-			"\xce\xc4\xbc\xfe: %s\n"
-			//% 上传
-			"\xc9\xcf\xb4\xab: %s\n"
-			//% 日期
-			"\xc8\xd5\xc6\xda: %s\n"
-			//% 大小: %d 字节
-			"\xb4\xf3\xd0\xa1: %d \xd7\xd6\xbd\xda\n"
-			//% 地址:
-			"\xb5\xd8\xd6\xb7:\n%s\n",
+	screen_printf("文件详细信息\n\n"
+			"版名: %s\n"
+			"序号: 第 %d 篇\n"
+			"文件: %s\n"
+			"上传: %s\n"
+			"日期: %s\n"
+			"大小: %d 字节\n"
+			"地址:\n"
+			"https%s\n\n"
+			"http%s",
 			bname, offset + 1, fp->filename, fp->owner,
-			format_time(fp->timeDeleted, TIME_FORMAT_ZH), fp->id, url);
-}
-
-static int read_attachment(tui_list_t *tl, const struct fileheader *fp)
-{
-	tui_attachment_list_t *tal = tl->data;
-	bool end = false, upward = false;
-	struct fileheader fh = *fp;
-	while (!end) {
-		print_attachment_info(&fh, tal->bname, tl->cur);
-
-		int key = egetch();
-		switch (key) {
-			case ' ': case 'j': case KEY_DOWN: case KEY_PGDN: case KEY_RIGHT:
-				upward = false;
-				break;
-			case KEY_UP: case KEY_PGUP: case 'u': case 'U':
-				upward = true;
-			default:
-				end = true;
-				break;
-		}
-	}
-	return FULLUPDATE;
+			format_time(fp->timeDeleted, TIME_FORMAT_UTF8_ZH), fp->id,
+			url, url);
 }
 
 static int attachment_search_author(tui_list_t *tl,
@@ -272,6 +244,23 @@ static int delete_attachment(tui_list_t *tl, struct fileheader *fp)
 
 extern int tui_follow_uname(const char *uname);
 
+static tui_list_query_t tui_attachment_query(tui_list_t *tl)
+{
+	struct fileheader *fp = NULL;
+	tui_attachment_list_t *tal = tl->data;
+	if (tl->cur >= tl->begin && tl->cur - tl->begin < tal->size)
+		fp = tal->buf + tl->cur - tl->begin;
+	if (fp) {
+		screen_clear();
+		print_attachment_info(fp, tal->bname, tl->cur);
+		tl->in_query = true;
+		return DONOTHING;
+	}
+	tl->in_query = false;
+	tl->update = FULLUPDATE;
+	return FULLUPDATE;
+}
+
 tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 {
 	struct fileheader *fp = NULL;
@@ -293,7 +282,7 @@ tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 	switch (key) {
 		case '\n': case '\r':
 		case KEY_RIGHT: case 'r': case Ctrl('S'): case 'p':
-			return read_attachment(tl, fp);
+			return tui_attachment_query(tl);
 		case 'm':
 			return toggle_attachment_flag(tl, fp, POST_FLAG_MARKED);
 		case 'g':
@@ -315,10 +304,24 @@ tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 		case 'P': case Ctrl('B'): case KEY_PGUP:
 			return tui_list_seek(tl, KEY_PGUP, true, true);
 		case 'k': case KEY_UP:
+			if (tl->in_query) {
+				if (tl->cur == 0) {
+					tl->in_query = false;
+					return FULLUPDATE;
+				}
+				return READ_AGAIN;
+			}
 			return tui_list_seek(tl, KEY_UP, true, true);
 		case 'N': case Ctrl('F'): case KEY_PGDN: case ' ':
 			return tui_list_seek(tl, KEY_PGDN, true, true);
 		case 'j': case KEY_DOWN:
+			if (tl->in_query) {
+				if (tl->cur == tl->all - 1) {
+					tl->in_query = false;
+					return FULLUPDATE;
+				}
+				return READ_AGAIN;
+			}
 			return tui_list_seek(tl, KEY_DOWN, true, true);
 		case '$': case KEY_END:
 			tl->cur = tl->all - 1;
@@ -340,11 +343,6 @@ tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 		default:
 			return READ_AGAIN;
 	}
-}
-
-tui_list_query_t tui_attachment_query(tui_list_t *tl)
-{
-	return 0;
 }
 
 int tui_attachment_list(const board_t *board)
@@ -369,6 +367,7 @@ int tui_attachment_list(const board_t *board)
 		.title = tui_attachment_title,
 		.display = tui_attachment_display,
 		.handler = tui_attachment_handler,
+		.query = tui_attachment_query,
 	};
 
 	tui_list(&tl);
