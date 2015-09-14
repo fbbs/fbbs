@@ -125,9 +125,8 @@ static int _tui_input(int line, int col, const char *prompt, char *buf,
 		} else if (isprint2(ch) && clen < len - 1) {
 			if (buf[cur] != '\0')
 				memmove(buf + cur + 1, buf + cur, clen - cur);
-			buf[cur] = ch;
-			buf[++cur] = '\0';
-			++clen;
+			buf[cur++] = ch;
+			buf[++clen] = '\0';
 		}
 	}
 
