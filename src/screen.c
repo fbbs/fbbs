@@ -765,21 +765,22 @@ void screen_save_line(int line, bool save)
  */
 void saveline_buf(int line, int mode)//0:save 1:restore
 {
-    static char temp[MAX_MSG_LINE * 2 + 2][SCREEN_LINE_LEN];
-    screen_line_t *bp = screen.buf;
-    int x, y;
-    
-    switch (mode) {
-        case 0:
-            strncpy(temp[line], (const char *)bp[line].data, SCREEN_LINE_LEN);
-            temp[line][bp[line].len] = '\0';
-            break;
-        case 1:
-            screen_coordinates(&x, &y);
-            screen_move(line, 0);
-            screen_clear_line(line);
-            prints("%s", temp[line]);
-            screen_move(x,y);
-            break;
-    }
+	static char temp[MAX_MSG_LINE * 2 + 2][SCREEN_LINE_LEN];
+	screen_line_t *bp = screen.buf;
+	int x, y;
+
+	switch (mode) {
+		case 0:
+			strlcpy(temp[line], (const char *) bp[line].data,
+					sizeof(temp[line]));
+			temp[line][bp[line].len] = '\0';
+			break;
+		case 1:
+			screen_coordinates(&x, &y);
+			screen_move(line, 0);
+			screen_clear_line(line);
+			screen_printf("%s", temp[line]);
+			screen_move(x,y);
+			break;
+	}
 }
