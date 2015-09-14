@@ -246,13 +246,13 @@ static void notice_string(char *buf, size_t size)
 	if (!empty) {
 		size_t orig_size = size;
 		char **dst = &buf;
-		if (replies) {
+		if (replies > 0) {
 			char str[24];
 			//% %d篇回复
 			snprintf(str, sizeof(str), "%d\xc6\xaa\xbb\xd8\xb8\xb4", replies);
 			strappend(dst, &size, str);
 		}
-		if (mentions) {
+		if (mentions > 0) {
 			char str[24];
 			//% %d篇提及
 			snprintf(str, sizeof(str), "%d\xc6\xaa\xcc\xe1\xbc\xb0",
