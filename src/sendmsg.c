@@ -324,7 +324,11 @@ int logout_msg(const char *msg)
 int login_msg(void)
 {
 	msg_session_info_t *s = get_sessions_of_followers();
-	int r = send_msg(s, NULL, LOGIN_MSG);
+	char msg[STRLEN];
+	//% "你的好朋友 %s 已经上站咯"
+	snprintf(msg, sizeof(msg), "\xc4\xe3\xb5\xc4\xba\xc3\xc5\xf3\xd3\xd1 %s "
+			"\xd2\xd1\xbe\xad\xc9\xcf\xd5\xbe\xbf\xa9", currentuser.userid);
+	int r = send_msg(s, msg, LOGIN_MSG);
 	msg_session_info_clear(s);
 	return r;
 }
