@@ -223,6 +223,7 @@
 <form id='postform' name='postform' method='post' action='snd?bid={@bid}&amp;f={po/@f}&amp;e={@edit}&amp;utf8=1'>
 <label class='blk'>版面<input disabled='disabled' type='text' name='brd' value='{@brd}'></input></label>
 <label class='blk'>标题<input class='binput' type='text' name='title' size='27' maxlength='50' value='{t}'><xsl:if test='@edit=1'><xsl:attribute name='disabled' value='disabled'/></xsl:if></input></label>
+<label class='blk'>匿名<xsl:if test='@anony=1'><input type="checkbox" name="anony" value="1" checked="checked"/></xsl:if></label>
 <label class='blk'>签名档<label><input type='radio' name='sig' value='1' checked='checked'/>1</label><label><input type='radio' name='sig' value='2'/>2</label><label><input type='radio' name='sig' value='3'/>3</label><label><input type='radio' name='sig' value='4'/>4</label><label><input type='radio' name='sig' value='5'/>5</label><label><input type='radio' name='sig' value='6'/>6</label></label>
 <textarea class='binput' name='text' rows='10' cols='27' wrap='virtual'>
 <xsl:if test='@edit=0'><xsl:text> &#x0d;&#x0a;</xsl:text></xsl:if>
