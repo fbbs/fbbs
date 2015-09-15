@@ -258,7 +258,7 @@ static tui_list_display_t online_users_display(tui_list_t *p, int i)
 
 	char buf[128];
 	snprintf(buf, sizeof(buf), " \033[m%4d%s  %-12.12s\033[m %-20.20s"
-			"\033[m %-19.19s %s%-10.10s\033[37m %4s\033[m\n",
+			"\033[m %-19.19s %s%-10.10s\033[m %4s\033[m\n",
 			i + 1, up->follow ? "\033[32m" : "", ip->name,
 			nick, host, color, session_status_descr(status), idle_str);
 	prints("%s", buf);
