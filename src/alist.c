@@ -123,16 +123,13 @@ static int attachment_search_author(tui_list_t *tl,
 		const struct fileheader *fp, bool upward)
 {
 	char prompt[80];
-	//% 向%s搜索作者
-	snprintf(prompt, sizeof(prompt),
-			"\xcf\xf2%s\xcb\xd1\xcb\xf7\xd7\xf7\xd5\xdf [%s]: ",
-			//% "上" : "下"
-			upward ? "\xc9\xcf" : "\xcf\xc2", fp->owner);
+	snprintf(prompt, sizeof(prompt), "向%s搜索作者 [%s]: ",
+			upward ? "上" : "下", fp->owner);
 	char ans[IDLEN + 1];
-	getdata(-1, 0, prompt, ans, sizeof(ans), DOECHO, YEA);
+	tui_input(-1, prompt, ans, sizeof(ans));
 
 	attachment_filter_t filter = { .utf8_keyword = { '\0' } };
-	strlcpy(filter.uname, ans, sizeof(filter.uname));
+	strlcpy(filter.uname, *ans ? ans : fp->owner, sizeof(filter.uname));
 	return attachment_search(tl, &filter, upward);
 }
 
