@@ -1236,7 +1236,7 @@ static void handle_edit(editor_t *editor, wchar_t wc)
 			delete_to_end_of_line(editor);
 			break;
 		case Ctrl('Y'):
-			editor->buffer_pos = 0;
+			editor->buffer_pos = editor->screen_pos = 0;
 			delete_to_end_of_line(editor);
 			break;
 		default:
