@@ -1706,7 +1706,8 @@ static int read_posts(tui_list_t *tl, post_info_t *pi, bool thread, bool user)
 				break;
 			case ' ': case 'p': case KEY_RIGHT: case Ctrl('S'):
 				direction = 1;
-				if (!uid && !tid) {
+				if ((DEFINE(DEF_THESIS) || ch == 'p' || ch == Ctrl('S'))
+						&& !uid && !tid) {
 					tid = pi->thread_id;
 					exit_pos = tl->cur;
 					entering = true;
