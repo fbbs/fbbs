@@ -985,7 +985,7 @@ static void print(editor_t *editor, vector_size_t *old_line,
 
 static void preview(editor_t *editor)
 {
-	vector_size_t current = editor->current_line;
+	vector_size_t current = editor->window_top;
 	while (current > editor->allow_edit_begin) {
 		text_line_t *tl = editor_line(editor, current - 1);
 		if (!contains_newline(tl))
