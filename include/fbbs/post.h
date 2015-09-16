@@ -70,7 +70,14 @@ typedef enum {
 	POST_LIST_JUNK,
 	POST_LIST_FORUM,
 	POST_LIST_REPLY,
+	POST_LIST_ATTACHMENT,
 } post_list_type_e;
+
+enum {
+	POST_LIST_POSITION_KEY_LEN = 8,
+};
+
+typedef struct post_list_position_t post_list_position_t;
 
 typedef struct {
 	post_id_t id;

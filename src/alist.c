@@ -5,10 +5,17 @@
 #include "fbbs/tui_list.h"
 #include "fbbs/terminal.h"
 
+extern post_list_position_t *post_list_get_position(const char *key);
+extern void post_list_set_position(post_list_position_t *plp, int top, int cur);
+extern void post_list_position_key(int board_id, int type, char *buf);
+extern void post_list_position_load(const post_list_position_t *plp, int *top, int *cur);
+
 typedef struct {
 	const char *bname;
 	record_t *record;
 	struct fileheader *buf;
+	post_list_position_t *plp;
+	int board_id;
 	int size;
 } tui_attachment_list_t;
 
@@ -57,11 +64,32 @@ static int attachment_open_record(const char *bname, record_perm_e rdonly,
 				rdonly, record);
 }
 
+static void save_post_list_position(const tui_list_t *tl)
+{
+	tui_attachment_list_t *tal = tl->data;
+	post_list_set_position(tal->plp, tl->begin, tl->cur);
+}
+
 tui_list_loader_t tui_attachment_loader(tui_list_t *tl)
 {
 	tui_attachment_list_t *tal = tl->data;
-	tal->size = record_read_after(tal->record, tal->buf, tl->lines, tl->begin);
 	tl->all = record_count(tal->record);
+	if (!tal->plp) {
+		char key[POST_LIST_POSITION_KEY_LEN];
+		post_list_position_key(tal->board_id, POST_LIST_ATTACHMENT, key);
+		tal->plp = post_list_get_position(key);
+		post_list_position_load(tal->plp, &tl->begin, &tl->cur);
+		if (tl->begin < 0) {
+			tl->begin = tl->all - tl->lines;
+			tl->cur = tl->all - 1;
+		}
+	}
+	if (tl->begin < 0)
+		tl->begin = 0;
+	if (tl->cur < 0)
+		tl->cur = 0;
+	tal->size = record_read_after(tal->record, tal->buf, tl->lines, tl->begin);
+	save_post_list_position(tl);
 	return 0;
 }
 
@@ -267,6 +295,7 @@ tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 
 	switch (key) {
 		case 'q': case 'e': case KEY_LEFT: case EOF:
+			save_post_list_position(tl);
 			return READ_AGAIN;
 		case 'M':
 			m_new();
@@ -352,6 +381,7 @@ int tui_attachment_list(const board_t *board)
 	struct fileheader *buf = malloc(lines * sizeof(*buf));
 
 	tui_attachment_list_t tal = {
+		.board_id = board->id,
 		.bname = board->name,
 		.record = &record,
 		.buf = buf,

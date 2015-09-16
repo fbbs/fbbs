@@ -14,16 +14,12 @@
 #include "fbbs/terminal.h"
 #include "fbbs/tui_list.h"
 
-enum {
-	POST_LIST_POSITION_KEY_LEN = 8,
-};
-
-typedef struct post_list_position_t {
+struct post_list_position_t {
 	char key[POST_LIST_POSITION_KEY_LEN];
 	int top;
 	int cur;
 	SLIST_FIELD(post_list_position_t) next;
-} post_list_position_t;
+};
 
 SLIST_HEAD(post_list_position_list_t, post_list_position_t);
 
@@ -41,13 +37,13 @@ typedef struct {
 	bool trash_valid;
 } post_list_t;
 
-static void post_list_position_key(const post_list_t *pl, char *buf)
+void post_list_position_key(int board_id, int type, char *buf)
 {
-	memcpy(buf, &(pl->bid), sizeof(pl->bid));
-	buf[4] = pl->type;
+	memcpy(buf, &board_id, sizeof(board_id));
+	buf[4] = type;
 }
 
-static post_list_position_t *get_post_list_position(const post_list_t *pl)
+post_list_position_t *post_list_get_position(const char *key)
 {
 	static struct post_list_position_list_t *list = NULL;
 	if (!list) {
@@ -55,29 +51,39 @@ static post_list_position_t *get_post_list_position(const post_list_t *pl)
 		SLIST_INIT_HEAD(list);
 	}
 
-	char buf[POST_LIST_POSITION_KEY_LEN] = { 0 };
-	post_list_position_key(pl, buf);
-
 	SLIST_FOREACH(post_list_position_t, plp, list, next) {
-		if (memcmp(plp->key, buf, sizeof(plp->key)) == 0)
+		if (memcmp(plp->key, key, sizeof(plp->key)) == 0)
 			return plp;
 	}
 
 	post_list_position_t *plp = malloc(sizeof(*plp));
-	memcpy(plp->key, buf, sizeof(plp->key));
+	memcpy(plp->key, key, sizeof(plp->key));
 	plp->cur = -1;
 	plp->top = -1;
 	SLIST_INSERT_HEAD(list, plp, next);
 	return plp;
 }
 
+void post_list_set_position(post_list_position_t *plp, int top, int cur)
+{
+	if (plp) {
+		plp->top = top;
+		plp->cur = cur;
+	}
+}
+
+void post_list_position_load(const post_list_position_t *plp, int *top, int *cur)
+{
+	if (plp && top && cur) {
+		*top = plp->top;
+		*cur = plp->cur;
+	}
+}
+
 static void save_post_list_position(tui_list_t *tl)
 {
 	post_list_t *pl = tl->data;
-	if (!pl->plp)
-		return;
-	pl->plp->top = tl->begin;
-	pl->plp->cur = tl->cur;
+	post_list_set_position(pl->plp, tl->begin, tl->cur);
 }
 
 static int last_read_filter(void *ptr, void *args, int offset)
@@ -133,7 +139,9 @@ static tui_list_loader_t post_list_loader(tui_list_t *tl)
 {
 	post_list_t *pl = tl->data;
 	if (!pl->plp) {
-		pl->plp = get_post_list_position(pl);
+		char key[POST_LIST_POSITION_KEY_LEN] = { 0 };
+		post_list_position_key(pl->bid, pl->type, key);
+		pl->plp = post_list_get_position(key);
 		if (pl->plp->top < 0) {
 			fb_time_t stamp = brc_last_read();
 			int offset = record_search(pl->record, last_read_filter, &stamp,
