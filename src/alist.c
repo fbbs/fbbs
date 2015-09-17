@@ -17,6 +17,8 @@ typedef struct {
 	post_list_position_t *plp;
 	int board_id;
 	int size;
+	fb_time_t marked_stamp;
+	int marked_offset;
 } tui_attachment_list_t;
 
 typedef struct {
@@ -113,7 +115,12 @@ tui_list_display_t tui_attachment_display(tui_list_t *tl, int offset)
 		char date[14];
 		format_post_date(fp->timeDeleted, date, sizeof(date));
 
-		char type = post_mark_raw(0, fp->accessed[0]);
+		char type;
+		if (tal->marked_stamp == fp->timeDeleted
+				&& tal->marked_offset == tl->begin + offset)
+			type = '@';
+		else
+			type = post_mark_raw(0, fp->accessed[0]);
 
 		char buf[STRLEN];
 		snprintf(buf, sizeof(buf), " %5d %c %-12.12s %s\033[m %s\n",
@@ -286,6 +293,77 @@ static tui_list_query_t tui_attachment_query(tui_list_t *tl)
 	return FULLUPDATE;
 }
 
+typedef struct {
+	const char *board_name;
+	int min;
+	int max;
+	fb_time_t min_stamp;
+	fb_time_t max_stamp;
+} delete_attachments_in_range_t;
+
+static record_callback_e delete_attachments_in_range(void *ptr, void *args,
+		int offset)
+{
+	struct fileheader *fp = ptr;
+	const delete_attachments_in_range_t *dair = args;
+	if (offset > dair->max || fp->timeDeleted > dair->max_stamp)
+		return RECORD_CALLBACK_BREAK;
+	if (offset >= dair->min && fp->timeDeleted >= dair->min_stamp
+			&& !(fp->accessed[0] & POST_FLAG_MARKED)) {
+		char file[HOMELEN];
+		snprintf(file, sizeof(file), "upload/%s/%s", dair->board_name,
+				fp->filename);
+		(void) unlink(file);
+		return RECORD_CALLBACK_MATCH;
+	}
+	return RECORD_CALLBACK_CONTINUE;
+}
+
+static int tui_delete_attachments_in_range(tui_list_t *tl)
+{
+	if (!am_curr_bm())
+		return DONOTHING;
+
+	tui_attachment_list_t *tal = tl->data;
+	struct fileheader *fp = NULL;
+	if (tl->cur - tl->begin < tal->size && tl->cur >= tl->begin) {
+		fp = tal->buf + tl->cur - tl->begin;
+	} else {
+		tal->marked_stamp = 0;
+		tal->marked_offset = -1;
+		return PARTUPDATE;
+	}
+
+	if (tal->marked_stamp && tal->marked_offset >= 0) {
+		screen_move_clear(-1);
+		//% 确定删除
+		if (askyn("\xc8\xb7\xb6\xa8\xc9\xbe\xb3\xfd", NA, NA)) {
+			if (attachment_reopen_record(tal) >= 0) {
+				delete_attachments_in_range_t dair = {
+					.board_name = tal->bname,
+					.min = tl->cur < tal->marked_offset
+						? tl->cur : tal->marked_offset,
+					.max = tl->cur < tal->marked_offset
+						? tal->marked_offset : tl->cur,
+					.min_stamp = fp->timeDeleted < tal->marked_stamp
+						? fp->timeDeleted : tal->marked_stamp,
+					.max_stamp = fp->timeDeleted < tal->marked_stamp
+						? tal->marked_stamp : fp->timeDeleted,
+				};
+				record_delete(tal->record, fp, dair.min,
+						delete_attachments_in_range, &dair);
+				tl->valid = false;
+			}
+		}
+		tal->marked_stamp = 0;
+		tal->marked_offset = -1;
+	} else {
+		tal->marked_stamp = fp->timeDeleted;
+		tal->marked_offset = tl->cur;
+	}
+	return PARTUPDATE;
+}
+
 tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 {
 	struct fileheader *fp = NULL;
@@ -366,6 +444,8 @@ tui_list_handler_t tui_attachment_handler(tui_list_t *tl, int key)
 			return PARTUPDATE;
 		case 'O':
 			return tui_follow_uname(fp->owner);
+		case 'D':
+			return tui_delete_attachments_in_range(tl);
 		default:
 			return READ_AGAIN;
 	}
