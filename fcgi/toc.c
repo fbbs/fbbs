@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "libweb.h"
 #include "fbbs/board.h"
 #include "fbbs/brc.h"
@@ -275,9 +276,9 @@ static record_callback_e web_post_filter(void *r, void *args, int offset)
 
 	if (post_stamp(pi.id) < wpf->begin)
 		return RECORD_CALLBACK_BREAK;
-	if ((*wpf->utf8_t1 && !strcaseeq(wpf->utf8_t1, pi.utf8_title))
-			|| (*wpf->utf8_t2 && !strcaseeq(wpf->utf8_t2, pi.utf8_title))
-			|| (*wpf->utf8_t3 && strcaseeq(wpf->utf8_t3, pi.utf8_title)))
+	if ((*wpf->utf8_t1 && !strcasestr(pi.utf8_title, wpf->utf8_t1))
+			|| (*wpf->utf8_t2 && !strcasestr(pi.utf8_title, wpf->utf8_t2))
+			|| (*wpf->utf8_t3 && strcasestr(pi.utf8_title, wpf->utf8_t3)))
 		return RECORD_CALLBACK_CONTINUE;
 
 	++wpf->count;
