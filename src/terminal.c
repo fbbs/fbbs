@@ -144,7 +144,10 @@ static bool _schedule_exit = false;
 
 void terminal_schedule_exit(int not_used)
 {
-	_schedule_exit = true;
+	if (_schedule_exit)
+		abort_bbs(0);
+	else
+		_schedule_exit = true;
 }
 
 /**
