@@ -134,7 +134,7 @@ static int tui_favorite_add(tui_list_t *tl)
 			return MINIUPDATE;
 		}
 
-		GBK_UTF8_BUFFER(name, BOARD_NAME_LEN / 2);
+		GBK_UTF8_BUFFER(name, (BOARD_NAME_LEN + 1) / 2);
 		board_complete(1, "输入讨论区名 (按空白键自动搜寻): ",
 				gbk_name, sizeof(gbk_name), AC_LIST_BOARDS_AND_DIR);
 
