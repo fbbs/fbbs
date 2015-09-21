@@ -345,7 +345,7 @@ int tui_check_notice(const char *board_name)
 void tui_header_line(const char *menu, bool check_mail)
 {
 	extern int mailXX; //main.c
-	char title[30];
+	char title[36];
 
 	if (check_mail && chkmail())
 		strlcpy(title, strstr(menu, "讨论区列表") ? "[您有信件，按 M 看新信]"
