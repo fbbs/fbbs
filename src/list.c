@@ -123,22 +123,22 @@ int tui_list(tui_list_t *p)
 			p->cur = 0;
 		adjust_window(p);
 
-		if (p->update != DONOTHING) {
-			if (p->update == FULLUPDATE) {
-				screen_clear();
-				p->title(p);
-				p->update = PARTUPDATE;
-			}
-			if (p->update == PARTUPDATE) {
-				screen_move(TUI_LIST_START, 0);
-				screen_clrtobot();
-				tui_list_display_loop(p);
-			}
-			tui_update_status_line();
-			p->update = DONOTHING;
-		}
-
 		if (!p->in_query) {
+			if (p->update != DONOTHING) {
+				if (p->update == FULLUPDATE) {
+					screen_clear();
+					p->title(p);
+					p->update = PARTUPDATE;
+				}
+				if (p->update == PARTUPDATE) {
+					screen_move(TUI_LIST_START, 0);
+					screen_clrtobot();
+					tui_list_display_loop(p);
+				}
+				tui_update_status_line();
+				p->update = DONOTHING;
+			}
+
 			screen_move(TUI_LIST_START + p->cur - p->begin, 0);
 			outs(">");
 		}
