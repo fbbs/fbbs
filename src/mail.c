@@ -780,8 +780,8 @@ int mailtitle(void)
 	int total, used;
 	total=getmailboxsize(currentuser.userlevel) ;
 	used=getmailsize(currentuser.userid);
-	//% showtitle("信件选单    ", BoardName);
-	showtitle("\xd0\xc5\xbc\xfe\xd1\xa1\xb5\xa5    ", BoardName);
+
+	tui_header_line("[信件]", false);
 	//% prints(" 离开[\033[1;32m←\033[m,\033[1;32me\033[m] 选择[\033[1;32m↑\033[m, \033[1;32m↓\033[m] 阅读信件[\033[1;32m→\033[m,\033[1;32mRtn\033[m] 回 信[\033[1;32mR\033[m] 砍信／清除旧信[\033[1;32md\033[m,\033[1;32mD\033[m] 求助[\033[1;32mh\033[m]\033[m\n");
 	prints(" \xc0\xeb\xbf\xaa[\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m, \033[1;32m\xa1\xfd\033[m] \xd4\xc4\xb6\xc1\xd0\xc5\xbc\xfe[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m] \xbb\xd8 \xd0\xc5[\033[1;32mR\033[m] \xbf\xb3\xd0\xc5\xa3\xaf\xc7\xe5\xb3\xfd\xbe\xc9\xd0\xc5[\033[1;32md\033[m,\033[1;32mD\033[m] \xc7\xf3\xd6\xfa[\033[1;32mh\033[m]\033[m\n");
 	prints(

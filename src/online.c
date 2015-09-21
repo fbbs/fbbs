@@ -148,16 +148,11 @@ static tui_list_loader_t online_users_load(tui_list_t *p)
 static tui_list_title_t online_users_title(tui_list_t *p)
 {
 	online_users_t *up = p->data;
-	//% docmdtitle(up->follow ? "[关注列表]" : "[使用者列表]",
-	docmdtitle(up->follow ? "[\xb9\xd8\xd7\xa2\xc1\xd0\xb1\xed]" : "[\xca\xb9\xd3\xc3\xd5\xdf\xc1\xd0\xb1\xed]",
-			//% " 寄信[\033[1;32mm\033[m] 送讯息[\033[1;32ms\033[m]"
-			" \xbc\xc4\xd0\xc5[\033[1;32mm\033[m] \xcb\xcd\xd1\xb6\xcf\xa2[\033[1;32ms\033[m]"
-			//% " 加,减关注[\033[1;32mo\033[m,\033[1;32md\033[m]"
-			" \xbc\xd3,\xbc\xf5\xb9\xd8\xd7\xa2[\033[1;32mo\033[m,\033[1;32md\033[m]"
-			//% " 看说明档[\033[1;32m→\033[m,\033[1;32mRtn\033[m]"
-			" \xbf\xb4\xcb\xb5\xc3\xf7\xb5\xb5[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m]"
-			//% " 切换模式 [\033[1;32mf\033[m] 求救[\033[1;32mh\033[m]");
-			" \xc7\xd0\xbb\xbb\xc4\xa3\xca\xbd [\033[1;32mf\033[m] \xc7\xf3\xbe\xc8[\033[1;32mh\033[m]");
+	tui_header_line(up->follow ? "[关注列表]" : "[使用者列表]", true);
+	screen_printf(" 寄信[\033[1;32mm\033[m] 送讯息[\033[1;32ms\033[m]"
+			" 加,减关注[\033[1;32mo\033[m,\033[1;32md\033[m]"
+			" 看说明档[\033[1;32m→\033[m,\033[1;32mRtn\033[m]"
+			" 切换模式 [\033[1;32mf\033[m] 求救[\033[1;32mh\033[m]");
 	
 	//% const char *field = up->show_note ? "备注" : "昵称";
 	const char *field = up->show_note ? "\xb1\xb8\xd7\xa2" : "\xea\xc7\xb3\xc6";

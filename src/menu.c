@@ -287,11 +287,8 @@ static int print_item(const menu_item_t *item, void *a, int offset)
 
 	const char *descr = menu_get_string(item->descr);
 	if (streq(cmd, "title")) {
-		if (descr) {
-			GBK_BUFFER(descr, 15);
-			convert_u2g(descr, gbk_descr);
-			firsttitle(gbk_descr);
-		}
+		if (descr)
+			tui_header_line(descr, true);
 	} else if (streq(cmd, "screen")) {
 		if (descr)
 			print_background(descr, item->line, item->col);

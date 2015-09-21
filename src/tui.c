@@ -159,26 +159,6 @@ int tui_input_no_clear(int line, const char *prompt, char *buf, int len)
 	return _tui_input(line, 0, prompt, buf, len, true, false, true);
 }
 
-static char *boardmargin(void)
-{
-	static char buf[STRLEN];
-
-	if (currbp->id)
-		//% snprintf(buf, sizeof(buf), "讨论区 [%s]", currboard);
-		snprintf(buf, sizeof(buf), "\xcc\xd6\xc2\xdb\xc7\xf8 [%s]", currboard);
-	else {
-		brc_init(currentuser.userid, DEFAULTBOARD);
-
-		board_t board;
-		get_board(DEFAULTBOARD, &board);
-		change_board(&board);
-
-		//% sprintf(buf, "讨论区 [%s]", currboard);
-		sprintf(buf, "\xcc\xd6\xc2\xdb\xc7\xf8 [%s]", currboard);
-	}
-	return buf;
-}
-
 static bool is_birth(const struct userec *user)
 {
 	struct tm *tm;
@@ -362,61 +342,45 @@ int tui_check_notice(const char *board_name)
 	return MINIUPDATE;
 }
 
-void showtitle(const char *title, const char *mid)
-{
-	extern char BoardName[]; //main.c
-	char buf[STRLEN], *note;
-	int spc1;
-	int spc2;
-
-	note = boardmargin();
-	spc1 = 39 + num_ans_chr(title) - strlen(title) - strlen(mid) / 2;
-	spc2 = 79 - (strlen(title) - num_ans_chr(title) + spc1 + strlen(note)
-			+ strlen(mid));
-	spc1 += spc2;
-	spc1 = (spc1 > 2) ? spc1 : 2; //防止过小
-	spc2 = spc1 / 2;
-	spc1 -= spc2;
-	screen_move_clear(0);
-	sprintf(buf, "%*s", spc1, "");
-	if (!strcmp(mid, BoardName))
-		prints("[1;44;33m%s%s[37m%s[1;44m", title, buf, mid);
-	else if (mid[0] == '[')
-		prints("[1;44;33m%s%s[5;36m%s[m[1;44m", title, buf, mid);
-	else
-		prints("[1;44;33m%s%s[36m%s", title, buf, mid);
-	sprintf(buf, "%*s", spc2, "");
-	prints("%s[33m%s[m\n", buf, note);
-	tui_update_status_line();
-	screen_move(1, 0);
-}
-
-void firsttitle(const char *title)
+void tui_header_line(const char *menu, bool check_mail)
 {
 	extern int mailXX; //main.c
-	extern char BoardName[]; //main.c
-	char middoc[30];
+	char title[30];
 
-	if (chkmail())
-		//% strcpy(middoc, strstr(title, "讨论区列表") ? "[您有信件，按 M 看新信]"
-		strcpy(middoc, strstr(title, "\xcc\xd6\xc2\xdb\xc7\xf8\xc1\xd0\xb1\xed") ? "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe\xa3\xac\xb0\xb4 M \xbf\xb4\xd0\xc2\xd0\xc5]"
-				//% : "[您有信件]");
-				: "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe]");
-	else if (mailXX == 1)
-		//% strcpy(middoc, "[信件过量，请整理信件!]");
-		strcpy(middoc, "[\xd0\xc5\xbc\xfe\xb9\xfd\xc1\xbf\xa3\xac\xc7\xeb\xd5\xfb\xc0\xed\xd0\xc5\xbc\xfe!]");
+	if (check_mail && chkmail())
+		strlcpy(title, strstr(menu, "讨论区列表") ? "[您有信件，按 M 看新信]"
+				: "[您有信件]", sizeof(title));
+	else if (check_mail && mailXX == 1)
+		strlcpy(title, "[信件过量，请整理信件!]", sizeof(title));
 	else
-		strlcpy(middoc, BoardName, sizeof(middoc));
+		strlcpy(title, BBSNAME_UTF8, sizeof(title));
 
-	showtitle(title, middoc);
-}
+	bool show_board = true;
+	int w1 = screen_display_width(menu, true),
+		w2 = screen_display_width(title, true),
+		w3 = screen_display_width(currboard, true) + 2;
+	int spaces = 80 - w1 - w2 - w3;
+	if (spaces < 0) {
+		spaces = 80 - w1 - w2;
+		show_board = false;
+	}
 
-// Show 'title' on line 0, 'prompt' on line1.
-void docmdtitle(const char *title, const char *prompt)
-{
-	firsttitle(title);
-	screen_move_clear(1);
-	prints("%s", prompt);
+	screen_move_clear(0);
+	screen_printf("\033[1;33;44m%s", menu);
+	if (spaces > 0)
+		tui_repeat_char(' ', spaces / 2);
+	if (streq(title, BBSNAME_UTF8))
+		screen_printf("\033[37m%s", title);
+	else if (title[0] == '[')
+		screen_printf("\033[5;36m%s\033[0;1;44m", title);
+	else
+		screen_printf("\033[36m%s", title);
+	if (spaces > 0)
+		tui_repeat_char(' ', spaces - spaces / 2);
+	if (show_board)
+		screen_printf("\033[33m[%s]\033[m", currboard);
+	tui_update_status_line();
+	screen_move(1, 0);
 }
 
 /* Added by Ashinmarch on 2007.12.01

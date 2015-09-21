@@ -17,10 +17,7 @@ static tui_list_loader_t following_list_loader(tui_list_t *p)
 
 static tui_list_title_t following_list_title(tui_list_t *p)
 {
-	//% const char *middle = chkmail() ? "[您有信件]" : BBSNAME;
-	const char *middle = chkmail() ? "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe]" : BBSNAME;
-	//% showtitle("[编辑关注名单]", middle);
-	showtitle("[\xb1\xe0\xbc\xad\xb9\xd8\xd7\xa2\xc3\xfb\xb5\xa5]", middle);
+	tui_header_line("[编辑关注名单]", true);
 	//% prints(" [\033[1;32m←\033[m,\033[1;32me\033[m] 离开"
 	prints(" [\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xc0\xeb\xbf\xaa"
 			//% " [\033[1;32mh\033[m] 求助"
@@ -168,10 +165,7 @@ static tui_list_loader_t black_list_loader(tui_list_t *p)
 
 static tui_list_title_t black_list_title(tui_list_t *p)
 {
-	//% const char *middle = chkmail() ? "[您有信件]" : BBSNAME;
-	const char *middle = chkmail() ? "[\xc4\xfa\xd3\xd0\xd0\xc5\xbc\xfe]" : BBSNAME;
-	//% showtitle("[编辑黑名单]", middle);
-	showtitle("[\xb1\xe0\xbc\xad\xba\xda\xc3\xfb\xb5\xa5]", middle);
+	tui_header_line("[编辑黑名单]", true);
 	//% prints(" [\033[1;32m←\033[m,\033[1;32me\033[m] 离开"
 	prints(" [\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xc0\xeb\xbf\xaa"
 			//% " [\033[1;32mh\033[m] 求助"

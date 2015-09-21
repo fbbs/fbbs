@@ -803,37 +803,29 @@ static int board_list_init(board_list_t *bl)
 
 static tui_list_title_t board_list_title(tui_list_t *tl)
 {
-	//% "分类";
-	const char *sort = "\xb7\xd6\xc0\xe0";
+	const char *sort = "分类";
 	char flag = currentuser.flags[0];
 	if (flag & BRDSORT_FLAG) {
-		//% sort = "字母";
-		sort = "\xd7\xd6\xc4\xb8";
+		sort = "字母";
 	} else if (flag & BRDSORT_ONLINE) {
-		//% sort = "在线";
-		sort = "\xd4\xda\xcf\xdf";
+		sort = "在线";
 	} else if (flag & BRDSORT_UDEF) {
-		//% sort = "自定";
-		sort = "\xd7\xd4\xb6\xa8";
+		sort = "自定";
 	} else if (flag & BRDSORT_UPDATE) {
-		//% sort = "更新";
-		sort = "\xb8\xfc\xd0\xc2";
+		sort = "更新";
 	}
 
 	char buf[32];
-	//% snprintf(buf, sizeof(buf), "[讨论区列表] [%s]", sort);
-	snprintf(buf, sizeof(buf), "[\xcc\xd6\xc2\xdb\xc7\xf8\xc1\xd0\xb1\xed] [%s]", sort);
-	//% docmdtitle(buf, " \033[m主选单[\033[1;32m←\033[m,\033[1;32me\033[m] 阅读"
-	docmdtitle(buf, " \033[m\xd6\xf7\xd1\xa1\xb5\xa5[\033[1;32m\xa1\xfb\033[m,\033[1;32me\033[m] \xd4\xc4\xb6\xc1"
-			//% "[\033[1;32m→\033[m,\033[1;32mRtn\033[m] 选择[\033[1;32m↑\033[m,"
-			"[\033[1;32m\xa1\xfa\033[m,\033[1;32mRtn\033[m] \xd1\xa1\xd4\xf1[\033[1;32m\xa1\xfc\033[m,"
-			//% "\033[1;32m↓\033[m] 列出[\033[1;32my\033[m] 排序[\033[1;32ms"
-			"\033[1;32m\xa1\xfd\033[m] \xc1\xd0\xb3\xf6[\033[1;32my\033[m] \xc5\xc5\xd0\xf2[\033[1;32ms"
-			//% "\033[m] 搜寻[\033[1;32m/\033[m] 切换[\033[1;32mc\033[m] 求助"
-			"\033[m] \xcb\xd1\xd1\xb0[\033[1;32m/\033[m] \xc7\xd0\xbb\xbb[\033[1;32mc\033[m] \xc7\xf3\xd6\xfa"
-			"[\033[1;32mh\033[m]\n");
-	screen_printf("\033[1;44;37m  编号 未 讨论区名称        V  类别  %-20s S 版  主        "
-			"在线 \033[m\n", "中  文  叙  述");
+	snprintf(buf, sizeof(buf), "[讨论区列表] [%s]", sort);
+	tui_header_line(buf, true);
+
+	screen_printf(" \033[m主选单[\033[1;32m←\033[m,\033[1;32me\033[m] 阅读"
+			"[\033[1;32m→\033[m,\033[1;32mRtn\033[m] 选择[\033[1;32m↑\033[m,"
+			"\033[1;32m↓\033[m] 列出[\033[1;32my\033[m] 排序[\033[1;32ms"
+			"\033[m] 搜寻[\033[1;32m/\033[m] 切换[\033[1;32mc\033[m] 求助"
+			"[\033[1;32mh\033[m]\n"
+			"\033[1;44;37m  编号 未 讨论区名称        V  类别  %-20s S 版  主"
+			"        在线  \033[m\n", "中  文  叙  述");
 }
 
 static tui_list_handler_t board_list_handler(tui_list_t *tl, int key)

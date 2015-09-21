@@ -40,9 +40,7 @@ extern void tui_repeat_char(int c, int repeat);
 extern void tui_update_status_line(void);
 extern void tui_suppress_notice(bool suppress_notice);
 extern int tui_check_notice(const char *board_name);
-extern void showtitle(const char *title, const char *mid);
-extern void firsttitle(const char *title);
-extern void docmdtitle(const char *title, const char *prompt);
+extern void tui_header_line(const char *menu, bool check_mail);
 extern int show_data(const char *buf, int maxcol, int line, int col);
 extern int multi_getdata(int line, int col, int maxcol, const char *prompt,
 		char *buf, int len, int maxline, int clearlabel, int textmode);

@@ -1213,13 +1213,14 @@ int vote_results(const char *bname)
 }
 
 //显示投票箱选项
-void vote_title() {
-
-	docmdtitle(
-			//% "[投票箱列表]",
-			"[\xcd\xb6\xc6\xb1\xcf\xe4\xc1\xd0\xb1\xed]",
-			//% "[[1;32m←[m,[1;32me[m] 离开 [[1;32mh[m] 求助 [[1;32m→[m,[1;32mr <cr>[m] 进行投票 [[1;32m↑[m,[1;32m↓[m] 上,下选择 [1m高亮度[m表示尚未投票");
-			"[[1;32m\xa1\xfb[m,[1;32me[m] \xc0\xeb\xbf\xaa [[1;32mh[m] \xc7\xf3\xd6\xfa [[1;32m\xa1\xfa[m,[1;32mr <cr>[m] \xbd\xf8\xd0\xd0\xcd\xb6\xc6\xb1 [[1;32m\xa1\xfc[m,[1;32m\xa1\xfd[m] \xc9\xcf,\xcf\xc2\xd1\xa1\xd4\xf1 [1m\xb8\xdf\xc1\xc1\xb6\xc8[m\xb1\xed\xca\xbe\xc9\xd0\xce\xb4\xcd\xb6\xc6\xb1");
+static void vote_title(void)
+{
+	tui_header_line("[投票箱列表]", true);
+	screen_printf("[\033[1;32m←\033[m,\033[1;32me\033[m] 离开"
+			" [\033[1;32mh\033[m] 求助"
+			" [\033[1;32m→\033[m,\033[1;32mr <cr>\033[m] 进行投票"
+			" [\033[1;32m↑\033[m,\033[1;32m↓\033[m] 上,下选择"
+			" \033[1m高亮度\033[m表示尚未投票");
 	tui_update_status_line();
 }
 

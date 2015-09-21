@@ -3,6 +3,7 @@
 #include <signal.h>
 #include "bbs.h"
 
+#include "fbbs/brc.h"
 #include "fbbs/dbi.h"
 #include "fbbs/fileio.h"
 #include "fbbs/helper.h"
@@ -761,6 +762,16 @@ void tlog_recover(void)
 
 extern void active_board_init(bool);
 
+static void init_current_board(void)
+{
+	if (!currbp->id) {
+		brc_init(currentuser.userid, DEFAULTBOARD);
+		board_t board;
+		get_board(DEFAULTBOARD, &board);
+		change_board(&board);
+	}
+}
+
 void start_client(void)
 {
 	extern char currmaildir[];
@@ -817,6 +828,8 @@ void start_client(void)
 	if (DEFINE(DEF_LOGFRIEND)
 			&& session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)) > 0)
 		show_online_followings();
+
+	init_current_board();
 
 	menu_load("menu.img");
 	while (1) {
