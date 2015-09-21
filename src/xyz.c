@@ -399,7 +399,7 @@ int fill_date(void)
 	if (fp == NULL)
 		return -1;
 
-	char date[5], index[5], buf[80], msg[30];
+	char date[5], index[5], buf[80], msg[29];
 	strftime(date, sizeof(date), "%m%d", mytm);
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if (*buf == '#' || *buf == '\0')

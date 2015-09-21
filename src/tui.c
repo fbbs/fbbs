@@ -244,24 +244,19 @@ static void notice_string(char *buf, size_t size)
 
 	bool empty = !(replies || mentions);
 	if (!empty) {
-		size_t orig_size = size;
 		char **dst = &buf;
 		if (replies > 0) {
 			char str[24];
-			//% %d篇回复
-			snprintf(str, sizeof(str), "%d\xc6\xaa\xbb\xd8\xb8\xb4", replies);
+			snprintf(str, sizeof(str), "%d篇回复", replies);
 			strappend(dst, &size, str);
 		}
 		if (mentions > 0) {
 			char str[24];
-			//% %d篇提及
-			snprintf(str, sizeof(str), "%d\xc6\xaa\xcc\xe1\xbc\xb0",
-					mentions);
+			snprintf(str, sizeof(str), "%d篇提及", mentions);
 			strappend(dst, &size, str);
 		}
-		//% 按^T查看
-		if (!_suppress_notice && orig_size - size <= 22)
-			strappend(dst, &size, " \xb0\xb4^T\xb2\xe9\xbf\xb4");
+		if (!_suppress_notice && screen_display_width(buf, true) <= 24)
+			strappend(dst, &size, " 按^T查看");
 	}
 }
 
@@ -286,20 +281,18 @@ void tui_update_status_line(void)
 	int cur_sec = now % 10;
 
 	if (cur_sec < 5) {
-		strlcpy(date, format_time(now, TIME_FORMAT_ZH), sizeof(date));
+		strlcpy(date, format_time(now, TIME_FORMAT_UTF8_ZH), sizeof(date));
 	} else {
 		if (resolve_boards() >= 0)
-			strlcpy(date, brdshm->date, 30);
+			convert_g2u(brdshm->date, date);
 		else
 			date[0] = '\0';
 	}
 
 	if (cur_sec >= 5 && is_birth(&currentuser)) {
-		//% "啦啦～～，生日快乐!   记得要请客哟 :P"
-		prints("\033[0;1;44;33m[\033[36m                     "
-				"\xc0\xb2\xc0\xb2\xa1\xab\xa1\xab\xa3\xac\xc9\xfa\xc8\xd5"
-				"\xbf\xec\xc0\xd6!   \xbc\xc7\xb5\xc3\xd2\xaa\xc7\xeb"
-				"\xbf\xcd\xd3\xb4 :P                   \033[33m]\033[m");
+		screen_printf("\033[0;1;33;44m[\033[36m                      "
+				"啦啦～～生日快乐！记得要请客哟 :P"
+				"                       \033[33m]\033[m");
 	} else {
 		int stay = (now - login_start_time) / 60;
 		char stay_str[20];
@@ -307,28 +300,21 @@ void tui_update_status_line(void)
 
 		char notice[128];
 		notice_string(notice, sizeof(notice));
-		int notice_len = strlen(notice);
+		int notice_width = screen_display_width(notice, true);
 
-		prints(	"\033[1;44;33m[\033[36m%29s\033[33m]"
-			//% "人 友"
-			"[\033[36m%5d\033[33m\xc8\xcb\033[36m%3d\033[33m\xd3\xd1]",
+		screen_printf("\033[1;44;33m[\033[36m%29s\033[33m]"
+			"[\033[36m%5d\033[33m人\033[36m%3d\033[33m友]",
 			date, session_count_online(),
 			session_count_online_followed(!HAS_PERM(PERM_SEECLOAK)));
-		if (notice_len) {
-			int space = 25 - notice_len;
-			if (space > 0) {
+		// 剩下35列
+		if (notice_width) {
+			int space = 33 - notice_width;
+			if (space > 0)
 				tui_repeat_char(' ', space);
-				prints("[\033[%d;36m%s\033[m\033[1;33;44m]%s\033[m",
-						_suppress_notice ? 1 : 5, notice, stay_str);
-			} else {
-				space += 6;
-				if (space > 0)
-					tui_repeat_char(' ', space);
-				prints("[\033[%d;36m%s\033[m\033[1;33;44m]\033[m",
-						_suppress_notice ? 1 : 5, notice);
-			}
+			screen_printf("[\033[%d;36m%s\033[m\033[1;33;44m]\033[m",
+					_suppress_notice ? 1 : 5, notice);
 		} else {
-			int space = 25 - strlen(currentuser.userid);
+			int space = 27 - strlen(currentuser.userid);
 			tui_repeat_char(' ', space);
 			prints("[\033[36m%s\033[33m]%s\033[m", currentuser.userid,
 					stay_str);
