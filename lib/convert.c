@@ -94,6 +94,11 @@ int convert(convert_type_e type, const char *from, size_t len,
 		size_t s = fb_iconv(cd, &f, &l, &b, &oleft);
 		buffer[size - oleft] = '\0';
 
+		if (handler && oleft < size) {
+			if (handler(buffer, size - oleft, arg) < 0)
+				return ret;
+		}
+
 		if (s == (size_t) -1) {
 			switch (errno) {
 				case E2BIG:
@@ -115,11 +120,6 @@ int convert(convert_type_e type, const char *from, size_t len,
 				default:
 					break;
 			}
-		}
-
-		if (handler && oleft < size) {
-			if (handler(buffer, size - oleft, arg) < 0)
-				return ret;
 		}
 	}
 	return ret;
