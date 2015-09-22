@@ -637,7 +637,7 @@ int tui_cross_post_legacy(const char *file, const char *title)
 	if (ans[0] == 's' || ans[0] == 'S' || ans[0] == 'L' || ans[0] == 'l') {
 		board_t brd;
 		if (!get_board(bname, &brd) ||
-				!post_cross_legacy(&brd, file, title, POST_FILE_NORMAL)) {
+				post_cross_legacy(&brd, file, title, POST_FILE_NORMAL) <= 0) {
 			pressreturn();
 			screen_move(2, 0);
 			return FULLUPDATE;
