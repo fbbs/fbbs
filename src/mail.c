@@ -1773,12 +1773,9 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 	char receiver[STRLEN];
 	screen_clear();
 	if (HAS_PERM(PERM_SETADDR)) {
-		//% prints("本站目前只提供站内转信，请输入要转寄的帐号名。\n"
-		prints("\xb1\xbe\xd5\xbe\xc4\xbf\xc7\xb0\xd6\xbb\xcc\xe1\xb9\xa9\xd5\xbe\xc4\xda\xd7\xaa\xd0\xc5\xa3\xac\xc7\xeb\xca\xe4\xc8\xeb\xd2\xaa\xd7\xaa\xbc\xc4\xb5\xc4\xd5\xca\xba\xc5\xc3\xfb\xa1\xa3\n"
-				//% "请直接按 Enter 接受括号内提示的地址, 或者输入其他地址\n"
-				"\xc7\xeb\xd6\xb1\xbd\xd3\xb0\xb4 Enter \xbd\xd3\xca\xdc\xc0\xa8\xba\xc5\xc4\xda\xcc\xe1\xca\xbe\xb5\xc4\xb5\xd8\xd6\xb7, \xbb\xf2\xd5\xdf\xca\xe4\xc8\xeb\xc6\xe4\xcb\xfb\xb5\xd8\xd6\xb7\n"
-				//% "把信件转寄给 [%s]\n", address);
-				"\xb0\xd1\xd0\xc5\xbc\xfe\xd7\xaa\xbc\xc4\xb8\xf8 [%s]\n", address);
+		screen_printf("本站目前只提供站内转信，请输入要转寄的帐号名。\n"
+				"请直接按 Enter 接受括号内提示的地址, 或者输入其他地址\n"
+				"把信件转寄给 [%s]\n", address);
 		user_complete(3, "==>", receiver, sizeof(receiver));
 	} else {
 		strlcpy(receiver, currentuser.userid, sizeof(receiver));
@@ -1792,6 +1789,7 @@ int tui_forward(const char *file, const char *gbk_title, bool uuencode)
 	char buf[STRLEN];
 	//% snprintf(buf, sizeof(buf), "确定将文章寄给 %s 吗", address);
 	snprintf(buf, sizeof(buf), "\xc8\xb7\xb6\xa8\xbd\xab\xce\xc4\xd5\xc2\xbc\xc4\xb8\xf8 %s \xc2\xf0", address);
+	screen_move(4, 0);
 	if (!askyn(buf, YEA, NA))
 		return 1;
 
