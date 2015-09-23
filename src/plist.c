@@ -1200,7 +1200,7 @@ static int tui_new_post(int bid, post_info_t *pi)
 		return FULLUPDATE;
 	}
 
-	if ((pi->flag & POST_FLAG_LOCKED) && !is_bm(&currentuser, &board)) {
+	if (pi && (pi->flag & POST_FLAG_LOCKED) && !is_bm(&currentuser, &board)) {
 		screen_move_clear(-1);
 		screen_printf("本文不可回复");
 		terminal_getchar();
