@@ -183,8 +183,9 @@ bool fav_board_add(user_id_t uid, const char *bname, int bid, int folder, const 
 	if (folder <= FAV_BOARD_ROOT_FOLDER)
 		folder = FAV_BOARD_ROOT_FOLDER;
 
-	db_res_t *res = db_cmd("INSERT INTO fav_boards (user_id, board, folder)"
-			" VALUES (%"DBIdUID", %d, %d)", uid, bid, folder);
+	db_res_t *res = db_cmd("INSERT INTO fav_boards"
+			" (user_id, board, folder, name) VALUES (%"DBIdUID", %d, %d, %s)",
+			uid, bid, folder, b.name);
 	db_clear(res);
 	return res;
 }
