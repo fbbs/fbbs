@@ -62,6 +62,18 @@ int web_brdadd(void)
 	return BBS_EBRDQE;
 }
 
+int web_brddel(void)
+{
+	if (!session_get_id())
+		return BBS_ELGNREQ;
+
+	int board_id = strtol(web_get_param("bid"), NULL, 10);
+	if (board_id > 0)
+		fav_board_rm(session_get_user_id(), board_id);
+	printf("Location: fav\n\n");
+	return 0;
+}
+
 int web_sel(void)
 {
 	xml_header("bbssel");

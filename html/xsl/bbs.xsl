@@ -895,12 +895,11 @@ table.post{width:100%}
 
 <xsl:template match='bbsfav'>
 	<h2>我的收藏夹</h2>
-	<p><a href='mybrd'>自定义</a></p>
 	<table class='content'>
-		<tr><th class='no'>序号</th><th class='title'>讨论区名称</th><th class='desc'>中文描述</th></tr>
+		<tr><th class='no'></th><th class='title'>讨论区名称</th><th class='desc'>中文描述</th></tr>
 		<xsl:for-each select='brd'><tr>
 			<xsl:attribute name='class'><xsl:choose><xsl:when test='position() mod 2 = 1'>light</xsl:when><xsl:otherwise>dark</xsl:otherwise></xsl:choose></xsl:attribute>
-			<td class='no'><xsl:value-of select='position()'/></td>
+			<td class='no'><a href='brddel?bid={@bid}'>取消收藏</a></td>
 			<td class='title'><a class='title' href='doc?bid={@bid}'><xsl:value-of select='@brd'/></a></td>
 			<td class='desc'><a class='desc' href='doc?bid={@bid}'><xsl:value-of select='.'/></a></td>
 		</tr></xsl:for-each>

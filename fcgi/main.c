@@ -35,6 +35,7 @@ extern int bbstdoc_main(void);
 extern int bbsgcon_main(void);
 extern int bbstcon_main(void);
 extern int web_brdadd(void);
+extern int web_brddel(void);
 extern int bbsccc_main(void);
 extern int web_fav(void);
 extern int bbspstmail_main(void);
@@ -92,6 +93,7 @@ const static web_handler_t handlers[] = {
 	{ "board-fav", api_board_fav, ST_READNEW },
 //	{ "board-toc", api_board_toc, ST_READING },
 	{ "brdadd", web_brdadd, ST_READING },
+	{ "brddel", web_brddel, ST_READING },
 	{ "buyprop", web_buy_prop, ST_PROP },
 	{ "ccc", bbsccc_main, ST_POSTING },
 	{ "clear", bbsclear_main, ST_READING },
