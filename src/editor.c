@@ -757,15 +757,20 @@ static void move_line_end(editor_t *editor)
 
 static void move_file_begin(editor_t *editor)
 {
-	editor->current_line = editor->allow_edit_begin;
+	editor->window_top = editor->current_line = editor->allow_edit_begin;
 	move_line_begin(editor);
+	editor->redraw = true;
 }
 
 static void move_file_end(editor_t *editor)
 {
 	if (editor->allow_edit_begin < editor->allow_edit_end) {
 		editor->current_line = editor->allow_edit_end - 1;
+		editor->window_top = editor->current_line - screen_lines() + 2;
+		if (editor->window_top < editor->allow_edit_begin)
+			editor->window_top = editor->allow_edit_begin;
 		move_line_begin(editor);
+		editor->redraw = true;
 	}
 }
 
@@ -892,7 +897,7 @@ static void jump_to_line(editor_t *editor)
 	} else {
 		editor->current_line = real_line;
 		if (real_line < editor->window_top
-				&& real_line >= editor->window_top + screen_lines() - 1) {
+				|| real_line >= editor->window_top + screen_lines() - 1) {
 			editor->window_top = real_line;
 			editor->redraw = true;
 		}
