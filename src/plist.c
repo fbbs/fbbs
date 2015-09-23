@@ -2579,8 +2579,8 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 					char buf[24];
 					snprintf(buf, sizeof(buf), "\033[1;44;33m[%6d]\033[m",
 							tl->jump);
-					screen_replace(-1, 45, "                         ");
-					screen_replace(-1, 70, buf);
+					screen_replace(-1, 45, "                           ");
+					screen_replace(-1, 72, buf);
 				}
 			}
 			return DONOTHING;
