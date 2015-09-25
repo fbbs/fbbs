@@ -1376,7 +1376,7 @@ static editor_e confirm_save_file(const char *file,
 		*ans = 'S';
 	} else {
 		screen_move_clear(-1);
-		tui_input_no_clear(-1, "S) 发表 A) 取消 T) 更改标题 E) 再编辑 [S]: ",
+		tui_input_no_clear(-1, "S) 发表 A) 取消 E) 再编辑 [S]: ",
 				ans, sizeof(ans));
 		*ans = toupper(*ans);
 		if (*ans == '\0')
@@ -1390,8 +1390,6 @@ static editor_e confirm_save_file(const char *file,
 		if (stat(file, &st) || st.st_size == 0)
 			unlink(file);
 		return EDITOR_ABORT;
-	} else if (*ans == 'T') {
-		// TODO
 	}
 	return EDITOR_CONTINUE;
 }
