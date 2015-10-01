@@ -168,7 +168,7 @@ int del_from_file(const char *file, const char *str)
 
 	if ((fpr = fopen(file, "r")) == NULL)
 		return -1;
-	if (file_lock_all(fileno(fpr), FILE_WRLCK) != 0) {
+	if (file_lock_all(fileno(fpr), FILE_RDLCK) != 0) {
 		fclose(fpr);
 		return -1;
 	}
