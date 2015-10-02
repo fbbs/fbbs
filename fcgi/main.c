@@ -68,8 +68,11 @@ extern int web_buy_prop(void);
 
 extern int api_top10(void);
 
+#define API_DECLARE(module, name)  extern int api_##module##_##name(void)
+
 extern int api_board_all(void);
 extern int api_board_fav(void);
+API_DECLARE(board, sector);
 extern int api_board_toc(void);
 
 extern int api_post_content(void);
@@ -91,6 +94,7 @@ const static web_handler_t handlers[] = {
 	{ "boa", web_sector, ST_READNEW },
 	{ "board-all", api_board_all, ST_READBRD },
 	{ "board-fav", api_board_fav, ST_READNEW },
+	{ "board-sector", api_board_sector, ST_READBRD },
 //	{ "board-toc", api_board_toc, ST_READING },
 	{ "brdadd", web_brdadd, ST_READING },
 	{ "brddel", web_brddel, ST_READING },
