@@ -96,7 +96,7 @@ $(document).ready(function() {
 	});
 
 	$.getJSON('bbs/login.json', function(data) {
-		if (data.code == 10001) { window.location.replace('bbs/top10'); }
+		if (data.code == 10002) { location.assign('bbs/top10'); }
 	});
 });
 </script>
