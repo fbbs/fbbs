@@ -207,9 +207,6 @@ static int api_login(void)
 		else
 			return WEB_ERROR_LOGIN_REQUIRED;
 	} else if (web_request_method(POST)) {
-		if (web_parse_post_data() < 0)
-			return WEB_ERROR_BAD_REQUEST;
-
 		const char *user_name = web_get_param("user_name");
 		char pw[PASSLEN];
 		strlcpy(pw, web_get_param("password"), sizeof(pw));
@@ -276,4 +273,19 @@ int web_logout(void)
 	}
 	redirect_homepage();
 	return 0;
+}
+
+int api_session_logout(void)
+{
+	if (web_request_method(POST)) {
+		session_id_t id = session_get_id();
+		if (id) {
+			update_user_stay(&currentuser, false, false);
+			save_user_data(&currentuser);
+			session_destroy(id);
+			return WEB_ERROR_NONE;
+		}
+		return WEB_ERROR_LOGIN_REQUIRED;
+	}
+	return WEB_ERROR_METHOD_NOT_ALLOWED;
 }
