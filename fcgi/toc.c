@@ -560,7 +560,7 @@ static record_callback_e board_toc_callback(void *ptr, void *args, int offset)
  */
 int api_board_toc(void)
 {
-	int board_id = strtol(web_get_param("board_id"), NULL, 10);
+	int board_id = web_get_param_long("board_id");
 	if (board_id < 0)
 		return WEB_ERROR_BAD_REQUEST;
 
@@ -599,9 +599,9 @@ int api_board_toc(void)
 	}
 
 	board_toc_callback_args_t args = {
-		.since_id = strtol(web_get_param("since_id"), NULL, 10),
-		.max_id = strtol(web_get_param("max_id"), NULL, 10),
-		.count = strtol(web_get_param("count"), NULL, 10),
+		.since_id = web_get_param_long("since_id"),
+		.max_id = web_get_param_long("max_id"),
+		.count = web_get_param_long("count"),
 	};
 	if (args.max_id < 0)
 		args.max_id = 0;

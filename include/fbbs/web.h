@@ -68,6 +68,7 @@ extern void web_ctx_destroy(void);
 
 extern const char *web_get_param(const char *name);
 extern const web_param_pair_t *web_get_param_pair(int idx);
+extern long web_get_param_long(const char *key);
 extern int web_parse_post_data(void);
 
 extern bool _web_request_type(web_request_type_e type);

@@ -182,6 +182,11 @@ const char *web_get_param(const char *key)
 	return "";
 }
 
+long web_get_param_long(const char *key)
+{
+	return strtol(web_get_param(key), NULL, 10);
+}
+
 const web_param_pair_t *web_get_param_pair(int idx)
 {
 	if (idx >= 0 && idx < ctx.req.count)
