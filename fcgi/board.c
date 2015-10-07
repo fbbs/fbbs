@@ -255,8 +255,8 @@ static int show_sector(int sid, db_res_t *res, int last)
 
 /*
 {
-	sectors: [ { id: CHAR, name: TEXT, short_descr: TEXT, descr: TEXT } ... ],
-	boards: [ { name: TEXT, descr: TEXT, sector_id: INTEGER } ]
+	sectors: [ { id: C, name: T, short_descr: T, descr: T } ... ],
+	boards: [ { id: I, name: T, descr: T, sector_id: I } ... ]
 }
 */
 int api_board_sector(void)
@@ -282,7 +282,7 @@ int api_board_sector(void)
 	}
 	db_clear(res);
 
-	res = db_query("SELECT name, descr, sector FROM boards"
+	res = db_query("SELECT id, name, descr, sector FROM boards"
 			" WHERE flag & %d <> 0", BOARD_FLAG_RECOMMEND);
 	if (res) {
 		json_array_t *boards = json_array_new();
@@ -291,9 +291,10 @@ int api_board_sector(void)
 		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
 			json_object_t *board = json_object_new();
 			json_array_append(boards, board, JSON_OBJECT);
-			json_object_string(board, "name", db_get_value(res, i, 0));
-			json_object_string(board, "descr", db_get_value(res, i, 1));
-			json_object_integer(board, "sector_id", db_get_integer(res, i, 2));
+			json_object_integer(board, "id", db_get_integer(res, i, 0));
+			json_object_string(board, "name", db_get_value(res, i, 1));
+			json_object_string(board, "descr", db_get_value(res, i, 2));
+			json_object_integer(board, "sector_id", db_get_integer(res, i, 3));
 		}
 		db_clear(res);
 	}
