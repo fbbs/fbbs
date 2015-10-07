@@ -503,95 +503,124 @@ int web_forum(void)
 	printf("</forum>");
 	return 0;
 }
-#if 0
-static xml_node_t *create_post_node(const post_info_t *p)
+
+static void post_record_to_json(const post_record_t *pr, json_array_t *array)
 {
-	xml_node_t *post = xml_new_node("post", XML_NODE_ANONYMOUS_JSON);
-	xml_attr_bigint(post, "id", p->id);
-	xml_attr_bigint(post, "reid", p->reid);
-	xml_attr_bigint(post, "tid", p->tid);
-	xml_attr_string(post, "owner", p->owner, false);
-	xml_attr_string(post, "stamp", format_time(p->stamp, TIME_FORMAT_XML), false);
-	xml_attr_string(post, "title", p->utf8_title, true);
-	char mark[2] = "\0";
-	mark[0] = post_mark(p);
-	xml_attr_string(post, "mark", mark, false);
-	return post;
+	json_object_t *o = json_object_new();
+	json_object_bigint(o, "id", pr->id);
+	json_object_string(o, "title", pr->utf8_title);
+	json_object_string(o, "user_name", pr->user_name);
+	json_array_append(array, o, JSON_OBJECT);
 }
 
-static int print_toc(xml_node_t *posts, db_res_t *res, int archive, bool asc)
+static record_callback_e sticky_callback(void *ptr, void *args,
+		int offset)
 {
-	int rows = db_res_rows(res);
-	for (int i = asc ? rows - 1 : 0;
-			asc ? i >= 0 : i < rows;
-			i += asc ? -1 : 1) {
-		post_info_t p;
-		res_to_post_info(res, i, archive, &p);
-		xml_node_t *post = create_post_node(&p);
-		xml_add_child(posts, post);
-	}
-	return rows;
-}
-
-static void print_toc_sticky(xml_node_t *root, int bid)
-{
-	xml_node_t *stickies = xml_new_child(root, "stickies",
-			XML_NODE_CHILD_ARRAY);
-	db_res_t *res = db_query("SELECT " POST_LIST_FIELDS " FROM posts.recent"
-			" WHERE board = %d AND sticky ORDER BY id DESC", bid);
-	print_toc(stickies, res, 0, false);
-	db_clear(res);
+	post_record_to_json(ptr, args);
+	return RECORD_CALLBACK_CONTINUE;
 }
 
 enum {
-	API_BOARD_TOC_LIMIT_DEFAULT = 20,
-	API_BOARD_TOC_LIMIT_MAX = 50,
+	BOARD_TOC_COUNT_MIN = 10,
+	BOARD_TOC_COUNT_DEFAULT = 20,
+	BOARD_TOC_COUNT_MAX = 50,
 };
 
-extern void board_to_node(const board_t *bp, xml_node_t *node);
+typedef struct {
+	json_array_t *array;
+	post_id_t since_id;
+	post_id_t max_id;
+	int count;
+} board_toc_callback_args_t;
 
+static record_callback_e board_toc_callback(void *ptr, void *args, int offset)
+{
+	const post_record_t *pr = ptr;
+	board_toc_callback_args_t *a = args;
+
+	if (pr->id < a->since_id)
+		return RECORD_CALLBACK_BREAK;
+	if (a->max_id && pr->id >= a->max_id)
+		return RECORD_CALLBACK_CONTINUE;
+
+	if (pr->id == pr->thread_id) {
+		post_record_to_json(pr, a->array);
+		if (--a->count <= 0)
+			return RECORD_CALLBACK_BREAK;
+	}
+	return RECORD_CALLBACK_CONTINUE;
+}
+
+/**
+ * {
+ *    board: { id: I, name: T, categ: T, descr: T, bms: T },
+ *    sticky: [ { id: B, title: T, user_name: T } ... ],
+ *    posts: [ { id: B, title: T, user_name: T } ... ]
+ * }
+ */
 int api_board_toc(void)
 {
+	int board_id = strtol(web_get_param("board_id"), NULL, 10);
+	if (board_id < 0)
+		return WEB_ERROR_BAD_REQUEST;
+
 	board_t board;
-	if (!get_board_by_param(&board))
-		return error_msg(ERROR_BOARD_NOT_FOUND);
+	if (get_board_by_bid(board_id, &board) < 0
+			|| !has_read_perm(&board))
+		return WEB_ERROR_BOARD_NOT_FOUND;
+
+	bool meta = *web_get_param("meta") != '0';
+	bool sticky = *web_get_param("sticky") != '0';
+
 	session_set_board(board.id);
 	brc_init(currentuser.userid, board.name);
 
-	bool asc = streq(web_get_param("page"), "next");
-	post_id_t start = strtoll(web_get_param("start"), NULL, 10);
+	json_object_t *object = json_object_new();
+	web_set_response(object, JSON_OBJECT);
 
-	int limit = strtol(web_get_param("limit"), NULL, 10);
-	if (limit > API_BOARD_TOC_LIMIT_MAX)
-		limit = API_BOARD_TOC_LIMIT_MAX;
-	if (limit < 0)
-		return error_msg(ERROR_BAD_REQUEST);
-	if (!limit)
-		limit = API_BOARD_TOC_LIMIT_DEFAULT;
+	if (meta) {
+		json_object_t *b = json_object_new();
+		json_object_integer(b, "id", board.id);
+		json_object_string(b, "name", board.name);
+		json_object_string(b, "categ", board.categ);
+		json_object_string(b, "descr", board.descr);
+		json_object_string(b, "bms", board.bms);
+		json_object_append(object, "board", b, JSON_OBJECT);
+	}
 
-	int flag = *web_get_param("flag");
+	if (sticky) {
+		json_array_t *a = json_array_new();
+		record_t record;
+		if (post_record_open_sticky(board.id, &record) >= 0) {
+			record_foreach(&record, NULL, 0, sticky_callback, a);
+			record_close(&record);
+		}
+		json_object_append(object, "sticky", a, JSON_ARRAY);
+	}
 
-	xml_node_t *root = set_response_root("bbs-board-toc",
-			XML_NODE_ANONYMOUS_JSON, XML_ENCODING_UTF8);
-	xml_node_t *posts = xml_new_child(root, "posts", XML_NODE_CHILD_ARRAY);
-
-	post_filter_t filter = {
-		.bid = board.id, .flag = flag,
-		.min = asc ? start : 0, .max = asc ? 0 : start,
+	board_toc_callback_args_t args = {
+		.since_id = strtol(web_get_param("since_id"), NULL, 10),
+		.max_id = strtol(web_get_param("max_id"), NULL, 10),
+		.count = strtol(web_get_param("count"), NULL, 10),
 	};
-	query_t *q = build_post_query(&filter, asc, limit);
-	db_res_t *res = query_exec(q);
-	print_toc(posts, res, filter.archive, asc);
-	db_clear(res);
+	if (args.max_id < 0)
+		args.max_id = 0;
+	if (args.count == 0)
+		args.count = BOARD_TOC_COUNT_DEFAULT;
+	if (args.count < BOARD_TOC_COUNT_MIN)
+		args.count = BOARD_TOC_COUNT_MIN;
+	if (args.count > BOARD_TOC_COUNT_MAX)
+		args.count = BOARD_TOC_COUNT_MAX;
+	args.array = json_array_new();
 
-	if (!start && !asc && !flag && board.id)
-		print_toc_sticky(root, board.id);
-
-	xml_node_t *bnode = xml_new_child(root, "board", 0);
-	board_to_node(&board, bnode);
-	return HTTP_OK;
+	record_t record;
+	if (post_record_open(board.id, &record) >= 0) {
+		record_reverse_foreach(&record, board_toc_callback, &args);
+		record_close(&record);
+	}
+	json_object_append(object, "posts", args.array, JSON_ARRAY);
+	return WEB_OK;
 }
-#endif
 
 #define BASEURL BBSHOST"/bbs"
 

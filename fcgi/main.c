@@ -73,7 +73,7 @@ extern int api_top10(void);
 extern int api_board_all(void);
 extern int api_board_fav(void);
 API_DECLARE(board, sector);
-extern int api_board_toc(void);
+API_DECLARE(board, toc);
 API_DECLARE(session, logout);
 
 extern int api_post_content(void);
@@ -96,7 +96,7 @@ const static web_handler_t handlers[] = {
 	{ "board-all", api_board_all, ST_READBRD },
 	{ "board-fav", api_board_fav, ST_READNEW },
 	{ "board-sector", api_board_sector, ST_READBRD },
-//	{ "board-toc", api_board_toc, ST_READING },
+	{ "board-toc", api_board_toc, ST_READING },
 	{ "brdadd", web_brdadd, ST_READING },
 	{ "brddel", web_brddel, ST_READING },
 	{ "buyprop", web_buy_prop, ST_PROP },
