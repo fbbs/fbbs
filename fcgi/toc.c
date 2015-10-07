@@ -560,7 +560,7 @@ static record_callback_e board_toc_callback(void *ptr, void *args, int offset)
  */
 int api_board_toc(void)
 {
-	int board_id = web_get_param_long("board_id");
+	int board_id = web_get_param_long("id");
 	if (board_id < 0)
 		return WEB_ERROR_BAD_REQUEST;
 
