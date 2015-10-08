@@ -999,21 +999,32 @@ enum {
 	API_POST_DEFAULT_COUNT = 20,
 };
 
+/**
+ * {
+ *   board_id: I, board_name: T,
+ *   posts: [
+ *     {
+ *       id: B, reply_id: B, thread_id: B, user_name: T, flags: I,
+ *		 title: T, content: T
+ *     }
+ *     ...
+ *   ]
+ */
 int api_post_content(void)
 {
-	post_id_t thread_id = strtoll(web_get_param("thread_id"), NULL, 10);
+	post_id_t thread_id = web_get_param_long("thread_id");
 	if (thread_id <= 0)
 		return WEB_ERROR_BAD_REQUEST;
-	post_id_t since_id = strtoll(web_get_param("since_id"), NULL, 10);
+	post_id_t since_id = web_get_param_long("since_id");
 
 	board_t board;
-	int board_id = strtol(web_get_param("board_id"), NULL, 10);
+	int board_id = web_get_param_long("board_id");
 	if (board_id <= 0 || get_board_by_bid(board_id, &board) <= 0
 			|| !has_read_perm(&board)) {
 		return WEB_ERROR_BOARD_NOT_FOUND;
 	}
 
-	int count = strtol(web_get_param("count"), NULL, 10);
+	int count = web_get_param_long("count");
 	if (count > API_POST_DEFAULT_COUNT || count <= 0)
 		count = API_POST_DEFAULT_COUNT;
 
@@ -1049,7 +1060,6 @@ int api_post_content(void)
 			json_object_bigint(post, "id", pr.id);
 			json_object_bigint(post, "reply_id", pr.reply_id);
 			json_object_bigint(post, "thread_id", pr.thread_id);
-			json_object_integer(post, "user_id", pr.user_id);
 			json_object_string(post, "user_name", pr.user_name);
 			json_object_integer(post, "flags", pr.flag);
 			json_object_string(post, "title", pr.utf8_title);
