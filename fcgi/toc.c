@@ -561,11 +561,11 @@ static record_callback_e board_toc_callback(void *ptr, void *args, int offset)
 int api_board_toc(void)
 {
 	int board_id = web_get_param_long("id");
-	if (board_id < 0)
+	if (board_id <= 0)
 		return WEB_ERROR_BAD_REQUEST;
 
 	board_t board;
-	if (get_board_by_bid(board_id, &board) < 0
+	if (get_board_by_bid(board_id, &board) <= 0
 			|| !has_read_perm(&board))
 		return WEB_ERROR_BOARD_NOT_FOUND;
 
