@@ -117,7 +117,7 @@ void terminal_write_cached(const uchar_t *str, int size)
 {
 	while (size > 0) {
 		int len = sizeof(output_buffer.ptr) - output_buffer.size;
-		if (size > len) {
+		if (size >= len) {
 			memcpy(output_buffer.ptr + output_buffer.size, str, len);
 			output_buffer.size += len;
 			terminal_flush();
