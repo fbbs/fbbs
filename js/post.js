@@ -55,7 +55,7 @@
 					lines = [];
 
 				if (m) {
-					m.forEach(function(i, item) {
+					m.forEach(function(item) {
 						var b = l.indexOf(item, s), sm;
 						if (!closed) {
 							lines.push('</span>');
@@ -66,7 +66,7 @@
 						if (item.startsWith('\x1b')) {
 							sm = item.match(/(\d+)/g);
 							if (sm) {
-								sm.forEach(function(j, d) {
+								sm.forEach(function(d) {
 									if (d == 0 || d == 1) hl = d;
 									if (d >= 30 && d <= 37) fg = d;
 									if (d >= 40 && d <= 48) bg = d;

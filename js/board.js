@@ -7,9 +7,9 @@
 		pre: function(data) {
 			var result = { sectors: [] }, boards;
 			data.sectors.sort(function(a, b) { return a.name.localeCompare(b.name); });
-			data.sectors.forEach(function(i, sector) {
+			data.sectors.forEach(function(sector) {
 				boards = [];
-				data.boards.forEach(function(i, b) {
+				data.boards.forEach(function(b) {
 					if (b.sector_id == sector.id) {
 						boards.push({ id: b.id, name: b.name, descr: b.descr });
 					}
@@ -30,7 +30,7 @@
 
 	T.set('board-toc', {
 		pre: function(data) {
-			var f = function(i, e) {
+			var f = function(e) {
 				e.stamp = Post.stamp(e.id).format();
 				e.board_id = data.board.id;
 			};
