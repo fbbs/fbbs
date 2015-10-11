@@ -1,24 +1,24 @@
-set(SCRIPTS
-	history/json2.js
-	history/history.adapter.jquery.js
-	history/history.html4.js
-	history/history.js
-	jquery.mustache.js)
+function(publish_js MINIFIED SCRIPTS)
+	set(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${MINIFIED}.min.js)
+	if(UGLIFYJS)
+		set(OUTPUT ${OUTPUT} ${CMAKE_CURRENT_BINARY_DIR}/${MINIFIED}.map.js)
+		add_custom_command(OUTPUT ${OUTPUT}
+				COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}
+						&& cp ${SCRIPTS} ${CMAKE_CURRENT_BINARY_DIR}
+				COMMAND ${UGLIFYJS} ${SCRIPTS} -c -m -o ${MINIFIED}.min.js
+						--source-map ${MINIFIED}.map.js -p relative
+				DEPENDS ${SCRIPTS})
+	else(UGLIFYJS)
+		add_custom_command(OUTPUT ${OUTPUT}
+				COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && cat ${SCRIPTS} > ${OUTPUT}
+				DEPENDS ${SCRIPTS})
+	endif(UGLIFYJS)
+	add_custom_target(${MINIFIED} ALL DEPENDS ${OUTPUT})
+	install(FILES ${OUTPUT} ${SCRIPTS} DESTINATION ${DOCUMENT_ROOT}/js)
+endfunction(publish_js)
 
-if(UGLIFYJS)
-	set(BUNDLE bundle.js)
-	set(ABSOLUTE_BUNDLE ${CMAKE_CURRENT_BINARY_DIR}/${BUNDLE})
+set(SCRIPTS util.js cookie.js template.js session.js board.js post.js ui.js main.js)
+publish_js(app-201509 "${SCRIPTS}")
 
-	set(FULL_PATHS)
-	foreach(SCRIPT ${SCRIPTS})
-		set(FULL_PATHS ${FULL_PATHS} ${CMAKE_CURRENT_SOURCE_DIR}/${SCRIPT})
-	endforeach(SCRIPT)
-
-	add_custom_command(OUTPUT ${BUNDLE}
-		COMMAND cat ${FULL_PATHS} | ${UGLIFYJS} -nc > ${BUNDLE}
-		DEPENDS ${SCRIPTS})
-	add_custom_target(${BUNDLE} ALL DEPENDS ${ABSOLUTE_BUNDLE})
-	install(FILES ${ABSOLUTE_BUNDLE} DESTINATION "${DOCUMENT_ROOT}/js")
-endif(UGLIFYJS)
-
-install(FILES ${SCRIPTS} DESTINATION "${DOCUMENT_ROOT}/js")
+set(SCRIPTS cookie.js session.js homepage.js)
+publish_js(homepage "${SCRIPTS}")
