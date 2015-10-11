@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='UTF-8'/>
+	<meta name='viewport' content='width=device-width, initial-scale=1'/>
+	<title id='title'>日月光华BBS</title>
+	<link href="../css/style.default.css" rel="stylesheet">
+</head>
+
+<body>
+<nav>
+	<div class='container'>
+		<ul class='nav-left'>
+			<li><h1 class='nav-header'>日月光华</h1></li>
+			<li><a href='home'>首页</a></li>
+			<li><a href='board-sector'>版面</a></li>
+		</ul>
+
+		<ul class='nav-right' id='nav-personal'>
+			<li><a href='../' class='no-ajaxify'>登录</a></li>
+			<li><a href='register'>注册</a></li>
+			<li class='require-login'><a href='profile'></a></li>
+			<li class='require-login'>
+				<a href='#' class='nav-dropdown-header no-ajaxify'>消息</a>
+				<ul id='nav-notification-list' class='hidden nav-dropdown-list'>
+					<li><a href='post-reply'>回复我的文章</a></li>
+					<li><a href='post-mention'>提到我的文章</a></li>
+				</ul>
+			</li>
+			<li class='require-login'>
+				<a href='#' class='nav-dropdown-header no-ajaxify'>设置</a>
+				<ul id='nav-setting-list' class='hidden nav-dropdown-list'>
+				</ul>
+			</li>
+			<li class='require-login'><a href='session-logout' class='no-ajaxify session-logout'>退出</a></li>
+		</ul>
+	</div>
+</nav>
+
+<div class='container'>
+	<div id='nav-board' class='hidden nav-left'>
+		<ul id='board-fav-list'>
+			<li><a href='board-sector'>分区列表</a></li>
+		</ul>
+	</div>
+
+	<div id='main'>
+	</div>
+</div>
+
+<footer class='hidden'>
+	<div class='container'>
+		<p>日月光华 &copy; 1996-2015 采用 <a href='https://github.com/fbbs/fbbs'>fbbs</a></p>
+	</div>
+</footer>
+
+<template board-sector>
+<template board-toc>
+<template board-toc-list>
+<template post-content>
+
+<script defer src='../js/jquery-1.11.3.min.js'></script>
+<script defer src='../js/lib-20150928.min.js'></script>
+<script defer src='../js/app-201509.min.js'></script>
+</body>
+</html>

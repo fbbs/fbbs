@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv='Content-Type' content='text/html; charset=gb2312'/>
-<title>»¶Ó­¹âÁÙ¸´µ©´óÑ§ÈÕÔÂ¹â»ªBBS</title>
+<meta charset='UTF-8'/>
+<meta name='viewport' content='width=device-width, initial-scale=1'/>
+<title>æ¬¢è¿å…‰ä¸´å¤æ—¦å¤§å­¦æ—¥æœˆå…‰åBBS</title>
 <style type="text/css">
 body, div, img, ul, li, h1, p, input { margin: 0; padding: 0; }
 body, label, input { font-family: "Microsoft YaHei", "WenQuanYi ZenHei", "SimSun", "Gill Sans MT", Verdana, sans-serif; font-size: 16px; }
@@ -17,7 +18,7 @@ a { text-decoration: none; }
 
 h1 { font-size: 32px; color: #369; margin: 18px 0 18px 0; }
 label { display: block; font-weight: bold; font-size: 16px; margin: 5px 0 2px 0; }
-input { border: 1px solid #c0c0c0; }
+input { border: 1px solid #c0c0c0; margin: 8px 0; }
 #id, #pw { height: 36px; width: 275px; padding: 0 0 0 5px; }
 #login { width: 282px; background-color: #369; }
 #reg { display: block; width: 282px; background-color: #b0281a; line-height: 36px; }
@@ -41,26 +42,26 @@ li#guest a { color: #000; }
 #copyright { float: right; }
 </style>
 </head>
+
 <body>
+
 <div id='container'>
 <div id='left'>
-<h1>ÈÕÔÂ¹â»ª</h1>
-<form id='box' method='post' action='bbs/login'>
-<label for='id'>ÕËºÅ</label>
-<input id='id' type='text' name='id' class='txt' placeholder='ÇëÊäÈëÕËºÅ'/>
-<label for='pw'>ÃÜÂë</label>
-<input id='pw' type='password' name='pw' class='txt' placeholder='ÇëÊäÈëÃÜÂë'/>
-<input id='persistent' type='checkbox' name='persistent' checked='checked'/><label id='for_cb' for='persistent'>ÏÂ´Î×Ô¶¯µÇÂ¼<span id='tip'>£¨¹«ÓÃµçÄÔÇëÎğÑ¡Ôñ£©</span></label>
-<input id='login' type='submit' value='µÇÂ¼'/>
+<h1>æ—¥æœˆå…‰å</h1>
+<form id='box' method='post' action='bbs/login.json'>
+<input id='id' type='text' name='user_name' class='txt' placeholder='è´¦å·' autofocus/>
+<input id='pw' type='password' name='password' class='txt' placeholder='å¯†ç '/>
+<input id='persistent' type='checkbox' name='persistent' checked='checked'/><label id='for_cb' for='persistent'>è®°ä½æˆ‘<span id='tip'>ï¼ˆå…¬ç”¨ç”µè„‘è¯·å‹¿é€‰æ‹©ï¼‰</span></label>
+<input id='login' type='submit' value='ç™»å½•'/>
 </form>
 
-<a id='reg' href='reg.htm'>×¢²á</a>
+<a id='reg' href='reg.htm'>æ³¨å†Œ</a>
 
 <ul id='links'>
-<li id='guest'><a href='bbs/top10'>Ëæ±ã¿´¿´</a></li>
-<li><a href='/banner.htm'>Web½øÕ¾Õ¹Ê¾</a></li>
-<li><a href='/wallpaper.htm'>¹â»ª±ÚÖ½ÏÂÔØ</a></li>
-<li><a href='/software/FTerm2.5.0.154.exe'>FTerm</a> / <a href='/software/CTerm3.24.rar'>Cterm</a> / <a href='#' id='sw'>ÆäËû¹¤¾ß</a></li>
+<li id='guest'><a href='bbs/top10'>éšä¾¿çœ‹çœ‹</a></li>
+<li><a href='/banner.htm'>Webè¿›ç«™å±•ç¤º</a></li>
+<li><a href='/wallpaper.htm'>å…‰åå£çº¸ä¸‹è½½</a></li>
+<li><a href='/software/FTerm2.5.0.154.exe'>FTerm</a> / <a href='/software/CTerm3.24.rar'>Cterm</a> / <a href='#' id='sw'>å…¶ä»–å·¥å…·</a></li>
 </ul>
 <ul id='more'>
 <li><a href='/software/Ansieditor2.03e.exe'>AnsiEditor</a></li>
@@ -78,27 +79,13 @@ li#guest a { color: #000; }
 </div>
 <footer id='footer'>
 <ul id='extra'>
-<li><a href='/m/'>ÊÖ»úµÇÂ¼£¨²âÊÔ£©</a></li>
-<li><a href='/q/'>¸½ÊôÕ¾¸´µ©Èª</a></li>
-<li><a href='/qm/'>¸´µ©ÈªÊÖ»úµÇÂ¼</a></li>
+<li><a href='/q/'>é™„å±ç«™å¤æ—¦æ³‰</a></li>
 </ul>
-<p id='copyright'><strong>ÈÕÔÂ¹â»ªÕ¾ °æÈ¨ËùÓĞ &copy;1996-2012 </strong><a href='http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407'>»¦ICP±¸042465</a></p>
+<p id='copyright'><strong>æ—¥æœˆå…‰åç«™ ç‰ˆæƒæ‰€æœ‰ &copy;1996-2015 </strong><a href='http://app.shca.gov.cn/enterprise/jsp/special/shca.gov.cn/IcpInfos.jsp?recordsn=5407'>æ²ªICPå¤‡042465</a></p>
 </footer>
 </div>
-<script src='/js/jquery-1.4.2.min.js'></script>
-<script>
-$(document).ready(function() {
-	$('#id').focus();
-	$('#sw').click(function() { $('#more').toggle(); return false; });
-	$('#login').click(function() {
-		if ($('#id').val().length < 1 || $('#pw').val().length < 1)
-			return false;
-	});
-
-	$.getJSON('bbs/login.json', function(data) {
-		if (data.code == 10001) { window.location.replace('bbs/top10'); }
-	});
-});
-</script>
+<script defer src='js/jquery-1.11.3.min.js'></script>
+<script defer src="js/lib-20150928.min.js"></script>
+<script defer src='js/homepage.min.js'></script>
 </body>
 </html>
