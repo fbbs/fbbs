@@ -1,0 +1,78 @@
+@nav-link-hover-color: @nav-color;
+@nav-link-hover-decoration: @link-decoration;
+
+@nav-secondary-background-color: @color-primary;
+@nav-secondary-hover-color: @color-primary-300;
+
+@nav-left-width: 160px;
+
+nav {
+	width: 100%;
+	font-size: @font-size-xlarge;
+	color: @nav-color;
+	background-color: @nav-background-color;
+	margin: 0 0 16px 0;
+
+	li {
+		display: inline-block;
+		vertical-align: top;
+		line-height: @line-height-xxlarge;
+
+		li {
+			display: block;
+			background-color: @nav-secondary-background-color;
+
+			a {
+				font-size: @font-size-large;
+				line-height: @line-height-xlarge;
+				min-width: 120px;
+				text-align: left;
+				padding: 0 8px;
+			}
+			a:hover {
+				background-color: @nav-secondary-hover-color;
+			}
+		}
+	}
+
+	a {
+		display: block;
+		width: 80px;
+		text-align: center;
+		color: @nav-color;
+	}
+
+	.nav-header {
+		font-size: @font-size-xxlarge;
+		font-weight: bold;
+		width: 160px;
+	}
+
+	a:hover {
+		background-color: @color-primary;
+		color: @nav-link-hover-color;
+		text-decoration: @nav-link-hover-decoration;
+	}
+
+	li:hover > ul, li:hover > form {
+		display: block;
+		position: absolute;
+	}
+
+	.container {
+		height: 48px;
+	}
+
+	.nav-left {
+		float: left;
+	}
+	.nav-right {
+		float: right;
+	}
+}
+
+div.nav-left {
+	float: left;
+	width: @nav-left-width;
+	margin: 0 0 16px 0;
+}
