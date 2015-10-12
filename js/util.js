@@ -167,6 +167,14 @@
 		}
 	}
 
+	if (!Array.prototype.forEach) {
+		Array.prototype.forEach = function(f) {
+			$.each(this, function(i, e) {
+				f(e);
+			});
+		};
+	}
+
 	Date.prototype.format = function() {
 		return this.getFullYear() + '-' + (this.getMonth() + 1) + '-' + this.getDate()
 				+ this.toString().substring(15, 24);
