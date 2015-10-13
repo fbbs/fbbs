@@ -1111,7 +1111,13 @@ int _mail_forward(const char *path, const struct fileheader *fp, bool uuencode)
 		return DONOTHING;
 	}
 
-	doforward(path, fp, uuencode);
+	char buf[HOMELEN];
+	strlcpy(buf, path, sizeof(buf));
+	char *p = strrchr(buf, '/');
+	if (p)
+		*p = '\0';
+
+	doforward(buf, fp, uuencode);
 	pressreturn();
 	screen_clear();
 	return FULLUPDATE;
