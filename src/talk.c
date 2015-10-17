@@ -160,7 +160,15 @@ int tui_query_result(const char *userid)
 	user_id_t uid = get_user_id(userid);
 	session_basic_info_t *res = get_sessions(uid);
 
-	if (res && session_basic_info_count(res) > 0) {
+	bool any_session_visible = false;
+	for (int i = 0; i < (res ? session_basic_info_count(res) : 0); ++i) {
+		if (HAS_PERM(PERM_SEECLOAK) || session_basic_info_visible(res, i)) {
+			any_session_visible = true;
+			break;
+		}
+	}
+
+	if (any_session_visible) {
 		//% prints("在线 [\033[1;32m讯息器:(\033[36m%s\033[32m)\033[m] ",
 		prints("\xd4\xda\xcf\xdf [\033[1;32m\xd1\xb6\xcf\xa2\xc6\xf7:(\033[36m%s\033[32m)\033[m] ",
 				//% "打开");
@@ -242,7 +250,8 @@ int tui_query_result(const char *userid)
 	
 	uinfo_free(&u);
 
-	show_statuses(res);
+	if (any_session_visible)
+		show_statuses(res);
 	session_basic_info_clear(res);
 
 	show_user_plan(userid);
