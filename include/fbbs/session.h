@@ -153,7 +153,7 @@ extern const char *session_status_color(int status, bool visible, bool web);
 /** 保存web会话的键值 @mdb_hash */
 #define SESSION_WEB_HASH_KEY  "web_session"
 
-extern void session_web_cache_set(user_id_t user_id, const char *session_key, const char *token, session_id_t session_id, const char *ip_addr, bool active);
+extern void session_web_cache_set(user_id_t user_id, const char *session_key, const char *token, session_id_t session_id, bool active);
 extern bool session_web_cache_get(user_id_t user_id, const char *session_key, char *value, size_t size);
 extern void session_web_cache_remove(user_id_t user_id, const char *session_key);
 

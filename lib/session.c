@@ -175,7 +175,7 @@ int session_inactivate(session_id_t session_id, user_id_t user_id,
 	db_clear(res);
 
 	purge_session_cache(session_id);
-	session_web_cache_set(user_id, session_key, token, session_id, "", false);
+	session_web_cache_set(user_id, session_key, token, session_id, false);
 
 	return !res;
 }
@@ -313,14 +313,13 @@ static void make_entry(user_id_t user_id, const char *session_key,
 }
 
 void session_web_cache_set(user_id_t user_id, const char *session_key,
-		const char *token, session_id_t session_id, const char *ip_addr,
-		bool active)
+		const char *token, session_id_t session_id, bool active)
 {
 	char entry[SESSION_WEB_CACHE_ENTRY_LEN];
 	make_entry(user_id, session_key, entry, sizeof(entry));
 	char value[SESSION_WEB_CACHE_VALUE_LEN];
-	snprintf(value, sizeof(value), "%"PRIdSID"-%d-%s-%s", session_id,
-			(int) active, token ? token : "", ip_addr);
+	snprintf(value, sizeof(value), "%"PRIdSID"-%d-%s", session_id,
+			(int) active, token ? token : "");
 	mdb_cmd("HSET", SESSION_WEB_HASH_KEY" %s %s", entry, value);
 }
 

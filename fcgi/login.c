@@ -190,7 +190,7 @@ static int _web_login(bool persistent, bool redirect, session_data_t *s)
 			s->expire_time);
 	if (session_get_id()) {
 		session_web_cache_set(session_get_user_id(), s->key, s->token,
-				session_get_id(), fromhost, true);
+				session_get_id(), true);
 	}
 	if (redirect) {
 		return login_redirect(s->key,
