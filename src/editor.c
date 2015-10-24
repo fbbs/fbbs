@@ -1363,8 +1363,10 @@ static int write_file(editor_t *editor, const char *file,
 		write_body(editor, fp, utf8_host, anonymous);
 
 	fclose(fp);
-	if (!utf8)
+	if (!utf8) {
 		ok = convert_file(temp, file, CONVERT_U2G);
+		unlink(temp);
+	}
 	return ok;
 }
 
