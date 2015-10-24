@@ -273,6 +273,8 @@ int web_logout(void)
 		expire_cookie(WEB_COOKIE_USER);
 
 		session_destroy(id);
+		session_web_cache_remove(session_get_user_id(),
+				web_get_param(WEB_COOKIE_KEY));
 	}
 	redirect_homepage();
 	return 0;

@@ -150,11 +150,14 @@ session_id_t session_new(const char *key, const char *token, session_id_t sid,
 #define SESSION_BOARD_KEY "current_board"
 /** 会话最后活动时间 @mdb_sorted_set */
 #define SESSION_IDLE_KEY "idle"
+/** 会话最新状态 @mdb_hash */
+#define SESSION_STATUS_KEY "user_status"
 
 static void purge_session_cache(session_id_t sid)
 {
 	mdb_cmd("ZREM", SESSION_BOARD_KEY" %"PRIdSID, sid);
 	mdb_cmd("ZREM", SESSION_IDLE_KEY" %"PRIdSID, sid);
+	mdb_cmd("HDEL", SESSION_STATUS_KEY" %"PRIdSID, sid);
 }
 
 int session_destroy(session_id_t sid)
@@ -216,9 +219,6 @@ int session_count_online_board(int bid)
 {
 	return (int) mdb_integer(0, "ZCOUNT", SESSION_BOARD_KEY" %d %d", bid, bid);
 }
-
-/** 会话最新状态 @mdb_hash */
-#define SESSION_STATUS_KEY "user_status"
 
 int set_user_status(int status)
 {
