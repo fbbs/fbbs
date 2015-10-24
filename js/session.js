@@ -1,8 +1,22 @@
 (function() {
-	window.Session = {
-		keepAlive: 15 * 60 * 1000,
+	var KEEP_ALIVE = 15 * 60 * 1000;
 
-		register: function() {
+	window.Session = {
+		checkLoginStatus: function() {
+			var last = Store.get('session-last-activity'),
+				current = (new Date()).getTime();
+			App.E.fire('s:login', !!(last && current - last < KEEP_ALIVE));
+		},
+
+		init: function() {
+			App.E.on('s:login', function(evt, loggedIn) {
+				$('#nav-personal>li').each(function() {
+					var t = $(this);
+					t.hasClass('require-login') == loggedIn ? t.show() : t.hide();
+				});
+			});
+			this.checkLoginStatus();
+
 			$('.session-logout').click(function() {
 				$.post('../bbs/session-logout.json',
 					{ token: Store.get('session-token') },

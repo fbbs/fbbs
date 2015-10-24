@@ -6,5 +6,11 @@
 {{/board.bms}}
 </div>
 <ul id='board-toc-list'>
+{{#sticky}}
+{{>board-toc-list}}
+{{/sticky}}
+{{#posts}}
+{{>board-toc-list}}
+{{/posts}}
 </ul>
 </div>

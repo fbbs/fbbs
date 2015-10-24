@@ -17,22 +17,22 @@
 		</ul>
 
 		<ul class='nav-right' id='nav-personal'>
-			<li><a href='../' class='no-ajaxify'>登录</a></li>
+			<li><a href='../' class='na'>登录</a></li>
 			<li><a href='register'>注册</a></li>
 			<li class='require-login'><a href='profile'></a></li>
 			<li class='require-login'>
-				<a href='#' class='nav-dropdown-header no-ajaxify'>消息</a>
+				<a href='#' class='nav-dropdown-header na'>消息</a>
 				<ul id='nav-notification-list' class='hidden nav-dropdown-list'>
 					<li><a href='post-reply'>回复我的文章</a></li>
 					<li><a href='post-mention'>提到我的文章</a></li>
 				</ul>
 			</li>
 			<li class='require-login'>
-				<a href='#' class='nav-dropdown-header no-ajaxify'>设置</a>
+				<a href='#' class='nav-dropdown-header na'>设置</a>
 				<ul id='nav-setting-list' class='hidden nav-dropdown-list'>
 				</ul>
 			</li>
-			<li class='require-login'><a href='session-logout' class='no-ajaxify session-logout'>退出</a></li>
+			<li class='require-login'><a href='session-logout' class='na session-logout'>退出</a></li>
 		</ul>
 	</div>
 </nav>
@@ -56,8 +56,9 @@
 
 <template board-sector>
 <template board-toc>
-<template board-toc-list>
+<partial board-toc-list>
 <template post-content>
+<partial user-meta>
 
 <script defer src='../js/jquery-1.11.3.min.js'></script>
 <script defer src='../js/lib-20150928.min.js'></script>

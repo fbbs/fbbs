@@ -118,12 +118,15 @@
 		}
 	};
 
-	Template.set('post-content', {
-		pre: function(data) {
-			$.each(data.posts, function(i, p) {
-				$.extend(p, Post.parse(p.content));
-			});
-			return data;
-		}
+	Post.Content = App.P({
+		tmpl: 'post-content',
+		m: {
+			init: function(data) {
+				data.posts.forEach(function(p) {
+					$.extend(p, Post.parse(p.content));
+				});
+				this.data = data;
+			}
+		},
 	});
 })();

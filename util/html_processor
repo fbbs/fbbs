@@ -13,9 +13,10 @@ sub main {
 
 	while (<$fin>) {
 		chomp;
-		if (/template +(.+)>/) {
-			print $fout "<script type='text/html' id='t-$1'>";
-			include_file($dir, $fout, $1);
+		if (/(template|partial) +(.+)>/) {
+			my $prefix = substr $1, 0, 1;
+			print $fout "<script type='text/html' id='$prefix-$2'>";
+			include_file($dir, $fout, $2);
 			print $fout "</script>";
 		} else {
 			s/^\s+//;

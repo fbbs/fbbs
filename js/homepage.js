@@ -10,22 +10,21 @@ $(function() {
 			$.ajax({
 				type: 'POST',
 				url: $form.attr('action'),
-				data: $form.serialize(),
-				success: function(data) {
-					var expire = data['expire_time'];
+				data: $form.serialize()
+			}).done(function(data) {
+				var expire = data['expire_time'];
 
-					Store.clear();
-					Store.set('session-user-name', data['user_name']);
-					Store.set('session-key', data['session_key']);
-					Store.set('session-token', data['token']);
-					if (expire)
-						Store.set('session-expire-time', expire);
-					Session.updateLastActivity();
+				Store.clear();
+				Store.set('session-user-name', data['user_name']);
+				Store.set('session-key', data['session_key']);
+				Store.set('session-token', data['token']);
+				if (expire)
+					Store.set('session-expire-time', expire);
+				Session.updateLastActivity();
 
-					Cookie.set('utmpkey', data['session_key'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs/'));
-					Cookie.set('utmpuser', data['user_name'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs/'));
-					location.assign('alpha/home');
-				}
+				Cookie.set('utmpkey', data['session_key'], expire ? new Date(expire * 1000) : 0);
+				Cookie.set('utmpuser', data['user_name'], expire ? new Date(expire * 1000) : 0);
+				location.assign('alpha/home');
 			});
 		}
 		return false;

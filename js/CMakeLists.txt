@@ -17,7 +17,8 @@ function(publish_js MINIFIED SCRIPTS)
 	install(FILES ${OUTPUT} ${SCRIPTS} DESTINATION ${DOCUMENT_ROOT}/js)
 endfunction(publish_js)
 
-set(SCRIPTS util.js cookie.js template.js session.js board.js post.js ui.js main.js)
+set(SCRIPTS app.js util.js cookie.js template.js session.js board.js post.js
+		ui.js main.js)
 publish_js(app-201509 "${SCRIPTS}")
 
 set(SCRIPTS cookie.js session.js homepage.js)
