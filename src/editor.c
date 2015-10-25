@@ -145,7 +145,7 @@ static bool text_line_allocate(editor_t *editor,
 	if (!editor || !tl)
 		return false;
 
-	if (!fit) {
+	if (!fit && capacity) {
 		text_line_size_t c = (text_line_size_t) -1;
 		while (c / 2 >= capacity)
 			c /= 2;
@@ -614,7 +614,7 @@ static void insert_tab(editor_t *editor)
 static void split_line(editor_t *editor)
 {
 	text_line_t *tl = editor_current_line(editor);
-	if (editor->buffer_pos >= tl->size)
+	if (editor->buffer_pos > tl->size)
 		return;
 
 	text_line_t new_tl = { .capacity = 0 };
@@ -1456,6 +1456,14 @@ static bool editor_init(editor_t *editor, const char *file, bool utf8,
 	if (!vector_init(&editor->lines, sizeof(text_line_t), 0)
 			|| !read_file(editor, file, utf8))
 		return false;
+
+	if (!vector_size(&editor->lines)) {
+		text_line_t tl = {
+			.buf = NULL, .capacity = 0, .size = 0, .redraw = false
+		};
+		text_line_allocate(editor, &tl, 0, false);
+		vector_insert(&editor->lines, 0, &tl);
+	}
 
 	editor->allow_edit_end = editor_end(editor);
 	editor->allow_edit_begin = 0;
