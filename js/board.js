@@ -42,6 +42,7 @@
 				var f = function(e) {
 					e.stamp = Post.stamp(e.id).format();
 					e.board_id = data.board.id;
+					e.title = Post.parseTitle(e.title);
 				};
 				if (data.board) {
 					data.board.bms = data.board.bms.split(' ');

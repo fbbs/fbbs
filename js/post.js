@@ -1,5 +1,12 @@
 (function() {
-	function parseHeader(lines) {
+	var parseTitle = function(t) {
+		t = t.escapeHtml();
+		t = t.replace(/\x1b\[1;3\dm\[(.+)\]\x1b\[m/, "<span class='post-tag'>$1</span>");
+		t = t.replace(/^\[转载\]/, "<span class='post-tag'>转载</span>");
+		return t;
+	};
+
+	var parseHeader = function(lines) {
 		var R1 = /发信人: ([^ ]+) \((.*)\), 信区: (.+)$/,
 			R2 = /(\d\d\d\d)年(\d\d)月(\d\d)日(\d\d):(\d\d):(\d\d)/,
 			R3 = /\((.+)\)/,
@@ -19,7 +26,7 @@
 			if (m)
 				r.date = new Date(m[1]);
 		}
-		r.title = lines[1].substring(6);
+		r.title = parseTitle(lines[1].substring(6));
 		return r;
 	}
 
@@ -115,7 +122,9 @@
 			s.setFooter(false);
 			r.parsed = s.lines.join('');
 			return r;
-		}
+		},
+
+		parseTitle: parseTitle
 	};
 
 	Post.Content = App.P({
