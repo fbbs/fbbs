@@ -1,0 +1,44 @@
+@color-post-border: #bbdefb;
+
+article {
+	margin: @font-size-base 0 0 0;
+	padding: @font-size-base;
+	font-size: @font-size-base;
+	line-height: @line-height-base;
+	border: solid 1px @color-post-border;
+
+	header {
+		margin: 0 0 @line-height-base / 2;
+
+		h1 {
+			font-size: @font-size-large;
+			line-height: @line-height-large;
+		}
+
+		span {
+			display: inline-block;
+			font-size: @font-size-base;
+			color: @color-user-nick;
+			margin: 0 @font-size-base;
+		}
+
+		a {
+			font-size: @font-size-large;
+			line-height: @line-height-large;
+		}
+	}
+
+	footer {
+		border: none;
+		font-size: @font-size-small;
+		font-family: @monospace;
+		line-height: 1.15 * @font-size-small;
+	}
+
+	blockquote {
+		font-size: @font-size-small;
+		line-height: @line-height-small;
+		color: @color-blockquote;
+		margin: 0 0 0 @font-size-base;
+	}
+}

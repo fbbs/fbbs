@@ -4,6 +4,7 @@
 @nav-secondary-background-color: @color-primary;
 @nav-secondary-hover-color: @color-primary-300;
 
+@nav-height: 48px;
 @nav-left-width: 160px;
 
 nav {
@@ -16,7 +17,7 @@ nav {
 	li {
 		display: inline-block;
 		vertical-align: top;
-		line-height: @line-height-xxlarge;
+		line-height: @nav-height;
 
 		li {
 			display: block;
@@ -24,7 +25,7 @@ nav {
 
 			a {
 				font-size: @font-size-large;
-				line-height: @line-height-xlarge;
+				line-height: @nav-height;
 				min-width: 120px;
 				text-align: left;
 				padding: 0 8px;
@@ -60,7 +61,7 @@ nav {
 	}
 
 	.container {
-		height: 48px;
+		height: @nav-height;
 	}
 
 	.nav-left {

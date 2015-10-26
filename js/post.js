@@ -72,7 +72,7 @@
 									if (d >= 40 && d <= 48) bg = d;
 								});
 							}
-							lines.push('<span class="a' + hl + fg + ' a' + bg + '">');
+							lines.push('<span class="a' + (+hl) + fg + ' a' + bg + '">');
 							closed = false;
 						} else if (item.startsWith('http')) {
 							if (item.match('/jpg|jpeg|png|gif/i')) {
