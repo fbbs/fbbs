@@ -3,8 +3,21 @@
 
 @import "default";
 
-@import "navigation";
+.column-custom(@width, @gap) {
+	column-width: @width;
+	-moz-column-width: @width;
+	-webkit-column-width: @width;
+	column-gap: @gap;
+	-moz-column-gap: @gap;
+	-webkit-column-gap: @gap;
+}
 
+.column-medium {
+	.column-custom(@column-medium-width, @column-medium-gap);
+}
+
+@import "navigation";
+@import "board";
 @import "footer";
 
 .container {

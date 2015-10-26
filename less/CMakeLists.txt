@@ -7,5 +7,6 @@ function(publish_css COMPILED LESS FILES)
 	install(FILES ${OUTPUT} ${LESS} DESTINATION ${DOCUMENT_ROOT}/css)
 endfunction(publish_css)
 
-set(FILES default.less navigation.less reset.less var.less footer.less)
+set(FILES default.less navigation.less reset.less var.less footer.less
+		board.less)
 publish_css(style.default "fbbs.less" "${FILES}")
