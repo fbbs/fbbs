@@ -59,3 +59,20 @@
 		color: #9e9e9e;
 	}
 }
+
+.post-tag {
+	display: inline-block;
+	text-align: center;
+	width: @font-size-xlarge * 2;
+	color: @color-post-tag;
+	background-color: @color-post-tag-background;
+	font-size: @font-size-xlarge;
+	line-height: @line-height-large;
+	border-radius: @font-size-xlarge / 2;
+	margin: 0 @font-size-xlarge / 4 0 0;
+}
+
+li.post-sticky a.board-toc-title::before {
+	content: "∞";
+	.post-tag;
+}

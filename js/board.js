@@ -46,7 +46,6 @@
 				if (data.board) {
 					data.board.bms = data.board.bms.split(' ');
 				}
-				data.sticky.forEach(f);
 				data.posts.forEach(f);
 				this.data = data;
 			}

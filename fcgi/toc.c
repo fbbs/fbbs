@@ -510,6 +510,8 @@ static void post_record_to_json(const post_record_t *pr, json_array_t *array)
 	json_object_bigint(o, "id", pr->id);
 	json_object_string(o, "title", pr->utf8_title);
 	json_object_string(o, "user_name", pr->user_name);
+	if (pr->flag & POST_FLAG_STICKY)
+		json_object_bool(o, "sticky", true);
 	json_array_append(array, o, JSON_OBJECT);
 }
 
@@ -554,7 +556,6 @@ static record_callback_e board_toc_callback(void *ptr, void *args, int offset)
 /**
  * {
  *    board: { id: I, name: T, categ: T, descr: T, bms: T },
- *    sticky: [ { id: B, title: T, user_name: T } ... ],
  *    posts: [ { id: B, title: T, user_name: T } ... ]
  * }
  */
@@ -569,8 +570,10 @@ int api_board_toc(void)
 			|| !has_read_perm(&board))
 		return WEB_ERROR_BOARD_NOT_FOUND;
 
-	bool meta = *web_get_param("meta") != '0';
-	bool sticky = *web_get_param("sticky") != '0';
+	post_id_t since_id = web_get_param_long("since_id");
+	post_id_t max_id = web_get_param_long("max_id");
+	bool meta, sticky;
+	meta = sticky = !(since_id || max_id);
 
 	session_set_board(board.id);
 	brc_init(currentuser.userid, board.name);
@@ -588,19 +591,18 @@ int api_board_toc(void)
 		json_object_append(object, "board", b, JSON_OBJECT);
 	}
 
+	json_array_t *posts = json_array_new();
 	if (sticky) {
-		json_array_t *a = json_array_new();
 		record_t record;
 		if (post_record_open_sticky(board.id, &record) >= 0) {
-			record_foreach(&record, NULL, 0, sticky_callback, a);
+			record_foreach(&record, NULL, 0, sticky_callback, posts);
 			record_close(&record);
 		}
-		json_object_append(object, "sticky", a, JSON_ARRAY);
 	}
 
 	board_toc_callback_args_t args = {
-		.since_id = web_get_param_long("since_id"),
-		.max_id = web_get_param_long("max_id"),
+		.since_id = since_id,
+		.max_id = max_id,
 		.count = web_get_param_long("count"),
 	};
 	if (args.max_id < 0)
@@ -611,14 +613,14 @@ int api_board_toc(void)
 		args.count = BOARD_TOC_COUNT_MIN;
 	if (args.count > BOARD_TOC_COUNT_MAX)
 		args.count = BOARD_TOC_COUNT_MAX;
-	args.array = json_array_new();
+	args.array = posts;
 
 	record_t record;
 	if (post_record_open(board.id, &record) >= 0) {
 		record_reverse_foreach(&record, board_toc_callback, &args);
 		record_close(&record);
 	}
-	json_object_append(object, "posts", args.array, JSON_ARRAY);
+	json_object_append(object, "posts", posts, JSON_ARRAY);
 	return WEB_OK;
 }
 
