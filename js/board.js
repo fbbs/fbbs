@@ -29,9 +29,7 @@
 		},
 
 		c: {
-			post: function() {
-				Ui.showNavBoard(true);
-			}
+			nav: 'board'
 		}
 	});
 
@@ -51,5 +49,9 @@
 				this.data = data;
 			}
 		},
+
+		c: {
+			nav: 'board'
+		}
 	});
 })();

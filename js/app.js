@@ -56,6 +56,8 @@
 				if (url === History.getState().url) {
 					controller.ready(data);
 					controller.defaultPost();
+					if (controller.post)
+						controller.post();
 				}
 			}).fail(function(jqXHR, textStatus, errorThrown) {
 				if (url === History.getState().url) {
@@ -141,11 +143,14 @@
 		defaultPost: function() {
 			var v = this.view;
 			v.$el.ajaxify();
+
 			hooks.forEach(function(i) {
 				v.$(i[0]).each(function(j, e) {
 					i[1]($(e));
 				});
 			});
+
+			Ui.showNavBoard(this.nav == 'board');
 		},
 		error: function() {}
 	});
