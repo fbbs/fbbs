@@ -1,7 +1,8 @@
 (function() {
 	var jQueryExtend = $.extend;
 
-	var controllers = {};
+	var controllers = {},
+		hooks = [];
 
 	var createLink = function(href) {
 		var a = document.createElement('a');
@@ -61,6 +62,10 @@
 					controller.error(jqXHR, textStatus, errorThrown);
 				}
 			});
+		},
+
+		globalHook: function(selector, func) {
+			hooks.push([selector, func]);
 		}
 	};
 
@@ -101,7 +106,7 @@
 		init: function() {},
 
 		$: function(selector) {
-			this.$el.find(selector);
+			return this.$el.find(selector);
 		},
 
 		render: function() {
@@ -134,7 +139,13 @@
 	jQueryExtend(Controller.prototype, {
 		ready: function(data) {},
 		defaultPost: function() {
-			this.view.$el.ajaxify();
+			var v = this.view;
+			v.$el.ajaxify();
+			hooks.forEach(function(i) {
+				v.$(i[0]).each(function(j, e) {
+					i[1]($(e));
+				});
+			});
 		},
 		error: function() {}
 	});

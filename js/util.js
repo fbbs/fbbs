@@ -275,3 +275,34 @@
 
 	window.Long = Long;
 })();
+
+(function() {
+	var relativeDate = function(d, n) {
+		var	floor = Math.floor,
+			diff = (n - d) / 1000;
+		if (diff < 60)
+			return '刚才';
+		if (diff < 3600)
+			return floor(diff / 60) + '分钟前';
+		if (diff < 86400)
+			return floor(diff / 3600) + '小时前';
+
+		var today = n - (n - n.getTimezoneOffset() * 60000) % 86400000;
+		if (this > today - 86400000)
+			return '昨天' + d.getHours() + ':' + d.getMinutes();
+		if (this > today - 86400000 * 2)
+			return '前天' + d.getHours() + ':' + d.getMinutes();
+		if (diff < 86400 * 8)
+			return floor(diff / 86400) + '天前';
+		if (d.getFullYear() == n.getFullYear())
+			return d.getMonth() + '-' + d.getDate();
+		return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+	};
+
+	App.globalHook('time', function(e) {
+		var now = new Date(),
+			d = new Date(e.text());
+		e.attr('title', d.toLocaleString());
+		e.text(relativeDate(d, now));
+	});
+})();

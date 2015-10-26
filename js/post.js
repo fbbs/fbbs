@@ -1,9 +1,8 @@
 (function() {
 	var parseTitle = function(t) {
-		t = t.escapeHtml();
-		t = t.replace(/\x1b\[1;3\dm\[(.+)\]\x1b\[m/, "<span class='post-tag'>$1</span>");
-		t = t.replace(/^\[转载\]/, "<span class='post-tag'>转载</span>");
-		return t;
+		return t.escapeHtml()
+			.replace(/\x1b\[1;3\dm\[(.+)\]\x1b\[m/, "<span class='post-tag'>$1</span>")
+			.replace(/^\[转载\]/, "<span class='post-tag'>转载</span>");
 	};
 
 	var parseHeader = function(lines) {
