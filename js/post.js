@@ -63,10 +63,6 @@
 				if (m) {
 					m.forEach(function(item) {
 						var b = l.indexOf(item, s), sm;
-						if (!closed) {
-							lines.push('</span>');
-							closed = true;
-						}
 						if (b > s)
 							lines.push(l.substring(s, b).escapeHtml());
 						if (item.startsWith('\x1b')) {
@@ -78,6 +74,8 @@
 									if (d >= 40 && d <= 48) bg = d;
 								});
 							}
+							if (!closed)
+								lines.push('</span>');
 							lines.push('<span class="a' + (+hl) + fg + ' a' + bg + '">');
 							closed = false;
 						} else if (item.startsWith('http')) {
