@@ -753,7 +753,7 @@ void screen_save_line(int line, bool save)
 		int x, y;
 		screen_coordinates(&x, &y);
 		screen_move_clear(line);
-		prints("%s", saved);
+		screen_printf("%s", saved);
 		screen_move(x, y);
 		screen_flush();
 	}
