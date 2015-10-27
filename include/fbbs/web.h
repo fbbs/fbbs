@@ -88,6 +88,7 @@ extern void *web_palloc(size_t size);
 extern char *web_pstrdup(const char *s);
 
 extern void web_set_response(json_object_t *object, json_value_e type);
+extern void web_remove_cookies(void);
 extern void web_respond(web_error_code_e code);
 
 #endif // FB_WEB_H

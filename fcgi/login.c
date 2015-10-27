@@ -283,6 +283,7 @@ int api_session_logout(void)
 			update_user_stay(&currentuser, false, false);
 			save_user_data(&currentuser);
 			session_destroy(id);
+			web_remove_cookies();
 			return WEB_ERROR_NONE;
 		}
 		return WEB_ERROR_LOGIN_REQUIRED;

@@ -2,6 +2,21 @@
 	var KEEP_ALIVE = 15 * 60 * 1000;
 
 	window.Session = {
+		onLoginSuccess: function(data) {
+			var expire = data['expire_time'];
+			Store.clear();
+			Store.set('session-user-name', data['user_name']);
+			Store.set('session-key', data['session_key']);
+			Store.set('session-token', data['token']);
+			if (expire)
+				Store.set('session-expire-time', expire);
+
+			Cookie.set('utmpkey', data['session_key'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs'));
+			Cookie.set('utmpuser', data['user_name'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs'));
+
+			Session.updateLastActivity();
+		},
+
 		checkLoginStatus: function() {
 			var last = Store.get('session-last-activity'),
 				current = (new Date()).getTime();

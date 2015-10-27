@@ -24,6 +24,8 @@
 			this.pathname = a.pathname;
 			this.href = a.href;
 
+			Store.init(createLink(a.pathname + '../').pathname);
+
 			var p = this.partials;
 			$('[id^=p-]').each(function() {
 				var $t = $(this);

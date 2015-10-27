@@ -26,6 +26,7 @@ struct web_ctx_t {
 	web_request_t req;
 	gcry_md_hd_t sha1;
 	bool inited;
+	bool remove_cookies;
 	web_response_t resp;
 };
 
@@ -335,6 +336,7 @@ bool web_ctx_init(void)
 			return false;
 	}
 
+	ctx.remove_cookies = false;
 	ctx.p = pool_create(0);
 	return parse_web_request();
 }
@@ -427,6 +429,16 @@ void web_set_response(json_object_t *object, json_value_e type)
 	ctx.resp.type = type;
 }
 
+void web_remove_cookies(void)
+{
+	ctx.remove_cookies = true;
+}
+
+static void remove_cookie(const char *key)
+{
+	printf("Set-cookie: %s=;Expires=Fri, 19-Apr-1996 11:11:11 GMT\n", key);
+}
+
 struct error_msg_t {
 	web_error_code_e code;
 	web_status_code_e status;
@@ -498,7 +510,12 @@ void web_respond(web_error_code_e code)
 		status = error_msg(code);
 
 	printf("Content-type: application/json; charset=utf-8\n"
-			"Status: %d\n\n", (int) status);
+			"Status: %d\n", (int) status);
+	if (ctx.remove_cookies) {
+		remove_cookie(WEB_COOKIE_USER);
+		remove_cookie(WEB_COOKIE_KEY);
+	}
+	putchar('\n');
 
 	json_dump(ctx.resp.object, ctx.resp.type);
 	FCGI_Finish();
