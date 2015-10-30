@@ -299,10 +299,11 @@
 		return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 	};
 
-	App.globalHook('time', function(e) {
-		var now = new Date(),
-			d = new Date(e.text());
-		e.attr('title', d.toLocaleString());
-		e.text(relativeDate(d, now));
+	App.hook('time', function(e) {
+		var $e = $(e),
+			now = new Date(),
+			d = new Date($e.text());
+		$e.attr('title', d.toLocaleString());
+		$e.text(relativeDate(d, now));
 	});
 })();

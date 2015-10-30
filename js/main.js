@@ -1,17 +1,13 @@
 (function() {
-	$.fn.extend({
-		ajaxify: function() {
-			this.find('a').each(function() {
-				var $this = $(this);
-				if (this.href.startsWith(App.href) && !$this.hasClass('na')) {
-					$this.click(function(evt) {
-						var title = $this.attr('title') || $this.text();
-						title += ' - ' + App.NAME;
-						History.pushState(null, title, this.href);
-						evt.preventDefault();
-						return false;
-					});
-				}
+	App.hook('a', function(e) {
+		var $e = $(e);
+		if (e.href.startsWith(App.href) && !$e.hasClass('na')) {
+			$e.click(function(evt) {
+				var title = $e.attr('title') || $e.text();
+				title += ' - ' + App.NAME;
+				History.pushState(null, title, this.href);
+				evt.preventDefault();
+				return false;
 			});
 		}
 	});
@@ -20,10 +16,10 @@
 		App.init();
 
 		Ui.hideHidden();
-		$('body').ajaxify();
+		$('body').hook();
 
 		App.E.on('statechange', function(evt) {
-			App.load();
+			App.loadPage();
 		});
 
 		$(window).bind('statechange', function() {

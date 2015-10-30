@@ -17,6 +17,10 @@
 			return Mustache.render(tmpl, data, this.partials);
 		},
 
+		partial: function(tmpl, data) {
+			return Mustache.render($('#p-' + tmpl).text(), data, this.partials);
+		},
+
 		partials: {},
 
 		init: function() {
@@ -41,7 +45,16 @@
 			return controllers[name];
 		},
 
-		load: function() {
+		load: function(api, param, done, fail) {
+			if (typeof(param) === 'object')
+				param = '?' + $.param(param);
+			return $.ajax({
+				url: this.pathname + '../bbs/' + api + '.json' + param,
+				dataType: 'json'
+			}).done(done).fail(fail);
+		},
+
+		loadPage: function() {
 			var url = History.getState().url,
 				a = createLink(url),
 				api = a.pathname.replace(this.pathname, ''),
@@ -51,27 +64,37 @@
 				return;
 			var controller = new ctrlClass();
 
-			$.ajax({
-				url: this.pathname + '../bbs/' + api + '.json' + a.search,
-				dataType: 'json'
-			}).done(function(data) {
+			this.load(api, a.search, function(data) {
 				if (url === History.getState().url) {
 					controller.ready(data);
 					controller.defaultPost();
 					if (controller.post)
 						controller.post();
 				}
-			}).fail(function(jqXHR, textStatus, errorThrown) {
+			},
+			function(jqXHR, textStatus, errorThrown) {
 				if (url === History.getState().url) {
 					controller.error(jqXHR, textStatus, errorThrown);
 				}
 			});
 		},
 
-		globalHook: function(selector, func) {
+		hook: function(selector, func) {
 			hooks.push([selector, func]);
-		}
+		},
+
 	};
+
+	$.fn.extend({
+		hook: function() {
+			var $this = this;
+			hooks.forEach(function(i) {
+				$this.find(i[0]).each(function(j, e) {
+					i[1](e);
+				});
+			});
+		}
+	});
 
 	var Model = App.M = function(options) {
 		jQueryExtend(this, options);
@@ -143,15 +166,7 @@
 	jQueryExtend(Controller.prototype, {
 		ready: function(data) {},
 		defaultPost: function() {
-			var v = this.view;
-			v.$el.ajaxify();
-
-			hooks.forEach(function(i) {
-				v.$(i[0]).each(function(j, e) {
-					i[1]($(e));
-				});
-			});
-
+			this.view.$el.hook();
 			Ui.showNavBoard(this.nav == 'board');
 		},
 		error: function() {}

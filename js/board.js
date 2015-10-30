@@ -36,22 +36,85 @@
 	Board.Toc = App.P({
 		tmpl: 'board-toc',
 		m: {
-			init: function(data) {
-				var f = function(e) {
-					e.stamp = Post.stamp(e.id).format();
-					e.board_id = data.board.id;
+			convert: function(board_id) {
+				return function(e) {
+					e.stamp = Post.stamp(e.id).toISOString();
+					e.board_id = board_id;
 					e.title = Post.parseTitle(e.title);
 				};
+			},
+
+			init: function(data) {
 				if (data.board) {
 					data.board.bms = data.board.bms.split(' ');
 				}
-				data.posts.forEach(f);
+				data.posts.forEach(this.convert(data.board.id));
 				this.data = data;
+			},
+
+			append: function(posts) {
+				posts.forEach(this.convert(this.data.board.id));
+				$.merge(this.data.posts, posts);
+			},
+
+			min_id: function() {
+				var p = this.data.posts,
+					l = p.length;
+				return l ? p[l - 1].id : 0;
+			}
+		},
+
+		v: {
+			append: function(posts) {
+				$($.map(posts, function(p) {
+					return App.partial('board-toc-list', p);
+				}).join(''))
+				.appendTo(this.$('#board-toc-list'))
+				.hook();
 			}
 		},
 
 		c: {
-			nav: 'board'
+			nav: 'board',
+
+			post: function() {
+				var $load = this.view.$('.load-more'),
+					clickable = true,
+					model = this.model, view = this.view,
+					count = 20;
+
+				if (model.data.posts.length < count) {
+					$load.hide();
+					return;
+				}
+
+				$load.text('↓ 载入更多');
+				$load.click(function() {
+					if (clickable) {
+						$load.text('载入中…');
+						App.load('board-toc', {
+							id: model.data.board.id,
+							max_id: model.min_id()
+						}, function(data) {
+							var posts = data.posts;
+							if (posts.length > 0) {
+								model.append(posts);
+								view.append(posts);
+							}
+							if (posts.length < count) {
+								$load.text('已全部载入');
+							} else {
+								$load.text('↓ 载入更多');
+								clickable = true;
+							}
+						}, function(jqXHR, textStatus, errorThrown) {
+							$load.text('载入失败，点击重试');
+							clickable = true;
+						});
+						clickable = false;
+					}
+				});
+			}
 		}
 	});
 })();
