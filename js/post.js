@@ -135,7 +135,9 @@
 			}
 		},
 		c: {
-			nav: 'board'
+			nav: 'board',
+			post: function() {
+			}
 		}
 	});
 })();

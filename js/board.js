@@ -61,6 +61,10 @@
 				var p = this.data.posts,
 					l = p.length;
 				return l ? p[l - 1].id : 0;
+			},
+
+			count: function() {
+				return this.data.posts.length;
 			}
 		},
 
@@ -78,40 +82,18 @@
 			nav: 'board',
 
 			post: function() {
-				var $load = this.view.$('.load-more'),
-					clickable = true,
-					model = this.model, view = this.view,
-					count = 20;
-
-				if (model.data.posts.length < count) {
-					$load.hide();
-					return;
-				}
-
-				$load.text('↓ 载入更多');
-				$load.click(function() {
-					if (clickable) {
-						$load.text('载入中…');
-						App.load('board-toc', {
+				Ui.loadMore({
+					ctrl: this,
+					count: 20,
+					api: 'board-toc',
+					param: function(model) {
+						return {
 							id: model.data.board.id,
 							max_id: model.min_id()
-						}, function(data) {
-							var posts = data.posts;
-							if (posts.length > 0) {
-								model.append(posts);
-								view.append(posts);
-							}
-							if (posts.length < count) {
-								$load.text('已全部载入');
-							} else {
-								$load.text('↓ 载入更多');
-								clickable = true;
-							}
-						}, function(jqXHR, textStatus, errorThrown) {
-							$load.text('载入失败，点击重试');
-							clickable = true;
-						});
-						clickable = false;
+						}
+					},
+					done: function(data) {
+						return data.posts;
 					}
 				});
 			}
