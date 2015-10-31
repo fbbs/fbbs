@@ -14,7 +14,7 @@
 		NAME: '日月光华',
 
 		render: function(tmpl, data) {
-			return Mustache.render(tmpl, data, this.partials);
+			return Mustache.render($('#t-' + tmpl).text(), data, this.partials);
 		},
 
 		partial: function(tmpl, data) {
@@ -154,8 +154,6 @@
 				if (t.cls)
 					t.$el.attr('class', t.cls);
 			}
-			if (t.tmpl)
-				t.tmpl = $('#t-' + t.tmpl).text();
 		}
 	});
 

@@ -199,7 +199,30 @@ static int _web_login(bool persistent, bool redirect, session_data_t *s)
 	return WEB_OK;
 }
 
-static int api_login(void)
+static void print_fav_boards(json_object_t *object)
+{
+	query_t *q = query_new(0);
+	query_select(q, "board, name");
+	query_from(q, "fav_boards");
+	query_where(q, "user_id = %"DBIdUID, session_get_user_id());
+	db_res_t *res = query_exec(q);
+
+	json_array_t *array = json_array_new();
+	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+		int board_id = db_get_integer(res, i, 0);
+		const char *board_name = db_get_value(res, i, 1);
+
+		json_object_t *o = json_object_new();
+		json_object_integer(o, "id", board_id);
+		json_object_string(o, "name", board_name);
+		json_array_append(array, o, JSON_OBJECT);
+	}
+	db_clear(res);
+
+	json_object_append(object, "board-favorite", array, JSON_ARRAY);
+}
+
+int api_session_login(void)
 {
 	if (web_request_method(GET)) {
 		if (session_get_id())
@@ -225,6 +248,8 @@ static int api_login(void)
 			json_object_string(object, "session_key", s.key);
 			json_object_string(object, "token", s.token);
 			json_object_bigint(object, "expire_time", s.expire_time);
+
+			print_fav_boards(object);
 		}
 		return ret;
 	} else {
@@ -234,9 +259,6 @@ static int api_login(void)
 
 int web_login(void)
 {
-	if (web_request_type(API))
-		return api_login();
-
 	if (session_get_id())
 		return login_redirect(NULL, 0);
 

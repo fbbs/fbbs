@@ -25,7 +25,7 @@ $(function() {
 	if (Store.get('session-logout')) {
 		Store.clear();
 	} else {
-		$.getJSON('bbs/login.json', function(data) {
+		$.getJSON('bbs/session-login.json', function(data) {
 			if (data.code == 10002) {
 				location.assign('alpha/home');
 			}

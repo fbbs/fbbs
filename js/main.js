@@ -29,6 +29,7 @@
 		Session.init();
 
 		App.E.fire('statechange');
+		App.E.fire('b:favorite');
 
 		(function() {
 			var $navHeaders = $('#nav-notification-header, #nav-board-header');

@@ -74,6 +74,7 @@ extern int api_board_all(void);
 extern int api_board_fav(void);
 API_DECLARE(board, sector);
 API_DECLARE(board, toc);
+API_DECLARE(session, login);
 API_DECLARE(session, logout);
 
 extern int api_post_content(void);
@@ -139,6 +140,7 @@ const static web_handler_t handlers[] = {
 	{ "rss", bbsrss_main, ST_READING },
 	{ "sec", bbssec_main, ST_READBRD },
 	{ "sel", web_sel, ST_SELECT },
+	{ "session-login", api_session_login, ST_LOGIN },
 	{ "session-logout", api_session_logout, ST_MMENU },
 	{ "sig", bbssig_main, ST_EDITUFILE },
 	{ "sigopt", web_sigopt, ST_GMENU },
@@ -239,7 +241,7 @@ static bool require_login(const web_handler_t *h)
 #ifdef FDQUAN
 	int (*f)(void) = h->func;
 	return !(f == web_login || f == fcgi_reg || f == fcgi_activate
-			|| f == api_session_logout);
+			|| f == api_session_login || f == api_session_logout);
 #else
 	return false;
 #endif

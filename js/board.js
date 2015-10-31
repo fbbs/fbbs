@@ -99,4 +99,15 @@
 			}
 		}
 	});
+
+	App.E.on('b:favorite', function() {
+		var s = 'board-favorite',
+			boards = Store.get(s);
+		if (boards && boards.length > 0)
+			boards.sort(function(a, b) { return a.name.localeCompare(b.name); });
+
+		$('#' + s).html(App.render(s, {
+			boards: boards
+		}));
+	});
 })();
