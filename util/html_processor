@@ -16,7 +16,7 @@ sub main {
 		if (/(template|partial) +(.+)>/) {
 			my $prefix = substr $1, 0, 1;
 			print $fout "<script type='text/html' id='$prefix-$2'>";
-			include_file($dir, $fout, $2);
+			include_file($dir, $fout, $2, $prefix);
 			print $fout "</script>";
 		} else {
 			s/^\s+//;
@@ -29,8 +29,8 @@ sub main {
 }
 
 sub include_file {
-	my ($dir, $fout, $tmpl) = @_;
-	open my $fh, '<', "$dir/tmpl/$tmpl.htm" or die $!;
+	my ($dir, $fout, $tmpl, $prefix) = @_;
+	open my $fh, '<', "$dir/tmpl/$tmpl.htm" . ($prefix eq 't' ? 'l' : '') or die $!;
 	while (<$fh>) {
 		chomp;
 		s/^\s+//;

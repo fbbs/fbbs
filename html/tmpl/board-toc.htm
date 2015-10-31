@@ -1,15 +1,1 @@
-<div id='board-toc'>
-<h2>{{board.descr}} [{{board.name}}]</h2>
-<div class='board-manager-list'>
-版主
-{{#board.bms}}
-<a class='user-meta' href='user-meta?name={{.}}'>{{.}}</a>
-{{/board.bms}}
-</div>
-<ul id='board-toc-list'>
-{{#posts}}
-{{>board-toc-list}}
-{{/posts}}
-</ul>
-<div class='load-more'></div>
-</div>
+<li {{#sticky}}class='post-sticky'{{/sticky}}><a class='board-toc-title' href='post-content?thread_id={{id}}&board_id={{board_id}}'>{{{title}}}</a><a class='user-meta' href='user-meta?name={{user_name}}'>{{user_name}}</a><time>{{stamp}}</time></li>

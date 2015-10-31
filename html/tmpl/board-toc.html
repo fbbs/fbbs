@@ -1,0 +1,15 @@
+<div id='board-toc'>
+<h2>{{board.descr}} [{{board.name}}]</h2>
+<div class='board-manager-list'>
+版主
+{{#board.bms}}
+<a class='user-meta' href='user-meta?name={{.}}'>{{.}}</a>
+{{/board.bms}}
+</div>
+<ul id='board-toc-list'>
+{{#posts}}
+{{>board-toc}}
+{{/posts}}
+</ul>
+<div class='load-more'></div>
+</div>

@@ -127,16 +127,56 @@
 	Post.Content = App.P({
 		tmpl: 'post-content',
 		m: {
+			convert: function(p) {
+				$.extend(p, Post.parse(p.content));
+			},
 			init: function(data) {
-				data.posts.forEach(function(p) {
-					$.extend(p, Post.parse(p.content));
-				});
+				data.posts.forEach(this.convert);
 				this.data = data;
+			},
+			thread_id: function() {
+				var l = this.data.posts.length;
+				return l ? this.data.posts[0].thread_id : 0;
+			},
+			max_id: function() {
+				var l = this.data.posts.length;
+				return l ? this.data.posts[l - 1].id : 0;
+			},
+			count: function() {
+				return this.data.posts.length;
+			},
+			append: function(posts) {
+				posts.forEach(this.convert);
+				$.merge(this.data.posts, posts);
+			}
+		},
+		v: {
+			append: function(posts) {
+				$($.map(posts, function(p) {
+					return App.partial('post-content', p);
+				}).join(''))
+					.appendTo(this.$('#post-content-list'))
+					.hook();
 			}
 		},
 		c: {
 			nav: 'board',
 			post: function() {
+				Ui.loadMore({
+					ctrl: this,
+					count: 20,
+					api: 'post-content',
+					param: function(model) {
+						return {
+							board_id: model.data.board_id,
+							thread_id: model.thread_id(),
+							since_id: model.max_id()
+						};
+					},
+					done: function(data) {
+						return data.posts;
+					}
+				});
 			}
 		}
 	});

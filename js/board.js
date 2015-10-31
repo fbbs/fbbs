@@ -71,7 +71,7 @@
 		v: {
 			append: function(posts) {
 				$($.map(posts, function(p) {
-					return App.partial('board-toc-list', p);
+					return App.partial('board-toc', p);
 				}).join(''))
 				.appendTo(this.$('#board-toc-list'))
 				.hook();
