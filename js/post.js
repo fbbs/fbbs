@@ -1,7 +1,7 @@
 (function() {
 	var parseTitle = function(t) {
 		return t.escapeHtml()
-			.replace(/\x1b\[1;3\dm\[(.+?)\]\x1b\[m/, "<span class='post-tag'>$1</span>")
+			.replace(/\x1b\[1(?:;3\d)?m\[(.+?)\]\x1b\[m/, "<span class='post-tag'>$1</span>")
 			.replace(/^\[(转载|合集)\]/, "<span class='post-tag'>$1</span>");
 	};
 
