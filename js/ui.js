@@ -55,6 +55,7 @@
 							if (list.length > 0) {
 								model.append(list);
 								view.append(list);
+								loadTop = $load.offset().top;
 							}
 							if (list.length < options.count) {
 								$load.hide();
