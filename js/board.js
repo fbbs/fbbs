@@ -112,6 +112,6 @@
 
 		$('#' + s).html(App.render(s, {
 			boards: boards
-		}));
+		})).hook();
 	});
 })();
