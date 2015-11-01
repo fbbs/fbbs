@@ -2356,7 +2356,7 @@ extern int club_user(void);
 extern int tui_send_msg(const char *);
 extern int x_lockscreen(void);
 extern int vote_results(const char *bname);
-extern int b_vote(void);
+extern int b_vote(const char *bname);
 extern int vote_maintain(const char *bname);
 extern int b_notes_edit(void);
 extern int b_notes_passwd(void);
@@ -2406,7 +2406,7 @@ static tui_list_handler_t post_list_handler(tui_list_t *tl, int ch)
 		case 'R':
 			return vote_results(currboard);
 		case 'v':
-			return b_vote();
+			return b_vote(currboard);
 		case 'V':
 			return vote_maintain(currboard);
 		case KEY_TAB:
