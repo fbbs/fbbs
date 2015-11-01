@@ -96,6 +96,10 @@
 						return data.posts;
 					}
 				});
+			},
+
+			leave: function() {
+				$(window).off('scroll');
 			}
 		}
 	});

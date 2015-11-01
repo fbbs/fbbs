@@ -2,6 +2,7 @@
 	var jQueryExtend = $.extend;
 
 	var controllers = {},
+		currentController,
 		hooks = [];
 
 	var createLink = function(href) {
@@ -60,11 +61,16 @@
 				api = a.pathname.replace(this.pathname, ''),
 				ctrlClass = App.getC(api);
 
+			if (currentController && currentController.leave) {
+				currentController.leave();
+			}
+
 			if (!ctrlClass)
 				return;
-			var controller = new ctrlClass();
+			var controller = currentController = new ctrlClass();
 
 			this.load(api, a.search, function(data) {
+				window.scrollTo(0, 0);
 				if (url === History.getState().url) {
 					controller.ready(data);
 					controller.defaultPost();

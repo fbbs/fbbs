@@ -20,17 +20,34 @@
 		loadMore: function(options) {
 			var ctrl = options.ctrl,
 				$load = ctrl.view.$('.load-more'),
-				clickable = true,
-				model = ctrl.model, view = ctrl.view;
+				$end = ctrl.view.$('.end-sign'),
+				clickable = true, autoload = false,
+				model = ctrl.model, view = ctrl.view,
+
+				loadTop = $load.offset().top,
+				callback = function() {
+					var $t = $(this);
+					var t = $t.scrollTop() + $t.height();
+					if (t > loadTop) {
+						$load.click();
+					}
+				};
 
 			if (model.count() < options.count) {
 				$load.hide();
 				return;
+			} else {
+				$end.hide();
 			}
 
 			$load.text('↓ 载入更多');
 			$load.click(function() {
 				if (clickable) {
+					clickable = false;
+					if (!autoload) {
+						$(window).on('scroll', callback);
+						autoload = true;
+					}
 					$load.text('载入中…');
 					App.load(options.api, options.param(model),
 						function(data) {
@@ -40,7 +57,8 @@
 								view.append(list);
 							}
 							if (list.length < options.count) {
-								$load.text('已全部载入');
+								$load.hide();
+								$end.show();
 							} else {
 								$load.text('↓ 载入更多');
 								clickable = true;
@@ -52,7 +70,6 @@
 								options.fail(jqXHR, textStatus, errorThrown);
 						}
 					});
-					clickable = false;
 				}
 			});
 		}

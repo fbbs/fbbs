@@ -39,3 +39,20 @@
 	margin-left: @nav-left-width + 16px;
 }
 
+hr.end-sign {
+	border: none;
+	border-top: 3px double @color-primary-300;
+	margin: @line-height-small 0;
+	text-align: center;
+	font-size: @font-size-xlarge;
+}
+hr.end-sign:after {
+	content: "•";
+	position: relative;
+	top: -(@font-size-xlarge + 3px) / 2;
+	background-color: #fff;
+	color: @color-primary-300;
+	width: @font-size-xlarge * 1.5;
+	display: inline-block;
+}
+
