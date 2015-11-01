@@ -445,62 +445,27 @@ struct error_msg_t {
 	const char *msg;
 };
 
-static const struct error_msg_t error_msgs[] = {
-	{
-		.code = WEB_ERROR_NONE,
-		.status = WEB_STATUS_OK,
-		.msg = "success",
-	},
-	{
-		.code = WEB_ERROR_INCORRECT_PASSWORD,
-		.status = WEB_STATUS_FORBIDDEN,
-		.msg = "incorrect username or password",
-	},
-	{
-		.code = WEB_ERROR_USER_SUSPENDED,
-		.status = WEB_STATUS_FORBIDDEN,
-		.msg = "permission denied",
-	},
-	{
-		.code = WEB_ERROR_BAD_REQUEST,
-		.status = WEB_STATUS_BAD_REQUEST,
-		.msg = "bad request",
-	},
-	{
-		.code = WEB_ERROR_INTERNAL,
-		.status = WEB_STATUS_INTERNAL_SERVER_ERROR,
-		.msg = "internal error",
-	},
-	{
-		.code = WEB_ERROR_LOGIN_REQUIRED,
-		.status = WEB_STATUS_FORBIDDEN,
-		.msg = "login required"
-	},
-	{
-		.code = WEB_ERROR_BOARD_NOT_FOUND,
-		.status = WEB_STATUS_NOT_FOUND,
-		.msg = "board not found"
-	},
-	{
-		.code = WEB_ERROR_METHOD_NOT_ALLOWED,
-		.status = WEB_STATUS_METHOD_NOT_ALLOWED,
-		.msg = "method not allowed",
-	},
+static const web_status_code_e errors[] = {
+	[WEB_ERROR_NONE] = WEB_STATUS_OK,
+	[WEB_ERROR_INCORRECT_PASSWORD] = WEB_STATUS_FORBIDDEN,
+	[WEB_ERROR_USER_SUSPENDED] = WEB_STATUS_FORBIDDEN,
+	[WEB_ERROR_BAD_REQUEST] = WEB_STATUS_BAD_REQUEST,
+	[WEB_ERROR_INTERNAL] = WEB_STATUS_INTERNAL_SERVER_ERROR,
+	[WEB_ERROR_LOGIN_REQUIRED] = WEB_STATUS_FORBIDDEN,
+	[WEB_ERROR_BOARD_NOT_FOUND] = WEB_STATUS_NOT_FOUND,
+	[WEB_ERROR_METHOD_NOT_ALLOWED] = WEB_STATUS_METHOD_NOT_ALLOWED,
 };
 
 static web_status_code_e error_msg(web_error_code_e code)
 {
 	json_object_t *object = json_object_new();
 	web_set_response(object, JSON_OBJECT);
+	json_object_integer(object, "code", code + 10000);
 
-	const struct error_msg_t *e = error_msgs;
-	if (code > 0 && code <= ARRAY_SIZE(error_msgs))
-		e = error_msgs + code - 2;
-
-	json_object_string(object, "msg", e->msg);
-	json_object_integer(object, "code", e->code + 10000);
-
-	return e->status;
+	int status = WEB_STATUS_OK;
+	if (code > WEB_OK && code < ARRAY_SIZE(errors))
+		status = errors[code];
+	return status;
 }
 
 void web_respond(web_error_code_e code)
