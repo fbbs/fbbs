@@ -295,7 +295,7 @@
 		if (diff < 86400 * 8)
 			return floor(diff / 86400) + '天前';
 		if (d.getFullYear() == n.getFullYear())
-			return d.getMonth() + '-' + d.getDate();
+			return (d.getMonth() + 1) + '-' + d.getDate();
 		return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 	};
 
