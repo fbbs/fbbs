@@ -699,11 +699,6 @@ int bbssnd_main(void)
 			return BBS_EINTNL;
 	}
 
-	if (!isedit && !(board.flag & BOARD_FLAG_JUNK)) {
-		currentuser.numposts++;
-		save_user_data(&currentuser);
-	}
-
 	char buf[128];
 	snprintf(buf, sizeof(buf), "%sed '%s' on %s", isedit ? "edit" : "post",
 			utf8_title, board.name);
