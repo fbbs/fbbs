@@ -1282,17 +1282,17 @@ static bool write_header_utf8(FILE *fp, const struct postheader *post_header,
 }
 
 static bool write_body(const editor_t *editor, FILE *fp, const char *host,
-		bool anonymous)
+		bool anonymous, bool write_header_to_file)
 {
 	bool ends_with_newline = false;
 	vector_size_t lines = vector_size(&editor->lines);
 	for (vector_size_t i = 0; i < lines; ++i) {
 		text_line_t *tl = editor_line(editor, i);
 		if (tl && tl->buf) {
-			if (!strneq2(tl->buf, "\033[m\033[1;36m※ 修改:·")) {
-				fwrite(tl->buf, 1, tl->size, fp);
-				ends_with_newline = contains_newline(tl);
-			}
+			if (strneq2(tl->buf, "\033[m\033[1;36m※ 修改:·"))
+				break;
+			fwrite(tl->buf, 1, tl->size, fp);
+			ends_with_newline = contains_newline(tl);
 		}
 	}
 	if (!ends_with_newline)
@@ -1302,7 +1302,7 @@ static bool write_body(const editor_t *editor, FILE *fp, const char *host,
 		fprintf(fp, "\033[m\033[1;36m※ 修改:·%s 于 %s·[FROM: %s]\033[m\n",
 				currentuser.userid,
 				format_time(fb_time(), TIME_FORMAT_UTF8_ZH), host);
-	} else {
+	} else if (write_header_to_file) {
 		if (editor->allow_edit_end == vector_size(&editor->lines)) {
 			int color = (currentuser.numlogins % 7) + 31;
 			fprintf(fp, "\033[m\033[1;%2dm※ 来源:·%s %s·[FROM: %s]\033[m\n",
@@ -1360,7 +1360,7 @@ static int write_file(editor_t *editor, const char *file,
 				in_mail);
 	}
 	if (ok)
-		write_body(editor, fp, utf8_host, anonymous);
+		write_body(editor, fp, utf8_host, anonymous, write_header_to_file);
 
 	fclose(fp);
 	if (!utf8) {
