@@ -1,9 +1,14 @@
+<div class='article'>
 <article>
 <header>
-<h1>{{{title}}}</h1>
+<h1>{{{titleHtml}}}</h1>
 <a href='user-meta?name={{user_name}}'>{{user_name}}</a>
 <span>{{user_nick}}</span>
 <time>{{date}}</time>
 </header>
-{{{parsed}}}
+{{{contentHtml}}}
 </article>
+<div class='article-links'>
+<a class='post-reply na' href='post-content?board_id={{board.id}}&reply_id={{id}}'>回复</a>
+</div>
+</div>

@@ -1,11 +1,11 @@
 (function() {
-	var parseTitle = function(t) {
-		return t.escapeHtml()
-			.replace(/\x1b\[1(?:;3\d)?m\[(.+?)\]\x1b\[m/, "<span class='post-tag'>$1</span>")
-			.replace(/^\[(转载|合集)\]/, "<span class='post-tag'>$1</span>");
-	};
+	var QUOTE_LINE_MAX = 5,
+		QUOTE_WIDTH_MAX = 140,
+		TRUNCATE_WIDTH = 76,
+		QUOTE_TEMPLATE = '【 在 {{{user_name}}} ({{{user_nick}}}) 的大作中提到: 】',
+		OMIT_STRING = ': .................（以下省略）';
 
-	var parseHeader = function(lines) {
+	function parseHeader(lines) {
 		var R1 = /发信人: ([^ ]+) \((.*)\), 信区: (.+)$/,
 			R2 = /(\d\d\d\d)年(\d\d)月(\d\d)日(\d\d):(\d\d):(\d\d)/,
 			R3 = /\((.+)\)/,
@@ -25,113 +25,174 @@
 			if (m)
 				r.date = new Date(m[1]);
 		}
-		r.title = parseTitle(lines[1].substring(6));
+		r.title = lines[1].substring(6);
 		return r;
 	}
 
-	window.Post = {
-		stamp: function(id) {
-			return new Date((new Long(id)).rshift(21).toInteger());
-		},
-		makeId: function(stamp) {
-			return (new Long(stamp)).lshift(21).toString();
+	var State = function() {
+		$.extend(this, {
+			lines: [],
+			quote: false,
+			footer: false
+		});
+	};
+
+	$.extend(State.prototype, {
+		setQuote: function(quote) {
+			if (this.quote != quote) {
+				this.lines.push(quote ? '<blockquote>' : '</blockquote>');
+				this.quote = quote;
+			}
 		},
 
-		_State: function() {
-			this.lines = [];
-			this.quote = false;
-			this.footer = false;
-			this.setQuote = function(quote) {
-				if (this.quote != quote) {
-					this.lines.push(quote ? '<blockquote>' : '</blockquote>');
-					this.quote = quote;
-				}
-			};
-			this.setFooter = function(footer) {
-				if (this.footer != footer) {
-					if (this.quote)
-						this.setQuote(false);
-					this.lines.push(footer ? '<footer>' : '</footer>');
-					this.footer = footer;
-				}
-			};
-			this.parseLine = function(l) {
-				var hl = false, fg = 37, bg = 40, s = 0, closed = true,
-					m = l.match(/(\x1b\[[\d;]*\w|https?:\/\/[\w\d\-\._~:\/\?#\[\]@!\$&'\(\)\*\+,;=%]+)/g),
-					lines = [];
+		setFooter: function(footer) {
+			if (this.footer != footer) {
+				if (this.quote)
+					this.setQuote(false);
+				this.lines.push(footer ? '<footer>' : '</footer>');
+				this.footer = footer;
+			}
+		},
 
-				if (m) {
-					m.forEach(function(item) {
-						var b = l.indexOf(item, s), sm;
-						if (b > s)
-							lines.push(l.substring(s, b).escapeHtml());
-						if (item.startsWith('\x1b')) {
-							sm = item.match(/(\d+)/g);
-							if (sm) {
-								sm.forEach(function(d) {
-									if (d == 0 || d == 1) hl = d;
-									if (d >= 30 && d <= 37) fg = d;
-									if (d >= 40 && d <= 48) bg = d;
-								});
-							}
-							if (!closed)
-								lines.push('</span>');
-							lines.push('<span class="a' + (+hl) + fg + ' a' + bg + '">');
-							closed = false;
-						} else if (item.startsWith('http')) {
-							if (item.match('/jpg|jpeg|png|gif/i')) {
-								lines.push('<img src="' + encodeURI(item) + '"/>');
-							} else {
-								lines.push('<a href="' + encodeURI(item) + '">' + item.escapeHtml() + '</a>');
-							}
+		parseLine: function(l) {
+			var hl = false, fg = 37, bg = 40, s = 0, closed = true,
+				m = l.match(/(\x1b\[[\d;]*\w|https?:\/\/[\w\d\-\._~:\/\?#\[\]@!\$&'\(\)\*\+,;=%]+)/g),
+				lines = [];
+
+			if (m) {
+				m.forEach(function(item) {
+					var b = l.indexOf(item, s), sm;
+					if (b > s)
+						lines.push(l.substring(s, b).escapeHtml());
+					if (item.startsWith('\x1b')) {
+						sm = item.match(/(\d+)/g);
+						if (sm) {
+							sm.forEach(function(d) {
+								if (d == 0 || d == 1) hl = d;
+								if (d >= 30 && d <= 37) fg = d;
+								if (d >= 40 && d <= 48) bg = d;
+							});
 						}
-						s = b + item.length;
-					});
-				}
-				if (s < l.length)
-					lines.push(l.substring(s).escapeHtml());
-				if (!closed)
-					lines.push('</span>');
-				return lines;
-			};
+						if (!closed)
+							lines.push('</span>');
+						lines.push('<span class="a' + (+hl) + fg + ' a' + bg + '">');
+						closed = false;
+					} else if (item.startsWith('http')) {
+						if (item.match('/jpg|jpeg|png|gif/i')) {
+							lines.push('<img src="' + encodeURI(item) + '"/>');
+						} else {
+							lines.push('<a href="' + encodeURI(item) + '">' + item.escapeHtml() + '</a>');
+						}
+					}
+					s = b + item.length;
+				});
+			}
+			if (s < l.length)
+				lines.push(l.substring(s).escapeHtml());
+			if (!closed)
+				lines.push('</span>');
+			return lines;
+		}
+	});
+
+	var Post = window.Post = {
+		stamp: function(id) {
+			return new Date((new Util.Long(id)).rshift(21).toInteger());
 		},
 
-		parse: function(s) {
-			var lines = s.split('\n'), s = new this._State(), r = {};
+		makeId: function(stamp) {
+			return (new Util.Long(stamp)).lshift(21).toString();
+		},
+
+		titleHtml: function(title) {
+			if (title) {
+				return title.escapeHtml()
+						.replace(/\x1b\[1(?:;3\d)?m\[(.+?)\]\x1b\[m/, "<span class='post-tag'>$1</span>")
+						.replace(/^\[(转载|合集)\]/, "<span class='post-tag'>$1</span>");
+			}
+		},
+
+		Article: function(post) {
+			var lines = post.content.split('\n');
 			if (lines.length > 4) {
-				r = parseHeader(lines);
+				$.extend(this, parseHeader(lines));
 				lines = lines.slice(4);
 			}
+			this.lines = lines;
 
-			$.each(lines, function(i, l) {
-				if (!s.footer) {
-					if (l == '--') {
-						s.setFooter(true);
+			$.extend(this, post);
+			delete this.content;
+		}
+	};
+
+	$.extend(Post.Article.prototype, {
+		contentHtml: function() {
+			var state = new State();
+			this.lines.forEach(function(line) {
+				if (!state.footer) {
+					if (line == '--') {
+						state.setFooter(true);
 						return;
 					}
-					s.setQuote(l.startsWith('【 在 ') || l.startsWith(': '));
+					state.setQuote(line.startsWith('【 在 ') || line.startsWith(': '));
 				}
-				s.lines.push('<p>');
-				$.merge(s.lines, s.parseLine(l));
-				s.lines.push('</p>');
+				state.lines.push('<p>');
+				$.merge(state.lines, state.parseLine(line));
+				state.lines.push('</p>');
 			});
-			s.setQuote(false);
-			s.setFooter(false);
-			r.parsed = s.lines.join('');
-			return r;
+			state.setQuote(false);
+			state.setFooter(false);
+			return state.lines.join('');
 		},
 
-		parseTitle: parseTitle
-	};
+		titleHtml: function() {
+			return Post.titleHtml(this.title);
+		},
+
+		titleReply: function() {
+			if (this.title) {
+				return this.title.startsWith('Re: ') ? this.title : 'Re: ' + this.title;
+			}
+		},
+
+		quote: function() {
+			var quotes = [
+				'',
+				Mustache.render(QUOTE_TEMPLATE, this)
+			];
+			var length = this.lines.length,
+				seeker, line, i, l, left = QUOTE_WIDTH_MAX, end = false;
+			for (i = 0; i < length && !end; ++i) {
+				line = this.lines[i]
+				if (line == '--' || /^([:>] ){2,}/.test(line) || /^\s+$/.test(line)) break;
+
+				seeker = new Util.Width.Seeker(line);
+				while (true) {
+					l = seeker.next(left > TRUNCATE_WIDTH ? TRUNCATE_WIDTH : left);
+					if (!l.str) break;
+
+					quotes.push(': ' + l.str);
+					left -= l.width;
+
+					if (quotes.length >= QUOTE_LINE_MAX + 2 || left <= 0) {
+						quotes.push(OMIT_STRING);
+						end = true;
+						break;
+					}
+				}
+			}
+			return quotes.join('\n').escapeHtml();
+		}
+	});
 
 	Post.Content = App.P({
 		tmpl: 'post-content',
 		m: {
 			convert: function(p) {
-				$.extend(p, Post.parse(p.content));
+				return new Post.Article(p);
 			},
 			init: function(data) {
-				data.posts.forEach(this.convert);
+				data.posts = $.map(data.posts, this.convert);
 				this.data = data;
 			},
 			thread_id: function() {
@@ -146,8 +207,16 @@
 				return this.data.posts.length;
 			},
 			append: function(posts) {
-				posts.forEach(this.convert);
+				posts = $.map(data.posts, this.convert);
 				$.merge(this.data.posts, posts);
+			},
+			anonymous: function() {
+				return !!this.data.board.anonymous;
+			},
+			find: function(id) {
+				return $.grep(this.data.posts, function(p, i) {
+					return p.id == id;
+				})[0];
 			}
 		},
 		v: {
@@ -176,6 +245,41 @@
 					done: function(data) {
 						return data.posts;
 					}
+				});
+
+				var model = this.model;
+				this.view.$('a.post-reply').click(function(evt) {
+					var $t = $(this), $p = $t.parent(),
+						$f = $p.parent().find('.post-new'),
+						search = this.search,
+						params = $.deparam(search),
+						post = model.find(params.reply_id);
+
+					if ($f.length == 0) {
+						$f = $(App.render('post-new', {
+							anonymous: model.anonymous()
+						})).appendTo($p);
+
+						$f.find('[type=submit]').click(function() {
+							$f.prop('disabled', true);
+							App.postForm({
+								type: 'POST',
+								url: App.api('post-content') + search,
+								data: $f.serializeArray()
+							}).done(function(data) {
+								$f.remove();
+							}).fail(function(jqXHR, textStatus, errorThrown) {
+								$f.prop('disabled', false);
+							});
+							return false;
+						});
+						$f.find('[name=title]').attr('value', post.titleReply());
+						$f.find('textarea').text(post.quote()).focus().selectRange(0, 0);
+						$f.show();
+					} else {
+						$f.remove();
+					}
+					return false;
 				});
 			},
 			leave: function() {

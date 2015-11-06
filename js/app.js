@@ -3,7 +3,8 @@
 
 	var controllers = {},
 		currentController,
-		hooks = [];
+		hooks = [],
+		tokenFunc;
 
 	var createLink = function(href) {
 		var a = document.createElement('a');
@@ -46,11 +47,27 @@
 			return controllers[name];
 		},
 
+		api: function(api) {
+			return this.pathname + '../bbs/' + api + '.json';
+		},
+
+		token: function(func) {
+			if (func)
+				tokenFunc = func;
+			else
+				return tokenFunc();
+		},
+
+		postForm: function(settings) {
+			settings.data = $.merge(settings.data, [ { name: 'token', value: tokenFunc() } ]);
+			return $.ajax(settings);
+		},
+
 		load: function(api, param, done, fail) {
 			if (typeof(param) === 'object')
 				param = '?' + $.param(param);
 			return $.ajax({
-				url: this.pathname + '../bbs/' + api + '.json' + param,
+				url: this.api(api) + param,
 				dataType: 'json'
 			}).done(done).fail(fail);
 		},
@@ -87,8 +104,7 @@
 
 		hook: function(selector, func) {
 			hooks.push([selector, func]);
-		},
-
+		}
 	};
 
 	$.fn.extend({
@@ -99,6 +115,34 @@
 					i[1](e);
 				});
 			});
+		},
+
+		selectRange: function(b, e) {
+			return this.each(function() {
+				if (this.setSelectionRange) {
+					this.setSelectionRange(b, e);
+				} else if (this.createTextRange) {
+					var range = this.createTextRange();
+					range.collapse(true);
+					range.moveEnd('character', b);
+					range.moveStart('character', e);
+					range.select();
+				}
+			});
+		}
+	});
+
+	$.extend({
+		deparam: function(s) {
+			if (s.startsWith('?'))
+				s = s.substring(1);
+			var a = s.split('&'),
+				r = {};
+			a.forEach(function(e) {
+				var p = e.split('=');
+				r[p[0]] = p[1];
+			});
+			return r;
 		}
 	});
 

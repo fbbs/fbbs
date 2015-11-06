@@ -8,6 +8,7 @@
 			Store.set('session-user-name', data['user_name']);
 			Store.set('session-key', data['session_key']);
 			Store.set('session-token', data['token']);
+
 			if (expire)
 				Store.set('session-expire-time', expire);
 			Store.set('board-favorite', data['board-favorite']);
@@ -43,6 +44,10 @@
 					}
 				);
 				return false;
+			});
+
+			App.token(function() {
+				return Store.get('session-token');
 			});
 		},
 

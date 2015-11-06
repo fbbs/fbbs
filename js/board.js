@@ -40,7 +40,7 @@
 				return function(e) {
 					e.stamp = Post.stamp(e.id).toISOString();
 					e.board_id = board_id;
-					e.title = Post.parseTitle(e.title);
+					e.title = Post.titleHtml(e.title);
 				};
 			},
 

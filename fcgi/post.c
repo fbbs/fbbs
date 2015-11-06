@@ -1001,7 +1001,7 @@ enum {
 
 /**
  * {
- *   board_id: I, board_name: T,
+ *   board: { id: I, name: T, anonymous: B },
  *   posts: [
  *     {
  *       id: B, reply_id: B, thread_id: B, user_name: T, flags: I,
@@ -1010,7 +1010,7 @@ enum {
  *     ...
  *   ]
  */
-int api_post_content(void)
+static int api_post_content_get(void)
 {
 	post_id_t thread_id = web_get_param_long("thread_id");
 	if (thread_id <= 0)
@@ -1031,8 +1031,12 @@ int api_post_content(void)
 	json_object_t *object = json_object_new();
 	web_set_response(object, JSON_OBJECT);
 
-	json_object_integer(object, "board_id", board.id);
-	json_object_string(object, "board_name", board.name);
+	json_object_t *o = json_object_new();
+	json_object_integer(o, "id", board.id);
+	json_object_string(o, "name", board.name);
+	if (board.flag & BOARD_FLAG_ANONY)
+		json_object_bool(o, "anonymous", true);
+	json_object_append(object, "board", o, JSON_OBJECT);
 
 	json_array_t *posts = json_array_new();
 	json_object_append(object, "posts", posts, JSON_ARRAY);
@@ -1068,4 +1072,90 @@ int api_post_content(void)
 	}
 	db_clear(res);
 	return WEB_OK;
+}
+
+static int api_post_content_post(void)
+{
+	if (!session_get_user_id())
+		return WEB_ERROR_LOGIN_REQUIRED;
+
+	board_t board;
+	int board_id = web_get_param_long("board_id");
+	if (board_id <= 0 || get_board_by_bid(board_id, &board) <= 0
+			|| !has_read_perm(&board)) {
+		return WEB_ERROR_BOARD_NOT_FOUND;
+	}
+
+	if (!has_post_perm(&board))
+		return WEB_ERROR_PERMISSION_DENIED;
+
+	if (board.flag & BOARD_FLAG_DIR)
+		return WEB_ERROR_BAD_REQUEST;
+
+	UTF8_BUFFER(title, POST_TITLE_CCHARS);
+	strlcpy(utf8_title, web_get_param("title"), sizeof(utf8_title));
+	string_remove_ansi_control_code(utf8_title, utf8_title);
+	string_remove_non_printable(utf8_title);
+	string_check_tail(utf8_title, NULL);
+	if (*utf8_title == '\0')
+		return WEB_ERROR_BAD_REQUEST;
+
+	time_t now = fb_time();
+	int diff = now - get_my_last_post_time();
+	set_my_last_post_time(now);
+	if (diff < 6)
+		return WEB_ERROR_PERMISSION_DENIED;
+
+	post_info_t reply_pi;
+	post_id_t reply_id = web_get_param_long("reply_id");
+	if (reply_id) {
+		if (!search_pid(board.id, reply_id, &reply_pi))
+			return WEB_ERROR_POST_NOT_FOUND;
+
+		if ((reply_pi.flag & POST_FLAG_LOCKED) && !am_bm(&board))
+			return WEB_ERROR_PERMISSION_DENIED;
+	}
+
+	char *text = (char *) web_get_param("content");
+	check_character(text);
+
+	if (string_validate_utf8(text, POST_CONTENT_CCHARS, true) < 0)
+		return WEB_ERROR_BAD_REQUEST;
+
+	post_request_t pr = {
+		.user = &currentuser,
+		.board = &board,
+		.title = utf8_title,
+		.content = text,
+		.sig = 0,
+		.ip = mask_host(fromhost),
+		.reid = reply_id ? reply_pi.id : 0,
+		.tid = reply_id ? reply_pi.thread_id : 0,
+		.uid_replied = reply_id ? reply_pi.user_id : 0,
+		.locked = reply_id && (reply_pi.flag & POST_FLAG_LOCKED),
+		.anony = web_get_param_long("anonymous"),
+		.web = true,
+		.convert_type = CONVERT_NONE,
+	};
+	post_id_t post_id = post_new(&pr);
+	if (!post_id)
+		return WEB_ERROR_INTERNAL;
+
+	char buf[128];
+	snprintf(buf, sizeof(buf), "posted '%s' on %s", utf8_title, board.name);
+	report(buf, currentuser.userid);
+
+	json_object_t *o = json_object_new();
+	json_object_bigint(o, "id", post_id);
+	web_set_response(o, JSON_OBJECT);
+	return WEB_OK;
+}
+
+int api_post_content(void)
+{
+	if (web_request_method(GET))
+		return api_post_content_get();
+	if (web_request_method(POST))
+		return api_post_content_post();
+	return WEB_ERROR_METHOD_NOT_ALLOWED;
 }
