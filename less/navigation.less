@@ -13,6 +13,8 @@ nav {
 	color: @nav-color;
 	background-color: @nav-background-color;
 	margin: 0 0 16px 0;
+	position: fixed;
+	top: 0;
 
 	li {
 		display: inline-block;
@@ -53,11 +55,6 @@ nav {
 		background-color: @color-primary;
 		color: @nav-link-hover-color;
 		text-decoration: @nav-link-hover-decoration;
-	}
-
-	li:hover > ul, li:hover > form {
-		display: block;
-		position: absolute;
 	}
 
 	.container {
