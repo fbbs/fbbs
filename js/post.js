@@ -163,8 +163,9 @@
 			var length = this.lines.length,
 				seeker, line, i, l, left = QUOTE_WIDTH_MAX, end = false;
 			for (i = 0; i < length && !end; ++i) {
-				line = this.lines[i]
-				if (line == '--' || /^([:>] ){2,}/.test(line) || /^\s+$/.test(line)) break;
+				line = this.lines[i];
+				if (line == '--') break;
+				if (/^([:>] ){2,}/.test(line) || /^\s+$/.test(line)) continue;
 
 				seeker = new Util.Width.Seeker(line);
 				while (true) {
@@ -250,7 +251,7 @@
 				var model = this.model;
 				this.view.$('a.post-reply').click(function(evt) {
 					var $t = $(this), $p = $t.parent(),
-						$f = $p.parent().find('.post-new'),
+						$f = $p.parent().find('.post-new'), $s,
 						search = this.search,
 						params = $.deparam(search),
 						post = model.find(params.reply_id);
@@ -267,7 +268,10 @@
 								url: App.api('post-content') + search,
 								data: $f.serializeArray()
 							}).done(function(data) {
+								$t.text('回复');
 								$f.remove();
+								$s = $('<div class="post-done">发表成功</div>').appendTo($p);
+								setTimeout(function() { $s.slideUp(); }, 1000);
 							}).fail(function(jqXHR, textStatus, errorThrown) {
 								$f.prop('disabled', false);
 							});
@@ -276,8 +280,10 @@
 						$f.find('[name=title]').attr('value', post.titleReply());
 						$f.find('textarea').text(post.quote()).focus().selectRange(0, 0);
 						$f.show();
+						$t.text('收起');
 					} else {
 						$f.remove();
+						$t.text('回复');
 					}
 					return false;
 				});
