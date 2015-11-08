@@ -29,6 +29,15 @@
 		return r;
 	}
 
+	function generateLink(href) {
+		var link = App.normalize(href);
+		if (/(jpg|jpeg|png|gif)$/i.test(href) && link) {
+			return '<img src="' + encodeURI(link) + '"/>';
+		}
+		link = link || href;
+		return '<a href="' + encodeURI(link) + '">' + href.escapeHtml() + '</a>';
+	}
+
 	var State = function() {
 		$.extend(this, {
 			lines: [],
@@ -78,11 +87,7 @@
 						lines.push('<span class="a' + (+hl) + fg + ' a' + bg + '">');
 						closed = false;
 					} else if (item.startsWith('http')) {
-						if (item.match('/jpg|jpeg|png|gif/i')) {
-							lines.push('<img src="' + encodeURI(item) + '"/>');
-						} else {
-							lines.push('<a href="' + encodeURI(item) + '">' + item.escapeHtml() + '</a>');
-						}
+						lines.push(generateLink(item));
 					}
 					s = b + item.length;
 				});

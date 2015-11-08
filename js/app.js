@@ -15,6 +15,8 @@
 	var App = window.App = {
 		NAME: '日月光华',
 
+		DOMAINS: [ 'bbs.fudan.edu.cn', 'bbs.fudan.sh.cn', '61.129.42.9', '202.120.225.9' ],
+
 		render: function(tmpl, data) {
 			return Mustache.render($('#t-' + tmpl).text(), data, this.partials);
 		},
@@ -112,6 +114,13 @@
 
 		hook: function(selector, func) {
 			hooks.push([selector, func]);
+		},
+
+		normalize: function(href) {
+			var a = createLink(href);
+			if ($.inArray(a.hostname, this.DOMAINS) >= 0) {
+				return a.pathname + a.search + a.hash;
+			}
 		}
 	};
 
