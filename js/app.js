@@ -96,6 +96,9 @@
 				return;
 			var controller = currentController = new ctrlClass();
 
+			if (controller.enter && controller.enter(a.search) === false)
+				return;
+
 			this.load(api, a.search, function(data) {
 				window.scrollTo(0, 0);
 				if (url === History.getState().url) {
@@ -295,10 +298,10 @@
 			M: Model,
 			V: View,
 			C: App.C.ext(jQueryExtend({
-				ready: function(data) {
+				ready: function(data, skip) {
 					var model = new Model();
 					this.model = model;
-					model.init(data);
+					model.init(data, skip);
 					this.view = new View({
 						model: model,
 						tmpl: tmpl

@@ -81,11 +81,13 @@
 				};
 			},
 
-			init: function(data) {
-				if (data.board) {
-					data.board.bms = data.board.bms.split(' ');
+			init: function(data, skip) {
+				if (!skip) {
+					if (data.board) {
+						data.board.bms = data.board.bms.split(' ');
+					}
+					data.posts.forEach(this.convert(data.board.id));
 				}
-				data.posts.forEach(this.convert(data.board.id));
 				this.data = data;
 			},
 
@@ -141,8 +143,26 @@
 			},
 
 			leave: function() {
-				$(window).off('scroll');
+				var $window = $(window);
+				$window.off('scroll');
 				App.E.off('b:favorite', this.callback);
+
+				Store.set('board-toc', {
+					data: this.model.data,
+					scrollTop: $window.scrollTop()
+				});
+			},
+
+			enter: function(search) {
+				var cache = Store.get('board-toc'),
+					params = $.deparam(search);
+				if (cache && params && cache.data.board.id == params.id) {
+					this.ready(cache.data, true);
+					this.defaultPost();
+					this.post();
+					window.scrollTo(0, cache.scrollTop);
+					return false;
+				}
 			}
 		}
 	});
