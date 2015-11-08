@@ -332,11 +332,14 @@
 		if (diff < 86400)
 			return floor(diff / 3600) + '小时前';
 
-		var today = n - (n - n.getTimezoneOffset() * 60000) % 86400000;
-		if (this > today - 86400000)
-			return '昨天' + d.getHours() + ':' + d.getMinutes();
-		if (this > today - 86400000 * 2)
-			return '前天' + d.getHours() + ':' + d.getMinutes();
+		var today = n - (n - n.getTimezoneOffset() * 60000) % 86400000,
+			min = d.getMinutes();
+		if (min < 10)
+			min = '0' + min;
+		if (d > today - 86400000)
+			return '昨天 ' + d.getHours() + ':' + min;
+		if (d > today - 86400000 * 2)
+			return '前天 ' + d.getHours() + ':' + min;
 		if (diff < 86400 * 8)
 			return floor(diff / 86400) + '天前';
 		if (d.getFullYear() == n.getFullYear())

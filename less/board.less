@@ -27,7 +27,6 @@
 
 .board-manager-list {
 	display: inline-block;
-	margin: 0 0 0 @font-size-xxlarge * 2;
 	font-size: @font-size-large;
 
 	a {
@@ -36,7 +35,7 @@
 }
 
 #board-toc-list {
-	margin: 16px 0 0;
+	margin: 8px 0 0;
 
 	li {
 		margin: 8px 0 0;
@@ -80,4 +79,58 @@ li.post-sticky a.board-toc-title::before {
 	line-height: @line-height-large;
 	border-top: 1px solid @link-color;
 	cursor: pointer;
+}
+
+.board-toc-links {
+	margin: 8px 0;
+}
+
+.board-favorite-btn {
+	display: inline-block;
+	border: 1px solid @color-positive;
+	border-radius: @font-size-base / 4;
+	font-size: @font-size-base;
+	line-height: @line-height-base;
+	width: @font-size-base * 5;
+	text-align: center;
+	margin: 0 16px 0 8px;
+	padding: 2px 0;
+}
+
+a.board-favorite-btn:hover {
+	text-decoration: none;
+}
+
+.board-favorite-add {
+	color: #fff;
+	background-color: @color-positive;
+
+	&:after {
+		content: "+收藏";
+	}
+
+	&:hover {
+		color: #fff;
+	}
+}
+
+.board-favorite-rm {
+	color: @color-positive;
+	background-color: #fff;
+
+	&:after {
+		content: "已收藏";
+	}
+
+	&:hover {
+		color: @color-warning;
+		border-color: @color-warning;
+	}
+
+	&:hover:after {
+		content: "取消收藏";
+	}
+}
+
+a.board-favorite-rm:hover {
 }

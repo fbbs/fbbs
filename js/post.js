@@ -263,7 +263,7 @@
 
 						$f.find('[type=submit]').click(function() {
 							$f.prop('disabled', true);
-							App.postForm({
+							App.ajax({
 								type: 'POST',
 								url: App.api('post-content') + search,
 								data: $f.serializeArray()

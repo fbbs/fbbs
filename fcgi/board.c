@@ -508,3 +508,27 @@ int bbsnot_main(void)
 	printf("</bbsnot>");
 	return 0;
 }
+
+int api_board_favorite(void)
+{
+	user_id_t user_id = session_get_user_id();
+	if (!user_id)
+		return WEB_ERROR_LOGIN_REQUIRED;
+
+	board_t board;
+	int board_id = web_get_param_long("id");
+	if (board_id <= 0 || get_board_by_bid(board_id, &board) <= 0
+			|| !has_read_perm(&board)) {
+		return WEB_ERROR_BOARD_NOT_FOUND;
+	}
+
+	if (web_request_method(POST)) {
+		bool ok = fav_board_add(user_id, board.name, board.id,
+				FAV_BOARD_ROOT_FOLDER, &currentuser);
+		return ok ? WEB_ERROR_NONE : WEB_ERROR_INTERNAL;
+	} else if (web_request_method(DELETE)) {
+		bool ok = fav_board_rm(user_id, board.id);
+		return ok ? WEB_ERROR_NONE : WEB_ERROR_INTERNAL;
+	}
+	return WEB_ERROR_METHOD_NOT_ALLOWED;
+}

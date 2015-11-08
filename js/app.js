@@ -51,6 +51,13 @@
 			return this.pathname + '../bbs/' + api + '.json';
 		},
 
+		hrefApi: function(href) {
+			var idx = href.indexOf('?');
+			if (idx >= 0)
+				return this.api(href.substring(0, idx)) + href.substring(idx);
+			return this.api(href);
+		},
+
 		token: function(func) {
 			if (func)
 				tokenFunc = func;
@@ -58,8 +65,9 @@
 				return tokenFunc();
 		},
 
-		postForm: function(settings) {
-			settings.data = $.merge(settings.data, [ { name: 'token', value: tokenFunc() } ]);
+		ajax: function(settings) {
+			settings.data = settings.data || [];
+			$.merge(settings.data, [ { name: 'token', value: tokenFunc() } ]);
 			return $.ajax(settings);
 		},
 

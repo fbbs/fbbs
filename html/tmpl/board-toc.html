@@ -1,11 +1,16 @@
 <div id='board-toc'>
 <h2>{{board.descr}} [{{board.name}}]</h2>
+<a class='board-favorite-btn na' href='board-favorite?id={{board.id}}'></a>
 <div class='board-manager-list'>
 版主
 {{#board.bms}}
 <a class='user-meta' href='user-meta?name={{.}}'>{{.}}</a>
 {{/board.bms}}
 </div>
+
+<ul class='board-toc-links'>
+</ul>
+
 <ul id='board-toc-list'>
 {{#posts}}
 {{>board-toc}}
