@@ -11,7 +11,7 @@
 
 			if (expire)
 				Store.set('session-expire-time', expire);
-			App.E.on('b:favorite', 'set', data['board-favorite']);
+			Store.set('board-favorite', data['board-favorite']);
 
 			Cookie.set('utmpkey', data['session_key'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs'));
 			Cookie.set('utmpuser', data['user_name'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs'));
