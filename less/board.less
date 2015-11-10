@@ -42,10 +42,10 @@
 	}
 
 	.board-toc-title {
-		font-size: @font-size-xlarge;
+		font-size: @font-size-large;
 		line-height: @line-height-large;
 		display: inline-block;
-		width: @font-size-xlarge * 25;
+		width: @font-size-large * 25;
 	}
 
 	.user-meta {
@@ -59,7 +59,7 @@
 	text-align: center;
 	color: @color-post-tag;
 	background-color: @color-post-tag-background;
-	font-size: @font-size-large;
+	font-size: @font-size-base;
 	line-height: @line-height-large;
 	border-radius: @font-size-large / 2;
 	margin: 0 @font-size-large / 4 0 0;
@@ -74,27 +74,21 @@ li.post-sticky a.board-toc-title::before {
 .load-more {
 	margin: 8px 0 0;
 	padding: 8px 0 0 16px;
-	font-size: @font-size-xlarge;
+	font-size: @font-size-large;
 	color: @link-color;
 	line-height: @line-height-large;
 	border-top: 1px solid @link-color;
 	cursor: pointer;
 }
 
-.board-toc-links {
+#board-toc-links {
 	margin: 8px 0;
 }
 
 .board-favorite-btn {
 	display: inline-block;
-	border: 1px solid @color-positive;
-	border-radius: @font-size-base / 4;
-	font-size: @font-size-base;
-	line-height: @line-height-base;
-	width: @font-size-base * 5;
-	text-align: center;
+	width: @font-size-small * 6;
 	margin: 0 16px 0 8px;
-	padding: 2px 0;
 }
 
 a.board-favorite-btn:hover {
@@ -130,7 +124,4 @@ a.board-favorite-btn:hover {
 	&:hover:after {
 		content: "取消收藏";
 	}
-}
-
-a.board-favorite-rm:hover {
 }

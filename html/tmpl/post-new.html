@@ -1,6 +1,7 @@
 <form class='post-new' method='post'>
-<input type='hidden' name='title' ></input>
-<textarea cols='80' rows='12' name='content'></textarea>
+<input type='text' name='title' maxlength='50' size='60' placeholder='标题'></input>
+<textarea cols='80' rows='12' name='content' placeholder='正文'></textarea>
 <input type='submit' value='发表'/>
 {{#anonymous}}<label><input type='checkbox' name='anonymous' value='1' checked></input>匿名</label>{{/anonymous}}
+<button class='btn-cancel btn-link'>取消</button>
 </form>

@@ -127,6 +127,35 @@
 
 			$.extend(this, post);
 			delete this.content;
+		},
+
+		setupForm: function(options) {
+			var $f = $(App.render('post-new', {
+				anonymous: options.anonymous
+			}));
+
+			if (options.hideTitle)
+				$f.find('[name=title]').attr('type', 'hidden');
+
+			$f.find('[type=submit]').click(function() {
+				$f.prop('disabled', true);
+				App.ajax({
+					type: 'POST',
+					url: App.api('post-content', {
+						board_id: options.boardId,
+						reply_id: options.replyId
+					}),
+					data: $f.serializeArray(),
+				}).done(options.done)
+				.fail(function(jqXHR, textStatus, errorThrown) {
+					$f.prop('disabled', false);
+				});
+				return false;
+			});
+			$f.find('[name=title]').attr('value', options.title);
+			$f.find('textarea').text(options.content).focus().selectRange(0, 0);
+			$f.find('button').click(options.cancel);
+			return $f;
 		}
 	};
 
@@ -254,41 +283,34 @@
 				});
 
 				var model = this.model;
-				this.view.$('a.post-reply').click(function(evt) {
+				this.view.$('.post-new-btn').click(function(evt) {
 					var $t = $(this), $p = $t.parent(),
 						$f = $p.parent().find('.post-new'), $s,
-						search = this.search,
-						params = $.deparam(search),
-						post = model.find(params.reply_id);
+						replyId = $t.data('replyId'),
+						post = model.find(replyId),
+						cancel = function() {
+							$f.remove();
+							$t.prop('disable', false);
+							return false;
+						};
 
 					if ($f.length == 0) {
-						$f = $(App.render('post-new', {
-							anonymous: model.anonymous()
-						})).appendTo($p);
-
-						$f.find('[type=submit]').click(function() {
-							$f.prop('disabled', true);
-							App.ajax({
-								type: 'POST',
-								url: App.api('post-content') + search,
-								data: $f.serializeArray()
-							}).done(function(data) {
-								$t.text('回复');
-								$f.remove();
+						$f = Post.setupForm({
+							anonymous: model.anonymous(),
+							boardId: $t.data('boardId'),
+							replyId: replyId,
+							title: post.titleReply(),
+							content: post.quote(),
+							hideTitle: true,
+							done: function(data) {
+								cancel();
 								$s = $('<div class="post-done">发表成功</div>').appendTo($p);
 								setTimeout(function() { $s.slideUp(); }, 1000);
-							}).fail(function(jqXHR, textStatus, errorThrown) {
-								$f.prop('disabled', false);
-							});
-							return false;
+							},
+							cancel: cancel
 						});
-						$f.find('[name=title]').attr('value', post.titleReply());
-						$f.find('textarea').text(post.quote()).focus().selectRange(0, 0);
-						$f.show();
-						$t.text('收起');
-					} else {
-						$f.remove();
-						$t.text('回复');
+						$f.appendTo($p).show();
+						$t.prop('disable', true);
 					}
 					return false;
 				});

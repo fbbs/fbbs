@@ -1,16 +1,18 @@
 <div id='board-toc'>
 <h2>{{board.descr}} [{{board.name}}]</h2>
-<a class='board-favorite-btn na' href='board-favorite?id={{board.id}}'></a>
+<button class='board-favorite-btn btn-positive btn-small'></button>
 <div class='board-manager-list'>
 版主
 {{#board.bms}}
-<a class='user-meta' href='user-meta?name={{.}}'>{{.}}</a>
+<a class='user-meta' href='user-meta?name={{name}}'>{{.}}</a>
 {{/board.bms}}
 </div>
 
-<ul class='board-toc-links'>
+<ul id='board-toc-links'>
+<li><button class='btn-positive post-new-btn'>+发表文章</button></li>
 </ul>
 
+<div id='board-toc-main'>
 <ul id='board-toc-list'>
 {{#posts}}
 {{>board-toc}}
@@ -18,4 +20,5 @@
 </ul>
 <div class='load-more'></div>
 <hr class='end-sign'/>
+</div>
 </div>

@@ -49,15 +49,11 @@
 			return controllers[name];
 		},
 
-		api: function(api) {
-			return this.pathname + '../bbs/' + api + '.json';
-		},
-
-		hrefApi: function(href) {
-			var idx = href.indexOf('?');
-			if (idx >= 0)
-				return this.api(href.substring(0, idx)) + href.substring(idx);
-			return this.api(href);
+		api: function(api, params) {
+			var url = this.pathname + '../bbs/' + api + '.json';
+			if (params !== undefined)
+				url += '?' + $.param(params);
+			return url;
 		},
 
 		token: function(func) {

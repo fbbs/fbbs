@@ -21,11 +21,14 @@
 			el.click(function() {
 				var $this = $(this),
 					rm = $this.hasClass('board-favorite-rm');
+				$this.prop('disabled', true);
 				App.ajax({
 					type: rm ? 'DELETE' : 'POST',
-					url: App.hrefApi($this.attr('href'))
+					url: App.api('board-favorite') + '?id=' + id
 				}).done(function() {
 					App.E.fire('b:favorite', rm ? 'rm' : 'add', rm ? id : { id: id, name: name });
+				}).always(function() {
+					$this.prop('disabled', false);
 				});
 				return false;
 			});
@@ -91,6 +94,19 @@
 				this.data = data;
 			},
 
+			prepend: function(post) {
+				var data = this.data, sticky = 0;
+				this.convert(data.board.id)(post);
+				$.each(data.posts, function(i, p) {
+					if (!p.sticky) {
+						sticky = i;
+						return false;
+					}
+				});
+				data.posts.splice(sticky, 0, post);
+				return sticky;
+			},
+
 			append: function(posts) {
 				posts.forEach(this.convert(this.data.board.id));
 				$.merge(this.data.posts, posts);
@@ -108,6 +124,13 @@
 		},
 
 		v: {
+			prepend: function(post, pos) {
+				var $el = $(App.partial('board-toc', post)),
+					$list = this.$('#board-toc-list').find('li');
+				$($list.get(pos)).before($el);
+				$el.hide().slideDown().hook();
+			},
+
 			append: function(posts) {
 				$($.map(posts, function(p) {
 					return App.partial('board-toc', p);
@@ -121,10 +144,48 @@
 			nav: 'board',
 
 			post: function() {
-				var board = this.model.data.board;
+				var view = this.view,
+					model = this.model,
+					board = model.data.board;
 				this.callback = favorite.setupButton(
 					this.view.$('.board-favorite-btn'),
 					board.id, board.name);
+
+				view.$('.post-new-btn').click(function() {
+					var $f = view.$('.post-new'),
+						$main = view.$('#board-toc-main'),
+						$links = view.$('#board-toc-links'),
+						cancel = function() {
+							$main.show();
+							$links.show();
+							$f.remove();
+							return false;
+						};
+
+					if ($f.length == 0) {
+						$f = Post.setupForm({
+							anonymous: !!board.anonymous,
+							boardId: board.id,
+							replyId: 0,
+							done: function(data) {
+								cancel();
+								var post = {
+									id: data.id,
+									title: $f.find('[name=title]').val(),
+									user_name: Store.get('session-user-name')
+								};
+								console.log(post);
+								view.prepend(post, model.prepend(post));
+							},
+							cancel: cancel
+						});
+						$f.insertBefore($main).show();
+						$f.find('[name=title]').focus();
+						$main.hide();
+						$links.hide();
+					}
+					return false;
+				});
 
 				Ui.loadMore({
 					ctrl: this,

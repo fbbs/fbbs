@@ -30,6 +30,44 @@ textarea {
 	display: block;
 }
 
+button {
+	background-color: @color-background;
+	font-family: @font-family;
+	font-size: @font-size-base;
+	line-height: @line-height-base;
+	padding: 4px 12px;
+	text-align: center;
+	border-radius: @font-size-base / 4;
+	cursor: pointer;
+}
+
+.btn-positive {
+	color: @color-text-light;
+	background-color: @color-positive;
+	border: 1px solid @color-positive;
+
+	&:active {
+		border: 1px solid @color-positive;
+	}
+}
+
+.btn-small {
+	font-size: @font-size-small;
+	line-height: @line-height-small;
+	border-radius: @font-size-small / 4;
+	padding: 2px 8px;
+}
+
+.btn-link {
+	border: none;
+	padding: 0 12px;
+	color: @link-color;
+	&:hover {
+		color: @link-hover-color;
+		text-decoration: @link-hover-decoration;
+	}
+}
+
 .a030 { color: @ansi-color-030; }
 .a130 { color: @ansi-color-130; }
 .a031 { color: @ansi-color-031; }

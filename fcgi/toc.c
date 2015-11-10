@@ -588,6 +588,8 @@ int api_board_toc(void)
 		json_object_string(b, "categ", board.categ);
 		json_object_string(b, "descr", board.descr);
 		json_object_string(b, "bms", board.bms);
+		if (board.flag & BOARD_FLAG_ANONY)
+			json_object_bool(b, "anonymous", true);
 		json_object_append(object, "board", b, JSON_OBJECT);
 	}
 
