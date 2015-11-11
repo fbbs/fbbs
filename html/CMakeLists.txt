@@ -1,9 +1,11 @@
-set(SRC_HTML beta.htm)
-set(DST_HTML index.htm)
-set(ABS_DST_HTML ${CMAKE_CURRENT_BINARY_DIR}/${DST_HTML})
+function(publish_html HTML)
+	set(DST ${CMAKE_CURRENT_BINARY_DIR}/${HTML}.htm)
+	add_custom_target(${HTML}.htm ALL
+		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../util/html_processor
+				${CMAKE_CURRENT_SOURCE_DIR} ${HTML}.htm ${DST}
+		DEPENDS ${HTML}.htm)
+	install(FILES ${DST} DESTINATION ${DOCUMENT_ROOT}/${HTML}
+		RENAME index.htm)
+endfunction(publish_html)
 
-add_custom_target(${DST_HTML} ALL
-	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../util/html_processor
-	${CMAKE_CURRENT_SOURCE_DIR} ${SRC_HTML} ${ABS_DST_HTML}
-	DEPENDS ${SRC_HTML})
-install(FILES ${ABS_DST_HTML} DESTINATION ${DOCUMENT_ROOT})
+publish_html(forum)

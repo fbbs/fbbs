@@ -16,7 +16,7 @@ $(function() {
 				data: $form.serialize()
 			}).done(function(data) {
 				Session.onLoginSuccess(data);
-				location.assign('alpha/home');
+				location.assign('forum/home');
 			});
 		}
 		return false;
@@ -27,7 +27,7 @@ $(function() {
 	} else {
 		$.getJSON('bbs/session-login.json', function(data) {
 			if (data.code == 10002) {
-				location.assign('alpha/home');
+				location.assign('forum/home');
 			}
 		});
 	}
