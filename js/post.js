@@ -153,7 +153,7 @@
 				return false;
 			});
 			$f.find('[name=title]').attr('value', options.title);
-			$f.find('textarea').text(options.content).focus().selectRange(0, 0);
+			$f.find('textarea').val(options.content).focus();
 			$f.find('button').click(options.cancel);
 			return $f;
 		}

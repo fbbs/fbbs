@@ -9,6 +9,11 @@
 	var createLink = function(href) {
 		var a = document.createElement('a');
 		a.href = href;
+
+		var p = a.pathname;
+		if (!p.startsWith('/'))
+			p = '/' + p;
+		a.path = p;
 		return a;
 	}
 
@@ -28,11 +33,11 @@
 		partials: {},
 
 		init: function() {
-			var a = createLink(location.pathname + '/..');
-			this.pathname = a.pathname;
+			var a = createLink(location.href + '/..');
+			this.pathname = a.path;
 			this.href = a.href;
 
-			Store.init(createLink(a.href + '../').pathname);
+			Store.init(createLink(a.href + '../').path);
 
 			var p = this.partials;
 			$('[id^=p-]').each(function() {
@@ -82,7 +87,7 @@
 		loadPage: function() {
 			var url = History.getState().url,
 				a = createLink(url),
-				api = a.pathname.replace(this.pathname, ''),
+				api = a.path.replace(this.pathname, ''),
 				ctrlClass = App.getC(api);
 
 			if (currentController && currentController.leave) {
@@ -119,7 +124,7 @@
 		normalize: function(href) {
 			var a = createLink(href);
 			if ($.inArray(a.hostname, this.DOMAINS) >= 0) {
-				return a.pathname + a.search + a.hash;
+				return a.path + a.search + a.hash;
 			}
 		}
 	};
@@ -133,20 +138,6 @@
 						i[1](e);
 					});
 				});
-			});
-		},
-
-		selectRange: function(b, e) {
-			return this.each(function() {
-				if (this.setSelectionRange) {
-					this.setSelectionRange(b, e);
-				} else if (this.createTextRange) {
-					var range = this.createTextRange();
-					range.collapse(true);
-					range.moveEnd('character', b);
-					range.moveStart('character', e);
-					range.select();
-				}
 			});
 		}
 	});
