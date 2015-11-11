@@ -33,7 +33,7 @@
 		partials: {},
 
 		init: function() {
-			var a = createLink(location.href + '/..');
+			var a = createLink(location.pathname + '/..');
 			this.pathname = a.path;
 			this.href = a.href;
 
