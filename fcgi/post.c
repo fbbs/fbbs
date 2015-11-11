@@ -249,9 +249,11 @@ int bbscon(const char *link)
 	if (content)
 		xml_print_post_wrapper(content, strlen(content));
 
-	brc_init(currentuser.userid, board.name);
-	post_mark_as_read(&pi, content);
-	brc_sync(currentuser.userid);
+	if (session_get_user_id()) {
+		brc_init(currentuser.userid, board.name);
+		post_mark_as_read(pi.id, pi.user_id_replied, pi.utf8_title, content);
+		brc_sync(currentuser.userid);
+	}
 
 	free(content);
 
@@ -455,7 +457,9 @@ int bbstcon_main(void)
 			opt & PREF_NOSIGIMG ? " nosigimg='1'" : "");
 	print_session();
 
-	brc_init(currentuser.userid, board.name);
+	bool logged = session_get_user_id();
+	if (logged)
+		brc_init(currentuser.userid, board.name);
 
 	bool asc = action != THREAD_PREV_PAGE;
 	if (c > count)
@@ -472,14 +476,18 @@ int bbstcon_main(void)
 		char *content = post_content_get(pi.id, false);
 		if (content)
 			xml_print_post_wrapper(content, strlen(content));
-		post_mark_as_read(&pi, content);
+		if (logged) {
+			post_mark_as_read(pi.id, pi.user_id_replied, pi.utf8_title,
+					content);
+		}
 		free(content);
 
 		puts("</po>");
 	}
 	puts("</bbstcon>");
 
-	brc_sync(currentuser.userid);
+	if (logged)
+		brc_sync(currentuser.userid);
 	return 0;
 }
 
@@ -1053,6 +1061,11 @@ static int api_post_content_get(void)
 
 	db_res_t *res = query_exec(q);
 	count = res ? db_res_rows(res) : 0;
+
+	bool logged = session_get_user_id();
+	if (logged)
+		brc_init(currentuser.userid, board.name);
+
 	for (int i = 0; i < count; ++i) {
 		post_record_t pr;
 		post_record_from_query(res, i, &pr, false);
@@ -1060,6 +1073,10 @@ static int api_post_content_get(void)
 		if (content) {
 			json_object_t *post = json_object_new();
 			json_object_string(post, "content", content);
+			if (logged) {
+				post_mark_as_read(pr.id, pr.user_id_replied,
+						pr.utf8_title, content);
+			}
 			free(content);
 			json_object_bigint(post, "id", pr.id);
 			json_object_bigint(post, "reply_id", pr.reply_id);
@@ -1071,6 +1088,9 @@ static int api_post_content_get(void)
 		}
 	}
 	db_clear(res);
+
+	if (logged)
+		brc_sync(currentuser.userid);
 	return WEB_OK;
 }
 

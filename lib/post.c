@@ -1435,19 +1435,17 @@ static int clear_mention(const char *user_name, post_id_t post_id, void *args)
 	return 0;
 }
 
-void post_mark_as_read(const post_info_t *pi, const char *content)
+void post_mark_as_read(post_id_t id, user_id_t user_id_replied,
+		const char *utf8_title, const char *content)
 {
-	if (pi) {
-		bool unread = brc_mark_as_read(post_stamp(pi->id));
-		if (unread) {
-			if (pi->user_id_replied == session_get_user_id()) {
-				post_reply_mark_as_read(pi->id, pi->user_id_replied, true,
-						false);
-			}
-			if (content) {
-				post_scan_for_mentions(pi->utf8_title, content, pi->id,
-						clear_mention, NULL);
-			}
+	bool unread = brc_mark_as_read(post_stamp(id));
+	if (unread) {
+		if (user_id_replied == session_get_user_id()) {
+			post_reply_mark_as_read(id, user_id_replied, true, false);
+		}
+		if (content) {
+			post_scan_for_mentions(utf8_title, content, id,
+					clear_mention, NULL);
 		}
 	}
 }

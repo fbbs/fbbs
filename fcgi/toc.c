@@ -512,6 +512,8 @@ static void post_record_to_json(const post_record_t *pr, json_array_t *array)
 	json_object_string(o, "user_name", pr->user_name);
 	if (pr->flag & POST_FLAG_STICKY)
 		json_object_bool(o, "sticky", true);
+	if (brc_unread(post_stamp(pr->id)))
+		json_object_bool(o, "unread", true);
 	json_array_append(array, o, JSON_OBJECT);
 }
 

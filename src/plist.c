@@ -1069,8 +1069,10 @@ static bool dump_content(const post_info_t *pi, char *file, size_t size,
 		ret = post_dump_gbk_file(content, strlen(content), file, size);
 	}
 
-	if (mark_as_read)
-		post_mark_as_read(pi, content);
+	if (mark_as_read) {
+		post_mark_as_read(pi->id, pi->user_id_replied,
+				pi->utf8_title, content);
+	}
 
 	free(content);
 	return ret == 0;
