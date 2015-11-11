@@ -1,44 +1,9 @@
 'use strict';
 
 (function() {
-	if (!Object.keys) {
-		Object.keys = function(o) {
-			if (o !== Object(o)) {
-				throw new TypeError('Object.keys called on a non-object');
-			}
-			var k = [], p;
-			for (p in o) {
-				if (Object.prototype.hasOwnProperty.call(o,p)) {
-					k.push(p);
-				}
-			}
-			return k;
-		}
-	}
-
-	if (!Array.prototype.forEach) {
-		Array.prototype.forEach = function(f) {
-			$.each(this, function(i, e) {
-				f(e);
-			});
-		};
-	}
-
-	String.prototype.escapeHtml = function() {
-		return this.replace(/&/g, '&amp;')
-				.replace(/</g, '&lt;')
-				.replace(/>/g, '&gt;');
-	}
-
-	if (!String.prototype.startsWith) {
-		String.prototype.startsWith = function(s) {
-			return this.substring(0, s.len) === s;
-		}
-	}
-})();
-
-(function() {
-	var Util = window.Util = {};
+	var Util = window.Util = {
+		escape: Mustache.escape
+	};
 
 	(function() {
 		var COMBINING = [

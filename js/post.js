@@ -35,7 +35,7 @@
 			return '<img src="' + encodeURI(link) + '"/>';
 		}
 		link = link || href;
-		return '<a href="' + encodeURI(link) + '">' + href.escapeHtml() + '</a>';
+		return '<a href="' + encodeURI(link) + '">' + Util.escape(href) + '</a>';
 	}
 
 	var State = function() {
@@ -72,7 +72,7 @@
 				m.forEach(function(item) {
 					var b = l.indexOf(item, s), sm;
 					if (b > s)
-						lines.push(l.substring(s, b).escapeHtml());
+						lines.push(Util.escape(l.substring(s, b)));
 					if (item.startsWith('\x1b')) {
 						sm = item.match(/(\d+)/g);
 						if (sm) {
@@ -93,7 +93,7 @@
 				});
 			}
 			if (s < l.length)
-				lines.push(l.substring(s).escapeHtml());
+				lines.push(Util.escape(l.substring(s)));
 			if (!closed)
 				lines.push('</span>');
 			return lines;
@@ -111,7 +111,7 @@
 
 		titleHtml: function(title) {
 			if (title) {
-				return title.escapeHtml()
+				return Util.escape(title)
 						.replace(/\x1b\[1(?:;3\d)?m\[(.+?)\]\x1b\[m/, "<span class='post-tag'>$1</span>")
 						.replace(/^\[(转载|合集)\]/, "<span class='post-tag'>$1</span>");
 			}
@@ -216,7 +216,7 @@
 					}
 				}
 			}
-			return quotes.join('\n').escapeHtml();
+			return Util.escape(quotes.join('\n'));
 		}
 	});
 

@@ -32,7 +32,7 @@
 			this.pathname = a.pathname;
 			this.href = a.href;
 
-			Store.init(createLink(a.pathname + '../').pathname);
+			Store.init(createLink(a.href + '../').pathname);
 
 			var p = this.partials;
 			$('[id^=p-]').each(function() {
@@ -50,9 +50,12 @@
 		},
 
 		api: function(api, params) {
-			var url = this.pathname + '../bbs/' + api + '.json';
-			if (params !== undefined)
+			var url = this.pathname + '../bbs/' + api + '.json',
+				t = typeof params;
+			if (t == 'object')
 				url += '?' + $.param(params);
+			else if (t == 'string')
+				url += params;
 			return url;
 		},
 
@@ -70,10 +73,8 @@
 		},
 
 		load: function(api, param, done, fail) {
-			if (typeof(param) === 'object')
-				param = '?' + $.param(param);
 			return $.ajax({
-				url: this.api(api) + param,
+				url: this.api(api, param),
 				dataType: 'json'
 			}).done(done).fail(fail);
 		},
@@ -125,10 +126,12 @@
 
 	$.fn.extend({
 		hook: function() {
-			var $this = this;
-			hooks.forEach(function(i) {
-				$this.find(i[0]).each(function(j, e) {
-					i[1](e);
+			return this.each(function() {
+				var $this = $(this);
+				hooks.forEach(function(i) {
+					$this.find(i[0]).each(function(j, e) {
+						i[1](e);
+					});
 				});
 			});
 		},
