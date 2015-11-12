@@ -78,7 +78,7 @@
 		m: {
 			convert: function(board_id) {
 				return function(e) {
-					e.stamp = Post.stamp(e.id).toISOString();
+					e.date = Post.date(e.id).toISOString();
 					e.board_id = board_id;
 					e.title = Post.titleHtml(e.title);
 				};
@@ -174,7 +174,6 @@
 									title: $f.find('[name=title]').val(),
 									user_name: Store.get('session-user-name')
 								};
-								console.log(post);
 								view.prepend(post, model.prepend(post));
 							},
 							cancel: cancel
@@ -208,16 +207,24 @@
 				$window.off('scroll');
 				App.E.off('b:favorite', this.callback);
 
-				Store.set('board-toc', {
+				App.S.set('board-toc', {
 					data: this.model.data,
 					scrollTop: $window.scrollTop()
 				});
 			},
 
 			enter: function(search) {
-				var cache = Store.get('board-toc'),
+				var cache = App.S.get('board-toc'),
 					params = $.deparam(search);
 				if (cache && params && cache.data.board.id == params.id) {
+					var rc = Post.ReadCache.remove();
+					if (rc) {
+						cache.data.posts.forEach(function(p) {
+							if (p.id in rc) {
+								delete p.unread;
+							}
+						});
+					}
 					this.ready(cache.data, true);
 					this.defaultPost();
 					this.post();

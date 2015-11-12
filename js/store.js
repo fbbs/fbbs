@@ -21,7 +21,7 @@
 					keys.push(k);
 				}
 			});
-			$.each(keys, function(i, k) {
+			keys.forEach(function(k) {
 				store.remove(k);
 			});
 		}

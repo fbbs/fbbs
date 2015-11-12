@@ -102,7 +102,11 @@
 
 	var Post = window.Post = {
 		stamp: function(id) {
-			return new Date((new Util.Long(id)).rshift(21).toInteger());
+			return (new Util.Long(id)).rshift(21).toInteger();
+		},
+
+		date: function(id) {
+			return new Date(this.stamp(id));
 		},
 
 		makeId: function(stamp) {
@@ -317,7 +321,26 @@
 			},
 			leave: function() {
 				$(window).off('scroll');
+				this.model.data.posts.forEach(function(p) {
+					if (p.id == p.reply_id) {
+						Post.ReadCache.set(p.id);
+					}
+				});
 			}
 		}
 	});
+
+	Post.ReadCache = {
+		key: 'read-cache',
+
+		set: function(postId) {
+			var val = App.S.get(this.key) || {};
+			val[postId] = 1;
+			App.S.set(this.key, val);
+		},
+
+		remove: function() {
+			return App.S.remove(this.key);
+		}
+	};
 })();

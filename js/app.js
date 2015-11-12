@@ -305,4 +305,21 @@
 		App.reg(tmpl, r.C);
 		return r;
 	};
+
+	var store = {};
+	App.S = {
+		get: function(key) {
+			return store[key];
+		},
+
+		set: function(key, val) {
+			store[key] = val;
+		},
+
+		remove: function(key) {
+			var val = store[key];
+			delete store[key];
+			return val;
+		}
+	};
 })();
