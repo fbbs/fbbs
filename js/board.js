@@ -110,6 +110,7 @@
 			append: function(posts) {
 				posts.forEach(this.convert(this.data.board.id));
 				$.merge(this.data.posts, posts);
+				return posts;
 			},
 
 			min_id: function() {

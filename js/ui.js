@@ -53,7 +53,7 @@
 						function(data) {
 							var list = options.done(data);
 							if (list.length > 0) {
-								model.append(list);
+								list = model.append(list);
 								view.append(list);
 								loadTop = $load.offset().top;
 							}

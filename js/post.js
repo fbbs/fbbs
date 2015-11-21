@@ -246,8 +246,9 @@
 				return this.data.posts.length;
 			},
 			append: function(posts) {
-				posts = $.map(data.posts, this.convert);
+				posts = $.map(posts, this.convert);
 				$.merge(this.data.posts, posts);
+				return posts;
 			},
 			anonymous: function() {
 				return !!this.data.board.anonymous;
@@ -276,7 +277,7 @@
 					api: 'post-content',
 					param: function(model) {
 						return {
-							board_id: model.data.board_id,
+							board_id: model.data.board.id,
 							thread_id: model.thread_id(),
 							since_id: model.max_id()
 						};
