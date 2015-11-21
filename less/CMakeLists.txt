@@ -10,3 +10,4 @@ endfunction(publish_css)
 set(FILES default.less navigation.less reset.less var.less footer.less
 		board.less post.less)
 publish_css(style.default "fbbs.less" "${FILES}")
+publish_css(style.homepage "homepage.less" "var.less")

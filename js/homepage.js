@@ -12,7 +12,7 @@ $(function() {
 		if ($('#id').val().length >= 2 && $('#pw').val().length >= 4) {
 			$.ajax({
 				type: 'POST',
-				url: $form.attr('action'),
+				url: 'bbs/session-login.json',
 				data: $form.serialize()
 			}).done(function(data) {
 				Session.onLoginSuccess(data);

@@ -6,20 +6,24 @@ use warnings;
 main();
 
 sub main {
-	my ($dir, $input, $output) = @ARGV;
+	my ($dir, $css_dir, $input, $output) = @ARGV;
 
 	open my $fin, '<', "$dir/$input" or die $!;
 	open my $fout, '>', $output or die $!;
 
 	while (<$fin>) {
 		chomp;
-		if (/(template|partial) +(.+)>/) {
+		s/^\s+//;
+		if (/<(template|partial) +(.+)>/) {
 			my $prefix = substr $1, 0, 1;
 			print $fout "<script type='text/html' id='$prefix-$2'>";
 			include_file($dir, $fout, $2, $prefix);
 			print $fout "</script>";
-		} else {
-			s/^\s+//;
+		} elsif (/<inline-style\s+(.+)>/) {
+			print $fout "<style>";
+			include_css($css_dir, $1, $fout);
+			print $fout "</style>";
+		} elsif (length $_) {
 			print $fout $_;
 		}
 	}
@@ -34,6 +38,15 @@ sub include_file {
 	while (<$fh>) {
 		chomp;
 		s/^\s+//;
+		print $fout $_;
+	}
+	close $fh;
+}
+
+sub include_css {
+	my ($dir, $file, $fout) = @_;
+	open my $fh, '<', "$dir/$file.css" or die $!;
+	while (<$fh>) {
 		print $fout $_;
 	}
 	close $fh;
