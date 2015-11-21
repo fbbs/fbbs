@@ -10,6 +10,7 @@ $(function() {
 	$('#login').click(function() {
 		var $form = $('form');
 		if ($('#id').val().length >= 2 && $('#pw').val().length >= 4) {
+			$('#error').hide();
 			$.ajax({
 				type: 'POST',
 				url: 'bbs/session-login.json',
@@ -17,6 +18,10 @@ $(function() {
 			}).done(function(data) {
 				Session.onLoginSuccess(data);
 				location.assign('forum/home');
+			}).fail(function(jqXHR) {
+				if (jqXHR.status == 403) {
+					$('#error').removeClass('hidden').show();
+				}
 			});
 		}
 		return false;

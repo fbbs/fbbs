@@ -5,6 +5,12 @@
 @reg-button-color: @color-positive;
 
 @input-height: 40px;
+@base-margin: 8px;
+@input-margin: @base-margin * 1.5;
+
+@page-width: 950px;
+@right-width: 645px;
+@left-width: @page-width - @right-width - @base-margin * 4;
 
 body, div, img, ul, li, h1, p, input {
 	margin: 0;
@@ -28,26 +34,27 @@ a {
 }
 
 #container {
-	width: 950px;
-	margin: 20px auto 0;
+	width: @page-width;
+	margin: @base-margin * 2 auto 0;
 }
 
 #left {
 	float: left;
-	width: 300px;
+	width: @left-width;
+	padding-right: @base-margin * 4;
 }
 
 #right {
 	float: right;
-	width: 645px;
-	margin: 0 0 10px 0;
+	width: @right-width;
+	margin: 0 0 @base-margin 0;
 }
 
 #footer {
 	clear: both;
 	border-top: 1px solid @color-grey-light;
-	padding: 8px 0 0;
-	font-size: 14px;
+	padding: @base-margin 0 0;
+	font-size: @font-size-base;
 }
 
 h1 {
@@ -58,10 +65,10 @@ h1 {
 
 #id, #pw {
 	height: @input-height;
-	width: 272px;
-	padding: 0 0 0 8px;
+	width: @left-width - @base-margin - 1px;
+	padding: 0 0 0 @base-margin;
 	border: 1px solid @color-blue-light;
-	margin: 12px 0 0;
+	margin: @input-margin 0 0;
 	font-size: @font-size-xlarge;
 }
 
@@ -70,7 +77,7 @@ label {
 	font-size: @font-size-base;
 	line-height: @line-height-base;
 	height: @line-height-base;
-	margin: 8px 0 0 8px;
+	margin: @base-margin 0 0 @base-margin;
 
 	input {
 		margin-right: 4px;
@@ -79,12 +86,12 @@ label {
 
 #login, #reg {
 	display: block;
-	width: 282px;
+	width: 100%;
 	font-size: @font-size-xlarge;
 	line-height: @input-height;
 	height: @input-height;
 	text-align: center;
-	margin: 12px 0 0;
+	margin: @input-margin 0 0;
 	border: none;
 	border-radius: 4px;
 	color: #fff;
@@ -92,6 +99,19 @@ label {
 
 #login {
 	background-color: @login-button-color;
+}
+
+#error.hidden {
+	display: none;
+}
+
+#error {
+	color: @color-warning;
+	width: 100%;
+	font-size: @font-size-large;
+	line-height: @line-height-large;
+	text-align: center;
+	margin: @input-margin 0 0;
 }
 
 #reg {
@@ -112,7 +132,7 @@ ul {
 	li {
 		font-size: @font-size-base;
 		margin: 4px 0;
-		width: 280px;
+		width: 100%;
 		text-align: center;
 		color: @color-grey;
 	}
