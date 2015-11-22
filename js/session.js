@@ -31,6 +31,7 @@
 					var t = $(this);
 					t.hasClass('require-login') == loggedIn ? t.show() : t.hide();
 				});
+				$('#nav-profile').text(Store.get('session-user-name'));
 			});
 			this.checkLoginStatus();
 
