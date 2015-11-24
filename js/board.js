@@ -236,6 +236,23 @@
 		}
 	});
 
+	Board.Hot = App.P({
+		tmpl: 'hot',
+
+		m: {
+			init: function(data) {
+				data.posts.forEach(function(obj) {
+					obj.title = Post.titleHtml(obj.title);
+				});
+				this.data = data;
+			}
+		},
+
+		c: {
+			nav: 'board'
+		}
+	});
+
 	App.E.on('b:favorite', function(evt, action, data) {
 		var s = BOARD_FAVORITE_KEY,
 			boards = Store.get(s) || [];

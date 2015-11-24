@@ -699,56 +699,54 @@ int bbsrss_main(void)
 	return 0;
 }
 
-int api_top10(void)
+int api_hot(void)
 {
-	bool api = web_request_type(API);
-	if (api && !web_request_method(GET))
-		return WEB_ERROR_METHOD_NOT_ALLOWED;
-
-	json_array_t *array;
-	if (!api) {
-		xml_header(NULL);
-		printf("<bbstop10>");
-		print_session();
-	} else {
-		array = json_array_new();
-		web_set_response(array, JSON_ARRAY);
-	}
+	json_object_t *object = json_object_new();
+	web_set_response(object, JSON_OBJECT);
+	json_array_t *array = json_array_new();
+	json_object_append(object, "posts", array, JSON_ARRAY);
 
 	FILE *fp = fopen("etc/posts/day_f.data", "r");
 	if (fp) {
-		int rank = 0;
 		topic_stat_t topic;
 		while (fread(&topic, sizeof(topic), 1, fp) == 1) {
-			if (api) {
-				json_object_t *o = json_object_new();
-				json_object_integer(o, "rank", ++rank);
-				json_object_string(o, "user_name", topic.owner);
-				json_object_string(o, "board_name", topic.bname);
-				json_object_integer(o, "board_id", topic.bid);
-				json_object_integer(o, "count", topic.count);
-				json_object_bigint(o, "thread_id", topic.tid);
-				json_object_string(o, "title", topic.utf8_title);
-				json_array_append(array, o, JSON_OBJECT);
+			json_object_t *o = json_object_new();
+			json_object_string(o, "user_name", topic.owner);
+			json_object_string(o, "board_name", topic.bname);
+			json_object_integer(o, "board_id", topic.bid);
+			json_object_integer(o, "count", topic.count);
+			json_object_bigint(o, "thread_id", topic.tid);
+			json_object_string(o, "title", topic.utf8_title);
+			json_array_append(array, o, JSON_OBJECT);
+		}
+	}
+	fclose(fp);
+	return WEB_OK;
+}
+
+int api_top10(void)
+{
+	xml_header(NULL);
+	printf("<bbstop10>");
+	print_session();
+
+	FILE *fp = fopen("etc/posts/day_f.data", "r");
+	if (fp) {
+		topic_stat_t topic;
+		while (fread(&topic, sizeof(topic), 1, fp) == 1) {
+			printf("<top board='%s' owner='%s' count='%u' gid='%"PRIdPID"'>",
+					topic.bname, topic.owner, topic.count, topic.tid);
+			if (web_request_type(UTF8)) {
+				xml_fputs(topic.utf8_title);
 			} else {
-				printf("<top board='%s' owner='%s' count='%u' gid='%"PRIdPID"'>",
-						topic.bname, topic.owner, topic.count, topic.tid);
-				if (web_request_type(UTF8)) {
-					xml_fputs(topic.utf8_title);
-				} else {
-					GBK_BUFFER(title, POST_TITLE_CCHARS);
-					convert_u2g(topic.utf8_title, gbk_title);
-					xml_fputs(gbk_title);
-				}
-				printf("</top>\n");
+				GBK_BUFFER(title, POST_TITLE_CCHARS);
+				convert_u2g(topic.utf8_title, gbk_title);
+				xml_fputs(gbk_title);
 			}
+			printf("</top>\n");
 		}
 		fclose(fp);
 	}
-	if (api) {
-		return WEB_OK;
-	} else {
-		printf("</bbstop10>");
-		return 0;
-	}
+	printf("</bbstop10>");
+	return 0;
 }

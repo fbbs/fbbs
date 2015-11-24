@@ -68,17 +68,17 @@ extern int web_buy_prop(void);
 
 extern int api_top10(void);
 
-#define API_DECLARE(module, name)  extern int api_##module##_##name(void)
+#define API_DECLARE(name)  extern int api_##name(void)
 
 extern int api_board_all(void);
 extern int api_board_fav(void);
-API_DECLARE(board, favorite);
-API_DECLARE(board, sector);
-API_DECLARE(board, toc);
-API_DECLARE(session, login);
-API_DECLARE(session, logout);
-
-extern int api_post_content(void);
+API_DECLARE(board_favorite);
+API_DECLARE(board_sector);
+API_DECLARE(board_toc);
+API_DECLARE(hot);
+API_DECLARE(post_content);
+API_DECLARE(session_login);
+API_DECLARE(session_logout);
 
 typedef struct {
 	const char *name;    ///< name of the cgi.
@@ -119,6 +119,7 @@ const static web_handler_t handlers[] = {
 	{ "fwd", bbsfwd_main, ST_SMAIL },
 	{ "gcon", bbsgcon_main, ST_READING },
 	{ "gdoc", bbsgdoc_main, ST_READING },
+	{ "hot", api_hot, ST_READBRD },
 	{ "idle", bbsidle_main, ST_IDLE },
 	{ "info", bbsinfo_main, ST_GMENU },
 	{ "login", web_login, ST_LOGIN},
