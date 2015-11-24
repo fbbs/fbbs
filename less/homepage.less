@@ -53,7 +53,7 @@ a {
 #footer {
 	clear: both;
 	border-top: 1px solid @color-grey-light;
-	padding: @base-margin 0 0;
+	padding: @base-margin 0;
 	font-size: @font-size-base;
 }
 
@@ -64,12 +64,13 @@ h1 {
 }
 
 #id, #pw {
+	width: 100%;
 	height: @input-height;
-	width: @left-width - @base-margin - 1px;
 	padding: 0 0 0 @base-margin;
 	border: 1px solid @color-blue-light;
 	margin: @input-margin 0 0;
 	font-size: @font-size-xlarge;
+	box-sizing: border-box;
 }
 
 label {
@@ -86,9 +87,9 @@ label {
 
 #login, #reg {
 	display: block;
-	width: 100%;
 	font-size: @font-size-xlarge;
 	line-height: @input-height;
+	width: 100%;
 	height: @input-height;
 	text-align: center;
 	margin: @input-margin 0 0;
@@ -107,7 +108,6 @@ label {
 
 #error {
 	color: @color-warning;
-	width: 100%;
 	font-size: @font-size-large;
 	line-height: @line-height-large;
 	text-align: center;
@@ -132,7 +132,6 @@ ul {
 	li {
 		font-size: @font-size-base;
 		margin: 4px 0;
-		width: 100%;
 		text-align: center;
 		color: @color-grey;
 	}
@@ -173,5 +172,38 @@ ul {
 
 	a {
 		color: @link-color;
+	}
+
+	div {
+		display: inline-block;
+	}
+}
+
+@media (max-width: @screen-sm) {
+	#container {
+		width: 100%;
+		padding: 0 8px;
+		box-sizing: border-box;
+	}
+
+	#left {
+		width: 100%;
+		padding: 0;
+	}
+
+	#right, #copyright div, #pc-tools {
+		display: none;
+	}
+
+	#links {
+		margin: 16px 0;
+	}
+
+	h1 {
+		margin: 8px 0;
+	}
+
+	#extra, #copyright {
+		float: none;
 	}
 }
