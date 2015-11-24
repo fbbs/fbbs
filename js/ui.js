@@ -20,27 +20,45 @@
 		loadMore: function(options) {
 			var ctrl = options.ctrl,
 				$load = ctrl.view.$('.load-more'),
-				$end = ctrl.view.$('.end-sign'),
-				clickable = true, autoload = false,
+				clickable = true, autoload = options.autoload,
+				retries = 0, autoclick = true,
 				model = ctrl.model, view = ctrl.view,
 
 				loadTop = $load.offset().top,
 				callback = function() {
-					var $t = $(this);
-					var t = $t.scrollTop() + $t.height();
-					if (t > loadTop) {
-						$load.click();
+					if (autoclick) {
+						var $t = $(this);
+						var t = $t.scrollTop() + $t.height();
+						if (t > loadTop) {
+							$load.click();
+						}
+					}
+				},
+				end = function($el, done) {
+					clickable = autoclick = !done;
+					if (done) {
+						if (options.retry) {
+							$el.text(options.retry(retries++));
+							clickable = true;
+						} else {
+							$el.hide();
+						}
+					} else {
+						$el.text('↓ 载入更多');
 					}
 				};
 
 			if (model.count() < options.count) {
-				$load.hide();
+				end($load, true);
 				return;
 			} else {
-				$end.hide();
+				end($load, false);
 			}
 
-			$load.text('↓ 载入更多');
+			if (autoload) {
+				$(window).on('scroll', callback);
+			}
+
 			$load.click(function() {
 				if (clickable) {
 					clickable = false;
@@ -57,13 +75,7 @@
 								view.append(list);
 								loadTop = $load.offset().top;
 							}
-							if (list.length < options.count) {
-								$load.hide();
-								$end.show();
-							} else {
-								$load.text('↓ 载入更多');
-								clickable = true;
-							}
+							end($load, list.length < options.count);
 						}, function(jqXHR, textStatus, errorThrown) {
 							$load.text('载入失败，点击重试');
 							clickable = true;

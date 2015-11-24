@@ -274,6 +274,13 @@
 				Ui.loadMore({
 					ctrl: this,
 					count: 20,
+					autoload: true,
+					retry: function(retries) {
+						var s = '看看有没有新回复? ';
+						for (var i = 0; i < retries; ++i)
+							s += '没有..';
+						return s;
+					},
 					api: 'post-content',
 					param: function(model) {
 						return {
