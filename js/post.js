@@ -29,10 +29,11 @@
 		return r;
 	}
 
-	function generateLink(href) {
+	function generateLink(href, img) {
 		var link = App.normalize(href);
-		if (/(jpg|jpeg|png|gif)$/i.test(href) && link) {
-			return '<img src="' + encodeURI(link) + '"/>';
+		if (img && /(jpg|jpeg|png|gif)$/i.test(href) && link) {
+			link = encodeURI(link);
+			return '<img src="' + link + '" alt="' + link + '">';
 		}
 		link = link || href;
 		return '<a href="' + encodeURI(link) + '">' + Util.escape(href) + '</a>';
@@ -66,7 +67,7 @@
 		parseLine: function(l) {
 			var hl = false, fg = 37, bg = 40, s = 0, closed = true,
 				m = l.match(/(\x1b\[[\d;]*\w|https?:\/\/[\w\d\-\._~:\/\?#\[\]@!\$&'\(\)\*\+,;=%]+)/g),
-				lines = [];
+				lines = [], img = !this.quote && !this.footer;
 
 			if (m) {
 				m.forEach(function(item) {
@@ -87,7 +88,7 @@
 						lines.push('<span class="a' + (+hl) + fg + ' a' + bg + '">');
 						closed = false;
 					} else if (item.startsWith('http')) {
-						lines.push(generateLink(item));
+						lines.push(generateLink(item, img))
 					}
 					s = b + item.length;
 				});
