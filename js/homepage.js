@@ -1,5 +1,5 @@
 $(function() {
-	Store.init(location.pathname);
+	Store.init(location.pathname.replace(/[^\/]+\.htm/, ''));
 
 	$('#id').focus();
 	$('#sw').click(function() {
