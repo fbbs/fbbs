@@ -261,8 +261,16 @@ static int show_sector(int sid, db_res_t *res, int last)
 */
 int api_board_sector(void)
 {
-	db_res_t *res = db_query("SELECT id, name, descr, short_descr"
-			" FROM board_sectors WHERE public");
+	query_t *q = query_new(0);
+	query_select(q, "id, name, descr, short_descr");
+	query_from(q, "board_sectors");
+	query_where(q, "public");
+
+	const char *name = web_get_param("name");
+	if (name && *name)
+		query_and(q, "name = %s", name);
+
+	db_res_t *res = query_exec(q);
 	if (!res)
 		return WEB_ERROR_INTERNAL;
 
@@ -282,19 +290,30 @@ int api_board_sector(void)
 	}
 	db_clear(res);
 
-	res = db_query("SELECT id, name, descr, sector FROM boards"
-			" WHERE flag & %d <> 0", BOARD_FLAG_RECOMMEND);
+	q = query_new(0);
+	query_select(q, BOARD_BASE_FIELDS);
+	query_from(q, BOARD_BASE_TABLES);
+	if (name && *name)
+		query_where(q, "sector = %d", *name);
+	else
+		query_where(q, "flag & %d <> 0", BOARD_FLAG_RECOMMEND);
+	res = query_exec(q);
 	if (res) {
 		json_array_t *boards = json_array_new();
 		json_object_append(object, "boards", boards, JSON_ARRAY);
 
 		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
-			json_object_t *board = json_object_new();
-			json_array_append(boards, board, JSON_OBJECT);
-			json_object_integer(board, "id", db_get_integer(res, i, 0));
-			json_object_string(board, "name", db_get_value(res, i, 1));
-			json_object_string(board, "descr", db_get_value(res, i, 2));
-			json_object_integer(board, "sector_id", db_get_integer(res, i, 3));
+			board_t board;
+			res_to_board(res, i, &board);
+			if (!has_read_perm(&board))
+				continue;
+
+			json_object_t *b = json_object_new();
+			json_array_append(boards, b, JSON_OBJECT);
+			json_object_integer(b, "id", board.id);
+			json_object_string(b, "name", board.name);
+			json_object_string(b, "descr", board.descr);
+			json_object_integer(b, "sector_id", board.sector);
 		}
 		db_clear(res);
 	}

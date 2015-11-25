@@ -40,6 +40,7 @@ enum {
 typedef struct {
 	int id;
 	int parent;
+	int sector;
 	uint_t flag;
 	uint_t perm;
 	char name[BOARD_NAME_LEN + 1];
@@ -49,7 +50,7 @@ typedef struct {
 } board_t;
 
 #define BOARD_BASE_FIELDS \
-	"b.id, b.name, b.descr, b.parent, b.flag, b.perm, b.bms, b.categ "
+	"b.id, b.name, b.descr, b.parent, b.flag, b.perm, b.bms, b.categ, b.sector "
 #define BOARD_BASE_TABLES \
 	"boards b "
 #define BOARD_SELECT_QUERY_BASE \

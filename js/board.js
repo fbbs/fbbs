@@ -69,7 +69,16 @@
 		},
 
 		c: {
-			nav: 'board'
+			nav: 'board',
+
+			post: function() {
+				if (this.model.data.sectors.length <= 1) {
+					var c = 'column-md', view = this.view;
+					view.$('#board-sector').removeClass(c);
+					view.$('ul').addClass(c);
+					view.$('h1~a').hide();
+				}
+			}
 		}
 	});
 
