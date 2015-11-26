@@ -130,6 +130,12 @@
 
 			count: function() {
 				return this.data.posts.length;
+			},
+
+			clear: function() {
+				this.data.posts.forEach(function(p) {
+					delete p.unread;
+				});
 			}
 		},
 
@@ -147,6 +153,13 @@
 				}).join(''))
 				.appendTo(this.$('#board-toc-list'))
 				.hook();
+			},
+
+			clear: function() {
+				var c = 'post-unread';
+				this.$('li.' + c).each(function() {
+					$(this).removeClass(c);
+				});
 			}
 		},
 
@@ -193,6 +206,17 @@
 						$main.hide();
 						$links.hide();
 					}
+					return false;
+				});
+
+				view.$('#board-clear').click(function() {
+					App.ajax({
+						url: App.api('board-clear', { id: board.id }),
+						type: 'POST'
+					}).done(function() {
+						model.clear();
+						view.clear();
+					});
 					return false;
 				});
 

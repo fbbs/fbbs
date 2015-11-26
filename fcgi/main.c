@@ -72,6 +72,7 @@ extern int api_top10(void);
 
 extern int api_board_all(void);
 extern int api_board_fav(void);
+API_DECLARE(board_clear);
 API_DECLARE(board_favorite);
 API_DECLARE(board_sector);
 API_DECLARE(board_toc);
@@ -96,6 +97,7 @@ const static web_handler_t handlers[] = {
 	{ "bfind", bbsbfind_main, ST_READING },
 	{ "boa", web_sector, ST_READNEW },
 	{ "board-all", api_board_all, ST_READBRD },
+	{ "board-clear", api_board_clear, ST_READING },
 	{ "board-fav", api_board_fav, ST_READNEW },
 	{ "board-favorite", api_board_favorite, ST_READNEW },
 	{ "board-sector", api_board_sector, ST_READBRD },

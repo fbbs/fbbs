@@ -502,6 +502,23 @@ int bbsclear_main(void)
 	return 0;
 }
 
+int api_board_clear(void)
+{
+	if (!session_get_id())
+		return WEB_ERROR_LOGIN_REQUIRED;
+
+	board_t board;
+	if (!get_board_by_bid(web_get_param_long("id"), &board)
+			|| !has_read_perm(&board))
+		return WEB_ERROR_BOARD_NOT_FOUND;
+
+	session_set_board(board.id);
+	brc_init(currentuser.userid, board.name);
+	brc_clear_all();
+	brc_sync(currentuser.userid);
+	return WEB_ERROR_NONE;
+}
+
 int bbsnot_main(void)
 {
 	board_t board;
