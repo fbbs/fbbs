@@ -1018,7 +1018,7 @@ enum {
  *     ...
  *   ]
  */
-static int api_post_content_get(void)
+static int api_post_get(void)
 {
 	post_id_t thread_id = web_get_param_long("thread_id");
 	if (thread_id <= 0)
@@ -1094,7 +1094,7 @@ static int api_post_content_get(void)
 	return WEB_OK;
 }
 
-static int api_post_content_post(void)
+static int api_post_new(void)
 {
 	if (!session_get_user_id())
 		return WEB_ERROR_LOGIN_REQUIRED;
@@ -1171,11 +1171,11 @@ static int api_post_content_post(void)
 	return WEB_OK;
 }
 
-int api_post_content(void)
+int api_post(void)
 {
 	if (web_request_method(GET))
-		return api_post_content_get();
+		return api_post_get();
 	if (web_request_method(POST))
-		return api_post_content_post();
+		return api_post_new();
 	return WEB_ERROR_METHOD_NOT_ALLOWED;
 }

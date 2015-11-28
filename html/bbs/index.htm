@@ -12,19 +12,19 @@
 	<div class='container'>
 		<ul class='nav-left'>
 			<li><h1 class='nav-header'>日月光华</h1></li>
-			<li><a href='hot'>热门</a></li>
-			<li><a href='board-sector'>版面</a></li>
+			<li><a href='trend'>热门</a></li>
+			<li><a href='sector'>版面</a></li>
 		</ul>
 
 		<ul class='nav-right' id='nav-personal'>
 			<li><a href='../' class='na'>登录</a></li>
 			<li><a href='register'>注册</a></li>
-			<li class='require-login'><a id='nav-profile' href='user-meta'></a></li>
+			<li class='require-login'><a id='nav-profile' href='user'></a></li>
 			<li class='require-login'>
 				<a href='#' class='nav-dropdown-header na'>消息</a>
 				<ul id='nav-notification-list' class='hidden nav-dropdown-list'>
-					<li><a href='post-reply'>回复我的文章</a></li>
-					<li><a href='post-mention'>提到我的文章</a></li>
+					<li><a href='reply'>回复我的文章</a></li>
+					<li><a href='mention'>提到我的文章</a></li>
 				</ul>
 			</li>
 			<li class='require-login'>
@@ -32,7 +32,7 @@
 				<ul id='nav-setting-list' class='hidden nav-dropdown-list'>
 				</ul>
 			</li>
-			<li class='require-login'><a href='session-logout' class='na session-logout'>退出</a></li>
+			<li class='require-login'><a href='logout' class='na session-logout'>退出</a></li>
 		</ul>
 	</div>
 </nav>
@@ -40,7 +40,7 @@
 <div class='container main-container'>
 	<div id='nav-board' class='hidden nav-left'>
 		<div>我收藏的版面</div>
-		<ul id='board-favorite'>
+		<ul id='favorite'>
 		</ul>
 	</div>
 
@@ -54,15 +54,15 @@
 	</div>
 </footer>
 
-<template board-favorite>
-<template board-sector>
-<template board-toc>
-<partial board-toc>
-<template hot>
-<template post-content>
-<partial post-content>
+<template favorite>
+<template sector>
+<template board>
+<partial board>
+<template trend>
+<template post>
+<partial post>
 <template post-new>
-<partial user-meta>
+<partial user>
 
 <script defer src='../js/jquery-1.11.3.min.js'></script>
 <script defer src='../js/lib-20150928.min.js'></script>

@@ -1,15 +1,15 @@
-function(publish_html HTML)
-	set(DST ${CMAKE_CURRENT_BINARY_DIR}/${HTML}.htm)
-	add_custom_target(${HTML}.htm ALL
+function(publish_html DIR)
+	set(DST ${CMAKE_CURRENT_BINARY_DIR}/${DIR}.htm)
+	add_custom_target(${DIR}-html ALL
 		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generator
-				${CMAKE_CURRENT_SOURCE_DIR}
+				${CMAKE_CURRENT_SOURCE_DIR}/${DIR}
 				${CMAKE_BINARY_DIR}/less
-				${HTML}.htm ${DST}
-		DEPENDS ${HTML}.htm)
-	install(FILES ${DST} DESTINATION ${DOCUMENT_ROOT}/${HTML}
+				index.htm ${DST}
+		DEPENDS ${DIR}/index.htm)
+	install(FILES ${DST} DESTINATION ${DOCUMENT_ROOT}/${DIR}
 		RENAME index.htm)
 endfunction(publish_html)
 
-publish_html(forum)
-publish_html(index)
-add_dependencies(index.htm style.homepage)
+publish_html(bbs)
+publish_html(home)
+add_dependencies(home-html style.homepage)

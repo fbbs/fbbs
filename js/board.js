@@ -1,5 +1,5 @@
 (function() {
-	var BOARD_FAVORITE_KEY = 'board-favorite';
+	var BOARD_FAVORITE_KEY = 'favorite';
 
 	var Board = window.Board = {};
 
@@ -24,7 +24,7 @@
 				$this.prop('disabled', true);
 				App.ajax({
 					type: rm ? 'DELETE' : 'POST',
-					url: App.api('board-favorite') + '?id=' + id
+					url: App.api('favorite') + '?id=' + id
 				}).done(function() {
 					App.E.fire('b:favorite', rm ? 'rm' : 'add', rm ? id : { id: id, name: name });
 				}).always(function() {
@@ -42,7 +42,7 @@
 	};
 
 	Board.Sector = App.P({
-		tmpl: 'board-sector',
+		tmpl: 'sector',
 		m: {
 			init: function(data) {
 				/*
@@ -83,7 +83,7 @@
 	});
 
 	Board.Toc = App.P({
-		tmpl: 'board-toc',
+		tmpl: 'board',
 		m: {
 			convert: function(board_id) {
 				return function(e) {
@@ -141,7 +141,7 @@
 
 		v: {
 			prepend: function(post, pos) {
-				var $el = $(App.partial('board-toc', post)),
+				var $el = $(App.partial('board', post)),
 					$list = this.$('#board-toc-list').find('li');
 				$($list.get(pos)).before($el);
 				$el.hide().slideDown().hook();
@@ -149,7 +149,7 @@
 
 			append: function(posts) {
 				$($.map(posts, function(p) {
-					return App.partial('board-toc', p);
+					return App.partial('board', p);
 				}).join(''))
 				.appendTo(this.$('#board-toc-list'))
 				.hook();
@@ -211,7 +211,7 @@
 
 				view.$('#board-clear').click(function() {
 					App.ajax({
-						url: App.api('board-clear', { id: board.id }),
+						url: App.api('clear', { id: board.id }),
 						type: 'POST'
 					}).done(function() {
 						model.clear();
@@ -223,7 +223,7 @@
 				Ui.loadMore({
 					ctrl: this,
 					count: 20,
-					api: 'board-toc',
+					api: 'board',
 					param: function(model) {
 						return {
 							id: model.data.board.id,
@@ -270,7 +270,7 @@
 	});
 
 	Board.Hot = App.P({
-		tmpl: 'hot',
+		tmpl: 'trend',
 
 		m: {
 			init: function(data) {

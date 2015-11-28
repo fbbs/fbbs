@@ -259,7 +259,7 @@ static int show_sector(int sid, db_res_t *res, int last)
 	boards: [ { id: I, name: T, descr: T, sector_id: I } ... ]
 }
 */
-int api_board_sector(void)
+int api_sector(void)
 {
 	query_t *q = query_new(0);
 	query_select(q, "id, name, descr, short_descr");
@@ -479,7 +479,7 @@ int web_sector(void)
 	return 0;
 }
 
-int bbsclear_main(void)
+static int bbsclear_main(void)
 {
 	if (!session_get_id())
 		return BBS_ELGNREQ;
@@ -502,8 +502,11 @@ int bbsclear_main(void)
 	return 0;
 }
 
-int api_board_clear(void)
+int api_clear(void)
 {
+	if (!web_request_type(API))
+		return bbsclear_main();
+
 	if (!session_get_id())
 		return WEB_ERROR_LOGIN_REQUIRED;
 
@@ -545,7 +548,7 @@ int bbsnot_main(void)
 	return 0;
 }
 
-int api_board_favorite(void)
+int api_favorite(void)
 {
 	user_id_t user_id = session_get_user_id();
 	if (!user_id)

@@ -11,7 +11,7 @@
 
 			if (expire)
 				Store.set('session-expire-time', expire);
-			Store.set('board-favorite', data['board-favorite']);
+			Store.set('favorite', data['favorite']);
 
 			Cookie.set('utmpkey', data['session_key'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs'));
 			Cookie.set('utmpuser', data['user_name'], expire ? new Date(expire * 1000) : 0, Cookie.abs('bbs'));
@@ -36,7 +36,7 @@
 			this.checkLoginStatus();
 
 			$('.session-logout').click(function() {
-				$.post('../bbs/session-logout.json',
+				$.post('../bbs/logout.json',
 					{ token: Store.get('session-token') },
 					function(data) {
 						Store.clear();

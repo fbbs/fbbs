@@ -34,7 +34,7 @@ sub main {
 
 sub include_file {
 	my ($dir, $fout, $tmpl, $prefix) = @_;
-	open my $fh, '<', "$dir/tmpl/$tmpl.htm" . ($prefix eq 't' ? 'l' : '') or die $!;
+	open my $fh, '<', "$dir/$tmpl.htm" . ($prefix eq 't' ? 'l' : '') or die $!;
 	while (<$fh>) {
 		chomp;
 		s/^\s+//;

@@ -13,11 +13,11 @@ $(function() {
 			$('#error').hide();
 			$.ajax({
 				type: 'POST',
-				url: 'bbs/session-login.json',
+				url: 'bbs/login.json',
 				data: $form.serialize()
 			}).done(function(data) {
 				Session.onLoginSuccess(data);
-				location.assign('forum/hot');
+				location.assign('forum/trend');
 			}).fail(function(jqXHR) {
 				if (jqXHR.status == 403) {
 					$('#error').removeClass('hidden').show();
@@ -27,12 +27,12 @@ $(function() {
 		return false;
 	});
 
-	if (Store.get('session-logout')) {
+	if (Store.get('logout')) {
 		Store.clear();
 	} else {
-		$.getJSON('bbs/session-login.json', function(data) {
+		$.getJSON('bbs/login.json', function(data) {
 			if (data.code == 10002) {
-				location.assign('forum/hot');
+				location.assign('forum/trend');
 			}
 		});
 	}

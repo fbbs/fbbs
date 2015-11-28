@@ -226,7 +226,7 @@
 	});
 
 	Post.Content = App.P({
-		tmpl: 'post-content',
+		tmpl: 'post',
 		m: {
 			convert: function(p) {
 				return new Post.Article(p);
@@ -263,7 +263,7 @@
 		v: {
 			append: function(posts) {
 				$($.map(posts, function(p) {
-					return App.partial('post-content', p);
+					return App.partial('post', p);
 				}).join(''))
 					.appendTo(this.$('#post-content-list'))
 					.hook();
@@ -282,7 +282,7 @@
 							s += '没有..';
 						return s;
 					},
-					api: 'post-content',
+					api: 'post',
 					param: function(model) {
 						return {
 							board_id: model.data.board.id,

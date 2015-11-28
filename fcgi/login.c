@@ -219,11 +219,38 @@ static void print_fav_boards(json_object_t *object)
 	}
 	db_clear(res);
 
-	json_object_append(object, "board-favorite", array, JSON_ARRAY);
+	json_object_append(object, "favorite", array, JSON_ARRAY);
 }
 
-int api_session_login(void)
+int web_login(void)
 {
+	if (session_get_id())
+		return login_redirect(NULL, 0);
+
+	if (web_parse_post_data() < 0)
+		return BBS_EINVAL;
+
+	const char *uname = web_get_param("id");
+	if (*uname == '\0' || strcaseeq(uname, "guest"))
+		return redirect_homepage();
+
+	char pw[PASSLEN];
+	strlcpy(pw, web_get_param("pw"), sizeof(pw));
+
+	int ret = do_web_login(uname, pw, false);
+	if (ret == 0) {
+		bool persistent = *web_get_param("persistent");
+		session_data_t s;
+		_web_login(persistent, true, &s);
+	}
+	return ret;
+}
+
+int api_login(void)
+{
+	if (!web_request_type(API))
+		return web_login();
+
 	if (web_request_method(GET)) {
 		if (session_get_id())
 			return WEB_ERROR_NONE;
@@ -257,30 +284,6 @@ int api_session_login(void)
 	}
 }
 
-int web_login(void)
-{
-	if (session_get_id())
-		return login_redirect(NULL, 0);
-
-	if (web_parse_post_data() < 0)
-		return BBS_EINVAL;
-
-	const char *uname = web_get_param("id");
-	if (*uname == '\0' || strcaseeq(uname, "guest"))
-		return redirect_homepage();
-
-	char pw[PASSLEN];
-	strlcpy(pw, web_get_param("pw"), sizeof(pw));
-
-	int ret = do_web_login(uname, pw, false);
-	if (ret == 0) {
-		bool persistent = *web_get_param("persistent");
-		session_data_t s;
-		_web_login(persistent, true, &s);
-	}
-	return ret;
-}
-
 int web_logout(void)
 {
 	session_id_t id = session_get_id();
@@ -297,8 +300,11 @@ int web_logout(void)
 	return 0;
 }
 
-int api_session_logout(void)
+int api_logout(void)
 {
+	if (!web_request_type(API))
+		return web_logout();
+
 	if (web_request_method(POST)) {
 		session_id_t id = session_get_id();
 		if (id) {

@@ -4,7 +4,7 @@
 <div class='board-manager-list'>
 版主
 {{#board.bms}}
-<a class='user-meta' href='user-meta?name={{name}}'>{{.}}</a>
+<a class='user-meta' href='user?name={{name}}'>{{.}}</a>
 {{/board.bms}}
 </div>
 
@@ -16,7 +16,7 @@
 <div id='board-toc-main'>
 <ul id='board-toc-list'>
 {{#posts}}
-{{>board-toc}}
+{{>board}}
 {{/posts}}
 </ul>
 <div class='load-more'></div>

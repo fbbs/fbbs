@@ -561,7 +561,7 @@ static record_callback_e board_toc_callback(void *ptr, void *args, int offset)
  *    posts: [ { id: B, title: T, user_name: T } ... ]
  * }
  */
-int api_board_toc(void)
+int api_board(void)
 {
 	int board_id = web_get_param_long("id");
 	if (board_id <= 0)
@@ -699,7 +699,7 @@ int bbsrss_main(void)
 	return 0;
 }
 
-int api_hot(void)
+int api_trend(void)
 {
 	json_object_t *object = json_object_new();
 	web_set_response(object, JSON_OBJECT);
@@ -724,7 +724,7 @@ int api_hot(void)
 	return WEB_OK;
 }
 
-int api_top10(void)
+int web_top10(void)
 {
 	xml_header(NULL);
 	printf("<bbstop10>");

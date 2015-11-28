@@ -14,14 +14,11 @@ void check_bbserr(int err);
 extern int bbssec_main(void);
 extern int web_all_boards(void);
 extern int web_sector(void);
-extern int web_login(void);
-extern int web_logout(void);
 extern int bbsdoc_main(void);
 extern int bbscon_main(void);
 extern int bbspst_main(void);
 extern int bbssnd_main(void);
 extern int bbsqry_main(void);
-extern int bbsclear_main(void);
 extern int bbsupload_main(void);
 extern int bbspreupload_main(void);
 extern int bbs0an_main(void);
@@ -66,20 +63,20 @@ extern int web_props(void);
 extern int web_my_props(void);
 extern int web_buy_prop(void);
 
-extern int api_top10(void);
+extern int web_top10(void);
 
 #define API_DECLARE(name)  extern int api_##name(void)
 
 extern int api_board_all(void);
 extern int api_board_fav(void);
-API_DECLARE(board_clear);
-API_DECLARE(board_favorite);
-API_DECLARE(board_sector);
-API_DECLARE(board_toc);
-API_DECLARE(hot);
-API_DECLARE(post_content);
-API_DECLARE(session_login);
-API_DECLARE(session_logout);
+API_DECLARE(clear);
+API_DECLARE(favorite);
+API_DECLARE(sector);
+API_DECLARE(board);
+API_DECLARE(trend);
+API_DECLARE(post);
+API_DECLARE(login);
+API_DECLARE(logout);
 
 typedef struct {
 	const char *name;    ///< name of the cgi.
@@ -96,17 +93,14 @@ const static web_handler_t handlers[] = {
 	{ "anc", bbsanc_main, ST_DIGEST },
 	{ "bfind", bbsbfind_main, ST_READING },
 	{ "boa", web_sector, ST_READNEW },
+	{ "board", api_board, ST_READING },
 	{ "board-all", api_board_all, ST_READBRD },
-	{ "board-clear", api_board_clear, ST_READING },
 	{ "board-fav", api_board_fav, ST_READNEW },
-	{ "board-favorite", api_board_favorite, ST_READNEW },
-	{ "board-sector", api_board_sector, ST_READBRD },
-	{ "board-toc", api_board_toc, ST_READING },
 	{ "brdadd", web_brdadd, ST_READING },
 	{ "brddel", web_brddel, ST_READING },
 	{ "buyprop", web_buy_prop, ST_PROP },
 	{ "ccc", bbsccc_main, ST_POSTING },
-	{ "clear", bbsclear_main, ST_READING },
+	{ "clear", api_clear, ST_READING },
 	{ "con", bbscon_main, ST_READING },
 	{ "del", bbsdel_main, ST_READING },
 	{ "delmail", bbsdelmail_main, ST_RMAIL },
@@ -116,16 +110,16 @@ const static web_handler_t handlers[] = {
 	{ "fadd", bbsfadd_main, ST_GMENU },
 	{ "fall", bbsfall_main, ST_GMENU },
 	{ "fav", web_fav, ST_READBRD },
+	{ "favorite", api_favorite, ST_READNEW },
 	{ "fdel", bbsfdel_main, ST_GMENU },
 	{ "fdoc", web_forum, ST_READING },
 	{ "fwd", bbsfwd_main, ST_SMAIL },
 	{ "gcon", bbsgcon_main, ST_READING },
 	{ "gdoc", bbsgdoc_main, ST_READING },
-	{ "hot", api_hot, ST_READBRD },
 	{ "idle", bbsidle_main, ST_IDLE },
 	{ "info", bbsinfo_main, ST_GMENU },
-	{ "login", web_login, ST_LOGIN},
-	{ "logout", web_logout, ST_MMENU },
+	{ "login", api_login, ST_LOGIN},
+	{ "logout", api_logout, ST_MMENU },
 	{ "mail", bbsmail_main, ST_RMAIL },
 	{ "mailcon", bbsmailcon_main, ST_RMAIL },
 	{ "mailman", web_mailman, ST_RMAIL },
@@ -134,7 +128,7 @@ const static web_handler_t handlers[] = {
 	{ "not", bbsnot_main, ST_READING },
 	{ "ovr", bbsovr_main, ST_FRIEND },
 	{ "plan", bbsplan_main, ST_EDITUFILE },
-	{ "post-content", api_post_content, ST_READING },
+	{ "post", api_post, ST_READING },
 	{ "preupload", bbspreupload_main, ST_UPLOAD },
 	{ "prop", web_props, ST_PROP },
 	{ "pst", bbspst_main, ST_POSTING },
@@ -144,16 +138,16 @@ const static web_handler_t handlers[] = {
 	{ "reg", fcgi_reg, ST_NEW },
 	{ "rss", bbsrss_main, ST_READING },
 	{ "sec", bbssec_main, ST_READBRD },
+	{ "sector", api_sector, ST_READBRD },
 	{ "sel", web_sel, ST_SELECT },
-	{ "session-login", api_session_login, ST_LOGIN },
-	{ "session-logout", api_session_logout, ST_MMENU },
 	{ "sig", bbssig_main, ST_EDITUFILE },
 	{ "sigopt", web_sigopt, ST_GMENU },
 	{ "snd", bbssnd_main, ST_POSTING },
 	{ "sndmail", bbssndmail_main, ST_SMAIL },
 	{ "tcon", bbstcon_main, ST_READING },
 	{ "tdoc" ,bbstdoc_main, ST_READING },
-	{ "top10", api_top10, ST_READBRD },
+	{ "top10", web_top10, ST_READBRD },
+	{ "trend", api_trend, ST_READBRD },
 	{ "upload", bbsupload_main, ST_UPLOAD },
 };
 
@@ -245,8 +239,8 @@ static bool require_login(const web_handler_t *h)
 {
 #ifdef FDQUAN
 	int (*f)(void) = h->func;
-	return !(f == web_login || f == fcgi_reg || f == fcgi_activate
-			|| f == api_session_login || f == api_session_logout);
+	return !(f == fcgi_reg || f == fcgi_activate
+			|| f == api_login || f == api_logout);
 #else
 	return false;
 #endif
