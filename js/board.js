@@ -12,15 +12,15 @@
 		},
 
 		toggleButton: function(el, added) {
-			el.toggleClass('board-favorite-add', !added)
-				.toggleClass('board-favorite-rm', added);
+			el.toggleClass('fav-add', !added)
+				.toggleClass('fav-rm', added);
 		},
 
 		setupButton: function(el, id, name) {
 			var t = this;
 			el.click(function() {
 				var $this = $(this),
-					rm = $this.hasClass('board-favorite-rm');
+					rm = $this.hasClass('fav-rm');
 				$this.prop('disabled', true);
 				App.ajax({
 					type: rm ? 'DELETE' : 'POST',
@@ -74,7 +74,7 @@
 			post: function() {
 				if (this.model.data.sectors.length <= 1) {
 					var c = 'column-md', view = this.view;
-					view.$('#board-sector').removeClass(c);
+					view.$('#sct').removeClass(c);
 					view.$('ul').addClass(c);
 					view.$('h1~a').hide();
 				}
@@ -142,7 +142,7 @@
 		v: {
 			prepend: function(post, pos) {
 				var $el = $(App.partial('board', post)),
-					$list = this.$('#board-toc-list').find('li');
+					$list = this.$('#brd-li').find('li');
 				$($list.get(pos)).before($el);
 				$el.hide().slideDown().hook();
 			},
@@ -151,12 +151,12 @@
 				$($.map(posts, function(p) {
 					return App.partial('board', p);
 				}).join(''))
-				.appendTo(this.$('#board-toc-list'))
+				.appendTo(this.$('#brd-li'))
 				.hook();
 			},
 
 			clear: function() {
-				var c = 'post-unread';
+				var c = 'pst-unread';
 				this.$('li.' + c).each(function() {
 					$(this).removeClass(c);
 				});
@@ -171,13 +171,13 @@
 					model = this.model,
 					board = model.data.board;
 				this.callback = favorite.setupButton(
-					this.view.$('.board-favorite-btn'),
+					this.view.$('.fav-btn'),
 					board.id, board.name);
 
-				view.$('.post-new-btn').click(function() {
-					var $f = view.$('.post-new'),
-						$main = view.$('#board-toc-main'),
-						$links = view.$('#board-toc-links'),
+				view.$('.pst-new-btn').click(function() {
+					var $f = view.$('.pst-new'),
+						$main = view.$('#brd-main'),
+						$links = view.$('#brd-links'),
 						cancel = function() {
 							$main.show();
 							$links.show();
@@ -209,7 +209,7 @@
 					return false;
 				});
 
-				view.$('#board-clear').click(function() {
+				view.$('#brd-clear').click(function() {
 					App.ajax({
 						url: App.api('clear', { id: board.id }),
 						type: 'POST'
@@ -302,7 +302,7 @@
 			boards.sort(function(a, b) { return a.name.localeCompare(b.name); });
 		Store.set(s, boards);
 
-		$('#' + s).html(App.render(s, {
+		$('#fav').html(App.render(s, {
 			boards: boards
 		})).hook();
 	});

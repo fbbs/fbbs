@@ -1,7 +1,7 @@
 (function() {
 	window.Ui = {
 		showNavBoard: function(show) {
-			var $navBoard = $('#nav-board'),
+			var $navBoard = $('#nav-brd'),
 				$main = $('#main'),
 				cls = 'nav-left-shown';
 			if (show) {
@@ -35,7 +35,7 @@
 					}
 				},
 				end = function($el, done) {
-					clickable = autoclick = !done;
+					autoload = clickable = autoclick = !done;
 					if (done) {
 						if (options.retry) {
 							$el.text(options.retry(retries++));
@@ -48,12 +48,7 @@
 					}
 				};
 
-			if (model.count() < options.count) {
-				end($load, true);
-				return;
-			} else {
-				end($load, false);
-			}
+			end($load, model.count() < options.count);
 
 			if (autoload) {
 				$(window).on('scroll', callback);

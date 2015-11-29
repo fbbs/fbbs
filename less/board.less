@@ -1,4 +1,4 @@
-#board-sector {
+#sct {
 	section {
 		margin: 0 0 @font-size-xlarge / 2;
 		display: inline-block;
@@ -18,7 +18,7 @@
 	}
 }
 
-#board-toc {
+#brd {
 	h2 {
 		font-size: @font-size-xxlarge;
 		font-weight: bold;
@@ -27,7 +27,7 @@
 	}
 }
 
-.board-manager-list {
+.brd-mgr-li {
 	display: inline-block;
 	font-size: @font-size-large;
 
@@ -36,27 +36,27 @@
 	}
 }
 
-#board-toc-list {
+#brd-li {
 	margin: 8px 0 0;
 
 	li {
 		margin: 8px 0 0;
 	}
 
-	.board-toc-title {
+	.brd-title {
 		font-size: @font-size-large;
 		line-height: @line-height-large;
 		display: inline-block;
 		width: @font-size-large * 25;
 	}
 
-	.user-meta {
+	.usr {
 		font-size: @font-size-large;
 		margin: 0 @font-size-large 0 0;
 	}
 }
 
-.post-tag {
+.pst-tag {
 	display: inline-block;
 	text-align: center;
 	color: @color-post-tag;
@@ -68,13 +68,13 @@
 	padding: 0 @font-size-large / 2;
 }
 
-li.post-sticky a.board-toc-title::before {
+li.pst-sticky a.brd-title::before {
 	content: "∞";
-	.post-tag;
+	.pst-tag;
 }
 
-.post-unread {
-	.board-toc-title {
+.pst-unread {
+	.brd-title {
 		font-weight: bold;
 	}
 }
@@ -87,21 +87,21 @@ li.post-sticky a.board-toc-title::before {
 	cursor: pointer;
 }
 
-#board-toc-links {
+#brd-links {
 	margin: 8px 0;
 }
 
-.board-favorite-btn {
+.fav-btn {
 	display: inline-block;
 	width: @font-size-small * 6;
 	margin: 0 16px 0 8px;
 }
 
-a.board-favorite-btn:hover {
+a.fav-btn:hover {
 	text-decoration: none;
 }
 
-.board-favorite-add {
+.fav-add {
 	color: #fff;
 	background-color: @color-positive;
 
@@ -114,7 +114,7 @@ a.board-favorite-btn:hover {
 	}
 }
 
-.board-favorite-rm {
+.fav-rm {
 	color: @color-positive;
 	background-color: #fff;
 
@@ -151,11 +151,11 @@ a.board-favorite-btn:hover {
 		margin: 8px 0;
 	}
 
-	.board {
+	.brd {
 		margin: 0 0 0 @font-size-large * 10;
 	}
 }
 
-.board-link {
+.brd-link {
 	font-size: @font-size-large;
 }

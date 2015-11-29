@@ -32,7 +32,7 @@
 		App.E.fire('b:favorite');
 
 		(function() {
-			var $navHeaders = $('#nav-notification-header, #nav-board-header');
+			var $navHeaders = $('#nav-notification-header, #nav-brd-header');
 			$navHeaders.click(function() {
 				$(this).parent().find('ul').slideToggle('fast');
 			});

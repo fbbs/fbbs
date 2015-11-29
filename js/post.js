@@ -117,8 +117,8 @@
 		titleHtml: function(title) {
 			if (title) {
 				return Util.escape(title)
-						.replace(/\x1b\[1(?:;3\d)?m\[(.+?)\]\x1b\[m/, "<span class='post-tag'>$1</span>")
-						.replace(/^\[(转载|合集)\]/, "<span class='post-tag'>$1</span>");
+						.replace(/\x1b\[1(?:;3\d)?m\[(.+?)\]\x1b\[m/, "<span class='pst-tag'>$1</span>")
+						.replace(/^\[(转载|合集)\]/, "<span class='pst-tag'>$1</span>");
 			}
 		},
 
@@ -146,7 +146,7 @@
 				$f.prop('disabled', true);
 				App.ajax({
 					type: 'POST',
-					url: App.api('post-content', {
+					url: App.api('post', {
 						board_id: options.boardId,
 						reply_id: options.replyId
 					}),
@@ -265,7 +265,7 @@
 				$($.map(posts, function(p) {
 					return App.partial('post', p);
 				}).join(''))
-					.appendTo(this.$('#post-content-list'))
+					.appendTo(this.$('#pst-li'))
 					.hook();
 			}
 		},
@@ -296,9 +296,9 @@
 				});
 
 				var model = this.model;
-				this.view.$('.post-new-btn').click(function(evt) {
+				this.view.$('.pst-new-btn').click(function(evt) {
 					var $t = $(this), $p = $t.parent(),
-						$f = $p.parent().find('.post-new'), $s,
+						$f = $p.parent().find('.pst-new'), $s,
 						replyId = $t.data('replyId'),
 						post = model.find(replyId),
 						cancel = function() {
@@ -317,7 +317,7 @@
 							hideTitle: true,
 							done: function(data) {
 								cancel();
-								$s = $('<div class="post-done">发表成功</div>').appendTo($p);
+								$s = $('<div class="pst-done">发表成功</div>').appendTo($p);
 								setTimeout(function() { $s.slideUp(); }, 1000);
 							},
 							cancel: cancel

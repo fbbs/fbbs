@@ -3,7 +3,7 @@
 
 @import "default";
 
-.column-custom(@width, @gap) {
+.col-custom(@width, @gap) {
 	column-width: @width;
 	-moz-column-width: @width;
 	-webkit-column-width: @width;
@@ -12,8 +12,8 @@
 	-webkit-column-gap: @gap;
 }
 
-.column-md {
-	.column-custom(@column-md-width, @column-md-gap);
+.col-md {
+	.col-custom(@column-md-width, @column-md-gap);
 }
 
 @import "navigation";
@@ -42,21 +42,3 @@
 #main.nav-left-shown {
 	margin-left: @nav-left-width + 16px;
 }
-
-hr.end-sign {
-	border: none;
-	border-top: 3px double @color-blue-light;
-	margin: @line-height-small 0;
-	text-align: center;
-	font-size: @font-size-xlarge;
-}
-hr.end-sign:after {
-	content: "•";
-	position: relative;
-	top: -(@font-size-xlarge + 3px) / 2;
-	background-color: #fff;
-	color: @color-blue-light;
-	width: @font-size-xlarge * 1.5;
-	display: inline-block;
-}
-
