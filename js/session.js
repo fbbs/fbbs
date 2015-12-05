@@ -20,9 +20,7 @@
 		},
 
 		checkLoginStatus: function() {
-			var last = Store.get('session-last-activity'),
-				current = (new Date()).getTime();
-			App.E.fire('s:login', !!(last && current - last < KEEP_ALIVE));
+			App.E.fire('s:login', true);
 		},
 
 		init: function() {
