@@ -34,8 +34,10 @@
 
 		init: function() {
 			var a = createLink(location.pathname + '/..');
-			this.pathname = a.path;
 			this.href = a.href;
+			this.pathname = a.path;
+			if (this.pathname.endsWith('/..'))
+				this.pathname = location.pathname.replace(/[^\/]+$/, '');
 
 			Store.init(createLink(a.href + '../').path);
 
