@@ -22,8 +22,9 @@
 @import "footer";
 
 .container {
-	width: 1000px;
+	width: 970px;
 	margin: 0 auto;
+	box-sizing: border-box;
 }
 
 .main-container {
@@ -36,9 +37,23 @@
 
 #main {
 	margin: 0 0 16px 0;
-
 }
 
-#main.nav-left-shown {
-	margin-left: @nav-left-width + 16px;
+@media (max-width: @screen-sm) {
+	.container {
+		margin: 0;
+		padding: 0 8px;
+		width: 100%;
+	}
+
+	.main-container {
+		margin: 64px 0 0;
+		overflow: scroll;
+	}
+}
+
+@media (min-width: @screen-lg) {
+	.container {
+		width: 1170px;
+	}
 }

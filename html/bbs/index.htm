@@ -11,7 +11,14 @@
 <nav>
 	<div class='container'>
 		<ul class='nav-left'>
-			<li><h1 class='nav-header'>日月光华</h1></li>
+			<li class='nav-hdr'>
+				<h1>日月光华</h1>
+				<ul class='nav-menu-li'>
+					<li><a href='trend'>热门</a></li>
+					<li><a href='sector'>版面</a></li>
+					<li><a id='fav-tgl'>版面收藏</a></li>
+				</ul>
+			</li>
 			<li><a href='trend'>热门</a></li>
 			<li><a href='sector'>版面</a></li>
 		</ul>
@@ -19,27 +26,27 @@
 		<ul class='nav-right' id='nav-personal'>
 			<li><a href='../' class='na'>登录</a></li>
 			<li><a href='register'>注册</a></li>
-			<li class='require-login'><a id='nav-profile' href='user'></a></li>
-			<li class='require-login'>
-				<a href='#' class='nav-dropdown-header na'>消息</a>
-				<ul id='nav-notification-list' class='hidden nav-dropdown-list'>
+			<li class='require-login nav-menu-hdr'>
+				<a>消息</a>
+				<ul id='nav-noti-li' class='nav-menu-li'>
 					<li><a href='reply'>回复我的文章</a></li>
 					<li><a href='mention'>提到我的文章</a></li>
 				</ul>
 			</li>
-			<li class='require-login'>
-				<a href='#' class='nav-dropdown-header na'>设置</a>
-				<ul id='nav-setting-list' class='hidden nav-dropdown-list'>
+			<li class='require-login nav-menu-hdr'>
+				<a id='nav-profile' class='nav-menu-hdr'></a>
+				<ul class='nav-menu-li'>
+					<li><a href='setting'>设置</a></li>
+					<li><a href='logout' class='na session-logout'>退出</a></li>
 				</ul>
 			</li>
-			<li class='require-login'><a href='logout' class='na session-logout'>退出</a></li>
 		</ul>
 	</div>
 </nav>
 
 <div class='container main-container'>
-	<div id='nav-brd' class='hidden nav-left'>
-		<div>我收藏的版面</div>
+	<div id='nav-brd' class='nav-left'>
+		<div>版面收藏</div>
 		<ul id='fav'>
 		</ul>
 	</div>

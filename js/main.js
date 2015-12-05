@@ -31,11 +31,17 @@
 		App.E.fire('statechange');
 		App.E.fire('b:favorite');
 
-		(function() {
-			var $navHeaders = $('#nav-notification-header, #nav-brd-header');
-			$navHeaders.click(function() {
-				$(this).parent().find('ul').slideToggle('fast');
-			});
-		 })();
+		$('#fav-tgl').click(function() {
+			$('#nav-brd').toggleClass('nav-open');
+			return false;
+		});
+		$('.nav-hdr, .nav-menu-hdr').each(function() {
+			var $this = $(this),
+				f = function() {
+					$this.toggleClass('nav-open');
+					return false;
+				};
+			$this.click(f).find('ul a').click(f);
+		});
 	});
 })();

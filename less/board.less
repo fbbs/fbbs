@@ -15,6 +15,7 @@
 	li {
 		font-size: @font-size-large;
 		line-height: @line-height-large;
+		margin: 4px 0 0;
 	}
 }
 
@@ -27,6 +28,14 @@
 	}
 }
 
+span.brd-descr {
+	color: @color-grey-600;
+	font-size: @font-size-xlarge;
+	font-weight: normal;
+	display: inline-block;
+	margin: 0 16px;
+}
+
 .brd-mgr-li {
 	display: inline-block;
 	font-size: @font-size-large;
@@ -37,7 +46,7 @@
 }
 
 #brd-li {
-	margin: 8px 0 0;
+	margin: 16px 0 0;
 
 	li {
 		margin: 8px 0 0;
@@ -47,7 +56,7 @@
 		font-size: @font-size-large;
 		line-height: @line-height-large;
 		display: inline-block;
-		width: @font-size-large * 25;
+		width: @font-size-large * 27;
 	}
 
 	.usr {
@@ -158,4 +167,38 @@ a.fav-btn:hover {
 
 .brd-link {
 	font-size: @font-size-large;
+}
+
+@media (max-width: @screen-sm) {
+	#hot-topics {
+		.brd {
+			margin: 0 0 0 @font-size-large * 2;
+		}
+	}
+
+	.brd-mgr-li {
+		display: block;
+		margin: 8px 0 0;
+	}
+
+	#brd-li .brd-title {
+		margin: 8px 0 4px;
+		display: block;
+		max-width: 100%;
+	}
+
+}
+
+@media (min-width: @screen-md) {
+	#hot-topics {
+		.title {
+			display: inline-block;
+			width: @font-size-large * 27;
+			margin: 0;
+		}
+
+		.brd {
+			margin: 0;
+		}
+	}
 }

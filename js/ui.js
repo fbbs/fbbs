@@ -5,10 +5,10 @@
 				$main = $('#main'),
 				cls = 'nav-left-shown';
 			if (show) {
-				$navBoard.show();
+				$navBoard.addClass(cls);
 				$main.addClass(cls);
 			} else {
-				$navBoard.hide();
+				$navBoard.removeClass(cls);
 				$main.removeClass(cls);
 			}
 		},

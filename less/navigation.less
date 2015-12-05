@@ -28,33 +28,22 @@ nav {
 			a {
 				font-size: @font-size-large;
 				line-height: @nav-height;
-				min-width: 120px;
-				text-align: left;
-				padding: 0 8px;
-			}
-			a:hover {
-				background-color: @nav-secondary-hover-color;
+				text-align: center;
 			}
 		}
 	}
 
 	a {
 		display: block;
-		width: 80px;
+		min-width: 80px;
 		text-align: center;
 		color: @nav-color;
-	}
+		cursor: pointer;
 
-	.nav-header {
-		font-size: @font-size-xxlarge;
-		font-weight: bold;
-		width: 160px;
-	}
-
-	a:hover {
-		background-color: @color-blue;
-		color: @nav-link-hover-color;
-		text-decoration: @nav-link-hover-decoration;
+		&:hover {
+			color: @nav-link-hover-color;
+			text-decoration: @nav-link-hover-decoration;
+		}
 	}
 
 	.container {
@@ -69,10 +58,48 @@ nav {
 	}
 }
 
-div.nav-left {
+.nav-hdr {
+	font-size: @font-size-xxlarge;
+	font-weight: bold;
+	width: 160px;
+}
+
+.nav-menu-hdr {
+	position: relative;
+
+	&:hover ul {
+		display: block;
+	}
+}
+
+.nav-menu-li {
+	display: none;
+	position: absolute;
+	left: 0;
+}
+
+.nav-right .nav-menu-li {
+	left: auto;
+	right: 0;
+}
+
+#nav-noti-li a {
+	min-width: 144px;
+}
+
+#nav-brd.nav-left {
+	display: none;
+}
+
+#nav-brd.nav-left-shown {
+	display: block;
 	float: left;
 	width: @nav-left-width;
 	margin: 0 0 16px 0;
+}
+
+#main.nav-left-shown {
+	margin-left: @nav-left-width + 16px;
 }
 
 #nav-brd div {
@@ -86,5 +113,65 @@ div.nav-left {
 
 	a {
 		display: block;
+	}
+}
+
+@media (max-width: @screen-sm) {
+	#nav-brd.nav-left-shown {
+		display: none;
+	}
+
+	#nav-brd.nav-left-shown.nav-open {
+		display: block;
+		float: none;
+		width: 100%;
+	}
+
+	#fav {
+		font-size: @font-size-base;
+		.col-custom(100px, 15px);
+	}
+
+	#main.nav-left-shown {
+		margin-left: 0;
+	}
+
+	.nav-menu-hdr {
+		&:hover ul {
+			display: none;
+		}
+	}
+
+	.nav-hdr {
+		width: 96px;
+
+		a {
+			font-weight: normal;
+			min-width: 96px;
+		}
+	}
+
+	nav {
+		.nav-left > li {
+			display: none;
+
+			&.nav-hdr {
+				display: block;
+			}
+		}
+
+		a {
+			min-width: 60px;
+		}
+
+		.nav-hdr.nav-open ul, .nav-menu-hdr.nav-open ul {
+			display: block;
+		}
+	}
+
+	#nav-profile {
+		max-width: 120px;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 }
