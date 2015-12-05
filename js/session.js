@@ -38,7 +38,7 @@
 					{ token: Store.get('session-token') },
 					function(data) {
 						Store.clear();
-						Store.set('session-logout', true);
+						Store.set('logout', true);
 						location.assign('..');
 					}
 				);
