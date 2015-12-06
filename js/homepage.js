@@ -17,7 +17,7 @@ $(function() {
 				data: $form.serialize()
 			}).done(function(data) {
 				Session.onLoginSuccess(data);
-				location.assign('forum/trend');
+				location.assign('forum/#trend');
 			}).fail(function(jqXHR) {
 				if (jqXHR.status == 403) {
 					$('#error').removeClass('hidden').show();
@@ -32,7 +32,7 @@ $(function() {
 	} else {
 		$.getJSON('bbs/login.json', function(data) {
 			if (data.code == 10002) {
-				location.assign('forum/trend');
+				location.assign('forum/#trend');
 			}
 		});
 	}

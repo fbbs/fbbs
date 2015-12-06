@@ -23,11 +23,11 @@
 		DOMAINS: [ 'bbs.fudan.edu.cn', 'bbs.fudan.sh.cn', '61.129.42.9', '202.120.225.9' ],
 
 		render: function(tmpl, data) {
-			return Mustache.render($('#t-' + tmpl).text(), data, this.partials);
+			return Mustache.render($('#t-' + tmpl).html(), data, this.partials);
 		},
 
 		partial: function(tmpl, data) {
-			return Mustache.render($('#p-' + tmpl).text(), data, this.partials);
+			return Mustache.render($('#p-' + tmpl).html(), data, this.partials);
 		},
 
 		partials: {},
