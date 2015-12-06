@@ -92,7 +92,7 @@
 				api = a.path.replace(this.pathname, ''),
 				ctrlClass = App.getC(api);
 
-			if (currentController && currentController.leave) {
+			if (currentController && currentController.model && currentController.leave) {
 				currentController.leave();
 			}
 
@@ -228,8 +228,7 @@
 		defaultPost: function() {
 			this.view.$el.hook();
 			Ui.showNavBoard(this.nav == 'board');
-		},
-		error: function() {}
+		}
 	});
 
 	var listeners = {};
@@ -301,6 +300,9 @@
 					this.view.render();
 					$('footer').show();
 					Session.updateLastActivity();
+				},
+				error: function(jqXHR) {
+					(new View()).$el.html('载入失败：错误代码 ' + jqXHR.status);
 				}
 			}, options.c))
 		};
