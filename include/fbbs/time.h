@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <time.h>
 
-
 typedef uint32_t fb_time_t;
 #define PRIdFBT PRId32
 #define parcel_write_fb_time(parcel, val)  parcel_write_varuint64(parcel, val)
@@ -22,6 +21,7 @@ typedef enum {
 } time_format_e;
 
 #define fb_time() ((fb_time_t) time(NULL))
+#define time_to_ms(t) (t * INT64_C(1000))
 extern struct tm *fb_localtime(const fb_time_t *t);
 extern const char *fb_ctime(const fb_time_t *t);
 

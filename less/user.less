@@ -1,0 +1,51 @@
+.usr-card {
+	z-index: 419;
+	position: absolute;
+
+	padding: 8px;
+
+	min-width: @font-size-large * 15;
+
+	background-color: @color-background;
+	box-shadow: 4px 4px 8px @color-grey;
+	border-radius: 8px;
+
+	font-size: @font-size-large;
+	line-height: @line-height-large;
+	text-align: center;
+
+	.name {
+		font-size: @font-size-xxlarge;
+		font-weight: bold;
+		line-height: @line-height-xxlarge;
+		display: inline-block;
+	}
+
+	.horo {
+		width: @font-size-large * 4;
+		display: inline-block;
+		color: #fff;
+		text-align: center;
+		background-color: #4caf50;
+		border-radius: 4px;
+		margin-left: 8px;
+	}
+
+	.horo.gender-F {
+		background-color: #e91e63;
+	}
+
+	.horo.gender-M {
+		background-color: #03a9f4;
+	}
+
+	.nick {
+		color: @color-grey-600;
+	}
+
+	li {
+		display: inline-block;
+		width: @font-size-large * 6;
+		margin: 0 8px;
+	}
+}

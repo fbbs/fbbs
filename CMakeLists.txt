@@ -9,6 +9,7 @@ endif(COMMAND cmake_policy)
 
 set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 set(CMAKE_COLOR_MAKEFILE off)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 option(ENABLE_SSH "compile ssh module" off)
 option(ENABLE_DEBUG "compile debug version" on)

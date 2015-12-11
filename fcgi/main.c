@@ -71,12 +71,13 @@ extern int api_board_all(void);
 extern int api_board_fav(void);
 API_DECLARE(clear);
 API_DECLARE(favorite);
-API_DECLARE(sector);
 API_DECLARE(board);
-API_DECLARE(trend);
-API_DECLARE(post);
 API_DECLARE(login);
 API_DECLARE(logout);
+API_DECLARE(post);
+API_DECLARE(sector);
+API_DECLARE(trend);
+API_DECLARE(user);
 
 typedef struct {
 	const char *name;    ///< name of the cgi.
@@ -149,6 +150,7 @@ const static web_handler_t handlers[] = {
 	{ "top10", web_top10, ST_READBRD },
 	{ "trend", api_trend, ST_READBRD },
 	{ "upload", bbsupload_main, ST_UPLOAD },
+	{ "user", api_user, ST_QUERY },
 };
 
 static int compare_handler(const void *l, const void *r)

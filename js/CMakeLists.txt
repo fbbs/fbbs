@@ -18,7 +18,7 @@ function(publish_js MINIFIED SCRIPTS)
 endfunction(publish_js)
 
 set(SCRIPTS compat.js store.js app.js util.js ui.js session.js board.js
-	post.js main.js)
+	post.js main.js user.js)
 publish_js(app-201509 "${SCRIPTS}")
 
 set(SCRIPTS compat.js store.js cookie.js session.js homepage.js)

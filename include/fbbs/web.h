@@ -58,6 +58,7 @@ typedef enum {
 	WEB_ERROR_METHOD_NOT_ALLOWED,
 	WEB_ERROR_PERMISSION_DENIED,
 	WEB_ERROR_POST_NOT_FOUND,
+	WEB_ERROR_USER_NOT_FOUND,
 } web_error_code_e;
 
 typedef struct {

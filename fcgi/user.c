@@ -266,7 +266,7 @@ static int show_sessions(user_id_t user_id)
 }
 
 // Convert exp to icons.
-int iconexp(int exp, int *repeat)
+static int iconexp(int exp, int *repeat)
 {
 	int i = 0, j;
 
@@ -303,6 +303,137 @@ static const char *horoscope_string(const struct userec *user)
 		return utf8_horo;
 	}
 	return gbk_horo;
+}
+
+static int session_info(user_id_t user_id, json_array_t *sessions)
+{
+	if (user_id <= 0)
+		return 0;
+	db_res_t *res = db_query("SELECT id, visible, web FROM sessions s"
+			" WHERE active AND user_id = %"DBIdUID, user_id);
+	if (!res)
+		return 0;
+
+	int num = 0;
+	fb_time_t now = fb_time();
+	for (int i = 0; i < db_res_rows(res); ++i) {
+		bool visible = db_get_bool(res, i, 1);
+		if (!visible && !HAS_PERM(PERM_SEECLOAK))
+			continue;
+
+		++num;
+
+		session_id_t session_id = db_get_session_id(res, i, 0);
+		bool web = db_get_bool(res, i, 2);
+
+		fb_time_t refresh = session_get_idle(session_id);
+		int status = get_user_status(session_id);
+
+		int idle;
+		if (refresh < 1 || status == ST_BBSNET)
+			idle = 0;
+		else
+			idle = (now - refresh) / 60;
+
+		char buf[32];
+		const char *descr = session_status_descr(status);
+		convert_g2u(descr, buf);
+
+		json_object_t *obj = json_object_new();
+		if (!visible)
+			json_object_bool(obj, "hidden", true);
+		json_object_bool(obj, "web", web);
+		json_object_integer(obj, "idle", idle);
+		json_object_string(obj, "status", buf);
+		json_array_append(sessions, obj, JSON_OBJECT);
+	}
+
+	db_clear(res);
+	return num;
+}
+
+int api_user(void)
+{
+	if (!session_get_id())
+		return WEB_ERROR_LOGIN_REQUIRED;
+
+	struct userec user;
+	if (!getuserec(web_get_param("name"), &user))
+		return WEB_ERROR_USER_NOT_FOUND;
+
+	bool self = streq(currentuser.userid, user.userid);
+
+	json_object_t *object = json_object_new();
+	web_set_response(object, JSON_OBJECT);
+
+	json_object_string(object, "name", user.userid);
+	json_object_integer(object, "logins", user.numlogins);
+	json_object_integer(object, "posts", user.numposts);
+
+	UTF8_BUFFER(nick, NAMELEN / 2);
+	convert_g2u(user.username, utf8_nick);
+	json_object_string(object, "nick", utf8_nick);
+
+	if (HAS_DEFINE(user.userdefine, DEF_S_HOROSCOPE)) {
+		json_object_string(object, "horo", horoscope_string(&user));
+		if (HAS_DEFINE(user.userdefine, DEF_COLOREDSEX)) {
+			char gender[] = { user.gender, '\0' };
+			json_object_string(object, "gender", gender);
+		}
+	}
+
+	if (web_get_param_long("s"))
+		return WEB_OK;
+
+	json_object_bigint(object, "login", time_to_ms(user.lastlogin));
+	json_object_integer(object, "perf", countperf(&user));
+	json_object_integer(object, "hp", compute_user_value(&user));
+	json_object_string(object, "ip",
+			self ? user.lasthost : mask_host(user.lasthost));
+
+	uinfo_t u;
+	uinfo_load(user.userid, &u);
+#ifdef ENABLE_BANK
+	if (self || HAS_PERM2(PERM_OCHAT, &currentuser)) {
+		json_object_integer(object, "money", TO_YUAN_INT(u.money));
+	}
+	json_object_integer(object, "contrib", TO_YUAN_INT(u.contrib));
+	json_object_integer(object, "rank", (int) u.rank * 100);
+#endif
+
+	char position[320];
+	show_position(&user, position, sizeof(position), u.title);
+	json_object_string(object, "position", position);
+
+	uinfo_free(&u);
+
+	char file[HOMELEN];
+	sethomefile(file, user.userid, "plans");
+	char *plan = file_read_all(file);
+	if (plan) {
+		size_t len = strlen(plan) * 2 + 1;
+		char *s = malloc(len);
+		convert_g2u(plan, s);
+		json_object_string(object, "plan", s);
+		free(s);
+		free(plan);
+	}
+
+	json_array_t *sessions = json_array_new();
+	json_object_append(object, "sessions", sessions, JSON_ARRAY);
+
+	user_id_t user_id = get_user_id(user.userid);
+	int num = session_info(user_id, sessions);
+	if (!num) {
+		fb_time_t logout = user.lastlogout;
+		if (logout < user.lastlogin) {
+			logout = ((time(NULL) - user.lastlogin) / 120) % 47 + 1
+				+ user.lastlogin;
+		}
+		json_object_bigint(object, "logout", time_to_ms(logout));
+	}
+
+	return WEB_OK;
 }
 
 int bbsqry_main(void)

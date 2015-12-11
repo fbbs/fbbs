@@ -456,6 +456,7 @@ static const web_status_code_e errors[] = {
 	[WEB_ERROR_METHOD_NOT_ALLOWED] = WEB_STATUS_METHOD_NOT_ALLOWED,
 	[WEB_ERROR_PERMISSION_DENIED] = WEB_STATUS_FORBIDDEN,
 	[WEB_ERROR_POST_NOT_FOUND] = WEB_STATUS_NOT_FOUND,
+	[WEB_ERROR_USER_NOT_FOUND] = WEB_STATUS_NOT_FOUND,
 };
 
 static web_status_code_e error_msg(web_error_code_e code)
