@@ -235,10 +235,9 @@ int tui_query_result(const char *userid)
 	prints(" \xc9\xfa\xc3\xfc\xc1\xa6 [\033[1;32m%d\033[m]\n", compute_user_value(&user));
 #endif
 
-	char buf[160];
+	char buf[320];
 	show_position(&user, buf, sizeof(buf), u.title);
-	//% prints("身份 %s\n", buf);
-	prints("\xc9\xed\xb7\xdd %s\n", buf);
+	screen_printf("身份 %s\n", buf);
 	
 	uinfo_free(&u);
 

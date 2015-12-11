@@ -308,58 +308,54 @@ void show_position(const struct userec *user, char *buf, size_t size, const char
 
 	if (user->userlevel & PERM_SPECIAL9) {
 		if (user->userlevel & PERM_SYSOPS) {
-			//% "[\033[1;32m站长\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xd5\xbe\xb3\xa4\033[m]");
+			strappend(&buf, &size, "[\033[1;32m站长\033[m]");
 		} else if (user->userlevel & PERM_ANNOUNCE) {
 			//% "[\033[1;32m站务\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xd5\xbe\xce\xf1\033[m]");
+			strappend(&buf, &size, "[\033[1;32m站务\033[m]");
 		} else if (user->userlevel & PERM_OCHAT) {
 			//% "[\033[1;32m实习站务\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xca\xb5\xcf\xb0\xd5\xbe\xce\xf1\033[m]");
+			strappend(&buf, &size, "[\033[1;32m实习站务\033[m]");
 		} else if (user->userlevel & PERM_SPECIAL0) {
 			//% "[\033[1;32m站务委员会秘书\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xd5\xbe\xce\xf1\xce\xaf\xd4\xb1\xbb\xe1\xc3\xd8\xca\xe9\033[m]");
+			strappend(&buf, &size, "[\033[1;32m站务委员会秘书\033[m]");
 		} else {
 			//% "[\033[1;32m离任站务\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xc0\xeb\xc8\xce\xd5\xbe\xce\xf1\033[m]");
+			strappend(&buf, &size, "[\033[1;32m离任站务\033[m]");
 		}
 	} else {
 		if ((user->userlevel & PERM_XEMPT)
 				&& (user->userlevel & PERM_LONGLIFE)
 				&& (user->userlevel & PERM_LARGEMAIL)) {
 			//% "[\033[1;32m荣誉版主\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xc8\xd9\xd3\xfe\xb0\xe6\xd6\xf7\033[m]");
+			strappend(&buf, &size, "[\033[1;32m荣誉版主\033[m]");
 		}
 		if (user->userlevel & PERM_BOARDS)
 			show_bm(user->userid, &buf, &size);
 		if (user->userlevel & PERM_ARBI)
 			//% "[\033[1;32m仲裁组\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xd6\xd9\xb2\xc3\xd7\xe9\033[m]");
+			strappend(&buf, &size, "[\033[1;32m仲裁组\033[m]");
 		if (user->userlevel & PERM_SERV)
 			//% "[\033[1;32m培训组\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xc5\xe0\xd1\xb5\xd7\xe9\033[m]");
+			strappend(&buf, &size, "[\033[1;32m培训组\033[m]");
 		if (user->userlevel & PERM_SPECIAL2)
 			//% "[\033[1;32m服务组\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xb7\xfe\xce\xf1\xd7\xe9\033[m]");
+			strappend(&buf, &size, "[\033[1;32m服务组\033[m]");
 		if (user->userlevel & PERM_SPECIAL3)
 			//% "[\033[1;32m美工组\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xc3\xc0\xb9\xa4\xd7\xe9\033[m]");
+			strappend(&buf, &size, "[\033[1;32m美工组\033[m]");
 		if (user->userlevel & PERM_TECH)
 			//% "[\033[1;32m技术组\033[m]"
-			strappend(&buf, &size, "[\033[1;32m\xbc\xbc\xca\xf5\xd7\xe9\033[m]");
+			strappend(&buf, &size, "[\033[1;32m技术组\033[m]");
 	}
 
 	if (title && *title) {
-		GBK_BUFFER(title, TITLE_CCHARS * 2);
-		convert_u2g(title, gbk_title);
 		char tbuf[TITLE_CCHARS * 4 + 13];
-		snprintf(tbuf, sizeof(tbuf), "[\033[1;33m%s\033[m]", gbk_title);
+		snprintf(tbuf, sizeof(tbuf), "[\033[1;33m%s\033[m]", title);
 		strappend(&buf, &size, tbuf);
 	}
 
 	if (!*orig)
-		//% "[\033[1;32m"SHORT_BBSNAME"网友\033[m]"
-		snprintf(buf, size, "[\033[1;32m"SHORT_BBSNAME"\xcd\xf8\xd3\xd1\033[m]");
+		snprintf(buf, size, "[\033[1;32m" BBSNAME_SHORT "网友\033[m]");
 }
 
 /**
