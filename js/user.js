@@ -24,27 +24,25 @@
 		$e.hover(
 			function() {
 				hover = true;
-				if ($div) {
-					$div.fadeIn();
-					layoutUserCard($div, $e);
-				} else {
-					App.load('user', {
-						name: $e.text(),
-						s: 1
-					}, function(data) {
-						$div = $(App.render('user-card', data));
-						if (hover) {
-							$div.appendTo($e.parent());
-							layoutUserCard($div, $e);
-							$div.fadeIn();
-						}
-					});
-				}
+				App.load('user', {
+					name: $e.text(),
+					s: 1
+				}, function(data) {
+					$div = $(App.render('user-card', data));
+					if (hover) {
+						$div.appendTo($('body'));
+						layoutUserCard($div, $e);
+						$div.fadeIn();
+					}
+				});
 			},
 			function() {
 				hover = false;
-				if ($div)
-					$div.fadeOut();
+				if ($div) {
+					$div.fadeOut(400, function() {
+						$div.remove();
+					});
+				}
 			}
 		);
 	});
