@@ -1,0 +1,41 @@
+<div class='usr'>
+<div><span class='name'>{{name}}</span><span class='nick'>{{nick}}</span>{{#horo}}<span class='horo gender-{{gender}}'>{{.}}</span>{{/horo}}</div>
+
+{{#position}}
+<ul class='position'>
+{{#admin}}
+<li class='admin'>{{.}}</li>
+{{/admin}}
+{{#bm}}
+<li class='bm'>{{.}}版主</li>
+{{/bm}}
+{{#custom}}
+<li class='custom'>{{.}}</li>
+{{/custom}}
+</ul>
+{{/position}}
+
+<div class='status'>
+<div>进站 <time>{{login}}</time> 来自 {{ip}}</div>
+{{#logout}}<div>离站 <time>{{.}}</time></div>{{/logout}}
+{{^logout}}<div>目前状态如下<br><ul class='sessions'>{{#sessions}}<li>{{status}}</li>{{/sessions}}</div>{{/logout}}
+</div>
+
+<ul class='stats'>
+<li>上站 {{logins}}</li>
+<li>发文 {{posts}}</li>
+<li>贡献 {{contrib}} ({{rank}}%)</li>
+{{#money}}<li>财富 {{.}}</li>{{/money}}
+<li>表现 {{perf}}</li>
+<li>经验 {{exp}}</li>
+<li>生命力 {{hp}}</li>
+</ul>
+
+{{#plan}}
+<div class='plan'>
+<p>个人说明档如下</p>
+{{{.}}}
+</div>
+{{/plan}}
+
+</div>

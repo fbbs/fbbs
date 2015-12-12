@@ -161,13 +161,11 @@
 			$f.find('textarea').val(options.content).focus();
 			$f.find('button').click(options.cancel);
 			return $f;
-		}
-	};
+		},
 
-	$.extend(Post.Article.prototype, {
-		contentHtml: function() {
+		parse: function(lines) {
 			var state = new State();
-			this.lines.forEach(function(line) {
+			lines.forEach(function(line) {
 				if (!state.footer) {
 					if (line == '--') {
 						state.setFooter(true);
@@ -182,6 +180,12 @@
 			state.setQuote(false);
 			state.setFooter(false);
 			return state.lines.join('');
+		}
+	};
+
+	$.extend(Post.Article.prototype, {
+		contentHtml: function() {
+			return Post.parse(this.lines);
 		},
 
 		titleHtml: function() {

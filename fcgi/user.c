@@ -285,13 +285,13 @@ static int iconexp(int exp, int *repeat)
 
 static const char *perf_string(int perf)
 {
-	static UTF8_BUFFER(str, 4);
-	const char *gbk_perf = cperf(perf);
-	if (web_request_type(UTF8)) {
-		convert_g2u(gbk_perf, utf8_str);
-		return utf8_str;
+	static GBK_BUFFER(str, 4);
+	const char *utf8_perf = cperf(perf);
+	if (!web_request_type(UTF8)) {
+		convert_u2g(utf8_perf, gbk_str);
+		return gbk_str;
 	}
-	return gbk_perf;
+	return utf8_perf;
 }
 
 static const char *horoscope_string(const struct userec *user)
@@ -452,7 +452,8 @@ int api_user(void)
 		return WEB_OK;
 
 	json_object_bigint(object, "login", time_to_ms(user.lastlogin));
-	json_object_integer(object, "perf", countperf(&user));
+	json_object_string(object, "perf", cperf(countperf(&user)));
+	json_object_string(object, "exp", cexpstr(countexp(&user)));
 	json_object_integer(object, "hp", compute_user_value(&user));
 	json_object_string(object, "ip",
 			self ? user.lasthost : mask_host(user.lasthost));
@@ -461,9 +462,10 @@ int api_user(void)
 	sethomefile(file, user.userid, "plans");
 	char *plan = file_read_all(file);
 	if (plan) {
-		size_t len = strlen(plan) * 2 + 1;
-		char *s = malloc(len);
-		convert_g2u(plan, s);
+		size_t len = strlen(plan),
+			   new_len = len * 2 + 1;
+		char *s = malloc(new_len);
+		convert(CONVERT_G2U, plan, len, s, new_len, NULL, NULL);
 		json_object_string(object, "plan", s);
 		free(s);
 		free(plan);

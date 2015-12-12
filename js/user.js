@@ -45,5 +45,24 @@
 				}
 			}
 		);
+		$e.click(function() {
+			hover = false;
+			if ($div)
+				$div.remove();
+		});
+	});
+
+	App.P({
+		tmpl: 'user',
+		m: {
+			init: function(data) {
+				data.login = new Date(+data.login).toISOString();
+				if (data.logout)
+					data.logout = new Date(+data.logout).toISOString();
+				if (data.plan)
+					data.plan = Post.parse(data.plan.split('\n'));
+				this.data = data;
+			}
+		}
 	});
 })();

@@ -1,19 +1,6 @@
-.usr-card {
-	z-index: 419;
-	position: absolute;
-
-	padding: 8px;
-
-	min-width: @font-size-large * 15;
-	max-width: @font-size-large * 20;
-
-	background-color: @color-background;
-	box-shadow: 4px 4px 8px @color-grey;
-	border-radius: 8px;
-
+.usr, .usr-card {
 	font-size: @font-size-large;
 	line-height: @line-height-large;
-	text-align: center;
 
 	.name {
 		font-size: @font-size-xxlarge;
@@ -44,18 +31,12 @@
 		color: @color-grey-600;
 	}
 
-	li {
-		display: inline-block;
-		width: @font-size-large * 6;
-		margin: 0 8px;
-	}
-
 	.position li {
 		display: inline-block;
 		color: #fff;
 		width: auto;
 		padding: 0 8px;
-		margin: 4px 4px 0;
+		margin: 4px 4px 0 0;
 		border-radius: 4px;
 	}
 
@@ -69,5 +50,58 @@
 
 	.custom {
 		background-color: #ff9800;
+	}
+
+}
+
+.usr-card {
+	z-index: 419;
+	position: absolute;
+
+	padding: 8px;
+
+	min-width: @font-size-large * 15;
+	max-width: @font-size-large * 20;
+
+	background-color: @color-background;
+	box-shadow: 4px 4px 8px @color-grey;
+	border-radius: 8px;
+
+	text-align: center;
+
+	li {
+		display: inline-block;
+		width: @font-size-large * 6;
+		margin: 0 8px;
+	}
+}
+
+.usr {
+	span {
+		display: inline-block;
+	}
+
+	.nick {
+		margin: 0 16px;
+	}
+
+	.status {
+		margin: 8px 0;
+
+		li {
+			display: inline-block;
+			width: 80px;
+		}
+	}
+
+	.stats li {
+		display: inline-block;
+		min-width: 160px;
+	}
+
+	.plan {
+		margin: 16px 0 0;
+		font-family: monospace;
+		white-space: pre;
 	}
 }
