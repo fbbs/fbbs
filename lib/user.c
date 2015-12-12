@@ -1,4 +1,5 @@
 #include "bbs.h"
+#include "fbbs/helper.h"
 #include "fbbs/mdbi.h"
 #include "fbbs/session.h"
 #include "fbbs/string.h"
@@ -141,4 +142,110 @@ fb_time_t get_my_last_post_time(void)
 {
 	return (fb_time_t) mdb_integer(0, "HGET",
 			LAST_POST_TIME_KEY" %"PRIdUID, session_get_user_id());
+}
+
+static void show_bm(const char *user_name, user_position_callback_t callback,
+		void *arg)
+{
+	char file[HOMELEN], tmp[STRLEN];
+	sethomefile(file, user_name, ".bmfile");
+
+	FILE *fp = fopen(file, "r");
+	if (fp) {
+		callback(tmp, arg, USER_POSITION_BM_BEGIN);
+		while (fgets(tmp, sizeof(tmp), fp) != NULL) {
+			tmp[strlen(tmp) - 1] = ' ';
+			callback(tmp, arg, USER_POSITION_BM);
+		}
+		fclose(fp);
+		callback(tmp, arg, USER_POSITION_BM_END);
+	}
+}
+
+void user_position(const struct userec *user, const char *title,
+		user_position_callback_t callback, void *arg)
+{
+	if (user->userlevel & PERM_SPECIAL9) {
+		if (user->userlevel & PERM_SYSOPS) {
+			callback("站长", arg, USER_POSITION_ADMIN);
+		} else if (user->userlevel & PERM_ANNOUNCE) {
+			callback("站务", arg, USER_POSITION_ADMIN);
+		} else if (user->userlevel & PERM_OCHAT) {
+			callback("实习站务", arg, USER_POSITION_ADMIN);
+		} else if (user->userlevel & PERM_SPECIAL0) {
+			callback("站务委员会秘书", arg, USER_POSITION_ADMIN);
+		} else {
+			callback("离任站务", arg, USER_POSITION_ADMIN);
+		}
+	} else {
+		if ((user->userlevel & PERM_XEMPT)
+				&& (user->userlevel & PERM_LONGLIFE)
+				&& (user->userlevel & PERM_LARGEMAIL)) {
+			callback("荣誉版主", arg, USER_POSITION_ADMIN);
+		}
+		if (user->userlevel & PERM_BOARDS)
+			show_bm(user->userid, callback, arg);
+		if (user->userlevel & PERM_ARBI)
+			callback("仲裁组", arg, USER_POSITION_ADMIN);
+		if (user->userlevel & PERM_SERV)
+			callback("培训组", arg, USER_POSITION_ADMIN);
+		if (user->userlevel & PERM_SPECIAL2)
+			callback("服务组", arg, USER_POSITION_ADMIN);
+		if (user->userlevel & PERM_SPECIAL3)
+			callback("美工组", arg, USER_POSITION_ADMIN);
+		if (user->userlevel & PERM_TECH)
+			callback("技术组", arg, USER_POSITION_ADMIN);
+	}
+
+	if (title && *title)
+		callback(title, arg, USER_POSITION_CUSTOM);
+}
+
+typedef struct {
+	char *buf;
+	size_t size;
+} user_position_string_callback_t;
+
+static void user_position_string_callback(const char *position, void *arg,
+		user_position_e type)
+{
+	user_position_string_callback_t *p = arg;
+	char **b = &p->buf;
+	size_t *s = &p->size;
+
+	switch (type) {
+		case USER_POSITION_BM_BEGIN:
+			strappend(b, s, "[\033[1;33m");
+			break;
+		case USER_POSITION_BM:
+			strappend(b, s, position);
+			break;
+		case USER_POSITION_BM_END:
+			strappend(b, s, "\033[32m版版主\033[m]");
+			break;
+		default: {
+			char buf[8];
+			snprintf(buf, sizeof(buf), "[\033[1;%dm",
+					type == USER_POSITION_ADMIN ? 32 : 33);
+			strappend(b, s, buf);
+			strappend(b, s, position);
+			strappend(b, s, "\033[m]");
+		}
+	}
+}
+
+void user_position_string(const struct userec *user, const char *title,
+		char *buf, size_t size)
+{
+	buf[0] = '\0';
+	user_position_string_callback_t arg = {
+		.buf = buf,
+		.size = size,
+	};
+	user_position(user, title, user_position_string_callback, &arg);
+
+	if (!*buf) {
+		user_position_string_callback(BBSNAME_SHORT "网友", &arg,
+				USER_POSITION_ADMIN);
+	}
 }

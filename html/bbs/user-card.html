@@ -1,8 +1,21 @@
 <div class='usr-card layer'>
-<div class='name'>{{name}}</div>{{#horo}}<div class='horo gender-{{gender}}'>{{horo}}</div>{{/horo}}
+<div class='name'>{{name}}</div>{{#horo}}<div class='horo gender-{{gender}}'>{{.}}</div>{{/horo}}
 <div class='nick'>{{nick}}</div>
 <ul>
 <li>上站 {{logins}}</li>
 <li>发文 {{posts}}</li>
 </ul>
+{{#position}}
+<ul class='position'>
+{{#admin}}
+<li class='admin'>{{.}}</li>
+{{/admin}}
+{{#bm}}
+<li class='bm'>{{.}}版主</li>
+{{/bm}}
+{{#custom}}
+<li class='custom'>{{.}}</li>
+{{/custom}}
+</ul>
+{{/position}}
 </div>

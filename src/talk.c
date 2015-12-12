@@ -236,7 +236,7 @@ int tui_query_result(const char *userid)
 #endif
 
 	char buf[320];
-	show_position(&user, buf, sizeof(buf), u.title);
+	user_position_string(&user, u.title, buf, sizeof(buf));
 	screen_printf("身份 %s\n", buf);
 	
 	uinfo_free(&u);
