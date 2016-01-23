@@ -90,10 +90,7 @@ int num_ans_chr(const char *str)
 
 void screen_init(int lines)
 {
-	if (!screen.buf)
-		screen.columns = WRAPMARGIN;
-
-	if (screen.columns > SCREEN_LINE_LEN)
+	if (!screen.buf || screen.columns > SCREEN_LINE_LEN)
 		screen.columns = SCREEN_LINE_LEN;
 
 	if (lines < MIN_SCREEN_LINES)

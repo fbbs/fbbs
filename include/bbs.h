@@ -219,8 +219,6 @@ extern int KEY_ESC_arg;
 //如果BMNAMELISTLEN与BMNAMEMAXLEN不同,显示版主列表时,将用...来表示超过部分
 //BMNAMELISTLEN一定要小于BMNAMEMAXLEN,且均小于56,否则内存越界
 
-#define WRAPMARGIN (255)
-
 enum {
 	LINE_BUFSIZE = 256,  ///< Line buffer size.
 };
