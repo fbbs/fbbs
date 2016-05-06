@@ -16,7 +16,6 @@
 typedef struct {
 	board_t board;
 	int folder;
-	int sector;
 	int online;
 } board_extra_t;
 
@@ -313,8 +312,7 @@ static void res_to_board_array(board_list_t *bl, db_res_t *r1, db_res_t *r2)
 		res_to_board(r1, i, board);
 		board_to_gbk(board);
 
-		e->folder = bl->favorite ? db_get_integer(r1, i, 8) : 0;
-		e->sector = bl->favorite ? db_get_integer(r1, i, 9) : 0;
+		e->folder = bl->favorite ? db_get_integer(r1, i, 9) : 0;
 
 		if (has_read_perm(board))
 			++bl->bcount;
@@ -333,7 +331,6 @@ static void res_to_board_array(board_list_t *bl, db_res_t *r1, db_res_t *r2)
 
 			board->flag = BOARD_CUSTOM_FLAG | BOARD_FLAG_DIR;
 			e->folder = FAV_BOARD_ROOT_FOLDER;
-			e->sector = 0;
 
 			++bl->bcount;
 		}
@@ -342,7 +339,7 @@ static void res_to_board_array(board_list_t *bl, db_res_t *r1, db_res_t *r2)
 
 static void load_favorite_boards(board_list_t *bl)
 {
-	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder, b.sector "
+	db_res_t *r1 = db_query("SELECT "BOARD_BASE_FIELDS", f.folder "
 			"FROM "BOARD_BASE_TABLES" JOIN fav_boards f ON b.id = f.board "
 			"WHERE f.user_id = %"DBIdUID, session_get_user_id());
 	db_res_t *r2 = db_query("SELECT id, name, descr FROM fav_board_folders "
@@ -613,7 +610,7 @@ static int board_cmp_default(const void *p1, const void *p2)
 {
 	const board_extra_t *b1 = *(const board_extra_t **) p1;
 	const board_extra_t *b2 = *(const board_extra_t **) p2;
-	int diff = b1->sector - b2->sector;
+	int diff = b1->board.sector - b2->board.sector;
 	if (!diff)
 		diff = strcasecmp(b1->board.categ, b2->board.categ);
 	if (!diff)
