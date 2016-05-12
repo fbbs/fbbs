@@ -224,7 +224,7 @@ static void user_position_string_callback(const char *position, void *arg,
 			strappend(b, s, "\033[32m版版主\033[m]");
 			break;
 		default: {
-			char buf[8];
+			char buf[12];
 			snprintf(buf, sizeof(buf), "[\033[1;%dm",
 					type == USER_POSITION_ADMIN ? 32 : 33);
 			strappend(b, s, buf);
