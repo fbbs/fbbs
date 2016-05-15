@@ -57,7 +57,7 @@ sub dump_results
 		print $fh $str;
 
 		my $str2 = pack 'qLLlZ93Z16Z18Z5', $thread_id, $score, ($last_post_id >> 21) / 1000,
-				$board_id, $title, $user_name, $boards->{$board_id}{name}, '';
+				$board_id, encode('utf8', $title), $user_name, $boards->{$board_id}{name}, '';
 		print $fh_binary $str2;
 	}
 
