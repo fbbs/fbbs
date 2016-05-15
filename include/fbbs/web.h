@@ -56,6 +56,9 @@ typedef enum {
 	WEB_ERROR_LOGIN_REQUIRED,
 	WEB_ERROR_BOARD_NOT_FOUND,
 	WEB_ERROR_METHOD_NOT_ALLOWED,
+	WEB_ERROR_PERMISSION_DENIED,
+	WEB_ERROR_POST_NOT_FOUND,
+	WEB_ERROR_USER_NOT_FOUND,
 } web_error_code_e;
 
 typedef struct {
@@ -68,6 +71,7 @@ extern void web_ctx_destroy(void);
 
 extern const char *web_get_param(const char *name);
 extern const web_param_pair_t *web_get_param_pair(int idx);
+extern long web_get_param_long(const char *key);
 extern int web_parse_post_data(void);
 
 extern bool _web_request_type(web_request_type_e type);
@@ -87,6 +91,7 @@ extern void *web_palloc(size_t size);
 extern char *web_pstrdup(const char *s);
 
 extern void web_set_response(json_object_t *object, json_value_e type);
+extern void web_remove_cookies(void);
 extern void web_respond(web_error_code_e code);
 
 #endif // FB_WEB_H

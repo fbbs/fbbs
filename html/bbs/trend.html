@@ -1,0 +1,10 @@
+<div id='hot-topics'>
+<h2>热门话题</h2>
+<ul>
+{{#posts}}
+<li>
+<a class='title' href='post?board_id={{board_id}}&thread_id={{thread_id}}'>{{{title}}}</a>
+<a class='brd' href='board?id={{board_id}}'>{{board_name}} 版</a> - <a class='usr' href='user?name={{user_name}}'>{{user_name}}</a> - {{count}} 篇
+</li>
+{{/posts}}
+</ul>

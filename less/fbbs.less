@@ -1,0 +1,60 @@
+@import "var";
+@import "reset";
+
+@import "default";
+
+.col-custom(@width, @gap) {
+	column-width: @width;
+	-moz-column-width: @width;
+	-webkit-column-width: @width;
+	column-gap: @gap;
+	-moz-column-gap: @gap;
+	-webkit-column-gap: @gap;
+}
+
+.col-md {
+	.col-custom(@column-md-width, @column-md-gap);
+}
+
+@import "navigation";
+@import "board";
+@import "post";
+@import "user";
+@import "footer";
+
+.container {
+	width: 970px;
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+.main-container {
+	margin: 64px auto 0;
+}
+
+.hidden {
+	display: none;
+}
+
+#main {
+	margin: 0 0 16px 0;
+}
+
+@media (max-width: @screen-sm) {
+	.container {
+		margin: 0;
+		padding: 0 8px;
+		width: 100%;
+	}
+
+	.main-container {
+		margin: 64px 0 0;
+		overflow: scroll;
+	}
+}
+
+@media (min-width: @screen-lg) {
+	.container {
+		width: 1170px;
+	}
+}

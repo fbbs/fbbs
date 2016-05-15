@@ -99,11 +99,9 @@ void disply_userinfo(const struct userec *u)
 #endif
 	exp = countperf(u);
 #ifdef SHOWPERF
-	//% prints("表现值 : %d  (%s)\n", exp, cperf(exp));
-	prints("\xb1\xed\xcf\xd6\xd6\xb5 : %d  (%s)\n", exp, cperf(exp));
+	screen_printf("表现值 : %d  (%s)\n", exp, cperf(exp));
 #else
-	//% prints("表现值  : [%s]\n", cperf(exp));
-	prints("\xb1\xed\xcf\xd6\xd6\xb5  : [%s]\n", cperf(exp));
+	screen_printf("表现值  : [%s]\n", cperf(exp));
 #endif
 	strcpy(genbuf, "ltmprbBOCAMURS#@XLEast0123456789\0");
 	for (num = 0; num < strlen(genbuf) ; num++)

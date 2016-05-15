@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='UTF-8'/>
+		<meta name='viewport' content='width=device-width, initial-scale=1'/>
+		<title>欢迎光临复旦大学日月光华BBS</title>
+		<inline-style style.homepage>
+		<!--[if lte IE 8]>
+		<script src='js/ie8-0.1.min.js'></script>
+		<![endif]-->
+	</head>
+<body>
+
+<div id='container'>
+	<div id='left'>
+		<h1>日月光华</h1>
+		<form method='post'>
+			<input id='id' type='text' name='user_name' placeholder='账号' autofocus minlength='2' maxlength='12'/>
+			<input id='pw' type='password' name='password' class='txt' placeholder='密码' minlength='4'/>
+			<label><input type='checkbox' name='persistent' checked/>记住我<span id='tip'>（公用设备请勿选择）</span></label>
+			<input id='login' type='submit' value='登录'/>
+		</form>
+
+		<div id='error' class='hidden'>用户名或密码有误</div>
+
+		<a id='reg' href='reg.htm'>注册</a>
+
+		<ul id='links'>
+			<li><a href='/banner.htm'>往期进站</a></li>
+			<li><a href='/wallpaper.htm'>壁纸下载</a></li>
+			<li id='pc-tools'><a href='/software/FTerm2.5.0.154.exe'>FTerm</a> / <a href='/software/CTerm3.24.rar'>Cterm</a> / <a href='#' id='sw'>其他工具</a></li>
+		</ul>
+
+		<ul id='more'>
+			<li><a href='/software/Ansieditor2.03e.exe'>AnsiEditor</a></li>
+			<li><a href='/software/Bmp2Ascii.exe'>Bmp2Ascii</a></li>
+			<li><a href='/software/netterm32428.exe'>NetTerm</a></li>
+			<li><a href='/software/Cterm2000.exe'>CTerm2000</a></li>
+			<li><a href='/software/STerm2.549.rar'>S-Term</a></li>
+			<li><a href='/software/qterm-0.4.0pre1.tar.gz'>Qterm</a></li>
+		</ul>
+	</div>
+
+	<div id='right'>
+		<img width='640' height='480' src='/images/bbswebpic.jpg'>
+		<!--<embed id="flash" width="640" height="480" quality="high" bgcolor="#ffffff" wmode="transparent" name="flash" style="" src="images/home/85-2011-summer-angelstep.swf" type="application/x-shockwave-flash"/>-->
+	</div>
+
+	<footer id='footer'>
+		<ul id='extra'>
+			<li><a href='forum/#trend'>随便看看</a></li>
+			<li><a href='/q/'>附属站复旦泉</a></li>
+		</ul>
+		<div id='copyright'><strong>日月光华站 版权所有 &copy;1996-2015</strong><div>  采用 <a href='https://github.com/fbbs'>fbbs</a>  沪ICP备042465</div></div>
+	</footer>
+</div>
+<script src='js/jquery-1.11.3.min.js'></script>
+<script src="js/lib-20150928.min.js"></script>
+<script src='js/homepage.min.js'></script>
+</body>
+</html>

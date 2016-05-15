@@ -27,13 +27,7 @@ static void post_add(FILE *fp, const struct userec *user, fb_time_t now)
 
 	int exp = countexp(user);
 	int perf = countperf(user);
-#ifdef SHOW_PERF
-	//% fprintf(fp, "表现值:%d(\033[1;33m%s\033[m)\n", perf, cperf(perf));
-	fprintf(fp, "\xb1\xed\xcf\xd6\xd6\xb5:%d(\033[1;33m%s\033[m)\n", perf, cperf(perf));
-#else
-	//% fprintf(fp, "表现值:[\033[1;33m%s\033[m]\n", cperf(perf));
-	fprintf(fp, "\xb1\xed\xcf\xd6\xd6\xb5:[\033[1;33m%s\033[m]\n", cperf(perf));
-#endif
+	fprintf(fp, "表现值: %d\n", perf);
 
 #ifdef ALLOWGAME
 	//% fprintf(fp, "银行存款: [\033[1;32m%d元\033[m] "

@@ -66,8 +66,10 @@ bool session_validate(void)
 	const char *user_name = web_get_param(WEB_COOKIE_USER);
 	const char *key = web_get_param(WEB_COOKIE_KEY);
 	const char *token = NULL;
-	if (web_request_type(API) && !web_request_method(GET))
+	if (web_request_type(API) && !web_request_method(GET)) {
+		web_parse_post_data();
 		token = web_get_param("token");
+	}
 
 	bool ok = session_check_web_cache(user_name, key, token);
 	if (ok)

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='UTF-8'/>
+	<meta name='viewport' content='width=device-width, initial-scale=1'/>
+	<title id='title'>日月光华BBS</title>
+	<link href="../css/style.default.css" rel="stylesheet">
+	<!--[if lte IE 8]>
+	<script src='../js/ie8-0.1.min.js'></script>
+	<![endif]-->
+</head>
+
+<body>
+<nav>
+	<div class='container'>
+		<ul class='nav-left'>
+			<li class='nav-hdr'>
+				<h1>日月光华</h1>
+				<ul class='nav-menu-li'>
+					<li><a href='trend'>热门</a></li>
+					<li><a href='sector'>版面</a></li>
+					<li><a id='fav-tgl'>版面收藏</a></li>
+				</ul>
+			</li>
+			<li><a href='trend'>热门</a></li>
+			<li><a href='sector'>版面</a></li>
+		</ul>
+
+		<ul class='nav-right' id='nav-personal'>
+			<li><a href='../' class='na'>登录</a></li>
+			<!--<li><a href='register'>注册</a></li>
+			<li class='require-login nav-menu-hdr'>
+				<a>消息</a>
+				<ul id='nav-noti-li' class='nav-menu-li'>
+					<li><a href='reply'>回复我的文章</a></li>
+					<li><a href='mention'>提到我的文章</a></li>
+				</ul>
+			</li>-->
+			<li class='require-login nav-menu-hdr'>
+				<a id='nav-profile' class='nav-menu-hdr'></a>
+				<ul class='nav-menu-li'>
+					<!--<li><a href='setting'>设置</a></li>-->
+					<li><a href='logout' class='na session-logout'>退出</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+<div class='container main-container'>
+	<div id='nav-brd' class='nav-left'>
+		<div>版面收藏</div>
+		<ul id='fav'>
+		</ul>
+	</div>
+
+	<div id='main'>
+	</div>
+</div>
+
+<footer id='footer' class='hidden'>
+	<div class='container'>
+		<p>日月光华 &copy; 1996-2015 采用 <a href='https://github.com/fbbs/fbbs'>fbbs</a></p>
+	</div>
+</footer>
+
+<template favorite>
+<template sector>
+<template board>
+<partial board>
+<template trend>
+<template post>
+<partial post>
+<template post-new>
+<partial user>
+<template user>
+<template user-card>
+
+<script src='../js/jquery-1.11.3.min.js'></script>
+<script src='../js/lib-20150928.min.js'></script>
+<script src='../js/app-201509.min.js'></script>
+</body>
+</html>

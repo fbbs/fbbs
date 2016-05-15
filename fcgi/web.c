@@ -26,6 +26,7 @@ struct web_ctx_t {
 	web_request_t req;
 	gcry_md_hd_t sha1;
 	bool inited;
+	bool remove_cookies;
 	web_response_t resp;
 };
 
@@ -182,6 +183,11 @@ const char *web_get_param(const char *key)
 	return "";
 }
 
+long web_get_param_long(const char *key)
+{
+	return strtol(web_get_param(key), NULL, 10);
+}
+
 const web_param_pair_t *web_get_param_pair(int idx)
 {
 	if (idx >= 0 && idx < ctx.req.count)
@@ -330,6 +336,7 @@ bool web_ctx_init(void)
 			return false;
 	}
 
+	ctx.remove_cookies = false;
 	ctx.p = pool_create(0);
 	return parse_web_request();
 }
@@ -422,68 +429,46 @@ void web_set_response(json_object_t *object, json_value_e type)
 	ctx.resp.type = type;
 }
 
+void web_remove_cookies(void)
+{
+	ctx.remove_cookies = true;
+}
+
+static void remove_cookie(const char *key)
+{
+	printf("Set-cookie: %s=;Expires=Fri, 19-Apr-1996 11:11:11 GMT\n", key);
+}
+
 struct error_msg_t {
 	web_error_code_e code;
 	web_status_code_e status;
 	const char *msg;
 };
 
-static const struct error_msg_t error_msgs[] = {
-	{
-		.code = WEB_ERROR_NONE,
-		.status = WEB_STATUS_OK,
-		.msg = "success",
-	},
-	{
-		.code = WEB_ERROR_INCORRECT_PASSWORD,
-		.status = WEB_STATUS_FORBIDDEN,
-		.msg = "incorrect username or password",
-	},
-	{
-		.code = WEB_ERROR_USER_SUSPENDED,
-		.status = WEB_STATUS_FORBIDDEN,
-		.msg = "permission denied",
-	},
-	{
-		.code = WEB_ERROR_BAD_REQUEST,
-		.status = WEB_STATUS_BAD_REQUEST,
-		.msg = "bad request",
-	},
-	{
-		.code = WEB_ERROR_INTERNAL,
-		.status = WEB_STATUS_INTERNAL_SERVER_ERROR,
-		.msg = "internal error",
-	},
-	{
-		.code = WEB_ERROR_LOGIN_REQUIRED,
-		.status = WEB_STATUS_FORBIDDEN,
-		.msg = "login required"
-	},
-	{
-		.code = WEB_ERROR_BOARD_NOT_FOUND,
-		.status = WEB_STATUS_NOT_FOUND,
-		.msg = "board not found"
-	},
-	{
-		.code = WEB_ERROR_METHOD_NOT_ALLOWED,
-		.status = WEB_STATUS_METHOD_NOT_ALLOWED,
-		.msg = "method not allowed",
-	},
+static const web_status_code_e errors[] = {
+	[WEB_ERROR_NONE] = WEB_STATUS_OK,
+	[WEB_ERROR_INCORRECT_PASSWORD] = WEB_STATUS_FORBIDDEN,
+	[WEB_ERROR_USER_SUSPENDED] = WEB_STATUS_FORBIDDEN,
+	[WEB_ERROR_BAD_REQUEST] = WEB_STATUS_BAD_REQUEST,
+	[WEB_ERROR_INTERNAL] = WEB_STATUS_INTERNAL_SERVER_ERROR,
+	[WEB_ERROR_LOGIN_REQUIRED] = WEB_STATUS_FORBIDDEN,
+	[WEB_ERROR_BOARD_NOT_FOUND] = WEB_STATUS_NOT_FOUND,
+	[WEB_ERROR_METHOD_NOT_ALLOWED] = WEB_STATUS_METHOD_NOT_ALLOWED,
+	[WEB_ERROR_PERMISSION_DENIED] = WEB_STATUS_FORBIDDEN,
+	[WEB_ERROR_POST_NOT_FOUND] = WEB_STATUS_NOT_FOUND,
+	[WEB_ERROR_USER_NOT_FOUND] = WEB_STATUS_NOT_FOUND,
 };
 
 static web_status_code_e error_msg(web_error_code_e code)
 {
 	json_object_t *object = json_object_new();
 	web_set_response(object, JSON_OBJECT);
+	json_object_integer(object, "code", code + 10000);
 
-	const struct error_msg_t *e = error_msgs;
-	if (code > 0 && code <= ARRAY_SIZE(error_msgs))
-		e = error_msgs + code - 2;
-
-	json_object_string(object, "msg", e->msg);
-	json_object_integer(object, "code", e->code + 10000);
-
-	return e->status;
+	int status = WEB_STATUS_OK;
+	if (code > WEB_OK && code < ARRAY_SIZE(errors))
+		status = errors[code];
+	return status;
 }
 
 void web_respond(web_error_code_e code)
@@ -493,7 +478,12 @@ void web_respond(web_error_code_e code)
 		status = error_msg(code);
 
 	printf("Content-type: application/json; charset=utf-8\n"
-			"Status: %d\n\n", (int) status);
+			"Status: %d\n", (int) status);
+	if (ctx.remove_cookies) {
+		remove_cookie(WEB_COOKIE_USER);
+		remove_cookie(WEB_COOKIE_KEY);
+	}
+	putchar('\n');
 
 	json_dump(ctx.resp.object, ctx.resp.type);
 	FCGI_Finish();

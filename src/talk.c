@@ -185,20 +185,17 @@ int tui_query_result(const char *userid)
 	snprintf(path, sizeof(path), "mail/%c/%s/%s",
 			toupper(user.userid[0]), user.userid, DOT_DIR);
 	int perf = countperf(&user);
-	//% prints("表现值 "
-	prints("\xb1\xed\xcf\xd6\xd6\xb5 "
+	screen_printf("表现值 "
 #ifdef SHOW_PERF
 			"%d(\033[1;33m%s\033[m)"
 #else
 			"[\033[1;33m%s\033[m]"
 #endif
-			//% " 信箱 [\033[1;5;32m%2s\033[m]\n"
-			" \xd0\xc5\xcf\xe4 [\033[1;5;32m%2s\033[m]\n"
+			" 信箱 [\033[1;5;32m%2s\033[m]\n"
 #ifdef SHOW_PERF
 			, perf
 #endif
-			//% , cperf(perf), (check_query_mail(path) == 1) ? "信" : "  ");
-			, cperf(perf), (check_query_mail(path) == 1) ? "\xd0\xc5" : "  ");
+			, cperf(perf), (check_query_mail(path) == 1) ? "信" : "  ");
 
 	int exp = countexp(&user);
 
@@ -243,10 +240,9 @@ int tui_query_result(const char *userid)
 	prints(" \xc9\xfa\xc3\xfc\xc1\xa6 [\033[1;32m%d\033[m]\n", compute_user_value(&user));
 #endif
 
-	char buf[160];
-	show_position(&user, buf, sizeof(buf), u.title);
-	//% prints("身份 %s\n", buf);
-	prints("\xc9\xed\xb7\xdd %s\n", buf);
+	char buf[320];
+	user_position_string(&user, u.title, buf, sizeof(buf));
+	screen_printf("身份 %s\n", buf);
 	
 	uinfo_free(&u);
 

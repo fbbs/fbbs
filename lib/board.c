@@ -58,6 +58,7 @@ void res_to_board(db_res_t *res, int row, board_t *bp)
 	strlcpy(bp->bms, db_get_value(res, row, 6), sizeof(bp->bms));
 	strlcpy(bp->descr, db_get_value(res, row, 2), sizeof(bp->descr));
 	strlcpy(bp->categ, db_get_value(res, row, 7), sizeof(bp->categ));
+	bp->sector = db_get_integer(res, row, 8);
 }
 
 int get_board(const char *name, board_t *bp)

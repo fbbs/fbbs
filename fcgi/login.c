@@ -199,47 +199,31 @@ static int _web_login(bool persistent, bool redirect, session_data_t *s)
 	return WEB_OK;
 }
 
-static int api_login(void)
+static void print_fav_boards(json_object_t *object)
 {
-	if (web_request_method(GET)) {
-		if (session_get_id())
-			return WEB_ERROR_NONE;
-		else
-			return WEB_ERROR_LOGIN_REQUIRED;
-	} else if (web_request_method(POST)) {
-		if (web_parse_post_data() < 0)
-			return WEB_ERROR_BAD_REQUEST;
+	query_t *q = query_new(0);
+	query_select(q, "board, name");
+	query_from(q, "fav_boards");
+	query_where(q, "user_id = %"DBIdUID, session_get_user_id());
+	db_res_t *res = query_exec(q);
 
-		const char *user_name = web_get_param("user_name");
-		char pw[PASSLEN];
-		strlcpy(pw, web_get_param("password"), sizeof(pw));
+	json_array_t *array = json_array_new();
+	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+		int board_id = db_get_integer(res, i, 0);
+		const char *board_name = db_get_value(res, i, 1);
 
-		int ret = do_web_login(user_name, pw, true);
-		session_data_t s;
-		if (ret == WEB_OK)
-			ret = _web_login(true, false, &s);
-		memset(pw, 0, sizeof(pw));
-
-		if (ret == WEB_OK) {
-			json_object_t *object = json_object_new();
-			web_set_response(object, JSON_OBJECT);
-
-			json_object_string(object, "user_name", currentuser.userid);
-			json_object_string(object, "session_key", s.key);
-			json_object_string(object, "token", s.token);
-			json_object_bigint(object, "expire_time", s.expire_time);
-		}
-		return ret;
-	} else {
-		return WEB_ERROR_METHOD_NOT_ALLOWED;
+		json_object_t *o = json_object_new();
+		json_object_integer(o, "id", board_id);
+		json_object_string(o, "name", board_name);
+		json_array_append(array, o, JSON_OBJECT);
 	}
+	db_clear(res);
+
+	json_object_append(object, "favorite", array, JSON_ARRAY);
 }
 
 int web_login(void)
 {
-	if (web_request_type(API))
-		return api_login();
-
 	if (session_get_id())
 		return login_redirect(NULL, 0);
 
@@ -262,6 +246,44 @@ int web_login(void)
 	return ret;
 }
 
+int api_login(void)
+{
+	if (!web_request_type(API))
+		return web_login();
+
+	if (web_request_method(GET)) {
+		if (session_get_id())
+			return WEB_ERROR_NONE;
+		else
+			return WEB_ERROR_LOGIN_REQUIRED;
+	} else if (web_request_method(POST)) {
+		const char *user_name = web_get_param("user_name");
+		char pw[PASSLEN];
+		strlcpy(pw, web_get_param("password"), sizeof(pw));
+
+		int ret = do_web_login(user_name, pw, true);
+		session_data_t s;
+		if (ret == WEB_OK)
+			ret = _web_login(true, false, &s);
+		memset(pw, 0, sizeof(pw));
+
+		if (ret == WEB_OK) {
+			json_object_t *object = json_object_new();
+			web_set_response(object, JSON_OBJECT);
+
+			json_object_string(object, "user_name", currentuser.userid);
+			json_object_string(object, "session_key", s.key);
+			json_object_string(object, "token", s.token);
+			json_object_bigint(object, "expire_time", s.expire_time);
+
+			print_fav_boards(object);
+		}
+		return ret;
+	} else {
+		return WEB_ERROR_METHOD_NOT_ALLOWED;
+	}
+}
+
 int web_logout(void)
 {
 	session_id_t id = session_get_id();
@@ -278,4 +300,23 @@ int web_logout(void)
 	}
 	redirect_homepage();
 	return 0;
+}
+
+int api_logout(void)
+{
+	if (!web_request_type(API))
+		return web_logout();
+
+	if (web_request_method(POST)) {
+		session_id_t id = session_get_id();
+		if (id) {
+			update_user_stay(&currentuser, false, false);
+			save_user_data(&currentuser);
+			session_destroy(id);
+			web_remove_cookies();
+			return WEB_ERROR_NONE;
+		}
+		return WEB_ERROR_LOGIN_REQUIRED;
+	}
+	return WEB_ERROR_METHOD_NOT_ALLOWED;
 }

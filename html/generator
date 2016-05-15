@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+main();
+
+sub main {
+	my ($dir, $css_dir, $input, $output) = @ARGV;
+
+	open my $fin, '<', "$dir/$input" or die $!;
+	open my $fout, '>', $output or die $!;
+
+	while (<$fin>) {
+		chomp;
+		s/^\s+//;
+		if (/<(template|partial) +(.+)>/) {
+			my $prefix = substr $1, 0, 1;
+			print $fout "<script type='text/html' id='$prefix-$2'>";
+			include_file($dir, $fout, $2, $prefix);
+			print $fout "</script>";
+		} elsif (/<inline-style\s+(.+)>/) {
+			print $fout "<style>";
+			include_css($css_dir, $1, $fout);
+			print $fout "</style>";
+		} elsif (length $_) {
+			print $fout $_;
+		}
+	}
+
+	close $fin;
+	close $fout;
+}
+
+sub include_file {
+	my ($dir, $fout, $tmpl, $prefix) = @_;
+	open my $fh, '<', "$dir/$tmpl.htm" . ($prefix eq 't' ? 'l' : '') or die $!;
+	while (<$fh>) {
+		chomp;
+		s/^\s+//;
+		print $fout $_;
+	}
+	close $fh;
+}
+
+sub include_css {
+	my ($dir, $file, $fout) = @_;
+	open my $fh, '<', "$dir/$file.css" or die $!;
+	while (<$fh>) {
+		print $fout $_;
+	}
+	close $fh;
+}
+
+1;

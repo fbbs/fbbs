@@ -252,6 +252,74 @@ static int show_sector(int sid, db_res_t *res, int last)
 	return last;
 }
 
+
+/*
+{
+	sectors: [ { id: C, name: T, short_descr: T, descr: T } ... ],
+	boards: [ { id: I, name: T, descr: T, sector_id: I } ... ]
+}
+*/
+int api_sector(void)
+{
+	query_t *q = query_new(0);
+	query_select(q, "id, name, descr, short_descr");
+	query_from(q, "board_sectors");
+	query_where(q, "public");
+
+	const char *name = web_get_param("name");
+	if (name && *name)
+		query_and(q, "name = %s", name);
+
+	db_res_t *res = query_exec(q);
+	if (!res)
+		return WEB_ERROR_INTERNAL;
+
+	json_object_t *object = json_object_new();
+	web_set_response(object, JSON_OBJECT);
+
+	json_array_t *sectors = json_array_new();
+	json_object_append(object, "sectors", sectors, JSON_ARRAY);
+
+	for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+		json_object_t *sector = json_object_new();
+		json_array_append(sectors, sector, JSON_OBJECT);
+		json_object_integer(sector, "id", db_get_integer(res, i, 0));
+		json_object_string(sector, "name", db_get_value(res, i, 1));
+		json_object_string(sector, "descr", db_get_value(res, i, 2));
+		json_object_string(sector, "short_descr", db_get_value(res, i, 3));
+	}
+	db_clear(res);
+
+	q = query_new(0);
+	query_select(q, BOARD_BASE_FIELDS);
+	query_from(q, BOARD_BASE_TABLES);
+	if (name && *name)
+		query_where(q, "sector = %d", *name);
+	else
+		query_where(q, "flag & %d <> 0", BOARD_FLAG_RECOMMEND);
+	res = query_exec(q);
+	if (res) {
+		json_array_t *boards = json_array_new();
+		json_object_append(object, "boards", boards, JSON_ARRAY);
+
+		for (int i = db_res_rows(res) - 1; i >= 0; --i) {
+			board_t board;
+			res_to_board(res, i, &board);
+			if (!has_read_perm(&board))
+				continue;
+
+			json_object_t *b = json_object_new();
+			json_array_append(boards, b, JSON_OBJECT);
+			json_object_integer(b, "id", board.id);
+			json_object_string(b, "name", board.name);
+			json_object_string(b, "descr", board.descr);
+			json_object_integer(b, "sector_id", board.sector);
+		}
+		db_clear(res);
+	}
+	return WEB_OK;
+}
+
 int bbssec_main(void)
 {
 	db_res_t *r1 = db_query("SELECT id, name, descr, short_descr"
@@ -411,7 +479,7 @@ int web_sector(void)
 	return 0;
 }
 
-int bbsclear_main(void)
+static int bbsclear_main(void)
 {
 	if (!session_get_id())
 		return BBS_ELGNREQ;
@@ -432,6 +500,26 @@ int bbsclear_main(void)
 	refreshto(0, buf);
 	printf("</head></html>");
 	return 0;
+}
+
+int api_clear(void)
+{
+	if (!web_request_type(API))
+		return bbsclear_main();
+
+	if (!session_get_id())
+		return WEB_ERROR_LOGIN_REQUIRED;
+
+	board_t board;
+	if (!get_board_by_bid(web_get_param_long("id"), &board)
+			|| !has_read_perm(&board))
+		return WEB_ERROR_BOARD_NOT_FOUND;
+
+	session_set_board(board.id);
+	brc_init(currentuser.userid, board.name);
+	brc_clear_all();
+	brc_sync(currentuser.userid);
+	return WEB_ERROR_NONE;
 }
 
 int bbsnot_main(void)
@@ -458,4 +546,28 @@ int bbsnot_main(void)
 	print_session();
 	printf("</bbsnot>");
 	return 0;
+}
+
+int api_favorite(void)
+{
+	user_id_t user_id = session_get_user_id();
+	if (!user_id)
+		return WEB_ERROR_LOGIN_REQUIRED;
+
+	board_t board;
+	int board_id = web_get_param_long("id");
+	if (board_id <= 0 || get_board_by_bid(board_id, &board) <= 0
+			|| !has_read_perm(&board)) {
+		return WEB_ERROR_BOARD_NOT_FOUND;
+	}
+
+	if (web_request_method(POST)) {
+		bool ok = fav_board_add(user_id, board.name, board.id,
+				FAV_BOARD_ROOT_FOLDER, &currentuser);
+		return ok ? WEB_ERROR_NONE : WEB_ERROR_INTERNAL;
+	} else if (web_request_method(DELETE)) {
+		bool ok = fav_board_rm(user_id, board.id);
+		return ok ? WEB_ERROR_NONE : WEB_ERROR_INTERNAL;
+	}
+	return WEB_ERROR_METHOD_NOT_ALLOWED;
 }

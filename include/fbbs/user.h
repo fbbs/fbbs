@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <stdint.h>
+#include "bbs.h"
 #include "fbbs/time.h"
 
 #define PRIdUID  PRId32
@@ -19,6 +20,18 @@ enum {
 	USER_FIELD_POSTS,
 	USER_FIELD_STAY,
 };
+
+typedef enum {
+	USER_POSITION_ADMIN,
+	USER_POSITION_BM_BEGIN,
+	USER_POSITION_BM,
+	USER_POSITION_BM_END,
+	USER_POSITION_CUSTOM,
+} user_position_e;
+
+typedef void (*user_position_callback_t)(const char *, void *arg, user_position_e);
+extern void user_position(const struct userec *user, const char *title, user_position_callback_t callback, void *arg);
+extern void user_position_string(const struct userec *user, const char *title, char *buf, size_t size);
 
 extern void remove_user_id_cache(const char *uname);
 extern user_id_t get_user_id(const char *name);
