@@ -53,7 +53,7 @@ sub dump_results
 			. "%-18s\033[37m〖 \033[32m%s\033[37m 〗\033[36m%4d \033[37m篇"
 			. "\033[33m%13.13s\n     \033[37m标题 : \033[1;44m%-60.60s\033[40m\n");
 		my $str = sprintf $fmt, ++$index, $boards->{$board_id}{name}, $last_stamp,
-				$score, $user_name, to_gbk($title);
+				$score, $user_name, to_gbk_2($title);
 		print $fh $str;
 
 		my $str2 = pack 'qLLlZ93Z16Z18Z5', $thread_id, $score, ($last_post_id >> 21) / 1000,
@@ -67,6 +67,10 @@ sub dump_results
 
 sub to_gbk {
 	encode('gbk', decode('utf8', $_[0]));
+}
+
+sub to_gbk_2 {
+	encode('gbk', $_[0]);
 }
 
 sub generate_results
